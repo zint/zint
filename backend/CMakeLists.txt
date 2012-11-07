@@ -4,7 +4,7 @@ project(zint)
 
 find_package(PNG)
 
-set(zint_COMMON_SRCS common.c library.c render.c ps.c large.c reedsol.c gs1.c svg.c png.c)
+set(zint_COMMON_SRCS common.c library.c render.c ps.c large.c reedsol.c gs1.c svg.c png.c pdf.c)
 set(zint_ONEDIM_SRCS code.c code128.c 2of5.c upcean.c telepen.c medical.c plessey.c rss.c)
 set(zint_POSTAL_SRCS postal.c auspost.c imail.c)
 set(zint_TWODIM_SRCS code16k.c dmatrix.c pdf417.c qr.c maxicode.c composite.c aztec.c code49.c code1.c gridmtx.c)

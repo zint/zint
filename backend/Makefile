@@ -18,7 +18,7 @@ includedir := $(prefix)/include
 libdir := $(prefix)/lib
 DESTDIR :=
 
-COMMON:= common.c render.c png.c library.c ps.c large.c reedsol.c gs1.c svg.c
+COMMON:= common.c render.c png.c pdf.c library.c ps.c large.c reedsol.c gs1.c svg.c
 COMMON_OBJ:= common.o render.o png.o library.o ps.o large.o reedsol.o gs1.o svg.o
 ONEDIM:= code.c code128.c 2of5.c upcean.c telepen.c medical.c plessey.c rss.c
 ONEDIM_OBJ:= code.o code128.o 2of5.o upcean.o telepen.o medical.o plessey.o rss.o
@@ -28,7 +28,7 @@ TWODIM:= code16k.c dmatrix.c pdf417.c qr.c maxicode.c composite.c aztec.c code49
 TWODIM_OBJ:= code16k.o dmatrix.o pdf417.o qr.o maxicode.o composite.o aztec.o code49.o code1.o gridmtx.o
 LIBS:= `libpng12-config --I_opts --L_opts --ldflags` -lz -lm
  
-libzint: code.c code128.c 2of5.c upcean.c medical.c telepen.c plessey.c postal.c auspost.c imail.c code16k.c dmatrix.c reedsol.c pdf417.c maxicode.c rss.c common.c render.c png.c library.c ps.c qr.c large.c composite.c aztec.c gs1.c svg.c code49.c code1.c gridmtx.c
+libzint: code.c code128.c 2of5.c upcean.c medical.c telepen.c plessey.c postal.c auspost.c imail.c code16k.c dmatrix.c reedsol.c pdf417.c maxicode.c rss.c common.c render.c png.c library.c ps.c qr.c large.c composite.c aztec.c gs1.c svg.c code49.c code1.c gridmtx.c pdf.c
 	$(CC) -Wall -fPIC $(CFLAGS) $(ZINT_VERSION) -c $(ONEDIM)
 	$(CC) -Wall -fPIC $(CFLAGS) $(ZINT_VERSION) -c $(POSTAL)
 	$(CC) -Wall -fPIC $(CFLAGS) $(ZINT_VERSION) -c $(TWODIM)

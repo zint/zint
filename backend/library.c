@@ -179,6 +179,7 @@ extern int render_plot(struct zint_symbol *symbol, float width, float height);
 
 extern int bmp_handle(struct zint_symbol *symbol, int rotate_angle);
 extern int ps_plot(struct zint_symbol *symbol);
+extern int pdf_plot(struct zint_symbol *symbol);
 extern int svg_plot(struct zint_symbol *symbol);
 
 void error_tag(char error_string[], int error_number)
@@ -721,6 +722,8 @@ int ZBarcode_Print(struct zint_symbol *symbol, int rotate_angle)
 			error_number = dump_plot(symbol);
 		} else if(!(strcmp(output, "EPS"))) {
 			error_number = ps_plot(symbol);
+		} else if(!(strcmp(output, "PDF"))) {
+			error_number = pdf_plot(symbol);
 		} else if(!(strcmp(output, "SVG"))) {
 			error_number = svg_plot(symbol);
 		} else {
