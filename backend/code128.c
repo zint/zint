@@ -4,20 +4,6 @@
     libzint - the open source barcode library
     Copyright (C) 2008 Robin Stuart <robin@zint.org.uk>
     Bugfixes thanks to Christian Sakowski and BogDan Vatra
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License along
-    with this program; if not, write to the Free Software Foundation, Inc.,
-    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
 #include <stdio.h>
@@ -193,9 +179,9 @@ void c128_set_c(unsigned char source_a, unsigned char source_b, char dest[], int
 
 int code_128(struct zint_symbol *symbol, unsigned char source[], int length)
 { /* Handle Code 128 and NVE-18 */
-	int i, j, k, e_count, values[170] = { 0 }, bar_characters, read, total_sum, nve_check;
+	int i, j, k,values[170] = { 0 }, bar_characters, read, total_sum;
 	int error_number, indexchaine, indexliste, sourcelen, f_state;
-	char set[170] = { ' ' }, fset[170] = { ' ' }, mode, last_set, last_fset, current_set = ' ';
+	char set[170] = { ' ' }, fset[170] = { ' ' }, mode, last_set, current_set = ' ';
 	float glyph_count;
 	char dest[1000];
 	
@@ -205,9 +191,7 @@ int code_128(struct zint_symbol *symbol, unsigned char source[], int length)
 	sourcelen = length;
 	
 	j = 0;
-	e_count = 0;
 	bar_characters = 0;
-	nve_check = 0;
 	f_state = 0;
 
 	if(sourcelen > 160) {
@@ -346,7 +330,6 @@ int code_128(struct zint_symbol *symbol, unsigned char source[], int length)
 	/* Now we can calculate how long the barcode is going to be - and stop it from
 	   being too long */
 	last_set = ' ';
-	last_fset = ' ';
 	glyph_count = 0.0;
 	for(i = 0; i < sourcelen; i++) {
 		if((set[i] == 'a') || (set[i] == 'b')) {
@@ -363,16 +346,13 @@ int code_128(struct zint_symbol *symbol, unsigned char source[], int length)
 		}
 		if(i == 0) {
 			if(fset[i] == 'F') {
-				last_fset = 'F';
 				glyph_count = glyph_count + 2.0;
 			}
 		} else {
 			if((fset[i] == 'F') && (fset[i - 1] != 'F')) {
-				last_fset = 'F';
 				glyph_count = glyph_count + 2.0;
 			}
 			if((fset[i] != 'F') && (fset[i - 1] == 'F')) {
-				last_fset = ' ';
 				glyph_count = glyph_count + 2.0;
 			}
 		}
@@ -592,7 +572,7 @@ int code_128(struct zint_symbol *symbol, unsigned char source[], int length)
 
 int ean_128(struct zint_symbol *symbol, unsigned char source[], int length)
 { /* Handle EAN-128 (Now known as GS1-128) */
-	int i, j, e_count, values[170], bar_characters, read, total_sum;
+	int i, j,values[170], bar_characters, read, total_sum;
 	int error_number, indexchaine, indexliste;
 	char set[170], mode, last_set;
 	float glyph_count;
@@ -608,7 +588,6 @@ int ean_128(struct zint_symbol *symbol, unsigned char source[], int length)
 	linkage_flag = 0;
 
 	j = 0;
-	e_count = 0;
 	bar_characters = 0;
 	separator_row = 0;
 

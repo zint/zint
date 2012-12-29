@@ -29,15 +29,20 @@
 #include "aztec.h"
 #include "reedsol.h"
 
+/**
+ * Shorten the string by one character
+ */
 void mapshorten(int *charmap, int *typemap, int start, int length)
-{ /* Shorten the string by one character */
-	
+{
 	memmove(charmap + start + 1 , charmap + start + 2, (length - 1) * sizeof(int));
 	memmove(typemap + start + 1 , typemap + start + 2, (length - 1) * sizeof(int));
 }
 
+/**
+ * Insert a character into the middle of a string at position posn
+ */
 void insert(char binary_string[], int posn, char newbit)
-{ /* Insert a character into the middle of a string at position posn */
+{
 	int i, end;
 	
 	end = strlen(binary_string);
@@ -47,8 +52,11 @@ void insert(char binary_string[], int posn, char newbit)
 	binary_string[posn] = newbit;
 }
 
+/**
+ * Encode input data into a binary string
+ */
 int aztec_text_process(unsigned char source[], const unsigned int src_len, char binary_string[], int gs1)
-{ /* Encode input data into a binary string */
+{
 	int i, j, k, bytes;
 	int curtable, newtable, lasttable, chartype, maplength, blocks, debug;
 #ifndef _MSC_VER

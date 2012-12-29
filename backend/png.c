@@ -82,7 +82,6 @@ int png_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width
 	png_structp  png_ptr;
 	png_infop  info_ptr;
 	graphic = &wpng_info;
-	unsigned long rowbytes;
 	unsigned char *image_data;
 	int i, row, column, errno;
 	int fgred, fggrn, fgblu, bgred, bggrn, bgblu;
@@ -171,7 +170,7 @@ int png_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width
 	png_init_io(png_ptr, graphic->outfile);
 
 	/* set compression */
-	png_set_compression_level(png_ptr, Z_BEST_COMPRESSION);
+	png_set_compression_level(png_ptr,9);
 
 	/* set Header block */
 	png_set_IHDR(png_ptr, info_ptr, graphic->width, graphic->height,
@@ -184,9 +183,6 @@ int png_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width
 	/* set up the transformations:  for now, just pack low-bit-depth pixels
 	into bytes (one, two or four pixels per byte) */
 	png_set_packing(png_ptr);
-
-	/* set rowbytes - depends on picture depth */
-	rowbytes = wpng_info.width * 3;
 
 	/* Pixel Plotting */
 
@@ -304,7 +300,6 @@ int png_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width
 
 int bmp_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width, char *pixelbuf, int rotate_angle)
 {
-	unsigned long rowbytes;
 	int i, row, column, errno;
 	int fgred, fggrn, fgblu, bgred, bggrn, bgblu;
 	
@@ -356,9 +351,6 @@ int bmp_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width
 	bgred = (16 * ctoi(symbol->bgcolour[0])) + ctoi(symbol->bgcolour[1]);
 	bggrn = (16 * ctoi(symbol->bgcolour[2])) + ctoi(symbol->bgcolour[3]);
 	bgblu = (16 * ctoi(symbol->bgcolour[4])) + ctoi(symbol->bgcolour[5]);
-
-	/* set rowbytes - depends on picture depth */
-	rowbytes = symbol->bitmap_width * 3;
 
 	/* Pixel Plotting */
 	i = 0;	

@@ -593,7 +593,7 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
 		}
 		
 		if(current_mode == C1_EDI) { /* Step E - EDI Encodation */
-			int value = 0, done = 0, latch = 0;
+			int value = 0,latch = 0;
 			
 			next_mode = C1_EDI;
 			if(edi_p == 0) {
@@ -605,7 +605,7 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
 					}
 				
 					if (j == 12) { 
-						next_mode = C1_ASCII; done = 1;
+						next_mode = C1_ASCII;
 					}
 				}
 				
@@ -626,7 +626,7 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
 					}
 				
 					if ((j == 8) && latch) { 
-						next_mode = C1_ASCII; done = 1;
+						next_mode = C1_ASCII;
 					}
 				}
 				

@@ -3,20 +3,6 @@
 /*
     libzint - the open source barcode library
     Copyright (C) 2008 Robin Stuart <robin@zint.org.uk>
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License along
-    with this program; if not, write to the Free Software Foundation, Inc.,
-    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
 #define NUMERIC		110
@@ -27,7 +13,7 @@
 #define ALPHA_OR_ISO	121
 
 /* CC-A component coefficients from ISO/IEC 24728:2006 Annex F */
-static int ccaCoeffs[30] = {
+static const int ccaCoeffs[30] = {
 	/* k = 4 */
 	522, 568, 723, 809,
 
@@ -45,14 +31,14 @@ static int ccaCoeffs[30] = {
 };
 
 /* rows, error codewords, k-offset of valid CC-A sizes from ISO/IEC 24723:2006 Table 9 */
-static int ccaVariants[51] = {
+static const int ccaVariants[51] = {
 	5, 6, 7, 8, 9, 10, 12, 4, 5, 6, 7, 8, 3, 4, 5, 6, 7,
 	4, 4, 5, 5, 6, 6, 7, 4, 5, 6, 7, 7, 4, 5, 6, 7, 8,
 	0, 0, 4, 4, 9, 9, 15, 0, 4, 9, 15, 15, 0, 4, 9, 15, 22
 };
 
 /* following is Left RAP, Centre RAP, Right RAP and Start Cluster from ISO/IEC 24723:2006 tables 10 and 11 */
-static int aRAPTable[68] = {
+static const int aRAPTable[68] = {
 	39, 1, 32, 8, 14, 43, 20, 11, 1, 5, 15, 21, 40, 43, 46, 34, 29,
 	0, 0, 0, 0, 0, 0, 0, 43, 33, 37, 47, 1, 20, 23, 26, 14, 9,
 	19, 33, 12, 40, 46, 23, 52, 23, 13, 17, 27, 33, 52, 3, 6, 46, 41,

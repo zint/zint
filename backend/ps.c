@@ -3,20 +3,6 @@
 /*
     libzint - the open source barcode library
     Copyright (C) 2009 Robin Stuart <robin@zint.org.uk>
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License along
-    with this program; if not, write to the Free Software Foundation, Inc.,
-    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
 #include <locale.h>
@@ -47,14 +33,14 @@ int ps_plot(struct zint_symbol *symbol)
 	float default_text_posn;
 	int plot_text = 1;
 	const char *locale = NULL;
-	
+
 	row_height=0;
 	textdone = 0;
 	main_width = symbol->width;
 	strcpy(addon, "");
 	comp_offset = 0;
 	addon_text_posn = 0.0;
-	
+
 	if((symbol->output_options & BARCODE_STDOUT) != 0) {
 		feps = stdout;
 	} else {
@@ -64,11 +50,11 @@ int ps_plot(struct zint_symbol *symbol)
 		strcpy(symbol->errtxt, "Could not open output file");
 		return ERROR_FILE_ACCESS;
 	}
-	
+
 	/* sort out colour options */
 	to_upper((unsigned char*)symbol->fgcolour);
 	to_upper((unsigned char*)symbol->bgcolour);
-	
+
 	if(strlen(symbol->fgcolour) != 6) {
 		strcpy(symbol->errtxt, "Malformed foreground colour target");
 		return ERROR_INVALID_OPTION;
@@ -88,7 +74,7 @@ int ps_plot(struct zint_symbol *symbol)
 		return ERROR_INVALID_OPTION;
 	}
 	locale = setlocale(LC_ALL, "C");
-	
+
 	fgred = (16 * ctoi(symbol->fgcolour[0])) + ctoi(symbol->fgcolour[1]);
 	fggrn = (16 * ctoi(symbol->fgcolour[2])) + ctoi(symbol->fgcolour[3]);
 	fgblu = (16 * ctoi(symbol->fgcolour[4])) + ctoi(symbol->fgcolour[5]);
@@ -101,11 +87,11 @@ int ps_plot(struct zint_symbol *symbol)
 	red_paper = bgred / 256.0;
 	green_paper = bggrn / 256.0;
 	blue_paper = bgblu / 256.0;
-	
+
 	if (symbol->height == 0) {
 		symbol->height = 50;
 	}
-	
+
 	large_bar_count = 0;
 	preset_height = 0.0;
 	for(i = 0; i < symbol->rows; i++) {
@@ -119,7 +105,7 @@ int ps_plot(struct zint_symbol *symbol)
 	if (large_bar_count == 0) {
 		symbol->height = preset_height;
 	}
-	
+
 	while(!(module_is_set(symbol, symbol->rows - 1, comp_offset))) {
 		comp_offset++;
 	}
@@ -140,21 +126,21 @@ int ps_plot(struct zint_symbol *symbol)
 				main_width = 68 + comp_offset;
 		}
 	}
-	
+
 	if (((symbol->symbology == BARCODE_UPCA) && (symbol->rows == 1)) || (symbol->symbology == BARCODE_UPCA_CC)) {
 		if(symbol->whitespace_width == 0) {
 			symbol->whitespace_width = 10;
 			main_width = 96 + comp_offset;
 		}
 	}
-	
+
 	if (((symbol->symbology == BARCODE_UPCE) && (symbol->rows == 1)) || (symbol->symbology == BARCODE_UPCE_CC)) {
 		if(symbol->whitespace_width == 0) {
 			symbol->whitespace_width = 10;
 			main_width = 51 + comp_offset;
 		}
 	}
-	
+
 	latch = 0;
 	r = 0;
 	/* Isolate add-on text */
@@ -170,7 +156,7 @@ int ps_plot(struct zint_symbol *symbol)
 		}
 	}
 	addon[r] = '\0';
-	
+
 	if((symbol->show_hrt == 0) || (ustrlen(symbol->text) == 0)) {
 		plot_text = 0;
 	}
@@ -181,7 +167,7 @@ int ps_plot(struct zint_symbol *symbol)
 	}
 	xoffset = symbol->border_width + symbol->whitespace_width;
 	yoffset = symbol->border_width;
-	
+
 	/* Start writing the header */
 	fprintf(feps, "%%!PS-Adobe-3.0 EPSF-3.0\n");
 	fprintf(feps, "%%%%Creator: Zint %s\n", ZINT_VERSION);
@@ -197,7 +183,7 @@ int ps_plot(struct zint_symbol *symbol)
 		fprintf(feps, "%%%%BoundingBox: 0 0 %d %d\n", roundup((74.0 + xoffset + xoffset) * scaler), roundup((72.0 + yoffset + yoffset) * scaler));
 	}
 	fprintf(feps, "%%%%EndComments\n");
-	
+
 	/* Definitions */
 	fprintf(feps, "/TL { setlinewidth moveto lineto stroke } bind def\n");
 	fprintf(feps, "/TC { moveto 0 360 arc 360 0 arcn fill } bind def\n");
@@ -205,14 +191,14 @@ int ps_plot(struct zint_symbol *symbol)
 	fprintf(feps, "/TB { 2 copy } bind def\n");
 	fprintf(feps, "/TR { newpath 4 1 roll exch moveto 1 index 0 rlineto 0 exch rlineto neg 0 rlineto closepath fill } bind def\n");
 	fprintf(feps, "/TE { pop pop } bind def\n");
-	
+
 	fprintf(feps, "newpath\n");
-	
+
 	/* Now the actual representation */
 	fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
 	fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_paper, green_paper, blue_paper);
 	fprintf(feps, "%.2f 0.00 TB 0.00 %.2f TR\n", (symbol->height + textoffset + yoffset + yoffset) * scaler, (symbol->width + xoffset + xoffset) * scaler);
-	
+
 	if(((symbol->output_options & BARCODE_BOX) != 0) || ((symbol->output_options & BARCODE_BIND) != 0)) {
 		default_text_posn = 0.5 * scaler;
 	} else {
@@ -222,8 +208,8 @@ int ps_plot(struct zint_symbol *symbol)
 	if(symbol->symbology == BARCODE_MAXICODE) {
 		/* Maxicode uses hexagons */
 		float ax, ay, bx, by, cx, cy, dx, dy, ex, ey, fx, fy, mx, my;
-		
-				
+
+
 		textoffset = 0.0;
 		if (((symbol->output_options & BARCODE_BOX) != 0) || ((symbol->output_options & BARCODE_BIND) != 0)) {
 			fprintf(feps, "TE\n");
@@ -235,10 +221,10 @@ int ps_plot(struct zint_symbol *symbol)
 			/* side bars */
 			fprintf(feps, "TE\n");
 			fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
-			fprintf(feps, "%.2f %.2f TB %.2f %.2f TR\n", (72.0 + (2 * symbol->border_width)) * scaler, textoffset * scaler, 0.0, symbol->border_width * scaler); 
+			fprintf(feps, "%.2f %.2f TB %.2f %.2f TR\n", (72.0 + (2 * symbol->border_width)) * scaler, textoffset * scaler, 0.0, symbol->border_width * scaler);
 			fprintf(feps, "%.2f %.2f TB %.2f %.2f TR\n", (72.0 + (2 * symbol->border_width)) * scaler, textoffset * scaler, (74.0 + xoffset + xoffset - symbol->border_width) * scaler, symbol->border_width * scaler);
 		}
-		
+
 		fprintf(feps, "TE\n");
 		fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
 		fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
@@ -269,13 +255,13 @@ int ps_plot(struct zint_symbol *symbol)
 				}
 			}
 		}
-	}	
-	
+	}
+
 	if(symbol->symbology != BARCODE_MAXICODE) {
 		/* everything else uses rectangles (or squares) */
 		/* Works from the bottom of the symbol up */
 		int addon_latch = 0;
-		
+
 		for(r = 0; r < symbol->rows; r++) {
 			this_row = symbol->rows - r - 1; /* invert r otherwise plots upside down */
 			if(symbol->row_height[this_row] == 0) {
@@ -292,7 +278,7 @@ int ps_plot(struct zint_symbol *symbol)
 				}
 			}
 			row_posn += (textoffset + yoffset);
-			
+
 			fprintf(feps, "TE\n");
 			fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
 			fprintf(feps, "%.2f %.2f ", row_height * scaler, row_posn * scaler);
@@ -302,7 +288,7 @@ int ps_plot(struct zint_symbol *symbol)
 			} else {
 				latch = 0;
 			}
-			
+
 			do {
 				block_width = 0;
 				do {
@@ -314,8 +300,8 @@ int ps_plot(struct zint_symbol *symbol)
 					fprintf(feps, "%.2f %.2f ", (row_height - 5.0) * scaler, (row_posn - 5.0) * scaler);
 					addon_text_posn = row_posn + row_height - 8.0;
 					addon_latch = 1;
-				} 
-				if(latch == 1) { 
+				}
+				if(latch == 1) {
 					/* a bar */
 					fprintf(feps, "TB %.2f %.2f TR\n", (i + xoffset) * scaler, block_width * scaler);
 					latch = 0;
@@ -324,7 +310,7 @@ int ps_plot(struct zint_symbol *symbol)
 					latch = 1;
 				}
 				i += block_width;
-				
+
 			} while (i < symbol->width);
 		}
 	}
@@ -381,7 +367,7 @@ int ps_plot(struct zint_symbol *symbol)
 					fprintf(feps, "setmatrix\n");
 					textdone = 1;
 					switch(strlen(addon)) {
-						case 2:	
+						case 2:
 							fprintf(feps, "matrix currentmatrix\n");
 							fprintf(feps, "/Helvetica findfont\n");
 							fprintf(feps, "%.2f scalefont setfont\n", 11.0 * scaler);
@@ -464,7 +450,7 @@ int ps_plot(struct zint_symbol *symbol)
 					fprintf(feps, "setmatrix\n");
 					textdone = 1;
 					switch(strlen(addon)) {
-						case 2:	
+						case 2:
 							fprintf(feps, "matrix currentmatrix\n");
 							fprintf(feps, "/Helvetica findfont\n");
 							fprintf(feps, "%.2f scalefont setfont\n", 11.0 * scaler);
@@ -492,7 +478,7 @@ int ps_plot(struct zint_symbol *symbol)
 					break;
 
 			}
-		}	
+		}
 
 		if (((symbol->symbology == BARCODE_UPCA) && (symbol->rows == 1)) || (symbol->symbology == BARCODE_UPCA_CC)) {
 			/* guard bar extensions and text formatting for UPCA */
@@ -500,7 +486,7 @@ int ps_plot(struct zint_symbol *symbol)
 			fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
 			fprintf(feps, "%.2f %.2f ", 5.0 * scaler, (4.0 + yoffset) * scaler);
 			latch = 1;
-			
+
 			i = 0 + comp_offset;
 			do {
 				block_width = 0;
@@ -592,7 +578,7 @@ int ps_plot(struct zint_symbol *symbol)
 			fprintf(feps, "setmatrix\n");
 			textdone = 1;
 			switch(strlen(addon)) {
-				case 2:	
+				case 2:
 					fprintf(feps, "matrix currentmatrix\n");
 					fprintf(feps, "/Helvetica findfont\n");
 					fprintf(feps, "%.2f scalefont setfont\n", 11.0 * scaler);
@@ -618,7 +604,7 @@ int ps_plot(struct zint_symbol *symbol)
 					break;
 			}
 
-		}	
+		}
 
 		if (((symbol->symbology == BARCODE_UPCE) && (symbol->rows == 1)) || (symbol->symbology == BARCODE_UPCE_CC)) {
 			/* guard bar extensions and text formatting for UPCE */
@@ -672,7 +658,7 @@ int ps_plot(struct zint_symbol *symbol)
 			fprintf(feps, "setmatrix\n");
 			textdone = 1;
 			switch(strlen(addon)) {
-				case 2:	
+				case 2:
 					fprintf(feps, "matrix currentmatrix\n");
 					fprintf(feps, "/Helvetica findfont\n");
 					fprintf(feps, "%.2f scalefont setfont\n", 11.0 * scaler);
@@ -728,12 +714,12 @@ int ps_plot(struct zint_symbol *symbol)
 				/* side bars */
 				fprintf(feps, "TE\n");
 				fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
-				fprintf(feps, "%.2f %.2f TB %.2f %.2f TR\n", (symbol->height + (2 * symbol->border_width)) * scaler, textoffset * scaler, 0.0, symbol->border_width * scaler); 
+				fprintf(feps, "%.2f %.2f TB %.2f %.2f TR\n", (symbol->height + (2 * symbol->border_width)) * scaler, textoffset * scaler, 0.0, symbol->border_width * scaler);
 				fprintf(feps, "%.2f %.2f TB %.2f %.2f TR\n", (symbol->height + (2 * symbol->border_width)) * scaler, textoffset * scaler, (symbol->width + xoffset + xoffset - symbol->border_width) * scaler, symbol->border_width * scaler);
 			}
 			break;
 	}
-	
+
 	/* Put the human readable text at the bottom */
 	if(plot_text && (textdone == 0)) {
 		fprintf(feps, "TE\n");
@@ -750,12 +736,16 @@ int ps_plot(struct zint_symbol *symbol)
 		fprintf(feps, "setmatrix\n");
 	}
 	fprintf(feps, "\nshowpage\n");
-	
-	fclose(feps);
-	
+
+	if(symbol->output_options & BARCODE_STDOUT) {
+		fflush(feps);
+	} else {
+		fclose(feps);
+	}
+
 	if (locale)
 		setlocale(LC_ALL, locale);
-	
+
 	return error_number;
 }
 

@@ -29,18 +29,18 @@
 
 /* UPC and EAN tables checked against EN 797:1996 */
 
-static char *UPCParity0[10] = {"BBBAAA", "BBABAA", "BBAABA", "BBAAAB", "BABBAA", "BAABBA", "BAAABB",
+static const char *UPCParity0[10] = {"BBBAAA", "BBABAA", "BBAABA", "BBAAAB", "BABBAA", "BAABBA", "BAAABB",
 	"BABABA", "BABAAB", "BAABAB"}; /* Number set for UPC-E symbol (EN Table 4) */
-static char *UPCParity1[10] = {"AAABBB", "AABABB", "AABBAB", "AABBBA", "ABAABB", "ABBAAB", "ABBBAA",
+static const char *UPCParity1[10] = {"AAABBB", "AABABB", "AABBAB", "AABBBA", "ABAABB", "ABBAAB", "ABBBAA",
 	"ABABAB", "ABABBA", "ABBABA"}; /* Not covered by BS EN 797:1995 */
-static char *EAN2Parity[4] = {"AA", "AB", "BA", "BB"}; /* Number sets for 2-digit add-on (EN Table 6) */
-static char *EAN5Parity[10] = {"BBAAA", "BABAA", "BAABA", "BAAAB", "ABBAA", "AABBA", "AAABB", "ABABA",
+static const char *EAN2Parity[4] = {"AA", "AB", "BA", "BB"}; /* Number sets for 2-digit add-on (EN Table 6) */
+static const char *EAN5Parity[10] = {"BBAAA", "BABAA", "BAABA", "BAAAB", "ABBAA", "AABBA", "AAABB", "ABABA",
 	"ABAAB", "AABAB"}; /* Number set for 5-digit add-on (EN Table 7) */
-static char *EAN13Parity[10] = {"AAAAA", "ABABB", "ABBAB", "ABBBA", "BAABB", "BBAAB", "BBBAA", "BABAB",
+static const char *EAN13Parity[10] = {"AAAAA", "ABABB", "ABBAB", "ABBBA", "BAABB", "BBAAB", "BBBAA", "BABAB",
 	"BABBA", "BBABA"}; /* Left hand of the EAN-13 symbol (EN Table 3) */
-static char *EANsetA[10] = {"3211", "2221", "2122", "1411", "1132", "1231", "1114", "1312", "1213",
+static const char *EANsetA[10] = {"3211", "2221", "2122", "1411", "1132", "1231", "1114", "1312", "1213",
 	"3112"}; /* Representation set A and C (EN Table 1) */
-static char *EANsetB[10] = {"1123", "1222", "2212", "1141", "2311", "1321", "4111", "2131", "3121",
+static const char *EANsetB[10] = {"1123", "1222", "2212", "1141", "2311", "1321", "4111", "2131", "3121",
 	"2113"}; /* Representation set B (EN Table 1) */
 
 char upc_check(char source[])

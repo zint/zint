@@ -3,20 +3,6 @@
 /*
     libzint - the open source barcode library
     Copyright (C) 2009 Robin Stuart <robin@zint.org.uk>
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License along
-    with this program; if not, write to the Free Software Foundation, Inc.,
-    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
 #include <locale.h>
@@ -32,8 +18,6 @@ int svg_plot(struct zint_symbol *symbol)
 	int i, block_width, latch, r, this_row;
 	float textpos, large_bar_height, preset_height, row_height, row_posn = 0.0;
 	FILE *fsvg;
-	int fgred, fggrn, fgblu, bgred, bggrn, bgblu;
-	float red_ink, green_ink, blue_ink, red_paper, green_paper, blue_paper;
 	int error_number = 0;
 	int textoffset, xoffset, yoffset, textdone, main_width;
 	char textpart[10], addon[6];
@@ -43,14 +27,14 @@ int svg_plot(struct zint_symbol *symbol)
 	float default_text_posn;
 	int plot_text = 1;
 	const char *locale = NULL;
-	
+
 	row_height=0;
 	textdone = 0;
 	main_width = symbol->width;
 	strcpy(addon, "");
 	comp_offset = 0;
 	addon_text_posn = 0.0;
-	
+
 	if((symbol->output_options & BARCODE_STDOUT) != 0) {
 		fsvg = stdout;
 	} else {
@@ -60,11 +44,11 @@ int svg_plot(struct zint_symbol *symbol)
 		strcpy(symbol->errtxt, "Could not open output file");
 		return ERROR_FILE_ACCESS;
 	}
-	
+
 	/* sort out colour options */
 	to_upper((unsigned char*)symbol->fgcolour);
 	to_upper((unsigned char*)symbol->bgcolour);
-	
+
 	if(strlen(symbol->fgcolour) != 6) {
 		strcpy(symbol->errtxt, "Malformed foreground colour target");
 		return ERROR_INVALID_OPTION;
@@ -85,23 +69,10 @@ int svg_plot(struct zint_symbol *symbol)
 	}
 	locale = setlocale(LC_ALL, "C");
 	
-	fgred = (16 * ctoi(symbol->fgcolour[0])) + ctoi(symbol->fgcolour[1]);
-	fggrn = (16 * ctoi(symbol->fgcolour[2])) + ctoi(symbol->fgcolour[3]);
-	fgblu = (16 * ctoi(symbol->fgcolour[4])) + ctoi(symbol->fgcolour[5]);
-	bgred = (16 * ctoi(symbol->bgcolour[0])) + ctoi(symbol->bgcolour[1]);
-	bggrn = (16 * ctoi(symbol->bgcolour[2])) + ctoi(symbol->bgcolour[3]);
-	bgblu = (16 * ctoi(symbol->bgcolour[4])) + ctoi(symbol->bgcolour[5]);
-	red_ink = fgred / 256.0;
-	green_ink = fggrn / 256.0;
-	blue_ink = fgblu / 256.0;
-	red_paper = bgred / 256.0;
-	green_paper = bggrn / 256.0;
-	blue_paper = bgblu / 256.0;
-	
 	if (symbol->height == 0) {
 		symbol->height = 50;
 	}
-	
+
 	large_bar_count = 0;
 	preset_height = 0.0;
 	for(i = 0; i < symbol->rows; i++) {
@@ -115,7 +86,7 @@ int svg_plot(struct zint_symbol *symbol)
 	if (large_bar_count == 0) {
 		symbol->height = preset_height;
 	}
-	
+
 	while(!(module_is_set(symbol, symbol->rows - 1, comp_offset))) {
 		comp_offset++;
 	}
@@ -136,21 +107,21 @@ int svg_plot(struct zint_symbol *symbol)
 				main_width = 68 + comp_offset;
 		}
 	}
-	
+
 	if (((symbol->symbology == BARCODE_UPCA) && (symbol->rows == 1)) || (symbol->symbology == BARCODE_UPCA_CC)) {
 		if(symbol->whitespace_width == 0) {
 			symbol->whitespace_width = 10;
 			main_width = 96 + comp_offset;
 		}
 	}
-	
+
 	if (((symbol->symbology == BARCODE_UPCE) && (symbol->rows == 1)) || (symbol->symbology == BARCODE_UPCE_CC)) {
 		if(symbol->whitespace_width == 0) {
 			symbol->whitespace_width = 10;
 			main_width = 51 + comp_offset;
 		}
 	}
-	
+
 	latch = 0;
 	r = 0;
 	/* Isolate add-on text */
@@ -166,7 +137,7 @@ int svg_plot(struct zint_symbol *symbol)
 		}
 	}
 	addon[r] = '\0';
-	
+
 	if((symbol->show_hrt == 0) || (ustrlen(symbol->text) == 0)) {
 		plot_text = 0;
 	}
@@ -177,7 +148,7 @@ int svg_plot(struct zint_symbol *symbol)
 	}
 	xoffset = symbol->border_width + symbol->whitespace_width;
 	yoffset = symbol->border_width;
-	
+
 	/* Start writing the header */
 	fprintf(fsvg, "<?xml version=\"1.0\" standalone=\"no\"?>\n");
 	fprintf(fsvg, "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\"\n");
@@ -211,8 +182,8 @@ int svg_plot(struct zint_symbol *symbol)
 	if(symbol->symbology == BARCODE_MAXICODE) {
 		/* Maxicode uses hexagons */
 		float ax, ay, bx, by, cx, cy, dx, dy, ex, ey, fx, fy, mx, my;
-		
-				
+
+
 		textoffset = 0.0;
 		if (((symbol->output_options & BARCODE_BOX) != 0) || ((symbol->output_options & BARCODE_BIND) != 0)) {
 			fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", 0.0, 0.0, (74.0 + xoffset + xoffset) * scaler, symbol->border_width * scaler);
@@ -255,13 +226,13 @@ int svg_plot(struct zint_symbol *symbol)
 				}
 			}
 		}
-	}	
-	
+	}
+
 	if(symbol->symbology != BARCODE_MAXICODE) {
 		/* everything else uses rectangles (or squares) */
 		/* Works from the bottom of the symbol up */
 		int addon_latch = 0;
-		
+
 		for(r = 0; r < symbol->rows; r++) {
 			this_row = r;
 			if(symbol->row_height[this_row] == 0) {
@@ -278,14 +249,14 @@ int svg_plot(struct zint_symbol *symbol)
 				}
 			}
 			row_posn += yoffset;
-			
+
 			i = 0;
 			if(module_is_set(symbol, this_row, 0)) {
 				latch = 1;
 			} else {
 				latch = 0;
 			}
-			
+
 			do {
 				block_width = 0;
 				do {
@@ -294,8 +265,8 @@ int svg_plot(struct zint_symbol *symbol)
 				if((addon_latch == 0) && (r == (symbol->rows - 1)) && (i > main_width)) {
 					addon_text_posn = (row_posn + 8.0) * scaler;
 					addon_latch = 1;
-				} 
-				if(latch == 1) { 
+				}
+				if(latch == 1) {
 					/* a bar */
 					if(addon_latch == 0) {
 						fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (i + xoffset) * scaler, row_posn * scaler, block_width * scaler, row_height * scaler);
@@ -308,7 +279,7 @@ int svg_plot(struct zint_symbol *symbol)
 					latch = 1;
 				}
 				i += block_width;
-				
+
 			} while (i < symbol->width);
 		}
 	}
@@ -330,7 +301,7 @@ int svg_plot(struct zint_symbol *symbol)
 					fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (32 + xoffset) * scaler, row_posn, scaler, 5.0 * scaler);
 					fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (34 + xoffset) * scaler, row_posn, scaler, 5.0 * scaler);
 					fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (64 + xoffset) * scaler, row_posn, scaler, 5.0 * scaler);
-					fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (66 + xoffset) * scaler, row_posn, scaler, 5.0 * scaler); 
+					fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (66 + xoffset) * scaler, row_posn, scaler, 5.0 * scaler);
 					for(i = 0; i < 4; i++) {
 						textpart[i] = symbol->text[i];
 					}
@@ -351,7 +322,7 @@ int svg_plot(struct zint_symbol *symbol)
 					fprintf(fsvg, "      </text>\n");
 					textdone = 1;
 					switch(strlen(addon)) {
-						case 2:	
+						case 2:
 							textpos = xoffset + 86;
 							fprintf(fsvg, "      <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"middle\"\n", textpos * scaler, addon_text_posn * scaler);
 							fprintf(fsvg, "         font-family=\"Helvetica\" font-size=\"%.1f\" fill=\"#%s\" >\n", 11.0 * scaler, symbol->fgcolour);
@@ -376,7 +347,7 @@ int svg_plot(struct zint_symbol *symbol)
 					fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (46 + xoffset) * scaler, row_posn, scaler, 5.0 * scaler);
 					fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (48 + xoffset) * scaler, row_posn, scaler, 5.0 * scaler);
 					fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (92 + xoffset) * scaler, row_posn, scaler, 5.0 * scaler);
-					fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (94 + xoffset) * scaler, row_posn, scaler, 5.0 * scaler); 
+					fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (94 + xoffset) * scaler, row_posn, scaler, 5.0 * scaler);
 					textpart[0] = symbol->text[0];
 					textpart[1] = '\0';
 					textpos = -7;
@@ -404,7 +375,7 @@ int svg_plot(struct zint_symbol *symbol)
 					fprintf(fsvg, "      </text>\n");
 					textdone = 1;
 					switch(strlen(addon)) {
-						case 2:	
+						case 2:
 							textpos = xoffset + 114;
 							fprintf(fsvg, "      <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"middle\"\n", textpos * scaler, addon_text_posn * scaler);
 							fprintf(fsvg, "         font-family=\"Helvetica\" font-size=\"%.1f\" fill=\"#%s\" >\n", 11.0 * scaler, symbol->fgcolour);
@@ -422,12 +393,12 @@ int svg_plot(struct zint_symbol *symbol)
 					break;
 
 			}
-		}	
+		}
 
 		if (((symbol->symbology == BARCODE_UPCA) && (symbol->rows == 1)) || (symbol->symbology == BARCODE_UPCA_CC)) {
 			/* guard bar extensions and text formatting for UPCA */
 			latch = 1;
-			
+
 			i = 0 + comp_offset;
 			do {
 				block_width = 0;
@@ -497,7 +468,7 @@ int svg_plot(struct zint_symbol *symbol)
 			fprintf(fsvg, "      </text>\n");
 			textdone = 1;
 			switch(strlen(addon)) {
-				case 2:	
+				case 2:
 					textpos = xoffset + 116;
 					fprintf(fsvg, "      <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"middle\"\n", textpos * scaler, addon_text_posn * scaler);
 					fprintf(fsvg, "         font-family=\"Helvetica\" font-size=\"%.1f\" fill=\"#%s\" >\n", 11.0 * scaler, symbol->fgcolour);
@@ -513,7 +484,7 @@ int svg_plot(struct zint_symbol *symbol)
 					break;
 			}
 
-		}	
+		}
 
 		if (((symbol->symbology == BARCODE_UPCE) && (symbol->rows == 1)) || (symbol->symbology == BARCODE_UPCE_CC)) {
 			/* guard bar extensions and text formatting for UPCE */
@@ -547,7 +518,7 @@ int svg_plot(struct zint_symbol *symbol)
 			fprintf(fsvg, "      </text>\n");
 			textdone = 1;
 			switch(strlen(addon)) {
-				case 2:	
+				case 2:
 					textpos = xoffset + 70;
 					fprintf(fsvg, "      <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"middle\"\n", textpos * scaler, addon_text_posn * scaler);
 					fprintf(fsvg, "         font-family=\"Helvetica\" font-size=\"%.1f\" fill=\"#%s\" >\n", 11.0 * scaler, symbol->fgcolour);
@@ -592,7 +563,7 @@ int svg_plot(struct zint_symbol *symbol)
 			}
 			break;
 	}
-	
+
 	/* Put the human readable text at the bottom */
 	if(plot_text && (textdone == 0)) {
 		textpos = symbol->width / 2.0;
@@ -603,12 +574,16 @@ int svg_plot(struct zint_symbol *symbol)
 	}
 	fprintf(fsvg, "   </g>\n");
 	fprintf(fsvg, "</svg>\n");
-	
-	fclose(fsvg);
-	
+
+	if(symbol->output_options & BARCODE_STDOUT) {
+		fflush(fsvg);
+	} else {
+		fclose(fsvg);
+	}
+
 	if (locale)
 		setlocale(LC_ALL, locale);
-	
+
 	return error_number;
 }
 

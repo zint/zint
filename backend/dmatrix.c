@@ -775,7 +775,7 @@ void add_tail(unsigned char target[], int tp, int tail_length, int last_mode)
 
 int data_matrix_200(struct zint_symbol *symbol, unsigned char source[], int length)
 {
-	int inputlen, i, skew = 0;
+	int           i, skew = 0;
 	unsigned char binary[2200];
 	int binlen;
 	int symbolsize, optionsize, calcsize;
@@ -783,7 +783,6 @@ int data_matrix_200(struct zint_symbol *symbol, unsigned char source[], int leng
 	int H, W, FH, FW, datablock, bytes, rsblock;
 	int last_mode;
 	unsigned char *grid = 0;
-	inputlen = length;
 	
 	binlen = dm200encode(symbol, source, binary, &last_mode, length);
 	

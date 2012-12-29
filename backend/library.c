@@ -79,9 +79,11 @@ void ZBarcode_Clear(struct zint_symbol *symbol)
 	symbol->width = 0;
 	symbol->text[0] = '\0';
 	symbol->errtxt[0] = '\0';
-	if (symbol->bitmap != NULL)
+	if (symbol->bitmap != NULL) 
+    {
 		free(symbol->bitmap);
-	symbol->bitmap = NULL;
+		symbol->bitmap = NULL;
+	}
 	symbol->bitmap_width = 0;
 	symbol->bitmap_height = 0;
 }
@@ -108,7 +110,7 @@ void ZBarcode_Delete(struct zint_symbol *symbol)
 		while (string) {
 			s = string;
 			string = string->next;
-      free(s->text);
+			free(s->text);
 			free(s);
 		}
 
@@ -225,7 +227,11 @@ int dump_plot(struct zint_symbol *symbol)
 	}
 	fputs("]\n", f);
 
-	fclose(f);
+	if(symbol->output_options & BARCODE_STDOUT) {
+		fflush(f);
+	} else {
+		fclose(f);
+	}
 
 	return 0;
 }
@@ -836,7 +842,8 @@ int ZBarcode_Encode_File(struct zint_symbol *symbol, char *filename)
 	buffer = (unsigned char *)malloc(fileLen * sizeof(unsigned char));
 	if(!buffer) {
 		strcpy(symbol->errtxt, "Internal memory error");
-		fclose(file);
+        if (strcmp(filename, "-"))
+		    fclose(file);
 		return ERROR_MEMORY;
 	}
 	

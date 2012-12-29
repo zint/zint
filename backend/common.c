@@ -42,7 +42,7 @@ void ustrcpy(unsigned char target[], unsigned char source[]) {
 	target[i] = '\0';
 }
 
-void concat(char dest[], char source[])
+void concat(char dest[],const char source[])
 { /* Concatinates dest[] with the contents of source[], copying /0 as well */
 	unsigned int i, j, n;
 
@@ -117,7 +117,7 @@ int posn(char set_string[], char data)
 	return 0;
 }
 
-void lookup(char set_string[], char *table[], char data, char dest[])
+void lookup(char set_string[],const char *table[], char data, char dest[])
 { /* Replaces huge switch statements for looking up in tables */
 	unsigned int i, n = strlen(set_string);
 

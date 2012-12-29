@@ -3,20 +3,6 @@
 /*
     libzint - the open source barcode library
     Copyright (C) 2008 Robin Stuart <robin@zint.org.uk>
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License along
-    with this program; if not, write to the Free Software Foundation, Inc.,
-    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
 /* Updated to comply with BS EN 12323:2005 */
@@ -44,7 +30,7 @@
 static int list[2][170];
 
 /* EN 12323 Table 1 - "Code 16K" character encodations */
-static char *C16KTable[107] = {"212222", "222122", "222221", "121223", "121322", "131222", "122213",
+static const char *C16KTable[107] = {"212222", "222122", "222221", "121223", "121322", "131222", "122213",
 	"122312", "132212", "221213", "221312", "231212", "112232", "122132", "122231", "113222",
 	"123122", "123221", "223211", "221132", "221231", "213212", "223112", "312131", "311222",
 	"321122", "321221", "312212", "322112", "322211", "212123", "212321", "232121", "111323",
@@ -59,11 +45,11 @@ static char *C16KTable[107] = {"212222", "222122", "222221", "121223", "121322",
 	"211133"};
 
 /* EN 12323 Table 3 and Table 4 - Start patterns and stop patterns */
-static char *C16KStartStop[8] = {"3211", "2221", "2122", "1411", "1132", "1231", "1114", "3112"};
+static const char *C16KStartStop[8] = {"3211", "2221", "2122", "1411", "1132", "1231", "1114", "3112"};
 
 /* EN 12323 Table 5 - Start and stop values defining row numbers */
-static int C16KStartValues[16] = {0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7};
-static int C16KStopValues[16] = {0, 1, 2, 3, 4, 5, 6, 7, 4, 5, 6, 7, 0, 1, 2, 3};
+static const int C16KStartValues[16] = {0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7};
+static const int C16KStopValues[16] = {0, 1, 2, 3, 4, 5, 6, 7, 4, 5, 6, 7, 0, 1, 2, 3};
 
 void grwp16(int *indexliste)
 {
@@ -172,8 +158,8 @@ int code16k(struct zint_symbol *symbol, unsigned char source[], int length)
 	char width_pattern[100];
 	int current_row, rows_needed, flip_flop, looper, first_check, second_check;
 	int indexliste, indexchaine, pads_needed, f_state;
-	char set[160] = { ' ' }, fset[160] = { ' ' }, mode, last_set, last_fset, current_set;
-	unsigned int i, j, k, m, e_count, read, mx_reader, writer;
+	char set[160] = { ' ' }, fset[160] = { ' ' }, mode, last_set,current_set;
+	unsigned int i, j, k, m,read, mx_reader, writer;
 	unsigned int values[160] = { 0 };
 	unsigned int bar_characters;
 	float glyph_count;
@@ -192,7 +178,6 @@ int code16k(struct zint_symbol *symbol, unsigned char source[], int length)
 		return ERROR_TOO_LONG;
 	}
 
-	e_count = 0;
 	bar_characters = 0;
 	
 	/* Detect extended ASCII characters */
@@ -331,7 +316,6 @@ int code16k(struct zint_symbol *symbol, unsigned char source[], int length)
 	
 	/* Make sure the data will fit in the symbol */
 	last_set = ' ';
-	last_fset = ' ';
 	glyph_count = 0.0;
 	for(i = 0; i < input_length; i++) {
 		if((set[i] == 'a') || (set[i] == 'b')) {
@@ -356,16 +340,13 @@ int code16k(struct zint_symbol *symbol, unsigned char source[], int length)
 				}
 			}
 			if(fset[i] == 'F') {
-				last_fset = 'F';
 				glyph_count = glyph_count + 2.0;
 			}
 		} else {
 			if((fset[i] == 'F') && (fset[i - 1] != 'F')) {
-				last_fset = 'F';
 				glyph_count = glyph_count + 2.0;
 			}
 			if((fset[i] != 'F') && (fset[i - 1] == 'F')) {
-				last_fset = ' ';
 				glyph_count = glyph_count + 2.0;
 			}
 		}

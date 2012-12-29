@@ -4,20 +4,6 @@
     libzint - the open source barcode library
     Copyright (C) 2008 Robin Stuart <robin@zint.org.uk>
     Portions Copyright (C) 2004 Grandzebu
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License along
-    with this program; if not, write to the Free Software Foundation, Inc.,
-    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
 /* this file contains the character table, the pre-calculated coefficients and the
@@ -32,7 +18,7 @@
 #define BRSET "ABCDEFabcdefghijklmnopqrstuvwxyz*+-"
 
 /* PDF417 error correction coefficients from Grand Zebu */
-static int coefrs[1022] = {
+static const int coefrs[1022] = {
 	/* k = 2 */
 	27, 917,
 	
@@ -118,7 +104,7 @@ static int coefrs[1022] = {
 	63, 310, 863, 251, 366, 304, 282, 738, 675, 410, 389, 244, 31, 121, 303, 263 };
 	
 
-static char *codagemc[2787] = { "urA", "xfs", "ypy", "unk", "xdw", "yoz", "pDA", "uls", "pBk", "eBA",
+static const char *codagemc[2787] = { "urA", "xfs", "ypy", "unk", "xdw", "yoz", "pDA", "uls", "pBk", "eBA",
 	"pAs", "eAk", "prA", "uvs", "xhy", "pnk", "utw", "xgz", "fDA", "pls", "fBk", "frA", "pvs",
 	"uxy", "fnk", "ptw", "uwz", "fls", "psy", "fvs", "pxy", "ftw", "pwz", "fxy", "yrx", "ufk",
 	"xFw", "ymz", "onA", "uds", "xEy", "olk", "ucw", "dBA", "oks", "uci", "dAk", "okg", "dAc",
@@ -335,13 +321,13 @@ static char *codagemc[2787] = { "urA", "xfs", "ypy", "unk", "xdw", "yoz", "pDA",
 	"Ayv", "kze", "kzd", "Aye", "Byu", "Ayd", "Byt", "szp" };
 	
 /* converts values into bar patterns - replacing Grand Zebu's true type font */
-static char *PDFttf[35] = { "00000", "00001", "00010", "00011", "00100", "00101", "00110", "00111",
+static const char *PDFttf[35] = { "00000", "00001", "00010", "00011", "00100", "00101", "00110", "00111",
 	"01000", "01001", "01010", "01011", "01100", "01101", "01110", "01111", "10000", "10001",
 	"10010", "10011", "10100", "10101", "10110", "10111", "11000", "11001", "11010",
 	"11011", "11100", "11101", "11110", "11111", "01", "1111111101010100", "11111101000101001"};
 
 /* MicroPDF417 coefficients from ISO/IEC 24728:2006 Annex F */
-static int Microcoeffs[344] = {
+static const int Microcoeffs[344] = {
 	/* k = 7 */
 	76, 925, 537, 597, 784, 691, 437,
 	
@@ -405,7 +391,7 @@ static int Microcoeffs[344] = {
 	718, 435 };
 
 /* rows, columns, error codewords, k-offset of valid MicroPDF417 sizes from ISO/IEC 24728:2006 */
-static int MicroVariants[170] =
+static const int MicroVariants[170] =
 {	1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
 	11, 14, 17, 20, 24, 28, 8, 11, 14, 17, 20, 23, 26, 6, 8, 10, 12, 15, 20, 26, 32, 38, 44, 4, 6, 8, 10, 12, 15, 20, 26, 32, 38, 44,
 	7, 7, 7, 8, 8, 8, 8, 9, 9, 10, 11, 13, 15, 12, 14, 16, 18, 21, 26, 32, 38, 44, 50, 8, 12, 14, 16, 18, 21, 26, 32, 38, 44, 50,
@@ -413,14 +399,14 @@ static int MicroVariants[170] =
 /* rows, columns, error codewords, k-offset */
 
 /* following is Left RAP, Centre RAP, Right RAP and Start Cluster from ISO/IEC 24728:2006 tables 10, 11 and 12 */
-static int RAPTable[136] =
+static const int RAPTable[136] =
 {	1, 8, 36, 19, 9, 25, 1, 1, 8, 36, 19, 9, 27, 1, 7, 15, 25, 37, 1, 1, 21, 15, 1, 47, 1, 7, 15, 25, 37, 1, 1, 21, 15, 1,
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 7, 15, 25, 37, 17, 9, 29, 31, 25, 19, 1, 7, 15, 25, 37, 17, 9, 29, 31, 25,
 	9, 8, 36, 19, 17, 33, 1, 9, 8, 36, 19, 17, 35, 1, 7, 15, 25, 37, 33, 17, 37, 47, 49, 43, 1, 7, 15, 25, 37, 33, 17, 37, 47, 49,
 	0, 3, 6, 0, 6, 0, 0, 0, 3, 6, 0, 6, 6, 0, 0, 6, 0, 0, 0, 0, 6, 6, 0, 3, 0, 0, 6, 0, 0, 0, 0, 6, 6, 0 };
 
 /* Left and Right Row Address Pattern from Table 2 */
-static char *RAPLR[53] = {"", "221311", "311311", "312211", "222211", "213211", "214111", "223111",
+static const char *RAPLR[53] = {"", "221311", "311311", "312211", "222211", "213211", "214111", "223111",
 	"313111", "322111", "412111", "421111", "331111", "241111", "232111", "231211", "321211",
 	"411211", "411121", "411112", "321112", "312112", "311212", "311221", "311131", "311122",
 	"311113", "221113", "221122", "221131", "221221", "222121", "312121", "321121", "231121",
@@ -428,7 +414,7 @@ static char *RAPLR[53] = {"", "221311", "311311", "312211", "222211", "213211", 
 	"211123", "211132", "211141", "211231", "211222", "211312", "211321", "211411", "212311" };
 
 /* Centre Row Address Pattern from Table 2 */
-static char *RAPC[53] = {"", "112231", "121231", "122131", "131131", "131221", "132121", "141121",
+static const char *RAPC[53] = {"", "112231", "121231", "122131", "131131", "131221", "132121", "141121",
 	"141211", "142111", "133111", "132211", "131311", "122311", "123211", "124111", "115111",
 	"114211", "114121", "123121", "123112", "122212", "122221", "121321", "121411", "112411",
 	"113311", "113221", "113212", "113122", "122122", "131122", "131113", "122113", "113113",

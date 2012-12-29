@@ -3,34 +3,20 @@
 /*
     libzint - the open source barcode library
     Copyright (C) 2008 Robin Stuart <robin@zint.org.uk>
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License along
-    with this program; if not, write to the Free Software Foundation, Inc.,
-    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
 #define GDSET 	"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz #"
 
-static char *AusNTable[10] = {"00", "01", "02", "10", "11", "12", "20", "21", "22", "30"};
+static const char *AusNTable[10] = {"00", "01", "02", "10", "11", "12", "20", "21", "22", "30"};
 
-static char *AusCTable[64] = {"222", "300", "301", "302", "310", "311", "312", "320", "321", "322",
+static const char *AusCTable[64] = {"222", "300", "301", "302", "310", "311", "312", "320", "321", "322",
 	"000", "001", "002", "010", "011", "012", "020", "021", "022", "100", "101", "102", "110",
 	"111", "112", "120", "121", "122", "200", "201", "202", "210", "211", "212", "220", "221",
 	"023", "030", "031", "032", "033", "103", "113", "123", "130", "131", "132", "133", "203",
 	"213", "223", "230", "231", "232", "233", "303", "313", "323", "330", "331", "332", "333",
 	"003", "013"};
 
-static char *AusBarTable[64] = {"000", "001", "002", "003", "010", "011", "012", "013", "020", "021",
+static const char *AusBarTable[64] = {"000", "001", "002", "003", "010", "011", "012", "013", "020", "021",
 	"022", "023", "030", "031", "032", "033", "100", "101", "102", "103", "110", "111", "112",
 	"113", "120", "121", "122", "123", "130", "131", "132", "133", "200", "201", "202", "203",
 	"210", "211", "212", "213", "220", "221", "222", "223", "230", "231", "232", "233", "300",
@@ -96,12 +82,12 @@ int australia_post(struct zint_symbol *symbol, unsigned char source[], int lengt
 	unsigned int loopey, reader, h;
 
 	char data_pattern[200];
-	char fcc[3], dpid[10];
+	char fcc[3] = {0, 0}, dpid[10];
 	char localstr[30];
 
 	error_number = 0;
         strcpy(localstr, "");
-	
+
 	/* Do all of the length checking first to avoid stack smashing */
 	if(symbol->symbology == BARCODE_AUSPOST) {
 		/* Format control code (FCC) */
@@ -134,7 +120,7 @@ int australia_post(struct zint_symbol *symbol, unsigned char source[], int lengt
 			return error_number;
 		}
 	} else {
-		if(length > 8) {
+		if (length > 8) {
 			strcpy(symbol->errtxt, "Auspost input is too long");
 			return ERROR_TOO_LONG;
 		}
@@ -143,7 +129,7 @@ int australia_post(struct zint_symbol *symbol, unsigned char source[], int lengt
 			case BARCODE_AUSROUTE: strcpy(fcc, "87"); break;
 			case BARCODE_AUSREDIRECT: strcpy(fcc, "92"); break;
 		}
-		
+
 		/* Add leading zeros as required */
 		zeroes = 8 - length;
 		memset(localstr, '0', zeroes);
@@ -157,7 +143,7 @@ int australia_post(struct zint_symbol *symbol, unsigned char source[], int lengt
 		strcpy(symbol->errtxt, "Invalid characters in data");
 		return error_number;
 	}
-	
+
 	/* Verifiy that the first 8 characters are numbers */
 	memcpy(dpid, localstr, 8);
 	dpid[8] = '\0';
@@ -201,14 +187,15 @@ int australia_post(struct zint_symbol *symbol, unsigned char source[], int lengt
 
 	/* Filler bar */
 	h = strlen(data_pattern);
-	if(h == 22) {
-		concat(data_pattern, "3");
-	}
-	else if(h == 37) {
-		concat(data_pattern, "3");
-	}
-	else if(h == 52) {
-		concat(data_pattern, "3");
+	switch (h) 
+    {
+	   case 22:
+	   case 37:
+	   case 52:
+		  concat(data_pattern, "3");
+          break;
+       default:
+          break;
 	}
 
 	/* Reed Solomon error correction */
@@ -216,7 +203,7 @@ int australia_post(struct zint_symbol *symbol, unsigned char source[], int lengt
 
 	/* Stop character */
 	concat(data_pattern, "13");
-	
+
 	/* Turn the symbol into a bar pattern ready for plotting */
 	writer = 0;
 	h = strlen(data_pattern);

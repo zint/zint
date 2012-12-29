@@ -732,19 +732,18 @@ int gm_encode(int gbdata[], int length, char binary[], int reader)
 
 void gm_add_ecc(char binary[], int data_posn, int layers, int ecc_level, int word[])
 {
-	int total_cw, data_cw, i, j, wp;
+	int data_cw, i, j, wp;
 	int n1, b1, n2, b2, e1, b3, e2;
-	int block_size, data_size, ecc_size, toggle;
+	int block_size, data_size, ecc_size;
 	int data[1320], block[130];
 	unsigned char data_block[115], ecc_block[70];
-	
-	total_cw = gm_total_cw[(layers - 1)];
+
 	data_cw = gm_data_codewords[((layers - 1) * 5) + (ecc_level - 1)];
-	
+
 	for(i = 0; i < 1320; i++) {
 		data[i] = 0;
 	}
-	
+
 	/* Convert from binary sream to 7-bit codewords */
 	for(i = 0; i < data_posn; i++) {
 		if(binary[i * 7] == '1') { data[i] += 0x40; }
@@ -755,19 +754,17 @@ void gm_add_ecc(char binary[], int data_posn, int layers, int ecc_level, int wor
 		if(binary[(i * 7) + 5] == '1') { data[i] += 0x02; }
 		if(binary[(i * 7) + 6] == '1') { data[i] += 0x01; }
 	}
-	
+
 	/* Add padding codewords */
 	data[data_posn] = 0x00;
 	for(i = (data_posn + 1); i < data_cw; i++) {
 		if(i & 1) {
 			data[i] = 0x7e;
-			toggle = 1;
 		} else {
 			data[i] = 0x00;
-			toggle = 0;
 		}
 	}
-	
+
 	/* Get block sizes */
 	n1 = gm_n1[(layers - 1)];
 	b1 = gm_b1[(layers - 1)];
@@ -776,27 +773,27 @@ void gm_add_ecc(char binary[], int data_posn, int layers, int ecc_level, int wor
 	e1 = gm_ebeb[((layers - 1) * 20) + ((ecc_level - 1) * 4)];
 	b3 = gm_ebeb[((layers - 1) * 20) + ((ecc_level - 1) * 4) + 1];
 	e2 = gm_ebeb[((layers - 1) * 20) + ((ecc_level - 1) * 4) + 2];
-	
+
 	/* Split the data into blocks */
 	wp = 0;
 	for(i = 0; i < (b1 + b2); i++) {
 		if(i < b1) { block_size = n1; } else { block_size = n2; }
 		if(i < b3) { ecc_size = e1; } else { ecc_size = e2; }
 		data_size = block_size - ecc_size;
-		
+
 		/* printf("block %d/%d: data %d / ecc %d\n", i + 1, (b1 + b2), data_size, ecc_size);*/
-		
+
 		for(j = 0; j < data_size; j++) {
 			data_block[j] = data[wp];
 			wp++;
 		}
-		
+
 		/* Calculate ECC data for this block */
 		rs_init_gf(0x89);
 		rs_init_code(ecc_size, 1);
 		rs_encode(data_size, data_block, ecc_block);
 		rs_free();
-		
+
 		/* Correct error correction data but in reverse order */
 		for(j = 0; j < data_size; j++) {
 			block[j] = data_block[j];
@@ -804,7 +801,7 @@ void gm_add_ecc(char binary[], int data_posn, int layers, int ecc_level, int wor
 		for(j = 0; j < ecc_size; j++) {
 			block[(j + data_size)] = ecc_block[ecc_size - j - 1];
 		}
-		
+
 		for(j = 0; j < n2; j++) {
 			word[((b1 + b2) * j) + i] = block[j];
 		}
