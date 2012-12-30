@@ -1,4 +1,6 @@
 build/
+*~
+*.[ao]
 *.swp
 *.swo
 .directory

@@ -119,7 +119,7 @@ int validator(char test_string[], char source[])
 			if (!(latch)) { 
 				return ERROR_INVALID_DATA; }
 	}
-	
+
 	return 0;
 }
 
@@ -136,7 +136,7 @@ int escape_char_process(struct zint_symbol *my_symbol, unsigned char input_strin
 
 	i = 0;
 	j = 0;
-	
+
 	do {
 		if(input_string[i] == '\\') {
 			switch(input_string[i + 1]) {
@@ -162,9 +162,9 @@ int escape_char_process(struct zint_symbol *my_symbol, unsigned char input_strin
 		j++;
 	} while (i < length);
 	escaped_string[j] = '\0';
-	
+
 	error_number = ZBarcode_Encode(my_symbol, escaped_string, j);
-	
+
 	return error_number;
 }
 
@@ -291,6 +291,7 @@ int batch_process(struct zint_symbol *symbol, char *filename)
 			error_number = ZBarcode_Encode_and_Print(symbol, buffer, posn, 0);
 			if(error_number != 0) {
 				fprintf(stderr, "On line %d: %s\n", line_count, symbol->errtxt);
+				fflush(stderr);
 			}
 			ZBarcode_Clear(symbol);
 			memset(buffer, 0, sizeof(unsigned char) * 7100);
@@ -302,6 +303,7 @@ int batch_process(struct zint_symbol *symbol, char *filename)
 		}
 		if(posn > 7090) {
 			fprintf(stderr, "On line %d: Input data too long\n", line_count);
+			fflush(stderr);
 			do {
 				character = fgetc(file);
 			} while((!feof(file)) && (character != '\n'));
@@ -310,6 +312,7 @@ int batch_process(struct zint_symbol *symbol, char *filename)
 	
 	if(character != '\n') {
 		fprintf(stderr, "Warning: No newline at end of file\n");
+		fflush(stderr);
 	}
 	
 	fclose(file);
@@ -438,6 +441,7 @@ int main(int argc, char **argv)
 					if(my_symbol->scale < 0.01) {
 						/* Zero and negative values are not permitted */
 						fprintf(stderr, "Invalid scale value\n");
+						fflush(stderr);
 						my_symbol->scale = 1.0;
 					}
 				}
@@ -451,6 +455,7 @@ int main(int argc, char **argv)
 						my_symbol->border_width = atoi(optarg);
 					} else {
 						fprintf(stderr, "Border width out of range\n");
+						fflush(stderr);
 					}
 				}
 				if(!strcmp(long_options[option_index].name, "height")) {
@@ -463,6 +468,7 @@ int main(int argc, char **argv)
 						my_symbol->height = atoi(optarg);
 					} else {
 						fprintf(stderr, "Symbol height out of range\n");
+						fflush(stderr);
 					}
 				}
 
@@ -471,6 +477,7 @@ int main(int argc, char **argv)
 						my_symbol->option_2 = atoi(optarg);
 					} else {
 						fprintf(stderr, "Number of columns out of range\n");
+						fflush(stderr);
 					}
 				}
 				if(!strcmp(long_options[option_index].name, "vers")) {
@@ -478,6 +485,7 @@ int main(int argc, char **argv)
 						my_symbol->option_2 = atoi(optarg);
 					} else {
 						fprintf(stderr, "Invalid QR Code version\n");
+						fflush(stderr);
 					}
 				}
 				if(!strcmp(long_options[option_index].name, "secure")) {
@@ -485,6 +493,7 @@ int main(int argc, char **argv)
 						my_symbol->option_1 = atoi(optarg);
 					} else {
 						fprintf(stderr, "ECC level out of range\n");
+						fflush(stderr);
 					}
 				}
 				if(!strcmp(long_options[option_index].name, "primary")) {
@@ -492,6 +501,7 @@ int main(int argc, char **argv)
 						strcpy(my_symbol->primary, optarg);
 					} else {
 						fprintf(stderr, "Primary data string too long");
+						fflush(stderr);
 					}
 				}
 				if(!strcmp(long_options[option_index].name, "mode")) {
@@ -499,6 +509,7 @@ int main(int argc, char **argv)
 						my_symbol->option_1 = optarg[0] - '0';
 					} else {
 						fprintf(stderr, "Invalid mode\n");
+						fflush(stderr);
 					}
 				}
 				if(!strcmp(long_options[option_index].name, "rotate")) {
@@ -548,6 +559,7 @@ int main(int argc, char **argv)
 					my_symbol->whitespace_width = atoi(optarg);
 				} else {
 					fprintf(stderr, "Whitespace value out of range");
+					fflush(stderr);
 				}
 				break;
 				
@@ -560,11 +572,13 @@ int main(int argc, char **argv)
 					generated = 1;
 					if(error_number != 0) {
 						fprintf(stderr, "%s\n", my_symbol->errtxt);
+						fflush(stderr);
 						ZBarcode_Delete(my_symbol);
 						return 1;
 					}
 				} else {
 					fprintf(stderr, "Cannot define data in batch mode");
+					fflush(stderr);
 				}
 				break;
 				
@@ -577,6 +591,7 @@ int main(int argc, char **argv)
 					generated = 1;
 					if(error_number != 0) {
 						fprintf(stderr, "%s\n", my_symbol->errtxt);
+						fflush(stderr);
 						ZBarcode_Delete(my_symbol);
 						return 1;
 					}
@@ -586,6 +601,7 @@ int main(int argc, char **argv)
 					generated = 1;
 					if(error_number != 0) {
 						fprintf(stderr, "%s\n", my_symbol->errtxt);
+						fflush(stderr);
 						ZBarcode_Delete(my_symbol);
 						return 1;
 					}
@@ -606,18 +622,21 @@ int main(int argc, char **argv)
 				
 			default:
 				fprintf(stderr, "?? getopt error 0%o\n", c);
+				fflush(stderr);
 		} 
 	}
 	
-		if (optind < argc) {
+	if (optind < argc) {
 		fprintf(stderr, "Invalid option ");
 		while (optind < argc)
 			fprintf(stderr, "%s", argv[optind++]);
 		fprintf(stderr, "\n");
+		fflush(stderr);
 	}
 	
 	if(generated == 0) {
 		fprintf(stderr, "error: No data received, no symbol generated\n");
+		fflush(stderr);
 	}
 	
 	ZBarcode_Delete(my_symbol); 

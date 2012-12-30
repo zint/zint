@@ -49,7 +49,7 @@ void horiz(struct zint_symbol *symbol, int row_no, int full)
 void central_finder(struct zint_symbol *symbol, int start_row, int row_count, int full_rows)
 {
 	int i;
-	
+
 	for(i = 0; i < row_count; i++) {
 		if(i < full_rows) {
 			horiz(symbol, start_row + (i * 2), 1);
@@ -106,18 +106,18 @@ int isedi(unsigned char input)
 int dq4bi(unsigned char source[], int sourcelen, int position)
 {
 	int i;
-	
+
 	for(i = position; isedi(source[position + i]) && ((position + i) < sourcelen); i++);
-	
+
 	if((position + i) == sourcelen) {
 		/* Reached end of input */
 		return 0;
 	}
-	
+
 	if (source[position + i - 1] == 13) { return 1; }
 	if (source[position + i - 1] == '*') { return 1; }
 	if (source[position + i - 1] == '>') { return 1; }
-	
+
 	return 0;
 }
 
@@ -126,7 +126,7 @@ int c1_look_ahead_test(unsigned char source[], int sourcelen, int position, int 
 	float ascii_count, c40_count, text_count, edi_count, byte_count;
 	char reduced_char;
 	int done, best_scheme, best_count, sp;
-	
+
 	/* Step J */
 	if(current_mode == C1_ASCII) {
 		ascii_count = 0.0;
@@ -141,18 +141,18 @@ int c1_look_ahead_test(unsigned char source[], int sourcelen, int position, int 
 		edi_count = 2.0;
 		byte_count = 3.0;
 	}
-	
+
 	switch(current_mode) {
 		case C1_C40: c40_count = 0.0; break;
 		case C1_TEXT: text_count = 0.0; break;
 		case C1_BYTE: byte_count = 0.0; break;
 		case C1_EDI: edi_count = 0.0; break;
 	}
-	
+
 	for(sp = position; (sp < sourcelen) && (sp <= (position + 8)); sp++) {
-		
+
 		if(source[sp] <= 127) { reduced_char = source[sp]; } else { reduced_char = source[sp] - 127; }
-		
+
 		/* Step L */
 		if((source[sp] >= '0') && (source[sp] <= '9')) {
 			ascii_count += 0.5;
@@ -164,7 +164,7 @@ int c1_look_ahead_test(unsigned char source[], int sourcelen, int position, int 
 				ascii_count += 1.0;
 			}
 		}
-		
+
 		/* Step M */
 		done = 0;
 		if(reduced_char == ' ') { c40_count += (2.0 / 3.0); done = 1; }
@@ -172,7 +172,7 @@ int c1_look_ahead_test(unsigned char source[], int sourcelen, int position, int 
 		if((reduced_char >= 'A') && (reduced_char <= 'Z')) { c40_count += (2.0 / 3.0); done = 1; }
 		if(source[sp] > 127) { c40_count += (4.0 / 3.0); }
 		if(done == 0) { c40_count += (4.0 / 3.0); }
-		
+
 		/* Step N */
 		done = 0;
 		if(reduced_char == ' ') { text_count += (2.0 / 3.0); done = 1; }
@@ -196,52 +196,52 @@ int c1_look_ahead_test(unsigned char source[], int sourcelen, int position, int 
 				edi_count += (10.0 / 3.0);
 			}
 		}
-		
+
 		/* Step P */
 		if(gs1 && (source[sp] == '[')) { byte_count += 3.0; } else { byte_count += 1.0; }
-		
+
 	}
-	
+
 	ascii_count = froundup(ascii_count);
 	c40_count = froundup(c40_count);
 	text_count = froundup(text_count);
 	edi_count = froundup(edi_count);
 	byte_count = froundup(byte_count);
 	best_scheme = C1_ASCII;
-	
+
 	if(sp == sourcelen) {
 		/* Step K */
 		best_count = edi_count;
-		
+
 		if(text_count <= best_count) {
 			best_count = text_count;
 			best_scheme = C1_TEXT;
 		}
-		
+
 		if(c40_count <= best_count) {
 			best_count = c40_count;
 			best_scheme = C1_C40;
 		}
-		
+
 		if(ascii_count <= best_count) {
 			best_count = ascii_count;
 			best_scheme = C1_ASCII;
 		}
-		
+
 		if(byte_count <= best_count) {
 			best_count = byte_count;
 			best_scheme = C1_BYTE;
 		}
 	} else {
 		/* Step Q */
-		
+
 		if(((edi_count + 1.0 <= ascii_count) && (edi_count + 1.0 <= c40_count)) &&
 			((edi_count + 1.0 <= byte_count) && (edi_count + 1.0 <= text_count))) {
 				best_scheme = C1_EDI;
 		}
-		
+
 		if((c40_count + 1.0 <= ascii_count) && (c40_count + 1.0 <= text_count)) {
-			
+
 			if(c40_count < edi_count) {
 				best_scheme = C1_C40;
 			} else {
@@ -255,17 +255,17 @@ int c1_look_ahead_test(unsigned char source[], int sourcelen, int position, int 
 				}
 			}
 		}
-		
+
 		if(((text_count + 1.0 <= ascii_count) && (text_count + 1.0 <= c40_count)) &&
 			((text_count + 1.0 <= byte_count) && (text_count + 1.0 <= edi_count))) {
 				best_scheme = C1_TEXT;
 		}
-		
+
 		if(((ascii_count + 1.0 <= byte_count) && (ascii_count + 1.0 <= c40_count)) &&
 			((ascii_count + 1.0 <= text_count) && (ascii_count + 1.0 <= edi_count))) {
 				best_scheme = C1_ASCII;
 		}
-		
+
 		if(((byte_count + 1.0 <= ascii_count) && (byte_count + 1.0 <= c40_count)) &&
 			((byte_count + 1.0 <= text_count) && (byte_count + 1.0 <= edi_count))) {
 				best_scheme = C1_BYTE;
@@ -286,7 +286,7 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
 	int edi_buffer[6], edi_p;
 	char decimal_binary[40];
 	int byte_start = 0;
-	
+
 	sp = 0;
 	tp = 0;
 	latch = 0;
@@ -297,14 +297,14 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
 	memset(edi_buffer, 0, 6);
 	edi_p = 0;
 	strcpy(decimal_binary, "");
-	
+
 	if(symbol->input_mode == GS1_MODE) { gs1 = 1; } else { gs1 = 0; }
 	if(gs1) { target[tp] = 232; tp++; } /* FNC1 */
-	
+
 	/* Step A */
 	current_mode = C1_ASCII;
 	next_mode = C1_ASCII;
-	
+
 	do {
 		if(current_mode != next_mode) {
 			/* Change mode */
@@ -318,7 +318,7 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
 		
 		if((current_mode != C1_BYTE) && (next_mode == C1_BYTE)) { byte_start = tp; }
 		current_mode = next_mode;
-		
+
 		if(current_mode == C1_ASCII) { /* Step B - ASCII encodation */
 			next_mode = C1_ASCII;
 			
@@ -341,7 +341,7 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
 				for(i = 0; i < 13; i++) {
 					if((source[sp + i] >= '0') && (source[sp + i] <= '9')) { j++; }
 				}
-				
+
 				if (j == 13) {
 					latch = 0;
 					for(i = sp + 13; i < length; i++) {
@@ -354,7 +354,7 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
 					}
 				}
 			}
-			
+
 			if(next_mode == C1_ASCII) { /* Step B3 */
 				if(istwodigits(source, sp) && ((sp + 1) != length)) {
 					target[tp] = (10 * ctoi(source[sp])) + ctoi(source[sp + 1]) + 130;
@@ -382,7 +382,7 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
 							for(i = 0; i < 7; i++) {
 								if((source[sp + i] >= '0') && (source[sp + i] <= '9')) { j++; }
 							}
-				
+
 							if (j == 7) {
 								latch = 0;
 								for(i = sp + 7; i < length; i++) {
@@ -402,7 +402,7 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
 					
 						/* Step B6 */
 						next_mode = c1_look_ahead_test(source, length, sp, current_mode, gs1);
-						
+
 						if(next_mode == C1_ASCII) {
 							if(source[sp] > 127) {
 								/* Step B7 */
@@ -421,10 +421,10 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
 				}
 			}
 		}
-		
+
 		if(current_mode == C1_C40) { /* Step C - C40 encodation */
 			int shift_set, value, done = 0, latch = 0;
-			
+
 			next_mode = C1_C40;
 			if(c40_p == 0) {
 				if((length - sp) >= 12) {
@@ -459,12 +459,12 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
 						next_mode = C1_ASCII; done = 1;
 					}
 				}
-				
+
 				if(!(done)) {
 					next_mode = c1_look_ahead_test(source, length, sp, current_mode, gs1);
 				}
 			}
-			
+
 			if(next_mode != C1_C40) {
 				target[tp] = 255; tp++; /* Unlatch */
 			} else {
@@ -477,24 +477,24 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
 					shift_set = c40_shift[source[sp]];
 					value = c40_value[source[sp]];
 				}
-				
+
 				if(gs1 && (source[sp] == '[')) {
 					shift_set = 2;
 					value = 27; /* FNC1 */
 				}
-				
+
 				if(shift_set != 0) {
 					c40_buffer[c40_p] = shift_set - 1; c40_p++;
 				}
 				c40_buffer[c40_p] = value; c40_p++;
-				
+
 				if(c40_p >= 3) {
 					int iv;
-					
+
 					iv = (1600 * c40_buffer[0]) + (40 * c40_buffer[1]) + (c40_buffer[2]) + 1;
 					target[tp] = iv / 256; tp++;
 					target[tp] = iv % 256; tp++;
-					
+
 					c40_buffer[0] = c40_buffer[3];
 					c40_buffer[1] = c40_buffer[4];
 					c40_buffer[2] = c40_buffer[5];
@@ -506,10 +506,10 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
 				sp++;
 			}
 		}
-		
+
 		if(current_mode == C1_TEXT) { /* Step D - Text encodation */
 			int shift_set, value, done = 0, latch = 0;
-			
+
 			next_mode = C1_TEXT;
 			if(text_p == 0) {
 				if((length - sp) >= 12) {
@@ -544,12 +544,12 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
 						next_mode = C1_ASCII; done = 1;
 					}
 				}
-				
+
 				if(!(done)) {
 					next_mode = c1_look_ahead_test(source, length, sp, current_mode, gs1);
 				}
 			}
-			
+
 			if(next_mode != C1_TEXT) {
 				target[tp] = 255; tp++; /* Unlatch */
 			} else {
@@ -562,24 +562,24 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
 					shift_set = text_shift[source[sp]];
 					value = text_value[source[sp]];
 				}
-				
+
 				if(gs1 && (source[sp] == '[')) {
 					shift_set = 2;
 					value = 27; /* FNC1 */
 				}
-				
+
 				if(shift_set != 0) {
 					text_buffer[text_p] = shift_set - 1; text_p++;
 				}
 				text_buffer[text_p] = value; text_p++;
-				
+
 				if(text_p >= 3) {
 					int iv;
-					
+
 					iv = (1600 * text_buffer[0]) + (40 * text_buffer[1]) + (text_buffer[2]) + 1;
 					target[tp] = iv / 256; tp++;
 					target[tp] = iv % 256; tp++;
-					
+
 					text_buffer[0] = text_buffer[3];
 					text_buffer[1] = text_buffer[4];
 					text_buffer[2] = text_buffer[5];
@@ -591,7 +591,7 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
 				sp++;
 			}
 		}
-		
+
 		if(current_mode == C1_EDI) { /* Step E - EDI Encodation */
 			int value = 0,latch = 0;
 			
@@ -629,12 +629,12 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
 						next_mode = C1_ASCII;
 					}
 				}
-				
+
 				if(!((isedi(source[sp]) && isedi(source[sp + 1])) && isedi(source[sp + 2]))) {
 					next_mode = C1_ASCII;
 				}
 			}
-				
+
 			if(next_mode != C1_EDI) {
 				target[tp] = 255; tp++; /* Unlatch */
 			} else {
@@ -644,16 +644,16 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
 				if(source[sp] == ' ') { value = 3; }
 				if((source[sp] >= '0') && (source[sp] <= '9')) { value = source[sp] - '0' + 4; }
 				if((source[sp] >= 'A') && (source[sp] <= 'Z')) { value = source[sp] - 'A' + 14; }
-				
+
 				edi_buffer[edi_p] = value; edi_p++;
-				
+
 				if(edi_p >= 3) {
 					int iv;
-					
+
 					iv = (1600 * edi_buffer[0]) + (40 * edi_buffer[1]) + (edi_buffer[2]) + 1;
 					target[tp] = iv / 256; tp++;
 					target[tp] = iv % 256; tp++;
-					
+
 					edi_buffer[0] = edi_buffer[3];
 					edi_buffer[1] = edi_buffer[4];
 					edi_buffer[2] = edi_buffer[5];
@@ -665,12 +665,12 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
 				sp++;
 			}
 		}
-		
+
 		if(current_mode == C1_DECIMAL) { /* Step F - Decimal encodation */
 			int value, decimal_count, data_left;
-			
+
 			next_mode = C1_DECIMAL;
-			
+
 			data_left = length - sp;
 			decimal_count = 0;
 			
@@ -688,9 +688,9 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
 				int bits_left_in_byte, target_count;
 				int sub_target;
 				/* Finish Decimal mode and go back to ASCII */
-				
+
 				concat(decimal_binary, "111111"); /* Unlatch */
-				
+
 				target_count = 3;
 				if(strlen(decimal_binary) <= 16) { target_count = 2; }
 				if(strlen(decimal_binary) <= 8) { target_count = 1; }
@@ -714,11 +714,11 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
 						concat(decimal_binary, "1111");
 					}
 				}
-				
+
 				if(bits_left_in_byte == 6) {
 					concat(decimal_binary, "01");
 				}
-				
+
 				/* Binary buffer is full - transfer to target */
 				if(target_count >= 1) {
 					sub_target = 0;
@@ -756,7 +756,7 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
 					if(decimal_binary[23] == '1') { sub_target += 1; }
 					target[tp] = sub_target; tp++;
 				}
-				
+
 				next_mode = C1_ASCII;
 			} else {
 				/* There are three digits - convert the value to binary */
@@ -775,11 +775,11 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
 				
 				sp+= 3;
 			}
-			
+
 			if(strlen(decimal_binary) >= 24) {
 				int target1 = 0, target2 = 0, target3 = 0;
 				char temp_binary[40];
-				
+
 				/* Binary buffer is full - transfer to target */
 				if(decimal_binary[0] == '1') { target1 += 128; }
 				if(decimal_binary[1] == '1') { target1 += 64; }
@@ -808,7 +808,7 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
 				target[tp] = target1; tp++;
 				target[tp] = target2; tp++;
 				target[tp] = target3; tp++;
-				
+
 				strcpy(temp_binary, "");
 				if(strlen(decimal_binary) > 24) { 
 					for(i = 0; i <= (strlen(decimal_binary) - 24); i++) {
@@ -818,10 +818,10 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
 				}
 			}
 		}
-		
+
 		if(current_mode == C1_BYTE) {
 			next_mode = C1_BYTE;
-			
+
 			if(gs1 && (source[sp] == '[')) {
 				next_mode = C1_ASCII;
 			} else {
@@ -829,7 +829,7 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
 					next_mode = c1_look_ahead_test(source, length, sp, current_mode, gs1);
 				}
 			}
-			
+
 			if(next_mode != C1_BYTE) {
 				/* Insert byte field length */
 				if((tp - byte_start) <= 249) {
@@ -852,18 +852,18 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
 				sp++;
 			}
 		}
-		
+
 		if(tp > 1480) {
 			/* Data is too large for symbol */
 			strcpy(symbol->errtxt, "Input data too long");
 			return 0;
 		}
 	} while (sp < length);
-	
+
 	/* Empty buffers */
 	if(c40_p == 2) {
 		int iv;
-		
+
 		c40_buffer[2] = 1;
 		iv = (1600 * c40_buffer[0]) + (40 * c40_buffer[1]) + (c40_buffer[2]) + 1;
 		target[tp] = iv / 256; tp++;
@@ -872,7 +872,7 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
 	}
 	if(c40_p == 1) {
 		int iv;
-		
+
 		c40_buffer[1] = 1;
 		c40_buffer[2] = 31; /* Pad */
 		iv = (1600 * c40_buffer[0]) + (40 * c40_buffer[1]) + (c40_buffer[2]) + 1;
@@ -882,7 +882,7 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
 	}
 	if(text_p == 2) {
 		int iv;
-		
+
 		text_buffer[2] = 1;
 		iv = (1600 * text_buffer[0]) + (40 * text_buffer[1]) + (text_buffer[2]) + 1;
 		target[tp] = iv / 256; tp++;
@@ -891,7 +891,7 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
 	}
 	if(text_p == 1) {
 		int iv;
-		
+
 		text_buffer[1] = 1;
 		text_buffer[2] = 31; /* Pad */
 		iv = (1600 * text_buffer[0]) + (40 * text_buffer[1]) + (text_buffer[2]) + 1;
@@ -899,32 +899,32 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
 		target[tp] = iv % 256; tp++;
 		target[tp] = 255; tp++; /* Unlatch */
 	}
-	
+
 	if(current_mode == C1_DECIMAL) {
 		int bits_left_in_byte, target_count;
 		int sub_target;
 		/* Finish Decimal mode and go back to ASCII */
-				
+
 		concat(decimal_binary, "111111"); /* Unlatch */
-				
+
 		target_count = 3;
 		if(strlen(decimal_binary) <= 16) { target_count = 2; }
 		if(strlen(decimal_binary) <= 8) { target_count = 1; }
 		bits_left_in_byte = (8 * target_count) - strlen(decimal_binary);
 		if(bits_left_in_byte == 8) { bits_left_in_byte = 0; }
-				
+
 		if(bits_left_in_byte == 2) {
 			concat(decimal_binary, "01");
 		}
-				
+
 		if((bits_left_in_byte == 4) || (bits_left_in_byte == 6)) {
 			concat(decimal_binary, "1111");
 		}
-				
+
 		if(bits_left_in_byte == 6) {
 			concat(decimal_binary, "01");
 		}
-				
+
 		/* Binary buffer is full - transfer to target */
 		if(target_count >= 1) {
 			sub_target = 0;
@@ -963,7 +963,7 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
 			target[tp] = sub_target; tp++;
 		}
 	}
-	
+
 	if(current_mode == C1_BYTE) {
 		/* Insert byte field length */
 		if((tp - byte_start) <= 249) {
@@ -1017,12 +1017,12 @@ int code_one(struct zint_symbol *symbol, unsigned char source[], int length)
 	char datagrid[136][120];
 	int row, col;
 	int sub_version = 0;
-	
+
 	if((symbol->option_2 < 0) || (symbol->option_2 > 10)) {
 		strcpy(symbol->errtxt, "Invalid symbol size");
 		return ERROR_INVALID_OPTION;
 	}
-	
+
 	if(symbol->option_2 == 9) {
 		/* Version S */
 		int codewords;
@@ -1030,7 +1030,7 @@ int code_one(struct zint_symbol *symbol, unsigned char source[], int length)
 		unsigned int data[15], ecc[15];
 		int stream[30];
 		int block_width;
-		
+
 		if(length > 18) {
 			strcpy(symbol->errtxt, "Input data too long");
 			return ERROR_TOO_LONG;
@@ -1039,11 +1039,11 @@ int code_one(struct zint_symbol *symbol, unsigned char source[], int length)
 			strcpy(symbol->errtxt, "Invalid input data (Version S encodes numeric input only)");
 			return ERROR_INVALID_DATA;
 		}
-		
+
 		sub_version = 3; codewords = 12; block_width = 6; /* Version S-30 */
 		if(length <= 12) { sub_version = 2; codewords = 8; block_width = 4; } /* Version S-20 */
 		if(length <= 6) { sub_version = 1; codewords = 4; block_width = 2; } /* Version S-10 */
-		
+
 		binary_load(elreg, (char *)source, length);
 		hex_dump(elreg);
 		
@@ -1059,7 +1059,7 @@ int code_one(struct zint_symbol *symbol, unsigned char source[], int length)
 			data[codewords - i - 1] += 8 * elreg[(i * 5) + 3];
 			data[codewords - i - 1] += 16 * elreg[(i * 5) + 4];
 		}
-		
+
 		rs_init_gf(0x25);
 		rs_init_code(codewords, 1);
 		rs_encode_long(codewords, data, ecc);
@@ -1097,7 +1097,7 @@ int code_one(struct zint_symbol *symbol, unsigned char source[], int length)
 		symbol->rows = 8;
 		symbol->width = 10 * sub_version + 1;
 	}
-	
+
 	if(symbol->option_2 == 10) {
 		/* Version T */
 		unsigned int data[40], ecc[25];
@@ -1107,16 +1107,16 @@ int code_one(struct zint_symbol *symbol, unsigned char source[], int length)
 		
 		for(i = 0; i < 40; i++) { data[i] = 0; }
 		data_length = c1_encode(symbol, source, data, length);
-		
+
 		if(data_length == 0) {
 			return ERROR_TOO_LONG;
 		}
-		
+
 		if(data_length > 38) {
 			strcpy(symbol->errtxt, "Input data too long");
 			return ERROR_TOO_LONG;
 		}
-		
+
 		size = 10;
 		sub_version = 3; data_cw = 38; ecc_cw = 22; block_width = 12;
 		if(data_length <= 24) { sub_version = 2; data_cw = 24; ecc_cw = 16; block_width = 8; }
@@ -1125,13 +1125,13 @@ int code_one(struct zint_symbol *symbol, unsigned char source[], int length)
 		for(i = data_length; i < data_cw; i++) {
 			data[i] = 129; /* Pad */
 		}
-		
+
 		/* Calculate error correction data */
 		rs_init_gf(0x12d);
 		rs_init_code(ecc_cw, 1);	
 		rs_encode_long(data_cw, data, ecc);
 		rs_free();
-		
+
 		/* "Stream" combines data and error correction data */
 		for(i = 0; i < data_cw; i++) {
 			stream[i] = data[i];
@@ -1160,11 +1160,11 @@ int code_one(struct zint_symbol *symbol, unsigned char source[], int length)
 				i++;
 			}
 		}
-		
+
 		symbol->rows = 16;
 		symbol->width = (sub_version * 16) + 1;
 	}
-		
+
 	if((symbol->option_2 != 9) && (symbol->option_2 != 10)) {
 		/* Version A to H */
 		unsigned int data[1500], ecc[600];
@@ -1192,14 +1192,14 @@ int code_one(struct zint_symbol *symbol, unsigned char source[], int length)
 		for(i = data_length; i < c1_data_length[size - 1]; i++) {
 			data[i] = 129; /* Pad */
 		}
-		
+
 		/* Calculate error correction data */
 		data_length = c1_data_length[size - 1];
 		for(i = 0; i < 190; i++) { sub_data[i] = 0; }
 		for(i = 0; i < 75; i++) { sub_ecc[i] = 0; }
 		
 		data_blocks = c1_blocks[size - 1];
-		
+
 		rs_init_gf(0x12d);
 		rs_init_code(c1_ecc_blocks[size - 1], 0);	
 		for(i = 0; i < data_blocks; i++) {
@@ -1213,7 +1213,7 @@ int code_one(struct zint_symbol *symbol, unsigned char source[], int length)
 			}
 		}
 		rs_free();
-		
+
 		/* "Stream" combines data and error correction data */
 		for(i = 0; i < data_length; i++) {
 			stream[i] = data[i];
@@ -1253,7 +1253,7 @@ int code_one(struct zint_symbol *symbol, unsigned char source[], int length)
 		symbol->rows = c1_height[size - 1];
 		symbol->width = c1_width[size - 1];
 	}
-	
+
 	switch(size) {
 		case 1: /* Version A */
 			central_finder(symbol, 6, 3, 1);
@@ -1510,6 +1510,6 @@ int code_one(struct zint_symbol *symbol, unsigned char source[], int length)
 	for(i = 0; i < symbol->rows; i++) {
 		symbol->row_height[i] = 1;
 	}
-	
+
 	return 0;
 }

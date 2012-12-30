@@ -97,7 +97,7 @@ int aztec_text_process(unsigned char source[], const unsigned int src_len, char 
 			}
 		}
 	}
-	
+
 	/* Look for double character encoding possibilities */
 	i = 0;
 	do{
@@ -108,7 +108,7 @@ int aztec_text_process(unsigned char source[], const unsigned int src_len, char 
 			mapshorten(charmap, typemap, i, maplength);
 			maplength--;
 		}
-		
+
 		if(((charmap[i] == 302) && (charmap[i + 1] == 1)) && ((typemap[i] == 24) && (typemap[i + 1] == 23))) {
 			/* . SP combination */
 			charmap[i] = 3;
@@ -116,7 +116,7 @@ int aztec_text_process(unsigned char source[], const unsigned int src_len, char 
 			mapshorten(charmap, typemap, i, maplength);
 			maplength--;
 		}
-		
+
 		if(((charmap[i] == 301) && (charmap[i + 1] == 1)) && ((typemap[i] == 24) && (typemap[i + 1] == 23))) {
 			/* , SP combination */
 			charmap[i] = 4;
@@ -124,7 +124,7 @@ int aztec_text_process(unsigned char source[], const unsigned int src_len, char 
 			mapshorten(charmap, typemap, i, maplength);
 			maplength--;
 		}
-		
+
 		if(((charmap[i] == 21) && (charmap[i + 1] == 1)) && ((typemap[i] == PUNC) && (typemap[i + 1] == 23))) {
 			/* : SP combination */
 			charmap[i] = 5;
@@ -132,10 +132,10 @@ int aztec_text_process(unsigned char source[], const unsigned int src_len, char 
 			mapshorten(charmap, typemap, i, maplength);
 			maplength--;
 		}
-		
+
 		i++;
 	}while(i < (maplength - 1));
-	
+
 	/* look for blocks of characters which use the same table */
 	blocks = 1;
 	blockmap[0][0] = typemap[0];
@@ -156,7 +156,6 @@ int aztec_text_process(unsigned char source[], const unsigned int src_len, char 
 	if(blockmap[0][0] & 8) { blockmap[0][0] = 8; }
 	
 	if(blocks > 1) {
-	  
 		/* look for adjacent blocks which can use the same table (left to right search) */
 		for(i = 1; i < blocks; i++) {
 			if(blockmap[0][i] & blockmap[0][i - 1]) {
@@ -183,7 +182,7 @@ int aztec_text_process(unsigned char source[], const unsigned int src_len, char 
 			if(blockmap[0][i] & 2) { blockmap[0][i] = 2; }
 			if(blockmap[0][i] & 1) { blockmap[0][i] = 1; }
 		}
-		
+
 		/* Combine blocks of the same type */
 		i = 0;
 		do{
@@ -199,7 +198,7 @@ int aztec_text_process(unsigned char source[], const unsigned int src_len, char 
 			}
 		} while (i < blocks);
 	}
-	
+
 	/* Put the adjusted block data back into typemap */
 	j = 0;
 	for(i = 0; i < blocks; i++) {
@@ -214,10 +213,10 @@ int aztec_text_process(unsigned char source[], const unsigned int src_len, char 
 		}
 		j += blockmap[1][i];
 	}
-	
+
 	/* Don't shift an initial capital letter */
 	if(typemap[0] == 65) { typemap[0] = 1; };
-	
+
 	/* Problem characters (those that appear in different tables with different values) can now be resolved into their tables */
 	for(i = 0; i < maplength; i++) {
 		if((charmap[i] >= 300) && (charmap[i] < 400)) {
@@ -248,7 +247,7 @@ int aztec_text_process(unsigned char source[], const unsigned int src_len, char 
 		}
 	}
 	*binary_string  = '\0';
-	
+
 	curtable = UPPER; /* start with UPPER table */
 	lasttable = UPPER;
 	for(i = 0; i < maplength; i++) {
@@ -568,20 +567,20 @@ int aztec_text_process(unsigned char source[], const unsigned int src_len, char 
 								newtable = BINARY;
 								break;
 						}
-		
+
 						bytes = 0;
 						do{
 							bytes++;
 						}while(typemap[i + (bytes - 1)] == BINARY);
 						bytes--;
-		
+
 						if(bytes > 2079) {
 							return ERROR_TOO_LONG;
 						}
-		
+
 						if(bytes > 31) { /* Put 00000 followed by 11-bit number of bytes less 31 */
 							int adjusted;
-			
+
 							adjusted = bytes - 31;
 							concat(binary_string, "00000");
 							if(adjusted & 0x400) { concat(binary_string, "1"); } else { concat(binary_string, "0"); }
@@ -603,7 +602,7 @@ int aztec_text_process(unsigned char source[], const unsigned int src_len, char 
 							if(bytes & 0x01) { concat(binary_string, "1"); } else { concat(binary_string, "0"); }
 						}
 						if(debug) printf("(%d bytes) ", bytes);
-		
+
 						break;
 				}
 			}
@@ -644,13 +643,13 @@ int aztec_text_process(unsigned char source[], const unsigned int src_len, char 
 		}
 
 	}
-	
+
 	if(debug) printf("\n");
-	
+
 	if(strlen(binary_string) > 14970) {
 		return ERROR_TOO_LONG;
 	}
-	
+
 	return 0;
 }
 
@@ -680,7 +679,7 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], int length)
 		strcpy(symbol->errtxt, "Cannot encode in GS1 and Reader Initialisation mode at the same time");
 		return ERROR_INVALID_OPTION;
 	}
-	
+
 	switch(symbol->input_mode) {
 		case DATA_MODE:
 		case GS1_MODE:
@@ -702,25 +701,25 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], int length)
 	}
 	
 	err_code = aztec_text_process(local_source, length, binary_string, gs1);
-	
+
 
 	if(err_code != 0) {
 		strcpy(symbol->errtxt, "Input too long or too many extended ASCII characters");
 		return err_code;
 	}
-	
+
 	if(!((symbol->option_1 >= -1) && (symbol->option_1 <= 4))) {
 		strcpy(symbol->errtxt, "Invalid error correction level - using default instead");
 		err_code = WARN_INVALID_OPTION;
 		symbol->option_1 = -1;
 	}
-	
+
 	ecc_level = symbol->option_1;
-	
+
 	if((ecc_level == -1) || (ecc_level == 0)) {
 		ecc_level = 2;
 	}
-	
+
 	data_length = strlen(binary_string);
 
 	layers = 0; /* Keep compiler happy! */
@@ -796,42 +795,42 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], int length)
 					}
 					break;
 			}
-			
+
 			if(layers == 0) { /* Couldn't find a symbol which fits the data */
 				strcpy(symbol->errtxt, "Input too long (too many bits for selected ECC)");
 				return ERROR_TOO_LONG;
 			}
-			
+
 			/* Determine codeword bitlength - Table 3 */
 			codeword_size = 6; /* if (layers <= 2) */
 			if((layers >= 3) && (layers <= 8)) { codeword_size = 8; }
 			if((layers >= 9) && (layers <= 22)) { codeword_size = 10; }
 			if(layers >= 23) { codeword_size = 12; }
-			
+
 			j = 0; i = 0;
 			do {
 				if((j + 1) % codeword_size == 0) {
 					/* Last bit of codeword */
 					int t, done = 0;
 					count = 0;
-					
+
 					/* Discover how many '1's in current codeword */
 					for(t = 0; t < (codeword_size - 1); t++) {
 						if(binary_string[(i - (codeword_size - 1)) + t] == '1') count++;
 					}
-					
+
 					if(count == (codeword_size - 1)) {
 						adjusted_string[j] = '0';
 						j++;
 						done = 1;
 					}
-					
+
 					if(count == 0) {
 						adjusted_string[j] = '1';
 						j++;
 						done = 1;
 					}
-					
+
 					if(done == 0) {
 						adjusted_string[j] = binary_string[i];
 						j++;
@@ -845,10 +844,10 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], int length)
 			adjusted_string[j] = '\0';
 			adjusted_length = strlen(adjusted_string);
 			adjustment_size = adjusted_length - data_length;
-			
+
 			/* Add padding */
 			remainder = adjusted_length % codeword_size;
-			
+
 			padbits = codeword_size - remainder;
 			if(padbits == codeword_size) { padbits = 0; }
 			
@@ -856,7 +855,7 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], int length)
 				concat(adjusted_string, "1");
 			}
 			adjusted_length = strlen(adjusted_string);
-			
+
 			count = 0;
 			for(i = (adjusted_length - codeword_size); i < adjusted_length; i++) {
 				if(adjusted_string[i] == '1') { count++; }
@@ -872,7 +871,7 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], int length)
 					printf("\n");
 				}
 			}
-			
+
 		} while(adjusted_length > data_maxsize);
 		/* This loop will only repeat on the rare occasions when the rule about not having all 1s or all 0s
 		means that the binary string has had to be lengthened beyond the maximum number of bits that can
@@ -900,31 +899,31 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], int length)
 		if((layers >= 3) && (layers <= 8)) { codeword_size = 8; }
 		if((layers >= 9) && (layers <= 22)) { codeword_size = 10; }
 		if(layers >= 23) { codeword_size = 12; }
-		
+
 		j = 0; i = 0;
 		do {
 			if((j + 1) % codeword_size == 0) {
 				/* Last bit of codeword */
 				int t, done = 0;
 				count = 0;
-					
+
 				/* Discover how many '1's in current codeword */
 				for(t = 0; t < (codeword_size - 1); t++) {
 					if(binary_string[(i - (codeword_size - 1)) + t] == '1') count++;
 				}
-					
+
 				if(count == (codeword_size - 1)) {
 					adjusted_string[j] = '0';
 					j++;
 					done = 1;
 				}
-					
+
 				if(count == 0) {
 					adjusted_string[j] = '1';
 					j++;
 					done = 1;
 				}
-					
+
 				if(done == 0) {
 					adjusted_string[j] = binary_string[i];
 					j++;
@@ -937,9 +936,9 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], int length)
 		} while (i <= (data_length + 1));
 		adjusted_string[j] = '\0';
 		adjusted_length = strlen(adjusted_string);
-			
+
 		remainder = adjusted_length % codeword_size;
-			
+
 		padbits = codeword_size - remainder;
 		if(padbits == codeword_size) { padbits = 0; }
 			
@@ -947,7 +946,7 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], int length)
 			concat(adjusted_string, "1");
 		}
 		adjusted_length = strlen(adjusted_string);
-		
+
 		count = 0;
 		for(i = (adjusted_length - codeword_size); i < adjusted_length; i++) {
 			if(adjusted_string[i] == '1') { count++; }
@@ -965,7 +964,7 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], int length)
 			strcpy(symbol->errtxt, "Data too long for specified Aztec Code symbol size");
 			return ERROR_TOO_LONG;
 		}
-		
+
 		if(debug) {
 			printf("Codewords:\n");
 			for(i = 0; i < (adjusted_length / codeword_size); i++) {
@@ -977,20 +976,20 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], int length)
 		}
 
 	}
-	
+
 	if(reader && (layers > 22)) {
 		strcpy(symbol->errtxt, "Data too long for reader initialisation symbol");
 		return ERROR_TOO_LONG;
 	}
-	
+
 	data_blocks = adjusted_length / codeword_size;
-	
+
 	if(compact) {
 		ecc_blocks = AztecCompactSizes[layers - 1] - data_blocks;
 	} else {
 		ecc_blocks = AztecSizes[layers - 1] - data_blocks;
 	}
-	
+
 	if(debug) {
 		printf("Generating a ");
 		if(compact) { printf("compact"); } else { printf("full-size"); }
@@ -1010,7 +1009,7 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], int length)
 	/* Copy across data into separate integers */
 	memset(data_part,0,(data_blocks + 2)*sizeof(int));
 	memset(ecc_part,0,(ecc_blocks + 2)*sizeof(int));
-	
+
 	/* Split into codewords and calculate reed-colomon error correction codes */
 	switch(codeword_size) {
 		case 6:
@@ -1126,15 +1125,15 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], int length)
 			rs_free();
 			break;
 	}
-	
+
 	/* Invert the data so that actual data is on the outside and reed-solomon on the inside */
 	memset(bit_pattern,'0',20045);
-	
+
 	total_bits = (data_blocks + ecc_blocks) * codeword_size;
 	for(i = 0; i < total_bits; i++) {
 		bit_pattern[i] = adjusted_string[total_bits - i - 1];
 	}
-	
+
 	/* Now add the symbol descriptor */
 	memset(desc_data,0,4);
 	memset(desc_ecc,0,6);
@@ -1183,7 +1182,7 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], int length)
 		descriptor[16] = '\0';
 		if(debug) printf("Mode Message = %s\n", descriptor);
 	}
-	
+
 	/* Split into 4-bit codewords */
 	for(i = 0; i < 4; i++) {
 		if(descriptor[i * 4] == '1') { desc_data[i] += 8; }
@@ -1216,7 +1215,7 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], int length)
 		}
 	}
 	rs_free();
-	
+
 	/* Merge descriptor with the rest of the symbol */
 	for(i = 0; i < 40; i++) {
 		if(compact) {
@@ -1228,7 +1227,7 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], int length)
 
 	/* Plot all of the data into the symbol in pre-defined spiral pattern */
 	if(compact) {
-		
+
 		for(y = AztecCompactOffset[layers - 1]; y < (27 - AztecCompactOffset[layers - 1]); y++) {
 			for(x = AztecCompactOffset[layers - 1]; x < (27 - AztecCompactOffset[layers - 1]); x++) {
 				if(CompactAztecMap[(y * 27) + x] == 1) {
@@ -1245,7 +1244,7 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], int length)
 		symbol->rows = 27 - (2 * AztecCompactOffset[layers - 1]);
 		symbol->width = 27 - (2 * AztecCompactOffset[layers - 1]);
 	} else {
-		
+
 		for(y = AztecOffset[layers - 1]; y < (151 - AztecOffset[layers - 1]); y++) {
 			for(x = AztecOffset[layers - 1]; x < (151 - AztecOffset[layers - 1]); x++) {
 				if(AztecMap[(y * 151) + x] == 1) {
@@ -1262,7 +1261,7 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], int length)
 		symbol->rows = 151 - (2 * AztecOffset[layers - 1]);
 		symbol->width = 151 - (2 * AztecOffset[layers - 1]);
 	}
-	
+
 	return err_code;
 }
 
@@ -1294,12 +1293,12 @@ int aztec_runes(struct zint_symbol *symbol, unsigned char source[], int length)
 		case 1: input_value = ctoi(source[0]);
 			break;
 	}
-	
+
 	if(input_value > 255) {
 		strcpy(symbol->errtxt, "Input too large");
 		return ERROR_INVALID_DATA;
 	}
-	
+
 	strcpy(binary_string, "");
 	if(input_value & 0x80) { concat(binary_string, "1"); } else { concat(binary_string, "0"); }
 	if(input_value & 0x40) { concat(binary_string, "1"); } else { concat(binary_string, "0"); }
@@ -1319,12 +1318,12 @@ int aztec_runes(struct zint_symbol *symbol, unsigned char source[], int length)
 		if(binary_string[(i * 4) + 2] == '1') { data_codewords[i] += 2; }
 		if(binary_string[(i * 4) + 3] == '1') { data_codewords[i] += 1; }
 	}
-	
+
 	rs_init_gf(0x13);
 	rs_init_code(5, 1);
 	rs_encode(2, data_codewords, ecc_codewords);
 	rs_free();
-	
+
 	strcpy(binary_string, "");
 	
 	for(i = 0; i < 5; i++) {
@@ -1353,6 +1352,6 @@ int aztec_runes(struct zint_symbol *symbol, unsigned char source[], int length)
 	}
 	symbol->rows = 11;
 	symbol->width = 11;
-	
+
 	return 0;
 }

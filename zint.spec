@@ -1,5 +1,5 @@
 Name:      zint
-Version:   2.3.1
+Version:   2.4.3
 Release:   2%{?dist}
 Summary:   A barcode generator and library
 License:   GPLv3+
@@ -114,7 +114,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root,-)
-%doc COPYING readme
+%doc COPYING README
 %{_bindir}/%{name}
 %{_libdir}/libzint.so.*
 

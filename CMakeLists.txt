@@ -10,7 +10,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 set (ZINT_VERSION_MAJOR 2)
 set (ZINT_VERSION_MINOR 4)
-set (ZINT_VERSION_RELEASE 2)
+set (ZINT_VERSION_RELEASE 3)
 set (ZINT_VERSION "${ZINT_VERSION_MAJOR}.${ZINT_VERSION_MINOR}.${ZINT_VERSION_RELEASE}" )
 
 add_definitions (-DZINT_VERSION=\"${ZINT_VERSION}\" -Wall)
@@ -30,8 +30,8 @@ endif (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_GNUCC)
 
 
 IF(APPLE)
-    IF (UNIVERSAL) # TODO: make univeral binary 
-        IF(NOT ZINT_HAS_BEEN_RUN_BEFORE and UNIVERAL) 
+    IF (UNIVERSAL) # TODO: make univeral binary
+        IF(NOT ZINT_HAS_BEEN_RUN_BEFORE and UNIVERAL)
             IF(EXISTS /Developer/SDKs/MacOSX10.5.sdk OR EXISTS /SDKs/MacOSX10.5.sdk)
                 SET(CMAKE_OSX_ARCHITECTURES "ppc;i386;ppc64;x86_64" CACHE STRING "Build architectures for OSX" FORCE)
                 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility-inlines-hidden -Wl -single_module " CACHE STRING "Flags used by the compiler during all build types." FORCE)

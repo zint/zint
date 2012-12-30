@@ -53,8 +53,9 @@ Studio is more involved!  Full instructions are currently not ready for
 publication but will be placed on the project website as soon as possible.
 
 Mac OSX:
-Efforts are currently under way to ease compiling on OSX using the CMake
-method. It may be possible to compile Zint using methods similar to those
-given above, but this has not been thoroughly tested yet. If you have any
-success with compiling Zint on OSX then please get in touch. An install
-binary for OSX is also in development.
+It is possible to compile Zint using methods similar to those
+given above, but this has not been thoroughly tested yet. An install
+binary for OSX is also in development. As of feb 2012 the easiest way to 
+get zint install on Mac OSX is to use HomeBrew with:
+
+        brew install zint

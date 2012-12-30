@@ -59,23 +59,19 @@ Visual Studio. Correct bug preventing compilation without PNG support.
 Version 2.4.2:
 Fix bugs in batch processing - this now works from the command line.
 
+Version 2.4.3:
+Some Windows-only fixes and changes
+
+
 CONTACT ME
 ----------
 The home of libzint is:
 
 	<http://www.sourceforge.net/projects/zint>
 
-and the home for Zint documentation is:
-
-	<http://www.zint.org.uk>
-
 For feature requests or bug reports please join the mailing list at
 
 	<https://lists.sourceforge.net/lists/listinfo/zint-barcode>
-
-or send an e-mail to
-
-	<zint-barcode@lists.sourceforge.net>
 
 BEFORE POSTING TO THIS LIST
 ---------------------------
@@ -97,8 +93,3 @@ Please note the following points...
 * Please remember that Zint is developed by volunteers - don't be surprised
   if we are unable to help you or if it takes a long time to answer your
   questions.
-
-Thanks for your interest in libzint.
-Happy encoding.
-
-Robin.
