@@ -36,13 +36,13 @@ void itostr(char ai_string[], int ai_value)
 {
 	int thou, hund, ten, unit;
 	char temp[2];
-	
+
 	strcpy(ai_string, "(");
 	thou = ai_value / 1000;
 	hund = (ai_value - (1000 * thou)) / 100;
 	ten = (ai_value - ((1000 * thou) + (100 * hund))) / 10;
 	unit = ai_value - ((1000 * thou) + (100 * hund) + (10 * ten));
-	
+
 	temp[1] = '\0';
 	if(ai_value >= 1000) { temp[0] = itoc(thou); concat(ai_string, temp); }
 	if(ai_value >= 100) { temp[0] = itoc(hund); concat(ai_string, temp); }
@@ -60,7 +60,7 @@ int gs1_verify(struct zint_symbol *symbol, unsigned char source[], const unsigne
 	int bracket_level, max_bracket_level, ai_length, max_ai_length, min_ai_length;
 	int ai_value[100], ai_location[100], ai_count, data_location[100], data_length[100];
 	int error_latch;
-	
+
 	/* Detect extended ASCII characters */
 	for(i = 0; i < src_len; i++) {
 		if(source[i] >=128) {
@@ -72,12 +72,12 @@ int gs1_verify(struct zint_symbol *symbol, unsigned char source[], const unsigne
 			return ERROR_INVALID_DATA;
 		}
 	}
-	
+
 	if(source[0] != '[') {
 		strcpy(symbol->errtxt, "Data does not start with an AI");
 		return ERROR_INVALID_DATA;
 	}
-	
+
 	/* Check the position of the brackets */
 	bracket_level = 0;
 	max_bracket_level = 0;
@@ -100,37 +100,37 @@ int gs1_verify(struct zint_symbol *symbol, unsigned char source[], const unsigne
 		if(ai_length > max_ai_length) { max_ai_length = ai_length; }
 	}
 	min_ai_length--;
-	
+
 	if(bracket_level != 0) {
 		/* Not all brackets are closed */
 		strcpy(symbol->errtxt, "Malformed AI in input data (brackets don\'t match)");
 		return ERROR_INVALID_DATA;
 	}
-	
+
 	if(max_bracket_level > 1) {
 		/* Nested brackets */
 		strcpy(symbol->errtxt, "Found nested brackets in input data");
 		return ERROR_INVALID_DATA;
 	}
-	
+
 	if(max_ai_length > 4) {
 		/* AI is too long */
 		strcpy(symbol->errtxt, "Invalid AI in input data (AI too long)");
 		return ERROR_INVALID_DATA;
 	}
-	
+
 	if(min_ai_length <= 1) {
 		/* AI is too short */
 		strcpy(symbol->errtxt, "Invalid AI in input data (AI too short)");
 		return ERROR_INVALID_DATA;
 	}
-	
+
 	if(ai_latch == 1) {
 		/* Non-numeric data in AI */
 		strcpy(symbol->errtxt, "Invalid AI in input data (non-numeric characters in AI)");
 		return ERROR_INVALID_DATA;
 	}
-	
+
 	ai_count = 0;
 	for(i = 1; i < src_len; i++) {
 		if(source[i - 1] == '[') {
@@ -145,7 +145,7 @@ int gs1_verify(struct zint_symbol *symbol, unsigned char source[], const unsigne
 			ai_count++;
 		}
 	}
-	
+
 	for(i = 0; i < ai_count; i++) {
 		data_location[i] = ai_location[i] + 3;
 		if(ai_value[i] >= 100) { data_location[i]++; }
@@ -156,7 +156,7 @@ int gs1_verify(struct zint_symbol *symbol, unsigned char source[], const unsigne
 		} while ((source[data_location[i] + data_length[i] - 1] != '[') && (source[data_location[i] + data_length[i] - 1] != '\0'));
 		data_length[i]--;
 	}
-	
+
 	for(i = 0; i < ai_count; i++) {
 		if(data_length[i] == 0) {
 			/* No data for given AI */
@@ -164,7 +164,7 @@ int gs1_verify(struct zint_symbol *symbol, unsigned char source[], const unsigne
 			return ERROR_INVALID_DATA;
 		}
 	}
-	
+
 	error_latch = 0;
 	strcpy(ai_string, "");
 	for(i = 0; i < ai_count; i++) {
@@ -238,13 +238,13 @@ int gs1_verify(struct zint_symbol *symbol, unsigned char source[], const unsigne
 			error_latch += 4;
 		}
 	}
-	
+
 	if(error_latch == 5) {
 		strcpy(symbol->errtxt, "Invalid data length for AI ");
 		concat(symbol->errtxt, ai_string);
 		return ERROR_INVALID_DATA;
 	}
-	
+
 	if(error_latch == 6) {
 		strcpy(symbol->errtxt, "Invalid AI value ");
 		concat(symbol->errtxt, ai_string);
@@ -284,7 +284,7 @@ int gs1_verify(struct zint_symbol *symbol, unsigned char source[], const unsigne
 		/* The ']' character is simply dropped from the input */
 	}
 	reduced[j] = '\0';
-	
+
 	/* the character '[' in the reduced string refers to the FNC1 character */
 	return 0;
 }
@@ -298,10 +298,10 @@ int ugs1_verify(struct zint_symbol *symbol, unsigned char source[], const unsign
         char* temp = (char*)_alloca(src_len + 5);
 #endif
 	int error_number;
-	
+
 	error_number = gs1_verify(symbol, source, src_len, temp);
 	if(error_number != 0) { return error_number; }
-	
+
 	if (strlen(temp) < src_len + 5) {
 		ustrcpy(reduced, (unsigned char*)temp);
 		return 0;

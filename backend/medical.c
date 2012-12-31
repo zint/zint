@@ -37,7 +37,7 @@ int pharma_one(struct zint_symbol *symbol, unsigned char source[], int length)
 	int counter, error_number, h;
 	char inter[18] = { 0 }; /* 131070 -> 17 bits */
 	char dest[64]; /* 17 * 2 + 1 */
-	
+
 	error_number = 0;
 
 	if(length > 6) {
@@ -78,7 +78,7 @@ int pharma_one(struct zint_symbol *symbol, unsigned char source[], int length)
 			concat(dest, "12");
 		}
 	}
-	
+
 	expand(symbol, dest);
 
 	return error_number;
@@ -95,7 +95,7 @@ int pharma_two_calc(struct zint_symbol *symbol, unsigned char source[], char des
 	int counter, h;
 	char inter[17];
 	int error_number;
-	
+
 	tester = atoi((char*)source);
 
 	if((tester < 4) || (tester > 64570080))
@@ -130,7 +130,7 @@ int pharma_two_calc(struct zint_symbol *symbol, unsigned char source[], char des
 		dest[h - counter] = inter[counter];
 	}
 	dest[h + 1] = '\0';
-	
+
 	return error_number;
 }
 
@@ -173,7 +173,7 @@ int pharma_two(struct zint_symbol *symbol, unsigned char source[], int length)
 	}
 	symbol->rows = 2;
 	symbol->width = writer - 1;
-	
+
 
 	return error_number;
 }
@@ -183,7 +183,7 @@ int codabar(struct zint_symbol *symbol, unsigned char source[], int length)
 
 	int i, error_number;
 	char dest[512];
-	
+
 	error_number = 0;
 	strcpy(dest, "");
 
@@ -215,7 +215,7 @@ int codabar(struct zint_symbol *symbol, unsigned char source[], int length)
 	{
 		lookup(CALCIUM, CodaTable, source[i], dest);
 	}
-	
+
 	expand(symbol, dest);
 	ustrcpy(symbol->text, source);
 	return error_number;
@@ -228,7 +228,7 @@ int code32(struct zint_symbol *symbol, unsigned char source[], int length)
 	long int pharmacode, remainder, devisor;
 	int codeword[6];
 	char tabella[34];
-	
+
 	/* Validate the input */
 	if(length > 8) {
 		strcpy(symbol->errtxt, "Input too long");
@@ -239,12 +239,12 @@ int code32(struct zint_symbol *symbol, unsigned char source[], int length)
 		strcpy(symbol->errtxt, "Invalid characters in data");
 		return error_number;
 	}
-	
+
 	/* Add leading zeros as required */
 	zeroes = 8 - length;
 	memset(localstr, '0', zeroes);
 	strcpy(localstr + zeroes, (char*)source);
-	
+
 	/* Calculate the check digit */
 	checksum = 0;
 	checkpart = 0;
@@ -258,12 +258,12 @@ int code32(struct zint_symbol *symbol, unsigned char source[], int length)
 			checksum += checkpart;
 		}
 	}
-	
+
 	/* Add check digit to data string */
 	checkdigit = checksum % 10;
 	localstr[8] = itoc(checkdigit);
 	localstr[9] = '\0';
-	
+
 	/* Convert string into an integer value */
 	pharmacode = atoi(localstr);
 
@@ -275,7 +275,7 @@ int code32(struct zint_symbol *symbol, unsigned char source[], int length)
 		pharmacode = remainder;
 		devisor /= 32;
 	}
-	
+
 	/* Look up values in 'Tabella di conversione' */
 	strcpy(tabella, "0123456789BCDFGHJKLMNPQRSTUVWXYZ");
 	for(i = 5; i >= 0; i--) {
@@ -285,10 +285,10 @@ int code32(struct zint_symbol *symbol, unsigned char source[], int length)
 	/* Plot the barcode using Code 39 */
 	error_number = c39(symbol, (unsigned char*)risultante, strlen(risultante));
 	if(error_number != 0) { return error_number; }
-	
+
 	/* Override the normal text output with the Pharmacode number */
 	ustrcpy(symbol->text, (unsigned char*)"A");
 	uconcat(symbol->text, (unsigned char*)localstr);
-	
+
 	return error_number;
 }

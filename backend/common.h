@@ -27,10 +27,10 @@ extern "C"
 {
 #endif /* __cplusplus */
 
-extern int ustrlen(unsigned char source[]);
-extern void ustrcpy(unsigned char target[], unsigned char source[]);
-extern void concat(char dest[],const char source[]);
-extern void uconcat(unsigned char dest[], unsigned char source[]);
+extern int ustrlen(const unsigned char source[]);
+extern void ustrcpy(unsigned char target[], const unsigned char source[]);
+extern void concat(char dest[], const char source[]);
+extern void uconcat(unsigned char dest[], const unsigned char source[]);
 extern int ctoi(char source);
 extern char itoc(int source);
 extern void to_upper(unsigned char source[]);

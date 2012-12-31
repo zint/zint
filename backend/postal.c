@@ -43,13 +43,13 @@ static const char *KoreaTable[10] = {"1313150613", "0713131313", "0417131313", "
 	
 static const char *JapanTable[19] = {"114", "132", "312", "123", "141", "321", "213", "231", "411", "144",
 	"414", "324", "342", "234", "432", "243", "423", "441", "111"};
-	
+
 int postnet(struct zint_symbol *symbol, unsigned char source[], char dest[], int length)
 {
 	/* Handles the PostNet system used for Zip codes in the US */
 	unsigned int i, sum, check_digit;
 	int error_number;
-	
+
 	error_number = 0;
 
 	if(length > 38) {
@@ -77,10 +77,10 @@ int postnet(struct zint_symbol *symbol, unsigned char source[], char dest[], int
 
 	/* stop character */
 	concat (dest, "L");
-	
+
 	return error_number;
 }
- 
+
 int post_plot(struct zint_symbol *symbol, unsigned char source[], int length)
 {
 	/* Puts PostNet barcodes into the pattern matrix */
@@ -88,7 +88,7 @@ int post_plot(struct zint_symbol *symbol, unsigned char source[], int length)
 	unsigned int loopey, h;
 	int writer;
 	int error_number;
-	
+
 	error_number = 0;
 
 	error_number = postnet(symbol, source, height_pattern, length);
@@ -111,7 +111,7 @@ int post_plot(struct zint_symbol *symbol, unsigned char source[], int length)
 	symbol->row_height[1] = 6;
 	symbol->rows = 2;
 	symbol->width = writer - 1;
-	
+
 	return error_number;
 }
 
@@ -120,9 +120,9 @@ int planet(struct zint_symbol *symbol, unsigned char source[], char dest[], int 
 	/* Handles the PLANET  system used for item tracking in the US */
 	unsigned int i, sum, check_digit;
 	int error_number;
-	
+
 	error_number = 0;
-	
+
 	if(length > 38) {
 		strcpy(symbol->errtxt, "Input too long");
 		return ERROR_TOO_LONG;
@@ -159,7 +159,7 @@ int planet_plot(struct zint_symbol *symbol, unsigned char source[], int length)
 	unsigned int loopey, h;
 	int writer;
 	int error_number;
-	
+
 	error_number = 0;
 
 	error_number = planet(symbol, source, height_pattern, length);
@@ -227,14 +227,14 @@ int fim(struct zint_symbol *symbol, unsigned char source[], int length)
 {
 	/* The simplest barcode symbology ever! Supported by MS Word, so here it is! */
 	/* glyphs from http://en.wikipedia.org/wiki/Facing_Identification_Mark */
-	
+
 	char dest[16] = { 0 };
-	
+
 	if(length > 1) {
 		strcpy(symbol->errtxt, "Input too long");
 		return ERROR_TOO_LONG;
 	}
-	
+
 	switch((char)source[0]) {
 		case 'a':
 		case 'A':
@@ -257,7 +257,7 @@ int fim(struct zint_symbol *symbol, unsigned char source[], int length)
 			return ERROR_INVALID_DATA;
 			break;
 	}
-	
+
 	expand(symbol, dest);
 	return 0;
 }
@@ -292,7 +292,7 @@ char rm4scc(char source[], unsigned char dest[], int length)
 
 	/* stop character */
 	concat ((char*)dest, "0");
-	
+
 	return set_copy[check_digit];
 }
 
@@ -306,7 +306,7 @@ int royal_plot(struct zint_symbol *symbol, unsigned char source[], int length)
 	strcpy(height_pattern, "");
 
 	error_number = 0;
-	
+
 	if(length > 120) {
 		strcpy(symbol->errtxt, "Input too long");
 		return ERROR_TOO_LONG;
@@ -340,7 +340,7 @@ int royal_plot(struct zint_symbol *symbol, unsigned char source[], int length)
 	symbol->row_height[2] = 3;
 	symbol->rows = 3;
 	symbol->width = writer - 1;
-	
+
 	return error_number;
 }
 
@@ -356,7 +356,7 @@ int kix_code(struct zint_symbol *symbol, unsigned char source[], int length)
 	strcpy(height_pattern, "");
 
 	error_number = 0;
-	
+
 	if(length > 18) {
 		strcpy(symbol->errtxt, "Input too long");
 		return ERROR_TOO_LONG;
@@ -367,18 +367,18 @@ int kix_code(struct zint_symbol *symbol, unsigned char source[], int length)
 		strcpy(symbol->errtxt, "Invalid characters in data");
 		return error_number;
 	}
-	
+
 	/* Add leading zeroes */
 	/* zeroes = 11 - length;
 	memset(localstr, '0', zeroes);
 	strcpy(localstr + zeroes, (char *)source);*/
 	strcpy(localstr, (char *)source);
-	
+
 	/* Encode data */
 	for (i = 0; i < 18; i++) {
 		lookup(KRSET, RoyalTable, localstr[i], height_pattern);
 	}
-	
+
 	writer = 0;
 	h = strlen(height_pattern);
 	for(loopey = 0; loopey < h; loopey++)
@@ -400,7 +400,7 @@ int kix_code(struct zint_symbol *symbol, unsigned char source[], int length)
 	symbol->row_height[2] = 3;
 	symbol->rows = 3;
 	symbol->width = writer - 1;
-	
+
 	return error_number;
 }
 
@@ -412,7 +412,7 @@ int daft_code(struct zint_symbol *symbol, unsigned char source[], int length)
 	unsigned int loopey, h;
 	int writer, i, error_number;
 	strcpy(height_pattern, "");
-	
+
 	error_number = 0;
 	if(length > 50) {
 		strcpy(symbol->errtxt, "Input too long");
@@ -425,14 +425,14 @@ int daft_code(struct zint_symbol *symbol, unsigned char source[], int length)
 		strcpy(symbol->errtxt, "Invalid characters in data");
 		return error_number;
 	}
-	
+
 	for (i = 0; i < length; i++) {
 		if(source[i] == 'D') { concat(height_pattern, "2"); }
 		if(source[i] == 'A') { concat(height_pattern, "1"); }
 		if(source[i] == 'F') { concat(height_pattern, "0"); }
 		if(source[i] == 'T') { concat(height_pattern, "3"); }
 	}
-	
+
 	writer = 0;
 	h = strlen(height_pattern);
 	for(loopey = 0; loopey < h; loopey++)
@@ -448,13 +448,13 @@ int daft_code(struct zint_symbol *symbol, unsigned char source[], int length)
 		}
 		writer += 2;
 	}
-	
+
 	symbol->row_height[0] = 3;
 	symbol->row_height[1] = 2;
 	symbol->row_height[2] = 3;
 	symbol->rows = 3;
 	symbol->width = writer - 1;
-	
+
 	return error_number;
 }
 
@@ -463,9 +463,9 @@ int flattermarken(struct zint_symbol *symbol, unsigned char source[], int length
 	but it's supported by TBarCode so it's supported by Zint! */
 	int loop, error_number;
 	char dest[512]; /* 90 * 4 + 1 ~ */
-	
+
 	error_number = 0;
-	
+
 	if(length > 90) {
 		strcpy(symbol->errtxt, "Input too long");
 		return ERROR_TOO_LONG;
@@ -543,7 +543,7 @@ int japan_post(struct zint_symbol *symbol, unsigned char source[], int length)
 	inter[20] = '\0';
 
 	strcpy(pattern, "13"); /* Start */
-	
+
 	sum = 0;
 	for(i = 0; i < 20; i++) {
 		concat(pattern, JapanTable[posn(KASUTSET, inter[i])]);
@@ -559,9 +559,9 @@ int japan_post(struct zint_symbol *symbol, unsigned char source[], int length)
 	if(check >= 11) { check_char = (check - 11) + 'a'; }
 	concat(pattern, JapanTable[posn(KASUTSET, check_char)]);
 	/* printf("check %c (%d)\n", check_char, check); */
-	
+
 	concat(pattern, "31"); /* Stop */
-	
+
 	/* Resolve pattern to 4-state symbols */
 	writer = 0;
 	h = strlen(pattern);
@@ -578,12 +578,12 @@ int japan_post(struct zint_symbol *symbol, unsigned char source[], int length)
 		}
 		writer += 2;
 	}
-	
+
 	symbol->row_height[0] = 3;
 	symbol->row_height[1] = 2;
 	symbol->row_height[2] = 3;
 	symbol->rows = 3;
 	symbol->width = writer - 1;
-	
+
 	return error_number;
 }

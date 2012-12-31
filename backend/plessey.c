@@ -39,12 +39,12 @@ int plessey(struct zint_symbol *symbol, unsigned char source[], int length)
 
 	unsigned int i, check;
 	unsigned char *checkptr;
-	static char grid[9] = {1,1,1,1,0,1,0,0,1};
+	static const char grid[9] = {1,1,1,1,0,1,0,0,1};
 	char dest[1024]; /* 8 + 65 * 8 + 8 * 2 + 9 + 1 ~ 1024 */
 	int error_number;
-	
+
 	error_number = 0;
-	
+
 	if(length > 65) {
 		strcpy(symbol->errtxt, "Input too long");
 		return ERROR_TOO_LONG;
@@ -90,7 +90,7 @@ int plessey(struct zint_symbol *symbol, unsigned char source[], int length)
 
 	/* Stop character */
 	concat(dest, "331311313");
-	
+
 	expand(symbol, dest);
 	ustrcpy(symbol->text, source);
 	free(checkptr);
@@ -102,7 +102,7 @@ int msi_plessey(struct zint_symbol *symbol, unsigned char source[], int length)
 
 	unsigned int i;
 	char dest[512]; /* 2 + 55 * 8 + 3 + 1 ~ 512 */
-	
+
 	if(length > 55) {
 		strcpy(symbol->errtxt, "Input too long");
 		return ERROR_TOO_LONG;
@@ -118,7 +118,7 @@ int msi_plessey(struct zint_symbol *symbol, unsigned char source[], int length)
 
 	/* Stop character */
 	concat (dest, "121");
-	
+
 	expand(symbol, dest);
 	ustrcpy(symbol->text, source);
 	return 0;
@@ -132,7 +132,7 @@ int msi_plessey_mod10(struct zint_symbol *symbol, unsigned char source[], int le
 	char un[200], tri[32];
 	int error_number, h;
 	char dest[1000];
-	
+
 	error_number = 0;
 
 	if(length > 18) { 
@@ -203,9 +203,9 @@ int msi_plessey_mod1010(struct zint_symbol *symbol, unsigned char source[], cons
 	char un[16], tri[32];
 	int error_number, h;
 	char dest[1000];
-	
+
 	error_number = 0;
-	
+
 	if(src_len > 18) { /* No Entry Stack Smashers! limit because of str->number conversion*/
 		strcpy(symbol->errtxt, "Input too long");
 		return ERROR_TOO_LONG;
@@ -295,7 +295,7 @@ int msi_plessey_mod1010(struct zint_symbol *symbol, unsigned char source[], cons
 
 	/* Stop character */
 	concat (dest, "121");
-	
+
 	expand(symbol, dest);
 
 	ustrcpy(symbol->text, source);
@@ -312,21 +312,21 @@ int msi_plessey_mod11(struct zint_symbol *symbol, unsigned char source[], const 
 	/* Calculate a Modulo 11 check digit using the system discussed on Wikipedia - 
 	see http://en.wikipedia.org/wiki/Talk:MSI_Barcode */
 	/* uses the IBM weight system */
-	
+
 	int i, weight, x, check;
 	int error_number;
 	char dest[1000];
-	
+
 	error_number = 0;
 
 	if(src_len > 55) {
 		strcpy(symbol->errtxt, "Input too long");
 		return ERROR_TOO_LONG;
 	}
-	
+
 	/* start character */
 	strcpy(dest, "21");
-	
+
 	/* draw data section */
 	for(i = 0; i < src_len; i++)
 	{
@@ -343,7 +343,7 @@ int msi_plessey_mod11(struct zint_symbol *symbol, unsigned char source[], const 
 			weight = 2;
 		}
 	}
-	
+
 	check = (11 - (x % 11)) % 11;
 	if(check == 10) {
 		lookup(NEON, MSITable, '1', dest);
@@ -351,10 +351,10 @@ int msi_plessey_mod11(struct zint_symbol *symbol, unsigned char source[], const 
 	} else {
 		lookup(NEON, MSITable, itoc(check), dest);
 	}
-	
+
 	/* stop character */
 	concat (dest, "121");
-	
+
 	expand(symbol, dest);
 
 	ustrcpy(symbol->text, source);
@@ -364,7 +364,7 @@ int msi_plessey_mod11(struct zint_symbol *symbol, unsigned char source[], const 
 		symbol->text[src_len] = itoc(check);
 		symbol->text[src_len + 1] = '\0';
 	}
-	
+
 	return error_number;
 }
 
@@ -373,24 +373,24 @@ int msi_plessey_mod1110(struct zint_symbol *symbol, unsigned char source[], cons
 	/* Combining the Barcode Island and Wikipedia code */
 	/* Verified against http://www.bokai.com/BarcodeJSP/applet/BarcodeSampleApplet.htm */
 	/* Weighted using the IBM system */
-	
+
 	unsigned long i, weight, x, check, wright, dau, pedwar, pump, h;
 	char un[16], tri[16];
 	int error_number;
 	char dest[1000];
 	unsigned char temp[32];
 	unsigned int temp_len;
-	
+
 	error_number = 0;
 
 	if(src_len > 18) {
 		strcpy(symbol->errtxt, "Input too long");
 		return ERROR_TOO_LONG;
 	}
-	
+
 	/* start character */
 	strcpy(dest, "21");
-	
+
 	/* draw data section */
 	for(i = 0; i < src_len; i++)
 	{
@@ -407,7 +407,7 @@ int msi_plessey_mod1110(struct zint_symbol *symbol, unsigned char source[], cons
 			weight = 2;
 		}
 	}
-	
+
 	check = (11 - (x % 11)) % 11;
 	ustrcpy(temp, source);
 	temp_len = src_len;
@@ -421,7 +421,7 @@ int msi_plessey_mod1110(struct zint_symbol *symbol, unsigned char source[], cons
 		temp[temp_len++] = itoc(check);
 		temp[temp_len] = '\0';
 	}
-	
+
 	/* caluculate second (mod 10) check digit */
 	wright = 0;
 	i = !(temp_len & 1);
@@ -478,7 +478,7 @@ int msi_handle(struct zint_symbol *symbol, unsigned char source[], int length) {
 		strcpy(symbol->errtxt, "Invalid characters in input data");
 		return ERROR_INVALID_DATA;
 	}
-	
+
 
 	if((symbol->option_2 < 0) || (symbol->option_2 > 4)) {
 		symbol->option_2 = 0;
@@ -491,6 +491,6 @@ int msi_handle(struct zint_symbol *symbol, unsigned char source[], int length) {
 		case 3: error_number = msi_plessey_mod11(symbol, source, length); break;
 		case 4: error_number = msi_plessey_mod1110(symbol, source, length); break;
 	}
-	
+
 	return error_number;
 }

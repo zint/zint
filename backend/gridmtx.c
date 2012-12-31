@@ -41,12 +41,12 @@ int number_lat(int gbdata[], int length, int position)
 	int sp;
 	int numb = 0, nonum = 0, done;
 	int tally = 0;
-	
+
 	sp = position;
-	
+
 	do {
 		done = 0;
-		
+
 		if((gbdata[sp] >= '0') && (gbdata[sp] <= '9')) { numb++; done = 1; }
 		switch(gbdata[sp]) {
 			case ' ':
@@ -64,7 +64,7 @@ int number_lat(int gbdata[], int length, int position)
 				sp++;
 			}
 		}
-		
+
 		if(done == 0) {
 			tally += 80;
 		} else {
@@ -82,14 +82,14 @@ int number_lat(int gbdata[], int length, int position)
 				nonum = 0;
 			}
 		}
-		
+
 		sp++;
 	} while ((sp < length) && (sp <= (position + 8)));
 
 	if(numb == 0) {
 		tally += 80;
 	}
-	
+
 	if(numb > 1) {
 		if(nonum == 0) {
 			tally += 10;
@@ -101,7 +101,7 @@ int number_lat(int gbdata[], int length, int position)
 			tally += 80;
 		}
 	}
-	
+
 	return tally;
 }
 
@@ -111,14 +111,14 @@ int seek_forward(int gbdata[], int length, int position, int current_mode)
 	   code uses a look-ahead test in the same manner as Data Matrix. This decision was made
 	   because the "official" algorithm does not provide clear methods for dealing with all
 	   possible combinations of input data */
-	
+
 	int number_count, byte_count, mixed_count, upper_count, lower_count, chinese_count;
 	int sp, best_mode, done;
 	int best_count, last = -1;
 	int debug = 0;
-	
+
 	if(gbdata[position] > 0xff) { return GM_CHINESE; }
-	
+
 	switch(current_mode) {
 		case GM_CHINESE:
 			number_count = 13;
@@ -176,11 +176,11 @@ int seek_forward(int gbdata[], int length, int position, int current_mode)
 			lower_count = 4;
 			chinese_count = 4;
 	}
-	
+
 	for(sp = position; (sp < length) && (sp <= (position + 8)); sp++) {
-		
+
 		done = 0;
-		
+
 		if(gbdata[sp] >= 0xff) {
 			byte_count += 17;
 			mixed_count += 23;
@@ -189,7 +189,7 @@ int seek_forward(int gbdata[], int length, int position, int current_mode)
 			chinese_count += 13;
 			done = 1;
 		}
-		
+
 		if((gbdata[sp] >= 'a') && (gbdata[sp] <= 'z')) {
 			byte_count += 8;
 			mixed_count += 6;
@@ -198,7 +198,7 @@ int seek_forward(int gbdata[], int length, int position, int current_mode)
 			chinese_count += 13;
 			done = 1;
 		}
-		
+
 		if((gbdata[sp] >= 'A') && (gbdata[sp] <= 'Z')) {
 			byte_count += 8;
 			mixed_count += 6;
@@ -207,7 +207,7 @@ int seek_forward(int gbdata[], int length, int position, int current_mode)
 			chinese_count += 13;
 			done = 1;
 		}
-		
+
 		if((gbdata[sp] >= '0') && (gbdata[sp] <= '9')) {
 			byte_count += 8;
 			mixed_count += 6;
@@ -216,7 +216,7 @@ int seek_forward(int gbdata[], int length, int position, int current_mode)
 			chinese_count += 13;
 			done = 1;
 		}
-		
+
 		if(gbdata[sp] == ' ') {
 			byte_count += 8;
 			mixed_count += 6;
@@ -225,7 +225,7 @@ int seek_forward(int gbdata[], int length, int position, int current_mode)
 			chinese_count += 13;
 			done = 1;
 		}
-		
+
 		if(done == 0) {
 			/* Control character */
 			byte_count += 8;
@@ -234,21 +234,21 @@ int seek_forward(int gbdata[], int length, int position, int current_mode)
 			lower_count += 13;
 			chinese_count += 13;
 		}
-		
+
 		if(gbdata[sp] >= 0x7f) {
 			mixed_count += 20;
 			upper_count += 20;
 			lower_count += 20;
 		}
 	}
-	
+
 	/* Adjust for <end of line> */
 	for(sp = position; (sp < (length - 1)) && (sp <= (position + 7)); sp++) {
 		if((gbdata[sp] == 0x13) && (gbdata[sp] == 0x10)) {
 			chinese_count -= 13;
 		}
 	}
-	
+
 	/* Adjust for double digits */
 	for(sp = position; (sp < (length - 1)) && (sp <= (position + 7)); sp++) {
 		if(sp != last) {
@@ -258,40 +258,40 @@ int seek_forward(int gbdata[], int length, int position, int current_mode)
 			}
 		}
 	}
-	
+
 	/* Numeric mode is more complex */
 	number_count += number_lat(gbdata, length, position);
-	
+
 	if(debug) { printf("C %d / B %d / M %d / U %d / L %d / N %d\n", chinese_count, byte_count, mixed_count, upper_count, lower_count, number_count); }
-	
+
 	best_count = chinese_count;
 	best_mode = GM_CHINESE;
-	
+
 	if(byte_count <= best_count) {
 		best_count = byte_count;
 		best_mode = GM_BYTE;
 	}
-	
+
 	if(mixed_count <= best_count) {
 		best_count = mixed_count;
 		best_mode = GM_MIXED;
 	}
-	
+
 	if(upper_count <= best_count) {
 		best_count = upper_count;
 		best_mode = GM_UPPER;
 	}
-	
+
 	if(lower_count <= best_count) {
 		best_count = lower_count;
 		best_mode = GM_LOWER;
 	}
-	
+
 	if(number_count <= best_count) {
 		best_count = number_count;
 		best_mode = GM_NUMBER;
 	}
-	
+
 	return best_mode;
 }
 
@@ -314,13 +314,13 @@ void add_shift_char(char binary[], int shifty)
 	/* Add a control character to the data stream */
 	int i, debug = 0;
 	int glyph = 0;
-	
+
 	for(i = 0; i < 64; i++) {
 		if(shift_set[i] == shifty) {
 			glyph = i;
 		}
 	}
-	
+
 	if(debug) { printf("SHIFT [%d] ", glyph); }
 	
 	if(glyph & 0x20) { concat(binary, "1"); } else { concat(binary, "0"); }
@@ -343,21 +343,21 @@ int gm_encode(int gbdata[], int length, char binary[], int reader)
 	int number_pad_posn, debug = 0;
 	int byte_count_posn = 0, byte_count = 0;
 	int shift, i;
-	
+
 	strcpy(binary, "");
-	
+
 	sp = 0;
 	current_mode = 0;
 	last_mode = 0;
 	number_pad_posn = 0;
-	
+
 	if(reader) {
 		concat(binary, "1010"); /* FNC3 - Reader Initialisation */
 	}
-	
+
 	do {
 		next_mode = seek_forward(gbdata, length, sp, current_mode);
-		
+
 		if(next_mode != current_mode) {
 			switch(current_mode) {
 				case 0:
@@ -440,7 +440,7 @@ int gm_encode(int gbdata[], int length, char binary[], int reader)
 		}
 		last_mode = current_mode;
 		current_mode = next_mode;
-		
+
 		switch(current_mode) {
 			case GM_CHINESE: 
 				done = 0;
@@ -448,7 +448,7 @@ int gm_encode(int gbdata[], int length, char binary[], int reader)
 					/* GB2312 character */
 					c1 = (gbdata[sp] & 0xff00) >> 8;
 					c2 = gbdata[sp] & 0xff;
-					
+
 					if((c1 >= 0xa0) && (c1 <= 0xa9)) {
 						glyph = (0x60 * (c1 - 0xa1)) + (c2 - 0xa0);
 					}
@@ -481,7 +481,7 @@ int gm_encode(int gbdata[], int length, char binary[], int reader)
 					/* Byte value */
 					glyph = 7777 + gbdata[sp];
 				}
-				
+
 				if(debug) { printf("[%d] ", glyph); }
 				
 				if(glyph & 0x1000) { concat(binary, "1"); } else { concat(binary, "0"); }
@@ -499,7 +499,7 @@ int gm_encode(int gbdata[], int length, char binary[], int reader)
 				if(glyph & 0x01) { concat(binary, "1"); } else { concat(binary, "0"); }
 				sp++;
 				break;
-				
+
 			case GM_NUMBER:
 				if(last_mode != current_mode) {
 					/* Reserve a space for numeric digit padding value (2 bits) */
@@ -508,10 +508,10 @@ int gm_encode(int gbdata[], int length, char binary[], int reader)
 				}
 				p = 0;
 				ppos = -1;
-				
+
 				/* Numeric compression can also include certain combinations of
 				   non-numeric character */
-				
+
 				numbuf[0] = '0';
 				numbuf[1] = '0';
 				numbuf[2] = '0';
@@ -541,7 +541,7 @@ int gm_encode(int gbdata[], int length, char binary[], int reader)
 						}
 					}
 				} while ((p < 3) && (sp < length));
-				
+
 				if(ppos != -1) {
 					switch(punt) {
 						case ' ': glyph = 0; break;
@@ -553,7 +553,7 @@ int gm_encode(int gbdata[], int length, char binary[], int reader)
 					}
 					glyph += ppos;
 					glyph += 1000;
-					
+
 					if(debug) { printf("[%d] ", glyph); }
 					
 					if(glyph & 0x200) { concat(binary, "1"); } else { concat(binary, "0"); }
@@ -567,7 +567,7 @@ int gm_encode(int gbdata[], int length, char binary[], int reader)
 					if(glyph & 0x02) { concat(binary, "1"); } else { concat(binary, "0"); }
 					if(glyph & 0x01) { concat(binary, "1"); } else { concat(binary, "0"); }
 				}
-				
+
 				glyph = (100 * (numbuf[0] - '0')) + (10 * (numbuf[1] - '0')) + (numbuf[2] - '0');
 				if(debug) { printf("[%d] ", glyph); }
 				
@@ -582,7 +582,7 @@ int gm_encode(int gbdata[], int length, char binary[], int reader)
 				if(glyph & 0x02) { concat(binary, "1"); } else { concat(binary, "0"); }
 				if(glyph & 0x01) { concat(binary, "1"); } else { concat(binary, "0"); }
 				break;
-				
+
 			case GM_BYTE:
 				if(last_mode != current_mode) {
 					/* Reserve space for byte block length indicator (9 bits) */
@@ -597,7 +597,7 @@ int gm_encode(int gbdata[], int length, char binary[], int reader)
 					concat(binary, "LLLLLLLLL");
 					byte_count = 0;
 				}
-				
+
 				glyph = gbdata[sp];
 				if(debug) { printf("[%d] ", glyph); }
 				if(glyph & 0x80) { concat(binary, "1"); } else { concat(binary, "0"); }
@@ -611,14 +611,14 @@ int gm_encode(int gbdata[], int length, char binary[], int reader)
 				sp++;
 				byte_count++;
 				break;
-				
+
 			case GM_MIXED:
 				shift = 1;
 				if((gbdata[sp] >= '0') && (gbdata[sp] <= '9')) { shift = 0; }
 				if((gbdata[sp] >= 'A') && (gbdata[sp] <= 'Z')) { shift = 0; }
 				if((gbdata[sp] >= 'a') && (gbdata[sp] <= 'z')) { shift = 0; }
 				if(gbdata[sp] == ' ') { shift = 0; }
-				
+
 				if(shift == 0) {
 					/* Mixed Mode character */
 					glyph = posn(EUROPIUM, gbdata[sp]);
@@ -635,15 +635,15 @@ int gm_encode(int gbdata[], int length, char binary[], int reader)
 					concat(binary, "1111110110"); /* 1014 - shift indicator */
 					add_shift_char(binary, gbdata[sp]);
 				}
-				
+
 				sp++;
 				break;
-				
+
 			case GM_UPPER:
 				shift = 1;
 				if((gbdata[sp] >= 'A') && (gbdata[sp] <= 'Z')) { shift = 0; }
 				if(gbdata[sp] == ' ') { shift = 0; }
-				
+
 				if(shift == 0) {
 					/* Upper Case character */
 					glyph = posn("ABCDEFGHIJKLMNOPQRSTUVWXYZ ", gbdata[sp]);
@@ -659,7 +659,7 @@ int gm_encode(int gbdata[], int length, char binary[], int reader)
 					concat(binary, "1111101"); /* 127 - shift indicator */
 					add_shift_char(binary, gbdata[sp]);
 				}
-				
+
 				sp++;
 				break;
 				
@@ -667,7 +667,7 @@ int gm_encode(int gbdata[], int length, char binary[], int reader)
 				shift = 1;
 				if((gbdata[sp] >= 'a') && (gbdata[sp] <= 'z')) { shift = 0; }
 				if(gbdata[sp] == ' ') { shift = 0; }
-				
+
 				if(shift == 0) {
 					/* Lower Case character */
 					glyph = posn("abcdefghijklmnopqrstuvwxyz ", gbdata[sp]);
@@ -683,16 +683,16 @@ int gm_encode(int gbdata[], int length, char binary[], int reader)
 					concat(binary, "1111101"); /* 127 - shift indicator */
 					add_shift_char(binary, gbdata[sp]);
 				}
-				
+
 				sp++;
 				break;
 		}
 		if(strlen(binary) > 9191) {
 			return ERROR_TOO_LONG;
 		}
-		
+
 	} while(sp < length);
-	
+
 	if(current_mode == GM_NUMBER) {
 		/* add numeric block padding value */
 		switch(p) {
@@ -701,12 +701,12 @@ int gm_encode(int gbdata[], int length, char binary[], int reader)
 			case 3: binary[number_pad_posn] = '0'; binary[number_pad_posn + 1] = '0'; break; // 0 pad digits
 		}
 	}
-	
+
 	if(current_mode == GM_BYTE) {
 		/* Add byte block length indicator */
 		add_byte_count(binary, byte_count_posn, byte_count);
 	}
-	
+
 	/* Add "end of data" character */
 	switch(current_mode) {
 		case GM_CHINESE: concat(binary, "1111111100000"); break; // 8160
@@ -716,14 +716,14 @@ int gm_encode(int gbdata[], int length, char binary[], int reader)
 		case GM_MIXED: concat(binary, "1111110000"); break; // 1008
 		case GM_BYTE: concat(binary, "0000"); break; // 0
 	}
-	
+
 	/* Add padding bits if required */
 	p = 7 - (strlen(binary) % 7);
 	if(p == 7) { p = 0; }
 	for(i = 0; i < p; i++) {
 		concat(binary, "0");
 	}
-	
+
 	if(strlen(binary) > 9191) {
 		return ERROR_TOO_LONG;
 	}
@@ -814,10 +814,10 @@ void gm_add_ecc(char binary[], int data_posn, int layers, int ecc_level, int wor
 void place_macromodule(char grid[], int x, int y, int word1, int word2, int size)
 {
 	int i, j;
-	
+
 	i = (x * 6) + 1;
 	j = (y * 6) + 1;
-	
+
 	if(word2 & 0x40) { grid[(j * size) + i + 2] = '1'; }
 	if(word2 & 0x20) { grid[(j * size) + i + 3] = '1'; }
 	if(word2 & 0x10) { grid[((j + 1) * size) + i] = '1'; }
@@ -837,7 +837,7 @@ void place_macromodule(char grid[], int x, int y, int word1, int word2, int size
 void place_data_in_grid(int word[], char grid[], int modules, int size)
 {
 	int x, y, macromodule, offset;
-	
+
 	offset = 13 - ((modules - 1) / 2);
 	for(y = 0; y < modules; y++) {
 		for(x = 0; x < modules; x++) {
@@ -850,7 +850,7 @@ void place_data_in_grid(int word[], char grid[], int modules, int size)
 void place_layer_id(char* grid, int size, int layers, int modules, int ecc_level)
 {
 	/* Place the layer ID into each macromodule */
-	
+
 	int i, j, layer, start, stop;
 	
 #ifndef _MSC_VER
@@ -869,13 +869,13 @@ void place_layer_id(char* grid, int size, int layers, int modules, int ecc_level
 			layerid[i] = (i + 5 - ecc_level) % 4;
 		}
 	}
-	
+
 	for(i = 0; i < modules; i++) {
 		for(j = 0; j < modules; j++) {
 			id[(i * modules) + j] = 0;
 		}
 	}
-	
+
 	/* Calculate which value goes in each macromodule */
 	start = modules / 2;
 	stop = modules / 2;
@@ -889,7 +889,7 @@ void place_layer_id(char* grid, int size, int layers, int modules, int ecc_level
 		start--;
 		stop++;
 	}
-	
+
 	/* Place the data in the grid */
 	for(i = 0; i < modules; i++) {
 		for(j = 0; j < modules; j++) {
@@ -934,7 +934,7 @@ int grid_matrix(struct zint_symbol *symbol, unsigned char source[], int length)
 			/* Convert Unicode input to GB-2312 */
 			error_number = utf8toutf16(symbol, source, utfdata, &length);
 			if(error_number != 0) { return error_number; }
-			
+
 			for(i = 0; i < length; i++) {
 				if(utfdata[i] <= 0xff) {
 					gbdata[i] = utfdata[i];
@@ -964,10 +964,10 @@ int grid_matrix(struct zint_symbol *symbol, unsigned char source[], int length)
 		strcpy(symbol->errtxt, "Input data too long");
 		return error_number;
 	}
-	
+
 	/* Determine the size of the symbol */
 	data_cw = strlen(binary) / 7;
-	
+
 	auto_layers = 13;
 	for(i = 12; i > 0; i--) {
 		if(gm_recommend_cw[(i - 1)] >= data_cw) { auto_layers = i; }
@@ -984,7 +984,7 @@ int grid_matrix(struct zint_symbol *symbol, unsigned char source[], int length)
 	if(layers == 1) { min_ecc_level = 4; }
 	if((layers == 2) || (layers == 3)) { min_ecc_level = 2; }
 	ecc_level = auto_ecc_level;
-	
+
 	if((symbol->option_2 >= 1) && (symbol->option_2 <= 13)) {
 		input_latch = 1;
 		if(symbol->option_2 > min_layers) {
@@ -993,7 +993,7 @@ int grid_matrix(struct zint_symbol *symbol, unsigned char source[], int length)
 			layers = min_layers;
 		}
 	}
-	
+
 	if(input_latch == 1) {
 		auto_ecc_level = 3;
 		if(layers == 1) { auto_ecc_level = 5; }
@@ -1003,7 +1003,7 @@ int grid_matrix(struct zint_symbol *symbol, unsigned char source[], int length)
 			layers++;
 		}
 	}
-	
+
 	if(input_latch == 0) {
 		if((symbol->option_1 >= 1) && (symbol->option_1 <= 5)) {
 			if(symbol->option_1 > min_ecc_level) {
@@ -1018,7 +1018,7 @@ int grid_matrix(struct zint_symbol *symbol, unsigned char source[], int length)
 			} while ((data_cw > gm_data_codewords[(5 * (layers - 1)) + (ecc_level - 1)]) && (layers <= 13));
 		}
 	}
-	
+
 	data_max = 1313;
 	switch(ecc_level) {
 		case 2: data_max = 1167; break;
@@ -1026,7 +1026,7 @@ int grid_matrix(struct zint_symbol *symbol, unsigned char source[], int length)
 		case 4: data_max = 875; break;
 		case 5: data_max = 729; break;
 	}
-	
+
 	if(data_cw > data_max) {
 		strcpy(symbol->errtxt, "Input data too long");
 		return ERROR_TOO_LONG;
@@ -1047,10 +1047,10 @@ int grid_matrix(struct zint_symbol *symbol, unsigned char source[], int length)
 			grid[(y * size) + x] = '0';
 		}
 	}
-	
+
 	place_data_in_grid(word, grid, modules, size);
 	place_layer_id(grid, size, layers, modules, ecc_level);
-	
+
 	/* Add macromodule frames */
 	for(x = 0; x < modules; x++) {
 		dark = 1 - (x & 1);
@@ -1073,7 +1073,7 @@ int grid_matrix(struct zint_symbol *symbol, unsigned char source[], int length)
 	/* Copy values to symbol */
 	symbol->width = size;
 	symbol->rows = size;
-	
+
 	for(x = 0; x < size; x++) {
 		for(y = 0; y < size; y++) {
 			if(grid[(y * size) + x] == '1') {
@@ -1082,6 +1082,6 @@ int grid_matrix(struct zint_symbol *symbol, unsigned char source[], int length)
 		}
 		symbol->row_height[x] = 1;
 	}
-	
+
 	return 0;
 }

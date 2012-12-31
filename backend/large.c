@@ -24,7 +24,7 @@
 #include "common.h"
 #include "large.h"
 
-static short int BCD[40] = {
+static const short int BCD[40] = {
 	0, 0, 0, 0,
 	1, 0, 0, 0,
 	0, 1, 0, 0,
@@ -91,7 +91,7 @@ void binary_subtract(short int accumulator[], short int input_buffer[])
 	/* take input_buffer from accumulator and put answer in accumulator */
 	int i;
 	short int sub_buffer[112];
-	
+
 	for(i = 0; i < 112; i++) {
 		if(input_buffer[i] == 0) {
 			sub_buffer[i] = 1;
@@ -100,9 +100,9 @@ void binary_subtract(short int accumulator[], short int input_buffer[])
 		}
 	}
 	binary_add(accumulator, sub_buffer);
-	
+
 	sub_buffer[0] = 1;
-	
+
 	for(i = 1; i < 112; i++) {
 		sub_buffer[i] = 0;
 	}
@@ -112,7 +112,7 @@ void binary_subtract(short int accumulator[], short int input_buffer[])
 void shiftdown(short int buffer[])
 {
 	int i;
-	
+
 	buffer[102] = 0;
 	buffer[103] = 0;
 
@@ -124,11 +124,11 @@ void shiftdown(short int buffer[])
 void shiftup(short int buffer[])
 {
 	int i;
-	
+
 	for(i = 102; i > 0; i--) {
 		buffer[i] = buffer[i - 1];
 	}
-	
+
 	buffer[0] = 0;
 }
 
@@ -139,8 +139,8 @@ short int islarger(short int accum[], short int reg[])
 	latch = 0;
 	i = 103;
 	larger = 0;
-	
-	
+
+
 	do {
 		if((accum[i] == 1) && (reg[i] == 0)) {
 			latch = 1;
@@ -151,7 +151,7 @@ short int islarger(short int accum[], short int reg[])
 		}
 		i--;
 	} while ((latch == 0) && (i >= -1));
-	
+
 	return larger;
 }
 
@@ -159,21 +159,21 @@ void binary_load(short int reg[], char data[], const unsigned int src_len)
 {
 	int read, i;
 	short int temp[112] = { 0 };
-	
+
 	for(i = 0; i < 112; i++) {
 		reg[i] = 0;
 	}
-	
+
 	for(read = 0; read < src_len; read++) {
 
 		for(i = 0; i < 112; i++) {
 			temp[i] = reg[i];
 		}
-		
+
 		for(i = 0; i < 9; i++) {
 			binary_add(reg, temp);
 		}
-		
+
 		temp[0] = BCD[ctoi(data[read]) * 4];
 		temp[1] = BCD[(ctoi(data[read]) * 4) + 1];
 		temp[2] = BCD[(ctoi(data[read]) * 4) + 2];
@@ -181,12 +181,12 @@ void binary_load(short int reg[], char data[], const unsigned int src_len)
 		for(i = 4; i < 112; i++) {
 			temp[i] = 0;
 		}
-		
+
 		binary_add(reg, temp);
 	}
 }
 
-void hex_dump(short int input_buffer[]) 
+void hex_dump(short int input_buffer[])
 {
 	int i, digit, byte_space;
 

@@ -23,7 +23,7 @@
 #include <stdlib.h>
 #include "common.h"
 
-int ustrlen(unsigned char data[]) {
+int ustrlen(const unsigned char data[]) {
 	/* Local replacement for strlen() with unsigned char strings */
 	int i;
 	for (i=0;data[i];i++);
@@ -31,7 +31,7 @@ int ustrlen(unsigned char data[]) {
 	return i;
 }
 
-void ustrcpy(unsigned char target[], unsigned char source[]) {
+void ustrcpy(unsigned char target[],const unsigned char source[]) {
 	/* Local replacement for strcpy() with unsigned char strings */
 	int i, len;
 
@@ -52,7 +52,7 @@ void concat(char dest[],const char source[])
 		dest[i + j] = source[i]; }
 }
 
-void uconcat(unsigned char dest[], unsigned char source[])
+void uconcat(unsigned char dest[], const unsigned char source[])
 { /* Concatinates dest[] with the contents of source[], copying /0 as well */
 	unsigned int i, j;
 
@@ -104,7 +104,7 @@ int is_sane(char test_string[], unsigned char source[], int length)
 			return ERROR_INVALID_DATA; 
 		}
 	}
-	
+
 	return 0;
 }
 
@@ -188,14 +188,14 @@ void unset_module(struct zint_symbol *symbol, int y_coord, int x_coord)
 
 void expand(struct zint_symbol *symbol, char data[])
 { /* Expands from a width pattern to a bit pattern */
-	
+
 	unsigned int reader, n = strlen(data);
 	int writer, i;
 	char latch;
-	
+
 	writer = 0;
 	latch = '1';
-	
+
 	for(reader = 0; reader < n; reader++) {
 		for(i = 0; i < ctoi(data[reader]); i++) {
 			if(latch == '1') { set_module(symbol, symbol->rows, writer); }
@@ -204,7 +204,7 @@ void expand(struct zint_symbol *symbol, char data[])
 
 		latch = (latch == '1' ? '0' : '1');
 	}
-	
+
 	if(symbol->symbology != BARCODE_PHARMA) {
 		if(writer > symbol->width) {
 			symbol->width = writer;
@@ -230,7 +230,7 @@ int is_stackable(int symbology) {
 	if(symbology == BARCODE_TELEPEN_NUM) { return 1; }
 	if(symbology == BARCODE_ITF14) { return 1; }
 	if(symbology == BARCODE_CODE32) { return 1; }
-	
+
 	return 0;
 }
 
@@ -243,7 +243,7 @@ int is_extendable(int symbology) {
 	if(symbology == BARCODE_UPCA_CC) { return 1; }
 	if(symbology == BARCODE_UPCE_CC) { return 1; }
 	if(symbology == BARCODE_EANX_CC) { return 1; }
-	
+
 	return 0;
 }
 
@@ -251,14 +251,14 @@ int roundup(float input)
 {
 	float remainder;
 	int integer_part;
-	
+
 	integer_part = (int)input;
 	remainder = input - integer_part;
-	
+
 	if(remainder > 0.1) {
 		integer_part++;
 	}
-	
+
 	return integer_part;
 }
 
@@ -269,17 +269,17 @@ int istwodigits(unsigned char source[], int position)
 			return 1;
 		}
 	}
-	
+
 	return 0;
 }
 
 float froundup(float input)
 {
 	float fraction, output = 0.0;
-	
+
 	fraction = input - (int)input;
 	if(fraction > 0.01) { output = (input - fraction) + 1.0; } else { output = input; }
-	
+
 	return output;
 }
 
@@ -316,7 +316,7 @@ int latin1_process(struct zint_symbol *symbol, unsigned char source[], unsigned 
 	} while(i < *length);
 	preprocessed[j] = '\0';
 	*length = j;
-	
+
 	return 0;
 }
 
@@ -324,12 +324,12 @@ int utf8toutf16(struct zint_symbol *symbol, unsigned char source[], int vals[], 
 {
 	int bpos, jpos, error_number;
 	int next;
-	
+
 	bpos = 0;
 	jpos = 0;
 	error_number = 0;
 	next = 0;
-	
+
 	do {
 		if(source[bpos] <= 0x7f) {
 			/* 1 byte mode (7-bit ASCII) */
@@ -363,12 +363,12 @@ int utf8toutf16(struct zint_symbol *symbol, unsigned char source[], int vals[], 
 				return ERROR_INVALID_DATA;
 			}
 		}
-		
+
 		bpos = next;
-		
+
 	} while(bpos < *length);
 	*length = jpos;
-	
+
 	return error_number;
 }
 

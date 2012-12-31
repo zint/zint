@@ -33,7 +33,7 @@ int in_alpha(int glyph) {
 	/* Returns true if input glyph is in the Alphanumeric set */
 	int retval = 0;
 	char cglyph = (char) glyph;
-	
+
 	if((cglyph >= '0') && (cglyph <= '9')) {
 		retval = 1;
 	}
@@ -53,7 +53,7 @@ int in_alpha(int glyph) {
 			retval = 1;
 			break;
 	}
-	
+
 	return retval;
 }
 
@@ -61,9 +61,9 @@ void define_mode(char mode[], int jisdata[], int length, int gs1)
 {
 	/* Values placed into mode[] are: K = Kanji, B = Binary, A = Alphanumeric, N = Numeric */
 	int i, mlen, j;
-	
+
 	for(i = 0; i < length; i++) {
-		if(jisdata[i] > 0xff) { 
+		if(jisdata[i] > 0xff) {
 			mode[i] = 'K';
 		} else {
 			mode[i] = 'B';
@@ -72,7 +72,7 @@ void define_mode(char mode[], int jisdata[], int length, int gs1)
 			if((jisdata[i] >= '0') && (jisdata[i] <= '9')) { mode[i] = 'N'; }
 		}
 	}
-	
+
 	/* If less than 6 numeric digits together then don't use numeric mode */
 	for(i = 0; i < length; i++) {
 		if(mode[i] == 'N') {
@@ -89,7 +89,7 @@ void define_mode(char mode[], int jisdata[], int length, int gs1)
 			}
 		}
 	}
-	
+
 	/* If less than 4 alphanumeric characters together then don't use alphanumeric mode */
 	for(i = 0; i < length; i++) {
 		if(mode[i] == 'A') {
@@ -117,7 +117,7 @@ int estimate_binary_length(char mode[], int length, int gs1)
 	int n_count = 0;
 
 	if(gs1) { count += 4; }
-	
+
 	for(i = 0; i < length; i++) {
 		if(mode[i] != current) {
 			switch(mode[i]) {
@@ -157,7 +157,7 @@ int estimate_binary_length(char mode[], int length, int gs1)
 	return count;
 }
 
-static inline void qr_bscan(char *binary, int data, int h)
+static void qr_bscan(char *binary, int data, int h)
 {
 	for (; h; h>>=1) {
 		concat(binary, data & h ? "1" : "0");
@@ -179,11 +179,11 @@ void qr_binary(int datastream[], int version, int target_binlen, char mode[], in
 	char* binary = (char *)_alloca(est_binlen + 12);
 #endif
 	strcpy(binary, "");
-	
+
 	if(gs1) {
 		concat(binary, "0101"); /* FNC1 */
 	}
-	
+
 	if(version <= 9) {
 		scheme = 1;
 	} else if((version >= 10) && (version <= 26)) {
@@ -191,39 +191,39 @@ void qr_binary(int datastream[], int version, int target_binlen, char mode[], in
 	} else if(version >= 27) {
 		scheme = 3;
 	}
-	
-	if(debug) { 
+
+	if(debug) {
 		for(i = 0; i < length; i++) {
 			printf("%c", mode[i]);
 		}
 		printf("\n");
 	}
-	
+
 	percent = 0;
-	
+
 	do {
 		data_block = mode[position];
 		short_data_block_length = 0;
 		do {
 			short_data_block_length++;
 		} while (((short_data_block_length + position) < length) && (mode[position + short_data_block_length] == data_block));
-		
+
 		switch(data_block) {
 			case 'K':
 				/* Kanji mode */
 				/* Mode indicator */
 				concat(binary, "1000");
-				
+
 				/* Character count indicator */
 				qr_bscan(binary, short_data_block_length, 0x20 << (scheme*2)); /* scheme = 1..3 */
 				
 				if(debug) { printf("Kanji block (length %d)\n\t", short_data_block_length); }
-				
+
 				/* Character representation */
 				for(i = 0; i < short_data_block_length; i++) {
 					int jis = jisdata[position + i];
 					int msb, lsb, prod;
-					
+
 					if(jis > 0x9fff) { jis -= 0xc140; }
 					msb = (jis & 0xff00) >> 4;
 					lsb = (jis & 0xff);
@@ -233,24 +233,24 @@ void qr_binary(int datastream[], int version, int target_binlen, char mode[], in
 					
 					if(debug) { printf("0x%4X ", prod); }
 				}
-				
+
 				if(debug) { printf("\n"); }
-				
+
 				break;
 			case 'B':
 				/* Byte mode */
 				/* Mode indicator */
 				concat(binary, "0100");
-				
+
 				/* Character count indicator */
 				qr_bscan(binary, short_data_block_length, scheme > 1 ? 0x8000 : 0x80); /* scheme = 1..3 */
 				
 				if(debug) { printf("Byte block (length %d)\n\t", short_data_block_length); }
-				
+
 				/* Character representation */
 				for(i = 0; i < short_data_block_length; i++) {
 					int byte = jisdata[position + i];
-					
+
 					if(gs1 && (byte == '[')) {
 						byte = 0x1d; /* FNC1 */
 					}
@@ -259,26 +259,26 @@ void qr_binary(int datastream[], int version, int target_binlen, char mode[], in
 					
 					if(debug) { printf("0x%2X(%d) ", byte, byte); }
 				}
-				
+
 				if(debug) { printf("\n"); }
-				
+
 				break;
 			case 'A':
 				/* Alphanumeric mode */
 				/* Mode indicator */
 				concat(binary, "0010");
-				
+
 				/* Character count indicator */
 				qr_bscan(binary, short_data_block_length, 0x40 << (2 * scheme)); /* scheme = 1..3 */
 				
 				if(debug) { printf("Alpha block (length %d)\n\t", short_data_block_length); }
-				
+
 				/* Character representation */
-				i = 0; 
+				i = 0;
 				while ( i < short_data_block_length ) {
 					int count;
 					int first = 0, second = 0, prod;
-			
+
 					if(percent == 0) {
 						if(gs1 && (jisdata[position + i] == '%')) {
 							first = posn(RHODIUM, '%');
@@ -295,7 +295,7 @@ void qr_binary(int datastream[], int version, int target_binlen, char mode[], in
 							count = 1;
 							i++;
 							prod = first;
-						
+
 							if(mode[position + i] == 'A') {
 								if(gs1 && (jisdata[position + i] == '%')) {
 									second = posn(RHODIUM, '%');
@@ -320,7 +320,7 @@ void qr_binary(int datastream[], int version, int target_binlen, char mode[], in
 						i++;
 						prod = first;
 						percent = 0;
-						
+
 						if(mode[position + i] == 'A') {
 							if(gs1 && (jisdata[position + i] == '%')) {
 								second = posn(RHODIUM, '%');
@@ -344,35 +344,35 @@ void qr_binary(int datastream[], int version, int target_binlen, char mode[], in
 					
 					if(debug) { printf("0x%4X ", prod); }
 				};
-				
+
 				if(debug) { printf("\n"); }
-				
+
 				break;
 			case 'N':
 				/* Numeric mode */
 				/* Mode indicator */
 				concat(binary, "0001");
-				
+
 				/* Character count indicator */
 				qr_bscan(binary, short_data_block_length, 0x80 << (2 * scheme)); /* scheme = 1..3 */
 				
 				if(debug) { printf("Number block (length %d)\n\t", short_data_block_length); }
-				
+
 								/* Character representation */
-				i = 0; 
+				i = 0;
 				while ( i < short_data_block_length ) {
 					int count;
 					int first = 0, second = 0, third = 0, prod;
-					
+
 					first = posn(NEON, (char) jisdata[position + i]);
 					count = 1;
 					prod = first;
-					
+
 					if(mode[position + i + 1] == 'N') {
 						second = posn(NEON, (char) jisdata[position + i + 1]);
 						count = 2;
 						prod = (prod * 10) + second;
-						
+
 						if(mode[position + i + 2] == 'N') {
 							third = posn(NEON, (char) jisdata[position + i + 2]);
 							count = 3;
@@ -383,18 +383,18 @@ void qr_binary(int datastream[], int version, int target_binlen, char mode[], in
 					qr_bscan(binary, prod, 1 << (3 * count)); /* count = 1..3 */
 					
 					if(debug) { printf("0x%4X (%d)", prod, prod); }
-					
+
 					i += count;
 				};
-				
+
 				if(debug) { printf("\n"); }
-				
+
 				break;
 		}
-		
+
 		position += short_data_block_length;
 	} while (position < length) ;
-	
+
 	/* Terminator */
 	concat(binary, "0000");
 
@@ -402,7 +402,7 @@ void qr_binary(int datastream[], int version, int target_binlen, char mode[], in
 	padbits = 8 - (current_binlen % 8);
 	if(padbits == 8) { padbits = 0; }
 	current_bytes = (current_binlen + padbits) / 8;
-	
+
 	/* Padding bits */
 	for(i = 0; i < padbits; i++) {
 		concat(binary, "0");
@@ -420,7 +420,7 @@ void qr_binary(int datastream[], int version, int target_binlen, char mode[], in
 		if(binary[i * 8 + 6] == '1') { datastream[i] += 0x02; }
 		if(binary[i * 8 + 7] == '1') { datastream[i] += 0x01; }
 	}
-	
+
 	/* Add pad codewords */
 	toggle = 0;
 	for(i = current_bytes; i < target_binlen; i++) {
@@ -466,23 +466,23 @@ void add_ecc(int fullstream[], int datastream[], int version, int data_cw, int b
 #endif
 
 	posn = 0;
-	
+
 	for(i = 0; i < blocks; i++) {
 		if(i < qty_short_blocks) { length_this_block = short_data_block_length; } else { length_this_block = short_data_block_length + 1; }
-		
+
 		for(j = 0; j < ecc_block_length; j++) {
 			ecc_block[j] = 0;
 		}
-		
+
 		for(j = 0; j < length_this_block; j++) {
 			data_block[j] = (unsigned char) datastream[posn + j];
 		}
-		
+
 		rs_init_gf(0x11d);
 		rs_init_code(ecc_block_length, 0);
 		rs_encode(length_this_block, data_block, ecc_block);
 		rs_free();
-		
+
 		if(debug) {
 			printf("Block %d: ", i + 1);
 			for(j = 0; j < length_this_block; j++) {
@@ -497,29 +497,29 @@ void add_ecc(int fullstream[], int datastream[], int version, int data_cw, int b
 			}
 			printf("\n");
 		}
-		
+
 		for(j = 0; j < short_data_block_length; j++) {
 			interleaved_data[(j * blocks) + i] = (int) data_block[j];
 		}
-		
+
 		if(i >= qty_short_blocks){
 			interleaved_data[(short_data_block_length * blocks) + (i - qty_short_blocks)] = (int) data_block[short_data_block_length];
 		}
-		
+
 		for(j = 0; j < ecc_block_length; j++) {
 			interleaved_ecc[(j * blocks) + i] = (int) ecc_block[ecc_block_length - j - 1];
 		}
-		
+
 		posn += length_this_block;
 	}
-	
+
 	for(j = 0; j < data_cw; j++) {
 		fullstream[j] = interleaved_data[j];
 	}
 	for(j = 0; j < ecc_cw; j++) {
 		fullstream[j + data_cw] = interleaved_ecc[j];
 	}
-	
+
 	if(debug) {
 		printf("\nData Stream: \n");
 		for(j = 0; j < (data_cw + ecc_cw); j++) {
@@ -532,7 +532,7 @@ void add_ecc(int fullstream[], int datastream[], int version, int data_cw, int b
 void place_finder(unsigned char grid[], int size, int x, int y)
 {
 	int xp, yp;
-	
+
 	int finder[] = {
 		1, 1, 1, 1, 1, 1, 1,
 		1, 0, 0, 0, 0, 0, 1,
@@ -542,7 +542,7 @@ void place_finder(unsigned char grid[], int size, int x, int y)
 		1, 0, 0, 0, 0, 0, 1,
 		1, 1, 1, 1, 1, 1, 1
 	};
-	
+
 	for(xp = 0; xp < 7; xp++) {
 		for(yp = 0; yp < 7; yp++) {
 			if (finder[xp + (7 * yp)] == 1) {
@@ -557,7 +557,7 @@ void place_finder(unsigned char grid[], int size, int x, int y)
 void place_align(unsigned char grid[], int size, int x, int y)
 {
 	int xp, yp;
-	
+
 	int alignment[] = {
 		1, 1, 1, 1, 1,
 		1, 0, 0, 0, 1,
@@ -565,10 +565,10 @@ void place_align(unsigned char grid[], int size, int x, int y)
 		1, 0, 0, 0, 1,
 		1, 1, 1, 1, 1
 	};
-	
+
 	x -= 2;
 	y -= 2; /* Input values represent centre of pattern */
-	
+
 	for(xp = 0; xp < 5; xp++) {
 		for(yp = 0; yp < 5; yp++) {
 			if (alignment[xp + (5 * yp)] == 1) {
@@ -597,12 +597,12 @@ void setup_grid(unsigned char* grid, int size, int version)
 			toggle = 1;
 		}
 	}
-	
+
 	/* Add finder patterns */
 	place_finder(grid, size, 0, 0);
 	place_finder(grid, size, 0, size - 7);
 	place_finder(grid, size, size - 7, 0);
-	
+
 	/* Add separators */
 	for(i = 0; i < 7; i++) {
 		grid[(7 * size) + i] = 0x10;
@@ -615,24 +615,24 @@ void setup_grid(unsigned char* grid, int size, int version)
 	grid[(7 * size) + 7] = 0x10;
 	grid[(7 * size) + (size - 8)] = 0x10;
 	grid[((size - 8) * size) + 7] = 0x10;
-	
+
 	/* Add alignment patterns */
 	if(version != 1) {
 		/* Version 1 does not have alignment patterns */
-		
+
 		loopsize = qr_align_loopsize[version - 1];
 		for(x = 0; x < loopsize; x++) {
 			for(y = 0; y < loopsize; y++) {
 				xcoord = qr_table_e1[((version - 2) * 7) + x];
 				ycoord = qr_table_e1[((version - 2) * 7) + y];
-				
+
 				if(!(grid[(ycoord * size) + xcoord] & 0x10)) {
 					place_align(grid, size, xcoord, ycoord);
 				}
 			}
 		}
 	}
-	
+
 	/* Reserve space for format information */
 	for(i = 0; i < 8; i++) {
 		grid[(8 * size) + i] += 0x20;
@@ -642,7 +642,7 @@ void setup_grid(unsigned char* grid, int size, int version)
 	}
 	grid[(8 * size) + 8] += 20;
 	grid[((size - 1 - 7) * size) + 8] = 0x21; /* Dark Module from Figure 25 */
-	
+
 	/* Reserve space for version information */
 	if(version >= 7) {
 		for(i = 0; i < 6; i++) {
@@ -679,9 +679,9 @@ void populate_grid(unsigned char* grid, int size, int* datastream, int cw)
 {
 	int direction = 1; /* up */
 	int row = 0; /* right hand side */
-	
+
 	int i, n, x, y;
-	
+
 	n = cw * 8;
 	y = size - 1;
 	i = 0;
@@ -698,7 +698,7 @@ void populate_grid(unsigned char* grid, int size, int* datastream, int cw)
 			}
 			i++;
 		}
-		
+
 		if(i < n) {
 			if(!(grid[(y * size) + x] & 0xf0)) {
 				if (cwbit(datastream, i)) {
@@ -709,7 +709,7 @@ void populate_grid(unsigned char* grid, int size, int* datastream, int cw)
 				i++;
 			}
 		}
-		
+
 		if(direction) { y--; } else { y++; }
 		if(y == -1) {
 			/* reached the top */
@@ -755,7 +755,7 @@ int evaluate(unsigned char *grid, int size, int pattern)
 			}
 		}
 	}
-	
+
 	/* Test 1: Adjacent modules in row/column in same colour */
 	/* Vertical */
 	for(x = 0; x < size; x++) {
@@ -776,7 +776,7 @@ int evaluate(unsigned char *grid, int size, int pattern)
 			result += (3 + block);
 		}
 	}
-	
+
 	/* Horizontal */
 	for(y = 0; y < size; y++) {
 		state = local[y * size];
@@ -796,9 +796,9 @@ int evaluate(unsigned char *grid, int size, int pattern)
 			result += (3 + block);
 		}
 	}
-	
+
 	/* Test 2 is not implimented */
-	
+
 	/* Test 3: 1:1:3:1:1 ratio pattern in row/column */
 	/* Vertical */
 	for(x = 0; x < size; x++) {
@@ -816,7 +816,7 @@ int evaluate(unsigned char *grid, int size, int pattern)
 			}
 		}
 	}
-	
+
 	/* Horizontal */
 	for(y = 0; y < size; y++) {
 		for(x = 0; x < (size - 7); x++) {
@@ -833,7 +833,7 @@ int evaluate(unsigned char *grid, int size, int pattern)
 			}
 		}
 	}
-	
+
 	/* Test 4: Proportion of dark modules in entire symbol */
 	dark_mods = 0;
 	for(x = 0; x < size; x++) {
@@ -849,9 +849,9 @@ int evaluate(unsigned char *grid, int size, int pattern)
 	} else {
 		k = (percentage - 50) / 5;
 	}
-	
+
 	result += 10 * k;
-	
+
 	return result;
 }
 
@@ -876,7 +876,7 @@ int apply_bitmask(unsigned char *grid, int size)
 	for(x = 0; x < size; x++) {
 		for(y = 0; y < size; y++) {
 			mask[(y * size) + x] = 0x00;
-			
+
 			if (!(grid[(y * size) + x] & 0xf0)) {
 				if(((y + x) & 1) == 0) { mask[(y * size) + x] += 0x01; }
 				if((y & 1) == 0) { mask[(y * size) + x] += 0x02; }
@@ -889,21 +889,21 @@ int apply_bitmask(unsigned char *grid, int size)
 			}
 		}
 	}
-	
+
 	for(x = 0; x < size; x++) {
 		for(y = 0; y < size; y++) {
 			if(grid[(y * size) + x] & 0x01) { p = 0xff; } else { p = 0x00; }
-			
+
 			eval[(y * size) + x] = mask[(y * size) + x] ^ p;
 		}
 	}
-	
-	
+
+
 	/* Evaluate result */
 	for(pattern = 0; pattern < 8; pattern++) {
 		penalty[pattern] = evaluate(eval, size, pattern);
 	}
-	
+
 	best_pattern = 0;
 	best_val = penalty[0];
 	for(pattern = 1; pattern < 8; pattern++) {
@@ -912,7 +912,7 @@ int apply_bitmask(unsigned char *grid, int size)
 			best_val = penalty[pattern];
 		}
 	}
-	
+
 	/* Apply mask */
 	for(x = 0; x < size; x++) {
 		for(y = 0; y < size; y++) {
@@ -936,18 +936,18 @@ int apply_bitmask(unsigned char *grid, int size)
 			}
 		}
 	}
-	
+
 	return best_pattern;
 }
 
 void add_format_info(unsigned char *grid, int size, int ecc_level, int pattern)
 {
 	/* Add format information to grid */
-	
+
 	int format = pattern;
 	unsigned int seq;
 	int i;
-	
+
 	switch(ecc_level) {
 		case LEVEL_L: format += 0x08; break;
 		case LEVEL_Q: format += 0x18; break;
@@ -955,23 +955,23 @@ void add_format_info(unsigned char *grid, int size, int ecc_level, int pattern)
 	}
 
 	seq = qr_annex_c[format];
-	
+
 	for(i = 0; i < 6; i++) {
 		grid[(i * size) + 8] += (seq >> i) & 0x01;
 	}
-	
+
 	for(i = 0; i < 8; i++) {
 		grid[(8 * size) + (size - i - 1)] += (seq >> i) & 0x01;
 	}
-	
+
 	for(i = 0; i < 6; i++) {
 		grid[(8 * size) + (5 - i)] += (seq >> (i + 9)) & 0x01;
 	}
-	
+
 	for(i = 0; i < 7; i++) {
 		grid[(((size - 7) + i) * size) + 8] += (seq >> (i + 8)) & 0x01;
 	}
-	
+
 	grid[(7 * size) + 8] += (seq >> 6) & 0x01;
 	grid[(8 * size) + 8] += (seq >> 7) & 0x01;
 	grid[(8 * size) + 7] += (seq >> 8) & 0x01;
@@ -981,7 +981,7 @@ void add_version_info(unsigned char *grid, int size, int version)
 {
 	/* Add version information */
 	int i;
-	
+
 	long int version_data = qr_annex_d[version - 7];
 	for(i = 0; i < 6; i++) {
 		grid[((size - 11) * size) + i] += (version_data >> (i * 3)) & 0x01;
@@ -1010,7 +1010,7 @@ int qr_code(struct zint_symbol *symbol, unsigned char source[], int length)
 #endif
 	
 	gs1 = (symbol->input_mode == GS1_MODE);
-	
+
 	switch(symbol->input_mode) {
 		case DATA_MODE:
 			for(i = 0; i < length; i++) {
@@ -1043,10 +1043,10 @@ int qr_code(struct zint_symbol *symbol, unsigned char source[], int length)
 			}
 			break;
 	}
-	
+
 	define_mode(mode, jisdata, length, gs1);
 	est_binlen = estimate_binary_length(mode, length, gs1);
-	
+
 	ecc_level = LEVEL_L;
 	max_cw = 2956;
 	if((symbol->option_1 >= 1) && (symbol->option_1 <= 4)) {
@@ -1057,12 +1057,12 @@ int qr_code(struct zint_symbol *symbol, unsigned char source[], int length)
 			case 4: ecc_level = LEVEL_H; max_cw = 1276; break;
 		}
 	}
-	
+
 	if(est_binlen > (8 * max_cw)) {
 		strcpy(symbol->errtxt, "Input too long for selected error correction level");
 		return ERROR_TOO_LONG;
 	}
-	
+
 	autosize = 40;
 	for(i = 39; i >= 0; i--) {
 		switch(ecc_level) {
@@ -1088,7 +1088,7 @@ int qr_code(struct zint_symbol *symbol, unsigned char source[], int length)
 				break;
 		}
 	}
-	
+
 	if((symbol->option_2 >= 1) && (symbol->option_2 <= 40)) {
 		if (symbol->option_2 > autosize) {
 			version = symbol->option_2;
@@ -1098,7 +1098,7 @@ int qr_code(struct zint_symbol *symbol, unsigned char source[], int length)
 	} else {
 		version = autosize;
 	}
-	
+
 	/* Ensure maxium error correction capacity */
 	if(est_binlen <= qr_data_codewords_M[version - 1]) { ecc_level = LEVEL_M; }
 	if(est_binlen <= qr_data_codewords_Q[version - 1]) { ecc_level = LEVEL_Q; }
@@ -1121,7 +1121,7 @@ int qr_code(struct zint_symbol *symbol, unsigned char source[], int length)
 
 	qr_binary(datastream, version, target_binlen, mode, jisdata, length, gs1, est_binlen);
 	add_ecc(fullstream, datastream, version, target_binlen, blocks);
-	
+
 	size = qr_sizes[version - 1];
 #ifndef _MSC_VER
 	unsigned char grid[size * size];
@@ -1134,7 +1134,7 @@ int qr_code(struct zint_symbol *symbol, unsigned char source[], int length)
 			grid[(i * size) + j] = 0;
 		}
 	}
-	
+
 	setup_grid(grid, size, version);
 	populate_grid(grid, size, fullstream, qr_total_codewords[version - 1]);
 	bitmask = apply_bitmask(grid, size);
@@ -1142,7 +1142,7 @@ int qr_code(struct zint_symbol *symbol, unsigned char source[], int length)
 	if(version >= 7) {
 		add_version_info(grid, size, version);
 	}
-	
+
 	symbol->width = size;
 	symbol->rows = size;
 	
@@ -1154,7 +1154,7 @@ int qr_code(struct zint_symbol *symbol, unsigned char source[], int length)
 		}
 		symbol->row_height[i] = 1;
 	}
-	
+
 	return 0;
 }
 
@@ -1168,7 +1168,7 @@ int micro_qr_intermediate(char binary[], int jisdata[], char mode[], int length,
 	int short_data_block_length, i;
 	char data_block;
 	char buffer[2];
-	
+
 	strcpy(binary, "");
 	
 	if(debug) { 
@@ -1177,37 +1177,37 @@ int micro_qr_intermediate(char binary[], int jisdata[], char mode[], int length,
 		}
 		printf("\n");
 	}
-	
+
 	do {
 		if(strlen(binary) > 128) {
 			return ERROR_TOO_LONG;
 		}
-		
+
 		data_block = mode[position];
 		short_data_block_length = 0;
 		do {
 			short_data_block_length++;
 		} while (((short_data_block_length + position) < length) && (mode[position + short_data_block_length] == data_block));
-		
+
 		switch(data_block) {
 			case 'K':
 				/* Kanji mode */
 				/* Mode indicator */
 				concat(binary, "K");
 				*kanji_used = 1;
-				
+
 				/* Character count indicator */
 				buffer[0] = short_data_block_length;
 				buffer[1] = '\0';
 				concat(binary, buffer);
-				
+
 				if(debug) { printf("Kanji block (length %d)\n\t", short_data_block_length); }
-				
+
 				/* Character representation */
 				for(i = 0; i < short_data_block_length; i++) {
 					int jis = jisdata[position + i];
 					int msb, lsb, prod;
-					
+
 					if(jis > 0x9fff) { jis -= 0xc140; }
 					msb = (jis & 0xff00) >> 4;
 					lsb = (jis & 0xff);
@@ -1216,28 +1216,28 @@ int micro_qr_intermediate(char binary[], int jisdata[], char mode[], int length,
 					qr_bscan(binary, prod, 0x1000);
 					
 					if(debug) { printf("0x%4X ", prod); }
-					
+
 					if(strlen(binary) > 128) {
 						return ERROR_TOO_LONG;
 					}
 				}
-				
+
 				if(debug) { printf("\n"); }
-				
+
 				break;
 			case 'B':
 				/* Byte mode */
 				/* Mode indicator */
 				concat(binary, "B");
 				*byte_used = 1;
-				
+
 				/* Character count indicator */
 				buffer[0] = short_data_block_length;
 				buffer[1] = '\0';
 				concat(binary, buffer);
-				
+
 				if(debug) { printf("Byte block (length %d)\n\t", short_data_block_length); }
-				
+
 				/* Character representation */
 				for(i = 0; i < short_data_block_length; i++) {
 					int byte = jisdata[position + i];
@@ -1245,38 +1245,38 @@ int micro_qr_intermediate(char binary[], int jisdata[], char mode[], int length,
 					qr_bscan(binary, byte, 0x80);
 					
 					if(debug) { printf("0x%4X ", byte); }
-					
+
 					if(strlen(binary) > 128) {
 						return ERROR_TOO_LONG;
 					}
 				}
-				
+
 				if(debug) { printf("\n"); }
-				
+
 				break;
 			case 'A':
 				/* Alphanumeric mode */
 				/* Mode indicator */
 				concat(binary, "A");
 				*alphanum_used = 1;
-				
+
 				/* Character count indicator */
 				buffer[0] = short_data_block_length;
 				buffer[1] = '\0';
 				concat(binary, buffer);
-				
+
 				if(debug) { printf("Alpha block (length %d)\n\t", short_data_block_length); }
-				
+
 				/* Character representation */
 				i = 0; 
 				while ( i < short_data_block_length ) {
 					int count;
 					int first = 0, second = 0, prod;
-					
+
 					first = posn(RHODIUM, (char) jisdata[position + i]);
 					count = 1;
 					prod = first;
-					
+
 					if(mode[position + i + 1] == 'A') {
 						second = posn(RHODIUM, (char) jisdata[position + i + 1]);
 						count = 2;
@@ -1286,45 +1286,45 @@ int micro_qr_intermediate(char binary[], int jisdata[], char mode[], int length,
 					qr_bscan(binary, prod, 1 << (5 * count)); /* count = 1..2 */
 					
 					if(debug) { printf("0x%4X ", prod); }
-					
+
 					if(strlen(binary) > 128) {
 						return ERROR_TOO_LONG;
 					}
-					
+
 					i += 2;
 				};
-				
+
 				if(debug) { printf("\n"); }
-				
+
 				break;
 			case 'N':
 				/* Numeric mode */
 				/* Mode indicator */
 				concat(binary, "N");
-				
+
 				/* Character count indicator */
 				buffer[0] = short_data_block_length;
 				buffer[1] = '\0';
 				concat(binary, buffer);
-				
+
 				if(debug) { printf("Number block (length %d)\n\t", short_data_block_length); }
-				
+
 				/* Character representation */
-				i = 0; 
+				i = 0;
 				while ( i < short_data_block_length ) {
 					int count;
 					int first = 0, second = 0, third = 0, prod;
-					
+
 					first = posn(NEON, (char) jisdata[position + i]);
 					count = 1;
 					prod = first;
-					
+
 					if(mode[position + i + 1] == 'N') {
 						second = posn(NEON, (char) jisdata[position + i + 1]);
 						count = 2;
 						prod = (prod * 10) + second;
 					}
-					
+
 					if(mode[position + i + 2] == 'N') {
 						third = posn(NEON, (char) jisdata[position + i + 2]);
 						count = 3;

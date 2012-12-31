@@ -170,16 +170,16 @@ int code16k(struct zint_symbol *symbol, unsigned char source[], int length)
 	errornum = 0;
         strcpy(width_pattern, "");
         input_length = length;
-	
+
 	if(symbol->input_mode == GS1_MODE) { gs1 = 1; } else { gs1 = 0; }
-	
+
 	if(input_length > 157) {
 		strcpy(symbol->errtxt, "Input too long");
 		return ERROR_TOO_LONG;
 	}
 
 	bar_characters = 0;
-	
+
 	/* Detect extended ASCII characters */
 	for(i = 0; i <  input_length; i++) {
 		if(source[i] >=128) {
@@ -187,7 +187,7 @@ int code16k(struct zint_symbol *symbol, unsigned char source[], int length)
 		}
 	}
 	fset[i] = '\0';
-	
+
 	/* Decide when to latch to extended mode */
 	for(i = 0; i < input_length; i++) {
 		j = 0;
@@ -202,7 +202,7 @@ int code16k(struct zint_symbol *symbol, unsigned char source[], int length)
 			}
 		}
 	}
-	
+
 	/* Decide if it is worth reverting to 646 encodation for a few characters */
 	if(input_length > 1) {
 		for(i = 1; i < input_length; i++) {
@@ -221,14 +221,14 @@ int code16k(struct zint_symbol *symbol, unsigned char source[], int length)
 	/* Detect mode A, B and C characters */
 	indexliste = 0;
 	indexchaine = 0;
-	
+
 	mode = parunmodd(source[indexchaine]);
 	if((gs1) && (source[indexchaine] == '[')) { mode = ABORC; } /* FNC1 */
-	
+
 	for(i = 0; i < 160; i++) {
 		list[0][i] = 0;
 	}
-	
+
 	do {
 		list[1][indexliste] = mode;
 		while ((list[1][indexliste] == mode) && (indexchaine < input_length)) {
@@ -239,9 +239,9 @@ int code16k(struct zint_symbol *symbol, unsigned char source[], int length)
 		}
 		indexliste++;
 	} while (indexchaine < input_length);
-	
+
 	dxsmooth16(&indexliste);
-	
+
 	/* Put set data into set[] */
 	read = 0;
 	for(i = 0; i < indexliste; i++) {
@@ -256,7 +256,7 @@ int code16k(struct zint_symbol *symbol, unsigned char source[], int length)
 			read++;
 		}
 	}
-	
+
 	/* Adjust for strings which start with shift characters - make them latch instead */
 	if(set[0] == 'a') {
 		i = 0;
@@ -265,7 +265,7 @@ int code16k(struct zint_symbol *symbol, unsigned char source[], int length)
 			i++;
 		} while (set[i] == 'a');
 	}
-	
+
 	if(set[0] == 'b') {
 		i = 0;
 		do {
@@ -273,7 +273,7 @@ int code16k(struct zint_symbol *symbol, unsigned char source[], int length)
 			i++;
 		} while (set[i] == 'b');
 	}
-	
+
 	/* Watch out for odd-length Mode C blocks */
 	c_count = 0;
 	for(i = 0; i < read; i++) {
@@ -313,7 +313,7 @@ int code16k(struct zint_symbol *symbol, unsigned char source[], int length)
 			set[i] = 'B';
 		}
 	}
-	
+
 	/* Make sure the data will fit in the symbol */
 	last_set = ' ';
 	glyph_count = 0.0;
@@ -350,34 +350,34 @@ int code16k(struct zint_symbol *symbol, unsigned char source[], int length)
 				glyph_count = glyph_count + 2.0;
 			}
 		}
-		
+
 		if((set[i] == 'C') && (!((gs1) && (source[i] == '[')))) {
 			glyph_count = glyph_count + 0.5;
 		} else {
 			glyph_count = glyph_count + 1.0;
 		}
 	}
-	
+
 	if((gs1) && (set[0] != 'A')) {
 		/* FNC1 can be integrated with mode character */
 		glyph_count--;
 	}
-	
+
 	if(glyph_count > 77.0) {
 		strcpy(symbol->errtxt, "Input too long");
 		return ERROR_TOO_LONG;
 	}
-	
+
 	/* Calculate how tall the symbol will be */
 	glyph_count = glyph_count + 2.0;
 	i = glyph_count;
 	rows_needed = (i/5);
 	if(i%5 > 0) { rows_needed++; }
-	
+
 	if(rows_needed == 1) {
 		rows_needed = 2;
 	}
-	
+
 	/* start with the mode character - Table 2 */
 	m = 0;
 	switch(set[0]) {
@@ -385,7 +385,7 @@ int code16k(struct zint_symbol *symbol, unsigned char source[], int length)
 		case 'B': m = 1; break;
 		case 'C': m = 2; break;
 	}
-	
+
 	if(symbol->output_options & READER_INIT) {
 		if(m == 2) { m = 5; }
 		if(gs1) {
@@ -429,9 +429,9 @@ int code16k(struct zint_symbol *symbol, unsigned char source[], int length)
 		bar_characters += 2;
 		f_state = 1;
 	}
-	
+
 	read = 0;
-	
+
 	/* Encode the data */
 	do {
 
@@ -494,7 +494,7 @@ int code16k(struct zint_symbol *symbol, unsigned char source[], int length)
 				f_state = 0;
 			}
 		}
-		
+
 		if((fset[i] == 'f') || (fset[i] == 'n')) {
 			/* Shift extended mode */
 			switch(current_set) {
@@ -507,13 +507,13 @@ int code16k(struct zint_symbol *symbol, unsigned char source[], int length)
 			}
 			bar_characters++;
 		}
-		
+
 		if((set[i] == 'a') || (set[i] == 'b')) {
 			/* Insert shift character */
 			values[bar_characters] = 98;
 			bar_characters++;
 		}
-		
+
 		if(!((gs1) && (source[read] == '['))) {
 			switch(set[read])
 			{ /* Encode data characters */
@@ -538,7 +538,7 @@ int code16k(struct zint_symbol *symbol, unsigned char source[], int length)
 		}
 		/* printf("tp9 read=%d surrent set=%c\n", read, set[read]); */
 	} while (read < ustrlen(source));
-	
+
 	pads_needed = 5 - ((bar_characters + 2) % 5);
 	if(pads_needed == 5) {
 		pads_needed = 0;
@@ -550,7 +550,7 @@ int code16k(struct zint_symbol *symbol, unsigned char source[], int length)
 		values[bar_characters] = 106;
 		bar_characters++;
 	}
-	
+
 	/* Calculate check digits */
 	first_sum = 0;
 	second_sum = 0;
@@ -565,16 +565,16 @@ int code16k(struct zint_symbol *symbol, unsigned char source[], int length)
 	values[bar_characters] = first_check;
 	values[bar_characters + 1] =  second_check;
 	bar_characters += 2;
-	
+
 	for(current_row = 0; current_row < rows_needed; current_row++) {
-		
+
 		strcpy(width_pattern, "");
 		concat(width_pattern, C16KStartStop[C16KStartValues[current_row]]);
 		concat(width_pattern, "1");
 		for(i = 0; i < 5; i++) {
 			concat(width_pattern, C16KTable[values[(current_row * 5) + i]]);
 			/* printf("[%d] ", values[(current_row * 5) + i]); */
-			
+
 		}
 		concat(width_pattern, C16KStartStop[C16KStopValues[current_row]]);
 		/* printf("\n"); */
@@ -594,7 +594,7 @@ int code16k(struct zint_symbol *symbol, unsigned char source[], int length)
 		}
 		symbol->row_height[current_row] = 10;
 	}
-	
+
 	symbol->rows = rows_needed;
 	symbol->width = 70;
 	return errornum;
