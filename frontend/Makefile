@@ -15,14 +15,23 @@ CFLAGS := -g
 prefix := /usr
 bindir := $(prefix)/bin
 DESTDIR :=
+LIBS:= -lz -lm -lpng
 
-zint: main.c
-	$(CC) -Wall $(INCLUDE) $(CFLAGS) $(ZINT_VERSION) -I../backend -L../backend main.c -o zint -lzint
+all: zint zint-static
+
+main.o: main.c
+	$(CC) -c -Wall $(INCLUDE) $(CFLAGS) $(ZINT_VERSION) -I../backend main.c -o main.o
+
+zint: main.o
+	$(CC) -Wall $(INCLUDE) $(CFLAGS) $(ZINT_VERSION) -I../backend -L../backend main.o -o zint -lzint
+
+zint-static: main.c
+	$(CC) -Wall $(INCLUDE) $(CFLAGS) $(ZINT_VERSION) -I../backend main.o -o zint-static ../backend/libzint.a $(LIBS)
 
 .PHONY: install uninstall clean dist
 
 clean:
-	rm -f zint *.o *.a *~ *.png *.eps *.svg *.log
+	rm -f zint zint-static *.o *.a *~ *.png *.eps *.svg *.log
 
 install:
 	install -D -p  zint $(DESTDIR)$(bindir)/zint

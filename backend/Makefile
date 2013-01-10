@@ -26,15 +26,23 @@ POSTAL:= postal.c auspost.c imail.c
 POSTAL_OBJ:= postal.o auspost.o imail.o
 TWODIM:= code16k.c dmatrix.c pdf417.c qr.c maxicode.c composite.c aztec.c code49.c code1.c gridmtx.c
 TWODIM_OBJ:= code16k.o dmatrix.o pdf417.o qr.o maxicode.o composite.o aztec.o code49.o code1.o gridmtx.o
+OBJS:=$(COMMON_OBJ) $(ONEDIM_OBJ) $(TWODIM_OBJ) $(POSTAL_OBJ)
 LIBS:= -lz -lm -lpng
+
+all: libzint.a libzint.so
+
+libzint.a: $(OBJS)
+	$(AR) rcs libzint.a $(OBJS)
  
-libzint: code.c code128.c 2of5.c upcean.c medical.c telepen.c plessey.c postal.c auspost.c imail.c code16k.c dmatrix.c reedsol.c pdf417.c maxicode.c rss.c common.c render.c png.c library.c ps.c qr.c large.c composite.c aztec.c gs1.c svg.c code49.c code1.c gridmtx.c
-	$(CC) -Wall -fPIC $(CFLAGS) $(ZINT_VERSION) -c $(ONEDIM)
-	$(CC) -Wall -fPIC $(CFLAGS) $(ZINT_VERSION) -c $(POSTAL)
-	$(CC) -Wall -fPIC $(CFLAGS) $(ZINT_VERSION) -c $(TWODIM)
-	$(CC) -Wall -fPIC $(CFLAGS) $(ZINT_VERSION) -c $(COMMON)
-	$(CC) $(CFLAGS) $(ZINT_VERSION) -shared -Wl,-soname,libzint.so -o libzint.so.2.3.2 $(INCLUDE) $(COMMON_OBJ) $(ONEDIM_OBJ) $(TWODIM_OBJ) $(POSTAL_OBJ) $(LIBS)
+libzint.so.2.4.4: $(OBJS)
+	$(CC) $(CFLAGS) $(ZINT_VERSION) -shared -Wl,-soname,libzint.so -o libzint.so.2.4.4 $(INCLUDE) $(OBJS) $(LIBS)
+
+libzint.so: libzint.so.2.4.4
+	rm -f libzint.so
 	ln -s libzint.so.* libzint.so
+
+%.o: %.c
+	$(CC) -Wall -fPIC $(CFLAGS) $(ZINT_VERSION) -c -o $@ $<
 
 .PHONY: install uninstall clean dist
 

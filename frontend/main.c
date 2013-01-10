@@ -168,7 +168,7 @@ int escape_char_process(struct zint_symbol *my_symbol, unsigned char input_strin
 	return error_number;
 }
 
-char itoc(int source)
+static char itoc(int source)
 { /* Converts an integer value to its hexadecimal character */
 	if ((source >= 0) && (source <= 9)) {
 		return ('0' + source); }
@@ -176,7 +176,7 @@ char itoc(int source)
 		return ('A' + (source - 10)); }
 }
 
-void concat(char dest[], char source[])
+static void concat(char dest[], char source[])
 { /* Concatinates dest[] with the contents of source[], copying /0 as well */
 	unsigned int i, j, n;
 
