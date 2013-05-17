@@ -671,7 +671,7 @@ int dm200encode(struct zint_symbol *symbol, unsigned char source[], unsigned cha
 		current_mode = DM_ASCII;
 	}
 	if(c40_p == 1) {
-		target[tp] = 254; tp++; /* unlatch */
+		// don't unlatch before sending a single remaining ASCII character.
 		target[tp] = source[inputlen - 1] + 1; tp++;
 		concat(binary, "  ");
 		if(debug) printf("ASC A%02X ", target[tp - 1] - 1);
@@ -687,7 +687,7 @@ int dm200encode(struct zint_symbol *symbol, unsigned char source[], unsigned cha
 		current_mode = DM_ASCII;
 	}
 	if(text_p == 1) {
-		target[tp] = 254; tp++; /* unlatch */
+		// don't unlatch before sending a single remaining ASCII character.
 		target[tp] = source[inputlen - 1] + 1; tp++;
 		concat(binary, "  ");
 		if(debug) printf("ASC A%02X ", target[tp - 1] - 1);
@@ -703,7 +703,7 @@ int dm200encode(struct zint_symbol *symbol, unsigned char source[], unsigned cha
 		current_mode = DM_ASCII;
 	}
 	if(x12_p == 1) {
-		target[tp] = 254; tp++; /* unlatch */
+		// don't unlatch before sending a single remaining ASCII character.
 		target[tp] = source[inputlen - 1] + 1; tp++;
 		concat(binary, "  ");
 		if(debug) printf("ASC A%02X ", target[tp - 1] - 1);
