@@ -39,6 +39,7 @@
 #include "sjis.h"
 #include "qr.h"
 #include "reedsol.h"
+#include <stdlib.h>     /* abs */
 
 int in_alpha(int glyph) {
 	/* Returns true if input glyph is in the Alphanumeric set */
@@ -737,21 +738,54 @@ void populate_grid(unsigned char* grid, int size, int* datastream, int cw)
 	} while (i < n);
 }
 
+#ifdef ZINTLOG 
+int append_log(char log)
+{  
+	FILE *file;
+	
+	file = fopen("zintlog.txt", "a+");   
+	fprintf(file, "%c", log); 
+	fclose(file);   
+	return 0;
+}
+
+int write_log(char log[])
+{  
+	FILE *file;
+	
+	file = fopen("zintlog.txt", "a+");   
+	fprintf(file, log); /*writes*/
+	fprintf(file, "\r\n"); /*writes*/
+	fclose(file);   
+	return 0;
+}
+#endif
+
 int evaluate(unsigned char *grid, int size, int pattern)
-{
+{ 
 	int x, y, block;
 	int result = 0;
+	int result_b = 0;
 	char state;
 	int p;
-	int dark_mods;
-	int percentage, k;
-	
+	int dark_mods; 
+	int percentage, k, k2;
+	char str[15];
+
 #ifndef _MSC_VER
 	char local[size * size];
 #else
 	char* local = (char *)_alloca((size * size) * sizeof(char));
 #endif
 
+
+#ifdef ZINTLOG 
+	write_log("");
+	sprintf(str, "%d", pattern);
+	write_log(str);
+#endif
+
+	// all eight bitmask variants have been encoded in the 8 bits of the bytes that make up the grid array. select them for evaluation according to the desired pattern.
 	for(x = 0; x < size; x++) {
 		for(y = 0; y < size; y++) {
 			switch(pattern) {
@@ -767,25 +801,36 @@ int evaluate(unsigned char *grid, int size, int pattern)
 		}
 	}
 
+#ifdef ZINTLOG 	 
+	//bitmask output
+	for(y = 0; y < size; y++) { 
+		strcpy (str, "");
+		for(x = 0; x < size; x++) {  
+			state =local[(y * size) + x];  
+			append_log(state);
+		} 
+		write_log("");		
+	}
+	write_log("");
+#endif
+
 	/* Test 1: Adjacent modules in row/column in same colour */
-	/* Vertical */
+	/* Vertical */ 
 	for(x = 0; x < size; x++) {
 		state = local[x];
-		block = 0;
+		block = 0; 
 		for(y = 0; y < size; y++) {
 			if(local[(y * size) + x] == state) {
-				block++;
+				block++;				
+				if(block ==5)
+					result += 3;
+				
+				if(block>5)				
+					result +=1;
 			} else {
-				if(block > 5) {
-					result += (3 + block);
-				}
-				block = 0;
-				state = local[(y * size) + x];
+				block=0;
 			}
-		}
-		if(block > 5) {
-			result += (3 + block);
-		}
+		} 
 	}
 
 	/* Horizontal */
@@ -794,35 +839,68 @@ int evaluate(unsigned char *grid, int size, int pattern)
 		block = 0;
 		for(x = 0; x < size; x++) {
 			if(local[(y * size) + x] == state) {
-				block++;
+				block++;				
+				if(block ==5)
+					result += 3;
+				
+				if(block>5)				
+					result +=1;
 			} else {
-				if(block > 5) {
-					result += (3 + block);
-				}
-				block = 0;
-				state = local[(y * size) + x];
+				block=0;
 			}
-		}
-		if(block > 5) {
-			result += (3 + block);
+		} 
+	}
+	 
+#ifdef ZINTLOG 
+	/* output Test 1 */
+	sprintf(str, "%d", result);
+	result_b=result;
+	write_log(str);
+#endif
+	
+	/* Test 2 fd02131114 */
+	for(x = 0; x < size-1; x++) {
+		for(y = 0; y < (size - 7) -1; y++) {	
+			// y + 1???		
+			if((local[((y + 1) * size) + x] == '1') && 
+				(local[((y + 1) * size) + x+1] == '1') &&
+				(local[(((y + 1)+1) * size) + x] == '1') &&
+				(local[(((y + 1)+1) * size) + x+1] == '1') 
+				) { result += 3; }		 
+
+			if((local[((y + 1) * size) + x] == '0') && 
+				(local[((y + 1) * size) + x+1] == '0') &&
+				(local[(((y + 1)+1) * size) + x] == '0') &&
+				(local[(((y + 1)+1) * size) + x+1] == '0') 
+				) { result += 3; }		
 		}
 	}
 
-	/* Test 2 is not implimented */
+#ifdef ZINTLOG 
+	/* output Test 2 */
+	sprintf(str, "%d", result-result_b);
+	result_b=result;
+	write_log(str);
+#endif
 
-	/* Test 3: 1:1:3:1:1 ratio pattern in row/column */
-	/* Vertical */
+	/* Test 3: fd02131114 */ 
+	/*pattern 10111010000 */ 
+	/* Vertical */ 
 	for(x = 0; x < size; x++) {
-		for(y = 0; y < (size - 7); y++) {
+		for(y = 0; y < (size - 11); y++) {
 			p = 0;
-			if(local[(y * size) + x] == '1') { p += 0x40; }
-			if(local[((y + 1) * size) + x] == '1') { p += 0x20; }
-			if(local[((y + 2) * size) + x] == '1') { p += 0x10; }
-			if(local[((y + 3) * size) + x] == '1') { p += 0x08; }
-			if(local[((y + 4) * size) + x] == '1') { p += 0x04; }
-			if(local[((y + 5) * size) + x] == '1') { p += 0x02; }
-			if(local[((y + 6) * size) + x] == '1') { p += 0x01; }
-			if(p == 0x5d) {
+			if(local[(y * size) + x] == '1') { p += 1; }
+			if(local[((y + 1) * size) + x] == '0') { p += 1; }
+			if(local[((y + 2) * size) + x] == '1') { p += 1; }
+			if(local[((y + 3) * size) + x] == '1') { p += 1; }
+			if(local[((y + 4) * size) + x] == '1') { p += 1; }
+			if(local[((y + 5) * size) + x] == '0') { p += 1; }
+			if(local[((y + 6) * size) + x] == '1') { p += 1; }
+			if(local[((y + 7) * size) + x] == '0') { p += 1; }
+			if(local[((y + 8) * size) + x] == '0') { p += 1; }
+			if(local[((y + 9) * size) + x] == '0') { p += 1; }
+			if(local[((y + 10) * size) + x] == '0') { p += 1; } 		
+			if(p == 11) {
 				result += 40;
 			}
 		}
@@ -830,44 +908,151 @@ int evaluate(unsigned char *grid, int size, int pattern)
 
 	/* Horizontal */
 	for(y = 0; y < size; y++) {
-		for(x = 0; x < (size - 7); x++) {
+		for(x = 0; x < (size - 11); x++) {
 			p = 0;
-			if(local[(y * size) + x] == '1') { p += 0x40; }
-			if(local[(y * size) + x + 1] == '1') { p += 0x20; }
-			if(local[(y * size) + x + 2] == '1') { p += 0x10; }
-			if(local[(y * size) + x + 3] == '1') { p += 0x08; }
-			if(local[(y * size) + x + 4] == '1') { p += 0x04; }
-			if(local[(y * size) + x + 5] == '1') { p += 0x02; }
-			if(local[(y * size) + x + 6] == '1') { p += 0x01; }
-			if(p == 0x5d) {
+			if(local[(y * size) + x] == '1') { p += 1; }
+			if(local[(y * size) + x + 1] == '0') { p += 1; }
+			if(local[(y * size) + x + 2] == '1') { p += 1; }
+			if(local[(y * size) + x + 3] == '1') { p += 1; }
+			if(local[(y * size) + x + 4] == '1') { p += 1; }
+			if(local[(y * size) + x + 5] == '0') { p += 1; }
+			if(local[(y * size) + x + 6] == '1') { p += 1; }
+			if(local[(y * size) + x + 7] == '0') { p += 1; }
+			if(local[(y * size) + x + 8] == '0') { p += 1; }
+			if(local[(y * size) + x + 9] == '0') { p += 1; }
+			if(local[(y * size) + x + 10] == '0') { p += 1; }
+			if(p == 11) {
 				result += 40;
 			}
 		}
 	}
 
+	/*pattern 00001011101 */ 
+	/* Vertical */ 
+	for(x = 0; x < size; x++) {
+		for(y = 0; y < (size - 11); y++) {
+			p = 0;
+			if(local[(y * size) + x] == '0') { p += 1; }
+			if(local[((y + 1) * size) + x] == '0') { p += 1; }
+			if(local[((y + 2) * size) + x] == '0') { p += 1; }
+			if(local[((y + 3) * size) + x] == '0') { p += 1; }
+			if(local[((y + 4) * size) + x] == '1') { p += 1; }
+			if(local[((y + 5) * size) + x] == '0') { p += 1; }
+			if(local[((y + 6) * size) + x] == '1') { p += 1; }
+			if(local[((y + 7) * size) + x] == '1') { p += 1; }
+			if(local[((y + 8) * size) + x] == '1') { p += 1; }
+			if(local[((y + 9) * size) + x] == '0') { p += 1; }
+			if(local[((y + 10) * size) + x] == '1') { p += 1; } 		
+			if(p == 11) {
+				result += 40;
+			}
+		}
+	}
+
+	/* Horizontal */
+	for(y = 0; y < size; y++) {
+		for(x = 0; x < (size - 11); x++) {
+			p = 0;
+			if(local[(y * size) + x] == '0') { p += 1; }
+			if(local[(y * size) + x + 1] == '0') { p += 1; }
+			if(local[(y * size) + x + 2] == '0') { p += 1; }
+			if(local[(y * size) + x + 3] == '0') { p += 1; }
+			if(local[(y * size) + x + 4] == '1') { p += 1; }
+			if(local[(y * size) + x + 5] == '0') { p += 1; }
+			if(local[(y * size) + x + 6] == '1') { p += 1; }
+			if(local[(y * size) + x + 7] == '1') { p += 1; }
+			if(local[(y * size) + x + 8] == '1') { p += 1; }
+			if(local[(y * size) + x + 9] == '0') { p += 1; }
+			if(local[(y * size) + x + 10] == '1') { p += 1; }
+			if(p == 11) {
+				result += 40;
+			}
+		}
+	} 
+
+#ifdef ZINTLOG 
+	/* output Test 3 */
+	sprintf(str, "%d", result-result_b);
+	result_b=result;
+	write_log(str);
+#endif
+
 	/* Test 4: Proportion of dark modules in entire symbol */
-	dark_mods = 0;
+	dark_mods = 0; 
 	for(x = 0; x < size; x++) {
 		for(y = 0; y < size; y++) {
 			if(local[(y * size) + x] == '1') {
 				dark_mods++;
-			}
+			} 
 		}
 	}
-	percentage = 100 * (dark_mods / (size * size));
-	if(percentage <= 50) {
-		k = ((100 - percentage) - 50) / 5;
-	} else {
-		k = (percentage - 50) / 5;
+	percentage = 100 * (dark_mods / (size * size));   
+	int m=0;
+	for(x = 0; x < 100; x+=5) {
+		if(x<percentage)
+			m=x;
 	}
 
-	result += 10 * k;
+		
+	k=abs((m-50)/5);
+	k2=abs((m+5-50)/5);
+
+	int smallest=k;
+	if(k2<smallest)
+		smallest=k2;
+	 
+	result += 10 * smallest;
+
+#ifdef ZINTLOG 
+	/* output Test 4+summary */
+	sprintf(str, "%d", result-result_b); 
+	write_log(str); 
+	write_log("==========");
+	sprintf(str, "%d", result); 
+	write_log(str);
+#endif 
 
 	return result;
 }
 
+void add_format_info_eval(unsigned char *eval, int size, int ecc_level, int pattern)
+{
+	/* Add format information to grid */
 
-int apply_bitmask(unsigned char *grid, int size)
+	int format = pattern;
+	unsigned int seq;
+	int i;
+
+	switch(ecc_level) {
+		case LEVEL_L: format += 0x08; break;
+		case LEVEL_Q: format += 0x18; break;
+		case LEVEL_H: format += 0x10; break;
+	}
+
+	seq = qr_annex_c[format];
+	
+	for(i = 0; i < 6; i++) {
+		eval[(i * size) + 8] = (seq >> i) & 0x01 ? (0x01 >> pattern) : 0x00;
+	}
+
+	for(i = 0; i < 8; i++) {
+		eval[(8 * size) + (size - i - 1)] = (seq >> i) & 0x01 ? (0x01 >> pattern) : 0x00;
+	}
+
+	for(i = 0; i < 6; i++) {
+		eval[(8 * size) + (5 - i)] = (seq >> (i + 9)) & 0x01 ? (0x01 >> pattern) : 0x00;
+	}
+
+	for(i = 0; i < 7; i++) {
+		eval[(((size - 7) + i) * size) + 8] = (seq >> (i + 8)) & 0x01 ? (0x01 >> pattern) : 0x00;
+	}
+
+	eval[(7 * size) + 8] = (seq >> 6) & 0x01 ? (0x01 >> pattern) : 0x00;
+	eval[(8 * size) + 8] = (seq >> 7) & 0x01 ? (0x01 >> pattern) : 0x00;
+	eval[(8 * size) + 7] = (seq >> 8) & 0x01 ? (0x01 >> pattern) : 0x00;
+}
+
+int apply_bitmask(unsigned char *grid, int size, int ecc_level)
 {
 	int x, y;
 	unsigned char p;
@@ -887,8 +1072,9 @@ int apply_bitmask(unsigned char *grid, int size)
 	for(x = 0; x < size; x++) {
 		for(y = 0; y < size; y++) {
 			mask[(y * size) + x] = 0x00;
-
-			if (!(grid[(y * size) + x] & 0xf0)) {
+			
+			// all eight bitmask variants are encoded in the 8 bits of the bytes that make up the mask array. 
+			if (!(grid[(y * size) + x] & 0xf0)) { // exclude areas not to be masked.
 				if(((y + x) & 1) == 0) { mask[(y * size) + x] += 0x01; }
 				if((y & 1) == 0) { mask[(y * size) + x] += 0x02; }
 				if((x % 3) == 0) { mask[(y * size) + x] += 0x04; }
@@ -901,9 +1087,12 @@ int apply_bitmask(unsigned char *grid, int size)
 		}
 	}
 
+	// apply data masks to grid, result in eval
 	for(x = 0; x < size; x++) {
 		for(y = 0; y < size; y++) {
-			if(grid[(y * size) + x] & 0x01) { p = 0xff; } else { p = 0x00; }
+			if(grid[(y * size) + x] & 0x01) 
+			{ p = 0xff; } 
+			else { p = 0x00; }
 
 			eval[(y * size) + x] = mask[(y * size) + x] ^ p;
 		}
@@ -912,6 +1101,9 @@ int apply_bitmask(unsigned char *grid, int size)
 
 	/* Evaluate result */
 	for(pattern = 0; pattern < 8; pattern++) {
+	
+	    add_format_info_eval(eval, size, ecc_level, pattern);
+	
 		penalty[pattern] = evaluate(eval, size, pattern);
 	}
 
@@ -923,6 +1115,13 @@ int apply_bitmask(unsigned char *grid, int size)
 			best_val = penalty[pattern];
 		}
 	}
+
+#ifdef ZINTLOG 
+	char str[15];
+	sprintf(str, "%d", best_val);
+	write_log("choosed pattern:");
+	write_log(str);
+#endif
 
 	/* Apply mask */
 	for(x = 0; x < size; x++) {
@@ -995,12 +1194,12 @@ void add_version_info(unsigned char *grid, int size, int version)
 
 	long int version_data = qr_annex_d[version - 7];
 	for(i = 0; i < 6; i++) {
-		grid[((size - 11) * size) + i] += (version_data >> (i * 3)) & 0x01;
-		grid[((size - 10) * size) + i] += (version_data >> ((i * 3) + 1)) & 0x01;
-		grid[((size - 9) * size) + i] += (version_data >> ((i * 3) + 2)) & 0x01;
-		grid[(i * size) + (size - 11)] += (version_data >> (i * 3)) & 0x01;
-		grid[(i * size) + (size - 10)] += (version_data >> ((i * 3) + 1)) & 0x01;
-		grid[(i * size) + (size - 9)] += (version_data >> ((i * 3) + 2)) & 0x01;
+		grid[((size - 11) * size) + i] += (version_data >> (i * 3)) & 0x41;
+		grid[((size - 10) * size) + i] += (version_data >> ((i * 3) + 1)) & 0x41;
+		grid[((size - 9) * size) + i] += (version_data >> ((i * 3) + 2)) & 0x41;
+		grid[(i * size) + (size - 11)] += (version_data >> (i * 3)) & 0x41;
+		grid[(i * size) + (size - 10)] += (version_data >> ((i * 3) + 1)) & 0x41;
+		grid[(i * size) + (size - 9)] += (version_data >> ((i * 3) + 2)) & 0x41;
 	}
 }
 
@@ -1148,11 +1347,16 @@ int qr_code(struct zint_symbol *symbol, unsigned char source[], int length)
 
 	setup_grid(grid, size, version);
 	populate_grid(grid, size, fullstream, qr_total_codewords[version - 1]);
-	bitmask = apply_bitmask(grid, size);
-	add_format_info(grid, size, ecc_level, bitmask);
+
 	if(version >= 7) {
 		add_version_info(grid, size, version);
 	}
+	
+	bitmask = apply_bitmask(grid, size, ecc_level);
+
+	add_format_info(grid, size, ecc_level, bitmask);
+	
+	
 
 	symbol->width = size;
 	symbol->rows = size;
