@@ -988,6 +988,7 @@ int general_rules(char field[], char type[])
 
 		if(current == ALPHA_OR_ISO) {
 			block[1][i] = ALPHA;
+			current = ALPHA;
 		}
 
 		if((current == ALPHA) && (i != (block_count - 1))) {
@@ -1848,7 +1849,7 @@ int rssexpanded(struct zint_symbol *symbol, uint8_t source[], int src_len)
 	int char_widths[21][8], checksum, check_widths[8], c_group;
 	int check_char, c_odd, c_even, elements[235], pattern_width, reader, writer;
 	int row, elements_in_sub, special_case_row, left_to_right;
-	int codeblocks, sub_elements[235], stack_rows, current_row, current_block;
+	int codeblocks, sub_elements[235], stack_rows, current_row, current_block, current_block_size;
 	int separator_row;
 	char reduced[src_len], binary_string[7 * src_len];
 
@@ -1962,7 +1963,8 @@ int rssexpanded(struct zint_symbol *symbol, uint8_t source[], int src_len)
 	check_widths[7] = widths[3];
 
 	/* Initialise element array */
-	pattern_width = ((((data_chars + 1) / 2) + ((data_chars + 1) & 1)) * 5) + ((data_chars + 1) * 8) + 4;
+	codeblocks = (data_chars + 2) / 2;
+	pattern_width = (codeblocks * 5) + ((data_chars + 1) * 8) + 4;
 	for(i = 0; i < pattern_width; i++) {
 		elements[i] = 0;
 	}
@@ -1973,8 +1975,8 @@ int rssexpanded(struct zint_symbol *symbol, uint8_t source[], int src_len)
 	elements[pattern_width - 1] = 1;
 
 	/* Put finder patterns in element array */
-	for(i = 0; i < (((data_chars + 1) / 2) + ((data_chars + 1) & 1)); i++) {
-		k = ((((((data_chars + 1) - 2) / 2) + ((data_chars + 1) & 1)) - 1) * 11) + i;
+	for(i = 0; i < codeblocks; i++) {
+		k = ((codeblocks - 2) * 11) + i;
 		for(j = 0; j < 5; j++) {
 			elements[(21 * i) + j + 10] = finder_pattern_exp[((finder_sequence[k] - 1) * 5) + j];
 		}
@@ -2054,7 +2056,7 @@ int rssexpanded(struct zint_symbol *symbol, uint8_t source[], int src_len)
 	} else {
 		/* RSS Expanded Stacked */
 
-		codeblocks = (data_chars + 1) / 2;
+		codeblocks = (data_chars + 2) / 2;
 
 		if((symbol->option_2 < 1) || (symbol->option_2 > 10)) {
 			symbol->option_2 = 2;
@@ -2092,7 +2094,10 @@ int rssexpanded(struct zint_symbol *symbol, uint8_t source[], int src_len)
 					/* left to right */
 					left_to_right = 1;
 					i = 2 + (current_block * 21);
-					for(j = 0; j < 21; j++) {
+					/* Last block may be just finder + data character */
+					current_block_size = (current_block == codeblocks - 1 && !(data_chars & 1)) ? 13 : 21;
+
+					for(j = 0; j < current_block_size; j++) {
 						sub_elements[j + (reader * 21) + 2] = elements[i + j];
 						elements_in_sub++;
 					}
@@ -2101,18 +2106,23 @@ int rssexpanded(struct zint_symbol *symbol, uint8_t source[], int src_len)
 					left_to_right = 0;
 					if((current_row * symbol->option_2) < codeblocks) {
 						/* a full row */
+						current_block_size = 21;
 						i = 2 + (((current_row * symbol->option_2) - reader - 1) * 21);
-						for(j = 0; j < 21; j++) {
+						for(j = 0; j < current_block_size; j++) {
 							sub_elements[(20 - j) + (reader * 21) + 2] = elements[i + j];
 							elements_in_sub++;
 						}
 					} else {
 						/* a partial row */
+						/* Last block (first on row) may be just finder + data character */
+						current_block_size = (reader == 0 && !(data_chars & 1)) ? 13 : 21;
+
 						k = ((current_row * symbol->option_2) - codeblocks);
 						l = (current_row * symbol->option_2) - reader - 1;
 						i = 2 + ((l - k) * 21);
-						for(j = 0; j < 21; j++) {
-							sub_elements[(20 - j) + (reader * 21) + 2] = elements[i + j];
+						for(j = 0; j < current_block_size; j++) {
+							k = (data_chars & 1) ? 0 : 8; /* Correction if even number of data chars */
+							sub_elements[(20 - j) + (reader * 21) + 2 - k] = elements[i + j];
 							elements_in_sub++;
 						}
 					}
@@ -2128,8 +2138,9 @@ int rssexpanded(struct zint_symbol *symbol, uint8_t source[], int src_len)
 
 			latch = current_row & 1 ? '0' : '1';
 
-			if ((current_row == stack_rows) && (codeblocks != (current_row * symbol->option_2)) &&
-				(((current_row * symbol->option_2) - codeblocks) & 1) ) {
+			if ((current_row == stack_rows) && (codeblocks < (current_row * symbol->option_2)) &&
+				!(symbol->option_2 & 1) &&
+				((codeblocks - ((current_row - 1) * symbol->option_2)) & 1)) {
 				/* Special case bottom row */
 				special_case_row = 1;
 				sub_elements[0] = 2;
