@@ -201,7 +201,8 @@ void error_tag(char error_string[], int error_number)
 int dump_plot(struct zint_symbol *symbol)
 {
 	FILE *f;
-	int i, r;
+	int i, r, hexout, done;
+	char hexchar[2];
 
 	if(symbol->output_options & BARCODE_STDOUT) {
 		f = stdout;
@@ -213,15 +214,70 @@ int dump_plot(struct zint_symbol *symbol)
 		}
 	}
 
-	fputs("[\n", f);
-	for (r = 0; r < symbol->rows; r++) {
-		fputs(" [ ", f);
-		for (i = 0; i < symbol->width; i++) {
-			fputs(module_is_set(symbol, r, i) ? "1 " : "0 ", f);
+	done = 0;
+	
+	if(symbol->symbology == BARCODE_PHARMA_TWO) {
+		for(i = 0; i < symbol->width; i++) {
+			if(module_is_set(symbol, 0, i)) { hexchar[0] = 'U'; }
+			if(module_is_set(symbol, 1, i)) { hexchar[0] = 'L'; }
+			if((module_is_set(symbol, 0, i)) && (module_is_set(symbol, 1, i))) { hexchar[0] = 'B'; }
+			hexchar[1] = '\0';
+			fputs(hexchar, f);
 		}
-		fputs("]\n", f);
+		fputs("\n", f);
+		done = 1;
 	}
-	fputs("]\n", f);
+	
+	if((symbol->symbology == BARCODE_POSTNET) || (symbol->symbology == BARCODE_PLANET)) {
+		for(i = 0; i < symbol->width; i++) {
+			if(module_is_set(symbol, 1, i)) {
+				if(module_is_set(symbol, 0, i)) {
+					hexchar[0] = 'L';
+				} else {
+					hexchar[0] = 'S';
+				}
+				hexchar[1] = '\0';
+				fputs(hexchar, f);
+			}
+		}
+		fputs("\n", f);
+		done = 1;
+	}
+	
+	if (((( (symbol->symbology == BARCODE_AUSPOST)      || (symbol->symbology == BARCODE_AUSROUTE) )   ||
+		 ( (symbol->symbology == BARCODE_AUSREDIRECT)  || (symbol->symbology == BARCODE_AUSREPLY)  ))  ||
+		 ( (symbol->symbology == BARCODE_KIX)          || (symbol->symbology == BARCODE_KOREAPOST) ))  ||
+	     (( (symbol->symbology == BARCODE_RM4SCC)       || (symbol->symbology == BARCODE_ONECODE)   )   ||
+		 ( (symbol->symbology == BARCODE_JAPANPOST)    || (symbol->symbology == BARCODE_DAFT)      ))) {
+		for(i = 0; i < symbol->width; i++) {
+			if(module_is_set(symbol, 1, i)) {
+				hexchar[0] = 'T';
+				if(module_is_set(symbol, 0, i)) { hexchar[0] = 'A'; }
+				if(module_is_set(symbol, 2, i)) { hexchar[0] = 'D'; }
+				if(module_is_set(symbol, 0, i) && module_is_set(symbol, 2, i)) { hexchar[0] = 'F'; }
+				hexchar[1] = '\0';
+				fputs(hexchar, f);
+			}
+		}
+		fputs("\n", f);
+		done = 1;
+	}		
+	
+	if (done == 0) {
+		for (r = 0; r < symbol->rows; r++) {
+			for (i = 0; i < symbol->width; i += 4) {
+				hexout = 0;
+				if(module_is_set(symbol, r, i)) { hexout += 0x08; }
+				if(module_is_set(symbol, r, i + 1)) { hexout += 0x04; }
+				if(module_is_set(symbol, r, i + 2)) { hexout += 0x02; }
+				if(module_is_set(symbol, r, i + 3)) { hexout += 0x01; }
+				hexchar[0] = itoc(hexout);
+				hexchar[1] = '\0';
+				fputs(hexchar, f);
+			}
+			fputs("\n", f);
+		}
+	}
 
 	if(symbol->output_options & BARCODE_STDOUT) {
 		fflush(f);
