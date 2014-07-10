@@ -41,10 +41,10 @@
 #define CANDB 98
 #define CANDBB 99
 
-int list[2][170];
+static int list[2][170];
 
 /* EN 12323 Table 1 - "Code 16K" character encodations */
-const char *C16KTable[107] = {"212222", "222122", "222221", "121223", "121322", "131222", "122213",
+static const char *C16KTable[107] = {"212222", "222122", "222221", "121223", "121322", "131222", "122213",
 	"122312", "132212", "221213", "221312", "231212", "112232", "122132", "122231", "113222",
 	"123122", "123221", "223211", "221132", "221231", "213212", "223112", "312131", "311222",
 	"321122", "321221", "312212", "322112", "322211", "212123", "212321", "232121", "111323",
@@ -59,13 +59,13 @@ const char *C16KTable[107] = {"212222", "222122", "222221", "121223", "121322", 
 	"211133"};
 
 /* EN 12323 Table 3 and Table 4 - Start patterns and stop patterns */
-const char *C16KStartStop[8] = {"3211", "2221", "2122", "1411", "1132", "1231", "1114", "3112"};
+static const char *C16KStartStop[8] = {"3211", "2221", "2122", "1411", "1132", "1231", "1114", "3112"};
 
 /* EN 12323 Table 5 - Start and stop values defining row numbers */
-const int C16KStartValues[16] = {0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7};
-const int C16KStopValues[16] = {0, 1, 2, 3, 4, 5, 6, 7, 4, 5, 6, 7, 0, 1, 2, 3};
+static const int C16KStartValues[16] = {0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7};
+static const int C16KStopValues[16] = {0, 1, 2, 3, 4, 5, 6, 7, 4, 5, 6, 7, 0, 1, 2, 3};
 
-void grwp16(int *indexliste)
+static void grwp16(int *indexliste)
 {
 	/* bring together same type blocks */
 	if(*(indexliste) > 1) {
@@ -86,7 +86,7 @@ void grwp16(int *indexliste)
 	}
 }
 
-void dxsmooth16(int *indexliste)
+static void dxsmooth16(int *indexliste)
 { /* Implements rules from ISO 15417 Annex E */
 	int current, last, next, length;
 
@@ -159,7 +159,7 @@ void dxsmooth16(int *indexliste)
 	grwp16(indexliste);
 }
 
-void c16k_set_a(uint8_t source, unsigned int values[], unsigned int *bar_chars)
+static void c16k_set_a(uint8_t source, unsigned int values[], unsigned int *bar_chars)
 {
 	source &= 127; /* limit the range to 0-127 */
 	if(source < 32)
@@ -169,13 +169,13 @@ void c16k_set_a(uint8_t source, unsigned int values[], unsigned int *bar_chars)
 	values[(*bar_chars)++] = source;
 }
 
-void c16k_set_b(uint8_t source, unsigned int values[], unsigned int *bar_chars)
+static void c16k_set_b(uint8_t source, unsigned int values[], unsigned int *bar_chars)
 {
 	source &= 127; /* limit the range to 0-127 */
 	values[(*bar_chars)++] = source - 32;
 }
 
-void c16k_set_c(uint8_t source_a, uint8_t source_b, unsigned int values[], unsigned int *bar_chars)
+static void c16k_set_c(uint8_t source_a, uint8_t source_b, unsigned int values[], unsigned int *bar_chars)
 {
 	int weight;
 

@@ -34,7 +34,7 @@ void die(const char *s)
 	exit(1);
 }
 
-const char help_types[] =
+static const char help_types[] =
 	" 1: Code 11           51: Pharma One-Track         90: KIX Code\n"
 	" 2: Standard 2of5     52: PZN                      92: Aztec Code\n"
 	" 3: Interleaved 2of5  53: Pharma Two-Track         93: DAFT Code\n"
@@ -64,15 +64,15 @@ const char help_types[] =
 	"49: FIM               87: Telepen Numeric\n"
 	"50: Logmars           89: ITF-14\n";
 
-const char help_usage[] =
+static const char help_usage[] =
 	"Zint version " ZINT_VERSION "\n"
 	"Encode input data in a barcode and save as a PNG, EPS or SVG file.\n"
 	"\n"
 	"  -h, --help            Display this message.\n"
 	"  -t, --types           Display table of barcode types\n"
-	"  -i, --input=FILE      Read data from FILE.\n"
+	"  -i, --input=FILE      Read data from FILE. Should be the last argument.\n"
 	"  -o, --output=FILE     Write image to FILE. (default is out.png)\n"
-	"  -d, --data=DATA       Barcode content.\n"
+	"  -d, --data=DATA       Barcode content. Should be the last argument.\n"
 	"  -b, --barcode=NUMBER  Number of barcode type (default is 20 (=Code128)).\n"
 	"  --height=NUMBER       Height of symbol in multiples of x-dimension.\n"
 	"  -w, --whitesp=NUMBER  Width of whitespace in multiples of x-dimension.\n"
@@ -101,7 +101,7 @@ const char help_usage[] =
 	"  --smalltext           Use half-size text in PNG images\n"
 	"  --batch               Treat each line of input as a separate data set\n";
 
-int validator(char test_string[], char source[])
+static int validator(char test_string[], char source[])
 { /* Verifies that a string only uses valid characters */
 	unsigned int i, j, latch;
 
@@ -116,7 +116,7 @@ int validator(char test_string[], char source[])
 	return 0;
 }
 
-int escape_char_process(struct zint_symbol *my_symbol, uint8_t input_string[], int length)
+static int escape_char_process(struct zint_symbol *my_symbol, uint8_t input_string[], int length)
 {
 	int error_number;
 	int i, j;
@@ -156,7 +156,7 @@ int escape_char_process(struct zint_symbol *my_symbol, uint8_t input_string[], i
 	return error_number;
 }
 
-char itoc(int source)
+static char itoc(int source)
 { /* Converts an integer value to its hexadecimal character */
 	if ((source >= 0) && (source <= 9)) {
 		return ('0' + source); }
@@ -164,7 +164,7 @@ char itoc(int source)
 		return ('A' + (source - 10)); }
 }
 
-void concat(char dest[], const char source[])
+static void concat(char dest[], const char source[])
 { /* Concatinates dest[] with the contents of source[], copying /0 as well */
 	unsigned int i, j, n;
 
@@ -174,7 +174,7 @@ void concat(char dest[], const char source[])
 		dest[i + j] = source[i];
 }
 
-int batch_process(struct zint_symbol *symbol, char *filename)
+static int batch_process(struct zint_symbol *symbol, char *filename)
 {
 	FILE *file;
 	uint8_t buffer[7100];

@@ -190,7 +190,7 @@ static void ecc200(uint8_t *binary, int bytes, int datablock, int rsblock, int s
 	rs_free();
 }
 
-int isx12(uint8_t source)
+static int isx12(uint8_t source)
 {
 	if(source == 13) { return 1; }
 	if(source == 42) { return 1; }
@@ -202,7 +202,7 @@ int isx12(uint8_t source)
 	return 0;
 }
 
-void dminsert(char binary_string[], int posn, char newbit)
+static void dminsert(char binary_string[], int posn, char newbit)
 { /* Insert a character into the middle of a string at position posn */
 	int i, end;
 
@@ -213,7 +213,7 @@ void dminsert(char binary_string[], int posn, char newbit)
 	binary_string[posn] = newbit;
 }
 
-void insert_value(uint8_t binary_stream[], int posn, int streamlen, char newbit)
+static void insert_value(uint8_t binary_stream[], int posn, int streamlen, char newbit)
 {
 	int i;
 
@@ -223,7 +223,7 @@ void insert_value(uint8_t binary_stream[], int posn, int streamlen, char newbit)
 	binary_stream[posn] = newbit;
 }
 
-int look_ahead_test(uint8_t source[], int sourcelen, int position, int current_mode, int gs1)
+static int look_ahead_test(uint8_t source[], int sourcelen, int position, int current_mode, int gs1)
 {
 	/* A custom version of the 'look ahead test' from Annex P */
 	/* This version is deliberately very reluctant to end a data stream with EDIFACT encoding */
@@ -324,7 +324,7 @@ int look_ahead_test(uint8_t source[], int sourcelen, int position, int current_m
 	return best_scheme;
 }
 
-int dm200encode(struct zint_symbol *symbol, uint8_t source[], uint8_t target[], int *last_mode, int length)
+static int dm200encode(struct zint_symbol *symbol, uint8_t source[], uint8_t target[], int *last_mode, int length)
 {
 	/* Encodes data using ASCII, C40, Text, X12, EDIFACT or Base 256 modes as appropriate */
 	/* Supports encoding FNC1 in supporting systems */
@@ -738,7 +738,7 @@ int dm200encode(struct zint_symbol *symbol, uint8_t source[], uint8_t target[], 
 	return tp;
 }
 
-void add_tail(uint8_t target[], int tp, int tail_length, int last_mode)
+static void add_tail(uint8_t target[], int tp, int tail_length, int last_mode)
 {
 	/* adds unlatch and pad bits */
 	int i, prn, temp;

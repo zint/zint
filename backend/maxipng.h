@@ -25,7 +25,7 @@
 
 #define SSET	"0123456789ABCDEF"
 
-const int hexagon[120] = {
+static const int hexagon[120] = {
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 1, 1, 1, 0, 0, 0,
 	0, 0, 0, 1, 1, 1, 1, 1, 0, 0,
@@ -40,7 +40,7 @@ const int hexagon[120] = {
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
-const unsigned int bullseye_compressed[] = {
+static const unsigned int bullseye_compressed[] = {
 	0,0,0,0,0,255,248,0,0,0,0,0,
 	0,0,0,0,31,255,255,192,0,0,0,0,
 	0,0,0,1,255,255,255,252,0,0,0,0,

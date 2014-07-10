@@ -55,4 +55,4 @@ extern const char *RAPLR[53];
 /* Centre Row Address Pattern from Table 2 */
 extern const char *RAPC[53];
 
-void byteprocess(int *chainemc, int *mclength, uint8_t chaine[], int start, int length, int block);
+extern void byteprocess(int *chainemc, int *mclength, uint8_t chaine[], int start, int length, int block);

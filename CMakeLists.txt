@@ -13,19 +13,25 @@ set (ZINT_VERSION_MINOR 4)
 set (ZINT_VERSION_RELEASE 2)
 set (ZINT_VERSION "${ZINT_VERSION_MAJOR}.${ZINT_VERSION_MINOR}.${ZINT_VERSION_RELEASE}" )
 
-add_definitions (-DZINT_VERSION=\"${ZINT_VERSION}\" -Wall)
+add_definitions (-DZINT_VERSION=\"${ZINT_VERSION}\")
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules" )
 
 include (SetPaths.cmake)
 
 INCLUDE (CheckCXXCompilerFlag)
+INCLUDE (CheckCCompilerFlag)
 
 if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_GNUCC)
     check_cxx_compiler_flag("-Wall" CXX_COMPILER_FLAG_WALL)
     if (CXX_COMPILER_FLAG_WALL)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
     endif (CXX_COMPILER_FLAG_WALL)
+
+    check_c_compiler_flag("-Wall" C_COMPILER_FLAG_WALL)
+    if (C_COMPILER_FLAG_WALL)
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
+    endif (C_COMPILER_FLAG_WALL)
 
     SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
 endif (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_GNUCC)

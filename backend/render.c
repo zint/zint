@@ -33,14 +33,14 @@
 
 #define   GL_CONST  2.8346
 
-struct zint_render_line *render_plot_create_line(float x, float y, float width, float length);
-int render_plot_add_line(struct zint_symbol *symbol, struct zint_render_line *line, struct zint_render_line **last_line);
-struct zint_render_ring *render_plot_create_ring(float x, float y, float radius, float line_width);
-int render_plot_add_ring(struct zint_symbol *symbol, struct zint_render_ring *ring, struct zint_render_ring **last_ring);
-struct zint_render_hexagon *render_plot_create_hexagon(float x, float y);
-int render_plot_add_hexagon(struct zint_symbol *symbol, struct zint_render_hexagon *ring, struct zint_render_hexagon **last_hexagon);
+static struct zint_render_line *render_plot_create_line(float x, float y, float width, float length);
+static int render_plot_add_line(struct zint_symbol *symbol, struct zint_render_line *line, struct zint_render_line **last_line);
+static struct zint_render_ring *render_plot_create_ring(float x, float y, float radius, float line_width);
+static int render_plot_add_ring(struct zint_symbol *symbol, struct zint_render_ring *ring, struct zint_render_ring **last_ring);
+static struct zint_render_hexagon *render_plot_create_hexagon(float x, float y);
+static int render_plot_add_hexagon(struct zint_symbol *symbol, struct zint_render_hexagon *ring, struct zint_render_hexagon **last_hexagon);
 
-int render_plot_add_string(struct zint_symbol *symbol, uint8_t *text, float x, float y, float fsize, float width, struct zint_render_string **last_string);
+static int render_plot_add_string(struct zint_symbol *symbol, uint8_t *text, float x, float y, float fsize, float width, struct zint_render_string **last_string);
 
 int render_plot(struct zint_symbol *symbol, float width, float height)
 {
@@ -664,7 +664,7 @@ int render_plot(struct zint_symbol *symbol, float width, float height)
  *
  * This is much quicker than writing out each line manually (in some cases!)
  */
-struct zint_render_line *render_plot_create_line(float x, float y, float width, float length)
+static struct zint_render_line *render_plot_create_line(float x, float y, float width, float length)
 {
 	struct zint_render_line *line;
 
@@ -682,7 +682,7 @@ struct zint_render_line *render_plot_create_line(float x, float y, float width, 
  * Add the line to the current rendering and update the last line's
  * next value.
  */
-int render_plot_add_line(struct zint_symbol *symbol, struct zint_render_line *line, struct zint_render_line **last_line)
+static int render_plot_add_line(struct zint_symbol *symbol, struct zint_render_line *line, struct zint_render_line **last_line)
 {
 	if (*last_line)
 		(*last_line)->next = line;
@@ -693,7 +693,7 @@ int render_plot_add_line(struct zint_symbol *symbol, struct zint_render_line *li
 	return 1;
 }
 
-struct zint_render_ring *render_plot_create_ring(float x, float y, float radius, float line_width)
+static struct zint_render_ring *render_plot_create_ring(float x, float y, float radius, float line_width)
 {
 	struct zint_render_ring *ring;
 
@@ -707,7 +707,7 @@ struct zint_render_ring *render_plot_create_ring(float x, float y, float radius,
 	return ring;
 }
 
-int render_plot_add_ring(struct zint_symbol *symbol, struct zint_render_ring *ring, struct zint_render_ring **last_ring)
+static int render_plot_add_ring(struct zint_symbol *symbol, struct zint_render_ring *ring, struct zint_render_ring **last_ring)
 {
 	if (*last_ring)
 		(*last_ring)->next = ring;
@@ -718,7 +718,7 @@ int render_plot_add_ring(struct zint_symbol *symbol, struct zint_render_ring *ri
 	return 1;
 }
 
-struct zint_render_hexagon *render_plot_create_hexagon(float x, float y)
+static struct zint_render_hexagon *render_plot_create_hexagon(float x, float y)
 {
 	struct zint_render_hexagon *hexagon;
 
@@ -730,7 +730,7 @@ struct zint_render_hexagon *render_plot_create_hexagon(float x, float y)
 	return hexagon;
 }
 
-int render_plot_add_hexagon(struct zint_symbol *symbol, struct zint_render_hexagon *hexagon, struct zint_render_hexagon **last_hexagon)
+static int render_plot_add_hexagon(struct zint_symbol *symbol, struct zint_render_hexagon *hexagon, struct zint_render_hexagon **last_hexagon)
 {
 	if (*last_hexagon)
 		(*last_hexagon)->next = hexagon;
@@ -745,7 +745,7 @@ int render_plot_add_hexagon(struct zint_symbol *symbol, struct zint_render_hexag
  * Add a string structure to the symbol.
  * Coordinates assumed to be from top-center.
  */
-int render_plot_add_string(struct zint_symbol *symbol,
+static int render_plot_add_string(struct zint_symbol *symbol,
 		uint8_t *text, float x, float y, float fsize, float width,
 		struct zint_render_string **last_string)
 {

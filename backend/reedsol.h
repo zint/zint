@@ -31,8 +31,8 @@ extern "C"
 
 extern void rs_init_gf(int poly);
 extern void rs_init_code(int nsym, int index);
-extern void rs_encode(int len, uint8_t *data, uint8_t *res);
-extern void rs_encode_long(int len, unsigned int *data, unsigned int *res);
+extern void rs_encode(int len, const uint8_t *data, uint8_t *res);
+extern void rs_encode_long(int len, const unsigned int *data, unsigned int *res);
 extern void rs_free(void);
 
 #ifdef __cplusplus

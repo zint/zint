@@ -29,7 +29,7 @@ extern int c39(struct zint_symbol *symbol, uint8_t source[], int length);
 
 #define CALCIUM	"0123456789-$:/.+ABCD"
 
-const char *CodaTable[20] = {"11111221", "11112211", "11121121", "22111111", "11211211", "21111211",
+static const char *CodaTable[20] = {"11111221", "11112211", "11121121", "22111111", "11211211", "21111211",
 	"12111121", "12112111", "12211111", "21121111", "11122111", "11221111", "21112121", "21211121",
 	"21212111", "11212121", "11221211", "12121121", "11121221", "11122211"};
 
@@ -98,7 +98,7 @@ int pharma_one(struct zint_symbol *symbol, uint8_t source[], int length)
 	return error_number;
 }
 
-int pharma_two_calc(struct zint_symbol *symbol, uint8_t source[], char dest[])
+static int pharma_two_calc(struct zint_symbol *symbol, uint8_t source[], char dest[])
 {
 	/* This code uses the Two Track Pharamacode defined in the document at
 	   http://www.laetus.com/laetus.php?request=file&id=69 and using a modified

@@ -18,7 +18,7 @@
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 
-const unsigned long int gb2312_lookup[] = {
+static const unsigned long int gb2312_lookup[] = {
 	0x00A4, 0xA1E8,
 	0x00A7, 0xA1EC,
 	0x00A8, 0xA1A7,

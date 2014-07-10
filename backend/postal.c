@@ -31,31 +31,33 @@
 #define SHKASUTSET "1234567890-ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 /* PostNet number encoding table - In this table L is long as S is short */
-const char *PNTable[10] = {"LLSSS", "SSSLL", "SSLSL", "SSLLS", "SLSSL", "SLSLS", "SLLSS", "LSSSL",
+static const char *PNTable[10] = {"LLSSS", "SSSLL", "SSLSL", "SSLLS", "SLSSL", "SLSLS", "SLLSS", "LSSSL",
 	"LSSLS", "LSLSS"};
-const char *PLTable[10] = {"SSLLL", "LLLSS", "LLSLS", "LLSSL", "LSLLS", "LSLSL", "LSSLL", "SLLLS",
+static const char *PLTable[10] = {"SSLLL", "LLLSS", "LLSLS", "LLSSL", "LSLLS", "LSLSL", "LSSLL", "SLLLS",
 	"SLLSL", "SLSLL"};
 
-const char *RoyalValues[36] = {"11", "12", "13", "14", "15", "10", "21", "22", "23", "24", "25",
+#if 0 /* unused */
+static const char *RoyalValues[36] = {"11", "12", "13", "14", "15", "10", "21", "22", "23", "24", "25",
 	"20", "31", "32", "33", "34", "35", "30", "41", "42", "43", "44", "45", "40", "51", "52",
 	"53", "54", "55", "50", "01", "02", "03", "04", "05", "00"};
+#endif
 
 /* 0 = Full, 1 = Ascender, 2 = Descender, 3 = Tracker */
-const char *RoyalTable[36] = {"3300", "3210", "3201", "2310", "2301", "2211", "3120", "3030", "3021",
+static const char *RoyalTable[36] = {"3300", "3210", "3201", "2310", "2301", "2211", "3120", "3030", "3021",
 	"2130", "2121", "2031", "3102", "3012", "3003", "2112", "2103", "2013", "1320", "1230",
 	"1221", "0330", "0321", "0231", "1302", "1212", "1203", "0312", "0303", "0213", "1122",
 	"1032", "1023", "0132", "0123", "0033"};
 
-const char *FlatTable[10] = {"0504", "18", "0117", "0216", "0315", "0414", "0513", "0612", "0711",
+static const char *FlatTable[10] = {"0504", "18", "0117", "0216", "0315", "0414", "0513", "0612", "0711",
 	"0810"};
 
-const char *KoreaTable[10] = {"1313150613", "0713131313", "0417131313", "1506131313",
+static const char *KoreaTable[10] = {"1313150613", "0713131313", "0417131313", "1506131313",
 	"0413171313", "17171313", "1315061313", "0413131713", "17131713", "13171713"};
 
-const char *JapanTable[19] = {"114", "132", "312", "123", "141", "321", "213", "231", "411", "144",
+static const char *JapanTable[19] = {"114", "132", "312", "123", "141", "321", "213", "231", "411", "144",
 	"414", "324", "342", "234", "432", "243", "423", "441", "111"};
 
-int postnet(struct zint_symbol *symbol, uint8_t source[], char dest[], int length)
+static int postnet(struct zint_symbol *symbol, uint8_t source[], char dest[], int length)
 {
 	/* Handles the PostNet system used for Zip codes in the US */
 	unsigned int i, sum, check_digit;
@@ -126,7 +128,7 @@ int post_plot(struct zint_symbol *symbol, uint8_t source[], int length)
 	return error_number;
 }
 
-int planet(struct zint_symbol *symbol, uint8_t source[], char dest[], int length)
+static int planet(struct zint_symbol *symbol, uint8_t source[], char dest[], int length)
 {
 	/* Handles the PLANET  system used for item tracking in the US */
 	unsigned int i, sum, check_digit;
@@ -273,6 +275,7 @@ int fim(struct zint_symbol *symbol, uint8_t source[], int length)
 	return 0;
 }
 
+#if 0 /* unused */
 char rm4scc(char source[], uint8_t dest[], int length)
 {
 	/* Handles the 4 State barcodes used in the UK by Royal Mail */
@@ -306,6 +309,7 @@ char rm4scc(char source[], uint8_t dest[], int length)
 
 	return set_copy[check_digit];
 }
+#endif
 
 int royal_plot(struct zint_symbol *symbol, uint8_t source[], int length)
 {
@@ -385,7 +389,7 @@ int kix_code(struct zint_symbol *symbol, uint8_t source[], int length)
 	strcpy(localstr, (char *)source);
 
 	/* Encode data */
-	for (i = 0; i < 18; i++) {
+	for (i = 0; (i < 18) && (localstr[i] != '\0'); i++) {
 		lookup(KRSET, RoyalTable, localstr[i], height_pattern);
 	}
 

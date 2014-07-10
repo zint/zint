@@ -28,7 +28,7 @@
 
 #define EUROPIUM	"0123456789ABCDEFGHIJKLMOPRSTUVWXYZabcdefghijklmnopqrstuvwxyz "
 
-const char shift_set[] = {
+static const char shift_set[] = {
 	/* From Table 7 - Encoding of control characters */
 	0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, /* NULL -> SI */
 	0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f, /* DLE -> US */
@@ -36,10 +36,10 @@ const char shift_set[] = {
 	';', '<', '=', '>', '?', '@', '[', '\\', ']', '^', '_', '`', '{', '|', '}', '~'
 };
 
-const int gm_recommend_cw[] = { 9, 30, 59, 114, 170, 237, 315, 405, 506, 618, 741, 875, 1021 };
-const int gm_max_cw[] = { 11, 40, 79, 146, 218, 305, 405, 521, 650, 794, 953, 1125, 1313 };
+static const int gm_recommend_cw[] = { 9, 30, 59, 114, 170, 237, 315, 405, 506, 618, 741, 875, 1021 };
+static const int gm_max_cw[] = { 11, 40, 79, 146, 218, 305, 405, 521, 650, 794, 953, 1125, 1313 };
 
-const int gm_data_codewords[] = {
+static const int gm_data_codewords[] = {
 	0, 15, 13, 11, 9,
 	45, 40, 35, 30, 25,
 	89, 79, 69, 59, 49,
@@ -55,11 +55,11 @@ const int gm_data_codewords[] = {
 	1313, 1167, 1021, 875, 729
 };
 
-const int gm_n1[] = { 18, 50, 98, 81, 121, 113, 113, 116, 121, 126, 118, 125, 122 };
-const int gm_b1[] = { 1, 1, 1, 2, 2, 2, 2, 3, 2, 7, 5, 10, 6 };
-const int gm_b2[] = { 0, 0, 0, 0, 0, 1, 2, 2, 4, 0, 4, 0, 6 };
+static const int gm_n1[] = { 18, 50, 98, 81, 121, 113, 113, 116, 121, 126, 118, 125, 122 };
+static const int gm_b1[] = { 1, 1, 1, 2, 2, 2, 2, 3, 2, 7, 5, 10, 6 };
+static const int gm_b2[] = { 0, 0, 0, 0, 0, 1, 2, 2, 4, 0, 4, 0, 6 };
 
-const int gm_ebeb[] = { 
+static const int gm_ebeb[] = { 
 	/* E1 B3 E2 B4 */
 	0, 0, 0, 0, // version 1
 	3, 1, 0, 0,
@@ -128,7 +128,7 @@ const int gm_ebeb[] = {
 	61, 9, 60, 3
 };
 
-const int gm_macro_matrix[] = {
+static const int gm_macro_matrix[] = {
 	728,625,626,627,628,629,630,631,632,633,634,635,636,637,638,639,640,641,642,643,644,645,646,647,648,649,650,
 	727,624,529,530,531,532,533,534,535,536,537,538,539,540,541,542,543,544,545,546,547,548,549,550,551,552,651,
 	726,623,528,441,442,443,444,445,446,447,448,449,450,451,452,453,454,455,456,457,458,459,460,461,462,553,652,

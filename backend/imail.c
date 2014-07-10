@@ -33,7 +33,7 @@
 
 /* The following lookup tables were generated using the code in Appendix C */
 
-const uint16_t AppxD_I[1287] = { /* Appendix D Table 1 - 5 of 13 characters */
+static const uint16_t AppxD_I[1287] = { /* Appendix D Table 1 - 5 of 13 characters */
 	0x001F, 0x1F00, 0x002F, 0x1E80, 0x0037, 0x1D80, 0x003B, 0x1B80, 0x003D, 0x1780,
 	0x003E, 0x0F80, 0x004F, 0x1E40, 0x0057, 0x1D40, 0x005B, 0x1B40, 0x005D, 0x1740,
 	0x005E, 0x0F40, 0x0067, 0x1CC0, 0x006B, 0x1AC0, 0x006D, 0x16C0, 0x006E, 0x0EC0,
@@ -164,7 +164,7 @@ const uint16_t AppxD_I[1287] = { /* Appendix D Table 1 - 5 of 13 characters */
 	0x1823, 0x1883, 0x1843, 0x1445, 0x1249, 0x1151, 0x10E1, 0x0C46, 0x0A4A, 0x0952,
 	0x08E2, 0x064C, 0x0554, 0x04E4, 0x0358, 0x02E8, 0x01F0 };
 
-const uint16_t AppxD_II[78] = { /* Appendix D Table II - 2 of 13 characters */
+static const uint16_t AppxD_II[78] = { /* Appendix D Table II - 2 of 13 characters */
 	0x0003, 0x1800, 0x0005, 0x1400, 0x0006, 0x0C00, 0x0009, 0x1200, 0x000A, 0x0A00,
 	0x000C, 0x0600, 0x0011, 0x1100, 0x0012, 0x0900, 0x0014, 0x0500, 0x0018, 0x0300,
 	0x0021, 0x1080, 0x0022, 0x0880, 0x0024, 0x0480, 0x0028, 0x0280, 0x0030, 0x0180,
@@ -174,7 +174,7 @@ const uint16_t AppxD_II[78] = { /* Appendix D Table II - 2 of 13 characters */
 	0x0201, 0x1008, 0x0202, 0x0808, 0x0204, 0x0408, 0x0401, 0x1004, 0x0402, 0x0804,
 	0x0801, 0x1002, 0x1001, 0x0802, 0x0404, 0x0208, 0x0110, 0x00A0 };
 
-const int AppxD_IV[130] = { /* Appendix D Table IV - Bar-to-Character Mapping (reverse lookup) */
+static const int AppxD_IV[130] = { /* Appendix D Table IV - Bar-to-Character Mapping (reverse lookup) */
 	67, 6, 78, 16, 86, 95, 34, 40, 45, 113, 117, 121, 62, 87, 18, 104, 41, 76, 57, 119, 115, 72, 97,
 	2, 127, 26, 105, 35, 122, 52, 114, 7, 24, 82, 68, 63, 94, 44, 77, 112, 70, 100, 39, 30, 107,
 	15, 125, 85, 10, 65, 54, 88, 20, 106, 46, 66, 8, 116, 29, 61, 99, 80, 90, 37, 123, 51, 25, 84,
@@ -193,7 +193,7 @@ const int AppxD_IV[130] = { /* Appendix D Table IV - Bar-to-Character Mapping (r
 	** Outputs:
 	**   return uint16_t - 11 bit Frame Check Sequence (right justified)
 ***************************************************************************/
-extern uint16_t
+static uint16_t
 		USPS_MSB_Math_CRC11GenerateFrameCheckSequence( uint8_t *ByteArrayPtr )
 
 {
@@ -233,7 +233,7 @@ extern uint16_t
 	return FrameCheckSequence;
 }
 
-void breakup(int16_t fcs_bit[], uint16_t usps_crc)
+static void breakup(int16_t fcs_bit[], uint16_t usps_crc)
 {
 	int i;
 

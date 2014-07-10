@@ -214,6 +214,8 @@ struct zint_symbol {
 #  else
 #    define ZINT_EXTERN extern
 #  endif
+#elif __GNUC__ >= 4
+#  define ZINT_EXTERN extern __attribute__((visibility("default")))
 #else
 #  define ZINT_EXTERN extern
 #endif

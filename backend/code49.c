@@ -187,10 +187,10 @@ int code_49(struct zint_symbol *symbol, uint8_t source[], int length)
 	}
 
 	if(M != 0) {
+		codeword_count--;
 		for(i = 0; i < codeword_count; i++) {
 			codewords[i] = codewords[i + 1];
 		}
-		codeword_count--;
 	}
 
 	if(codeword_count > 49) {

@@ -63,7 +63,7 @@ static void writepng_error_handler(png_structp png_ptr, png_const_charp msg)
     longjmp(graphic->jmpbuf, 1);
 }
 
-int png_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width, char *pixelbuf, int rotate_angle)
+static int png_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width, char *pixelbuf, int rotate_angle)
 {
 	struct mainprog_info_type wpng_info;
 	struct mainprog_info_type *graphic;
@@ -286,7 +286,7 @@ int png_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width
 }
 #endif /* NO_PNG */
 
-int bmp_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width, char *pixelbuf, int rotate_angle)
+static int bmp_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width, char *pixelbuf, int rotate_angle)
 {
 	int i, row, column, errn;
 	int fgred, fggrn, fgblu, bgred, bggrn, bgblu;
@@ -428,7 +428,7 @@ int bmp_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width
 	return 0;
 }
 
-int png_to_file(struct zint_symbol *symbol, int image_height, int image_width, char *pixelbuf, int rotate_angle, int image_type)
+static int png_to_file(struct zint_symbol *symbol, int image_height, int image_width, char *pixelbuf, int rotate_angle, int image_type)
 {
 	int error_number;
 	float scaler = symbol->scale;
@@ -471,7 +471,7 @@ int png_to_file(struct zint_symbol *symbol, int image_height, int image_width, c
 	return error_number;
 }
 
-void draw_bar(char *pixelbuf, int xpos, int xlen, int ypos, int ylen, int image_width, int image_height)
+static void draw_bar(char *pixelbuf, int xpos, int xlen, int ypos, int ylen, int image_width, int image_height)
 {
 	/* Draw a rectangle */
 	int i, j, png_ypos;
@@ -487,7 +487,7 @@ void draw_bar(char *pixelbuf, int xpos, int xlen, int ypos, int ylen, int image_
 	}
 }
 
-int bullseye_pixel(int row, int col) {
+static int bullseye_pixel(int row, int col) {
 	int block_val, block_pos, return_val;
 
 	block_val = bullseye_compressed[(row * 12) + (col / 8)];
@@ -508,7 +508,7 @@ int bullseye_pixel(int row, int col) {
 	return return_val;
 }
 
-void draw_bullseye(char *pixelbuf, int image_width, int xoffset, int yoffset)
+static void draw_bullseye(char *pixelbuf, int image_width, int xoffset, int yoffset)
 {
 	/* Central bullseye in Maxicode symbols */
 	int i, j;
@@ -523,7 +523,7 @@ void draw_bullseye(char *pixelbuf, int image_width, int xoffset, int yoffset)
 	}
 }
 
-void draw_hexagon(char *pixelbuf, int image_width, int xposn, int yposn)
+static void draw_hexagon(char *pixelbuf, int image_width, int xposn, int yposn)
 {
 	/* Put a hexagon into the pixel buffer */
 	int i, j;
@@ -537,7 +537,7 @@ void draw_hexagon(char *pixelbuf, int image_width, int xposn, int yposn)
 	}
 }
 
-void draw_letter(char *pixelbuf, uint8_t letter, int xposn, int yposn, int smalltext, int image_width, int image_height)
+static void draw_letter(char *pixelbuf, uint8_t letter, int xposn, int yposn, int smalltext, int image_width, int image_height)
 {
 	/* Put a letter into a position */
 	int skip, i, j, glyph_no, alphabet;
@@ -588,7 +588,7 @@ void draw_letter(char *pixelbuf, uint8_t letter, int xposn, int yposn, int small
 	}
 }
 
-void draw_string(char *pixbuf, char input_string[], int xposn, int yposn, int smalltext, int image_width, int image_height)
+static void draw_string(char *pixbuf, char input_string[], int xposn, int yposn, int smalltext, int image_width, int image_height)
 {
 	/* Plot a string into the pixel buffer */
 	int i, string_length, string_left_hand;
@@ -602,7 +602,7 @@ void draw_string(char *pixbuf, char input_string[], int xposn, int yposn, int sm
 
 }
 
-int maxi_png_plot(struct zint_symbol *symbol, int rotate_angle, int data_type)
+static int maxi_png_plot(struct zint_symbol *symbol, int rotate_angle, int data_type)
 {
 	int i, row, column, xposn, yposn;
 	int image_height, image_width;
@@ -660,7 +660,7 @@ int maxi_png_plot(struct zint_symbol *symbol, int rotate_angle, int data_type)
 	return error_number;
 }
 
-void to_latin1(uint8_t source[], uint8_t preprocessed[])
+static void to_latin1(uint8_t source[], uint8_t preprocessed[])
 {
 	int j, i, input_length;
 
@@ -691,7 +691,7 @@ void to_latin1(uint8_t source[], uint8_t preprocessed[])
 	return;
 }
 
-int png_plot(struct zint_symbol *symbol, int rotate_angle, int data_type)
+static int png_plot(struct zint_symbol *symbol, int rotate_angle, int data_type)
 {
 	int textdone, main_width, comp_offset, large_bar_count;
 	char textpart[10], addon[6];
@@ -845,6 +845,9 @@ int png_plot(struct zint_symbol *symbol, int rotate_angle, int data_type)
 		do {
 			block_width = 0;
 			do {
+				if (!module_is_allocated(this_row, i + block_width + 1)) {
+					break;
+				}
 				block_width++;
 			} while (module_is_set(symbol, this_row, i + block_width) == module_is_set(symbol, this_row, i));
 			if((addon_latch == 0) && (r == 0) && (i > main_width)) {
@@ -956,6 +959,9 @@ int png_plot(struct zint_symbol *symbol, int rotate_angle, int data_type)
 		do {
 			block_width = 0;
 			do {
+				if (!module_is_allocated(symbol->rows - 1, i + block_width + 1)) {
+					break;
+				}
 				block_width++;
 			} while (module_is_set(symbol, symbol->rows - 1, i + block_width) == module_is_set(symbol, symbol->rows - 1, i));
 			if(latch == 1) {
@@ -975,6 +981,9 @@ int png_plot(struct zint_symbol *symbol, int rotate_angle, int data_type)
 		do {
 			block_width = 0;
 			do {
+				if (!module_is_allocated(symbol->rows - 1, i + block_width + 1)) {
+					break;
+				}
 				block_width++;
 			} while (module_is_set(symbol, symbol->rows - 1, i + block_width) == module_is_set(symbol, symbol->rows - 1, i));
 			if(latch == 1) {

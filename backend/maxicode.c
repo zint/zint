@@ -32,9 +32,9 @@
 #include <malloc.h>
 #endif
 
-int maxi_codeword[144];
+static int maxi_codeword[144];
 
-void maxi_do_primary_check(  )
+static void maxi_do_primary_check(  )
 {
 	/* Handles error correction of primary message */
 	uint8_t data[15];
@@ -56,7 +56,7 @@ void maxi_do_primary_check(  )
 	rs_free();
 }
 
-void maxi_do_secondary_chk_odd( int ecclen )
+static void maxi_do_secondary_chk_odd( int ecclen )
 {
 	/* Handles error correction of odd characters in secondary */
 	uint8_t data[100];
@@ -81,7 +81,7 @@ void maxi_do_secondary_chk_odd( int ecclen )
 	rs_free();
 }
 
-void maxi_do_secondary_chk_even(int ecclen )
+static void maxi_do_secondary_chk_even(int ecclen )
 {
 	/* Handles error correction of even characters in secondary */
 	uint8_t data[100];
@@ -106,7 +106,7 @@ void maxi_do_secondary_chk_even(int ecclen )
 	rs_free();
 }
 
-void maxi_bump(int set[], int character[], int bump_posn)
+static void maxi_bump(int set[], int character[], int bump_posn)
 {
 	/* Moves everything up so that a shift or latch can be inserted */
 	int i;
@@ -469,7 +469,7 @@ maxi_text_process(int mode, uint8_t source[], int length)
 	return 0;
 }
 
-void maxi_do_primary_2(char postcode[], int country, int service)
+static void maxi_do_primary_2(char postcode[], int country, int service)
 {
 	/* Format structured primary for Mode 2 */
 	int postcode_length, postcode_num;
@@ -495,7 +495,7 @@ void maxi_do_primary_2(char postcode[], int country, int service)
 	maxi_codeword[9] = ((service & 0x3f0) >> 4);
 }
 
-void maxi_do_primary_3(char postcode[], int country, int service)
+static void maxi_do_primary_3(char postcode[], int country, int service)
 {
 	/* Format structured primary for Mode 3 */
 	int i, h;

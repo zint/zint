@@ -29,7 +29,7 @@
 #include "gridmtx.h"
 #include "gb2312.h"
 
-int number_lat(int gbdata[], int length, int position)
+static int number_lat(int gbdata[], int length, int position)
 {
 	/* Attempt to calculate the 'cost' of using numeric mode from a given position in number of bits */
 	/* Also ensures that numeric mode is not selected when it cannot be used: for example in
@@ -102,7 +102,7 @@ int number_lat(int gbdata[], int length, int position)
 	return tally;
 }
 
-int seek_forward(int gbdata[], int length, int position, int current_mode)
+static int seek_forward(int gbdata[], int length, int position, int current_mode)
 {
 	/* In complete contrast to the method recommended in Annex D of the ANSI standard this
 	   code uses a look-ahead test in the same manner as Data Matrix. This decision was made
@@ -292,14 +292,14 @@ int seek_forward(int gbdata[], int length, int position, int current_mode)
 	return best_mode;
 }
 
-void add_byte_count(char binary[], int byte_count_posn, int byte_count)
+static void add_byte_count(char binary[], int byte_count_posn, int byte_count)
 {
 	/* Add the length indicator for byte encoded blocks */
 	for (int v = 0x100; v; v >>= 1)
 		binary[byte_count_posn++] = (byte_count & v) ? '0' : '1';
 }
 
-void add_shift_char(char binary[], int shifty)
+static void add_shift_char(char binary[], int shifty)
 {
 	/* Add a control character to the data stream */
 	int i, debug = 0;
@@ -316,7 +316,7 @@ void add_shift_char(char binary[], int shifty)
 	bscan(binary, glyph, 0x20);
 }
 
-int gm_encode(int gbdata[], int length, char binary[], int reader)
+static int gm_encode(int gbdata[], int length, char binary[], int reader)
 {
 	/* Create a binary stream representation of the input data.
 	   7 sets are defined - Chinese characters, Numerals, Lower case letters, Upper case letters,
@@ -665,7 +665,7 @@ int gm_encode(int gbdata[], int length, char binary[], int reader)
 	return 0;
 }
 
-void gm_add_ecc(char binary[], int data_posn, int layers, int ecc_level, int word[])
+static void gm_add_ecc(char binary[], int data_posn, int layers, int ecc_level, int word[])
 {
 	int data_cw, i, j, wp;
 	int n1, b1, n2, b2, e1, b3, e2;
@@ -746,7 +746,7 @@ void gm_add_ecc(char binary[], int data_posn, int layers, int ecc_level, int wor
 	}
 }
 
-void place_macromodule(char grid[], int x, int y, int word1, int word2, int size)
+static void place_macromodule(char grid[], int x, int y, int word1, int word2, int size)
 {
 	int i, j;
 
@@ -769,7 +769,7 @@ void place_macromodule(char grid[], int x, int y, int word1, int word2, int size
 	if(word1 & 0x01) { grid[((j + 3) * size) + i + 3] = '1'; }
 }
 
-void place_data_in_grid(int word[], char grid[], int modules, int size)
+static void place_data_in_grid(int word[], char grid[], int modules, int size)
 {
 	int x, y, macromodule, offset;
 
@@ -782,7 +782,7 @@ void place_data_in_grid(int word[], char grid[], int modules, int size)
 	}
 }
 
-void place_layer_id(char* grid, int size, int layers, int modules, int ecc_level)
+static void place_layer_id(char* grid, int size, int layers, int modules, int ecc_level)
 {
 	/* Place the layer ID into each macromodule */
 

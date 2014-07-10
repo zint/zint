@@ -31,7 +31,7 @@
 #include <malloc.h>
 #endif
 
-void horiz(struct zint_symbol *symbol, int row_no, int full)
+static void horiz(struct zint_symbol *symbol, int row_no, int full)
 {
 	int i = !full;
 	int lim = symbol->width - i;
@@ -40,7 +40,7 @@ void horiz(struct zint_symbol *symbol, int row_no, int full)
 		set_module(symbol, row_no, i++);
 }
 
-void central_finder(struct zint_symbol *symbol, int start_row, int row_count, int full_rows)
+static void central_finder(struct zint_symbol *symbol, int start_row, int row_count, int full_rows)
 {
 	int i;
 
@@ -57,7 +57,7 @@ void central_finder(struct zint_symbol *symbol, int start_row, int row_count, in
 	}
 }
 
-void vert(struct zint_symbol *symbol, int column, int height, int top)
+static void vert(struct zint_symbol *symbol, int column, int height, int top)
 {
 	if(top) {
 		for (int i = 0; i < height; i++) {
@@ -70,7 +70,7 @@ void vert(struct zint_symbol *symbol, int column, int height, int top)
 	}
 }
 
-void spigot(struct zint_symbol *symbol, int row_no)
+static void spigot(struct zint_symbol *symbol, int row_no)
 {
 	for (int i = symbol->width - 1; i > 0; i--) {
 		if(module_is_set(symbol, row_no, i - 1))
@@ -78,7 +78,7 @@ void spigot(struct zint_symbol *symbol, int row_no)
 	}
 }
 
-int isedi(uint8_t input)
+static int isedi(uint8_t input)
 {
 	if (input == 13 || input == '*' || input == '>' || input == ' ' ||
 	    ((input >= '0') && (input <= '9')) || ((input >= 'A') && (input <= 'Z')))
@@ -87,7 +87,7 @@ int isedi(uint8_t input)
 	return 0;
 }
 
-int dq4bi(uint8_t source[], int sourcelen, int position)
+static int dq4bi(uint8_t source[], int sourcelen, int position)
 {
 	int i;
 
@@ -105,7 +105,7 @@ int dq4bi(uint8_t source[], int sourcelen, int position)
 	return 0;
 }
 
-int c1_look_ahead_test(uint8_t source[], int sourcelen, int position, int current_mode, int gs1)
+static int c1_look_ahead_test(uint8_t source[], int sourcelen, int position, int current_mode, int gs1)
 {
 	float ascii_count, c40_count, text_count, edi_count, byte_count;
 	char reduced_char;
@@ -261,7 +261,7 @@ int c1_look_ahead_test(uint8_t source[], int sourcelen, int position, int curren
 	return best_scheme;
 }
 
-int c1_encode(struct zint_symbol *symbol, uint8_t source[], unsigned int target[], int length)
+static int c1_encode(struct zint_symbol *symbol, uint8_t source[], unsigned int target[], int length)
 {
 	int current_mode, next_mode;
 	int sp, tp, gs1, latch;
@@ -986,7 +986,7 @@ int c1_encode(struct zint_symbol *symbol, uint8_t source[], unsigned int target[
 	return tp;
 }
 
-void block_copy(struct zint_symbol *symbol, char grid[][120], int start_row, int start_col, int height, int width, int row_offset, int col_offset) {
+static void block_copy(struct zint_symbol *symbol, char grid[][120], int start_row, int start_col, int height, int width, int row_offset, int col_offset) {
 	for(int i = start_row; i < (start_row + height); i++) {
 		for(int j = start_col; j < (start_col + width); j++) {
 			if(grid[i][j] == '1') {

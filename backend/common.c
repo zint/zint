@@ -89,7 +89,7 @@ void to_upper(uint8_t source[])
 	}
 }
 
-int is_sane(char test_string[], uint8_t source[], int length)
+int is_sane(const char test_string[], const uint8_t source[], int length)
 { /* Verifies that a string only uses valid characters */
 	unsigned int latch;
 	unsigned int lt = strlen(test_string);
@@ -110,7 +110,7 @@ int is_sane(char test_string[], uint8_t source[], int length)
 	return 0;
 }
 
-int posn(char set_string[], char data)
+int posn(const char set_string[], char data)
 { /* Returns the position of data in set_string */
 	unsigned int n = strlen(set_string);
 
@@ -121,7 +121,7 @@ int posn(char set_string[], char data)
 }
 
 /** Replaces huge switch statements for looking up in tables */
-void lookup(char set_string[], const char *table[], char data, char dest[])
+void lookup(const char set_string[], const char * const table[], char data, char dest[])
 {
 	unsigned int n = strlen(set_string);
 
@@ -130,7 +130,7 @@ void lookup(char set_string[], const char *table[], char data, char dest[])
 			concat(dest, table[i]);
 }
 
-int module_is_set(struct zint_symbol *symbol, int y_coord, int x_coord)
+int module_is_set(const struct zint_symbol *symbol, int y_coord, int x_coord)
 {
 	return (symbol->encoded_data[y_coord][x_coord / 7] >> (x_coord % 7)) & 1;
 }
@@ -221,7 +221,7 @@ int roundup(float input)
 	return integer_part;
 }
 
-int istwodigits(uint8_t source[], int position)
+int istwodigits(const uint8_t source[], int position)
 {
 	if((source[position] >= '0') && (source[position] <= '9')) {
 		if((source[position + 1] >= '0') && (source[position + 1] <= '9')) {
@@ -242,7 +242,7 @@ float froundup(float input)
 	return output;
 }
 
-int latin1_process(struct zint_symbol *symbol, uint8_t source[], uint8_t preprocessed[], int *length)
+int latin1_process(struct zint_symbol *symbol, const uint8_t source[], uint8_t preprocessed[], int *length)
 {
 	int j = 0, i = 0, next;
 
@@ -277,7 +277,7 @@ int latin1_process(struct zint_symbol *symbol, uint8_t source[], uint8_t preproc
 	return 0;
 }
 
-int utf8toutf16(struct zint_symbol *symbol, uint8_t source[], int vals[], int *length)
+int utf8toutf16(struct zint_symbol *symbol, const uint8_t source[], int vals[], int *length)
 {
 	int bpos, jpos, error_number;
 	int next;

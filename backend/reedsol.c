@@ -40,12 +40,12 @@
 #include <stdio.h>		// only needed for debug (main)
 #include <stdlib.h>		// only needed for malloc/free
 #include "reedsol.h"
-int gfpoly;
-int symsize;		// in bits
-int logmod;		// 2**symsize - 1
-int rlen;
+static int gfpoly;
+static int symsize;		// in bits
+static int logmod;		// 2**symsize - 1
+static int rlen;
 
-int *logt = NULL, *alog = NULL, *rspoly = NULL;
+static int *logt = NULL, *alog = NULL, *rspoly = NULL;
 
 // rs_init_gf(poly) initialises the parameters for the Galois Field.
 // The symbol size is determined from the highest bit set in poly
@@ -111,7 +111,7 @@ void rs_init_code(int nsym, int index)
 	}
 }
 
-void rs_encode(int len, uint8_t *data, uint8_t *res)
+void rs_encode(int len, const uint8_t *data, uint8_t *res)
 {
 	int i, k, m;
 	for (i = 0; i < rlen; i++)
@@ -131,7 +131,7 @@ void rs_encode(int len, uint8_t *data, uint8_t *res)
 	}
 }
 
-void rs_encode_long(int len, unsigned int *data, unsigned int *res)
+void rs_encode_long(int len, const unsigned int *data, unsigned int *res)
 { /* The same as above but for larger bitlengths - Aztec code compatible */
 	int i, k, m;
 	for (i = 0; i < rlen; i++)

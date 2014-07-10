@@ -29,14 +29,14 @@
 #define SODIUM	"0123456789-"
 #define SILVER	"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%abcd"
 
-const char *C11Table[11] = {"111121", "211121", "121121", "221111", "112121", "212111", "122111",
+static const char *C11Table[11] = {"111121", "211121", "121121", "221111", "112121", "212111", "122111",
 	"111221", "211211", "211111", "112111"};
 
 
 /* Code 39 tables checked against ISO/IEC 16388:2007 */
 
 /* Incorporates Table A1 */
-const char *C39Table[43] = { "1112212111", "2112111121", "1122111121", "2122111111", "1112211121",
+static const char *C39Table[43] = { "1112212111", "2112111121", "1122111121", "2122111111", "1112211121",
 	"2112211111", "1122211111", "1112112121", "2112112111", "1122112111", "2111121121",
 	"1121121121", "2121121111", "1111221121", "2111221111", "1121221111", "1111122121",
 	"2111122111", "1121122111", "1111222111", "2111111221", "1121111221", "2121111211",
@@ -46,7 +46,7 @@ const char *C39Table[43] = { "1112212111", "2112111121", "1122111121", "21221111
 	"1211121211", "1112121211"};
 /* Code 39 character assignments (Table 1) */
 
-const char *EC39Ctrl[128] = {"%U", "$A", "$B", "$C", "$D", "$E", "$F", "$G", "$H", "$I", "$J", "$K",
+static const char *EC39Ctrl[128] = {"%U", "$A", "$B", "$C", "$D", "$E", "$F", "$G", "$H", "$I", "$J", "$K",
 	"$L", "$M", "$N", "$O", "$P", "$Q", "$R", "$S", "$T", "$U", "$V", "$W", "$X", "$Y", "$Z",
 	"%A", "%B", "%C", "%D", "%E", " ", "/A", "/B", "/C", "/D", "/E", "/F", "/G", "/H", "/I", "/J",
 	"/K", "/L", "-", ".", "/O", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "/Z", "%F",
@@ -56,7 +56,7 @@ const char *EC39Ctrl[128] = {"%U", "$A", "$B", "$C", "$D", "$E", "$F", "$G", "$H
 	"+P", "+Q", "+R", "+S", "+T", "+U", "+V", "+W", "+X", "+Y", "+Z", "%P", "%Q", "%R", "%S", "%T"};
 /* Encoding the full ASCII character set in Code 39 (Table A2) */
 
-const char *C93Ctrl[128] = {"bU", "aA", "aB", "aC", "aD", "aE", "aF", "aG", "aH", "aI", "aJ", "aK",
+static const char *C93Ctrl[128] = {"bU", "aA", "aB", "aC", "aD", "aE", "aF", "aG", "aH", "aI", "aJ", "aK",
 	"aL", "aM", "aN", "aO", "aP", "aQ", "aR", "aS", "aT", "aU", "aV", "aW", "aX", "aY", "aZ",
 	"bA", "bB", "bC", "bD", "bE", " ", "cA", "cB", "cC", "cD", "cE", "cF", "cG", "cH", "cI", "cJ",
 	"cK", "cL", "cM", "cN", "cO", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "cZ", "bF",
@@ -65,7 +65,7 @@ const char *C93Ctrl[128] = {"bU", "aA", "aB", "aC", "aD", "aE", "aF", "aG", "aH"
 	"bW", "dA", "dB", "dC", "dD", "dE", "dF", "dG", "dH", "dI", "dJ", "dK", "dL", "dM", "dN", "dO",
 	"dP", "dQ", "dR", "dS", "dT", "dU", "dV", "dW", "dX", "dY", "dZ", "bP", "bQ", "bR", "bS", "bT"};
 
-const char *C93Table[47] = {"131112", "111213", "111312", "111411", "121113", "121212", "121311",
+static const char *C93Table[47] = {"131112", "111213", "111312", "111411", "121113", "121212", "121311",
 	"111114", "131211", "141111", "211113", "211212", "211311", "221112", "221211", "231111",
 	"112113", "112212", "112311", "122112", "132111", "111123", "111222", "111321", "121122",
 	"131121", "212112", "212211", "211122", "211221", "221121", "222111", "112122", "112221",
@@ -73,14 +73,14 @@ const char *C93Table[47] = {"131112", "111213", "111312", "111411", "121113", "1
 	"121221", "312111", "311121", "122211"};
 
 /* Global Variables for Channel Code */
-int S[11], B[11];
-long value;
-long target_value;
-char pattern[30];
+static int S[11], B[11];
+static long value;
+static long target_value;
+static char pattern[30];
 
 /* Function Prototypes */
-void NextS(int Chan, int i, int MaxS, int MaxB);
-void NextB(int Chan, int i, int MaxB, int MaxS);
+static void NextS(int Chan, int i, int MaxS, int MaxB);
+static void NextB(int Chan, int i, int MaxB, int MaxS);
 
 /* *********************** CODE 11 ******************** */
 
@@ -442,7 +442,7 @@ int c93(struct zint_symbol *symbol, uint8_t source[], int length)
    licenses and fees. AIM USA, its memer companies, or individual officers
    assume no liability for the use of this document." */
 
-void CheckCharacter() {
+static void CheckCharacter() {
 	int i;
 	char part[3];
 
@@ -458,7 +458,7 @@ void CheckCharacter() {
 	}
 }
 
-void NextB(int Chan, int i, int MaxB, int MaxS) {
+static void NextB(int Chan, int i, int MaxB, int MaxS) {
 	int b;
 
 	b = (S[i]+B[i-1]+S[i-1]+B[i-2] > 4)? 1:2;
@@ -474,7 +474,7 @@ void NextB(int Chan, int i, int MaxB, int MaxS) {
 	}
 }
 
-void NextS(int Chan, int i, int MaxS, int MaxB) {
+static void NextS(int Chan, int i, int MaxS, int MaxB) {
 	int s;
 
 	for (s = (i<Chan+2)? 1: MaxS; s <= MaxS; s++) {

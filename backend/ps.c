@@ -306,6 +306,9 @@ int ps_plot(struct zint_symbol *symbol)
 			do {
 				block_width = 0;
 				do {
+					if (!module_is_allocated(this_row, i + block_width + 1)) {
+						break;
+					}
 					block_width++;
 				} while (module_is_set(symbol, this_row, i + block_width) == module_is_set(symbol, this_row, i));
 				if((addon_latch == 0) && (r == 0) && (i > main_width)) {
@@ -505,6 +508,9 @@ int ps_plot(struct zint_symbol *symbol)
 			do {
 				block_width = 0;
 				do {
+					if (!module_is_allocated(symbol->rows - 1, i + block_width + 1)) {
+						break;
+					}
 					block_width++;
 				} while (module_is_set(symbol, symbol->rows - 1, i + block_width) == module_is_set(symbol, symbol->rows - 1, i));
 				if(latch == 1) {
@@ -524,6 +530,9 @@ int ps_plot(struct zint_symbol *symbol)
 			do {
 				block_width = 0;
 				do {
+					if (!module_is_allocated(symbol->rows - 1, i + block_width + 1)) {
+						break;
+					}
 					block_width++;
 				} while (module_is_set(symbol, symbol->rows - 1, i + block_width) == module_is_set(symbol, symbol->rows - 1, i));
 				if(latch == 1) {

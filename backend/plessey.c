@@ -26,11 +26,11 @@
 
 
 #define SSET	"0123456789ABCDEF"
-const char *PlessTable[16] = {"13131313", "31131313", "13311313", "31311313", "13133113", "31133113",
+static const char *PlessTable[16] = {"13131313", "31131313", "13311313", "31311313", "13133113", "31133113",
 	"13313113", "31313113", "13131331", "31131331", "13311331", "31311331", "13133131",
 	"31133131", "13313131", "31313131"};
 
-const char *MSITable[10] = {"12121212", "12121221", "12122112", "12122121", "12211212", "12211221",
+static const char *MSITable[10] = {"12121212", "12121221", "12122112", "12122121", "12211212", "12211221",
 	"12212112", "12212121", "21121212", "21121221"};
 
 
@@ -97,7 +97,7 @@ int plessey(struct zint_symbol *symbol, uint8_t source[], int length)
 	return error_number;
 }
 
-int msi_plessey(struct zint_symbol *symbol, uint8_t source[], int length)
+static int msi_plessey(struct zint_symbol *symbol, uint8_t source[], int length)
 { /* Plain MSI Plessey - does not calculate any check character */
 
 	unsigned int i;
@@ -124,7 +124,7 @@ int msi_plessey(struct zint_symbol *symbol, uint8_t source[], int length)
 	return 0;
 }
 
-int msi_plessey_mod10(struct zint_symbol *symbol, uint8_t source[], int length)
+static int msi_plessey_mod10(struct zint_symbol *symbol, uint8_t source[], int length)
 { /* MSI Plessey with Modulo 10 check digit - algorithm from Barcode Island
 	http://www.barcodeisland.com/ */
 
@@ -195,7 +195,7 @@ int msi_plessey_mod10(struct zint_symbol *symbol, uint8_t source[], int length)
 	return error_number;
 }
 
-int msi_plessey_mod1010(struct zint_symbol *symbol, uint8_t source[], const unsigned int src_len)
+static int msi_plessey_mod1010(struct zint_symbol *symbol, uint8_t source[], const unsigned int src_len)
 { /* MSI Plessey with two Modulo 10 check digits - algorithm from
 	Barcode Island http://www.barcodeisland.com/ */
 
@@ -307,7 +307,7 @@ int msi_plessey_mod1010(struct zint_symbol *symbol, uint8_t source[], const unsi
 }
 
 
-int msi_plessey_mod11(struct zint_symbol *symbol, uint8_t source[], const unsigned int src_len)
+static int msi_plessey_mod11(struct zint_symbol *symbol, uint8_t source[], const unsigned int src_len)
 {
 	/* Calculate a Modulo 11 check digit using the system discussed on Wikipedia -
 	see http://en.wikipedia.org/wiki/Talk:MSI_Barcode */
@@ -368,7 +368,7 @@ int msi_plessey_mod11(struct zint_symbol *symbol, uint8_t source[], const unsign
 	return error_number;
 }
 
-int msi_plessey_mod1110(struct zint_symbol *symbol, uint8_t source[], const unsigned int src_len)
+static int msi_plessey_mod1110(struct zint_symbol *symbol, uint8_t source[], const unsigned int src_len)
 {
 	/* Combining the Barcode Island and Wikipedia code */
 	/* Verified against http://www.bokai.com/BarcodeJSP/applet/BarcodeSampleApplet.htm */

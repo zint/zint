@@ -29,7 +29,7 @@
    to be bulletproof, nor does it report very accurately what problem was found
    or where, but should prevent some of the more common encoding errors */
 
-void itostr(char ai_string[], int ai_value)
+static void itostr(char ai_string[], int ai_value)
 {
 	int thou, hund, ten, unit;
 	char temp[2];
@@ -50,7 +50,7 @@ void itostr(char ai_string[], int ai_value)
 	concat(ai_string, ")");
 }
 
-int gs1_verify(struct zint_symbol *symbol, uint8_t source[], const unsigned int src_len, char reduced[])
+int gs1_verify(struct zint_symbol *symbol, const uint8_t source[], const unsigned int src_len, char reduced[])
 {
 	int i, j, last_ai, ai_latch;
 	char ai_string[6];
@@ -286,7 +286,7 @@ int gs1_verify(struct zint_symbol *symbol, uint8_t source[], const unsigned int 
 	return 0;
 }
 
-int ugs1_verify(struct zint_symbol *symbol, uint8_t source[], const unsigned int src_len, uint8_t reduced[])
+int ugs1_verify(struct zint_symbol *symbol, const uint8_t source[], const unsigned int src_len, uint8_t reduced[])
 {
 	/* Only to keep the compiler happy */
 	char temp[src_len + 5];

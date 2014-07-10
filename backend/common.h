@@ -50,27 +50,39 @@ extern void uconcat(uint8_t dest[], const uint8_t source[]);
 extern int ctoi(char source);
 extern char itoc(int source);
 extern void to_upper(uint8_t source[]);
-extern int is_sane(char test_string[], uint8_t source[], int length);
-extern void lookup(char set_string[], const char *table[], char data, char dest[]);
-extern int posn(char set_string[], char data);
+extern int is_sane(const char test_string[], const uint8_t source[], int length);
+extern void lookup(const char set_string[], const char * const table[], char data, char dest[]);
+extern int posn(const char set_string[], char data);
 extern void expand(struct zint_symbol *symbol, char data[]);
 extern int is_stackable(int symbology);
 extern int is_extendable(int symbology);
 extern int roundup(float input);
-extern int module_is_set(struct zint_symbol *symbol, int y_coord, int x_coord);
+extern int module_is_set(const struct zint_symbol *symbol, int y_coord, int x_coord);
 extern void set_module(struct zint_symbol *symbol, int y_coord, int x_coord);
 extern void unset_module(struct zint_symbol *symbol, int y_coord, int x_coord);
-extern int istwodigits(uint8_t source[], int position);
+extern int istwodigits(const uint8_t source[], int position);
 extern float froundup(float input);
 extern int parunmodd(uint8_t llyth);
-extern int latin1_process(struct zint_symbol *symbol, uint8_t source[], uint8_t preprocessed[], int *length);
-extern int utf8toutf16(struct zint_symbol *symbol, uint8_t source[], int vals[], int *length);
+extern int latin1_process(struct zint_symbol *symbol, const uint8_t source[], uint8_t preprocessed[], int *length);
+extern int utf8toutf16(struct zint_symbol *symbol, const uint8_t source[], int vals[], int *length);
 
 static inline void bscan(char *binary, int data, int h)
 {
 	for (; h; h>>=1) {
 		concat(binary, data & h ? "1" : "0");
 	}
+}
+
+/* Return true if module coords are within the allocated range.
+ * See module_is_set(), set_module(), unset_module() for naming and addressing convention.
+ */
+static inline int module_is_allocated(int y_coord, int x_coord)
+{
+	int x = x_coord / 7;
+	if ((0 <= y_coord) && (y_coord < ZINT_ROWS_MAX) && (0 <= x) && (x < ZINT_COLS_MAX)) {
+		return 1;
+	}
+	return 0;
 }
 
 #define nitems(a) (sizeof(a) / sizeof(a[0]))

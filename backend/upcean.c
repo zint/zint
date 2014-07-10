@@ -29,21 +29,21 @@
 
 /* UPC and EAN tables checked against EN 797:1996 */
 
-const char *UPCParity0[10] = {"BBBAAA", "BBABAA", "BBAABA", "BBAAAB", "BABBAA", "BAABBA", "BAAABB",
+static const char *UPCParity0[10] = {"BBBAAA", "BBABAA", "BBAABA", "BBAAAB", "BABBAA", "BAABBA", "BAAABB",
 	"BABABA", "BABAAB", "BAABAB"}; /* Number set for UPC-E symbol (EN Table 4) */
-const char *UPCParity1[10] = {"AAABBB", "AABABB", "AABBAB", "AABBBA", "ABAABB", "ABBAAB", "ABBBAA",
+static const char *UPCParity1[10] = {"AAABBB", "AABABB", "AABBAB", "AABBBA", "ABAABB", "ABBAAB", "ABBBAA",
 	"ABABAB", "ABABBA", "ABBABA"}; /* Not covered by BS EN 797:1995 */
-const char *EAN2Parity[4] = {"AA", "AB", "BA", "BB"}; /* Number sets for 2-digit add-on (EN Table 6) */
-const char *EAN5Parity[10] = {"BBAAA", "BABAA", "BAABA", "BAAAB", "ABBAA", "AABBA", "AAABB", "ABABA",
+static const char *EAN2Parity[4] = {"AA", "AB", "BA", "BB"}; /* Number sets for 2-digit add-on (EN Table 6) */
+static const char *EAN5Parity[10] = {"BBAAA", "BABAA", "BAABA", "BAAAB", "ABBAA", "AABBA", "AAABB", "ABABA",
 	"ABAAB", "AABAB"}; /* Number set for 5-digit add-on (EN Table 7) */
-const char *EAN13Parity[10] = {"AAAAA", "ABABB", "ABBAB", "ABBBA", "BAABB", "BBAAB", "BBBAA", "BABAB",
+static const char *EAN13Parity[10] = {"AAAAA", "ABABB", "ABBAB", "ABBBA", "BAABB", "BBAAB", "BBBAA", "BABAB",
 	"BABBA", "BBABA"}; /* Left hand of the EAN-13 symbol (EN Table 3) */
-const char *EANsetA[10] = {"3211", "2221", "2122", "1411", "1132", "1231", "1114", "1312", "1213",
+static const char *EANsetA[10] = {"3211", "2221", "2122", "1411", "1132", "1231", "1114", "1312", "1213",
 	"3112"}; /* Representation set A and C (EN Table 1) */
-const char *EANsetB[10] = {"1123", "1222", "2212", "1141", "2311", "1321", "4111", "2131", "3121",
+static const char *EANsetB[10] = {"1123", "1222", "2212", "1141", "2311", "1321", "4111", "2131", "3121",
 	"2113"}; /* Representation set B (EN Table 1) */
 
-char upc_check(char source[])
+static char upc_check(char source[])
 { /* Calculate the correct check digit for a UPC barcode */
 	unsigned int i, count, check_digit;
 
@@ -62,7 +62,7 @@ char upc_check(char source[])
 	return itoc(check_digit);
 }
 
-void upca_draw(char source[], char dest[])
+static void upca_draw(char source[], char dest[])
 { /* UPC A is usually used for 12 digit numbers, but this function takes a source of any length */
 	unsigned int i, half_way;
 
@@ -87,7 +87,7 @@ void upca_draw(char source[], char dest[])
 	concat (dest, "111");
 }
 
-void upca(struct zint_symbol *symbol, uint8_t source[], char dest[])
+static void upca(struct zint_symbol *symbol, uint8_t source[], char dest[])
 { /* Make a UPC A barcode when we haven't been given the check digit */
 	int length;
 	char gtin[15];
@@ -100,7 +100,7 @@ void upca(struct zint_symbol *symbol, uint8_t source[], char dest[])
 	ustrcpy(symbol->text, (uint8_t*)gtin);
 }
 
-void upce(struct zint_symbol *symbol, uint8_t source[], char dest[])
+static void upce(struct zint_symbol *symbol, uint8_t source[], char dest[])
 { /* UPC E is a zero-compressed version of UPC A */
 	unsigned int i, num_system;
 	char emode, equivalent[12], check_digit, parity[8], temp[8];
@@ -212,7 +212,7 @@ void upce(struct zint_symbol *symbol, uint8_t source[], char dest[])
 }
 
 
-void add_on(uint8_t source[], char dest[], int mode)
+static void add_on(uint8_t source[], char dest[], int mode)
 { /* EAN-2 and EAN-5 add-on codes */
 	char parity[6];
 	unsigned int i, code_type;
@@ -280,7 +280,7 @@ void add_on(uint8_t source[], char dest[], int mode)
 
 /* ************************ EAN-13 ****************** */
 
-char ean_check(char source[])
+static char ean_check(char source[])
 { /* Calculate the correct check digit for a EAN-13 barcode */
 	int i;
 	unsigned int h, count, check_digit;
@@ -300,7 +300,7 @@ char ean_check(char source[])
 	return itoc(check_digit);
 }
 
-void ean13(struct zint_symbol *symbol, uint8_t source[], char dest[])
+static void ean13(struct zint_symbol *symbol, uint8_t source[], char dest[])
 {
 	unsigned int length, i, half_way;
 	char parity[6];
@@ -348,7 +348,7 @@ void ean13(struct zint_symbol *symbol, uint8_t source[], char dest[])
 	ustrcpy(symbol->text, (uint8_t*)gtin);
 }
 
-void ean8(struct zint_symbol *symbol, uint8_t source[], char dest[])
+static void ean8(struct zint_symbol *symbol, uint8_t source[], char dest[])
 { /* Make an EAN-8 barcode when we haven't been given the check digit */
   /* EAN-8 is basically the same as UPC-A but with fewer digits */
 	int length;
@@ -362,7 +362,7 @@ void ean8(struct zint_symbol *symbol, uint8_t source[], char dest[])
 	ustrcpy(symbol->text, (uint8_t*)gtin);
 }
 
-char isbn13_check(uint8_t source[]) /* For ISBN(13) only */
+static char isbn13_check(uint8_t source[]) /* For ISBN(13) only */
 {
 	unsigned int i, weight, sum, check, h;
 
@@ -382,7 +382,7 @@ char isbn13_check(uint8_t source[]) /* For ISBN(13) only */
 	return itoc(check);
 }
 
-char isbn_check(uint8_t source[]) /* For ISBN(10) and SBN only */
+static char isbn_check(uint8_t source[]) /* For ISBN(10) and SBN only */
 {
 	unsigned int i, weight, sum, check, h;
 	char check_char;
@@ -403,7 +403,7 @@ char isbn_check(uint8_t source[]) /* For ISBN(10) and SBN only */
 	return check_char;
 }
 
-int isbn(struct zint_symbol *symbol, uint8_t source[], const unsigned int src_len, char dest[]) /* Make an EAN-13 barcode from an SBN or ISBN */
+static int isbn(struct zint_symbol *symbol, uint8_t source[], const unsigned int src_len, char dest[]) /* Make an EAN-13 barcode from an SBN or ISBN */
 {
 	int i, error_number;
 	char check_digit;
@@ -495,7 +495,7 @@ int isbn(struct zint_symbol *symbol, uint8_t source[], const unsigned int src_le
 	return 0;
 }
 
-void ean_leading_zeroes(struct zint_symbol *symbol, uint8_t source[], uint8_t local_source[]) {
+static void ean_leading_zeroes(struct zint_symbol *symbol, uint8_t source[], uint8_t local_source[]) {
 	/* Add leading zeroes to EAN and UPC strings */
 	uint8_t first_part[20], second_part[20], zfirst_part[20], zsecond_part[20];
 	int with_addon = 0;
@@ -791,7 +791,5 @@ int eanx(struct zint_symbol *symbol, uint8_t source[], int src_len)
 	}
 	return error_number;
 }
-
-
 
 

@@ -27,7 +27,7 @@
 #define ALPHA_OR_ISO	121
 
 /* CC-A component coefficients from ISO/IEC 24728:2006 Annex F */
-const int ccaCoeffs[30] = {
+static const int ccaCoeffs[30] = {
 	/* k = 4 */
 	522, 568, 723, 809,
 
@@ -45,14 +45,14 @@ const int ccaCoeffs[30] = {
 };
 
 /* rows, error codewords, k-offset of valid CC-A sizes from ISO/IEC 24723:2006 Table 9 */
-const int ccaVariants[51] = {
+static const int ccaVariants[51] = {
 	5, 6, 7, 8, 9, 10, 12, 4, 5, 6, 7, 8, 3, 4, 5, 6, 7,
 	4, 4, 5, 5, 6, 6, 7, 4, 5, 6, 7, 7, 4, 5, 6, 7, 8,
 	0, 0, 4, 4, 9, 9, 15, 0, 4, 9, 15, 15, 0, 4, 9, 15, 22
 };
 
 /* following is Left RAP, Centre RAP, Right RAP and Start Cluster from ISO/IEC 24723:2006 tables 10 and 11 */
-const int aRAPTable[68] = {
+static const int aRAPTable[68] = {
 	39, 1, 32, 8, 14, 43, 20, 11, 1, 5, 15, 21, 40, 43, 46, 34, 29,
 	0, 0, 0, 0, 0, 0, 0, 43, 33, 37, 47, 1, 20, 23, 26, 14, 9,
 	19, 33, 12, 40, 46, 23, 52, 23, 13, 17, 27, 33, 52, 3, 6, 46, 41,

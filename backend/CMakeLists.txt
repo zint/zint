@@ -2,6 +2,13 @@
 
 project(zint)
 
+if(DEFINED CMAKE_C_COMPILE_OPTIONS_VISIBILITY)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_C_COMPILE_OPTIONS_VISIBILITY}hidden")
+endif(DEFINED CMAKE_C_COMPILE_OPTIONS_VISIBILITY)
+if(DEFINED CMAKE_CXX_COMPILE_OPTIONS_VISIBILITY)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_COMPILE_OPTIONS_VISIBILITY}hidden")
+endif(DEFINED CMAKE_CXX_COMPILE_OPTIONS_VISIBILITY)
+
 find_package(PNG)
 
 set(zint_COMMON_SRCS common.c library.c render.c ps.c large.c reedsol.c gs1.c svg.c png.c)
@@ -22,7 +29,7 @@ set_target_properties(zint PROPERTIES 	SOVERSION "${ZINT_VERSION_MAJOR}.${ZINT_V
 					VERSION ${ZINT_VERSION})
 
 target_link_libraries(zint ${PNG_LIBRARIES} )
-target_link_libraries(zint -lm)
+target_link_libraries(zint m)
 
 install(TARGETS zint  ${INSTALL_TARGETS_DEFAULT_ARGS} )
 install(FILES zint.h DESTINATION ${INCLUDE_INSTALL_DIR} COMPONENT Devel)

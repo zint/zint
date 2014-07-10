@@ -130,8 +130,8 @@ extern int itf14(struct zint_symbol *symbol, uint8_t source[], int length); /* I
 extern int dpleit(struct zint_symbol *symbol, uint8_t source[], int length); /* Deutsche Post Leitcode */
 extern int dpident(struct zint_symbol *symbol, uint8_t source[], int length); /* Deutsche Post Identcode */
 extern int c93(struct zint_symbol *symbol, uint8_t source[], int length); /* Code 93 - a re-working of Code 39+, generates 2 check digits */
-extern int code_128(struct zint_symbol *symbol, uint8_t source[], int length); /* Code 128 and NVE-18 */
-extern int ean_128(struct zint_symbol *symbol, uint8_t source[], int length); /* EAN-128 (GS1-128) */
+extern int code_128(struct zint_symbol *symbol, const uint8_t source[], int length); /* Code 128 and NVE-18 */
+extern int ean_128(struct zint_symbol *symbol, const uint8_t source[], int length); /* EAN-128 (GS1-128) */
 extern int code_11(struct zint_symbol *symbol, uint8_t source[], int length); /* Code 11 */
 extern int msi_handle(struct zint_symbol *symbol, uint8_t source[], int length); /* MSI Plessey */
 extern int telepen(struct zint_symbol *symbol, uint8_t source[], int length); /* Telepen ASCII */
@@ -160,7 +160,7 @@ extern int kix_code(struct zint_symbol *symbol, uint8_t source[], int length); /
 extern int aztec(struct zint_symbol *symbol, uint8_t source[], int length); /* Aztec Code */
 extern int code32(struct zint_symbol *symbol, uint8_t source[], int length); /* Italian Pharmacode */
 extern int daft_code(struct zint_symbol *symbol, uint8_t source[], int length); /* DAFT Code */
-extern int ean_14(struct zint_symbol *symbol, uint8_t source[], int length); /* EAN-14 */
+extern int ean_14(struct zint_symbol *symbol, const uint8_t source[], int length); /* EAN-14 */
 extern int nve_18(struct zint_symbol *symbol, uint8_t source[], int length); /* NVE-18 */
 extern int microqr(struct zint_symbol *symbol, uint8_t source[], int length); /* Micro QR Code */
 extern int aztec_runes(struct zint_symbol *symbol, uint8_t source[], int length); /* Aztec Runes */
@@ -181,7 +181,7 @@ extern int bmp_handle(struct zint_symbol *symbol, int rotate_angle);
 extern int ps_plot(struct zint_symbol *symbol);
 extern int svg_plot(struct zint_symbol *symbol);
 
-void error_tag(char error_string[], int error_number)
+static void error_tag(char error_string[], int error_number)
 {
 	char error_buffer[100];
 
@@ -198,7 +198,7 @@ void error_tag(char error_string[], int error_number)
 	}
 }
 
-int dump_plot(struct zint_symbol *symbol)
+static int dump_plot(struct zint_symbol *symbol)
 {
 	FILE *f;
 	int i, r;
@@ -232,7 +232,7 @@ int dump_plot(struct zint_symbol *symbol)
 	return 0;
 }
 
-int hibc(struct zint_symbol *symbol, uint8_t source[], int length)
+static int hibc(struct zint_symbol *symbol, uint8_t source[], int length)
 {
 	int counter, error_number, i;
 	char to_process[40], temp[2], check_digit;
@@ -315,7 +315,7 @@ int hibc(struct zint_symbol *symbol, uint8_t source[], int length)
 	return error_number;
 }
 
-int gs1_compliant(int symbology)
+static int gs1_compliant(int symbology)
 {
 	/* Returns 1 if symbology supports GS1 data */
 
@@ -444,7 +444,7 @@ int ZBarcode_ValidID(int symbol_id)
 	return result;
 }
 
-int extended_charset(struct zint_symbol *symbol, uint8_t *source, int length)
+static int extended_charset(struct zint_symbol *symbol, uint8_t *source, int length)
 {
 	int error_number = 0;
 
@@ -458,7 +458,7 @@ int extended_charset(struct zint_symbol *symbol, uint8_t *source, int length)
 	return error_number;
 }
 
-int reduced_charset(struct zint_symbol *symbol, uint8_t *source, int length)
+static int reduced_charset(struct zint_symbol *symbol, uint8_t *source, int length)
 {
 	/* These are the "norm" standards which only support Latin-1 at most */
 	int error_number = 0;
@@ -842,6 +842,7 @@ int ZBarcode_Encode_File(struct zint_symbol *symbol, char *filename)
 		{
 			strcpy(symbol->errtxt, strerror(errno));
 			nRead = 0;
+			free(buffer);
 			return ZERROR_INVALID_DATA;
 		}
 		nRead += n;

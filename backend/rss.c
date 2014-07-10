@@ -51,7 +51,7 @@
 * combins(n,r): returns the number of Combinations of r selected from n:
 *   Combinations = n! / ((n - r)! * r!)
 **********************************************************************/
-int combins(int n, int r) {
+static int combins(int n, int r) {
 	int i, j;
 	int maxDenom, minDenom;
 	int val;
@@ -93,7 +93,7 @@ int combins(int n, int r) {
 * Return:
 * static int widths[] = element widths
 **********************************************************************/
-void getRSSwidths(int val, int n, int elements, int maxWidth, int noNarrow)
+static void getRSSwidths(int val, int n, int elements, int maxWidth, int noNarrow)
 {
 	int bar;
 	int elmWidth;
@@ -964,10 +964,7 @@ int general_rules(char field[], char type[])
 
 	block_count++;
 
-	for(i = 0; i < block_count; i++) {
-	}
-
-	for(i = 0; i < block_count; i++) {
+	for(i = 0; i < block_count - 1; i++) {
 		current = block[1][i];
 		next = (block[1][i + 1] & 0xFF);
 
@@ -1054,7 +1051,7 @@ int general_rules(char field[], char type[])
 	}
 }
 
-int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_string[])
+static int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_string[])
 { /* Handles all data encodation from section 7.2.5 of ISO/IEC 24724 */
 	int encoding_method, i, mask, j, read_posn, latch, debug = 0, last_mode = ISOIEC;
 	char general_field[strlen(source)], general_field_type[strlen(source)];

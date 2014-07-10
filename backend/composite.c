@@ -49,14 +49,14 @@
 
 extern int general_rules(char field[], char type[]);
 extern int eanx(struct zint_symbol *symbol, uint8_t source[], int length);
-extern int ean_128(struct zint_symbol *symbol, uint8_t source[], int length);
+extern int ean_128(struct zint_symbol *symbol, const uint8_t source[], int length);
 extern int rss14(struct zint_symbol *symbol, uint8_t source[], int length);
 extern int rsslimited(struct zint_symbol *symbol, uint8_t source[], int length);
 extern int rssexpanded(struct zint_symbol *symbol, uint8_t source[], int length);
 
 static uint16_t pwr928[69][7];
 
-int _min(int first, int second) {
+static int _min(int first, int second) {
 
         if(first <= second)
         return first;
@@ -65,12 +65,12 @@ int _min(int first, int second) {
 }
 
 /* gets bit in bitString at bitPos */
-int getBit(uint16_t *bitStr, int bitPos) {
+static int getBit(uint16_t *bitStr, int bitPos) {
 	return !!(bitStr[bitPos >> 4] & (0x8000 >> (bitPos & 15)));
 }
 
 /* initialize pwr928 encoding table */
-void init928(void) {
+static void init928(void) {
 	int i, j, v;
 	int cw[7];
 	cw[6] = 1L;
@@ -90,7 +90,7 @@ void init928(void) {
 }
 
 /* converts bit string to base 928 values, codeWords[0] is highest order */
-int encode928(uint16_t bitString[], uint16_t codeWords[], int bitLng) {
+static int encode928(uint16_t bitString[], uint16_t codeWords[], int bitLng) {
 	int i, j, b, bitCnt, cwNdx, cwCnt, cwLng;
 	for (cwNdx = cwLng = b = 0; b < bitLng; b += 69, cwNdx += 7) {
 		bitCnt = _min(bitLng-b, 69);
@@ -112,7 +112,7 @@ int encode928(uint16_t bitString[], uint16_t codeWords[], int bitLng) {
 	return (cwLng);
 }
 
-int cc_a(struct zint_symbol *symbol, char source[], int cc_width)
+static int cc_a(struct zint_symbol *symbol, char source[], int cc_width)
 { /* CC-A 2D component */
 	int i, strpos, segment, bitlen, cwCnt, variant, rows;
 	int k, offset, j, total, rsCodeWords[8];
@@ -328,7 +328,7 @@ int cc_a(struct zint_symbol *symbol, char source[], int cc_width)
 	return 0;
 }
 
-int cc_b(struct zint_symbol *symbol, char source[], int cc_width)
+static int cc_b(struct zint_symbol *symbol, char source[], int cc_width)
 { /* CC-B 2D component */
 	int length, i, binloc;
 	uint8_t data_string[(strlen(source) / 8) + 3];
@@ -555,7 +555,7 @@ int cc_b(struct zint_symbol *symbol, char source[], int cc_width)
 	return 0;
 }
 
-int cc_c(struct zint_symbol *symbol, char source[], int cc_width, int ecc_level)
+static int cc_c(struct zint_symbol *symbol, char source[], int cc_width, int ecc_level)
 { /* CC-C 2D component - byte compressed PDF417 */
 	int length, i, binloc;
         uint8_t data_string[(strlen(source) / 8) + 4];
@@ -694,7 +694,7 @@ int cc_c(struct zint_symbol *symbol, char source[], int cc_width, int ecc_level)
 	return 0;
 }
 
-int cc_binary_string(struct zint_symbol *symbol, const char source[], char binary_string[], int cc_mode, int *cc_width, int *ecc, int lin_width)
+static int cc_binary_string(struct zint_symbol *symbol, const char source[], char binary_string[], int cc_mode, int *cc_width, int *ecc, int lin_width)
 { /* Handles all data encodation from section 5 of ISO/IEC 24723 */
 	int encoding_method, read_posn, d1, d2, value, alpha_pad;
 	int i, j, mask, ai_crop, fnc1_latch;
@@ -1670,7 +1670,8 @@ int cc_binary_string(struct zint_symbol *symbol, const char source[], char binar
 	return 0;
 }
 
-void add_leading_zeroes(struct zint_symbol *symbol)
+#if 0 /* unused */
+static void add_leading_zeroes(struct zint_symbol *symbol)
 {
 	int with_addon = 0;
 	int first_len = 0, second_len = 0, zfirst_len = 0, zsecond_len = 0, i, h, n = 0;
@@ -1711,6 +1712,7 @@ void add_leading_zeroes(struct zint_symbol *symbol)
 	}
 	symbol->primary[n] = '\0';
 }
+#endif
 
 int composite(struct zint_symbol *symbol, uint8_t source[], int length)
 {

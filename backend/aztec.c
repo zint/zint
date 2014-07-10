@@ -29,16 +29,17 @@
 /**
  * Shorten the string by one character
  */
-void mapshorten(int *charmap, int *typemap, int start, int length)
+static void mapshorten(int *charmap, int *typemap, int start, int length)
 {
 	memmove(charmap + start + 1 , charmap + start + 2, (length - 1) * sizeof(int));
 	memmove(typemap + start + 1 , typemap + start + 2, (length - 1) * sizeof(int));
 }
 
+#if 0 /* unused */
 /**
  * Insert a character into the middle of a string at position posn
  */
-void insert(char binary_string[], int posn, char newbit)
+static void insert(char binary_string[], int posn, char newbit)
 {
 	int end;
 
@@ -48,11 +49,12 @@ void insert(char binary_string[], int posn, char newbit)
 	}
 	binary_string[posn] = newbit;
 }
+#endif
 
 /**
  * Encode input data into a binary string
  */
-int aztec_text_process(uint8_t source[], const unsigned int src_len, char binary_string[], int gs1)
+static int aztec_text_process(uint8_t source[], const unsigned int src_len, char binary_string[], int gs1)
 {
 	int bytes;
 	int curtable, newtable, lasttable, chartype, maplength, blocks, debug;
@@ -163,7 +165,7 @@ int aztec_text_process(uint8_t source[], const unsigned int src_len, char binary
 		}
 
 		/* look for adjacent blocks which can use the same table (right to left search) */
-		for(int i = blocks - 1; i > 0; i--) {
+		for(int i = blocks - 1 - 1; i >= 0; i--) {
 			if(blockmap[0][i] & blockmap[0][i + 1]) {
 				blockmap[0][i] = (blockmap[0][i] & blockmap[0][i + 1]);
 			}
@@ -185,7 +187,7 @@ int aztec_text_process(uint8_t source[], const unsigned int src_len, char binary
 		do{
 			if(blockmap[0][i] == blockmap[0][i + 1]) {
 				blockmap[1][i] += blockmap[1][i + 1];
-				for(int j = i + 1; j < blocks; j++) {
+				for(int j = i + 1; j < blocks - 1; j++) {
 					blockmap[0][j] = blockmap[0][j + 1];
 					blockmap[1][j] = blockmap[1][j + 1];
 				}
@@ -193,7 +195,7 @@ int aztec_text_process(uint8_t source[], const unsigned int src_len, char binary
 			} else {
 				i++;
 			}
-		} while (i < blocks);
+		} while (i < (blocks - 1));
 	}
 
 	/* Put the adjusted block data back into typemap */

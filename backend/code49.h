@@ -21,7 +21,7 @@
 
 /* This data set taken from ANSI/AIM-BC6-2000, 4th April 2000 */
 
-const char *c49_table7[128] = {
+static const char *c49_table7[128] = {
 	/* Table 7: Code 49 ASCII Chart */
 	"! ", "!A", "!B", "!C", "!D", "!E", "!F", "!G", "!H", "!I", "!J", "!K", "!L",
 	"!M", "!N", "!O", "!P", "!Q", "!R", "!S", "!T", "!U", "!V", "!W", "!X", "!Y",
@@ -36,27 +36,27 @@ const char *c49_table7[128] = {
 };
 
 /* Table 5: Check Character Weighting Values */
-const int c49_x_weight[] = {
+static const int c49_x_weight[] = {
 	1, 9, 31, 26, 2, 12, 17, 23, 37, 18, 22, 6, 27, 44, 15, 43,
 	39, 11, 13, 5, 41, 33, 36, 8, 4, 32, 3, 19, 40, 25, 29, 10
 };
 
-const int c49_y_weight[] = {
+static const int c49_y_weight[] = {
 	9, 31, 26, 2, 12, 17, 23, 37, 18, 22, 6, 27, 44, 15, 43, 39,
 	11, 13, 5, 41, 33, 36, 8, 4, 32, 3, 19, 40, 25, 29, 10, 24
 };
 
-const int c49_z_weight[] = {
+static const int c49_z_weight[] = {
 	31, 26, 2, 12, 17, 23, 37, 18, 22, 6, 27, 44, 15, 43, 39, 11,
 	13, 5, 41, 33, 36, 8, 4, 32, 3, 19, 40, 25, 29, 10, 24, 30
 };
 
-const char *c49_table4[8] = {
+static const char *c49_table4[8] = {
 	/* Table 4: Row Parity Pattern for Code 49 Symbols */
 	"OEEO", "EOEO", "OOEE", "EEOO", "OEOE", "EOOE", "OOOO", "EEEE"
 };
 
-const char *c49_appxe_even[2401] = {
+static const char *c49_appxe_even[2401] = {
 	/* Appendix E - Code 49 Encodation Patterns (Even Symbol Character Parity) */
 	/* Column 1 */
 	"11521132",
@@ -615,7 +615,7 @@ const char *c49_appxe_even[2401] = {
 	"31412311", "15121132", "24221131", "13321132", "22421131"
 };
 
-const char *c49_appxe_odd[2401] = {
+static const char *c49_appxe_odd[2401] = {
 	/* Appendix E - Code 49 Encodation Patterns (Odd Symbol Character Parity) */
 	/* Column 1 */
 	"22121116",

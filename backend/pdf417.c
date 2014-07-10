@@ -453,28 +453,28 @@ const char *codagemc[2787] = { "urA", "xfs", "ypy", "unk", "xdw", "yoz", "pDA", 
 
 /* text mode processing tables */
 
-const int asciix[95] = { 7, 8, 8, 4, 12, 4, 4, 8, 8, 8, 12, 4, 12, 12, 12, 12, 4, 4, 4, 4, 4, 4, 4, 4,
+static const int asciix[95] = { 7, 8, 8, 4, 12, 4, 4, 8, 8, 8, 12, 4, 12, 12, 12, 12, 4, 4, 4, 4, 4, 4, 4, 4,
 	4, 4, 12, 8, 8, 4, 8, 8, 8, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 	1, 1, 1, 1, 8, 8, 8, 4, 8, 8, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
 	2, 2, 2, 2, 8, 8, 8, 8 };
 
-const int asciiy[95] = { 26, 10, 20, 15, 18, 21, 10, 28, 23, 24, 22, 20, 13, 16, 17, 19, 0, 1, 2, 3,
+static const int asciiy[95] = { 26, 10, 20, 15, 18, 21, 10, 28, 23, 24, 22, 20, 13, 16, 17, 19, 0, 1, 2, 3,
 	4, 5, 6, 7, 8, 9, 14, 0, 1, 23, 2, 25, 3, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
 	16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 4, 5, 6, 24, 7, 8, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
 	11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 21, 27, 9 };
 
 /* Automatic sizing table */
 
-const int MicroAutosize[56] =
+static const int MicroAutosize[56] =
 {	4, 6, 7, 8, 10, 12, 13, 14, 16, 18, 19, 20, 24, 29, 30, 33, 34, 37, 39, 46, 54, 58, 70, 72, 82, 90, 108, 126,
 	1, 14, 2, 7, 3, 25, 8, 16, 5, 17, 9, 6, 10, 11, 28, 12, 19, 13, 29, 20, 30, 21, 22, 31, 23, 32, 33, 34
 };
 
-int liste[2][1000]; /* global - okay, so I got _almost_ everything local! */
+static int liste[2][1000]; /* global - okay, so I got _almost_ everything local! */
 
 /* 866 */
 
-int quelmode(char codeascii)
+static int quelmode(char codeascii)
 {
 	int mode = BYT;
 	if ((codeascii == '\t') || (codeascii == '\n') || (codeascii == '\r') || ((codeascii >= ' ') && (codeascii <= '~'))) { mode = TEX; }
@@ -485,7 +485,7 @@ int quelmode(char codeascii)
 }
 
 /* 844 */
-void regroupe(int *indexliste)
+static void regroupe(int *indexliste)
 {
 	int i, j;
 
@@ -514,7 +514,7 @@ void regroupe(int *indexliste)
 }
 
 /* 478 */
-void pdfsmooth(int *indexliste)
+static void pdfsmooth(int *indexliste)
 {
 	int i, crnt, last, next, length;
 
@@ -567,7 +567,7 @@ void pdfsmooth(int *indexliste)
 }
 
 /* 547 */
-void textprocess(int *chainemc, int *mclength, char chaine[], int start, int length, int block)
+static void textprocess(int *chainemc, int *mclength, char chaine[], int start, int length, int block)
 {
 	int j, indexlistet, curtable, listet[2][5000], chainet[5000], wnet;
 	char codeascii;
@@ -769,7 +769,7 @@ void byteprocess(int *chainemc, int *mclength, uint8_t chaine[], int start, int 
 }
 
 /* 712 */
-void numbprocess(int *chainemc, int *mclength, char chaine[], int start, int length, int block)
+static void numbprocess(int *chainemc, int *mclength, char chaine[], int start, int length, int block)
 {
 	int j, loop, longueur, dummy[100], dumlength, diviseur, nombre;
 	char chainemod[50], chainemult[100], temp;
@@ -833,7 +833,7 @@ void numbprocess(int *chainemc, int *mclength, char chaine[], int start, int len
 }
 
 /* 366 */
-int pdf417(struct zint_symbol *symbol, uint8_t chaine[], int length)
+static int pdf417(struct zint_symbol *symbol, uint8_t chaine[], int length)
 {
 	int i, k, j, indexchaine, indexliste, mode, longueur, loop, mccorrection[520], offset;
 	int total, chainemc[2700], mclength, c1, c2, c3, dummy[35], codeerr;
