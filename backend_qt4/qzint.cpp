@@ -30,6 +30,7 @@ QZint::QZint()
 {
 	m_symbol=BARCODE_CODE128;
 	m_height=50;
+	m_whitespace = 0;
 	m_border=NO_BORDER;
 	m_borderWidth=1;
 	m_securityLevel=-1;
