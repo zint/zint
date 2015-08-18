@@ -927,14 +927,14 @@ int data_matrix_200(struct zint_symbol *symbol, unsigned char source[], int leng
 		return ERROR_TOO_LONG;
 	}
 
-	if((symbol->option_2 >= 1) && (symbol->option_2 <= 30)) {
+	if((symbol->option_2 >= 1) && (symbol->option_2 <= DMSIZESCOUNT)) {
 		optionsize = intsymbol[symbol->option_2 - 1];
 	} else {
 		optionsize = -1;
 	}
 
-	calcsize = 29;
-	for(i = 29; i > -1; i--) {
+	calcsize = DMSIZESCOUNT-1;
+	for(i = DMSIZESCOUNT-1; i > -1; i--) {
 		if(matrixbytes[i] >= (binlen + process_p))	// Allow for the remaining data characters.
 		{
 			calcsize = i;
@@ -944,12 +944,34 @@ int data_matrix_200(struct zint_symbol *symbol, unsigned char source[], int leng
 	if(symbol->option_3 == DM_SQUARE) {
 		/* Force to use square symbol */
 		switch(calcsize) {
+		/* Without DMRE
 			case 2:
 			case 4:
 			case 6:
 			case 9:
 			case 11:
 			case 14:
+		*/
+			case 2:
+			case 4:
+			case 6:
+			case 8:
+			case 9:
+			case 10:
+			case 11:
+			case 13:
+			case 14:
+			case 16:
+			case 18:
+			case 19:
+			case 20:
+			case 21:
+			case 23:
+			case 24:
+			case 25:
+			case 27:
+			case 28:
+			case 30:
 				calcsize++;
 		}
 	}
@@ -983,7 +1005,7 @@ int data_matrix_200(struct zint_symbol *symbol, unsigned char source[], int leng
 	}
 
 	// ecc code
-	if(symbolsize == 29) { skew = 1; }
+	if(symbolsize == INTSYMBOL144) { skew = 1; }
 	ecc200(binary, bytes, datablock, rsblock, skew);
 	{			// placement
 		int x, y, NC, NR, *places;
