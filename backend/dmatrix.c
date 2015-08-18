@@ -414,6 +414,32 @@ int dm200encode(struct zint_symbol *symbol, unsigned char source[], unsigned cha
 			if(debug) printf("RP ");
 		}
 	}
+	
+	/* Check for Macro05/Macro06 */
+	/* "[)>[RS]05[GS]...[RS][EOT]" -> CW 236 */
+	/* "[)>[RS]06[GS]...[RS][EOT]" -> CW 237 */
+	if (tp == 0 && sp == 0 && inputlen >= 9
+		&& source[0] == '[' && source[1] == ')' && source[2] == '>'
+		&& source[3] == '\x1e' && source[4] == '0'
+		&& (source[5] == '5' || source[5] == '6')
+		&& source[6] == '\x1d'
+		&& source[inputlen-2] == '\x1e' && source[inputlen-1] == '\x04' )
+	{
+		/* Output macro Codeword */
+		if (source[5] == '5') {
+			target[tp] = 236;
+			if(debug) printf("Macro05 ");
+		} else {
+			target[tp] = 237;
+			if(debug) printf("Macro06 ");
+		}
+		tp++;
+		concat(binary, " ");
+		/* Remove macro characters from input string */
+		sp = 7;
+		inputlen -= 2;
+	}
+	
 
 	while (sp < inputlen) {
 
