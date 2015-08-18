@@ -62,6 +62,7 @@ static void ecc200placementbit(int *array, int NR, int NC, int r, int c, int p, 
 		r += 4 - ((NC + 4) % 8);
 	}
 	// Necessary for 36x120,36x144,72x120,72x144
+	/*
 	if (r >= NR) {
 		#ifdef DEBUG
 		fprintf(stderr,"r >= NR:%i,%i at r=%i->",p,b,r);
@@ -71,6 +72,7 @@ static void ecc200placementbit(int *array, int NR, int NC, int r, int c, int p, 
 		fprintf(stderr,"%i,c=%i\n",r,c);
 		#endif
 	}
+	*/
 	#ifdef DEBUG
 	if(0 != array[r * NC + c] ){
 		int a = array[r * NC + c];
@@ -267,8 +269,7 @@ int look_ahead_test(unsigned char source[], int sourcelen, int position, int cur
 
 	float ascii_count, c40_count, text_count, x12_count, edf_count, b256_count, best_count;
 	int sp, done, best_scheme;
-	char reduced_char;
-
+	
 	/* step (j) */
 	if(current_mode == DM_ASCII) {
 		ascii_count = 0.0;
@@ -295,39 +296,48 @@ int look_ahead_test(unsigned char source[], int sourcelen, int position, int cur
 	}
 
 	for(sp = position; (sp < sourcelen) && (sp <= (position + 8)); sp++) {
-
-		if(source[sp] <= 127) { reduced_char = source[sp]; } else { reduced_char = source[sp] - 127; }
-
+		
+		//if(source[sp] <= 127) { reduced_char = source[sp]; } else { reduced_char = source[sp] - 127; }
+		
+		/* ascii */
 		if((source[sp] >= '0') && (source[sp] <= '9')) { ascii_count += 0.5; } else { ascii_count += 1.0; }
-		if(source[sp] > 127) { ascii_count += 1.0; }
-
+		if(source[sp] > 127) { ascii_count += 2.0; }
+		
+		/* c40 */
 		done = 0;
-		if(reduced_char == ' ') { c40_count += (2.0 / 3.0); done = 1; }
-		if((reduced_char >= '0') && (reduced_char <= '9')) { c40_count += (2.0 / 3.0); done = 1; }
-		if((reduced_char >= 'A') && (reduced_char <= 'Z')) { c40_count += (2.0 / 3.0); done = 1; }
-		if(source[sp] > 127) { c40_count += (4.0 / 3.0); }
+		if(source[sp] == ' ') { c40_count += (2.0 / 3.0); done = 1; }
+		if((source[sp] >= '0') && (source[sp] <= '9')) { c40_count += (2.0 / 3.0); done = 1; }
+		if((source[sp] >= 'A') && (source[sp] <= 'Z')) { c40_count += (2.0 / 3.0); done = 1; }
+		if(source[sp] > 127) { c40_count += (8.0 / 3.0); }
 		if(done == 0) { c40_count += (4.0 / 3.0); }
-
+		
+		/* text */
 		done = 0;
-		if(reduced_char == ' ') { text_count += (2.0 / 3.0); done = 1; }
-		if((reduced_char >= '0') && (reduced_char <= '9')) { text_count += (2.0 / 3.0); done = 1; }
-		if((reduced_char >= 'a') && (reduced_char <= 'z')) { text_count += (2.0 / 3.0); done = 1; }
-		if(source[sp] > 127) { text_count += (4.0 / 3.0); }
+		if(source[sp] == ' ') { text_count += (2.0 / 3.0); done = 1; }
+		if((source[sp] >= '0') && (source[sp] <= '9')) { text_count += (2.0 / 3.0); done = 1; }
+		if((source[sp] >= 'a') && (source[sp] <= 'z')) { text_count += (2.0 / 3.0); done = 1; }
+		if(source[sp] > 127) { text_count += (8.0 / 3.0); }
 		if(done == 0) { text_count += (4.0 / 3.0); }
-
-		if(isx12(source[sp])) { x12_count += (2.0 / 3.0); } else { x12_count += 4.0; }
+		
+		/* x12 */
+		done = 0;
+		if(isx12(source[sp])) { x12_count += (2.0 / 3.0); done = 1; }
+		if(source[sp] > 127) { x12_count += (13.0f / 3.0f);	done = 1; }
+		if(done == 0) x12_count += (10.0f / 3.0f);
 
 		/* step (p) */
+		/* edifact */
 		done = 0;
-		if((source[sp] >= ' ') && (source[sp] <= '^')) { edf_count += (3.0 / 4.0); } else { edf_count += 6.0; }
-		if(gs1 && (source[sp] == '[')) { edf_count += 6.0; }
-		if(sp >= (sourcelen - 5)) { edf_count += 6.0; } /* MMmmm fudge! */
-
+		if((source[sp] >= ' ') && (source[sp] <= '^')) { edf_count += (3.0f / 4.0f); done = 1; }
+		if(source[sp] > 127) { edf_count += (17.0f / 4.0f);	done = 1; }
+		if(done = 0) edf_count += (13.0f / 4.0f);
+		
 		/* step (q) */
+		/* b256 */
 		if(gs1 && (source[sp] == '[')) { b256_count += 4.0; } else { b256_count += 1.0; }
-
+		
 		/* printf("%c lat a%.2f c%.2f t%.2f x%.2f e%.2f b%.2f\n", source[sp], ascii_count, c40_count, text_count, x12_count, edf_count, b256_count); */
-
+		
 	}
 
 	best_count = ascii_count;
@@ -361,7 +371,7 @@ int look_ahead_test(unsigned char source[], int sourcelen, int position, int cur
 	return best_scheme;
 }
 
-int dm200encode(struct zint_symbol *symbol, unsigned char source[], unsigned char target[], int *last_mode, int length)
+int dm200encode(struct zint_symbol *symbol, unsigned char source[], unsigned char target[], int *last_mode, int length, int process_buffer[], int *process_p)
 {
 	/* Encodes data using ASCII, C40, Text, X12, EDIFACT or Base 256 modes as appropriate */
 	/* Supports encoding FNC1 in supporting systems */
@@ -369,10 +379,6 @@ int dm200encode(struct zint_symbol *symbol, unsigned char source[], unsigned cha
 	int sp, tp, i, gs1;
 	int current_mode, next_mode;
 	int inputlen = length;
-	int c40_buffer[6], c40_p;
-	int text_buffer[6], text_p;
-	int x12_buffer[6], x12_p;
-	int edifact_buffer[8], edifact_p;
 	int debug = 0;
 #ifndef _MSC_VER
         char binary[2 * inputlen];
@@ -382,14 +388,8 @@ int dm200encode(struct zint_symbol *symbol, unsigned char source[], unsigned cha
 
 	sp = 0;
 	tp = 0;
-	memset(c40_buffer, 0, 6);
-	c40_p = 0;
-	memset(text_buffer, 0, 6);
-	text_p = 0;
-	memset(x12_buffer, 0, 6);
-	x12_p = 0;
-	memset(edifact_buffer, 0, 8);
-	edifact_p = 0;
+	memset(process_buffer, 0, 8);
+	*process_p = 0;
 	strcpy(binary, "");
 
 	/* step (a) */
@@ -500,18 +500,18 @@ int dm200encode(struct zint_symbol *symbol, unsigned char source[], unsigned cha
 			int shift_set, value;
 
 			next_mode = DM_C40;
-			if(c40_p == 0) {
+			if(*process_p == 0) {
 				next_mode = look_ahead_test(source, inputlen, sp, current_mode, gs1);
 			}
 
 			if(next_mode != DM_C40) {
-				target[tp] = 254; tp++; concat(binary, " ");/* Unlatch */
+				target[tp] = 254; tp++; concat(binary, " ");	/* Unlatch */
 				next_mode = DM_ASCII;
 				if (debug) printf("ASC ");
 			} else {
 				if(source[sp] > 127) {
-					c40_buffer[c40_p] = 1; c40_p++;
-					c40_buffer[c40_p] = 30; c40_p++; /* Upper Shift */
+					process_buffer[*process_p] = 1; (*process_p)++;
+					process_buffer[*process_p] = 30; (*process_p)++;	/* Upper Shift */
 					shift_set = c40_shift[source[sp] - 128];
 					value = c40_value[source[sp] - 128];
 				} else {
@@ -525,26 +525,26 @@ int dm200encode(struct zint_symbol *symbol, unsigned char source[], unsigned cha
 				}
 
 				if(shift_set != 0) {
-					c40_buffer[c40_p] = shift_set - 1; c40_p++;
+					process_buffer[*process_p] = shift_set - 1; (*process_p)++;
 				}
-				c40_buffer[c40_p] = value; c40_p++;
+				process_buffer[*process_p] = value; (*process_p)++;
 
-				if(c40_p >= 3) {
+				if(*process_p >= 3) {
 					int iv;
 
-					iv = (1600 * c40_buffer[0]) + (40 * c40_buffer[1]) + (c40_buffer[2]) + 1;
+					iv = (1600 * process_buffer[0]) + (40 * process_buffer[1]) + (process_buffer[2]) + 1;
 					target[tp] = iv / 256; tp++;
 					target[tp] = iv % 256; tp++;
 					concat(binary, "  ");
-					if (debug) printf("[%d %d %d] ", c40_buffer[0], c40_buffer[1], c40_buffer[2]);
+					if (debug) printf("[%d %d %d] ", process_buffer[0], process_buffer[1], process_buffer[2]);
 
-					c40_buffer[0] = c40_buffer[3];
-					c40_buffer[1] = c40_buffer[4];
-					c40_buffer[2] = c40_buffer[5];
-					c40_buffer[3] = 0;
-					c40_buffer[4] = 0;
-					c40_buffer[5] = 0;
-					c40_p -= 3;
+					process_buffer[0] = process_buffer[3];
+					process_buffer[1] = process_buffer[4];
+					process_buffer[2] = process_buffer[5];
+					process_buffer[3] = 0;
+					process_buffer[4] = 0;
+					process_buffer[5] = 0;
+					*process_p -= 3;
 				}
 				sp++;
 			}
@@ -555,7 +555,7 @@ int dm200encode(struct zint_symbol *symbol, unsigned char source[], unsigned cha
 			int shift_set, value;
 
 			next_mode = DM_TEXT;
-			if(text_p == 0) {
+			if(*process_p == 0) {
 				next_mode = look_ahead_test(source, inputlen, sp, current_mode, gs1);
 			}
 
@@ -565,8 +565,8 @@ int dm200encode(struct zint_symbol *symbol, unsigned char source[], unsigned cha
 				if (debug) printf("ASC ");
 			} else {
 				if(source[sp] > 127) {
-					text_buffer[text_p] = 1; text_p++;
-					text_buffer[text_p] = 30; text_p++; /* Upper Shift */
+					process_buffer[*process_p] = 1; (*process_p)++;
+					process_buffer[*process_p] = 30; (*process_p)++; /* Upper Shift */
 					shift_set = text_shift[source[sp] - 128];
 					value = text_value[source[sp] - 128];
 				} else {
@@ -580,26 +580,26 @@ int dm200encode(struct zint_symbol *symbol, unsigned char source[], unsigned cha
 				}
 
 				if(shift_set != 0) {
-					text_buffer[text_p] = shift_set - 1; text_p++;
+					process_buffer[*process_p] = shift_set - 1; (*process_p)++;
 				}
-				text_buffer[text_p] = value; text_p++;
-
-				if(text_p >= 3) {
+				process_buffer[*process_p] = value; (*process_p)++;
+				
+				if(*process_p >= 3) {
 					int iv;
-
-					iv = (1600 * text_buffer[0]) + (40 * text_buffer[1]) + (text_buffer[2]) + 1;
+					
+					iv = (1600 * process_buffer[0]) + (40 * process_buffer[1]) + (process_buffer[2]) + 1;
 					target[tp] = iv / 256; tp++;
 					target[tp] = iv % 256; tp++;
 					concat(binary, "  ");
-					if (debug) printf("[%d %d %d] ", text_buffer[0], text_buffer[1], text_buffer[2]);
-
-					text_buffer[0] = text_buffer[3];
-					text_buffer[1] = text_buffer[4];
-					text_buffer[2] = text_buffer[5];
-					text_buffer[3] = 0;
-					text_buffer[4] = 0;
-					text_buffer[5] = 0;
-					text_p -= 3;
+					if (debug) printf("[%d %d %d] ", process_buffer[0], process_buffer[1], process_buffer[2]);
+					
+					process_buffer[0] = process_buffer[3];
+					process_buffer[1] = process_buffer[4];
+					process_buffer[2] = process_buffer[5];
+					process_buffer[3] = 0;
+					process_buffer[4] = 0;
+					process_buffer[5] = 0;
+					*process_p -= 3;
 				}
 				sp++;
 			}
@@ -610,7 +610,7 @@ int dm200encode(struct zint_symbol *symbol, unsigned char source[], unsigned cha
 			int value = 0;
 
 			next_mode = DM_X12;
-			if(x12_p == 0) {
+			if(*process_p == 0) {
 				next_mode = look_ahead_test(source, inputlen, sp, current_mode, gs1);
 			}
 
@@ -626,24 +626,24 @@ int dm200encode(struct zint_symbol *symbol, unsigned char source[], unsigned cha
 				if((source[sp] >= '0') && (source[sp] <= '9')) { value = (source[sp] - '0') + 4; }
 				if((source[sp] >= 'A') && (source[sp] <= 'Z')) { value = (source[sp] - 'A') + 14; }
 
-				x12_buffer[x12_p] = value; x12_p++;
+				process_buffer[*process_p] = value; (*process_p)++;
 
-				if(x12_p >= 3) {
+				if(*process_p >= 3) {
 					int iv;
 
-					iv = (1600 * x12_buffer[0]) + (40 * x12_buffer[1]) + (x12_buffer[2]) + 1;
+					iv = (1600 * process_buffer[0]) + (40 * process_buffer[1]) + (process_buffer[2]) + 1;
 					target[tp] = iv / 256; tp++;
 					target[tp] = iv % 256; tp++;
 					concat(binary, "  ");
-					if (debug) printf("[%d %d %d] ", x12_buffer[0], x12_buffer[1], x12_buffer[2]);
+					if (debug) printf("[%d %d %d] ", process_buffer[0], process_buffer[1], process_buffer[2]);
 
-					x12_buffer[0] = x12_buffer[3];
-					x12_buffer[1] = x12_buffer[4];
-					x12_buffer[2] = x12_buffer[5];
-					x12_buffer[3] = 0;
-					x12_buffer[4] = 0;
-					x12_buffer[5] = 0;
-					x12_p -= 3;
+					process_buffer[0] = process_buffer[3];
+					process_buffer[1] = process_buffer[4];
+					process_buffer[2] = process_buffer[5];
+					process_buffer[3] = 0;
+					process_buffer[4] = 0;
+					process_buffer[5] = 0;
+					*process_p -= 3;
 				}
 				sp++;
 			}
@@ -654,37 +654,37 @@ int dm200encode(struct zint_symbol *symbol, unsigned char source[], unsigned cha
 			int value = 0;
 
 			next_mode = DM_EDIFACT;
-			if(edifact_p == 3) {
+			if(*process_p == 3) {
 				next_mode = look_ahead_test(source, inputlen, sp, current_mode, gs1);
 			}
 
 			if(next_mode != DM_EDIFACT) {
-				edifact_buffer[edifact_p] = 31; edifact_p++;
+				process_buffer[*process_p] = 31; (*process_p)++;
 				next_mode = DM_ASCII;
 			} else {
 				if((source[sp] >= '@') && (source[sp] <= '^')) { value = source[sp] - '@'; }
 				if((source[sp] >= ' ') && (source[sp] <= '?')) { value = source[sp]; }
 
-				edifact_buffer[edifact_p] = value; edifact_p++;
+				process_buffer[*process_p] = value; (*process_p)++;
 				sp++;
 			}
 
-			if(edifact_p >= 4) {
-				target[tp] = (edifact_buffer[0] << 2) + ((edifact_buffer[1] & 0x30) >> 4); tp++;
-				target[tp] = ((edifact_buffer[1] & 0x0f) << 4) + ((edifact_buffer[2] & 0x3c) >> 2); tp++;
-				target[tp] = ((edifact_buffer[2] & 0x03) << 6) + edifact_buffer[3]; tp++;
+			if(*process_p >= 4) {
+				target[tp] = (process_buffer[0] << 2) + ((process_buffer[1] & 0x30) >> 4); tp++;
+				target[tp] = ((process_buffer[1] & 0x0f) << 4) + ((process_buffer[2] & 0x3c) >> 2); tp++;
+				target[tp] = ((process_buffer[2] & 0x03) << 6) + process_buffer[3]; tp++;
 				concat(binary, "   ");
-				if (debug) printf("[%d %d %d %d] ", edifact_buffer[0], edifact_buffer[1], edifact_buffer[2], edifact_buffer[3]);
+				if (debug) printf("[%d %d %d %d] ", process_buffer[0], process_buffer[1], process_buffer[2], process_buffer[3]);
 
-				edifact_buffer[0] = edifact_buffer[4];
-				edifact_buffer[1] = edifact_buffer[5];
-				edifact_buffer[2] = edifact_buffer[6];
-				edifact_buffer[3] = edifact_buffer[7];
-				edifact_buffer[4] = 0;
-				edifact_buffer[5] = 0;
-				edifact_buffer[6] = 0;
-				edifact_buffer[7] = 0;
-				edifact_p -= 4;
+				process_buffer[0] = process_buffer[4];
+				process_buffer[1] = process_buffer[5];
+				process_buffer[2] = process_buffer[6];
+				process_buffer[3] = process_buffer[7];
+				process_buffer[4] = 0;
+				process_buffer[5] = 0;
+				process_buffer[6] = 0;
+				process_buffer[7] = 0;
+				*process_p -= 4;
 			}
 		}
 
@@ -709,59 +709,6 @@ int dm200encode(struct zint_symbol *symbol, unsigned char source[], unsigned cha
 		}
 
 	} /* while */
-
-	/* Empty buffers */
-	if(c40_p == 1 || ( c40_p == 2 && c40_buffer[0] < 3 ) ) {
-		/* There is one C40 character, wether with shift or without -> output
-one ASCII
-		 * character */
-		/* ToDo: If it is known that the symbol is not filled, the unlatch
-might be omitted*/
-		target[tp] = 254; tp++; /* unlatch */
-		target[tp] = source[inputlen - 1] + 1; tp++;
-		concat(binary, "  ");
-		if(debug) printf("ASC A%02X ", target[tp - 1] - 1);
-		current_mode = DM_ASCII;
-	} else if(c40_p == 2) {
-		target[tp] = 254; tp++; /* unlatch */
-		target[tp] = source[inputlen - 2] + 1; tp++;
-		target[tp] = source[inputlen - 1] + 1; tp++;
-		concat(binary, "   ");
-		if(debug) printf("ASC A%02X A%02X ", target[tp - 2] - 1, target[tp - 1] - 1);
-		current_mode = DM_ASCII;
-	}
-
-	if(text_p == 2) {
-		target[tp] = 254; tp++; /* unlatch */
-		target[tp] = source[inputlen - 2] + 1; tp++;
-		target[tp] = source[inputlen - 1] + 1; tp++;
-		concat(binary, "   ");
-		if(debug) printf("ASC A%02X A%02X ", target[tp - 2] - 1, target[tp - 1] - 1);
-		current_mode = DM_ASCII;
-	}
-	if(text_p == 1) {
-		target[tp] = 254; tp++; /* text encodation requires unlatch */
-		target[tp] = source[inputlen - 1] + 1; tp++;
-		concat(binary, "  ");
-		if(debug) printf("ASC A%02X ", target[tp - 1] - 1);
-		current_mode = DM_ASCII;
-	}
-
-	if(x12_p == 2) {
-		target[tp] = 254; tp++; /* unlatch */
-		target[tp] = source[inputlen - 2] + 1; tp++;
-		target[tp] = source[inputlen - 1] + 1; tp++;
-		concat(binary, "   ");
-		if(debug) printf("ASC A%02X A%02X ", target[tp - 2] - 1, target[tp - 1] - 1);
-		current_mode = DM_ASCII;
-	}
-	if(x12_p == 1) {
-		// don't unlatch before sending a single remaining ASCII character.
-		target[tp] = source[inputlen - 1] + 1; tp++;
-		concat(binary, "  ");
-		if(debug) printf("ASC A%02X ", target[tp - 1] - 1);
-		current_mode = DM_ASCII;
-	}
 
 	/* Add length and randomising algorithm to b256 */
 	i = 0;
@@ -797,30 +744,152 @@ might be omitted*/
 		}
 	}
 
-	if(debug) {
-		printf("\n\n");
-		for(i = 0; i < tp; i++){
-			printf("%02X ", target[i]);
-		}
-		printf("\n");
-	}
-
 	*(last_mode) = current_mode;
 	return tp;
 }
 
-void add_tail(unsigned char target[], int tp, int tail_length, int last_mode)
+int dm200encode_remainder(unsigned char target[], int target_length, unsigned char source[], int inputlen, int last_mode, int process_buffer[], int process_p, int symbols_left)
 {
-	/* adds unlatch and pad bits */
-	int i, prn, temp;
+	int debug = 0;
 
-	switch(last_mode) {
+	switch (last_mode) 
+	{
 		case DM_C40:
 		case DM_TEXT:
+			if (symbols_left == process_p)	// No unlatch required!
+			{
+				if (process_p == 1)   // 1 data character left to encode.
+				{
+					target[target_length] = source[inputlen - 1] + 1; target_length++;
+				}
+
+				if (process_p == 2)   // 2 data characters left to encode.
+				{
+					// Pad with shift 1 value (0) and encode as double.
+					int intValue = (1600 * process_buffer[0]) + (40 * process_buffer[1]) + 1;	// ie (0 + 1).
+					target[target_length] = (unsigned char)(intValue / 256); target_length++;
+					target[target_length] = (unsigned char)(intValue % 256); target_length++;
+				}
+			}
+
+			if (symbols_left > process_p)
+			{
+				target[target_length] = (254); target_length++;    // Unlatch and encode remaining data in ascii.
+				if (process_p == 1 || (process_p == 2 && process_buffer[0] < 3))	// Check for a shift value.
+				{
+					target[target_length] = source[inputlen - 1] + 1; target_length++;
+				}
+
+				else if (process_p == 2)
+				{
+					target[target_length] = source[inputlen - 2] + 1; target_length++;
+					target[target_length] = source[inputlen - 1] + 1; target_length++;
+				}
+			}
+			break;
+
 		case DM_X12:
-			target[tp] = 254; tp++; /* Unlatch */
-			tail_length--;
+			if (symbols_left == process_p)	// Unlatch not required!
+			{
+				if (process_p == 1)   // 1 data character left to encode.
+				{
+					target[target_length] = source[inputlen - 1] + 1; target_length++;
+				}
+
+				if (process_p == 2)
+				{
+					// Encode last 2 bytes as ascii.
+					target[target_length] = source[inputlen - 2] + 1; target_length++;
+					target[target_length] = source[inputlen - 1] + 1; target_length++;
+				}
+			}
+
+			if (symbols_left > process_p)	// Unlatch and encode remaining data in ascii.
+			{
+				target[target_length] = (254); target_length++;   // Unlatch.
+				if (process_p == 1)	
+				{
+					target[target_length] = source[inputlen - 1] + 1; target_length++;
+				}
+
+				if (process_p == 2)
+				{
+					target[target_length] = source[inputlen - 2] + 1; target_length++;
+					target[target_length] = source[inputlen - 1] + 1; target_length++;
+				}
+			}
+			break;
+
+		case DM_EDIFACT:
+			if (symbols_left == process_p)	// Unlatch not required!
+			{
+				if (process_p == 1)
+				{
+					target[target_length] = source[inputlen - 1] + 1; target_length++;
+				}
+
+				if (process_p == 2)
+				{
+					target[target_length] = source[inputlen - 2] + 1; target_length++;
+					target[target_length] = source[inputlen - 1] + 1; target_length++;
+				}
+
+				if (process_p == 3)    // Append edifact unlatch value (31) and encode as triple.
+				{
+					target[target_length] = (unsigned char)((process_buffer[0] << 2) + ((process_buffer[1] & 0x30) >> 4)); target_length++;
+					target[target_length] = (unsigned char)(((process_buffer[1] & 0x0f) << 4) + ((process_buffer[2] & 0x3c) >> 2)); target_length++;
+					target[target_length] = (unsigned char)(((process_buffer[2] & 0x03) << 6) + 31); target_length++;
+				}
+			}
+
+			if (symbols_left > process_p)     // Unlatch and encode remaining data in ascii.
+			{
+				// Edifact unlatch.
+				if (symbols_left < 3)
+				{
+					target[target_length] = 31; target_length++;
+				}
+
+				else
+					target[target_length] = (31 << 2); target_length++;
+
+				if (process_p == 1)
+				{
+					target[target_length] = source[inputlen - 1] + 1; target_length++;
+				}
+
+				if (process_p == 2)
+				{
+					target[target_length] = source[inputlen - 2] + 1; target_length++;
+					target[target_length] = source[inputlen - 1] + 1; target_length++;
+				}
+
+				if (process_p == 3)
+				{
+					target[target_length] = source[inputlen - 3] + 1; target_length++;
+					target[target_length] = source[inputlen - 2] + 1; target_length++;
+					target[target_length] = source[inputlen - 1] + 1; target_length++;
+				}
+			}
+			break;
 	}
+
+	if(debug)
+		{
+			printf("\n\n");
+			for(int i = 0; i < target_length; i++)
+				printf("%03d ", target[i]);
+
+			printf("\n");
+		}
+
+			return target_length;
+	}
+
+void add_tail(unsigned char target[], int tp, int tail_length)
+{
+	/* add pad bits */
+	int i, prn, temp;
 
 	for(i = tail_length; i > 0; i--) {
 		if(i == tail_length) {
@@ -839,34 +908,49 @@ void add_tail(unsigned char target[], int tp, int tail_length, int last_mode)
 
 int data_matrix_200(struct zint_symbol *symbol, unsigned char source[], int length)
 {
-	int           i, skew = 0;
+	int inputlen, i, skew = 0;
 	unsigned char binary[2200];
 	int binlen;
+	int process_buffer[8];	/* holds remaining data to finalised */
+	int process_p;			/* number of characters left to finalise */
 	int symbolsize, optionsize, calcsize;
 	int taillength, error_number = 0;
 	int H, W, FH, FW, datablock, bytes, rsblock;
 	int last_mode;
 	unsigned char *grid = 0;
+	inputlen = length;
 
-	binlen = dm200encode(symbol, source, binary, &last_mode, length);
+	binlen = dm200encode(symbol, source, binary, &last_mode, inputlen, process_buffer, &process_p);
 
 	if(binlen == 0) {
 		strcpy(symbol->errtxt, "Data too long to fit in symbol");
 		return ERROR_TOO_LONG;
 	}
 
-	if((symbol->option_2 >= 1) && (symbol->option_2 <= DM_SYMBOL_OPTION_MAX)) {
+	if((symbol->option_2 >= 1) && (symbol->option_2 <= 30)) {
 		optionsize = intsymbol[symbol->option_2 - 1];
 	} else {
 		optionsize = -1;
 	}
 
-	calcsize = DM_SYMBOL_OPTION_MAX-1;
-	for(i = DM_SYMBOL_OPTION_MAX-1; i > -1; i--) {
-		if(matrixbytes[i] >= binlen
-                    && ( symbol->option_3 != DM_SQUARE
-                        || matrixH[i] == matrixW[i] ) ) {
+	calcsize = 29;
+	for(i = 29; i > -1; i--) {
+		if(matrixbytes[i] >= (binlen + process_p))	// Allow for the remaining data characters.
+		{
 			calcsize = i;
+		}
+	}
+
+	if(symbol->option_3 == DM_SQUARE) {
+		/* Force to use square symbol */
+		switch(calcsize) {
+			case 2:
+			case 4:
+			case 6:
+			case 9:
+			case 11:
+			case 14:
+				calcsize++;
 		}
 	}
 
@@ -880,6 +964,10 @@ int data_matrix_200(struct zint_symbol *symbol, unsigned char source[], int leng
 		}
 	}
 
+	// Now we know the symbol size we can handle the remaining data in the process buffer.
+	int symbols_left = matrixbytes[symbolsize] - binlen;
+    binlen = dm200encode_remainder(binary, binlen, source, inputlen, last_mode, process_buffer, process_p, symbols_left);
+
 	H = matrixH[symbolsize];
 	W = matrixW[symbolsize];
 	FH = matrixFH[symbolsize];
@@ -891,7 +979,7 @@ int data_matrix_200(struct zint_symbol *symbol, unsigned char source[], int leng
 	taillength = bytes - binlen;
 
 	if(taillength != 0) {
-		add_tail(binary, binlen, taillength, last_mode);
+		add_tail(binary, binlen, taillength);
 	}
 
 	// ecc code
@@ -932,9 +1020,11 @@ int data_matrix_200(struct zint_symbol *symbol, unsigned char source[], int leng
 		for (y = 0; y < NR; y++) {
 			for (x = 0; x < NC; x++) {
 				int v = places[(NR - y - 1) * NC + x];
+				//fprintf (stderr, "%4d", v);
 				if (v == 1 || (v > 7 && (binary[(v >> 3) - 1] & (1 << (v & 7)))))
 					grid[(1 + y + 2 * (y / (FH - 2))) * W + 1 + x + 2 * (x / (FW - 2))] = 1;
 			}
+			//fprintf (stderr, "\n");
 		}
 		for(y = H - 1; y >= 0; y--) {
 			int x;
