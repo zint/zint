@@ -223,7 +223,12 @@ int batch_process(struct zint_symbol *symbol, char *filename)
 	}
 	
 	do {
-		character = fgetc(file);
+		int intChar;
+		intChar = fgetc(file);
+		if (intChar == EOF) {
+		    break;
+		}
+		character = (unsigned char) intChar;
 		if(character == '\n') {
 			if(buffer[posn - 1] == '\r') {
 				/* CR+LF - assume Windows formatting and remove CR */
