@@ -42,6 +42,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
+#include <assert.h> 
 #ifdef _MSC_VER
 #include <malloc.h> 
 #endif
@@ -60,6 +61,28 @@ static void ecc200placementbit(int *array, int NR, int NC, int r, int c, int p, 
 		c += NC;
 		r += 4 - ((NC + 4) % 8);
 	}
+	// Necessary for 36x120,36x144,72x120,72x144
+	if (r >= NR) {
+		#ifdef DEBUG
+		fprintf(stderr,"r >= NR:%i,%i at r=%i->",p,b,r);
+		#endif
+		r = r - NR;
+		#ifdef DEBUG
+		fprintf(stderr,"%i,c=%i\n",r,c);
+		#endif
+	}
+	#ifdef DEBUG
+	if(0 != array[r * NC + c] ){
+		int a = array[r * NC + c];
+		fprintf(stderr,"Double:%i,%i->%i,%i at r=%i,c=%i\n",a >> 3, a & 7, p,b,r,c);
+		return;
+	}
+	#endif
+	// Check index limits
+	assert( r < NR );
+	assert( c < NC );
+	// Check double-assignment
+	assert( 0 == array[r * NC + c] );
 	array[r * NC + c] = (p << 3) + b;
 }
 
@@ -802,29 +825,18 @@ int data_matrix_200(struct zint_symbol *symbol, unsigned char source[], int leng
 		return ERROR_TOO_LONG;
 	}
 
-	if((symbol->option_2 >= 1) && (symbol->option_2 <= 30)) {
+	if((symbol->option_2 >= 1) && (symbol->option_2 <= DM_SYMBOL_OPTION_MAX)) {
 		optionsize = intsymbol[symbol->option_2 - 1];
 	} else {
 		optionsize = -1;
 	}
 
-	calcsize = 29;
-	for(i = 29; i > -1; i--) {
-		if(matrixbytes[i] >= binlen) {
+	calcsize = DM_SYMBOL_OPTION_MAX-1;
+	for(i = DM_SYMBOL_OPTION_MAX-1; i > -1; i--) {
+		if(matrixbytes[i] >= binlen
+                    && ( symbol->option_3 != DM_SQUARE
+                        || matrixH[i] == matrixW[i] ) ) {
 			calcsize = i;
-		}
-	}
-
-	if(symbol->option_3 == DM_SQUARE) {
-		/* Force to use square symbol */
-		switch(calcsize) {
-			case 2:
-			case 4:
-			case 6:
-			case 9:
-			case 11:
-			case 14:
-				calcsize++;
 		}
 	}
 
@@ -875,14 +887,24 @@ int data_matrix_200(struct zint_symbol *symbol, unsigned char source[], int leng
 			for (y = 0; y < H; y += 2)
 				grid[y * W + x + FW - 1] = 1;
 		}
+		#ifdef DEBUG
+		// Print position matrix as in standard
+		for (y = NR-1; y >= 0; y--) {
+			for (x = 0; x < NC; x++) {
+				if (x != 0)
+				    fprintf (stderr, "|");
+				int v = places[(NR - y - 1) * NC + x];
+				fprintf(stderr,"%3d.%2d",(v>>3),8-(v&7));
+			}
+			fprintf (stderr, "\n");
+		}
+		#endif
 		for (y = 0; y < NR; y++) {
 			for (x = 0; x < NC; x++) {
 				int v = places[(NR - y - 1) * NC + x];
-				//fprintf (stderr, "%4d", v);
 				if (v == 1 || (v > 7 && (binary[(v >> 3) - 1] & (1 << (v & 7)))))
 					grid[(1 + y + 2 * (y / (FH - 2))) * W + 1 + x + 2 * (x / (FW - 2))] = 1;
 			}
-			//fprintf (stderr, "\n");
 		}
 		for(y = H - 1; y >= 0; y--) {
 			int x;

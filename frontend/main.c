@@ -481,7 +481,7 @@ int main(int argc, char **argv)
 					}
 				}
 				if(!strcmp(long_options[option_index].name, "vers")) {
-					if((atoi(optarg) >= 1) && (atoi(optarg) <= 40)) {
+					if((atoi(optarg) >= 1) && (atoi(optarg) <= 47)) {
 						my_symbol->option_2 = atoi(optarg);
 					} else {
 						fprintf(stderr, "Invalid QR Code version\n");
