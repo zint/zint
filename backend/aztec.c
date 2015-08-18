@@ -99,7 +99,7 @@ int aztec_text_process(unsigned char source[], const unsigned int src_len, char 
 			charmap[maplength] = 400;
 			typemap[maplength++] = PUNC;
 		} else {
-			if(source[i] > 127) {
+			if((source[i] > 127) || (source[i] == 0)) {
 				charmap[maplength] = source[i];
 				typemap[maplength++] = BINARY;
 			} else {
@@ -703,14 +703,6 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], int length)
 			err_code = latin1_process(symbol, source, local_source, &length);
 			if(err_code != 0) { return err_code; }
 			break;
-	}
-	
-	/* Aztec code can't handle NULL characters */
-	for(i = 0; i < length; i++) {
-		if(local_source[i] == '\0') {
-			strcpy(symbol->errtxt, "Invalid character (NULL) in input data");
-			return ERROR_INVALID_DATA;
-		}
 	}
 	
 	err_code = aztec_text_process(local_source, length, binary_string, gs1);
