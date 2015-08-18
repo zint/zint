@@ -524,9 +524,7 @@ int dm200encode(struct zint_symbol *symbol, unsigned char source[], unsigned cha
 					value = 27; /* FNC1 */
 				}
 
-				/* Do not output the shift if we are at the end and
-				   thus, the character is outputted using ASCII */
-				if(shift_set != 0 && inputlen - sp > 1) {
+				if(shift_set != 0) {
 					c40_buffer[c40_p] = shift_set - 1; c40_p++;
 				}
 				c40_buffer[c40_p] = value; c40_p++;
@@ -713,20 +711,23 @@ int dm200encode(struct zint_symbol *symbol, unsigned char source[], unsigned cha
 	} /* while */
 
 	/* Empty buffers */
-	if(c40_p == 2) {
+	if(c40_p == 1 || ( c40_p == 2 && c40_buffer[0] < 3 ) ) {
+		/* There is one C40 character, wether with shift or without -> output
+one ASCII
+		 * character */
+		/* ToDo: If it is known that the symbol is not filled, the unlatch
+might be omitted*/
+		target[tp] = 254; tp++; /* unlatch */
+		target[tp] = source[inputlen - 1] + 1; tp++;
+		concat(binary, "  ");
+		if(debug) printf("ASC A%02X ", target[tp - 1] - 1);
+		current_mode = DM_ASCII;
+	} else if(c40_p == 2) {
 		target[tp] = 254; tp++; /* unlatch */
 		target[tp] = source[inputlen - 2] + 1; tp++;
 		target[tp] = source[inputlen - 1] + 1; tp++;
 		concat(binary, "   ");
 		if(debug) printf("ASC A%02X A%02X ", target[tp - 2] - 1, target[tp - 1] - 1);
-		current_mode = DM_ASCII;
-	}
-	if(c40_p == 1) {
-		// ToDo: If we know that there is no Pad after this, the unlatch may be removed
-		target[tp] = 254; tp++; /* unlatch */
-		target[tp] = source[inputlen - 1] + 1; tp++;
-		concat(binary, "  ");
-		if(debug) printf("ASC A%02X ", target[tp - 1] - 1);
 		current_mode = DM_ASCII;
 	}
 
