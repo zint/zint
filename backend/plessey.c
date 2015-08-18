@@ -386,6 +386,7 @@ int msi_plessey_mod1110(struct zint_symbol *symbol, unsigned char source[], cons
 	/* Weighted using the IBM system */
 
 	unsigned long i, weight, x, check, wright, dau, pedwar, pump, h;
+	long si;
 	char un[16], tri[16];
 	int error_number;
 	char dest[1000];
@@ -411,8 +412,8 @@ int msi_plessey_mod1110(struct zint_symbol *symbol, unsigned char source[], cons
 	/* calculate first (mod 11) digit */
 	x = 0;
 	weight = 2;
-	for(i = src_len - 1; i >= 0; i--) {
-		x += weight * ctoi(source[i]);
+	for(si = src_len - 1; si >= 0; si--) {
+		x += weight * ctoi(source[si]);
 		weight++;
 		if(weight > 7) {
 			weight = 2;
