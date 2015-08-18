@@ -320,11 +320,11 @@ int look_ahead_test(unsigned char source[], int sourcelen, int position, int cur
 		/* step (p) */
 		done = 0;
 		if((source[sp] >= ' ') && (source[sp] <= '^')) { edf_count += (3.0 / 4.0); } else { edf_count += 6.0; }
-		if(gs1 && (source[sp] == '[')) { edf_count += 6.0; }
+		if(gs1 && (source[sp] == '[' || source[sp] == '\x1d')) { edf_count += 6.0; }
 		if(sp >= (sourcelen - 5)) { edf_count += 6.0; } /* MMmmm fudge! */
 
 		/* step (q) */
-		if(gs1 && (source[sp] == '[')) { b256_count += 4.0; } else { b256_count += 1.0; }
+		if(gs1 && (source[sp] == '[' || source[sp] == '\x1d')) { b256_count += 4.0; } else { b256_count += 1.0; }
 
 		/* printf("%c lat a%.2f c%.2f t%.2f x%.2f e%.2f b%.2f\n", source[sp], ascii_count, c40_count, text_count, x12_count, edf_count, b256_count); */
 
@@ -479,7 +479,7 @@ int dm200encode(struct zint_symbol *symbol, unsigned char source[], unsigned cha
 						if(debug) printf("A%02X ", target[tp] - 1);
 						tp++; concat(binary, "  ");
 					} else {
-						if(gs1 && (source[sp] == '[')) {
+						if(gs1 && (source[sp] == '[' || source[sp] == '\x1d')) {
 							target[tp] = 232; /* FNC1 */
 							if(debug) printf("FN1 ");
 						} else {
@@ -519,7 +519,7 @@ int dm200encode(struct zint_symbol *symbol, unsigned char source[], unsigned cha
 					value = c40_value[source[sp]];
 				}
 
-				if(gs1 && (source[sp] == '[')) {
+				if(gs1 && (source[sp] == '[' || source[sp] == '\x1d')) {
 					shift_set = 2;
 					value = 27; /* FNC1 */
 				}
@@ -574,7 +574,7 @@ int dm200encode(struct zint_symbol *symbol, unsigned char source[], unsigned cha
 					value = text_value[source[sp]];
 				}
 
-				if(gs1 && (source[sp] == '[')) {
+				if(gs1 && (source[sp] == '[' || source[sp] == '\x1d')) {
 					shift_set = 2;
 					value = 27; /* FNC1 */
 				}
