@@ -30,6 +30,12 @@
     SUCH DAMAGE.
 */
 
+/*
+    Containes Extended Rectangular Data Matrix (DMRE)
+    See http://www.eurodatacouncil.org for information
+    Contact: harald.oehlmann@eurodatacouncil.org
+ */
+
 #include "common.h"
 
 #ifndef __IEC16022ECC200_H
