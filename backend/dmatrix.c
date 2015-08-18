@@ -524,7 +524,9 @@ int dm200encode(struct zint_symbol *symbol, unsigned char source[], unsigned cha
 					value = 27; /* FNC1 */
 				}
 
-				if(shift_set != 0) {
+				/* Do not output the shift if we are at the end and
+				   thus, the character is outputted using ASCII */
+				if(shift_set != 0 && inputlen - sp > 1) {
 					c40_buffer[c40_p] = shift_set - 1; c40_p++;
 				}
 				c40_buffer[c40_p] = value; c40_p++;
@@ -720,7 +722,8 @@ int dm200encode(struct zint_symbol *symbol, unsigned char source[], unsigned cha
 		current_mode = DM_ASCII;
 	}
 	if(c40_p == 1) {
-		// don't unlatch before sending a single remaining ASCII character.
+		// ToDo: If we know that there is no Pad after this, the unlatch may be removed
+		target[tp] = 254; tp++; /* unlatch */
 		target[tp] = source[inputlen - 1] + 1; tp++;
 		concat(binary, "  ");
 		if(debug) printf("ASC A%02X ", target[tp - 1] - 1);
