@@ -927,6 +927,7 @@ int grid_matrix(struct zint_symbol *symbol, unsigned char source[], int length)
 	int utfdata[length + 1];
 	int gbdata[length + 1];
 #else
+	char* grid;
 	int* utfdata = (int *)_alloca((length + 1) * sizeof(int));
 	int* gbdata = (int *)_alloca((length + 1) * sizeof(int));
 #endif
@@ -1050,7 +1051,7 @@ int grid_matrix(struct zint_symbol *symbol, unsigned char source[], int length)
 #ifndef _MSC_VER
 	char grid[size * size];
 #else
-	char* grid = (char *)_alloca((size * size) * sizeof(char));
+	grid = (char *)_alloca((size * size) * sizeof(char));
 #endif
 
 	for(x = 0; x < size; x++) {

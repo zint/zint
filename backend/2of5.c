@@ -36,6 +36,7 @@
 #include "common.h"
 #ifdef _MSC_VER
 #include <malloc.h>
+#define inline _inline
 #endif
 
 static const char *C25MatrixTable[10] = {"113311", "311131", "131131", "331111", "113131", "313111",

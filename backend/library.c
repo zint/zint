@@ -596,6 +596,9 @@ int reduced_charset(struct zint_symbol *symbol, unsigned char *source, int lengt
 int ZBarcode_Encode(struct zint_symbol *symbol, unsigned char *source, int length)
 {
 	int error_number, error_buffer, i;
+#ifdef _MSC_VER
+        unsigned char* local_source;
+#endif
         error_number = 0;
 
 	if(length == 0) {
@@ -613,7 +616,7 @@ int ZBarcode_Encode(struct zint_symbol *symbol, unsigned char *source, int lengt
 #ifndef _MSC_VER
         unsigned char local_source[length + 1];
 #else
-        unsigned char* local_source = (unsigned char*)_alloca(length + 1);
+        local_source = (unsigned char*)_alloca(length + 1);
 #endif
 	
 	/* First check the symbology field */

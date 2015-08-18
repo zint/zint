@@ -53,6 +53,9 @@ static const char *AusBarTable[64] = {"000", "001", "002", "003", "010", "011", 
 #include <stdlib.h>
 #include "common.h"
 #include "reedsol.h"
+#ifdef _MSC_VER
+#define inline _inline
+#endif
 
 static inline char convert_pattern(char data, int shift)
 {

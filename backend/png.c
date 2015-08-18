@@ -84,18 +84,19 @@ int png_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width
 {
 	struct mainprog_info_type wpng_info;
 	struct mainprog_info_type *graphic;
+	png_structp  png_ptr;
+	png_infop  info_ptr;
+	unsigned char *image_data;
+	int i, row, column, errno;
+	int fgred, fggrn, fgblu, bgred, bggrn, bgblu;
 	
 #ifndef _MSC_VER
 	unsigned char outdata[image_width * 3];
 #else
 	unsigned char* outdata = (unsigned char*)_alloca(image_width * 3);
 #endif
-	png_structp  png_ptr;
-	png_infop  info_ptr;
+
 	graphic = &wpng_info;
-	unsigned char *image_data;
-	int i, row, column, errno;
-	int fgred, fggrn, fgblu, bgred, bggrn, bgblu;
 
 	switch(rotate_angle) {
 		case 0:
@@ -691,7 +692,7 @@ void to_latin1(unsigned char source[], unsigned char preprocessed[])
 
 	j = 0;
 	i = 0;
-	do {
+	while (i < input_length) {
 		if(source[i] < 128) {
 			preprocessed[j] = source[i];
 			j++;
@@ -708,7 +709,7 @@ void to_latin1(unsigned char source[], unsigned char preprocessed[])
 				i += 2;
 			}
 		}
-	} while (i < input_length);
+	}
 	preprocessed[j] = '\0';
 
 	return;

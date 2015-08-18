@@ -146,9 +146,15 @@ bool MainWindow::save()
 {
 	bool status;
 	
+#ifdef NO_PNG
+	QString fileName = QFileDialog::getSaveFileName(this,
+			tr("Save Barcode Image"), ".",
+			   tr("Encapsulated Post Script (*.eps);;Scalable Vector Graphic (*.svg)"));
+#else
 	QString fileName = QFileDialog::getSaveFileName(this,
 			tr("Save Barcode Image"), ".",
 			   tr("Portable Network Graphic (*.png);;Encapsulated Post Script (*.eps);;Scalable Vector Graphic (*.svg)"));
+#endif
 	
 	if (fileName.isEmpty())
 		return false;

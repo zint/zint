@@ -1,6 +1,13 @@
+
 TEMPLATE = lib
 
-CONFIG += dll
+
+# My qt is configured for static build:
+# http://qt-project.org/wiki/Build_Standalone_Qt_Application_for_Windows
+CONFIG += staticlib
+
+# for dynamic build enable this:
+#CONFIG += dll
 
 macx{
 	CONFIG -= dll
@@ -12,11 +19,12 @@ TARGET = QtZint
 INCLUDEPATH += ../backend
 
 #EDIT THIS !!!!
-DEFINES += NO_PNG NO_QR ZINT_VERSION="2.3.0"
+DEFINES += ZINT_VERSION="\\\"2.3.0\\\"" NO_PNG
 
 !contains(DEFINES, NO_PNG) {
-    SOURCES += ../backend/png.c
-    LIBS += -lpng
+    LIBS += -llibpng
+    INCLUDEPATH += ../../../support/lpng169
+    QMAKE_LIBDIR+=../../../support/lpng169/projects/visualc71/Win32_LIB_Release ../../../support/lpng169/projects/visualc71/Win32_LIB_Release/ZLib
 }
 
 contains(DEFINES, QR_SYSTEM){
@@ -49,14 +57,13 @@ HEADERS +=  ../backend/aztec.h \
             ../backend/code49.h \
             ../backend/common.h \
             ../backend/composite.h \
-            ../backend/dm200.h \
             ../backend/dmatrix.h \
             ../backend/font.h \
+            ../backend/gridmtx.h \
             ../backend/gs1.h \
             ../backend/large.h \
             ../backend/maxicode.h \
             ../backend/maxipng.h \
-            ../backend/micqr.h \
             ../backend/pdf417.h \
             ../backend/reedsol.h \
             ../backend/rss.h \
@@ -67,27 +74,26 @@ HEADERS +=  ../backend/aztec.h \
 SOURCES += ../backend/2of5.c \
            ../backend/auspost.c \
            ../backend/aztec.c \
-           ../backend/blockf.c \
            ../backend/code.c \
            ../backend/code128.c \
            ../backend/code16k.c \
            ../backend/code49.c \
            ../backend/common.c \
            ../backend/composite.c \
-           ../backend/dm200.c \
            ../backend/dmatrix.c \
+           ../backend/gridmtx.c \
            ../backend/gs1.c \
            ../backend/imail.c \
            ../backend/large.c \
            ../backend/library.c \
            ../backend/maxicode.c \
            ../backend/medical.c \
-           ../backend/micqr.c \
            ../backend/pdf417.c \
            ../backend/plessey.c \
            ../backend/postal.c \
            ../backend/ps.c \
            ../backend/reedsol.c \
+            ../backend/render.c \
            ../backend/rss.c \
            ../backend/svg.c \
            ../backend/telepen.c \
@@ -95,16 +101,19 @@ SOURCES += ../backend/2of5.c \
            ../backend/qr.c \
            ../backend/dllversion.c \
            ../backend/code1.c \
+           ../backend/png.c \
            qzint.cpp
 
 VERSION = 2.3.0
 
 #DESTDIR = .
 
-include.path = $$[ZINT_INSTALL_HEADERS]
+#include.path = $$[ZINT_INSTALL_HEADERS]
+include.path = inst/include
 include.files = ../backend/zint.h qzint.h
 
-target.path = $$[ZINT_INSTALL_LIBS]
+#target.path = $$[ZINT_INSTALL_LIBS]
+target.path = inst/lib
 
 INSTALLS += target include
 

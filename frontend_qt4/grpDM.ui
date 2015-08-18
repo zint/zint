@@ -207,6 +207,91 @@
          <string>16 x 48</string>
         </property>
        </item>
+       <item>
+        <property name="text">
+         <string>8 x 48</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>8 x 64</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>12 x 48</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>12 x 64</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>16 x 64</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>24 x 32</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>24 x 40</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>24 x 48</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>24 x 64</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>26 x 32</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>26 x 40</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>26 x 48</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>26 x 64</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>36 x 120</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>36 x 144</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>72 x 120</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>72 x 144</string>
+        </property>
+       </item>
       </widget>
      </item>
     </layout>

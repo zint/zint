@@ -72,9 +72,14 @@ void ExportWindow::process()
 	inputpos = 0;
 	
 	switch(cmbFileFormat->currentIndex()) {
-		case 0: suffix = ".png"; break;
+#ifdef NO_PNG
+		case 0: suffix = ".eps"; break;
+		case 1: suffix = ".svg"; break;
+#else
+                case 0: suffix = ".png"; break;
 		case 1: suffix = ".eps"; break;
 		case 2: suffix = ".svg"; break;
+#endif
 	}
 	
 	for(i = 0; i < lines; i++) {

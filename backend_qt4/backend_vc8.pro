@@ -9,9 +9,9 @@ VERSION = 2.3.0
 QMAKE_CFLAGS += /TP /wd4018 /wd4244 /wd4305
 QMAKE_CXXFLAGS += /TP /wd4018 /wd4244 /wd4305
 
-INCLUDEPATH += ../backend d:\opt\include
+INCLUDEPATH += ../backend d:\\opt\\include
 
-DEFINES +=  _CRT_SECURE_NO_WARNINGS _CRT_NONSTDC_NO_WARNINGS ZINT_VERSION=\\\"$$VERSION\\\"
+DEFINES +=  _CRT_SECURE_NO_WARNINGS _CRT_NONSTDC_NO_WARNINGS ZINT_VERSION=\\\"$$VERSION\\\" include=""
 
 !contains(DEFINES, NO_PNG) {
     SOURCES += ../backend/png.c
@@ -22,7 +22,6 @@ HEADERS +=  ../backend/aztec.h \
             ../backend/code49.h \
             ../backend/common.h \
             ../backend/composite.h \
-            ../backend/dm200.h \
             ../backend/dmatrix.h \
             ../backend/font.h \
             ../backend/gb2312.h \
@@ -43,7 +42,6 @@ HEADERS +=  ../backend/aztec.h \
 SOURCES += ../backend/2of5.c \
            ../backend/auspost.c \
            ../backend/aztec.c \
-           ../backend/blockf.c \
            ../backend/code.c \
            ../backend/code1.c \
            ../backend/code128.c \
@@ -51,7 +49,6 @@ SOURCES += ../backend/2of5.c \
            ../backend/code49.c \
            ../backend/common.c \
            ../backend/composite.c \
-           ../backend/dm200.c \
            ../backend/dmatrix.c \
            ../backend/gridmtx.c \
            ../backend/gs1.c \
@@ -66,9 +63,9 @@ SOURCES += ../backend/2of5.c \
            ../backend/ps.c \
            ../backend/qr.c \
            ../backend/reedsol.c \
+           ../backend/render.c \
            ../backend/rss.c \
            ../backend/svg.c \
            ../backend/telepen.c \
            ../backend/upcean.c \
            qzint.cpp
-

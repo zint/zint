@@ -41,8 +41,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="d:\opt\include"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;ZINT_VERSION=&quot;\&quot;2.4.4\&quot;&quot;;BUILD_ZINT_DLL;ZLIB_DLL;PNG_DLL"
+				AdditionalIncludeDirectories="..\..\..\support\lpng169;&quot;..\..\zlib128-dll\include&quot;"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;ZINT_VERSION=&quot;\&quot;2.4.4\&quot;&quot;;BUILD_ZINT_DLL;ZLIB_DLL;PNG_DLL;DEBUG"
 				MinimalRebuild="true"
 				ExceptionHandling="0"
 				BasicRuntimeChecks="3"
@@ -68,10 +68,11 @@
 			<Tool
 				Name="VCLinkerTool"
 				LinkLibraryDependencies="false"
-				AdditionalDependencies="libpng13d.lib zlib1d.lib"
+				AdditionalDependencies="libpngd.lib zlibd.lib"
 				OutputFile="$(OutDir)\zintd.dll"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="d:\opt\lib"
+				AdditionalLibraryDirectories="..\..\..\support\lpng169\projects\visualc71\Win32_LIB_Debug;..\..\..\support\lpng169\projects\visualc71\Win32_LIB_Debug\ZLib"
+				IgnoreDefaultLibraryNames="libcmtd.lib"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				TargetMachine="1"
@@ -125,7 +126,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="false"
-				AdditionalIncludeDirectories="d:\opt\include"
+				AdditionalIncludeDirectories="..\..\..\support\lpng169;&quot;..\..\zlib128-dll\include&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;ZINT_VERSION=&quot;\&quot;2.4.4\&quot;&quot;;BUILD_ZINT_DLL;ZLIB_DLL;PNG_DLL"
 				StringPooling="true"
 				ExceptionHandling="0"
@@ -151,10 +152,10 @@
 			<Tool
 				Name="VCLinkerTool"
 				LinkLibraryDependencies="false"
-				AdditionalDependencies="libpng13.lib zlib1.lib"
+				AdditionalDependencies="libpng.lib zlib.lib"
 				OutputFile="$(OutDir)\zint.dll"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="d:\opt\lib"
+				AdditionalLibraryDirectories="..\..\..\support\lpng169\projects\visualc71\Win32_LIB_Release;..\..\..\support\lpng169\projects\visualc71\Win32_LIB_Release\ZLib"
 				GenerateDebugInformation="false"
 				SubSystem="2"
 				OptimizeReferences="2"
@@ -313,10 +314,6 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\backend\dm200.c"
-				>
 			</File>
 			<File
 				RelativePath="..\backend\dmatrix.c"
