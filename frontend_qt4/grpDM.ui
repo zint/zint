@@ -272,26 +272,6 @@
          <string>26 x 64</string>
         </property>
        </item>
-       <item>
-        <property name="text">
-         <string>36 x 120</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>36 x 144</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>72 x 120</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>72 x 144</string>
-        </property>
-       </item>
       </widget>
      </item>
     </layout>
