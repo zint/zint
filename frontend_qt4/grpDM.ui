@@ -219,11 +219,6 @@
        </item>
        <item>
         <property name="text">
-         <string>12 x 48</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
          <string>12 x 64</string>
         </property>
        </item>

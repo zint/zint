@@ -66,7 +66,7 @@ static void ecc200placementbit(int *array, int NR, int NC, int r, int c, int p, 
 		#ifdef DEBUG
 		fprintf(stderr,"r >= NR:%i,%i at r=%i->",p,b,r);
 		#endif
-		r = r - NR;
+		r -= NR;
 		#ifdef DEBUG
 		fprintf(stderr,"%i,c=%i\n",r,c);
 		#endif
@@ -874,8 +874,9 @@ int dm200encode_remainder(unsigned char target[], int target_length, unsigned ch
 
 	if(debug)
 		{
+			int i;
 			printf("\n\n");
-			for(int i = 0; i < target_length; i++)
+			for(i = 0; i < target_length; i++)
 				printf("%03d ", target[i]);
 
 			printf("\n");
@@ -916,6 +917,7 @@ int data_matrix_200(struct zint_symbol *symbol, unsigned char source[], int leng
 	int H, W, FH, FW, datablock, bytes, rsblock;
 	int last_mode;
 	unsigned char *grid = 0;
+	int symbols_left;
 	inputlen = length;
 
 	binlen = dm200encode(symbol, source, binary, &last_mode, inputlen, process_buffer, &process_p);
@@ -939,39 +941,9 @@ int data_matrix_200(struct zint_symbol *symbol, unsigned char source[], int leng
 		}
 	}
 
-	if(symbol->option_3 == DM_SQUARE) {
-		/* Force to use square symbol */
-		switch(calcsize) {
-		/* Without DMRE
-			case 2:
-			case 4:
-			case 6:
-			case 9:
-			case 11:
-			case 14:
-		*/
-			case 2:
-			case 4:
-			case 6:
-			case 8:
-			case 9:
-			case 10:
-			case 11:
-			case 13:
-			case 14:
-			case 16:
-			case 18:
-			case 19:
-			case 20:
-			case 21:
-			case 23:
-			case 24:
-			case 25:
-			case 27:
-			case 28:
-			case 30:
-				calcsize++;
-		}
+	/* Skip rectangular symbols in square only mode */
+	while(symbol->option_3 == DM_SQUARE && matrixH[calcsize] != matrixW[calcsize]) {
+		calcsize++;
 	}
 
 	symbolsize = optionsize;
@@ -985,7 +957,7 @@ int data_matrix_200(struct zint_symbol *symbol, unsigned char source[], int leng
 	}
 
 	// Now we know the symbol size we can handle the remaining data in the process buffer.
-	int symbols_left = matrixbytes[symbolsize] - binlen;
+	symbols_left = matrixbytes[symbolsize] - binlen;
     binlen = dm200encode_remainder(binary, binlen, source, inputlen, last_mode, process_buffer, process_p, symbols_left);
 
 	H = matrixH[symbolsize];
