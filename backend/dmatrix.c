@@ -610,7 +610,7 @@ int dm200encode(struct zint_symbol *symbol, unsigned char source[], unsigned cha
 			int value = 0;
 
 			next_mode = DM_X12;
-			if(text_p == 0) {
+			if(x12_p == 0) {
 				next_mode = look_ahead_test(source, inputlen, sp, current_mode, gs1);
 			}
 
