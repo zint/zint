@@ -118,7 +118,7 @@
 				PreprocessorDefinitions="WIN32;_WIN32;NDEBUG;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;ZINT_VERSION=&quot;\&quot;2.3.0\&quot;&quot;;ZINT_DLL"
 				StringPooling="true"
 				ExceptionHandling="0"
-				RuntimeLibrary="2"
+				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="false"
 				RuntimeTypeInfo="false"
 				UsePrecompiledHeader="0"
