@@ -61,7 +61,7 @@ static void ecc200placementbit(int *array, int NR, int NC, int r, int c, int p, 
 		c += NC;
 		r += 4 - ((NC + 4) % 8);
 	}
-	// Necessary for 36x120,36x144,72x120,72x144
+	// Necessary for 26x32,26x40,26x48,36x120,36x144,72x120,72x144
 	if (r >= NR) {
 		#ifdef DEBUG
 		fprintf(stderr,"r >= NR:%i,%i at r=%i->",p,b,r);
