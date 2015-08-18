@@ -324,8 +324,13 @@ void byteprocess(int *chainemc, int *mclength, unsigned char chaine[], int start
 	int		debug	  = 0;
 	int		len       = 0;
 	unsigned int	chunkLen  = 0;
+#if defined(_MSC_VER) && _MSC_VER == 1200
+	uint64_t	mantisa   = 0;
+	uint64_t	total     = 0;
+#else
 	uint64_t	mantisa   = 0ULL;
 	uint64_t	total     = 0ULL;
+#endif
 
 	if(debug) printf("\nEntering byte mode at position %d\n", start);
 
@@ -350,20 +355,33 @@ void byteprocess(int *chainemc, int *mclength, unsigned char chaine[], int start
 			{
 				chunkLen	= 6;
 				len		+= chunkLen;
+#if defined(_MSC_VER) && _MSC_VER == 1200
+				total		= 0;
+#else
 				total		= 0ULL;
+#endif
 
 				while (chunkLen--)
 				{
 					mantisa = chaine[start++];
+#if defined(_MSC_VER) && _MSC_VER == 1200
+					total   |= mantisa << (uint64_t)(chunkLen * 8);
+#else
 					total   |= mantisa << (uint64_t)(chunkLen * 8ULL);
+#endif
 				}
 
 				chunkLen = 5;
 
 				while (chunkLen--)
 				{
+#if defined(_MSC_VER) && _MSC_VER == 1200
+					chainemc[*mclength + chunkLen] = (int)(total % 900);
+					total /= 900;
+#else
 					chainemc[*mclength + chunkLen] = (int)(total % 900ULL);
 					total /= 900ULL;
+#endif
 				}
 				*mclength += 5;
 			}
