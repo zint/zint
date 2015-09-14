@@ -86,7 +86,14 @@ CONFIGURE_FILE(
 ADD_CUSTOM_TARGET(uninstall
   "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake")
 
-install(FILES cmake/modules/FindZint.cmake DESTINATION ${CMAKE_ROOT}/Modules COMPONENT Devel)
+# staniek: don't install 
+if (DATA_INSTALL_DIR)
+    set(CMAKE_MODULES_INSTALL_PATH ${DATA_INSTALL_DIR}/cmake/modules)
+else (DATA_INSTALL_DIR)
+    set(CMAKE_MODULES_INSTALL_PATH ${CMAKE_ROOT}/Modules)
+endif(DATA_INSTALL_DIR)
+
+install(FILES cmake/modules/FindZint.cmake DESTINATION ${CMAKE_MODULES_INSTALL_PATH} COMPONENT Devel)
 
 # This needs to be run very last so other parts of the scripts can take
 # advantage of this.
