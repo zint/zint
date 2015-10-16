@@ -400,7 +400,7 @@ int msi_plessey_mod1110(struct zint_symbol *symbol, uint8_t source[], const unsi
 	/* calculate first (mod 11) digit */
 	x = 0;
 	weight = 2;
-	for(i = src_len - 1; i >= 0; i--) {
+	for(i = src_len; i-- != 0;) {
 		x += weight * ctoi(source[i]);
 		weight++;
 		if(weight > 7) {
