@@ -266,7 +266,6 @@ int fim(struct zint_symbol *symbol, uint8_t source[], int length)
 		default:
 			strcpy(symbol->errtxt, "Invalid characters in data");
 			return ZERROR_INVALID_DATA;
-			break;
 	}
 
 	expand(symbol, dest);

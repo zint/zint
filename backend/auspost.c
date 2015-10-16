@@ -119,7 +119,6 @@ int australia_post(struct zint_symbol *symbol, uint8_t source[], int length)
 			default:
 				strcpy(symbol->errtxt, "Auspost input is wrong length");
 				return ZERROR_TOO_LONG;
-				break;
 		}
 		if(error_number == ZERROR_INVALID_DATA) {
 			strcpy(symbol->errtxt, "Invalid characters in data");

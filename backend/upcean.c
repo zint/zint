@@ -657,7 +657,7 @@ int eanx(struct zint_symbol *symbol, uint8_t source[], int src_len)
 				case 5: add_on(first_part, (char*)dest, 0); ustrcpy(symbol->text, first_part); break;
 				case 7: ean8(symbol, first_part, (char*)dest); break;
 				case 12: ean13(symbol, first_part, (char*)dest); break;
-				default: strcpy(symbol->errtxt, "Invalid length input"); return ZERROR_TOO_LONG; break;
+				default: strcpy(symbol->errtxt, "Invalid length input"); return ZERROR_TOO_LONG;
 			}
 			break;
 		case BARCODE_EANX_CC:
@@ -685,7 +685,7 @@ int eanx(struct zint_symbol *symbol, uint8_t source[], int src_len)
 					symbol->row_height[symbol->rows + 2] = 2;
 					symbol->rows += 3;
 					ean13(symbol, first_part, (char*)dest); break;
-					default: strcpy(symbol->errtxt, "Invalid length EAN input"); return ZERROR_TOO_LONG; break;
+					default: strcpy(symbol->errtxt, "Invalid length EAN input"); return ZERROR_TOO_LONG;
 			}
 			break;
 		case BARCODE_UPCA:
@@ -763,7 +763,6 @@ int eanx(struct zint_symbol *symbol, uint8_t source[], int src_len)
 		default:
 			strcpy(symbol->errtxt, "Invalid length input");
 			return ZERROR_TOO_LONG;
-			break;
 	}
 
 	expand(symbol, (char*)dest);
