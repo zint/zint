@@ -730,7 +730,6 @@ int ZBarcode_Print(struct zint_symbol *symbol, int rotate_angle)
 		default:
 			strcpy(symbol->errtxt, "Invalid rotation angle");
 			return ERROR_INVALID_OPTION;
-			break;
 	}
 
 	if(strlen(symbol->outfile) > 3) {
@@ -783,7 +782,6 @@ int ZBarcode_Buffer(struct zint_symbol *symbol, int rotate_angle)
 		default:
 			strcpy(symbol->errtxt, "Invalid rotation angle");
 			return ERROR_INVALID_OPTION;
-			break;
 	}
 
 	error_number = bmp_handle(symbol, rotate_angle);
