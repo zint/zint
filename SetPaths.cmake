@@ -1,6 +1,6 @@
 # - Find include and library dirs, and define a some macros
 #
-# This module defines a bunch of variables used as locations for install directories. 
+# This module defines a bunch of variables used as locations for install directories.
 # They can be relative (to CMAKE_INSTALL_PREFIX) or absolute.
 # Under Windows they are always relative.
 #
@@ -179,7 +179,7 @@ endif (WIN32)
 
 # The INSTALL_TARGETS_DEFAULT_ARGS variable should be used when libraries are installed.
 # The arguments are also ok for regular executables, i.e. executables which don't go
-# into sbin/ or libexec/, but for installing executables the basic syntax 
+# into sbin/ or libexec/, but for installing executables the basic syntax
 # INSTALL(TARGETS kate DESTINATION "${BIN_INSTALL_DIR}")
 # is enough, so using this variable there doesn't help a lot.
 # The variable must not be used for installing plugins.
@@ -189,7 +189,7 @@ endif (WIN32)
 # This will install libraries correctly under UNIX, OSX and Windows (i.e. dll's go
 # into bin/.
 # Later on it will be possible to extend this for installing OSX frameworks
-# The COMPONENT Devel argument has the effect that static libraries belong to the 
+# The COMPONENT Devel argument has the effect that static libraries belong to the
 # "Devel" install component. If we use this also for all install() commands
 # for header files, it will be possible to install
 #   -everything: make install OR cmake -P cmake_install.cmake
@@ -216,13 +216,13 @@ set(CMAKE_SYSTEM_INCLUDE_PATH ${CMAKE_SYSTEM_INCLUDE_PATH}
 set(CMAKE_SYSTEM_PROGRAM_PATH ${CMAKE_SYSTEM_PROGRAM_PATH}
                               "${BIN_INSTALL_DIR}" )
 
-set(CMAKE_SYSTEM_LIBRARY_PATH ${CMAKE_SYSTEM_LIBRARY_PATH} 
+set(CMAKE_SYSTEM_LIBRARY_PATH ${CMAKE_SYSTEM_LIBRARY_PATH}
                               "${LIB_INSTALL_DIR}" )
 
 # under Windows dlls may be also installed in bin/
 if(WIN32)
-  set(CMAKE_SYSTEM_LIBRARY_PATH ${CMAKE_SYSTEM_LIBRARY_PATH} 
-                                "${_CMAKE_INSTALL_DIR}/bin" 
+  set(CMAKE_SYSTEM_LIBRARY_PATH ${CMAKE_SYSTEM_LIBRARY_PATH}
+                                "${_CMAKE_INSTALL_DIR}/bin"
                                 "${CMAKE_INSTALL_PREFIX}/bin" )
 endif(WIN32)
 

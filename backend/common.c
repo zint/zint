@@ -103,7 +103,7 @@ int is_sane(char test_string[], uint8_t source[], int length)
 			}
 		}
 		if (!latch) {
-			return ZERROR_INVALID_DATA; 
+			return ZERROR_INVALID_DATA;
 		}
 	}
 

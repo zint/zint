@@ -955,8 +955,8 @@ int grid_matrix(struct zint_symbol *symbol, uint8_t source[], int length)
 	if(data_cw > data_max) {
 		strcpy(symbol->errtxt, "Input data too long");
 		return ZERROR_TOO_LONG;
-	}	
-	
+	}
+
 	gm_add_ecc(binary, data_cw, layers, ecc_level, word);
 	size = 6 + (layers * 12);
 	modules = 1 + (layers * 2);

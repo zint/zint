@@ -55,7 +55,7 @@ publication but will be placed on the project website as soon as possible.
 Mac OSX:
 It is possible to compile Zint using methods similar to those
 given above, but this has not been thoroughly tested yet. An install
-binary for OSX is also in development. As of feb 2012 the easiest way to 
+binary for OSX is also in development. As of feb 2012 the easiest way to
 get zint install on Mac OSX is to use HomeBrew with:
 
         brew install zint
