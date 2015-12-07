@@ -255,7 +255,7 @@ int seek_forward(int gbdata[], int length, int position, int current_mode)
 
 	/* Adjust for <end of line> */
 	for(sp = position; (sp < (length - 1)) && (sp <= (position + 7)); sp++) {
-		if((gbdata[sp] == 0x13) && (gbdata[sp] == 0x10)) {
+		if((gbdata[sp] == 0x13) && (gbdata[sp+1] == 0x10)) {
 			chinese_count -= 13;
 		}
 	}
