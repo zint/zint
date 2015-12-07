@@ -27,7 +27,7 @@ STATLIB:=lib$(APP).a
 COMMON_OBJ:= common.o render.o png.o library.o ps.o large.o reedsol.o gs1.o svg.o
 ONEDIM_OBJ:= code.o code128.o 2of5.o upcean.o telepen.o medical.o plessey.o rss.o
 POSTAL_OBJ:= postal.o auspost.o imail.o
-TWODIM_OBJ:= code16k.o dmatrix.o dm200.o pdf417.o qr.o maxicode.o composite.o aztec.o code49.o code1.o gridmtx.o
+TWODIM_OBJ:= code16k.o dmatrix.o pdf417.o qr.o maxicode.o composite.o aztec.o code49.o code1.o gridmtx.o
 
 LIB_OBJ:= $(COMMON_OBJ) $(ONEDIM_OBJ) $(TWODIM_OBJ) $(POSTAL_OBJ)
 DLL_OBJ:= $(LIB_OBJ:.o=.lo) dllversion.lo

@@ -160,7 +160,7 @@ int msi_plessey_mod10(struct zint_symbol *symbol, unsigned char source[], int le
 		lookup(NEON, MSITable, source[i], dest);
 	}
 
-	/* caluculate check digit */
+	/* calculate check digit */
 	wright = 0;
 	n = !(length & 1);
 	for(i = n; i < length; i += 2)
@@ -434,7 +434,7 @@ int msi_plessey_mod1110(struct zint_symbol *symbol, unsigned char source[], cons
 		temp[temp_len] = '\0';
 	}
 
-	/* caluculate second (mod 10) check digit */
+	/* calculate second (mod 10) check digit */
 	wright = 0;
 	i = !(temp_len & 1);
 	for(; i < temp_len; i += 2)
