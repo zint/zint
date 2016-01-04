@@ -369,14 +369,14 @@ int look_ahead_test(unsigned char source[], int sourcelen, int position, int cur
 	return best_scheme;
 }
 
-int dm200encode(struct zint_symbol *symbol, unsigned char source[], unsigned char target[], int *last_mode, int length, int process_buffer[], int *process_p)
+int dm200encode(struct zint_symbol *symbol, unsigned char source[], unsigned char target[], int *last_mode, int *length_p, int process_buffer[], int *process_p)
 {
 	/* Encodes data using ASCII, C40, Text, X12, EDIFACT or Base 256 modes as appropriate */
 	/* Supports encoding FNC1 in supporting systems */
 
 	int sp, tp, i, gs1;
 	int current_mode, next_mode;
-	int inputlen = length;
+	int inputlen = *length_p;
 	int debug = 0;
 #ifndef _MSC_VER
         char binary[2 * inputlen];
@@ -436,6 +436,7 @@ int dm200encode(struct zint_symbol *symbol, unsigned char source[], unsigned cha
 		/* Remove macro characters from input string */
 		sp = 7;
 		inputlen -= 2;
+		*length_p -= 2;
 	}
 	
 
@@ -662,6 +663,7 @@ int dm200encode(struct zint_symbol *symbol, unsigned char source[], unsigned cha
 			} else {
 				if((source[sp] >= '@') && (source[sp] <= '^')) { value = source[sp] - '@'; }
 				if((source[sp] >= ' ') && (source[sp] <= '?')) { value = source[sp]; }
+				/* possibility put an assertion here for invalid character (none of the ifs trigger) */
 
 				process_buffer[*process_p] = value; (*process_p)++;
 				sp++;
@@ -920,7 +922,8 @@ int data_matrix_200(struct zint_symbol *symbol, unsigned char source[], int leng
 	int symbols_left;
 	inputlen = length;
 
-	binlen = dm200encode(symbol, source, binary, &last_mode, inputlen, process_buffer, &process_p);
+	/* inputlen may be decremented by 2 if macro character is used */
+	binlen = dm200encode(symbol, source, binary, &last_mode, &inputlen, process_buffer, &process_p);
 
 	if(binlen == 0) {
 		strcpy(symbol->errtxt, "Data too long to fit in symbol");
@@ -977,6 +980,20 @@ int data_matrix_200(struct zint_symbol *symbol, unsigned char source[], int leng
 	// ecc code
 	if(symbolsize == INTSYMBOL144) { skew = 1; }
 	ecc200(binary, bytes, datablock, rsblock, skew);
+	// Print Codewords
+	#ifdef DEBUG
+	{
+	    int CWCount;
+	    if (skew) 
+		CWCount = 1558+620;
+	    else
+		CWCount = bytes + rsblock * (bytes / datablock);
+	    printf("Codewords (%i):",CWCount);
+	    for (int posCur = 0;posCur < CWCount;posCur++)
+		printf(" %3i",binary[posCur]);
+	    puts("\n");
+	}
+	#endif
 	{			// placement
 		int x, y, NC, NR, *places;
 		NC = W - 2 * (W / FW);
