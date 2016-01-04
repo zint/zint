@@ -690,6 +690,7 @@ int maxi_png_plot(struct zint_symbol *symbol, int rotate_angle, int data_type)
 	return error_number;
 }
 
+/* Convert UTF-8 to Latin1 Codepage for the interpretation line */
 void to_latin1(unsigned char source[], unsigned char preprocessed[])
 {
 	int j, i, input_length;
@@ -699,22 +700,30 @@ void to_latin1(unsigned char source[], unsigned char preprocessed[])
 	j = 0;
 	i = 0;
 	while (i < input_length) {
-		if(source[i] < 128) {
+		switch (source[i]) {
+		case 0xC2:
+			/* UTF-8 C2xxh */
+			/* Character range: C280h (latin: 80h) to C2BFh (latin: BFh) */
+			i++;
 			preprocessed[j] = source[i];
 			j++;
+			break;
+		case 0xC3:
+			/* UTF-8 C3xx */
+			/* Character range: C380h (latin: C0h) to C3BFh (latin: FFh) */
 			i++;
-		} else {
-			if(source[i] == 0xC2) {
-				preprocessed[j] = source[i + 1];
+			preprocessed[j] = source[i] + 64;
+			j++;
+			break;
+		default:
+			/* Process ASCII (< 80h), all other unicode points are ignored */
+			if(source[i] < 128) {
+				preprocessed[j] = source[i];
 				j++;
-				i += 2;
 			}
-			if(source[i] == 0xC3) {
-				preprocessed[j] = source[i + 1] + 64;
-				j++;
-				i += 2;
-			}
+			break;
 		}
+		i++;
 	}
 	preprocessed[j] = '\0';
 
