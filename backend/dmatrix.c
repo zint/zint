@@ -328,7 +328,7 @@ int look_ahead_test(unsigned char source[], int sourcelen, int position, int cur
 		done = 0;
 		if((source[sp] >= ' ') && (source[sp] <= '^')) { edf_count += (3.0f / 4.0f); done = 1; }
 		if(source[sp] > 127) { edf_count += (17.0f / 4.0f);	done = 1; }
-		if(done = 0) edf_count += (13.0f / 4.0f);
+		if(done == 0) edf_count += (13.0f / 4.0f);
 		
 		/* step (q) */
 		/* b256 */
