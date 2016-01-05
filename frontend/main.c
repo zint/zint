@@ -190,7 +190,7 @@ int batch_process(struct zint_symbol *symbol, char *filename)
 {
 	FILE *file;
 	unsigned char buffer[7100];
-	unsigned char character;
+	unsigned char character = 0;
 	int posn = 0, error_number = 0, line_count = 1;
 	char output_file[127];
 	char number[12], reverse_number[12];
