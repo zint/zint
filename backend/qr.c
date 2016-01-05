@@ -765,14 +765,16 @@ int evaluate(unsigned char *grid, int size, int pattern)
 { 
 	int x, y, block;
 	int result = 0;
-	int result_b = 0;
 	char state;
 	int p;
 	int dark_mods; 
 	int percentage, k, k2;
-	char str[15];
-        int m;
+	int m;
 	int smallest;
+#ifdef ZINTLOG
+	int result_b = 0;
+	char str[15];
+#endif
 
 #ifndef _MSC_VER
 	char local[size * size];
