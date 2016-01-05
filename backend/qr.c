@@ -308,7 +308,7 @@ void qr_binary(int datastream[], int version, int target_binlen, char mode[], in
 							i++;
 							prod = first;
 
-							if(mode[position + i] == 'A') {
+							if(i < short_data_block_length && mode[position + i] == 'A') {
 								if(gs1 && (jisdata[position + i] == '%')) {
 									second = posn(RHODIUM, '%');
 									count = 2;
@@ -333,7 +333,7 @@ void qr_binary(int datastream[], int version, int target_binlen, char mode[], in
 						prod = first;
 						percent = 0;
 
-						if(mode[position + i] == 'A') {
+						if(i < short_data_block_length && mode[position + i] == 'A') {
 							if(gs1 && (jisdata[position + i] == '%')) {
 								second = posn(RHODIUM, '%');
 								count = 2;
@@ -380,12 +380,12 @@ void qr_binary(int datastream[], int version, int target_binlen, char mode[], in
 					count = 1;
 					prod = first;
 
-					if(mode[position + i + 1] == 'N') {
+					if(i + 1 < short_data_block_length && mode[position + i + 1] == 'N') {
 						second = posn(NEON, (char) jisdata[position + i + 1]);
 						count = 2;
 						prod = (prod * 10) + second;
 
-						if(mode[position + i + 2] == 'N') {
+						if(i + 2 < short_data_block_length && mode[position + i + 2] == 'N') {
 							third = posn(NEON, (char) jisdata[position + i + 2]);
 							count = 3;
 							prod = (prod * 10) + third;
@@ -1499,7 +1499,7 @@ int micro_qr_intermediate(char binary[], int jisdata[], char mode[], int length,
 					count = 1;
 					prod = first;
 
-					if(mode[position + i + 1] == 'A') {
+					if(i + 1 < short_data_block_length && mode[position + i + 1] == 'A') {
 						second = posn(RHODIUM, (char) jisdata[position + i + 1]);
 						count = 2;
 						prod = (first * 45) + second;
@@ -1541,13 +1541,13 @@ int micro_qr_intermediate(char binary[], int jisdata[], char mode[], int length,
 					count = 1;
 					prod = first;
 
-					if(mode[position + i + 1] == 'N') {
+					if(i + 1 < short_data_block_length && mode[position + i + 1] == 'N') {
 						second = posn(NEON, (char) jisdata[position + i + 1]);
 						count = 2;
 						prod = (prod * 10) + second;
 					}
 
-					if(mode[position + i + 2] == 'N') {
+					if(i + 2 < short_data_block_length && mode[position + i + 2] == 'N') {
 						third = posn(NEON, (char) jisdata[position + i + 2]);
 						count = 3;
 						prod = (prod * 10) + third;
@@ -1915,19 +1915,19 @@ void micro_qr_m3(char binary_data[], int ecc_mode)
 	}
 	
 	if(ecc_mode == LEVEL_L) {
-		data_blocks[11] = 0;
-		if(binary_data[80] == '1') { data_blocks[2] += 0x08; }
-		if(binary_data[81] == '1') { data_blocks[2] += 0x04; }
-		if(binary_data[82] == '1') { data_blocks[2] += 0x02; }
-		if(binary_data[83] == '1') { data_blocks[2] += 0x01; }
+		data_blocks[10] = 0;
+		if(binary_data[80] == '1') { data_blocks[10] += 0x08; }
+		if(binary_data[81] == '1') { data_blocks[10] += 0x04; }
+		if(binary_data[82] == '1') { data_blocks[10] += 0x02; }
+		if(binary_data[83] == '1') { data_blocks[10] += 0x01; }
 	}
 	
 	if(ecc_mode == LEVEL_M) {
-		data_blocks[9] = 0;
-		if(binary_data[64] == '1') { data_blocks[2] += 0x08; }
-		if(binary_data[65] == '1') { data_blocks[2] += 0x04; }
-		if(binary_data[66] == '1') { data_blocks[2] += 0x02; }
-		if(binary_data[67] == '1') { data_blocks[2] += 0x01; }
+		data_blocks[8] = 0;
+		if(binary_data[64] == '1') { data_blocks[8] += 0x08; }
+		if(binary_data[65] == '1') { data_blocks[8] += 0x04; }
+		if(binary_data[66] == '1') { data_blocks[8] += 0x02; }
+		if(binary_data[67] == '1') { data_blocks[8] += 0x01; }
 	}
 	
 	/* Calculate Reed-Solomon error codewords */
