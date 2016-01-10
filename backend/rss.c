@@ -2121,8 +2121,10 @@ int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int src_len)
 					left_to_right = 1;
 					i = 2 + (current_block * 21);
 					for(j = 0; j < 21; j++) {
-						sub_elements[j + (reader * 21) + 2] = elements[i + j];
-						elements_in_sub++;
+                                                if((i + j) < pattern_width) {
+                                                        sub_elements[j + (reader * 21) + 2] = elements[i + j];
+                                                        elements_in_sub++;
+                                                }
 					}
 				} else {
 					/* right to left */
@@ -2131,8 +2133,10 @@ int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int src_len)
 						/* a full row */
 						i = 2 + (((current_row * symbol->option_2) - reader - 1) * 21);
 						for(j = 0; j < 21; j++) {
-							sub_elements[(20 - j) + (reader * 21) + 2] = elements[i + j];
-							elements_in_sub++;
+                                                        if((i + j) < pattern_width) {
+                                                                sub_elements[(20 - j) + (reader * 21) + 2] = elements[i + j];
+                                                                elements_in_sub++;
+                                                        }
 						}
 					} else {
 						/* a partial row */
@@ -2140,8 +2144,10 @@ int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int src_len)
 						l = (current_row * symbol->option_2) - reader - 1;
 						i = 2 + ((l - k) * 21);
 						for(j = 0; j < 21; j++) {
-							sub_elements[(20 - j) + (reader * 21) + 2] = elements[i + j];
-							elements_in_sub++;
+                                                        if((i + j) < pattern_width) {
+                                                                sub_elements[(20 - j) + (reader * 21) + 2] = elements[i + j];
+                                                                elements_in_sub++;
+                                                        }
 						}
 					}
 				}
