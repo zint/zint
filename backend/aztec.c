@@ -664,6 +664,161 @@ int aztec_text_process(unsigned char source[], const unsigned int src_len, char 
 	return 0;
 }
 
+int avoidReferenceGrid(int input) {
+    int output;
+
+    output = input;
+    if (output > 10) {
+        output++;
+    }
+    if (output > 26) {
+        output++;
+    }
+    if (output > 42) {
+        output++;
+    }
+    if (output > 58) {
+        output++;
+    }
+    if (output > 74) {
+        output++;
+    }
+    if (output > 90) {
+        output++;
+    }
+    if (output > 106) {
+        output++;
+    }
+    if (output > 122) {
+        output++;
+    }
+    if (output > 138) {
+        output++;
+    }
+
+    return output;
+}
+
+void popilate_map()
+{
+    /* Calculate the position of the bits in the grid */
+    int layer, start, length, n, i;
+    int x, y;
+
+    for (x = 0; x < 151; x++) {
+        for (y = 0; y < 151; y++) {
+            AztecMap[(x * 151) + y] = 0;
+        }
+    }
+
+    for (layer = 1; layer < 33; layer++) {
+        start = (112 * (layer - 1)) + (16 * (layer - 1) * (layer - 1)) + 2;
+        length = 28 + ((layer - 1) * 4) + (layer * 4);
+        /* Top */
+        i = 0;
+        x = 64 - ((layer - 1) * 2);
+        y = 63 - ((layer - 1) * 2);
+        for (n = start; n < (start + length); n += 2) {
+            AztecMap[(avoidReferenceGrid(x + i) * 151) + avoidReferenceGrid(y)] = n;
+            AztecMap[(avoidReferenceGrid(x + i) * 151) + avoidReferenceGrid(y - 1)] = n + 1;
+            i++;
+        }
+        /* Right */
+        i = 0;
+        x = 78 + ((layer - 1) * 2);
+        y = 64 - ((layer - 1) * 2);
+        for (n = start + length; n < (start + (length * 2)); n += 2) {
+            AztecMap[(avoidReferenceGrid(x) * 151) + avoidReferenceGrid(y + i)] = n;
+            AztecMap[(avoidReferenceGrid(x + 1) * 151) + avoidReferenceGrid(y + i)] = n + 1;
+            i++;
+        }
+        /* Bottom */
+        i = 0;
+        x = 77 + ((layer - 1) * 2);
+        y = 78 + ((layer - 1) * 2);
+        for (n = start + (length * 2); n < (start + (length * 3)); n += 2) {
+            AztecMap[(avoidReferenceGrid(x - i) * 151) + avoidReferenceGrid(y)] = n;
+            AztecMap[(avoidReferenceGrid(x - i) * 151) + avoidReferenceGrid(y + 1)] = n + 1;
+            i++;
+        }
+        /* Left */
+        i = 0;
+        x = 63 - ((layer - 1) * 2);
+        y = 77 + ((layer - 1) * 2);
+        for (n = start + (length * 3); n < (start + (length * 4)); n += 2) {
+            AztecMap[(avoidReferenceGrid(x) * 151) + avoidReferenceGrid(y - i)] = n;
+            AztecMap[(avoidReferenceGrid(x - 1) * 151) + avoidReferenceGrid(y - i)] = n + 1;
+            i++;
+        }
+    }
+
+    /* Central finder pattern */
+    for (y = 69; y <= 81; y++) {
+        for (x = 69; x <= 81; x++) {
+            AztecMap[(x * 151) + y] = 1;
+        }
+    }
+    for (y = 70; y <= 80; y++) {
+        for (x = 70; x <= 80; x++) {
+            AztecMap[(x * 151) + y] = 0;
+        }
+    }
+    for (y = 71; y <= 79; y++) {
+        for (x = 71; x <= 79; x++) {
+            AztecMap[(x * 151) + y] = 1;
+        }
+    }
+    for (y = 72; y <= 78; y++) {
+        for (x = 72; x <= 78; x++) {
+            AztecMap[(x * 151) + y] = 0;
+        }
+    }
+    for (y = 73; y <= 77; y++) {
+        for (x = 73; x <= 77; x++) {
+            AztecMap[(x * 151) + y] = 1;
+        }
+    }
+    for (y = 74; y <= 76; y++) {
+        for (x = 74; x <= 76; x++) {
+            AztecMap[(x * 151) + y] = 0;
+        }
+    }
+
+    /* Guide bars */
+    for (y = 11; y < 151; y += 16) {
+        for (x = 1; x < 151; x += 2) {
+            AztecMap[(x * 151) + y] = 1;
+            AztecMap[(y * 151) + x] = 1;
+        }
+    }
+
+    /* Descriptor */
+    for (i = 0; i < 10; i++) { /* Top */
+
+        AztecMap[(avoidReferenceGrid(66 + i) * 151) + avoidReferenceGrid(64)] = 20000 + i;
+    }
+    for (i = 0; i < 10; i++) { /* Right */
+
+        AztecMap[(avoidReferenceGrid(77) * 151) + avoidReferenceGrid(66 + i)] = 20010 + i;
+    }
+    for (i = 0; i < 10; i++) { /* Bottom */
+
+        AztecMap[(avoidReferenceGrid(75 - i) * 151) + avoidReferenceGrid(77)] = 20020 + i;
+    }
+    for (i = 0; i < 10; i++) { /* Left */
+
+        AztecMap[(avoidReferenceGrid(64) * 151) + avoidReferenceGrid(75 - i)] = 20030 + i;
+    }
+
+    /* Orientation */
+    AztecMap[(avoidReferenceGrid(64) * 151) + avoidReferenceGrid(64)] = 1;
+    AztecMap[(avoidReferenceGrid(65) * 151) + avoidReferenceGrid(64)] = 1;
+    AztecMap[(avoidReferenceGrid(64) * 151) + avoidReferenceGrid(65)] = 1;
+    AztecMap[(avoidReferenceGrid(77) * 151) + avoidReferenceGrid(64)] = 1;
+    AztecMap[(avoidReferenceGrid(77) * 151) + avoidReferenceGrid(65)] = 1;
+    AztecMap[(avoidReferenceGrid(77) * 151) + avoidReferenceGrid(76)] = 1;
+}
+
 int aztec(struct zint_symbol *symbol, unsigned char source[], int length)
 {
 	int x, y, i, j, data_blocks, ecc_blocks, layers, total_bits;
