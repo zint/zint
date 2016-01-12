@@ -2082,7 +2082,7 @@ int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int src_len)
 		 * [01]90614141999996[10]1234222222222221
 		 * Patch by Daniel Frede
 		 */
-		codeblocks = (data_chars + 1) / 2 + 1;
+		codeblocks = (data_chars + 1) / 2 + ((data_chars + 1) % 2);
 		
 		if((symbol->option_2 < 1) || (symbol->option_2 > 10)) {
 			symbol->option_2 = 2;
