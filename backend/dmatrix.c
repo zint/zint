@@ -43,6 +43,7 @@
 #include <ctype.h>
 #include <string.h>
 #include <assert.h> 
+#include <math.h>
 #ifdef _MSC_VER
 #include <malloc.h> 
 #endif
@@ -262,11 +263,10 @@ void insert_value(unsigned char binary_stream[], int posn, int streamlen, char n
 
 int look_ahead_test(unsigned char source[], int sourcelen, int position, int current_mode, int gs1)
 {
-	/* A custom version of the 'look ahead test' from Annex P */
-	/* This version is deliberately very reluctant to end a data stream with EDIFACT encoding */
+	/* 'look ahead test' from Annex P */
 
 	float ascii_count, c40_count, text_count, x12_count, edf_count, b256_count, best_count;
-	int sp, done, best_scheme;
+	int sp, best_scheme;
 	
 	/* step (j) */
 	if(current_mode == DM_ASCII) {
@@ -295,47 +295,72 @@ int look_ahead_test(unsigned char source[], int sourcelen, int position, int cur
 
 	for(sp = position; (sp < sourcelen) && (sp <= (position + 8)); sp++) {
 		
-		//if(source[sp] <= 127) { reduced_char = source[sp]; } else { reduced_char = source[sp] - 127; }
-		
-		/* ascii */
-		if((source[sp] >= '0') && (source[sp] <= '9')) { ascii_count += 0.5; } else { ascii_count += 1.0; }
-		if(source[sp] > 127) { ascii_count += 2.0; }
-		
-		/* c40 */
-		done = 0;
-		if(source[sp] == ' ') { c40_count += (2.0 / 3.0); done = 1; }
-		if((source[sp] >= '0') && (source[sp] <= '9')) { c40_count += (2.0 / 3.0); done = 1; }
-		if((source[sp] >= 'A') && (source[sp] <= 'Z')) { c40_count += (2.0 / 3.0); done = 1; }
-		if(source[sp] > 127) { c40_count += (8.0 / 3.0); }
-		if(done == 0) { c40_count += (4.0 / 3.0); }
-		
-		/* text */
-		done = 0;
-		if(source[sp] == ' ') { text_count += (2.0 / 3.0); done = 1; }
-		if((source[sp] >= '0') && (source[sp] <= '9')) { text_count += (2.0 / 3.0); done = 1; }
-		if((source[sp] >= 'a') && (source[sp] <= 'z')) { text_count += (2.0 / 3.0); done = 1; }
-		if(source[sp] > 127) { text_count += (8.0 / 3.0); }
-		if(done == 0) { text_count += (4.0 / 3.0); }
-		
-		/* x12 */
-		done = 0;
-		if(isx12(source[sp])) { x12_count += (2.0 / 3.0); done = 1; }
-		if(source[sp] > 127) { x12_count += (13.0f / 3.0f);	done = 1; }
-		if(done == 0) x12_count += (10.0f / 3.0f);
+		/* ascii ... step (l) */
+		if ((source[sp] >= '0') && (source[sp] <= '9')) {
+			ascii_count += 0.5;
+		} else {
+			if (source[sp] > 127) {
+				ascii_count = ceil(ascii_count) + 2.0;
+			} else {
+				ascii_count = ceil(ascii_count) + 1.0;
+			}
+		}
 
-		/* step (p) */
-		/* edifact */
-		done = 0;
-		if((source[sp] >= ' ') && (source[sp] <= '^')) { edf_count += (3.0f / 4.0f); done = 1; }
-		if(source[sp] > 127) { edf_count += (17.0f / 4.0f);	done = 1; }
-		if(done == 0) edf_count += (13.0f / 4.0f);
-		
-		/* step (q) */
-		/* b256 */
-		if(gs1 && (source[sp] == '[')) { b256_count += 4.0; } else { b256_count += 1.0; }
-		
+		/* c40 ... step (m) */
+		if ((source[sp] == ' ') || (((source[sp] >= '0') && (source[sp] <= '9')) || ((source[sp] >= 'A') && (source[sp] <= 'Z')))) {
+			c40_count += (2.0 / 3.0);
+		} else {
+			if (source[sp] > 127) {
+				c40_count += (8.0 / 3.0);
+			} else {
+				c40_count += (4.0 / 3.0);
+			}
+		}
+
+		/* text ... step (n) */
+		if ((source[sp] == ' ') || (((source[sp] >= '0') && (source[sp] <= '9')) || ((source[sp] >= 'a') && (source[sp] <= 'z')))) {
+			text_count += (2.0 / 3.0);
+		} else {
+			if (source[sp] > 127) {
+				text_count += (8.0 / 3.0);
+			} else {
+				text_count += (4.0 / 3.0);
+			}
+		}
+
+		/* x12 ... step (o) */
+		if (isx12(source[sp])) {
+			x12_count += (2.0 / 3.0);
+		} else {
+			if (source[sp] > 127) {
+				x12_count += (13.0 / 3.0);
+			} else {
+				x12_count += (10.0 / 3.0);
+			}
+		}
+
+		/* edifact ... step (p) */
+		if ((source[sp] >= ' ') && (source[sp] <= '^')) {
+			edf_count += (3.0 / 4.0);
+		} else {
+			if (source[sp] > 127) {
+				edf_count += (17.0 / 4.0);
+			} else {
+				edf_count += (13.0 / 4.0);
+			}
+		}
+		if (gs1 && (source[sp] == '[')) {
+			edf_count += 6.0;
+		}
+
+		/* base 256 ... step (q) */
+		if (gs1 && (source[sp] == '[')) {
+			b256_count += 4.0;
+		} else {
+			b256_count += 1.0;
+		}
+
 		/* printf("%c lat a%.2f c%.2f t%.2f x%.2f e%.2f b%.2f\n", source[sp], ascii_count, c40_count, text_count, x12_count, edf_count, b256_count); */
-		
 	}
 
 	best_count = ascii_count;
