@@ -568,6 +568,7 @@ int aztec_text_process(unsigned char source[], const unsigned int src_len, char 
 								if(debug) printf("UL ");
 								concat(binary_string, hexbit[31]);
 								if(debug) printf("BS ");
+                                                                lasttable = UPPER;
 								newtable = BINARY;
 								break;
 							case DIGIT: /* UL BS */
@@ -575,6 +576,7 @@ int aztec_text_process(unsigned char source[], const unsigned int src_len, char 
 								if(debug) printf("UL ");
 								concat(binary_string, hexbit[31]);
 								if(debug) printf("BS ");
+                                                                lasttable = UPPER;
 								newtable = BINARY;
 								break;
 						}
