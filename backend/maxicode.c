@@ -356,7 +356,7 @@ int maxi_text_process(int mode, unsigned char source[], int length)
 	i = 0;
 	do {
 
-		if(set[i] != current_set) {
+		if((set[i] != current_set) && (set[i] != 6)) {
 			switch(set[i]) {
 				case 1:
 					if(set[i + 1] == 1) {
@@ -420,10 +420,6 @@ int maxi_text_process(int mode, unsigned char source[], int length)
 					character[i] = 62;
 					length++;
 					break;
-				case 6:
-					/* Number Compressed */
-					/* Do nothing */
-					break;
 			}
 			i++;
 		}
@@ -438,10 +434,10 @@ int maxi_text_process(int mode, unsigned char source[], int length)
 			char substring[11];
 			int value;
 
-			for(j = 0; j < 10; j++) {
+			for(j = 0; j < 9; j++) {
 				substring[j] = character[i + j];
 			}
-			substring[10] = '\0';
+			substring[9] = '\0';
 			value = atoi(substring);
 
 			character[i] = 31; /* NS */
