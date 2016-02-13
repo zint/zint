@@ -53,6 +53,7 @@ extern int data_matrix_200(struct zint_symbol *symbol, unsigned char source[], i
 
 #define MAXBARCODE 3116
 
+#define DM_NULL         0
 #define DM_ASCII	1
 #define DM_C40		2
 #define DM_TEXT		3

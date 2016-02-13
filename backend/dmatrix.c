@@ -228,7 +228,7 @@ static void ecc200(unsigned char *binary, int bytes, int datablock, int rsblock,
 	rs_free();
 }
 
-int isx12(unsigned char source)
+int isX12(unsigned char source)
 {
 	if(source == 13) { return 1; }
 	if(source == 42) { return 1; }
@@ -261,12 +261,50 @@ void insert_value(unsigned char binary_stream[], int posn, int streamlen, char n
 	binary_stream[posn] = newbit;
 }
 
-int look_ahead_test(unsigned char source[], int sourcelen, int position, int current_mode, int gs1)
+int p_r_6_2_1(unsigned char inputData[], int position, int sourcelen) {
+        /* Annex P section (r)(6)(ii)(I)
+           "If one of the three X12 terminator/separator characters first
+            occurs in the yet to be processed data before a non-X12 character..."
+        */
+        
+        int i;
+        int nonX12Position = 0;
+        int specialX12Position = 0;
+        int retval = 0;
+        
+        for (i = position; i < sourcelen; i++) {
+            if (nonX12Position == 0) {
+                if (isX12(i) == 1) {
+                    nonX12Position = i;
+                }
+            }
+            
+            if (specialX12Position == 0) {
+                if ((inputData[i] == (char) 13) ||
+                    (inputData[i] == '*') ||
+                    (inputData[i] == '>')) {
+                    specialX12Position = i;
+                }
+            }
+        }
+        
+        if ((nonX12Position != 0) && (specialX12Position != 0)) {
+            if (specialX12Position < nonX12Position) {
+                retval = 1;
+            }
+        }
+        
+        return retval;
+}
+
+int look_ahead_test(unsigned char inputData[], int sourcelen, int position, int current_mode, int gs1)
 {
 	/* 'look ahead test' from Annex P */
 
 	float ascii_count, c40_count, text_count, x12_count, edf_count, b256_count, best_count;
 	int sp, best_scheme;
+        
+        best_scheme = DM_NULL;
 	
 	/* step (j) */
 	if(current_mode == DM_ASCII) {
@@ -293,104 +331,189 @@ int look_ahead_test(unsigned char source[], int sourcelen, int position, int cur
 		case DM_BASE256: b256_count = 0.0; break;
 	}
 
-	for(sp = position; (sp < sourcelen) && (sp <= (position + 8)); sp++) {
-		
-		/* ascii ... step (l) */
-		if ((source[sp] >= '0') && (source[sp] <= '9')) {
-			ascii_count += 0.5;
-		} else {
-			if (source[sp] > 127) {
-				ascii_count = ceil(ascii_count) + 2.0;
-			} else {
-				ascii_count = ceil(ascii_count) + 1.0;
-			}
-		}
+        sp = position;
 
-		/* c40 ... step (m) */
-		if ((source[sp] == ' ') || (((source[sp] >= '0') && (source[sp] <= '9')) || ((source[sp] >= 'A') && (source[sp] <= 'Z')))) {
-			c40_count += (2.0 / 3.0);
-		} else {
-			if (source[sp] > 127) {
-				c40_count += (8.0 / 3.0);
-			} else {
-				c40_count += (4.0 / 3.0);
-			}
-		}
+        do {
+            if(sp == (sourcelen - 1)) {
+                /* At the end of data ... step (k) */
+                ascii_count = ceil(ascii_count);
+                b256_count = ceil(b256_count);
+                edf_count = ceil(edf_count);
+                text_count = ceil(text_count);
+                x12_count = ceil(x12_count);
+                c40_count = ceil(c40_count);
 
-		/* text ... step (n) */
-		if ((source[sp] == ' ') || (((source[sp] >= '0') && (source[sp] <= '9')) || ((source[sp] >= 'a') && (source[sp] <= 'z')))) {
-			text_count += (2.0 / 3.0);
-		} else {
-			if (source[sp] > 127) {
-				text_count += (8.0 / 3.0);
-			} else {
-				text_count += (4.0 / 3.0);
-			}
-		}
+                best_count = c40_count;
+                best_scheme = DM_C40; // (k)(7)
 
-		/* x12 ... step (o) */
-		if (isx12(source[sp])) {
-			x12_count += (2.0 / 3.0);
-		} else {
-			if (source[sp] > 127) {
-				x12_count += (13.0 / 3.0);
-			} else {
-				x12_count += (10.0 / 3.0);
-			}
-		}
+                if (x12_count < best_count) {
+                    best_count = x12_count;
+                    best_scheme = DM_X12; // (k)(6)
+                }            
 
-		/* edifact ... step (p) */
-		if ((source[sp] >= ' ') && (source[sp] <= '^')) {
-			edf_count += (3.0 / 4.0);
-		} else {
-			if (source[sp] > 127) {
-				edf_count += (17.0 / 4.0);
-			} else {
-				edf_count += (13.0 / 4.0);
-			}
-		}
-		if (gs1 && (source[sp] == '[')) {
-			edf_count += 6.0;
-		}
+                if (text_count < best_count) {
+                    best_count = text_count;
+                    best_scheme = DM_TEXT; // (k)(5)
+                }
 
-		/* base 256 ... step (q) */
-		if (gs1 && (source[sp] == '[')) {
-			b256_count += 4.0;
-		} else {
-			b256_count += 1.0;
-		}
+                if (edf_count < best_count) {
+                    best_count = edf_count;
+                    best_scheme = DM_EDIFACT; // (k)(4)
+                }
 
-		/* printf("%c lat a%.2f c%.2f t%.2f x%.2f e%.2f b%.2f\n", source[sp], ascii_count, c40_count, text_count, x12_count, edf_count, b256_count); */
-	}
+                if (b256_count < best_count) {
+                    best_count = b256_count;
+                    best_scheme = DM_BASE256; // (k)(3)
+                }
 
-	best_count = ascii_count;
-	best_scheme = DM_ASCII;
+                if (ascii_count <= best_count) {
+                    best_scheme = DM_ASCII; // (k)(2)
+                }
+            } else {
 
-	if(b256_count <= best_count) {
-		best_count = b256_count;
-		best_scheme = DM_BASE256;
-	}
+                /* ascii ... step (l) */
+                if ((inputData[sp] >= '0') && (inputData[sp] <= '9')) {
+                    ascii_count += 0.5; // (l)(1)
+                } else {
+                    if (inputData[sp] > 127) {
+                        ascii_count = ceil(ascii_count) + 2.0; // (l)(2)
+                    } else {
+                        ascii_count = ceil(ascii_count) + 1.0; // (l)(3)
+                    }
+                }
 
-	if(edf_count <= best_count) {
-		best_count = edf_count;
-		best_scheme = DM_EDIFACT;
-	}
+                /* c40 ... step (m) */
+                if ((inputData[sp] == ' ') ||
+                       (((inputData[sp] >= '0') && (inputData[sp] <= '9')) ||
+                       ((inputData[sp] >= 'A') && (inputData[sp] <= 'Z')))) {
+                    c40_count += (2.0 / 3.0); // (m)(1)
+                } else {
+                    if (inputData[sp] > 127) {
+                        c40_count += (8.0 / 3.0); // (m)(2)
+                    } else {
+                        c40_count += (4.0 / 3.0); // (m)(3)
+                    }
+                }
 
-	if(text_count <= best_count) {
-		best_count = text_count;
-		best_scheme = DM_TEXT;
-	}
+                /* text ... step (n) */
+                if ((inputData[sp] == ' ') ||
+                       (((inputData[sp] >= '0') && (inputData[sp] <= '9')) ||
+                       ((inputData[sp] >= 'a') && (inputData[sp] <= 'z')))) {
+                    text_count += (2.0 / 3.0); // (n)(1)
+                } else {
+                    if (inputData[sp] > 127) {
+                        text_count += (8.0 / 3.0); // (n)(2)
+                    } else {
+                        text_count += (4.0 / 3.0); // (n)(3)
+                    }
+                }
 
-	if(x12_count <= best_count) {
-		best_count = x12_count;
-		best_scheme = DM_X12;
-	}
+                /* x12 ... step (o) */
+                if (isX12(inputData[sp])) {
+                    x12_count += (2.0 / 3.0); // (o)(1)
+                } else {
+                    if (inputData[sp] > 127) {
+                        x12_count += (13.0 / 3.0); // (o)(2)
+                    } else {
+                        x12_count += (10.0 / 3.0); // (o)(3)
+                    }
+                }
 
-	if(c40_count <= best_count) {
-		best_count = c40_count;
-		best_scheme = DM_C40;
-	}
+                /* edifact ... step (p) */
+                if ((inputData[sp] >= ' ') && (inputData[sp] <= '^')) {
+                    edf_count += (3.0 / 4.0); // (p)(1)
+                } else {
+                    if (inputData[sp] > 127) {
+                        edf_count += (17.0 / 4.0); // (p)(2)
+                    } else {
+                        edf_count += (13.0 / 4.0); // (p)(3)
+                    }
+                }
+                if ((gs1 == 1) && (inputData[sp] == '[')) {
+                    edf_count += 6.0;
+                }
 
+                /* base 256 ... step (q) */
+                if ((gs1 == 1) && (inputData[sp] == '[')) {
+                    b256_count += 4.0; // (q)(1)
+                } else {
+                    b256_count += 1.0; // (q)(2)
+                }
+            }
+
+
+            if (sp > (position + 3)) {
+                /* 4 data characters processed ... step (r) */
+
+                /* step (r)(6) */
+                if (((c40_count + 1.0) < ascii_count) &&
+                        ((c40_count + 1.0) < b256_count) &&
+                        ((c40_count + 1.0) < edf_count) &&
+                        ((c40_count + 1.0) < text_count)) {
+
+                    if (c40_count < x12_count) {
+                        best_scheme = DM_C40;
+                    }
+
+                    if (c40_count == x12_count) {
+                        if (p_r_6_2_1(inputData, sp, sourcelen) == 1) {
+                            // Test (r)(6)(ii)(i)
+                            best_scheme = DM_X12;
+                        } else {
+                            best_scheme = DM_C40;
+                        }
+                    }
+                }
+
+                /* step (r)(5) */
+                if (((x12_count + 1.0) < ascii_count) &&
+                        ((x12_count + 1.0) < b256_count) &&
+                        ((x12_count + 1.0) < edf_count) && 
+                        ((x12_count + 1.0) < text_count) &&
+                        ((x12_count + 1.0) < c40_count)) {
+                    best_scheme = DM_X12;
+                }
+
+                /* step (r)(4) */
+                if (((text_count + 1.0) < ascii_count) &&
+                        ((text_count + 1.0) < b256_count) &&
+                        ((text_count + 1.0) < edf_count) && 
+                        ((text_count + 1.0) < x12_count) &&
+                        ((text_count + 1.0) < c40_count)) {
+                    best_scheme = DM_TEXT;
+                }
+
+                /* step (r)(3) */
+                if (((edf_count + 1.0) < ascii_count) &&
+                        ((edf_count + 1.0) < b256_count) &&
+                        ((edf_count + 1.0) < text_count) && 
+                        ((edf_count + 1.0) < x12_count) &&
+                        ((edf_count + 1.0) < c40_count)) {
+                    best_scheme = DM_EDIFACT;
+                }
+
+                /* step (r)(2) */
+                if (((b256_count + 1.0) <= ascii_count) || 
+                        (((b256_count + 1.0) < edf_count) &&
+                        ((b256_count + 1.0) < text_count) && 
+                        ((b256_count + 1.0) < x12_count) &&
+                        ((b256_count + 1.0) < c40_count))) {
+                    best_scheme = DM_BASE256;
+                }
+
+                /* step (r)(1) */
+                if (((ascii_count + 1.0) <= b256_count) &&
+                        ((ascii_count + 1.0) <= edf_count) &&
+                        ((ascii_count + 1.0) <= text_count) && 
+                        ((ascii_count + 1.0) <= x12_count) &&
+                        ((ascii_count + 1.0) <= c40_count)) {
+                   best_scheme = DM_ASCII;
+               }
+            }
+
+            sp++;
+        } while (best_scheme == DM_NULL); // step (s)
+        
 	return best_scheme;
 }
 
