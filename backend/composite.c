@@ -1,4 +1,4 @@
-/* composite.c - Handles UCC.EAN Composite Symbols */
+/* composite.c - Handles GS1 Composite Symbols */
 
 /*
     libzint - the open source barcode library

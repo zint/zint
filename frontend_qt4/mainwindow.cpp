@@ -183,7 +183,7 @@ void MainWindow::about()
 					   "<p><table border=1><tr><td><small>Currently supported standards include:<br>"
 					   "EN 797:1996, EN 798:1996, EN 12323:2005, ISO/IEC 15417:2007,<br>"
 					   "ISO/IEC 15438:2006, ISO/IEC 16022:2006, ISO/IEC 16023:2000,<br>"
-					   "ISO/IEC 16388:2007, ISO/IEC 18004:2006, ISO/IEC 24723:2006,<br>"
+					   "ISO/IEC 16388:2007, ISO/IEC 18004:2006, ISO/IEC 24723:2010,<br>"
 					   "ISO/IEC 24724:2011, ISO/IEC 24728:2006, ISO/IEC 24778:2008,<br>"
 					   "ANSI-HIBC 2.3-2009, ANSI/AIM BC6-2000, ANSI/AIM BC12-1998,<br>"
 					   "AIMD014 (v 1.63), USPS-B-3200</small></td></tr></table>"
