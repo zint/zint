@@ -406,8 +406,6 @@ void qr_binary(int datastream[], int version, int target_binlen, char mode[], in
 
 		position += short_data_block_length;
 	} while (position < length) ;
-
-        printf("Actual binary: %d\n", (int) strlen(binary));
         
 	/* Terminator */
 	concat(binary, "0000");
@@ -765,14 +763,13 @@ int write_log(char log[])
 
 int evaluate(unsigned char *grid, int size, int pattern)
 { 
-	int x, y, block;
+	int x, y, block, weight;
 	int result = 0;
 	char state;
 	int p;
 	int dark_mods; 
-	int percentage, k, k2;
-	int m;
-	int smallest;
+	int percentage, k;
+        int a, b, afterCount, beforeCount;
 #ifdef ZINTLOG
 	int result_b = 0;
 	char str[15];
@@ -864,24 +861,17 @@ int evaluate(unsigned char *grid, int size, int pattern)
 	write_log(str);
 #endif
 	
-	/* Test 2 fd02131114 */
-	for(x = 0; x < size-1; x++) {
-		for(y = 0; y < (size - 7) -1; y++) {	
-			// y + 1???		
-			if((local[((y + 1) * size) + x] == '1') && 
-				(local[((y + 1) * size) + x+1] == '1') &&
-				(local[(((y + 1)+1) * size) + x] == '1') &&
-				(local[(((y + 1)+1) * size) + x+1] == '1') 
-				) { result += 3; }		 
-
-			if((local[((y + 1) * size) + x] == '0') && 
-				(local[((y + 1) * size) + x+1] == '0') &&
-				(local[(((y + 1)+1) * size) + x] == '0') &&
-				(local[(((y + 1)+1) * size) + x+1] == '0') 
-				) { result += 3; }		
-		}
-	}
-
+        /* Test 2: Block of modules in same color */
+        for (x = 0; x < size - 1; x++) {
+            for (y = 0; y < size - 1; y++) {
+                if (((local[(y * size) + x] == local[((y + 1) * size) + x]) &&
+                        (local[(y * size) + x] == local[(y * size) + (x + 1)])) &&
+                        (local[(y * size) + x] == local[((y + 1) * size) + (x + 1)])) {
+                    result += 3;
+                }
+            }
+        }
+        
 #ifdef ZINTLOG 
 	/* output Test 2 */
 	sprintf(str, "%d", result-result_b);
@@ -889,92 +879,98 @@ int evaluate(unsigned char *grid, int size, int pattern)
 	write_log(str);
 #endif
 
-	/* Test 3: fd02131114 */ 
-	/*pattern 10111010000 */ 
-	/* Vertical */ 
-	for(x = 0; x < size; x++) {
-		for(y = 0; y < (size - 11); y++) {
-			p = 0;
-			if(local[(y * size) + x] == '1') { p += 1; }
-			if(local[((y + 1) * size) + x] == '0') { p += 1; }
-			if(local[((y + 2) * size) + x] == '1') { p += 1; }
-			if(local[((y + 3) * size) + x] == '1') { p += 1; }
-			if(local[((y + 4) * size) + x] == '1') { p += 1; }
-			if(local[((y + 5) * size) + x] == '0') { p += 1; }
-			if(local[((y + 6) * size) + x] == '1') { p += 1; }
-			if(local[((y + 7) * size) + x] == '0') { p += 1; }
-			if(local[((y + 8) * size) + x] == '0') { p += 1; }
-			if(local[((y + 9) * size) + x] == '0') { p += 1; }
-			if(local[((y + 10) * size) + x] == '0') { p += 1; } 		
-			if(p == 11) {
-				result += 40;
-			}
-		}
-	}
+        /* Test 3: 1:1:3:1:1 ratio pattern in row/column */
+        /* Vertical */
+        for (x = 0; x < size; x++) {
+            for (y = 0; y < (size - 7); y++) {
+                p = 0;
+                for (weight = 0; weight < 7; weight++) {
+                    if (local[((y + weight) * size) + x] == '1') {
+                        p += (0x40 >> weight);
+                    }
+                }
+                if (p == 0x5d) {
+                    /* Pattern found, check before and after */
+                    beforeCount = 0;
+                    for (b = (y - 4); b < y; b++) {
+                        if (b < 0) {
+                            beforeCount++;
+                        } else {
+                            if (local[(b * size) + x] == '0') {
+                                beforeCount++;
+                            } else {
+                                beforeCount = 0;
+                            }
+                        }
+                    }
+                    
+                    afterCount = 0;
+                    for (a = (y + 7); a <= (y + 10); a++) {
+                        if (a >= size) {
+                            afterCount++;
+                        } else {
+                            if (local[(a * size) + x] == '0') {
+                                afterCount++;
+                            } else {
+                                afterCount = 0;
+                            }
+                        }
+                    }
+                    
+                    if ((beforeCount == 4) || (afterCount == 4)) {
+                        /* Pattern is preceeded or followed by light area
+                           4 modules wide */
+                        result += 40;
+                    }
+                }
+            }
+        }
 
-	/* Horizontal */
-	for(y = 0; y < size; y++) {
-		for(x = 0; x < (size - 11); x++) {
-			p = 0;
-			if(local[(y * size) + x] == '1') { p += 1; }
-			if(local[(y * size) + x + 1] == '0') { p += 1; }
-			if(local[(y * size) + x + 2] == '1') { p += 1; }
-			if(local[(y * size) + x + 3] == '1') { p += 1; }
-			if(local[(y * size) + x + 4] == '1') { p += 1; }
-			if(local[(y * size) + x + 5] == '0') { p += 1; }
-			if(local[(y * size) + x + 6] == '1') { p += 1; }
-			if(local[(y * size) + x + 7] == '0') { p += 1; }
-			if(local[(y * size) + x + 8] == '0') { p += 1; }
-			if(local[(y * size) + x + 9] == '0') { p += 1; }
-			if(local[(y * size) + x + 10] == '0') { p += 1; }
-			if(p == 11) {
-				result += 40;
-			}
-		}
-	}
-
-	/*pattern 00001011101 */ 
-	/* Vertical */ 
-	for(x = 0; x < size; x++) {
-		for(y = 0; y < (size - 11); y++) {
-			p = 0;
-			if(local[(y * size) + x] == '0') { p += 1; }
-			if(local[((y + 1) * size) + x] == '0') { p += 1; }
-			if(local[((y + 2) * size) + x] == '0') { p += 1; }
-			if(local[((y + 3) * size) + x] == '0') { p += 1; }
-			if(local[((y + 4) * size) + x] == '1') { p += 1; }
-			if(local[((y + 5) * size) + x] == '0') { p += 1; }
-			if(local[((y + 6) * size) + x] == '1') { p += 1; }
-			if(local[((y + 7) * size) + x] == '1') { p += 1; }
-			if(local[((y + 8) * size) + x] == '1') { p += 1; }
-			if(local[((y + 9) * size) + x] == '0') { p += 1; }
-			if(local[((y + 10) * size) + x] == '1') { p += 1; } 		
-			if(p == 11) {
-				result += 40;
-			}
-		}
-	}
-
-	/* Horizontal */
-	for(y = 0; y < size; y++) {
-		for(x = 0; x < (size - 11); x++) {
-			p = 0;
-			if(local[(y * size) + x] == '0') { p += 1; }
-			if(local[(y * size) + x + 1] == '0') { p += 1; }
-			if(local[(y * size) + x + 2] == '0') { p += 1; }
-			if(local[(y * size) + x + 3] == '0') { p += 1; }
-			if(local[(y * size) + x + 4] == '1') { p += 1; }
-			if(local[(y * size) + x + 5] == '0') { p += 1; }
-			if(local[(y * size) + x + 6] == '1') { p += 1; }
-			if(local[(y * size) + x + 7] == '1') { p += 1; }
-			if(local[(y * size) + x + 8] == '1') { p += 1; }
-			if(local[(y * size) + x + 9] == '0') { p += 1; }
-			if(local[(y * size) + x + 10] == '1') { p += 1; }
-			if(p == 11) {
-				result += 40;
-			}
-		}
-	} 
+        /* Horizontal */
+        for (y = 0; y < size; y++) {
+            for (x = 0; x < (size - 7); x++) {
+                p = 0;
+                for (weight = 0; weight < 7; weight++) {
+                    if (local[(y * size) + x + weight] == '1') {
+                        p += (0x40 >> weight);
+                    }
+                }
+                if (p == 0x5d) {
+                    /* Pattern found, check before and after */
+                    beforeCount = 0;
+                    for (b = (x - 4); b < x; b++) {
+                        if (b < 0) {
+                            beforeCount++;
+                        } else {
+                            if (local[(y * size) + b] == '0') {
+                                beforeCount++;
+                            } else {
+                                beforeCount = 0;
+                            }
+                        }
+                    }
+                    
+                    afterCount = 0;
+                    for (a = (x + 7); a <= (x + 10); a++) {
+                        if (a >= size) {
+                            afterCount++;
+                        } else {
+                            if (local[(y * size) + a] == '0') {
+                                afterCount++;
+                            } else {
+                                afterCount = 0;
+                            }
+                        }
+                    }
+                    
+                    if ((beforeCount == 4) || (afterCount == 4)) {
+                        /* Pattern is preceeded or followed by light area
+                           4 modules wide */
+                        result += 40;
+                    }
+                }
+            }
+        }
 
 #ifdef ZINTLOG 
 	/* output Test 3 */
@@ -993,21 +989,13 @@ int evaluate(unsigned char *grid, int size, int pattern)
 		}
 	}
 	percentage = 100 * (dark_mods / (size * size));   
-	m=0;
-	for(x = 0; x < 100; x+=5) {
-		if(x<percentage)
-			m=x;
-	}
+        if (percentage <= 50) {
+            k = ((100 - percentage) - 50) / 5;
+        } else {
+            k = (percentage - 50) / 5;
+        }
 
-		
-	k=abs((m-50)/5);
-	k2=abs((m+5-50)/5);
-
-	smallest=k;
-	if(k2<smallest)
-		smallest=k2;
-	 
-	result += 10 * smallest;
+        result += 10 * k;
 
 #ifdef ZINTLOG 
 	/* output Test 4+summary */
