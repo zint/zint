@@ -53,12 +53,6 @@ MainWindow::MainWindow(QWidget* parent, Qt::WFlags fl)
 		"Code 49",
 		"Code 93", 
 		"Code One",
-		"Databar",
-		"Databar Expanded",
-		"Databar Expanded Stacked",
-		"Databar Limited",
-		"Databar Stacked",
-		"Databar Stacked Omnidirectional",
 		"Data Matrix (ISO 16022)",
 		"Deutsche Post Identcode",
 		"Deutsche Post Leitcode",
@@ -68,6 +62,12 @@ MainWindow::MainWindow(QWidget* parent, Qt::WFlags fl)
 		"Facing Identification Mark (FIM)",
 		"Flattermarken",
 		"Grid Matrix",
+		"GS1 DataBar Expanded Omnidirectional",
+		"GS1 DataBar Expanded Stacked Omnidirectional",
+		"GS1 DataBar Limited",
+		"GS1 DataBar Omnidirectional",                
+		"GS1 DataBar Stacked",
+		"GS1 DataBar Stacked Omnidirectional",                
 		"ITF-14",
 		"International Standard Book Number (ISBN)",
 		"Japanese Postal Barcode",
@@ -184,7 +184,7 @@ void MainWindow::about()
 					   "EN 797:1996, EN 798:1996, EN 12323:2005, ISO/IEC 15417:2007,<br>"
 					   "ISO/IEC 15438:2006, ISO/IEC 16022:2006, ISO/IEC 16023:2000,<br>"
 					   "ISO/IEC 16388:2007, ISO/IEC 18004:2006, ISO/IEC 24723:2006,<br>"
-					   "ISO/IEC 24724:2006, ISO/IEC 24728:2006, ISO/IEC 24778:2008,<br>"
+					   "ISO/IEC 24724:2011, ISO/IEC 24728:2006, ISO/IEC 24778:2008,<br>"
 					   "ANSI-HIBC 2.3-2009, ANSI/AIM BC6-2000, ANSI/AIM BC12-1998,<br>"
 					   "AIMD014 (v 1.63), USPS-B-3200</small></td></tr></table>"
 			     ));
@@ -466,7 +466,7 @@ void MainWindow::change_options()
 			return;
 		m_optionWidget=uiload.load(&file);
 		file.close();
-		tabMain->insertTab(1,m_optionWidget,tr("DataBar Stacked"));
+		tabMain->insertTab(1,m_optionWidget,tr("GS1 DataBar Stacked"));
 		connect(m_optionWidget->findChild<QObject*>("cmbCols"), SIGNAL(currentIndexChanged ( int )), SLOT(update_preview()));
 	}
 

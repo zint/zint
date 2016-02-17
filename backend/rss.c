@@ -49,6 +49,18 @@
 */
 
 /* Includes numerous bugfixes thanks to Pablo Orduña @ the PIRAmIDE project */
+
+/* Note: This code reflects the symbol names as used in ISO/IEC 24724:2006. These names
+ * were updated in ISO/IEC 24724:2011 as follows:
+ * 
+ * RSS-14 > GS1 DataBar Omnidirectional
+ * RSS-14 Truncated > GS1 DataBar Truncated
+ * RSS-14 Stacked > GS1 DataBar Stacked
+ * RSS-14 Stacked Omnidirectional > GS1 DataBar Stacked Omnidirectional
+ * RSS Limited > GS1 DataBar Limited
+ * RSS Expanded > GS1 DataBar Expanded Omnidirectional
+ * RSS Expanded Stacked > GS1 DataBar Expanded Stacked Omnidirectional
+ */
 	
 #include <stdio.h>
 #include <string.h>
