@@ -187,10 +187,8 @@ void SequenceWindow::import()
 
 void SequenceWindow::generate_sequence()
 {
-	int returnval;
-	
 	ExportWindow dlg;
 	dlg.barcode = barcode;
 	dlg.output_data = txtPreview->toPlainText();
-	returnval = dlg.exec();
+	dlg.exec();
 }

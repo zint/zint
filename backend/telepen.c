@@ -68,7 +68,7 @@ int telepen(struct zint_symbol *symbol, unsigned char source[], int src_len)
 
 	if(src_len > 30) {
 		strcpy(symbol->errtxt, "Input too long");
-		return ERROR_TOO_LONG;
+		return ZINT_ERROR_TOO_LONG;
 	}
 	/* Start character */
 	strcpy(dest, TeleTable['_']);
@@ -77,7 +77,7 @@ int telepen(struct zint_symbol *symbol, unsigned char source[], int src_len)
 		if(source[i] > 126) {
 			/* Cannot encode extended ASCII */
 			strcpy(symbol->errtxt, "Invalid characters in input data");
-			return ERROR_INVALID_DATA;
+			return ZINT_ERROR_INVALID_DATA;
 		}
 		concat(dest, TeleTable[source[i]]);
 		count += source[i];
@@ -114,12 +114,12 @@ int telepen_num(struct zint_symbol *symbol, unsigned char source[], int src_len)
 
 	if(temp_length > 60) {
 		strcpy(symbol->errtxt, "Input too long");
-		return ERROR_TOO_LONG;
+		return ZINT_ERROR_TOO_LONG;
 	}
 	ustrcpy(temp, source);		
 	to_upper(temp);
 	error_number = is_sane(NEON, temp, temp_length);
-	if(error_number == ERROR_INVALID_DATA) {
+	if(error_number == ZINT_ERROR_INVALID_DATA) {
 		strcpy(symbol->errtxt, "Invalid characters in data");
 		return error_number;
 	}
@@ -140,7 +140,7 @@ int telepen_num(struct zint_symbol *symbol, unsigned char source[], int src_len)
 	{
 		if(temp[i] == 'X') {
 			strcpy(symbol->errtxt, "Invalid position of X in Telepen data");
-			return ERROR_INVALID_DATA;
+			return ZINT_ERROR_INVALID_DATA;
 		}
 		
 		if(temp[i + 1] == 'X') {

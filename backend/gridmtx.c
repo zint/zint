@@ -699,7 +699,7 @@ int gm_encode(int gbdata[], int length, char binary[], int reader)
 				break;
 		}
 		if(strlen(binary) > 9191) {
-			return ERROR_TOO_LONG;
+			return ZINT_ERROR_TOO_LONG;
 		}
 
 	} while(sp < length);
@@ -736,7 +736,7 @@ int gm_encode(int gbdata[], int length, char binary[], int reader)
 	}
 
 	if(strlen(binary) > 9191) {
-		return ERROR_TOO_LONG;
+		return ZINT_ERROR_TOO_LONG;
 	}
 	return 0;
 }
@@ -961,7 +961,7 @@ int grid_matrix(struct zint_symbol *symbol, unsigned char source[], int length)
 					} while ((j < 7445) && (glyph == 0));
 					if(glyph == 0) {
 						strcpy(symbol->errtxt, "Invalid character in input data");
-						return ERROR_INVALID_DATA;
+						return ZINT_ERROR_INVALID_DATA;
 					}
 					gbdata[i] = glyph;
 				}
@@ -1041,7 +1041,7 @@ int grid_matrix(struct zint_symbol *symbol, unsigned char source[], int length)
 
 	if(data_cw > data_max) {
 		strcpy(symbol->errtxt, "Input data too long");
-		return ERROR_TOO_LONG;
+		return ZINT_ERROR_TOO_LONG;
 	}	
 	
 	gm_add_ecc(binary, data_cw, layers, ecc_level, word);

@@ -168,10 +168,10 @@ int rss14(struct zint_symbol *symbol, unsigned char source[], int src_len)
 
 	if(src_len > 13) {
 		strcpy(symbol->errtxt, "Input too long");
-		return ERROR_TOO_LONG;
+		return ZINT_ERROR_TOO_LONG;
 	}
 	error_number = is_sane(NEON, source, src_len);
-	if(error_number == ERROR_INVALID_DATA) {
+	if(error_number == ZINT_ERROR_INVALID_DATA) {
 		strcpy(symbol->errtxt, "Invalid characters in data");
 		return error_number;
 	}
@@ -674,17 +674,17 @@ int rsslimited(struct zint_symbol *symbol, unsigned char source[], int src_len)
 	
 	if(src_len > 13) {
 		strcpy(symbol->errtxt, "Input too long");
-		return ERROR_TOO_LONG;
+		return ZINT_ERROR_TOO_LONG;
 	}
 	error_number = is_sane(NEON, source, src_len);
-	if(error_number == ERROR_INVALID_DATA) {
+	if(error_number == ZINT_ERROR_INVALID_DATA) {
 		strcpy(symbol->errtxt, "Invalid characters in data");
 		return error_number;
 	}
 	if(src_len == 13) {
 		if((source[0] != '0') && (source[0] != '1')) {
 			strcpy(symbol->errtxt, "Input out of range");
-			return ERROR_INVALID_DATA;
+			return ZINT_ERROR_INVALID_DATA;
 		}
 	}
 	
@@ -1254,7 +1254,7 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
 			if((source[i] != '[') && (source[i] != ']')) {
 				/* Something is wrong */
 				strcpy(symbol->errtxt, "Invalid characters in input data");
-				return ERROR_INVALID_DATA;
+				return ZINT_ERROR_INVALID_DATA;
 			}
 		}
 	}
@@ -1580,7 +1580,7 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
 	if(latch == 1) {
 		/* Invalid characters in input data */
 		strcpy(symbol->errtxt, "Invalid characters in input data");
-		return ERROR_INVALID_DATA;
+		return ZINT_ERROR_INVALID_DATA;
 	}
 	
 	for(i = 0; i < strlen(general_field); i++) {
@@ -1821,7 +1821,7 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
 	
 	if(strlen(binary_string) > 252) {
 		strcpy(symbol->errtxt, "Input too long");
-		return ERROR_TOO_LONG;
+		return ZINT_ERROR_TOO_LONG;
 	}
 	
 	/* Now add padding to binary string (7.2.5.5.4) */

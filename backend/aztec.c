@@ -588,7 +588,7 @@ int aztec_text_process(unsigned char source[], const unsigned int src_len, char 
 						bytes--;
 
 						if(bytes > 2079) {
-							return ERROR_TOO_LONG;
+							return ZINT_ERROR_TOO_LONG;
 						}
 
 						if(bytes > 31) { /* Put 00000 followed by 11-bit number of bytes less 31 */
@@ -660,7 +660,7 @@ int aztec_text_process(unsigned char source[], const unsigned int src_len, char 
 	if(debug) printf("\n");
 
 	if(strlen(binary_string) > 14970) {
-		return ERROR_TOO_LONG;
+		return ZINT_ERROR_TOO_LONG;
 	}
 
 	return 0;
@@ -847,7 +847,7 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], int length)
 	if(symbol->output_options & READER_INIT) { reader = 1; comp_loop = 1; }
 	if((gs1 == 1) && (reader == 1)) {
 		strcpy(symbol->errtxt, "Cannot encode in GS1 and Reader Initialisation mode at the same time");
-		return ERROR_INVALID_OPTION;
+		return ZINT_ERROR_INVALID_OPTION;
 	}
 
 	switch(symbol->input_mode) {
@@ -872,7 +872,7 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], int length)
 
 	if(!((symbol->option_1 >= -1) && (symbol->option_1 <= 4))) {
 		strcpy(symbol->errtxt, "Invalid error correction level - using default instead");
-		err_code = WARN_INVALID_OPTION;
+		err_code = ZINT_WARN_INVALID_OPTION;
 		symbol->option_1 = -1;
 	}
 
@@ -960,7 +960,7 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], int length)
 
 			if(layers == 0) { /* Couldn't find a symbol which fits the data */
 				strcpy(symbol->errtxt, "Input too long (too many bits for selected ECC)");
-				return ERROR_TOO_LONG;
+				return ZINT_ERROR_TOO_LONG;
 			}
 
 			/* Determine codeword bitlength - Table 3 */
@@ -1053,7 +1053,7 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], int length)
 		}
 		if((symbol->option_2 < 0) || (symbol->option_2 > 36)) {
 			strcpy(symbol->errtxt, "Invalid Aztec Code size");
-			return ERROR_INVALID_OPTION;
+			return ZINT_ERROR_INVALID_OPTION;
 		}
 
 		/* Determine codeword bitlength - Table 3 */
@@ -1124,7 +1124,7 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], int length)
 
 		if(adjusted_length > data_maxsize) {
 			strcpy(symbol->errtxt, "Data too long for specified Aztec Code symbol size");
-			return ERROR_TOO_LONG;
+			return ZINT_ERROR_TOO_LONG;
 		}
 
 		if(debug) {
@@ -1141,7 +1141,7 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], int length)
 
 	if(reader && (layers > 22)) {
 		strcpy(symbol->errtxt, "Data too long for reader initialisation symbol");
-		return ERROR_TOO_LONG;
+		return ZINT_ERROR_TOO_LONG;
 	}
 
 	data_blocks = adjusted_length / codeword_size;
@@ -1437,12 +1437,12 @@ int aztec_runes(struct zint_symbol *symbol, unsigned char source[], int length)
 	input_value = 0;
 	if(length > 3) {
 		strcpy(symbol->errtxt, "Input too large");
-		return ERROR_INVALID_DATA;
+		return ZINT_ERROR_INVALID_DATA;
 	}
 	error_number = is_sane(NEON, source, length);
 	if(error_number != 0) {
 		strcpy(symbol->errtxt, "Invalid characters in input");
-		return ERROR_INVALID_DATA;
+		return ZINT_ERROR_INVALID_DATA;
 	}
 	switch(length) {
 		case 3: input_value = 100 * ctoi(source[0]);
@@ -1458,7 +1458,7 @@ int aztec_runes(struct zint_symbol *symbol, unsigned char source[], int length)
 
 	if(input_value > 255) {
 		strcpy(symbol->errtxt, "Input too large");
-		return ERROR_INVALID_DATA;
+		return ZINT_ERROR_INVALID_DATA;
 	}
 
 	strcpy(binary_string, "");

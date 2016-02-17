@@ -203,14 +203,14 @@ struct zint_symbol {
 
 #define DM_SQUARE	100
 
-#define WARN_INVALID_OPTION	2
-#define ERROR_TOO_LONG		5
-#define ERROR_INVALID_DATA	6
-#define ERROR_INVALID_CHECK	7
-#define ERROR_INVALID_OPTION	8
-#define ERROR_ENCODING_PROBLEM	9
-#define ERROR_FILE_ACCESS	10
-#define ERROR_MEMORY		11
+#define ZINT_WARN_INVALID_OPTION	2
+#define ZINT_ERROR_TOO_LONG		5
+#define ZINT_ERROR_INVALID_DATA	6
+#define ZINT_ERROR_INVALID_CHECK	7
+#define ZINT_ERROR_INVALID_OPTION	8
+#define ZINT_ERROR_ENCODING_PROBLEM	9
+#define ZINT_ERROR_FILE_ACCESS	10
+#define ZINT_ERROR_MEMORY		11
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32) || defined(_MSC_VER)
 #  if defined (DLL_EXPORT) || defined(PIC) || defined(_USRDLL)

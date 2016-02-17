@@ -117,7 +117,7 @@ int validator(char test_string[], char source[])
 		for(j = 0; j < strlen(test_string); j++) {
 			if (source[i] == test_string[j]) { latch = 1; } }
 			if (!(latch)) { 
-				return ERROR_INVALID_DATA; }
+				return ZINT_ERROR_INVALID_DATA; }
 	}
 
 	return 0;
@@ -207,7 +207,7 @@ int batch_process(struct zint_symbol *symbol, char *filename)
 			strcpy(format_string, symbol->outfile);
 		} else {
 			strcpy(symbol->errtxt, "Format string too long");
-			return ERROR_INVALID_DATA;
+			return ZINT_ERROR_INVALID_DATA;
 		}
 	}
 	memset(adjusted, 0, sizeof(char) * 2);
@@ -218,7 +218,7 @@ int batch_process(struct zint_symbol *symbol, char *filename)
 		file = fopen(filename, "rb");
 		if (!file) {
 			strcpy(symbol->errtxt, "Unable to read input file");
-			return ERROR_INVALID_DATA;
+			return ZINT_ERROR_INVALID_DATA;
 		}
 	}
 	
@@ -452,7 +452,7 @@ int main(int argc, char **argv)
 				}
 				if(!strcmp(long_options[option_index].name, "border")) {
 					error_number = validator(NESET, optarg);
-					if(error_number == ERROR_INVALID_DATA) {
+					if(error_number == ZINT_ERROR_INVALID_DATA) {
 						fprintf(stderr, "Invalid border width\n");
 						exit(1);
 					}
@@ -465,7 +465,7 @@ int main(int argc, char **argv)
 				}
 				if(!strcmp(long_options[option_index].name, "height")) {
 					error_number = validator(NESET, optarg);
-					if(error_number == ERROR_INVALID_DATA) {
+					if(error_number == ZINT_ERROR_INVALID_DATA) {
 						fprintf(stderr, "Invalid symbol height\n");
 						exit(1);
 					}
@@ -520,7 +520,7 @@ int main(int argc, char **argv)
 				if(!strcmp(long_options[option_index].name, "rotate")) {
 					/* Only certain inputs allowed */
 					error_number = validator(NESET, optarg);
-					if(error_number == ERROR_INVALID_DATA) {
+					if(error_number == ZINT_ERROR_INVALID_DATA) {
 						fprintf(stderr, "Invalid rotation parameter\n");
 						exit(1);
 					}
@@ -547,7 +547,7 @@ int main(int argc, char **argv)
 				
 			case 'b':
 				error_number = validator(NESET, optarg);
-				if(error_number == ERROR_INVALID_DATA) {
+				if(error_number == ZINT_ERROR_INVALID_DATA) {
 					fprintf(stderr, "Invalid barcode type\n");
 					exit(1);
 				}
@@ -556,7 +556,7 @@ int main(int argc, char **argv)
 				
 			case 'w':
 				error_number = validator(NESET, optarg);
-				if(error_number == ERROR_INVALID_DATA) {
+				if(error_number == ZINT_ERROR_INVALID_DATA) {
 					fprintf(stderr, "Invalid whitespace value\n");
 					exit(1);
 				}

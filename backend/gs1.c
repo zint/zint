@@ -76,17 +76,17 @@ int gs1_verify(struct zint_symbol *symbol, unsigned char source[], const unsigne
 	for(i = 0; i < src_len; i++) {
 		if(source[i] >=128) {
 			strcpy(symbol->errtxt, "Extended ASCII characters are not supported by GS1");
-			return ERROR_INVALID_DATA;
+			return ZINT_ERROR_INVALID_DATA;
 		}
 		if(source[i] < 32) {
 			strcpy(symbol->errtxt, "Control characters are not supported by GS1");
-			return ERROR_INVALID_DATA;
+			return ZINT_ERROR_INVALID_DATA;
 		}
 	}
 
 	if(source[0] != '[') {
 		strcpy(symbol->errtxt, "Data does not start with an AI");
-		return ERROR_INVALID_DATA;
+		return ZINT_ERROR_INVALID_DATA;
 	}
 
 	/* Check the position of the brackets */
@@ -115,31 +115,31 @@ int gs1_verify(struct zint_symbol *symbol, unsigned char source[], const unsigne
 	if(bracket_level != 0) {
 		/* Not all brackets are closed */
 		strcpy(symbol->errtxt, "Malformed AI in input data (brackets don\'t match)");
-		return ERROR_INVALID_DATA;
+		return ZINT_ERROR_INVALID_DATA;
 	}
 
 	if(max_bracket_level > 1) {
 		/* Nested brackets */
 		strcpy(symbol->errtxt, "Found nested brackets in input data");
-		return ERROR_INVALID_DATA;
+		return ZINT_ERROR_INVALID_DATA;
 	}
 
 	if(max_ai_length > 4) {
 		/* AI is too long */
 		strcpy(symbol->errtxt, "Invalid AI in input data (AI too long)");
-		return ERROR_INVALID_DATA;
+		return ZINT_ERROR_INVALID_DATA;
 	}
 
 	if(min_ai_length <= 1) {
 		/* AI is too short */
 		strcpy(symbol->errtxt, "Invalid AI in input data (AI too short)");
-		return ERROR_INVALID_DATA;
+		return ZINT_ERROR_INVALID_DATA;
 	}
 
 	if(ai_latch == 1) {
 		/* Non-numeric data in AI */
 		strcpy(symbol->errtxt, "Invalid AI in input data (non-numeric characters in AI)");
-		return ERROR_INVALID_DATA;
+		return ZINT_ERROR_INVALID_DATA;
 	}
 
 	ai_count = 0;
@@ -172,7 +172,7 @@ int gs1_verify(struct zint_symbol *symbol, unsigned char source[], const unsigne
 		if(data_length[i] == 0) {
 			/* No data for given AI */
 			strcpy(symbol->errtxt, "Empty data field in input data");
-			return ERROR_INVALID_DATA;
+			return ZINT_ERROR_INVALID_DATA;
 		}
 	}
 
@@ -253,13 +253,13 @@ int gs1_verify(struct zint_symbol *symbol, unsigned char source[], const unsigne
 	if(error_latch == 5) {
 		strcpy(symbol->errtxt, "Invalid data length for AI ");
 		concat(symbol->errtxt, ai_string);
-		return ERROR_INVALID_DATA;
+		return ZINT_ERROR_INVALID_DATA;
 	}
 
 	if(error_latch == 6) {
 		strcpy(symbol->errtxt, "Invalid AI value ");
 		concat(symbol->errtxt, ai_string);
-		return ERROR_INVALID_DATA;
+		return ZINT_ERROR_INVALID_DATA;
 	}
 
 	/* Resolve AI data - put resulting string in 'reduced' */
@@ -318,5 +318,5 @@ int ugs1_verify(struct zint_symbol *symbol, unsigned char source[], const unsign
 		return 0;
 	}
 	strcpy(symbol->errtxt, "ugs1_verify overflow");
-	return ERROR_INVALID_DATA;
+	return ZINT_ERROR_INVALID_DATA;
 }

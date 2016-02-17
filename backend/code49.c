@@ -52,7 +52,7 @@ int code_49(struct zint_symbol *symbol, unsigned char source[], int length)
 
 	if(length > 81) {
 		strcpy(symbol->errtxt, "Input too long");
-		return ERROR_TOO_LONG;
+		return ZINT_ERROR_TOO_LONG;
 	}
 	if(symbol->input_mode == GS1_MODE) { gs1 = 1; } else { gs1 = 0; }
 
@@ -60,7 +60,7 @@ int code_49(struct zint_symbol *symbol, unsigned char source[], int length)
 	for(i = 0; i < length; i++) {
 		if(source[i] > 127) {
 			strcpy(symbol->errtxt, "Invalid characters in input data");
-			return ERROR_INVALID_DATA;
+			return ZINT_ERROR_INVALID_DATA;
 		}
 		if(gs1 && (source[i] == '['))
 			concat(intermediate, "*"); /* FNC1 */
@@ -206,7 +206,7 @@ int code_49(struct zint_symbol *symbol, unsigned char source[], int length)
 
 	if(codeword_count > 49) {
 		strcpy(symbol->errtxt, "Input too long");
-		return ERROR_TOO_LONG;
+		return ZINT_ERROR_TOO_LONG;
 	}
 
 	/* Place codewords in code character array (c grid) */

@@ -73,7 +73,7 @@ int ps_plot(struct zint_symbol *symbol)
 	}
 	if(feps == NULL) {
 		strcpy(symbol->errtxt, "Could not open output file");
-		return ERROR_FILE_ACCESS;
+		return ZINT_ERROR_FILE_ACCESS;
 	}
 
 	/* sort out colour options */
@@ -82,21 +82,21 @@ int ps_plot(struct zint_symbol *symbol)
 
 	if(strlen(symbol->fgcolour) != 6) {
 		strcpy(symbol->errtxt, "Malformed foreground colour target");
-		return ERROR_INVALID_OPTION;
+		return ZINT_ERROR_INVALID_OPTION;
 	}
 	if(strlen(symbol->bgcolour) != 6) {
 		strcpy(symbol->errtxt, "Malformed background colour target");
-		return ERROR_INVALID_OPTION;
+		return ZINT_ERROR_INVALID_OPTION;
 	}
 	error_number = is_sane(SSET, (unsigned char*)symbol->fgcolour, strlen(symbol->fgcolour));
-	if (error_number == ERROR_INVALID_DATA) {
+	if (error_number == ZINT_ERROR_INVALID_DATA) {
 		strcpy(symbol->errtxt, "Malformed foreground colour target");
-		return ERROR_INVALID_OPTION;
+		return ZINT_ERROR_INVALID_OPTION;
 	}
 	error_number = is_sane(SSET, (unsigned char*)symbol->bgcolour, strlen(symbol->bgcolour));
-	if (error_number == ERROR_INVALID_DATA) {
+	if (error_number == ZINT_ERROR_INVALID_DATA) {
 		strcpy(symbol->errtxt, "Malformed background colour target");
-		return ERROR_INVALID_OPTION;
+		return ZINT_ERROR_INVALID_OPTION;
 	}
 	locale = setlocale(LC_ALL, "C");
 
