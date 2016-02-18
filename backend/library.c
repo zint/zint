@@ -215,8 +215,13 @@ void error_tag(char error_string[], int error_number)
 
 int dump_plot(struct zint_symbol *symbol)
 {
+    /* Output a hexadecimal representation of the rendered symbol */
 	FILE *f;
 	int i, r;
+        int byt;
+        char hex[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8',
+            '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+        int space = 0;
 
 	if(symbol->output_options & BARCODE_STDOUT) {
 		f = stdout;
@@ -228,15 +233,31 @@ int dump_plot(struct zint_symbol *symbol)
 		}
 	}
 
-	fputs("[\n", f);
 	for (r = 0; r < symbol->rows; r++) {
-		fputs(" [ ", f);
+                byt = 0;
 		for (i = 0; i < symbol->width; i++) {
-			fputs(module_is_set(symbol, r, i) ? "1 " : "0 ", f);
+                    byt = byt << 1;
+                    if (module_is_set(symbol, r, i)) {
+                        byt += 1;
+                    }
+                    if (((i + 1) % 4) == 0) {
+                        fputc(hex[byt], f);
+                        space++;
+                        byt = 0;
+                    }
+                    if (space == 2) {
+                        fputc(' ', f);
+                        space = 0;
+                    }
 		}
-		fputs("]\n", f);
+		
+		if ((symbol->width % 4) != 0) {
+                    byt = byt << (4 - (symbol->width % 4));
+                    fputc(hex[byt], f);
+                }
+		fputs("\n", f);
+                space = 0;
 	}
-	fputs("]\n", f);
 
 	if(symbol->output_options & BARCODE_STDOUT) {
 		fflush(f);
