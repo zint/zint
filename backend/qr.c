@@ -761,7 +761,7 @@ int write_log(char log[])
 }
 #endif
 
-int evaluate(unsigned char *grid, int size, int pattern)
+int evaluate(unsigned char *eval, int size, int pattern)
 { 
 	int x, y, block, weight;
 	int result = 0;
@@ -791,16 +791,11 @@ int evaluate(unsigned char *grid, int size, int pattern)
 	// all eight bitmask variants have been encoded in the 8 bits of the bytes that make up the grid array. select them for evaluation according to the desired pattern.
 	for(x = 0; x < size; x++) {
 		for(y = 0; y < size; y++) {
-			switch(pattern) {
-				case 0: if (grid[(y * size) + x] & 0x01) { local[(y * size) + x] = '1'; } else { local[(y * size) + x] = '0'; } break;
-				case 1: if (grid[(y * size) + x] & 0x02) { local[(y * size) + x] = '1'; } else { local[(y * size) + x] = '0'; } break;
-				case 2: if (grid[(y * size) + x] & 0x04) { local[(y * size) + x] = '1'; } else { local[(y * size) + x] = '0'; } break;
-				case 3: if (grid[(y * size) + x] & 0x08) { local[(y * size) + x] = '1'; } else { local[(y * size) + x] = '0'; } break;
-				case 4: if (grid[(y * size) + x] & 0x10) { local[(y * size) + x] = '1'; } else { local[(y * size) + x] = '0'; } break;
-				case 5: if (grid[(y * size) + x] & 0x20) { local[(y * size) + x] = '1'; } else { local[(y * size) + x] = '0'; } break;
-				case 6: if (grid[(y * size) + x] & 0x40) { local[(y * size) + x] = '1'; } else { local[(y * size) + x] = '0'; } break;
-				case 7: if (grid[(y * size) + x] & 0x80) { local[(y * size) + x] = '1'; } else { local[(y * size) + x] = '0'; } break;
-			}
+                    if ((eval[(y * size) + x] & (0x01 << pattern)) != 0) {
+                        local[(y * size) + x] = '1';
+                    } else {
+                        local[(y * size) + x] = '0';
+                    }
 		}
 	}
 
@@ -819,7 +814,7 @@ int evaluate(unsigned char *grid, int size, int pattern)
 
 	/* Test 1: Adjacent modules in row/column in same colour */
 	/* Vertical */ 
-	for(x = 0; x < size; x++) {
+	/*for(x = 0; x < size; x++) {
 		state = local[x];
 		block = 0; 
 		for(y = 0; y < size; y++) {
@@ -834,10 +829,10 @@ int evaluate(unsigned char *grid, int size, int pattern)
 				block=0;
 			}
 		} 
-	}
+	}*/
 
 	/* Horizontal */
-	for(y = 0; y < size; y++) {
+	/*for(y = 0; y < size; y++) {
 		state = local[y * size];
 		block = 0;
 		for(x = 0; x < size; x++) {
@@ -852,8 +847,49 @@ int evaluate(unsigned char *grid, int size, int pattern)
 				block=0;
 			}
 		} 
-	}
-	 
+	}*/
+
+        /* Test 1: Adjacent modules in row/column in same colour */
+        /* Vertical */
+        for (x = 0; x < size; x++) {
+            state = local[x];
+            block = 0;
+            for (y = 0; y < size; y++) {
+                if (local[(y * size) + x] == state) {
+                    block++;
+                } else {
+                    if (block > 5) {
+                        result += (3 + (block - 5));
+                    }
+                    block = 0;
+                    state = local[(y * size) + x];
+                }
+            }
+            if (block > 5) {
+                result += (3 + (block - 5));
+            }
+        }
+
+        /* Horizontal */
+        for (y = 0; y < size; y++) {
+            state = local[y * size];
+            block = 0;
+            for (x = 0; x < size; x++) {
+                if (local[(y * size) + x] == state) {
+                    block++;
+                } else {
+                    if (block > 5) {
+                        result += (3 + (block - 5));
+                    }
+                    block = 0;
+                    state = local[(y * size) + x];
+                }
+            }
+            if (block > 5) {
+                result += (3 + (block - 5));
+            }
+        }
+
 #ifdef ZINTLOG 
 	/* output Test 1 */
 	sprintf(str, "%d", result);
@@ -871,7 +907,7 @@ int evaluate(unsigned char *grid, int size, int pattern)
                 }
             }
         }
-        
+
 #ifdef ZINTLOG 
 	/* output Test 2 */
 	sprintf(str, "%d", result-result_b);
@@ -1098,7 +1134,7 @@ int apply_bitmask(unsigned char *grid, int size, int ecc_level)
 	
 	    add_format_info_eval(eval, size, ecc_level, pattern);
 	
-		penalty[pattern] = evaluate(eval, size, pattern);
+            penalty[pattern] = evaluate(eval, size, pattern);
 	}
 
 	best_pattern = 0;
@@ -1197,11 +1233,216 @@ void add_version_info(unsigned char *grid, int size, int version)
 	}
 }
 
+int tribus(int version, int a, int b, int c) {
+    /* Choose from three numbers based on version */
+    int RetVal;
+
+    RetVal = c;
+
+    if (version < 10) {
+        RetVal = a;
+    }
+
+    if ((version >= 10) && (version <= 26)) {
+        RetVal = b;
+    }
+
+    return RetVal;
+}
+
+void applyOptimisation(int version, char inputMode[], int inputLength) {
+    /* Implements a custom optimisation algorithm, more efficient than that
+       given in Annex J.
+     */
+
+    int blockCount = 0;
+    int i, j;
+    char currentMode = ' '; // Null
+
+    for (i = 0; i < inputLength; i++) {
+        if (inputMode[i] != currentMode) {
+            currentMode = inputMode[i];
+            blockCount++;
+        }
+    }
+
+    int blockLength[blockCount];
+    char blockMode[blockCount];
+
+    j = -1;
+    currentMode = ' '; // Null
+    for (i = 0; i < inputLength; i++) {
+        if (inputMode[i] != currentMode) {
+            j++;
+            blockLength[j] = 1;
+            blockMode[j] = inputMode[i];
+            currentMode = inputMode[i];
+        } else {
+            blockLength[j]++;
+        }
+    }
+
+    if (blockCount > 1) {
+        // Search forward
+        for (i = 0; i <= (blockCount - 2); i++) {
+            if (blockMode[i] == 'B') {
+                switch (blockMode[i + 1]) {
+                    case 'K':
+                        if (blockLength[i + 1] < tribus(version, 4, 5, 6)) {
+                            blockMode[i + 1] = 'B';
+                        }
+                        break;
+                    case 'A':
+                        if (blockLength[i + 1] < tribus(version, 7, 8, 9)) {
+                            blockMode[i + 1] = 'B';
+                        }
+                        break;
+                    case 'N':
+                        if (blockLength[i + 1] < tribus(version, 3, 4, 5)) {
+                            blockMode[i + 1] = 'B';
+                        }
+                        break;
+                }
+            }
+
+            if ((blockMode[i] == 'A')
+                    && (blockMode[i + 1] == 'N')) {
+                if (blockLength[i + 1] < tribus(version, 6, 8, 10)) {
+                    blockMode[i + 1] = 'A';
+                }
+            }
+        }
+
+        // Search backward
+        for (i = blockCount - 1; i > 0; i--) {
+            if (blockMode[i] == 'B') {
+                switch (blockMode[i - 1]) {
+                    case 'K':
+                        if (blockLength[i - 1] < tribus(version, 4, 5, 6)) {
+                            blockMode[i - 1] = 'B';
+                        }
+                        break;
+                    case 'A':
+                        if (blockLength[i - 1] < tribus(version, 7, 8, 9)) {
+                            blockMode[i - 1] = 'B';
+                        }
+                        break;
+                    case 'N':
+                        if (blockLength[i - 1] < tribus(version, 3, 4, 5)) {
+                            blockMode[i - 1] = 'B';
+                        }
+                        break;
+                }
+            }
+
+            if ((blockMode[i] == 'A')
+                    && (blockMode[i - 1] == 'N')) {
+                if (blockLength[i - 1] < tribus(version, 6, 8, 10)) {
+                    blockMode[i - 1] = 'A';
+                }
+            }
+        }
+    }
+
+    j = 0;
+    for (int block = 0; block < blockCount; block++) {
+        currentMode = blockMode[block];
+        for (i = 0; i < blockLength[block]; i++) {
+            inputMode[j] = currentMode;
+            j++;
+        }
+    }
+}
+
+int blockLength(int start, char inputMode[], int inputLength) {
+    /* Find the length of the block starting from 'start' */
+    int i, count;
+    char mode = inputMode[start];
+
+    count = 0;
+    i = start;
+
+    do {
+        count++;
+    } while (((i + count) < inputLength) && (inputMode[i + count] == mode));
+
+    return count;
+}
+
+int getBinaryLength(int version, char inputMode[], int inputData[], int inputLength, int gs1) {
+    /* Calculate the actual bitlength of the proposed binary string */
+    char currentMode;
+    int i, j;
+    int count = 0;
+
+    applyOptimisation(version, inputMode, inputLength);
+
+    currentMode = ' '; // Null
+
+    if (gs1 == 1) {
+        count += 4;
+    }
+
+    for (i = 0; i < inputLength; i++) {
+        if (inputMode[i] != currentMode) {
+            count += 4;
+            switch (inputMode[i]) {
+                case 'K':
+                    count += tribus(version, 8, 10, 12);
+                    count += (blockLength(i, inputMode, inputLength) * 13);
+                    break;
+                case 'B':
+                    count += tribus(version, 8, 16, 16);
+                    for (j = i; j < (i + blockLength(i, inputMode, inputLength)); j++) {
+                        if (inputData[j] > 0xff) {
+                            count += 16;
+                        } else {
+                            count += 8;
+                        }
+                    }
+                    break;
+                case 'A':
+                    count += tribus(version, 9, 11, 13);
+                    switch (blockLength(i, inputMode, inputLength) % 2) {
+                        case 0:
+                            count += (blockLength(i, inputMode, inputLength) / 2) * 11;
+                            break;
+                        case 1:
+                            count += ((blockLength(i, inputMode, inputLength) - 1) / 2) * 11;
+                            count += 6;
+                            break;
+                    }
+                    break;
+                case 'N':
+                    count += tribus(version, 10, 12, 14);
+                    switch (blockLength(i, inputMode, inputLength) % 3) {
+                        case 0:
+                            count += (blockLength(i, inputMode, inputLength) / 3) * 10;
+                            break;
+                        case 1:
+                            count += ((blockLength(i, inputMode, inputLength) - 1) / 3) * 10;
+                            count += 4;
+                            break;
+                        case 2:
+                            count += ((blockLength(i, inputMode, inputLength) - 2) / 3) * 10;
+                            count += 7;
+                            break;
+                    }
+                    break;
+            }
+            currentMode = inputMode[i];
+        }
+    }
+
+    return count;
+}
+
 int qr_code(struct zint_symbol *symbol, unsigned char source[], int length)
 {
 	int error_number, i, j, glyph, est_binlen;
 	int ecc_level, autosize, version, max_cw, target_binlen, blocks, size;
 	int bitmask, gs1;
+        int canShrink;
 	
 #ifndef _MSC_VER
 	int utfdata[length + 1];
@@ -1295,16 +1536,66 @@ int qr_code(struct zint_symbol *symbol, unsigned char source[], int length)
 				break;
 		}
 	}
+	
+        // Now see if the optimised binary will fit in a smaller symbol.
+        canShrink = 1;
 
-	if((symbol->option_2 >= 1) && (symbol->option_2 <= 40)) {
-		if (symbol->option_2 > autosize) {
-			version = symbol->option_2;
-		} else {
-			version = autosize;
-		}
-	} else {
-		version = autosize;
-	}
+        do {
+            if (autosize == 1) {
+                canShrink = 0;
+            } else {
+                if (tribus(autosize - 1, 1, 2, 3) != tribus(autosize, 1, 2, 3)) {
+                    // Length of binary needed to encode the data in the smaller symbol is different, recalculate
+                    est_binlen = getBinaryLength(autosize - 1, mode, jisdata, length, gs1);
+                }
+
+                switch (ecc_level) {
+                    case LEVEL_L:
+                        if ((8 * qr_data_codewords_L[autosize - 2]) < est_binlen) {
+                            canShrink = 0;
+                        }
+                        break;
+                    case LEVEL_M:
+                        if ((8 * qr_data_codewords_M[autosize - 2]) < est_binlen) {
+                            canShrink = 0;
+                        }
+                        break;
+                    case LEVEL_Q:
+                        if ((8 * qr_data_codewords_Q[autosize - 2]) < est_binlen) {
+                            canShrink = 0;
+                        }
+                        break;
+                    case LEVEL_H:
+                        if ((8 * qr_data_codewords_H[autosize - 2]) < est_binlen) {
+                            canShrink = 0;
+                        }
+                        break;
+                }
+
+                if (canShrink == 1) {
+                    // Optimisation worked - data will fit in a smaller symbol
+                    autosize--;
+                } else {
+                    // Data did not fit in the smaller symbol, revert to original size
+                    if (tribus(autosize - 1, 1, 2, 3) != tribus(autosize, 1, 2, 3)) {
+                        est_binlen = getBinaryLength(autosize, mode, jisdata, length, gs1);
+                    }
+                }
+            }
+        } while (canShrink == 1);
+
+        version = autosize;
+
+        if ((symbol->option_2 >= 1) && (symbol->option_2 <= 40)) {
+            /* If the user has selected a larger symbol than the smallest available,
+             then use the size the user has selected, and re-optimise for this
+             symbol size.
+             */
+            if (symbol->option_2 > version) {
+                version = symbol->option_2;
+                est_binlen = getBinaryLength(symbol->option_2, mode, jisdata, length, gs1);
+            }
+        }
 
 	/* Ensure maxium error correction capacity */
 	if(est_binlen <= qr_data_codewords_M[version - 1]) { ecc_level = LEVEL_M; }
