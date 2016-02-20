@@ -1,6 +1,6 @@
 /***************************************************************************
  *   Copyright (C) 2008 by BogDan Vatra <bogdan@licentia.eu>               *
- *   Copyright (C) 2009 by Robin Stuart <robin@zint.org.uk>                *
+ *   Copyright (C) 2009-2016 by Robin Stuart <rstuart114@gmail.com>        *
  *                                                                         *
  *   This program is free software: you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -169,7 +169,7 @@ bool MainWindow::save()
 void MainWindow::about()
 {
 	QMessageBox::about(this, tr("About Zint"),
-			   tr("<h2>Zint Barcode Studio 2.4.2</h2>"
+			   tr("<h2>Zint Barcode Studio 2.5</h2>"
 					   "<p>A free barcode generator"
 					   "<p>Instruction manual is available from Sourceforge:"
 					   "<p>http://www.sourceforge.net/projects/zint"
