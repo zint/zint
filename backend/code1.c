@@ -1366,7 +1366,6 @@ int code_one(struct zint_symbol *symbol, unsigned char source[], int length) {
         } 
 
         binary_load(elreg, (char *) source, length);
-        hex_dump(elreg);
 
         for (i = 0; i < 15; i++) {
             data[i] = 0;

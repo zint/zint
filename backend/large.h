@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008 Robin Stuart <robin@zint.org.uk>
+    Copyright (C) 2008-2016 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -42,7 +42,6 @@ extern void binary_subtract(short int accumulator[], short int input_buffer[]);
 extern void shiftdown(short int buffer[]);
 extern void shiftup(short int buffer[]);
 extern short int islarger(short int accum[], short int reg[]);
-extern void hex_dump(short int input_buffer[]);
 
 #ifdef __cplusplus
 }
