@@ -551,10 +551,9 @@ void draw_hexagon(char *pixelbuf, int image_width, int xposn, int yposn) {
 
 void draw_letter(char *pixelbuf, unsigned char letter, int xposn, int yposn, int smalltext, int image_width, int image_height) {
     /* Put a letter into a position */
-    int skip, i, j, glyph_no, alphabet;
+    int skip, x, y, glyph_no;
 
     skip = 0;
-    alphabet = 0;
 
     if (letter < 33) {
         skip = 1;
@@ -565,41 +564,49 @@ void draw_letter(char *pixelbuf, unsigned char letter, int xposn, int yposn, int
 
     if (skip == 0) {
         if (letter > 128) {
-            alphabet = 1;
-            glyph_no = letter - 161;
+            glyph_no = letter - 65;
         } else {
             glyph_no = letter - 33;
         }
+        
+        
+        if (smalltext) {
+            for (y = 0; y < 9; y++) {
+                for (x = 0; x < 5; x++) {
+                    if (small_font[(glyph_no * 8) + y] & (0x10 >> x)) {
+                        *(pixelbuf + (y * image_width) + (yposn * image_width) + xposn + x) = '1';
+                    }
+                }
+            }
+        } else {
+            for (y = 0; y < 14; y++) {
+                for (x = 0; x < 7; x++) {
+                    if (ascii_font[(glyph_no * 14) + y] & (0x40 >> x)) {
+                        *(pixelbuf + (y * image_width) + (yposn * image_width) + xposn + x) = '1';
+                    }
+                }
+            }
+        }
 
+/*
         if (smalltext) {
             for (i = 0; i <= 8; i++) {
                 for (j = 0; j < 5; j++) {
-                    if (alphabet == 0) {
-                        if (small_font[(glyph_no * 5) + (i * 475) + j - 1] == 1) {
-                            *(pixelbuf + (i * image_width) + (yposn * image_width) + xposn + j) = '1';
-                        }
-                    } else {
-                        if (small_font_extended[(glyph_no * 5) + (i * 475) + j - 1] == 1) {
-                            *(pixelbuf + (i * image_width) + (yposn * image_width) + xposn + j) = '1';
-                        }
+                    if (small_font[(glyph_no * 5) + j - 1] == 1) {
+                        *(pixelbuf + (i * image_width) + (yposn * image_width) + xposn + j) = '1';
                     }
                 }
             }
         } else {
             for (i = 0; i <= 13; i++) {
                 for (j = 0; j < 7; j++) {
-                    if (alphabet == 0) {
-                        if (ascii_font[(glyph_no * 7) + (i * 665) + j - 1] == 1) {
-                            *(pixelbuf + (i * image_width) + (yposn * image_width) + xposn + j) = '1';
-                        }
-                    } else {
-                        if (ascii_ext_font[(glyph_no * 7) + (i * 665) + j - 1] == 1) {
-                            *(pixelbuf + (i * image_width) + (yposn * image_width) + xposn + j) = '1';
-                        }
+                    if (ascii_font[(glyph_no * 7) + (i * 665) + j - 1] == 1) {
+                        *(pixelbuf + (i * image_width) + (yposn * image_width) + xposn + j) = '1';
                     }
                 }
             }
         }
+*/
     }
 }
 
