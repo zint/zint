@@ -587,26 +587,6 @@ void draw_letter(char *pixelbuf, unsigned char letter, int xposn, int yposn, int
                 }
             }
         }
-
-/*
-        if (smalltext) {
-            for (i = 0; i <= 8; i++) {
-                for (j = 0; j < 5; j++) {
-                    if (small_font[(glyph_no * 5) + j - 1] == 1) {
-                        *(pixelbuf + (i * image_width) + (yposn * image_width) + xposn + j) = '1';
-                    }
-                }
-            }
-        } else {
-            for (i = 0; i <= 13; i++) {
-                for (j = 0; j < 7; j++) {
-                    if (ascii_font[(glyph_no * 7) + (i * 665) + j - 1] == 1) {
-                        *(pixelbuf + (i * image_width) + (yposn * image_width) + xposn + j) = '1';
-                    }
-                }
-            }
-        }
-*/
     }
 }
 
