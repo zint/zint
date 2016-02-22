@@ -564,7 +564,7 @@ void draw_letter(char *pixelbuf, unsigned char letter, int xposn, int yposn, int
 
     if (skip == 0) {
         if (letter > 128) {
-            glyph_no = letter - 65;
+            glyph_no = letter - 66;
         } else {
             glyph_no = letter - 33;
         }

@@ -69,12 +69,15 @@ The home of libzint is:
 
 	<http://www.sourceforge.net/projects/zint>
 
-For feature requests or bug reports please join the mailing list at
+For feature requests or bug reports please either join the mailing list at
 
 	<https://lists.sourceforge.net/lists/listinfo/zint-barcode>
+	
+or add a ticket on the project's SourceForge.
 
-BEFORE POSTING TO THIS LIST
----------------------------
+
+BEFORE POSTING TO THE LIST
+--------------------------
 Please note the following points...
 * You do not need to join the list to post messages, although joining
   the list will usually mean your request is answered more promptly.

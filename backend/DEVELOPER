@@ -62,13 +62,6 @@ composite.c:
 dm200.c:
 	Data Matrix ECC 200
 
-dmatrix.c:
-	Data Matrix ECC 000
-	Data Matrix ECC 050
-	Data Matrix ECC 080
-	Data Matrix ECC 100
-	Data Matrix ECC 140
-
 gridmtx.c:
 	Grid Matrix
 
