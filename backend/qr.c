@@ -1307,8 +1307,13 @@ void applyOptimisation(int version, char inputMode[], int inputLength) {
         }
     }
 
+#ifndef _MSC_VER
     int blockLength[blockCount];
     char blockMode[blockCount];
+#else
+    int* blockLength = (int *) _alloca(blockCount * sizeof (int));
+    int* blockMode = (int *) _alloca(blockMode * sizeof(int));
+#endif
 
     j = -1;
     currentMode = ' '; // Null
