@@ -313,7 +313,9 @@ int seek_forward(int gbdata[], int length, int position, int current_mode) {
 
 /* Add the length indicator for byte encoded blocks */
 void add_byte_count(char binary[], int byte_count_posn, int byte_count) {
-    for (int p = 0; p < 8; p++) {
+    int p;
+    
+    for (p = 0; p < 8; p++) {
         if (byte_count & (0x100 >> p)) {
             binary[byte_count_posn + p] = '0';
         } else {
@@ -324,7 +326,7 @@ void add_byte_count(char binary[], int byte_count_posn, int byte_count) {
 
 /* Add a control character to the data stream */
 void add_shift_char(char binary[], int shifty) {
-    int i, debug = 0;
+    int i, p, debug = 0;
     int glyph = 0;
 
     for (i = 0; i < 64; i++) {
@@ -337,7 +339,7 @@ void add_shift_char(char binary[], int shifty) {
         printf("SHIFT [%d] ", glyph);
     }
 
-    for (int p = 0; p < 6; p++) {
+    for (p = 0; p < 6; p++) {
         if (glyph & (0x20 >> p)) {
             concat(binary, "1");
         } else {
@@ -356,7 +358,7 @@ int gm_encode(int gbdata[], int length, char binary[], int reader) {
     int numbuf[3], punt = 0;
     int number_pad_posn, debug = 0;
     int byte_count_posn = 0, byte_count = 0;
-    int shift, i;
+    int shift, i, q;
 
     strcpy(binary, "");
 
@@ -543,8 +545,8 @@ int gm_encode(int gbdata[], int length, char binary[], int reader) {
                     printf("[%d] ", glyph);
                 }
 
-                for (int p = 0; p < 13; p++) {
-                    if (glyph & (0x1000 >> p)) {
+                for (q = 0; q < 13; q++) {
+                    if (glyph & (0x1000 >> q)) {
                         concat(binary, "1");
                     } else {
                         concat(binary, "0");
@@ -617,8 +619,8 @@ int gm_encode(int gbdata[], int length, char binary[], int reader) {
                         printf("[%d] ", glyph);
                     }
 
-                    for (int p = 0; p < 10; p++) {
-                        if (glyph & (0x200 >> p)) {
+                    for (q = 0; q < 10; q++) {
+                        if (glyph & (0x200 >> q)) {
                             concat(binary, "1");
                         } else {
                             concat(binary, "0");
@@ -631,8 +633,8 @@ int gm_encode(int gbdata[], int length, char binary[], int reader) {
                     printf("[%d] ", glyph);
                 }
 
-                for (int p = 0; p < 10; p++) {
-                    if (glyph & (0x200 >> p)) {
+                for (q = 0; q < 10; q++) {
+                    if (glyph & (0x200 >> q)) {
                         concat(binary, "1");
                     } else {
                         concat(binary, "0");
@@ -659,8 +661,8 @@ int gm_encode(int gbdata[], int length, char binary[], int reader) {
                 if (debug) {
                     printf("[%d] ", glyph);
                 }
-                for (int p = 0; p < 8; p++) {
-                    if (glyph & (0x80 >> p)) {
+                for (q = 0; q < 8; q++) {
+                    if (glyph & (0x80 >> q)) {
                         concat(binary, "1");
                     } else {
                         concat(binary, "0");
@@ -692,8 +694,8 @@ int gm_encode(int gbdata[], int length, char binary[], int reader) {
                         printf("[%d] ", glyph);
                     }
 
-                    for (int p = 0; p < 6; p++) {
-                        if (glyph & (0x20 >> p)) {
+                    for (q = 0; q < 6; q++) {
+                        if (glyph & (0x20 >> q)) {
                             concat(binary, "1");
                         } else {
                             concat(binary, "0");
@@ -724,8 +726,8 @@ int gm_encode(int gbdata[], int length, char binary[], int reader) {
                         printf("[%d] ", glyph);
                     }
 
-                    for (int p = 0; p < 5; p++) {
-                        if (glyph & (0x10 >> p)) {
+                    for (q = 0; q < 5; q++) {
+                        if (glyph & (0x10 >> q)) {
                             concat(binary, "1");
                         } else {
                             concat(binary, "0");
@@ -756,8 +758,8 @@ int gm_encode(int gbdata[], int length, char binary[], int reader) {
                         printf("[%d] ", glyph);
                     }
 
-                    for (int p = 0; p < 5; p++) {
-                        if (glyph & (0x10 >> p)) {
+                    for (q = 0; q < 5; q++) {
+                        if (glyph & (0x10 >> q)) {
                             concat(binary, "1");
                         } else {
                             concat(binary, "0");
@@ -829,7 +831,7 @@ int gm_encode(int gbdata[], int length, char binary[], int reader) {
 }
 
 void gm_add_ecc(char binary[], int data_posn, int layers, int ecc_level, int word[]) {
-    int data_cw, i, j, wp;
+    int data_cw, i, j, wp, p;
     int n1, b1, n2, b2, e1, b3, e2;
     int block_size, data_size, ecc_size;
     int data[1320], block[130];
@@ -843,7 +845,7 @@ void gm_add_ecc(char binary[], int data_posn, int layers, int ecc_level, int wor
 
     /* Convert from binary sream to 7-bit codewords */
     for (i = 0; i < data_posn; i++) {
-        for (int p = 0; p < 7; p++) {
+        for (p = 0; p < 7; p++) {
             if (binary[i * 7 + p] == '1') {
                 data[i] += (0x40 >> p);
             }

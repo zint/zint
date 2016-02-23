@@ -355,7 +355,7 @@ int c1_look_ahead_test(unsigned char source[], int sourcelen, int position, int 
 
 int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int target[], int length) {
     int current_mode, next_mode;
-    int sp, tp, gs1, i, j, latch;
+    int sp, tp, gs1, i, j, p, latch;
     int c40_buffer[6], c40_p;
     int text_buffer[6], text_p;
     int edi_buffer[6], edi_p;
@@ -1015,7 +1015,7 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
                 /* There are three digits - convert the value to binary */
                 value = (100 * ctoi(source[sp])) + (10 * ctoi(source[sp + 1])) + ctoi(source[sp + 2]) + 1;
 
-                for (int p = 0; p < 10; p++) {
+                for (p = 0; p < 10; p++) {
                     if (value & (0x200 >> p)) {
                         concat(decimal_binary, "1");
                     } else {
@@ -1032,7 +1032,7 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
 
                 /* Binary buffer is full - transfer to target */
                 
-                for (int p = 0; p < 8; p++) {
+                for (p = 0; p < 8; p++) {
                     if (decimal_binary[p] == '1') {
                         target1 += (0x80 >> p);
                     }

@@ -65,7 +65,7 @@ void insert(char binary_string[], int posn, char newbit) {
  * Encode input data into a binary string
  */
 int aztec_text_process(unsigned char source[], const unsigned int src_len, char binary_string[], int gs1) {
-    int i, j, k, bytes;
+    int i, j, k, p, bytes;
     int curtable, newtable, lasttable, chartype, maplength, blocks, debug;
 #ifndef _MSC_VER
     int charmap[src_len * 2], typemap[src_len * 2];
@@ -630,7 +630,7 @@ int aztec_text_process(unsigned char source[], const unsigned int src_len, char 
                             /* Put 00000 followed by 11-bit number of bytes less 31 */
                             concat(binary_string, "00000");
                             
-                            for (int p = 0; p < 11; p++) {
+                            for (p = 0; p < 11; p++) {
                                 if ((bytes - 31) & (0x400 >> p)) {
                                     concat(binary_string, "1");
                                 } else {
@@ -639,7 +639,7 @@ int aztec_text_process(unsigned char source[], const unsigned int src_len, char 
                             }
                         } else {
                             /* Put 5-bit number of bytes */
-                            for (int p = 0; p < 5; p++) {
+                            for (p = 0; p < 5; p++) {
                                 if (bytes & (0x10 >> p)) {
                                     concat(binary_string, "1");
                                 } else {
@@ -678,7 +678,7 @@ int aztec_text_process(unsigned char source[], const unsigned int src_len, char 
                 if (debug) printf("%d ", charmap[i]);
                 break;
             case BINARY:
-                for (int p = 0; p < 8; p++) {
+                for (p = 0; p < 8; p++) {
                     if (charmap[i] & (0x80 >> p)) {
                         concat(binary_string, "1");
                     } else {
@@ -856,7 +856,7 @@ void popilate_map() {
 }
 
 int aztec(struct zint_symbol *symbol, unsigned char source[], int length) {
-    int x, y, i, j, data_blocks, ecc_blocks, layers, total_bits;
+    int x, y, i, j, p, data_blocks, ecc_blocks, layers, total_bits;
     char binary_string[20000], bit_pattern[20045], descriptor[42];
     char adjusted_string[20000];
     unsigned char desc_data[4], desc_ecc[6];
@@ -1255,7 +1255,7 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], int length) {
     switch (codeword_size) {
         case 6:
             for (i = 0; i < data_blocks; i++) {
-                for (int p = 0; p < 6; p++) {
+                for (p = 0; p < 6; p++) {
                     if (adjusted_string[i * codeword_size + p] == '1') {
                         data_part[i] += (0x20 >> p);
                     }
@@ -1265,7 +1265,7 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], int length) {
             rs_init_code(ecc_blocks, 1);
             rs_encode_long(data_blocks, data_part, ecc_part);
             for (i = (ecc_blocks - 1); i >= 0; i--) {
-                for (int p = 0; p < 6; p++) {
+                for (p = 0; p < 6; p++) {
                     if (ecc_part[i] & (0x20 >> p)) {
                         concat(adjusted_string, "1");
                     } else {
@@ -1277,7 +1277,7 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], int length) {
             break;
         case 8:
             for (i = 0; i < data_blocks; i++) {
-                for (int p = 0; p < 8; p++) {
+                for (p = 0; p < 8; p++) {
                     if (adjusted_string[i * codeword_size + p] == '1') {
                         data_part[i] += (0x80 >> p);
                     }
@@ -1287,7 +1287,7 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], int length) {
             rs_init_code(ecc_blocks, 1);
             rs_encode_long(data_blocks, data_part, ecc_part);
             for (i = (ecc_blocks - 1); i >= 0; i--) {
-                for (int p = 0; p < 8; p++) {
+                for (p = 0; p < 8; p++) {
                     if (ecc_part[i] & (0x80 >> p)) {
                         concat(adjusted_string, "1");
                     } else {
@@ -1309,7 +1309,7 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], int length) {
             rs_init_code(ecc_blocks, 1);
             rs_encode_long(data_blocks, data_part, ecc_part);
             for (i = (ecc_blocks - 1); i >= 0; i--) {
-                for (int p = 0; p < 10; p++) {
+                for (p = 0; p < 10; p++) {
                     if (ecc_part[i] & (0x200 >> p)) {
                         concat(adjusted_string, "1");
                     } else {
@@ -1321,7 +1321,7 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], int length) {
             break;
         case 12:
             for (i = 0; i < data_blocks; i++) {
-                for (int p = 0; p < 12; p++) {
+                for (p = 0; p < 12; p++) {
                     if (adjusted_string[i * codeword_size + p] == '1') {
                         data_part[i] += (0x800 >> p);
                     }
@@ -1331,7 +1331,7 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], int length) {
             rs_init_code(ecc_blocks, 1);
             rs_encode_long(data_blocks, data_part, ecc_part);
             for (i = (ecc_blocks - 1); i >= 0; i--) {
-                for (int p = 0; p < 12; p++) {
+                for (p = 0; p < 12; p++) {
                     if (ecc_part[i] & (0x800 >> p)) {
                         concat(adjusted_string, "1");
                     } else {
@@ -1620,7 +1620,7 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], int length) {
 
 /* Encodes Aztec runes as specified in ISO/IEC 24778:2008 Annex A */
 int aztec_runes(struct zint_symbol *symbol, unsigned char source[], int length) {
-    int input_value, error_number, i, y, x;
+    int input_value, error_number, i, p, y, x;
     char binary_string[28];
     unsigned char data_codewords[3], ecc_codewords[6];
 
@@ -1653,7 +1653,7 @@ int aztec_runes(struct zint_symbol *symbol, unsigned char source[], int length) 
     }
 
     strcpy(binary_string, "");
-    for (int p = 0; p < 8; p++) {
+    for (p = 0; p < 8; p++) {
         if (input_value & (0x80 >> p)) {
             concat(binary_string, "1");
         } else {

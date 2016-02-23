@@ -371,7 +371,7 @@ int cc_b(struct zint_symbol *symbol, char source[], int cc_width) {
     unsigned char* data_string = (unsigned char*) _alloca((strlen(source) / 8) + 3);
 #endif
     int chainemc[180], mclength;
-    int k, j, longueur, mccorrection[50], offset;
+    int k, j, p, longueur, mccorrection[50], offset;
     int total, dummy[5];
     char codebarre[100], pattern[580];
     int variant, LeftRAPStart, CentreRAPStart, RightRAPStart, StartCluster;
@@ -383,7 +383,7 @@ int cc_b(struct zint_symbol *symbol, char source[], int cc_width) {
         binloc = i * 8;
 
         data_string[i] = 0;
-        for (int p = 0; p < 8; p++) {
+        for (p = 0; p < 8; p++) {
             if (source[binloc + p] == '1') {
                 data_string[i] += (0x80 >> p);
             }
@@ -647,7 +647,7 @@ int cc_b(struct zint_symbol *symbol, char source[], int cc_width) {
 
 /* CC-C 2D component - byte compressed PDF417 */
 int cc_c(struct zint_symbol *symbol, char source[], int cc_width, int ecc_level) { 
-    int length, i, binloc;
+    int length, i, p, binloc;
 #ifndef _MSC_VER
     unsigned char data_string[(strlen(source) / 8) + 4];
 #else
@@ -664,7 +664,7 @@ int cc_c(struct zint_symbol *symbol, char source[], int cc_width, int ecc_level)
         binloc = i * 8;
 
         data_string[i] = 0;
-        for (int p = 0; p < 8; p++) {
+        for (p = 0; p < 8; p++) {
             if (source[binloc + p] == '1') {
                 data_string[i] += (0x80 >> p);
             }
