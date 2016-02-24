@@ -1299,7 +1299,7 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], int length) {
             break;
         case 10:
             for (i = 0; i < data_blocks; i++) {
-                for(int p = 0; p < 10; p++) {
+                for(p = 0; p < 10; p++) {
                     if (adjusted_string[i * codeword_size + p] == '1') {
                         data_part[i] += (0x200 >> p);
                     }

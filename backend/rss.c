@@ -2011,7 +2011,7 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
 
 /* GS1 DataBar Expanded */
 int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int src_len) { 
-    int i, j, k, l, data_chars, vs[21], group[21], v_odd[21], v_even[21];
+    int i, j, k, l, p, data_chars, vs[21], group[21], v_odd[21], v_even[21];
     char substring[21][14], latch;
     int char_widths[21][8], checksum, check_widths[8], c_group;
     int check_char, c_odd, c_even, elements[235], pattern_width, reader, writer;
@@ -2067,7 +2067,7 @@ int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int src_len)
 
     for (i = 0; i < data_chars; i++) {
         vs[i] = 0;
-        for (int p = 0; p < 12; p++) {
+        for (p = 0; p < 12; p++) {
             if (substring[i][p] == '1') {
                 vs[i] += (0x800 >> p);
             }

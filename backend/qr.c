@@ -465,8 +465,9 @@ void qr_binary(int datastream[], int version, int target_binlen, char mode[], in
 
     /* Put data into 8-bit codewords */
     for (i = 0; i < current_bytes; i++) {
+        int p;
         datastream[i] = 0x00;
-        for (int p = 0; p < 8; p++) {
+        for (p = 0; p < 8; p++) {
             if (binary[i * 8 + p] == '1') {
                 datastream[i] += (0x80 >> p);
             }
@@ -1299,7 +1300,13 @@ void applyOptimisation(int version, char inputMode[], int inputLength) {
     int blockCount = 0;
     int i, j;
     char currentMode = ' '; // Null
+    int block;
 
+#ifdef _MSC_VER
+    int* blockLength;
+    int* blockMode;
+#endif
+    
     for (i = 0; i < inputLength; i++) {
         if (inputMode[i] != currentMode) {
             currentMode = inputMode[i];
@@ -1311,8 +1318,8 @@ void applyOptimisation(int version, char inputMode[], int inputLength) {
     int blockLength[blockCount];
     char blockMode[blockCount];
 #else
-    int* blockLength = (int *) _alloca(blockCount * sizeof (int));
-    int* blockMode = (int *) _alloca(blockMode * sizeof(int));
+    blockLength = (int *) _alloca(blockCount * sizeof (int));
+    blockMode = (int *) _alloca(blockCount * sizeof(int));
 #endif
 
     j = -1;
@@ -1391,7 +1398,7 @@ void applyOptimisation(int version, char inputMode[], int inputLength) {
     }
 
     j = 0;
-    for (int block = 0; block < blockCount; block++) {
+    for (block = 0; block < blockCount; block++) {
         currentMode = blockMode[block];
         for (i = 0; i < blockLength[block]; i++) {
             inputMode[j] = currentMode;
