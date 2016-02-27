@@ -101,6 +101,7 @@ void usage(void) {
             "  --binary              Treat input as Binary data\n"
             "  --notext              Remove human readable text\n"
             "  --square              Force Data Matrix symbols to be square\n"
+            "  --dmre                Allow Data Matrix Rectangular Extended\n"
             "  --init                Create reader initialisation symbol (Code 128)\n"
             "  --smalltext           Use half-size text in PNG images\n"
             "  --batch               Treat each line of input as a separate data set\n"
@@ -409,6 +410,7 @@ int main(int argc, char **argv) {
             {"binary", 0, 0, 0},
             {"notext", 0, 0, 0},
             {"square", 0, 0, 0},
+            {"dmre", 0, 0, 0},
             {"init", 0, 0, 0},
             {"smalltext", 0, 0, 0},
             {"batch", 0, 0, 0},
@@ -470,6 +472,11 @@ int main(int argc, char **argv) {
                 }
                 if (!strcmp(long_options[option_index].name, "square")) {
                     my_symbol->option_3 = DM_SQUARE;
+                }
+                /* Square overwrites DMRE */
+                if (!strcmp(long_options[option_index].name, "dmre")
+                    && my_symbol->option_3 != DM_SQUARE) {
+                    my_symbol->option_3 = DM_DMRE;
                 }
                 if (!strcmp(long_options[option_index].name, "scale")) {
                     my_symbol->scale = (float) (atof(optarg));

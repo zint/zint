@@ -88,11 +88,6 @@ static const int text_value[] = {
     22, 23, 24, 25, 26, 0, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 27, 28, 29, 30, 31
 };
 
-// Activate DMRE Extensions
-//#define DMRE
-#ifdef DMRE
-// With Rectangular extensions
-
 // Position in option array [symbol option value - 1]
 // The position in the option array is by increasing total data codewords with square first
 
@@ -115,6 +110,23 @@ static const int intsymbol[] = {
 #define DMSIZESCOUNT 42
 // Number of 144x144 for special interlace
 #define INTSYMBOL144 41
+
+// Is the current code a DMRE code ?
+// This is the case, if intsymbol index >= 30
+
+static const int isDMRE[] = {
+    /*0*/ 0, /* 10x10 ,3 */ 0, /* 12x12 ,5 */ 0, /*  8x18 ,5 */ 0, /* 14x14 , 8 */
+    /*4*/ 0, /*  8x32 ,10 */ 0, /* 16x16 ,12 */ 0, /* 12x26 ,16 */ 0, /* 18x18 ,18 */
+    /*8*/ 1, /*  8x48 ,18 */ 0, /* 20x20 ,22 */ 0, /* 12x36 ,22 */ 1, /*  8x64 ,24 */
+    /*12*/ 0, /* 22x22 ,30 */ 0, /* 16x36 ,32 */ 0, /* 24x24 ,36 */ 1, /* 12x64 ,43 */
+    /*16*/ 0, /* 26x26 ,44 */ 0, /* 16x48 ,49 */ 1, /* 24x32 ,49 */ 1, /* 26x32 ,52 */
+    /*20*/ 1, /* 24x36 ,55 */ 0, /* 32x32 ,62 */ 1, /* 16x64 ,62 */ 1, /* 26x40 ,70 */
+    /*24*/ 1, /* 24x48 ,80 */ 0, /* 36x36 ,86 */ 1, /* 26x48 ,90 */ 1, /* 24x64 ,108*/
+    /*28*/ 0, /* 40x40 ,114*/ 1, /* 26x64 ,118*/ 0, /* 44x44 ,144*/ 0, /* 48x48,174 */
+    /*32*/ 0, /* 52x52,204 */ 0, /* 64x64,280 */ 0, /* 72x72,368 */ 0, /* 80x80,456 */
+    /*36*/ 0, /* 88x88,576 */ 0, /* 96x96,696 */ 0, /*104x104,816*/ 0, /*120x120,1050*/
+    /*40*/ 0, /*132x132,1304*/0 /*144x144,1558*/
+};
 
 // Horizontal matrix size
 
@@ -228,53 +240,5 @@ static const int matrixrsblock[] = {
     /*40*/ 62, /*132x132*/ 62 /*144x144*/
 };
 
-#else
-// No Rectangular extensions
-
-static const int intsymbol[] = {
-    0, 1, 3, 5, 7, 8, 10, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 2, 4, 6, 9, 11, 14
-};
-
-// Number of DM Sizes
-#define DMSIZESCOUNT 30
-// Number of 144x144 for special interlace
-#define INTSYMBOL144 29
-
-static const int matrixH[] = {
-    10, 12, 8, 14, 8, 16, 12, 18, 20, 12, 22, 16, 24, 26, 16, 32, 36, 40, 44, 48,
-    52, 64, 72, 80, 88, 96, 104, 120, 132, 144
-};
-
-static const int matrixW[] = {
-    10, 12, 18, 14, 32, 16, 26, 18, 20, 36, 22, 36, 24, 26, 48, 32, 36, 40, 44,
-    48, 52, 64, 72, 80, 88, 96, 104, 120, 132, 144
-};
-
-static const int matrixFH[] = {
-    10, 12, 8, 14, 8, 16, 12, 18, 20, 12, 22, 16, 24, 26, 16, 16, 18, 20, 22, 24,
-    26, 16, 18, 20, 22, 24, 26, 20, 22, 24
-};
-
-static const int matrixFW[] = {
-    10, 12, 18, 14, 16, 16, 26, 18, 20, 18, 22, 18, 24, 26, 24, 16, 18, 20, 22,
-    24, 26, 16, 18, 20, 22, 24, 26, 20, 22, 24
-};
-
-static const int matrixbytes[] = {
-    3, 5, 5, 8, 10, 12, 16, 18, 22, 22, 30, 32, 36, 44, 49, 62, 86, 114, 144,
-    174, 204, 280, 368, 456, 576, 696, 816, 1050, 1304, 1558
-};
-
-static const int matrixdatablock[] = {
-    3, 5, 5, 8, 10, 12, 16, 18, 22, 22, 30, 32, 36, 44, 49, 62, 86, 114, 144,
-    174, 102, 140, 92, 114, 144, 174, 136, 175, 163, 156
-};
-
-static const int matrixrsblock[] = {
-    5, 7, 7, 10, 11, 12, 14, 14, 18, 18, 20, 24, 24, 28, 28, 36, 42, 48, 56, 68,
-    42, 56, 36, 48, 56, 68, 56, 68, 62, 62
-};
-
-#endif
 
 #endif

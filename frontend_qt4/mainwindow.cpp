@@ -362,6 +362,7 @@ void MainWindow::change_options()
 		connect(m_optionWidget->findChild<QObject*>("radDM200HIBC"), SIGNAL(clicked( bool )), SLOT(update_preview()));
 		connect(m_optionWidget->findChild<QObject*>("cmbDM200Size"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
 		connect(m_optionWidget->findChild<QObject*>("chkDMRectangle"), SIGNAL(stateChanged( int )), SLOT(update_preview()));
+		connect(m_optionWidget->findChild<QObject*>("chkDMRE"), SIGNAL(stateChanged( int )), SLOT(update_preview()));
 	}
 	
 	if(metaObject()->enumerator(0).value(bstyle->currentIndex()) == BARCODE_QRCODE)
@@ -718,8 +719,12 @@ void MainWindow::update_preview()
 			m_bc.bc.setWidth(m_optionWidget->findChild<QComboBox*>("cmbDM200Size")->currentIndex());
 			if(m_optionWidget->findChild<QCheckBox*>("chkDMRectangle")->isChecked())
 				m_bc.bc.setOption3(DM_SQUARE);
-			else
-				m_bc.bc.setOption3(0);
+			else {
+				if(m_optionWidget->findChild<QCheckBox*>("chkDMRE")->isChecked())
+					m_bc.bc.setOption3(DM_DMRE);
+				else
+					m_bc.bc.setOption3(0);
+			}
 			break;
 			
 		case BARCODE_QRCODE:

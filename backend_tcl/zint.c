@@ -429,13 +429,13 @@ static int Encode(Tcl_Interp *interp, int objc,
 			"-bind", "-box", "-barcode", "-height", "-whitesp", "-border",
 			"-fg", "-bg", "-cols", "-vers", "-rotate",
 			"-secure", "-mode", "-primary", "-scale", "-format",
-			"-notext", "-square", "-init", "-smalltext", "-to",
+			"-notext", "-square", "-dmre", "-init", "-smalltext", "-to",
 			NULL};
 		enum iOption {
 			iBind, iBox, iBarcode, iHeight, iWhiteSp, iBorder,
 			iFG, iBG, iCols, iVers, iRotate,
 			iSecure, iMode, iPrimary, iScale, iFormat,
-			iNoText, iSquare, iInit, iSmallText, iTo
+			iNoText, iSquare, iDMRE, iInit, iSmallText, iTo
 			};
 		int optionIndex;
 		int intValue;
@@ -458,6 +458,7 @@ static int Encode(Tcl_Interp *interp, int objc,
 		case iSmallText:
 		case iNoText:
 		case iSquare:
+		case iDMRE:
 			/* >> Binary options */
 			if (TCL_OK != Tcl_GetBooleanFromObj(interp, objv[optionPos+1],
 					&intValue))
@@ -557,6 +558,12 @@ static int Encode(Tcl_Interp *interp, int objc,
 			break;
 		case iSquare:
 			hSymbol->option_3 = (intValue?DM_SQUARE:0);
+			break;
+		case iDMRE:
+			/* DM_SQUARE overwrites DM_DMRE */
+			if (hSymbol->option_3 != DM_DMRE) {
+				Symbol->option_3 = (intValue?DM_DMRE:0);
+			}
 			break;
 		case iScale:
             if (doubleValue < 0.01) {

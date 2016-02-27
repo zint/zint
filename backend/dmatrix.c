@@ -1178,9 +1178,16 @@ int data_matrix_200(struct zint_symbol *symbol, unsigned char source[], int leng
         }
     }
 
-    /* Skip rectangular symbols in square only mode */
-    while (symbol->option_3 == DM_SQUARE && matrixH[calcsize] != matrixW[calcsize]) {
-        calcsize++;
+    if (symbol->option_3 == DM_SQUARE) {
+        /* Skip rectangular symbols in square only mode */
+        while (matrixH[calcsize] != matrixW[calcsize]) {
+            calcsize++;
+        }
+    } else if (symbol->option_3 != DM_DMRE) {
+        /* Skip DMRE symbols */
+        while (isDMRE[calcsize]) {
+            calcsize++;
+        }
     }
 
     symbolsize = optionsize;
