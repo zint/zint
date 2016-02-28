@@ -1,0 +1,55 @@
+Harald Oehlmann
+2016-02-28
+
+How to build qzint.exe using:
+- QT 4
+- MS Visual Studio 2008 (VC9)
+
+Folder structure:
+- zint source files in $ZH
+  -> this file is in $ZH\frontend_qt4
+- png1620.zip unzipped in $ZH\..\lpng
+  -> $ZH\..\lpng\png.h exists
+- zlib128.zip inzipped in folder $ZH\..\zlib
+  -> $ZH\..\zlib\zlib.h exists
+
+Prepare qt for static build
+
+- Start "Visual Studio 2008 Command Line" (or execute "%VS90COMNTOOLS%vsvars32.bat" )
+- cd c:\qt\4.8.6
+- configure -static -release -qt-zlib  -qt-libpng -qt-libjpeg
+- nmake
+  -> took around 2 hours for me
+
+Build pnglib and zlib
+- cd $ZH\..\lpng\projects
+- copy visual71 visual71_converted_to_9
+- Start Visual Studio 2..8 (CV9)
+- open Project: $ZH\..\lpng\projects\visualc71_converted_to_9\libpng.sln
+- convert it as proposed by the IDE (no backup, we have made a copy before)
+- select "LIB Release" configuration
+- go to project "libpng" and open project options (ALT-F7)
+- On the left, select "C/C++->Code generation"
+- On the right change "Run time library" from "Multi-Treaded (/MT)" to "Multithread-DLL (/MD)"
+- also do the upper steps for the project "zlib" (change /MT to /MD)
+- Build libpng and zlib project using the Buildall menu entry
+  -> this compiles png in the static lib:
+   lpng\projects\visualc71_converted_to_9\Win32_LIB_Release\libpng.lib
+   and zlib into the static lib
+   lpng\projects\visualc71_converted_to_9\Win32_LIB_Release\zlib\zlib.lib
+
+Build zint
+
+- Start "Visual Studio 2008 Command Line" (or execute "%VS90COMNTOOLS%vsvars32.bat" )
+- C:\Qt\4.8.6\bin\qtvars.bat
+- cd $ZH
+- cd backend_qt4
+- qmake backend_qt4.pro
+- nmake clean
+- nmake release
+    
+- cd ..\frontend_qt4
+- qmake frontend_qt4.pro
+- nmake clean
+- nmake release
+  -> qzint.exe is in the release folder

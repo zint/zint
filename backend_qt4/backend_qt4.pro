@@ -19,12 +19,11 @@ TARGET = QtZint
 INCLUDEPATH += ../backend
 
 #EDIT THIS !!!!
-DEFINES += ZINT_VERSION="\\\"2.3.0\\\"" NO_PNG
+DEFINES += ZINT_VERSION="\\\"2.5.0\\\""
 
 !contains(DEFINES, NO_PNG) {
-    LIBS += -llibpng
-    INCLUDEPATH += ../../../support/lpng169
-    QMAKE_LIBDIR+=../../../support/lpng169/projects/visualc71/Win32_LIB_Release ../../../support/lpng169/projects/visualc71/Win32_LIB_Release/ZLib
+    INCLUDEPATH += ../../lpng
+    INCLUDEPATH += ../../zlib
 }
 
 contains(DEFINES, QR_SYSTEM){
@@ -104,7 +103,7 @@ SOURCES += ../backend/2of5.c \
            ../backend/png.c \
            qzint.cpp
 
-VERSION = 2.3.0
+VERSION = 2.5.0
 
 #DESTDIR = .
 

@@ -7,7 +7,6 @@ TEMPLATE = app
 TARGET = qtZint
 DEPENDPATH += . debug release
 INCLUDEPATH += .
-DEFINES += NO_PNG
 
 # Input
 HEADERS += barcodeitem.h \
@@ -57,3 +56,10 @@ INCLUDEPATH += ../backend_qt4 ../backend
 
 LIBS += -lqtzint -lQtCore
 QMAKE_LIBDIR += ../backend_qt4/release
+
+!contains(DEFINES, NO_PNG) {
+    LIBS += -llibpng -lzlib
+    QMAKE_LIBDIR+=../../lpng\projects\visualc71_converted_to_9\Win32_LIB_Release ../../lpng\projects\visualc71_converted_to_9\Win32_LIB_Release\zlib
+#    LIBS += -llibpng16 -lzlib1
+#    QMAKE_LIBDIR+=../../lpng\projects\visualc71_converted_to_9\Win32_DLL_Release ../../lpng\projects\visualc71_converted_to_9\Win32_DLL_Release\zlib
+}
