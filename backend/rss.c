@@ -1097,6 +1097,7 @@ int general_rules(char field[], char type[]) {
 
         if (current == ALPHA_OR_ISO) {
             block[1][i] = ALPHA;
+            current = ALPHA;
         }
 
         if ((current == ALPHA) && (i != (block_count - 1))) {
@@ -1167,10 +1168,10 @@ int general_rules(char field[], char type[]) {
 int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_string[]) { 
     int encoding_method, i, mask, j, read_posn, latch, debug = 0, last_mode = ISOIEC;
 #ifndef _MSC_VER
-    char general_field[strlen(source)], general_field_type[strlen(source)];
+    char general_field[strlen(source) + 1], general_field_type[strlen(source) + 1];
 #else
-    char* general_field = (char*) _alloca(strlen(source));
-    char* general_field_type = (char*) _alloca(strlen(source));
+    char* general_field = (char*) _alloca(strlen(source) + 1);
+    char* general_field_type = (char*) _alloca(strlen(source) + 1);
 #endif
     int remainder, d1, d2, value;
     char padstring[40];
@@ -2019,10 +2020,10 @@ int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int src_len)
     int codeblocks, sub_elements[235], stack_rows, current_row, current_block;
     int separator_row;
 #ifndef _MSC_VER
-    char reduced[src_len], binary_string[7 * src_len];
+    char reduced[src_len + 1], binary_string[(7 * src_len) + 1];
 #else
-    char* reduced = (char*) _alloca(src_len);
-    char* binary_string = (char*) _alloca(7 * src_len);
+    char* reduced = (char*) _alloca(src_len + 1);
+    char* binary_string = (char*) _alloca((7 * src_len) + 1);
 #endif
 
     separator_row = 0;
