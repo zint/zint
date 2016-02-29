@@ -37,10 +37,10 @@
 extern "C" {
 #endif /* __cplusplus */
 
-    extern void rs_init_gf(int poly);
-    extern void rs_init_code(int nsym, int index);
-    extern void rs_encode(int len, unsigned char *data, unsigned char *res);
-    extern void rs_encode_long(int len, unsigned int *data, unsigned int *res);
+extern void rs_init_gf(const int poly);
+extern void rs_init_code(const int nsym,int index);
+extern void rs_encode(const int len,const unsigned char *data, unsigned char *res);
+extern void rs_encode_long(const int len,const unsigned int *data, unsigned int *res);
     extern void rs_free(void);
 
 #ifdef __cplusplus

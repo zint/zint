@@ -54,8 +54,8 @@ void ustrcpy(unsigned char target[], const unsigned char source[]) {
 }
 
 /* Concatinates dest[] with the contents of source[], copying /0 as well */
-void concat(char dest[], const char source[]) { 
-    unsigned int i, j, n;
+void concat(char dest[], const char source[]) {
+    size_t i, j, n;
 
     j = strlen(dest);
     n = strlen(source);
@@ -65,7 +65,7 @@ void concat(char dest[], const char source[]) {
 }
 
 /* Concatinates dest[] with the contents of source[], copying /0 as well */
-void uconcat(unsigned char dest[], const unsigned char source[]) { 
+void uconcat(unsigned char dest[], const unsigned char source[]) {
     unsigned int i, j;
 
     j = ustrlen(dest);
@@ -75,14 +75,14 @@ void uconcat(unsigned char dest[], const unsigned char source[]) {
 }
 
 /* Converts a character 0-9 to its equivalent integer value */
-int ctoi(char source) { 
+int ctoi(const char source) {
     if ((source >= '0') && (source <= '9'))
         return (source - '0');
     return (source - 'A' + 10);
 }
 
 /* Converts an integer value to its hexadecimal character */
-char itoc(int source) { 
+char itoc(const int source) {
     if ((source >= 0) && (source <= 9)) {
         return ('0' + source);
     } else {
@@ -91,7 +91,7 @@ char itoc(int source) {
 }
 
 /* Converts lower case characters to upper case in a string source[] */
-void to_upper(unsigned char source[]) { 
+void to_upper(unsigned char source[]) {
     unsigned int i, src_len = ustrlen(source);
 
     for (i = 0; i < src_len; i++) {
@@ -102,7 +102,7 @@ void to_upper(unsigned char source[]) {
 }
 
 /* Verifies that a string only uses valid characters */
-int is_sane(char test_string[], unsigned char source[], int length) { 
+int is_sane(char test_string[], const unsigned char source[], const int length) {
     unsigned int i, j, latch;
     unsigned int lt = strlen(test_string);
 
@@ -123,7 +123,7 @@ int is_sane(char test_string[], unsigned char source[], int length) {
 }
 
 /* Returns the position of data in set_string */
-int posn(char set_string[], char data) { 
+int posn(char set_string[], const char data) {
     unsigned int i, n = strlen(set_string);
 
     for (i = 0; i < n; i++) {
@@ -135,7 +135,7 @@ int posn(char set_string[], char data) {
 }
 
 /* Replaces huge switch statements for looking up in tables */
-void lookup(char set_string[], const char *table[], char data, char dest[]) { 
+void lookup(char set_string[], const char *table[], const char data, char dest[]) {
     unsigned int i, n = strlen(set_string);
 
     for (i = 0; i < n; i++) {
@@ -146,22 +146,22 @@ void lookup(char set_string[], const char *table[], char data, char dest[]) {
 }
 
 /* Return true (1) if a module is dark/black, orherwise false (0) */
-int module_is_set(struct zint_symbol *symbol, int y_coord, int x_coord) {
+int module_is_set(const struct zint_symbol *symbol, const int y_coord, const int x_coord) {
     return (symbol->encoded_data[y_coord][x_coord / 7] >> (x_coord % 7)) & 1;
 }
 
 /* Set a module to dark/black */
-void set_module(struct zint_symbol *symbol, int y_coord, int x_coord) {
+void set_module(struct zint_symbol *symbol, const int y_coord, const int x_coord) {
     symbol->encoded_data[y_coord][x_coord / 7] |= 1 << (x_coord % 7);
 }
 
 /* Set (or unset) a module to white */
-void unset_module(struct zint_symbol *symbol, int y_coord, int x_coord) {
+void unset_module(struct zint_symbol *symbol, const int y_coord, const int x_coord) {
     symbol->encoded_data[y_coord][x_coord / 7] &= ~(1 << (x_coord % 7));
 }
 
 /* Expands from a width pattern to a bit pattern */
-void expand(struct zint_symbol *symbol, char data[]) { 
+void expand(struct zint_symbol *symbol, char data[]) {
 
     unsigned int reader, n = strlen(data);
     int writer, i;
@@ -231,7 +231,7 @@ int is_stackable(int symbology) {
 }
 
 /* Indicates which symbols can have addon (EAN-2 and EAN-5) */
-int is_extendable(int symbology) {
+int is_extendable(const int symbology) {
     if (symbology == BARCODE_EANX) {
         return 1;
     }
@@ -257,21 +257,21 @@ int is_extendable(int symbology) {
     return 0;
 }
 
-int roundup(float input) {
+int roundup(const float input) {
     float remainder;
     int integer_part;
 
     integer_part = (int) input;
     remainder = input - integer_part;
 
-    if (remainder > 0.1) {
+    if (remainder > 0.1F) {
         integer_part++;
     }
 
     return integer_part;
 }
 
-int istwodigits(unsigned char source[], int position) {
+int istwodigits(const unsigned char source[], const int position) {
     if ((source[position] >= '0') && (source[position] <= '9')) {
         if ((source[position + 1] >= '0') && (source[position + 1] <= '9')) {
             return 1;
@@ -281,8 +281,8 @@ int istwodigits(unsigned char source[], int position) {
     return 0;
 }
 
-float froundup(float input) {
-    float fraction, output = 0.0;
+double froundup(const double input) {
+    double fraction, output = 0.0;
 
     fraction = input - (int) input;
     if (fraction > 0.01) {
@@ -295,7 +295,7 @@ float froundup(float input) {
 }
 
 /* Convert Unicode to Latin-1 for those symbologies which only support Latin-1 */
-int latin1_process(struct zint_symbol *symbol, unsigned char source[], unsigned char preprocessed[], int *length) {
+int latin1_process(struct zint_symbol *symbol, const unsigned char source[], unsigned char preprocessed[], int *length) {
     int j, i, next;
 
     j = 0;
@@ -330,7 +330,7 @@ int latin1_process(struct zint_symbol *symbol, unsigned char source[], unsigned 
     return 0;
 }
 
-int utf8toutf16(struct zint_symbol *symbol, unsigned char source[], int vals[], int *length) {
+int utf8toutf16(struct zint_symbol *symbol, const unsigned char source[], int vals[], int *length) {
     int bpos, jpos, error_number;
     int next;
 

@@ -56,7 +56,7 @@ int render_plot_add_hexagon(struct zint_symbol *symbol, struct zint_render_hexag
 
 int render_plot_add_string(struct zint_symbol *symbol, unsigned char *text, float x, float y, float fsize, float width, struct zint_render_string **last_string);
 
-int render_plot(struct zint_symbol *symbol, float width, float height) {
+int render_plot(struct zint_symbol *symbol,const float width,const  float height) {
     struct zint_render *render;
     struct zint_render_line *line, *last_line = NULL;
     struct zint_render_string *last_string = NULL;
@@ -173,7 +173,7 @@ int render_plot(struct zint_symbol *symbol, float width, float height) {
         }
     }
 
-    if (((symbol->symbology == BARCODE_UPCA) && (symbol->rows == 1)) || (symbol->symbology == BARCODE_UPCA_CC)) {
+	else if (((symbol->symbology == BARCODE_UPCA) && (symbol->rows == 1)) || (symbol->symbology == BARCODE_UPCA_CC)) {
         upceanflag = 12;
         if (symbol->whitespace_width < 10) {
             symbol->whitespace_width = 10;
@@ -191,7 +191,7 @@ int render_plot(struct zint_symbol *symbol, float width, float height) {
         }
     }
 
-    if (((symbol->symbology == BARCODE_UPCE) && (symbol->rows == 1)) || (symbol->symbology == BARCODE_UPCE_CC)) {
+	else if (((symbol->symbology == BARCODE_UPCE) && (symbol->rows == 1)) || (symbol->symbology == BARCODE_UPCE_CC)) {
         upceanflag = 6;
         if (symbol->whitespace_width == 0) {
             symbol->whitespace_width = 10;
@@ -228,7 +228,7 @@ int render_plot(struct zint_symbol *symbol, float width, float height) {
     if (large_bar_count == 0) {
         required_aspect = width / height;
         symbol_aspect = (total_symbol_width_x + (2 * xoffset)) / (preset_height + (2 * yoffset) + text_offset + text_height);
-        symbol->height = preset_height;
+        symbol->height = (int)preset_height;
         if (required_aspect > symbol_aspect) {
             /* the area is too wide */
             scaler = height / (preset_height + (2 * yoffset) + text_offset + text_height);
@@ -242,7 +242,7 @@ int render_plot(struct zint_symbol *symbol, float width, float height) {
         }
     } else {
         scaler = width / (total_symbol_width_x + (2 * xoffset));
-        symbol->height = (height / scaler) - ((2 * yoffset) + text_offset + text_height);
+        symbol->height = (int)((height / scaler) - ((2 * yoffset) + text_offset + text_height));
 
         render->width = width;
         render->height = height;
@@ -277,7 +277,7 @@ int render_plot(struct zint_symbol *symbol, float width, float height) {
         }
     }
 
-    if (symbol->symbology == BARCODE_CODE49) {
+	else if(symbol->symbology == BARCODE_CODE49) {
         /* The minimum X-dimension of Code 49 is 0.191mm */
         if (x_dimension < 0.191) {
             render->width = 0.191 * GL_CONST * total_area_width_x;
@@ -316,20 +316,20 @@ int render_plot(struct zint_symbol *symbol, float width, float height) {
         render->height = 4.064 * GL_CONST;
     }
 
-    if ((symbol->symbology == BARCODE_POSTNET) || (symbol->symbology == BARCODE_PLANET)) {
+	else if((symbol->symbology == BARCODE_POSTNET) || (symbol->symbology == BARCODE_PLANET)) {
         /* The size of PostNet and PLANET are fized */
         render->width = 0.508 * GL_CONST * total_area_width_x;
         render->height = 2.921 * GL_CONST;
     }
 
-    if (((symbol->symbology == BARCODE_AUSPOST) || (symbol->symbology == BARCODE_AUSREPLY)) ||
+	else if(((symbol->symbology == BARCODE_AUSPOST) || (symbol->symbology == BARCODE_AUSREPLY)) ||
             ((symbol->symbology == BARCODE_AUSROUTE) || (symbol->symbology == BARCODE_AUSREDIRECT))) {
         /* Australia Post use the same sizes as USPS */
         render->width = 0.508 * GL_CONST * total_area_width_x;
         render->height = 4.064 * GL_CONST;
     }
 
-    if ((symbol->symbology == BARCODE_RM4SCC) || (symbol->symbology == BARCODE_KIX)) {
+	else if((symbol->symbology == BARCODE_RM4SCC) || (symbol->symbology == BARCODE_KIX)) {
         /* Royal Mail and KIX Code uses 22 bars per inch */
         render->width = 0.577 * GL_CONST * total_area_width_x;
         render->height = 5.22 * GL_CONST;
@@ -680,6 +680,8 @@ struct zint_render_line *render_plot_create_line(float x, float y, float width, 
     struct zint_render_line *line;
 
     line = (struct zint_render_line*) malloc(sizeof (struct zint_render_line));
+    if (!line) return NULL;
+
     line->next = NULL;
     line->x = x;
     line->y = y;
@@ -694,6 +696,7 @@ struct zint_render_line *render_plot_create_line(float x, float y, float width, 
  * next value.
  */
 int render_plot_add_line(struct zint_symbol *symbol, struct zint_render_line *line, struct zint_render_line **last_line) {
+   if (!line) return ZINT_ERROR_MEMORY;
     if (*last_line)
         (*last_line)->next = line;
     else
@@ -707,6 +710,7 @@ struct zint_render_ring *render_plot_create_ring(float x, float y, float radius,
     struct zint_render_ring *ring;
 
     ring = (struct zint_render_ring *) malloc(sizeof (struct zint_render_ring));
+    if (!ring) return NULL;
     ring->next = NULL;
     ring->x = x;
     ring->y = y;
@@ -717,6 +721,7 @@ struct zint_render_ring *render_plot_create_ring(float x, float y, float radius,
 }
 
 int render_plot_add_ring(struct zint_symbol *symbol, struct zint_render_ring *ring, struct zint_render_ring **last_ring) {
+   if (!ring) return ZINT_ERROR_MEMORY;
     if (*last_ring)
         (*last_ring)->next = ring;
     else
@@ -730,6 +735,7 @@ struct zint_render_hexagon *render_plot_create_hexagon(float x, float y) {
     struct zint_render_hexagon *hexagon;
 
     hexagon = (struct zint_render_hexagon*) malloc(sizeof (struct zint_render_hexagon));
+    if (!hexagon) return NULL;
     hexagon->next = NULL;
     hexagon->x = x;
     hexagon->y = y;
@@ -738,6 +744,7 @@ struct zint_render_hexagon *render_plot_create_hexagon(float x, float y) {
 }
 
 int render_plot_add_hexagon(struct zint_symbol *symbol, struct zint_render_hexagon *hexagon, struct zint_render_hexagon **last_hexagon) {
+   if (!hexagon) return ZINT_ERROR_MEMORY;
     if (*last_hexagon)
         (*last_hexagon)->next = hexagon;
     else

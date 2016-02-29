@@ -160,7 +160,7 @@ extern int australia_post(struct zint_symbol *symbol, unsigned char source[], in
 extern int code16k(struct zint_symbol *symbol, unsigned char source[], int length); /* Code 16k */
 extern int pdf417enc(struct zint_symbol *symbol, unsigned char source[], int length); /* PDF417 */
 extern int dmatrix(struct zint_symbol *symbol, unsigned char source[], int length); /* Data Matrix (IEC16022) */
-extern int qr_code(struct zint_symbol *symbol, unsigned char source[], int length); /* QR Code */
+extern int qr_code(struct zint_symbol *symbol, const unsigned char source[], int length); /* QR Code */
 extern int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], int length); /* Micro PDF417 */
 extern int maxicode(struct zint_symbol *symbol, unsigned char source[], int length); /* Maxicode */
 extern int rss14(struct zint_symbol *symbol, unsigned char source[], int length); /* RSS-14 */
@@ -173,14 +173,14 @@ extern int code32(struct zint_symbol *symbol, unsigned char source[], int length
 extern int daft_code(struct zint_symbol *symbol, unsigned char source[], int length); /* DAFT Code */
 extern int ean_14(struct zint_symbol *symbol, unsigned char source[], int length); /* EAN-14 */
 extern int nve_18(struct zint_symbol *symbol, unsigned char source[], int length); /* NVE-18 */
-extern int microqr(struct zint_symbol *symbol, unsigned char source[], int length); /* Micro QR Code */
+extern int microqr(struct zint_symbol *symbol, const unsigned char source[], int length); /* Micro QR Code */
 extern int aztec_runes(struct zint_symbol *symbol, unsigned char source[], int length); /* Aztec Runes */
 extern int korea_post(struct zint_symbol *symbol, unsigned char source[], int length); /* Korea Post */
 extern int japan_post(struct zint_symbol *symbol, unsigned char source[], int length); /* Japanese Post */
-extern int code_49(struct zint_symbol *symbol, unsigned char source[], int length); /* Code 49 */
+extern int code_49(struct zint_symbol *symbol, unsigned char source[], const int length); /* Code 49 */
 extern int channel_code(struct zint_symbol *symbol, unsigned char source[], int length); /* Channel Code */
 extern int code_one(struct zint_symbol *symbol, unsigned char source[], int length); /* Code One */
-extern int grid_matrix(struct zint_symbol *symbol, unsigned char source[], int length); /* Grid Matrix */
+extern int grid_matrix(struct zint_symbol *symbol, const unsigned char source[], int length); /* Grid Matrix */
 
 #ifndef NO_PNG
 extern int png_handle(struct zint_symbol *symbol, int rotate_angle);
@@ -353,7 +353,7 @@ int hibc(struct zint_symbol *symbol, unsigned char source[], int length) {
     return error_number;
 }
 
-int gs1_compliant(int symbology) {
+static int gs1_compliant(const int symbology) {
     /* Returns 1 if symbology supports GS1 data */
 
     int result = 0;
@@ -480,7 +480,7 @@ int ZBarcode_ValidID(int symbol_id) {
     return result;
 }
 
-int extended_charset(struct zint_symbol *symbol, unsigned char *source, int length) {
+static int extended_charset(struct zint_symbol *symbol, const unsigned char *source, const int length) {
     int error_number = 0;
 
     /* These are the "elite" standards which can support multiple character sets */
@@ -496,7 +496,7 @@ int extended_charset(struct zint_symbol *symbol, unsigned char *source, int leng
     return error_number;
 }
 
-int reduced_charset(struct zint_symbol *symbol, unsigned char *source, int length) {
+static int reduced_charset(struct zint_symbol *symbol, const unsigned char *source, int length) {
     /* These are the "norm" standards which only support Latin-1 at most */
     int error_number = 0;
 

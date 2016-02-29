@@ -40,6 +40,7 @@
 #include "qr.h"
 #include "reedsol.h"
 #include <stdlib.h>     /* abs */
+#include <assert.h>
 
 /* Returns true if input glyph is in the Alphanumeric set */
 int in_alpha(int glyph) {
@@ -1297,16 +1298,12 @@ int tribus(int version, int a, int b, int c) {
 void applyOptimisation(int version, char inputMode[], int inputLength) {
     
 
-    int blockCount = 0;
+    int blockCount = 0, block;
     int i, j;
     char currentMode = ' '; // Null
-    int block;
+    int  *blockLength;
+    char *blockMode;
 
-#ifdef _MSC_VER
-    int* blockLength;
-    int* blockMode;
-#endif
-    
     for (i = 0; i < inputLength; i++) {
         if (inputMode[i] != currentMode) {
             currentMode = inputMode[i];
@@ -1314,13 +1311,16 @@ void applyOptimisation(int version, char inputMode[], int inputLength) {
         }
     }
 
-#ifndef _MSC_VER
-    int blockLength[blockCount];
-    char blockMode[blockCount];
-#else
-    blockLength = (int *) _alloca(blockCount * sizeof (int));
-    blockMode = (int *) _alloca(blockCount * sizeof(int));
-#endif
+    blockLength=(int*)malloc(sizeof(int)*blockCount);
+    assert(blockLength);
+    if (!blockLength) return;
+    blockMode=(char*)malloc(sizeof(char)*blockCount);
+    assert(blockMode);
+    if (!blockMode)
+    {   
+        free(blockLength);
+        return;
+    }
 
     j = -1;
     currentMode = ' '; // Null
@@ -1405,6 +1405,9 @@ void applyOptimisation(int version, char inputMode[], int inputLength) {
             j++;
         }
     }
+
+    free(blockLength);
+    free(blockMode);
 }
 
 int blockLength(int start, char inputMode[], int inputLength) {
@@ -1490,7 +1493,7 @@ int getBinaryLength(int version, char inputMode[], int inputData[], int inputLen
     return count;
 }
 
-int qr_code(struct zint_symbol *symbol, unsigned char source[], int length) {
+int qr_code(struct zint_symbol *symbol, const unsigned char source[], int length) {
     int error_number, i, j, glyph, est_binlen;
     int ecc_level, autosize, version, max_cw, target_binlen, blocks, size;
     int bitmask, gs1;
@@ -2757,7 +2760,7 @@ int micro_apply_bitmask(unsigned char *grid, int size) {
     return best_pattern;
 }
 
-int microqr(struct zint_symbol *symbol, unsigned char source[], int length) {
+int microqr(struct zint_symbol *symbol, const unsigned char source[], int length) {
     int i, j, glyph, size;
     char binary_stream[200];
     char full_stream[200];

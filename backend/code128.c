@@ -75,7 +75,7 @@ static const char *C128Table[107] = {
 };
 
 /* Determine appropriate mode for a given character */
-int parunmodd(unsigned char llyth) {
+int parunmodd(const unsigned char llyth) {
     int modd;
     modd = 0;
 
@@ -281,7 +281,7 @@ void c128_set_b(unsigned char source, char dest[], int values[], int *bar_chars)
 /* Translate Code 128 Set C characters into barcodes
  * This set handles numbers in a compressed form
  */
-void c128_set_c(unsigned char source_a, unsigned char source_b, char dest[], int values[], int *bar_chars) { 
+void c128_set_c(unsigned char source_a, unsigned char source_b, char dest[], int values[], int *bar_chars) {
     int weight;
 
     weight = (10 * ctoi(source_a)) + ctoi(source_b);
@@ -291,7 +291,7 @@ void c128_set_c(unsigned char source_a, unsigned char source_b, char dest[], int
 }
 
 /* Handle Code 128 and NVE-18 */
-int code_128(struct zint_symbol *symbol, unsigned char source[], int length) { 
+int code_128(struct zint_symbol *symbol, unsigned char source[], int length) {
     int i, j, k, values[170] = {0}, bar_characters, read, total_sum;
     int error_number, indexchaine, indexliste, sourcelen, f_state;
     char set[170] = {' '}, fset[170] = {' '}, mode, last_set, current_set = ' ';
@@ -681,7 +681,7 @@ int code_128(struct zint_symbol *symbol, unsigned char source[], int length) {
 }
 
 /* Handle EAN-128 (Now known as GS1-128) */
-int ean_128(struct zint_symbol *symbol, unsigned char source[], int length) { 
+int ean_128(struct zint_symbol *symbol, unsigned char source[], int length) {
     int i, j, values[170], bar_characters, read, total_sum;
     int error_number, indexchaine, indexliste;
     char set[170], mode, last_set;
@@ -748,7 +748,7 @@ int ean_128(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     do {
         list[1][indexliste] = mode;
-        while ((list[1][indexliste] == mode) && (indexchaine < strlen(reduced))) {
+        while ((list[1][indexliste] == mode) && (indexchaine < (int) strlen(reduced))) {
             list[0][indexliste]++;
             indexchaine++;
             mode = parunmodd(reduced[indexchaine]);
@@ -757,7 +757,7 @@ int ean_128(struct zint_symbol *symbol, unsigned char source[], int length) {
             }
         }
         indexliste++;
-    } while (indexchaine < strlen(reduced));
+    } while (indexchaine < (int) strlen(reduced));
 
     dxsmooth(&indexliste);
 
@@ -825,7 +825,7 @@ int ean_128(struct zint_symbol *symbol, unsigned char source[], int length) {
     being too long */
     last_set = ' ';
     glyph_count = 0.0;
-    for (i = 0; i < strlen(reduced); i++) {
+    for (i = 0; i < (int) strlen(reduced); i++) {
         if ((set[i] == 'a') || (set[i] == 'b')) {
             glyph_count = glyph_count + 1.0;
         }
@@ -919,7 +919,7 @@ int ean_128(struct zint_symbol *symbol, unsigned char source[], int length) {
             bar_characters++;
             read++;
         }
-    } while (read < strlen(reduced));
+    } while (read < (int) strlen(reduced));
 
     /* "...note that the linkage flag is an extra code set character between
     the last data character and the Symbol Check Character" (GS1 Specification) */

@@ -312,9 +312,9 @@ int seek_forward(int gbdata[], int length, int position, int current_mode) {
 }
 
 /* Add the length indicator for byte encoded blocks */
-void add_byte_count(char binary[], int byte_count_posn, int byte_count) {
+static void add_byte_count(char binary[], const size_t byte_count_posn, const int byte_count) {
     int p;
-    
+
     for (p = 0; p < 8; p++) {
         if (byte_count & (0x100 >> p)) {
             binary[byte_count_posn + p] = '0';
@@ -352,13 +352,13 @@ int gm_encode(int gbdata[], int length, char binary[], int reader) {
     /* Create a binary stream representation of the input data.
        7 sets are defined - Chinese characters, Numerals, Lower case letters, Upper case letters,
        Mixed numerals and latters, Control characters and 8-bit binary data */
-    int sp, current_mode, next_mode, last_mode, glyph = 0;
+    int sp, current_mode, next_mode, last_mode, glyph = 0, q;
     int c1, c2, done;
     int p = 0, ppos;
     int numbuf[3], punt = 0;
-    int number_pad_posn, debug = 0;
-    int byte_count_posn = 0, byte_count = 0;
-    int shift, i, q;
+    size_t number_pad_posn, byte_count_posn = 0;
+    int byte_count = 0, debug = 0;
+    int shift, i;
 
     strcpy(binary, "");
 
@@ -830,7 +830,7 @@ int gm_encode(int gbdata[], int length, char binary[], int reader) {
     return 0;
 }
 
-void gm_add_ecc(char binary[], int data_posn, int layers, int ecc_level, int word[]) {
+static void gm_add_ecc(const char binary[], const size_t data_posn, const int layers, const int ecc_level, int word[]) {
     int data_cw, i, j, wp, p;
     int n1, b1, n2, b2, e1, b3, e2;
     int block_size, data_size, ecc_size;
@@ -854,7 +854,7 @@ void gm_add_ecc(char binary[], int data_posn, int layers, int ecc_level, int wor
 
     /* Add padding codewords */
     data[data_posn] = 0x00;
-    for (i = (data_posn + 1); i < data_cw; i++) {
+    for (i = (int) (data_posn + 1); i < data_cw; i++) {
         if (i & 1) {
             data[i] = 0x7e;
         } else {
@@ -1032,7 +1032,7 @@ void place_layer_id(char* grid, int size, int layers, int modules, int ecc_level
     }
 }
 
-int grid_matrix(struct zint_symbol *symbol, unsigned char source[], int length) {
+int grid_matrix(struct zint_symbol *symbol, const unsigned char source[], int length) {
     int size, modules, dark, error_number;
     int auto_layers, min_layers, layers, auto_ecc_level, min_ecc_level, ecc_level;
     int x, y, i, j, glyph;

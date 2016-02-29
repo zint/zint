@@ -55,24 +55,24 @@ extern "C" {
     extern void ustrcpy(unsigned char target[], const unsigned char source[]);
     extern void concat(char dest[], const char source[]);
     extern void uconcat(unsigned char dest[], const unsigned char source[]);
-    extern int ctoi(char source);
-    extern char itoc(int source);
+    extern int ctoi(const char source);
+    extern char itoc(const int source);
     extern void to_upper(unsigned char source[]);
-    extern int is_sane(char test_string[], unsigned char source[], int length);
-    extern void lookup(char set_string[], const char *table[], char data, char dest[]);
-    extern int posn(char set_string[], char data);
+    extern int is_sane(char test_string[], const unsigned char source[], const int length);
+    extern void lookup(char set_string[], const char *table[], const char data, char dest[]);
+    extern int posn(char set_string[], const char data);
     extern void expand(struct zint_symbol *symbol, char data[]);
-    extern int is_stackable(int symbology);
-    extern int is_extendable(int symbology);
-    extern int roundup(float input);
-    extern int module_is_set(struct zint_symbol *symbol, int y_coord, int x_coord);
-    extern void set_module(struct zint_symbol *symbol, int y_coord, int x_coord);
-    extern void unset_module(struct zint_symbol *symbol, int y_coord, int x_coord);
-    extern int istwodigits(unsigned char source[], int position);
-    extern float froundup(float input);
-    extern int parunmodd(unsigned char llyth);
-    extern int latin1_process(struct zint_symbol *symbol, unsigned char source[], unsigned char preprocessed[], int *length);
-    extern int utf8toutf16(struct zint_symbol *symbol, unsigned char source[], int vals[], int *length);
+    extern int is_stackable(const int symbology);
+    extern int is_extendable(const int symbology);
+    extern int roundup(const float input);
+    extern int module_is_set(const struct zint_symbol *symbol, const int y_coord, const int x_coord);
+    extern void set_module(struct zint_symbol *symbol, const int y_coord, const int x_coord);
+    extern void unset_module(struct zint_symbol *symbol, const int y_coord, const int x_coord);
+    extern int istwodigits(const unsigned char source[], const int position);
+    extern double froundup(const double input);
+    extern int parunmodd(const unsigned char llyth);
+    extern int latin1_process(struct zint_symbol *symbol, const unsigned char source[], unsigned char preprocessed[], int *length);
+    extern int utf8toutf16(struct zint_symbol *symbol, const unsigned char source[], int vals[], int *length);
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

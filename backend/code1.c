@@ -289,25 +289,25 @@ int c1_look_ahead_test(unsigned char source[], int sourcelen, int position, int 
 
     if (sp == sourcelen) {
         /* Step K */
-        best_count = edi_count;
+		best_count = (int)edi_count;
 
         if (text_count <= best_count) {
-            best_count = text_count;
+			best_count = (int)text_count;
             best_scheme = C1_TEXT;
         }
 
         if (c40_count <= best_count) {
-            best_count = c40_count;
+			best_count = (int)c40_count;
             best_scheme = C1_C40;
         }
 
         if (ascii_count <= best_count) {
-            best_count = ascii_count;
+			best_count = (int)ascii_count;
             best_scheme = C1_ASCII;
         }
 
         if (byte_count <= best_count) {
-            best_count = byte_count;
+			best_count = (int)byte_count;
             best_scheme = C1_BYTE;
         }
     } else {
@@ -1052,7 +1052,7 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
 
                 strcpy(temp_binary, "");
                 if (strlen(decimal_binary) > 24) {
-                    for (i = 0; i <= (strlen(decimal_binary) - 24); i++) {
+					for(i = 0; i <= (int)(strlen(decimal_binary) - 24); i++) {
                         temp_binary[i] = decimal_binary[i + 24];
                     }
                     strcpy(decimal_binary, temp_binary);

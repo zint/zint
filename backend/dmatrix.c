@@ -51,8 +51,8 @@
 #include "common.h"
 #include "dmatrix.h"
 
-// Annex M placement alorithm low level
-static void ecc200placementbit(int *array, int NR, int NC, int r, int c, int p, char b) {
+/* Annex M placement alorithm low level */
+static void ecc200placementbit(int *array, const int NR, const int NC, int r, int c, const int p, const char b) {
     if (r < 0) {
         r += NR;
         c += 4 - ((NR + 4) % 8);
@@ -86,7 +86,8 @@ static void ecc200placementbit(int *array, int NR, int NC, int r, int c, int p, 
     array[r * NC + c] = (p << 3) + b;
 }
 
-static void ecc200placementblock(int *array, int NR, int NC, int r, int c, int p) {
+static void ecc200placementblock(int *array, const int NR, const int NC, const int r,
+        const int c, const int p) {
     ecc200placementbit(array, NR, NC, r - 2, c - 2, p, 7);
     ecc200placementbit(array, NR, NC, r - 2, c - 1, p, 6);
     ecc200placementbit(array, NR, NC, r - 1, c - 2, p, 5);
@@ -97,7 +98,7 @@ static void ecc200placementblock(int *array, int NR, int NC, int r, int c, int p
     ecc200placementbit(array, NR, NC, r - 0, c - 0, p, 0);
 }
 
-static void ecc200placementcornerA(int *array, int NR, int NC, int p) {
+static void ecc200placementcornerA(int *array, const int NR, const int NC, const int p) {
     ecc200placementbit(array, NR, NC, NR - 1, 0, p, 7);
     ecc200placementbit(array, NR, NC, NR - 1, 1, p, 6);
     ecc200placementbit(array, NR, NC, NR - 1, 2, p, 5);
@@ -108,7 +109,7 @@ static void ecc200placementcornerA(int *array, int NR, int NC, int p) {
     ecc200placementbit(array, NR, NC, 3, NC - 1, p, 0);
 }
 
-static void ecc200placementcornerB(int *array, int NR, int NC, int p) {
+static void ecc200placementcornerB(int *array, const int NR, const int NC, const int p) {
     ecc200placementbit(array, NR, NC, NR - 3, 0, p, 7);
     ecc200placementbit(array, NR, NC, NR - 2, 0, p, 6);
     ecc200placementbit(array, NR, NC, NR - 1, 0, p, 5);
@@ -119,7 +120,7 @@ static void ecc200placementcornerB(int *array, int NR, int NC, int p) {
     ecc200placementbit(array, NR, NC, 1, NC - 1, p, 0);
 }
 
-static void ecc200placementcornerC(int *array, int NR, int NC, int p) {
+static void ecc200placementcornerC(int *array, const int NR, const int NC, const int p) {
     ecc200placementbit(array, NR, NC, NR - 3, 0, p, 7);
     ecc200placementbit(array, NR, NC, NR - 2, 0, p, 6);
     ecc200placementbit(array, NR, NC, NR - 1, 0, p, 5);
@@ -130,7 +131,7 @@ static void ecc200placementcornerC(int *array, int NR, int NC, int p) {
     ecc200placementbit(array, NR, NC, 3, NC - 1, p, 0);
 }
 
-static void ecc200placementcornerD(int *array, int NR, int NC, int p) {
+static void ecc200placementcornerD(int *array, const int NR, const int NC, const int p) {
     ecc200placementbit(array, NR, NC, NR - 1, 0, p, 7);
     ecc200placementbit(array, NR, NC, NR - 1, NC - 1, p, 6);
     ecc200placementbit(array, NR, NC, 0, NC - 3, p, 5);
@@ -141,8 +142,8 @@ static void ecc200placementcornerD(int *array, int NR, int NC, int p) {
     ecc200placementbit(array, NR, NC, 1, NC - 1, p, 0);
 }
 
-// Annex M placement alorithm main function
-static void ecc200placement(int *array, int NR, int NC) {
+/* Annex M placement alorithm main function */
+static void ecc200placement(int *array, const int NR, const int NC) {
     int r, c, p;
     // invalidate
     for (r = 0; r < NR; r++)
@@ -186,8 +187,8 @@ static void ecc200placement(int *array, int NR, int NC) {
         array[NR * NC - 1] = array[NR * NC - NC - 2] = 1;
 }
 
-// calculate and append ecc code, and if necessary interleave
-static void ecc200(unsigned char *binary, int bytes, int datablock, int rsblock, int skew) {
+/* calculate and append ecc code, and if necessary interleave */
+static void ecc200(unsigned char *binary, const int bytes, const int datablock, const int rsblock, const int skew) {
     int blocks = (bytes + 2) / datablock, b;
     int n, p;
     rs_init_gf(0x12d);
@@ -217,7 +218,7 @@ static void ecc200(unsigned char *binary, int bytes, int datablock, int rsblock,
 }
 
 /* Return true (1) if a character is valid in X12 set */
-int isX12(unsigned char source) {
+static int isX12(const int source) {
     if (source == 13) {
         return 1;
     }
@@ -241,17 +242,17 @@ int isX12(unsigned char source) {
 }
 
 /* Insert a character into the middle of a string at position posn */
-void dminsert(char binary_string[], int posn, char newbit) { 
+static void dminsert(char binary_string[], const int posn, const char newbit) {
     int i, end;
 
-    end = strlen(binary_string);
+    end = (int) strlen(binary_string);
     for (i = end; i > posn; i--) {
         binary_string[i] = binary_string[i - 1];
     }
     binary_string[posn] = newbit;
 }
 
-void insert_value(unsigned char binary_stream[], int posn, int streamlen, char newbit) {
+static void insert_value(unsigned char binary_stream[], const int posn, const int streamlen, const int newbit) {
     int i;
 
     for (i = streamlen; i > posn; i--) {
@@ -260,7 +261,7 @@ void insert_value(unsigned char binary_stream[], int posn, int streamlen, char n
     binary_stream[posn] = newbit;
 }
 
-int p_r_6_2_1(unsigned char inputData[], int position, int sourcelen) {
+int p_r_6_2_1(const unsigned char inputData[], int position, const int sourcelen) {
     /* Annex P section (r)(6)(ii)(I)
        "If one of the three X12 terminator/separator characters first
         occurs in the yet to be processed data before a non-X12 character..."
@@ -297,7 +298,7 @@ int p_r_6_2_1(unsigned char inputData[], int position, int sourcelen) {
 }
 
 /* 'look ahead test' from Annex P */
-int look_ahead_test(unsigned char inputData[], int sourcelen, int position, int current_mode, int gs1) {
+static int look_ahead_test(const unsigned char inputData[], const int sourcelen, const int position, const int current_mode, const int gs1) {
     float ascii_count, c40_count, text_count, x12_count, edf_count, b256_count, best_count;
     int sp, best_scheme;
 
@@ -338,12 +339,12 @@ int look_ahead_test(unsigned char inputData[], int sourcelen, int position, int 
     do {
         if (sp == (sourcelen - 1)) {
             /* At the end of data ... step (k) */
-            ascii_count = ceil(ascii_count);
-            b256_count = ceil(b256_count);
-            edf_count = ceil(edf_count);
-            text_count = ceil(text_count);
-            x12_count = ceil(x12_count);
-            c40_count = ceil(c40_count);
+            ascii_count = ceilf(ascii_count);
+            b256_count = ceilf(b256_count);
+            edf_count = ceilf(edf_count);
+            text_count = ceilf(text_count);
+            x12_count = ceilf(x12_count);
+            c40_count = ceilf(c40_count);
 
             best_count = c40_count;
             best_scheme = DM_C40; // (k)(7)
@@ -375,12 +376,12 @@ int look_ahead_test(unsigned char inputData[], int sourcelen, int position, int 
 
             /* ascii ... step (l) */
             if ((inputData[sp] >= '0') && (inputData[sp] <= '9')) {
-                ascii_count += 0.5; // (l)(1)
+                ascii_count += 0.5F; // (l)(1)
             } else {
                 if (inputData[sp] > 127) {
-                    ascii_count = ceil(ascii_count) + 2.0; // (l)(2)
+                    ascii_count = ceilf(ascii_count) + 2.0F; // (l)(2)
                 } else {
-                    ascii_count = ceil(ascii_count) + 1.0; // (l)(3)
+                    ascii_count = ceilf(ascii_count) + 1.0F; // (l)(3)
                 }
             }
 
@@ -388,12 +389,12 @@ int look_ahead_test(unsigned char inputData[], int sourcelen, int position, int 
             if ((inputData[sp] == ' ') ||
                     (((inputData[sp] >= '0') && (inputData[sp] <= '9')) ||
                     ((inputData[sp] >= 'A') && (inputData[sp] <= 'Z')))) {
-                c40_count += (2.0 / 3.0); // (m)(1)
+                c40_count += (2.0F / 3.0F); // (m)(1)
             } else {
                 if (inputData[sp] > 127) {
-                    c40_count += (8.0 / 3.0); // (m)(2)
+                    c40_count += (8.0F / 3.0F); // (m)(2)
                 } else {
-                    c40_count += (4.0 / 3.0); // (m)(3)
+                    c40_count += (4.0F / 3.0F); // (m)(3)
                 }
             }
 
@@ -401,45 +402,45 @@ int look_ahead_test(unsigned char inputData[], int sourcelen, int position, int 
             if ((inputData[sp] == ' ') ||
                     (((inputData[sp] >= '0') && (inputData[sp] <= '9')) ||
                     ((inputData[sp] >= 'a') && (inputData[sp] <= 'z')))) {
-                text_count += (2.0 / 3.0); // (n)(1)
+                text_count += (2.0F / 3.0F); // (n)(1)
             } else {
                 if (inputData[sp] > 127) {
-                    text_count += (8.0 / 3.0); // (n)(2)
+                    text_count += (8.0F / 3.0F); // (n)(2)
                 } else {
-                    text_count += (4.0 / 3.0); // (n)(3)
+                    text_count += (4.0F / 3.0F); // (n)(3)
                 }
             }
 
             /* x12 ... step (o) */
             if (isX12(inputData[sp])) {
-                x12_count += (2.0 / 3.0); // (o)(1)
+                x12_count += (2.0F / 3.0F); // (o)(1)
             } else {
                 if (inputData[sp] > 127) {
-                    x12_count += (13.0 / 3.0); // (o)(2)
+                    x12_count += (13.0F / 3.0F); // (o)(2)
                 } else {
-                    x12_count += (10.0 / 3.0); // (o)(3)
+                    x12_count += (10.0F / 3.0F); // (o)(3)
                 }
             }
 
             /* edifact ... step (p) */
             if ((inputData[sp] >= ' ') && (inputData[sp] <= '^')) {
-                edf_count += (3.0 / 4.0); // (p)(1)
+                edf_count += (3.0F / 4.0F); // (p)(1)
             } else {
                 if (inputData[sp] > 127) {
-                    edf_count += (17.0 / 4.0); // (p)(2)
+                    edf_count += (17.0F / 4.0F); // (p)(2)
                 } else {
-                    edf_count += (13.0 / 4.0); // (p)(3)
+                    edf_count += (13.0F / 4.0F); // (p)(3)
                 }
             }
             if ((gs1 == 1) && (inputData[sp] == '[')) {
-                edf_count += 6.0;
+                edf_count += 6.0F;
             }
 
             /* base 256 ... step (q) */
             if ((gs1 == 1) && (inputData[sp] == '[')) {
-                b256_count += 4.0; // (q)(1)
+                b256_count += 4.0F; // (q)(1)
             } else {
-                b256_count += 1.0; // (q)(2)
+                b256_count += 1.0F; // (q)(2)
             }
         }
 
@@ -448,10 +449,10 @@ int look_ahead_test(unsigned char inputData[], int sourcelen, int position, int 
             /* 4 data characters processed ... step (r) */
 
             /* step (r)(6) */
-            if (((c40_count + 1.0) < ascii_count) &&
-                    ((c40_count + 1.0) < b256_count) &&
-                    ((c40_count + 1.0) < edf_count) &&
-                    ((c40_count + 1.0) < text_count)) {
+            if (((c40_count + 1.0F) < ascii_count) &&
+                    ((c40_count + 1.0F) < b256_count) &&
+                    ((c40_count + 1.0F) < edf_count) &&
+                    ((c40_count + 1.0F) < text_count)) {
 
                 if (c40_count < x12_count) {
                     best_scheme = DM_C40;
@@ -468,47 +469,47 @@ int look_ahead_test(unsigned char inputData[], int sourcelen, int position, int 
             }
 
             /* step (r)(5) */
-            if (((x12_count + 1.0) < ascii_count) &&
-                    ((x12_count + 1.0) < b256_count) &&
-                    ((x12_count + 1.0) < edf_count) &&
-                    ((x12_count + 1.0) < text_count) &&
-                    ((x12_count + 1.0) < c40_count)) {
+            if (((x12_count + 1.0F) < ascii_count) &&
+                    ((x12_count + 1.0F) < b256_count) &&
+                    ((x12_count + 1.0F) < edf_count) &&
+                    ((x12_count + 1.0F) < text_count) &&
+                    ((x12_count + 1.0F) < c40_count)) {
                 best_scheme = DM_X12;
             }
 
             /* step (r)(4) */
-            if (((text_count + 1.0) < ascii_count) &&
-                    ((text_count + 1.0) < b256_count) &&
-                    ((text_count + 1.0) < edf_count) &&
-                    ((text_count + 1.0) < x12_count) &&
-                    ((text_count + 1.0) < c40_count)) {
+            if (((text_count + 1.0F) < ascii_count) &&
+                    ((text_count + 1.0F) < b256_count) &&
+                    ((text_count + 1.0F) < edf_count) &&
+                    ((text_count + 1.0F) < x12_count) &&
+                    ((text_count + 1.0F) < c40_count)) {
                 best_scheme = DM_TEXT;
             }
 
             /* step (r)(3) */
-            if (((edf_count + 1.0) < ascii_count) &&
-                    ((edf_count + 1.0) < b256_count) &&
-                    ((edf_count + 1.0) < text_count) &&
-                    ((edf_count + 1.0) < x12_count) &&
-                    ((edf_count + 1.0) < c40_count)) {
+            if (((edf_count + 1.0F) < ascii_count) &&
+                    ((edf_count + 1.0F) < b256_count) &&
+                    ((edf_count + 1.0F) < text_count) &&
+                    ((edf_count + 1.0F) < x12_count) &&
+                    ((edf_count + 1.0F) < c40_count)) {
                 best_scheme = DM_EDIFACT;
             }
 
             /* step (r)(2) */
-            if (((b256_count + 1.0) <= ascii_count) ||
-                    (((b256_count + 1.0) < edf_count) &&
-                    ((b256_count + 1.0) < text_count) &&
-                    ((b256_count + 1.0) < x12_count) &&
-                    ((b256_count + 1.0) < c40_count))) {
+            if (((b256_count + 1.0F) <= ascii_count) ||
+                    (((b256_count + 1.0F) < edf_count) &&
+                    ((b256_count + 1.0F) < text_count) &&
+                    ((b256_count + 1.0F) < x12_count) &&
+                    ((b256_count + 1.0F) < c40_count))) {
                 best_scheme = DM_BASE256;
             }
 
             /* step (r)(1) */
-            if (((ascii_count + 1.0) <= b256_count) &&
-                    ((ascii_count + 1.0) <= edf_count) &&
-                    ((ascii_count + 1.0) <= text_count) &&
-                    ((ascii_count + 1.0) <= x12_count) &&
-                    ((ascii_count + 1.0) <= c40_count)) {
+            if (((ascii_count + 1.0F) <= b256_count) &&
+                    ((ascii_count + 1.0F) <= edf_count) &&
+                    ((ascii_count + 1.0F) <= text_count) &&
+                    ((ascii_count + 1.0F) <= x12_count) &&
+                    ((ascii_count + 1.0F) <= c40_count)) {
                 best_scheme = DM_ASCII;
             }
         }
@@ -1001,8 +1002,7 @@ int dm200encode_remainder(unsigned char target[], int target_length, unsigned ch
                 {
                     target[target_length] = source[inputlen - 1] + 1;
                     target_length++;
-                }
-                else if (process_p == 2) {
+                } else if (process_p == 2) {
                     target[target_length] = source[inputlen - 2] + 1;
                     target_length++;
                     target[target_length] = source[inputlen - 1] + 1;
@@ -1079,8 +1079,7 @@ int dm200encode_remainder(unsigned char target[], int target_length, unsigned ch
                 if (symbols_left < 3) {
                     target[target_length] = 31;
                     target_length++;
-                }
-                else
+                } else
                     target[target_length] = (31 << 2);
                 target_length++;
 
@@ -1297,7 +1296,7 @@ int data_matrix_200(struct zint_symbol *symbol, unsigned char source[], int leng
     return error_number;
 }
 
-int dmatrix(struct zint_symbol *symbol, unsigned char source[], int length) {
+int dmatrix(struct zint_symbol *symbol, unsigned char source[], const int length) {
     int error_number;
 
     if (symbol->option_1 <= 1) {

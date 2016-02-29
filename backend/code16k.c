@@ -113,7 +113,7 @@ void grwp16(int *indexliste) {
 }
 
 /* Implements rules from ISO 15417 Annex E */
-void dxsmooth16(int *indexliste) { 
+void dxsmooth16(int *indexliste) {
     int i, current, last, next, length;
 
     for (i = 0; i < *(indexliste); i++) {
@@ -285,7 +285,7 @@ int code16k(struct zint_symbol *symbol, unsigned char source[], int length) {
     bar_characters = 0;
 
     /* Detect extended ASCII characters */
-    for (i = 0; i < input_length; i++) {
+    for (i = 0; i < (unsigned int) input_length; i++) {
         if (source[i] >= 128) {
             fset[i] = 'f';
         }
@@ -293,7 +293,7 @@ int code16k(struct zint_symbol *symbol, unsigned char source[], int length) {
     fset[i] = '\0';
 
     /* Decide when to latch to extended mode */
-    for (i = 0; i < input_length; i++) {
+    for (i = 0; i < (unsigned int) input_length; i++) {
         j = 0;
         if (fset[i] == 'f') {
             do {
@@ -309,10 +309,10 @@ int code16k(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     /* Decide if it is worth reverting to 646 encodation for a few characters */
     if (input_length > 1) {
-        for (i = 1; i < input_length; i++) {
+        for (i = 1; i < (unsigned int) input_length; i++) {
             if ((fset[i - 1] == 'F') && (fset[i] == ' ')) {
                 /* Detected a change from 8859-1 to 646 - count how long for */
-                for (j = 0; (fset[i + j] == ' ') && ((i + j) < input_length); j++);
+                for (j = 0; (fset[i + j] == ' ') && ((i + j) < (unsigned int) input_length); j++);
                 if ((j < 5) || ((j < 3) && ((i + j) == (input_length - 1)))) {
                     /* Change to shifting back rather than latching back */
                     for (k = 0; k < j; k++) {
@@ -543,7 +543,7 @@ int code16k(struct zint_symbol *symbol, unsigned char source[], int length) {
     current_set = set[0];
     f_state = 0;
     /* f_state remembers if we are in Extended ASCII mode (value 1) or
-	in ISO/IEC 646 mode (value 0) */
+        in ISO/IEC 646 mode (value 0) */
     if (fset[0] == 'F') {
         switch (current_set) {
             case 'A':

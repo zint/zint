@@ -52,7 +52,7 @@ void mapshorten(int *charmap, int *typemap, int start, int length) {
  * Insert a character into the middle of a string at position posn
  */
 void insert(char binary_string[], int posn, char newbit) {
-    int i, end;
+    size_t i, end;
 
     end = strlen(binary_string);
     for (i = end; i > posn; i--) {
@@ -81,7 +81,7 @@ int aztec_text_process(unsigned char source[], const unsigned int src_len, char 
     maplength = 0;
     debug = 0;
 
-    for (i = 0; i < src_len; i++) {
+    for (i = 0; i < (int) src_len; i++) {
         if (gs1 && (i == 0)) {
             /* Add FNC1 to beginning of GS1 messages */
             charmap[maplength] = 0;
@@ -109,7 +109,7 @@ int aztec_text_process(unsigned char source[], const unsigned int src_len, char 
     /* Look for double character encoding possibilities */
     i = 0;
     do {
-        if (((charmap[i] == 300) && (charmap[i + 1] == 11)) 
+        if (((charmap[i] == 300) && (charmap[i + 1] == 11))
                 && ((typemap[i] == PUNC) && (typemap[i + 1] == PUNC))) {
             /* CR LF combination */
             charmap[i] = 2;
@@ -118,7 +118,7 @@ int aztec_text_process(unsigned char source[], const unsigned int src_len, char 
             maplength--;
         }
 
-        if (((charmap[i] == 302) && (charmap[i + 1] == 1)) 
+        if (((charmap[i] == 302) && (charmap[i + 1] == 1))
                 && ((typemap[i] == 24) && (typemap[i + 1] == 23))) {
             /* . SP combination */
             charmap[i] = 3;
@@ -127,7 +127,7 @@ int aztec_text_process(unsigned char source[], const unsigned int src_len, char 
             maplength--;
         }
 
-        if (((charmap[i] == 301) && (charmap[i + 1] == 1)) 
+        if (((charmap[i] == 301) && (charmap[i + 1] == 1))
                 && ((typemap[i] == 24) && (typemap[i + 1] == 23))) {
             /* , SP combination */
             charmap[i] = 4;
@@ -136,7 +136,7 @@ int aztec_text_process(unsigned char source[], const unsigned int src_len, char 
             maplength--;
         }
 
-        if (((charmap[i] == 21) && (charmap[i + 1] == 1)) 
+        if (((charmap[i] == 21) && (charmap[i + 1] == 1))
                 && ((typemap[i] == PUNC) && (typemap[i + 1] == 23))) {
             /* : SP combination */
             charmap[i] = 5;
@@ -629,7 +629,7 @@ int aztec_text_process(unsigned char source[], const unsigned int src_len, char 
                         if (bytes > 31) {
                             /* Put 00000 followed by 11-bit number of bytes less 31 */
                             concat(binary_string, "00000");
-                            
+
                             for (p = 0; p < 11; p++) {
                                 if ((bytes - 31) & (0x400 >> p)) {
                                     concat(binary_string, "1");
@@ -1000,8 +1000,7 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], int length) {
                     break;
             }
 
-            if (layers == 0) {
-                /* Couldn't find a symbol which fits the data */
+            if (layers == 0) { /* Couldn't find a symbol which fits the data */
                 strcpy(symbol->errtxt, "Input too long (too many bits for selected ECC)");
                 return ZINT_ERROR_TOO_LONG;
             }
@@ -1299,7 +1298,7 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], int length) {
             break;
         case 10:
             for (i = 0; i < data_blocks; i++) {
-                for(p = 0; p < 10; p++) {
+                for (p = 0; p < 10; p++) {
                     if (adjusted_string[i * codeword_size + p] == '1') {
                         data_part[i] += (0x200 >> p);
                     }

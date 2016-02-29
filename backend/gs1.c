@@ -69,7 +69,7 @@ void itostr(char ai_string[], int ai_value) {
     concat(ai_string, ")");
 }
 
-int gs1_verify(struct zint_symbol *symbol, unsigned char source[], const unsigned int src_len, char reduced[]) {
+int gs1_verify(struct zint_symbol *symbol, const unsigned char source[], const unsigned int src_len, char reduced[]) {
     int i, j, last_ai, ai_latch;
     char ai_string[6];
     int bracket_level, max_bracket_level, ai_length, max_ai_length, min_ai_length;
@@ -335,7 +335,7 @@ int gs1_verify(struct zint_symbol *symbol, unsigned char source[], const unsigne
     return 0;
 }
 
-int ugs1_verify(struct zint_symbol *symbol, unsigned char source[], const unsigned int src_len, unsigned char reduced[]) {
+int ugs1_verify(struct zint_symbol *symbol, const unsigned char source[], const unsigned int src_len, unsigned char reduced[]) {
     /* Only to keep the compiler happy */
 #ifndef _MSC_VER
     char temp[src_len + 5];

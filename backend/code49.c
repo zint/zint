@@ -42,7 +42,7 @@
 
 int code_49(struct zint_symbol *symbol, unsigned char source[], int length) {
     int i, j, rows, M, x_count, y_count, z_count, posn_val, local_value, h;
-    char intermediate[170];
+    char intermediate[170] = "";
     int codewords[170], codeword_count;
     int c_grid[8][8]; /* Refers to table 3 */
     int w_grid[8][4]; /* Refets to table 2 */
@@ -195,7 +195,7 @@ int code_49(struct zint_symbol *symbol, unsigned char source[], int length) {
     } while (i < h);
 
     switch (codewords[0]) {
-        /* Set starting mode value */
+            /* Set starting mode value */
         case 48: M = 2;
             break;
         case 43: M = 4;

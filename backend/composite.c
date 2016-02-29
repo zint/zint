@@ -129,7 +129,7 @@ int encode928(UINT bitString[], UINT codeWords[], int bitLng) {
 }
 
 /* CC-A 2D component */
-int cc_a(struct zint_symbol *symbol, char source[], int cc_width) { 
+int cc_a(struct zint_symbol *symbol, char source[], int cc_width) {
     int i, strpos, segment, bitlen, cwCnt, variant, rows;
     int k, offset, j, total, rsCodeWords[8];
     int LeftRAPStart, RightRAPStart, CentreRAPStart, StartCluster;
@@ -307,7 +307,7 @@ int cc_a(struct zint_symbol *symbol, char source[], int cc_width) {
         writer = 0;
         flip = 1;
         strcpy(pattern, "");
-        for (loop = 0; loop < strlen(codebarre); loop++) {
+        for (loop = 0; loop < (int) strlen(codebarre); loop++) {
             if ((codebarre[loop] >= '0') && (codebarre[loop] <= '9')) {
                 for (k = 0; k < ctoi(codebarre[loop]); k++) {
                     if (flip == 0) {
@@ -331,7 +331,7 @@ int cc_a(struct zint_symbol *symbol, char source[], int cc_width) {
         symbol->width = writer;
 
         /* so now pattern[] holds the string of '1's and '0's. - copy this to the symbol */
-        for (loop = 0; loop < strlen(pattern); loop++) {
+        for (loop = 0; loop < (int) strlen(pattern); loop++) {
             if (pattern[loop] == '1') {
                 set_module(symbol, i, loop);
             }
@@ -363,7 +363,7 @@ int cc_a(struct zint_symbol *symbol, char source[], int cc_width) {
 }
 
 /* CC-B 2D component */
-int cc_b(struct zint_symbol *symbol, char source[], int cc_width) { 
+int cc_b(struct zint_symbol *symbol, char source[], int cc_width) {
     int length, i, binloc;
 #ifndef _MSC_VER
     unsigned char data_string[(strlen(source) / 8) + 3];
@@ -591,7 +591,7 @@ int cc_b(struct zint_symbol *symbol, char source[], int cc_width) {
         writer = 0;
         flip = 1;
         strcpy(pattern, "");
-        for (loop = 0; loop < strlen(codebarre); loop++) {
+        for (loop = 0; loop < (int) strlen(codebarre); loop++) {
             if ((codebarre[loop] >= '0') && (codebarre[loop] <= '9')) {
                 for (k = 0; k < ctoi(codebarre[loop]); k++) {
                     if (flip == 0) {
@@ -615,7 +615,7 @@ int cc_b(struct zint_symbol *symbol, char source[], int cc_width) {
         symbol->width = writer;
 
         /* so now pattern[] holds the string of '1's and '0's. - copy this to the symbol */
-        for (loop = 0; loop < strlen(pattern); loop++) {
+        for (loop = 0; loop < (int) strlen(pattern); loop++) {
             if (pattern[loop] == '1') {
                 set_module(symbol, i, loop);
             }
@@ -646,7 +646,7 @@ int cc_b(struct zint_symbol *symbol, char source[], int cc_width) {
 }
 
 /* CC-C 2D component - byte compressed PDF417 */
-int cc_c(struct zint_symbol *symbol, char source[], int cc_width, int ecc_level) { 
+int cc_c(struct zint_symbol *symbol, char source[], int cc_width, int ecc_level) {
     int length, i, p, binloc;
 #ifndef _MSC_VER
     unsigned char data_string[(strlen(source) / 8) + 4];
@@ -765,12 +765,12 @@ int cc_c(struct zint_symbol *symbol, char source[], int cc_width, int ecc_level)
 
         for (j = 0; j <= cc_width + 1; j++) {
             switch (i % 3) {
-                case 1: offset = 929; /* cluster(3) */ 
+                case 1: offset = 929; /* cluster(3) */
                     break;
-                case 2: offset = 1858; /* cluster(6) */ 
+                case 2: offset = 1858; /* cluster(6) */
                     break;
                 default: offset = 0; /* cluster(0) */
-                     break;
+                    break;
             }
             concat(codebarre, codagemc[offset + dummy[j]]);
             concat(codebarre, "*");
@@ -778,10 +778,10 @@ int cc_c(struct zint_symbol *symbol, char source[], int cc_width, int ecc_level)
         concat(codebarre, "-");
 
         strcpy(pattern, "");
-        for (loop = 0; loop < strlen(codebarre); loop++) {
+        for (loop = 0; loop < (int) strlen(codebarre); loop++) {
             lookup(BRSET, PDFttf, codebarre[loop], pattern);
         }
-        for (loop = 0; loop < strlen(pattern); loop++) {
+        for (loop = 0; loop < (int) strlen(pattern); loop++) {
             if (pattern[loop] == '1') {
                 set_module(symbol, i, loop);
             }
@@ -914,7 +914,7 @@ int cc_binary_string(struct zint_symbol *symbol, const char source[], char binar
         alphanum = 0;
         numeric = 0;
 
-        for (i = 0; i < strlen(ninety); i++) {
+        for (i = 0; i < (int) strlen(ninety); i++) {
 
             if ((ninety[i] >= 'A') && (ninety[i] <= 'Z')) {
                 /* Character is alphabetic */
@@ -1217,7 +1217,7 @@ int cc_binary_string(struct zint_symbol *symbol, const char source[], char binar
         j++;
     }
 
-    for (i = read_posn; i < strlen(source); i++) {
+    for (i = read_posn; i < (int) strlen(source); i++) {
         general_field[j] = source[i];
         j++;
     }
@@ -1228,7 +1228,7 @@ int cc_binary_string(struct zint_symbol *symbol, const char source[], char binar
     }
 
     latch = 0;
-    for (i = 0; i < strlen(general_field); i++) {
+    for (i = 0; i < (int) strlen(general_field); i++) {
         /* Table 13 - ISO/IEC 646 encodation */
         if ((general_field[i] < ' ') || (general_field[i] > 'z')) {
             general_field_type[i] = INVALID_CHAR;
@@ -1301,13 +1301,13 @@ int cc_binary_string(struct zint_symbol *symbol, const char source[], char binar
         return ZINT_ERROR_INVALID_DATA;
     }
 
-    for (i = 0; i < strlen(general_field); i++) {
+    for (i = 0; i < (int) strlen(general_field); i++) {
         if ((general_field_type[i] == ISOIEC) && (general_field[i + 1] == '[')) {
             general_field_type[i + 1] = ISOIEC;
         }
     }
 
-    for (i = 0; i < strlen(general_field); i++) {
+    for (i = 0; i < (int) strlen(general_field); i++) {
         if ((general_field_type[i] == ALPHA_OR_ISO) && (general_field[i + 1] == '[')) {
             general_field_type[i + 1] = ALPHA_OR_ISO;
         }
@@ -1487,7 +1487,7 @@ int cc_binary_string(struct zint_symbol *symbol, const char source[], char binar
                 i++;
                 break;
         }
-    } while (i + latch < strlen(general_field));
+    } while (i + latch < (int) strlen(general_field));
 
     binary_length = strlen(binary_string);
     if (cc_mode == 1) {
@@ -2031,11 +2031,11 @@ int cc_binary_string(struct zint_symbol *symbol, const char source[], char binar
             concat(binary_string, "0000");
         }
 
-        while (strlen(binary_string) < target_bitsize) {
+        while (strlen(binary_string) < (unsigned int) target_bitsize) {
             concat(binary_string, "00100");
         }
 
-        if (strlen(binary_string) > target_bitsize) {
+        if (strlen(binary_string) > (unsigned int) target_bitsize) {
             binary_string[target_bitsize] = '\0';
         }
     }
@@ -2244,7 +2244,7 @@ int composite(struct zint_symbol *symbol, unsigned char source[], int length) {
     }
 
     switch (cc_mode) {
-        /* Note that ecc_level is only relevant to CC-C */
+            /* Note that ecc_level is only relevant to CC-C */
         case 1: error_number = cc_a(symbol, binary_string, cc_width);
             break;
         case 2: error_number = cc_b(symbol, binary_string, cc_width);

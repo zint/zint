@@ -109,7 +109,7 @@ int australia_post(struct zint_symbol *symbol, unsigned char source[], int lengt
     unsigned int loopey, reader, h;
 
     char data_pattern[200];
-    char fcc[3] = {0, 0}, dpid[10];
+    char fcc[3] = {0, 0, 0}, dpid[10];
     char localstr[30];
 
     error_number = 0;

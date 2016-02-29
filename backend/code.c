@@ -132,7 +132,7 @@ int code_11(struct zint_symbol *symbol, unsigned char source[], int length) { /*
     strcpy(dest, "112211");
 
     /* Draw main body of barcode */
-    for (i = 0; i < length; i++) {
+    for (i = 0; i < (unsigned int) length; i++) {
         lookup(SODIUM, C11Table, source[i], dest);
         if (source[i] == '-')
             weight[i] = 10;
@@ -187,7 +187,7 @@ int code_11(struct zint_symbol *symbol, unsigned char source[], int length) { /*
 }
 
 /* Code 39 */
-int c39(struct zint_symbol *symbol, unsigned char source[], int length) { 
+int c39(struct zint_symbol *symbol, unsigned char source[], int length) {
     unsigned int i;
     unsigned int counter;
     char check_digit;
@@ -219,7 +219,7 @@ int c39(struct zint_symbol *symbol, unsigned char source[], int length) {
     /* Start character */
     strcpy(dest, "1211212111");
 
-    for (i = 0; i < length; i++) {
+    for (i = 0; i < (unsigned int) length; i++) {
         lookup(SILVER, C39Table, source[i], dest);
         counter += posn(SILVER, source[i]);
     }
@@ -292,7 +292,7 @@ int c39(struct zint_symbol *symbol, unsigned char source[], int length) {
 }
 
 /* Pharmazentral Nummer (PZN) */
-int pharmazentral(struct zint_symbol *symbol, unsigned char source[], int length) { 
+int pharmazentral(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     int i, error_number, zeroes;
     unsigned int count, check_digit;
@@ -338,7 +338,7 @@ int pharmazentral(struct zint_symbol *symbol, unsigned char source[], int length
 }
 
 /* Extended Code 39 - ISO/IEC 16388:2007 Annex A */
-int ec39(struct zint_symbol *symbol, unsigned char source[], int length) { 
+int ec39(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     unsigned char buffer[150] = {0};
     unsigned int i;
@@ -352,7 +352,7 @@ int ec39(struct zint_symbol *symbol, unsigned char source[], int length) {
     }
 
     /* Creates a buffer string and places control characters into it */
-    for (i = 0; i < length; i++) {
+    for (i = 0; i < (unsigned int) length; i++) {
         if (source[i] > 127) {
             /* Cannot encode extended ASCII */
             strcpy(symbol->errtxt, "Invalid characters in input data");
@@ -364,7 +364,7 @@ int ec39(struct zint_symbol *symbol, unsigned char source[], int length) {
     /* Then sends the buffer to the C39 function */
     error_number = c39(symbol, buffer, ustrlen(buffer));
 
-    for (i = 0; i < length; i++)
+    for (i = 0; i < (unsigned int) length; i++)
         symbol->text[i] = source[i] ? source[i] : ' ';
     symbol->text[length] = '\0';
 
@@ -372,7 +372,7 @@ int ec39(struct zint_symbol *symbol, unsigned char source[], int length) {
 }
 
 /* Code 93 is an advancement on Code 39 and the definition is a lot tighter */
-int c93(struct zint_symbol *symbol, unsigned char source[], int length) { 
+int c93(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     /* SILVER includes the extra characters a, b, c and d to represent Code 93 specific
        shift characters 1, 2, 3 and 4 respectively. These characters are never used by
