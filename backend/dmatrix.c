@@ -339,12 +339,12 @@ static int look_ahead_test(const unsigned char inputData[], const int sourcelen,
     do {
         if (sp == (sourcelen - 1)) {
             /* At the end of data ... step (k) */
-            ascii_count = ceilf(ascii_count);
-            b256_count = ceilf(b256_count);
-            edf_count = ceilf(edf_count);
-            text_count = ceilf(text_count);
-            x12_count = ceilf(x12_count);
-            c40_count = ceilf(c40_count);
+            ascii_count = ceil(ascii_count);
+            b256_count = ceil(b256_count);
+            edf_count = ceil(edf_count);
+            text_count = ceil(text_count);
+            x12_count = ceil(x12_count);
+            c40_count = ceil(c40_count);
 
             best_count = c40_count;
             best_scheme = DM_C40; // (k)(7)
@@ -379,9 +379,9 @@ static int look_ahead_test(const unsigned char inputData[], const int sourcelen,
                 ascii_count += 0.5F; // (l)(1)
             } else {
                 if (inputData[sp] > 127) {
-                    ascii_count = ceilf(ascii_count) + 2.0F; // (l)(2)
+                    ascii_count = ceil(ascii_count) + 2.0F; // (l)(2)
                 } else {
-                    ascii_count = ceilf(ascii_count) + 1.0F; // (l)(3)
+                    ascii_count = ceil(ascii_count) + 1.0F; // (l)(3)
                 }
             }
 
