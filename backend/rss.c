@@ -159,7 +159,7 @@ void getRSSwidths(int val, int n, int elements, int maxWidth, int noNarrow) {
 }
 
 /* GS1 DataBar-14 */
-int rss14(struct zint_symbol *symbol, unsigned char source[], int src_len) { 
+int rss14(struct zint_symbol *symbol, unsigned char source[], int src_len) {
     int error_number = 0, i, j, mask;
     short int accum[112], left_reg[112], right_reg[112], x_reg[112], y_reg[112];
     int data_character[4], data_group[4], v_odd[4], v_even[4];
@@ -513,7 +513,7 @@ int rss14(struct zint_symbol *symbol, unsigned char source[], int src_len) {
         }
         hrt[13] = itoc(check_digit);
 
-        uconcat(symbol->text, (unsigned char*) hrt);
+        strcat((char*) symbol->text, hrt);
     }
 
     if ((symbol->symbology == BARCODE_RSS14STACK) || (symbol->symbology == BARCODE_RSS14STACK_CC)) {
@@ -723,7 +723,7 @@ int rss14(struct zint_symbol *symbol, unsigned char source[], int src_len) {
 }
 
 /* GS1 DataBar Limited */
-int rsslimited(struct zint_symbol *symbol, unsigned char source[], int src_len) { 
+int rsslimited(struct zint_symbol *symbol, unsigned char source[], int src_len) {
     int error_number = 0, i, mask;
     short int accum[112], left_reg[112], right_reg[112], x_reg[112], y_reg[112];
     int left_group, right_group, left_odd, left_even, right_odd, right_even;
@@ -1041,15 +1041,15 @@ int rsslimited(struct zint_symbol *symbol, unsigned char source[], int src_len) 
     hrt[13] = itoc(check_digit);
     hrt[14] = '\0';
 
-    uconcat(symbol->text, (unsigned char*) hrt);
+    strcat((char*) symbol->text, hrt);
 
     return error_number;
 }
 
 /* Attempts to apply encoding rules from secions 7.2.5.5.1 to 7.2.5.5.3
  * of ISO/IEC 24724:2006 */
-int general_rules(char field[], char type[]) { 
-	
+int general_rules(char field[], char type[]) {
+
     int block[2][200], block_count, i, j, k;
     char current, next, last;
 
@@ -1165,7 +1165,7 @@ int general_rules(char field[], char type[]) {
 }
 
 /* Handles all data encodation from section 7.2.5 of ISO/IEC 24724 */
-int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_string[]) { 
+int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_string[]) {
     int encoding_method, i, mask, j, read_posn, latch, debug = 0, last_mode = ISOIEC;
 #ifndef _MSC_VER
     char general_field[strlen(source) + 1], general_field_type[strlen(source) + 1];
@@ -1270,12 +1270,12 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
                         /* (01) and (3202)/(3203) */
 
                         if (source[19] == '3') {
-                            weight = atof(weight_str) / 1000.0;
+                            weight = (float) (atof(weight_str) / 1000.0F);
                             if (weight <= 22.767) {
                                 encoding_method = 4;
                             }
                         } else {
-                            weight = atof(weight_str) / 100.0;
+                            weight = (float) (atof(weight_str) / 100.0F);
                             if (weight <= 99.99) {
                                 encoding_method = 4;
                             }
@@ -1325,46 +1325,46 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
     }
 
     switch (encoding_method) { /* Encoding method - Table 10 */
-        case 1: concat(binary_string, "1XX");
+        case 1: strcat(binary_string, "1XX");
             read_posn = 16;
             break;
-        case 2: concat(binary_string, "00XX");
+        case 2: strcat(binary_string, "00XX");
             read_posn = 0;
             break;
-        case 3: concat(binary_string, "0100");
+        case 3: strcat(binary_string, "0100");
             read_posn = strlen(source);
             break;
-        case 4: concat(binary_string, "0101");
+        case 4: strcat(binary_string, "0101");
             read_posn = strlen(source);
             break;
-        case 5: concat(binary_string, "01100XX");
+        case 5: strcat(binary_string, "01100XX");
             read_posn = 20;
             break;
-        case 6: concat(binary_string, "01101XX");
+        case 6: strcat(binary_string, "01101XX");
             read_posn = 23;
             break;
-        case 7: concat(binary_string, "0111000");
+        case 7: strcat(binary_string, "0111000");
             read_posn = strlen(source);
             break;
-        case 8: concat(binary_string, "0111001");
+        case 8: strcat(binary_string, "0111001");
             read_posn = strlen(source);
             break;
-        case 9: concat(binary_string, "0111010");
+        case 9: strcat(binary_string, "0111010");
             read_posn = strlen(source);
             break;
-        case 10: concat(binary_string, "0111011");
+        case 10: strcat(binary_string, "0111011");
             read_posn = strlen(source);
             break;
-        case 11: concat(binary_string, "0111100");
+        case 11: strcat(binary_string, "0111100");
             read_posn = strlen(source);
             break;
-        case 12: concat(binary_string, "0111101");
+        case 12: strcat(binary_string, "0111101");
             read_posn = strlen(source);
             break;
-        case 13: concat(binary_string, "0111110");
+        case 13: strcat(binary_string, "0111110");
             read_posn = strlen(source);
             break;
-        case 14: concat(binary_string, "0111111");
+        case 14: strcat(binary_string, "0111111");
             read_posn = strlen(source);
             break;
     }
@@ -1399,7 +1399,7 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
 
         mask = 0x08;
         for (j = 0; j < 4; j++) {
-            concat(binary_string, (group_val & mask) ? "1" : "0");
+            strcat(binary_string, (group_val & mask) ? "1" : "0");
             mask = mask >> 1;
         }
 
@@ -1412,7 +1412,7 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
 
             mask = 0x200;
             for (j = 0; j < 10; j++) {
-                concat(binary_string, (group_val & mask) ? "1" : "0");
+                strcat(binary_string, (group_val & mask) ? "1" : "0");
                 mask = mask >> 1;
             }
         }
@@ -1435,7 +1435,7 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
 
             mask = 0x200;
             for (j = 0; j < 10; j++) {
-                concat(binary_string, (group_val & mask) ? "1" : "0");
+                strcat(binary_string, (group_val & mask) ? "1" : "0");
                 mask = mask >> 1;
             }
         }
@@ -1448,7 +1448,7 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
 
         mask = 0x4000;
         for (j = 0; j < 15; j++) {
-            concat(binary_string, (group_val & mask) ? "1" : "0");
+            strcat(binary_string, (group_val & mask) ? "1" : "0");
             mask = mask >> 1;
         }
     }
@@ -1469,7 +1469,7 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
 
             mask = 0x200;
             for (j = 0; j < 10; j++) {
-                concat(binary_string, (group_val & mask) ? "1" : "0");
+                strcat(binary_string, (group_val & mask) ? "1" : "0");
                 mask = mask >> 1;
             }
         }
@@ -1486,7 +1486,7 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
 
         mask = 0x4000;
         for (j = 0; j < 15; j++) {
-            concat(binary_string, (group_val & mask) ? "1" : "0");
+            strcat(binary_string, (group_val & mask) ? "1" : "0");
             mask = mask >> 1;
         }
     }
@@ -1509,7 +1509,7 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
 
             mask = 0x200;
             for (j = 0; j < 10; j++) {
-                concat(binary_string, (group_val & mask) ? "1" : "0");
+                strcat(binary_string, (group_val & mask) ? "1" : "0");
                 mask = mask >> 1;
             }
         }
@@ -1524,7 +1524,7 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
 
         mask = 0x80000;
         for (j = 0; j < 20; j++) {
-            concat(binary_string, (group_val & mask) ? "1" : "0");
+            strcat(binary_string, (group_val & mask) ? "1" : "0");
             mask = mask >> 1;
         }
 
@@ -1548,7 +1548,7 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
 
         mask = 0x8000;
         for (j = 0; j < 16; j++) {
-            concat(binary_string, (group_val & mask) ? "1" : "0");
+            strcat(binary_string, (group_val & mask) ? "1" : "0");
             mask = mask >> 1;
         }
     }
@@ -1567,19 +1567,19 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
 
             mask = 0x200;
             for (j = 0; j < 10; j++) {
-                concat(binary_string, (group_val & mask) ? "1" : "0");
+                strcat(binary_string, (group_val & mask) ? "1" : "0");
                 mask = mask >> 1;
             }
         }
 
         switch (source[19]) {
-            case '0': concat(binary_string, "00");
+            case '0': strcat(binary_string, "00");
                 break;
-            case '1': concat(binary_string, "01");
+            case '1': strcat(binary_string, "01");
                 break;
-            case '2': concat(binary_string, "10");
+            case '2': strcat(binary_string, "10");
                 break;
-            case '3': concat(binary_string, "11");
+            case '3': strcat(binary_string, "11");
                 break;
         }
     }
@@ -1601,19 +1601,19 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
 
             mask = 0x200;
             for (j = 0; j < 10; j++) {
-                concat(binary_string, (group_val & mask) ? "1" : "0");
+                strcat(binary_string, (group_val & mask) ? "1" : "0");
                 mask = mask >> 1;
             }
         }
 
         switch (source[19]) {
-            case '0': concat(binary_string, "00");
+            case '0': strcat(binary_string, "00");
                 break;
-            case '1': concat(binary_string, "01");
+            case '1': strcat(binary_string, "01");
                 break;
-            case '2': concat(binary_string, "10");
+            case '2': strcat(binary_string, "10");
                 break;
-            case '3': concat(binary_string, "11");
+            case '3': strcat(binary_string, "11");
                 break;
         }
 
@@ -1625,7 +1625,7 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
 
         mask = 0x200;
         for (j = 0; j < 10; j++) {
-            concat(binary_string, (group_val & mask) ? "1" : "0");
+            strcat(binary_string, (group_val & mask) ? "1" : "0");
             mask = mask >> 1;
         }
     }
@@ -1734,12 +1734,12 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
 
     /* Set initial mode if not NUMERIC */
     if (general_field_type[0] == ALPHA) {
-        concat(binary_string, "0000"); /* Alphanumeric latch */
+        strcat(binary_string, "0000"); /* Alphanumeric latch */
         last_mode = ALPHA;
     }
     if (general_field_type[0] == ISOIEC) {
-        concat(binary_string, "0000"); /* Alphanumeric latch */
-        concat(binary_string, "00100"); /* ISO/IEC 646 latch */
+        strcat(binary_string, "0000"); /* Alphanumeric latch */
+        strcat(binary_string, "00100"); /* ISO/IEC 646 latch */
         last_mode = ISOIEC;
     }
 
@@ -1751,7 +1751,7 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
                 if (debug) printf("as NUMERIC:");
 
                 if (last_mode != NUMERIC) {
-                    concat(binary_string, "000"); /* Numeric latch */
+                    strcat(binary_string, "000"); /* Numeric latch */
                     if (debug) printf("<NUMERIC LATCH>\n");
                 }
 
@@ -1772,7 +1772,7 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
 
                 mask = 0x40;
                 for (j = 0; j < 7; j++) {
-                    concat(binary_string, (value & mask) ? "1" : "0");
+                    strcat(binary_string, (value & mask) ? "1" : "0");
                     if (debug) {
                         printf("%d", !!(value & mask));
                     }
@@ -1788,10 +1788,10 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
                 if (debug) printf("as ALPHA\n");
                 if (i != 0) {
                     if (last_mode == NUMERIC) {
-                        concat(binary_string, "0000"); /* Alphanumeric latch */
+                        strcat(binary_string, "0000"); /* Alphanumeric latch */
                     }
                     if (last_mode == ISOIEC) {
-                        concat(binary_string, "00100"); /* Alphanumeric latch */
+                        strcat(binary_string, "00100"); /* Alphanumeric latch */
                     }
                 }
 
@@ -1801,7 +1801,7 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
 
                     mask = 0x10;
                     for (j = 0; j < 5; j++) {
-                        concat(binary_string, (value & mask) ? "1" : "0");
+                        strcat(binary_string, (value & mask) ? "1" : "0");
                         mask = mask >> 1;
                     }
                 }
@@ -1812,21 +1812,21 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
 
                     mask = 0x20;
                     for (j = 0; j < 6; j++) {
-                        concat(binary_string, (value & mask) ? "1" : "0");
+                        strcat(binary_string, (value & mask) ? "1" : "0");
                         mask = mask >> 1;
                     }
                 }
 
                 last_mode = ALPHA;
                 if (general_field[i] == '[') {
-                    concat(binary_string, "01111");
+                    strcat(binary_string, "01111");
                     last_mode = NUMERIC;
                 } /* FNC1/Numeric latch */
-                if (general_field[i] == '*') concat(binary_string, "111010"); /* asterisk */
-                if (general_field[i] == ',') concat(binary_string, "111011"); /* comma */
-                if (general_field[i] == '-') concat(binary_string, "111100"); /* minus or hyphen */
-                if (general_field[i] == '.') concat(binary_string, "111101"); /* period or full stop */
-                if (general_field[i] == '/') concat(binary_string, "111110"); /* slash or solidus */
+                if (general_field[i] == '*') strcat(binary_string, "111010"); /* asterisk */
+                if (general_field[i] == ',') strcat(binary_string, "111011"); /* comma */
+                if (general_field[i] == '-') strcat(binary_string, "111100"); /* minus or hyphen */
+                if (general_field[i] == '.') strcat(binary_string, "111101"); /* period or full stop */
+                if (general_field[i] == '/') strcat(binary_string, "111110"); /* slash or solidus */
 
                 i++;
                 break;
@@ -1835,11 +1835,11 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
                 if (debug) printf("as ISOIEC\n");
                 if (i != 0) {
                     if (last_mode == NUMERIC) {
-                        concat(binary_string, "0000"); /* Alphanumeric latch */
-                        concat(binary_string, "00100"); /* ISO/IEC 646 latch */
+                        strcat(binary_string, "0000"); /* Alphanumeric latch */
+                        strcat(binary_string, "00100"); /* ISO/IEC 646 latch */
                     }
                     if (last_mode == ALPHA) {
-                        concat(binary_string, "00100"); /* ISO/IEC 646 latch */
+                        strcat(binary_string, "00100"); /* ISO/IEC 646 latch */
                     }
                 }
 
@@ -1849,7 +1849,7 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
 
                     mask = 0x10;
                     for (j = 0; j < 5; j++) {
-                        concat(binary_string, (value & mask) ? "1" : "0");
+                        strcat(binary_string, (value & mask) ? "1" : "0");
                         mask = mask >> 1;
                     }
                 }
@@ -1860,7 +1860,7 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
 
                     mask = 0x40;
                     for (j = 0; j < 7; j++) {
-                        concat(binary_string, (value & mask) ? "1" : "0");
+                        strcat(binary_string, (value & mask) ? "1" : "0");
                         mask = mask >> 1;
                     }
                 }
@@ -1871,37 +1871,37 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
 
                     mask = 0x40;
                     for (j = 0; j < 7; j++) {
-                        concat(binary_string, (value & mask) ? "1" : "0");
+                        strcat(binary_string, (value & mask) ? "1" : "0");
                         mask = mask >> 1;
                     }
                 }
 
                 last_mode = ISOIEC;
                 if (general_field[i] == '[') {
-                    concat(binary_string, "01111");
+                    strcat(binary_string, "01111");
                     last_mode = NUMERIC;
                 } /* FNC1/Numeric latch */
-                if (general_field[i] == '!') concat(binary_string, "11101000"); /* exclamation mark */
-                if (general_field[i] == 34) concat(binary_string, "11101001"); /* quotation mark */
-                if (general_field[i] == 37) concat(binary_string, "11101010"); /* percent sign */
-                if (general_field[i] == '&') concat(binary_string, "11101011"); /* ampersand */
-                if (general_field[i] == 39) concat(binary_string, "11101100"); /* apostrophe */
-                if (general_field[i] == '(') concat(binary_string, "11101101"); /* left parenthesis */
-                if (general_field[i] == ')') concat(binary_string, "11101110"); /* right parenthesis */
-                if (general_field[i] == '*') concat(binary_string, "11101111"); /* asterisk */
-                if (general_field[i] == '+') concat(binary_string, "11110000"); /* plus sign */
-                if (general_field[i] == ',') concat(binary_string, "11110001"); /* comma */
-                if (general_field[i] == '-') concat(binary_string, "11110010"); /* minus or hyphen */
-                if (general_field[i] == '.') concat(binary_string, "11110011"); /* period or full stop */
-                if (general_field[i] == '/') concat(binary_string, "11110100"); /* slash or solidus */
-                if (general_field[i] == ':') concat(binary_string, "11110101"); /* colon */
-                if (general_field[i] == ';') concat(binary_string, "11110110"); /* semicolon */
-                if (general_field[i] == '<') concat(binary_string, "11110111"); /* less-than sign */
-                if (general_field[i] == '=') concat(binary_string, "11111000"); /* equals sign */
-                if (general_field[i] == '>') concat(binary_string, "11111001"); /* greater-than sign */
-                if (general_field[i] == '?') concat(binary_string, "11111010"); /* question mark */
-                if (general_field[i] == '_') concat(binary_string, "11111011"); /* underline or low line */
-                if (general_field[i] == ' ') concat(binary_string, "11111100"); /* space */
+                if (general_field[i] == '!') strcat(binary_string, "11101000"); /* exclamation mark */
+                if (general_field[i] == 34) strcat(binary_string, "11101001"); /* quotation mark */
+                if (general_field[i] == 37) strcat(binary_string, "11101010"); /* percent sign */
+                if (general_field[i] == '&') strcat(binary_string, "11101011"); /* ampersand */
+                if (general_field[i] == 39) strcat(binary_string, "11101100"); /* apostrophe */
+                if (general_field[i] == '(') strcat(binary_string, "11101101"); /* left parenthesis */
+                if (general_field[i] == ')') strcat(binary_string, "11101110"); /* right parenthesis */
+                if (general_field[i] == '*') strcat(binary_string, "11101111"); /* asterisk */
+                if (general_field[i] == '+') strcat(binary_string, "11110000"); /* plus sign */
+                if (general_field[i] == ',') strcat(binary_string, "11110001"); /* comma */
+                if (general_field[i] == '-') strcat(binary_string, "11110010"); /* minus or hyphen */
+                if (general_field[i] == '.') strcat(binary_string, "11110011"); /* period or full stop */
+                if (general_field[i] == '/') strcat(binary_string, "11110100"); /* slash or solidus */
+                if (general_field[i] == ':') strcat(binary_string, "11110101"); /* colon */
+                if (general_field[i] == ';') strcat(binary_string, "11110110"); /* semicolon */
+                if (general_field[i] == '<') strcat(binary_string, "11110111"); /* less-than sign */
+                if (general_field[i] == '=') strcat(binary_string, "11111000"); /* equals sign */
+                if (general_field[i] == '>') strcat(binary_string, "11111001"); /* greater-than sign */
+                if (general_field[i] == '?') strcat(binary_string, "11111010"); /* question mark */
+                if (general_field[i] == '_') strcat(binary_string, "11111011"); /* underline or low line */
+                if (general_field[i] == ' ') strcat(binary_string, "11111100"); /* space */
 
                 i++;
                 break;
@@ -1929,7 +1929,7 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
 
                 mask = 0x08;
                 for (j = 0; j < 4; j++) {
-                    concat(binary_string, (value & mask) ? "1" : "0");
+                    strcat(binary_string, (value & mask) ? "1" : "0");
                     mask = mask >> 1;
                 }
             } else {
@@ -1940,7 +1940,7 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
 
                 mask = 0x40;
                 for (j = 0; j < 7; j++) {
-                    concat(binary_string, (value & mask) ? "1" : "0");
+                    strcat(binary_string, (value & mask) ? "1" : "0");
                     mask = mask >> 1;
                 }
             }
@@ -1949,7 +1949,7 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
 
             mask = 0x10;
             for (j = 0; j < 5; j++) {
-                concat(binary_string, (value & mask) ? "1" : "0");
+                strcat(binary_string, (value & mask) ? "1" : "0");
                 mask = mask >> 1;
             }
         }
@@ -1979,11 +1979,11 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
         strcpy(padstring, "");
     }
     for (; i > 0; i -= 5) {
-        concat(padstring, "00100");
+        strcat(padstring, "00100");
     }
 
     padstring[remainder] = '\0';
-    concat(binary_string, padstring);
+    strcat(binary_string, padstring);
 
     /* Patch variable length symbol bit field */
     d1 = ((strlen(binary_string) / 12) + 1) & 1;
@@ -2011,7 +2011,7 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
 }
 
 /* GS1 DataBar Expanded */
-int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int src_len) { 
+int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int src_len) {
     int i, j, k, l, p, data_chars, vs[21], group[21], v_odd[21], v_even[21];
     char substring[21][14], latch;
     int char_widths[21][8], checksum, check_widths[8], c_group;
@@ -2047,9 +2047,9 @@ int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int src_len)
     strcpy(binary_string, "");
 
     if (symbol->option_1 == 2) {
-        concat(binary_string, "1");
+        strcat(binary_string, "1");
     } else {
-        concat(binary_string, "0");
+        strcat(binary_string, "0");
     }
 
     i = rss_binary_string(symbol, reduced, binary_string);

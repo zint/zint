@@ -244,18 +244,18 @@ void c128_set_a(unsigned char source, char dest[], int values[], int *bar_chars)
 
     if (source > 127) {
         if (source < 160) {
-            concat(dest, C128Table[(source - 128) + 64]);
+            strcat(dest, C128Table[(source - 128) + 64]);
             values[(*bar_chars)] = (source - 128) + 64;
         } else {
-            concat(dest, C128Table[(source - 128) - 32]);
+            strcat(dest, C128Table[(source - 128) - 32]);
             values[(*bar_chars)] = (source - 128) - 32;
         }
     } else {
         if (source < 32) {
-            concat(dest, C128Table[source + 64]);
+            strcat(dest, C128Table[source + 64]);
             values[(*bar_chars)] = source + 64;
         } else {
-            concat(dest, C128Table[source - 32]);
+            strcat(dest, C128Table[source - 32]);
             values[(*bar_chars)] = source - 32;
         }
     }
@@ -269,10 +269,10 @@ void c128_set_a(unsigned char source, char dest[], int values[], int *bar_chars)
  */
 void c128_set_b(unsigned char source, char dest[], int values[], int *bar_chars) {
     if (source > 127) {
-        concat(dest, C128Table[source - 32 - 128]);
+        strcat(dest, C128Table[source - 32 - 128]);
         values[(*bar_chars)] = source - 32 - 128;
     } else {
-        concat(dest, C128Table[source - 32]);
+        strcat(dest, C128Table[source - 32]);
         values[(*bar_chars)] = source - 32;
     }
     (*bar_chars)++;
@@ -285,7 +285,7 @@ void c128_set_c(unsigned char source_a, unsigned char source_b, char dest[], int
     int weight;
 
     weight = (10 * ctoi(source_a)) + ctoi(source_b);
-    concat(dest, C128Table[weight]);
+    strcat(dest, C128Table[weight]);
     values[(*bar_chars)] = weight;
     (*bar_chars)++;
 }
@@ -491,27 +491,27 @@ int code_128(struct zint_symbol *symbol, unsigned char source[], int length) {
         /* Reader Initialisation mode */
         switch (set[0]) {
             case 'A': /* Start A */
-                concat(dest, C128Table[103]);
+                strcat(dest, C128Table[103]);
                 values[0] = 103;
                 current_set = 'A';
-                concat(dest, C128Table[96]); /* FNC3 */
+                strcat(dest, C128Table[96]); /* FNC3 */
                 values[1] = 96;
                 bar_characters++;
                 break;
             case 'B': /* Start B */
-                concat(dest, C128Table[104]);
+                strcat(dest, C128Table[104]);
                 values[0] = 104;
                 current_set = 'B';
-                concat(dest, C128Table[96]); /* FNC3 */
+                strcat(dest, C128Table[96]); /* FNC3 */
                 values[1] = 96;
                 bar_characters++;
                 break;
             case 'C': /* Start C */
-                concat(dest, C128Table[104]); /* Start B */
+                strcat(dest, C128Table[104]); /* Start B */
                 values[0] = 105;
-                concat(dest, C128Table[96]); /* FNC3 */
+                strcat(dest, C128Table[96]); /* FNC3 */
                 values[1] = 96;
-                concat(dest, C128Table[99]); /* Code C */
+                strcat(dest, C128Table[99]); /* Code C */
                 values[2] = 99;
                 bar_characters += 2;
                 current_set = 'C';
@@ -521,17 +521,17 @@ int code_128(struct zint_symbol *symbol, unsigned char source[], int length) {
         /* Normal mode */
         switch (set[0]) {
             case 'A': /* Start A */
-                concat(dest, C128Table[103]);
+                strcat(dest, C128Table[103]);
                 values[0] = 103;
                 current_set = 'A';
                 break;
             case 'B': /* Start B */
-                concat(dest, C128Table[104]);
+                strcat(dest, C128Table[104]);
                 values[0] = 104;
                 current_set = 'B';
                 break;
             case 'C': /* Start C */
-                concat(dest, C128Table[105]);
+                strcat(dest, C128Table[105]);
                 values[0] = 105;
                 current_set = 'C';
                 break;
@@ -543,14 +543,14 @@ int code_128(struct zint_symbol *symbol, unsigned char source[], int length) {
     if (fset[0] == 'F') {
         switch (current_set) {
             case 'A':
-                concat(dest, C128Table[101]);
-                concat(dest, C128Table[101]);
+                strcat(dest, C128Table[101]);
+                strcat(dest, C128Table[101]);
                 values[bar_characters] = 101;
                 values[bar_characters + 1] = 101;
                 break;
             case 'B':
-                concat(dest, C128Table[100]);
-                concat(dest, C128Table[100]);
+                strcat(dest, C128Table[100]);
+                strcat(dest, C128Table[100]);
                 values[bar_characters] = 100;
                 values[bar_characters + 1] = 100;
                 break;
@@ -566,17 +566,17 @@ int code_128(struct zint_symbol *symbol, unsigned char source[], int length) {
         if ((read != 0) && (set[read] != current_set)) {
             /* Latch different code set */
             switch (set[read]) {
-                case 'A': concat(dest, C128Table[101]);
+                case 'A': strcat(dest, C128Table[101]);
                     values[bar_characters] = 101;
                     bar_characters++;
                     current_set = 'A';
                     break;
-                case 'B': concat(dest, C128Table[100]);
+                case 'B': strcat(dest, C128Table[100]);
                     values[bar_characters] = 100;
                     bar_characters++;
                     current_set = 'B';
                     break;
-                case 'C': concat(dest, C128Table[99]);
+                case 'C': strcat(dest, C128Table[99]);
                     values[bar_characters] = 99;
                     bar_characters++;
                     current_set = 'C';
@@ -589,14 +589,14 @@ int code_128(struct zint_symbol *symbol, unsigned char source[], int length) {
                 /* Latch beginning of extended mode */
                 switch (current_set) {
                     case 'A':
-                        concat(dest, C128Table[101]);
-                        concat(dest, C128Table[101]);
+                        strcat(dest, C128Table[101]);
+                        strcat(dest, C128Table[101]);
                         values[bar_characters] = 101;
                         values[bar_characters + 1] = 101;
                         break;
                     case 'B':
-                        concat(dest, C128Table[100]);
-                        concat(dest, C128Table[100]);
+                        strcat(dest, C128Table[100]);
+                        strcat(dest, C128Table[100]);
                         values[bar_characters] = 100;
                         values[bar_characters + 1] = 100;
                         break;
@@ -608,14 +608,14 @@ int code_128(struct zint_symbol *symbol, unsigned char source[], int length) {
                 /* Latch end of extended mode */
                 switch (current_set) {
                     case 'A':
-                        concat(dest, C128Table[101]);
-                        concat(dest, C128Table[101]);
+                        strcat(dest, C128Table[101]);
+                        strcat(dest, C128Table[101]);
                         values[bar_characters] = 101;
                         values[bar_characters + 1] = 101;
                         break;
                     case 'B':
-                        concat(dest, C128Table[100]);
-                        concat(dest, C128Table[100]);
+                        strcat(dest, C128Table[100]);
+                        strcat(dest, C128Table[100]);
                         values[bar_characters] = 100;
                         values[bar_characters + 1] = 100;
                         break;
@@ -629,11 +629,11 @@ int code_128(struct zint_symbol *symbol, unsigned char source[], int length) {
             /* Shift to or from extended mode */
             switch (current_set) {
                 case 'A':
-                    concat(dest, C128Table[101]); /* FNC 4 */
+                    strcat(dest, C128Table[101]); /* FNC 4 */
                     values[bar_characters] = 101;
                     break;
                 case 'B':
-                    concat(dest, C128Table[100]); /* FNC 4 */
+                    strcat(dest, C128Table[100]); /* FNC 4 */
                     values[bar_characters] = 100;
                     break;
             }
@@ -642,7 +642,7 @@ int code_128(struct zint_symbol *symbol, unsigned char source[], int length) {
 
         if ((set[read] == 'a') || (set[read] == 'b')) {
             /* Insert shift character */
-            concat(dest, C128Table[98]);
+            strcat(dest, C128Table[98]);
             values[bar_characters] = 98;
             bar_characters++;
         }
@@ -672,10 +672,10 @@ int code_128(struct zint_symbol *symbol, unsigned char source[], int length) {
         }
         total_sum += values[i];
     }
-    concat(dest, C128Table[total_sum % 103]);
+    strcat(dest, C128Table[total_sum % 103]);
 
     /* Stop character */
-    concat(dest, C128Table[106]);
+    strcat(dest, C128Table[106]);
     expand(symbol, dest);
     return error_number;
 }
@@ -850,21 +850,21 @@ int ean_128(struct zint_symbol *symbol, unsigned char source[], int length) {
     /* So now we know what start character to use - we can get on with it! */
     switch (set[0]) {
         case 'A': /* Start A */
-            concat(dest, C128Table[103]);
+            strcat(dest, C128Table[103]);
             values[0] = 103;
             break;
         case 'B': /* Start B */
-            concat(dest, C128Table[104]);
+            strcat(dest, C128Table[104]);
             values[0] = 104;
             break;
         case 'C': /* Start C */
-            concat(dest, C128Table[105]);
+            strcat(dest, C128Table[105]);
             values[0] = 105;
             break;
     }
     bar_characters++;
 
-    concat(dest, C128Table[102]);
+    strcat(dest, C128Table[102]);
     values[1] = 102;
     bar_characters++;
 
@@ -874,15 +874,15 @@ int ean_128(struct zint_symbol *symbol, unsigned char source[], int length) {
 
         if ((read != 0) && (set[read] != set[read - 1])) { /* Latch different code set */
             switch (set[read]) {
-                case 'A': concat(dest, C128Table[101]);
+                case 'A': strcat(dest, C128Table[101]);
                     values[bar_characters] = 101;
                     bar_characters++;
                     break;
-                case 'B': concat(dest, C128Table[100]);
+                case 'B': strcat(dest, C128Table[100]);
                     values[bar_characters] = 100;
                     bar_characters++;
                     break;
-                case 'C': concat(dest, C128Table[99]);
+                case 'C': strcat(dest, C128Table[99]);
                     values[bar_characters] = 99;
                     bar_characters++;
                     break;
@@ -891,7 +891,7 @@ int ean_128(struct zint_symbol *symbol, unsigned char source[], int length) {
 
         if ((set[read] == 'a') || (set[read] == 'b')) {
             /* Insert shift character */
-            concat(dest, C128Table[98]);
+            strcat(dest, C128Table[98]);
             values[bar_characters] = 98;
             bar_characters++;
         }
@@ -914,7 +914,7 @@ int ean_128(struct zint_symbol *symbol, unsigned char source[], int length) {
                     break;
             }
         } else {
-            concat(dest, C128Table[102]);
+            strcat(dest, C128Table[102]);
             values[bar_characters] = 102;
             bar_characters++;
             read++;
@@ -953,7 +953,7 @@ int ean_128(struct zint_symbol *symbol, unsigned char source[], int length) {
     }
 
     if (linkage_flag != 0) {
-        concat(dest, C128Table[linkage_flag]);
+        strcat(dest, C128Table[linkage_flag]);
         values[bar_characters] = linkage_flag;
         bar_characters++;
     }
@@ -967,12 +967,12 @@ int ean_128(struct zint_symbol *symbol, unsigned char source[], int length) {
         }
         total_sum += values[i];
     }
-    concat(dest, C128Table[total_sum % 103]);
+    strcat(dest, C128Table[total_sum % 103]);
     values[bar_characters] = total_sum % 103;
     bar_characters++;
 
     /* Stop character */
-    concat(dest, C128Table[106]);
+    strcat(dest, C128Table[106]);
     values[bar_characters] = 106;
     bar_characters++;
     expand(symbol, dest);

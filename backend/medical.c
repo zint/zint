@@ -85,10 +85,10 @@ int pharma_one(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     do {
         if (!(tester & 1)) {
-            concat(inter, "W");
+            strcat(inter, "W");
             tester = (tester - 2) / 2;
         } else {
-            concat(inter, "N");
+            strcat(inter, "N");
             tester = (tester - 1) / 2;
         }
     } while (tester != 0);
@@ -97,9 +97,9 @@ int pharma_one(struct zint_symbol *symbol, unsigned char source[], int length) {
     *dest = '\0';
     for (counter = h; counter >= 0; counter--) {
         if (inter[counter] == 'W') {
-            concat(dest, "32");
+            strcat(dest, "32");
         } else {
-            concat(dest, "12");
+            strcat(dest, "12");
         }
     }
 
@@ -130,15 +130,15 @@ int pharma_two_calc(struct zint_symbol *symbol, unsigned char source[], char des
     do {
         switch (tester % 3) {
             case 0:
-                concat(inter, "3");
+                strcat(inter, "3");
                 tester = (tester - 3) / 3;
                 break;
             case 1:
-                concat(inter, "1");
+                strcat(inter, "1");
                 tester = (tester - 1) / 3;
                 break;
             case 2:
-                concat(inter, "2");
+                strcat(inter, "2");
                 tester = (tester - 2) / 3;
                 break;
         }
@@ -194,7 +194,7 @@ int pharma_two(struct zint_symbol *symbol, unsigned char source[], int length) {
 }
 
 /* The Codabar system consisting of simple substitution */
-int codabar(struct zint_symbol *symbol, unsigned char source[], int length) { 
+int codabar(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     int i, error_number;
     char dest[512];
@@ -213,7 +213,7 @@ int codabar(struct zint_symbol *symbol, unsigned char source[], int length) {
         return error_number;
     }
     /* Codabar must begin and end with the characters A, B, C or D */
-    if ((source[0] != 'A') && (source[0] != 'B') && (source[0] != 'C') 
+    if ((source[0] != 'A') && (source[0] != 'B') && (source[0] != 'C')
             && (source[0] != 'D')) {
         strcpy(symbol->errtxt, "Invalid characters in data");
         return ZINT_ERROR_INVALID_DATA;
@@ -235,7 +235,7 @@ int codabar(struct zint_symbol *symbol, unsigned char source[], int length) {
 }
 
 /* Italian Pharmacode */
-int code32(struct zint_symbol *symbol, unsigned char source[], int length) { 
+int code32(struct zint_symbol *symbol, unsigned char source[], int length) {
     int i, zeroes, error_number, checksum, checkpart, checkdigit;
     char localstr[10], risultante[7];
     long int pharmacode, remainder, devisor;
@@ -302,8 +302,8 @@ int code32(struct zint_symbol *symbol, unsigned char source[], int length) {
     }
 
     /* Override the normal text output with the Pharmacode number */
-    ustrcpy(symbol->text, (unsigned char*) "A");
-    uconcat(symbol->text, (unsigned char*) localstr);
+    strcpy((char*) symbol->text, "A");
+    strcat((char*) symbol->text, (char*) localstr);
 
     return error_number;
 }

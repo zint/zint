@@ -34,6 +34,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 #include "common.h"
 
 #define SSET	"0123456789ABCDEF"
@@ -198,9 +199,9 @@ int ps_plot(struct zint_symbol *symbol) {
     }
     fprintf(feps, "%%%%Pages: 0\n");
     if (symbol->symbology != BARCODE_MAXICODE) {
-        fprintf(feps, "%%%%BoundingBox: 0 0 %d %d\n", roundup((symbol->width + xoffset + xoffset) * scaler), roundup((symbol->height + textoffset + yoffset + yoffset) * scaler));
+        fprintf(feps, "%%%%BoundingBox: 0 0 %d %d\n", (int)ceil((symbol->width + xoffset + xoffset) * scaler), (int)ceil((symbol->height + textoffset + yoffset + yoffset) * scaler));
     } else {
-        fprintf(feps, "%%%%BoundingBox: 0 0 %d %d\n", roundup((74.0 + xoffset + xoffset) * scaler), roundup((72.0 + yoffset + yoffset) * scaler));
+        fprintf(feps, "%%%%BoundingBox: 0 0 %d %d\n", (int)ceil((74.0F + xoffset + xoffset) * scaler), (int)ceil((72.0F + yoffset + yoffset) * scaler));
     }
     fprintf(feps, "%%%%EndComments\n");
 

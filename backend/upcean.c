@@ -50,7 +50,7 @@ static const char *UPCParity1[10] = {
     /* Not covered by BS EN 797:1995 */
     "AAABBB", "AABABB", "AABBAB", "AABBBA", "ABAABB", "ABBAAB", "ABBBAA",
     "ABABAB", "ABABBA", "ABBABA"
-}; 
+};
 
 static const char *EAN2Parity[4] = {
     /* Number sets for 2-digit add-on (EN Table 6) */
@@ -71,16 +71,16 @@ static const char *EAN13Parity[10] = {
 
 static const char *EANsetA[10] = {
     /* Representation set A and C (EN Table 1) */
-    "3211", "2221", "2122", "1411", "1132", "1231", "1114", "1312", "1213","3112"
+    "3211", "2221", "2122", "1411", "1132", "1231", "1114", "1312", "1213", "3112"
 };
 
 static const char *EANsetB[10] = {
     /* Representation set B (EN Table 1) */
     "1123", "1222", "2212", "1141", "2311", "1321", "4111", "2131", "3121", "2113"
-}; 
+};
 
 /* Calculate the correct check digit for a UPC barcode */
-char upc_check(char source[]) { 
+char upc_check(char source[]) {
     unsigned int i, count, check_digit;
 
     count = 0;
@@ -101,30 +101,30 @@ char upc_check(char source[]) {
 }
 
 /* UPC A is usually used for 12 digit numbers, but this function takes a source of any length */
-void upca_draw(char source[], char dest[]) { 
+void upca_draw(char source[], char dest[]) {
     unsigned int i, half_way;
 
     half_way = strlen(source) / 2;
 
     /* start character */
-    concat(dest, "111");
+    strcat(dest, "111");
 
     for (i = 0; i <= strlen(source); i++) {
         if (i == half_way) {
             /* middle character - separates manufacturer no. from product no. */
             /* also inverts right hand characters */
-            concat(dest, "11111");
+            strcat(dest, "11111");
         }
 
         lookup(NEON, EANsetA, source[i], dest);
     }
 
     /* stop character */
-    concat(dest, "111");
+    strcat(dest, "111");
 }
 
 /* Make a UPC A barcode when we haven't been given the check digit */
-void upca(struct zint_symbol *symbol, unsigned char source[], char dest[]) { 
+void upca(struct zint_symbol *symbol, unsigned char source[], char dest[]) {
     int length;
     char gtin[15];
 
@@ -137,7 +137,7 @@ void upca(struct zint_symbol *symbol, unsigned char source[], char dest[]) {
 }
 
 /* UPC E is a zero-compressed version of UPC A */
-void upce(struct zint_symbol *symbol, unsigned char source[], char dest[]) { 
+void upce(struct zint_symbol *symbol, unsigned char source[], char dest[]) {
     unsigned int i, num_system;
     char emode, equivalent[12], check_digit, parity[8], temp[8];
     char hrt[9];
@@ -162,7 +162,7 @@ void upce(struct zint_symbol *symbol, unsigned char source[], char dest[]) {
         num_system = 0;
         hrt[0] = '0';
         hrt[1] = '\0';
-        concat(hrt, (char*) source);
+        strcat(hrt, (char*) source);
     }
 
     /* Expand the zero-compressed UPCE code to make a UPCA equivalent (EN Table 5) */
@@ -234,7 +234,7 @@ void upce(struct zint_symbol *symbol, unsigned char source[], char dest[]) {
     /* Take all this information and make the barcode pattern */
 
     /* start character */
-    concat(dest, "111");
+    strcat(dest, "111");
 
     for (i = 0; i <= ustrlen(source); i++) {
         switch (parity[i]) {
@@ -246,7 +246,7 @@ void upce(struct zint_symbol *symbol, unsigned char source[], char dest[]) {
     }
 
     /* stop character */
-    concat(dest, "111111");
+    strcat(dest, "111111");
 
     hrt[7] = check_digit;
     hrt[8] = '\0';
@@ -254,17 +254,17 @@ void upce(struct zint_symbol *symbol, unsigned char source[], char dest[]) {
 }
 
 /* EAN-2 and EAN-5 add-on codes */
-void add_on(unsigned char source[], char dest[], int mode) { 
+void add_on(unsigned char source[], char dest[], int mode) {
     char parity[6];
     unsigned int i, code_type;
 
     /* If an add-on then append with space */
     if (mode != 0) {
-        concat(dest, "9");
+        strcat(dest, "9");
     }
 
     /* Start character */
-    concat(dest, "112");
+    strcat(dest, "112");
 
     /* Determine EAN2 or EAN5 add-on */
     if (ustrlen(source) == 2) {
@@ -306,14 +306,15 @@ void add_on(unsigned char source[], char dest[], int mode) {
 
         /* Glyph separator */
         if (i != (ustrlen(source) - 1)) {
-            concat(dest, "11");
+            strcat(dest, "11");
         }
     }
 }
 
 /* ************************ EAN-13 ****************** */
+
 /* Calculate the correct check digit for a EAN-13 barcode */
-char ean_check(char source[]) { 
+char ean_check(char source[]) {
     int i;
     unsigned int h, count, check_digit;
 
@@ -354,13 +355,13 @@ void ean13(struct zint_symbol *symbol, unsigned char source[], char dest[]) {
     half_way = 7;
 
     /* start character */
-    concat(dest, "111");
+    strcat(dest, "111");
     length = strlen(gtin);
     for (i = 1; i <= length; i++) {
         if (i == half_way) {
             /* middle character - separates manufacturer no. from product no. */
             /* also inverses right hand characters */
-            concat(dest, "11111");
+            strcat(dest, "11111");
         }
 
         if (((i > 1) && (i < 7)) && (parity[i - 2] == 'B')) {
@@ -371,13 +372,13 @@ void ean13(struct zint_symbol *symbol, unsigned char source[], char dest[]) {
     }
 
     /* stop character */
-    concat(dest, "111");
+    strcat(dest, "111");
 
     ustrcpy(symbol->text, (unsigned char*) gtin);
 }
 
 /* Make an EAN-8 barcode when we haven't been given the check digit */
-void ean8(struct zint_symbol *symbol, unsigned char source[], char dest[]) { 
+void ean8(struct zint_symbol *symbol, unsigned char source[], char dest[]) {
     /* EAN-8 is basically the same as UPC-A but with fewer digits */
     int length;
     char gtin[10];
@@ -599,19 +600,19 @@ void ean_leading_zeroes(struct zint_symbol *symbol, unsigned char source[], unsi
 
     /* Add leading zeroes */
     for (i = 0; i < (zfirst_len - first_len); i++) {
-        uconcat(zfirst_part, (unsigned char *) "0");
+        strcat((char*) zfirst_part, "0");
     }
-    uconcat(zfirst_part, first_part);
+    strcat((char*) zfirst_part, (char*) first_part);
     for (i = 0; i < (zsecond_len - second_len); i++) {
-        uconcat(zsecond_part, (unsigned char *) "0");
+        strcat((char*) zsecond_part, "0");
     }
-    uconcat(zsecond_part, second_part);
+    strcat((char*) zsecond_part, (char*) second_part);
 
     /* Copy adjusted data back to local_source */
-    uconcat(local_source, zfirst_part);
+    strcat((char*) local_source, (char*) zfirst_part);
     if (zsecond_len != 0) {
-        uconcat(local_source, (unsigned char *) "+");
-        uconcat(local_source, zsecond_part);
+        strcat((char*) local_source, "+");
+        strcat((char*) local_source, (char*) zsecond_part);
     }
 }
 
@@ -794,13 +795,13 @@ int eanx(struct zint_symbol *symbol, unsigned char source[], int src_len) {
         case 0: break;
         case 2:
             add_on(second_part, (char*) dest, 1);
-            uconcat(symbol->text, (unsigned char*) "+");
-            uconcat(symbol->text, second_part);
+            strcat((char*) symbol->text, "+");
+            strcat((char*) symbol->text, (char*) second_part);
             break;
         case 5:
             add_on(second_part, (char*) dest, 1);
-            uconcat(symbol->text, (unsigned char*) "+");
-            uconcat(symbol->text, second_part);
+            strcat((char*) symbol->text, "+");
+            strcat((char*) symbol->text, (char*) second_part);
             break;
         default:
             strcpy(symbol->errtxt, "Invalid length input");

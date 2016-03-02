@@ -258,10 +258,10 @@ static void insert_value(unsigned char binary_stream[], const int posn, const in
     for (i = streamlen; i > posn; i--) {
         binary_stream[i] = binary_stream[i - 1];
     }
-    binary_stream[posn] = newbit;
+    binary_stream[posn] = (unsigned char) newbit;
 }
 
-int p_r_6_2_1(const unsigned char inputData[], int position, const int sourcelen) {
+static int p_r_6_2_1(const unsigned char inputData[], const int position, const int sourcelen) {
     /* Annex P section (r)(6)(ii)(I)
        "If one of the three X12 terminator/separator characters first
         occurs in the yet to be processed data before a non-X12 character..."
@@ -522,8 +522,7 @@ static int look_ahead_test(const unsigned char inputData[], const int sourcelen,
 
 /* Encodes data using ASCII, C40, Text, X12, EDIFACT or Base 256 modes as appropriate
    Supports encoding FNC1 in supporting systems */
-int dm200encode(struct zint_symbol *symbol, unsigned char source[], unsigned char target[], int *last_mode, int *length_p, int process_buffer[], int *process_p) {
-
+static int dm200encode(struct zint_symbol *symbol, const unsigned char source[], unsigned char target[], int *last_mode, int *length_p, int process_buffer[], int *process_p) {
 
     int sp, tp, i, gs1;
     int current_mode, next_mode;
@@ -554,7 +553,7 @@ int dm200encode(struct zint_symbol *symbol, unsigned char source[], unsigned cha
     if (gs1) {
         target[tp] = 232;
         tp++;
-        concat(binary, " ");
+        strcat(binary, " ");
         if (debug) printf("FN1 ");
     } /* FNC1 */
 
@@ -565,7 +564,7 @@ int dm200encode(struct zint_symbol *symbol, unsigned char source[], unsigned cha
         } else {
             target[tp] = 234;
             tp++; /* Reader Programming */
-            concat(binary, " ");
+            strcat(binary, " ");
             if (debug) printf("RP ");
         }
     }
@@ -588,7 +587,7 @@ int dm200encode(struct zint_symbol *symbol, unsigned char source[], unsigned cha
             if (debug) printf("Macro06 ");
         }
         tp++;
-        concat(binary, " ");
+        strcat(binary, " ");
         /* Remove macro characters from input string */
         sp = 7;
         inputlen -= 2;
@@ -605,10 +604,10 @@ int dm200encode(struct zint_symbol *symbol, unsigned char source[], unsigned cha
             next_mode = DM_ASCII;
 
             if (istwodigits(source, sp) && ((sp + 1) != inputlen)) {
-                target[tp] = (10 * ctoi(source[sp])) + ctoi(source[sp + 1]) + 130;
+                target[tp] = (unsigned char) ((10 * ctoi(source[sp])) + ctoi(source[sp + 1]) + 130);
                 if (debug) printf("N%d ", target[tp] - 130);
                 tp++;
-                concat(binary, " ");
+                strcat(binary, " ");
                 sp += 2;
             } else {
                 next_mode = look_ahead_test(source, inputlen, sp, current_mode, gs1);
@@ -617,27 +616,27 @@ int dm200encode(struct zint_symbol *symbol, unsigned char source[], unsigned cha
                     switch (next_mode) {
                         case DM_C40: target[tp] = 230;
                             tp++;
-                            concat(binary, " ");
+                            strcat(binary, " ");
                             if (debug) printf("C40 ");
                             break;
                         case DM_TEXT: target[tp] = 239;
                             tp++;
-                            concat(binary, " ");
+                            strcat(binary, " ");
                             if (debug) printf("TEX ");
                             break;
                         case DM_X12: target[tp] = 238;
                             tp++;
-                            concat(binary, " ");
+                            strcat(binary, " ");
                             if (debug) printf("X12 ");
                             break;
                         case DM_EDIFACT: target[tp] = 240;
                             tp++;
-                            concat(binary, " ");
+                            strcat(binary, " ");
                             if (debug) printf("EDI ");
                             break;
                         case DM_BASE256: target[tp] = 231;
                             tp++;
-                            concat(binary, " ");
+                            strcat(binary, " ");
                             if (debug) printf("BAS ");
                             break;
                     }
@@ -649,7 +648,7 @@ int dm200encode(struct zint_symbol *symbol, unsigned char source[], unsigned cha
                         target[tp] = (source[sp] - 128) + 1;
                         if (debug) printf("A%02X ", target[tp] - 1);
                         tp++;
-                        concat(binary, "  ");
+                        strcat(binary, "  ");
                     } else {
                         if (gs1 && (source[sp] == '[')) {
                             target[tp] = 232; /* FNC1 */
@@ -659,7 +658,7 @@ int dm200encode(struct zint_symbol *symbol, unsigned char source[], unsigned cha
                             if (debug) printf("A%02X ", target[tp] - 1);
                         }
                         tp++;
-                        concat(binary, " ");
+                        strcat(binary, " ");
                     }
                     sp++;
                 }
@@ -679,7 +678,7 @@ int dm200encode(struct zint_symbol *symbol, unsigned char source[], unsigned cha
             if (next_mode != DM_C40) {
                 target[tp] = 254;
                 tp++;
-                concat(binary, " "); /* Unlatch */
+                strcat(binary, " "); /* Unlatch */
                 next_mode = DM_ASCII;
                 if (debug) printf("ASC ");
             } else {
@@ -715,7 +714,7 @@ int dm200encode(struct zint_symbol *symbol, unsigned char source[], unsigned cha
                     tp++;
                     target[tp] = iv % 256;
                     tp++;
-                    concat(binary, "  ");
+                    strcat(binary, "  ");
                     if (debug) printf("[%d %d %d] ", process_buffer[0], process_buffer[1], process_buffer[2]);
 
                     process_buffer[0] = process_buffer[3];
@@ -742,7 +741,7 @@ int dm200encode(struct zint_symbol *symbol, unsigned char source[], unsigned cha
             if (next_mode != DM_TEXT) {
                 target[tp] = 254;
                 tp++;
-                concat(binary, " "); /* Unlatch */
+                strcat(binary, " "); /* Unlatch */
                 next_mode = DM_ASCII;
                 if (debug) printf("ASC ");
             } else {
@@ -778,7 +777,7 @@ int dm200encode(struct zint_symbol *symbol, unsigned char source[], unsigned cha
                     tp++;
                     target[tp] = iv % 256;
                     tp++;
-                    concat(binary, "  ");
+                    strcat(binary, "  ");
                     if (debug) printf("[%d %d %d] ", process_buffer[0], process_buffer[1], process_buffer[2]);
 
                     process_buffer[0] = process_buffer[3];
@@ -805,7 +804,7 @@ int dm200encode(struct zint_symbol *symbol, unsigned char source[], unsigned cha
             if (next_mode != DM_X12) {
                 target[tp] = 254;
                 tp++;
-                concat(binary, " "); /* Unlatch */
+                strcat(binary, " "); /* Unlatch */
                 next_mode = DM_ASCII;
                 if (debug) printf("ASC ");
             } else {
@@ -839,7 +838,7 @@ int dm200encode(struct zint_symbol *symbol, unsigned char source[], unsigned cha
                     tp++;
                     target[tp] = iv % 256;
                     tp++;
-                    concat(binary, "  ");
+                    strcat(binary, "  ");
                     if (debug) printf("[%d %d %d] ", process_buffer[0], process_buffer[1], process_buffer[2]);
 
                     process_buffer[0] = process_buffer[3];
@@ -888,7 +887,7 @@ int dm200encode(struct zint_symbol *symbol, unsigned char source[], unsigned cha
                 tp++;
                 target[tp] = ((process_buffer[2] & 0x03) << 6) + process_buffer[3];
                 tp++;
-                concat(binary, "   ");
+                strcat(binary, "   ");
                 if (debug) printf("[%d %d %d %d] ", process_buffer[0], process_buffer[1], process_buffer[2], process_buffer[3]);
 
                 process_buffer[0] = process_buffer[4];
@@ -912,7 +911,7 @@ int dm200encode(struct zint_symbol *symbol, unsigned char source[], unsigned cha
                 if (debug) printf("B%02X ", target[tp]);
                 tp++;
                 sp++;
-                concat(binary, "b");
+                strcat(binary, "b");
             } else {
                 next_mode = DM_ASCII;
                 if (debug) printf("ASC ");
@@ -970,7 +969,7 @@ int dm200encode(struct zint_symbol *symbol, unsigned char source[], unsigned cha
     return tp;
 }
 
-int dm200encode_remainder(unsigned char target[], int target_length, unsigned char source[], int inputlen, int last_mode, int process_buffer[], int process_p, int symbols_left) {
+static int dm200encode_remainder(unsigned char target[], int target_length, const unsigned char source[], const int inputlen, const int last_mode, const int process_buffer[], const int process_p, const int symbols_left) {
     int debug = 0;
 
     switch (last_mode) {
@@ -1120,7 +1119,7 @@ int dm200encode_remainder(unsigned char target[], int target_length, unsigned ch
 }
 
 /* add pad bits */
-void add_tail(unsigned char target[], int tp, int tail_length) {
+static void add_tail(unsigned char target[], int tp, const int tail_length) {
     int i, prn, temp;
 
     for (i = tail_length; i > 0; i--) {
@@ -1141,7 +1140,7 @@ void add_tail(unsigned char target[], int tp, int tail_length) {
     }
 }
 
-int data_matrix_200(struct zint_symbol *symbol, unsigned char source[], int length) {
+int data_matrix_200(struct zint_symbol *symbol, unsigned char source[], const int length) {
     int inputlen, i, skew = 0;
     unsigned char binary[2200];
     int binlen;

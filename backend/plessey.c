@@ -49,7 +49,7 @@ static const char *MSITable[10] = {
 };
 
 /* Not MSI/Plessey but the older Plessey standard */
-int plessey(struct zint_symbol *symbol, unsigned char source[], int length) { 
+int plessey(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     unsigned int i, check;
     unsigned char *checkptr;
@@ -95,15 +95,15 @@ int plessey(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     for (i = 0; i < 8; i++) {
         switch (checkptr[length * 4 + i]) {
-            case 0: concat(dest, "13");
+            case 0: strcat(dest, "13");
                 break;
-            case 1: concat(dest, "31");
+            case 1: strcat(dest, "31");
                 break;
         }
     }
 
     /* Stop character */
-    concat(dest, "331311313");
+    strcat(dest, "331311313");
 
     expand(symbol, dest);
     ustrcpy(symbol->text, source);
@@ -112,7 +112,7 @@ int plessey(struct zint_symbol *symbol, unsigned char source[], int length) {
 }
 
 /* Plain MSI Plessey - does not calculate any check character */
-int msi_plessey(struct zint_symbol *symbol, unsigned char source[], int length) { 
+int msi_plessey(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     unsigned int i;
     char dest[512]; /* 2 + 55 * 8 + 3 + 1 ~ 512 */
@@ -130,7 +130,7 @@ int msi_plessey(struct zint_symbol *symbol, unsigned char source[], int length) 
     }
 
     /* Stop character */
-    concat(dest, "121");
+    strcat(dest, "121");
 
     expand(symbol, dest);
     ustrcpy(symbol->text, source);
@@ -139,8 +139,8 @@ int msi_plessey(struct zint_symbol *symbol, unsigned char source[], int length) 
 
 /* MSI Plessey with Modulo 10 check digit - algorithm from Barcode Island
  * http://www.barcodeisland.com/ */
-int msi_plessey_mod10(struct zint_symbol *symbol, unsigned char source[], int length) { 
-	
+int msi_plessey_mod10(struct zint_symbol *symbol, unsigned char source[], int length) {
+
 
     unsigned long i, wright, dau, pedwar, pump, n;
     char un[200], tri[32];
@@ -195,7 +195,7 @@ int msi_plessey_mod10(struct zint_symbol *symbol, unsigned char source[], int le
     lookup(NEON, MSITable, itoc(pump), dest);
 
     /* Stop character */
-    concat(dest, "121");
+    strcat(dest, "121");
     expand(symbol, dest);
 
     ustrcpy(symbol->text, source);
@@ -206,8 +206,8 @@ int msi_plessey_mod10(struct zint_symbol *symbol, unsigned char source[], int le
 
 /* MSI Plessey with two Modulo 10 check digits - algorithm from
  * Barcode Island http://www.barcodeisland.com/ */
-int msi_plessey_mod1010(struct zint_symbol *symbol, unsigned char source[], const unsigned int src_len) { 
-	
+int msi_plessey_mod1010(struct zint_symbol *symbol, unsigned char source[], const unsigned int src_len) {
+
 
     unsigned long i, n, wright, dau, pedwar, pump, chwech;
     char un[16], tri[32];
@@ -296,7 +296,7 @@ int msi_plessey_mod1010(struct zint_symbol *symbol, unsigned char source[], cons
     lookup(NEON, MSITable, itoc(chwech), dest);
 
     /* Stop character */
-    concat(dest, "121");
+    strcat(dest, "121");
 
     expand(symbol, dest);
 
@@ -351,13 +351,13 @@ int msi_plessey_mod11(struct zint_symbol *symbol, unsigned char source[], const 
     }
 
     /* stop character */
-    concat(dest, "121");
+    strcat(dest, "121");
 
     expand(symbol, dest);
 
     ustrcpy(symbol->text, source);
     if (check == 10) {
-        concat((char*) symbol->text, "10");
+        strcat((char*) symbol->text, "10");
     } else {
         symbol->text[src_len] = itoc(check);
         symbol->text[src_len + 1] = '\0';
@@ -410,7 +410,7 @@ int msi_plessey_mod1110(struct zint_symbol *symbol, unsigned char source[], cons
     if (check == 10) {
         lookup(NEON, MSITable, '1', dest);
         lookup(NEON, MSITable, '0', dest);
-        uconcat(temp, (unsigned char *) "10");
+        strcat((char*) temp, "10");
         temp_len += 2;
     } else {
         lookup(NEON, MSITable, itoc(check), dest);
@@ -451,7 +451,7 @@ int msi_plessey_mod1110(struct zint_symbol *symbol, unsigned char source[], cons
     lookup(NEON, MSITable, itoc(pump), dest);
 
     /* stop character */
-    concat(dest, "121");
+    strcat(dest, "121");
     expand(symbol, dest);
 
     temp[temp_len++] = itoc(pump);

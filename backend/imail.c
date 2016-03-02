@@ -652,7 +652,7 @@ int imail(struct zint_symbol *symbol, unsigned char source[], int length) {
         if (bar_map[i + 65] == 0)
             j += 2;
         temp[0] = itoc(j);
-        concat(data_pattern, temp);
+        strcat(data_pattern, temp);
     }
 
     /* Translate 4-state data pattern to symbol */

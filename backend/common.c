@@ -36,42 +36,13 @@
 
 /* Local replacement for strlen() with unsigned char strings */
 int ustrlen(const unsigned char data[]) {
-    int i;
-    for (i = 0; data[i]; i++);
-
-    return i;
+    return strlen((const char*) data);
 }
 
 /* Local replacement for strcpy() with unsigned char strings */
+
 void ustrcpy(unsigned char target[], const unsigned char source[]) {
-    int i, len;
-
-    len = ustrlen(source);
-    for (i = 0; i < len; i++) {
-        target[i] = source[i];
-    }
-    target[i] = '\0';
-}
-
-/* Concatinates dest[] with the contents of source[], copying /0 as well */
-void concat(char dest[], const char source[]) {
-    size_t i, j, n;
-
-    j = strlen(dest);
-    n = strlen(source);
-    for (i = 0; i <= n; i++) {
-        dest[i + j] = source[i];
-    }
-}
-
-/* Concatinates dest[] with the contents of source[], copying /0 as well */
-void uconcat(unsigned char dest[], const unsigned char source[]) {
-    unsigned int i, j;
-
-    j = ustrlen(dest);
-    for (i = 0; i <= ustrlen(source); i++) {
-        dest[i + j] = source[i];
-    }
+    strcpy((char *) target, (const char*) source);
 }
 
 /* Converts a character 0-9 to its equivalent integer value */
@@ -140,7 +111,7 @@ void lookup(char set_string[], const char *table[], const char data, char dest[]
 
     for (i = 0; i < n; i++) {
         if (data == set_string[i]) {
-            concat(dest, table[i]);
+            strcat(dest, table[i]);
         }
     }
 }
@@ -195,7 +166,7 @@ void expand(struct zint_symbol *symbol, char data[]) {
 }
 
 /* Indicates which symbologies can have row binding */
-int is_stackable(int symbology) {
+int is_stackable(const int symbology) {
     if (symbology < BARCODE_PDF417) {
         return 1;
     }
@@ -257,20 +228,6 @@ int is_extendable(const int symbology) {
     return 0;
 }
 
-int roundup(const float input) {
-    float remainder;
-    int integer_part;
-
-    integer_part = (int) input;
-    remainder = input - integer_part;
-
-    if (remainder > 0.1F) {
-        integer_part++;
-    }
-
-    return integer_part;
-}
-
 int istwodigits(const unsigned char source[], const int position) {
     if ((source[position] >= '0') && (source[position] <= '9')) {
         if ((source[position + 1] >= '0') && (source[position + 1] <= '9')) {
@@ -279,19 +236,6 @@ int istwodigits(const unsigned char source[], const int position) {
     }
 
     return 0;
-}
-
-double froundup(const double input) {
-    double fraction, output = 0.0;
-
-    fraction = input - (int) input;
-    if (fraction > 0.01) {
-        output = (input - fraction) + 1.0;
-    } else {
-        output = input;
-    }
-
-    return output;
 }
 
 /* Convert Unicode to Latin-1 for those symbologies which only support Latin-1 */

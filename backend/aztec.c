@@ -311,21 +311,21 @@ int aztec_text_process(unsigned char source[], const unsigned int src_len, char 
                     case (64 + UPPER): /* To UPPER */
                         switch (curtable) {
                             case LOWER: /* US */
-                                concat(binary_string, hexbit[28]);
+                                strcat(binary_string, hexbit[28]);
                                 if (debug) printf("US ");
                                 break;
                             case MIXED: /* UL */
-                                concat(binary_string, hexbit[29]);
+                                strcat(binary_string, hexbit[29]);
                                 if (debug) printf("UL ");
                                 newtable = UPPER;
                                 break;
                             case PUNC: /* UL */
-                                concat(binary_string, hexbit[31]);
+                                strcat(binary_string, hexbit[31]);
                                 if (debug) printf("UL ");
                                 newtable = UPPER;
                                 break;
                             case DIGIT: /* US */
-                                concat(binary_string, pentbit[15]);
+                                strcat(binary_string, pentbit[15]);
                                 if (debug) printf("US ");
                                 break;
                         }
@@ -333,26 +333,26 @@ int aztec_text_process(unsigned char source[], const unsigned int src_len, char 
                     case (64 + LOWER): /* To LOWER */
                         switch (curtable) {
                             case UPPER: /* LL */
-                                concat(binary_string, hexbit[28]);
+                                strcat(binary_string, hexbit[28]);
                                 if (debug) printf("LL ");
                                 newtable = LOWER;
                                 break;
                             case MIXED: /* LL */
-                                concat(binary_string, hexbit[28]);
+                                strcat(binary_string, hexbit[28]);
                                 if (debug) printf("LL ");
                                 newtable = LOWER;
                                 break;
                             case PUNC: /* UL LL */
-                                concat(binary_string, hexbit[31]);
+                                strcat(binary_string, hexbit[31]);
                                 if (debug) printf("UL ");
-                                concat(binary_string, hexbit[28]);
+                                strcat(binary_string, hexbit[28]);
                                 if (debug) printf("LL ");
                                 newtable = LOWER;
                                 break;
                             case DIGIT: /* UL LL */
-                                concat(binary_string, pentbit[14]);
+                                strcat(binary_string, pentbit[14]);
                                 if (debug) printf("UL ");
-                                concat(binary_string, hexbit[28]);
+                                strcat(binary_string, hexbit[28]);
                                 if (debug) printf("LL ");
                                 newtable = LOWER;
                                 break;
@@ -361,26 +361,26 @@ int aztec_text_process(unsigned char source[], const unsigned int src_len, char 
                     case (64 + MIXED): /* To MIXED */
                         switch (curtable) {
                             case UPPER: /* ML */
-                                concat(binary_string, hexbit[29]);
+                                strcat(binary_string, hexbit[29]);
                                 if (debug) printf("ML ");
                                 newtable = MIXED;
                                 break;
                             case LOWER: /* ML */
-                                concat(binary_string, hexbit[29]);
+                                strcat(binary_string, hexbit[29]);
                                 if (debug) printf("ML ");
                                 newtable = MIXED;
                                 break;
                             case PUNC: /* UL ML */
-                                concat(binary_string, hexbit[31]);
+                                strcat(binary_string, hexbit[31]);
                                 if (debug) printf("UL ");
-                                concat(binary_string, hexbit[29]);
+                                strcat(binary_string, hexbit[29]);
                                 if (debug) printf("ML ");
                                 newtable = MIXED;
                                 break;
                             case DIGIT: /* UL ML */
-                                concat(binary_string, pentbit[14]);
+                                strcat(binary_string, pentbit[14]);
                                 if (debug) printf("UL ");
-                                concat(binary_string, hexbit[29]);
+                                strcat(binary_string, hexbit[29]);
                                 if (debug) printf("ML ");
                                 newtable = MIXED;
                                 break;
@@ -389,19 +389,19 @@ int aztec_text_process(unsigned char source[], const unsigned int src_len, char 
                     case (64 + PUNC): /* To PUNC */
                         switch (curtable) {
                             case UPPER: /* PS */
-                                concat(binary_string, hexbit[0]);
+                                strcat(binary_string, hexbit[0]);
                                 if (debug) printf("PS ");
                                 break;
                             case LOWER: /* PS */
-                                concat(binary_string, hexbit[0]);
+                                strcat(binary_string, hexbit[0]);
                                 if (debug) printf("PS ");
                                 break;
                             case MIXED: /* PS */
-                                concat(binary_string, hexbit[0]);
+                                strcat(binary_string, hexbit[0]);
                                 if (debug) printf("PS ");
                                 break;
                             case DIGIT: /* PS */
-                                concat(binary_string, pentbit[0]);
+                                strcat(binary_string, pentbit[0]);
                                 if (debug) printf("PS ");
                                 break;
                         }
@@ -409,26 +409,26 @@ int aztec_text_process(unsigned char source[], const unsigned int src_len, char 
                     case (64 + DIGIT): /* To DIGIT */
                         switch (curtable) {
                             case UPPER: /* DL */
-                                concat(binary_string, hexbit[30]);
+                                strcat(binary_string, hexbit[30]);
                                 if (debug) printf("DL ");
                                 newtable = DIGIT;
                                 break;
                             case LOWER: /* DL */
-                                concat(binary_string, hexbit[30]);
+                                strcat(binary_string, hexbit[30]);
                                 if (debug) printf("DL ");
                                 newtable = DIGIT;
                                 break;
                             case MIXED: /* UL DL */
-                                concat(binary_string, hexbit[29]);
+                                strcat(binary_string, hexbit[29]);
                                 if (debug) printf("UL ");
-                                concat(binary_string, hexbit[30]);
+                                strcat(binary_string, hexbit[30]);
                                 if (debug) printf("DL ");
                                 newtable = DIGIT;
                                 break;
                             case PUNC: /* UL DL */
-                                concat(binary_string, hexbit[31]);
+                                strcat(binary_string, hexbit[31]);
                                 if (debug) printf("UL ");
-                                concat(binary_string, hexbit[30]);
+                                strcat(binary_string, hexbit[30]);
                                 if (debug) printf("DL ");
                                 newtable = DIGIT;
                                 break;
@@ -441,24 +441,24 @@ int aztec_text_process(unsigned char source[], const unsigned int src_len, char 
                     case UPPER: /* To UPPER */
                         switch (curtable) {
                             case LOWER: /* ML UL */
-                                concat(binary_string, hexbit[29]);
+                                strcat(binary_string, hexbit[29]);
                                 if (debug) printf("ML ");
-                                concat(binary_string, hexbit[29]);
+                                strcat(binary_string, hexbit[29]);
                                 if (debug) printf("UL ");
                                 newtable = UPPER;
                                 break;
                             case MIXED: /* UL */
-                                concat(binary_string, hexbit[29]);
+                                strcat(binary_string, hexbit[29]);
                                 if (debug) printf("UL ");
                                 newtable = UPPER;
                                 break;
                             case PUNC: /* UL */
-                                concat(binary_string, hexbit[31]);
+                                strcat(binary_string, hexbit[31]);
                                 if (debug) printf("UL ");
                                 newtable = UPPER;
                                 break;
                             case DIGIT: /* UL */
-                                concat(binary_string, pentbit[14]);
+                                strcat(binary_string, pentbit[14]);
                                 if (debug) printf("UL ");
                                 newtable = UPPER;
                                 break;
@@ -467,26 +467,26 @@ int aztec_text_process(unsigned char source[], const unsigned int src_len, char 
                     case LOWER: /* To LOWER */
                         switch (curtable) {
                             case UPPER: /* LL */
-                                concat(binary_string, hexbit[28]);
+                                strcat(binary_string, hexbit[28]);
                                 if (debug) printf("LL ");
                                 newtable = LOWER;
                                 break;
                             case MIXED: /* LL */
-                                concat(binary_string, hexbit[28]);
+                                strcat(binary_string, hexbit[28]);
                                 if (debug) printf("LL ");
                                 newtable = LOWER;
                                 break;
                             case PUNC: /* UL LL */
-                                concat(binary_string, hexbit[31]);
+                                strcat(binary_string, hexbit[31]);
                                 if (debug) printf("UL ");
-                                concat(binary_string, hexbit[28]);
+                                strcat(binary_string, hexbit[28]);
                                 if (debug) printf("LL ");
                                 newtable = LOWER;
                                 break;
                             case DIGIT: /* UL LL */
-                                concat(binary_string, pentbit[14]);
+                                strcat(binary_string, pentbit[14]);
                                 if (debug) printf("UL ");
-                                concat(binary_string, hexbit[28]);
+                                strcat(binary_string, hexbit[28]);
                                 if (debug) printf("LL ");
                                 newtable = LOWER;
                                 break;
@@ -495,26 +495,26 @@ int aztec_text_process(unsigned char source[], const unsigned int src_len, char 
                     case MIXED: /* To MIXED */
                         switch (curtable) {
                             case UPPER: /* ML */
-                                concat(binary_string, hexbit[29]);
+                                strcat(binary_string, hexbit[29]);
                                 if (debug) printf("ML ");
                                 newtable = MIXED;
                                 break;
                             case LOWER: /* ML */
-                                concat(binary_string, hexbit[29]);
+                                strcat(binary_string, hexbit[29]);
                                 if (debug) printf("ML ");
                                 newtable = MIXED;
                                 break;
                             case PUNC: /* UL ML */
-                                concat(binary_string, hexbit[31]);
+                                strcat(binary_string, hexbit[31]);
                                 if (debug) printf("UL ");
-                                concat(binary_string, hexbit[29]);
+                                strcat(binary_string, hexbit[29]);
                                 if (debug) printf("ML ");
                                 newtable = MIXED;
                                 break;
                             case DIGIT: /* UL ML */
-                                concat(binary_string, pentbit[14]);
+                                strcat(binary_string, pentbit[14]);
                                 if (debug) printf("UL ");
-                                concat(binary_string, hexbit[29]);
+                                strcat(binary_string, hexbit[29]);
                                 if (debug) printf("ML ");
                                 newtable = MIXED;
                                 break;
@@ -523,30 +523,30 @@ int aztec_text_process(unsigned char source[], const unsigned int src_len, char 
                     case PUNC: /* To PUNC */
                         switch (curtable) {
                             case UPPER: /* ML PL */
-                                concat(binary_string, hexbit[29]);
+                                strcat(binary_string, hexbit[29]);
                                 if (debug) printf("ML ");
-                                concat(binary_string, hexbit[30]);
+                                strcat(binary_string, hexbit[30]);
                                 if (debug) printf("PL ");
                                 newtable = PUNC;
                                 break;
                             case LOWER: /* ML PL */
-                                concat(binary_string, hexbit[29]);
+                                strcat(binary_string, hexbit[29]);
                                 if (debug) printf("ML ");
-                                concat(binary_string, hexbit[30]);
+                                strcat(binary_string, hexbit[30]);
                                 if (debug) printf("PL ");
                                 newtable = PUNC;
                                 break;
                             case MIXED: /* PL */
-                                concat(binary_string, hexbit[30]);
+                                strcat(binary_string, hexbit[30]);
                                 if (debug) printf("PL ");
                                 newtable = PUNC;
                                 break;
                             case DIGIT: /* UL ML PL */
-                                concat(binary_string, pentbit[14]);
+                                strcat(binary_string, pentbit[14]);
                                 if (debug) printf("UL ");
-                                concat(binary_string, hexbit[29]);
+                                strcat(binary_string, hexbit[29]);
                                 if (debug) printf("ML ");
-                                concat(binary_string, hexbit[30]);
+                                strcat(binary_string, hexbit[30]);
                                 if (debug) printf("PL ");
                                 newtable = PUNC;
                                 break;
@@ -555,26 +555,26 @@ int aztec_text_process(unsigned char source[], const unsigned int src_len, char 
                     case DIGIT: /* To DIGIT */
                         switch (curtable) {
                             case UPPER: /* DL */
-                                concat(binary_string, hexbit[30]);
+                                strcat(binary_string, hexbit[30]);
                                 if (debug) printf("DL ");
                                 newtable = DIGIT;
                                 break;
                             case LOWER: /* DL */
-                                concat(binary_string, hexbit[30]);
+                                strcat(binary_string, hexbit[30]);
                                 if (debug) printf("DL ");
                                 newtable = DIGIT;
                                 break;
                             case MIXED: /* UL DL */
-                                concat(binary_string, hexbit[29]);
+                                strcat(binary_string, hexbit[29]);
                                 if (debug) printf("UL ");
-                                concat(binary_string, hexbit[30]);
+                                strcat(binary_string, hexbit[30]);
                                 if (debug) printf("DL ");
                                 newtable = DIGIT;
                                 break;
                             case PUNC: /* UL DL */
-                                concat(binary_string, hexbit[31]);
+                                strcat(binary_string, hexbit[31]);
                                 if (debug) printf("UL ");
-                                concat(binary_string, hexbit[30]);
+                                strcat(binary_string, hexbit[30]);
                                 if (debug) printf("DL ");
                                 newtable = DIGIT;
                                 break;
@@ -584,32 +584,32 @@ int aztec_text_process(unsigned char source[], const unsigned int src_len, char 
                         lasttable = curtable;
                         switch (curtable) {
                             case UPPER: /* BS */
-                                concat(binary_string, hexbit[31]);
+                                strcat(binary_string, hexbit[31]);
                                 if (debug) printf("BS ");
                                 newtable = BINARY;
                                 break;
                             case LOWER: /* BS */
-                                concat(binary_string, hexbit[31]);
+                                strcat(binary_string, hexbit[31]);
                                 if (debug) printf("BS ");
                                 newtable = BINARY;
                                 break;
                             case MIXED: /* BS */
-                                concat(binary_string, hexbit[31]);
+                                strcat(binary_string, hexbit[31]);
                                 if (debug) printf("BS ");
                                 newtable = BINARY;
                                 break;
                             case PUNC: /* UL BS */
-                                concat(binary_string, hexbit[31]);
+                                strcat(binary_string, hexbit[31]);
                                 if (debug) printf("UL ");
-                                concat(binary_string, hexbit[31]);
+                                strcat(binary_string, hexbit[31]);
                                 if (debug) printf("BS ");
                                 lasttable = UPPER;
                                 newtable = BINARY;
                                 break;
                             case DIGIT: /* UL BS */
-                                concat(binary_string, pentbit[14]);
+                                strcat(binary_string, pentbit[14]);
                                 if (debug) printf("UL ");
-                                concat(binary_string, hexbit[31]);
+                                strcat(binary_string, hexbit[31]);
                                 if (debug) printf("BS ");
                                 lasttable = UPPER;
                                 newtable = BINARY;
@@ -628,22 +628,22 @@ int aztec_text_process(unsigned char source[], const unsigned int src_len, char 
 
                         if (bytes > 31) {
                             /* Put 00000 followed by 11-bit number of bytes less 31 */
-                            concat(binary_string, "00000");
+                            strcat(binary_string, "00000");
 
                             for (p = 0; p < 11; p++) {
                                 if ((bytes - 31) & (0x400 >> p)) {
-                                    concat(binary_string, "1");
+                                    strcat(binary_string, "1");
                                 } else {
-                                    concat(binary_string, "0");
+                                    strcat(binary_string, "0");
                                 }
                             }
                         } else {
                             /* Put 5-bit number of bytes */
                             for (p = 0; p < 5; p++) {
                                 if (bytes & (0x10 >> p)) {
-                                    concat(binary_string, "1");
+                                    strcat(binary_string, "1");
                                 } else {
-                                    concat(binary_string, "0");
+                                    strcat(binary_string, "0");
                                 }
                             }
                         }
@@ -665,24 +665,24 @@ int aztec_text_process(unsigned char source[], const unsigned int src_len, char 
             case MIXED:
             case PUNC:
                 if (charmap[i] >= 400) {
-                    concat(binary_string, tribit[charmap[i] - 400]);
+                    strcat(binary_string, tribit[charmap[i] - 400]);
                     if (debug) printf("FLG(%d) ", charmap[i] - 400);
                 } else {
-                    concat(binary_string, hexbit[charmap[i]]);
+                    strcat(binary_string, hexbit[charmap[i]]);
                     if (!((chartype == PUNC) && (charmap[i] == 0)))
                         if (debug) printf("%d ", charmap[i]);
                 }
                 break;
             case DIGIT:
-                concat(binary_string, pentbit[charmap[i]]);
+                strcat(binary_string, pentbit[charmap[i]]);
                 if (debug) printf("%d ", charmap[i]);
                 break;
             case BINARY:
                 for (p = 0; p < 8; p++) {
                     if (charmap[i] & (0x80 >> p)) {
-                        concat(binary_string, "1");
+                        strcat(binary_string, "1");
                     } else {
-                        concat(binary_string, "0");
+                        strcat(binary_string, "0");
                     }
                 }
                 if (debug) printf("%d ", charmap[i]);
@@ -1065,7 +1065,7 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], int length) {
             }
 
             for (i = 0; i < padbits; i++) {
-                concat(adjusted_string, "1");
+                strcat(adjusted_string, "1");
             }
             adjusted_length = strlen(adjusted_string);
 
@@ -1171,7 +1171,7 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], int length) {
         }
 
         for (i = 0; i < padbits; i++) {
-            concat(adjusted_string, "1");
+            strcat(adjusted_string, "1");
         }
         adjusted_length = strlen(adjusted_string);
 
@@ -1266,9 +1266,9 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], int length) {
             for (i = (ecc_blocks - 1); i >= 0; i--) {
                 for (p = 0; p < 6; p++) {
                     if (ecc_part[i] & (0x20 >> p)) {
-                        concat(adjusted_string, "1");
+                        strcat(adjusted_string, "1");
                     } else {
-                        concat(adjusted_string, "0");
+                        strcat(adjusted_string, "0");
                     }
                 }
             }
@@ -1288,9 +1288,9 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], int length) {
             for (i = (ecc_blocks - 1); i >= 0; i--) {
                 for (p = 0; p < 8; p++) {
                     if (ecc_part[i] & (0x80 >> p)) {
-                        concat(adjusted_string, "1");
+                        strcat(adjusted_string, "1");
                     } else {
-                        concat(adjusted_string, "0");
+                        strcat(adjusted_string, "0");
                     }
                 }
             }
@@ -1310,9 +1310,9 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], int length) {
             for (i = (ecc_blocks - 1); i >= 0; i--) {
                 for (p = 0; p < 10; p++) {
                     if (ecc_part[i] & (0x200 >> p)) {
-                        concat(adjusted_string, "1");
+                        strcat(adjusted_string, "1");
                     } else {
-                        concat(adjusted_string, "0");
+                        strcat(adjusted_string, "0");
                     }
                 }
             }
@@ -1332,9 +1332,9 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], int length) {
             for (i = (ecc_blocks - 1); i >= 0; i--) {
                 for (p = 0; p < 12; p++) {
                     if (ecc_part[i] & (0x800 >> p)) {
-                        concat(adjusted_string, "1");
+                        strcat(adjusted_string, "1");
                     } else {
-                        concat(adjusted_string, "0");
+                        strcat(adjusted_string, "0");
                     }
                 }
             }
@@ -1654,9 +1654,9 @@ int aztec_runes(struct zint_symbol *symbol, unsigned char source[], int length) 
     strcpy(binary_string, "");
     for (p = 0; p < 8; p++) {
         if (input_value & (0x80 >> p)) {
-            concat(binary_string, "1");
+            strcat(binary_string, "1");
         } else {
-            concat(binary_string, "0");
+            strcat(binary_string, "0");
         }
     }
 

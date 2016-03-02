@@ -188,7 +188,7 @@ int estimate_binary_length(char mode[], int length, int gs1) {
 
 static void qr_bscan(char *binary, int data, int h) {
     for (; h; h >>= 1) {
-        concat(binary, data & h ? "1" : "0");
+        strcat(binary, data & h ? "1" : "0");
     }
 }
 
@@ -208,7 +208,7 @@ void qr_binary(int datastream[], int version, int target_binlen, char mode[], in
     strcpy(binary, "");
 
     if (gs1) {
-        concat(binary, "0101"); /* FNC1 */
+        strcat(binary, "0101"); /* FNC1 */
     }
 
     if (version <= 9) {
@@ -233,14 +233,14 @@ void qr_binary(int datastream[], int version, int target_binlen, char mode[], in
         short_data_block_length = 0;
         do {
             short_data_block_length++;
-        } while (((short_data_block_length + position) < length) 
+        } while (((short_data_block_length + position) < length)
                 && (mode[position + short_data_block_length] == data_block));
 
         switch (data_block) {
             case 'K':
                 /* Kanji mode */
                 /* Mode indicator */
-                concat(binary, "1000");
+                strcat(binary, "1000");
 
                 /* Character count indicator */
                 qr_bscan(binary, short_data_block_length, 0x20 << (scheme * 2)); /* scheme = 1..3 */
@@ -276,7 +276,7 @@ void qr_binary(int datastream[], int version, int target_binlen, char mode[], in
             case 'B':
                 /* Byte mode */
                 /* Mode indicator */
-                concat(binary, "0100");
+                strcat(binary, "0100");
 
                 /* Character count indicator */
                 qr_bscan(binary, short_data_block_length, scheme > 1 ? 0x8000 : 0x80); /* scheme = 1..3 */
@@ -308,7 +308,7 @@ void qr_binary(int datastream[], int version, int target_binlen, char mode[], in
             case 'A':
                 /* Alphanumeric mode */
                 /* Mode indicator */
-                concat(binary, "0010");
+                strcat(binary, "0010");
 
                 /* Character count indicator */
                 qr_bscan(binary, short_data_block_length, 0x40 << (2 * scheme)); /* scheme = 1..3 */
@@ -399,7 +399,7 @@ void qr_binary(int datastream[], int version, int target_binlen, char mode[], in
             case 'N':
                 /* Numeric mode */
                 /* Mode indicator */
-                concat(binary, "0001");
+                strcat(binary, "0001");
 
                 /* Character count indicator */
                 qr_bscan(binary, short_data_block_length, 0x80 << (2 * scheme)); /* scheme = 1..3 */
@@ -450,7 +450,7 @@ void qr_binary(int datastream[], int version, int target_binlen, char mode[], in
     } while (position < length);
 
     /* Terminator */
-    concat(binary, "0000");
+    strcat(binary, "0000");
 
     current_binlen = strlen(binary);
     padbits = 8 - (current_binlen % 8);
@@ -461,7 +461,7 @@ void qr_binary(int datastream[], int version, int target_binlen, char mode[], in
 
     /* Padding bits */
     for (i = 0; i < padbits; i++) {
-        concat(binary, "0");
+        strcat(binary, "0");
     }
 
     /* Put data into 8-bit codewords */
@@ -1138,8 +1138,7 @@ int apply_bitmask(unsigned char *grid, int size, int ecc_level) {
         for (y = 0; y < size; y++) {
             if (grid[(y * size) + x] & 0x01) {
                 p = 0xff;
-            }
-            else {
+            } else {
                 p = 0x00;
             }
 
@@ -1296,12 +1295,12 @@ int tribus(int version, int a, int b, int c) {
 /* Implements a custom optimisation algorithm, more efficient than that
    given in Annex J. */
 void applyOptimisation(int version, char inputMode[], int inputLength) {
-    
+
 
     int blockCount = 0, block;
     int i, j;
     char currentMode = ' '; // Null
-    int  *blockLength;
+    int *blockLength;
     char *blockMode;
 
     for (i = 0; i < inputLength; i++) {
@@ -1311,13 +1310,12 @@ void applyOptimisation(int version, char inputMode[], int inputLength) {
         }
     }
 
-    blockLength=(int*)malloc(sizeof(int)*blockCount);
+    blockLength = (int*) malloc(sizeof (int)*blockCount);
     assert(blockLength);
     if (!blockLength) return;
-    blockMode=(char*)malloc(sizeof(char)*blockCount);
+    blockMode = (char*) malloc(sizeof (char)*blockCount);
     assert(blockMode);
-    if (!blockMode)
-    {   
+    if (!blockMode) {
         free(blockLength);
         return;
     }
@@ -1773,13 +1771,13 @@ int micro_qr_intermediate(char binary[], int jisdata[], char mode[], int length,
             case 'K':
                 /* Kanji mode */
                 /* Mode indicator */
-                concat(binary, "K");
+                strcat(binary, "K");
                 *kanji_used = 1;
 
                 /* Character count indicator */
                 buffer[0] = short_data_block_length;
                 buffer[1] = '\0';
-                concat(binary, buffer);
+                strcat(binary, buffer);
 
                 if (debug) {
                     printf("Kanji block (length %d)\n\t", short_data_block_length);
@@ -1816,13 +1814,13 @@ int micro_qr_intermediate(char binary[], int jisdata[], char mode[], int length,
             case 'B':
                 /* Byte mode */
                 /* Mode indicator */
-                concat(binary, "B");
+                strcat(binary, "B");
                 *byte_used = 1;
 
                 /* Character count indicator */
                 buffer[0] = short_data_block_length;
                 buffer[1] = '\0';
-                concat(binary, buffer);
+                strcat(binary, buffer);
 
                 if (debug) {
                     printf("Byte block (length %d)\n\t", short_data_block_length);
@@ -1851,13 +1849,13 @@ int micro_qr_intermediate(char binary[], int jisdata[], char mode[], int length,
             case 'A':
                 /* Alphanumeric mode */
                 /* Mode indicator */
-                concat(binary, "A");
+                strcat(binary, "A");
                 *alphanum_used = 1;
 
                 /* Character count indicator */
                 buffer[0] = short_data_block_length;
                 buffer[1] = '\0';
-                concat(binary, buffer);
+                strcat(binary, buffer);
 
                 if (debug) {
                     printf("Alpha block (length %d)\n\t", short_data_block_length);
@@ -1900,12 +1898,12 @@ int micro_qr_intermediate(char binary[], int jisdata[], char mode[], int length,
             case 'N':
                 /* Numeric mode */
                 /* Mode indicator */
-                concat(binary, "N");
+                strcat(binary, "N");
 
                 /* Character count indicator */
                 buffer[0] = short_data_block_length;
                 buffer[1] = '\0';
-                concat(binary, buffer);
+                strcat(binary, buffer);
 
                 if (debug) {
                     printf("Number block (length %d)\n\t", short_data_block_length);
@@ -2014,21 +2012,21 @@ void microqr_expand_binary(char binary_stream[], char full_stream[], int version
     i = 0;
     do {
         switch (binary_stream[i]) {
-            case '1': concat(full_stream, "1");
+            case '1': strcat(full_stream, "1");
                 i++;
                 break;
-            case '0': concat(full_stream, "0");
+            case '0': strcat(full_stream, "0");
                 i++;
                 break;
             case 'N':
                 /* Numeric Mode */
                 /* Mode indicator */
                 switch (version) {
-                    case 1: concat(full_stream, "0");
+                    case 1: strcat(full_stream, "0");
                         break;
-                    case 2: concat(full_stream, "00");
+                    case 2: strcat(full_stream, "00");
                         break;
-                    case 3: concat(full_stream, "000");
+                    case 3: strcat(full_stream, "000");
                         break;
                 }
 
@@ -2041,11 +2039,11 @@ void microqr_expand_binary(char binary_stream[], char full_stream[], int version
                 /* Alphanumeric Mode */
                 /* Mode indicator */
                 switch (version) {
-                    case 1: concat(full_stream, "1");
+                    case 1: strcat(full_stream, "1");
                         break;
-                    case 2: concat(full_stream, "01");
+                    case 2: strcat(full_stream, "01");
                         break;
-                    case 3: concat(full_stream, "001");
+                    case 3: strcat(full_stream, "001");
                         break;
                 }
 
@@ -2058,9 +2056,9 @@ void microqr_expand_binary(char binary_stream[], char full_stream[], int version
                 /* Byte Mode */
                 /* Mode indicator */
                 switch (version) {
-                    case 2: concat(full_stream, "10");
+                    case 2: strcat(full_stream, "10");
                         break;
-                    case 3: concat(full_stream, "010");
+                    case 3: strcat(full_stream, "010");
                         break;
                 }
 
@@ -2073,9 +2071,9 @@ void microqr_expand_binary(char binary_stream[], char full_stream[], int version
                 /* Kanji Mode */
                 /* Mode indicator */
                 switch (version) {
-                    case 2: concat(full_stream, "11");
+                    case 2: strcat(full_stream, "11");
                         break;
-                    case 3: concat(full_stream, "011");
+                    case 3: strcat(full_stream, "011");
                         break;
                 }
 
@@ -2102,11 +2100,11 @@ void micro_qr_m1(char binary_data[]) {
     bits_left = bits_total - strlen(binary_data);
     if (bits_left <= 3) {
         for (i = 0; i < bits_left; i++) {
-            concat(binary_data, "0");
+            strcat(binary_data, "0");
         }
         latch = 1;
     } else {
-        concat(binary_data, "000");
+        strcat(binary_data, "000");
     }
 
     if (latch == 0) {
@@ -2114,7 +2112,7 @@ void micro_qr_m1(char binary_data[]) {
         bits_left = bits_total - strlen(binary_data);
         if (bits_left <= 4) {
             for (i = 0; i < bits_left; i++) {
-                concat(binary_data, "0");
+                strcat(binary_data, "0");
             }
             latch = 1;
         }
@@ -2127,7 +2125,7 @@ void micro_qr_m1(char binary_data[]) {
             remainder = 0;
         }
         for (i = 0; i < remainder; i++) {
-            concat(binary_data, "0");
+            strcat(binary_data, "0");
         }
 
         /* Add padding */
@@ -2135,10 +2133,10 @@ void micro_qr_m1(char binary_data[]) {
         if (bits_left > 4) {
             remainder = (bits_left - 4) / 8;
             for (i = 0; i < remainder; i++) {
-                concat(binary_data, i & 1 ? "00010001" : "11101100");
+                strcat(binary_data, i & 1 ? "00010001" : "11101100");
             }
         }
-        concat(binary_data, "0000");
+        strcat(binary_data, "0000");
     }
 
     data_codewords = 3;
@@ -2217,11 +2215,11 @@ void micro_qr_m2(char binary_data[], int ecc_mode) {
     bits_left = bits_total - strlen(binary_data);
     if (bits_left <= 5) {
         for (i = 0; i < bits_left; i++) {
-            concat(binary_data, "0");
+            strcat(binary_data, "0");
         }
         latch = 1;
     } else {
-        concat(binary_data, "00000");
+        strcat(binary_data, "00000");
     }
 
     if (latch == 0) {
@@ -2231,14 +2229,14 @@ void micro_qr_m2(char binary_data[], int ecc_mode) {
             remainder = 0;
         }
         for (i = 0; i < remainder; i++) {
-            concat(binary_data, "0");
+            strcat(binary_data, "0");
         }
 
         /* Add padding */
         bits_left = bits_total - strlen(binary_data);
         remainder = bits_left / 8;
         for (i = 0; i < remainder; i++) {
-            concat(binary_data, i & 1 ? "00010001" : "11101100");
+            strcat(binary_data, i & 1 ? "00010001" : "11101100");
         }
     }
 
@@ -2313,11 +2311,11 @@ void micro_qr_m3(char binary_data[], int ecc_mode) {
     bits_left = bits_total - strlen(binary_data);
     if (bits_left <= 7) {
         for (i = 0; i < bits_left; i++) {
-            concat(binary_data, "0");
+            strcat(binary_data, "0");
         }
         latch = 1;
     } else {
-        concat(binary_data, "0000000");
+        strcat(binary_data, "0000000");
     }
 
     if (latch == 0) {
@@ -2325,7 +2323,7 @@ void micro_qr_m3(char binary_data[], int ecc_mode) {
         bits_left = bits_total - strlen(binary_data);
         if (bits_left <= 4) {
             for (i = 0; i < bits_left; i++) {
-                concat(binary_data, "0");
+                strcat(binary_data, "0");
             }
             latch = 1;
         }
@@ -2338,7 +2336,7 @@ void micro_qr_m3(char binary_data[], int ecc_mode) {
             remainder = 0;
         }
         for (i = 0; i < remainder; i++) {
-            concat(binary_data, "0");
+            strcat(binary_data, "0");
         }
 
         /* Add padding */
@@ -2346,10 +2344,10 @@ void micro_qr_m3(char binary_data[], int ecc_mode) {
         if (bits_left > 4) {
             remainder = (bits_left - 4) / 8;
             for (i = 0; i < remainder; i++) {
-                concat(binary_data, i & 1 ? "00010001" : "11101100");
+                strcat(binary_data, i & 1 ? "00010001" : "11101100");
             }
         }
-        concat(binary_data, "0000");
+        strcat(binary_data, "0000");
     }
 
     if (ecc_mode == LEVEL_L) {
@@ -2458,11 +2456,11 @@ void micro_qr_m4(char binary_data[], int ecc_mode) {
     bits_left = bits_total - strlen(binary_data);
     if (bits_left <= 9) {
         for (i = 0; i < bits_left; i++) {
-            concat(binary_data, "0");
+            strcat(binary_data, "0");
         }
         latch = 1;
     } else {
-        concat(binary_data, "000000000");
+        strcat(binary_data, "000000000");
     }
 
     if (latch == 0) {
@@ -2472,14 +2470,14 @@ void micro_qr_m4(char binary_data[], int ecc_mode) {
             remainder = 0;
         }
         for (i = 0; i < remainder; i++) {
-            concat(binary_data, "0");
+            strcat(binary_data, "0");
         }
 
         /* Add padding */
         bits_left = bits_total - strlen(binary_data);
         remainder = bits_left / 8;
         for (i = 0; i < remainder; i++) {
-            concat(binary_data, i & 1 ? "00010001" : "11101100");
+            strcat(binary_data, i & 1 ? "00010001" : "11101100");
         }
     }
 

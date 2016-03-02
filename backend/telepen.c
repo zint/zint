@@ -37,7 +37,7 @@
 #include <stdlib.h>
 #include "common.h"
 
-static char *TeleTable[] ={
+static char *TeleTable[] = {
     "1111111111111111", "1131313111", "33313111", "1111313131", "3111313111", "11333131", "13133131", "111111313111",
     "31333111", "1131113131", "33113131", "1111333111", "3111113131", "1113133111", "1311133111", "111111113131",
     "3131113111", "11313331", "333331", "111131113111", "31113331", "1133113111", "1313113111", "1111113331",
@@ -78,7 +78,7 @@ int telepen(struct zint_symbol *symbol, unsigned char source[], int src_len) {
             strcpy(symbol->errtxt, "Invalid characters in input data");
             return ZINT_ERROR_INVALID_DATA;
         }
-        concat(dest, TeleTable[source[i]]);
+        strcat(dest, TeleTable[source[i]]);
         count += source[i];
     }
 
@@ -86,10 +86,10 @@ int telepen(struct zint_symbol *symbol, unsigned char source[], int src_len) {
     if (check_digit == 127) {
         check_digit = 0;
     }
-    concat(dest, TeleTable[check_digit]);
+    strcat(dest, TeleTable[check_digit]);
 
     /* Stop character */
-    concat(dest, TeleTable['z']);
+    strcat(dest, TeleTable['z']);
 
     expand(symbol, dest);
     for (i = 0; i < src_len; i++) {
@@ -149,17 +149,17 @@ int telepen_num(struct zint_symbol *symbol, unsigned char source[], int src_len)
             glyph += 27;
             count += glyph;
         }
-        concat(dest, TeleTable[glyph]);
+        strcat(dest, TeleTable[glyph]);
     }
 
     check_digit = 127 - (count % 127);
     if (check_digit == 127) {
         check_digit = 0;
     }
-    concat(dest, TeleTable[check_digit]);
+    strcat(dest, TeleTable[check_digit]);
 
     /* Stop character */
-    concat(dest, TeleTable['z']);
+    strcat(dest, TeleTable['z']);
 
     expand(symbol, dest);
     ustrcpy(symbol->text, temp);

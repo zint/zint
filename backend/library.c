@@ -204,7 +204,7 @@ void error_tag(char error_string[], int error_number) {
             strcpy(error_string, "warning: ");
         }
 
-        concat(error_string, error_buffer);
+        strcat(error_string, error_buffer);
     }
 }
 
@@ -315,23 +315,23 @@ int hibc(struct zint_symbol *symbol, unsigned char source[], int length) {
     temp[0] = check_digit;
     temp[1] = '\0';
 
-    concat(to_process, (char *) source);
-    concat(to_process, temp);
+    strcat(to_process, (char *) source);
+    strcat(to_process, temp);
     length = strlen(to_process);
 
     switch (symbol->symbology) {
         case BARCODE_HIBC_128:
             error_number = code_128(symbol, (unsigned char *) to_process, length);
             ustrcpy(symbol->text, (unsigned char*) "*");
-            uconcat(symbol->text, (unsigned char*) to_process);
-            uconcat(symbol->text, (unsigned char*) "*");
+            strcat((char*) symbol->text, to_process);
+            strcat((char*) symbol->text, "*");
             break;
         case BARCODE_HIBC_39:
             symbol->option_2 = 0;
             error_number = c39(symbol, (unsigned char *) to_process, length);
             ustrcpy(symbol->text, (unsigned char*) "*");
-            uconcat(symbol->text, (unsigned char*) to_process);
-            uconcat(symbol->text, (unsigned char*) "*");
+            strcat((char*) symbol->text, to_process);
+            strcat((char*) symbol->text, "*");
             break;
         case BARCODE_HIBC_DM:
             error_number = dmatrix(symbol, (unsigned char *) to_process, length);

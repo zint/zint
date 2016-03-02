@@ -36,6 +36,7 @@
 #include "large.h"
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 #ifdef __APPLE__
 #include <sys/malloc.h>
 #else
@@ -187,7 +188,7 @@ int c1_look_ahead_test(unsigned char source[], int sourcelen, int position, int 
         if ((source[sp] >= '0') && (source[sp] <= '9')) {
             ascii_count += 0.5;
         } else {
-            ascii_count = froundup(ascii_count);
+            ascii_count = ceil(ascii_count);
             if (source[sp] > 127) {
                 ascii_count += 2.0;
             } else {
@@ -280,34 +281,34 @@ int c1_look_ahead_test(unsigned char source[], int sourcelen, int position, int 
 
     }
 
-    ascii_count = froundup(ascii_count);
-    c40_count = froundup(c40_count);
-    text_count = froundup(text_count);
-    edi_count = froundup(edi_count);
-    byte_count = froundup(byte_count);
+    ascii_count = ceil(ascii_count);
+    c40_count = ceil(c40_count);
+    text_count = ceil(text_count);
+    edi_count = ceil(edi_count);
+    byte_count = ceil(byte_count);
     best_scheme = C1_ASCII;
 
     if (sp == sourcelen) {
         /* Step K */
-		best_count = (int)edi_count;
+        best_count = (int) edi_count;
 
         if (text_count <= best_count) {
-			best_count = (int)text_count;
+            best_count = (int) text_count;
             best_scheme = C1_TEXT;
         }
 
         if (c40_count <= best_count) {
-			best_count = (int)c40_count;
+            best_count = (int) c40_count;
             best_scheme = C1_C40;
         }
 
         if (ascii_count <= best_count) {
-			best_count = (int)ascii_count;
+            best_count = (int) ascii_count;
             best_scheme = C1_ASCII;
         }
 
         if (byte_count <= best_count) {
-			best_count = (int)byte_count;
+            best_count = (int) byte_count;
             best_scheme = C1_BYTE;
         }
     } else {
@@ -382,7 +383,7 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
         /* FNC1 */
         target[tp] = 232;
         tp++;
-    } 
+    }
 
     /* Step A */
     current_mode = C1_ASCII;
@@ -518,7 +519,7 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
                             if (source[sp] > 127) {
                                 /* Step B7 */
                                 target[tp] = 235; /* FNC4 */
-                                tp++; 
+                                tp++;
                                 target[tp] = (source[sp] - 128) + 1;
                                 tp++;
                                 sp++;
@@ -527,7 +528,7 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
                                 if ((gs1) && (source[sp] == '[')) {
                                     target[tp] = 232; /* FNC1 */
                                     tp++;
-                                    sp++; 
+                                    sp++;
                                 } else {
                                     target[tp] = source[sp] + 1;
                                     tp++;
@@ -594,13 +595,13 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
 
             if (next_mode != C1_C40) {
                 target[tp] = 255; /* Unlatch */
-                tp++; 
+                tp++;
             } else {
                 if (source[sp] > 127) {
                     c40_buffer[c40_p] = 1;
                     c40_p++;
                     c40_buffer[c40_p] = 30; /* Upper Shift */
-                    c40_p++; 
+                    c40_p++;
                     shift_set = c40_shift[source[sp] - 128];
                     value = c40_value[source[sp] - 128];
                 } else {
@@ -794,7 +795,7 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
 
             if (next_mode != C1_EDI) {
                 target[tp] = 255; /* Unlatch */
-                tp++; 
+                tp++;
             } else {
                 if (source[sp] == 13) {
                     value = 0;
@@ -869,7 +870,7 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
                 int sub_target;
                 /* Finish Decimal mode and go back to ASCII */
 
-                concat(decimal_binary, "111111"); /* Unlatch */
+                strcat(decimal_binary, "111111"); /* Unlatch */
 
                 target_count = 3;
                 if (strlen(decimal_binary) <= 16) {
@@ -884,7 +885,7 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
                 }
 
                 if (bits_left_in_byte == 2) {
-                    concat(decimal_binary, "01");
+                    strcat(decimal_binary, "01");
                 }
 
                 if ((bits_left_in_byte == 4) || (bits_left_in_byte == 6)) {
@@ -892,33 +893,33 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
                         int sub_value = ctoi(source[sp]) + 1;
 
                         if (sub_value & 0x08) {
-                            concat(decimal_binary, "1");
+                            strcat(decimal_binary, "1");
                         } else {
-                            concat(decimal_binary, "0");
+                            strcat(decimal_binary, "0");
                         }
                         if (sub_value & 0x04) {
-                            concat(decimal_binary, "1");
+                            strcat(decimal_binary, "1");
                         } else {
-                            concat(decimal_binary, "0");
+                            strcat(decimal_binary, "0");
                         }
                         if (sub_value & 0x02) {
-                            concat(decimal_binary, "1");
+                            strcat(decimal_binary, "1");
                         } else {
-                            concat(decimal_binary, "0");
+                            strcat(decimal_binary, "0");
                         }
                         if (sub_value & 0x01) {
-                            concat(decimal_binary, "1");
+                            strcat(decimal_binary, "1");
                         } else {
-                            concat(decimal_binary, "0");
+                            strcat(decimal_binary, "0");
                         }
                         sp++;
                     } else {
-                        concat(decimal_binary, "1111");
+                        strcat(decimal_binary, "1111");
                     }
                 }
 
                 if (bits_left_in_byte == 6) {
-                    concat(decimal_binary, "01");
+                    strcat(decimal_binary, "01");
                 }
 
                 /* Binary buffer is full - transfer to target */
@@ -1017,9 +1018,9 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
 
                 for (p = 0; p < 10; p++) {
                     if (value & (0x200 >> p)) {
-                        concat(decimal_binary, "1");
+                        strcat(decimal_binary, "1");
                     } else {
-                        concat(decimal_binary, "0");
+                        strcat(decimal_binary, "0");
                     }
                 }
 
@@ -1031,7 +1032,7 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
                 char temp_binary[40];
 
                 /* Binary buffer is full - transfer to target */
-                
+
                 for (p = 0; p < 8; p++) {
                     if (decimal_binary[p] == '1') {
                         target1 += (0x80 >> p);
@@ -1052,7 +1053,7 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
 
                 strcpy(temp_binary, "");
                 if (strlen(decimal_binary) > 24) {
-					for(i = 0; i <= (int)(strlen(decimal_binary) - 24); i++) {
+                    for (i = 0; i <= (int) (strlen(decimal_binary) - 24); i++) {
                         temp_binary[i] = decimal_binary[i + 24];
                     }
                     strcpy(decimal_binary, temp_binary);
@@ -1158,7 +1159,7 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
         int sub_target;
         /* Finish Decimal mode and go back to ASCII */
 
-        concat(decimal_binary, "111111"); /* Unlatch */
+        strcat(decimal_binary, "111111"); /* Unlatch */
 
         target_count = 3;
         if (strlen(decimal_binary) <= 16) {
@@ -1173,15 +1174,15 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
         }
 
         if (bits_left_in_byte == 2) {
-            concat(decimal_binary, "01");
+            strcat(decimal_binary, "01");
         }
 
         if ((bits_left_in_byte == 4) || (bits_left_in_byte == 6)) {
-            concat(decimal_binary, "1111");
+            strcat(decimal_binary, "1111");
         }
 
         if (bits_left_in_byte == 6) {
-            concat(decimal_binary, "01");
+            strcat(decimal_binary, "01");
         }
 
         /* Binary buffer is full - transfer to target */
@@ -1357,13 +1358,13 @@ int code_one(struct zint_symbol *symbol, unsigned char source[], int length) {
             sub_version = 2;
             codewords = 8;
             block_width = 4;
-        } 
+        }
         if (length <= 6) {
             /* Version S-10 */
             sub_version = 1;
             codewords = 4;
             block_width = 2;
-        } 
+        }
 
         binary_load(elreg, (char *) source, length);
 

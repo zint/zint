@@ -40,8 +40,8 @@
 
 /* "!" represents Shift 1 and "&" represents Shift 2, "*" represents FNC1 */
 
-int code_49(struct zint_symbol *symbol, unsigned char source[], int length) {
-    int i, j, rows, M, x_count, y_count, z_count, posn_val, local_value, h;
+int code_49(struct zint_symbol *symbol, unsigned char source[], const int length) {
+    int i, j, rows, M, x_count, y_count, z_count, posn_val, local_value;
     char intermediate[170] = "";
     int codewords[170], codeword_count;
     int c_grid[8][8]; /* Refers to table 3 */
@@ -49,6 +49,7 @@ int code_49(struct zint_symbol *symbol, unsigned char source[], int length) {
     int pad_count = 0;
     char pattern[40];
     int gs1;
+    size_t h;
 
     if (length > 81) {
         strcpy(symbol->errtxt, "Input too long");
@@ -67,9 +68,9 @@ int code_49(struct zint_symbol *symbol, unsigned char source[], int length) {
             return ZINT_ERROR_INVALID_DATA;
         }
         if (gs1 && (source[i] == '['))
-            concat(intermediate, "*"); /* FNC1 */
+            strcat(intermediate, "*"); /* FNC1 */
         else
-            concat(intermediate, c49_table7[source[i]]);
+            strcat(intermediate, c49_table7[source[i]]);
     }
 
     codeword_count = 0;
@@ -310,17 +311,17 @@ int code_49(struct zint_symbol *symbol, unsigned char source[], int length) {
             if (i != (rows - 1)) {
                 if (c49_table4[i][j] == 'E') {
                     /* Even Parity */
-                    concat(pattern, c49_appxe_even[w_grid[i][j]]);
+                    strcat(pattern, c49_appxe_even[w_grid[i][j]]);
                 } else {
                     /* Odd Parity */
-                    concat(pattern, c49_appxe_odd[w_grid[i][j]]);
+                    strcat(pattern, c49_appxe_odd[w_grid[i][j]]);
                 }
             } else {
                 /* Last row uses all even parity */
-                concat(pattern, c49_appxe_even[w_grid[i][j]]);
+                strcat(pattern, c49_appxe_even[w_grid[i][j]]);
             }
         }
-        concat(pattern, "4"); /* Stop character */
+        strcat(pattern, "4"); /* Stop character */
 
         /* Expand into symbol */
         symbol->row_height[i] = 10;

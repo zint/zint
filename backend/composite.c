@@ -274,33 +274,33 @@ int cc_a(struct zint_symbol *symbol, char source[], int cc_width) {
             dummy[j + 1] = codeWords[i * cc_width + j];
         }
         /* Copy the data into codebarre */
-        concat(codebarre, RAPLR[LeftRAP]);
-        concat(codebarre, "1");
-        concat(codebarre, codagemc[offset + dummy[1]]);
-        concat(codebarre, "1");
+        strcat(codebarre, RAPLR[LeftRAP]);
+        strcat(codebarre, "1");
+        strcat(codebarre, codagemc[offset + dummy[1]]);
+        strcat(codebarre, "1");
         if (cc_width == 3) {
-            concat(codebarre, RAPC[CentreRAP]);
+            strcat(codebarre, RAPC[CentreRAP]);
         }
         if (cc_width >= 2) {
-            concat(codebarre, "1");
-            concat(codebarre, codagemc[offset + dummy[2]]);
-            concat(codebarre, "1");
+            strcat(codebarre, "1");
+            strcat(codebarre, codagemc[offset + dummy[2]]);
+            strcat(codebarre, "1");
         }
         if (cc_width == 4) {
-            concat(codebarre, RAPC[CentreRAP]);
+            strcat(codebarre, RAPC[CentreRAP]);
         }
         if (cc_width >= 3) {
-            concat(codebarre, "1");
-            concat(codebarre, codagemc[offset + dummy[3]]);
-            concat(codebarre, "1");
+            strcat(codebarre, "1");
+            strcat(codebarre, codagemc[offset + dummy[3]]);
+            strcat(codebarre, "1");
         }
         if (cc_width == 4) {
-            concat(codebarre, "1");
-            concat(codebarre, codagemc[offset + dummy[4]]);
-            concat(codebarre, "1");
+            strcat(codebarre, "1");
+            strcat(codebarre, codagemc[offset + dummy[4]]);
+            strcat(codebarre, "1");
         }
-        concat(codebarre, RAPLR[RightRAP]);
-        concat(codebarre, "1"); /* stop */
+        strcat(codebarre, RAPLR[RightRAP]);
+        strcat(codebarre, "1"); /* stop */
 
         /* Now codebarre is a mixture of letters and numbers */
 
@@ -558,33 +558,33 @@ int cc_b(struct zint_symbol *symbol, char source[], int cc_width) {
             dummy[j + 1] = chainemc[i * symbol->option_2 + j];
         }
         /* Copy the data into codebarre */
-        concat(codebarre, RAPLR[LeftRAP]);
-        concat(codebarre, "1");
-        concat(codebarre, codagemc[offset + dummy[1]]);
-        concat(codebarre, "1");
+        strcat(codebarre, RAPLR[LeftRAP]);
+        strcat(codebarre, "1");
+        strcat(codebarre, codagemc[offset + dummy[1]]);
+        strcat(codebarre, "1");
         if (cc_width == 3) {
-            concat(codebarre, RAPC[CentreRAP]);
+            strcat(codebarre, RAPC[CentreRAP]);
         }
         if (cc_width >= 2) {
-            concat(codebarre, "1");
-            concat(codebarre, codagemc[offset + dummy[2]]);
-            concat(codebarre, "1");
+            strcat(codebarre, "1");
+            strcat(codebarre, codagemc[offset + dummy[2]]);
+            strcat(codebarre, "1");
         }
         if (cc_width == 4) {
-            concat(codebarre, RAPC[CentreRAP]);
+            strcat(codebarre, RAPC[CentreRAP]);
         }
         if (cc_width >= 3) {
-            concat(codebarre, "1");
-            concat(codebarre, codagemc[offset + dummy[3]]);
-            concat(codebarre, "1");
+            strcat(codebarre, "1");
+            strcat(codebarre, codagemc[offset + dummy[3]]);
+            strcat(codebarre, "1");
         }
         if (cc_width == 4) {
-            concat(codebarre, "1");
-            concat(codebarre, codagemc[offset + dummy[4]]);
-            concat(codebarre, "1");
+            strcat(codebarre, "1");
+            strcat(codebarre, codagemc[offset + dummy[4]]);
+            strcat(codebarre, "1");
         }
-        concat(codebarre, RAPLR[RightRAP]);
-        concat(codebarre, "1"); /* stop */
+        strcat(codebarre, RAPLR[RightRAP]);
+        strcat(codebarre, "1"); /* stop */
 
         /* Now codebarre is a mixture of letters and numbers */
 
@@ -772,10 +772,10 @@ int cc_c(struct zint_symbol *symbol, char source[], int cc_width, int ecc_level)
                 default: offset = 0; /* cluster(0) */
                     break;
             }
-            concat(codebarre, codagemc[offset + dummy[j]]);
-            concat(codebarre, "*");
+            strcat(codebarre, codagemc[offset + dummy[j]]);
+            strcat(codebarre, "*");
         }
-        concat(codebarre, "-");
+        strcat(codebarre, "-");
 
         strcpy(pattern, "");
         for (loop = 0; loop < (int) strlen(codebarre); loop++) {
@@ -829,17 +829,17 @@ int cc_binary_string(struct zint_symbol *symbol, const char source[], char binar
     }
 
     if (encoding_method == 1) {
-        concat(binary_string, "0");
+        strcat(binary_string, "0");
     }
 
     if (encoding_method == 2) {
         /* Encoding Method field "10" - date and lot number */
 
-        concat(binary_string, "10");
+        strcat(binary_string, "10");
 
         if (source[1] == '0') {
             /* No date data */
-            concat(binary_string, "11");
+            strcat(binary_string, "11");
             read_posn = 2;
         } else {
             /* Production Date (11) or Expiration Date (17) */
@@ -859,19 +859,19 @@ int cc_binary_string(struct zint_symbol *symbol, const char source[], char binar
             mask = 0x8000;
             for (j = 0; j < 16; j++) {
                 if ((group_val & mask) == 0x00) {
-                    concat(binary_string, "0");
+                    strcat(binary_string, "0");
                 } else {
-                    concat(binary_string, "1");
+                    strcat(binary_string, "1");
                 }
                 mask = mask >> 1;
             }
 
             if (source[1] == '1') {
                 /* Production Date AI 11 */
-                concat(binary_string, "0");
+                strcat(binary_string, "0");
             } else {
                 /* Expiration Date AI 17 */
-                concat(binary_string, "1");
+                strcat(binary_string, "1");
             }
             read_posn = 8;
         }
@@ -967,7 +967,7 @@ int cc_binary_string(struct zint_symbol *symbol, const char source[], char binar
 
         if ((test1 != -1) && (test2 != 1) && (test3 == 0)) {
             /* Encodation method "11" can be used */
-            concat(binary_string, "11");
+            strcat(binary_string, "11");
 
             numeric -= test1;
             alpha--;
@@ -977,16 +977,16 @@ int cc_binary_string(struct zint_symbol *symbol, const char source[], char binar
 
             if (alphanum > 0) {
                 /* Alphanumeric mode */
-                concat(binary_string, "0");
+                strcat(binary_string, "0");
                 ai90_mode = 1;
             } else {
                 if (alpha > numeric) {
                     /* Alphabetic mode */
-                    concat(binary_string, "11");
+                    strcat(binary_string, "11");
                     ai90_mode = 2;
                 } else {
                     /* Numeric mode */
-                    concat(binary_string, "10");
+                    strcat(binary_string, "10");
                     ai90_mode = 3;
                 }
             }
@@ -1007,11 +1007,11 @@ int cc_binary_string(struct zint_symbol *symbol, const char source[], char binar
             }
 
             switch (ai_crop) {
-                case 0: concat(binary_string, "0");
+                case 0: strcat(binary_string, "0");
                     break;
-                case 1: concat(binary_string, "10");
+                case 1: strcat(binary_string, "10");
                     break;
-                case 2: concat(binary_string, "11");
+                case 2: strcat(binary_string, "11");
                     break;
             }
 
@@ -1070,9 +1070,9 @@ int cc_binary_string(struct zint_symbol *symbol, const char source[], char binar
                 mask = 0x10;
                 for (j = 0; j < 5; j++) {
                     if ((numeric_value & mask) == 0x00) {
-                        concat(binary_string, "0");
+                        strcat(binary_string, "0");
                     } else {
-                        concat(binary_string, "1");
+                        strcat(binary_string, "1");
                     }
                     mask = mask >> 1;
                 }
@@ -1081,22 +1081,22 @@ int cc_binary_string(struct zint_symbol *symbol, const char source[], char binar
                 mask = 0x08;
                 for (j = 0; j < 4; j++) {
                     if ((table3_letter & mask) == 0x00) {
-                        concat(binary_string, "0");
+                        strcat(binary_string, "0");
                     } else {
-                        concat(binary_string, "1");
+                        strcat(binary_string, "1");
                     }
                     mask = mask >> 1;
                 }
             } else {
                 /* Encoding is done according to 5.2.2 c) 3) */
-                concat(binary_string, "11111");
+                strcat(binary_string, "11111");
                 /* ten bit representation of number */
                 mask = 0x200;
                 for (j = 0; j < 10; j++) {
                     if ((numeric_value & mask) == 0x00) {
-                        concat(binary_string, "0");
+                        strcat(binary_string, "0");
                     } else {
-                        concat(binary_string, "1");
+                        strcat(binary_string, "1");
                     }
                     mask = mask >> 1;
                 }
@@ -1105,9 +1105,9 @@ int cc_binary_string(struct zint_symbol *symbol, const char source[], char binar
                 mask = 0x10;
                 for (j = 0; j < 5; j++) {
                     if (((ninety[test1] - 65) & mask) == 0x00) {
-                        concat(binary_string, "0");
+                        strcat(binary_string, "0");
                     } else {
-                        concat(binary_string, "1");
+                        strcat(binary_string, "1");
                     }
                     mask = mask >> 1;
                 }
@@ -1116,7 +1116,7 @@ int cc_binary_string(struct zint_symbol *symbol, const char source[], char binar
             read_posn = test1 + 3;
         } else {
             /* Use general field encodation instead */
-            concat(binary_string, "0");
+            strcat(binary_string, "0");
             read_posn = 0;
         }
     }
@@ -1129,9 +1129,9 @@ int cc_binary_string(struct zint_symbol *symbol, const char source[], char binar
                 mask = 0x10;
                 for (j = 0; j < 5; j++) {
                     if (((source[read_posn] + 4) & mask) == 0x00) {
-                        concat(binary_string, "0");
+                        strcat(binary_string, "0");
                     } else {
-                        concat(binary_string, "1");
+                        strcat(binary_string, "1");
                     }
                     mask = mask >> 1;
                 }
@@ -1141,16 +1141,16 @@ int cc_binary_string(struct zint_symbol *symbol, const char source[], char binar
                 mask = 0x20;
                 for (j = 0; j < 6; j++) {
                     if (((source[read_posn] - 65) & mask) == 0x00) {
-                        concat(binary_string, "0");
+                        strcat(binary_string, "0");
                     } else {
-                        concat(binary_string, "1");
+                        strcat(binary_string, "1");
                     }
                     mask = mask >> 1;
                 }
             }
 
             if (source[read_posn] == '[') {
-                concat(binary_string, "11111");
+                strcat(binary_string, "11111");
             }
 
             read_posn++;
@@ -1165,9 +1165,9 @@ int cc_binary_string(struct zint_symbol *symbol, const char source[], char binar
                 mask = 0x10;
                 for (j = 0; j < 5; j++) {
                     if (((source[read_posn] - 43) & mask) == 0x00) {
-                        concat(binary_string, "0");
+                        strcat(binary_string, "0");
                     } else {
-                        concat(binary_string, "1");
+                        strcat(binary_string, "1");
                     }
                     mask = mask >> 1;
                 }
@@ -1177,26 +1177,26 @@ int cc_binary_string(struct zint_symbol *symbol, const char source[], char binar
                 mask = 0x20;
                 for (j = 0; j < 6; j++) {
                     if (((source[read_posn] - 33) & mask) == 0x00) {
-                        concat(binary_string, "0");
+                        strcat(binary_string, "0");
                     } else {
-                        concat(binary_string, "1");
+                        strcat(binary_string, "1");
                     }
                     mask = mask >> 1;
                 }
             }
 
             switch (source[read_posn]) {
-                case '[': concat(binary_string, "01111");
+                case '[': strcat(binary_string, "01111");
                     break;
-                case '*': concat(binary_string, "111010");
+                case '*': strcat(binary_string, "111010");
                     break;
-                case ',': concat(binary_string, "111011");
+                case ',': strcat(binary_string, "111011");
                     break;
-                case '-': concat(binary_string, "111100");
+                case '-': strcat(binary_string, "111100");
                     break;
-                case '.': concat(binary_string, "111101");
+                case '.': strcat(binary_string, "111101");
                     break;
-                case '/': concat(binary_string, "111110");
+                case '/': strcat(binary_string, "111110");
                     break;
             }
 
@@ -1322,7 +1322,7 @@ int cc_binary_string(struct zint_symbol *symbol, const char source[], char binar
 
                 if (i != 0) {
                     if ((general_field_type[i - 1] != NUMERIC) && (general_field[i - 1] != '[')) {
-                        concat(binary_string, "000"); /* Numeric latch */
+                        strcat(binary_string, "000"); /* Numeric latch */
                     }
                 }
 
@@ -1343,9 +1343,9 @@ int cc_binary_string(struct zint_symbol *symbol, const char source[], char binar
                 mask = 0x40;
                 for (j = 0; j < 7; j++) {
                     if ((value & mask) == 0x00) {
-                        concat(binary_string, "0");
+                        strcat(binary_string, "0");
                     } else {
-                        concat(binary_string, "1");
+                        strcat(binary_string, "1");
                     }
                     mask = mask >> 1;
                 }
@@ -1357,10 +1357,10 @@ int cc_binary_string(struct zint_symbol *symbol, const char source[], char binar
 
                 if (i != 0) {
                     if ((general_field_type[i - 1] == NUMERIC) || (general_field[i - 1] == '[')) {
-                        concat(binary_string, "0000"); /* Alphanumeric latch */
+                        strcat(binary_string, "0000"); /* Alphanumeric latch */
                     }
                     if (general_field_type[i - 1] == ISOIEC) {
-                        concat(binary_string, "00100"); /* ISO/IEC 646 latch */
+                        strcat(binary_string, "00100"); /* ISO/IEC 646 latch */
                     }
                 }
 
@@ -1371,9 +1371,9 @@ int cc_binary_string(struct zint_symbol *symbol, const char source[], char binar
                     mask = 0x10;
                     for (j = 0; j < 5; j++) {
                         if ((value & mask) == 0x00) {
-                            concat(binary_string, "0");
+                            strcat(binary_string, "0");
                         } else {
-                            concat(binary_string, "1");
+                            strcat(binary_string, "1");
                         }
                         mask = mask >> 1;
                     }
@@ -1386,20 +1386,20 @@ int cc_binary_string(struct zint_symbol *symbol, const char source[], char binar
                     mask = 0x20;
                     for (j = 0; j < 6; j++) {
                         if ((value & mask) == 0x00) {
-                            concat(binary_string, "0");
+                            strcat(binary_string, "0");
                         } else {
-                            concat(binary_string, "1");
+                            strcat(binary_string, "1");
                         }
                         mask = mask >> 1;
                     }
                 }
 
-                if (general_field[i] == '[') concat(binary_string, "01111"); /* FNC1/Numeric latch */
-                if (general_field[i] == '*') concat(binary_string, "111010"); /* asterisk */
-                if (general_field[i] == ',') concat(binary_string, "111011"); /* comma */
-                if (general_field[i] == '-') concat(binary_string, "111100"); /* minus or hyphen */
-                if (general_field[i] == '.') concat(binary_string, "111101"); /* period or full stop */
-                if (general_field[i] == '/') concat(binary_string, "111110"); /* slash or solidus */
+                if (general_field[i] == '[') strcat(binary_string, "01111"); /* FNC1/Numeric latch */
+                if (general_field[i] == '*') strcat(binary_string, "111010"); /* asterisk */
+                if (general_field[i] == ',') strcat(binary_string, "111011"); /* comma */
+                if (general_field[i] == '-') strcat(binary_string, "111100"); /* minus or hyphen */
+                if (general_field[i] == '.') strcat(binary_string, "111101"); /* period or full stop */
+                if (general_field[i] == '/') strcat(binary_string, "111110"); /* slash or solidus */
 
                 i++;
                 break;
@@ -1408,11 +1408,11 @@ int cc_binary_string(struct zint_symbol *symbol, const char source[], char binar
 
                 if (i != 0) {
                     if ((general_field_type[i - 1] == NUMERIC) || (general_field[i - 1] == '[')) {
-                        concat(binary_string, "0000"); /* Alphanumeric latch */
-                        concat(binary_string, "00100"); /* ISO/IEC 646 latch */
+                        strcat(binary_string, "0000"); /* Alphanumeric latch */
+                        strcat(binary_string, "00100"); /* ISO/IEC 646 latch */
                     }
                     if (general_field_type[i - 1] == ALPHA) {
-                        concat(binary_string, "00100"); /* ISO/IEC 646 latch */
+                        strcat(binary_string, "00100"); /* ISO/IEC 646 latch */
                     }
                 }
 
@@ -1423,9 +1423,9 @@ int cc_binary_string(struct zint_symbol *symbol, const char source[], char binar
                     mask = 0x10;
                     for (j = 0; j < 5; j++) {
                         if ((value & mask) == 0x00) {
-                            concat(binary_string, "0");
+                            strcat(binary_string, "0");
                         } else {
-                            concat(binary_string, "1");
+                            strcat(binary_string, "1");
                         }
                         mask = mask >> 1;
                     }
@@ -1438,9 +1438,9 @@ int cc_binary_string(struct zint_symbol *symbol, const char source[], char binar
                     mask = 0x40;
                     for (j = 0; j < 7; j++) {
                         if ((value & mask) == 0x00) {
-                            concat(binary_string, "0");
+                            strcat(binary_string, "0");
                         } else {
-                            concat(binary_string, "1");
+                            strcat(binary_string, "1");
                         }
                         mask = mask >> 1;
                     }
@@ -1453,36 +1453,36 @@ int cc_binary_string(struct zint_symbol *symbol, const char source[], char binar
                     mask = 0x40;
                     for (j = 0; j < 7; j++) {
                         if ((value & mask) == 0x00) {
-                            concat(binary_string, "0");
+                            strcat(binary_string, "0");
                         } else {
-                            concat(binary_string, "1");
+                            strcat(binary_string, "1");
                         }
                         mask = mask >> 1;
                     }
                 }
 
-                if (general_field[i] == '[') concat(binary_string, "01111"); /* FNC1/Numeric latch */
-                if (general_field[i] == '!') concat(binary_string, "11101000"); /* exclamation mark */
-                if (general_field[i] == 34) concat(binary_string, "11101001"); /* quotation mark */
-                if (general_field[i] == 37) concat(binary_string, "11101010"); /* percent sign */
-                if (general_field[i] == '&') concat(binary_string, "11101011"); /* ampersand */
-                if (general_field[i] == 39) concat(binary_string, "11101100"); /* apostrophe */
-                if (general_field[i] == '(') concat(binary_string, "11101101"); /* left parenthesis */
-                if (general_field[i] == ')') concat(binary_string, "11101110"); /* right parenthesis */
-                if (general_field[i] == '*') concat(binary_string, "11101111"); /* asterisk */
-                if (general_field[i] == '+') concat(binary_string, "11110000"); /* plus sign */
-                if (general_field[i] == ',') concat(binary_string, "11110001"); /* comma */
-                if (general_field[i] == '-') concat(binary_string, "11110010"); /* minus or hyphen */
-                if (general_field[i] == '.') concat(binary_string, "11110011"); /* period or full stop */
-                if (general_field[i] == '/') concat(binary_string, "11110100"); /* slash or solidus */
-                if (general_field[i] == ':') concat(binary_string, "11110101"); /* colon */
-                if (general_field[i] == ';') concat(binary_string, "11110110"); /* semicolon */
-                if (general_field[i] == '<') concat(binary_string, "11110111"); /* less-than sign */
-                if (general_field[i] == '=') concat(binary_string, "11111000"); /* equals sign */
-                if (general_field[i] == '>') concat(binary_string, "11111001"); /* greater-than sign */
-                if (general_field[i] == '?') concat(binary_string, "11111010"); /* question mark */
-                if (general_field[i] == '_') concat(binary_string, "11111011"); /* underline or low line */
-                if (general_field[i] == ' ') concat(binary_string, "11111100"); /* space */
+                if (general_field[i] == '[') strcat(binary_string, "01111"); /* FNC1/Numeric latch */
+                if (general_field[i] == '!') strcat(binary_string, "11101000"); /* exclamation mark */
+                if (general_field[i] == 34) strcat(binary_string, "11101001"); /* quotation mark */
+                if (general_field[i] == 37) strcat(binary_string, "11101010"); /* percent sign */
+                if (general_field[i] == '&') strcat(binary_string, "11101011"); /* ampersand */
+                if (general_field[i] == 39) strcat(binary_string, "11101100"); /* apostrophe */
+                if (general_field[i] == '(') strcat(binary_string, "11101101"); /* left parenthesis */
+                if (general_field[i] == ')') strcat(binary_string, "11101110"); /* right parenthesis */
+                if (general_field[i] == '*') strcat(binary_string, "11101111"); /* asterisk */
+                if (general_field[i] == '+') strcat(binary_string, "11110000"); /* plus sign */
+                if (general_field[i] == ',') strcat(binary_string, "11110001"); /* comma */
+                if (general_field[i] == '-') strcat(binary_string, "11110010"); /* minus or hyphen */
+                if (general_field[i] == '.') strcat(binary_string, "11110011"); /* period or full stop */
+                if (general_field[i] == '/') strcat(binary_string, "11110100"); /* slash or solidus */
+                if (general_field[i] == ':') strcat(binary_string, "11110101"); /* colon */
+                if (general_field[i] == ';') strcat(binary_string, "11110110"); /* semicolon */
+                if (general_field[i] == '<') strcat(binary_string, "11110111"); /* less-than sign */
+                if (general_field[i] == '=') strcat(binary_string, "11111000"); /* equals sign */
+                if (general_field[i] == '>') strcat(binary_string, "11111001"); /* greater-than sign */
+                if (general_field[i] == '?') strcat(binary_string, "11111010"); /* question mark */
+                if (general_field[i] == '_') strcat(binary_string, "11111011"); /* underline or low line */
+                if (general_field[i] == ' ') strcat(binary_string, "11111100"); /* space */
 
                 i++;
                 break;
@@ -1744,9 +1744,9 @@ int cc_binary_string(struct zint_symbol *symbol, const char source[], char binar
             mask = 0x08;
             for (j = 0; j < 4; j++) {
                 if ((value & mask) == 0x00) {
-                    concat(binary_string, "0");
+                    strcat(binary_string, "0");
                 } else {
-                    concat(binary_string, "1");
+                    strcat(binary_string, "1");
                 }
                 mask = mask >> 1;
             }
@@ -1759,9 +1759,9 @@ int cc_binary_string(struct zint_symbol *symbol, const char source[], char binar
             mask = 0x40;
             for (j = 0; j < 7; j++) {
                 if ((value & mask) == 0x00) {
-                    concat(binary_string, "0");
+                    strcat(binary_string, "0");
                 } else {
-                    concat(binary_string, "1");
+                    strcat(binary_string, "1");
                 }
                 mask = mask >> 1;
             }
@@ -2022,17 +2022,17 @@ int cc_binary_string(struct zint_symbol *symbol, const char source[], char binar
     if (binary_length < target_bitsize) {
         /* Now add padding to binary string */
         if (alpha_pad == 1) {
-            concat(binary_string, "11111");
+            strcat(binary_string, "11111");
             alpha_pad = 0;
             /* Extra FNC1 character required after Alpha encodation (section 5.2.3) */
         }
 
         if ((strlen(general_field) != 0) && (general_field_type[strlen(general_field) - 1] == NUMERIC)) {
-            concat(binary_string, "0000");
+            strcat(binary_string, "0000");
         }
 
         while (strlen(binary_string) < (unsigned int) target_bitsize) {
-            concat(binary_string, "00100");
+            strcat(binary_string, "00100");
         }
 
         if (strlen(binary_string) > (unsigned int) target_bitsize) {
@@ -2170,7 +2170,7 @@ int composite(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     if (error_number != 0) {
         strcpy(symbol->errtxt, linear->errtxt);
-        concat(symbol->errtxt, " in linear component");
+        strcat(symbol->errtxt, " in linear component");
         return error_number;
     }
 

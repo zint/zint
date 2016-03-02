@@ -88,7 +88,7 @@ void rs_error(char data_pattern[]) {
     rs_encode(triple_writer, (unsigned char*) inv_triple, result);
 
     for (reader = 4; reader > 0; reader--) {
-        concat(data_pattern, AusBarTable[(int) result[reader - 1]]);
+        strcat(data_pattern, AusBarTable[(int) result[reader - 1]]);
     }
     rs_free();
 }
@@ -164,7 +164,7 @@ int australia_post(struct zint_symbol *symbol, unsigned char source[], int lengt
         localstr[8] = '\0';
     }
 
-    concat(localstr, (char*) source);
+    strcat(localstr, (char*) source);
     h = strlen(localstr);
     error_number = is_sane(GDSET, (unsigned char *) localstr, h);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
@@ -215,7 +215,7 @@ int australia_post(struct zint_symbol *symbol, unsigned char source[], int lengt
         case 22:
         case 37:
         case 52:
-            concat(data_pattern, "3");
+            strcat(data_pattern, "3");
             break;
         default:
             break;
@@ -225,7 +225,7 @@ int australia_post(struct zint_symbol *symbol, unsigned char source[], int lengt
     rs_error(data_pattern);
 
     /* Stop character */
-    concat(data_pattern, "13");
+    strcat(data_pattern, "13");
 
     /* Turn the symbol into a bar pattern ready for plotting */
     writer = 0;

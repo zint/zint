@@ -177,12 +177,12 @@ int code_11(struct zint_symbol *symbol, unsigned char source[], int length) { /*
     lookup(SODIUM, C11Table, checkstr[1], dest);
 
     /* Stop character */
-    concat(dest, "11221");
+    strcat(dest, "11221");
 
     expand(symbol, dest);
 
     ustrcpy(symbol->text, source);
-    uconcat(symbol->text, (unsigned char*) checkstr);
+    strcat((char*) symbol->text, checkstr);
     return error_number;
 }
 
@@ -265,7 +265,7 @@ int c39(struct zint_symbol *symbol, unsigned char source[], int length) {
     }
 
     /* Stop character */
-    concat(dest, "121121211");
+    strcat(dest, "121121211");
 
     if ((symbol->symbology == BARCODE_LOGMARS) || (symbol->symbology == BARCODE_HIBC_39)) {
         /* LOGMARS uses wider 'wide' bars than normal Code 39 */
@@ -280,13 +280,13 @@ int c39(struct zint_symbol *symbol, unsigned char source[], int length) {
     expand(symbol, dest);
 
     if (symbol->symbology == BARCODE_CODE39) {
-        ustrcpy(symbol->text, (unsigned char*) "*");
-        uconcat(symbol->text, source);
-        uconcat(symbol->text, (unsigned char*) localstr);
-        uconcat(symbol->text, (unsigned char*) "*");
+        strcpy((char*) symbol->text, "*");
+        strcat((char*) symbol->text, (char*) source);
+        strcat((char*) symbol->text, localstr);
+        strcat((char*) symbol->text, "*");
     } else {
-        ustrcpy(symbol->text, source);
-        uconcat(symbol->text, (unsigned char*) localstr);
+        strcpy((char*) symbol->text, (char*) source);
+        strcat((char*) symbol->text, localstr);
     }
     return error_number;
 }
@@ -333,7 +333,7 @@ int pharmazentral(struct zint_symbol *symbol, unsigned char source[], int length
     }
     error_number = c39(symbol, (unsigned char *) localstr, strlen(localstr));
     ustrcpy(symbol->text, (unsigned char *) "PZN");
-    uconcat(symbol->text, (unsigned char *) localstr);
+    strcat((char*) symbol->text, localstr);
     return error_number;
 }
 
@@ -358,7 +358,7 @@ int ec39(struct zint_symbol *symbol, unsigned char source[], int length) {
             strcpy(symbol->errtxt, "Invalid characters in input data");
             return ZINT_ERROR_INVALID_DATA;
         }
-        concat((char*) buffer, EC39Ctrl[source[i]]);
+        strcat((char*) buffer, EC39Ctrl[source[i]]);
     }
 
     /* Then sends the buffer to the C39 function */
@@ -399,7 +399,7 @@ int c93(struct zint_symbol *symbol, unsigned char source[], int length) {
             strcpy(symbol->errtxt, "Invalid characters in input data");
             return ZINT_ERROR_INVALID_DATA;
         }
-        concat(buffer, C93Ctrl[source[i]]);
+        strcat(buffer, C93Ctrl[source[i]]);
         symbol->text[i] = source[i] ? source[i] : ' ';
     }
 
@@ -450,7 +450,7 @@ int c93(struct zint_symbol *symbol, unsigned char source[], int length) {
     }
 
     /* Stop character */
-    concat(dest, "1111411");
+    strcat(dest, "1111411");
     expand(symbol, dest);
 
     symbol->text[length] = set_copy[c];
@@ -482,7 +482,7 @@ void CheckCharacter() {
             part[0] = itoc(S[i]);
             part[1] = itoc(B[i]);
             part[2] = '\0';
-            concat(pattern, part);
+            strcat(pattern, part);
         }
     }
 }

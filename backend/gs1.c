@@ -56,17 +56,17 @@ void itostr(char ai_string[], int ai_value) {
     temp[1] = '\0';
     if (ai_value >= 1000) {
         temp[0] = itoc(thou);
-        concat(ai_string, temp);
+        strcat(ai_string, temp);
     }
     if (ai_value >= 100) {
         temp[0] = itoc(hund);
-        concat(ai_string, temp);
+        strcat(ai_string, temp);
     }
     temp[0] = itoc(ten);
-    concat(ai_string, temp);
+    strcat(ai_string, temp);
     temp[0] = itoc(unit);
-    concat(ai_string, temp);
-    concat(ai_string, ")");
+    strcat(ai_string, temp);
+    strcat(ai_string, ")");
 }
 
 int gs1_verify(struct zint_symbol *symbol, const unsigned char source[], const unsigned int src_len, char reduced[]) {
@@ -287,13 +287,13 @@ int gs1_verify(struct zint_symbol *symbol, const unsigned char source[], const u
 
     if (error_latch == 5) {
         strcpy(symbol->errtxt, "Invalid data length for AI ");
-        concat(symbol->errtxt, ai_string);
+        strcat(symbol->errtxt, ai_string);
         return ZINT_ERROR_INVALID_DATA;
     }
 
     if (error_latch == 6) {
         strcpy(symbol->errtxt, "Invalid AI value ");
-        concat(symbol->errtxt, ai_string);
+        strcat(symbol->errtxt, ai_string);
         return ZINT_ERROR_INVALID_DATA;
     }
 

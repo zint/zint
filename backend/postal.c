@@ -111,10 +111,10 @@ int postnet(struct zint_symbol *symbol, unsigned char source[], char dest[], int
     }
 
     check_digit = (10 - (sum % 10)) % 10;
-    concat(dest, PNTable[check_digit]);
+    strcat(dest, PNTable[check_digit]);
 
     /* stop character */
-    concat(dest, "L");
+    strcat(dest, "L");
 
     return error_number;
 }
@@ -177,10 +177,10 @@ int planet(struct zint_symbol *symbol, unsigned char source[], char dest[], int 
     }
 
     check_digit = (10 - (sum % 10)) % 10;
-    concat(dest, PLTable[check_digit]);
+    strcat(dest, PLTable[check_digit]);
 
     /* stop character */
-    concat(dest, "L");
+    strcat(dest, "L");
 
     return error_number;
 }
@@ -216,7 +216,7 @@ int planet_plot(struct zint_symbol *symbol, unsigned char source[], int length) 
 }
 
 /* Korean Postal Authority */
-int korea_post(struct zint_symbol *symbol, unsigned char source[], int length) { 
+int korea_post(struct zint_symbol *symbol, unsigned char source[], int length) {
     int total, loop, check, zeroes, error_number;
     char localstr[8], dest[80];
 
@@ -257,7 +257,7 @@ int korea_post(struct zint_symbol *symbol, unsigned char source[], int length) {
 /* The simplest barcode symbology ever! Supported by MS Word, so here it is!
     glyphs from http://en.wikipedia.org/wiki/Facing_Identification_Mark */
 int fim(struct zint_symbol *symbol, unsigned char source[], int length) {
-    
+
 
     char dest[16] = {0};
 
@@ -322,10 +322,10 @@ char rm4scc(char source[], unsigned char dest[], int length) {
         column = 5;
     }
     check_digit = (6 * row) + column;
-    concat((char*) dest, RoyalTable[check_digit]);
+    strcat((char*) dest, RoyalTable[check_digit]);
 
     /* stop character */
-    concat((char*) dest, "0");
+    strcat((char*) dest, "0");
 
     return set_copy[check_digit];
 }
@@ -448,16 +448,16 @@ int daft_code(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     for (i = 0; i < length; i++) {
         if (source[i] == 'D') {
-            concat(height_pattern, "2");
+            strcat(height_pattern, "2");
         }
         if (source[i] == 'A') {
-            concat(height_pattern, "1");
+            strcat(height_pattern, "1");
         }
         if (source[i] == 'F') {
-            concat(height_pattern, "0");
+            strcat(height_pattern, "0");
         }
         if (source[i] == 'T') {
-            concat(height_pattern, "3");
+            strcat(height_pattern, "3");
         }
     }
 
@@ -484,7 +484,7 @@ int daft_code(struct zint_symbol *symbol, unsigned char source[], int length) {
 }
 
 /* Flattermarken - Not really a barcode symbology! */
-int flattermarken(struct zint_symbol *symbol, unsigned char source[], int length) { 
+int flattermarken(struct zint_symbol *symbol, unsigned char source[], int length) {
     int loop, error_number;
     char dest[512]; /* 90 * 4 + 1 ~ */
 
@@ -509,7 +509,7 @@ int flattermarken(struct zint_symbol *symbol, unsigned char source[], int length
 }
 
 /* Japanese Postal Code (Kasutama Barcode) */
-int japan_post(struct zint_symbol *symbol, unsigned char source[], int length) { 
+int japan_post(struct zint_symbol *symbol, unsigned char source[], int length) {
     int error_number, h;
     char pattern[69];
     int writer, loopey, inter_posn, i, sum, check;
@@ -570,7 +570,7 @@ int japan_post(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     sum = 0;
     for (i = 0; i < 20; i++) {
-        concat(pattern, JapanTable[posn(KASUTSET, inter[i])]);
+        strcat(pattern, JapanTable[posn(KASUTSET, inter[i])]);
         sum += posn(CHKASUTSET, inter[i]);
     }
 
@@ -588,9 +588,9 @@ int japan_post(struct zint_symbol *symbol, unsigned char source[], int length) {
     if (check >= 11) {
         check_char = (check - 11) + 'a';
     }
-    concat(pattern, JapanTable[posn(KASUTSET, check_char)]);
+    strcat(pattern, JapanTable[posn(KASUTSET, check_char)]);
 
-    concat(pattern, "31"); /* Stop */
+    strcat(pattern, "31"); /* Stop */
 
     /* Resolve pattern to 4-state symbols */
     writer = 0;

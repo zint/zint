@@ -84,7 +84,7 @@ int matrix_two_of_five(struct zint_symbol *symbol, unsigned char source[], int l
     }
 
     /* Stop character */
-    concat(dest, "41111");
+	strcat(dest, "41111");
 
     expand(symbol, dest);
     ustrcpy(symbol->text, source);
@@ -117,7 +117,7 @@ int industrial_two_of_five(struct zint_symbol *symbol, unsigned char source[], i
     }
 
     /* Stop character */
-    concat(dest, "31113");
+	strcat(dest, "31113");
 
     expand(symbol, dest);
     ustrcpy(symbol->text, source);
@@ -149,7 +149,7 @@ int iata_two_of_five(struct zint_symbol *symbol, unsigned char source[], int len
     }
 
     /* stop */
-    concat(dest, "311");
+	strcat(dest, "311");
 
     expand(symbol, dest);
     ustrcpy(symbol->text, source);
@@ -182,7 +182,7 @@ int logic_two_of_five(struct zint_symbol *symbol, unsigned char source[], int le
     }
 
     /* Stop character */
-    concat(dest, "311");
+	strcat(dest, "311");
 
     expand(symbol, dest);
     ustrcpy(symbol->text, source);
@@ -219,7 +219,7 @@ int interleaved_two_of_five(struct zint_symbol *symbol, unsigned char source[], 
         ustrcpy(temp, (unsigned char *) "0");
         length++;
     }
-    uconcat(temp, source);
+    strcat((char*)temp, (char*)source);
 
     /* start character */
     strcpy(dest, "1111");
@@ -240,11 +240,11 @@ int interleaved_two_of_five(struct zint_symbol *symbol, unsigned char source[], 
             k++;
         }
         mixed[k] = '\0';
-        concat(dest, mixed);
+		strcat(dest, mixed);
     }
 
     /* Stop character */
-    concat(dest, "311");
+	strcat(dest, "311");
 
     expand(symbol, dest);
     ustrcpy(symbol->text, temp);

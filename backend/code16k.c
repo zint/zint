@@ -695,12 +695,12 @@ int code16k(struct zint_symbol *symbol, unsigned char source[], int length) {
     for (current_row = 0; current_row < rows_needed; current_row++) {
 
         strcpy(width_pattern, "");
-        concat(width_pattern, C16KStartStop[C16KStartValues[current_row]]);
-        concat(width_pattern, "1");
+        strcat(width_pattern, C16KStartStop[C16KStartValues[current_row]]);
+        strcat(width_pattern, "1");
         for (i = 0; i < 5; i++) {
-            concat(width_pattern, C16KTable[values[(current_row * 5) + i]]);
+            strcat(width_pattern, C16KTable[values[(current_row * 5) + i]]);
         }
-        concat(width_pattern, C16KStartStop[C16KStopValues[current_row]]);
+        strcat(width_pattern, C16KStartStop[C16KStopValues[current_row]]);
 
         /* Write the information into the symbol */
         writer = 0;

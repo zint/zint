@@ -51,8 +51,6 @@
 #include <stdio.h>		// only needed for debug (main)
 #include <stdlib.h>		// only needed for malloc/free
 #include "reedsol.h"
-static int gfpoly;
-static int symsize; // in bits
 static int logmod; // 2**symsize - 1
 static int rlen;
 
@@ -76,8 +74,6 @@ void rs_init_gf(const int poly) {
         m++;
     b >>= 1;
     m--;
-    gfpoly = poly;
-    symsize = m;
 
     // Calculate the log/alog tables
     logmod = (1 << m) - 1;
@@ -100,7 +96,7 @@ void rs_init_gf(const int poly) {
 // (x + 2**i)*(x + 2**(i+1))*...   [nsym terms]
 // For ECC200, index is 1.
 
-void rs_init_code(const int nsym,int index) {
+void rs_init_code(const int nsym, int index) {
     int i, k;
 
     rspoly = (int *) malloc(sizeof (int) * (nsym + 1));
@@ -120,7 +116,7 @@ void rs_init_code(const int nsym,int index) {
     }
 }
 
-void rs_encode(const int len,const unsigned char *data, unsigned char *res) {
+void rs_encode(const int len, const unsigned char *data, unsigned char *res) {
     int i, k, m;
     for (i = 0; i < rlen; i++)
         res[i] = 0;
@@ -128,19 +124,19 @@ void rs_encode(const int len,const unsigned char *data, unsigned char *res) {
         m = res[rlen - 1] ^ data[i];
         for (k = rlen - 1; k > 0; k--) {
             if (m && rspoly[k])
-                res[k] = res[k - 1] ^ alog[(logt[m] + logt[rspoly[k]]) % logmod];
+                res[k] = (unsigned char) (res[k - 1] ^ alog[(logt[m] + logt[rspoly[k]]) % logmod]);
             else
                 res[k] = res[k - 1];
         }
         if (m && rspoly[0])
-            res[0] = alog[(logt[m] + logt[rspoly[0]]) % logmod];
+            res[0] = (unsigned char) (alog[(logt[m] + logt[rspoly[0]]) % logmod]);
         else
             res[0] = 0;
     }
 }
 
 /* The same as above but for larger bitlengths - Aztec code compatible */
-void rs_encode_long(const int len,const unsigned int *data, unsigned int *res) { 
+void rs_encode_long(const int len, const unsigned int *data, unsigned int *res) {
     int i, k, m;
     for (i = 0; i < rlen; i++)
         res[i] = 0;
@@ -160,7 +156,7 @@ void rs_encode_long(const int len,const unsigned int *data, unsigned int *res) {
 }
 
 /* Free memory */
-void rs_free(void) { 
+void rs_free(void) {
     free(logt);
     free(alog);
     free(rspoly);

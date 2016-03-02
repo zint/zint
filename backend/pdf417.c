@@ -78,7 +78,7 @@ static const int asciiy[95] = {
 
 /* Automatic sizing table */
 
-static const int MicroAutosize[56] ={
+static const int MicroAutosize[56] = {
     4, 6, 7, 8, 10, 12, 13, 14, 16, 18, 19, 20, 24, 29, 30, 33, 34, 37, 39, 46, 54, 58, 70, 72, 82, 90, 108, 126,
     1, 14, 2, 7, 3, 25, 8, 16, 5, 17, 9, 6, 10, 11, 28, 12, 19, 13, 29, 20, 30, 21, 22, 31, 23, 32, 33, 34
 };
@@ -510,7 +510,7 @@ void numbprocess(int *chainemc, int *mclength, char chaine[], int start, int len
         if (longueur > 44) {
             longueur = 44;
         }
-        concat(chainemod, "1");
+        strcat(chainemod, "1");
         for (loop = 1; loop <= longueur; loop++) {
             chainemod[loop] = chaine[start + loop + j - 1];
         }
@@ -529,7 +529,7 @@ void numbprocess(int *chainemc, int *mclength, char chaine[], int start, int len
                 }
                 if (nombre < diviseur) {
                     if (strlen(chainemult) != 0) {
-                        concat(chainemult, "0");
+                        strcat(chainemult, "0");
                     }
                 } else {
                     temp = (nombre / diviseur) + '0';
@@ -777,8 +777,8 @@ int pdf417(struct zint_symbol *symbol, unsigned char chaine[], int length) {
                     default: offset = 0;
                         break;
                 }
-                concat(codebarre, codagemc[offset + dummy[j]]);
-                concat(codebarre, "*");
+                strcat(codebarre, codagemc[offset + dummy[j]]);
+                strcat(codebarre, "*");
             }
         } else {
             /* normal PDF417 symbol */
@@ -791,10 +791,10 @@ int pdf417(struct zint_symbol *symbol, unsigned char chaine[], int length) {
                     default: offset = 0;
                         /* cluster(0) */ break;
                 }
-                concat(codebarre, codagemc[offset + dummy[j]]);
-                concat(codebarre, "*");
+                strcat(codebarre, codagemc[offset + dummy[j]]);
+                strcat(codebarre, "*");
             }
-            concat(codebarre, "-");
+            strcat(codebarre, "-");
         }
 
         strcpy(pattern, "");
@@ -1194,33 +1194,33 @@ int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], int length)
         }
 
         /* Copy the data into codebarre */
-        concat(codebarre, RAPLR[LeftRAP]);
-        concat(codebarre, "1");
-        concat(codebarre, codagemc[offset + dummy[1]]);
-        concat(codebarre, "1");
+        strcat(codebarre, RAPLR[LeftRAP]);
+        strcat(codebarre, "1");
+        strcat(codebarre, codagemc[offset + dummy[1]]);
+        strcat(codebarre, "1");
         if (symbol->option_2 == 3) {
-            concat(codebarre, RAPC[CentreRAP]);
+            strcat(codebarre, RAPC[CentreRAP]);
         }
         if (symbol->option_2 >= 2) {
-            concat(codebarre, "1");
-            concat(codebarre, codagemc[offset + dummy[2]]);
-            concat(codebarre, "1");
+            strcat(codebarre, "1");
+            strcat(codebarre, codagemc[offset + dummy[2]]);
+            strcat(codebarre, "1");
         }
         if (symbol->option_2 == 4) {
-            concat(codebarre, RAPC[CentreRAP]);
+            strcat(codebarre, RAPC[CentreRAP]);
         }
         if (symbol->option_2 >= 3) {
-            concat(codebarre, "1");
-            concat(codebarre, codagemc[offset + dummy[3]]);
-            concat(codebarre, "1");
+            strcat(codebarre, "1");
+            strcat(codebarre, codagemc[offset + dummy[3]]);
+            strcat(codebarre, "1");
         }
         if (symbol->option_2 == 4) {
-            concat(codebarre, "1");
-            concat(codebarre, codagemc[offset + dummy[4]]);
-            concat(codebarre, "1");
+            strcat(codebarre, "1");
+            strcat(codebarre, codagemc[offset + dummy[4]]);
+            strcat(codebarre, "1");
         }
-        concat(codebarre, RAPLR[RightRAP]);
-        concat(codebarre, "1"); /* stop */
+        strcat(codebarre, RAPLR[RightRAP]);
+        strcat(codebarre, "1"); /* stop */
         if (debug) printf("%s\n", codebarre);
 
         /* Now codebarre is a mixture of letters and numbers */

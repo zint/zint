@@ -34,6 +34,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 #include "common.h"
 
 #define SSET	"0123456789ABCDEF"
@@ -178,9 +179,9 @@ int svg_plot(struct zint_symbol *symbol) {
     fprintf(fsvg, "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\"\n");
     fprintf(fsvg, "   \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n");
     if (symbol->symbology != BARCODE_MAXICODE) {
-        fprintf(fsvg, "<svg width=\"%d\" height=\"%d\" version=\"1.1\"\n", roundup((symbol->width + xoffset + xoffset) * scaler), roundup((symbol->height + textoffset + yoffset + yoffset) * scaler));
+        fprintf(fsvg, "<svg width=\"%d\" height=\"%d\" version=\"1.1\"\n", (int)ceil((symbol->width + xoffset + xoffset) * scaler), (int)ceil((symbol->height + textoffset + yoffset + yoffset) * scaler));
     } else {
-        fprintf(fsvg, "<svg width=\"%d\" height=\"%d\" version=\"1.1\"\n", roundup((74.0 + xoffset + xoffset) * scaler), roundup((72.0 + yoffset + yoffset) * scaler));
+        fprintf(fsvg, "<svg width=\"%d\" height=\"%d\" version=\"1.1\"\n", (int)ceil((74.0F + xoffset + xoffset) * scaler), (int)ceil((72.0F + yoffset + yoffset) * scaler));
     }
     fprintf(fsvg, "   xmlns=\"http://www.w3.org/2000/svg\">\n");
     if (ustrlen(symbol->text) != 0) {
@@ -192,9 +193,9 @@ int svg_plot(struct zint_symbol *symbol) {
     fprintf(fsvg, "\n   <g id=\"barcode\" fill=\"#%s\">\n", symbol->fgcolour);
 
     if (symbol->symbology != BARCODE_MAXICODE) {
-        fprintf(fsvg, "      <rect x=\"0\" y=\"0\" width=\"%d\" height=\"%d\" fill=\"#%s\" />\n", roundup((symbol->width + xoffset + xoffset) * scaler), roundup((symbol->height + textoffset + yoffset + yoffset) * scaler), symbol->bgcolour);
+        fprintf(fsvg, "      <rect x=\"0\" y=\"0\" width=\"%d\" height=\"%d\" fill=\"#%s\" />\n", (int)ceil((symbol->width + xoffset + xoffset) * scaler), (int)ceil((symbol->height + textoffset + yoffset + yoffset) * scaler), symbol->bgcolour);
     } else {
-        fprintf(fsvg, "      <rect x=\"0\" y=\"0\" width=\"%d\" height=\"%d\" fill=\"#%s\" />\n", roundup((74.0 + xoffset + xoffset) * scaler), roundup((72.0 + yoffset + yoffset) * scaler), symbol->bgcolour);
+        fprintf(fsvg, "      <rect x=\"0\" y=\"0\" width=\"%d\" height=\"%d\" fill=\"#%s\" />\n", (int)ceil((74.0F + xoffset + xoffset) * scaler), (int)ceil((72.0F + yoffset + yoffset) * scaler), symbol->bgcolour);
     }
 
     if (((symbol->output_options & BARCODE_BOX) != 0) || ((symbol->output_options & BARCODE_BIND) != 0)) {
