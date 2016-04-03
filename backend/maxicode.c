@@ -37,11 +37,6 @@
 #include "reedsol.h"
 #include <string.h>
 #include <stdlib.h>
-#ifdef __APPLE__
-#include <sys/malloc.h>
-#else
-#include <malloc.h>
-#endif
 
 int maxi_codeword[144];
 

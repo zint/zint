@@ -37,11 +37,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#ifdef __APPLE__
-#include <sys/malloc.h>
-#else
-#include <malloc.h>
-#endif
 
 void horiz(struct zint_symbol *symbol, int row_no, int full) {
     int i;
