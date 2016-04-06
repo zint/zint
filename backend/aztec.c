@@ -737,7 +737,7 @@ int avoidReferenceGrid(int input) {
 }
 
 /* Calculate the position of the bits in the grid */
-void popilate_map() {
+void populate_map() {
     int layer, start, length, n, i;
     int x, y;
 
@@ -903,6 +903,8 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], int length) {
             }
             break;
     }
+    
+    populate_map();
 
     err_code = aztec_text_process(local_source, length, binary_string, gs1);
 
