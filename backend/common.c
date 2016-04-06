@@ -73,7 +73,7 @@ void to_upper(unsigned char source[]) {
 }
 
 /* Verifies that a string only uses valid characters */
-int is_sane(char test_string[], const unsigned char source[], const int length) {
+int is_sane(const char test_string[], const unsigned char source[], const int length) {
     unsigned int i, j, latch;
     unsigned int lt = strlen(test_string);
 
@@ -94,7 +94,7 @@ int is_sane(char test_string[], const unsigned char source[], const int length) 
 }
 
 /* Returns the position of data in set_string */
-int posn(char set_string[], const char data) {
+int posn(const char set_string[], const char data) {
     unsigned int i, n = strlen(set_string);
 
     for (i = 0; i < n; i++) {
@@ -106,7 +106,7 @@ int posn(char set_string[], const char data) {
 }
 
 /* Replaces huge switch statements for looking up in tables */
-void lookup(char set_string[], const char *table[], const char data, char dest[]) {
+void lookup(const char set_string[], const char *table[], const char data, char dest[]) {
     unsigned int i, n = strlen(set_string);
 
     for (i = 0; i < n; i++) {
@@ -132,7 +132,7 @@ void unset_module(struct zint_symbol *symbol, const int y_coord, const int x_coo
 }
 
 /* Expands from a width pattern to a bit pattern */
-void expand(struct zint_symbol *symbol, char data[]) {
+void expand(struct zint_symbol *symbol, const char data[]) {
 
     unsigned int reader, n = strlen(data);
     int writer, i;

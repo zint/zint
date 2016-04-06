@@ -1099,7 +1099,7 @@ int ZBarcode_Encode_File_and_Buffer(struct zint_symbol *symbol, char *filename, 
  * dimensions. The symbol->scale and symbol->height values are totally ignored in this case.
  *
  */
-int ZBarcode_Render(struct zint_symbol *symbol, float width, float height) {
+int ZBarcode_Render(struct zint_symbol *symbol, const float width, const float height) {
     // Send the request to the render_plot method
     return render_plot(symbol, width, height);
 }

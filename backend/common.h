@@ -56,10 +56,10 @@ extern "C" {
     extern int ctoi(const char source);
     extern char itoc(const int source);
     extern void to_upper(unsigned char source[]);
-    extern int is_sane(char test_string[], const unsigned char source[], const int length);
-    extern void lookup(char set_string[], const char *table[], const char data, char dest[]);
-    extern int posn(char set_string[], const char data);
-    extern void expand(struct zint_symbol *symbol, char data[]);
+    extern int is_sane(const char test_string[], const unsigned char source[], const int length);
+    extern void lookup(const char set_string[], const char *table[], const char data, char dest[]);
+    extern int posn(const char set_string[], const char data);
+    extern void expand(struct zint_symbol *symbol, const char data[]);
     extern int is_stackable(const int symbology);
     extern int is_extendable(const int symbology);
     extern int roundup(const float input);
