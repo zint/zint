@@ -170,6 +170,10 @@ extern "C" {
 #define BARCODE_HIBC_MICPDF	108
 #define BARCODE_HIBC_BLOCKF	110
 #define BARCODE_HIBC_AZTEC	112
+    
+    /* Tbarcode 10 codes */
+#define BARCODE_DOTCODE         115
+#define BARCODE_HANXIN          116
 
     /* Zint specific */
 #define BARCODE_AZRUNE		128

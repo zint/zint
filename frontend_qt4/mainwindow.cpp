@@ -68,7 +68,8 @@ MainWindow::MainWindow(QWidget* parent, Qt::WFlags fl)
 		"GS1 DataBar Omnidirectional",                
 		"GS1 DataBar Stacked",
 		"GS1 DataBar Stacked Omnidirectional",                
-		"ITF-14",
+		"Han Xin Code",
+                "ITF-14",
 		"International Standard Book Number (ISBN)",
 		"Japanese Postal Barcode",
 		"Korean Postal Barcode",
@@ -676,7 +677,7 @@ void MainWindow::update_preview()
 				m_bc.bc.setSymbol(BARCODE_HIBC_AZTEC);
 			break;
 
-		case MSI_PLESSEY:
+		case BARCODE_MSI_PLESSEY:
 			m_bc.bc.setSymbol(BARCODE_MSI_PLESSEY);
 			m_bc.bc.setWidth(m_optionWidget->findChild<QComboBox*>("cmbMSICheck")->currentIndex());
 			break;
@@ -792,7 +793,10 @@ void MainWindow::update_preview()
 			if(m_optionWidget->findChild<QRadioButton*>("radC49GS1")->isChecked())
 				m_bc.bc.setInputMode(GS1_MODE);
 			break;
-			
+                case BARCODE_HANXIN:
+                        m_bc.bc.setSymbol(BARCODE_HANXIN);
+                        // Space reserved for more options!
+                        break;
 		default:
 			m_bc.bc.setSymbol(metaObject()->enumerator(0).value(bstyle->currentIndex()));
 			break;
