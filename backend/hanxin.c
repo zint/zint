@@ -41,11 +41,31 @@
 #include "reedsol.h"
 #include "hanxin.h"
 
+/* Find which submode to use for a text character */
+int getsubmode(char input) {
+    int submode = 2;
+    
+    if ((input >= '0') && (input <= '9')) {
+        submode = 1;
+    }
+    
+    if ((input >= 'A') && (input <= 'Z')) {
+        submode = 1;
+    }
+    
+    if ((input >= 'a') && (input <= 'z')) {
+        submode = 1;
+    }
+    
+    return submode;
+}
+
 /* Calculate the approximate length of the binary string */
-int calculate_binlength(char mode[], int length) {
+int calculate_binlength(char mode[], const unsigned char source[], int length) {
     int i;
     char lastmode = ' ';
     int est_binlen = 0;
+    int submode = 1;
     
     for (i = 0; i < length; i++) {
         switch (mode[i]) {
@@ -60,6 +80,11 @@ int calculate_binlength(char mode[], int length) {
                 if (lastmode != 't') {
                     est_binlen += 10;
                     lastmode = 't';
+                    submode = 1;
+                }
+                if (getsubmode((char) source[i]) != submode) {
+                    est_binlen += 6;
+                    submode = getsubmode((char) source[i]);
                 }
                 est_binlen += 6;
             case 'b':
@@ -99,25 +124,6 @@ void hx_define_mode(char mode[], const unsigned char source[], int length) {
         }
     }
     mode[length] = '\0';
-}
-
-/* Find which submode to use for a text character */
-int getsubmode(char input) {
-    int submode = 2;
-    
-    if ((input >= '0') && (input <= '9')) {
-        submode = 1;
-    }
-    
-    if ((input >= 'A') && (input <= 'Z')) {
-        submode = 1;
-    }
-    
-    if ((input >= 'a') && (input <= 'z')) {
-        submode = 1;
-    }
-    
-    return submode;
 }
 
 /* Convert Text 1 sub-mode character to encoding value, as given in table 3 */
@@ -341,22 +347,363 @@ void calculate_binary(char binary[], char mode[], const unsigned char source[], 
     } while (position < length);
 }
 
+/* Finder pattern for top left of symbol */
+void hx_place_finder_top_left(unsigned char* grid, int size) {
+    int xp, yp;
+    int x = 0, y = 0;
+    
+    int finder[] = {
+        1, 1, 1, 1, 1, 1, 1,
+        1, 0, 0, 0, 0, 0, 0,
+        1, 0, 1, 1, 1, 1, 1,
+        1, 0, 1, 0, 0, 0, 0,
+        1, 0, 1, 0, 1, 1, 1,
+        1, 0, 1, 0, 1, 1, 1,
+        1, 0, 1, 0, 1, 1, 1
+    };
+    
+    for (xp = 0; xp < 7; xp++) {
+        for (yp = 0; yp < 7; yp++) {
+            if (finder[xp + (7 * yp)] == 1) {
+                grid[((yp + y) * size) + (xp + x)] = 0x11;
+            } else {
+                grid[((yp + y) * size) + (xp + x)] = 0x10;
+            }
+        }
+    }
+}
+
+/* Finder pattern for top right and bottom left of symbol */
+void hx_place_finder(unsigned char* grid, int size, int x, int y) {
+    int xp, yp;
+    
+    int finder[] = {
+        1, 1, 1, 1, 1, 1, 1,
+        0, 0, 0, 0, 0, 0, 1,
+        1, 1, 1, 1, 1, 0, 1,
+        0, 0, 0, 0, 1, 0, 1,
+        1, 1, 1, 0, 1, 0, 1,
+        1, 1, 1, 0, 1, 0, 1,
+        1, 1, 1, 0, 1, 0, 1
+    };
+    
+    for (xp = 0; xp < 7; xp++) {
+        for (yp = 0; yp < 7; yp++) {
+            if (finder[xp + (7 * yp)] == 1) {
+                grid[((yp + y) * size) + (xp + x)] = 0x11;
+            } else {
+                grid[((yp + y) * size) + (xp + x)] = 0x10;
+            }
+        }
+    }
+}
+
+/* Finder pattern for bottom right of symbol */
+void hx_place_finder_bottom_right(unsigned char* grid, int size) {
+    int xp, yp;
+    int x = size - 7, y = size - 7;
+    
+    int finder[] = {
+        1, 1, 1, 0, 1, 0, 1,
+        1, 1, 1, 0, 1, 0, 1,
+        1, 1, 1, 0, 1, 0, 1,
+        0, 0, 0, 0, 1, 0, 1,
+        1, 1, 1, 1, 1, 0, 1,
+        0, 0, 0, 0, 0, 0, 1,
+        1, 1, 1, 1, 1, 1, 1
+    };
+    
+    for (xp = 0; xp < 7; xp++) {
+        for (yp = 0; yp < 7; yp++) {
+            if (finder[xp + (7 * yp)] == 1) {
+                grid[((yp + y) * size) + (xp + x)] = 0x11;
+            } else {
+                grid[((yp + y) * size) + (xp + x)] = 0x10;
+            }
+        }
+    }
+}
+
+/* Avoid plotting outside symbol or over finder patterns */
+void hx_safe_plot(unsigned char *grid, int size, int x, int y, int value) {
+    if ((x >= 0) && (x < size)) {
+        if ((y >= 0) && (y < size)) {
+            if (grid[(y * size) + x] == 0) {
+                grid[(y * size) + x] = value;
+            }
+        }
+    }
+}
+
+/* Plot an alignment pattern around top and right of a module */
+void hx_plot_alignment(unsigned char *grid, int size, int x, int y, int w, int h) {
+    int i;
+    hx_safe_plot(grid, size, x, y, 0x11);
+    hx_safe_plot(grid, size, x - 1, y + 1, 0x10);
+    
+    for (i = 1; i <= w; i++) {
+        /* Top */
+        hx_safe_plot(grid, size, x - i, y, 0x11);
+        hx_safe_plot(grid, size, x - i - 1, y + 1, 0x10);
+    }
+    
+    for (i = 1; i < h; i++) {
+        /* Right */
+        hx_safe_plot(grid, size, x, y + i, 0x11);
+        hx_safe_plot(grid, size, x - 1, y + i + 1, 0x10);
+    }
+}
+
+/* Plot assistany alignment patterns */
+void hx_plot_assistant(unsigned char *grid, int size, int x, int y) {
+    hx_safe_plot(grid, size, x - 1, y - 1, 0x10);
+    hx_safe_plot(grid, size, x, y - 1, 0x10);
+    hx_safe_plot(grid, size, x + 1, y - 1, 0x10);
+    hx_safe_plot(grid, size, x - 1, y, 0x10);
+    hx_safe_plot(grid, size, x, y, 0x11);
+    hx_safe_plot(grid, size, x + 1, y, 0x10);
+    hx_safe_plot(grid, size, x - 1, y + 1, 0x10);
+    hx_safe_plot(grid, size, x, y + 1, 0x10);
+    hx_safe_plot(grid, size, x + 1, y + 1, 0x10);    
+}
+
+/* Put static elements in the grid */
+void hx_setup_grid(unsigned char* grid, int size, int version) {
+    int i, j;
+    
+    for (i = 0; i < size; i++) {
+        for (j = 0; j < size; j++) {
+            grid[(i * size) + j] = 0;
+        }
+    }
+    
+    /* Add finder patterns */
+    hx_place_finder_top_left(grid, size);
+    hx_place_finder(grid, size, 0, size - 7);
+    hx_place_finder(grid, size, size - 7, 0);
+    hx_place_finder_bottom_right(grid, size);
+    
+    /* Add finder pattern separator region */
+    for (i = 0; i < 8; i++) {
+        /* Top left */
+        grid[(7 * size) + i] = 0x10;
+        grid[(i * size) + 7] = 0x10;
+        
+         /* Top right */
+        grid[(7 * size) + (size - i - 1)] = 0x10;       
+        grid[((size - i - 1) * size) + 7] = 0x10;
+       
+        /* Bottom left */
+        grid[(i * size) + (size - 8)] = 0x10;
+        grid[((size - 8) * size) + i] = 0x10;
+        
+        /* Bottom right */
+        grid[((size - 8) * size) + (size - i - 1)] = 0x10;
+        grid[((size - i - 1) * size) + (size - 8)] = 0x10;
+    }
+    
+    /* Reserve function information region */
+    for (i = 0; i < 9; i++) {
+        /* Top left */
+        grid[(8 * size) + i] = 0x10;
+        grid[(i * size) + 8] = 0x10;
+        
+         /* Top right */
+        grid[(8 * size) + (size - i - 1)] = 0x10;       
+        grid[((size - i - 1) * size) + 8] = 0x10;
+       
+        /* Bottom left */
+        grid[(i * size) + (size - 9)] = 0x10;
+        grid[((size - 9) * size) + i] = 0x10;
+        
+        /* Bottom right */
+        grid[((size - 9) * size) + (size - i - 1)] = 0x10;
+        grid[((size - i - 1) * size) + (size - 9)] = 0x10;
+    }
+    
+    if (version > 3) {
+        int k = hx_module_k[version - 1];
+        int r = hx_module_r[version - 1];
+        int m = hx_module_m[version - 1];
+        int x, y, row_switch, column_switch;
+        int module_height, module_width;
+        int mod_x, mod_y;
+        
+        /* Add assistant alignment patterns to left and right */
+        y = 0;
+        mod_y = 0;
+        do {
+            if (mod_y < m) {
+                module_height = k;
+            } else {
+                module_height = r - 1;
+            }
+            
+            if ((mod_y % 2) == 0) {
+                if ((m % 2) == 1) {
+                    hx_plot_assistant(grid, size, 0, y);
+                }
+            } else {
+                if ((m % 2) == 0) {
+                    hx_plot_assistant(grid, size, 0, y);
+                }
+                hx_plot_assistant(grid, size, size - 1, y);
+            }
+            
+            mod_y++;
+            y += module_height;
+        } while (y < size);
+        
+        /* Add assistant alignment patterns to top and bottom */
+        x = (size - 1);
+        mod_x = 0;
+        do {
+            if (mod_x < m) {
+                module_width = k;
+            } else {
+                module_width = r - 1;
+            }
+            
+            if ((mod_x % 2) == 0) {
+                if ((m % 2) == 1) {
+                    hx_plot_assistant(grid, size, x, (size - 1));
+                }
+            } else {
+                if ((m % 2) == 0) {
+                    hx_plot_assistant(grid, size, x, (size - 1));
+                }
+                hx_plot_assistant(grid, size, x, 0);
+            }
+            
+            mod_x++;
+            x -= module_width;
+        } while (x >= 0);
+        
+        /* Add alignment pattern */
+        column_switch = 1;
+        y = 0;
+        mod_y = 0;        
+        do {
+            if (mod_y < m) {
+                module_height = k;
+            } else {
+                module_height = r - 1;
+            }
+            
+            if (column_switch == 1) {
+                row_switch = 1;
+                column_switch = 0;
+            } else {
+                row_switch = 0;
+                column_switch = 1;
+            }
+            
+            x = (size - 1);
+            mod_x = 0;
+            do {
+                if (mod_x < m) {
+                    module_width = k;
+                } else {
+                    module_width = r - 1;
+                }
+                
+                if (row_switch == 1) {
+                    if (!(y == 0 && x == (size - 1))) {
+                        hx_plot_alignment(grid, size, x, y, module_width, module_height);
+                    }
+                    row_switch = 0;
+                } else {
+                    row_switch = 1;
+                }
+                mod_x++;
+                x -= module_width;
+            } while (x >= 0);
+            
+            mod_y++;
+            y += module_height;
+        } while (y < size);
+    }
+}
+
 /* Han Xin Code - main */
 int han_xin(struct zint_symbol *symbol, const unsigned char source[], int length) {
     char mode[length + 1];
     int est_binlen;
+    int ecc_level = 1;
+    int i, j, version;
+    int target_binlen, size;
 
     hx_define_mode(mode, source, length);
     
-    est_binlen = calculate_binlength(mode, length);
+    est_binlen = calculate_binlength(mode, source, length);
     
     char binary[est_binlen + 10];
     binary[0] = '\0';
     
     calculate_binary(binary, mode, source, length);
     
+    version = 85;
+    for (i = 84; i > 0; i--) {
+        switch (ecc_level) {
+            case 1:
+                if ((hx_data_codewords_L1[i - 1] * 8) > est_binlen) {
+                    version = i;
+                    target_binlen = hx_data_codewords_L1[i - 1] * 8;
+                }
+                break;
+            case 2:
+                if ((hx_data_codewords_L2[i - 1] * 8) > est_binlen) {
+                    version = i;
+                    target_binlen = hx_data_codewords_L2[i - 1] * 8;
+                }
+                break;
+            case 3:
+                if ((hx_data_codewords_L3[i - 1] * 8) > est_binlen) {
+                    version = i;
+                    target_binlen = hx_data_codewords_L3[i - 1] * 8;
+                }
+                break;
+            case 4:
+                if ((hx_data_codewords_L4[i - 1] * 8) > est_binlen) {
+                    version = i;
+                    target_binlen = hx_data_codewords_L4[i - 1] * 8;
+                }
+                break;
+        }
+    }
+    
+    if (version == 85) {
+        strcpy(symbol->errtxt, "Input too long for selected error correction level");
+        return ZINT_ERROR_TOO_LONG;
+    }
+    
+    size = (version * 2) + 21;
+    
+#ifndef _MSC_VER
+    int datastream[target_binlen + 1];
+    int fullstream[hx_total_codewords[version - 1] + 1];
+    unsigned char grid[size * size];
+#else
+    datastream = (int *) _alloca((target_binlen + 1) * sizeof (int));
+    fullstream = (int *) _alloca((hx_total_codewords[version - 1] + 1) * sizeof (int));
+    grid = (unsigned char *) _alloca((size * size) * sizeof (unsigned char));
+#endif
+    
+    hx_setup_grid(grid, size, version);
+    
     printf("Binary: %s\n", binary);
     
-    strcpy(symbol->errtxt, "Under Construction!");
-    return ZINT_ERROR_INVALID_OPTION;
+    symbol->width = size;
+    symbol->rows = size;
+
+    for (i = 0; i < size; i++) {
+        for (j = 0; j < size; j++) {
+            if (grid[(i * size) + j] & 0x01) {
+                set_module(symbol, i, j);
+            }
+        }
+        symbol->row_height[i] = 1;
+    }
+    
+    return 0;
 }
