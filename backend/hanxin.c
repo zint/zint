@@ -63,7 +63,7 @@ int getsubmode(char input) {
 /* Calculate the approximate length of the binary string */
 int calculate_binlength(char mode[], const unsigned char source[], int length) {
     int i;
-    char lastmode = ' ';
+    char lastmode = 't';
     int est_binlen = 0;
     int submode = 1;
     
@@ -87,11 +87,14 @@ int calculate_binlength(char mode[], const unsigned char source[], int length) {
                     submode = getsubmode((char) source[i]);
                 }
                 est_binlen += 6;
+                break;
             case 'b':
                 if (lastmode != 'b') {
                     est_binlen += 17;
                     lastmode = 'b';
                 }
+                est_binlen += 8;
+                break;
         }
     }
     
@@ -454,7 +457,7 @@ void hx_plot_alignment(unsigned char *grid, int size, int x, int y, int w, int h
     }
 }
 
-/* Plot assistany alignment patterns */
+/* Plot assistant alignment patterns */
 void hx_plot_assistant(unsigned char *grid, int size, int x, int y) {
     hx_safe_plot(grid, size, x - 1, y - 1, 0x10);
     hx_safe_plot(grid, size, x, y - 1, 0x10);
@@ -631,13 +634,22 @@ int han_xin(struct zint_symbol *symbol, const unsigned char source[], int length
     int est_binlen;
     int ecc_level = 1;
     int i, j, version;
-    int target_binlen, size;
+    int data_codewords, size;
+    int est_codewords;
 
     hx_define_mode(mode, source, length);
     
     est_binlen = calculate_binlength(mode, source, length);
+    est_codewords = est_binlen / 8;
+    if (est_binlen % 8 != 0) {
+        est_codewords++;
+    }
     
-    char binary[est_binlen + 10];
+    char binary[est_binlen + 1];
+    for (i = 0; i < est_binlen + 1; i++) {
+        binary[i] = '\0';
+    }
+    
     binary[0] = '\0';
     
     calculate_binary(binary, mode, source, length);
@@ -646,27 +658,27 @@ int han_xin(struct zint_symbol *symbol, const unsigned char source[], int length
     for (i = 84; i > 0; i--) {
         switch (ecc_level) {
             case 1:
-                if ((hx_data_codewords_L1[i - 1] * 8) > est_binlen) {
+                if (hx_data_codewords_L1[i - 1] > est_codewords ) {
                     version = i;
-                    target_binlen = hx_data_codewords_L1[i - 1] * 8;
+                    data_codewords = hx_data_codewords_L1[i - 1];
                 }
                 break;
             case 2:
-                if ((hx_data_codewords_L2[i - 1] * 8) > est_binlen) {
+                if (hx_data_codewords_L2[i - 1] > est_codewords) {
                     version = i;
-                    target_binlen = hx_data_codewords_L2[i - 1] * 8;
+                    data_codewords = hx_data_codewords_L2[i - 1];
                 }
                 break;
             case 3:
-                if ((hx_data_codewords_L3[i - 1] * 8) > est_binlen) {
+                if (hx_data_codewords_L3[i - 1] > est_codewords) {
                     version = i;
-                    target_binlen = hx_data_codewords_L3[i - 1] * 8;
+                    data_codewords = hx_data_codewords_L3[i - 1];
                 }
                 break;
             case 4:
-                if ((hx_data_codewords_L4[i - 1] * 8) > est_binlen) {
+                if (hx_data_codewords_L4[i - 1] > est_codewords) {
                     version = i;
-                    target_binlen = hx_data_codewords_L4[i - 1] * 8;
+                    data_codewords = hx_data_codewords_L4[i - 1];
                 }
                 break;
         }
@@ -680,18 +692,34 @@ int han_xin(struct zint_symbol *symbol, const unsigned char source[], int length
     size = (version * 2) + 21;
     
 #ifndef _MSC_VER
-    int datastream[target_binlen + 1];
-    int fullstream[hx_total_codewords[version - 1] + 1];
+    int datastream[data_codewords];
+    int fullstream[hx_total_codewords[version - 1]];
     unsigned char grid[size * size];
 #else
-    datastream = (int *) _alloca((target_binlen + 1) * sizeof (int));
-    fullstream = (int *) _alloca((hx_total_codewords[version - 1] + 1) * sizeof (int));
+    datastream = (int *) _alloca((data_codewords) * sizeof (int));
+    fullstream = (int *) _alloca((hx_total_codewords[version - 1]) * sizeof (int));
     grid = (unsigned char *) _alloca((size * size) * sizeof (unsigned char));
 #endif
+    
+    for (i = 0; i < data_codewords; i++) {
+        datastream[i] = 0;
+    }
+    
+    for(i = 0; i < est_binlen; i++) {
+        if (binary[i] == '1') {
+            datastream[i / 8] += 0x80 >> (i % 8);
+        }
+    }
     
     hx_setup_grid(grid, size, version);
     
     printf("Binary: %s\n", binary);
+    
+    printf("Data Codewords:\n");
+    for (i = 0; i < data_codewords; i++) {
+        printf("%2X ", datastream[i]);
+    }
+    printf("\n");
     
     symbol->width = size;
     symbol->rows = size;
