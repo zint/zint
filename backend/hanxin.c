@@ -628,6 +628,59 @@ void hx_setup_grid(unsigned char* grid, int size, int version) {
     }
 }
 
+/* Calculate error correction codes */
+void hx_add_ecc(unsigned char fullstream[], unsigned char datastream[], int version, int ecc_level) {
+    unsigned char data_block[180];
+    unsigned char ecc_block[36];
+    
+    //FIXME: Check that this is the correct method for assembling the data
+    
+    int i, j, block;
+    int batch_size, data_length, ecc_length;
+    int input_position = -1;
+    int output_position = -1;
+    
+    for (i = 0; i < 3; i++) {
+        batch_size = hx_table_d1[(((version - 1) + (ecc_level - 1)) * 9) + (3 * i)];
+        data_length = hx_table_d1[(((version - 1) + (ecc_level - 1)) * 9) + (3 * i) + 1];
+        ecc_length = hx_table_d1[(((version - 1) + (ecc_level - 1)) * 9) + (3 * i) + 2];
+        
+        for(block = 0; block < batch_size; block++) {
+            for (j = 0; j < data_length; j++) {
+                input_position++;
+                output_position++;
+                data_block[j] = datastream[input_position];
+                fullstream[output_position] = datastream[input_position];
+            }
+            
+            rs_init_gf(0x163); // x^8 + x^6 + x^5 + x + 1 = 0
+            rs_init_code(ecc_length, 1);
+            rs_encode(data_length, data_block, ecc_block);
+            rs_free();
+            
+            for (j = 0; j < ecc_length; j++) {
+                output_position++;
+                fullstream[output_position] = ecc_block[ecc_length - j - 1];
+            }
+        }
+    }
+}
+
+/* Rearrange data in batches of 13 codewords (section 5.8.2) */
+void make_picket_fence(unsigned char fullstream[], unsigned char picket_fence[], int streamsize) {
+    int i, start;
+    int output_position = 0;
+    
+    for (start = 0; start < 13; start++) {
+        for (i = start; i < streamsize; i += 13) {
+            if (i < streamsize) {
+                picket_fence[output_position] = fullstream[i];
+                output_position++;
+            }
+        }
+    }
+}
+
 /* Han Xin Code - main */
 int han_xin(struct zint_symbol *symbol, const unsigned char source[], int length) {
     char mode[length + 1];
@@ -690,17 +743,19 @@ int han_xin(struct zint_symbol *symbol, const unsigned char source[], int length
     }
     
     size = (version * 2) + 21;
-    
+
 #ifndef _MSC_VER
-    int datastream[data_codewords];
-    int fullstream[hx_total_codewords[version - 1]];
+    unsigned char datastream[data_codewords];
+    unsigned char fullstream[hx_total_codewords[version - 1]];
+    unsigned char picket_fence[hx_total_codewords[version - 1]];
     unsigned char grid[size * size];
 #else
-    datastream = (int *) _alloca((data_codewords) * sizeof (int));
-    fullstream = (int *) _alloca((hx_total_codewords[version - 1]) * sizeof (int));
+    datastream = (unsigned char *) _alloca((data_codewords) * sizeof (unsigned char));
+    fullstream = (unsigned char *) _alloca((hx_total_codewords[version - 1]) * sizeof (unsigned char));
+    picket_fence = (unsigned char *) _alloca((hx_total_codewords[version - 1]) * sizeof (unsigned char));
     grid = (unsigned char *) _alloca((size * size) * sizeof (unsigned char));
 #endif
-    
+
     for (i = 0; i < data_codewords; i++) {
         datastream[i] = 0;
     }
@@ -710,9 +765,9 @@ int han_xin(struct zint_symbol *symbol, const unsigned char source[], int length
             datastream[i / 8] += 0x80 >> (i % 8);
         }
     }
-    
+
     hx_setup_grid(grid, size, version);
-    
+
     printf("Binary: %s\n", binary);
     
     printf("Data Codewords:\n");
@@ -720,6 +775,24 @@ int han_xin(struct zint_symbol *symbol, const unsigned char source[], int length
         printf("%2X ", datastream[i]);
     }
     printf("\n");
+    
+    hx_add_ecc(fullstream, datastream, version, ecc_level);
+    
+    printf("Full stream, including ecc:\n");
+    for (i = 0; i < hx_total_codewords[version - 1]; i++) {
+        printf("%2X ", fullstream[i]);
+    }
+    printf("\n");
+    
+    make_picket_fence(fullstream, picket_fence, hx_total_codewords[version - 1]);
+    
+    printf("Picket fence:\n");
+    for (i = 0; i < hx_total_codewords[version - 1]; i++) {
+        printf("%2X ", picket_fence[i]);
+    }
+    printf("\n");
+    
+    printf("Version %d, ECC level %d\n", version, ecc_level);
     
     symbol->width = size;
     symbol->rows = size;
@@ -732,6 +805,6 @@ int han_xin(struct zint_symbol *symbol, const unsigned char source[], int length
         }
         symbol->row_height[i] = 1;
     }
-    
-    return 0;
+
+    return 1;
 }
