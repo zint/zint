@@ -632,9 +632,6 @@ void hx_setup_grid(unsigned char* grid, int size, int version) {
 void hx_add_ecc(unsigned char fullstream[], unsigned char datastream[], int version, int ecc_level) {
     unsigned char data_block[180];
     unsigned char ecc_block[36];
-    
-    //FIXME: Check that this is the correct method for assembling the data
-    
     int i, j, block;
     int batch_size, data_length, ecc_length;
     int input_position = -1;
@@ -681,6 +678,273 @@ void make_picket_fence(unsigned char fullstream[], unsigned char picket_fence[],
     }
 }
 
+/* Evaluate a bitmask according to table 9 */
+int hx_evaluate(unsigned char *eval, int size, int pattern) {
+    int x, y, i, block, weight;
+    int result = 0;
+    char state;
+    int p;
+    int a, b, afterCount, beforeCount;
+#ifndef _MSC_VER
+    char local[size * size];
+#else
+    char* local = (char *) _alloca((size * size) * sizeof (char));
+#endif
+
+    /* all eight bitmask variants have been encoded in the 8 bits of the bytes
+     * that make up the grid array. select them for evaluation according to the
+     * desired pattern.*/
+    for (x = 0; x < size; x++) {
+        for (y = 0; y < size; y++) {
+            if ((eval[(y * size) + x] & (0x01 << pattern)) != 0) {
+                local[(y * size) + x] = '1';
+            } else {
+                local[(y * size) + x] = '0';
+            }
+        }
+    }
+
+
+
+    /* Test 1: 1:1:1:1:3  of 3:1:1:1:1 ratio pattern in row/column */
+    /* Vertical */
+    for (x = 0; x < size; x++) {
+        for (y = 0; y < (size - 7); y++) {
+            p = 0;
+            for (weight = 0; weight < 7; weight++) {
+                if (local[((y + weight) * size) + x] == '1') {
+                    p += (0x40 >> weight);
+                }
+            }
+            if ((p == 0x57) || (p = 0x75)) {
+                /* Pattern found, check before and after */
+                beforeCount = 0;
+                for (b = (y - 3); b < y; b++) {
+                    if (b < 0) {
+                        beforeCount++;
+                    } else {
+                        if (local[(b * size) + x] == '0') {
+                            beforeCount++;
+                        } else {
+                            beforeCount = 0;
+                        }
+                    }
+                }
+
+                afterCount = 0;
+                for (a = (y + 7); a <= (y + 9); a++) {
+                    if (a >= size) {
+                        afterCount++;
+                    } else {
+                        if (local[(a * size) + x] == '0') {
+                            afterCount++;
+                        } else {
+                            afterCount = 0;
+                        }
+                    }
+                }
+
+                if ((beforeCount == 3) || (afterCount == 3)) {
+                    /* Pattern is preceeded or followed by light area
+                       3 modules wide */
+                    result += 50;
+                }
+            }
+        }
+    }
+
+    /* Horizontal */
+    for (y = 0; y < size; y++) {
+        for (x = 0; x < (size - 7); x++) {
+            p = 0;
+            for (weight = 0; weight < 7; weight++) {
+                if (local[(y * size) + x + weight] == '1') {
+                    p += (0x40 >> weight);
+                }
+            }
+            if ((p == 0x57) || (p = 0x75)) {
+                /* Pattern found, check before and after */
+                beforeCount = 0;
+                for (b = (x - 3); b < x; b++) {
+                    if (b < 0) {
+                        beforeCount++;
+                    } else {
+                        if (local[(y * size) + b] == '0') {
+                            beforeCount++;
+                        } else {
+                            beforeCount = 0;
+                        }
+                    }
+                }
+
+                afterCount = 0;
+                for (a = (x + 7); a <= (x + 9); a++) {
+                    if (a >= size) {
+                        afterCount++;
+                    } else {
+                        if (local[(y * size) + a] == '0') {
+                            afterCount++;
+                        } else {
+                            afterCount = 0;
+                        }
+                    }
+                }
+
+                if ((beforeCount == 3) || (afterCount == 3)) {
+                    /* Pattern is preceeded or followed by light area
+                       3 modules wide */
+                    result += 50;
+                }
+            }
+        }
+    }
+    
+    /* Test 2: Adjacent modules in row/column in same colour */
+    /* Vertical */
+    for (x = 0; x < size; x++) {
+        state = local[x];
+        block = 0;
+        for (y = 0; y < size; y++) {
+            i = y + 1;
+            if (local[(y * size) + x] == state) {
+                block++;
+            } else {
+                if (block > (3 + i)) {
+                    result += (3 + i) * 4;
+                }
+                block = 0;
+                state = local[(y * size) + x];
+            }
+        }
+        if (block > (3 + i)) {
+            result += (3 + i) * 4;
+        }
+    }
+
+    /* Horizontal */
+    for (y = 0; y < size; y++) {
+        i = y + 1;
+        state = local[y * size];
+        block = 0;
+        for (x = 0; x < size; x++) {
+            if (local[(y * size) + x] == state) {
+                block++;
+            } else {
+                if (block > (3 + i)) {
+                    result += (3 + i) * 4;
+                }
+                block = 0;
+                state = local[(y * size) + x];
+            }
+        }
+        if (block > (3 + i)) {
+            result += (3 + i) * 4;
+        }
+    }
+
+    return result;
+}
+
+/* Apply the four possible bitmasks for evaluation */
+int hx_apply_bitmask(unsigned char *grid, int size) {
+    int x, y;
+    int i, j;
+    int pattern, penalty[4];
+    int best_pattern, best_val;
+    int bit;
+    unsigned char p;
+    
+#ifndef _MSC_VER
+    unsigned char mask[size * size];
+    unsigned char eval[size * size];
+#else
+    unsigned char* mask = (unsigned char *) _alloca((size * size) * sizeof (unsigned char));
+    unsigned char* eval = (unsigned char *) _alloca((size * size) * sizeof (unsigned char));
+#endif
+    
+    /* Perform data masking */
+    for (x = 0; x < size; x++) {
+        for (y = 0; y < size; y++) {
+            mask[(y * size) + x] = 0x00;
+            j = x + 1;
+            i = y + 1;
+            
+            if (!(grid[(y * size) + x] & 0xf0)) {
+                if ((i + j) % 2 == 0) {
+                    mask[(y * size) + x] += 0x02;
+                }
+                if ((((i + j) % 3) + (j % 3)) % 2 == 0) {
+                    mask[(y * size) + x] += 0x04;
+                }
+                if (((i % j) + (j % i) + (i % 3) + (j % 3)) % 2 == 0) {
+                    mask[(y * size) + x] += 0x08;
+                }
+            }
+        }
+    }
+    
+    // apply data masks to grid, result in eval
+    for (x = 0; x < size; x++) {
+        for (y = 0; y < size; y++) {
+            if (grid[(y * size) + x] & 0x01) {
+                p = 0xff;
+            } else {
+                p = 0x00;
+            }
+
+            eval[(y * size) + x] = mask[(y * size) + x] ^ p;
+        }
+    }
+    
+    /* Evaluate result */
+    for (pattern = 0; pattern < 4; pattern++) {
+        penalty[pattern] = hx_evaluate(eval, size, pattern);
+    }
+    
+    best_pattern = 0;
+    best_val = penalty[0];
+    for (pattern = 1; pattern < 4; pattern++) {
+        if (penalty[pattern] < best_val) {
+            best_pattern = pattern;
+            best_val = penalty[pattern];
+        }
+    }
+    
+    /* Apply mask */
+    for (x = 0; x < size; x++) {
+        for (y = 0; y < size; y++) {
+            bit = 0;
+            switch (best_pattern) {
+                case 0: if (mask[(y * size) + x] & 0x01) {
+                        bit = 1;
+                    }
+                    break;
+                case 1: if (mask[(y * size) + x] & 0x02) {
+                        bit = 1;
+                    }
+                    break;
+                case 2: if (mask[(y * size) + x] & 0x04) {
+                        bit = 1;
+                    }
+                    break;
+                case 3: if (mask[(y * size) + x] & 0x08) {
+                        bit = 1;
+                    }
+                    break;
+            }
+            if (bit == 1) {
+                if (grid[(y * size) + x] & 0x01) {
+                    grid[(y * size) + x] = 0x00;
+                } else {
+                    grid[(y * size) + x] = 0x01;
+                }
+            }
+        }
+    }
+    
+    return best_pattern;
+}
+
 /* Han Xin Code - main */
 int han_xin(struct zint_symbol *symbol, const unsigned char source[], int length) {
     char mode[length + 1];
@@ -689,6 +953,7 @@ int han_xin(struct zint_symbol *symbol, const unsigned char source[], int length
     int i, j, version;
     int data_codewords, size;
     int est_codewords;
+    int bitmask;
 
     hx_define_mode(mode, source, length);
     
@@ -792,7 +1057,22 @@ int han_xin(struct zint_symbol *symbol, const unsigned char source[], int length
     }
     printf("\n");
     
-    printf("Version %d, ECC level %d\n", version, ecc_level);
+    /* Populate grid */
+    j = 0;
+    for (i = 0; i < (size * size); i++) {
+        if (grid[i] == 0x00) {
+            if (j < (hx_total_codewords[version - 1] * 8)) {
+                if (picket_fence[(j / 8)] & (0x80 >> (j % 8))) {
+                    grid[i] = 0x01;
+                }
+                j++;
+            }
+        }
+    }
+    
+    bitmask = hx_apply_bitmask(grid, size);
+    
+    printf("Version %d, ECC level %d, bitmask %d\n", version, ecc_level, bitmask);
     
     symbol->width = size;
     symbol->rows = size;
