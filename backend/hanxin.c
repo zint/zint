@@ -176,7 +176,7 @@ void calculate_binary(char binary[], char mode[], const unsigned char source[], 
     int block_length;
     int position = 0;
     int i, p, count, encoding_value;
-    int debug = 1;
+    int debug = 0;
     
     do {
         block_length = 0;
@@ -691,7 +691,7 @@ int hx_evaluate(unsigned char *eval, int size, int pattern) {
     char* local = (char *) _alloca((size * size) * sizeof (char));
 #endif
 
-    /* all eight bitmask variants have been encoded in the 8 bits of the bytes
+    /* all four bitmask variants have been encoded in the 4 bits of the bytes
      * that make up the grid array. select them for evaluation according to the
      * desired pattern.*/
     for (x = 0; x < size; x++) {
@@ -704,9 +704,7 @@ int hx_evaluate(unsigned char *eval, int size, int pattern) {
         }
     }
 
-
-
-    /* Test 1: 1:1:1:1:3  of 3:1:1:1:1 ratio pattern in row/column */
+    /* Test 1: 1:1:1:1:3  or 3:1:1:1:1 ratio pattern in row/column */
     /* Vertical */
     for (x = 0; x < size; x++) {
         for (y = 0; y < (size - 7); y++) {
@@ -954,6 +952,9 @@ int han_xin(struct zint_symbol *symbol, const unsigned char source[], int length
     int data_codewords, size;
     int est_codewords;
     int bitmask;
+    char function_information[36];
+    unsigned char fi_cw[3] = {0, 0, 0};
+    unsigned char fi_ecc[4];
 
     hx_define_mode(mode, source, length);
     
@@ -1032,30 +1033,10 @@ int han_xin(struct zint_symbol *symbol, const unsigned char source[], int length
     }
 
     hx_setup_grid(grid, size, version);
-
-    printf("Binary: %s\n", binary);
-    
-    printf("Data Codewords:\n");
-    for (i = 0; i < data_codewords; i++) {
-        printf("%2X ", datastream[i]);
-    }
-    printf("\n");
     
     hx_add_ecc(fullstream, datastream, version, ecc_level);
     
-    printf("Full stream, including ecc:\n");
-    for (i = 0; i < hx_total_codewords[version - 1]; i++) {
-        printf("%2X ", fullstream[i]);
-    }
-    printf("\n");
-    
     make_picket_fence(fullstream, picket_fence, hx_total_codewords[version - 1]);
-    
-    printf("Picket fence:\n");
-    for (i = 0; i < hx_total_codewords[version - 1]; i++) {
-        printf("%2X ", picket_fence[i]);
-    }
-    printf("\n");
     
     /* Populate grid */
     j = 0;
@@ -1072,7 +1053,84 @@ int han_xin(struct zint_symbol *symbol, const unsigned char source[], int length
     
     bitmask = hx_apply_bitmask(grid, size);
     
-    printf("Version %d, ECC level %d, bitmask %d\n", version, ecc_level, bitmask);
+    /* Form function information string */
+    for (i = 0; i < 34; i++) {
+        if (i % 2) {
+            function_information[i] = '1';
+        } else {
+            function_information[i] = '0';
+        }
+    }
+    function_information[34] = '\0';
+    
+    for (i = 0; i < 8; i++) {
+        if ((version + 20) & (0x80 >> i)) {
+            function_information[i] = '1';
+        } else {
+            function_information[i] = '0';
+        }
+    }
+    
+    for (i = 0; i < 2; i++) {
+        if (ecc_level & (0x02 >> i)) {
+            function_information[i + 8] = '1';
+        } else {
+            function_information[i + 8] = '0';
+        }
+    }
+    
+    for (i = 0; i < 2; i++) {
+        if (bitmask & (0x02 >> i)) {
+            function_information[i + 10] = '1';
+        } else {
+            function_information[i + 10] = '0';
+        }
+    }
+    
+    
+    
+    for (i = 0; i < 3; i++) {
+        for (j = 0; j < 4; j++) {
+            if (function_information[(i * 4) + j] == '1') {
+                fi_cw[i] += (0x08 >> j);
+            }
+        }
+    }
+    
+    rs_init_gf(0x13);
+    rs_init_code(4, 1);
+    rs_encode(3, fi_cw, fi_ecc);
+    rs_free();
+    
+    for (i = 0; i < 4; i++) {
+        for (j = 0; j < 4; j++) {
+            if (fi_ecc[3 - i] & (0x08 >> j)) {
+                function_information[(i * 4) + j + 12] = '1';
+            } else {
+                function_information[(i * 4) + j + 12] = '0';
+            }
+        }
+    }
+    
+    /* Add function information to symbol */
+    for (i = 0; i < 9; i++) {
+        if (function_information[i] == '1') {
+            grid[(8 * size) + i] = 0x01;
+            grid[((size - 8 - 1) * size) + (size - i - 1)] = 0x01;
+        }
+        if (function_information[i + 8] == '1') {
+            grid[((8 - i) * size) + 8] = 0x01;
+            grid[((size - 8 - 1 + i) * size) + (size - 8 - 1)] = 0x01;
+        }
+        if (function_information[i + 17] == '1') {
+            grid[(i * size) + (size - 1 - 8)] = 0x01;
+            grid[((size - 1 - i) * size) + 8] = 0x01;
+        }
+        if (function_information[i + 25] == '1') {
+            grid[(8 * size) + (size - 1 - 8 + i)] = 0x01;
+            grid[((size - 1 - 8) * size) + (8 - i)] = 0x01;
+        }
+    }
     
     symbol->width = size;
     symbol->rows = size;
