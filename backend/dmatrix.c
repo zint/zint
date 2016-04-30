@@ -1149,7 +1149,7 @@ int data_matrix_200(struct zint_symbol *symbol, unsigned char source[], const in
     int symbolsize, optionsize, calcsize;
     int taillength, error_number = 0;
     int H, W, FH, FW, datablock, bytes, rsblock;
-    int last_mode;
+    int last_mode = DM_ASCII;
     unsigned char *grid = 0;
     int symbols_left;
     inputlen = length;
