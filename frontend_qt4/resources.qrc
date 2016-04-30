@@ -1,5 +1,5 @@
 <RCC>
-    <qresource prefix="/" >
+    <qresource prefix="/">
         <file>images/zoomout.png</file>
         <file>images/rotateleft.png</file>
         <file>images/rotateright.png</file>
@@ -19,7 +19,8 @@
         <file>grpCodeOne.ui</file>
         <file>grpC49.ui</file>
         <file>grpGrid.ui</file>
-	<file>grpDBExtend.ui</file>
+        <file>grpDBExtend.ui</file>
         <file>images/zint.png</file>
+        <file>grpHX.ui</file>
     </qresource>
 </RCC>

@@ -947,7 +947,7 @@ int hx_apply_bitmask(unsigned char *grid, int size) {
 int han_xin(struct zint_symbol *symbol, const unsigned char source[], int length) {
     char mode[length + 1];
     int est_binlen;
-    int ecc_level = 1;
+    int ecc_level = symbol->option_1;
     int i, j, version;
     int data_codewords, size;
     int est_codewords;
@@ -970,6 +970,10 @@ int han_xin(struct zint_symbol *symbol, const unsigned char source[], int length
     }
     
     binary[0] = '\0';
+    
+    if ((ecc_level <= 0) || (ecc_level >= 5)) {
+        ecc_level = 1;
+    }
     
     calculate_binary(binary, mode, source, length);
     
@@ -1007,6 +1011,35 @@ int han_xin(struct zint_symbol *symbol, const unsigned char source[], int length
         strcpy(symbol->errtxt, "Input too long for selected error correction level");
         return ZINT_ERROR_TOO_LONG;
     }
+    
+    if ((symbol->option_2 < 0) || (symbol->option_2 > 84)) {
+        symbol->option_2 = 0;
+    }
+    
+    if (symbol->option_2 > version) {
+        version = symbol->option_2;
+    }
+    
+    /* If there is spare capacity, increase the level of ECC */
+    switch (ecc_level) {
+        case 1:
+            if (est_codewords < hx_data_codewords_L2[version - 1]) {
+                ecc_level = 2;
+                data_codewords = hx_data_codewords_L2[version - 1];
+            }
+        case 2:
+            if (est_codewords < hx_data_codewords_L3[version - 1]) {
+                ecc_level = 3;
+                data_codewords = hx_data_codewords_L3[version - 1];
+            }
+        case 3:
+            if (est_codewords < hx_data_codewords_L4[version - 1]) {
+                ecc_level = 4;
+                data_codewords = hx_data_codewords_L4[version - 1];
+            }
+    }
+    
+    printf("Version %d, ECC %d\n", version, ecc_level);
     
     size = (version * 2) + 21;
 
@@ -1144,5 +1177,5 @@ int han_xin(struct zint_symbol *symbol, const unsigned char source[], int length
         symbol->row_height[i] = 1;
     }
 
-    return 1;
+    return 0;
 }

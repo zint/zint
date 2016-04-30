@@ -68,7 +68,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WFlags fl)
 		"GS1 DataBar Omnidirectional",                
 		"GS1 DataBar Stacked",
 		"GS1 DataBar Stacked Omnidirectional",                
-		"Han Xin Code",
+		"Han Xin (Chinese Sensible) Code",
                 "ITF-14",
 		"International Standard Book Number (ISBN)",
 		"Japanese Postal Barcode",
@@ -383,6 +383,21 @@ void MainWindow::change_options()
 		connect(m_optionWidget->findChild<QObject*>("radQRGS1"), SIGNAL(clicked( bool )), SLOT(update_preview()));
 		connect(m_optionWidget->findChild<QObject*>("radQRHIBC"), SIGNAL(clicked( bool )), SLOT(update_preview()));
 	}
+        
+        if(metaObject()->enumerator(0).value(bstyle->currentIndex()) == BARCODE_HANXIN)
+        {
+                QFile file (":/grpHX.ui");
+                if (!file.open(QIODevice::ReadOnly))
+                    return;
+                m_optionWidget=uiload.load(&file);
+                file.close();
+                tabMain->insertTab(1,m_optionWidget,tr("Han Xin Code"));
+                connect(m_optionWidget->findChild<QObject*>("radHXAuto"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+                connect(m_optionWidget->findChild<QObject*>("radHXSize"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+                connect(m_optionWidget->findChild<QObject*>("radHXECC"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+                connect(m_optionWidget->findChild<QObject*>("cmbHXSize"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+                connect(m_optionWidget->findChild<QObject*>("cmbHXECC"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        }
 
 	if(metaObject()->enumerator(0).value(bstyle->currentIndex()) == BARCODE_MICROQR)
 	{
@@ -793,10 +808,16 @@ void MainWindow::update_preview()
 			if(m_optionWidget->findChild<QRadioButton*>("radC49GS1")->isChecked())
 				m_bc.bc.setInputMode(GS1_MODE);
 			break;
+                        
                 case BARCODE_HANXIN:
                         m_bc.bc.setSymbol(BARCODE_HANXIN);
-                        // Space reserved for more options!
+			if(m_optionWidget->findChild<QRadioButton*>("radHXSize")->isChecked())
+				m_bc.bc.setWidth(m_optionWidget->findChild<QComboBox*>("cmbHXSize")->currentIndex() + 1);
+
+			if(m_optionWidget->findChild<QRadioButton*>("radHXECC")->isChecked())
+				m_bc.bc.setSecurityLevel(m_optionWidget->findChild<QComboBox*>("cmbHXECC")->currentIndex() + 1);
                         break;
+                        
 		default:
 			m_bc.bc.setSymbol(metaObject()->enumerator(0).value(bstyle->currentIndex()));
 			break;
