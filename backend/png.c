@@ -573,7 +573,7 @@ void draw_letter(char *pixelbuf, unsigned char letter, int xposn, int yposn, int
         if (smalltext) {
             for (y = 0; y < 9; y++) {
                 for (x = 0; x < 5; x++) {
-                    if (small_font[(glyph_no * 8) + y] & (0x10 >> x)) {
+                    if (small_font[(glyph_no * 9) + y] & (0x10 >> x)) {
                         *(pixelbuf + (y * image_width) + (yposn * image_width) + xposn + x) = '1';
                     }
                 }
@@ -592,13 +592,16 @@ void draw_letter(char *pixelbuf, unsigned char letter, int xposn, int yposn, int
 
 /* Plot a string into the pixel buffer */
 void draw_string(char *pixbuf, char input_string[], int xposn, int yposn, int smalltext, int image_width, int image_height) {
-    int i, string_length, string_left_hand;
+    int i, string_length, string_left_hand, letter_width = 7;
 
+    if (smalltext != 0) {
+        letter_width = 5;
+    }
     string_length = strlen(input_string);
-    string_left_hand = xposn - ((7 * string_length) / 2);
+    string_left_hand = xposn - ((letter_width * string_length) / 2);
 
     for (i = 0; i < string_length; i++) {
-        draw_letter(pixbuf, input_string[i], string_left_hand + (i * 7), yposn, smalltext, image_width, image_height);
+        draw_letter(pixbuf, input_string[i], string_left_hand + (i * letter_width), yposn, smalltext, image_width, image_height);
     }
 
 }
