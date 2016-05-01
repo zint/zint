@@ -40,6 +40,7 @@
 #include "common.h"
 #include "reedsol.h"
 #include "hanxin.h"
+#include "gb18030.h"
 
 /* Find which submode to use for a text character */
 int getsubmode(char input) {
@@ -61,13 +62,14 @@ int getsubmode(char input) {
 }
 
 /* Calculate the approximate length of the binary string */
-int calculate_binlength(char mode[], const unsigned char source[], int length) {
+int calculate_binlength(char mode[], int source[], int length) {
     int i;
     char lastmode = 't';
     int est_binlen = 0;
     int submode = 1;
     
-    for (i = 0; i < length; i++) {
+    i = 0;
+    do {
         switch (mode[i]) {
             case 'n':
                 if (lastmode != 'n') {
@@ -95,37 +97,186 @@ int calculate_binlength(char mode[], const unsigned char source[], int length) {
                 }
                 est_binlen += 8;
                 break;
+            case '1':
+                if (lastmode != '1') {
+                    est_binlen += 16;
+                    lastmode = '1';
+                }
+                est_binlen += 12;
+                break;
+            case '2':
+                if (lastmode != '2') {
+                    est_binlen += 16;
+                    lastmode = '2';
+                }
+                est_binlen += 12;
+                break;
+            case 'd':
+                if (lastmode != 'd') {
+                    est_binlen += 16;
+                    lastmode = 'd';
+                }
+                est_binlen += 15;
+                break;
+            case 'f':
+                if (lastmode != 'f') {
+                    est_binlen += 4;
+                    lastmode = 'f';
+                }
+                est_binlen += 21;
+                i++;
+                break;
         }
-    }
+        i++;
+    } while (i < length);
     
     return est_binlen;
 }
 
-/* Calculate mode switching */
-void hx_define_mode(char mode[], const unsigned char source[], int length) {
-    int i;
-    char lastmode = 't';
+int isRegion1(int glyph) {
+    int first_byte, second_byte;
+    int valid = 0;
     
-    for(i = 0; i < length; i++) {
-        if ((source[i] >= '0') && (source[i] <= '9')) {
-            mode[i] = 'n';
-            if (lastmode != 'n') {
-                lastmode = 'n';
-            }
-        } else {
-            if ((source[i] <= 127) && ((source[i] <= 27) || (source[i] >= 32))) {
-                mode[i] = 't';
-                if (lastmode != 't') {
-                    lastmode = 't';
-                }
-            } else {
-                mode[i] = 'b';
-                if (lastmode != 'b') {
-                    lastmode = 'b';
+    first_byte = (glyph & 0xff00) >> 8;
+    second_byte = glyph & 0xff;
+    
+    if ((first_byte >= 0xb0) && (first_byte <= 0xd7)) {
+        if ((second_byte >= 0xa1) && (second_byte <= 0xfe)) {
+            valid = 1;
+        }
+    }
+    
+    if ((first_byte >= 0xa1) && (first_byte <= 0xa3)) {
+        if ((second_byte >= 0xa1) && (second_byte <= 0xfe)) {
+            valid = 1;
+        }
+    }
+    
+    if ((glyph >= 0xa8a1) && (glyph <= 0xa8c0)) {
+        valid = 1;
+    }
+    
+    return valid;
+}
+
+int isRegion2(int glyph) {
+    int first_byte, second_byte;
+    int valid = 0;
+    
+    first_byte = (glyph & 0xff00) >> 8;
+    second_byte = glyph & 0xff;
+    
+    if ((first_byte >= 0xd8) && (first_byte <= 0xf7)) {
+        if ((second_byte >= 0xa1) && (second_byte <= 0xfe)) {
+            valid = 1;
+        }
+    }
+    
+    return valid;
+}
+
+int isDoubleByte(int glyph) {
+    int first_byte, second_byte;
+    int valid = 0;
+    
+    first_byte = (glyph & 0xff00) >> 8;
+    second_byte = glyph & 0xff;
+    
+    if ((first_byte >= 0x81) && (first_byte <= 0xfe)) {
+        if ((second_byte >= 0x40) && (second_byte <= 0x7e)) {
+            valid = 1;
+        }
+        
+        if ((second_byte >= 0x80) && (second_byte <= 0xfe)) {
+            valid = 1;
+        }
+    }
+    
+    return valid;
+}
+
+int isFourByte(int glyph, int glyph2) {
+    int first_byte, second_byte;
+    int third_byte, fourth_byte;
+    int valid = 0;
+    
+    first_byte = (glyph & 0xff00) >> 8;
+    second_byte = glyph & 0xff;
+    third_byte = (glyph2 & 0xff00) >> 8;
+    fourth_byte = glyph2 & 0xff;
+    
+    if ((first_byte >= 0x81) && (first_byte <= 0xfe)) {
+        if ((second_byte >= 0x30) && (second_byte <= 0x39)) {
+            if ((third_byte >= 0x81) && (third_byte <= 0xfe)) {
+                if ((fourth_byte >= 0x30) && (fourth_byte <= 0x39)) {
+                    valid = 1;
                 }
             }
         }
     }
+    
+    return valid;
+}
+
+/* Calculate mode switching */
+void hx_define_mode(char mode[], int source[], int length) {
+    int i;
+    char lastmode = 't';
+    int done;
+    
+    i = 0;
+    do {
+        done = 0;
+        
+        if (isRegion1(source[i])) {
+            mode[i] = '1';
+            done = 1;
+            i++;
+        }
+        
+        if ((done == 0) && (isRegion2(source[i]))) {
+            mode[i] = '2';
+            done = 1;
+            i++;
+        }
+        
+        if ((done == 0) && (isDoubleByte(source[i]))) {
+            mode[i] = 'd';
+            done = 1;
+            i++;
+        }
+        
+        if ((done == 0) && (i < length - 1)) {
+            if (isFourByte(source[i], source[i + 1])) {
+                mode[i] = 'f';
+                mode[i + 1] = 'f';
+                done = 1;
+                i += 2;
+            }
+        }
+        
+        if (done == 0) {
+            if ((source[i] >= '0') && (source[i] <= '9')) {
+                mode[i] = 'n';
+                if (lastmode != 'n') {
+                    lastmode = 'n';
+                }
+            } else {
+                if ((source[i] <= 127) && ((source[i] <= 27) || (source[i] >= 32))) {
+                    mode[i] = 't';
+                    if (lastmode != 't') {
+                        lastmode = 't';
+                    }
+                } else {
+                    mode[i] = 'b';
+                    if (lastmode != 'b') {
+                        lastmode = 'b';
+                    }
+                }
+            }
+            i++; 
+        }
+    } while (i < length);
     mode[length] = '\0';
 }
 
@@ -172,11 +323,14 @@ int lookup_text2(char input) {
 }
 
 /* Convert input data to binary stream */
-void calculate_binary(char binary[], char mode[], const unsigned char source[], int length) {
+void calculate_binary(char binary[], char mode[], int source[], int length) {
     int block_length;
     int position = 0;
     int i, p, count, encoding_value;
     int debug = 0;
+    int first_byte, second_byte;
+    int third_byte, fourth_byte;
+    int glyph;
     
     do {
         block_length = 0;
@@ -265,10 +419,10 @@ void calculate_binary(char binary[], char mode[], const unsigned char source[], 
                     
                 while (i < block_length) {
                         
-                    if (getsubmode(source[i + position]) != submode) {
+                    if (getsubmode((char) source[i + position]) != submode) {
                         /* Change submode */
                         strcat(binary, "111110");
-                        submode = getsubmode(source[i + position]);
+                        submode = getsubmode((char) source[i + position]);
                         if (debug) {
                             printf("SWITCH ");
                         }
@@ -343,6 +497,184 @@ void calculate_binary(char binary[], char mode[], const unsigned char source[], 
                     printf("\n");
                 }
                 break;
+            case '1':
+                /* Region 1 encoding */
+                /* Mode indicator */
+                strcat(binary, "0100");
+                
+                if (debug) {
+                    printf("Region 1\n");
+                }
+                
+                i = 0;
+                
+                while (i < block_length) {
+                    first_byte = (source[i + position] & 0xff00) >> 8;
+                    second_byte = source[i + position] & 0xff;
+
+                    /* Subset 1 */
+                    glyph = (0x5e * (first_byte - 0xb0)) + (second_byte - 0xa1);
+
+                    /* Subset 2 */
+                    if ((first_byte >= 0xa1) && (first_byte <= 0xa3)) {
+                        if ((second_byte >= 0xa1) && (second_byte <= 0xfe)) {
+                            glyph = (0x5e * first_byte - 0xa1) + (second_byte - 0xa1) + 0xeb0;
+                        }
+                    }
+
+                    /* Subset 3 */
+                    if ((source[i + position] >= 0xa8a1) && (source[i + position] <= 0xa8c0)) {
+                        glyph = (second_byte - 0xa1) + 0xfca;
+                    }
+                    
+                    if (debug) {
+                        printf("%d ", glyph);
+                    }
+                    
+                    for (p = 0; p < 12; p++) {
+                        if (glyph & (0x800 >> p)) {
+                            strcat(binary, "1");
+                        } else {
+                            strcat(binary, "0");
+                        }
+                    }
+                    
+                    i++;
+                }
+                
+                /* Terminator */
+                strcat(binary, "111111111111");
+                
+                if (debug) {
+                    printf("\n");
+                }
+                
+                break;
+            case '2':
+                /* Region 2 encoding */
+                /* Mode indicator */
+                strcat(binary, "0101");
+                
+                if (debug) {
+                    printf("Region 2\n");
+                }
+                
+                i = 0;
+                
+                while (i < block_length) {
+                    first_byte = (source[i + position] & 0xff00) >> 8;
+                    second_byte = source[i + position] & 0xff;
+    
+                    glyph = (0x5e * (first_byte - 0xd8)) + (second_byte - 0xa1);
+                    
+                    if (debug) {
+                        printf("%d ", glyph);
+                    }
+                    
+                    for (p = 0; p < 12; p++) {
+                        if (glyph & (0x800 >> p)) {
+                            strcat(binary, "1");
+                        } else {
+                            strcat(binary, "0");
+                        }
+                    }
+                    
+                    i++;
+                }
+                
+                /* Terminator */
+                strcat(binary, "111111111111");
+                
+                if (debug) {
+                    printf("\n");
+                }                
+                break;
+            case 'd':
+                /* Double byte encoding */
+                /* Mode indicator */
+                strcat(binary, "0110");
+                
+                if (debug) {
+                    printf("Double byte\n");
+                }
+                
+                i = 0;
+                
+                while (i < block_length) {
+                    first_byte = (source[i + position] & 0xff00) >> 8;
+                    second_byte = source[i + position] & 0xff;
+                    
+                    if (second_byte <= 0x7e) {
+                        glyph = (0xbe * (first_byte - 0x81)) + (second_byte - 0x40);
+                    } else {
+                        glyph = (0xbe * (first_byte - 0x81)) + (second_byte - 0x41);
+                    }
+                    
+                    if (debug) {
+                        printf("%d ", glyph);
+                    }
+                    
+                    for (p = 0; p < 15; p++) {
+                        if (glyph & (0x4000 >> p)) {
+                            strcat(binary, "1");
+                        } else {
+                            strcat(binary, "0");
+                        }
+                    }
+                    
+                    i++;
+                }
+                
+                /* Terminator */
+                strcat(binary, "111111111111");
+                
+                if (debug) {
+                    printf("\n");
+                }                
+                break;
+            case 'f':
+                /* Four-byte encoding */
+                if (debug) {
+                    printf("Four byte\n");
+                }
+                
+                i = 0;
+                
+                while (i < block_length) {
+                    
+                    /* Mode indicator */
+                    strcat(binary, "0111");
+                    
+                    first_byte = (source[i + position] & 0xff00) >> 8;
+                    second_byte = source[i + position] & 0xff;
+                    third_byte = (source[i + position + 1] & 0xff00) >> 8;
+                    fourth_byte = source[i + position + 1] & 0xff;
+                    
+                    glyph = (0x3138 * (first_byte - 0x81)) + (0x04ec * (second_byte - 0x30)) +
+                            (0x0a * (third_byte - 0x81)) + (fourth_byte - 0x30);
+                    
+                    if (debug) {
+                        printf("%d ", glyph);
+                    }
+                    
+                    for (p = 0; p < 15; p++) {
+                        if (glyph & (0x4000 >> p)) {
+                            strcat(binary, "1");
+                        } else {
+                            strcat(binary, "0");
+                        }
+                    }
+                    
+                    i += 2;
+                }
+                
+                /* No terminator */
+                
+                if (debug) {
+                    printf("\n");
+                }
+                break;
+                
         }
         
         position += block_length;
@@ -948,17 +1280,83 @@ int han_xin(struct zint_symbol *symbol, const unsigned char source[], int length
     char mode[length + 1];
     int est_binlen;
     int ecc_level = symbol->option_1;
-    int i, j, version;
+    int i, j, version, posn = 0, glyph, glyph2;
     int data_codewords, size;
     int est_codewords;
     int bitmask;
+    int error_number;
     char function_information[36];
     unsigned char fi_cw[3] = {0, 0, 0};
     unsigned char fi_ecc[4];
-
-    hx_define_mode(mode, source, length);
     
-    est_binlen = calculate_binlength(mode, source, length);
+#ifndef _MSC_VER
+    int utfdata[length + 1];
+    int gbdata[(length + 1) * 2];
+#else
+    int* utfdata = (int *) _alloca((length + 1) * sizeof (int));
+    int* gbdata = (int *) _alloca(((length + 1) * 2) * sizeof (int));
+#endif
+    
+    switch (symbol->input_mode) {
+        case DATA_MODE:
+            for (i = 0; i < length; i++) {
+                gbdata[i] = (int) source[i];
+            }
+            break;
+        default:
+            /* Convert Unicode input to GB-18030 */
+            error_number = utf8toutf16(symbol, source, utfdata, &length);
+            if (error_number != 0) {
+                return error_number;
+            }
+
+            posn = 0;
+            for (i = 0; i < length; i++) {
+                if (utfdata[i] <= 0x7f) {
+                    gbdata[posn] = utfdata[i];
+                    posn++;
+                } else {
+                    j = 0;
+                    glyph = 0;
+                    do {
+                        if (gb18030_twobyte_lookup[j * 2] == utfdata[i]) {
+                            glyph = gb18030_twobyte_lookup[(j * 2) + 1];
+                        }
+                        j++;
+                    } while ((j < 23940) && (glyph == 0));
+                    
+                    if (glyph == 0) {
+                        j = 0;
+                        glyph = 0;
+                        glyph2 = 0;
+                        do {
+                            if (gb18030_fourbyte_lookup[j * 3] == utfdata[i]) {
+                                glyph = gb18030_fourbyte_lookup[(j * 3) + 1];
+                                glyph2 = gb18030_fourbyte_lookup[(j * 3) + 2];
+                            }
+                            j++;
+                        } while ((j < 6793) && (glyph == 0));
+                        if (glyph == 0) {
+                            strcpy(symbol->errtxt, "Unknown character in input data");
+                            return ZINT_ERROR_INVALID_DATA;
+                        } else {
+                            gbdata[posn] = glyph;
+                            gbdata[posn + 1] = glyph2;
+                            posn += 2;
+                        }
+                    } else {
+                        gbdata[posn] = glyph;
+                        posn++;
+                    }
+                }
+            }
+            break;
+    }
+
+    length = posn;
+    hx_define_mode(mode, gbdata, length);
+    
+    est_binlen = calculate_binlength(mode, gbdata, length);
     est_codewords = est_binlen / 8;
     if (est_binlen % 8 != 0) {
         est_codewords++;
@@ -975,7 +1373,7 @@ int han_xin(struct zint_symbol *symbol, const unsigned char source[], int length
         ecc_level = 1;
     }
     
-    calculate_binary(binary, mode, source, length);
+    calculate_binary(binary, mode, gbdata, length);
     
     version = 85;
     for (i = 84; i > 0; i--) {
@@ -1039,7 +1437,7 @@ int han_xin(struct zint_symbol *symbol, const unsigned char source[], int length
             }
     }
     
-    printf("Version %d, ECC %d\n", version, ecc_level);
+    //printf("Version %d, ECC %d\n", version, ecc_level);
     
     size = (version * 2) + 21;
 
