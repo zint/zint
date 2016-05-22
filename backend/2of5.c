@@ -64,8 +64,6 @@ int matrix_two_of_five(struct zint_symbol *symbol, unsigned char source[], int l
     int i, error_number;
     char dest[512]; /* 6 + 80 * 6 + 6 + 1 ~ 512*/
 
-    error_number = 0;
-
     if (length > 80) {
         strcpy(symbol->errtxt, "Input too long (C01)");
         return ZINT_ERROR_TOO_LONG;
@@ -97,8 +95,6 @@ int industrial_two_of_five(struct zint_symbol *symbol, unsigned char source[], i
     int i, error_number;
     char dest[512]; /* 6 + 40 * 10 + 6 + 1 */
 
-    error_number = 0;
-
     if (length > 45) {
         strcpy(symbol->errtxt, "Input too long (C03)");
         return ZINT_ERROR_TOO_LONG;
@@ -128,8 +124,6 @@ int industrial_two_of_five(struct zint_symbol *symbol, unsigned char source[], i
 int iata_two_of_five(struct zint_symbol *symbol, unsigned char source[], int length) {
     int i, error_number;
     char dest[512]; /* 4 + 45 * 10 + 3 + 1 */
-
-    error_number = 0;
 
     if (length > 45) {
         strcpy(symbol->errtxt, "Input too long (C05)");
@@ -161,8 +155,6 @@ int logic_two_of_five(struct zint_symbol *symbol, unsigned char source[], int le
 
     int i, error_number;
     char dest[512]; /* 4 + 80 * 6 + 3 + 1 */
-
-    error_number = 0;
 
     if (length > 80) {
         strcpy(symbol->errtxt, "Input too long (C07)");
@@ -199,8 +191,6 @@ int interleaved_two_of_five(struct zint_symbol *symbol, const unsigned char sour
 #else
     unsigned char* temp = (unsigned char *) _alloca((length + 2) * sizeof (unsigned char));
 #endif
-
-    error_number = 0;
 
     if (length > 89) {
         strcpy(symbol->errtxt, "Input too long (C09)");
@@ -258,8 +248,6 @@ int itf14(struct zint_symbol *symbol, unsigned char source[], int length) {
     unsigned int count;
     char localstr[16];
 
-    error_number = 0;
-
     count = 0;
 
     if (length > 13) {
@@ -302,7 +290,6 @@ int dpleit(struct zint_symbol *symbol, unsigned char source[], int length) {
     char localstr[16];
     int zeroes;
 
-    error_number = 0;
     count = 0;
     if (length > 13) {
         strcpy(symbol->errtxt, "Input wrong length (C0E)");

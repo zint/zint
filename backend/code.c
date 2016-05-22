@@ -112,8 +112,6 @@ int code_11(struct zint_symbol *symbol, unsigned char source[], int length) { /*
     char dest[1024]; /* 6 +  121 * 6 + 2 * 6 + 5 + 1 ~ 1024*/
     char checkstr[3];
 
-    error_number = 0;
-
     if (length > 121) {
         strcpy(symbol->errtxt, "Input too long (C20)");
         return ZINT_ERROR_TOO_LONG;
@@ -195,7 +193,6 @@ int c39(struct zint_symbol *symbol, unsigned char source[], const size_t length)
     char dest[775];
     char localstr[2] = {0};
 
-    error_number = 0;
     counter = 0;
 
     if ((symbol->option_2 < 0) || (symbol->option_2 > 1)) {
@@ -298,8 +295,6 @@ int pharmazentral(struct zint_symbol *symbol, unsigned char source[], int length
     unsigned int count, check_digit;
     char localstr[10];
 
-    error_number = 0;
-
     count = 0;
     if (length > 6) {
         strcpy(symbol->errtxt, "Input wrong length (C25)");
@@ -343,8 +338,6 @@ int ec39(struct zint_symbol *symbol, unsigned char source[], int length) {
     unsigned char buffer[150] = {0};
     unsigned int i;
     int error_number;
-
-    error_number = 0;
 
     if (length > 74) {
         strcpy(symbol->errtxt, "Input too long (C28)");

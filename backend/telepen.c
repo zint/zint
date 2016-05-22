@@ -109,7 +109,6 @@ int telepen_num(struct zint_symbol *symbol, unsigned char source[], int src_len)
     char dest[1024]; /* 14 + 60 * 14 + 14 + 14 + 1 ~ 1024 */
     unsigned char temp[64];
 
-    error_number = 0;
     count = 0;
 
     if (temp_length > 60) {

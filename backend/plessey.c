@@ -57,8 +57,6 @@ int plessey(struct zint_symbol *symbol, unsigned char source[], int length) {
     char dest[1024]; /* 8 + 65 * 8 + 8 * 2 + 9 + 1 ~ 1024 */
     int error_number;
 
-    error_number = 0;
-
     if (length > 65) {
         strcpy(symbol->errtxt, "Input too long (C70)");
         return ZINT_ERROR_TOO_LONG;

@@ -64,8 +64,6 @@ int pharma_one(struct zint_symbol *symbol, unsigned char source[], int length) {
     char inter[18] = {0}; /* 131070 -> 17 bits */
     char dest[64]; /* 17 * 2 + 1 */
 
-    error_number = 0;
-
     if (length > 6) {
         strcpy(symbol->errtxt, "Input too long (C50)");
         return ZINT_ERROR_TOO_LONG;
@@ -199,7 +197,6 @@ int codabar(struct zint_symbol *symbol, unsigned char source[], int length) {
     int i, error_number;
     char dest[512];
 
-    error_number = 0;
     strcpy(dest, "");
 
     if (length > 60) { /* No stack smashing please */
