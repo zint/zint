@@ -220,7 +220,7 @@ static int aztec_text_process(const unsigned char source[], const unsigned int s
         }
 
         /* look for adjacent blocks which can use the same table (right to left search) */
-        for (i = blocks - 1; i > 0; i--) {
+        for (i = blocks - 1 - 1; i >= 0; i--) {
             if (blockmap[0][i] & blockmap[0][i + 1]) {
                 blockmap[0][i] = (blockmap[0][i] & blockmap[0][i + 1]);
             }
@@ -247,7 +247,7 @@ static int aztec_text_process(const unsigned char source[], const unsigned int s
         do {
             if (blockmap[0][i] == blockmap[0][i + 1]) {
                 blockmap[1][i] += blockmap[1][i + 1];
-                for (j = i + 1; j < blocks; j++) {
+                for (j = i + 1; j < blocks - 1; j++) {
                     blockmap[0][j] = blockmap[0][j + 1];
                     blockmap[1][j] = blockmap[1][j + 1];
                 }
@@ -255,7 +255,7 @@ static int aztec_text_process(const unsigned char source[], const unsigned int s
             } else {
                 i++;
             }
-        } while (i < blocks);
+        } while (i < blocks - 1);
     }
 
     /* Put the adjusted block data back into typemap */
