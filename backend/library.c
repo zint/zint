@@ -1175,8 +1175,6 @@ int ZBarcode_Buffer(struct zint_symbol *symbol, int rotate_angle) {
 int ZBarcode_Encode_and_Print(struct zint_symbol *symbol, unsigned char *input, int length, int rotate_angle) {
     int error_number;
 
-    error_number = 0;
-
     error_number = ZBarcode_Encode(symbol, input, length);
     if (error_number != 0) {
         return error_number;
@@ -1188,8 +1186,6 @@ int ZBarcode_Encode_and_Print(struct zint_symbol *symbol, unsigned char *input, 
 
 int ZBarcode_Encode_and_Buffer(struct zint_symbol *symbol, unsigned char *input, int length, int rotate_angle) {
     int error_number;
-
-    error_number = 0;
 
     error_number = ZBarcode_Encode(symbol, input, length);
     if (error_number != 0) {
@@ -1260,8 +1256,6 @@ int ZBarcode_Encode_File(struct zint_symbol *symbol, char *filename) {
 int ZBarcode_Encode_File_and_Print(struct zint_symbol *symbol, char *filename, int rotate_angle) {
     int error_number;
 
-    error_number = 0;
-
     error_number = ZBarcode_Encode_File(symbol, filename);
     if (error_number != 0) {
         return error_number;
@@ -1272,8 +1266,6 @@ int ZBarcode_Encode_File_and_Print(struct zint_symbol *symbol, char *filename, i
 
 int ZBarcode_Encode_File_and_Buffer(struct zint_symbol *symbol, char *filename, int rotate_angle) {
     int error_number;
-
-    error_number = 0;
 
     error_number = ZBarcode_Encode_File(symbol, filename);
     if (error_number != 0) {
