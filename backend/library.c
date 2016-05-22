@@ -1241,7 +1241,6 @@ int ZBarcode_Encode_File(struct zint_symbol *symbol, char *filename) {
         n = fread(buffer + nRead, 1, fileLen - nRead, file);
         if (ferror(file)) {
             strcpy(symbol->errtxt, strerror(errno));
-            nRead = 0;
             return ZINT_ERROR_INVALID_DATA;
         }
         nRead += n;
