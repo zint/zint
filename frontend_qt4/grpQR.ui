@@ -277,7 +277,7 @@
     </layout>
    </item>
    <item>
-    <widget class="QGroupBox" name="grpAztecMode">
+    <widget class="QGroupBox" name="grpQRMode">
      <property name="minimumSize">
       <size>
        <width>0</width>
@@ -329,8 +329,6 @@
        </item>
       </layout>
      </widget>
-     <zorder>gridLayoutWidget</zorder>
-     <zorder></zorder>
     </widget>
    </item>
   </layout>
