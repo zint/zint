@@ -378,7 +378,7 @@ void calculate_binary(char binary[], char mode[], int source[], int length) {
                     }
                     
                     if (debug) {
-                        printf("0x%4X (%d)", encoding_value, encoding_value);
+                        printf("0x%4x (%d)", encoding_value, encoding_value);
                     }
                     
                     i += count;
@@ -626,7 +626,8 @@ void calculate_binary(char binary[], char mode[], int source[], int length) {
                 }
                 
                 /* Terminator */
-                strcat(binary, "111111111111");
+                strcat(binary, "111111111111111");
+                /* Terminator sequence of length 12 is assumed to be a mistake */
                 
                 if (debug) {
                     printf("\n");
@@ -1130,6 +1131,11 @@ int hx_evaluate(unsigned char *eval, int size, int pattern) {
     }
     
     /* Test 2: Adjacent modules in row/column in same colour */
+    /* In AIMD-15 section 5.8.3.2 it is stated... “In Table 9 below, i refers to the row
+     * position of the module.” - however i being the length of the run of the
+     * same colour (i.e. "block" below) in the same fashion as ISO/IEC 18004
+     * makes more sense. The implementation below matches AIMD-015.*/
+    
     /* Vertical */
     for (x = 0; x < size; x++) {
         state = local[x];
