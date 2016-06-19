@@ -216,7 +216,7 @@ int svg_plot(struct zint_symbol *symbol) {
         fprintf(fsvg, "<svg width=\"%d\" height=\"%d\" version=\"1.1\"\n", (int)ceil((74.0F + xoffset + xoffset) * scaler), (int)ceil((72.0F + yoffset + yoffset) * scaler));
     }
     fprintf(fsvg, "   xmlns=\"http://www.w3.org/2000/svg\">\n");
-    if (ustrlen(local_text) != 0) {
+    if ((ustrlen(local_text) != 0) && (symbol->show_hrt != 0)) {
         fprintf(fsvg, "   <desc>%s\n", local_text);
     } else {
         fprintf(fsvg, "   <desc>Zint Generated Symbol\n");
