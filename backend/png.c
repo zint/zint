@@ -721,9 +721,34 @@ int png_plot(struct zint_symbol *symbol, int rotate_angle, int data_type) {
 #endif
 
     if (symbol->show_hrt != 0) {
+        /* Copy text from symbol */
         to_latin1(symbol->text, local_text);
     } else {
-        local_text[0] = '\0';
+        /* No text needed */
+        switch (symbol->symbology) {
+            case BARCODE_EANX:
+            case BARCODE_EANX_CC:
+            case BARCODE_ISBNX:
+            case BARCODE_UPCA:
+            case BARCODE_UPCE:
+            case BARCODE_UPCA_CC:
+            case BARCODE_UPCE_CC:
+                /* For these symbols use dummy text to ensure formatting is done
+                 * properly even if no text is required */
+                for (i = 0; i < ustrlen(symbol->text); i++) {
+                    if (symbol->text[i] == '+') {
+                        local_text[i] = '+';
+                    } else {
+                        local_text[i] = ' ';
+                    }
+                    local_text[ustrlen(symbol->text)] = '\0';
+                }
+                break;
+            default:
+                /* For everything else, just remove the text */
+                local_text[0] = '\0';
+                break;
+        }
     }
 
     textdone = 0;
@@ -812,6 +837,7 @@ int png_plot(struct zint_symbol *symbol, int rotate_angle, int data_type) {
     } else {
         textoffset = 0;
     }
+    
     xoffset = symbol->border_width + symbol->whitespace_width;
     yoffset = symbol->border_width;
     image_width = 2 * (symbol->width + xoffset + xoffset);
@@ -895,14 +921,14 @@ int png_plot(struct zint_symbol *symbol, int rotate_angle, int data_type) {
                 draw_bar(pixelbuf, (64 + xoffset) * 2, 1 * 2, (4 + (int) yoffset) * 2, 5 * 2, image_width, image_height);
                 draw_bar(pixelbuf, (66 + xoffset) * 2, 1 * 2, (4 + (int) yoffset) * 2, 5 * 2, image_width, image_height);
                 for (i = 0; i < 4; i++) {
-                    textpart[i] = symbol->text[i];
+                    textpart[i] = local_text[i];
                 }
                 textpart[4] = '\0';
                 textpos = 2 * (17 + xoffset);
 
                 draw_string(pixelbuf, textpart, textpos, default_text_posn, smalltext, image_width, image_height);
                 for (i = 0; i < 4; i++) {
-                    textpart[i] = symbol->text[i + 4];
+                    textpart[i] = local_text[i + 4];
                 }
                 textpart[4] = '\0';
                 textpos = 2 * (50 + xoffset);
@@ -930,18 +956,18 @@ int png_plot(struct zint_symbol *symbol, int rotate_angle, int data_type) {
                 draw_bar(pixelbuf, (92 + xoffset) * 2, 1 * 2, (4 + (int) yoffset) * 2, 5 * 2, image_width, image_height);
                 draw_bar(pixelbuf, (94 + xoffset) * 2, 1 * 2, (4 + (int) yoffset) * 2, 5 * 2, image_width, image_height);
 
-                textpart[0] = symbol->text[0];
+                textpart[0] = local_text[0];
                 textpart[1] = '\0';
                 textpos = 2 * (-7 + xoffset);
                 draw_string(pixelbuf, textpart, textpos, default_text_posn, smalltext, image_width, image_height);
                 for (i = 0; i < 6; i++) {
-                    textpart[i] = symbol->text[i + 1];
+                    textpart[i] = local_text[i + 1];
                 }
                 textpart[6] = '\0';
                 textpos = 2 * (24 + xoffset);
                 draw_string(pixelbuf, textpart, textpos, default_text_posn, smalltext, image_width, image_height);
                 for (i = 0; i < 6; i++) {
-                    textpart[i] = symbol->text[i + 7];
+                    textpart[i] = local_text[i + 7];
                 }
                 textpart[6] = '\0';
                 textpos = 2 * (71 + xoffset);
@@ -1001,23 +1027,23 @@ int png_plot(struct zint_symbol *symbol, int rotate_angle, int data_type) {
             }
             i += block_width;
         } while (i < 96 + comp_offset);
-        textpart[0] = symbol->text[0];
+        textpart[0] = local_text[0];
         textpart[1] = '\0';
         textpos = 2 * (-5 + xoffset);
         draw_string(pixelbuf, textpart, textpos, default_text_posn, smalltext, image_width, image_height);
         for (i = 0; i < 5; i++) {
-            textpart[i] = symbol->text[i + 1];
+            textpart[i] = local_text[i + 1];
         }
         textpart[5] = '\0';
         textpos = 2 * (27 + xoffset);
         draw_string(pixelbuf, textpart, textpos, default_text_posn, smalltext, image_width, image_height);
         for (i = 0; i < 5; i++) {
-            textpart[i] = symbol->text[i + 6];
+            textpart[i] = local_text[i + 6];
         }
         textpart[6] = '\0';
         textpos = 2 * (68 + xoffset);
         draw_string(pixelbuf, textpart, textpos, default_text_posn, smalltext, image_width, image_height);
-        textpart[0] = symbol->text[11];
+        textpart[0] = local_text[11];
         textpart[1] = '\0';
         textpos = 2 * (100 + xoffset);
         draw_string(pixelbuf, textpart, textpos, default_text_posn, smalltext, image_width, image_height);
@@ -1043,17 +1069,17 @@ int png_plot(struct zint_symbol *symbol, int rotate_angle, int data_type) {
         draw_bar(pixelbuf, (48 + xoffset) * 2, 1 * 2, (4 + (int) yoffset) * 2, 5 * 2, image_width, image_height);
         draw_bar(pixelbuf, (50 + xoffset) * 2, 1 * 2, (4 + (int) yoffset) * 2, 5 * 2, image_width, image_height);
 
-        textpart[0] = symbol->text[0];
+        textpart[0] = local_text[0];
         textpart[1] = '\0';
         textpos = 2 * (-5 + xoffset);
         draw_string(pixelbuf, textpart, textpos, default_text_posn, smalltext, image_width, image_height);
         for (i = 0; i < 6; i++) {
-            textpart[i] = symbol->text[i + 1];
+            textpart[i] = local_text[i + 1];
         }
         textpart[6] = '\0';
         textpos = 2 * (24 + xoffset);
         draw_string(pixelbuf, textpart, textpos, default_text_posn, smalltext, image_width, image_height);
-        textpart[0] = symbol->text[7];
+        textpart[0] = local_text[7];
         textpart[1] = '\0';
         textpos = 2 * (55 + xoffset);
         draw_string(pixelbuf, textpart, textpos, default_text_posn, smalltext, image_width, image_height);

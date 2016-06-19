@@ -50,8 +50,12 @@ int svg_plot(struct zint_symbol *symbol) {
     float addon_text_posn;
     float scaler = symbol->scale;
     float default_text_posn;
-    int plot_text = 1;
     const char *locale = NULL;
+#ifndef _MSC_VER
+    unsigned char local_text[ustrlen(symbol->text) + 1];
+#else
+    unsigned char* local_text = (unsigned char*) _alloca(ustrlen(symbol->text) + 1);
+#endif
 
     row_height = 0;
     textdone = 0;
@@ -59,6 +63,37 @@ int svg_plot(struct zint_symbol *symbol) {
     strcpy(addon, "");
     comp_offset = 0;
     addon_text_posn = 0.0;
+    
+    if (symbol->show_hrt != 0) {
+        /* Copy text from symbol */
+        ustrcpy(local_text, symbol->text);
+    } else {
+        /* No text needed */
+        switch (symbol->symbology) {
+            case BARCODE_EANX:
+            case BARCODE_EANX_CC:
+            case BARCODE_ISBNX:
+            case BARCODE_UPCA:
+            case BARCODE_UPCE:
+            case BARCODE_UPCA_CC:
+            case BARCODE_UPCE_CC:
+                /* For these symbols use dummy text to ensure formatting is done
+                 * properly even if no text is required */
+                for (i = 0; i < ustrlen(symbol->text); i++) {
+                    if (symbol->text[i] == '+') {
+                        local_text[i] = '+';
+                    } else {
+                        local_text[i] = ' ';
+                    }
+                    local_text[ustrlen(symbol->text)] = '\0';
+                }
+                break;
+            default:
+                /* For everything else, just remove the text */
+                local_text[0] = '\0';
+                break;
+        }
+    }
 
     if ((symbol->output_options & BARCODE_STDOUT) != 0) {
         fsvg = stdout;
@@ -119,7 +154,7 @@ int svg_plot(struct zint_symbol *symbol) {
     /* Certain symbols need whitespace otherwise characters get chopped off the sides */
     if ((((symbol->symbology == BARCODE_EANX) && (symbol->rows == 1)) || (symbol->symbology == BARCODE_EANX_CC))
             || (symbol->symbology == BARCODE_ISBNX)) {
-        switch (ustrlen(symbol->text)) {
+        switch (ustrlen(local_text)) {
             case 13: /* EAN 13 */
             case 16:
             case 19:
@@ -151,22 +186,19 @@ int svg_plot(struct zint_symbol *symbol) {
     r = 0;
     /* Isolate add-on text */
     if (is_extendable(symbol->symbology)) {
-        for (i = 0; i < ustrlen(symbol->text); i++) {
+        for (i = 0; i < ustrlen(local_text); i++) {
             if (latch == 1) {
-                addon[r] = symbol->text[i];
+                addon[r] = local_text[i];
                 r++;
             }
-            if (symbol->text[i] == '+') {
+            if (local_text[i] == '+') {
                 latch = 1;
             }
         }
     }
     addon[r] = '\0';
 
-    if ((symbol->show_hrt == 0) || (ustrlen(symbol->text) == 0)) {
-        plot_text = 0;
-    }
-    if (plot_text) {
+    if (ustrlen(local_text) != 0) {
         textoffset = 9;
     } else {
         textoffset = 0;
@@ -184,8 +216,8 @@ int svg_plot(struct zint_symbol *symbol) {
         fprintf(fsvg, "<svg width=\"%d\" height=\"%d\" version=\"1.1\"\n", (int)ceil((74.0F + xoffset + xoffset) * scaler), (int)ceil((72.0F + yoffset + yoffset) * scaler));
     }
     fprintf(fsvg, "   xmlns=\"http://www.w3.org/2000/svg\">\n");
-    if (ustrlen(symbol->text) != 0) {
-        fprintf(fsvg, "   <desc>%s\n", symbol->text);
+    if (ustrlen(local_text) != 0) {
+        fprintf(fsvg, "   <desc>%s\n", local_text);
     } else {
         fprintf(fsvg, "   <desc>Zint Generated Symbol\n");
     }
@@ -313,254 +345,252 @@ int svg_plot(struct zint_symbol *symbol) {
     xoffset += comp_offset;
     row_posn = (row_posn + large_bar_height) * scaler;
 
-    if (plot_text) {
-        if ((((symbol->symbology == BARCODE_EANX) && (symbol->rows == 1)) || (symbol->symbology == BARCODE_EANX_CC)) ||
-                (symbol->symbology == BARCODE_ISBNX)) {
-            /* guard bar extensions and text formatting for EAN8 and EAN13 */
-            switch (ustrlen(symbol->text)) {
-                case 8: /* EAN-8 */
-                case 11:
-                case 14:
-                    fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (0 + xoffset) * scaler, row_posn, scaler, 5.0 * scaler);
-                    fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (2 + xoffset) * scaler, row_posn, scaler, 5.0 * scaler);
-                    fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (32 + xoffset) * scaler, row_posn, scaler, 5.0 * scaler);
-                    fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (34 + xoffset) * scaler, row_posn, scaler, 5.0 * scaler);
-                    fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (64 + xoffset) * scaler, row_posn, scaler, 5.0 * scaler);
-                    fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (66 + xoffset) * scaler, row_posn, scaler, 5.0 * scaler);
-                    for (i = 0; i < 4; i++) {
-                        textpart[i] = symbol->text[i];
-                    }
-                    textpart[4] = '\0';
-                    textpos = 17;
-                    fprintf(fsvg, "      <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"middle\"\n", (textpos + xoffset) * scaler, default_text_posn);
-                    fprintf(fsvg, "         font-family=\"Helvetica\" font-size=\"%.1f\" fill=\"#%s\" >\n", 11.0 * scaler, symbol->fgcolour);
-                    fprintf(fsvg, "         %s\n", textpart);
-                    fprintf(fsvg, "      </text>\n");
-                    for (i = 0; i < 4; i++) {
-                        textpart[i] = symbol->text[i + 4];
-                    }
-                    textpart[4] = '\0';
-                    textpos = 50;
-                    fprintf(fsvg, "      <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"middle\"\n", (textpos + xoffset) * scaler, default_text_posn);
-                    fprintf(fsvg, "         font-family=\"Helvetica\" font-size=\"%.1f\" fill=\"#%s\" >\n", 11.0 * scaler, symbol->fgcolour);
-                    fprintf(fsvg, "         %s\n", textpart);
-                    fprintf(fsvg, "      </text>\n");
-                    textdone = 1;
-                    switch (strlen(addon)) {
-                        case 2:
-                            textpos = xoffset + 86;
-                            fprintf(fsvg, "      <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"middle\"\n", textpos * scaler, addon_text_posn * scaler);
-                            fprintf(fsvg, "         font-family=\"Helvetica\" font-size=\"%.1f\" fill=\"#%s\" >\n", 11.0 * scaler, symbol->fgcolour);
-                            fprintf(fsvg, "         %s\n", addon);
-                            fprintf(fsvg, "      </text>\n");
-                            break;
-                        case 5:
-                            textpos = xoffset + 100;
-                            fprintf(fsvg, "      <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"middle\"\n", textpos * scaler, addon_text_posn * scaler);
-                            fprintf(fsvg, "         font-family=\"Helvetica\" font-size=\"%.1f\" fill=\"#%s\" >\n", 11.0 * scaler, symbol->fgcolour);
-                            fprintf(fsvg, "         %s\n", addon);
-                            fprintf(fsvg, "      </text>\n");
-                            break;
-                    }
-
-                    break;
-                case 13: /* EAN 13 */
-                case 16:
-                case 19:
-                    fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (0 + xoffset) * scaler, row_posn, scaler, 5.0 * scaler);
-                    fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (2 + xoffset) * scaler, row_posn, scaler, 5.0 * scaler);
-                    fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (46 + xoffset) * scaler, row_posn, scaler, 5.0 * scaler);
-                    fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (48 + xoffset) * scaler, row_posn, scaler, 5.0 * scaler);
-                    fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (92 + xoffset) * scaler, row_posn, scaler, 5.0 * scaler);
-                    fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (94 + xoffset) * scaler, row_posn, scaler, 5.0 * scaler);
-                    textpart[0] = symbol->text[0];
-                    textpart[1] = '\0';
-                    textpos = -7;
-                    fprintf(fsvg, "      <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"middle\"\n", (textpos + xoffset) * scaler, default_text_posn);
-                    fprintf(fsvg, "         font-family=\"Helvetica\" font-size=\"%.1f\" fill=\"#%s\" >\n", 11.0 * scaler, symbol->fgcolour);
-                    fprintf(fsvg, "         %s\n", textpart);
-                    fprintf(fsvg, "      </text>\n");
-                    for (i = 0; i < 6; i++) {
-                        textpart[i] = symbol->text[i + 1];
-                    }
-                    textpart[6] = '\0';
-                    textpos = 24;
-                    fprintf(fsvg, "      <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"middle\"\n", (textpos + xoffset) * scaler, default_text_posn);
-                    fprintf(fsvg, "         font-family=\"Helvetica\" font-size=\"%.1f\" fill=\"#%s\" >\n", 11.0 * scaler, symbol->fgcolour);
-                    fprintf(fsvg, "         %s\n", textpart);
-                    fprintf(fsvg, "      </text>\n");
-                    for (i = 0; i < 6; i++) {
-                        textpart[i] = symbol->text[i + 7];
-                    }
-                    textpart[6] = '\0';
-                    textpos = 71;
-                    fprintf(fsvg, "      <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"middle\"\n", (textpos + xoffset) * scaler, default_text_posn);
-                    fprintf(fsvg, "         font-family=\"Helvetica\" font-size=\"%.1f\" fill=\"#%s\" >\n", 11.0 * scaler, symbol->fgcolour);
-                    fprintf(fsvg, "         %s\n", textpart);
-                    fprintf(fsvg, "      </text>\n");
-                    textdone = 1;
-                    switch (strlen(addon)) {
-                        case 2:
-                            textpos = xoffset + 114;
-                            fprintf(fsvg, "      <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"middle\"\n", textpos * scaler, addon_text_posn * scaler);
-                            fprintf(fsvg, "         font-family=\"Helvetica\" font-size=\"%.1f\" fill=\"#%s\" >\n", 11.0 * scaler, symbol->fgcolour);
-                            fprintf(fsvg, "         %s\n", addon);
-                            fprintf(fsvg, "      </text>\n");
-                            break;
-                        case 5:
-                            textpos = xoffset + 128;
-                            fprintf(fsvg, "      <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"middle\"\n", textpos * scaler, addon_text_posn * scaler);
-                            fprintf(fsvg, "         font-family=\"Helvetica\" font-size=\"%.1f\" fill=\"#%s\" >\n", 11.0 * scaler, symbol->fgcolour);
-                            fprintf(fsvg, "         %s\n", addon);
-                            fprintf(fsvg, "      </text>\n");
-                            break;
-                    }
-                    break;
-
-            }
-        }
-
-        if (((symbol->symbology == BARCODE_UPCA) && (symbol->rows == 1)) || (symbol->symbology == BARCODE_UPCA_CC)) {
-            /* guard bar extensions and text formatting for UPCA */
-            latch = 1;
-
-            i = 0 + comp_offset;
-            do {
-                block_width = 0;
-                do {
-                    block_width++;
-                } while (module_is_set(symbol, symbol->rows - 1, i + block_width) == module_is_set(symbol, symbol->rows - 1, i));
-                if (latch == 1) {
-                    /* a bar */
-                    fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (i + xoffset - comp_offset) * scaler, row_posn, block_width * scaler, 5.0 * scaler);
-                    latch = 0;
-                } else {
-                    /* a space */
-                    latch = 1;
+    if ((((symbol->symbology == BARCODE_EANX) && (symbol->rows == 1)) || (symbol->symbology == BARCODE_EANX_CC)) ||
+            (symbol->symbology == BARCODE_ISBNX)) {
+        /* guard bar extensions and text formatting for EAN8 and EAN13 */
+        switch (ustrlen(local_text)) {
+            case 8: /* EAN-8 */
+            case 11:
+            case 14:
+                fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (0 + xoffset) * scaler, row_posn, scaler, 5.0 * scaler);
+                fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (2 + xoffset) * scaler, row_posn, scaler, 5.0 * scaler);
+                fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (32 + xoffset) * scaler, row_posn, scaler, 5.0 * scaler);
+                fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (34 + xoffset) * scaler, row_posn, scaler, 5.0 * scaler);
+                fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (64 + xoffset) * scaler, row_posn, scaler, 5.0 * scaler);
+                fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (66 + xoffset) * scaler, row_posn, scaler, 5.0 * scaler);
+                for (i = 0; i < 4; i++) {
+                    textpart[i] = local_text[i];
                 }
-                i += block_width;
-            } while (i < 11 + comp_offset);
-            fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (46 + xoffset) * scaler, row_posn, scaler, 5.0 * scaler);
-            fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (48 + xoffset) * scaler, row_posn, scaler, 5.0 * scaler);
-            latch = 1;
-            i = 85 + comp_offset;
-            do {
-                block_width = 0;
-                do {
-                    block_width++;
-                } while (module_is_set(symbol, symbol->rows - 1, i + block_width) == module_is_set(symbol, symbol->rows - 1, i));
-                if (latch == 1) {
-                    /* a bar */
-                    fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (i + xoffset - comp_offset) * scaler, row_posn, block_width * scaler, 5.0 * scaler);
-                    latch = 0;
-                } else {
-                    /* a space */
-                    latch = 1;
+                textpart[4] = '\0';
+                textpos = 17;
+                fprintf(fsvg, "      <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"middle\"\n", (textpos + xoffset) * scaler, default_text_posn);
+                fprintf(fsvg, "         font-family=\"Helvetica\" font-size=\"%.1f\" fill=\"#%s\" >\n", 11.0 * scaler, symbol->fgcolour);
+                fprintf(fsvg, "         %s\n", textpart);
+                fprintf(fsvg, "      </text>\n");
+                for (i = 0; i < 4; i++) {
+                    textpart[i] = local_text[i + 4];
                 }
-                i += block_width;
-            } while (i < 96 + comp_offset);
-            textpart[0] = symbol->text[0];
-            textpart[1] = '\0';
-            textpos = -5;
-            fprintf(fsvg, "      <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"middle\"\n", (textpos + xoffset) * scaler, default_text_posn);
-            fprintf(fsvg, "         font-family=\"Helvetica\" font-size=\"%.1f\" fill=\"#%s\" >\n", 8.0 * scaler, symbol->fgcolour);
-            fprintf(fsvg, "         %s\n", textpart);
-            fprintf(fsvg, "      </text>\n");
-            for (i = 0; i < 5; i++) {
-                textpart[i] = symbol->text[i + 1];
-            }
-            textpart[5] = '\0';
-            textpos = 27;
-            fprintf(fsvg, "      <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"middle\"\n", (textpos + xoffset) * scaler, default_text_posn);
-            fprintf(fsvg, "         font-family=\"Helvetica\" font-size=\"%.1f\" fill=\"#%s\" >\n", 11.0 * scaler, symbol->fgcolour);
-            fprintf(fsvg, "         %s\n", textpart);
-            fprintf(fsvg, "      </text>\n");
-            for (i = 0; i < 5; i++) {
-                textpart[i] = symbol->text[i + 6];
-            }
-            textpart[6] = '\0';
-            textpos = 68;
-            fprintf(fsvg, "      <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"middle\"\n", (textpos + xoffset) * scaler, default_text_posn);
-            fprintf(fsvg, "         font-family=\"Helvetica\" font-size=\"%.1f\" fill=\"#%s\" >\n", 11.0 * scaler, symbol->fgcolour);
-            fprintf(fsvg, "         %s\n", textpart);
-            fprintf(fsvg, "      </text>\n");
-            textpart[0] = symbol->text[11];
-            textpart[1] = '\0';
-            textpos = 100;
-            fprintf(fsvg, "      <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"middle\"\n", (textpos + xoffset) * scaler, default_text_posn);
-            fprintf(fsvg, "         font-family=\"Helvetica\" font-size=\"%.1f\" fill=\"#%s\" >\n", 8.0 * scaler, symbol->fgcolour);
-            fprintf(fsvg, "         %s\n", textpart);
-            fprintf(fsvg, "      </text>\n");
-            textdone = 1;
-            switch (strlen(addon)) {
-                case 2:
-                    textpos = xoffset + 116;
-                    fprintf(fsvg, "      <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"middle\"\n", textpos * scaler, addon_text_posn * scaler);
-                    fprintf(fsvg, "         font-family=\"Helvetica\" font-size=\"%.1f\" fill=\"#%s\" >\n", 11.0 * scaler, symbol->fgcolour);
-                    fprintf(fsvg, "         %s\n", addon);
-                    fprintf(fsvg, "      </text>\n");
-                    break;
-                case 5:
-                    textpos = xoffset + 130;
-                    fprintf(fsvg, "      <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"middle\"\n", textpos * scaler, addon_text_posn * scaler);
-                    fprintf(fsvg, "         font-family=\"Helvetica\" font-size=\"%.1f\" fill=\"#%s\" >\n", 11.0 * scaler, symbol->fgcolour);
-                    fprintf(fsvg, "         %s\n", addon);
-                    fprintf(fsvg, "      </text>\n");
-                    break;
-            }
+                textpart[4] = '\0';
+                textpos = 50;
+                fprintf(fsvg, "      <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"middle\"\n", (textpos + xoffset) * scaler, default_text_posn);
+                fprintf(fsvg, "         font-family=\"Helvetica\" font-size=\"%.1f\" fill=\"#%s\" >\n", 11.0 * scaler, symbol->fgcolour);
+                fprintf(fsvg, "         %s\n", textpart);
+                fprintf(fsvg, "      </text>\n");
+                textdone = 1;
+                switch (strlen(addon)) {
+                    case 2:
+                        textpos = xoffset + 86;
+                        fprintf(fsvg, "      <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"middle\"\n", textpos * scaler, addon_text_posn * scaler);
+                        fprintf(fsvg, "         font-family=\"Helvetica\" font-size=\"%.1f\" fill=\"#%s\" >\n", 11.0 * scaler, symbol->fgcolour);
+                        fprintf(fsvg, "         %s\n", addon);
+                        fprintf(fsvg, "      </text>\n");
+                        break;
+                    case 5:
+                        textpos = xoffset + 100;
+                        fprintf(fsvg, "      <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"middle\"\n", textpos * scaler, addon_text_posn * scaler);
+                        fprintf(fsvg, "         font-family=\"Helvetica\" font-size=\"%.1f\" fill=\"#%s\" >\n", 11.0 * scaler, symbol->fgcolour);
+                        fprintf(fsvg, "         %s\n", addon);
+                        fprintf(fsvg, "      </text>\n");
+                        break;
+                }
+
+                break;
+            case 13: /* EAN 13 */
+            case 16:
+            case 19:
+                fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (0 + xoffset) * scaler, row_posn, scaler, 5.0 * scaler);
+                fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (2 + xoffset) * scaler, row_posn, scaler, 5.0 * scaler);
+                fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (46 + xoffset) * scaler, row_posn, scaler, 5.0 * scaler);
+                fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (48 + xoffset) * scaler, row_posn, scaler, 5.0 * scaler);
+                fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (92 + xoffset) * scaler, row_posn, scaler, 5.0 * scaler);
+                fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (94 + xoffset) * scaler, row_posn, scaler, 5.0 * scaler);
+                textpart[0] = local_text[0];
+                textpart[1] = '\0';
+                textpos = -7;
+                fprintf(fsvg, "      <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"middle\"\n", (textpos + xoffset) * scaler, default_text_posn);
+                fprintf(fsvg, "         font-family=\"Helvetica\" font-size=\"%.1f\" fill=\"#%s\" >\n", 11.0 * scaler, symbol->fgcolour);
+                fprintf(fsvg, "         %s\n", textpart);
+                fprintf(fsvg, "      </text>\n");
+                for (i = 0; i < 6; i++) {
+                    textpart[i] = local_text[i + 1];
+                }
+                textpart[6] = '\0';
+                textpos = 24;
+                fprintf(fsvg, "      <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"middle\"\n", (textpos + xoffset) * scaler, default_text_posn);
+                fprintf(fsvg, "         font-family=\"Helvetica\" font-size=\"%.1f\" fill=\"#%s\" >\n", 11.0 * scaler, symbol->fgcolour);
+                fprintf(fsvg, "         %s\n", textpart);
+                fprintf(fsvg, "      </text>\n");
+                for (i = 0; i < 6; i++) {
+                    textpart[i] = local_text[i + 7];
+                }
+                textpart[6] = '\0';
+                textpos = 71;
+                fprintf(fsvg, "      <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"middle\"\n", (textpos + xoffset) * scaler, default_text_posn);
+                fprintf(fsvg, "         font-family=\"Helvetica\" font-size=\"%.1f\" fill=\"#%s\" >\n", 11.0 * scaler, symbol->fgcolour);
+                fprintf(fsvg, "         %s\n", textpart);
+                fprintf(fsvg, "      </text>\n");
+                textdone = 1;
+                switch (strlen(addon)) {
+                    case 2:
+                        textpos = xoffset + 114;
+                        fprintf(fsvg, "      <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"middle\"\n", textpos * scaler, addon_text_posn * scaler);
+                        fprintf(fsvg, "         font-family=\"Helvetica\" font-size=\"%.1f\" fill=\"#%s\" >\n", 11.0 * scaler, symbol->fgcolour);
+                        fprintf(fsvg, "         %s\n", addon);
+                        fprintf(fsvg, "      </text>\n");
+                        break;
+                    case 5:
+                        textpos = xoffset + 128;
+                        fprintf(fsvg, "      <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"middle\"\n", textpos * scaler, addon_text_posn * scaler);
+                        fprintf(fsvg, "         font-family=\"Helvetica\" font-size=\"%.1f\" fill=\"#%s\" >\n", 11.0 * scaler, symbol->fgcolour);
+                        fprintf(fsvg, "         %s\n", addon);
+                        fprintf(fsvg, "      </text>\n");
+                        break;
+                }
+                break;
 
         }
+    }
 
-        if (((symbol->symbology == BARCODE_UPCE) && (symbol->rows == 1)) || (symbol->symbology == BARCODE_UPCE_CC)) {
-            /* guard bar extensions and text formatting for UPCE */
-            fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (0 + xoffset) * scaler, row_posn, scaler, 5.0 * scaler);
-            fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (2 + xoffset) * scaler, row_posn, scaler, 5.0 * scaler);
-            fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (46 + xoffset) * scaler, row_posn, scaler, 5.0 * scaler);
-            fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (48 + xoffset) * scaler, row_posn, scaler, 5.0 * scaler);
-            fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (50 + xoffset) * scaler, row_posn, scaler, 5.0 * scaler);
-            textpart[0] = symbol->text[0];
-            textpart[1] = '\0';
-            textpos = -5;
-            fprintf(fsvg, "      <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"middle\"\n", (textpos + xoffset) * scaler, default_text_posn);
-            fprintf(fsvg, "         font-family=\"Helvetica\" font-size=\"%.1f\" fill=\"#%s\" >\n", 8.0 * scaler, symbol->fgcolour);
-            fprintf(fsvg, "         %s\n", textpart);
-            fprintf(fsvg, "      </text>\n");
-            for (i = 0; i < 6; i++) {
-                textpart[i] = symbol->text[i + 1];
-            }
-            textpart[6] = '\0';
-            textpos = 24;
-            fprintf(fsvg, "      <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"middle\"\n", (textpos + xoffset) * scaler, default_text_posn);
-            fprintf(fsvg, "         font-family=\"Helvetica\" font-size=\"%.1f\" fill=\"#%s\" >\n", 11.0 * scaler, symbol->fgcolour);
-            fprintf(fsvg, "         %s\n", textpart);
-            fprintf(fsvg, "      </text>\n");
-            textpart[0] = symbol->text[7];
-            textpart[1] = '\0';
-            textpos = 55;
-            fprintf(fsvg, "      <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"middle\"\n", (textpos + xoffset) * scaler, default_text_posn);
-            fprintf(fsvg, "         font-family=\"Helvetica\" font-size=\"%.1f\" fill=\"#%s\" >\n", 8.0 * scaler, symbol->fgcolour);
-            fprintf(fsvg, "         %s\n", textpart);
-            fprintf(fsvg, "      </text>\n");
-            textdone = 1;
-            switch (strlen(addon)) {
-                case 2:
-                    textpos = xoffset + 70;
-                    fprintf(fsvg, "      <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"middle\"\n", textpos * scaler, addon_text_posn * scaler);
-                    fprintf(fsvg, "         font-family=\"Helvetica\" font-size=\"%.1f\" fill=\"#%s\" >\n", 11.0 * scaler, symbol->fgcolour);
-                    fprintf(fsvg, "         %s\n", addon);
-                    fprintf(fsvg, "      </text>\n");
-                    break;
-                case 5:
-                    textpos = xoffset + 84;
-                    fprintf(fsvg, "      <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"middle\"\n", textpos * scaler, addon_text_posn * scaler);
-                    fprintf(fsvg, "         font-family=\"Helvetica\" font-size=\"%.1f\" fill=\"#%s\" >\n", 11.0 * scaler, symbol->fgcolour);
-                    fprintf(fsvg, "         %s\n", addon);
-                    fprintf(fsvg, "      </text>\n");
-                    break;
-            }
+    if (((symbol->symbology == BARCODE_UPCA) && (symbol->rows == 1)) || (symbol->symbology == BARCODE_UPCA_CC)) {
+        /* guard bar extensions and text formatting for UPCA */
+        latch = 1;
 
+        i = 0 + comp_offset;
+        do {
+            block_width = 0;
+            do {
+                block_width++;
+            } while (module_is_set(symbol, symbol->rows - 1, i + block_width) == module_is_set(symbol, symbol->rows - 1, i));
+            if (latch == 1) {
+                /* a bar */
+                fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (i + xoffset - comp_offset) * scaler, row_posn, block_width * scaler, 5.0 * scaler);
+                latch = 0;
+            } else {
+                /* a space */
+                latch = 1;
+            }
+            i += block_width;
+        } while (i < 11 + comp_offset);
+        fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (46 + xoffset) * scaler, row_posn, scaler, 5.0 * scaler);
+        fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (48 + xoffset) * scaler, row_posn, scaler, 5.0 * scaler);
+        latch = 1;
+        i = 85 + comp_offset;
+        do {
+            block_width = 0;
+            do {
+                block_width++;
+            } while (module_is_set(symbol, symbol->rows - 1, i + block_width) == module_is_set(symbol, symbol->rows - 1, i));
+            if (latch == 1) {
+                /* a bar */
+                fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (i + xoffset - comp_offset) * scaler, row_posn, block_width * scaler, 5.0 * scaler);
+                latch = 0;
+            } else {
+                /* a space */
+                latch = 1;
+            }
+            i += block_width;
+        } while (i < 96 + comp_offset);
+        textpart[0] = local_text[0];
+        textpart[1] = '\0';
+        textpos = -5;
+        fprintf(fsvg, "      <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"middle\"\n", (textpos + xoffset) * scaler, default_text_posn);
+        fprintf(fsvg, "         font-family=\"Helvetica\" font-size=\"%.1f\" fill=\"#%s\" >\n", 8.0 * scaler, symbol->fgcolour);
+        fprintf(fsvg, "         %s\n", textpart);
+        fprintf(fsvg, "      </text>\n");
+        for (i = 0; i < 5; i++) {
+            textpart[i] = local_text[i + 1];
         }
-    } /* if (plot_text) */
+        textpart[5] = '\0';
+        textpos = 27;
+        fprintf(fsvg, "      <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"middle\"\n", (textpos + xoffset) * scaler, default_text_posn);
+        fprintf(fsvg, "         font-family=\"Helvetica\" font-size=\"%.1f\" fill=\"#%s\" >\n", 11.0 * scaler, symbol->fgcolour);
+        fprintf(fsvg, "         %s\n", textpart);
+        fprintf(fsvg, "      </text>\n");
+        for (i = 0; i < 5; i++) {
+            textpart[i] = local_text[i + 6];
+        }
+        textpart[6] = '\0';
+        textpos = 68;
+        fprintf(fsvg, "      <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"middle\"\n", (textpos + xoffset) * scaler, default_text_posn);
+        fprintf(fsvg, "         font-family=\"Helvetica\" font-size=\"%.1f\" fill=\"#%s\" >\n", 11.0 * scaler, symbol->fgcolour);
+        fprintf(fsvg, "         %s\n", textpart);
+        fprintf(fsvg, "      </text>\n");
+        textpart[0] = local_text[11];
+        textpart[1] = '\0';
+        textpos = 100;
+        fprintf(fsvg, "      <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"middle\"\n", (textpos + xoffset) * scaler, default_text_posn);
+        fprintf(fsvg, "         font-family=\"Helvetica\" font-size=\"%.1f\" fill=\"#%s\" >\n", 8.0 * scaler, symbol->fgcolour);
+        fprintf(fsvg, "         %s\n", textpart);
+        fprintf(fsvg, "      </text>\n");
+        textdone = 1;
+        switch (strlen(addon)) {
+            case 2:
+                textpos = xoffset + 116;
+                fprintf(fsvg, "      <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"middle\"\n", textpos * scaler, addon_text_posn * scaler);
+                fprintf(fsvg, "         font-family=\"Helvetica\" font-size=\"%.1f\" fill=\"#%s\" >\n", 11.0 * scaler, symbol->fgcolour);
+                fprintf(fsvg, "         %s\n", addon);
+                fprintf(fsvg, "      </text>\n");
+                break;
+            case 5:
+                textpos = xoffset + 130;
+                fprintf(fsvg, "      <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"middle\"\n", textpos * scaler, addon_text_posn * scaler);
+                fprintf(fsvg, "         font-family=\"Helvetica\" font-size=\"%.1f\" fill=\"#%s\" >\n", 11.0 * scaler, symbol->fgcolour);
+                fprintf(fsvg, "         %s\n", addon);
+                fprintf(fsvg, "      </text>\n");
+                break;
+        }
+
+    }
+
+    if (((symbol->symbology == BARCODE_UPCE) && (symbol->rows == 1)) || (symbol->symbology == BARCODE_UPCE_CC)) {
+        /* guard bar extensions and text formatting for UPCE */
+        fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (0 + xoffset) * scaler, row_posn, scaler, 5.0 * scaler);
+        fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (2 + xoffset) * scaler, row_posn, scaler, 5.0 * scaler);
+        fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (46 + xoffset) * scaler, row_posn, scaler, 5.0 * scaler);
+        fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (48 + xoffset) * scaler, row_posn, scaler, 5.0 * scaler);
+        fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (50 + xoffset) * scaler, row_posn, scaler, 5.0 * scaler);
+        textpart[0] = local_text[0];
+        textpart[1] = '\0';
+        textpos = -5;
+        fprintf(fsvg, "      <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"middle\"\n", (textpos + xoffset) * scaler, default_text_posn);
+        fprintf(fsvg, "         font-family=\"Helvetica\" font-size=\"%.1f\" fill=\"#%s\" >\n", 8.0 * scaler, symbol->fgcolour);
+        fprintf(fsvg, "         %s\n", textpart);
+        fprintf(fsvg, "      </text>\n");
+        for (i = 0; i < 6; i++) {
+            textpart[i] = local_text[i + 1];
+        }
+        textpart[6] = '\0';
+        textpos = 24;
+        fprintf(fsvg, "      <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"middle\"\n", (textpos + xoffset) * scaler, default_text_posn);
+        fprintf(fsvg, "         font-family=\"Helvetica\" font-size=\"%.1f\" fill=\"#%s\" >\n", 11.0 * scaler, symbol->fgcolour);
+        fprintf(fsvg, "         %s\n", textpart);
+        fprintf(fsvg, "      </text>\n");
+        textpart[0] = local_text[7];
+        textpart[1] = '\0';
+        textpos = 55;
+        fprintf(fsvg, "      <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"middle\"\n", (textpos + xoffset) * scaler, default_text_posn);
+        fprintf(fsvg, "         font-family=\"Helvetica\" font-size=\"%.1f\" fill=\"#%s\" >\n", 8.0 * scaler, symbol->fgcolour);
+        fprintf(fsvg, "         %s\n", textpart);
+        fprintf(fsvg, "      </text>\n");
+        textdone = 1;
+        switch (strlen(addon)) {
+            case 2:
+                textpos = xoffset + 70;
+                fprintf(fsvg, "      <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"middle\"\n", textpos * scaler, addon_text_posn * scaler);
+                fprintf(fsvg, "         font-family=\"Helvetica\" font-size=\"%.1f\" fill=\"#%s\" >\n", 11.0 * scaler, symbol->fgcolour);
+                fprintf(fsvg, "         %s\n", addon);
+                fprintf(fsvg, "      </text>\n");
+                break;
+            case 5:
+                textpos = xoffset + 84;
+                fprintf(fsvg, "      <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"middle\"\n", textpos * scaler, addon_text_posn * scaler);
+                fprintf(fsvg, "         font-family=\"Helvetica\" font-size=\"%.1f\" fill=\"#%s\" >\n", 11.0 * scaler, symbol->fgcolour);
+                fprintf(fsvg, "         %s\n", addon);
+                fprintf(fsvg, "      </text>\n");
+                break;
+        }
+
+    }
 
     xoffset -= comp_offset;
 
@@ -590,11 +620,11 @@ int svg_plot(struct zint_symbol *symbol) {
     }
 
     /* Put the human readable text at the bottom */
-    if (plot_text && (textdone == 0)) {
+    if (textdone == 0) {
         textpos = symbol->width / 2.0;
         fprintf(fsvg, "      <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"middle\"\n", (textpos + xoffset) * scaler, default_text_posn);
         fprintf(fsvg, "         font-family=\"Helvetica\" font-size=\"%.1f\" fill=\"#%s\" >\n", 8.0 * scaler, symbol->fgcolour);
-        fprintf(fsvg, "         %s\n", symbol->text);
+        fprintf(fsvg, "         %s\n", local_text);
         fprintf(fsvg, "      </text>\n");
     }
     fprintf(fsvg, "   </g>\n");
