@@ -86,6 +86,7 @@ void usage(void) {
             "  -r, --reverse         Reverse colours (white on black).\n"
             "  --fg=COLOUR           Specify a foreground colour.\n"
             "  --bg=COLOUR           Specify a background colour.\n"
+            "  --cmyk                Convert to CMYK colour space for EPS\n"
             "  --scale=NUMBER        Adjust size of output image.\n"
             "  --directpng           Send PNG output to stdout\n"
             "  --directeps           Send EPS output to stdout\n"
@@ -415,6 +416,7 @@ int main(int argc, char **argv) {
             {"init", 0, 0, 0},
             {"smalltext", 0, 0, 0},
             {"boldtext", 0, 0, 0},
+            {"cmyk", 0, 0, 0},
             {"batch", 0, 0, 0},
             {0, 0, 0, 0}
         };
@@ -437,6 +439,9 @@ int main(int argc, char **argv) {
                 }
                 if (!strcmp(long_options[option_index].name, "boldtext")) {
                     my_symbol->output_options += BOLD_TEXT;
+                }
+                if (!strcmp(long_options[option_index].name, "cmyk")) {
+                    my_symbol->output_options += CMYK_COLOUR;
                 }
                 if (!strcmp(long_options[option_index].name, "directeps")) {
                     my_symbol->output_options += BARCODE_STDOUT;

@@ -45,6 +45,8 @@ int ps_plot(struct zint_symbol *symbol) {
     FILE *feps;
     int fgred, fggrn, fgblu, bgred, bggrn, bgblu;
     float red_ink, green_ink, blue_ink, red_paper, green_paper, blue_paper;
+    float cyan_ink, magenta_ink, yellow_ink, black_ink;
+    float cyan_paper, magenta_paper, yellow_paper, black_paper;
     int error_number = 0;
     int textoffset, xoffset, yoffset, textdone, main_width;
     char textpart[10], addon[6];
@@ -143,6 +145,53 @@ int ps_plot(struct zint_symbol *symbol) {
     red_paper = bgred / 256.0;
     green_paper = bggrn / 256.0;
     blue_paper = bgblu / 256.0;
+    
+    /* Convert RGB to CMYK */
+    if (red_ink > green_ink) {
+        if (blue_ink > red_ink) {
+            black_ink = 1 - blue_ink;
+        } else {
+            black_ink = 1 - red_ink;
+        }
+    } else {
+        if (blue_ink > red_ink) {
+            black_ink = 1 - blue_ink;
+        } else {
+            black_ink = 1 - green_ink;
+        }
+    }
+    if (black_ink < 1.0) {
+        cyan_ink = (1 - red_ink - black_ink) / (1 - black_ink);
+        magenta_ink = (1 - green_ink - black_ink) / (1 - black_ink);
+        yellow_ink = (1 - blue_ink - black_ink) / (1 - black_ink);
+    } else {
+        cyan_ink = 0.0;
+        magenta_ink = 0.0;
+        yellow_ink = 0.0;
+    }
+    
+    if (red_paper > green_paper) {
+        if (blue_paper > red_paper) {
+            black_paper = 1 - blue_paper;
+        } else {
+            black_paper = 1 - red_paper;
+        }
+    } else {
+        if (blue_paper > red_paper) {
+            black_paper = 1 - blue_paper;
+        } else {
+            black_paper = 1 - green_paper;
+        }
+    }
+    if (black_paper < 1.0) {
+        cyan_paper = (1 - red_paper - black_paper) / (1 - black_paper);
+        magenta_paper = (1 - green_paper - black_paper) / (1 - black_paper);
+        yellow_paper = (1 - blue_paper - black_paper) / (1 - black_paper);
+    } else {
+        cyan_paper = 0.0;
+        magenta_paper = 0.0;
+        yellow_paper = 0.0;
+    }
 
     if (symbol->height == 0) {
         symbol->height = 50;
@@ -248,8 +297,13 @@ int ps_plot(struct zint_symbol *symbol) {
     fprintf(feps, "newpath\n");
 
     /* Now the actual representation */
-    fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
-    fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_paper, green_paper, blue_paper);
+    if ((symbol->output_options & CMYK_COLOUR) == 0) {
+        fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
+        fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_paper, green_paper, blue_paper);
+    } else {
+        fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n", cyan_ink, magenta_ink, yellow_ink, black_ink);
+        fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n", cyan_paper, magenta_paper, yellow_paper, black_paper);
+    }
     fprintf(feps, "%.2f 0.00 TB 0.00 %.2f TR\n", (symbol->height + textoffset + yoffset + yoffset) * scaler, (symbol->width + xoffset + xoffset) * scaler);
 
     if (((symbol->output_options & BARCODE_BOX) != 0) || ((symbol->output_options & BARCODE_BIND) != 0)) {
@@ -266,21 +320,34 @@ int ps_plot(struct zint_symbol *symbol) {
         textoffset = 0.0;
         if (((symbol->output_options & BARCODE_BOX) != 0) || ((symbol->output_options & BARCODE_BIND) != 0)) {
             fprintf(feps, "TE\n");
-            fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
+            if ((symbol->output_options & CMYK_COLOUR) == 0) {
+                fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
+            } else {
+                fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n", cyan_ink, magenta_ink, yellow_ink, black_ink);
+            }
             fprintf(feps, "%.2f %.2f TB %.2f %.2f TR\n", symbol->border_width * scaler, textoffset * scaler, 0.0, (74.0 + xoffset + xoffset) * scaler);
             fprintf(feps, "%.2f %.2f TB %.2f %.2f TR\n", symbol->border_width * scaler, (textoffset + 72.0 + symbol->border_width) * scaler, 0.0, (74.0 + xoffset + xoffset) * scaler);
         }
         if ((symbol->output_options & BARCODE_BOX) != 0) {
             /* side bars */
             fprintf(feps, "TE\n");
-            fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
+            if ((symbol->output_options & CMYK_COLOUR) == 0) {
+                fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
+            } else {
+                fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n", cyan_ink, magenta_ink, yellow_ink, black_ink);
+            }
             fprintf(feps, "%.2f %.2f TB %.2f %.2f TR\n", (72.0 + (2 * symbol->border_width)) * scaler, textoffset * scaler, 0.0, symbol->border_width * scaler);
             fprintf(feps, "%.2f %.2f TB %.2f %.2f TR\n", (72.0 + (2 * symbol->border_width)) * scaler, textoffset * scaler, (74.0 + xoffset + xoffset - symbol->border_width) * scaler, symbol->border_width * scaler);
         }
 
         fprintf(feps, "TE\n");
-        fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
-        fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
+        if ((symbol->output_options & CMYK_COLOUR) == 0) {
+            fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
+            fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
+        } else {
+            fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n", cyan_ink, magenta_ink, yellow_ink, black_ink);
+            fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n", cyan_ink, magenta_ink, yellow_ink, black_ink);
+        }
         fprintf(feps, "%.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f TC\n", (35.76 + xoffset) * scaler, (35.60 + yoffset) * scaler, 10.85 * scaler, (35.76 + xoffset) * scaler, (35.60 + yoffset) * scaler, 8.97 * scaler, (44.73 + xoffset) * scaler, (35.60 + yoffset) * scaler);
         fprintf(feps, "%.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f TC\n", (35.76 + xoffset) * scaler, (35.60 + yoffset) * scaler, 7.10 * scaler, (35.76 + xoffset) * scaler, (35.60 + yoffset) * scaler, 5.22 * scaler, (40.98 + xoffset) * scaler, (35.60 + yoffset) * scaler);
         fprintf(feps, "%.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f TC\n", (35.76 + xoffset) * scaler, (35.60 + yoffset) * scaler, 3.31 * scaler, (35.76 + xoffset) * scaler, (35.60 + yoffset) * scaler, 1.43 * scaler, (37.19 + xoffset) * scaler, (35.60 + yoffset) * scaler);
@@ -333,7 +400,11 @@ int ps_plot(struct zint_symbol *symbol) {
             row_posn += (textoffset + yoffset);
 
             fprintf(feps, "TE\n");
-            fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
+            if ((symbol->output_options & CMYK_COLOUR) == 0) {
+                fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
+            } else {
+                fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n", cyan_ink, magenta_ink, yellow_ink, black_ink);
+            }
             fprintf(feps, "%.2f %.2f ", row_height * scaler, row_posn * scaler);
             i = 0;
             if (module_is_set(symbol, this_row, 0)) {
@@ -349,7 +420,11 @@ int ps_plot(struct zint_symbol *symbol) {
                 } while (module_is_set(symbol, this_row, i + block_width) == module_is_set(symbol, this_row, i));
                 if ((addon_latch == 0) && (r == 0) && (i > main_width)) {
                     fprintf(feps, "TE\n");
-                    fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
+                    if ((symbol->output_options & CMYK_COLOUR) == 0) {
+                        fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
+                    } else {
+                        fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n", cyan_ink, magenta_ink, yellow_ink, black_ink);
+                    }
                     fprintf(feps, "%.2f %.2f ", (row_height - 5.0) * scaler, (row_posn - 5.0) * scaler);
                     addon_text_posn = row_posn + row_height - 8.0;
                     addon_latch = 1;
@@ -379,7 +454,11 @@ int ps_plot(struct zint_symbol *symbol) {
             case 11:
             case 14:
                 fprintf(feps, "TE\n");
-                fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
+                if ((symbol->output_options & CMYK_COLOUR) == 0) {
+                    fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
+                } else {
+                    fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n", cyan_ink, magenta_ink, yellow_ink, black_ink);
+                }
                 fprintf(feps, "%.2f %.2f ", 5.0 * scaler, (4.0 + yoffset) * scaler);
                 fprintf(feps, "TB %.2f %.2f TR\n", (0 + xoffset) * scaler, 1 * scaler);
                 fprintf(feps, "TB %.2f %.2f TR\n", (2 + xoffset) * scaler, 1 * scaler);
@@ -392,7 +471,11 @@ int ps_plot(struct zint_symbol *symbol) {
                 }
                 textpart[4] = '\0';
                 fprintf(feps, "TE\n");
-                fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
+                if ((symbol->output_options & CMYK_COLOUR) == 0) {
+                    fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
+                } else {
+                    fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n", cyan_ink, magenta_ink, yellow_ink, black_ink);
+                }
                 fprintf(feps, "matrix currentmatrix\n");
                 fprintf(feps, "/Helvetica findfont\n");
                 fprintf(feps, "%.2f scalefont setfont\n", 11.0 * scaler);
@@ -450,7 +533,11 @@ int ps_plot(struct zint_symbol *symbol) {
             case 16:
             case 19:
                 fprintf(feps, "TE\n");
-                fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
+                if ((symbol->output_options & CMYK_COLOUR) == 0) {
+                    fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
+                } else {
+                    fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n", cyan_ink, magenta_ink, yellow_ink, black_ink);
+                }
                 fprintf(feps, "%.2f %.2f ", 5.0 * scaler, (4.0 + yoffset) * scaler);
                 fprintf(feps, "TB %.2f %.2f TR\n", (0 + xoffset) * scaler, 1 * scaler);
                 fprintf(feps, "TB %.2f %.2f TR\n", (2 + xoffset) * scaler, 1 * scaler);
@@ -461,7 +548,11 @@ int ps_plot(struct zint_symbol *symbol) {
                 textpart[0] = local_text[0];
                 textpart[1] = '\0';
                 fprintf(feps, "TE\n");
-                fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
+                if ((symbol->output_options & CMYK_COLOUR) == 0) {
+                    fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
+                } else {
+                    fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n", cyan_ink, magenta_ink, yellow_ink, black_ink);
+                }
                 fprintf(feps, "matrix currentmatrix\n");
                 fprintf(feps, "/Helvetica findfont\n");
                 fprintf(feps, "%.2f scalefont setfont\n", 11.0 * scaler);
@@ -535,7 +626,11 @@ int ps_plot(struct zint_symbol *symbol) {
     if (((symbol->symbology == BARCODE_UPCA) && (symbol->rows == 1)) || (symbol->symbology == BARCODE_UPCA_CC)) {
         /* guard bar extensions and text formatting for UPCA */
         fprintf(feps, "TE\n");
-        fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
+        if ((symbol->output_options & CMYK_COLOUR) == 0) {
+            fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
+        } else {
+            fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n", cyan_ink, magenta_ink, yellow_ink, black_ink);
+        }
         fprintf(feps, "%.2f %.2f ", 5.0 * scaler, (4.0 + yoffset) * scaler);
         latch = 1;
 
@@ -577,7 +672,11 @@ int ps_plot(struct zint_symbol *symbol) {
         textpart[0] = local_text[0];
         textpart[1] = '\0';
         fprintf(feps, "TE\n");
-        fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
+        if ((symbol->output_options & CMYK_COLOUR) == 0) {
+            fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
+        } else {
+            fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n", cyan_ink, magenta_ink, yellow_ink, black_ink);
+        }
         fprintf(feps, "matrix currentmatrix\n");
         fprintf(feps, "/Helvetica findfont\n");
         fprintf(feps, "%.2f scalefont setfont\n", 8.0 * scaler);
@@ -661,7 +760,11 @@ int ps_plot(struct zint_symbol *symbol) {
     if (((symbol->symbology == BARCODE_UPCE) && (symbol->rows == 1)) || (symbol->symbology == BARCODE_UPCE_CC)) {
         /* guard bar extensions and text formatting for UPCE */
         fprintf(feps, "TE\n");
-        fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
+        if ((symbol->output_options & CMYK_COLOUR) == 0) {
+            fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
+        } else {
+            fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n", cyan_ink, magenta_ink, yellow_ink, black_ink);
+        }
         fprintf(feps, "%.2f %.2f ", 5.0 * scaler, (4.0 + yoffset) * scaler);
         fprintf(feps, "TB %.2f %.2f TR\n", (0 + xoffset) * scaler, 1 * scaler);
         fprintf(feps, "TB %.2f %.2f TR\n", (2 + xoffset) * scaler, 1 * scaler);
@@ -749,7 +852,11 @@ int ps_plot(struct zint_symbol *symbol) {
                 if ((symbol->rows > 1) && (is_stackable(symbol->symbology) == 1)) {
                     /* row binding */
                     fprintf(feps, "TE\n");
-                    fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
+                    if ((symbol->output_options & CMYK_COLOUR) == 0) {
+                        fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
+                    } else {
+                        fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n", cyan_ink, magenta_ink, yellow_ink, black_ink);
+                    }
                     for (r = 1; r < symbol->rows; r++) {
                         fprintf(feps, "%.2f %.2f TB %.2f %.2f TR\n", 2.0 * scaler, ((r * row_height) + textoffset + yoffset - 1) * scaler, xoffset * scaler, symbol->width * scaler);
                     }
@@ -757,14 +864,22 @@ int ps_plot(struct zint_symbol *symbol) {
             }
             if (((symbol->output_options & BARCODE_BOX) != 0) || ((symbol->output_options & BARCODE_BIND) != 0)) {
                 fprintf(feps, "TE\n");
-                fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
+                if ((symbol->output_options & CMYK_COLOUR) == 0) {
+                    fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
+                } else {
+                    fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n", cyan_ink, magenta_ink, yellow_ink, black_ink);
+                }
                 fprintf(feps, "%.2f %.2f TB %.2f %.2f TR\n", symbol->border_width * scaler, textoffset * scaler, 0.0, (symbol->width + xoffset + xoffset) * scaler);
                 fprintf(feps, "%.2f %.2f TB %.2f %.2f TR\n", symbol->border_width * scaler, (textoffset + symbol->height + symbol->border_width) * scaler, 0.0, (symbol->width + xoffset + xoffset) * scaler);
             }
             if ((symbol->output_options & BARCODE_BOX) != 0) {
                 /* side bars */
                 fprintf(feps, "TE\n");
-                fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
+                if ((symbol->output_options & CMYK_COLOUR) == 0) {
+                    fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
+                } else {
+                    fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n", cyan_ink, magenta_ink, yellow_ink, black_ink);
+                }
                 fprintf(feps, "%.2f %.2f TB %.2f %.2f TR\n", (symbol->height + (2 * symbol->border_width)) * scaler, textoffset * scaler, 0.0, symbol->border_width * scaler);
                 fprintf(feps, "%.2f %.2f TB %.2f %.2f TR\n", (symbol->height + (2 * symbol->border_width)) * scaler, textoffset * scaler, (symbol->width + xoffset + xoffset - symbol->border_width) * scaler, symbol->border_width * scaler);
             }
@@ -774,7 +889,11 @@ int ps_plot(struct zint_symbol *symbol) {
     /* Put the human readable text at the bottom */
     if (textdone == 0) {
         fprintf(feps, "TE\n");
-        fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
+        if ((symbol->output_options & CMYK_COLOUR) == 0) {
+            fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
+        } else {
+            fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n", cyan_ink, magenta_ink, yellow_ink, black_ink);
+        }
         fprintf(feps, "matrix currentmatrix\n");
         fprintf(feps, "/Helvetica findfont\n");
         fprintf(feps, "%.2f scalefont setfont\n", 8.0 * scaler);

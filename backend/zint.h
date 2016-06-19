@@ -198,7 +198,8 @@ extern "C" {
 #define BARCODE_STDOUT		8
 #define READER_INIT		16
 #define SMALL_TEXT		32
-#define BOLD_TEXT       64
+#define BOLD_TEXT               64
+#define CMYK_COLOUR             128
 
 #define DATA_MODE	0
 #define UNICODE_MODE	1
