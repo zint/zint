@@ -104,6 +104,7 @@ void usage(void) {
             "  --dmre                Allow Data Matrix Rectangular Extended\n"
             "  --init                Create reader initialisation symbol (Code 128)\n"
             "  --smalltext           Use half-size text in PNG images\n"
+            "  --boldtext            Use bold text in PNG images\n"
             "  --batch               Treat each line of input as a separate data set\n"
             , ZINT_VERSION);
 }
@@ -413,6 +414,7 @@ int main(int argc, char **argv) {
             {"dmre", 0, 0, 0},
             {"init", 0, 0, 0},
             {"smalltext", 0, 0, 0},
+            {"boldtext", 0, 0, 0},
             {"batch", 0, 0, 0},
             {0, 0, 0, 0}
         };
@@ -432,6 +434,9 @@ int main(int argc, char **argv) {
                 }
                 if (!strcmp(long_options[option_index].name, "smalltext")) {
                     my_symbol->output_options += SMALL_TEXT;
+                }
+                if (!strcmp(long_options[option_index].name, "boldtext")) {
+                    my_symbol->output_options += BOLD_TEXT;
                 }
                 if (!strcmp(long_options[option_index].name, "directeps")) {
                     my_symbol->output_options += BARCODE_STDOUT;
