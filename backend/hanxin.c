@@ -331,6 +331,7 @@ void calculate_binary(char binary[], char mode[], int source[], int length) {
     int first_byte, second_byte;
     int third_byte, fourth_byte;
     int glyph;
+    int submode;
     
     do {
         block_length = 0;
@@ -413,7 +414,7 @@ void calculate_binary(char binary[], char mode[], int source[], int length) {
                     }
                 }
                 
-                int submode = 1;
+                submode = 1;
                     
                 i = 0;
                     
@@ -1283,7 +1284,6 @@ int hx_apply_bitmask(unsigned char *grid, int size) {
 
 /* Han Xin Code - main */
 int han_xin(struct zint_symbol *symbol, const unsigned char source[], int length) {
-    char mode[length + 1];
     int est_binlen;
     int ecc_level = symbol->option_1;
     int i, j, version, posn = 0, glyph, glyph2;
@@ -1298,9 +1298,16 @@ int han_xin(struct zint_symbol *symbol, const unsigned char source[], int length
 #ifndef _MSC_VER
     int utfdata[length + 1];
     int gbdata[(length + 1) * 2];
+    char mode[length + 1];
 #else
     int* utfdata = (int *) _alloca((length + 1) * sizeof (int));
     int* gbdata = (int *) _alloca(((length + 1) * 2) * sizeof (int));
+    char* mode = (char *) _alloca((length + 1) * sizeof (char));
+    char* binary;
+	unsigned char *datastream;
+    unsigned char *fullstream;
+    unsigned char *picket_fence;
+    unsigned char *grid;
 #endif
     
     switch (symbol->input_mode) {
@@ -1368,7 +1375,11 @@ int han_xin(struct zint_symbol *symbol, const unsigned char source[], int length
         est_codewords++;
     }
     
+#ifndef _MSC_VER
     char binary[est_binlen + 1];
+#else
+    binary = (char *) _alloca((est_binlen + 1) * sizeof (char));;
+#endif
     for (i = 0; i < est_binlen + 1; i++) {
         binary[i] = '\0';
     }

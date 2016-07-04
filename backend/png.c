@@ -599,6 +599,7 @@ void draw_letter(char *pixelbuf, unsigned char letter, int xposn, int yposn, int
 
         case 2: // bold font -> twice the regular font
            {
+			  char * linePtr;
               max_x = 7;
               max_y = 14;
 
@@ -610,7 +611,7 @@ void draw_letter(char *pixelbuf, unsigned char letter, int xposn, int yposn, int
                   max_y = image_height - yposn - 1;
               }
 
-              char * linePtr = pixelbuf + (yposn * image_width) + xposn + 1;
+              linePtr = pixelbuf + (yposn * image_width) + xposn + 1;
               for (y = 0; y < max_y; y++) {
                   char * pixelPtr = linePtr;
                   int extra_dot = 0;
