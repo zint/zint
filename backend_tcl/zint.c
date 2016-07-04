@@ -35,6 +35,7 @@
 	First implementation
 */
 
+#if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
 #pragma warning(disable : 4201 4214 4514)
 #define STRICT
 #define WIN32_LEAN_AND_MEAN
@@ -47,14 +48,25 @@
 #ifdef ERROR_INVALID_DATA
 #undef ERROR_INVALID_DATA
 #endif
+#endif
 
 #include <zint.h>
+#include <string.h>
 
+#if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
 #define USE_TCL_STUBS
 #define USE_TK_STUBS
+#endif
+
 #include <tcl.h>
 #include <tk.h> 
 
+#undef EXPORT
+#if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
+#define EXPORT __declspec(dllexport)
+#else
+#define EXPORT
+#endif
 
 
 /*----------------------------------------------------------------------------*/
@@ -69,7 +81,7 @@
 
 /*----------------------------------------------------------------------------*/
 /* >>>> External Prototypes (exports) */
-int __declspec(dllexport) Zint_Init (Tcl_Interp *interp);
+EXPORT int Zint_Init (Tcl_Interp *interp);
 /*----------------------------------------------------------------------------*/
 /* >>>> local prototypes */
 static int Zint(ClientData unused, Tcl_Interp *interp, int objc, 
@@ -277,7 +289,7 @@ static char help_message[] = "zint tcl(stub,obj) dll\n"
 	"   -vers integer: Symbology option, QR-Code, Plessy\n"
 	"   -rotate angle: Image rotation by 0,90 or 270 degrees\n"
 	"   -secure integer: EC Level (PDF417, QR)\n"
-	"   -mode: tructured primary data mode (Maxicode, Composite)\n"
+	"   -mode: Structured primary data mode (Maxicode, Composite)\n"
 	"   -primary text: Structured primary data (Maxicode, Composite)\n"
 	"   -scale double: Scale the image to this factor\n"
     "   -format binary|unicode|gs1: input data format. Default:unicode"
@@ -294,23 +306,33 @@ static char help_message[] = "zint tcl(stub,obj) dll\n"
 
 /*----------------------------------------------------------------------------*/
 /* Exported symbols */
-BOOL __declspec(dllexport) WINAPI DllEntryPoint (HINSTANCE hInstance, 
+#if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
+EXPORT BOOL WINAPI DllEntryPoint (HINSTANCE hInstance, 
 	DWORD seginfo, LPVOID lpCmdLine)
 {
   /* Don't do anything, so just return true */
   return TRUE;
 }
+#endif
 /*----------------------------------------------------------------------------*/
 /* Initialisation Procedures */
-int __declspec(dllexport) Zint_Init (Tcl_Interp *Interp)
+EXPORT int Zint_Init (Tcl_Interp *Interp)
 {
 	/*------------------------------------------------------------------------*/
+#ifdef USE_TCL_STUBS
 	if (Tcl_InitStubs(Interp, "8.1", 0) == NULL)
+#else
+	if (Tcl_PkgRequire(Interp, "Tcl", "8.1", 0) == NULL)
+#endif
 	{
 		return TCL_ERROR;
 	}
 	/*------------------------------------------------------------------------*/
+#ifdef USE_TK_STUBS
 	if (Tk_InitStubs(Interp, "8.1", 0) == NULL)
+#else
+	if (Tcl_PkgRequire(Interp, "Tk", "8.1", 0) == NULL)
+#endif
 	{
 		return TCL_ERROR;
 	}
@@ -390,18 +412,18 @@ static int Encode(Tcl_Interp *interp, int objc,
 	Tcl_Obj *CONST objv[])
 {
 	struct zint_symbol *hSymbol;
-	Tcl_DString	dsInput;
-	char *pStr;
+	Tcl_DString dsInput;
+	char *pStr = NULL;
 	int lStr;
 	Tcl_Encoding hUTF8Encoding;
 	int rotate_angle=0;
 	int fError = 0;
-	Tcl_DString	dString;
+	Tcl_DString dString;
 	int optionPos;
-    int destX0=0;
-    int destY0=0;
-    int destWidth=0;
-    int destHeight=0;
+	int destX0 = 0;
+	int destY0 = 0;
+	int destWidth = 0;
+	int destHeight = 0;
 	/*------------------------------------------------------------------------*/
 	/* >> Check if at least data and object is given and a pair number of */
 	/* >> options */
@@ -562,7 +584,7 @@ static int Encode(Tcl_Interp *interp, int objc,
 		case iDMRE:
 			/* DM_SQUARE overwrites DM_DMRE */
 			if (hSymbol->option_3 != DM_DMRE) {
-				Symbol->option_3 = (intValue?DM_DMRE:0);
+				hSymbol->option_3 = (intValue?DM_DMRE:0);
 			}
 			break;
 		case iScale:
@@ -672,14 +694,14 @@ static int Encode(Tcl_Interp *interp, int objc,
                             Tcl_NewStringObj(
                             "option -to not a list of 2 or 4", -1));
                     fError = 1;
-                } else if (
+                } else if ((
                         TCL_OK != Tcl_ListObjIndex(interp, objv[optionPos+1],
                             0, &poParam)
                         || TCL_OK != Tcl_GetIntFromObj(interp,poParam,&destX0)
                         || TCL_OK != Tcl_ListObjIndex(interp, objv[optionPos+1],
                             1, &poParam)
                         || TCL_OK != Tcl_GetIntFromObj(interp,poParam,&destY0)
-                        || lStr == 4 && (
+                        || lStr == 4) && (
                         TCL_OK != Tcl_ListObjIndex(interp, objv[optionPos+1],
                             2, &poParam)
                         || TCL_OK != Tcl_GetIntFromObj(interp,poParam,
@@ -728,7 +750,7 @@ static int Encode(Tcl_Interp *interp, int objc,
         /* >>> Get input - 2nd argument */
         if (hSymbol->input_mode == DATA_MODE) {
             /* Binary data */
-            pStr = Tcl_GetByteArrayFromObj(objv[2], &lStr);
+            pStr = (char *) Tcl_GetByteArrayFromObj(objv[2], &lStr);
         } else {
             /* UTF8 Data */
             pStr = Tcl_GetStringFromObj(objv[2], &lStr);
@@ -738,7 +760,7 @@ static int Encode(Tcl_Interp *interp, int objc,
         }
         /*--------------------------------------------------------------------*/
         if( 0 != ZBarcode_Encode_and_Buffer(hSymbol,
-                pStr, lStr, rotate_angle) )
+                (unsigned char *) pStr, lStr, rotate_angle) )
         {
             /* >> Encode error */
             fError = 1;
@@ -751,7 +773,7 @@ static int Encode(Tcl_Interp *interp, int objc,
             fError = 1;
         } else {
             Tk_PhotoImageBlock sImageBlock;
-			sImageBlock.pixelPtr = hSymbol->bitmap;
+            sImageBlock.pixelPtr = (unsigned char *) hSymbol->bitmap;
             sImageBlock.width = hSymbol->bitmap_width;
             sImageBlock.height = hSymbol->bitmap_height;
             sImageBlock.pitch = 3*hSymbol->bitmap_width;
