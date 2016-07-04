@@ -60,6 +60,7 @@ HEADERS +=  ../backend/aztec.h \
             ../backend/font.h \
             ../backend/gridmtx.h \
             ../backend/gs1.h \
+            ../backend/hanxin.h \
             ../backend/large.h \
             ../backend/maxicode.h \
             ../backend/maxipng.h \
@@ -82,6 +83,7 @@ SOURCES += ../backend/2of5.c \
            ../backend/dmatrix.c \
            ../backend/gridmtx.c \
            ../backend/gs1.c \
+           ../backend/hanxin.c \
            ../backend/imail.c \
            ../backend/large.c \
            ../backend/library.c \
