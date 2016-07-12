@@ -107,6 +107,9 @@ void usage(void) {
             "  --smalltext           Use half-size text in PNG images\n"
             "  --boldtext            Use bold text in PNG images\n"
             "  --batch               Treat each line of input as a separate data set\n"
+            "  --mirror              Use batch data to determine filename (PNG output)\n"
+            "  --mirroreps           Use batch data to determine filename (EPS output)\n"
+            "  --mirrorsvg           Use batch data to determine filename (SVG output)\n"
             , ZINT_VERSION);
 }
 
@@ -221,12 +224,12 @@ static void concat(char dest[], char source[]) {
     }
 }
 
-int batch_process(struct zint_symbol *symbol, char *filename) {
+int batch_process(struct zint_symbol *symbol, char *filename, int mirror_mode) {
     FILE *file;
     unsigned char buffer[7100];
     unsigned char character = 0;
     int posn = 0, error_number = 0, line_count = 1;
-    char output_file[127];
+    char output_file[256];
     char number[12], reverse_number[12];
     int inpos, local_line_count;
     char format_string[127], reversed_string[127], format_char;
@@ -269,61 +272,111 @@ int batch_process(struct zint_symbol *symbol, char *filename) {
                 posn--;
                 buffer[posn] = '\0';
             }
-            inpos = 0;
-            local_line_count = line_count;
-            memset(number, 0, sizeof (char) * 12);
-            memset(reverse_number, 0, sizeof (char) * 12);
-            memset(reversed_string, 0, sizeof (char) * 127);
-            memset(output_file, 0, sizeof (char) * 127);
-            do {
-                number[inpos] = itoc(local_line_count % 10);
-                local_line_count /= 10;
-                inpos++;
-            } while (local_line_count > 0);
-            number[inpos] = '\0';
+            
+            if (mirror_mode == 0) {
+                inpos = 0;
+                local_line_count = line_count;
+                memset(number, 0, sizeof (char) * 12);
+                memset(reverse_number, 0, sizeof (char) * 12);
+                memset(reversed_string, 0, sizeof (char) * 127);
+                memset(output_file, 0, sizeof (char) * 127);
+                do {
+                    number[inpos] = itoc(local_line_count % 10);
+                    local_line_count /= 10;
+                    inpos++;
+                } while (local_line_count > 0);
+                number[inpos] = '\0';
 
-            for (i = 0; i < inpos; i++) {
-                reverse_number[i] = number[inpos - i - 1];
-            }
-
-            format_len = strlen(format_string);
-            for (i = format_len; i > 0; i--) {
-                format_char = format_string[i - 1];
-
-                switch (format_char) {
-                    case '#':
-                        if (inpos > 0) {
-                            adjusted[0] = reverse_number[inpos - 1];
-                            inpos--;
-                        } else {
-                            adjusted[0] = ' ';
-                        }
-                        break;
-                    case '~':
-                        if (inpos > 0) {
-                            adjusted[0] = reverse_number[inpos - 1];
-                            inpos--;
-                        } else {
-                            adjusted[0] = '0';
-                        }
-                        break;
-                    case '@':
-                        if (inpos > 0) {
-                            adjusted[0] = reverse_number[inpos - 1];
-                            inpos--;
-                        } else {
-                            adjusted[0] = '*';
-                        }
-                        break;
-                    default:
-                        adjusted[0] = format_string[i - 1];
-                        break;
+                for (i = 0; i < inpos; i++) {
+                    reverse_number[i] = number[inpos - i - 1];
                 }
-                concat(reversed_string, adjusted);
-            }
 
-            for (i = 0; i < format_len; i++) {
-                output_file[i] = reversed_string[format_len - i - 1];
+                format_len = strlen(format_string);
+                for (i = format_len; i > 0; i--) {
+                    format_char = format_string[i - 1];
+
+                    switch (format_char) {
+                        case '#':
+                            if (inpos > 0) {
+                                adjusted[0] = reverse_number[inpos - 1];
+                                inpos--;
+                            } else {
+                                adjusted[0] = ' ';
+                            }
+                            break;
+                        case '~':
+                            if (inpos > 0) {
+                                adjusted[0] = reverse_number[inpos - 1];
+                                inpos--;
+                            } else {
+                                adjusted[0] = '0';
+                            }
+                            break;
+                        case '@':
+                            if (inpos > 0) {
+                                adjusted[0] = reverse_number[inpos - 1];
+                                inpos--;
+                            } else {
+                                adjusted[0] = '*';
+                            }
+                            break;
+                        default:
+                            adjusted[0] = format_string[i - 1];
+                            break;
+                    }
+                    concat(reversed_string, adjusted);
+                }
+
+                for (i = 0; i < format_len; i++) {
+                    output_file[i] = reversed_string[format_len - i - 1];
+                }
+            } else {
+                /* Name the output file from the data being processed */
+                for (i = 0; (i < posn && i < 250); i++) {
+                    if (buffer[i] < 0x20) {
+                        output_file[i] = '_';
+                    } else {
+                        switch (buffer[i]) {
+                            case 0x21: // !
+                            case 0x22: // "
+                            case 0x2a: // *
+                            case 0x2f: // /
+                            case 0x3a: // :
+                            case 0x3c: // <
+                            case 0x3e: // >
+                            case 0x3f: // ?
+                            case 0x7c: // |
+                            case 0x7f: // DEL
+                                output_file[i] = '_';
+                                break;
+                            default:
+                                output_file[i] = buffer[i];
+                        }
+                    }
+                }
+                
+                /* Add file extension */
+                output_file[i] = '.';
+                
+                if (mirror_mode == 1) {
+                    output_file[i + 1] = 'p';
+                    output_file[i + 2] = 'n';
+                    output_file[i + 3] = 'g';
+                }
+                
+                if (mirror_mode == 2) {
+                    output_file[i + 1] = 'e';
+                    output_file[i + 2] = 'p';
+                    output_file[i + 3] = 's';
+                }
+                
+                if (mirror_mode == 3) {
+                    output_file[i + 1] = 's';
+                    output_file[i + 2] = 'v';
+                    output_file[i + 3] = 'g';
+                }
+                
+                output_file[i + 4] = '\0';
             }
 
             strcpy(symbol->outfile, output_file);
@@ -365,6 +418,7 @@ int main(int argc, char **argv) {
     int rotate_angle;
     int generated;
     int batch_mode;
+    int filename_reflects_data;
 
     error_number = 0;
     rotate_angle = 0;
@@ -372,6 +426,7 @@ int main(int argc, char **argv) {
     my_symbol = ZBarcode_Create();
     my_symbol->input_mode = UNICODE_MODE;
     batch_mode = 0;
+    filename_reflects_data = 0;
 
     if (argc == 1) {
         usage();
@@ -418,6 +473,9 @@ int main(int argc, char **argv) {
             {"boldtext", 0, 0, 0},
             {"cmyk", 0, 0, 0},
             {"batch", 0, 0, 0},
+            {"mirror", 0, 0, 0},
+            {"mirroreps", 0, 0, 0},
+            {"mirrorsvg", 0, 0, 0},
             {0, 0, 0, 0}
         };
         c = getopt_long(argc, argv, "htb:w:d:o:i:rcmp", long_options, &option_index);
@@ -586,6 +644,18 @@ int main(int argc, char **argv) {
                     /* Switch to batch processing mode */
                     batch_mode = 1;
                 }
+                if (!strcmp(long_options[option_index].name, "mirror")) {
+                    /* Use filenames which reflect content, output to PNG */
+                    filename_reflects_data = 1;
+                }
+                if (!strcmp(long_options[option_index].name, "mirroreps")) {
+                    /* Use filenames which reflect content, output to EPS */
+                    filename_reflects_data = 2;
+                }
+                if (!strcmp(long_options[option_index].name, "mirrorsvg")) {
+                    /* Use filenames which reflect content, output to SVG */
+                    filename_reflects_data = 3;
+                }
                 break;
 
             case 'h':
@@ -653,7 +723,7 @@ int main(int argc, char **argv) {
                     }
                 } else {
                     /* Take each line of text as a separate data set */
-                    error_number = batch_process(my_symbol, optarg);
+                    error_number = batch_process(my_symbol, optarg, filename_reflects_data);
                     generated = 1;
                     if (error_number != 0) {
                         fprintf(stderr, "%s\n", my_symbol->errtxt);
