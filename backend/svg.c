@@ -306,38 +306,48 @@ int svg_plot(struct zint_symbol *symbol) {
                 }
             }
             row_posn += yoffset;
-
-            i = 0;
-            if (module_is_set(symbol, this_row, 0)) {
-                latch = 1;
-            } else {
-                latch = 0;
-            }
-
-            do {
-                block_width = 0;
-                do {
-                    block_width++;
-                } while (module_is_set(symbol, this_row, i + block_width) == module_is_set(symbol, this_row, i));
-                if ((addon_latch == 0) && (r == (symbol->rows - 1)) && (i > main_width)) {
-                    addon_text_posn = (row_posn + 8.0) * scaler;
-                    addon_latch = 1;
-                }
-                if (latch == 1) {
-                    /* a bar */
-                    if (addon_latch == 0) {
-                        fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (i + xoffset) * scaler, row_posn * scaler, block_width * scaler, row_height * scaler);
-                    } else {
-                        fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (i + xoffset) * scaler, (row_posn + 10.0) * scaler, block_width * scaler, (row_height - 5.0) * scaler);
+            
+            if ((symbol->output_options & BARCODE_DOTTY_MODE) != 0) { 
+                /* Use (currently undocumented) dot mode - see SF ticket #29 */
+                for (i = 0; i < symbol->width; i++) {
+                    if (module_is_set(symbol, this_row, i)) {
+                        fprintf(fsvg, "      <circle cx=\"%.2f\" cy=\"%.2f\" r=\"%.2f\" fill=\"#%s\" />\n", ((i + xoffset) * scaler) + (scaler / 2.0), (row_posn * scaler) + (scaler / 2.0), (2.0 / 5.0) * scaler, symbol->fgcolour);
                     }
-                    latch = 0;
-                } else {
-                    /* a space */
-                    latch = 1;
                 }
-                i += block_width;
+            } else {
+                /* Normal mode, with rectangles */
+                i = 0;
+                if (module_is_set(symbol, this_row, 0)) {
+                    latch = 1;
+                } else {
+                    latch = 0;
+                }
+                
+                do {
+                    block_width = 0;
+                    do {
+                        block_width++;
+                    } while (module_is_set(symbol, this_row, i + block_width) == module_is_set(symbol, this_row, i));
+                    if ((addon_latch == 0) && (r == (symbol->rows - 1)) && (i > main_width)) {
+                        addon_text_posn = (row_posn + 8.0) * scaler;
+                        addon_latch = 1;
+                    }
+                    if (latch == 1) {
+                        /* a bar */
+                        if (addon_latch == 0) {
+                            fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (i + xoffset) * scaler, row_posn * scaler, block_width * scaler, row_height * scaler);
+                        } else {
+                            fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (i + xoffset) * scaler, (row_posn + 10.0) * scaler, block_width * scaler, (row_height - 5.0) * scaler);
+                        }
+                        latch = 0;
+                    } else {
+                        /* a space */
+                        latch = 1;
+                    }
+                    i += block_width;
 
-            } while (i < symbol->width);
+                } while (i < symbol->width);
+            }
         }
     }
     /* That's done the actual data area, everything else is human-friendly */

@@ -200,6 +200,7 @@ extern "C" {
 #define SMALL_TEXT		32
 #define BOLD_TEXT               64
 #define CMYK_COLOUR             128
+#define BARCODE_DOTTY_MODE      256
 
 #define DATA_MODE	0
 #define UNICODE_MODE	1

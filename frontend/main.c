@@ -476,6 +476,7 @@ int main(int argc, char **argv) {
             {"mirror", 0, 0, 0},
             {"mirroreps", 0, 0, 0},
             {"mirrorsvg", 0, 0, 0},
+            {"dotty", 0, 0, 0},
             {0, 0, 0, 0}
         };
         c = getopt_long(argc, argv, "htb:w:d:o:i:rcmp", long_options, &option_index);
@@ -500,6 +501,9 @@ int main(int argc, char **argv) {
                 }
                 if (!strcmp(long_options[option_index].name, "cmyk")) {
                     my_symbol->output_options += CMYK_COLOUR;
+                }
+                if (!strcmp(long_options[option_index].name, "dotty")) {
+                    my_symbol->output_options += BARCODE_DOTTY_MODE;
                 }
                 if (!strcmp(long_options[option_index].name, "directeps")) {
                     my_symbol->output_options += BARCODE_STDOUT;
