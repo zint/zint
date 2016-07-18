@@ -52,6 +52,9 @@
 
 #include "font.h"	/* Font for human readable text */
 
+#include "bmp.h"        /* Bitmap header structure */
+#include <math.h>
+
 #define SSET	"0123456789ABCDEF"
 
 #define	PNG_DATA	100
@@ -315,6 +318,10 @@ int png_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width
 int bmp_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width, char *pixelbuf, int rotate_angle) {
     int i, row, column, errno;
     int fgred, fggrn, fgblu, bgred, bggrn, bgblu;
+    int row_size;
+    unsigned int data_size;
+    unsigned char *bitmap_file_start, *bmp_posn;
+    FILE *bmp_file;
 
     switch (rotate_angle) {
         case 0:
@@ -331,9 +338,9 @@ int bmp_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width
 
     if (symbol->bitmap != NULL)
         free(symbol->bitmap);
-
-    symbol->bitmap = (char *) malloc(image_width * image_height * 3);
-
+    
+    row_size = 4 * floor((24 * symbol->bitmap_width + 31) / 32);
+    symbol->bitmap = (char *) malloc(row_size * symbol->bitmap_height);
 
     /* sort out colour options */
     to_upper((unsigned char*) symbol->fgcolour);
@@ -371,16 +378,17 @@ int bmp_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width
         case 0: /* Plot the right way up */
             for (row = 0; row < image_height; row++) {
                 for (column = 0; column < image_width; column++) {
-                    switch (*(pixelbuf + (image_width * row) + column)) {
+                    i = (3 * column) + (row * row_size);
+                    switch (*(pixelbuf + (image_width * (image_height - row - 1)) + column)) {
                         case '1':
-                            symbol->bitmap[i++] = fgred;
-                            symbol->bitmap[i++] = fggrn;
-                            symbol->bitmap[i++] = fgblu;
+                            symbol->bitmap[i] = fgblu;
+                            symbol->bitmap[i + 1] = fggrn;
+                            symbol->bitmap[i + 2] = fgred;
                             break;
                         default:
-                            symbol->bitmap[i++] = bgred;
-                            symbol->bitmap[i++] = bggrn;
-                            symbol->bitmap[i++] = bgblu;
+                            symbol->bitmap[i] = bgblu;
+                            symbol->bitmap[i + 1] = bggrn;
+                            symbol->bitmap[i + 2] = bgred;
                             break;
 
                     }
@@ -390,16 +398,17 @@ int bmp_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width
         case 90: /* Plot 90 degrees clockwise */
             for (row = 0; row < image_width; row++) {
                 for (column = 0; column < image_height; column++) {
-                    switch (*(pixelbuf + (image_width * (image_height - column - 1)) + row)) {
+                    i = (3 * column) + (row * row_size);
+                    switch (*(pixelbuf + (image_width * (image_height - column - 1)) + (image_width - row - 1))) {
                         case '1':
-                            symbol->bitmap[i++] = fgred;
-                            symbol->bitmap[i++] = fggrn;
-                            symbol->bitmap[i++] = fgblu;
+                            symbol->bitmap[i] = fgblu;
+                            symbol->bitmap[i + 1] = fggrn;
+                            symbol->bitmap[i + 2] = fgred;
                             break;
                         default:
-                            symbol->bitmap[i++] = bgred;
-                            symbol->bitmap[i++] = bggrn;
-                            symbol->bitmap[i++] = bgblu;
+                            symbol->bitmap[i] = bgblu;
+                            symbol->bitmap[i + 1] = bggrn;
+                            symbol->bitmap[i + 2] = bgred;
                             break;
 
                     }
@@ -409,16 +418,17 @@ int bmp_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width
         case 180: /* Plot upside down */
             for (row = 0; row < image_height; row++) {
                 for (column = 0; column < image_width; column++) {
-                    switch (*(pixelbuf + (image_width * (image_height - row - 1)) + (image_width - column - 1))) {
+                    i = (3 * column) + (row * row_size);
+                    switch (*(pixelbuf + (image_width * row) + (image_width - column - 1))) {
                         case '1':
-                            symbol->bitmap[i++] = fgred;
-                            symbol->bitmap[i++] = fggrn;
-                            symbol->bitmap[i++] = fgblu;
+                            symbol->bitmap[i] = fgblu;
+                            symbol->bitmap[i + 1] = fggrn;
+                            symbol->bitmap[i + 2] = fgred;
                             break;
                         default:
-                            symbol->bitmap[i++] = bgred;
-                            symbol->bitmap[i++] = bggrn;
-                            symbol->bitmap[i++] = bgblu;
+                            symbol->bitmap[i] = bgblu;
+                            symbol->bitmap[i + 1] = bggrn;
+                            symbol->bitmap[i + 2] = bgred;
                             break;
 
                     }
@@ -428,16 +438,17 @@ int bmp_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width
         case 270: /* Plot 90 degrees anti-clockwise */
             for (row = 0; row < image_width; row++) {
                 for (column = 0; column < image_height; column++) {
-                    switch (*(pixelbuf + (image_width * column) + (image_width - row - 1))) {
+                    i = (3 * column) + (row * row_size);
+                    switch (*(pixelbuf + (image_width * column) + row)) {
                         case '1':
-                            symbol->bitmap[i++] = fgred;
-                            symbol->bitmap[i++] = fggrn;
-                            symbol->bitmap[i++] = fgblu;
+                            symbol->bitmap[i] = fgblu;
+                            symbol->bitmap[i + 1] = fggrn;
+                            symbol->bitmap[i + 2] = fgred;
                             break;
                         default:
-                            symbol->bitmap[i++] = bgred;
-                            symbol->bitmap[i++] = bggrn;
-                            symbol->bitmap[i++] = bgblu;
+                            symbol->bitmap[i] = bgblu;
+                            symbol->bitmap[i + 1] = bggrn;
+                            symbol->bitmap[i + 2] = bgred;
                             break;
 
                     }
@@ -446,6 +457,57 @@ int bmp_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width
             break;
     }
 
+    data_size = symbol->bitmap_height * row_size;
+    
+    bitmap_file_header_t file_header;
+    bitmap_info_header_t info_header;
+    
+    file_header.header_field = 0x4d42;  // "BM"
+    file_header.file_size = sizeof(bitmap_file_header_t) + sizeof(bitmap_info_header_t) + data_size;
+    file_header.reserved = 0;
+    file_header.data_offset = sizeof(bitmap_file_header_t) + sizeof(bitmap_info_header_t);
+
+    info_header.header_size = sizeof(bitmap_info_header_t);
+    info_header.width = symbol->bitmap_width;
+    info_header.height = symbol->bitmap_height;
+    info_header.colour_planes = 1;
+    info_header.bits_per_pixel = 24;
+    info_header.compression_method = 0; // BI_RGB
+    info_header.image_size = 0;
+    info_header.horiz_res = 0;
+    info_header.vert_res = 0;
+    info_header.colours = 0;
+    info_header.important_colours = 0;
+    
+    bitmap_file_start = (unsigned char*)malloc(file_header.file_size);
+    memset(bitmap_file_start, 0xff, file_header.file_size);
+    
+    bmp_posn = bitmap_file_start;
+    memcpy( bitmap_file_start, &file_header, sizeof(bitmap_file_header_t));
+    bmp_posn += sizeof(bitmap_file_header_t);
+    memcpy(bmp_posn, &info_header, sizeof(bitmap_info_header_t) );
+    bmp_posn += sizeof(bitmap_info_header_t);
+    memcpy(bmp_posn, symbol->bitmap, data_size);
+    
+    /* Open output file in binary mode */
+    if ((symbol->output_options & BARCODE_STDOUT) != 0) {
+#ifdef _MSC_VER
+        if (-1 == _setmode(_fileno(stdout), _O_BINARY)) {
+            strcpy(symbol->errtxt, "Can't open output file");
+            return ZINT_ERROR_FILE_ACCESS;
+        }
+#endif
+        bmp_file = stdout;
+    } else {
+        if (!(bmp_file = fopen(symbol->outfile, "wb"))) {
+            strcpy(symbol->errtxt, "Can't open output file");
+            return ZINT_ERROR_FILE_ACCESS;
+        }
+    }
+    
+    fwrite(bitmap_file_start, file_header.file_size, 1, bmp_file);
+    fclose(bmp_file);
+    
     return 0;
 }
 
