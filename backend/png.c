@@ -458,6 +458,7 @@ int bmp_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width
     }
 
     data_size = symbol->bitmap_height * row_size;
+    symbol->bitmap_byte_length = data_size;
     
     bitmap_file_header_t file_header;
     bitmap_info_header_t info_header;
