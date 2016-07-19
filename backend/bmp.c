@@ -1,4 +1,4 @@
-/* bmp.c - Handles output to PNG file */
+/* bmp.c - Handles output to Windows Bitmap file */
 
 /*
     libzint - the open source barcode library
