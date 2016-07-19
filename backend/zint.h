@@ -92,6 +92,7 @@ extern "C" {
         char *bitmap;
         int bitmap_width;
         int bitmap_height;
+        unsigned int bitmap_byte_length;
         struct zint_render *rendered;
     };
 
@@ -192,6 +193,7 @@ extern "C" {
 #define BARCODE_CODEONE		141
 #define BARCODE_GRIDMATRIX	142
 
+// Output options
 #define BARCODE_NO_ASCII	1
 #define BARCODE_BIND		2
 #define BARCODE_BOX		4
@@ -202,23 +204,30 @@ extern "C" {
 #define CMYK_COLOUR             128
 #define BARCODE_DOTTY_MODE      256
 
+// Input data types
 #define DATA_MODE	0
 #define UNICODE_MODE	1
 #define GS1_MODE	2
 #define KANJI_MODE	3
 #define SJIS_MODE	4
 
+// Data Matrix specific options
 #define DM_SQUARE	100
-#define DM_DMRE	101
+#define DM_DMRE	        101
 
+// Warning and error conditions
 #define ZINT_WARN_INVALID_OPTION	2
 #define ZINT_ERROR_TOO_LONG		5
-#define ZINT_ERROR_INVALID_DATA	6
+#define ZINT_ERROR_INVALID_DATA	        6
 #define ZINT_ERROR_INVALID_CHECK	7
 #define ZINT_ERROR_INVALID_OPTION	8
 #define ZINT_ERROR_ENCODING_PROBLEM	9
-#define ZINT_ERROR_FILE_ACCESS	10
+#define ZINT_ERROR_FILE_ACCESS	        10
 #define ZINT_ERROR_MEMORY		11
+    
+// Raster file types
+#define	OUT_PNG_FILE        100
+#define	OUT_BMP_FILE        120
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32) || defined(_MSC_VER)
 #if defined (DLL_EXPORT) || defined(PIC) || defined(_USRDLL)

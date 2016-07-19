@@ -183,15 +183,10 @@ extern int code_one(struct zint_symbol *symbol, unsigned char source[], int leng
 extern int grid_matrix(struct zint_symbol *symbol, const unsigned char source[], int length); /* Grid Matrix */
 extern int han_xin(struct zint_symbol * symbol, const unsigned char source[], int length); /* Han Xin */
 
-#ifndef NO_PNG
-extern int png_handle(struct zint_symbol *symbol, int rotate_angle);
-#endif
-
-extern int render_plot(struct zint_symbol *symbol, float width, float height);
-
-extern int bmp_handle(struct zint_symbol *symbol, int rotate_angle);
-extern int ps_plot(struct zint_symbol *symbol);
-extern int svg_plot(struct zint_symbol *symbol);
+extern int plot_raster(struct zint_symbol *symbol, int rotate_angle, int file_type); /* Plot to PNG or BMP */
+extern int render_plot(struct zint_symbol *symbol, float width, float height); /* Plot to gLabels */
+extern int ps_plot(struct zint_symbol *symbol); /* Plot to EPS */
+extern int svg_plot(struct zint_symbol *symbol); /* Plot to SVG */
 
 void error_tag(char error_string[], int error_number) {
     char error_buffer[100];
@@ -943,14 +938,18 @@ int ZBarcode_Print(struct zint_symbol *symbol, int rotate_angle) {
         output[3] = '\0';
         to_upper((unsigned char*) output);
 
-#ifndef NO_PNG
         if (!(strcmp(output, "PNG"))) {
             if (symbol->scale < 1.0) {
                 symbol->text[0] = '\0';
             }
-            error_number = png_handle(symbol, rotate_angle);
+            error_number = plot_raster(symbol, rotate_angle, OUT_PNG_FILE);
         } else
-#endif
+            if (!(strcmp(output, "BMP"))) {
+            if (symbol->scale < 1.0) {
+                symbol->text[0] = '\0';
+            }
+            error_number = plot_raster(symbol, rotate_angle, OUT_BMP_FILE);
+        } else
             if (!(strcmp(output, "TXT"))) {
             error_number = dump_plot(symbol);
         } else
@@ -988,7 +987,7 @@ int ZBarcode_Buffer(struct zint_symbol *symbol, int rotate_angle) {
             return ZINT_ERROR_INVALID_OPTION;
     }
 
-    error_number = bmp_handle(symbol, rotate_angle);
+    error_number = plot_raster(symbol, rotate_angle, OUT_BMP_FILE);
     error_tag(symbol->errtxt, error_number);
     return error_number;
 }
