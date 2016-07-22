@@ -1,4 +1,4 @@
-/*  zint.h - definitions for libzint
+/*  bmp.h - header structure for Windows bitmap files
 
     libzint - the open source barcode library
     Copyright (C) 2009-2016 Robin Stuart <rstuart114@gmail.com>
