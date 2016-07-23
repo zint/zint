@@ -106,7 +106,7 @@ int pcx_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width
         case 0: /* Plot the right way up */
             for (row = 0; row < image_height; row++) {
                 for (column = 0; column < image_width; column++) {
-                    rotated_bitmap[(row * symbol->bitmap_width) + column] =
+                    rotated_bitmap[(row * image_width) + column] =
                             *(pixelbuf + (image_width * row) + column);
                 }
             }
