@@ -50,7 +50,7 @@
 extern int png_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width, char *pixelbuf, int rotate_angle);
 #endif /* NO_PNG */
 extern int bmp_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width, char *pixelbuf, int rotate_angle);
-
+extern int pcx_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width, char *pixelbuf, int rotate_angle);
 
 int save_raster_image_to_file(struct zint_symbol *symbol, int image_height, int image_width, char *pixelbuf, int rotate_angle, int image_type) {
     int error_number;
@@ -81,14 +81,20 @@ int save_raster_image_to_file(struct zint_symbol *symbol, int image_height, int 
         }
     }
 
-    if (image_type == OUT_PNG_FILE) {
+    switch(image_type) {
+        case OUT_PNG_FILE:
 #ifndef NO_PNG
-        error_number = png_pixel_plot(symbol, scale_height, scale_width, scaled_pixelbuf, rotate_angle);
+            error_number = png_pixel_plot(symbol, scale_height, scale_width, scaled_pixelbuf, rotate_angle);
 #else
-        return ZINT_ERROR_INVALID_OPTION;
+            return ZINT_ERROR_INVALID_OPTION;
 #endif
-    } else {
-        error_number = bmp_pixel_plot(symbol, scale_height, scale_width, scaled_pixelbuf, rotate_angle);
+            break;
+        case OUT_PCX_FILE:
+            error_number = pcx_pixel_plot(symbol, scale_height, scale_width, scaled_pixelbuf, rotate_angle);
+            break;
+        default:
+            error_number = bmp_pixel_plot(symbol, scale_height, scale_width, scaled_pixelbuf, rotate_angle);
+            break;
     }
 
     free(scaled_pixelbuf);
