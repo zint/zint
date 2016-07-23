@@ -42,9 +42,8 @@
 int pcx_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width, char *pixelbuf, int rotate_angle) {
     int fgred, fggrn, fgblu, bgred, bggrn, bgblu;
     int errno;
-    int row, column, i;
-    int run_count, sub_block;
-    char pixel_colour;
+    int row, column, i, colour;
+    int run_count;
     FILE *pcx_file;
     
 #ifndef _MSC_VER
@@ -67,7 +66,7 @@ int pcx_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width
     }
 
 #ifndef _MSC_VER
-    unsigned char rle_row[symbol->bitmap_width * 6];
+    unsigned char rle_row[symbol->bitmap_width];
 #else
     unsignd char* rle_row = (unsigned char *) _alloca((symbol->bitmap_width * 6) * sizeof(unsigned char));
 #endif /* _MSC_VER */
@@ -101,13 +100,13 @@ int pcx_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width
     bgred = (16 * ctoi(symbol->bgcolour[0])) + ctoi(symbol->bgcolour[1]);
     bggrn = (16 * ctoi(symbol->bgcolour[2])) + ctoi(symbol->bgcolour[3]);
     bgblu = (16 * ctoi(symbol->bgcolour[4])) + ctoi(symbol->bgcolour[5]);
-
+    
     /* Rotate image before plotting */
     switch (rotate_angle) {
         case 0: /* Plot the right way up */
             for (row = 0; row < image_height; row++) {
                 for (column = 0; column < image_width; column++) {
-                    rotated_bitmap[(row * image_width) + column] =
+                    rotated_bitmap[(row * symbol->bitmap_width) + column] =
                             *(pixelbuf + (image_width * row) + column);
                 }
             }
@@ -115,7 +114,7 @@ int pcx_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width
         case 90: /* Plot 90 degrees clockwise */
             for (row = 0; row < image_width; row++) {
                 for (column = 0; column < image_height; column++) {
-                    rotated_bitmap[(row * image_width) + column] =
+                    rotated_bitmap[(row * image_height) + column] =
                             *(pixelbuf + (image_width * (image_height - column - 1)) + row);
                 }
             }
@@ -131,7 +130,7 @@ int pcx_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width
         case 270: /* Plot 90 degrees anti-clockwise */
             for (row = 0; row < image_width; row++) {
                 for (column = 0; column < image_height; column++) {
-                    rotated_bitmap[(row * image_width) + column] =
+                    rotated_bitmap[(row * image_height) + column] =
                             *(pixelbuf + (image_width * column) + (image_width - row - 1));
                 }
             }
@@ -191,62 +190,51 @@ int pcx_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width
     fwrite(&header, sizeof(pcx_header_t), 1, pcx_file);
     
     for(row = 0; row < symbol->bitmap_height; row++) {
-        run_count = 1;
-        sub_block = 0;
-        for(column = 1; column < symbol->bitmap_width; column++) {
-            if ((rotated_bitmap[(row * image_width) + column - 1]
-                    == rotated_bitmap[(row * image_width) + column])
-                    && (run_count < 63)) {
-                run_count++;
-            } else {
-                pixel_colour = rotated_bitmap[(row * image_width) + column - 1];
-                rle_row[(sub_block * 2)] = run_count + 0xc0;
-                rle_row[(sub_block * 2) + (2 * symbol->bitmap_width)] = run_count + 0xc0;
-                rle_row[(sub_block * 2) + (4 * symbol->bitmap_width)] = run_count + 0xc0;
-                if (pixel_colour == '1') {
-                    rle_row[(sub_block * 2) + 1] = fgred;
-                    rle_row[(sub_block * 2) + (2 * symbol->bitmap_width) + 1] = fggrn;
-                    rle_row[(sub_block * 2) + (4 * symbol->bitmap_width) + 1] = fgblu;
-                } else {
-                    rle_row[(sub_block * 2) + 1] = bgred;
-                    rle_row[(sub_block * 2) + (2 * symbol->bitmap_width) + 1] = bggrn;
-                    rle_row[(sub_block * 2) + (4 * symbol->bitmap_width) + 1] = bgblu;
+        for (colour = 0; colour < 3; colour++) {
+            for (column = 0; column < symbol->bitmap_width; column++) {
+                switch(colour) {
+                    case 0:
+                        if (rotated_bitmap[(row * symbol->bitmap_width) + column] == '1') {
+                            rle_row[column] = fgred;
+                        } else {
+                            rle_row[column] = bgred;
+                        }
+                        break;
+                    case 1:
+                        if (rotated_bitmap[(row * symbol->bitmap_width) + column] == '1') {
+                            rle_row[column] = fggrn;
+                        } else {
+                            rle_row[column] = bggrn;
+                        }
+                        break;
+                    case 2:
+                        if (rotated_bitmap[(row * symbol->bitmap_width) + column] == '1') {
+                            rle_row[column] = fgblu;
+                        } else {
+                            rle_row[column] = bgblu;
+                        }
+                        break;
                 }
-                sub_block++;
-                run_count = 1;
             }
-     
-        }
-        
-        if (run_count > 1) {
-            pixel_colour = rotated_bitmap[(row * image_width) + column - 1];
-            rle_row[(sub_block * 2)] = run_count + 0xc0;
-            rle_row[(sub_block * 2) + (2 * symbol->bitmap_width)] = run_count + 0xc0;
-            rle_row[(sub_block * 2) + (4 * symbol->bitmap_width)] = run_count + 0xc0;
-            if (pixel_colour == '1') {
-                rle_row[(sub_block * 2) + 1] = fgred;
-                rle_row[(sub_block * 2) + (2 * symbol->bitmap_width) + 1] = fggrn;
-                rle_row[(sub_block * 2) + (4 * symbol->bitmap_width) + 1] = fgblu;
-            } else {
-                rle_row[(sub_block * 2) + 1] = bgred;
-                rle_row[(sub_block * 2) + (2 * symbol->bitmap_width) + 1] = bggrn;
-                rle_row[(sub_block * 2) + (4 * symbol->bitmap_width) + 1] = bgblu;
+            
+            run_count = 1;
+            for (column = 1; column < symbol->bitmap_width; column++) {
+                if ((rle_row[column - 1] == rle_row[column]) && (run_count < 63)) {
+                    run_count++;
+                } else {
+                    run_count += 0xc0;
+                    fputc(run_count, pcx_file);
+                    fputc(rle_row[column - 1], pcx_file);
+                    run_count = 1;
+                }
             }
-            sub_block++;
-        }
-        
-        for (i = 0; i < (sub_block * 2); i++) {
-            fputc(rle_row[i], pcx_file);
-        }
-        
-        for (i = 0; i < (sub_block * 2); i++) {
-            fputc(rle_row[i + (2 * symbol->bitmap_width)], pcx_file);
-        }
-        
-        for (i = 0; i < (sub_block * 2); i++) {
-            fputc(rle_row[i + (4 * symbol->bitmap_width)], pcx_file);
-        }
-        
+            
+            if (run_count > 1) {
+                run_count += 0xc0;
+                fputc(run_count, pcx_file);
+                fputc(rle_row[column - 1], pcx_file);
+            }
+        }  
     }
     
     fclose(pcx_file);
