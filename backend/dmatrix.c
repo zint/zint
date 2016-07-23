@@ -527,7 +527,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
     int sp, tp, i, gs1;
     int current_mode, next_mode;
     int inputlen = *length_p;
-    int debug = 1;
+    int debug = 0;
 #ifndef _MSC_VER
     char binary[2 * inputlen];
 #else
@@ -970,7 +970,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
 }
 
 static int dm200encode_remainder(unsigned char target[], int target_length, const unsigned char source[], const int inputlen, const int last_mode, const int process_buffer[], const int process_p, const int symbols_left) {
-    int debug = 1;
+    int debug = 0;
 
     switch (last_mode) {
         case DM_C40:
@@ -1210,7 +1210,7 @@ int data_matrix_200(struct zint_symbol *symbol, unsigned char source[], const in
     }
     ecc200(binary, bytes, datablock, rsblock, skew);
     // Print Codewords
-//#ifdef DEBUG
+#ifdef DEBUG
     {
         int CWCount;
         if (skew)
@@ -1222,7 +1222,7 @@ int data_matrix_200(struct zint_symbol *symbol, unsigned char source[], const in
             printf(" %3i", binary[posCur]);
         puts("\n");
     }
-//#endif
+#endif
     { // placement
         int x, y, NC, NR, *places;
         NC = W - 2 * (W / FW);
