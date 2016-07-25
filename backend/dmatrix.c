@@ -274,7 +274,7 @@ static int p_r_6_2_1(const unsigned char inputData[], const int position, const 
 
     for (i = position; i < sourcelen; i++) {
         if (nonX12Position == 0) {
-            if (isX12(i) == 1) {
+            if (isX12(inputData[i]) != 1) {
                 nonX12Position = i;
             }
         }
