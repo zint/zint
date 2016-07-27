@@ -37,6 +37,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <math.h>
 #ifndef _MSC_VER
 #include <stdint.h>
 #else
@@ -64,6 +65,53 @@ static const char *C128Table[107] = {
     "2331112"
 };
 */
+
+#define GF 113
+#define PM 3
+//-------------------------------------------------------------------------
+// "rsencode(nd,nc)" adds "nc" R-S check words to "nd" data words in wd[]
+// employing Galois Field GF, where GF is prime, with a prime modulus of PM
+//-------------------------------------------------------------------------
+void rsencode (int nd, int nc, unsigned char *wd) {
+    int i, j, k, nw, start, step, root[GF], c[GF];
+    
+    // Start by generating "nc" roots (antilogs):
+    root[0] = 1;
+    for (i=1; i<=nc; i++)
+        root[i] = (PM * root[i-1]) % GF;
+    
+    // Here we compute how many interleaved R-S blocks will be needed
+    nw = nd + nc; step = (nw + GF - 2)/(GF - 1);
+    
+    // ...& then for each such block:
+    for (start=0; start<step; start++) {
+        int ND = (nd-start+step-1)/step, NW = (nw-start+step-1)/step, NC = NW-ND;
+        
+        // first compute the generator polynomial "c" of order "NC":
+        for (i=1; i<=NC; i++)
+            c[i] = 0; c[0] = 1;
+            
+        for (i=1; i<=NC; i++) {
+            for (j=NC; j>=1; j--) {
+                c[j] = (GF + c[j] - (root[i] * c[j-1]) % GF) % GF;
+            }
+        }
+            
+        // & then compute the corresponding checkword values into wd[]
+        // ... (a) starting at wd[start] & (b) stepping by step
+        for (i=ND; i<NW; i++)
+            wd[start+i*step] = 0;
+        for (i=0; i<ND; i++) {
+            k = (wd[start+i*step] + wd[start+ND*step]) % GF;
+            for (j=0; j<NC-1; j++) {
+                wd[start+(ND+j)*step] = (GF - ((c[j+1] * k) % GF) + wd[start+(ND+j+1)*step]) % GF;
+            }
+            wd[start+(ND+NC-1)*step] = (GF - ((c[NC] * k) % GF)) % GF;
+        }
+    for (i=ND; i<NW; i++)
+        wd[start+i*step] = (GF - wd[start+i*step]) % GF;
+    }
+}
 
 /* Check if the next character is directly encodable in code set A (Annex F.II.D) */
 int datum_a(unsigned char source[], int position, int length) {
@@ -202,41 +250,13 @@ int binary(unsigned char source[], int position, int length) {
     return retval;
 }
 
-int dotcode(struct zint_symbol *symbol, unsigned char source[], int length) {
+int dotcode_encode_message(struct zint_symbol *symbol, unsigned char source[], int length, unsigned char *codeword_array) {
     int input_position, array_length, i;
     char encoding_mode;
     int inside_macro, done;
-    int ecc_length;
-    int debug = 1;
+    int debug = 0;
     int binary_buffer_size = 0;
     int lawrencium[6]; // Reversed radix 103 values
-    
-    /* Test data */
-/*
-    symbol->input_mode = GS1_MODE;
-    length = 15;
-    source[0] = '0';
-    source[1] = '2';
-    source[2] = '[';
-    source[3] = 0x80;
-    source[4] = 0xd0;
-    source[5] = 0x20;
-    source[6] = 0xd2;
-    source[7] = 0x00;
-    source[8] = 0x00;
-    source[9] = 0x00;
-    source[10] = 0x00;
-    source[11] = 48;
-    source[12] = 0xcc;
-    source[13] = 49;
-    source[14] = 0x1f;
-*/
-    
-#ifndef _MSC_VER
-    int codeword_array[length * 2];
-#else
-    int* codeword_array = (int *) _alloca(length * 2 * sizeof(int));
-#endif /* _MSC_VER */
     
 #if defined(_MSC_VER) && _MSC_VER == 1200
     uint64_t binary_buffer = 0;
@@ -262,7 +282,6 @@ int dotcode(struct zint_symbol *symbol, unsigned char source[], int length) {
     
     do {
         done = 0;
-        printf("[%c] ", encoding_mode);
         
         /* Step A */
         if ((input_position == length - 2) && (inside_macro != 0) && (inside_macro != 100)) {
@@ -699,18 +718,153 @@ int dotcode(struct zint_symbol *symbol, unsigned char source[], int length) {
     
     if (debug) { printf("\n\n"); }
     
-    printf("ip = %d, len = %d\n", input_position, length);
+    return array_length;
+}
+
+int dotcode(struct zint_symbol *symbol, unsigned char source[], int length) {
+    int i, j;
+    int data_length, ecc_length;
+    int min_dots, n_dots;
+    int height, width, pad_chars;
+    int mask_score[4];
+    int weight;
     
-    ecc_length = 3 + (array_length / 2);
+    /* Test data */
+/*
+    symbol->input_mode = GS1_MODE;
+    length = 15;
+    source[0] = '0';
+    source[1] = '2';
+    source[2] = '[';
+    source[3] = 0x80;
+    source[4] = 0xd0;
+    source[5] = 0x20;
+    source[6] = 0xd2;
+    source[7] = 0x00;
+    source[8] = 0x00;
+    source[9] = 0x00;
+    source[10] = 0x00;
+    source[11] = 48;
+    source[12] = 0xcc;
+    source[13] = 49;
+    source[14] = 0x1f;
+*/
     
-    printf("Codeword length = %d, ECC length = %d\n", array_length, ecc_length);
-    printf("Data codewords: ");
-    for (i = 0; i < array_length; i++) {
-        printf(" %d ", codeword_array[i]);
+#ifndef _MSC_VER
+    unsigned char codeword_array[length * 3];
+    unsigned char masked_codeword_array[length * 3];
+#else
+    unsigned char* codeword_array = (unsigned char *) _alloca(length * 3 * sizeof(unsigned char));
+    unsigned char* masked_codeword_array = (unsigned char *) _alloca(length * 3 * sizeof(unsigned char));
+#endif /* _MSC_VER */
+    
+    data_length = dotcode_encode_message(symbol, source, length, codeword_array);
+    
+    ecc_length = 3 + (data_length / 2);
+    
+    printf("Codeword length = %d, ECC length = %d\n", data_length, ecc_length);
+    
+    min_dots = 9 * (data_length + 3 + (data_length / 2)) + 2;
+    printf("Min Dots %d\n", min_dots);
+    
+    //FIXME: Listen to user preferences here
+    height = sqrt(2 * min_dots);
+    if ((height % 2) == 1) {
+        height++;
     }
-    printf("\n");
     
-    printf("Dot code, coming soon!\n");
+    width = (2 * min_dots) / height;
+    
+    if ((width % 2) != 1) {
+        width++;
+    }
+    
+    n_dots = (height * width) / 2;
+    
+    /* Add pad characters */
+    for(pad_chars = 0; 9 * ((data_length + pad_chars + 3 + ((data_length + pad_chars) / 2)) + 2) < n_dots; pad_chars++);
+    
+    printf("Pad characters %d\n", pad_chars);
+    
+    if (pad_chars > 0) {
+        codeword_array[data_length] = 109; // Latch to Code Set A
+        data_length++;
+        pad_chars--;
+    }
+    
+    for (i = 0; i < pad_chars; i++) {
+        codeword_array[data_length] = 106; // Pad
+        data_length++;
+    }
+    
+    ecc_length = 3 + (data_length / 2);
+    
+    /* Evaluate data mask options */
+    for (i = 0; i < 4; i++) {
+        switch(i) {
+            case 0:
+                masked_codeword_array[0] = 0;
+                for(j = 0; j < data_length; j++) {
+                    masked_codeword_array[j + 1] = codeword_array[j];
+                }
+                printf("Masked Data codewords: ");
+                for (j = 0; j <= data_length; j++) {
+                    printf(" %d ", (int) masked_codeword_array[j]);
+                }
+                printf("\n");
+                break;
+            case 1:
+                weight = 0;
+                masked_codeword_array[0] = 1;
+                for(j = 0; j < data_length; j++) {
+                    masked_codeword_array[j + 1] = (weight + codeword_array[j]) % 113;
+                    weight += 3;
+                }
+                printf("Masked Data codewords: ");
+                for (j = 0; j <= data_length; j++) {
+                    printf(" %d ", (int) masked_codeword_array[j]);
+                }
+                printf("\n");
+                break;
+            case 2:
+                weight = 0;
+                masked_codeword_array[0] = 2;
+                for(j = 0; j < data_length; j++) {
+                    masked_codeword_array[j + 1] = (weight + codeword_array[j]) % 113;
+                    weight += 7;
+                }
+                printf("Masked Data codewords: ");
+                for (j = 0; j <= data_length; j++) {
+                    printf(" %d ", (int) masked_codeword_array[j]);
+                }
+                printf("\n");
+                break;
+            case 3:
+                weight = 0;
+                masked_codeword_array[0] = 3;
+                for(j = 0; j < data_length; j++) {
+                    masked_codeword_array[j + 1] = (weight + codeword_array[j]) % 113;
+                    weight += 17;
+                }                
+                printf("Masked Data codewords: ");
+                for (j = 0; j <= data_length; j++) {
+                    printf(" %d ", (int) masked_codeword_array[j]);
+                }
+                printf("\n");
+                break;
+        }
+        
+        rsencode(data_length + 1, ecc_length, masked_codeword_array);
+        
+        printf("Full code stream: ");
+        for (j = 0; j < (data_length + ecc_length + 1); j++) {
+            printf("%d ", (int) masked_codeword_array[j]);
+        }
+        printf("\n");
+        
+    }
+    
+    printf("Proposed size = height %d, width %d, (total usable dots %d)\n", height, width, n_dots);
     
     return ZINT_ERROR_INVALID_OPTION;
 }
