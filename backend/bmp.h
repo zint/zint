@@ -36,14 +36,23 @@
 extern "C" {
 #endif
 
+#ifdef _MSC_VER
+#include <windows.h>
+#include "stdint_msvc.h"
+#else
 #include <stdint.h>
+#endif
 
     typedef struct bitmap_file_header {
         uint16_t header_field;
         uint32_t file_size;
         uint32_t reserved;
         uint32_t data_offset;
-    } __attribute__((__packed__ )) bitmap_file_header_t;
+    }
+#ifdef __GNUC__
+	__attribute__((__packed__ )) 
+#endif
+	bitmap_file_header_t;
     
     typedef struct bitmap_info_header {
         uint32_t header_size;
@@ -57,7 +66,11 @@ extern "C" {
         int32_t vert_res;
         uint32_t colours;
         uint32_t important_colours;
-    } __attribute__((__packed__ )) bitmap_info_header_t;
+    }
+#ifdef __GNUC__
+	__attribute__((__packed__ ))
+#endif
+	bitmap_info_header_t;
 
 #ifdef __cplusplus
 }

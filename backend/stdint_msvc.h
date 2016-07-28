@@ -1,7 +1,7 @@
-/*  pcx.h - header structure for ZSoft PCX files
+/*  stdint_msvc.h - definitions for libzint
 
     libzint - the open source barcode library
-    Copyright (C) 2016 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2016 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -29,48 +29,24 @@
     SUCH DAMAGE.
  */
 
-#ifndef PCX_H
-#define PCX_H
+#ifndef STDINT_MSVC_H
+#define STDINT_MSVC_H
 
 #ifdef __cplusplus
 extern "C" {
-#endif
+#endif /* __cplusplus */
 
 #ifdef _MSC_VER
-#include <windows.h>
-#include "stdint_msvc.h"
-#else
-#include <stdint.h>
-#endif
 
-    typedef struct pcx_header {
-        uint8_t manufacturer;
-        uint8_t version;
-        uint8_t encoding;
-        uint8_t bits_per_pixel;
-        uint16_t window_xmin;
-        uint16_t window_ymin;
-        uint16_t window_xmax;
-        uint16_t window_ymax;
-        uint16_t horiz_dpi;
-        uint16_t vert_dpi;
-        uint8_t colourmap[48];
-        uint8_t reserved;
-        uint8_t number_of_planes;
-        uint16_t bytes_per_line;
-        uint16_t palette_info;
-        uint16_t horiz_screen_size;
-        uint16_t vert_screen_size;
-        uint8_t filler[54];
-    }
-#ifdef __GNUC__
-	__attribute__((__packed__ ))
+typedef BYTE uint8_t;
+typedef WORD uint16_t;
+typedef DWORD uint32_t;
+typedef INT32 int32_t;
+
 #endif
-	pcx_header_t;
 
 #ifdef __cplusplus
 }
-#endif
+#endif /* __cplusplus */
 
-#endif /* PCX_H */
-
+#endif /* STDINT_MSVC_H */

@@ -29,7 +29,7 @@ HEADERS +=  ../backend/aztec.h \
             ../backend/gs1.h \
             ../backend/large.h \
             ../backend/maxicode.h \
-            ../backend/maxipng.h \
+            ../backend/maxihex.h \
             ../backend/ms_stdint.h \
             ../backend/pdf417.h \
             ../backend/qr.h \

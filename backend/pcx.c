@@ -36,6 +36,10 @@
 #include "common.h"
 #include "pcx.h"        /* PCX header structure */
 #include <math.h>
+#ifdef _MSC_VER
+#include <io.h>
+#include <fcntl.h>
+#endif
 
 #define SSET	"0123456789ABCDEF"
 
@@ -45,11 +49,16 @@ int pcx_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width
     int row, column, i, colour;
     int run_count;
     FILE *pcx_file;
+    pcx_header_t header;
+#ifdef _MSC_VER
+	char* rotated_bitmap;
+    unsigned char* rle_row;
+#endif
     
 #ifndef _MSC_VER
     char rotated_bitmap[image_height * image_width];
 #else
-    char* rotated_bitmap = (char *) _alloca((image_height * image_width) * sizeof(char));
+    rotated_bitmap = (char *) _alloca((image_height * image_width) * sizeof(char));
 #endif /* _MSC_VER */
 
     switch (rotate_angle) {
@@ -68,7 +77,7 @@ int pcx_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width
 #ifndef _MSC_VER
     unsigned char rle_row[symbol->bitmap_width];
 #else
-    unsignd char* rle_row = (unsigned char *) _alloca((symbol->bitmap_width * 6) * sizeof(unsigned char));
+    rle_row = (unsigned char *) _alloca((symbol->bitmap_width * 6) * sizeof(unsigned char));
 #endif /* _MSC_VER */
     
     /* sort out colour options */
@@ -137,7 +146,6 @@ int pcx_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width
             break;
     }
     
-    pcx_header_t header;
     
     header.manufacturer = 10; // ZSoft
     header.version = 5; // Version 3.0

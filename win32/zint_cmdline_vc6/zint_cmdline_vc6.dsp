@@ -100,6 +100,10 @@ SOURCE=..\..\backend\aztec.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\backend\bmp.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\backend\code.c
 # End Source File
 # Begin Source File
@@ -176,6 +180,10 @@ SOURCE=..\..\backend\medical.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\backend\pcx.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\backend\pdf417.c
 # End Source File
 # Begin Source File
@@ -197,6 +205,10 @@ SOURCE=..\..\backend\ps.c
 # Begin Source File
 
 SOURCE=..\..\backend\qr.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\backend\raster.c
 # End Source File
 # Begin Source File
 

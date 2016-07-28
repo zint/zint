@@ -53,6 +53,7 @@ SOURCES += qrencode/bitstream.c \
 }
 
 HEADERS +=  ../backend/aztec.h \
+            ../backend/bmp.h \
             ../backend/code49.h \
             ../backend/common.h \
             ../backend/composite.h \
@@ -63,17 +64,20 @@ HEADERS +=  ../backend/aztec.h \
             ../backend/hanxin.h \
             ../backend/large.h \
             ../backend/maxicode.h \
-            ../backend/maxipng.h \
+            ../backend/maxihex.h \
+            ../backend/pcx.h \
             ../backend/pdf417.h \
             ../backend/reedsol.h \
             ../backend/rss.h \
             ../backend/sjis.h \
+            ../backend/stdint_msvc.h \
             ../backend/zint.h \
             qzint.h
 
 SOURCES += ../backend/2of5.c \
            ../backend/auspost.c \
            ../backend/aztec.c \
+           ../backend/bmp.c \
            ../backend/code.c \
            ../backend/code128.c \
            ../backend/code16k.c \
@@ -89,10 +93,12 @@ SOURCES += ../backend/2of5.c \
            ../backend/library.c \
            ../backend/maxicode.c \
            ../backend/medical.c \
+           ../backend/pcx.c \
            ../backend/pdf417.c \
            ../backend/plessey.c \
            ../backend/postal.c \
            ../backend/ps.c \
+           ../backend/raster.c \
            ../backend/reedsol.c \
             ../backend/render.c \
            ../backend/rss.c \

@@ -36,6 +36,10 @@
 #include "common.h"
 #include "bmp.h"        /* Bitmap header structure */
 #include <math.h>
+#ifdef _MSC_VER
+#include <io.h>
+#include <fcntl.h>
+#endif
 
 #define SSET	"0123456789ABCDEF"
 
@@ -46,6 +50,8 @@ int bmp_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width
     unsigned int data_size;
     unsigned char *bitmap_file_start, *bmp_posn;
     FILE *bmp_file;
+    bitmap_file_header_t file_header;
+    bitmap_info_header_t info_header;
 
     switch (rotate_angle) {
         case 0:
@@ -183,9 +189,6 @@ int bmp_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width
 
     data_size = symbol->bitmap_height * row_size;
     symbol->bitmap_byte_length = data_size;
-    
-    bitmap_file_header_t file_header;
-    bitmap_info_header_t info_header;
     
     file_header.header_field = 0x4d42;  // "BM"
     file_header.file_size = sizeof(bitmap_file_header_t) + sizeof(bitmap_info_header_t) + data_size;

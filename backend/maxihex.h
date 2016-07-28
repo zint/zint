@@ -1,4 +1,4 @@
-/* maxipng.h - Shapes for Maxicode output to PNG file */
+/* maxihex.h - Shapes for Maxicode output to PNG file */
 
 /*
     libzint - the open source barcode library
