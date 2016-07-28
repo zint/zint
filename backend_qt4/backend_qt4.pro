@@ -85,6 +85,7 @@ SOURCES += ../backend/2of5.c \
            ../backend/common.c \
            ../backend/composite.c \
            ../backend/dmatrix.c \
+           ../backend/gif.c \
            ../backend/gridmtx.c \
            ../backend/gs1.c \
            ../backend/hanxin.c \

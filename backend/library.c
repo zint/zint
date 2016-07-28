@@ -956,6 +956,12 @@ int ZBarcode_Print(struct zint_symbol *symbol, int rotate_angle) {
             }
             error_number = plot_raster(symbol, rotate_angle, OUT_PCX_FILE);            
         } else
+            if (!(strcmp(output, "GIF"))) {
+            if (symbol->scale < 1.0) {
+                symbol->text[0] = '\0';
+            }
+            error_number = plot_raster(symbol, rotate_angle, OUT_GIF_FILE);
+        } else
             if (!(strcmp(output, "TXT"))) {
             error_number = dump_plot(symbol);
         } else

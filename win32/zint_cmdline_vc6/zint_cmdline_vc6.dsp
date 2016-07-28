@@ -66,7 +66,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /GZ /c
-# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I "..\..\backend" /I "..\..\..\lpng" /I "..\..\..\zlib" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /D /D /D /D /D /D /D /GZ ZINT_VERSION="\"2.7.4\"" /c
+# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I "..\..\backend" /I "..\..\..\lpng" /I "..\..\..\zlib" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /D "NO_PNG" /YX /FD /GZ /D ZINT_VERSION="\"2.7.4\"" /c
 # ADD BASE RSC /l 0x407 /d "_DEBUG"
 # ADD RSC /l 0x407 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -141,6 +141,10 @@ SOURCE=..\..\frontend\getopt.c
 # Begin Source File
 
 SOURCE=..\..\frontend\getopt1.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\backend\gif.c
 # End Source File
 # Begin Source File
 
