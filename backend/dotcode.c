@@ -47,27 +47,132 @@
 #include "common.h"
 #include "gs1.h"
 
-/*
-static const char *C128Table[107] = {
-    // Code 128 character encodation
-    "212222", "222122", "222221", "121223", "121322", "131222", "122213",
-    "122312", "132212", "221213", "221312", "231212", "112232", "122132", "122231", "113222",
-    "123122", "123221", "223211", "221132", "221231", "213212", "223112", "312131", "311222",
-    "321122", "321221", "312212", "322112", "322211", "212123", "212321", "232121", "111323",
-    "131123", "131321", "112313", "132113", "132311", "211313", "231113", "231311", "112133",
-    "112331", "132131", "113123", "113321", "133121", "313121", "211331", "231131", "213113",
-    "213311", "213131", "311123", "311321", "331121", "312113", "312311", "332111", "314111",
-    "221411", "431111", "111224", "111422", "121124", "121421", "141122", "141221", "112214",
-    "112412", "122114", "122411", "142112", "142211", "241211", "221114", "413111", "241112",
-    "134111", "111242", "121142", "121241", "114212", "124112", "124211", "411212", "421112",
-    "421211", "212141", "214121", "412121", "111143", "111341", "131141", "114113", "114311",
-    "411113", "411311", "113141", "114131", "311141", "411131", "211412", "211214", "211232",
-    "2331112"
-};
-*/
-
 #define GF 113
 #define PM 3
+
+/* DotCode symbol character dot patterns, from Annex C */
+static const int dot_patterns[113] = {
+    0x155,0x0ab,0x0ad,0x0b5,0x0d5,0x156,0x15a,0x16a,0x1aa,0x0ae,
+    0x0b6,0x0ba,0x0d6,0x0da,0x0ea,0x12b,0x12d,0x135,0x14b,0x14d,
+    0x153,0x159,0x165,0x169,0x195,0x1a5,0x1a9,0x057,0x05b,0x05d,
+    0x06b,0x06d,0x075,0x097,0x09b,0x09d,0x0a7,0x0b3,0x0b9,0x0cb,
+    0x0cd,0x0d3,0x0d9,0x0e5,0x0e9,0x12e,0x136,0x13a,0x14e,0x15c,
+    0x166,0x16c,0x172,0x174,0x196,0x19a,0x1a6,0x1ac,0x1b2,0x1b4,
+    0x1ca,0x1d2,0x1d4,0x05e,0x06e,0x076,0x07a,0x09e,0x0bc,0x0ce,
+    0x0dc,0x0e6,0x0ec,0x0f2,0x0f4,0x117,0x11b,0x11d,0x127,0x133,
+    0x139,0x147,0x163,0x171,0x18b,0x18d,0x193,0x199,0x1a3,0x1b1,
+    0x1c5,0x1c9,0x1d1,0x02f,0x037,0x03b,0x03d,0x04f,0x067,0x073,
+    0x079,0x08f,0x0c7,0x0e3,0x0f1,0x11e,0x13c,0x178,0x18e,0x19c,
+    0x1b8,0x1c6,0x1cc
+};
+
+int get_dot (char Dots[], int Hgt, int Wid, int x, int y) {
+    int retval = 0;
+    
+    if ((x >= 0) && (x < Wid) && (y >= 0) && (y < Hgt)) {
+        if (Dots[(y * Wid) + x] == '1') {
+            retval = 1;
+        }
+    }
+    
+    return retval;
+}
+
+/* Dot pattern scoring routine from Annex A */
+int score_array (char Dots[], int Hgt, int Wid) {
+    int x, y, worstedge, first, last, sum;
+    
+    sum = 0;
+    first = -1;
+    
+    // across the top edge, count printed dots and measure their extent
+    for (x = 0; x < Wid; x += 2)
+        if (get_dot(Dots,Hgt,Wid,x,0)) {
+            if (first < 0) {
+                first = x;
+            }
+            last = x; 
+            sum++;
+        }
+    worstedge = sum + last-first;
+    worstedge *= Hgt;
+    
+    sum = 0;
+    first = -1;
+    
+    //across the bottom edge, ditto
+    for (x = Wid & 1; x < Wid; x += 2) 
+        if (get_dot(Dots,Hgt,Wid,x,Hgt-1)) {
+            if (first < 0) {
+                first = x;
+            }
+            last = x; 
+            sum++;
+        }
+    sum += last-first;
+    sum *= Hgt;
+    if (sum < worstedge) {
+        worstedge = sum;
+    }
+    
+    sum = 0;
+    first = -1;
+    
+    //down the left edge, ditto
+    for (y = 0; y < Hgt; y += 2) 
+        if (get_dot(Dots,Hgt,Wid,0,y)) {
+            if (first < 0) {
+                first = y;
+            }
+            last = y; 
+            sum++;
+        }
+    sum += last-first;
+    sum *= Wid;
+    if (sum < worstedge) {
+        worstedge = sum;
+    }
+    
+    sum = 0;
+    first = -1;
+    
+    //down the right edge, ditto
+    for (y = Hgt & 1; y < Hgt; y += 2) 
+        if (get_dot(Dots,Hgt,Wid,Wid-1,y)) {
+            if (first < 0) {
+                first = y;
+            }
+            last = y; 
+            sum++;
+        }
+    sum += last-first; 
+    sum *= Wid; 
+    if (sum < worstedge) {
+        worstedge = sum;
+    }
+
+    // throughout the array, count the # of unprinted 5-somes (cross patterns)
+    // plus the # of printed dots surrounded by 8 unprinted neighbors
+    sum = 0;
+    for (y = 0; y < Hgt; y++) {
+        for (x = y & 1; x < Wid; x += 2) {
+            if ((!get_dot(Dots,Hgt,Wid,x-1,y-1))
+                    && (!get_dot(Dots,Hgt,Wid,x+1,y-1))
+                    && (!get_dot(Dots,Hgt,Wid,x-1,y+1))
+                    &&(!get_dot(Dots,Hgt,Wid,x+1,y+1))
+                    && ((!get_dot(Dots,Hgt,Wid,x,y))
+                    || ((!get_dot(Dots,Hgt,Wid,x-2,y))
+                    && (!get_dot(Dots,Hgt,Wid,x,y-2))
+                    && (!get_dot(Dots,Hgt,Wid,x+2,y))
+                    && (!get_dot(Dots,Hgt,Wid,x,y+2))))) {
+                sum++;
+            }
+        }
+    }
+    
+    return (worstedge - sum * sum);
+}
+
 //-------------------------------------------------------------------------
 // "rsencode(nd,nc)" adds "nc" R-S check words to "nd" data words in wd[]
 // employing Galois Field GF, where GF is prime, with a prime modulus of PM
@@ -175,7 +280,7 @@ int n_digits(unsigned char source[], int position, int length) {
     return i - position;
 }
 
-/* checks ahead for 10 or more digits starting "17xxxxxx10..." (annex F.II.B) */
+/* checks ahead for 10 or more digits starting "17xxxxxx10..." (Annex F.II.B) */
 int seventeen_ten(unsigned char source[], int position, int length) {
     int found = 0;
     
@@ -250,6 +355,7 @@ int binary(unsigned char source[], int position, int length) {
     return retval;
 }
 
+/* Analyse input data stream and encode using algorithm from Annex F */
 int dotcode_encode_message(struct zint_symbol *symbol, unsigned char source[], int length, unsigned char *codeword_array) {
     int input_position, array_length, i;
     char encoding_mode;
@@ -264,7 +370,6 @@ int dotcode_encode_message(struct zint_symbol *symbol, unsigned char source[], i
     uint64_t binary_buffer = 0ULL;
 #endif
     
-    /* Analyse input data stream and encode using algorithm from Annex F */
     input_position = 0;
     array_length = 0;
     encoding_mode = 'C';
@@ -721,34 +826,162 @@ int dotcode_encode_message(struct zint_symbol *symbol, unsigned char source[], i
     return array_length;
 }
 
-int dotcode(struct zint_symbol *symbol, unsigned char source[], int length) {
+/* Convert codewords to binary data stream */
+int make_dotstream(unsigned char masked_array[], int array_length, char dot_stream[]) {
     int i, j;
+    int mask = 0x100;
+    
+    dot_stream[0] = '\0';
+    
+    /* Mask value is encoded as two dots */
+    switch(masked_array[0]) {
+        case 0:
+            strcat(dot_stream, "00");
+            break;
+        case 1:
+            strcat(dot_stream, "01");
+            break;
+        case 2:
+            strcat(dot_stream, "10");
+            break;
+        case 3:
+            strcat(dot_stream, "11");
+            break;
+    }
+    
+    /* The rest of the data uses 9-bit dot patterns from Annex C */
+    for (i = 1; i < array_length; i++) {
+        for(j = 0; j < 9; j++) {
+            if (dot_patterns[masked_array[i]] & (mask >> j)) {
+                strcat(dot_stream, "1");
+            } else {
+                strcat(dot_stream, "0");
+            }
+        }
+    }
+    
+    return strlen(dot_stream);
+}
+
+/* Determines if a given dot is a reserved corner dot 
+ * to be used by one of the last six bits */
+int is_corner(int column, int row, int width, int height) {
+    int corner = 0;
+    
+    /* Top Left */
+    if ((column == 0) && (row == 0)) {
+        corner = 1;
+    } 
+    
+    /* Top Right */
+    if (height % 2) {
+        if (((column == width - 2) && (row == 0))
+                || ((column == width - 1) && (row == 1))) {
+            corner = 1;
+        }
+    } else {
+        if ((column == width - 1) && (row == 0)) {
+            corner = 1;
+        }
+    }
+    
+    /* Bottom Left */
+    if (height % 2) {
+        if ((column == 0) && (row == height - 1)) {
+            corner = 1;
+        }
+    } else {
+        if (((column == 0) && (row == height - 2))
+                || ((column == 1) && (row == height - 1))) {
+            corner = 1;
+        }
+    }
+    
+    /* Bottom Right */
+    if (((column == width - 2) && (row == height - 1))
+            || ((column == width - 1) && (row == height - 2))) {
+        corner = 1;
+    }
+    
+    return corner;
+}
+
+/* Place the dots in the symbol*/
+void fold_dotstream(char dot_stream[], int width, int height, char dot_array[]) {
+    int column, row;
+    int input_position = 0;
+    
+    if (height % 2) {
+        /* Horizontal folding */
+        for (row = 0; row < height; row++) {
+            for (column = 0; column < width; column++) {
+                if (!((column + row) % 2)) {
+                    if (is_corner(column, row, width, height)) {
+                        dot_array[(row * width) + column] = 'C';
+                    } else {
+                        dot_array[((height - row - 1) * width) + column] = dot_stream[input_position];
+                        input_position++;
+                    }
+                } else {
+                    dot_array[((height - row - 1) * width) + column] = ' '; // Non-data position
+                }
+            }
+        }
+        
+        /* Corners */
+        dot_array[width - 2] = dot_stream[input_position];
+        input_position++;
+        dot_array[(height * width) - 2] = dot_stream[input_position];
+        input_position++;
+        dot_array[(width * 2) - 1] = dot_stream[input_position];
+        input_position++;
+        dot_array[((height - 1) * width) - 1] = dot_stream[input_position];
+        input_position++;
+        dot_array[0] = dot_stream[input_position];
+        input_position++;
+        dot_array[(height - 1) * width] = dot_stream[input_position];
+    } else {
+        /* Vertical folding */
+        for (column = 0; column < width; column++) {
+            for (row = 0; row < height; row++) {
+                if (!((column + row) % 2)) {
+                    if (is_corner(column, row, width, height)) {
+                        dot_array[(row * width) + column] = 'C';
+                    } else {
+                        dot_array[(row * width) + column] = dot_stream[input_position];
+                        input_position++;
+                    }
+                } else {
+                    dot_array[(row * width) + column] = ' '; // Non-data position
+                }
+            }
+        }
+        
+        /* Corners */
+        dot_array[((height - 1) * width) - 1] = dot_stream[input_position];
+        input_position++;
+        dot_array[(height - 2) * width] = dot_stream[input_position];
+        input_position++;
+        dot_array[(height * width) - 2] = dot_stream[input_position];
+        input_position++;
+        dot_array[((height - 1) * width) + 1] = dot_stream[input_position];
+        input_position++;
+        dot_array[width - 1] = dot_stream[input_position];
+        input_position++;
+        dot_array[0] = dot_stream[input_position];
+    }
+}
+
+int dotcode(struct zint_symbol *symbol, unsigned char source[], int length) {
+    int i, j, k;
     int data_length, ecc_length;
     int min_dots, n_dots;
     int height, width, pad_chars;
     int mask_score[4];
     int weight;
-    
-    /* Test data */
-/*
-    symbol->input_mode = GS1_MODE;
-    length = 15;
-    source[0] = '0';
-    source[1] = '2';
-    source[2] = '[';
-    source[3] = 0x80;
-    source[4] = 0xd0;
-    source[5] = 0x20;
-    source[6] = 0xd2;
-    source[7] = 0x00;
-    source[8] = 0x00;
-    source[9] = 0x00;
-    source[10] = 0x00;
-    source[11] = 48;
-    source[12] = 0xcc;
-    source[13] = 49;
-    source[14] = 0x1f;
-*/
+    int dot_stream_length;
+    int high_score, best_mask;
+    int debug = 0;
     
 #ifndef _MSC_VER
     unsigned char codeword_array[length * 3];
@@ -762,10 +995,11 @@ int dotcode(struct zint_symbol *symbol, unsigned char source[], int length) {
     
     ecc_length = 3 + (data_length / 2);
     
-    printf("Codeword length = %d, ECC length = %d\n", data_length, ecc_length);
+    if (debug) {
+        printf("Codeword length = %d, ECC length = %d\n", data_length, ecc_length);
+    }
     
     min_dots = 9 * (data_length + 3 + (data_length / 2)) + 2;
-    printf("Min Dots %d\n", min_dots);
     
     //FIXME: Listen to user preferences here
     height = sqrt(2 * min_dots);
@@ -781,17 +1015,23 @@ int dotcode(struct zint_symbol *symbol, unsigned char source[], int length) {
     
     n_dots = (height * width) / 2;
     
+#ifndef _MSC_VER
+    char dot_stream[n_dots + 3];
+    char dot_array[width * height];
+#else
+    char* dot_stream = (char *) _alloca((n_dots + 3) * sizeof(char));
+    char* dot_array = (char *) _alloca(width * height * sizeof(char));
+#endif /* _MSC_VER */
+    
     /* Add pad characters */
     for(pad_chars = 0; 9 * ((data_length + pad_chars + 3 + ((data_length + pad_chars) / 2)) + 2) < n_dots; pad_chars++);
-    
-    printf("Pad characters %d\n", pad_chars);
     
     if (pad_chars > 0) {
         codeword_array[data_length] = 109; // Latch to Code Set A
         data_length++;
         pad_chars--;
     }
-    
+
     for (i = 0; i < pad_chars; i++) {
         codeword_array[data_length] = 106; // Pad
         data_length++;
@@ -807,11 +1047,6 @@ int dotcode(struct zint_symbol *symbol, unsigned char source[], int length) {
                 for(j = 0; j < data_length; j++) {
                     masked_codeword_array[j + 1] = codeword_array[j];
                 }
-                printf("Masked Data codewords: ");
-                for (j = 0; j <= data_length; j++) {
-                    printf(" %d ", (int) masked_codeword_array[j]);
-                }
-                printf("\n");
                 break;
             case 1:
                 weight = 0;
@@ -820,11 +1055,6 @@ int dotcode(struct zint_symbol *symbol, unsigned char source[], int length) {
                     masked_codeword_array[j + 1] = (weight + codeword_array[j]) % 113;
                     weight += 3;
                 }
-                printf("Masked Data codewords: ");
-                for (j = 0; j <= data_length; j++) {
-                    printf(" %d ", (int) masked_codeword_array[j]);
-                }
-                printf("\n");
                 break;
             case 2:
                 weight = 0;
@@ -833,11 +1063,6 @@ int dotcode(struct zint_symbol *symbol, unsigned char source[], int length) {
                     masked_codeword_array[j + 1] = (weight + codeword_array[j]) % 113;
                     weight += 7;
                 }
-                printf("Masked Data codewords: ");
-                for (j = 0; j <= data_length; j++) {
-                    printf(" %d ", (int) masked_codeword_array[j]);
-                }
-                printf("\n");
                 break;
             case 3:
                 weight = 0;
@@ -845,26 +1070,97 @@ int dotcode(struct zint_symbol *symbol, unsigned char source[], int length) {
                 for(j = 0; j < data_length; j++) {
                     masked_codeword_array[j + 1] = (weight + codeword_array[j]) % 113;
                     weight += 17;
-                }                
-                printf("Masked Data codewords: ");
-                for (j = 0; j <= data_length; j++) {
-                    printf(" %d ", (int) masked_codeword_array[j]);
                 }
-                printf("\n");
                 break;
         }
         
         rsencode(data_length + 1, ecc_length, masked_codeword_array);
         
-        printf("Full code stream: ");
-        for (j = 0; j < (data_length + ecc_length + 1); j++) {
-            printf("%d ", (int) masked_codeword_array[j]);
-        }
-        printf("\n");
+        dot_stream_length = make_dotstream(masked_codeword_array, (data_length + ecc_length + 1), dot_stream);
         
+        /* Add pad bits */
+        for(j = dot_stream_length; j < n_dots; j++) {
+            strcat(dot_stream, "1");
+        }
+        
+        fold_dotstream(dot_stream, width, height, dot_array);
+        
+        mask_score[i] = score_array(dot_array, height, width);
+        
+        if (debug) {
+            printf("Mask %d score is %d\n", i, mask_score[i]);
+        }
     }
     
-    printf("Proposed size = height %d, width %d, (total usable dots %d)\n", height, width, n_dots);
+    high_score = mask_score[0];
+    best_mask = 0;
     
-    return ZINT_ERROR_INVALID_OPTION;
+    for(i = 1; i < 4; i++) {
+        if (mask_score[i] > high_score) {
+            high_score = mask_score[i];
+            best_mask = i;
+        }
+    }
+    
+    if (best_mask != 3) {
+        /* Reprocess to get symbol with best mask */
+        switch(best_mask) {
+            case 0:
+                masked_codeword_array[0] = 0;
+                for(j = 0; j < data_length; j++) {
+                    masked_codeword_array[j + 1] = codeword_array[j];
+                }
+                break;
+            case 1:
+                weight = 0;
+                masked_codeword_array[0] = 1;
+                for(j = 0; j < data_length; j++) {
+                    masked_codeword_array[j + 1] = (weight + codeword_array[j]) % 113;
+                    weight += 3;
+                }
+                break;
+            case 2:
+                weight = 0;
+                masked_codeword_array[0] = 2;
+                for(j = 0; j < data_length; j++) {
+                    masked_codeword_array[j + 1] = (weight + codeword_array[j]) % 113;
+                    weight += 7;
+                }
+                break;
+        }
+        
+        rsencode(data_length + 1, ecc_length, masked_codeword_array);
+        dot_stream_length = make_dotstream(masked_codeword_array, (data_length + ecc_length + 1), dot_stream);
+        
+        /* Add pad bits */
+        for(j = dot_stream_length; j < n_dots; j++) {
+            strcat(dot_stream, "1");
+        }
+        
+        fold_dotstream(dot_stream, width, height, dot_array);
+    } /* else { the version with the best mask is already in memory } */
+    
+    if (debug) {
+        for(k = 0; k < height; k++) {
+            for (j = 0; j < width; j++) {
+                printf("%c", dot_array[(k * width) + j]);
+            }
+            printf("\n");
+        }
+    }
+    
+    /* Copy values to symbol */
+    symbol->width = width;
+    symbol->rows = height;
+
+    for (k = 0; k < height; k++) {
+        for (j = 0; j < width; j++) {
+            if (dot_array[(k * width) + j] == '1') {
+                set_module(symbol, k, j);
+            }
+        }
+        symbol->row_height[k] = 1;
+    }
+    
+    return 0;
 }
