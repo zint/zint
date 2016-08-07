@@ -84,6 +84,7 @@ int score_array(char Dots[], int Hgt, int Wid) {
 
     sum = 0;
     first = -1;
+    last = -1;
 
     // across the top edge, count printed dots and measure their extent
     for (x = 0; x < Wid; x += 2)
@@ -1224,7 +1225,7 @@ int dotcode(struct zint_symbol *symbol, unsigned char source[], int length) {
         symbol->row_height[k] = 1;
     }
 
-    symbol->barcode_options += BARCODE_DOTTY_MODE;
+    symbol->output_options += BARCODE_DOTTY_MODE;
 
     return 0;
 }
