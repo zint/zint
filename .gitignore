@@ -5,3 +5,6 @@ build/
 *.swo
 .directory
 CMakeLists.txt.user*
+Makefile
+backend/Makefile
+frontend/Makefile
