@@ -182,8 +182,9 @@ extern int channel_code(struct zint_symbol *symbol, unsigned char source[], int 
 extern int code_one(struct zint_symbol *symbol, unsigned char source[], int length); /* Code One */
 extern int grid_matrix(struct zint_symbol *symbol, const unsigned char source[], int length); /* Grid Matrix */
 extern int han_xin(struct zint_symbol * symbol, const unsigned char source[], int length); /* Han Xin */
+extern int dotcode(struct zint_symbol * symbol, const unsigned char source[], int length); /* DotCode */
 
-extern int plot_raster(struct zint_symbol *symbol, int rotate_angle, int file_type); /* Plot to PNG or BMP */
+extern int plot_raster(struct zint_symbol *symbol, int rotate_angle, int file_type); /* Plot to PNG/BMP/PCX */
 extern int render_plot(struct zint_symbol *symbol, float width, float height); /* Plot to gLabels */
 extern int ps_plot(struct zint_symbol *symbol); /* Plot to EPS */
 extern int svg_plot(struct zint_symbol *symbol); /* Plot to SVG */
@@ -374,6 +375,7 @@ static int gs1_compliant(const int symbology) {
         case BARCODE_CODEONE:
         case BARCODE_CODE49:
         case BARCODE_QRCODE:
+        case BARCODE_DOTCODE:
             result = 1;
             break;
     }
@@ -470,6 +472,7 @@ int ZBarcode_ValidID(int symbol_id) {
         case BARCODE_CODEONE:
         case BARCODE_GRIDMATRIX:
         case BARCODE_HANXIN:
+        case BARCODE_DOTCODE:
             result = 1;
             break;
     }
@@ -690,6 +693,8 @@ static int reduced_charset(struct zint_symbol *symbol, const unsigned char *sour
             break;
         case BARCODE_AZTEC: error_number = aztec(symbol, preprocessed, length);
             break;
+        case BARCODE_DOTCODE: error_number = dotcode(symbol, preprocessed, length);
+            break;
     }
 
     return error_number;
@@ -834,9 +839,7 @@ int ZBarcode_Encode(struct zint_symbol *symbol, unsigned char *source, int lengt
         error_number = ZINT_WARN_INVALID_OPTION;
     }
     if (symbol->symbology == 115) {
-        strcpy(symbol->errtxt, "Dot Code not supported");
-        symbol->symbology = BARCODE_CODE128;
-        error_number = ZINT_WARN_INVALID_OPTION;
+        symbol->symbology = BARCODE_DOTCODE;
     }
     if ((symbol->symbology >= 117) && (symbol->symbology <= 127)) {
         strcpy(symbol->errtxt, "Symbology out of range, using Code 128");
