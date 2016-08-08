@@ -43,8 +43,8 @@
 #include <malloc.h> 
 #endif /* _MSC_VER */
 
-#include "maxihex.h"	/* Maxicode shapes */
-#include "font.h"	/* Font for human readable text */
+#include "maxihex.h" /* Maxicode shapes */
+#include "font.h" /* Font for human readable text */
 
 #ifndef NO_PNG
 extern int png_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width, char *pixelbuf, int rotate_angle);
@@ -55,53 +55,25 @@ extern int gif_pixel_plot(struct zint_symbol *symbol, int image_height, int imag
 
 int save_raster_image_to_file(struct zint_symbol *symbol, int image_height, int image_width, char *pixelbuf, int rotate_angle, int image_type) {
     int error_number;
-    float scaler = symbol->scale;
-    char *scaled_pixelbuf;
-    int horiz, vert, i;
-    int scale_width, scale_height;
 
-    if (scaler == 0) {
-        scaler = 0.5;
-    }
-    scale_width = image_width * scaler;
-    scale_height = image_height * scaler;
-
-    /* Apply scale options by creating another pixel buffer */
-    if (!(scaled_pixelbuf = (char *) malloc(scale_width * scale_height))) {
-        printf("Insufficient memory for pixel buffer");
-        return ZINT_ERROR_ENCODING_PROBLEM;
-    } else {
-        for (i = 0; i < (scale_width * scale_height); i++) {
-            *(scaled_pixelbuf + i) = '0';
-        }
-    }
-
-    for (vert = 0; vert < scale_height; vert++) {
-        for (horiz = 0; horiz < scale_width; horiz++) {
-            *(scaled_pixelbuf + (vert * scale_width) + horiz) = *(pixelbuf + ((int) (vert / scaler) * image_width) + (int) (horiz / scaler));
-        }
-    }
-
-    switch(image_type) {
+    switch (image_type) {
         case OUT_PNG_FILE:
 #ifndef NO_PNG
-            error_number = png_pixel_plot(symbol, scale_height, scale_width, scaled_pixelbuf, rotate_angle);
+            error_number = png_pixel_plot(symbol, image_height, image_width, pixelbuf, rotate_angle);
 #else
             return ZINT_ERROR_INVALID_OPTION;
 #endif
             break;
         case OUT_PCX_FILE:
-            error_number = pcx_pixel_plot(symbol, scale_height, scale_width, scaled_pixelbuf, rotate_angle);
+            error_number = pcx_pixel_plot(symbol, image_height, image_width, pixelbuf, rotate_angle);
             break;
         case OUT_GIF_FILE:
-            error_number = gif_pixel_plot(symbol, scale_height, scale_width, scaled_pixelbuf, rotate_angle);
+            error_number = gif_pixel_plot(symbol, image_height, image_width, pixelbuf, rotate_angle);
             break;
         default:
-            error_number = bmp_pixel_plot(symbol, scale_height, scale_width, scaled_pixelbuf, rotate_angle);
+            error_number = bmp_pixel_plot(symbol, image_height, image_width, pixelbuf, rotate_angle);
             break;
     }
-
-    free(scaled_pixelbuf);
 
     return error_number;
 }
@@ -186,92 +158,92 @@ void draw_letter(char *pixelbuf, unsigned char letter, int xposn, int yposn, int
         } else {
             glyph_no = letter - 33;
         }
-        
-        
+
+
         switch (textflags) {
-        case 1: // small font 5x9
-           max_x = 5;
-           max_y = 9;
+            case 1: // small font 5x9
+                max_x = 5;
+                max_y = 9;
 
-           if (xposn + max_x >= image_width) {
-               max_x = image_width - xposn - 1;
-           }
+                if (xposn + max_x >= image_width) {
+                    max_x = image_width - xposn - 1;
+                }
 
-           if (yposn + max_y >= image_height) {
-               max_y = image_height - yposn - 1;
-           }
+                if (yposn + max_y >= image_height) {
+                    max_y = image_height - yposn - 1;
+                }
 
-           for (y = 0; y < max_y; y++) {
-               for (x = 0; x < max_x; x++) {
-                   if (small_font[(glyph_no * 9) + y] & (0x10 >> x)) {
-                       *(pixelbuf + (y * image_width) + (yposn * image_width) + xposn + x) = '1';
-                   }
-               }
-           }
-           break;
+                for (y = 0; y < max_y; y++) {
+                    for (x = 0; x < max_x; x++) {
+                        if (small_font[(glyph_no * 9) + y] & (0x10 >> x)) {
+                            *(pixelbuf + (y * image_width) + (yposn * image_width) + xposn + x) = '1';
+                        }
+                    }
+                }
+                break;
 
-        case 2: // bold font -> twice the regular font
-           {
-			  char * linePtr;
-              max_x = 7;
-              max_y = 14;
+            case 2: // bold font -> twice the regular font
+            {
+                char * linePtr;
+                max_x = 7;
+                max_y = 14;
 
-              if (xposn + max_x + 1 >= image_width) {
-                  max_x = image_width - xposn - 2;
-              }
+                if (xposn + max_x + 1 >= image_width) {
+                    max_x = image_width - xposn - 2;
+                }
 
-              if (yposn + max_y >= image_height) {
-                  max_y = image_height - yposn - 1;
-              }
+                if (yposn + max_y >= image_height) {
+                    max_y = image_height - yposn - 1;
+                }
 
-              linePtr = pixelbuf + (yposn * image_width) + xposn + 1;
-              for (y = 0; y < max_y; y++) {
-                  char * pixelPtr = linePtr;
-                  int extra_dot = 0;
-                  for (x = 0; x < 7; x++) {
-                      if (ascii_font[(glyph_no * 14) + y] & (0x40 >> x)) {
-                          *pixelPtr = '1';
-                          extra_dot = 1;
-                      } else {
-                          if (extra_dot) {
-                              *pixelPtr = '1';
-                          }
+                linePtr = pixelbuf + (yposn * image_width) + xposn + 1;
+                for (y = 0; y < max_y; y++) {
+                    char * pixelPtr = linePtr;
+                    int extra_dot = 0;
+                    for (x = 0; x < 7; x++) {
+                        if (ascii_font[(glyph_no * 14) + y] & (0x40 >> x)) {
+                            *pixelPtr = '1';
+                            extra_dot = 1;
+                        } else {
+                            if (extra_dot) {
+                                *pixelPtr = '1';
+                            }
 
-                          extra_dot = 0;
-                      }
+                            extra_dot = 0;
+                        }
 
-                      ++pixelPtr;
-                  }
+                        ++pixelPtr;
+                    }
 
-                  if (extra_dot) {
-                      *pixelPtr = '1';
-                  }
+                    if (extra_dot) {
+                        *pixelPtr = '1';
+                    }
 
-                  linePtr += image_width;
-              }
-           }
-           break;
+                    linePtr += image_width;
+                }
+            }
+                break;
 
-        default: // regular font 7x15
-           max_x = 7;
-           max_y = 14;
+            default: // regular font 7x15
+                max_x = 7;
+                max_y = 14;
 
-           if (xposn + max_x >= image_width) {
-               max_x = image_width - xposn - 1;
-           }
+                if (xposn + max_x >= image_width) {
+                    max_x = image_width - xposn - 1;
+                }
 
-           if (yposn + max_y >= image_height) {
-               max_y = image_height - yposn - 1;
-           }
+                if (yposn + max_y >= image_height) {
+                    max_y = image_height - yposn - 1;
+                }
 
-           for (y = 0; y < max_y; y++) {
-               for (x = 0; x < 7; x++) {
-                   if (ascii_font[(glyph_no * 14) + y] & (0x40 >> x)) {
-                       *(pixelbuf + (y * image_width) + (yposn * image_width) + xposn + x) = '1';
-                   }
-               }
-           }
-           break;
+                for (y = 0; y < max_y; y++) {
+                    for (x = 0; x < 7; x++) {
+                        if (ascii_font[(glyph_no * 14) + y] & (0x40 >> x)) {
+                            *(pixelbuf + (y * image_width) + (yposn * image_width) + xposn + x) = '1';
+                        }
+                    }
+                }
+                break;
         }
     }
 }
@@ -281,19 +253,19 @@ void draw_string(char *pixbuf, char input_string[], int xposn, int yposn, int te
     int i, string_length, string_left_hand, letter_width = 7;
 
     switch (textflags) {
-    case 1: // small font 5x9
-       letter_width = 5;
-       break;
+        case 1: // small font 5x9
+            letter_width = 5;
+            break;
 
-    case 2: // bold font -> width of the regular font + 1 extra dot + 1 extra space
-       letter_width = 9;
-       break;
+        case 2: // bold font -> width of the regular font + 1 extra dot + 1 extra space
+            letter_width = 9;
+            break;
 
-    default: // regular font 7x15
-       letter_width = 7;
-       break;
+        default: // regular font 7x15
+            letter_width = 7;
+            break;
     }
-    
+
     string_length = strlen(input_string);
     string_left_hand = xposn - ((letter_width * string_length) / 2);
 
@@ -309,6 +281,10 @@ int plot_raster_maxicode(struct zint_symbol *symbol, int rotate_angle, int data_
     char *pixelbuf;
     int error_number;
     int xoffset, yoffset;
+    float scaler = symbol->scale;
+    char *scaled_pixelbuf;
+    int horiz, vert;
+    int scale_width, scale_height;
 
     xoffset = symbol->border_width + symbol->whitespace_width;
     yoffset = symbol->border_width;
@@ -355,7 +331,31 @@ int plot_raster_maxicode(struct zint_symbol *symbol, int rotate_angle, int data_
         draw_bar(pixelbuf, 300 + ((symbol->border_width + symbol->whitespace_width + symbol->whitespace_width) * 2), symbol->border_width * 2, 0, image_height, image_width, image_height);
     }
 
-    error_number = save_raster_image_to_file(symbol, image_height, image_width, pixelbuf, rotate_angle, data_type);
+
+    if (scaler == 0) {
+        scaler = 0.5;
+    }
+    scale_width = image_width * scaler;
+    scale_height = image_height * scaler;
+
+    /* Apply scale options by creating another pixel buffer */
+    if (!(scaled_pixelbuf = (char *) malloc(scale_width * scale_height))) {
+        printf("Insufficient memory for pixel buffer");
+        return ZINT_ERROR_ENCODING_PROBLEM;
+    } else {
+        for (i = 0; i < (scale_width * scale_height); i++) {
+            *(scaled_pixelbuf + i) = '0';
+        }
+    }
+
+    for (vert = 0; vert < scale_height; vert++) {
+        for (horiz = 0; horiz < scale_width; horiz++) {
+            *(scaled_pixelbuf + (vert * scale_width) + horiz) = *(pixelbuf + ((int) (vert / scaler) * image_width) + (int) (horiz / scaler));
+        }
+    }
+
+    error_number = save_raster_image_to_file(symbol, scale_height, scale_width, scaled_pixelbuf, rotate_angle, data_type);
+    free(scaled_pixelbuf);
     free(pixelbuf);
     return error_number;
 }
@@ -399,6 +399,70 @@ void to_latin1(unsigned char source[], unsigned char preprocessed[]) {
     return;
 }
 
+void draw_circle(char *pixelbuf, int image_width, int image_height, int x0, int y0, int radius) {
+    int x, y;
+
+    for (y = -radius; y <= radius; y++) {
+        for (x = -radius; x <= radius; x++) {
+            if ((x * x) + (y * y) <= (radius * radius)) {
+                if ((y + y0 >= 0) && (y + y0 < image_height)
+                        && (x + x0 >= 0) && (x + x0 < image_width)) {
+                    *(pixelbuf + ((y + y0) * image_width) + (x + x0)) = '1';
+                }
+            }
+        }
+    }
+}
+
+int plot_raster_dotty(struct zint_symbol *symbol, int rotate_angle, int data_type) {
+    float scaler = 2 * symbol->scale;
+    char *scaled_pixelbuf;
+    int r, i;
+    int scale_width, scale_height;
+    int error_number = 0;
+    int xoffset, yoffset, image_width, image_height;
+
+    symbol->height = symbol->rows; // This is true because only 2d matrix symbols are processed here
+
+    xoffset = symbol->border_width + symbol->whitespace_width;
+    yoffset = symbol->border_width;
+    image_width = symbol->width + xoffset + xoffset;
+    image_height = symbol->height + yoffset + yoffset;
+
+    if (scaler < 2.0) {
+        scaler = 2.0;
+    }
+    scale_width = (image_width * scaler) + 1;
+    scale_height = (image_height * scaler) + 1;
+
+    /* Apply scale options by creating another pixel buffer */
+    if (!(scaled_pixelbuf = (char *) malloc(scale_width * scale_height))) {
+        printf("Insufficient memory for pixel buffer");
+        return ZINT_ERROR_ENCODING_PROBLEM;
+    } else {
+        for (i = 0; i < (scale_width * scale_height); i++) {
+            *(scaled_pixelbuf + i) = '0';
+        }
+    }
+
+    /* Plot the body of the symbol to the pixel buffer */
+    for (r = 0; r < symbol->rows; r++) {
+        for (i = 0; i < symbol->width; i++) {
+            if (module_is_set(symbol, r, i)) {
+                draw_circle(scaled_pixelbuf, scale_width, scale_height,
+                        (int) ((i + xoffset) * scaler) + (scaler / 2.0),
+                        (int) ((r + yoffset) * scaler) + (scaler / 2.0),
+                        (int) (scaler / 2.0));
+            }
+        }
+    }
+
+    error_number = save_raster_image_to_file(symbol, scale_height, scale_width, scaled_pixelbuf, rotate_angle, data_type);
+    free(scaled_pixelbuf);
+
+    return error_number;
+}
+
 int plot_raster_default(struct zint_symbol *symbol, int rotate_angle, int data_type) {
     int textdone, main_width, comp_offset, large_bar_count;
     char textpart[10], addon[6];
@@ -411,6 +475,10 @@ int plot_raster_default(struct zint_symbol *symbol, int rotate_angle, int data_t
     int error_number;
     int default_text_posn;
     int next_yposn;
+    float scaler = symbol->scale;
+    char *scaled_pixelbuf;
+    int horiz, vert;
+    int scale_width, scale_height;
 #ifndef _MSC_VER
     unsigned char local_text[ustrlen(symbol->text) + 1];
 #else
@@ -456,8 +524,7 @@ int plot_raster_default(struct zint_symbol *symbol, int rotate_angle, int data_t
     row_height = 0;
     if (symbol->output_options & SMALL_TEXT) {
         textflags = 1;
-    }
-    else if (symbol->output_options & BOLD_TEXT) {
+    } else if (symbol->output_options & BOLD_TEXT) {
         textflags = 2;
     }
 
@@ -537,7 +604,7 @@ int plot_raster_default(struct zint_symbol *symbol, int rotate_angle, int data_t
     } else {
         textoffset = 0;
     }
-    
+
     xoffset = symbol->border_width + symbol->whitespace_width;
     yoffset = symbol->border_width;
     image_width = 2 * (symbol->width + xoffset + xoffset);
@@ -826,7 +893,31 @@ int plot_raster_default(struct zint_symbol *symbol, int rotate_angle, int data_t
         draw_string(pixelbuf, (char*) local_text, textpos, default_text_posn, textflags, image_width, image_height);
     }
 
-    error_number = save_raster_image_to_file(symbol, image_height, image_width, pixelbuf, rotate_angle, data_type);
+
+    if (scaler == 0) {
+        scaler = 0.5;
+    }
+    scale_width = image_width * scaler;
+    scale_height = image_height * scaler;
+
+    /* Apply scale options by creating another pixel buffer */
+    if (!(scaled_pixelbuf = (char *) malloc(scale_width * scale_height))) {
+        printf("Insufficient memory for pixel buffer");
+        return ZINT_ERROR_ENCODING_PROBLEM;
+    } else {
+        for (i = 0; i < (scale_width * scale_height); i++) {
+            *(scaled_pixelbuf + i) = '0';
+        }
+    }
+
+    for (vert = 0; vert < scale_height; vert++) {
+        for (horiz = 0; horiz < scale_width; horiz++) {
+            *(scaled_pixelbuf + (vert * scale_width) + horiz) = *(pixelbuf + ((int) (vert / scaler) * image_width) + (int) (horiz / scaler));
+        }
+    }
+
+    error_number = save_raster_image_to_file(symbol, scale_height, scale_width, scaled_pixelbuf, rotate_angle, data_type);
+    free(scaled_pixelbuf);
     free(pixelbuf);
     return error_number;
 }
@@ -840,11 +931,15 @@ int plot_raster(struct zint_symbol *symbol, int rotate_angle, int file_type) {
         return ZINT_ERROR_INVALID_OPTION;
     }
 #endif /* NO_PNG */    
-    
-    if (symbol->symbology == BARCODE_MAXICODE) {
-        error = plot_raster_maxicode(symbol, rotate_angle, file_type);
+
+    if (symbol->output_options &= BARCODE_DOTTY_MODE) {
+        error = plot_raster_dotty(symbol, rotate_angle, file_type);
     } else {
-        error = plot_raster_default(symbol, rotate_angle, file_type);
+        if (symbol->symbology == BARCODE_MAXICODE) {
+            error = plot_raster_maxicode(symbol, rotate_angle, file_type);
+        } else {
+            error = plot_raster_default(symbol, rotate_angle, file_type);
+        }
     }
 
     return error;
