@@ -383,6 +383,31 @@ static int gs1_compliant(const int symbology) {
     return result;
 }
 
+static int is_matrix(const int symbology) {
+    /* Returns 1 if symbology is a matrix design */
+    
+    int result = 0;
+    
+    switch (symbology) {
+        case BARCODE_QRCODE:
+        case BARCODE_DATAMATRIX:
+        case BARCODE_MICROQR:
+        case BARCODE_HIBC_DM:
+        case BARCODE_AZTEC:
+        case BARCODE_HIBC_QR:
+        case BARCODE_HIBC_AZTEC:
+        case BARCODE_AZRUNE:
+        case BARCODE_CODEONE:
+        case BARCODE_GRIDMATRIX:
+        case BARCODE_HANXIN:
+        case BARCODE_DOTCODE:
+            result = 1;
+            break;
+    }
+    
+    return result;
+}
+
 int ZBarcode_ValidID(int symbol_id) {
     /* Checks whether a symbology is supported */
 
@@ -934,6 +959,13 @@ int ZBarcode_Print(struct zint_symbol *symbol, int rotate_angle) {
             return ZINT_ERROR_INVALID_OPTION;
     }
 
+    if (symbol->output_options &= BARCODE_DOTTY_MODE) {
+        if (!(is_matrix(symbol->symbology))) {
+            strcpy(symbol->errtxt, "Selected symbology cannot be rendered as dots");
+            return ZINT_ERROR_INVALID_OPTION;
+        }
+    }
+    
     if (strlen(symbol->outfile) > 3) {
         output[0] = symbol->outfile[strlen(symbol->outfile) - 3];
         output[1] = symbol->outfile[strlen(symbol->outfile) - 2];
