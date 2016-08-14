@@ -74,11 +74,17 @@ void ExportWindow::process()
 	switch(cmbFileFormat->currentIndex()) {
 #ifdef NO_PNG
 		case 0: suffix = ".eps"; break;
-		case 1: suffix = ".svg"; break;
+		case 1: suffix = ".gif"; break;
+                case 2: suffix = ".svg"; break;
+                case 3: suffix = ".bmp"; break;
+                case 4: suffix = ".pcx"; break;
 #else
                 case 0: suffix = ".png"; break;
 		case 1: suffix = ".eps"; break;
-		case 2: suffix = ".svg"; break;
+		case 2: suffix = ".gif"; break;
+                case 3: suffix = ".svg"; break;
+                case 4: suffix = ".bmp"; break;
+                case 5: suffix = ".pcx"; break;
 #endif
 	}
 	

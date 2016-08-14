@@ -77,7 +77,22 @@
    </item>
    <item>
     <property name="text">
+     <string>Graphics Interchange Format (*.gif)</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
      <string>Scalable Vector Graphic (*.svg)</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>Windows Bitmap (*.bmp)</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>ZSoft PC Painter Image (*.pcx)</string>
     </property>
    </item>
   </widget>
