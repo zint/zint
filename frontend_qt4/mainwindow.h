@@ -63,6 +63,7 @@ public:
 		DATAMATRIX	=71,
 		DPIDENT		=22,
 		DPLEIT		=21,
+                DOTCODE         =115,
 		KIX		=90,
 		EAN14		=72,
 		EANX		=13,

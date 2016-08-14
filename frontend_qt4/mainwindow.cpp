@@ -56,6 +56,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WFlags fl)
 		"Data Matrix (ISO 16022)",
 		"Deutsche Post Identcode",
 		"Deutsche Post Leitcode",
+                "DotCode",
 		"Dutch Post KIX",
 		"EAN-14",
 		"European Article Number (EAN)",
