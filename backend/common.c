@@ -238,42 +238,6 @@ int istwodigits(const unsigned char source[], const int position) {
     return 0;
 }
 
-/* Convert Unicode to Latin-1 for those symbologies which only support Latin-1 */
-int latin1_process(struct zint_symbol *symbol, const unsigned char source[], unsigned char preprocessed[], int *length) {
-    int j, i, next;
-
-    j = 0;
-    i = 0;
-    do {
-        next = -1;
-        if (source[i] < 128) {
-            preprocessed[j] = source[i];
-            j++;
-            next = i + 1;
-        } else {
-            if (source[i] == 0xC2) {
-                preprocessed[j] = source[i + 1];
-                j++;
-                next = i + 2;
-            }
-            if (source[i] == 0xC3) {
-                preprocessed[j] = source[i + 1] + 64;
-                j++;
-                next = i + 2;
-            }
-        }
-        if (next == -1) {
-            strcpy(symbol->errtxt, "error: Invalid character in input string (only Latin-1 characters supported)");
-            return ZINT_ERROR_INVALID_DATA;
-        }
-        i = next;
-    } while (i < *length);
-    preprocessed[j] = '\0';
-    *length = j;
-
-    return 0;
-}
-
 int utf8toutf16(struct zint_symbol *symbol, const unsigned char source[], int vals[], int *length) {
     int bpos, jpos, error_number;
     int next;

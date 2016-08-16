@@ -62,11 +62,15 @@ int getsubmode(char input) {
 }
 
 /* Calculate the approximate length of the binary string */
-int calculate_binlength(char mode[], int source[], int length) {
+int calculate_binlength(char mode[], int source[], int length, int eci) {
     int i;
     char lastmode = 't';
     int est_binlen = 0;
     int submode = 1;
+    
+    if (eci != 3) {
+        est_binlen += 12;
+    }
     
     i = 0;
     do {
@@ -323,7 +327,7 @@ int lookup_text2(char input) {
 }
 
 /* Convert input data to binary stream */
-void calculate_binary(char binary[], char mode[], int source[], int length) {
+void calculate_binary(char binary[], char mode[], int source[], int length, int eci) {
     int block_length;
     int position = 0;
     int i, p, count, encoding_value;
@@ -332,6 +336,17 @@ void calculate_binary(char binary[], char mode[], int source[], int length) {
     int third_byte, fourth_byte;
     int glyph;
     int submode;
+    
+    if (eci != 3) {
+        strcat(binary, "1000"); // ECI
+        for (p = 0; p < 8; p++) {
+            if (eci & (0x80 >> p)) {
+                strcat(binary, "1");
+            } else {
+                strcat(binary, "0");
+            }
+        }
+    }
     
     do {
         block_length = 0;
@@ -1310,66 +1325,63 @@ int han_xin(struct zint_symbol *symbol, const unsigned char source[], int length
     unsigned char *grid;
 #endif
     
-    switch (symbol->input_mode) {
-        case DATA_MODE:
-            for (i = 0; i < length; i++) {
-                gbdata[i] = (int) source[i];
-            }
-            break;
-        default:
-            /* Convert Unicode input to GB-18030 */
-            error_number = utf8toutf16(symbol, source, utfdata, &length);
-            if (error_number != 0) {
-                return error_number;
-            }
+    if ((symbol->input_mode == DATA_MODE) || (symbol->eci != 3)) {
+        for (i = 0; i < length; i++) {
+            gbdata[i] = (int) source[i];
+        }
+    } else {
+        /* Convert Unicode input to GB-18030 */
+        error_number = utf8toutf16(symbol, source, utfdata, &length);
+        if (error_number != 0) {
+            return error_number;
+        }
 
-            posn = 0;
-            for (i = 0; i < length; i++) {
-                if (utfdata[i] <= 0x7f) {
-                    gbdata[posn] = utfdata[i];
-                    posn++;
-                } else {
+        posn = 0;
+        for (i = 0; i < length; i++) {
+            if (utfdata[i] <= 0x7f) {
+                gbdata[posn] = utfdata[i];
+                posn++;
+            } else {
+                j = 0;
+                glyph = 0;
+                do {
+                    if (gb18030_twobyte_lookup[j * 2] == utfdata[i]) {
+                        glyph = gb18030_twobyte_lookup[(j * 2) + 1];
+                    }
+                    j++;
+                } while ((j < 23940) && (glyph == 0));
+
+                if (glyph == 0) {
                     j = 0;
                     glyph = 0;
+                    glyph2 = 0;
                     do {
-                        if (gb18030_twobyte_lookup[j * 2] == utfdata[i]) {
-                            glyph = gb18030_twobyte_lookup[(j * 2) + 1];
+                        if (gb18030_fourbyte_lookup[j * 3] == utfdata[i]) {
+                            glyph = gb18030_fourbyte_lookup[(j * 3) + 1];
+                            glyph2 = gb18030_fourbyte_lookup[(j * 3) + 2];
                         }
                         j++;
-                    } while ((j < 23940) && (glyph == 0));
-                    
+                    } while ((j < 6793) && (glyph == 0));
                     if (glyph == 0) {
-                        j = 0;
-                        glyph = 0;
-                        glyph2 = 0;
-                        do {
-                            if (gb18030_fourbyte_lookup[j * 3] == utfdata[i]) {
-                                glyph = gb18030_fourbyte_lookup[(j * 3) + 1];
-                                glyph2 = gb18030_fourbyte_lookup[(j * 3) + 2];
-                            }
-                            j++;
-                        } while ((j < 6793) && (glyph == 0));
-                        if (glyph == 0) {
-                            strcpy(symbol->errtxt, "Unknown character in input data");
-                            return ZINT_ERROR_INVALID_DATA;
-                        } else {
-                            gbdata[posn] = glyph;
-                            gbdata[posn + 1] = glyph2;
-                            posn += 2;
-                        }
+                        strcpy(symbol->errtxt, "Unknown character in input data");
+                        return ZINT_ERROR_INVALID_DATA;
                     } else {
                         gbdata[posn] = glyph;
-                        posn++;
+                        gbdata[posn + 1] = glyph2;
+                        posn += 2;
                     }
+                } else {
+                    gbdata[posn] = glyph;
+                    posn++;
                 }
             }
-            break;
+        }
     }
 
     length = posn;
     hx_define_mode(mode, gbdata, length);
     
-    est_binlen = calculate_binlength(mode, gbdata, length);
+    est_binlen = calculate_binlength(mode, gbdata, length, symbol->eci);
     est_codewords = est_binlen / 8;
     if (est_binlen % 8 != 0) {
         est_codewords++;
@@ -1390,7 +1402,7 @@ int han_xin(struct zint_symbol *symbol, const unsigned char source[], int length
         ecc_level = 1;
     }
     
-    calculate_binary(binary, mode, gbdata, length);
+    calculate_binary(binary, mode, gbdata, length, symbol->eci);
     
     version = 85;
     for (i = 84; i > 0; i--) {

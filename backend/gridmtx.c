@@ -348,7 +348,7 @@ void add_shift_char(char binary[], int shifty) {
     }
 }
 
-int gm_encode(int gbdata[], int length, char binary[], int reader) {
+int gm_encode(int gbdata[], int length, char binary[], int reader, int eci) {
     /* Create a binary stream representation of the input data.
        7 sets are defined - Chinese characters, Numerals, Lower case letters, Upper case letters,
        Mixed numerals and latters, Control characters and 8-bit binary data */
@@ -369,6 +369,17 @@ int gm_encode(int gbdata[], int length, char binary[], int reader) {
 
     if (reader) {
         strcat(binary, "1010"); /* FNC3 - Reader Initialisation */
+    }
+    
+    if (eci != 3) {
+        strcat(binary, "11000"); /* ECI */
+        for (q = 0; q < 10; q++) {
+            if (eci & (0x100 >> q)) {
+                strcat(binary, "1");
+            } else {
+                strcat(binary, "0");
+            }
+        }
     }
 
     do {
@@ -1053,44 +1064,41 @@ int grid_matrix(struct zint_symbol *symbol, const unsigned char source[], int le
         word[i] = 0;
     }
 
-    switch (symbol->input_mode) {
-        case DATA_MODE:
-            for (i = 0; i < length; i++) {
-                gbdata[i] = (int) source[i];
-            }
-            break;
-        default:
-            /* Convert Unicode input to GB-2312 */
-            error_number = utf8toutf16(symbol, source, utfdata, &length);
-            if (error_number != 0) {
-                return error_number;
-            }
+    if ((symbol->input_mode == DATA_MODE) || (symbol->eci != 3)) {
+        for (i = 0; i < length; i++) {
+            gbdata[i] = (int) source[i];
+        }
+    } else {
+        /* Convert Unicode input to GB-2312 */
+        error_number = utf8toutf16(symbol, source, utfdata, &length);
+        if (error_number != 0) {
+            return error_number;
+        }
 
-            for (i = 0; i < length; i++) {
-                if (utfdata[i] <= 0xff) {
-                    gbdata[i] = utfdata[i];
-                } else {
-                    j = 0;
-                    glyph = 0;
-                    do {
-                        if (gb2312_lookup[j * 2] == utfdata[i]) {
-                            glyph = gb2312_lookup[(j * 2) + 1];
-                        }
-                        j++;
-                    } while ((j < 7445) && (glyph == 0));
-                    if (glyph == 0) {
-                        strcpy(symbol->errtxt, "Invalid character in input data");
-                        return ZINT_ERROR_INVALID_DATA;
+        for (i = 0; i < length; i++) {
+            if (utfdata[i] <= 0xff) {
+                gbdata[i] = utfdata[i];
+            } else {
+                j = 0;
+                glyph = 0;
+                do {
+                    if (gb2312_lookup[j * 2] == utfdata[i]) {
+                        glyph = gb2312_lookup[(j * 2) + 1];
                     }
-                    gbdata[i] = glyph;
+                    j++;
+                } while ((j < 7445) && (glyph == 0));
+                if (glyph == 0) {
+                    strcpy(symbol->errtxt, "Invalid character in input data");
+                    return ZINT_ERROR_INVALID_DATA;
                 }
+                gbdata[i] = glyph;
             }
-            break;
+        }
     }
 
     if (symbol->output_options & READER_INIT) reader = 1;
 
-    error_number = gm_encode(gbdata, length, binary, reader);
+    error_number = gm_encode(gbdata, length, binary, reader, symbol->eci);
     if (error_number != 0) {
         strcpy(symbol->errtxt, "Input data too long");
         return error_number;

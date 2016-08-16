@@ -127,7 +127,7 @@ void define_mode(char mode[], int jisdata[], int length, int gs1) {
 }
 
 /* Make an estimate (worst case scenario) of how long the binary string will be */
-int estimate_binary_length(char mode[], int length, int gs1) {
+int estimate_binary_length(char mode[], int length, int gs1, int eci) {
     int i, count = 0;
     char current = 0;
     int a_count = 0;
@@ -135,6 +135,10 @@ int estimate_binary_length(char mode[], int length, int gs1) {
 
     if (gs1) {
         count += 4;
+    }
+    
+    if (eci != 3) {
+        count += 12;
     }
 
     for (i = 0; i < length; i++) {
@@ -193,7 +197,7 @@ static void qr_bscan(char *binary, int data, int h) {
 }
 
 /* Convert input data to a binary stream and add padding */
-void qr_binary(int datastream[], int version, int target_binlen, char mode[], int jisdata[], int length, int gs1, int est_binlen) {
+void qr_binary(int datastream[], int version, int target_binlen, char mode[], int jisdata[], int length, int gs1, int eci, int est_binlen) {
     int position = 0, debug = 0;
     int short_data_block_length, i, scheme = 1;
     char data_block, padbits;
@@ -209,6 +213,11 @@ void qr_binary(int datastream[], int version, int target_binlen, char mode[], in
 
     if (gs1) {
         strcat(binary, "0101"); /* FNC1 */
+    }
+    
+    if (eci != 3) {
+        strcat(binary, "0111"); /* ECI */
+        qr_bscan(binary, eci, 0x80);
     }
 
     if (version <= 9) {
@@ -1423,7 +1432,7 @@ int blockLength(int start, char inputMode[], int inputLength) {
     return count;
 }
 
-int getBinaryLength(int version, char inputMode[], int inputData[], int inputLength, int gs1) {
+int getBinaryLength(int version, char inputMode[], int inputData[], int inputLength, int gs1, int eci) {
     /* Calculate the actual bitlength of the proposed binary string */
     char currentMode;
     int i, j;
@@ -1435,6 +1444,10 @@ int getBinaryLength(int version, char inputMode[], int inputData[], int inputLen
 
     if (gs1 == 1) {
         count += 4;
+    }
+    
+    if (eci != 3) {
+        count += 12;
     }
 
     for (i = 0; i < inputLength; i++) {
@@ -1512,43 +1525,40 @@ int qr_code(struct zint_symbol *symbol, const unsigned char source[], int length
 
     gs1 = (symbol->input_mode == GS1_MODE);
 
-    switch (symbol->input_mode) {
-        case DATA_MODE:
-            for (i = 0; i < length; i++) {
-                jisdata[i] = (int) source[i];
-            }
-            break;
-        default:
-            /* Convert Unicode input to Shift-JIS */
-            error_number = utf8toutf16(symbol, source, utfdata, &length);
-            if (error_number != 0) {
-                return error_number;
-            }
+    if ((symbol->input_mode == DATA_MODE) || (symbol->eci != 3)) {
+        for (i = 0; i < length; i++) {
+            jisdata[i] = (int) source[i];
+        }
+    } else {
+        /* Convert Unicode input to Shift-JIS */
+        error_number = utf8toutf16(symbol, source, utfdata, &length);
+        if (error_number != 0) {
+            return error_number;
+        }
 
-            for (i = 0; i < length; i++) {
-                if (utfdata[i] <= 0xff) {
-                    jisdata[i] = utfdata[i];
-                } else {
-                    j = 0;
-                    glyph = 0;
-                    do {
-                        if (sjis_lookup[j * 2] == utfdata[i]) {
-                            glyph = sjis_lookup[(j * 2) + 1];
-                        }
-                        j++;
-                    } while ((j < 6843) && (glyph == 0));
-                    if (glyph == 0) {
-                        strcpy(symbol->errtxt, "Invalid character in input data");
-                        return ZINT_ERROR_INVALID_DATA;
+        for (i = 0; i < length; i++) {
+            if (utfdata[i] <= 0xff) {
+                jisdata[i] = utfdata[i];
+            } else {
+                j = 0;
+                glyph = 0;
+                do {
+                    if (sjis_lookup[j * 2] == utfdata[i]) {
+                        glyph = sjis_lookup[(j * 2) + 1];
                     }
-                    jisdata[i] = glyph;
+                    j++;
+                } while ((j < 6843) && (glyph == 0));
+                if (glyph == 0) {
+                    strcpy(symbol->errtxt, "Invalid character in input data");
+                    return ZINT_ERROR_INVALID_DATA;
                 }
+                jisdata[i] = glyph;
             }
-            break;
+        }
     }
 
     define_mode(mode, jisdata, length, gs1);
-    est_binlen = estimate_binary_length(mode, length, gs1);
+    est_binlen = estimate_binary_length(mode, length, gs1, symbol->eci);
 
     ecc_level = LEVEL_L;
     max_cw = 2956;
@@ -1609,7 +1619,7 @@ int qr_code(struct zint_symbol *symbol, const unsigned char source[], int length
         } else {
             if (tribus(autosize - 1, 1, 2, 3) != tribus(autosize, 1, 2, 3)) {
                 // Length of binary needed to encode the data in the smaller symbol is different, recalculate
-                est_binlen = getBinaryLength(autosize - 1, mode, jisdata, length, gs1);
+                est_binlen = getBinaryLength(autosize - 1, mode, jisdata, length, gs1, symbol->eci);
             }
 
             switch (ecc_level) {
@@ -1641,7 +1651,7 @@ int qr_code(struct zint_symbol *symbol, const unsigned char source[], int length
             } else {
                 // Data did not fit in the smaller symbol, revert to original size
                 if (tribus(autosize - 1, 1, 2, 3) != tribus(autosize, 1, 2, 3)) {
-                    est_binlen = getBinaryLength(autosize, mode, jisdata, length, gs1);
+                    est_binlen = getBinaryLength(autosize, mode, jisdata, length, gs1, symbol->eci);
                 }
             }
         }
@@ -1656,7 +1666,7 @@ int qr_code(struct zint_symbol *symbol, const unsigned char source[], int length
          */
         if (symbol->option_2 > version) {
             version = symbol->option_2;
-            est_binlen = getBinaryLength(symbol->option_2, mode, jisdata, length, gs1);
+            est_binlen = getBinaryLength(symbol->option_2, mode, jisdata, length, gs1, symbol->eci);
         }
     }
 
@@ -1693,7 +1703,7 @@ int qr_code(struct zint_symbol *symbol, const unsigned char source[], int length
     fullstream = (int *) _alloca((qr_total_codewords[version - 1] + 1) * sizeof (int));
 #endif
 
-    qr_binary(datastream, version, target_binlen, mode, jisdata, length, gs1, est_binlen);
+    qr_binary(datastream, version, target_binlen, mode, jisdata, length, gs1, symbol->eci, est_binlen);
     add_ecc(fullstream, datastream, version, target_binlen, blocks);
 
     size = qr_sizes[version - 1];
@@ -2783,39 +2793,36 @@ int microqr(struct zint_symbol *symbol, const unsigned char source[], int length
         version_valid[i] = 1;
     }
 
-    switch (symbol->input_mode) {
-        case DATA_MODE:
-            for (i = 0; i < length; i++) {
-                jisdata[i] = (int) source[i];
-            }
-            break;
-        default:
-            /* Convert Unicode input to Shift-JIS */
-            error_number = utf8toutf16(symbol, source, utfdata, &length);
-            if (error_number != 0) {
-                return error_number;
-            }
+    if (symbol->input_mode == DATA_MODE) {
+        for (i = 0; i < length; i++) {
+            jisdata[i] = (int) source[i];
+        }
+    } else {
+        /* Convert Unicode input to Shift-JIS */
+        error_number = utf8toutf16(symbol, source, utfdata, &length);
+        if (error_number != 0) {
+            return error_number;
+        }
 
-            for (i = 0; i < length; i++) {
-                if (utfdata[i] <= 0xff) {
-                    jisdata[i] = utfdata[i];
-                } else {
-                    j = 0;
-                    glyph = 0;
-                    do {
-                        if (sjis_lookup[j * 2] == utfdata[i]) {
-                            glyph = sjis_lookup[(j * 2) + 1];
-                        }
-                        j++;
-                    } while ((j < 6843) && (glyph == 0));
-                    if (glyph == 0) {
-                        strcpy(symbol->errtxt, "Invalid character in input data");
-                        return ZINT_ERROR_INVALID_DATA;
+        for (i = 0; i < length; i++) {
+            if (utfdata[i] <= 0xff) {
+                jisdata[i] = utfdata[i];
+            } else {
+                j = 0;
+                glyph = 0;
+                do {
+                    if (sjis_lookup[j * 2] == utfdata[i]) {
+                        glyph = sjis_lookup[(j * 2) + 1];
                     }
-                    jisdata[i] = glyph;
+                    j++;
+                } while ((j < 6843) && (glyph == 0));
+                if (glyph == 0) {
+                    strcpy(symbol->errtxt, "Invalid character in input data");
+                    return ZINT_ERROR_INVALID_DATA;
                 }
+                jisdata[i] = glyph;
             }
-            break;
+        }
     }
 
     define_mode(mode, jisdata, length, 0);

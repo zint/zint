@@ -73,6 +73,7 @@ struct zint_symbol *ZBarcode_Create() {
     symbol->bitmap = NULL;
     symbol->bitmap_width = 0;
     symbol->bitmap_height = 0;
+    symbol->eci = 3;
     return symbol;
 }
 
@@ -126,6 +127,9 @@ void ZBarcode_Delete(struct zint_symbol *symbol) {
     }
     free(symbol);
 }
+
+extern int get_best_eci(unsigned char source[], int length); /* Calculate suitable ECI mode */
+extern int utf_to_eci(int eci, const unsigned char source[], unsigned char dest[], int *length); /* Convert Unicode to other encodings */
 
 extern int eanx(struct zint_symbol *symbol, unsigned char source[], int length); /* EAN system barcodes */
 extern int c39(struct zint_symbol *symbol, unsigned char source[], int length); /* Code 3 from 9 (or Code 39) */
@@ -408,6 +412,29 @@ static int is_matrix(const int symbology) {
     return result;
 }
 
+static int supports_eci(const int symbology) {
+    /* Returns 1 if symbology can encode the ECI character */
+    
+    int result = 0;
+    
+    switch (symbology) {
+        case BARCODE_AZTEC:
+        case BARCODE_DATAMATRIX:
+        case BARCODE_MAXICODE:
+        case BARCODE_MICROPDF417:
+        case BARCODE_PDF417:
+        case BARCODE_PDF417TRUNC:
+        case BARCODE_QRCODE:
+        case BARCODE_DOTCODE:
+        case BARCODE_GRIDMATRIX:
+        case BARCODE_HANXIN:
+            result = 1;
+            break;
+    }
+    
+    return result;
+}
+
 int ZBarcode_ValidID(int symbol_id) {
     /* Checks whether a symbology is supported */
 
@@ -552,8 +579,9 @@ static int reduced_charset(struct zint_symbol *symbol, const unsigned char *sour
             preprocessed[length] = '\0';
             break;
         case UNICODE_MODE:
-            error_number = latin1_process(symbol, source, preprocessed, &length);
+            error_number = utf_to_eci(symbol->eci, source, preprocessed, &length);
             if (error_number != 0) {
+                strcpy(symbol->errtxt, "Invalid characters in input data");
                 return error_number;
             }
             break;
@@ -888,6 +916,16 @@ int ZBarcode_Encode(struct zint_symbol *symbol, unsigned char *source, int lengt
     } else {
         error_buffer = error_number;
     }
+    
+    if ((!(supports_eci(symbol->symbology))) && (symbol->eci != 3)) {
+        strcpy(symbol->errtxt, "Symbology does not support ECI switching");
+        error_number = ZINT_ERROR_INVALID_OPTION;
+    }
+    
+    if ((symbol->eci < 3) || (symbol->eci > 26) || (symbol->eci == 14) || (symbol->eci == 19) || (symbol->eci == 25)) {
+        strcpy(symbol->errtxt, "Invalid or unsupported ECI mode");
+        error_number = ZINT_ERROR_INVALID_OPTION;
+    }
 
     if ((symbol->input_mode < 0) || (symbol->input_mode > 2)) {
         symbol->input_mode = DATA_MODE;
@@ -925,6 +963,30 @@ int ZBarcode_Encode(struct zint_symbol *symbol, unsigned char *source, int lengt
         default:
             error_number = reduced_charset(symbol, local_source, length);
             break;
+    }
+    
+    if ((error_number == ZINT_ERROR_INVALID_DATA) && (supports_eci(symbol->symbology)
+            && (symbol->input_mode == UNICODE_MODE))) {
+        /* Try another ECI mode */
+        symbol->eci = get_best_eci(local_source, length);
+        
+        if (symbol->eci >= 3) {
+            
+            //printf("Data will encode with ECI %d\n", symbol->eci);
+            
+            switch (symbol->symbology) {
+                case BARCODE_QRCODE:
+                case BARCODE_MICROQR:
+                case BARCODE_GRIDMATRIX:
+                case BARCODE_HANXIN:
+                    error_number = utf_to_eci(symbol->eci, source, local_source, &length);
+                    error_number = extended_charset(symbol, local_source, length);
+                    break;
+                default:
+                    error_number = reduced_charset(symbol, local_source, length);
+                    break;
+            }
+        }
     }
 
     if ((symbol->symbology == BARCODE_CODE128) || (symbol->symbology == BARCODE_CODE128B)) {

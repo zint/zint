@@ -69,7 +69,6 @@ extern "C" {
     extern int istwodigits(const unsigned char source[], const int position);
     extern double froundup(const double input);
     extern int parunmodd(const unsigned char llyth);
-    extern int latin1_process(struct zint_symbol *symbol, const unsigned char source[], unsigned char preprocessed[], int *length);
     extern int utf8toutf16(struct zint_symbol *symbol, const unsigned char source[], int vals[], int *length);
 #ifdef __cplusplus
 }

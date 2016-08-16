@@ -120,7 +120,7 @@ void maxi_bump(int set[], int character[], int bump_posn) {
 }
 
 /* Format text according to Appendix A */
-int maxi_text_process(int mode, unsigned char source[], int length) {
+int maxi_text_process(int mode, unsigned char source[], int length, int eci) {
     /* This code doesn't make use of [Lock in C], [Lock in D]
     and [Lock in E] and so is not always the most efficient at
     compressing data, but should suffice for most applications */
@@ -451,6 +451,15 @@ int maxi_text_process(int mode, unsigned char source[], int length) {
         }
     } while (i <= 143);
 
+    /* Insert ECI at the beginning of message if needed */
+    if (eci != 3) {
+        maxi_bump(set, character, 0);
+        character[0] = 27; // ECI
+        maxi_bump(set, character, 1);
+        character[1] = eci;
+        length += 2;
+    }
+    
     if (((mode == 2) || (mode == 3)) && (length > 84)) {
         return ZINT_ERROR_TOO_LONG;
     }
@@ -548,36 +557,16 @@ void maxi_do_primary_3(char postcode[], int country, int service) {
     maxi_codeword[9] = ((service & 0x3f0) >> 4);
 }
 
-int maxicode(struct zint_symbol *symbol, unsigned char source[], int length) {
+int maxicode(struct zint_symbol *symbol, unsigned char local_source[], int length) {
     int i, j, block, bit, mode, countrycode = 0, service = 0, lp = 0;
-    int bit_pattern[7], internal_error = 0, eclen, error_number;
+    int bit_pattern[7], internal_error = 0, eclen;
     char postcode[12], countrystr[4], servicestr[4];
-
-#ifndef _MSC_VER
-    unsigned char local_source[length + 1];
-#else
-    unsigned char* local_source = (unsigned char*) _alloca(length + 1);
-#endif
 
     mode = symbol->option_1;
     strcpy(postcode, "");
     strcpy(countrystr, "");
     strcpy(servicestr, "");
 
-    /* The following to be replaced by ECI handling */
-    switch (symbol->input_mode) {
-        case DATA_MODE:
-        case GS1_MODE:
-            memcpy(local_source, source, length);
-            local_source[length] = '\0';
-            break;
-        case UNICODE_MODE:
-            error_number = latin1_process(symbol, source, local_source, &length);
-            if (error_number != 0) {
-                return error_number;
-            }
-            break;
-    }
     memset(maxi_codeword, 0, sizeof (maxi_codeword));
 
     if (mode == -1) { /* If mode is unspecified */
@@ -652,7 +641,7 @@ int maxicode(struct zint_symbol *symbol, unsigned char source[], int length) {
         maxi_codeword[0] = mode;
     }
 
-    i = maxi_text_process(mode, local_source, length);
+    i = maxi_text_process(mode, local_source, length, symbol->eci);
     if (i == ZINT_ERROR_TOO_LONG) {
         strcpy(symbol->errtxt, "Input data too long");
         return i;

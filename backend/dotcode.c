@@ -388,6 +388,13 @@ int dotcode_encode_message(struct zint_symbol *symbol, unsigned char source[], i
         codeword_array[array_length] = 107; // FNC1
         array_length++;
     }
+    
+    if (symbol->eci > 3) {
+        codeword_array[array_length] = 108; // FNC2
+        array_length++;
+        codeword_array[array_length] = symbol->eci;
+        array_length++;
+    }
 
     do {
         done = 0;

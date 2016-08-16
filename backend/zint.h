@@ -82,6 +82,7 @@ extern "C" {
         int option_3;
         int show_hrt;
         int input_mode;
+        int eci;
         unsigned char text[128];
         int rows;
         int width;

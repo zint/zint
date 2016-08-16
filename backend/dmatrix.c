@@ -568,6 +568,14 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
             if (debug) printf("RP ");
         }
     }
+    
+    if (symbol->eci > 3) {
+        target[tp] = 241; /* ECI Character */
+        tp++;
+        target[tp] = symbol->eci + 1;
+        tp++;
+        if (debug) printf("ECI %d ", symbol->eci + 1);
+    }
 
     /* Check for Macro05/Macro06 */
     /* "[)>[RS]05[GS]...[RS][EOT]" -> CW 236 */

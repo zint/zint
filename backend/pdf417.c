@@ -609,10 +609,19 @@ int pdf417(struct zint_symbol *symbol, unsigned char chaine[], int length) {
     /* 541 - now compress the data */
     indexchaine = 0;
     mclength = 0;
+    
     if (symbol->output_options & READER_INIT) {
         chainemc[mclength] = 921; /* Reader Initialisation */
         mclength++;
     }
+    
+    if (symbol->eci != 3) {
+        chainemc[mclength] = 927; /* ECI */
+        mclength++;
+        chainemc[mclength] = symbol->eci;
+        mclength++;
+    }
+    
     for (i = 0; i < indexliste; i++) {
         switch (liste[1][i]) {
             case TEX: /* 547 - text mode */
@@ -923,10 +932,19 @@ int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], int length)
     /* 541 - now compress the data */
     indexchaine = 0;
     mclength = 0;
+    
     if (symbol->output_options & READER_INIT) {
         chainemc[mclength] = 921; /* Reader Initialisation */
         mclength++;
     }
+    
+    if (symbol->eci != 3) {
+        chainemc[mclength] = 927; /* ECI */
+        mclength++;
+        chainemc[mclength] = symbol->eci;
+        mclength++;
+    }
+    
     for (i = 0; i < indexliste; i++) {
         switch (liste[1][i]) {
             case TEX: /* 547 - text mode */
