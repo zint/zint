@@ -1060,7 +1060,7 @@ int dotcode(struct zint_symbol *symbol, unsigned char source[], int length) {
     }
 
     min_dots = 9 * (data_length + 3 + (data_length / 2)) + 2;
-
+    
     if (symbol->option_2 == 0) {
 
         height = sqrt(2 * min_dots);
@@ -1083,6 +1083,11 @@ int dotcode(struct zint_symbol *symbol, unsigned char source[], int length) {
         }
     }
 
+    if ((height > 177) || (width > 177)) {
+        strcpy(symbol->errtxt, "Specified symbol size is too large");
+        return ZINT_ERROR_INVALID_OPTION;
+    }
+    
     n_dots = (height * width) / 2;
 
 #ifndef _MSC_VER
@@ -1106,9 +1111,16 @@ int dotcode(struct zint_symbol *symbol, unsigned char source[], int length) {
         codeword_array[data_length] = 106; // Pad
         data_length++;
     }
+    
+    if (data_length > 450) {
+        // Larger data sets than this cause rsencode() to throw SIGSEGV
+        // This should probably be fixed by somebody who understands what rsencode() does...
+        strcpy(symbol->errtxt, "Input too long");
+        return ZINT_ERROR_TOO_LONG;
+    }
 
     ecc_length = 3 + (data_length / 2);
-
+    
     /* Evaluate data mask options */
     for (i = 0; i < 4; i++) {
         switch (i) {
@@ -1143,16 +1155,16 @@ int dotcode(struct zint_symbol *symbol, unsigned char source[], int length) {
                 }
                 break;
         }
-
+        
         rsencode(data_length + 1, ecc_length, masked_codeword_array);
 
         dot_stream_length = make_dotstream(masked_codeword_array, (data_length + ecc_length + 1), dot_stream);
-
+        
         /* Add pad bits */
         for (j = dot_stream_length; j < n_dots; j++) {
             strcat(dot_stream, "1");
         }
-
+        
         fold_dotstream(dot_stream, width, height, dot_array);
 
         mask_score[i] = score_array(dot_array, height, width);
