@@ -1076,7 +1076,7 @@ int dotcode(struct zint_symbol *symbol, unsigned char source[], int length) {
     } else {
         width = symbol->option_2;
 
-        height = min_dots / width;
+        height = (2 * min_dots) / width;
 
         if (!((width + height) % 2)) {
             height++;
