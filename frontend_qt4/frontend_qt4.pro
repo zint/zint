@@ -35,7 +35,8 @@ FORMS += extData.ui \
          grpPDF417.ui \
          grpQR.ui \
          grpHX.ui \
-         mainWindow.ui
+         mainWindow.ui \
+    grpDotCode.ui
 
 SOURCES += barcodeitem.cpp \
         datawindow.cpp \

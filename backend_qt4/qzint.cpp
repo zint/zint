@@ -488,7 +488,7 @@ namespace Zint {
                 for (int c = 0; c < m_zintSymbol->width; c++) {
                     if (module_set(r, c)) {
 
-                        painter.drawEllipse(QPointF((r + 1.0), (c + 1.0)), 0.5, 0.5);
+                        painter.drawEllipse(QPointF((c + 1.0), (r + 1.0)), 0.5, 0.5);
                     }
                 }
             }

@@ -22,5 +22,6 @@
         <file>grpDBExtend.ui</file>
         <file>images/zint.png</file>
         <file>grpHX.ui</file>
+        <file>grpDotCode.ui</file>
     </qresource>
 </RCC>

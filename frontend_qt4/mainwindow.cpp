@@ -56,7 +56,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WFlags fl)
 		"Data Matrix (ISO 16022)",
 		"Deutsche Post Identcode",
 		"Deutsche Post Leitcode",
-                "DotCode",
+        "DotCode",
 		"Dutch Post KIX",
 		"EAN-14",
 		"European Article Number (EAN)",
@@ -285,6 +285,19 @@ void MainWindow::change_options()
 		connect(m_optionWidget->findChild<QObject*>("cmbMPDFCols"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
 		connect(m_optionWidget->findChild<QObject*>("radMPDFStand"), SIGNAL(toggled( bool )), SLOT(update_preview()));
 	}
+
+    if(metaObject()->enumerator(0).value(bstyle->currentIndex()) == BARCODE_DOTCODE)
+    {
+        QFile file(":/grpDotCode.ui");
+        if (!file.open(QIODevice::ReadOnly))
+            return;
+        m_optionWidget=uiload.load(&file);
+        file.close();
+        tabMain->insertTab(1,m_optionWidget,tr("DotCode"));
+        connect(m_optionWidget->findChild<QObject*>("cmbDotCols"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(m_optionWidget->findChild<QObject*>("radDotStan"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(m_optionWidget->findChild<QObject*>("radDotGs1"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+    }
 
 	if(metaObject()->enumerator(0).value(bstyle->currentIndex()) == BARCODE_AZTEC)
 	{
@@ -678,6 +691,13 @@ void MainWindow::update_preview()
 			if(m_optionWidget->findChild<QRadioButton*>("radMPDFHIBC")->isChecked())
 				m_bc.bc.setSymbol(BARCODE_HIBC_MICPDF);
 			break;
+
+        case BARCODE_DOTCODE:
+            m_bc.bc.setSymbol(BARCODE_DOTCODE);
+            m_bc.bc.setWidth(m_optionWidget->findChild<QComboBox*>("cmbDotCols")->currentIndex());
+            if(m_optionWidget->findChild<QRadioButton*>("radDotGs1")->isChecked())
+                m_bc.bc.setInputMode(GS1_MODE);
+            break;
 
 		case BARCODE_AZTEC:
 			m_bc.bc.setSymbol(BARCODE_AZTEC);
