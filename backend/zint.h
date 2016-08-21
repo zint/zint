@@ -87,8 +87,8 @@ extern "C" {
         int rows;
         int width;
         char primary[128];
-        unsigned char encoded_data[178][143];
-        int row_height[178]; /* Largest symbol is 177x177 QR Code */
+        unsigned char encoded_data[200][143];
+        int row_height[200]; /* Largest symbol is 189 x 189 Han Xin */
         char errtxt[100];
         char *bitmap;
         int bitmap_width;
