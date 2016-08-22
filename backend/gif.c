@@ -491,9 +491,9 @@ int gif_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width
 
     /* call lzw encoding */
     byte_out = gif_lzw(
-        lzwoutbuf,
+        (unsigned char *) lzwoutbuf,
         image_height * image_width,
-        rotated_bitmap,
+        (unsigned char *) rotated_bitmap,
         image_height * image_width);
     if (byte_out <= 0)
     {
