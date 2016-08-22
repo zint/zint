@@ -136,6 +136,14 @@ SOURCE=..\..\backend\dmatrix.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\backend\dotcode.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\backend\eci.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\frontend\getopt.c
 # End Source File
 # Begin Source File
