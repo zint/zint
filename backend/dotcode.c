@@ -303,8 +303,9 @@ int seventeen_ten(unsigned char source[], int position, int length) {
  */
 int ahead_c(unsigned char source[], int position, int length) {
     int count = 0;
+	int i;
 
-    for (int i = position; (i < length) && datum_c(source, i, length); i += 2) {
+    for (i = position; (i < length) && datum_c(source, i, length); i += 2) {
         count++;
     }
 
@@ -327,8 +328,9 @@ int try_c(unsigned char source[], int position, int length) {
 /* Annex F.II.G */
 int ahead_a(unsigned char source[], int position, int length) {
     int count = 0;
+	int i;
 
-    for (int i = position; ((i < length) && datum_a(source, i, length))
+    for (i = position; ((i < length) && datum_a(source, i, length))
             && (try_c(source, i, length) < 2); i++) {
         count++;
     }
@@ -339,8 +341,9 @@ int ahead_a(unsigned char source[], int position, int length) {
 /* Annex F.II.H */
 int ahead_b(unsigned char source[], int position, int length) {
     int count = 0;
+	int i;
 
-    for (int i = position; ((i < length) && datum_b(source, i, length))
+    for (i = position; ((i < length) && datum_b(source, i, length))
             && (try_c(source, i, length) < 2); i++) {
         count++;
     }
@@ -1047,6 +1050,8 @@ int dotcode(struct zint_symbol *symbol, unsigned char source[], int length) {
     unsigned char codeword_array[length * 3];
     unsigned char masked_codeword_array[length * 3];
 #else
+    char* dot_stream;
+    char* dot_array;
     unsigned char* codeword_array = (unsigned char *) _alloca(length * 3 * sizeof (unsigned char));
     unsigned char* masked_codeword_array = (unsigned char *) _alloca(length * 3 * sizeof (unsigned char));
 #endif /* _MSC_VER */
@@ -1094,8 +1099,8 @@ int dotcode(struct zint_symbol *symbol, unsigned char source[], int length) {
     char dot_stream[n_dots + 3];
     char dot_array[width * height];
 #else
-    char* dot_stream = (char *) _alloca((n_dots + 3) * sizeof (char));
-    char* dot_array = (char *) _alloca(width * height * sizeof (char));
+    dot_stream = (char *) _alloca((n_dots + 3) * sizeof (char));
+    dot_array = (char *) _alloca(width * height * sizeof (char));
 #endif /* _MSC_VER */
 
     /* Add pad characters */

@@ -290,7 +290,7 @@ int get_best_eci(unsigned char source[], int length) {
 #ifndef _MSC_VER
     unsigned char local_source[length + 1];
 #else
-    local_source = (unsigned char*) _alloca(length + 1);
+    unsigned char *local_source = (unsigned char*) _alloca(length + 1);
 #endif
     
     do {
