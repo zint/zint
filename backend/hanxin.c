@@ -1448,22 +1448,20 @@ int han_xin(struct zint_symbol *symbol, const unsigned char source[], int length
     }
     
     /* If there is spare capacity, increase the level of ECC */
-    switch (ecc_level) {
-        case 1:
-            if (est_codewords < hx_data_codewords_L2[version - 1]) {
-                ecc_level = 2;
-                data_codewords = hx_data_codewords_L2[version - 1];
-            }
-        case 2:
-            if (est_codewords < hx_data_codewords_L3[version - 1]) {
-                ecc_level = 3;
-                data_codewords = hx_data_codewords_L3[version - 1];
-            }
-        case 3:
-            if (est_codewords < hx_data_codewords_L4[version - 1]) {
-                ecc_level = 4;
-                data_codewords = hx_data_codewords_L4[version - 1];
-            }
+    
+    if ((ecc_level == 1) && (est_codewords < hx_data_codewords_L2[version - 1])) {
+        ecc_level = 2;
+        data_codewords = hx_data_codewords_L2[version - 1];
+    }
+
+    if ((ecc_level == 2) && (est_codewords < hx_data_codewords_L3[version - 1])) {
+        ecc_level = 3;
+        data_codewords = hx_data_codewords_L3[version - 1];
+    }
+
+    if ((ecc_level == 3) && (est_codewords < hx_data_codewords_L4[version - 1])) {
+        ecc_level = 4;
+        data_codewords = hx_data_codewords_L4[version - 1];
     }
     
     //printf("Version %d, ECC %d\n", version, ecc_level);
