@@ -39,6 +39,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WFlags fl)
 		"Aztec Runes",
 		"Channel Code",
 		"Codabar",
+        "Codablock",
 		"Code 11",
 		"Code 128 (ISO 15417)",
 		"Code 16k",
@@ -70,7 +71,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WFlags fl)
 		"GS1 DataBar Stacked",
 		"GS1 DataBar Stacked Omnidirectional",                
 		"Han Xin (Chinese Sensible) Code",
-                "ITF-14",
+        "ITF-14",
 		"International Standard Book Number (ISBN)",
 		"Japanese Postal Barcode",
 		"Korean Postal Barcode",
@@ -108,7 +109,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WFlags fl)
 		bstyle->addItem(metaObject()->enumerator(0).key(i));
 		bstyle->setItemText(i,bstyle_text[i]);
 	}
-	bstyle->setCurrentIndex(9);
+	bstyle->setCurrentIndex(10);
 	change_options();
 	update_preview();
 	view->scene()->addItem(&m_bc);

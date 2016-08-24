@@ -187,6 +187,7 @@ extern int code_one(struct zint_symbol *symbol, unsigned char source[], int leng
 extern int grid_matrix(struct zint_symbol *symbol, const unsigned char source[], int length); /* Grid Matrix */
 extern int han_xin(struct zint_symbol * symbol, const unsigned char source[], int length); /* Han Xin */
 extern int dotcode(struct zint_symbol * symbol, const unsigned char source[], int length); /* DotCode */
+extern int codablock(struct zint_symbol * symbol, const unsigned char source[], int length); /* Codablock */
 
 extern int plot_raster(struct zint_symbol *symbol, int rotate_angle, int file_type); /* Plot to PNG/BMP/PCX */
 extern int render_plot(struct zint_symbol *symbol, float width, float height); /* Plot to gLabels */
@@ -349,6 +350,9 @@ int hibc(struct zint_symbol *symbol, unsigned char source[], int length) {
         case BARCODE_HIBC_AZTEC:
             error_number = aztec(symbol, (unsigned char *) to_process, length);
             break;
+        case BARCODE_HIBC_BLOCKF:
+            error_number = codablock(symbol, (unsigned char *) to_process, length);
+            break;
     }
 
     return error_number;
@@ -380,6 +384,7 @@ static int gs1_compliant(const int symbology) {
         case BARCODE_CODE49:
         case BARCODE_QRCODE:
         case BARCODE_DOTCODE:
+        case BARCODE_CODABLOCK:
             result = 1;
             break;
     }
@@ -508,6 +513,7 @@ int ZBarcode_ValidID(int symbol_id) {
         case BARCODE_HIBC_PDF:
         case BARCODE_HIBC_MICPDF:
         case BARCODE_HIBC_AZTEC:
+        case BARCODE_HIBC_BLOCKF:
         case BARCODE_AZRUNE:
         case BARCODE_CODE32:
         case BARCODE_EANX_CC:
@@ -525,6 +531,7 @@ int ZBarcode_ValidID(int symbol_id) {
         case BARCODE_GRIDMATRIX:
         case BARCODE_HANXIN:
         case BARCODE_DOTCODE:
+        case BARCODE_CODABLOCK:
             result = 1;
             break;
     }
@@ -726,6 +733,8 @@ static int reduced_charset(struct zint_symbol *symbol, const unsigned char *sour
             break;
         case BARCODE_HIBC_AZTEC: error_number = hibc(symbol, preprocessed, length);
             break;
+        case BARCODE_HIBC_BLOCKF: error_number = hibc(symbol, preprocessed, length);
+            break;
         case BARCODE_JAPANPOST: error_number = japan_post(symbol, preprocessed, length);
             break;
         case BARCODE_CODE49: error_number = code_49(symbol, preprocessed, length);
@@ -747,6 +756,8 @@ static int reduced_charset(struct zint_symbol *symbol, const unsigned char *sour
         case BARCODE_AZTEC: error_number = aztec(symbol, preprocessed, length);
             break;
         case BARCODE_DOTCODE: error_number = dotcode(symbol, preprocessed, length);
+            break;
+        case BARCODE_CODABLOCK: error_number = codablock(symbol, preprocessed, length);
             break;
     }
 
@@ -843,8 +854,8 @@ int ZBarcode_Encode(struct zint_symbol *symbol, unsigned char *source, int lengt
         symbol->symbology = BARCODE_AUSPOST;
     }
     if (symbol->symbology == 73) {
-        strcpy(symbol->errtxt, "Codablock E not supported");
-        error_number = ZINT_ERROR_INVALID_OPTION;
+        symbol->symbology = BARCODE_CODABLOCK;
+        symbol->input_mode = GS1_MODE;
     }
     if (symbol->symbology == 78) {
         symbol->symbology = BARCODE_RSS14;
@@ -904,10 +915,6 @@ int ZBarcode_Encode(struct zint_symbol *symbol, unsigned char *source, int lengt
         strcpy(symbol->errtxt, "Symbology out of range, using Code 128");
         symbol->symbology = BARCODE_CODE128;
         error_number = ZINT_WARN_INVALID_OPTION;
-    }
-    if ((symbol->symbology == BARCODE_CODABLOCKF) || (symbol->symbology == BARCODE_HIBC_BLOCKF)) {
-        strcpy(symbol->errtxt, "Codablock F not supported");
-        error_number = ZINT_ERROR_INVALID_OPTION;
     }
 
     if (error_number > 4) {
