@@ -927,7 +927,6 @@ int plot_raster(struct zint_symbol *symbol, int rotate_angle, int file_type) {
 
 #ifdef NO_PNG
     if (file_type == OUT_PNG_FILE) {
-        printf("libpng not found");
         return ZINT_ERROR_INVALID_OPTION;
     }
 #endif /* NO_PNG */    

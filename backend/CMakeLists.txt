@@ -22,7 +22,9 @@ add_library(zint SHARED ${zint_SRCS})
 set_target_properties(zint PROPERTIES 	SOVERSION "${ZINT_VERSION_MAJOR}.${ZINT_VERSION_MINOR}"
 					VERSION ${ZINT_VERSION})
 
-target_link_libraries(zint ${PNG_LIBRARIES} )
+if(PNG_FOUND)
+    target_link_libraries(zint ${PNG_LIBRARIES} )
+endif(PNG_FOUND)
 target_link_libraries(zint -lm)
 
 install(TARGETS zint  ${INSTALL_TARGETS_DEFAULT_ARGS} )

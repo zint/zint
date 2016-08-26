@@ -781,7 +781,11 @@ int ZBarcode_Encode(struct zint_symbol *symbol, unsigned char *source, int lengt
     }
 
     if (strcmp(symbol->outfile, "") == 0) {
+#ifdef NO_PNG
+        strcpy(symbol->outfile, "out.gif");
+#else    
         strcpy(symbol->outfile, "out.png");
+#endif
     }
 #ifndef _MSC_VER
     unsigned char local_source[length + 1];
@@ -1085,6 +1089,11 @@ int ZBarcode_Print(struct zint_symbol *symbol, int rotate_angle) {
         return ZINT_ERROR_INVALID_OPTION;
     }
 
+    if (error_number == ZINT_ERROR_INVALID_OPTION) {
+        /* If libpng is not installed */
+        strcpy(symbol->errtxt, "Unknown output format");
+    }
+    
     error_tag(symbol->errtxt, error_number);
     return error_number;
 }
