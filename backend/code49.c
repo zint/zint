@@ -329,7 +329,7 @@ int code_49(struct zint_symbol *symbol, unsigned char source[], const int length
     }
 
     symbol->whitespace_width = 10;
-    symbol->output_options = BARCODE_BIND;
+    symbol->output_options += BARCODE_BIND;
     symbol->border_width = 2;
 
     return 0;

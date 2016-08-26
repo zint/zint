@@ -218,7 +218,7 @@ int dump_plot(struct zint_symbol *symbol) {
     char hex[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8',
         '9', 'A', 'B', 'C', 'D', 'E', 'F'};
     int space = 0;
-
+    
     if (symbol->output_options & BARCODE_STDOUT) {
         f = stdout;
     } else {
@@ -570,13 +570,13 @@ static int reduced_charset(struct zint_symbol *symbol, const unsigned char *sour
     if (symbol->symbology == BARCODE_CODE16K) {
         symbol->whitespace_width = 16;
         symbol->border_width = 2;
-        symbol->output_options = BARCODE_BIND;
+        symbol->output_options += BARCODE_BIND;
     }
 
     if (symbol->symbology == BARCODE_ITF14) {
         symbol->whitespace_width = 20;
         symbol->border_width = 8;
-        symbol->output_options = BARCODE_BOX;
+        symbol->output_options += BARCODE_BOX;
     }
 
     switch (symbol->input_mode) {
@@ -1032,7 +1032,7 @@ int ZBarcode_Print(struct zint_symbol *symbol, int rotate_angle) {
             return ZINT_ERROR_INVALID_OPTION;
     }
 
-    if (symbol->output_options &= BARCODE_DOTTY_MODE) {
+    if (symbol->output_options & BARCODE_DOTTY_MODE) {
         if (!(is_matrix(symbol->symbology))) {
             strcpy(symbol->errtxt, "Selected symbology cannot be rendered as dots");
             return ZINT_ERROR_INVALID_OPTION;
