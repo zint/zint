@@ -180,7 +180,7 @@ int pcx_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width
     }
     
     /* Open output file in binary mode */
-    if ((symbol->output_options & BARCODE_STDOUT) != 0) {
+    if (symbol->output_options & BARCODE_STDOUT) {
 #ifdef _MSC_VER
         if (-1 == _setmode(_fileno(stdout), _O_BINARY)) {
             strcpy(symbol->errtxt, "Can't open output file");

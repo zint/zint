@@ -331,7 +331,7 @@ namespace Zint {
             gwidth *= (maxi_width + 1);
         }
 
-        if (m_zintSymbol->output_options &= BARCODE_DOTTY_MODE) {
+        if (m_zintSymbol->output_options & BARCODE_DOTTY_MODE) {
             gwidth += 2.0;
             gheight += 2.0;
         }
@@ -476,7 +476,7 @@ namespace Zint {
             painter.drawEllipse(QPointF(14.5 * w, 16.5 * w * 0.868), w + w * 1.5, w + w * 1.5);
             painter.drawEllipse(QPointF(14.5 * w, 16.5 * w * 0.868), w + w * 3, w + w * 3);
             painter.restore();
-        } else if (m_zintSymbol->output_options &= BARCODE_DOTTY_MODE) {
+        } else if (m_zintSymbol->output_options & BARCODE_DOTTY_MODE) {
             /* Draw with dots (circles) */
 
             p.setColor(m_fgColor);

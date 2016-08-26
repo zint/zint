@@ -570,13 +570,17 @@ static int reduced_charset(struct zint_symbol *symbol, const unsigned char *sour
     if (symbol->symbology == BARCODE_CODE16K) {
         symbol->whitespace_width = 16;
         symbol->border_width = 2;
-        symbol->output_options += BARCODE_BIND;
+        if (!(symbol->output_options & BARCODE_BIND)) {
+            symbol->output_options += BARCODE_BIND;
+        }
     }
 
     if (symbol->symbology == BARCODE_ITF14) {
         symbol->whitespace_width = 20;
         symbol->border_width = 8;
-        symbol->output_options += BARCODE_BOX;
+        if (!(symbol->output_options & BARCODE_BOX)) {
+            symbol->output_options += BARCODE_BOX;
+        }
     }
 
     switch (symbol->input_mode) {

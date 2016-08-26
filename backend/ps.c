@@ -99,7 +99,7 @@ int ps_plot(struct zint_symbol *symbol) {
         }
     }    
 
-    if ((symbol->output_options & BARCODE_STDOUT) != 0) {
+    if (symbol->output_options & BARCODE_STDOUT) {
         feps = stdout;
     } else {
         feps = fopen(symbol->outfile, "w");
@@ -848,7 +848,7 @@ int ps_plot(struct zint_symbol *symbol) {
             /* Do nothing! (It's already been done) */
             break;
         default:
-            if ((symbol->output_options & BARCODE_BIND) != 0) {
+            if (symbol->output_options & BARCODE_BIND) {
                 if ((symbol->rows > 1) && (is_stackable(symbol->symbology) == 1)) {
                     /* row binding */
                     fprintf(feps, "TE\n");
@@ -862,7 +862,7 @@ int ps_plot(struct zint_symbol *symbol) {
                     }
                 }
             }
-            if (((symbol->output_options & BARCODE_BOX) != 0) || ((symbol->output_options & BARCODE_BIND) != 0)) {
+            if ((symbol->output_options & BARCODE_BOX) || (symbol->output_options & BARCODE_BIND)) {
                 fprintf(feps, "TE\n");
                 if ((symbol->output_options & CMYK_COLOUR) == 0) {
                     fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
@@ -872,7 +872,7 @@ int ps_plot(struct zint_symbol *symbol) {
                 fprintf(feps, "%.2f %.2f TB %.2f %.2f TR\n", symbol->border_width * scaler, textoffset * scaler, 0.0, (symbol->width + xoffset + xoffset) * scaler);
                 fprintf(feps, "%.2f %.2f TB %.2f %.2f TR\n", symbol->border_width * scaler, (textoffset + symbol->height + symbol->border_width) * scaler, 0.0, (symbol->width + xoffset + xoffset) * scaler);
             }
-            if ((symbol->output_options & BARCODE_BOX) != 0) {
+            if (symbol->output_options & BARCODE_BOX) {
                 /* side bars */
                 fprintf(feps, "TE\n");
                 if ((symbol->output_options & CMYK_COLOUR) == 0) {
