@@ -248,7 +248,7 @@ int render_plot(struct zint_symbol *symbol, const float width, const float heigh
     }
     large_bar_height = (symbol->height - preset_height) / large_bar_count;
 
-    if (((symbol->output_options & BARCODE_BOX) != 0) || ((symbol->output_options & BARCODE_BIND) != 0)) {
+    if ((symbol->output_options & BARCODE_BOX) || (symbol->output_options & BARCODE_BIND)) {
         default_text_posn = (symbol->height + text_offset + symbol->border_width + symbol->border_width) * scaler;
     } else {
         default_text_posn = (symbol->height + text_offset + symbol->border_width) * scaler;
@@ -643,13 +643,13 @@ int render_plot(struct zint_symbol *symbol, const float width, const float heigh
                     }
                 }
             }
-            if (((symbol->output_options & BARCODE_BOX) != 0) || ((symbol->output_options & BARCODE_BIND) != 0)) {
+            if ((symbol->output_options & BARCODE_BOX) || (symbol->output_options & BARCODE_BIND)) {
                 line = render_plot_create_line(0, 0, (symbol->width + xoffset + xoffset) * scaler, symbol->border_width * scaler);
                 render_plot_add_line(symbol, line, &last_line);
                 line = render_plot_create_line(0, (symbol->height + symbol->border_width) * scaler, (symbol->width + xoffset + xoffset) * scaler, symbol->border_width * scaler);
                 render_plot_add_line(symbol, line, &last_line);
             }
-            if ((symbol->output_options & BARCODE_BOX) != 0) {
+            if (symbol->output_options & BARCODE_BOX) {
                 /* side bars */
                 line = render_plot_create_line(0, 0, symbol->border_width * scaler, (symbol->height + (2 * symbol->border_width)) * scaler);
                 render_plot_add_line(symbol, line, &last_line);

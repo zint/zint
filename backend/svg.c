@@ -95,7 +95,7 @@ int svg_plot(struct zint_symbol *symbol) {
         }
     }
 
-    if ((symbol->output_options & BARCODE_STDOUT) != 0) {
+    if (symbol->output_options & BARCODE_STDOUT) {
         fsvg = stdout;
     } else {
         fsvg = fopen(symbol->outfile, "w");
@@ -230,7 +230,7 @@ int svg_plot(struct zint_symbol *symbol) {
         fprintf(fsvg, "      <rect x=\"0\" y=\"0\" width=\"%d\" height=\"%d\" fill=\"#%s\" />\n", (int)ceil((74.0F + xoffset + xoffset) * scaler), (int)ceil((72.0F + yoffset + yoffset) * scaler), symbol->bgcolour);
     }
 
-    if (((symbol->output_options & BARCODE_BOX) != 0) || ((symbol->output_options & BARCODE_BIND) != 0)) {
+    if ((symbol->output_options & BARCODE_BOX) || (symbol->output_options & BARCODE_BIND)) {
         default_text_posn = (symbol->height + textoffset + symbol->border_width + symbol->border_width) * scaler;
     } else {
         default_text_posn = (symbol->height + textoffset + symbol->border_width) * scaler;
@@ -242,11 +242,11 @@ int svg_plot(struct zint_symbol *symbol) {
 
 
         textoffset = 0.0;
-        if (((symbol->output_options & BARCODE_BOX) != 0) || ((symbol->output_options & BARCODE_BIND) != 0)) {
+        if ((symbol->output_options & BARCODE_BOX) || (symbol->output_options & BARCODE_BIND)) {
             fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", 0.0, 0.0, (74.0 + xoffset + xoffset) * scaler, symbol->border_width * scaler);
             fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", 0.0, (72.0 + symbol->border_width) * scaler, (74.0 + xoffset + xoffset) * scaler, symbol->border_width * scaler);
         }
-        if ((symbol->output_options & BARCODE_BOX) != 0) {
+        if (symbol->output_options & BARCODE_BOX) {
             /* side bars */
             fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", 0.0, 0.0, symbol->border_width * scaler, (72.0 + (2 * symbol->border_width)) * scaler);
             fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (74.0 + xoffset + xoffset - symbol->border_width) * scaler, 0.0, symbol->border_width * scaler, (72.0 + (2 * symbol->border_width)) * scaler);
@@ -307,7 +307,7 @@ int svg_plot(struct zint_symbol *symbol) {
             }
             row_posn += yoffset;
             
-            if ((symbol->output_options & BARCODE_DOTTY_MODE) != 0) { 
+            if (symbol->output_options & BARCODE_DOTTY_MODE) { 
                 /* Use (currently undocumented) dot mode - see SF ticket #29 */
                 for (i = 0; i < symbol->width; i++) {
                     if (module_is_set(symbol, this_row, i)) {
@@ -609,7 +609,7 @@ int svg_plot(struct zint_symbol *symbol) {
             /* Do nothing! (It's already been done) */
             break;
         default:
-            if ((symbol->output_options & BARCODE_BIND) != 0) {
+            if (symbol->output_options & BARCODE_BIND) {
                 if ((symbol->rows > 1) && (is_stackable(symbol->symbology) == 1)) {
                     /* row binding */
                     for (r = 1; r < symbol->rows; r++) {
@@ -617,11 +617,11 @@ int svg_plot(struct zint_symbol *symbol) {
                     }
                 }
             }
-            if (((symbol->output_options & BARCODE_BOX) != 0) || ((symbol->output_options & BARCODE_BIND) != 0)) {
+            if ((symbol->output_options & BARCODE_BOX) || (symbol->output_options & BARCODE_BIND)) {
                 fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", 0.0, 0.0, (symbol->width + xoffset + xoffset) * scaler, symbol->border_width * scaler);
                 fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", 0.0, (symbol->height + symbol->border_width) * scaler, (symbol->width + xoffset + xoffset) * scaler, symbol->border_width * scaler);
             }
-            if ((symbol->output_options & BARCODE_BOX) != 0) {
+            if (symbol->output_options & BARCODE_BOX) {
                 /* side bars */
                 fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", 0.0, 0.0, symbol->border_width * scaler, (symbol->height + (2 * symbol->border_width)) * scaler);
                 fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (symbol->width + xoffset + xoffset - symbol->border_width) * scaler, 0.0, symbol->border_width * scaler, (symbol->height + (2 * symbol->border_width)) * scaler);

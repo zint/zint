@@ -37,22 +37,22 @@
 
 /* Print list of supported symbologies */
 void types(void) {
-    printf( " 1: Code 11           51: Pharma One-Track         90: KIX Code\n"
-            " 2: Standard 2of5     52: PZN                      92: Aztec Code\n"
-            " 3: Interleaved 2of5  53: Pharma Two-Track         93: DAFT Code\n"
-            " 4: IATA 2of5         55: PDF417                   97: Micro QR Code\n"
-            " 6: Data Logic        56: PDF417 Trunc             98: HIBC Code 128\n"
-            " 7: Industrial 2of5   57: Maxicode                 99: HIBC Code 39\n"
-            " 8: Code 39           58: QR Code                 102: HIBC Data Matrix\n"
-            " 9: Extended Code 39  60: Code 128-B              104: HIBC QR Code\n"
-            "13: EAN               63: AP Standard Customer    106: HIBC PDF417\n"
-            "16: GS1-128           66: AP Reply Paid           108: HIBC MicroPDF417\n"
-            "18: Codabar           67: AP Routing              112: HIBC Aztec Code\n"
-            "20: Code 128          68: AP Redirection          115: DotCode\n"
-            "21: Leitcode          69: ISBN                    116: Han Xin Code\n"
-            "22: Identcode         70: RM4SCC                  128: Aztec Runes\n"
-            "23: Code 16k          71: Data Matrix             129: Code 32\n"
-            "24: Code 49           72: EAN-14                  130: Comp EAN\n"
+    printf( " 1: Code 11           52: PZN                      92: Aztec Code\n"
+            " 2: Standard 2of5     53: Pharma Two-Track         93: DAFT Code\n"
+            " 3: Interleaved 2of5  55: PDF417                   97: Micro QR Code\n"
+            " 4: IATA 2of5         56: PDF417 Trunc             98: HIBC Code 128\n"
+            " 6: Data Logic        57: Maxicode                 99: HIBC Code 39\n"
+            " 7: Industrial 2of5   58: QR Code                 102: HIBC Data Matrix\n"
+            " 8: Code 39           60: Code 128-B              104: HIBC QR Code\n"
+            " 9: Extended Code 39  63: AP Standard Customer    106: HIBC PDF417\n"
+            "13: EAN               66: AP Reply Paid           108: HIBC MicroPDF417\n"
+            "16: GS1-128           67: AP Routing              110: HIBC Codablock-F\n"
+            "18: Codabar           68: AP Redirection          112: HIBC Aztec Code\n"
+            "20: Code 128          69: ISBN                    115: DotCode\n"
+            "21: Leitcode          70: RM4SCC                  116: Han Xin Code\n"
+            "22: Identcode         71: Data Matrix             128: Aztec Runes\n"
+            "23: Code 16k          72: EAN-14                  129: Code 32\n"
+            "24: Code 49           74: Codablock               130: Comp EAN\n"
             "25: Code 93           75: NVE-18                  131: Comp GS1-128\n"
             "28: Flattermarken     76: Japanese Post           132: Comp DataBar Omni\n"
             "29: GS1 DataBar Omni  77: Korea Post              133: Comp DataBar Ltd\n"
@@ -65,6 +65,7 @@ void types(void) {
             "47: MSI Plessey       86: UK Plessey              140: Channel Code\n"
             "49: FIM               87: Telepen Numeric         141: Code One\n"
             "50: Logmars           89: ITF-14                  142: Grid Matrix\n"
+            "51: Pharma One-Track  90: KIX Code\n"
             );
 }
 
@@ -95,7 +96,7 @@ void usage(void) {
             "  --dump                Dump hexadecimal representation to stdout\n"
             "  --rotate=NUMBER       Rotate symbol (PNG output only).\n"
             "  --cols=NUMBER         (PDF417) Number of columns.\n"
-            "  --vers=NUMBER         (QR Code) Version\n"
+            "  --vers=NUMBER         (QR Code or Han Xin) Version\n"
             "  --secure=NUMBER       (PDF417 and QR Code) Error correction level.\n"
             "  --primary=STRING      (Maxicode and Composite) Structured primary message.\n"
             "  --mode=NUMBER         (Maxicode and Composite) Set encoding mode.\n"
@@ -624,10 +625,10 @@ int main(int argc, char **argv) {
                     }
                 }
                 if (!strcmp(long_options[option_index].name, "vers")) {
-                    if ((atoi(optarg) >= 1) && (atoi(optarg) <= 47)) {
+                    if ((atoi(optarg) >= 1) && (atoi(optarg) <= 84)) {
                         my_symbol->option_2 = atoi(optarg);
                     } else {
-                        fprintf(stderr, "Invalid QR Code version\n");
+                        fprintf(stderr, "Invalid Version\n");
                         fflush(stderr);
                     }
                 }

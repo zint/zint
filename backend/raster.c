@@ -292,7 +292,7 @@ int plot_raster_maxicode(struct zint_symbol *symbol, int rotate_angle, int data_
     image_height = 300 + (2 * yoffset * 2);
 
     if (!(pixelbuf = (char *) malloc(image_width * image_height))) {
-        printf("Insifficient memory for pixel buffer");
+        printf("Insufficient memory for pixel buffer");
         return ZINT_ERROR_ENCODING_PROBLEM;
     } else {
         for (i = 0; i < (image_width * image_height); i++) {
@@ -319,13 +319,13 @@ int plot_raster_maxicode(struct zint_symbol *symbol, int rotate_angle, int data_
         }
     }
 
-    if (((symbol->output_options & BARCODE_BOX) != 0) || ((symbol->output_options & BARCODE_BIND) != 0)) {
+    if ((symbol->output_options & BARCODE_BOX) || (symbol->output_options & BARCODE_BIND)) {
         /* boundary bars */
         draw_bar(pixelbuf, 0, image_width, 0, symbol->border_width * 2, image_width, image_height);
         draw_bar(pixelbuf, 0, image_width, 300 + (symbol->border_width * 2), symbol->border_width * 2, image_width, image_height);
     }
 
-    if ((symbol->output_options & BARCODE_BOX) != 0) {
+    if (symbol->output_options & BARCODE_BOX) {
         /* side bars */
         draw_bar(pixelbuf, 0, symbol->border_width * 2, 0, image_height, image_width, image_height);
         draw_bar(pixelbuf, 300 + ((symbol->border_width + symbol->whitespace_width + symbol->whitespace_width) * 2), symbol->border_width * 2, 0, image_height, image_width, image_height);
@@ -619,7 +619,7 @@ int plot_raster_default(struct zint_symbol *symbol, int rotate_angle, int data_t
         }
     }
 
-    if (((symbol->output_options & BARCODE_BOX) != 0) || ((symbol->output_options & BARCODE_BIND) != 0)) {
+    if ((symbol->output_options & BARCODE_BOX) || (symbol->output_options & BARCODE_BIND)) {
         default_text_posn = image_height - 17;
     } else {
         default_text_posn = image_height - 17 - symbol->border_width - symbol->border_width;
@@ -867,7 +867,7 @@ int plot_raster_default(struct zint_symbol *symbol, int rotate_angle, int data_t
     xoffset -= comp_offset;
 
     /* Put boundary bars or box around symbol */
-    if (((symbol->output_options & BARCODE_BOX) != 0) || ((symbol->output_options & BARCODE_BIND) != 0)) {
+    if ((symbol->output_options & BARCODE_BOX) || (symbol->output_options & BARCODE_BIND)) {
         /* boundary bars */
         draw_bar(pixelbuf, 0, (symbol->width + xoffset + xoffset) * 2, textoffset * 2, symbol->border_width * 2, image_width, image_height);
         draw_bar(pixelbuf, 0, (symbol->width + xoffset + xoffset) * 2, (textoffset + symbol->height + symbol->border_width) * 2, symbol->border_width * 2, image_width, image_height);
@@ -881,7 +881,7 @@ int plot_raster_default(struct zint_symbol *symbol, int rotate_angle, int data_t
         }
     }
 
-    if ((symbol->output_options & BARCODE_BOX) != 0) {
+    if (symbol->output_options & BARCODE_BOX) {
         /* side bars */
         draw_bar(pixelbuf, 0, symbol->border_width * 2, textoffset * 2, (symbol->height + (2 * symbol->border_width)) * 2, image_width, image_height);
         draw_bar(pixelbuf, (symbol->width + xoffset + xoffset - symbol->border_width) * 2, symbol->border_width * 2, textoffset * 2, (symbol->height + (2 * symbol->border_width)) * 2, image_width, image_height);
@@ -927,12 +927,11 @@ int plot_raster(struct zint_symbol *symbol, int rotate_angle, int file_type) {
 
 #ifdef NO_PNG
     if (file_type == OUT_PNG_FILE) {
-        printf("libpng not found");
         return ZINT_ERROR_INVALID_OPTION;
     }
 #endif /* NO_PNG */    
 
-    if (symbol->output_options &= BARCODE_DOTTY_MODE) {
+    if (symbol->output_options & BARCODE_DOTTY_MODE) {
         error = plot_raster_dotty(symbol, rotate_angle, file_type);
     } else {
         if (symbol->symbology == BARCODE_MAXICODE) {
