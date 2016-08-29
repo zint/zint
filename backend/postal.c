@@ -332,7 +332,7 @@ char rm4scc(char source[], unsigned char dest[], int length) {
 
 /* Puts RM4SCC into the data matrix */
 int royal_plot(struct zint_symbol *symbol, unsigned char source[], int length) {
-    char height_pattern[200];
+    char height_pattern[210];
     unsigned int loopey, h;
     int writer;
     int error_number;
@@ -340,7 +340,7 @@ int royal_plot(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     error_number = 0;
 
-    if (length > 120) {
+    if (length > 50) {
         strcpy(symbol->errtxt, "Input too long");
         return ZINT_ERROR_TOO_LONG;
     }
@@ -351,7 +351,7 @@ int royal_plot(struct zint_symbol *symbol, unsigned char source[], int length) {
         return error_number;
     }
     /*check = */rm4scc((char*) source, (unsigned char*) height_pattern, length);
-
+                
     writer = 0;
     h = strlen(height_pattern);
     for (loopey = 0; loopey < h; loopey++) {
@@ -378,7 +378,7 @@ int royal_plot(struct zint_symbol *symbol, unsigned char source[], int length) {
    The same as RM4SCC but without check digit
    Specification at http://www.tntpost.nl/zakelijk/klantenservice/downloads/kIX_code/download.aspx */
 int kix_code(struct zint_symbol *symbol, unsigned char source[], int length) {
-    char height_pattern[50], localstr[20];
+    char height_pattern[75], localstr[20];
     unsigned int loopey;
     int writer, i, h;
     int error_number; /* zeroes; */
@@ -398,9 +398,9 @@ int kix_code(struct zint_symbol *symbol, unsigned char source[], int length) {
     }
 
     strcpy(localstr, (char *) source);
-
+    
     /* Encode data */
-    for (i = 0; i < 18; i++) {
+    for (i = 0; i < length; i++) {
         lookup(KRSET, RoyalTable, localstr[i], height_pattern);
     }
 
@@ -522,6 +522,11 @@ int japan_post(struct zint_symbol *symbol, unsigned char source[], int length) {
     char* local_source = (char*) _alloca(length + 1);
 #endif
 
+    if (length > 20) {
+        strcpy(symbol->errtxt, "Input too long");
+        return ZINT_ERROR_TOO_LONG;
+    }
+    
     inter_posn = 0;
     error_number = 0;
 

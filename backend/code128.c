@@ -481,7 +481,7 @@ int code_128(struct zint_symbol *symbol, unsigned char source[], int length) {
             glyph_count = glyph_count + 1.0;
         }
     }
-    if (glyph_count > 80.0) {
+    if (glyph_count > 60.0) {
         strcpy(symbol->errtxt, "Input too long");
         return ZINT_ERROR_TOO_LONG;
     }
@@ -842,7 +842,7 @@ int ean_128(struct zint_symbol *symbol, unsigned char source[], int length) {
             glyph_count = glyph_count + 1.0;
         }
     }
-    if (glyph_count > 80.0) {
+    if (glyph_count > 60.0) {
         strcpy(symbol->errtxt, "Input too long");
         return ZINT_ERROR_TOO_LONG;
     }
