@@ -289,6 +289,7 @@ int ps_plot(struct zint_symbol *symbol) {
     /* Definitions */
     fprintf(feps, "/TL { setlinewidth moveto lineto stroke } bind def\n");
     fprintf(feps, "/TC { moveto 0 360 arc 360 0 arcn fill } bind def\n");
+    fprintf(feps, "/TD { newpath 0 360 arc fill } bind def\n");
     fprintf(feps, "/TH { 0 setlinewidth moveto lineto lineto lineto lineto lineto closepath fill } bind def\n");
     fprintf(feps, "/TB { 2 copy } bind def\n");
     fprintf(feps, "/TR { newpath 4 1 roll exch moveto 1 index 0 rlineto 0 exch rlineto neg 0 rlineto closepath fill } bind def\n");
@@ -380,6 +381,7 @@ int ps_plot(struct zint_symbol *symbol) {
     if (symbol->symbology != BARCODE_MAXICODE) {
         /* everything else uses rectangles (or squares) */
         /* Works from the bottom of the symbol up */
+        
         int addon_latch = 0;
 
         for (r = 0; r < symbol->rows; r++) {
@@ -399,47 +401,65 @@ int ps_plot(struct zint_symbol *symbol) {
             }
             row_posn += (textoffset + yoffset);
 
-            fprintf(feps, "TE\n");
-            if ((symbol->output_options & CMYK_COLOUR) == 0) {
-                fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
-            } else {
-                fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n", cyan_ink, magenta_ink, yellow_ink, black_ink);
-            }
-            fprintf(feps, "%.2f %.2f ", row_height * scaler, row_posn * scaler);
-            i = 0;
-            if (module_is_set(symbol, this_row, 0)) {
-                latch = 1;
-            } else {
-                latch = 0;
-            }
-
-            do {
-                block_width = 0;
-                do {
-                    block_width++;
-                } while (module_is_set(symbol, this_row, i + block_width) == module_is_set(symbol, this_row, i));
-                if ((addon_latch == 0) && (r == 0) && (i > main_width)) {
-                    fprintf(feps, "TE\n");
-                    if ((symbol->output_options & CMYK_COLOUR) == 0) {
-                        fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
-                    } else {
-                        fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n", cyan_ink, magenta_ink, yellow_ink, black_ink);
-                    }
-                    fprintf(feps, "%.2f %.2f ", (row_height - 5.0) * scaler, (row_posn - 5.0) * scaler);
-                    addon_text_posn = row_posn + row_height - 8.0;
-                    addon_latch = 1;
-                }
-                if (latch == 1) {
-                    /* a bar */
-                    fprintf(feps, "TB %.2f %.2f TR\n", (i + xoffset) * scaler, block_width * scaler);
-                    latch = 0;
+            if ((symbol->output_options & BARCODE_DOTTY_MODE) != 0) { 
+                if ((symbol->output_options & CMYK_COLOUR) == 0) {
+                    fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
                 } else {
-                    /* a space */
-                    latch = 1;
+                    fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n", cyan_ink, magenta_ink, yellow_ink, black_ink);
                 }
-                i += block_width;
+                
+                /* Use dots instead of squares */
+                for (i = 0; i < symbol->width; i++) {
+                    if (module_is_set(symbol, this_row, i)) {
+                        fprintf(feps, "%.2f %.2f %.2f TD\n", ((i + xoffset) * scaler) + (scaler / 2.0), (row_posn * scaler) + (scaler / 2.0), (2.0 / 5.0) * scaler);
+                    }
+                } 
+            } else {
+                /* Normal mode, with rectangles */
 
-            } while (i < symbol->width);
+                fprintf(feps, "TE\n");
+                if ((symbol->output_options & CMYK_COLOUR) == 0) {
+                    fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
+                } else {
+                    fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n", cyan_ink, magenta_ink, yellow_ink, black_ink);
+                }
+                
+                fprintf(feps, "%.2f %.2f ", row_height * scaler, row_posn * scaler);
+                i = 0;
+                if (module_is_set(symbol, this_row, 0)) {
+                    latch = 1;
+                } else {
+                    latch = 0;
+                }
+
+                do {
+                    block_width = 0;
+                    do {
+                        block_width++;
+                    } while (module_is_set(symbol, this_row, i + block_width) == module_is_set(symbol, this_row, i));
+                    if ((addon_latch == 0) && (r == 0) && (i > main_width)) {
+                        fprintf(feps, "TE\n");
+                        if ((symbol->output_options & CMYK_COLOUR) == 0) {
+                            fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
+                        } else {
+                            fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n", cyan_ink, magenta_ink, yellow_ink, black_ink);
+                        }
+                        fprintf(feps, "%.2f %.2f ", (row_height - 5.0) * scaler, (row_posn - 5.0) * scaler);
+                        addon_text_posn = row_posn + row_height - 8.0;
+                        addon_latch = 1;
+                    }
+                    if (latch == 1) {
+                        /* a bar */
+                        fprintf(feps, "TB %.2f %.2f TR\n", (i + xoffset) * scaler, block_width * scaler);
+                        latch = 0;
+                    } else {
+                        /* a space */
+                        latch = 1;
+                    }
+                    i += block_width;
+
+                } while (i < symbol->width);
+            }
         }
     }
     /* That's done the actual data area, everything else is human-friendly */
@@ -887,7 +907,7 @@ int ps_plot(struct zint_symbol *symbol) {
     }
 
     /* Put the human readable text at the bottom */
-    if (textdone == 0) {
+    if ((textdone == 0) && (ustrlen(local_text))) {
         fprintf(feps, "TE\n");
         if ((symbol->output_options & CMYK_COLOUR) == 0) {
             fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
