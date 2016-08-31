@@ -95,7 +95,8 @@ void usage(void) {
             "  --directsvg           Send SVG output to stdout\n"
             "  --dump                Dump hexadecimal representation to stdout\n"
             "  --rotate=NUMBER       Rotate symbol (PNG output only).\n"
-            "  --cols=NUMBER         (PDF417) Number of columns.\n"
+            "  --cols=NUMBER         (PDF417, Codablock F) Number of columns.\n"
+            "  --rows=NUMBER         (Codablock F) Number of rows.\n"
             "  --vers=NUMBER         (QR Code or Han Xin) Version\n"
             "  --secure=NUMBER       (PDF417 and QR Code) Error correction level.\n"
             "  --primary=STRING      (Maxicode and Composite) Structured primary message.\n"
@@ -483,6 +484,7 @@ int main(int argc, char **argv) {
             {"fg", 1, 0, 0},
             {"bg", 1, 0, 0},
             {"cols", 1, 0, 0},
+            {"rows", 1, 0, 0},
             {"vers", 1, 0, 0},
             {"rotate", 1, 0, 0},
             {"secure", 1, 0, 0},
@@ -617,8 +619,16 @@ int main(int argc, char **argv) {
                 }
 
                 if (!strcmp(long_options[option_index].name, "cols")) {
-                    if ((atoi(optarg) >= 1) && (atoi(optarg) <= 30)) {
+                    if ((atoi(optarg) >= 6) && (atoi(optarg) <= 66)) {
                         my_symbol->option_2 = atoi(optarg);
+                    } else {
+                        fprintf(stderr, "Number of columns out of range\n");
+                        fflush(stderr);
+                    }
+                }
+                if (!strcmp(long_options[option_index].name, "rows")) {
+                    if ((atoi(optarg) >= 1) && (atoi(optarg) <= 44)) {
+                        my_symbol->option_1 = atoi(optarg);
                     } else {
                         fprintf(stderr, "Number of columns out of range\n");
                         fflush(stderr);
