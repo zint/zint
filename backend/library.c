@@ -105,6 +105,8 @@ void ZBarcode_Delete(struct zint_symbol *symbol) {
     if (symbol->rendered != NULL) {
         struct zint_render_line *line, *l;
         struct zint_render_string *string, *s;
+        struct zint_render_ring *ring, *r;
+        struct zint_render_hexagon *hexagon, *h;
 
         // Free lines
         line = symbol->rendered->lines;
@@ -120,6 +122,22 @@ void ZBarcode_Delete(struct zint_symbol *symbol) {
             string = string->next;
             free(s->text);
             free(s);
+        }
+        
+        // Free Rings
+        ring = symbol->rendered->rings;
+        while (ring) {
+            r = ring;
+            ring = ring->next;
+            free(r);
+        }
+        
+        // Free Hexagons
+        hexagon = symbol->rendered->hexagons;
+        while (hexagon) {
+            h = hexagon;
+            hexagon = hexagon->next;
+            free(h);
         }
 
         // Free Render

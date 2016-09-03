@@ -497,6 +497,7 @@ int gif_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width
         image_height * image_width);
     if (byte_out <= 0)
     {
+        fclose(gif_file);
         return ZINT_ERROR_MEMORY;
     }
     fwrite(lzwoutbuf, byte_out, 1, gif_file);

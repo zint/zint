@@ -236,5 +236,6 @@ int bmp_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width
     fwrite(bitmap_file_start, file_header.file_size, 1, bmp_file);
     fclose(bmp_file);
     
+    free(bitmap_file_start);
     return 0;
 }

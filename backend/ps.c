@@ -115,20 +115,24 @@ int ps_plot(struct zint_symbol *symbol) {
 
     if (strlen(symbol->fgcolour) != 6) {
         strcpy(symbol->errtxt, "Malformed foreground colour target");
+        fclose(feps);
         return ZINT_ERROR_INVALID_OPTION;
     }
     if (strlen(symbol->bgcolour) != 6) {
         strcpy(symbol->errtxt, "Malformed background colour target");
+        fclose(feps);
         return ZINT_ERROR_INVALID_OPTION;
     }
     error_number = is_sane(SSET, (unsigned char*) symbol->fgcolour, strlen(symbol->fgcolour));
     if (error_number == ZINT_ERROR_INVALID_DATA) {
         strcpy(symbol->errtxt, "Malformed foreground colour target");
+        fclose(feps);
         return ZINT_ERROR_INVALID_OPTION;
     }
     error_number = is_sane(SSET, (unsigned char*) symbol->bgcolour, strlen(symbol->bgcolour));
     if (error_number == ZINT_ERROR_INVALID_DATA) {
         strcpy(symbol->errtxt, "Malformed background colour target");
+        fclose(feps);
         return ZINT_ERROR_INVALID_OPTION;
     }
     locale = setlocale(LC_ALL, "C");
