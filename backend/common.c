@@ -167,38 +167,27 @@ void expand(struct zint_symbol *symbol, const char data[]) {
 
 /* Indicates which symbologies can have row binding */
 int is_stackable(const int symbology) {
+    int retval = 0;
+    
     if (symbology < BARCODE_PDF417) {
-        return 1;
+        retval = 1;
     }
-    if (symbology == BARCODE_CODE128B) {
-        return 1;
-    }
-    if (symbology == BARCODE_ISBNX) {
-        return 1;
-    }
-    if (symbology == BARCODE_EAN14) {
-        return 1;
-    }
-    if (symbology == BARCODE_NVE18) {
-        return 1;
-    }
-    if (symbology == BARCODE_KOREAPOST) {
-        return 1;
-    }
-    if (symbology == BARCODE_PLESSEY) {
-        return 1;
-    }
-    if (symbology == BARCODE_TELEPEN_NUM) {
-        return 1;
-    }
-    if (symbology == BARCODE_ITF14) {
-        return 1;
-    }
-    if (symbology == BARCODE_CODE32) {
-        return 1;
+    
+    switch (symbology) {
+        case BARCODE_CODE128B:
+        case BARCODE_ISBNX:
+        case BARCODE_EAN14:
+        case BARCODE_NVE18:
+        case BARCODE_KOREAPOST:
+        case BARCODE_PLESSEY:
+        case BARCODE_TELEPEN_NUM:
+        case BARCODE_ITF14:
+        case BARCODE_CODE32:
+        case BARCODE_CODABLOCK:
+            retval = 1;
     }
 
-    return 0;
+    return retval;
 }
 
 /* Indicates which symbols can have addon (EAN-2 and EAN-5) */
