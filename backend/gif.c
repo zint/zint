@@ -286,8 +286,8 @@ int gif_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width
     int errno;
     int row, column;
     FILE *gif_file;
-	unsigned short ImageWidth;
-	unsigned short ImageHeight;
+	unsigned short ImageWidth = image_width;
+	unsigned short ImageHeight = image_height;
 	unsigned short usTemp;
     int byte_out;
 #ifdef _MSC_VER
@@ -306,8 +306,6 @@ int gif_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width
     switch (rotate_angle) {
         case 0:
         case 180:
-            ImageWidth = image_width;
-            ImageHeight = image_height;
             symbol->bitmap_width = image_width;
             symbol->bitmap_height = image_height;
             break;

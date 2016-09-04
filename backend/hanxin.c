@@ -1302,7 +1302,7 @@ int han_xin(struct zint_symbol *symbol, const unsigned char source[], int length
     int est_binlen;
     int ecc_level = symbol->option_1;
     int i, j, version, posn = 0, glyph, glyph2;
-    int data_codewords, size;
+    int data_codewords = 0, size;
     int est_codewords;
     int bitmask;
     int error_number;
