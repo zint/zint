@@ -37,8 +37,6 @@
 #define DIGIT	16
 #define BINARY	32
 
-static int AztecMap[22801];
-
 static const int CompactAztecMap[] = {
     /* 27 x 27 data grid */
     609, 608, 411, 413, 415, 417, 419, 421, 423, 425, 427, 429, 431, 433, 435, 437, 439, 441, 443, 445, 447, 449, 451, 453, 455, 457, 459,

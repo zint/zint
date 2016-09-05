@@ -681,7 +681,7 @@ int code_128(struct zint_symbol *symbol, unsigned char source[], int length) {
 }
 
 /* Handle EAN-128 (Now known as GS1-128) */
-int ean_128(struct zint_symbol *symbol, unsigned char source[], int length) {
+int ean_128(struct zint_symbol *symbol, unsigned char source[], const size_t length) {
     int i, j, values[170], bar_characters, read, total_sum;
     int error_number, indexchaine, indexliste;
     char set[170], mode, last_set;

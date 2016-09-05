@@ -31,8 +31,12 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "eci.h"
 #include "zint.h"
+#ifdef _MSC_VER
+#include <malloc.h>
+#endif
 
 /* Convert Unicode to other character encodings */
 int utf_to_eci(int eci, const unsigned char source[], unsigned char dest[], int *length) {
@@ -51,19 +55,19 @@ int utf_to_eci(int eci, const unsigned char source[], unsigned char dest[], int 
         dest[*length] = '\0';
         return 0;
     }
-    
+
     in_posn = 0;
     out_posn = 0;
     do {
         /* Single byte (ASCII) character */
         bytelen = 1;
-        glyph = (int)source[in_posn];
-        
+        glyph = (int) source[in_posn];
+
         if ((source[in_posn] >= 0x80) && (source[in_posn] < 0xc0)) {
             /* Something has gone wrong, abort */
             return ZINT_ERROR_INVALID_DATA;
         }
-        
+
         if ((source[in_posn] >= 0xc0) && (source[in_posn] < 0xe0)) {
             /* Two-byte character */
             bytelen = 2;
@@ -72,78 +76,78 @@ int utf_to_eci(int eci, const unsigned char source[], unsigned char dest[], int 
             if (*length < (in_posn + 2)) {
                 return ZINT_ERROR_INVALID_DATA;
             }
-            
+
             if (source[in_posn + 1] > 0xc0) {
                 return ZINT_ERROR_INVALID_DATA;
             }
-            
+
             glyph += (source[in_posn + 1] & 0x3f);
         }
-        
+
         if ((source[in_posn] >= 0xe0) && (source[in_posn] < 0xf0)) {
             /* Three-byte character */
             bytelen = 3;
             glyph = (source[in_posn] & 0x0f) << 12;
-            
+
             if (*length < (in_posn + 2)) {
                 return ZINT_ERROR_INVALID_DATA;
             }
-            
+
             if (*length < (in_posn + 3)) {
                 return ZINT_ERROR_INVALID_DATA;
             }
-            
+
             if (source[in_posn + 1] > 0xc0) {
                 return ZINT_ERROR_INVALID_DATA;
             }
-            
+
             if (source[in_posn + 2] > 0xc0) {
                 return ZINT_ERROR_INVALID_DATA;
             }
-            
+
             glyph += (source[in_posn + 1] & 0x3f) << 6;
             glyph += (source[in_posn + 2] & 0x3f);
         }
-        
+
         if ((source[in_posn] >= 0xf0) && (source[in_posn] < 0xf7)) {
             /* Four-byte character */
             bytelen = 4;
             glyph = (source[in_posn] & 0x07) << 18;
-            
+
             if (*length < (in_posn + 2)) {
                 return ZINT_ERROR_INVALID_DATA;
             }
-            
+
             if (*length < (in_posn + 3)) {
                 return ZINT_ERROR_INVALID_DATA;
             }
-            
+
             if (*length < (in_posn + 4)) {
                 return ZINT_ERROR_INVALID_DATA;
             }
-            
+
             if (source[in_posn + 1] > 0xc0) {
                 return ZINT_ERROR_INVALID_DATA;
             }
-            
+
             if (source[in_posn + 2] > 0xc0) {
                 return ZINT_ERROR_INVALID_DATA;
             }
-            
+
             if (source[in_posn + 3] > 0xc0) {
                 return ZINT_ERROR_INVALID_DATA;
             }
-            
+
             glyph += (source[in_posn + 1] & 0x3f) << 12;
             glyph += (source[in_posn + 2] & 0x3f) << 6;
             glyph += (source[in_posn + 3] & 0x3f);
         }
-        
+
         if (source[in_posn] >= 0xf7) {
             /* More than 4 bytes not supported */
             return ZINT_ERROR_INVALID_DATA;
         }
-        
+
         if (glyph < 128) {
             dest[out_posn] = glyph;
         } else {
@@ -268,12 +272,12 @@ int utf_to_eci(int eci, const unsigned char source[], unsigned char dest[], int 
                         break;
                 }
             }
-            
+
             if (!(done)) {
                 return ZINT_ERROR_INVALID_DATA;
             }
         }
-        
+
         in_posn += bytelen;
         out_posn++;
     } while (in_posn < *length);
@@ -292,14 +296,14 @@ int get_best_eci(unsigned char source[], int length) {
 #else
     unsigned char *local_source = (unsigned char*) _alloca(length + 1);
 #endif
-    
+
     do {
         if (utf_to_eci(eci, source, local_source, &length) == 0) {
             return eci;
-        } 
+        }
         eci++;
     } while (eci < 25);
-    
+
     return 26; // If all of these fail, use Unicode!
 }
 

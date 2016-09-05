@@ -703,7 +703,7 @@ int codablock(struct zint_symbol *symbol, unsigned char source[], int length) {
 			rows = 1;
 		} else {
 			/* use 3/1 aspect/ratio Codablock */
-			rows = ((int)floor(sqrt(dataLength)))/3;
+			rows = ((int)floor(sqrt(1.0*dataLength)))/3;
 			if (rows < 1)
 				rows = 1;
 			else if (rows > 44)
@@ -771,7 +771,7 @@ int codablock(struct zint_symbol *symbol, unsigned char source[], int length) {
 #ifndef _MSC_VER
 	uchar pOutput[columns * rows];
 #else
-	pOutput = (char *)_alloca(columns * rows * sizeof(char));
+	pOutput = (unsigned char *)_alloca(columns * rows * sizeof(char));
 #endif
 	pOutPos = pOutput;
 	charCur=0;
@@ -782,7 +782,7 @@ int codablock(struct zint_symbol *symbol, unsigned char source[], int length) {
 			/* >> Empty line with StartCCodeBCodeC */
 			characterSetCur=CodeC;
 			/* CDB Start C*/
-			pOutPos+=sprintf(pOutPos,"\x67\x63");
+			pOutPos+=sprintf((char*)pOutPos,"\x67\x63");
 			SummeASCII(&pOutPos,rowCur+42,CodeC);
 			emptyColumns=useColumns-2;
 			while (emptyColumns>0)

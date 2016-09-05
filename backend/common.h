@@ -46,17 +46,19 @@
 #define NEON	"0123456789"
 
 #include "zint.h"
+#include <stdlib.h>
+
+#define ustrcpy(target,source) strcpy((char*)target,(const char*)source)
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
-    extern int ustrlen(const unsigned char source[]);
-    extern void ustrcpy(unsigned char target[], const unsigned char source[]);
+    extern size_t ustrlen(const unsigned char source[]);
     extern int ctoi(const char source);
     extern char itoc(const int source);
     extern void to_upper(unsigned char source[]);
-    extern int is_sane(const char test_string[], const unsigned char source[], const int length);
+    extern int is_sane(const char test_string[], const unsigned char source[], const size_t length);
     extern void lookup(const char set_string[], const char *table[], const char data, char dest[]);
     extern int posn(const char set_string[], const char data);
     extern void expand(struct zint_symbol *symbol, const char data[]);

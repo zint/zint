@@ -50,10 +50,10 @@ extern "C" {
         uint32_t data_offset;
     }
 #ifdef __GNUC__
-	__attribute__((__packed__ )) 
+    __attribute__((__packed__))
 #endif
-	bitmap_file_header_t;
-    
+    bitmap_file_header_t;
+
     typedef struct bitmap_info_header {
         uint32_t header_size;
         int32_t width;
@@ -68,9 +68,9 @@ extern "C" {
         uint32_t important_colours;
     }
 #ifdef __GNUC__
-	__attribute__((__packed__ ))
+    __attribute__((__packed__))
 #endif
-	bitmap_info_header_t;
+    bitmap_info_header_t;
 
 #ifdef __cplusplus
 }

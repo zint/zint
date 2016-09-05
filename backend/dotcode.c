@@ -38,11 +38,11 @@
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
+#include <stdint.h>
 #ifndef _MSC_VER
 #include <stdint.h>
 #else
 #include <malloc.h>
-#include "ms_stdint.h"
 #endif
 #include "common.h"
 #include "gs1.h"
@@ -160,7 +160,7 @@ int score_array(char Dots[], int Hgt, int Wid) {
             if ((!get_dot(Dots, Hgt, Wid, x - 1, y - 1))
                     && (!get_dot(Dots, Hgt, Wid, x + 1, y - 1))
                     && (!get_dot(Dots, Hgt, Wid, x - 1, y + 1))
-                    &&(!get_dot(Dots, Hgt, Wid, x + 1, y + 1))
+                    && (!get_dot(Dots, Hgt, Wid, x + 1, y + 1))
                     && ((!get_dot(Dots, Hgt, Wid, x, y))
                     || ((!get_dot(Dots, Hgt, Wid, x - 2, y))
                     && (!get_dot(Dots, Hgt, Wid, x, y - 2))
@@ -223,7 +223,7 @@ void rsencode(int nd, int nc, unsigned char *wd) {
 }
 
 /* Check if the next character is directly encodable in code set A (Annex F.II.D) */
-int datum_a(unsigned char source[], int position, int length) {
+int datum_a(const unsigned char source[], int position, int length) {
     int retval = 0;
 
     if (position < length) {
@@ -236,7 +236,7 @@ int datum_a(unsigned char source[], int position, int length) {
 }
 
 /* Check if the next character is directly encodable in code set B (Annex F.II.D) */
-int datum_b(unsigned char source[], int position, int length) {
+int datum_b(const unsigned char source[], int position, int length) {
     int retval = 0;
 
     if (position < length) {
@@ -263,7 +263,7 @@ int datum_b(unsigned char source[], int position, int length) {
 }
 
 /* Check if the next characters are directly encodable in code set C (Annex F.II.D) */
-int datum_c(unsigned char source[], int position, int length) {
+int datum_c(const unsigned char source[], int position, int length) {
     int retval = 0;
 
     if (position < length - 2) {
@@ -276,7 +276,7 @@ int datum_c(unsigned char source[], int position, int length) {
 }
 
 /* Returns how many consecutive digits lie immediately ahead (Annex F.II.A) */
-int n_digits(unsigned char source[], int position, int length) {
+int n_digits(const unsigned char source[], int position, int length) {
     int i;
 
     for (i = position; ((source[i] >= '0') && (source[i] <= '9')) && (i < length); i++);
@@ -285,7 +285,7 @@ int n_digits(unsigned char source[], int position, int length) {
 }
 
 /* checks ahead for 10 or more digits starting "17xxxxxx10..." (Annex F.II.B) */
-int seventeen_ten(unsigned char source[], int position, int length) {
+int seventeen_ten(const unsigned char source[], int position, int length) {
     int found = 0;
 
     if (n_digits(source, position, length) >= 10) {
@@ -301,9 +301,9 @@ int seventeen_ten(unsigned char source[], int position, int length) {
 /*  checks how many characters ahead can be reached while datum_c is true,
  *  returning the resulting number of codewords (Annex F.II.E)
  */
-int ahead_c(unsigned char source[], int position, int length) {
+int ahead_c(const unsigned char source[], int position, int length) {
     int count = 0;
-	int i;
+    int i;
 
     for (i = position; (i < length) && datum_c(source, i, length); i += 2) {
         count++;
@@ -313,7 +313,7 @@ int ahead_c(unsigned char source[], int position, int length) {
 }
 
 /* Annex F.II.F */
-int try_c(unsigned char source[], int position, int length) {
+int try_c(const unsigned char source[], int position, int length) {
     int retval = 0;
 
     if (n_digits(source, position, length) > 0) {
@@ -326,9 +326,9 @@ int try_c(unsigned char source[], int position, int length) {
 }
 
 /* Annex F.II.G */
-int ahead_a(unsigned char source[], int position, int length) {
+int ahead_a(const unsigned char source[], int position, int length) {
     int count = 0;
-	int i;
+    int i;
 
     for (i = position; ((i < length) && datum_a(source, i, length))
             && (try_c(source, i, length) < 2); i++) {
@@ -339,9 +339,9 @@ int ahead_a(unsigned char source[], int position, int length) {
 }
 
 /* Annex F.II.H */
-int ahead_b(unsigned char source[], int position, int length) {
+int ahead_b(const unsigned char source[], int position, int length) {
     int count = 0;
-	int i;
+    int i;
 
     for (i = position; ((i < length) && datum_b(source, i, length))
             && (try_c(source, i, length) < 2); i++) {
@@ -352,7 +352,7 @@ int ahead_b(unsigned char source[], int position, int length) {
 }
 
 /* checks if the next character is in the range 128 to 255  (Annex F.II.I) */
-int binary(unsigned char source[], int position, int length) {
+int binary(const unsigned char source[], int position, int length) {
     int retval = 0;
 
     if (source[position] >= 128) {
@@ -363,7 +363,7 @@ int binary(unsigned char source[], int position, int length) {
 }
 
 /* Analyse input data stream and encode using algorithm from Annex F */
-int dotcode_encode_message(struct zint_symbol *symbol, unsigned char source[], int length, unsigned char *codeword_array) {
+int dotcode_encode_message(struct zint_symbol *symbol, const unsigned char source[], int length, unsigned char *codeword_array) {
     int input_position, array_length, i;
     char encoding_mode;
     int inside_macro, done;
@@ -391,7 +391,7 @@ int dotcode_encode_message(struct zint_symbol *symbol, unsigned char source[], i
         codeword_array[array_length] = 107; // FNC1
         array_length++;
     }
-    
+
     if (symbol->eci > 3) {
         codeword_array[array_length] = 108; // FNC2
         array_length++;
@@ -889,7 +889,7 @@ int dotcode_encode_message(struct zint_symbol *symbol, unsigned char source[], i
 }
 
 /* Convert codewords to binary data stream */
-int make_dotstream(unsigned char masked_array[], int array_length, char dot_stream[]) {
+static size_t make_dotstream(unsigned char masked_array[], int array_length, char dot_stream[]) {
     int i, j;
     int mask = 0x100;
 
@@ -1035,14 +1035,15 @@ void fold_dotstream(char dot_stream[], int width, int height, char dot_array[]) 
     }
 }
 
-int dotcode(struct zint_symbol *symbol, unsigned char source[], int length) {
+int dotcode(struct zint_symbol *symbol, const unsigned char source[], int length) {
     int i, j, k;
+    size_t jc;
     int data_length, ecc_length;
     int min_dots, n_dots;
     int height, width, pad_chars;
     int mask_score[4];
     int weight;
-    int dot_stream_length;
+    size_t dot_stream_length;
     int high_score, best_mask;
     int debug = 0;
 
@@ -1065,10 +1066,10 @@ int dotcode(struct zint_symbol *symbol, unsigned char source[], int length) {
     }
 
     min_dots = 9 * (data_length + 3 + (data_length / 2)) + 2;
-    
+
     if (symbol->option_2 == 0) {
 
-        height = sqrt(2 * min_dots);
+        height = (int) sqrt(2.0 * min_dots);
         if (height % 2) {
             height++;
         }
@@ -1092,16 +1093,19 @@ int dotcode(struct zint_symbol *symbol, unsigned char source[], int length) {
         strcpy(symbol->errtxt, "Specified symbol size is too large");
         return ZINT_ERROR_INVALID_OPTION;
     }
-    
+
     n_dots = (height * width) / 2;
 
 #ifndef _MSC_VER
-    char dot_stream[n_dots + 3];
-    char dot_array[width * height];
+    char dot_stream[height * width * 3];
+    char dot_array[width * height * sizeof (char) ];
 #else
-    dot_stream = (char *) _alloca((n_dots + 3) * sizeof (char));
+    dot_stream = (char *) _alloca(height * width * 3);
+    if (!dot_stream) return ZINT_ERROR_MEMORY;
+
     dot_array = (char *) _alloca(width * height * sizeof (char));
-#endif /* _MSC_VER */
+    if (!dot_array) return ZINT_ERROR_MEMORY;
+#endif
 
     /* Add pad characters */
     for (pad_chars = 0; 9 * ((data_length + pad_chars + 3 + ((data_length + pad_chars) / 2)) + 2) < n_dots; pad_chars++);
@@ -1116,7 +1120,7 @@ int dotcode(struct zint_symbol *symbol, unsigned char source[], int length) {
         codeword_array[data_length] = 106; // Pad
         data_length++;
     }
-    
+
     if (data_length > 450) {
         // Larger data sets than this cause rsencode() to throw SIGSEGV
         // This should probably be fixed by somebody who understands what rsencode() does...
@@ -1125,7 +1129,7 @@ int dotcode(struct zint_symbol *symbol, unsigned char source[], int length) {
     }
 
     ecc_length = 3 + (data_length / 2);
-    
+
     /* Evaluate data mask options */
     for (i = 0; i < 4; i++) {
         switch (i) {
@@ -1160,16 +1164,16 @@ int dotcode(struct zint_symbol *symbol, unsigned char source[], int length) {
                 }
                 break;
         }
-        
+
         rsencode(data_length + 1, ecc_length, masked_codeword_array);
 
         dot_stream_length = make_dotstream(masked_codeword_array, (data_length + ecc_length + 1), dot_stream);
-        
+
         /* Add pad bits */
-        for (j = dot_stream_length; j < n_dots; j++) {
+        for (jc = dot_stream_length; jc < n_dots; jc++) {
             strcat(dot_stream, "1");
         }
-        
+
         fold_dotstream(dot_stream, width, height, dot_array);
 
         mask_score[i] = score_array(dot_array, height, width);
@@ -1220,7 +1224,7 @@ int dotcode(struct zint_symbol *symbol, unsigned char source[], int length) {
         dot_stream_length = make_dotstream(masked_codeword_array, (data_length + ecc_length + 1), dot_stream);
 
         /* Add pad bits */
-        for (j = dot_stream_length; j < n_dots; j++) {
+        for (jc = dot_stream_length; jc < n_dots; jc++) {
             strcat(dot_stream, "1");
         }
 

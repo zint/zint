@@ -65,7 +65,7 @@
 
 extern int general_rules(char field[], char type[]);
 extern int eanx(struct zint_symbol *symbol, unsigned char source[], int length);
-extern int ean_128(struct zint_symbol *symbol, unsigned char source[], int length);
+extern int ean_128(struct zint_symbol *symbol, unsigned char source[], const size_t length);
 extern int rss14(struct zint_symbol *symbol, unsigned char source[], int length);
 extern int rsslimited(struct zint_symbol *symbol, unsigned char source[], int length);
 extern int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int length);

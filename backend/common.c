@@ -35,14 +35,8 @@
 #include "common.h"
 
 /* Local replacement for strlen() with unsigned char strings */
-int ustrlen(const unsigned char data[]) {
+size_t ustrlen(const unsigned char data[]) {
     return strlen((const char*) data);
-}
-
-/* Local replacement for strcpy() with unsigned char strings */
-
-void ustrcpy(unsigned char target[], const unsigned char source[]) {
-    strcpy((char *) target, (const char*) source);
 }
 
 /* Converts a character 0-9 to its equivalent integer value */
@@ -63,7 +57,7 @@ char itoc(const int source) {
 
 /* Converts lower case characters to upper case in a string source[] */
 void to_upper(unsigned char source[]) {
-    unsigned int i, src_len = ustrlen(source);
+    size_t i, src_len = ustrlen(source);
 
     for (i = 0; i < src_len; i++) {
         if ((source[i] >= 'a') && (source[i] <= 'z')) {
@@ -73,9 +67,9 @@ void to_upper(unsigned char source[]) {
 }
 
 /* Verifies that a string only uses valid characters */
-int is_sane(const char test_string[], const unsigned char source[], const int length) {
-    unsigned int i, j, latch;
-    unsigned int lt = strlen(test_string);
+int is_sane(const char test_string[], const unsigned char source[], const size_t length) {
+    unsigned int j, latch;
+    size_t i, lt = strlen(test_string);
 
     for (i = 0; i < length; i++) {
         latch = FALSE;
@@ -95,7 +89,7 @@ int is_sane(const char test_string[], const unsigned char source[], const int le
 
 /* Returns the position of data in set_string */
 int posn(const char set_string[], const char data) {
-    unsigned int i, n = strlen(set_string);
+    size_t i, n = strlen(set_string);
 
     for (i = 0; i < n; i++) {
         if (data == set_string[i]) {
@@ -107,7 +101,7 @@ int posn(const char set_string[], const char data) {
 
 /* Replaces huge switch statements for looking up in tables */
 void lookup(const char set_string[], const char *table[], const char data, char dest[]) {
-    unsigned int i, n = strlen(set_string);
+    size_t i, n = strlen(set_string);
 
     for (i = 0; i < n; i++) {
         if (data == set_string[i]) {
@@ -134,7 +128,7 @@ void unset_module(struct zint_symbol *symbol, const int y_coord, const int x_coo
 /* Expands from a width pattern to a bit pattern */
 void expand(struct zint_symbol *symbol, const char data[]) {
 
-    unsigned int reader, n = strlen(data);
+    size_t reader, n = strlen(data);
     int writer, i;
     char latch;
 
@@ -168,11 +162,11 @@ void expand(struct zint_symbol *symbol, const char data[]) {
 /* Indicates which symbologies can have row binding */
 int is_stackable(const int symbology) {
     int retval = 0;
-    
+
     if (symbology < BARCODE_PDF417) {
         retval = 1;
     }
-    
+
     switch (symbology) {
         case BARCODE_CODE128B:
         case BARCODE_ISBNX:

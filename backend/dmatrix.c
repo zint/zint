@@ -306,31 +306,31 @@ static int look_ahead_test(const unsigned char inputData[], const int sourcelen,
 
     /* step (j) */
     if (current_mode == DM_ASCII) {
-        ascii_count = 0.0;
-        c40_count = 1.0;
-        text_count = 1.0;
-        x12_count = 1.0;
-        edf_count = 1.0;
-        b256_count = 1.25;
+        ascii_count = 0.0F;
+        c40_count = 1.0F;
+        text_count = 1.0F;
+        x12_count = 1.0F;
+        edf_count = 1.0F;
+        b256_count = 1.25F;
     } else {
-        ascii_count = 1.0;
-        c40_count = 2.0;
-        text_count = 2.0;
-        x12_count = 2.0;
-        edf_count = 2.0;
-        b256_count = 2.25;
+        ascii_count = 1.0F;
+        c40_count = 2.0F;
+        text_count = 2.0F;
+        x12_count = 2.0F;
+        edf_count = 2.0F;
+        b256_count = 2.25F;
     }
 
     switch (current_mode) {
-        case DM_C40: c40_count = 0.0;
+        case DM_C40: c40_count = 0.0F;
             break;
-        case DM_TEXT: text_count = 0.0;
+        case DM_TEXT: text_count = 0.0F;
             break;
-        case DM_X12: x12_count = 0.0;
+        case DM_X12: x12_count = 0.0F;
             break;
-        case DM_EDIFACT: edf_count = 0.0;
+        case DM_EDIFACT: edf_count = 0.0F;
             break;
-        case DM_BASE256: b256_count = 0.0;
+        case DM_BASE256: b256_count = 0.0F;
             break;
     }
 
@@ -339,12 +339,12 @@ static int look_ahead_test(const unsigned char inputData[], const int sourcelen,
     do {
         if (sp == (sourcelen - 1)) {
             /* At the end of data ... step (k) */
-            ascii_count = ceil(ascii_count);
-            b256_count = ceil(b256_count);
-            edf_count = ceil(edf_count);
-            text_count = ceil(text_count);
-            x12_count = ceil(x12_count);
-            c40_count = ceil(c40_count);
+            ascii_count = ceilf(ascii_count);
+            b256_count = ceilf(b256_count);
+            edf_count = ceilf(edf_count);
+            text_count = ceilf(text_count);
+            x12_count = ceilf(x12_count);
+            c40_count = ceilf(c40_count);
 
             best_count = c40_count;
             best_scheme = DM_C40; // (k)(7)
@@ -379,9 +379,9 @@ static int look_ahead_test(const unsigned char inputData[], const int sourcelen,
                 ascii_count += 0.5F; // (l)(1)
             } else {
                 if (inputData[sp] > 127) {
-                    ascii_count = ceil(ascii_count) + 2.0F; // (l)(2)
+                    ascii_count = ceilf(ascii_count) + 2.0F; // (l)(2)
                 } else {
-                    ascii_count = ceil(ascii_count) + 1.0F; // (l)(3)
+                    ascii_count = ceilf(ascii_count) + 1.0F; // (l)(3)
                 }
             }
 
@@ -568,11 +568,11 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
             if (debug) printf("RP ");
         }
     }
-    
+
     if (symbol->eci > 3) {
         target[tp] = 241; /* ECI Character */
         tp++;
-        target[tp] = symbol->eci + 1;
+        target[tp] = (unsigned char) (symbol->eci + 1);
         tp++;
         if (debug) printf("ECI %d ", symbol->eci + 1);
     }
@@ -718,7 +718,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
                     int iv;
 
                     iv = (1600 * process_buffer[0]) + (40 * process_buffer[1]) + (process_buffer[2]) + 1;
-                    target[tp] = iv / 256;
+                    target[tp] = (unsigned char) (iv / 256);
                     tp++;
                     target[tp] = iv % 256;
                     tp++;
@@ -781,7 +781,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
                     int iv;
 
                     iv = (1600 * process_buffer[0]) + (40 * process_buffer[1]) + (process_buffer[2]) + 1;
-                    target[tp] = iv / 256;
+                    target[tp] = (unsigned char) (iv / 256);
                     tp++;
                     target[tp] = iv % 256;
                     tp++;
@@ -842,7 +842,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
                     int iv;
 
                     iv = (1600 * process_buffer[0]) + (40 * process_buffer[1]) + (process_buffer[2]) + 1;
-                    target[tp] = iv / 256;
+                    target[tp] = (unsigned char) (iv / 256);
                     tp++;
                     target[tp] = iv % 256;
                     tp++;
@@ -889,11 +889,11 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
             }
 
             if (*process_p >= 4) {
-                target[tp] = (process_buffer[0] << 2) + ((process_buffer[1] & 0x30) >> 4);
+                target[tp] = (unsigned char) ((process_buffer[0] << 2) + ((process_buffer[1] & 0x30) >> 4));
                 tp++;
                 target[tp] = ((process_buffer[1] & 0x0f) << 4) + ((process_buffer[2] & 0x3c) >> 2);
                 tp++;
-                target[tp] = ((process_buffer[2] & 0x03) << 6) + process_buffer[3];
+                target[tp] = (unsigned char) (((process_buffer[2] & 0x03) << 6) + process_buffer[3]);
                 tp++;
                 strcat(binary, "   ");
                 if (debug) printf("[%d %d %d %d] ", process_buffer[0], process_buffer[1], process_buffer[2], process_buffer[3]);
@@ -966,9 +966,9 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
             prn = ((149 * (i + 1)) % 255) + 1;
             temp = target[i] + prn;
             if (temp <= 255) {
-                target[i] = temp;
+                target[i] = (unsigned char) (temp);
             } else {
-                target[i] = temp - 256;
+                target[i] = (unsigned char) (temp - 256);
             }
         }
     }
@@ -1074,7 +1074,7 @@ static int dm200encode_remainder(unsigned char target[], int target_length, cons
                 if (process_p == 1) {
                     target[target_length] = (unsigned char) ((process_buffer[0] << 2) + ((31 & 0x30) >> 4));
                     target_length++;
-                    target[target_length] = (unsigned char) ((31 & 0x0f) << 4) ;
+                    target[target_length] = (unsigned char) ((31 & 0x0f) << 4);
                     target_length++;
                     target[target_length] = (unsigned char) 0;
                     target_length++;
@@ -1126,18 +1126,18 @@ static void add_tail(unsigned char target[], int tp, const int tail_length) {
             prn = ((149 * (tp + 1)) % 253) + 1;
             temp = 129 + prn;
             if (temp <= 254) {
-                target[tp] = temp;
+                target[tp] = (unsigned char) (temp);
                 tp++;
             } else {
-                target[tp] = temp - 254;
+                target[tp] = (unsigned char) (temp - 254);
                 tp++;
             }
         }
     }
 }
 
-int data_matrix_200(struct zint_symbol *symbol, unsigned char source[], const int length) {
-    int inputlen, i, skew = 0;
+int data_matrix_200(struct zint_symbol *symbol, const unsigned char source[], const int in_length) {
+    int i, inputlen = in_length, skew = 0;
     unsigned char binary[2200];
     int binlen;
     int process_buffer[8]; /* holds remaining data to finalised */
@@ -1148,7 +1148,6 @@ int data_matrix_200(struct zint_symbol *symbol, unsigned char source[], const in
     int last_mode = DM_ASCII;
     unsigned char *grid = 0;
     int symbols_left;
-    inputlen = length;
 
     /* inputlen may be decremented by 2 if macro character is used */
     binlen = dm200encode(symbol, source, binary, &last_mode, &inputlen, process_buffer, &process_p);
@@ -1291,12 +1290,12 @@ int data_matrix_200(struct zint_symbol *symbol, unsigned char source[], const in
     return error_number;
 }
 
-int dmatrix(struct zint_symbol *symbol, unsigned char source[], const int length) {
+int dmatrix(struct zint_symbol *symbol, const unsigned char source[], const int in_length) {
     int error_number;
 
     if (symbol->option_1 <= 1) {
         /* ECC 200 */
-        error_number = data_matrix_200(symbol, source, length);
+        error_number = data_matrix_200(symbol, source, in_length);
     } else {
         /* ECC 000 - 140 */
         strcpy(symbol->errtxt, "Older Data Matrix standards are no longer supported");

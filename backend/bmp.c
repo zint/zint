@@ -68,8 +68,8 @@ int bmp_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width
 
     if (symbol->bitmap != NULL)
         free(symbol->bitmap);
-    
-    row_size = 4 * floor((24 * symbol->bitmap_width + 31) / 32);
+
+    row_size = 4 * floor((24.0 * symbol->bitmap_width + 31) / 32);
     symbol->bitmap = (char *) malloc(row_size * symbol->bitmap_height);
 
     /* sort out colour options */
@@ -189,13 +189,13 @@ int bmp_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width
 
     data_size = symbol->bitmap_height * row_size;
     symbol->bitmap_byte_length = data_size;
-    
-    file_header.header_field = 0x4d42;  // "BM"
-    file_header.file_size = sizeof(bitmap_file_header_t) + sizeof(bitmap_info_header_t) + data_size;
-    file_header.reserved = 0;
-    file_header.data_offset = sizeof(bitmap_file_header_t) + sizeof(bitmap_info_header_t);
 
-    info_header.header_size = sizeof(bitmap_info_header_t);
+    file_header.header_field = 0x4d42; // "BM"
+    file_header.file_size = sizeof (bitmap_file_header_t) + sizeof (bitmap_info_header_t) + data_size;
+    file_header.reserved = 0;
+    file_header.data_offset = sizeof (bitmap_file_header_t) + sizeof (bitmap_info_header_t);
+
+    info_header.header_size = sizeof (bitmap_info_header_t);
     info_header.width = symbol->bitmap_width;
     info_header.height = symbol->bitmap_height;
     info_header.colour_planes = 1;
@@ -206,17 +206,17 @@ int bmp_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width
     info_header.vert_res = 0;
     info_header.colours = 0;
     info_header.important_colours = 0;
-    
-    bitmap_file_start = (unsigned char*)malloc(file_header.file_size);
+
+    bitmap_file_start = (unsigned char*) malloc(file_header.file_size);
     memset(bitmap_file_start, 0xff, file_header.file_size);
-    
+
     bmp_posn = bitmap_file_start;
-    memcpy( bitmap_file_start, &file_header, sizeof(bitmap_file_header_t));
-    bmp_posn += sizeof(bitmap_file_header_t);
-    memcpy(bmp_posn, &info_header, sizeof(bitmap_info_header_t) );
-    bmp_posn += sizeof(bitmap_info_header_t);
+    memcpy(bitmap_file_start, &file_header, sizeof (bitmap_file_header_t));
+    bmp_posn += sizeof (bitmap_file_header_t);
+    memcpy(bmp_posn, &info_header, sizeof (bitmap_info_header_t));
+    bmp_posn += sizeof (bitmap_info_header_t);
     memcpy(bmp_posn, symbol->bitmap, data_size);
-    
+
     /* Open output file in binary mode */
     if ((symbol->output_options & BARCODE_STDOUT) != 0) {
 #ifdef _MSC_VER
@@ -232,10 +232,10 @@ int bmp_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width
             return ZINT_ERROR_FILE_ACCESS;
         }
     }
-    
+
     fwrite(bitmap_file_start, file_header.file_size, 1, bmp_file);
     fclose(bmp_file);
-    
+
     free(bitmap_file_start);
     return 0;
 }

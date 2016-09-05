@@ -140,7 +140,7 @@ int dq4bi(unsigned char source[], int sourcelen, int position) {
     return 0;
 }
 
-int c1_look_ahead_test(unsigned char source[], int sourcelen, int position, int current_mode, int gs1) {
+static int c1_look_ahead_test(unsigned char source[], int sourcelen, int position, int current_mode, int gs1) {
     float ascii_count, c40_count, text_count, edi_count, byte_count;
     char reduced_char;
     int done, best_scheme, best_count, sp;
@@ -861,7 +861,7 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
             }
 
             if (decimal_count != 3) {
-                int bits_left_in_byte, target_count;
+                size_t bits_left_in_byte, target_count;
                 int sub_target;
                 /* Finish Decimal mode and go back to ASCII */
 
@@ -1150,7 +1150,7 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
     }
 
     if (current_mode == C1_DECIMAL) {
-        int bits_left_in_byte, target_count;
+        size_t bits_left_in_byte, target_count;
         int sub_target;
         /* Finish Decimal mode and go back to ASCII */
 

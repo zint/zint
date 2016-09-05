@@ -1,12 +1,11 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual Studio 2008
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zint", "zint.vcproj", "{3169C7FA-E52C-4BFC-B7BB-E55EBA133770}"
-	ProjectSection(ProjectDependencies) = postProject
-		{5C08DC40-8F7D-475E-AA3C-814DED735A4B} = {5C08DC40-8F7D-475E-AA3C-814DED735A4B}
-	EndProjectSection
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.40629.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zint", "zint.vcxproj", "{3169C7FA-E52C-4BFC-B7BB-E55EBA133770}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libzint", "libzint.vcproj", "{5C08DC40-8F7D-475E-AA3C-814DED735A4B}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libzint", "libzint.vcxproj", "{5C08DC40-8F7D-475E-AA3C-814DED735A4B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

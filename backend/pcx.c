@@ -36,6 +36,7 @@
 #include "common.h"
 #include "pcx.h"        /* PCX header structure */
 #include <math.h>
+#include <malloc.h>
 #ifdef _MSC_VER
 #include <io.h>
 #include <fcntl.h>
@@ -51,14 +52,14 @@ int pcx_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width
     FILE *pcx_file;
     pcx_header_t header;
 #ifdef _MSC_VER
-	char* rotated_bitmap;
+    char* rotated_bitmap;
     unsigned char* rle_row;
 #endif
-    
+
 #ifndef _MSC_VER
     char rotated_bitmap[image_height * image_width];
 #else
-    rotated_bitmap = (char *) _alloca((image_height * image_width) * sizeof(char));
+    rotated_bitmap = (char *) _alloca((image_height * image_width) * sizeof (char));
 #endif /* _MSC_VER */
 
     switch (rotate_angle) {
@@ -77,9 +78,9 @@ int pcx_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width
 #ifndef _MSC_VER
     unsigned char rle_row[symbol->bitmap_width];
 #else
-    rle_row = (unsigned char *) _alloca((symbol->bitmap_width * 6) * sizeof(unsigned char));
+    rle_row = (unsigned char *) _alloca((symbol->bitmap_width * 6) * sizeof (unsigned char));
 #endif /* _MSC_VER */
-    
+
     /* sort out colour options */
     to_upper((unsigned char*) symbol->fgcolour);
     to_upper((unsigned char*) symbol->bgcolour);
@@ -109,7 +110,7 @@ int pcx_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width
     bgred = (16 * ctoi(symbol->bgcolour[0])) + ctoi(symbol->bgcolour[1]);
     bggrn = (16 * ctoi(symbol->bgcolour[2])) + ctoi(symbol->bgcolour[3]);
     bgblu = (16 * ctoi(symbol->bgcolour[4])) + ctoi(symbol->bgcolour[5]);
-    
+
     /* Rotate image before plotting */
     switch (rotate_angle) {
         case 0: /* Plot the right way up */
@@ -145,8 +146,8 @@ int pcx_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width
             }
             break;
     }
-    
-    
+
+
     header.manufacturer = 10; // ZSoft
     header.version = 5; // Version 3.0
     header.encoding = 1; // Run length encoding
@@ -157,28 +158,28 @@ int pcx_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width
     header.window_ymax = symbol->bitmap_height - 1;
     header.horiz_dpi = 300;
     header.vert_dpi = 300;
-    
-    for(i = 0; i < 48; i++) {
+
+    for (i = 0; i < 48; i++) {
         header.colourmap[i] = 0x00;
     }
-    
+
     header.reserved = 0;
     header.number_of_planes = 3;
-    
+
     if (symbol->bitmap_width % 2) {
         header.bytes_per_line = symbol->bitmap_width + 1;
     } else {
         header.bytes_per_line = symbol->bitmap_width;
     }
-    
+
     header.palette_info = 1; // Colour
     header.horiz_screen_size = 0;
     header.vert_screen_size = 0;
-    
-    for(i = 0; i < 54; i++) {
+
+    for (i = 0; i < 54; i++) {
         header.filler[i] = 0x00;
     }
-    
+
     /* Open output file in binary mode */
     if (symbol->output_options & BARCODE_STDOUT) {
 #ifdef _MSC_VER
@@ -194,13 +195,13 @@ int pcx_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width
             return ZINT_ERROR_FILE_ACCESS;
         }
     }
-    
-    fwrite(&header, sizeof(pcx_header_t), 1, pcx_file);
-    
-    for(row = 0; row < symbol->bitmap_height; row++) {
+
+    fwrite(&header, sizeof (pcx_header_t), 1, pcx_file);
+
+    for (row = 0; row < symbol->bitmap_height; row++) {
         for (colour = 0; colour < 3; colour++) {
             for (column = 0; column < symbol->bitmap_width; column++) {
-                switch(colour) {
+                switch (colour) {
                     case 0:
                         if (rotated_bitmap[(row * symbol->bitmap_width) + column] == '1') {
                             rle_row[column] = fgred;
@@ -224,7 +225,7 @@ int pcx_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width
                         break;
                 }
             }
-            
+
             run_count = 1;
             for (column = 1; column < symbol->bitmap_width; column++) {
                 if ((rle_row[column - 1] == rle_row[column]) && (run_count < 63)) {
@@ -236,16 +237,16 @@ int pcx_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width
                     run_count = 1;
                 }
             }
-            
+
             if (run_count > 1) {
                 run_count += 0xc0;
                 fputc(run_count, pcx_file);
                 fputc(rle_row[column - 1], pcx_file);
             }
-        }  
+        }
     }
-    
+
     fclose(pcx_file);
-    
+
     return 0;
 }

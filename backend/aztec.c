@@ -40,10 +40,12 @@
 #include "aztec.h"
 #include "reedsol.h"
 
+static int AztecMap[22801];
+
 /**
  * Shorten the string by one character
  */
-void mapshorten(int *charmap, int *typemap, int start, int length) {
+static void mapshorten(int *charmap, int *typemap, const int start, const int length) {
     memmove(charmap + start + 1, charmap + start + 2, (length - 1) * sizeof (int));
     memmove(typemap + start + 1, typemap + start + 2, (length - 1) * sizeof (int));
 }
@@ -51,7 +53,7 @@ void mapshorten(int *charmap, int *typemap, int start, int length) {
 /**
  * Insert a character into the middle of a string at position posn
  */
-void insert(char binary_string[], int posn, char newbit) {
+static void insert(char binary_string[], const size_t posn, const char newbit) {
     size_t i, end;
 
     end = strlen(binary_string);
@@ -64,7 +66,7 @@ void insert(char binary_string[], int posn, char newbit) {
 /**
  * Encode input data into a binary string
  */
-int aztec_text_process(unsigned char source[], const unsigned int src_len, char binary_string[], int gs1, int eci) {
+static int aztec_text_process(const unsigned char source[], const unsigned int src_len, char binary_string[], const int gs1, const int eci) {
     int i, j, k, p, bytes;
     int curtable, newtable, lasttable, chartype, maplength, blocks, debug;
 #ifndef _MSC_VER
@@ -723,10 +725,8 @@ int aztec_text_process(unsigned char source[], const unsigned int src_len, char 
 }
 
 /* Prevent data from obscuring reference grid */
-int avoidReferenceGrid(int input) {
-    int output;
+static int avoidReferenceGrid(int output) {
 
-    output = input;
     if (output > 10) {
         output++;
     }
@@ -759,7 +759,7 @@ int avoidReferenceGrid(int input) {
 }
 
 /* Calculate the position of the bits in the grid */
-void populate_map() {
+static void populate_map() {
     int layer, start, length, n, i;
     int x, y;
 
@@ -930,7 +930,7 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], int length) {
         ecc_level = 2;
     }
 
-    data_length = strlen(binary_string);
+    data_length = (int) strlen(binary_string);
 
     layers = 0; /* Keep compiler happy! */
     data_maxsize = 0; /* Keep compiler happy! */
@@ -1059,7 +1059,7 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], int length) {
                 i++;
             } while (i <= (data_length + 1));
             adjusted_string[j] = '\0';
-            adjusted_length = strlen(adjusted_string);
+            adjusted_length = (int) strlen(adjusted_string);
             adjustment_size = adjusted_length - data_length;
 
             /* Add padding */
@@ -1073,7 +1073,7 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], int length) {
             for (i = 0; i < padbits; i++) {
                 strcat(adjusted_string, "1");
             }
-            adjusted_length = strlen(adjusted_string);
+            adjusted_length = (int) strlen(adjusted_string);
 
             count = 0;
             for (i = (adjusted_length - codeword_size); i < adjusted_length; i++) {
@@ -1167,7 +1167,7 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], int length) {
             i++;
         } while (i <= (data_length + 1));
         adjusted_string[j] = '\0';
-        adjusted_length = strlen(adjusted_string);
+        adjusted_length = (int) strlen(adjusted_string);
 
         remainder = adjusted_length % codeword_size;
 
@@ -1179,7 +1179,7 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], int length) {
         for (i = 0; i < padbits; i++) {
             strcat(adjusted_string, "1");
         }
-        adjusted_length = strlen(adjusted_string);
+        adjusted_length = (int) strlen(adjusted_string);
 
         count = 0;
         for (i = (adjusted_length - codeword_size); i < adjusted_length; i++) {

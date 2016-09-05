@@ -58,7 +58,7 @@ int ps_plot(struct zint_symbol *symbol) {
 #ifndef _MSC_VER
     unsigned char local_text[ustrlen(symbol->text) + 1];
 #else
-    unsigned char* local_text = (unsigned char*) _alloca(ustrlen(symbol->text) + 1);
+    unsigned char* local_text = (unsigned char*) malloc(ustrlen(symbol->text) + 1);
 #endif    
 
     row_height = 0;
@@ -67,7 +67,7 @@ int ps_plot(struct zint_symbol *symbol) {
     strcpy(addon, "");
     comp_offset = 0;
     addon_text_posn = 0.0;
-    
+
     if (symbol->show_hrt != 0) {
         /* Copy text from symbol */
         ustrcpy(local_text, symbol->text);
@@ -97,7 +97,7 @@ int ps_plot(struct zint_symbol *symbol) {
                 local_text[0] = '\0';
                 break;
         }
-    }    
+    }
 
     if (symbol->output_options & BARCODE_STDOUT) {
         feps = stdout;
@@ -149,7 +149,7 @@ int ps_plot(struct zint_symbol *symbol) {
     red_paper = bgred / 256.0;
     green_paper = bggrn / 256.0;
     blue_paper = bgblu / 256.0;
-    
+
     /* Convert RGB to CMYK */
     if (red_ink > green_ink) {
         if (blue_ink > red_ink) {
@@ -173,7 +173,7 @@ int ps_plot(struct zint_symbol *symbol) {
         magenta_ink = 0.0;
         yellow_ink = 0.0;
     }
-    
+
     if (red_paper > green_paper) {
         if (blue_paper > red_paper) {
             black_paper = 1 - blue_paper;
@@ -284,9 +284,9 @@ int ps_plot(struct zint_symbol *symbol) {
     }
     fprintf(feps, "%%%%Pages: 0\n");
     if (symbol->symbology != BARCODE_MAXICODE) {
-        fprintf(feps, "%%%%BoundingBox: 0 0 %d %d\n", (int)ceil((symbol->width + xoffset + xoffset) * scaler), (int)ceil((symbol->height + textoffset + yoffset + yoffset) * scaler));
+        fprintf(feps, "%%%%BoundingBox: 0 0 %d %d\n", (int) ceil((symbol->width + xoffset + xoffset) * scaler), (int) ceil((symbol->height + textoffset + yoffset + yoffset) * scaler));
     } else {
-        fprintf(feps, "%%%%BoundingBox: 0 0 %d %d\n", (int)ceil((74.0F + xoffset + xoffset) * scaler), (int)ceil((72.0F + yoffset + yoffset) * scaler));
+        fprintf(feps, "%%%%BoundingBox: 0 0 %d %d\n", (int) ceil((74.0F + xoffset + xoffset) * scaler), (int) ceil((72.0F + yoffset + yoffset) * scaler));
     }
     fprintf(feps, "%%%%EndComments\n");
 
@@ -385,7 +385,7 @@ int ps_plot(struct zint_symbol *symbol) {
     if (symbol->symbology != BARCODE_MAXICODE) {
         /* everything else uses rectangles (or squares) */
         /* Works from the bottom of the symbol up */
-        
+
         int addon_latch = 0;
 
         for (r = 0; r < symbol->rows; r++) {
@@ -405,19 +405,19 @@ int ps_plot(struct zint_symbol *symbol) {
             }
             row_posn += (textoffset + yoffset);
 
-            if ((symbol->output_options & BARCODE_DOTTY_MODE) != 0) { 
+            if ((symbol->output_options & BARCODE_DOTTY_MODE) != 0) {
                 if ((symbol->output_options & CMYK_COLOUR) == 0) {
                     fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
                 } else {
                     fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n", cyan_ink, magenta_ink, yellow_ink, black_ink);
                 }
-                
+
                 /* Use dots instead of squares */
                 for (i = 0; i < symbol->width; i++) {
                     if (module_is_set(symbol, this_row, i)) {
                         fprintf(feps, "%.2f %.2f %.2f TD\n", ((i + xoffset) * scaler) + (scaler / 2.0), (row_posn * scaler) + (scaler / 2.0), (2.0 / 5.0) * scaler);
                     }
-                } 
+                }
             } else {
                 /* Normal mode, with rectangles */
 
@@ -427,7 +427,7 @@ int ps_plot(struct zint_symbol *symbol) {
                 } else {
                     fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n", cyan_ink, magenta_ink, yellow_ink, black_ink);
                 }
-                
+
                 fprintf(feps, "%.2f %.2f ", row_height * scaler, row_posn * scaler);
                 i = 0;
                 if (module_is_set(symbol, this_row, 0)) {

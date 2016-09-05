@@ -59,7 +59,7 @@ static inline char check_digit(unsigned int count) {
 }
 
 /* Code 2 of 5 Standard (Code 2 of 5 Matrix) */
-int matrix_two_of_five(struct zint_symbol *symbol, unsigned char source[], int length) { 
+int matrix_two_of_five(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     int i, error_number;
     char dest[512]; /* 6 + 80 * 6 + 6 + 1 ~ 512*/
@@ -84,7 +84,7 @@ int matrix_two_of_five(struct zint_symbol *symbol, unsigned char source[], int l
     }
 
     /* Stop character */
-	strcat(dest, "41111");
+    strcat(dest, "41111");
 
     expand(symbol, dest);
     ustrcpy(symbol->text, source);
@@ -92,7 +92,7 @@ int matrix_two_of_five(struct zint_symbol *symbol, unsigned char source[], int l
 }
 
 /* Code 2 of 5 Industrial */
-int industrial_two_of_five(struct zint_symbol *symbol, unsigned char source[], int length) { 
+int industrial_two_of_five(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     int i, error_number;
     char dest[512]; /* 6 + 40 * 10 + 6 + 1 */
@@ -117,7 +117,7 @@ int industrial_two_of_five(struct zint_symbol *symbol, unsigned char source[], i
     }
 
     /* Stop character */
-	strcat(dest, "31113");
+    strcat(dest, "31113");
 
     expand(symbol, dest);
     ustrcpy(symbol->text, source);
@@ -125,7 +125,7 @@ int industrial_two_of_five(struct zint_symbol *symbol, unsigned char source[], i
 }
 
 /* Code 2 of 5 IATA */
-int iata_two_of_five(struct zint_symbol *symbol, unsigned char source[], int length) { 
+int iata_two_of_five(struct zint_symbol *symbol, unsigned char source[], int length) {
     int i, error_number;
     char dest[512]; /* 4 + 45 * 10 + 3 + 1 */
 
@@ -149,7 +149,7 @@ int iata_two_of_five(struct zint_symbol *symbol, unsigned char source[], int len
     }
 
     /* stop */
-	strcat(dest, "311");
+    strcat(dest, "311");
 
     expand(symbol, dest);
     ustrcpy(symbol->text, source);
@@ -157,7 +157,7 @@ int iata_two_of_five(struct zint_symbol *symbol, unsigned char source[], int len
 }
 
 /* Code 2 of 5 Data Logic */
-int logic_two_of_five(struct zint_symbol *symbol, unsigned char source[], int length) { 
+int logic_two_of_five(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     int i, error_number;
     char dest[512]; /* 4 + 80 * 6 + 3 + 1 */
@@ -182,7 +182,7 @@ int logic_two_of_five(struct zint_symbol *symbol, unsigned char source[], int le
     }
 
     /* Stop character */
-	strcat(dest, "311");
+    strcat(dest, "311");
 
     expand(symbol, dest);
     ustrcpy(symbol->text, source);
@@ -190,7 +190,7 @@ int logic_two_of_five(struct zint_symbol *symbol, unsigned char source[], int le
 }
 
 /* Code 2 of 5 Interleaved */
-int interleaved_two_of_five(struct zint_symbol *symbol, unsigned char source[], int length) { 
+int interleaved_two_of_five(struct zint_symbol *symbol, const unsigned char source[], size_t length) {
 
     int i, j, k, error_number;
     char bars[7], spaces[7], mixed[14], dest[1000];
@@ -219,7 +219,7 @@ int interleaved_two_of_five(struct zint_symbol *symbol, unsigned char source[], 
         ustrcpy(temp, (unsigned char *) "0");
         length++;
     }
-    strcat((char*)temp, (char*)source);
+    strcat((char*) temp, (char*) source);
 
     /* start character */
     strcpy(dest, "1111");
@@ -240,11 +240,11 @@ int interleaved_two_of_five(struct zint_symbol *symbol, unsigned char source[], 
             k++;
         }
         mixed[k] = '\0';
-		strcat(dest, mixed);
+        strcat(dest, mixed);
     }
 
     /* Stop character */
-	strcat(dest, "311");
+    strcat(dest, "311");
 
     expand(symbol, dest);
     ustrcpy(symbol->text, temp);
@@ -296,7 +296,7 @@ int itf14(struct zint_symbol *symbol, unsigned char source[], int length) {
 }
 
 /* Deutshe Post Leitcode */
-int dpleit(struct zint_symbol *symbol, unsigned char source[], int length) { 
+int dpleit(struct zint_symbol *symbol, unsigned char source[], int length) {
     int i, error_number;
     unsigned int count;
     char localstr[16];
@@ -334,7 +334,7 @@ int dpleit(struct zint_symbol *symbol, unsigned char source[], int length) {
 }
 
 /* Deutsche Post Identcode */
-int dpident(struct zint_symbol *symbol, unsigned char source[], int length) { 
+int dpident(struct zint_symbol *symbol, unsigned char source[], int length) {
     int i, error_number, zeroes;
     unsigned int count;
     char localstr[16];

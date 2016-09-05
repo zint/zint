@@ -35,7 +35,7 @@
 #include <stdlib.h>
 #include "common.h"
 
-extern int c39(struct zint_symbol *symbol, unsigned char source[], int length);
+extern int c39(struct zint_symbol *symbol, unsigned char source[], const size_t length);
 /* Codabar table checked against EN 798:1995 */
 
 #define CALCIUM	"0123456789-$:/.+ABCD"

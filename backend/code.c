@@ -187,7 +187,7 @@ int code_11(struct zint_symbol *symbol, unsigned char source[], int length) { /*
 }
 
 /* Code 39 */
-int c39(struct zint_symbol *symbol, unsigned char source[], int length) {
+int c39(struct zint_symbol *symbol, unsigned char source[], const size_t length) {
     unsigned int i;
     unsigned int counter;
     char check_digit;
@@ -269,7 +269,7 @@ int c39(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     if ((symbol->symbology == BARCODE_LOGMARS) || (symbol->symbology == BARCODE_HIBC_39)) {
         /* LOGMARS uses wider 'wide' bars than normal Code 39 */
-        counter = strlen(dest);
+        counter = (unsigned int) strlen(dest);
         for (i = 0; i < counter; i++) {
             if (dest[i] == '2') {
                 dest[i] = '3';
@@ -404,7 +404,7 @@ int c93(struct zint_symbol *symbol, unsigned char source[], int length) {
     }
 
     /* Now we can check the true length of the barcode */
-    h = strlen(buffer);
+    h = (int) strlen(buffer);
     if (h > 107) {
         strcpy(symbol->errtxt, "Input too long");
         return ZINT_ERROR_TOO_LONG;
