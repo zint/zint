@@ -43,6 +43,8 @@ extern "C" {
 #include <stdint.h>
 #endif
 
+#pragma pack (1)
+    
     typedef struct pcx_header {
         uint8_t manufacturer;
         uint8_t version;
@@ -62,12 +64,10 @@ extern "C" {
         uint16_t horiz_screen_size;
         uint16_t vert_screen_size;
         uint8_t filler[54];
-    }
-#ifdef __GNUC__
-	__attribute__((__packed__ ))
-#endif
-	pcx_header_t;
+    } pcx_header_t;
 
+#pragma pack ()
+    
 #ifdef __cplusplus
 }
 #endif
