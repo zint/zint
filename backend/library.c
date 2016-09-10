@@ -205,7 +205,7 @@ extern int code_one(struct zint_symbol *symbol, unsigned char source[], int leng
 extern int grid_matrix(struct zint_symbol *symbol, const unsigned char source[], int length); /* Grid Matrix */
 extern int han_xin(struct zint_symbol * symbol, const unsigned char source[], int length); /* Han Xin */
 extern int dotcode(struct zint_symbol * symbol, const unsigned char source[], int length); /* DotCode */
-extern int codablock(struct zint_symbol * symbol, const unsigned char source[], int length); /* Codablock */
+extern int codablock(struct zint_symbol * symbol, unsigned char source[], int length); /* Codablock */
 
 extern int plot_raster(struct zint_symbol *symbol, int rotate_angle, int file_type); /* Plot to PNG/BMP/PCX */
 extern int render_plot(struct zint_symbol *symbol, float width, float height); /* Plot to gLabels */
