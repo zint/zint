@@ -70,58 +70,25 @@ static void writepng_error_handler(png_structp png_ptr, png_const_charp msg) {
     longjmp(graphic->jmpbuf, 1);
 }
 
-int png_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width, char *pixelbuf, int rotate_angle) {
+int png_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
     struct mainprog_info_type wpng_info;
     struct mainprog_info_type *graphic;
     png_structp png_ptr;
     png_infop info_ptr;
     unsigned char *image_data;
-    int i, row, column, errno;
+    int i, row, column;
     int fgred, fggrn, fgblu, bgred, bggrn, bgblu;
 
 #ifndef _MSC_VER
-    unsigned char outdata[image_width * 3];
+    unsigned char outdata[symbol->bitmap_width * 3];
 #else
-    unsigned char* outdata = (unsigned char*) _alloca(image_width * 3);
+    unsigned char* outdata = (unsigned char*) _alloca(symbol->bitmap_width * 3);
 #endif
 
     graphic = &wpng_info;
-
-    switch (rotate_angle) {
-        case 0:
-        case 180:
-            graphic->width = image_width;
-            graphic->height = image_height;
-            break;
-        case 90:
-        case 270:
-            graphic->width = image_height;
-            graphic->height = image_width;
-            break;
-    }
-
-    /* sort out colour options */
-    to_upper((unsigned char*) symbol->fgcolour);
-    to_upper((unsigned char*) symbol->bgcolour);
-
-    if (strlen(symbol->fgcolour) != 6) {
-        strcpy(symbol->errtxt, "Malformed foreground colour target");
-        return ZINT_ERROR_INVALID_OPTION;
-    }
-    if (strlen(symbol->bgcolour) != 6) {
-        strcpy(symbol->errtxt, "Malformed background colour target");
-        return ZINT_ERROR_INVALID_OPTION;
-    }
-    errno = is_sane(SSET, (unsigned char*) symbol->fgcolour, strlen(symbol->fgcolour));
-    if (errno == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "Malformed foreground colour target");
-        return ZINT_ERROR_INVALID_OPTION;
-    }
-    errno = is_sane(SSET, (unsigned char*) symbol->bgcolour, strlen(symbol->bgcolour));
-    if (errno == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "Malformed background colour target");
-        return ZINT_ERROR_INVALID_OPTION;
-    }
+    
+    graphic->width = symbol->bitmap_width;
+    graphic->height = symbol->bitmap_height;
 
     fgred = (16 * ctoi(symbol->fgcolour[0])) + ctoi(symbol->fgcolour[1]);
     fggrn = (16 * ctoi(symbol->fgcolour[2])) + ctoi(symbol->fgcolour[3]);
@@ -186,103 +153,26 @@ int png_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width
     png_set_packing(png_ptr);
 
     /* Pixel Plotting */
+    for (row = 0; row < symbol->bitmap_height; row++) {
+        for (column = 0; column < symbol->bitmap_width; column++) {
+            i = column * 3;
+            switch (*(pixelbuf + (symbol->bitmap_width * row) + column)) {
+                case '1':
+                    outdata[i] = fgred;
+                    outdata[i + 1] = fggrn;
+                    outdata[i + 2] = fgblu;
+                    break;
+                default:
+                    outdata[i] = bgred;
+                    outdata[i + 1] = bggrn;
+                    outdata[i + 2] = bgblu;
+                    break;
 
-    switch (rotate_angle) {
-        case 0: /* Plot the right way up */
-            for (row = 0; row < image_height; row++) {
-                for (column = 0; column < image_width; column++) {
-                    i = column * 3;
-                    switch (*(pixelbuf + (image_width * row) + column)) {
-                        case '1':
-                            outdata[i] = fgred;
-                            outdata[i + 1] = fggrn;
-                            outdata[i + 2] = fgblu;
-                            break;
-                        default:
-                            outdata[i] = bgred;
-                            outdata[i + 1] = bggrn;
-                            outdata[i + 2] = bgblu;
-                            break;
-
-                    }
-                }
-                /* write row contents to file */
-                image_data = outdata;
-                png_write_row(png_ptr, image_data);
             }
-            break;
-        case 90: /* Plot 90 degrees clockwise */
-            for (row = 0; row < image_width; row++) {
-                for (column = 0; column < image_height; column++) {
-                    i = column * 3;
-                    switch (*(pixelbuf + (image_width * (image_height - column - 1)) + row)) {
-                        case '1':
-                            outdata[i] = fgred;
-                            outdata[i + 1] = fggrn;
-                            outdata[i + 2] = fgblu;
-                            break;
-                        default:
-                            outdata[i] = bgred;
-                            outdata[i + 1] = bggrn;
-                            outdata[i + 2] = bgblu;
-                            break;
-
-                    }
-                }
-
-                /* write row contents to file */
-                image_data = outdata;
-                png_write_row(png_ptr, image_data);
-            }
-            break;
-        case 180: /* Plot upside down */
-            for (row = 0; row < image_height; row++) {
-                for (column = 0; column < image_width; column++) {
-                    i = column * 3;
-                    switch (*(pixelbuf + (image_width * (image_height - row - 1)) + (image_width - column - 1))) {
-                        case '1':
-                            outdata[i] = fgred;
-                            outdata[i + 1] = fggrn;
-                            outdata[i + 2] = fgblu;
-                            break;
-                        default:
-                            outdata[i] = bgred;
-                            outdata[i + 1] = bggrn;
-                            outdata[i + 2] = bgblu;
-                            break;
-
-                    }
-                }
-
-                /* write row contents to file */
-                image_data = outdata;
-                png_write_row(png_ptr, image_data);
-            }
-            break;
-        case 270: /* Plot 90 degrees anti-clockwise */
-            for (row = 0; row < image_width; row++) {
-                for (column = 0; column < image_height; column++) {
-                    i = column * 3;
-                    switch (*(pixelbuf + (image_width * column) + (image_width - row - 1))) {
-                        case '1':
-                            outdata[i] = fgred;
-                            outdata[i + 1] = fggrn;
-                            outdata[i + 2] = fgblu;
-                            break;
-                        default:
-                            outdata[i] = bgred;
-                            outdata[i + 1] = bggrn;
-                            outdata[i + 2] = bgblu;
-                            break;
-
-                    }
-                }
-
-                /* write row contents to file */
-                image_data = outdata;
-                png_write_row(png_ptr, image_data);
-            }
-            break;
+        }
+        /* write row contents to file */
+        image_data = outdata;
+        png_write_row(png_ptr, image_data);
     }
 
     /* End the file */

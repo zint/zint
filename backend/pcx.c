@@ -44,36 +44,15 @@
 
 #define SSET	"0123456789ABCDEF"
 
-int pcx_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width, char *pixelbuf, int rotate_angle) {
+int pcx_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
     int fgred, fggrn, fgblu, bgred, bggrn, bgblu;
-    int errno;
     int row, column, i, colour;
     int run_count;
     FILE *pcx_file;
     pcx_header_t header;
 #ifdef _MSC_VER
-    char* rotated_bitmap;
     unsigned char* rle_row;
 #endif
-
-#ifndef _MSC_VER
-    char rotated_bitmap[image_height * image_width];
-#else
-    rotated_bitmap = (char *) _alloca((image_height * image_width) * sizeof (char));
-#endif /* _MSC_VER */
-
-    switch (rotate_angle) {
-        case 0:
-        case 180:
-            symbol->bitmap_width = image_width;
-            symbol->bitmap_height = image_height;
-            break;
-        case 90:
-        case 270:
-            symbol->bitmap_width = image_height;
-            symbol->bitmap_height = image_width;
-            break;
-    }
 
 #ifndef _MSC_VER
     unsigned char rle_row[symbol->bitmap_width];
@@ -81,71 +60,12 @@ int pcx_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width
     rle_row = (unsigned char *) _alloca((symbol->bitmap_width * 6) * sizeof (unsigned char));
 #endif /* _MSC_VER */
 
-    /* sort out colour options */
-    to_upper((unsigned char*) symbol->fgcolour);
-    to_upper((unsigned char*) symbol->bgcolour);
-
-    if (strlen(symbol->fgcolour) != 6) {
-        strcpy(symbol->errtxt, "Malformed foreground colour target");
-        return ZINT_ERROR_INVALID_OPTION;
-    }
-    if (strlen(symbol->bgcolour) != 6) {
-        strcpy(symbol->errtxt, "Malformed background colour target");
-        return ZINT_ERROR_INVALID_OPTION;
-    }
-    errno = is_sane(SSET, (unsigned char*) symbol->fgcolour, strlen(symbol->fgcolour));
-    if (errno == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "Malformed foreground colour target");
-        return ZINT_ERROR_INVALID_OPTION;
-    }
-    errno = is_sane(SSET, (unsigned char*) symbol->bgcolour, strlen(symbol->fgcolour));
-    if (errno == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "Malformed background colour target");
-        return ZINT_ERROR_INVALID_OPTION;
-    }
-
     fgred = (16 * ctoi(symbol->fgcolour[0])) + ctoi(symbol->fgcolour[1]);
     fggrn = (16 * ctoi(symbol->fgcolour[2])) + ctoi(symbol->fgcolour[3]);
     fgblu = (16 * ctoi(symbol->fgcolour[4])) + ctoi(symbol->fgcolour[5]);
     bgred = (16 * ctoi(symbol->bgcolour[0])) + ctoi(symbol->bgcolour[1]);
     bggrn = (16 * ctoi(symbol->bgcolour[2])) + ctoi(symbol->bgcolour[3]);
     bgblu = (16 * ctoi(symbol->bgcolour[4])) + ctoi(symbol->bgcolour[5]);
-
-    /* Rotate image before plotting */
-    switch (rotate_angle) {
-        case 0: /* Plot the right way up */
-            for (row = 0; row < image_height; row++) {
-                for (column = 0; column < image_width; column++) {
-                    rotated_bitmap[(row * image_width) + column] =
-                            *(pixelbuf + (image_width * row) + column);
-                }
-            }
-            break;
-        case 90: /* Plot 90 degrees clockwise */
-            for (row = 0; row < image_width; row++) {
-                for (column = 0; column < image_height; column++) {
-                    rotated_bitmap[(row * image_height) + column] =
-                            *(pixelbuf + (image_width * (image_height - column - 1)) + row);
-                }
-            }
-            break;
-        case 180: /* Plot upside down */
-            for (row = 0; row < image_height; row++) {
-                for (column = 0; column < image_width; column++) {
-                    rotated_bitmap[(row * image_width) + column] =
-                            *(pixelbuf + (image_width * (image_height - row - 1)) + (image_width - column - 1));
-                }
-            }
-            break;
-        case 270: /* Plot 90 degrees anti-clockwise */
-            for (row = 0; row < image_width; row++) {
-                for (column = 0; column < image_height; column++) {
-                    rotated_bitmap[(row * image_height) + column] =
-                            *(pixelbuf + (image_width * column) + (image_width - row - 1));
-                }
-            }
-            break;
-    }
 
 
     header.manufacturer = 10; // ZSoft
@@ -203,21 +123,21 @@ int pcx_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width
             for (column = 0; column < symbol->bitmap_width; column++) {
                 switch (colour) {
                     case 0:
-                        if (rotated_bitmap[(row * symbol->bitmap_width) + column] == '1') {
+                        if (pixelbuf[(row * symbol->bitmap_width) + column] == '1') {
                             rle_row[column] = fgred;
                         } else {
                             rle_row[column] = bgred;
                         }
                         break;
                     case 1:
-                        if (rotated_bitmap[(row * symbol->bitmap_width) + column] == '1') {
+                        if (pixelbuf[(row * symbol->bitmap_width) + column] == '1') {
                             rle_row[column] = fggrn;
                         } else {
                             rle_row[column] = bggrn;
                         }
                         break;
                     case 2:
-                        if (rotated_bitmap[(row * symbol->bitmap_width) + column] == '1') {
+                        if (pixelbuf[(row * symbol->bitmap_width) + column] == '1') {
                             rle_row[column] = fgblu;
                         } else {
                             rle_row[column] = bgblu;

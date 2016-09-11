@@ -260,103 +260,20 @@ int gif_lzw(unsigned char *pOut, int OutLength, unsigned char *pIn, int InLen) {
     }
 }
 
-int gif_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width, char *pixelbuf, int rotate_angle) {
+int gif_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
     char outbuf[10];
-    int errno;
-    int row, column;
     FILE *gif_file;
-    unsigned short ImageWidth = image_width;
-    unsigned short ImageHeight = image_height;
     unsigned short usTemp;
     int byte_out;
 #ifdef _MSC_VER
-    char* rotated_bitmap;
     char * lzwoutbuf;
 #endif
 
 #ifndef _MSC_VER
-    char rotated_bitmap[image_height * image_width];
-    char lzwoutbuf[image_height * image_width];
+    char lzwoutbuf[symbol->bitmap_height * symbol->bitmap_width];
 #else
-    rotated_bitmap = (char *) _alloca((image_height * image_width) * sizeof (char));
     lzwoutbuf = (char *) _alloca((image_height * image_width) * sizeof (char));
 #endif /* _MSC_VER */
-
-    switch (rotate_angle) {
-        case 0:
-        case 180:
-            symbol->bitmap_width = image_width;
-            symbol->bitmap_height = image_height;
-            break;
-        case 90:
-        case 270:
-            ImageWidth = image_height;
-            ImageHeight = image_width;
-            symbol->bitmap_width = image_height;
-            symbol->bitmap_height = image_width;
-            break;
-    }
-
-    /* sort out colour options */
-    to_upper((unsigned char*) symbol->fgcolour);
-    to_upper((unsigned char*) symbol->bgcolour);
-
-    if (strlen(symbol->fgcolour) != 6) {
-        strcpy(symbol->errtxt, "Malformed foreground colour target");
-        return ZINT_ERROR_INVALID_OPTION;
-    }
-    if (strlen(symbol->bgcolour) != 6) {
-        strcpy(symbol->errtxt, "Malformed background colour target");
-        return ZINT_ERROR_INVALID_OPTION;
-    }
-    errno = is_sane(SSET, (unsigned char*) symbol->fgcolour, strlen(symbol->fgcolour));
-    if (errno == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "Malformed foreground colour target");
-        return ZINT_ERROR_INVALID_OPTION;
-    }
-    errno = is_sane(SSET, (unsigned char*) symbol->bgcolour, strlen(symbol->fgcolour));
-    if (errno == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "Malformed background colour target");
-        return ZINT_ERROR_INVALID_OPTION;
-    }
-
-    /* Rotate image before plotting */
-    switch (rotate_angle) {
-        case 0: /* Plot the right way up */
-            for (row = 0; row < image_height; row++) {
-                for (column = 0; column < image_width; column++) {
-                    rotated_bitmap[(row * image_width) + column] =
-                            *(pixelbuf + (image_width * row) + column);
-                }
-            }
-            break;
-        case 90: /* Plot 90 degrees clockwise */
-            for (row = 0; row < image_width; row++) {
-                for (column = 0; column < image_height; column++) {
-                    rotated_bitmap[(row * image_height) + column] =
-                            *(pixelbuf + (image_width * (image_height - column - 1)) + row);
-                }
-            }
-            break;
-        case 180: /* Plot upside down */
-            for (row = 0; row < image_height; row++) {
-                for (column = 0; column < image_width; column++) {
-                    rotated_bitmap[(row * image_width) + column] =
-                            *(pixelbuf + (image_width * (image_height - row - 1)) + (image_width - column - 1));
-                }
-            }
-            break;
-        case 270: /* Plot 90 degrees anti-clockwise */
-            for (row = 0; row < image_width; row++) {
-                for (column = 0; column < image_height; column++) {
-                    rotated_bitmap[(row * image_height) + column] =
-                            *(pixelbuf + (image_width * column) + (image_width - row - 1));
-                }
-            }
-            break;
-    }
-
-
 
     /* Open output file in binary mode */
     if ((symbol->output_options & BARCODE_STDOUT) != 0) {
@@ -388,11 +305,11 @@ int gif_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width
     fwrite(outbuf, 6, 1, gif_file);
     /* Screen Descriptor (7) */
     /* Screen Width */
-    usTemp = (unsigned short) ImageWidth;
+    usTemp = (unsigned short) symbol->bitmap_width;
     outbuf[0] = (unsigned char) (0xff & usTemp);
     outbuf[1] = (unsigned char) ((0xff00 & usTemp) / 0x100);
     /* Screen Height */
-    usTemp = (unsigned short) ImageHeight;
+    usTemp = (unsigned short) symbol->bitmap_height;
     outbuf[2] = (unsigned char) (0xff & usTemp);
     outbuf[3] = (unsigned char) ((0xff00 & usTemp) / 0x100);
     /* write ImageBits-1 to the three least significant bits of byte 5  of
@@ -452,11 +369,11 @@ int gif_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width
     outbuf[3] = 0x00;
     outbuf[4] = 0x00;
     /* Image Width (low byte first) */
-    outbuf[5] = (unsigned char) (0xff & ImageWidth);
-    outbuf[6] = (unsigned char) ((0xff00 & ImageWidth) / 0x100);
+    outbuf[5] = (unsigned char) (0xff & symbol->bitmap_width);
+    outbuf[6] = (unsigned char) ((0xff00 & symbol->bitmap_width) / 0x100);
     /* Image Height */
-    outbuf[7] = (unsigned char) (0xff & ImageHeight);
-    outbuf[8] = (unsigned char) ((0xff00 & ImageHeight) / 0x100);
+    outbuf[7] = (unsigned char) (0xff & symbol->bitmap_height);
+    outbuf[8] = (unsigned char) ((0xff00 & symbol->bitmap_height) / 0x100);
 
     /* Byte 10 contains the interlaced flag and
      * information on the local color table.
@@ -468,9 +385,9 @@ int gif_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width
     /* call lzw encoding */
     byte_out = gif_lzw(
             (unsigned char *) lzwoutbuf,
-            image_height * image_width,
-            (unsigned char *) rotated_bitmap,
-            image_height * image_width);
+            symbol->bitmap_height * symbol->bitmap_width,
+            (unsigned char *) pixelbuf,
+            symbol->bitmap_height * symbol->bitmap_width);
     if (byte_out <= 0) {
         fclose(gif_file);
         return ZINT_ERROR_MEMORY;

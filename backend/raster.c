@@ -47,31 +47,109 @@
 #include "font.h" /* Font for human readable text */
 
 #ifndef NO_PNG
-extern int png_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width, char *pixelbuf, int rotate_angle);
+extern int png_pixel_plot(struct zint_symbol *symbol, char *pixelbuf);
 #endif /* NO_PNG */
-extern int bmp_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width, char *pixelbuf, int rotate_angle);
-extern int pcx_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width, char *pixelbuf, int rotate_angle);
-extern int gif_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width, char *pixelbuf, int rotate_angle);
+extern int bmp_pixel_plot(struct zint_symbol *symbol, char *pixelbuf);
+extern int pcx_pixel_plot(struct zint_symbol *symbol, char *pixelbuf);
+extern int gif_pixel_plot(struct zint_symbol *symbol, char *pixelbuf);
 
 int save_raster_image_to_file(struct zint_symbol *symbol, int image_height, int image_width, char *pixelbuf, int rotate_angle, int image_type) {
     int error_number;
+    int row, column;
+#ifndef _MSC_VER
+    char rotated_pixbuf[image_height * image_width];
+#else
+    char* rrotated_pixbuf = (char *) _alloca((image_height * image_width) * sizeof (char));
+#endif /* _MSC_VER */
 
+    switch (rotate_angle) {
+        case 0:
+        case 180:
+            symbol->bitmap_width = image_width;
+            symbol->bitmap_height = image_height;
+            break;
+        case 90:
+        case 270:
+            symbol->bitmap_width = image_height;
+            symbol->bitmap_height = image_width;
+            break;
+    }
+    
+    /* sort out colour options */
+    to_upper((unsigned char*) symbol->fgcolour);
+    to_upper((unsigned char*) symbol->bgcolour);
+
+    if (strlen(symbol->fgcolour) != 6) {
+        strcpy(symbol->errtxt, "Malformed foreground colour target");
+        return ZINT_ERROR_INVALID_OPTION;
+    }
+    if (strlen(symbol->bgcolour) != 6) {
+        strcpy(symbol->errtxt, "Malformed background colour target");
+        return ZINT_ERROR_INVALID_OPTION;
+    }
+    error_number = is_sane(SSET, (unsigned char*) symbol->fgcolour, strlen(symbol->fgcolour));
+    if (error_number == ZINT_ERROR_INVALID_DATA) {
+        strcpy(symbol->errtxt, "Malformed foreground colour target");
+        return ZINT_ERROR_INVALID_OPTION;
+    }
+    error_number = is_sane(SSET, (unsigned char*) symbol->bgcolour, strlen(symbol->fgcolour));
+    if (error_number == ZINT_ERROR_INVALID_DATA) {
+        strcpy(symbol->errtxt, "Malformed background colour target");
+        return ZINT_ERROR_INVALID_OPTION;
+    }
+    
+    /* Rotate image before plotting */
+    switch (rotate_angle) {
+        case 0: /* Plot the right way up */
+            for (row = 0; row < image_height; row++) {
+                for (column = 0; column < image_width; column++) {
+                    rotated_pixbuf[(row * image_width) + column] =
+                            *(pixelbuf + (image_width * row) + column);
+                }
+            }
+            break;
+        case 90: /* Plot 90 degrees clockwise */
+            for (row = 0; row < image_width; row++) {
+                for (column = 0; column < image_height; column++) {
+                    rotated_pixbuf[(row * image_height) + column] =
+                            *(pixelbuf + (image_width * (image_height - column - 1)) + row);
+                }
+            }
+            break;
+        case 180: /* Plot upside down */
+            for (row = 0; row < image_height; row++) {
+                for (column = 0; column < image_width; column++) {
+                    rotated_pixbuf[(row * image_width) + column] =
+                            *(pixelbuf + (image_width * (image_height - row - 1)) + (image_width - column - 1));
+                }
+            }
+            break;
+        case 270: /* Plot 90 degrees anti-clockwise */
+            for (row = 0; row < image_width; row++) {
+                for (column = 0; column < image_height; column++) {
+                    rotated_pixbuf[(row * image_height) + column] =
+                            *(pixelbuf + (image_width * column) + (image_width - row - 1));
+                }
+            }
+            break;
+    }
+    
     switch (image_type) {
         case OUT_PNG_FILE:
 #ifndef NO_PNG
-            error_number = png_pixel_plot(symbol, image_height, image_width, pixelbuf, rotate_angle);
+            error_number = png_pixel_plot(symbol, rotated_pixbuf);
 #else
             return ZINT_ERROR_INVALID_OPTION;
 #endif
             break;
         case OUT_PCX_FILE:
-            error_number = pcx_pixel_plot(symbol, image_height, image_width, pixelbuf, rotate_angle);
+            error_number = pcx_pixel_plot(symbol, rotated_pixbuf);
             break;
         case OUT_GIF_FILE:
-            error_number = gif_pixel_plot(symbol, image_height, image_width, pixelbuf, rotate_angle);
+            error_number = gif_pixel_plot(symbol, rotated_pixbuf);
             break;
         default:
-            error_number = bmp_pixel_plot(symbol, image_height, image_width, pixelbuf, rotate_angle);
+            error_number = bmp_pixel_plot(symbol, rotated_pixbuf);
             break;
     }
 

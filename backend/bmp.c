@@ -43,8 +43,8 @@
 
 #define SSET	"0123456789ABCDEF"
 
-int bmp_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width, char *pixelbuf, int rotate_angle) {
-    int i, row, column, errno;
+int bmp_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
+    int i, row, column;
     int fgred, fggrn, fgblu, bgred, bggrn, bgblu;
     int row_size;
     unsigned int data_size;
@@ -53,47 +53,11 @@ int bmp_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width
     bitmap_file_header_t file_header;
     bitmap_info_header_t info_header;
 
-    switch (rotate_angle) {
-        case 0:
-        case 180:
-            symbol->bitmap_width = image_width;
-            symbol->bitmap_height = image_height;
-            break;
-        case 90:
-        case 270:
-            symbol->bitmap_width = image_height;
-            symbol->bitmap_height = image_width;
-            break;
-    }
-
     if (symbol->bitmap != NULL)
         free(symbol->bitmap);
 
     row_size = 4 * floor((24.0 * symbol->bitmap_width + 31) / 32);
     symbol->bitmap = (char *) malloc(row_size * symbol->bitmap_height);
-
-    /* sort out colour options */
-    to_upper((unsigned char*) symbol->fgcolour);
-    to_upper((unsigned char*) symbol->bgcolour);
-
-    if (strlen(symbol->fgcolour) != 6) {
-        strcpy(symbol->errtxt, "Malformed foreground colour target");
-        return ZINT_ERROR_INVALID_OPTION;
-    }
-    if (strlen(symbol->bgcolour) != 6) {
-        strcpy(symbol->errtxt, "Malformed background colour target");
-        return ZINT_ERROR_INVALID_OPTION;
-    }
-    errno = is_sane(SSET, (unsigned char*) symbol->fgcolour, strlen(symbol->fgcolour));
-    if (errno == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "Malformed foreground colour target");
-        return ZINT_ERROR_INVALID_OPTION;
-    }
-    errno = is_sane(SSET, (unsigned char*) symbol->bgcolour, strlen(symbol->fgcolour));
-    if (errno == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "Malformed background colour target");
-        return ZINT_ERROR_INVALID_OPTION;
-    }
 
     fgred = (16 * ctoi(symbol->fgcolour[0])) + ctoi(symbol->fgcolour[1]);
     fggrn = (16 * ctoi(symbol->fgcolour[2])) + ctoi(symbol->fgcolour[3]);
@@ -104,87 +68,23 @@ int bmp_pixel_plot(struct zint_symbol *symbol, int image_height, int image_width
 
     /* Pixel Plotting */
     i = 0;
-    switch (rotate_angle) {
-        case 0: /* Plot the right way up */
-            for (row = 0; row < image_height; row++) {
-                for (column = 0; column < image_width; column++) {
-                    i = (3 * column) + (row * row_size);
-                    switch (*(pixelbuf + (image_width * (image_height - row - 1)) + column)) {
-                        case '1':
-                            symbol->bitmap[i] = fgblu;
-                            symbol->bitmap[i + 1] = fggrn;
-                            symbol->bitmap[i + 2] = fgred;
-                            break;
-                        default:
-                            symbol->bitmap[i] = bgblu;
-                            symbol->bitmap[i + 1] = bggrn;
-                            symbol->bitmap[i + 2] = bgred;
-                            break;
+    for (row = 0; row < symbol->bitmap_height; row++) {
+        for (column = 0; column < symbol->bitmap_width; column++) {
+            i = (3 * column) + (row * row_size);
+            switch (*(pixelbuf + (symbol->bitmap_width * (symbol->bitmap_height - row - 1)) + column)) {
+                case '1':
+                    symbol->bitmap[i] = fgblu;
+                    symbol->bitmap[i + 1] = fggrn;
+                    symbol->bitmap[i + 2] = fgred;
+                    break;
+                default:
+                    symbol->bitmap[i] = bgblu;
+                    symbol->bitmap[i + 1] = bggrn;
+                    symbol->bitmap[i + 2] = bgred;
+                    break;
 
-                    }
-                }
             }
-            break;
-        case 90: /* Plot 90 degrees clockwise */
-            for (row = 0; row < image_width; row++) {
-                for (column = 0; column < image_height; column++) {
-                    i = (3 * column) + (row * row_size);
-                    switch (*(pixelbuf + (image_width * (image_height - column - 1)) + (image_width - row - 1))) {
-                        case '1':
-                            symbol->bitmap[i] = fgblu;
-                            symbol->bitmap[i + 1] = fggrn;
-                            symbol->bitmap[i + 2] = fgred;
-                            break;
-                        default:
-                            symbol->bitmap[i] = bgblu;
-                            symbol->bitmap[i + 1] = bggrn;
-                            symbol->bitmap[i + 2] = bgred;
-                            break;
-
-                    }
-                }
-            }
-            break;
-        case 180: /* Plot upside down */
-            for (row = 0; row < image_height; row++) {
-                for (column = 0; column < image_width; column++) {
-                    i = (3 * column) + (row * row_size);
-                    switch (*(pixelbuf + (image_width * row) + (image_width - column - 1))) {
-                        case '1':
-                            symbol->bitmap[i] = fgblu;
-                            symbol->bitmap[i + 1] = fggrn;
-                            symbol->bitmap[i + 2] = fgred;
-                            break;
-                        default:
-                            symbol->bitmap[i] = bgblu;
-                            symbol->bitmap[i + 1] = bggrn;
-                            symbol->bitmap[i + 2] = bgred;
-                            break;
-
-                    }
-                }
-            }
-            break;
-        case 270: /* Plot 90 degrees anti-clockwise */
-            for (row = 0; row < image_width; row++) {
-                for (column = 0; column < image_height; column++) {
-                    i = (3 * column) + (row * row_size);
-                    switch (*(pixelbuf + (image_width * column) + row)) {
-                        case '1':
-                            symbol->bitmap[i] = fgblu;
-                            symbol->bitmap[i + 1] = fggrn;
-                            symbol->bitmap[i + 2] = fgred;
-                            break;
-                        default:
-                            symbol->bitmap[i] = bgblu;
-                            symbol->bitmap[i + 1] = bggrn;
-                            symbol->bitmap[i + 2] = bgred;
-                            break;
-
-                    }
-                }
-            }
-            break;
+        }
     }
 
     data_size = symbol->bitmap_height * row_size;
