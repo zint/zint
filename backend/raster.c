@@ -59,7 +59,7 @@ int save_raster_image_to_file(struct zint_symbol *symbol, int image_height, int 
 #ifndef _MSC_VER
     char rotated_pixbuf[image_height * image_width];
 #else
-    char* rrotated_pixbuf = (char *) _alloca((image_height * image_width) * sizeof (char));
+    char* rotated_pixbuf = (char *) _alloca((image_height * image_width) * sizeof (char));
 #endif /* _MSC_VER */
 
     switch (rotate_angle) {
