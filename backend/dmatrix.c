@@ -46,6 +46,10 @@
 #include <math.h>
 #ifdef _MSC_VER
 #include <malloc.h>
+/* ceilf (C99) not before MSVC++2013 (C++ 12.0) */
+#if _MSC_VER < 1800
+#define ceilf ceil
+#endif
 #endif
 #include "reedsol.h"
 #include "common.h"

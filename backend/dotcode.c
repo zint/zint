@@ -38,10 +38,10 @@
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
-#include <stdint.h>
 #ifndef _MSC_VER
 #include <stdint.h>
 #else
+#include "ms_stdint.h"
 #include <malloc.h>
 #endif
 #include "common.h"

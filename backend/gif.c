@@ -272,7 +272,7 @@ int gif_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
 #ifndef _MSC_VER
     char lzwoutbuf[symbol->bitmap_height * symbol->bitmap_width];
 #else
-    lzwoutbuf = (char *) _alloca((image_height * image_width) * sizeof (char));
+    lzwoutbuf = (char *) _alloca((symbol->bitmap_height * symbol->bitmap_width) * sizeof (char));
 #endif /* _MSC_VER */
 
     /* Open output file in binary mode */
