@@ -881,8 +881,14 @@ int ps_plot(struct zint_symbol *symbol) {
                     } else {
                         fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n", cyan_ink, magenta_ink, yellow_ink, black_ink);
                     }
-                    for (r = 1; r < symbol->rows; r++) {
-                        fprintf(feps, "%.2f %.2f TB %.2f %.2f TR\n", 2.0 * scaler, ((r * row_height) + textoffset + yoffset - 1) * scaler, xoffset * scaler, symbol->width * scaler);
+                    if (symbol->symbology != BARCODE_CODABLOCKF) {
+                        for (r = 1; r < symbol->rows; r++) {
+                            fprintf(feps, "%.2f %.2f TB %.2f %.2f TR\n", 2.0 * scaler, ((r * row_height) + textoffset + yoffset - 1) * scaler, xoffset * scaler, symbol->width * scaler);
+                        }
+                    } else {
+                        for (r = 1; r < symbol->rows; r++) {
+                            fprintf(feps, "%.2f %.2f TB %.2f %.2f TR\n", 2.0 * scaler, ((r * row_height) + textoffset + yoffset - 1) * scaler, (xoffset + 11) * scaler, (symbol->width - 25) * scaler);
+                        }
                     }
                 }
             }
@@ -893,8 +899,13 @@ int ps_plot(struct zint_symbol *symbol) {
                 } else {
                     fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n", cyan_ink, magenta_ink, yellow_ink, black_ink);
                 }
-                fprintf(feps, "%.2f %.2f TB %.2f %.2f TR\n", symbol->border_width * scaler, textoffset * scaler, 0.0, (symbol->width + xoffset + xoffset) * scaler);
-                fprintf(feps, "%.2f %.2f TB %.2f %.2f TR\n", symbol->border_width * scaler, (textoffset + symbol->height + symbol->border_width) * scaler, 0.0, (symbol->width + xoffset + xoffset) * scaler);
+                if (symbol->symbology != BARCODE_CODABLOCKF) {
+                    fprintf(feps, "%.2f %.2f TB %.2f %.2f TR\n", symbol->border_width * scaler, textoffset * scaler, 0.0, (symbol->width + xoffset + xoffset) * scaler);
+                    fprintf(feps, "%.2f %.2f TB %.2f %.2f TR\n", symbol->border_width * scaler, (textoffset + symbol->height + symbol->border_width) * scaler, 0.0, (symbol->width + xoffset + xoffset) * scaler);
+                } else {
+                    fprintf(feps, "%.2f %.2f TB %.2f %.2f TR\n", symbol->border_width * scaler, textoffset * scaler, xoffset * scaler, symbol->width * scaler);
+                    fprintf(feps, "%.2f %.2f TB %.2f %.2f TR\n", symbol->border_width * scaler, (textoffset + symbol->height + symbol->border_width) * scaler, xoffset * scaler, symbol->width * scaler);
+                }
             }
             if (symbol->output_options & BARCODE_BOX) {
                 /* side bars */

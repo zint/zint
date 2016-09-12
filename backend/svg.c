@@ -617,14 +617,25 @@ int svg_plot(struct zint_symbol *symbol) {
             if (symbol->output_options & BARCODE_BIND) {
                 if ((symbol->rows > 1) && (is_stackable(symbol->symbology) == 1)) {
                     /* row binding */
-                    for (r = 1; r < symbol->rows; r++) {
-                        fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", xoffset * scaler, ((r * row_height) + yoffset - 1) * scaler, symbol->width * scaler, 2.0 * scaler);
+                    if (symbol->symbology != BARCODE_CODABLOCKF) {
+                        for (r = 1; r < symbol->rows; r++) {
+                            fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", xoffset * scaler, ((r * row_height) + yoffset - 1) * scaler, symbol->width * scaler, 2.0 * scaler);
+                        }
+                    } else {
+                        for (r = 1; r < symbol->rows; r++) {
+                            fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", (xoffset + 11) * scaler, ((r * row_height) + yoffset - 1) * scaler, (symbol->width - 25) * scaler, 2.0 * scaler);
+                        }
                     }
                 }
             }
             if ((symbol->output_options & BARCODE_BOX) || (symbol->output_options & BARCODE_BIND)) {
-                fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", 0.0, 0.0, (symbol->width + xoffset + xoffset) * scaler, symbol->border_width * scaler);
-                fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", 0.0, (symbol->height + symbol->border_width) * scaler, (symbol->width + xoffset + xoffset) * scaler, symbol->border_width * scaler);
+                if (symbol->symbology != BARCODE_CODABLOCKF) {
+                    fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", 0.0, 0.0, (symbol->width + xoffset + xoffset) * scaler, symbol->border_width * scaler);
+                    fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", 0.0, (symbol->height + symbol->border_width) * scaler, (symbol->width + xoffset + xoffset) * scaler, symbol->border_width * scaler);
+                } else {
+                    fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", xoffset * scaler, 0.0, symbol->width * scaler, symbol->border_width * scaler);
+                    fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", xoffset * scaler, (symbol->height + symbol->border_width) * scaler, symbol->width * scaler, symbol->border_width * scaler);
+                }
             }
             if (symbol->output_options & BARCODE_BOX) {
                 /* side bars */

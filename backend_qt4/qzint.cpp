@@ -394,8 +394,13 @@ namespace Zint {
                     yoffset = m_borderWidth;
                     break;
                 case BIND:
-                    painter.fillRect(0, 0, m_zintSymbol->width + xoffset + xoffset, m_borderWidth, QBrush(m_fgColor));
-                    painter.fillRect(0, m_zintSymbol->height + m_borderWidth, m_zintSymbol->width + xoffset + xoffset, m_borderWidth, QBrush(m_fgColor));
+                    if (m_zintSymbol->symbology != BARCODE_CODABLOCKF) {
+                        painter.fillRect(0, 0, m_zintSymbol->width + xoffset + xoffset, m_borderWidth, QBrush(m_fgColor));
+                        painter.fillRect(0, m_zintSymbol->height, m_zintSymbol->width + xoffset + xoffset, m_borderWidth, QBrush(m_fgColor));
+                    } else {
+                        painter.fillRect(xoffset, 0, m_zintSymbol->width, m_borderWidth, QBrush(m_fgColor));
+                        painter.fillRect(xoffset, m_zintSymbol->height, m_zintSymbol->width, m_borderWidth, QBrush(m_fgColor));
+                    }
                     painter.translate(m_zintSymbol->whitespace_width, m_borderWidth);
                     yoffset = m_borderWidth;
                     break;
@@ -516,9 +521,11 @@ namespace Zint {
                 }
                 /* Add row binding */
                 if (((m_zintSymbol->symbology == BARCODE_CODE16K) 
-                        || (m_zintSymbol->symbology == BARCODE_CODE49)
-                        || (m_zintSymbol->symbology == BARCODE_CODABLOCK)) && (row != 0)) {
+                        || (m_zintSymbol->symbology == BARCODE_CODE49)) && (row != 0)) {
                     painter.fillRect(0, y - 1, m_zintSymbol->width, 2, QBrush(m_fgColor));
+                }
+                if ((m_zintSymbol->symbology == BARCODE_CODABLOCKF) && (row != 0)) {
+                    painter.fillRect(11, y - 1, m_zintSymbol->width - 25, 2, QBrush(m_fgColor));
                 }
                 y += m_zintSymbol->row_height[row];
             }

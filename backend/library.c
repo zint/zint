@@ -402,7 +402,7 @@ static int gs1_compliant(const int symbology) {
         case BARCODE_CODE49:
         case BARCODE_QRCODE:
         case BARCODE_DOTCODE:
-        case BARCODE_CODABLOCK:
+        case BARCODE_CODABLOCKF:
             result = 1;
             break;
     }
@@ -549,7 +549,7 @@ int ZBarcode_ValidID(int symbol_id) {
         case BARCODE_GRIDMATRIX:
         case BARCODE_HANXIN:
         case BARCODE_DOTCODE:
-        case BARCODE_CODABLOCK:
+        case BARCODE_CODABLOCKF:
             result = 1;
             break;
     }
@@ -779,7 +779,7 @@ static int reduced_charset(struct zint_symbol *symbol, const unsigned char *sour
             break;
         case BARCODE_DOTCODE: error_number = dotcode(symbol, preprocessed, in_length);
             break;
-        case BARCODE_CODABLOCK: error_number = codablock(symbol, preprocessed, in_length);
+        case BARCODE_CODABLOCKF: error_number = codablock(symbol, preprocessed, in_length);
             break;
     }
 
@@ -880,7 +880,7 @@ int ZBarcode_Encode(struct zint_symbol *symbol, unsigned char *source, int in_le
         symbol->symbology = BARCODE_AUSPOST;
     }
     if (symbol->symbology == 73) {
-        symbol->symbology = BARCODE_CODABLOCK;
+        symbol->symbology = BARCODE_CODABLOCKF;
         symbol->input_mode = GS1_MODE;
     }
     if (symbol->symbology == 78) {

@@ -171,6 +171,21 @@ void draw_bar(char *pixelbuf, int xpos, int xlen, int ypos, int ylen, int image_
     }
 }
 
+void draw_circle(char *pixelbuf, int image_width, int image_height, int x0, int y0, int radius, char fill) {
+    int x, y;
+
+    for (y = -radius; y <= radius; y++) {
+        for (x = -radius; x <= radius; x++) {
+            if ((x * x) + (y * y) <= (radius * radius)) {
+                if ((y + y0 >= 0) && (y + y0 < image_height)
+                        && (x + x0 >= 0) && (x + x0 < image_width)) {
+                    *(pixelbuf + ((y + y0) * image_width) + (x + x0)) = fill;
+                }
+            }
+        }
+    }
+}
+
 int bullseye_pixel(int row, int col) {
     int block_val, block_pos, return_val;
 
@@ -185,18 +200,31 @@ int bullseye_pixel(int row, int col) {
     return return_val;
 }
 
-void draw_bullseye(char *pixelbuf, int image_width, int xoffset, int yoffset) {
+void draw_bullseye(char *pixelbuf, int image_width, int image_height, int xoffset, int yoffset) {
     /* Central bullseye in Maxicode symbols */
     int i, j;
-
+    
     for (j = 103; j < 196; j++) {
         for (i = 0; i < 93; i++) {
             if (bullseye_pixel(j - 103, i)) {
-                /* if(bullseye[(((j - 103) * 93) + i)] == 1) { */
                 *(pixelbuf + (image_width * j) + (image_width * yoffset) + i + 99 + xoffset) = '1';
             }
         }
     }
+    
+/*
+ //  At some point (probably after 2.5 release) the above clumsy drawing method should
+ //  be replaced by something more like the code below
+ 
+    int scaler = 10;
+    
+    draw_circle(pixelbuf, image_width, image_height, (14.5 * scaler) + xoffset, (int)(15 * scaler) + yoffset, (int)(4.57 * scaler), '1');
+    draw_circle(pixelbuf, image_width, image_height, (14.5 * scaler) + xoffset, (int)(15 * scaler) + yoffset, (int)(3.78 * scaler), '0');
+    draw_circle(pixelbuf, image_width, image_height, (14.5 * scaler) + xoffset, (int)(15 * scaler) + yoffset, (int)(2.99 * scaler), '1');
+    draw_circle(pixelbuf, image_width, image_height, (14.5 * scaler) + xoffset, (int)(15 * scaler) + yoffset, (int)(2.20 * scaler), '0');
+    draw_circle(pixelbuf, image_width, image_height, (14.5 * scaler) + xoffset, (int)(15 * scaler) + yoffset, (int)(1.39 * scaler), '1');
+    draw_circle(pixelbuf, image_width, image_height, (14.5 * scaler) + xoffset, (int)(15 * scaler) + yoffset, (int)(0.60 * scaler), '0');
+*/
 }
 
 void draw_hexagon(char *pixelbuf, int image_width, int xposn, int yposn) {
@@ -378,7 +406,7 @@ int plot_raster_maxicode(struct zint_symbol *symbol, int rotate_angle, int data_
         }
     }
 
-    draw_bullseye(pixelbuf, image_width, (2 * xoffset), (2 * yoffset));
+    draw_bullseye(pixelbuf, image_width, image_height, (2 * xoffset), (2 * yoffset));
 
     for (row = 0; row < symbol->rows; row++) {
         yposn = row * 9;
@@ -478,21 +506,6 @@ void to_latin1(unsigned char source[], unsigned char preprocessed[]) {
     return;
 }
 
-void draw_circle(char *pixelbuf, int image_width, int image_height, int x0, int y0, int radius) {
-    int x, y;
-
-    for (y = -radius; y <= radius; y++) {
-        for (x = -radius; x <= radius; x++) {
-            if ((x * x) + (y * y) <= (radius * radius)) {
-                if ((y + y0 >= 0) && (y + y0 < image_height)
-                        && (x + x0 >= 0) && (x + x0 < image_width)) {
-                    *(pixelbuf + ((y + y0) * image_width) + (x + x0)) = '1';
-                }
-            }
-        }
-    }
-}
-
 int plot_raster_dotty(struct zint_symbol *symbol, int rotate_angle, int data_type) {
     float scaler = 2 * symbol->scale;
     char *scaled_pixelbuf;
@@ -531,7 +544,8 @@ int plot_raster_dotty(struct zint_symbol *symbol, int rotate_angle, int data_typ
                 draw_circle(scaled_pixelbuf, scale_width, scale_height,
                         (int) ((i + xoffset) * scaler) + (scaler / 2.0),
                         (int) ((r + yoffset) * scaler) + (scaler / 2.0),
-                        (int) (scaler / 2.0));
+                        (int) (scaler / 2.0),
+                        '1');
             }
         }
     }
@@ -948,13 +962,24 @@ int plot_raster_default(struct zint_symbol *symbol, int rotate_angle, int data_t
     /* Put boundary bars or box around symbol */
     if ((symbol->output_options & BARCODE_BOX) || (symbol->output_options & BARCODE_BIND)) {
         /* boundary bars */
-        draw_bar(pixelbuf, 0, (symbol->width + xoffset + xoffset) * 2, textoffset * 2, symbol->border_width * 2, image_width, image_height);
-        draw_bar(pixelbuf, 0, (symbol->width + xoffset + xoffset) * 2, (textoffset + symbol->height + symbol->border_width) * 2, symbol->border_width * 2, image_width, image_height);
+        if (symbol->symbology != BARCODE_CODABLOCKF) {
+            draw_bar(pixelbuf, 0, (symbol->width + xoffset + xoffset) * 2, textoffset * 2, symbol->border_width * 2, image_width, image_height);
+            draw_bar(pixelbuf, 0, (symbol->width + xoffset + xoffset) * 2, (textoffset + symbol->height + symbol->border_width) * 2, symbol->border_width * 2, image_width, image_height);
+        } else {
+            draw_bar(pixelbuf, xoffset * 2, symbol->width * 2, textoffset * 2, symbol->border_width * 2, image_width, image_height);
+            draw_bar(pixelbuf, xoffset * 2, symbol->width * 2, (textoffset + symbol->height + symbol->border_width) * 2, symbol->border_width * 2, image_width, image_height);
+        }
         if ((symbol->output_options & BARCODE_BIND) != 0) {
             if ((symbol->rows > 1) && (is_stackable(symbol->symbology) == 1)) {
                 /* row binding */
-                for (r = 1; r < symbol->rows; r++) {
-                    draw_bar(pixelbuf, xoffset * 2, symbol->width * 2, ((r * row_height) + textoffset + yoffset - 1) * 2, 2 * 2, image_width, image_height);
+                if (symbol->symbology != BARCODE_CODABLOCKF) {
+                    for (r = 1; r < symbol->rows; r++) {
+                        draw_bar(pixelbuf, xoffset * 2, symbol->width * 2, ((r * row_height) + textoffset + yoffset - 1) * 2, 2 * 2, image_width, image_height);
+                    }
+                } else {
+                    for (r = 1; r < symbol->rows; r++) {
+                        draw_bar(pixelbuf, (xoffset + 11) * 2 , (symbol->width - 25) * 2, ((r * row_height) + textoffset + yoffset - 1) * 2, 2 * 2, image_width, image_height);
+                    }
                 }
             }
         }

@@ -987,5 +987,9 @@ int codablock(struct zint_symbol *symbol, unsigned char source[], int length) {
     if (!(symbol->output_options & BARCODE_BIND)) {
         symbol->output_options += BARCODE_BIND;
     }
+        
+    if (symbol->border_width < 2) {
+        symbol->border_width = 2;
+    }
     return 0;
 }

@@ -177,7 +177,7 @@ int is_stackable(const int symbology) {
         case BARCODE_TELEPEN_NUM:
         case BARCODE_ITF14:
         case BARCODE_CODE32:
-        case BARCODE_CODABLOCK:
+        case BARCODE_CODABLOCKF:
             retval = 1;
     }
 
