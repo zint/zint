@@ -424,13 +424,13 @@ int Rows2Columns(CharacterSetTable *T, unsigned char *data, int dataLength,
     int errorCur;
     int rowsCur;
     int rowsRequested;  /* Number of requested rows */
-    int backupRows;
+    int backupRows = 0;
     int fillings;
-    int backupFillings;
+    int backupFillings = 0;
     int useColumns;
     int testColumns;    /* To enter into Width2Rows */
-    int backupColumns;
-    int fBackupOk;      /* The memorysed set is o.k. */
+    int backupColumns = 0;
+    int fBackupOk = 0;      /* The memorysed set is o.k. */
     int testListSize = 0;
     int pTestList[62];
 #ifndef _MSC_VER
@@ -445,7 +445,6 @@ int Rows2Columns(CharacterSetTable *T, unsigned char *data, int dataLength,
         fprintf(stderr,"Optimizer : Searching <%i> rows\n",rowsRequested);
     #endif
 
-    fBackupOk=0;
     if (rowsRequested==1)
         /* OneLiners are self-calibrating */
         testColumns=32767;
@@ -822,6 +821,7 @@ int codablock(struct zint_symbol *symbol, unsigned char source[], int length) {
                 characterSetCur=CodeB;
                 break;
             case CodeC:
+            default:
                 if (rows==1) {
                     *pOutPos = '\x69';
                     pOutPos++;
