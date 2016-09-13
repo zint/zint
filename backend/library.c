@@ -786,17 +786,17 @@ static int reduced_charset(struct zint_symbol *symbol, const unsigned char *sour
     return error_number;
 }
 
-int ZBarcode_Encode(struct zint_symbol *symbol, unsigned char *source, int in_length) {
+int ZBarcode_Encode(struct zint_symbol *symbol, unsigned char *source, int length) {
     int error_number, error_buffer, i;
 #ifdef _MSC_VER
     unsigned char* local_source;
 #endif
     error_number = 0;
 
-    if (in_length == 0) {
-        in_length = (int) ustrlen(source);
+    if (length == 0) {
+        length = (int) ustrlen(source);
     }
-    if (in_length == 0) {
+    if (length == 0) {
         strcpy(symbol->errtxt, "No input data");
         error_tag(symbol->errtxt, ZINT_ERROR_INVALID_DATA);
         return ZINT_ERROR_INVALID_DATA;
@@ -810,9 +810,9 @@ int ZBarcode_Encode(struct zint_symbol *symbol, unsigned char *source, int in_le
 #endif
     }
 #ifndef _MSC_VER
-    unsigned char local_source[in_length + 1];
+    unsigned char local_source[length + 1];
 #else
-    local_source = (unsigned char*) _alloca(in_length + 1);
+    local_source = (unsigned char*) _alloca(length + 1);
 #endif
 
     /* First check the symbology field */
@@ -965,25 +965,25 @@ int ZBarcode_Encode(struct zint_symbol *symbol, unsigned char *source, int in_le
     }
 
     if (symbol->input_mode == GS1_MODE) {
-        for (i = 0; i < in_length; i++) {
+        for (i = 0; i < length; i++) {
             if (source[i] == '\0') {
                 strcpy(symbol->errtxt, "NULL characters not permitted in GS1 mode");
                 return ZINT_ERROR_INVALID_DATA;
             }
         }
         if (gs1_compliant(symbol->symbology) == 1) {
-            error_number = ugs1_verify(symbol, source, in_length, local_source);
+            error_number = ugs1_verify(symbol, source, length, local_source);
             if (error_number != 0) {
                 return error_number;
             }
-            in_length = ustrlen(local_source);
+            length = ustrlen(local_source);
         } else {
             strcpy(symbol->errtxt, "Selected symbology does not support GS1 mode");
             return ZINT_ERROR_INVALID_OPTION;
         }
     } else {
-        memcpy(local_source, source, in_length);
-        local_source[in_length] = '\0';
+        memcpy(local_source, source, length);
+        local_source[length] = '\0';
     }
 
     switch (symbol->symbology) {
@@ -991,17 +991,17 @@ int ZBarcode_Encode(struct zint_symbol *symbol, unsigned char *source, int in_le
         case BARCODE_MICROQR:
         case BARCODE_GRIDMATRIX:
         case BARCODE_HANXIN:
-            error_number = extended_charset(symbol, local_source, in_length);
+            error_number = extended_charset(symbol, local_source, length);
             break;
         default:
-            error_number = reduced_charset(symbol, local_source, in_length);
+            error_number = reduced_charset(symbol, local_source, length);
             break;
     }
 
     if ((error_number == ZINT_ERROR_INVALID_DATA) && (supports_eci(symbol->symbology)
             && (symbol->input_mode == UNICODE_MODE))) {
         /* Try another ECI mode */
-        symbol->eci = get_best_eci(local_source, in_length);
+        symbol->eci = get_best_eci(local_source, length);
 
         if (symbol->eci >= 3) {
 
@@ -1012,18 +1012,18 @@ int ZBarcode_Encode(struct zint_symbol *symbol, unsigned char *source, int in_le
                 case BARCODE_MICROQR:
                 case BARCODE_GRIDMATRIX:
                 case BARCODE_HANXIN:
-                    error_number = utf_to_eci(symbol->eci, source, local_source, &in_length);
-                    error_number = extended_charset(symbol, local_source, in_length);
+                    error_number = utf_to_eci(symbol->eci, source, local_source, &length);
+                    error_number = extended_charset(symbol, local_source, length);
                     break;
                 default:
-                    error_number = reduced_charset(symbol, local_source, in_length);
+                    error_number = reduced_charset(symbol, local_source, length);
                     break;
             }
         }
     }
 
     if ((symbol->symbology == BARCODE_CODE128) || (symbol->symbology == BARCODE_CODE128B)) {
-        for (i = 0; i < in_length; i++) {
+        for (i = 0; i < length; i++) {
             if (local_source[i] == '\0') {
                 symbol->text[i] = ' ';
             } else {
