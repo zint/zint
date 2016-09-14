@@ -376,6 +376,38 @@ static int hibc(struct zint_symbol *symbol, unsigned char source[], size_t lengt
     return error_number;
 }
 
+static void check_row_heights(struct zint_symbol *symbol) {
+    /* Check that rows with undefined heights are never less than 5x  */
+    int large_bar_count;
+    int i;
+    int preset_height;
+    int large_bar_height;
+   
+    large_bar_count = 0;
+    preset_height = 0;
+    for (i = 0; i < symbol->rows; i++) {
+        preset_height += symbol->row_height[i];
+        if (symbol->row_height[i] == 0) {
+            large_bar_count++;
+        }
+    }
+    large_bar_height = (symbol->height - preset_height) / large_bar_count;
+
+    if (large_bar_count == 0) {
+        symbol->height = preset_height;
+    }
+    
+    if (large_bar_height < 5) {
+        for (i = 0; i < symbol->rows; i++) {
+            if (symbol->row_height[i] == 0) {
+                symbol->row_height[i] = 5;
+                preset_height += 5;
+            }
+        }
+        symbol->height = preset_height;
+    }
+}
+
 static int gs1_compliant(const int symbology) {
     /* Returns 1 if symbology supports GS1 data */
 
@@ -402,7 +434,6 @@ static int gs1_compliant(const int symbology) {
         case BARCODE_CODE49:
         case BARCODE_QRCODE:
         case BARCODE_DOTCODE:
-        case BARCODE_CODABLOCKF:
             result = 1;
             break;
     }
@@ -880,8 +911,9 @@ int ZBarcode_Encode(struct zint_symbol *symbol, unsigned char *source, int lengt
         symbol->symbology = BARCODE_AUSPOST;
     }
     if (symbol->symbology == 73) {
-        symbol->symbology = BARCODE_CODABLOCKF;
-        symbol->input_mode = GS1_MODE;
+        strcpy(symbol->errtxt, "Symbology out of range, using Code 128");
+        symbol->symbology = BARCODE_CODE128;
+        error_number = ZINT_WARN_INVALID_OPTION;
     }
     if (symbol->symbology == 78) {
         symbol->symbology = BARCODE_RSS14;
@@ -1002,24 +1034,24 @@ int ZBarcode_Encode(struct zint_symbol *symbol, unsigned char *source, int lengt
             && (symbol->input_mode == UNICODE_MODE))) {
         /* Try another ECI mode */
         symbol->eci = get_best_eci(local_source, length);
+            
+        error_number = ZINT_WARN_USES_ECI;
+        strcpy(symbol->errtxt, "Encoded data includes ECI codes");
+        //printf("Data will encode with ECI %d\n", symbol->eci);
 
-        if (symbol->eci >= 3) {
-
-            //printf("Data will encode with ECI %d\n", symbol->eci);
-
-            switch (symbol->symbology) {
-                case BARCODE_QRCODE:
-                case BARCODE_MICROQR:
-                case BARCODE_GRIDMATRIX:
-                case BARCODE_HANXIN:
-                    error_number = utf_to_eci(symbol->eci, source, local_source, &length);
-                    error_number = extended_charset(symbol, local_source, length);
-                    break;
-                default:
-                    error_number = reduced_charset(symbol, local_source, length);
-                    break;
-            }
+        switch (symbol->symbology) {
+            case BARCODE_QRCODE:
+            case BARCODE_MICROQR:
+            case BARCODE_GRIDMATRIX:
+            case BARCODE_HANXIN:
+                error_number = utf_to_eci(symbol->eci, source, local_source, &length);
+                error_number = extended_charset(symbol, local_source, length);
+                break;
+            default:
+                error_number = reduced_charset(symbol, local_source, length);
+                break;
         }
+        
     }
 
     if ((symbol->symbology == BARCODE_CODE128) || (symbol->symbology == BARCODE_CODE128B)) {
@@ -1033,9 +1065,15 @@ int ZBarcode_Encode(struct zint_symbol *symbol, unsigned char *source, int lengt
     }
 
     if (error_number == 0) {
+        
         error_number = error_buffer;
     }
     error_tag(symbol->errtxt, error_number);
+    
+    if (error_number <= 5) {
+        check_row_heights(symbol);
+    }
+    
     return error_number;
 }
 

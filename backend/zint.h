@@ -218,6 +218,7 @@ extern "C" {
 
 // Warning and error conditions
 #define ZINT_WARN_INVALID_OPTION	2
+#define ZINT_WARN_USES_ECI              3
 #define ZINT_ERROR_TOO_LONG		5
 #define ZINT_ERROR_INVALID_DATA	        6
 #define ZINT_ERROR_INVALID_CHECK	7
