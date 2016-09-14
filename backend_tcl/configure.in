@@ -70,6 +70,8 @@ TEA_ADD_SOURCES([
 	../backend/2of5.c
 	../backend/auspost.c
 	../backend/aztec.c
+	../backend/bmp.c
+	../backend/codablock.c
 	../backend/code128.c
 	../backend/code16k.c
 	../backend/code1.c
@@ -79,19 +81,25 @@ TEA_ADD_SOURCES([
 	../backend/composite.c
 	../backend/dllversion.c
 	../backend/dmatrix.c
+	../backend/dotcode.c
+	../backend/eci.c
+	../backend/gif.c
 	../backend/gridmtx.c
 	../backend/gs1.c
+	../backend/hanxin.c
 	../backend/imail.c
 	../backend/large.c
 	../backend/library.c
 	../backend/maxicode.c
 	../backend/medical.c
+	../backend/pcx.c
 	../backend/pdf417.c
 	../backend/plessey.c
 	../backend/png.c
 	../backend/postal.c
 	../backend/ps.c
 	../backend/qr.c
+	../backend/raster.c
 	../backend/reedsol.c
 	../backend/render.c
 	../backend/rss.c
