@@ -25,6 +25,7 @@ FORMS += extData.ui \
          grpC49.ui \
          grpChannel.ui \
          grpCodeOne.ui \
+         grpCodablockF.ui \
          grpDBExtend.ui \
          grpDM.ui \
          grpGrid.ui \

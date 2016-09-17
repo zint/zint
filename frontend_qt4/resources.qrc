@@ -23,5 +23,6 @@
         <file>images/zint.png</file>
         <file>grpHX.ui</file>
         <file>grpDotCode.ui</file>
+        <file>grpCodablockF.ui</file>
     </qresource>
 </RCC>

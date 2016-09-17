@@ -378,23 +378,22 @@ static int hibc(struct zint_symbol *symbol, unsigned char source[], size_t lengt
 
 static void check_row_heights(struct zint_symbol *symbol) {
     /* Check that rows with undefined heights are never less than 5x  */
-    int large_bar_count;
+    int large_bar_count = 0;
     int i;
-    int preset_height;
-    int large_bar_height;
+    int preset_height = 0;
+    int large_bar_height = 0;
    
-    large_bar_count = 0;
-    preset_height = 0;
     for (i = 0; i < symbol->rows; i++) {
         preset_height += symbol->row_height[i];
         if (symbol->row_height[i] == 0) {
             large_bar_count++;
         }
     }
-    large_bar_height = (symbol->height - preset_height) / large_bar_count;
-
+    
     if (large_bar_count == 0) {
         symbol->height = preset_height;
+    } else {
+        large_bar_height = (symbol->height - preset_height) / large_bar_count;
     }
     
     if (large_bar_height < 5) {

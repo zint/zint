@@ -52,7 +52,7 @@ void types(void) {
             "21: Leitcode          70: RM4SCC                  116: Han Xin Code\n"
             "22: Identcode         71: Data Matrix             128: Aztec Runes\n"
             "23: Code 16k          72: EAN-14                  129: Code 32\n"
-            "24: Code 49           74: Codablock               130: Comp EAN\n"
+            "24: Code 49           74: Codablock-F             130: Comp EAN\n"
             "25: Code 93           75: NVE-18                  131: Comp GS1-128\n"
             "28: Flattermarken     76: Japanese Post           132: Comp DataBar Omni\n"
             "29: GS1 DataBar Omni  77: Korea Post              133: Comp DataBar Ltd\n"

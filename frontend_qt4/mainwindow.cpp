@@ -39,7 +39,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WFlags fl)
 		"Aztec Runes",
 		"Channel Code",
 		"Codabar",
-        "Codablock",
+                "Codablock-F",
 		"Code 11",
 		"Code 128 (ISO 15417)",
 		"Code 16k",
@@ -57,7 +57,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WFlags fl)
 		"Data Matrix (ISO 16022)",
 		"Deutsche Post Identcode",
 		"Deutsche Post Leitcode",
-        "DotCode",
+                "DotCode",
 		"Dutch Post KIX",
 		"EAN-14",
 		"European Article Number (EAN)",
@@ -71,7 +71,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WFlags fl)
 		"GS1 DataBar Stacked",
 		"GS1 DataBar Stacked Omnidirectional",                
 		"Han Xin (Chinese Sensible) Code",
-        "ITF-14",
+                "ITF-14",
 		"International Standard Book Number (ISBN)",
 		"Japanese Postal Barcode",
 		"Korean Postal Barcode",
@@ -365,6 +365,21 @@ void MainWindow::change_options()
 		connect(m_optionWidget->findChild<QObject*>("radC16kStand"), SIGNAL(toggled( bool )), SLOT(update_preview()));
 	}
 	
+        if(metaObject()->enumerator(0).value(bstyle->currentIndex()) == BARCODE_CODABLOCKF)
+        {
+                QFile file (":/grpCodablockF.ui");
+                if (!file.open(QIODevice::ReadOnly))
+                    return;
+                m_optionWidget=uiload.load(&file);
+                file.close();
+                tabMain->insertTab(1,m_optionWidget,tr("Codablock-F"));
+                connect(m_optionWidget->findChild<QObject*>("radCbfAutosize"), SIGNAL(toggled( bool )), SLOT(update_preview()));
+                connect(m_optionWidget->findChild<QObject*>("radCbfSetWidth"), SIGNAL(toggled( bool )), SLOT(update_preview()));
+                connect(m_optionWidget->findChild<QObject*>("radCbfSetHeight"), SIGNAL(toggled( bool )), SLOT(update_preview()));
+                connect(m_optionWidget->findChild<QObject*>("cmbCbfWidth"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+                connect(m_optionWidget->findChild<QObject*>("cmbCbfHeight"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        }
+        
 	if(metaObject()->enumerator(0).value(bstyle->currentIndex()) == BARCODE_DATAMATRIX)
 	{
 		QFile file(":/grpDM.ui");
@@ -744,6 +759,15 @@ void MainWindow::update_preview()
 				m_bc.bc.setInputMode(GS1_MODE);
 			break;
 
+            case BARCODE_CODABLOCKF:
+                m_bc.bc.setSymbol(BARCODE_CODABLOCKF);
+                if(m_optionWidget->findChild<QRadioButton*>("radCbfSetWidth")->isChecked())
+                    m_bc.bc.setWidth(m_optionWidget->findChild<QComboBox*>("cmbCbfWidth")->currentIndex() + 6);
+                // Height selection uses option 1 in zint_symbol
+                if(m_optionWidget->findChild<QRadioButton*>("radCbfSetHeight")->isChecked())
+                    m_bc.bc.setSecurityLevel(m_optionWidget->findChild<QComboBox*>("cmbCbfHeight")->currentIndex() + 1);
+                break;
+                        
 		case BARCODE_DATAMATRIX:
 			m_bc.bc.setSecurityLevel(1);
 			if(m_optionWidget->findChild<QRadioButton*>("radDM200HIBC")->isChecked())
