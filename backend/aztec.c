@@ -53,6 +53,7 @@ static void mapshorten(int *charmap, int *typemap, const int start, const int le
 /**
  * Insert a character into the middle of a string at position posn
  */
+/*
 static void insert(char binary_string[], const size_t posn, const char newbit) {
     size_t i, end;
 
@@ -62,6 +63,7 @@ static void insert(char binary_string[], const size_t posn, const char newbit) {
     }
     binary_string[posn] = newbit;
 }
+*/
 
 /**
  * Encode input data into a binary string
@@ -1383,60 +1385,27 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], int length) {
                 descriptor[2] = '0';
             }
         }
-        if ((data_blocks - 1) & 0x10) {
-            descriptor[3] = '1';
-        } else {
-            descriptor[3] = '0';
+
+        for (i = 3; i < 8; i++) {
+            if ((data_blocks - 1) & (0x10 >> (i - 3))) {
+                descriptor[i] = '1';
+            } else {
+                descriptor[i] = '0';
+            }
         }
-        if ((data_blocks - 1) & 0x08) {
-            descriptor[4] = '1';
-        } else {
-            descriptor[4] = '0';
-        }
-        if ((data_blocks - 1) & 0x04) {
-            descriptor[5] = '1';
-        } else {
-            descriptor[5] = '0';
-        }
-        if ((data_blocks - 1) & 0x02) {
-            descriptor[6] = '1';
-        } else {
-            descriptor[6] = '0';
-        }
-        if ((data_blocks - 1) & 0x01) {
-            descriptor[7] = '1';
-        } else {
-            descriptor[7] = '0';
-        }
+
         descriptor[8] = '\0';
         if (debug) printf("Mode Message = %s\n", descriptor);
     } else {
         /* The first 5 bits represent the number of layers minus 1 */
-        if ((layers - 1) & 0x10) {
-            descriptor[0] = '1';
-        } else {
-            descriptor[0] = '0';
+        for (i = 0; i < 5; i++) {
+            if ((layers - 1) & (0x10 >> i)) {
+                descriptor[i] = '1';
+            } else {
+                descriptor[i] = '0';
+            }
         }
-        if ((layers - 1) & 0x08) {
-            descriptor[1] = '1';
-        } else {
-            descriptor[1] = '0';
-        }
-        if ((layers - 1) & 0x04) {
-            descriptor[2] = '1';
-        } else {
-            descriptor[2] = '0';
-        }
-        if ((layers - 1) & 0x02) {
-            descriptor[3] = '1';
-        } else {
-            descriptor[3] = '0';
-        }
-        if ((layers - 1) & 0x01) {
-            descriptor[4] = '1';
-        } else {
-            descriptor[4] = '0';
-        }
+
         /* The next 11 bits represent the number of data blocks minus 1 */
         if (reader) {
             descriptor[5] = '1';
@@ -1447,55 +1416,12 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], int length) {
                 descriptor[5] = '0';
             }
         }
-        if ((data_blocks - 1) & 0x200) {
-            descriptor[6] = '1';
-        } else {
-            descriptor[6] = '0';
-        }
-        if ((data_blocks - 1) & 0x100) {
-            descriptor[7] = '1';
-        } else {
-            descriptor[7] = '0';
-        }
-        if ((data_blocks - 1) & 0x80) {
-            descriptor[8] = '1';
-        } else {
-            descriptor[8] = '0';
-        }
-        if ((data_blocks - 1) & 0x40) {
-            descriptor[9] = '1';
-        } else {
-            descriptor[9] = '0';
-        }
-        if ((data_blocks - 1) & 0x20) {
-            descriptor[10] = '1';
-        } else {
-            descriptor[10] = '0';
-        }
-        if ((data_blocks - 1) & 0x10) {
-            descriptor[11] = '1';
-        } else {
-            descriptor[11] = '0';
-        }
-        if ((data_blocks - 1) & 0x08) {
-            descriptor[12] = '1';
-        } else {
-            descriptor[12] = '0';
-        }
-        if ((data_blocks - 1) & 0x04) {
-            descriptor[13] = '1';
-        } else {
-            descriptor[13] = '0';
-        }
-        if ((data_blocks - 1) & 0x02) {
-            descriptor[14] = '1';
-        } else {
-            descriptor[14] = '0';
-        }
-        if ((data_blocks - 1) & 0x01) {
-            descriptor[15] = '1';
-        } else {
-            descriptor[15] = '0';
+        for (i = 6; i < 16; i++) {
+            if ((data_blocks - 1) & (0x200 >> (i - 6))) {
+                descriptor[i] = '1';
+            } else {
+                descriptor[i] = '0';
+            }
         }
         descriptor[16] = '\0';
         if (debug) printf("Mode Message = %s\n", descriptor);

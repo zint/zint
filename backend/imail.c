@@ -256,66 +256,6 @@ extern unsigned short USPS_MSB_Math_CRC11GenerateFrameCheckSequence(unsigned cha
     return FrameCheckSequence;
 }
 
-void breakup(short int fcs_bit[], unsigned short usps_crc) {
-    int i;
-
-    for (i = 0; i < 13; i++) {
-        fcs_bit[i] = 0;
-    }
-
-    if (usps_crc >= 4096) {
-        fcs_bit[12] = 1;
-        usps_crc -= 4096;
-    }
-    if (usps_crc >= 2048) {
-        fcs_bit[11] = 1;
-        usps_crc -= 2048;
-    }
-    if (usps_crc >= 1024) {
-        fcs_bit[10] = 1;
-        usps_crc -= 1024;
-    }
-    if (usps_crc >= 512) {
-        fcs_bit[9] = 1;
-        usps_crc -= 512;
-    }
-    if (usps_crc >= 256) {
-        fcs_bit[8] = 1;
-        usps_crc -= 256;
-    }
-    if (usps_crc >= 128) {
-        fcs_bit[7] = 1;
-        usps_crc -= 128;
-    }
-    if (usps_crc >= 64) {
-        fcs_bit[6] = 1;
-        usps_crc -= 64;
-    }
-    if (usps_crc >= 32) {
-        fcs_bit[5] = 1;
-        usps_crc -= 32;
-    }
-    if (usps_crc >= 16) {
-        fcs_bit[4] = 1;
-        usps_crc -= 16;
-    }
-    if (usps_crc >= 8) {
-        fcs_bit[3] = 1;
-        usps_crc -= 8;
-    }
-    if (usps_crc >= 4) {
-        fcs_bit[2] = 1;
-        usps_crc -= 4;
-    }
-    if (usps_crc >= 2) {
-        fcs_bit[1] = 1;
-        usps_crc -= 2;
-    }
-    if (usps_crc == 1) {
-        fcs_bit[0] = 1;
-    }
-}
-
 int imail(struct zint_symbol *symbol, unsigned char source[], int length) {
     char data_pattern[200];
     int error_number;
@@ -326,7 +266,7 @@ int imail(struct zint_symbol *symbol, unsigned char source[], int length) {
     unsigned short usps_crc;
     int codeword[10];
     unsigned short characters[10];
-    short int bit_pattern[13], bar_map[130];
+    short int bar_map[130];
 
     error_number = 0;
 
@@ -625,21 +565,21 @@ int imail(struct zint_symbol *symbol, unsigned char source[], int length) {
             characters[i] = AppxD_II[codeword[i] - 1287];
         }
     }
-
-    breakup(bit_pattern, usps_crc);
-
+    
     for (i = 0; i < 10; i++) {
-        if (bit_pattern[i] == 1) {
+        if (usps_crc & (1 << i)) {
             characters[i] = 0x1FFF - characters[i];
         }
     }
 
     /* *** Step 6 - Conversion from Characters to the Intelligent Mail Barcode *** */
-
     for (i = 0; i < 10; i++) {
-        breakup(bit_pattern, characters[i]);
         for (j = 0; j < 13; j++) {
-            bar_map[AppxD_IV[(13 * i) + j] - 1] = bit_pattern[j];
+            if (characters[i] & (1 << j)) {
+                bar_map[AppxD_IV[(13 * i) + j] - 1] = 1;
+            } else {
+                bar_map[AppxD_IV[(13 * i) + j] - 1] = 0;
+            }
         }
     }
 

@@ -887,26 +887,14 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
                     if (decimal_count >= 1) {
                         int sub_value = ctoi(source[sp]) + 1;
 
-                        if (sub_value & 0x08) {
-                            strcat(decimal_binary, "1");
-                        } else {
-                            strcat(decimal_binary, "0");
+                        for (i = 0x08; i > 0; i = i >> 1) {
+                            if (sub_value & i) {
+                                strcat(decimal_binary, "1");
+                            } else {
+                                strcat(decimal_binary, "0");
+                            }
                         }
-                        if (sub_value & 0x04) {
-                            strcat(decimal_binary, "1");
-                        } else {
-                            strcat(decimal_binary, "0");
-                        }
-                        if (sub_value & 0x02) {
-                            strcat(decimal_binary, "1");
-                        } else {
-                            strcat(decimal_binary, "0");
-                        }
-                        if (sub_value & 0x01) {
-                            strcat(decimal_binary, "1");
-                        } else {
-                            strcat(decimal_binary, "0");
-                        }
+                        
                         sp++;
                     } else {
                         strcat(decimal_binary, "1111");
@@ -920,87 +908,33 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
                 /* Binary buffer is full - transfer to target */
                 if (target_count >= 1) {
                     sub_target = 0;
-                    if (decimal_binary[0] == '1') {
-                        sub_target += 128;
-                    }
-                    if (decimal_binary[1] == '1') {
-                        sub_target += 64;
-                    }
-                    if (decimal_binary[2] == '1') {
-                        sub_target += 32;
-                    }
-                    if (decimal_binary[3] == '1') {
-                        sub_target += 16;
-                    }
-                    if (decimal_binary[4] == '1') {
-                        sub_target += 8;
-                    }
-                    if (decimal_binary[5] == '1') {
-                        sub_target += 4;
-                    }
-                    if (decimal_binary[6] == '1') {
-                        sub_target += 2;
-                    }
-                    if (decimal_binary[7] == '1') {
-                        sub_target += 1;
+                    
+                    for (i = 0; i < 8; i++) {
+                        if (decimal_binary[i] == '1') {
+                            sub_target += 128 >> i;
+                        }
                     }
                     target[tp] = sub_target;
                     tp++;
                 }
                 if (target_count >= 2) {
                     sub_target = 0;
-                    if (decimal_binary[8] == '1') {
-                        sub_target += 128;
-                    }
-                    if (decimal_binary[9] == '1') {
-                        sub_target += 64;
-                    }
-                    if (decimal_binary[10] == '1') {
-                        sub_target += 32;
-                    }
-                    if (decimal_binary[11] == '1') {
-                        sub_target += 16;
-                    }
-                    if (decimal_binary[12] == '1') {
-                        sub_target += 8;
-                    }
-                    if (decimal_binary[13] == '1') {
-                        sub_target += 4;
-                    }
-                    if (decimal_binary[14] == '1') {
-                        sub_target += 2;
-                    }
-                    if (decimal_binary[15] == '1') {
-                        sub_target += 1;
+                    
+                    for (i = 0; i < 8; i++) {
+                        if (decimal_binary[i + 8] == '1') {
+                            sub_target += 128 >> i;
+                        }
                     }
                     target[tp] = sub_target;
                     tp++;
                 }
                 if (target_count == 3) {
                     sub_target = 0;
-                    if (decimal_binary[16] == '1') {
-                        sub_target += 128;
-                    }
-                    if (decimal_binary[17] == '1') {
-                        sub_target += 64;
-                    }
-                    if (decimal_binary[18] == '1') {
-                        sub_target += 32;
-                    }
-                    if (decimal_binary[19] == '1') {
-                        sub_target += 16;
-                    }
-                    if (decimal_binary[20] == '1') {
-                        sub_target += 8;
-                    }
-                    if (decimal_binary[21] == '1') {
-                        sub_target += 4;
-                    }
-                    if (decimal_binary[22] == '1') {
-                        sub_target += 2;
-                    }
-                    if (decimal_binary[23] == '1') {
-                        sub_target += 1;
+                    
+                    for (i = 0; i < 8; i++) {
+                        if (decimal_binary[i + 16] == '1') {
+                            sub_target += 128 >> i;
+                        }
                     }
                     target[tp] = sub_target;
                     tp++;
@@ -1183,87 +1117,33 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
         /* Binary buffer is full - transfer to target */
         if (target_count >= 1) {
             sub_target = 0;
-            if (decimal_binary[0] == '1') {
-                sub_target += 128;
-            }
-            if (decimal_binary[1] == '1') {
-                sub_target += 64;
-            }
-            if (decimal_binary[2] == '1') {
-                sub_target += 32;
-            }
-            if (decimal_binary[3] == '1') {
-                sub_target += 16;
-            }
-            if (decimal_binary[4] == '1') {
-                sub_target += 8;
-            }
-            if (decimal_binary[5] == '1') {
-                sub_target += 4;
-            }
-            if (decimal_binary[6] == '1') {
-                sub_target += 2;
-            }
-            if (decimal_binary[7] == '1') {
-                sub_target += 1;
+            
+            for (i = 0; i < 8; i++) {
+                if (decimal_binary[i] == '1') {
+                    sub_target += 128 >> i;
+                }
             }
             target[tp] = sub_target;
             tp++;
         }
         if (target_count >= 2) {
             sub_target = 0;
-            if (decimal_binary[8] == '1') {
-                sub_target += 128;
-            }
-            if (decimal_binary[9] == '1') {
-                sub_target += 64;
-            }
-            if (decimal_binary[10] == '1') {
-                sub_target += 32;
-            }
-            if (decimal_binary[11] == '1') {
-                sub_target += 16;
-            }
-            if (decimal_binary[12] == '1') {
-                sub_target += 8;
-            }
-            if (decimal_binary[13] == '1') {
-                sub_target += 4;
-            }
-            if (decimal_binary[14] == '1') {
-                sub_target += 2;
-            }
-            if (decimal_binary[15] == '1') {
-                sub_target += 1;
+            
+            for (i = 0; i < 8; i++) {
+                if (decimal_binary[i + 8] == '1') {
+                    sub_target += 128 >> i;
+                }
             }
             target[tp] = sub_target;
             tp++;
         }
         if (target_count == 3) {
             sub_target = 0;
-            if (decimal_binary[16] == '1') {
-                sub_target += 128;
-            }
-            if (decimal_binary[17] == '1') {
-                sub_target += 64;
-            }
-            if (decimal_binary[18] == '1') {
-                sub_target += 32;
-            }
-            if (decimal_binary[19] == '1') {
-                sub_target += 16;
-            }
-            if (decimal_binary[20] == '1') {
-                sub_target += 8;
-            }
-            if (decimal_binary[21] == '1') {
-                sub_target += 4;
-            }
-            if (decimal_binary[22] == '1') {
-                sub_target += 2;
-            }
-            if (decimal_binary[23] == '1') {
-                sub_target += 1;
+            
+            for (i = 0; i < 8; i++) {
+                if (decimal_binary[i + 16] == '1') {
+                    sub_target += 128 >> i;
+                }
             }
             target[tp] = sub_target;
             tp++;

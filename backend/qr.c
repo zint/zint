@@ -1097,7 +1097,6 @@ int apply_bitmask(unsigned char *grid, int size, int ecc_level) {
     unsigned char p;
     int pattern, penalty[8];
     int best_val, best_pattern;
-    int bit;
 
 #ifndef _MSC_VER
     unsigned char mask[size * size];
@@ -1183,42 +1182,7 @@ int apply_bitmask(unsigned char *grid, int size, int ecc_level) {
     /* Apply mask */
     for (x = 0; x < size; x++) {
         for (y = 0; y < size; y++) {
-            bit = 0;
-            switch (best_pattern) {
-                case 0: if (mask[(y * size) + x] & 0x01) {
-                        bit = 1;
-                    }
-                    break;
-                case 1: if (mask[(y * size) + x] & 0x02) {
-                        bit = 1;
-                    }
-                    break;
-                case 2: if (mask[(y * size) + x] & 0x04) {
-                        bit = 1;
-                    }
-                    break;
-                case 3: if (mask[(y * size) + x] & 0x08) {
-                        bit = 1;
-                    }
-                    break;
-                case 4: if (mask[(y * size) + x] & 0x10) {
-                        bit = 1;
-                    }
-                    break;
-                case 5: if (mask[(y * size) + x] & 0x20) {
-                        bit = 1;
-                    }
-                    break;
-                case 6: if (mask[(y * size) + x] & 0x40) {
-                        bit = 1;
-                    }
-                    break;
-                case 7: if (mask[(y * size) + x] & 0x80) {
-                        bit = 1;
-                    }
-                    break;
-            }
-            if (bit == 1) {
+            if (mask[(y * size) + x] & (0x01 << best_pattern)) {
                 if (grid[(y * size) + x] & 0x01) {
                     grid[(y * size) + x] = 0x00;
                 } else {
@@ -2098,7 +2062,7 @@ void microqr_expand_binary(char binary_stream[], char full_stream[], int version
 }
 
 void micro_qr_m1(char binary_data[]) {
-    int i, latch;
+    int i, j, latch;
     int bits_total, bits_left, remainder;
     int data_codewords, ecc_codewords;
     unsigned char data_blocks[4], ecc_blocks[3];
@@ -2155,43 +2119,17 @@ void micro_qr_m1(char binary_data[]) {
     /* Copy data into codewords */
     for (i = 0; i < (data_codewords - 1); i++) {
         data_blocks[i] = 0;
-        if (binary_data[i * 8] == '1') {
-            data_blocks[i] += 0x80;
-        }
-        if (binary_data[(i * 8) + 1] == '1') {
-            data_blocks[i] += 0x40;
-        }
-        if (binary_data[(i * 8) + 2] == '1') {
-            data_blocks[i] += 0x20;
-        }
-        if (binary_data[(i * 8) + 3] == '1') {
-            data_blocks[i] += 0x10;
-        }
-        if (binary_data[(i * 8) + 4] == '1') {
-            data_blocks[i] += 0x08;
-        }
-        if (binary_data[(i * 8) + 5] == '1') {
-            data_blocks[i] += 0x04;
-        }
-        if (binary_data[(i * 8) + 6] == '1') {
-            data_blocks[i] += 0x02;
-        }
-        if (binary_data[(i * 8) + 7] == '1') {
-            data_blocks[i] += 0x01;
+        for (j = 0; j < 8; j++) {
+            if (binary_data[(i * 8) + j] == '1') {
+                data_blocks[i] += 0x80 >> j;
+            }
         }
     }
     data_blocks[2] = 0;
-    if (binary_data[16] == '1') {
-        data_blocks[2] += 0x08;
-    }
-    if (binary_data[17] == '1') {
-        data_blocks[2] += 0x04;
-    }
-    if (binary_data[18] == '1') {
-        data_blocks[2] += 0x02;
-    }
-    if (binary_data[19] == '1') {
-        data_blocks[2] += 0x01;
+    for (j = 0; j < 4; j++) {
+        if (binary_data[16 + j] == '1') {
+            data_blocks[2] += 0x08 >> j;
+        }
     }
 
     /* Calculate Reed-Solomon error codewords */
@@ -2207,7 +2145,7 @@ void micro_qr_m1(char binary_data[]) {
 }
 
 void micro_qr_m2(char binary_data[], int ecc_mode) {
-    int i, latch;
+    int i, j, latch;
     int bits_total, bits_left, remainder;
     int data_codewords, ecc_codewords;
     unsigned char data_blocks[6], ecc_blocks[7];
@@ -2262,29 +2200,11 @@ void micro_qr_m2(char binary_data[], int ecc_mode) {
     /* Copy data into codewords */
     for (i = 0; i < data_codewords; i++) {
         data_blocks[i] = 0;
-        if (binary_data[i * 8] == '1') {
-            data_blocks[i] += 0x80;
-        }
-        if (binary_data[(i * 8) + 1] == '1') {
-            data_blocks[i] += 0x40;
-        }
-        if (binary_data[(i * 8) + 2] == '1') {
-            data_blocks[i] += 0x20;
-        }
-        if (binary_data[(i * 8) + 3] == '1') {
-            data_blocks[i] += 0x10;
-        }
-        if (binary_data[(i * 8) + 4] == '1') {
-            data_blocks[i] += 0x08;
-        }
-        if (binary_data[(i * 8) + 5] == '1') {
-            data_blocks[i] += 0x04;
-        }
-        if (binary_data[(i * 8) + 6] == '1') {
-            data_blocks[i] += 0x02;
-        }
-        if (binary_data[(i * 8) + 7] == '1') {
-            data_blocks[i] += 0x01;
+        
+        for (j = 0; j < 8; j++) {
+            if (binary_data[(i * 8) + j] == '1') {
+                data_blocks[i] += 0x80 >> j;
+            }
         }
     }
 
@@ -2303,7 +2223,7 @@ void micro_qr_m2(char binary_data[], int ecc_mode) {
 }
 
 void micro_qr_m3(char binary_data[], int ecc_mode) {
-    int i, latch;
+    int i, j, latch;
     int bits_total, bits_left, remainder;
     int data_codewords, ecc_codewords;
     unsigned char data_blocks[12], ecc_blocks[9];
@@ -2372,29 +2292,11 @@ void micro_qr_m3(char binary_data[], int ecc_mode) {
     /* Copy data into codewords */
     for (i = 0; i < (data_codewords - 1); i++) {
         data_blocks[i] = 0;
-        if (binary_data[i * 8] == '1') {
-            data_blocks[i] += 0x80;
-        }
-        if (binary_data[(i * 8) + 1] == '1') {
-            data_blocks[i] += 0x40;
-        }
-        if (binary_data[(i * 8) + 2] == '1') {
-            data_blocks[i] += 0x20;
-        }
-        if (binary_data[(i * 8) + 3] == '1') {
-            data_blocks[i] += 0x10;
-        }
-        if (binary_data[(i * 8) + 4] == '1') {
-            data_blocks[i] += 0x08;
-        }
-        if (binary_data[(i * 8) + 5] == '1') {
-            data_blocks[i] += 0x04;
-        }
-        if (binary_data[(i * 8) + 6] == '1') {
-            data_blocks[i] += 0x02;
-        }
-        if (binary_data[(i * 8) + 7] == '1') {
-            data_blocks[i] += 0x01;
+        
+        for (j = 0; j < 8; j++) {
+            if (binary_data[(i * 8) + j] == '1') {
+                data_blocks[i] += 0x80 >> j;
+            }
         }
     }
 
@@ -2445,7 +2347,7 @@ void micro_qr_m3(char binary_data[], int ecc_mode) {
 }
 
 void micro_qr_m4(char binary_data[], int ecc_mode) {
-    int i, latch;
+    int i, j, latch;
     int bits_total, bits_left, remainder;
     int data_codewords, ecc_codewords;
     unsigned char data_blocks[17], ecc_blocks[15];
@@ -2507,29 +2409,11 @@ void micro_qr_m4(char binary_data[], int ecc_mode) {
     /* Copy data into codewords */
     for (i = 0; i < data_codewords; i++) {
         data_blocks[i] = 0;
-        if (binary_data[i * 8] == '1') {
-            data_blocks[i] += 0x80;
-        }
-        if (binary_data[(i * 8) + 1] == '1') {
-            data_blocks[i] += 0x40;
-        }
-        if (binary_data[(i * 8) + 2] == '1') {
-            data_blocks[i] += 0x20;
-        }
-        if (binary_data[(i * 8) + 3] == '1') {
-            data_blocks[i] += 0x10;
-        }
-        if (binary_data[(i * 8) + 4] == '1') {
-            data_blocks[i] += 0x08;
-        }
-        if (binary_data[(i * 8) + 5] == '1') {
-            data_blocks[i] += 0x04;
-        }
-        if (binary_data[(i * 8) + 6] == '1') {
-            data_blocks[i] += 0x02;
-        }
-        if (binary_data[(i * 8) + 7] == '1') {
-            data_blocks[i] += 0x01;
+        
+        for (j = 0; j < 8; j++) {
+            if (binary_data[(i * 8) + j] == '1') {
+                data_blocks[i] += 0x80 >> j;
+            }
         }
     }
 
@@ -2671,7 +2555,6 @@ int micro_apply_bitmask(unsigned char *grid, int size) {
     unsigned char p;
     int pattern, value[8];
     int best_val, best_pattern;
-    int bit;
 
 #ifndef _MSC_VER
     unsigned char mask[size * size];
@@ -2736,26 +2619,7 @@ int micro_apply_bitmask(unsigned char *grid, int size) {
     /* Apply mask */
     for (x = 0; x < size; x++) {
         for (y = 0; y < size; y++) {
-            bit = 0;
-            switch (best_pattern) {
-                case 0: if (mask[(y * size) + x] & 0x01) {
-                        bit = 1;
-                    }
-                    break;
-                case 1: if (mask[(y * size) + x] & 0x02) {
-                        bit = 1;
-                    }
-                    break;
-                case 2: if (mask[(y * size) + x] & 0x04) {
-                        bit = 1;
-                    }
-                    break;
-                case 3: if (mask[(y * size) + x] & 0x08) {
-                        bit = 1;
-                    }
-                    break;
-            }
-            if (bit == 1) {
+            if (mask[(y * size) + x] & (0x01 << best_pattern)) {
                 if (grid[(y * size) + x] & 0x01) {
                     grid[(y * size) + x] = 0x00;
                 } else {
