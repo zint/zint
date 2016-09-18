@@ -94,6 +94,7 @@ extern "C" {
         int bitmap_width;
         int bitmap_height;
         unsigned int bitmap_byte_length;
+        float dot_size;
         struct zint_render *rendered;
     };
 

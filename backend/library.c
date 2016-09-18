@@ -74,6 +74,7 @@ struct zint_symbol *ZBarcode_Create() {
     symbol->bitmap_width = 0;
     symbol->bitmap_height = 0;
     symbol->eci = 3;
+    symbol->dot_size = 4.0 / 5.0;
     return symbol;
 }
 
@@ -1015,6 +1016,11 @@ int ZBarcode_Encode(struct zint_symbol *symbol, unsigned char *source, int lengt
     } else {
         memcpy(local_source, source, length);
         local_source[length] = '\0';
+    }
+    
+    if ((symbol->dot_size < 0.01) || (symbol->dot_size > 20.0)) {
+        strcpy(symbol->errtxt, "Invalid dot size");
+        return ZINT_ERROR_INVALID_OPTION;
     }
 
     switch (symbol->symbology) {

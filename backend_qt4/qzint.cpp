@@ -41,6 +41,7 @@ namespace Zint {
         m_scale = 1.0;
         m_option_3 = 0;
         m_hidetext = FALSE;
+        m_dot_size = 4.0 / 5.0;
     }
 
     QZint::~QZint() {
@@ -62,6 +63,7 @@ namespace Zint {
         m_zintSymbol->option_1 = m_securityLevel;
         m_zintSymbol->input_mode = m_input_mode;
         m_zintSymbol->option_2 = m_width;
+        m_zintSymbol->dot_size = m_dot_size;
         if (m_hidetext) {
             m_zintSymbol->show_hrt = 0;
         } else {
@@ -151,6 +153,10 @@ namespace Zint {
     void QZint::setScale(float scale) {
         m_scale = scale;
     }
+    
+    void QZint::setDotSize(float dot_size) {
+        m_dot_size = dot_size;
+    }
 
     QColor QZint::fgColor() {
         return m_fgColor;
@@ -239,6 +245,7 @@ namespace Zint {
         m_zintSymbol->option_1 = m_securityLevel;
         m_zintSymbol->input_mode = m_input_mode;
         m_zintSymbol->option_2 = m_width;
+        m_zintSymbol->dot_size = m_dot_size;
         if (m_hidetext) {
             m_zintSymbol->show_hrt = 0;
         } else {
@@ -493,7 +500,7 @@ namespace Zint {
                 for (int c = 0; c < m_zintSymbol->width; c++) {
                     if (module_set(r, c)) {
 
-                        painter.drawEllipse(QPointF((c + 1.0), (r + 1.0)), 0.5, 0.5);
+                        painter.drawEllipse(QPointF((c + 1.0), (r + 1.0)), m_dot_size / 2.0, m_dot_size / 2.0);
                     }
                 }
             }

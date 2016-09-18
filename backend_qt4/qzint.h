@@ -73,6 +73,8 @@ public:
 
 	float scale();
 	void setScale(float scale);
+        
+        void setDotSize(float dot_size);
 
 	int mode();
 	void setMode(int securityLevel);
@@ -116,6 +118,7 @@ private:
 	float m_scale;
 	int m_option_3;
 	bool m_hidetext;
+        float m_dot_size;
 };
 }
 #endif

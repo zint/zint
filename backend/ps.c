@@ -430,7 +430,7 @@ int ps_plot(struct zint_symbol *symbol) {
                 /* Use dots instead of squares */
                 for (i = 0; i < symbol->width; i++) {
                     if (module_is_set(symbol, this_row, i)) {
-                        fprintf(feps, "%.2f %.2f %.2f TD\n", ((i + xoffset) * scaler) + (scaler / 2.0), (row_posn * scaler) + (scaler / 2.0), (2.0 / 5.0) * scaler);
+                        fprintf(feps, "%.2f %.2f %.2f TD\n", ((i + xoffset) * scaler) + (scaler / 2.0), (row_posn * scaler) + (scaler / 2.0), (symbol->dot_size / 2.0) * scaler);
                     }
                 }
             } else {

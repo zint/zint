@@ -171,12 +171,13 @@ void draw_bar(char *pixelbuf, int xpos, int xlen, int ypos, int ylen, int image_
     }
 }
 
-void draw_circle(char *pixelbuf, int image_width, int image_height, int x0, int y0, int radius, char fill) {
+void draw_circle(char *pixelbuf, int image_width, int image_height, int x0, int y0, float radius, char fill) {
     int x, y;
-
-    for (y = -radius; y <= radius; y++) {
-        for (x = -radius; x <= radius; x++) {
-            if ((x * x) + (y * y) <= (radius * radius)) {
+    int radius_i = (int) radius;
+    
+    for (y = -radius_i; y <= radius_i; y++) {
+        for (x = -radius_i; x <= radius_i; x++) {
+            if ((x * x) + (y * y) <= (radius_i * radius_i)) {
                 if ((y + y0 >= 0) && (y + y0 < image_height)
                         && (x + x0 >= 0) && (x + x0 < image_width)) {
                     *(pixelbuf + ((y + y0) * image_width) + (x + x0)) = fill;
@@ -544,7 +545,7 @@ int plot_raster_dotty(struct zint_symbol *symbol, int rotate_angle, int data_typ
                 draw_circle(scaled_pixelbuf, scale_width, scale_height,
                         (int) ((i + xoffset) * scaler) + (scaler / 2.0),
                         (int) ((r + yoffset) * scaler) + (scaler / 2.0),
-                        (int) (scaler / 2.0),
+                        (symbol->dot_size / 2.0) * scaler,
                         '1');
             }
         }

@@ -316,7 +316,7 @@ int svg_plot(struct zint_symbol *symbol) {
                 /* Use (currently undocumented) dot mode - see SF ticket #29 */
                 for (i = 0; i < symbol->width; i++) {
                     if (module_is_set(symbol, this_row, i)) {
-                        fprintf(fsvg, "      <circle cx=\"%.2f\" cy=\"%.2f\" r=\"%.2f\" fill=\"#%s\" />\n", ((i + xoffset) * scaler) + (scaler / 2.0), (row_posn * scaler) + (scaler / 2.0), (2.0 / 5.0) * scaler, symbol->fgcolour);
+                        fprintf(fsvg, "      <circle cx=\"%.2f\" cy=\"%.2f\" r=\"%.2f\" fill=\"#%s\" />\n", ((i + xoffset) * scaler) + (scaler / 2.0), (row_posn * scaler) + (scaler / 2.0), (symbol->dot_size / 2.0) * scaler, symbol->fgcolour);
                     }
                 }
             } else {

@@ -106,7 +106,7 @@ void usage(void) {
             "  --notext              Remove human readable text\n"
             "  --square              Force Data Matrix symbols to be square\n"
             "  --dmre                Allow Data Matrix Rectangular Extended\n"
-            "  --init                Create reader initialisation symbol (Code 128)\n"
+            "  --init                Create reader initialisation/programming symbol\n"
             "  --smalltext           Use half-size text in PNG images\n"
             "  --boldtext            Use bold text in PNG images\n"
             "  --batch               Treat each line of input as a separate data set\n"
@@ -114,6 +114,8 @@ void usage(void) {
             "  --mirroreps           Use batch data to determine filename (EPS output)\n"
             "  --mirrorsvg           Use batch data to determine filename (SVG output)\n"
             "  --eci=NUMBER          Set the ECI mode for raw data\n"
+            "  --dotty               Use dots instead of squares for matrix symbols\n"
+            "  --dotsize=NUMBER       Set radius of dots in dotty mode\n"
             , ZINT_VERSION);
 }
 
@@ -508,6 +510,7 @@ int main(int argc, char **argv) {
             {"mirroreps", 0, 0, 0},
             {"mirrorsvg", 0, 0, 0},
             {"dotty", 0, 0, 0},
+            {"dotsize", 1, 0, 0},
             {"eci", 1, 0, 'e'},
             {0, 0, 0, 0}
         };
@@ -591,6 +594,15 @@ int main(int argc, char **argv) {
                         my_symbol->scale = 1.0;
                     }
                 }
+                if (!strcmp(long_options[option_index].name, "dotsize")) {
+                    my_symbol->dot_size = (float) (atof(optarg));
+                    if (my_symbol->dot_size < 0.01) {
+                        /* Zero and negative values are not permitted */
+                        fprintf(stderr, "Invalid dot radius value\n");
+                        fflush(stderr);
+                        my_symbol->dot_size = 4.0 / 5.0;
+                    }
+                }
                 if (!strcmp(long_options[option_index].name, "border")) {
                     error_number = validator(NESET, optarg);
                     if (error_number == ZINT_ERROR_INVALID_DATA) {
@@ -630,7 +642,7 @@ int main(int argc, char **argv) {
                     if ((atoi(optarg) >= 1) && (atoi(optarg) <= 44)) {
                         my_symbol->option_1 = atoi(optarg);
                     } else {
-                        fprintf(stderr, "Number of columns out of range\n");
+                        fprintf(stderr, "Number of rows out of range\n");
                         fflush(stderr);
                     }
                 }

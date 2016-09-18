@@ -298,6 +298,7 @@ void MainWindow::change_options()
         connect(m_optionWidget->findChild<QObject*>("cmbDotCols"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radDotStan"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radDotGs1"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(m_optionWidget->findChild<QObject*>("txtDotSize"), SIGNAL(textChanged( QString )), SLOT(update_preview()));
     }
 
 	if(metaObject()->enumerator(0).value(bstyle->currentIndex()) == BARCODE_AZTEC)
@@ -713,6 +714,7 @@ void MainWindow::update_preview()
             m_bc.bc.setWidth(m_optionWidget->findChild<QComboBox*>("cmbDotCols")->currentIndex());
             if(m_optionWidget->findChild<QRadioButton*>("radDotGs1")->isChecked())
                 m_bc.bc.setInputMode(GS1_MODE);
+            m_bc.bc.setDotSize(m_optionWidget->findChild<QLineEdit*>("txtDotSize")->text().toFloat());
             break;
 
 		case BARCODE_AZTEC:
