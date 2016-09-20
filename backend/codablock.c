@@ -467,7 +467,7 @@ int Rows2Columns(CharacterSetTable *T, unsigned char *data, int dataLength,
         if (rowsCur<=rowsRequested) {
             /* Less or exactly line number found */
             /* check if column count below already tested or Count = 1*/
-            int fInTestList = (rowsCur == 1);
+            int fInTestList = (rowsCur == 1 || testColumns == 1);
             int posCur;
             for (posCur = 0; posCur < testListSize && ! fInTestList; posCur++) {
                 if ( pTestList[posCur] == testColumns-1 )
@@ -479,7 +479,7 @@ int Rows2Columns(CharacterSetTable *T, unsigned char *data, int dataLength,
                  * if rowsCur<rowsRequested and fillings>0
                  * -> New search for rowsRequested:=rowsCur
                  */
-                if (rowsCur==rowsRequested||fillings==0) {
+                if ( rowsCur == rowsRequested || fillings == 0 || testColumns == 1 ) {
                     /* Exit with actual */
                     *pFillings=fillings;
                     *pRows=rowsCur;
@@ -650,8 +650,6 @@ int codablock(struct zint_symbol *symbol, unsigned char source[], int length) {
         strcpy(symbol->errtxt, "Columns parameter not in 0,6..66");
         return ZINT_ERROR_INVALID_OPTION;
     }
-    /* There are 5 Codewords for Organisation Start(2),row(1),CheckSum,Stop */
-    useColumns = columns - 5;
     /* GS1 not implemented */
     if  (symbol->input_mode == GS1_MODE) {
         strcpy(symbol->errtxt, "GS1 mode not supported");
@@ -692,19 +690,22 @@ int codablock(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     /* Find final row and column count */
     /* nor row nor column count given */
-    if ( rows <= 0 && useColumns <= 0 ) {
+    if ( rows <= 0 && columns <= 5 ) {
         /* Use Code128 until reasonable size */
-        if (dataLength < 64) {
+        if (dataLength < 9) {
             rows = 1;
         } else {
-            /* use 3/1 aspect/ratio Codablock */
-            rows = ((int)floor(sqrt(1.0*dataLength)))/3;
-            if (rows < 1)
-                rows = 1;
-            else if (rows > 44)
-                rows = 44;
+            /* use 1/1 aspect/ratio Codablock */
+            columns = ((int)floor(sqrt(1.0*dataLength))+5);
+            if (columns > 64)
+                columns = 64;
+                #ifdef _DEBUG
+                printf("Auto column count for %d characters:%d\n",dataLength,columns);
+                #endif
         }
     }
+    /* There are 5 Codewords for Organisation Start(2),row(1),CheckSum,Stop */
+    useColumns = columns - 5;
     if ( rows > 0 ) {
         /* row count given */
         Error=Rows2Columns(T,data,dataLength,&rows,&useColumns,pSet,&fillings);
@@ -879,7 +880,7 @@ int codablock(struct zint_symbol *symbol, unsigned char source[], int length) {
                 }
                 if ((pSet[charCur]&CodeA)!=0)
                 {
-                    /* >> Shift it and put out the shiftet character */
+                    /* >> Shift it and put out the shifted character */
                     ASCIIZ128(&pOutPos,characterSetCur,aShift,'\0');
                     emptyColumns-=2;
                     characterSetCur=(characterSetCur==CodeB)?CodeA:CodeB;
@@ -967,7 +968,7 @@ int codablock(struct zint_symbol *symbol, unsigned char source[], int length) {
             {
                 for (DPos2=0 ; DPos2 < columns ; DPos2++)
                 {
-                    printf("% 3i ",(int)(pOutput[DPos*columns+DPos2]));
+                    printf("%3d ",(int)(pOutput[DPos*columns+DPos2]));
                 }
                 printf("\n");
             }
