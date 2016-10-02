@@ -229,6 +229,7 @@ extern "C" {
 #define ZINT_ERROR_MEMORY		11
     
 // Raster file types
+#define OUT_BUFFER          0
 #define	OUT_PNG_FILE        100
 #define	OUT_BMP_FILE        120
 #define OUT_GIF_FILE        140

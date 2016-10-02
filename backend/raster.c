@@ -53,6 +53,40 @@ extern int bmp_pixel_plot(struct zint_symbol *symbol, char *pixelbuf);
 extern int pcx_pixel_plot(struct zint_symbol *symbol, char *pixelbuf);
 extern int gif_pixel_plot(struct zint_symbol *symbol, char *pixelbuf);
 
+void buffer_plot(struct zint_symbol *symbol, char *pixelbuf) {
+    /* Place pixelbuffer into symbol */
+    int fgred, fggrn, fgblu, bgred, bggrn, bgblu;
+    int row, column, i;
+    
+    symbol->bitmap = (char *) malloc(symbol->bitmap_width * symbol->bitmap_height * 3);
+    
+    fgred = (16 * ctoi(symbol->fgcolour[0])) + ctoi(symbol->fgcolour[1]);
+    fggrn = (16 * ctoi(symbol->fgcolour[2])) + ctoi(symbol->fgcolour[3]);
+    fgblu = (16 * ctoi(symbol->fgcolour[4])) + ctoi(symbol->fgcolour[5]);
+    bgred = (16 * ctoi(symbol->bgcolour[0])) + ctoi(symbol->bgcolour[1]);
+    bggrn = (16 * ctoi(symbol->bgcolour[2])) + ctoi(symbol->bgcolour[3]);
+    bgblu = (16 * ctoi(symbol->bgcolour[4])) + ctoi(symbol->bgcolour[5]);
+    
+    for (row = 0; row < symbol->bitmap_height; row++) {
+        for (column = 0; column < symbol->bitmap_width; column++) {
+            i = ((row * symbol->bitmap_width) + column) * 3;
+            switch (*(pixelbuf + (symbol->bitmap_width * (symbol->bitmap_height - row - 1)) + column)) {
+                case '1':
+                    symbol->bitmap[i] = fgred;
+                    symbol->bitmap[i + 1] = fggrn;
+                    symbol->bitmap[i + 2] = fgblu;
+                    break;
+                default:
+                    symbol->bitmap[i] = bgred;
+                    symbol->bitmap[i + 1] = bggrn;
+                    symbol->bitmap[i + 2] = bgblu;
+                    break;
+
+            }
+        }
+    }
+}
+
 int save_raster_image_to_file(struct zint_symbol *symbol, int image_height, int image_width, char *pixelbuf, int rotate_angle, int image_type) {
     int error_number;
     int row, column;
@@ -135,6 +169,10 @@ int save_raster_image_to_file(struct zint_symbol *symbol, int image_height, int 
     }
     
     switch (image_type) {
+        case OUT_BUFFER:
+            buffer_plot(symbol, rotated_pixbuf);
+            error_number = 0;
+            break;
         case OUT_PNG_FILE:
 #ifndef NO_PNG
             error_number = png_pixel_plot(symbol, rotated_pixbuf);

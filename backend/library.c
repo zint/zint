@@ -1177,7 +1177,7 @@ int ZBarcode_Buffer(struct zint_symbol *symbol, int rotate_angle) {
             return ZINT_ERROR_INVALID_OPTION;
     }
 
-    error_number = plot_raster(symbol, rotate_angle, OUT_BMP_FILE);
+    error_number = plot_raster(symbol, rotate_angle, OUT_BUFFER);
     error_tag(symbol->errtxt, error_number);
     return error_number;
 }

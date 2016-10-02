@@ -49,6 +49,7 @@ int bmp_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
     int row_size;
     unsigned int data_size;
     unsigned char *bitmap_file_start, *bmp_posn;
+    char *bitmap;
     FILE *bmp_file;
     bitmap_file_header_t file_header;
     bitmap_info_header_t info_header;
@@ -57,7 +58,7 @@ int bmp_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
         free(symbol->bitmap);
 
     row_size = 4 * floor((24.0 * symbol->bitmap_width + 31) / 32);
-    symbol->bitmap = (char *) malloc(row_size * symbol->bitmap_height);
+    bitmap = (char *) malloc(row_size * symbol->bitmap_height);
 
     fgred = (16 * ctoi(symbol->fgcolour[0])) + ctoi(symbol->fgcolour[1]);
     fggrn = (16 * ctoi(symbol->fgcolour[2])) + ctoi(symbol->fgcolour[3]);
@@ -73,14 +74,14 @@ int bmp_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
             i = (3 * column) + (row * row_size);
             switch (*(pixelbuf + (symbol->bitmap_width * (symbol->bitmap_height - row - 1)) + column)) {
                 case '1':
-                    symbol->bitmap[i] = fgblu;
-                    symbol->bitmap[i + 1] = fggrn;
-                    symbol->bitmap[i + 2] = fgred;
+                    bitmap[i] = fgblu;
+                    bitmap[i + 1] = fggrn;
+                    bitmap[i + 2] = fgred;
                     break;
                 default:
-                    symbol->bitmap[i] = bgblu;
-                    symbol->bitmap[i + 1] = bggrn;
-                    symbol->bitmap[i + 2] = bgred;
+                    bitmap[i] = bgblu;
+                    bitmap[i + 1] = bggrn;
+                    bitmap[i + 2] = bgred;
                     break;
 
             }
@@ -115,7 +116,7 @@ int bmp_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
     bmp_posn += sizeof (bitmap_file_header_t);
     memcpy(bmp_posn, &info_header, sizeof (bitmap_info_header_t));
     bmp_posn += sizeof (bitmap_info_header_t);
-    memcpy(bmp_posn, symbol->bitmap, data_size);
+    memcpy(bmp_posn, bitmap, data_size);
 
     /* Open output file in binary mode */
     if ((symbol->output_options & BARCODE_STDOUT) != 0) {
@@ -137,5 +138,6 @@ int bmp_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
     fclose(bmp_file);
 
     free(bitmap_file_start);
+    free(bitmap);
     return 0;
 }
