@@ -1167,6 +1167,7 @@ int general_rules(char field[], char type[]) {
 /* Handles all data encodation from section 7.2.5 of ISO/IEC 24724 */
 int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_string[]) {
     int encoding_method, i, mask, j, read_posn, latch, debug = 0, last_mode = ISOIEC;
+    int symbol_characters, characters_per_row;
 #ifndef _MSC_VER
     char general_field[strlen(source) + 1], general_field_type[strlen(source) + 1];
 #else
@@ -1914,10 +1915,30 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
     if (remainder == 12) {
         remainder = 0;
     }
-    if (strlen(binary_string) < 36) {
-        remainder = 36 - strlen(binary_string);
+    symbol_characters = ((strlen(binary_string) + remainder) / 12) + 1;
+    
+    if ((symbol->symbology == BARCODE_RSS_EXPSTACK) || (symbol->symbology == BARCODE_RSS_EXPSTACK_CC)) {
+        characters_per_row = symbol->option_2 * 2;
+        
+        if ((characters_per_row < 2) || (characters_per_row > 20)) {
+            characters_per_row = 4;
+        }
+        
+        if ((symbol_characters % characters_per_row) == 1) {
+            symbol_characters++;
+        }
+        
+        if (symbol_characters < 4) {
+            symbol_characters = 4;
+        }
     }
-
+    
+    if (symbol_characters < 3) {
+        symbol_characters = 3;
+    }
+    
+    remainder = (12 * (symbol_characters - 1)) - strlen(binary_string);
+    
     if (latch == 1) {
         /* There is still one more numeric digit to encode */
         if (debug) printf("Adding extra (odd) numeric digit\n");
@@ -1958,9 +1979,30 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
         if (remainder == 12) {
             remainder = 0;
         }
-        if (strlen(binary_string) < 36) {
-            remainder = 36 - strlen(binary_string);
+        symbol_characters = ((strlen(binary_string) + remainder) / 12) + 1;
+
+        if ((symbol->symbology == BARCODE_RSS_EXPSTACK) || (symbol->symbology == BARCODE_RSS_EXPSTACK_CC)) {
+            characters_per_row = symbol->option_2 * 2;
+
+            if ((characters_per_row < 2) || (characters_per_row > 20)) {
+                characters_per_row = 4;
+            }
+
+            if ((symbol_characters % characters_per_row) == 1) {
+                symbol_characters++;
+            }
+
+            if (symbol_characters < 4) {
+                symbol_characters = 4;
+            }
         }
+
+        if (symbol_characters < 3) {
+            symbol_characters = 3;
+        }
+
+        remainder = (12 * (symbol_characters - 1)) - strlen(binary_string);
+        
         if (debug) printf("Resultant binary = %s\n", binary_string);
         if (debug) printf("\tLength: %d\n", (int) strlen(binary_string));
     }
@@ -1984,10 +2026,11 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
 
     padstring[remainder] = '\0';
     strcat(binary_string, padstring);
-
+    
     /* Patch variable length symbol bit field */
-    d1 = ((strlen(binary_string) / 12) + 1) & 1;
-    if (strlen(binary_string) <= 156) {
+    d1 = symbol_characters & 1;
+
+    if (symbol_characters <= 14) {
         d2 = 0;
     } else {
         d2 = 1;
@@ -2255,6 +2298,7 @@ int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int src_len)
          */
         codeblocks = (data_chars + 1) / 2 + ((data_chars + 1) % 2);
 
+
         if ((symbol->option_2 < 1) || (symbol->option_2 > 10)) {
             symbol->option_2 = 2;
         }
@@ -2334,7 +2378,7 @@ int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int src_len)
             latch = current_row & 1 ? '0' : '1';
 
             if ((current_row == stack_rows) && (codeblocks != (current_row * symbol->option_2)) &&
-                    (((current_row * symbol->option_2) - codeblocks) & 1)) {
+                    ((current_row & 1) == 0) && ((symbol->option_2 & 1) == 0)) {
                 /* Special case bottom row */
                 special_case_row = 1;
                 sub_elements[0] = 2;
