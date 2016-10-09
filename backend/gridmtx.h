@@ -83,6 +83,7 @@ static const int gm_b2[] = {
     0, 0, 0, 0, 0, 1, 2, 2, 4, 0, 4, 0, 6
 };
 
+/* Values from table A.1 */
 static const int gm_ebeb[] = {
     /* E1 B3 E2 B4 */
     0, 0, 0, 0, // version 1
@@ -104,7 +105,7 @@ static const int gm_ebeb[] = {
     16, 2, 0, 0,
     24, 2, 0, 0,
     32, 2, 0, 0,
-    41, 1, 10, 1,
+    41, 1, 40, 1,
     12, 2, 0, 0, // version 5
     24, 2, 0, 0,
     36, 2, 0, 0,
