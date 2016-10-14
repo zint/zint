@@ -70,7 +70,7 @@ void buffer_plot(struct zint_symbol *symbol, char *pixelbuf) {
     for (row = 0; row < symbol->bitmap_height; row++) {
         for (column = 0; column < symbol->bitmap_width; column++) {
             i = ((row * symbol->bitmap_width) + column) * 3;
-            switch (*(pixelbuf + (symbol->bitmap_width * (symbol->bitmap_height - row - 1)) + column)) {
+            switch (*(pixelbuf + (symbol->bitmap_width * row) + column)) {
                 case '1':
                     symbol->bitmap[i] = fgred;
                     symbol->bitmap[i + 1] = fggrn;
