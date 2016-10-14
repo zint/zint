@@ -514,6 +514,8 @@ int rss14(struct zint_symbol *symbol, unsigned char source[], int src_len) {
         hrt[13] = itoc(check_digit);
 
         strcat((char*) symbol->text, hrt);
+        
+        set_minimum_height(symbol, 14); // Minimum height is 14X for truncated symbol
     }
 
     if ((symbol->symbology == BARCODE_RSS14STACK) || (symbol->symbology == BARCODE_RSS14STACK_CC)) {
@@ -716,6 +718,8 @@ int rss14(struct zint_symbol *symbol, unsigned char source[], int src_len) {
             }
         }
         symbol->rows = symbol->rows + 1;
+        
+        set_minimum_height(symbol, 33);
     }
 
 
@@ -1042,6 +1046,8 @@ int rsslimited(struct zint_symbol *symbol, unsigned char source[], int src_len) 
     hrt[14] = '\0';
 
     strcat((char*) symbol->text, hrt);
+    
+    set_minimum_height(symbol, 10);
 
     return error_number;
 }
@@ -2500,6 +2506,12 @@ int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int src_len)
             }
         }
 
+    }
+    
+    for (i = 0; i < symbol->rows; i++) {
+        if (symbol->row_height[i] == 0) {
+            symbol->row_height[i] = 34;
+        }
     }
 
     return 0;

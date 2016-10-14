@@ -72,6 +72,7 @@ extern "C" {
     extern double froundup(const double input);
     extern int parunmodd(const unsigned char llyth);
     extern int utf8toutf16(struct zint_symbol *symbol, const unsigned char source[], int vals[], int *length);
+    extern void set_minimum_height(struct zint_symbol *symbol, int min_height);
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

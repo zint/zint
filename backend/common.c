@@ -272,3 +272,25 @@ int utf8toutf16(struct zint_symbol *symbol, const unsigned char source[], int va
     return error_number;
 }
 
+void set_minimum_height(struct zint_symbol *symbol, int min_height) {
+    /* Enforce minimum permissable height of rows */
+    int fixed_height = 0;
+    int zero_count = 0;
+    int i;
+    
+    for (i = 0; i < symbol->rows; i++) {
+        fixed_height += symbol->row_height[i];
+        
+        if (symbol->row_height[i] == 0) {
+            zero_count++;
+        }
+    }
+    
+    if (((symbol->height - fixed_height) / zero_count) < min_height) {
+        for (i = 0; i < symbol->rows; i++) {
+            if (symbol->row_height[i] == 0) {
+                symbol->row_height[i] = min_height;
+            }
+        }
+    }
+}
