@@ -36,6 +36,8 @@
  2016-09-14 2.5.1 HaO
 -   Added Codablock F options "-rows".
 -   Adopted to new image format of zint
+ 2016-10-14 2.5.2 HaO
+-   Include the upstream reverted image format
 */
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
@@ -75,7 +77,7 @@
 /*----------------------------------------------------------------------------*/
 /* > File option defines */
 
-#define VERSION "2.5.1"
+#define VERSION "2.5.2"
 
 /*----------------------------------------------------------------------------*/
 /* >>>>> Hepler defines */
@@ -784,22 +786,11 @@ static int Encode(Tcl_Interp *interp, int objc,
                 Tcl_NewStringObj("Unknown photo image", -1));
             fError = 1;
         } else {
-            int pitch;
             Tk_PhotoImageBlock sImageBlock;
-            /* The format is:
-             * RGBRGB..., pad to multiple of 4 bytes
-             * Y Axis inverted.
-             * So the pitch is negative and filled to 4 bytes
-             * The origin pointer is the last row start
-             */
-            pitch = 3 * hSymbol->bitmap_width;
-            if ( pitch % 4 != 0)
-                pitch += 4 - (pitch % 4);
-            sImageBlock.pixelPtr = (unsigned char *) (hSymbol->bitmap
-                + pitch * (hSymbol->bitmap_height - 1) );
+            sImageBlock.pixelPtr = (unsigned char *) hSymbol->bitmap;
             sImageBlock.width = hSymbol->bitmap_width;
             sImageBlock.height = hSymbol->bitmap_height;
-            sImageBlock.pitch = pitch * -1;
+            sImageBlock.pitch = 3*hSymbol->bitmap_width;
             sImageBlock.pixelSize = 3;
             sImageBlock.offset[0] = 0;
             sImageBlock.offset[1] = 1;
