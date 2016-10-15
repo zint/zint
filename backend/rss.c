@@ -2061,7 +2061,7 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
 
 /* GS1 DataBar Expanded */
 int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int src_len) {
-    int i, j, k, l, p, data_chars, vs[21], group[21], v_odd[21], v_even[21];
+    int i, j, k, p, data_chars, vs[21], group[21], v_odd[21], v_even[21];
     char substring[21][14], latch;
     int char_widths[21][8], checksum, check_widths[8], c_group;
     int check_char, c_odd, c_even, elements[235], pattern_width, reader, writer;
@@ -2205,11 +2205,6 @@ int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int src_len)
         elements[i] = 0;
     }
 
-    elements[0] = 1;
-    elements[1] = 1;
-    elements[pattern_width - 2] = 1;
-    elements[pattern_width - 1] = 1;
-
     /* Put finder patterns in element array */
     for (i = 0; i < (((data_chars + 1) / 2) + ((data_chars + 1) & 1)); i++) {
         k = ((((((data_chars + 1) - 2) / 2) + ((data_chars + 1) & 1)) - 1) * 11) + i;
@@ -2239,6 +2234,13 @@ int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int src_len)
 
     if ((symbol->symbology == BARCODE_RSS_EXP) || (symbol->symbology == BARCODE_RSS_EXP_CC)) {
         /* Copy elements into symbol */
+        
+        elements[0] = 1; // left guard
+        elements[1] = 1;
+        
+        elements[pattern_width - 2] = 1; // right guard
+        elements[pattern_width - 1] = 1;
+        
         writer = 0;
         latch = '0';
         for (i = 0; i < pattern_width; i++) {
@@ -2328,7 +2330,7 @@ int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int src_len)
             special_case_row = 0;
 
             /* Row Start */
-            sub_elements[0] = 1;
+            sub_elements[0] = 1; // left guard
             sub_elements[1] = 1;
             elements_in_sub = 2;
 
@@ -2343,33 +2345,19 @@ int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int src_len)
                     i = 2 + (current_block * 21);
                     for (j = 0; j < 21; j++) {
                         if ((i + j) < pattern_width) {
-                            sub_elements[j + (reader * 21) + 2] = elements[i + j];
-                            elements_in_sub++;
+                                sub_elements[j + (reader * 21) + 2] = elements[i + j];
                         }
+                        elements_in_sub++;
                     }
-                } else {
+                } else { 
                     /* right to left */
                     left_to_right = 0;
-                    if ((current_row * symbol->option_2) < codeblocks) {
-                        /* a full row */
-                        i = 2 + (((current_row * symbol->option_2) - reader - 1) * 21);
-                        for (j = 0; j < 21; j++) {
-                            if ((i + j) < pattern_width) {
+                    i = 2 + (((current_row * symbol->option_2) - reader - 1) * 21);
+                    for (j = 0; j < 21; j++) {
+                        if ((i + j) < pattern_width) {
                                 sub_elements[(20 - j) + (reader * 21) + 2] = elements[i + j];
-                                elements_in_sub++;
-                            }
                         }
-                    } else {
-                        /* a partial row */
-                        k = ((current_row * symbol->option_2) - codeblocks);
-                        l = (current_row * symbol->option_2) - reader - 1;
-                        i = 2 + ((l - k) * 21);
-                        for (j = 0; j < 21; j++) {
-                            if ((i + j) < pattern_width) {
-                                sub_elements[(20 - j) + (reader * 21) + 2] = elements[i + j];
-                                elements_in_sub++;
-                            }
-                        }
+                        elements_in_sub++;
                     }
                 }
                 reader++;
@@ -2377,7 +2365,7 @@ int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int src_len)
             } while ((reader < symbol->option_2) && (current_block < codeblocks));
 
             /* Row Stop */
-            sub_elements[elements_in_sub] = 1;
+            sub_elements[elements_in_sub] = 1; // right guard
             sub_elements[elements_in_sub + 1] = 1;
             elements_in_sub += 2;
 
@@ -2428,7 +2416,7 @@ int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int src_len)
                 symbol->row_height[symbol->rows - 1] = 1;
                 /* finder bar adjustment */
                 for (j = 0; j < reader; j++) {
-                    k = (49 * j) + (special_case_row ? 19 : 18);
+                    k = (49 * j) + 18 + special_case_row;
                     if (left_to_right) {
                         for (i = 0; i < 15; i++) {
                             if ((!(module_is_set(symbol, symbol->rows, i + k - 1))) &&
@@ -2438,6 +2426,9 @@ int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int src_len)
                             }
                         }
                     } else {
+                        if ((current_row == stack_rows) && (data_chars % 2 == 0)) {
+                            k -= 18;
+                        }
                         for (i = 14; i >= 0; i--) {
                             if ((!(module_is_set(symbol, symbol->rows, i + k + 1))) &&
                                     (!(module_is_set(symbol, symbol->rows, i + k))) &&
