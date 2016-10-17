@@ -73,49 +73,46 @@ void types(void) {
 void usage(void) {
     printf( "Zint version %s\n"
             "Encode input data in a barcode and save as a PNG, BMP, GIF, PCX, EPS or SVG file.\n\n"
-            "  -h, --help            Display this message.\n"
-            "  -t, --types           Display table of barcode types\n"
-            "  -e, --ecinos          Display table of ECI character encodings\n"
-            "  -i, --input=FILE      Read data from FILE.\n"
-            "  -o, --output=FILE     Write image to FILE. (default is out.png)\n"
-            "  -d, --data=DATA       Barcode content.\n"
             "  -b, --barcode=NUMBER  Number of barcode type (default is 20 (=Code128)).\n"
-            "  --height=NUMBER       Height of symbol in multiples of x-dimension.\n"
-            "  -w, --whitesp=NUMBER  Width of whitespace in multiples of x-dimension.\n"
-            "  --border=NUMBER       Width of border in multiples of x-dimension.\n"
-            "  --box                 Add a box.\n"
-            "  --bind                Add boundary bars.\n"
-            "  -r, --reverse         Reverse colours (white on black).\n"
-            "  --fg=COLOUR           Specify a foreground colour.\n"
-            "  --bg=COLOUR           Specify a background colour.\n"
-            "  --cmyk                Convert to CMYK colour space for EPS\n"
-            "  --scale=NUMBER        Adjust size of output image.\n"
-            "  --directpng           Send PNG output to stdout\n"
-            "  --directeps           Send EPS output to stdout\n"
-            "  --directsvg           Send SVG output to stdout\n"
-            "  --dump                Dump hexadecimal representation to stdout\n"
-            "  --rotate=NUMBER       Rotate symbol (PNG output only).\n"
-            "  --cols=NUMBER         (PDF417, Codablock F) Number of columns.\n"
-            "  --rows=NUMBER         (Codablock F) Number of rows.\n"
-            "  --vers=NUMBER         (QR Code or Han Xin) Version\n"
-            "  --secure=NUMBER       (PDF417 and QR Code) Error correction level.\n"
-            "  --primary=STRING      (Maxicode and Composite) Structured primary message.\n"
-            "  --mode=NUMBER         (Maxicode and Composite) Set encoding mode.\n"
-            "  --gs1                 Treat input as GS1 data\n"
-            "  --binary              Treat input as Binary data\n"
-            "  --notext              Remove human readable text\n"
-            "  --square              Force Data Matrix symbols to be square\n"
-            "  --dmre                Allow Data Matrix Rectangular Extended\n"
-            "  --init                Create reader initialisation/programming symbol\n"
-            "  --smalltext           Use half-size text in PNG images\n"
-            "  --boldtext            Use bold text in PNG images\n"
-            "  --batch               Treat each line of input as a separate data set\n"
-            "  --mirror              Use batch data to determine filename (PNG output)\n"
-            "  --mirroreps           Use batch data to determine filename (EPS output)\n"
-            "  --mirrorsvg           Use batch data to determine filename (SVG output)\n"
-            "  --eci=NUMBER          Set the ECI mode for raw data\n"
+            "  --batch               Treat each line of input file as a separate data set\n"
+            "  --bg=COLOUR           Specify a background colour (in hex)\n"
+            "  --binary              Treat input as raw binary data\n"
+            "  --bind                Add boundary bars\n"
+            "  --bold                Use bold text\n"
+            "  --border=NUMBER       Set width of border in multiples of x-dimension\n"
+            "  --box                 Add a box around the symbol\n"
+            "  --cmyk                Use CMYK colour space in EPS symbols\n"
+            "  --cols=NUMBER         Set the number of data columns in symbol\n"
+            "  -d, --data=DATA       Set the symbol content\n"
+            "  --direct              Send output to stdout\n"
+            "  --dotsize=NUMBER      Set radius of dots in dotty mode\n"
             "  --dotty               Use dots instead of squares for matrix symbols\n"
-            "  --dotsize=NUMBER       Set radius of dots in dotty mode\n"
+            "  --dmre                Allow Data Matrix Rectangular Extended\n"
+            "  --dump                Dump hexadecimal representation to stdout\n"
+            "  -e, --ecinos          Display table of ECI character encodings\n"
+            "  --eci=NUMBER          Set the ECI mode for raw data\n"
+            "  --filetype=TYPE       Set output file type (PNG/EPS/SVG/PNG/EPS/GIF/TXT)\n"
+            "  --fg=COLOUR           Specify a foreground colour (in hex)\n"
+            "  --gs1                 Treat input as GS1 compatible data\n"
+            "  -h, --help            Display help message\n"
+            "  --height=NUMBER       Set height of symbol in multiples of x-dimension\n"
+            "  -i, --input=FILE      Read input data from FILE\n"
+            "  --init                Create reader initialisation/programming symbol\n"
+            "  --mirror              Use batch data to determine filename\n"
+            "  --mode=NUMBER         Set encoding mode (Maxicode/Composite)\n"
+            "  --notext              Remove human readable text\n"
+            "  -o, --output=FILE     Send output to FILE. (default is out.png)\n"
+            "  --primary=STRING      Set structured primary message (Maxicode/Composite)\n"
+            "  --secure=NUMBER       Set error correction level\n"
+            "  --scale=NUMBER        Adjust size of x-dimension\n"
+            "  --small               Use half-size text in PNG images\n"
+            "  --square              Force Data Matrix symbols to be square\n"
+            "  -r, --reverse         Reverse colours (white on black)\n"
+            "  --rotate=NUMBER       Rotate symbol by NUMBER degrees (PNG/BMP/PCX)\n"
+            "  --rows=NUMBER         Set number of rows (Codablock-F)\n"
+            "  -t, --types           Display table of barcode types\n"
+            "  --vers=NUMBER         Set symbol version (QR Code/Han Xin)\n"
+            "  -w, --whitesp=NUMBER  Set Width of whitespace in multiples of x-dimension\n"
             , ZINT_VERSION);
 }
 
@@ -255,7 +252,7 @@ static void concat(char dest[], char source[]) {
     }
 }
 
-int batch_process(struct zint_symbol *symbol, char *filename, int mirror_mode) {
+int batch_process(struct zint_symbol *symbol, char *filename, int mirror_mode, char *filetype) {
     FILE *file;
     unsigned char buffer[7100];
     unsigned char character = 0;
@@ -266,10 +263,11 @@ int batch_process(struct zint_symbol *symbol, char *filename, int mirror_mode) {
     char format_string[127], reversed_string[127], format_char;
     int format_len, i;
     char adjusted[2];
-
+    
     memset(buffer, 0, sizeof (unsigned char) * 7100);
     if (symbol->outfile[0] == '\0') {
-        strcpy(format_string, "~~~~~.png");
+        strcpy(format_string, "~~~~~.");
+        strcat(format_string, filetype);
     } else {
         if (strlen(format_string) < 127) {
             strcpy(format_string, symbol->outfile);
@@ -388,26 +386,9 @@ int batch_process(struct zint_symbol *symbol, char *filename, int mirror_mode) {
                 
                 /* Add file extension */
                 output_file[i] = '.';
+                output_file[i + 1] = '\0';
                 
-                if (mirror_mode == 1) {
-                    output_file[i + 1] = 'p';
-                    output_file[i + 2] = 'n';
-                    output_file[i + 3] = 'g';
-                }
-                
-                if (mirror_mode == 2) {
-                    output_file[i + 1] = 'e';
-                    output_file[i + 2] = 'p';
-                    output_file[i + 3] = 's';
-                }
-                
-                if (mirror_mode == 3) {
-                    output_file[i + 1] = 's';
-                    output_file[i + 2] = 'v';
-                    output_file[i + 3] = 'g';
-                }
-                
-                output_file[i + 4] = '\0';
+                strcat(output_file, filetype);
             }
 
             strcpy(symbol->outfile, output_file);
@@ -449,7 +430,8 @@ int main(int argc, char **argv) {
     int rotate_angle;
     int generated;
     int batch_mode;
-    int filename_reflects_data;
+    int mirror_mode;
+    char filetype[4];
 
     error_number = 0;
     rotate_angle = 0;
@@ -457,7 +439,8 @@ int main(int argc, char **argv) {
     my_symbol = ZBarcode_Create();
     my_symbol->input_mode = UNICODE_MODE;
     batch_mode = 0;
-    filename_reflects_data = 0;
+    mirror_mode = 0;
+    strcpy(filetype, "png");
 
     if (argc == 1) {
         usage();
@@ -472,9 +455,7 @@ int main(int argc, char **argv) {
             {"ecinos", 0, 0, 'e'},
             {"bind", 0, 0, 0},
             {"box", 0, 0, 0},
-            {"directeps", 0, 0, 0},
-            {"directpng", 0, 0, 0},
-            {"directsvg", 0, 0, 0},
+            {"direct", 0, 0, 0},
             {"dump", 0, 0, 0},
             {"barcode", 1, 0, 'b'},
             {"height", 1, 0, 0},
@@ -502,16 +483,15 @@ int main(int argc, char **argv) {
             {"square", 0, 0, 0},
             {"dmre", 0, 0, 0},
             {"init", 0, 0, 0},
-            {"smalltext", 0, 0, 0},
-            {"boldtext", 0, 0, 0},
+            {"small", 0, 0, 0},
+            {"bold", 0, 0, 0},
             {"cmyk", 0, 0, 0},
             {"batch", 0, 0, 0},
             {"mirror", 0, 0, 0},
-            {"mirroreps", 0, 0, 0},
-            {"mirrorsvg", 0, 0, 0},
             {"dotty", 0, 0, 0},
             {"dotsize", 1, 0, 0},
             {"eci", 1, 0, 'e'},
+            {"filetype", 1, 0, 0},
             {0, 0, 0, 0}
         };
         c = getopt_long(argc, argv, "htb:w:d:o:i:rcmpe", long_options, &option_index);
@@ -528,10 +508,10 @@ int main(int argc, char **argv) {
                 if (!strcmp(long_options[option_index].name, "init")) {
                     my_symbol->output_options += READER_INIT;
                 }
-                if (!strcmp(long_options[option_index].name, "smalltext")) {
+                if (!strcmp(long_options[option_index].name, "small")) {
                     my_symbol->output_options += SMALL_TEXT;
                 }
-                if (!strcmp(long_options[option_index].name, "boldtext")) {
+                if (!strcmp(long_options[option_index].name, "bold")) {
                     my_symbol->output_options += BOLD_TEXT;
                 }
                 if (!strcmp(long_options[option_index].name, "cmyk")) {
@@ -540,17 +520,8 @@ int main(int argc, char **argv) {
                 if (!strcmp(long_options[option_index].name, "dotty")) {
                     my_symbol->output_options += BARCODE_DOTTY_MODE;
                 }
-                if (!strcmp(long_options[option_index].name, "directeps")) {
+                if (!strcmp(long_options[option_index].name, "direct")) {
                     my_symbol->output_options += BARCODE_STDOUT;
-                    strncpy(my_symbol->outfile, "dummy.eps", 10);
-                }
-                if (!strcmp(long_options[option_index].name, "directpng")) {
-                    my_symbol->output_options += BARCODE_STDOUT;
-                    strncpy(my_symbol->outfile, "dummy.png", 10);
-                }
-                if (!strcmp(long_options[option_index].name, "directsvg")) {
-                    my_symbol->output_options += BARCODE_STDOUT;
-                    strncpy(my_symbol->outfile, "dummy.svg", 10);
                 }
                 if (!strcmp(long_options[option_index].name, "dump")) {
                     my_symbol->output_options += BARCODE_STDOUT;
@@ -701,16 +672,12 @@ int main(int argc, char **argv) {
                     batch_mode = 1;
                 }
                 if (!strcmp(long_options[option_index].name, "mirror")) {
-                    /* Use filenames which reflect content, output to PNG */
-                    filename_reflects_data = 1;
+                    /* Use filenames which reflect content */
+                    mirror_mode = 1;
                 }
-                if (!strcmp(long_options[option_index].name, "mirroreps")) {
-                    /* Use filenames which reflect content, output to EPS */
-                    filename_reflects_data = 2;
-                }
-                if (!strcmp(long_options[option_index].name, "mirrorsvg")) {
-                    /* Use filenames which reflect content, output to SVG */
-                    filename_reflects_data = 3;
+                if (!strcmp(long_options[option_index].name, "filetype")) {
+                    /* Select the type of output file */
+                    strncpy(filetype, optarg, (size_t) 3);
                 }
                 if (!strcmp(long_options[option_index].name, "eci")) {
                     if ((atoi(optarg) >= 0) && (atoi(optarg) <= 30)) {
@@ -791,7 +758,7 @@ int main(int argc, char **argv) {
                     }
                 } else {
                     /* Take each line of text as a separate data set */
-                    error_number = batch_process(my_symbol, optarg, filename_reflects_data);
+                    error_number = batch_process(my_symbol, optarg, mirror_mode, filetype);
                     generated = 1;
                     if (error_number != 0) {
                         fprintf(stderr, "%s\n", my_symbol->errtxt);
