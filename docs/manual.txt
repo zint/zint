@@ -24,8 +24,59 @@ Graphic (PNG) image, Windows Bitmap (BMP), Graphics Interchange Format (GIF),
 ZSoft Paintbrush image (PCX), as Encapsulated Post Script (EPS) or as a 
 Scalable Vector Graphic (SVG). Many options are available for setting the 
 characteristics of the output image including the size and colour of the image, 
-the amount of error correction used in the symbol and, in the case of PNG 
+the amount of error correction used in the symbol and, in the case of raster 
 images, the orientation of the image. 
+
+1.1 Terms of Reference
+----------------------
+Some of the words and phrases used in this document are specific to barcoding,
+and so a brief explanation is given to help understanding:
+
+symbol: A symbol is an image which encodes data according to one of the
+        standards. This encompases barcodes (linear symbols) as well as any of
+        the other methods of representing data used in this program.
+        
+symbology: A method of encoding data to create a certain type of symbol.
+
+linear: A linear symbol is one which consists of bars and spaces, and is what
+        most people associate with the term "barcode". Examples include EAN.
+        
+stacked: A stacked symbol consists of multiple linear symbols placed one above
+        another and which together hold the message, usually allong side some
+        error correction data. Examples include PDF417.
+        
+matrix: A matrix symbol is one based on a (usually square) grid of elements.
+        Examples include Data Matrix, but Maxicode and DotCode are also
+        considered matrix symbologies.
+        
+x-dimension: The x-dimension of a symbol is size (usually the width) of the
+        smallest element. For a linear symbology this is the width of the
+        smallest bar. The default size of the x-dimension in a raster image
+        is 2 pixels. Many symbologies have a fixed width-to-height ratio where
+        the height is expressed as a multiple of the x-dimension.
+        
+composite: A composite symbology is one which is made up of elements which are
+        both linear and stacked. Those currently supported are made up of a
+        linear "primary" message above which is printed a stacked component
+        based on the PDF417 symbology. These symbols also have a separator
+        which seperates the linear and the stacked components.
+        
+GS-1 data: This is a structured way of representing information which consists
+        of "chunks" of data, each of which starts with an Application
+        Identifier. The AI identifies what type of information is being
+        encoded. See Appendix C.
+        
+Reader Initialisation: Some symbologies allow a special character to be included
+        which can be detected by the scanning equipment as signifying that the
+        data is used to program or change settings in that equipment. This data
+        is usually not passed on to the software which handles normal input
+        data. This feature should only be used if you are familiar with the
+        programming codes relevant to your scanner.
+        
+ECI:    The ECI mechanism allows for multi-language data to be encoded in
+        symbols which would usually support only Latin-1 characters. This can
+        be useful, for example, if you need to encode cyrillic characters, but
+        should be used with caution as not all scanners support this method.
 
 2. Installing Zint
 ==================
@@ -68,43 +119,62 @@ available from Zint.
 To run Zint Barcode Studio on Windows simply download and run the installation 
 executable and follow the instructions on-screen.
 
-2.3 Apple Mac OSX
------------------
-Zint can be compiled on OSX from the command line using the same steps as shown 
+2.3 Apple macOS
+---------------
+Zint can be compiled on macOS from the command line using the same steps as shown 
 for Linux above. Currently the Zint Barcode Studio GUI is not known to work on 
-OSX. 
+macOS. The Zint developers do not currently have access to Apple hardware and
+so are not able to provide support or binaries for macOS. If you are a macOS
+developer, however, or if you have any success in building Zint on macOS, we
+would love to hear from you.
 
 
 3. Using Zint Barcode Studio
 ============================
-(This section of the manual has been removed from this text-only version)
+Zint Barcode Studio is the graphical user interface for Zint. If you are
+starting from a command line interface you can start the GUI by typing
+
+zint-qt
+
+or in Windows
+
+zint-qt.exe
+
+
+(The rest of this section of the manual involves use of the GUI, so has been
+removed from this text-only version)
 
 
 4. Using the Command Line
 =========================
-This page describes how to encode data using the command line front end 
-program. 
+This section describes how to encode data using the command line front end 
+program. The examples given are for the Linux platform, but the same options
+are available for Windows - just rememer to include the executable file
+extension. i.e.:
+
+zint.exe -d "This Text"
+
 
 4.1 Inputting data
 ------------------
 The data to encode can be entered at the command line using the -d option, for 
 example 
 
-zint -d “This Text”
+zint -d "This Text"
 
-This will encode the text “This Text”. Zint will use the default symbology, 
+This will encode the text "This Text". Zint will use the default symbology, 
 Code 128, and output to the default file out.png in the current directory. The 
 -d switch and the input data should always be the last entry on the command 
-line input. Any options given after -d will be ignored. 
+line input. Any options given after this will be ignored. 
 
 The data input to Zint is assumed to be encoded in Unicode (UTF-8) format. If 
-you are encoding characters beyond the 7-bit ASCII using a scheme other than 
+you are encoding characters beyond the 7-bit ASCII set using a scheme other than 
 Unicode then you will need to set the appropriate input options as shown in 
 section 4.11 below. 
 
 Non-printing characters can be entered on the command line using the backslash 
 (\) as an escape character. Permissible characters are shown in the table 
-below. Note that only applies on the command line. 
+below. Note that this only applies on the command line. 
 
 -------------------------------------------------------------
 Escape Character  |  ASCII Equivalent  |  Interpretation
@@ -125,7 +195,8 @@ Escape Character  |  ASCII Equivalent  |  Interpretation
 
 Input data can be read directly from file using the -i switch as shown below. 
 The input file is assumed to be Unicode (UTF-8) formatted unless an alternative 
-mode is selected.
+mode is selected. This command replaces the use of the -d switch and should
+similarly be the last option given.
 
 zint -i ./somefile.txt
 
@@ -134,22 +205,22 @@ zint -i ./somefile.txt
 Output can be directed to a file other than the default using the -o switch. 
 For example:
 
-zint -o here.png -d 'This Text'
+zint -o here.png -d "This Text"
 
-draws a Code 128 barcode in the file here.png. If an encapsulated Post Script 
-file is needed simply append the file name with .eps:
+This draws a Code 128 barcode in the file here.png. If an encapsulated Post Script 
+file is needed simply append the file name with .eps, and so on for the other
+supported file types:
 
-zint -o there.eps -d 'This Text'
-
-Scalable Vector Graphics representations of symbols can be generated with the 
-suffix ".svg". Output can also be directed to stdout using the --directeps, 
---directpng and --directsvg switches for EPS, PNG and SVG output respectively. 
+zint -o there.eps -d "This Text"
 
 4.3 Selecting barcode type
 --------------------------
 Selecting which type of barcode you wish to produce (i.e. which symbology to 
 use) can be done at the command line using the -b or --barcode= switch followed 
-by the appropriate integer value in the following table: 
+by the appropriate integer value in the following table. For example to create
+a Data Matrix symbol you could use:
+
+zint -o datamatrix.png -b 71 -d "Data to encode"
 
 --------------------------------------------------------------------------------
 Numeric Value  |  Barcode Name
@@ -162,7 +233,7 @@ Numeric Value  |  Barcode Name
 7              |  Code 2 of 5 Industrial
 8              |  Code 3 of 9 (Code 39)
 9              |  Extended Code 3 of 9 (Code 39+)
-13             |  EAN
+13             |  EAN (Including EAN-8 and EAN-13)
 16             |  GS1-128 (UCC.EAN-128)
 18             |  Codabar
 20             |  Code 128 (automatic subset switching)
@@ -196,7 +267,7 @@ Numeric Value  |  Barcode Name
 68             |  Australia Post Redirection
 69             |  ISBN (EAN-13 with verification stage)
 70             |  Royal Mail 4 State (RM4SCC)
-71             |  Data Matrix ECC200
+71             |  Data Matrix (ECC200)
 72             |  EAN-14
 75             |  NVE-18
 76             |  Japanese Postal Code
@@ -243,21 +314,21 @@ Numeric Value  |  Barcode Name
 
 4.4 Adjusting height
 --------------------
-The height of a 1d symbol can be adjusted using the --height switch. For 
+The height of a linear symbol can be adjusted using the --height switch. For 
 example:
 
-zint --height=100 -d 'This Text'
+zint --height=100 -d "This Text"
 
-specifies a symbol height of 100 times the x-resolution of the symbol.
+This specifies a symbol height of 100 times the x-resolution of the symbol.
 
 4.5 Adjusting whitespace
 ------------------------
 The amount of whitespace to the left and right of the generated barcode can be 
 altered using the –w switch. For example:
 
-zint -w 10 -d 'This Text'
+zint -w 10 -d "This Text"
 
-specifies a whitespace width of 10 times the x-resolution of the symbol.
+This specifies a whitespace width of 10 times the x-resolution of the symbol.
 
 4.6 Adding boundary bars and boxes
 ----------------------------------
@@ -270,7 +341,7 @@ option. This option is automatically selected for ITF-14 symbols.
 The width of the boundary or box can be specified using the --border switch. 
 For example:
 
-zint --box --border=10 -d 'This'
+zint --box --border=10 -d "This"
 
 gives a box with a width 10 times the x-resolution of the symbol.
 
@@ -281,17 +352,17 @@ allows you to change this. The -r switch allows the default colours to be
 inverted so that a white symbol is shown on a black background. For example the 
 command
 
-zint -r -d 'This'
+zint -r -d "This"
 
 gives an inverted Code 128 symbol. This is not practical for most symbologies 
 but white-on-black is allowed by the Data Matrix ECC200 and Aztec Code 
 symbology specifications.
 
-For more specific needs the foreground and background colours can be specified 
-using the --fg= and --bg= options followed by a number in RGB hexadecimal 
-notation (the same system used in HTML). For example the command
+For more specific needs the foreground (ink) and background (paper) colours
+can be specified using the --fg= and --bg= options followed by a number in RRGGBB
+hexadecimal notation (the same system used in HTML). For example the command
 
-zint --fg=004700 -d 'This'
+zint --fg=004700 -d "This"
 
 alters the symbol to a dark green.
 
@@ -309,8 +380,8 @@ with raster image (PNG, BMP, GIF and PCX) output.
 4.9 Adjusting image size
 ------------------------
 The scale of the image can be altered using the --scale= option followed by a 
-multiple of the default x-dimension. For example for PNG images a scale of 5 
-will increase the x-dimension to 10 pixels. 
+multiple of the default x-dimension. The default x-dimension is 2 pixels. For
+example for PNG images a scale of 5 will increase the x-dimension to 10 pixels. 
 
 4.10 Input modes
 ----------------
@@ -318,18 +389,18 @@ By default all input data is assumed to be encoded in Unicode (UTF-8) format.
 Many barcode symbologies encode data using Latin-1 (ISO-8851-1) character 
 encoding, so input is converted from Unicode to Latin-1 before being put in the 
 symbol. In addition QR Code, Micro QR Code, Han Xin Code and Grid Matrix 
-standards can encode Chinese and Japanese characters which are also converted 
+standards can encode Chinese or Japanese characters which are also converted 
 from Unicode. If Zint encounters characters which can not be encoded using the 
 default character encoding then it will take advantage of the ECI (Extended 
 Channel Interpretations) mechanism to encode the data. Be aware that not all 
 barcode readers support ECI mode, so this can sometimes lead to unreadable 
 barcodes. If you are using characters beyond those supported by Latin-1 then 
 you should check that the resulting barcode can be understood by your target 
-barcode reader.
+barcode reader. Zint will generate a warning message when ECI codes have been
+inserted into a symbol.
 
-GS1  formatting in a specific way to encode data about products. GS1 data can 
-be encoded in a number of symbologies. Application identifiers should be 
-enclosed in [square brackets] followed by the data to be encoded (see 
+GS1 data can be encoded in a number of symbologies. Application identifiers
+should be enclosed in [square brackets] followed by the data to be encoded (see 
 5.1.12.3). To encode GS1 data use the --gs1 option. GS1 mode is assumed (and 
 doesn't need to be set) for EAN-128, DataBar and Composite symbologies but is 
 also available for Code 16k, Data Matrix, Aztec Code, DotCode and QR Code. 
@@ -372,7 +443,7 @@ ECI Code  |  Character Encoding Scheme
 ---------------------
 Data can be batch processed by reading from a text file and producing a 
 separate barcode image for each line of text in that file. To do this use the 
-batch switch. To select the input file from which to read data use the –i 
+--batch switch. To select the input file from which to read data use the –i 
 option. Zint will automatically detect the end of a line of text (in either 
 Unix or Windows formatted text files) and produce a symbol each time it finds 
 this. Input files should end with a return character – if this is not present 
@@ -381,7 +452,7 @@ is a problem.
 
 By default Zint will output numbered filenames starting with 00001.png, 
 00002.png etc. To change this behaviour use the –o option in combination with 
-batch using special characters in the output file name as shown in the table 
+--batch using special characters in the output file name as shown in the table 
 below: 
 
 ---------------------------------------------
@@ -404,13 +475,47 @@ Input            |  Filenames Generated
 -o t@es~t~.png   |  t*es0t1.png, t*es0t2.png, t*es0t3.png
 --------------------------------------------------------------
 
-4.12 Other options
+4.12 Direct output
 ------------------
+The finished image files can be output directly to stdout for use as part of
+a pipe by using the --direct option. By default --direct will output data
+as a PNG image, but this can be altered by supplimenting the --direct option
+with a --filetype= option followed by the suffix of the file type required.
+For example:
+
+zint -b 84 --direct --filetype=pcx -d "Data to encode"
+
+This command will output the symbol as a PCX file to stdout.
+
+CAUTION: Outputting binary files to the command shell without catching that
+data in a pipe can have unpredictable results. Use with care!
+
+4.13 Automatic filenames
+------------------------
+The --mirror option instructs Zint to use the data to be encoded as an
+indicator of the filename to be used. This is particularly useful if you are
+processing batch data. For example the input data "1234567" will result in
+a file named 1234567.png.
+
+There are restrictions, however, on what characters can be stored in a file
+name, so the file name may vary from the data if the data includes non-
+printable characters, for example, and may be shortened if the data input is
+long.
+
+To set the output file format use the --filetype= option as detailed in
+section 4.12.
+
+4.15 Other output options
+-------------------------
 For linear barcodes the text present in the output image can be removed by 
 using the --notext option.
 
+The text can be set to bold using the --bold option, or a smaller font
+can be substituted using the --small option. The --bold and --small options
+can be used together if required.
+
 Additional options are available which are specific to certain symbologies. 
-These may, for example, control the quantity of error correction data or the 
+These may, for example, control the amount of error correction data or the 
 size of the symbol. These options are discussed in section 6 of this guide. 
 
 5. Using the API
