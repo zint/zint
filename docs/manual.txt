@@ -383,6 +383,13 @@ The scale of the image can be altered using the --scale= option followed by a
 multiple of the default x-dimension. The default x-dimension is 2 pixels. For
 example for PNG images a scale of 5 will increase the x-dimension to 10 pixels. 
 
+===============================================================================
+NOTE: There is a known problem with scaling MaxiCode images when outputting
+to a raster file format. While the image does scale it does not improve the
+clarity of the image. It is hoped this will be resolved in a later version of
+the program.
+===============================================================================
+
 4.10 Input modes
 ----------------
 By default all input data is assumed to be encoded in Unicode (UTF-8) format. 
@@ -485,10 +492,25 @@ For example:
 
 zint -b 84 --direct --filetype=pcx -d "Data to encode"
 
-This command will output the symbol as a PCX file to stdout.
+This command will output the symbol as a PCX file to stdout. The currently
+supported output file formats are shown in the following table:
 
+--------------------------------------------------------------
+Abbreviation |  File format
+--------------------------------------------------------------
+BMP          |  Windows Bitmap
+EPS          |  Encapsulated PostScript
+GIF          |  Graphics Interchange Format
+PCX          |  ZSoft Paintbrush image
+PNG          |  Portable Network Graphic
+SVG          |  Scalable Vector Graphic
+TXT          |  Text file (see 4.16)
+--------------------------------------------------------------
+
+=============================================================================
 CAUTION: Outputting binary files to the command shell without catching that
 data in a pipe can have unpredictable results. Use with care!
+=============================================================================
 
 4.13 Automatic filenames
 ------------------------
@@ -505,7 +527,26 @@ long.
 To set the output file format use the --filetype= option as detailed in
 section 4.12.
 
-4.15 Other output options
+4.14 Working with dots
+----------------------
+Matrix codes can be rendered as a series of dots or circles rather than the
+normal squares by using the --dotty option. This option is only available for
+matrix symbologies, and is automatically selected for DotCode. The size of
+the dots can be adjusted using the --dotsize= option followed by the radius
+of the dot, where that radius is given as a multiple of the x-dimension.
+
+4.15 Help options
+-----------------
+There are three help options which give information about how to use the
+command line. The -h or --help option will display a list of all of the valid
+options available, and also gives the exact version of the software.
+
+The -t or --types option gives the table of symbologies along with the symbol
+ID numbers.
+
+The -e or --ecinos option gives a list of the ECI codes supported by Zint.
+
+4.16 Other output options
 -------------------------
 For linear barcodes the text present in the output image can be removed by 
 using the --notext option.
@@ -513,6 +554,14 @@ using the --notext option.
 The text can be set to bold using the --bold option, or a smaller font
 can be substituted using the --small option. The --bold and --small options
 can be used together if required.
+
+Zint can output a representation of the symbol data as a set of hexadecimal
+values if asked to output to a text file (*.txt) or if given the option
+--filetype=txt. This can be used for test and diagnostic purposes.
+
+The --cmyk option is specific to output in encapsulated PostScript, and
+converts the RGB colours used to the CMYK colour space. Setting custom
+colours at the command line will still need to be done in RRGGBB format.
 
 Additional options are available which are specific to certain symbologies. 
 These may, for example, control the amount of error correction data or the 
@@ -524,6 +573,8 @@ Zint has been written using the C language and currently only has an API for
 use with C language programs. A wrapper is available for Pascal/Delphi 
 developers thanks to theunknownones from 
 http://theunknownones.googlecode.com/svn/trunk/Components/ZintBarcode/.
+This wrapper, however, is likely to be out of date and may not function as
+expected.
 
 The libzint API has been designed to be very similar to that used by the GNU 
 Barcode package. This allows easy migration from GNU Barcode to Zint. Zint, 
