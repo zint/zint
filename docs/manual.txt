@@ -1075,21 +1075,18 @@ numeric input (digits 0-9).
 6.1.2.2 IATA Code 2 of 5
 ------------------------
 Used for baggage handling in the air-transport industry by the International 
-Air 
-Transport Agency, this self-checking code will encode any length numeric input 
+Air Transport Agency, this self-checking code will encode any length numeric input 
 (digits 0-9) and does not include a check digit.
 
 6.1.2.3 Industrial Code 2 of 5
 ------------------------------
 Industrial Code 2 of 5 can encode any length numeric input (digits 0-9) and 
-does 
-not include a check digit.
+does not include a check digit.
 
 6.1.2.4 Interleaved Code 2 of 5
 -------------------------------
 This self-checking symbology encodes pairs of numbers, and so can only encode 
-an 
-even number of digits (0-9). If an odd number of digits is entered a leading 
+an even number of digits (0-9). If an odd number of digits is entered a leading 
 zero is added by Zint. No check digit is added.
 
 6.1.2.5 Code 2 of 5 Data Logic
@@ -1101,7 +1098,7 @@ input (digits 0-9).
 --------------
 ITF-14, also known as UPC Shipping Container Symbol or Case Code is based on 
 Interleaved Code 2 of 5 and requires a 13 digit numeric input (digits 0-9). One 
-modulo-10 check digit is calculated.
+modulo-10 check digit is added by Zint.
 
 6.1.2.7 Deutsche Post Leitcode
 ------------------------------
@@ -1139,8 +1136,8 @@ UPC-E is a zero-compressed version of UPC-A developed for smaller packages. The
 code requires a 6 digit article number (digits 0-9). The check digit is 
 calculated by Zint. EAN-2 and EAN-5 add-on symbols can be added using the + 
 character as with UPC-A. In addition Zint also supports Number System 1 
-encoding 
-by entering a 7-digit article number stating with the digit 1. For example:
+encoding by entering a 7-digit article number stating with the digit 1. For
+example:
 
 zint --barcode=37 -d 1123456
 
@@ -1167,8 +1164,7 @@ will encode a stand-alone EAN-5, whereas
 zint --barcode=13 -d 7432365+54321
 
 will encode an EAN-8 symbol with an EAN-5 add-on. As before these results can 
-be 
-achieved using the API:
+be achieved using the API:
 
 my_symbol->symbology = BARCODE_EANX;
 
@@ -1176,14 +1172,13 @@ error = ZBarcode_Encode_and_Print(my_symbol, "54321");
 
 error = ZBarcode_Encode_and_Print(my_symbol, "7432365+54321");
 
-All of the EAN symbols include check data which is added by Zint.
+All of the EAN symbols include check digits which are added by Zint.
 
 6.1.4.2 SBN, ISBN and ISBN-13
 -----------------------------
 EAN-13 symbols (also known as Bookland EAN-13) can also be produced from 
-9-digit 
-SBN, 10-digit ISBN or 13-digit ISBN-13 data. The relevant check digit needs to 
-be present in the input data and will be verified before the symbol is 
+9-digit SBN, 10-digit ISBN or 13-digit ISBN-13 data. The relevant check digit needs
+to be present in the input data and will be verified before the symbol is 
 generated. In addition EAN-2 and EAN-5 add-on symbols can be added using the + 
 symbol as with UPC symbols.
 
@@ -1191,8 +1186,7 @@ symbol as with UPC symbols.
 -------------
 Also known as Plessey Code, this symbology was developed by the Plessey Company 
 Ltd. in the UK. The symbol can encode any length data consisting of digits 
-(0-9) 
-or letters A-F and includes a CRC check digit. 
+(0-9) or letters A-F and includes a CRC check digit. 
 
 6.1.6 MSI Plessey
 -----------------
@@ -1223,15 +1217,15 @@ length of ASCII text input. Telepen includes a modulo-127 check digit.
 Telepen Numeric allows compression of numeric data into a Telepen symbol. Data 
 can consist of pairs of numbers or pairs consisting of a numerical digit 
 followed an X character. For example: 466333 and 466X33 are valid codes whereas 
-46X333 is not (the digit pair "X3" is not valid). Includes a modulo-127 check 
-digit. 
+46X333 is not (the digit pair "X3" is not valid). Telepen Numeric includes a
+modulo-127 check digit which is added by Zint. 
 
 6.1.8 Code 39
 -------------
 6.1.8.1 Standard Code 39 (ISO 16388)
 ------------------------------------
 Standard Code 39 was developed in 1974 by Intermec. Input data can be of any 
-length and supports the characters 0-9, AZ, dash (-), full stop (.), space, 
+length and can include the characters 0-9, A-Z, dash (-), full stop (.), space, 
 asterisk (*), dollar ($), slash (/), plus (+) and percent (%). The standard 
 does not require a check digit but a modulo-43 check digit can be added if 
 required by setting option_2 = 1 or using --ver=1.
@@ -1251,7 +1245,8 @@ check digits are added by Zint.
 6.1.8.4 PZN
 -----------
 PZN is a Code 39 based symbology used by the pharmaceutical industry in 
-Germany. PZN encodes a 6 digit number and includes a modulo-10 check digit.
+Germany. PZN encodes a 6 digit number to which Zint will add a modulo-10
+check digit.
 
 6.1.8.5 LOGMARS
 ---------------
@@ -1263,8 +1258,8 @@ check digit.
 6.1.8.6 Code 32
 ---------------
 A variation of Code 39 used by the Italian Ministry of Health ("Ministero della 
-Sanità") for encoding identifiers on pharmaceutical products. Requires a 
-numeric input up to 8 digits in length. Check digit is added by Zint.
+Sanità") for encoding identifiers on pharmaceutical products. This symbology
+requires a numeric input up to 8 digits in length. A check digit is added by Zint.
 
 6.1.8.7 HIBC Code 39
 --------------------
@@ -1298,38 +1293,38 @@ and uses a three-mode system to compress the data into a smaller symbol. Zint
 automatically switches between modes and adds a modulo-103 check digit. Code 
 128 is the default barcode symbology used by Zint. In addition Zint supports 
 the encoding of Latin-1 (non-English) characters in Code 128 symbols [1]. The 
-Latin-1 character set is shown in Appendix A .
+Latin-1 character set is shown in Appendix A.
 
 6.1.11.2 Code 128 Subset B
 --------------------------
 It is sometimes advantageous to stop Code 128 from using subset mode C which 
-compresses numerical data. The BARCODE_CODE128B option (AKA symbology 60) 
+compresses numerical data. The BARCODE_CODE128B option (symbology 60) 
 suppresses mode C in favour of mode B.
 
 6.1.11.3 GS1-128
 ----------------
 A variation of Code 128 also known as UCC/EAN-128, this symbology is defined by 
 the GS1 General Specification. Application Identifiers (AIs) should be entered 
-using [square brackets] notation. These will be converted to (round brackets) 
+using [square bracket] notation. These will be converted to (round brackets) 
 for the human readable text. This will allow round brackets to be used in the 
 data strings to be encoded. Fixed length data should be entered at the 
 appropriate length for correct encoding (see Appendix C). GS1-128 does not 
 support extended ASCII characters. Check digits for GTIN data (AI 01) are not 
-generated and need to be included in input data. The following is an example of 
-a valid GS1-128 input:
+generated and need to be included in the input data. The following is an example
+of a valid GS1-128 input:
 
 zint --barcode=16 -d "[01]98898765432106[3202]012345[15]991231"
 
 6.1.11.4 EAN-14
 ---------------
 A shorter version of GS1-128 which encodes GTIN data only. A 13 digit number is 
-required. GTIN check digit and AI (01) are added by Zint.
+required. The GTIN check digit and AI (01) are added by Zint.
 
 6.1.11.5 NVE-18
 ---------------
-A variation of Code 128 the Nummber der Versandeinheit standard includes both 
+A variation of Code 128 the "Nummber der Versandeinheit" standard includes both 
 modulo-10 and modulo-103 check digits. NVE-18 requires a 17 digit numerical 
-input.
+input and check digits are added by Zint.
 
 6.1.11.6 HIBC Code 128
 ----------------------
@@ -1340,18 +1335,17 @@ standards.
 6.1.12 GS1 DataBar (ISO 24724)
 ------------------------------
 Also known as RSS (Reduced Spaced Symbology) these symbols are due to replace 
-GS1-128 symbols starting in 2010 in accordance with the GS1 General 
-Specification. If a GS1 DataBar symbol is to be printed with a 2D component as 
-specified in ISO 24723 set option_1 = 2 or use the option --mode=2 at the 
-command prompt. See section 6.3 of this manual to find out how to generate 
-DataBar symbols with 2D components.
+GS1-128 symbols in accordance with the GS1 General Specification. If a GS1
+DataBar symbol is to be printed with a 2D component as specified in ISO 24723
+set option_1 = 2 or use the option --mode=2 at the command prompt. See section
+6.3 of this manual to find out how to generate DataBar symbols with 2D components.
 
 6.1.12.1 DataBar-14 and DataBar-14 Truncated
 --------------------------------------------
 Also known as RSS-14 this standard encodes a 13 digit item code. A check digit 
-and application identifier of (01) are added by Zint. Note that for full 
-standard compliance symbol height should be greater than or equal to 33 
-modules. For DataBar-14 Truncated set the symbol height to a minimum of 13.
+and application identifier of (01) are added by Zint. To produce a truncated
+symbol set the symbol height to a value between 32 and 13. Normal DataBar-14
+symbols should have a height of 33 or greater.
 
 6.1.12.2 DataBar Limited
 ------------------------
@@ -1369,11 +1363,9 @@ encoding data from a number of AIs in a single symbol. AIs should be encased in
 brackets) before it is included in the human readable text attached to the 
 symbol. This method allows the inclusion of rounded brackets in the data to be 
 encoded. GTIN data (AI 01) should also include the check digit data as this is 
-not calculated by Zint when this
-
-symbology is encoded. Fixed length data should be entered at the appropriate 
-length for correct encoding (see Appendix C ). The following is an example of a 
-valid DataBar Expanded input
+not calculated by Zint when this symbology is encoded. Fixed length data should
+be entered at the appropriate length for correct encoding (see Appendix C). The
+following is an example of a valid DataBar Expanded input:
 
 zint --barcode=31 -d "[01]98898765432106[3202]012345[15]991231" 
 
@@ -1425,16 +1417,27 @@ error = ZBarcode_Encode(my_symbol, "That");
 
 error = ZBarcode_Print(my_symbol);
 
-6.2.2 Code 16k (EN 12323)
--------------------------
 A more sophisticated method is to use some type of line indexing which 
 indicates to the barcode reader which order the symbols should be read. This is 
-demonstrated by Code 16k which uses a Code128 based system which can stack up 
-to 16 rows in a block. This gives a maximum data capacity of 77 characters or 
-154 numerical digits and includes two modulo-107 check digits. Code 16k also 
-supports extended ASCII character encoding in the same manner as Code 128. 
+demonstrated by the symbologies below.
 
-6.2.3 PDF417 (ISO 15438)
+6.2.2 Codablock-F
+-----------------
+This is a stacked symbology based on Code 128 which can encode ASCII code set
+data up to a maximum length of 2725 characters. The width of the Codablock-F
+symbol can be set using the --cols= option at the command line or option_2.
+Alternatively the height (number of rows) can be set using the --rows= option
+at the command line or by setting option_1. Zint does not support encoding of
+GS1 data in Codablock-F symbols.
+
+6.2.3 Code 16k (EN 12323)
+-------------------------
+Code 16k uses a Code 128 based system which can stack up to 16 rows in a block.
+This gives a maximum data capacity of 77 characters or 154 numerical digits and
+includes two modulo-107 check digits. Code 16k also supports extended ASCII
+character encoding in the same manner as Code 128. 
+
+6.2.4 PDF417 (ISO 15438)
 ------------------------
 Heavily used in the parcel industry, the PDF417 symbology can encode a vast 
 amount of data into a small space. Zint supports encoding up to the ISO 
@@ -1444,7 +1447,7 @@ width of the generated PDF417 symbol can be specified at the command line using
 the --cols switch followed by a number between 1 and 30, and the amount of 
 check digit information can be specified by using the --security switch 
 followed by a number between 0 and 8 where the number of codewords used for 
-check information is determined by 2(value + 1). If using the API these values 
+check information is determined by 2^(value + 1). If using the API these values 
 are assigned to option_2 and option_1 respectively. The default level of check 
 information is determined by the amount of data being encoded. This symbology 
 uses Latin-1 character encoding by default but also supports the ECI encoding 
@@ -1452,11 +1455,11 @@ mechanism. A separate symbology ID can be used to encode Health Industry
 Barcode (HIBC) data which adds a leading '+' character and a modulo-49 check 
 digit to the encoded data. 
 
-6.2.4 Compact PDF417
+6.2.5 Compact PDF417
 --------------------
-Also known as truncated PDF417. Options are as for PDF417 above.
+Also known as truncated PDF417. Options are the same as for PDF417 above.
 
-6.2.5 MicroPDF417 (ISO 24728)
+6.2.6 MicroPDF417 (ISO 24728)
 -----------------------------
 A variation of the PDF417 standard, MicroPDF417 is intended for applications 
 where symbol size needs to be kept to a minimum. 34 predefined symbol sizes are 
@@ -1469,31 +1472,31 @@ mechanism. A separate symbology ID can be used to encode Health Industry
 Barcode (HIBC) data which adds a leading '+' character and a modulo-49 check 
 digit to the encoded data. 
 
-6.2.6 GS1 DataBar-14 Stacked (ISO 24724)
+6.2.7 GS1 DataBar-14 Stacked (ISO 24724)
 ----------------------------------------
 A stacked variation of the GS1 DataBar-14 symbol requiring the same input (see 
 section 6.1.12.1). The height of this symbol is fixed. The data is encoded in 
 two rows of bars with a central finder pattern. This symbol can be generated 
 with a two-dimensional component to make a composite symbol. 
 
-6.2.7 GS1 DataBar-14 Stacked Omnidirectional (ISO 24724)
+6.2.8 GS1 DataBar-14 Stacked Omnidirectional (ISO 24724)
 --------------------------------------------------------
 Another variation of the GS1 DataBar-14 symbol requiring the same input (see 
 section 6.1.12.1). The data is encoded in two rows of bars with a central 
 finder pattern. This symbol can be generated with a two-dimensional component 
 to make a composite symbol. 
 
-6.2.8 GS1 DataBar Expanded Stacked (ISO 24724)
+6.2.9 GS1 DataBar Expanded Stacked (ISO 24724)
 ----------------------------------------------
 A stacked variation of the GS1 DataBar Expanded symbol for smaller packages. 
 Input is the same as for GS1 DataBar Expanded (see section 6.1.12.3). In 
 addition the width of the symbol can be altered using the --cols switch or 
 option_2. In this case the number of columns relates to the number of character 
-pairs on each row of the symbol. For symbols with a 2D component the number of 
-columns must be at least 2. This symbol can be generated with a two-dimensional 
-component to make a composite symbol. 
+pairs on each row of the symbol. This symbol can be generated with a two-
+dimensional component to make a composite symbol. For symbols with a 2D component
+the number of columns must be at least 2.
 
-6.2.9 Code 49
+6.2.10 Code 49
 -------------
 Developed in 1987 at Intermec, Code 49 is a cross between UPC and Code 39. It 
 it one of the earliest stacked symbologies and influenced the design of Code 
@@ -1545,7 +1548,9 @@ This creates an EAN-13 linear component with the data "331234567890" and a 2D
 CC-A (see below) component with the data "(99)1234-abcd". The same results can 
 be achieved using the API as shown below:
 
-my_symbol->symbology = 130;my_symbol->option_1 = 1;
+my_symbol->symbology = 130;
+
+my_symbol->option_1 = 1;
 
 strcpy(my_symbol->primary, "331234567890");
 
@@ -1566,7 +1571,7 @@ option_1 variable as shown above.
 This system uses a variation of MicroPDF417 which optimised to fit into a small 
 space. The size of the 2D component and the amount of error correction is 
 determined by the amount of data to be encoded and the type of linear component 
-which is being used. CCA can encode up to 56 numeric digits or an alphanumeric 
+which is being used. CC-A can encode up to 56 numeric digits or an alphanumeric 
 string of shorter length. To select CC-A use --mode=1.
 
 6.3.2 CC-B
@@ -1575,7 +1580,7 @@ This system uses MicroPDF417 to encode the 2D component. The size of the 2D
 component and the amount of error correction is determined by the amount of 
 data to be encoded and the type of linear component which is being used. CC-B 
 can encode up to 338 numeric digits or an alphanumeric string of shorter 
-length. To select CCB use --mode=2.
+length. To select CC-B use --mode=2.
 
 6.3.3 CC-C
 ----------
@@ -1684,17 +1689,17 @@ example all of the following inputs are valid data entries:
 6.5.5 Japanese Postal Code
 --------------------------
 Used for address data on mail items for Japan Post. Accepted values are 0-9, 
-A-Z and Dash (-). A modulo 19 check digit is added. 
+A-Z and Dash (-). A modulo 19 check digit is added by Zint.
 
-6.6 Two-Dimensional Symbols
----------------------------
+6.6 Two-Dimensional Matrix Symbols
+----------------------------------
 6.6.1 Data Matrix ECC200 (ISO 16022)
 ------------------------------------
 Also known as Semacode this symbology was developed in 1989 by Acuity CiMatrix 
 in partnership with the US DoD and NASA. The symbol can encode a large amount 
 of data in a small area. Data Matrix ECC200 can encode characters in the 
 Latin-1 set by default but also supports encoding using other character sets 
-using the ECI  mechanism. It can also encode GS1 data. The size of the 
+using the ECI mechanism. It can also encode GS1 data. The size of the 
 generated symbol can also be adjusted using the --vers= option or by setting 
 option_2 as shown in the table below. A separate symbology ID can be used to 
 encode Health Industry Barcode (HIBC) data which adds a leading '+' character 
@@ -1741,7 +1746,7 @@ use the option --square and when using the API set the value option_3 =
 DM_SQUARE.
 
 Data Matrix Rectangular Extension (DMRE) codes may be generated with the 
-following
+following values as before:
 
 ---------------------
 Input  |  Symbol Size
@@ -1760,13 +1765,13 @@ Input  |  Symbol Size
 42     |  26 x 64
 ---------------------
 
-DMRE may be activated in automatic mode using the option --dmre or by the API 
-option_3 = DM_DMRE
+DMRE symbol sizes may be activated in automatic size mode using the option 
+--dmre or by the API option_3 = DM_DMRE
 
 6.6.2 QR Code (ISO 18004)
 -------------------------
 Also known as Quick Response Code this symbology was developed by Denso. Four 
-levels of error correction are available using the --security= option or 
+levels of error correction are available using the --security= option or by
 setting option_1 as shown in the following table. 
 
 -------------------------------------------------------------------------
@@ -1832,10 +1837,10 @@ The maximum capacity of a (version 40) QR Code symbol is 7089 numeric digits,
 used to encode GS1 data. QR Code symbols can by default encode characters in 
 the Latin-1 set and Kanji characters which are members of the Shift-JIS 
 encoding scheme. In addition QR Code supports using other character sets using 
-the ECI mechanism. Input should usually be entered as a UTF-8 data with 
-conversion to Shift-JIS being carried out automatically by Zint. A separate 
-symbology ID can be used to encode Health Industry Barcode (HIBC) data which 
-adds a leading '+' character and a modulo-49 check digit to the encoded data. 
+the ECI mechanism. Input should usually be entered as Unicode (UTF-8) with 
+conversion to Shift-JIS being carried out by Zint. A separate symbology ID can
+be used to encode Health Industry Barcode (HIBC) data which adds a leading '+'
+character and a modulo-49 check digit to the encoded data. 
 
 6.6.3 Micro QR Code (ISO 18004)
 -------------------------------
@@ -1879,9 +1884,8 @@ Characters | Meaning
 13 - 15    | Three digit service code. This depends on your parcel courier. 
 ----------------------------------------------------------------------------
 
-The primary message can be designated at the command prompt using the 
---primary= switch. The secondary message uses the normal data entry method. For 
-example:
+The primary message can be set at the command prompt using the --primary= switch.
+The secondary message uses the normal data entry method. For example:
 
 zint -o test.eps -b 57 --primary='999999999840012' -d 'Secondary Message Here'
 
@@ -2036,15 +2040,14 @@ version T symbols is determined by the length of the input data.
 -----------------
 By default Grid Matrix supports encoding in Latin-1 and Chinese characters 
 within the GB 2312 standard set to be encoded in a checkerboard pattern. Input 
-should be entered as a UTF-8 stream with conversion to GB 2312 being carried 
+should be entered as Unicode (UTF-8) with conversion to GB 2312 being carried 
 out automatically by Zint. The symbology also supports the ECI mechanism. The 
 size of the symbol and the error correction capacity can be specified. If you 
 specify both of these values then Zint will make a 'best-fit' attempt to 
-satisfy 
-both conditions. The symbol size can be specified using the --ver= option or by 
-setting option_2, and the error correction capacity can be specified by using 
-the --security= option or by setting option_1 according to the following 
-tables: 
+satisfy  both conditions. The symbol size can be specified using the --ver=
+option or by setting option_2, and the error correction capacity can be
+specified by using the --security= option or by setting option_1 according to
+the following tables: 
 
 ---------------------
 Input  |  Symbol Size
@@ -2083,8 +2086,7 @@ produce a symbol which is approximately square, however the width of the symbol
 can be adjusted by using the --cols= option or by setting option_2. Outputting 
 DotCode to raster images (PNG, GIF, BMP, PCX) will require setting the scale of 
 the image to a larger value than the default (e.g. approx 10) for the dots to 
-be 
-plotted correctly. Approximately 33% of the resulting symbol is comprised of 
+be plotted correctly. Approximately 33% of the resulting symbol is comprised of 
 error correction codewords.
 
 6.6.10 Han Xin Code
@@ -2254,6 +2256,9 @@ QR Code is a registered trademark of Denso Wave Incorporated.
 
 Microsoft, Windows and the Windows logo are either registered trademarks or 
 trademarks of Microsoft Corporation in the United States and/or other countries.
+
+Linux is the registered trademark of Linus Torvalds in the U.S. and other
+countries.
 
 Zint.org.uk website design and hosting provided by Robert Elliott.
 
@@ -2444,7 +2449,7 @@ for Code-1 and addition of batch processing at the command line. 19/4/2011 &
 
 v2.4.3 - Includes minor bugfixes 16/5/2011
 
-V2.5 – Support for DotCode and Han Xin code. ECI code processing. Output to 
+v2.5 – Support for DotCode and Han Xin code. ECI code processing. Output to 
 BMP, GIF and PCX. Added bold text option. Many minor bugfixes and improvements. 
 (Due for release November 2016).
 
@@ -2504,6 +2509,7 @@ international standards:
 > ANSI/AIM BC6-2000 - Uniform Symbology Specification Code 49 
 > ANSI/HIBC 2.3-2009 - The Health Industry Bar Code (HIBC) Supplier Labeling 
      Standard 
+> AIM ISS-X-24 - Uniform Symbology Specification Codablock F
 > AIMD013 (v 1.34a) – Information technology – Automaic identification and data 
      capture techniques – Bar code symbology specification – DotCode (Revised 
      19th Feb 2009)
@@ -2832,7 +2838,7 @@ The GS1 General Specification defines a global standard for encoding data about
 products. Data is encoded as a series of number pairs where the first number, 
 usually shown in (brackets) is an application identifier (AI), and the second 
 is a formatted representation of the data. For example (21)6773 can be read as 
-"Serial Number 6773" where the AI (21) signifies that the data is a consignment 
+"Serial Number 6773" where the AI (21) signifies that the data is a serial 
 number. Note that when using Zint AI data is entered using [square] brackets. 
 This allows rounded brackets to be included in the data which is allowed by the 
 specification. When the barcode symbol is generated these square brackets are 
@@ -2922,7 +2928,7 @@ C.1 Application Identifiers [1]
 8100 Coupon Extended Code: Number System and Offer
 8101 Coupon Extended Code: Number System, Offer, End of Offer
 8102 Coupon Extended Code: Number System preceded by 090 Mutually Agreed 
-Between         Trading Partners
+     Between Trading Partners
 91   Internal Company Codes
 92   Internal Company Codes
 93   Internal Company Codes
