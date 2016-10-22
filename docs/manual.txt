@@ -163,9 +163,11 @@ example
 zint -d "This Text"
 
 This will encode the text "This Text". Zint will use the default symbology, 
-Code 128, and output to the default file out.png in the current directory. The 
--d switch and the input data should always be the last entry on the command 
-line input. Any options given after this will be ignored. 
+Code 128, and output to the default file out.png in the current directory. 
+Alternatively, if libpng was not present when Zint was built, the default
+output file will be out.gif. The -d switch and the input data should always
+be the last entry on the command line input. Any options given after this
+will be ignored. 
 
 The data input to Zint is assumed to be encoded in Unicode (UTF-8) format. If 
 you are encoding characters beyond the 7-bit ASCII set using a scheme other than 
@@ -269,6 +271,7 @@ Numeric Value  |  Barcode Name
 70             |  Royal Mail 4 State (RM4SCC)
 71             |  Data Matrix (ECC200)
 72             |  EAN-14
+74             |  Codablock-F
 75             |  NVE-18
 76             |  Japanese Postal Code
 77             |  Korea Post
@@ -415,6 +418,7 @@ also available for Code 16k, Data Matrix, Aztec Code, DotCode and QR Code.
 The --binary option prevents Zint from performing any convertion of the data 
 before placing in the barcode symbol and should be used if you are encoding raw 
 binary or encrypted data.
+
 If your platform does not use Unicode or if you are using data from file which 
 is not stored in UTF-8 then you can specify the encoding by using the --binary 
 switch in combination with the --eci= switch followed by the appropriate number 
@@ -612,7 +616,8 @@ gcc -o simple simple.c –lzint
 To encode data in a barcode use the ZBarcode_Encode() function. To write the 
 symbol to a file use the ZBarcode_Print() function. For example the following 
 code takes a string from the command line and outputs a Code 128 symbol in a 
-PNG file named out.png in the current working directory:
+PNG file named out.png (or a GIF file called out.gif if libpng is not present)
+in the current working directory:
 
 #include <stdio.h>
 #include <zint.h>
@@ -640,7 +645,7 @@ int main(int argc, char **argv)
     return 0;
 }
 
-Input strings should be Unicode formatted.
+Input data should be Unicode (UTF-8) formatted.
 
 5.3 Encoding and Printing Functions in Depth
 --------------------------------------------
@@ -654,10 +659,10 @@ int ZBarcode_Encode_File(struct zint_symbol *symbol, char *filename);
 int ZBarcode_Print(struct zint_symbol *symbol, int rotate_angle);
 
 int ZBarcode_Encode_and_Print(struct zint_symbol *symbol, unsigned char *input, 
-int length, int rotate_angle);
+      int length, int rotate_angle);
 
 int ZBarcode_Encode_File_and_Print(struct zint_symbol *symbol, char *filename, 
-int rotate_angle);
+      int rotate_angle);
 
 In these definitions "length" can be used to set the length of the input 
 string. This allows the encoding of NULL (ASCII 0) characters in those 
@@ -665,11 +670,11 @@ symbologies which allow this. A value of 0 will disable this function and Zint
 will encode data up to the first NULL character in the input string.
 
 The "rotate_angle" value can be used to rotate the image when outputting as a 
-PNG image. Valid values are 0, 90, 180 and 270.
+raster image. Valid values are 0, 90, 180 and 270.
 
 The ZBarcode_Encode_File() and ZBarcode_Encode_File_and_Print() functions can 
-be used to encode data read directly from a file where the filename is given in 
-the "filename" string. 
+be used to encode data read directly from a text file where the filename is given
+in the "filename" string. 
 
 5.4 Buffering Symbols in Memory
 -------------------------------
@@ -680,25 +685,39 @@ allow you to do this:
 int ZBarcode_Buffer(struct zint_symbol *symbol, int rotate_angle); 
 
 int ZBarcide_Encode_and_Buffer(struct zint_symbol *symbol, unsigned char 
-*input, int length, int rotate_angle); 
+      *input, int length, int rotate_angle); 
 
 int ZBarcode_Encode_File_and_Buffer(struct zint_symbol *symbol, char *filename, 
-int rotate_angle); 
+      int rotate_angle); 
 
 The arguments here are the same as above. The difference is that instead of 
 saving the image to file it is placed in a character array. The "bitmap" 
 pointer is set to the first memory location in the array and the values 
 "barcode_width" and "barcode_height" indicate the size of the resulting image 
 in pixels. Rotation and colour options can be used at the same time as using 
-the buffer functions in the same way as when saving to a PNG image. The bitmap 
-is held in memory using the structure defined for the Windows bitmap (BMP) 
-format.
+the buffer functions in the same way as when saving to a raster image. The
+pixel data can be extracted from the character array by the methd shown in
+the example below where render_pixel() is assumed to be a function for drawing
+a pixel on the screen implemented by the external application:
+
+int row, col, i = 0;
+int red, blue, green;
+
+for (row = 0; row < my_symbol->bitmap_height; row++) {
+     for (column = 0; column < my_symbol->bitmap_width; column++) {
+          red = my_symbol->bitmap[i];
+          green = my_symbol->bitmap[i + 1];
+          blue = my_symbol->bitmap[i + 2];
+          render_pixel(row, column, red, green, blue);
+          i += 3;
+     }
+}
 
 5.5 Setting Options
 -------------------
 So far our application is not very useful unless we plan to only make Code 128 
-barcodes and we don't mind that they only save to out.png. As with the front 
-end program, of course, these options can be altered. The way this is done is 
+symbols and we don't mind that they only save to out.png. As with the CLI 
+program, of course, these options can be altered. The way this is done is 
 by altering the contents of the zint_symbol structure between the creation and 
 encoding stages. The zint_symbol structure consists of the following variables: 
 
@@ -710,8 +729,9 @@ symbology        | integer      | Symbol to use (see section  | BARCODE_CODE128
 height           | integer      | Symbol height. [1]          | 50
 whitespace_width | integer      | Whtespace width.            | 0
 border_width     | integer      | Border width.               | 0
-output_options   | integer      | Binding or box parameters   | (none)
-                 |              |    (see section 5.8). [2]   |
+output_options   | integer      | Set various output file     | (none)
+                 |              |    parameters (see section  |
+                 |              |    5.8). [2]                |
 fgcolour         | character    | Foreground (ink) colour as  | "000000"
                  |    string    |    RGB hexadecimal string.  |
                  |              |    Must be 6 characters     |
@@ -726,7 +746,7 @@ outfile          | character    | Contains the name of the    | "out.png"
                  |    string    |    file to output a result- |
                  |              |    ing barcode symbol to.   |
                  |              |    Must end in .png, .gif,  |
-                 |              |    .eps, .pcx or .svg       |
+                 |              |    .eps, .pcx, .svg or .txt |
 option_1         | integer      | Symbol specific options.    | (automatic)
 option_2         | integer      | Symbol specific options.    | (automatic)
 option_3         | integer      | Symbol specific options.    | (automatic)
@@ -743,6 +763,9 @@ text             | unsigned     | Human readable text, which  | NULL
                  |    string    |    put data plus one more   |
                  |              |    check digit. Uses UTF-8  |
                  |              |    formatting.              |
+show_hrt         | integer      | Set to 0 to hide text.      | 1
+dot_size         | float        | Size of dots used in dotty  | 4.0 / 5.0
+                 |              |    mode.                    |
 rows             | integer      | Number of rows used by the  | (output only)
                  |              |    the symbol.              |
 width            | integer      | Width of the generated sym- | (output only)
@@ -794,6 +817,9 @@ ZINT_WARN_INVALID_OPTION     |  One of the values in zint_struct was set
                              |     incorrectly but Zint has made a guess at
                              |     what it should have been and generated a
                              |     barcode accordingly.
+ZINT_WARN_USES_ECI           |  Zint has automatically inserted an ECI 
+                             |     character. The symbol may not be readable
+                             |     with some readers.
 ZINT_ERROR_TOO_LONG          |  The input data is too long or too short for the
                              |     selected symbology. No symbol has been
                              |     generated. 
@@ -909,6 +935,7 @@ Value   |
 70      | BARCODE_RM4SCC          | Royal Mail 4 State (RM4SCC)
 71      | BARCODE_DATAMATRIX      | Data Matrix ECC200
 72      | BARCODE_EAN14           | EAN-14
+74      | BARCODE_CODABLOCKF      | Codablock-F
 75      | BARCODE_NVE18           | NVE-18
 76      | BARCODE_JAPANPOST       | Japanese Postal Code
 77      | BARCODE_KOREAPOST       | Korea Post
@@ -958,20 +985,29 @@ Value   |
 142     | BARCODE_GRIDMATRIX      | Grid Matrix
 --------------------------------------------------------------------------------
 
-5.8 Adding Boxes and Boundary Bars
+5.8 Adjusting other output options
 ----------------------------------
-Boxes and boundary bars are handled using the output_options variable in the
+The output_options variable can be used to adjust various aspects of the output
+file. To select more than one option from the table below simply add them together
+when adjusting this value:
 
-zint_symbol structure. To use this option simply assign a value to the 
-output_options variable from the following table [2]. 
+my_symbol->output_options += BARCODE_BIND + READER_INIT;
 
 --------------------------------------------------------------------------------
-Value         |  Effect
+Value               |  Effect
 --------------------------------------------------------------------------------
-0             |  No box or boundary bars.
-BARCODE_BIND  |  Boundary bars above and below the symbol and between rows if
-              |     stacking multiple symbols. 
-BARCODE_BOX   |  Add a box surrounding the symbol and whitespace. 
+0                   |  No options selected.
+BARCODE_BIND        |  Boundary bars above and below the symbol and between
+                    |     rows if stacking multiple symbols. [2]
+BARCODE_BOX         |  Add a box surrounding the symbol and whitespace. [2]
+BARCODE_STDOUT      |  Output the file to stdout.
+READER_INIT         |  Add a reader initialisation symbol to the data before
+                    |     encoding.
+SMALL_TEXT          |  Use a smaller font for the human readable text.
+BOLD_TEXT           |  Embolden the human readable text.
+CMYK_COLOUR         |  Select the CMYK colour space option for encapsulated
+                    |      PostScript files.
+BARCODE_DOTTY_MODE  |  Plot a matrix symbol using dots rather than squares.
 --------------------------------------------------------------------------------
 
 5.9 Setting the Input Mode
@@ -1007,7 +1043,7 @@ if(ZBarcode_ValidID(BARCODE_PDF417) != 0) {
 USPS OneCode, RM4SCC, PDF417, Data Matrix ECC200, Maxicode, QR Code, GS1 
 DataBar-14 Stacked, PDF417 and MicroPDF417 - all of which have a fixed height.
 
-[2] This value is ignored for Code 16k and ITF-14 symbols.
+[2] This value is ignored for Code 16k, Codablock-F and ITF-14 symbols.
 
 6. Types of Symbology
 =====================
