@@ -286,9 +286,10 @@ int dump_plot(struct zint_symbol *symbol) {
 /* Process health industry bar code data */
 static int hibc(struct zint_symbol *symbol, unsigned char source[], size_t length) {
     int counter, error_number, i;
-    char to_process[40], temp[2], check_digit;
+    char to_process[113], temp[2], check_digit;
 
-    if (length > 36) {
+    /* without "+" and check: max 110 characters in HIBC 2.6 */
+    if (length > 110) {
         strcpy(symbol->errtxt, "Data too long for HIBC LIC");
         return ZINT_ERROR_TOO_LONG;
     }
