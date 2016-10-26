@@ -1339,7 +1339,7 @@ required. The GTIN check digit and AI (01) are added by Zint.
 
 6.1.11.5 NVE-18
 ---------------
-A variation of Code 128 the "Nummber der Versandeinheit" standard includes both 
+A variation of Code 128 the "Nummer der Versandeinheit" standard includes both 
 modulo-10 and modulo-103 check digits. NVE-18 requires a 17 digit numerical 
 input and check digits are added by Zint.
 

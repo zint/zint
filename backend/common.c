@@ -110,7 +110,7 @@ void lookup(const char set_string[], const char *table[], const char data, char 
     }
 }
 
-/* Return true (1) if a module is dark/black, orherwise false (0) */
+/* Return true (1) if a module is dark/black, otherwise false (0) */
 int module_is_set(const struct zint_symbol *symbol, const int y_coord, const int x_coord) {
     return (symbol->encoded_data[y_coord][x_coord / 7] >> (x_coord % 7)) & 1;
 }
