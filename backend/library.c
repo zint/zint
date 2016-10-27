@@ -43,7 +43,6 @@
 
 struct zint_symbol *ZBarcode_Create() {
     struct zint_symbol *symbol;
-    int i;
 
     symbol = (struct zint_symbol*) malloc(sizeof (*symbol));
     if (!symbol) return NULL;
@@ -67,9 +66,7 @@ struct zint_symbol *ZBarcode_Create() {
     symbol->input_mode = DATA_MODE;
     strcpy(symbol->primary, "");
     memset(&(symbol->encoded_data[0][0]), 0, sizeof (symbol->encoded_data));
-    for (i = 0; i < 178; i++) {
-        symbol->row_height[i] = 0;
-    }
+    memset(&(symbol->row_height[0]), 0, sizeof (symbol->row_height));
     symbol->bitmap = NULL;
     symbol->bitmap_width = 0;
     symbol->bitmap_height = 0;
