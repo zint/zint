@@ -984,6 +984,7 @@ int codablock(struct zint_symbol *symbol, unsigned char source[], int length) {
         }
         expand(symbol, dest);
     }
+    set_minimum_height(symbol, 8);
     
     if (!(symbol->output_options & BARCODE_BIND)) {
         symbol->output_options += BARCODE_BIND;

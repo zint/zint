@@ -50,7 +50,7 @@ struct zint_symbol *ZBarcode_Create() {
 
     memset(symbol, 0, sizeof (*symbol));
     symbol->symbology = BARCODE_CODE128;
-    symbol->height = 0;
+    symbol->height = 50;
     symbol->whitespace_width = 0;
     symbol->border_width = 0;
     symbol->output_options = 0;

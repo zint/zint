@@ -286,10 +286,12 @@ void set_minimum_height(struct zint_symbol *symbol, int min_height) {
         }
     }
     
-    if (((symbol->height - fixed_height) / zero_count) < min_height) {
-        for (i = 0; i < symbol->rows; i++) {
-            if (symbol->row_height[i] == 0) {
-                symbol->row_height[i] = min_height;
+    if (zero_count > 0) {
+        if (((symbol->height - fixed_height) / zero_count) < min_height) {
+            for (i = 0; i < symbol->rows; i++) {
+                if (symbol->row_height[i] == 0) {
+                    symbol->row_height[i] = min_height;
+                }
             }
         }
     }
