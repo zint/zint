@@ -646,7 +646,7 @@ int svg_plot(struct zint_symbol *symbol) {
     }
 
     /* Put the human readable text at the bottom */
-    if (textdone == 0) {
+    if ((textdone == 0) && ustrlen(local_text)) {
         textpos = symbol->width / 2.0;
         fprintf(fsvg, "      <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"middle\"\n", (textpos + xoffset) * scaler, default_text_posn);
         fprintf(fsvg, "         font-family=\"Helvetica\" font-size=\"%.1f\" fill=\"#%s\" >\n", 8.0 * scaler, symbol->fgcolour);
