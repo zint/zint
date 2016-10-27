@@ -334,8 +334,10 @@ namespace Zint {
         qreal gwidth = m_zintSymbol->width;
         qreal gheight = m_zintSymbol->height;
         if (m_zintSymbol->symbology == BARCODE_MAXICODE) {
-            gheight *= (maxi_width);
-            gwidth *= (maxi_width + 1);
+//            gheight *= (maxi_width);
+//            gwidth *= (maxi_width + 1);
+            gwidth *= 2.0;
+            gheight *= 2.0;
         }
 
         if (m_zintSymbol->output_options & BARCODE_DOTTY_MODE) {
@@ -356,13 +358,13 @@ namespace Zint {
             textoffset = 0;
         }
         gwidth += m_zintSymbol->whitespace_width * 2;
-        switch (mode) {
-            case IgnoreAspectRatio:
-                xsf = (qreal) paintRect.width() / gwidth;
-                ysf = (qreal) paintRect.height() / gheight;
-                break;
-
-            case KeepAspectRatio:
+//        switch (mode) {
+//            case IgnoreAspectRatio:
+//                xsf = (qreal) paintRect.width() / gwidth;
+//                ysf = (qreal) paintRect.height() / gheight;
+//                break;
+//
+//            case KeepAspectRatio:
                 if (paintRect.width() / gwidth < paintRect.height() / gheight) {
                     ysf = xsf = (qreal) paintRect.width() / gwidth;
                     ytr += (qreal) (paintRect.height() - gheight * ysf) / 2;
@@ -370,13 +372,13 @@ namespace Zint {
                     ysf = xsf = (qreal) paintRect.height() / gheight;
                     xtr += (qreal) (paintRect.width() - gwidth * xsf) / 2;
                 }
-                break;
+//                break;
 
-            case CenterBarCode:
-                xtr += ((qreal) paintRect.width() - gwidth * xsf) / 2;
-                ytr += ((qreal) paintRect.height() - gheight * ysf) / 2;
-                break;
-        }
+//            case CenterBarCode:
+//                xtr += ((qreal) paintRect.width() - gwidth * xsf) / 2;
+//                ytr += ((qreal) paintRect.height() - gheight * ysf) / 2;
+//                break;
+//        }
 
         painter.setBackground(QBrush(m_bgColor));
         painter.fillRect(paintRect, QBrush(m_bgColor));
