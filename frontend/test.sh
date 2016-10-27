@@ -1,437 +1,441 @@
 echo testing Code 11
-./zint -o bar01.txt -b 1 -d 87654321
-./zint -o bar01.gif -b 1 --height=50 --border=10 -d 87654321
-./zint -o bar01.svg -b 1 --height=50 --border=10 -d 87654321
+zint -o bar01.txt -b 1 -d 87654321
+zint -o bar01.gif -b 1 --height=50 --border=10 -d 87654321
+zint -o bar01.svg -b 1 --height=50 --border=10 -d 87654321
 echo testing Code 2 of 5 Standard
-./zint -o bar02.txt -b 2 -d 87654321
-./zint -o bar02.gif -b 2 --height=50 --border=10 -d 87654321
-./zint -o bar02.svg -b 2 --height=50 --border=10 -d 87654321
+zint -o bar02.txt -b 2 -d 87654321
+zint -o bar02.gif -b 2 --height=50 --border=10 -d 87654321
+zint -o bar02.svg -b 2 --height=50 --border=10 -d 87654321
 echo testing Interleaved 2 of 5
-./zint -o bar03.txt -b 3 -d 87654321
-./zint -o bar03.gif -b 3 --height=50 --border=10 -d 87654321
-./zint -o bar03.svg -b 3 --height=50 --border=10 -d 87654321
+zint -o bar03.txt -b 3 -d 87654321
+zint -o bar03.gif -b 3 --height=50 --border=10 -d 87654321
+zint -o bar03.svg -b 3 --height=50 --border=10 -d 87654321
 echo testing Code 2 of 5 IATA
-./zint -o bar04.txt -b 4 -d 87654321
-./zint -o bar04.gif -b 4 --height=50 --border=10 -d 87654321
-./zint -o bar04.svg -b 4 --height=50 --border=10 -d 87654321
+zint -o bar04.txt -b 4 -d 87654321
+zint -o bar04.gif -b 4 --height=50 --border=10 -d 87654321
+zint -o bar04.svg -b 4 --height=50 --border=10 -d 87654321
 echo testing Code 2 of 5 Data Logic
-./zint -o bar06.txt -b 6 -d 87654321
-./zint -o bar06.gif -b 6 --height=50 --border=10 -d 87654321
-./zint -o bar06.svg -b 6 --height=50 --border=10 -d 87654321
+zint -o bar06.txt -b 6 -d 87654321
+zint -o bar06.gif -b 6 --height=50 --border=10 -d 87654321
+zint -o bar06.svg -b 6 --height=50 --border=10 -d 87654321
 echo testing Code 2 of 5 Industrial
-./zint -o bar07.txt -b 7 -d 87654321
-./zint -o bar07.gif -b 7 --height=50 --border=10 -d 87654321
-./zint -o bar07.svg -b 7 --height=50 --border=10 -d 87654321
+zint -o bar07.txt -b 7 -d 87654321
+zint -o bar07.gif -b 7 --height=50 --border=10 -d 87654321
+zint -o bar07.svg -b 7 --height=50 --border=10 -d 87654321
 echo testing Code 39
-./zint -o bar08.txt -b 8 -d CODE39
-./zint -o bar08.gif -b 8 --height=50 --border=10 -d CODE39
-./zint -o bar08.svg -b 8 --height=50 --border=10 -d CODE39
+zint -o bar08.txt -b 8 -d CODE39
+zint -o bar08.gif -b 8 --height=50 --border=10 -d CODE39
+zint -o bar08.svg -b 8 --height=50 --border=10 -d CODE39
 echo testing Extended Code 39
-./zint -o bar09.txt -b 9 -d 'Code 39e'
-./zint -o bar09.gif -b 9 --height=50 --border=10 -d 'Code 39e'
-./zint -o bar09.svg -b 9 --height=50 --border=10 -d 'Code 39e'
+zint -o bar09.txt -b 9 -d 'Code 39e'
+zint -o bar09.gif -b 9 --height=50 --border=10 -d 'Code 39e'
+zint -o bar09.svg -b 9 --height=50 --border=10 -d 'Code 39e'
 echo testing EAN8
-./zint -o bar10.txt -b 13 -d 7654321
-./zint -o bar10.gif -b 13 --height=50 --border=10 -d 7654321
-./zint -o bar10.svg -b 13 --height=50 --border=10 -d 7654321
+zint -o bar10.txt -b 13 -d 7654321
+zint -o bar10.gif -b 13 --height=50 --border=10 -d 7654321
+zint -o bar10.svg -b 13 --height=50 --border=10 -d 7654321
 echo testing EAN8 - 2 digits add on
-./zint -o bar11.txt -b 13 -d 7654321+21
-./zint -o bar11.gif -b 13 --height=50 --border=10 -d 7654321+21
-./zint -o bar11.svg -b 13 --height=50 --border=10 -d 7654321+21
+zint -o bar11.txt -b 13 -d 7654321+21
+zint -o bar11.gif -b 13 --height=50 --border=10 -d 7654321+21
+zint -o bar11.svg -b 13 --height=50 --border=10 -d 7654321+21
 echo testing EAN8 - 5 digits add-on
-./zint -o bar12.txt -b 13 -d 7654321+54321
-./zint -o bar12.gif -b 13 --height=50 --border=10 -d 7654321+54321
-./zint -o bar12.svg -b 13 --height=50 --border=10 -d 7654321+54321
+zint -o bar12.txt -b 13 -d 7654321+54321
+zint -o bar12.gif -b 13 --height=50 --border=10 -d 7654321+54321
+zint -o bar12.svg -b 13 --height=50 --border=10 -d 7654321+54321
 echo testing EAN13
-./zint -o bar13.txt -b 13 -d 210987654321
-./zint -o bar13.gif -b 13 --height=50 --border=10 -d 210987654321
-./zint -o bar13.svg -b 13 --height=50 --border=10 -d 210987654321
+zint -o bar13.txt -b 13 -d 210987654321
+zint -o bar13.gif -b 13 --height=50 --border=10 -d 210987654321
+zint -o bar13.svg -b 13 --height=50 --border=10 -d 210987654321
 echo testing EAN13 - 2 digits add-on
-./zint -o bar14.txt -b 13 -d 210987654321+21
-./zint -o bar14.gif -b 13 --height=50 --border=10 -d 210987654321+21
-./zint -o bar14.svg -b 13 --height=50 --border=10 -d 210987654321+21
+zint -o bar14.txt -b 13 -d 210987654321+21
+zint -o bar14.gif -b 13 --height=50 --border=10 -d 210987654321+21
+zint -o bar14.svg -b 13 --height=50 --border=10 -d 210987654321+21
 echo testing EAN13 - 5 digits add-on
-./zint -o bar15.txt -b 13 -d 210987654321+54321
-./zint -o bar15.gif -b 13 --height=50 --border=10 -d 210987654321+54321
-./zint -o bar15.svg -b 13 --height=50 --border=10 -d 210987654321+54321
+zint -o bar15.txt -b 13 -d 210987654321+54321
+zint -o bar15.gif -b 13 --height=50 --border=10 -d 210987654321+54321
+zint -o bar15.svg -b 13 --height=50 --border=10 -d 210987654321+54321
 echo testing GS1-128
-./zint -o bar16.txt -b 16 -d "[01]98898765432106[3202]012345[15]991231"
-./zint -o bar16.gif -b 16 --height=50 --border=10 -d "[01]98898765432106[3202]012345[15]991231"
-./zint -o bar16.svg -b 16 --height=50 --border=10 -d "[01]98898765432106[3202]012345[15]991231"
+zint -o bar16.txt -b 16 -d "[01]98898765432106[3202]012345[15]991231"
+zint -o bar16.gif -b 16 --height=50 --border=10 -d "[01]98898765432106[3202]012345[15]991231"
+zint -o bar16.svg -b 16 --height=50 --border=10 -d "[01]98898765432106[3202]012345[15]991231"
 echo testing CodaBar
-./zint -o bar18.txt -b 18 -d D765432C
-./zint -o bar18.gif -b 18 --height=50 --border=10 -d D765432C
-./zint -o bar18.svg -b 18 --height=50 --border=10 -d D765432C
+zint -o bar18.txt -b 18 -d D765432C
+zint -o bar18.gif -b 18 --height=50 --border=10 -d D765432C
+zint -o bar18.svg -b 18 --height=50 --border=10 -d D765432C
 echo testing Code 128
-./zint -o bar20.txt -b 20 -d 'Code 128'
-./zint -o bar20.gif -b 20 --height=50 --border=10 -d 'Code 128'
-./zint -o bar20.svg -b 20 --height=50 --border=10 -d 'Code 128'
+zint -o bar20.txt -b 20 -d 'Code 128'
+zint -o bar20.gif -b 20 --height=50 --border=10 -d 'Code 128'
+zint -o bar20.svg -b 20 --height=50 --border=10 -d 'Code 128'
 echo testing Deutsche Post Leitcode
-./zint -o bar21.txt -b 21 -d 3210987654321
-./zint -o bar21.gif -b 21 --height=50 --border=10 -d 3210987654321
-./zint -o bar21.svg -b 21 --height=50 --border=10 -d 3210987654321
+zint -o bar21.txt -b 21 -d 3210987654321
+zint -o bar21.gif -b 21 --height=50 --border=10 -d 3210987654321
+zint -o bar21.svg -b 21 --height=50 --border=10 -d 3210987654321
 echo testing Deutsche Post Identcode
-./zint -o bar22.txt -b 22 -d 10987654321
-./zint -o bar22.gif -b 22 --height=50 --border=10 -d 10987654321
-./zint -o bar22.svg -b 22 --height=50 --border=10 -d 10987654321
+zint -o bar22.txt -b 22 -d 10987654321
+zint -o bar22.gif -b 22 --height=50 --border=10 -d 10987654321
+zint -o bar22.svg -b 22 --height=50 --border=10 -d 10987654321
 echo testing Code 16k
-./zint -o bar23.txt -b 23 -d "Demonstration Code 16k symbol generated by lib./zint"
-./zint -o bar23.gif -b 23 --height=50 --border=10 -d "Demonstration Code 16k symbol generated by lib./zint"
-./zint -o bar23.svg -b 23 --height=50 --border=10 -d "Demonstration Code 16k symbol generated by lib./zint"
-./zint -o bar23a.txt -b 23 --gs1 -d "[01]98898765432106[02]13012345678909[10]1234567ABCDEFG[3202]012345[15]991231"
-./zint -o bar23a.gif -b 23 --gs1 --border=10 -d "[01]98898765432106[02]13012345678909[10]1234567ABCDEFG[3202]012345[15]991231"
-./zint -o bar23a.svg -b 23 --gs1 --border=10 -d "[01]98898765432106[02]13012345678909[10]1234567ABCDEFG[3202]012345[15]991231"
+zint -o bar23.txt -b 23 -d "Demonstration Code 16k symbol generated by libzint"
+zint -o bar23.gif -b 23 --height=50 --border=10 -d "Demonstration Code 16k symbol generated by libzint"
+zint -o bar23.svg -b 23 --height=50 --border=10 -d "Demonstration Code 16k symbol generated by libzint"
+zint -o bar23a.txt -b 23 --gs1 -d "[01]98898765432106[02]13012345678909[10]1234567ABCDEFG[3202]012345[15]991231"
+zint -o bar23a.gif -b 23 --gs1 --border=10 -d "[01]98898765432106[02]13012345678909[10]1234567ABCDEFG[3202]012345[15]991231"
+zint -o bar23a.svg -b 23 --gs1 --border=10 -d "[01]98898765432106[02]13012345678909[10]1234567ABCDEFG[3202]012345[15]991231"
 echo testing Code 49
-./zint -o bar24.txt -b 24 -d "Demonstration Code 49"
-./zint -o bar24.gif -b 24 -d "Demonstration Code 49"
-./zint -o bar24.svg -b 24 -d "Demonstration Code 49"
+zint -o bar24.txt -b 24 -d "Demonstration Code 49"
+zint -o bar24.gif -b 24 -d "Demonstration Code 49"
+zint -o bar24.svg -b 24 -d "Demonstration Code 49"
 echo testing Code 93
-./zint -o bar25.txt -b 25 -d 'Code 93'
-./zint -o bar25.gif -b 25 --height=50 --border=10 -d 'Code 93'
-./zint -o bar25.svg -b 25 --height=50 --border=10 -d 'Code 93'
+zint -o bar25.txt -b 25 -d 'Code 93'
+zint -o bar25.gif -b 25 --height=50 --border=10 -d 'Code 93'
+zint -o bar25.svg -b 25 --height=50 --border=10 -d 'Code 93'
 echo testing Flattermarken
-./zint -o bar28.txt -b 28 -d 87654321
-./zint -o bar28.gif -b 28 --height=50 --border=10 -d 87654321
-./zint -o bar28.svg -b 28 --height=50 --border=10 -d 87654321
+zint -o bar28.txt -b 28 -d 87654321
+zint -o bar28.gif -b 28 --height=50 --border=10 -d 87654321
+zint -o bar28.svg -b 28 --height=50 --border=10 -d 87654321
 echo testing DataBar-14
-./zint -o bar29.txt -b 29 -d 2001234567890
-./zint -o bar29.gif -b 29 --height=33 --border=10 -d 2001234567890
-./zint -o bar29.svg -b 29 --height=33 --border=10 -d 2001234567890
+zint -o bar29.txt -b 29 -d 2001234567890
+zint -o bar29.gif -b 29 --height=33 --border=10 -d 2001234567890
+zint -o bar29.svg -b 29 --height=33 --border=10 -d 2001234567890
 echo testing DataBar Limited
-./zint -o bar30.txt -b 30 -w 2 -d 31234567890
-./zint -o bar30.gif -b 30 --height=50 --border=10 -w 2 -d 31234567890
-./zint -o bar30.svg -b 30 --height=50 --border=10 -w 2 -d 31234567890
+zint -o bar30.txt -b 30 -w 2 -d 31234567890
+zint -o bar30.gif -b 30 --height=50 --border=10 -w 2 -d 31234567890
+zint -o bar30.svg -b 30 --height=50 --border=10 -w 2 -d 31234567890
 echo testing DataBar Expanded
-./zint -o bar31.txt -b 31 -d "[01]90012345678908[3103]001750"
-./zint -o bar31.gif -b 31 --height=50 --border=10 -d "[01]90012345678908[3103]001750"
-./zint -o bar31.svg -b 31 --height=50 --border=10 -d "[01]90012345678908[3103]001750"
+zint -o bar31.txt -b 31 -d "[01]90012345678908[3103]001750"
+zint -o bar31.gif -b 31 --height=50 --border=10 -d "[01]90012345678908[3103]001750"
+zint -o bar31.svg -b 31 --height=50 --border=10 -d "[01]90012345678908[3103]001750"
 echo testing Telepen Alpha
-./zint -o bar32.txt -b 32 -d 'Telepen'
-./zint -o bar32.gif -b 32 --height=50 --border=10 -d 'Telepen'
-./zint -o bar32.svg -b 32 --height=50 --border=10 -d 'Telepen'
+zint -o bar32.txt -b 32 -d 'Telepen'
+zint -o bar32.gif -b 32 --height=50 --border=10 -d 'Telepen'
+zint -o bar32.svg -b 32 --height=50 --border=10 -d 'Telepen'
 echo testing UPC A
-./zint -o bar34.txt -b 34 -d 10987654321
-./zint -o bar34.gif -b 34 --height=50 --border=10 -d 10987654321
-./zint -o bar34.svg -b 34 --height=50 --border=10 -d 10987654321
+zint -o bar34.txt -b 34 -d 10987654321
+zint -o bar34.gif -b 34 --height=50 --border=10 -d 10987654321
+zint -o bar34.svg -b 34 --height=50 --border=10 -d 10987654321
 echo testing UPC A - 2 digit add-on
-./zint -o bar35.txt -b 34 -d 10987654321+21
-./zint -o bar35.gif -b 34 --height=50 --border=10 -d 10987654321+21
-./zint -o bar35.svg -b 34 --height=50 --border=10 -d 10987654321+21
+zint -o bar35.txt -b 34 -d 10987654321+21
+zint -o bar35.gif -b 34 --height=50 --border=10 -d 10987654321+21
+zint -o bar35.svg -b 34 --height=50 --border=10 -d 10987654321+21
 echo testing UPC A - 5 digit add-on
-./zint -o bar36.txt -b 36 -d 10987654321+54321
-./zint -o bar36.gif -b 36 --height=50 --border=10 -d 10987654321+54321
-./zint -o bar36.svg -b 36 --height=50 --border=10 -d 10987654321+54321
+zint -o bar36.txt -b 36 -d 10987654321+54321
+zint -o bar36.gif -b 36 --height=50 --border=10 -d 10987654321+54321
+zint -o bar36.svg -b 36 --height=50 --border=10 -d 10987654321+54321
 echo testing UPC E
-./zint -o bar37.txt -b 37 -d 654321
-./zint -o bar37.gif -b 37 --height=50 --border=10 -d 654321
-./zint -o bar37.svg -b 37 --height=50 --border=10 -d 654321
+zint -o bar37.txt -b 37 -d 654321
+zint -o bar37.gif -b 37 --height=50 --border=10 -d 654321
+zint -o bar37.svg -b 37 --height=50 --border=10 -d 654321
 echo testing UPC E - 2 digit add-on
-./zint -o bar38.txt -b 37 -d 654321+21
-./zint -o bar38.gif -b 37 --height=50 --border=10 -d 654321+21
-./zint -o bar38.svg -b 37 --height=50 --border=10 -d 654321+21
+zint -o bar38.txt -b 37 -d 654321+21
+zint -o bar38.gif -b 37 --height=50 --border=10 -d 654321+21
+zint -o bar38.svg -b 37 --height=50 --border=10 -d 654321+21
 echo testing UPC E - 5 digit add-on
-./zint -o bar39.txt -b 37 -d 654321+54321
-./zint -o bar39.gif -b 37 --height=50 --border=10 -d 654321+54321
-./zint -o bar39.svg -b 37 --height=50 --border=10 -d 654321+54321
+zint -o bar39.txt -b 37 -d 654321+54321
+zint -o bar39.gif -b 37 --height=50 --border=10 -d 654321+54321
+zint -o bar39.svg -b 37 --height=50 --border=10 -d 654321+54321
 echo testing PostNet-6
-./zint -o bar41.txt -b 40 -d 54321
-./zint -o bar41.gif -b 40 --border=10 -d 54321
-./zint -o bar41.svg -b 40 --border=10 -d 54321
+zint -o bar41.txt -b 40 -d 54321
+zint -o bar41.gif -b 40 --border=10 -d 54321
+zint -o bar41.svg -b 40 --border=10 -d 54321
 echo testing PostNet-10
-./zint -o bar43.txt -b 40 -d 987654321
-./zint -o bar43.gif -b 40 --border=10 -d 987654321
-./zint -o bar43.svg -b 40 --border=10 -d 987654321
+zint -o bar43.txt -b 40 -d 987654321
+zint -o bar43.gif -b 40 --border=10 -d 987654321
+zint -o bar43.svg -b 40 --border=10 -d 987654321
 echo testing PostNet-12
-./zint -o bar45.txt -b 40 -d 10987654321
-./zint -o bar45.gif -b 40 --border=10 -d 10987654321
-./zint -o bar45.svg -b 40 --border=10 -d 10987654321
+zint -o bar45.txt -b 40 -d 10987654321
+zint -o bar45.gif -b 40 --border=10 -d 10987654321
+zint -o bar45.svg -b 40 --border=10 -d 10987654321
 echo testing MSI Code
-./zint -o bar47.txt -b 47 -d 87654321
-./zint -o bar47.gif -b 47 --height=50 --border=10 -d 87654321
-./zint -o bar47.svg -b 47 --height=50 --border=10 -d 87654321
+zint -o bar47.txt -b 47 -d 87654321
+zint -o bar47.gif -b 47 --height=50 --border=10 -d 87654321
+zint -o bar47.svg -b 47 --height=50 --border=10 -d 87654321
 echo testing FIM
-./zint -o bar49.txt -b 49 -d D
-./zint -o bar49.gif -b 49 --height=50 --border=10 -d D
-./zint -o bar49.svg -b 49 --height=50 --border=10 -d D
+zint -o bar49.txt -b 49 -d D
+zint -o bar49.gif -b 49 --height=50 --border=10 -d D
+zint -o bar49.svg -b 49 --height=50 --border=10 -d D
 echo testing LOGMARS
-./zint -o bar50.txt -b 50 -d LOGMARS
-./zint -o bar50.gif -b 50 --height=50 --border=10 -d LOGMARS
-./zint -o bar50.svg -b 50 --height=50 --border=10 -d LOGMARS
+zint -o bar50.txt -b 50 -d LOGMARS
+zint -o bar50.gif -b 50 --height=50 --border=10 -d LOGMARS
+zint -o bar50.svg -b 50 --height=50 --border=10 -d LOGMARS
 echo testing Pharmacode One-Track
-./zint -o bar51.txt -b 51 -d 123456
-./zint -o bar51.gif -b 51 --height=50 --border=10 -d 123456
-./zint -o bar51.svg -b 51 --height=50 --border=10 -d 123456
+zint -o bar51.txt -b 51 -d 123456
+zint -o bar51.gif -b 51 --height=50 --border=10 -d 123456
+zint -o bar51.svg -b 51 --height=50 --border=10 -d 123456
 echo testing Pharmazentralnumber
-./zint -o bar52.txt -b 52 -d 654321
-./zint -o bar52.gif -b 52 --height=50 --border=10 -d 654321
-./zint -o bar52.svg -b 52 --height=50 --border=10 -d 654321
+zint -o bar52.txt -b 52 -d 654321
+zint -o bar52.gif -b 52 --height=50 --border=10 -d 654321
+zint -o bar52.svg -b 52 --height=50 --border=10 -d 654321
 echo testing Pharmacode Two-Track
-./zint -o bar53.txt -b 53 --border=10 -d 12345678
-./zint -o bar53.gif -b 53 --height=50 --border=10 -d 12345678
-./zint -o bar53.svg -b 53 --height=50 --border=10 -d 12345678
+zint -o bar53.txt -b 53 --border=10 -d 12345678
+zint -o bar53.gif -b 53 --height=50 --border=10 -d 12345678
+zint -o bar53.svg -b 53 --height=50 --border=10 -d 12345678
 echo testing PDF417
-./zint -o bar55.txt -b 55 -d "Demonstration PDF417 symbol generated by libzint"
-./zint -o bar55.gif -b 55 --border=10 -d "Demonstration PDF417 symbol generated by libzint"
-./zint -o bar55.svg -b 55 --border=10 -d "Demonstration PDF417 symbol generated by libzint"
+zint -o bar55.txt -b 55 -d "Demonstration PDF417 symbol generated by libzint"
+zint -o bar55.gif -b 55 --border=10 -d "Demonstration PDF417 symbol generated by libzint"
+zint -o bar55.svg -b 55 --border=10 -d "Demonstration PDF417 symbol generated by libzint"
 echo testing PDF417 Truncated
-./zint -o bar56.txt -b 56 -d "Demonstration PDF417 symbol generated by libzint"
-./zint -o bar56.gif -b 56 --border=10 -d "Demonstration PDF417 symbol generated by libzint"
-./zint -o bar56.svg -b 56 --border=10 -d "Demonstration PDF417 symbol generated by libzint"
+zint -o bar56.txt -b 56 -d "Demonstration PDF417 symbol generated by libzint"
+zint -o bar56.gif -b 56 --border=10 -d "Demonstration PDF417 symbol generated by libzint"
+zint -o bar56.svg -b 56 --border=10 -d "Demonstration PDF417 symbol generated by libzint"
 echo testing Maxicode
-./zint -o bar57.txt -b 57 --primary="999999999840012" -d "Demonstration Maxicode symbol generated by libzint"
-./zint -o bar57.gif -b 57 --border=10 --primary="999999999840012" -d "Demonstration Maxicode symbol generated by libzint"
-./zint -o bar57.svg -b 57 --border=10 --primary="999999999840012" -d "Demonstration Maxicode symbol generated by libzint"
+zint -o bar57.txt -b 57 --primary="999999999840012" -d "Demonstration Maxicode symbol generated by libzint"
+zint -o bar57.gif -b 57 --border=10 --primary="999999999840012" -d "Demonstration Maxicode symbol generated by libzint"
+zint -o bar57.svg -b 57 --border=10 --primary="999999999840012" -d "Demonstration Maxicode symbol generated by libzint"
 echo testing QR Code
-./zint -o bar58.txt -b 58 -d "Demonstration QR Code symbol generated by libzint"
-./zint -o bar58.gif -b 58 --border=10 -d "Demonstration QR Code symbol generated by libzint"
-./zint -o bar58.svg -b 58 --border=10 -d "Demonstration QR Code symbol generated by libzint"
-./zint -o bar58k.txt -b 58 --kanji -d "画像内の単語を非表示にする"
-./zint -o bar58k.gif -b 58 --kanji --border=10 -d "画像内の単語を非表示にする"
-./zint -o bar58k.svg -b 58 --kanji --border=10 -d "画像内の単語を非表示にする"
+zint -o bar58.txt -b 58 -d "Demonstration QR Code symbol generated by libzint"
+zint -o bar58.gif -b 58 --border=10 -d "Demonstration QR Code symbol generated by libzint"
+zint -o bar58.svg -b 58 --border=10 -d "Demonstration QR Code symbol generated by libzint"
+zint -o bar58k.txt -b 58 --kanji -d "画像内の単語を非表示にする"
+zint -o bar58k.gif -b 58 --kanji --border=10 -d "画像内の単語を非表示にする"
+zint -o bar58k.svg -b 58 --kanji --border=10 -d "画像内の単語を非表示にする"
 echo testing Code 128 Subset B
-./zint -o bar60.txt -b 60 -d 87654321
-./zint -o bar60.gif -b 60 --height=50 --border=10 -d 87654321
-./zint -o bar60.svg -b 60 --height=50 --border=10 -d 87654321
+zint -o bar60.txt -b 60 -d 87654321
+zint -o bar60.gif -b 60 --height=50 --border=10 -d 87654321
+zint -o bar60.svg -b 60 --height=50 --border=10 -d 87654321
 echo testing Australian Post Standard Customer
-./zint -o bar63.txt -b 63 -d 87654321
-./zint -o bar63.gif -b 63 --border=10 -d 87654321
-./zint -o bar63.svg -b 63 --border=10 -d 87654321
+zint -o bar63.txt -b 63 -d 87654321
+zint -o bar63.gif -b 63 --border=10 -d 87654321
+zint -o bar63.svg -b 63 --border=10 -d 87654321
 echo testing Australian Post Customer 2
-./zint -o bar64.txt -b 63 -d 87654321AUSPS
-./zint -o bar64.gif -b 63 --border=10 -d 87654321AUSPS
-./zint -o bar64.svg -b 63 --border=10 -d 87654321AUSPS
+zint -o bar64.txt -b 63 -d 87654321AUSPS
+zint -o bar64.gif -b 63 --border=10 -d 87654321AUSPS
+zint -o bar64.svg -b 63 --border=10 -d 87654321AUSPS
 echo testing Australian Post Customer 3
-./zint -o bar65.txt -b 63 -d '87654321 AUSTRALIA'
-./zint -o bar65.gif -b 63 --border=10 -d '87654321 AUSTRALIA'
-./zint -o bar65.svg -b 63 --border=10 -d '87654321 AUSTRALIA'
+zint -o bar65.txt -b 63 -d '87654321 AUSTRALIA'
+zint -o bar65.gif -b 63 --border=10 -d '87654321 AUSTRALIA'
+zint -o bar65.svg -b 63 --border=10 -d '87654321 AUSTRALIA'
 echo testing Australian Post Reply Paid
-./zint -o bar66.txt -b 66 -d 87654321
-./zint -o bar66.gif -b 66 --border=10 -d 87654321
-./zint -o bar66.svg -b 66 --border=10 -d 87654321
+zint -o bar66.txt -b 66 -d 87654321
+zint -o bar66.gif -b 66 --border=10 -d 87654321
+zint -o bar66.svg -b 66 --border=10 -d 87654321
 echo testing Australian Post Routing
-./zint -o bar67.txt -b 67 -d 87654321
-./zint -o bar67.gif -b 67 --border=10 -d 87654321
-./zint -o bar67.svg -b 67 --border=10 -d 87654321
+zint -o bar67.txt -b 67 -d 87654321
+zint -o bar67.gif -b 67 --border=10 -d 87654321
+zint -o bar67.svg -b 67 --border=10 -d 87654321
 echo testing Australian Post Redirection
-./zint -o bar68.txt -b 68 -d 87654321
-./zint -o bar68.gif -b 68 --border=10 -d 87654321
-./zint -o bar68.svg -b 68 --border=10 -d 87654321
+zint -o bar68.txt -b 68 -d 87654321
+zint -o bar68.gif -b 68 --border=10 -d 87654321
+zint -o bar68.svg -b 68 --border=10 -d 87654321
 echo testing ISBN Code
-./zint -o bar69.txt -b 69 -d 0333638514
-./zint -o bar69.gif -b 69 --height=50 --border=10 -d 0333638514
-./zint -o bar69.svg -b 69 --height=50 --border=10 -d 0333638514
+zint -o bar69.txt -b 69 -d 0333638514
+zint -o bar69.gif -b 69 --height=50 --border=10 -d 0333638514
+zint -o bar69.svg -b 69 --height=50 --border=10 -d 0333638514
 echo testing Royal Mail 4 State
-./zint -o bar70.txt -b 70 -d ROYALMAIL
-./zint -o bar70.gif -b 70 --border=10 -d ROYALMAIL
-./zint -o bar70.svg -b 70 --border=10 -d ROYALMAIL
+zint -o bar70.txt -b 70 -d ROYALMAIL
+zint -o bar70.gif -b 70 --border=10 -d ROYALMAIL
+zint -o bar70.svg -b 70 --border=10 -d ROYALMAIL
 echo testing Data Matrix
-./zint -o bar71.txt -b 71 -d "Demonstration Data Matrix symbol generated by libzint"
-./zint -o bar71.gif -b 71 --border=10 -d "Demonstration Data Matrix symbol generated by libzint"
-./zint -o bar71.svg -b 71 --border=10 -d "Demonstration Data Matrix symbol generated by libzint"
-./zint -o bar71a.txt -b 71 --gs1 -d "[01]98898765432106[02]13012345678909[10]1234567ABCDEFG[3202]012345[15]991231"
-./zint -o bar71a.gif -b 71 --gs1 --border=10 -d "[01]98898765432106[02]13012345678909[10]1234567ABCDEFG[3202]012345[15]991231"
-./zint -o bar71a.svg -b 71 --gs1 --border=10 -d "[01]98898765432106[02]13012345678909[10]1234567ABCDEFG[3202]012345[15]991231"
+zint -o bar71.txt -b 71 -d "Demonstration Data Matrix symbol generated by libzint"
+zint -o bar71.gif -b 71 --border=10 -d "Demonstration Data Matrix symbol generated by libzint"
+zint -o bar71.svg -b 71 --border=10 -d "Demonstration Data Matrix symbol generated by libzint"
+zint -o bar71a.txt -b 71 --gs1 -d "[01]98898765432106[02]13012345678909[10]1234567ABCDEFG[3202]012345[15]991231"
+zint -o bar71a.gif -b 71 --gs1 --border=10 -d "[01]98898765432106[02]13012345678909[10]1234567ABCDEFG[3202]012345[15]991231"
+zint -o bar71a.svg -b 71 --gs1 --border=10 -d "[01]98898765432106[02]13012345678909[10]1234567ABCDEFG[3202]012345[15]991231"
 echo testing EAN-14
-./zint -o bar72.txt -b 72 -d 3210987654321
-./zint -o bar72.gif -b 72 --height=50 --border=10 -d 3210987654321
-./zint -o bar72.svg -b 72 --height=50 --border=10 -d 3210987654321
+zint -o bar72.txt -b 72 -d 3210987654321
+zint -o bar72.gif -b 72 --height=50 --border=10 -d 3210987654321
+zint -o bar72.svg -b 72 --height=50 --border=10 -d 3210987654321
+echo testing Codablock-F
+zint -o bar74.txt -b 74 -d "Demonstration Codablock-F symbol generated by libzint"
+zint -o bar74.gif -b 74 -d "Demonstration Codablock-F symbol generated by libzint"
+zint -o bar74.svg -b 74 -d "Demonstration Codablock-F symbol generated by libzint"
 echo testing NVE-18
-./zint -o bar75.txt -b 75 -d 76543210987654321
-./zint -o bar75.gif -b 75 --height=50 --border=10 -d 76543210987654321
-./zint -o bar75.svg -b 75 --height=50 --border=10 -d 76543210987654321
+zint -o bar75.txt -b 75 -d 76543210987654321
+zint -o bar75.gif -b 75 --height=50 --border=10 -d 76543210987654321
+zint -o bar75.svg -b 75 --height=50 --border=10 -d 76543210987654321
 echo testing Japanese Post
-./zint -o bar76.txt -b 76 -d "10000131-3-2-503"
-./zint -o bar76.gif -b 76 --border=10 -d "10000131-3-2-503"
-./zint -o bar76.svg -b 76 --border=10 -d "10000131-3-2-503"
+zint -o bar76.txt -b 76 -d "10000131-3-2-503"
+zint -o bar76.gif -b 76 --border=10 -d "10000131-3-2-503"
+zint -o bar76.svg -b 76 --border=10 -d "10000131-3-2-503"
 echo testing Korea Post
-./zint -o bar77.txt -b 77 -d 123456
-./zint -o bar77.gif -b 77 --height=50 --border=10 -d 123456
-./zint -o bar77.svg -b 77 --height=50 --border=10 -d 123456
+zint -o bar77.txt -b 77 -d 123456
+zint -o bar77.gif -b 77 --height=50 --border=10 -d 123456
+zint -o bar77.svg -b 77 --height=50 --border=10 -d 123456
 echo testing DataBar Truncated
-./zint -o bar78.txt -b 29 -d 1234567890
-./zint -o bar78.gif -b 29 --height=13 --border=10 -d 1234567890
-./zint -o bar78.svg -b 29 --height=13 --border=10 -d 1234567890
+zint -o bar78.txt -b 29 -d 1234567890
+zint -o bar78.gif -b 29 --height=13 --border=10 -d 1234567890
+zint -o bar78.svg -b 29 --height=13 --border=10 -d 1234567890
 echo testing DataBar Stacked
-./zint -o bar79.txt -b 79 -d 1234567890
-./zint -o bar79.gif -b 79 --border=10 -d 1234567890
-./zint -o bar79.svg -b 79 --border=10 -d 1234567890
+zint -o bar79.txt -b 79 -d 1234567890
+zint -o bar79.gif -b 79 --border=10 -d 1234567890
+zint -o bar79.svg -b 79 --border=10 -d 1234567890
 echo testing DataBar Stacked Omnidirectional
-./zint -o bar80.txt -b 80 -d 3456789012
-./zint -o bar80.gif -b 80 --height=69 --border=10 -d 3456789012
-./zint -o bar80.svg -b 80 --height=69 --border=10 -d 3456789012
+zint -o bar80.txt -b 80 -d 3456789012
+zint -o bar80.gif -b 80 --height=69 --border=10 -d 3456789012
+zint -o bar80.svg -b 80 --height=69 --border=10 -d 3456789012
 echo testing DataBar Expanded Stacked
-./zint -o bar81.txt -b 81 -d "[01]98898765432106[3202]012345[15]991231"
-./zint -o bar81.gif -b 81 --border=10 -d "[01]98898765432106[3202]012345[15]991231"
-./zint -o bar81.svg -b 81 --border=10 -d "[01]98898765432106[3202]012345[15]991231"
+zint -o bar81.txt -b 81 -d "[01]98898765432106[3202]012345[15]991231"
+zint -o bar81.gif -b 81 --border=10 -d "[01]98898765432106[3202]012345[15]991231"
+zint -o bar81.svg -b 81 --border=10 -d "[01]98898765432106[3202]012345[15]991231"
 echo testing Planet 12 Digit
-./zint -o bar82.txt -b 82 -d 10987654321
-./zint -o bar82.gif -b 82 --border=10 -d 10987654321
-./zint -o bar82.svg -b 82 --border=10 -d 10987654321
+zint -o bar82.txt -b 82 -d 10987654321
+zint -o bar82.gif -b 82 --border=10 -d 10987654321
+zint -o bar82.svg -b 82 --border=10 -d 10987654321
 echo testing Planet 14 Digit
-./zint -o bar83.txt -b 82 -d 3210987654321
-./zint -o bar83.gif -b 82 --border=10 -d 3210987654321
-./zint -o bar83.svg -b 82 --border=10 -d 3210987654321
+zint -o bar83.txt -b 82 -d 3210987654321
+zint -o bar83.gif -b 82 --border=10 -d 3210987654321
+zint -o bar83.svg -b 82 --border=10 -d 3210987654321
 echo testing Micro PDF417
-./zint -o bar84.txt -b 84 -d "Demonstration MicroPDF417 symbol generated by libzint"
-./zint -o bar84.gif -b 84 --border=10 -d "Demonstration MicroPDF417 symbol generated by libzint"
-./zint -o bar84.svg -b 84 --border=10 -d "Demonstration MicroPDF417 symbol generated by libzint"
+zint -o bar84.txt -b 84 -d "Demonstration MicroPDF417 symbol generated by libzint"
+zint -o bar84.gif -b 84 --border=10 -d "Demonstration MicroPDF417 symbol generated by libzint"
+zint -o bar84.svg -b 84 --border=10 -d "Demonstration MicroPDF417 symbol generated by libzint"
 echo testing USPS OneCode 4-State Customer Barcode
-./zint -o bar85.txt -b 85 -d 01234567094987654321
-./zint -o bar85.gif -b 85 --border=10 -d 01234567094987654321
-./zint -o bar85.svg -b 85 --border=10 -d 01234567094987654321
+zint -o bar85.txt -b 85 -d 01234567094987654321
+zint -o bar85.gif -b 85 --border=10 -d 01234567094987654321
+zint -o bar85.svg -b 85 --border=10 -d 01234567094987654321
 echo testing Plessey Code with bidirectional reading support
-./zint -o bar86.txt -b 86 -d 87654321
-./zint -o bar86.gif -b 86 --height=50 --border=10 -d 87654321
-./zint -o bar86.svg -b 86 --height=50 --border=10 -d 87654321
+zint -o bar86.txt -b 86 -d 87654321
+zint -o bar86.gif -b 86 --height=50 --border=10 -d 87654321
+zint -o bar86.svg -b 86 --height=50 --border=10 -d 87654321
 echo testing Telepen Numeric
-./zint -o bar87.txt -b 87 -d 87654321
-./zint -o bar87.gif -b 87 --height=50 --border=10 -d 87654321
-./zint -o bar87.svg -b 87 --height=50 --border=10 -d 87654321
+zint -o bar87.txt -b 87 -d 87654321
+zint -o bar87.gif -b 87 --height=50 --border=10 -d 87654321
+zint -o bar87.svg -b 87 --height=50 --border=10 -d 87654321
 echo testing ITF-14
-./zint -o bar89.txt -b 89 -d 3210987654321
-./zint -o bar89.gif -b 89 --height=50 --border=10 -d 3210987654321
-./zint -o bar89.svg -b 89 --height=50 --border=10 -d 3210987654321
+zint -o bar89.txt -b 89 -d 3210987654321
+zint -o bar89.gif -b 89 --height=50 --border=10 -d 3210987654321
+zint -o bar89.svg -b 89 --height=50 --border=10 -d 3210987654321
 echo testing KIX Code
-./zint -o bar90.txt -b 90 -d '1231FZ13Xhs'
-./zint -o bar90.gif -b 90 --border=10 -d '1231FZ13Xhs'
-./zint -o bar90.svg -b 90 --border=10 -d '1231FZ13Xhs'
+zint -o bar90.txt -b 90 -d '1231FZ13Xhs'
+zint -o bar90.gif -b 90 --border=10 -d '1231FZ13Xhs'
+zint -o bar90.svg -b 90 --border=10 -d '1231FZ13Xhs'
 echo testing Aztec Code
-./zint -o bar92.txt -b 92 -d "Demonstration Aztec Code symbol generated by libzint"
-./zint -o bar92.gif -b 92 --border=10 -d "Demonstration Aztec Code symbol generated by libzint"
-./zint -o bar92.svg -b 92 --border=10 -d "Demonstration Aztec Code symbol generated by libzint"
-./zint -o bar92a.txt -b 92 --gs1 -d "[01]98898765432106[02]13012345678909[10]1234567ABCDEFG[3202]012345[15]991231"
-./zint -o bar92a.gif -b 92 --gs1 --border=10 -d "[01]98898765432106[02]13012345678909[10]1234567ABCDEFG[3202]012345[15]991231"
-./zint -o bar92a.svg -b 92 --gs1 --border=10 -d "[01]98898765432106[02]13012345678909[10]1234567ABCDEFG[3202]012345[15]991231"
+zint -o bar92.txt -b 92 -d "Demonstration Aztec Code symbol generated by libzint"
+zint -o bar92.gif -b 92 --border=10 -d "Demonstration Aztec Code symbol generated by libzint"
+zint -o bar92.svg -b 92 --border=10 -d "Demonstration Aztec Code symbol generated by libzint"
+zint -o bar92a.txt -b 92 --gs1 -d "[01]98898765432106[02]13012345678909[10]1234567ABCDEFG[3202]012345[15]991231"
+zint -o bar92a.gif -b 92 --gs1 --border=10 -d "[01]98898765432106[02]13012345678909[10]1234567ABCDEFG[3202]012345[15]991231"
+zint -o bar92a.svg -b 92 --gs1 --border=10 -d "[01]98898765432106[02]13012345678909[10]1234567ABCDEFG[3202]012345[15]991231"
 echo testing DAFT Code
-./zint -o bar93.txt -b 93 -d "daftdaftdaftdaftdaftdaftdaftdaftdaft"
-./zint -o bar93.gif -b 93 --border=10 -d "daftdaftdaftdaftdaftdaftdaftdaftdaft"
-./zint -o bar93.svg -b 93 --border=10 -d "daftdaftdaftdaftdaftdaftdaftdaftdaft"
+zint -o bar93.txt -b 93 -d "daftdaftdaftdaftdaftdaftdaftdaftdaft"
+zint -o bar93.gif -b 93 --border=10 -d "daftdaftdaftdaftdaftdaftdaftdaftdaft"
+zint -o bar93.svg -b 93 --border=10 -d "daftdaftdaftdaftdaftdaftdaftdaftdaft"
 echo testing Micro QR Code
-./zint -o bar97.txt -b 97 -d "MicroQR Code"
-./zint -o bar97.gif -b 97 --border=10 -d "MicroQR Code"
-./zint -o bar97.svg -b 97 --border=10 -d "MicroQR Code"
-./zint -o bar97k.txt -b 97 --kanji -d "小さい"
-./zint -o bar97k.gif -b 97 --kanji --border=10 -d "小さい"
-./zint -o bar97k.svg -b 97 --kanji --border=10 -d "小さい"
+zint -o bar97.txt -b 97 -d "MicroQR Code"
+zint -o bar97.gif -b 97 --border=10 -d "MicroQR Code"
+zint -o bar97.svg -b 97 --border=10 -d "MicroQR Code"
+zint -o bar97k.txt -b 97 --kanji -d "小さい"
+zint -o bar97k.gif -b 97 --kanji --border=10 -d "小さい"
+zint -o bar97k.svg -b 97 --kanji --border=10 -d "小さい"
 echo testing HIBC LIC 128
-./zint -o bar98.txt -b 98 -d "A99912345/9901510X3"
-./zint -o bar98.gif -b 98 --border=10 -d "A99912345/9901510X3"
-./zint -o bar98.svg -b 98 --border=10 -d "A99912345/9901510X3"
+zint -o bar98.txt -b 98 -d "A99912345/9901510X3"
+zint -o bar98.gif -b 98 --border=10 -d "A99912345/9901510X3"
+zint -o bar98.svg -b 98 --border=10 -d "A99912345/9901510X3"
 echo testing HIBC LIC 39
-./zint -o bar99.txt -b 99 -d "A123BJC5D6E71"
-./zint -o bar99.gif -b 99 --border=10 -d "A123BJC5D6E71"
-./zint -o bar99.svg -b 99 --border=10 -d "A123BJC5D6E71"
+zint -o bar99.txt -b 99 -d "A123BJC5D6E71"
+zint -o bar99.gif -b 99 --border=10 -d "A123BJC5D6E71"
+zint -o bar99.svg -b 99 --border=10 -d "A123BJC5D6E71"
 echo testing HIBC LIC Data Matrix
-./zint -o bar102.txt -b 102 -d "A99912345/9901510X3"
-./zint -o bar102.gif -b 102 --border=10 -d "A99912345/9901510X3"
-./zint -o bar102.svg -b 102 --border=10 -d "A99912345/9901510X3"
+zint -o bar102.txt -b 102 -d "A99912345/9901510X3"
+zint -o bar102.gif -b 102 --border=10 -d "A99912345/9901510X3"
+zint -o bar102.svg -b 102 --border=10 -d "A99912345/9901510X3"
 echo testing HIBC LIC QR-Code
-./zint -o bar104.txt -b 104 -d "A99912345/9901510X3"
-./zint -o bar104.gif -b 104 --border=10 -d "A99912345/9901510X3"
-./zint -o bar104.svg -b 104 --border=10 -d "A99912345/9901510X3"
+zint -o bar104.txt -b 104 -d "A99912345/9901510X3"
+zint -o bar104.gif -b 104 --border=10 -d "A99912345/9901510X3"
+zint -o bar104.svg -b 104 --border=10 -d "A99912345/9901510X3"
 echo testing HIBC LIC PDF417
-./zint -o bar106.txt -b 106 -d "A99912345/9901510X3"
-./zint -o bar106.gif -b 106 --border=10 -d "A99912345/9901510X3"
-./zint -o bar106.svg -b 106 --border=10 -d "A99912345/9901510X3"
+zint -o bar106.txt -b 106 -d "A99912345/9901510X3"
+zint -o bar106.gif -b 106 --border=10 -d "A99912345/9901510X3"
+zint -o bar106.svg -b 106 --border=10 -d "A99912345/9901510X3"
 echo testing HIBC LIC MicroPDF417
-./zint -o bar108.txt -b 108 -d "A99912345/9901510X3"
-./zint -o bar108.gif -b 108 --border=10 -d "A99912345/9901510X3"
-./zint -o bar108.svg -b 108 --border=10 -d "A99912345/9901510X3"
+zint -o bar108.txt -b 108 -d "A99912345/9901510X3"
+zint -o bar108.gif -b 108 --border=10 -d "A99912345/9901510X3"
+zint -o bar108.svg -b 108 --border=10 -d "A99912345/9901510X3"
 echo testing HIBC LIC Aztec Code
-./zint -o bar112.txt -b 112 -d "A99912345/9901510X3"
-./zint -o bar112.gif -b 112 --border=10 -d "A99912345/9901510X3"
-./zint -o bar112.svg -b 112 --border=10 -d "A99912345/9901510X3"
+zint -o bar112.txt -b 112 -d "A99912345/9901510X3"
+zint -o bar112.gif -b 112 --border=10 -d "A99912345/9901510X3"
+zint -o bar112.svg -b 112 --border=10 -d "A99912345/9901510X3"
 echo testing DotCode
-./zint -o bar115.txt -b 115 -d "Demonstration DotCode symbol generated by libzint"
-./zint -o bar115.gif -b 115 --scale=5 --border=10 -d "Demonstration DotCode symbol generated by libzint"
-./zint -o bar115.svg -b 115 --scale=5 --border=10 -d "Demonstration DotCode symbol generated by libzint"
-./zint -o bar115a.txt -b 115 --gs1 -d "[01]98898765432106[3202]012345[15]991231"
-./zint -o bar115a.gif -b 115 --gs1 --scale=5 --border=10 -d "[01]98898765432106[3202]012345[15]991231"
-./zint -o bar115a.svg -b 115 --gs1 --scale=5 --border=10 -d "[01]98898765432106[3202]012345[15]991231"
+zint -o bar115.txt -b 115 -d "Demonstration DotCode symbol generated by libzint"
+zint -o bar115.gif -b 115 --scale=5 --border=10 -d "Demonstration DotCode symbol generated by libzint"
+zint -o bar115.svg -b 115 --scale=5 --border=10 -d "Demonstration DotCode symbol generated by libzint"
+zint -o bar115a.txt -b 115 --gs1 -d "[01]98898765432106[3202]012345[15]991231"
+zint -o bar115a.gif -b 115 --gs1 --scale=5 --border=10 -d "[01]98898765432106[3202]012345[15]991231"
+zint -o bar115a.svg -b 115 --gs1 --scale=5 --border=10 -d "[01]98898765432106[3202]012345[15]991231"
 echo testing Han Xin Code
-./zint -o bar116.txt -b 116 -d "Demonstration DotCode symbol generated by libzint"
-./zint -o bar116.gif -b 116 --scale=5 --border=10 -d "Demonstration DotCode symbol generated by libzint"
-./zint -o bar116.svg -b 116 --scale=5 --border=10 -d "Demonstration DotCode symbol generated by libzint"
+zint -o bar116.txt -b 116 -d "Demonstration Han Xin symbol generated by libzint"
+zint -o bar116.gif -b 116 --scale=5 --border=10 -d "Demonstration Han Xin symbol generated by libzint"
+zint -o bar116.svg -b 116 --scale=5 --border=10 -d "Demonstration Han Xin symbol generated by libzint"
 echo testing Aztec Runes
-./zint -o bar128.txt -b 128 -d 125
-./zint -o bar128.gif -b 128 --border=10 -d 125
-./zint -o bar128.svg -b 128 --border=10 -d 125
+zint -o bar128.txt -b 128 -d 125
+zint -o bar128.gif -b 128 --border=10 -d 125
+zint -o bar128.svg -b 128 --border=10 -d 125
 echo testing Code 23
-./zint -o bar129.txt -b 129 -d "12345678"
-./zint -o bar129.gif -b 129 --border=10 -d "12345678"
-./zint -o bar129.svg -b 129 --border=10 -d "12345678"
+zint -o bar129.txt -b 129 -d "12345678"
+zint -o bar129.gif -b 129 --border=10 -d "12345678"
+zint -o bar129.svg -b 129 --border=10 -d "12345678"
 echo testing EAN-8 Composite with CC-A
-./zint -o bar130.txt -b 130 --mode=1 --primary=1234567 -d "[21]A12345678"
-./zint -o bar130.gif -b 130 --height=100 --border=10 --mode=1 --primary=1234567 -d "[21]A12345678"
-./zint -o bar130.svg -b 130 --height=100 --border=10 --mode=1 --primary=1234567 -d "[21]A12345678"
+zint -o bar130.txt -b 130 --mode=1 --primary=1234567 -d "[21]A12345678"
+zint -o bar130.gif -b 130 --height=100 --border=10 --mode=1 --primary=1234567 -d "[21]A12345678"
+zint -o bar130.svg -b 130 --height=100 --border=10 --mode=1 --primary=1234567 -d "[21]A12345678"
 echo testing EAN-13 Composite with CC-A
-./zint -o bar130a.txt -b 130 --mode=1 --primary=331234567890 -d "[99]1234-abcd"
-./zint -o bar130a.gif -b 130 --height=100 --border=10 --mode=1 --primary=331234567890 -d "[99]1234-abcd"
-./zint -o bar130a.svg -b 130 --height=100 --border=10 --mode=1 --primary=331234567890 -d "[99]1234-abcd"
+zint -o bar130a.txt -b 130 --mode=1 --primary=331234567890 -d "[99]1234-abcd"
+zint -o bar130a.gif -b 130 --height=100 --border=10 --mode=1 --primary=331234567890 -d "[99]1234-abcd"
+zint -o bar130a.svg -b 130 --height=100 --border=10 --mode=1 --primary=331234567890 -d "[99]1234-abcd"
 echo testing UCC/EAN-128 Composite with CC-A
-./zint -o bar131.txt -b 131 --mode=1 --primary="[01]03212345678906" -d "[10]1234567ABCDEFG"
-./zint -o bar131.gif -b 131 --height=100 --border=10 --mode=1 --primary="[01]03212345678906" -d "[10]1234567ABCDEFG"
-./zint -o bar131.svg -b 131 --height=100 --border=10 --mode=1 --primary="[01]03212345678906" -d "[10]1234567ABCDEFG"
+zint -o bar131.txt -b 131 --mode=1 --primary="[01]03212345678906" -d "[10]1234567ABCDEFG"
+zint -o bar131.gif -b 131 --height=100 --border=10 --mode=1 --primary="[01]03212345678906" -d "[10]1234567ABCDEFG"
+zint -o bar131.svg -b 131 --height=100 --border=10 --mode=1 --primary="[01]03212345678906" -d "[10]1234567ABCDEFG"
 echo testing UCC/EAN-128 Composite with CC-C
-./zint -o bar131a.txt -b 131 --mode=3 --primary="[00]030123456789012340" -d "[02]13012345678909[10]1234567ABCDEFG"
-./zint -o bar131a.gif -b 131 --height=100 --border=10 --mode=3 --primary="[00]030123456789012340" -d "[02]13012345678909[10]1234567ABCDEFG"
-./zint -o bar131a.svg -b 131 --height=100 --border=10 --mode=3 --primary="[00]030123456789012340" -d "[02]13012345678909[10]1234567ABCDEFG"
+zint -o bar131a.txt -b 131 --mode=3 --primary="[00]030123456789012340" -d "[02]13012345678909[10]1234567ABCDEFG"
+zint -o bar131a.gif -b 131 --height=100 --border=10 --mode=3 --primary="[00]030123456789012340" -d "[02]13012345678909[10]1234567ABCDEFG"
+zint -o bar131a.svg -b 131 --height=100 --border=10 --mode=3 --primary="[00]030123456789012340" -d "[02]13012345678909[10]1234567ABCDEFG"
 echo testing DataBar-14 Composite with CC-A
-./zint -o bar132.txt -b 132 --mode=1 --primary=361234567890 -d "[11]990102"
-./zint -o bar132.gif -b 132 --height=100 --border=10 --mode=1 --primary=361234567890 -d "[11]990102"
-./zint -o bar132.svg -b 132 --height=100 --border=10 --mode=1 --primary=361234567890 -d "[11]990102"
+zint -o bar132.txt -b 132 --mode=1 --primary=361234567890 -d "[11]990102"
+zint -o bar132.gif -b 132 --height=100 --border=10 --mode=1 --primary=361234567890 -d "[11]990102"
+zint -o bar132.svg -b 132 --height=100 --border=10 --mode=1 --primary=361234567890 -d "[11]990102"
 echo testing DataBar Limited Composite with CC-B
-./zint -o bar133.txt -b 133 --mode=2 --primary=351234567890 -d "[21]abcdefghijklmnopqrstuv"
-./zint -o bar133.gif -b 133 --height=100 --border=10 --mode=2 --primary=351234567890 -d "[21]abcdefghijklmnopqrstuv"
-./zint -o bar133.svg -b 133 --height=100 --border=10 --mode=2 --primary=351234567890 -d "[21]abcdefghijklmnopqrstuv"
+zint -o bar133.txt -b 133 --mode=2 --primary=351234567890 -d "[21]abcdefghijklmnopqrstuv"
+zint -o bar133.gif -b 133 --height=100 --border=10 --mode=2 --primary=351234567890 -d "[21]abcdefghijklmnopqrstuv"
+zint -o bar133.svg -b 133 --height=100 --border=10 --mode=2 --primary=351234567890 -d "[21]abcdefghijklmnopqrstuv"
 echo testing DataBar Expanded Composite with CC-A
-./zint -o bar134.txt -b 134 --mode=1 --primary="[01]93712345678904[3103]001234" -d "[91]1A2B3C4D5E"
-./zint -o bar134.gif -b 134 --height=100 --border=10 --mode=1 --primary="[01]93712345678904[3103]001234" -d "[91]1A2B3C4D5E"
-./zint -o bar134.svg -b 134 --height=100 --border=10 --mode=1 --primary="[01]93712345678904[3103]001234" -d "[91]1A2B3C4D5E"
+zint -o bar134.txt -b 134 --mode=1 --primary="[01]93712345678904[3103]001234" -d "[91]1A2B3C4D5E"
+zint -o bar134.gif -b 134 --height=100 --border=10 --mode=1 --primary="[01]93712345678904[3103]001234" -d "[91]1A2B3C4D5E"
+zint -o bar134.svg -b 134 --height=100 --border=10 --mode=1 --primary="[01]93712345678904[3103]001234" -d "[91]1A2B3C4D5E"
 echo testing UPC-A Composite with CC-A
-./zint -o bar135.txt -b 135 --mode=1 --primary=10987654321 -d "[15]021231"
-./zint -o bar135.gif -b 135 --height=100 --border=10 --mode=1 --primary=10987654321 -d "[15]021231"
-./zint -o bar135.svg -b 135 --height=100 --border=10 --mode=1 --primary=10987654321 -d "[15]021231"
+zint -o bar135.txt -b 135 --mode=1 --primary=10987654321 -d "[15]021231"
+zint -o bar135.gif -b 135 --height=100 --border=10 --mode=1 --primary=10987654321 -d "[15]021231"
+zint -o bar135.svg -b 135 --height=100 --border=10 --mode=1 --primary=10987654321 -d "[15]021231"
 echo testing UPC-E Composite with CC-A
-./zint -o bar136.txt -b 136 --mode=1 --primary=121230 -d "[15]021231"
-./zint -o bar136.gif -b 136 --height=100 --border=10 --mode=1 --primary=121230 -d "[15]021231"
-./zint -o bar136.svg -b 136 --height=100 --border=10 --mode=1 --primary=121230 -d "[15]021231"
+zint -o bar136.txt -b 136 --mode=1 --primary=121230 -d "[15]021231"
+zint -o bar136.gif -b 136 --height=100 --border=10 --mode=1 --primary=121230 -d "[15]021231"
+zint -o bar136.svg -b 136 --height=100 --border=10 --mode=1 --primary=121230 -d "[15]021231"
 echo testing DataBar-14 Stacked Composite with CC-A
-./zint -o bar137.txt -b 137 --mode=1 --primary=341234567890 -d "[17]010200"
-./zint -o bar137.gif -b 137 --border=10 --mode=1 --primary=341234567890 -d "[17]010200"
-./zint -o bar137.svg -b 137 --border=10 --mode=1 --primary=341234567890 -d "[17]010200"
+zint -o bar137.txt -b 137 --mode=1 --primary=341234567890 -d "[17]010200"
+zint -o bar137.gif -b 137 --border=10 --mode=1 --primary=341234567890 -d "[17]010200"
+zint -o bar137.svg -b 137 --border=10 --mode=1 --primary=341234567890 -d "[17]010200"
 echo testing DataBar-14 Stacked Omnidirectional Composite with CC-A
-./zint -o bar138.txt -b 138 --mode=1 --primary=341234567890 -d "[17]010200"
-./zint -o bar138.gif -b 138 --border=10 --mode=1 --primary=341234567890 -d "[17]010200"
-./zint -o bar138.svg -b 138 --border=10 --mode=1 --primary=341234567890 -d "[17]010200"
+zint -o bar138.txt -b 138 --mode=1 --primary=341234567890 -d "[17]010200"
+zint -o bar138.gif -b 138 --border=10 --mode=1 --primary=341234567890 -d "[17]010200"
+zint -o bar138.svg -b 138 --border=10 --mode=1 --primary=341234567890 -d "[17]010200"
 echo testing DataBar Expanded Stacked Composite with CC-A
-./zint -o bar139.txt -b 139 --mode=1 --primary="[01]00012345678905[10]ABCDEF" -d "[21]12345678"
-./zint -o bar139.gif -b 139 --height=150 --border=10 --mode=1 --primary="[01]00012345678905[10]ABCDEF" -d "[21]12345678"
-./zint -o bar139.svg -b 139 --height=150 --border=10 --mode=1 --primary="[01]00012345678905[10]ABCDEF" -d "[21]12345678"
+zint -o bar139.txt -b 139 --mode=1 --primary="[01]00012345678905[10]ABCDEF" -d "[21]12345678"
+zint -o bar139.gif -b 139 --height=150 --border=10 --mode=1 --primary="[01]00012345678905[10]ABCDEF" -d "[21]12345678"
+zint -o bar139.svg -b 139 --height=150 --border=10 --mode=1 --primary="[01]00012345678905[10]ABCDEF" -d "[21]12345678"
 echo testing Channel Code
-./zint -o bar140.txt -b 140 -d "12345"
-./zint -o bar140.gif -b 140 --height=100 --border=10 -d "12345"
-./zint -o bar140.svg -b 140 --height=100 --border=10 -d "12345"
+zint -o bar140.txt -b 140 -d "12345"
+zint -o bar140.gif -b 140 --height=100 --border=10 -d "12345"
+zint -o bar140.svg -b 140 --height=100 --border=10 -d "12345"
 echo testing Code One
-./zint -o bar141.txt -b 141 -d "Demonstration Code One symbol generated by libzint"
-./zint -o bar141.gif -b 141 --border=10 -d "Demonstration Code One symbol generated by libzint"
-./zint -o bar141.svg -b 141 --border=10 -d "Demonstration Code One symbol generated by libzint"
+zint -o bar141.txt -b 141 -d "Demonstration Code One symbol generated by libzint"
+zint -o bar141.gif -b 141 --border=10 -d "Demonstration Code One symbol generated by libzint"
+zint -o bar141.svg -b 141 --border=10 -d "Demonstration Code One symbol generated by libzint"
 echo testing Grid Matrix
-./zint -o bar142.txt -b 142 -d "Demonstration Grid Matrix generated by libzint"
-./zint -o bar142.gif -b 142 --border=10 -d "Demonstration Grid Matrix generated by libzint"
-./zint -o bar142.svg -b 142 --border=10 -d "Demonstration Grid Matrix generated by libzint"
+zint -o bar142.txt -b 142 -d "Demonstration Grid Matrix generated by libzint"
+zint -o bar142.gif -b 142 --border=10 -d "Demonstration Grid Matrix generated by libzint"
+zint -o bar142.svg -b 142 --border=10 -d "Demonstration Grid Matrix generated by libzint"
 echo testing output formats
-./zint -o barout.png -b 58 --border=10 -d "Sample output QR Code"
-./zint -o barout.gif -b 58 --border=10 -d "Sample output QR Code"
-./zint -o barout.bmp -b 58 --border=10 -d "Sample output QR Code"
-./zint -o barout.pcx -b 58 --border=10 -d "Sample output QR Code"
-./zint -o barout.eps -b 58 --border=10 -d "Sample output QR Code"
-./zint -o barout.svg -b 58 --border=10 -d "Sample output QR Code"
+zint -o barout.png -b 58 --border=10 -d "Sample output QR Code"
+zint -o barout.gif -b 58 --border=10 -d "Sample output QR Code"
+zint -o barout.bmp -b 58 --border=10 -d "Sample output QR Code"
+zint -o barout.pcx -b 58 --border=10 -d "Sample output QR Code"
+zint -o barout.eps -b 58 --border=10 -d "Sample output QR Code"
+zint -o barout.svg -b 58 --border=10 -d "Sample output QR Code"
 echo testing image rotation
-./zint -o barrot0.gif -b 130 --height=50 --border=10 --mode=1 --rotate=0 --primary=331234567890+01234 -d "[99]1234-abcd"
-./zint -o barrot90.gif -b 130 --height=50 --border=10 --mode=1 --rotate=90 --primary=331234567890+01234 -d "[99]1234-abcd"
-./zint -o barrot180.gif -b 130 --height=50 --border=10 --mode=1 --rotate=180 --primary=331234567890+01234 -d "[99]1234-abcd"
-./zint -o barrot270.gif -b 130 --height=50 --border=10 --mode=1 --rotate=270 --primary=331234567890+01234 -d "[99]1234-abcd"
+zint -o barrot0.gif -b 130 --height=50 --border=10 --mode=1 --rotate=0 --primary=331234567890+01234 -d "[99]1234-abcd"
+zint -o barrot90.gif -b 130 --height=50 --border=10 --mode=1 --rotate=90 --primary=331234567890+01234 -d "[99]1234-abcd"
+zint -o barrot180.gif -b 130 --height=50 --border=10 --mode=1 --rotate=180 --primary=331234567890+01234 -d "[99]1234-abcd"
+zint -o barrot270.gif -b 130 --height=50 --border=10 --mode=1 --rotate=270 --primary=331234567890+01234 -d "[99]1234-abcd"
 echo testing Extended ASCII support
-./zint -o barext.txt -d "größer"
-./zint -o barext.svg --height=50 --border=10 -d "größer"
+zint -o barext.txt -d "größer"
+zint -o barext.svg --height=50 --border=10 -d "größer"
