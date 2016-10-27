@@ -602,7 +602,7 @@ int main(int argc, char **argv) {
                 }
 
                 if (!strcmp(long_options[option_index].name, "cols")) {
-                    if ((atoi(optarg) >= 6) && (atoi(optarg) <= 66)) {
+                    if ((atoi(optarg) >= 1) && (atoi(optarg) <= 66)) {
                         my_symbol->option_2 = atoi(optarg);
                     } else {
                         fprintf(stderr, "Number of columns out of range\n");
