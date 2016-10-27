@@ -85,7 +85,7 @@ void ZBarcode_Clear(struct zint_symbol *symbol) {
     }
     symbol->rows = 0;
     symbol->width = 0;
-    memset(symbol->text, 0, 128);
+    memset(symbol->text, 0, sizeof(symbol->text));
     symbol->errtxt[0] = '\0';
     if (symbol->bitmap != NULL) {
         free(symbol->bitmap);
