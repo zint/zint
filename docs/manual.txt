@@ -386,13 +386,6 @@ The scale of the image can be altered using the --scale= option followed by a
 multiple of the default x-dimension. The default x-dimension is 2 pixels. For
 example for PNG images a scale of 5 will increase the x-dimension to 10 pixels. 
 
-===============================================================================
-NOTE: There is a known problem with scaling MaxiCode images when outputting
-to a raster file format. While the image does scale it does not improve the
-clarity of the image. It is hoped this will be resolved in a later version of
-the program.
-===============================================================================
-
 4.10 Input modes
 ----------------
 By default all input data is assumed to be encoded in Unicode (UTF-8) format. 

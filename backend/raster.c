@@ -43,8 +43,9 @@
 #include <malloc.h> 
 #endif /* _MSC_VER */
 
-#include "maxihex.h" /* Maxicode shapes */
 #include "font.h" /* Font for human readable text */
+
+#define SSET	"0123456789ABCDEF"
 
 #ifndef NO_PNG
 extern int png_pixel_plot(struct zint_symbol *symbol, char *pixelbuf);
@@ -90,11 +91,13 @@ void buffer_plot(struct zint_symbol *symbol, char *pixelbuf) {
 int save_raster_image_to_file(struct zint_symbol *symbol, int image_height, int image_width, char *pixelbuf, int rotate_angle, int image_type) {
     int error_number;
     int row, column;
-#ifndef _MSC_VER
-    char rotated_pixbuf[image_height * image_width];
-#else
-    char* rotated_pixbuf = (char *) _alloca((image_height * image_width) * sizeof (char));
-#endif /* _MSC_VER */
+    
+    char *rotated_pixbuf;
+    
+    if (!(rotated_pixbuf = (char *) malloc(image_width * image_height))) {
+        printf("Insufficient memory for pixel buffer");
+        return ZINT_ERROR_ENCODING_PROBLEM;
+    }
 
     switch (rotate_angle) {
         case 0:
@@ -138,7 +141,7 @@ int save_raster_image_to_file(struct zint_symbol *symbol, int image_height, int 
             for (row = 0; row < image_height; row++) {
                 for (column = 0; column < image_width; column++) {
                     rotated_pixbuf[(row * image_width) + column] =
-                            *(pixelbuf + (image_width * row) + column);
+                            pixelbuf[(image_width * row) + column];
                 }
             }
             break;
@@ -191,6 +194,7 @@ int save_raster_image_to_file(struct zint_symbol *symbol, int image_height, int 
             break;
     }
 
+    free(rotated_pixbuf);
     return error_number;
 }
 
@@ -225,54 +229,24 @@ void draw_circle(char *pixelbuf, int image_width, int image_height, int x0, int 
     }
 }
 
-int bullseye_pixel(int row, int col) {
-    int block_val, block_pos, return_val;
-
-    block_val = bullseye_compressed[(row * 12) + (col / 8)];
-    return_val = 0;
-    block_pos = col % 8;
-
-    if (block_val & (0x80 >> block_pos)) {
-        return_val = 1;
-    }
-
-    return return_val;
-}
-
-void draw_bullseye(char *pixelbuf, int image_width, int image_height, int xoffset, int yoffset) {
+void draw_bullseye(char *pixelbuf, int image_width, int image_height, int xoffset, int yoffset, int scaler) {
     /* Central bullseye in Maxicode symbols */
-    int i, j;
-    
-    for (j = 103; j < 196; j++) {
-        for (i = 0; i < 93; i++) {
-            if (bullseye_pixel(j - 103, i)) {
-                *(pixelbuf + (image_width * j) + (image_width * yoffset) + i + 99 + xoffset) = '1';
-            }
-        }
-    }
-    
-/*
- //  At some point (probably after 2.5 release) the above clumsy drawing method should
- //  be replaced by something more like the code below
- 
-    int scaler = 10;
-    
-    draw_circle(pixelbuf, image_width, image_height, (14.5 * scaler) + xoffset, (int)(15 * scaler) + yoffset, (int)(4.57 * scaler), '1');
-    draw_circle(pixelbuf, image_width, image_height, (14.5 * scaler) + xoffset, (int)(15 * scaler) + yoffset, (int)(3.78 * scaler), '0');
-    draw_circle(pixelbuf, image_width, image_height, (14.5 * scaler) + xoffset, (int)(15 * scaler) + yoffset, (int)(2.99 * scaler), '1');
-    draw_circle(pixelbuf, image_width, image_height, (14.5 * scaler) + xoffset, (int)(15 * scaler) + yoffset, (int)(2.20 * scaler), '0');
-    draw_circle(pixelbuf, image_width, image_height, (14.5 * scaler) + xoffset, (int)(15 * scaler) + yoffset, (int)(1.39 * scaler), '1');
-    draw_circle(pixelbuf, image_width, image_height, (14.5 * scaler) + xoffset, (int)(15 * scaler) + yoffset, (int)(0.60 * scaler), '0');
-*/
+    draw_circle(pixelbuf, image_width, image_height, (int)(14.5 * scaler) + xoffset, (int)(15 * scaler) + yoffset, (int)(4.571 * scaler) + 1, '1');
+    draw_circle(pixelbuf, image_width, image_height, (int)(14.5 * scaler) + xoffset, (int)(15 * scaler) + yoffset, (int)(3.779 * scaler) + 1, '0');
+    draw_circle(pixelbuf, image_width, image_height, (int)(14.5 * scaler) + xoffset, (int)(15 * scaler) + yoffset, (int)(2.988 * scaler) + 1, '1');
+    draw_circle(pixelbuf, image_width, image_height, (int)(14.5 * scaler) + xoffset, (int)(15 * scaler) + yoffset, (int)(2.196 * scaler) + 1, '0');
+    draw_circle(pixelbuf, image_width, image_height, (int)(14.5 * scaler) + xoffset, (int)(15 * scaler) + yoffset, (int)(1.394 * scaler) + 1, '1');
+    draw_circle(pixelbuf, image_width, image_height, (int)(14.5 * scaler) + xoffset, (int)(15 * scaler) + yoffset, (int)(0.602 * scaler) + 1, '0');
+
 }
 
-void draw_hexagon(char *pixelbuf, int image_width, int xposn, int yposn) {
+void draw_hexagon(char *pixelbuf, int image_width, char *scaled_hexagon, int hexagon_size, int xposn, int yposn) {
     /* Put a hexagon into the pixel buffer */
     int i, j;
 
-    for (i = 0; i < 12; i++) {
-        for (j = 0; j < 10; j++) {
-            if (hexagon[(i * 10) + j] == 1) {
+    for (i = 0; i < hexagon_size; i++) {
+        for (j = 0; j < hexagon_size; j++) {
+            if (scaled_hexagon[(i * hexagon_size) + j] == '1') {
                 *(pixelbuf + (image_width * i) + (image_width * yposn) + xposn + j) = '1';
             }
         }
@@ -420,21 +394,96 @@ void draw_string(char *pixbuf, char input_string[], int xposn, int yposn, int te
 
 }
 
+void plot_hexline(char *scaled_hexagon, int hexagon_size, float start_x, float start_y, float end_x, float end_y) {
+    /* Draw a straight line from start to end */
+    int i;
+    float inc_x, inc_y;
+    float this_x, this_y;
+    
+    inc_x = (end_x - start_x) / hexagon_size;
+    inc_y = (end_y - start_y) / hexagon_size;
+    
+    for (i = 0; i < hexagon_size; i++) {
+        this_x = start_x + ((float)i * inc_x);
+        this_y = start_y + ((float)i * inc_y);
+        if (((this_x >= 0) && (this_x < hexagon_size)) && ((this_y >= 0) && (this_y < hexagon_size))) {
+                scaled_hexagon[(hexagon_size * (int)this_y) + (int)this_x] = '1';
+        }
+    }
+}
+
+void plot_hexagon(char *scaled_hexagon, int hexagon_size) {
+    /* Create a hexagon shape and fill it */
+    int line, i;
+    char ink;
+    
+    float x_offset[6];
+    float y_offset[6];
+    float start_x, start_y;
+    float end_x, end_y;
+    
+    x_offset[0] = 0.0;
+    x_offset[1] = 0.86;
+    x_offset[2] = 0.86;
+    x_offset[3] = 0.0;
+    x_offset[4] = -0.86;
+    x_offset[5] = -0.86;
+    
+    y_offset[0] = 1.0;
+    y_offset[1] = 0.5;
+    y_offset[2] = -0.5;
+    y_offset[3] = -1.0;
+    y_offset[4] = -0.5;
+    y_offset[5] = 0.5;
+    
+    /* Plot hexagon outline */
+    for (line = 0; line < 5; line++) {
+        start_x = ((float)hexagon_size / 2.0) + (((float)hexagon_size / 2.0) * x_offset[line]);
+        start_y = ((float)hexagon_size / 2.0) + (((float)hexagon_size / 2.0) * y_offset[line]);
+        end_x = ((float)hexagon_size / 2.0) + (((float)hexagon_size / 2.0) * x_offset[line + 1]);
+        end_y = ((float)hexagon_size / 2.0) + (((float)hexagon_size / 2.0) * y_offset[line + 1]);
+        plot_hexline(scaled_hexagon, hexagon_size, start_x, start_y, end_x, end_y);
+    }
+    start_x = ((float)hexagon_size / 2.0) + (((float)hexagon_size / 2.0) * x_offset[line]);
+    start_y = ((float)hexagon_size / 2.0) + (((float)hexagon_size / 2.0) * y_offset[line]);
+    end_x = ((float)hexagon_size / 2.0) + (((float)hexagon_size / 2.0) * x_offset[0]);
+    end_y = ((float)hexagon_size / 2.0) + (((float)hexagon_size / 2.0) * y_offset[0]);
+    plot_hexline(scaled_hexagon, hexagon_size, start_x, start_y, end_x, end_y);
+    
+    /* Fill hexagon */
+    for (line = 0; line < hexagon_size; line++) {
+        ink = '0';
+        for (i = 0; i < hexagon_size; i++) {
+            if (scaled_hexagon[(hexagon_size * line) + i] == '1') {
+                if (i < (hexagon_size / 2)) {
+                    ink = '1';
+                } else {
+                    ink = '0';
+                }
+            }
+            
+            if (ink == '1') {
+                scaled_hexagon[(hexagon_size * line) + i] = ink;
+            }
+        }
+    }
+}
+
 int plot_raster_maxicode(struct zint_symbol *symbol, int rotate_angle, int data_type) {
+    /* Plot a MaxiCode symbol with hexagons and bullseye */
     int i, row, column, xposn, yposn;
     int image_height, image_width;
     char *pixelbuf;
     int error_number;
     int xoffset, yoffset;
     float scaler = symbol->scale;
-    char *scaled_pixelbuf;
-    int horiz, vert;
-    int scale_width, scale_height;
+    char *scaled_hexagon;
+    int hexagon_size;
 
     xoffset = symbol->border_width + symbol->whitespace_width;
     yoffset = symbol->border_width;
-    image_width = 300 + (2 * xoffset * 2);
-    image_height = 300 + (2 * yoffset * 2);
+    image_width = (300 + (2 * xoffset * 2)) * scaler;
+    image_height = (300 + (2 * yoffset * 2)) * scaler;
 
     if (!(pixelbuf = (char *) malloc(image_width * image_height))) {
         printf("Insufficient memory for pixel buffer");
@@ -444,8 +493,22 @@ int plot_raster_maxicode(struct zint_symbol *symbol, int rotate_angle, int data_
             *(pixelbuf + i) = '0';
         }
     }
+    
+    hexagon_size = (int)scaler * 10;
+    
+    if (!(scaled_hexagon = (char *) malloc(hexagon_size * hexagon_size))) {
+        printf("Insufficient memory for pixel buffer");
+        free(scaled_hexagon);
+        return ZINT_ERROR_ENCODING_PROBLEM;
+    } else {
+        for (i = 0; i < (hexagon_size * hexagon_size); i++) {
+            *(scaled_hexagon + i) = '0';
+        }
+    }
+    
+    plot_hexagon(scaled_hexagon, hexagon_size);
 
-    draw_bullseye(pixelbuf, image_width, image_height, (2 * xoffset), (2 * yoffset));
+    draw_bullseye(pixelbuf, image_width, image_height, (2 * xoffset), (2 * yoffset), scaler * 10);
 
     for (row = 0; row < symbol->rows; row++) {
         yposn = row * 9;
@@ -455,10 +518,10 @@ int plot_raster_maxicode(struct zint_symbol *symbol, int rotate_angle, int data_
                 if (row & 1) {
                     /* Odd (reduced) row */
                     xposn += 5;
-                    draw_hexagon(pixelbuf, image_width, xposn + (2 * xoffset), yposn + (2 * yoffset));
+                    draw_hexagon(pixelbuf, image_width, scaled_hexagon, hexagon_size, (xposn + (2 * xoffset)) * scaler, (yposn + (2 * yoffset)) * scaler);
                 } else {
                     /* Even (full) row */
-                    draw_hexagon(pixelbuf, image_width, xposn + (2 * xoffset), yposn + (2 * yoffset));
+                    draw_hexagon(pixelbuf, image_width, scaled_hexagon, hexagon_size, (xposn + (2 * xoffset)) * scaler, (yposn + (2 * yoffset)) * scaler);
                 }
             }
         }
@@ -476,32 +539,8 @@ int plot_raster_maxicode(struct zint_symbol *symbol, int rotate_angle, int data_
         draw_bar(pixelbuf, 300 + ((symbol->border_width + symbol->whitespace_width + symbol->whitespace_width) * 2), symbol->border_width * 2, 0, image_height, image_width, image_height);
     }
 
-
-    if (scaler == 0) {
-        scaler = 0.5;
-    }
-    scale_width = image_width * scaler;
-    scale_height = image_height * scaler;
-
-    /* Apply scale options by creating another pixel buffer */
-    if (!(scaled_pixelbuf = (char *) malloc(scale_width * scale_height))) {
-        printf("Insufficient memory for pixel buffer");
-        free(pixelbuf);
-        return ZINT_ERROR_ENCODING_PROBLEM;
-    } else {
-        for (i = 0; i < (scale_width * scale_height); i++) {
-            *(scaled_pixelbuf + i) = '0';
-        }
-    }
-
-    for (vert = 0; vert < scale_height; vert++) {
-        for (horiz = 0; horiz < scale_width; horiz++) {
-            *(scaled_pixelbuf + (vert * scale_width) + horiz) = *(pixelbuf + ((int) (vert / scaler) * image_width) + (int) (horiz / scaler));
-        }
-    }
-
-    error_number = save_raster_image_to_file(symbol, scale_height, scale_width, scaled_pixelbuf, rotate_angle, data_type);
-    free(scaled_pixelbuf);
+    error_number = save_raster_image_to_file(symbol, image_height, image_width, pixelbuf, rotate_angle, data_type);
+    free(scaled_hexagon);
     free(pixelbuf);
     return error_number;
 }
