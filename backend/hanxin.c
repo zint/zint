@@ -644,7 +644,8 @@ void calculate_binary(char binary[], char mode[], int source[], int length, int 
 
                 /* Terminator */
                 strcat(binary, "111111111111111");
-                /* Terminator sequence of length 12 is assumed to be a mistake */
+                /* Terminator sequence of length 12 is a mistake
+                   - confirmed by Wang Yi */
 
                 if (debug) {
                     printf("\n");
@@ -1030,7 +1031,7 @@ void make_picket_fence(unsigned char fullstream[], unsigned char picket_fence[],
 
 /* Evaluate a bitmask according to table 9 */
 int hx_evaluate(unsigned char *eval, int size, int pattern) {
-    int x, y, i, block, weight;
+    int x, y, block, weight;
     int result = 0;
     char state;
     int p;
@@ -1151,47 +1152,45 @@ int hx_evaluate(unsigned char *eval, int size, int pattern) {
     /* In AIMD-15 section 5.8.3.2 it is stated... “In Table 9 below, i refers to the row
      * position of the module.” - however i being the length of the run of the
      * same colour (i.e. "block" below) in the same fashion as ISO/IEC 18004
-     * makes more sense. The implementation below matches AIMD-015.*/
+     * makes more sense. -- Confirmed by Wang Yi */
 
     /* Vertical */
     for (x = 0; x < size; x++) {
         state = local[x];
         block = 0;
         for (y = 0; y < size; y++) {
-            i = y + 1;
             if (local[(y * size) + x] == state) {
                 block++;
             } else {
-                if (block > (3 + i)) {
-                    result += (3 + i) * 4;
+                if (block > 3) {
+                    result += (3 + block) * 4;
                 }
                 block = 0;
                 state = local[(y * size) + x];
             }
         }
-        if (block > (3 + i)) {
-            result += (3 + i) * 4;
+        if (block > 3) {
+            result += (3 + block) * 4;
         }
     }
 
     /* Horizontal */
     for (y = 0; y < size; y++) {
-        i = y + 1;
         state = local[y * size];
         block = 0;
         for (x = 0; x < size; x++) {
             if (local[(y * size) + x] == state) {
                 block++;
             } else {
-                if (block > (3 + i)) {
-                    result += (3 + i) * 4;
+                if (block > 3) {
+                    result += (3 + block) * 4;
                 }
                 block = 0;
                 state = local[(y * size) + x];
             }
         }
-        if (block > (3 + i)) {
-            result += (3 + i) * 4;
+        if (block > 3) {
+            result += (3 + block) * 4;
         }
     }
 
