@@ -128,6 +128,10 @@ so are not able to provide support or binaries for macOS. If you are a macOS
 developer, however, or if you have any success in building Zint on macOS, we
 would love to hear from you.
 
+2.4 zint tcl backend
+--------------------
+The tcl backend may be build using the provided TEA build on Linux, Windows,
+Mac-OS and Android. For Windows, a MS-VC6 makefile is also available.
 
 3. Using Zint Barcode Studio
 ============================
@@ -410,6 +414,10 @@ should be enclosed in [square brackets] followed by the data to be encoded (see
 5.1.12.3). To encode GS1 data use the --gs1 option. GS1 mode is assumed (and 
 doesn't need to be set) for EAN-128, DataBar and Composite symbologies but is 
 also available for Code 16k, Data Matrix, Aztec Code, DotCode and QR Code. 
+
+HIBC data may also be encoded in the symbologies Code 39, Code128, Codablock-F,
+Datamatrix, QR-Code, PDF417 and Aztec-Code. Within this mode, the leading '+' and the
+check character is automatically added.
 
 The --binary option prevents Zint from performing any convertion of the data 
 before placing in the barcode symbol and should be used if you are encoding raw 
