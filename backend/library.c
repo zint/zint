@@ -505,6 +505,7 @@ int ZBarcode_ValidID(int symbol_id) {
         case BARCODE_CODE39:
         case BARCODE_EXCODE39:
         case BARCODE_EANX:
+        case BARCODE_EANX_CHK:
         case BARCODE_EAN128:
         case BARCODE_CODABAR:
         case BARCODE_CODE128:
@@ -519,7 +520,9 @@ int ZBarcode_ValidID(int symbol_id) {
         case BARCODE_RSS_EXP:
         case BARCODE_TELEPEN:
         case BARCODE_UPCA:
+        case BARCODE_UPCA_CHK:
         case BARCODE_UPCE:
+        case BARCODE_UPCE_CHK:
         case BARCODE_POSTNET:
         case BARCODE_MSI_PLESSEY:
         case BARCODE_FIM:
@@ -540,6 +543,7 @@ int ZBarcode_ValidID(int symbol_id) {
         case BARCODE_RM4SCC:
         case BARCODE_DATAMATRIX:
         case BARCODE_EAN14:
+        case BARCODE_EAN14_CHK:
         case BARCODE_NVE18:
         case BARCODE_JAPANPOST:
         case BARCODE_KOREAPOST:
@@ -663,11 +667,13 @@ static int reduced_charset(struct zint_symbol *symbol, const unsigned char *sour
             break;
         case BARCODE_DPIDENT: error_number = dpident(symbol, preprocessed, in_length);
             break;
-        case BARCODE_UPCA: error_number = eanx(symbol, preprocessed, in_length);
-            break;
-        case BARCODE_UPCE: error_number = eanx(symbol, preprocessed, in_length);
-            break;
-        case BARCODE_EANX: error_number = eanx(symbol, preprocessed, in_length);
+        case BARCODE_UPCA: 
+        case BARCODE_UPCA_CHK:
+        case BARCODE_UPCE: 
+        case BARCODE_UPCE_CHK:
+        case BARCODE_EANX: 
+        case BARCODE_EANX_CHK:
+            error_number = eanx(symbol, preprocessed, in_length);
             break;
         case BARCODE_EAN128: error_number = ean_128(symbol, preprocessed, in_length);
             break;
@@ -683,9 +689,9 @@ static int reduced_charset(struct zint_symbol *symbol, const unsigned char *sour
             break;
         case BARCODE_LOGMARS: error_number = c39(symbol, preprocessed, in_length);
             break;
-        case BARCODE_CODE128: error_number = code_128(symbol, preprocessed, in_length);
-            break;
-        case BARCODE_CODE128B: error_number = code_128(symbol, preprocessed, in_length);
+        case BARCODE_CODE128:
+        case BARCODE_CODE128B: 
+            error_number = code_128(symbol, preprocessed, in_length);
             break;
         case BARCODE_NVE18: error_number = nve_18(symbol, preprocessed, in_length);
             break;
@@ -713,13 +719,11 @@ static int reduced_charset(struct zint_symbol *symbol, const unsigned char *sour
             break;
         case BARCODE_RM4SCC: error_number = royal_plot(symbol, preprocessed, in_length);
             break;
-        case BARCODE_AUSPOST: error_number = australia_post(symbol, preprocessed, in_length);
-            break;
-        case BARCODE_AUSREPLY: error_number = australia_post(symbol, preprocessed, in_length);
-            break;
-        case BARCODE_AUSROUTE: error_number = australia_post(symbol, preprocessed, in_length);
-            break;
-        case BARCODE_AUSREDIRECT: error_number = australia_post(symbol, preprocessed, in_length);
+        case BARCODE_AUSPOST:
+        case BARCODE_AUSREPLY: 
+        case BARCODE_AUSROUTE:
+        case BARCODE_AUSREDIRECT:
+            error_number = australia_post(symbol, preprocessed, in_length);
             break;
         case BARCODE_CODE16K: error_number = code16k(symbol, preprocessed, in_length);
             break;
@@ -729,37 +733,28 @@ static int reduced_charset(struct zint_symbol *symbol, const unsigned char *sour
             break;
         case BARCODE_ISBNX: error_number = eanx(symbol, preprocessed, in_length);
             break;
-        case BARCODE_RSS14: error_number = rss14(symbol, preprocessed, in_length);
-            break;
-        case BARCODE_RSS14STACK: error_number = rss14(symbol, preprocessed, in_length);
-            break;
-        case BARCODE_RSS14STACK_OMNI: error_number = rss14(symbol, preprocessed, in_length);
+        case BARCODE_RSS14:
+        case BARCODE_RSS14STACK: 
+        case BARCODE_RSS14STACK_OMNI: 
+            error_number = rss14(symbol, preprocessed, in_length);
             break;
         case BARCODE_RSS_LTD: error_number = rsslimited(symbol, preprocessed, in_length);
             break;
-        case BARCODE_RSS_EXP: error_number = rssexpanded(symbol, preprocessed, in_length);
+        case BARCODE_RSS_EXP: 
+        case BARCODE_RSS_EXPSTACK: 
+            error_number = rssexpanded(symbol, preprocessed, in_length);
             break;
-        case BARCODE_RSS_EXPSTACK: error_number = rssexpanded(symbol, preprocessed, in_length);
-            break;
-        case BARCODE_EANX_CC: error_number = composite(symbol, preprocessed, in_length);
-            break;
-        case BARCODE_EAN128_CC: error_number = composite(symbol, preprocessed, in_length);
-            break;
-        case BARCODE_RSS14_CC: error_number = composite(symbol, preprocessed, in_length);
-            break;
-        case BARCODE_RSS_LTD_CC: error_number = composite(symbol, preprocessed, in_length);
-            break;
-        case BARCODE_RSS_EXP_CC: error_number = composite(symbol, preprocessed, in_length);
-            break;
-        case BARCODE_UPCA_CC: error_number = composite(symbol, preprocessed, in_length);
-            break;
-        case BARCODE_UPCE_CC: error_number = composite(symbol, preprocessed, in_length);
-            break;
-        case BARCODE_RSS14STACK_CC: error_number = composite(symbol, preprocessed, in_length);
-            break;
-        case BARCODE_RSS14_OMNI_CC: error_number = composite(symbol, preprocessed, in_length);
-            break;
-        case BARCODE_RSS_EXPSTACK_CC: error_number = composite(symbol, preprocessed, in_length);
+        case BARCODE_EANX_CC: 
+        case BARCODE_EAN128_CC: 
+        case BARCODE_RSS14_CC: 
+        case BARCODE_RSS_LTD_CC: 
+        case BARCODE_RSS_EXP_CC: 
+        case BARCODE_UPCA_CC: 
+        case BARCODE_UPCE_CC: 
+        case BARCODE_RSS14STACK_CC: 
+        case BARCODE_RSS14_OMNI_CC: 
+        case BARCODE_RSS_EXPSTACK_CC: 
+            error_number = composite(symbol, preprocessed, in_length);
             break;
         case BARCODE_KIX: error_number = kix_code(symbol, preprocessed, in_length);
             break;
@@ -767,27 +762,23 @@ static int reduced_charset(struct zint_symbol *symbol, const unsigned char *sour
             break;
         case BARCODE_DAFT: error_number = daft_code(symbol, preprocessed, in_length);
             break;
-        case BARCODE_EAN14: error_number = ean_14(symbol, preprocessed, in_length);
+        case BARCODE_EAN14:
+        case BARCODE_EAN14_CHK:
+            error_number = ean_14(symbol, preprocessed, in_length);
             break;
         case BARCODE_AZRUNE: error_number = aztec_runes(symbol, preprocessed, in_length);
             break;
         case BARCODE_KOREAPOST: error_number = korea_post(symbol, preprocessed, in_length);
             break;
-        case BARCODE_HIBC_128: error_number = hibc(symbol, preprocessed, in_length);
-            break;
-        case BARCODE_HIBC_39: error_number = hibc(symbol, preprocessed, in_length);
-            break;
-        case BARCODE_HIBC_DM: error_number = hibc(symbol, preprocessed, in_length);
-            break;
-        case BARCODE_HIBC_QR: error_number = hibc(symbol, preprocessed, in_length);
-            break;
-        case BARCODE_HIBC_PDF: error_number = hibc(symbol, preprocessed, in_length);
-            break;
-        case BARCODE_HIBC_MICPDF: error_number = hibc(symbol, preprocessed, in_length);
-            break;
-        case BARCODE_HIBC_AZTEC: error_number = hibc(symbol, preprocessed, in_length);
-            break;
-        case BARCODE_HIBC_BLOCKF: error_number = hibc(symbol, preprocessed, in_length);
+        case BARCODE_HIBC_128: 
+        case BARCODE_HIBC_39: 
+        case BARCODE_HIBC_DM: 
+        case BARCODE_HIBC_QR: 
+        case BARCODE_HIBC_PDF: 
+        case BARCODE_HIBC_MICPDF: 
+        case BARCODE_HIBC_AZTEC: 
+        case BARCODE_HIBC_BLOCKF: 
+            error_number = hibc(symbol, preprocessed, in_length);
             break;
         case BARCODE_JAPANPOST: error_number = japan_post(symbol, preprocessed, in_length);
             break;
@@ -799,9 +790,9 @@ static int reduced_charset(struct zint_symbol *symbol, const unsigned char *sour
             break;
         case BARCODE_DATAMATRIX: error_number = dmatrix(symbol, preprocessed, in_length);
             break;
-        case BARCODE_PDF417: error_number = pdf417enc(symbol, preprocessed, in_length);
-            break;
-        case BARCODE_PDF417TRUNC: error_number = pdf417enc(symbol, preprocessed, in_length);
+        case BARCODE_PDF417: 
+        case BARCODE_PDF417TRUNC: 
+            error_number = pdf417enc(symbol, preprocessed, in_length);
             break;
         case BARCODE_MICROPDF417: error_number = micro_pdf417(symbol, preprocessed, in_length);
             break;
@@ -861,7 +852,7 @@ int ZBarcode_Encode(struct zint_symbol *symbol, unsigned char *source, int lengt
     if ((symbol->symbology >= 10) && (symbol->symbology <= 12)) {
         symbol->symbology = BARCODE_EANX;
     }
-    if ((symbol->symbology == 14) || (symbol->symbology == 15)) {
+    if (symbol->symbology == 15) {
         symbol->symbology = BARCODE_EANX;
     }
     if (symbol->symbology == 17) {
@@ -882,10 +873,10 @@ int ZBarcode_Encode(struct zint_symbol *symbol, unsigned char *source, int lengt
     if (symbol->symbology == 33) {
         symbol->symbology = BARCODE_EAN128;
     }
-    if ((symbol->symbology == 35) || (symbol->symbology == 36)) {
+    if (symbol->symbology == 36) {
         symbol->symbology = BARCODE_UPCA;
     }
-    if ((symbol->symbology == 38) || (symbol->symbology == 39)) {
+    if (symbol->symbology == 38) {
         symbol->symbology = BARCODE_UPCE;
     }
     if ((symbol->symbology >= 41) && (symbol->symbology <= 45)) {

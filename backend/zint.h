@@ -109,6 +109,7 @@ extern "C" {
 #define BARCODE_CODE39		8
 #define BARCODE_EXCODE39	9
 #define BARCODE_EANX		13
+#define BARCODE_EANX_CHK        14
 #define BARCODE_EAN128		16
 #define BARCODE_CODABAR		18
 #define BARCODE_CODE128		20
@@ -123,7 +124,9 @@ extern "C" {
 #define BARCODE_RSS_EXP		31
 #define BARCODE_TELEPEN		32
 #define BARCODE_UPCA		34
+#define BARCODE_UPCA_CHK        35
 #define BARCODE_UPCE		37
+#define BARCODE_UPCE_CHK        38
 #define BARCODE_POSTNET		40
 #define BARCODE_MSI_PLESSEY	47
 #define BARCODE_FIM		49

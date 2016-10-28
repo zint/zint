@@ -236,6 +236,7 @@ Numeric Value  |  Barcode Name
 8              |  Code 3 of 9 (Code 39)
 9              |  Extended Code 3 of 9 (Code 39+)
 13             |  EAN (Including EAN-8 and EAN-13)
+14             |  EAN + Check Digit
 16             |  GS1-128 (UCC.EAN-128)
 18             |  Codabar
 20             |  Code 128 (automatic subset switching)
@@ -250,7 +251,9 @@ Numeric Value  |  Barcode Name
 31             |  GS1 DataBar Extended
 32             |  Telepen Alpha
 34             |  UPC A
+35             |  UPC A + Check Digit
 37             |  UPC E
+38             |  UPC E + Check Digit
 40             |  PostNet
 47             |  MSI Plessey
 49             |  FIM
@@ -893,6 +896,7 @@ Value   |
 8       | BARCODE_CODE39          | Code 3 of 9 (Code 39)
 9       | BARCODE_EXCODE39        | Extended Code 3 of 9 (Code 39+)
 13      | BARCODE_EANX            | EAN
+14      | BARCODE_EANX_CHK        | EAN + Check Digit
 16      | BARCODE_EAN128          | GS1-128 (UCC.EAN-128)
 18      | BARCODE_CODABAR         | Codabar
 20      | BARCODE_CODE128         | Code 128 (automatic subset switching)
@@ -907,7 +911,9 @@ Value   |
 31      | BARCODE_RSS_EXP         | GS1 DataBar Extended
 32      | BARCODE_TELEPEN         | Telepen Alpha
 34      | BARCODE_UPCA            | UPC A
+35      | BARCODE_UPCA_CHK        | UPC A + Check Digit
 37      | BARCODE_UPCE            | UPC E
+38      | BARCODE_UPCE            | UPC E + Check Digit
 40      | BARCODE_POSTNET         | PostNet
 47      | BARCODE_MSI_PLESSEY     | MSI Plessey
 49      | BARCODE_FIM             | FIM
@@ -1123,6 +1129,9 @@ my_symbol->symbology = BARCODE_UPCA;
 
 error = ZBarcode_Encode_and_Print(my_symbol, "72527270270+12345");
 
+If your input data already includes the check digit symbology 35 can be used
+which takes a 12 digit input and validates the check digit before encoding.
+
 6.1.3.2 UPC Version E
 ---------------------
 UPC-E is a zero-compressed version of UPC-A developed for smaller packages. The 
@@ -1139,6 +1148,9 @@ or
 my_symbol->symbology = BARCODE_UPCE;
 
 error = ZBarcode_Encode_and_Print(my_symbol, "1123456");
+
+If your input data already includes the check digit symbology 38 can be used
+which takes a 7 or 8 digit input and validates the check digit before encoding.
 
 6.1.4 European Article Number (EN 797)
 --------------------------------------
@@ -1166,6 +1178,10 @@ error = ZBarcode_Encode_and_Print(my_symbol, "54321");
 error = ZBarcode_Encode_and_Print(my_symbol, "7432365+54321");
 
 All of the EAN symbols include check digits which are added by Zint.
+
+If you are encoding an EAN-8 or EAN-13 symbol and your data already includes
+the check digit then you can use symbology 14 which takes an 8 or 13 digit input
+and validates the check digit before encoding.
 
 6.1.4.2 SBN, ISBN and ISBN-13
 -----------------------------
