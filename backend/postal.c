@@ -92,12 +92,12 @@ int postnet(struct zint_symbol *symbol, unsigned char source[], char dest[], int
     error_number = 0;
 
     if (length > 38) {
-        strcpy(symbol->errtxt, "Input too long");
+        strcpy(symbol->errtxt, "Input too long (D80)");
         return ZINT_ERROR_TOO_LONG;
     }
     error_number = is_sane(NEON, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "Invalid characters in data");
+        strcpy(symbol->errtxt, "Invalid characters in data (D81)");
         return error_number;
     }
     sum = 0;
@@ -158,12 +158,12 @@ int planet(struct zint_symbol *symbol, unsigned char source[], char dest[], int 
     error_number = 0;
 
     if (length > 38) {
-        strcpy(symbol->errtxt, "Input too long");
+        strcpy(symbol->errtxt, "Input too long (D82)");
         return ZINT_ERROR_TOO_LONG;
     }
     error_number = is_sane(NEON, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "Invalid characters in data");
+        strcpy(symbol->errtxt, "Invalid characters in data (D83)");
         return error_number;
     }
     sum = 0;
@@ -222,12 +222,12 @@ int korea_post(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     error_number = 0;
     if (length > 6) {
-        strcpy(symbol->errtxt, "Input too long");
+        strcpy(symbol->errtxt, "Input too long (D84)");
         return ZINT_ERROR_TOO_LONG;
     }
     error_number = is_sane(NEON, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "Invalid characters in data");
+        strcpy(symbol->errtxt, "Invalid characters in data (D85)");
         return error_number;
     }
     zeroes = 6 - length;
@@ -262,7 +262,7 @@ int fim(struct zint_symbol *symbol, unsigned char source[], int length) {
     char dest[16] = {0};
 
     if (length > 1) {
-        strcpy(symbol->errtxt, "Input too long");
+        strcpy(symbol->errtxt, "Input too long (D86)");
         return ZINT_ERROR_TOO_LONG;
     }
 
@@ -284,7 +284,7 @@ int fim(struct zint_symbol *symbol, unsigned char source[], int length) {
             strcpy(dest, "1111131311111");
             break;
         default:
-            strcpy(symbol->errtxt, "Invalid characters in data");
+            strcpy(symbol->errtxt, "Invalid characters in data (D87)");
             return ZINT_ERROR_INVALID_DATA;
             break;
     }
@@ -341,13 +341,13 @@ int royal_plot(struct zint_symbol *symbol, unsigned char source[], int length) {
     error_number = 0;
 
     if (length > 50) {
-        strcpy(symbol->errtxt, "Input too long");
+        strcpy(symbol->errtxt, "Input too long (D88)");
         return ZINT_ERROR_TOO_LONG;
     }
     to_upper(source);
     error_number = is_sane(KRSET, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "Invalid characters in data");
+        strcpy(symbol->errtxt, "Invalid characters in data (D89)");
         return error_number;
     }
     /*check = */rm4scc((char*) source, (unsigned char*) height_pattern, length);
@@ -387,13 +387,13 @@ int kix_code(struct zint_symbol *symbol, unsigned char source[], int length) {
     error_number = 0;
 
     if (length > 18) {
-        strcpy(symbol->errtxt, "Input too long");
+        strcpy(symbol->errtxt, "Input too long (D8A)");
         return ZINT_ERROR_TOO_LONG;
     }
     to_upper(source);
     error_number = is_sane(KRSET, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "Invalid characters in data");
+        strcpy(symbol->errtxt, "Invalid characters in data (D8B)");
         return error_number;
     }
 
@@ -435,14 +435,14 @@ int daft_code(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     error_number = 0;
     if (length > 50) {
-        strcpy(symbol->errtxt, "Input too long");
+        strcpy(symbol->errtxt, "Input too long (D8C)");
         return ZINT_ERROR_TOO_LONG;
     }
     to_upper((unsigned char*) source);
     error_number = is_sane(DAFTSET, (unsigned char*) source, length);
 
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "Invalid characters in data");
+        strcpy(symbol->errtxt, "Invalid characters in data (D8D)");
         return error_number;
     }
 
@@ -491,12 +491,12 @@ int flattermarken(struct zint_symbol *symbol, unsigned char source[], int length
     error_number = 0;
 
     if (length > 90) {
-        strcpy(symbol->errtxt, "Input too long");
+        strcpy(symbol->errtxt, "Input too long (D8E)");
         return ZINT_ERROR_TOO_LONG;
     }
     error_number = is_sane(NEON, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "Invalid characters in data");
+        strcpy(symbol->errtxt, "Invalid characters in data (D8F)");
         return error_number;
     }
     *dest = '\0';
@@ -523,7 +523,7 @@ int japan_post(struct zint_symbol *symbol, unsigned char source[], int length) {
 #endif
 
     if (length > 20) {
-        strcpy(symbol->errtxt, "Input too long");
+        strcpy(symbol->errtxt, "Input too long (D8G)");
         return ZINT_ERROR_TOO_LONG;
     }
     
@@ -538,7 +538,7 @@ int japan_post(struct zint_symbol *symbol, unsigned char source[], int length) {
     error_number = is_sane(SHKASUTSET, (unsigned char*) local_source, length);
 
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "Invalid characters in data");
+        strcpy(symbol->errtxt, "Invalid characters in data (D8H)");
         return error_number;
     }
     memset(inter, 'd', 20); /* Pad character CC4 */

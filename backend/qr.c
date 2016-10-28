@@ -1513,7 +1513,7 @@ int qr_code(struct zint_symbol *symbol, const unsigned char source[], int length
                     j++;
                 } while ((j < 6843) && (glyph == 0));
                 if (glyph == 0) {
-                    strcpy(symbol->errtxt, "Invalid character in input data");
+                    strcpy(symbol->errtxt, "Invalid character in input data (E60)");
                     return ZINT_ERROR_INVALID_DATA;
                 }
                 jisdata[i] = glyph;
@@ -1544,7 +1544,7 @@ int qr_code(struct zint_symbol *symbol, const unsigned char source[], int length
     }
 
     if (est_binlen > (8 * max_cw)) {
-        strcpy(symbol->errtxt, "Input too long for selected error correction level");
+        strcpy(symbol->errtxt, "Input too long for selected error correction level (E61)");
         return ZINT_ERROR_TOO_LONG;
     }
 
@@ -2649,7 +2649,7 @@ int microqr(struct zint_symbol *symbol, const unsigned char source[], int length
 #endif
 
     if (length > 35) {
-        strcpy(symbol->errtxt, "Input data too long");
+        strcpy(symbol->errtxt, "Input data too long (E62)");
         return ZINT_ERROR_TOO_LONG;
     }
 
@@ -2681,7 +2681,7 @@ int microqr(struct zint_symbol *symbol, const unsigned char source[], int length
                     j++;
                 } while ((j < 6843) && (glyph == 0));
                 if (glyph == 0) {
-                    strcpy(symbol->errtxt, "Invalid character in input data");
+                    strcpy(symbol->errtxt, "Invalid character in input data (E63)");
                     return ZINT_ERROR_INVALID_DATA;
                 }
                 jisdata[i] = glyph;
@@ -2718,7 +2718,7 @@ int microqr(struct zint_symbol *symbol, const unsigned char source[], int length
 
     error_number = micro_qr_intermediate(binary_stream, jisdata, mode, length, &kanji_used, &alphanum_used, &byte_used);
     if (error_number != 0) {
-        strcpy(symbol->errtxt, "Input data too long");
+        strcpy(symbol->errtxt, "Input data too long (E64)");
         return error_number;
     }
 
@@ -2750,7 +2750,7 @@ int microqr(struct zint_symbol *symbol, const unsigned char source[], int length
         version_valid[2] = 0;
     }
     if (binary_count[3] > 128) {
-        strcpy(symbol->errtxt, "Input data too long");
+        strcpy(symbol->errtxt, "Input data too long (E65)");
         return ZINT_ERROR_TOO_LONG;
     }
 
@@ -2761,7 +2761,7 @@ int microqr(struct zint_symbol *symbol, const unsigned char source[], int length
     }
 
     if (ecc_level == LEVEL_H) {
-        strcpy(symbol->errtxt, "Error correction level H not available");
+        strcpy(symbol->errtxt, "Error correction level H not available (E66)");
         return ZINT_ERROR_INVALID_OPTION;
     }
 
@@ -2770,7 +2770,7 @@ int microqr(struct zint_symbol *symbol, const unsigned char source[], int length
         version_valid[1] = 0;
         version_valid[2] = 0;
         if (binary_count[3] > 80) {
-            strcpy(symbol->errtxt, "Input data too long");
+            strcpy(symbol->errtxt, "Input data too long (E67)");
             return ZINT_ERROR_TOO_LONG;
         }
     }
@@ -2784,7 +2784,7 @@ int microqr(struct zint_symbol *symbol, const unsigned char source[], int length
             version_valid[2] = 0;
         }
         if (binary_count[3] > 112) {
-            strcpy(symbol->errtxt, "Input data too long");
+            strcpy(symbol->errtxt, "Input data too long (E68)");
             return ZINT_ERROR_TOO_LONG;
         }
     }

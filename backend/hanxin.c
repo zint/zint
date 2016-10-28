@@ -1363,7 +1363,7 @@ int han_xin(struct zint_symbol *symbol, const unsigned char source[], int length
                         j++;
                     } while ((j < 6793) && (glyph == 0));
                     if (glyph == 0) {
-                        strcpy(symbol->errtxt, "Unknown character in input data");
+                        strcpy(symbol->errtxt, "Unknown character in input data (E40)");
                         return ZINT_ERROR_INVALID_DATA;
                     } else {
                         gbdata[posn] = glyph;
@@ -1434,7 +1434,7 @@ int han_xin(struct zint_symbol *symbol, const unsigned char source[], int length
     }
 
     if (version == 85) {
-        strcpy(symbol->errtxt, "Input too long for selected error correction level");
+        strcpy(symbol->errtxt, "Input too long for selected error correction level (E41)");
         return ZINT_ERROR_TOO_LONG;
     }
 

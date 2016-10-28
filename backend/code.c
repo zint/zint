@@ -115,12 +115,12 @@ int code_11(struct zint_symbol *symbol, unsigned char source[], int length) { /*
     error_number = 0;
 
     if (length > 121) {
-        strcpy(symbol->errtxt, "Input too long");
+        strcpy(symbol->errtxt, "Input too long (C20)");
         return ZINT_ERROR_TOO_LONG;
     }
     error_number = is_sane(SODIUM, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "Invalid characters in data");
+        strcpy(symbol->errtxt, "Invalid characters in data (C21)");
         return error_number;
     }
     c_weight = 1;
@@ -203,16 +203,16 @@ int c39(struct zint_symbol *symbol, unsigned char source[], const size_t length)
     }
 
     if ((symbol->symbology == BARCODE_LOGMARS) && (length > 59)) {
-        strcpy(symbol->errtxt, "Input too long");
+        strcpy(symbol->errtxt, "Input too long (C22)");
         return ZINT_ERROR_TOO_LONG;
     } else if (length > 74) {
-        strcpy(symbol->errtxt, "Input too long");
+        strcpy(symbol->errtxt, "Input too long (C23)");
         return ZINT_ERROR_TOO_LONG;
     }
     to_upper(source);
     error_number = is_sane(SILVER, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "Invalid characters in data");
+        strcpy(symbol->errtxt, "Invalid characters in data (C24)");
         return error_number;
     }
 
@@ -302,12 +302,12 @@ int pharmazentral(struct zint_symbol *symbol, unsigned char source[], int length
 
     count = 0;
     if (length > 6) {
-        strcpy(symbol->errtxt, "Input wrong length");
+        strcpy(symbol->errtxt, "Input wrong length (C25)");
         return ZINT_ERROR_TOO_LONG;
     }
     error_number = is_sane(NEON, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "Invalid characters in data");
+        strcpy(symbol->errtxt, "Invalid characters in data (C26)");
         return error_number;
     }
 
@@ -328,7 +328,7 @@ int pharmazentral(struct zint_symbol *symbol, unsigned char source[], int length
     localstr[7] = itoc(check_digit);
     localstr[8] = '\0';
     if (localstr[7] == 'A') {
-        strcpy(symbol->errtxt, "Invalid PZN Data");
+        strcpy(symbol->errtxt, "Invalid PZN Data (C27)");
         return ZINT_ERROR_INVALID_DATA;
     }
     error_number = c39(symbol, (unsigned char *) localstr, strlen(localstr));
@@ -347,7 +347,7 @@ int ec39(struct zint_symbol *symbol, unsigned char source[], int length) {
     error_number = 0;
 
     if (length > 74) {
-        strcpy(symbol->errtxt, "Input too long");
+        strcpy(symbol->errtxt, "Input too long (C28)");
         return ZINT_ERROR_TOO_LONG;
     }
 
@@ -355,7 +355,7 @@ int ec39(struct zint_symbol *symbol, unsigned char source[], int length) {
     for (i = 0; i < (unsigned int) length; i++) {
         if (source[i] > 127) {
             /* Cannot encode extended ASCII */
-            strcpy(symbol->errtxt, "Invalid characters in input data");
+            strcpy(symbol->errtxt, "Invalid characters in input data (C29)");
             return ZINT_ERROR_INVALID_DATA;
         }
         strcat((char*) buffer, EC39Ctrl[source[i]]);
@@ -388,7 +388,7 @@ int c93(struct zint_symbol *symbol, unsigned char source[], int length) {
     strcpy(buffer, "");
 
     if (length > 107) {
-        strcpy(symbol->errtxt, "Input too long");
+        strcpy(symbol->errtxt, "Input too long (C2A)");
         return ZINT_ERROR_TOO_LONG;
     }
 
@@ -396,7 +396,7 @@ int c93(struct zint_symbol *symbol, unsigned char source[], int length) {
     for (i = 0; i < length; i++) {
         if (source[i] > 127) {
             /* Cannot encode extended ASCII */
-            strcpy(symbol->errtxt, "Invalid characters in input data");
+            strcpy(symbol->errtxt, "Invalid characters in input data (C2B)");
             return ZINT_ERROR_INVALID_DATA;
         }
         strcat(buffer, C93Ctrl[source[i]]);
@@ -406,7 +406,7 @@ int c93(struct zint_symbol *symbol, unsigned char source[], int length) {
     /* Now we can check the true length of the barcode */
     h = (int) strlen(buffer);
     if (h > 107) {
-        strcpy(symbol->errtxt, "Input too long");
+        strcpy(symbol->errtxt, "Input too long (C2C)");
         return ZINT_ERROR_TOO_LONG;
     }
 
@@ -521,12 +521,12 @@ int channel_code(struct zint_symbol *symbol, unsigned char source[], int length)
     target_value = 0;
 
     if (length > 7) {
-        strcpy(symbol->errtxt, "Input too long");
+        strcpy(symbol->errtxt, "Input too long (C2D)");
         return ZINT_ERROR_TOO_LONG;
     }
     error_number = is_sane(NEON, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "Invalid characters in data");
+        strcpy(symbol->errtxt, "Invalid characters in data (C2E)");
         return error_number;
     }
 
@@ -574,7 +574,7 @@ int channel_code(struct zint_symbol *symbol, unsigned char source[], int length)
             break;
     }
     if (range) {
-        strcpy(symbol->errtxt, "Value out of range");
+        strcpy(symbol->errtxt, "Value out of range (C2F)");
         return ZINT_ERROR_INVALID_DATA;
     }
 

@@ -111,7 +111,7 @@ int pcx_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
         pcx_file = stdout;
     } else {
         if (!(pcx_file = fopen(symbol->outfile, "wb"))) {
-            strcpy(symbol->errtxt, "Can't open output file");
+            strcpy(symbol->errtxt, "Can't open output file (F20)");
             return ZINT_ERROR_FILE_ACCESS;
         }
     }

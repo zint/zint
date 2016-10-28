@@ -563,7 +563,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
 
     if (symbol->output_options & READER_INIT) {
         if (gs1) {
-            strcpy(symbol->errtxt, "Cannot encode in GS1 mode and Reader Initialisation at the same time");
+            strcpy(symbol->errtxt, "Cannot encode in GS1 mode and Reader Initialisation at the same time (E10)");
             return ZINT_ERROR_INVALID_OPTION;
         } else {
             target[tp] = 234;
@@ -1157,7 +1157,7 @@ int data_matrix_200(struct zint_symbol *symbol, const unsigned char source[], co
     binlen = dm200encode(symbol, source, binary, &last_mode, &inputlen, process_buffer, &process_p);
 
     if (binlen == 0) {
-        strcpy(symbol->errtxt, "Data too long to fit in symbol");
+        strcpy(symbol->errtxt, "Data too long to fit in symbol (E11)");
         return ZINT_ERROR_TOO_LONG;
     }
 
@@ -1193,7 +1193,7 @@ int data_matrix_200(struct zint_symbol *symbol, const unsigned char source[], co
         if (optionsize != -1) {
             /* flag an error */
             error_number = ZINT_WARN_INVALID_OPTION;
-            strcpy(symbol->errtxt, "Data does not fit in selected symbol size");
+            strcpy(symbol->errtxt, "Data does not fit in selected symbol size (E12)");
         }
     }
 
@@ -1302,7 +1302,7 @@ int dmatrix(struct zint_symbol *symbol, const unsigned char source[], const int 
         error_number = data_matrix_200(symbol, source, in_length);
     } else {
         /* ECC 000 - 140 */
-        strcpy(symbol->errtxt, "Older Data Matrix standards are no longer supported");
+        strcpy(symbol->errtxt, "Older Data Matrix standards are no longer supported (E13)");
         error_number = ZINT_ERROR_INVALID_OPTION;
     }
 

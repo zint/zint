@@ -585,7 +585,7 @@ int maxicode(struct zint_symbol *symbol, unsigned char local_source[], int lengt
     }
 
     if ((mode < 2) || (mode > 6)) { /* Only codes 2 to 6 supported */
-        strcpy(symbol->errtxt, "Invalid Maxicode Mode");
+        strcpy(symbol->errtxt, "Invalid Maxicode Mode (E50)");
         return ZINT_ERROR_INVALID_OPTION;
     }
 
@@ -594,13 +594,13 @@ int maxicode(struct zint_symbol *symbol, unsigned char local_source[], int lengt
             lp = strlen(symbol->primary);
         }
         if (lp != 15) {
-            strcpy(symbol->errtxt, "Invalid Primary String");
+            strcpy(symbol->errtxt, "Invalid Primary String (E51)");
             return ZINT_ERROR_INVALID_DATA;
         }
 
         for (i = 9; i < 15; i++) { /* check that country code and service are numeric */
             if ((symbol->primary[i] < '0') || (symbol->primary[i] > '9')) {
-                strcpy(symbol->errtxt, "Invalid Primary String");
+                strcpy(symbol->errtxt, "Invalid Primary String (E52)");
                 return ZINT_ERROR_INVALID_DATA;
             }
         }
@@ -643,7 +643,7 @@ int maxicode(struct zint_symbol *symbol, unsigned char local_source[], int lengt
 
     i = maxi_text_process(mode, local_source, length, symbol->eci);
     if (i == ZINT_ERROR_TOO_LONG) {
-        strcpy(symbol->errtxt, "Input data too long");
+        strcpy(symbol->errtxt, "Input data too long (E53)");
         return i;
     }
 

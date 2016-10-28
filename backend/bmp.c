@@ -129,7 +129,7 @@ int bmp_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
         bmp_file = stdout;
     } else {
         if (!(bmp_file = fopen(symbol->outfile, "wb"))) {
-            strcpy(symbol->errtxt, "Can't open output file");
+            strcpy(symbol->errtxt, "Can't open output file (F00)");
             return ZINT_ERROR_FILE_ACCESS;
         }
     }

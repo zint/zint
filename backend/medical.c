@@ -67,19 +67,19 @@ int pharma_one(struct zint_symbol *symbol, unsigned char source[], int length) {
     error_number = 0;
 
     if (length > 6) {
-        strcpy(symbol->errtxt, "Input too long");
+        strcpy(symbol->errtxt, "Input too long (C50)");
         return ZINT_ERROR_TOO_LONG;
     }
     error_number = is_sane(NEON, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "Invalid characters in data");
+        strcpy(symbol->errtxt, "Invalid characters in data (C51)");
         return error_number;
     }
 
     tester = atoi((char*) source);
 
     if ((tester < 3) || (tester > 131070)) {
-        strcpy(symbol->errtxt, "Data out of range");
+        strcpy(symbol->errtxt, "Data out of range (C52)");
         return ZINT_ERROR_INVALID_DATA;
     }
 
@@ -122,7 +122,7 @@ int pharma_two_calc(struct zint_symbol *symbol, unsigned char source[], char des
     tester = atoi((char*) source);
 
     if ((tester < 4) || (tester > 64570080)) {
-        strcpy(symbol->errtxt, "Data out of range");
+        strcpy(symbol->errtxt, "Data out of range (C53)");
         return ZINT_ERROR_INVALID_DATA;
     }
     error_number = 0;
@@ -162,12 +162,12 @@ int pharma_two(struct zint_symbol *symbol, unsigned char source[], int length) {
     strcpy(height_pattern, "");
 
     if (length > 8) {
-        strcpy(symbol->errtxt, "Input too long");
+        strcpy(symbol->errtxt, "Input too long (C54)");
         return ZINT_ERROR_TOO_LONG;
     }
     error_number = is_sane(NEON, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "Invalid characters in data");
+        strcpy(symbol->errtxt, "Invalid characters in data (C55)");
         return error_number;
     }
     error_number = pharma_two_calc(symbol, source, height_pattern);
@@ -203,25 +203,25 @@ int codabar(struct zint_symbol *symbol, unsigned char source[], int length) {
     strcpy(dest, "");
 
     if (length > 60) { /* No stack smashing please */
-        strcpy(symbol->errtxt, "Input too long");
+        strcpy(symbol->errtxt, "Input too long (C56)");
         return ZINT_ERROR_TOO_LONG;
     }
     to_upper(source);
     error_number = is_sane(CALCIUM, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "Invalid characters in data");
+        strcpy(symbol->errtxt, "Invalid characters in data (C57)");
         return error_number;
     }
     /* Codabar must begin and end with the characters A, B, C or D */
     if ((source[0] != 'A') && (source[0] != 'B') && (source[0] != 'C')
             && (source[0] != 'D')) {
-        strcpy(symbol->errtxt, "Invalid characters in data");
+        strcpy(symbol->errtxt, "Invalid characters in data (C58)");
         return ZINT_ERROR_INVALID_DATA;
     }
 
     if ((source[length - 1] != 'A') && (source[length - 1] != 'B') &&
             (source[length - 1] != 'C') && (source[length - 1] != 'D')) {
-        strcpy(symbol->errtxt, "Invalid characters in data");
+        strcpy(symbol->errtxt, "Invalid characters in data (C59)");
         return ZINT_ERROR_INVALID_DATA;
     }
 
@@ -244,12 +244,12 @@ int code32(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     /* Validate the input */
     if (length > 8) {
-        strcpy(symbol->errtxt, "Input too long");
+        strcpy(symbol->errtxt, "Input too long (C5A)");
         return ZINT_ERROR_TOO_LONG;
     }
     error_number = is_sane(NEON, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "Invalid characters in data");
+        strcpy(symbol->errtxt, "Invalid characters in data (C5B)");
         return error_number;
     }
 

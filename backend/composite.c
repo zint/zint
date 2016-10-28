@@ -1170,7 +1170,7 @@ int cc_binary_string(struct zint_symbol *symbol, const char source[], char binar
             if (!(((ninety[i] >= '0') && (ninety[i] <= '9')) || ((ninety[i] >= 'A') && (ninety[i] <= 'Z')))) {
                 if ((ninety[i] != '*') && (ninety[i] != ',') && (ninety[i] != '-') && (ninety[i] != '.') && (ninety[i] != '/')) {
                     /* An Invalid AI 90 character */
-                    strcpy(symbol->errtxt, "Invalid AI 90 data");
+                    strcpy(symbol->errtxt, "Invalid AI 90 data (D40)");
                     return ZINT_ERROR_INVALID_DATA;
                 }
             }
@@ -1529,7 +1529,7 @@ int cc_binary_string(struct zint_symbol *symbol, const char source[], char binar
 
     if (latch == 1) {
         /* Invalid characters in input data */
-        strcpy(symbol->errtxt, "Invalid characters in input data");
+        strcpy(symbol->errtxt, "Invalid characters in input data (D41)");
         return ZINT_ERROR_INVALID_DATA;
     }
 
@@ -1735,7 +1735,7 @@ int cc_binary_string(struct zint_symbol *symbol, const char source[], char binar
     }
     
     if (target_bitsize == 0) {
-        strcpy(symbol->errtxt, "Input too long for selected 2d component");
+        strcpy(symbol->errtxt, "Input too long for selected 2d component (D42)");
         return ZINT_ERROR_TOO_LONG;
     }
 
@@ -1778,7 +1778,7 @@ int cc_binary_string(struct zint_symbol *symbol, const char source[], char binar
     }
 
     if (strlen(binary_string) > 11805) { /* (2361 * 5) */
-        strcpy(symbol->errtxt, "Input too long");
+        strcpy(symbol->errtxt, "Input too long (D43)");
         return ZINT_ERROR_TOO_LONG;
     }
 
@@ -1797,7 +1797,7 @@ int cc_binary_string(struct zint_symbol *symbol, const char source[], char binar
     }
     
     if (target_bitsize == 0) {
-        strcpy(symbol->errtxt, "Input too long for selected 2d component");
+        strcpy(symbol->errtxt, "Input too long for selected 2d component (D44)");
         return ZINT_ERROR_TOO_LONG;
     }
 
@@ -1914,19 +1914,19 @@ int composite(struct zint_symbol *symbol, unsigned char source[], int length) {
     error_number = 0;
     pri_len = strlen(symbol->primary);
     if (pri_len == 0) {
-        strcpy(symbol->errtxt, "No primary (linear) message in 2D composite");
+        strcpy(symbol->errtxt, "No primary (linear) message in 2D composite (D45)");
         return ZINT_ERROR_INVALID_OPTION;
     }
 
     if (length > 2990) {
-        strcpy(symbol->errtxt, "2D component input data too long");
+        strcpy(symbol->errtxt, "2D component input data too long (D46)");
         return ZINT_ERROR_TOO_LONG;
     }
     
     cc_mode = symbol->option_1;
     if ((cc_mode == 3) && (symbol->symbology != BARCODE_EAN128_CC)) {
         /* CC-C can only be used with a GS1-128 linear part */
-        strcpy(symbol->errtxt, "Invalid mode (CC-C only valid with GS1-128 linear component)");
+        strcpy(symbol->errtxt, "Invalid mode (CC-C only valid with GS1-128 linear component) (D47)");
         return ZINT_ERROR_INVALID_OPTION;
     }
 
@@ -1939,7 +1939,7 @@ int composite(struct zint_symbol *symbol, unsigned char source[], int length) {
         /* Do a test run of encoding the linear component to establish its width */
         linear_width = linear_dummy_run((unsigned char *) symbol->primary, pri_len);
         if (linear_width == 0) {
-            strcpy(symbol->errtxt, "Invalid data");
+            strcpy(symbol->errtxt, "Invalid data (D48)");
             return ZINT_ERROR_INVALID_DATA;
         }
     }
@@ -2065,7 +2065,7 @@ int composite(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     if (error_number != 0) {
         strcpy(symbol->errtxt, linear->errtxt);
-        strcat(symbol->errtxt, " in linear component");
+        strcat(symbol->errtxt, " in linear component ");
         ZBarcode_Delete(linear);
         return error_number;
     }

@@ -67,12 +67,12 @@ int matrix_two_of_five(struct zint_symbol *symbol, unsigned char source[], int l
     error_number = 0;
 
     if (length > 80) {
-        strcpy(symbol->errtxt, "Input too long");
+        strcpy(symbol->errtxt, "Input too long (C01)");
         return ZINT_ERROR_TOO_LONG;
     }
     error_number = is_sane(NEON, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "Invalid characters in data");
+        strcpy(symbol->errtxt, "Invalid characters in data (C02)");
         return error_number;
     }
 
@@ -100,12 +100,12 @@ int industrial_two_of_five(struct zint_symbol *symbol, unsigned char source[], i
     error_number = 0;
 
     if (length > 45) {
-        strcpy(symbol->errtxt, "Input too long");
+        strcpy(symbol->errtxt, "Input too long (C03)");
         return ZINT_ERROR_TOO_LONG;
     }
     error_number = is_sane(NEON, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "Invalid character in data");
+        strcpy(symbol->errtxt, "Invalid character in data (C04)");
         return error_number;
     }
 
@@ -132,12 +132,12 @@ int iata_two_of_five(struct zint_symbol *symbol, unsigned char source[], int len
     error_number = 0;
 
     if (length > 45) {
-        strcpy(symbol->errtxt, "Input too long");
+        strcpy(symbol->errtxt, "Input too long (C05)");
         return ZINT_ERROR_TOO_LONG;
     }
     error_number = is_sane(NEON, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "Invalid characters in data");
+        strcpy(symbol->errtxt, "Invalid characters in data (C06)");
         return error_number;
     }
 
@@ -165,12 +165,12 @@ int logic_two_of_five(struct zint_symbol *symbol, unsigned char source[], int le
     error_number = 0;
 
     if (length > 80) {
-        strcpy(symbol->errtxt, "Input too long");
+        strcpy(symbol->errtxt, "Input too long (C07)");
         return ZINT_ERROR_TOO_LONG;
     }
     error_number = is_sane(NEON, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "Invalid characters in data");
+        strcpy(symbol->errtxt, "Invalid characters in data (C08)");
         return error_number;
     }
 
@@ -203,12 +203,12 @@ int interleaved_two_of_five(struct zint_symbol *symbol, const unsigned char sour
     error_number = 0;
 
     if (length > 89) {
-        strcpy(symbol->errtxt, "Input too long");
+        strcpy(symbol->errtxt, "Input too long (C09)");
         return ZINT_ERROR_TOO_LONG;
     }
     error_number = is_sane(NEON, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "Invalid characters in data");
+        strcpy(symbol->errtxt, "Invalid characters in data (C0A)");
         return error_number;
     }
 
@@ -263,13 +263,13 @@ int itf14(struct zint_symbol *symbol, unsigned char source[], int length) {
     count = 0;
 
     if (length > 13) {
-        strcpy(symbol->errtxt, "Input too long");
+        strcpy(symbol->errtxt, "Input too long (C0B)");
         return ZINT_ERROR_TOO_LONG;
     }
 
     error_number = is_sane(NEON, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "Invalid character in data");
+        strcpy(symbol->errtxt, "Invalid character in data (C0D)");
         return error_number;
     }
 
@@ -305,12 +305,12 @@ int dpleit(struct zint_symbol *symbol, unsigned char source[], int length) {
     error_number = 0;
     count = 0;
     if (length > 13) {
-        strcpy(symbol->errtxt, "Input wrong length");
+        strcpy(symbol->errtxt, "Input wrong length (C0E)");
         return ZINT_ERROR_TOO_LONG;
     }
     error_number = is_sane(NEON, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "Invalid characters in data");
+        strcpy(symbol->errtxt, "Invalid characters in data (C0D)");
         return error_number;
     }
 
@@ -341,12 +341,12 @@ int dpident(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     count = 0;
     if (length > 11) {
-        strcpy(symbol->errtxt, "Input wrong length");
+        strcpy(symbol->errtxt, "Input wrong length (C0E)");
         return ZINT_ERROR_TOO_LONG;
     }
     error_number = is_sane(NEON, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "Invalid characters in data");
+        strcpy(symbol->errtxt, "Invalid characters in data (C0F)");
         return error_number;
     }
 

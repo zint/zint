@@ -286,7 +286,7 @@ int gif_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
         gif_file = stdout;
     } else {
         if (!(gif_file = fopen(symbol->outfile, "wb"))) {
-            strcpy(symbol->errtxt, "Can't open output file");
+            strcpy(symbol->errtxt, "Can't open output file (F10)");
             return ZINT_ERROR_FILE_ACCESS;
         }
     }

@@ -138,16 +138,16 @@ int australia_post(struct zint_symbol *symbol, unsigned char source[], int lengt
                 error_number = is_sane(NEON, source, length);
                 break;
             default:
-                strcpy(symbol->errtxt, "Auspost input is wrong length");
+                strcpy(symbol->errtxt, "Auspost input is wrong length (D01)");
                 return ZINT_ERROR_TOO_LONG;
         }
         if (error_number == ZINT_ERROR_INVALID_DATA) {
-            strcpy(symbol->errtxt, "Invalid characters in data");
+            strcpy(symbol->errtxt, "Invalid characters in data (D02)");
             return error_number;
         }
     } else {
         if (length > 8) {
-            strcpy(symbol->errtxt, "Auspost input is too long");
+            strcpy(symbol->errtxt, "Auspost input is too long (D03)");
             return ZINT_ERROR_TOO_LONG;
         }
         switch (symbol->symbology) {
@@ -169,7 +169,7 @@ int australia_post(struct zint_symbol *symbol, unsigned char source[], int lengt
     h = strlen(localstr);
     error_number = is_sane(GDSET, (unsigned char *) localstr, h);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "Invalid characters in data");
+        strcpy(symbol->errtxt, "Invalid characters in data (D04)");
         return error_number;
     }
 
@@ -178,7 +178,7 @@ int australia_post(struct zint_symbol *symbol, unsigned char source[], int lengt
     dpid[8] = '\0';
     error_number = is_sane(NEON, (unsigned char *) dpid, strlen(dpid));
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "Invalid characters in DPID");
+        strcpy(symbol->errtxt, "Invalid characters in DPID (D05)");
         return error_number;
     }
 

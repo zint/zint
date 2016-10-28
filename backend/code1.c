@@ -1026,7 +1026,7 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
 
         if (tp > 1480) {
             /* Data is too large for symbol */
-            strcpy(symbol->errtxt, "Input data too long");
+            strcpy(symbol->errtxt, "Input data too long (E10)");
             return 0;
         }
     } while (sp < length);
@@ -1171,7 +1171,7 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
     /* Re-check length of data */
     if (tp > 1480) {
         /* Data is too large for symbol */
-        strcpy(symbol->errtxt, "Input data too long");
+        strcpy(symbol->errtxt, "Input data too long (E11)");
         return 0;
     }
     /* 
@@ -1204,7 +1204,7 @@ int code_one(struct zint_symbol *symbol, unsigned char source[], int length) {
     int sub_version = 0;
 
     if ((symbol->option_2 < 0) || (symbol->option_2 > 10)) {
-        strcpy(symbol->errtxt, "Invalid symbol size");
+        strcpy(symbol->errtxt, "Invalid symbol size (E12)");
         return ZINT_ERROR_INVALID_OPTION;
     }
 
@@ -1217,11 +1217,11 @@ int code_one(struct zint_symbol *symbol, unsigned char source[], int length) {
         int block_width;
 
         if (length > 18) {
-            strcpy(symbol->errtxt, "Input data too long");
+            strcpy(symbol->errtxt, "Input data too long (E13)");
             return ZINT_ERROR_TOO_LONG;
         }
         if (is_sane(NEON, source, length) == ZINT_ERROR_INVALID_DATA) {
-            strcpy(symbol->errtxt, "Invalid input data (Version S encodes numeric input only)");
+            strcpy(symbol->errtxt, "Invalid input data (Version S encodes numeric input only) (E14)");
             return ZINT_ERROR_INVALID_DATA;
         }
 
@@ -1331,7 +1331,7 @@ int code_one(struct zint_symbol *symbol, unsigned char source[], int length) {
         }
 
         if (data_length > 38) {
-            strcpy(symbol->errtxt, "Input data too long");
+            strcpy(symbol->errtxt, "Input data too long (E15)");
             return ZINT_ERROR_TOO_LONG;
         }
 

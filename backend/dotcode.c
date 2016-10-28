@@ -1090,7 +1090,7 @@ int dotcode(struct zint_symbol *symbol, const unsigned char source[], int length
     }
 
     if ((height > 200) || (width > 200)) {
-        strcpy(symbol->errtxt, "Specified symbol size is too large");
+        strcpy(symbol->errtxt, "Specified symbol size is too large (E20)");
         return ZINT_ERROR_INVALID_OPTION;
     }
 
@@ -1124,7 +1124,7 @@ int dotcode(struct zint_symbol *symbol, const unsigned char source[], int length
     if (data_length > 450) {
         // Larger data sets than this cause rsencode() to throw SIGSEGV
         // This should probably be fixed by somebody who understands what rsencode() does...
-        strcpy(symbol->errtxt, "Input too long");
+        strcpy(symbol->errtxt, "Input too long (E21)");
         return ZINT_ERROR_TOO_LONG;
     }
 

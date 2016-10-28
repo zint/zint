@@ -273,7 +273,7 @@ int batch_process(struct zint_symbol *symbol, char *filename, int mirror_mode, c
         if (strlen(format_string) < 127) {
             strcpy(format_string, symbol->outfile);
         } else {
-            strcpy(symbol->errtxt, "Format string too long");
+            strcpy(symbol->errtxt, "Format string too long (A01)");
             return ZINT_ERROR_INVALID_DATA;
         }
     }
@@ -284,7 +284,7 @@ int batch_process(struct zint_symbol *symbol, char *filename, int mirror_mode, c
     } else {
         file = fopen(filename, "rb");
         if (!file) {
-            strcpy(symbol->errtxt, "Unable to read input file");
+            strcpy(symbol->errtxt, "Unable to read input file (A02)");
             return ZINT_ERROR_INVALID_DATA;
         }
     }
@@ -407,7 +407,7 @@ int batch_process(struct zint_symbol *symbol, char *filename, int mirror_mode, c
             posn++;
         }
         if (posn > 7090) {
-            fprintf(stderr, "On line %d: Input data too long\n", line_count);
+            fprintf(stderr, "On line %d: Input data too long (A03)\n", line_count);
             fflush(stderr);
             do {
                 character = fgetc(file);
@@ -416,7 +416,7 @@ int batch_process(struct zint_symbol *symbol, char *filename, int mirror_mode, c
     } while ((!feof(file)) && (line_count < 2000000000));
 
     if (character != '\n') {
-        fprintf(stderr, "Warning: No newline at end of file\n");
+        fprintf(stderr, "Warning: No newline at end of file (A04)\n");
         fflush(stderr);
     }
 
@@ -561,7 +561,7 @@ int main(int argc, char **argv) {
                     my_symbol->scale = (float) (atof(optarg));
                     if (my_symbol->scale < 0.01) {
                         /* Zero and negative values are not permitted */
-                        fprintf(stderr, "Invalid scale value\n");
+                        fprintf(stderr, "Invalid scale value (A05)\n");
                         fflush(stderr);
                         my_symbol->scale = 1.0;
                     }
@@ -570,7 +570,7 @@ int main(int argc, char **argv) {
                     my_symbol->dot_size = (float) (atof(optarg));
                     if (my_symbol->dot_size < 0.01) {
                         /* Zero and negative values are not permitted */
-                        fprintf(stderr, "Invalid dot radius value\n");
+                        fprintf(stderr, "Invalid dot radius value (A06)\n");
                         fflush(stderr);
                         my_symbol->dot_size = 4.0 / 5.0;
                     }
@@ -578,26 +578,26 @@ int main(int argc, char **argv) {
                 if (!strcmp(long_options[option_index].name, "border")) {
                     error_number = validator(NESET, optarg);
                     if (error_number == ZINT_ERROR_INVALID_DATA) {
-                        fprintf(stderr, "Invalid border width\n");
+                        fprintf(stderr, "Invalid border width (A07)\n");
                         exit(1);
                     }
                     if ((atoi(optarg) >= 0) && (atoi(optarg) <= 1000)) {
                         my_symbol->border_width = atoi(optarg);
                     } else {
-                        fprintf(stderr, "Border width out of range\n");
+                        fprintf(stderr, "Border width out of range (A08)\n");
                         fflush(stderr);
                     }
                 }
                 if (!strcmp(long_options[option_index].name, "height")) {
                     error_number = validator(NESET, optarg);
                     if (error_number == ZINT_ERROR_INVALID_DATA) {
-                        fprintf(stderr, "Invalid symbol height\n");
+                        fprintf(stderr, "Invalid symbol height (A09)\n");
                         exit(1);
                     }
                     if ((atoi(optarg) >= 1) && (atoi(optarg) <= 1000)) {
                         my_symbol->height = atoi(optarg);
                     } else {
-                        fprintf(stderr, "Symbol height out of range\n");
+                        fprintf(stderr, "Symbol height out of range (A10)\n");
                         fflush(stderr);
                     }
                 }
@@ -606,7 +606,7 @@ int main(int argc, char **argv) {
                     if ((atoi(optarg) >= 1) && (atoi(optarg) <= 66)) {
                         my_symbol->option_2 = atoi(optarg);
                     } else {
-                        fprintf(stderr, "Number of columns out of range\n");
+                        fprintf(stderr, "Number of columns out of range (A11)\n");
                         fflush(stderr);
                     }
                 }
@@ -614,7 +614,7 @@ int main(int argc, char **argv) {
                     if ((atoi(optarg) >= 1) && (atoi(optarg) <= 44)) {
                         my_symbol->option_1 = atoi(optarg);
                     } else {
-                        fprintf(stderr, "Number of rows out of range\n");
+                        fprintf(stderr, "Number of rows out of range (A12)\n");
                         fflush(stderr);
                     }
                 }
@@ -622,7 +622,7 @@ int main(int argc, char **argv) {
                     if ((atoi(optarg) >= 1) && (atoi(optarg) <= 84)) {
                         my_symbol->option_2 = atoi(optarg);
                     } else {
-                        fprintf(stderr, "Invalid Version\n");
+                        fprintf(stderr, "Invalid Version (A13)\n");
                         fflush(stderr);
                     }
                 }
@@ -630,7 +630,7 @@ int main(int argc, char **argv) {
                     if ((atoi(optarg) >= 1) && (atoi(optarg) <= 8)) {
                         my_symbol->option_1 = atoi(optarg);
                     } else {
-                        fprintf(stderr, "ECC level out of range\n");
+                        fprintf(stderr, "ECC level out of range (A14)\n");
                         fflush(stderr);
                     }
                 }
@@ -638,7 +638,7 @@ int main(int argc, char **argv) {
                     if (strlen(optarg) <= 90) {
                         strcpy(my_symbol->primary, optarg);
                     } else {
-                        fprintf(stderr, "Primary data string too long");
+                        fprintf(stderr, "Primary data string too long (A15)");
                         fflush(stderr);
                     }
                 }
@@ -646,7 +646,7 @@ int main(int argc, char **argv) {
                     if ((optarg[0] >= '0') && (optarg[0] <= '6')) {
                         my_symbol->option_1 = optarg[0] - '0';
                     } else {
-                        fprintf(stderr, "Invalid mode\n");
+                        fprintf(stderr, "Invalid mode (A16)\n");
                         fflush(stderr);
                     }
                 }
@@ -654,7 +654,7 @@ int main(int argc, char **argv) {
                     /* Only certain inputs allowed */
                     error_number = validator(NESET, optarg);
                     if (error_number == ZINT_ERROR_INVALID_DATA) {
-                        fprintf(stderr, "Invalid rotation parameter\n");
+                        fprintf(stderr, "Invalid rotation parameter (A17)\n");
                         exit(1);
                     }
                     switch (atoi(optarg)) {
@@ -684,7 +684,7 @@ int main(int argc, char **argv) {
                     if ((atoi(optarg) >= 0) && (atoi(optarg) <= 30)) {
                         my_symbol->eci = atoi(optarg);
                     } else {
-                        fprintf(stderr, "Invalid ECI code\n");
+                        fprintf(stderr, "Invalid ECI code (A18)\n");
                         fflush(stderr);
                     }
                 }
@@ -705,7 +705,7 @@ int main(int argc, char **argv) {
             case 'b':
                 error_number = validator(NESET, optarg);
                 if (error_number == ZINT_ERROR_INVALID_DATA) {
-                    fprintf(stderr, "Invalid barcode type\n");
+                    fprintf(stderr, "Invalid barcode type (A19)\n");
                     exit(1);
                 }
                 my_symbol->symbology = atoi(optarg);
@@ -714,13 +714,13 @@ int main(int argc, char **argv) {
             case 'w':
                 error_number = validator(NESET, optarg);
                 if (error_number == ZINT_ERROR_INVALID_DATA) {
-                    fprintf(stderr, "Invalid whitespace value\n");
+                    fprintf(stderr, "Invalid whitespace value (A20)\n");
                     exit(1);
                 }
                 if ((atoi(optarg) >= 0) && (atoi(optarg) <= 1000)) {
                     my_symbol->whitespace_width = atoi(optarg);
                 } else {
-                    fprintf(stderr, "Whitespace value out of range");
+                    fprintf(stderr, "Whitespace value out of range (A21)");
                     fflush(stderr);
                 }
                 break;
@@ -739,7 +739,7 @@ int main(int argc, char **argv) {
                         return 1;
                     }
                 } else {
-                    fprintf(stderr, "Cannot define data in batch mode");
+                    fprintf(stderr, "Cannot define data in batch mode (A22)");
                     fflush(stderr);
                 }
                 break;
@@ -783,7 +783,7 @@ int main(int argc, char **argv) {
                 break;
 
             default:
-                fprintf(stderr, "?? getopt error 0%o\n", c);
+                fprintf(stderr, "?? getopt error 0%o (A23)\n", c);
                 fflush(stderr);
         }
     }
@@ -797,7 +797,7 @@ int main(int argc, char **argv) {
     }
 
     if (generated == 0) {
-        fprintf(stderr, "error: No data received, no symbol generated\n");
+        fprintf(stderr, "error: No data received, no symbol generated (A24)\n");
         fflush(stderr);
     }
 

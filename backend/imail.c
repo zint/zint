@@ -271,12 +271,12 @@ int imail(struct zint_symbol *symbol, unsigned char source[], int length) {
     error_number = 0;
 
     if (length > 32) {
-        strcpy(symbol->errtxt, "Input too long");
+        strcpy(symbol->errtxt, "Input too long (D50)");
         return ZINT_ERROR_TOO_LONG;
     }
     error_number = is_sane(SODIUM, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "Invalid characters in data");
+        strcpy(symbol->errtxt, "Invalid characters in data (D51)");
         return error_number;
     }
 
@@ -311,11 +311,11 @@ int imail(struct zint_symbol *symbol, unsigned char source[], int length) {
     }
 
     if (strlen(tracker) != 20) {
-        strcpy(symbol->errtxt, "Invalid length tracking code");
+        strcpy(symbol->errtxt, "Invalid length tracking code (D52)");
         return ZINT_ERROR_INVALID_DATA;
     }
     if (strlen(zip) > 11) {
-        strcpy(symbol->errtxt, "Invalid ZIP code");
+        strcpy(symbol->errtxt, "Invalid ZIP code (D53)");
         return ZINT_ERROR_INVALID_DATA;
     }
 
