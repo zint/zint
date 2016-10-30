@@ -35,7 +35,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include <malloc.h>
 #include "common.h"
 
 #define SSET	"0123456789ABCDEF"
