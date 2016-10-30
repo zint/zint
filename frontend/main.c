@@ -46,7 +46,7 @@ void types(void) {
             " 8: Code 39           57: Maxicode                102: HIBC Data Matrix\n"
             " 9: Extended Code 39  58: QR Code                 104: HIBC QR Code\n"
             "13: EAN               60: Code 128-B              106: HIBC PDF417\n"
-            "14: EAN + Check       63: AP Standard Customer    108: HIBC MicroPDF417"
+            "14: EAN + Check       63: AP Standard Customer    108: HIBC MicroPDF417\n"
             "16: GS1-128           66: AP Reply Paid           110: HIBC Codablock-F\n"
             "18: Codabar           67: AP Routing              112: HIBC Aztec Code\n"
             "20: Code 128          68: AP Redirection          115: DotCode\n"
