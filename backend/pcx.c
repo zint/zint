@@ -36,7 +36,6 @@
 #include "common.h"
 #include "pcx.h"        /* PCX header structure */
 #include <math.h>
-#include <malloc.h>
 #ifdef _MSC_VER
 #include <io.h>
 #include <fcntl.h>
