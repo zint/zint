@@ -441,7 +441,7 @@ int main(int argc, char **argv) {
     my_symbol->input_mode = UNICODE_MODE;
     batch_mode = 0;
     mirror_mode = 0;
-    strcpy(filetype, "png");
+    filetype[0] = '\0';
 
     if (argc == 1) {
         usage();
@@ -727,6 +727,10 @@ int main(int argc, char **argv) {
 
             case 'd': /* we have some data! */
                 if (batch_mode == 0) {
+                    if (filetype[0] != '\0') {
+                        strcat(my_symbol->outfile, ".");
+                        strcat(my_symbol->outfile, filetype);
+                    }
                     error_number = escape_char_process(my_symbol, (unsigned char*) optarg, strlen(optarg));
                     if (error_number == 0) {
                         error_number = ZBarcode_Print(my_symbol, rotate_angle);
@@ -759,6 +763,9 @@ int main(int argc, char **argv) {
                     }
                 } else {
                     /* Take each line of text as a separate data set */
+                    if (filetype[0] == '\0') {
+                        strcpy(filetype, "png");
+                    }
                     error_number = batch_process(my_symbol, optarg, mirror_mode, filetype);
                     generated = 1;
                     if (error_number != 0) {
