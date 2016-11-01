@@ -65,7 +65,6 @@ HEADERS +=  ../backend/aztec.h \
             ../backend/hanxin.h \
             ../backend/large.h \
             ../backend/maxicode.h \
-            ../backend/maxihex.h \
             ../backend/pcx.h \
             ../backend/pdf417.h \
             ../backend/reedsol.h \
