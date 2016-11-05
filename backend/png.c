@@ -34,6 +34,7 @@
 #ifdef _MSC_VER
 #include <fcntl.h>
 #include <io.h>
+#include <malloc.h>
 #endif
 #include <stdlib.h>
 #include <string.h>
