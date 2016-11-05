@@ -39,6 +39,7 @@
 #ifdef _MSC_VER
 #include <io.h>
 #include <fcntl.h>
+#include <malloc.h>
 #endif
 
 #define SSET	"0123456789ABCDEF"

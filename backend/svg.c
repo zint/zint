@@ -35,6 +35,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#ifdef _MSC_VER
+#include <malloc.h>
+#endif
+
 #include "common.h"
 
 #define SSET	"0123456789ABCDEF"
