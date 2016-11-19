@@ -694,26 +694,24 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
                 next_mode = DM_ASCII;
                 if (debug) printf("ASC ");
             } else {
-                /* Note process_buffer uses special values 41 - 43 to distinguish
-                   Shift 1, Shift 2 and Shift 3 from characters [/0/x01/x02!"#'ab] */
                 if (source[sp] > 127) {
                     process_buffer[*process_p] = 1;
                     (*process_p)++;
                     process_buffer[*process_p] = 30;
                     (*process_p)++; /* Upper Shift */
-                    shift_set = 40 + c40_shift[source[sp] - 128];
+                    shift_set = c40_shift[source[sp] - 128];
                     value = c40_value[source[sp] - 128];
                 } else {
-                    shift_set = 40 + c40_shift[source[sp]];
+                    shift_set = c40_shift[source[sp]];
                     value = c40_value[source[sp]];
                 }
 
                 if (gs1 && (source[sp] == '[')) {
-                    shift_set = 42;
+                    shift_set = 2;
                     value = 27; /* FNC1 */
                 }
 
-                if (shift_set != 40) {
+                if (shift_set != 0) {
                     process_buffer[*process_p] = shift_set - 1;
                     (*process_p)++;
                 }
@@ -723,7 +721,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
                 if (*process_p >= 3) {
                     int iv;
 
-                    iv = (1600 * (process_buffer[0] % 40)) + (40 * (process_buffer[1] % 40)) + (process_buffer[2] % 40) + 1;
+                    iv = (1600 * process_buffer[0]) + (40 * process_buffer[1]) + (process_buffer[2]) + 1;
                     target[tp] = (unsigned char) (iv / 256);
                     tp++;
                     target[tp] = iv % 256;
@@ -759,26 +757,24 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
                 next_mode = DM_ASCII;
                 if (debug) printf("ASC ");
             } else {
-                /* Note process_buffer uses special values 41 - 43 to distinguish
-                   Shift 1, Shift 2 and Shift 3 from characters [/0/x01/x02!"#'AB] */
                 if (source[sp] > 127) {
                     process_buffer[*process_p] = 1;
                     (*process_p)++;
                     process_buffer[*process_p] = 30;
                     (*process_p)++; /* Upper Shift */
-                    shift_set = 40 + text_shift[source[sp] - 128];
+                    shift_set = text_shift[source[sp] - 128];
                     value = text_value[source[sp] - 128];
                 } else {
-                    shift_set = 40 + text_shift[source[sp]];
+                    shift_set = text_shift[source[sp]];
                     value = text_value[source[sp]];
                 }
 
                 if (gs1 && (source[sp] == '[')) {
-                    shift_set = 42;
+                    shift_set = 2;
                     value = 27; /* FNC1 */
                 }
 
-                if (shift_set != 40) {
+                if (shift_set != 0) {
                     process_buffer[*process_p] = shift_set - 1;
                     (*process_p)++;
                 }
@@ -788,7 +784,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
                 if (*process_p >= 3) {
                     int iv;
 
-                    iv = (1600 * (process_buffer[0] % 40)) + (40 * (process_buffer[1] % 40)) + (process_buffer[2] % 40) + 1;
+                    iv = (1600 * process_buffer[0]) + (40 * process_buffer[1]) + (process_buffer[2]) + 1;
                     target[tp] = (unsigned char) (iv / 256);
                     tp++;
                     target[tp] = iv % 256;
@@ -1002,7 +998,7 @@ static int dm200encode_remainder(unsigned char target[], int target_length, cons
                 if (process_p == 2) // 2 data characters left to encode.
                 {
                     // Pad with shift 1 value (0) and encode as double.
-                    int intValue = (1600 * (process_buffer[0] % 40)) + (40 * (process_buffer[1] % 40)) + 1; // ie (0 + 1).
+                    int intValue = (1600 * process_buffer[0]) + (40 * process_buffer[1]) + 1; // ie (0 + 1).
                     target[target_length] = (unsigned char) (intValue / 256);
                     target_length++;
                     target[target_length] = (unsigned char) (intValue % 256);
@@ -1013,8 +1009,7 @@ static int dm200encode_remainder(unsigned char target[], int target_length, cons
             if (symbols_left > process_p) {
                 target[target_length] = (254);
                 target_length++; // Unlatch and encode remaining data in ascii.
-                if (process_p == 1 || (process_p == 2 && process_buffer[0] > 40)) // Check for a shift value.
-                {
+                if (process_p == 1) {
                     target[target_length] = source[inputlen - 1] + 1;
                     target_length++;
                 } else if (process_p == 2) {
