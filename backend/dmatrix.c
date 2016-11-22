@@ -987,35 +987,26 @@ static int dm200encode_remainder(unsigned char target[], int target_length, cons
     switch (last_mode) {
         case DM_C40:
         case DM_TEXT:
-            if (symbols_left == process_p) // No unlatch required!
+            if (process_p == 1) // 1 data character left to encode.
             {
-                if (process_p == 1) // 1 data character left to encode.
-                {
-                    target[target_length] = source[inputlen - 1] + 1;
-                    target_length++;
+                if (symbols_left > 1) {
+                    target[target_length] = 254;
+                    target_length++; // Unlatch and encode remaining data in ascii.
                 }
-
-                if (process_p == 2) // 2 data characters left to encode.
-                {
-                    // Pad with shift 1 value (0) and encode as double.
-                    int intValue = (1600 * process_buffer[0]) + (40 * process_buffer[1]) + 1; // ie (0 + 1).
-                    target[target_length] = (unsigned char) (intValue / 256);
-                    target_length++;
-                    target[target_length] = (unsigned char) (intValue % 256);
-                    target_length++;
-                }
+                target[target_length] = source[inputlen - 1] + 1;
+                target_length++;
             }
 
-            if (symbols_left > process_p) {
-                target[target_length] = (254);
-                target_length++; // Unlatch and encode remaining data in ascii.
-                if (process_p == 1) {
-                    target[target_length] = source[inputlen - 1] + 1;
-                    target_length++;
-                } else if (process_p == 2) {
-                    target[target_length] = source[inputlen - 2] + 1;
-                    target_length++;
-                    target[target_length] = source[inputlen - 1] + 1;
+            if (process_p == 2) // 2 data characters left to encode.
+            {
+                // Pad with shift 1 value (0) and encode as double.
+                int intValue = (1600 * process_buffer[0]) + (40 * process_buffer[1]) + 1; // ie (0 + 1).
+                target[target_length] = (unsigned char) (intValue / 256);
+                target_length++;
+                target[target_length] = (unsigned char) (intValue % 256);
+                target_length++;
+                if (symbols_left > 2) {
+                    target[target_length] = 254; // Unlatch
                     target_length++;
                 }
             }
