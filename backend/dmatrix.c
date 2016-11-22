@@ -944,7 +944,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
                 /* start of binary data */
                 int binary_count; /* length of b256 data */
 
-                for (binary_count = 0; binary[binary_count + i] == 'b'; binary_count++);
+                for (binary_count = 0; binary_count + i < tp && binary[binary_count + i] == 'b'; binary_count++);
 
                 if (binary_count <= 249) {
                     dminsert(binary, i, 'b');
@@ -995,9 +995,7 @@ static int dm200encode_remainder(unsigned char target[], int target_length, cons
                 }
                 target[target_length] = source[inputlen - 1] + 1;
                 target_length++;
-            }
-
-            if (process_p == 2) // 2 data characters left to encode.
+            } else if (process_p == 2) // 2 data characters left to encode.
             {
                 // Pad with shift 1 value (0) and encode as double.
                 int intValue = (1600 * process_buffer[0]) + (40 * process_buffer[1]) + 1; // ie (0 + 1).
@@ -1006,6 +1004,11 @@ static int dm200encode_remainder(unsigned char target[], int target_length, cons
                 target[target_length] = (unsigned char) (intValue % 256);
                 target_length++;
                 if (symbols_left > 2) {
+                    target[target_length] = 254; // Unlatch
+                    target_length++;
+                }
+            } else {
+                if (symbols_left > 0) {
                     target[target_length] = 254; // Unlatch
                     target_length++;
                 }
