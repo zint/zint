@@ -1193,6 +1193,11 @@ int data_matrix_200(struct zint_symbol *symbol, const unsigned char source[], co
     // Now we know the symbol size we can handle the remaining data in the process buffer.
     symbols_left = matrixbytes[symbolsize] - binlen;
     binlen = dm200encode_remainder(binary, binlen, source, inputlen, last_mode, process_buffer, process_p, symbols_left);
+    
+    if (binlen > matrixbytes[symbolsize]) {
+        strcpy(symbol->errtxt, "Data too long to fit in symbol (E12A)");
+        return ZINT_ERROR_TOO_LONG;
+    }
 
     H = matrixH[symbolsize];
     W = matrixW[symbolsize];
