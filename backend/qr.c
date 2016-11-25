@@ -2128,7 +2128,7 @@ void micro_qr_m1(char binary_data[]) {
     data_blocks[2] = 0;
     for (j = 0; j < 4; j++) {
         if (binary_data[16 + j] == '1') {
-            data_blocks[2] += 0x08 >> j;
+            data_blocks[2] += 0x80 >> j;
         }
     }
 
@@ -2302,33 +2302,19 @@ void micro_qr_m3(char binary_data[], int ecc_mode) {
 
     if (ecc_mode == LEVEL_L) {
         data_blocks[10] = 0;
-        if (binary_data[80] == '1') {
-            data_blocks[10] += 0x08;
-        }
-        if (binary_data[81] == '1') {
-            data_blocks[10] += 0x04;
-        }
-        if (binary_data[82] == '1') {
-            data_blocks[10] += 0x02;
-        }
-        if (binary_data[83] == '1') {
-            data_blocks[10] += 0x01;
+        for (j = 0; j < 4; j++) {
+            if (binary_data[80 + j] == '1') {
+                data_blocks[10] += 0x80 >> j;
+            }
         }
     }
 
     if (ecc_mode == LEVEL_M) {
         data_blocks[8] = 0;
-        if (binary_data[64] == '1') {
-            data_blocks[8] += 0x08;
-        }
-        if (binary_data[65] == '1') {
-            data_blocks[8] += 0x04;
-        }
-        if (binary_data[66] == '1') {
-            data_blocks[8] += 0x02;
-        }
-        if (binary_data[67] == '1') {
-            data_blocks[8] += 0x01;
+        for (j = 0; j < 4; j++) {
+            if (binary_data[64 + j] == '1') {
+                data_blocks[8] += 0x80 >> j;
+            }
         }
     }
 
