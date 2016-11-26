@@ -304,6 +304,7 @@ static int p_r_6_2_1(const unsigned char inputData[], const int position, const 
 /* 'look ahead test' from Annex P */
 static int look_ahead_test(const unsigned char inputData[], const int sourcelen, const int position, const int current_mode, const int gs1) {
     float ascii_count, c40_count, text_count, x12_count, edf_count, b256_count, best_count;
+    const float stiction = (1.0F / 24.0F); // smallest change to act on, to get around floating point inaccuracies
     int sp, best_scheme;
 
     best_scheme = DM_NULL;
@@ -353,27 +354,27 @@ static int look_ahead_test(const unsigned char inputData[], const int sourcelen,
             best_count = c40_count;
             best_scheme = DM_C40; // (k)(7)
 
-            if (x12_count < best_count) {
+            if (x12_count < (best_count - stiction)) {
                 best_count = x12_count;
                 best_scheme = DM_X12; // (k)(6)
             }
 
-            if (text_count < best_count) {
+            if (text_count < (best_count - stiction)) {
                 best_count = text_count;
                 best_scheme = DM_TEXT; // (k)(5)
             }
 
-            if (edf_count < best_count) {
+            if (edf_count < (best_count - stiction)) {
                 best_count = edf_count;
                 best_scheme = DM_EDIFACT; // (k)(4)
             }
 
-            if (b256_count < best_count) {
+            if (b256_count < (best_count - stiction)) {
                 best_count = b256_count;
                 best_scheme = DM_BASE256; // (k)(3)
             }
 
-            if (ascii_count <= best_count) {
+            if (ascii_count <= (best_count + stiction)) {
                 best_scheme = DM_ASCII; // (k)(2)
             }
         } else {
@@ -453,16 +454,17 @@ static int look_ahead_test(const unsigned char inputData[], const int sourcelen,
             /* 4 data characters processed ... step (r) */
 
             /* step (r)(6) */
-            if (((c40_count + 1.0F) < ascii_count) &&
-                    ((c40_count + 1.0F) < b256_count) &&
-                    ((c40_count + 1.0F) < edf_count) &&
-                    ((c40_count + 1.0F) < text_count)) {
+            if (((c40_count + 1.0F) < (ascii_count - stiction)) &&
+                    ((c40_count + 1.0F) < (b256_count - stiction)) &&
+                    ((c40_count + 1.0F) < (edf_count - stiction)) &&
+                    ((c40_count + 1.0F) < (text_count - stiction))) {
 
-                if (c40_count < x12_count) {
+                if (c40_count < (x12_count - stiction)) {
                     best_scheme = DM_C40;
                 }
 
-                if (c40_count == x12_count) {
+                if ((c40_count >= (x12_count - stiction))
+                        && (c40_count <= (x12_count + stiction))) {
                     if (p_r_6_2_1(inputData, sp, sourcelen) == 1) {
                         // Test (r)(6)(ii)(i)
                         best_scheme = DM_X12;
@@ -473,47 +475,47 @@ static int look_ahead_test(const unsigned char inputData[], const int sourcelen,
             }
 
             /* step (r)(5) */
-            if (((x12_count + 1.0F) < ascii_count) &&
-                    ((x12_count + 1.0F) < b256_count) &&
-                    ((x12_count + 1.0F) < edf_count) &&
-                    ((x12_count + 1.0F) < text_count) &&
-                    ((x12_count + 1.0F) < c40_count)) {
+            if (((x12_count + 1.0F) < (ascii_count - stiction)) &&
+                    ((x12_count + 1.0F) < (b256_count - stiction)) &&
+                    ((x12_count + 1.0F) < (edf_count - stiction)) &&
+                    ((x12_count + 1.0F) < (text_count - stiction)) &&
+                    ((x12_count + 1.0F) < (c40_count - stiction))) {
                 best_scheme = DM_X12;
             }
 
             /* step (r)(4) */
-            if (((text_count + 1.0F) < ascii_count) &&
-                    ((text_count + 1.0F) < b256_count) &&
-                    ((text_count + 1.0F) < edf_count) &&
-                    ((text_count + 1.0F) < x12_count) &&
-                    ((text_count + 1.0F) < c40_count)) {
+            if (((text_count + 1.0F) < (ascii_count - stiction)) &&
+                    ((text_count + 1.0F) < (b256_count - stiction)) &&
+                    ((text_count + 1.0F) < (edf_count - stiction)) &&
+                    ((text_count + 1.0F) < (x12_count - stiction)) &&
+                    ((text_count + 1.0F) < (c40_count - stiction))) {
                 best_scheme = DM_TEXT;
             }
 
             /* step (r)(3) */
-            if (((edf_count + 1.0F) < ascii_count) &&
-                    ((edf_count + 1.0F) < b256_count) &&
-                    ((edf_count + 1.0F) < text_count) &&
-                    ((edf_count + 1.0F) < x12_count) &&
-                    ((edf_count + 1.0F) < c40_count)) {
+            if (((edf_count + 1.0F) < (ascii_count - stiction)) &&
+                    ((edf_count + 1.0F) < (b256_count - stiction)) &&
+                    ((edf_count + 1.0F) < (text_count - stiction)) &&
+                    ((edf_count + 1.0F) < (x12_count - stiction)) &&
+                    ((edf_count + 1.0F) < (c40_count - stiction))) {
                 best_scheme = DM_EDIFACT;
             }
 
             /* step (r)(2) */
-            if (((b256_count + 1.0F) <= ascii_count) ||
-                    (((b256_count + 1.0F) < edf_count) &&
-                    ((b256_count + 1.0F) < text_count) &&
-                    ((b256_count + 1.0F) < x12_count) &&
-                    ((b256_count + 1.0F) < c40_count))) {
+            if (((b256_count + 1.0F) <= (ascii_count + stiction)) ||
+                    (((b256_count + 1.0F) < (edf_count - stiction)) &&
+                    ((b256_count + 1.0F) < (text_count - stiction)) &&
+                    ((b256_count + 1.0F) < (x12_count - stiction)) &&
+                    ((b256_count + 1.0F) < (c40_count - stiction)))) {
                 best_scheme = DM_BASE256;
             }
 
             /* step (r)(1) */
-            if (((ascii_count + 1.0F) <= b256_count) &&
-                    ((ascii_count + 1.0F) <= edf_count) &&
-                    ((ascii_count + 1.0F) <= text_count) &&
-                    ((ascii_count + 1.0F) <= x12_count) &&
-                    ((ascii_count + 1.0F) <= c40_count)) {
+            if (((ascii_count + 1.0F) <= (b256_count + stiction)) &&
+                    ((ascii_count + 1.0F) <= (edf_count + stiction)) &&
+                    ((ascii_count + 1.0F) <= (text_count + stiction)) &&
+                    ((ascii_count + 1.0F) <= (x12_count + stiction)) &&
+                    ((ascii_count + 1.0F) <= (c40_count + stiction))) {
                 best_scheme = DM_ASCII;
             }
         }
