@@ -432,13 +432,13 @@ static int look_ahead_test(const unsigned char inputData[], const int sourcelen,
                 edf_count += (3.0F / 4.0F); // (p)(1)
             } else {
                 if (inputData[sp] > 127) {
-                    edf_count += (17.0F / 4.0F); // (p)(2)
+                    edf_count += 17.0F; // (p)(2) > Value changed from ISO
                 } else {
-                    edf_count += (13.0F / 4.0F); // (p)(3)
+                    edf_count += 13.0F; // (p)(3) > Value changed from ISO
                 }
             }
             if ((gs1 == 1) && (inputData[sp] == '[')) {
-                edf_count += 6.0F;
+                edf_count += 13.0F; //  > Value changed from ISO
             }
 
             /* base 256 ... step (q) */
@@ -519,6 +519,9 @@ static int look_ahead_test(const unsigned char inputData[], const int sourcelen,
                 best_scheme = DM_ASCII;
             }
         }
+        
+        //printf("Char %d[%c]: ASC:%.2f C40:%.2f X12:%.2f TXT:%.2f EDI:%.2f BIN:%.2f\n", sp,
+        //        inputData[sp], ascii_count, c40_count, x12_count, text_count, edf_count, b256_count);
 
         sp++;
     } while (best_scheme == DM_NULL); // step (s)
@@ -869,7 +872,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
 
         /* step (f) EDIFACT encodation */
         if (current_mode == DM_EDIFACT) {
-            int value = -1;
+            int value = 0;
 
             next_mode = DM_EDIFACT;
             if (*process_p == 3) {
@@ -881,27 +884,15 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
                 (*process_p)++;
                 next_mode = DM_ASCII;
             } else {
-                if ((source[sp] >= '@') && (source[sp] <= '^')) {
-                    value = source[sp] - '@';
+                value = source[sp];
+                
+                if (source[sp] >= 64) {  // '@'
+                    value -= 64;
                 }
-                if ((source[sp] >= ' ') && (source[sp] <= '?')) {
-                    value = source[sp];
-                }
-                if (value != -1) {
-                    process_buffer[*process_p] = value;
-                    (*process_p)++;
-                    sp++;
-                } else {
-                    // Invalid character, latch to ASCII
-                    process_buffer[*process_p] = 31;
-                    (*process_p)++;
-                    
-                    while (*process_p < 4) {
-                        process_buffer[*process_p] = 0;
-                        (*process_p)++;
-                    }
-                    next_mode = DM_ASCII;
-                }
+                
+                process_buffer[*process_p] = value;
+                (*process_p)++;
+                sp++;
             }
 
             if (*process_p >= 4) {
