@@ -250,7 +250,7 @@ static void dminsert(char binary_string[], const int posn, const char newbit) {
     int i, end;
 
     end = (int) strlen(binary_string);
-    for (i = end; i > posn; i--) {
+    for (i = end + 1; i > posn; i--) {
         binary_string[i] = binary_string[i - 1];
     }
     binary_string[posn] = newbit;
