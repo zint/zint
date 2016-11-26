@@ -1026,27 +1026,14 @@ static int dm200encode_remainder(unsigned char target[], int target_length, cons
             break;
 
         case DM_X12:
-            if (symbols_left == process_p) // Unlatch not required!
-            {
-                if (process_p == 1) // 1 data character left to encode.
-                {
-                    target[target_length] = source[inputlen - 1] + 1;
-                    target_length++;
-                }
-
-                if (process_p == 2) {
-                    // Encode last 2 bytes as ascii.
-                    target[target_length] = source[inputlen - 2] + 1;
-                    target_length++;
-                    target[target_length] = source[inputlen - 1] + 1;
-                    target_length++;
-                }
-            }
-
-            if (symbols_left > process_p) // Unlatch and encode remaining data in ascii.
-            {
+            if ((symbols_left == process_p) && (process_p == 1)) {
+                // Unlatch not required!
+                target[target_length] = source[inputlen - 1] + 1;
+                target_length++;
+            } else {
                 target[target_length] = (254);
                 target_length++; // Unlatch.
+                
                 if (process_p == 1) {
                     target[target_length] = source[inputlen - 1] + 1;
                     target_length++;
