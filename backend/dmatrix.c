@@ -867,7 +867,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
 
         /* step (f) EDIFACT encodation */
         if (current_mode == DM_EDIFACT) {
-            int value = 0;
+            int value = -1;
 
             next_mode = DM_EDIFACT;
             if (*process_p == 3) {
@@ -885,11 +885,21 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
                 if ((source[sp] >= ' ') && (source[sp] <= '?')) {
                     value = source[sp];
                 }
-                /* possibility put an assertion here for invalid character (none of the ifs trigger) */
-
-                process_buffer[*process_p] = value;
-                (*process_p)++;
-                sp++;
+                if (value != -1) {
+                    process_buffer[*process_p] = value;
+                    (*process_p)++;
+                    sp++;
+                } else {
+                    // Invalid character, latch to ASCII
+                    process_buffer[*process_p] = 31;
+                    (*process_p)++;
+                    
+                    while (*process_p < 4) {
+                        process_buffer[*process_p] = 0;
+                        (*process_p)++;
+                    }
+                    next_mode = DM_ASCII;
+                }
             }
 
             if (*process_p >= 4) {
