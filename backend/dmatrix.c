@@ -341,7 +341,7 @@ static int look_ahead_test(const unsigned char inputData[], const int sourcelen,
     sp = position;
 
     do {
-        if (sp == (sourcelen - 1)) {
+        if (sp == sourcelen) {
             /* At the end of data ... step (k) */
             ascii_count = ceilf(ascii_count);
             b256_count = ceilf(b256_count);
