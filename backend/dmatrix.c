@@ -1063,7 +1063,16 @@ static int dm200encode_remainder(unsigned char target[], int target_length, cons
                     target_length++;
                 }
             } else {
-                // Append edifact unlatch value (31) and encode as triple.
+                // Append edifact unlatch value (31) and encode as triple
+                
+                if (process_p == 0) {
+                    target[target_length] = (unsigned char) (31 << 2);
+                    target_length++;
+                    target[target_length] = 0;
+                    target_length++;
+                    target[target_length] = 0;
+                    target_length++;
+                }
 
                 if (process_p == 1) {
                     target[target_length] = (unsigned char) ((process_buffer[0] << 2) + ((31 & 0x30) >> 4));
