@@ -76,6 +76,15 @@ Fix bugs in batch processing - this now works from the command line.
 Version 2.4.3:
 Some Windows-only fixes and changes
 
+Version 2.5.0:
+Support for DotCode and Han Xin code. ECI code processing. Output to BMP, GIF
+and PCX. Added bold and small text options. Reintroduction of Codablock-F.
+Many minor fixes and improvements.
+
+Version 2.5.1:
+Numerous bugfixes, especially with Data Matrix thanks to extensive testing
+by brunt@SF
+
 
 CONTACT ME
 ----------

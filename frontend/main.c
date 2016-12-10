@@ -72,7 +72,7 @@ void types(void) {
 
 /* Output usage information */
 void usage(void) {
-    printf( "Zint version %s\n"
+    printf( "Zint version %d.%d.%d\n"
             "Encode input data in a barcode and save as a PNG, BMP, GIF, PCX, EPS or SVG file.\n\n"
             "  -b, --barcode=NUMBER  Number of barcode type (default is 20 (=Code128)).\n"
             "  --batch               Treat each line of input file as a separate data set\n"
@@ -114,7 +114,7 @@ void usage(void) {
             "  -t, --types           Display table of barcode types\n"
             "  --vers=NUMBER         Set symbol version (QR Code/Han Xin)\n"
             "  -w, --whitesp=NUMBER  Set Width of whitespace in multiples of x-dimension\n"
-            , ZINT_VERSION);
+            , ZINT_VERSION_MAJOR, ZINT_VERSION_MINOR, ZINT_VERSION_RELEASE);
 }
 
 /* Display supported ECI codes */

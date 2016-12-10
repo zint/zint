@@ -98,7 +98,10 @@ extern "C" {
         struct zint_render *rendered;
     };
 
-
+#define ZINT_VERSION_MAJOR      2
+#define ZINT_VERSION_MINOR      5
+#define ZINT_VERSION_RELEASE    1
+    
     /* Tbarcode 7 codes */
 #define BARCODE_CODE11		1
 #define BARCODE_C25MATRIX	2

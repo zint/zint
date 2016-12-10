@@ -291,7 +291,7 @@ int ps_plot(struct zint_symbol *symbol) {
 
     /* Start writing the header */
     fprintf(feps, "%%!PS-Adobe-3.0 EPSF-3.0\n");
-    fprintf(feps, "%%%%Creator: Zint %s\n", ZINT_VERSION);
+    fprintf(feps, "%%%%Creator: Zint %d.%d.%d\n", ZINT_VERSION_MAJOR, ZINT_VERSION_MINOR, ZINT_VERSION_RELEASE);
     if ((ustrlen(local_text) != 0) && (symbol->show_hrt != 0)) {
         fprintf(feps, "%%%%Title: %s\n", local_text);
     } else {
