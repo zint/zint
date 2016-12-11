@@ -105,7 +105,7 @@ public:
 	};
 
 public:
-	MainWindow(QWidget* parent = 0, Qt::WFlags fl = 0);
+	MainWindow(QWidget* parent = 0, Qt::WindowFlags fl = 0);
 	~MainWindow();
 
 

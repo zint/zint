@@ -20,13 +20,16 @@
 #include <QColorDialog>
 #include <QUiLoader>
 #include <QFile>
+#include <QRadioButton>
+#include <QFileDialog>
+#include <QMessageBox>
 
 #include "mainwindow.h"
 #include "datawindow.h"
 #include "sequencewindow.h"
 #include <stdio.h>
 
-MainWindow::MainWindow(QWidget* parent, Qt::WFlags fl)
+MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags fl)
 		: QWidget(parent, fl),m_optionWidget(0)
 {
 
@@ -172,13 +175,14 @@ bool MainWindow::save()
 void MainWindow::about()
 {
 	QMessageBox::about(this, tr("About Zint"),
-			   tr("<h2>Zint Barcode Studio 2.5.1</h2>"
+               tr("<h2>Zint Barcode Studio 2.5.1</h2>"
 					   "<p>A free barcode generator"
 					   "<p>Instruction manual is available from Sourceforge:"
 					   "<p>http://www.sourceforge.net/projects/zint"
 					   "<p>Copyright &copy; 2006-2016 Robin Stuart.<br>"
-					   "Qt4 code by BogDan Vatra, MS Windows port by \"tgotic\".<br>"
-					   "With thanks to Norbert Szab&oacute;, Robert Elliott,"
+					   "Qt back end by BogDan Vatra, MS Windows port by \"tgotic\"."
+                                           "<p>Qt version " QT_VERSION_STR 
+					   "<p>With thanks to Norbert Szab&oacute;, Robert Elliott, "
                                            "Harald Oehlmann and many others at Sourceforge."
 					   "<p>Released under the GNU General Public License ver. 3 or later.<br>"
 					   "\"QR Code\" is a Registered Trademark of Denso Corp.<br>"
@@ -189,7 +193,8 @@ void MainWindow::about()
 					   "ISO/IEC 16388:2007, ISO/IEC 18004:2006, ISO/IEC 24723:2010,<br>"
 					   "ISO/IEC 24724:2011, ISO/IEC 24728:2006, ISO/IEC 24778:2008,<br>"
 					   "ANSI-HIBC 2.3-2009, ANSI/AIM BC6-2000, ANSI/AIM BC12-1998,<br>"
-					   "AIMD014 (v 1.63), USPS-B-3200</small></td></tr></table>"
+                       "AIMD014 (v 1.63), USPS-B-3200</small></td></tr></table>"
+
 			     ));
 }
 
@@ -595,9 +600,9 @@ void MainWindow::update_preview()
 	m_bc.bc.setSecurityLevel(0);
 	m_bc.bc.setWidth(0);
 	m_bc.bc.setInputMode(UNICODE_MODE);
-	m_bc.bc.setHideText(FALSE);
+	m_bc.bc.setHideText(0);
 	if(chkHRTHide->isChecked() == false) {
-		m_bc.bc.setHideText(TRUE);
+		m_bc.bc.setHideText(1);
 	}
 	switch(metaObject()->enumerator(0).value(bstyle->currentIndex()))
 	{

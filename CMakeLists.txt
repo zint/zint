@@ -62,21 +62,28 @@ ENDIF(APPLE)
 add_subdirectory(backend)
 add_subdirectory(frontend)
 
-find_package(Qt4)
+find_package(Qt5Widgets)
+find_package(Qt5Gui)
+find_package(Qt5UiTools)
 
-if (QT4_FOUND)
-    set( QT_USE_QTGUI   TRUE )
-    set( QT_USE_QTUITOOLS TRUE )
-    set( QT_USE_QTXML TRUE )
-    include( ${QT_USE_FILE} )
-    include_directories(
-        ${CMAKE_CURRENT_SOURCE_DIR}
-        ${QT_INCLUDE_DIR}
-        ${CMAKE_CURRENT_BINARY_DIR}
-        )
-    add_subdirectory(backend_qt4)
-    add_subdirectory(frontend_qt4)
-endif(QT4_FOUND)
+if (Qt5Widgets_FOUND)
+    if (Qt5Gui_FOUND)
+        if (Qt5UiTools_FOUND)
+            set( QT_USE_QTGUI   TRUE )
+            set( QT_USE_QTUITOOLS TRUE )
+            set( QT_USE_QTXML TRUE )
+            include_directories(
+                ${CMAKE_CURRENT_SOURCE_DIR}
+                ${Qt5Widgets_INCLUDES}
+                ${Qt5Gui_INCLUDES}
+                ${Qt5UiTools_INCLUDES}
+                ${CMAKE_CURRENT_BINARY_DIR}
+                )
+            add_subdirectory(backend_qt)
+            add_subdirectory(frontend_qt)
+        endif(Qt5UiTools_FOUND)
+    endif(Qt5Gui_FOUND)
+endif(Qt5Widgets_FOUND)
 
 CONFIGURE_FILE(
   "${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in"

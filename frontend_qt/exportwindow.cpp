@@ -103,7 +103,7 @@ void ExportWindow::process()
 					
 					for(m = 0; m < dataString.length(); m++) {
 						name_qchar = dataString[m];
-						name_char = name_qchar.toAscii();
+						name_char = name_qchar.toLatin1();
 						
 						switch(name_char) {
 							case '\\': url_escaped += "%5C"; break;
@@ -141,8 +141,8 @@ void ExportWindow::process()
 				}
 				break;
 		}
-		barcode->bc.setText(dataString.toAscii().data());
-		barcode->bc.save_to_file(fileName.toAscii().data());
+		barcode->bc.setText(dataString.toLatin1().data());
+		barcode->bc.save_to_file(fileName.toLatin1().data());
 		inputpos += datalen + 1;
 	}
 	close();

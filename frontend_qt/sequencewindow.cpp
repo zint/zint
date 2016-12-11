@@ -73,7 +73,7 @@ QString SequenceWindow::apply_format(QString raw_number)
 	
 	for(i = format_len; i > 0; i--) {
 		format_qchar = format[i - 1];
-		format_char = format_qchar.toAscii();
+		format_char = format_qchar.toLatin1();
 		switch(format_char) {
 			case '#':
 				if (inpos > 0) {
