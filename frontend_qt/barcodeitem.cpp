@@ -20,13 +20,17 @@
 BarcodeItem::BarcodeItem()
 		: QGraphicsItem()
 {
-	w=550;
-	h=230;
+	w=693;
+	h=378; // Default widget size when created
 }
-
 
 BarcodeItem::~BarcodeItem()
 {
+}
+
+void BarcodeItem::setSize(int width, int height) {
+    w = width;
+    h = height;
 }
 
 QRectF BarcodeItem::boundingRect() const

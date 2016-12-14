@@ -103,8 +103,10 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags fl)
 	/* createActions();
 	createMenus();	*/
 	
+        scene = new QGraphicsScene(this);
+        
 	setupUi(this);
-	view->setScene(new QGraphicsScene);
+	view->setScene(scene);
 	
 	m_fgcolor=qRgb(0,0,0);
 	m_bgcolor=qRgb(0xff,0xff,0xff);
@@ -114,8 +116,8 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags fl)
 	}
 	bstyle->setCurrentIndex(10);
 	change_options();
+        scene->addItem(&m_bc);
 	update_preview();
-	view->scene()->addItem(&m_bc);
 	connect(bstyle, SIGNAL(currentIndexChanged( int )), SLOT(change_options()));
 	connect(bstyle, SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
 	connect(heightb, SIGNAL(valueChanged( int )), SLOT(update_preview()));
@@ -139,6 +141,12 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags fl)
 
 MainWindow::~MainWindow()
 {
+}
+
+void MainWindow::resizeEvent(QResizeEvent* event)
+{
+    QWidget::resizeEvent(event);
+    update_preview();
 }
 
 void MainWindow::reset_view()
@@ -588,8 +596,10 @@ void MainWindow::maxi_primary()
 
 void MainWindow::update_preview()
 {
-	QString error;
-	m_bc.ar=(Zint::QZint::AspectRatioMode)1;
+        int width = view->geometry().width();
+        int height = view->geometry().height();
+    
+	//m_bc.ar=(Zint::QZint::AspectRatioMode)1;
 	if(chkComposite->isChecked() == true) {
 		m_bc.bc.setPrimaryMessage(txtData->text());
 		m_bc.bc.setText(txtComposite->toPlainText());
@@ -885,7 +895,8 @@ void MainWindow::update_preview()
 	m_bc.bc.setWhitespace(spnWhitespace->value());
 	m_bc.bc.setFgColor(m_fgcolor);
 	m_bc.bc.setBgColor(m_bgcolor);
+        m_bc.setSize(width - 10, height - 10);
 	m_bc.update();
-	view->scene()->update();
+        scene->setSceneRect(0, 0, width - 10, height - 10);
+        scene->update();
 }
-
