@@ -316,6 +316,7 @@ namespace Zint {
         fontLarge.setPixelSize(fontPixelSizeLarge);
         
         if (m_lastError.length()) {
+            fontLarge.setPointSize(14);
             painter.setFont(fontLarge);
             painter.drawText(paintRect, Qt::AlignCenter, m_lastError);
             return;
@@ -346,10 +347,8 @@ namespace Zint {
         qreal gwidth = m_zintSymbol->width;
         qreal gheight = m_zintSymbol->height;
         if (m_zintSymbol->symbology == BARCODE_MAXICODE) {
-            gheight *= (maxi_width);
-            gwidth *= (maxi_width + 1);
-            gwidth *= 2.0;
-            gheight *= 2.0;
+            gwidth = (33.0 * maxi_width) + xoffset + xoffset;
+            gheight = (32.0 * maxi_width) + yoffset + yoffset;
         }
 
         if (m_zintSymbol->output_options & BARCODE_DOTTY_MODE) {
