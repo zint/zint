@@ -240,6 +240,8 @@ extern "C" {
 #define	OUT_BMP_FILE        120
 #define OUT_GIF_FILE        140
 #define OUT_PCX_FILE        160
+#define OUT_JPG_FILE        180
+#define OUT_TIF_FILE        200
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32) || defined(_MSC_VER)
 #if defined (DLL_EXPORT) || defined(PIC) || defined(_USRDLL)
