@@ -38,6 +38,8 @@
 -   Adopted to new image format of zint
  2016-10-14 2.5.2 HaO
 -   Include the upstream reverted image format
+ 2016-12-12 2.5.3 HaO
+-	No changes here, take 2.5.1 framework files
 */
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
@@ -77,7 +79,7 @@
 /*----------------------------------------------------------------------------*/
 /* > File option defines */
 
-#define VERSION "2.5.2"
+#define VERSION "2.5.3"
 
 /*----------------------------------------------------------------------------*/
 /* >>>>> Hepler defines */
