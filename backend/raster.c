@@ -53,6 +53,7 @@ extern int png_pixel_plot(struct zint_symbol *symbol, char *pixelbuf);
 extern int bmp_pixel_plot(struct zint_symbol *symbol, char *pixelbuf);
 extern int pcx_pixel_plot(struct zint_symbol *symbol, char *pixelbuf);
 extern int gif_pixel_plot(struct zint_symbol *symbol, char *pixelbuf);
+extern int tif_pixel_plot(struct zint_symbol *symbol, char *pixelbuf);
 
 void buffer_plot(struct zint_symbol *symbol, char *pixelbuf) {
     /* Place pixelbuffer into symbol */
@@ -188,6 +189,9 @@ int save_raster_image_to_file(struct zint_symbol *symbol, int image_height, int 
             break;
         case OUT_GIF_FILE:
             error_number = gif_pixel_plot(symbol, rotated_pixbuf);
+            break;
+        case OUT_TIF_FILE:
+            error_number = tif_pixel_plot(symbol, rotated_pixbuf);
             break;
         default:
             error_number = bmp_pixel_plot(symbol, rotated_pixbuf);
