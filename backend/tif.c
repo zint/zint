@@ -94,15 +94,17 @@ int tif_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
         if (i != (strip_count - 1)) {
             strip_bytes[i] = rows_per_strip * symbol->bitmap_width * 3;
         } else {
-            strip_bytes[i] = (symbol->bitmap_height % rows_per_strip) * symbol->bitmap_width * 3;
+            if ((symbol->bitmap_height % rows_per_strip) != 0) {
+                strip_bytes[i] = (symbol->bitmap_height % rows_per_strip) * symbol->bitmap_width * 3;
+            } else {
+                strip_bytes[i] = rows_per_strip * symbol->bitmap_width * 3;
+            }
         }
         free_memory += strip_bytes[i];
         if ((free_memory % 2) == 1) {
             free_memory++;
         }
     }
-    
-    printf("Mem%d\n", free_memory);
     
     if (free_memory > 0xffff0000) {
 #ifdef _MSC_VER
