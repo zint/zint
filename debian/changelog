@@ -1,3 +1,15 @@
+zint (2.5.1) UNRELEASED; urgency=medium
+
+  * Include support for DotCode
+  * Include support for Han Xin (Chinese Sensible) code.
+  * Reinstate Codablock-F support.
+  * Automated ECI pre-processing.
+  * Ouput to BMP, GIF and PCX.
+  * Huge code review and numerous bugfixes
+  * DMRE support and DataMatrix bugfixes 
+
+ -- Robin Stuart <rstuart114@gmail.com>  Fri, 13 Jan 2017 20:33:54 +0000
+
 zint (2.4.1) unstable; urgency=low
 
   * Update and review of files required by Debian including changelog.

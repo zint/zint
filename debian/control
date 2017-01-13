@@ -1,8 +1,8 @@
 Source: zint
 Section: libs
-Priority: extra
-Maintainer: Robin Stuart <robin@zint.org.uk>
-Build-Depends: cdbs, debhelper (>= 7), cmake, libpng12-dev, libqt4-dev
+Priority: optional
+Maintainer: Robin Stuart <rstuart114@gmail.com>
+Build-Depends: debhelper (>= 9), cmake, libpng12-dev, libqt4-dev
 Standards-Version: 3.9.1
 Homepage: http://www.zint.org.uk/
 

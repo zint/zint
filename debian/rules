@@ -1,9 +1,3 @@
 #!/usr/bin/make -f
-
-include /usr/share/cdbs/1/rules/debhelper.mk
-include /usr/share/cdbs/1/class/cmake.mk
-
-DEB_DBG_PACKAGE_libzint := libzint-dbg
-DEB_DBG_PACKAGE_libqzint := libzint-dbg
-DEB_DBG_PACKAGE_zintfrontend := libzint-dbg
-DEB_DBG_PACKAGE_qzintfrontend := libzint-dbg
+%:
+	dh $@
