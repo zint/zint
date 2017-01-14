@@ -23,6 +23,7 @@
 #include <QRadioButton>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QSettings>
 
 #include "mainwindow.h"
 #include "datawindow.h"
@@ -32,6 +33,12 @@
 MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags fl)
 		: QWidget(parent, fl),m_optionWidget(0)
 {
+    
+    QCoreApplication::setOrganizationName("Zint");
+    QCoreApplication::setOrganizationDomain("zint.org.uk");
+    QCoreApplication::setApplicationName("Barcode Studio");
+    
+    QSettings settings;
 
 	char bstyle_text[][50] = {
 		"Australia Post Redirect Code",
@@ -108,13 +115,17 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags fl)
 	setupUi(this);
 	view->setScene(scene);
 	
-	m_fgcolor=qRgb(0,0,0);
-	m_bgcolor=qRgb(0xff,0xff,0xff);
+	m_fgcolor=qRgb(settings.value("studio/ink/red", 0).toInt(),
+                settings.value("studio/ink/green", 0).toInt(),
+                settings.value("studio/ink/blue", 0).toInt());
+	m_bgcolor=qRgb(settings.value("studio/paper/red", 0xff).toInt(),
+                settings.value("studio/paper/green", 0xff).toInt(),
+                settings.value("studio/paper/blue", 0xff).toInt());
 	for (int i=0;i<metaObject()->enumerator(0).keyCount();i++) {
 		bstyle->addItem(metaObject()->enumerator(0).key(i));
 		bstyle->setItemText(i,bstyle_text[i]);
 	}
-	bstyle->setCurrentIndex(10);
+	bstyle->setCurrentIndex(settings.value("studio/symbology", 10).toInt());
 	change_options();
         scene->addItem(&m_bc);
 	update_preview();
@@ -141,6 +152,15 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags fl)
 
 MainWindow::~MainWindow()
 {
+    QSettings settings;
+    
+    settings.setValue("studio/symbology", bstyle->currentIndex());
+    settings.setValue("studio/ink/red", m_fgcolor.red());
+    settings.setValue("studio/ink/green", m_fgcolor.green());
+    settings.setValue("studio/ink/blue", m_fgcolor.blue());
+    settings.setValue("studio/paper/red", m_bgcolor.red());
+    settings.setValue("studio/paper/green", m_bgcolor.green());
+    settings.setValue("studio/paper/blue", m_bgcolor.blue());
 }
 
 void MainWindow::resizeEvent(QResizeEvent* event)
