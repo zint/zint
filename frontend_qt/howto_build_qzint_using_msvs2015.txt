@@ -1,0 +1,30 @@
+Harald Oehlmann
+2016-02-28
+
+How to build qzint.exe using:
+- QT 5.7 installed in C:\qt5
+- MS Visual Studio 2015 (VC12)
+
+Folder structure:
+- zint source files in $ZH
+  -> this file is in $ZH\frontend_qt
+- png1620.zip unzipped in $ZH\..\lpng
+  -> $ZH\..\lpng\png.h exists
+- zlib128.zip unzipped in folder $ZH\..\zlib
+  -> $ZH\..\zlib\zlib.h exists
+
+Build zint
+
+- Start in the start menu: "VS2015 x64 Native Tools-Eingabeaufforderung"
+- set PATH=C:\Qt5\5.7\msvc2015_64\bin;%PATH%
+- cd $ZH
+- cd backend_qt
+- qmake backend_qt.pro
+- nmake clean
+- nmake release
+    
+- cd ..\frontend_qt
+- qmake frontend_qt.pro
+- nmake clean
+- nmake release
+  -> qzint.exe is in the release folder

@@ -4,6 +4,7 @@ DEPENDPATH += . debug release
 INCLUDEPATH += .
 QT += gui
 QT += uitools
+DEFINES += NO_PNG
 
 # Input
 HEADERS += barcodeitem.h \
@@ -52,15 +53,16 @@ CONFIG += static
 
 CONFIG += warn_on thread qt uitools
 
-INCLUDEPATH += ../backend_qt4 ../backend
+INCLUDEPATH += ../backend_qt ../backend
 
-LIBS += -lQZint -lQtCore
-QMAKE_LIBDIR += ../backend_qt4/release
+LIBS += -lQtZint -lQt5Core
+QMAKE_LIBDIR += ../backend_qt/release
 
 !contains(DEFINES, NO_PNG) {
-    LIBS += -lpng -zlib
-    QMAKE_LIBDIR += /usr/local/lib /usr/lib/x86_64-linux-gnu/
-#    QMAKE_LIBDIR+=../../lpng\projects\visualc71_converted_to_9\Win32_LIB_Release ../../lpng\projects\visualc71_converted_to_9\Win32_LIB_Release\zlib
-#    LIBS += -llibpng16 -lzlib1
-#    QMAKE_LIBDIR+=../../lpng\projects\visualc71_converted_to_9\Win32_DLL_Release ../../lpng\projects\visualc71_converted_to_9\Win32_DLL_Release\zlib
+# Win
+    LIBS += -llibpng -zlib
+    QMAKE_LIBDIR+=../../lpng/projects/visualc71_converted_to_9/Win32_LIB_Release ../../lpng/projects/visualc71_converted_to_9/Win32_LIB_Release/zlib
+# Unix
+    #LIBS += -lpng -zlib
+    #QMAKE_LIBDIR += /usr/local/lib /usr/lib/x86_64-linux-gnu/
 }

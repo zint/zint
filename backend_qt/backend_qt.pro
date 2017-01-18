@@ -21,6 +21,9 @@ INCLUDEPATH += ../backend
 #EDIT THIS !!!!
 DEFINES += ZINT_VERSION="\\\"2.5.0\\\""
 
+# Win
+DEFINES += NO_PNG
+
 !contains(DEFINES, NO_PNG) {
     INCLUDEPATH += ../../lpng
     INCLUDEPATH += ../../zlib
