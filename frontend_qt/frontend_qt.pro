@@ -4,7 +4,8 @@ DEPENDPATH += . debug release
 INCLUDEPATH += .
 QT += gui
 QT += uitools
-DEFINES += NO_PNG
+QT += widgets
+QT += uitools
 
 # Input
 HEADERS += barcodeitem.h \
@@ -51,7 +52,7 @@ RESOURCES += resources.qrc
 # Static target following http://qt-project.org/wiki/Build_Standalone_Qt_Application_for_Windows
 CONFIG += static
 
-CONFIG += warn_on thread qt uitools
+CONFIG += warn_on thread qt
 
 INCLUDEPATH += ../backend_qt ../backend
 
@@ -60,9 +61,9 @@ QMAKE_LIBDIR += ../backend_qt/release
 
 !contains(DEFINES, NO_PNG) {
 # Win
-    LIBS += -llibpng -zlib
-    QMAKE_LIBDIR+=../../lpng/projects/visualc71_converted_to_9/Win32_LIB_Release ../../lpng/projects/visualc71_converted_to_9/Win32_LIB_Release/zlib
+    win32:LIBS += -llibpng16 -zlib
+    win32:QMAKE_LIBDIR+="../../lpng/projects/vstudio/Release Library"
 # Unix
-    #LIBS += -lpng -zlib
-    #QMAKE_LIBDIR += /usr/local/lib /usr/lib/x86_64-linux-gnu/
+    unix:LIBS += -lpng -zlib
+    unix:QMAKE_LIBDIR += /usr/local/lib /usr/lib/x86_64-linux-gnu/
 }
