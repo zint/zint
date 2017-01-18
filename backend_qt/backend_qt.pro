@@ -19,7 +19,7 @@ TARGET = QtZint
 INCLUDEPATH += ../backend
 
 #EDIT THIS !!!!
-DEFINES += ZINT_VERSION="\\\"2.5.0\\\""
+DEFINES += ZINT_VERSION="\\\"2.5.1\\\""
 
 !contains(DEFINES, NO_PNG) {
     INCLUDEPATH += ../../lpng

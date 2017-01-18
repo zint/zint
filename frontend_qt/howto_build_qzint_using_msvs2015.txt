@@ -18,6 +18,7 @@ Folder structure:
 
 Build libpng:
 Open $ZH\..\lpng\projects\vstudio with VS2015 gui and convert the project
+Set Project settings->C++->Code Generation->Library: Multi-Threadded DLL /MD
 Copy the zlib source as required by the make file (in my case: zlib-1.2.8)
 Build targets "Release Library" for zlib and libpng.
 

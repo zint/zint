@@ -61,9 +61,9 @@ QMAKE_LIBDIR += ../backend_qt/release
 
 !contains(DEFINES, NO_PNG) {
 # Win
-    win32:LIBS += -llibpng16 -zlib
+    win32:LIBS += -llibpng16 -lzlib
     win32:QMAKE_LIBDIR+="../../lpng/projects/vstudio/Release Library"
 # Unix
-    unix:LIBS += -lpng -zlib
-    unix:QMAKE_LIBDIR += /usr/local/lib /usr/lib/x86_64-linux-gnu/
+    #unix:LIBS += -lpng -zlib
+    #unix:QMAKE_LIBDIR += /usr/local/lib /usr/lib/x86_64-linux-gnu/
 }
