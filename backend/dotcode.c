@@ -184,7 +184,7 @@ void rsencode(int nd, int nc, unsigned char *wd) {
 
     // Start by generating "nc" roots (antilogs):
     root[0] = 1;
-    for (i = 1; i <= nc; i++)
+    for (i = 1; (i <= nc) && (i < GF); i++)
         root[i] = (PM * root[i - 1]) % GF;
 
     // Here we compute how many interleaved R-S blocks will be needed
@@ -1119,13 +1119,6 @@ int dotcode(struct zint_symbol *symbol, const unsigned char source[], int length
     for (i = 0; i < pad_chars; i++) {
         codeword_array[data_length] = 106; // Pad
         data_length++;
-    }
-
-    if (data_length > 450) {
-        // Larger data sets than this cause rsencode() to throw SIGSEGV
-        // This should probably be fixed by somebody who understands what rsencode() does...
-        strcpy(symbol->errtxt, "Input too long (E21)");
-        return ZINT_ERROR_TOO_LONG;
     }
 
     ecc_length = 3 + (data_length / 2);
