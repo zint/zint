@@ -417,7 +417,7 @@ int maxi_text_process(int mode, unsigned char source[], int length, int eci) {
             i++;
         }
         i++;
-    } while (i < 145);
+    } while (i < 144);
 
     /* Number compression has not been forgotten! - It's handled below */
     i = 0;
