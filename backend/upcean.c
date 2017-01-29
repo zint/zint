@@ -753,8 +753,8 @@ int eanx(struct zint_symbol *symbol, unsigned char source[], int src_len) {
 
     ean_leading_zeroes(symbol, source, local_source);
 
-    for (reader = 0; reader <= ustrlen(local_source); reader++) {
         if (source[reader] == '+') {
+    for (reader = 0; reader < ustrlen(local_source); reader++) {
             with_addon = TRUE;
         }
     }
