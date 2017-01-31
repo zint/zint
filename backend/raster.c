@@ -828,7 +828,7 @@ int plot_raster_default(struct zint_symbol *symbol, int rotate_angle, int data_t
             block_width = 0;
             do {
                 block_width++;
-            } while (module_is_set(symbol, this_row, i + block_width) == module_is_set(symbol, this_row, i));
+            } while ((i + block_width < symbol->width )&& module_is_set(symbol, this_row, i + block_width) == module_is_set(symbol, this_row, i));
             if ((addon_latch == 0) && (r == 0) && (i > main_width)) {
                 plot_height = (int) (row_height - 5.0);
                 plot_yposn = (int) (row_posn - 5.0);
