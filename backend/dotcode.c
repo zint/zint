@@ -266,7 +266,7 @@ int datum_b(const unsigned char source[], int position, int length) {
 int datum_c(const unsigned char source[], int position, int length) {
     int retval = 0;
 
-    if (position < length - 2) {
+    if (position <= length - 2) {
         if (((source[position] >= '0') && (source[position] <= '9'))
                 && ((source[position + 1] >= '0') && (source[position + 1] <= '9')))
             retval = 1;
@@ -1039,7 +1039,7 @@ int dotcode(struct zint_symbol *symbol, const unsigned char source[], int length
     int i, j, k;
     size_t jc;
     int data_length, ecc_length;
-    int min_dots, n_dots;
+    int min_dots, n_dots, min_area;
     int height, width, pad_chars;
     int mask_score[4];
     int weight;
@@ -1066,23 +1066,52 @@ int dotcode(struct zint_symbol *symbol, const unsigned char source[], int length
     }
 
     min_dots = 9 * (data_length + 3 + (data_length / 2)) + 2;
+    min_area = min_dots * 2;
 
     if (symbol->option_2 == 0) {
+        /* Automatic sizing */
+        /* Following Rule 3 (Section 5.2.2) and applying a recommended width to height ratio 3:2 */
+        /* Eliminates under sized symbols */
+        
+        float h = (float)(sqrt(min_area * 0.666));
+        float w = (float)(sqrt(min_area * 1.5));
 
-        height = (int) sqrt(2.0 * min_dots);
-        if (height % 2) {
-            height++;
-        }
-
-        width = (2 * min_dots) / height;
-        if (!(width % 2)) {
-            width++;
+        height = (int) h;
+        width = (int) w;
+        
+        if ((width + height) % 2 == 1){
+            if ((width * height) < min_area){
+                width++;
+                height++;
+            }
+        } else {
+            if ((h * width) < (w * height)){
+                width++;
+                if ((width * height) < min_area){
+                    width--;
+                    height++;
+                    if ((width * height) < min_area){
+                        width += 2;
+                    }
+                }
+            } else {
+                height++;
+                if ((width * height) < min_area){
+                   width++;
+                   height--;
+                   if ((width * height) < min_area){
+                      height += 2;
+                   }
+                }
+            }
         }
 
     } else {
+        /* User defined width */
+        /* Eliminates under sized symbols */
+        
         width = symbol->option_2;
-
-        height = (2 * min_dots) / width;
+        height = (min_area + (width - 1)) / width;
 
         if (!((width + height) % 2)) {
             height++;
