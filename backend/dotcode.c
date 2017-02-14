@@ -363,7 +363,7 @@ int binary(const unsigned char source[], int position, int length) {
 }
 
 /* Analyse input data stream and encode using algorithm from Annex F */
-int dotcode_encode_message(struct zint_symbol *symbol, const unsigned char source[], int length, unsigned char *codeword_array) {
+int dotcode_encode_message(struct zint_symbol *symbol, const unsigned char source[], int length, unsigned char *codeword_array, int *binary_finish) {
     int input_position, array_length, i;
     char encoding_mode;
     int inside_macro, done;
@@ -880,6 +880,10 @@ int dotcode_encode_message(struct zint_symbol *symbol, const unsigned char sourc
             }
         }
     } while (input_position < length);
+    
+    if (encoding_mode == 'X') {
+        *(binary_finish) = 1;
+    }
 
     if (debug) {
         printf("\n\n");
@@ -1045,6 +1049,7 @@ int dotcode(struct zint_symbol *symbol, const unsigned char source[], int length
     int weight;
     size_t dot_stream_length;
     int high_score, best_mask;
+    int binary_finish = 0;
     int debug = 0;
 
 #ifndef _MSC_VER
@@ -1057,7 +1062,7 @@ int dotcode(struct zint_symbol *symbol, const unsigned char source[], int length
     unsigned char* masked_codeword_array = (unsigned char *) _alloca(length * 3 * sizeof (unsigned char));
 #endif /* _MSC_VER */
 
-    data_length = dotcode_encode_message(symbol, source, length, codeword_array);
+    data_length = dotcode_encode_message(symbol, source, length, codeword_array, &binary_finish);
 
     ecc_length = 3 + (data_length / 2);
 
@@ -1138,8 +1143,8 @@ int dotcode(struct zint_symbol *symbol, const unsigned char source[], int length
 
     /* Add pad characters */
     for (pad_chars = 0; 9 * ((data_length + pad_chars + 3 + ((data_length + pad_chars) / 2)) + 2) < n_dots; pad_chars++);
-
-    if (pad_chars > 0) {
+    
+    if ((pad_chars > 0) && (binary_finish == 1)) {
         codeword_array[data_length] = 109; // Latch to Code Set A
         data_length++;
         pad_chars--;
