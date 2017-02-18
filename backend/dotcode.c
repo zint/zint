@@ -352,7 +352,7 @@ int ahead_b(const unsigned char source[], int position, int length) {
 }
 
 /* checks if the next character is in the range 128 to 255  (Annex F.II.I) */
-int binary(const unsigned char source[], int position, int length) {
+int binary(const unsigned char source[], int position) {
     int retval = 0;
 
     if (source[position] >= 128) {
@@ -521,7 +521,7 @@ int dotcode_encode_message(struct zint_symbol *symbol, const unsigned char sourc
 
         /* Setp B3 */
         if ((!done) && (encoding_mode == 'C')) {
-            if (binary(source, input_position, length)) {
+            if (binary(source, input_position)) {
                 if (n_digits(source, input_position + 1, length) > 0) {
                     if ((source[input_position] - 128) < 32) {
                         codeword_array[array_length] = 110; // Bin Shift A
@@ -627,7 +627,7 @@ int dotcode_encode_message(struct zint_symbol *symbol, const unsigned char sourc
 
         /* Step C3 */
         if ((!done) && (encoding_mode == 'B')) {
-            if (binary(source, input_position, length)) {
+            if (binary(source, input_position)) {
                 if (datum_b(source, input_position + 1, length)) {
                     if ((source[input_position] - 128) < 32) {
                         codeword_array[array_length] = 110; // Bin Shift A
@@ -729,7 +729,7 @@ int dotcode_encode_message(struct zint_symbol *symbol, const unsigned char sourc
 
         /* Step D3 */
         if ((!done) && (encoding_mode == 'A')) {
-            if (binary(source, input_position, length)) {
+            if (binary(source, input_position)) {
                 if (datum_a(source, input_position + 1, length)) {
                     if ((source[input_position] - 128) < 32) {
                         codeword_array[array_length] = 110; // Bin Shift A
@@ -822,10 +822,10 @@ int dotcode_encode_message(struct zint_symbol *symbol, const unsigned char sourc
          * base 103 into five base 259 values..."
          */
         if ((!done) && (encoding_mode == 'X')) {
-            if (binary(source, input_position, length)
-                    || binary(source, input_position + 1, length)
-                    || binary(source, input_position + 2, length)
-                    || binary(source, input_position + 3, length)) {
+            if (binary(source, input_position)
+                    || binary(source, input_position + 1)
+                    || binary(source, input_position + 2)
+                    || binary(source, input_position + 3)) {
                 binary_buffer *= 259;
                 binary_buffer += source[input_position];
                 binary_buffer_size++;
@@ -880,7 +880,7 @@ int dotcode_encode_message(struct zint_symbol *symbol, const unsigned char sourc
             }
         }
     } while (input_position < length);
-    
+
     if (encoding_mode == 'X') {
         *(binary_finish) = 1;
     }
@@ -1044,22 +1044,21 @@ int dotcode(struct zint_symbol *symbol, const unsigned char source[], int length
     size_t jc;
     int data_length, ecc_length;
     int min_dots, n_dots, min_area;
-    int height, width, pad_chars;
+    int height, width;
     int mask_score[4];
     int weight;
     size_t dot_stream_length;
     int high_score, best_mask;
     int binary_finish = 0;
     int debug = 0;
+    int padding_dots, is_first;
 
 #ifndef _MSC_VER
     unsigned char codeword_array[length * 3];
-    unsigned char masked_codeword_array[length * 3];
 #else
     char* dot_stream;
     char* dot_array;
     unsigned char* codeword_array = (unsigned char *) _alloca(length * 3 * sizeof (unsigned char));
-    unsigned char* masked_codeword_array = (unsigned char *) _alloca(length * 3 * sizeof (unsigned char));
 #endif /* _MSC_VER */
 
     data_length = dotcode_encode_message(symbol, source, length, codeword_array, &binary_finish);
@@ -1077,36 +1076,36 @@ int dotcode(struct zint_symbol *symbol, const unsigned char source[], int length
         /* Automatic sizing */
         /* Following Rule 3 (Section 5.2.2) and applying a recommended width to height ratio 3:2 */
         /* Eliminates under sized symbols */
-        
-        float h = (float)(sqrt(min_area * 0.666));
-        float w = (float)(sqrt(min_area * 1.5));
+
+        float h = (float) (sqrt(min_area * 0.666));
+        float w = (float) (sqrt(min_area * 1.5));
 
         height = (int) h;
         width = (int) w;
-        
-        if ((width + height) % 2 == 1){
-            if ((width * height) < min_area){
+
+        if ((width + height) % 2 == 1) {
+            if ((width * height) < min_area) {
                 width++;
                 height++;
             }
         } else {
-            if ((h * width) < (w * height)){
+            if ((h * width) < (w * height)) {
                 width++;
-                if ((width * height) < min_area){
+                if ((width * height) < min_area) {
                     width--;
                     height++;
-                    if ((width * height) < min_area){
+                    if ((width * height) < min_area) {
                         width += 2;
                     }
                 }
             } else {
                 height++;
-                if ((width * height) < min_area){
-                   width++;
-                   height--;
-                   if ((width * height) < min_area){
-                      height += 2;
-                   }
+                if ((width * height) < min_area) {
+                    width++;
+                    height--;
+                    if ((width * height) < min_area) {
+                        height += 2;
+                    }
                 }
             }
         }
@@ -1114,7 +1113,7 @@ int dotcode(struct zint_symbol *symbol, const unsigned char source[], int length
     } else {
         /* User defined width */
         /* Eliminates under sized symbols */
-        
+
         width = symbol->option_2;
         height = (min_area + (width - 1)) / width;
 
@@ -1142,20 +1141,37 @@ int dotcode(struct zint_symbol *symbol, const unsigned char source[], int length
 #endif
 
     /* Add pad characters */
-    for (pad_chars = 0; 9 * ((data_length + pad_chars + 3 + ((data_length + pad_chars) / 2)) + 2) < n_dots; pad_chars++);
-    
-    if ((pad_chars > 0) && (binary_finish == 1)) {
-        codeword_array[data_length] = 109; // Latch to Code Set A
-        data_length++;
-        pad_chars--;
-    }
+    padding_dots = n_dots - min_dots; /* get the number of free dots available for padding */
+    is_first = 1; /* first padding character flag */
 
-    for (i = 0; i < pad_chars; i++) {
-        codeword_array[data_length] = 106; // Pad
+    while (padding_dots >= 9) {
+        if (padding_dots < 18 && ((data_length % 2) == 0))
+            padding_dots -= 9;
+
+        else if (padding_dots >= 18) {
+            if ((data_length % 2) == 0)
+                padding_dots -= 9;
+            else
+                padding_dots -= 18;
+        } else
+            break; /* not enough padding dots left for padding */
+
+        if ((is_first == 1) && (binary_finish == 1))
+            codeword_array[data_length] = 109;
+        else
+            codeword_array[data_length] = 106;
+
         data_length++;
+        is_first = 0;
     }
 
     ecc_length = 3 + (data_length / 2);
+
+#ifndef _MSC_VER
+    unsigned char masked_codeword_array[data_length + 1 + ecc_length];
+#else
+    unsigned char* masked_codeword_array = (unsigned char *) _alloca((data_length + 1 + ecc_length) * sizeof (unsigned char));
+#endif /* _MSC_VER */
 
     /* Evaluate data mask options */
     for (i = 0; i < 4; i++) {
