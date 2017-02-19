@@ -614,12 +614,42 @@ int dotcode_encode_message(struct zint_symbol *symbol, const unsigned char sourc
                 }
             } else {
                 if (datum_b(source, input_position, length)) {
-                    codeword_array[array_length] = source[input_position] - 32;
-                    array_length++;
-                    input_position++;
-                    done = 1;
-                    if (debug) {
-                        printf("C2/2 ");
+                    
+                    if ((source[input_position] >= 32) && (source[input_position] <= 127)) {
+                        codeword_array[array_length] = source[input_position] - 32;
+                        done = 1;
+                        
+                    } else if (source[input_position] == 13) {
+                        /* CR/LF */
+                        codeword_array[array_length] = 96;
+                        input_position++;
+                        done = 1;
+                        
+                    } else if (input_position != 0) {
+                        /* HT, FS, GS and RS in the first data position would be interpreted as a macro (see table 2) */
+                        switch(source[input_position]) {
+                            case 9: // HT
+                                codeword_array[array_length] = 97;
+                                break;
+                            case 28: // FS
+                                codeword_array[array_length] = 98;
+                                break;
+                            case 29: // GS
+                                codeword_array[array_length] = 99;
+                                break;
+                            case 30: // RS
+                                codeword_array[array_length] = 100;
+                                break;
+                        }
+                        done = 1;
+                    }
+                    
+                    if (done == 1) {
+                        array_length++;
+                        input_position++;
+                        if (debug) {
+                            printf("C2/2 ");
+                        }
                     }
                 }
             }
