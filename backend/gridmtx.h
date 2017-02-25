@@ -37,7 +37,7 @@
 #define GM_BYTE		6
 #define GM_CHINESE	7
 
-#define EUROPIUM	"0123456789ABCDEFGHIJKLMOPRSTUVWXYZabcdefghijklmnopqrstuvwxyz "
+#define EUROPIUM	"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz "
 
 static const char shift_set[] = {
     /* From Table 7 - Encoding of control characters */
