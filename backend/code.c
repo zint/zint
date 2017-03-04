@@ -293,10 +293,10 @@ int pharmazentral(struct zint_symbol *symbol, unsigned char source[], int length
 
     int i, error_number, zeroes;
     unsigned int count, check_digit;
-    char localstr[10];
+    char localstr[11];
 
     count = 0;
-    if (length > 6) {
+    if (length > 7) {
         strcpy(symbol->errtxt, "Input wrong length (C25)");
         return ZINT_ERROR_TOO_LONG;
     }
@@ -307,22 +307,22 @@ int pharmazentral(struct zint_symbol *symbol, unsigned char source[], int length
     }
 
     localstr[0] = '-';
-    zeroes = 6 - length + 1;
+    zeroes = 7 - length + 1;
     for (i = 1; i < zeroes; i++)
         localstr[i] = '0';
     strcpy(localstr + zeroes, (char *) source);
 
-    for (i = 1; i < 7; i++) {
-        count += (i + 1) * ctoi(localstr[i]);
+    for (i = 1; i < 8; i++) {
+        count += i * ctoi(localstr[i]);
     }
 
     check_digit = count % 11;
     if (check_digit == 11) {
         check_digit = 0;
     }
-    localstr[7] = itoc(check_digit);
-    localstr[8] = '\0';
-    if (localstr[7] == 'A') {
+    localstr[8] = itoc(check_digit);
+    localstr[9] = '\0';
+    if (localstr[8] == 'A') {
         strcpy(symbol->errtxt, "Invalid PZN Data (C27)");
         return ZINT_ERROR_INVALID_DATA;
     }
