@@ -117,7 +117,7 @@ int telepen_num(struct zint_symbol *symbol, unsigned char source[], int src_len)
     }
     ustrcpy(temp, source);
     to_upper(temp);
-    error_number = is_sane(NEON, temp, temp_length);
+    error_number = is_sane(SODIUM, temp, temp_length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
         strcpy(symbol->errtxt, "Invalid characters in data (C93)");
         return error_number;
