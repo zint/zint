@@ -815,9 +815,9 @@ int pdf417(struct zint_symbol *symbol, unsigned char chaine[], int length) {
                 set_module(symbol, i, loop);
             }
         }
-        if (symbol->height == 0) {
-            symbol->row_height[i] = 3;
-        }
+        
+        symbol->row_height[i] = 3;
+        
     }
     symbol->rows = (mclength / symbol->option_2);
     symbol->width = strlen(pattern);
