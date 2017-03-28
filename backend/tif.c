@@ -57,6 +57,10 @@ int tif_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
     int free_memory;
     int row, column;
     FILE *tif_file;
+#ifdef _MSC_VER
+    uint32_t* strip_offset;
+    uint32_t* strip_bytes;
+#endif
     
     tiff_header_t header;
     tiff_ifd_t ifd;
@@ -84,8 +88,8 @@ int tif_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
     uint32_t strip_offset[strip_count];
     uint32_t strip_bytes[strip_count];
 #else
-    uint32_t* strip_offset = (uint32_t*) _alloca(strip_count);
-    uint32_t* strip_bytes = (uint32_t*) _alloca(strip_count);
+    strip_offset = (uint32_t*) _alloca(strip_count * sizeof(uint32_t));
+    strip_bytes = (uint32_t*) _alloca(strip_count * sizeof(uint32_t));
 #endif
     free_memory = 8;
     

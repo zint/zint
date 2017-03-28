@@ -1088,6 +1088,7 @@ int dotcode(struct zint_symbol *symbol, const unsigned char source[], int length
 #else
     char* dot_stream;
     char* dot_array;
+    unsigned char* masked_codeword_array;
     unsigned char* codeword_array = (unsigned char *) _alloca(length * 3 * sizeof (unsigned char));
 #endif /* _MSC_VER */
 
@@ -1200,7 +1201,7 @@ int dotcode(struct zint_symbol *symbol, const unsigned char source[], int length
 #ifndef _MSC_VER
     unsigned char masked_codeword_array[data_length + 1 + ecc_length];
 #else
-    unsigned char* masked_codeword_array = (unsigned char *) _alloca((data_length + 1 + ecc_length) * sizeof (unsigned char));
+    masked_codeword_array = (unsigned char *) _alloca((data_length + 1 + ecc_length) * sizeof (unsigned char));
 #endif /* _MSC_VER */
 
     /* Evaluate data mask options */

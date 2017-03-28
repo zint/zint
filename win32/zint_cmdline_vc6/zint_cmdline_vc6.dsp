@@ -148,6 +148,10 @@ SOURCE=..\..\backend\eci.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\backend\emf.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\frontend\getopt.c
 # End Source File
 # Begin Source File
@@ -245,6 +249,10 @@ SOURCE=..\..\backend\svg.c
 # Begin Source File
 
 SOURCE=..\..\backend\telepen.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\backend\tif.c
 # End Source File
 # Begin Source File
 

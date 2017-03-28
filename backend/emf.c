@@ -155,14 +155,6 @@ int emf_plot(struct zint_symbol *symbol) {
     unsigned char output_buffer[12];
     uint32_t dx;
     
-#ifndef _MSC_VER
-    unsigned char local_text[bump_up(ustrlen(symbol->text) + 1)];
-    unsigned char string_buffer[2 * bump_up(ustrlen(symbol->text) + 1)];
-#else
-    unsigned char* local_text = (unsigned char*) malloc(bump_up(ustrlen(symbol->text) + 1));
-    unsigned char* string_buffer = (unsigned char*) malloc(2 * (bump_up(ustrlen(symbol->text) + 1));
-#endif
-    
     emr_header_t emr_header;
     emr_eof_t emr_eof;
     emr_createbrushindirect_t emr_createbrushindirect_fg;
@@ -181,6 +173,19 @@ int emf_plot(struct zint_symbol *symbol) {
 
     box_t box;
     
+#ifndef _MSC_VER
+    unsigned char local_text[bump_up(ustrlen(symbol->text) + 1)];
+    unsigned char string_buffer[2 * bump_up(ustrlen(symbol->text) + 1)];
+#else
+	unsigned char* local_text;
+	unsigned char* string_buffer;
+	emr_rectangle_t *rectangle, *row_binding;
+	emr_ellipse_t* circle;
+    emr_polygon_t* hexagon;
+    local_text = (unsigned char*) _alloca(bump_up(ustrlen(symbol->text) + 1) * sizeof (unsigned char));
+    string_buffer = (unsigned char*) _alloca(2 * bump_up(ustrlen(symbol->text) + 1) * sizeof (unsigned char));
+#endif
+    
     row_height = 0;
     textdone = 0;
     comp_offset = 0;
@@ -189,7 +194,7 @@ int emf_plot(struct zint_symbol *symbol) {
     this_hexagon = 0;
     dx = 0;
     latch = 0;
-    
+
     for(i = 0; i < 6; i++) {
         regw[i] = '\0';
         regx[i] = '\0';
@@ -234,21 +239,11 @@ int emf_plot(struct zint_symbol *symbol) {
 
     if (strlen(symbol->fgcolour) != 6) {
         strcpy(symbol->errtxt, "Malformed foreground colour target (F41)");
-#ifdef _MSC_VER
-        free(local_text);
-        free(string_buffer);
-        free(dx_buffer);
-#endif
         return ZINT_ERROR_INVALID_OPTION;
     }
     
     if (strlen(symbol->bgcolour) != 6) {
         strcpy(symbol->errtxt, "Malformed background colour target (F42)");
-#ifdef _MSC_VER
-        free(local_text);
-        free(string_buffer);
-        free(dx_buffer);
-#endif
         return ZINT_ERROR_INVALID_OPTION;
     }
     
@@ -328,10 +323,10 @@ int emf_plot(struct zint_symbol *symbol) {
     emr_ellipse_t circle[circle_count];
     emr_polygon_t hexagon[hexagon_count];
 #else
-    rectangle = (emr_rectangle_t*) malloc(rectangle_count);
-    row_binding = (emr_rectangle_t*) malloc(rectangle_count);
-    circle = (emr_ellipse_t*) malloc(circle_count);
-    hexagon = (emr_polygon_t*) malloc(hexagon_count);
+    rectangle = (emr_rectangle_t*) _alloca(rectangle_count*sizeof(emr_rectangle_t));
+    row_binding = (emr_rectangle_t*) _alloca((symbol->rows - 1)*sizeof(emr_rectangle_t));
+    circle = (emr_ellipse_t*) _alloca(circle_count*sizeof(emr_ellipse_t));
+    hexagon = (emr_polygon_t*) _alloca(hexagon_count*sizeof(emr_polygon_t));
 #endif
     
     /* Header */
@@ -1021,15 +1016,6 @@ int emf_plot(struct zint_symbol *symbol) {
     }
     if (emf_file == NULL) {
         strcpy(symbol->errtxt, "Could not open output file (F40)");
-#ifdef _MSC_VER
-        free(local_text);
-        free(string_buffer);
-        free(dx_buffer);
-        free(rectangle);
-        free(row_binding);
-        free(circle);
-        free(hexagon);
-#endif
         return ZINT_ERROR_FILE_ACCESS;
     }
     
@@ -1231,16 +1217,5 @@ int emf_plot(struct zint_symbol *symbol) {
     } else {
         fclose(emf_file);
     }
-
-#ifdef _MSC_VER
-    free(local_text);
-    free(string_buffer);
-    free(dx_buffer);
-    free(rectangle);
-    free(row_binding);
-    free(circle);
-    free(hexagon);
-#endif
-    
     return error_number;
 }
