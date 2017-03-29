@@ -71,6 +71,7 @@ TEA_ADD_SOURCES([
 	../backend/auspost.c
 	../backend/aztec.c
 	../backend/bmp.c
+	../backend/emf.c
 	../backend/codablock.c
 	../backend/code128.c
 	../backend/code16k.c
@@ -105,6 +106,7 @@ TEA_ADD_SOURCES([
 	../backend/rss.c
 	../backend/svg.c
 	../backend/telepen.c
+	../backend/tif.c
 	../backend/upcean.c
 	zint.c
 ])
