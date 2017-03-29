@@ -95,6 +95,16 @@
      <string>ZSoft PC Painter Image (*.pcx)</string>
     </property>
    </item>
+   <item>
+    <property name="text">
+     <string>Extended Metafile (*.emf)</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>Tagged Image File Format (*.tif)</string>
+    </property>
+   </item>
   </widget>
   <widget class="QToolButton" name="btnDestPath">
    <property name="geometry">

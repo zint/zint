@@ -78,6 +78,8 @@ void ExportWindow::process()
                 case 2: suffix = ".svg"; break;
                 case 3: suffix = ".bmp"; break;
                 case 4: suffix = ".pcx"; break;
+		case 5: suffix = ".emf"; break;
+		case 6: suffix = ".tif"; break;
 #else
                 case 0: suffix = ".png"; break;
 		case 1: suffix = ".eps"; break;
@@ -85,6 +87,8 @@ void ExportWindow::process()
                 case 3: suffix = ".svg"; break;
                 case 4: suffix = ".bmp"; break;
                 case 5: suffix = ".pcx"; break;
+		case 6: suffix = ".emf"; break;
+		case 7: suffix = ".tif"; break;
 #endif
 	}
 	
