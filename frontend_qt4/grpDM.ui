@@ -209,62 +209,42 @@
        </item>
        <item>
         <property name="text">
-         <string>8 x 48</string>
+         <string>8 x 48 (DMRE)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>8 x 64</string>
+         <string>8 x 64 (DMRE)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>12 x 64</string>
+         <string>12 x 64 (DMRE)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>16 x 64</string>
+         <string>16 x 64 (DMRE)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>24 x 32</string>
+         <string>24 x 48 (DMRE)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>24 x 40</string>
+         <string>24 x 64 (DMRE)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>24 x 48</string>
+         <string>26 x 48 (DMRE)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>24 x 64</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>26 x 32</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>26 x 40</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>26 x 48</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>26 x 64</string>
+         <string>26 x 64 (DMRE)</string>
         </property>
        </item>
       </widget>
