@@ -878,7 +878,7 @@ int codablock(struct zint_symbol *symbol, unsigned char source[], int length) {
                         characterSetCur=CodeC;
                     }
                 }
-                if ((pSet[charCur]&CodeA)!=0)
+                if ((pSet[charCur]&CShift)!=0)
                 {
                     /* >> Shift it and put out the shifted character */
                     ASCIIZ128(&pOutPos,characterSetCur,aShift,'\0');
