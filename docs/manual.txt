@@ -1772,14 +1772,10 @@ Input  |  Symbol Size
 32     |  8 x 64
 33     |  12 x 64
 34     |  16 x 64
-35     |  24 x 32
-36     |  24 x 36
-37     |  24 x 48
-38     |  24 x 64
-39     |  26 x 32
-40     |  26 x 40
-41     |  26 x 48
-42     |  26 x 64
+35     |  24 x 48
+36     |  24 x 64
+37     |  26 x 48
+38     |  26 x 64
 ---------------------
 
 DMRE symbol sizes may be activated in automatic size mode using the option 
