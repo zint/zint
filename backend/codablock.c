@@ -305,7 +305,13 @@ int Columns2Rows(CharacterSetTable *T, unsigned char *data, int dataLength,
                                 emptyColumns=0;
                             }else{
                                 /* <Shift> or <switchB>? */
-                                pSet[charCur]|=(T[charCur].BFollowing==1)?CShift:CodeB;
+                                if (T[charCur].BFollowing==1)
+                                {
+                                    pSet[charCur]|=CShift;
+                                } else {
+                                    pSet[charCur]|=CodeB;
+                                    characterSetCur = CodeB;
+                                }
                                 emptyColumns-=2;
                                 ++charCur;
                             }
@@ -324,7 +330,13 @@ int Columns2Rows(CharacterSetTable *T, unsigned char *data, int dataLength,
                                 emptyColumns=0;
                             } else {
                                 /* <Shift> or <switchA>? */
-                                pSet[charCur]|=(T[charCur].AFollowing==1)?CShift:CodeA;
+                                if (T[charCur].AFollowing==1)
+                                {
+                                    pSet[charCur]|=CShift;
+                                } else {
+                                    pSet[charCur]|=CodeA;
+                                    characterSetCur = CodeA;
+                                }
                                 emptyColumns-=2;
                                 ++charCur;
                             }
