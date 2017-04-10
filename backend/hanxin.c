@@ -987,11 +987,12 @@ void hx_add_ecc(unsigned char fullstream[], unsigned char datastream[], int vers
     int batch_size, data_length, ecc_length;
     int input_position = -1;
     int output_position = -1;
+    int table_d1_pos = ((version - 1) * 36) + ((ecc_level - 1) * 9);
 
     for (i = 0; i < 3; i++) {
-        batch_size = hx_table_d1[(((version - 1) + (ecc_level - 1)) * 9) + (3 * i)];
-        data_length = hx_table_d1[(((version - 1) + (ecc_level - 1)) * 9) + (3 * i) + 1];
-        ecc_length = hx_table_d1[(((version - 1) + (ecc_level - 1)) * 9) + (3 * i) + 2];
+        batch_size = hx_table_d1[table_d1_pos + (3 * i)];
+        data_length = hx_table_d1[table_d1_pos + (3 * i) + 1];
+        ecc_length = hx_table_d1[table_d1_pos + (3 * i) + 2];
 
         for (block = 0; block < batch_size; block++) {
             for (j = 0; j < data_length; j++) {
@@ -1065,7 +1066,7 @@ int hx_evaluate(unsigned char *eval, int size, int pattern) {
                     p += (0x40 >> weight);
                 }
             }
-            if ((p == 0x57) || (p = 0x75)) {
+            if ((p == 0x57) || (p == 0x75)) {
                 /* Pattern found, check before and after */
                 beforeCount = 0;
                 for (b = (y - 3); b < y; b++) {
@@ -1111,7 +1112,7 @@ int hx_evaluate(unsigned char *eval, int size, int pattern) {
                     p += (0x40 >> weight);
                 }
             }
-            if ((p == 0x57) || (p = 0x75)) {
+            if ((p == 0x57) || (p == 0x75)) {
                 /* Pattern found, check before and after */
                 beforeCount = 0;
                 for (b = (x - 3); b < x; b++) {
@@ -1303,9 +1304,10 @@ int han_xin(struct zint_symbol *symbol, const unsigned char source[], int length
     int ecc_level = symbol->option_1;
     int i, j, version, posn = 0, glyph, glyph2;
     int data_codewords = 0, size;
-    int est_codewords;
+    int codewords;
     int bitmask;
     int error_number;
+    int bin_len;
     char function_information[36];
     unsigned char fi_cw[3] = {0, 0, 0};
     unsigned char fi_ecc[4];
@@ -1382,13 +1384,9 @@ int han_xin(struct zint_symbol *symbol, const unsigned char source[], int length
     hx_define_mode(mode, gbdata, length);
 
     est_binlen = calculate_binlength(mode, gbdata, length, symbol->eci);
-    est_codewords = est_binlen / 8;
-    if (est_binlen % 8 != 0) {
-        est_codewords++;
-    }
 
 #ifndef _MSC_VER
-    char binary[est_binlen + 1];
+    char binary[est_binlen + 10];
 #else
     binary = (char *) _alloca((est_binlen + 10) * sizeof (char));
 #endif
@@ -1399,30 +1397,35 @@ int han_xin(struct zint_symbol *symbol, const unsigned char source[], int length
     }
 
     calculate_binary(binary, mode, gbdata, length, symbol->eci);
+    bin_len = strlen(binary);
+    codewords = bin_len / 8;
+    if (bin_len % 8 != 0) {
+        codewords++;
+    }
 
     version = 85;
     for (i = 84; i > 0; i--) {
         switch (ecc_level) {
             case 1:
-                if (hx_data_codewords_L1[i - 1] > est_codewords) {
+                if (hx_data_codewords_L1[i - 1] > codewords) {
                     version = i;
                     data_codewords = hx_data_codewords_L1[i - 1];
                 }
                 break;
             case 2:
-                if (hx_data_codewords_L2[i - 1] > est_codewords) {
+                if (hx_data_codewords_L2[i - 1] > codewords) {
                     version = i;
                     data_codewords = hx_data_codewords_L2[i - 1];
                 }
                 break;
             case 3:
-                if (hx_data_codewords_L3[i - 1] > est_codewords) {
+                if (hx_data_codewords_L3[i - 1] > codewords) {
                     version = i;
                     data_codewords = hx_data_codewords_L3[i - 1];
                 }
                 break;
             case 4:
-                if (hx_data_codewords_L4[i - 1] > est_codewords) {
+                if (hx_data_codewords_L4[i - 1] > codewords) {
                     version = i;
                     data_codewords = hx_data_codewords_L4[i - 1];
                 }
@@ -1448,17 +1451,17 @@ int han_xin(struct zint_symbol *symbol, const unsigned char source[], int length
 
     /* If there is spare capacity, increase the level of ECC */
 
-    if ((ecc_level == 1) && (est_codewords < hx_data_codewords_L2[version - 1])) {
+    if ((ecc_level == 1) && (codewords < hx_data_codewords_L2[version - 1])) {
         ecc_level = 2;
         data_codewords = hx_data_codewords_L2[version - 1];
     }
 
-    if ((ecc_level == 2) && (est_codewords < hx_data_codewords_L3[version - 1])) {
+    if ((ecc_level == 2) && (codewords < hx_data_codewords_L3[version - 1])) {
         ecc_level = 3;
         data_codewords = hx_data_codewords_L3[version - 1];
     }
 
-    if ((ecc_level == 3) && (est_codewords < hx_data_codewords_L4[version - 1])) {
+    if ((ecc_level == 3) && (codewords < hx_data_codewords_L4[version - 1])) {
         ecc_level = 4;
         data_codewords = hx_data_codewords_L4[version - 1];
     }
@@ -1483,7 +1486,7 @@ int han_xin(struct zint_symbol *symbol, const unsigned char source[], int length
         datastream[i] = 0;
     }
 
-    for (i = 0; i < est_binlen; i++) {
+    for (i = 0; i < bin_len; i++) {
         if (binary[i] == '1') {
             datastream[i / 8] += 0x80 >> (i % 8);
         }
