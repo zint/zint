@@ -695,20 +695,20 @@ int ZBarcode_Encode_File_and_Buffer(struct zint_symbol *symbol, char *filename,
       int rotate_angle); 
 
 The arguments here are the same as above. The difference is that instead of 
-saving the image to file it is placed in a character array. The "bitmap" 
+saving the image to file it is placed in an unsigned integer array. The "bitmap" 
 pointer is set to the first memory location in the array and the values 
 "barcode_width" and "barcode_height" indicate the size of the resulting image 
 in pixels. Rotation and colour options can be used at the same time as using 
 the buffer functions in the same way as when saving to a raster image. The
-pixel data can be extracted from the character array by the methd shown in
+pixel data can be extracted from the array by the methd shown in
 the example below where render_pixel() is assumed to be a function for drawing
 a pixel on the screen implemented by the external application:
 
 int row, col, i = 0;
-int red, blue, green;
+unsigned int red, blue, green;
 
 for (row = 0; row < my_symbol->bitmap_height; row++) {
-     for (column = 0; column < my_symbol->bitmap_width; column++) {
+     for (column = 0; col < my_symbol->bitmap_width; column++) {
           red = my_symbol->bitmap[i];
           green = my_symbol->bitmap[i + 1];
           blue = my_symbol->bitmap[i + 2];
