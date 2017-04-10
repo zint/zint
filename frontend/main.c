@@ -491,7 +491,7 @@ int main(int argc, char **argv) {
             {"mirror", 0, 0, 0},
             {"dotty", 0, 0, 0},
             {"dotsize", 1, 0, 0},
-            {"eci", 1, 0, 'e'},
+            {"eci", 1, 0, 0},
             {"filetype", 1, 0, 0},
             {0, 0, 0, 0}
         };
