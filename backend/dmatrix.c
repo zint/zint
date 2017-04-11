@@ -1183,9 +1183,8 @@ int data_matrix_200(struct zint_symbol *symbol, const unsigned char source[], co
     if (calcsize > optionsize) {
         symbolsize = calcsize;
         if (optionsize != -1) {
-            /* flag an error */
-            error_number = ZINT_WARN_INVALID_OPTION;
-            strcpy(symbol->errtxt, "Data does not fit in selected symbol size (E12)");
+            strcpy(symbol->errtxt, "Input too long for selected symbol size");
+            return ZINT_ERROR_TOO_LONG;
         }
     }
 

@@ -1425,6 +1425,7 @@ int code_one(struct zint_symbol *symbol, unsigned char source[], int length) {
         data_length = c1_encode(symbol, source, data, length);
 
         if (data_length == 0) {
+            strcpy(symbol->errtxt, "Input data is too long");
             return ZINT_ERROR_TOO_LONG;
         }
 
@@ -1436,6 +1437,11 @@ int code_one(struct zint_symbol *symbol, unsigned char source[], int length) {
 
         if (symbol->option_2 > size) {
             size = symbol->option_2;
+        }
+        
+        if ((symbol-> option_2 != 0) && (symbol->option_2 < size)) {
+            strcpy(symbol->errtxt, "Input too long for selected symbol size");
+            return ZINT_ERROR_TOO_LONG;
         }
 
         for (i = data_length; i < c1_data_length[size - 1]; i++) {

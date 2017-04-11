@@ -1448,6 +1448,11 @@ int han_xin(struct zint_symbol *symbol, const unsigned char source[], int length
     if (symbol->option_2 > version) {
         version = symbol->option_2;
     }
+    
+    if ((symbol->option_2 != 0) && (symbol->option_2 < version)) {
+        strcpy(symbol->errtxt, "Input too long for selected symbol size");
+        return ZINT_ERROR_TOO_LONG;
+    }
 
     /* If there is spare capacity, increase the level of ECC */
 

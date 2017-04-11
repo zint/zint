@@ -1632,6 +1632,11 @@ int qr_code(struct zint_symbol *symbol, const unsigned char source[], int length
             version = symbol->option_2;
             est_binlen = getBinaryLength(symbol->option_2, mode, jisdata, length, gs1, symbol->eci);
         }
+        
+        if (symbol->option_2 < version) {
+            strcpy(symbol->errtxt, "Input too long for selected symbol size");
+            return ZINT_ERROR_TOO_LONG;
+        }
     }
 
     /* Ensure maxium error correction capacity */
@@ -2791,6 +2796,9 @@ int microqr(struct zint_symbol *symbol, const unsigned char source[], int length
     if ((symbol->option_2 >= 1) && (symbol->option_2 <= 4)) {
         if (symbol->option_2 >= autoversion) {
             version = symbol->option_2;
+        } else {
+            strcpy(symbol->errtxt, "Input too long for selected symbol size");
+            return ZINT_ERROR_TOO_LONG;
         }
     }
 

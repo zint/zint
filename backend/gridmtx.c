@@ -1141,7 +1141,8 @@ int grid_matrix(struct zint_symbol *symbol, const unsigned char source[], int le
         if (symbol->option_2 > min_layers) {
             layers = symbol->option_2;
         } else {
-            layers = min_layers;
+            strcpy(symbol->errtxt, "Input data too long for selected symbol size");
+            return ZINT_ERROR_TOO_LONG;
         }
     }
 
