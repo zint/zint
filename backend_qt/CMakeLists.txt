@@ -15,8 +15,7 @@ add_dependencies(QZint zint)
 
 link_directories( "${CMAKE_BINARY_DIR}/backend" )
 
-target_link_libraries(QZint zint ${QT_QTGUI_LIBRARY} 
-        ${QT_QTCORE_LIBRARY} )
+target_link_libraries(QZint zint Qt5::Widgets Qt5::Gui )
 
 install(TARGETS QZint  ${INSTALL_TARGETS_DEFAULT_ARGS} )
 install(FILES qzint.h DESTINATION ${INCLUDE_INSTALL_DIR} COMPONENT Devel)

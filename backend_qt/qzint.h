@@ -93,6 +93,8 @@ public:
 	bool save_to_file(QString filename);
 	
 	void setHideText(bool hide);
+        
+        void setTargetSize(int width, int height);
 
 private:
 	void encode();
@@ -119,6 +121,8 @@ private:
 	int m_option_3;
 	bool m_hidetext;
         float m_dot_size;
+        int target_size_horiz;
+        int target_size_vert;
 };
 }
 #endif

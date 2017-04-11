@@ -29,12 +29,15 @@ class BarcodeItem : public QGraphicsItem
 public:
 	BarcodeItem();
 	~BarcodeItem();
+        void setSize(int width, int height);
 	QRectF boundingRect() const;
 	void paint(QPainter * painter, const QStyleOptionGraphicsItem * option, QWidget * widget = 0);
 
+private:
+        int w, h;
+        
 public:
 	mutable Zint::QZint bc;
-	int w,h;
 	Zint::QZint::AspectRatioMode ar;
 };
 

@@ -20,6 +20,7 @@
 #include <QtGui>
 #include <QGraphicsItem>
 #include <QMainWindow>
+#include <QGraphicsScene>
 
 #include "ui_mainWindow.h"
 #include "barcodeitem.h"
@@ -105,7 +106,7 @@ public:
 	};
 
 public:
-	MainWindow(QWidget* parent = 0, Qt::WFlags fl = 0);
+	MainWindow(QWidget* parent = 0, Qt::WindowFlags fl = 0);
 	~MainWindow();
 
 
@@ -119,6 +120,9 @@ public slots:
 	void maxi_primary();
 	void change_print_scale();
 
+protected:
+    void resizeEvent(QResizeEvent *event);
+        
 private slots:
 	bool save();
 	void about();
@@ -134,6 +138,7 @@ private:
 	QColor m_fgcolor,m_bgcolor;
 	BarcodeItem m_bc;
 	QWidget *m_optionWidget; 
+        QGraphicsScene *scene;
 /*     QMenu *fileMenu;
      QMenu *helpMenu;
      QAction *saveAct;

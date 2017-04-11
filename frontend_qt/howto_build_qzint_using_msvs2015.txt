@@ -1,0 +1,60 @@
+Harald Oehlmann
+2017-03-29
+
+How to build qzint.exe using:
+- QT 5.7 installed in C:\qt\Qt5.7.1
+  32 bit (use the offline installer and the 32 bit package)
+- MS Visual Studio 2015 (VC12)
+
+Build static Qt:
+---------------
+- Download: qt-opensource-windows-x86-msvc2015-5.7.1.exe
+- Klick option "source" and deselect all other special modules.
+- Install to C:\qt\5.7.1 (or another folder, then change the folders in the following)
+- Install Python (ActivePython-2.7.13.2713-win64-x64-401787.exe)
+
+- Start the VS2015 x86 native console by the start menu entry:
+Visual Studio 2015\Visual Studio Tools\Windows Desktop Command Prompts\VS2015 x86 Native Tools-Eingabeaufforderung
+
+- cd C:\Qt\5.7.1\5.7\Src
+- set QMAKESPEC=win32-msvc2015
+- configure.bat -static -release -prefix c:\qt\5.7.1static -qt-zlib -qt-pcre -qt-libpng -qt-libjpeg -qt-freetype -opengl desktop -qt-sql-sqlite -no-openssl -opensource -confirm-license -make libs -nomake tools -nomake examples -nomake tests -mp
+  One may set another destination folder after the -prefix option.
+  Attention, the upper command is one long line.
+- nmake
+- nmake install
+  The last 3 commands run around 3 hours
+
+Zint Folder structure:
+----------------------
+- zint source files in $ZH
+  -> this file is in $ZH\frontend_qt
+- png1620.zip unzipped in $ZH\..\lpng
+  -> $ZH\..\lpng\png.h exists
+- zlib128.zip unzipped in folder $ZH\..\zlib
+  -> $ZH\..\zlib\zlib.h exists
+
+Build libpng:
+-------------
+Open $ZH\..\lpng\projects\vstudio with VS2015 gui and convert the project
+Set Project settings->C++->Code Generation->Library: Multi-Threadded DLL /MD
+Copy the zlib source as required by the make file (in my case: zlib-1.2.8)
+Build targets "Release Library" for zlib and libpng.
+
+Build zint:
+-----------
+- Start in the start menu: "VS2015 x86 Native Tools-Eingabeaufforderung"
+- set QTDIR=C:\Qt\5.7.1static
+- set PATH=C:\Qt\5.7.1static\bin;%PATH%
+- set QMAKESPEC=win32-msvc2015
+- cd $ZH
+- cd backend_qt
+- qmake backend_qt.pro
+- nmake clean
+- nmake release
+    
+- cd ..\frontend_qt
+- qmake frontend_qt.pro
+- nmake clean
+- nmake release
+  -> qzint.exe is in the release folder

@@ -20,15 +20,25 @@
 #include <QColorDialog>
 #include <QUiLoader>
 #include <QFile>
+#include <QRadioButton>
+#include <QFileDialog>
+#include <QMessageBox>
+#include <QSettings>
 
 #include "mainwindow.h"
 #include "datawindow.h"
 #include "sequencewindow.h"
 #include <stdio.h>
 
-MainWindow::MainWindow(QWidget* parent, Qt::WFlags fl)
+MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags fl)
 		: QWidget(parent, fl),m_optionWidget(0)
 {
+    
+    QCoreApplication::setOrganizationName("Zint");
+    QCoreApplication::setOrganizationDomain("zint.org.uk");
+    QCoreApplication::setApplicationName("Barcode Studio");
+    
+    QSettings settings;
 
 	char bstyle_text[][50] = {
 		"Australia Post Redirect Code",
@@ -100,19 +110,25 @@ MainWindow::MainWindow(QWidget* parent, Qt::WFlags fl)
 	/* createActions();
 	createMenus();	*/
 	
+        scene = new QGraphicsScene(this);
+        
 	setupUi(this);
-	view->setScene(new QGraphicsScene);
+	view->setScene(scene);
 	
-	m_fgcolor=qRgb(0,0,0);
-	m_bgcolor=qRgb(0xff,0xff,0xff);
+	m_fgcolor=qRgb(settings.value("studio/ink/red", 0).toInt(),
+                settings.value("studio/ink/green", 0).toInt(),
+                settings.value("studio/ink/blue", 0).toInt());
+	m_bgcolor=qRgb(settings.value("studio/paper/red", 0xff).toInt(),
+                settings.value("studio/paper/green", 0xff).toInt(),
+                settings.value("studio/paper/blue", 0xff).toInt());
 	for (int i=0;i<metaObject()->enumerator(0).keyCount();i++) {
 		bstyle->addItem(metaObject()->enumerator(0).key(i));
 		bstyle->setItemText(i,bstyle_text[i]);
 	}
-	bstyle->setCurrentIndex(10);
+	bstyle->setCurrentIndex(settings.value("studio/symbology", 10).toInt());
 	change_options();
+        scene->addItem(&m_bc);
 	update_preview();
-	view->scene()->addItem(&m_bc);
 	connect(bstyle, SIGNAL(currentIndexChanged( int )), SLOT(change_options()));
 	connect(bstyle, SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
 	connect(heightb, SIGNAL(valueChanged( int )), SLOT(update_preview()));
@@ -136,6 +152,21 @@ MainWindow::MainWindow(QWidget* parent, Qt::WFlags fl)
 
 MainWindow::~MainWindow()
 {
+    QSettings settings;
+    
+    settings.setValue("studio/symbology", bstyle->currentIndex());
+    settings.setValue("studio/ink/red", m_fgcolor.red());
+    settings.setValue("studio/ink/green", m_fgcolor.green());
+    settings.setValue("studio/ink/blue", m_fgcolor.blue());
+    settings.setValue("studio/paper/red", m_bgcolor.red());
+    settings.setValue("studio/paper/green", m_bgcolor.green());
+    settings.setValue("studio/paper/blue", m_bgcolor.blue());
+}
+
+void MainWindow::resizeEvent(QResizeEvent* event)
+{
+    QWidget::resizeEvent(event);
+    update_preview();
 }
 
 void MainWindow::reset_view()
@@ -172,13 +203,14 @@ bool MainWindow::save()
 void MainWindow::about()
 {
 	QMessageBox::about(this, tr("About Zint"),
-			   tr("<h2>Zint Barcode Studio 2.5.1</h2>"
+               tr("<h2>Zint Barcode Studio 2.5.1</h2>"
 					   "<p>A free barcode generator"
 					   "<p>Instruction manual is available from Sourceforge:"
 					   "<p>http://www.sourceforge.net/projects/zint"
 					   "<p>Copyright &copy; 2006-2016 Robin Stuart.<br>"
-					   "Qt4 code by BogDan Vatra, MS Windows port by \"tgotic\".<br>"
-					   "With thanks to Norbert Szab&oacute;, Robert Elliott,"
+					   "Qt back end by BogDan Vatra, MS Windows port by \"tgotic\"."
+                                           "<p>Qt version " QT_VERSION_STR 
+					   "<p>With thanks to Norbert Szab&oacute;, Robert Elliott, "
                                            "Harald Oehlmann and many others at Sourceforge."
 					   "<p>Released under the GNU General Public License ver. 3 or later.<br>"
 					   "\"QR Code\" is a Registered Trademark of Denso Corp.<br>"
@@ -189,7 +221,8 @@ void MainWindow::about()
 					   "ISO/IEC 16388:2007, ISO/IEC 18004:2006, ISO/IEC 24723:2010,<br>"
 					   "ISO/IEC 24724:2011, ISO/IEC 24728:2006, ISO/IEC 24778:2008,<br>"
 					   "ANSI-HIBC 2.3-2009, ANSI/AIM BC6-2000, ANSI/AIM BC12-1998,<br>"
-					   "AIMD014 (v 1.63), USPS-B-3200</small></td></tr></table>"
+                       "AIMD014 (v 1.63), USPS-B-3200</small></td></tr></table>"
+
 			     ));
 }
 
@@ -583,8 +616,10 @@ void MainWindow::maxi_primary()
 
 void MainWindow::update_preview()
 {
-	QString error;
-	m_bc.ar=(Zint::QZint::AspectRatioMode)1;
+        int width = view->geometry().width();
+        int height = view->geometry().height();
+    
+	//m_bc.ar=(Zint::QZint::AspectRatioMode)1;
 	if(chkComposite->isChecked() == true) {
 		m_bc.bc.setPrimaryMessage(txtData->text());
 		m_bc.bc.setText(txtComposite->toPlainText());
@@ -595,9 +630,9 @@ void MainWindow::update_preview()
 	m_bc.bc.setSecurityLevel(0);
 	m_bc.bc.setWidth(0);
 	m_bc.bc.setInputMode(UNICODE_MODE);
-	m_bc.bc.setHideText(FALSE);
+	m_bc.bc.setHideText(0);
 	if(chkHRTHide->isChecked() == false) {
-		m_bc.bc.setHideText(TRUE);
+		m_bc.bc.setHideText(1);
 	}
 	switch(metaObject()->enumerator(0).value(bstyle->currentIndex()))
 	{
@@ -880,7 +915,8 @@ void MainWindow::update_preview()
 	m_bc.bc.setWhitespace(spnWhitespace->value());
 	m_bc.bc.setFgColor(m_fgcolor);
 	m_bc.bc.setBgColor(m_bgcolor);
+        m_bc.setSize(width - 10, height - 10);
 	m_bc.update();
-	view->scene()->update();
+        scene->setSceneRect(0, 0, width - 10, height - 10);
+        scene->update();
 }
-

@@ -40,8 +40,10 @@ namespace Zint {
         m_input_mode = UNICODE_MODE;
         m_scale = 1.0;
         m_option_3 = 0;
-        m_hidetext = FALSE;
+        m_hidetext = 0;
         m_dot_size = 4.0 / 5.0;
+        target_size_horiz = 0;
+        target_size_vert = 0;
     }
 
     QZint::~QZint() {
@@ -75,7 +77,7 @@ namespace Zint {
             m_zintSymbol->option_3 = m_option_3;
         }
         QByteArray bstr = m_text.toUtf8();
-        QByteArray pstr = m_primaryMessage.left(99).toAscii();
+        QByteArray pstr = m_primaryMessage.left(99).toLatin1();
         strcpy(m_zintSymbol->primary, pstr.data());
         int error = ZBarcode_Encode(m_zintSymbol, (unsigned char*) bstr.data(), bstr.length());
         if (error > ZINT_WARN_INVALID_OPTION)
@@ -114,6 +116,11 @@ namespace Zint {
 
     void QZint::setText(const QString & text) {
         m_text = text;
+    }
+    
+    void QZint::setTargetSize(int width, int height) {
+        target_size_horiz = width;
+        target_size_vert = height;
     }
 
     QString QZint::primaryMessage() {
@@ -258,12 +265,12 @@ namespace Zint {
         }
         m_zintSymbol->scale = m_scale;
         QByteArray bstr = m_text.toUtf8();
-        QByteArray pstr = m_primaryMessage.left(99).toAscii();
-        QByteArray fstr = filename.left(255).toAscii();
+        QByteArray pstr = m_primaryMessage.left(99).toLatin1();
+        QByteArray fstr = filename.left(255).toLatin1();
         strcpy(m_zintSymbol->primary, pstr.data());
         strcpy(m_zintSymbol->outfile, fstr.data());
-        QByteArray fgcol = fg_colour_hash.right(6).toAscii();
-        QByteArray bgcol = bg_colour_hash.right(6).toAscii();
+        QByteArray fgcol = fg_colour_hash.right(6).toLatin1();
+        QByteArray bgcol = bg_colour_hash.right(6).toLatin1();
         strcpy(m_zintSymbol->fgcolour, fgcol.data());
         strcpy(m_zintSymbol->bgcolour, bgcol.data());
         int error = ZBarcode_Encode(m_zintSymbol, (unsigned char*) bstr.data(), bstr.length());
@@ -294,17 +301,22 @@ namespace Zint {
     }
 
     void QZint::render(QPainter & painter, const QRectF & paintRect, AspectRatioMode mode) {
-        encode();
         bool textdone;
-        int comp_offset = 0, xoffset = m_whitespace, j, main_width = 0, addon_text_height = 0;
+        int comp_offset = 0;
+        int xoffset = m_whitespace;
+        int j, main_width = 0, addon_text_height = 0;
         int yoffset = 0;
+        
+        encode();
+        
         QString caption = QString::fromUtf8((const char *) m_zintSymbol->text, -1);
         QFont fontSmall(fontstyle);
         fontSmall.setPixelSize(fontPixelSizeSmall);
         QFont fontLarge(fontstyle);
         fontLarge.setPixelSize(fontPixelSizeLarge);
-
+        
         if (m_lastError.length()) {
+            fontLarge.setPointSize(14);
             painter.setFont(fontLarge);
             painter.drawText(paintRect, Qt::AlignCenter, m_lastError);
             return;
@@ -312,6 +324,7 @@ namespace Zint {
 
         painter.save();
         painter.setClipRect(paintRect, Qt::IntersectClip);
+        
         qreal xtr = paintRect.x();
         qreal ytr = paintRect.y();
 
@@ -334,10 +347,8 @@ namespace Zint {
         qreal gwidth = m_zintSymbol->width;
         qreal gheight = m_zintSymbol->height;
         if (m_zintSymbol->symbology == BARCODE_MAXICODE) {
-//            gheight *= (maxi_width);
-//            gwidth *= (maxi_width + 1);
-            gwidth *= 2.0;
-            gheight *= 2.0;
+            gwidth = (33.0 * maxi_width) + xoffset + xoffset;
+            gheight = (32.0 * maxi_width) + yoffset + yoffset;
         }
 
         if (m_zintSymbol->output_options & BARCODE_DOTTY_MODE) {
@@ -358,27 +369,14 @@ namespace Zint {
             textoffset = 0;
         }
         gwidth += m_zintSymbol->whitespace_width * 2;
-//        switch (mode) {
-//            case IgnoreAspectRatio:
-//                xsf = (qreal) paintRect.width() / gwidth;
-//                ysf = (qreal) paintRect.height() / gheight;
-//                break;
-//
-//            case KeepAspectRatio:
-                if (paintRect.width() / gwidth < paintRect.height() / gheight) {
-                    ysf = xsf = (qreal) paintRect.width() / gwidth;
-                    ytr += (qreal) (paintRect.height() - gheight * ysf) / 2;
-                } else {
-                    ysf = xsf = (qreal) paintRect.height() / gheight;
-                    xtr += (qreal) (paintRect.width() - gwidth * xsf) / 2;
-                }
-//                break;
-
-//            case CenterBarCode:
-//                xtr += ((qreal) paintRect.width() - gwidth * xsf) / 2;
-//                ytr += ((qreal) paintRect.height() - gheight * ysf) / 2;
-//                break;
-//        }
+        
+        if (paintRect.width() / gwidth < paintRect.height() / gheight) {
+            ysf = xsf = (qreal) paintRect.width() / gwidth;
+            ytr += (qreal) (paintRect.height() - gheight * ysf) / 2;
+        } else {
+            ysf = xsf = (qreal) paintRect.height() / gheight;
+            xtr += (qreal) (paintRect.width() - gwidth * xsf) / 2;
+        }
 
         painter.setBackground(QBrush(m_bgColor));
         painter.fillRect(paintRect, QBrush(m_bgColor));
@@ -386,11 +384,11 @@ namespace Zint {
         painter.scale(xsf, ysf);
 
         QPen p;
+        
         p.setColor(m_fgColor);
         p.setWidth(m_borderWidth);
         painter.setPen(p);
 
-        QPainterPath pt;
         if (m_zintSymbol->symbology != BARCODE_MAXICODE) {
             /* Draw boundary bars or boxes around the symbol */
             switch (m_border) {
