@@ -68,9 +68,9 @@ static void insert(char binary_string[], const size_t posn, const char newbit) {
 /**
  * Encode input data into a binary string
  */
-static int aztec_text_process(const unsigned char source[], const unsigned int src_len, char binary_string[], const int gs1, const int eci) {
+static int aztec_text_process(const unsigned char source[], const unsigned int src_len, char binary_string[], const int gs1, const int eci, int debug) {
     int i, j, k, p, bytes;
-    int curtable, newtable, lasttable, chartype, maplength, blocks, debug;
+    int curtable, newtable, lasttable, chartype, maplength, blocks;
 #ifndef _MSC_VER
     int charmap[src_len * 2], typemap[src_len * 2];
     int blockmap[2][src_len];
@@ -83,7 +83,6 @@ static int aztec_text_process(const unsigned char source[], const unsigned int s
 #endif
     /* Lookup input string in encoding table */
     maplength = 0;
-    debug = 0;
 
     if (gs1) {
         /* Add FNC1 to beginning of GS1 messages */
@@ -886,7 +885,7 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], int length) {
     unsigned char desc_data[4], desc_ecc[6];
     int err_code, ecc_level, compact, data_length, data_maxsize, codeword_size, adjusted_length;
     int remainder, padbits, count, gs1, adjustment_size;
-    int debug = 0, reader = 0;
+    int debug = symbol->debug, reader = 0;
     int comp_loop = 4;
 
 #ifdef _MSC_VER
@@ -913,7 +912,7 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     populate_map();
 
-    err_code = aztec_text_process(source, length, binary_string, gs1, symbol->eci);
+    err_code = aztec_text_process(source, length, binary_string, gs1, symbol->eci, symbol->debug);
 
     if (err_code != 0) {
         strcpy(symbol->errtxt, "Input too long or too many extended ASCII characters (E02)");

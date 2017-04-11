@@ -536,7 +536,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
     int sp, tp, i, gs1;
     int current_mode, next_mode;
     int inputlen = *length_p;
-    int debug = 0;
+    int debug = symbol->debug;
 #ifndef _MSC_VER
     char binary[2 * inputlen];
 #else

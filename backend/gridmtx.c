@@ -348,7 +348,7 @@ void add_shift_char(char binary[], int shifty) {
     }
 }
 
-int gm_encode(int gbdata[], int length, char binary[], int reader, int eci) {
+int gm_encode(int gbdata[], int length, char binary[], int reader, int eci, int debug) {
     /* Create a binary stream representation of the input data.
        7 sets are defined - Chinese characters, Numerals, Lower case letters, Upper case letters,
        Mixed numerals and latters, Control characters and 8-bit binary data */
@@ -357,7 +357,7 @@ int gm_encode(int gbdata[], int length, char binary[], int reader, int eci) {
     int p = 0, ppos;
     int numbuf[3], punt = 0;
     size_t number_pad_posn, byte_count_posn = 0;
-    int byte_count = 0, debug = 0;
+    int byte_count = 0;
     int shift, i;
 
     strcpy(binary, "");
@@ -1098,7 +1098,7 @@ int grid_matrix(struct zint_symbol *symbol, const unsigned char source[], int le
 
     if (symbol->output_options & READER_INIT) reader = 1;
 
-    error_number = gm_encode(gbdata, length, binary, reader, symbol->eci);
+    error_number = gm_encode(gbdata, length, binary, reader, symbol->eci, symbol->debug);
     if (error_number != 0) {
         strcpy(symbol->errtxt, "Input data too long (E31)");
         return error_number;

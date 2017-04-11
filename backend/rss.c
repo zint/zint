@@ -1169,7 +1169,7 @@ int general_rules(char field[], char type[]) {
 
 /* Handles all data encodation from section 7.2.5 of ISO/IEC 24724 */
 int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_string[]) {
-    int encoding_method, i, mask, j, read_posn, latch, debug = 0, last_mode = ISOIEC;
+    int encoding_method, i, mask, j, read_posn, latch, debug = symbol->debug, last_mode = ISOIEC;
     int symbol_characters, characters_per_row;
 #ifndef _MSC_VER
     char general_field[strlen(source) + 1], general_field_type[strlen(source) + 1];

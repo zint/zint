@@ -96,6 +96,7 @@ extern "C" {
         unsigned int bitmap_byte_length;
         float dot_size;
         struct zint_render *rendered;
+        int debug;
     };
 
 #define ZINT_VERSION_MAJOR      2

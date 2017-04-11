@@ -72,6 +72,7 @@ struct zint_symbol *ZBarcode_Create() {
     symbol->bitmap_height = 0;
     symbol->eci = 3;
     symbol->dot_size = 4.0 / 5.0;
+    symbol->debug = 0;
     return symbol;
 }
 

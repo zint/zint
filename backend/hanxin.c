@@ -328,11 +328,10 @@ int lookup_text2(char input) {
 }
 
 /* Convert input data to binary stream */
-void calculate_binary(char binary[], char mode[], int source[], int length, int eci) {
+void calculate_binary(char binary[], char mode[], int source[], int length, int eci, int debug) {
     int block_length;
     int position = 0;
     int i, p, count, encoding_value;
-    int debug = 0;
     int first_byte, second_byte;
     int third_byte, fourth_byte;
     int glyph;
@@ -1396,7 +1395,7 @@ int han_xin(struct zint_symbol *symbol, const unsigned char source[], int length
         ecc_level = 1;
     }
 
-    calculate_binary(binary, mode, gbdata, length, symbol->eci);
+    calculate_binary(binary, mode, gbdata, length, symbol->eci, symbol->debug);
     bin_len = strlen(binary);
     codewords = bin_len / 8;
     if (bin_len % 8 != 0) {
