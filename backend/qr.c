@@ -261,16 +261,15 @@ void qr_binary(int datastream[], int version, int target_binlen, char mode[], in
                 /* Character representation */
                 for (i = 0; i < short_data_block_length; i++) {
                     int jis = jisdata[position + i];
-                    int msb, lsb, prod;
-
-                    if (jis > 0x9fff) {
+                    int prod;
+                    
+                    if (jis >= 0x8140 && jis <= 0x9ffc)
+                        jis -= 0x8140;
+                    
+                    else if (jis >= 0xe040 && jis <= 0xebbf)
                         jis -= 0xc140;
-                    }
-                    msb = (jis & 0xff00) >> 4;
-                    lsb = (jis & 0xff);
-                    prod = (msb * 0xc0) + lsb;
-
-                    qr_bscan(binary, prod, 0x1000);
+                    
+                    prod = ((jis >> 8) * 0xc0) + (jis & 0xff);
 
                     if (debug) {
                         printf("0x%4X ", prod);
@@ -1765,14 +1764,17 @@ int micro_qr_intermediate(char binary[], int jisdata[], char mode[], int length,
                 /* Character representation */
                 for (i = 0; i < short_data_block_length; i++) {
                     int jis = jisdata[position + i];
-                    int msb, lsb, prod;
+                    int prod;
 
-                    if (jis > 0x9fff) {
+                    int jis = jisdata[position + i];
+                    
+                    if (jis >= 0x8140 && jis <= 0x9ffc)
+                        jis -= 0x8140;
+                    
+                    else if (jis >= 0xe040 && jis <= 0xebbf)
                         jis -= 0xc140;
-                    }
-                    msb = (jis & 0xff00) >> 4;
-                    lsb = (jis & 0xff);
-                    prod = (msb * 0xc0) + lsb;
+                    
+                    prod = ((jis >> 8) * 0xc0) + (jis & 0xff);
 
                     qr_bscan(binary, prod, 0x1000);
 
