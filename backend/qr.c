@@ -270,6 +270,8 @@ void qr_binary(int datastream[], int version, int target_binlen, char mode[], in
                         jis -= 0xc140;
                     
                     prod = ((jis >> 8) * 0xc0) + (jis & 0xff);
+                    
+                    qr_bscan(binary, prod, 0x1000);
 
                     if (debug) {
                         printf("0x%4X ", prod);
@@ -1765,8 +1767,6 @@ int micro_qr_intermediate(char binary[], int jisdata[], char mode[], int length,
                 for (i = 0; i < short_data_block_length; i++) {
                     int jis = jisdata[position + i];
                     int prod;
-
-                    int jis = jisdata[position + i];
                     
                     if (jis >= 0x8140 && jis <= 0x9ffc)
                         jis -= 0x8140;
