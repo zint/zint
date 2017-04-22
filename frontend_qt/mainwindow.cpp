@@ -24,6 +24,8 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QSettings>
+#include <QClipboard>
+#include <QMimeData>
 
 #include "mainwindow.h"
 #include "datawindow.h"
@@ -148,6 +150,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags fl)
 	connect(btnMoreData, SIGNAL(clicked( bool )), SLOT(open_data_dialog()));
 	connect(btnSequence, SIGNAL(clicked( bool )), SLOT(open_sequence_dialog()));
 	connect(chkHRTHide, SIGNAL(stateChanged( int )), SLOT(update_preview()));
+    connect(btnCopy, SIGNAL(clicked( bool )), SLOT(copy_to_clipboard()));
 }
 
 MainWindow::~MainWindow()
@@ -265,6 +268,22 @@ void MainWindow::change_print_scale()
 void MainWindow::quit_now()
 {
 	close();
+}
+
+void MainWindow::copy_to_clipboard()
+{
+    QClipboard *clipboard = QGuiApplication::clipboard();
+    QMimeData *data = new QMimeData;
+    QString filename = ".zint.gif";
+
+    if (!m_bc.bc.save_to_file(filename)) {
+            return;
+    }
+
+    data->setImageData(QImage(filename));
+    clipboard->setMimeData(data, QClipboard::Clipboard);
+
+    QFile::remove(filename);
 }
 
 void MainWindow::change_options()
