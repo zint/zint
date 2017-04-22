@@ -103,7 +103,7 @@
           <string notr="true"/>
          </property>
          <property name="currentIndex">
-          <number>0</number>
+          <number>1</number>
          </property>
          <widget class="QWidget" name="tabGeneral">
           <attribute name="title">
@@ -626,6 +626,9 @@ p, li { white-space: pre-wrap; }
          <width>100</width>
          <height>0</height>
         </size>
+       </property>
+       <property name="toolTip">
+        <string>Copy to clipboard</string>
        </property>
        <property name="text">
         <string>&amp;Copy</string>

@@ -274,7 +274,10 @@ void MainWindow::copy_to_clipboard()
 {
     QClipboard *clipboard = QGuiApplication::clipboard();
     QMimeData *data = new QMimeData;
-    QString filename = ".zint.gif";
+    QString filename = ".zint.svg";
+    double scale = spnScale->value();
+
+    spnScale->setValue(10);
 
     if (!m_bc.bc.save_to_file(filename)) {
             return;
@@ -284,6 +287,8 @@ void MainWindow::copy_to_clipboard()
     clipboard->setMimeData(data, QClipboard::Clipboard);
 
     QFile::remove(filename);
+
+    spnScale->setValue(scale);
 }
 
 void MainWindow::change_options()
