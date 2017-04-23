@@ -1301,12 +1301,13 @@ int hx_apply_bitmask(unsigned char *grid, int size) {
 int han_xin(struct zint_symbol *symbol, const unsigned char source[], int length) {
     int est_binlen;
     int ecc_level = symbol->option_1;
-    int i, j, version, posn = 0, glyph, glyph2;
+    int i, j, version, posn = 0;
     int data_codewords = 0, size;
     int codewords;
     int bitmask;
     int error_number;
     int bin_len;
+    int done;
     char function_information[36];
     unsigned char fi_cw[3] = {0, 0, 0};
     unsigned char fi_ecc[4];
@@ -1339,42 +1340,65 @@ int han_xin(struct zint_symbol *symbol, const unsigned char source[], int length
 
         posn = 0;
         for (i = 0; i < length; i++) {
+            done = 0;
+            gbdata[posn] = 0;
+            
+            /* Single byte characters in range U+0000 -> U+007F */
             if (utfdata[i] <= 0x7f) {
                 gbdata[posn] = utfdata[i];
                 posn++;
-            } else {
+                done = 1;
+            }
+            
+            /* Two bytes characters */
+            if (done == 0) {
                 j = 0;
-                glyph = 0;
                 do {
                     if (gb18030_twobyte_lookup[j * 2] == utfdata[i]) {
-                        glyph = gb18030_twobyte_lookup[(j * 2) + 1];
+                        gbdata[posn] = gb18030_twobyte_lookup[(j * 2) + 1];
+                        posn++;
+                        done = 1;
                     }
                     j++;
-                } while ((j < 23940) && (glyph == 0));
+                } while ((j < 23940) && (done == 0));
+            }
 
-                if (glyph == 0) {
-                    j = 0;
-                    glyph = 0;
-                    glyph2 = 0;
-                    do {
-                        if (gb18030_fourbyte_lookup[j * 3] == utfdata[i]) {
-                            glyph = gb18030_fourbyte_lookup[(j * 3) + 1];
-                            glyph2 = gb18030_fourbyte_lookup[(j * 3) + 2];
-                        }
-                        j++;
-                    } while ((j < 6793) && (glyph == 0));
-                    if (glyph == 0) {
-                        strcpy(symbol->errtxt, "Unknown character in input data (E40)");
-                        return ZINT_ERROR_INVALID_DATA;
-                    } else {
-                        gbdata[posn] = glyph;
-                        gbdata[posn + 1] = glyph2;
+            /* Four byte characters in range U+0080 -> U+FFFF */
+            if (done == 0) {
+                j = 0;
+                do {
+                    if (gb18030_fourbyte_lookup[j * 3] == utfdata[i]) {
+                        gbdata[posn] = gb18030_fourbyte_lookup[(j * 3) + 1];
+                        gbdata[posn + 1] = gb18030_fourbyte_lookup[(j * 3) + 2];
                         posn += 2;
+                        done = 1;
                     }
-                } else {
-                    gbdata[posn] = glyph;
-                    posn++;
+                    j++;
+                } while ((j < 6793) && (done == 0));
+            }
+            
+            /* Supplementary planes U+10000 -> U+1FFFF */
+            if (done == 0) {
+                if (utfdata[i] >= 0x10000 && utfdata[i] < 0x110000) {
+                    /* algorithm from libiconv-1.15\lib\gb18030.h */
+                    int j, r3, r2, r1, r0;
+                    
+                    j = utfdata[i] - 0x10000;
+                    r3 = (j % 10) + 0x30; j = j / 10;
+                    r2 = (j % 126) + 0x81; j = j / 126;
+                    r1 = (j % 10) + 0x30; j = j / 10;
+                    r0 = j + 0x90;
+                    gbdata[posn] = (r0 << 8) + r1;
+                    gbdata[posn + 1] = (r2 << 8) + r3;
+                    posn += 2;
+                    done = 1;
                 }
+            }
+            
+            /* Character not found */
+            if (done == 0) {
+                strcpy(symbol->errtxt, "Unknown character in input data (E40)");
+                return ZINT_ERROR_INVALID_DATA;
             }
         }
         length = posn;
