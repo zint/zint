@@ -1,7 +1,7 @@
 /*  hanxin.h - definitions for Han Xin code
 
     libzint - the open source barcode library
-    Copyright (C) 2009-2016 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2017 Robin Stuart <rstuart114@gmail.com>
     Copyright (C) 2016 Zoe Stuart
 
     Redistribution and use in source and binary forms, with or without

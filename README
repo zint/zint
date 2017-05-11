@@ -20,22 +20,10 @@ HIBC PDF417, HIBC MicroPDF417, HIBC QR Code, HIBC Aztec Code, Japanese Postal
 Code, Code 49, Channel Code, Code One, Grid Matrix, FIM and Flattermarken,
 Codablock-F, DotCode, Han Xin Code.
 
-Output can be saved as BMP, EPS, GIF, PCX, PNG or SVG. 
+Output can be saved as BMP, EPS, GIF, PCX, TIF, EMF, PNG or SVG. 
 
-PROJECT STATUS
---------------
-Version 2.5.0:
-After a long period of inaction, many new features and bugfixes, including:
-
-* Reintroduction of Codablock-F
-* Introduction of symbologies DotCode and Han Xin Code
-* New output formats: GIF, BMP and PCX
-* ECI handling
-* Redesigned handling of batch files at the command line
-* Integrate DMRE handling in Data Matrix
-* New licensing model
-
-
+PROJECT HISTORY
+---------------
 Version 2.3.0:
 This release features a complete rebuild of QR Code and Micro QR Code
 functionality which now:
@@ -85,8 +73,12 @@ Version 2.5.1:
 Numerous bugfixes, especially with Data Matrix thanks to extensive testing
 by brunt@SF
 
+Version 2.6.0:
+Update front end to Qt5. Output to EMF and TIF. Copy to clipboard. Update
+to latest draft of DMRE. Usual bugfixes.
 
-CONTACT ME
+
+CONTACT US
 ----------
 The home of libzint is:
 
