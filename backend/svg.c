@@ -206,6 +206,13 @@ int svg_plot(struct zint_symbol *symbol) {
     }
     addon[r] = '\0';
 
+    /* Don't include control characters in output text */
+    for(i = 0; i < ustrlen(local_text); i++) {
+        if (local_text[i] < ' ') {
+            local_text[i] = ' ';
+        }
+    }
+    
     if (ustrlen(local_text) != 0) {
         textoffset = 9;
     } else {
