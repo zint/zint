@@ -40,6 +40,8 @@
 -   Include the upstream reverted image format
  2016-12-12 2.5.3 HaO
 -	No changes here, take 2.5.1 framework files
+ 2017-05-12 2.6.0 HaO
+-	No changes here, take 2.6 framework files
 */
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
@@ -79,7 +81,7 @@
 /*----------------------------------------------------------------------------*/
 /* > File option defines */
 
-#define VERSION "2.5.3"
+#define VERSION "2.6.0"
 
 /*----------------------------------------------------------------------------*/
 /* >>>>> Hepler defines */
