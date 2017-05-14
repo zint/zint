@@ -69,7 +69,7 @@ static void insert(char binary_string[], const size_t posn, const char newbit) {
  * Encode input data into a binary string
  */
 static int aztec_text_process(const unsigned char source[], const unsigned int src_len, char binary_string[], const int gs1, const int eci, int debug) {
-    int i, j, k, p, bytes;
+    int i, j, k, bytes;
     int curtable, newtable, lasttable, chartype, maplength, blocks;
 #ifndef _MSC_VER
     int charmap[src_len * 2], typemap[src_len * 2];
@@ -333,21 +333,21 @@ static int aztec_text_process(const unsigned char source[], const unsigned int s
                     case (64 + UPPER): /* To UPPER */
                         switch (curtable) {
                             case LOWER: /* US */
-                                strcat(binary_string, pentbit[28]);
+                                bin_append(28, 5, binary_string);
                                 if (debug) printf("US ");
                                 break;
                             case MIXED: /* UL */
-                                strcat(binary_string, pentbit[29]);
+                                bin_append(29, 5, binary_string);
                                 if (debug) printf("UL ");
                                 newtable = UPPER;
                                 break;
                             case PUNC: /* UL */
-                                strcat(binary_string, pentbit[31]);
+                                bin_append(31, 5, binary_string);
                                 if (debug) printf("UL ");
                                 newtable = UPPER;
                                 break;
                             case DIGIT: /* US */
-                                strcat(binary_string, quadbit[15]);
+                                bin_append(15, 4, binary_string);
                                 if (debug) printf("US ");
                                 break;
                         }
@@ -355,26 +355,22 @@ static int aztec_text_process(const unsigned char source[], const unsigned int s
                     case (64 + LOWER): /* To LOWER */
                         switch (curtable) {
                             case UPPER: /* LL */
-                                strcat(binary_string, pentbit[28]);
-                                if (debug) printf("LL ");
-                                newtable = LOWER;
-                                break;
-                            case MIXED: /* LL */
-                                strcat(binary_string, pentbit[28]);
+                            case MIXED:
+                                bin_append(28, 5, binary_string);
                                 if (debug) printf("LL ");
                                 newtable = LOWER;
                                 break;
                             case PUNC: /* UL LL */
-                                strcat(binary_string, pentbit[31]);
+                                bin_append(31, 5, binary_string);
                                 if (debug) printf("UL ");
-                                strcat(binary_string, pentbit[28]);
+                                bin_append(28, 5, binary_string);
                                 if (debug) printf("LL ");
                                 newtable = LOWER;
                                 break;
                             case DIGIT: /* UL LL */
-                                strcat(binary_string, quadbit[14]);
+                                bin_append(14, 4, binary_string);
                                 if (debug) printf("UL ");
-                                strcat(binary_string, pentbit[28]);
+                                bin_append(28, 5, binary_string);
                                 if (debug) printf("LL ");
                                 newtable = LOWER;
                                 break;
@@ -383,26 +379,22 @@ static int aztec_text_process(const unsigned char source[], const unsigned int s
                     case (64 + MIXED): /* To MIXED */
                         switch (curtable) {
                             case UPPER: /* ML */
-                                strcat(binary_string, pentbit[29]);
-                                if (debug) printf("ML ");
-                                newtable = MIXED;
-                                break;
-                            case LOWER: /* ML */
-                                strcat(binary_string, pentbit[29]);
+                            case LOWER:
+                                bin_append(29, 5, binary_string);
                                 if (debug) printf("ML ");
                                 newtable = MIXED;
                                 break;
                             case PUNC: /* UL ML */
-                                strcat(binary_string, pentbit[31]);
+                                bin_append(31, 5, binary_string);
                                 if (debug) printf("UL ");
-                                strcat(binary_string, pentbit[29]);
+                                bin_append(29, 5, binary_string);
                                 if (debug) printf("ML ");
                                 newtable = MIXED;
                                 break;
                             case DIGIT: /* UL ML */
-                                strcat(binary_string, quadbit[14]);
+                                bin_append(14, 4, binary_string);
                                 if (debug) printf("UL ");
-                                strcat(binary_string, pentbit[29]);
+                                bin_append(29, 5, binary_string);
                                 if (debug) printf("ML ");
                                 newtable = MIXED;
                                 break;
@@ -411,19 +403,10 @@ static int aztec_text_process(const unsigned char source[], const unsigned int s
                     case (64 + PUNC): /* To PUNC */
                         switch (curtable) {
                             case UPPER: /* PS */
-                                strcat(binary_string, pentbit[0]);
-                                if (debug) printf("PS ");
-                                break;
-                            case LOWER: /* PS */
-                                strcat(binary_string, pentbit[0]);
-                                if (debug) printf("PS ");
-                                break;
-                            case MIXED: /* PS */
-                                strcat(binary_string, pentbit[0]);
-                                if (debug) printf("PS ");
-                                break;
-                            case DIGIT: /* PS */
-                                strcat(binary_string, quadbit[0]);
+                            case LOWER:
+                            case MIXED:
+                            case DIGIT:
+                                bin_append(0, 5, binary_string);
                                 if (debug) printf("PS ");
                                 break;
                         }
@@ -431,26 +414,22 @@ static int aztec_text_process(const unsigned char source[], const unsigned int s
                     case (64 + DIGIT): /* To DIGIT */
                         switch (curtable) {
                             case UPPER: /* DL */
-                                strcat(binary_string, pentbit[30]);
-                                if (debug) printf("DL ");
-                                newtable = DIGIT;
-                                break;
-                            case LOWER: /* DL */
-                                strcat(binary_string, pentbit[30]);
+                            case LOWER:
+                                bin_append(30, 5, binary_string);
                                 if (debug) printf("DL ");
                                 newtable = DIGIT;
                                 break;
                             case MIXED: /* UL DL */
-                                strcat(binary_string, pentbit[29]);
+                                bin_append(29, 5, binary_string);
                                 if (debug) printf("UL ");
-                                strcat(binary_string, pentbit[30]);
+                                bin_append(30, 5, binary_string);
                                 if (debug) printf("DL ");
                                 newtable = DIGIT;
                                 break;
                             case PUNC: /* UL DL */
-                                strcat(binary_string, pentbit[31]);
+                                bin_append(31, 5, binary_string);
                                 if (debug) printf("UL ");
-                                strcat(binary_string, pentbit[30]);
+                                bin_append(30, 5, binary_string);
                                 if (debug) printf("DL ");
                                 newtable = DIGIT;
                                 break;
@@ -463,24 +442,24 @@ static int aztec_text_process(const unsigned char source[], const unsigned int s
                     case UPPER: /* To UPPER */
                         switch (curtable) {
                             case LOWER: /* ML UL */
-                                strcat(binary_string, pentbit[29]);
+                                bin_append(29, 5, binary_string);
                                 if (debug) printf("ML ");
-                                strcat(binary_string, pentbit[29]);
+                                bin_append(29, 5, binary_string);
                                 if (debug) printf("UL ");
                                 newtable = UPPER;
                                 break;
                             case MIXED: /* UL */
-                                strcat(binary_string, pentbit[29]);
+                                bin_append(29, 5, binary_string);
                                 if (debug) printf("UL ");
                                 newtable = UPPER;
                                 break;
                             case PUNC: /* UL */
-                                strcat(binary_string, pentbit[31]);
+                                bin_append(31, 5, binary_string);
                                 if (debug) printf("UL ");
                                 newtable = UPPER;
                                 break;
                             case DIGIT: /* UL */
-                                strcat(binary_string, quadbit[14]);
+                                bin_append(14, 4, binary_string);
                                 if (debug) printf("UL ");
                                 newtable = UPPER;
                                 break;
@@ -489,26 +468,22 @@ static int aztec_text_process(const unsigned char source[], const unsigned int s
                     case LOWER: /* To LOWER */
                         switch (curtable) {
                             case UPPER: /* LL */
-                                strcat(binary_string, pentbit[28]);
-                                if (debug) printf("LL ");
-                                newtable = LOWER;
-                                break;
-                            case MIXED: /* LL */
-                                strcat(binary_string, pentbit[28]);
+                            case MIXED:
+                                bin_append(28, 5, binary_string);
                                 if (debug) printf("LL ");
                                 newtable = LOWER;
                                 break;
                             case PUNC: /* UL LL */
-                                strcat(binary_string, pentbit[31]);
+                                bin_append(31, 5, binary_string);
                                 if (debug) printf("UL ");
-                                strcat(binary_string, pentbit[28]);
+                                bin_append(28, 5, binary_string);
                                 if (debug) printf("LL ");
                                 newtable = LOWER;
                                 break;
                             case DIGIT: /* UL LL */
-                                strcat(binary_string, quadbit[14]);
+                                bin_append(14, 4, binary_string);
                                 if (debug) printf("UL ");
-                                strcat(binary_string, pentbit[28]);
+                                bin_append(28, 5, binary_string);
                                 if (debug) printf("LL ");
                                 newtable = LOWER;
                                 break;
@@ -517,26 +492,22 @@ static int aztec_text_process(const unsigned char source[], const unsigned int s
                     case MIXED: /* To MIXED */
                         switch (curtable) {
                             case UPPER: /* ML */
-                                strcat(binary_string, pentbit[29]);
-                                if (debug) printf("ML ");
-                                newtable = MIXED;
-                                break;
-                            case LOWER: /* ML */
-                                strcat(binary_string, pentbit[29]);
+                            case LOWER:
+                                bin_append(29, 5, binary_string);
                                 if (debug) printf("ML ");
                                 newtable = MIXED;
                                 break;
                             case PUNC: /* UL ML */
-                                strcat(binary_string, pentbit[31]);
+                                bin_append(31, 5, binary_string);
                                 if (debug) printf("UL ");
-                                strcat(binary_string, pentbit[29]);
+                                bin_append(29, 5, binary_string);
                                 if (debug) printf("ML ");
                                 newtable = MIXED;
                                 break;
                             case DIGIT: /* UL ML */
-                                strcat(binary_string, quadbit[14]);
+                                bin_append(14, 4, binary_string);
                                 if (debug) printf("UL ");
-                                strcat(binary_string, pentbit[29]);
+                                bin_append(29, 5, binary_string);
                                 if (debug) printf("ML ");
                                 newtable = MIXED;
                                 break;
@@ -545,30 +516,24 @@ static int aztec_text_process(const unsigned char source[], const unsigned int s
                     case PUNC: /* To PUNC */
                         switch (curtable) {
                             case UPPER: /* ML PL */
-                                strcat(binary_string, pentbit[29]);
+                            case LOWER:
+                                bin_append(29, 5, binary_string);
                                 if (debug) printf("ML ");
-                                strcat(binary_string, pentbit[30]);
-                                if (debug) printf("PL ");
-                                newtable = PUNC;
-                                break;
-                            case LOWER: /* ML PL */
-                                strcat(binary_string, pentbit[29]);
-                                if (debug) printf("ML ");
-                                strcat(binary_string, pentbit[30]);
+                                bin_append(30, 5, binary_string);
                                 if (debug) printf("PL ");
                                 newtable = PUNC;
                                 break;
                             case MIXED: /* PL */
-                                strcat(binary_string, pentbit[30]);
+                                bin_append(30, 5, binary_string);
                                 if (debug) printf("PL ");
                                 newtable = PUNC;
                                 break;
                             case DIGIT: /* UL ML PL */
-                                strcat(binary_string, quadbit[14]);
+                                bin_append(14, 4, binary_string);
                                 if (debug) printf("UL ");
-                                strcat(binary_string, pentbit[29]);
+                                bin_append(29, 5, binary_string);
                                 if (debug) printf("ML ");
-                                strcat(binary_string, pentbit[30]);
+                                bin_append(30, 5, binary_string);
                                 if (debug) printf("PL ");
                                 newtable = PUNC;
                                 break;
@@ -577,26 +542,22 @@ static int aztec_text_process(const unsigned char source[], const unsigned int s
                     case DIGIT: /* To DIGIT */
                         switch (curtable) {
                             case UPPER: /* DL */
-                                strcat(binary_string, pentbit[30]);
-                                if (debug) printf("DL ");
-                                newtable = DIGIT;
-                                break;
-                            case LOWER: /* DL */
-                                strcat(binary_string, pentbit[30]);
+                            case LOWER:
+                                bin_append(30, 5, binary_string);
                                 if (debug) printf("DL ");
                                 newtable = DIGIT;
                                 break;
                             case MIXED: /* UL DL */
-                                strcat(binary_string, pentbit[29]);
+                                bin_append(29, 5, binary_string);
                                 if (debug) printf("UL ");
-                                strcat(binary_string, pentbit[30]);
+                                bin_append(30, 5, binary_string);
                                 if (debug) printf("DL ");
                                 newtable = DIGIT;
                                 break;
                             case PUNC: /* UL DL */
-                                strcat(binary_string, pentbit[31]);
+                                bin_append(31, 5, binary_string);
                                 if (debug) printf("UL ");
-                                strcat(binary_string, pentbit[30]);
+                                bin_append(30, 5, binary_string);
                                 if (debug) printf("DL ");
                                 newtable = DIGIT;
                                 break;
@@ -606,32 +567,24 @@ static int aztec_text_process(const unsigned char source[], const unsigned int s
                         lasttable = curtable;
                         switch (curtable) {
                             case UPPER: /* BS */
-                                strcat(binary_string, pentbit[31]);
-                                if (debug) printf("BS ");
-                                newtable = BINARY;
-                                break;
-                            case LOWER: /* BS */
-                                strcat(binary_string, pentbit[31]);
-                                if (debug) printf("BS ");
-                                newtable = BINARY;
-                                break;
-                            case MIXED: /* BS */
-                                strcat(binary_string, pentbit[31]);
+                            case LOWER:
+                            case MIXED:
+                                bin_append(31, 5, binary_string);
                                 if (debug) printf("BS ");
                                 newtable = BINARY;
                                 break;
                             case PUNC: /* UL BS */
-                                strcat(binary_string, pentbit[31]);
+                                bin_append(31, 5, binary_string);
                                 if (debug) printf("UL ");
-                                strcat(binary_string, pentbit[31]);
+                                bin_append(31, 5, binary_string);
                                 if (debug) printf("BS ");
                                 lasttable = UPPER;
                                 newtable = BINARY;
                                 break;
                             case DIGIT: /* UL BS */
-                                strcat(binary_string, quadbit[14]);
+                                bin_append(14, 4, binary_string);
                                 if (debug) printf("UL ");
-                                strcat(binary_string, pentbit[31]);
+                                bin_append(31, 5, binary_string);
                                 if (debug) printf("BS ");
                                 lasttable = UPPER;
                                 newtable = BINARY;
@@ -650,24 +603,11 @@ static int aztec_text_process(const unsigned char source[], const unsigned int s
 
                         if (bytes > 31) {
                             /* Put 00000 followed by 11-bit number of bytes less 31 */
-                            strcat(binary_string, "00000");
-
-                            for (p = 0; p < 11; p++) {
-                                if ((bytes - 31) & (0x400 >> p)) {
-                                    strcat(binary_string, "1");
-                                } else {
-                                    strcat(binary_string, "0");
-                                }
-                            }
+                            bin_append(0, 5, binary_string);
+                            bin_append(bytes - 31, 11, binary_string);
                         } else {
                             /* Put 5-bit number of bytes */
-                            for (p = 0; p < 5; p++) {
-                                if (bytes & (0x10 >> p)) {
-                                    strcat(binary_string, "1");
-                                } else {
-                                    strcat(binary_string, "0");
-                                }
-                            }
+                            bin_append(bytes, 5, binary_string);
                         }
                         if (debug) printf("(%d bytes) ", bytes);
 
@@ -687,29 +627,23 @@ static int aztec_text_process(const unsigned char source[], const unsigned int s
             case MIXED:
             case PUNC:
                 if ((charmap[i] >= 400) && (charmap[i] < 500)) {
-                    strcat(binary_string, tribit[charmap[i] - 400]);
+                    bin_append(charmap[i] - 400, 3, binary_string);
                     if (debug) printf("FLG(%d) ", charmap[i] - 400);
                 } else if (charmap[i] >= 500) {
-                    strcat(binary_string, quadbit[charmap[i] - 500]);
+                    bin_append(charmap[i] - 500, 4, binary_string);
                     if (debug) printf("[%d] ", charmap[i] - 500);
                 } else {
-                    strcat(binary_string, pentbit[charmap[i]]);
+                    bin_append(charmap[i], 5, binary_string);
                     if (!((chartype == PUNC) && (charmap[i] == 0)))
                         if (debug) printf("%d ", charmap[i]);
                 }
                 break;
             case DIGIT:
-                strcat(binary_string, quadbit[charmap[i]]);
+                bin_append(charmap[i], 4, binary_string);
                 if (debug) printf("%d ", charmap[i]);
                 break;
             case BINARY:
-                for (p = 0; p < 8; p++) {
-                    if (charmap[i] & (0x80 >> p)) {
-                        strcat(binary_string, "1");
-                    } else {
-                        strcat(binary_string, "0");
-                    }
-                }
+                bin_append(charmap[i], 8, binary_string);
                 if (debug) printf("%d ", charmap[i]);
                 break;
         }

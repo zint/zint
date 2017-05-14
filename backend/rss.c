@@ -1169,7 +1169,7 @@ int general_rules(char field[], char type[]) {
 
 /* Handles all data encodation from section 7.2.5 of ISO/IEC 24724 */
 int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_string[]) {
-    int encoding_method, i, mask, j, read_posn, latch, debug = symbol->debug, last_mode = ISOIEC;
+    int encoding_method, i, j, read_posn, latch, debug = symbol->debug, last_mode = ISOIEC;
     int symbol_characters, characters_per_row;
 #ifndef _MSC_VER
     char general_field[strlen(source) + 1], general_field_type[strlen(source) + 1];
@@ -1177,11 +1177,10 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
     char* general_field = (char*) _alloca(strlen(source) + 1);
     char* general_field_type = (char*) _alloca(strlen(source) + 1);
 #endif
-    int remainder, d1, d2, value;
+    int remainder, d1, d2;
     char padstring[40];
 
     read_posn = 0;
-    value = 0;
 
     /* Decide whether a compressed data field is required and if so what
     method to use - method 2 = no compressed data field */
@@ -1335,10 +1334,9 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
         case 2: strcat(binary_string, "00XX");
             read_posn = 0;
             break;
-        case 3: strcat(binary_string, "0100");
-            read_posn = strlen(source);
-            break;
-        case 4: strcat(binary_string, "0101");
+        case 3: // 0100
+        case 4: // 0101
+            bin_append(4 + (encoding_method - 3), 4, binary_string);
             read_posn = strlen(source);
             break;
         case 5: strcat(binary_string, "01100XX");
@@ -1347,28 +1345,8 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
         case 6: strcat(binary_string, "01101XX");
             read_posn = 23;
             break;
-        case 7: strcat(binary_string, "0111000");
-            read_posn = strlen(source);
-            break;
-        case 8: strcat(binary_string, "0111001");
-            read_posn = strlen(source);
-            break;
-        case 9: strcat(binary_string, "0111010");
-            read_posn = strlen(source);
-            break;
-        case 10: strcat(binary_string, "0111011");
-            read_posn = strlen(source);
-            break;
-        case 11: strcat(binary_string, "0111100");
-            read_posn = strlen(source);
-            break;
-        case 12: strcat(binary_string, "0111101");
-            read_posn = strlen(source);
-            break;
-        case 13: strcat(binary_string, "0111110");
-            read_posn = strlen(source);
-            break;
-        case 14: strcat(binary_string, "0111111");
+        default: /* modes 7 to 14 */
+            bin_append(56 + (encoding_method - 7), 7, binary_string);
             read_posn = strlen(source);
             break;
     }
@@ -1395,73 +1373,28 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
     if (encoding_method == 1) {
         /* Encoding method field "1" - general item identification data */
         char group[4];
-        int group_val;
 
         group[0] = source[2];
         group[1] = '\0';
-        group_val = atoi(group);
 
-        mask = 0x08;
-        for (j = 0; j < 4; j++) {
-            strcat(binary_string, (group_val & mask) ? "1" : "0");
-            mask = mask >> 1;
-        }
+        bin_append(atoi(group), 4, binary_string);
 
         for (i = 1; i < 5; i++) {
             group[0] = source[(i * 3)];
             group[1] = source[(i * 3) + 1];
             group[2] = source[(i * 3) + 2];
             group[3] = '\0';
-            group_val = atoi(group);
 
-            mask = 0x200;
-            for (j = 0; j < 10; j++) {
-                strcat(binary_string, (group_val & mask) ? "1" : "0");
-                mask = mask >> 1;
-            }
+            bin_append(atoi(group), 10, binary_string);
         }
     }
 
-
-    if (encoding_method == 3) {
+    if ((encoding_method == 3) || (encoding_method == 4)) {
         /* Encoding method field "0100" - variable weight item
         (0,001 kilogram icrements) */
-        char group[4];
-        int group_val;
-        char weight_str[7];
-
-        for (i = 1; i < 5; i++) {
-            group[0] = source[(i * 3)];
-            group[1] = source[(i * 3) + 1];
-            group[2] = source[(i * 3) + 2];
-            group[3] = '\0';
-            group_val = atoi(group);
-
-            mask = 0x200;
-            for (j = 0; j < 10; j++) {
-                strcat(binary_string, (group_val & mask) ? "1" : "0");
-                mask = mask >> 1;
-            }
-        }
-
-        for (i = 0; i < 6; i++) {
-            weight_str[i] = source[20 + i];
-        }
-        weight_str[6] = '\0';
-        group_val = atoi(weight_str);
-
-        mask = 0x4000;
-        for (j = 0; j < 15; j++) {
-            strcat(binary_string, (group_val & mask) ? "1" : "0");
-            mask = mask >> 1;
-        }
-    }
-
-    if (encoding_method == 4) {
         /* Encoding method field "0101" - variable weight item (0,01 or
         0,001 pound increment) */
         char group[4];
-        int group_val;
         char weight_str[7];
 
         for (i = 1; i < 5; i++) {
@@ -1469,32 +1402,51 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
             group[1] = source[(i * 3) + 1];
             group[2] = source[(i * 3) + 2];
             group[3] = '\0';
-            group_val = atoi(group);
 
-            mask = 0x200;
-            for (j = 0; j < 10; j++) {
-                strcat(binary_string, (group_val & mask) ? "1" : "0");
-                mask = mask >> 1;
-            }
+            bin_append(atoi(group), 10, binary_string);
         }
 
         for (i = 0; i < 6; i++) {
             weight_str[i] = source[20 + i];
         }
         weight_str[6] = '\0';
-        group_val = atoi(weight_str);
 
-        if (source[19] == '3') {
-            group_val = group_val + 10000;
-        }
-
-        mask = 0x4000;
-        for (j = 0; j < 15; j++) {
-            strcat(binary_string, (group_val & mask) ? "1" : "0");
-            mask = mask >> 1;
+        if ((encoding_method == 4) && (source[19] == '3')) {
+            bin_append(atoi(weight_str) + 10000, 15, binary_string);
+        } else {
+            bin_append(atoi(weight_str), 15, binary_string);
         }
     }
+    
+    if ((encoding_method == 5) || (encoding_method == 6)) {
+        /* Encoding method "01100" - variable measure item and price */
+        /* Encoding method "01101" - variable measure item and price with ISO 4217
+        Currency Code */
+        
+        char group[4];
 
+        for (i = 1; i < 5; i++) {
+            group[0] = source[(i * 3)];
+            group[1] = source[(i * 3) + 1];
+            group[2] = source[(i * 3) + 2];
+            group[3] = '\0';
+            
+            bin_append(atoi(group), 10, binary_string);
+        }
+
+        bin_append(source[19] - '0', 2, binary_string);
+        
+        if (encoding_method == 6) {
+            char currency_str[5];
+            
+            for (i = 0; i < 3; i++) {
+                currency_str[i] = source[20 + i];
+            }
+            currency_str[3] = '\0';
+
+            bin_append(atoi(currency_str), 10, binary_string);
+        }
+    }
 
     if ((encoding_method >= 7) && (encoding_method <= 14)) {
         /* Encoding method fields "0111000" through "0111111" - variable
@@ -1509,13 +1461,8 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
             group[1] = source[(i * 3) + 1];
             group[2] = source[(i * 3) + 2];
             group[3] = '\0';
-            group_val = atoi(group);
-
-            mask = 0x200;
-            for (j = 0; j < 10; j++) {
-                strcat(binary_string, (group_val & mask) ? "1" : "0");
-                mask = mask >> 1;
-            }
+            
+            bin_append(atoi(group), 10, binary_string);
         }
 
         weight_str[0] = source[19];
@@ -1524,13 +1471,8 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
             weight_str[i + 1] = source[21 + i];
         }
         weight_str[6] = '\0';
-        group_val = atoi(weight_str);
-
-        mask = 0x80000;
-        for (j = 0; j < 20; j++) {
-            strcat(binary_string, (group_val & mask) ? "1" : "0");
-            mask = mask >> 1;
-        }
+        
+        bin_append(atoi(weight_str), 20, binary_string);
 
         if (strlen(source) == 34) {
             /* Date information is included */
@@ -1550,88 +1492,7 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
             group_val = 38400;
         }
 
-        mask = 0x8000;
-        for (j = 0; j < 16; j++) {
-            strcat(binary_string, (group_val & mask) ? "1" : "0");
-            mask = mask >> 1;
-        }
-    }
-
-    if (encoding_method == 5) {
-        /* Encoding method field "01100" - variable measure item and price */
-        char group[4];
-        int group_val;
-
-        for (i = 1; i < 5; i++) {
-            group[0] = source[(i * 3)];
-            group[1] = source[(i * 3) + 1];
-            group[2] = source[(i * 3) + 2];
-            group[3] = '\0';
-            group_val = atoi(group);
-
-            mask = 0x200;
-            for (j = 0; j < 10; j++) {
-                strcat(binary_string, (group_val & mask) ? "1" : "0");
-                mask = mask >> 1;
-            }
-        }
-
-        switch (source[19]) {
-            case '0': strcat(binary_string, "00");
-                break;
-            case '1': strcat(binary_string, "01");
-                break;
-            case '2': strcat(binary_string, "10");
-                break;
-            case '3': strcat(binary_string, "11");
-                break;
-        }
-    }
-
-    if (encoding_method == 6) {
-        /* Encoding method "01101" - variable measure item and price with ISO 4217
-        Currency Code */
-
-        char group[4];
-        int group_val;
-        char currency_str[5];
-
-        for (i = 1; i < 5; i++) {
-            group[0] = source[(i * 3)];
-            group[1] = source[(i * 3) + 1];
-            group[2] = source[(i * 3) + 2];
-            group[3] = '\0';
-            group_val = atoi(group);
-
-            mask = 0x200;
-            for (j = 0; j < 10; j++) {
-                strcat(binary_string, (group_val & mask) ? "1" : "0");
-                mask = mask >> 1;
-            }
-        }
-
-        switch (source[19]) {
-            case '0': strcat(binary_string, "00");
-                break;
-            case '1': strcat(binary_string, "01");
-                break;
-            case '2': strcat(binary_string, "10");
-                break;
-            case '3': strcat(binary_string, "11");
-                break;
-        }
-
-        for (i = 0; i < 3; i++) {
-            currency_str[i] = source[20 + i];
-        }
-        currency_str[3] = '\0';
-        group_val = atoi(currency_str);
-
-        mask = 0x200;
-        for (j = 0; j < 10; j++) {
-            strcat(binary_string, (group_val & mask) ? "1" : "0");
-            mask = mask >> 1;
-        }
+        bin_append(group_val, 16, binary_string);
     }
 
     /* The compressed data field has been processed if appropriate - the
@@ -1738,12 +1599,12 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
 
     /* Set initial mode if not NUMERIC */
     if (general_field_type[0] == ALPHA) {
-        strcat(binary_string, "0000"); /* Alphanumeric latch */
+        bin_append(0, 4, binary_string); /* Alphanumeric latch */
         last_mode = ALPHA;
     }
     if (general_field_type[0] == ISOIEC) {
-        strcat(binary_string, "0000"); /* Alphanumeric latch */
-        strcat(binary_string, "00100"); /* ISO/IEC 646 latch */
+        bin_append(0, 4, binary_string); /* Alphanumeric latch */
+        bin_append(4, 5, binary_string); /* ISO/IEC 646 latch */
         last_mode = ISOIEC;
     }
 
@@ -1755,7 +1616,7 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
                 if (debug) printf("as NUMERIC:");
 
                 if (last_mode != NUMERIC) {
-                    strcat(binary_string, "000"); /* Numeric latch */
+                    bin_append(0, 3, binary_string); /* Numeric latch */
                     if (debug) printf("<NUMERIC LATCH>\n");
                 }
 
@@ -1772,16 +1633,7 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
                     d2 = 10;
                 }
 
-                value = (11 * d1) + d2 + 8;
-
-                mask = 0x40;
-                for (j = 0; j < 7; j++) {
-                    strcat(binary_string, (value & mask) ? "1" : "0");
-                    if (debug) {
-                        printf("%d", !!(value & mask));
-                    }
-                    mask = mask >> 1;
-                }
+                bin_append((11 * d1) + d2 + 8, 7, binary_string);
 
                 i += 2;
                 if (debug) printf("\n");
@@ -1792,45 +1644,33 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
                 if (debug) printf("as ALPHA\n");
                 if (i != 0) {
                     if (last_mode == NUMERIC) {
-                        strcat(binary_string, "0000"); /* Alphanumeric latch */
+                        bin_append(0, 4, binary_string); /* Alphanumeric latch */
                     }
                     if (last_mode == ISOIEC) {
-                        strcat(binary_string, "00100"); /* Alphanumeric latch */
+                        bin_append(4, 5, binary_string); /* Alphanumeric latch */
                     }
                 }
 
                 if ((general_field[i] >= '0') && (general_field[i] <= '9')) {
-
-                    value = general_field[i] - 43;
-
-                    mask = 0x10;
-                    for (j = 0; j < 5; j++) {
-                        strcat(binary_string, (value & mask) ? "1" : "0");
-                        mask = mask >> 1;
-                    }
+                    bin_append(general_field[i] - 43, 5, binary_string);
                 }
 
                 if ((general_field[i] >= 'A') && (general_field[i] <= 'Z')) {
-
-                    value = general_field[i] - 33;
-
-                    mask = 0x20;
-                    for (j = 0; j < 6; j++) {
-                        strcat(binary_string, (value & mask) ? "1" : "0");
-                        mask = mask >> 1;
-                    }
+                    bin_append(general_field[i] - 33, 6, binary_string);
                 }
 
                 last_mode = ALPHA;
+                
                 if (general_field[i] == '[') {
-                    strcat(binary_string, "01111");
+                    bin_append(15, 5, binary_string);
                     last_mode = NUMERIC;
                 } /* FNC1/Numeric latch */
-                if (general_field[i] == '*') strcat(binary_string, "111010"); /* asterisk */
-                if (general_field[i] == ',') strcat(binary_string, "111011"); /* comma */
-                if (general_field[i] == '-') strcat(binary_string, "111100"); /* minus or hyphen */
-                if (general_field[i] == '.') strcat(binary_string, "111101"); /* period or full stop */
-                if (general_field[i] == '/') strcat(binary_string, "111110"); /* slash or solidus */
+                
+                if (general_field[i] == '*') bin_append(58, 6, binary_string); /* asterisk */
+                if (general_field[i] == ',') bin_append(59, 6, binary_string); /* comma */
+                if (general_field[i] == '-') bin_append(60, 6, binary_string); /* minus or hyphen */
+                if (general_field[i] == '.') bin_append(61, 6, binary_string); /* period or full stop */
+                if (general_field[i] == '/') bin_append(62, 6, binary_string); /* slash or solidus */
 
                 i++;
                 break;
@@ -1839,73 +1679,53 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
                 if (debug) printf("as ISOIEC\n");
                 if (i != 0) {
                     if (last_mode == NUMERIC) {
-                        strcat(binary_string, "0000"); /* Alphanumeric latch */
-                        strcat(binary_string, "00100"); /* ISO/IEC 646 latch */
+                        bin_append(0, 4, binary_string); /* Alphanumeric latch */
+                        bin_append(4, 5, binary_string); /* ISO/IEC 646 latch */
                     }
                     if (last_mode == ALPHA) {
-                        strcat(binary_string, "00100"); /* ISO/IEC 646 latch */
+                        bin_append(4, 5, binary_string); /* ISO/IEC 646 latch */
                     }
                 }
 
                 if ((general_field[i] >= '0') && (general_field[i] <= '9')) {
-
-                    value = general_field[i] - 43;
-
-                    mask = 0x10;
-                    for (j = 0; j < 5; j++) {
-                        strcat(binary_string, (value & mask) ? "1" : "0");
-                        mask = mask >> 1;
-                    }
+                    bin_append(general_field[i] - 43, 5, binary_string);
                 }
 
                 if ((general_field[i] >= 'A') && (general_field[i] <= 'Z')) {
-
-                    value = general_field[i] - 1;
-
-                    mask = 0x40;
-                    for (j = 0; j < 7; j++) {
-                        strcat(binary_string, (value & mask) ? "1" : "0");
-                        mask = mask >> 1;
-                    }
+                    bin_append(general_field[i] - 1, 7, binary_string);
                 }
 
                 if ((general_field[i] >= 'a') && (general_field[i] <= 'z')) {
-
-                    value = general_field[i] - 7;
-
-                    mask = 0x40;
-                    for (j = 0; j < 7; j++) {
-                        strcat(binary_string, (value & mask) ? "1" : "0");
-                        mask = mask >> 1;
-                    }
+                    bin_append(general_field[i] - 7, 7, binary_string);
                 }
-
                 last_mode = ISOIEC;
+                
                 if (general_field[i] == '[') {
-                    strcat(binary_string, "01111");
+                    bin_append(15, 5, binary_string);
                     last_mode = NUMERIC;
                 } /* FNC1/Numeric latch */
-                if (general_field[i] == '!') strcat(binary_string, "11101000"); /* exclamation mark */
-                if (general_field[i] == 34) strcat(binary_string, "11101001"); /* quotation mark */
-                if (general_field[i] == 37) strcat(binary_string, "11101010"); /* percent sign */
-                if (general_field[i] == '&') strcat(binary_string, "11101011"); /* ampersand */
-                if (general_field[i] == 39) strcat(binary_string, "11101100"); /* apostrophe */
-                if (general_field[i] == '(') strcat(binary_string, "11101101"); /* left parenthesis */
-                if (general_field[i] == ')') strcat(binary_string, "11101110"); /* right parenthesis */
-                if (general_field[i] == '*') strcat(binary_string, "11101111"); /* asterisk */
-                if (general_field[i] == '+') strcat(binary_string, "11110000"); /* plus sign */
-                if (general_field[i] == ',') strcat(binary_string, "11110001"); /* comma */
-                if (general_field[i] == '-') strcat(binary_string, "11110010"); /* minus or hyphen */
-                if (general_field[i] == '.') strcat(binary_string, "11110011"); /* period or full stop */
-                if (general_field[i] == '/') strcat(binary_string, "11110100"); /* slash or solidus */
-                if (general_field[i] == ':') strcat(binary_string, "11110101"); /* colon */
-                if (general_field[i] == ';') strcat(binary_string, "11110110"); /* semicolon */
-                if (general_field[i] == '<') strcat(binary_string, "11110111"); /* less-than sign */
-                if (general_field[i] == '=') strcat(binary_string, "11111000"); /* equals sign */
-                if (general_field[i] == '>') strcat(binary_string, "11111001"); /* greater-than sign */
-                if (general_field[i] == '?') strcat(binary_string, "11111010"); /* question mark */
-                if (general_field[i] == '_') strcat(binary_string, "11111011"); /* underline or low line */
-                if (general_field[i] == ' ') strcat(binary_string, "11111100"); /* space */
+                
+                if (general_field[i] == '!') bin_append(232, 8, binary_string); /* exclamation mark */
+                if (general_field[i] == 34)  bin_append(233, 8, binary_string); /* quotation mark */
+                if (general_field[i] == 37)  bin_append(234, 8, binary_string); /* percent sign */
+                if (general_field[i] == '&') bin_append(235, 8, binary_string); /* ampersand */
+                if (general_field[i] == 39)  bin_append(236, 8, binary_string); /* apostrophe */
+                if (general_field[i] == '(') bin_append(237, 8, binary_string); /* left parenthesis */
+                if (general_field[i] == ')') bin_append(238, 8, binary_string); /* right parenthesis */
+                if (general_field[i] == '*') bin_append(239, 8, binary_string); /* asterisk */
+                if (general_field[i] == '+') bin_append(240, 8, binary_string); /* plus sign */
+                if (general_field[i] == ',') bin_append(241, 8, binary_string); /* comma */
+                if (general_field[i] == '-') bin_append(242, 8, binary_string); /* minus or hyphen */
+                if (general_field[i] == '.') bin_append(243, 8, binary_string); /* period or full stop */
+                if (general_field[i] == '/') bin_append(244, 8, binary_string); /* slash or solidus */
+                if (general_field[i] == ':') bin_append(245, 8, binary_string); /* colon */
+                if (general_field[i] == ';') bin_append(246, 8, binary_string); /* semicolon */
+                if (general_field[i] == '<') bin_append(247, 8, binary_string); /* less-than sign */
+                if (general_field[i] == '=') bin_append(248, 8, binary_string); /* equals sign */
+                if (general_field[i] == '>') bin_append(249, 8, binary_string); /* greater-than sign */
+                if (general_field[i] == '?') bin_append(250, 8, binary_string); /* question mark */
+                if (general_field[i] == '_') bin_append(251, 8, binary_string); /* underline or low line */
+                if (general_field[i] == ' ') bin_append(252, 8, binary_string); /* space */
 
                 i++;
                 break;
@@ -1948,34 +1768,15 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
 
         if (last_mode == NUMERIC) {
             if ((remainder >= 4) && (remainder <= 6)) {
-                value = ctoi(general_field[i]);
-                value++;
-
-                mask = 0x08;
-                for (j = 0; j < 4; j++) {
-                    strcat(binary_string, (value & mask) ? "1" : "0");
-                    mask = mask >> 1;
-                }
+                bin_append(ctoi(general_field[i]) + 1, 4, binary_string);
             } else {
                 d1 = ctoi(general_field[i]);
                 d2 = 10;
 
-                value = (11 * d1) + d2 + 8;
-
-                mask = 0x40;
-                for (j = 0; j < 7; j++) {
-                    strcat(binary_string, (value & mask) ? "1" : "0");
-                    mask = mask >> 1;
-                }
+                bin_append((11 * d1) + d2 + 8, 7, binary_string);
             }
         } else {
-            value = general_field[i] - 43;
-
-            mask = 0x10;
-            for (j = 0; j < 5; j++) {
-                strcat(binary_string, (value & mask) ? "1" : "0");
-                mask = mask >> 1;
-            }
+            bin_append(general_field[i] - 43, 5, binary_string);
         }
 
         remainder = 12 - (strlen(binary_string) % 12);

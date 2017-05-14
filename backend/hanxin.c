@@ -331,21 +331,15 @@ int lookup_text2(char input) {
 void calculate_binary(char binary[], char mode[], int source[], int length, int eci, int debug) {
     int block_length;
     int position = 0;
-    int i, p, count, encoding_value;
+    int i, count, encoding_value;
     int first_byte, second_byte;
     int third_byte, fourth_byte;
     int glyph;
     int submode;
 
     if (eci != 3) {
-        strcat(binary, "1000"); // ECI
-        for (p = 0; p < 8; p++) {
-            if (eci & (0x80 >> p)) {
-                strcat(binary, "1");
-            } else {
-                strcat(binary, "0");
-            }
-        }
+        bin_append(8, 4, binary); // ECI
+        bin_append(eci, 8, binary);
     }
 
     do {
@@ -358,7 +352,7 @@ void calculate_binary(char binary[], char mode[], int source[], int length, int 
             case 'n':
                 /* Numeric mode */
                 /* Mode indicator */
-                strcat(binary, "0001");
+                bin_append(1, 4, binary);
 
                 if (debug) {
                     printf("Numeric\n");
@@ -385,13 +379,7 @@ void calculate_binary(char binary[], char mode[], int source[], int length, int 
                         }
                     }
 
-                    for (p = 0; p < 10; p++) {
-                        if (encoding_value & (0x200 >> p)) {
-                            strcat(binary, "1");
-                        } else {
-                            strcat(binary, "0");
-                        }
-                    }
+                    bin_append(encoding_value, 10, binary);
 
                     if (debug) {
                         printf("0x%4x (%d)", encoding_value, encoding_value);
@@ -403,13 +391,13 @@ void calculate_binary(char binary[], char mode[], int source[], int length, int 
                 /* Mode terminator depends on number of characters in last group (Table 2) */
                 switch (count) {
                     case 1:
-                        strcat(binary, "1111111101");
+                        bin_append(1021, 10, binary);
                         break;
                     case 2:
-                        strcat(binary, "1111111110");
+                        bin_append(1022, 10, binary);
                         break;
                     case 3:
-                        strcat(binary, "1111111111");
+                        bin_append(1023, 10, binary);
                         break;
                 }
 
@@ -422,7 +410,7 @@ void calculate_binary(char binary[], char mode[], int source[], int length, int 
                 /* Text mode */
                 if (position != 0) {
                     /* Mode indicator */
-                    strcat(binary, "0010");
+                    bin_append(2, 4, binary);
 
                     if (debug) {
                         printf("Text\n");
@@ -437,7 +425,7 @@ void calculate_binary(char binary[], char mode[], int source[], int length, int 
 
                     if (getsubmode((char) source[i + position]) != submode) {
                         /* Change submode */
-                        strcat(binary, "111110");
+                        bin_append(62, 6, binary);
                         submode = getsubmode((char) source[i + position]);
                         if (debug) {
                             printf("SWITCH ");
@@ -450,13 +438,7 @@ void calculate_binary(char binary[], char mode[], int source[], int length, int 
                         encoding_value = lookup_text2((char) source[i + position]);
                     }
 
-                    for (p = 0; p < 6; p++) {
-                        if (encoding_value & (0x20 >> p)) {
-                            strcat(binary, "1");
-                        } else {
-                            strcat(binary, "0");
-                        }
-                    }
+                    bin_append(encoding_value, 6, binary);
 
                     if (debug) {
                         printf("%c (%d) ", (char) source[i], encoding_value);
@@ -465,7 +447,7 @@ void calculate_binary(char binary[], char mode[], int source[], int length, int 
                 }
 
                 /* Terminator */
-                strcat(binary, "111111");
+                bin_append(63, 6, binary);
 
                 if (debug) {
                     printf("\n");
@@ -474,16 +456,10 @@ void calculate_binary(char binary[], char mode[], int source[], int length, int 
             case 'b':
                 /* Binary Mode */
                 /* Mode indicator */
-                strcat(binary, "0011");
+                bin_append(3, 4, binary);
 
                 /* Count indicator */
-                for (p = 0; p < 13; p++) {
-                    if (block_length & (0x1000 >> p)) {
-                        strcat(binary, "1");
-                    } else {
-                        strcat(binary, "0");
-                    }
-                }
+                bin_append(block_length, 13, binary);
 
                 if (debug) {
                     printf("Binary (length %d)\n", block_length);
@@ -494,13 +470,7 @@ void calculate_binary(char binary[], char mode[], int source[], int length, int 
                 while (i < block_length) {
 
                     /* 8-bit bytes with no conversion */
-                    for (p = 0; p < 8; p++) {
-                        if (source[i + position] & (0x80 >> p)) {
-                            strcat(binary, "1");
-                        } else {
-                            strcat(binary, "0");
-                        }
-                    }
+                    bin_append(source[i + position], 8, binary);
 
                     if (debug) {
                         printf("%d ", source[i + position]);
@@ -516,7 +486,7 @@ void calculate_binary(char binary[], char mode[], int source[], int length, int 
             case '1':
                 /* Region 1 encoding */
                 /* Mode indicator */
-                strcat(binary, "0100");
+                bin_append(4, 4, binary);
 
                 if (debug) {
                     printf("Region 1\n");
@@ -547,19 +517,12 @@ void calculate_binary(char binary[], char mode[], int source[], int length, int 
                         printf("%d ", glyph);
                     }
 
-                    for (p = 0; p < 12; p++) {
-                        if (glyph & (0x800 >> p)) {
-                            strcat(binary, "1");
-                        } else {
-                            strcat(binary, "0");
-                        }
-                    }
-
+                    bin_append(glyph, 12, binary);
                     i++;
                 }
 
                 /* Terminator */
-                strcat(binary, "111111111111");
+                bin_append(4095, 12, binary);
 
                 if (debug) {
                     printf("\n");
@@ -569,7 +532,7 @@ void calculate_binary(char binary[], char mode[], int source[], int length, int 
             case '2':
                 /* Region 2 encoding */
                 /* Mode indicator */
-                strcat(binary, "0101");
+                bin_append(5, 4, binary);
 
                 if (debug) {
                     printf("Region 2\n");
@@ -587,19 +550,12 @@ void calculate_binary(char binary[], char mode[], int source[], int length, int 
                         printf("%d ", glyph);
                     }
 
-                    for (p = 0; p < 12; p++) {
-                        if (glyph & (0x800 >> p)) {
-                            strcat(binary, "1");
-                        } else {
-                            strcat(binary, "0");
-                        }
-                    }
-
+                    bin_append(glyph, 12, binary);
                     i++;
                 }
 
                 /* Terminator */
-                strcat(binary, "111111111111");
+                bin_append(4095, 12, binary);
 
                 if (debug) {
                     printf("\n");
@@ -608,7 +564,7 @@ void calculate_binary(char binary[], char mode[], int source[], int length, int 
             case 'd':
                 /* Double byte encoding */
                 /* Mode indicator */
-                strcat(binary, "0110");
+                bin_append(6, 4, binary);
 
                 if (debug) {
                     printf("Double byte\n");
@@ -630,19 +586,12 @@ void calculate_binary(char binary[], char mode[], int source[], int length, int 
                         printf("%d ", glyph);
                     }
 
-                    for (p = 0; p < 15; p++) {
-                        if (glyph & (0x4000 >> p)) {
-                            strcat(binary, "1");
-                        } else {
-                            strcat(binary, "0");
-                        }
-                    }
-
+                    bin_append(glyph, 15, binary);
                     i++;
                 }
 
                 /* Terminator */
-                strcat(binary, "111111111111111");
+                bin_append(32767, 15, binary);
                 /* Terminator sequence of length 12 is a mistake
                    - confirmed by Wang Yi */
 
@@ -661,7 +610,7 @@ void calculate_binary(char binary[], char mode[], int source[], int length, int 
                 while (i < block_length) {
 
                     /* Mode indicator */
-                    strcat(binary, "0111");
+                    bin_append(7, 4, binary);
 
                     first_byte = (source[i + position] & 0xff00) >> 8;
                     second_byte = source[i + position] & 0xff;
@@ -675,14 +624,7 @@ void calculate_binary(char binary[], char mode[], int source[], int length, int 
                         printf("%d ", glyph);
                     }
 
-                    for (p = 0; p < 15; p++) {
-                        if (glyph & (0x4000 >> p)) {
-                            strcat(binary, "1");
-                        } else {
-                            strcat(binary, "0");
-                        }
-                    }
-
+                    bin_append(glyph, 15, binary);
                     i += 2;
                 }
 

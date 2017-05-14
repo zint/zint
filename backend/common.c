@@ -55,6 +55,25 @@ char itoc(const int source) {
     }
 }
 
+/* Convert an integer value to a string representing its binary equivalent */
+void bin_append(const int arg, const int length, char *binary) {
+    int i;
+    int start;
+    int posn = strlen(binary);
+    
+    start = 0x01 << (length - 1);
+    
+    for (i = 0; i < length; i++) {
+        binary[posn + i] = '0';
+        if (arg & (start >> i)) {
+            binary[posn + i] = '1';
+        }
+    }
+    binary[posn + length] = '\0';
+    
+    return;
+}
+
 /* Converts lower case characters to upper case in a string source[] */
 void to_upper(unsigned char source[]) {
     size_t i, src_len = ustrlen(source);

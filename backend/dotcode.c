@@ -924,36 +924,16 @@ int dotcode_encode_message(struct zint_symbol *symbol, const unsigned char sourc
 
 /* Convert codewords to binary data stream */
 static size_t make_dotstream(unsigned char masked_array[], int array_length, char dot_stream[]) {
-    int i, j;
-    int mask = 0x100;
+    int i;
 
     dot_stream[0] = '\0';
 
     /* Mask value is encoded as two dots */
-    switch (masked_array[0]) {
-        case 0:
-            strcat(dot_stream, "00");
-            break;
-        case 1:
-            strcat(dot_stream, "01");
-            break;
-        case 2:
-            strcat(dot_stream, "10");
-            break;
-        case 3:
-            strcat(dot_stream, "11");
-            break;
-    }
+    bin_append(masked_array[0], 2, dot_stream);
 
     /* The rest of the data uses 9-bit dot patterns from Annex C */
     for (i = 1; i < array_length; i++) {
-        for (j = 0; j < 9; j++) {
-            if (dot_patterns[masked_array[i]] & (mask >> j)) {
-                strcat(dot_stream, "1");
-            } else {
-                strcat(dot_stream, "0");
-            }
-        }
+        bin_append(dot_patterns[masked_array[i]], 9, dot_stream);
     }
 
     return strlen(dot_stream);

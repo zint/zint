@@ -57,6 +57,7 @@ extern "C" {
     extern size_t ustrlen(const unsigned char source[]);
     extern int ctoi(const char source);
     extern char itoc(const int source);
+    extern void bin_append(const int arg, const int length, char *binary);
     extern void to_upper(unsigned char source[]);
     extern int is_sane(const char test_string[], const unsigned char source[], const size_t length);
     extern void lookup(const char set_string[], const char *table[], const char data, char dest[]);

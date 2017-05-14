@@ -424,7 +424,7 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
 
                 if (j == 21) {
                     next_mode = C1_DECIMAL;
-                    strcpy(decimal_binary, "1111");
+                    bin_append(15, 4, decimal_binary);
                 }
             }
 
@@ -448,7 +448,7 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
 
                     if (!(latch)) {
                         next_mode = C1_DECIMAL;
-                        strcpy(decimal_binary, "1111");
+                        bin_append(15, 4, decimal_binary);
                     }
                 }
             }
@@ -837,7 +837,7 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
 
         if (current_mode == C1_DECIMAL) {
             /* Step F - Decimal encodation */
-            int value, decimal_count, data_left;
+            int decimal_count, data_left;
 
             next_mode = C1_DECIMAL;
 
@@ -865,7 +865,7 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
                 int sub_target;
                 /* Finish Decimal mode and go back to ASCII */
 
-                strcat(decimal_binary, "111111"); /* Unlatch */
+                bin_append(63, 6, decimal_binary); /* Unlatch */
 
                 target_count = 3;
                 if (strlen(decimal_binary) <= 16) {
@@ -880,29 +880,20 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
                 }
 
                 if (bits_left_in_byte == 2) {
-                    strcat(decimal_binary, "01");
+                    bin_append(1, 2, decimal_binary);
                 }
 
                 if ((bits_left_in_byte == 4) || (bits_left_in_byte == 6)) {
                     if (decimal_count >= 1) {
-                        int sub_value = ctoi(source[sp]) + 1;
-
-                        for (i = 0x08; i > 0; i = i >> 1) {
-                            if (sub_value & i) {
-                                strcat(decimal_binary, "1");
-                            } else {
-                                strcat(decimal_binary, "0");
-                            }
-                        }
-                        
+                        bin_append(ctoi(source[sp]) + 1, 4, decimal_binary);
                         sp++;
                     } else {
-                        strcat(decimal_binary, "1111");
+                        bin_append(15, 4, decimal_binary);
                     }
                 }
 
                 if (bits_left_in_byte == 6) {
-                    strcat(decimal_binary, "01");
+                    bin_append(1, 2, decimal_binary);
                 }
 
                 /* Binary buffer is full - transfer to target */
@@ -943,16 +934,7 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
                 next_mode = C1_ASCII;
             } else {
                 /* There are three digits - convert the value to binary */
-                value = (100 * ctoi(source[sp])) + (10 * ctoi(source[sp + 1])) + ctoi(source[sp + 2]) + 1;
-
-                for (p = 0; p < 10; p++) {
-                    if (value & (0x200 >> p)) {
-                        strcat(decimal_binary, "1");
-                    } else {
-                        strcat(decimal_binary, "0");
-                    }
-                }
-
+                bin_append((100 * ctoi(source[sp])) + (10 * ctoi(source[sp + 1])) + ctoi(source[sp + 2]) + 1, 10, decimal_binary);
                 sp += 3;
             }
 
@@ -1088,7 +1070,7 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
         int sub_target;
         /* Finish Decimal mode and go back to ASCII */
 
-        strcat(decimal_binary, "111111"); /* Unlatch */
+        bin_append(63, 6, decimal_binary); /* Unlatch */
 
         target_count = 3;
         if (strlen(decimal_binary) <= 16) {
@@ -1103,15 +1085,15 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
         }
 
         if (bits_left_in_byte == 2) {
-            strcat(decimal_binary, "01");
+            bin_append(1, 2, decimal_binary);
         }
 
         if ((bits_left_in_byte == 4) || (bits_left_in_byte == 6)) {
-            strcat(decimal_binary, "1111");
+            bin_append(15, 4, decimal_binary);
         }
 
         if (bits_left_in_byte == 6) {
-            strcat(decimal_binary, "01");
+            bin_append(1, 2, decimal_binary);
         }
 
         /* Binary buffer is full - transfer to target */
