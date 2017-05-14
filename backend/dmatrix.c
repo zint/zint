@@ -1220,12 +1220,13 @@ int data_matrix_200(struct zint_symbol *symbol, const unsigned char source[], co
 #ifdef DEBUG
     {
         int CWCount;
+		int posCur;
         if (skew)
             CWCount = 1558 + 620;
         else
             CWCount = bytes + rsblock * (bytes / datablock);
         printf("Codewords (%i):", CWCount);
-        for (int posCur = 0; posCur < CWCount; posCur++)
+        for (posCur = 0; posCur < CWCount; posCur++)
             printf(" %3i", binary[posCur]);
         puts("\n");
     }
@@ -1254,9 +1255,10 @@ int data_matrix_200(struct zint_symbol *symbol, const unsigned char source[], co
         // Print position matrix as in standard
         for (y = NR - 1; y >= 0; y--) {
             for (x = 0; x < NC; x++) {
+				int v;
                 if (x != 0)
                     fprintf(stderr, "|");
-                int v = places[(NR - y - 1) * NC + x];
+                v = places[(NR - y - 1) * NC + x];
                 fprintf(stderr, "%3d.%2d", (v >> 3), 8 - (v & 7));
             }
             fprintf(stderr, "\n");
