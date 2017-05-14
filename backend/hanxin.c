@@ -40,6 +40,7 @@
 #include "common.h"
 #include "reedsol.h"
 #include "hanxin.h"
+#include "gb2312.h"
 #include "gb18030.h"
 #include "assert.h"
 
@@ -1292,7 +1293,20 @@ int han_xin(struct zint_symbol *symbol, const unsigned char source[], int length
                 done = 1;
             }
             
-            /* Two bytes characters */
+            /* Two bytes characters in GB-2312 */
+            if (done == 0) {
+                j = 0;
+                do {
+                    if (gb2312_lookup[j * 2] == utfdata[i]) {
+                        gbdata[posn] = gb2312_lookup[(j * 2) + 1];
+                        posn++;
+                        done = 1;
+                    }
+                    j++;
+                } while ((j < 7445) && (done == 0));
+            }
+            
+            /* Two byte characters in GB-18030 */
             if (done == 0) {
                 j = 0;
                 do {
@@ -1302,7 +1316,7 @@ int han_xin(struct zint_symbol *symbol, const unsigned char source[], int length
                         done = 1;
                     }
                     j++;
-                } while ((j < 23940) && (done == 0));
+                } while ((j < 16495) && (done == 0));
             }
 
             /* Four byte characters in range U+0080 -> U+FFFF */
