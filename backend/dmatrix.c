@@ -1041,7 +1041,7 @@ static int dm200encode_remainder(unsigned char target[], int target_length, cons
             }
             break;
 
-        case DM_EDIFACT:
+        case DM_EDIFACT:         
             if (symbols_left <= 2) // Unlatch not required!
             {
                 if (process_p == 1) {
@@ -1056,14 +1056,9 @@ static int dm200encode_remainder(unsigned char target[], int target_length, cons
                     target_length++;
                 }
             } else {
-                // Append edifact unlatch value (31) and encode as triple
-                
+                // Append edifact unlatch value (31) and empty buffer
                 if (process_p == 0) {
                     target[target_length] = (unsigned char) (31 << 2);
-                    target_length++;
-                    target[target_length] = 0;
-                    target_length++;
-                    target[target_length] = 0;
                     target_length++;
                 }
 
@@ -1071,8 +1066,6 @@ static int dm200encode_remainder(unsigned char target[], int target_length, cons
                     target[target_length] = (unsigned char) ((process_buffer[0] << 2) + ((31 & 0x30) >> 4));
                     target_length++;
                     target[target_length] = (unsigned char) ((31 & 0x0f) << 4);
-                    target_length++;
-                    target[target_length] = (unsigned char) 0;
                     target_length++;
                 }
 
@@ -1093,7 +1086,6 @@ static int dm200encode_remainder(unsigned char target[], int target_length, cons
                     target[target_length] = (unsigned char) (((process_buffer[2] & 0x03) << 6) + 31);
                     target_length++;
                 }
-
             }
             break;
     }
