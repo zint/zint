@@ -561,7 +561,7 @@ p, li { white-space: pre-wrap; }
    </item>
    <item>
     <layout class="QGridLayout" name="gridLayout_2">
-     <item row="0" column="0">
+     <item row="1" column="0">
       <widget class="QPushButton" name="btnAbout">
        <property name="minimumSize">
         <size>
@@ -577,7 +577,7 @@ p, li { white-space: pre-wrap; }
        </property>
       </widget>
      </item>
-     <item row="0" column="4">
+     <item row="1" column="5">
       <widget class="QPushButton" name="btnSave">
        <property name="minimumSize">
         <size>
@@ -593,7 +593,7 @@ p, li { white-space: pre-wrap; }
        </property>
       </widget>
      </item>
-     <item row="0" column="5">
+     <item row="1" column="6">
       <widget class="QPushButton" name="btnExit">
        <property name="minimumSize">
         <size>
@@ -606,7 +606,7 @@ p, li { white-space: pre-wrap; }
        </property>
       </widget>
      </item>
-     <item row="0" column="1">
+     <item row="1" column="1">
       <spacer name="horizontalSpacer_2">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -619,8 +619,8 @@ p, li { white-space: pre-wrap; }
        </property>
       </spacer>
      </item>
-     <item row="0" column="2">
-      <widget class="QPushButton" name="btnCopy">
+     <item row="1" column="3">
+      <widget class="QPushButton" name="btnCopySVG">
        <property name="minimumSize">
         <size>
          <width>100</width>
@@ -631,7 +631,20 @@ p, li { white-space: pre-wrap; }
         <string>Copy to clipboard</string>
        </property>
        <property name="text">
-        <string>&amp;Copy</string>
+        <string>Copy S&amp;VG</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="2">
+      <widget class="QPushButton" name="btnCopyBMP">
+       <property name="minimumSize">
+        <size>
+         <width>100</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>&amp;Copy BMP</string>
        </property>
       </widget>
      </item>

@@ -150,7 +150,8 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags fl)
 	connect(btnMoreData, SIGNAL(clicked( bool )), SLOT(open_data_dialog()));
 	connect(btnSequence, SIGNAL(clicked( bool )), SLOT(open_sequence_dialog()));
 	connect(chkHRTHide, SIGNAL(stateChanged( int )), SLOT(update_preview()));
-    connect(btnCopy, SIGNAL(clicked( bool )), SLOT(copy_to_clipboard()));
+    connect(btnCopySVG, SIGNAL(clicked( bool )), SLOT(copy_to_clipboard_svg()));
+    connect(btnCopyBMP, SIGNAL(clicked( bool )), SLOT(copy_to_clipboard_bmp()));
 }
 
 MainWindow::~MainWindow()
@@ -270,14 +271,14 @@ void MainWindow::quit_now()
 	close();
 }
 
-void MainWindow::copy_to_clipboard()
+void MainWindow::copy_to_clipboard_svg()
 {
     QClipboard *clipboard = QGuiApplication::clipboard();
     QMimeData *data = new QMimeData;
     QString filename = ".zint.svg";
     double scale = spnScale->value();
 
-    spnScale->setValue(10);
+    spnScale->setValue(5);
 
     if (!m_bc.bc.save_to_file(filename)) {
             return;
@@ -289,6 +290,22 @@ void MainWindow::copy_to_clipboard()
     QFile::remove(filename);
 
     spnScale->setValue(scale);
+}
+
+void MainWindow::copy_to_clipboard_bmp()
+{
+    QClipboard *clipboard = QGuiApplication::clipboard();
+    QMimeData *data = new QMimeData;
+    QString filename = ".zint.bmp";
+
+    if (!m_bc.bc.save_to_file(filename)) {
+            return;
+    }
+
+    data->setImageData(QImage(filename));
+    clipboard->setMimeData(data, QClipboard::Clipboard);
+
+    QFile::remove(filename);
 }
 
 void MainWindow::change_options()

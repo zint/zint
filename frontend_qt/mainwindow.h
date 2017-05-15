@@ -130,7 +130,8 @@ private slots:
 	void reset_view();
 	int open_data_dialog();
 	int open_sequence_dialog();
-    void copy_to_clipboard();
+    void copy_to_clipboard_svg();
+    void copy_to_clipboard_bmp();
 
 private:
 /*	void createActions();
