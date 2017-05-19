@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2016 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2017 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -78,10 +78,77 @@ int get_dot(char Dots[], int Hgt, int Wid, int x, int y) {
     return retval;
 }
 
+int clr_col(char *Dots, int Hgt, int Wid, int x) {
+    int y;
+    for (y = x & 1; y < Hgt; y += 2) {
+        if (get_dot(Dots, Hgt, Wid, x, y)) {
+            return 0;
+        }
+    }
+    
+    return 1;
+}
+
+int clr_row(char *Dots, int Hgt, int Wid, int y) {
+    int x;
+    for (x = y & 1; x < Wid; x += 2) {
+        if (get_dot(Dots, Hgt, Wid, x, y)) {
+            return 0;
+        }
+    }
+    
+    return 1;
+}
+
 /* Dot pattern scoring routine from Annex A */
 int score_array(char Dots[], int Hgt, int Wid) {
     int x, y, worstedge, first, last, sum;
+    int penalty_local = 0;
+    int penalty = 0;
 
+    // first, guard against "pathelogical" gaps in the array
+    if (Hgt & 1) {
+        if (Hgt < 12) {
+            sum = 0;
+            for (x = 1; x < Wid - 1; x++) {
+                if (!(clr_col(Dots, Hgt, Wid, x))) {
+                    sum = 0;
+                    if (penalty_local) {
+                        penalty += penalty_local;
+                        penalty_local = 0;
+                    }
+                } else {
+                    sum++;
+                    if (sum == 1) {
+                        penalty_local = Hgt;
+                    } else {
+                        penalty_local *= Hgt;
+                    }
+                }
+            }
+        }
+    } else {
+        if (Wid < 12) {
+            sum = 0;
+            for (y = 1; y < Hgt - 1; y++) {
+                if (!(clr_row(Dots, Hgt, Wid, y))) {
+                    sum = 0;
+                    if (penalty_local) {
+                        penalty += penalty_local;
+                        penalty_local = 0;
+                    }
+                } else {
+                    sum++;
+                    if (sum == 1) {
+                        penalty_local = Wid;
+                    } else {
+                        penalty_local *= Wid;
+                    }
+                }
+            }
+        }
+    }
+    
     sum = 0;
     first = -1;
     last = -1;
@@ -100,6 +167,7 @@ int score_array(char Dots[], int Hgt, int Wid) {
 
     sum = 0;
     first = -1;
+    last = -1;
 
     //across the bottom edge, ditto
     for (x = Wid & 1; x < Wid; x += 2)
@@ -118,6 +186,7 @@ int score_array(char Dots[], int Hgt, int Wid) {
 
     sum = 0;
     first = -1;
+    last = -1;
 
     //down the left edge, ditto
     for (y = 0; y < Hgt; y += 2)
@@ -136,6 +205,7 @@ int score_array(char Dots[], int Hgt, int Wid) {
 
     sum = 0;
     first = -1;
+    last = -1;
 
     //down the right edge, ditto
     for (y = Hgt & 1; y < Hgt; y += 2)
@@ -171,7 +241,7 @@ int score_array(char Dots[], int Hgt, int Wid) {
         }
     }
 
-    return (worstedge - sum * sum);
+    return (worstedge - sum * sum - penalty);
 }
 
 //-------------------------------------------------------------------------
@@ -240,7 +310,7 @@ int datum_b(const unsigned char source[], int position, int length) {
     int retval = 0;
 
     if (position < length) {
-        if (source[position] >= 32) {
+        if ((source[position] >= 32) && (source[position] <= 127)) {
             retval = 1;
         }
 
@@ -388,20 +458,73 @@ int dotcode_encode_message(struct zint_symbol *symbol, const unsigned char sourc
     }
 
     if (symbol->input_mode != GS1_MODE) {
-        codeword_array[array_length] = 107; // FNC1
-        array_length++;
+        if (length > 2) {
+            if (((source[input_position] >= '0') && (source[input_position] <= '9')) &&
+                    ((source[input_position + 1] >= '0') && (source[input_position + 1] <= '9'))) {
+                codeword_array[array_length] = 107; // FNC1
+                array_length++;
+            }
+        }
     }
 
     if (symbol->eci > 3) {
         codeword_array[array_length] = 108; // FNC2
         array_length++;
-        codeword_array[array_length] = symbol->eci;
-        array_length++;
+        if (symbol->eci <= 39) {
+            codeword_array[array_length] = symbol->eci;
+            array_length++;
+        } else {
+            // the next three codewords valued A, B & C encode the ECI value of
+            // (A - 40) * 12769 + B * 113 + C + 40 (Section 5.2.1)
+            int a, b, c;
+            a = (symbol->eci - 40) % 12769;
+            b = ((symbol->eci - 40) - (12769 * a)) % 113;
+            c = (symbol->eci - 40) - (12769 * a) - (113 * b);
+            
+            codeword_array[array_length] = a + 40;
+            array_length++;
+            codeword_array[array_length] = b;
+            array_length++;
+            codeword_array[array_length] = c;
+            array_length++;
+        }
     }
 
+    // Prevent encodation as a macro if a special character is in first position
+    if (source[input_position] == 9) {
+        codeword_array[array_length] = 101; // Latch A
+        array_length++;
+        codeword_array[array_length] = 73; // HT
+        array_length++;
+        encoding_mode = 'A';
+    }
+    
+    if (source[input_position] == 28) {
+        codeword_array[array_length] = 101; // Latch A
+        array_length++;
+        codeword_array[array_length] = 92; // FS
+        array_length++;
+        encoding_mode = 'A';
+    }
+    
+    if (source[input_position] == 29) {
+        codeword_array[array_length] = 101; // Latch A
+        array_length++;
+        codeword_array[array_length] = 93; // GS
+        array_length++;
+        encoding_mode = 'A';
+    }
+    
+    if (source[input_position] == 30) {
+        codeword_array[array_length] = 101; // Latch A
+        array_length++;
+        codeword_array[array_length] = 94; // RS
+        array_length++;
+        encoding_mode = 'A';
+    }
+    
     do {
         done = 0;
-
         /* Step A */
         if ((input_position == length - 2) && (inside_macro != 0) && (inside_macro != 100)) {
             // inside_macro only gets set to 97, 98 or 99 if the last two characters are RS/EOT
@@ -430,12 +553,11 @@ int dotcode_encode_message(struct zint_symbol *symbol, const unsigned char sourc
                         && (source[input_position + 3] == 30) // RS
                         && (source[length - 1] == 04)) { // EOT
 
-                    codeword_array[array_length] = 106; // Latch B
-                    array_length++;
-                    encoding_mode = 'B';
 
                     if ((source[input_position + 6] == 29) && (source[length - 2] == 30)) { // GS/RS
                         if ((source[input_position + 4] == '0') && (source[input_position + 5] == '5')) {
+                            codeword_array[array_length] = 102; // Shift B
+                            array_length++;
                             codeword_array[array_length] = 97; // Macro
                             array_length++;
                             input_position += 7;
@@ -447,6 +569,8 @@ int dotcode_encode_message(struct zint_symbol *symbol, const unsigned char sourc
                         }
 
                         if ((source[input_position + 4] == '0') && (source[input_position + 5] == '6')) {
+                            codeword_array[array_length] = 102; // Shift B
+                            array_length++;
                             codeword_array[array_length] = 98; // Macro
                             array_length++;
                             input_position += 7;
@@ -458,6 +582,8 @@ int dotcode_encode_message(struct zint_symbol *symbol, const unsigned char sourc
                         }
 
                         if ((source[input_position + 4] == '1') && (source[input_position + 5] == '2')) {
+                            codeword_array[array_length] = 102; // Shift B
+                            array_length++;
                             codeword_array[array_length] = 99; // Macro
                             array_length++;
                             input_position += 7;
@@ -469,7 +595,10 @@ int dotcode_encode_message(struct zint_symbol *symbol, const unsigned char sourc
                         }
                     }
 
-                    if (!done) {
+                    if ((!done) && (source[input_position] >= '0') && (source[input_position] <= '9') &&
+                            (source[input_position + 1] >= '0') && (source[input_position + 1] <= '9')) {
+                        codeword_array[array_length] = 102; // Shift B
+                        array_length++;
                         codeword_array[array_length] = 100; // Macro
                         array_length++;
                         input_position += 4;
@@ -912,6 +1041,18 @@ int dotcode_encode_message(struct zint_symbol *symbol, const unsigned char sourc
     } while (input_position < length);
 
     if (encoding_mode == 'X') {
+        if (binary_buffer_size != 0) {
+            /* Empty binary buffer */
+            for (i = 0; i < (binary_buffer_size + 1); i++) {
+                lawrencium[i] = binary_buffer % 103;
+                binary_buffer /= 103;
+            }
+
+            for (i = 0; i < (binary_buffer_size + 1); i++) {
+                codeword_array[array_length] = lawrencium[binary_buffer_size - i];
+                array_length++;
+            }
+        }
         *(binary_finish) = 1;
     }
 
