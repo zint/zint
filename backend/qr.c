@@ -2947,3 +2947,100 @@ int microqr(struct zint_symbol *symbol, const unsigned char source[], int length
 
     return 0;
 }
+
+/* For UPNQR the symbol size and error correction capacity is fixed */
+int upnqr(struct zint_symbol *symbol, const unsigned char source[], int length) {
+    int i, j, est_binlen;
+    int ecc_level, version, max_cw, target_binlen, blocks, size;
+    int bitmask;
+
+#ifndef _MSC_VER
+    int jisdata[length + 1];
+    char mode[length + 1];
+#else
+    int* datastream;
+    int* fullstream;
+    unsigned char* grid;
+    int* jisdata = (int *) _alloca((length + 1) * sizeof (int));
+    char* mode = (char *) _alloca(length + 1);
+#endif
+
+    switch(symbol->eci) {
+        case 3:
+            /* Convert input to ISO-8859-2 */
+            strcpy(symbol->errtxt, "Not implemented yet!");
+            return ZINT_ERROR_INVALID_DATA;
+            break;
+        case 4:
+            /* Input is already in ISO-8859-2 format */
+            for (i = 0; i < length; i++) {
+                jisdata[i] = (int) source[i];
+                mode[i] = 'B';
+            }
+            break;
+        default:
+            strcpy(symbol->errtxt, "Input data should be in Unicode or ISO-8859-2 format");
+            return ZINT_ERROR_INVALID_DATA;
+            break;
+    }
+
+    symbol->eci = 4;
+    est_binlen = estimate_binary_length(mode, length, 0, symbol->eci);
+    ecc_level = LEVEL_M;
+    max_cw = 2334;
+
+    if (est_binlen > (8 * max_cw)) {
+        strcpy(symbol->errtxt, "Input too long for selected error correction level (E61)");
+        return ZINT_ERROR_TOO_LONG;
+    }
+
+    version = 15; // 77 x 77
+
+    target_binlen = qr_data_codewords_M[version - 1];
+    blocks = qr_blocks_M[version - 1];
+
+#ifndef _MSC_VER
+    int datastream[target_binlen + 1];
+    int fullstream[qr_total_codewords[version - 1] + 1];
+#else
+    datastream = (int *) _alloca((target_binlen + 1) * sizeof (int));
+    fullstream = (int *) _alloca((qr_total_codewords[version - 1] + 1) * sizeof (int));
+#endif
+
+    qr_binary(datastream, version, target_binlen, mode, jisdata, length, 0, symbol->eci, est_binlen, symbol->debug);
+    add_ecc(fullstream, datastream, version, target_binlen, blocks);
+
+    size = qr_sizes[version - 1];
+#ifndef _MSC_VER
+    unsigned char grid[size * size];
+#else
+    grid = (unsigned char *) _alloca((size * size) * sizeof (unsigned char));
+#endif
+
+    for (i = 0; i < size; i++) {
+        for (j = 0; j < size; j++) {
+            grid[(i * size) + j] = 0;
+        }
+    }
+
+    setup_grid(grid, size, version);
+    populate_grid(grid, size, fullstream, qr_total_codewords[version - 1]);
+
+    bitmask = apply_bitmask(grid, size, ecc_level);
+
+    add_format_info(grid, size, ecc_level, bitmask);
+    
+    symbol->width = size;
+    symbol->rows = size;
+
+    for (i = 0; i < size; i++) {
+        for (j = 0; j < size; j++) {
+            if (grid[(i * size) + j] & 0x01) {
+                set_module(symbol, i, j);
+            }
+        }
+        symbol->row_height[i] = 1;
+    }
+
+    return 0;
+}

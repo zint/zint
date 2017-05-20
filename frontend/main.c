@@ -66,7 +66,7 @@ void types(void) {
             "38: UPC-E + Check     85: USPS OneCode            140: Channel Code\n"
             "40: Postnet           86: UK Plessey              141: Code One\n"
             "47: MSI Plessey       87: Telepen Numeric         142: Grid Matrix\n"
-            "49: FIM               89: ITF-14\n"
+            "49: FIM               89: ITF-14                  143: UPNQR\n"
             );
 }
 
