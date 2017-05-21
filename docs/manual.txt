@@ -320,6 +320,7 @@ Numeric Value  |  Barcode Name
 140            |  Channel Code
 141            |  Code One
 142            |  Grid Matrix
+143            |  UPNQR (Univerzalnega Plačilnega Naloga QR)
 --------------------------------------------------------------------------------
 
 4.4 Adjusting height
@@ -990,6 +991,7 @@ Value   |
 140     | BARCODE_CHANNEL         | Channel Code
 141     | BARCODE_CODEONE         | Code One
 142     | BARCODE_GRIDMATRIX      | Grid Matrix
+143     | BARCODE_UPNQR           | UPNQR (Univerzalnega Plačilnega Naloga QR)
 --------------------------------------------------------------------------------
 
 5.8 Adjusting other output options
@@ -1875,7 +1877,20 @@ Input  |  Version  |  Symbol Size
 4      |  M4       |  17 x 17
 ---------------------------------
 
-6.6.4 Maxicode (ISO 16023)
+6.6.4 UPNQR (Univerzalnega Plačilnega Naloga QR)
+------------------------------------------------
+A variation of QR Code used by Združenje Bank Slovenije (Bank Association of
+Slovenia). The size, error correction level and ECI are set by Zint and do not
+need to be specified. UPNQR is unusual in that it uses ISO-8859-2 formatted data.
+Zint will accept UTF-8 data and convert it to ISO-8859-2, or if your data is
+already ISO-8859-2 formatted use the --binary switch or if using the API set
+symbol->input_mode = DATA MODE;
+
+The following example creates a symbol from data saved as an ISO-8859-2 file:
+
+zint -o upnqr.png -b 143 --border=5 --scale=3 --binary -i ./upn.txt
+
+6.6.5 Maxicode (ISO 16023)
 --------------------------
 Developed by UPS the Maxicode symbology employs a grid of hexagons surrounding 
 a 'bulls-eye' finder pattern. This symbology is designed for the identification 
@@ -1933,7 +1948,7 @@ Mode  |  Maximum Data Lenth   |  Maximum Data Length  |  Number of Error
 -----------------------------------------------------------------------------
 * - secondary only
 
-6.6.5 Aztec Code (ISO 24778)
+6.6.6 Aztec Code (ISO 24778)
 ----------------------------
 Invented by Andrew Longacre at Welch Allyn Inc in 1995 the Aztec Code symbol is 
 a matrix symbol with a distinctive bulls-eye finder pattern. Zint can generate 
@@ -2015,13 +2030,13 @@ A separate symbology ID can be used to encode Health Industry Barcode (HIBC)
 data which adds a leading '+' character and a modulo-49 check digit to the 
 encoded data.
 
-6.6.6 Aztec Runes
+6.6.7 Aztec Runes
 -----------------
 A truncated version of compact Aztec Code for encoding whole integers between 0 
 and 255. Includes Reed-Solomon error correction. As defined in ISO/IEC 24778 
 Annex A. 
 
-6.6.7 Code One
+6.6.8 Code One
 --------------
 A matrix symbology developed by Ted Williams in 1992 which encodes data in a 
 way similar to Data Matrix ECC200. Code One is able to encode the Latin-1 
@@ -2049,7 +2064,7 @@ Input  |  Version  |  Size        |  Numeric        |  Alphanumeric
 Version S symbols can only encode numeric data. The width of version S and 
 version T symbols is determined by the length of the input data. 
 
-6.6.8 Grid Matrix
+6.6.9 Grid Matrix
 -----------------
 By default Grid Matrix supports encoding in Latin-1 and Chinese characters 
 within the GB 2312 standard set to be encoded in a checkerboard pattern. Input 
@@ -2090,7 +2105,7 @@ Mode  |  Error Correction Capacity
 5     |  Approximately 50%
 ----------------------------------
 
-6.6.9 DotCode
+6.6.10 DotCode
 -------------
 DotCode uses a grid of dots in a rectangular formation to encode characters up 
 to a maximum of approximately 450 characters (or 900 numeric digits). The 
@@ -2102,7 +2117,7 @@ the image to a larger value than the default (e.g. approx 10) for the dots to
 be plotted correctly. Approximately 33% of the resulting symbol is comprised of 
 error correction codewords.
 
-6.6.10 Han Xin Code
+6.6.11 Han Xin Code
 -------------------
 Also known as Chinese Sensible Code, Han Xin is a symbology which is still 
 under 

@@ -42,6 +42,8 @@
 #include <stdlib.h>     /* abs */
 #include <assert.h>
 
+extern int utf_to_eci(int eci, const unsigned char source[], unsigned char dest[], int *length); /* Convert Unicode to other encodings */
+
 /* Returns true if input glyph is in the Alphanumeric set */
 int in_alpha(int glyph) {
     int retval = 0;
@@ -2952,7 +2954,7 @@ int microqr(struct zint_symbol *symbol, const unsigned char source[], int length
 int upnqr(struct zint_symbol *symbol, const unsigned char source[], int length) {
     int i, j, est_binlen;
     int ecc_level, version, max_cw, target_binlen, blocks, size;
-    int bitmask;
+    int bitmask, error_number;
 
 #ifndef _MSC_VER
     int jisdata[length + 1];
@@ -2964,23 +2966,35 @@ int upnqr(struct zint_symbol *symbol, const unsigned char source[], int length) 
     int* jisdata = (int *) _alloca((length + 1) * sizeof (int));
     char* mode = (char *) _alloca(length + 1);
 #endif
+    
+#ifndef _MSC_VER
+    unsigned char preprocessed[length + 1];
+#else
+    unsigned char* preprocessed = (unsigned char*) _alloca(length + 1);
+#endif
 
-    switch(symbol->eci) {
-        case 3:
-            /* Convert input to ISO-8859-2 */
-            strcpy(symbol->errtxt, "Not implemented yet!");
-            return ZINT_ERROR_INVALID_DATA;
-            break;
-        case 4:
+    switch(symbol->input_mode) {
+        case DATA_MODE:
             /* Input is already in ISO-8859-2 format */
             for (i = 0; i < length; i++) {
                 jisdata[i] = (int) source[i];
                 mode[i] = 'B';
             }
             break;
-        default:
-            strcpy(symbol->errtxt, "Input data should be in Unicode or ISO-8859-2 format");
-            return ZINT_ERROR_INVALID_DATA;
+        case GS1_MODE:
+            strcpy(symbol->errtxt, "UPNQR does not support GS-1 encoding");
+            return ZINT_ERROR_INVALID_OPTION;
+            break;
+        case UNICODE_MODE:
+            error_number = utf_to_eci(4, source, preprocessed, &length);
+            if (error_number != 0) {
+                strcpy(symbol->errtxt, "Invalid characters in input data (B04)");
+                return error_number;
+            }
+            for (i = 0; i < length; i++) {
+                jisdata[i] = (int) preprocessed[i];
+                mode[i] = 'B';
+            }
             break;
     }
 
