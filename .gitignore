@@ -3,8 +3,17 @@ build/
 *.[ao]
 *.swp
 *.swo
+*.suo
+*.pro.user
 .directory
 CMakeLists.txt.user*
 Makefile
 backend/Makefile
 frontend/Makefile
+build-*
+win32/*.VC.opendb
+win32/*.VC.db
+win32/Debug
+win32/Release
+win32/x64
+extern/*
