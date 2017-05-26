@@ -1786,7 +1786,7 @@ DMRE symbol sizes may be activated in automatic size mode using the option
 6.6.2 QR Code (ISO 18004)
 -------------------------
 Also known as Quick Response Code this symbology was developed by Denso. Four 
-levels of error correction are available using the --security= option or by
+levels of error correction are available using the --secure= option or by
 setting option_1 as shown in the following table. 
 
 -------------------------------------------------------------------------
