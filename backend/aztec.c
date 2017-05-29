@@ -68,7 +68,7 @@ static void insert(char binary_string[], const size_t posn, const char newbit) {
 /**
  * Encode input data into a binary string
  */
-static int aztec_text_process(const unsigned char source[], const unsigned int src_len, char binary_string[], const int gs1, const int eci, int debug) {
+static int aztec_text_process(const unsigned char source[], const size_t src_len, char binary_string[], const int gs1, const int eci, const int debug) {
     int i, j, k, bytes;
     int curtable, newtable, lasttable, chartype, maplength, blocks;
 #ifndef _MSC_VER
@@ -812,7 +812,7 @@ static void populate_map() {
     AztecMap[(avoidReferenceGrid(77) * 151) + avoidReferenceGrid(76)] = 1;
 }
 
-int aztec(struct zint_symbol *symbol, unsigned char source[], int length) {
+int aztec(struct zint_symbol *symbol, unsigned char source[], const size_t length) {
     int x, y, i, j, p, data_blocks, ecc_blocks, layers, total_bits;
     char binary_string[20000], bit_pattern[20045], descriptor[42];
     char adjusted_string[20000];

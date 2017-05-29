@@ -52,6 +52,8 @@
 #define CANDB 98
 #define CANDBB 99
 
+extern int parunmodd(const unsigned char llyth);
+
 static int list[2][170];
 
 static const char *C16KTable[107] = {
@@ -86,20 +88,20 @@ static const int C16KStopValues[16] = {
     0, 1, 2, 3, 4, 5, 6, 7, 4, 5, 6, 7, 0, 1, 2, 3
 };
 
-void grwp16(int *indexliste) {
+static void grwp16(unsigned int *indexliste) {
     int i, j;
 
     /* bring together same type blocks */
     if (*(indexliste) > 1) {
         i = 1;
-        while (i < *(indexliste)) {
+        while(i < (int)*(indexliste)) {
             if (list[1][i - 1] == list[1][i]) {
                 /* bring together */
                 list[0][i - 1] = list[0][i - 1] + list[0][i];
                 j = i + 1;
 
                 /* decreace the list */
-                while (j < *(indexliste)) {
+                while(j < (int)*(indexliste)) {
                     list[0][j - 1] = list[0][j];
                     list[1][j - 1] = list[1][j];
                     j++;
@@ -113,10 +115,10 @@ void grwp16(int *indexliste) {
 }
 
 /* Implements rules from ISO 15417 Annex E */
-void dxsmooth16(int *indexliste) {
+static void dxsmooth16(unsigned int *indexliste) {
     int i, current, last, next, length;
 
-    for (i = 0; i < *(indexliste); i++) {
+    for(i = 0; i < (int)*(indexliste); i++) {
         current = list[1][i];
         length = list[0][i];
         if (i != 0) {
@@ -220,7 +222,7 @@ void dxsmooth16(int *indexliste) {
 
 }
 
-void c16k_set_a(unsigned char source, unsigned int values[], unsigned int *bar_chars) {
+static void c16k_set_a(const unsigned char source, unsigned int values[], unsigned int *bar_chars) {
     if (source > 127) {
         if (source < 160) {
             values[(*bar_chars)] = source + 64 - 128;
@@ -237,7 +239,7 @@ void c16k_set_a(unsigned char source, unsigned int values[], unsigned int *bar_c
     (*bar_chars)++;
 }
 
-void c16k_set_b(unsigned char source, unsigned int values[], unsigned int *bar_chars) {
+static void c16k_set_b(const unsigned char source, unsigned int values[], unsigned int *bar_chars) {
     if (source > 127) {
         values[(*bar_chars)] = source - 32 - 128;
     } else {
@@ -246,7 +248,7 @@ void c16k_set_b(unsigned char source, unsigned int values[], unsigned int *bar_c
     (*bar_chars)++;
 }
 
-void c16k_set_c(unsigned char source_a, unsigned char source_b, unsigned int values[], unsigned int *bar_chars) {
+static void c16k_set_c(const unsigned char source_a, unsigned char source_b, unsigned int values[], unsigned int *bar_chars) {
     int weight;
 
     weight = (10 * ctoi(source_a)) + ctoi(source_b);
@@ -254,17 +256,17 @@ void c16k_set_c(unsigned char source_a, unsigned char source_b, unsigned int val
     (*bar_chars)++;
 }
 
-int code16k(struct zint_symbol *symbol, unsigned char source[], int length) {
+int code16k(struct zint_symbol *symbol, unsigned char source[], const size_t length) {
     char width_pattern[100];
     int current_row, rows_needed, flip_flop, looper, first_check, second_check;
-    int indexliste, indexchaine, pads_needed, f_state;
+    int indexchaine, f_state;
     char set[160] = {' '}, fset[160] = {' '}, mode, last_set, current_set;
-    unsigned int i, j, k, m, read, mx_reader, writer;
+    unsigned int pads_needed, indexliste, i, j, k, m, read, mx_reader, writer;
     unsigned int values[160] = {0};
     unsigned int bar_characters;
     float glyph_count;
     int errornum, first_sum, second_sum;
-    int input_length;
+    size_t input_length;
     int gs1, c_count;
 
     errornum = 0;
@@ -483,7 +485,7 @@ int code16k(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     /* Calculate how tall the symbol will be */
     glyph_count = glyph_count + 2.0;
-    i = glyph_count;
+    i = (int)glyph_count;
     rows_needed = (i / 5);
     if (i % 5 > 0) {
         rows_needed++;

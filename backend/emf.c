@@ -35,6 +35,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+#include <malloc.h>
 #include "common.h"
 #include "emf.h"
 

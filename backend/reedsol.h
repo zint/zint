@@ -39,7 +39,7 @@ extern "C" {
 
 extern void rs_init_gf(const int poly);
 extern void rs_init_code(const int nsym,int index);
-extern void rs_encode(const int len,const unsigned char *data, unsigned char *res);
+extern void rs_encode(const size_t len,const unsigned char *data, unsigned char *res);
 extern void rs_encode_long(const int len,const unsigned int *data, unsigned int *res);
     extern void rs_free(void);
 

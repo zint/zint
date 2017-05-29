@@ -47,33 +47,33 @@
 /* Find which submode to use for a text character */
 int getsubmode(char input) {
     int submode = 2;
-
+    
     if ((input >= '0') && (input <= '9')) {
         submode = 1;
     }
-
+    
     if ((input >= 'A') && (input <= 'Z')) {
         submode = 1;
     }
-
+    
     if ((input >= 'a') && (input <= 'z')) {
         submode = 1;
     }
-
+    
     return submode;
 }
 
 /* Calculate the approximate length of the binary string */
-int calculate_binlength(char mode[], int source[], int length, int eci) {
+static int calculate_binlength(char mode[], int source[], const size_t length, int eci) {
     int i;
     char lastmode = 't';
     int est_binlen = 0;
     int submode = 1;
-
+    
     if (eci != 3) {
         est_binlen += 12;
     }
-
+    
     i = 0;
     do {
         switch (mode[i]) {
@@ -220,38 +220,38 @@ int isFourByte(int glyph, int glyph2) {
             }
         }
     }
-
+    
     return valid;
 }
 
 /* Calculate mode switching */
-void hx_define_mode(char mode[], int source[], int length) {
+static void hx_define_mode(char mode[], int source[], const size_t length) {
     int i;
     char lastmode = 't';
     int done;
-
+    
     i = 0;
     do {
         done = 0;
-
+        
         if (isRegion1(source[i])) {
             mode[i] = '1';
             done = 1;
             i++;
         }
-
+        
         if ((done == 0) && (isRegion2(source[i]))) {
             mode[i] = '2';
             done = 1;
             i++;
         }
-
+        
         if ((done == 0) && (isDoubleByte(source[i]))) {
             mode[i] = 'd';
             done = 1;
             i++;
         }
-
+        
         if ((done == 0) && (i < length - 1)) {
             if (isFourByte(source[i], source[i + 1])) {
                 mode[i] = 'f';
@@ -289,47 +289,47 @@ void hx_define_mode(char mode[], int source[], int length) {
 /* Convert Text 1 sub-mode character to encoding value, as given in table 3 */
 int lookup_text1(char input) {
     int encoding_value = 0;
-
+    
     if ((input >= '0') && (input <= '9')) {
         encoding_value = input - '0';
     }
-
+    
     if ((input >= 'A') && (input <= 'Z')) {
         encoding_value = input - 'A' + 10;
     }
-
+    
     if ((input >= 'a') && (input <= 'z')) {
         encoding_value = input - 'a' + 36;
     }
-
+    
     return encoding_value;
 }
 
 /* Convert Text 2 sub-mode character to encoding value, as given in table 4 */
 int lookup_text2(char input) {
     int encoding_value = 0;
-
+    
     if ((input >= 0) && (input <= 27)) {
         encoding_value = input;
     }
-
+    
     if ((input >= ' ') && (input <= '/')) {
         encoding_value = input - ' ' + 28;
     }
-
+    
     if ((input >= '[') && (input <= 96)) {
         encoding_value = input - '[' + 51;
     }
-
+    
     if ((input >= '{') && (input <= 127)) {
         encoding_value = input - '{' + 57;
     }
-
+    
     return encoding_value;
 }
 
 /* Convert input data to binary stream */
-void calculate_binary(char binary[], char mode[], int source[], int length, int eci, int debug) {
+static void calculate_binary(char binary[], char mode[], int source[], const size_t length, const int eci, int debug) {
     int block_length;
     int position = 0;
     int i, count, encoding_value;
@@ -1236,12 +1236,12 @@ int hx_apply_bitmask(unsigned char *grid, int size) {
             }
         }
     }
-
+    
     return best_pattern;
 }
 
 /* Han Xin Code - main */
-int han_xin(struct zint_symbol *symbol, const unsigned char source[], int length) {
+int han_xin(struct zint_symbol *symbol, const unsigned char source[], size_t length) {
     int est_binlen;
     int ecc_level = symbol->option_1;
     int i, j, version, posn = 0;

@@ -503,7 +503,8 @@ int maxi_text_process(int mode, unsigned char source[], int length, int eci) {
 
 /* Format structured primary for Mode 2 */
 void maxi_do_primary_2(char postcode[], int country, int service) {
-    int postcode_length, postcode_num, i;
+    size_t postcode_length;
+   int    postcode_num, i;
 
     for (i = 0; i < 10; i++) {
         if ((postcode[i] < '0') || (postcode[i] > '9')) {

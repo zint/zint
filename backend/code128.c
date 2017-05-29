@@ -291,9 +291,10 @@ void c128_set_c(unsigned char source_a, unsigned char source_b, char dest[], int
 }
 
 /* Handle Code 128 and NVE-18 */
-int code_128(struct zint_symbol *symbol, unsigned char source[], int length) {
+int code_128(struct zint_symbol *symbol, unsigned char source[], const size_t length) { 
     int i, j, k, values[170] = {0}, bar_characters, read, total_sum;
-    int error_number, indexchaine, indexliste, sourcelen, f_state;
+    int error_number, indexchaine, indexliste, f_state;
+    size_t sourcelen;
     char set[170] = {' '}, fset[170] = {' '}, mode, last_set, current_set = ' ';
     float glyph_count;
     char dest[1000];

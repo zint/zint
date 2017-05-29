@@ -557,7 +557,7 @@ void numbprocess(int *chainemc, int *mclength, char chaine[], int start, int len
 }
 
 /* 366 */
-int pdf417(struct zint_symbol *symbol, unsigned char chaine[], int length) {
+static int pdf417(struct zint_symbol *symbol, unsigned char chaine[], const size_t length) {
     int i, k, j, indexchaine, indexliste, mode, longueur, loop, mccorrection[520], offset;
     int total, chainemc[2700], mclength, c1, c2, c3, dummy[35], codeerr;
     char codebarre[140], pattern[580];
@@ -670,7 +670,7 @@ int pdf417(struct zint_symbol *symbol, unsigned char chaine[], int length) {
         symbol->option_2 = 30;
     }
     if (symbol->option_2 < 1) {
-        symbol->option_2 = 0.5 + sqrt((longueur + k) / 3.0);
+        symbol->option_2 =(int)(0.5 + sqrt((longueur + k) / 3.0));
     }
     if (((longueur + k) / symbol->option_2) > 90) {
         /* stop the symbol from becoming too high */
@@ -820,14 +820,14 @@ int pdf417(struct zint_symbol *symbol, unsigned char chaine[], int length) {
         
     }
     symbol->rows = (mclength / symbol->option_2);
-    symbol->width = strlen(pattern);
+    symbol->width =(int)strlen(pattern);
 
     /* 843 */
     return codeerr;
 }
 
 /* 345 */
-int pdf417enc(struct zint_symbol *symbol, unsigned char source[], int length) {
+int pdf417enc(struct zint_symbol *symbol, unsigned char source[], const size_t length) {
     int codeerr, error_number;
 
     error_number = 0;
@@ -877,7 +877,7 @@ int pdf417enc(struct zint_symbol *symbol, unsigned char source[], int length) {
 }
 
 /* like PDF417 only much smaller! */
-int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], int length) {
+int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], const size_t length) {
     int i, k, j, indexchaine, indexliste, mode, longueur, mccorrection[50], offset;
     int total, chainemc[2700], mclength, dummy[5], codeerr;
     char codebarre[100], pattern[580];

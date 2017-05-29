@@ -72,7 +72,7 @@ extern int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int l
 
 static UINT pwr928[69][7];
 
-int _min(int first, int second) {
+static int _min(int first, int second) {
 
     if (first <= second)
         return first;
@@ -81,12 +81,12 @@ int _min(int first, int second) {
 }
 
 /* gets bit in bitString at bitPos */
-int getBit(UINT *bitStr, int bitPos) {
+static int getBit(UINT *bitStr, int bitPos) {
     return !!(bitStr[bitPos >> 4] & (0x8000 >> (bitPos & 15)));
 }
 
 /* initialize pwr928 encoding table */
-void init928(void) {
+static void init928(void) {
     int i, j, v;
     int cw[7];
     cw[6] = 1L;
@@ -106,7 +106,7 @@ void init928(void) {
 }
 
 /* converts bit string to base 928 values, codeWords[0] is highest order */
-int encode928(UINT bitString[], UINT codeWords[], int bitLng) {
+static int encode928(UINT bitString[], UINT codeWords[], int bitLng) {
     int i, j, b, bitCnt, cwNdx, cwCnt, cwLng;
     for (cwNdx = cwLng = b = 0; b < bitLng; b += 69, cwNdx += 7) {
         bitCnt = _min(bitLng - b, 69);
@@ -129,7 +129,7 @@ int encode928(UINT bitString[], UINT codeWords[], int bitLng) {
 }
 
 /* CC-A 2D component */
-int cc_a(struct zint_symbol *symbol, char source[], int cc_width) {
+static int cc_a(struct zint_symbol *symbol, char source[], int cc_width) { 
     int i, strpos, segment, bitlen, cwCnt, variant, rows;
     int k, offset, j, total, rsCodeWords[8];
     int LeftRAPStart, RightRAPStart, CentreRAPStart, StartCluster;
@@ -363,7 +363,7 @@ int cc_a(struct zint_symbol *symbol, char source[], int cc_width) {
 }
 
 /* CC-B 2D component */
-int cc_b(struct zint_symbol *symbol, char source[], int cc_width) {
+static int cc_b(struct zint_symbol *symbol, char source[], int cc_width) { 
     int length, i, binloc;
 #ifndef _MSC_VER
     unsigned char data_string[(strlen(source) / 8) + 3];
@@ -646,7 +646,7 @@ int cc_b(struct zint_symbol *symbol, char source[], int cc_width) {
 }
 
 /* CC-C 2D component - byte compressed PDF417 */
-int cc_c(struct zint_symbol *symbol, char source[], int cc_width, int ecc_level) {
+static int cc_c(struct zint_symbol *symbol, char source[], int cc_width, int ecc_level) { 
     int length, i, p, binloc;
 #ifndef _MSC_VER
     unsigned char data_string[(strlen(source) / 8) + 4];
@@ -789,12 +789,12 @@ int cc_c(struct zint_symbol *symbol, char source[], int cc_width, int ecc_level)
         symbol->row_height[i] = 3;
     }
     symbol->rows = (mclength / cc_width);
-    symbol->width = strlen(pattern);
+    symbol->width = (int)strlen(pattern);
 
     return 0;
 }
 
-int calc_padding_cca(int binary_length, int cc_width) {
+static int calc_padding_cca(int binary_length, int cc_width) {
     int target_bitsize = 0;
     
     switch (cc_width) {
@@ -1026,7 +1026,7 @@ int calc_padding_ccc(int binary_length, int *cc_width, int lin_width, int *ecc) 
     return target_bitsize;
 }
 
-int cc_binary_string(struct zint_symbol *symbol, const char source[], char binary_string[], int cc_mode, int *cc_width, int *ecc, int lin_width) { /* Handles all data encodation from section 5 of ISO/IEC 24723 */
+static int cc_binary_string(struct zint_symbol *symbol, const char source[], char binary_string[], int cc_mode, int *cc_width, int *ecc, int lin_width) { /* Handles all data encodation from section 5 of ISO/IEC 24723 */
     int encoding_method, read_posn, d1, d2, value, alpha_pad;
     int i, j, mask, ai_crop, fnc1_latch;
     long int group_val;
@@ -1223,7 +1223,7 @@ int cc_binary_string(struct zint_symbol *symbol, const char source[], char binar
                 }
             }
 
-            next_ai_posn = 2 + strlen(ninety);
+            next_ai_posn = 2 + (int)strlen(ninety);
 
             if (source[next_ai_posn] == '[') {
                 /* There are more AIs afterwords */
@@ -1721,7 +1721,7 @@ int cc_binary_string(struct zint_symbol *symbol, const char source[], char binar
         }
     } while (i + latch < (int) strlen(general_field));
     
-    binary_length = strlen(binary_string);
+    binary_length = (int)strlen(binary_string);
     switch (cc_mode) {
         case 1:
             target_bitsize = calc_padding_cca(binary_length, *(cc_width));
@@ -1783,7 +1783,7 @@ int cc_binary_string(struct zint_symbol *symbol, const char source[], char binar
     }
 
 
-    binary_length = strlen(binary_string);
+    binary_length = (int)strlen(binary_string);
     switch (cc_mode) {
         case 1:
             target_bitsize = calc_padding_cca(binary_length, *(cc_width));
@@ -1825,55 +1825,6 @@ int cc_binary_string(struct zint_symbol *symbol, const char source[], char binar
     return 0;
 }
 
-void add_leading_zeroes(struct zint_symbol *symbol) {
-    int with_addon = 0;
-    int first_len = 0, second_len = 0, zfirst_len = 0, zsecond_len = 0, i, h, n = 0;
-
-    h = strlen(symbol->primary);
-    for (i = 0; i < h; i++) {
-        if (symbol->primary[i] == '+') {
-            with_addon = 1;
-        } else {
-            if (with_addon == 0) {
-                first_len++;
-            } else {
-                second_len++;
-            }
-        }
-    }
-
-    /* Calculate target lengths */
-    if (first_len <= 12) {
-        zfirst_len = 12;
-    }
-    if (first_len <= 7) {
-        zfirst_len = 7;
-    }
-    if (second_len <= 5) {
-        zsecond_len = 5;
-    }
-    if (second_len <= 2) {
-        zsecond_len = 2;
-    }
-    if (second_len == 0) {
-        zsecond_len = 0;
-    }
-
-    /* Add leading zeroes */
-    n = zfirst_len - first_len;
-    if (n > 0) {
-        memmove(symbol->primary + n, symbol->primary, h);
-        memset(symbol->primary, '0', n);
-    }
-    n += first_len + 1;
-    if (zsecond_len) {
-        memmove(symbol->primary + n + zsecond_len, symbol->primary + n, second_len);
-        memset(symbol->primary + n, '0', zsecond_len);
-        n += zsecond_len + second_len;
-    }
-    symbol->primary[n] = '\0';
-}
-
 int linear_dummy_run(unsigned char *source, int length) {
     struct zint_symbol *dummy;
     int error_number;
@@ -1912,7 +1863,7 @@ int composite(struct zint_symbol *symbol, unsigned char source[], int length) {
     
     /* Perform sanity checks on input options first */
     error_number = 0;
-    pri_len = strlen(symbol->primary);
+    pri_len = (int)strlen(symbol->primary);
     if (pri_len == 0) {
         strcpy(symbol->errtxt, "No primary (linear) message in 2D composite (D45)");
         return ZINT_ERROR_INVALID_OPTION;

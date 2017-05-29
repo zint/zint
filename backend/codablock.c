@@ -629,7 +629,7 @@ void SumASCII(uchar **ppOutPos, int Sum, int CharacterSet)
 
 /* Main function called by zint framework
  */
-int codablock(struct zint_symbol *symbol, unsigned char source[], int length) {
+int codablock(struct zint_symbol *symbol,const unsigned char source[], const size_t length) {
     int charCur;
     int dataLength;
     int Error;

@@ -49,7 +49,7 @@ static const char *MSITable[10] = {
 };
 
 /* Not MSI/Plessey but the older Plessey standard */
-int plessey(struct zint_symbol *symbol, unsigned char source[], int length) {
+int plessey(struct zint_symbol *symbol, unsigned char source[], const size_t length) { 
 
     unsigned int i, check;
     unsigned char *checkptr;
@@ -110,9 +110,9 @@ int plessey(struct zint_symbol *symbol, unsigned char source[], int length) {
 }
 
 /* Plain MSI Plessey - does not calculate any check character */
-int msi_plessey(struct zint_symbol *symbol, unsigned char source[], int length) {
+int msi_plessey(struct zint_symbol *symbol, unsigned char source[], const size_t length) { 
 
-    unsigned int i;
+	size_t i;
     char dest[512]; /* 2 + 55 * 8 + 3 + 1 ~ 512 */
 
     if (length > 55) {
@@ -368,7 +368,8 @@ int msi_plessey_mod11(struct zint_symbol *symbol, unsigned char source[], const 
  * Verified against http://www.bokai.com/BarcodeJSP/applet/BarcodeSampleApplet.htm */
 int msi_plessey_mod1110(struct zint_symbol *symbol, unsigned char source[], const unsigned int src_len) {
     /* Weighted using the IBM system */
-    unsigned long i, weight, x, check, wright, dau, pedwar, pump, h;
+    unsigned long i, weight, x, check, wright, dau, pedwar, pump;
+    size_t h;
     long si;
     char un[16], tri[16];
     int error_number;

@@ -505,7 +505,7 @@ char isbn_check(unsigned char source[]) {
 }
 
 /* Make an EAN-13 barcode from an SBN or ISBN */
-int isbn(struct zint_symbol *symbol, unsigned char source[], const unsigned int src_len, char dest[]) {
+static int isbn(struct zint_symbol *symbol, unsigned char source[], const size_t src_len, char dest[]) {
     int i, error_number;
     char check_digit;
 

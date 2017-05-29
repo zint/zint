@@ -105,7 +105,7 @@ int render_plot(struct zint_symbol *symbol, const float width, const float heigh
     r = 0;
     /* Isolate add-on text */
     if (is_extendable(symbol->symbology)) {
-        for (i = 0; i < ustrlen(symbol->text); i++) {
+        for(i = 0; i < (int)ustrlen(symbol->text); i++) {
             if (latch == 1) {
                 addon[r] = symbol->text[i];
                 r++;
@@ -208,7 +208,7 @@ int render_plot(struct zint_symbol *symbol, const float width, const float heigh
         }
     }
 
-    total_symbol_width_x = main_symbol_width_x + addon_width_x;
+    total_symbol_width_x = 0.0 + main_symbol_width_x + addon_width_x;
     total_area_width_x = total_symbol_width_x + (2 * (symbol->border_width + symbol->whitespace_width));
 
     xoffset = symbol->border_width + symbol->whitespace_width;

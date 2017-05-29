@@ -171,7 +171,7 @@ short int islarger(short int accum[], short int reg[]) {
     return larger;
 }
 
-void binary_load(short int reg[], char data[], const unsigned int src_len) {
+void binary_load(short int reg[], char data[], const size_t src_len) {
     int read, i;
     short int temp[112] = {0};
 

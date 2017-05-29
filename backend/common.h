@@ -62,18 +62,16 @@ extern "C" {
     extern int is_sane(const char test_string[], const unsigned char source[], const size_t length);
     extern void lookup(const char set_string[], const char *table[], const char data, char dest[]);
     extern int posn(const char set_string[], const char data);
-    extern void expand(struct zint_symbol *symbol, const char data[]);
-    extern int is_stackable(const int symbology);
-    extern int is_extendable(const int symbology);
-    extern int roundup(const float input);
     extern int module_is_set(const struct zint_symbol *symbol, const int y_coord, const int x_coord);
     extern void set_module(struct zint_symbol *symbol, const int y_coord, const int x_coord);
-    extern void unset_module(struct zint_symbol *symbol, const int y_coord, const int x_coord);
     extern int istwodigits(const unsigned char source[], const int position);
-    extern double froundup(const double input);
     extern int parunmodd(const unsigned char llyth);
-    extern int utf8toutf16(struct zint_symbol *symbol, const unsigned char source[], int vals[], int *length);
-    extern void set_minimum_height(struct zint_symbol *symbol, int min_height);
+    extern void expand(struct zint_symbol *symbol, const char data[]);
+    extern void unset_module(struct zint_symbol *symbol, const int y_coord, const int x_coord);
+    extern int is_stackable(const int symbology);
+    extern int is_extendable(const int symbology);
+    extern int utf8toutf16(struct zint_symbol *symbol, const unsigned char source[], int vals[], size_t *length);
+    extern void set_minimum_height(struct zint_symbol *symbol, const int min_height);
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

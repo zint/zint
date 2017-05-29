@@ -43,12 +43,12 @@
 #include "gridmtx.h"
 #include "gb2312.h"
 
-int number_lat(int gbdata[], int length, int position) {
+int number_lat(int gbdata[], const size_t length, const size_t position) {
     /* Attempt to calculate the 'cost' of using numeric mode from a given position in number of bits */
     /* Also ensures that numeric mode is not selected when it cannot be used: for example in
        a string which has "2.2.0" (cannot have more than one non-numeric character for each
        block of three numeric characters) */
-    int sp;
+    size_t sp;
     int numb = 0, nonum = 0, done;
     int tally = 0;
 
@@ -118,14 +118,15 @@ int number_lat(int gbdata[], int length, int position) {
     return tally;
 }
 
-int seek_forward(int gbdata[], int length, int position, int current_mode) {
+static int seek_forward(int gbdata[], const size_t length, const size_t position, int current_mode) {
     /* In complete contrast to the method recommended in Annex D of the ANSI standard this
        code uses a look-ahead test in the same manner as Data Matrix. This decision was made
        because the "official" algorithm does not provide clear methods for dealing with all
        possible combinations of input data */
 
     int number_count, byte_count, mixed_count, upper_count, lower_count, chinese_count;
-    int sp, best_mode, done;
+    int    best_mode, done;
+   size_t sp;
     int best_count, last = -1;
     int debug = 0;
 
@@ -268,7 +269,7 @@ int seek_forward(int gbdata[], int length, int position, int current_mode) {
         if (sp != last) {
             if (((gbdata[sp] >= '0') && (gbdata[sp] <= '9')) && ((gbdata[sp + 1] >= '0') && (gbdata[sp + 1] <= '9'))) {
                 chinese_count -= 13;
-                last = sp + 1;
+                last = (int)(sp + 1);
             }
         }
     }
@@ -342,7 +343,7 @@ void add_shift_char(char binary[], int shifty) {
     bin_append(glyph, 6, binary);
 }
 
-int gm_encode(int gbdata[], int length, char binary[], int reader, int eci, int debug) {
+static int gm_encode(int gbdata[], const size_t length, char binary[], int reader, int eci, int debug) {
     /* Create a binary stream representation of the input data.
        7 sets are defined - Chinese characters, Numerals, Lower case letters, Upper case letters,
        Mixed numerals and latters, Control characters and 8-bit binary data */
@@ -987,7 +988,7 @@ void place_layer_id(char* grid, int size, int layers, int modules, int ecc_level
     }
 }
 
-int grid_matrix(struct zint_symbol *symbol, const unsigned char source[], int length) {
+int grid_matrix(struct zint_symbol *symbol, const unsigned char source[], size_t length) {
     int size, modules, dark, error_number;
     int auto_layers, min_layers, layers, auto_ecc_level, min_ecc_level, ecc_level;
     int x, y, i, j, glyph;
@@ -1049,7 +1050,7 @@ int grid_matrix(struct zint_symbol *symbol, const unsigned char source[], int le
     }
 
     /* Determine the size of the symbol */
-    data_cw = strlen(binary) / 7;
+    data_cw = (int)strlen(binary) / 7;
 
     auto_layers = 13;
     for (i = 12; i > 0; i--) {

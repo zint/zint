@@ -573,7 +573,7 @@ int main(int argc, char **argv) {
                         /* Zero and negative values are not permitted */
                         fprintf(stderr, "Invalid dot radius value (A06)\n");
                         fflush(stderr);
-                        my_symbol->dot_size = 4.0 / 5.0;
+                        my_symbol->dot_size = 4.0F / 5.0F;
                     }
                 }
                 if (!strcmp(long_options[option_index].name, "border")) {

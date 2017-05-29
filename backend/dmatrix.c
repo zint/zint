@@ -256,22 +256,22 @@ static void dminsert(char binary_string[], const int posn, const char newbit) {
     binary_string[posn] = newbit;
 }
 
-static void insert_value(unsigned char binary_stream[], const int posn, const int streamlen, const int newbit) {
+static void insert_value(unsigned char binary_stream[], const int posn, const size_t streamlen, const int newbit) {
     int i;
 
-    for (i = streamlen; i > posn; i--) {
+    for(i = (int)streamlen; i > posn; i--) {
         binary_stream[i] = binary_stream[i - 1];
     }
     binary_stream[posn] = (unsigned char) newbit;
 }
 
-static int p_r_6_2_1(const unsigned char inputData[], const int position, const int sourcelen) {
+static int p_r_6_2_1(const unsigned char inputData[], const int position, const size_t sourcelen) {
     /* Annex P section (r)(6)(ii)(I)
        "If one of the three X12 terminator/separator characters first
         occurs in the yet to be processed data before a non-X12 character..."
      */
 
-    int i;
+    size_t i;
     int nonX12Position = 0;
     int specialX12Position = 0;
     int retval = 0;
@@ -302,10 +302,11 @@ static int p_r_6_2_1(const unsigned char inputData[], const int position, const 
 }
 
 /* 'look ahead test' from Annex P */
-static int look_ahead_test(const unsigned char inputData[], const int sourcelen, const int position, const int current_mode, const int gs1) {
+static int look_ahead_test(const unsigned char inputData[], const size_t sourcelen, const size_t position, const int current_mode, const int gs1) {
     float ascii_count, c40_count, text_count, x12_count, edf_count, b256_count, best_count;
     const float stiction = (1.0F / 24.0F); // smallest change to act on, to get around floating point inaccuracies
-    int sp, best_scheme;
+    int    best_scheme;
+    size_t sp;
 
     best_scheme = DM_NULL;
 
@@ -520,9 +521,6 @@ static int look_ahead_test(const unsigned char inputData[], const int sourcelen,
             }
         }
         
-        //printf("Char %d[%c]: ASC:%.2f C40:%.2f X12:%.2f TXT:%.2f EDI:%.2f BIN:%.2f\n", sp,
-        //        inputData[sp], ascii_count, c40_count, x12_count, text_count, edf_count, b256_count);
-
         sp++;
     } while (best_scheme == DM_NULL); // step (s)
 
@@ -531,11 +529,12 @@ static int look_ahead_test(const unsigned char inputData[], const int sourcelen,
 
 /* Encodes data using ASCII, C40, Text, X12, EDIFACT or Base 256 modes as appropriate
    Supports encoding FNC1 in supporting systems */
-static int dm200encode(struct zint_symbol *symbol, const unsigned char source[], unsigned char target[], int *last_mode, int *length_p, int process_buffer[], int *process_p) {
+static int dm200encode(struct zint_symbol *symbol, const unsigned char source[], unsigned char target[], int *last_mode, size_t *length_p, int process_buffer[], int *process_p) {
 
-    int sp, tp, i, gs1;
+    size_t sp;
+    int tp, i, gs1;
     int current_mode, next_mode;
-    int inputlen = *length_p;
+    size_t inputlen = *length_p;
     int debug = symbol->debug;
 #ifndef _MSC_VER
     char binary[2 * inputlen];
@@ -984,9 +983,9 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
     return tp;
 }
 
-static int dm200encode_remainder(unsigned char target[], int target_length, const unsigned char source[], const int inputlen, const int last_mode, const int process_buffer[], const int process_p, const int symbols_left) {
+static int dm200encode_remainder(unsigned char target[], int target_length, const unsigned char source[], const size_t inputlen, const int last_mode, const int process_buffer[], const int process_p, const int symbols_left) {
     int debug = 0;
-
+    
     switch (last_mode) {
         case DM_C40:
         case DM_TEXT:
@@ -1124,8 +1123,9 @@ static void add_tail(unsigned char target[], int tp, const int tail_length) {
     }
 }
 
-int data_matrix_200(struct zint_symbol *symbol, const unsigned char source[], const int in_length) {
-    int i, inputlen = in_length, skew = 0;
+int data_matrix_200(struct zint_symbol *symbol,const unsigned char source[], const size_t in_length) {
+	int i, skew = 0;
+   size_t inputlen=in_length;
     unsigned char binary[2200];
     int binlen;
     int process_buffer[8]; /* holds remaining data to finalised */
@@ -1284,7 +1284,7 @@ int data_matrix_200(struct zint_symbol *symbol, const unsigned char source[], co
     return error_number;
 }
 
-int dmatrix(struct zint_symbol *symbol, const unsigned char source[], const int in_length) {
+int dmatrix(struct zint_symbol *symbol, const unsigned char source[], const size_t in_length) {
     int error_number;
 
     if (symbol->option_1 <= 1) {

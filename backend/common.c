@@ -106,18 +106,6 @@ int is_sane(const char test_string[], const unsigned char source[], const size_t
     return 0;
 }
 
-/* Returns the position of data in set_string */
-int posn(const char set_string[], const char data) {
-    size_t i, n = strlen(set_string);
-
-    for (i = 0; i < n; i++) {
-        if (data == set_string[i]) {
-            return i;
-        }
-    }
-    return 0;
-}
-
 /* Replaces huge switch statements for looking up in tables */
 void lookup(const char set_string[], const char *table[], const char data, char dest[]) {
     size_t i, n = strlen(set_string);
@@ -127,6 +115,18 @@ void lookup(const char set_string[], const char *table[], const char data, char 
             strcat(dest, table[i]);
         }
     }
+}
+
+/* Returns the position of data in set_string */
+int posn(const char set_string[], const char data) {
+    int i, n = (int)strlen(set_string);
+
+    for (i = 0; i < n; i++) {
+        if (data == set_string[i]) {
+         return i;
+        }
+    }
+   return 0;
 }
 
 /* Return true (1) if a module is dark/black, otherwise false (0) */
@@ -180,12 +180,10 @@ void expand(struct zint_symbol *symbol, const char data[]) {
 
 /* Indicates which symbologies can have row binding */
 int is_stackable(const int symbology) {
-    int retval = 0;
-
     if (symbology < BARCODE_PDF417) {
-        retval = 1;
+        return 1;
     }
-
+    
     switch (symbology) {
         case BARCODE_CODE128B:
         case BARCODE_ISBNX:
@@ -197,10 +195,10 @@ int is_stackable(const int symbology) {
         case BARCODE_ITF14:
         case BARCODE_CODE32:
         case BARCODE_CODABLOCKF:
-            retval = 1;
+            return 1;
     }
 
-    return retval;
+    return 0;
 }
 
 /* Indicates which symbols can have addon (EAN-2 and EAN-5) */
@@ -240,8 +238,9 @@ int istwodigits(const unsigned char source[], const int position) {
     return 0;
 }
 
-int utf8toutf16(struct zint_symbol *symbol, const unsigned char source[], int vals[], int *length) {
-    int bpos, jpos, error_number;
+int utf8toutf16(struct zint_symbol *symbol, const unsigned char source[], int vals[], size_t *length) {
+    size_t bpos;
+    int    jpos, error_number;
     int next;
 
     bpos = 0;
@@ -291,7 +290,8 @@ int utf8toutf16(struct zint_symbol *symbol, const unsigned char source[], int va
     return error_number;
 }
 
-void set_minimum_height(struct zint_symbol *symbol, int min_height) {
+
+void set_minimum_height(struct zint_symbol *symbol, const int min_height) {
     /* Enforce minimum permissable height of rows */
     int fixed_height = 0;
     int zero_count = 0;

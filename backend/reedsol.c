@@ -116,7 +116,7 @@ void rs_init_code(const int nsym, int index) {
     }
 }
 
-void rs_encode(const int len, const unsigned char *data, unsigned char *res) {
+void rs_encode(const size_t len,const unsigned char *data, unsigned char *res) {
     int i, k, m;
     for (i = 0; i < rlen; i++)
         res[i] = 0;

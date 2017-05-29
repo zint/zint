@@ -66,7 +66,7 @@ static const int dot_patterns[113] = {
     0x1b8, 0x1c6, 0x1cc
 };
 
-int get_dot(char Dots[], int Hgt, int Wid, int x, int y) {
+static int get_dot(char Dots[], const int Hgt, const int Wid, const int x, const int y) {
     int retval = 0;
 
     if ((x >= 0) && (x < Wid) && (y >= 0) && (y < Hgt)) {
@@ -78,7 +78,7 @@ int get_dot(char Dots[], int Hgt, int Wid, int x, int y) {
     return retval;
 }
 
-int clr_col(char *Dots, int Hgt, int Wid, int x) {
+static int clr_col(char *Dots, const int Hgt, const int Wid, const int x) {
     int y;
     for (y = x & 1; y < Hgt; y += 2) {
         if (get_dot(Dots, Hgt, Wid, x, y)) {
@@ -89,7 +89,7 @@ int clr_col(char *Dots, int Hgt, int Wid, int x) {
     return 1;
 }
 
-int clr_row(char *Dots, int Hgt, int Wid, int y) {
+static int clr_row(char *Dots, const int Hgt, const int Wid, const int y) {
     int x;
     for (x = y & 1; x < Wid; x += 2) {
         if (get_dot(Dots, Hgt, Wid, x, y)) {
@@ -101,7 +101,7 @@ int clr_row(char *Dots, int Hgt, int Wid, int y) {
 }
 
 /* Dot pattern scoring routine from Annex A */
-int score_array(char Dots[], int Hgt, int Wid) {
+const int score_array(char Dots[], int Hgt, int Wid) {
     int x, y, worstedge, first, last, sum;
     int penalty_local = 0;
     int penalty = 0;
@@ -1192,9 +1192,9 @@ void fold_dotstream(char dot_stream[], int width, int height, char dot_array[]) 
 
 int dotcode(struct zint_symbol *symbol, const unsigned char source[], int length) {
     int i, j, k;
-    size_t jc;
+    size_t jc, n_dots;
     int data_length, ecc_length;
-    int min_dots, n_dots, min_area;
+    int min_dots, min_area;
     int height, width;
     int mask_score[4];
     int weight;

@@ -177,6 +177,7 @@
     <ClCompile Include="..\backend\dmatrix.c" />
     <ClCompile Include="..\backend\dotcode.c" />
     <ClCompile Include="..\backend\eci.c" />
+    <ClCompile Include="..\backend\emf.c" />
     <ClCompile Include="..\backend\gif.c" />
     <ClCompile Include="..\backend\gridmtx.c" />
     <ClCompile Include="..\backend\gs1.c" />
@@ -199,6 +200,7 @@
     <ClCompile Include="..\backend\rss.c" />
     <ClCompile Include="..\backend\svg.c" />
     <ClCompile Include="..\backend\telepen.c" />
+    <ClCompile Include="..\backend\tif.c" />
     <ClCompile Include="..\backend\upcean.c" />
   </ItemGroup>
   <ItemGroup>
@@ -209,6 +211,7 @@
     <ClInclude Include="..\backend\composite.h" />
     <ClInclude Include="..\backend\dm200.h" />
     <ClInclude Include="..\backend\dmatrix.h" />
+    <ClInclude Include="..\backend\emf.h" />
     <ClInclude Include="..\backend\font.h" />
     <ClInclude Include="..\backend\gb2312.h" />
     <ClInclude Include="..\backend\gridmtx.h" />
@@ -223,6 +226,7 @@
     <ClInclude Include="..\backend\resource.h" />
     <ClInclude Include="..\backend\rss.h" />
     <ClInclude Include="..\backend\sjis.h" />
+    <ClInclude Include="..\backend\tif.h" />
     <ClInclude Include="..\backend\zint.h" />
   </ItemGroup>
   <ItemGroup>

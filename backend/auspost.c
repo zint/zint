@@ -69,7 +69,7 @@ static inline char convert_pattern(char data, int shift) {
 
 /* Adds Reed-Solomon error correction to auspost */
 void rs_error(char data_pattern[]) {
-    int reader, triple_writer = 0;
+    size_t reader, triple_writer = 0;
     char triple[31], inv_triple[31];
     unsigned char result[5];
 
