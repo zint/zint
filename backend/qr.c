@@ -3054,6 +3054,8 @@ int upnqr(struct zint_symbol *symbol, const unsigned char source[], int length) 
 
     setup_grid(grid, size, version);
     populate_grid(grid, size, fullstream, qr_total_codewords[version - 1]);
+    
+    add_version_info(grid, size, version);
 
     bitmask = apply_bitmask(grid, size, ecc_level);
 
