@@ -1589,10 +1589,7 @@ int qr_code(struct zint_symbol *symbol, const unsigned char source[], size_t len
         if (autosize == 1) {
             canShrink = 0;
         } else {
-            if (tribus(autosize - 1, 1, 2, 3) != tribus(autosize, 1, 2, 3)) {
-                // Length of binary needed to encode the data in the smaller symbol is different, recalculate
-                est_binlen = getBinaryLength(autosize - 1, mode, jisdata, length, gs1, symbol->eci);
-            }
+            est_binlen = getBinaryLength(autosize - 1, mode, jisdata, length, gs1, symbol->eci);
 
             switch (ecc_level) {
                 case LEVEL_L:
@@ -1622,9 +1619,7 @@ int qr_code(struct zint_symbol *symbol, const unsigned char source[], size_t len
                 autosize--;
             } else {
                 // Data did not fit in the smaller symbol, revert to original size
-                if (tribus(autosize - 1, 1, 2, 3) != tribus(autosize, 1, 2, 3)) {
-                    est_binlen = getBinaryLength(autosize, mode, jisdata, length, gs1, symbol->eci);
-                }
+                est_binlen = getBinaryLength(autosize, mode, jisdata, length, gs1, symbol->eci);
             }
         }
     } while (canShrink == 1);
