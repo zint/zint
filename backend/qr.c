@@ -129,71 +129,6 @@ static void define_mode(char mode[],const int jisdata[], const size_t length,con
     }
 }
 
-/* Make an estimate (worst case scenario) of how long the binary string will be */
-static int estimate_binary_length(const char mode[], const size_t length,const int gs1,const int eci) {
-    size_t i;
-    int    count = 0;
-    char current = 0;
-    int a_count = 0;
-    int n_count = 0;
-
-    if (gs1) {
-        count += 4;
-    }
-    
-    if (eci != 3) {
-        count += 12;
-    }
-
-    for (i = 0; i < length; i++) {
-        if (mode[i] != current) {
-            switch (mode[i]) {
-                case 'K': count += 12 + 4;
-                    current = 'K';
-                    break;
-                case 'B': count += 16 + 4;
-                    current = 'B';
-                    break;
-                case 'A': count += 13 + 4;
-                    current = 'A';
-                    a_count = 0;
-                    break;
-                case 'N': count += 14 + 4;
-                    current = 'N';
-                    n_count = 0;
-                    break;
-            }
-        }
-
-        switch (mode[i]) {
-            case 'K': count += 13;
-                break;
-            case 'B': count += 8;
-                break;
-            case 'A':
-                a_count++;
-                if ((a_count & 1) == 0) {
-                    count += 5; // 11 in total
-                    a_count = 0;
-                } else
-                    count += 6;
-                break;
-            case 'N':
-                n_count++;
-                if ((n_count % 3) == 0) {
-                    count += 3; // 10 in total
-                    n_count = 0;
-                } else if ((n_count & 1) == 0)
-                    count += 3; // 7 in total
-                else
-                    count += 4;
-                break;
-        }
-    }
-
-    return count;
-}
-
 static void qr_bscan(char *binary,const int data,int h) {
     for (; h; h >>= 1) {
         strcat(binary, data & h ? "1" : "0");
@@ -1530,7 +1465,7 @@ int qr_code(struct zint_symbol *symbol, const unsigned char source[], size_t len
     }
 
     define_mode(mode, jisdata, length, gs1);
-    est_binlen = estimate_binary_length(mode, length, gs1, symbol->eci);
+    est_binlen = getBinaryLength(40, mode, jisdata, length, gs1, symbol->eci);
 
     ecc_level = LEVEL_L;
     max_cw = 2956;
@@ -2963,7 +2898,7 @@ int microqr(struct zint_symbol *symbol, const unsigned char source[], size_t len
 /* For UPNQR the symbol size and error correction capacity is fixed */
 int upnqr(struct zint_symbol *symbol, const unsigned char source[], int length) {
     int i, j, est_binlen;
-    int ecc_level, version, max_cw, target_binlen, blocks, size;
+    int ecc_level, version, target_binlen, blocks, size;
     int bitmask, error_number;
 
 #ifndef _MSC_VER
@@ -3009,12 +2944,12 @@ int upnqr(struct zint_symbol *symbol, const unsigned char source[], int length) 
     }
 
     symbol->eci = 4;
-    est_binlen = estimate_binary_length(mode, length, 0, symbol->eci);
+    est_binlen = getBinaryLength(15, mode, jisdata, length, 0, symbol->eci);
+    
     ecc_level = LEVEL_M;
-    max_cw = 2334;
 
-    if (est_binlen > (8 * max_cw)) {
-        strcpy(symbol->errtxt, "Input too long for selected error correction level (E61)");
+    if (est_binlen > 3320) {
+        strcpy(symbol->errtxt, "Input too long for selected symbol");
         return ZINT_ERROR_TOO_LONG;
     }
 
