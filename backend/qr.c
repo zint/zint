@@ -342,7 +342,7 @@ static void qr_binary(int datastream[], const int version, const int target_binl
                         }
                     }
 
-                    bin_append(prod, count == 2 ? 11 : 6, binary);
+                    bin_append(prod, 1 + (5 * count), binary);
 
                     if (debug) {
                         printf("0x%4X ", prod);
@@ -1787,7 +1787,7 @@ static int micro_qr_intermediate(char binary[], const int jisdata[], const char 
                         prod = (first * 45) + second;
                     }
 
-                    bin_append(prod, 5 * count, binary);
+                    bin_append(prod, 1 + (5 * count), binary);
 
                     if (debug) {
                         printf("0x%4X ", prod);
@@ -1841,7 +1841,7 @@ static int micro_qr_intermediate(char binary[], const int jisdata[], const char 
                         prod = (prod * 10) + third;
                     }
 
-                    bin_append(prod, 3 * count, binary);
+                    bin_append(prod, 1 + (3 * count), binary);
 
                     if (debug) {
                         printf("0x%4X (%d)", prod, prod);
@@ -2048,7 +2048,7 @@ static void micro_qr_m1(char binary_data[]) {
                 strcat(binary_data, i & 1 ? "00010001" : "11101100");
             }
         }
-        strcat(binary_data, "0000");
+        bin_append(0, 4, binary_data);
     }
 
     data_codewords = 3;
@@ -2106,7 +2106,7 @@ static void micro_qr_m2(char binary_data[],const int ecc_mode) {
         }
         latch = 1;
     } else {
-        strcat(binary_data, "00000");
+        bin_append(0, 5, binary_data);
     }
 
     if (latch == 0) {
@@ -2186,7 +2186,7 @@ static void micro_qr_m3(char binary_data[],const int ecc_mode) {
         }
         latch = 1;
     } else {
-        strcat(binary_data, "0000000");
+        bin_append(0, 7, binary_data);
     }
 
     if (latch == 0) {
@@ -2218,7 +2218,7 @@ static void micro_qr_m3(char binary_data[],const int ecc_mode) {
                 strcat(binary_data, i & 1 ? "00010001" : "11101100");
             }
         }
-        strcat(binary_data, "0000");
+        bin_append(0, 4, binary_data);
     }
 
     if (ecc_mode == LEVEL_L) {
@@ -2301,7 +2301,7 @@ static void micro_qr_m4(char binary_data[],const int ecc_mode) {
         }
         latch = 1;
     } else {
-        strcat(binary_data, "000000000");
+        bin_append(0, 9, binary_data);
     }
 
     if (latch == 0) {
