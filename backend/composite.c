@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2016 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2017 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -134,10 +134,10 @@ static int cc_a(struct zint_symbol *symbol, char source[], int cc_width) {
     int k, offset, j, total, rsCodeWords[8];
     int LeftRAPStart, RightRAPStart, CentreRAPStart, StartCluster;
     int LeftRAP, RightRAP, CentreRAP, Cluster, dummy[5];
-    int writer, flip, loop;
+    int loop;
     UINT codeWords[28];
     UINT bitStr[13];
-    char codebarre[100], pattern[580];
+    char pattern[580];
     char local_source[210]; /* A copy of source but with padding zeroes to make 208 bits */
 
     variant = 0;
@@ -265,7 +265,7 @@ static int cc_a(struct zint_symbol *symbol, char source[], int cc_width) {
     Cluster = StartCluster; /* Cluster can be 0, 1 or 2 for Cluster(0), Cluster(3) and Cluster(6) */
 
     for (i = 0; i < rows; i++) {
-        strcpy(codebarre, "");
+        strcpy(pattern, "");
         offset = 929 * Cluster;
         for (j = 0; j < 5; j++) {
             dummy[j] = 0;
@@ -274,61 +274,29 @@ static int cc_a(struct zint_symbol *symbol, char source[], int cc_width) {
             dummy[j + 1] = codeWords[i * cc_width + j];
         }
         /* Copy the data into codebarre */
-        strcat(codebarre, RAPLR[LeftRAP]);
-        strcat(codebarre, "1");
-        strcat(codebarre, codagemc[offset + dummy[1]]);
-        strcat(codebarre, "1");
+        bin_append(rap_side[LeftRAP - 1], 10, pattern);
+        bin_append(pdf_bitpattern[offset + dummy[1]], 16, pattern);
+        strcat(pattern, "0");
         if (cc_width == 3) {
-            strcat(codebarre, RAPC[CentreRAP]);
+            bin_append(rap_centre[CentreRAP - 1], 10, pattern);
         }
         if (cc_width >= 2) {
-            strcat(codebarre, "1");
-            strcat(codebarre, codagemc[offset + dummy[2]]);
-            strcat(codebarre, "1");
+            bin_append(pdf_bitpattern[offset + dummy[2]], 16, pattern);
+            strcat(pattern, "0");
         }
         if (cc_width == 4) {
-            strcat(codebarre, RAPC[CentreRAP]);
+            bin_append(rap_centre[CentreRAP - 1], 10, pattern);
         }
         if (cc_width >= 3) {
-            strcat(codebarre, "1");
-            strcat(codebarre, codagemc[offset + dummy[3]]);
-            strcat(codebarre, "1");
+            bin_append(pdf_bitpattern[offset + dummy[3]], 16, pattern);
+            strcat(pattern, "0");
         }
         if (cc_width == 4) {
-            strcat(codebarre, "1");
-            strcat(codebarre, codagemc[offset + dummy[4]]);
-            strcat(codebarre, "1");
+            bin_append(pdf_bitpattern[offset + dummy[4]], 16, pattern);
+            strcat(pattern, "0");
         }
-        strcat(codebarre, RAPLR[RightRAP]);
-        strcat(codebarre, "1"); /* stop */
-
-        /* Now codebarre is a mixture of letters and numbers */
-
-        writer = 0;
-        flip = 1;
-        strcpy(pattern, "");
-        for (loop = 0; loop < (int) strlen(codebarre); loop++) {
-            if ((codebarre[loop] >= '0') && (codebarre[loop] <= '9')) {
-                for (k = 0; k < ctoi(codebarre[loop]); k++) {
-                    if (flip == 0) {
-                        pattern[writer] = '0';
-                    } else {
-                        pattern[writer] = '1';
-                    }
-                    writer++;
-                }
-                pattern[writer] = '\0';
-                if (flip == 0) {
-                    flip = 1;
-                } else {
-                    flip = 0;
-                }
-            } else {
-                lookup(BRSET, PDFttf, codebarre[loop], pattern);
-                writer += 5;
-            }
-        }
-        symbol->width = writer;
+        bin_append(rap_side[RightRAP - 1], 10, pattern);
+        strcat(pattern, "1"); /* stop */
 
         /* so now pattern[] holds the string of '1's and '0's. - copy this to the symbol */
         for (loop = 0; loop < (int) strlen(pattern); loop++) {
@@ -338,6 +306,7 @@ static int cc_a(struct zint_symbol *symbol, char source[], int cc_width) {
         }
         symbol->row_height[i] = 2;
         symbol->rows++;
+        symbol->width = strlen(pattern);
 
         /* Set up RAPs and Cluster for next row */
         LeftRAP++;
@@ -373,9 +342,9 @@ static int cc_b(struct zint_symbol *symbol, char source[], int cc_width) {
     int chainemc[180], mclength;
     int k, j, p, longueur, mccorrection[50], offset;
     int total, dummy[5];
-    char codebarre[100], pattern[580];
+    char pattern[580];
     int variant, LeftRAPStart, CentreRAPStart, RightRAPStart, StartCluster;
-    int LeftRAP, CentreRAP, RightRAP, Cluster, writer, flip, loop;
+    int LeftRAP, CentreRAP, RightRAP, Cluster, loop;
 
     length = strlen(source) / 8;
 
@@ -549,7 +518,7 @@ static int cc_b(struct zint_symbol *symbol, char source[], int cc_width) {
     /* Cluster can be 0, 1 or 2 for Cluster(0), Cluster(3) and Cluster(6) */
 
     for (i = 0; i < symbol->rows; i++) {
-        strcpy(codebarre, "");
+        strcpy(pattern, "");
         offset = 929 * Cluster;
         for (j = 0; j < 5; j++) {
             dummy[j] = 0;
@@ -558,61 +527,29 @@ static int cc_b(struct zint_symbol *symbol, char source[], int cc_width) {
             dummy[j + 1] = chainemc[i * symbol->option_2 + j];
         }
         /* Copy the data into codebarre */
-        strcat(codebarre, RAPLR[LeftRAP]);
-        strcat(codebarre, "1");
-        strcat(codebarre, codagemc[offset + dummy[1]]);
-        strcat(codebarre, "1");
+        bin_append(rap_side[LeftRAP - 1], 10, pattern);
+        bin_append(pdf_bitpattern[offset + dummy[1]], 16, pattern);
+        strcat(pattern, "0");
         if (cc_width == 3) {
-            strcat(codebarre, RAPC[CentreRAP]);
+            bin_append(rap_centre[CentreRAP - 1], 10, pattern);
         }
         if (cc_width >= 2) {
-            strcat(codebarre, "1");
-            strcat(codebarre, codagemc[offset + dummy[2]]);
-            strcat(codebarre, "1");
+            bin_append(pdf_bitpattern[offset + dummy[2]], 16, pattern);
+            strcat(pattern, "0");
         }
         if (cc_width == 4) {
-            strcat(codebarre, RAPC[CentreRAP]);
+            bin_append(rap_centre[CentreRAP - 1], 10, pattern);
         }
         if (cc_width >= 3) {
-            strcat(codebarre, "1");
-            strcat(codebarre, codagemc[offset + dummy[3]]);
-            strcat(codebarre, "1");
+            bin_append(pdf_bitpattern[offset + dummy[3]], 16, pattern);
+            strcat(pattern, "0");
         }
         if (cc_width == 4) {
-            strcat(codebarre, "1");
-            strcat(codebarre, codagemc[offset + dummy[4]]);
-            strcat(codebarre, "1");
+            bin_append(pdf_bitpattern[offset + dummy[4]], 16, pattern);
+            strcat(pattern, "0");
         }
-        strcat(codebarre, RAPLR[RightRAP]);
-        strcat(codebarre, "1"); /* stop */
-
-        /* Now codebarre is a mixture of letters and numbers */
-
-        writer = 0;
-        flip = 1;
-        strcpy(pattern, "");
-        for (loop = 0; loop < (int) strlen(codebarre); loop++) {
-            if ((codebarre[loop] >= '0') && (codebarre[loop] <= '9')) {
-                for (k = 0; k < ctoi(codebarre[loop]); k++) {
-                    if (flip == 0) {
-                        pattern[writer] = '0';
-                    } else {
-                        pattern[writer] = '1';
-                    }
-                    writer++;
-                }
-                pattern[writer] = '\0';
-                if (flip == 0) {
-                    flip = 1;
-                } else {
-                    flip = 0;
-                }
-            } else {
-                lookup(BRSET, PDFttf, codebarre[loop], pattern);
-                writer += 5;
-            }
-        }
-        symbol->width = writer;
+        bin_append(rap_side[RightRAP - 1], 10, pattern);
+        strcat(pattern, "1"); /* stop */
 
         /* so now pattern[] holds the string of '1's and '0's. - copy this to the symbol */
         for (loop = 0; loop < (int) strlen(pattern); loop++) {
@@ -621,6 +558,7 @@ static int cc_b(struct zint_symbol *symbol, char source[], int cc_width) {
             }
         }
         symbol->row_height[i] = 2;
+        symbol->width = strlen(pattern);
 
         /* Set up RAPs and Cluster for next row */
         LeftRAP++;
@@ -656,7 +594,7 @@ static int cc_c(struct zint_symbol *symbol, char source[], int cc_width, int ecc
     int chainemc[1000], mclength, k;
     int offset, longueur, loop, total, j, mccorrection[520];
     int c1, c2, c3, dummy[35];
-    char codebarre[100], pattern[580];
+    char pattern[580];
 
     length = strlen(source) / 8;
 
@@ -751,36 +689,28 @@ static int cc_c(struct zint_symbol *symbol, char source[], int cc_width, int ecc
             case 0:
                 dummy[0] = k + c1;
                 dummy[cc_width + 1] = k + c3;
+                offset = 0; /* cluster(0) */
                 break;
             case 1:
                 dummy[0] = k + c2;
                 dummy[cc_width + 1] = k + c1;
+                offset = 929; /* cluster(3) */
                 break;
             case 2:
                 dummy[0] = k + c3;
                 dummy[cc_width + 1] = k + c2;
+                offset = 1858; /* cluster(6) */
                 break;
         }
-        strcpy(codebarre, "+*"); /* Start with a start char and a separator */
+        strcpy(pattern, "");
+        bin_append(0x1FEA8, 17, pattern); /* Row start */
 
         for (j = 0; j <= cc_width + 1; j++) {
-            switch (i % 3) {
-                case 1: offset = 929; /* cluster(3) */
-                    break;
-                case 2: offset = 1858; /* cluster(6) */
-                    break;
-                default: offset = 0; /* cluster(0) */
-                    break;
-            }
-            strcat(codebarre, codagemc[offset + dummy[j]]);
-            strcat(codebarre, "*");
+            bin_append(pdf_bitpattern[offset + dummy[j]], 16, pattern);
+            strcat(pattern, "0");
         }
-        strcat(codebarre, "-");
+        bin_append(0x3FA29, 18, pattern); /* Row Stop */
 
-        strcpy(pattern, "");
-        for (loop = 0; loop < (int) strlen(codebarre); loop++) {
-            lookup(BRSET, PDFttf, codebarre[loop], pattern);
-        }
         for (loop = 0; loop < (int) strlen(pattern); loop++) {
             if (pattern[loop] == '1') {
                 set_module(symbol, i, loop);

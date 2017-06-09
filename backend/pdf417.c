@@ -1,7 +1,7 @@
 /* pdf417.c - Handles PDF417 stacked symbology */
 
 /*  Zint - A barcode generating program using libpng
-    Copyright (C) 2008-2016 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2017 Robin Stuart <rstuart114@gmail.com>
     Portions Copyright (C) 2004 Grandzebu
     Bug Fixes thanks to KL Chin <klchin@users.sourceforge.net>
 
@@ -560,7 +560,7 @@ void numbprocess(int *chainemc, int *mclength, char chaine[], int start, int len
 static int pdf417(struct zint_symbol *symbol, unsigned char chaine[], const size_t length) {
     int i, k, j, indexchaine, indexliste, mode, longueur, loop, mccorrection[520], offset;
     int total, chainemc[2700], mclength, c1, c2, c3, dummy[35], codeerr;
-    char codebarre[140], pattern[580];
+    char pattern[580];
     int debug = symbol->debug;
 
     codeerr = 0;
@@ -764,52 +764,33 @@ static int pdf417(struct zint_symbol *symbol, unsigned char chaine[], const size
             case 0:
                 dummy[0] = k + c1;
                 dummy[symbol->option_2 + 1] = k + c3;
+                offset = 0; /* cluster(0) */
                 break;
             case 1:
                 dummy[0] = k + c2;
                 dummy[symbol->option_2 + 1] = k + c1;
+                offset = 929; /* cluster(3) */
                 break;
             case 2:
                 dummy[0] = k + c3;
                 dummy[symbol->option_2 + 1] = k + c2;
+                offset = 1858; /* cluster(6) */
                 break;
         }
-        strcpy(codebarre, "+*"); /* Start with a start char and a separator */
-        if (symbol->symbology == BARCODE_PDF417TRUNC) {
-            /* truncated - so same as before except knock off the last 5 chars */
-            for (j = 0; j <= symbol->option_2; j++) {
-                switch (i % 3) {
-                    case 1: offset = 929;
-                        break;
-                    case 2: offset = 1858;
-                        break;
-                    default: offset = 0;
-                        break;
-                }
-                strcat(codebarre, codagemc[offset + dummy[j]]);
-                strcat(codebarre, "*");
-            }
-        } else {
-            /* normal PDF417 symbol */
-            for (j = 0; j <= symbol->option_2 + 1; j++) {
-                switch (i % 3) {
-                    case 1: offset = 929;
-                        /* cluster(3) */ break;
-                    case 2: offset = 1858;
-                        /* cluster(6) */ break;
-                    default: offset = 0;
-                        /* cluster(0) */ break;
-                }
-                strcat(codebarre, codagemc[offset + dummy[j]]);
-                strcat(codebarre, "*");
-            }
-            strcat(codebarre, "-");
-        }
-
         strcpy(pattern, "");
-        for (loop = 0; loop < strlen(codebarre); loop++) {
-            lookup(BRSET, PDFttf, codebarre[loop], pattern);
+        bin_append(0x1FEA8, 17, pattern); /* Row start */
+
+        for (j = 0; j <= symbol->option_2; j++) {
+            bin_append(pdf_bitpattern[offset + dummy[j]], 16, pattern);
+            strcat(pattern, "0");
         }
+        
+        if (symbol->symbology != BARCODE_PDF417TRUNC) {
+            bin_append(pdf_bitpattern[offset + dummy[j]], 16, pattern);
+            strcat(pattern, "0");
+            bin_append(0x3FA29, 18, pattern); /* Row Stop */
+        }
+        
         for (loop = 0; loop < strlen(pattern); loop++) {
             if (pattern[loop] == '1') {
                 set_module(symbol, i, loop);
@@ -880,9 +861,9 @@ int pdf417enc(struct zint_symbol *symbol, unsigned char source[], const size_t l
 int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], const size_t length) {
     int i, k, j, indexchaine, indexliste, mode, longueur, mccorrection[50], offset;
     int total, chainemc[2700], mclength, dummy[5], codeerr;
-    char codebarre[100], pattern[580];
+    char pattern[580];
     int variant, LeftRAPStart, CentreRAPStart, RightRAPStart, StartCluster;
-    int LeftRAP, CentreRAP, RightRAP, Cluster, writer, flip, loop;
+    int LeftRAP, CentreRAP, RightRAP, Cluster, loop;
     int debug = 0;
 
     /* Encoding starts out the same as PDF417, so use the same code */
@@ -1201,7 +1182,7 @@ int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], const size_
     if (debug) printf("\nInternal row representation:\n");
     for (i = 0; i < symbol->rows; i++) {
         if (debug) printf("row %d: ", i);
-        strcpy(codebarre, "");
+        strcpy(pattern, "");
         offset = 929 * Cluster;
         for (j = 0; j < 5; j++) {
             dummy[j] = 0;
@@ -1212,62 +1193,30 @@ int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], const size_
         }
 
         /* Copy the data into codebarre */
-        strcat(codebarre, RAPLR[LeftRAP]);
-        strcat(codebarre, "1");
-        strcat(codebarre, codagemc[offset + dummy[1]]);
-        strcat(codebarre, "1");
+        bin_append(rap_side[LeftRAP - 1], 10, pattern);
+        bin_append(pdf_bitpattern[offset + dummy[1]], 16, pattern);
+        strcat(pattern, "0");
         if (symbol->option_2 == 3) {
-            strcat(codebarre, RAPC[CentreRAP]);
+            bin_append(rap_centre[CentreRAP - 1], 10, pattern);
         }
         if (symbol->option_2 >= 2) {
-            strcat(codebarre, "1");
-            strcat(codebarre, codagemc[offset + dummy[2]]);
-            strcat(codebarre, "1");
+            bin_append(pdf_bitpattern[offset + dummy[2]], 16, pattern);
+            strcat(pattern, "0");
         }
         if (symbol->option_2 == 4) {
-            strcat(codebarre, RAPC[CentreRAP]);
+            bin_append(rap_centre[CentreRAP - 1], 10, pattern);
         }
         if (symbol->option_2 >= 3) {
-            strcat(codebarre, "1");
-            strcat(codebarre, codagemc[offset + dummy[3]]);
-            strcat(codebarre, "1");
+            bin_append(pdf_bitpattern[offset + dummy[3]], 16, pattern);
+            strcat(pattern, "0");
         }
         if (symbol->option_2 == 4) {
-            strcat(codebarre, "1");
-            strcat(codebarre, codagemc[offset + dummy[4]]);
-            strcat(codebarre, "1");
+            bin_append(pdf_bitpattern[offset + dummy[4]], 16, pattern);
+            strcat(pattern, "0");
         }
-        strcat(codebarre, RAPLR[RightRAP]);
-        strcat(codebarre, "1"); /* stop */
-        if (debug) printf("%s\n", codebarre);
-
-        /* Now codebarre is a mixture of letters and numbers */
-
-        writer = 0;
-        flip = 1;
-        strcpy(pattern, "");
-        for (loop = 0; loop < strlen(codebarre); loop++) {
-            if ((codebarre[loop] >= '0') && (codebarre[loop] <= '9')) {
-                for (k = 0; k < ctoi(codebarre[loop]); k++) {
-                    if (flip == 0) {
-                        pattern[writer] = '0';
-                    } else {
-                        pattern[writer] = '1';
-                    }
-                    writer++;
-                }
-                pattern[writer] = '\0';
-                if (flip == 0) {
-                    flip = 1;
-                } else {
-                    flip = 0;
-                }
-            } else {
-                lookup(BRSET, PDFttf, codebarre[loop], pattern);
-                writer += 5;
-            }
-        }
-        symbol->width = writer;
+        bin_append(rap_side[RightRAP - 1], 10, pattern);
+        strcat(pattern, "1"); /* stop */
+        if (debug) printf("%s\n", pattern);
 
         /* so now pattern[] holds the string of '1's and '0's. - copy this to the symbol */
         for (loop = 0; loop < strlen(pattern); loop++) {
@@ -1276,6 +1225,7 @@ int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], const size_
             }
         }
         symbol->row_height[i] = 2;
+        symbol->width = strlen(pattern);
 
         /* Set up RAPs and Cluster for next row */
         LeftRAP++;
