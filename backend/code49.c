@@ -47,7 +47,7 @@ int code_49(struct zint_symbol *symbol, unsigned char source[], const int length
     int c_grid[8][8]; /* Refers to table 3 */
     int w_grid[8][4]; /* Refets to table 2 */
     int pad_count = 0;
-    char pattern[40];
+    char pattern[80];
     int gs1;
     size_t h;
 
@@ -306,28 +306,35 @@ int code_49(struct zint_symbol *symbol, unsigned char source[], const int length
     }
 
     for (i = 0; i < rows; i++) {
-        strcpy(pattern, "11"); /* Start character */
+        strcpy(pattern, "10"); /* Start character */
         for (j = 0; j < 4; j++) {
             if (i != (rows - 1)) {
                 if (c49_table4[i][j] == 'E') {
                     /* Even Parity */
-                    strcat(pattern, c49_appxe_even[w_grid[i][j]]);
+                    bin_append(c49_even_bitpattern[w_grid[i][j]], 16, pattern);
                 } else {
                     /* Odd Parity */
-                    strcat(pattern, c49_appxe_odd[w_grid[i][j]]);
+                    bin_append(c49_odd_bitpattern[w_grid[i][j]], 16, pattern);
                 }
             } else {
                 /* Last row uses all even parity */
-                strcat(pattern, c49_appxe_even[w_grid[i][j]]);
+                bin_append(c49_even_bitpattern[w_grid[i][j]], 16, pattern);
             }
         }
-        strcat(pattern, "4"); /* Stop character */
+        strcat(pattern, "1111"); /* Stop character */
 
         /* Expand into symbol */
         symbol->row_height[i] = 10;
-        expand(symbol, pattern);
+        
+        for (j = 0; j < strlen(pattern); j++) {
+            if (pattern[j] == '1') {
+                set_module(symbol, i, j);
+            }
+        }
     }
 
+    symbol->rows = rows;
+    symbol->width = strlen(pattern);
     symbol->whitespace_width = 10;
     if (!(symbol->output_options & BARCODE_BIND)) {
         symbol->output_options += BARCODE_BIND;
