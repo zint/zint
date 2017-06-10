@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2016 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2017 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -30,7 +30,7 @@
     SUCH DAMAGE.
  */
 
-static const int MaxiGrid[] = {
+static const unsigned short int MaxiGrid[] = {
     /* ISO/IEC 16023 Figure 5 - MaxiCode Module Sequence */ /* 30 x 33 data grid */
     122, 121, 128, 127, 134, 133, 140, 139, 146, 145, 152, 151, 158, 157, 164, 163, 170, 169, 176, 175, 182, 181, 188, 187, 194, 193, 200, 199, 0, 0,
     124, 123, 130, 129, 136, 135, 142, 141, 148, 147, 154, 153, 160, 159, 166, 165, 172, 171, 178, 177, 184, 183, 190, 189, 196, 195, 202, 201, 817, 0,

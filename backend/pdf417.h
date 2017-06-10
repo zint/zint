@@ -41,7 +41,7 @@
 #define NUM 902
 
 /* PDF417 error correction coefficients from Grand Zebu */
-static const int coefrs[1022] = {
+static const unsigned short int coefrs[1022] = {
     /* k = 2 */
     27, 917,
 
@@ -127,7 +127,7 @@ static const int coefrs[1022] = {
     63, 310, 863, 251, 366, 304, 282, 738, 675, 410, 389, 244, 31, 121, 303, 263
 };
 
-static const int pdf_bitpattern[2787] = {
+static const unsigned short int pdf_bitpattern[2787] = {
     0xEAE0, 0xF578, 0xFABE, 0xEA70, 0xF53C, 0xFA9F, 0xD460, 0xEA38, 0xD430, 0xA820,
     0xD418, 0xA810, 0xD6E0, 0xEB78, 0xF5BE, 0xD670, 0xEB3C, 0xF59F, 0xAC60, 0xD638,
     0xAC30, 0xAEE0, 0xD778, 0xEBBE, 0xAE70, 0xD73C, 0xEB9F, 0xAE38, 0xD71E, 0xAF78,
@@ -410,7 +410,7 @@ static const int pdf_bitpattern[2787] = {
 };
 
 /* MicroPDF417 coefficients from ISO/IEC 24728:2006 Annex F */
-static const int Microcoeffs[344] = {
+static const unsigned short int Microcoeffs[344] = {
     /* k = 7 */
     76, 925, 537, 597, 784, 691, 437,
 
@@ -492,7 +492,7 @@ static const int RAPTable[136] ={
 };
 
 /* Left and Right Row Address Pattern from Table 2 */
-static const int rap_side[52] = {
+static const unsigned short int rap_side[52] = {
     0x322, 0x3A2, 0x3B2, 0x332, 0x372, 0x37A, 0x33A, 0x3BA, 0x39A, 0x3DA,
     0x3CA, 0x38A, 0x30A, 0x31A, 0x312, 0x392, 0x3D2, 0x3D6, 0x3D4, 0x394,
     0x3B4, 0x3A4, 0x3A6, 0x3AE, 0x3AC, 0x3A8, 0x328, 0x32C, 0x32E, 0x326,
@@ -502,7 +502,7 @@ static const int rap_side[52] = {
 };
 
 /* Centre Row Address Pattern from Table 2 */
-static const int rap_centre[52] = {
+static const unsigned short int rap_centre[52] = {
     0x2CE, 0x24E, 0x26E, 0x22E, 0x226, 0x236, 0x216, 0x212, 0x21A, 0x23A,
     0x232, 0x222, 0x262, 0x272, 0x27A, 0x2FA, 0x2F2, 0x2F6, 0x276, 0x274,
     0x264, 0x266, 0x246, 0x242, 0x2C2, 0x2E2, 0x2E6, 0x2E4, 0x2EC, 0x26C,

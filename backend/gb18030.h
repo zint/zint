@@ -29,7 +29,7 @@
     SUCH DAMAGE.
  */
 
-static const unsigned long int gb18030_twobyte_lookup[] = {
+static const unsigned short int gb18030_twobyte_lookup[] = {
     0x0144, 0xA8BD,
     0x0148, 0xA8BE,
     0x01F9, 0xA8BF,
@@ -16527,7 +16527,7 @@ static const unsigned long int gb18030_twobyte_lookup[] = {
     0xFFE4, 0xA957
 };
 
-static const unsigned long int gb18030_fourbyte_lookup[] = {
+static const unsigned short int gb18030_fourbyte_lookup[] = {
     0x0080, 0x8130, 0x8130,
     0x0081, 0x8130, 0x8131,
     0x0082, 0x8130, 0x8132,
