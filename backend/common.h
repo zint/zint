@@ -64,7 +64,7 @@ extern "C" {
     extern int posn(const char set_string[], const char data);
     extern int module_is_set(const struct zint_symbol *symbol, const int y_coord, const int x_coord);
     extern void set_module(struct zint_symbol *symbol, const int y_coord, const int x_coord);
-    extern int istwodigits(const unsigned char source[], const int position);
+    extern int istwodigits(const unsigned char source[], const size_t position);
     extern int parunmodd(const unsigned char llyth);
     extern void expand(struct zint_symbol *symbol, const char data[]);
     extern void unset_module(struct zint_symbol *symbol, const int y_coord, const int x_coord);

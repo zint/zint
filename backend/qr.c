@@ -42,7 +42,7 @@
 #include <stdlib.h>     /* abs */
 #include <assert.h>
 
-extern int utf_to_eci(int eci, const unsigned char source[], unsigned char dest[], int *length); /* Convert Unicode to other encodings */
+extern int utf_to_eci(const int eci, const unsigned char source[], unsigned char dest[], size_t *length); /* Convert Unicode to other encodings */
 
 /* Returns true if input glyph is in the Alphanumeric set */
 static int in_alpha(const int glyph) {
@@ -147,7 +147,7 @@ static int tribus(const int version,const int a,const int b,const int c) {
 }
 
 /* Convert input data to a binary stream and add padding */
-static void qr_binary(int datastream[], const int version, const int target_binlen, const char mode[], const int jisdata[], const size_t length, const int gs1, const int eci, const int est_binlen, int debug) {
+static void qr_binary(int datastream[], const int version, const int target_binlen, const char mode[], const int jisdata[], const size_t length, const int gs1, const int eci, const int est_binlen,const int debug) {
     int position = 0;
     int short_data_block_length, i;
     char data_block, padbits;
@@ -1313,7 +1313,7 @@ static void applyOptimisation(const int version,char inputMode[], const size_t i
     free(blockMode);
 }
 
-static int blockLength(const int start,const char inputMode[],const size_t inputLength) {
+static int blockLength(const size_t start,const char inputMode[],const size_t inputLength) {
     /* Find the length of the block starting from 'start' */
     size_t i;
     int    count;
@@ -1648,7 +1648,7 @@ int qr_code(struct zint_symbol *symbol, const unsigned char source[], size_t len
 
 /* NOTE: From this point forward concerns Micro QR Code only */
 
-static int micro_qr_intermediate(char binary[], const int jisdata[], const char mode[], const size_t length, int *kanji_used, int *alphanum_used, int *byte_used, int debug) {
+static int micro_qr_intermediate(char binary[], const int jisdata[], const char mode[], const size_t length, int *kanji_used, int *alphanum_used, int *byte_used,const int debug) {
     /* Convert input data to an "intermediate stage" where data is binary encoded but
        control information is not */
     int position = 0;
@@ -2888,7 +2888,7 @@ int microqr(struct zint_symbol *symbol, const unsigned char source[], size_t len
 }
 
 /* For UPNQR the symbol size and error correction capacity is fixed */
-int upnqr(struct zint_symbol *symbol, const unsigned char source[], int length) {
+int upnqr(struct zint_symbol *symbol, const unsigned char source[], size_t length) {
     int i, j, est_binlen;
     int ecc_level, version, target_binlen, blocks, size;
     int bitmask, error_number;

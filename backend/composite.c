@@ -150,7 +150,7 @@ static int cc_a(struct zint_symbol *symbol, char source[], int cc_width) {
         codeWords[i] = 0;
     }
 
-    bitlen = strlen(source);
+	bitlen = (int)strlen(source);
 
     for (i = 0; i < 208; i++) {
         local_source[i] = '0';

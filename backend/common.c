@@ -59,7 +59,7 @@ char itoc(const int source) {
 void bin_append(const int arg, const int length, char *binary) {
     int i;
     int start;
-    int posn = strlen(binary);
+    size_t posn = strlen(binary);
     
     start = 0x01 << (length - 1);
     
@@ -228,7 +228,7 @@ int is_extendable(const int symbology) {
     return 0;
 }
 
-int istwodigits(const unsigned char source[], const int position) {
+int istwodigits(const unsigned char source[], const size_t position) {
     if ((source[position] >= '0') && (source[position] <= '9')) {
         if ((source[position + 1] >= '0') && (source[position + 1] <= '9')) {
             return 1;

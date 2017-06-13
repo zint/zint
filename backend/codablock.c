@@ -115,7 +115,7 @@ int GetPossibleCharacterSet(unsigned char C)
  *  int CFollowing  The number of characters encodable in CodeC if we
  *          start here.
  */
-void CreateCharacterSetTable(CharacterSetTable T[], unsigned char *data, int dataLength)
+static void CreateCharacterSetTable(CharacterSetTable T[], unsigned char *data,const size_t dataLength)
 {
     int charCur;
     int runChar;
@@ -205,7 +205,7 @@ int RemainingDigits(CharacterSetTable *T, int charCur,int emptyColumns)
  *  Return value    Resulting row count
  */
 
-int Columns2Rows(CharacterSetTable *T, unsigned char *data, int dataLength,
+static int Columns2Rows(CharacterSetTable *T, unsigned char *data, const size_t dataLength,
         int * pRows, int * pUseColumns, int * pSet, int * pFillings)
 {
     int useColumns;     /* Usable Characters per line */
@@ -430,7 +430,7 @@ int Columns2Rows(CharacterSetTable *T, unsigned char *data, int dataLength,
 }
 /* Find columns if row count is given.
  */
-int Rows2Columns(CharacterSetTable *T, unsigned char *data, int dataLength,
+static int Rows2Columns(CharacterSetTable *T, unsigned char *data, const size_t dataLength,
         int * pRows, int * pUseColumns, int * pSet, int * pFillings)
 {
     int errorCur;
@@ -630,8 +630,7 @@ void SumASCII(uchar **ppOutPos, int Sum, int CharacterSet)
 /* Main function called by zint framework
  */
 int codablock(struct zint_symbol *symbol,const unsigned char source[], const size_t length) {
-    int charCur;
-    int dataLength;
+    size_t charCur,dataLength;
     int Error;
     int rows, columns, useColumns;
     int fillings;
@@ -733,7 +732,7 @@ int codablock(struct zint_symbol *symbol,const unsigned char source[], const siz
     Sum1=Sum2=0;
     if (rows>1)
     {
-        int charCur;
+        size_t charCur;
         for (charCur=0 ; charCur<dataLength ; charCur++) {
             Sum1=(Sum1 + (charCur%86+1)*data[charCur])%86;
             Sum2=(Sum2 + (charCur%86)*data[charCur])%86;

@@ -172,7 +172,8 @@ short int islarger(short int accum[], short int reg[]) {
 }
 
 void binary_load(short int reg[], char data[], const size_t src_len) {
-    int read, i;
+	size_t    read;
+	int       i;
     short int temp[112] = {0};
 
     for (i = 0; i < 112; i++) {

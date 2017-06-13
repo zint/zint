@@ -256,7 +256,7 @@ static void dminsert(char binary_string[], const int posn, const char newbit) {
     binary_string[posn] = newbit;
 }
 
-static void insert_value(unsigned char binary_stream[], const int posn, const size_t streamlen, const int newbit) {
+static void insert_value(unsigned char binary_stream[], const int posn, const int streamlen, const int newbit) {
     int i;
 
     for(i = (int)streamlen; i > posn; i--) {
@@ -265,15 +265,15 @@ static void insert_value(unsigned char binary_stream[], const int posn, const si
     binary_stream[posn] = (unsigned char) newbit;
 }
 
-static int p_r_6_2_1(const unsigned char inputData[], const int position, const size_t sourcelen) {
+static int p_r_6_2_1(const unsigned char inputData[], const size_t position, const size_t sourcelen) {
     /* Annex P section (r)(6)(ii)(I)
        "If one of the three X12 terminator/separator characters first
         occurs in the yet to be processed data before a non-X12 character..."
      */
 
     size_t i;
-    int nonX12Position = 0;
-    int specialX12Position = 0;
+    size_t nonX12Position = 0;
+    size_t specialX12Position = 0;
     int retval = 0;
 
     for (i = position; i < sourcelen; i++) {

@@ -1203,13 +1203,15 @@ int dotcode(struct zint_symbol *symbol, const unsigned char source[], int length
     int binary_finish = 0;
     int debug = 0;
     int padding_dots, is_first;
+#ifdef _MSC_VER
+    unsigned char* masked_codeword_array;
+#endif
 
 #ifndef _MSC_VER
     unsigned char codeword_array[length * 3];
 #else
     char* dot_stream;
     char* dot_array;
-    unsigned char* masked_codeword_array;
     unsigned char* codeword_array = (unsigned char *) _alloca(length * 3 * sizeof (unsigned char));
 #endif /* _MSC_VER */
     

@@ -145,8 +145,9 @@ void ZBarcode_Delete(struct zint_symbol *symbol) {
     free(symbol);
 }
 
-extern int get_best_eci(unsigned char source[], int length); /* Calculate suitable ECI mode */
-extern int utf_to_eci(int eci, const unsigned char source[], unsigned char dest[], int *length); /* Convert Unicode to other encodings */
+extern int get_best_eci(unsigned char source[], size_t length); /* Calculate suitable ECI mode */
+extern int utf_to_eci(const int eci, const unsigned char source[], unsigned char dest[], size_t *length); /* Convert Unicode to other encodings */
+
 
 extern int eanx(struct zint_symbol *symbol, unsigned char source[], int length); /* EAN system barcodes */
 extern int c39(struct zint_symbol *symbol, unsigned char source[], const size_t length); /* Code 3 from 9 (or Code 39) */
@@ -203,7 +204,7 @@ extern int grid_matrix(struct zint_symbol *symbol, const unsigned char source[],
 extern int han_xin(struct zint_symbol * symbol, const unsigned char source[], size_t length); /* Han Xin */
 extern int dotcode(struct zint_symbol * symbol, const unsigned char source[], int length); /* DotCode */
 extern int codablock(struct zint_symbol * symbol, const unsigned char source[], const size_t length); /* Codablock */
-extern int upnqr(struct zint_symbol *symbol, const unsigned char source[], int length); /* UPNQR */
+extern int upnqr(struct zint_symbol *symbol, const unsigned char source[], size_t length); /* UPNQR */
 extern int qr_code(struct zint_symbol *symbol, const unsigned char source[], size_t length); /* Data Matrix (IEC16022) */
 extern int dmatrix(struct zint_symbol *symbol, const unsigned char source[], const size_t in_length); /* QR Code */
 
@@ -615,7 +616,7 @@ static int extended_charset(struct zint_symbol *symbol, const unsigned char *sou
     return error_number;
 }
 
-static int reduced_charset(struct zint_symbol *symbol, const unsigned char *source, int in_length) {
+static int reduced_charset(struct zint_symbol *symbol, const unsigned char *source, size_t in_length) {
     /* These are the "norm" standards which only support Latin-1 at most */
     int error_number = 0;
 
@@ -1049,7 +1050,7 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source,int 
             case BARCODE_MICROQR:
             case BARCODE_GRIDMATRIX:
             case BARCODE_HANXIN:
-                error_number = utf_to_eci(symbol->eci, source, local_source, &in_length);
+                error_number = utf_to_eci(symbol->eci, source, local_source, (size_t*)&in_length);
                 error_number = extended_charset(symbol, local_source, in_length);
                 break;
             default:

@@ -65,7 +65,7 @@ int getsubmode(char input) {
 
 /* Calculate the approximate length of the binary string */
 static int calculate_binlength(char mode[], int source[], const size_t length, int eci) {
-    int i;
+    size_t i;
     char lastmode = 't';
     int est_binlen = 0;
     int submode = 1;
@@ -226,7 +226,7 @@ int isFourByte(int glyph, int glyph2) {
 
 /* Calculate mode switching */
 static void hx_define_mode(char mode[], int source[], const size_t length) {
-    int i;
+    size_t i;
     char lastmode = 't';
     int done;
     
