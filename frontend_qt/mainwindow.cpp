@@ -26,6 +26,7 @@
 #include <QSettings>
 #include <QClipboard>
 #include <QMimeData>
+#include <QColor>
 
 #include "mainwindow.h"
 #include "datawindow.h"
@@ -250,14 +251,24 @@ int MainWindow::open_sequence_dialog()
 
 void MainWindow::on_fgcolor_clicked()
 {
-	m_fgcolor=QColorDialog::getColor(m_fgcolor,this);
-	update_preview();
+    QColor temp = m_fgcolor;
+	m_fgcolor=QColorDialog::getColor(m_fgcolor,this,"Set foreground colour");
+        if (m_fgcolor.isValid()) {
+            update_preview();
+        } else {
+            m_fgcolor = temp;
+        }
 }
 
 void MainWindow::on_bgcolor_clicked()
 {
-	m_bgcolor=QColorDialog::getColor(m_bgcolor,this);
-	update_preview();
+    QColor temp = m_bgcolor;
+	m_bgcolor=QColorDialog::getColor(m_bgcolor,this,"Set background colour");
+        if (m_bgcolor.isValid()) {
+            update_preview();
+        } else {
+            m_bgcolor = temp;
+        }
 }
 
 void MainWindow::change_print_scale()
