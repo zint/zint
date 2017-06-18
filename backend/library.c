@@ -820,6 +820,11 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source,int 
 #endif
     error_number = 0;
 
+    for (i = 0; i < in_length; i++) {
+        printf("%X ", (int) source[i]);
+    }
+    printf("\n");
+    
     if (in_length == 0) {
         in_length = (int)ustrlen(source);
     }

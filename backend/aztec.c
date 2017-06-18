@@ -88,7 +88,7 @@ static int aztec_text_process(const unsigned char source[], const size_t src_len
         /* Add FNC1 to beginning of GS1 messages */
         charmap[maplength] = 0;
         typemap[maplength++] = PUNC;
-        charmap[maplength] = 400;
+        charmap[maplength] = 400; // FLG(0)
         typemap[maplength++] = PUNC;
     } else if (eci != 3) {
         /* Set ECI mode */
@@ -99,7 +99,8 @@ static int aztec_text_process(const unsigned char source[], const size_t src_len
             typemap[maplength++] = PUNC;
             charmap[maplength] = 502 + eci;
             typemap[maplength++] = PUNC;
-        } else {
+        }
+        if ((eci >= 10) && (eci <= 99)) {
             charmap[maplength] = 402; // FLG(2)
             typemap[maplength++] = PUNC;
             charmap[maplength] = 502 + (eci / 10);
@@ -107,9 +108,61 @@ static int aztec_text_process(const unsigned char source[], const size_t src_len
             charmap[maplength] = 502 + (eci % 10);
             typemap[maplength++] = PUNC;
         }
-
+        if ((eci >= 100) && (eci <= 999)) {
+            charmap[maplength] = 403; // FLG(3)
+            typemap[maplength++] = PUNC;
+            charmap[maplength] = 502 + (eci / 100);
+            typemap[maplength++] = PUNC;
+            charmap[maplength] = 502 + ((eci % 100) / 10);
+            typemap[maplength++] = PUNC;
+            charmap[maplength] = 502 + (eci % 10);
+            typemap[maplength++] = PUNC;
+        }
+        if ((eci >= 1000) && (eci <= 9999)) {
+            charmap[maplength] = 404; // FLG(4)
+            typemap[maplength++] = PUNC;
+            charmap[maplength] = 502 + (eci / 1000);
+            typemap[maplength++] = PUNC;
+            charmap[maplength] = 502 + ((eci % 1000) / 100);
+            typemap[maplength++] = PUNC;
+            charmap[maplength] = 502 + ((eci % 100) / 10);
+            typemap[maplength++] = PUNC;
+            charmap[maplength] = 502 + (eci % 10);
+            typemap[maplength++] = PUNC;
+        }
+        if ((eci >= 10000) && (eci <= 99999)) {
+            charmap[maplength] = 405; // FLG(5)
+            typemap[maplength++] = PUNC;
+            charmap[maplength] = 502 + (eci / 10000);
+            typemap[maplength++] = PUNC;
+            charmap[maplength] = 502 + ((eci % 10000) / 1000);
+            typemap[maplength++] = PUNC;
+            charmap[maplength] = 502 + ((eci % 1000) / 100);
+            typemap[maplength++] = PUNC;
+            charmap[maplength] = 502 + ((eci % 100) / 10);
+            typemap[maplength++] = PUNC;
+            charmap[maplength] = 502 + (eci % 10);
+            typemap[maplength++] = PUNC;
+        }
+        if (eci >= 100000) {
+            charmap[maplength] = 406; // FLG(6)
+            typemap[maplength++] = PUNC;
+            charmap[maplength] = 502 + (eci / 100000);
+            typemap[maplength++] = PUNC;
+            charmap[maplength] = 502 + ((eci % 100000) / 10000);
+            typemap[maplength++] = PUNC;
+            charmap[maplength] = 502 + ((eci % 10000) / 1000);
+            typemap[maplength++] = PUNC;
+            charmap[maplength] = 502 + ((eci % 1000) / 100);
+            typemap[maplength++] = PUNC;
+            charmap[maplength] = 502 + ((eci % 100) / 10);
+            typemap[maplength++] = PUNC;
+            charmap[maplength] = 502 + (eci % 10);
+            typemap[maplength++] = PUNC;
+        }
     }
-
+    
+    /* Copy the rest of the data into charmap */
     for (i = 0; i < (int) src_len; i++) {
         if ((gs1) && (source[i] == '[')) {
             /* FNC1 represented by FLG(0) */

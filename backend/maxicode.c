@@ -452,12 +452,42 @@ int maxi_text_process(int mode, unsigned char source[], int length, int eci) {
     } while (i <= 143);
 
     /* Insert ECI at the beginning of message if needed */
+    /* Encode ECI assignment numbers according to table 3 */
     if (eci != 3) {
         maxi_bump(set, character, 0);
         character[0] = 27; // ECI
-        maxi_bump(set, character, 1);
-        character[1] = eci;
-        length += 2;
+        if (eci <= 31) {
+            maxi_bump(set, character, 1);
+            character[1] = eci;
+            length += 2;
+        }
+        if ((eci >= 32) && (eci <= 1023)) {
+            maxi_bump(set, character, 1);
+            maxi_bump(set, character, 1);
+            character[1] = 0x20 + ((eci >> 6) & 0x0F);
+            character[2] = eci & 0x3F;
+            length += 3;
+        }
+        if ((eci >= 1024) && (eci <= 32767)) {
+            maxi_bump(set, character, 1);
+            maxi_bump(set, character, 1);
+            maxi_bump(set, character, 1);
+            character[1] = 0x30 + ((eci >> 12) & 0x03);
+            character[2] = (eci >> 6) & 0x3F;
+            character[3] = eci & 0x3F;
+            length += 4;
+        }
+        if (eci >= 32768) {
+            maxi_bump(set, character, 1);
+            maxi_bump(set, character, 1);
+            maxi_bump(set, character, 1);
+            maxi_bump(set, character, 1);
+            character[1] = 0x38 + ((eci >> 18) & 0x02);
+            character[2] = (eci >> 12) & 0x3F;
+            character[3] = (eci >> 6) & 0x3F;
+            character[4] = eci & 0x3F;
+            length += 5;
+        }
     }
     
     if (((mode == 2) || (mode == 3)) && (length > 84)) {

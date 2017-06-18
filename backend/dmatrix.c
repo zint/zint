@@ -578,10 +578,27 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
     }
 
     if (symbol->eci > 3) {
+        /* Encode ECI numbers according to Table 6 */
         target[tp] = 241; /* ECI Character */
         tp++;
-        target[tp] = (unsigned char) (symbol->eci + 1);
-        tp++;
+        if (symbol->eci <= 126) {
+            target[tp] = (unsigned char) symbol->eci + 1;
+            tp++;
+        }
+        if ((symbol->eci >= 127) && (symbol->eci <= 16382)) {
+            target[tp] = (unsigned char) ((symbol->eci - 127) / 254) + 128;
+            tp++;
+            target[tp] = (unsigned char) ((symbol->eci - 127) % 254) + 1;
+            tp++;
+        }
+        if (symbol->eci >= 16383) {
+            target[tp] = (unsigned char) ((symbol->eci - 16383) / 64516) + 192;
+            tp++;
+            target[tp] = (unsigned char) (((symbol->eci - 16383) / 254) % 254) + 1;
+            tp++;
+            target[tp] = (unsigned char) ((symbol->eci - 16383) % 254) + 1;
+            tp++;
+        }
         if (debug) printf("ECI %d ", symbol->eci + 1);
     }
 

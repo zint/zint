@@ -367,8 +367,19 @@ static int gm_encode(int gbdata[], const size_t length, char binary[], int reade
     }
     
     if (eci != 3) {
-        bin_append(24, 5, binary); /* ECI */
-        bin_append(eci, 10, binary);
+        /* ECI assignment according to Table 8 */
+        bin_append(12, 4, binary); /* ECI */
+        if (eci <= 1023) {
+            bin_append(eci, 11, binary);
+        }
+        if ((eci >= 1024) && (eci <= 32767)) {
+            strcat(binary, "10");
+            bin_append(eci, 15, binary);
+        }
+        if (eci >= 32768) {
+            strcat(binary, "11");
+            bin_append(eci, 20, binary);
+        }
     }
 
     do {

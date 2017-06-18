@@ -339,8 +339,19 @@ static void calculate_binary(char binary[], char mode[], int source[], const siz
     int submode;
 
     if (eci != 3) {
+        /* Encoding ECI assignment number, according to Table 5 */
         bin_append(8, 4, binary); // ECI
-        bin_append(eci, 8, binary);
+        if (eci <= 127) {
+            bin_append(eci, 8, binary);
+        }
+        if ((eci >= 128) && (eci <= 16383)) {
+            strcat(binary, "10");
+            bin_append(eci, 14, binary);
+        }
+        if (eci >= 16384) {
+            strcat(binary, "110");
+            bin_append(eci, 21, binary);
+        }
     }
 
     do {

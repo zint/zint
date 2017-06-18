@@ -616,10 +616,27 @@ static int pdf417(struct zint_symbol *symbol, unsigned char chaine[], const size
     }
     
     if (symbol->eci != 3) {
-        chainemc[mclength] = 927; /* ECI */
-        mclength++;
-        chainemc[mclength] = symbol->eci;
-        mclength++;
+        /* Encoding ECI assignment number, according to Table 8 */
+        if (symbol->eci <= 899) {
+            chainemc[mclength] = 927; /* ECI */
+            mclength++;
+            chainemc[mclength] = symbol->eci;
+            mclength++;
+        }
+        if ((symbol->eci >= 900) && (symbol->eci <= 810899)) {
+            chainemc[mclength] = 926; /* ECI */
+            mclength++;
+            chainemc[mclength] = (symbol->eci / 900) - 1;
+            mclength++;
+            chainemc[mclength] = symbol->eci % 900;
+            mclength++;
+        }
+        if (symbol->eci >= 810900) {
+            chainemc[mclength] = 925; /* ECI */
+            mclength++;
+            chainemc[mclength] = symbol->eci - 810900;
+            mclength++;
+        }
     }
     
     for (i = 0; i < indexliste; i++) {
@@ -920,10 +937,27 @@ int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], const size_
     }
     
     if (symbol->eci != 3) {
-        chainemc[mclength] = 927; /* ECI */
-        mclength++;
-        chainemc[mclength] = symbol->eci;
-        mclength++;
+        /* Encoding ECI assignment number, according to Table 8 */
+        if (symbol->eci <= 899) {
+            chainemc[mclength] = 927; /* ECI */
+            mclength++;
+            chainemc[mclength] = symbol->eci;
+            mclength++;
+        }
+        if ((symbol->eci >= 900) && (symbol->eci <= 810899)) {
+            chainemc[mclength] = 926; /* ECI */
+            mclength++;
+            chainemc[mclength] = (symbol->eci / 900) - 1;
+            mclength++;
+            chainemc[mclength] = symbol->eci % 900;
+            mclength++;
+        }
+        if (symbol->eci >= 810900) {
+            chainemc[mclength] = 925; /* ECI */
+            mclength++;
+            chainemc[mclength] = symbol->eci - 810900;
+            mclength++;
+        }
     }
     
     for (i = 0; i < indexliste; i++) {
