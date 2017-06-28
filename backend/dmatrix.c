@@ -959,7 +959,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
     i = 0;
     while (i < tp) {
         if (binary[i] == 'b') {
-            if ((i == 0) || ((i != 0) && (binary[i - 1] != 'b'))) {
+            if ((i == 0) || (binary[i - 1] != 'b')) {
                 /* start of binary data */
                 int binary_count; /* length of b256 data */
 

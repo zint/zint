@@ -266,6 +266,7 @@ int batch_process(struct zint_symbol *symbol, char *filename, int mirror_mode, c
     char adjusted[2];
     
     memset(buffer, 0, sizeof (unsigned char) * 7100);
+    memset(format_string, 0, sizeof (unsigned char) * 127);
     if (symbol->outfile[0] == '\0') {
         strcpy(format_string, "~~~~~.");
         strcat(format_string, filetype);

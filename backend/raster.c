@@ -119,20 +119,24 @@ int save_raster_image_to_file(struct zint_symbol *symbol, int image_height, int 
 
     if (strlen(symbol->fgcolour) != 6) {
         strcpy(symbol->errtxt, "Malformed foreground colour target (F51)");
+        free(rotated_pixbuf);
         return ZINT_ERROR_INVALID_OPTION;
     }
     if (strlen(symbol->bgcolour) != 6) {
         strcpy(symbol->errtxt, "Malformed background colour target (F52)");
+        free(rotated_pixbuf);
         return ZINT_ERROR_INVALID_OPTION;
     }
     error_number = is_sane(SSET, (unsigned char*) symbol->fgcolour, strlen(symbol->fgcolour));
     if (error_number == ZINT_ERROR_INVALID_DATA) {
         strcpy(symbol->errtxt, "Malformed foreground colour target (F53)");
+        free(rotated_pixbuf);
         return ZINT_ERROR_INVALID_OPTION;
     }
     error_number = is_sane(SSET, (unsigned char*) symbol->bgcolour, strlen(symbol->fgcolour));
     if (error_number == ZINT_ERROR_INVALID_DATA) {
         strcpy(symbol->errtxt, "Malformed background colour target (F54)");
+        free(rotated_pixbuf);
         return ZINT_ERROR_INVALID_OPTION;
     }
     
@@ -181,6 +185,7 @@ int save_raster_image_to_file(struct zint_symbol *symbol, int image_height, int 
 #ifndef NO_PNG
             error_number = png_pixel_plot(symbol, rotated_pixbuf);
 #else
+            free(rotated_pixbuf);
             return ZINT_ERROR_INVALID_OPTION;
 #endif
             break;
@@ -503,6 +508,7 @@ int plot_raster_maxicode(struct zint_symbol *symbol, int rotate_angle, int data_
     if (!(scaled_hexagon = (char *) malloc(hexagon_size * hexagon_size))) {
         strcpy(symbol->errtxt, "Insufficient memory for pixel buffer (F56)");
         free(scaled_hexagon);
+        free(pixelbuf);
         return ZINT_ERROR_ENCODING_PROBLEM;
     } else {
         for (i = 0; i < (hexagon_size * hexagon_size); i++) {

@@ -100,7 +100,7 @@ void ExportWindow::process()
 	
 	for(i = 0; i < lines; i++) {
 		datalen = 0;
-		for(j = inputpos; ((output_data[j] != '\n') && (j < output_data.length())); j++) {
+		for(j = inputpos; ((j < output_data.length()) && (output_data[j] != '\n') ); j++) {
 			datalen++;
 		}
 		dataString = output_data.mid(inputpos, datalen);

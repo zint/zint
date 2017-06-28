@@ -461,6 +461,7 @@ static int cc_b(struct zint_symbol *symbol, char source[], int cc_width) {
 
     /* Now we have the variant we can load the data - from here on the same as MicroPDF417 code */
     variant--;
+    assert(variant >= 0);
     symbol->option_2 = MicroVariants[variant]; /* columns */
     symbol->rows = MicroVariants[variant + 34]; /* rows */
     k = MicroVariants[variant + 68]; /* number of EC CWs */
