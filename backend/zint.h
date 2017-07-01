@@ -274,6 +274,7 @@ extern "C" {
     ZINT_EXTERN int ZBarcode_Encode_File_and_Buffer(struct zint_symbol *symbol, char *filename, int rotate_angle);
 
     ZINT_EXTERN int ZBarcode_ValidID(int symbol_id);
+    ZINT_EXTERN int ZBarcode_Version();
 
 #ifdef __cplusplus
 }

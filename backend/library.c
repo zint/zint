@@ -983,8 +983,8 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source,int 
         error_number = ZINT_ERROR_INVALID_OPTION;
     }
 
-    if ((symbol->eci < 3) || (symbol->eci > 26) || (symbol->eci == 14) || (symbol->eci == 19) || (symbol->eci == 25)) {
-        strcpy(symbol->errtxt, "Invalid or unsupported ECI mode (B18)");
+    if ((symbol->eci < 3) || (symbol->eci > 999999)) {
+        strcpy(symbol->errtxt, "Invalid ECI mode (B18)");
         error_number = ZINT_ERROR_INVALID_OPTION;
     }
 
@@ -1303,4 +1303,8 @@ int ZBarcode_Encode_File_and_Buffer(struct zint_symbol *symbol, char *filename, 
 int ZBarcode_Render(struct zint_symbol *symbol, const float width, const float height) {
     // Send the request to the render_plot method
     return render_plot(symbol, width, height);
+}
+
+int ZBarcode_Version() {
+    return (ZINT_VERSION_MAJOR * 10000) + (ZINT_VERSION_MINOR * 100) + ZINT_VERSION_RELEASE;
 }
