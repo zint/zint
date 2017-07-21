@@ -1313,7 +1313,7 @@ static void applyOptimisation(const int version,char inputMode[], const size_t i
     free(blockMode);
 }
 
-static int blockLength(const size_t start,const char inputMode[],const size_t inputLength) {
+static size_t blockLength(const size_t start,const char inputMode[],const size_t inputLength) {
     /* Find the length of the block starting from 'start' */
     size_t i;
     int    count;

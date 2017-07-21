@@ -46,14 +46,6 @@ int ctoi(const char source) {
     return (source - 'A' + 10);
 }
 
-/* Converts an integer value to its hexadecimal character */
-char itoc(const int source) {
-    if ((source >= 0) && (source <= 9)) {
-        return ('0' + source);
-    } else {
-        return ('A' + (source - 10));
-    }
-}
 
 /* Convert an integer value to a string representing its binary equivalent */
 void bin_append(const int arg, const int length, char *binary) {
@@ -74,6 +66,14 @@ void bin_append(const int arg, const int length, char *binary) {
     return;
 }
 
+/* Converts an integer value to its hexadecimal character */
+char itoc(const int source) {
+    if ((source >= 0) && (source <= 9)) {
+        return ('0' + source);
+    } else {
+        return ('A' + (source - 10));
+    }
+}
 /* Converts lower case characters to upper case in a string source[] */
 void to_upper(unsigned char source[]) {
     size_t i, src_len = ustrlen(source);
