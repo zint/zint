@@ -52,6 +52,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
+#include <assert.h>
 #ifdef _MSC_VER
 #include <malloc.h>
 #endif
