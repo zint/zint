@@ -105,6 +105,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags fl)
 		"Telepen",
 		"Telepen Numeric",
 		"UK Plessey",
+                "UPNQR",
 		"Universal Product Code (UPC-A)",
 		"Universal Product Code (UPC-E)",
 		"USPS Intelligent Mail"

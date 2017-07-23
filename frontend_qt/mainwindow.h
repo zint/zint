@@ -100,6 +100,7 @@ public:
 		TELEPEN		=32,
 		TELEPEN_NUM	=87,
 		PLESSEY		=86,
+                UPNQR           =143,
 		UPCA		=34,
 		UPCE		=37,
 		ONECODE		=85
