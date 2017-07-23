@@ -991,7 +991,7 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source,int 
         symbol->input_mode = DATA_MODE;
     }
     
-    if (symbol->eci != 3) {
+    if ((symbol->eci != 3) && (symbol->eci != 26)) {
         symbol->input_mode = DATA_MODE;
     }
 
