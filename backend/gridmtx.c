@@ -1053,6 +1053,11 @@ int grid_matrix(struct zint_symbol *symbol, const unsigned char source[], size_t
     }
 
     if (symbol->output_options & READER_INIT) reader = 1;
+    
+    if (symbol->eci > 811799) {
+        strcpy(symbol->errtxt, "Invalid ECI");
+        return ZINT_ERROR_INVALID_OPTION;
+    }
 
     error_number = gm_encode(gbdata, length, binary, reader, symbol->eci, symbol->debug);
     if (error_number != 0) {

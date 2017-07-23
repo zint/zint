@@ -559,11 +559,9 @@ void numbprocess(int *chainemc, int *mclength, char chaine[], int start, int len
 /* 366 */
 static int pdf417(struct zint_symbol *symbol, unsigned char chaine[], const size_t length) {
     int i, k, j, indexchaine, indexliste, mode, longueur, loop, mccorrection[520], offset;
-    int total, chainemc[2700], mclength, c1, c2, c3, dummy[35], codeerr;
+    int total, chainemc[2700], mclength, c1, c2, c3, dummy[35];
     char pattern[580];
     int debug = symbol->debug;
-
-    codeerr = 0;
 
     /* 456 */
     indexliste = 0;
@@ -637,6 +635,11 @@ static int pdf417(struct zint_symbol *symbol, unsigned char chaine[], const size
             chainemc[mclength] = symbol->eci - 810900;
             mclength++;
         }
+    }
+    
+    if (symbol->eci > 811799) {
+        strcpy(symbol->errtxt, "Invalid ECI");
+        return ZINT_ERROR_INVALID_OPTION;
     }
     
     for (i = 0; i < indexliste; i++) {
@@ -821,7 +824,7 @@ static int pdf417(struct zint_symbol *symbol, unsigned char chaine[], const size
     symbol->width =(int)strlen(pattern);
 
     /* 843 */
-    return codeerr;
+    return 0;
 }
 
 /* 345 */
@@ -862,6 +865,9 @@ int pdf417enc(struct zint_symbol *symbol, unsigned char source[], const size_t l
             case 4:
                 strcpy(symbol->errtxt, "Data too long for specified number of columns (D65)");
                 error_number = ZINT_ERROR_TOO_LONG;
+                break;
+            case ZINT_ERROR_INVALID_OPTION:
+                error_number = codeerr;
                 break;
             default:
                 strcpy(symbol->errtxt, "Something strange happened (D66)");
@@ -934,6 +940,11 @@ int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], const size_
     if (symbol->output_options & READER_INIT) {
         chainemc[mclength] = 921; /* Reader Initialisation */
         mclength++;
+    }
+    
+    if (symbol->eci > 811799) {
+        strcpy(symbol->errtxt, "Invalid ECI");
+        return ZINT_ERROR_INVALID_OPTION;
     }
     
     if (symbol->eci != 3) {

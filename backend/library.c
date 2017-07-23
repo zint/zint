@@ -485,7 +485,6 @@ static int supports_eci(const int symbology) {
         case BARCODE_DOTCODE:
         case BARCODE_GRIDMATRIX:
         case BARCODE_HANXIN:
-        case BARCODE_UPNQR:
             result = 1;
             break;
     }
@@ -989,6 +988,10 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source,int 
     }
 
     if ((symbol->input_mode < 0) || (symbol->input_mode > 2)) {
+        symbol->input_mode = DATA_MODE;
+    }
+    
+    if (symbol->eci != 3) {
         symbol->input_mode = DATA_MODE;
     }
 

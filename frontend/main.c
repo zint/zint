@@ -134,11 +134,18 @@ void show_eci(void) {
             "16: ISO-8859-14 - Latin alphabet No. 8 (Celtic)\n"
             "17: ISO-8859-15 - Latin alphabet No. 9\n"
             "18: ISO-8859-16 - Latin alphabet No. 10\n"
+            "20: ** Shift-JIS (JISX 0208 amd JISX 0201)\n"
             "21: Windows-1250\n"
             "22: Windows-1251\n"
             "23: Windows-1252\n"
             "24: Windows-1256\n"
+            "25: ** UCS-2 Unicode (High order byte first)\n"
             "26: Unicode (UTF-8)\n"
+            "27: ISO-646:1991 7-bit character set\n"
+            "28: ** Big-5 (Taiwan) Chinese Character Set\n"
+            "29: ** GB (PRC) Chinese Character Set\n"
+            "30: ** Korean Character Set (KSX1001:1998)\n"
+            "** See note in section 4.10 of the manual"
     );
 }
 
@@ -683,7 +690,7 @@ int main(int argc, char **argv) {
                     strncpy(filetype, optarg, (size_t) 3);
                 }
                 if (!strcmp(long_options[option_index].name, "eci")) {
-                    if ((atoi(optarg) >= 0) && (atoi(optarg) <= 30)) {
+                    if ((atoi(optarg) >= 0) && (atoi(optarg) <= 999999)) {
                         my_symbol->eci = atoi(optarg);
                     } else {
                         fprintf(stderr, "Invalid ECI code (A18)\n");

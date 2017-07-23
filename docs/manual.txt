@@ -424,9 +424,8 @@ The --binary option prevents Zint from performing any convertion of the data
 before placing in the barcode symbol and should be used if you are encoding raw 
 binary or encrypted data.
 
-If your platform does not use Unicode or if you are using data from file which 
-is not stored in UTF-8 then you can specify the encoding by using the --binary 
-switch in combination with the --eci= switch followed by the appropriate number 
+If you are using data from file which is not UTF-8 formatted then you can 
+specify the encoding by using the --eci= switch followed by the appropriate number 
 from the table below. This procedure adds an ECI flag in the barcode data which 
 tells the barcode reader to change character encoding.
 
@@ -448,12 +447,24 @@ ECI Code  |  Character Encoding Scheme
 16        |  ISO-8859-14 - Latin alphabet No. 8 (Celtic)
 17        |  ISO-8859-15 - Latin alphabet No. 9
 18        |  ISO-8859-16 - Latin alphabet No. 10
+20 *      |  Shift-JIS (JISX 0208 amd JISX 0201)
 21        |  Windows-1250 - Latin 2 (Central Europe)
 22        |  Windows-1251 - Cyrillic
 23        |  Windows-1252 - Latin 1
 24        |  Windows-1256 - Arabic
+25 *      |  UCS-2 Unicode (High order byte first)
 26        |  Unicode (UTF-8)
+27        |  ISO-646:1991 7-bit character set
+28 *      |  Big-5 (Taiwan) Chinese Character Set
+29 *      |  GB (PRC) Chinese Character Set
+30 *      |  Korean Character Set (KSX1001:1998)
 --------------------------------------------------------
+
+* Note: When using the ECI flag Zint will treat all input data as raw binary.
+This means that data which is encoded using a multiple-byte encoding schemes
+(other than UTF-8) will not use optimal compression. It is therefore
+recommended that data using these schemes be converted to UTF-8 using iconv
+or similar before passing it to Zint.
 
 4.11 Batch processing
 ---------------------
@@ -553,7 +564,7 @@ options available, and also gives the exact version of the software.
 The -t or --types option gives the table of symbologies along with the symbol
 ID numbers.
 
-The -e or --ecinos option gives a list of the ECI codes supported by Zint.
+The -e or --ecinos option gives a list of the ECI codes.
 
 4.16 Other output options
 -------------------------

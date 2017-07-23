@@ -1212,6 +1212,11 @@ int dotcode(struct zint_symbol *symbol, const unsigned char source[], int length
     unsigned char* masked_codeword_array;
     unsigned char* codeword_array = (unsigned char *) _alloca(length * 3 * sizeof (unsigned char));
 #endif /* _MSC_VER */
+    
+    if (symbol->eci > 811799) {
+        strcpy(symbol->errtxt, "Invalid ECI");
+        return ZINT_ERROR_INVALID_OPTION;
+    }
 
     data_length = dotcode_encode_message(symbol, source, length, codeword_array, &binary_finish);
 
