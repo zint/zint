@@ -42,7 +42,7 @@
 
 static int AztecMap[22801];
 
-static int count_doubles(const unsigned char source[], int posn, const size_t src_len) {
+static int count_doubles(const unsigned char source[], const int posn, const size_t src_len) {
     int c = 0;
     int i = posn;
     int cond = 1;
@@ -110,7 +110,7 @@ static int count_spaces(char source[], int posn, int length) {
     return c;
 }
 
-static char get_next_mode(char encode_mode[], const size_t src_len, int posn) {
+static char get_next_mode(char encode_mode[], const size_t src_len, const int posn) {
     int i = posn;
     
     do {
@@ -125,16 +125,24 @@ static char get_next_mode(char encode_mode[], const size_t src_len, int posn) {
 
 static int aztec_text_process(const unsigned char source[], const size_t src_len, char binary_string[], const int gs1, const int eci, const int debug) {
     
-    char encode_mode[src_len];
+    char *encode_mode;
     int i, j;
     char current_mode;
     int count;
     char next_mode;
-    char reduced_source[src_len];
-    char reduced_encode_mode[src_len];
+    char *reduced_source;
+    char *reduced_encode_mode;
     int reduced_length;
     int byte_mode = 0;
     
+    encode_mode=(char*)alloca(src_len);
+    reduced_source=(char*)alloca(src_len);
+    reduced_encode_mode=(char*)alloca(src_len);
+
+    if ((!encode_mode) ||
+        (!reduced_source) ||
+        (!reduced_encode_mode)) return -1;
+
     for (i = 0; i < src_len; i++) {
         if (source[i] > 128) {
             encode_mode[i] = 'B';

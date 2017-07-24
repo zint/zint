@@ -343,7 +343,7 @@ void add_shift_char(char binary[], int shifty) {
     bin_append(glyph, 6, binary);
 }
 
-static int gm_encode(int gbdata[], const size_t length, char binary[], int reader, int eci, int debug) {
+static int gm_encode(int gbdata[], const size_t length, char binary[],const int reader,const int eci, int debug) {
     /* Create a binary stream representation of the input data.
        7 sets are defined - Chinese characters, Numerals, Lower case letters, Upper case letters,
        Mixed numerals and latters, Control characters and 8-bit binary data */
