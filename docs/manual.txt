@@ -2085,7 +2085,7 @@ size of the symbol and the error correction capacity can be specified. If you
 specify both of these values then Zint will make a 'best-fit' attempt to 
 satisfy  both conditions. The symbol size can be specified using the --ver=
 option or by setting option_2, and the error correction capacity can be
-specified by using the --security= option or by setting option_1 according to
+specified by using the --secure= option or by setting option_1 according to
 the following tables: 
 
 ---------------------
