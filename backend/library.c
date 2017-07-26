@@ -809,7 +809,7 @@ static int reduced_charset(struct zint_symbol *symbol, const unsigned char *sour
         case BARCODE_CODABLOCKF: error_number = codablock(symbol, preprocessed, in_length);
             break;
     }
-
+    
     return error_number;
 }
 
@@ -1060,18 +1060,16 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source,int 
         
     }
 
-    if ((symbol->symbology == BARCODE_CODE128) || (symbol->symbology == BARCODE_CODE128B)) {
-        for (i = 0; i < in_length; i++) {
-            if (local_source[i] == '\0') {
-                symbol->text[i] = ' ';
-            } else {
-                symbol->text[i] = local_source[i];
+    if (error_number == 0) {
+        if ((symbol->symbology == BARCODE_CODE128) || (symbol->symbology == BARCODE_CODE128B)) {
+            for (i = 0; i < in_length; i++) {
+                if (local_source[i] == '\0') {
+                    symbol->text[i] = ' ';
+                } else {
+                    symbol->text[i] = local_source[i];
+                }
             }
         }
-    }
-
-    if (error_number == 0) {
-        
         error_number = error_buffer;
     }
     error_tag(symbol->errtxt, error_number);
