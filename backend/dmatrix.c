@@ -1181,6 +1181,10 @@ int data_matrix_200(struct zint_symbol *symbol,const unsigned char source[], con
         while (matrixH[calcsize] != matrixW[calcsize]) {
             calcsize++;
         }
+        if (optionsize != -1) {
+            strcpy(symbol->errtxt, "Can not force square symbols when symbol size is selected");
+            error_number = ZINT_WARN_INVALID_OPTION;
+        }
     } else if (symbol->option_3 != DM_DMRE) {
         /* Skip DMRE symbols */
         while (isDMRE[calcsize]) {

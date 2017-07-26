@@ -1771,9 +1771,9 @@ Input  |  Symbol Size
 30     |  16 x 48
 ---------------------
 
-To force Zint only to use square symbols (versions 1-24) at the command line 
-use the option --square and when using the API set the value option_3 = 
-DM_SQUARE.
+When using automatic symbol sizes you can force Zint to use square symbols
+(versions 1-24) at the command line by using the option --square and when
+using the API by setting the value option_3 = DM_SQUARE.
 
 Data Matrix Rectangular Extension (DMRE) codes may be generated with the 
 following values as before:

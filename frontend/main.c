@@ -744,7 +744,11 @@ int main(int argc, char **argv) {
                         strcat(my_symbol->outfile, filetype);
                     }
                     error_number = escape_char_process(my_symbol, (unsigned char*) optarg, strlen(optarg));
-                    if (error_number == 0) {
+                    if (error_number < 5) {
+                        if (error_number != 0) {
+                            fprintf(stderr, "%s\n", my_symbol->errtxt);
+                            fflush(stderr);
+                        }
                         error_number = ZBarcode_Print(my_symbol, rotate_angle);
                     }
                     generated = 1;
@@ -763,7 +767,11 @@ int main(int argc, char **argv) {
             case 'i': /* Take data from file */
                 if (batch_mode == 0) {
                     error_number = ZBarcode_Encode_File(my_symbol, optarg);
-                    if (error_number == 0) {
+                    if (error_number < 5) {
+                        if (error_number != 0) {
+                            fprintf(stderr, "%s\n", my_symbol->errtxt);
+                            fflush(stderr);
+                        }
                         error_number = ZBarcode_Print(my_symbol, rotate_angle);
                     }
                     generated = 1;
