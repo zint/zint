@@ -130,6 +130,13 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags fl)
 		bstyle->setItemText(i,bstyle_text[i]);
 	}
 	bstyle->setCurrentIndex(settings.value("studio/symbology", 10).toInt());
+        txtData->setText(settings.value("studio/data", "Your Data Here!").toString());
+        txtComposite->setText(settings.value("studio/composite_text", "Your Data Here!").toString());
+        heightb->setValue(settings.value("studio/appearance/height", 50).toInt());
+        bwidth->setValue(settings.value("studio/appearance/border", 50).toInt());
+        spnWhitespace->setValue(settings.value("studio/appearance/whitespace", 0).toInt());
+        spnScale->setValue(settings.value("studio/appearance/scale", 1.0).toFloat());
+        btype->setCurrentIndex(settings.value("studio/appearance/border_type", 0).toInt());
 	change_options();
         scene->addItem(&m_bc);
 	update_preview();
@@ -167,6 +174,13 @@ MainWindow::~MainWindow()
     settings.setValue("studio/paper/red", m_bgcolor.red());
     settings.setValue("studio/paper/green", m_bgcolor.green());
     settings.setValue("studio/paper/blue", m_bgcolor.blue());
+    settings.setValue("studio/data", txtData->text());
+    settings.setValue("studio/composite_text", txtComposite->toPlainText());
+    settings.setValue("studio/appearance/height", heightb->value());
+    settings.setValue("studio/appearance/border", bwidth->value());
+    settings.setValue("studio/appearance/whitespace", spnWhitespace->value());
+    settings.setValue("studio/appearance/scale", spnScale->value());
+    settings.setValue("studio/appearance/border_type", btype->currentIndex());
 }
 
 void MainWindow::resizeEvent(QResizeEvent* event)
