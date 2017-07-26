@@ -10,8 +10,30 @@
     <height>170</height>
    </rect>
   </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>450</width>
+    <height>170</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>450</width>
+    <height>170</height>
+   </size>
+  </property>
   <property name="windowTitle">
    <string>Export Barcodes</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>images/zint.png</normaloff>images/zint.png</iconset>
   </property>
   <widget class="QLineEdit" name="linDestPath">
    <property name="geometry">
@@ -22,6 +44,9 @@
      <height>22</height>
     </rect>
    </property>
+   <property name="toolTip">
+    <string>Destination folder</string>
+   </property>
   </widget>
   <widget class="QLineEdit" name="linPrefix">
    <property name="geometry">
@@ -31,6 +56,9 @@
      <width>301</width>
      <height>22</height>
     </rect>
+   </property>
+   <property name="toolTip">
+    <string>The first part of the filenames</string>
    </property>
    <property name="text">
     <string>bcs_</string>
@@ -44,6 +72,9 @@
      <width>301</width>
      <height>22</height>
     </rect>
+   </property>
+   <property name="toolTip">
+    <string>Sat the naming convention used by the files</string>
    </property>
    <item>
     <property name="text">
@@ -64,6 +95,9 @@
      <width>301</width>
      <height>22</height>
     </rect>
+   </property>
+   <property name="toolTip">
+    <string>The type of file which you want to create</string>
    </property>
    <item>
     <property name="text">
@@ -114,6 +148,9 @@
      <width>30</width>
      <height>25</height>
     </rect>
+   </property>
+   <property name="toolTip">
+    <string>Find a destination for your files</string>
    </property>
    <property name="text">
     <string>...</string>
