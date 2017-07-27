@@ -638,7 +638,7 @@ static int pdf417(struct zint_symbol *symbol, unsigned char chaine[], const size
     }
     
     if (symbol->eci > 811799) {
-        strcpy(symbol->errtxt, "Invalid ECI");
+        strcpy(symbol->errtxt, "472: Invalid ECI");
         return ZINT_ERROR_INVALID_OPTION;
     }
     
@@ -834,12 +834,12 @@ int pdf417enc(struct zint_symbol *symbol, unsigned char source[], const size_t l
     error_number = 0;
 
     if ((symbol->option_1 < -1) || (symbol->option_1 > 8)) {
-        strcpy(symbol->errtxt, "Security value out of range (D60)");
+        strcpy(symbol->errtxt, "460: Security value out of range");
         symbol->option_1 = -1;
         error_number = ZINT_WARN_INVALID_OPTION;
     }
     if ((symbol->option_2 < 0) || (symbol->option_2 > 30)) {
-        strcpy(symbol->errtxt, "Number of columns out of range (D61)");
+        strcpy(symbol->errtxt, "461: Number of columns out of range");
         symbol->option_2 = 0;
         error_number = ZINT_WARN_INVALID_OPTION;
     }
@@ -851,26 +851,26 @@ int pdf417enc(struct zint_symbol *symbol, unsigned char source[], const size_t l
     if (codeerr != 0) {
         switch (codeerr) {
             case 1:
-                strcpy(symbol->errtxt, "No such file or file unreadable (D62)");
+                strcpy(symbol->errtxt, "462: No such file or file unreadable");
                 error_number = ZINT_ERROR_INVALID_OPTION;
                 break;
             case 2:
-                strcpy(symbol->errtxt, "Input string too long (D63)");
+                strcpy(symbol->errtxt, "463: Input string too long");
                 error_number = ZINT_ERROR_TOO_LONG;
                 break;
             case 3:
-                strcpy(symbol->errtxt, "Number of codewords per row too small (D64)");
+                strcpy(symbol->errtxt, "464: Number of codewords per row too small");
                 error_number = ZINT_WARN_INVALID_OPTION;
                 break;
             case 4:
-                strcpy(symbol->errtxt, "Data too long for specified number of columns (D65)");
+                strcpy(symbol->errtxt, "465: Data too long for specified number of columns");
                 error_number = ZINT_ERROR_TOO_LONG;
                 break;
             case ZINT_ERROR_INVALID_OPTION:
                 error_number = codeerr;
                 break;
             default:
-                strcpy(symbol->errtxt, "Something strange happened (D66)");
+                strcpy(symbol->errtxt, "466: Something strange happened");
                 error_number = ZINT_ERROR_ENCODING_PROBLEM;
                 break;
         }
@@ -943,7 +943,7 @@ int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], const size_
     }
     
     if (symbol->eci > 811799) {
-        strcpy(symbol->errtxt, "Invalid ECI");
+        strcpy(symbol->errtxt, "473: Invalid ECI");
         return ZINT_ERROR_INVALID_OPTION;
     }
     
@@ -989,11 +989,11 @@ int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], const size_
     /* This is where it all changes! */
 
     if (mclength > 126) {
-        strcpy(symbol->errtxt, "Input data too long (D67)");
+        strcpy(symbol->errtxt, "467: Input data too long");
         return ZINT_ERROR_TOO_LONG;
     }
     if (symbol->option_2 > 4) {
-        strcpy(symbol->errtxt, "Specified width out of range (D68)");
+        strcpy(symbol->errtxt, "468: Specified width out of range");
         symbol->option_2 = 0;
         codeerr = ZINT_WARN_INVALID_OPTION;
     }
@@ -1013,21 +1013,21 @@ int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], const size_
     if ((symbol->option_2 == 1) && (mclength > 20)) {
         /* the user specified 1 column but the data doesn't fit - go to automatic */
         symbol->option_2 = 0;
-        strcpy(symbol->errtxt, "Specified symbol size too small for data (D69)");
+        strcpy(symbol->errtxt, "469: Specified symbol size too small for data");
         codeerr = ZINT_WARN_INVALID_OPTION;
     }
 
     if ((symbol->option_2 == 2) && (mclength > 37)) {
         /* the user specified 2 columns but the data doesn't fit - go to automatic */
         symbol->option_2 = 0;
-        strcpy(symbol->errtxt, "Specified symbol size too small for data (D6A)");
+        strcpy(symbol->errtxt, "470: Specified symbol size too small for data");
         codeerr = ZINT_WARN_INVALID_OPTION;
     }
 
     if ((symbol->option_2 == 3) && (mclength > 82)) {
         /* the user specified 3 columns but the data doesn't fit - go to automatic */
         symbol->option_2 = 0;
-        strcpy(symbol->errtxt, "Specified symbol size too small for data (D6B)");
+        strcpy(symbol->errtxt, "471: Specified symbol size too small for data");
         codeerr = ZINT_WARN_INVALID_OPTION;
     }
 

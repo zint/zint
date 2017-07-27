@@ -1044,7 +1044,7 @@ int grid_matrix(struct zint_symbol *symbol, const unsigned char source[], size_t
                     j++;
                 } while ((j < 7445) && (glyph == 0));
                 if (glyph == 0) {
-                    strcpy(symbol->errtxt, "Invalid character in input data (E30)");
+                    strcpy(symbol->errtxt, "530: Invalid character in input data");
                     return ZINT_ERROR_INVALID_DATA;
                 }
                 gbdata[i] = glyph;
@@ -1055,13 +1055,13 @@ int grid_matrix(struct zint_symbol *symbol, const unsigned char source[], size_t
     if (symbol->output_options & READER_INIT) reader = 1;
     
     if (symbol->eci > 811799) {
-        strcpy(symbol->errtxt, "Invalid ECI");
+        strcpy(symbol->errtxt, "533: Invalid ECI");
         return ZINT_ERROR_INVALID_OPTION;
     }
 
     error_number = gm_encode(gbdata, length, binary, reader, symbol->eci, symbol->debug);
     if (error_number != 0) {
-        strcpy(symbol->errtxt, "Input data too long (E31)");
+        strcpy(symbol->errtxt, "531: Input data too long");
         return error_number;
     }
 
@@ -1102,7 +1102,7 @@ int grid_matrix(struct zint_symbol *symbol, const unsigned char source[], size_t
         if (symbol->option_2 > min_layers) {
             layers = symbol->option_2;
         } else {
-            strcpy(symbol->errtxt, "Input data too long for selected symbol size");
+            strcpy(symbol->errtxt, "534: Input data too long for selected symbol size");
             return ZINT_ERROR_TOO_LONG;
         }
     }
@@ -1149,7 +1149,7 @@ int grid_matrix(struct zint_symbol *symbol, const unsigned char source[], size_t
     }
 
     if (data_cw > data_max) {
-        strcpy(symbol->errtxt, "Input data too long (E32)");
+        strcpy(symbol->errtxt, "532: Input data too long");
         return ZINT_ERROR_TOO_LONG;
     }
 

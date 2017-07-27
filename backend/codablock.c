@@ -652,18 +652,18 @@ int codablock(struct zint_symbol *symbol,const unsigned char source[], const siz
     /* option1: rows 0: automatic, 1..44 */
     rows = symbol->option_1;
     if (rows > 44) {
-        strcpy(symbol->errtxt, "Row parameter not in 0..44 (D10)");
+        strcpy(symbol->errtxt, "410: Row parameter not in 0..44");
         return ZINT_ERROR_INVALID_OPTION;
     }
     /* option_2: (usable data) columns: 0: automatic, 6..66 */
     columns = symbol->option_2;
     if ( ! (columns <= 0 || (columns >= 6 && columns <=66)) ) {
-        strcpy(symbol->errtxt, "Columns parameter not in 0,6..66 (D11)");
+        strcpy(symbol->errtxt, "411: Columns parameter not in 0,6..66");
         return ZINT_ERROR_INVALID_OPTION;
     }
     /* GS1 not implemented */
     if  (symbol->input_mode == GS1_MODE) {
-        strcpy(symbol->errtxt, "GS1 mode not supported (D12)");
+        strcpy(symbol->errtxt, "412: GS1 mode not supported");
         return ZINT_ERROR_INVALID_OPTION;
     }
 #ifndef _MSC_VER
@@ -725,7 +725,7 @@ int codablock(struct zint_symbol *symbol,const unsigned char source[], const siz
         Error=Columns2Rows(T,data,dataLength,&rows,&useColumns,pSet,&fillings);
     }
     if (Error != 0) {
-        strcpy(symbol->errtxt, "data string to long (D13)");
+        strcpy(symbol->errtxt, "413: Data string to long");
         return Error;
     }
     /* Checksum */

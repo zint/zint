@@ -567,7 +567,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
 
     if (symbol->output_options & READER_INIT) {
         if (gs1) {
-            strcpy(symbol->errtxt, "Cannot encode in GS1 mode and Reader Initialisation at the same time (E10)");
+            strcpy(symbol->errtxt, "519: Cannot encode in GS1 mode and Reader Initialisation at the same time");
             return ZINT_ERROR_INVALID_OPTION;
         } else {
             target[tp] = 234;
@@ -1158,7 +1158,7 @@ int data_matrix_200(struct zint_symbol *symbol,const unsigned char source[], con
     binlen = dm200encode(symbol, source, binary, &last_mode, &inputlen, process_buffer, &process_p);
 
     if (binlen == 0) {
-        strcpy(symbol->errtxt, "Data too long to fit in symbol (E11)");
+        strcpy(symbol->errtxt, "520: Data too long to fit in symbol");
         return ZINT_ERROR_TOO_LONG;
     }
 
@@ -1182,7 +1182,7 @@ int data_matrix_200(struct zint_symbol *symbol,const unsigned char source[], con
             calcsize++;
         }
         if (optionsize != -1) {
-            strcpy(symbol->errtxt, "Can not force square symbols when symbol size is selected");
+            strcpy(symbol->errtxt, "521: Can not force square symbols when symbol size is selected");
             error_number = ZINT_WARN_INVALID_OPTION;
         }
     } else if (symbol->option_3 != DM_DMRE) {
@@ -1196,7 +1196,7 @@ int data_matrix_200(struct zint_symbol *symbol,const unsigned char source[], con
     if (calcsize > optionsize) {
         symbolsize = calcsize;
         if (optionsize != -1) {
-            strcpy(symbol->errtxt, "Input too long for selected symbol size");
+            strcpy(symbol->errtxt, "522: Input too long for selected symbol size");
             return ZINT_ERROR_TOO_LONG;
         }
     }
@@ -1206,7 +1206,7 @@ int data_matrix_200(struct zint_symbol *symbol,const unsigned char source[], con
     binlen = dm200encode_remainder(binary, binlen, source, inputlen, last_mode, process_buffer, process_p, symbols_left);
     
     if (binlen > matrixbytes[symbolsize]) {
-        strcpy(symbol->errtxt, "Data too long to fit in symbol (E12A)");
+        strcpy(symbol->errtxt, "523: Data too long to fit in symbol");
         return ZINT_ERROR_TOO_LONG;
     }
 
@@ -1313,7 +1313,7 @@ int dmatrix(struct zint_symbol *symbol, const unsigned char source[], const size
         error_number = data_matrix_200(symbol, source, in_length);
     } else {
         /* ECC 000 - 140 */
-        strcpy(symbol->errtxt, "Older Data Matrix standards are no longer supported (E13)");
+        strcpy(symbol->errtxt, "524: Older Data Matrix standards are no longer supported");
         error_number = ZINT_ERROR_INVALID_OPTION;
     }
 

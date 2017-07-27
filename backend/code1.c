@@ -1008,7 +1008,7 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
 
         if (tp > 1480) {
             /* Data is too large for symbol */
-            strcpy(symbol->errtxt, "Input data too long (E10)");
+            strcpy(symbol->errtxt, "511: Input data too long");
             return 0;
         }
     } while (sp < length);
@@ -1153,7 +1153,7 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
     /* Re-check length of data */
     if (tp > 1480) {
         /* Data is too large for symbol */
-        strcpy(symbol->errtxt, "Input data too long (E11)");
+        strcpy(symbol->errtxt, "512: Input data too long");
         return 0;
     }
     /* 
@@ -1186,7 +1186,7 @@ int code_one(struct zint_symbol *symbol, unsigned char source[], int length) {
     int sub_version = 0;
 
     if ((symbol->option_2 < 0) || (symbol->option_2 > 10)) {
-        strcpy(symbol->errtxt, "Invalid symbol size (E12)");
+        strcpy(symbol->errtxt, "513: Invalid symbol size");
         return ZINT_ERROR_INVALID_OPTION;
     }
 
@@ -1199,11 +1199,11 @@ int code_one(struct zint_symbol *symbol, unsigned char source[], int length) {
         int block_width;
 
         if (length > 18) {
-            strcpy(symbol->errtxt, "Input data too long (E13)");
+            strcpy(symbol->errtxt, "514: Input data too long");
             return ZINT_ERROR_TOO_LONG;
         }
         if (is_sane(NEON, source, length) == ZINT_ERROR_INVALID_DATA) {
-            strcpy(symbol->errtxt, "Invalid input data (Version S encodes numeric input only) (E14)");
+            strcpy(symbol->errtxt, "515: Invalid input data (Version S encodes numeric input only)");
             return ZINT_ERROR_INVALID_DATA;
         }
 
@@ -1313,7 +1313,7 @@ int code_one(struct zint_symbol *symbol, unsigned char source[], int length) {
         }
 
         if (data_length > 38) {
-            strcpy(symbol->errtxt, "Input data too long (E15)");
+            strcpy(symbol->errtxt, "516: Input data too long");
             return ZINT_ERROR_TOO_LONG;
         }
 
@@ -1407,7 +1407,7 @@ int code_one(struct zint_symbol *symbol, unsigned char source[], int length) {
         data_length = c1_encode(symbol, source, data, length);
 
         if (data_length == 0) {
-            strcpy(symbol->errtxt, "Input data is too long");
+            strcpy(symbol->errtxt, "517: Input data is too long");
             return ZINT_ERROR_TOO_LONG;
         }
 
@@ -1422,7 +1422,7 @@ int code_one(struct zint_symbol *symbol, unsigned char source[], int length) {
         }
         
         if ((symbol-> option_2 != 0) && (symbol->option_2 < size)) {
-            strcpy(symbol->errtxt, "Input too long for selected symbol size");
+            strcpy(symbol->errtxt, "518: Input too long for selected symbol size");
             return ZINT_ERROR_TOO_LONG;
         }
 

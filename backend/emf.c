@@ -239,12 +239,12 @@ int emf_plot(struct zint_symbol *symbol) {
     to_upper((unsigned char*) symbol->bgcolour);
 
     if (strlen(symbol->fgcolour) != 6) {
-        strcpy(symbol->errtxt, "Malformed foreground colour target (F41)");
+        strcpy(symbol->errtxt, "641: Malformed foreground colour target");
         return ZINT_ERROR_INVALID_OPTION;
     }
     
     if (strlen(symbol->bgcolour) != 6) {
-        strcpy(symbol->errtxt, "Malformed background colour target (F42)");
+        strcpy(symbol->errtxt, "642: Malformed background colour target");
         return ZINT_ERROR_INVALID_OPTION;
     }
     
@@ -1016,7 +1016,7 @@ int emf_plot(struct zint_symbol *symbol) {
         emf_file = fopen(symbol->outfile, "w");
     }
     if (emf_file == NULL) {
-        strcpy(symbol->errtxt, "Could not open output file (F40)");
+        strcpy(symbol->errtxt, "640: Could not open output file");
         return ZINT_ERROR_FILE_ACCESS;
     }
     

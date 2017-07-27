@@ -170,12 +170,12 @@ int rss14(struct zint_symbol *symbol, unsigned char source[], int src_len) {
     separator_row = 0;
 
     if (src_len > 13) {
-        strcpy(symbol->errtxt, "Input too long (C80)");
+        strcpy(symbol->errtxt, "380: Input too long");
         return ZINT_ERROR_TOO_LONG;
     }
     error_number = is_sane(NEON, source, src_len);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "Invalid characters in data (C81)");
+        strcpy(symbol->errtxt, "381: Invalid characters in data");
         return error_number;
     }
 
@@ -739,17 +739,17 @@ int rsslimited(struct zint_symbol *symbol, unsigned char source[], int src_len) 
     separator_row = 0;
 
     if (src_len > 13) {
-        strcpy(symbol->errtxt, "Input too long (C82)");
+        strcpy(symbol->errtxt, "382: Input too long");
         return ZINT_ERROR_TOO_LONG;
     }
     error_number = is_sane(NEON, source, src_len);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "Invalid characters in data (C83)");
+        strcpy(symbol->errtxt, "383: Invalid characters in data");
         return error_number;
     }
     if (src_len == 13) {
         if ((source[0] != '0') && (source[0] != '1')) {
-            strcpy(symbol->errtxt, "Input out of range (C84)");
+            strcpy(symbol->errtxt, "384: Input out of range");
             return ZINT_ERROR_INVALID_DATA;
         }
     }
@@ -1361,7 +1361,7 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
         if ((source[i] < '0') || (source[i] > '9')) {
             if ((source[i] != '[') && (source[i] != ']')) {
                 /* Something is wrong */
-                strcpy(symbol->errtxt, "Invalid characters in input data (C85)");
+                strcpy(symbol->errtxt, "385: Invalid characters in input data");
                 return ZINT_ERROR_INVALID_DATA;
             }
         }
@@ -1576,7 +1576,7 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
 
     if (latch == 1) {
         /* Invalid characters in input data */
-        strcpy(symbol->errtxt, "Invalid characters in input data (C86)");
+        strcpy(symbol->errtxt, "386: Invalid characters in input data");
         return ZINT_ERROR_INVALID_DATA;
     }
 
@@ -1812,7 +1812,7 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
     }
 
     if (strlen(binary_string) > 252) {
-        strcpy(symbol->errtxt, "Input too long");
+        strcpy(symbol->errtxt, "387: Input too long");
         return ZINT_ERROR_TOO_LONG;
     }
 

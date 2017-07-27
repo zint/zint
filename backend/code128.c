@@ -311,7 +311,7 @@ int code_128(struct zint_symbol *symbol, unsigned char source[], const size_t le
     if (sourcelen > 160) {
         /* This only blocks rediculously long input - the actual length of the
            resulting barcode depends on the type of data, so this is trapped later */
-        strcpy(symbol->errtxt, "Input too long (C40)");
+        strcpy(symbol->errtxt, "340: Input too long");
         return ZINT_ERROR_TOO_LONG;
     }
 
@@ -483,7 +483,7 @@ int code_128(struct zint_symbol *symbol, unsigned char source[], const size_t le
         }
     }
     if (glyph_count > 60.0) {
-        strcpy(symbol->errtxt, "Input too long (C41)");
+        strcpy(symbol->errtxt, "341: Input too long");
         return ZINT_ERROR_TOO_LONG;
     }
 
@@ -708,13 +708,13 @@ int ean_128(struct zint_symbol *symbol, unsigned char source[], const size_t len
     if (length > 160) {
         /* This only blocks rediculously long input - the actual length of the
         resulting barcode depends on the type of data, so this is trapped later */
-        strcpy(symbol->errtxt, "Input too long (C42)");
+        strcpy(symbol->errtxt, "342: Input too long");
         return ZINT_ERROR_TOO_LONG;
     }
     for (i = 0; i < length; i++) {
         if (source[i] == '\0') {
             /* Null characters not allowed! */
-            strcpy(symbol->errtxt, "NULL character in input data (C43)");
+            strcpy(symbol->errtxt, "343: NULL character in input data");
             return ZINT_ERROR_INVALID_DATA;
         }
     }
@@ -844,7 +844,7 @@ int ean_128(struct zint_symbol *symbol, unsigned char source[], const size_t len
         }
     }
     if (glyph_count > 60.0) {
-        strcpy(symbol->errtxt, "Input too long (C44)");
+        strcpy(symbol->errtxt, "344: Input too long");
         return ZINT_ERROR_TOO_LONG;
     }
 
@@ -1011,13 +1011,13 @@ int nve_18(struct zint_symbol *symbol, unsigned char source[], int length) {
     sourcelen = length;
 
     if (sourcelen > 17) {
-        strcpy(symbol->errtxt, "Input too long (C45)");
+        strcpy(symbol->errtxt, "345: Input too long");
         return ZINT_ERROR_TOO_LONG;
     }
 
     error_number = is_sane(NEON, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "Invalid characters in data (C46)");
+        strcpy(symbol->errtxt, "346: Invalid characters in data");
         return error_number;
     }
     zeroes = 17 - sourcelen;
@@ -1052,13 +1052,13 @@ int ean_14(struct zint_symbol *symbol, unsigned char source[], int length) {
     unsigned char ean128_equiv[20];
 
     if (length > 13) {
-        strcpy(symbol->errtxt, "Input wrong length (C47)");
+        strcpy(symbol->errtxt, "347: Input wrong length");
         return ZINT_ERROR_TOO_LONG;
     }
 
     error_number = is_sane(NEON, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "Invalid character in data (C48)");
+        strcpy(symbol->errtxt, "348: Invalid character in data");
         return error_number;
     }
 

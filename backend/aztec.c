@@ -987,7 +987,7 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], const size_t lengt
         comp_loop = 1;
     }
     if (gs1 && reader) {
-        strcpy(symbol->errtxt, "Cannot encode in GS1 and Reader Initialisation mode at the same time (E01)");
+        strcpy(symbol->errtxt, "501: Cannot encode in GS1 and Reader Initialisation mode at the same time");
         return ZINT_ERROR_INVALID_OPTION;
     }
 
@@ -996,12 +996,12 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], const size_t lengt
     err_code = aztec_text_process(source, length, binary_string, gs1, symbol->eci, symbol->debug);
 
     if (err_code != 0) {
-        strcpy(symbol->errtxt, "Input too long or too many extended ASCII characters (E02)");
+        strcpy(symbol->errtxt, "502: Input too long or too many extended ASCII characters");
         return err_code;
     }
 
     if (!((symbol->option_1 >= -1) && (symbol->option_1 <= 4))) {
-        strcpy(symbol->errtxt, "Invalid error correction level - using default instead (E03)");
+        strcpy(symbol->errtxt, "503: Invalid error correction level - using default instead");
         err_code = ZINT_WARN_INVALID_OPTION;
         symbol->option_1 = -1;
     }
@@ -1089,7 +1089,7 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], const size_t lengt
             }
 
             if (layers == 0) { /* Couldn't find a symbol which fits the data */
-                strcpy(symbol->errtxt, "Input too long (too many bits for selected ECC) (E04)");
+                strcpy(symbol->errtxt, "504: Input too long (too many bits for selected ECC)");
                 return ZINT_ERROR_TOO_LONG;
             }
 
@@ -1195,7 +1195,7 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], const size_t lengt
             layers = symbol->option_2 - 4;
         }
         if ((symbol->option_2 < 0) || (symbol->option_2 > 36)) {
-            strcpy(symbol->errtxt, "Invalid Aztec Code size");
+            strcpy(symbol->errtxt, "510: Invalid Aztec Code size");
             return ZINT_ERROR_INVALID_OPTION;
         }
 
@@ -1281,7 +1281,7 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], const size_t lengt
         }
 
         if (adjusted_length > data_maxsize) {
-            strcpy(symbol->errtxt, "Data too long for specified Aztec Code symbol size (E05)");
+            strcpy(symbol->errtxt, "505: Data too long for specified Aztec Code symbol size");
             return ZINT_ERROR_TOO_LONG;
         }
 
@@ -1298,7 +1298,7 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], const size_t lengt
     }
 
     if (reader && (layers > 22)) {
-        strcpy(symbol->errtxt, "Data too long for reader initialisation symbol (E06)");
+        strcpy(symbol->errtxt, "506: Data too long for reader initialisation symbol");
         return ZINT_ERROR_TOO_LONG;
     }
 
@@ -1638,12 +1638,12 @@ int aztec_runes(struct zint_symbol *symbol, unsigned char source[], int length) 
     error_number = 0;
     input_value = 0;
     if (length > 3) {
-        strcpy(symbol->errtxt, "Input too large (E07)");
+        strcpy(symbol->errtxt, "507: Input too large");
         return ZINT_ERROR_INVALID_DATA;
     }
     error_number = is_sane(NEON, source, length);
     if (error_number != 0) {
-        strcpy(symbol->errtxt, "Invalid characters in input (E08)");
+        strcpy(symbol->errtxt, "508: Invalid characters in input");
         return ZINT_ERROR_INVALID_DATA;
     }
     switch (length) {
@@ -1659,7 +1659,7 @@ int aztec_runes(struct zint_symbol *symbol, unsigned char source[], int length) 
     }
 
     if (input_value > 255) {
-        strcpy(symbol->errtxt, "Input too large (E09)");
+        strcpy(symbol->errtxt, "509: Input too large");
         return ZINT_ERROR_INVALID_DATA;
     }
 

@@ -279,14 +279,14 @@ int gif_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
     if ((symbol->output_options & BARCODE_STDOUT) != 0) {
 #ifdef _MSC_VER
         if (-1 == _setmode(_fileno(stdout), _O_BINARY)) {
-            strcpy(symbol->errtxt, "Can't open output file");
+            strcpy(symbol->errtxt, "610: Can't open output file");
             return ZINT_ERROR_FILE_ACCESS;
         }
 #endif
         gif_file = stdout;
     } else {
         if (!(gif_file = fopen(symbol->outfile, "wb"))) {
-            strcpy(symbol->errtxt, "Can't open output file (F10)");
+            strcpy(symbol->errtxt, "611: Can't open output file");
             return ZINT_ERROR_FILE_ACCESS;
         }
     }

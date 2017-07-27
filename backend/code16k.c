@@ -280,7 +280,7 @@ int code16k(struct zint_symbol *symbol, unsigned char source[], const size_t len
     }
 
     if (input_length > 157) {
-        strcpy(symbol->errtxt, "Input too long (D20)");
+        strcpy(symbol->errtxt, "420: Input too long");
         return ZINT_ERROR_TOO_LONG;
     }
 
@@ -479,7 +479,7 @@ int code16k(struct zint_symbol *symbol, unsigned char source[], const size_t len
     }
 
     if (glyph_count > 77.0) {
-        strcpy(symbol->errtxt, "Input too long (D21)");
+        strcpy(symbol->errtxt, "421: Input too long");
         return ZINT_ERROR_TOO_LONG;
     }
 
@@ -511,7 +511,7 @@ int code16k(struct zint_symbol *symbol, unsigned char source[], const size_t len
             m = 5;
         }
         if (gs1) {
-            strcpy(symbol->errtxt, "Cannot use both GS1 mode and Reader Initialisation (D22)");
+            strcpy(symbol->errtxt, "422: Cannot use both GS1 mode and Reader Initialisation");
             return ZINT_ERROR_INVALID_OPTION;
         } else {
             if ((set[0] == 'B') && (set[1] == 'C')) {

@@ -256,11 +256,11 @@ int utf8toutf16(struct zint_symbol *symbol, const unsigned char source[], int va
             jpos++;
         } else {
             if ((source[bpos] >= 0x80) && (source[bpos] <= 0xbf)) {
-                strcpy(symbol->errtxt, "Corrupt Unicode data (B40)");
+                strcpy(symbol->errtxt, "240: Corrupt Unicode data");
                 return ZINT_ERROR_INVALID_DATA;
             }
             if ((source[bpos] >= 0xc0) && (source[bpos] <= 0xc1)) {
-                strcpy(symbol->errtxt, "Overlong encoding not supported (B41)");
+                strcpy(symbol->errtxt, "241: Overlong encoding not supported");
                 return ZINT_ERROR_INVALID_DATA;
             }
 
@@ -277,7 +277,7 @@ int utf8toutf16(struct zint_symbol *symbol, const unsigned char source[], int va
                 jpos++;
             } else
                 if (source[bpos] >= 0xf0) {
-                strcpy(symbol->errtxt, "Unicode sequences of more than 3 bytes not supported (B42)");
+                strcpy(symbol->errtxt, "242: Unicode sequences of more than 3 bytes not supported");
                 return ZINT_ERROR_INVALID_DATA;
             }
         }

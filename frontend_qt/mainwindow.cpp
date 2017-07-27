@@ -37,7 +37,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags fl)
 		: QWidget(parent, fl),m_optionWidget(0)
 {
     
-    QCoreApplication::setOrganizationName("Zint");
+    QCoreApplication::setOrganizationName("zint");
     QCoreApplication::setOrganizationDomain("zint.org.uk");
     QCoreApplication::setApplicationName("Barcode Studio");
     

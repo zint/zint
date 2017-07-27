@@ -1364,7 +1364,7 @@ int han_xin(struct zint_symbol *symbol, const unsigned char source[], size_t len
             
             /* Character not found */
             if (done == 0) {
-                strcpy(symbol->errtxt, "Unknown character in input data (E40)");
+                strcpy(symbol->errtxt, "540: Unknown character in input data");
                 return ZINT_ERROR_INVALID_DATA;
             }
         }
@@ -1427,7 +1427,7 @@ int han_xin(struct zint_symbol *symbol, const unsigned char source[], size_t len
     }
 
     if (version == 85) {
-        strcpy(symbol->errtxt, "Input too long for selected error correction level (E41)");
+        strcpy(symbol->errtxt, "541: Input too long for selected error correction level");
         return ZINT_ERROR_TOO_LONG;
     }
 
@@ -1440,7 +1440,7 @@ int han_xin(struct zint_symbol *symbol, const unsigned char source[], size_t len
     }
     
     if ((symbol->option_2 != 0) && (symbol->option_2 < version)) {
-        strcpy(symbol->errtxt, "Input too long for selected symbol size");
+        strcpy(symbol->errtxt, "542: Input too long for selected symbol size");
         return ZINT_ERROR_TOO_LONG;
     }
 
