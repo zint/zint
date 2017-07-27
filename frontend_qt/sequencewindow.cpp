@@ -1,6 +1,6 @@
 /*
     Zint Barcode Generator - the open source barcode generator
-    Copyright (C) 2009-2016 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2017 Robin Stuart <rstuart114@gmail.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@
 #include <QUiLoader>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QSettings>
 
 #include "sequencewindow.h"
 #include "exportwindow.h"
@@ -30,8 +31,14 @@
 SequenceWindow::SequenceWindow()
 {
 	setupUi(this);
+        QSettings settings;
 	QValidator *intvalid = new QIntValidator(this);
 	
+        linStartVal->setText(settings.value("studio/sequence/start_value", "1").toString());
+        linEndVal->setText(settings.value("studio/sequence/end_value", "10").toString());
+        linIncVal->setText(settings.value("studio/sequence/increment", "1").toString());
+        linFormat->setText(settings.value("studio/sequence/format", "$$$$$$").toString());
+        
 	linStartVal->setValidator(intvalid);
 	linEndVal->setValidator(intvalid);
 	linIncVal->setValidator(intvalid);
@@ -45,6 +52,12 @@ SequenceWindow::SequenceWindow()
 
 SequenceWindow::~SequenceWindow()
 {
+    QSettings settings;
+    
+    settings.setValue("studio/sequence/start_value", linStartVal->text());
+    settings.setValue("studio/sequence/end_value", linEndVal->text());
+    settings.setValue("studio/sequence/increment", linIncVal->text());
+    settings.setValue("studio/sequence/format", linFormat->text());
 }
 
 void SequenceWindow::quit_now()
@@ -153,36 +166,33 @@ void SequenceWindow::check_generate()
 
 void SequenceWindow::import()
 {
-	//QString fileName;
-	//QFileDialog fdialog;
-	QFile file;
-	QString selectedFilter;
+    QSettings settings;
+    QFileDialog import_dialog;
+    QString filename;
+    QFile file;
+    QByteArray outstream;
+    
+    import_dialog.setWindowTitle("Import File");
+    import_dialog.setDirectory(settings.value("studio/default_dir", QDir::toNativeSeparators(QDir::homePath())).toString());
 	
-	//fdialog.setFileMode(QFileDialog::ExistingFile);
-	
-	//if(fdialog.exec()) {
-	//	fileName = fdialog.selectedFiles().at(0);
-	//} else {
-	//	return;
-	//}
+    if (import_dialog.exec()) {
+        filename = import_dialog.selectedFiles().at(0);
+    } else {
+        return;
+    }
+    
+    file.setFileName(filename);
+    if(!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QMessageBox::critical(this, tr("Open Error"), tr("Could not open selected file."));
+        return;
+    }
 
-	QString fileName = QFileDialog::getOpenFileName(this,
-                                 tr("Import File"),
-                                 "./",
-                                 tr("All Files (*);;Text Files (*.txt)"));
-     if (fileName.isEmpty())
-         return;
-	
-	file.setFileName(fileName);
-	if(!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-		QMessageBox::critical(this, tr("Open Error"), tr("Could not open selected file."));
-		return;
-	}
+    outstream = file.readAll();
 
-	QByteArray outstream = file.readAll();
-
-	txtPreview->setPlainText(QString(outstream));
-	file.close();
+    txtPreview->setPlainText(QString(outstream));
+    file.close();
+    
+    settings.setValue("studio/default_dir", filename.mid(0, filename.lastIndexOf(QDir::separator())));
 }
 
 void SequenceWindow::generate_sequence()

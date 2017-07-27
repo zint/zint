@@ -1,6 +1,6 @@
 /***************************************************************************
  *   Copyright (C) 2008 by BogDan Vatra <bogdan@licentia.eu>               *
- *   Copyright (C) 2009-2016 by Robin Stuart <rstuart114@gmail.com>        *
+ *   Copyright (C) 2009-2017 by Robin Stuart <rstuart114@gmail.com>        *
  *                                                                         *
  *   This program is free software: you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -198,26 +198,32 @@ void MainWindow::reset_view()
 
 bool MainWindow::save()
 {
-	bool status;
-	
+        QSettings settings;
+        QFileDialog save_dialog;
+        QString filename;
+
+        save_dialog.setAcceptMode(QFileDialog::AcceptSave);
+        save_dialog.setWindowTitle("Save Barcode Image");
+        save_dialog.setDirectory(settings.value("studio/default_dir", QDir::toNativeSeparators(QDir::homePath())).toString());
 #ifdef NO_PNG
-	QString fileName = QFileDialog::getSaveFileName(this,
-			tr("Save Barcode Image"), ".",
-			   tr("Encapsulated Post Script (*.eps);;Graphics Interchange Format (*.gif);;Scalable Vector Graphic (*.svg);;Windows Bitmap (*.bmp);;ZSoft PC Painter Image (*.pcx);;Extended Metafile (*.emf);;Tagged Image File Format (*.tif)"));
+        save_dialog.setNameFilter(tr("Encapsulated Post Script (*.eps);;Graphics Interchange Format (*.gif);;Scalable Vector Graphic (*.svg);;Windows Bitmap (*.bmp);;ZSoft PC Painter Image (*.pcx);;Extended Metafile (*.emf);;Tagged Image File Format (*.tif)"));
 #else
-	QString fileName = QFileDialog::getSaveFileName(this,
-			tr("Save Barcode Image"), ".",
-			   tr("Portable Network Graphic (*.png);;Encapsulated Post Script (*.eps);;Graphics Interchange Format (*.gif);;Scalable Vector Graphic (*.svg);;Windows Bitmap (*.bmp);;ZSoft PC Painter Image (*.pcx);;Extended Metafile (*.emf);;Tagged Image File Format (*.tif)"));
+        save_dialog.setNameFilter(tr("Portable Network Graphic (*.png);;Encapsulated Post Script (*.eps);;Graphics Interchange Format (*.gif);;Scalable Vector Graphic (*.svg);;Windows Bitmap (*.bmp);;ZSoft PC Painter Image (*.pcx);;Extended Metafile (*.emf);;Tagged Image File Format (*.tif)"));
 #endif
-	
-	if (fileName.isEmpty())
-		return false;
-	
-	status = m_bc.bc.save_to_file(fileName);
-	if(status == false) {
+        
+        if (save_dialog.exec()) {
+            filename = save_dialog.selectedFiles().at(0);
+        } else {
+            return false;
+        }
+
+	if(m_bc.bc.save_to_file(filename) == false) {
 		QMessageBox::critical(this,tr("Save Error"),m_bc.bc.error_message());
+                return false;
 	}
-	return status;
+        
+        settings.setValue("studio/default_dir", filename.mid(0, filename.lastIndexOf(QDir::separator())));
+	return true;
 }
 
 void MainWindow::about()

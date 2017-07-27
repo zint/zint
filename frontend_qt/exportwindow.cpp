@@ -1,6 +1,6 @@
 /*
     Zint Barcode Generator - the open source barcode generator
-    Copyright (C) 2009-2016 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2017 Robin Stuart <rstuart114@gmail.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -29,20 +29,25 @@
 ExportWindow::ExportWindow()
 {
     QSettings settings;
-	setupUi(this);
-	linDestPath->setText(QDir::toNativeSeparators(QDir::homePath()));
-	
-	connect(btnCancel, SIGNAL( clicked( bool )), SLOT(quit_now()));
-	connect(btnOK, SIGNAL( clicked( bool )), SLOT(process()));
-	connect(btnDestPath, SIGNAL( clicked( bool )), SLOT(get_directory()));
+    setupUi(this);
 
+    linDestPath->setText(settings.value("studio/export/destination", QDir::toNativeSeparators(QDir::homePath())).toString());
+    linPrefix->setText(settings.value("studio/export/file_prefix", "bcs_").toString());
+    cmbFileName->setCurrentIndex(settings.value("studio/export/name_format", 0).toInt());
     cmbFileFormat->setCurrentIndex(settings.value("studio/export/filetype", 0).toInt());
+    
+    connect(btnCancel, SIGNAL( clicked( bool )), SLOT(quit_now()));
+    connect(btnOK, SIGNAL( clicked( bool )), SLOT(process()));
+    connect(btnDestPath, SIGNAL( clicked( bool )), SLOT(get_directory()));
 }
 
 ExportWindow::~ExportWindow()
 {
     QSettings settings;
 
+    settings.setValue("studio/export/destination", linDestPath->text());
+    settings.setValue("studio/export/file_prefix", linPrefix->text());
+    settings.setValue("studio/export/name_format", cmbFileName->currentIndex());
     settings.setValue("studio/export/filetype", cmbFileFormat->currentIndex());
 }
 
@@ -53,18 +58,21 @@ void ExportWindow::quit_now()
 
 void ExportWindow::get_directory()
 {
-	QString directory;
-	QFileDialog fdialog;
-	
-	fdialog.setFileMode(QFileDialog::Directory);
-	
-	if(fdialog.exec()) {
-		directory = fdialog.selectedFiles().at(0);
-	} else {
-		return;
-	}
-	
-	linDestPath->setText(QDir::toNativeSeparators(directory));
+    QSettings settings;
+    QString directory;
+    QFileDialog fdialog;
+
+    fdialog.setFileMode(QFileDialog::Directory);
+    fdialog.setDirectory(settings.value("studio/default_dir", QDir::toNativeSeparators(QDir::homePath())).toString());
+
+    if(fdialog.exec()) {
+        directory = fdialog.selectedFiles().at(0);
+    } else {
+        return;
+    }
+
+    linDestPath->setText(QDir::toNativeSeparators(directory));
+    settings.setValue("studio/default_dir", directory);
 }
 
 void ExportWindow::process()

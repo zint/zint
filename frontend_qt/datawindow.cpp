@@ -1,6 +1,6 @@
 /*
     Zint Barcode Generator - the open source barcode generator
-    Copyright (C) 2009-2016 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2017 Robin Stuart <rstuart114@gmail.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@
 #include <QUiLoader>
 #include <QStringList>
 #include <QMessageBox>
+#include <QSettings>
 
 #include "datawindow.h"
 #include <stdio.h>
@@ -71,33 +72,31 @@ void DataWindow::okay()
 
 void DataWindow::from_file()
 {
-	//QString fileName;
-	//QFileDialog fdialog;
-	QFile file;
-	
-	//fdialog.setFileMode(QFileDialog::ExistingFile);
-	//
-	//if(fdialog.exec()) {
-	//	fileName = fdialog.selectedFiles().at(0);
-	//} else {
-	//	return;
-	//}
+    QSettings settings;
+    QFileDialog open_dialog;
+    QString filename;
+    QFile file;
+    QByteArray outstream;
+    
+    open_dialog.setWindowTitle("Open File");
+    open_dialog.setDirectory(settings.value("studio/default_dir", QDir::toNativeSeparators(QDir::homePath())).toString());
+    
+    if (open_dialog.exec()) {
+        filename = open_dialog.selectedFiles().at(0);
+    } else {
+        return;
+    }
 
-	QString fileName = QFileDialog::getOpenFileName(this,
-                                 tr("Open File"),
-                                 "./",
-                                 tr("All Files (*);;Text Files (*.txt)"));
-     if (fileName.isEmpty())
-         return;
+    file.setFileName(filename);
+    if(!file.open(QIODevice::ReadOnly)) {
+        QMessageBox::critical(this, tr("Open Error"), tr("Could not open selected file."));
+        return;
+    }
 
-	file.setFileName(fileName);
-	if(!file.open(QIODevice::ReadOnly)) {
-		QMessageBox::critical(this, tr("Open Error"), tr("Could not open selected file."));
-		return;
-	}
-	
-	QByteArray outstream = file.readAll();
-	
-	txtDataInput->setPlainText(QString(outstream));
-	file.close();
+    outstream = file.readAll();
+
+    txtDataInput->setPlainText(QString(outstream));
+    file.close();
+    
+    settings.setValue("studio/default_dir", filename.mid(0, filename.lastIndexOf(QDir::separator())));
 }
