@@ -201,18 +201,47 @@ bool MainWindow::save()
         QSettings settings;
         QFileDialog save_dialog;
         QString filename;
+        QString suffix;
 
         save_dialog.setAcceptMode(QFileDialog::AcceptSave);
         save_dialog.setWindowTitle("Save Barcode Image");
         save_dialog.setDirectory(settings.value("studio/default_dir", QDir::toNativeSeparators(QDir::homePath())).toString());
+        
 #ifdef NO_PNG
+        suffix = settings.value("studio/default_suffix", "gif").toString();
         save_dialog.setNameFilter(tr("Encapsulated Post Script (*.eps);;Graphics Interchange Format (*.gif);;Scalable Vector Graphic (*.svg);;Windows Bitmap (*.bmp);;ZSoft PC Painter Image (*.pcx);;Extended Metafile (*.emf);;Tagged Image File Format (*.tif)"));
 #else
+        suffix = settings.value("studio/default_suffix", "png").toString();
         save_dialog.setNameFilter(tr("Portable Network Graphic (*.png);;Encapsulated Post Script (*.eps);;Graphics Interchange Format (*.gif);;Scalable Vector Graphic (*.svg);;Windows Bitmap (*.bmp);;ZSoft PC Painter Image (*.pcx);;Extended Metafile (*.emf);;Tagged Image File Format (*.tif)"));
 #endif
         
+        if (QString::compare(suffix, "png", Qt::CaseInsensitive) == 0)
+            save_dialog.selectNameFilter("Portable Network Graphic (*.png)");
+        if (QString::compare(suffix, "eps", Qt::CaseInsensitive) == 0)
+            save_dialog.selectNameFilter("Encapsulated Post Script (*.eps)");
+        if (QString::compare(suffix, "gif", Qt::CaseInsensitive) == 0)
+            save_dialog.selectNameFilter("Graphics Interchange Format (*.gif)");
+        if (QString::compare(suffix, "svg", Qt::CaseInsensitive) == 0)
+            save_dialog.selectNameFilter("Scalable Vector Graphic (*.svg)");
+        if (QString::compare(suffix, "bmp", Qt::CaseInsensitive) == 0)
+            save_dialog.selectNameFilter("Windows Bitmap (*.bmp)");
+        if (QString::compare(suffix, "pcx", Qt::CaseInsensitive) == 0)
+            save_dialog.selectNameFilter("ZSoft PC Painter Image (*.pcx)");
+        if (QString::compare(suffix, "emf", Qt::CaseInsensitive) == 0)
+            save_dialog.selectNameFilter("Extended Metafile (*.emf)");
+        if (QString::compare(suffix, "tif", Qt::CaseInsensitive) == 0)
+            save_dialog.selectNameFilter("Tagged Image File Format (*.tif)");
+        
         if (save_dialog.exec()) {
             filename = save_dialog.selectedFiles().at(0);
+            if ((filename.lastIndexOf(".") == -1) || (filename.lastIndexOf(".") < (filename.length() - 5))) {
+                suffix = save_dialog.selectedNameFilter();
+                suffix = suffix.mid((suffix.lastIndexOf(".") + 1), 3);
+                filename.append(".");
+                filename.append(suffix);
+            } else {
+                suffix = filename.right(filename.length() - (filename.lastIndexOf('.') + 1));
+            }
         } else {
             return false;
         }
@@ -223,6 +252,7 @@ bool MainWindow::save()
 	}
         
         settings.setValue("studio/default_dir", filename.mid(0, filename.lastIndexOf(QDir::separator())));
+        settings.setValue("studio/default_suffix", suffix);
 	return true;
 }
 
