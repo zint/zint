@@ -1338,98 +1338,37 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], const size_t lengt
     memset(data_part, 0, (data_blocks + 2) * sizeof (int));
     memset(ecc_part, 0, (ecc_blocks + 2) * sizeof (int));
 
-    /* Split into codewords and calculate reed-colomon error correction codes */
+    /* Split into codewords and calculate reed-solomon error correction codes */
+    for (i = 0; i < data_blocks; i++) {
+        for (p = 0; p < codeword_size; p++) {
+            if (adjusted_string[i * codeword_size + p] == '1') {
+                data_part[i] += 0x01 << (codeword_size - (p + 1));
+            }
+        }
+    }
+    
     switch (codeword_size) {
         case 6:
-            for (i = 0; i < data_blocks; i++) {
-                for (p = 0; p < 6; p++) {
-                    if (adjusted_string[i * codeword_size + p] == '1') {
-                        data_part[i] += (0x20 >> p);
-                    }
-                }
-            }
             rs_init_gf(0x43);
-            rs_init_code(ecc_blocks, 1);
-            rs_encode_long(data_blocks, data_part, ecc_part);
-            for (i = (ecc_blocks - 1); i >= 0; i--) {
-                for (p = 0; p < 6; p++) {
-                    if (ecc_part[i] & (0x20 >> p)) {
-                        strcat(adjusted_string, "1");
-                    } else {
-                        strcat(adjusted_string, "0");
-                    }
-                }
-            }
-            rs_free();
             break;
         case 8:
-            for (i = 0; i < data_blocks; i++) {
-                for (p = 0; p < 8; p++) {
-                    if (adjusted_string[i * codeword_size + p] == '1') {
-                        data_part[i] += (0x80 >> p);
-                    }
-                }
-            }
             rs_init_gf(0x12d);
-            rs_init_code(ecc_blocks, 1);
-            rs_encode_long(data_blocks, data_part, ecc_part);
-            for (i = (ecc_blocks - 1); i >= 0; i--) {
-                for (p = 0; p < 8; p++) {
-                    if (ecc_part[i] & (0x80 >> p)) {
-                        strcat(adjusted_string, "1");
-                    } else {
-                        strcat(adjusted_string, "0");
-                    }
-                }
-            }
-            rs_free();
             break;
         case 10:
-            for (i = 0; i < data_blocks; i++) {
-                for (p = 0; p < 10; p++) {
-                    if (adjusted_string[i * codeword_size + p] == '1') {
-                        data_part[i] += (0x200 >> p);
-                    }
-                }
-            }
             rs_init_gf(0x409);
-            rs_init_code(ecc_blocks, 1);
-            rs_encode_long(data_blocks, data_part, ecc_part);
-            for (i = (ecc_blocks - 1); i >= 0; i--) {
-                for (p = 0; p < 10; p++) {
-                    if (ecc_part[i] & (0x200 >> p)) {
-                        strcat(adjusted_string, "1");
-                    } else {
-                        strcat(adjusted_string, "0");
-                    }
-                }
-            }
-            rs_free();
             break;
         case 12:
-            for (i = 0; i < data_blocks; i++) {
-                for (p = 0; p < 12; p++) {
-                    if (adjusted_string[i * codeword_size + p] == '1') {
-                        data_part[i] += (0x800 >> p);
-                    }
-                }
-            }
             rs_init_gf(0x1069);
-            rs_init_code(ecc_blocks, 1);
-            rs_encode_long(data_blocks, data_part, ecc_part);
-            for (i = (ecc_blocks - 1); i >= 0; i--) {
-                for (p = 0; p < 12; p++) {
-                    if (ecc_part[i] & (0x800 >> p)) {
-                        strcat(adjusted_string, "1");
-                    } else {
-                        strcat(adjusted_string, "0");
-                    }
-                }
-            }
-            rs_free();
             break;
     }
 
+    rs_init_code(ecc_blocks, 1);
+    rs_encode_long(data_blocks, data_part, ecc_part);
+    for (i = (ecc_blocks - 1); i >= 0; i--) {
+        bin_append(ecc_part[i], codeword_size, adjusted_string);
+    }
+    rs_free();
+    
     /* Invert the data so that actual data is on the outside and reed-solomon on the inside */
     memset(bit_pattern, '0', 20045);
 
