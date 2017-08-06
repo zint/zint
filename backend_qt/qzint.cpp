@@ -44,6 +44,8 @@ namespace Zint {
         m_dot_size = 4.0 / 5.0;
         target_size_horiz = 0;
         target_size_vert = 0;
+        m_width = 0;
+        m_whitespace = 0;
     }
 
     QZint::~QZint() {
