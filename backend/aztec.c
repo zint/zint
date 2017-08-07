@@ -1570,7 +1570,7 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], const size_t lengt
 
 /* Encodes Aztec runes as specified in ISO/IEC 24778:2008 Annex A */
 int aztec_runes(struct zint_symbol *symbol, unsigned char source[], int length) {
-    int input_value, error_number, i, p, y, x;
+    int input_value, error_number, i, y, x;
     char binary_string[28];
     unsigned char data_codewords[3], ecc_codewords[6];
 
@@ -1603,13 +1603,7 @@ int aztec_runes(struct zint_symbol *symbol, unsigned char source[], int length) 
     }
 
     strcpy(binary_string, "");
-    for (p = 0; p < 8; p++) {
-        if (input_value & (0x80 >> p)) {
-            strcat(binary_string, "1");
-        } else {
-            strcat(binary_string, "0");
-        }
-    }
+    bin_append(input_value, 8, binary_string);
 
     data_codewords[0] = 0;
     data_codewords[1] = 0;

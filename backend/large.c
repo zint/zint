@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2016 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2017 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -34,19 +34,6 @@
 #include <string.h>
 #include "common.h"
 #include "large.h"
-
-static const short int BCD[40] = {
-    0, 0, 0, 0,
-    1, 0, 0, 0,
-    0, 1, 0, 0,
-    1, 1, 0, 0,
-    0, 0, 1, 0,
-    1, 0, 1, 0,
-    0, 1, 1, 0,
-    1, 1, 1, 0,
-    0, 0, 0, 1,
-    1, 0, 0, 1
-};
 
 void binary_add(short int accumulator[], short int input_buffer[]) { /* Binary addition */
     int i, carry, done;
@@ -190,12 +177,12 @@ void binary_load(short int reg[], char data[], const size_t src_len) {
             binary_add(reg, temp);
         }
 
-        temp[0] = BCD[ctoi(data[read]) * 4];
-        temp[1] = BCD[(ctoi(data[read]) * 4) + 1];
-        temp[2] = BCD[(ctoi(data[read]) * 4) + 2];
-        temp[3] = BCD[(ctoi(data[read]) * 4) + 3];
-        for (i = 4; i < 112; i++) {
+        for (i = 0; i < 112; i++) {
             temp[i] = 0;
+        }
+        
+        for (i = 0; i < 4; i++) {
+                if (ctoi(data[read]) & (0x01 << i)) temp[i] = 1;
         }
 
         binary_add(reg, temp);

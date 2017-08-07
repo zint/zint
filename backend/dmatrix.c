@@ -223,18 +223,15 @@ static void ecc200(unsigned char *binary, const int bytes, const int datablock, 
 
 /* Return true (1) if a character is valid in X12 set */
 static int isX12(const int source) {
-    if (source == 13) {
-        return 1;
+    
+    switch(source) {
+        case 13: // CR
+        case 42: // *
+        case 62: // >
+        case 32: // space
+            return 1;
     }
-    if (source == 42) {
-        return 1;
-    }
-    if (source == 62) {
-        return 1;
-    }
-    if (source == 32) {
-        return 1;
-    }
+
     if ((source >= '0') && (source <= '9')) {
         return 1;
     }

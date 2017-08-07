@@ -658,20 +658,11 @@ static void calculate_binary(char binary[], char mode[], int source[], const siz
 void hx_place_finder_top_left(unsigned char* grid, int size) {
     int xp, yp;
     int x = 0, y = 0;
-
-    int finder[] = {
-        1, 1, 1, 1, 1, 1, 1,
-        1, 0, 0, 0, 0, 0, 0,
-        1, 0, 1, 1, 1, 1, 1,
-        1, 0, 1, 0, 0, 0, 0,
-        1, 0, 1, 0, 1, 1, 1,
-        1, 0, 1, 0, 1, 1, 1,
-        1, 0, 1, 0, 1, 1, 1
-    };
-
+    char finder[] = {0x7F, 0x40, 0x5F, 0x50, 0x57, 0x57, 0x57};
+    
     for (xp = 0; xp < 7; xp++) {
         for (yp = 0; yp < 7; yp++) {
-            if (finder[xp + (7 * yp)] == 1) {
+            if (finder[yp] & 0x40 >> xp) {
                 grid[((yp + y) * size) + (xp + x)] = 0x11;
             } else {
                 grid[((yp + y) * size) + (xp + x)] = 0x10;
@@ -683,20 +674,11 @@ void hx_place_finder_top_left(unsigned char* grid, int size) {
 /* Finder pattern for top right and bottom left of symbol */
 void hx_place_finder(unsigned char* grid, int size, int x, int y) {
     int xp, yp;
-
-    int finder[] = {
-        1, 1, 1, 1, 1, 1, 1,
-        0, 0, 0, 0, 0, 0, 1,
-        1, 1, 1, 1, 1, 0, 1,
-        0, 0, 0, 0, 1, 0, 1,
-        1, 1, 1, 0, 1, 0, 1,
-        1, 1, 1, 0, 1, 0, 1,
-        1, 1, 1, 0, 1, 0, 1
-    };
+    char finder[] = {0x7F, 0x01, 0x7D, 0x05, 0x75, 0x75, 0x75};
 
     for (xp = 0; xp < 7; xp++) {
         for (yp = 0; yp < 7; yp++) {
-            if (finder[xp + (7 * yp)] == 1) {
+            if (finder[yp] & 0x40 >> xp) {
                 grid[((yp + y) * size) + (xp + x)] = 0x11;
             } else {
                 grid[((yp + y) * size) + (xp + x)] = 0x10;
@@ -709,20 +691,11 @@ void hx_place_finder(unsigned char* grid, int size, int x, int y) {
 void hx_place_finder_bottom_right(unsigned char* grid, int size) {
     int xp, yp;
     int x = size - 7, y = size - 7;
-
-    int finder[] = {
-        1, 1, 1, 0, 1, 0, 1,
-        1, 1, 1, 0, 1, 0, 1,
-        1, 1, 1, 0, 1, 0, 1,
-        0, 0, 0, 0, 1, 0, 1,
-        1, 1, 1, 1, 1, 0, 1,
-        0, 0, 0, 0, 0, 0, 1,
-        1, 1, 1, 1, 1, 1, 1
-    };
+    char finder[] = {0x75, 0x75, 0x75, 0x05, 0x7D, 0x01, 0x7F};
 
     for (xp = 0; xp < 7; xp++) {
         for (yp = 0; yp < 7; yp++) {
-            if (finder[xp + (7 * yp)] == 1) {
+            if (finder[yp] & 0x40 >> xp) {
                 grid[((yp + y) * size) + (xp + x)] = 0x11;
             } else {
                 grid[((yp + y) * size) + (xp + x)] = 0x10;

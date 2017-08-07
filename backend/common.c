@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2016 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2017 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -126,7 +126,7 @@ int posn(const char set_string[], const char data) {
          return i;
         }
     }
-   return 0;
+   return -1;
 }
 
 /* Return true (1) if a module is dark/black, otherwise false (0) */

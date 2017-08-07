@@ -546,20 +546,11 @@ static void add_ecc(int fullstream[],const int datastream[],const int version,co
 
 static void place_finder(unsigned char grid[],const int size,const int x,const int y) {
     int xp, yp;
-
-    static const int finder[] = {
-        1, 1, 1, 1, 1, 1, 1,
-        1, 0, 0, 0, 0, 0, 1,
-        1, 0, 1, 1, 1, 0, 1,
-        1, 0, 1, 1, 1, 0, 1,
-        1, 0, 1, 1, 1, 0, 1,
-        1, 0, 0, 0, 0, 0, 1,
-        1, 1, 1, 1, 1, 1, 1
-    };
-
+    char finder[] = {0x7F, 0x41, 0x5D, 0x5D, 0x5D, 0x41, 0x7F};
+    
     for (xp = 0; xp < 7; xp++) {
         for (yp = 0; yp < 7; yp++) {
-            if (finder[xp + (7 * yp)] == 1) {
+            if (finder[yp] & 0x40 >> xp) {
                 grid[((yp + y) * size) + (xp + x)] = 0x11;
             } else {
                 grid[((yp + y) * size) + (xp + x)] = 0x10;
@@ -570,21 +561,14 @@ static void place_finder(unsigned char grid[],const int size,const int x,const i
 
 static void place_align(unsigned char grid[],const int size,int x,int y) {
     int xp, yp;
-
-    static const int alignment[] = {
-        1, 1, 1, 1, 1,
-        1, 0, 0, 0, 1,
-        1, 0, 1, 0, 1,
-        1, 0, 0, 0, 1,
-        1, 1, 1, 1, 1
-    };
+    char alignment[] = {0x1F, 0x11, 0x15, 0x11, 0x1F};
 
     x -= 2;
     y -= 2; /* Input values represent centre of pattern */
 
     for (xp = 0; xp < 5; xp++) {
         for (yp = 0; yp < 5; yp++) {
-            if (alignment[xp + (5 * yp)] == 1) {
+            if (alignment[yp] & 0x10 >> xp) {
                 grid[((yp + y) * size) + (xp + x)] = 0x11;
             } else {
                 grid[((yp + y) * size) + (xp + x)] = 0x10;
