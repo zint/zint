@@ -68,7 +68,7 @@ static const unsigned short int CompactAztecMap[] = {
     559, 557, 555, 553, 551, 549, 547, 545, 543, 541, 539, 537, 535, 533, 531, 529, 527, 525, 523, 521, 519, 517, 515, 513, 511, 508, 509
 };
 
-static const int AztecSymbolChar[128] = {
+static const char AztecSymbolChar[128] = {
     /* From Table 2 */
     0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 0, 14, 15, 16, 17, 18, 19,
     20, 21, 22, 23, 24, 25, 26, 15, 16, 17, 18, 19, 1, 6, 7, 8, 9, 10, 11, 12,
@@ -119,27 +119,27 @@ static const unsigned short int Aztec50DataSizes[32] = {
     8844, 9384, 9948
 };
 
-static const int AztecCompact10DataSizes [4] = {
+static const unsigned short int AztecCompact10DataSizes [4] = {
     78, 198, 336, 520
 };
 
-static const int AztecCompact23DataSizes [4] = {
+static const unsigned short int AztecCompact23DataSizes [4] = {
     66, 168, 288, 440
 };
 
-static const int AztecCompact36DataSizes [4] = {
+static const unsigned short int AztecCompact36DataSizes [4] = {
     48, 138, 232, 360
 };
 
-static const int AztecCompact50DataSizes [4] = {
+static const unsigned short int AztecCompact50DataSizes [4] = {
     36, 102, 176, 280
 };
 
-static const int AztecOffset[32] = {
+static const char AztecOffset[32] = {
     66, 64, 62, 60, 57, 55, 53, 51, 49, 47, 45, 42, 40, 38, 36, 34, 32, 30, 28, 25, 23, 21,
     19, 17, 15, 13, 10, 8, 6, 4, 2, 0
 };
 
-static const int AztecCompactOffset[4] = {
+static const char AztecCompactOffset[4] = {
     6, 4, 2, 0
 };

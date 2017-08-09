@@ -47,17 +47,17 @@ static const char *c49_table7[128] = {
 };
 
 /* Table 5: Check Character Weighting Values */
-static const int c49_x_weight[] = {
+static const char c49_x_weight[] = {
     1, 9, 31, 26, 2, 12, 17, 23, 37, 18, 22, 6, 27, 44, 15, 43,
     39, 11, 13, 5, 41, 33, 36, 8, 4, 32, 3, 19, 40, 25, 29, 10
 };
 
-static const int c49_y_weight[] = {
+static const char c49_y_weight[] = {
     9, 31, 26, 2, 12, 17, 23, 37, 18, 22, 6, 27, 44, 15, 43, 39,
     11, 13, 5, 41, 33, 36, 8, 4, 32, 3, 19, 40, 25, 29, 10, 24
 };
 
-static const int c49_z_weight[] = {
+static const char c49_z_weight[] = {
     31, 26, 2, 12, 17, 23, 37, 18, 22, 6, 27, 44, 15, 43, 39, 11,
     13, 5, 41, 33, 36, 8, 4, 32, 3, 19, 40, 25, 29, 10, 24, 30
 };

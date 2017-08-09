@@ -80,7 +80,7 @@ static const unsigned short int hx_data_codewords_L4[] = {
 };
 
 /* Value 'k' from Annex A */
-static const int hx_module_k[] = {
+static const char hx_module_k[] = {
     0, 0, 0, 14, 16, 16, 17, 18, 19, 20,
     14, 15, 16, 16, 17, 17, 18, 19, 20, 20,
     21, 16, 17, 17, 18, 18, 19, 19, 20, 20,
@@ -93,7 +93,7 @@ static const int hx_module_k[] = {
 };
 
 /* Value 'r' from Annex A */
-static const int hx_module_r[] = {
+static const char hx_module_r[] = {
     0, 0, 0, 15, 15, 17, 18, 19, 20, 21,
     15, 15, 15, 17, 17, 19, 19, 19, 19, 21,
     21, 17, 16, 18, 17, 19, 18, 20, 19, 21,
@@ -106,7 +106,7 @@ static const int hx_module_r[] = {
 };
 
 /* Value of 'm' from Annex A */
-static const int hx_module_m[] = {
+static const char hx_module_m[] = {
     0, 0, 0, 1, 1, 1, 1, 1, 1, 1,
     2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
     2, 3, 3, 3, 3, 3, 3, 3, 3, 3,

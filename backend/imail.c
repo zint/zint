@@ -188,7 +188,7 @@ static const unsigned short AppxD_II[78] = {
     0x0801, 0x1002, 0x1001, 0x0802, 0x0404, 0x0208, 0x0110, 0x00A0
 };
 
-static const int AppxD_IV[130] = {
+static const unsigned short int AppxD_IV[130] = {
     /* Appendix D Table IV - Bar-to-Character Mapping (reverse lookup) */
     67, 6, 78, 16, 86, 95, 34, 40, 45, 113, 117, 121, 62, 87, 18, 104, 41, 76, 57, 119, 115, 72, 97,
     2, 127, 26, 105, 35, 122, 52, 114, 7, 24, 82, 68, 63, 94, 44, 77, 112, 70, 100, 39, 30, 107,

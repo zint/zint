@@ -47,15 +47,15 @@ static const char shift_set[] = {
     ';', '<', '=', '>', '?', '@', '[', '\\', ']', '^', '_', '`', '{', '|', '}', '~'
 };
 
-static const int gm_recommend_cw[] = {
+static const unsigned short int gm_recommend_cw[] = {
     9, 30, 59, 114, 170, 237, 315, 405, 506, 618, 741, 875, 1021
 };
 
-static const int gm_max_cw[] = {
+static const unsigned short int gm_max_cw[] = {
     11, 40, 79, 146, 218, 305, 405, 521, 650, 794, 953, 1125, 1313
 };
 
-static const int gm_data_codewords[] = {
+static const unsigned short int gm_data_codewords[] = {
     0, 15, 13, 11, 9,
     45, 40, 35, 30, 25,
     89, 79, 69, 59, 49,
@@ -71,20 +71,20 @@ static const int gm_data_codewords[] = {
     1313, 1167, 1021, 875, 729
 };
 
-static const int gm_n1[] = {
+static const char gm_n1[] = {
     18, 50, 98, 81, 121, 113, 113, 116, 121, 126, 118, 125, 122
 };
 
-static const int gm_b1[] = {
+static const char gm_b1[] = {
     1, 1, 1, 2, 2, 2, 2, 3, 2, 7, 5, 10, 6
 };
 
-static const int gm_b2[] = {
+static const char gm_b2[] = {
     0, 0, 0, 0, 0, 1, 2, 2, 4, 0, 4, 0, 6
 };
 
 /* Values from table A.1 */
-static const int gm_ebeb[] = {
+static const char gm_ebeb[] = {
     /* E1 B3 E2 B4 */
     0, 0, 0, 0, // version 1
     3, 1, 0, 0,
