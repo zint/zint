@@ -80,6 +80,7 @@ void ExportWindow::process()
 	QString fileName;
 	QString dataString;
 	QString suffix;
+        QString Feedback;
 	int lines, i, j, inputpos, datalen;
 	
 	lines = output_data.count(QChar('\n'), Qt::CaseInsensitive);
@@ -105,7 +106,9 @@ void ExportWindow::process()
 		case 7: suffix = ".tif"; break;
 #endif
     }
-	
+        txtFeedback->clear();
+        Feedback = "";
+        
 	for(i = 0; i < lines; i++) {
 		datalen = 0;
 		for(j = inputpos; ((j < output_data.length()) && (output_data[j] != '\n') ); j++) {
@@ -160,8 +163,17 @@ void ExportWindow::process()
 				break;
 		}
 		barcode->bc.setText(dataString.toLatin1().data());
-		barcode->bc.save_to_file(fileName.toLatin1().data());
+                barcode->bc.save_to_file(fileName.toLatin1().data());
+                Feedback += "Line ";
+                Feedback += QString::number(i + 1);
+                Feedback += ": ";
+		if (barcode->bc.hasErrors()) {
+                    Feedback += barcode->bc.error_message();
+                    Feedback += "\n";
+                } else {
+                    Feedback += "Success\n";
+                }
+                txtFeedback->document()->setPlainText(Feedback);
 		inputpos += datalen + 1;
 	}
-	close();
 }

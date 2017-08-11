@@ -275,12 +275,10 @@ namespace Zint {
         QByteArray bgcol = bg_colour_hash.right(6).toLatin1();
         strcpy(m_zintSymbol->fgcolour, fgcol.data());
         strcpy(m_zintSymbol->bgcolour, bgcol.data());
-        int error = ZBarcode_Encode(m_zintSymbol, (unsigned char*) bstr.data(), bstr.length());
-        if (error > ZINT_WARN_INVALID_OPTION)
+        int error = ZBarcode_Encode_and_Print(m_zintSymbol, (unsigned char*) bstr.data(), bstr.length(), 0);
+        if (error > ZINT_WARN_INVALID_OPTION) {
             m_lastError = m_zintSymbol->errtxt;
-        error = ZBarcode_Print(m_zintSymbol, 0);
-        if (error > ZINT_WARN_INVALID_OPTION)
-            m_lastError = m_zintSymbol->errtxt;
+        }
         if (error == 0) {
             return true;
         } else {
