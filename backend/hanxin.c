@@ -1500,7 +1500,7 @@ int han_xin(struct zint_symbol *symbol, const unsigned char source[], size_t len
     }
 
     for (i = 0; i < 2; i++) {
-        if (ecc_level & (0x02 >> i)) {
+        if ((ecc_level - 1) & (0x02 >> i)) {
             function_information[i + 8] = '1';
         } else {
             function_information[i + 8] = '0';
