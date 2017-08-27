@@ -1,5 +1,5 @@
 Name:      zint
-Version:   2.6.0
+Version:   2.6.1
 Release:   2%{?dist}
 Summary:   A barcode generator and library
 License:   GPLv3+
@@ -29,7 +29,7 @@ Features of the library:
   FNC1 characters.
 - Support for encoding binary data including NULL (ASCII 0) characters.
 - Health Industry Barcode (HIBC) encoding capabilities.
-- Output in PNG, EPS and SVG formats with user adjustable sizes and colors.
+- Output in the following file formats: PNG, GIF, EPS, WMF, BMP, TIF, SVG.
 - Verification stage for SBN, ISBN and ISBN-13 data.
 
 
@@ -137,6 +137,10 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+
+* Sun Aug 27 2017 Robin Stuart <rstuart114@gmail.com> - 2.6.1
+- Version -> 2.6.1
+
 * Thu May 11 2017 Robin Stuart <rstuart114@gmail.com> - 2.6.0
 - Update version number
 

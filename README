@@ -77,6 +77,13 @@ Version 2.6.0:
 Update front end to Qt5. Output to EMF and TIF. Copy to clipboard. Update
 to latest draft of DMRE. Usual bugfixes.
 
+Version 2.6.1:
+Library bugfixes: EDIFACT unlatch in Data Matrix, Add UPNQR, Improved Aztec
+data compression, Detect Code 128 data too long, Make error codes consistent.
+GUI improvements: Additional clipboard options, remove border width bug,
+remove changing background colour bug, remember more settings and make GUI
+more consistent with user expectations. All windows now resizable and more
+information given when batch processing.
 
 CONTACT US
 ----------

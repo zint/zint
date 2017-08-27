@@ -945,7 +945,7 @@ void hx_add_ecc(unsigned char fullstream[], unsigned char datastream[], int vers
 void make_picket_fence(unsigned char fullstream[], unsigned char picket_fence[], int streamsize) {
     int i, start;
     int output_position = 0;
-
+    
     for (start = 0; start < 13; start++) {
         for (i = start; i < streamsize; i += 13) {
             if (i < streamsize) {

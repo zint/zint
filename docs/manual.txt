@@ -2496,6 +2496,11 @@ v2.6 - Output to EMF and TIF. Update frontend to Qt5. Copy to clipboard on
 KDE and Windows.
 12/5/2017
 
+v2.6.1 - Various bugfixes to backend, including improved Aztec code processing.
+Many improvements to GUI including resizable screens and more output while
+batch processing, more consistent use of dialogues.
+27/8/2017
+
 7.4 Sources of Information
 --------------------------
 Below is a list of some of the sources used in rough chronological order:

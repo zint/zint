@@ -3,14 +3,11 @@ If you are interested in improving this package then here are a few ideas.
 Backend
 -------
  * Create filters for more output file formats.
- * Add ECI character support to allow encoding in more languages than are
-   covered by the Latin-1 character set.
  * The code was developed to be easy to understand rather than efficient so may
    benefit from some memory optimisation for embedded systems.
 
 GUI Frontend
 ------------
- * Allow copying of generated barcodes to the clipboard with a "Copy" button.
  * Allow dragging and dropping to external apps.
 
 Packaging
@@ -23,10 +20,3 @@ Translations
 ------------
 Documentation is currently only in English. If you have the knowledge and the
 time please consider translating into other languages.
-
-Research
---------
-The following standards would be welcomed in Zint but the full documentation has
-not yet been found:
- * DPD Code
- * Italian Postal Code
