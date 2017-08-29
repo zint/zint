@@ -42,6 +42,11 @@
 -	No changes here, take 2.5.1 framework files
  2017-05-12 2.6.0 HaO
 -	No changes here, take 2.6 framework files
+ 2017-08-29 2.6.1 HaO
+-	Framework 2.6.1 extensions
+-	EAN/UPC Codes with included check digit 
+-	UPNQR Code
+-	Misspelled symbology: AztecRunes
 */
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
@@ -81,7 +86,7 @@
 /*----------------------------------------------------------------------------*/
 /* > File option defines */
 
-#define VERSION "2.6.0"
+#define VERSION "2.6.1"
 
 /*----------------------------------------------------------------------------*/
 /* >>>>> Hepler defines */
@@ -112,6 +117,7 @@ static char *s_code_list[] = {
     "Code39",
     "Code39Extended",
     "EAN",
+	"EAN+Check",
     "GS1-128",
     "Codabar",
     "Code128",
@@ -126,7 +132,9 @@ static char *s_code_list[] = {
     "GS1DataBarExpanded",
     "Telepen",
     "UPC-A",
+	"UPC-A+Check",
     "UPC-E",
+    "UPC-E+Check",
     "Postnet",
     "MSIPlessey",
     "FIM",
@@ -172,7 +180,9 @@ static char *s_code_list[] = {
     "HIBC-MicroPDF",
     "HIBC-CodablockF",
     "HIBCAztec",
-    "Azure",
+	"DotCode",
+	"HanXin",
+    "AztecRunes",
     "Code32",
     "EAN-CC",
     "EAN128-CC",
@@ -187,8 +197,7 @@ static char *s_code_list[] = {
     "Channel",
     "CodeOne",
     "GridMatrix",
-    "DotCode",
-    "HanXin",
+    "UPNQR",
     NULL};
 
 static int s_code_number[] = {
@@ -201,6 +210,7 @@ static int s_code_number[] = {
     BARCODE_CODE39,
     BARCODE_EXCODE39,
     BARCODE_EANX,
+	BARCODE_EANX_CHK,
     BARCODE_EAN128,
     BARCODE_CODABAR,
     BARCODE_CODE128,
@@ -215,7 +225,9 @@ static int s_code_number[] = {
     BARCODE_RSS_EXP,
     BARCODE_TELEPEN,
     BARCODE_UPCA,
+	BARCODE_UPCA_CHK,
     BARCODE_UPCE,
+    BARCODE_UPCE_CHK,
     BARCODE_POSTNET,
     BARCODE_MSI_PLESSEY,
     BARCODE_FIM,
@@ -261,6 +273,8 @@ static int s_code_number[] = {
     BARCODE_HIBC_MICPDF,
     BARCODE_HIBC_BLOCKF,
     BARCODE_HIBC_AZTEC,
+	BARCODE_DOTCODE,
+	BARCODE_HANXIN,
     BARCODE_AZRUNE,
     BARCODE_CODE32,
     BARCODE_EANX_CC,
@@ -276,8 +290,7 @@ static int s_code_number[] = {
     BARCODE_CHANNEL,
     BARCODE_CODEONE,
     BARCODE_GRIDMATRIX,
-    BARCODE_DOTCODE,
-    BARCODE_HANXIN,
+    BARCODE_UPNQR,
     0};
 
 

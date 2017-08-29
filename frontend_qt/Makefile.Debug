@@ -48,7 +48,7 @@ SOURCES       = barcodeitem.cpp \
 		exportwindow.cpp \
 		main.cpp \
 		mainwindow.cpp \
-		sequencewindow.cpp C:/test/git/zint-code_qt5/frontend_qt/qtzint_plugin_import.cpp \
+		sequencewindow.cpp C:/test/git/zint-code/frontend_qt/qtzint_plugin_import.cpp \
 		debug\qrc_resources.cpp \
 		debug\moc_datawindow.cpp \
 		debug\moc_exportwindow.cpp \
@@ -86,22 +86,22 @@ DESTDIR_TARGET = debug\qtZint.exe
 
 .SUFFIXES: .c .cpp .cc .cxx
 
-{C:/test/git/zint-code_qt5/frontend_qt}.cpp{debug\}.obj::
+{C:/test/git/zint-code/frontend_qt}.cpp{debug\}.obj::
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -Fodebug\ @<<
 	$<
 <<
 
-{C:/test/git/zint-code_qt5/frontend_qt}.cc{debug\}.obj::
+{C:/test/git/zint-code/frontend_qt}.cc{debug\}.obj::
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -Fodebug\ @<<
 	$<
 <<
 
-{C:/test/git/zint-code_qt5/frontend_qt}.cxx{debug\}.obj::
+{C:/test/git/zint-code/frontend_qt}.cxx{debug\}.obj::
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -Fodebug\ @<<
 	$<
 <<
 
-{C:/test/git/zint-code_qt5/frontend_qt}.c{debug\}.obj::
+{C:/test/git/zint-code/frontend_qt}.c{debug\}.obj::
 	$(CC) -c $(CFLAGS) $(INCPATH) -Fodebug\ @<<
 	$<
 <<
@@ -169,7 +169,7 @@ clean: compiler_clean
 	-$(DEL_FILE) debug\qtZint.vc.pdb debug\qtZint.ilk debug\qtZint.idb
 
 distclean: clean 
-	-$(DEL_FILE) C:\test\git\zint-code_qt5\frontend_qt\qtzint_plugin_import.cpp debug\qtZint.pdb
+	-$(DEL_FILE) C:\test\git\zint-code\frontend_qt\qtzint_plugin_import.cpp debug\qtZint.pdb
 	-$(DEL_FILE) $(DESTDIR_TARGET)
 	-$(DEL_FILE) Makefile.Debug
 
@@ -216,322 +216,108 @@ compiler_moc_header_make_all: debug\moc_datawindow.cpp debug\moc_exportwindow.cp
 compiler_moc_header_clean:
 	-$(DEL_FILE) debug\moc_datawindow.cpp debug\moc_exportwindow.cpp debug\moc_mainwindow.cpp debug\moc_sequencewindow.cpp
 debug\moc_datawindow.cpp: ui_extData.h \
-		c:\qt\5.7.1static\include\QtCore\QVariant \
-		c:\qt\5.7.1static\include\QtCore\qvariant.h \
-		c:\qt\5.7.1static\include\QtCore\qatomic.h \
-		c:\qt\5.7.1static\include\QtCore\qglobal.h \
-		c:\qt\5.7.1static\include\QtCore\qconfig.h \
-		c:\qt\5.7.1static\include\QtCore\qfeatures.h \
-		c:\qt\5.7.1static\include\QtCore\qsystemdetection.h \
-		c:\qt\5.7.1static\include\QtCore\qprocessordetection.h \
-		c:\qt\5.7.1static\include\QtCore\qcompilerdetection.h \
-		c:\qt\5.7.1static\include\QtCore\qtypeinfo.h \
-		c:\qt\5.7.1static\include\QtCore\qtypetraits.h \
-		c:\qt\5.7.1static\include\QtCore\qisenum.h \
-		c:\qt\5.7.1static\include\QtCore\qsysinfo.h \
-		c:\qt\5.7.1static\include\QtCore\qlogging.h \
-		c:\qt\5.7.1static\include\QtCore\qflags.h \
-		c:\qt\5.7.1static\include\QtCore\qglobalstatic.h \
-		c:\qt\5.7.1static\include\QtCore\qmutex.h \
-		c:\qt\5.7.1static\include\QtCore\qnumeric.h \
-		c:\qt\5.7.1static\include\QtCore\qversiontagging.h \
-		c:\qt\5.7.1static\include\QtCore\qbasicatomic.h \
-		c:\qt\5.7.1static\include\QtCore\qatomic_bootstrap.h \
-		c:\qt\5.7.1static\include\QtCore\qgenericatomic.h \
-		c:\qt\5.7.1static\include\QtCore\qatomic_cxx11.h \
-		c:\qt\5.7.1static\include\QtCore\qatomic_msvc.h \
-		c:\qt\5.7.1static\include\QtCore\qbytearray.h \
-		c:\qt\5.7.1static\include\QtCore\qrefcount.h \
-		c:\qt\5.7.1static\include\QtCore\qnamespace.h \
-		c:\qt\5.7.1static\include\QtCore\qarraydata.h \
-		c:\qt\5.7.1static\include\QtCore\qstring.h \
-		c:\qt\5.7.1static\include\QtCore\qchar.h \
-		c:\qt\5.7.1static\include\QtCore\qstringbuilder.h \
-		c:\qt\5.7.1static\include\QtCore\qlist.h \
-		c:\qt\5.7.1static\include\QtCore\qalgorithms.h \
-		c:\qt\5.7.1static\include\QtCore\qiterator.h \
-		c:\qt\5.7.1static\include\QtCore\qhashfunctions.h \
-		c:\qt\5.7.1static\include\QtCore\qpair.h \
-		c:\qt\5.7.1static\include\QtCore\qbytearraylist.h \
-		c:\qt\5.7.1static\include\QtCore\qstringlist.h \
-		c:\qt\5.7.1static\include\QtCore\qregexp.h \
-		c:\qt\5.7.1static\include\QtCore\qstringmatcher.h \
-		c:\qt\5.7.1static\include\QtCore\qmetatype.h \
-		c:\qt\5.7.1static\include\QtCore\qvarlengtharray.h \
-		c:\qt\5.7.1static\include\QtCore\qcontainerfwd.h \
-		c:\qt\5.7.1static\include\QtCore\qobjectdefs.h \
-		c:\qt\5.7.1static\include\QtCore\qobjectdefs_impl.h \
-		c:\qt\5.7.1static\include\QtCore\qmap.h \
-		c:\qt\5.7.1static\include\QtCore\qdebug.h \
-		c:\qt\5.7.1static\include\QtCore\qhash.h \
-		c:\qt\5.7.1static\include\QtCore\qtextstream.h \
-		c:\qt\5.7.1static\include\QtCore\qiodevice.h \
-		c:\qt\5.7.1static\include\QtCore\qobject.h \
-		c:\qt\5.7.1static\include\QtCore\qcoreevent.h \
-		c:\qt\5.7.1static\include\QtCore\qscopedpointer.h \
-		c:\qt\5.7.1static\include\QtCore\qobject_impl.h \
-		c:\qt\5.7.1static\include\QtCore\qlocale.h \
-		c:\qt\5.7.1static\include\QtCore\qshareddata.h \
-		c:\qt\5.7.1static\include\QtCore\qvector.h \
-		c:\qt\5.7.1static\include\QtCore\qpoint.h \
-		c:\qt\5.7.1static\include\QtCore\qset.h \
-		c:\qt\5.7.1static\include\QtCore\qcontiguouscache.h \
-		c:\qt\5.7.1static\include\QtCore\qsharedpointer.h \
-		c:\qt\5.7.1static\include\QtCore\qsharedpointer_impl.h \
-		c:\qt\5.7.1static\include\QtWidgets\QAction \
-		c:\qt\5.7.1static\include\QtWidgets\qaction.h \
-		c:\qt\5.7.1static\include\QtGui\qkeysequence.h \
-		c:\qt\5.7.1static\include\QtWidgets\qwidget.h \
-		c:\qt\5.7.1static\include\QtGui\qwindowdefs.h \
-		c:\qt\5.7.1static\include\QtGui\qwindowdefs_win.h \
-		c:\qt\5.7.1static\include\QtCore\qmargins.h \
-		c:\qt\5.7.1static\include\QtGui\qpaintdevice.h \
-		c:\qt\5.7.1static\include\QtCore\qrect.h \
-		c:\qt\5.7.1static\include\QtCore\qsize.h \
-		c:\qt\5.7.1static\include\QtGui\qpalette.h \
-		c:\qt\5.7.1static\include\QtGui\qcolor.h \
-		c:\qt\5.7.1static\include\QtGui\qrgb.h \
-		c:\qt\5.7.1static\include\QtGui\qrgba64.h \
-		c:\qt\5.7.1static\include\QtGui\qbrush.h \
-		c:\qt\5.7.1static\include\QtGui\qmatrix.h \
-		c:\qt\5.7.1static\include\QtGui\qpolygon.h \
-		c:\qt\5.7.1static\include\QtGui\qregion.h \
-		c:\qt\5.7.1static\include\QtCore\qdatastream.h \
-		c:\qt\5.7.1static\include\QtCore\qline.h \
-		c:\qt\5.7.1static\include\QtGui\qtransform.h \
-		c:\qt\5.7.1static\include\QtGui\qpainterpath.h \
-		c:\qt\5.7.1static\include\QtGui\qimage.h \
-		c:\qt\5.7.1static\include\QtGui\qpixelformat.h \
-		c:\qt\5.7.1static\include\QtGui\qpixmap.h \
-		c:\qt\5.7.1static\include\QtGui\qfont.h \
-		c:\qt\5.7.1static\include\QtGui\qfontmetrics.h \
-		c:\qt\5.7.1static\include\QtGui\qfontinfo.h \
-		c:\qt\5.7.1static\include\QtWidgets\qsizepolicy.h \
-		c:\qt\5.7.1static\include\QtGui\qcursor.h \
-		c:\qt\5.7.1static\include\QtGui\qevent.h \
-		c:\qt\5.7.1static\include\QtCore\qurl.h \
-		c:\qt\5.7.1static\include\QtCore\qurlquery.h \
-		c:\qt\5.7.1static\include\QtCore\qfile.h \
-		c:\qt\5.7.1static\include\QtCore\qfiledevice.h \
-		c:\qt\5.7.1static\include\QtGui\qvector2d.h \
-		c:\qt\5.7.1static\include\QtGui\qtouchdevice.h \
-		c:\qt\5.7.1static\include\QtGui\qicon.h \
-		c:\qt\5.7.1static\include\QtWidgets\qactiongroup.h \
-		c:\qt\5.7.1static\include\QtWidgets\QApplication \
-		c:\qt\5.7.1static\include\QtWidgets\qapplication.h \
-		c:\qt\5.7.1static\include\QtCore\qcoreapplication.h \
-		c:\qt\5.7.1static\include\QtCore\qeventloop.h \
-		c:\qt\5.7.1static\include\QtWidgets\qdesktopwidget.h \
-		c:\qt\5.7.1static\include\QtGui\qguiapplication.h \
-		c:\qt\5.7.1static\include\QtGui\qinputmethod.h \
-		c:\qt\5.7.1static\include\QtWidgets\QButtonGroup \
-		c:\qt\5.7.1static\include\QtWidgets\qbuttongroup.h \
-		c:\qt\5.7.1static\include\QtWidgets\QDialog \
-		c:\qt\5.7.1static\include\QtWidgets\qdialog.h \
-		c:\qt\5.7.1static\include\QtWidgets\QHBoxLayout \
-		c:\qt\5.7.1static\include\QtWidgets\qboxlayout.h \
-		c:\qt\5.7.1static\include\QtWidgets\qlayout.h \
-		c:\qt\5.7.1static\include\QtWidgets\qlayoutitem.h \
-		c:\qt\5.7.1static\include\QtWidgets\qgridlayout.h \
-		c:\qt\5.7.1static\include\QtWidgets\QHeaderView \
-		c:\qt\5.7.1static\include\QtWidgets\qheaderview.h \
-		c:\qt\5.7.1static\include\QtWidgets\qabstractitemview.h \
-		c:\qt\5.7.1static\include\QtWidgets\qabstractscrollarea.h \
-		c:\qt\5.7.1static\include\QtWidgets\qframe.h \
-		c:\qt\5.7.1static\include\QtCore\qabstractitemmodel.h \
-		c:\qt\5.7.1static\include\QtCore\qitemselectionmodel.h \
-		c:\qt\5.7.1static\include\QtWidgets\qabstractitemdelegate.h \
-		c:\qt\5.7.1static\include\QtWidgets\qstyleoption.h \
-		c:\qt\5.7.1static\include\QtWidgets\qabstractspinbox.h \
-		c:\qt\5.7.1static\include\QtGui\qvalidator.h \
-		c:\qt\5.7.1static\include\QtCore\qregularexpression.h \
-		c:\qt\5.7.1static\include\QtWidgets\qslider.h \
-		c:\qt\5.7.1static\include\QtWidgets\qabstractslider.h \
-		c:\qt\5.7.1static\include\QtWidgets\qstyle.h \
-		c:\qt\5.7.1static\include\QtWidgets\qtabbar.h \
-		c:\qt\5.7.1static\include\QtWidgets\qtabwidget.h \
-		c:\qt\5.7.1static\include\QtWidgets\qrubberband.h \
-		c:\qt\5.7.1static\include\QtWidgets\QLabel \
-		c:\qt\5.7.1static\include\QtWidgets\qlabel.h \
-		c:\qt\5.7.1static\include\QtWidgets\QPlainTextEdit \
-		c:\qt\5.7.1static\include\QtWidgets\qplaintextedit.h \
-		c:\qt\5.7.1static\include\QtWidgets\qtextedit.h \
-		c:\qt\5.7.1static\include\QtGui\qtextdocument.h \
-		c:\qt\5.7.1static\include\QtGui\qtextoption.h \
-		c:\qt\5.7.1static\include\QtGui\qtextcursor.h \
-		c:\qt\5.7.1static\include\QtGui\qtextformat.h \
-		c:\qt\5.7.1static\include\QtGui\qpen.h \
-		c:\qt\5.7.1static\include\QtGui\qabstracttextdocumentlayout.h \
-		c:\qt\5.7.1static\include\QtGui\qtextlayout.h \
-		c:\qt\5.7.1static\include\QtGui\qglyphrun.h \
-		c:\qt\5.7.1static\include\QtGui\qrawfont.h \
-		c:\qt\5.7.1static\include\QtGui\qfontdatabase.h \
-		c:\qt\5.7.1static\include\QtWidgets\QPushButton \
-		c:\qt\5.7.1static\include\QtWidgets\qpushbutton.h \
-		c:\qt\5.7.1static\include\QtWidgets\qabstractbutton.h \
-		c:\qt\5.7.1static\include\QtWidgets\QSpacerItem \
-		c:\qt\5.7.1static\include\QtWidgets\QWidget \
 		datawindow.h \
 		c:\qt\5.7.1static\bin\moc.exe
-	c:\qt\5.7.1static\bin\moc.exe $(DEFINES) -D_MSC_VER=1900 -D_WIN32 -Ic:/qt/5.7.1static/mkspecs/win32-msvc2015 -IC:/test/git/zint-code_qt5/frontend_qt -IC:/test/git/zint-code_qt5/frontend_qt -IC:/test/git/zint-code_qt5/backend_qt -IC:/test/git/zint-code_qt5/backend -Ic:/qt/5.7.1static/include -Ic:/qt/5.7.1static/include/QtUiTools -Ic:/qt/5.7.1static/include/QtWidgets -Ic:/qt/5.7.1static/include/QtGui -Ic:/qt/5.7.1static/include/QtCore datawindow.h -o debug\moc_datawindow.cpp
+	c:\qt\5.7.1static\bin\moc.exe $(DEFINES) -D_MSC_VER=1900 -D_WIN32 -Ic:/qt/5.7.1static/mkspecs/win32-msvc2015 -IC:/test/git/zint-code/frontend_qt -IC:/test/git/zint-code/frontend_qt -IC:/test/git/zint-code/backend_qt -IC:/test/git/zint-code/backend -Ic:/qt/5.7.1static/include -Ic:/qt/5.7.1static/include/QtUiTools -Ic:/qt/5.7.1static/include/QtWidgets -Ic:/qt/5.7.1static/include/QtGui -Ic:/qt/5.7.1static/include/QtCore datawindow.h -o debug\moc_datawindow.cpp
 
 debug\moc_exportwindow.cpp: ui_extExport.h \
-		c:\qt\5.7.1static\include\QtCore\QVariant \
-		c:\qt\5.7.1static\include\QtCore\qvariant.h \
-		c:\qt\5.7.1static\include\QtCore\qatomic.h \
-		c:\qt\5.7.1static\include\QtCore\qglobal.h \
-		c:\qt\5.7.1static\include\QtCore\qconfig.h \
-		c:\qt\5.7.1static\include\QtCore\qfeatures.h \
-		c:\qt\5.7.1static\include\QtCore\qsystemdetection.h \
-		c:\qt\5.7.1static\include\QtCore\qprocessordetection.h \
-		c:\qt\5.7.1static\include\QtCore\qcompilerdetection.h \
-		c:\qt\5.7.1static\include\QtCore\qtypeinfo.h \
-		c:\qt\5.7.1static\include\QtCore\qtypetraits.h \
-		c:\qt\5.7.1static\include\QtCore\qisenum.h \
-		c:\qt\5.7.1static\include\QtCore\qsysinfo.h \
-		c:\qt\5.7.1static\include\QtCore\qlogging.h \
-		c:\qt\5.7.1static\include\QtCore\qflags.h \
-		c:\qt\5.7.1static\include\QtCore\qglobalstatic.h \
-		c:\qt\5.7.1static\include\QtCore\qmutex.h \
-		c:\qt\5.7.1static\include\QtCore\qnumeric.h \
-		c:\qt\5.7.1static\include\QtCore\qversiontagging.h \
-		c:\qt\5.7.1static\include\QtCore\qbasicatomic.h \
-		c:\qt\5.7.1static\include\QtCore\qatomic_bootstrap.h \
-		c:\qt\5.7.1static\include\QtCore\qgenericatomic.h \
-		c:\qt\5.7.1static\include\QtCore\qatomic_cxx11.h \
-		c:\qt\5.7.1static\include\QtCore\qatomic_msvc.h \
-		c:\qt\5.7.1static\include\QtCore\qbytearray.h \
-		c:\qt\5.7.1static\include\QtCore\qrefcount.h \
-		c:\qt\5.7.1static\include\QtCore\qnamespace.h \
-		c:\qt\5.7.1static\include\QtCore\qarraydata.h \
-		c:\qt\5.7.1static\include\QtCore\qstring.h \
-		c:\qt\5.7.1static\include\QtCore\qchar.h \
-		c:\qt\5.7.1static\include\QtCore\qstringbuilder.h \
-		c:\qt\5.7.1static\include\QtCore\qlist.h \
-		c:\qt\5.7.1static\include\QtCore\qalgorithms.h \
-		c:\qt\5.7.1static\include\QtCore\qiterator.h \
-		c:\qt\5.7.1static\include\QtCore\qhashfunctions.h \
-		c:\qt\5.7.1static\include\QtCore\qpair.h \
-		c:\qt\5.7.1static\include\QtCore\qbytearraylist.h \
-		c:\qt\5.7.1static\include\QtCore\qstringlist.h \
-		c:\qt\5.7.1static\include\QtCore\qregexp.h \
-		c:\qt\5.7.1static\include\QtCore\qstringmatcher.h \
-		c:\qt\5.7.1static\include\QtCore\qmetatype.h \
-		c:\qt\5.7.1static\include\QtCore\qvarlengtharray.h \
-		c:\qt\5.7.1static\include\QtCore\qcontainerfwd.h \
-		c:\qt\5.7.1static\include\QtCore\qobjectdefs.h \
-		c:\qt\5.7.1static\include\QtCore\qobjectdefs_impl.h \
-		c:\qt\5.7.1static\include\QtCore\qmap.h \
-		c:\qt\5.7.1static\include\QtCore\qdebug.h \
-		c:\qt\5.7.1static\include\QtCore\qhash.h \
-		c:\qt\5.7.1static\include\QtCore\qtextstream.h \
-		c:\qt\5.7.1static\include\QtCore\qiodevice.h \
-		c:\qt\5.7.1static\include\QtCore\qobject.h \
-		c:\qt\5.7.1static\include\QtCore\qcoreevent.h \
-		c:\qt\5.7.1static\include\QtCore\qscopedpointer.h \
-		c:\qt\5.7.1static\include\QtCore\qobject_impl.h \
-		c:\qt\5.7.1static\include\QtCore\qlocale.h \
-		c:\qt\5.7.1static\include\QtCore\qshareddata.h \
-		c:\qt\5.7.1static\include\QtCore\qvector.h \
-		c:\qt\5.7.1static\include\QtCore\qpoint.h \
-		c:\qt\5.7.1static\include\QtCore\qset.h \
-		c:\qt\5.7.1static\include\QtCore\qcontiguouscache.h \
-		c:\qt\5.7.1static\include\QtCore\qsharedpointer.h \
-		c:\qt\5.7.1static\include\QtCore\qsharedpointer_impl.h \
-		c:\qt\5.7.1static\include\QtWidgets\QAction \
-		c:\qt\5.7.1static\include\QtWidgets\qaction.h \
-		c:\qt\5.7.1static\include\QtGui\qkeysequence.h \
-		c:\qt\5.7.1static\include\QtWidgets\qwidget.h \
-		c:\qt\5.7.1static\include\QtGui\qwindowdefs.h \
-		c:\qt\5.7.1static\include\QtGui\qwindowdefs_win.h \
-		c:\qt\5.7.1static\include\QtCore\qmargins.h \
-		c:\qt\5.7.1static\include\QtGui\qpaintdevice.h \
-		c:\qt\5.7.1static\include\QtCore\qrect.h \
-		c:\qt\5.7.1static\include\QtCore\qsize.h \
-		c:\qt\5.7.1static\include\QtGui\qpalette.h \
-		c:\qt\5.7.1static\include\QtGui\qcolor.h \
-		c:\qt\5.7.1static\include\QtGui\qrgb.h \
-		c:\qt\5.7.1static\include\QtGui\qrgba64.h \
-		c:\qt\5.7.1static\include\QtGui\qbrush.h \
-		c:\qt\5.7.1static\include\QtGui\qmatrix.h \
-		c:\qt\5.7.1static\include\QtGui\qpolygon.h \
-		c:\qt\5.7.1static\include\QtGui\qregion.h \
-		c:\qt\5.7.1static\include\QtCore\qdatastream.h \
-		c:\qt\5.7.1static\include\QtCore\qline.h \
-		c:\qt\5.7.1static\include\QtGui\qtransform.h \
-		c:\qt\5.7.1static\include\QtGui\qpainterpath.h \
-		c:\qt\5.7.1static\include\QtGui\qimage.h \
-		c:\qt\5.7.1static\include\QtGui\qpixelformat.h \
-		c:\qt\5.7.1static\include\QtGui\qpixmap.h \
-		c:\qt\5.7.1static\include\QtGui\qfont.h \
-		c:\qt\5.7.1static\include\QtGui\qfontmetrics.h \
-		c:\qt\5.7.1static\include\QtGui\qfontinfo.h \
-		c:\qt\5.7.1static\include\QtWidgets\qsizepolicy.h \
-		c:\qt\5.7.1static\include\QtGui\qcursor.h \
-		c:\qt\5.7.1static\include\QtGui\qevent.h \
-		c:\qt\5.7.1static\include\QtCore\qurl.h \
-		c:\qt\5.7.1static\include\QtCore\qurlquery.h \
-		c:\qt\5.7.1static\include\QtCore\qfile.h \
-		c:\qt\5.7.1static\include\QtCore\qfiledevice.h \
-		c:\qt\5.7.1static\include\QtGui\qvector2d.h \
-		c:\qt\5.7.1static\include\QtGui\qtouchdevice.h \
-		c:\qt\5.7.1static\include\QtGui\qicon.h \
-		c:\qt\5.7.1static\include\QtWidgets\qactiongroup.h \
-		c:\qt\5.7.1static\include\QtWidgets\QApplication \
-		c:\qt\5.7.1static\include\QtWidgets\qapplication.h \
-		c:\qt\5.7.1static\include\QtCore\qcoreapplication.h \
-		c:\qt\5.7.1static\include\QtCore\qeventloop.h \
-		c:\qt\5.7.1static\include\QtWidgets\qdesktopwidget.h \
-		c:\qt\5.7.1static\include\QtGui\qguiapplication.h \
-		c:\qt\5.7.1static\include\QtGui\qinputmethod.h \
-		c:\qt\5.7.1static\include\QtWidgets\QButtonGroup \
-		c:\qt\5.7.1static\include\QtWidgets\qbuttongroup.h \
-		c:\qt\5.7.1static\include\QtWidgets\QComboBox \
-		c:\qt\5.7.1static\include\QtWidgets\qcombobox.h \
-		c:\qt\5.7.1static\include\QtWidgets\qabstractitemdelegate.h \
-		c:\qt\5.7.1static\include\QtWidgets\qstyleoption.h \
-		c:\qt\5.7.1static\include\QtWidgets\qabstractspinbox.h \
-		c:\qt\5.7.1static\include\QtGui\qvalidator.h \
-		c:\qt\5.7.1static\include\QtCore\qregularexpression.h \
-		c:\qt\5.7.1static\include\QtWidgets\qslider.h \
-		c:\qt\5.7.1static\include\QtWidgets\qabstractslider.h \
-		c:\qt\5.7.1static\include\QtWidgets\qstyle.h \
-		c:\qt\5.7.1static\include\QtWidgets\qtabbar.h \
-		c:\qt\5.7.1static\include\QtWidgets\qtabwidget.h \
-		c:\qt\5.7.1static\include\QtWidgets\qrubberband.h \
-		c:\qt\5.7.1static\include\QtWidgets\qframe.h \
-		c:\qt\5.7.1static\include\QtCore\qabstractitemmodel.h \
-		c:\qt\5.7.1static\include\QtWidgets\QDialog \
-		c:\qt\5.7.1static\include\QtWidgets\qdialog.h \
-		c:\qt\5.7.1static\include\QtWidgets\QHeaderView \
-		c:\qt\5.7.1static\include\QtWidgets\qheaderview.h \
-		c:\qt\5.7.1static\include\QtWidgets\qabstractitemview.h \
-		c:\qt\5.7.1static\include\QtWidgets\qabstractscrollarea.h \
-		c:\qt\5.7.1static\include\QtCore\qitemselectionmodel.h \
-		c:\qt\5.7.1static\include\QtWidgets\QLabel \
-		c:\qt\5.7.1static\include\QtWidgets\qlabel.h \
-		c:\qt\5.7.1static\include\QtWidgets\QLineEdit \
-		c:\qt\5.7.1static\include\QtWidgets\qlineedit.h \
-		c:\qt\5.7.1static\include\QtGui\qtextcursor.h \
-		c:\qt\5.7.1static\include\QtGui\qtextformat.h \
-		c:\qt\5.7.1static\include\QtGui\qpen.h \
-		c:\qt\5.7.1static\include\QtGui\qtextoption.h \
-		c:\qt\5.7.1static\include\QtWidgets\QPushButton \
-		c:\qt\5.7.1static\include\QtWidgets\qpushbutton.h \
-		c:\qt\5.7.1static\include\QtWidgets\qabstractbutton.h \
-		c:\qt\5.7.1static\include\QtWidgets\QToolButton \
-		c:\qt\5.7.1static\include\QtWidgets\qtoolbutton.h \
 		barcodeitem.h \
 		c:\qt\5.7.1static\include\QtWidgets\QGraphicsItem \
 		c:\qt\5.7.1static\include\QtWidgets\qgraphicsitem.h \
+		c:\qt\5.7.1static\include\QtCore\qglobal.h \
+		c:\qt\5.7.1static\include\QtCore\qconfig.h \
+		c:\qt\5.7.1static\include\QtCore\qfeatures.h \
+		c:\qt\5.7.1static\include\QtCore\qsystemdetection.h \
+		c:\qt\5.7.1static\include\QtCore\qprocessordetection.h \
+		c:\qt\5.7.1static\include\QtCore\qcompilerdetection.h \
+		c:\qt\5.7.1static\include\QtCore\qtypeinfo.h \
+		c:\qt\5.7.1static\include\QtCore\qtypetraits.h \
+		c:\qt\5.7.1static\include\QtCore\qisenum.h \
+		c:\qt\5.7.1static\include\QtCore\qsysinfo.h \
+		c:\qt\5.7.1static\include\QtCore\qlogging.h \
+		c:\qt\5.7.1static\include\QtCore\qflags.h \
+		c:\qt\5.7.1static\include\QtCore\qatomic.h \
+		c:\qt\5.7.1static\include\QtCore\qbasicatomic.h \
+		c:\qt\5.7.1static\include\QtCore\qatomic_bootstrap.h \
+		c:\qt\5.7.1static\include\QtCore\qgenericatomic.h \
+		c:\qt\5.7.1static\include\QtCore\qatomic_cxx11.h \
+		c:\qt\5.7.1static\include\QtCore\qatomic_msvc.h \
+		c:\qt\5.7.1static\include\QtCore\qglobalstatic.h \
+		c:\qt\5.7.1static\include\QtCore\qmutex.h \
+		c:\qt\5.7.1static\include\QtCore\qnumeric.h \
+		c:\qt\5.7.1static\include\QtCore\qversiontagging.h \
+		c:\qt\5.7.1static\include\QtCore\qobject.h \
+		c:\qt\5.7.1static\include\QtCore\qobjectdefs.h \
+		c:\qt\5.7.1static\include\QtCore\qnamespace.h \
+		c:\qt\5.7.1static\include\QtCore\qobjectdefs_impl.h \
+		c:\qt\5.7.1static\include\QtCore\qstring.h \
+		c:\qt\5.7.1static\include\QtCore\qchar.h \
+		c:\qt\5.7.1static\include\QtCore\qbytearray.h \
+		c:\qt\5.7.1static\include\QtCore\qrefcount.h \
+		c:\qt\5.7.1static\include\QtCore\qarraydata.h \
+		c:\qt\5.7.1static\include\QtCore\qstringbuilder.h \
+		c:\qt\5.7.1static\include\QtCore\qlist.h \
+		c:\qt\5.7.1static\include\QtCore\qalgorithms.h \
+		c:\qt\5.7.1static\include\QtCore\qiterator.h \
+		c:\qt\5.7.1static\include\QtCore\qhashfunctions.h \
+		c:\qt\5.7.1static\include\QtCore\qpair.h \
+		c:\qt\5.7.1static\include\QtCore\qbytearraylist.h \
+		c:\qt\5.7.1static\include\QtCore\qstringlist.h \
+		c:\qt\5.7.1static\include\QtCore\qregexp.h \
+		c:\qt\5.7.1static\include\QtCore\qstringmatcher.h \
+		c:\qt\5.7.1static\include\QtCore\qcoreevent.h \
+		c:\qt\5.7.1static\include\QtCore\qscopedpointer.h \
+		c:\qt\5.7.1static\include\QtCore\qmetatype.h \
+		c:\qt\5.7.1static\include\QtCore\qvarlengtharray.h \
+		c:\qt\5.7.1static\include\QtCore\qcontainerfwd.h \
+		c:\qt\5.7.1static\include\QtCore\qobject_impl.h \
+		c:\qt\5.7.1static\include\QtCore\qvariant.h \
+		c:\qt\5.7.1static\include\QtCore\qmap.h \
+		c:\qt\5.7.1static\include\QtCore\qdebug.h \
+		c:\qt\5.7.1static\include\QtCore\qhash.h \
+		c:\qt\5.7.1static\include\QtCore\qtextstream.h \
+		c:\qt\5.7.1static\include\QtCore\qiodevice.h \
+		c:\qt\5.7.1static\include\QtCore\qlocale.h \
+		c:\qt\5.7.1static\include\QtCore\qshareddata.h \
+		c:\qt\5.7.1static\include\QtCore\qvector.h \
+		c:\qt\5.7.1static\include\QtCore\qpoint.h \
+		c:\qt\5.7.1static\include\QtCore\qset.h \
+		c:\qt\5.7.1static\include\QtCore\qcontiguouscache.h \
+		c:\qt\5.7.1static\include\QtCore\qsharedpointer.h \
+		c:\qt\5.7.1static\include\QtCore\qsharedpointer_impl.h \
+		c:\qt\5.7.1static\include\QtCore\qrect.h \
+		c:\qt\5.7.1static\include\QtCore\qmargins.h \
+		c:\qt\5.7.1static\include\QtCore\qsize.h \
+		c:\qt\5.7.1static\include\QtGui\qpainterpath.h \
+		c:\qt\5.7.1static\include\QtGui\qmatrix.h \
+		c:\qt\5.7.1static\include\QtGui\qpolygon.h \
+		c:\qt\5.7.1static\include\QtGui\qregion.h \
+		c:\qt\5.7.1static\include\QtGui\qwindowdefs.h \
+		c:\qt\5.7.1static\include\QtGui\qwindowdefs_win.h \
+		c:\qt\5.7.1static\include\QtCore\qdatastream.h \
+		c:\qt\5.7.1static\include\QtCore\qline.h \
+		c:\qt\5.7.1static\include\QtGui\qpixmap.h \
+		c:\qt\5.7.1static\include\QtGui\qpaintdevice.h \
+		c:\qt\5.7.1static\include\QtGui\qcolor.h \
+		c:\qt\5.7.1static\include\QtGui\qrgb.h \
+		c:\qt\5.7.1static\include\QtGui\qrgba64.h \
+		c:\qt\5.7.1static\include\QtGui\qimage.h \
+		c:\qt\5.7.1static\include\QtGui\qpixelformat.h \
+		c:\qt\5.7.1static\include\QtGui\qtransform.h \
 		..\backend_qt\qzint.h \
 		c:\qt\5.7.1static\include\QtGui\QColor \
 		c:\qt\5.7.1static\include\QtGui\QPainter \
 		c:\qt\5.7.1static\include\QtGui\qpainter.h \
+		c:\qt\5.7.1static\include\QtGui\qtextoption.h \
+		c:\qt\5.7.1static\include\QtGui\qpen.h \
+		c:\qt\5.7.1static\include\QtGui\qbrush.h \
+		c:\qt\5.7.1static\include\QtGui\qfontinfo.h \
+		c:\qt\5.7.1static\include\QtGui\qfont.h \
+		c:\qt\5.7.1static\include\QtGui\qfontmetrics.h \
 		..\backend\zint.h \
 		exportwindow.h \
 		c:\qt\5.7.1static\bin\moc.exe
-	c:\qt\5.7.1static\bin\moc.exe $(DEFINES) -D_MSC_VER=1900 -D_WIN32 -Ic:/qt/5.7.1static/mkspecs/win32-msvc2015 -IC:/test/git/zint-code_qt5/frontend_qt -IC:/test/git/zint-code_qt5/frontend_qt -IC:/test/git/zint-code_qt5/backend_qt -IC:/test/git/zint-code_qt5/backend -Ic:/qt/5.7.1static/include -Ic:/qt/5.7.1static/include/QtUiTools -Ic:/qt/5.7.1static/include/QtWidgets -Ic:/qt/5.7.1static/include/QtGui -Ic:/qt/5.7.1static/include/QtCore exportwindow.h -o debug\moc_exportwindow.cpp
+	c:\qt\5.7.1static\bin\moc.exe $(DEFINES) -D_MSC_VER=1900 -D_WIN32 -Ic:/qt/5.7.1static/mkspecs/win32-msvc2015 -IC:/test/git/zint-code/frontend_qt -IC:/test/git/zint-code/frontend_qt -IC:/test/git/zint-code/backend_qt -IC:/test/git/zint-code/backend -Ic:/qt/5.7.1static/include -Ic:/qt/5.7.1static/include/QtUiTools -Ic:/qt/5.7.1static/include/QtWidgets -Ic:/qt/5.7.1static/include/QtGui -Ic:/qt/5.7.1static/include/QtCore exportwindow.h -o debug\moc_exportwindow.cpp
 
 debug\moc_mainwindow.cpp: c:\qt\5.7.1static\include\QtGui\QtGui \
 		c:\qt\5.7.1static\include\QtGui\QtGuiDepends \
@@ -844,62 +630,6 @@ debug\moc_mainwindow.cpp: c:\qt\5.7.1static\include\QtGui\QtGui \
 		c:\qt\5.7.1static\include\QtWidgets\QGraphicsScene \
 		c:\qt\5.7.1static\include\QtWidgets\qgraphicsscene.h \
 		ui_mainWindow.h \
-		c:\qt\5.7.1static\include\QtCore\QLocale \
-		c:\qt\5.7.1static\include\QtCore\QVariant \
-		c:\qt\5.7.1static\include\QtWidgets\QAction \
-		c:\qt\5.7.1static\include\QtWidgets\qaction.h \
-		c:\qt\5.7.1static\include\QtWidgets\qactiongroup.h \
-		c:\qt\5.7.1static\include\QtWidgets\QApplication \
-		c:\qt\5.7.1static\include\QtWidgets\qapplication.h \
-		c:\qt\5.7.1static\include\QtWidgets\qdesktopwidget.h \
-		c:\qt\5.7.1static\include\QtWidgets\QButtonGroup \
-		c:\qt\5.7.1static\include\QtWidgets\qbuttongroup.h \
-		c:\qt\5.7.1static\include\QtWidgets\QCheckBox \
-		c:\qt\5.7.1static\include\QtWidgets\qcheckbox.h \
-		c:\qt\5.7.1static\include\QtWidgets\qabstractbutton.h \
-		c:\qt\5.7.1static\include\QtWidgets\QComboBox \
-		c:\qt\5.7.1static\include\QtWidgets\qcombobox.h \
-		c:\qt\5.7.1static\include\QtWidgets\qabstractitemdelegate.h \
-		c:\qt\5.7.1static\include\QtWidgets\qstyleoption.h \
-		c:\qt\5.7.1static\include\QtWidgets\qabstractspinbox.h \
-		c:\qt\5.7.1static\include\QtWidgets\qslider.h \
-		c:\qt\5.7.1static\include\QtWidgets\qabstractslider.h \
-		c:\qt\5.7.1static\include\QtWidgets\qstyle.h \
-		c:\qt\5.7.1static\include\QtWidgets\qtabbar.h \
-		c:\qt\5.7.1static\include\QtWidgets\qrubberband.h \
-		c:\qt\5.7.1static\include\QtWidgets\qframe.h \
-		c:\qt\5.7.1static\include\QtWidgets\QDoubleSpinBox \
-		c:\qt\5.7.1static\include\QtWidgets\qspinbox.h \
-		c:\qt\5.7.1static\include\QtWidgets\QGraphicsView \
-		c:\qt\5.7.1static\include\QtWidgets\qgraphicsview.h \
-		c:\qt\5.7.1static\include\QtWidgets\qscrollarea.h \
-		c:\qt\5.7.1static\include\QtWidgets\qabstractscrollarea.h \
-		c:\qt\5.7.1static\include\QtWidgets\QGridLayout \
-		c:\qt\5.7.1static\include\QtWidgets\qgridlayout.h \
-		c:\qt\5.7.1static\include\QtWidgets\qlayout.h \
-		c:\qt\5.7.1static\include\QtWidgets\qlayoutitem.h \
-		c:\qt\5.7.1static\include\QtWidgets\qboxlayout.h \
-		c:\qt\5.7.1static\include\QtWidgets\QGroupBox \
-		c:\qt\5.7.1static\include\QtWidgets\qgroupbox.h \
-		c:\qt\5.7.1static\include\QtWidgets\QHBoxLayout \
-		c:\qt\5.7.1static\include\QtWidgets\QHeaderView \
-		c:\qt\5.7.1static\include\QtWidgets\qheaderview.h \
-		c:\qt\5.7.1static\include\QtWidgets\qabstractitemview.h \
-		c:\qt\5.7.1static\include\QtWidgets\QLabel \
-		c:\qt\5.7.1static\include\QtWidgets\qlabel.h \
-		c:\qt\5.7.1static\include\QtWidgets\QLineEdit \
-		c:\qt\5.7.1static\include\QtWidgets\qlineedit.h \
-		c:\qt\5.7.1static\include\QtWidgets\QPushButton \
-		c:\qt\5.7.1static\include\QtWidgets\qpushbutton.h \
-		c:\qt\5.7.1static\include\QtWidgets\QSpacerItem \
-		c:\qt\5.7.1static\include\QtWidgets\QSpinBox \
-		c:\qt\5.7.1static\include\QtWidgets\QTabWidget \
-		c:\qt\5.7.1static\include\QtWidgets\QTextEdit \
-		c:\qt\5.7.1static\include\QtWidgets\qtextedit.h \
-		c:\qt\5.7.1static\include\QtWidgets\QToolButton \
-		c:\qt\5.7.1static\include\QtWidgets\qtoolbutton.h \
-		c:\qt\5.7.1static\include\QtWidgets\QVBoxLayout \
-		c:\qt\5.7.1static\include\QtWidgets\QWidget \
 		barcodeitem.h \
 		..\backend_qt\qzint.h \
 		c:\qt\5.7.1static\include\QtGui\QColor \
@@ -907,12 +637,12 @@ debug\moc_mainwindow.cpp: c:\qt\5.7.1static\include\QtGui\QtGui \
 		..\backend\zint.h \
 		mainwindow.h \
 		c:\qt\5.7.1static\bin\moc.exe
-	c:\qt\5.7.1static\bin\moc.exe $(DEFINES) -D_MSC_VER=1900 -D_WIN32 -Ic:/qt/5.7.1static/mkspecs/win32-msvc2015 -IC:/test/git/zint-code_qt5/frontend_qt -IC:/test/git/zint-code_qt5/frontend_qt -IC:/test/git/zint-code_qt5/backend_qt -IC:/test/git/zint-code_qt5/backend -Ic:/qt/5.7.1static/include -Ic:/qt/5.7.1static/include/QtUiTools -Ic:/qt/5.7.1static/include/QtWidgets -Ic:/qt/5.7.1static/include/QtGui -Ic:/qt/5.7.1static/include/QtCore mainwindow.h -o debug\moc_mainwindow.cpp
+	c:\qt\5.7.1static\bin\moc.exe $(DEFINES) -D_MSC_VER=1900 -D_WIN32 -Ic:/qt/5.7.1static/mkspecs/win32-msvc2015 -IC:/test/git/zint-code/frontend_qt -IC:/test/git/zint-code/frontend_qt -IC:/test/git/zint-code/backend_qt -IC:/test/git/zint-code/backend -Ic:/qt/5.7.1static/include -Ic:/qt/5.7.1static/include/QtUiTools -Ic:/qt/5.7.1static/include/QtWidgets -Ic:/qt/5.7.1static/include/QtGui -Ic:/qt/5.7.1static/include/QtCore mainwindow.h -o debug\moc_mainwindow.cpp
 
 debug\moc_sequencewindow.cpp: ui_extSequence.h \
-		c:\qt\5.7.1static\include\QtCore\QVariant \
-		c:\qt\5.7.1static\include\QtCore\qvariant.h \
-		c:\qt\5.7.1static\include\QtCore\qatomic.h \
+		barcodeitem.h \
+		c:\qt\5.7.1static\include\QtWidgets\QGraphicsItem \
+		c:\qt\5.7.1static\include\QtWidgets\qgraphicsitem.h \
 		c:\qt\5.7.1static\include\QtCore\qglobal.h \
 		c:\qt\5.7.1static\include\QtCore\qconfig.h \
 		c:\qt\5.7.1static\include\QtCore\qfeatures.h \
@@ -925,21 +655,25 @@ debug\moc_sequencewindow.cpp: ui_extSequence.h \
 		c:\qt\5.7.1static\include\QtCore\qsysinfo.h \
 		c:\qt\5.7.1static\include\QtCore\qlogging.h \
 		c:\qt\5.7.1static\include\QtCore\qflags.h \
-		c:\qt\5.7.1static\include\QtCore\qglobalstatic.h \
-		c:\qt\5.7.1static\include\QtCore\qmutex.h \
-		c:\qt\5.7.1static\include\QtCore\qnumeric.h \
-		c:\qt\5.7.1static\include\QtCore\qversiontagging.h \
+		c:\qt\5.7.1static\include\QtCore\qatomic.h \
 		c:\qt\5.7.1static\include\QtCore\qbasicatomic.h \
 		c:\qt\5.7.1static\include\QtCore\qatomic_bootstrap.h \
 		c:\qt\5.7.1static\include\QtCore\qgenericatomic.h \
 		c:\qt\5.7.1static\include\QtCore\qatomic_cxx11.h \
 		c:\qt\5.7.1static\include\QtCore\qatomic_msvc.h \
-		c:\qt\5.7.1static\include\QtCore\qbytearray.h \
-		c:\qt\5.7.1static\include\QtCore\qrefcount.h \
+		c:\qt\5.7.1static\include\QtCore\qglobalstatic.h \
+		c:\qt\5.7.1static\include\QtCore\qmutex.h \
+		c:\qt\5.7.1static\include\QtCore\qnumeric.h \
+		c:\qt\5.7.1static\include\QtCore\qversiontagging.h \
+		c:\qt\5.7.1static\include\QtCore\qobject.h \
+		c:\qt\5.7.1static\include\QtCore\qobjectdefs.h \
 		c:\qt\5.7.1static\include\QtCore\qnamespace.h \
-		c:\qt\5.7.1static\include\QtCore\qarraydata.h \
+		c:\qt\5.7.1static\include\QtCore\qobjectdefs_impl.h \
 		c:\qt\5.7.1static\include\QtCore\qstring.h \
 		c:\qt\5.7.1static\include\QtCore\qchar.h \
+		c:\qt\5.7.1static\include\QtCore\qbytearray.h \
+		c:\qt\5.7.1static\include\QtCore\qrefcount.h \
+		c:\qt\5.7.1static\include\QtCore\qarraydata.h \
 		c:\qt\5.7.1static\include\QtCore\qstringbuilder.h \
 		c:\qt\5.7.1static\include\QtCore\qlist.h \
 		c:\qt\5.7.1static\include\QtCore\qalgorithms.h \
@@ -950,20 +684,18 @@ debug\moc_sequencewindow.cpp: ui_extSequence.h \
 		c:\qt\5.7.1static\include\QtCore\qstringlist.h \
 		c:\qt\5.7.1static\include\QtCore\qregexp.h \
 		c:\qt\5.7.1static\include\QtCore\qstringmatcher.h \
+		c:\qt\5.7.1static\include\QtCore\qcoreevent.h \
+		c:\qt\5.7.1static\include\QtCore\qscopedpointer.h \
 		c:\qt\5.7.1static\include\QtCore\qmetatype.h \
 		c:\qt\5.7.1static\include\QtCore\qvarlengtharray.h \
 		c:\qt\5.7.1static\include\QtCore\qcontainerfwd.h \
-		c:\qt\5.7.1static\include\QtCore\qobjectdefs.h \
-		c:\qt\5.7.1static\include\QtCore\qobjectdefs_impl.h \
+		c:\qt\5.7.1static\include\QtCore\qobject_impl.h \
+		c:\qt\5.7.1static\include\QtCore\qvariant.h \
 		c:\qt\5.7.1static\include\QtCore\qmap.h \
 		c:\qt\5.7.1static\include\QtCore\qdebug.h \
 		c:\qt\5.7.1static\include\QtCore\qhash.h \
 		c:\qt\5.7.1static\include\QtCore\qtextstream.h \
 		c:\qt\5.7.1static\include\QtCore\qiodevice.h \
-		c:\qt\5.7.1static\include\QtCore\qobject.h \
-		c:\qt\5.7.1static\include\QtCore\qcoreevent.h \
-		c:\qt\5.7.1static\include\QtCore\qscopedpointer.h \
-		c:\qt\5.7.1static\include\QtCore\qobject_impl.h \
 		c:\qt\5.7.1static\include\QtCore\qlocale.h \
 		c:\qt\5.7.1static\include\QtCore\qshareddata.h \
 		c:\qt\5.7.1static\include\QtCore\qvector.h \
@@ -972,107 +704,39 @@ debug\moc_sequencewindow.cpp: ui_extSequence.h \
 		c:\qt\5.7.1static\include\QtCore\qcontiguouscache.h \
 		c:\qt\5.7.1static\include\QtCore\qsharedpointer.h \
 		c:\qt\5.7.1static\include\QtCore\qsharedpointer_impl.h \
-		c:\qt\5.7.1static\include\QtWidgets\QAction \
-		c:\qt\5.7.1static\include\QtWidgets\qaction.h \
-		c:\qt\5.7.1static\include\QtGui\qkeysequence.h \
-		c:\qt\5.7.1static\include\QtWidgets\qwidget.h \
-		c:\qt\5.7.1static\include\QtGui\qwindowdefs.h \
-		c:\qt\5.7.1static\include\QtGui\qwindowdefs_win.h \
-		c:\qt\5.7.1static\include\QtCore\qmargins.h \
-		c:\qt\5.7.1static\include\QtGui\qpaintdevice.h \
 		c:\qt\5.7.1static\include\QtCore\qrect.h \
+		c:\qt\5.7.1static\include\QtCore\qmargins.h \
 		c:\qt\5.7.1static\include\QtCore\qsize.h \
-		c:\qt\5.7.1static\include\QtGui\qpalette.h \
-		c:\qt\5.7.1static\include\QtGui\qcolor.h \
-		c:\qt\5.7.1static\include\QtGui\qrgb.h \
-		c:\qt\5.7.1static\include\QtGui\qrgba64.h \
-		c:\qt\5.7.1static\include\QtGui\qbrush.h \
+		c:\qt\5.7.1static\include\QtGui\qpainterpath.h \
 		c:\qt\5.7.1static\include\QtGui\qmatrix.h \
 		c:\qt\5.7.1static\include\QtGui\qpolygon.h \
 		c:\qt\5.7.1static\include\QtGui\qregion.h \
+		c:\qt\5.7.1static\include\QtGui\qwindowdefs.h \
+		c:\qt\5.7.1static\include\QtGui\qwindowdefs_win.h \
 		c:\qt\5.7.1static\include\QtCore\qdatastream.h \
 		c:\qt\5.7.1static\include\QtCore\qline.h \
-		c:\qt\5.7.1static\include\QtGui\qtransform.h \
-		c:\qt\5.7.1static\include\QtGui\qpainterpath.h \
+		c:\qt\5.7.1static\include\QtGui\qpixmap.h \
+		c:\qt\5.7.1static\include\QtGui\qpaintdevice.h \
+		c:\qt\5.7.1static\include\QtGui\qcolor.h \
+		c:\qt\5.7.1static\include\QtGui\qrgb.h \
+		c:\qt\5.7.1static\include\QtGui\qrgba64.h \
 		c:\qt\5.7.1static\include\QtGui\qimage.h \
 		c:\qt\5.7.1static\include\QtGui\qpixelformat.h \
-		c:\qt\5.7.1static\include\QtGui\qpixmap.h \
-		c:\qt\5.7.1static\include\QtGui\qfont.h \
-		c:\qt\5.7.1static\include\QtGui\qfontmetrics.h \
-		c:\qt\5.7.1static\include\QtGui\qfontinfo.h \
-		c:\qt\5.7.1static\include\QtWidgets\qsizepolicy.h \
-		c:\qt\5.7.1static\include\QtGui\qcursor.h \
-		c:\qt\5.7.1static\include\QtGui\qevent.h \
-		c:\qt\5.7.1static\include\QtCore\qurl.h \
-		c:\qt\5.7.1static\include\QtCore\qurlquery.h \
-		c:\qt\5.7.1static\include\QtCore\qfile.h \
-		c:\qt\5.7.1static\include\QtCore\qfiledevice.h \
-		c:\qt\5.7.1static\include\QtGui\qvector2d.h \
-		c:\qt\5.7.1static\include\QtGui\qtouchdevice.h \
-		c:\qt\5.7.1static\include\QtGui\qicon.h \
-		c:\qt\5.7.1static\include\QtWidgets\qactiongroup.h \
-		c:\qt\5.7.1static\include\QtWidgets\QApplication \
-		c:\qt\5.7.1static\include\QtWidgets\qapplication.h \
-		c:\qt\5.7.1static\include\QtCore\qcoreapplication.h \
-		c:\qt\5.7.1static\include\QtCore\qeventloop.h \
-		c:\qt\5.7.1static\include\QtWidgets\qdesktopwidget.h \
-		c:\qt\5.7.1static\include\QtGui\qguiapplication.h \
-		c:\qt\5.7.1static\include\QtGui\qinputmethod.h \
-		c:\qt\5.7.1static\include\QtWidgets\QButtonGroup \
-		c:\qt\5.7.1static\include\QtWidgets\qbuttongroup.h \
-		c:\qt\5.7.1static\include\QtWidgets\QDialog \
-		c:\qt\5.7.1static\include\QtWidgets\qdialog.h \
-		c:\qt\5.7.1static\include\QtWidgets\QGroupBox \
-		c:\qt\5.7.1static\include\QtWidgets\qgroupbox.h \
-		c:\qt\5.7.1static\include\QtWidgets\qframe.h \
-		c:\qt\5.7.1static\include\QtWidgets\QHeaderView \
-		c:\qt\5.7.1static\include\QtWidgets\qheaderview.h \
-		c:\qt\5.7.1static\include\QtWidgets\qabstractitemview.h \
-		c:\qt\5.7.1static\include\QtWidgets\qabstractscrollarea.h \
-		c:\qt\5.7.1static\include\QtCore\qabstractitemmodel.h \
-		c:\qt\5.7.1static\include\QtCore\qitemselectionmodel.h \
-		c:\qt\5.7.1static\include\QtWidgets\qabstractitemdelegate.h \
-		c:\qt\5.7.1static\include\QtWidgets\qstyleoption.h \
-		c:\qt\5.7.1static\include\QtWidgets\qabstractspinbox.h \
-		c:\qt\5.7.1static\include\QtGui\qvalidator.h \
-		c:\qt\5.7.1static\include\QtCore\qregularexpression.h \
-		c:\qt\5.7.1static\include\QtWidgets\qslider.h \
-		c:\qt\5.7.1static\include\QtWidgets\qabstractslider.h \
-		c:\qt\5.7.1static\include\QtWidgets\qstyle.h \
-		c:\qt\5.7.1static\include\QtWidgets\qtabbar.h \
-		c:\qt\5.7.1static\include\QtWidgets\qtabwidget.h \
-		c:\qt\5.7.1static\include\QtWidgets\qrubberband.h \
-		c:\qt\5.7.1static\include\QtWidgets\QLabel \
-		c:\qt\5.7.1static\include\QtWidgets\qlabel.h \
-		c:\qt\5.7.1static\include\QtWidgets\QLineEdit \
-		c:\qt\5.7.1static\include\QtWidgets\qlineedit.h \
-		c:\qt\5.7.1static\include\QtGui\qtextcursor.h \
-		c:\qt\5.7.1static\include\QtGui\qtextformat.h \
-		c:\qt\5.7.1static\include\QtGui\qpen.h \
-		c:\qt\5.7.1static\include\QtGui\qtextoption.h \
-		c:\qt\5.7.1static\include\QtWidgets\QPlainTextEdit \
-		c:\qt\5.7.1static\include\QtWidgets\qplaintextedit.h \
-		c:\qt\5.7.1static\include\QtWidgets\qtextedit.h \
-		c:\qt\5.7.1static\include\QtGui\qtextdocument.h \
-		c:\qt\5.7.1static\include\QtGui\qabstracttextdocumentlayout.h \
-		c:\qt\5.7.1static\include\QtGui\qtextlayout.h \
-		c:\qt\5.7.1static\include\QtGui\qglyphrun.h \
-		c:\qt\5.7.1static\include\QtGui\qrawfont.h \
-		c:\qt\5.7.1static\include\QtGui\qfontdatabase.h \
-		c:\qt\5.7.1static\include\QtWidgets\QPushButton \
-		c:\qt\5.7.1static\include\QtWidgets\qpushbutton.h \
-		c:\qt\5.7.1static\include\QtWidgets\qabstractbutton.h \
-		barcodeitem.h \
-		c:\qt\5.7.1static\include\QtWidgets\QGraphicsItem \
-		c:\qt\5.7.1static\include\QtWidgets\qgraphicsitem.h \
+		c:\qt\5.7.1static\include\QtGui\qtransform.h \
 		..\backend_qt\qzint.h \
 		c:\qt\5.7.1static\include\QtGui\QColor \
 		c:\qt\5.7.1static\include\QtGui\QPainter \
 		c:\qt\5.7.1static\include\QtGui\qpainter.h \
+		c:\qt\5.7.1static\include\QtGui\qtextoption.h \
+		c:\qt\5.7.1static\include\QtGui\qpen.h \
+		c:\qt\5.7.1static\include\QtGui\qbrush.h \
+		c:\qt\5.7.1static\include\QtGui\qfontinfo.h \
+		c:\qt\5.7.1static\include\QtGui\qfont.h \
+		c:\qt\5.7.1static\include\QtGui\qfontmetrics.h \
 		..\backend\zint.h \
 		sequencewindow.h \
 		c:\qt\5.7.1static\bin\moc.exe
-	c:\qt\5.7.1static\bin\moc.exe $(DEFINES) -D_MSC_VER=1900 -D_WIN32 -Ic:/qt/5.7.1static/mkspecs/win32-msvc2015 -IC:/test/git/zint-code_qt5/frontend_qt -IC:/test/git/zint-code_qt5/frontend_qt -IC:/test/git/zint-code_qt5/backend_qt -IC:/test/git/zint-code_qt5/backend -Ic:/qt/5.7.1static/include -Ic:/qt/5.7.1static/include/QtUiTools -Ic:/qt/5.7.1static/include/QtWidgets -Ic:/qt/5.7.1static/include/QtGui -Ic:/qt/5.7.1static/include/QtCore sequencewindow.h -o debug\moc_sequencewindow.cpp
+	c:\qt\5.7.1static\bin\moc.exe $(DEFINES) -D_MSC_VER=1900 -D_WIN32 -Ic:/qt/5.7.1static/mkspecs/win32-msvc2015 -IC:/test/git/zint-code/frontend_qt -IC:/test/git/zint-code/frontend_qt -IC:/test/git/zint-code/backend_qt -IC:/test/git/zint-code/backend -Ic:/qt/5.7.1static/include -Ic:/qt/5.7.1static/include/QtUiTools -Ic:/qt/5.7.1static/include/QtWidgets -Ic:/qt/5.7.1static/include/QtGui -Ic:/qt/5.7.1static/include/QtCore sequencewindow.h -o debug\moc_sequencewindow.cpp
 
 compiler_moc_source_make_all:
 compiler_moc_source_clean:
@@ -1391,65 +1055,7 @@ debug\datawindow.obj: datawindow.cpp c:\qt\5.7.1static\include\QtCore\QDebug \
 		c:\qt\5.7.1static\include\QtWidgets\QMessageBox \
 		c:\qt\5.7.1static\include\QtWidgets\qmessagebox.h \
 		datawindow.h \
-		ui_extData.h \
-		c:\qt\5.7.1static\include\QtCore\QVariant \
-		c:\qt\5.7.1static\include\QtWidgets\QAction \
-		c:\qt\5.7.1static\include\QtWidgets\qaction.h \
-		c:\qt\5.7.1static\include\QtGui\qicon.h \
-		c:\qt\5.7.1static\include\QtWidgets\qactiongroup.h \
-		c:\qt\5.7.1static\include\QtWidgets\QApplication \
-		c:\qt\5.7.1static\include\QtWidgets\qapplication.h \
-		c:\qt\5.7.1static\include\QtCore\qcoreapplication.h \
-		c:\qt\5.7.1static\include\QtCore\qeventloop.h \
-		c:\qt\5.7.1static\include\QtWidgets\qdesktopwidget.h \
-		c:\qt\5.7.1static\include\QtGui\qguiapplication.h \
-		c:\qt\5.7.1static\include\QtGui\qinputmethod.h \
-		c:\qt\5.7.1static\include\QtWidgets\QButtonGroup \
-		c:\qt\5.7.1static\include\QtWidgets\qbuttongroup.h \
-		c:\qt\5.7.1static\include\QtWidgets\QDialog \
-		c:\qt\5.7.1static\include\QtWidgets\QHBoxLayout \
-		c:\qt\5.7.1static\include\QtWidgets\qboxlayout.h \
-		c:\qt\5.7.1static\include\QtWidgets\qlayout.h \
-		c:\qt\5.7.1static\include\QtWidgets\qlayoutitem.h \
-		c:\qt\5.7.1static\include\QtWidgets\qgridlayout.h \
-		c:\qt\5.7.1static\include\QtWidgets\QHeaderView \
-		c:\qt\5.7.1static\include\QtWidgets\qheaderview.h \
-		c:\qt\5.7.1static\include\QtWidgets\qabstractitemview.h \
-		c:\qt\5.7.1static\include\QtWidgets\qabstractscrollarea.h \
-		c:\qt\5.7.1static\include\QtWidgets\qframe.h \
-		c:\qt\5.7.1static\include\QtCore\qabstractitemmodel.h \
-		c:\qt\5.7.1static\include\QtCore\qitemselectionmodel.h \
-		c:\qt\5.7.1static\include\QtWidgets\qabstractitemdelegate.h \
-		c:\qt\5.7.1static\include\QtWidgets\qstyleoption.h \
-		c:\qt\5.7.1static\include\QtWidgets\qabstractspinbox.h \
-		c:\qt\5.7.1static\include\QtGui\qvalidator.h \
-		c:\qt\5.7.1static\include\QtCore\qregularexpression.h \
-		c:\qt\5.7.1static\include\QtWidgets\qslider.h \
-		c:\qt\5.7.1static\include\QtWidgets\qabstractslider.h \
-		c:\qt\5.7.1static\include\QtWidgets\qstyle.h \
-		c:\qt\5.7.1static\include\QtWidgets\qtabbar.h \
-		c:\qt\5.7.1static\include\QtWidgets\qtabwidget.h \
-		c:\qt\5.7.1static\include\QtWidgets\qrubberband.h \
-		c:\qt\5.7.1static\include\QtWidgets\QLabel \
-		c:\qt\5.7.1static\include\QtWidgets\qlabel.h \
-		c:\qt\5.7.1static\include\QtWidgets\QPlainTextEdit \
-		c:\qt\5.7.1static\include\QtWidgets\qplaintextedit.h \
-		c:\qt\5.7.1static\include\QtWidgets\qtextedit.h \
-		c:\qt\5.7.1static\include\QtGui\qtextdocument.h \
-		c:\qt\5.7.1static\include\QtGui\qtextoption.h \
-		c:\qt\5.7.1static\include\QtGui\qtextcursor.h \
-		c:\qt\5.7.1static\include\QtGui\qtextformat.h \
-		c:\qt\5.7.1static\include\QtGui\qpen.h \
-		c:\qt\5.7.1static\include\QtGui\qabstracttextdocumentlayout.h \
-		c:\qt\5.7.1static\include\QtGui\qtextlayout.h \
-		c:\qt\5.7.1static\include\QtGui\qglyphrun.h \
-		c:\qt\5.7.1static\include\QtGui\qrawfont.h \
-		c:\qt\5.7.1static\include\QtGui\qfontdatabase.h \
-		c:\qt\5.7.1static\include\QtWidgets\QPushButton \
-		c:\qt\5.7.1static\include\QtWidgets\qpushbutton.h \
-		c:\qt\5.7.1static\include\QtWidgets\qabstractbutton.h \
-		c:\qt\5.7.1static\include\QtWidgets\QSpacerItem \
-		c:\qt\5.7.1static\include\QtWidgets\QWidget
+		ui_extData.h
 
 debug\exportwindow.obj: exportwindow.cpp c:\qt\5.7.1static\include\QtCore\QDebug \
 		c:\qt\5.7.1static\include\QtCore\qdebug.h \
@@ -1559,56 +1165,10 @@ debug\exportwindow.obj: exportwindow.cpp c:\qt\5.7.1static\include\QtCore\QDebug
 		c:\qt\5.7.1static\include\QtGui\qtouchdevice.h \
 		c:\qt\5.7.1static\include\QtWidgets\QMessageBox \
 		c:\qt\5.7.1static\include\QtWidgets\qmessagebox.h \
+		c:\qt\5.7.1static\include\QtCore\QSettings \
+		c:\qt\5.7.1static\include\QtCore\qsettings.h \
 		exportwindow.h \
 		ui_extExport.h \
-		c:\qt\5.7.1static\include\QtCore\QVariant \
-		c:\qt\5.7.1static\include\QtWidgets\QAction \
-		c:\qt\5.7.1static\include\QtWidgets\qaction.h \
-		c:\qt\5.7.1static\include\QtGui\qicon.h \
-		c:\qt\5.7.1static\include\QtWidgets\qactiongroup.h \
-		c:\qt\5.7.1static\include\QtWidgets\QApplication \
-		c:\qt\5.7.1static\include\QtWidgets\qapplication.h \
-		c:\qt\5.7.1static\include\QtCore\qcoreapplication.h \
-		c:\qt\5.7.1static\include\QtCore\qeventloop.h \
-		c:\qt\5.7.1static\include\QtWidgets\qdesktopwidget.h \
-		c:\qt\5.7.1static\include\QtGui\qguiapplication.h \
-		c:\qt\5.7.1static\include\QtGui\qinputmethod.h \
-		c:\qt\5.7.1static\include\QtWidgets\QButtonGroup \
-		c:\qt\5.7.1static\include\QtWidgets\qbuttongroup.h \
-		c:\qt\5.7.1static\include\QtWidgets\QComboBox \
-		c:\qt\5.7.1static\include\QtWidgets\qcombobox.h \
-		c:\qt\5.7.1static\include\QtWidgets\qabstractitemdelegate.h \
-		c:\qt\5.7.1static\include\QtWidgets\qstyleoption.h \
-		c:\qt\5.7.1static\include\QtWidgets\qabstractspinbox.h \
-		c:\qt\5.7.1static\include\QtGui\qvalidator.h \
-		c:\qt\5.7.1static\include\QtCore\qregularexpression.h \
-		c:\qt\5.7.1static\include\QtWidgets\qslider.h \
-		c:\qt\5.7.1static\include\QtWidgets\qabstractslider.h \
-		c:\qt\5.7.1static\include\QtWidgets\qstyle.h \
-		c:\qt\5.7.1static\include\QtWidgets\qtabbar.h \
-		c:\qt\5.7.1static\include\QtWidgets\qtabwidget.h \
-		c:\qt\5.7.1static\include\QtWidgets\qrubberband.h \
-		c:\qt\5.7.1static\include\QtWidgets\qframe.h \
-		c:\qt\5.7.1static\include\QtCore\qabstractitemmodel.h \
-		c:\qt\5.7.1static\include\QtWidgets\QDialog \
-		c:\qt\5.7.1static\include\QtWidgets\QHeaderView \
-		c:\qt\5.7.1static\include\QtWidgets\qheaderview.h \
-		c:\qt\5.7.1static\include\QtWidgets\qabstractitemview.h \
-		c:\qt\5.7.1static\include\QtWidgets\qabstractscrollarea.h \
-		c:\qt\5.7.1static\include\QtCore\qitemselectionmodel.h \
-		c:\qt\5.7.1static\include\QtWidgets\QLabel \
-		c:\qt\5.7.1static\include\QtWidgets\qlabel.h \
-		c:\qt\5.7.1static\include\QtWidgets\QLineEdit \
-		c:\qt\5.7.1static\include\QtWidgets\qlineedit.h \
-		c:\qt\5.7.1static\include\QtGui\qtextcursor.h \
-		c:\qt\5.7.1static\include\QtGui\qtextformat.h \
-		c:\qt\5.7.1static\include\QtGui\qpen.h \
-		c:\qt\5.7.1static\include\QtGui\qtextoption.h \
-		c:\qt\5.7.1static\include\QtWidgets\QPushButton \
-		c:\qt\5.7.1static\include\QtWidgets\qpushbutton.h \
-		c:\qt\5.7.1static\include\QtWidgets\qabstractbutton.h \
-		c:\qt\5.7.1static\include\QtWidgets\QToolButton \
-		c:\qt\5.7.1static\include\QtWidgets\qtoolbutton.h \
 		barcodeitem.h \
 		c:\qt\5.7.1static\include\QtWidgets\QGraphicsItem \
 		c:\qt\5.7.1static\include\QtWidgets\qgraphicsitem.h \
@@ -1616,6 +1176,8 @@ debug\exportwindow.obj: exportwindow.cpp c:\qt\5.7.1static\include\QtCore\QDebug
 		c:\qt\5.7.1static\include\QtGui\QColor \
 		c:\qt\5.7.1static\include\QtGui\QPainter \
 		c:\qt\5.7.1static\include\QtGui\qpainter.h \
+		c:\qt\5.7.1static\include\QtGui\qtextoption.h \
+		c:\qt\5.7.1static\include\QtGui\qpen.h \
 		..\backend\zint.h
 
 debug\main.obj: main.cpp c:\qt\5.7.1static\include\QtWidgets\QApplication \
@@ -1933,59 +1495,6 @@ debug\main.obj: main.cpp c:\qt\5.7.1static\include\QtWidgets\QApplication \
 		c:\qt\5.7.1static\include\QtWidgets\QGraphicsScene \
 		c:\qt\5.7.1static\include\QtWidgets\qgraphicsscene.h \
 		ui_mainWindow.h \
-		c:\qt\5.7.1static\include\QtCore\QLocale \
-		c:\qt\5.7.1static\include\QtCore\QVariant \
-		c:\qt\5.7.1static\include\QtWidgets\QAction \
-		c:\qt\5.7.1static\include\QtWidgets\qaction.h \
-		c:\qt\5.7.1static\include\QtWidgets\qactiongroup.h \
-		c:\qt\5.7.1static\include\QtWidgets\QButtonGroup \
-		c:\qt\5.7.1static\include\QtWidgets\qbuttongroup.h \
-		c:\qt\5.7.1static\include\QtWidgets\QCheckBox \
-		c:\qt\5.7.1static\include\QtWidgets\qcheckbox.h \
-		c:\qt\5.7.1static\include\QtWidgets\qabstractbutton.h \
-		c:\qt\5.7.1static\include\QtWidgets\QComboBox \
-		c:\qt\5.7.1static\include\QtWidgets\qcombobox.h \
-		c:\qt\5.7.1static\include\QtWidgets\qabstractitemdelegate.h \
-		c:\qt\5.7.1static\include\QtWidgets\qstyleoption.h \
-		c:\qt\5.7.1static\include\QtWidgets\qabstractspinbox.h \
-		c:\qt\5.7.1static\include\QtWidgets\qslider.h \
-		c:\qt\5.7.1static\include\QtWidgets\qabstractslider.h \
-		c:\qt\5.7.1static\include\QtWidgets\qstyle.h \
-		c:\qt\5.7.1static\include\QtWidgets\qtabbar.h \
-		c:\qt\5.7.1static\include\QtWidgets\qrubberband.h \
-		c:\qt\5.7.1static\include\QtWidgets\qframe.h \
-		c:\qt\5.7.1static\include\QtWidgets\QDoubleSpinBox \
-		c:\qt\5.7.1static\include\QtWidgets\qspinbox.h \
-		c:\qt\5.7.1static\include\QtWidgets\QGraphicsView \
-		c:\qt\5.7.1static\include\QtWidgets\qgraphicsview.h \
-		c:\qt\5.7.1static\include\QtWidgets\qscrollarea.h \
-		c:\qt\5.7.1static\include\QtWidgets\qabstractscrollarea.h \
-		c:\qt\5.7.1static\include\QtWidgets\QGridLayout \
-		c:\qt\5.7.1static\include\QtWidgets\qgridlayout.h \
-		c:\qt\5.7.1static\include\QtWidgets\qlayout.h \
-		c:\qt\5.7.1static\include\QtWidgets\qlayoutitem.h \
-		c:\qt\5.7.1static\include\QtWidgets\qboxlayout.h \
-		c:\qt\5.7.1static\include\QtWidgets\QGroupBox \
-		c:\qt\5.7.1static\include\QtWidgets\qgroupbox.h \
-		c:\qt\5.7.1static\include\QtWidgets\QHBoxLayout \
-		c:\qt\5.7.1static\include\QtWidgets\QHeaderView \
-		c:\qt\5.7.1static\include\QtWidgets\qheaderview.h \
-		c:\qt\5.7.1static\include\QtWidgets\qabstractitemview.h \
-		c:\qt\5.7.1static\include\QtWidgets\QLabel \
-		c:\qt\5.7.1static\include\QtWidgets\qlabel.h \
-		c:\qt\5.7.1static\include\QtWidgets\QLineEdit \
-		c:\qt\5.7.1static\include\QtWidgets\qlineedit.h \
-		c:\qt\5.7.1static\include\QtWidgets\QPushButton \
-		c:\qt\5.7.1static\include\QtWidgets\qpushbutton.h \
-		c:\qt\5.7.1static\include\QtWidgets\QSpacerItem \
-		c:\qt\5.7.1static\include\QtWidgets\QSpinBox \
-		c:\qt\5.7.1static\include\QtWidgets\QTabWidget \
-		c:\qt\5.7.1static\include\QtWidgets\QTextEdit \
-		c:\qt\5.7.1static\include\QtWidgets\qtextedit.h \
-		c:\qt\5.7.1static\include\QtWidgets\QToolButton \
-		c:\qt\5.7.1static\include\QtWidgets\qtoolbutton.h \
-		c:\qt\5.7.1static\include\QtWidgets\QVBoxLayout \
-		c:\qt\5.7.1static\include\QtWidgets\QWidget \
 		barcodeitem.h \
 		..\backend_qt\qzint.h \
 		c:\qt\5.7.1static\include\QtGui\QColor \
@@ -2113,6 +1622,10 @@ debug\mainwindow.obj: mainwindow.cpp c:\qt\5.7.1static\include\QtCore\QDebug \
 		c:\qt\5.7.1static\include\QtWidgets\qmessagebox.h \
 		c:\qt\5.7.1static\include\QtCore\QSettings \
 		c:\qt\5.7.1static\include\QtCore\qsettings.h \
+		c:\qt\5.7.1static\include\QtGui\QClipboard \
+		c:\qt\5.7.1static\include\QtGui\qclipboard.h \
+		c:\qt\5.7.1static\include\QtCore\QMimeData \
+		c:\qt\5.7.1static\include\QtCore\qmimedata.h \
 		mainwindow.h \
 		c:\qt\5.7.1static\include\QtGui\QtGui \
 		c:\qt\5.7.1static\include\QtGui\QtGuiDepends \
@@ -2161,7 +1674,6 @@ debug\mainwindow.obj: mainwindow.cpp c:\qt\5.7.1static\include\QtCore\QDebug \
 		c:\qt\5.7.1static\include\QtCore\qcoreapplication.h \
 		c:\qt\5.7.1static\include\QtCore\qmath.h \
 		c:\qt\5.7.1static\include\QtCore\qmetaobject.h \
-		c:\qt\5.7.1static\include\QtCore\qmimedata.h \
 		c:\qt\5.7.1static\include\QtCore\qobjectcleanuphandler.h \
 		c:\qt\5.7.1static\include\QtCore\qpointer.h \
 		c:\qt\5.7.1static\include\QtCore\qsharedmemory.h \
@@ -2236,7 +1748,6 @@ debug\mainwindow.obj: mainwindow.cpp c:\qt\5.7.1static\include\QtCore\QDebug \
 		c:\qt\5.7.1static\include\QtGui\qpictureformatplugin.h \
 		c:\qt\5.7.1static\include\QtGui\qpixmapcache.h \
 		c:\qt\5.7.1static\include\QtGui\qstandarditemmodel.h \
-		c:\qt\5.7.1static\include\QtGui\qclipboard.h \
 		c:\qt\5.7.1static\include\QtGui\qdrag.h \
 		c:\qt\5.7.1static\include\QtGui\qgenericplugin.h \
 		c:\qt\5.7.1static\include\QtGui\qgenericpluginfactory.h \
@@ -2319,61 +1830,6 @@ debug\mainwindow.obj: mainwindow.cpp c:\qt\5.7.1static\include\QtCore\QDebug \
 		c:\qt\5.7.1static\include\QtWidgets\qmainwindow.h \
 		c:\qt\5.7.1static\include\QtWidgets\qtabwidget.h \
 		ui_mainWindow.h \
-		c:\qt\5.7.1static\include\QtCore\QLocale \
-		c:\qt\5.7.1static\include\QtCore\QVariant \
-		c:\qt\5.7.1static\include\QtWidgets\QAction \
-		c:\qt\5.7.1static\include\QtWidgets\qaction.h \
-		c:\qt\5.7.1static\include\QtWidgets\qactiongroup.h \
-		c:\qt\5.7.1static\include\QtWidgets\QApplication \
-		c:\qt\5.7.1static\include\QtWidgets\qapplication.h \
-		c:\qt\5.7.1static\include\QtWidgets\qdesktopwidget.h \
-		c:\qt\5.7.1static\include\QtWidgets\QButtonGroup \
-		c:\qt\5.7.1static\include\QtWidgets\qbuttongroup.h \
-		c:\qt\5.7.1static\include\QtWidgets\QCheckBox \
-		c:\qt\5.7.1static\include\QtWidgets\qcheckbox.h \
-		c:\qt\5.7.1static\include\QtWidgets\QComboBox \
-		c:\qt\5.7.1static\include\QtWidgets\qcombobox.h \
-		c:\qt\5.7.1static\include\QtWidgets\qabstractitemdelegate.h \
-		c:\qt\5.7.1static\include\QtWidgets\qstyleoption.h \
-		c:\qt\5.7.1static\include\QtWidgets\qabstractspinbox.h \
-		c:\qt\5.7.1static\include\QtWidgets\qslider.h \
-		c:\qt\5.7.1static\include\QtWidgets\qabstractslider.h \
-		c:\qt\5.7.1static\include\QtWidgets\qstyle.h \
-		c:\qt\5.7.1static\include\QtWidgets\qtabbar.h \
-		c:\qt\5.7.1static\include\QtWidgets\qrubberband.h \
-		c:\qt\5.7.1static\include\QtWidgets\qframe.h \
-		c:\qt\5.7.1static\include\QtWidgets\QDoubleSpinBox \
-		c:\qt\5.7.1static\include\QtWidgets\qspinbox.h \
-		c:\qt\5.7.1static\include\QtWidgets\QGraphicsView \
-		c:\qt\5.7.1static\include\QtWidgets\qgraphicsview.h \
-		c:\qt\5.7.1static\include\QtWidgets\qscrollarea.h \
-		c:\qt\5.7.1static\include\QtWidgets\qabstractscrollarea.h \
-		c:\qt\5.7.1static\include\QtWidgets\QGridLayout \
-		c:\qt\5.7.1static\include\QtWidgets\qgridlayout.h \
-		c:\qt\5.7.1static\include\QtWidgets\qlayout.h \
-		c:\qt\5.7.1static\include\QtWidgets\qlayoutitem.h \
-		c:\qt\5.7.1static\include\QtWidgets\qboxlayout.h \
-		c:\qt\5.7.1static\include\QtWidgets\QGroupBox \
-		c:\qt\5.7.1static\include\QtWidgets\qgroupbox.h \
-		c:\qt\5.7.1static\include\QtWidgets\QHBoxLayout \
-		c:\qt\5.7.1static\include\QtWidgets\QHeaderView \
-		c:\qt\5.7.1static\include\QtWidgets\qheaderview.h \
-		c:\qt\5.7.1static\include\QtWidgets\qabstractitemview.h \
-		c:\qt\5.7.1static\include\QtWidgets\QLabel \
-		c:\qt\5.7.1static\include\QtWidgets\qlabel.h \
-		c:\qt\5.7.1static\include\QtWidgets\QLineEdit \
-		c:\qt\5.7.1static\include\QtWidgets\qlineedit.h \
-		c:\qt\5.7.1static\include\QtWidgets\QPushButton \
-		c:\qt\5.7.1static\include\QtWidgets\qpushbutton.h \
-		c:\qt\5.7.1static\include\QtWidgets\QSpacerItem \
-		c:\qt\5.7.1static\include\QtWidgets\QSpinBox \
-		c:\qt\5.7.1static\include\QtWidgets\QTabWidget \
-		c:\qt\5.7.1static\include\QtWidgets\QTextEdit \
-		c:\qt\5.7.1static\include\QtWidgets\qtextedit.h \
-		c:\qt\5.7.1static\include\QtWidgets\QToolButton \
-		c:\qt\5.7.1static\include\QtWidgets\qtoolbutton.h \
-		c:\qt\5.7.1static\include\QtWidgets\QVBoxLayout \
-		c:\qt\5.7.1static\include\QtWidgets\QWidget \
 		barcodeitem.h \
 		..\backend_qt\qzint.h \
 		c:\qt\5.7.1static\include\QtGui\QColor \
@@ -2381,9 +1837,6 @@ debug\mainwindow.obj: mainwindow.cpp c:\qt\5.7.1static\include\QtCore\QDebug \
 		..\backend\zint.h \
 		datawindow.h \
 		ui_extData.h \
-		c:\qt\5.7.1static\include\QtWidgets\QDialog \
-		c:\qt\5.7.1static\include\QtWidgets\QPlainTextEdit \
-		c:\qt\5.7.1static\include\QtWidgets\qplaintextedit.h \
 		sequencewindow.h \
 		ui_extSequence.h
 
@@ -2498,61 +1951,6 @@ debug\sequencewindow.obj: sequencewindow.cpp c:\qt\5.7.1static\include\QtCore\QD
 		c:\qt\5.7.1static\include\QtWidgets\qmessagebox.h \
 		sequencewindow.h \
 		ui_extSequence.h \
-		c:\qt\5.7.1static\include\QtCore\QVariant \
-		c:\qt\5.7.1static\include\QtWidgets\QAction \
-		c:\qt\5.7.1static\include\QtWidgets\qaction.h \
-		c:\qt\5.7.1static\include\QtGui\qicon.h \
-		c:\qt\5.7.1static\include\QtWidgets\qactiongroup.h \
-		c:\qt\5.7.1static\include\QtWidgets\QApplication \
-		c:\qt\5.7.1static\include\QtWidgets\qapplication.h \
-		c:\qt\5.7.1static\include\QtCore\qcoreapplication.h \
-		c:\qt\5.7.1static\include\QtCore\qeventloop.h \
-		c:\qt\5.7.1static\include\QtWidgets\qdesktopwidget.h \
-		c:\qt\5.7.1static\include\QtGui\qguiapplication.h \
-		c:\qt\5.7.1static\include\QtGui\qinputmethod.h \
-		c:\qt\5.7.1static\include\QtWidgets\QButtonGroup \
-		c:\qt\5.7.1static\include\QtWidgets\qbuttongroup.h \
-		c:\qt\5.7.1static\include\QtWidgets\QDialog \
-		c:\qt\5.7.1static\include\QtWidgets\QGroupBox \
-		c:\qt\5.7.1static\include\QtWidgets\qgroupbox.h \
-		c:\qt\5.7.1static\include\QtWidgets\qframe.h \
-		c:\qt\5.7.1static\include\QtWidgets\QHeaderView \
-		c:\qt\5.7.1static\include\QtWidgets\qheaderview.h \
-		c:\qt\5.7.1static\include\QtWidgets\qabstractitemview.h \
-		c:\qt\5.7.1static\include\QtWidgets\qabstractscrollarea.h \
-		c:\qt\5.7.1static\include\QtCore\qabstractitemmodel.h \
-		c:\qt\5.7.1static\include\QtCore\qitemselectionmodel.h \
-		c:\qt\5.7.1static\include\QtWidgets\qabstractitemdelegate.h \
-		c:\qt\5.7.1static\include\QtWidgets\qstyleoption.h \
-		c:\qt\5.7.1static\include\QtWidgets\qabstractspinbox.h \
-		c:\qt\5.7.1static\include\QtGui\qvalidator.h \
-		c:\qt\5.7.1static\include\QtCore\qregularexpression.h \
-		c:\qt\5.7.1static\include\QtWidgets\qslider.h \
-		c:\qt\5.7.1static\include\QtWidgets\qabstractslider.h \
-		c:\qt\5.7.1static\include\QtWidgets\qstyle.h \
-		c:\qt\5.7.1static\include\QtWidgets\qtabbar.h \
-		c:\qt\5.7.1static\include\QtWidgets\qtabwidget.h \
-		c:\qt\5.7.1static\include\QtWidgets\qrubberband.h \
-		c:\qt\5.7.1static\include\QtWidgets\QLabel \
-		c:\qt\5.7.1static\include\QtWidgets\qlabel.h \
-		c:\qt\5.7.1static\include\QtWidgets\QLineEdit \
-		c:\qt\5.7.1static\include\QtWidgets\qlineedit.h \
-		c:\qt\5.7.1static\include\QtGui\qtextcursor.h \
-		c:\qt\5.7.1static\include\QtGui\qtextformat.h \
-		c:\qt\5.7.1static\include\QtGui\qpen.h \
-		c:\qt\5.7.1static\include\QtGui\qtextoption.h \
-		c:\qt\5.7.1static\include\QtWidgets\QPlainTextEdit \
-		c:\qt\5.7.1static\include\QtWidgets\qplaintextedit.h \
-		c:\qt\5.7.1static\include\QtWidgets\qtextedit.h \
-		c:\qt\5.7.1static\include\QtGui\qtextdocument.h \
-		c:\qt\5.7.1static\include\QtGui\qabstracttextdocumentlayout.h \
-		c:\qt\5.7.1static\include\QtGui\qtextlayout.h \
-		c:\qt\5.7.1static\include\QtGui\qglyphrun.h \
-		c:\qt\5.7.1static\include\QtGui\qrawfont.h \
-		c:\qt\5.7.1static\include\QtGui\qfontdatabase.h \
-		c:\qt\5.7.1static\include\QtWidgets\QPushButton \
-		c:\qt\5.7.1static\include\QtWidgets\qpushbutton.h \
-		c:\qt\5.7.1static\include\QtWidgets\qabstractbutton.h \
 		barcodeitem.h \
 		c:\qt\5.7.1static\include\QtWidgets\QGraphicsItem \
 		c:\qt\5.7.1static\include\QtWidgets\qgraphicsitem.h \
@@ -2560,15 +1958,13 @@ debug\sequencewindow.obj: sequencewindow.cpp c:\qt\5.7.1static\include\QtCore\QD
 		c:\qt\5.7.1static\include\QtGui\QColor \
 		c:\qt\5.7.1static\include\QtGui\QPainter \
 		c:\qt\5.7.1static\include\QtGui\qpainter.h \
+		c:\qt\5.7.1static\include\QtGui\qtextoption.h \
+		c:\qt\5.7.1static\include\QtGui\qpen.h \
 		..\backend\zint.h \
 		exportwindow.h \
-		ui_extExport.h \
-		c:\qt\5.7.1static\include\QtWidgets\QComboBox \
-		c:\qt\5.7.1static\include\QtWidgets\qcombobox.h \
-		c:\qt\5.7.1static\include\QtWidgets\QToolButton \
-		c:\qt\5.7.1static\include\QtWidgets\qtoolbutton.h
+		ui_extExport.h
 
-debug\qtzint_plugin_import.obj: C:/test/git/zint-code_qt5/frontend_qt/qtzint_plugin_import.cpp 
+debug\qtzint_plugin_import.obj: C:/test/git/zint-code/frontend_qt/qtzint_plugin_import.cpp 
 
 debug\qrc_resources.obj: debug\qrc_resources.cpp 
 
