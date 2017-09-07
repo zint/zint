@@ -31,7 +31,7 @@ if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_GNUCC)
 endif (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_GNUCC)
 
 IF(APPLE)
-    IF (UNIVERSAL) # TODO: make univeral binary
+    IF (UNIVERSAL) # TODO: make universal binary
         IF(NOT ZINT_HAS_BEEN_RUN_BEFORE and UNIVERAL)
             IF(EXISTS /Developer/SDKs/MacOSX10.5.sdk OR EXISTS /SDKs/MacOSX10.5.sdk)
                 SET(CMAKE_OSX_ARCHITECTURES "ppc;i386;ppc64;x86_64" CACHE STRING "Build architectures for OSX" FORCE)
