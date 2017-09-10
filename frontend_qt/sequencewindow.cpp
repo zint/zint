@@ -75,7 +75,6 @@ QString SequenceWindow::apply_format(QString raw_number)
 	QString adjusted, reversed;
 	QString format;
 	int format_len, input_len, i, inpos;
-	char format_char;
 	QChar format_qchar;
 	
 	format = linFormat->text();
@@ -86,7 +85,7 @@ QString SequenceWindow::apply_format(QString raw_number)
 	
 	for(i = format_len; i > 0; i--) {
 		format_qchar = format[i - 1];
-		format_char = format_qchar.toLatin1();
+        char format_char = format_qchar.toLatin1();
 		switch(format_char) {
 			case '#':
 				if (inpos > 0) {

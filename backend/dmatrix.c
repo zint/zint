@@ -194,12 +194,12 @@ static void ecc200placement(int *array, const int NR, const int NC) {
 /* calculate and append ecc code, and if necessary interleave */
 static void ecc200(unsigned char *binary, const int bytes, const int datablock, const int rsblock, const int skew) {
     int blocks = (bytes + 2) / datablock, b;
-    int n, p;
+    int n;
     rs_init_gf(0x12d);
     rs_init_code(rsblock, 1);
     for (b = 0; b < blocks; b++) {
         unsigned char buf[256], ecc[256];
-        p = 0;
+        int p = 0;
         for (n = b; n < bytes; n += blocks)
             buf[p++] = binary[n];
         rs_encode(p, buf, ecc);
@@ -698,7 +698,6 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
 
         /* step (c) C40 encodation */
         if (current_mode == DM_C40) {
-            int shift_set, value;
 
             next_mode = DM_C40;
             if (*process_p == 0) {
@@ -712,6 +711,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
                 next_mode = DM_ASCII;
                 if (debug) printf("ASC ");
             } else {
+                int shift_set, value;
                 if (source[sp] > 127) {
                     process_buffer[*process_p] = 1;
                     (*process_p)++;
@@ -761,7 +761,6 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
 
         /* step (d) Text encodation */
         if (current_mode == DM_TEXT) {
-            int shift_set, value;
 
             next_mode = DM_TEXT;
             if (*process_p == 0) {
@@ -775,6 +774,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
                 next_mode = DM_ASCII;
                 if (debug) printf("ASC ");
             } else {
+                int shift_set, value;
                 if (source[sp] > 127) {
                     process_buffer[*process_p] = 1;
                     (*process_p)++;
@@ -824,7 +824,6 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
 
         /* step (e) X12 encodation */
         if (current_mode == DM_X12) {
-            int value = 0;
 
             next_mode = DM_X12;
             if (*process_p == 0) {
@@ -838,6 +837,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
                 next_mode = DM_ASCII;
                 if (debug) printf("ASC ");
             } else {
+                int value = 0;
                 if (source[sp] == 13) {
                     value = 0;
                 }
@@ -885,7 +885,6 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
 
         /* step (f) EDIFACT encodation */
         if (current_mode == DM_EDIFACT) {
-            int value = 0;
 
             next_mode = DM_EDIFACT;
             if (*process_p == 3) {
@@ -897,7 +896,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
                 (*process_p)++;
                 next_mode = DM_ASCII;
             } else {
-                value = source[sp];
+                int value = source[sp];
                 
                 if (source[sp] >= 64) {  // '@'
                     value -= 64;
@@ -1148,7 +1147,6 @@ int data_matrix_200(struct zint_symbol *symbol,const unsigned char source[], con
     int taillength, error_number = 0;
     int H, W, FH, FW, datablock, bytes, rsblock;
     int last_mode = DM_ASCII;
-    unsigned char *grid = 0;
     int symbols_left;
 
     /* inputlen may be decremented by 2 if macro character is used */
@@ -1247,7 +1245,7 @@ int data_matrix_200(struct zint_symbol *symbol,const unsigned char source[], con
         NR = H - 2 * (H / FH);
         places = (int*) malloc(NC * NR * sizeof (int));
         ecc200placement(places, NR, NC);
-        grid = (unsigned char*) malloc(W * H);
+        unsigned char *grid = (unsigned char*) malloc(W * H);
         memset(grid, 0, W * H);
         for (y = 0; y < H; y += FH) {
             for (x = 0; x < W; x++)

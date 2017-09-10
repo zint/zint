@@ -109,9 +109,10 @@ static void init928(void) {
 
 /* converts bit string to base 928 values, codeWords[0] is highest order */
 static int encode928(UINT bitString[], UINT codeWords[], int bitLng) {
-    int i, j, b, bitCnt, cwNdx, cwCnt, cwLng;
+    int i, j, b, cwNdx, cwLng;
     for (cwNdx = cwLng = b = 0; b < bitLng; b += 69, cwNdx += 7) {
-        bitCnt = _min(bitLng - b, 69);
+        int bitCnt = _min(bitLng - b, 69);
+        int cwCnt;
         cwLng += cwCnt = bitCnt / 10 + 1;
         for (i = 0; i < cwCnt; i++)
             codeWords[cwNdx + i] = 0; /* init 0 */
@@ -132,7 +133,7 @@ static int encode928(UINT bitString[], UINT codeWords[], int bitLng) {
 
 /* CC-A 2D component */
 static int cc_a(struct zint_symbol *symbol, char source[], int cc_width) { 
-    int i, strpos, segment, bitlen, cwCnt, variant, rows;
+    int i, segment, bitlen, cwCnt, variant, rows;
     int k, offset, j, total, rsCodeWords[8];
     int LeftRAPStart, RightRAPStart, CentreRAPStart, StartCluster;
     int LeftRAP, RightRAP, CentreRAP, Cluster, dummy[5];
@@ -162,7 +163,7 @@ static int cc_a(struct zint_symbol *symbol, char source[], int cc_width) {
     local_source[208] = '\0';
 
     for (segment = 0; segment < 13; segment++) {
-        strpos = segment * 16;
+        int strpos = segment * 16;
         for (i = 0; i < 16; i++) {
             if (local_source[strpos + i] == '1') {
                 bitStr[segment] += (0x8000 >> i);
@@ -335,7 +336,7 @@ static int cc_a(struct zint_symbol *symbol, char source[], int cc_width) {
 
 /* CC-B 2D component */
 static int cc_b(struct zint_symbol *symbol, char source[], int cc_width) { 
-    int length, i, binloc;
+    int length, i;
 #ifndef _MSC_VER
     unsigned char data_string[(strlen(source) / 8) + 3];
 #else
@@ -351,7 +352,7 @@ static int cc_b(struct zint_symbol *symbol, char source[], int cc_width) {
     length = strlen(source) / 8;
 
     for (i = 0; i < length; i++) {
-        binloc = i * 8;
+        int binloc = i * 8;
 
         data_string[i] = 0;
         for (p = 0; p < 8; p++) {
@@ -368,7 +369,7 @@ static int cc_b(struct zint_symbol *symbol, char source[], int cc_width) {
     chainemc[mclength] = 920;
     mclength++;
 
-    byteprocess(chainemc, &mclength, data_string, 0, length, 0);
+    byteprocess(chainemc, &mclength, data_string, 0, length);
 
     /* Now figure out which variant of the symbol to use and load values accordingly */
 
@@ -588,7 +589,7 @@ static int cc_b(struct zint_symbol *symbol, char source[], int cc_width) {
 
 /* CC-C 2D component - byte compressed PDF417 */
 static int cc_c(struct zint_symbol *symbol, char source[], int cc_width, int ecc_level) { 
-    int length, i, p, binloc;
+    int length, i, p;
 #ifndef _MSC_VER
     unsigned char data_string[(strlen(source) / 8) + 4];
 #else
@@ -602,7 +603,7 @@ static int cc_c(struct zint_symbol *symbol, char source[], int cc_width, int ecc
     length = strlen(source) / 8;
 
     for (i = 0; i < length; i++) {
-        binloc = i * 8;
+        int binloc = i * 8;
 
         data_string[i] = 0;
         for (p = 0; p < 8; p++) {
@@ -619,7 +620,7 @@ static int cc_c(struct zint_symbol *symbol, char source[], int cc_width, int ecc
     chainemc[mclength] = 920; /* CC-C identifier */
     mclength++;
 
-    byteprocess(chainemc, &mclength, data_string, 0, length, 0);
+    byteprocess(chainemc, &mclength, data_string, 0, length);
 
     chainemc[0] = mclength;
 
@@ -962,9 +963,7 @@ int calc_padding_ccc(int binary_length, int *cc_width, int lin_width, int *ecc) 
 static int cc_binary_string(struct zint_symbol *symbol, const char source[], char binary_string[], int cc_mode, int *cc_width, int *ecc, int lin_width) { /* Handles all data encodation from section 5 of ISO/IEC 24723 */
     int encoding_method, read_posn, d1, d2, alpha_pad;
     int i, j, ai_crop, fnc1_latch;
-    long int group_val;
     int ai90_mode, latch, remainder, binary_length;
-    char date_str[4];
 #ifndef _MSC_VER
     char general_field[strlen(source) + 1], general_field_type[strlen(source) + 1];
 #else
@@ -1007,10 +1006,11 @@ static int cc_binary_string(struct zint_symbol *symbol, const char source[], cha
             read_posn = 2;
         } else {
             /* Production Date (11) or Expiration Date (17) */
+            char date_str[4];
             date_str[0] = source[2];
             date_str[1] = source[3];
             date_str[2] = '\0';
-            group_val = atoi(date_str) * 384;
+            long int group_val = atoi(date_str) * 384;
 
             date_str[0] = source[4];
             date_str[1] = source[5];
@@ -1048,9 +1048,7 @@ static int cc_binary_string(struct zint_symbol *symbol, const char source[], cha
 #else
         char* ninety = (char*) _alloca(strlen(source) + 1);
 #endif
-        char numeric_part[4];
-        int alpha, alphanum, numeric, test1, test2, test3, next_ai_posn;
-        int numeric_value, table3_letter;
+        int alpha, alphanum, numeric, test1, test2, test3;
 
         /* "This encodation method may be used if an element string with an AI
         90 occurs at the start of the data message, and if the data field
@@ -1147,7 +1145,7 @@ static int cc_binary_string(struct zint_symbol *symbol, const char source[], cha
                 }
             }
 
-            next_ai_posn = 2 + (int)strlen(ninety);
+            int next_ai_posn = 2 + (int)strlen(ninety);
 
             if (source[next_ai_posn] == '[') {
                 /* There are more AIs afterwords */
@@ -1171,6 +1169,7 @@ static int cc_binary_string(struct zint_symbol *symbol, const char source[], cha
                     break;
             }
 
+            char numeric_part[4];
             if (test1 == 0) {
                 strcpy(numeric_part, "0");
             } else {
@@ -1180,9 +1179,9 @@ static int cc_binary_string(struct zint_symbol *symbol, const char source[], cha
                 numeric_part[i] = '\0';
             }
 
-            numeric_value = atoi(numeric_part);
+            int numeric_value = atoi(numeric_part);
 
-            table3_letter = -1;
+            int table3_letter = -1;
             if (numeric_value < 31) {
                 table3_letter = posn("BDHIJKLNPQRSTVWZ", ninety[test1]);
             }

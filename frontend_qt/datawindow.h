@@ -28,7 +28,7 @@ class DataWindow : public QDialog, private Ui::DataDialog
 
 public:
 	DataWindow();
-	DataWindow(QString input);
+    explicit DataWindow(const QString &input);
 	~DataWindow();
 	int Valid;
 	QString DataOutput;

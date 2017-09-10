@@ -188,7 +188,6 @@ int code_11(struct zint_symbol *symbol, unsigned char source[], int length) { /*
 int c39(struct zint_symbol *symbol, unsigned char source[], const size_t length) {
     unsigned int i;
     unsigned int counter;
-    char check_digit;
     int error_number;
     char dest[775];
     char localstr[2] = {0};
@@ -223,9 +222,10 @@ int c39(struct zint_symbol *symbol, unsigned char source[], const size_t length)
 
     if ((symbol->symbology == BARCODE_LOGMARS) || (symbol->option_2 == 1)) {
 
+        char check_digit;
         counter = counter % 43;
         if (counter < 10) {
-            check_digit = itoc(counter);
+             check_digit = itoc(counter);
         } else {
             if (counter < 36) {
                 check_digit = (counter - 10) + 'A';
@@ -465,13 +465,13 @@ int c93(struct zint_symbol *symbol, unsigned char source[], int length) {
    assume no liability for the use of this document." */
 
 void CheckCharacter() {
-    int i;
-    char part[3];
 
     if (value == target_value) {
         /* Target reached - save the generated pattern */
         strcpy(pattern, "11110");
+        int i;
         for (i = 0; i < 11; i++) {
+            char part[3];
             part[0] = itoc(S[i]);
             part[1] = itoc(B[i]);
             part[2] = '\0';

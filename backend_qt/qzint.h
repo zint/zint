@@ -36,13 +36,13 @@ public:
 	QZint();
 	~QZint();
 
-	int  symbol();
+    int  symbol() const;
 	void setSymbol(int symbol);
 
-	QString text();
+    QString text() const;
 	void setText(const QString & text);
 
-	QString primaryMessage();
+    QString primaryMessage() const;
 	void setPrimaryMessage(const QString & primaryMessage);
 
 	void setHeight(int height);
@@ -53,41 +53,41 @@ public:
 	
 	void setOption3(int option);
 
-	QColor fgColor();
+    QColor fgColor() const;
 	void setFgColor(const QColor & fgColor);
 
-	QColor bgColor();
+    QColor bgColor() const;
 	void setBgColor(const QColor & bgColor);
 
-	BorderType borderType();
+    BorderType borderType() const;
 	void setBorderType(BorderType border);
 
-	int borderWidth();
+    int borderWidth() const;
 	void setBorderWidth(int boderWidth);
 
-	int pdf417CodeWords();
+    int pdf417CodeWords() const;
 	void setPdf417CodeWords(int pdf417CodeWords);
 
-	int securityLevel();
+    int securityLevel() const;
 	void setSecurityLevel(int securityLevel);
 
-	float scale();
+    float scale() const;
 	void setScale(float scale);
         
         void setDotSize(float dot_size);
 
-	int mode();
+    int mode() const;
 	void setMode(int securityLevel);
 
 	void setInputMode(int input_mode);
 
 	void setWhitespace(int whitespace);
 
-	QString error_message();
+    QString error_message() const;
 
 	void render(QPainter & painter, const QRectF & paintRect, AspectRatioMode mode=IgnoreAspectRatio);
 
-	const QString & lastError();
+    const QString & lastError() const;
 	bool hasErrors();
 
 	bool save_to_file(QString filename);
@@ -98,7 +98,7 @@ public:
 
 private:
 	void encode();
-	int module_set(int y_coord, int x_coord);
+    int module_set(int y_coord, int x_coord) const;
 
 private:
 	int m_symbol;
@@ -120,9 +120,9 @@ private:
 	float m_scale;
 	int m_option_3;
 	bool m_hidetext;
-        float m_dot_size;
-        int target_size_horiz;
-        int target_size_vert;
+    float m_dot_size;
+    int target_size_horiz;
+    int target_size_vert;
 };
 }
 #endif

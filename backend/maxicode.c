@@ -588,8 +588,8 @@ void maxi_do_primary_3(char postcode[], int country, int service) {
     maxi_codeword[9] = ((service & 0x3f0) >> 4);
 }
 
-int maxicode(struct zint_symbol *symbol, unsigned char local_source[], int length) {
-    int i, j, block, bit, mode, countrycode = 0, service = 0, lp = 0;
+int maxicode(struct zint_symbol *symbol, unsigned char local_source[], const int length) {
+    int i, j, block, bit, mode, lp = 0;
     int bit_pattern[7], internal_error = 0, eclen;
     char postcode[12], countrystr[4], servicestr[4];
 
@@ -659,8 +659,8 @@ int maxicode(struct zint_symbol *symbol, unsigned char local_source[], int lengt
         servicestr[2] = symbol->primary[14];
         servicestr[3] = '\0';
 
-        countrycode = atoi(countrystr);
-        service = atoi(servicestr);
+        int countrycode = atoi(countrystr);
+        int service = atoi(servicestr);
 
         if (mode == 2) {
             maxi_do_primary_2(postcode, countrycode, service);

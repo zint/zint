@@ -104,7 +104,7 @@ int australia_post(struct zint_symbol *symbol, unsigned char source[], int lengt
        1 = Tracker and Ascender
        2 = Tracker and Descender
        3 = Tracker only */
-    int error_number, zeroes;
+    int error_number;
     int writer;
     unsigned int loopey, reader;
     size_t h;
@@ -160,7 +160,7 @@ int australia_post(struct zint_symbol *symbol, unsigned char source[], int lengt
         }
 
         /* Add leading zeros as required */
-        zeroes = 8 - length;
+        int zeroes = 8 - length;
         memset(localstr, '0', zeroes);
         localstr[8] = '\0';
     }

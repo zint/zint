@@ -134,14 +134,19 @@ static int aztec_text_process(const unsigned char source[], const size_t src_len
     char *reduced_encode_mode;
     int reduced_length;
     int byte_mode = 0;
-    
-    encode_mode=(char*)alloca(src_len);
-    reduced_source=(char*)alloca(src_len);
-    reduced_encode_mode=(char*)alloca(src_len);
+
+    encode_mode=(char*)malloc(src_len);
+    reduced_source=(char*)malloc(src_len);
+    reduced_encode_mode=(char*)malloc(src_len);
 
     if ((!encode_mode) ||
         (!reduced_source) ||
-        (!reduced_encode_mode)) return -1;
+        (!reduced_encode_mode)) {
+        free(encode_mode);
+        free(reduced_source);
+        free(reduced_encode_mode);
+        return -1;
+    }
 
     for (i = 0; i < src_len; i++) {
         if (source[i] > 128) {
@@ -802,6 +807,10 @@ static int aztec_text_process(const unsigned char source[], const size_t src_len
         printf("Binary String:\n");
         printf("%s\n", binary_string);
     }
+
+    free(encode_mode);
+    free(reduced_source);
+    free(reduced_encode_mode);
     
     return 0;
 }
@@ -842,7 +851,7 @@ static int avoidReferenceGrid(int output) {
 
 /* Calculate the position of the bits in the grid */
 static void populate_map() {
-    int layer, start, length, n, i;
+    int layer, n, i;
     int x, y;
 
     for (x = 0; x < 151; x++) {
@@ -852,8 +861,8 @@ static void populate_map() {
     }
 
     for (layer = 1; layer < 33; layer++) {
-        start = (112 * (layer - 1)) + (16 * (layer - 1) * (layer - 1)) + 2;
-        length = 28 + ((layer - 1) * 4) + (layer * 4);
+        const int start = (112 * (layer - 1)) + (16 * (layer - 1) * (layer - 1)) + 2;
+        const int length = 28 + ((layer - 1) * 4) + (layer * 4);
         /* Top */
         i = 0;
         x = 64 - ((layer - 1) * 2);

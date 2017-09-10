@@ -49,13 +49,13 @@ int number_lat(int gbdata[], const size_t length, const size_t position) {
        a string which has "2.2.0" (cannot have more than one non-numeric character for each
        block of three numeric characters) */
     size_t sp;
-    int numb = 0, nonum = 0, done;
+    int numb = 0, nonum = 0;
     int tally = 0;
 
     sp = position;
 
     do {
-        done = 0;
+        int done = 0;
 
         if ((gbdata[sp] >= '0') && (gbdata[sp] <= '9')) {
             numb++;
@@ -125,7 +125,7 @@ static int seek_forward(int gbdata[], const size_t length, const size_t position
        possible combinations of input data */
 
     int number_count, byte_count, mixed_count, upper_count, lower_count, chinese_count;
-    int    best_mode, done;
+    int    best_mode;
    size_t sp;
     int best_count, last = -1;
     int debug = 0;
@@ -194,7 +194,7 @@ static int seek_forward(int gbdata[], const size_t length, const size_t position
 
     for (sp = position; (sp < length) && (sp <= (position + 8)); sp++) {
 
-        done = 0;
+        int done = 0;
 
         if (gbdata[sp] >= 0xff) {
             byte_count += 17;
@@ -347,7 +347,7 @@ static int gm_encode(int gbdata[], const size_t length, char binary[],const int 
     /* Create a binary stream representation of the input data.
        7 sets are defined - Chinese characters, Numerals, Lower case letters, Upper case letters,
        Mixed numerals and latters, Control characters and 8-bit binary data */
-    int sp, current_mode, next_mode, last_mode, glyph = 0;
+    int sp, current_mode, last_mode, glyph = 0;
     int c1, c2, done;
     int p = 0, ppos;
     int numbuf[3], punt = 0;
@@ -383,7 +383,7 @@ static int gm_encode(int gbdata[], const size_t length, char binary[],const int 
     }
 
     do {
-        next_mode = seek_forward(gbdata, length, sp, current_mode);
+        int next_mode = seek_forward(gbdata, length, sp, current_mode);
 
         if (next_mode != current_mode) {
             switch (current_mode) {
@@ -800,7 +800,7 @@ static int gm_encode(int gbdata[], const size_t length, char binary[],const int 
 static void gm_add_ecc(const char binary[], const size_t data_posn, const int layers, const int ecc_level, int word[]) {
     int data_cw, i, j, wp, p;
     int n1, b1, n2, b2, e1, b3, e2;
-    int block_size, data_size, ecc_size;
+    int block_size, ecc_size;
     int data[1320], block[130];
     unsigned char data_block[115], ecc_block[70];
 
@@ -851,7 +851,7 @@ static void gm_add_ecc(const char binary[], const size_t data_posn, const int la
         } else {
             ecc_size = e2;
         }
-        data_size = block_size - ecc_size;
+        int data_size = block_size - ecc_size;
 
         /* printf("block %d/%d: data %d / ecc %d\n", i + 1, (b1 + b2), data_size, ecc_size);*/
 
@@ -1000,9 +1000,9 @@ void place_layer_id(char* grid, int size, int layers, int modules, int ecc_level
 }
 
 int grid_matrix(struct zint_symbol *symbol, const unsigned char source[], size_t length) {
-    int size, modules, dark, error_number;
+    int size, modules, error_number;
     int auto_layers, min_layers, layers, auto_ecc_level, min_ecc_level, ecc_level;
-    int x, y, i, j, glyph;
+    int x, y, i;
     char binary[9300];
     int data_cw, input_latch = 0;
     int word[1460], data_max, reader = 0;
@@ -1035,8 +1035,8 @@ int grid_matrix(struct zint_symbol *symbol, const unsigned char source[], size_t
             if (utfdata[i] <= 0xff) {
                 gbdata[i] = utfdata[i];
             } else {
-                j = 0;
-                glyph = 0;
+                int j = 0;
+                int glyph = 0;
                 do {
                     if (gb2312_lookup[j * 2] == utfdata[i]) {
                         glyph = gb2312_lookup[(j * 2) + 1];
@@ -1174,7 +1174,7 @@ int grid_matrix(struct zint_symbol *symbol, const unsigned char source[], size_t
 
     /* Add macromodule frames */
     for (x = 0; x < modules; x++) {
-        dark = 1 - (x & 1);
+        int dark = 1 - (x & 1);
         for (y = 0; y < modules; y++) {
             if (dark == 1) {
                 for (i = 0; i < 5; i++) {

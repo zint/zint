@@ -43,13 +43,12 @@
 
 int count_rectangles(struct zint_symbol *symbol) {
     int rectangles = 0;
-    int this_row;
-    int latch, i;
     
     if ((symbol->symbology != BARCODE_MAXICODE) && 
             ((symbol->output_options & BARCODE_DOTTY_MODE) == 0)) {
+        int this_row;
         for(this_row = 0; this_row < symbol->rows; this_row++) {
-            latch = 0;
+            int i, latch = 0;
             for(i = 0; i < symbol->width; i++) {
                 if ((module_is_set(symbol, this_row, i)) && (latch == 0)) {
                     latch = 1;
@@ -68,12 +67,12 @@ int count_rectangles(struct zint_symbol *symbol) {
 
 int count_circles(struct zint_symbol *symbol) {
     int circles = 0;
-    int this_row;
-    int i;
     
     if ((symbol->symbology != BARCODE_MAXICODE) &&
             ((symbol->output_options & BARCODE_DOTTY_MODE) != 0)) {
+        int this_row;
         for(this_row = 0; this_row < symbol->rows; this_row++) {
+            int i;
             for(i = 0; i < symbol->width; i++) {
                 if (module_is_set(symbol, this_row, i)) {
                     circles++;
@@ -87,11 +86,11 @@ int count_circles(struct zint_symbol *symbol) {
 
 int count_hexagons(struct zint_symbol *symbol) {
     int hexagons = 0;
-    int this_row;
-    int i;
     
     if (symbol->symbology == BARCODE_MAXICODE) {
+        int this_row;
         for(this_row = 0; this_row < symbol->rows; this_row++) {
+            int i;
             for(i = 0; i < symbol->width; i++) {
                 if (module_is_set(symbol, this_row, i)) {
                     hexagons++;
@@ -137,7 +136,7 @@ int bump_up(int input) {
 
 int emf_plot(struct zint_symbol *symbol) {
     int i, block_width, latch, this_row;
-    float large_bar_height, preset_height, row_height, row_posn;
+    float large_bar_height, preset_height, row_height;
     FILE *emf_file;
     int fgred, fggrn, fgblu, bgred, bggrn, bgblu;
     int error_number = 0;
@@ -751,7 +750,7 @@ int emf_plot(struct zint_symbol *symbol) {
         } else {
             row_height = symbol->row_height[this_row];
         }
-        row_posn = 0;
+        float row_posn = 0;
         for (i = 0; i < this_row; i++) {
             if (symbol->row_height[i] == 0) {
                 row_posn += large_bar_height;

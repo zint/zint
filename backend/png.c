@@ -76,7 +76,6 @@ int png_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
     struct mainprog_info_type *graphic;
     png_structp png_ptr;
     png_infop info_ptr;
-    unsigned char *image_data;
     int i, row, column;
     int fgred, fggrn, fgblu, bgred, bggrn, bgblu;
 
@@ -172,7 +171,7 @@ int png_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
             }
         }
         /* write row contents to file */
-        image_data = outdata;
+        unsigned char *image_data = outdata;
         png_write_row(png_ptr, image_data);
     }
 

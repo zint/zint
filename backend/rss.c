@@ -164,8 +164,8 @@ int rss14(struct zint_symbol *symbol, unsigned char source[], int src_len) {
     short int accum[112], left_reg[112], right_reg[112], x_reg[112], y_reg[112];
     int data_character[4], data_group[4], v_odd[4], v_even[4];
     int data_widths[8][4], checksum, c_left, c_right, total_widths[46], writer;
-    char latch, hrt[15], temp[32];
-    int check_digit, count, separator_row;
+    char latch, temp[32];
+    int separator_row;
 
     separator_row = 0;
 
@@ -486,8 +486,9 @@ int rss14(struct zint_symbol *symbol, unsigned char source[], int src_len) {
         }
         symbol->rows = symbol->rows + 1;
 
-        count = 0;
-        check_digit = 0;
+        int count = 0;
+        int check_digit = 0;
+        char hrt[15];
 
         /* Calculate check digit from Annex A and place human readable text */
         ustrcpy(symbol->text, (unsigned char*) "(01)");
@@ -1054,10 +1055,10 @@ int rsslimited(struct zint_symbol *symbol, unsigned char source[], int src_len) 
 
 /* Attempts to apply encoding rules from secions 7.2.5.5.1 to 7.2.5.5.3
  * of ISO/IEC 24724:2006 */
-int general_rules(char field[], char type[]) {
+int general_rules(char type[]) {
 
     int block[2][200], block_count, i, j, k;
-    char current, next, last;
+    char current;
 
     block_count = 0;
 
@@ -1066,7 +1067,7 @@ int general_rules(char field[], char type[]) {
 
     for (i = 1; i < strlen(type); i++) {
         current = type[i];
-        last = type[i - 1];
+        char last = type[i - 1];
 
         if (current == last) {
             block[0][block_count] = block[0][block_count] + 1;
@@ -1081,7 +1082,7 @@ int general_rules(char field[], char type[]) {
 
     for (i = 0; i < block_count; i++) {
         current = block[1][i];
-        next = (block[1][i + 1] & 0xFF);
+        char next = (block[1][i + 1] & 0xFF);
 
         if ((current == ISOIEC) && (i != (block_count - 1))) {
             if ((next == ANY_ENC) && (block[0][i + 1] >= 4)) {
@@ -1205,7 +1206,6 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
             if (source[18] == '0') {
                 /* (01) and (310x) */
                 char weight_str[7];
-                float weight; /* In kilos */
 
                 for (i = 0; i < 6; i++) {
                     weight_str[i] = source[20 + i];
@@ -1219,6 +1219,7 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
 
                     if ((source[19] == '3') && (strlen(source) == 26)) {
                         /* (01) and (3103) */
+                        float weight; /* In kilos */
                         weight = atof(weight_str) / 1000.0;
 
                         if (weight <= 32.767) {
@@ -1258,7 +1259,6 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
             if (source[18] == '0') {
                 /* (01) and (320x) */
                 char weight_str[7];
-                float weight; /* In pounds */
 
                 for (i = 0; i < 6; i++) {
                     weight_str[i] = source[20 + i];
@@ -1271,6 +1271,7 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
 
                     if (((source[19] == '2') || (source[19] == '3')) && (strlen(source) == 26)) {
                         /* (01) and (3202)/(3203) */
+                        float weight; /* In pounds */
 
                         if (source[19] == '3') {
                             weight = (float) (atof(weight_str) / 1000.0F);
@@ -1454,7 +1455,6 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
         char group[4];
         int group_val;
         char weight_str[8];
-        char date_str[4];
 
         for (i = 1; i < 5; i++) {
             group[0] = source[(i * 3)];
@@ -1476,6 +1476,7 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
 
         if (strlen(source) == 34) {
             /* Date information is included */
+            char date_str[4];
             date_str[0] = source[28];
             date_str[1] = source[29];
             date_str[2] = '\0';
@@ -1592,7 +1593,7 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
         }
     }
 
-    latch = general_rules(general_field, general_field_type);
+    latch = general_rules(general_field_type);
     if (debug) printf("General field type: %s\n", general_field_type);
 
     last_mode = NUMERIC;
@@ -1863,8 +1864,6 @@ int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int src_len)
     char substring[21][14], latch;
     int char_widths[21][8], checksum, check_widths[8], c_group;
     int check_char, c_odd, c_even, elements[235], pattern_width, reader, writer;
-    int row, elements_in_sub, special_case_row, left_to_right;
-    int codeblocks, sub_elements[235], stack_rows, current_row, current_block;
     int separator_row;
 #ifndef _MSC_VER
     char reduced[src_len + 1], binary_string[(7 * src_len) + 1];
@@ -1958,7 +1957,7 @@ int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int src_len)
        elements in the data characters. */
     checksum = 0;
     for (i = 0; i < data_chars; i++) {
-        row = weight_rows[(((data_chars - 2) / 2) * 21) + i];
+        int row = weight_rows[(((data_chars - 2) / 2) * 21) + i];
         for (j = 0; j < 8; j++) {
             checksum += (char_widths[i][j] * checksum_weight_exp[(row * 8) + j]);
 
@@ -2102,7 +2101,7 @@ int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int src_len)
          * [01]90614141999996[10]1234222222222221
          * Patch by Daniel Frede
          */
-        codeblocks = (data_chars + 1) / 2 + ((data_chars + 1) % 2);
+        int codeblocks = (data_chars + 1) / 2 + ((data_chars + 1) % 2);
 
 
         if ((symbol->option_2 < 1) || (symbol->option_2 > 10)) {
@@ -2115,22 +2114,23 @@ int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int src_len)
             symbol->option_2 = 2;
         }
 
-        stack_rows = codeblocks / symbol->option_2;
+        int stack_rows = codeblocks / symbol->option_2;
         if (codeblocks % symbol->option_2 > 0) {
             stack_rows++;
         }
 
-        current_block = 0;
+        int current_row, current_block = 0, left_to_right;
         for (current_row = 1; current_row <= stack_rows; current_row++) {
+            int sub_elements[235];
             for (i = 0; i < 235; i++) {
                 sub_elements[i] = 0;
             }
-            special_case_row = 0;
+            int special_case_row = 0;
 
             /* Row Start */
             sub_elements[0] = 1; // left guard
             sub_elements[1] = 1;
-            elements_in_sub = 2;
+            int elements_in_sub = 2;
 
             /* Row Data */
             reader = 0;
@@ -2139,7 +2139,7 @@ int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int src_len)
                         ((current_row == stack_rows) && (codeblocks != (current_row * symbol->option_2)) &&
                         (((current_row * symbol->option_2) - codeblocks) & 1))) {
                     /* left to right */
-                    left_to_right = 1;
+                     left_to_right = 1;
                     i = 2 + (current_block * 21);
                     for (j = 0; j < 21; j++) {
                         if ((i + j) < pattern_width) {
@@ -2167,7 +2167,7 @@ int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int src_len)
             sub_elements[elements_in_sub + 1] = 1;
             elements_in_sub += 2;
 
-            latch = current_row & 1 ? '0' : '1';
+            latch = (current_row & 1) ? '0' : '1';
 
             if ((current_row == stack_rows) && (codeblocks != (current_row * symbol->option_2)) &&
                     ((current_row & 1) == 0) && ((symbol->option_2 & 1) == 0)) {

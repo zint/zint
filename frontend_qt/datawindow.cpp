@@ -36,7 +36,7 @@ DataWindow::DataWindow()
 	connect(btnOK, SIGNAL( clicked( bool )), SLOT(okay()));
 }
 
-DataWindow::DataWindow(QString input)
+DataWindow::DataWindow(const QString &input)
 {
 	setupUi(this);
 	txtDataInput->setPlainText(input);

@@ -36,11 +36,11 @@
 #include "large.h"
 
 void binary_add(short int accumulator[], short int input_buffer[]) { /* Binary addition */
-    int i, carry, done;
+    int i, carry;
     carry = 0;
 
     for (i = 0; i < 112; i++) {
-        done = 0;
+        int done = 0;
         if (((input_buffer[i] == 0) && (accumulator[i] == 0)) 
                 && ((carry == 0) && (done == 0))) {
             accumulator[i] = 0;

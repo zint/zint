@@ -228,11 +228,10 @@ int isFourByte(int glyph, int glyph2) {
 static void hx_define_mode(char mode[], int source[], const size_t length) {
     size_t i;
     char lastmode = 't';
-    int done;
-    
+
     i = 0;
     do {
-        done = 0;
+        int done = 0;
         
         if (isRegion1(source[i])) {
             mode[i] = '1';
@@ -330,7 +329,6 @@ int lookup_text2(char input) {
 
 /* Convert input data to binary stream */
 static void calculate_binary(char binary[], char mode[], int source[], const size_t length, const int eci, int debug) {
-    int block_length;
     int position = 0;
     int i, count, encoding_value;
     int first_byte, second_byte;
@@ -355,7 +353,7 @@ static void calculate_binary(char binary[], char mode[], int source[], const siz
     }
 
     do {
-        block_length = 0;
+        int block_length = 0;
         do {
             block_length++;
         } while (mode[position + block_length] == mode[position]);
@@ -373,19 +371,19 @@ static void calculate_binary(char binary[], char mode[], int source[], const siz
                 i = 0;
 
                 while (i < block_length) {
-                    int first = 0, second = 0, third = 0;
+                    int first = 0;
 
                     first = posn(NEON, (char) source[position + i]);
                     count = 1;
                     encoding_value = first;
 
                     if (i + 1 < block_length && mode[position + i + 1] == 'n') {
-                        second = posn(NEON, (char) source[position + i + 1]);
+                        int second = posn(NEON, (char) source[position + i + 1]);
                         count = 2;
                         encoding_value = (encoding_value * 10) + second;
 
                         if (i + 2 < block_length && mode[position + i + 2] == 'n') {
-                            third = posn(NEON, (char) source[position + i + 2]);
+                            int third = posn(NEON, (char) source[position + i + 2]);
                             count = 3;
                             encoding_value = (encoding_value * 10) + third;
                         }
@@ -910,15 +908,14 @@ void hx_add_ecc(unsigned char fullstream[], unsigned char datastream[], int vers
     unsigned char data_block[180];
     unsigned char ecc_block[36];
     int i, j, block;
-    int batch_size, data_length, ecc_length;
     int input_position = -1;
     int output_position = -1;
     int table_d1_pos = ((version - 1) * 36) + ((ecc_level - 1) * 9);
 
     for (i = 0; i < 3; i++) {
-        batch_size = hx_table_d1[table_d1_pos + (3 * i)];
-        data_length = hx_table_d1[table_d1_pos + (3 * i) + 1];
-        ecc_length = hx_table_d1[table_d1_pos + (3 * i) + 2];
+        int batch_size = hx_table_d1[table_d1_pos + (3 * i)];
+        int data_length = hx_table_d1[table_d1_pos + (3 * i) + 1];
+        int ecc_length = hx_table_d1[table_d1_pos + (3 * i) + 2];
 
         for (block = 0; block < batch_size; block++) {
             for (j = 0; j < data_length; j++) {
@@ -1228,13 +1225,11 @@ int hx_apply_bitmask(unsigned char *grid, int size) {
 int han_xin(struct zint_symbol *symbol, const unsigned char source[], size_t length) {
     int est_binlen;
     int ecc_level = symbol->option_1;
-    int i, j, version, posn = 0;
+    int i, j, version;
     int data_codewords = 0, size;
     int codewords;
     int bitmask;
-    int error_number;
     int bin_len;
-    int done;
     char function_information[36];
     unsigned char fi_cw[3] = {0, 0, 0};
     unsigned char fi_ecc[4];
@@ -1260,14 +1255,14 @@ int han_xin(struct zint_symbol *symbol, const unsigned char source[], size_t len
         }
     } else {
         /* Convert Unicode input to GB-18030 */
-        error_number = utf8toutf16(symbol, source, utfdata, &length);
+        int error_number = utf8toutf16(symbol, source, utfdata, &length);
         if (error_number != 0) {
             return error_number;
         }
 
-        posn = 0;
+        int posn = 0;
         for (i = 0; i < length; i++) {
-            done = 0;
+            int done = 0;
             gbdata[posn] = 0;
             
             /* Single byte characters in range U+0000 -> U+007F */

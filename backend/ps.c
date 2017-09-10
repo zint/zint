@@ -40,8 +40,8 @@
 #define SSET	"0123456789ABCDEF"
 
 int ps_plot(struct zint_symbol *symbol) {
-    int i, block_width, latch, r, this_row;
-    float textpos, large_bar_height, preset_height, row_height, row_posn;
+    int i, block_width, latch, r;
+    float textpos, large_bar_height, preset_height, row_height;
     FILE *feps;
     int fgred, fggrn, fgblu, bgred, bggrn, bgblu;
     float red_ink, green_ink, blue_ink, red_paper, green_paper, blue_paper;
@@ -383,7 +383,7 @@ int ps_plot(struct zint_symbol *symbol) {
                     ey = my - 0.5 + yoffset;
                     fy = my + 0.5 + yoffset;
 
-                    mx = 2.46 * i + 1.23 + (r & 1 ? 1.23 : 0);
+                    mx = 2.46 * i + 1.23 + ((r & 1) ? 1.23 : 0);
 
                     ax = mx + xoffset;
                     bx = mx + 0.86 + xoffset;
@@ -404,13 +404,13 @@ int ps_plot(struct zint_symbol *symbol) {
         int addon_latch = 0;
 
         for (r = 0; r < symbol->rows; r++) {
-            this_row = symbol->rows - r - 1; /* invert r otherwise plots upside down */
+            int this_row = symbol->rows - r - 1; /* invert r otherwise plots upside down */
             if (symbol->row_height[this_row] == 0) {
                 row_height = large_bar_height;
             } else {
                 row_height = symbol->row_height[this_row];
             }
-            row_posn = 0;
+            float row_posn = 0;
             for (i = 0; i < r; i++) {
                 if (symbol->row_height[symbol->rows - i - 1] == 0) {
                     row_posn += large_bar_height;

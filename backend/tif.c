@@ -232,7 +232,7 @@ int tif_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
     ifd.y_resolution.type = 5;
     ifd.y_resolution.count = 1;
     ifd.y_resolution.offset = free_memory;
-    free_memory += 8;
+//    free_memory += 8;
     
     ifd.planar_config.tag = 0x11c;
     ifd.planar_config.type = 3;

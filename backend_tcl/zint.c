@@ -330,7 +330,7 @@ EXPORT BOOL WINAPI DllEntryPoint (HINSTANCE hInstance,
 #endif
 /*----------------------------------------------------------------------------*/
 /* Initialisation Procedures */
-EXPORT int Zint_Init (Tcl_Interp *Interp)
+EXPORT int Zint_Init (Tcl_Interp *interp)
 {
     /*------------------------------------------------------------------------*/
 #ifdef USE_TCL_STUBS
@@ -365,7 +365,6 @@ static int Zint(ClientData unused, Tcl_Interp *interp, int objc,
     Tcl_Obj *CONST objv[])
 {
     /* Option list and indexes */
-    char *subCmds[] = {"encode", "symbologies", "version", "help", NULL};
     enum iCommand {iEncode, iSymbologies, iVersion, iHelp};
     /* choice of option */
     int Index;
@@ -373,6 +372,7 @@ static int Zint(ClientData unused, Tcl_Interp *interp, int objc,
     /* > Check if option argument is given and decode it */
     if (objc > 1)
     {
+    char *subCmds[] = {"encode", "symbologies", "version", "help", NULL};
         if(Tcl_GetIndexFromObj(interp, objv[1], (const char **) subCmds,
             "option", 0, &Index)
             == TCL_ERROR)

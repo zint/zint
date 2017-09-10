@@ -151,10 +151,10 @@ void show_eci(void) {
 
 /* Verifies that a string only uses valid characters */
 int validator(char test_string[], char source[]) {
-    unsigned int i, j, latch;
+    unsigned int i, j;
 
     for (i = 0; i < strlen(source); i++) {
-        latch = 0;
+        unsigned int latch = 0;
         for (j = 0; j < strlen(test_string); j++) {
             if (source[i] == test_string[j]) {
                 latch = 1;
@@ -434,7 +434,6 @@ int batch_process(struct zint_symbol *symbol, char *filename, int mirror_mode, c
 
 int main(int argc, char **argv) {
     struct zint_symbol *my_symbol;
-    int c;
     int error_number;
     int rotate_angle;
     int generated;
@@ -504,7 +503,7 @@ int main(int argc, char **argv) {
             {"verbose", 0, 0, 0}, // Currently undocumented, output some debug info
             {0, 0, 0, 0}
         };
-        c = getopt_long(argc, argv, "htb:w:d:o:i:rcmpe", long_options, &option_index);
+        int c = getopt_long(argc, argv, "htb:w:d:o:i:rcmpe", long_options, &option_index);
         if (c == -1) break;
 
         switch (c) {

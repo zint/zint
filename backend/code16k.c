@@ -89,16 +89,15 @@ static const int C16KStopValues[16] = {
 };
 
 static void grwp16(unsigned int *indexliste) {
-    int i, j;
 
     /* bring together same type blocks */
     if (*(indexliste) > 1) {
-        i = 1;
+        int i = 1;
         while(i < (int)*(indexliste)) {
             if (list[1][i - 1] == list[1][i]) {
                 /* bring together */
                 list[0][i - 1] = list[0][i - 1] + list[0][i];
-                j = i + 1;
+                int j = i + 1;
 
                 /* decreace the list */
                 while(j < (int)*(indexliste)) {
@@ -116,11 +115,11 @@ static void grwp16(unsigned int *indexliste) {
 
 /* Implements rules from ISO 15417 Annex E */
 static void dxsmooth16(unsigned int *indexliste) {
-    int i, current, last, next, length;
+    int i, last, next;
 
     for(i = 0; i < (int)*(indexliste); i++) {
-        current = list[1][i];
-        length = list[0][i];
+        int current = list[1][i];
+        int length = list[0][i];
         if (i != 0) {
             last = list[1][i - 1];
         } else {
@@ -258,10 +257,10 @@ static void c16k_set_c(const unsigned char source_a, unsigned char source_b, uns
 
 int code16k(struct zint_symbol *symbol, unsigned char source[], const size_t length) {
     char width_pattern[100];
-    int current_row, rows_needed, flip_flop, looper, first_check, second_check;
+    int current_row, rows_needed, looper, first_check, second_check;
     int indexchaine, f_state;
     char set[160] = {' '}, fset[160] = {' '}, mode, last_set, current_set;
-    unsigned int pads_needed, indexliste, i, j, k, m, read, mx_reader, writer;
+    unsigned int pads_needed, indexliste, i, j, k, m, read, mx_reader;
     unsigned int values[160] = {0};
     unsigned int bar_characters;
     float glyph_count;
@@ -705,8 +704,8 @@ int code16k(struct zint_symbol *symbol, unsigned char source[], const size_t len
         strcat(width_pattern, C16KStartStop[C16KStopValues[current_row]]);
 
         /* Write the information into the symbol */
-        writer = 0;
-        flip_flop = 1;
+        unsigned int writer = 0;
+        int flip_flop = 1;
         for (mx_reader = 0; mx_reader < strlen(width_pattern); mx_reader++) {
             for (looper = 0; looper < ctoi(width_pattern[mx_reader]); looper++) {
                 if (flip_flop == 1) {

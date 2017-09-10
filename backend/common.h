@@ -54,7 +54,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-    extern size_t ustrlen(const unsigned char source[]);
+    extern size_t ustrlen(const unsigned char data[]);
     extern int ctoi(const char source);
     extern char itoc(const int source);
     extern void to_upper(unsigned char source[]);

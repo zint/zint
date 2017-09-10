@@ -87,11 +87,11 @@ void to_upper(unsigned char source[]) {
 
 /* Verifies that a string only uses valid characters */
 int is_sane(const char test_string[], const unsigned char source[], const size_t length) {
-    unsigned int j, latch;
+    unsigned int j;
     size_t i, lt = strlen(test_string);
 
     for (i = 0; i < length; i++) {
-        latch = FALSE;
+        unsigned int latch = FALSE;
         for (j = 0; j < lt; j++) {
             if (source[i] == test_string[j]) {
                 latch = TRUE;

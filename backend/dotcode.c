@@ -436,7 +436,7 @@ int binary(const unsigned char source[], int position) {
 int dotcode_encode_message(struct zint_symbol *symbol, const unsigned char source[], int length, unsigned char *codeword_array, int *binary_finish) {
     int input_position, array_length, i;
     char encoding_mode;
-    int inside_macro, done;
+    int inside_macro;
     int debug = symbol->debug;
     int binary_buffer_size = 0;
     int lawrencium[6]; // Reversed radix 103 values
@@ -524,7 +524,7 @@ int dotcode_encode_message(struct zint_symbol *symbol, const unsigned char sourc
     }
     
     do {
-        done = 0;
+        int done = 0;
         /* Step A */
         if ((input_position == length - 2) && (inside_macro != 0) && (inside_macro != 100)) {
             // inside_macro only gets set to 97, 98 or 99 if the last two characters are RS/EOT

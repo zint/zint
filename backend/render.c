@@ -52,7 +52,7 @@ int render_plot_add_line(struct zint_symbol *symbol, struct zint_render_line *li
 struct zint_render_ring *render_plot_create_ring(float x, float y, float radius, float line_width);
 int render_plot_add_ring(struct zint_symbol *symbol, struct zint_render_ring *ring, struct zint_render_ring **last_ring);
 struct zint_render_hexagon *render_plot_create_hexagon(float x, float y);
-int render_plot_add_hexagon(struct zint_symbol *symbol, struct zint_render_hexagon *ring, struct zint_render_hexagon **last_hexagon);
+int render_plot_add_hexagon(struct zint_symbol *symbol, struct zint_render_hexagon *hexagon, struct zint_render_hexagon **last_hexagon);
 
 int render_plot_add_string(struct zint_symbol *symbol, unsigned char *text, float x, float y, float fsize, float width, struct zint_render_string **last_string);
 
@@ -60,21 +60,20 @@ int render_plot(struct zint_symbol *symbol, const float width, const float heigh
     struct zint_render *render;
     struct zint_render_line *line, *last_line = NULL;
     struct zint_render_string *last_string = NULL;
-    struct zint_render_ring *ring, *last_ring = NULL;
-    struct zint_render_hexagon *hexagon, *last_hexagon = NULL;
+    struct zint_render_ring *last_ring = NULL;
+    struct zint_render_hexagon *last_hexagon = NULL;
 
-    int i, r, block_width, latch, this_row;
-    float textpos, textwidth, large_bar_height, preset_height, row_height, row_posn = 0.0;
+    int i, r, latch;
+    float textpos, large_bar_height, preset_height, row_height, row_posn = 0.0;
     // int error_number = 0;
     int text_offset, text_height, xoffset, yoffset, textdone, main_symbol_width_x, addon_width_x;
-    char addon[6], textpart[10];
+    char addon[6];
     int large_bar_count, symbol_lead_in, total_symbol_width_x, total_area_width_x;
     float addon_text_posn;
     float default_text_posn;
     float scaler;
     const char *locale = NULL;
     int hide_text = 0;
-    float required_aspect;
     float symbol_aspect = 1;
     float x_dimension;
     int upceanflag = 0;
@@ -225,7 +224,7 @@ int render_plot(struct zint_symbol *symbol, const float width, const float heigh
     }
 
     if (large_bar_count == 0) {
-        required_aspect = width / height;
+        float required_aspect = width / height;
         symbol_aspect = (total_symbol_width_x + (2 * xoffset)) / (preset_height + (2 * yoffset) + text_offset + text_height);
         symbol->height = (int) preset_height;
         if (required_aspect > symbol_aspect) {
@@ -337,6 +336,7 @@ int render_plot(struct zint_symbol *symbol, const float width, const float heigh
         render->height = 26.86 * scaler;
 
         /* Central bullseye pattern */
+        struct zint_render_ring *ring;
         ring = render_plot_create_ring(13.64 * scaler, 13.43 * scaler, 0.85 * scaler, 0.67 * scaler);
         render_plot_add_ring(symbol, ring, &last_ring);
         ring = render_plot_create_ring(13.64 * scaler, 13.43 * scaler, 2.20 * scaler, 0.67 * scaler);
@@ -348,7 +348,7 @@ int render_plot(struct zint_symbol *symbol, const float width, const float heigh
         for (r = 0; r < symbol->rows; r++) {
             for (i = 0; i < symbol->width; i++) {
                 if (module_is_set(symbol, r, i)) {
-                    hexagon = render_plot_create_hexagon(((i * 0.88) + (r & 1 ? 1.76 : 1.32)) * scaler, ((r * 0.76) + 0.76) * scaler);
+                    struct zint_render_hexagon *hexagon = render_plot_create_hexagon(((i * 0.88) + ((r & 1) ? 1.76 : 1.32)) * scaler, ((r * 0.76) + 0.76) * scaler);
                     render_plot_add_hexagon(symbol, hexagon, &last_hexagon);
                 }
             }
@@ -360,7 +360,7 @@ int render_plot(struct zint_symbol *symbol, const float width, const float heigh
         int addon_latch = 0;
 
         for (r = 0; r < symbol->rows; r++) {
-            this_row = r;
+            int this_row = r;
             if (symbol->row_height[this_row] == 0) {
                 row_height = large_bar_height;
             } else {
@@ -384,7 +384,7 @@ int render_plot(struct zint_symbol *symbol, const float width, const float heigh
             }
 
             do {
-                block_width = 0;
+                int block_width = 0;
                 do {
                     block_width++;
                 } while (module_is_set(symbol, this_row, i + block_width) == module_is_set(symbol, this_row, i));
@@ -419,6 +419,8 @@ int render_plot(struct zint_symbol *symbol, const float width, const float heigh
     row_posn = (row_posn + large_bar_height) * scaler;
 
     if (!hide_text) {
+        char textpart[10];
+        float textwidth;
         if (upceanflag == 8) {
             /* guard bar extensions and text formatting for EAN-8 */
             i = 0;

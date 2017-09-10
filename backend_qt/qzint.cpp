@@ -100,7 +100,7 @@ namespace Zint {
         m_whitespace = m_zintSymbol->whitespace_width;
     }
 
-    int QZint::symbol() {
+    int QZint::symbol() const {
         return m_symbol;
     }
 
@@ -112,7 +112,7 @@ namespace Zint {
         m_input_mode = input_mode;
     }
 
-    QString QZint::text() {
+    QString QZint::text() const {
         return m_text;
     }
 
@@ -125,7 +125,7 @@ namespace Zint {
         target_size_vert = height;
     }
 
-    QString QZint::primaryMessage() {
+    QString QZint::primaryMessage() const {
         return m_primaryMessage;
     }
 
@@ -135,7 +135,7 @@ namespace Zint {
 
     int QZint::height() {
         encode();
-        return (m_zintSymbol->height + (m_border != NO_BORDER) ? m_borderWidth * 2 : 0)*(m_zintSymbol->symbology == BARCODE_MAXICODE ? (maxi_width + 1) : 1);
+        return (m_zintSymbol->height + (m_border != NO_BORDER ? m_borderWidth * 2 : 0)*(m_zintSymbol->symbology == BARCODE_MAXICODE ? (maxi_width + 1) : 1));
     }
 
     void QZint::setHeight(int height) {
@@ -152,10 +152,10 @@ namespace Zint {
 
     int QZint::width() {
         encode();
-        return (m_zintSymbol->width + (m_border == BOX) ? m_borderWidth * 2 : 0)*(m_zintSymbol->symbology == BARCODE_MAXICODE ? (maxi_width + 1) : 1);
+        return (m_zintSymbol->width + (m_border == BOX ? m_borderWidth * 2 : 0)*(m_zintSymbol->symbology == BARCODE_MAXICODE ? (maxi_width + 1) : 1));
     }
 
-    float QZint::scale() {
+    float QZint::scale() const {
         return m_scale;
     }
 
@@ -167,7 +167,7 @@ namespace Zint {
         m_dot_size = dot_size;
     }
 
-    QColor QZint::fgColor() {
+    QColor QZint::fgColor() const {
         return m_fgColor;
     }
 
@@ -175,7 +175,7 @@ namespace Zint {
         m_fgColor = fgColor;
     }
 
-    QColor QZint::bgColor() {
+    QColor QZint::bgColor() const {
         return m_bgColor;
     }
 
@@ -183,7 +183,7 @@ namespace Zint {
         m_bgColor = bgColor;
     }
 
-    QZint::BorderType QZint::borderType() {
+    QZint::BorderType QZint::borderType() const {
         return m_border;
     }
 
@@ -191,7 +191,7 @@ namespace Zint {
         m_border = border;
     }
 
-    int QZint::borderWidth() {
+    int QZint::borderWidth() const {
         return m_borderWidth;
     }
 
@@ -205,7 +205,7 @@ namespace Zint {
         m_whitespace = whitespace;
     }
 
-    int QZint::pdf417CodeWords() {
+    int QZint::pdf417CodeWords() const {
         return m_pdf417CodeWords;
     }
 
@@ -213,7 +213,7 @@ namespace Zint {
         m_pdf417CodeWords = pdf417CodeWords;
     }
 
-    int QZint::securityLevel() {
+    int QZint::securityLevel() const {
         return m_securityLevel;
     }
 
@@ -221,11 +221,11 @@ namespace Zint {
         m_securityLevel = securityLevel;
     }
 
-    QString QZint::error_message() {
+    QString QZint::error_message() const {
         return m_lastError;
     }
 
-    int QZint::mode() {
+    int QZint::mode() const {
         return m_securityLevel;
     }
 
@@ -286,7 +286,7 @@ namespace Zint {
         }
     }
 
-    int QZint::module_set(int y_coord, int x_coord) {
+    int QZint::module_set(int y_coord, int x_coord) const {
         int x_char, x_sub, result;
 
         x_char = x_coord / 7;
@@ -304,7 +304,7 @@ namespace Zint {
         bool textdone;
         int comp_offset = 0;
         int xoffset = m_whitespace;
-        int j, main_width = 0, addon_text_height = 0;
+        int main_width = 0, addon_text_height = 0;
         int yoffset = 0;
         
         encode();
@@ -602,7 +602,7 @@ namespace Zint {
                 int block_width;
                 bool latch = true;
 
-                j = 0 + comp_offset;
+                int j = 0 + comp_offset;
                 do {
                     block_width = 0;
                     do {
@@ -681,7 +681,7 @@ namespace Zint {
         painter.restore();
     }
 
-    const QString & QZint::lastError() {
+    const QString & QZint::lastError() const {
         return m_lastError;
     }
 

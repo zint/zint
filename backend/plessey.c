@@ -51,7 +51,7 @@ static const char *MSITable[10] = {
 /* Not MSI/Plessey but the older Plessey standard */
 int plessey(struct zint_symbol *symbol, unsigned char source[], const size_t length) { 
 
-    unsigned int i, check;
+    unsigned int i;
     unsigned char *checkptr;
     static const char grid[9] = {1, 1, 1, 1, 0, 1, 0, 0, 1};
     char dest[1024]; /* 8 + 65 * 8 + 8 * 2 + 9 + 1 ~ 1024 */
@@ -73,7 +73,7 @@ int plessey(struct zint_symbol *symbol, unsigned char source[], const size_t len
 
     /* Data area */
     for (i = 0; i < length; i++) {
-        check = posn(SSET, source[i]);
+        unsigned int check = posn(SSET, source[i]);
         lookup(SSET, PlessTable, source[i], dest);
         checkptr[4 * i] = check & 1;
         checkptr[4 * i + 1] = (check >> 1) & 1;
@@ -85,10 +85,11 @@ int plessey(struct zint_symbol *symbol, unsigned char source[], const size_t len
        used in GNU Barcode */
 
     for (i = 0; i < (4 * length); i++) {
-        int j;
-        if (checkptr[i])
+        if (checkptr[i]) {
+            int j;
             for (j = 0; j < 9; j++)
                 checkptr[i + j] ^= grid[j];
+        }
     }
 
     for (i = 0; i < 8; i++) {
@@ -171,7 +172,7 @@ int msi_plessey_mod10(struct zint_symbol *symbol, unsigned char source[], int le
     dau = strtoul(un, NULL, 10);
     dau *= 2;
 
-    sprintf(tri, "%ld", dau);
+    sprintf(tri, "%lu", dau);
 
     pedwar = 0;
     h = strlen(tri);
@@ -240,7 +241,7 @@ int msi_plessey_mod1010(struct zint_symbol *symbol, unsigned char source[], cons
     dau = strtoul(un, NULL, 10);
     dau *= 2;
 
-    sprintf(tri, "%ld", dau);
+    sprintf(tri, "%lu", dau);
 
     pedwar = 0;
     h = strlen(tri);
@@ -270,7 +271,7 @@ int msi_plessey_mod1010(struct zint_symbol *symbol, unsigned char source[], cons
     dau = strtoul(un, NULL, 10);
     dau *= 2;
 
-    sprintf(tri, "%ld", dau);
+    sprintf(tri, "%lu", dau);
 
     pedwar = 0;
     h = strlen(tri);
@@ -428,7 +429,7 @@ int msi_plessey_mod1110(struct zint_symbol *symbol, unsigned char source[], cons
     dau = strtoul(un, NULL, 10);
     dau *= 2;
 
-    sprintf(tri, "%ld", dau);
+    sprintf(tri, "%lu", dau);
 
     pedwar = 0;
     h = strlen(tri);

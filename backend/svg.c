@@ -44,7 +44,7 @@
 #define SSET	"0123456789ABCDEF"
 
 int svg_plot(struct zint_symbol *symbol) {
-    int i, block_width, latch, r, this_row;
+    int i, block_width, latch, r;
     float textpos, large_bar_height, preset_height, row_height, row_posn = 0.0;
     FILE *fsvg;
     int error_number = 0;
@@ -306,7 +306,7 @@ int svg_plot(struct zint_symbol *symbol) {
         int addon_latch = 0;
 
         for (r = 0; r < symbol->rows; r++) {
-            this_row = r;
+            int this_row = r;
             if (symbol->row_height[this_row] == 0) {
                 row_height = large_bar_height;
             } else {

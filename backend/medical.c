@@ -235,7 +235,7 @@ int codabar(struct zint_symbol *symbol, unsigned char source[], int length) {
 int code32(struct zint_symbol *symbol, unsigned char source[], int length) {
     int i, zeroes, error_number, checksum, checkpart, checkdigit;
     char localstr[10], risultante[7];
-    long int pharmacode, remainder, devisor;
+    long int pharmacode, devisor;
     int codeword[6];
     char tabella[34];
 
@@ -281,7 +281,7 @@ int code32(struct zint_symbol *symbol, unsigned char source[], int length) {
     devisor = 33554432;
     for (i = 5; i >= 0; i--) {
         codeword[i] = pharmacode / devisor;
-        remainder = pharmacode % devisor;
+        long int remainder = pharmacode % devisor;
         pharmacode = remainder;
         devisor /= 32;
     }

@@ -264,7 +264,7 @@ void draw_hexagon(char *pixelbuf, int image_width, char *scaled_hexagon, int hex
 
 void draw_letter(char *pixelbuf, unsigned char letter, int xposn, int yposn, int textflags, int image_width, int image_height) {
     /* Put a letter into a position */
-    int skip, x, y, glyph_no, max_x, max_y;
+    int skip;
 
     skip = 0;
 
@@ -281,14 +281,17 @@ void draw_letter(char *pixelbuf, unsigned char letter, int xposn, int yposn, int
     }
 
     if (skip == 0) {
+        int glyph_no;
         if (letter > 128) {
             glyph_no = letter - 66;
         } else {
             glyph_no = letter - 33;
         }
 
+        int x, y;
 
         switch (textflags) {
+            int max_x, max_y;
             case 1: // small font 5x9
                 max_x = 5;
                 max_y = 9;
@@ -407,14 +410,13 @@ void plot_hexline(char *scaled_hexagon, int hexagon_size, float start_x, float s
     /* Draw a straight line from start to end */
     int i;
     float inc_x, inc_y;
-    float this_x, this_y;
     
     inc_x = (end_x - start_x) / hexagon_size;
     inc_y = (end_y - start_y) / hexagon_size;
     
     for (i = 0; i < hexagon_size; i++) {
-        this_x = start_x + ((float)i * inc_x);
-        this_y = start_y + ((float)i * inc_y);
+        float this_x = start_x + ((float)i * inc_x);
+        float this_y = start_y + ((float)i * inc_y);
         if (((this_x >= 0) && (this_x < hexagon_size)) && ((this_y >= 0) && (this_y < hexagon_size))) {
                 scaled_hexagon[(hexagon_size * (int)this_y) + (int)this_x] = '1';
         }
@@ -424,7 +426,6 @@ void plot_hexline(char *scaled_hexagon, int hexagon_size, float start_x, float s
 void plot_hexagon(char *scaled_hexagon, int hexagon_size) {
     /* Create a hexagon shape and fill it */
     int line, i;
-    char ink;
     
     float x_offset[6];
     float y_offset[6];
@@ -461,7 +462,7 @@ void plot_hexagon(char *scaled_hexagon, int hexagon_size) {
     
     /* Fill hexagon */
     for (line = 0; line < hexagon_size; line++) {
-        ink = '0';
+        char ink = '0';
         for (i = 0; i < hexagon_size; i++) {
             if (scaled_hexagon[(hexagon_size * line) + i] == '1') {
                 if (i < (hexagon_size / 2)) {
@@ -480,7 +481,7 @@ void plot_hexagon(char *scaled_hexagon, int hexagon_size) {
 
 int plot_raster_maxicode(struct zint_symbol *symbol, int rotate_angle, int data_type) {
     /* Plot a MaxiCode symbol with hexagons and bullseye */
-    int i, row, column, xposn, yposn;
+    int i, row, column, xposn;
     int image_height, image_width;
     char *pixelbuf;
     int error_number;
@@ -521,7 +522,7 @@ int plot_raster_maxicode(struct zint_symbol *symbol, int rotate_angle, int data_
     draw_bullseye(pixelbuf, image_width, image_height, (2 * xoffset), (2 * yoffset), scaler * 10);
 
     for (row = 0; row < symbol->rows; row++) {
-        yposn = row * 9;
+        int yposn = row * 9;
         for (column = 0; column < symbol->width; column++) {
             xposn = column * 10;
             if (module_is_set(symbol, row, column)) {
@@ -651,7 +652,7 @@ int plot_raster_default(struct zint_symbol *symbol, int rotate_angle, int data_t
     int i, r, textoffset, yoffset, xoffset, latch, image_width, image_height;
     char *pixelbuf;
     int addon_latch = 0, textflags = 0;
-    int this_row, block_width, plot_height, plot_yposn, textpos;
+    int block_width, textpos;
     float row_height, row_posn;
     int error_number;
     int default_text_posn;
@@ -812,16 +813,16 @@ int plot_raster_default(struct zint_symbol *symbol, int rotate_angle, int data_t
 
     /* Plot the body of the symbol to the pixel buffer */
     for (r = 0; r < symbol->rows; r++) {
-        this_row = symbol->rows - r - 1; /* invert r otherwise plots upside down */
+        int this_row = symbol->rows - r - 1; /* invert r otherwise plots upside down */
         row_posn += row_height;
-        plot_yposn = next_yposn;
+        int plot_yposn = next_yposn;
         if (symbol->row_height[this_row] == 0) {
             row_height = large_bar_height;
         } else {
             row_height = symbol->row_height[this_row];
         }
         next_yposn = (int) (row_posn + row_height);
-        plot_height = next_yposn - plot_yposn;
+        int plot_height = next_yposn - plot_yposn;
 
         i = 0;
         if (module_is_set(symbol, this_row, 0)) {

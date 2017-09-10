@@ -184,7 +184,7 @@ int logic_two_of_five(struct zint_symbol *symbol, unsigned char source[], int le
 /* Code 2 of 5 Interleaved */
 int interleaved_two_of_five(struct zint_symbol *symbol, const unsigned char source[], size_t length) {
 
-    int i, j, k, error_number;
+    int i, j, error_number;
     char bars[7], spaces[7], mixed[14], dest[1000];
 #ifndef _MSC_VER
     unsigned char temp[length + 2];
@@ -222,7 +222,7 @@ int interleaved_two_of_five(struct zint_symbol *symbol, const unsigned char sour
         lookup(NEON, C25InterTable, temp[i + 1], spaces);
 
         /* then merge (interlace) the strings together */
-        k = 0;
+        int k = 0;
         for (j = 0; j <= 4; j++) {
             mixed[k] = bars[j];
             k++;

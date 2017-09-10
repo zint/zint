@@ -102,22 +102,22 @@ void ZBarcode_Delete(struct zint_symbol *symbol) {
 
     // If there is a rendered version, ensure its memory is released
     if (symbol->rendered != NULL) {
-        struct zint_render_line *line, *l;
-        struct zint_render_string *string, *s;
-        struct zint_render_ring *ring, *r;
-        struct zint_render_hexagon *hexagon, *h;
+        struct zint_render_line *line;
+        struct zint_render_string *string;
+        struct zint_render_ring *ring;
+        struct zint_render_hexagon *hexagon;
 
         // Free lines
         line = symbol->rendered->lines;
         while (line) {
-            l = line;
+            struct zint_render_line *l = line;
             line = line->next;
             free(l);
         }
         // Free Strings
         string = symbol->rendered->strings;
         while (string) {
-            s = string;
+            struct zint_render_string *s = string;
             string = string->next;
             free(s->text);
             free(s);
@@ -126,7 +126,7 @@ void ZBarcode_Delete(struct zint_symbol *symbol) {
         // Free Rings
         ring = symbol->rendered->rings;
         while (ring) {
-            r = ring;
+            struct zint_render_ring *r = ring;
             ring = ring->next;
             free(r);
         }
@@ -134,7 +134,7 @@ void ZBarcode_Delete(struct zint_symbol *symbol) {
         // Free Hexagons
         hexagon = symbol->rendered->hexagons;
         while (hexagon) {
-            h = hexagon;
+            struct zint_render_hexagon *h = hexagon;
             hexagon = hexagon->next;
             free(h);
         }
@@ -215,9 +215,9 @@ extern int svg_plot(struct zint_symbol *symbol); /* Plot to SVG */
 extern int emf_plot(struct zint_symbol *symbol); /* Plot to Metafile */
 
 void error_tag(char error_string[], int error_number) {
-    char error_buffer[100];
 
     if (error_number != 0) {
+        char error_buffer[100];
         strcpy(error_buffer, error_string);
 
         if (error_number > 4) {
@@ -234,7 +234,6 @@ void error_tag(char error_string[], int error_number) {
 int dump_plot(struct zint_symbol *symbol) {
     FILE *f;
     int i, r;
-    int byt;
     char hex[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8',
         '9', 'A', 'B', 'C', 'D', 'E', 'F'};
     int space = 0;
@@ -250,7 +249,7 @@ int dump_plot(struct zint_symbol *symbol) {
     }
 
     for (r = 0; r < symbol->rows; r++) {
-        byt = 0;
+        int byt = 0;
         for (i = 0; i < symbol->width; i++) {
             byt = byt << 1;
             if (module_is_set(symbol, r, i)) {
@@ -1083,7 +1082,6 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source,int 
 
 int ZBarcode_Print(struct zint_symbol *symbol, int rotate_angle) {
     int error_number;
-    char output[4];
 
     switch (rotate_angle) {
         case 0:
@@ -1104,6 +1102,7 @@ int ZBarcode_Print(struct zint_symbol *symbol, int rotate_angle) {
     }
 
     if (strlen(symbol->outfile) > 3) {
+        char output[4];
         output[0] = symbol->outfile[strlen(symbol->outfile) - 3];
         output[1] = symbol->outfile[strlen(symbol->outfile) - 2];
         output[2] = symbol->outfile[strlen(symbol->outfile) - 1];

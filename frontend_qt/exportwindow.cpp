@@ -81,7 +81,7 @@ void ExportWindow::process()
 	QString dataString;
 	QString suffix;
         QString Feedback;
-	int lines, i, j, inputpos, datalen;
+    int lines, i, j, inputpos;
 	
 	lines = output_data.count(QChar('\n'), Qt::CaseInsensitive);
 	inputpos = 0;
@@ -110,7 +110,7 @@ void ExportWindow::process()
         Feedback = "";
         
 	for(i = 0; i < lines; i++) {
-		datalen = 0;
+        int datalen = 0;
 		for(j = inputpos; ((j < output_data.length()) && (output_data[j] != '\n') ); j++) {
 			datalen++;
 		}
@@ -119,12 +119,11 @@ void ExportWindow::process()
 			case 0: { /* Same as Data (URL Escaped) */
 					QString url_escaped;
 					int m;
-					char name_char;
 					QChar name_qchar;
 					
 					for(m = 0; m < dataString.length(); m++) {
 						name_qchar = dataString[m];
-						name_char = name_qchar.toLatin1();
+                        char name_char = name_qchar.toLatin1();
 						
 						switch(name_char) {
 							case '\\': url_escaped += "%5C"; break;

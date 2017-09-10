@@ -1150,14 +1150,13 @@ getopt (int argc, char *const *argv, const char *optstring)
 int
 main (int argc, char **argv)
 {
-  int c;
   int digit_optind = 0;
 
   while (1)
     {
       int this_option_optind = optind ? optind : 1;
 
-      c = getopt (argc, argv, "abc:d:0123456789");
+      int c = getopt (argc, argv, "abc:d:0123456789");
       if (c == -1)
 	break;
 

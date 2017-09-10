@@ -117,11 +117,11 @@ void rs_init_code(const int nsym, int index) {
 }
 
 void rs_encode(const size_t len,const unsigned char *data, unsigned char *res) {
-    int i, k, m;
+    int i, k;
     for (i = 0; i < rlen; i++)
         res[i] = 0;
     for (i = 0; i < len; i++) {
-        m = res[rlen - 1] ^ data[i];
+        int m = res[rlen - 1] ^ data[i];
         for (k = rlen - 1; k > 0; k--) {
             if (m && rspoly[k])
                 res[k] = (unsigned char) (res[k - 1] ^ alog[(logt[m] + logt[rspoly[k]]) % logmod]);
@@ -137,11 +137,11 @@ void rs_encode(const size_t len,const unsigned char *data, unsigned char *res) {
 
 /* The same as above but for larger bitlengths - Aztec code compatible */
 void rs_encode_long(const int len, const unsigned int *data, unsigned int *res) {
-    int i, k, m;
+    int i, k;
     for (i = 0; i < rlen; i++)
         res[i] = 0;
     for (i = 0; i < len; i++) {
-        m = res[rlen - 1] ^ data[i];
+        int m = res[rlen - 1] ^ data[i];
         for (k = rlen - 1; k > 0; k--) {
             if (m && rspoly[k])
                 res[k] = res[k - 1] ^ alog[(logt[m] + logt[rspoly[k]]) % logmod];

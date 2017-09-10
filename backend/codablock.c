@@ -211,11 +211,9 @@ static int Columns2Rows(CharacterSetTable *T, unsigned char *data, const size_t 
     int useColumns;     /* Usable Characters per line */
     int fillings;       /* Number of filling characters */
     int rowsCur;
-    int charCur;
     int runChar;
     int emptyColumns;   /* Number of codes still empty in line. */
     int emptyColumns2;  /* Alternative emptyColumns to compare */
-    int fOneLiner;      /* Flag if One Liner */
     int CPaires;        /* Number of digit pairs which may fit in the line */
     int characterSetCur;        /* Current Character Set */
 
@@ -226,9 +224,9 @@ static int Columns2Rows(CharacterSetTable *T, unsigned char *data, const size_t 
     /* >>> Loop until rowsCur<44 */
     do {
         memset(pSet,0,dataLength*sizeof(int));
-        charCur=0;
+        int charCur=0;
         rowsCur=0;
-        fOneLiner=1;        /* First try one-Liner */
+        int fOneLiner=1;        /* First try one-Liner */
 
         /* >>> Line and OneLiner-try Loop */
         do{
@@ -433,7 +431,6 @@ static int Columns2Rows(CharacterSetTable *T, unsigned char *data, const size_t 
 static int Rows2Columns(CharacterSetTable *T, unsigned char *data, const size_t dataLength,
         int * pRows, int * pUseColumns, int * pSet, int * pFillings)
 {
-    int errorCur;
     int rowsCur;
     int rowsRequested;  /* Number of requested rows */
     int backupRows = 0;
@@ -473,7 +470,7 @@ static int Rows2Columns(CharacterSetTable *T, unsigned char *data, const size_t 
         pTestList[testListSize] = testColumns;
         testListSize++;
         useColumns=testColumns; /* Make a copy because it may be modified */
-        errorCur = Columns2Rows(T, data, dataLength, &rowsCur, &useColumns, pSet, &fillings);
+        int errorCur = Columns2Rows(T, data, dataLength, &rowsCur, &useColumns, pSet, &fillings);
         if (errorCur != 0)
             return errorCur;
         if (rowsCur<=rowsRequested) {
@@ -711,7 +708,7 @@ int codablock(struct zint_symbol *symbol,const unsigned char source[], const siz
             if (columns > 64)
                 columns = 64;
                 #ifdef _DEBUG
-                printf("Auto column count for %d characters:%d\n",dataLength,columns);
+                printf("Auto column count for %zu characters:%d\n",dataLength,columns);
                 #endif
         }
     }

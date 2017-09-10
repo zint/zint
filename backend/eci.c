@@ -40,8 +40,6 @@
 
 /* Convert Unicode to other character encodings */
 int utf_to_eci(const int eci, const unsigned char source[], unsigned char dest[], size_t *length) {
-    int glyph;
-    int bytelen;
     int in_posn;
     int out_posn;
     int ext;
@@ -60,8 +58,8 @@ int utf_to_eci(const int eci, const unsigned char source[], unsigned char dest[]
     out_posn = 0;
     do {
         /* Single byte (ASCII) character */
-        bytelen = 1;
-        glyph = (int) source[in_posn];
+        int bytelen = 1;
+        int glyph = (int) source[in_posn];
 
         if ((source[in_posn] >= 0x80) && (source[in_posn] < 0xc0)) {
             /* Something has gone wrong, abort */

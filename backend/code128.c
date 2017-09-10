@@ -102,16 +102,15 @@ int parunmodd(const unsigned char llyth) {
  * bring together same type blocks
  */
 void grwp(int *indexliste) {
-    int i, j;
 
     /* bring together same type blocks */
     if (*(indexliste) > 1) {
-        i = 1;
+        int i = 1;
         while (i < *(indexliste)) {
             if (list[1][i - 1] == list[1][i]) {
                 /* bring together */
                 list[0][i - 1] = list[0][i - 1] + list[0][i];
-                j = i + 1;
+                int j = i + 1;
 
                 /* decreace the list */
                 while (j < *(indexliste)) {
@@ -131,11 +130,11 @@ void grwp(int *indexliste) {
  * Implements rules from ISO 15417 Annex E
  */
 void dxsmooth(int *indexliste) {
-    int i, current, last, next, length;
+    int i, last, next;
 
     for (i = 0; i < *(indexliste); i++) {
-        current = list[1][i];
-        length = list[0][i];
+        int current = list[1][i];
+        int length = list[0][i];
         if (i != 0) {
             last = list[1][i - 1];
         } else {
