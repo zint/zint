@@ -933,7 +933,7 @@ Value   |
 34      | BARCODE_UPCA            | UPC A
 35      | BARCODE_UPCA_CHK        | UPC A + Check Digit
 37      | BARCODE_UPCE            | UPC E
-38      | BARCODE_UPCE            | UPC E + Check Digit
+38      | BARCODE_UPCE_CHK        | UPC E + Check Digit
 40      | BARCODE_POSTNET         | PostNet
 47      | BARCODE_MSI_PLESSEY     | MSI Plessey
 49      | BARCODE_FIM             | FIM
@@ -973,10 +973,11 @@ Value   |
 97      | BARCODE_MICROQR         | Micro QR Code
 98      | BARCODE_HIBC_128        | HIBC Code 128
 99      | BARCODE_HIBC_39         | HIBC Code 39
-102     | BARCODE_HIBC_39         | HIBC Data Matrix ECC200
-104     | BARCODE_HIBC_DM         | HIBC QR Code
+102     | BARCODE_HIBC_DM         | HIBC Data Matrix ECC200
+104     | BARCODE_HIBC_QR         | HIBC QR Code
 106     | BARCODE_HIBC_PDF        | HIBC PDF417
 108     | BARCODE_HIBC_MICPDF     | HIBC MicroPDF417
+110     | BARCODE_HIBC_BLOCKF     | HIBC Codablock F
 112     | BARCODE_HIBC_AZTEC      | HIBC Aztec Code
 115     | BARCODE_DOTCODE         | DotCode
 116     | BARCODE_HANXIN          | Han Xin (Chinese Sensible) Code
