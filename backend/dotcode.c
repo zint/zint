@@ -1282,7 +1282,12 @@ int dotcode(struct zint_symbol *symbol, const unsigned char source[], int length
     }
 
     if ((height > 200) || (width > 200)) {
-        strcpy(symbol->errtxt, "526: Specified symbol size is too large (E20)");
+        strcpy(symbol->errtxt, "526: Specified symbol size is too large");
+        return ZINT_ERROR_INVALID_OPTION;
+    }
+    
+    if ((height < 5) || (width < 5)) {
+        strcpy(symbol->errtxt, "527: Specified symbol size has a dimension which is too small");
         return ZINT_ERROR_INVALID_OPTION;
     }
 
