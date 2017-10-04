@@ -59,7 +59,7 @@ static int count_doubles(const unsigned char source[], const int posn, const siz
     return c;
 }
 
-static int count_cr(char source[], int posn, int length) {
+static int count_cr(unsigned char source[], int posn, int length) {
     int c = 0;
     int i = posn;
     int cond = 1;
@@ -76,7 +76,7 @@ static int count_cr(char source[], int posn, int length) {
     return c;
 }
 
-static int count_dotcomma(char source[], int posn, int length) {
+static int count_dotcomma(unsigned char source[], int posn, int length) {
     int c = 0;
     int i = posn;
     int cond = 1;
@@ -93,7 +93,7 @@ static int count_dotcomma(char source[], int posn, int length) {
     return c;
 }
 
-static int count_spaces(char source[], int posn, int length) {
+static int count_spaces(unsigned char source[], int posn, int length) {
     int c = 0;
     int i = posn;
     int cond = 1;
@@ -130,13 +130,13 @@ static int aztec_text_process(const unsigned char source[], const size_t src_len
     char current_mode;
     int count;
     char next_mode;
-    char *reduced_source;
+    unsigned char *reduced_source;
     char *reduced_encode_mode;
     int reduced_length;
     int byte_mode = 0;
 
     encode_mode=(char*)malloc(src_len + 1);
-    reduced_source=(char*)malloc(src_len + 1);
+    reduced_source=(unsigned char*)malloc(src_len + 1);
     reduced_encode_mode=(char*)malloc(src_len + 1);
 
     if ((!encode_mode) ||
@@ -149,7 +149,7 @@ static int aztec_text_process(const unsigned char source[], const size_t src_len
     }
 
     for (i = 0; i < src_len; i++) {
-        if (source[i] > 128) {
+        if (source[i] >= 128) {
             encode_mode[i] = 'B';
         } else {
             encode_mode[i] = AztecModes[(int) source[i]];
@@ -268,7 +268,6 @@ static int aztec_text_process(const unsigned char source[], const size_t src_len
     
     current_mode = 'U';
     for(i = 0; i < reduced_length; i++) {
-        
         // Resolve Carriage Return (CR) which can be Punct or Mixed mode
         if (reduced_source[i] == 13) {
             count = count_cr(reduced_source, i, reduced_length);
@@ -576,7 +575,12 @@ static int aztec_text_process(const unsigned char source[], const size_t src_len
 
     current_mode = 'U';
     for(i = 0; i < reduced_length; i++) {
-        if (reduced_encode_mode[i] != current_mode) {
+        
+        if (reduced_encode_mode[i] != 'B') {
+            byte_mode = 0;
+        }
+        
+        if ((reduced_encode_mode[i] != current_mode) && (!byte_mode)) {
             // Change mode
             if (current_mode == 'U') {
                 switch (reduced_encode_mode[i]) {
@@ -615,6 +619,7 @@ static int aztec_text_process(const unsigned char source[], const size_t src_len
                         bin_append(29, 5, binary_string); // M/L
                         break;
                     case 'P':
+                        bin_append(29, 5, binary_string); // M/L
                         bin_append(30, 5, binary_string); // P/L
                         break;
                     case 'p':
@@ -709,10 +714,10 @@ static int aztec_text_process(const unsigned char source[], const size_t src_len
                         break;
                 }
             }
-                
+            
             // Byte mode length descriptor
             if ((reduced_encode_mode[i] == 'B') && (!byte_mode)) {
-                for (count = 0; ((i + count) < reduced_length) && (reduced_encode_mode[i] == 'B'); count++);
+                for (count = 0; ((i + count) < reduced_length) && (reduced_encode_mode[i + count] == 'B'); count++);
 
                 if (count > 2079) {
                     return ZINT_ERROR_TOO_LONG;
@@ -727,10 +732,6 @@ static int aztec_text_process(const unsigned char source[], const size_t src_len
                     bin_append(count, 5, binary_string);
                 }
                 byte_mode = 1;
-            }
-
-            if ((reduced_encode_mode[i] != 'B') && byte_mode) {
-                byte_mode = 0;
             }
 
             if ((reduced_encode_mode[i] != 'B') && (reduced_encode_mode[i] != 'u') && (reduced_encode_mode[i] != 'p')) {
@@ -1176,6 +1177,7 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], const size_t lengt
                 adjusted_string[adjusted_length - 1] = '0';
             }
 
+/*
             if (debug) {
                 printf("Codewords:\n");
                 for (i = 0; i < (adjusted_length / codeword_size); i++) {
@@ -1185,6 +1187,7 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], const size_t lengt
                     printf("\n");
                 }
             }
+*/
 
         } while (adjusted_length > data_maxsize);
         /* This loop will only repeat on the rare occasions when the rule about not having all 1s or all 0s
