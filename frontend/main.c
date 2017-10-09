@@ -260,7 +260,7 @@ static void concat(char dest[], char source[]) {
     }
 }
 
-int batch_process(struct zint_symbol *symbol, char *filename, int mirror_mode, char *filetype) {
+int batch_process(struct zint_symbol *symbol, char *filename, int mirror_mode, char *filetype, int rotate_angle) {
     FILE *file;
     unsigned char buffer[7100];
     unsigned char character = 0;
@@ -401,7 +401,7 @@ int batch_process(struct zint_symbol *symbol, char *filename, int mirror_mode, c
             }
 
             strcpy(symbol->outfile, output_file);
-            error_number = ZBarcode_Encode_and_Print(symbol, buffer, posn, 0);
+            error_number = ZBarcode_Encode_and_Print(symbol, buffer, posn, rotate_angle);
             if (error_number != 0) {
                 fprintf(stderr, "On line %d: %s\n", line_count, symbol->errtxt);
                 fflush(stderr);
@@ -785,7 +785,7 @@ int main(int argc, char **argv) {
                     if (filetype[0] == '\0') {
                         strcpy(filetype, "png");
                     }
-                    error_number = batch_process(my_symbol, optarg, mirror_mode, filetype);
+                    error_number = batch_process(my_symbol, optarg, mirror_mode, filetype, rotate_angle);
                     generated = 1;
                     if (error_number != 0) {
                         fprintf(stderr, "%s\n", my_symbol->errtxt);
