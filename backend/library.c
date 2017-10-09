@@ -812,6 +812,20 @@ static int reduced_charset(struct zint_symbol *symbol, const unsigned char *sour
     return error_number;
 }
 
+void strip_bom(unsigned char *source, int *input_length) {
+    int i;
+    
+    if (*input_length > 3) {
+        if((source[0] == 0xef) && (source[1] == 0xbb) && (source[2] == 0xbf)) {
+            /* BOM at start of input data, strip in accordance with RFC 3629 */
+            for (i = 3; i < *input_length; i++) {
+                source[i - 3] = source[i];
+            }
+        }
+    }
+    *input_length -= 3;
+}
+
 int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source,int in_length) {
     int error_number, error_buffer, i;
 #ifdef _MSC_VER
@@ -1015,6 +1029,10 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source,int 
     } else {
         memcpy(local_source, source, in_length);
         local_source[in_length] = '\0';
+    }
+    
+    if (symbol->input_mode == UNICODE_MODE) {
+        strip_bom(local_source, &in_length);
     }
     
     if ((symbol->dot_size < 0.01) || (symbol->dot_size > 20.0)) {
