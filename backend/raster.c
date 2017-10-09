@@ -238,21 +238,21 @@ void draw_circle(char *pixelbuf, int image_width, int image_height, int x0, int 
     }
 }
 
-void draw_bullseye(char *pixelbuf, int image_width, int image_height, int xoffset, int yoffset, int scaler) {
+void draw_bullseye(char *pixelbuf, int image_width, int image_height, int cx, int cy, int scaler) {
     /* Central bullseye in Maxicode symbols */
-    draw_circle(pixelbuf, image_width, image_height, (int)(14.5 * scaler) + xoffset, (int)(15 * scaler) + yoffset, (int)(4.571 * scaler) + 1, '1');
-    draw_circle(pixelbuf, image_width, image_height, (int)(14.5 * scaler) + xoffset, (int)(15 * scaler) + yoffset, (int)(3.779 * scaler) + 1, '0');
-    draw_circle(pixelbuf, image_width, image_height, (int)(14.5 * scaler) + xoffset, (int)(15 * scaler) + yoffset, (int)(2.988 * scaler) + 1, '1');
-    draw_circle(pixelbuf, image_width, image_height, (int)(14.5 * scaler) + xoffset, (int)(15 * scaler) + yoffset, (int)(2.196 * scaler) + 1, '0');
-    draw_circle(pixelbuf, image_width, image_height, (int)(14.5 * scaler) + xoffset, (int)(15 * scaler) + yoffset, (int)(1.394 * scaler) + 1, '1');
-    draw_circle(pixelbuf, image_width, image_height, (int)(14.5 * scaler) + xoffset, (int)(15 * scaler) + yoffset, (int)(0.602 * scaler) + 1, '0');
-
+    
+    draw_circle(pixelbuf, image_width, image_height, cx, cy, (int)(4.571 * scaler) + 1, '1');
+    draw_circle(pixelbuf, image_width, image_height, cx, cy, (int)(3.779 * scaler) + 1, '0');
+    draw_circle(pixelbuf, image_width, image_height, cx, cy, (int)(2.988 * scaler) + 1, '1');
+    draw_circle(pixelbuf, image_width, image_height, cx, cy, (int)(2.196 * scaler) + 1, '0');
+    draw_circle(pixelbuf, image_width, image_height, cx, cy, (int)(1.394 * scaler) + 1, '1');
+    draw_circle(pixelbuf, image_width, image_height, cx, cy, (int)(0.602 * scaler) + 1, '0');
 }
 
 void draw_hexagon(char *pixelbuf, int image_width, char *scaled_hexagon, int hexagon_size, int xposn, int yposn) {
     /* Put a hexagon into the pixel buffer */
     int i, j;
-
+    
     for (i = 0; i < hexagon_size; i++) {
         for (j = 0; j < hexagon_size; j++) {
             if (scaled_hexagon[(i * hexagon_size) + j] == '1') {
@@ -489,7 +489,7 @@ int plot_raster_maxicode(struct zint_symbol *symbol, int rotate_angle, int data_
     float scaler = symbol->scale;
     char *scaled_hexagon;
     int hexagon_size;
-
+    
     xoffset = symbol->border_width + symbol->whitespace_width;
     yoffset = symbol->border_width;
     image_width = (300 + (2 * xoffset * 2)) * scaler;
@@ -519,8 +519,6 @@ int plot_raster_maxicode(struct zint_symbol *symbol, int rotate_angle, int data_
     
     plot_hexagon(scaled_hexagon, hexagon_size);
 
-    draw_bullseye(pixelbuf, image_width, image_height, (2 * xoffset), (2 * yoffset), scaler * 10);
-
     for (row = 0; row < symbol->rows; row++) {
         int yposn = row * 9;
         for (column = 0; column < symbol->width; column++) {
@@ -537,7 +535,12 @@ int plot_raster_maxicode(struct zint_symbol *symbol, int rotate_angle, int data_
             }
         }
     }
-
+    
+    draw_bullseye(pixelbuf, image_width, image_height, (int)(((14.5 * 10.0) + (2.0 * xoffset)) * scaler), (int)(((16.5 * 9.0) + (2.0 * yoffset)) * scaler), scaler * 10);
+    
+    // Virtual hexagon
+    //draw_hexagon(pixelbuf, image_width, scaled_hexagon, hexagon_size, ((14 * 10) + (2 * xoffset)) * scaler, ((16 * 9) + (2 * yoffset)) * scaler);
+    
     if ((symbol->output_options & BARCODE_BOX) || (symbol->output_options & BARCODE_BIND)) {
         /* boundary bars */
         draw_bar(pixelbuf, 0, image_width, 0, symbol->border_width * 2, image_width, image_height);
