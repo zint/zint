@@ -51,7 +51,7 @@ struct zint_render_line *render_plot_create_line(float x, float y, float width, 
 int render_plot_add_line(struct zint_symbol *symbol, struct zint_render_line *line, struct zint_render_line **last_line);
 struct zint_render_ring *render_plot_create_ring(float x, float y, float radius, float line_width);
 int render_plot_add_ring(struct zint_symbol *symbol, struct zint_render_ring *ring, struct zint_render_ring **last_ring);
-struct zint_render_hexagon *render_plot_create_hexagon(float x, float y);
+struct zint_render_hexagon *render_plot_create_hexagon(float x, float y, float height);
 int render_plot_add_hexagon(struct zint_symbol *symbol, struct zint_render_hexagon *hexagon, struct zint_render_hexagon **last_hexagon);
 
 int render_plot_add_string(struct zint_symbol *symbol, unsigned char *text, float x, float y, float fsize, float width, struct zint_render_string **last_string);
@@ -351,7 +351,7 @@ int render_plot(struct zint_symbol *symbol, const float width, const float heigh
         for (r = 0; r < symbol->rows; r++) {
             for (i = 0; i < symbol->width; i++) {
                 if (module_is_set(symbol, r, i)) {
-                    struct zint_render_hexagon *hexagon = render_plot_create_hexagon(((i * 0.88) + ((r & 1) ? 1.76 : 1.32)) * scaler, ((r * 0.76) + 0.76) * scaler);
+                    struct zint_render_hexagon *hexagon = render_plot_create_hexagon(((i * 0.88) + ((r & 1) ? 1.76 : 1.32)) * scaler, ((r * 0.76) + 0.76) * scaler, 1. * scaler);
                     render_plot_add_hexagon(symbol, hexagon, &last_hexagon);
                 }
             }
@@ -731,7 +731,7 @@ int render_plot_add_ring(struct zint_symbol *symbol, struct zint_render_ring *ri
     return 1;
 }
 
-struct zint_render_hexagon *render_plot_create_hexagon(float x, float y) {
+struct zint_render_hexagon *render_plot_create_hexagon(float x, float y, float height) {
     struct zint_render_hexagon *hexagon;
 
     hexagon = (struct zint_render_hexagon*) malloc(sizeof (struct zint_render_hexagon));
@@ -739,6 +739,7 @@ struct zint_render_hexagon *render_plot_create_hexagon(float x, float y) {
     hexagon->next = NULL;
     hexagon->x = x;
     hexagon->y = y;
+    hexagon->height = height;
 
     return hexagon;
 }
