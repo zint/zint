@@ -55,6 +55,7 @@ struct zint_render_hexagon *render_plot_create_hexagon(float x, float y);
 int render_plot_add_hexagon(struct zint_symbol *symbol, struct zint_render_hexagon *hexagon, struct zint_render_hexagon **last_hexagon);
 
 int render_plot_add_string(struct zint_symbol *symbol, unsigned char *text, float x, float y, float fsize, float width, struct zint_render_string **last_string);
+void render_free(struct zint_symbol *symbol);
 
 int render_plot(struct zint_symbol *symbol, const float width, const float height) {
     struct zint_render *render;
@@ -78,6 +79,8 @@ int render_plot(struct zint_symbol *symbol, const float width, const float heigh
     float x_dimension;
     int upceanflag = 0;
 
+    // Free any previous rendering structures
+    render_free(symbol);
     // Allocate memory for the rendered version
     render = symbol->rendered = (struct zint_render *) malloc(sizeof (struct zint_render));
     if (!symbol->rendered) return ZINT_ERROR_MEMORY;
@@ -777,4 +780,52 @@ int render_plot_add_string(struct zint_symbol *symbol,
     *last_string = string;
 
     return 1;
+}
+
+/*
+ * Free the data structures created by render_plot
+ */
+void render_free(struct zint_symbol *symbol) {
+  if (symbol->rendered != NULL) {
+    struct zint_render_line *line;
+    struct zint_render_string *string;
+    struct zint_render_ring *ring;
+    struct zint_render_hexagon *hexagon;
+
+    // Free lines
+    line = symbol->rendered->lines;
+    while (line) {
+      struct zint_render_line *l = line;
+      line = line->next;
+      free(l);
+    }
+    // Free Strings
+    string = symbol->rendered->strings;
+    while (string) {
+      struct zint_render_string *s = string;
+      string = string->next;
+      free(s->text);
+      free(s);
+    }
+
+    // Free Rings
+    ring = symbol->rendered->rings;
+    while (ring) {
+      struct zint_render_ring *r = ring;
+      ring = ring->next;
+      free(r);
+    }
+
+    // Free Hexagons
+    hexagon = symbol->rendered->hexagons;
+    while (hexagon) {
+      struct zint_render_hexagon *h = hexagon;
+      hexagon = hexagon->next;
+      free(h);
+    }
+
+    // Free Render
+    free(symbol->rendered);
+    symbol->rendered = NULL;
+  }
 }
