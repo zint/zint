@@ -108,9 +108,10 @@ void grwp(int *indexliste) {
         int i = 1;
         while (i < *(indexliste)) {
             if (list[1][i - 1] == list[1][i]) {
+                int j;
                 /* bring together */
                 list[0][i - 1] = list[0][i - 1] + list[0][i];
-                int j = i + 1;
+                j = i + 1;
 
                 /* decreace the list */
                 while (j < *(indexliste)) {

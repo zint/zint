@@ -404,13 +404,14 @@ int ps_plot(struct zint_symbol *symbol) {
         int addon_latch = 0;
 
         for (r = 0; r < symbol->rows; r++) {
+            float row_posn;
             int this_row = symbol->rows - r - 1; /* invert r otherwise plots upside down */
             if (symbol->row_height[this_row] == 0) {
                 row_height = large_bar_height;
             } else {
                 row_height = symbol->row_height[this_row];
             }
-            float row_posn = 0;
+            row_posn = 0;
             for (i = 0; i < r; i++) {
                 if (symbol->row_height[symbol->rows - i - 1] == 0) {
                     row_posn += large_bar_height;

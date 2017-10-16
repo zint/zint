@@ -841,6 +841,7 @@ static void gm_add_ecc(const char binary[], const size_t data_posn, const int la
     /* Split the data into blocks */
     wp = 0;
     for (i = 0; i < (b1 + b2); i++) {
+        int data_size;
         if (i < b1) {
             block_size = n1;
         } else {
@@ -851,7 +852,7 @@ static void gm_add_ecc(const char binary[], const size_t data_posn, const int la
         } else {
             ecc_size = e2;
         }
-        int data_size = block_size - ecc_size;
+        data_size = block_size - ecc_size;
 
         /* printf("block %d/%d: data %d / ecc %d\n", i + 1, (b1 + b2), data_size, ecc_size);*/
 

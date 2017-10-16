@@ -744,13 +744,14 @@ int emf_plot(struct zint_symbol *symbol) {
 
     /* Make image rectangles, circles, hexagons */
     for (this_row = 0; this_row < symbol->rows; this_row++) {
+        float row_posn;
 
         if (symbol->row_height[this_row] == 0) {
             row_height = large_bar_height;
         } else {
             row_height = symbol->row_height[this_row];
         }
-        float row_posn = 0;
+        row_posn = 0;
         for (i = 0; i < this_row; i++) {
             if (symbol->row_height[i] == 0) {
                 row_posn += large_bar_height;

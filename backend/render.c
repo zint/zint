@@ -330,13 +330,13 @@ int render_plot(struct zint_symbol *symbol, const float width, const float heigh
     }
 
     if (symbol->symbology == BARCODE_MAXICODE) {
+        struct zint_render_ring *ring;
         /* Maxicode is a fixed size */
         scaler = GL_CONST; /* Converts from millimeters to the scale used by glabels */
         render->width = 28.16 * scaler;
         render->height = 26.86 * scaler;
 
         /* Central bullseye pattern */
-        struct zint_render_ring *ring;
         ring = render_plot_create_ring(13.64 * scaler, 13.43 * scaler, 0.85 * scaler, 0.67 * scaler);
         render_plot_add_ring(symbol, ring, &last_ring);
         ring = render_plot_create_ring(13.64 * scaler, 13.43 * scaler, 2.20 * scaler, 0.67 * scaler);

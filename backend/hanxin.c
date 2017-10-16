@@ -1254,13 +1254,14 @@ int han_xin(struct zint_symbol *symbol, const unsigned char source[], size_t len
             gbdata[i] = (int) source[i];
         }
     } else {
+        int posn;
         /* Convert Unicode input to GB-18030 */
         int error_number = utf8toutf16(symbol, source, utfdata, &length);
         if (error_number != 0) {
             return error_number;
         }
 
-        int posn = 0;
+        posn = 0;
         for (i = 0; i < length; i++) {
             int done = 0;
             gbdata[posn] = 0;

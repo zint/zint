@@ -146,6 +146,7 @@ int australia_post(struct zint_symbol *symbol, unsigned char source[], int lengt
             return error_number;
         }
     } else {
+        int zeroes;
         if (length > 8) {
             strcpy(symbol->errtxt, "403: Auspost input is too long");
             return ZINT_ERROR_TOO_LONG;
@@ -160,7 +161,7 @@ int australia_post(struct zint_symbol *symbol, unsigned char source[], int lengt
         }
 
         /* Add leading zeros as required */
-        int zeroes = 8 - length;
+        zeroes = 8 - length;
         memset(localstr, '0', zeroes);
         localstr[8] = '\0';
     }

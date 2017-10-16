@@ -1405,6 +1405,7 @@ int code_one(struct zint_symbol *symbol, unsigned char source[], int length) {
         unsigned int sub_data[190], sub_ecc[75];
         unsigned int stream[2100];
         int data_length;
+        int data_blocks;
 
         for (i = 0; i < 1500; i++) {
             data[i] = 0;
@@ -1444,7 +1445,7 @@ int code_one(struct zint_symbol *symbol, unsigned char source[], int length) {
             sub_ecc[i] = 0;
         }
 
-        int data_blocks = c1_blocks[size - 1];
+        data_blocks = c1_blocks[size - 1];
 
         rs_init_gf(0x12d);
         rs_init_code(c1_ecc_blocks[size - 1], 0);

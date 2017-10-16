@@ -428,6 +428,9 @@ int rss14(struct zint_symbol *symbol, unsigned char source[], int src_len) {
 
     /* Put this data into the symbol */
     if ((symbol->symbology == BARCODE_RSS14) || (symbol->symbology == BARCODE_RSS14_CC)) {
+        int count;
+        int check_digit;
+        char hrt[15];
         writer = 0;
         latch = '0';
         for (i = 0; i < 46; i++) {
@@ -486,9 +489,8 @@ int rss14(struct zint_symbol *symbol, unsigned char source[], int src_len) {
         }
         symbol->rows = symbol->rows + 1;
 
-        int count = 0;
-        int check_digit = 0;
-        char hrt[15];
+        count = 0;
+        check_digit = 0;
 
         /* Calculate check digit from Annex A and place human readable text */
         ustrcpy(symbol->text, (unsigned char*) "(01)");
@@ -1066,8 +1068,9 @@ int general_rules(char type[]) {
     block[1][block_count] = type[0];
 
     for (i = 1; i < strlen(type); i++) {
+        char last;
         current = type[i];
-        char last = type[i - 1];
+        last = type[i - 1];
 
         if (current == last) {
             block[0][block_count] = block[0][block_count] + 1;
@@ -1081,8 +1084,9 @@ int general_rules(char type[]) {
     block_count++;
 
     for (i = 0; i < block_count; i++) {
+        char next;
         current = block[1][i];
-        char next = (block[1][i + 1] & 0xFF);
+        next = (block[1][i + 1] & 0xFF);
 
         if ((current == ISOIEC) && (i != (block_count - 1))) {
             if ((next == ANY_ENC) && (block[0][i + 1] >= 4)) {
@@ -2095,6 +2099,8 @@ int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int src_len)
         }
 
     } else {
+        int stack_rows;
+        int current_row, current_block, left_to_right;
         /* RSS Expanded Stacked */
 
         /* Bug corrected: Character missing for message
@@ -2114,23 +2120,24 @@ int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int src_len)
             symbol->option_2 = 2;
         }
 
-        int stack_rows = codeblocks / symbol->option_2;
+        stack_rows = codeblocks / symbol->option_2;
         if (codeblocks % symbol->option_2 > 0) {
             stack_rows++;
         }
 
-        int current_row, current_block = 0, left_to_right;
+        current_block = 0;
         for (current_row = 1; current_row <= stack_rows; current_row++) {
+            int special_case_row = 0;
+            int elements_in_sub;
             int sub_elements[235];
             for (i = 0; i < 235; i++) {
                 sub_elements[i] = 0;
             }
-            int special_case_row = 0;
 
             /* Row Start */
             sub_elements[0] = 1; // left guard
             sub_elements[1] = 1;
-            int elements_in_sub = 2;
+            elements_in_sub = 2;
 
             /* Row Data */
             reader = 0;

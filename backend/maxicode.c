@@ -621,6 +621,8 @@ int maxicode(struct zint_symbol *symbol, unsigned char local_source[], const int
     }
 
     if ((mode == 2) || (mode == 3)) { /* Modes 2 and 3 need data in symbol->primary */
+        int countrycode;
+        int service;
         if (lp == 0) { /* Mode set manually means lp doesn't get set */
             lp = strlen(symbol->primary);
         }
@@ -659,8 +661,8 @@ int maxicode(struct zint_symbol *symbol, unsigned char local_source[], const int
         servicestr[2] = symbol->primary[14];
         servicestr[3] = '\0';
 
-        int countrycode = atoi(countrystr);
-        int service = atoi(servicestr);
+        countrycode = atoi(countrystr);
+        service = atoi(servicestr);
 
         if (mode == 2) {
             maxi_do_primary_2(postcode, countrycode, service);

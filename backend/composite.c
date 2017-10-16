@@ -1005,12 +1005,13 @@ static int cc_binary_string(struct zint_symbol *symbol, const char source[], cha
             strcat(binary_string, "11");
             read_posn = 2;
         } else {
+            long int group_val;
             /* Production Date (11) or Expiration Date (17) */
             char date_str[4];
             date_str[0] = source[2];
             date_str[1] = source[3];
             date_str[2] = '\0';
-            long int group_val = atoi(date_str) * 384;
+            group_val = atoi(date_str) * 384;
 
             date_str[0] = source[4];
             date_str[1] = source[5];
@@ -1120,6 +1121,10 @@ static int cc_binary_string(struct zint_symbol *symbol, const char source[], cha
         }
 
         if ((test1 != -1) && (test2 != 1) && (test3 == 0)) {
+            int next_ai_posn;
+            char numeric_part[4];
+            int numeric_value;
+            int table3_letter;
             /* Encodation method "11" can be used */
             strcat(binary_string, "11");
 
@@ -1145,7 +1150,7 @@ static int cc_binary_string(struct zint_symbol *symbol, const char source[], cha
                 }
             }
 
-            int next_ai_posn = 2 + (int)strlen(ninety);
+            next_ai_posn = 2 + (int)strlen(ninety);
 
             if (source[next_ai_posn] == '[') {
                 /* There are more AIs afterwords */
@@ -1169,7 +1174,6 @@ static int cc_binary_string(struct zint_symbol *symbol, const char source[], cha
                     break;
             }
 
-            char numeric_part[4];
             if (test1 == 0) {
                 strcpy(numeric_part, "0");
             } else {
@@ -1179,9 +1183,9 @@ static int cc_binary_string(struct zint_symbol *symbol, const char source[], cha
                 numeric_part[i] = '\0';
             }
 
-            int numeric_value = atoi(numeric_part);
+            numeric_value = atoi(numeric_part);
 
-            int table3_letter = -1;
+            table3_letter = -1;
             if (numeric_value < 31) {
                 table3_letter = posn("BDHIJKLNPQRSTVWZ", ninety[test1]);
             }

@@ -223,10 +223,10 @@ static int Columns2Rows(CharacterSetTable *T, unsigned char *data, const size_t 
 
     /* >>> Loop until rowsCur<44 */
     do {
-        memset(pSet,0,dataLength*sizeof(int));
         int charCur=0;
-        rowsCur=0;
         int fOneLiner=1;        /* First try one-Liner */
+        memset(pSet,0,dataLength*sizeof(int));
+        rowsCur=0;
 
         /* >>> Line and OneLiner-try Loop */
         do{
@@ -467,10 +467,11 @@ static int Rows2Columns(CharacterSetTable *T, unsigned char *data, const size_t 
     }
 
     for (;;) {
+        int errorCur;
         pTestList[testListSize] = testColumns;
         testListSize++;
         useColumns=testColumns; /* Make a copy because it may be modified */
-        int errorCur = Columns2Rows(T, data, dataLength, &rowsCur, &useColumns, pSet, &fillings);
+        errorCur = Columns2Rows(T, data, dataLength, &rowsCur, &useColumns, pSet, &fillings);
         if (errorCur != 0)
             return errorCur;
         if (rowsCur<=rowsRequested) {

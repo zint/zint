@@ -1422,8 +1422,8 @@ int qr_code(struct zint_symbol *symbol, const unsigned char source[], size_t len
             if (utfdata[i] <= 0xff) {
                 jisdata[i] = utfdata[i];
             } else {
-                j = 0;
                 int glyph = 0;
+                j = 0;
                 do {
                     if (sjis_lookup[j * 2] == utfdata[i]) {
                         glyph = sjis_lookup[(j * 2) + 1];
@@ -1648,12 +1648,13 @@ static int micro_qr_intermediate(char binary[], const int jisdata[], const char 
     }
 
     do {
+        char data_block;
+        int short_data_block_length = 0;
         if (strlen(binary) > 128) {
             return ZINT_ERROR_TOO_LONG;
         }
 
-        char data_block = mode[position];
-        int short_data_block_length = 0;
+        data_block = mode[position];
         do {
             short_data_block_length++;
         } while (((short_data_block_length + position) < length) && (mode[position + short_data_block_length] == data_block));
@@ -2586,8 +2587,8 @@ int microqr(struct zint_symbol *symbol, const unsigned char source[], size_t len
             if (utfdata[i] <= 0xff) {
                 jisdata[i] = utfdata[i];
             } else {
-                j = 0;
                 int glyph = 0;
+                j = 0;
                 do {
                     if (sjis_lookup[j * 2] == utfdata[i]) {
                         glyph = sjis_lookup[(j * 2) + 1];

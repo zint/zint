@@ -107,9 +107,10 @@ void regroupe(int *indexliste) {
         int i = 1;
         while (i < *(indexliste)) {
             if (liste[1][i - 1] == liste[1][i]) {
+                int j;
                 /* bring together */
                 liste[0][i - 1] = liste[0][i - 1] + liste[0][i];
-                int j = i + 1;
+                j = i + 1;
 
                 /* decreace the list */
                 while (j < *(indexliste)) {
@@ -426,6 +427,7 @@ void byteprocess(int *chainemc, int *mclength, unsigned char chaine[], int start
             printf("913 %d\n", chainemc[*mclength - 1]);
         }
     } else {
+        int len;
         /* select the switch for multiple of 6 bytes */
         if (length % 6 == 0) {
             chainemc[(*mclength)++] = 924;
@@ -435,17 +437,18 @@ void byteprocess(int *chainemc, int *mclength, unsigned char chaine[], int start
             if (debug) printf("901 ");
         }
 
-        int len = 0;
+        len = 0;
 
         while (len < length) {
+			uint64_t total;
             unsigned int chunkLen = length - len;
             if (6 <= chunkLen) /* Take groups of 6 */ {
                 chunkLen = 6;
                 len += chunkLen;
 #if defined(_MSC_VER) && _MSC_VER == 1200
-                uint64_t total = 0;
+                total = 0;
 #else
-                uint64_t total = 0ULL;
+                total = 0ULL;
 #endif
 
                 while (chunkLen--) {
@@ -494,9 +497,10 @@ void numbprocess(int *chainemc, int *mclength, char chaine[], int start, int len
 
     j = 0;
     while (j < length) {
+        int longueur;
         int dumlength = 0;
         strcpy(chainemod, "");
-        int longueur = length - j;
+        longueur = length - j;
         if (longueur > 44) {
             longueur = 44;
         }

@@ -282,13 +282,13 @@ void draw_letter(char *pixelbuf, unsigned char letter, int xposn, int yposn, int
 
     if (skip == 0) {
         int glyph_no;
+        int x, y;
         if (letter > 128) {
             glyph_no = letter - 66;
         } else {
             glyph_no = letter - 33;
         }
 
-        int x, y;
 
         switch (textflags) {
             int max_x, max_y;
@@ -816,16 +816,18 @@ int plot_raster_default(struct zint_symbol *symbol, int rotate_angle, int data_t
 
     /* Plot the body of the symbol to the pixel buffer */
     for (r = 0; r < symbol->rows; r++) {
+        int plot_yposn;
+        int plot_height;
         int this_row = symbol->rows - r - 1; /* invert r otherwise plots upside down */
         row_posn += row_height;
-        int plot_yposn = next_yposn;
+        plot_yposn = next_yposn;
         if (symbol->row_height[this_row] == 0) {
             row_height = large_bar_height;
         } else {
             row_height = symbol->row_height[this_row];
         }
         next_yposn = (int) (row_posn + row_height);
-        int plot_height = next_yposn - plot_yposn;
+        plot_height = next_yposn - plot_yposn;
 
         i = 0;
         if (module_is_set(symbol, this_row, 0)) {

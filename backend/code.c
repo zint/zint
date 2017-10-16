@@ -467,9 +467,9 @@ int c93(struct zint_symbol *symbol, unsigned char source[], int length) {
 void CheckCharacter() {
 
     if (value == target_value) {
+        int i;
         /* Target reached - save the generated pattern */
         strcpy(pattern, "11110");
-        int i;
         for (i = 0; i < 11; i++) {
             char part[3];
             part[0] = itoc(S[i]);

@@ -95,9 +95,10 @@ static void grwp16(unsigned int *indexliste) {
         int i = 1;
         while(i < (int)*(indexliste)) {
             if (list[1][i - 1] == list[1][i]) {
+                int j;
                 /* bring together */
                 list[0][i - 1] = list[0][i - 1] + list[0][i];
-                int j = i + 1;
+                j = i + 1;
 
                 /* decreace the list */
                 while(j < (int)*(indexliste)) {
@@ -694,6 +695,8 @@ int code16k(struct zint_symbol *symbol, unsigned char source[], const size_t len
     bar_characters += 2;
 
     for (current_row = 0; current_row < rows_needed; current_row++) {
+        unsigned int writer;
+        int flip_flop;
 
         strcpy(width_pattern, "");
         strcat(width_pattern, C16KStartStop[C16KStartValues[current_row]]);
@@ -704,8 +707,8 @@ int code16k(struct zint_symbol *symbol, unsigned char source[], const size_t len
         strcat(width_pattern, C16KStartStop[C16KStopValues[current_row]]);
 
         /* Write the information into the symbol */
-        unsigned int writer = 0;
-        int flip_flop = 1;
+        writer = 0;
+        flip_flop = 1;
         for (mx_reader = 0; mx_reader < strlen(width_pattern); mx_reader++) {
             for (looper = 0; looper < ctoi(width_pattern[mx_reader]); looper++) {
                 if (flip_flop == 1) {

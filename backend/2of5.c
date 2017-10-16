@@ -215,6 +215,7 @@ int interleaved_two_of_five(struct zint_symbol *symbol, const unsigned char sour
     strcpy(dest, "1111");
 
     for (i = 0; i < length; i += 2) {
+        int k = 0;
         /* look up the bars and the spaces and put them in two strings */
         strcpy(bars, "");
         lookup(NEON, C25InterTable, temp[i], bars);
@@ -222,7 +223,6 @@ int interleaved_two_of_five(struct zint_symbol *symbol, const unsigned char sour
         lookup(NEON, C25InterTable, temp[i + 1], spaces);
 
         /* then merge (interlace) the strings together */
-        int k = 0;
         for (j = 0; j <= 4; j++) {
             mixed[k] = bars[j];
             k++;

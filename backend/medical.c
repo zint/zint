@@ -280,8 +280,9 @@ int code32(struct zint_symbol *symbol, unsigned char source[], int length) {
     /* Convert from decimal to base-32 */
     devisor = 33554432;
     for (i = 5; i >= 0; i--) {
+        long int remainder;
         codeword[i] = pharmacode / devisor;
-        long int remainder = pharmacode % devisor;
+        remainder = pharmacode % devisor;
         pharmacode = remainder;
         devisor /= 32;
     }

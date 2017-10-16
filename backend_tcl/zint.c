@@ -347,26 +347,26 @@ EXPORT int Zint_Init (Tcl_Interp *interp)
 {
     /*------------------------------------------------------------------------*/
 #ifdef USE_TCL_STUBS
-    if (Tcl_InitStubs(Interp, "8.1", 0) == NULL)
+    if (Tcl_InitStubs(interp, "8.1", 0) == NULL)
 #else
-    if (Tcl_PkgRequire(Interp, "Tcl", "8.1", 0) == NULL)
+    if (Tcl_PkgRequire(interp, "Tcl", "8.1", 0) == NULL)
 #endif
     {
         return TCL_ERROR;
     }
     /*------------------------------------------------------------------------*/
 #ifdef USE_TK_STUBS
-    if (Tk_InitStubs(Interp, "8.1", 0) == NULL)
+    if (Tk_InitStubs(interp, "8.1", 0) == NULL)
 #else
-    if (Tcl_PkgRequire(Interp, "Tk", "8.1", 0) == NULL)
+    if (Tcl_PkgRequire(interp, "Tk", "8.1", 0) == NULL)
 #endif
     {
         return TCL_ERROR;
     }
     /*------------------------------------------------------------------------*/
-    Tcl_CreateObjCommand(Interp, "zint", Zint, (ClientData)NULL,
+    Tcl_CreateObjCommand(interp, "zint", Zint, (ClientData)NULL,
         (Tcl_CmdDeleteProc *)NULL);
-    Tcl_PkgProvide (Interp, "zint", version_string);
+    Tcl_PkgProvide (interp, "zint", version_string);
     /*------------------------------------------------------------------------*/
     return TCL_OK;
 }

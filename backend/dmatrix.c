@@ -1241,11 +1241,12 @@ int data_matrix_200(struct zint_symbol *symbol,const unsigned char source[], con
 #endif
     { // placement
         int x, y, NC, NR, *places;
+        unsigned char *grid;
         NC = W - 2 * (W / FW);
         NR = H - 2 * (H / FH);
         places = (int*) malloc(NC * NR * sizeof (int));
         ecc200placement(places, NR, NC);
-        unsigned char *grid = (unsigned char*) malloc(W * H);
+        grid = (unsigned char*) malloc(W * H);
         memset(grid, 0, W * H);
         for (y = 0; y < H; y += FH) {
             for (x = 0; x < W; x++)

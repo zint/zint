@@ -154,6 +154,7 @@ int png_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
 
     /* Pixel Plotting */
     for (row = 0; row < symbol->bitmap_height; row++) {
+        unsigned char *image_data;
         for (column = 0; column < symbol->bitmap_width; column++) {
             i = column * 3;
             switch (*(pixelbuf + (symbol->bitmap_width * row) + column)) {
@@ -171,7 +172,7 @@ int png_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
             }
         }
         /* write row contents to file */
-        unsigned char *image_data = outdata;
+        image_data = outdata;
         png_write_row(png_ptr, image_data);
     }
 
