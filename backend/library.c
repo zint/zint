@@ -787,9 +787,9 @@ void strip_bom(unsigned char *source, int *input_length) {
             for (i = 3; i < *input_length; i++) {
                 source[i - 3] = source[i];
             }
+            *input_length -= 3;
         }
     }
-    *input_length -= 3;
 }
 
 int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source,int in_length) {
