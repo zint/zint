@@ -65,7 +65,7 @@
 
 #define UINT unsigned short
 
-extern int general_rules(char field[], char type[]);
+extern int general_rules(char type[]);
 extern int eanx(struct zint_symbol *symbol, unsigned char source[], int length);
 extern int ean_128(struct zint_symbol *symbol, unsigned char source[], const size_t length);
 extern int rss14(struct zint_symbol *symbol, unsigned char source[], int length);
@@ -1381,7 +1381,7 @@ static int cc_binary_string(struct zint_symbol *symbol, const char source[], cha
         }
     }
 
-    latch = general_rules(general_field, general_field_type);
+    latch = general_rules(general_field_type);
 
     i = 0;
     do {

@@ -76,6 +76,8 @@ struct zint_symbol *ZBarcode_Create() {
     return symbol;
 }
 
+extern void render_free(struct zint_symbol *symbol); /* Free render structures */
+
 void ZBarcode_Clear(struct zint_symbol *symbol) {
     int i, j;
 
@@ -94,6 +96,9 @@ void ZBarcode_Clear(struct zint_symbol *symbol) {
     }
     symbol->bitmap_width = 0;
     symbol->bitmap_height = 0;
+
+    // If there is a rendered version, ensure its memory is released
+    render_free(symbol);
 }
 
 void ZBarcode_Delete(struct zint_symbol *symbol) {
@@ -101,47 +106,8 @@ void ZBarcode_Delete(struct zint_symbol *symbol) {
         free(symbol->bitmap);
 
     // If there is a rendered version, ensure its memory is released
-    if (symbol->rendered != NULL) {
-        struct zint_render_line *line;
-        struct zint_render_string *string;
-        struct zint_render_ring *ring;
-        struct zint_render_hexagon *hexagon;
+    render_free(symbol);
 
-        // Free lines
-        line = symbol->rendered->lines;
-        while (line) {
-            struct zint_render_line *l = line;
-            line = line->next;
-            free(l);
-        }
-        // Free Strings
-        string = symbol->rendered->strings;
-        while (string) {
-            struct zint_render_string *s = string;
-            string = string->next;
-            free(s->text);
-            free(s);
-        }
-
-        // Free Rings
-        ring = symbol->rendered->rings;
-        while (ring) {
-            struct zint_render_ring *r = ring;
-            ring = ring->next;
-            free(r);
-        }
-
-        // Free Hexagons
-        hexagon = symbol->rendered->hexagons;
-        while (hexagon) {
-            struct zint_render_hexagon *h = hexagon;
-            hexagon = hexagon->next;
-            free(h);
-        }
-
-        // Free Render
-        free(symbol->rendered);
-    }
     free(symbol);
 }
 

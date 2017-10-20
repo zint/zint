@@ -55,7 +55,7 @@ extern "C" {
     };
 
     struct zint_render_hexagon {
-        float x, y;
+        float x, y, height;
         struct zint_render_hexagon *next; /* Pointer to next hexagon */
     };
 
