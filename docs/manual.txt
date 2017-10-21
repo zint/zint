@@ -179,12 +179,12 @@ Unicode then you will need to set the appropriate input options as shown in
 section 4.11 below. 
 
 Non-printing characters can be entered on the command line using the backslash 
-(\) as an escape character. Permissible characters are shown in the table 
-below. Note that this only applies on the command line. 
+(\) as an escape character in combination with the --esc switch. Permissible
+characters are shown in the table below. 
 
--------------------------------------------------------------
+--------------------------------------------------------------------
 Escape Character  |  ASCII Equivalent  |  Interpretation
--------------------------------------------------------------
+--------------------------------------------------------------------
 \0                |  0x00              |  Null
 \E                |  0x04              |  End of Transmission
 \a                |  0x07              |  Bell
@@ -197,7 +197,9 @@ Escape Character  |  ASCII Equivalent  |  Interpretation
 \e                |  0x1B              |  Escape
 \G                |  0x1D              |  Group Selector
 \R                |  0x1E              |  Record Selector
--------------------------------------------------------------
+\xNN              |  0xNN              |  Any other 8-bit character
+                  |                    |     where NN is hexadecimal
+--------------------------------------------------------------------
 
 Input data can be read directly from file using the -i switch as shown below. 
 The input file is assumed to be Unicode (UTF-8) formatted unless an alternative 
@@ -1042,7 +1044,20 @@ Value         |  Effect
 DATA_MODE     |  Uses full ASCII range interpreted as Latin-1 or binary data.
 UNICODE_MODE  |  Uses pre-formatted UTF-8 input.
 GS1_MODE      |  Encodes GS1 data using FNC1 characters.
+ESCAPE_MODE   |  Process input data for escape sequences
 -----------------------------------------------------------------------------
+
+DATA_MODE, UNICODE_MODE and GS1_MODE are mutually exclusive, whereas
+ESCAPE_MODE is optional. So, for example, you can set
+
+my_symbol->input_mode = UNICODE_MODE + ESCAPE_MODE;
+
+whereas 
+
+my_symbol->input_mode = DATA_MODE + GS1_MODE;
+
+is not valid. Permissable escape sequences are listed in section 4.1.
+
 
 5.10 Verifying Symbology Availability
 -------------------------------------

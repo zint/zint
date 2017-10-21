@@ -43,7 +43,11 @@ size_t ustrlen(const unsigned char data[]) {
 int ctoi(const char source) {
     if ((source >= '0') && (source <= '9'))
         return (source - '0');
-    return (source - 'A' + 10);
+    if ((source >= 'A') && (source <= 'F'))
+        return (source - 'A' + 10);
+    if ((source >= 'a') && (source <= 'f'))
+        return (source - 'a' + 10);
+    return -1;
 }
 
 

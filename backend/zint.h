@@ -220,6 +220,7 @@ extern "C" {
 #define GS1_MODE	2
 #define KANJI_MODE	3
 #define SJIS_MODE	4
+#define ESCAPE_MODE     8
 
 // Data Matrix specific options
 #define DM_SQUARE	100

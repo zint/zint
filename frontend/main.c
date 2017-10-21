@@ -92,6 +92,7 @@ void usage(void) {
             "  --dump                Dump hexadecimal representation to stdout\n"
             "  -e, --ecinos          Display table of ECI character encodings\n"
             "  --eci=NUMBER          Set the ECI mode for raw data\n"
+            "  --esc                 Process escape characters in input data\n"
             "  --filetype=TYPE       Set output file type (PNG/EPS/SVG/PNG/EPS/GIF/TXT)\n"
             "  --fg=COLOUR           Specify a foreground colour (in hex)\n"
             "  --gs1                 Treat input as GS1 compatible data\n"
@@ -166,78 +167,6 @@ int validator(char test_string[], char source[]) {
     }
 
     return 0;
-}
-
-int escape_char_process(struct zint_symbol *my_symbol, unsigned char input_string[], int length) {
-    int error_number;
-    int i, j;
-
-#ifndef _MSC_VER
-    unsigned char escaped_string[length + 1];
-#else
-    unsigned char* escaped_string = (unsigned char*) _alloca(length + 1);
-#endif
-
-    i = 0;
-    j = 0;
-
-    do {
-        if (input_string[i] == '\\') {
-            switch (input_string[i + 1]) {
-                case '0': escaped_string[j] = 0x00; /* Null */
-                    i += 2;
-                    break;
-                case 'E': escaped_string[j] = 0x04; /* End of Transmission */
-                    i += 2;
-                    break;
-                case 'a': escaped_string[j] = 0x07; /* Bell */
-                    i += 2;
-                    break;
-                case 'b': escaped_string[j] = 0x08; /* Backspace */
-                    i += 2;
-                    break;
-                case 't': escaped_string[j] = 0x09; /* Horizontal tab */
-                    i += 2;
-                    break;
-                case 'n': escaped_string[j] = 0x0a; /* Line feed */
-                    i += 2;
-                    break;
-                case 'v': escaped_string[j] = 0x0b; /* Vertical tab */
-                    i += 2;
-                    break;
-                case 'f': escaped_string[j] = 0x0c; /* Form feed */
-                    i += 2;
-                    break;
-                case 'r': escaped_string[j] = 0x0d; /* Carriage return */
-                    i += 2;
-                    break;
-                case 'e': escaped_string[j] = 0x1b; /* Escape */
-                    i += 2;
-                    break;
-                case 'G': escaped_string[j] = 0x1d; /* Group Separator */
-                    i += 2;
-                    break;
-                case 'R': escaped_string[j] = 0x1e; /* Record Separator */
-                    i += 2;
-                    break;
-                case '\\': escaped_string[j] = '\\';
-                    i += 2;
-                    break;
-                default: escaped_string[j] = input_string[i];
-                    i++;
-                    break;
-            }
-        } else {
-            escaped_string[j] = input_string[i];
-            i++;
-        }
-        j++;
-    } while (i < length);
-    escaped_string[j] = '\0';
-
-    error_number = ZBarcode_Encode(my_symbol, escaped_string, j);
-
-    return error_number;
 }
 
 /* Converts an integer value to its hexadecimal character */
@@ -500,6 +429,7 @@ int main(int argc, char **argv) {
             {"dotsize", 1, 0, 0},
             {"eci", 1, 0, 0},
             {"filetype", 1, 0, 0},
+            {"esc", 0, 0, 0},
             {"verbose", 0, 0, 0}, // Currently undocumented, output some debug info
             {0, 0, 0, 0}
         };
@@ -696,6 +626,11 @@ int main(int argc, char **argv) {
                         fflush(stderr);
                     }
                 }
+                if (!strcmp(long_options[option_index].name, "esc")) {
+                    if (!(my_symbol->input_mode &= ESCAPE_MODE)) {
+                        my_symbol->input_mode += ESCAPE_MODE;
+                    }
+                }
                 if (!strcmp(long_options[option_index].name, "verbose")) {
                     my_symbol->debug = 1;
                 }
@@ -742,7 +677,7 @@ int main(int argc, char **argv) {
                         strcat(my_symbol->outfile, ".");
                         strcat(my_symbol->outfile, filetype);
                     }
-                    error_number = escape_char_process(my_symbol, (unsigned char*) optarg, strlen(optarg));
+                    error_number = ZBarcode_Encode(my_symbol, (unsigned char*) optarg, strlen(optarg));
                     if (error_number < 5) {
                         if (error_number != 0) {
                             fprintf(stderr, "%s\n", my_symbol->errtxt);

@@ -57,7 +57,7 @@ struct zint_symbol *ZBarcode_Create() {
     symbol->width = 0;
     strcpy(symbol->fgcolour, "000000");
     strcpy(symbol->bgcolour, "ffffff");
-    strcpy(symbol->outfile, "");
+    strcpy(symbol->outfile, "out.png");
     symbol->scale = 1.0;
     symbol->option_1 = -1;
     symbol->option_2 = 0;
@@ -792,7 +792,96 @@ void strip_bom(unsigned char *source, int *input_length) {
     }
 }
 
-int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source,int in_length) {
+int escape_char_process(struct zint_symbol *symbol, unsigned char *input_string, int *length) {
+    int error_number;
+    int in_posn, out_posn;
+    int hex1, hex2;
+
+#ifndef _MSC_VER
+    unsigned char escaped_string[*length + 1];
+#else
+    unsigned char* escaped_string = (unsigned char*) _alloca(length + 1);
+#endif
+
+    in_posn = 0;
+    out_posn = 0;
+
+    do {
+        if (input_string[in_posn] == '\\') {
+            switch (input_string[in_posn + 1]) {
+                case '0': escaped_string[out_posn] = 0x00; /* Null */
+                    in_posn += 2;
+                    break;
+                case 'E': escaped_string[out_posn] = 0x04; /* End of Transmission */
+                    in_posn += 2;
+                    break;
+                case 'a': escaped_string[out_posn] = 0x07; /* Bell */
+                    in_posn += 2;
+                    break;
+                case 'b': escaped_string[out_posn] = 0x08; /* Backspace */
+                    in_posn += 2;
+                    break;
+                case 't': escaped_string[out_posn] = 0x09; /* Horizontal tab */
+                    in_posn += 2;
+                    break;
+                case 'n': escaped_string[out_posn] = 0x0a; /* Line feed */
+                    in_posn += 2;
+                    break;
+                case 'v': escaped_string[out_posn] = 0x0b; /* Vertical tab */
+                    in_posn += 2;
+                    break;
+                case 'f': escaped_string[out_posn] = 0x0c; /* Form feed */
+                    in_posn += 2;
+                    break;
+                case 'r': escaped_string[out_posn] = 0x0d; /* Carriage return */
+                    in_posn += 2;
+                    break;
+                case 'e': escaped_string[out_posn] = 0x1b; /* Escape */
+                    in_posn += 2;
+                    break;
+                case 'G': escaped_string[out_posn] = 0x1d; /* Group Separator */
+                    in_posn += 2;
+                    break;
+                case 'R': escaped_string[out_posn] = 0x1e; /* Record Separator */
+                    in_posn += 2;
+                    break;
+                case 'x': if (in_posn + 4 > *length) {
+                        strcpy(symbol->errtxt, "232: Incomplete escape character in input data");
+                        return ZINT_ERROR_INVALID_DATA;
+                    }
+                    hex1 = ctoi(input_string[in_posn + 2]);
+                    hex2 = ctoi(input_string[in_posn + 3]);
+                    if ((hex1 >= 0) && (hex2 >= 0)) {
+                        escaped_string[out_posn] += (hex1 << 4) + hex2;
+                        in_posn += 4;
+                    } else {
+                        strcpy(symbol->errtxt, "233: Corrupt escape character in input data");
+                        return ZINT_ERROR_INVALID_DATA;
+                    }
+                    break;
+                case '\\': escaped_string[out_posn] = '\\';
+                    in_posn += 2;
+                    break;
+                default: strcpy(symbol->errtxt, "234: Unrecognised escape character in input data");
+                    return ZINT_ERROR_INVALID_DATA;
+                    break;
+            }
+        } else {
+            escaped_string[out_posn] = input_string[in_posn];
+            in_posn++;
+        }
+        out_posn++;
+    } while (in_posn < *length);
+
+    memcpy(input_string, escaped_string, out_posn);
+    *length = out_posn;
+    
+    error_number = 0;
+
+    return error_number;
+}
+
+int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int in_length) {
     int error_number, error_buffer, i;
 #ifdef _MSC_VER
     unsigned char* local_source;
@@ -967,14 +1056,7 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source,int 
         error_number = ZINT_ERROR_INVALID_OPTION;
     }
 
-    if ((symbol->input_mode < 0) || (symbol->input_mode > 2)) {
-        symbol->input_mode = DATA_MODE;
-    }
-    
-    if ((symbol->eci != 3) && (symbol->eci != 26)) {
-        symbol->input_mode = DATA_MODE;
-    }
-
+    /* Start acting on input mode */
     if (symbol->input_mode == GS1_MODE) {
         for (i = 0; i < in_length; i++) {
             if (source[i] == '\0') {
@@ -995,6 +1077,22 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source,int 
     } else {
         memcpy(local_source, source, in_length);
         local_source[in_length] = '\0';
+    }
+    
+    if (symbol->input_mode &= ESCAPE_MODE) {
+        error_number = escape_char_process(symbol, local_source, &in_length);
+        if (error_number != 0) {
+            return error_number;
+        }
+        symbol->input_mode -= ESCAPE_MODE;
+    }
+    
+    if ((symbol->input_mode < 0) || (symbol->input_mode > 2)) {
+        symbol->input_mode = DATA_MODE;
+    }
+    
+    if ((symbol->eci != 3) && (symbol->eci != 26)) {
+        symbol->input_mode = DATA_MODE;
     }
     
     if (symbol->input_mode == UNICODE_MODE) {
