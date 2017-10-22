@@ -85,11 +85,19 @@ remove changing background colour bug, remember more settings and make GUI
 more consistent with user expectations. All windows now resizable and more
 information given when batch processing.
 
+Version 2.6.2:
+Further bugfixes in Aztec and DotCode. Expand escape sequence support
+to API and GUI. Handle UTF BOM. Bugfix raster images of Maxicode.
+
 CONTACT US
 ----------
-The home of libzint is:
+The home of Zint is:
 
 	<http://www.sourceforge.net/projects/zint>
+
+The code is now also mirrored at:
+
+        <https://github.com/woo-j/zint>
 
 For feature requests or bug reports please either join the mailing list at
 
@@ -101,20 +109,17 @@ or add a ticket on the project's SourceForge.
 BEFORE POSTING TO THE LIST
 --------------------------
 Please note the following points...
-* You do not need to join the list to post messages, although joining
-  the list will usually mean your request is answered more promptly.
-* Zint is primarily developed for Linux. If you are using another platform
-  then we will be less able to help you, although we will do so if we can.
-  We cannot provide support for commercial packages such as MS Office or
-  Crystal Reports.
+* Zint is primarily developed for Linux. While we have some experience of
+  using Zint on Windows we may be unable to resolve problems if they are
+  specific to other operating systems. We cannot provide support for using
+  Zint with commercial packages such as MS Office or Crystal Reports.
 * Always ensure you are using the latest version of Zint before posting bug
   reports - the bug you are reporting may have been fixed already.
 * Please remember to state what operating system you are using and include
   enough information to allow us to reproduce the error - including input
   data if appropriate.
 * Please DO NOT post messages asking for us to change the license
-  arrangements. You will be ignored. If you want a barcode encoder with a
-  different license then please look elsewhere.
-* Please remember that Zint is developed by volunteers - don't be surprised
-  if we are unable to help you or if it takes a long time to answer your
-  questions.
+  arrangements. You will be ignored.
+* Please remember that Zint is developed by volunteers. While we attempt to
+  answer all messages within a week, this is highly dependant on external
+  circumstances.

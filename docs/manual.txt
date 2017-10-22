@@ -592,11 +592,7 @@ size of the symbol. These options are discussed in section 6 of this guide.
 5. Using the API
 ================
 Zint has been written using the C language and currently only has an API for 
-use with C language programs. A wrapper is available for Pascal/Delphi 
-developers thanks to theunknownones from 
-http://theunknownones.googlecode.com/svn/trunk/Components/ZintBarcode/.
-This wrapper, however, is likely to be out of date and may not function as
-expected.
+use with C language programs.
 
 The libzint API has been designed to be very similar to that used by the GNU 
 Barcode package. This allows easy migration from GNU Barcode to Zint. Zint, 
@@ -2504,8 +2500,9 @@ for Code-1 and addition of batch processing at the command line. 19/4/2011 &
 
 v2.4.3 - Includes minor bugfixes 16/5/2011
 
-v2.5 – Support for DotCode and Han Xin code. ECI code processing. Output to 
-BMP, GIF and PCX. Added bold text option. Many minor bugfixes and improvements. 
+v2.5 – Support for DotCode and Han Xin code. Restore support for Codablock-F.
+ECI code processing. Output to BMP, GIF and PCX. Added bold text option. Many
+minor bugfixes and improvements. 
 13/11/2016
 
 v2.6 - Output to EMF and TIF. Update frontend to Qt5. Copy to clipboard on
@@ -2516,6 +2513,10 @@ v2.6.1 - Various bugfixes to backend, including improved Aztec code processing.
 Many improvements to GUI including resizable screens and more output while
 batch processing, more consistent use of dialogues.
 27/8/2017
+
+v2.6.2 - Further bugfixes in Aztec and DotCode. Expand escape sequence support
+to API and GUI. Handle UTF BOM. Bugfix raster images of Maxicode.
+22/10/2017
 
 7.4 Sources of Information
 --------------------------
