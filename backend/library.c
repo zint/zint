@@ -852,7 +852,7 @@ int escape_char_process(struct zint_symbol *symbol, unsigned char *input_string,
                     hex1 = ctoi(input_string[in_posn + 2]);
                     hex2 = ctoi(input_string[in_posn + 3]);
                     if ((hex1 >= 0) && (hex2 >= 0)) {
-                        escaped_string[out_posn] += (hex1 << 4) + hex2;
+                        escaped_string[out_posn] = (hex1 << 4) + hex2;
                         in_posn += 4;
                     } else {
                         strcpy(symbol->errtxt, "233: Corrupt escape character in input data");
