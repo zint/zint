@@ -47,6 +47,8 @@
 -	EAN/UPC Codes with included check digit 
 -	UPNQR Code
 -	Misspelled symbology: AztecRunes
+ 2017-10-23 2.6.2 HaO
+-	Framework 2.6.2 bugfixes
 */
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
@@ -86,7 +88,7 @@
 /*----------------------------------------------------------------------------*/
 /* > File option defines */
 
-#define VERSION "2.6.1"
+#define VERSION "2.6.2"
 
 /*----------------------------------------------------------------------------*/
 /* >>>>> Hepler defines */

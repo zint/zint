@@ -254,9 +254,10 @@ int render_plot(struct zint_symbol *symbol, float width, float height) {
     else if (symbol->symbology == BARCODE_CODE49) {
         /* The minimum X-dimension of Code 49 is 0.191mm */
         if (x_dimension < 0.191) {
+            float encoded_symbol_aspect;
             x_dimension = 0.191;
             width = 0.191 * GL_CONST * total_area_width_x;
-            float encoded_symbol_aspect = total_area_width_x;
+            encoded_symbol_aspect = total_area_width_x;
             encoded_symbol_aspect /= (preset_height + (2 * yoffset) + text_offset + text_height);
             height = width / encoded_symbol_aspect;
         }
