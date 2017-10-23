@@ -189,3 +189,4 @@ int png_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
     return 0;
 }
 #endif /* NO_PNG */
+

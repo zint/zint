@@ -50,3 +50,4 @@ typedef INT32 int32_t;
 #endif /* __cplusplus */
 
 #endif /* STDINT_MSVC_H */
+

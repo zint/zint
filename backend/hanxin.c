@@ -1570,3 +1570,4 @@ int han_xin(struct zint_symbol *symbol, const unsigned char source[], size_t len
 
     return 0;
 }
+

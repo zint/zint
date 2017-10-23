@@ -1004,3 +1004,4 @@ int codablock(struct zint_symbol *symbol,const unsigned char source[], const siz
     }
     return 0;
 }
+

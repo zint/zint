@@ -2980,3 +2980,4 @@ int upnqr(struct zint_symbol *symbol, const unsigned char source[], size_t lengt
 
     return 0;
 }
+

@@ -589,3 +589,4 @@ int channel_code(struct zint_symbol *symbol, unsigned char source[], int length)
 
     return error_number;
 }
+

@@ -733,3 +733,4 @@ int maxicode(struct zint_symbol *symbol, unsigned char local_source[], const int
 
     return internal_error;
 }
+

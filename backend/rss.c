@@ -2312,3 +2312,4 @@ int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int src_len)
 
     return 0;
 }
+

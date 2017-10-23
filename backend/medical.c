@@ -305,3 +305,4 @@ int code32(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     return error_number;
 }
+

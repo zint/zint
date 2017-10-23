@@ -1222,3 +1222,4 @@ int emf_plot(struct zint_symbol *symbol) {
     }
     return error_number;
 }
+

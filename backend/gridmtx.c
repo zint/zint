@@ -1207,3 +1207,4 @@ int grid_matrix(struct zint_symbol *symbol, const unsigned char source[], size_t
 
     return 0;
 }
+

@@ -1873,3 +1873,4 @@ int composite(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     return error_number;
 }
+

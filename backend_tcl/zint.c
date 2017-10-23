@@ -851,3 +851,4 @@ static int Encode(Tcl_Interp *interp, int objc,
     }
     return TCL_OK;
 }
+

@@ -1086,3 +1086,4 @@ int ean_14(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     return error_number;
 }
+

@@ -355,3 +355,4 @@ int dpident(struct zint_symbol *symbol, unsigned char source[], int length) {
     ustrcpy(symbol->text, (unsigned char*) localstr);
     return error_number;
 }
+

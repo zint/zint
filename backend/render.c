@@ -847,3 +847,4 @@ void render_free(struct zint_symbol *symbol) {
     symbol->rendered = NULL;
   }
 }
+

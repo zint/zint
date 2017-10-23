@@ -1769,3 +1769,4 @@ int code_one(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     return 0;
 }
+

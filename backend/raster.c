@@ -1142,3 +1142,4 @@ int plot_raster(struct zint_symbol *symbol, int rotate_angle, int file_type) {
 
     return error;
 }
+

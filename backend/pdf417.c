@@ -1288,3 +1288,4 @@ int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], const size_
 
     return codeerr;
 }
+

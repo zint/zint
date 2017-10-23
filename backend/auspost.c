@@ -253,3 +253,4 @@ int australia_post(struct zint_symbol *symbol, unsigned char source[], int lengt
     return error_number;
 }
 
+

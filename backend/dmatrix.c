@@ -1315,3 +1315,4 @@ int dmatrix(struct zint_symbol *symbol, const unsigned char source[], const size
 
     return error_number;
 }
+
