@@ -49,6 +49,7 @@
 -	Misspelled symbology: AztecRunes
  2017-10-23 2.6.2 HaO
 -	Framework 2.6.2 bugfixes
+-   Allow dll unload
 */
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
@@ -98,6 +99,7 @@
 /*----------------------------------------------------------------------------*/
 /* >>>> External Prototypes (exports) */
 EXPORT int Zint_Init (Tcl_Interp *interp);
+EXPORT int Zint_Unload (Tcl_Interp *Interp, int Flags);
 /*----------------------------------------------------------------------------*/
 /* >>>> local prototypes */
 static int Zint(ClientData unused, Tcl_Interp *interp, int objc,
@@ -303,7 +305,9 @@ static char help_message[] = "zint tcl(stub,obj) dll\n"
     "(c) 2014-06-16 ELMICRON GmbH by Harald Oehlmann\n"
     " Generate barcode in tk images and in file output\n"
     "Usage:\n"
-    " zint encode option value...\n"
+    " zint encode data photo option value...\n"
+    "  data: data to encode in the symbol\n"
+    "  photo: a tcl photo image handle ('p' after 'image create photo p')\n"
     "  Available options:\n"
     "   -bind bool: bars above/below the code, size set by -border\n"
     "   -box bool: box around bar code, size set be -border\n"
@@ -321,7 +325,7 @@ static char help_message[] = "zint tcl(stub,obj) dll\n"
     "   -mode: Structured primary data mode (Maxicode, Composite)\n"
     "   -primary text: Structured primary data (Maxicode, Composite)\n"
     "   -scale double: Scale the image to this factor\n"
-    "   -format binary|unicode|gs1: input data format. Default:unicode"
+    "   -format binary|unicode|gs1: input data format. Default:unicode\n"
     "   -notext bool: no interpretation line\n"
     "   -square bool: force Data Matrix symbols to be square\n"
     "   -init bool: Create reader initialisation symbol (Code 128, Data Matrix)\n"
@@ -371,6 +375,14 @@ EXPORT int Zint_Init (Tcl_Interp *interp)
     Tcl_PkgProvide (interp, "zint", version_string);
     /*------------------------------------------------------------------------*/
     return TCL_OK;
+}
+//------------------------------------------------------------------------------
+// >>>> Unload Procedures
+//------------------------------------------------------------------------------
+EXPORT int Zint_Unload (Tcl_Interp *Interp, int Flags)
+{
+	// Allow unload
+	return TCL_OK;
 }
 /*----------------------------------------------------------------------------*/
 /* >>>>> Called routine */
