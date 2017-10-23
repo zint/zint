@@ -31,10 +31,10 @@ public:
 	SequenceWindow();
 	~SequenceWindow();
 	BarcodeItem *barcode;
-	
+
 private:
 	QString apply_format(QString raw_number);
-	
+
 private slots:
 	void quit_now();
 	void reset_preview();

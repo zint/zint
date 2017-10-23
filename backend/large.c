@@ -8,14 +8,14 @@
     modification, are permitted provided that the following conditions
     are met:
 
-    1. Redistributions of source code must retain the above copyright 
-       notice, this list of conditions and the following disclaimer.  
+    1. Redistributions of source code must retain the above copyright
+       notice, this list of conditions and the following disclaimer.
     2. Redistributions in binary form must reproduce the above copyright
        notice, this list of conditions and the following disclaimer in the
-       documentation and/or other materials provided with the distribution.  
+       documentation and/or other materials provided with the distribution.
     3. Neither the name of the project nor the names of its contributors
        may be used to endorse or promote products derived from this software
-       without specific prior written permission. 
+       without specific prior written permission.
 
     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
     ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -26,7 +26,7 @@
     OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
     HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
     LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-    OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF 
+    OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
 
@@ -41,49 +41,49 @@ void binary_add(short int accumulator[], short int input_buffer[]) { /* Binary a
 
     for (i = 0; i < 112; i++) {
         int done = 0;
-        if (((input_buffer[i] == 0) && (accumulator[i] == 0)) 
+        if (((input_buffer[i] == 0) && (accumulator[i] == 0))
                 && ((carry == 0) && (done == 0))) {
             accumulator[i] = 0;
             carry = 0;
             done = 1;
         }
-        if (((input_buffer[i] == 0) && (accumulator[i] == 0)) 
+        if (((input_buffer[i] == 0) && (accumulator[i] == 0))
                 && ((carry == 1) && (done == 0))) {
             accumulator[i] = 1;
             carry = 0;
             done = 1;
         }
-        if (((input_buffer[i] == 0) && (accumulator[i] == 1)) 
+        if (((input_buffer[i] == 0) && (accumulator[i] == 1))
                 && ((carry == 0) && (done == 0))) {
             accumulator[i] = 1;
             carry = 0;
             done = 1;
         }
-        if (((input_buffer[i] == 0) && (accumulator[i] == 1)) 
+        if (((input_buffer[i] == 0) && (accumulator[i] == 1))
                 && ((carry == 1) && (done == 0))) {
             accumulator[i] = 0;
             carry = 1;
             done = 1;
         }
-        if (((input_buffer[i] == 1) && (accumulator[i] == 0)) 
+        if (((input_buffer[i] == 1) && (accumulator[i] == 0))
                 && ((carry == 0) && (done == 0))) {
             accumulator[i] = 1;
             carry = 0;
             done = 1;
         }
-        if (((input_buffer[i] == 1) && (accumulator[i] == 0)) 
+        if (((input_buffer[i] == 1) && (accumulator[i] == 0))
                 && ((carry == 1) && (done == 0))) {
             accumulator[i] = 0;
             carry = 1;
             done = 1;
         }
-        if (((input_buffer[i] == 1) && (accumulator[i] == 1)) 
+        if (((input_buffer[i] == 1) && (accumulator[i] == 1))
                 && ((carry == 0) && (done == 0))) {
             accumulator[i] = 0;
             carry = 1;
             done = 1;
         }
-        if (((input_buffer[i] == 1) && (accumulator[i] == 1)) 
+        if (((input_buffer[i] == 1) && (accumulator[i] == 1))
                 && ((carry == 1) && (done == 0))) {
             accumulator[i] = 1;
             carry = 1;
@@ -92,7 +92,7 @@ void binary_add(short int accumulator[], short int input_buffer[]) { /* Binary a
     }
 }
 
-void binary_subtract(short int accumulator[], short int input_buffer[]) { 
+void binary_subtract(short int accumulator[], short int input_buffer[]) {
     /* 2's compliment subtraction */
     /* take input_buffer from accumulator and put answer in accumulator */
     int i;
@@ -180,7 +180,7 @@ void binary_load(short int reg[], char data[], const size_t src_len) {
         for (i = 0; i < 112; i++) {
             temp[i] = 0;
         }
-        
+
         for (i = 0; i < 4; i++) {
                 if (ctoi(data[read]) & (0x01 << i)) temp[i] = 1;
         }
@@ -188,4 +188,5 @@ void binary_load(short int reg[], char data[], const size_t src_len) {
         binary_add(reg, temp);
     }
 }
+
 

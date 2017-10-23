@@ -75,7 +75,7 @@ public:
 		RSS_EXP		=31,
 		RSS_EXPSTACK	=81,
 		RSS_LTD		=30,
-		RSS14		=29,                
+		RSS14		=29,
 		RSS14STACK	=79,
 		RSS14STACK_OMNI	=80,
                 HANXIN          =116,
@@ -123,7 +123,7 @@ public slots:
 
 protected:
     void resizeEvent(QResizeEvent *event);
-        
+
 private slots:
 	bool save();
 	void about();
@@ -140,7 +140,7 @@ private:
 
 	QColor m_fgcolor,m_bgcolor;
 	BarcodeItem m_bc;
-	QWidget *m_optionWidget; 
+	QWidget *m_optionWidget;
         QGraphicsScene *scene;
 /*     QMenu *fileMenu;
      QMenu *helpMenu;
@@ -149,5 +149,6 @@ private:
 };
 
 #endif
+
 
 

@@ -327,7 +327,7 @@ int imail(struct zint_symbol *symbol, unsigned char source[], int length) {
         for (i = 0; i < 112; i++) {
             x_reg[i] = 0;
         }
-        
+
         for (i = 0; i < 4; i++) {
             if (ctoi(zip[read]) & (0x01 << i)) x_reg[i] = 1;
         }
@@ -368,11 +368,11 @@ int imail(struct zint_symbol *symbol, unsigned char source[], int length) {
         for (i = 0; i < 9; i++) {
             binary_add(accum, y_reg);
         }
-        
+
         for (i = 0; i < 112; i++) {
             y_reg[i] = 0;
         }
-        
+
         for (i = 0; i < 4; i++) {
             if (ctoi(zip_adder[read]) & (0x01 << i)) y_reg[i] = 1;
         }
@@ -392,11 +392,11 @@ int imail(struct zint_symbol *symbol, unsigned char source[], int length) {
     for (i = 0; i < 9; i++) {
         binary_add(accum, y_reg);
     }
-    
+
     for (i = 0; i < 112; i++) {
         y_reg[i] = 0;
     }
-    
+
     /* add first digit of tracker */
     for (i = 0; i < 4; i++) {
         if (ctoi(tracker[0]) & (0x01 << i)) y_reg[i] = 1;
@@ -412,7 +412,7 @@ int imail(struct zint_symbol *symbol, unsigned char source[], int length) {
     for (i = 0; i < 4; i++) {
         binary_add(accum, y_reg);
     }
-    
+
     for (i = 0; i < 112; i++) {
         y_reg[i] = 0;
     }
@@ -435,15 +435,15 @@ int imail(struct zint_symbol *symbol, unsigned char source[], int length) {
         for (i = 0; i < 9; i++) {
             binary_add(accum, y_reg);
         }
-        
+
         for (i = 0; i < 112; i++) {
             y_reg[i] = 0;
         }
-        
+
         for (i = 0; i < 4; i++) {
             if (ctoi(tracker[read]) & (0x01 << i)) y_reg[i] = 1;
         }
-        
+
         binary_add(accum, y_reg);
     }
 
@@ -552,7 +552,7 @@ int imail(struct zint_symbol *symbol, unsigned char source[], int length) {
             characters[i] = AppxD_II[codeword[i] - 1287];
         }
     }
-    
+
     for (i = 0; i < 10; i++) {
         if (usps_crc & (1 << i)) {
             characters[i] = 0x1FFF - characters[i];
@@ -603,3 +603,4 @@ int imail(struct zint_symbol *symbol, unsigned char source[], int length) {
     symbol->width = read - 1;
     return error_number;
 }
+

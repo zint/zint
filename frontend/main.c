@@ -170,7 +170,7 @@ int validator(char test_string[], char source[]) {
 }
 
 /* Converts an integer value to its hexadecimal character */
-static char itoc(int source) { 
+static char itoc(int source) {
     if ((source >= 0) && (source <= 9)) {
         return ('0' + source);
     } else {
@@ -179,7 +179,7 @@ static char itoc(int source) {
 }
 
 /* Concatinates dest[] with the contents of source[], copying /0 as well */
-static void concat(char dest[], char source[]) { 
+static void concat(char dest[], char source[]) {
     unsigned int i, j, n;
 
     j = strlen(dest);
@@ -200,7 +200,7 @@ int batch_process(struct zint_symbol *symbol, char *filename, int mirror_mode, c
     char format_string[127], reversed_string[127], format_char;
     int format_len, i;
     char adjusted[2];
-    
+
     memset(buffer, 0, sizeof (unsigned char) * 7100);
     memset(format_string, 0, sizeof (unsigned char) * 127);
     if (symbol->outfile[0] == '\0') {
@@ -239,7 +239,7 @@ int batch_process(struct zint_symbol *symbol, char *filename, int mirror_mode, c
                 posn--;
                 buffer[posn] = '\0';
             }
-            
+
             if (mirror_mode == 0) {
                 inpos = 0;
                 local_line_count = line_count;
@@ -321,11 +321,11 @@ int batch_process(struct zint_symbol *symbol, char *filename, int mirror_mode, c
                         }
                     }
                 }
-                
+
                 /* Add file extension */
                 output_file[i] = '.';
                 output_file[i + 1] = '\0';
-                
+
                 strcat(output_file, filetype);
             }
 
@@ -643,7 +643,7 @@ int main(int argc, char **argv) {
             case 't':
                 types();
                 break;
-                
+
             case 'e':
                 show_eci();
                 break;
@@ -766,3 +766,4 @@ int main(int argc, char **argv) {
 
     return error_number;
 }
+

@@ -164,7 +164,7 @@ static void qr_binary(int datastream[], const int version, const int target_binl
     if (gs1) {
         strcat(binary, "0101"); /* FNC1 */
     }
-    
+
     if (eci != 3) {
         strcat(binary, "0111"); /* ECI (Table 4) */
         if (eci <= 127) {
@@ -210,15 +210,15 @@ static void qr_binary(int datastream[], const int version, const int target_binl
                 for (i = 0; i < short_data_block_length; i++) {
                     int jis = jisdata[position + i];
                     int prod;
-                    
+
                     if (jis >= 0x8140 && jis <= 0x9ffc)
                         jis -= 0x8140;
-                    
+
                     else if (jis >= 0xe040 && jis <= 0xebbf)
                         jis -= 0xc140;
-                    
+
                     prod = ((jis >> 8) * 0xc0) + (jis & 0xff);
-                    
+
                     bin_append(prod, 13, binary);
 
                     if (debug) {
@@ -547,7 +547,7 @@ static void add_ecc(int fullstream[],const int datastream[],const int version,co
 static void place_finder(unsigned char grid[],const int size,const int x,const int y) {
     int xp, yp;
     char finder[] = {0x7F, 0x41, 0x5D, 0x5D, 0x5D, 0x41, 0x7F};
-    
+
     for (xp = 0; xp < 7; xp++) {
         for (yp = 0; yp < 7; yp++) {
             if (finder[yp] & 0x40 >> xp) {
@@ -1327,7 +1327,7 @@ static int getBinaryLength(const int version,char inputMode[],const int inputDat
     if (gs1 == 1) {
         count += 4;
     }
-    
+
     if (eci != 3) {
         count += 12;
     }
@@ -1545,7 +1545,7 @@ int qr_code(struct zint_symbol *symbol, const unsigned char source[], size_t len
             version = symbol->option_2;
             est_binlen = getBinaryLength(symbol->option_2, mode, jisdata, length, gs1, symbol->eci);
         }
-        
+
         if (symbol->option_2 < version) {
             strcpy(symbol->errtxt, "569: Input too long for selected symbol size");
             return ZINT_ERROR_TOO_LONG;
@@ -1679,13 +1679,13 @@ static int micro_qr_intermediate(char binary[], const int jisdata[], const char 
                 for (i = 0; i < short_data_block_length; i++) {
                     int jis = jisdata[position + i];
                     int prod;
-                    
+
                     if (jis >= 0x8140 && jis <= 0x9ffc)
                         jis -= 0x8140;
-                    
+
                     else if (jis >= 0xe040 && jis <= 0xebbf)
                         jis -= 0xc140;
-                    
+
                     prod = ((jis >> 8) * 0xc0) + (jis & 0xff);
 
                     bin_append(prod, 13, binary);
@@ -2123,7 +2123,7 @@ static void micro_qr_m2(char binary_data[],const int ecc_mode) {
     /* Copy data into codewords */
     for (i = 0; i < data_codewords; i++) {
         data_blocks[i] = 0;
-        
+
         for (j = 0; j < 8; j++) {
             if (binary_data[(i * 8) + j] == '1') {
                 data_blocks[i] += 0x80 >> j;
@@ -2217,7 +2217,7 @@ static void micro_qr_m3(char binary_data[],const int ecc_mode) {
     /* Copy data into codewords */
     for (i = 0; i < (data_codewords - 1); i++) {
         data_blocks[i] = 0;
-        
+
         for (j = 0; j < 8; j++) {
             if (binary_data[(i * 8) + j] == '1') {
                 data_blocks[i] += 0x80 >> j;
@@ -2322,7 +2322,7 @@ static void micro_qr_m4(char binary_data[],const int ecc_mode) {
     /* Copy data into codewords */
     for (i = 0; i < data_codewords; i++) {
         data_blocks[i] = 0;
-        
+
         for (j = 0; j < 8; j++) {
             if (binary_data[(i * 8) + j] == '1') {
                 data_blocks[i] += 0x80 >> j;
@@ -2886,7 +2886,7 @@ int upnqr(struct zint_symbol *symbol, const unsigned char source[], size_t lengt
     int* jisdata = (int *) _alloca((length + 1) * sizeof (int));
     char* mode = (char *) _alloca(length + 1);
 #endif
-    
+
 #ifndef _MSC_VER
     unsigned char preprocessed[length + 1];
 #else
@@ -2920,7 +2920,7 @@ int upnqr(struct zint_symbol *symbol, const unsigned char source[], size_t lengt
 
     symbol->eci = 4;
     est_binlen = getBinaryLength(15, mode, jisdata, length, 0, symbol->eci);
-    
+
     ecc_level = LEVEL_M;
 
     if (est_binlen > 3320) {
@@ -2959,13 +2959,13 @@ int upnqr(struct zint_symbol *symbol, const unsigned char source[], size_t lengt
 
     setup_grid(grid, size, version);
     populate_grid(grid, size, fullstream, qr_total_codewords[version - 1]);
-    
+
     add_version_info(grid, size, version);
 
     bitmask = apply_bitmask(grid, size, ecc_level);
 
     add_format_info(grid, size, ecc_level, bitmask);
-    
+
     symbol->width = size;
     symbol->rows = size;
 
@@ -2980,4 +2980,5 @@ int upnqr(struct zint_symbol *symbol, const unsigned char source[], size_t lengt
 
     return 0;
 }
+
 

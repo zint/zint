@@ -56,9 +56,9 @@ void bin_append(const int arg, const int length, char *binary) {
     int i;
     int start;
     size_t posn = strlen(binary);
-    
+
     start = 0x01 << (length - 1);
-    
+
     for (i = 0; i < length; i++) {
         binary[posn + i] = '0';
         if (arg & (start >> i)) {
@@ -66,7 +66,7 @@ void bin_append(const int arg, const int length, char *binary) {
         }
     }
     binary[posn + length] = '\0';
-    
+
     return;
 }
 
@@ -187,7 +187,7 @@ int is_stackable(const int symbology) {
     if (symbology < BARCODE_PDF417) {
         return 1;
     }
-    
+
     switch (symbology) {
         case BARCODE_CODE128B:
         case BARCODE_ISBNX:
@@ -300,15 +300,15 @@ void set_minimum_height(struct zint_symbol *symbol, const int min_height) {
     int fixed_height = 0;
     int zero_count = 0;
     int i;
-    
+
     for (i = 0; i < symbol->rows; i++) {
         fixed_height += symbol->row_height[i];
-        
+
         if (symbol->row_height[i] == 0) {
             zero_count++;
         }
     }
-    
+
     if (zero_count > 0) {
         if (((symbol->height - fixed_height) / zero_count) < min_height) {
             for (i = 0; i < symbol->rows; i++) {
@@ -319,3 +319,4 @@ void set_minimum_height(struct zint_symbol *symbol, const int min_height) {
         }
     }
 }
+

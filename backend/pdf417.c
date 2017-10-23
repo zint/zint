@@ -601,12 +601,12 @@ static int pdf417(struct zint_symbol *symbol, unsigned char chaine[], const size
     /* 541 - now compress the data */
     indexchaine = 0;
     mclength = 0;
-    
+
     if (symbol->output_options & READER_INIT) {
         chainemc[mclength] = 921; /* Reader Initialisation */
         mclength++;
     }
-    
+
     if (symbol->eci != 3) {
         /* Encoding ECI assignment number, according to Table 8 */
         if (symbol->eci <= 899) {
@@ -630,12 +630,12 @@ static int pdf417(struct zint_symbol *symbol, unsigned char chaine[], const size
             mclength++;
         }
     }
-    
+
     if (symbol->eci > 811799) {
         strcpy(symbol->errtxt, "472: Invalid ECI");
         return ZINT_ERROR_INVALID_OPTION;
     }
-    
+
     for (i = 0; i < indexliste; i++) {
         switch (liste[1][i]) {
             case TEX: /* 547 - text mode */
@@ -798,21 +798,21 @@ static int pdf417(struct zint_symbol *symbol, unsigned char chaine[], const size
             bin_append(pdf_bitpattern[offset + dummy[j]], 16, pattern);
             strcat(pattern, "0");
         }
-        
+
         if (symbol->symbology != BARCODE_PDF417TRUNC) {
             bin_append(pdf_bitpattern[offset + dummy[j]], 16, pattern);
             strcat(pattern, "0");
             bin_append(0x3FA29, 18, pattern); /* Row Stop */
         }
-        
+
         for (loop = 0; loop < strlen(pattern); loop++) {
             if (pattern[loop] == '1') {
                 set_module(symbol, i, loop);
             }
         }
-        
+
         symbol->row_height[i] = 3;
-        
+
     }
     symbol->rows = (mclength / symbol->option_2);
     symbol->width =(int)strlen(pattern);
@@ -930,17 +930,17 @@ int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], const size_
     /* 541 - now compress the data */
     indexchaine = 0;
     mclength = 0;
-    
+
     if (symbol->output_options & READER_INIT) {
         chainemc[mclength] = 921; /* Reader Initialisation */
         mclength++;
     }
-    
+
     if (symbol->eci > 811799) {
         strcpy(symbol->errtxt, "473: Invalid ECI");
         return ZINT_ERROR_INVALID_OPTION;
     }
-    
+
     if (symbol->eci != 3) {
         /* Encoding ECI assignment number, according to Table 8 */
         if (symbol->eci <= 899) {
@@ -964,7 +964,7 @@ int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], const size_
             mclength++;
         }
     }
-    
+
     for (i = 0; i < indexliste; i++) {
         switch (liste[1][i]) {
             case TEX: /* 547 - text mode */
@@ -1288,4 +1288,5 @@ int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], const size_
 
     return codeerr;
 }
+
 

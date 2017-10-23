@@ -119,7 +119,7 @@ namespace Zint {
     void QZint::setText(const QString & text) {
         m_text = text;
     }
-    
+
     void QZint::setTargetSize(int width, int height) {
         target_size_horiz = width;
         target_size_vert = height;
@@ -162,7 +162,7 @@ namespace Zint {
     void QZint::setScale(float scale) {
         m_scale = scale;
     }
-    
+
     void QZint::setDotSize(float dot_size) {
         m_dot_size = dot_size;
     }
@@ -306,15 +306,15 @@ namespace Zint {
         int xoffset = m_whitespace;
         int main_width = 0, addon_text_height = 0;
         int yoffset = 0;
-        
+
         encode();
-        
+
         QString caption = QString::fromUtf8((const char *) m_zintSymbol->text, -1);
         QFont fontSmall(fontstyle);
         fontSmall.setPixelSize(fontPixelSizeSmall);
         QFont fontLarge(fontstyle);
         fontLarge.setPixelSize(fontPixelSizeLarge);
-        
+
         if (m_lastError.length()) {
             fontLarge.setPointSize(14);
             painter.setFont(fontLarge);
@@ -324,7 +324,7 @@ namespace Zint {
 
         painter.save();
         painter.setClipRect(paintRect, Qt::IntersectClip);
-        
+
         qreal xtr = paintRect.x();
         qreal ytr = paintRect.y();
 
@@ -369,7 +369,7 @@ namespace Zint {
             textoffset = 0;
         }
         gwidth += m_zintSymbol->whitespace_width * 2;
-        
+
         if (paintRect.width() / gwidth < paintRect.height() / gheight) {
             ysf = xsf = (qreal) paintRect.width() / gwidth;
             ytr += (qreal) (paintRect.height() - gheight * ysf) / 2;
@@ -384,7 +384,7 @@ namespace Zint {
         painter.scale(xsf, ysf);
 
         QPen p;
-        
+
         p.setColor(m_fgColor);
         p.setWidth(m_borderWidth);
         painter.setPen(p);
@@ -526,7 +526,7 @@ namespace Zint {
                     }
                 }
                 /* Add row binding */
-                if (((m_zintSymbol->symbology == BARCODE_CODE16K) 
+                if (((m_zintSymbol->symbology == BARCODE_CODE16K)
                         || (m_zintSymbol->symbology == BARCODE_CODE49)) && (row != 0)) {
                     painter.fillRect(0, y - 1, m_zintSymbol->width, 2, QBrush(m_fgColor));
                 }
@@ -690,3 +690,4 @@ namespace Zint {
     }
 
 }
+

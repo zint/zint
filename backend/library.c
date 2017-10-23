@@ -7,14 +7,14 @@
     modification, are permitted provided that the following conditions
     are met:
 
-    1. Redistributions of source code must retain the above copyright 
-       notice, this list of conditions and the following disclaimer.  
+    1. Redistributions of source code must retain the above copyright
+       notice, this list of conditions and the following disclaimer.
     2. Redistributions in binary form must reproduce the above copyright
        notice, this list of conditions and the following disclaimer in the
-       documentation and/or other materials provided with the distribution.  
+       documentation and/or other materials provided with the distribution.
     3. Neither the name of the project nor the names of its contributors
        may be used to endorse or promote products derived from this software
-       without specific prior written permission. 
+       without specific prior written permission.
 
     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
     ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -25,7 +25,7 @@
     OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
     HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
     LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-    OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF 
+    OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
 
@@ -34,7 +34,7 @@
 #include <string.h>
 #include <errno.h>
 #ifdef _MSC_VER
-#include <malloc.h> 
+#include <malloc.h>
 #endif
 #include "common.h"
 #include "gs1.h"
@@ -351,20 +351,20 @@ static void check_row_heights(struct zint_symbol *symbol) {
     int i;
     int preset_height = 0;
     int large_bar_height = 0;
-   
+
     for (i = 0; i < symbol->rows; i++) {
         preset_height += symbol->row_height[i];
         if (symbol->row_height[i] == 0) {
             large_bar_count++;
         }
     }
-    
+
     if (large_bar_count == 0) {
         symbol->height = preset_height;
     } else {
         large_bar_height = (symbol->height - preset_height) / large_bar_count;
     }
-    
+
     if (large_bar_height < 5) {
         for (i = 0; i < symbol->rows; i++) {
             if (symbol->row_height[i] == 0) {
@@ -637,11 +637,11 @@ static int reduced_charset(struct zint_symbol *symbol, const unsigned char *sour
             break;
         case BARCODE_DPIDENT: error_number = dpident(symbol, preprocessed, in_length);
             break;
-        case BARCODE_UPCA: 
+        case BARCODE_UPCA:
         case BARCODE_UPCA_CHK:
-        case BARCODE_UPCE: 
+        case BARCODE_UPCE:
         case BARCODE_UPCE_CHK:
-        case BARCODE_EANX: 
+        case BARCODE_EANX:
         case BARCODE_EANX_CHK:
             error_number = eanx(symbol, preprocessed, in_length);
             break;
@@ -660,7 +660,7 @@ static int reduced_charset(struct zint_symbol *symbol, const unsigned char *sour
         case BARCODE_LOGMARS: error_number = c39(symbol, preprocessed, in_length);
             break;
         case BARCODE_CODE128:
-        case BARCODE_CODE128B: 
+        case BARCODE_CODE128B:
             error_number = code_128(symbol, preprocessed, in_length);
             break;
         case BARCODE_NVE18: error_number = nve_18(symbol, preprocessed, in_length);
@@ -690,7 +690,7 @@ static int reduced_charset(struct zint_symbol *symbol, const unsigned char *sour
         case BARCODE_RM4SCC: error_number = royal_plot(symbol, preprocessed, in_length);
             break;
         case BARCODE_AUSPOST:
-        case BARCODE_AUSREPLY: 
+        case BARCODE_AUSREPLY:
         case BARCODE_AUSROUTE:
         case BARCODE_AUSREDIRECT:
             error_number = australia_post(symbol, preprocessed, in_length);
@@ -704,26 +704,26 @@ static int reduced_charset(struct zint_symbol *symbol, const unsigned char *sour
         case BARCODE_ISBNX: error_number = eanx(symbol, preprocessed, in_length);
             break;
         case BARCODE_RSS14:
-        case BARCODE_RSS14STACK: 
-        case BARCODE_RSS14STACK_OMNI: 
+        case BARCODE_RSS14STACK:
+        case BARCODE_RSS14STACK_OMNI:
             error_number = rss14(symbol, preprocessed, in_length);
             break;
         case BARCODE_RSS_LTD: error_number = rsslimited(symbol, preprocessed, in_length);
             break;
-        case BARCODE_RSS_EXP: 
-        case BARCODE_RSS_EXPSTACK: 
+        case BARCODE_RSS_EXP:
+        case BARCODE_RSS_EXPSTACK:
             error_number = rssexpanded(symbol, preprocessed, in_length);
             break;
-        case BARCODE_EANX_CC: 
-        case BARCODE_EAN128_CC: 
-        case BARCODE_RSS14_CC: 
-        case BARCODE_RSS_LTD_CC: 
-        case BARCODE_RSS_EXP_CC: 
-        case BARCODE_UPCA_CC: 
-        case BARCODE_UPCE_CC: 
-        case BARCODE_RSS14STACK_CC: 
-        case BARCODE_RSS14_OMNI_CC: 
-        case BARCODE_RSS_EXPSTACK_CC: 
+        case BARCODE_EANX_CC:
+        case BARCODE_EAN128_CC:
+        case BARCODE_RSS14_CC:
+        case BARCODE_RSS_LTD_CC:
+        case BARCODE_RSS_EXP_CC:
+        case BARCODE_UPCA_CC:
+        case BARCODE_UPCE_CC:
+        case BARCODE_RSS14STACK_CC:
+        case BARCODE_RSS14_OMNI_CC:
+        case BARCODE_RSS_EXPSTACK_CC:
             error_number = composite(symbol, preprocessed, in_length);
             break;
         case BARCODE_KIX: error_number = kix_code(symbol, preprocessed, in_length);
@@ -739,14 +739,14 @@ static int reduced_charset(struct zint_symbol *symbol, const unsigned char *sour
             break;
         case BARCODE_KOREAPOST: error_number = korea_post(symbol, preprocessed, in_length);
             break;
-        case BARCODE_HIBC_128: 
-        case BARCODE_HIBC_39: 
-        case BARCODE_HIBC_DM: 
-        case BARCODE_HIBC_QR: 
-        case BARCODE_HIBC_PDF: 
-        case BARCODE_HIBC_MICPDF: 
-        case BARCODE_HIBC_AZTEC: 
-        case BARCODE_HIBC_BLOCKF: 
+        case BARCODE_HIBC_128:
+        case BARCODE_HIBC_39:
+        case BARCODE_HIBC_DM:
+        case BARCODE_HIBC_QR:
+        case BARCODE_HIBC_PDF:
+        case BARCODE_HIBC_MICPDF:
+        case BARCODE_HIBC_AZTEC:
+        case BARCODE_HIBC_BLOCKF:
             error_number = hibc(symbol, preprocessed, in_length);
             break;
         case BARCODE_JAPANPOST: error_number = japan_post(symbol, preprocessed, in_length);
@@ -759,8 +759,8 @@ static int reduced_charset(struct zint_symbol *symbol, const unsigned char *sour
             break;
         case BARCODE_DATAMATRIX: error_number = dmatrix(symbol, preprocessed, in_length);
             break;
-        case BARCODE_PDF417: 
-        case BARCODE_PDF417TRUNC: 
+        case BARCODE_PDF417:
+        case BARCODE_PDF417TRUNC:
             error_number = pdf417enc(symbol, preprocessed, in_length);
             break;
         case BARCODE_MICROPDF417: error_number = micro_pdf417(symbol, preprocessed, in_length);
@@ -774,13 +774,13 @@ static int reduced_charset(struct zint_symbol *symbol, const unsigned char *sour
         case BARCODE_CODABLOCKF: error_number = codablock(symbol, preprocessed, in_length);
             break;
     }
-    
+
     return error_number;
 }
 
 void strip_bom(unsigned char *source, int *input_length) {
     int i;
-    
+
     if (*input_length > 3) {
         if((source[0] == 0xef) && (source[1] == 0xbb) && (source[2] == 0xbf)) {
             /* BOM at start of input data, strip in accordance with RFC 3629 */
@@ -875,7 +875,7 @@ int escape_char_process(struct zint_symbol *symbol, unsigned char *input_string,
 
     memcpy(input_string, escaped_string, out_posn);
     *length = out_posn;
-    
+
     error_number = 0;
 
     return error_number;
@@ -887,7 +887,7 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
     unsigned char* local_source;
 #endif
     error_number = 0;
-    
+
     if (in_length == 0) {
         in_length = (int)ustrlen(source);
     }
@@ -900,7 +900,7 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
     if (strcmp(symbol->outfile, "") == 0) {
 #ifdef NO_PNG
         strcpy(symbol->outfile, "out.gif");
-#else    
+#else
         strcpy(symbol->outfile, "out.png");
 #endif
     }
@@ -1078,7 +1078,7 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
         memcpy(local_source, source, in_length);
         local_source[in_length] = '\0';
     }
-    
+
     if (symbol->input_mode &= ESCAPE_MODE) {
         error_number = escape_char_process(symbol, local_source, &in_length);
         if (error_number != 0) {
@@ -1086,19 +1086,19 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
         }
         symbol->input_mode -= ESCAPE_MODE;
     }
-    
+
     if ((symbol->input_mode < 0) || (symbol->input_mode > 2)) {
         symbol->input_mode = DATA_MODE;
     }
-    
+
     if ((symbol->eci != 3) && (symbol->eci != 26)) {
         symbol->input_mode = DATA_MODE;
     }
-    
+
     if (symbol->input_mode == UNICODE_MODE) {
         strip_bom(local_source, &in_length);
     }
-    
+
     if ((symbol->dot_size < 0.01) || (symbol->dot_size > 20.0)) {
         strcpy(symbol->errtxt, "221: Invalid dot size");
         return ZINT_ERROR_INVALID_OPTION;
@@ -1116,12 +1116,12 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
             error_number = reduced_charset(symbol, local_source, in_length);
             break;
     }
-    
+
     if ((error_number == ZINT_ERROR_INVALID_DATA) && (supports_eci(symbol->symbology)
             && (symbol->input_mode == UNICODE_MODE))) {
         /* Try another ECI mode */
         symbol->eci = get_best_eci(local_source, in_length);
-            
+
         error_number = ZINT_WARN_USES_ECI;
         strcpy(symbol->errtxt, "222: Encoded data includes ECI codes");
         //printf("Data will encode with ECI %d\n", symbol->eci);
@@ -1138,7 +1138,7 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
                 error_number = reduced_charset(symbol, local_source, in_length);
                 break;
         }
-        
+
     }
 
     if (error_number == 0) {
@@ -1154,11 +1154,11 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
         error_number = error_buffer;
     }
     error_tag(symbol->errtxt, error_number);
-    
+
     if (error_number <= 5) {
         check_row_heights(symbol);
     }
-    
+
     return error_number;
 }
 
@@ -1391,3 +1391,4 @@ int ZBarcode_Render(struct zint_symbol *symbol, const float width, const float h
 int ZBarcode_Version() {
     return (ZINT_VERSION_MAJOR * 10000) + (ZINT_VERSION_MINOR * 100) + ZINT_VERSION_RELEASE;
 }
+

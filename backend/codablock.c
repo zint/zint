@@ -994,14 +994,15 @@ int codablock(struct zint_symbol *symbol,const unsigned char source[], const siz
         expand(symbol, dest);
         symbol->row_height[r] = 10;
     }
-    
+
     if (!(symbol->output_options & BARCODE_BIND)) {
         symbol->output_options += BARCODE_BIND;
     }
-        
+
     if (symbol->border_width < 2) {
         symbol->border_width = 2;
     }
     return 0;
 }
+
 

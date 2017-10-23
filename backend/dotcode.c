@@ -8,14 +8,14 @@
     modification, are permitted provided that the following conditions
     are met:
 
-    1. Redistributions of source code must retain the above copyright 
-       notice, this list of conditions and the following disclaimer.  
+    1. Redistributions of source code must retain the above copyright
+       notice, this list of conditions and the following disclaimer.
     2. Redistributions in binary form must reproduce the above copyright
        notice, this list of conditions and the following disclaimer in the
-       documentation and/or other materials provided with the distribution.  
+       documentation and/or other materials provided with the distribution.
     3. Neither the name of the project nor the names of its contributors
        may be used to endorse or promote products derived from this software
-       without specific prior written permission. 
+       without specific prior written permission.
 
     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
     ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -26,11 +26,11 @@
     OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
     HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
     LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-    OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF 
-    SUCH DAMAGE.    
+    OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+    SUCH DAMAGE.
  */
 
-/* 
+/*
  * Attempts to encode DotCode according to AIMD013 Rev 1.34a, dated Feb 19, 2009
  */
 
@@ -85,7 +85,7 @@ static int clr_col(char *Dots, const int Hgt, const int Wid, const int x) {
             return 0;
         }
     }
-    
+
     return 1;
 }
 
@@ -96,7 +96,7 @@ static int clr_row(char *Dots, const int Hgt, const int Wid, const int y) {
             return 0;
         }
     }
-    
+
     return 1;
 }
 
@@ -148,7 +148,7 @@ const int score_array(char Dots[], int Hgt, int Wid) {
             }
         }
     }
-    
+
     sum = 0;
     first = -1;
     last = -1;
@@ -480,7 +480,7 @@ int dotcode_encode_message(struct zint_symbol *symbol, const unsigned char sourc
             a = (symbol->eci - 40) % 12769;
             b = ((symbol->eci - 40) - (12769 * a)) % 113;
             c = (symbol->eci - 40) - (12769 * a) - (113 * b);
-            
+
             codeword_array[array_length] = a + 40;
             array_length++;
             codeword_array[array_length] = b;
@@ -498,7 +498,7 @@ int dotcode_encode_message(struct zint_symbol *symbol, const unsigned char sourc
         array_length++;
         encoding_mode = 'A';
     }
-    
+
     if (source[input_position] == 28) {
         codeword_array[array_length] = 101; // Latch A
         array_length++;
@@ -506,7 +506,7 @@ int dotcode_encode_message(struct zint_symbol *symbol, const unsigned char sourc
         array_length++;
         encoding_mode = 'A';
     }
-    
+
     if (source[input_position] == 29) {
         codeword_array[array_length] = 101; // Latch A
         array_length++;
@@ -514,7 +514,7 @@ int dotcode_encode_message(struct zint_symbol *symbol, const unsigned char sourc
         array_length++;
         encoding_mode = 'A';
     }
-    
+
     if (source[input_position] == 30) {
         codeword_array[array_length] = 101; // Latch A
         array_length++;
@@ -522,7 +522,7 @@ int dotcode_encode_message(struct zint_symbol *symbol, const unsigned char sourc
         array_length++;
         encoding_mode = 'A';
     }
-    
+
     do {
         int done = 0;
         /* Step A */
@@ -743,17 +743,17 @@ int dotcode_encode_message(struct zint_symbol *symbol, const unsigned char sourc
                 }
             } else {
                 if (datum_b(source, input_position, length)) {
-                    
+
                     if ((source[input_position] >= 32) && (source[input_position] <= 127)) {
                         codeword_array[array_length] = source[input_position] - 32;
                         done = 1;
-                        
+
                     } else if (source[input_position] == 13) {
                         /* CR/LF */
                         codeword_array[array_length] = 96;
                         input_position++;
                         done = 1;
-                        
+
                     } else if (input_position != 0) {
                         /* HT, FS, GS and RS in the first data position would be interpreted as a macro (see table 2) */
                         switch(source[input_position]) {
@@ -772,7 +772,7 @@ int dotcode_encode_message(struct zint_symbol *symbol, const unsigned char sourc
                         }
                         done = 1;
                     }
-                    
+
                     if (done == 1) {
                         array_length++;
                         input_position++;
@@ -1080,8 +1080,8 @@ static size_t make_dotstream(unsigned char masked_array[], int array_length, cha
     return strlen(dot_stream);
 }
 
-/* Determines if a given dot is a reserved corner dot 
- * to be used by one of the last six bits 
+/* Determines if a given dot is a reserved corner dot
+ * to be used by one of the last six bits
  */
 int is_corner(int column, int row, int width, int height) {
     int corner = 0;
@@ -1214,7 +1214,7 @@ int dotcode(struct zint_symbol *symbol, const unsigned char source[], int length
     char* dot_array;
     unsigned char* codeword_array = (unsigned char *) _alloca(length * 3 * sizeof (unsigned char));
 #endif /* _MSC_VER */
-    
+
     if (symbol->eci > 811799) {
         strcpy(symbol->errtxt, "525: Invalid ECI");
         return ZINT_ERROR_INVALID_OPTION;
@@ -1285,7 +1285,7 @@ int dotcode(struct zint_symbol *symbol, const unsigned char source[], int length
         strcpy(symbol->errtxt, "526: Specified symbol size is too large");
         return ZINT_ERROR_INVALID_OPTION;
     }
-    
+
     if ((height < 5) || (width < 5)) {
         strcpy(symbol->errtxt, "527: Specified symbol size has a dimension which is too small");
         return ZINT_ERROR_INVALID_OPTION;
@@ -1466,3 +1466,4 @@ int dotcode(struct zint_symbol *symbol, const unsigned char source[], int length
 
     return 0;
 }
+

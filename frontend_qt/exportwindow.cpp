@@ -35,7 +35,7 @@ ExportWindow::ExportWindow()
     linPrefix->setText(settings.value("studio/export/file_prefix", "bcs_").toString());
     cmbFileName->setCurrentIndex(settings.value("studio/export/name_format", 0).toInt());
     cmbFileFormat->setCurrentIndex(settings.value("studio/export/filetype", 0).toInt());
-    
+
     connect(btnCancel, SIGNAL( clicked( bool )), SLOT(quit_now()));
     connect(btnOK, SIGNAL( clicked( bool )), SLOT(process()));
     connect(btnDestPath, SIGNAL( clicked( bool )), SLOT(get_directory()));
@@ -82,10 +82,10 @@ void ExportWindow::process()
 	QString suffix;
         QString Feedback;
     int lines, i, j, inputpos;
-	
+
 	lines = output_data.count(QChar('\n'), Qt::CaseInsensitive);
 	inputpos = 0;
-	
+
 	switch(cmbFileFormat->currentIndex()) {
 #ifdef NO_PNG
 		case 0: suffix = ".eps"; break;
@@ -108,7 +108,7 @@ void ExportWindow::process()
     }
         txtFeedback->clear();
         Feedback = "";
-        
+
 	for(i = 0; i < lines; i++) {
         int datalen = 0;
 		for(j = inputpos; ((j < output_data.length()) && (output_data[j] != '\n') ); j++) {
@@ -120,11 +120,11 @@ void ExportWindow::process()
 					QString url_escaped;
 					int m;
 					QChar name_qchar;
-					
+
 					for(m = 0; m < dataString.length(); m++) {
 						name_qchar = dataString[m];
                         char name_char = name_qchar.toLatin1();
-						
+
 						switch(name_char) {
 							case '\\': url_escaped += "%5C"; break;
 							case '/': url_escaped += "%2F"; break;
@@ -145,18 +145,18 @@ void ExportWindow::process()
 			case 1: { /* Formatted Serial Number */
 					QString biggest, this_val, outnumber;
 					int number_size, val_size, m;
-					
+
 					biggest = QString::number(lines + 1);
 					number_size = biggest.length();
 					this_val = QString::number(i + 1);
 					val_size = this_val.length();
-					
+
 					for(m = 0; m < (number_size - val_size); m++) {
 						outnumber += QChar('0');
 					}
-					
+
 					outnumber += this_val;
-					
+
 					fileName = linDestPath->text() + QDir::separator() + linPrefix->text() + outnumber + suffix;
 				}
 				break;
@@ -176,3 +176,4 @@ void ExportWindow::process()
 		inputpos += datalen + 1;
 	}
 }
+

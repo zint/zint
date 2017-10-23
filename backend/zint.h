@@ -7,14 +7,14 @@
     modification, are permitted provided that the following conditions
     are met:
 
-    1. Redistributions of source code must retain the above copyright 
-       notice, this list of conditions and the following disclaimer.  
+    1. Redistributions of source code must retain the above copyright
+       notice, this list of conditions and the following disclaimer.
     2. Redistributions in binary form must reproduce the above copyright
        notice, this list of conditions and the following disclaimer in the
-       documentation and/or other materials provided with the distribution.  
+       documentation and/or other materials provided with the distribution.
     3. Neither the name of the project nor the names of its contributors
        may be used to endorse or promote products derived from this software
-       without specific prior written permission. 
+       without specific prior written permission.
 
     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
     ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -25,7 +25,7 @@
     OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
     HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
     LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-    OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF 
+    OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
 
@@ -102,7 +102,7 @@ extern "C" {
 #define ZINT_VERSION_MAJOR      2
 #define ZINT_VERSION_MINOR      6
 #define ZINT_VERSION_RELEASE    2
-    
+
     /* Tbarcode 7 codes */
 #define BARCODE_CODE11		1
 #define BARCODE_C25MATRIX	2
@@ -180,7 +180,7 @@ extern "C" {
 #define BARCODE_HIBC_MICPDF	108
 #define BARCODE_HIBC_BLOCKF	110
 #define BARCODE_HIBC_AZTEC	112
-    
+
     /* Tbarcode 10 codes */
 #define BARCODE_DOTCODE         115
 #define BARCODE_HANXIN          116
@@ -236,7 +236,7 @@ extern "C" {
 #define ZINT_ERROR_ENCODING_PROBLEM	9
 #define ZINT_ERROR_FILE_ACCESS	        10
 #define ZINT_ERROR_MEMORY		11
-    
+
 // Raster file types
 #define OUT_BUFFER          0
 #define	OUT_PNG_FILE        100
@@ -255,7 +255,7 @@ extern "C" {
 #define ZINT_EXTERN extern
 #endif
 #else
-#define ZINT_EXTERN extern	
+#define ZINT_EXTERN extern
 #endif
 
     ZINT_EXTERN struct zint_symbol *ZBarcode_Create(void);
@@ -282,3 +282,4 @@ extern "C" {
 #endif /* __cplusplus */
 
 #endif /* ZINT_H */
+

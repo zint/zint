@@ -489,7 +489,7 @@ int maxi_text_process(int mode, unsigned char source[], int length, int eci) {
             length += 5;
         }
     }
-    
+
     if (((mode == 2) || (mode == 3)) && (length > 84)) {
         return ZINT_ERROR_TOO_LONG;
     }
@@ -733,4 +733,5 @@ int maxicode(struct zint_symbol *symbol, unsigned char local_source[], const int
 
     return internal_error;
 }
+
 

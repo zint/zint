@@ -8,14 +8,14 @@
     modification, are permitted provided that the following conditions
     are met:
 
-    1. Redistributions of source code must retain the above copyright 
-       notice, this list of conditions and the following disclaimer.  
+    1. Redistributions of source code must retain the above copyright
+       notice, this list of conditions and the following disclaimer.
     2. Redistributions in binary form must reproduce the above copyright
        notice, this list of conditions and the following disclaimer in the
-       documentation and/or other materials provided with the distribution.  
+       documentation and/or other materials provided with the distribution.
     3. Neither the name of the project nor the names of its contributors
        may be used to endorse or promote products derived from this software
-       without specific prior written permission. 
+       without specific prior written permission.
 
     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
     ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -26,7 +26,7 @@
     OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
     HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
     LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-    OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF 
+    OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
 
@@ -904,7 +904,7 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
                 /* Binary buffer is full - transfer to target */
                 if (target_count >= 1) {
                     sub_target = 0;
-                    
+
                     for (i = 0; i < 8; i++) {
                         if (decimal_binary[i] == '1') {
                             sub_target += 128 >> i;
@@ -915,7 +915,7 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
                 }
                 if (target_count >= 2) {
                     sub_target = 0;
-                    
+
                     for (i = 0; i < 8; i++) {
                         if (decimal_binary[i + 8] == '1') {
                             sub_target += 128 >> i;
@@ -926,7 +926,7 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
                 }
                 if (target_count == 3) {
                     sub_target = 0;
-                    
+
                     for (i = 0; i < 8; i++) {
                         if (decimal_binary[i + 16] == '1') {
                             sub_target += 128 >> i;
@@ -1104,7 +1104,7 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
         /* Binary buffer is full - transfer to target */
         if (target_count >= 1) {
             sub_target = 0;
-            
+
             for (i = 0; i < 8; i++) {
                 if (decimal_binary[i] == '1') {
                     sub_target += 128 >> i;
@@ -1115,7 +1115,7 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
         }
         if (target_count >= 2) {
             sub_target = 0;
-            
+
             for (i = 0; i < 8; i++) {
                 if (decimal_binary[i + 8] == '1') {
                     sub_target += 128 >> i;
@@ -1126,7 +1126,7 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
         }
         if (target_count == 3) {
             sub_target = 0;
-            
+
             for (i = 0; i < 8; i++) {
                 if (decimal_binary[i + 16] == '1') {
                     sub_target += 128 >> i;
@@ -1161,7 +1161,7 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
         strcpy(symbol->errtxt, "512: Input data too long");
         return 0;
     }
-    /* 
+    /*
     printf("targets:\n");
     for(i = 0; i < tp; i++) {
             printf("[%d]", target[i]);
@@ -1426,7 +1426,7 @@ int code_one(struct zint_symbol *symbol, unsigned char source[], int length) {
         if (symbol->option_2 > size) {
             size = symbol->option_2;
         }
-        
+
         if ((symbol-> option_2 != 0) && (symbol->option_2 < size)) {
             strcpy(symbol->errtxt, "518: Input too long for selected symbol size");
             return ZINT_ERROR_TOO_LONG;
@@ -1769,4 +1769,5 @@ int code_one(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     return 0;
 }
+
 

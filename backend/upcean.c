@@ -130,7 +130,7 @@ int upca(struct zint_symbol *symbol, unsigned char source[], char dest[]) {
 
     strcpy(gtin, (char*) source);
     length = strlen(gtin);
-    
+
     if (length == 11) {
         gtin[length] = upc_check(gtin);
         gtin[length + 1] = '\0';
@@ -393,7 +393,7 @@ int ean13(struct zint_symbol *symbol, unsigned char source[], char dest[]) {
 
     /* Add the appropriate check digit */
     length = strlen(gtin);
-    
+
     if (length == 12) {
         gtin[length] = ean_check(gtin);
         gtin[length + 1] = '\0';
@@ -444,7 +444,7 @@ int ean8(struct zint_symbol *symbol, unsigned char source[], char dest[]) {
 
     strcpy(gtin, (char*) source);
     length = strlen(gtin);
-    
+
     if (length == 7) {
         gtin[length] = upc_check(gtin);
         gtin[length + 1] = '\0';
@@ -458,7 +458,7 @@ int ean8(struct zint_symbol *symbol, unsigned char source[], char dest[]) {
     }
     upca_draw(gtin, dest);
     ustrcpy(symbol->text, (unsigned char*) gtin);
-    
+
     return 0;
 }
 
@@ -796,7 +796,7 @@ int eanx(struct zint_symbol *symbol, unsigned char source[], int src_len) {
                 case 7:
                 case 8: error_number = ean8(symbol, first_part, (char*) dest);
                     break;
-                case 12: 
+                case 12:
                 case 13: error_number = ean13(symbol, first_part, (char*) dest);
                     break;
                 default: strcpy(symbol->errtxt, "286: Invalid length input");
@@ -891,11 +891,11 @@ int eanx(struct zint_symbol *symbol, unsigned char source[], int src_len) {
             error_number = isbn(symbol, first_part, ustrlen(first_part), (char*) dest);
             break;
     }
-    
+
     if (error_number > 4) {
         return error_number;
     }
-    
+
     switch (ustrlen(second_part)) {
         case 0: break;
         case 2:
@@ -934,3 +934,4 @@ int eanx(struct zint_symbol *symbol, unsigned char source[], int src_len) {
 
     return 0;
 }
+

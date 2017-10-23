@@ -36,11 +36,11 @@
 MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags fl)
 		: QWidget(parent, fl),m_optionWidget(0)
 {
-    
+
     QCoreApplication::setOrganizationName("zint");
     QCoreApplication::setOrganizationDomain("zint.org.uk");
     QCoreApplication::setApplicationName("Barcode Studio");
-    
+
     QSettings settings;
 
 	char bstyle_text[][50] = {
@@ -65,7 +65,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags fl)
 		"Code 39 (ISO 16388)",
 		"Code 39 Extended",
 		"Code 49",
-		"Code 93", 
+		"Code 93",
 		"Code One",
 		"Data Matrix (ISO 16022)",
 		"Deutsche Post Identcode",
@@ -80,9 +80,9 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags fl)
 		"GS1 DataBar Expanded Omnidirectional",
 		"GS1 DataBar Expanded Stacked Omnidirectional",
 		"GS1 DataBar Limited",
-		"GS1 DataBar Omnidirectional",                
+		"GS1 DataBar Omnidirectional",
 		"GS1 DataBar Stacked",
-		"GS1 DataBar Stacked Omnidirectional",                
+		"GS1 DataBar Stacked Omnidirectional",
 		"Han Xin (Chinese Sensible) Code",
                 "ITF-14",
 		"International Standard Book Number (ISBN)",
@@ -110,15 +110,15 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags fl)
 		"Universal Product Code (UPC-E)",
 		"USPS Intelligent Mail"
 	};
-		
+
 	/* createActions();
 	createMenus();	*/
-	
+
         scene = new QGraphicsScene(this);
-        
+
 	setupUi(this);
 	view->setScene(scene);
-	
+
 	m_fgcolor=qRgb(settings.value("studio/ink/red", 0).toInt(),
                 settings.value("studio/ink/green", 0).toInt(),
                 settings.value("studio/ink/blue", 0).toInt());
@@ -166,7 +166,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags fl)
 MainWindow::~MainWindow()
 {
     QSettings settings;
-    
+
     settings.setValue("studio/symbology", bstyle->currentIndex());
     settings.setValue("studio/ink/red", m_fgcolor.red());
     settings.setValue("studio/ink/green", m_fgcolor.green());
@@ -206,7 +206,7 @@ bool MainWindow::save()
         save_dialog.setAcceptMode(QFileDialog::AcceptSave);
         save_dialog.setWindowTitle("Save Barcode Image");
         save_dialog.setDirectory(settings.value("studio/default_dir", QDir::toNativeSeparators(QDir::homePath())).toString());
-        
+
 #ifdef NO_PNG
         suffix = settings.value("studio/default_suffix", "gif").toString();
         save_dialog.setNameFilter(tr("Encapsulated Post Script (*.eps);;Graphics Interchange Format (*.gif);;Scalable Vector Graphic (*.svg);;Windows Bitmap (*.bmp);;ZSoft PC Painter Image (*.pcx);;Extended Metafile (*.emf);;Tagged Image File Format (*.tif)"));
@@ -214,7 +214,7 @@ bool MainWindow::save()
         suffix = settings.value("studio/default_suffix", "png").toString();
         save_dialog.setNameFilter(tr("Portable Network Graphic (*.png);;Encapsulated Post Script (*.eps);;Graphics Interchange Format (*.gif);;Scalable Vector Graphic (*.svg);;Windows Bitmap (*.bmp);;ZSoft PC Painter Image (*.pcx);;Extended Metafile (*.emf);;Tagged Image File Format (*.tif)"));
 #endif
-        
+
         if (QString::compare(suffix, "png", Qt::CaseInsensitive) == 0)
             save_dialog.selectNameFilter("Portable Network Graphic (*.png)");
         if (QString::compare(suffix, "eps", Qt::CaseInsensitive) == 0)
@@ -231,7 +231,7 @@ bool MainWindow::save()
             save_dialog.selectNameFilter("Extended Metafile (*.emf)");
         if (QString::compare(suffix, "tif", Qt::CaseInsensitive) == 0)
             save_dialog.selectNameFilter("Tagged Image File Format (*.tif)");
-        
+
         if (save_dialog.exec()) {
             filename = save_dialog.selectedFiles().at(0);
             if ((filename.lastIndexOf(".") == -1) || (filename.lastIndexOf(".") < (filename.length() - 5))) {
@@ -250,7 +250,7 @@ bool MainWindow::save()
 		QMessageBox::critical(this,tr("Save Error"),m_bc.bc.error_message());
                 return false;
 	}
-        
+
         settings.setValue("studio/default_dir", filename.mid(0, filename.lastIndexOf(QDir::separator())));
         settings.setValue("studio/default_suffix", suffix);
 	return true;
@@ -391,7 +391,7 @@ void MainWindow::change_options()
 		connect(m_optionWidget->findChild<QObject*>("radC128CSup"), SIGNAL(clicked( bool )), SLOT(update_preview()));
 		connect(m_optionWidget->findChild<QObject*>("radC128EAN"), SIGNAL(clicked( bool )), SLOT(update_preview()));
 		connect(m_optionWidget->findChild<QObject*>("radC128HIBC"), SIGNAL(clicked( bool )), SLOT(update_preview()));
-	} 
+	}
 	else
 		chkComposite->setText(tr("Add 2D Component"));
 
@@ -479,16 +479,16 @@ void MainWindow::change_options()
 		connect(m_optionWidget->findChild<QObject*>("radC39Stand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
 		connect(m_optionWidget->findChild<QObject*>("radC39Check"), SIGNAL(clicked( bool )), SLOT(update_preview()));
 		connect(m_optionWidget->findChild<QObject*>("radC39HIBC"), SIGNAL(clicked( bool )), SLOT(update_preview()));
-		if(metaObject()->enumerator(0).value(bstyle->currentIndex()) == BARCODE_EXCODE39) 
+		if(metaObject()->enumerator(0).value(bstyle->currentIndex()) == BARCODE_EXCODE39)
 		{
-			if(m_optionWidget->findChild<QRadioButton*>("radC39HIBC")->isChecked() == true) 
+			if(m_optionWidget->findChild<QRadioButton*>("radC39HIBC")->isChecked() == true)
 			{
 				m_optionWidget->findChild<QRadioButton*>("radC39HIBC")->setChecked(false);
 				m_optionWidget->findChild<QRadioButton*>("radC39Stand")->setChecked(true);
 			}
 			m_optionWidget->findChild<QRadioButton*>("radC39HIBC")->setEnabled(false);
-		} 
-		else 
+		}
+		else
 			m_optionWidget->findChild<QRadioButton*>("radC39HIBC")->setEnabled(true);
 	}
 
@@ -502,7 +502,7 @@ void MainWindow::change_options()
 		tabMain->insertTab(1,m_optionWidget,tr("Code 16K"));
 		connect(m_optionWidget->findChild<QObject*>("radC16kStand"), SIGNAL(toggled( bool )), SLOT(update_preview()));
 	}
-	
+
         if(metaObject()->enumerator(0).value(bstyle->currentIndex()) == BARCODE_CODABLOCKF)
         {
                 QFile file (":/grpCodablockF.ui");
@@ -517,7 +517,7 @@ void MainWindow::change_options()
                 connect(m_optionWidget->findChild<QObject*>("cmbCbfWidth"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
                 connect(m_optionWidget->findChild<QObject*>("cmbCbfHeight"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         }
-        
+
 	if(metaObject()->enumerator(0).value(bstyle->currentIndex()) == BARCODE_DATAMATRIX)
 	{
 		QFile file(":/grpDM.ui");
@@ -533,7 +533,7 @@ void MainWindow::change_options()
 		connect(m_optionWidget->findChild<QObject*>("chkDMRectangle"), SIGNAL(stateChanged( int )), SLOT(update_preview()));
 		connect(m_optionWidget->findChild<QObject*>("chkDMRE"), SIGNAL(stateChanged( int )), SLOT(update_preview()));
 	}
-	
+
 	if(metaObject()->enumerator(0).value(bstyle->currentIndex()) == BARCODE_QRCODE)
 	{
 		QFile file(":/grpQR.ui");
@@ -551,7 +551,7 @@ void MainWindow::change_options()
 		connect(m_optionWidget->findChild<QObject*>("radQRGS1"), SIGNAL(clicked( bool )), SLOT(update_preview()));
 		connect(m_optionWidget->findChild<QObject*>("radQRHIBC"), SIGNAL(clicked( bool )), SLOT(update_preview()));
 	}
-        
+
         if(metaObject()->enumerator(0).value(bstyle->currentIndex()) == BARCODE_HANXIN)
         {
                 QFile file (":/grpHX.ui");
@@ -581,7 +581,7 @@ void MainWindow::change_options()
 		connect(m_optionWidget->findChild<QObject*>("cmbMQRSize"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
 		connect(m_optionWidget->findChild<QObject*>("cmbMQRECC"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
 	}
-	
+
 	if(metaObject()->enumerator(0).value(bstyle->currentIndex()) == BARCODE_GRIDMATRIX)
 	{
 		QFile file(":/grpGrid.ui");
@@ -609,7 +609,7 @@ void MainWindow::change_options()
 		connect(m_optionWidget->findChild<QObject*>("cmbMaxiMode"), SIGNAL(currentIndexChanged( int )), SLOT(maxi_primary()));
 		connect(m_optionWidget->findChild<QObject*>("txtMaxiPrimary"), SIGNAL(textChanged( const QString& )), SLOT(update_preview()));
 	}
-	
+
 	if(metaObject()->enumerator(0).value(bstyle->currentIndex()) == BARCODE_CHANNEL)
 	{
 		QFile file(":/grpChannel.ui");
@@ -620,7 +620,7 @@ void MainWindow::change_options()
 		tabMain->insertTab(1,m_optionWidget,tr("Channel Code"));
 		connect(m_optionWidget->findChild<QObject*>("cmbChannel"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
 	}
-	
+
 	if(metaObject()->enumerator(0).value(bstyle->currentIndex()) == BARCODE_CODEONE)
 	{
 		QFile file(":/grpCodeOne.ui");
@@ -643,7 +643,7 @@ void MainWindow::change_options()
 		tabMain->insertTab(1,m_optionWidget,tr("Code 49"));
 		connect(m_optionWidget->findChild<QObject*>("radC49GS1"), SIGNAL(toggled( bool )), SLOT(update_preview()));
 	}
-	
+
 	if(metaObject()->enumerator(0).value(bstyle->currentIndex()) == BARCODE_RSS_EXPSTACK)
 	{
 		QFile file(":/grpDBExtend.ui");
@@ -679,7 +679,7 @@ void MainWindow::change_options()
 
 void MainWindow::composite_enable()
 {
-	if(chkComposite->isChecked() == true) 
+	if(chkComposite->isChecked() == true)
 	{
 		lblCompType->setEnabled(true);
 		cmbCompType->setEnabled(true);
@@ -722,7 +722,7 @@ void MainWindow::update_preview()
 {
         int width = view->geometry().width();
         int height = view->geometry().height();
-    
+
 	//m_bc.ar=(Zint::QZint::AspectRatioMode)1;
 	if(chkComposite->isChecked() == true) {
 		m_bc.bc.setPrimaryMessage(txtData->text());
@@ -747,9 +747,9 @@ void MainWindow::update_preview()
 			if(m_optionWidget->findChild<QRadioButton*>("radC128CSup")->isChecked())
 				m_bc.bc.setSymbol(BARCODE_CODE128B);
 
-			if(m_optionWidget->findChild<QRadioButton*>("radC128EAN")->isChecked()) 
+			if(m_optionWidget->findChild<QRadioButton*>("radC128EAN")->isChecked())
 			{
-				if(chkComposite->isChecked()) 
+				if(chkComposite->isChecked())
 					m_bc.bc.setSymbol(BARCODE_EAN128_CC);
 				else
 					m_bc.bc.setSymbol(BARCODE_EAN128);
@@ -820,7 +820,7 @@ void MainWindow::update_preview()
 				m_bc.bc.setSymbol(BARCODE_RSS_EXPSTACK_CC);
 			else
 				m_bc.bc.setSymbol(BARCODE_RSS_EXPSTACK);
-			
+
 			if(m_optionWidget->findChild<QComboBox*>("cmbCols")->currentIndex() != 0)
 				m_bc.bc.setWidth(m_optionWidget->findChild<QComboBox*>("cmbCols")->currentIndex());
 			break;
@@ -908,7 +908,7 @@ void MainWindow::update_preview()
                 if(m_optionWidget->findChild<QRadioButton*>("radCbfSetHeight")->isChecked())
                     m_bc.bc.setSecurityLevel(m_optionWidget->findChild<QComboBox*>("cmbCbfHeight")->currentIndex() + 1);
                 break;
-                        
+
 		case BARCODE_DATAMATRIX:
 			m_bc.bc.setSecurityLevel(1);
 			if(m_optionWidget->findChild<QRadioButton*>("radDM200HIBC")->isChecked())
@@ -929,7 +929,7 @@ void MainWindow::update_preview()
 					m_bc.bc.setOption3(0);
 			}
 			break;
-			
+
 		case BARCODE_QRCODE:
 			if(m_optionWidget->findChild<QRadioButton*>("radQRHIBC")->isChecked())
 				m_bc.bc.setSymbol(BARCODE_HIBC_QR);
@@ -938,7 +938,7 @@ void MainWindow::update_preview()
 
 			if(m_optionWidget->findChild<QRadioButton*>("radQRGS1")->isChecked())
 				m_bc.bc.setInputMode(GS1_MODE);
-			
+
 			if(m_optionWidget->findChild<QRadioButton*>("radQRSize")->isChecked())
 				m_bc.bc.setWidth(m_optionWidget->findChild<QComboBox*>("cmbQRSize")->currentIndex() + 1);
 
@@ -954,7 +954,7 @@ void MainWindow::update_preview()
 			if(m_optionWidget->findChild<QRadioButton*>("radMQRECC")->isChecked())
 				m_bc.bc.setSecurityLevel(m_optionWidget->findChild<QComboBox*>("cmbMQRECC")->currentIndex() + 1);
 			break;
-			
+
 		case BARCODE_GRIDMATRIX:
 			m_bc.bc.setSymbol(BARCODE_GRIDMATRIX);
 			if(m_optionWidget->findChild<QRadioButton*>("radGridSize")->isChecked())
@@ -977,25 +977,25 @@ void MainWindow::update_preview()
 
 		case BARCODE_CHANNEL:
 			m_bc.bc.setSymbol(BARCODE_CHANNEL);
-			if(m_optionWidget->findChild<QComboBox*>("cmbChannel")->currentIndex() == 0) 
+			if(m_optionWidget->findChild<QComboBox*>("cmbChannel")->currentIndex() == 0)
 				m_bc.bc.setWidth(0);
 			else
 				m_bc.bc.setWidth(m_optionWidget->findChild<QComboBox*>("cmbChannel")->currentIndex() + 2);
 			break;
-			
+
 		case BARCODE_CODEONE:
 			m_bc.bc.setSymbol(BARCODE_CODEONE);
 			if(m_optionWidget->findChild<QRadioButton*>("radC1GS1")->isChecked())
 				m_bc.bc.setInputMode(GS1_MODE);
 			m_bc.bc.setWidth(m_optionWidget->findChild<QComboBox*>("cmbC1Size")->currentIndex());
 			break;
-			
+
 		case BARCODE_CODE49:
 			m_bc.bc.setSymbol(BARCODE_CODE49);
 			if(m_optionWidget->findChild<QRadioButton*>("radC49GS1")->isChecked())
 				m_bc.bc.setInputMode(GS1_MODE);
 			break;
-                        
+
                 case BARCODE_HANXIN:
                         m_bc.bc.setSymbol(BARCODE_HANXIN);
 			if(m_optionWidget->findChild<QRadioButton*>("radHXSize")->isChecked())
@@ -1004,7 +1004,7 @@ void MainWindow::update_preview()
 			if(m_optionWidget->findChild<QRadioButton*>("radHXECC")->isChecked())
 				m_bc.bc.setSecurityLevel(m_optionWidget->findChild<QComboBox*>("cmbHXECC")->currentIndex() + 1);
                         break;
-                        
+
 		default:
 			m_bc.bc.setSymbol(metaObject()->enumerator(0).value(bstyle->currentIndex()));
 			break;
@@ -1024,3 +1024,4 @@ void MainWindow::update_preview()
         scene->setSceneRect(0, 0, width - 10, height - 10);
         scene->update();
 }
+

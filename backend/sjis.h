@@ -7,14 +7,14 @@
     modification, are permitted provided that the following conditions
     are met:
 
-    1. Redistributions of source code must retain the above copyright 
-       notice, this list of conditions and the following disclaimer.  
+    1. Redistributions of source code must retain the above copyright
+       notice, this list of conditions and the following disclaimer.
     2. Redistributions in binary form must reproduce the above copyright
        notice, this list of conditions and the following disclaimer in the
-       documentation and/or other materials provided with the distribution.  
+       documentation and/or other materials provided with the distribution.
     3. Neither the name of the project nor the names of its contributors
        may be used to endorse or promote products derived from this software
-       without specific prior written permission. 
+       without specific prior written permission.
 
     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
     ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -25,13 +25,13 @@
     OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
     HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
     LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-    OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF 
+    OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
 
 /* Derived from :
 ## Shift_JIS (JIS X 0208:1997 Appendix 1) vs Unicode mapping table
-## 
+##
 ## Date: 06 Mar 2002 06:01:22 GMT
 ## License:
 ## 	Copyright (C) 2001 earthian@tama.or.jp, All Rights Reserved.
@@ -207,7 +207,7 @@ static const unsigned short int sjis_lookup[] = {
     0x222C, 0x81E8, // DOUBLE INTEGRAL
     0x2234, 0x8188, // THEREFORE
     0x2235, 0x81E6, // BECAUSE
-    0x223D, 0x81E4, // REVERSED TILDE 
+    0x223D, 0x81E4, // REVERSED TILDE
     0x2252, 0x81E0, // APPROXIMATELY EQUAL TO OR THE IMAGE OF
     0x2260, 0x8182, // NOT EQUAL TO
     0x2261, 0x81DF, // IDENTICAL TO
@@ -6881,6 +6881,6 @@ static const unsigned short int sjis_lookup[] = {
     0xFF5B, 0x816F, // FULLWIDTH LEFT CURLY BRACKET
     0xFF5C, 0x8162, // FULLWIDTH VERTICAL LINE
     0xFF5D, 0x8170, // FULLWIDTH RIGHT CURLY BRACKET
-    0xFFE3, 0x8150, // FULLWIDTH MACRON 
+    0xFFE3, 0x8150, // FULLWIDTH MACRON
     0xFFE5, 0x818F // FULLWIDTH YEN SIGN
 };

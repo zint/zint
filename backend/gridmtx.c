@@ -315,7 +315,7 @@ static int seek_forward(int gbdata[], const size_t length, const size_t position
 /* Add the length indicator for byte encoded blocks */
 static void add_byte_count(char binary[], const size_t byte_count_posn, const int byte_count) {
     int p;
-    
+
     for (p = 0; p < 8; p++) {
         if (byte_count & (0x100 >> p)) {
             binary[byte_count_posn + p] = '0';
@@ -365,7 +365,7 @@ static int gm_encode(int gbdata[], const size_t length, char binary[],const int 
     if (reader) {
         bin_append(10, 4, binary); /* FNC3 - Reader Initialisation */
     }
-    
+
     if (eci != 3) {
         /* ECI assignment according to Table 8 */
         bin_append(12, 4, binary); /* ECI */
@@ -732,7 +732,7 @@ static int gm_encode(int gbdata[], const size_t length, char binary[],const int 
                     if (debug) {
                         printf("[%d] ", glyph);
                     }
-                    
+
                     bin_append(glyph, 5, binary);
                 } else {
                     /* Shift Mode character */
@@ -1054,7 +1054,7 @@ int grid_matrix(struct zint_symbol *symbol, const unsigned char source[], size_t
     }
 
     if (symbol->output_options & READER_INIT) reader = 1;
-    
+
     if (symbol->eci > 811799) {
         strcpy(symbol->errtxt, "533: Invalid ECI");
         return ZINT_ERROR_INVALID_OPTION;
@@ -1207,4 +1207,5 @@ int grid_matrix(struct zint_symbol *symbol, const unsigned char source[], size_t
 
     return 0;
 }
+
 

@@ -44,7 +44,7 @@
 -	No changes here, take 2.6 framework files
  2017-08-29 2.6.1 HaO
 -	Framework 2.6.1 extensions
--	EAN/UPC Codes with included check digit 
+-	EAN/UPC Codes with included check digit
 -	UPNQR Code
 -	Misspelled symbology: AztecRunes
  2017-10-23 2.6.2 HaO
@@ -851,4 +851,5 @@ static int Encode(Tcl_Interp *interp, int objc,
     }
     return TCL_OK;
 }
+
 

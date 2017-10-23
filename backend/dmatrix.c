@@ -223,7 +223,7 @@ static void ecc200(unsigned char *binary, const int bytes, const int datablock, 
 
 /* Return true (1) if a character is valid in X12 set */
 static int isX12(const int source) {
-    
+
     switch(source) {
         case 13: // CR
         case 42: // *
@@ -517,7 +517,7 @@ static int look_ahead_test(const unsigned char inputData[], const size_t sourcel
                 best_scheme = DM_ASCII;
             }
         }
-        
+
         sp++;
     } while (best_scheme == DM_NULL); // step (s)
 
@@ -897,11 +897,11 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
                 next_mode = DM_ASCII;
             } else {
                 int value = source[sp];
-                
+
                 if (source[sp] >= 64) {  // '@'
                     value -= 64;
                 }
-                
+
                 process_buffer[*process_p] = value;
                 (*process_p)++;
                 sp++;
@@ -998,7 +998,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
 
 static int dm200encode_remainder(unsigned char target[], int target_length, const unsigned char source[], const size_t inputlen, const int last_mode, const int process_buffer[], const int process_p, const int symbols_left) {
     int debug = 0;
-    
+
     switch (last_mode) {
         case DM_C40:
         case DM_TEXT:
@@ -1038,7 +1038,7 @@ static int dm200encode_remainder(unsigned char target[], int target_length, cons
             } else {
                 target[target_length] = (254);
                 target_length++; // Unlatch.
-                
+
                 if (process_p == 1) {
                     target[target_length] = source[inputlen - 1] + 1;
                     target_length++;
@@ -1053,7 +1053,7 @@ static int dm200encode_remainder(unsigned char target[], int target_length, cons
             }
             break;
 
-        case DM_EDIFACT:         
+        case DM_EDIFACT:
             if (symbols_left <= 2) // Unlatch not required!
             {
                 if (process_p == 1) {
@@ -1199,7 +1199,7 @@ int data_matrix_200(struct zint_symbol *symbol,const unsigned char source[], con
     // Now we know the symbol size we can handle the remaining data in the process buffer.
     symbols_left = matrixbytes[symbolsize] - binlen;
     binlen = dm200encode_remainder(binary, binlen, source, inputlen, last_mode, process_buffer, process_p, symbols_left);
-    
+
     if (binlen > matrixbytes[symbolsize]) {
         strcpy(symbol->errtxt, "523: Data too long to fit in symbol");
         return ZINT_ERROR_TOO_LONG;
@@ -1315,4 +1315,5 @@ int dmatrix(struct zint_symbol *symbol, const unsigned char source[], const size
 
     return error_number;
 }
+
 

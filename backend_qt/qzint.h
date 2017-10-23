@@ -50,7 +50,7 @@ public:
 
 	void setWidth(int width);
 	int width();
-	
+
 	void setOption3(int option);
 
     QColor fgColor() const;
@@ -73,7 +73,7 @@ public:
 
     float scale() const;
 	void setScale(float scale);
-        
+
         void setDotSize(float dot_size);
 
     int mode() const;
@@ -91,9 +91,9 @@ public:
 	bool hasErrors();
 
 	bool save_to_file(QString filename);
-	
+
 	void setHideText(bool hide);
-        
+
         void setTargetSize(int width, int height);
 
 private:
@@ -126,3 +126,4 @@ private:
 };
 }
 #endif
+

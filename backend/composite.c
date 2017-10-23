@@ -132,7 +132,7 @@ static int encode928(UINT bitString[], UINT codeWords[], int bitLng) {
 }
 
 /* CC-A 2D component */
-static int cc_a(struct zint_symbol *symbol, char source[], int cc_width) { 
+static int cc_a(struct zint_symbol *symbol, char source[], int cc_width) {
     int i, segment, bitlen, cwCnt, variant, rows;
     int k, offset, j, total, rsCodeWords[8];
     int LeftRAPStart, RightRAPStart, CentreRAPStart, StartCluster;
@@ -335,7 +335,7 @@ static int cc_a(struct zint_symbol *symbol, char source[], int cc_width) {
 }
 
 /* CC-B 2D component */
-static int cc_b(struct zint_symbol *symbol, char source[], int cc_width) { 
+static int cc_b(struct zint_symbol *symbol, char source[], int cc_width) {
     int length, i;
 #ifndef _MSC_VER
     unsigned char data_string[(strlen(source) / 8) + 3];
@@ -588,7 +588,7 @@ static int cc_b(struct zint_symbol *symbol, char source[], int cc_width) {
 }
 
 /* CC-C 2D component - byte compressed PDF417 */
-static int cc_c(struct zint_symbol *symbol, char source[], int cc_width, int ecc_level) { 
+static int cc_c(struct zint_symbol *symbol, char source[], int cc_width, int ecc_level) {
     int length, i, p;
 #ifndef _MSC_VER
     unsigned char data_string[(strlen(source) / 8) + 4];
@@ -730,7 +730,7 @@ static int cc_c(struct zint_symbol *symbol, char source[], int cc_width, int ecc
 
 static int calc_padding_cca(int binary_length, int cc_width) {
     int target_bitsize = 0;
-    
+
     switch (cc_width) {
         case 2:
             if (binary_length <= 167) {
@@ -790,13 +790,13 @@ static int calc_padding_cca(int binary_length, int cc_width) {
             }
             break;
         }
-    
+
         return target_bitsize;
 }
 
 int calc_padding_ccb(int binary_length, int cc_width) {
     int target_bitsize = 0;
-    
+
     switch (cc_width) {
         case 2:
             if (binary_length <= 336) {
@@ -889,7 +889,7 @@ int calc_padding_ccb(int binary_length, int cc_width) {
             }
             break;
     }
-    
+
     return target_bitsize;
 }
 
@@ -944,7 +944,7 @@ int calc_padding_ccc(int binary_length, int *cc_width, int lin_width, int *ecc) 
     }
 
     codewords_total = *(cc_width) * rows;
-    
+
     if (codewords_total > 928) { // PDF_MAX
         return 0;
     }
@@ -956,7 +956,7 @@ int calc_padding_ccc(int binary_length, int *cc_width, int lin_width, int *ecc) 
     target_bytesize += target_codewords % 5;
 
     target_bitsize = 8 * target_bytesize;
-    
+
     return target_bitsize;
 }
 
@@ -1194,7 +1194,7 @@ static int cc_binary_string(struct zint_symbol *symbol, const char source[], cha
                 /* Encoding can be done according to 5.2.2 c) 2) */
                 /* five bit binary string representing value before letter */
                 bin_append(numeric_value, 5, binary_string);
-                
+
                 /* followed by four bit representation of letter from Table 3 */
                 bin_append(table3_letter, 4, binary_string);
             } else {
@@ -1254,7 +1254,7 @@ static int cc_binary_string(struct zint_symbol *symbol, const char source[], cha
                 case '*':
                     bin_append(58, 6, binary_string);
                     break;
-                case ',': 
+                case ',':
                     bin_append(59, 6, binary_string);
                     break;
                 case '-':
@@ -1437,7 +1437,7 @@ static int cc_binary_string(struct zint_symbol *symbol, const char source[], cha
                     case '*':
                         bin_append(58, 6, binary_string);
                         break;
-                    case ',': 
+                    case ',':
                         bin_append(59, 6, binary_string);
                         break;
                     case '-':
@@ -1505,7 +1505,7 @@ static int cc_binary_string(struct zint_symbol *symbol, const char source[], cha
                 break;
         }
     } while (i + latch < (int) strlen(general_field));
-    
+
     binary_length = (int)strlen(binary_string);
     switch (cc_mode) {
         case 1:
@@ -1518,7 +1518,7 @@ static int cc_binary_string(struct zint_symbol *symbol, const char source[], cha
             target_bitsize = calc_padding_ccc(binary_length, cc_width, lin_width, ecc);
             break;
     }
-    
+
     if (target_bitsize == 0) {
         strcpy(symbol->errtxt, "442: Input too long for selected 2d component");
         return ZINT_ERROR_TOO_LONG;
@@ -1556,7 +1556,7 @@ static int cc_binary_string(struct zint_symbol *symbol, const char source[], cha
             target_bitsize = calc_padding_ccc(binary_length, cc_width, lin_width, ecc);
             break;
     }
-    
+
     if (target_bitsize == 0) {
         strcpy(symbol->errtxt, "444: Input too long for selected 2d component");
         return ZINT_ERROR_TOO_LONG;
@@ -1590,14 +1590,14 @@ int linear_dummy_run(unsigned char *source, int length) {
     struct zint_symbol *dummy;
     int error_number;
     int linear_width;
-    
+
     dummy = ZBarcode_Create();
     dummy->symbology = BARCODE_EAN128_CC;
     dummy->option_1 = 3;
     error_number = ean_128(dummy, source, length);
     linear_width = dummy->width;
     ZBarcode_Delete(dummy);
-    
+
     if (error_number == 0) {
         return linear_width;
     } else {
@@ -1621,7 +1621,7 @@ int composite(struct zint_symbol *symbol, unsigned char source[], int length) {
     struct zint_symbol *linear;
     int top_shift, bottom_shift;
     int linear_width = 0;
-    
+
     /* Perform sanity checks on input options first */
     error_number = 0;
     pri_len = (int)strlen(symbol->primary);
@@ -1634,7 +1634,7 @@ int composite(struct zint_symbol *symbol, unsigned char source[], int length) {
         strcpy(symbol->errtxt, "446: 2D component input data too long");
         return ZINT_ERROR_TOO_LONG;
     }
-    
+
     cc_mode = symbol->option_1;
     if ((cc_mode == 3) && (symbol->symbology != BARCODE_EAN128_CC)) {
         /* CC-C can only be used with a GS1-128 linear part */
@@ -1646,7 +1646,7 @@ int composite(struct zint_symbol *symbol, unsigned char source[], int length) {
     if (error_number != 0) {
         return error_number;
     }
-    
+
     if (symbol->symbology == BARCODE_EAN128_CC) {
         /* Do a test run of encoding the linear component to establish its width */
         linear_width = linear_dummy_run((unsigned char *) symbol->primary, pri_len);
@@ -1691,7 +1691,7 @@ int composite(struct zint_symbol *symbol, unsigned char source[], int length) {
         case BARCODE_RSS_EXPSTACK_CC: cc_width = 4;
             break;
     }
-    
+
     memset(binary_string, 0, bs);
 
     if (cc_mode < 1 || cc_mode > 3) {
@@ -1738,10 +1738,10 @@ int composite(struct zint_symbol *symbol, unsigned char source[], int length) {
     if (error_number != 0) {
         return ZINT_ERROR_ENCODING_PROBLEM;
     }
-    
+
     /* 2D component done, now calculate linear component */
     linear = ZBarcode_Create(); /* Symbol contains the 2D component and Linear contains the rest */
-    
+
     linear->symbology = symbol->symbology;
 
     if (linear->symbology != BARCODE_EAN128_CC) {
@@ -1873,4 +1873,5 @@ int composite(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     return error_number;
 }
+
 

@@ -325,7 +325,7 @@ int code_49(struct zint_symbol *symbol, unsigned char source[], const int length
 
         /* Expand into symbol */
         symbol->row_height[i] = 10;
-        
+
         for (j = 0; j < strlen(pattern); j++) {
             if (pattern[j] == '1') {
                 set_module(symbol, i, j);
@@ -343,3 +343,4 @@ int code_49(struct zint_symbol *symbol, unsigned char source[], const int length
 
     return 0;
 }
+

@@ -33,12 +33,12 @@ SequenceWindow::SequenceWindow()
 	setupUi(this);
         QSettings settings;
 	QValidator *intvalid = new QIntValidator(this);
-	
+
         linStartVal->setText(settings.value("studio/sequence/start_value", "1").toString());
         linEndVal->setText(settings.value("studio/sequence/end_value", "10").toString());
         linIncVal->setText(settings.value("studio/sequence/increment", "1").toString());
         linFormat->setText(settings.value("studio/sequence/format", "$$$$$$").toString());
-        
+
 	linStartVal->setValidator(intvalid);
 	linEndVal->setValidator(intvalid);
 	linIncVal->setValidator(intvalid);
@@ -53,7 +53,7 @@ SequenceWindow::SequenceWindow()
 SequenceWindow::~SequenceWindow()
 {
     QSettings settings;
-    
+
     settings.setValue("studio/sequence/start_value", linStartVal->text());
     settings.setValue("studio/sequence/end_value", linEndVal->text());
     settings.setValue("studio/sequence/increment", linIncVal->text());
@@ -76,13 +76,13 @@ QString SequenceWindow::apply_format(QString raw_number)
 	QString format;
 	int format_len, input_len, i, inpos;
 	QChar format_qchar;
-	
+
 	format = linFormat->text();
 	input_len = raw_number.length();
 	format_len = format.length();
-	
+
 	inpos = input_len;
-	
+
 	for(i = format_len; i > 0; i--) {
 		format_qchar = format[i - 1];
         char format_char = format_qchar.toLatin1();
@@ -116,11 +116,11 @@ QString SequenceWindow::apply_format(QString raw_number)
 				break;
 		}
 	}
-	
+
 	for(i = format_len; i > 0; i--) {
 		reversed += adjusted[i - 1];
 	}
-	
+
 	return reversed;
 }
 
@@ -129,32 +129,32 @@ void SequenceWindow::create_sequence()
 	QString startval, endval, incval, part, outputtext;
 	int start, stop, step, i;
 	bool ok;
-	
+
 	startval = linStartVal->text();
 	endval = linEndVal->text();
 	incval = linIncVal->text();
 	start = startval.toInt(&ok, 10);
 	stop = endval.toInt(&ok, 10);
 	step = incval.toInt(&ok, 10);
-	
+
 	if((stop <= start) || (step <= 0)) {
 		QMessageBox::critical(this, tr("Sequence Error"), tr("One or more of the input values is incorrect."));
 		return;
 	}
-	
+
 	for(i = start; i <= stop; i += step) {
 		part = apply_format(QString::number(i, 10));
 		part += '\n';
 		outputtext += part;
 	}
-	
+
 	txtPreview->setPlainText(outputtext);
 }
 
 void SequenceWindow::check_generate()
 {
 	QString preview_copy;
-	
+
 	preview_copy = txtPreview->toPlainText();
 	if(preview_copy.isEmpty()) {
 		btnExport->setEnabled(false);
@@ -170,16 +170,16 @@ void SequenceWindow::import()
     QString filename;
     QFile file;
     QByteArray outstream;
-    
+
     import_dialog.setWindowTitle("Import File");
     import_dialog.setDirectory(settings.value("studio/default_dir", QDir::toNativeSeparators(QDir::homePath())).toString());
-	
+
     if (import_dialog.exec()) {
         filename = import_dialog.selectedFiles().at(0);
     } else {
         return;
     }
-    
+
     file.setFileName(filename);
     if(!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         QMessageBox::critical(this, tr("Open Error"), tr("Could not open selected file."));
@@ -190,7 +190,7 @@ void SequenceWindow::import()
 
     txtPreview->setPlainText(QString(outstream));
     file.close();
-    
+
     settings.setValue("studio/default_dir", filename.mid(0, filename.lastIndexOf(QDir::separator())));
 }
 
@@ -201,3 +201,4 @@ void SequenceWindow::generate_sequence()
 	dlg.output_data = txtPreview->toPlainText();
 	dlg.exec();
 }
+

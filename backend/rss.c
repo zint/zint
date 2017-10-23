@@ -8,14 +8,14 @@
     modification, are permitted provided that the following conditions
     are met:
 
-    1. Redistributions of source code must retain the above copyright 
-       notice, this list of conditions and the following disclaimer.  
+    1. Redistributions of source code must retain the above copyright
+       notice, this list of conditions and the following disclaimer.
     2. Redistributions in binary form must reproduce the above copyright
        notice, this list of conditions and the following disclaimer in the
-       documentation and/or other materials provided with the distribution.  
+       documentation and/or other materials provided with the distribution.
     3. Neither the name of the project nor the names of its contributors
        may be used to endorse or promote products derived from this software
-       without specific prior written permission. 
+       without specific prior written permission.
 
     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
     ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -26,25 +26,25 @@
     OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
     HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
     LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-    OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF 
+    OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
 
 /* The functions "combins" and "getRSSwidths" are copyright BSI and are
    released with permission under the following terms:
-   
+
    "Copyright subsists in all BSI publications. BSI also holds the copyright, in the
    UK, of the international standardisation bodies. Except as
    permitted under the Copyright, Designs and Patents Act 1988 no extract may be
    reproduced, stored in a retrieval system or transmitted in any form or by any
    means - electronic, photocopying, recording or otherwise - without prior written
    permission from BSI.
-   
+
    "This does not preclude the free use, in the course of implementing the standard,
    of necessary details such as symbols, and size, type or grade designations. If these
    details are to be used for any other purpose than implementation then the prior
    written permission of BSI must be obtained."
-   
+
    The date of publication for these functions is 30 November 2006
  */
 
@@ -52,7 +52,7 @@
 
 /* Note: This code reflects the symbol names as used in ISO/IEC 24724:2006. These names
  * were updated in ISO/IEC 24724:2011 as follows:
- * 
+ *
  * RSS-14 > GS1 DataBar Omnidirectional
  * RSS-14 Truncated > GS1 DataBar Truncated
  * RSS-14 Stacked > GS1 DataBar Stacked
@@ -66,7 +66,7 @@
 #include <string.h>
 #include <stdlib.h>
 #ifdef _MSC_VER
-#include <malloc.h> 
+#include <malloc.h>
 #endif
 #include "common.h"
 #include "large.h"
@@ -517,7 +517,7 @@ int rss14(struct zint_symbol *symbol, unsigned char source[], int src_len) {
         hrt[13] = itoc(check_digit);
 
         strcat((char*) symbol->text, hrt);
-        
+
         set_minimum_height(symbol, 14); // Minimum height is 14X for truncated symbol
     }
 
@@ -721,7 +721,7 @@ int rss14(struct zint_symbol *symbol, unsigned char source[], int src_len) {
             }
         }
         symbol->rows = symbol->rows + 1;
-        
+
         set_minimum_height(symbol, 33);
     }
 
@@ -1049,7 +1049,7 @@ int rsslimited(struct zint_symbol *symbol, unsigned char source[], int src_len) 
     hrt[14] = '\0';
 
     strcat((char*) symbol->text, hrt);
-    
+
     set_minimum_height(symbol, 10);
 
     return error_number;
@@ -1422,12 +1422,12 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
             bin_append(atoi(weight_str), 15, binary_string);
         }
     }
-    
+
     if ((encoding_method == 5) || (encoding_method == 6)) {
         /* Encoding method "01100" - variable measure item and price */
         /* Encoding method "01101" - variable measure item and price with ISO 4217
         Currency Code */
-        
+
         char group[4];
 
         for (i = 1; i < 5; i++) {
@@ -1435,15 +1435,15 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
             group[1] = source[(i * 3) + 1];
             group[2] = source[(i * 3) + 2];
             group[3] = '\0';
-            
+
             bin_append(atoi(group), 10, binary_string);
         }
 
         bin_append(source[19] - '0', 2, binary_string);
-        
+
         if (encoding_method == 6) {
             char currency_str[5];
-            
+
             for (i = 0; i < 3; i++) {
                 currency_str[i] = source[20 + i];
             }
@@ -1465,7 +1465,7 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
             group[1] = source[(i * 3) + 1];
             group[2] = source[(i * 3) + 2];
             group[3] = '\0';
-            
+
             bin_append(atoi(group), 10, binary_string);
         }
 
@@ -1475,7 +1475,7 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
             weight_str[i + 1] = source[21 + i];
         }
         weight_str[6] = '\0';
-        
+
         bin_append(atoi(weight_str), 20, binary_string);
 
         if (strlen(source) == 34) {
@@ -1665,12 +1665,12 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
                 }
 
                 last_mode = ALPHA;
-                
+
                 if (general_field[i] == '[') {
                     bin_append(15, 5, binary_string);
                     last_mode = NUMERIC;
                 } /* FNC1/Numeric latch */
-                
+
                 if (general_field[i] == '*') bin_append(58, 6, binary_string); /* asterisk */
                 if (general_field[i] == ',') bin_append(59, 6, binary_string); /* comma */
                 if (general_field[i] == '-') bin_append(60, 6, binary_string); /* minus or hyphen */
@@ -1704,12 +1704,12 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
                     bin_append(general_field[i] - 7, 7, binary_string);
                 }
                 last_mode = ISOIEC;
-                
+
                 if (general_field[i] == '[') {
                     bin_append(15, 5, binary_string);
                     last_mode = NUMERIC;
                 } /* FNC1/Numeric latch */
-                
+
                 if (general_field[i] == '!') bin_append(232, 8, binary_string); /* exclamation mark */
                 if (general_field[i] == 34)  bin_append(233, 8, binary_string); /* quotation mark */
                 if (general_field[i] == 37)  bin_append(234, 8, binary_string); /* percent sign */
@@ -1744,29 +1744,29 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
         remainder = 0;
     }
     symbol_characters = ((strlen(binary_string) + remainder) / 12) + 1;
-    
+
     if ((symbol->symbology == BARCODE_RSS_EXPSTACK) || (symbol->symbology == BARCODE_RSS_EXPSTACK_CC)) {
         characters_per_row = symbol->option_2 * 2;
-        
+
         if ((characters_per_row < 2) || (characters_per_row > 20)) {
             characters_per_row = 4;
         }
-        
+
         if ((symbol_characters % characters_per_row) == 1) {
             symbol_characters++;
         }
-        
+
         if (symbol_characters < 4) {
             symbol_characters = 4;
         }
     }
-    
+
     if (symbol_characters < 3) {
         symbol_characters = 3;
     }
-    
+
     remainder = (12 * (symbol_characters - 1)) - strlen(binary_string);
-    
+
     if (latch == 1) {
         /* There is still one more numeric digit to encode */
         if (debug) printf("Adding extra (odd) numeric digit\n");
@@ -1811,7 +1811,7 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
         }
 
         remainder = (12 * (symbol_characters - 1)) - strlen(binary_string);
-        
+
         if (debug) printf("Resultant binary = %s\n", binary_string);
         if (debug) printf("\tLength: %d\n", (int) strlen(binary_string));
     }
@@ -1835,7 +1835,7 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
 
     padstring[remainder] = '\0';
     strcat(binary_string, padstring);
-    
+
     /* Patch variable length symbol bit field */
     d1 = symbol_characters & 1;
 
@@ -2035,13 +2035,13 @@ int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int src_len)
 
     if ((symbol->symbology == BARCODE_RSS_EXP) || (symbol->symbology == BARCODE_RSS_EXP_CC)) {
         /* Copy elements into symbol */
-        
+
         elements[0] = 1; // left guard
         elements[1] = 1;
-        
+
         elements[pattern_width - 2] = 1; // right guard
         elements[pattern_width - 1] = 1;
-        
+
         writer = 0;
         latch = '0';
         for (i = 0; i < pattern_width; i++) {
@@ -2154,7 +2154,7 @@ int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int src_len)
                         }
                         elements_in_sub++;
                     }
-                } else { 
+                } else {
                     /* right to left */
                     left_to_right = 0;
                     i = 2 + (((current_row * symbol->option_2) - reader - 1) * 21);
@@ -2303,7 +2303,7 @@ int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int src_len)
         }
 
     }
-    
+
     for (i = 0; i < symbol->rows; i++) {
         if (symbol->row_height[i] == 0) {
             symbol->row_height[i] = 34;
@@ -2312,4 +2312,5 @@ int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int src_len)
 
     return 0;
 }
+
 

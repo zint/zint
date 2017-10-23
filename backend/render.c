@@ -1,5 +1,5 @@
-/* 
- * render.c - Generic Rendered Format 
+/*
+ * render.c - Generic Rendered Format
  *
  * Initiall written by Sam Lown for use in gLabels. Converts encoded
  * data into a generic internal structure of lines and characters
@@ -14,14 +14,14 @@
     modification, are permitted provided that the following conditions
     are met:
 
-    1. Redistributions of source code must retain the above copyright 
-       notice, this list of conditions and the following disclaimer.  
+    1. Redistributions of source code must retain the above copyright
+       notice, this list of conditions and the following disclaimer.
     2. Redistributions in binary form must reproduce the above copyright
        notice, this list of conditions and the following disclaimer in the
-       documentation and/or other materials provided with the distribution.  
+       documentation and/or other materials provided with the distribution.
     3. Neither the name of the project nor the names of its contributors
        may be used to endorse or promote products derived from this software
-       without specific prior written permission. 
+       without specific prior written permission.
 
     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
     ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -32,7 +32,7 @@
     OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
     HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
     LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-    OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF 
+    OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
 
@@ -101,7 +101,7 @@ int render_plot(struct zint_symbol *symbol, float width, float height) {
     addon_width_x = 0;
 
     /*
-     * Determine if there will be any addon texts and text height 
+     * Determine if there will be any addon texts and text height
      */
     latch = 0;
     r = 0;
@@ -688,7 +688,7 @@ int render_plot(struct zint_symbol *symbol, float width, float height) {
 }
 
 /*
- * Create a new line with its memory allocated ready for adding to the 
+ * Create a new line with its memory allocated ready for adding to the
  * rendered structure.
  *
  * This is much quicker than writing out each line manually (in some cases!)
@@ -709,7 +709,7 @@ struct zint_render_line *render_plot_create_line(float x, float y, float width, 
 }
 
 /*
- * Add the line to the current rendering and update the last line's 
+ * Add the line to the current rendering and update the last line's
  * next value.
  */
 int render_plot_add_line(struct zint_symbol *symbol, struct zint_render_line *line, struct zint_render_line **last_line) {
@@ -847,4 +847,5 @@ void render_free(struct zint_symbol *symbol) {
     symbol->rendered = NULL;
   }
 }
+
 

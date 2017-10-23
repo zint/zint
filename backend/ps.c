@@ -59,7 +59,7 @@ int ps_plot(struct zint_symbol *symbol) {
     unsigned char local_text[ustrlen(symbol->text) + 1];
 #else
     unsigned char* local_text = (unsigned char*) malloc(ustrlen(symbol->text) + 1);
-#endif    
+#endif
 
     row_height = 0;
     textdone = 0;
@@ -973,4 +973,5 @@ int ps_plot(struct zint_symbol *symbol) {
 
     return error_number;
 }
+
 

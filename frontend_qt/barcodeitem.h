@@ -35,10 +35,11 @@ public:
 
 private:
         int w, h;
-        
+
 public:
 	mutable Zint::QZint bc;
 	Zint::QZint::AspectRatioMode ar;
 };
 
 #endif
+
