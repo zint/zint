@@ -733,7 +733,7 @@ void MainWindow::update_preview()
 	}
 	m_bc.bc.setSecurityLevel(0);
 	m_bc.bc.setWidth(0);
-	m_bc.bc.setInputMode(UNICODE_MODE + ESCAPE_MODE);
+	m_bc.bc.setInputMode(UNICODE_MODE);
 	m_bc.bc.setHideText(0);
 	if(chkHRTHide->isChecked() == false) {
 		m_bc.bc.setHideText(1);
@@ -895,7 +895,7 @@ void MainWindow::update_preview()
 		case BARCODE_CODE16K:
 			m_bc.bc.setSymbol(BARCODE_CODE16K);
 			if(m_optionWidget->findChild<QRadioButton*>("radC16kStand")->isChecked())
-				m_bc.bc.setInputMode(UNICODE_MODE + ESCAPE_MODE);
+				m_bc.bc.setInputMode(UNICODE_MODE);
 			else
 				m_bc.bc.setInputMode(GS1_MODE);
 			break;
