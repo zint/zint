@@ -37,7 +37,7 @@ namespace Zint {
         m_bgColor = Qt::white;
         m_zintSymbol = 0;
         m_error = 0;
-        m_input_mode = UNICODE_MODE + ESCAPE_MODE;
+        m_input_mode = UNICODE_MODE;
         m_scale = 1.0;
         m_option_3 = 0;
         m_hidetext = 0;
@@ -252,7 +252,7 @@ namespace Zint {
         m_zintSymbol->whitespace_width = m_whitespace;
         m_zintSymbol->border_width = m_borderWidth;
         m_zintSymbol->option_1 = m_securityLevel;
-        m_zintSymbol->input_mode = m_input_mode;
+        m_zintSymbol->input_mode = m_input_mode + ESCAPE_MODE;
         m_zintSymbol->option_2 = m_width;
         m_zintSymbol->dot_size = m_dot_size;
         if (m_hidetext) {
