@@ -1080,7 +1080,6 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
     }
 
     if (symbol->input_mode & ESCAPE_MODE) {
-        printf("Esc process\n");
         error_number = escape_char_process(symbol, local_source, &in_length);
         if (error_number != 0) {
             return error_number;
