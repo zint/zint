@@ -627,7 +627,7 @@ int main(int argc, char **argv) {
                     }
                 }
                 if (!strcmp(long_options[option_index].name, "esc")) {
-                    if (!(my_symbol->input_mode &= ESCAPE_MODE)) {
+                    if (!(my_symbol->input_mode & ESCAPE_MODE)) {
                         my_symbol->input_mode += ESCAPE_MODE;
                     }
                 }
