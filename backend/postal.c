@@ -91,8 +91,8 @@ int postnet(struct zint_symbol *symbol, unsigned char source[], char dest[], int
 
     error_number = 0;
 
-    if (length > 38) {
-        strcpy(symbol->errtxt, "480: Input too long");
+    if (length != 5 && length != 9 && length != 11) {
+        strcpy(symbol->errtxt, "480: Input wrong length");
         return ZINT_ERROR_TOO_LONG;
     }
     error_number = is_sane(NEON, source, length);
@@ -157,8 +157,8 @@ int planet(struct zint_symbol *symbol, unsigned char source[], char dest[], int 
 
     error_number = 0;
 
-    if (length > 38) {
-        strcpy(symbol->errtxt, "482: Input too long");
+    if (length != 11 && length != 13) {
+        strcpy(symbol->errtxt, "482: Input wrong length");
         return ZINT_ERROR_TOO_LONG;
     }
     error_number = is_sane(NEON, source, length);
