@@ -369,6 +369,7 @@ int main(int argc, char **argv) {
     int batch_mode;
     int mirror_mode;
     char filetype[4];
+    int i;
 
     error_number = 0;
     rotate_angle = 0;
@@ -377,7 +378,10 @@ int main(int argc, char **argv) {
     my_symbol->input_mode = UNICODE_MODE;
     batch_mode = 0;
     mirror_mode = 0;
-    filetype[0] = '\0';
+
+    for (i = 0; i < 4; i++) {
+        filetype[i] = '\0';
+    }
 
     if (argc == 1) {
         usage();
