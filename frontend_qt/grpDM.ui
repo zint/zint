@@ -239,6 +239,11 @@
        </item>
        <item>
         <property name="text">
+         <string>26 x 40 (DMRE)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
          <string>26 x 48 (DMRE)</string>
         </property>
        </item>
