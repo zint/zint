@@ -220,6 +220,10 @@ namespace Zint {
     void QZint::setSecurityLevel(int securityLevel) {
         m_securityLevel = securityLevel;
     }
+    
+    int QZint::getError() {
+        return m_error;
+    }
 
     QString QZint::error_message() const {
         return m_lastError;
@@ -275,14 +279,12 @@ namespace Zint {
         QByteArray bgcol = bg_colour_hash.right(6).toLatin1();
         strcpy(m_zintSymbol->fgcolour, fgcol.data());
         strcpy(m_zintSymbol->bgcolour, bgcol.data());
-        int error = ZBarcode_Encode_and_Print(m_zintSymbol, (unsigned char*) bstr.data(), bstr.length(), 0);
-        if (error > ZINT_WARN_INVALID_OPTION) {
+        m_error = ZBarcode_Encode_and_Print(m_zintSymbol, (unsigned char*) bstr.data(), bstr.length(), 0);
+        if (m_error != 0) {
             m_lastError = m_zintSymbol->errtxt;
-        }
-        if (error == 0) {
-            return true;
-        } else {
             return false;
+        } else {
+            return true;
         }
     }
 

@@ -70,6 +70,8 @@ public:
 
     int securityLevel() const;
 	void setSecurityLevel(int securityLevel);
+        
+        int getError();
 
     float scale() const;
 	void setScale(float scale);
