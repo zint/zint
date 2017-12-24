@@ -1245,7 +1245,7 @@ int ZBarcode_Print(struct zint_symbol *symbol, int rotate_angle) {
 
     if (error_number == ZINT_ERROR_INVALID_OPTION) {
         /* If libpng is not installed */
-        strcpy(symbol->errtxt, "227: Unknown output format");
+        strcpy(symbol->errtxt, "227: No PNG support - compile with libpng-devel to resolve");
     }
 
     error_tag(symbol->errtxt, error_number);
