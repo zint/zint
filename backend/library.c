@@ -874,6 +874,7 @@ int escape_char_process(struct zint_symbol *symbol, unsigned char *input_string,
     } while (in_posn < *length);
 
     memcpy(input_string, escaped_string, out_posn);
+    input_string[out_posn] = '\0';
     *length = out_posn;
 
     error_number = 0;
