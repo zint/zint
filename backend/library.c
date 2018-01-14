@@ -800,7 +800,7 @@ int escape_char_process(struct zint_symbol *symbol, unsigned char *input_string,
 #ifndef _MSC_VER
     unsigned char escaped_string[*length + 1];
 #else
-    unsigned char* escaped_string = (unsigned char*) _alloca(length + 1);
+    unsigned char* escaped_string = (unsigned char*) _alloca(*length + 1);
 #endif
 
     in_posn = 0;
