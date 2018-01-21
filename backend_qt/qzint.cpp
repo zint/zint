@@ -81,9 +81,8 @@ namespace Zint {
         QByteArray bstr = m_text.toUtf8();
         QByteArray pstr = m_primaryMessage.left(99).toLatin1();
         strcpy(m_zintSymbol->primary, pstr.data());
-        int error = ZBarcode_Encode(m_zintSymbol, (unsigned char*) bstr.data(), bstr.length());
-        if (error > ZINT_WARN_INVALID_OPTION)
-            m_lastError = m_zintSymbol->errtxt;
+        m_error = ZBarcode_Encode(m_zintSymbol, (unsigned char*) bstr.data(), bstr.length());
+        m_lastError = m_zintSymbol->errtxt;
 
         if (m_zintSymbol->symbology == BARCODE_MAXICODE)
             m_zintSymbol->height = 33;
@@ -317,7 +316,8 @@ namespace Zint {
         QFont fontLarge(fontstyle);
         fontLarge.setPixelSize(fontPixelSizeLarge);
 
-        if (m_lastError.length()) {
+        if (m_error >= 5) {
+            // Display error message instead of barcode
             fontLarge.setPointSize(14);
             painter.setFont(fontLarge);
             painter.drawText(paintRect, Qt::AlignCenter, m_lastError);
