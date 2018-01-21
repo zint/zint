@@ -1062,6 +1062,7 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
         for (i = 0; i < in_length; i++) {
             if (source[i] == '\0') {
                 strcpy(symbol->errtxt, "219: NULL characters not permitted in GS1 mode");
+                error_tag(symbol->errtxt, ZINT_ERROR_INVALID_DATA);
                 return ZINT_ERROR_INVALID_DATA;
             }
         }
@@ -1073,6 +1074,7 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
             in_length =(int)ustrlen(local_source);
         } else {
             strcpy(symbol->errtxt, "220: Selected symbology does not support GS1 mode");
+            error_tag(symbol->errtxt, ZINT_ERROR_INVALID_OPTION);
             return ZINT_ERROR_INVALID_OPTION;
         }
     } else {
@@ -1083,6 +1085,7 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
     if (symbol->input_mode & ESCAPE_MODE) {
         error_number = escape_char_process(symbol, local_source, &in_length);
         if (error_number != 0) {
+            error_tag(symbol->errtxt, error_number);
             return error_number;
         }
         symbol->input_mode -= ESCAPE_MODE;
@@ -1102,6 +1105,7 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
 
     if ((symbol->dot_size < 0.01) || (symbol->dot_size > 20.0)) {
         strcpy(symbol->errtxt, "221: Invalid dot size");
+        error_tag(symbol->errtxt, ZINT_ERROR_INVALID_OPTION);
         return ZINT_ERROR_INVALID_OPTION;
     }
 
@@ -1123,10 +1127,6 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
         /* Try another ECI mode */
         symbol->eci = get_best_eci(local_source, in_length);
 
-        error_number = ZINT_WARN_USES_ECI;
-        strcpy(symbol->errtxt, "222: Encoded data includes ECI codes");
-        //printf("Data will encode with ECI %d\n", symbol->eci);
-
         switch (symbol->symbology) {
             case BARCODE_QRCODE:
             case BARCODE_MICROQR:
@@ -1139,7 +1139,12 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
                 error_number = reduced_charset(symbol, local_source, in_length);
                 break;
         }
-
+        
+        if (error_number == 0) {
+            error_number = ZINT_WARN_USES_ECI;
+            strcpy(symbol->errtxt, "222: Encoded data includes ECI");
+            if (symbol->debug) printf("Data ECI %d\n", symbol->eci);
+        }
     }
 
     if (error_number == 0) {
@@ -1174,12 +1179,14 @@ int ZBarcode_Print(struct zint_symbol *symbol, int rotate_angle) {
             break;
         default:
             strcpy(symbol->errtxt, "223: Invalid rotation angle");
+            error_tag(symbol->errtxt, ZINT_ERROR_INVALID_OPTION);
             return ZINT_ERROR_INVALID_OPTION;
     }
 
     if (symbol->output_options & BARCODE_DOTTY_MODE) {
         if (!(is_matrix(symbol->symbology))) {
             strcpy(symbol->errtxt, "224: Selected symbology cannot be rendered as dots");
+            error_tag(symbol->errtxt, ZINT_ERROR_INVALID_OPTION);
             return ZINT_ERROR_INVALID_OPTION;
         }
     }
@@ -1264,6 +1271,7 @@ int ZBarcode_Buffer(struct zint_symbol *symbol, int rotate_angle) {
             break;
         default:
             strcpy(symbol->errtxt, "228: Invalid rotation angle");
+            error_tag(symbol->errtxt, ZINT_ERROR_INVALID_OPTION);
             return ZINT_ERROR_INVALID_OPTION;
     }
 
@@ -1310,6 +1318,7 @@ int ZBarcode_Encode_File(struct zint_symbol *symbol, char *filename) {
         file = fopen(filename, "rb");
         if (!file) {
             strcpy(symbol->errtxt, "229: Unable to read input file");
+            error_tag(symbol->errtxt, ZINT_ERROR_INVALID_OPTION);
             return ZINT_ERROR_INVALID_DATA;
         }
 
@@ -1321,6 +1330,7 @@ int ZBarcode_Encode_File(struct zint_symbol *symbol, char *filename) {
         if (fileLen > 7100) {
             /* The largest amount of data that can be encoded is 7089 numeric digits in QR Code */
             strcpy(symbol->errtxt, "230: Input file too long");
+            error_tag(symbol->errtxt, ZINT_ERROR_INVALID_DATA);
             fclose(file);
             return ZINT_ERROR_INVALID_DATA;
         }
@@ -1330,6 +1340,7 @@ int ZBarcode_Encode_File(struct zint_symbol *symbol, char *filename) {
     buffer = (unsigned char *) malloc(fileLen * sizeof (unsigned char));
     if (!buffer) {
         strcpy(symbol->errtxt, "231: Internal memory error");
+        error_tag(symbol->errtxt, ZINT_ERROR_MEMORY);
         if (strcmp(filename, "-"))
             fclose(file);
         return ZINT_ERROR_MEMORY;
