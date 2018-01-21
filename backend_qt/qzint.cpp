@@ -279,7 +279,7 @@ namespace Zint {
         strcpy(m_zintSymbol->fgcolour, fgcol.data());
         strcpy(m_zintSymbol->bgcolour, bgcol.data());
         m_error = ZBarcode_Encode_and_Print(m_zintSymbol, (unsigned char*) bstr.data(), bstr.length(), 0);
-        if (m_error != 0) {
+        if (m_error >= 5) {
             m_lastError = m_zintSymbol->errtxt;
             return false;
         } else {
