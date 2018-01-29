@@ -267,27 +267,34 @@ int render_plot(struct zint_symbol *symbol, float width, float height) {
         /* The X-dimension of UPC/EAN symbols is fixed at 0.330mm */
         /* The phrase before is questionable. It may scale in certain percentages (80% - 200%).
            see https://internationalbarcodes.com/ean-13-specifications/ */
+        // Can now cope with sizes between 80% and 200%, enforces correct aspect ratio
         /* NOTE: This code will need adjustment before it correctly deals with composite symbols */
-        x_dimension = 0.330;
-        width = 0.330 * GL_CONST * total_area_width_x;
-        /* The height is also fixed */
+        //x_dimension = 0.330;
+        if (x_dimension < 0.26) {
+            x_dimension = 0.26;
+        }
+        if (x_dimension > 0.66) {
+            x_dimension = 0.66;
+        }
+        width = x_dimension * GL_CONST * total_area_width_x;
+
         switch (upceanflag) {
             case 6:
             case 12:
             case 13:
                 /* UPC-A, UPC-E and EAN-13 */
                 /* Height of bars should be 22.85mm */
-                height = ((0.330 * ((2 * symbol->border_width) + text_offset + text_height)) + 22.85) * GL_CONST;
+                height = ((x_dimension * ((2 * symbol->border_width) + text_offset + text_height)) + (22.85 * (x_dimension / 0.33))) * GL_CONST;
                 break;
             case 8:
                 /* EAN-8 */
                 /* Height of bars should be 18.23mm */
-                height = ((0.330 * ((2 * symbol->border_width) + text_offset + text_height)) + 18.23) * GL_CONST;
+                height = ((x_dimension * ((2 * symbol->border_width) + text_offset + text_height)) + (18.23 * (x_dimension / 0.33))) * GL_CONST;
                 break;
             default:
                 /* EAN-2 and EAN-5 */
                 /* Height of bars should be 21.10mm */
-                height = ((0.330 * ((2 * symbol->border_width) + text_offset + text_height)) + 21.10) * GL_CONST;
+                height = ((x_dimension * ((2 * symbol->border_width) + text_offset + text_height)) + (21.10 * (x_dimension / 0.33))) * GL_CONST;
         }
     }
 
