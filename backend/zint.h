@@ -151,6 +151,7 @@ extern "C" {
 #define BARCODE_RM4SCC		70
 #define BARCODE_DATAMATRIX	71
 #define BARCODE_EAN14		72
+#define BARCODE_VIN             73
 #define BARCODE_CODABLOCKF	74
 #define BARCODE_NVE18		75
 #define BARCODE_JAPANPOST	76

@@ -171,8 +171,9 @@ extern int han_xin(struct zint_symbol * symbol, const unsigned char source[], si
 extern int dotcode(struct zint_symbol * symbol, const unsigned char source[], int length); /* DotCode */
 extern int codablock(struct zint_symbol * symbol, const unsigned char source[], const size_t length); /* Codablock */
 extern int upnqr(struct zint_symbol *symbol, const unsigned char source[], size_t length); /* UPNQR */
-extern int qr_code(struct zint_symbol *symbol, const unsigned char source[], size_t length); /* Data Matrix (IEC16022) */
-extern int dmatrix(struct zint_symbol *symbol, const unsigned char source[], const size_t in_length); /* QR Code */
+extern int qr_code(struct zint_symbol *symbol, const unsigned char source[], size_t length); /* QR Code */
+extern int dmatrix(struct zint_symbol *symbol, const unsigned char source[], const size_t in_length); /* Data Matrix (IEC16022) */
+extern int vin(struct zint_symbol *symbol, const unsigned char source[], const size_t in_length); /* VIN Code (Vehicle Identification Number) */
 
 extern int plot_raster(struct zint_symbol *symbol, int rotate_angle, int file_type); /* Plot to PNG/BMP/PCX */
 extern int render_plot(struct zint_symbol *symbol, float width, float height); /* Plot to gLabels */
@@ -554,6 +555,7 @@ int ZBarcode_ValidID(int symbol_id) {
         case BARCODE_DOTCODE:
         case BARCODE_CODABLOCKF:
         case BARCODE_UPNQR:
+        case BARCODE_VIN:
             result = 1;
             break;
     }
@@ -773,6 +775,8 @@ static int reduced_charset(struct zint_symbol *symbol, const unsigned char *sour
             break;
         case BARCODE_CODABLOCKF: error_number = codablock(symbol, preprocessed, in_length);
             break;
+        case BARCODE_VIN: error_number = vin(symbol, preprocessed, in_length);
+            break;
     }
 
     return error_number;
@@ -974,11 +978,6 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
     }
     if ((symbol->symbology == 64) || (symbol->symbology == 65)) {
         symbol->symbology = BARCODE_AUSPOST;
-    }
-    if (symbol->symbology == 73) {
-        strcpy(symbol->errtxt, "211: Symbology out of range, using Code 128");
-        symbol->symbology = BARCODE_CODE128;
-        error_number = ZINT_WARN_INVALID_OPTION;
     }
     if (symbol->symbology == 78) {
         symbol->symbology = BARCODE_RSS14;

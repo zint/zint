@@ -280,6 +280,7 @@ Numeric Value  |  Barcode Name
 70             |  Royal Mail 4 State (RM4SCC)
 71             |  Data Matrix (ECC200)
 72             |  EAN-14
+73             |  Vehicle Identification Number (America)
 74             |  Codablock-F
 75             |  NVE-18
 76             |  Japanese Postal Code
@@ -526,6 +527,7 @@ GIF          |  Graphics Interchange Format
 PCX          |  ZSoft Paintbrush image
 PNG          |  Portable Network Graphic
 SVG          |  Scalable Vector Graphic
+TIF          |  Tagged Image File Format
 TXT          |  Text file (see 4.16)
 --------------------------------------------------------------
 
@@ -952,6 +954,7 @@ Value   |
 70      | BARCODE_RM4SCC          | Royal Mail 4 State (RM4SCC)
 71      | BARCODE_DATAMATRIX      | Data Matrix ECC200
 72      | BARCODE_EAN14           | EAN-14
+73      | BARCODE_VIN             | Vehicle Identification Number (America)
 74      | BARCODE_CODABLOCKF      | Codablock-F
 75      | BARCODE_NVE18           | NVE-18
 76      | BARCODE_JAPANPOST       | Japanese Postal Code
@@ -1308,6 +1311,12 @@ requires a numeric input up to 8 digits in length. A check digit is added by Zin
 This option adds a leading '+' character and a trailing modulo-49 check digit 
 to a standard Code 39 symbol as required by the Health Industry Barcode 
 standards. 
+
+6.1.8.8 Vehicle Identification Number
+-------------------------------------
+This option includes a verification stage for vehicle identification numbers
+used in North America which include a check digit. For European vehicle
+identification numbers use Standard Code 39.
 
 6.1.9 Codabar (EN 798)
 ----------------------
@@ -2518,6 +2527,8 @@ batch processing, more consistent use of dialogues.
 v2.6.2 - Further bugfixes in Aztec and DotCode. Expand escape sequence support
 to API and GUI. Handle UTF BOM. Bugfix raster images of Maxicode.
 22/10/2017
+
+v2.6.3 - Includes VIN (US) verification. (Forthcoming)
 
 7.4 Sources of Information
 --------------------------

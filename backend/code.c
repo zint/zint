@@ -39,6 +39,7 @@
 
 #define SODIUM	"0123456789-"
 #define SILVER	"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%abcd"
+#define ARSENIC "0123456789ABCDEFGHJKLMNPRSTUVWXYZ"
 
 static const char *C11Table[11] = {
     "111121", "211121", "121121", "221111", "112121", "212111", "122111",
@@ -461,7 +462,7 @@ int c93(struct zint_symbol *symbol, unsigned char source[], int length) {
 
    "It is the intent and understanding of AIM [t]hat the symbology presented in this
    specification is entirely in the public domain and free of all use restrictions,
-   licenses and fees. AIM USA, its memer companies, or individual officers
+   licenses and fees. AIM USA, its member companies, or individual officers
    assume no liability for the use of this document." */
 
 void CheckCharacter() {
@@ -590,4 +591,99 @@ int channel_code(struct zint_symbol *symbol, unsigned char source[], int length)
     return error_number;
 }
 
+
+/* Vehicle Identification Number (VIN) */
+int vin(struct zint_symbol *symbol, unsigned char source[], int length) {
+    
+    /* This code verifies the check digit present in North American VIN codes */
+    
+    int zeros;
+    char local_source[18];
+    char dest[200];
+    char input_check;
+    char output_check;
+    int value[17];
+    int weight[17] = {8, 7, 6, 5, 4, 3, 2, 10, 0, 9, 8, 7, 6, 5, 4, 3, 2};
+    int sum;
+    int i;
+    
+    // Check length
+    if (length > 17) {
+        strcpy(symbol->errtxt, "336: Input too long");
+        return ZINT_ERROR_TOO_LONG;
+    }
+    
+    // Check input characters, I, O and Q are not allowed
+    if (is_sane(ARSENIC, source, length) == ZINT_ERROR_INVALID_DATA) {
+        strcpy(symbol->errtxt, "337: Invalid characters in input data");
+        return ZINT_ERROR_INVALID_DATA;
+    }
+    
+    // Pad with zeros
+    zeros = 17 - length;
+    
+    for (i = 0; i < 17; i++) {
+        local_source[i] = '0';
+    }
+    local_source[17] = '\0';
+    
+    for (i = 0; i < length; i++) {
+        local_source[zeros + i] = source[i];
+    }
+    
+    input_check = local_source[8];
+    
+    for (i = 0; i < 17; i++) {
+        if ((local_source[i] >= '0') && (local_source[i] <= '9')) {
+            value[i] = local_source[i] - '0';
+        }
+        if ((local_source[i] >= 'A') && (local_source[i] <= 'I')) {
+            value[i] = (local_source[i] - 'A') + 1;
+        }
+        if ((local_source[i] >= 'J') && (local_source[i] <= 'R')) {
+            value[i] = (local_source[i] - 'J') + 1;
+        }
+        if ((local_source[i] >= 'S') && (local_source[i] <= 'Z')) {
+            value[i] = (local_source[i] - 'S') + 2;
+        }
+    }
+    
+    sum = 0;
+    for (i = 0; i < 17; i++) {
+        sum += value[i] * weight[i];
+    }
+    
+    output_check = '0' + (sum % 11);
+    
+    if (output_check == ':') {
+        // Check digit was 10
+        output_check = 'X';
+    }
+    
+    if (symbol->debug) {
+        printf("Producing VIN code: %s\n", local_source);
+        printf("Input check was %c, calculated check is %c\n", input_check, output_check);
+    }
+    
+    if (input_check != output_check) {
+        strcpy(symbol->errtxt, "338: Invalid check digit in input data");
+        return ZINT_ERROR_INVALID_DATA;
+    }
+    
+    /* Start character */
+    strcpy(dest, "1211212111");
+    
+    // Copy glyphs to symbol
+    for (i = 0; i < 17; i++) {
+        lookup(SILVER, C39Table, local_source[i], dest);
+    }
+    
+    /* Stop character */
+    strcat(dest, "121121211");
+    
+    ustrcpy(symbol->text, (unsigned char *) local_source);
+    expand(symbol, dest);
+    
+    return 0;
+}
 
