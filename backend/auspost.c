@@ -163,7 +163,7 @@ int australia_post(struct zint_symbol *symbol, unsigned char source[], int lengt
         /* Add leading zeros as required */
         zeroes = 8 - length;
         memset(localstr, '0', zeroes);
-        localstr[8] = '\0';
+        localstr[zeroes] = '\0';
     }
 
     strcat(localstr, (char*) source);
