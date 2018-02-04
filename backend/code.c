@@ -613,12 +613,6 @@ int vin(struct zint_symbol *symbol, unsigned char source[], int length) {
         return ZINT_ERROR_TOO_LONG;
     }
     
-    // Check input characters, I, O and Q are not allowed
-    if (is_sane(ARSENIC, source, length) == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "337: Invalid characters in input data");
-        return ZINT_ERROR_INVALID_DATA;
-    }
-    
     // Pad with zeros
     zeros = 17 - length;
     
@@ -629,6 +623,14 @@ int vin(struct zint_symbol *symbol, unsigned char source[], int length) {
     
     for (i = 0; i < length; i++) {
         local_source[zeros + i] = source[i];
+    }
+    
+    to_upper((unsigned char *) local_source);
+    
+    // Check input characters, I, O and Q are not allowed
+    if (is_sane(ARSENIC, (unsigned char *) local_source, length) == ZINT_ERROR_INVALID_DATA) {
+        strcpy(symbol->errtxt, "337: Invalid characters in input data");
+        return ZINT_ERROR_INVALID_DATA;
     }
     
     input_check = local_source[8];
