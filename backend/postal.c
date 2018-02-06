@@ -531,15 +531,11 @@ int japan_post(struct zint_symbol *symbol, unsigned char source[], int length) {
     error_number = 0;
 
     strcpy(local_source, (char*) source);
-    for (i = 0; i < length; i++) {
-        local_source[i] = source[i];
-    }
     to_upper((unsigned char*) local_source);
-    error_number = is_sane(SHKASUTSET, (unsigned char*) local_source, length);
 
-    if (error_number == ZINT_ERROR_INVALID_DATA) {
+    if (is_sane(SHKASUTSET, (unsigned char*) local_source, length) == ZINT_ERROR_INVALID_DATA) {
         strcpy(symbol->errtxt, "497: Invalid characters in data");
-        return error_number;
+        return ZINT_ERROR_INVALID_DATA;
     }
     memset(inter, 'd', 20); /* Pad character CC4 */
     inter[20] = '\0';
@@ -619,4 +615,3 @@ int japan_post(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     return error_number;
 }
-

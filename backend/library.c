@@ -174,6 +174,7 @@ extern int upnqr(struct zint_symbol *symbol, const unsigned char source[], size_
 extern int qr_code(struct zint_symbol *symbol, const unsigned char source[], size_t length); /* QR Code */
 extern int dmatrix(struct zint_symbol *symbol, const unsigned char source[], const size_t in_length); /* Data Matrix (IEC16022) */
 extern int vin(struct zint_symbol *symbol, const unsigned char source[], const size_t in_length); /* VIN Code (Vehicle Identification Number) */
+extern int mailmark(struct zint_symbol *symbol, const unsigned char source[], const size_t in_length); /* Royal Mail 4-state Mailmark */
 
 extern int plot_raster(struct zint_symbol *symbol, int rotate_angle, int file_type); /* Plot to PNG/BMP/PCX */
 extern int render_plot(struct zint_symbol *symbol, float width, float height); /* Plot to gLabels */
@@ -556,6 +557,7 @@ int ZBarcode_ValidID(int symbol_id) {
         case BARCODE_CODABLOCKF:
         case BARCODE_UPNQR:
         case BARCODE_VIN:
+        case BARCODE_MAILMARK:
             result = 1;
             break;
     }
@@ -776,6 +778,8 @@ static int reduced_charset(struct zint_symbol *symbol, const unsigned char *sour
         case BARCODE_CODABLOCKF: error_number = codablock(symbol, preprocessed, in_length);
             break;
         case BARCODE_VIN: error_number = vin(symbol, preprocessed, in_length);
+            break;
+        case BARCODE_MAILMARK: error_number = mailmark(symbol, preprocessed, in_length);
             break;
     }
 
@@ -1028,9 +1032,11 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
         symbol->symbology = BARCODE_DOTCODE;
     }
     if ((symbol->symbology >= 117) && (symbol->symbology <= 127)) {
-        strcpy(symbol->errtxt, "215: Symbology out of range, using Code 128");
-        symbol->symbology = BARCODE_CODE128;
-        error_number = ZINT_WARN_INVALID_OPTION;
+        if (symbol->symbology != 121) {
+            strcpy(symbol->errtxt, "215: Symbology out of range, using Code 128");
+            symbol->symbology = BARCODE_CODE128;
+            error_number = ZINT_WARN_INVALID_OPTION;
+        }
     }
     /* Everything from 128 up is Zint-specific */
     if (symbol->symbology >= 144) {

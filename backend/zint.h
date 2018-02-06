@@ -185,6 +185,9 @@ extern "C" {
     /* Tbarcode 10 codes */
 #define BARCODE_DOTCODE         115
 #define BARCODE_HANXIN          116
+    
+    /*Tbarcode 11 codes*/
+#define BARCODE_MAILMARK        121
 
     /* Zint specific */
 #define BARCODE_AZRUNE		128
