@@ -97,6 +97,7 @@ public:
 		POSTNET		=40,
 		QRCODE		=58,
 		RM4SCC		=70,
+                MAILMARK        =121,
 		TELEPEN		=32,
 		TELEPEN_NUM	=87,
 		PLESSEY		=86,

@@ -102,6 +102,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags fl)
 		"Postnet",
 		"QR Code (ISO 18004)",
 		"Royal Mail 4-state Barcode",
+                "Royal Mail 4-state Mailmark",
 		"Telepen",
 		"Telepen Numeric",
 		"UK Plessey",
@@ -268,7 +269,7 @@ void MainWindow::about()
 					   "<p>A free barcode generator"
                        "<p>Instruction manual is available at the project homepage:<br>"
                        "<a href=\"http://www.zint.org.uk\">http://www.zint.org.uk</a>"
-                       "<p>Copyright &copy; 2006-2017 Robin Stuart and others.<br>"
+                       "<p>Copyright &copy; 2006-2018 Robin Stuart and others.<br>"
                        "Qt back end by BogDan Vatra<br>"
                        "Windows port by Harald Oehlmann</p>"
                        "<p>Qt version " QT_VERSION_STR
