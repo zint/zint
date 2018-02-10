@@ -146,12 +146,27 @@ int mailmark(struct zint_symbol *symbol, unsigned char source[], int length) {
     int check_count;
     int i, j;
     
-    if ((length != 22) && (length != 26)) {
-        strcpy(symbol->errtxt, "580: Invalid length input");
-        return ZINT_ERROR_INVALID_DATA;
+    if (length > 26) {
+        strcpy(symbol->errtxt, "580: Input too long");
+        return ZINT_ERROR_TOO_LONG;
     }
     
     strcpy(local_source, (char*) source);
+    
+    if (length < 22) {
+        for (i = length; i <= 22; i++) {
+            strcat(local_source, " ");
+        }
+        length = 22;
+    }
+    
+    if ((length > 22) && (length < 26)) {
+        for (i = length; i <= 26; i++) {
+            strcat(local_source, " ");
+        }
+        length = 26;
+    } 
+    
     to_upper((unsigned char*) local_source);
     
     if (symbol->debug) {
@@ -159,7 +174,7 @@ int mailmark(struct zint_symbol *symbol, unsigned char source[], int length) {
     }
     
     if (is_sane(RUBIDIUM, (unsigned char *) local_source, length) != 0) {
-        strcpy(symbol->errtxt, "581: Invalid characters or format in input data");
+        strcpy(symbol->errtxt, "581: Invalid characters in input data");
         return ZINT_ERROR_INVALID_DATA;
     }
 
