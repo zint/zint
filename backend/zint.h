@@ -81,6 +81,7 @@ extern "C" {
         int option_2;
         int option_3;
         int show_hrt;
+        int fontsize;
         int input_mode;
         int eci;
         unsigned char text[128];

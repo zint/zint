@@ -63,6 +63,7 @@ struct zint_symbol *ZBarcode_Create() {
     symbol->option_2 = 0;
     symbol->option_3 = 928; // PDF_MAX
     symbol->show_hrt = 1; // Show human readable text
+    symbol->fontsize = 8;
     symbol->input_mode = DATA_MODE;
     strcpy(symbol->primary, "");
     memset(&(symbol->encoded_data[0][0]), 0, sizeof (symbol->encoded_data));

@@ -435,6 +435,7 @@ int main(int argc, char **argv) {
             {"eci", 1, 0, 0},
             {"filetype", 1, 0, 0},
             {"esc", 0, 0, 0},
+            {"fontsize", 1, 0, 0},
             {"verbose", 0, 0, 0}, // Currently undocumented, output some debug info
             {0, 0, 0, 0}
         };
@@ -638,6 +639,14 @@ int main(int argc, char **argv) {
                 }
                 if (!strcmp(long_options[option_index].name, "verbose")) {
                     my_symbol->debug = 1;
+                }
+                if (!strcmp(long_options[option_index].name, "fontsize")) {
+                    if ((atoi(optarg) >= 0) && (atoi(optarg) <= 100)) {
+                        my_symbol->fontsize = atoi(optarg);
+                    } else {
+                        fprintf(stderr, "Warning 125: Invalid font size\n");
+                        fflush(stderr);
+                    }
                 }
                 break;
 
