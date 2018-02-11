@@ -58,7 +58,6 @@
 #include <malloc.h>
 #endif
 #include "common.h"
-#include "large.h"
 #include "composite.h"
 #include "pdf417.h"
 #include "gs1.h"

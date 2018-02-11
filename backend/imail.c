@@ -316,17 +316,8 @@ int imail(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     for (read = 0; read < strlen(zip); read++) {
 
-        for (i = 0; i < 112; i++) {
-            x_reg[i] = accum[i];
-        }
-
-        for (i = 0; i < 9; i++) {
-            binary_add(accum, x_reg);
-        }
-
-        for (i = 0; i < 112; i++) {
-            x_reg[i] = 0;
-        }
+        binary_multiply(accum, "10");
+        binary_load(x_reg, "0", 1);
 
         for (i = 0; i < 4; i++) {
             if (ctoi(zip[read]) & (0x01 << i)) x_reg[i] = 1;
@@ -361,17 +352,8 @@ int imail(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     for (read = 0; read < strlen(zip_adder); read++) {
 
-        for (i = 0; i < 112; i++) {
-            y_reg[i] = accum[i];
-        }
-
-        for (i = 0; i < 9; i++) {
-            binary_add(accum, y_reg);
-        }
-
-        for (i = 0; i < 112; i++) {
-            y_reg[i] = 0;
-        }
+        binary_multiply(accum, "10");
+        binary_load(y_reg, "0", 1);
 
         for (i = 0; i < 4; i++) {
             if (ctoi(zip_adder[read]) & (0x01 << i)) y_reg[i] = 1;
@@ -385,17 +367,8 @@ int imail(struct zint_symbol *symbol, unsigned char source[], int length) {
     /* tracking code */
 
     /* multiply by 10 */
-    for (i = 0; i < 112; i++) {
-        y_reg[i] = accum[i];
-    }
-
-    for (i = 0; i < 9; i++) {
-        binary_add(accum, y_reg);
-    }
-
-    for (i = 0; i < 112; i++) {
-        y_reg[i] = 0;
-    }
+    binary_multiply(accum, "10");
+    binary_load(y_reg, "0", 1);
 
     /* add first digit of tracker */
     for (i = 0; i < 4; i++) {
@@ -405,17 +378,8 @@ int imail(struct zint_symbol *symbol, unsigned char source[], int length) {
     binary_add(accum, y_reg);
 
     /* multiply by 5 */
-    for (i = 0; i < 112; i++) {
-        y_reg[i] = accum[i];
-    }
-
-    for (i = 0; i < 4; i++) {
-        binary_add(accum, y_reg);
-    }
-
-    for (i = 0; i < 112; i++) {
-        y_reg[i] = 0;
-    }
+    binary_multiply(accum, "5");
+    binary_load(y_reg, "0", 1);
 
     /* add second digit */
     for (i = 0; i < 4; i++) {
@@ -428,17 +392,8 @@ int imail(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     for (read = 2; read < strlen(tracker); read++) {
 
-        for (i = 0; i < 112; i++) {
-            y_reg[i] = accum[i];
-        }
-
-        for (i = 0; i < 9; i++) {
-            binary_add(accum, y_reg);
-        }
-
-        for (i = 0; i < 112; i++) {
-            y_reg[i] = 0;
-        }
+        binary_multiply(accum, "10");
+        binary_load(y_reg, "0", 1);
 
         for (i = 0; i < 4; i++) {
             if (ctoi(tracker[read]) & (0x01 << i)) y_reg[i] = 1;

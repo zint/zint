@@ -293,14 +293,7 @@ int mailmark(struct zint_symbol *symbol, unsigned char source[], int length) {
         for (i = 0; i < 9; i++) {
             switch (pattern[i]) {
                 case 'F':
-                    for (j = 0; j < 112; j++) {
-                        temp[j] = b[j];
-                    }
-                    
-                    // b *= 26
-                    for (j = 1; j < 26; j++) {
-                        binary_add(b, temp);
-                    }
+                    binary_multiply(b, "26");
                     
                     binary_load(temp, "0", 1);
                     for (j = 0; j < 5; j++) {
@@ -310,14 +303,7 @@ int mailmark(struct zint_symbol *symbol, unsigned char source[], int length) {
                     binary_add(b, temp);
                     break;
                 case 'L':
-                    for (j = 0; j < 112; j++) {
-                        temp[j] = b[j];
-                    }
-                    
-                    // b *= 20
-                    for (j = 1; j < 20; j++) {
-                        binary_add(b, temp);
-                    }
+                    binary_multiply(b, "20");
                     
                     binary_load(temp, "0", 1);
                     for (j = 0; j < 5; j++) {
@@ -327,14 +313,7 @@ int mailmark(struct zint_symbol *symbol, unsigned char source[], int length) {
                     binary_add(b, temp);
                     break;
                 case 'N':
-                    for (j = 0; j < 112; j++) {
-                        temp[j] = b[j];
-                    }
-                    
-                    for (j = 1; j < 10; j++) {
-                        // b *= 10
-                        binary_add(b, temp);
-                    }
+                    binary_multiply(b, "10");
                     
                     binary_load(temp, "0", 1);
                     for (j = 0; j < 4; j++) {
@@ -390,14 +369,7 @@ int mailmark(struct zint_symbol *symbol, unsigned char source[], int length) {
     binary_add(cdv, destination_postcode);
     
     // Multiply by 100,000,000
-    for (i = 0; i < 8; i++) {
-        binary_load(temp, "0", 1);
-        binary_add(temp, cdv);
-        
-        for (j = 1; j < 10; j++) {
-            binary_add(cdv, temp);
-        }
-    }
+    binary_multiply(cdv, "100000000");
     
     // Add Item ID
     binary_load(temp, "0", 1);
@@ -406,26 +378,12 @@ int mailmark(struct zint_symbol *symbol, unsigned char source[], int length) {
     }
     binary_add(cdv, temp);
     
-    if (length == 22) {
+    if (length == 22) {  
         // Barcode C - Multiply by 100
-        for (i = 0; i < 2; i++) {
-            binary_load(temp, "0", 1);
-            binary_add(temp, cdv);
-
-            for (j = 1; j < 10; j++) {
-                binary_add(cdv, temp);
-            }
-        }
+        binary_multiply(cdv, "100");
     } else {
         // Barcode L - Multiply by 1,000,000
-        for (i = 0; i < 6; i++) {
-            binary_load(temp, "0", 1);
-            binary_add(temp, cdv);
-
-            for (j = 1; j < 10; j++) {
-                binary_add(cdv, temp);
-            }
-        }
+        binary_multiply(cdv, "1000000");
     }
     
     // Add Supply Chain ID
@@ -436,12 +394,7 @@ int mailmark(struct zint_symbol *symbol, unsigned char source[], int length) {
     binary_add(cdv, temp);
     
     // Multiply by 15
-    binary_load(temp, "0", 1);
-    binary_add(temp, cdv);
-
-    for (j = 1; j < 15; j++) {
-        binary_add(cdv, temp);
-    }
+    binary_multiply(cdv, "15");
     
     // Add Class
     binary_load(temp, "0", 1);
@@ -451,12 +404,7 @@ int mailmark(struct zint_symbol *symbol, unsigned char source[], int length) {
     binary_add(cdv, temp);
     
     // Multiply by 5
-    binary_load(temp, "0", 1);
-    binary_add(temp, cdv);
-
-    for (j = 1; j < 5; j++) {
-        binary_add(cdv, temp);
-    }
+    binary_multiply(cdv, "5");
     
     // Add Format
     binary_load(temp, "0", 1);
@@ -466,12 +414,7 @@ int mailmark(struct zint_symbol *symbol, unsigned char source[], int length) {
     binary_add(cdv, temp);
     
     // Multiply by 4
-    binary_load(temp, "0", 1);
-    binary_add(temp, cdv);
-
-    for (j = 1; j < 4; j++) {
-        binary_add(cdv, temp);
-    }
+    binary_multiply(cdv, "4");
     
     // Add Version ID
     binary_load(temp, "0", 1);

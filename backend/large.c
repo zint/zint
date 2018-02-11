@@ -115,6 +115,26 @@ void binary_subtract(short int accumulator[], short int input_buffer[]) {
     binary_add(accumulator, sub_buffer);
 }
 
+void binary_multiply(short int reg[], char data[]) {
+    /* Multiply the contents of reg[] by a number */
+    short int temp[112] = {0};
+    short int accum[112] = {0};
+    int i;
+    
+    binary_load(temp, data, strlen(data));
+    
+    for (i = 0; i < 102; i++) {
+        if (temp[i] == 1) {
+            binary_add(accum, reg);
+        }
+        shiftup(reg);
+    }
+    
+    for (i = 0; i < 112; i++) {
+        reg[i] = accum[i];
+    }
+}
+
 void shiftdown(short int buffer[]) {
     int i;
 

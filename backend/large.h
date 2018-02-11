@@ -42,6 +42,7 @@ extern void binary_subtract(short int accumulator[], short int input_buffer[]);
 extern void shiftdown(short int buffer[]);
 extern void shiftup(short int buffer[]);
 extern short int islarger(short int accum[], short int reg[]);
+extern void binary_multiply(short int reg[], char data[]);
 
 #ifdef __cplusplus
 }

@@ -53,8 +53,6 @@
 #endif
 #include "pdf417.h"
 #include "common.h"
-#include "large.h"
-
 /*
    Three figure numbers in comments give the location of command equivalents in the
    original Visual Basic source code file pdf417.frm
