@@ -55,7 +55,7 @@ int tif_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
     int i;
     int rows_per_strip, strip_count;
     int free_memory;
-    int row, column;
+    int row, column, strip, bytes_put;
     FILE *tif_file;
 #ifdef _MSC_VER
     uint32_t* strip_offset;
@@ -83,7 +83,16 @@ int tif_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
     if ((symbol->bitmap_height % rows_per_strip) != 0) {
         strip_count++;
     }
-
+    
+    if (rows_per_strip > symbol->bitmap_height) {
+        rows_per_strip = symbol->bitmap_height;
+    }
+    
+    if (strip_count == 1) {
+        rows_per_strip = (rows_per_strip / 2) + 1;
+        strip_count++;
+    }
+    
 #ifndef _MSC_VER
     uint32_t strip_offset[strip_count];
     uint32_t strip_bytes[strip_count];
@@ -142,8 +151,10 @@ int tif_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
 
     fwrite(&header, sizeof(tiff_header_t), 1, tif_file);
     free_memory += sizeof(tiff_ifd_t);
-
+    
     /* Pixel data */
+    strip = 0;
+    bytes_put = 0;
     for (row = 0; row < symbol->bitmap_height; row++) {
         for (column = 0; column < symbol->bitmap_width; column++) {
             if (pixelbuf[(row * symbol->bitmap_width) + column] == '1') {
@@ -155,13 +166,16 @@ int tif_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
                 putc(bggrn, tif_file);
                 putc(bgblu, tif_file);
             }
+            bytes_put += 3;
         }
-        if (((row + 1) % rows_per_strip) == 0) {
-            /* End of a strip */
-            if ((strip_bytes[0] % 2) == 1) {
-                /* Add end-of strip pad */
+        
+        if ((bytes_put + 3) >= strip_bytes[strip]) {
+            // End of strip, pad if strip length is odd
+            if (strip_bytes[strip] % 2 == 1) {
                 putc(0, tif_file);
             }
+            strip++;
+            bytes_put = 0;
         }
     }
 
