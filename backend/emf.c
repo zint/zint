@@ -1015,7 +1015,7 @@ int emf_plot(struct zint_symbol *symbol) {
     if (symbol->output_options & BARCODE_STDOUT) {
         emf_file = stdout;
     } else {
-        emf_file = fopen(symbol->outfile, "w");
+        emf_file = fopen(symbol->outfile, "wb");
     }
     if (emf_file == NULL) {
         strcpy(symbol->errtxt, "640: Could not open output file");
