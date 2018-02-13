@@ -50,6 +50,9 @@
  2017-10-23 2.6.2 HaO
 -	Framework 2.6.2 bugfixes
 -   Allow dll unload
+ 2018-02-13 2.6.3 HaO
+ -	Framework trunk update
+ -	Added VIN and MailMark symbologies.
 */
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
@@ -89,7 +92,7 @@
 /*----------------------------------------------------------------------------*/
 /* > File option defines */
 
-#define VERSION "2.6.2"
+#define VERSION "2.6.3"
 
 /*----------------------------------------------------------------------------*/
 /* >>>>> Hepler defines */
@@ -159,6 +162,7 @@ static char *s_code_list[] = {
     "RM4SCC",
     "Datamatrix",
     "EAN14",
+	"VIN",
     "CodablockF",
     "NVE18",
     "JapanPost",
@@ -186,6 +190,7 @@ static char *s_code_list[] = {
     "HIBCAztec",
 	"DotCode",
 	"HanXin",
+	"MailMark",
     "AztecRunes",
     "Code32",
     "EAN-CC",
@@ -252,6 +257,7 @@ static int s_code_number[] = {
     BARCODE_RM4SCC,
     BARCODE_DATAMATRIX,
     BARCODE_EAN14,
+	BARCODE_VIN,
     BARCODE_CODABLOCKF,
     BARCODE_NVE18,
     BARCODE_JAPANPOST,
@@ -279,6 +285,7 @@ static int s_code_number[] = {
     BARCODE_HIBC_AZTEC,
 	BARCODE_DOTCODE,
 	BARCODE_HANXIN,
+	BARCODE_MAILMARK,
     BARCODE_AZRUNE,
     BARCODE_CODE32,
     BARCODE_EANX_CC,

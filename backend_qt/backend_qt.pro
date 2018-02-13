@@ -96,6 +96,7 @@ SOURCES += ../backend/2of5.c \
            ../backend/imail.c \
            ../backend/large.c \
            ../backend/library.c \
+           ../backend/mailmark.c \
            ../backend/maxicode.c \
            ../backend/medical.c \
            ../backend/pcx.c \
