@@ -294,10 +294,5 @@ int tif_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
         fclose(tif_file);
     }
 
-#ifdef _MSC_VER
-    free(strip_offset);
-    free(strip_bytes);
-#endif
-
     return 0;
 }

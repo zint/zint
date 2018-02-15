@@ -184,6 +184,10 @@ SOURCE=..\backend\library.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\backend\mailmark.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\backend\maxicode.c
 # End Source File
 # Begin Source File
