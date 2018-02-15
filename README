@@ -24,45 +24,6 @@ Output can be saved as BMP, EPS, GIF, PCX, TIF, EMF, PNG or SVG.
 
 PROJECT HISTORY
 ---------------
-Version 2.3.0:
-This release features a complete rebuild of QR Code and Micro QR Code
-functionality which now:
-
-* Automatically detects and adjusts to Japanese characters
-* Supports GS1 encoding
-* Does not require the qrencode library.
-
-Also new in this release is Grid Matrix support which similarly supports
-Chinese character encoding.
-
-Version 2.3.1:
-Correction of some minor bugs in Code 128 and Data Matrix, addition of
---notext option to CLI and better operation of --scale option which now
-scales human readable text and MaxiCode.
-
-SPECIAL NOTE: Codablock-F has now been REMOVED from this project because of
-problems implimenting this standard. For full details see the project website.
-
-Version 2.3.2:
-More bug corrections including important corrections to RSS Expanded,
-Maxicode and ISBN.
-
-Version 2.4:
-Simplified GUI. Addition of "render" functions provides an API for
-glabels. Corrections to 4-state codes. Simplification in QR code. Added
---dump option and support for reading from stdin.
-
-Version 2.4.1:
-Contains bugfixes for Data Matrix and QR Code. Add option to produce multiple
-files from the command line. Add option to change font size in PNG images.
-Tidy up information for creating Debian packages and for compiling on MS
-Visual Studio. Correct bug preventing compilation without PNG support.
-
-Version 2.4.2:
-Fix bugs in batch processing - this now works from the command line.
-
-Version 2.4.3:
-Some Windows-only fixes and changes
 
 Version 2.5.0:
 Support for DotCode and Han Xin code. ECI code processing. Output to BMP, GIF
@@ -88,6 +49,10 @@ information given when batch processing.
 Version 2.6.2:
 Further bugfixes in Aztec and DotCode. Expand escape sequence support
 to API and GUI. Handle UTF BOM. Bugfix raster images of Maxicode.
+
+Version 2.6.3:
+New symbology Royal Mail 4-state Mailmark. Added North America VIN verification.
+Bugfixes for TIF and EMF output and escape character handling.
 
 CONTACT US
 ----------

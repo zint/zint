@@ -2539,7 +2539,9 @@ v2.6.2 - Further bugfixes in Aztec and DotCode. Expand escape sequence support
 to API and GUI. Handle UTF BOM. Bugfix raster images of Maxicode.
 22/10/2017
 
-v2.6.3 - Includes VIN (US) verification. (Forthcoming)
+v2.6.3 - New symbology Royal Mail 4-state Mailmark. Added North America VIN
+verification. Bugfixes for TIF and EMF output and escape character handling.
+15/02/2018
 
 7.4 Sources of Information
 --------------------------

@@ -74,7 +74,7 @@ void types(void) {
 /* Output usage information */
 void usage(void) {
     printf( "Zint version %d.%d.%d\n"
-            "Encode input data in a barcode and save as a PNG, BMP, GIF, PCX, EPS or SVG file.\n\n"
+            "Encode input data in a barcode and save as BMP/EMF/EPS/GIF/PCX/PNG/SVG/TIF\n\n"
             "  -b, --barcode=NUMBER  Number of barcode type (default is 20 (=Code128)).\n"
             "  --batch               Treat each line of input file as a separate data set\n"
             "  --bg=COLOUR           Specify a background colour (in hex)\n"
@@ -147,7 +147,7 @@ void show_eci(void) {
             "28: ** Big-5 (Taiwan) Chinese Character Set\n"
             "29: ** GB (PRC) Chinese Character Set\n"
             "30: ** Korean Character Set (KSX1001:1998)\n"
-            "** See note in section 4.10 of the manual"
+            "** See note in section 4.10 of the manual\n"
     );
 }
 

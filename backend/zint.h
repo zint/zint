@@ -102,7 +102,7 @@ extern "C" {
 
 #define ZINT_VERSION_MAJOR      2
 #define ZINT_VERSION_MINOR      6
-#define ZINT_VERSION_RELEASE    2
+#define ZINT_VERSION_RELEASE    3
 
     /* Tbarcode 7 codes */
 #define BARCODE_CODE11		1
