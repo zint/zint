@@ -70,7 +70,7 @@ static inline char convert_pattern(char data, int shift) {
 /* Adds Reed-Solomon error correction to auspost */
 void rs_error(char data_pattern[]) {
     size_t reader, triple_writer = 0;
-    char triple[31], inv_triple[31];
+    char triple[31];
     unsigned char result[5];
 
     for (reader = 2; reader < strlen(data_pattern); reader += 3, triple_writer++) {
@@ -79,13 +79,9 @@ void rs_error(char data_pattern[]) {
                 + convert_pattern(data_pattern[reader + 2], 0);
     }
 
-    for (reader = 0; reader < triple_writer; reader++) {
-        inv_triple[reader] = triple[(triple_writer - 1) - reader];
-    }
-
     rs_init_gf(0x43);
     rs_init_code(4, 1);
-    rs_encode(triple_writer, (unsigned char*) inv_triple, result);
+    rs_encode(triple_writer, (unsigned char*) triple, result);
 
     for (reader = 4; reader > 0; reader--) {
         strcat(data_pattern, AusBarTable[(int) result[reader - 1]]);
