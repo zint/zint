@@ -194,107 +194,418 @@ int gs1_verify(struct zint_symbol *symbol, const unsigned char source[], const s
             return ZINT_ERROR_INVALID_DATA;
         }
     }
-
-    error_latch = 0;
+    
     strcpy(ai_string, "");
+    
+    // Check for valid AI values and data lengths according to GS1 General
+    // Specification Release 18, January 2018
     for (i = 0; i < ai_count; i++) {
+        
+        error_latch = 2;
         switch (ai_value[i]) {
-            case 0: if (data_length[i] != 18) {
+            // Length 2 Fixed
+            case 20: // VARIANT
+                if (data_length[i] != 2) {
                     error_latch = 1;
+                } else {
+                    error_latch = 0;
                 }
                 break;
-            case 1:
-            case 2:
-            case 3: if (data_length[i] != 14) {
+                
+            // Length 3 Fixed
+            case 422: // ORIGIN
+            case 424: // COUNTRY PROCESS
+            case 426: // COUNTRY FULL PROCESS
+                if (data_length[i] != 3) {
                     error_latch = 1;
+                } else {
+                    error_latch = 0;
                 }
                 break;
-            case 4: if (data_length[i] != 16) {
+                
+            // Length 4 Fixed
+            case 8111: // POINTS
+                if (data_length[i] != 4) {
                     error_latch = 1;
+                } else {
+                    error_latch = 0;
                 }
                 break;
-            case 11:
-            case 12:
-            case 13:
-            case 14:
-            case 15:
-            case 16:
-            case 17:
-            case 18:
-            case 19: if (data_length[i] != 6) {
+                
+            // Length 6 Fixed
+            case 11: // PROD DATE
+            case 12: // DUE DATE
+            case 13: // PACK DATE
+            case 15: // BEST BY
+            case 16: // SELL BY
+            case 17: // USE BY
+            case 7006: // FIRST FREEZE DATE
+            case 8005: // PRICE PER UNIT
+                if (data_length[i] != 6) {
                     error_latch = 1;
+                } else {
+                    error_latch = 0;
                 }
                 break;
-            case 20: if (data_length[i] != 2) {
+                
+            // Length 10 Fixed
+            case 7003: // EXPIRY TIME
+                if (data_length[i] != 10) {
                     error_latch = 1;
+                } else {
+                    error_latch = 0;
                 }
                 break;
-            case 23:
-            case 24:
-            case 25:
-            case 39:
-            case 40:
-            case 41:
-            case 42:
-            case 70:
-            case 80:
-            case 81: error_latch = 2;
+                
+            // Length 13 Fixed
+            case 410: // SHIP TO LOC
+            case 411: // BILL TO
+            case 412: // PURCHASE FROM
+            case 413: // SHIP FOR LOC
+            case 414: // LOC NO
+            case 415: // PAY TO
+            case 416: // PROD/SERV LOC
+            case 7001: // NSN
+                if (data_length[i] != 13) {
+                    error_latch = 1;
+                } else {
+                    error_latch = 0;
+                }
                 break;
+                
+            // Length 14 Fixed
+            case 1: // GTIN
+            case 2: // CONTENT
+            case 8001: // DIMENSIONS
+                if (data_length[i] != 14) {
+                    error_latch = 1;
+                } else {
+                    error_latch = 0;
+                }
+                break;
+                
+            // Length 17 Fixed
+            case 402: // GSIN
+            case 8017: // GSRN PROVIDER
+            case 8018: // GSRN RECIPIENT
+                if (data_length[i] != 17) {
+                    error_latch = 1;
+                } else {
+                    error_latch = 0;
+                }
+                break;
+                
+            // Length 18 Fixed
+            case 0: // SSCC
+            case 8006: // ITIP
+                if (data_length[i] != 18) {
+                    error_latch = 1;
+                } else {
+                    error_latch = 0;
+                }
+                break;
+                
+            // Length 2 Max
+            case 7010: // PROD METHOD
+                if (data_length[i] > 2) {
+                    error_latch = 1;
+                } else {
+                    error_latch = 0;
+                }
+                break;
+                
+            // Length 3 Max
+            case 427: // ORIGIN SUBDIVISION
+            case 7008: // AQUATIC SPECIES
+                if (data_length[i] > 3) {
+                    error_latch = 1;
+                } else {
+                    error_latch = 0;
+                }
+                break;
+                
+            // Length 4 Max
+            case 7004: // ACTIVE POTENCY
+                if (data_length[i] > 4) {
+                    error_latch = 1;
+                } else {
+                    error_latch = 0;
+                }
+                break;
+                
+            // Length 6 Max
+            case 242: // MTO VARIANT
+                if (data_length[i] > 6) {
+                    error_latch = 1;
+                } else {
+                    error_latch = 0;
+                }
+                break;
+                
+            // Length 8 Max
+            case 30: // VAR COUNT
+            case 37: // COUNT
+                if (data_length[i] > 8) {
+                    error_latch = 1;
+                } else {
+                    error_latch = 0;
+                }
+                break;
+                
+            // Length 10 Max
+            case 7009: // FISHING GEAR TYPE
+            case 8019: // SRIN
+                if (data_length[i] > 10) {
+                    error_latch = 1;
+                } else {
+                    error_latch = 0;
+                }
+                break;
+                
+            // Length 12 Max
+            case 7005: // CATCH AREA
+            case 8011: // CPID SERIAL
+                if (data_length[i] > 12) {
+                    error_latch = 1;
+                } else {
+                    error_latch = 0;
+                }
+                break;
+                
+            // Length 20 Max
+            case 10: // BATCH/LOT
+            case 21: // SERIAL
+            case 22: // CPV
+            case 243: // PCN
+            case 254: // GLN EXTENSION COMPONENT
+            case 420: // SHIP TO POST
+            case 7020: // REFURB LOT
+            case 7021: // FUNC STAT
+            case 7022: // REV STAT
+            case 710: // NHRN PZN
+            case 711: // NHRN CIP
+            case 712: // NHRN CN
+            case 713: // NHRN DRN
+            case 714: // NHRN AIM
+            case 8002: // CMT NO
+            case 8012: // VERSION
+                if (data_length[i] > 20) {
+                    error_latch = 1;
+                } else {
+                    error_latch = 0;
+                }
+                break;
+                
+            // Length 25 Max
+            case 8020: // REF NO
+                if (data_length[i] > 25) {
+                    error_latch = 1;
+                } else {
+                    error_latch = 0;
+                }
+                break;
+                
+            // Length 30 Max
+            case 240: // ADDITIONAL ID
+            case 241: // CUST PART NO
+            case 250: // SECONDARY SERIAL
+            case 251: // REF TO SOURCE
+            case 400: // ORDER NUMBER
+            case 401: // GINC
+            case 403: // ROUTE
+            case 7002: // MEAT CUT
+            case 7023: // GIAI ASSEMBLY
+            case 8004: // GIAI
+            case 8010: // CPID
+            case 8013: // BUDI-DI
+            case 90: // INTERNAL
+                if (data_length[i] > 30) {
+                    error_latch = 1;
+                } else {
+                    error_latch = 0;
+                }
+                break;
+                
+            // Length 34 Max
+            case 8007: // IBAN
+                if (data_length[i] > 34) {
+                    error_latch = 1;
+                } else {
+                    error_latch = 0;
+                }
+                break;
+                
+            // Length 70 Max
+            case 8110: // Coupon code
+            case 8112: // Paperless coupon code
+            case 8200: // PRODUCT URL
+                if (data_length[i] > 34) {
+                    error_latch = 1;
+                } else {
+                    error_latch = 0;
+                }
+                break;
+                
         }
-        if (
-                ((ai_value[i] >= 100) && (ai_value[i] <= 179))
-                || ((ai_value[i] >= 1000) && (ai_value[i] <= 1799))
-                || ((ai_value[i] >= 200) && (ai_value[i] <= 229))
-                || ((ai_value[i] >= 2000) && (ai_value[i] <= 2299))
-                || ((ai_value[i] >= 300) && (ai_value[i] <= 309))
-                || ((ai_value[i] >= 3000) && (ai_value[i] <= 3099))
-                || ((ai_value[i] >= 31) && (ai_value[i] <= 36))
-                || ((ai_value[i] >= 310) && (ai_value[i] <= 369))
-                ) {
-            error_latch = 2;
+        
+        if (ai_value[i] == 253) { // GDTI
+            if ((data_length[i] < 14) || (data_length[i] > 31)) {
+                error_latch = 1;
+            } else {
+                error_latch = 0;
+            }
         }
-        if ((ai_value[i] >= 3100) && (ai_value[i] <= 3699)) {
+        
+        if (ai_value[i] == 255) { // GCN
+            if ((data_length[i] < 14) || (data_length[i] > 25)) {
+                error_latch = 1;
+            } else {
+                error_latch = 0;
+            }
+        }
+        
+        if ((ai_value[i] >= 3100) && (ai_value[i] <= 3169)) {
             if (data_length[i] != 6) {
                 error_latch = 1;
+            } else {
+                error_latch = 0;
             }
         }
-        if (
-                ((ai_value[i] >= 370) && (ai_value[i] <= 379))
-                || ((ai_value[i] >= 3700) && (ai_value[i] <= 3799))
-                ) {
-            error_latch = 2;
-        }
-        if ((ai_value[i] >= 410) && (ai_value[i] <= 415)) {
-            if (data_length[i] != 13) {
+        
+        if ((ai_value[i] >= 3200) && (ai_value[i] <= 3379)) {
+            if (data_length[i] != 6) {
                 error_latch = 1;
+            } else {
+                error_latch = 0;
             }
         }
-        if (
-                ((ai_value[i] >= 4100) && (ai_value[i] <= 4199))
-                || ((ai_value[i] >= 700) && (ai_value[i] <= 703))
-                || ((ai_value[i] >= 800) && (ai_value[i] <= 810))
-                || ((ai_value[i] >= 900) && (ai_value[i] <= 999))
-                || ((ai_value[i] >= 9000) && (ai_value[i] <= 9999))
-                ) {
-            error_latch = 2;
+        
+        if ((ai_value[i] >= 3400) && (ai_value[i] <= 3579)) {
+            if (data_length[i] != 6) {
+                error_latch = 1;
+            } else {
+                error_latch = 0;
+            }
         }
-        if ((error_latch < 4) && (error_latch > 0)) {
-            /* error has just been detected: capture AI */
+        
+        if ((ai_value[i] >= 3600) && (ai_value[i] <= 3699)) {
+            if (data_length[i] != 6) {
+                error_latch = 1;
+            } else {
+                error_latch = 0;
+            }
+        }
+        
+        if ((ai_value[i] >= 3900) && (ai_value[i] <= 3909)) { // AMOUNT
+            if (data_length[i] > 15) {
+                error_latch = 1;
+            } else {
+                error_latch = 0;
+            }
+        }
+        
+        if ((ai_value[i] >= 3910) && (ai_value[i] <= 3919)) { // AMOUNT
+            if ((data_length[i] < 4) || (data_length[i] > 18)) {
+                error_latch = 1;
+            } else {
+                error_latch = 0;
+            }
+        }
+        
+        if ((ai_value[i] >= 3920) && (ai_value[i] <= 3929)) { // PRICE
+            if (data_length[i] > 15) {
+                error_latch = 1;
+            } else {
+                error_latch = 0;
+            }
+        }
+        
+        if ((ai_value[i] >= 3930) && (ai_value[i] <= 3939)) { // PRICE
+            if ((data_length[i] < 4) || (data_length[i] > 18)) {
+                error_latch = 1;
+            } else {
+                error_latch = 0;
+            }
+        }
+        
+        if ((ai_value[i] >= 3940) && (ai_value[i] <= 3949)) { // PRCNT OFF
+            if (data_length[i] != 4) {
+                error_latch = 1;
+            } else {
+                error_latch = 0;
+            }
+        }
+        
+        if (ai_value[i] == 421) { // SHIP TO POST
+            if ((data_length[i] < 4) || (data_length[i] > 12)) {
+                error_latch = 1;
+            } else {
+                error_latch = 0;
+            }
+        }
+        
+        if ((ai_value[i] == 423) || (ai_value[i] == 425)) {
+            // COUNTRY INITIAL PROCESS || COUNTRY DISASSEMBLY
+            if ((data_length[i] < 4) || (data_length[i] > 15)) {
+                error_latch = 1;
+            } else {
+                error_latch = 0;
+            }
+        }
+        
+        if (ai_value[i] == 7007) { // HARVEST DATE
+            if ((data_length[i] < 6) || (data_length[i] > 12)) {
+                error_latch = 1;
+            } else {
+                error_latch = 0;
+            }
+        }
+        
+        if ((ai_value[i] >= 7030) && (ai_value[i] <= 7039)) { // PROCESSOR #
+            if ((data_length[i] < 4) || (data_length[i] > 30)) {
+                error_latch = 1;
+            } else {
+                error_latch = 0;
+            }
+        }
+        
+        if (ai_value[i] == 8003) { // GRAI
+            if ((data_length[i] < 15) || (data_length[i] > 30)) {
+                error_latch = 1;
+            } else {
+                error_latch = 0;
+            }
+        }
+        
+        if (ai_value[i] == 8008) { // PROD TIME
+            if ((data_length[i] < 9) || (data_length[i] > 12)) {
+                error_latch = 1;
+            } else {
+                error_latch = 0;
+            }
+        }
+        
+        if ((ai_value[i] >= 91) && (ai_value[i] <= 99)) { // INTERNAL
+            if (data_length[i] > 90) {
+                error_latch = 1;
+            } else {
+                error_latch = 0;
+            }
+        }
+
+        if (error_latch == 1) {
             itostr(ai_string, ai_value[i]);
-            error_latch += 4;
+            strcpy(symbol->errtxt, "259: Invalid data length for AI ");
+            strcat(symbol->errtxt, ai_string);
+            return ZINT_ERROR_INVALID_DATA;
         }
-    }
 
-    if (error_latch == 5) {
-        strcpy(symbol->errtxt, "259: Invalid data length for AI ");
-        strcat(symbol->errtxt, ai_string);
-        return ZINT_ERROR_INVALID_DATA;
-    }
-
-    if (error_latch == 6) {
-        strcpy(symbol->errtxt, "260: Invalid AI value");
-        strcat(symbol->errtxt, ai_string);
-        return ZINT_ERROR_INVALID_DATA;
+        if (error_latch == 2) {
+            itostr(ai_string, ai_value[i]);
+            strcpy(symbol->errtxt, "260: Invalid AI value ");
+            strcat(symbol->errtxt, ai_string);
+            return ZINT_ERROR_INVALID_DATA;
+        }
     }
 
     /* Resolve AI data - put resulting string in 'reduced' */
