@@ -199,7 +199,7 @@ int batch_process(struct zint_symbol *symbol, char *filename, int mirror_mode, c
     char number[12], reverse_number[12];
     int inpos, local_line_count;
     char format_string[127], reversed_string[127], format_char;
-    int format_len, i;
+    int format_len, i, o;
     char adjusted[2];
 
     memset(buffer, 0, sizeof (unsigned char) * 7100);
@@ -300,9 +300,12 @@ int batch_process(struct zint_symbol *symbol, char *filename, int mirror_mode, c
                 }
             } else {
                 /* Name the output file from the data being processed */
-                for (i = 0; (i < posn && i < 250); i++) {
+                i = 0;
+                o = 0;
+                do {
+                //for (i = 0; (i < posn && i < 250); i++) {
                     if (buffer[i] < 0x20) {
-                        output_file[i] = '_';
+                        output_file[o] = '_';
                     } else {
                         switch (buffer[i]) {
                             case 0x21: // !
@@ -313,19 +316,30 @@ int batch_process(struct zint_symbol *symbol, char *filename, int mirror_mode, c
                             case 0x3c: // <
                             case 0x3e: // >
                             case 0x3f: // ?
+                            case 0x5c: // Backslash
                             case 0x7c: // |
                             case 0x7f: // DEL
-                                output_file[i] = '_';
+                                output_file[o] = '_';
                                 break;
                             default:
-                                output_file[i] = buffer[i];
+                                output_file[o] = buffer[i];
                         }
                     }
-                }
+                    
+                    // Skip escape characters
+                    if ((buffer[i] == 0x5c) && (symbol->input_mode & ESCAPE_MODE)) {
+                        i++;
+                        if (buffer[i] == 'x') {
+                            i += 2;
+                        }
+                    }
+                    i++;
+                    o++;
+                } while (i < posn && o < 250);
 
                 /* Add file extension */
-                output_file[i] = '.';
-                output_file[i + 1] = '\0';
+                output_file[o] = '.';
+                output_file[o + 1] = '\0';
 
                 strcat(output_file, filetype);
             }

@@ -893,6 +893,7 @@ int escape_char_process(struct zint_symbol *symbol, unsigned char *input_string,
 
 int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int in_length) {
     int error_number, error_buffer, i;
+    int input_mode = symbol->input_mode;
 #ifdef _MSC_VER
     unsigned char* local_source;
 #endif
@@ -1064,7 +1065,7 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
     }
 
     /* Start acting on input mode */
-    if (symbol->input_mode == GS1_MODE) {
+    if (input_mode == GS1_MODE) {
         for (i = 0; i < in_length; i++) {
             if (source[i] == '\0') {
                 strcpy(symbol->errtxt, "219: NULL characters not permitted in GS1 mode");
@@ -1088,24 +1089,24 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
         local_source[in_length] = '\0';
     }
 
-    if (symbol->input_mode & ESCAPE_MODE) {
+    if (input_mode & ESCAPE_MODE) {
         error_number = escape_char_process(symbol, local_source, &in_length);
         if (error_number != 0) {
             error_tag(symbol->errtxt, error_number);
             return error_number;
         }
-        symbol->input_mode -= ESCAPE_MODE;
+        input_mode -= ESCAPE_MODE;
     }
 
-    if ((symbol->input_mode < 0) || (symbol->input_mode > 2)) {
-        symbol->input_mode = DATA_MODE;
+    if ((input_mode < 0) || (input_mode > 2)) {
+        input_mode = DATA_MODE;
     }
 
     if ((symbol->eci != 3) && (symbol->eci != 26)) {
-        symbol->input_mode = DATA_MODE;
+        input_mode = DATA_MODE;
     }
 
-    if (symbol->input_mode == UNICODE_MODE) {
+    if (input_mode == UNICODE_MODE) {
         strip_bom(local_source, &in_length);
     }
 
@@ -1129,7 +1130,7 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
     }
 
     if ((error_number == ZINT_ERROR_INVALID_DATA) && (supports_eci(symbol->symbology)
-            && (symbol->input_mode == UNICODE_MODE))) {
+            && (input_mode == UNICODE_MODE))) {
         /* Try another ECI mode */
         symbol->eci = get_best_eci(local_source, in_length);
 
