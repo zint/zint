@@ -127,7 +127,7 @@ int mailmark(struct zint_symbol *symbol, unsigned char source[], int length) {
     char local_source[28];
     int format;
     int version_id;
-    int class;
+    int mail_class;
     int supply_chain_id;
     long item_id;
     char postcode[10];
@@ -193,8 +193,8 @@ int mailmark(struct zint_symbol *symbol, unsigned char source[], int length) {
     }
     
     // Class is in the range 0-9,A-E
-    class = ctoi(local_source[2]);
-    if ((class < 0) || (class > 14)) {
+    mail_class = ctoi(local_source[2]);
+    if ((mail_class < 0) || (mail_class > 14)) {
         strcpy(symbol->errtxt, "584: Invalid Class");
         return ZINT_ERROR_INVALID_DATA;
     }
@@ -399,7 +399,7 @@ int mailmark(struct zint_symbol *symbol, unsigned char source[], int length) {
     // Add Class
     binary_load(temp, "0", 1);
     for (i = 0; i < 4; i++) {
-        if (0x01 & (class >> i)) temp[i] = 1;
+        if (0x01 & (mail_class >> i)) temp[i] = 1;
     }
     binary_add(cdv, temp);
     
