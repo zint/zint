@@ -138,7 +138,7 @@ int mailmark(struct zint_symbol *symbol, unsigned char source[], int length) {
     short int b[112];
     short int temp[112];
     short int cdv[112];
-    unsigned char data[25];
+    unsigned char data[26];
     int data_top, data_step;
     unsigned char check[7];
     short int extender[27];
