@@ -1171,29 +1171,29 @@ int data_matrix_200(struct zint_symbol *symbol,const unsigned char source[], con
         }
     }
 
-    if (symbol->option_3 == DM_SQUARE) {
-        /* Skip rectangular symbols in square only mode */
-        while (matrixH[calcsize] != matrixW[calcsize]) {
-            calcsize++;
+    if (optionsize == -1) {
+        // We are in automatic size mode as the exact symbol size was not given
+        // Now check the detailed search options square only or no dmre
+        if (symbol->option_3 == DM_SQUARE) {
+            /* Skip rectangular symbols in square only mode */
+            while (matrixH[calcsize] != matrixW[calcsize]) {
+                calcsize++;
+            }
+        } else if (symbol->option_3 != DM_DMRE) {
+            /* Skip DMRE symbols in no dmre mode */
+            while (isDMRE[calcsize]) {
+                calcsize++;
+            }
         }
-        if (optionsize != -1) {
-            strcpy(symbol->errtxt, "521: Can not force square symbols when symbol size is selected");
-            error_number = ZINT_WARN_INVALID_OPTION;
-        }
-    } else if (symbol->option_3 != DM_DMRE) {
-        /* Skip DMRE symbols */
-        while (isDMRE[calcsize]) {
-            calcsize++;
-        }
-    }
-
-    symbolsize = optionsize;
-    if (calcsize > optionsize) {
         symbolsize = calcsize;
-        if (optionsize != -1) {
+    } else {
+        // The symbol size was given by --ver (option_2)
+        // Thus check if the data fits into this symbol size and use this size
+        if (calcsize > optionsize) {
             strcpy(symbol->errtxt, "522: Input too long for selected symbol size");
             return ZINT_ERROR_TOO_LONG;
         }
+        symbolsize = optionsize;
     }
 
     // Now we know the symbol size we can handle the remaining data in the process buffer.
