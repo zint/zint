@@ -122,7 +122,7 @@ int verify_postcode(char* postcode, int type) {
 }
 
 /* Royal Mail Mailmark */
-int mailmark(struct zint_symbol *symbol, unsigned char source[], int length) {
+int mailmark(struct zint_symbol *symbol, const unsigned char source[], const size_t in_length) {
     
     char local_source[28];
     int format;
@@ -145,6 +145,7 @@ int mailmark(struct zint_symbol *symbol, unsigned char source[], int length) {
     char bar[80];
     int check_count;
     int i, j;
+    int length = (int) in_length;
     
     if (length > 26) {
         strcpy(symbol->errtxt, "580: Input too long");
@@ -223,7 +224,7 @@ int mailmark(struct zint_symbol *symbol, unsigned char source[], int length) {
         }
     }
     
-    // Seperate Destination Post Code plus DPS field
+    // Separate Destination Post Code plus DPS field
     for (i = 0; i < 9; i++) {
         postcode[i] = local_source[(length - 9) + i];
     }
@@ -326,7 +327,7 @@ int mailmark(struct zint_symbol *symbol, unsigned char source[], int length) {
             }
         }
         
-        // detination_postcode = a + b
+        // destination_postcode = a + b
         binary_load(destination_postcode, "0", 1);
         binary_add(destination_postcode, b);
         
@@ -373,7 +374,7 @@ int mailmark(struct zint_symbol *symbol, unsigned char source[], int length) {
     
     // Add Item ID
     binary_load(temp, "0", 1);
-    for (i = 0; i < 38; i++) {
+    for (i = 0; i < 31; i++) {
         if (0x01 & (item_id >> i)) temp[i] = 1;
     }
     binary_add(cdv, temp);

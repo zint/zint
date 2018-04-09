@@ -593,7 +593,7 @@ int channel_code(struct zint_symbol *symbol, unsigned char source[], int length)
 
 
 /* Vehicle Identification Number (VIN) */
-int vin(struct zint_symbol *symbol, unsigned char source[], int length) {
+int vin(struct zint_symbol *symbol, const unsigned char source[], const size_t in_length) {
     
     /* This code verifies the check digit present in North American VIN codes */
     
@@ -606,6 +606,7 @@ int vin(struct zint_symbol *symbol, unsigned char source[], int length) {
     int weight[17] = {8, 7, 6, 5, 4, 3, 2, 10, 0, 9, 8, 7, 6, 5, 4, 3, 2};
     int sum;
     int i;
+    int length = (int) in_length;
     
     // Check length
     if (length > 17) {
