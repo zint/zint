@@ -1197,7 +1197,7 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
     } else {
         /* any AIs */
         encoding_method = 2;
-        if (debug) printf("Choosing Mehod 2\n");
+        if (debug) printf("Choosing Method 2\n");
     }
 
     if (((strlen(source) >= 20) && (encoding_method == 1)) && ((source[2] == '9') && (source[16] == '3'))) {
@@ -1217,9 +1217,6 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
                 weight_str[6] = '\0';
 
                 if (weight_str[0] == '0') { /* Maximum weight = 99999 */
-
-
-                    encoding_method = 7;
 
                     if ((source[19] == '3') && (strlen(source) == 26)) {
                         /* (01) and (3103) */
@@ -1270,8 +1267,6 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
                 weight_str[6] = '\0';
 
                 if (weight_str[0] == '0') { /* Maximum weight = 99999 */
-
-                    encoding_method = 8;
 
                     if (((source[19] == '2') || (source[19] == '3')) && (strlen(source) == 26)) {
                         /* (01) and (3202)/(3203) */
