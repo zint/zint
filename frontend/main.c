@@ -432,8 +432,6 @@ int main(int argc, char **argv) {
             {"primary", 1, 0, 0},
             {"scale", 1, 0, 0},
             {"gs1", 0, 0, 0},
-            {"kanji", 0, 0, 0},
-            {"sjis", 0, 0, 0},
             {"binary", 0, 0, 0},
             {"notext", 0, 0, 0},
             {"square", 0, 0, 0},
@@ -489,14 +487,12 @@ int main(int argc, char **argv) {
                 if (!strcmp(long_options[option_index].name, "gs1")) {
                     my_symbol->input_mode = GS1_MODE;
                 }
-                if (!strcmp(long_options[option_index].name, "kanji")) {
-                    my_symbol->input_mode = KANJI_MODE;
-                }
-                if (!strcmp(long_options[option_index].name, "sjis")) {
-                    my_symbol->input_mode = SJIS_MODE;
-                }
                 if (!strcmp(long_options[option_index].name, "binary")) {
-                    my_symbol->input_mode = DATA_MODE;
+                    if (my_symbol->input_mode & ESCAPE_MODE) {
+                        my_symbol->input_mode = DATA_MODE + ESCAPE_MODE;
+                    } else {
+                        my_symbol->input_mode = DATA_MODE;
+                    }
                 }
                 if (!strcmp(long_options[option_index].name, "fg")) {
                     strncpy(my_symbol->fgcolour, optarg, 7);

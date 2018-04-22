@@ -568,7 +568,7 @@ int ZBarcode_ValidID(int symbol_id) {
 
 static int extended_charset(struct zint_symbol *symbol, const unsigned char *source, const int length) {
     int error_number = 0;
-
+        
     /* These are the "elite" standards which can support multiple character sets */
     switch (symbol->symbology) {
         case BARCODE_QRCODE: error_number = qr_code(symbol, source, length);
@@ -595,7 +595,7 @@ static int reduced_charset(struct zint_symbol *symbol, const unsigned char *sour
 #else
     unsigned char* preprocessed = (unsigned char*) _alloca(in_length + 1);
 #endif
-
+    
     if (symbol->symbology == BARCODE_CODE16K) {
         symbol->whitespace_width = 16;
         symbol->border_width = 2;
@@ -611,8 +611,8 @@ static int reduced_charset(struct zint_symbol *symbol, const unsigned char *sour
             symbol->output_options += BARCODE_BOX;
         }
     }
-
-    switch (symbol->input_mode) {
+    
+    switch (symbol->input_mode & 0x07) {
         case DATA_MODE:
         case GS1_MODE:
             memcpy(preprocessed, source, in_length);
@@ -626,7 +626,7 @@ static int reduced_charset(struct zint_symbol *symbol, const unsigned char *sour
             }
             break;
     }
-
+    
     switch (symbol->symbology) {
         case BARCODE_C25MATRIX: error_number = matrix_two_of_five(symbol, preprocessed, in_length);
             break;
@@ -814,7 +814,7 @@ int escape_char_process(struct zint_symbol *symbol, unsigned char *input_string,
 
     in_posn = 0;
     out_posn = 0;
-
+    
     do {
         if (input_string[in_posn] == '\\') {
             switch (input_string[in_posn + 1]) {
@@ -861,7 +861,14 @@ int escape_char_process(struct zint_symbol *symbol, unsigned char *input_string,
                     hex1 = ctoi(input_string[in_posn + 2]);
                     hex2 = ctoi(input_string[in_posn + 3]);
                     if ((hex1 >= 0) && (hex2 >= 0)) {
-                        escaped_string[out_posn] = (hex1 << 4) + hex2;
+                        if (hex1 > 7 && (symbol->input_mode & UNICODE_MODE) != 0) {
+                            // Convert to UTF-8
+                            escaped_string[out_posn] = 0xc0 + (hex1 >> 2);
+                            out_posn++;
+                            escaped_string[out_posn] = 0x80 + ((hex1 & 0x03) << 4) + hex2;
+                        } else {
+                            escaped_string[out_posn] = (hex1 << 4) + hex2;
+                        }
                         in_posn += 4;
                     } else {
                         strcpy(symbol->errtxt, "233: Corrupt escape character in input data");
@@ -881,11 +888,11 @@ int escape_char_process(struct zint_symbol *symbol, unsigned char *input_string,
         }
         out_posn++;
     } while (in_posn < *length);
-
+    
     memcpy(input_string, escaped_string, out_posn);
     input_string[out_posn] = '\0';
     *length = out_posn;
-
+    
     error_number = 0;
 
     return error_number;
@@ -1115,7 +1122,7 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
         error_tag(symbol->errtxt, ZINT_ERROR_INVALID_OPTION);
         return ZINT_ERROR_INVALID_OPTION;
     }
-
+    
     switch (symbol->symbology) {
         case BARCODE_QRCODE:
         case BARCODE_MICROQR:

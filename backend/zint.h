@@ -223,8 +223,6 @@ extern "C" {
 #define DATA_MODE	0
 #define UNICODE_MODE	1
 #define GS1_MODE	2
-#define KANJI_MODE	3
-#define SJIS_MODE	4
 #define ESCAPE_MODE     8
 
 // Data Matrix specific options
