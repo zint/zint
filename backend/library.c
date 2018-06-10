@@ -1,7 +1,7 @@
 /*  library.c - external functions of libzint
 
     libzint - the open source barcode library
-    Copyright (C) 2009-2017 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2018 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -78,6 +78,7 @@ struct zint_symbol *ZBarcode_Create() {
 }
 
 extern void render_free(struct zint_symbol *symbol); /* Free render structures */
+extern void vector_free(struct zint_symbol *symbol); /* Free vector structures */
 
 void ZBarcode_Clear(struct zint_symbol *symbol) {
     int i, j;
@@ -100,6 +101,7 @@ void ZBarcode_Clear(struct zint_symbol *symbol) {
 
     // If there is a rendered version, ensure its memory is released
     render_free(symbol);
+    vector_free(symbol);
 }
 
 void ZBarcode_Delete(struct zint_symbol *symbol) {
@@ -108,6 +110,7 @@ void ZBarcode_Delete(struct zint_symbol *symbol) {
 
     // If there is a rendered version, ensure its memory is released
     render_free(symbol);
+    vector_free(symbol);
 
     free(symbol);
 }
@@ -179,8 +182,9 @@ extern int mailmark(struct zint_symbol *symbol, const unsigned char source[], co
 
 extern int plot_raster(struct zint_symbol *symbol, int rotate_angle, int file_type); /* Plot to PNG/BMP/PCX */
 extern int render_plot(struct zint_symbol *symbol, float width, float height); /* Plot to gLabels */
-extern int ps_plot(struct zint_symbol *symbol); /* Plot to EPS */
-extern int svg_plot(struct zint_symbol *symbol); /* Plot to SVG */
+extern int vector_plot(struct zint_symbol *symbol, int rotate_angle, int file_type); /* Plot to new vector format */
+//extern int ps_plot(struct zint_symbol *symbol); /* Plot to EPS */
+//extern int svg_plot(struct zint_symbol *symbol); /* Plot to SVG */
 extern int emf_plot(struct zint_symbol *symbol); /* Plot to Metafile */
 
 void error_tag(char error_string[], int error_number) {
@@ -1247,13 +1251,13 @@ int ZBarcode_Print(struct zint_symbol *symbol, int rotate_angle) {
             error_number = dump_plot(symbol);
         } else
             if (!(strcmp(output, "EPS"))) {
-            error_number = ps_plot(symbol);
+            error_number = vector_plot(symbol, rotate_angle, OUT_EPS_FILE);  
         } else
             if (!(strcmp(output, "SVG"))) {
-            error_number = svg_plot(symbol);
+            error_number = vector_plot(symbol, rotate_angle, OUT_SVG_FILE);
         } else
             if (!(strcmp(output, "EMF"))) {
-            error_number = emf_plot(symbol);
+			error_number = vector_plot(symbol, rotate_angle, OUT_EMF_FILE);
         } else {
             strcpy(symbol->errtxt, "225: Unknown output format");
             error_tag(symbol->errtxt, ZINT_ERROR_INVALID_OPTION);

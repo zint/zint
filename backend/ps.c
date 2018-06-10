@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2017 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2018 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -37,68 +37,21 @@
 #include <math.h>
 #include "common.h"
 
-#define SSET	"0123456789ABCDEF"
-
 int ps_plot(struct zint_symbol *symbol) {
-    int i, block_width, latch, r;
-    float textpos, large_bar_height, preset_height, row_height;
     FILE *feps;
     int fgred, fggrn, fgblu, bgred, bggrn, bgblu;
     float red_ink, green_ink, blue_ink, red_paper, green_paper, blue_paper;
     float cyan_ink, magenta_ink, yellow_ink, black_ink;
     float cyan_paper, magenta_paper, yellow_paper, black_paper;
     int error_number = 0;
-    int textoffset, xoffset, yoffset, textdone, main_width;
-    char textpart[10], addon[6];
-    int large_bar_count, comp_offset;
-    float addon_text_posn;
-    float scaler = symbol->scale;
-    float default_text_posn;
+    float ax, ay, bx, by, cx, cy, dx, dy, ex, ey, fx, fy;
+    float radius;
+    
+    struct zint_vector_rect *rect;
+    struct zint_vector_hexagon *hex;
+    struct zint_vector_circle *circle;
+    struct zint_vector_string *string;
     const char *locale = NULL;
-    float fontsize = symbol->fontsize * scaler;
-#ifndef _MSC_VER
-    unsigned char local_text[ustrlen(symbol->text) + 1];
-#else
-    unsigned char* local_text = (unsigned char*) malloc(ustrlen(symbol->text) + 1);
-#endif
-
-    row_height = 0;
-    textdone = 0;
-    main_width = symbol->width;
-    strcpy(addon, "");
-    comp_offset = 0;
-    addon_text_posn = 0.0;
-
-    if (symbol->show_hrt != 0) {
-        /* Copy text from symbol */
-        ustrcpy(local_text, symbol->text);
-    } else {
-        /* No text needed */
-        switch (symbol->symbology) {
-            case BARCODE_EANX:
-            case BARCODE_EANX_CC:
-            case BARCODE_ISBNX:
-            case BARCODE_UPCA:
-            case BARCODE_UPCE:
-            case BARCODE_UPCA_CC:
-            case BARCODE_UPCE_CC:
-                /* For these symbols use dummy text to ensure formatting is done
-                 * properly even if no text is required */
-                for (i = 0; i < ustrlen(symbol->text); i++) {
-                    if (symbol->text[i] == '+') {
-                        local_text[i] = '+';
-                    } else {
-                        local_text[i] = ' ';
-                    }
-                    local_text[ustrlen(symbol->text)] = '\0';
-                }
-                break;
-            default:
-                /* For everything else, just remove the text */
-                local_text[0] = '\0';
-                break;
-        }
-    }
 
     if (symbol->output_options & BARCODE_STDOUT) {
         feps = stdout;
@@ -113,44 +66,6 @@ int ps_plot(struct zint_symbol *symbol) {
         return ZINT_ERROR_FILE_ACCESS;
     }
 
-    /* sort out colour options */
-    to_upper((unsigned char*) symbol->fgcolour);
-    to_upper((unsigned char*) symbol->bgcolour);
-
-    if (strlen(symbol->fgcolour) != 6) {
-        strcpy(symbol->errtxt, "646: Malformed foreground colour target");
-        fclose(feps);
-#ifdef _MSC_VER
-        free(local_text);
-#endif
-        return ZINT_ERROR_INVALID_OPTION;
-    }
-    if (strlen(symbol->bgcolour) != 6) {
-        strcpy(symbol->errtxt, "647: Malformed background colour target");
-        fclose(feps);
-#ifdef _MSC_VER
-        free(local_text);
-#endif
-        return ZINT_ERROR_INVALID_OPTION;
-    }
-    error_number = is_sane(SSET, (unsigned char*) symbol->fgcolour, strlen(symbol->fgcolour));
-    if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "648: Malformed foreground colour target");
-        fclose(feps);
-#ifdef _MSC_VER
-        free(local_text);
-#endif
-        return ZINT_ERROR_INVALID_OPTION;
-    }
-    error_number = is_sane(SSET, (unsigned char*) symbol->bgcolour, strlen(symbol->bgcolour));
-    if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "649: Malformed background colour target");
-        fclose(feps);
-#ifdef _MSC_VER
-        free(local_text);
-#endif
-        return ZINT_ERROR_INVALID_OPTION;
-    }
     locale = setlocale(LC_ALL, "C");
 
     fgred = (16 * ctoi(symbol->fgcolour[0])) + ctoi(symbol->fgcolour[1]);
@@ -213,102 +128,16 @@ int ps_plot(struct zint_symbol *symbol) {
         yellow_paper = 0.0;
     }
 
-    if (symbol->height == 0) {
-        symbol->height = 50;
-    }
-
-    large_bar_count = 0;
-    preset_height = 0.0;
-    for (i = 0; i < symbol->rows; i++) {
-        preset_height += symbol->row_height[i];
-        if (symbol->row_height[i] == 0) {
-            large_bar_count++;
-        }
-    }
-    large_bar_height = (symbol->height - preset_height) / large_bar_count;
-
-    if (large_bar_count == 0) {
-        symbol->height = preset_height;
-    }
-
-    while (!(module_is_set(symbol, symbol->rows - 1, comp_offset))) {
-        comp_offset++;
-    }
-
-    /* Certain symbols need whitespace otherwise characters get chopped off the sides */
-    if ((((symbol->symbology == BARCODE_EANX) && (symbol->rows == 1)) || (symbol->symbology == BARCODE_EANX_CC))
-            || (symbol->symbology == BARCODE_ISBNX)) {
-        switch (ustrlen(local_text)) {
-            case 13: /* EAN 13 */
-            case 16:
-            case 19:
-                if (symbol->whitespace_width == 0) {
-                    symbol->whitespace_width = 10;
-                }
-                main_width = 96 + comp_offset;
-                break;
-            default:
-                main_width = 68 + comp_offset;
-        }
-    }
-
-    if (((symbol->symbology == BARCODE_UPCA) && (symbol->rows == 1)) || (symbol->symbology == BARCODE_UPCA_CC)) {
-        if (symbol->whitespace_width == 0) {
-            symbol->whitespace_width = 10;
-            main_width = 96 + comp_offset;
-        }
-    }
-
-    if (((symbol->symbology == BARCODE_UPCE) && (symbol->rows == 1)) || (symbol->symbology == BARCODE_UPCE_CC)) {
-        if (symbol->whitespace_width == 0) {
-            symbol->whitespace_width = 10;
-            main_width = 51 + comp_offset;
-        }
-    }
-
-    latch = 0;
-    r = 0;
-    /* Isolate add-on text */
-    if (is_extendable(symbol->symbology)) {
-        for (i = 0; i < ustrlen(local_text); i++) {
-            if (latch == 1) {
-                addon[r] = local_text[i];
-                r++;
-            }
-            if (local_text[i] == '+') {
-                latch = 1;
-            }
-        }
-    }
-    addon[r] = '\0';
-
-    if (ustrlen(local_text) != 0) {
-        textoffset = 9;
-    } else {
-        textoffset = 0;
-    }
-    xoffset = symbol->border_width + symbol->whitespace_width;
-    yoffset = symbol->border_width;
-
     /* Start writing the header */
     fprintf(feps, "%%!PS-Adobe-3.0 EPSF-3.0\n");
     fprintf(feps, "%%%%Creator: Zint %d.%d.%d\n", ZINT_VERSION_MAJOR, ZINT_VERSION_MINOR, ZINT_VERSION_RELEASE);
-    if ((ustrlen(local_text) != 0) && (symbol->show_hrt != 0)) {
-        fprintf(feps, "%%%%Title: %s\n", local_text);
-    } else {
-        fprintf(feps, "%%%%Title: Zint Generated Symbol\n");
-    }
+    fprintf(feps, "%%%%Title: Zint Generated Symbol\n");
     fprintf(feps, "%%%%Pages: 0\n");
-    if (symbol->symbology != BARCODE_MAXICODE) {
-        fprintf(feps, "%%%%BoundingBox: 0 0 %d %d\n", (int) ceil((symbol->width + xoffset + xoffset) * scaler), (int) ceil((symbol->height + textoffset + yoffset + yoffset) * scaler));
-    } else {
-        fprintf(feps, "%%%%BoundingBox: 0 0 %d %d\n", (int) ceil((74.0F + xoffset + xoffset) * scaler), (int) ceil((72.0F + yoffset + yoffset) * scaler));
-    }
+    fprintf(feps, "%%%%BoundingBox: 0 0 %d %d\n", (int) ceil(symbol->vector->width), (int) ceil(symbol->vector->height));
     fprintf(feps, "%%%%EndComments\n");
 
     /* Definitions */
     fprintf(feps, "/TL { setlinewidth moveto lineto stroke } bind def\n");
-    fprintf(feps, "/TC { moveto 0 360 arc 360 0 arcn fill } bind def\n");
     fprintf(feps, "/TD { newpath 0 360 arc fill } bind def\n");
     fprintf(feps, "/TH { 0 setlinewidth moveto lineto lineto lineto lineto lineto closepath fill } bind def\n");
     fprintf(feps, "/TB { 2 copy } bind def\n");
@@ -319,644 +148,86 @@ int ps_plot(struct zint_symbol *symbol) {
 
     /* Now the actual representation */
     if ((symbol->output_options & CMYK_COLOUR) == 0) {
-        fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
         fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_paper, green_paper, blue_paper);
     } else {
-        fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n", cyan_ink, magenta_ink, yellow_ink, black_ink);
         fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n", cyan_paper, magenta_paper, yellow_paper, black_paper);
     }
-    fprintf(feps, "%.2f 0.00 TB 0.00 %.2f TR\n", (symbol->height + textoffset + yoffset + yoffset) * scaler, (symbol->width + xoffset + xoffset) * scaler);
+    fprintf(feps, "%.2f 0.00 TB 0.00 %.2f TR\n", symbol->vector->height, symbol->vector->width);
 
-    if (((symbol->output_options & BARCODE_BOX) != 0) || ((symbol->output_options & BARCODE_BIND) != 0)) {
-        default_text_posn = 0.5 * scaler;
-    } else {
-        default_text_posn = (symbol->border_width + 0.5) * scaler;
-    }
-
-    if (symbol->symbology == BARCODE_MAXICODE) {
-        /* Maxicode uses hexagons */
-        float ax, ay, bx, by, cx, cy, dx, dy, ex, ey, fx, fy, mx, my;
-
-
-        textoffset = 0.0;
-        if (((symbol->output_options & BARCODE_BOX) != 0) || ((symbol->output_options & BARCODE_BIND) != 0)) {
-            fprintf(feps, "TE\n");
-            if ((symbol->output_options & CMYK_COLOUR) == 0) {
-                fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
-            } else {
-                fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n", cyan_ink, magenta_ink, yellow_ink, black_ink);
-            }
-            fprintf(feps, "%.2f %.2f TB %.2f %.2f TR\n", symbol->border_width * scaler, textoffset * scaler, 0.0, (74.0 + xoffset + xoffset) * scaler);
-            fprintf(feps, "%.2f %.2f TB %.2f %.2f TR\n", symbol->border_width * scaler, (textoffset + 72.0 + symbol->border_width) * scaler, 0.0, (74.0 + xoffset + xoffset) * scaler);
-        }
-        if ((symbol->output_options & BARCODE_BOX) != 0) {
-            /* side bars */
-            fprintf(feps, "TE\n");
-            if ((symbol->output_options & CMYK_COLOUR) == 0) {
-                fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
-            } else {
-                fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n", cyan_ink, magenta_ink, yellow_ink, black_ink);
-            }
-            fprintf(feps, "%.2f %.2f TB %.2f %.2f TR\n", (72.0 + (2 * symbol->border_width)) * scaler, textoffset * scaler, 0.0, symbol->border_width * scaler);
-            fprintf(feps, "%.2f %.2f TB %.2f %.2f TR\n", (72.0 + (2 * symbol->border_width)) * scaler, textoffset * scaler, (74.0 + xoffset + xoffset - symbol->border_width) * scaler, symbol->border_width * scaler);
-        }
-
-        fprintf(feps, "TE\n");
-        if ((symbol->output_options & CMYK_COLOUR) == 0) {
-            fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
-            fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
-        } else {
-            fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n", cyan_ink, magenta_ink, yellow_ink, black_ink);
-            fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n", cyan_ink, magenta_ink, yellow_ink, black_ink);
-        }
-        fprintf(feps, "%.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f TC\n", (35.76 + xoffset) * scaler, (35.60 + yoffset) * scaler, 10.85 * scaler, (35.76 + xoffset) * scaler, (35.60 + yoffset) * scaler, 8.97 * scaler, (44.73 + xoffset) * scaler, (35.60 + yoffset) * scaler);
-        fprintf(feps, "%.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f TC\n", (35.76 + xoffset) * scaler, (35.60 + yoffset) * scaler, 7.10 * scaler, (35.76 + xoffset) * scaler, (35.60 + yoffset) * scaler, 5.22 * scaler, (40.98 + xoffset) * scaler, (35.60 + yoffset) * scaler);
-        fprintf(feps, "%.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f TC\n", (35.76 + xoffset) * scaler, (35.60 + yoffset) * scaler, 3.31 * scaler, (35.76 + xoffset) * scaler, (35.60 + yoffset) * scaler, 1.43 * scaler, (37.19 + xoffset) * scaler, (35.60 + yoffset) * scaler);
-        for (r = 0; r < symbol->rows; r++) {
-            for (i = 0; i < symbol->width; i++) {
-                if (module_is_set(symbol, r, i)) {
-                    /* Dump a hexagon */
-                    my = ((symbol->rows - r - 1)) * 2.135 + 1.43;
-                    ay = my + 1.0 + yoffset;
-                    by = my + 0.5 + yoffset;
-                    cy = my - 0.5 + yoffset;
-                    dy = my - 1.0 + yoffset;
-                    ey = my - 0.5 + yoffset;
-                    fy = my + 0.5 + yoffset;
-
-                    mx = 2.46 * i + 1.23 + ((r & 1) ? 1.23 : 0);
-
-                    ax = mx + xoffset;
-                    bx = mx + 0.86 + xoffset;
-                    cx = mx + 0.86 + xoffset;
-                    dx = mx + xoffset;
-                    ex = mx - 0.86 + xoffset;
-                    fx = mx - 0.86 + xoffset;
-                    fprintf(feps, "%.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f TH\n", ax * scaler, ay * scaler, bx * scaler, by * scaler, cx * scaler, cy * scaler, dx * scaler, dy * scaler, ex * scaler, ey * scaler, fx * scaler, fy * scaler);
-                }
-            }
-        }
-    }
-
-    if (symbol->symbology != BARCODE_MAXICODE) {
-        /* everything else uses rectangles (or squares) */
-        /* Works from the bottom of the symbol up */
-
-        int addon_latch = 0;
-
-        for (r = 0; r < symbol->rows; r++) {
-            float row_posn;
-            int this_row = symbol->rows - r - 1; /* invert r otherwise plots upside down */
-            if (symbol->row_height[this_row] == 0) {
-                row_height = large_bar_height;
-            } else {
-                row_height = symbol->row_height[this_row];
-            }
-            row_posn = 0;
-            for (i = 0; i < r; i++) {
-                if (symbol->row_height[symbol->rows - i - 1] == 0) {
-                    row_posn += large_bar_height;
-                } else {
-                    row_posn += symbol->row_height[symbol->rows - i - 1];
-                }
-            }
-            row_posn += (textoffset + yoffset);
-
-            if ((symbol->output_options & BARCODE_DOTTY_MODE) != 0) {
-                if ((symbol->output_options & CMYK_COLOUR) == 0) {
-                    fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
-                } else {
-                    fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n", cyan_ink, magenta_ink, yellow_ink, black_ink);
-                }
-
-                /* Use dots instead of squares */
-                for (i = 0; i < symbol->width; i++) {
-                    if (module_is_set(symbol, this_row, i)) {
-                        fprintf(feps, "%.2f %.2f %.2f TD\n", ((i + xoffset) * scaler) + (scaler / 2.0), (row_posn * scaler) + (scaler / 2.0), (symbol->dot_size / 2.0) * scaler);
-                    }
-                }
-            } else {
-                /* Normal mode, with rectangles */
-
-                fprintf(feps, "TE\n");
-                if ((symbol->output_options & CMYK_COLOUR) == 0) {
-                    fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
-                } else {
-                    fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n", cyan_ink, magenta_ink, yellow_ink, black_ink);
-                }
-
-                fprintf(feps, "%.2f %.2f ", row_height * scaler, row_posn * scaler);
-                i = 0;
-                if (module_is_set(symbol, this_row, 0)) {
-                    latch = 1;
-                } else {
-                    latch = 0;
-                }
-
-                do {
-                    block_width = 0;
-                    do {
-                        block_width++;
-                    } while (module_is_set(symbol, this_row, i + block_width) == module_is_set(symbol, this_row, i));
-                    if ((addon_latch == 0) && (r == 0) && (i > main_width)) {
-                        fprintf(feps, "TE\n");
-                        if ((symbol->output_options & CMYK_COLOUR) == 0) {
-                            fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
-                        } else {
-                            fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n", cyan_ink, magenta_ink, yellow_ink, black_ink);
-                        }
-                        fprintf(feps, "%.2f %.2f ", (row_height - 5.0) * scaler, (row_posn - 5.0) * scaler);
-                        addon_text_posn = row_posn + row_height - 8.0;
-                        addon_latch = 1;
-                    }
-                    if (latch == 1) {
-                        /* a bar */
-                        fprintf(feps, "TB %.2f %.2f TR\n", (i + xoffset) * scaler, block_width * scaler);
-                        latch = 0;
-                    } else {
-                        /* a space */
-                        latch = 1;
-                    }
-                    i += block_width;
-
-                } while (i < symbol->width);
-            }
-        }
-    }
-    /* That's done the actual data area, everything else is human-friendly */
-
-    xoffset += comp_offset;
-
-    if ((((symbol->symbology == BARCODE_EANX) && (symbol->rows == 1)) || (symbol->symbology == BARCODE_EANX_CC)) ||
-            (symbol->symbology == BARCODE_ISBNX)) {
-        /* guard bar extensions and text formatting for EAN8 and EAN13 */
-        switch (ustrlen(local_text)) {
-            case 8: /* EAN-8 */
-            case 11:
-            case 14:
-                fprintf(feps, "TE\n");
-                if ((symbol->output_options & CMYK_COLOUR) == 0) {
-                    fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
-                } else {
-                    fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n", cyan_ink, magenta_ink, yellow_ink, black_ink);
-                }
-                fprintf(feps, "%.2f %.2f ", 5.0 * scaler, (4.0 + yoffset) * scaler);
-                fprintf(feps, "TB %.2f %.2f TR\n", (0 + xoffset) * scaler, 1 * scaler);
-                fprintf(feps, "TB %.2f %.2f TR\n", (2 + xoffset) * scaler, 1 * scaler);
-                fprintf(feps, "TB %.2f %.2f TR\n", (32 + xoffset) * scaler, 1 * scaler);
-                fprintf(feps, "TB %.2f %.2f TR\n", (34 + xoffset) * scaler, 1 * scaler);
-                fprintf(feps, "TB %.2f %.2f TR\n", (64 + xoffset) * scaler, 1 * scaler);
-                fprintf(feps, "TB %.2f %.2f TR\n", (66 + xoffset) * scaler, 1 * scaler);
-                for (i = 0; i < 4; i++) {
-                    textpart[i] = local_text[i];
-                }
-                textpart[4] = '\0';
-                fprintf(feps, "TE\n");
-                if ((symbol->output_options & CMYK_COLOUR) == 0) {
-                    fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
-                } else {
-                    fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n", cyan_ink, magenta_ink, yellow_ink, black_ink);
-                }
-                fprintf(feps, "matrix currentmatrix\n");
-                fprintf(feps, "/Helvetica findfont\n");
-                fprintf(feps, "%.2f scalefont setfont\n", (11.0 / 8.0) * fontsize);
-                textpos = 17;
-                fprintf(feps, " 0 0 moveto %.2f %.2f translate 0.00 rotate 0 0 moveto\n", (textpos + xoffset) * scaler, default_text_posn);
-                fprintf(feps, " (%s) stringwidth\n", textpart);
-                fprintf(feps, "pop\n");
-                fprintf(feps, "-2 div 0 rmoveto\n");
-                fprintf(feps, " (%s) show\n", textpart);
-                fprintf(feps, "setmatrix\n");
-                for (i = 0; i < 4; i++) {
-                    textpart[i] = local_text[i + 4];
-                }
-                textpart[4] = '\0';
-                fprintf(feps, "matrix currentmatrix\n");
-                fprintf(feps, "/Helvetica findfont\n");
-                fprintf(feps, "%.2f scalefont setfont\n", (11.0 / 8.0) * fontsize);
-                textpos = 50;
-                fprintf(feps, " 0 0 moveto %.2f %.2f translate 0.00 rotate 0 0 moveto\n", (textpos + xoffset) * scaler, default_text_posn);
-                fprintf(feps, " (%s) stringwidth\n", textpart);
-                fprintf(feps, "pop\n");
-                fprintf(feps, "-2 div 0 rmoveto\n");
-                fprintf(feps, " (%s) show\n", textpart);
-                fprintf(feps, "setmatrix\n");
-                textdone = 1;
-                switch (strlen(addon)) {
-                    case 2:
-                        fprintf(feps, "matrix currentmatrix\n");
-                        fprintf(feps, "/Helvetica findfont\n");
-                        fprintf(feps, "%.2f scalefont setfont\n", (11.0 / 8.0) * fontsize);
-                        textpos = xoffset + 86;
-                        fprintf(feps, " 0 0 moveto %.2f %.2f translate 0.00 rotate 0 0 moveto\n", textpos * scaler, addon_text_posn * scaler);
-                        fprintf(feps, " (%s) stringwidth\n", addon);
-                        fprintf(feps, "pop\n");
-                        fprintf(feps, "-2 div 0 rmoveto\n");
-                        fprintf(feps, " (%s) show\n", addon);
-                        fprintf(feps, "setmatrix\n");
-                        break;
-                    case 5:
-                        fprintf(feps, "matrix currentmatrix\n");
-                        fprintf(feps, "/Helvetica findfont\n");
-                        fprintf(feps, "%.2f scalefont setfont\n", (11.0 / 8.0) * fontsize);
-                        textpos = xoffset + 100;
-                        fprintf(feps, " 0 0 moveto %.2f %.2f translate 0.00 rotate 0 0 moveto\n", textpos * scaler, addon_text_posn * scaler);
-                        fprintf(feps, " (%s) stringwidth\n", addon);
-                        fprintf(feps, "pop\n");
-                        fprintf(feps, "-2 div 0 rmoveto\n");
-                        fprintf(feps, " (%s) show\n", addon);
-                        fprintf(feps, "setmatrix\n");
-                        break;
-                }
-
-                break;
-            case 13: /* EAN 13 */
-            case 16:
-            case 19:
-                fprintf(feps, "TE\n");
-                if ((symbol->output_options & CMYK_COLOUR) == 0) {
-                    fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
-                } else {
-                    fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n", cyan_ink, magenta_ink, yellow_ink, black_ink);
-                }
-                fprintf(feps, "%.2f %.2f ", 5.0 * scaler, (4.0 + yoffset) * scaler);
-                fprintf(feps, "TB %.2f %.2f TR\n", (0 + xoffset) * scaler, 1 * scaler);
-                fprintf(feps, "TB %.2f %.2f TR\n", (2 + xoffset) * scaler, 1 * scaler);
-                fprintf(feps, "TB %.2f %.2f TR\n", (46 + xoffset) * scaler, 1 * scaler);
-                fprintf(feps, "TB %.2f %.2f TR\n", (48 + xoffset) * scaler, 1 * scaler);
-                fprintf(feps, "TB %.2f %.2f TR\n", (92 + xoffset) * scaler, 1 * scaler);
-                fprintf(feps, "TB %.2f %.2f TR\n", (94 + xoffset) * scaler, 1 * scaler);
-                textpart[0] = local_text[0];
-                textpart[1] = '\0';
-                fprintf(feps, "TE\n");
-                if ((symbol->output_options & CMYK_COLOUR) == 0) {
-                    fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
-                } else {
-                    fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n", cyan_ink, magenta_ink, yellow_ink, black_ink);
-                }
-                fprintf(feps, "matrix currentmatrix\n");
-                fprintf(feps, "/Helvetica findfont\n");
-                fprintf(feps, "%.2f scalefont setfont\n", (11.0 / 8.0) * fontsize);
-                textpos = -7;
-                fprintf(feps, " 0 0 moveto %.2f %.2f translate 0.00 rotate 0 0 moveto\n", (textpos + xoffset) * scaler, default_text_posn);
-                fprintf(feps, " (%s) stringwidth\n", textpart);
-                fprintf(feps, "pop\n");
-                fprintf(feps, "-2 div 0 rmoveto\n");
-                fprintf(feps, " (%s) show\n", textpart);
-                fprintf(feps, "setmatrix\n");
-                for (i = 0; i < 6; i++) {
-                    textpart[i] = local_text[i + 1];
-                }
-                textpart[6] = '\0';
-                fprintf(feps, "matrix currentmatrix\n");
-                fprintf(feps, "/Helvetica findfont\n");
-                fprintf(feps, "%.2f scalefont setfont\n", (11.0 / 8.0) * fontsize);
-                textpos = 24;
-                fprintf(feps, " 0 0 moveto %.2f %.2f translate 0.00 rotate 0 0 moveto\n", (textpos + xoffset) * scaler, default_text_posn);
-                fprintf(feps, " (%s) stringwidth\n", textpart);
-                fprintf(feps, "pop\n");
-                fprintf(feps, "-2 div 0 rmoveto\n");
-                fprintf(feps, " (%s) show\n", textpart);
-                fprintf(feps, "setmatrix\n");
-                for (i = 0; i < 6; i++) {
-                    textpart[i] = local_text[i + 7];
-                }
-                textpart[6] = '\0';
-                fprintf(feps, "matrix currentmatrix\n");
-                fprintf(feps, "/Helvetica findfont\n");
-                fprintf(feps, "%.2f scalefont setfont\n", (11.0 / 8.0) * fontsize);
-                textpos = 71;
-                fprintf(feps, " 0 0 moveto %.2f %.2f translate 0.00 rotate 0 0 moveto\n", (textpos + xoffset) * scaler, default_text_posn);
-                fprintf(feps, " (%s) stringwidth\n", textpart);
-                fprintf(feps, "pop\n");
-                fprintf(feps, "-2 div 0 rmoveto\n");
-                fprintf(feps, " (%s) show\n", textpart);
-                fprintf(feps, "setmatrix\n");
-                textdone = 1;
-                switch (strlen(addon)) {
-                    case 2:
-                        fprintf(feps, "matrix currentmatrix\n");
-                        fprintf(feps, "/Helvetica findfont\n");
-                        fprintf(feps, "%.2f scalefont setfont\n", (11.0 / 8.0) * fontsize);
-                        textpos = xoffset + 114;
-                        fprintf(feps, " 0 0 moveto %.2f %.2f translate 0.00 rotate 0 0 moveto\n", textpos * scaler, addon_text_posn * scaler);
-                        fprintf(feps, " (%s) stringwidth\n", addon);
-                        fprintf(feps, "pop\n");
-                        fprintf(feps, "-2 div 0 rmoveto\n");
-                        fprintf(feps, " (%s) show\n", addon);
-                        fprintf(feps, "setmatrix\n");
-                        break;
-                    case 5:
-                        fprintf(feps, "matrix currentmatrix\n");
-                        fprintf(feps, "/Helvetica findfont\n");
-                        fprintf(feps, "%.2f scalefont setfont\n", (11.0 / 8.0) * fontsize);
-                        textpos = xoffset + 128;
-                        fprintf(feps, " 0 0 moveto %.2f %.2f translate 0.00 rotate 0 0 moveto\n", textpos * scaler, addon_text_posn * scaler);
-                        fprintf(feps, " (%s) stringwidth\n", addon);
-                        fprintf(feps, "pop\n");
-                        fprintf(feps, "-2 div 0 rmoveto\n");
-                        fprintf(feps, " (%s) show\n", addon);
-                        fprintf(feps, "setmatrix\n");
-                        break;
-                }
-                break;
-
-        }
-    }
-
-    if (((symbol->symbology == BARCODE_UPCA) && (symbol->rows == 1)) || (symbol->symbology == BARCODE_UPCA_CC)) {
-        /* guard bar extensions and text formatting for UPCA */
-        fprintf(feps, "TE\n");
-        if ((symbol->output_options & CMYK_COLOUR) == 0) {
-            fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
-        } else {
-            fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n", cyan_ink, magenta_ink, yellow_ink, black_ink);
-        }
-        fprintf(feps, "%.2f %.2f ", 5.0 * scaler, (4.0 + yoffset) * scaler);
-        latch = 1;
-
-        i = 0 + comp_offset;
-        do {
-            block_width = 0;
-            do {
-                block_width++;
-            } while (module_is_set(symbol, symbol->rows - 1, i + block_width) == module_is_set(symbol, symbol->rows - 1, i));
-            if (latch == 1) {
-                /* a bar */
-                fprintf(feps, "TB %.2f %.2f TR\n", (i + xoffset - comp_offset) * scaler, block_width * scaler);
-                latch = 0;
-            } else {
-                /* a space */
-                latch = 1;
-            }
-            i += block_width;
-        } while (i < 11 + comp_offset);
-        fprintf(feps, "TB %.2f %.2f TR\n", (46 + xoffset) * scaler, 1 * scaler);
-        fprintf(feps, "TB %.2f %.2f TR\n", (48 + xoffset) * scaler, 1 * scaler);
-        latch = 1;
-        i = 85 + comp_offset;
-        do {
-            block_width = 0;
-            do {
-                block_width++;
-            } while (module_is_set(symbol, symbol->rows - 1, i + block_width) == module_is_set(symbol, symbol->rows - 1, i));
-            if (latch == 1) {
-                /* a bar */
-                fprintf(feps, "TB %.2f %.2f TR\n", (i + xoffset - comp_offset) * scaler, block_width * scaler);
-                latch = 0;
-            } else {
-                /* a space */
-                latch = 1;
-            }
-            i += block_width;
-        } while (i < 96 + comp_offset);
-        textpart[0] = local_text[0];
-        textpart[1] = '\0';
-        fprintf(feps, "TE\n");
-        if ((symbol->output_options & CMYK_COLOUR) == 0) {
-            fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
-        } else {
-            fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n", cyan_ink, magenta_ink, yellow_ink, black_ink);
-        }
-        fprintf(feps, "matrix currentmatrix\n");
-        fprintf(feps, "/Helvetica findfont\n");
-        fprintf(feps, "%.2f scalefont setfont\n", fontsize);
-        textpos = -5;
-        fprintf(feps, " 0 0 moveto %.2f %.2f translate 0.00 rotate 0 0 moveto\n", (textpos + xoffset) * scaler, default_text_posn);
-        fprintf(feps, " (%s) stringwidth\n", textpart);
-        fprintf(feps, "pop\n");
-        fprintf(feps, "-2 div 0 rmoveto\n");
-        fprintf(feps, " (%s) show\n", textpart);
-        fprintf(feps, "setmatrix\n");
-        for (i = 0; i < 5; i++) {
-            textpart[i] = local_text[i + 1];
-        }
-        textpart[5] = '\0';
-        fprintf(feps, "matrix currentmatrix\n");
-        fprintf(feps, "/Helvetica findfont\n");
-        fprintf(feps, "%.2f scalefont setfont\n", (11.0 / 8.0) * fontsize);
-        textpos = 27;
-        fprintf(feps, " 0 0 moveto %.2f %.2f translate 0.00 rotate 0 0 moveto\n", (textpos + xoffset) * scaler, default_text_posn);
-        fprintf(feps, " (%s) stringwidth\n", textpart);
-        fprintf(feps, "pop\n");
-        fprintf(feps, "-2 div 0 rmoveto\n");
-        fprintf(feps, " (%s) show\n", textpart);
-        fprintf(feps, "setmatrix\n");
-        for (i = 0; i < 5; i++) {
-            textpart[i] = local_text[i + 6];
-        }
-        textpart[6] = '\0';
-        fprintf(feps, "matrix currentmatrix\n");
-        fprintf(feps, "/Helvetica findfont\n");
-        fprintf(feps, "%.2f scalefont setfont\n", (11.0 / 8.0) * fontsize);
-        textpos = 68;
-        fprintf(feps, " 0 0 moveto %.2f %.2f translate 0.00 rotate 0 0 moveto\n", (textpos + xoffset) * scaler, default_text_posn);
-        fprintf(feps, " (%s) stringwidth\n", textpart);
-        fprintf(feps, "pop\n");
-        fprintf(feps, "-2 div 0 rmoveto\n");
-        fprintf(feps, " (%s) show\n", textpart);
-        fprintf(feps, "setmatrix\n");
-        textpart[0] = local_text[11];
-        textpart[1] = '\0';
-        fprintf(feps, "matrix currentmatrix\n");
-        fprintf(feps, "/Helvetica findfont\n");
-        fprintf(feps, "%.2f scalefont setfont\n", fontsize);
-        textpos = 100;
-        fprintf(feps, " 0 0 moveto %.2f %.2f translate 0.00 rotate 0 0 moveto\n", (textpos + xoffset) * scaler, default_text_posn);
-        fprintf(feps, " (%s) stringwidth\n", textpart);
-        fprintf(feps, "pop\n");
-        fprintf(feps, "-2 div 0 rmoveto\n");
-        fprintf(feps, " (%s) show\n", textpart);
-        fprintf(feps, "setmatrix\n");
-        textdone = 1;
-        switch (strlen(addon)) {
-            case 2:
-                fprintf(feps, "matrix currentmatrix\n");
-                fprintf(feps, "/Helvetica findfont\n");
-                fprintf(feps, "%.2f scalefont setfont\n", (11.0 / 8.0) * fontsize);
-                textpos = xoffset + 116;
-                fprintf(feps, " 0 0 moveto %.2f %.2f translate 0.00 rotate 0 0 moveto\n", textpos * scaler, addon_text_posn * scaler);
-                fprintf(feps, " (%s) stringwidth\n", addon);
-                fprintf(feps, "pop\n");
-                fprintf(feps, "-2 div 0 rmoveto\n");
-                fprintf(feps, " (%s) show\n", addon);
-                fprintf(feps, "setmatrix\n");
-                break;
-            case 5:
-                fprintf(feps, "matrix currentmatrix\n");
-                fprintf(feps, "/Helvetica findfont\n");
-                fprintf(feps, "%.2f scalefont setfont\n", (11.0 / 8.0) * fontsize);
-                textpos = xoffset + 130;
-                fprintf(feps, " 0 0 moveto %.2f %.2f translate 0.00 rotate 0 0 moveto\n", textpos * scaler, addon_text_posn * scaler);
-                fprintf(feps, " (%s) stringwidth\n", addon);
-                fprintf(feps, "pop\n");
-                fprintf(feps, "-2 div 0 rmoveto\n");
-                fprintf(feps, " (%s) show\n", addon);
-                fprintf(feps, "setmatrix\n");
-                break;
-        }
-
-    }
-
-    if (((symbol->symbology == BARCODE_UPCE) && (symbol->rows == 1)) || (symbol->symbology == BARCODE_UPCE_CC)) {
-        /* guard bar extensions and text formatting for UPCE */
-        fprintf(feps, "TE\n");
-        if ((symbol->output_options & CMYK_COLOUR) == 0) {
-            fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
-        } else {
-            fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n", cyan_ink, magenta_ink, yellow_ink, black_ink);
-        }
-        fprintf(feps, "%.2f %.2f ", 5.0 * scaler, (4.0 + yoffset) * scaler);
-        fprintf(feps, "TB %.2f %.2f TR\n", (0 + xoffset) * scaler, 1 * scaler);
-        fprintf(feps, "TB %.2f %.2f TR\n", (2 + xoffset) * scaler, 1 * scaler);
-        fprintf(feps, "TB %.2f %.2f TR\n", (46 + xoffset) * scaler, 1 * scaler);
-        fprintf(feps, "TB %.2f %.2f TR\n", (48 + xoffset) * scaler, 1 * scaler);
-        fprintf(feps, "TB %.2f %.2f TR\n", (50 + xoffset) * scaler, 1 * scaler);
-        textpart[0] = local_text[0];
-        textpart[1] = '\0';
-        fprintf(feps, "TE\n");
+    fprintf(feps, "TE\n");
+    if ((symbol->output_options & CMYK_COLOUR) == 0) {
         fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
-        fprintf(feps, "matrix currentmatrix\n");
-        fprintf(feps, "/Helvetica findfont\n");
-        fprintf(feps, "%.2f scalefont setfont\n", fontsize);
-        textpos = -5;
-        fprintf(feps, " 0 0 moveto %.2f %.2f translate 0.00 rotate 0 0 moveto\n", (textpos + xoffset) * scaler, default_text_posn);
-        fprintf(feps, " (%s) stringwidth\n", textpart);
-        fprintf(feps, "pop\n");
-        fprintf(feps, "-2 div 0 rmoveto\n");
-        fprintf(feps, " (%s) show\n", textpart);
-        fprintf(feps, "setmatrix\n");
-        for (i = 0; i < 6; i++) {
-            textpart[i] = local_text[i + 1];
-        }
-        textpart[6] = '\0';
-        fprintf(feps, "matrix currentmatrix\n");
-        fprintf(feps, "/Helvetica findfont\n");
-        fprintf(feps, "%.2f scalefont setfont\n", (11.0 / 8.0) * fontsize);
-        textpos = 24;
-        fprintf(feps, " 0 0 moveto %.2f %.2f translate 0.00 rotate 0 0 moveto\n", (textpos + xoffset) * scaler, default_text_posn);
-        fprintf(feps, " (%s) stringwidth\n", textpart);
-        fprintf(feps, "pop\n");
-        fprintf(feps, "-2 div 0 rmoveto\n");
-        fprintf(feps, " (%s) show\n", textpart);
-        fprintf(feps, "setmatrix\n");
-        textpart[0] = local_text[7];
-        textpart[1] = '\0';
-        fprintf(feps, "matrix currentmatrix\n");
-        fprintf(feps, "/Helvetica findfont\n");
-        fprintf(feps, "%.2f scalefont setfont\n", fontsize);
-        textpos = 55;
-        fprintf(feps, " 0 0 moveto %.2f %.2f translate 0.00 rotate 0 0 moveto\n", (textpos + xoffset) * scaler, default_text_posn);
-        fprintf(feps, " (%s) stringwidth\n", textpart);
-        fprintf(feps, "pop\n");
-        fprintf(feps, "-2 div 0 rmoveto\n");
-        fprintf(feps, " (%s) show\n", textpart);
-        fprintf(feps, "setmatrix\n");
-        textdone = 1;
-        switch (strlen(addon)) {
-            case 2:
-                fprintf(feps, "matrix currentmatrix\n");
-                fprintf(feps, "/Helvetica findfont\n");
-                fprintf(feps, "%.2f scalefont setfont\n", (11.0 / 8.0) * fontsize);
-                textpos = xoffset + 70;
-                fprintf(feps, " 0 0 moveto %.2f %.2f translate 0.00 rotate 0 0 moveto\n", textpos * scaler, addon_text_posn * scaler);
-                fprintf(feps, " (%s) stringwidth\n", addon);
-                fprintf(feps, "pop\n");
-                fprintf(feps, "-2 div 0 rmoveto\n");
-                fprintf(feps, " (%s) show\n", addon);
-                fprintf(feps, "setmatrix\n");
-                break;
-            case 5:
-                fprintf(feps, "matrix currentmatrix\n");
-                fprintf(feps, "/Helvetica findfont\n");
-                fprintf(feps, "%.2f scalefont setfont\n", (11.0 / 8.0) * fontsize);
-                textpos = xoffset + 84;
-                fprintf(feps, " 0 0 moveto %.2f %.2f translate 0.00 rotate 0 0 moveto\n", textpos * scaler, addon_text_posn * scaler);
-                fprintf(feps, " (%s) stringwidth\n", addon);
-                fprintf(feps, "pop\n");
-                fprintf(feps, "-2 div 0 rmoveto\n");
-                fprintf(feps, " (%s) show\n", addon);
-                fprintf(feps, "setmatrix\n");
-                break;
-        }
-
+    } else {
+        fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n", cyan_ink, magenta_ink, yellow_ink, black_ink);
     }
-
-    xoffset -= comp_offset;
-
-    switch (symbol->symbology) {
-        case BARCODE_MAXICODE:
-            /* Do nothing! (It's already been done) */
-            break;
-        default:
-            if (symbol->output_options & BARCODE_BIND) {
-                if ((symbol->rows > 1) && (is_stackable(symbol->symbology) == 1)) {
-                    /* row binding */
-                    fprintf(feps, "TE\n");
-                    if ((symbol->output_options & CMYK_COLOUR) == 0) {
-                        fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
-                    } else {
-                        fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n", cyan_ink, magenta_ink, yellow_ink, black_ink);
-                    }
-                    if (symbol->symbology != BARCODE_CODABLOCKF) {
-                        for (r = 1; r < symbol->rows; r++) {
-                            fprintf(feps, "%.2f %.2f TB %.2f %.2f TR\n", 2.0 * scaler, ((r * row_height) + textoffset + yoffset - 1) * scaler, xoffset * scaler, symbol->width * scaler);
-                        }
-                    } else {
-                        for (r = 1; r < symbol->rows; r++) {
-                            fprintf(feps, "%.2f %.2f TB %.2f %.2f TR\n", 2.0 * scaler, ((r * row_height) + textoffset + yoffset - 1) * scaler, (xoffset + 11) * scaler, (symbol->width - 25) * scaler);
-                        }
-                    }
-                }
+    
+    // Rectangles
+    rect = symbol->vector->rectangles;
+    while (rect) {
+        fprintf(feps, "%.2f %.2f TB %.2f %.2f TR\n", rect->height, (symbol->vector->height - rect->y) - rect->height, rect->x, rect->width);
+        rect = rect->next;
+    }
+    
+    // Hexagons
+    hex = symbol->vector->hexagons;
+    while (hex) {
+        radius = hex->diameter / 2.0;
+        ay = (symbol->vector->height - hex->y) + (1.0 * radius);
+        by = (symbol->vector->height - hex->y) + (0.5 * radius);
+        cy = (symbol->vector->height - hex->y) - (0.5 * radius);
+        dy = (symbol->vector->height - hex->y) - (1.0 * radius);
+        ey = (symbol->vector->height - hex->y) - (0.5 * radius);
+        fy = (symbol->vector->height - hex->y) + (0.5 * radius);
+        ax = hex->x;
+        bx = hex->x + (0.86 * radius);
+        cx = hex->x + (0.86 * radius);
+        dx = hex->x;
+        ex = hex->x - (0.86 * radius);
+        fx = hex->x - (0.86 * radius);
+        fprintf(feps, "%.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f TH\n", ax, ay, bx, by, cx, cy, dx, dy, ex, ey, fx, fy);
+        hex = hex->next;
+    }
+    
+    // Circles
+    circle = symbol->vector->circles;
+    while (circle) {
+        if (circle->colour) {
+            // A 'white' circle
+            if ((symbol->output_options & CMYK_COLOUR) == 0) {
+                fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_paper, green_paper, blue_paper);
+            } else {
+                fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n", cyan_paper, magenta_paper, yellow_paper, black_paper);
             }
-            if ((symbol->output_options & BARCODE_BOX) || (symbol->output_options & BARCODE_BIND)) {
-                fprintf(feps, "TE\n");
+            fprintf(feps, "%.2f %.2f %.2f TD\n", circle->x, (symbol->vector->height - circle->y), circle->diameter / 2.0);
+            if (circle->next) {
                 if ((symbol->output_options & CMYK_COLOUR) == 0) {
                     fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
                 } else {
                     fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n", cyan_ink, magenta_ink, yellow_ink, black_ink);
                 }
-                if (symbol->symbology != BARCODE_CODABLOCKF) {
-                    fprintf(feps, "%.2f %.2f TB %.2f %.2f TR\n", symbol->border_width * scaler, textoffset * scaler, 0.0, (symbol->width + xoffset + xoffset) * scaler);
-                    fprintf(feps, "%.2f %.2f TB %.2f %.2f TR\n", symbol->border_width * scaler, (textoffset + symbol->height + symbol->border_width) * scaler, 0.0, (symbol->width + xoffset + xoffset) * scaler);
-                } else {
-                    fprintf(feps, "%.2f %.2f TB %.2f %.2f TR\n", symbol->border_width * scaler, textoffset * scaler, xoffset * scaler, symbol->width * scaler);
-                    fprintf(feps, "%.2f %.2f TB %.2f %.2f TR\n", symbol->border_width * scaler, (textoffset + symbol->height + symbol->border_width) * scaler, xoffset * scaler, symbol->width * scaler);
-                }
             }
-            if (symbol->output_options & BARCODE_BOX) {
-                /* side bars */
-                fprintf(feps, "TE\n");
-                if ((symbol->output_options & CMYK_COLOUR) == 0) {
-                    fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
-                } else {
-                    fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n", cyan_ink, magenta_ink, yellow_ink, black_ink);
-                }
-                fprintf(feps, "%.2f %.2f TB %.2f %.2f TR\n", (symbol->height + (2 * symbol->border_width)) * scaler, textoffset * scaler, 0.0, symbol->border_width * scaler);
-                fprintf(feps, "%.2f %.2f TB %.2f %.2f TR\n", (symbol->height + (2 * symbol->border_width)) * scaler, textoffset * scaler, (symbol->width + xoffset + xoffset - symbol->border_width) * scaler, symbol->border_width * scaler);
-            }
-            break;
-    }
-
-    /* Put the human readable text at the bottom */
-    if ((textdone == 0) && (ustrlen(local_text))) {
-        fprintf(feps, "TE\n");
-        if ((symbol->output_options & CMYK_COLOUR) == 0) {
-            fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
         } else {
-            fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n", cyan_ink, magenta_ink, yellow_ink, black_ink);
+            // A 'black' circle
+            fprintf(feps, "%.2f %.2f %.2f TD\n", circle->x, (symbol->vector->height - circle->y), circle->diameter / 2.0);
         }
+        circle = circle->next;
+    }
+    
+    // Text
+    string = symbol->vector->strings;
+    while (string) {
         fprintf(feps, "matrix currentmatrix\n");
         fprintf(feps, "/Helvetica findfont\n");
-        fprintf(feps, "%.2f scalefont setfont\n", fontsize);
-        textpos = symbol->width / 2.0;
-        fprintf(feps, " 0 0 moveto %.2f %.2f translate 0.00 rotate 0 0 moveto\n", (textpos + xoffset) * scaler, default_text_posn);
-        fprintf(feps, " (%s) stringwidth\n", local_text);
+        fprintf(feps, "%.2f scalefont setfont\n", string->fsize);
+        fprintf(feps, " 0 0 moveto %.2f %.2f translate 0.00 rotate 0 0 moveto\n", string->x, (symbol->vector->height - string->y));
+        fprintf(feps, " (%s) stringwidth\n", string->text);
         fprintf(feps, "pop\n");
         fprintf(feps, "-2 div 0 rmoveto\n");
-        fprintf(feps, " (%s) show\n", local_text);
+        fprintf(feps, " (%s) show\n", string->text);
         fprintf(feps, "setmatrix\n");
+        string = string->next;
     }
+    
     fprintf(feps, "\nshowpage\n");
 
     if (symbol->output_options & BARCODE_STDOUT) {
@@ -968,11 +239,5 @@ int ps_plot(struct zint_symbol *symbol) {
     if (locale)
         setlocale(LC_ALL, locale);
 
-#ifdef _MSC_VER
-    free(local_text);
-#endif
-
     return error_number;
 }
-
-
