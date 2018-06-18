@@ -181,11 +181,13 @@ extern int vin(struct zint_symbol *symbol, const unsigned char source[], const s
 extern int mailmark(struct zint_symbol *symbol, const unsigned char source[], const size_t in_length); /* Royal Mail 4-state Mailmark */
 
 extern int plot_raster(struct zint_symbol *symbol, int rotate_angle, int file_type); /* Plot to PNG/BMP/PCX */
+extern int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_type); /* Plot to EPS/EMF/SVG */
+
 extern int render_plot(struct zint_symbol *symbol, float width, float height); /* Plot to gLabels */
-extern int vector_plot(struct zint_symbol *symbol, int rotate_angle, int file_type); /* Plot to new vector format */
+
 //extern int ps_plot(struct zint_symbol *symbol); /* Plot to EPS */
 //extern int svg_plot(struct zint_symbol *symbol); /* Plot to SVG */
-extern int emf_plot(struct zint_symbol *symbol); /* Plot to Metafile */
+//extern int emf_plot(struct zint_symbol *symbol); /* Plot to Metafile */
 
 void error_tag(char error_string[], int error_number) {
 
@@ -1251,13 +1253,13 @@ int ZBarcode_Print(struct zint_symbol *symbol, int rotate_angle) {
             error_number = dump_plot(symbol);
         } else
             if (!(strcmp(output, "EPS"))) {
-            error_number = vector_plot(symbol, rotate_angle, OUT_EPS_FILE);  
+            error_number = plot_vector(symbol, rotate_angle, OUT_EPS_FILE);  
         } else
             if (!(strcmp(output, "SVG"))) {
-            error_number = vector_plot(symbol, rotate_angle, OUT_SVG_FILE);
+            error_number = plot_vector(symbol, rotate_angle, OUT_SVG_FILE);
         } else
             if (!(strcmp(output, "EMF"))) {
-			error_number = vector_plot(symbol, rotate_angle, OUT_EMF_FILE);
+            error_number = plot_vector(symbol, rotate_angle, OUT_EMF_FILE);
         } else {
             strcpy(symbol->errtxt, "225: Unknown output format");
             error_tag(symbol->errtxt, ZINT_ERROR_INVALID_OPTION);
@@ -1298,6 +1300,26 @@ int ZBarcode_Buffer(struct zint_symbol *symbol, int rotate_angle) {
     return error_number;
 }
 
+int ZBarcode_Buffer_Vector(struct zint_symbol *symbol, int rotate_angle) {
+    int error_number;
+
+    switch (rotate_angle) {
+        case 0:
+        case 90:
+        case 180:
+        case 270:
+            break;
+        default:
+            strcpy(symbol->errtxt, "228: Invalid rotation angle");
+            error_tag(symbol->errtxt, ZINT_ERROR_INVALID_OPTION);
+            return ZINT_ERROR_INVALID_OPTION;
+    }
+
+    error_number = plot_vector(symbol, rotate_angle, OUT_BUFFER);
+    error_tag(symbol->errtxt, error_number);
+    return error_number;
+}
+
 int ZBarcode_Encode_and_Print(struct zint_symbol *symbol, unsigned char *input, int length, int rotate_angle) {
     int error_number;
     int first_err;
@@ -1326,6 +1348,24 @@ int ZBarcode_Encode_and_Buffer(struct zint_symbol *symbol, unsigned char *input,
 
     first_err = error_number;
     error_number = ZBarcode_Buffer(symbol, rotate_angle);
+    if (error_number == 0) {
+        error_number = first_err;
+    }
+    
+    return error_number;
+}
+
+int ZBarcode_Encode_and_Buffer_Vector(struct zint_symbol *symbol, unsigned char *input, int length, int rotate_angle) {
+    int error_number;
+    int first_err;
+
+    error_number = ZBarcode_Encode(symbol, input, length);
+    if (error_number >= 5) {
+        return error_number;
+    }
+
+    first_err = error_number;
+    error_number = ZBarcode_Buffer_Vector(symbol, rotate_angle);
     if (error_number == 0) {
         error_number = first_err;
     }
@@ -1421,6 +1461,24 @@ int ZBarcode_Encode_File_and_Buffer(struct zint_symbol *symbol, char *filename, 
     
     first_err = error_number;
     error_number = ZBarcode_Buffer(symbol, rotate_angle);
+    if (error_number == 0) {
+        error_number = first_err;
+    }
+
+    return error_number;
+}
+
+int ZBarcode_Encode_File_and_Buffer_Vector(struct zint_symbol *symbol, char *filename, int rotate_angle) {
+    int error_number;
+    int first_err;
+
+    error_number = ZBarcode_Encode_File(symbol, filename);
+    if (error_number >= 5) {
+        return error_number;
+    }
+    
+    first_err = error_number;
+    error_number = ZBarcode_Buffer_Vector(symbol, rotate_angle);
     if (error_number == 0) {
         error_number = first_err;
     }
