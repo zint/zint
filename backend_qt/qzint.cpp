@@ -17,6 +17,7 @@
 
 #include "qzint.h"
 #include <stdio.h>
+#include <QFontMetrics>
 
 namespace Zint {
     static const char* fontstyle = "Arial";
@@ -388,8 +389,12 @@ namespace Zint {
         if (string) {
             painter.setFont(fontLarge);
         }
+        QFontMetrics fm(fontLarge);
         while (string) {
-            painter.drawText(0.0, string->y, m_zintSymbol->vector->width, 7, Qt::AlignCenter, QString::fromUtf8((const char *) string->text, -1));
+            QString content = QString::fromUtf8((const char *) string->text, -1);
+            int width = fm.width(content, -1);
+            int height = fm.height();
+            painter.drawText(string->x - (width / 2.0), string->y - height, width, height, Qt::AlignHCenter | Qt::AlignBottom, content);
             string = string->next;
         }
         
