@@ -105,6 +105,7 @@ const int score_array(char Dots[], int Hgt, int Wid) {
     int x, y, worstedge, first, last, sum;
     int penalty_local = 0;
     int penalty = 0;
+    int t = 0, b = 0, l = 0, r = 0;
 
     // first, guard against "pathelogical" gaps in the array
     if (Hgt & 1) {
@@ -164,6 +165,10 @@ const int score_array(char Dots[], int Hgt, int Wid) {
         }
     worstedge = sum + last - first;
     worstedge *= Hgt;
+    
+    if (sum == 0) {
+        t = 1;
+    }
 
     sum = 0;
     first = -1;
@@ -182,6 +187,10 @@ const int score_array(char Dots[], int Hgt, int Wid) {
     sum *= Hgt;
     if (sum < worstedge) {
         worstedge = sum;
+    }
+    
+    if (sum == 0) {
+        b = 2;
     }
 
     sum = 0;
@@ -202,6 +211,10 @@ const int score_array(char Dots[], int Hgt, int Wid) {
     if (sum < worstedge) {
         worstedge = sum;
     }
+    
+    if (sum == 0) {
+        l = 4;
+    }
 
     sum = 0;
     first = -1;
@@ -221,6 +234,12 @@ const int score_array(char Dots[], int Hgt, int Wid) {
     if (sum < worstedge) {
         worstedge = sum;
     }
+    
+    if (sum == 0) {
+        r = 8;
+    }
+
+    penalty += (t + b + l + r) * 100000;
 
     // throughout the array, count the # of unprinted 5-somes (cross patterns)
     // plus the # of printed dots surrounded by 8 unprinted neighbors
@@ -1057,7 +1076,7 @@ int dotcode_encode_message(struct zint_symbol *symbol, const unsigned char sourc
     }
 
     if (debug) {
-        printf("\n\n");
+        printf("\n");
     }
 
     return array_length;
@@ -1190,19 +1209,76 @@ void fold_dotstream(char dot_stream[], int width, int height, char dot_array[]) 
     }
 }
 
+void apply_mask(int mask, int data_length, unsigned char *masked_codeword_array, unsigned char *codeword_array, int ecc_length, char *dot_stream) {
+    int weight = 0;
+    int j;
+    
+    switch (mask) {
+        case 0:
+            masked_codeword_array[0] = 0;
+            for (j = 0; j < data_length; j++) {
+                masked_codeword_array[j + 1] = codeword_array[j];
+            }
+            break;
+        case 1:
+            masked_codeword_array[0] = 1;
+            for (j = 0; j < data_length; j++) {
+                masked_codeword_array[j + 1] = (weight + codeword_array[j]) % 113;
+                weight += 3;
+            }
+            break;
+        case 2:
+            masked_codeword_array[0] = 2;
+            for (j = 0; j < data_length; j++) {
+                masked_codeword_array[j + 1] = (weight + codeword_array[j]) % 113;
+                weight += 7;
+            }
+            break;
+        case 3:
+            masked_codeword_array[0] = 3;
+            for (j = 0; j < data_length; j++) {
+                masked_codeword_array[j + 1] = (weight + codeword_array[j]) % 113;
+                weight += 17;
+            }
+            break;
+    }
+
+    rsencode(data_length + 1, ecc_length, masked_codeword_array);
+}
+
+void force_corners(int width, int height, char *dot_array) {
+    if (width % 2) {
+        // "Vertical" symbol
+        dot_array[0] = '1';
+        dot_array[width - 1] = '1';
+        dot_array[(height - 2) * width] = '1';
+        dot_array[((height - 1) * width) - 1] = '1';
+        dot_array[((height - 1) * width) + 1] = '1';
+        dot_array[(height * width) - 2] = '1';
+    } else {
+        // "Horizontal" symbol
+        dot_array[0] = '1';
+        dot_array[width - 2] = '1';
+        dot_array[(2 * width) - 1] = '1';
+        dot_array[((height - 1) * width) - 1] = '1';
+        dot_array[(height - 1) * width] = '1';
+        dot_array[(height * width) - 2] = '1';
+    }
+}
+
 int dotcode(struct zint_symbol *symbol, const unsigned char source[], int length) {
     int i, j, k;
     size_t jc, n_dots;
     int data_length, ecc_length;
     int min_dots, min_area;
     int height, width;
-    int mask_score[4];
-    int weight;
+    int mask_score[8];
     size_t dot_stream_length;
     int high_score, best_mask;
     int binary_finish = 0;
-    int debug = 0;
+    int debug = symbol->debug;
     int padding_dots, is_first;
+    int corners_forced = 0;
 #ifdef _MSC_VER
     unsigned char* masked_codeword_array;
 #endif
@@ -1226,6 +1302,11 @@ int dotcode(struct zint_symbol *symbol, const unsigned char source[], int length
 
     if (debug) {
         printf("Codeword length = %d, ECC length = %d\n", data_length, ecc_length);
+        printf("Codewords: ");
+        for (i = 0; i < data_length; i++) {
+            printf("[%d] ",codeword_array[i]);
+        }
+        printf("\n");
     }
 
     min_dots = 9 * (data_length + 3 + (data_length / 2)) + 2;
@@ -1339,41 +1420,9 @@ int dotcode(struct zint_symbol *symbol, const unsigned char source[], int length
 
     /* Evaluate data mask options */
     for (i = 0; i < 4; i++) {
-        switch (i) {
-            case 0:
-                masked_codeword_array[0] = 0;
-                for (j = 0; j < data_length; j++) {
-                    masked_codeword_array[j + 1] = codeword_array[j];
-                }
-                break;
-            case 1:
-                weight = 0;
-                masked_codeword_array[0] = 1;
-                for (j = 0; j < data_length; j++) {
-                    masked_codeword_array[j + 1] = (weight + codeword_array[j]) % 113;
-                    weight += 3;
-                }
-                break;
-            case 2:
-                weight = 0;
-                masked_codeword_array[0] = 2;
-                for (j = 0; j < data_length; j++) {
-                    masked_codeword_array[j + 1] = (weight + codeword_array[j]) % 113;
-                    weight += 7;
-                }
-                break;
-            case 3:
-                weight = 0;
-                masked_codeword_array[0] = 3;
-                for (j = 0; j < data_length; j++) {
-                    masked_codeword_array[j + 1] = (weight + codeword_array[j]) % 113;
-                    weight += 17;
-                }
-                break;
-        }
 
-        rsencode(data_length + 1, ecc_length, masked_codeword_array);
-
+        apply_mask(i, data_length, masked_codeword_array, codeword_array, ecc_length, dot_stream);
+        
         dot_stream_length = make_dotstream(masked_codeword_array, (data_length + ecc_length + 1), dot_stream);
 
         /* Add pad bits */
@@ -1399,52 +1448,55 @@ int dotcode(struct zint_symbol *symbol, const unsigned char source[], int length
             best_mask = i;
         }
     }
+    
+    /* Re-evaluate using forced corners if needed */
+    if (best_mask <= (height * width) / 2) {
+        corners_forced = 1;
+        
+        for (i = 0; i < 4; i++) {
 
-    if (best_mask != 3) {
-        /* Reprocess to get symbol with best mask */
-        switch (best_mask) {
-            case 0:
-                masked_codeword_array[0] = 0;
-                for (j = 0; j < data_length; j++) {
-                    masked_codeword_array[j + 1] = codeword_array[j];
-                }
-                break;
-            case 1:
-                weight = 0;
-                masked_codeword_array[0] = 1;
-                for (j = 0; j < data_length; j++) {
-                    masked_codeword_array[j + 1] = (weight + codeword_array[j]) % 113;
-                    weight += 3;
-                }
-                break;
-            case 2:
-                weight = 0;
-                masked_codeword_array[0] = 2;
-                for (j = 0; j < data_length; j++) {
-                    masked_codeword_array[j + 1] = (weight + codeword_array[j]) % 113;
-                    weight += 7;
-                }
-                break;
-        }
+            apply_mask(i, data_length, masked_codeword_array, codeword_array, ecc_length, dot_stream);
+            
+            dot_stream_length = make_dotstream(masked_codeword_array, (data_length + ecc_length + 1), dot_stream);
 
-        rsencode(data_length + 1, ecc_length, masked_codeword_array);
-        dot_stream_length = make_dotstream(masked_codeword_array, (data_length + ecc_length + 1), dot_stream);
-
-        /* Add pad bits */
-        for (jc = dot_stream_length; jc < n_dots; jc++) {
-            strcat(dot_stream, "1");
-        }
-
-        fold_dotstream(dot_stream, width, height, dot_array);
-    } /* else { the version with the best mask is already in memory } */
-
-    if (debug) {
-        for (k = 0; k < height; k++) {
-            for (j = 0; j < width; j++) {
-                printf("%c", dot_array[(k * width) + j]);
+            /* Add pad bits */
+            for (jc = dot_stream_length; jc < n_dots; jc++) {
+                strcat(dot_stream, "1");
             }
-            printf("\n");
+
+            fold_dotstream(dot_stream, width, height, dot_array);
+            
+            force_corners(width, height, dot_array);
+
+            mask_score[i] = score_array(dot_array, height, width);
+
+            if (debug) {
+                printf("Mask %d score is %d\n", i, mask_score[i]);
+            }
         }
+        
+        for (i = 0; i < 4; i++) {
+            if (mask_score[i] > high_score) {
+                high_score = mask_score[i];
+                best_mask = i;
+            }
+        }
+    }
+
+    /* Apply best mask */
+    apply_mask(i, data_length, masked_codeword_array, codeword_array, ecc_length, dot_stream);
+    
+    dot_stream_length = make_dotstream(masked_codeword_array, (data_length + ecc_length + 1), dot_stream);
+
+    /* Add pad bits */
+    for (jc = dot_stream_length; jc < n_dots; jc++) {
+        strcat(dot_stream, "1");
+    }
+
+    fold_dotstream(dot_stream, width, height, dot_array);
+    
+    if (corners_forced) {
+        force_corners(width, height, dot_array);
     }
 
     /* Copy values to symbol */
