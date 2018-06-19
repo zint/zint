@@ -509,7 +509,7 @@ int code_128(struct zint_symbol *symbol, unsigned char source[], const size_t le
                 break;
             case 'C': /* Start C */
                 strcat(dest, C128Table[104]); /* Start B */
-                values[0] = 105;
+                values[0] = 104;
                 strcat(dest, C128Table[96]); /* FNC3 */
                 values[1] = 96;
                 strcat(dest, C128Table[99]); /* Code C */
