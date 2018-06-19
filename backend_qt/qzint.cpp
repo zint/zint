@@ -17,12 +17,13 @@
 
 #include "qzint.h"
 #include <stdio.h>
+#include <math.h>
 #include <QFontMetrics>
 
 namespace Zint {
     static const char* fontstyle = "Arial";
-    static const int fontPixelSizeSmall = 6;
-    static const int fontPixelSizeLarge = 8;
+    static const int fontPixelSizeSmall = 8;
+    static const int fontPixelSizeLarge = 12;
 
     QZint::QZint() {
         m_symbol = BARCODE_CODE128;
@@ -277,7 +278,6 @@ namespace Zint {
         struct zint_vector_hexagon *hex;
         struct zint_vector_circle *circle;
         struct zint_vector_string *string;
-        qreal ax, ay, bx, by, cx, cy, dx, dy, ex, ey, fx, fy;
         qreal radius;
 
         encode();
@@ -306,12 +306,13 @@ namespace Zint {
         qreal gheight = m_zintSymbol->vector->height;
 
         if (paintRect.width() / gwidth < paintRect.height() / gheight) {
-            scale = (qreal) paintRect.width() / gwidth;
-            ytr += (qreal) (paintRect.height() - gheight * scale) / 2;
+            scale = (qreal) floor(paintRect.width() / gwidth);
         } else {
-            scale = (qreal) paintRect.height() / gheight;
-            xtr += (qreal) (paintRect.width() - gwidth * scale) / 2;
+            scale = (qreal) floor(paintRect.height() / gheight);
         }
+        
+        xtr += (qreal) (paintRect.width() - gwidth * scale) / 2.0;
+        ytr += (qreal) (paintRect.height() - gheight * scale) / 2.0;
 
         painter.setBackground(QBrush(m_bgColor));
         painter.fillRect(paintRect, QBrush(m_bgColor));
@@ -325,6 +326,7 @@ namespace Zint {
         QPen p;
 
         p.setWidth(1);
+        p.setColor(m_fgColor);
         painter.setPen(p);
         painter.setRenderHint(QPainter::Antialiasing);
         
@@ -340,27 +342,14 @@ namespace Zint {
         while (hex) {
             radius = hex->diameter / 2.0;
             
-            ay = hex->y + (1.0 * radius);
-            by = hex->y + (0.5 * radius);
-            cy = hex->y - (0.5 * radius);
-            dy = hex->y - (1.0 * radius);
-            ey = hex->y - (0.5 * radius);
-            fy = hex->y + (0.5 * radius);
-            ax = hex->x;
-            bx = hex->x + (0.86 * radius);
-            cx = hex->x + (0.86 * radius);
-            dx = hex->x;
-            ex = hex->x - (0.86 * radius);
-            fx = hex->x - (0.86 * radius);
-            
             QPainterPath pt;
-            pt.moveTo(ax, ay);
-            pt.lineTo(bx, by);
-            pt.lineTo(cx, cy);
-            pt.lineTo(dx, dy);
-            pt.lineTo(ex, ey);
-            pt.lineTo(fx, fy);
-            pt.lineTo(ax, ay);
+            pt.moveTo(hex->x, hex->y + (1.0 * radius));
+            pt.lineTo(hex->x + (0.86 * radius), hex->y + (0.5 * radius));
+            pt.lineTo(hex->x + (0.86 * radius), hex->y - (0.5 * radius));
+            pt.lineTo(hex->x, hex->y - (1.0 * radius));
+            pt.lineTo(hex->x - (0.86 * radius), hex->y - (0.5 * radius));
+            pt.lineTo(hex->x - (0.86 * radius), hex->y + (0.5 * radius));
+            pt.lineTo(hex->x, hex->y + (1.0 * radius));
             painter.fillPath(pt, QBrush(m_fgColor));
             
             hex = hex->next;
