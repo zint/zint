@@ -1278,7 +1278,6 @@ int dotcode(struct zint_symbol *symbol, const unsigned char source[], int length
     int binary_finish = 0;
     int debug = symbol->debug;
     int padding_dots, is_first;
-    int corners_forced = 0;
 #ifdef _MSC_VER
     unsigned char* masked_codeword_array;
 #endif
@@ -1451,8 +1450,6 @@ int dotcode(struct zint_symbol *symbol, const unsigned char source[], int length
     
     /* Re-evaluate using forced corners if needed */
     if (best_mask <= (height * width) / 2) {
-        corners_forced = 1;
-        
         for (i = 0; i < 4; i++) {
 
             apply_mask(i, data_length, masked_codeword_array, codeword_array, ecc_length, dot_stream);
@@ -1468,23 +1465,27 @@ int dotcode(struct zint_symbol *symbol, const unsigned char source[], int length
             
             force_corners(width, height, dot_array);
 
-            mask_score[i] = score_array(dot_array, height, width);
+            mask_score[i + 4] = score_array(dot_array, height, width);
 
             if (debug) {
-                printf("Mask %d score is %d\n", i, mask_score[i]);
+                printf("Mask %d score is %d\n", i + 4, mask_score[i + 4]);
             }
         }
         
-        for (i = 0; i < 4; i++) {
+        for (i = 4; i < 8; i++) {
             if (mask_score[i] > high_score) {
                 high_score = mask_score[i];
                 best_mask = i;
             }
         }
     }
+    
+    if (debug) {
+        printf("Applying mask %d\n", best_mask);
+    }
 
     /* Apply best mask */
-    apply_mask(i, data_length, masked_codeword_array, codeword_array, ecc_length, dot_stream);
+    apply_mask(best_mask % 4, data_length, masked_codeword_array, codeword_array, ecc_length, dot_stream);
     
     dot_stream_length = make_dotstream(masked_codeword_array, (data_length + ecc_length + 1), dot_stream);
 
@@ -1495,7 +1496,7 @@ int dotcode(struct zint_symbol *symbol, const unsigned char source[], int length
 
     fold_dotstream(dot_stream, width, height, dot_array);
     
-    if (corners_forced) {
+    if (best_mask >= 4) {
         force_corners(width, height, dot_array);
     }
 
