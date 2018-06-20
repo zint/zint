@@ -1319,6 +1319,8 @@ static int getBinaryLength(const int version,char inputMode[],const int inputDat
     char currentMode;
     int    j;
     int count = 0;
+    int alphalength;
+    int percent = 0;
 
     applyOptimisation(version, inputMode, inputLength);
 
@@ -1352,12 +1354,20 @@ static int getBinaryLength(const int version,char inputMode[],const int inputDat
                     break;
                 case 'A':
                     count += tribus(version, 9, 11, 13);
-                    switch (blockLength(i, inputMode, inputLength) % 2) {
+                    alphalength = blockLength(i, inputMode, inputLength);
+                    // In alphanumeric mode % becomes %%
+                    for (j = i; j < (i + alphalength); j++) {
+                        if (inputData[j] == '%') {
+                            percent++;
+                        }
+                    }
+                    alphalength += percent;
+                    switch (alphalength % 2) {
                         case 0:
-                            count += (blockLength(i, inputMode, inputLength) / 2) * 11;
+                            count += (alphalength / 2) * 11;
                             break;
                         case 1:
-                            count += ((blockLength(i, inputMode, inputLength) - 1) / 2) * 11;
+                            count += ((alphalength - 1) / 2) * 11;
                             count += 6;
                             break;
                     }
