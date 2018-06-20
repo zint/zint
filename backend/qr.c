@@ -119,7 +119,7 @@ static void define_mode(char mode[],const int jisdata[], const size_t length,con
                 while (((mlen + i) < length) && (mode[mlen + i] == 'A')) {
                     mlen++;
                 };
-                if (mlen < 6) {
+                if (mlen < 4) {
                     for (j = 0; j < mlen; j++) {
                         mode[i + j] = 'B';
                     }
