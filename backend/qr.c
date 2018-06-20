@@ -153,6 +153,7 @@ static void qr_binary(int datastream[], const int version, const int target_binl
     char padbits;
     int current_binlen, current_bytes;
     int toggle, percent;
+    int percent_count;
 
 #ifndef _MSC_VER
     char binary[est_binlen + 12];
@@ -268,11 +269,18 @@ static void qr_binary(int datastream[], const int version, const int target_binl
                 /* Mode indicator */
                 strcat(binary, "0010");
 
+                percent_count = 0;
+                for (i = 0; i < short_data_block_length; i++) {
+                    if (gs1 && (jisdata[position + i] == '%')) {
+                        percent_count++;
+                    }
+                }
+                
                 /* Character count indicator */
-                bin_append(short_data_block_length, tribus(version, 9, 11, 13), binary);
+                bin_append(short_data_block_length + percent_count, tribus(version, 9, 11, 13), binary);
 
                 if (debug) {
-                    printf("Alpha block (length %d)\n\t", short_data_block_length);
+                    printf("Alpha block (length %d)\n\t", short_data_block_length + percent_count);
                 }
 
                 /* Character representation */
