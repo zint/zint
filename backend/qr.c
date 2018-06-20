@@ -1569,15 +1569,15 @@ int qr_code(struct zint_symbol *symbol, const unsigned char source[], size_t len
             return ZINT_ERROR_TOO_LONG;
         }
     }
-
+    
     /* Ensure maxium error correction capacity */
-    if (est_binlen <= qr_data_codewords_M[version - 1]) {
+    if (est_binlen <= qr_data_codewords_M[version - 1] * 8) {
         ecc_level = LEVEL_M;
     }
-    if (est_binlen <= qr_data_codewords_Q[version - 1]) {
+    if (est_binlen <= qr_data_codewords_Q[version - 1] * 8) {
         ecc_level = LEVEL_Q;
     }
-    if (est_binlen <= qr_data_codewords_H[version - 1]) {
+    if (est_binlen <= qr_data_codewords_H[version - 1] * 8) {
         ecc_level = LEVEL_H;
     }
 
