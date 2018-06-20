@@ -581,12 +581,14 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
         if (symbol->eci <= 126) {
             target[tp] = (unsigned char) symbol->eci + 1;
             tp++;
+            strcat(binary, " ");
         }
         if ((symbol->eci >= 127) && (symbol->eci <= 16382)) {
             target[tp] = (unsigned char) ((symbol->eci - 127) / 254) + 128;
             tp++;
             target[tp] = (unsigned char) ((symbol->eci - 127) % 254) + 1;
             tp++;
+            strcat(binary, "  ");
         }
         if (symbol->eci >= 16383) {
             target[tp] = (unsigned char) ((symbol->eci - 16383) / 64516) + 192;
@@ -595,6 +597,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
             tp++;
             target[tp] = (unsigned char) ((symbol->eci - 16383) % 254) + 1;
             tp++;
+            strcat(binary, "   ");
         }
         if (debug) printf("ECI %d ", symbol->eci + 1);
     }
