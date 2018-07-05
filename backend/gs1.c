@@ -439,7 +439,7 @@ int gs1_verify(struct zint_symbol *symbol, const unsigned char source[], const s
             case 8110: // Coupon code
             case 8112: // Paperless coupon code
             case 8200: // PRODUCT URL
-                if (data_length[i] > 34) {
+                if (data_length[i] > 70) {
                     error_latch = 1;
                 } else {
                     error_latch = 0;
