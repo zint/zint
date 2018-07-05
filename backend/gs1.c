@@ -286,8 +286,6 @@ int gs1_verify(struct zint_symbol *symbol, const unsigned char source[], const s
                 
             // Length 17 Fixed
             case 402: // GSIN
-            case 8017: // GSRN PROVIDER
-            case 8018: // GSRN RECIPIENT
                 if (data_length[i] != 17) {
                     error_latch = 1;
                 } else {
@@ -298,6 +296,8 @@ int gs1_verify(struct zint_symbol *symbol, const unsigned char source[], const s
             // Length 18 Fixed
             case 0: // SSCC
             case 8006: // ITIP
+            case 8017: // GSRN PROVIDER
+            case 8018: // GSRN RECIPIENT
                 if (data_length[i] != 18) {
                     error_latch = 1;
                 } else {
