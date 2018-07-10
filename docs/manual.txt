@@ -1045,7 +1045,7 @@ Value         |  Effect
 DATA_MODE     |  Uses full ASCII range interpreted as Latin-1 or binary data.
 UNICODE_MODE  |  Uses pre-formatted UTF-8 input.
 GS1_MODE      |  Encodes GS1 data using FNC1 characters.
-ESCAPE_MODE   |  Process input data for escape sequences
+ESCAPE_MODE   |  Process input data for escape sequences.
 -----------------------------------------------------------------------------
 
 DATA_MODE, UNICODE_MODE and GS1_MODE are mutually exclusive, whereas
