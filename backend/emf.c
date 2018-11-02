@@ -126,7 +126,7 @@ int bump_up(int input) {
 }
 
 int emf_plot(struct zint_symbol *symbol) {
-    int i;
+    int i,j;
     FILE *emf_file;
     int fgred, fggrn, fgblu, bgred, bggrn, bgblu;
     int error_number = 0;
@@ -160,6 +160,13 @@ int emf_plot(struct zint_symbol *symbol) {
     //emr_extcreatefontindirectw_t emr_extcreatefontindirectw_big;
     //emr_selectobject_t emr_selectobject_font_big;
 
+#ifdef _MSC_VER
+    emr_rectangle_t *rectangle;
+    emr_ellipse_t *circle;
+    emr_polygon_t *hexagon;
+    emr_exttextoutw_t *text;
+#endif
+
     fgred = (16 * ctoi(symbol->fgcolour[0])) + ctoi(symbol->fgcolour[1]);
     fggrn = (16 * ctoi(symbol->fgcolour[2])) + ctoi(symbol->fgcolour[3]);
     fgblu = (16 * ctoi(symbol->fgcolour[4])) + ctoi(symbol->fgcolour[5]);
@@ -178,10 +185,10 @@ int emf_plot(struct zint_symbol *symbol) {
     emr_polygon_t hexagon[hexagon_count];
     emr_exttextoutw_t text[string_count];
 #else
-    emr_rectangle_t *rectangle = (emr_rectangle_t*) _alloca(rectangle_count * sizeof (emr_rectangle_t));
-    emr_ellipse_t *circle = (emr_ellipse_t*) _alloca(circle_count * sizeof (emr_ellipse_t));
-    emr_polygon_t *hexagon = (emr_polygon_t*) _alloca(hexagon_count * sizeof (emr_polygon_t));
-    emr_exttextoutw_t *text = (emr_exttextoutw_t*) _alloca(string_count * sizeof (emr_exttextoutw_t));
+    rectangle = (emr_rectangle_t*) _alloca(rectangle_count * sizeof (emr_rectangle_t));
+    circle = (emr_ellipse_t*) _alloca(circle_count * sizeof (emr_ellipse_t));
+    hexagon = (emr_polygon_t*) _alloca(hexagon_count * sizeof (emr_polygon_t));
+    text = (emr_exttextoutw_t*) _alloca(string_count * sizeof (emr_exttextoutw_t));
 #endif
     
     /* Header */
@@ -501,7 +508,7 @@ int emf_plot(struct zint_symbol *symbol) {
         fwrite(&emr_selectobject_font, sizeof (emr_selectobject_t), 1, emf_file);
         fwrite(&text[i], sizeof (emr_exttextoutw_t), 1, emf_file);
         fwrite(this_string[i], bump_up(text[i].w_emr_text.chars + 1) * 2, 1, emf_file);
-        for (int j = 0; j < bump_up(text[i].w_emr_text.chars + 1); j++) {
+        for (j = 0; j < bump_up(text[i].w_emr_text.chars + 1); j++) {
             fwrite(&spacing, 4, 1, emf_file);
         }
     }

@@ -60,9 +60,6 @@ int ps_plot(struct zint_symbol *symbol) {
     }
     if (feps == NULL) {
         strcpy(symbol->errtxt, "645: Could not open output file");
-#ifdef _MSC_VER
-        free(local_text);
-#endif
         return ZINT_ERROR_FILE_ACCESS;
     }
 

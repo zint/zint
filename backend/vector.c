@@ -315,7 +315,8 @@ int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_type) {
     int upceanflag = 0;
     int rect_count, last_row_start;
     int this_row;
-
+    int addon_latch = 0;
+    struct zint_vector_string *string;
     // Sanity check colours
     to_upper((unsigned char*) symbol->fgcolour);
     to_upper((unsigned char*) symbol->bgcolour);
@@ -432,6 +433,8 @@ int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_type) {
 
     if ((!symbol->show_hrt) || (ustrlen(symbol->text) == 0)) {
         hide_text = 1;
+        // HaO 2018-11-02 text_height and text_offset is an int.
+        // This gives the idea to me that a float is intended
         text_height = 0.0;
         text_offset = upceanflag ? 9.0 : 0.0;
     } else {
@@ -465,8 +468,6 @@ int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_type) {
     } else {
         default_text_posn = symbol->height + text_offset + symbol->border_width;
     }
-
-    int addon_latch = 0;
 
     // Plot rectangles - most symbols created here
     if ((symbol->symbology != BARCODE_MAXICODE) && ((symbol->output_options & BARCODE_DOTTY_MODE) == 0)) {
@@ -527,11 +528,12 @@ int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_type) {
 
     // Plot Maxicode symbols
     if (symbol->symbology == BARCODE_MAXICODE) {
+        struct zint_vector_circle *circle;
         vector->width = 37.0 + (2.0 * xoffset);
         vector->height = 36.0 + (2.0 * yoffset);
 
         // Bullseye
-        struct zint_vector_circle *circle = vector_plot_create_circle(17.88 + xoffset, 17.8 + yoffset, 10.85, 0);
+        circle = vector_plot_create_circle(17.88 + xoffset, 17.8 + yoffset, 10.85, 0);
         vector_plot_add_circle(symbol, circle, &last_circle);
         circle = vector_plot_create_circle(17.88 + xoffset, 17.8 + yoffset, 8.97, 1);
         vector_plot_add_circle(symbol, circle, &last_circle);
@@ -793,7 +795,7 @@ int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_type) {
 
     //Remove control characters from readable text
     // This only applies to Code 128
-    struct zint_vector_string *string = symbol->vector->strings;
+    string = symbol->vector->strings;
     if (string) {
         for (i = 0; i < string->length; i++) {
             if (string->text[i] < ' ') {
