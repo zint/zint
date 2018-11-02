@@ -670,7 +670,7 @@ static int cwbit(const int* datastream,const int i) {
     return resultant;
 }
 
-static void populate_grid(unsigned char* grid,const int size,const int* datastream,const int cw) {
+static void populate_grid(unsigned char* grid,const int size,const int* fullstream,const int cw) {
     int direction = 1; /* up */
     int row = 0; /* right hand side */
 
@@ -685,7 +685,7 @@ static void populate_grid(unsigned char* grid,const int size,const int* datastre
             x--; /* skip over vertical timing pattern */
 
         if (!(grid[(y * size) + (x + 1)] & 0xf0)) {
-            if (cwbit(datastream, i)) {
+            if (cwbit(fullstream, i)) {
                 grid[(y * size) + (x + 1)] = 0x01;
             } else {
                 grid[(y * size) + (x + 1)] = 0x00;
@@ -695,7 +695,7 @@ static void populate_grid(unsigned char* grid,const int size,const int* datastre
 
         if (i < n) {
             if (!(grid[(y * size) + x] & 0xf0)) {
-                if (cwbit(datastream, i)) {
+                if (cwbit(fullstream, i)) {
                     grid[(y * size) + x] = 0x01;
                 } else {
                     grid[(y * size) + x] = 0x00;
