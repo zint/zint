@@ -321,12 +321,13 @@ static char help_message[] = "zint tcl(stub,obj) dll\n"
     "   -barcode choice: symbology, use 'zint symbology' to get a list\n"
     "   -height integer: Symbol height in modules\n"
     "   -whitesp integer: horizontal quiet zone in modules\n"
-    "   -border integer: with of a border around the symbol. Use with -bind/-box 1\n"
+    "   -border integer: width of a border around the symbol. Use with -bind/-box 1\n"
     "   -fg color: set foreground color as 6 hex rrggbb\n"
     "   -bg color: set background color as 6 hex rrggbb\n"
     "   -cols integer: PDF417, Codablock F: number of columns\n"
     "   -rows integer: Codablock F: number of rows\n"
     "   -vers integer: Symbology option, QR-Code, Plessy\n"
+    "   -dmre bool: Allow Data Matrix Rectangular Extended\n"
     "   -rotate angle: Image rotation by 0,90 or 270 degrees\n"
     "   -secure integer: EC Level (PDF417, QR)\n"
     "   -mode: Structured primary data mode (Maxicode, Composite)\n"
@@ -700,7 +701,7 @@ static int Encode(Tcl_Interp *interp, int objc,
             /* >> Rotate angle */
             /*----------------------------------------------------------------*/
             {
-                char *rotateList[] = {"0", "90", "180", "270", "360", NULL};
+                char *rotateList[] = {"0", "90", "180", "270", NULL};
                 enum iRotate { iRotate0, iRotate90, iRotate180, iRotate270 };
                 /*------------------------------------------------------------*/
                 if(Tcl_GetIndexFromObj(interp, objv[optionPos+1],
