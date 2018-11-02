@@ -262,6 +262,10 @@ SOURCE=..\..\backend\tif.c
 
 SOURCE=..\..\backend\upcean.c
 # End Source File
+# Begin Source File
+
+SOURCE=..\..\backend\vector.c
+# End Source File
 # End Group
 # Begin Group "Header Files"
 

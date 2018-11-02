@@ -112,6 +112,7 @@ SOURCES += ../backend/2of5.c \
            ../backend/telepen.c \
            ../backend/tif.c \
            ../backend/upcean.c \
+           ../backend/vector.c \
            ../backend/qr.c \
            ../backend/dllversion.c \
            ../backend/code1.c \

@@ -256,6 +256,10 @@ SOURCE=..\backend\upcean.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\backend\vector.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\zint.c
 # End Source File
 # End Group
