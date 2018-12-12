@@ -25,8 +25,8 @@ DLL:=$(APP).dll
 STATLIB:=lib$(APP).a
 
 COMMON_OBJ:= common.o render.o png.o library.o ps.o large.o reedsol.o gs1.o svg.o \
-                 hanxin.o mailmark.o dotcode.o codablock.o emf.o eci.o \
-                 raster.o tif.o gif.o pcx.o bmp.o
+	hanxin.o mailmark.o dotcode.o codablock.o emf.o eci.o \
+	raster.o tif.o gif.o pcx.o bmp.o
 ONEDIM_OBJ:= code.o code128.o 2of5.o upcean.o telepen.o medical.o plessey.o rss.o
 POSTAL_OBJ:= postal.o auspost.o imail.o
 TWODIM_OBJ:= code16k.o dmatrix.o pdf417.o qr.o maxicode.o composite.o aztec.o code49.o code1.o gridmtx.o
