@@ -25,7 +25,17 @@ set_target_properties(zint PROPERTIES 	SOVERSION "${ZINT_VERSION_MAJOR}.${ZINT_V
 if(PNG_FOUND)
     target_link_libraries(zint ${PNG_LIBRARIES} )
 endif(PNG_FOUND)
-target_link_libraries(zint -lm)
+if(NOT MSVC)
+  # Link with standard C math library.
+  target_link_libraries(zint m)
+endif(NOT MSVC)
+
+if(MSVC)
+  # "BUILD_SHARED_LIBS" is a CMake defined variable, see documentation.
+  if(BUILD_SHARED_LIBS)
+    add_definitions("-DDLL_EXPORT")
+  endif(BUILD_SHARED_LIBS)
+endif(MSVC)
 
 install(TARGETS zint  ${INSTALL_TARGETS_DEFAULT_ARGS} )
 install(FILES zint.h DESTINATION ${INCLUDE_INSTALL_DIR} COMPONENT Devel)
