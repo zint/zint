@@ -326,6 +326,7 @@
     <ClCompile Include="..\backend\imail.c" />
     <ClCompile Include="..\backend\large.c" />
     <ClCompile Include="..\backend\library.c" />
+    <ClCompile Include="..\backend\mailmark.c" />
     <ClCompile Include="..\backend\maxicode.c" />
     <ClCompile Include="..\backend\medical.c" />
     <ClCompile Include="..\backend\pcx.c" />
@@ -343,6 +344,7 @@
     <ClCompile Include="..\backend\telepen.c" />
     <ClCompile Include="..\backend\tif.c" />
     <ClCompile Include="..\backend\upcean.c" />
+    <ClCompile Include="..\backend\vector.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\backend\aztec.h" />

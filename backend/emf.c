@@ -397,7 +397,7 @@ int emf_plot(struct zint_symbol *symbol) {
     str = symbol->vector->strings;
     this_text = 0;
     while (str) {
-        this_string[this_text] = malloc(bump_up(str->length + 1) * 2);
+        this_string[this_text] = (unsigned char *) malloc(bump_up(str->length + 1) * 2);
         text[this_text].type = 0x00000054; // EMR_EXTTEXTOUTW
         text[this_text].size = 76 + (6 * bump_up(str->length + 1));
         text[this_text].bounds.top = 0; // ignored
