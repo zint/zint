@@ -278,6 +278,10 @@ SOURCE=..\..\backend\vector.c
 
 SOURCE=.\zint.rc
 # End Source File
+# Begin Source File
+
+SOURCE=.\zint_black_vc6.ico
+# End Source File
 # End Group
 # End Target
 # End Project
