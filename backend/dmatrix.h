@@ -91,7 +91,7 @@ static const char text_value[] = {
 // Position in option array [symbol option value - 1]
 // The position in the option array is by increasing total data codewords with square first
 // The last comment value is the total data codewords value.
-// The index of this array is the --vers parameter value -1 and is given as forst comment value
+// The index of this array is the --vers parameter value -1 and is given as first comment value
 
 static const unsigned short int intsymbol[] = {
      0, /*  1: 10x10 ,  3*/  1, /*  2: 12x12 ,  5*/  3, /*  3: 14x14 ,  8*/  5, /*  4: 16x16 , 12*/
