@@ -430,11 +430,11 @@ int emf_plot(struct zint_symbol *symbol) {
 
     /* Create EOF record */
     emr_eof.type = 0x0000000e; // EMR_EOF
-    emr_eof.size = 18; // Assuming no palette entries
+    emr_eof.size = 20; // Assuming no palette entries
     emr_eof.n_pal_entries = 0;
     emr_eof.off_pal_entries = 0;
     emr_eof.size_last = emr_eof.size;
-    bytecount += 18;
+    bytecount += 20;
     recordcount++;
 
     if (symbol->symbology == BARCODE_MAXICODE) {
