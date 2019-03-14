@@ -157,8 +157,6 @@ int emf_plot(struct zint_symbol *symbol) {
     emr_rectangle_t background;
     emr_extcreatefontindirectw_t emr_extcreatefontindirectw;
     emr_selectobject_t emr_selectobject_font;
-    //emr_extcreatefontindirectw_t emr_extcreatefontindirectw_big;
-    //emr_selectobject_t emr_selectobject_font_big;
 
     fgred = (16 * ctoi(symbol->fgcolour[0])) + ctoi(symbol->fgcolour[1]);
     fggrn = (16 * ctoi(symbol->fgcolour[2])) + ctoi(symbol->fgcolour[3]);
@@ -423,11 +421,11 @@ int emf_plot(struct zint_symbol *symbol) {
 
     /* Create EOF record */
     emr_eof.type = 0x0000000e; // EMR_EOF
-    emr_eof.size = 18; // Assuming no palette entries
+    emr_eof.size = 20; // Assuming no palette entries
     emr_eof.n_pal_entries = 0;
     emr_eof.off_pal_entries = 0;
     emr_eof.size_last = emr_eof.size;
-    bytecount += 18;
+    bytecount += 20;
     recordcount++;
 
     if (symbol->symbology == BARCODE_MAXICODE) {
