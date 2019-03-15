@@ -607,7 +607,7 @@ int maxicode(struct zint_symbol *symbol, unsigned char local_source[], const int
         } else {
             mode = 2;
             for (i = 0; i < 10 && i < lp; i++) {
-                if ((symbol->primary[i] < 48) || (symbol->primary[i] > 57)) {
+                if (((symbol->primary[i] < 48) || (symbol->primary[i] > 57)) && (symbol->primary[i] != ' ')) {
                     mode = 3;
                     break;
                 }
