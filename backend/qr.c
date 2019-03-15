@@ -644,7 +644,7 @@ static void setup_grid(unsigned char* grid,const int size,const int version) {
         grid[(8 * size) + (size - 1 - i)] = 0x20;
         grid[((size - 1 - i) * size) + 8] = 0x20;
     }
-    grid[(8 * size) + 8] += 20;
+    grid[(8 * size) + 8] += 0x20;
     grid[((size - 1 - 7) * size) + 8] = 0x21; /* Dark Module from Figure 25 */
 
     /* Reserve space for version information */
