@@ -504,7 +504,7 @@ int plot_raster_maxicode(struct zint_symbol *symbol, int rotate_angle, int data_
         }
     }
 
-    hexagon_size = (int)scaler * 10;
+    hexagon_size = (int)(scaler * 10);
 
     if (!(scaled_hexagon = (char *) malloc(hexagon_size * hexagon_size))) {
         strcpy(symbol->errtxt, "656: Insufficient memory for pixel buffer");
