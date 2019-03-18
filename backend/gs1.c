@@ -198,7 +198,7 @@ int gs1_verify(struct zint_symbol *symbol, const unsigned char source[], const s
     strcpy(ai_string, "");
     
     // Check for valid AI values and data lengths according to GS1 General
-    // Specification Release 18, January 2018
+    // Specification Release 19, January 2019
     for (i = 0; i < ai_count; i++) {
         
         error_latch = 2;
@@ -435,6 +435,15 @@ int gs1_verify(struct zint_symbol *symbol, const unsigned char source[], const s
                 }
                 break;
                 
+            // Length 50 Max
+            case 8009: // OPTSEN
+                if (data_length[i] > 50) {
+                    error_latch = 1;
+                } else {
+                    error_latch = 0;
+                }
+                break;
+                
             // Length 70 Max
             case 8110: // Coupon code
             case 8112: // Paperless coupon code
@@ -563,6 +572,14 @@ int gs1_verify(struct zint_symbol *symbol, const unsigned char source[], const s
         
         if ((ai_value[i] >= 7030) && (ai_value[i] <= 7039)) { // PROCESSOR #
             if ((data_length[i] < 4) || (data_length[i] > 30)) {
+                error_latch = 1;
+            } else {
+                error_latch = 0;
+            }
+        }
+        
+        if ((ai_value[i] >= 7230) && (ai_value[i] <= 7239)) { // CERT #
+            if ((data_length[i] < 3) || (data_length[i] > 30)) {
                 error_latch = 1;
             } else {
                 error_latch = 0;
