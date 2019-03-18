@@ -428,10 +428,21 @@ The --binary option prevents Zint from performing any convertion of the data
 before placing in the barcode symbol and should be used if you are encoding raw 
 binary or encrypted data.
 
-If you are using data from file which is not UTF-8 formatted then you can 
-specify the encoding by using the --eci= switch followed by the appropriate number 
-from the table below. This procedure adds an ECI flag in the barcode data which 
-tells the barcode reader to change character encoding.
+If your data contains non ISO-Latin-1 characters, you may encode it using an ECI-aware
+Symbology and an ECI value from the table below.
+The ECI information is added to your code symbol as prefix data.
+
+The ECI-Value may be specified with the --eci switch, followed by the value in the column
+"ECI Code".
+
+The first row of the table (ECI code 3) is the default value and does not lead to any ECI
+information included into the symbol.
+
+The input data should be utf-8 formatted. Zint automatically translates the data into the
+target encoding.
+The rows marked with a star (*) do not do this transformation. The data must be specified
+as binary data (--binary switch) with the data in the encoding given by the "Character
+Encoding Scheme" column.
 
 --------------------------------------------------------
 ECI Code  |  Character Encoding Scheme
@@ -464,11 +475,20 @@ ECI Code  |  Character Encoding Scheme
 30 *      |  Korean Character Set (KSX1001:1998)
 --------------------------------------------------------
 
-* Note: When using the ECI flag Zint will treat all input data as raw binary.
-This means that data which is encoded using a multiple-byte encoding schemes
-(other than UTF-8) will not use optimal compression. It is therefore
-recommended that data using these schemes be converted to UTF-8 using iconv
-or similar before passing it to Zint.
+Two examples:
+Ex1: The Euro sign should be encoded in ISO-8859-15.
+The Euro-Sign has the ISO8859-15 codepoint hex A4.
+It is encoded in utf-8 as the hex sequence: e2 82 ac
+Those 3 bytes are contained in the file "utf8euro.txt"
+This command will generate the corresponding code:
+zint.exe -b 71 --square --scale 10 --eci 17 -i utf8euro.txt
+
+Ex2: The Chinese character with Unicode codepoint hex 5e38 should be
+encoded in big5 encoding. The big5 ECI is marked in the upper table to
+require input data in big5 instead of utf-8.  The big5 representation of
+this character are the two hex bytes: 9c 75 (contained in the file big5char.txt).
+The generation command is:
+zint.exe -b 71 --square --scale 10 --eci 28 --binary -i big5char.txt
 
 4.11 Batch processing
 ---------------------
