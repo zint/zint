@@ -40,6 +40,7 @@
 #include "gs1.h"
 
 #define TECHNETIUM	"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%"
+#define TITANIUM "01234567890ABCDEFabcdef"
 
 struct zint_symbol *ZBarcode_Create() {
     struct zint_symbol *symbol;
@@ -1125,6 +1126,20 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
 
     if ((symbol->dot_size < 0.01) || (symbol->dot_size > 20.0)) {
         strcpy(symbol->errtxt, "221: Invalid dot size");
+        error_tag(symbol->errtxt, ZINT_ERROR_INVALID_OPTION);
+        return ZINT_ERROR_INVALID_OPTION;
+    }
+    
+    //Check value of colours
+    if ((strlen(symbol->bgcolour) > 6) || (strlen(symbol->fgcolour) > 6)) {
+        strcpy(symbol->errtxt, "232: Invalid colour");
+        error_tag(symbol->errtxt, ZINT_ERROR_INVALID_OPTION);
+        return ZINT_ERROR_INVALID_OPTION;
+    }
+    
+    if ((is_sane(TITANIUM, (unsigned char *)symbol->bgcolour, strlen(symbol->bgcolour)) == ZINT_ERROR_INVALID_DATA) 
+        || (is_sane(TITANIUM, (unsigned char *)symbol->fgcolour, strlen(symbol->bgcolour)) == ZINT_ERROR_INVALID_DATA)) {
+        strcpy(symbol->errtxt, "233: Invalid characters in colour");
         error_tag(symbol->errtxt, ZINT_ERROR_INVALID_OPTION);
         return ZINT_ERROR_INVALID_OPTION;
     }
