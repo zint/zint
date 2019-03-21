@@ -241,6 +241,7 @@ extern "C" {
 #define BARCODE_CODEONE		141
 #define BARCODE_GRIDMATRIX	142
 #define BARCODE_UPNQR           143
+#define BARCODE_ULTRA       144
 
 // Output options
 #define BARCODE_NO_ASCII	1

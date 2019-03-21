@@ -179,6 +179,7 @@ extern int qr_code(struct zint_symbol *symbol, const unsigned char source[], siz
 extern int dmatrix(struct zint_symbol *symbol, const unsigned char source[], const size_t in_length); /* Data Matrix (IEC16022) */
 extern int vin(struct zint_symbol *symbol, const unsigned char source[], const size_t in_length); /* VIN Code (Vehicle Identification Number) */
 extern int mailmark(struct zint_symbol *symbol, const unsigned char source[], const size_t in_length); /* Royal Mail 4-state Mailmark */
+extern int ultracode(struct zint_symbol *symbol, const unsigned char source[], const size_t in_length); /* Ultracode */
 
 extern int plot_raster(struct zint_symbol *symbol, int rotate_angle, int file_type); /* Plot to PNG/BMP/PCX */
 extern int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_type); /* Plot to EPS/EMF/SVG */
@@ -460,6 +461,7 @@ static int supports_eci(const int symbology) {
         case BARCODE_DOTCODE:
         case BARCODE_GRIDMATRIX:
         case BARCODE_HANXIN:
+        case BARCODE_ULTRA:
             result = 1;
             break;
     }
@@ -565,6 +567,7 @@ int ZBarcode_ValidID(int symbol_id) {
         case BARCODE_UPNQR:
         case BARCODE_VIN:
         case BARCODE_MAILMARK:
+        case BARCODE_ULTRA:
             result = 1;
             break;
     }
@@ -787,6 +790,8 @@ static int reduced_charset(struct zint_symbol *symbol, const unsigned char *sour
         case BARCODE_VIN: error_number = vin(symbol, preprocessed, in_length);
             break;
         case BARCODE_MAILMARK: error_number = mailmark(symbol, preprocessed, in_length);
+            break;
+        case BARCODE_ULTRA: error_number = ultracode(symbol, preprocessed, in_length);
             break;
     }
 
@@ -1054,7 +1059,7 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
         }
     }
     /* Everything from 128 up is Zint-specific */
-    if (symbol->symbology >= 144) {
+    if (symbol->symbology >= 145) {
         strcpy(symbol->errtxt, "216: Symbology out of range, using Code 128");
         symbol->symbology = BARCODE_CODE128;
         error_number = ZINT_WARN_INVALID_OPTION;
