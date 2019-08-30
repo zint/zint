@@ -418,7 +418,7 @@ GS1 data can be encoded in a number of symbologies. Application identifiers
 should be enclosed in [square brackets] followed by the data to be encoded (see 
 5.1.12.3). To encode GS1 data use the --gs1 option. GS1 mode is assumed (and 
 doesn't need to be set) for EAN-128, DataBar and Composite symbologies but is 
-also available for Code 16k, Data Matrix, Aztec Code, DotCode and QR Code. 
+also available for Code 16k, Data Matrix, Aztec Code, DotCode and QR Code.
 
 HIBC data may also be encoded in the symbologies Code 39, Code128, Codablock-F,
 Datamatrix, QR-Code, PDF417 and Aztec-Code. Within this mode, the leading '+' and the
@@ -1052,6 +1052,7 @@ BOLD_TEXT           |  Embolden the human readable text.
 CMYK_COLOUR         |  Select the CMYK colour space option for encapsulated
                     |      PostScript files.
 BARCODE_DOTTY_MODE  |  Plot a matrix symbol using dots rather than squares.
+GS1_GS_SEPARATOR    |  Use GS instead FNC1 as GS1 separator.
 --------------------------------------------------------------------------------
 
 5.9 Setting the Input Mode
@@ -1846,6 +1847,10 @@ Input  |  Symbol Size
 
 DMRE symbol sizes may be activated in automatic size mode using the option 
 --dmre or by the API option_3 = DM_DMRE
+
+GS1 symbology may use FNC1 (prefered) or GS as separator.
+Use the option --gssep to change to GS or use the API
+output_options+=GS1_GS_SEPARATOR
 
 6.6.2 QR Code (ISO 18004)
 -------------------------

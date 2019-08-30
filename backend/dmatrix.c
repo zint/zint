@@ -435,12 +435,14 @@ static int look_ahead_test(const unsigned char inputData[], const size_t sourcel
                     edf_count += 13.0F; // (p)(3) > Value changed from ISO
                 }
             }
-            if ((gs1 == 1) && (inputData[sp] == '[')) {
+            if (gs1 && (inputData[sp] == '[')) {
+                /* fnc1 and gs have the same weight of 13.0f */
                 edf_count += 13.0F; //  > Value changed from ISO
             }
 
             /* base 256 ... step (q) */
             if ((gs1 == 1) && (inputData[sp] == '[')) {
+                /* FNC1 separator */
                 b256_count += 4.0F; // (q)(1)
             } else {
                 b256_count += 1.0F; // (q)(2)
@@ -549,8 +551,13 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
     current_mode = DM_ASCII;
     next_mode = DM_ASCII;
 
+    /* gs1 flag values: 0: no gs1, 1: gs1 with FNC1 serparator, 2: GS separator */
     if (symbol->input_mode == GS1_MODE) {
-        gs1 = 1;
+        if (symbol->output_options & GS1_GS_SEPARATOR) {
+            gs1 = 2;
+        } else {
+            gs1 = 1;
+        }
     } else {
         gs1 = 0;
     }
@@ -684,8 +691,13 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
                         strcat(binary, "  ");
                     } else {
                         if (gs1 && (source[sp] == '[')) {
-                            target[tp] = 232; /* FNC1 */
-                            if (debug) printf("FN1 ");
+                            if (gs1==2) {
+                                target[tp] = 29+1; /* GS */
+                                if (debug) printf("GS ");
+                            } else {
+                                target[tp] = 232; /* FNC1 */
+                                if (debug) printf("FN1 ");
+                            }
                         } else {
                             target[tp] = source[sp] + 1;
                             if (debug) printf("A%02X ", target[tp] - 1);
@@ -728,8 +740,13 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
                 }
 
                 if (gs1 && (source[sp] == '[')) {
-                    shift_set = 2;
-                    value = 27; /* FNC1 */
+                    if (gs1 == 2) {
+                        shift_set = c40_shift[29];
+                        value = c40_value[29]; /* GS */
+                    } else {
+                        shift_set = 2;
+                        value = 27; /* FNC1 */
+                    }
                 }
 
                 if (shift_set != 0) {
@@ -791,8 +808,13 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
                 }
 
                 if (gs1 && (source[sp] == '[')) {
-                    shift_set = 2;
-                    value = 27; /* FNC1 */
+                    if (gs1 == 2) {
+                        shift_set = text_shift[29];
+                        value = text_value[29]; /* GS */
+                    } else {
+                        shift_set = 2;
+                        value = 27; /* FNC1 */
+                    }
                 }
 
                 if (shift_set != 0) {

@@ -97,6 +97,7 @@ void usage(void) {
             "  --filetype=TYPE       Set output file type (PNG/EPS/SVG/PNG/EPS/GIF/TXT)\n"
             "  --fg=COLOUR           Specify a foreground colour (in hex)\n"
             "  --gs1                 Treat input as GS1 compatible data\n"
+            "  --gssep               Use separator GS for GS1\n"
             "  -h, --help            Display help message\n"
             "  --height=NUMBER       Set height of symbol in multiples of x-dimension\n"
             "  -i, --input=FILE      Read input data from FILE\n"
@@ -432,6 +433,7 @@ int main(int argc, char **argv) {
             {"primary", 1, 0, 0},
             {"scale", 1, 0, 0},
             {"gs1", 0, 0, 0},
+            {"gssep", 0, 0, 0},
             {"binary", 0, 0, 0},
             {"notext", 0, 0, 0},
             {"square", 0, 0, 0},
@@ -476,6 +478,9 @@ int main(int argc, char **argv) {
                 }
                 if (!strcmp(long_options[option_index].name, "dotty")) {
                     my_symbol->output_options += BARCODE_DOTTY_MODE;
+                }
+                if (!strcmp(long_options[option_index].name, "gssep")) {
+                    my_symbol->output_options += GS1_GS_SEPARATOR;
                 }
                 if (!strcmp(long_options[option_index].name, "direct")) {
                     my_symbol->output_options += BARCODE_STDOUT;

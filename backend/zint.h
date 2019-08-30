@@ -253,6 +253,7 @@ extern "C" {
 #define BOLD_TEXT               64
 #define CMYK_COLOUR             128
 #define BARCODE_DOTTY_MODE      256
+#define GS1_GS_SEPARATOR        512
 
 // Input data types
 #define DATA_MODE	0
