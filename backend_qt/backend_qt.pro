@@ -111,6 +111,7 @@ SOURCES += ../backend/2of5.c \
            ../backend/svg.c \
            ../backend/telepen.c \
            ../backend/tif.c \
+           ../backend/ultra.c \
            ../backend/upcean.c \
            ../backend/vector.c \
            ../backend/qr.c \
