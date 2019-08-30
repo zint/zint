@@ -31,7 +31,6 @@
  */
 
 /* Includes corrections thanks to Monica Swanson @ Source Technologies */
-
 #include "common.h"
 #include "maxicode.h"
 #include "reedsol.h"
@@ -119,6 +118,33 @@ void maxi_bump(int set[], int character[], int bump_posn) {
     }
 }
 
+/* If the value is present in  array, return the value, else return badvalue */
+int value_in_array(int val, int arr[], int badvalue){
+    int i;
+    for(i = 0; i < sizeof(arr); i++){
+        if(arr[i] == val) return val;
+    }
+    return badvalue;
+}
+
+/* Choose the best set from previous and next set in the range of the setval array, if no value can be found we return setval[0] */
+int bestSurroundingSet(int index, int length, int set[], int setval[]) {
+    int badValue = -1;
+    int option1 = value_in_array(set[index - 1], setval, badValue);
+    if (index + 1 < length) {
+        // we have two options to check (previous & next)
+        int option2 = value_in_array(set[index + 1], setval, badValue);
+        if (option2 != badValue && option1 > option2) {
+          return option2;
+        }
+    }
+    //
+    if (option1 != badValue) {
+      return option1;
+    }
+    return setval[0];
+}
+
 /* Format text according to Appendix A */
 int maxi_text_process(int mode, unsigned char source[], int length, int eci) {
     /* This code doesn't make use of [Lock in C], [Lock in D]
@@ -126,6 +152,10 @@ int maxi_text_process(int mode, unsigned char source[], int length, int eci) {
     compressing data, but should suffice for most applications */
 
     int set[144], character[144], i, j, done, count, current_set;
+
+    int set15[2] = { 1, 5 };
+    int set12[2] = { 1, 2 };
+    int set12345[5] = { 1, 2, 3, 4, 5 };
 
     if (length > 138) {
         return ZINT_ERROR_TOO_LONG;
@@ -158,146 +188,87 @@ int maxi_text_process(int mode, unsigned char source[], int length, int eci) {
             /* Special character */
             if (character[i] == 13) {
                 /* Carriage Return */
-                if (set[i - 1] == 5) {
+                set[i] = bestSurroundingSet(i, length, set, set15);
+                if (set[i] == 5) {
                     character[i] = 13;
-                    set[i] = 5;
                 } else {
-                    if ((i != length - 1) && (set[i + 1] == 5)) {
-                        character[i] = 13;
-                        set[i] = 5;
-                    } else {
-                        character[i] = 0;
-                        set[i] = 1;
-                    }
+                    character[i] = 0;
                 }
                 done = 1;
             }
 
-            if ((character[i] == 28) && (done == 0)) {
+            if ((done == 0) && (character[i] == 28)) {
                 /* FS */
-                if (set[i - 1] == 5) {
-                    character[i] = 32;
-                    set[i] = 5;
-                } else {
-                    set[i] = set[i - 1];
+                set[i] = bestSurroundingSet(i, length, set, set12345);
+                if (set[i] == 5) {
+                    character[i] = 32;                   
                 }
                 done = 1;
             }
 
-            if ((character[i] == 29) && (done == 0)) {
+            if ((done == 0) && (character[i] == 29)) {
                 /* GS */
-                if (set[i - 1] == 5) {
+                set[i] = bestSurroundingSet(i, length, set, set12345);
+                if (set[i] == 5) {
                     character[i] = 33;
-                    set[i] = 5;
-                } else {
-                    set[i] = set[i - 1];
-                }
+                }       
                 done = 1;
             }
 
-            if ((character[i] == 30) && (done == 0)) {
+            if ((done == 0) && (character[i] == 30)) {
                 /* RS */
-                if (set[i - 1] == 5) {
+                set[i] = bestSurroundingSet(i, length, set, set12345);         
+                if (set[i] == 5) {
                     character[i] = 34;
-                    set[i] = 5;
-                } else {
-                    set[i] = set[i - 1];
                 }
                 done = 1;
             }
 
-            if ((character[i] == 32) && (done == 0)) {
+            if ((done == 0) && (character[i] == 32)) {
                 /* Space */
-                if (set[i - 1] == 1) {
+                set[i] = bestSurroundingSet(i, length, set, set12345);
+                if (set[i] == 1) {
                     character[i] = 32;
-                    set[i] = 1;
-                }
-                if (set[i - 1] == 2) {
+                } else if (set[i] == 2) {
                     character[i] = 47;
-                    set[i] = 2;
-                }
-                if (set[i - 1] >= 3) {
-                    if (i != length - 1) {
-                        if (set[i + 1] == 1) {
-                            character[i] = 32;
-                            set[i] = 1;
-                        }
-                        if (set[i + 1] == 2) {
-                            character[i] = 47;
-                            set[i] = 2;
-                        }
-                        if (set[i + 1] >= 3) {
-                            character[i] = 59;
-                            set[i] = set[i - 1];
-                        }
-                    } else {
-                        character[i] = 59;
-                        set[i] = set[i - 1];
-                    }
+                } else {
+                    character[i] = 59;
                 }
                 done = 1;
             }
 
-            if ((character[i] == 44) && (done == 0)) {
+            if ((done == 0) && (character[i] == 44)) {
                 /* Comma */
-                if (set[i - 1] == 2) {
+                set[i] = bestSurroundingSet(i, length, set, set12);
+                if (set[i] == 2) {
                     character[i] = 48;
-                    set[i] = 2;
-                } else {
-                    if ((i != length - 1) && (set[i + 1] == 2)) {
-                        character[i] = 48;
-                        set[i] = 2;
-                    } else {
-                        set[i] = 1;
-                    }
                 }
                 done = 1;
             }
 
-            if ((character[i] == 46) && (done == 0)) {
+            if ((done == 0) && (character[i] == 46)) {
                 /* Full Stop */
-                if (set[i - 1] == 2) {
+                set[i] = bestSurroundingSet(i, length, set, set12);
+                if (set[i] == 2) {
                     character[i] = 49;
-                    set[i] = 2;
-                } else {
-                    if ((i != length - 1) && (set[i + 1] == 2)) {
-                        character[i] = 49;
-                        set[i] = 2;
-                    } else {
-                        set[i] = 1;
-                    }
-                }
+                } 
                 done = 1;
             }
 
-            if ((character[i] == 47) && (done == 0)) {
+            if ((done == 0) && (character[i] == 47)) {
                 /* Slash */
-                if (set[i - 1] == 2) {
+                set[i] = bestSurroundingSet(i, length, set, set12);
+                if (set[i] == 2) {
                     character[i] = 50;
-                    set[i] = 2;
-                } else {
-                    if ((i != length - 1) && (set[i + 1] == 2)) {
-                        character[i] = 50;
-                        set[i] = 2;
-                    } else {
-                        set[i] = 1;
-                    }
                 }
-                done = 1;
+               done = 1;
             }
 
-            if ((character[i] == 58) && (done == 0)) {
+            if ((done == 0) && (character[i] == 58)) {
                 /* Colon */
-                if (set[i - 1] == 2) {
+                set[i] = bestSurroundingSet(i, length, set, set12);
+                if (set[i] == 2) {
                     character[i] = 51;
-                    set[i] = 2;
-                } else {
-                    if ((i != length - 1) && (set[i + 1] == 2)) {
-                        character[i] = 51;
-                        set[i] = 2;
-                    } else {
-                        set[i] = 1;
-                    }
                 }
                 done = 1;
             }
@@ -352,9 +323,9 @@ int maxi_text_process(int mode, unsigned char source[], int length, int eci) {
         if ((set[i] != current_set) && (set[i] != 6)) {
             switch (set[i]) {
                 case 1:
-                    if (set[i + 1] == 1) {
-                        if (set[i + 2] == 1) {
-                            if (set[i + 3] == 1) {
+                    if (i+1 < 144 &&  set[i + 1] == 1) {
+                        if (i+2 < 144 && set[i + 2] == 1) {
+                            if (i+3 < 144 && set[i + 3] == 1) {
                                 /* Latch A */
                                 maxi_bump(set, character, i);
                                 character[i] = 63;
@@ -382,7 +353,7 @@ int maxi_text_process(int mode, unsigned char source[], int length, int eci) {
                     }
                     break;
                 case 2:
-                    if (set[i + 1] == 2) {
+                    if (i+1 < 144 &&  set[i + 1] == 2) {
                         /* Latch B */
                         maxi_bump(set, character, i);
                         character[i] = 63;
@@ -396,22 +367,52 @@ int maxi_text_process(int mode, unsigned char source[], int length, int eci) {
                     }
                     break;
                 case 3:
-                    /* Shift C */
-                    maxi_bump(set, character, i);
-                    character[i] = 60;
-                    length++;
+            if (i + 3 < 144 && set[i + 1] == 3 && set[i + 2] == 3 && set[i + 3] == 3) {
+                maxi_bump(set, character, i);
+                        character[i] = 60;
+                        maxi_bump(set, character, i);
+                        character[i] = 60;    
+                        current_set = 3;
+                        length++;
+                        i += 3;
+                    } else {
+                       /* Shift C */
+                       maxi_bump(set, character, i);
+                       character[i] = 60;
+                       length++;
+                    }
                     break;
                 case 4:
                     /* Shift D */
-                    maxi_bump(set, character, i);
-                    character[i] = 61;
-                    length++;
+                    if (i + 3 < 144 && set[i + 1] == 4 && set[i + 2] == 4 && set[i + 3] == 4) {
+                        maxi_bump(set, character, i);
+                        character[i] = 61;
+                        maxi_bump(set, character, i);
+                        character[i] = 61;
+                        current_set = 3;
+                        length++;
+                        i += 3;
+                    } else {
+                        maxi_bump(set, character, i);
+                        character[i] = 61;
+                        length++;
+                    }
                     break;
                 case 5:
                     /* Shift E */
-                    maxi_bump(set, character, i);
-                    character[i] = 62;
-                    length++;
+                    if (i + 3 < 144 && set[i + 1] == 5 && set[i + 2] == 5 && set[i + 3] == 5) {
+                        maxi_bump(set, character, i);
+                        character[i] = 62;
+                        maxi_bump(set, character, i);
+                        character[i] = 62;
+                        current_set = 3;
+                        length++;
+                        i += 3;
+                    } else {
+                        maxi_bump(set, character, i);
+                        character[i] = 62;
+                        length++;
+            }
                     break;
             }
             i++;
@@ -607,7 +608,7 @@ int maxicode(struct zint_symbol *symbol, unsigned char local_source[], const int
         } else {
             mode = 2;
             for (i = 0; i < 10 && i < lp; i++) {
-                if (((symbol->primary[i] < 48) || (symbol->primary[i] > 57)) && (symbol->primary[i] != ' ')) {
+                if ((symbol->primary[i] < 48) || (symbol->primary[i] > 57)) {
                     mode = 3;
                     break;
                 }
