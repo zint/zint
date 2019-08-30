@@ -209,47 +209,92 @@
        </item>
        <item>
         <property name="text">
-         <string>8 x 48 (DMRE)</string>
+         <string>8 x 48 (DIN+ISO DMRE)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>8 x 64 (DMRE)</string>
+         <string>8 x 64 (DIN+ISO DMRE)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>12 x 64 (DMRE)</string>
+         <string>8 x 80 (ISO DMRE)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>16 x 64 (DMRE)</string>
+         <string>8 x 96 (ISO DMRE)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>24 x 48 (DMRE)</string>
+         <string>8 x 120 (ISO DMRE)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>24 x 64 (DMRE)</string>
+         <string>8 x 144 (ISO DMRE)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>26 x 40 (DMRE)</string>
+         <string>12 x 64 (DIN+ISO DMRE)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>26 x 48 (DMRE)</string>
+         <string>12 x 88 (ISO DMRE)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>26 x 64 (DMRE)</string>
+         <string>16 x 64 (DIN+ISO DMRE)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>20 x 36 (ISO DMRE)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>20 x 44 (ISO DMRE)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>20 x 64 (ISO DMRE)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>22 x 48 (ISO DMRE)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>24 x 48 (DIN+ISO DMRE)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>24 x 64 (DIN+ISO DMRE)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>26 x 40 (DIN+ISO DMRE)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>26 x 48 (DIN+ISO DMRE)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>26 x 64 (DIN+ISO DMRE)</string>
         </property>
        </item>
       </widget>
