@@ -9,7 +9,6 @@ Homepage: http://www.zint.org.uk/
 Package: zint
 Section: libs
 Architecture: any
-Depends: libpng12-dev
 Description: A library for encoding data in barcode symbols.
    Zint is an Open Source barcode encoding and image generating library.
    It currently features support for over 50 symbologies including
@@ -29,7 +28,7 @@ Description: Zint development files
 Package: zint-qt
 Section: libs
 Architecture: any
-Depends: zint (= ${binary:Version}), libqt4-dev
+Depends: zint (= ${binary:Version})
 Description: Zint Barcode Studio.
    This package contains Zint Barcode Studio, a QT frontend for the Zint
  barcode encoding library.
