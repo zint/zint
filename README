@@ -54,6 +54,13 @@ Version 2.6.3:
 New symbology Royal Mail 4-state Mailmark. Added North America VIN verification.
 Bugfixes for TIF and EMF output and escape character handling.
 
+Version 2.6.4:
+Fixed bugs: EMF output, maxicode plot/content
+Datamatrix DMRE updated to the ISO/IEC29158 version. This is incompatible in the way,
+that the old -vers numbers for DMRE are re-assigned.
+The separator of GS1-datamatrix may be switched from FNC1 to GS.
+GS1 field length check AI 8009 and 7230 to 7239 currected.
+
 CONTACT US
 ----------
 The home of Zint is:
