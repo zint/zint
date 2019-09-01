@@ -1,0 +1,44 @@
+# Copyright (C) 2019 Robin Stuart <rstuart114@gmail.com>
+# Adapted from qrencode/tests/CMakeLists.txt
+# Copyright (C) 2006-2017 Kentaro Fukuchi <kentaro@fukuchi.org>
+
+cmake_minimum_required (VERSION 3.9)
+
+enable_testing()
+
+set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
+
+set(ZINT_DEBUG FALSE CACHE BOOL "Set debug compile flag")
+set(ZINT_SANITIZE FALSE CACHE BOOL "Set sanitize compile/link flags")
+
+find_package (LibZint 2.6.3 REQUIRED)
+
+if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
+    if (ZINT_DEBUG)
+        add_compile_options("-g")
+    endif (ZINT_DEBUG)
+    if (ZINT_SANITIZE)
+        add_compile_options("-fsanitize=undefined")
+        add_compile_options("-fsanitize=address")
+        set (CMAKE_EXE_LINKER_FLAGS "-fsanitize=undefined -fsanitize=address")
+    endif (ZINT_SANITIZE)
+endif ()
+
+add_library(testcommon
+    testcommon.c testcommon.h)
+target_link_libraries(testcommon ZINT::ZINT)
+
+macro(zint_add_test test_name test_command)
+    set(ADDITIONAL_LIBS "${ARGN}" ${LIBRARY_FLAGS})
+    add_executable(${test_command} ${test_command}.c)
+    target_link_libraries(${test_command} testcommon ${ADDITIONAL_LIBS})
+    add_test(${test_name} ${test_command})
+endmacro(zint_add_test)
+
+zint_add_test(channel, test_channel)
+zint_add_test(eci, test_eci)
+zint_add_test(imail, test_imail)
+zint_add_test(mailmark, test_mailmark)
+zint_add_test(maxicode, test_maxicode)
+zint_add_test(rss, test_rss)
+zint_add_test(upcean, test_upcean)
