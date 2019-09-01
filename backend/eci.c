@@ -46,11 +46,9 @@ int utf_to_eci(const int eci, const unsigned char source[], unsigned char dest[]
     int done;
     
     if (eci == 26) {
-        int in_length = (int) *length;
         /* Unicode mode, do not process - just copy data across */
-        for (in_posn = 0; in_posn < in_length; in_posn++) {
-            dest[in_posn] = source[in_posn];
-        }
+        memcpy(dest, source, *length);
+        dest[*length] = '\0';
         return 0;
     }
 
@@ -107,42 +105,8 @@ int utf_to_eci(const int eci, const unsigned char source[], unsigned char dest[]
             glyph += (source[in_posn + 2] & 0x3f);
         }
 
-        if ((source[in_posn] >= 0xf0) && (source[in_posn] < 0xf7)) {
-            /* Four-byte character */
-            bytelen = 4;
-            glyph = (source[in_posn] & 0x07) << 18;
-
-            if (*length < (in_posn + 2)) {
-                return ZINT_ERROR_INVALID_DATA;
-            }
-
-            if (*length < (in_posn + 3)) {
-                return ZINT_ERROR_INVALID_DATA;
-            }
-
-            if (*length < (in_posn + 4)) {
-                return ZINT_ERROR_INVALID_DATA;
-            }
-
-            if (source[in_posn + 1] > 0xc0) {
-                return ZINT_ERROR_INVALID_DATA;
-            }
-
-            if (source[in_posn + 2] > 0xc0) {
-                return ZINT_ERROR_INVALID_DATA;
-            }
-
-            if (source[in_posn + 3] > 0xc0) {
-                return ZINT_ERROR_INVALID_DATA;
-            }
-
-            glyph += (source[in_posn + 1] & 0x3f) << 12;
-            glyph += (source[in_posn + 2] & 0x3f) << 6;
-            glyph += (source[in_posn + 3] & 0x3f);
-        }
-
-        if (source[in_posn] >= 0xf7) {
-            /* More than 4 bytes not supported */
+        if (source[in_posn] >= 0xf0 || glyph > 0x2122) {
+            /* Not in any ISO 8859 or Windows page */
             return ZINT_ERROR_INVALID_DATA;
         }
 
@@ -268,6 +232,9 @@ int utf_to_eci(const int eci, const unsigned char source[], unsigned char dest[]
                         break;
                     default:
                         break;
+                }
+                if (done) {
+                    break;
                 }
             }
 

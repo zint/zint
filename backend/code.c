@@ -582,6 +582,9 @@ int channel_code(struct zint_symbol *symbol, unsigned char source[], int length)
     NextS(channels, 3, channels, channels);
 
     zeroes = channels - 1 - length;
+    if (zeroes < 0) {
+        zeroes = 0;
+    }
     memset(hrt, '0', zeroes);
     strcpy(hrt + zeroes, (char *) source);
     ustrcpy(symbol->text, (unsigned char *) hrt);

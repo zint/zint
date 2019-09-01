@@ -464,14 +464,14 @@ int mailmark(struct zint_symbol *symbol, const unsigned char source[], const siz
         }
         a[96] = 1;
         for (i = 91; i >= 0; i--) {
-            b[i] = islarger(cdv, a);
+            b[i] = !islarger(a, cdv);
             if (b[i] == 1) {
                 binary_subtract(cdv, a);
             }
             shiftdown(a);
         }
 
-        data[j] = (cdv[5] * 32) + (cdv[4] * 16) + (cdv[3] * 8) + (cdv[2] * 4) +
+        data[j] = (cdv[4] * 16) + (cdv[3] * 8) + (cdv[2] * 4) +
                 (cdv[1] * 2) + cdv[0];
     }
     
@@ -486,14 +486,14 @@ int mailmark(struct zint_symbol *symbol, const unsigned char source[], const siz
         a[93] = 1;
         a[92] = 1;
         for (i = 91; i >= 0; i--) {
-            b[i] = islarger(cdv, a);
+            b[i] = !islarger(a, cdv);
             if (b[i] == 1) {
                 binary_subtract(cdv, a);
             }
             shiftdown(a);
         }
 
-        data[j] = (cdv[5] * 32) + (cdv[4] * 16) + (cdv[3] * 8) + (cdv[2] * 4) +
+        data[j] = (cdv[4] * 16) + (cdv[3] * 8) + (cdv[2] * 4) +
                 (cdv[1] * 2) + cdv[0];
     }
     

@@ -254,6 +254,7 @@ int imail(struct zint_symbol *symbol, unsigned char source[], int length) {
     int codeword[10];
     unsigned short characters[10];
     short int bar_map[130];
+    int zip_len;
 
     error_number = 0;
 
@@ -301,7 +302,13 @@ int imail(struct zint_symbol *symbol, unsigned char source[], int length) {
         strcpy(symbol->errtxt, "452: Invalid length tracking code");
         return ZINT_ERROR_INVALID_DATA;
     }
-    if (strlen(zip) > 11) {
+    if (tracker[1] > '4') {
+        strcpy(symbol->errtxt, "454: Invalid Barcode Identifier");
+        return ZINT_ERROR_INVALID_DATA;
+    }
+
+    zip_len = strlen(zip);
+    if (zip_len != 0 && zip_len != 5 && zip_len != 9 && zip_len != 11) {
         strcpy(symbol->errtxt, "453: Invalid ZIP code");
         return ZINT_ERROR_INVALID_DATA;
     }
@@ -314,7 +321,7 @@ int imail(struct zint_symbol *symbol, unsigned char source[], int length) {
         accum[i] = 0;
     }
 
-    for (read = 0; read < strlen(zip); read++) {
+    for (read = 0; read < zip_len; read++) {
 
         binary_multiply(accum, "10");
         binary_load(x_reg, "0", 1);
@@ -332,13 +339,13 @@ int imail(struct zint_symbol *symbol, unsigned char source[], int length) {
         x_reg[i] = accum[i];
     }
 
-    if (strlen(zip) > 9) {
+    if (zip_len > 9) {
         strcpy(zip_adder, "1000100001");
     } else {
-        if (strlen(zip) > 5) {
+        if (zip_len > 5) {
             strcpy(zip_adder, "100001");
         } else {
-            if (strlen(zip) > 0) {
+            if (zip_len > 0) {
                 strcpy(zip_adder, "1");
             } else {
                 strcpy(zip_adder, "0");
@@ -439,7 +446,7 @@ int imail(struct zint_symbol *symbol, unsigned char source[], int length) {
     x_reg[94] = 1;
 
     for (i = 92; i >= 0; i--) {
-        y_reg[i] = islarger(accum, x_reg);
+        y_reg[i] = !islarger(x_reg, accum);
         if (y_reg[i] == 1) {
             binary_subtract(accum, x_reg);
         }
@@ -465,7 +472,7 @@ int imail(struct zint_symbol *symbol, unsigned char source[], int length) {
         x_reg[93] = 1;
         x_reg[91] = 1;
         for (i = 91; i >= 0; i--) {
-            y_reg[i] = islarger(accum, x_reg);
+            y_reg[i] = !islarger(x_reg, accum);
             if (y_reg[i] == 1) {
                 binary_subtract(accum, x_reg);
             }

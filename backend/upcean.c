@@ -138,7 +138,7 @@ int upca(struct zint_symbol *symbol, unsigned char source[], char dest[]) {
         gtin[length - 1] = '\0';
         if (source[length - 1] != upc_check(gtin)) {
             strcpy(symbol->errtxt, "270: Invalid check digit");
-            return ZINT_ERROR_INVALID_DATA;
+            return ZINT_ERROR_INVALID_CHECK;
         }
         gtin[length - 1] = upc_check(gtin);
     }
@@ -150,7 +150,7 @@ int upca(struct zint_symbol *symbol, unsigned char source[], char dest[]) {
 /* UPC E is a zero-compressed version of UPC A */
 int upce(struct zint_symbol *symbol, unsigned char source[], char dest[]) {
     unsigned int i, num_system;
-    char emode, equivalent[12], check_digit, parity[8], temp[8];
+    char emode, equivalent[12], check_digit, parity[8], temp[9];
     char hrt[9];
 
     /* Two number systems can be used - system 0 and system 1 */
@@ -191,7 +191,7 @@ int upce(struct zint_symbol *symbol, unsigned char source[], char dest[]) {
             }
             strcpy(temp, (char*) source);
             strcpy(hrt, (char*) source);
-            for (i = 1; i <= 7; i++) {
+            for (i = 1; i <= 8; i++) {
                 source[i - 1] = temp[i];
             }
         } else {
@@ -294,7 +294,7 @@ int upce(struct zint_symbol *symbol, unsigned char source[], char dest[]) {
     } else {
         if (hrt[7] != check_digit) {
             strcpy(symbol->errtxt, "274: Invalid check digit");
-            return ZINT_ERROR_INVALID_DATA;
+            return ZINT_ERROR_INVALID_CHECK;
         }
     }
     ustrcpy(symbol->text, (unsigned char*) hrt);
@@ -517,7 +517,7 @@ static int isbn(struct zint_symbol *symbol, unsigned char source[], const size_t
     }
 
     /* Input must be 9, 10 or 13 characters */
-    if (((src_len < 9) || (src_len > 13)) || ((src_len > 10) && (src_len < 13))) {
+    if (src_len != 9 && src_len != 10 && src_len != 13) {
         strcpy(symbol->errtxt, "278: Input wrong length");
         return ZINT_ERROR_TOO_LONG;
     }
@@ -535,25 +535,6 @@ static int isbn(struct zint_symbol *symbol, unsigned char source[], const size_t
             return ZINT_ERROR_INVALID_CHECK;
         }
         source[12] = '\0';
-
-        ean13(symbol, source, dest);
-    }
-
-    if (src_len == 10) /* Using 10 digit ISBN */ {
-        check_digit = isbn_check(source);
-        if (check_digit != source[src_len - 1]) {
-            strcpy(symbol->errtxt, "281: Incorrect ISBN check");
-            return ZINT_ERROR_INVALID_CHECK;
-        }
-        for (i = 13; i > 0; i--) {
-            source[i] = source[i - 3];
-        }
-        source[0] = '9';
-        source[1] = '7';
-        source[2] = '8';
-        source[12] = '\0';
-
-        ean13(symbol, source, dest);
     }
 
     if (src_len == 9) /* Using 9 digit SBN */ {
@@ -562,27 +543,24 @@ static int isbn(struct zint_symbol *symbol, unsigned char source[], const size_t
             source[i] = source[i - 1];
         }
         source[0] = '0';
+    }
 
-        /* Verify check digit */
+    if (src_len == 9 || src_len == 10) /* Using 10 digit ISBN or 9 digit SBN padded with leading zero */ {
         check_digit = isbn_check(source);
         if (check_digit != source[ustrlen(source) - 1]) {
-            strcpy(symbol->errtxt, "282: Incorrect SBN check");
+            strcpy(symbol->errtxt, src_len == 9 ? "281: Incorrect SBN check" : "281: Incorrect ISBN check");
             return ZINT_ERROR_INVALID_CHECK;
         }
-
-        /* Convert to EAN-13 number */
-        for (i = 13; i > 0; i--) {
+        for (i = 11; i > 2; i--) {
             source[i] = source[i - 3];
         }
         source[0] = '9';
         source[1] = '7';
         source[2] = '8';
         source[12] = '\0';
-
-        ean13(symbol, source, dest);
     }
 
-    return 0;
+    return ean13(symbol, source, dest);
 }
 
 /* Add leading zeroes to EAN and UPC strings */
@@ -862,7 +840,7 @@ int eanx(struct zint_symbol *symbol, unsigned char source[], int src_len) {
             break;
         case BARCODE_UPCE:
         case BARCODE_UPCE_CHK:
-            if ((ustrlen(first_part) >= 6) && (ustrlen(first_part) <= 8)) {
+            if ((ustrlen(first_part) >= 6) && (ustrlen(first_part) <= (symbol->symbology == BARCODE_UPCE ? 7 : 8))) {
                 error_number = upce(symbol, first_part, (char*) dest);
             } else {
                 strcpy(symbol->errtxt, "290: Input wrong length");

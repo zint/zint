@@ -367,8 +367,8 @@ int maxi_text_process(int mode, unsigned char source[], int length, int eci) {
                     }
                     break;
                 case 3:
-            if (i + 3 < 144 && set[i + 1] == 3 && set[i + 2] == 3 && set[i + 3] == 3) {
-                maxi_bump(set, character, i);
+                    if (i + 3 < 144 && set[i + 1] == 3 && set[i + 2] == 3 && set[i + 3] == 3) {
+                        maxi_bump(set, character, i);
                         character[i] = 60;
                         maxi_bump(set, character, i);
                         character[i] = 60;    
@@ -389,7 +389,7 @@ int maxi_text_process(int mode, unsigned char source[], int length, int eci) {
                         character[i] = 61;
                         maxi_bump(set, character, i);
                         character[i] = 61;
-                        current_set = 3;
+                        current_set = 4;
                         length++;
                         i += 3;
                     } else {
@@ -405,7 +405,7 @@ int maxi_text_process(int mode, unsigned char source[], int length, int eci) {
                         character[i] = 62;
                         maxi_bump(set, character, i);
                         character[i] = 62;
-                        current_set = 3;
+                        current_set = 5;
                         length++;
                         i += 3;
                     } else {

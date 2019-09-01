@@ -173,7 +173,7 @@ short int islarger(short int accum[], short int reg[]) {
             latch = 1;
         }
         i--;
-    } while ((latch == 0) && (i >= -1));
+    } while ((latch == 0) && (i >= 0));
 
     return larger;
 }

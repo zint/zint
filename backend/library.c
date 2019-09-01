@@ -917,10 +917,10 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
 #endif
     error_number = 0;
 
-    if (in_length == 0) {
+    if (in_length <= 0) {
         in_length = (int)ustrlen(source);
     }
-    if (in_length == 0) {
+    if (in_length <= 0) {
         strcpy(symbol->errtxt, "205: No input data");
         error_tag(symbol->errtxt, ZINT_ERROR_INVALID_DATA);
         return ZINT_ERROR_INVALID_DATA;
@@ -976,9 +976,6 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
     }
     if (symbol->symbology == 36) {
         symbol->symbology = BARCODE_UPCA;
-    }
-    if (symbol->symbology == 38) {
-        symbol->symbology = BARCODE_UPCE;
     }
     if ((symbol->symbology >= 41) && (symbol->symbology <= 45)) {
         symbol->symbology = BARCODE_POSTNET;
@@ -1157,8 +1154,23 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
             case BARCODE_MICROQR:
             case BARCODE_GRIDMATRIX:
             case BARCODE_HANXIN:
-                error_number = utf_to_eci(symbol->eci, source, local_source, (size_t*)&in_length);
-                error_number = extended_charset(symbol, local_source, in_length);
+                {
+#ifndef _MSC_VER
+                    unsigned char temp[in_length + 1];
+#else
+                    unsigned char *temp = (unsigned char*) _alloca(in_length + 1);
+#endif
+                    size_t temp_len = in_length;
+                    memcpy(temp, local_source, temp_len);
+					temp[temp_len] = '\0';
+                    error_number = utf_to_eci(symbol->eci, local_source, temp, &temp_len);
+                    if (error_number == 0) {
+                        in_length = (int) temp_len;
+                        memcpy(local_source, temp, in_length);
+                        local_source[in_length] = '\0';
+                        error_number = extended_charset(symbol, local_source, in_length);
+                    }
+                }
                 break;
             default:
                 error_number = reduced_charset(symbol, local_source, in_length);

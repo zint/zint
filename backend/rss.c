@@ -221,7 +221,7 @@ int rss14(struct zint_symbol *symbol, unsigned char source[], int src_len) {
     }
 
     for (i = 24; i >= 0; i--) {
-        y_reg[i] = islarger(accum, x_reg);
+        y_reg[i] = !islarger(x_reg, accum);
         if (y_reg[i] == 1) {
             binary_subtract(accum, x_reg);
         }
@@ -245,7 +245,7 @@ int rss14(struct zint_symbol *symbol, unsigned char source[], int src_len) {
     }
 
     for (i = 24; i >= 0; i--) {
-        y_reg[i] = islarger(accum, x_reg);
+        y_reg[i] = !islarger(x_reg, accum);
         if (y_reg[i] == 1) {
             binary_subtract(accum, x_reg);
         }
@@ -275,7 +275,7 @@ int rss14(struct zint_symbol *symbol, unsigned char source[], int src_len) {
     }
 
     for (i = 24; i >= 0; i--) {
-        y_reg[i] = islarger(accum, x_reg);
+        y_reg[i] = !islarger(x_reg, accum);
         if (y_reg[i] == 1) {
             binary_subtract(accum, x_reg);
         }
@@ -790,7 +790,7 @@ int rsslimited(struct zint_symbol *symbol, unsigned char source[], int src_len) 
     }
 
     for (i = 24; i >= 0; i--) {
-        y_reg[i] = islarger(accum, x_reg);
+        y_reg[i] = !islarger(x_reg, accum);
         if (y_reg[i] == 1) {
             binary_subtract(accum, x_reg);
         }
