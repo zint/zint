@@ -119,21 +119,21 @@ void maxi_bump(int set[], int character[], int bump_posn) {
 }
 
 /* If the value is present in  array, return the value, else return badvalue */
-int value_in_array(int val, int arr[], int badvalue){
+int value_in_array(int val, int arr[], int badvalue, int arrLength){
     int i;
-    for(i = 0; i < sizeof(arr); i++){
+    for(i = 0; i < arrLength; i++){
         if(arr[i] == val) return val;
     }
     return badvalue;
 }
 
 /* Choose the best set from previous and next set in the range of the setval array, if no value can be found we return setval[0] */
-int bestSurroundingSet(int index, int length, int set[], int setval[]) {
+int bestSurroundingSet(int index, int length, int set[], int setval[], int setLength) {
     int badValue = -1;
-    int option1 = value_in_array(set[index - 1], setval, badValue);
+    int option1 = value_in_array(set[index - 1], setval, badValue, setLength);
     if (index + 1 < length) {
         // we have two options to check (previous & next)
-        int option2 = value_in_array(set[index + 1], setval, badValue);
+        int option2 = value_in_array(set[index + 1], setval, badValue, setLength);
         if (option2 != badValue && option1 > option2) {
           return option2;
         }
@@ -188,7 +188,7 @@ int maxi_text_process(int mode, unsigned char source[], int length, int eci) {
             /* Special character */
             if (character[i] == 13) {
                 /* Carriage Return */
-                set[i] = bestSurroundingSet(i, length, set, set15);
+                set[i] = bestSurroundingSet(i, length, set, set15, 2);
                 if (set[i] == 5) {
                     character[i] = 13;
                 } else {
@@ -199,7 +199,7 @@ int maxi_text_process(int mode, unsigned char source[], int length, int eci) {
 
             if ((done == 0) && (character[i] == 28)) {
                 /* FS */
-                set[i] = bestSurroundingSet(i, length, set, set12345);
+                set[i] = bestSurroundingSet(i, length, set, set12345, 5);
                 if (set[i] == 5) {
                     character[i] = 32;                   
                 }
@@ -208,7 +208,7 @@ int maxi_text_process(int mode, unsigned char source[], int length, int eci) {
 
             if ((done == 0) && (character[i] == 29)) {
                 /* GS */
-                set[i] = bestSurroundingSet(i, length, set, set12345);
+                set[i] = bestSurroundingSet(i, length, set, set12345, 5);
                 if (set[i] == 5) {
                     character[i] = 33;
                 }       
@@ -217,7 +217,7 @@ int maxi_text_process(int mode, unsigned char source[], int length, int eci) {
 
             if ((done == 0) && (character[i] == 30)) {
                 /* RS */
-                set[i] = bestSurroundingSet(i, length, set, set12345);         
+                set[i] = bestSurroundingSet(i, length, set, set12345, 5);         
                 if (set[i] == 5) {
                     character[i] = 34;
                 }
@@ -226,7 +226,7 @@ int maxi_text_process(int mode, unsigned char source[], int length, int eci) {
 
             if ((done == 0) && (character[i] == 32)) {
                 /* Space */
-                set[i] = bestSurroundingSet(i, length, set, set12345);
+                set[i] = bestSurroundingSet(i, length, set, set12345, 5);
                 if (set[i] == 1) {
                     character[i] = 32;
                 } else if (set[i] == 2) {
@@ -239,7 +239,7 @@ int maxi_text_process(int mode, unsigned char source[], int length, int eci) {
 
             if ((done == 0) && (character[i] == 44)) {
                 /* Comma */
-                set[i] = bestSurroundingSet(i, length, set, set12);
+                set[i] = bestSurroundingSet(i, length, set, set12, 2);
                 if (set[i] == 2) {
                     character[i] = 48;
                 }
@@ -248,7 +248,7 @@ int maxi_text_process(int mode, unsigned char source[], int length, int eci) {
 
             if ((done == 0) && (character[i] == 46)) {
                 /* Full Stop */
-                set[i] = bestSurroundingSet(i, length, set, set12);
+                set[i] = bestSurroundingSet(i, length, set, set12, 2);
                 if (set[i] == 2) {
                     character[i] = 49;
                 } 
@@ -257,7 +257,7 @@ int maxi_text_process(int mode, unsigned char source[], int length, int eci) {
 
             if ((done == 0) && (character[i] == 47)) {
                 /* Slash */
-                set[i] = bestSurroundingSet(i, length, set, set12);
+                set[i] = bestSurroundingSet(i, length, set, set12, 2);
                 if (set[i] == 2) {
                     character[i] = 50;
                 }
@@ -266,7 +266,7 @@ int maxi_text_process(int mode, unsigned char source[], int length, int eci) {
 
             if ((done == 0) && (character[i] == 58)) {
                 /* Colon */
-                set[i] = bestSurroundingSet(i, length, set, set12);
+                set[i] = bestSurroundingSet(i, length, set, set12, 2);
                 if (set[i] == 2) {
                     character[i] = 51;
                 }
