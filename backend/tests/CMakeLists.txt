@@ -11,7 +11,7 @@ set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/"
 set(ZINT_DEBUG FALSE CACHE BOOL "Set debug compile flag")
 set(ZINT_SANITIZE FALSE CACHE BOOL "Set sanitize compile/link flags")
 
-find_package (LibZint 2.6.3 REQUIRED)
+find_package (LibZint 2.6.4 REQUIRED)
 
 if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
     if (ZINT_DEBUG)
@@ -40,5 +40,6 @@ zint_add_test(eci, test_eci)
 zint_add_test(imail, test_imail)
 zint_add_test(mailmark, test_mailmark)
 zint_add_test(maxicode, test_maxicode)
+zint_add_test(qr, test_qr)
 zint_add_test(rss, test_rss)
 zint_add_test(upcean, test_upcean)
