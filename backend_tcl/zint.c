@@ -57,6 +57,10 @@
  -	Framework trunk update
  -	Add options -bold, -dotted, -dotsize, -dmre, -eci
  -	Implemented ECI logic
+ 2019-09-01 2.6.5 HaO
+ -	Framework 2.6.5 update
+ -	Add option -gssep
+ 
 */
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
@@ -96,7 +100,7 @@
 /*----------------------------------------------------------------------------*/
 /* > File option defines */
 
-#define VERSION "2.6.4"
+#define VERSION "2.6.5"
 
 /*----------------------------------------------------------------------------*/
 /* >>>>> Hepler defines */
@@ -388,6 +392,7 @@ static char help_message[] = "zint tcl(stub,obj) dll\n"
     "   -dotsize number: radius ratio of dots from 0.01 to 1.0\n" 
     "   -scale double: Scale the image to this factor\n"
     "   -format binary|unicode|gs1: input data format. Default:unicode\n"
+	"   -gssep bool: for gs1, use gs as separator instead fnc1 (Datamatrix only)\n"
     "   -eci number: ECI to use\n"
     "   -notext bool: no interpretation line\n"
     "   -square bool: force Data Matrix symbols to be square\n"
@@ -572,13 +577,13 @@ static int Encode(Tcl_Interp *interp, int objc,
         /* Option list and indexes */
         char *optionList[] = {
             "-barcode", "-bg", "-bind", "-bold", "-border", "-box", "-cols",
-            "-dmre", "-dotsize", "-dotty", "-eci", "-fg", "-format", "-height",
-            "-init", "-mode", "-notext", "-primary", "-rotate", "-rows",
-            "-scale", "-secure", "-smalltext", "-square", "-to", "-vers",
-            "-whitesp", NULL};
+            "-dmre", "-dotsize", "-dotty", "-eci", "-fg", "-format", "-gssep",
+			"-height", "-init", "-mode", "-notext", "-primary", "-rotate",
+			"-rows", "-scale", "-secure", "-smalltext", "-square", "-to",
+			"-vers", "-whitesp", NULL};
         enum iOption {
             iBarcode, iBG, iBind, iBold, iBorder, iBox, iCols,
-            iDMRE, iDotSize, iDotty, iECI, iFG, iFormat, iHeight,
+            iDMRE, iDotSize, iDotty, iECI, iFG, iFormat, iGSSep, iHeight,
             iInit, iMode, iNoText, iPrimary, iRotate, iRows,
             iScale, iSecure, iSmallText, iSquare, iTo, iVers,
             iWhiteSp
@@ -603,6 +608,7 @@ static int Encode(Tcl_Interp *interp, int objc,
         case iBox:
         case iDMRE:
         case iDotty:
+		case iGSSep:
         case iInit:
         case iNoText:
         case iSmallText:
@@ -702,6 +708,13 @@ static int Encode(Tcl_Interp *interp, int objc,
                 hSymbol->output_options |= BARCODE_DOTTY_MODE;
             } else {
                 hSymbol->output_options &= ~BARCODE_DOTTY_MODE;
+            }
+            break;
+        case iGSSep:
+            if (intValue) {
+                hSymbol->output_options |= GS1_GS_SEPARATOR;
+            } else {
+                hSymbol->output_options &= ~GS1_GS_SEPARATOR;
             }
             break;
         case iECI:

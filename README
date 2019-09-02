@@ -61,6 +61,19 @@ that the old -vers numbers for DMRE are re-assigned.
 The separator of GS1-datamatrix may be switched from FNC1 to GS.
 GS1 field length check AI 8009 and 7230 to 7239 currected.
 
+Version 2.6.5:
+Fixed bugs:
+backend/main.c was missing
+Maxicode bullseye rastering for scale = 0.5
+Crash in uto to eci.
+eci ISO 8859-16 table missing data line
+upce check for 7 digit input (causes crash) and BARCODE_UPCE_CHK -> BARCODE_UPCE mapping removed
+US imail check for invalid barcode identifier and allow 0/5/9/11 length zip
+maxicode code set correction
+cmake flags for debugging and sanitize options
+unit tests for the changes, with a simple test suite based on qrencode/tests
+
+
 CONTACT US
 ----------
 The home of Zint is:

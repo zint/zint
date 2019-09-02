@@ -1,5 +1,5 @@
 Name:      zint
-Version:   2.6.4
+Version:   2.6.5
 Release:   2%{?dist}
 Summary:   A barcode generator and library
 License:   GPLv3+
@@ -137,6 +137,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+
+* Mon Sep 1 2019 Harald Oehlmann <oehhar@sourceforge.net> - 2.6.5
+- Version -> 2.6.5
 
 * Fri Aug 30 2019 Harald Oehlmann <oehhar@sourceforge.net> - 2.6.4
 - Version -> 2.6.4
