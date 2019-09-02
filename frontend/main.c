@@ -97,6 +97,7 @@ void usage(void) {
             "  --filetype=TYPE       Set output file type (PNG/EPS/SVG/PNG/EPS/GIF/TXT)\n"
             "  --fg=COLOUR           Specify a foreground colour (in hex)\n"
             "  --gs1                 Treat input as GS1 compatible data\n"
+            "  --gssep               Use separator GS for GS1\n"
             "  -h, --help            Display help message\n"
             "  --height=NUMBER       Set height of symbol in multiples of x-dimension\n"
             "  -i, --input=FILE      Read input data from FILE\n"
@@ -199,7 +200,7 @@ int batch_process(struct zint_symbol *symbol, char *filename, int mirror_mode, c
     char number[12], reverse_number[12];
     int inpos, local_line_count;
     char format_string[127], reversed_string[127], format_char;
-    int format_len, i;
+    int format_len, i, o;
     char adjusted[2];
 
     memset(buffer, 0, sizeof (unsigned char) * 7100);
@@ -300,9 +301,12 @@ int batch_process(struct zint_symbol *symbol, char *filename, int mirror_mode, c
                 }
             } else {
                 /* Name the output file from the data being processed */
-                for (i = 0; (i < posn && i < 250); i++) {
+                i = 0;
+                o = 0;
+                do {
+                //for (i = 0; (i < posn && i < 250); i++) {
                     if (buffer[i] < 0x20) {
-                        output_file[i] = '_';
+                        output_file[o] = '_';
                     } else {
                         switch (buffer[i]) {
                             case 0x21: // !
@@ -313,19 +317,30 @@ int batch_process(struct zint_symbol *symbol, char *filename, int mirror_mode, c
                             case 0x3c: // <
                             case 0x3e: // >
                             case 0x3f: // ?
+                            case 0x5c: // Backslash
                             case 0x7c: // |
                             case 0x7f: // DEL
-                                output_file[i] = '_';
+                                output_file[o] = '_';
                                 break;
                             default:
-                                output_file[i] = buffer[i];
+                                output_file[o] = buffer[i];
                         }
                     }
-                }
+                    
+                    // Skip escape characters
+                    if ((buffer[i] == 0x5c) && (symbol->input_mode & ESCAPE_MODE)) {
+                        i++;
+                        if (buffer[i] == 'x') {
+                            i += 2;
+                        }
+                    }
+                    i++;
+                    o++;
+                } while (i < posn && o < 250);
 
                 /* Add file extension */
-                output_file[i] = '.';
-                output_file[i + 1] = '\0';
+                output_file[o] = '.';
+                output_file[o + 1] = '\0';
 
                 strcat(output_file, filetype);
             }
@@ -418,6 +433,7 @@ int main(int argc, char **argv) {
             {"primary", 1, 0, 0},
             {"scale", 1, 0, 0},
             {"gs1", 0, 0, 0},
+            {"gssep", 0, 0, 0},
             {"binary", 0, 0, 0},
             {"notext", 0, 0, 0},
             {"square", 0, 0, 0},
@@ -463,6 +479,9 @@ int main(int argc, char **argv) {
                 if (!strcmp(long_options[option_index].name, "dotty")) {
                     my_symbol->output_options += BARCODE_DOTTY_MODE;
                 }
+                if (!strcmp(long_options[option_index].name, "gssep")) {
+                    my_symbol->output_options += GS1_GS_SEPARATOR;
+                }
                 if (!strcmp(long_options[option_index].name, "direct")) {
                     my_symbol->output_options += BARCODE_STDOUT;
                 }
@@ -474,7 +493,11 @@ int main(int argc, char **argv) {
                     my_symbol->input_mode = GS1_MODE;
                 }
                 if (!strcmp(long_options[option_index].name, "binary")) {
-                    my_symbol->input_mode = DATA_MODE;
+                    if (my_symbol->input_mode & ESCAPE_MODE) {
+                        my_symbol->input_mode = DATA_MODE + ESCAPE_MODE;
+                    } else {
+                        my_symbol->input_mode = DATA_MODE;
+                    }
                 }
                 if (!strcmp(long_options[option_index].name, "fg")) {
                     strncpy(my_symbol->fgcolour, optarg, 7);
