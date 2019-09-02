@@ -239,7 +239,7 @@ void draw_circle(char *pixelbuf, int image_width, int image_height, int x0, int 
 }
 
 void draw_bullseye(char pixelbuf, int image_width, int image_height, int xoffset, int yoffset, int scaler) {
-    / Central bullseye in Maxicode symbols */
+    /* Central bullseye in Maxicode symbols */
     float x = 14.5 * scaler;
     float y = 15.0 * scaler;
     if(scaler < 10) {
@@ -541,7 +541,7 @@ int plot_raster_maxicode(struct zint_symbol *symbol, int rotate_angle, int data_
         }
     }
 
-    draw_bullseye(pixelbuf, image_width, image_height, (2.0 * xoffset), (2.0 * yoffset)) * scaler), scaler * 10);
+    draw_bullseye(pixelbuf, image_width, image_height, (2.0 * xoffset), (2.0 * yoffset), scaler * 10);
 
     // Virtual hexagon
     //draw_hexagon(pixelbuf, image_width, scaled_hexagon, hexagon_size, ((14 * 10) + (2 * xoffset)) * scaler, ((16 * 9) + (2 * yoffset)) * scaler);
