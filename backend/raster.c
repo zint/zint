@@ -238,7 +238,7 @@ void draw_circle(char *pixelbuf, int image_width, int image_height, int x0, int 
     }
 }
 
-void draw_bullseye(char pixelbuf, int image_width, int image_height, int xoffset, int yoffset, int scaler) {
+void draw_bullseye(char *pixelbuf, int image_width, int image_height, int xoffset, int yoffset, int scaler) {
     /* Central bullseye in Maxicode symbols */
     float x = 14.5 * scaler;
     float y = 15.0 * scaler;
