@@ -33,7 +33,7 @@
 #include <zint.h>
 #include "testcommon.h"
 
-//#define TEST_RSS_GENERATE_EXPECTED 1
+//#define TEST_GENERATE_EXPECTED 1
 
 static void test_best_supported_set(void)
 {
@@ -105,7 +105,7 @@ static void test_best_supported_set(void)
         ret = ZBarcode_Render( symbol, data[i].w, data[i].h );
         assert_equal(ret, data[i].ret_render, "i:%d ZBarcode_Render ret %d != %d\n", i, ret, data[i].ret_render);
 
-        #ifdef TEST_RSS_GENERATE_EXPECTED
+        #ifdef TEST_GENERATE_EXPECTED
         printf("symbology %d, data %s, length %d, rows %d, width %d\n", symbol->symbology, data[i].data, length, symbol->rows, symbol->width);
         testUtilModulesDump(symbol);
         #else

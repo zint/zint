@@ -966,7 +966,7 @@ void MainWindow::update_preview()
 		case BARCODE_MICROQR:
 			m_bc.bc.setSymbol(BARCODE_MICROQR);
 			if(m_optionWidget->findChild<QRadioButton*>("radMQRSize")->isChecked())
-				m_bc.bc.setWidth(m_optionWidget->findChild<QComboBox*>("cmbMQRSize")->currentIndex());
+				m_bc.bc.setWidth(m_optionWidget->findChild<QComboBox*>("cmbMQRSize")->currentIndex() + 1);
 
 			if(m_optionWidget->findChild<QRadioButton*>("radMQRECC")->isChecked())
 				m_bc.bc.setSecurityLevel(m_optionWidget->findChild<QComboBox*>("cmbMQRECC")->currentIndex() + 1);

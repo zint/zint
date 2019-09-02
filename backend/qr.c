@@ -2586,6 +2586,26 @@ int microqr(struct zint_symbol *symbol, const unsigned char source[], size_t len
         return ZINT_ERROR_TOO_LONG;
     }
 
+    /* Check option 1 in combination with option 2 */
+    ecc_level = LEVEL_L;
+    if (symbol->option_1 >= 1 && symbol->option_1 <= 4) {
+        if (symbol->option_1 == 4) {
+            strcpy(symbol->errtxt, "566: Error correction level H not available");
+            return ZINT_ERROR_INVALID_OPTION;
+        }
+        if (symbol->option_2 >= 1 && symbol->option_2 <= 4) {
+            if (symbol->option_2 == 1 && symbol->option_1 != 1) {
+                strcpy(symbol->errtxt, "574: Version M1 supports error correction level L only");
+                return ZINT_ERROR_INVALID_OPTION;
+            }
+            if (symbol->option_2 != 4 && symbol->option_1 == 3) {
+                strcpy(symbol->errtxt, "575: Error correction level Q requires Version M4");
+                return ZINT_ERROR_INVALID_OPTION;
+            }
+        }
+        ecc_level = symbol->option_1;
+    }
+
     for (i = 0; i < 4; i++) {
         version_valid[i] = 1;
     }
@@ -2688,16 +2708,6 @@ int microqr(struct zint_symbol *symbol, const unsigned char source[], size_t len
     }
 
     /* Eliminate possible versions depending on error correction level specified */
-    ecc_level = LEVEL_L;
-    if ((symbol->option_1 >= 1) && (symbol->option_2 <= 4)) {
-        ecc_level = symbol->option_1;
-    }
-
-    if (ecc_level == LEVEL_H) {
-        strcpy(symbol->errtxt, "566: Error correction level H not available");
-        return ZINT_ERROR_INVALID_OPTION;
-    }
-
     if (ecc_level == LEVEL_Q) {
         version_valid[0] = 0;
         version_valid[1] = 0;
@@ -2736,8 +2746,8 @@ int microqr(struct zint_symbol *symbol, const unsigned char source[], size_t len
     version = autoversion;
     /* Get version from user */
     if ((symbol->option_2 >= 1) && (symbol->option_2 <= 4)) {
-        if (symbol->option_2 >= autoversion) {
-            version = symbol->option_2;
+        if (symbol->option_2 - 1 >= autoversion) {
+            version = symbol->option_2 - 1;
         } else {
             strcpy(symbol->errtxt, "570: Input too long for selected symbol size");
             return ZINT_ERROR_TOO_LONG;
