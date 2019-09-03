@@ -551,7 +551,7 @@ void numbprocess(int *chainemc, int *mclength, char chaine[], int start, int len
 /* 366 */
 static int pdf417(struct zint_symbol *symbol, unsigned char chaine[], const size_t length) {
     int i, k, j, indexchaine, indexliste, mode, longueur, loop, mccorrection[520], offset;
-    int total, chainemc[2700], mclength, c1, c2, c3, dummy[35];
+    int total, chainemc[2700], mclength, c1, c2, c3, dummy[35], calcheight;
     char pattern[580];
     int debug = symbol->debug;
 
@@ -808,10 +808,18 @@ static int pdf417(struct zint_symbol *symbol, unsigned char chaine[], const size
                 set_module(symbol, i, loop);
             }
         }
-
-        symbol->row_height[i] = 3;
-
     }
+    
+    /* Allow user to adjust height of symbol, but enforce minimum row height of 3X */
+    calcheight = (int)(symbol->height / i);
+    if (calcheight < 3) {
+        calcheight = 3;
+    }
+    
+    for (j = 0; j < i; j++) {
+        symbol->row_height[j] = calcheight;
+    }
+    
     symbol->rows = (mclength / symbol->option_2);
     symbol->width =(int)strlen(pattern);
 
@@ -878,7 +886,7 @@ int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], const size_
     int total, chainemc[2700], mclength, dummy[5], codeerr;
     char pattern[580];
     int variant, LeftRAPStart, CentreRAPStart, RightRAPStart, StartCluster;
-    int LeftRAP, CentreRAP, RightRAP, Cluster, loop;
+    int LeftRAP, CentreRAP, RightRAP, Cluster, loop, calcheight;
     int debug = 0;
 
     /* Encoding starts out the same as PDF417, so use the same code */
@@ -1282,6 +1290,16 @@ int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], const size_
         if (Cluster == 3) {
             Cluster = 0;
         }
+    }
+    
+    /* Allow user to adjust height of symbol, but enforce minimum row height of 2X */
+    calcheight = (int)(symbol->height / i);
+    if (calcheight < 2) {
+        calcheight = 2;
+    }
+    
+    for (j = 0; j < i; j++) {
+        symbol->row_height[j] = calcheight;
     }
 
     return codeerr;
