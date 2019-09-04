@@ -49,7 +49,7 @@ struct zint_symbol *ZBarcode_Create() {
 
     memset(symbol, 0, sizeof (*symbol));
     symbol->symbology = BARCODE_CODE128;
-    symbol->height = 50;
+    symbol->height = 0;
     symbol->whitespace_width = 0;
     symbol->border_width = 0;
     symbol->output_options = 0;
@@ -445,6 +445,68 @@ static int is_matrix(const int symbology) {
     return result;
 }
 
+static int is_linear(const int symbology) {
+    /* Returns 1 if symbology is linear (1 dimensional) */
+    
+    int result = 0;
+    switch (symbology) {
+        case BARCODE_CODE11:
+        case BARCODE_C25MATRIX:
+        case BARCODE_C25INTER:
+        case BARCODE_C25IATA:
+        case BARCODE_C25LOGIC:
+        case BARCODE_C25IND:
+        case BARCODE_CODE39:
+        case BARCODE_EXCODE39:
+        case BARCODE_EANX:
+        case BARCODE_EANX_CHK:
+        case BARCODE_EAN128:
+        case BARCODE_CODABAR:
+        case BARCODE_CODE128:
+        case BARCODE_DPLEIT:
+        case BARCODE_DPIDENT:
+        case BARCODE_CODE93:
+        case BARCODE_FLAT:
+        case BARCODE_RSS14:
+        case BARCODE_RSS_LTD:
+        case BARCODE_RSS_EXP:
+        case BARCODE_TELEPEN:
+        case BARCODE_UPCA:
+        case BARCODE_UPCA_CHK:
+        case BARCODE_UPCE:
+        case BARCODE_UPCE_CHK:
+        case BARCODE_MSI_PLESSEY:
+        case BARCODE_FIM:
+        case BARCODE_LOGMARS:
+        case BARCODE_PHARMA:
+        case BARCODE_PZN:
+        case BARCODE_CODE128B:
+        case BARCODE_ISBNX:
+        case BARCODE_EAN14:
+        case BARCODE_NVE18:
+        case BARCODE_ONECODE:
+        case BARCODE_PLESSEY:
+        case BARCODE_TELEPEN_NUM:
+        case BARCODE_ITF14:
+        case BARCODE_HIBC_128:
+        case BARCODE_HIBC_39:
+        case BARCODE_CODE32:
+        case BARCODE_EANX_CC:
+        case BARCODE_EAN128_CC:
+        case BARCODE_RSS14_CC:
+        case BARCODE_RSS_LTD_CC:
+        case BARCODE_RSS_EXP_CC:
+        case BARCODE_UPCA_CC:
+        case BARCODE_UPCE_CC:
+        case BARCODE_CHANNEL:
+        case BARCODE_VIN:
+            result = 1;
+            break;
+    }
+    
+    return result;
+}
+
 static int supports_eci(const int symbology) {
     /* Returns 1 if symbology can encode the ECI character */
 
@@ -634,6 +696,10 @@ static int reduced_charset(struct zint_symbol *symbol, const unsigned char *sour
                 return error_number;
             }
             break;
+    }
+    
+    if ((symbol->height == 0) && is_linear(symbol->symbology)) {
+        symbol->height = 50;
     }
     
     switch (symbol->symbology) {
