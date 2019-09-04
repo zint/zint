@@ -89,7 +89,8 @@ int quelmode(char codeascii) {
     int mode = BYT;
     if ((codeascii == '\t') || (codeascii == '\n') || (codeascii == '\r') || ((codeascii >= ' ') && (codeascii <= '~'))) {
         mode = TEX;
-    } else if ((codeascii >= '0') && (codeascii <= '9')) {
+    }
+    if ((codeascii >= '0') && (codeascii <= '9')) {
         mode = NUM;
     }
     /* 876 */
@@ -759,6 +760,14 @@ static int pdf417(struct zint_symbol *symbol, unsigned char chaine[], const size
     /* we add these codes to the string */
     for (i = k - 1; i >= 0; i--) {
         chainemc[mclength++] = mccorrection[i] ? 929 - mccorrection[i] : 0;
+    }
+    
+    if (debug) {
+        printf("Complete CW string:\n");
+        for (i = 0; i < mclength; i++) {
+            printf("%d ", chainemc[i]);
+        }
+        printf("\n");
     }
 
     /* 818 - The CW string is finished */
