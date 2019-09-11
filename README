@@ -74,12 +74,11 @@ cmake flags for debugging and sanitize options
 unit tests for the changes, with a simple test suite based on qrencode/tests
 
 Version 2.6.6 (not jet released):
-New features:
-PDF row size may be set
-PDF numeric compaction
-Fixing bugs:
+Fixed bugs:
+Ticket 161: PDF row size may be set
+Ticket 155: PDF numeric compaction
 Ticket 164: crash due to call of svg_plot withnull vector
-Crash on bullseye raster drawing
+Ticket 119: Crash on bullseye raster drawing
 qtzint: Micro-QR version option choice corrected (+1 missing).
 
 CONTACT US
