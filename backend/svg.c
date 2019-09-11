@@ -54,7 +54,7 @@ int svg_plot(struct zint_symbol *symbol) {
     struct zint_vector_string *string;
 
     /* Check for no created vector set */
-    /* E-Mail Christian Schmitz 2019-09-10: reason unknown */
+    /* E-Mail Christian Schmitz 2019-09-10: reason unknown  Ticket #164*/
     if (symbol->vector == NULL) {
         return ZINT_ERROR_INVALID_DATA;
     }
