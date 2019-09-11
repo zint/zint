@@ -53,6 +53,11 @@ int svg_plot(struct zint_symbol *symbol) {
     struct zint_vector_circle *circle;
     struct zint_vector_string *string;
 
+    /* Check for no created vector set */
+    /* E-Mail Christian Schmitz 2019-09-10: reason unknown */
+    if (symbol->vector == NULL) {
+        return ZINT_ERROR_INVALID_DATA;
+    }
     if (symbol->output_options & BARCODE_STDOUT) {
         fsvg = stdout;
     } else {
