@@ -265,7 +265,7 @@ bool MainWindow::save()
 void MainWindow::about()
 {
 	QMessageBox::about(this, tr("About Zint"),
-               tr("<h2>Zint Barcode Studio 2.6.5</h2>"
+               tr("<h2>Zint Barcode Studio 2.6.6</h2>"
 					   "<p>A free barcode generator"
                        "<p>Instruction manual is available at the project homepage:<br>"
                        "<a href=\"http://www.zint.org.uk\">http://www.zint.org.uk</a>"
@@ -283,7 +283,7 @@ void MainWindow::about()
                        "ISO/IEC 15438:2015, ISO/IEC 16022:2006, ISO/IEC 16023:2000,<br>"
                        "ISO/IEC 16388:2007, ISO/IEC 18004:2015, ISO/IEC 24723:2010,<br>"
 					   "ISO/IEC 24724:2011, ISO/IEC 24728:2006, ISO/IEC 24778:2008,<br>"
-					   "ISO/IEC 29158:2019, ANSI-HIBC 2.3-2009, ANSI/AIM BC6-2000,<br>"
+					   "ISO/IEC 21471:2019, ANSI-HIBC 2.3-2009, ANSI/AIM BC6-2000,<br>"
                        "ANSI/AIM BC12-1998, AIMD014 (v 1.63), USPS-B-3200"
                        "</small></td></tr></table>"
 

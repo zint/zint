@@ -80,6 +80,7 @@ Ticket 155: PDF numeric compaction
 Ticket 164: crash due to call of svg_plot withnull vector
 Ticket 119: Crash on bullseye raster drawing
 qtzint: Micro-QR version option choice corrected (+1 missing).
+Datamatrix: code corruption when ECI was encoded and base256 encoding was automatically chosen.
 
 CONTACT US
 ----------
