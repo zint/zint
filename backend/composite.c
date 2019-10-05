@@ -1421,6 +1421,8 @@ static int cc_binary_string(struct zint_symbol *symbol, const char source[], cha
                     if (general_field_type[i - 1] == ISOIEC) {
                         bin_append(4, 5, binary_string); /* ISO/IEC 646 latch */
                     }
+                } else {
+                    bin_append(0, 4, binary_string); /* Alphanumeric latch */
                 }
 
                 if ((general_field[i] >= '0') && (general_field[i] <= '9')) {
@@ -1465,6 +1467,9 @@ static int cc_binary_string(struct zint_symbol *symbol, const char source[], cha
                     if (general_field_type[i - 1] == ALPHA) {
                         bin_append(4, 5, binary_string);; /* ISO/IEC 646 latch */
                     }
+                } else {
+                    bin_append(0, 4, binary_string); /* Alphanumeric latch */
+                    bin_append(4, 5, binary_string); /* ISO/IEC 646 latch */
                 }
 
                 if ((general_field[i] >= '0') && (general_field[i] <= '9')) {
