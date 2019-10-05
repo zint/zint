@@ -276,7 +276,9 @@ static int cc_a(struct zint_symbol *symbol, char source[], int cc_width) {
             dummy[j + 1] = codeWords[i * cc_width + j];
         }
         /* Copy the data into codebarre */
-        bin_append(rap_side[LeftRAP - 1], 10, pattern);
+        if (cc_width != 3) {
+            bin_append(rap_side[LeftRAP - 1], 10, pattern);
+        }
         bin_append(pdf_bitpattern[offset + dummy[1]], 16, pattern);
         strcat(pattern, "0");
         if (cc_width == 3) {
@@ -1793,7 +1795,11 @@ int composite(struct zint_symbol *symbol, unsigned char source[], int length) {
                 case 7: /* EAN-8 */
                 case 10: /* EAN-8 + 2 */
                 case 13: /* EAN-8 + 5 */
-                    bottom_shift = 13;
+                    if (cc_mode == 1) {
+                        bottom_shift = 3;
+                    } else {
+                        bottom_shift = 13;
+                    }
                     break;
                 case 12: /* EAN-13 */
                 case 15: /* EAN-13 + 2 */
@@ -1808,7 +1814,12 @@ int composite(struct zint_symbol *symbol, unsigned char source[], int length) {
             break;
         case BARCODE_RSS14_CC: bottom_shift = 4;
             break;
-        case BARCODE_RSS_LTD_CC: bottom_shift = 9;
+        case BARCODE_RSS_LTD_CC: 
+            if (cc_mode == 1) {
+                top_shift = 1;
+            } else {
+                bottom_shift = 9;
+            }
             break;
         case BARCODE_RSS_EXP_CC: k = 1;
             while ((!(module_is_set(linear, 1, k - 1))) && module_is_set(linear, 1, k)) {

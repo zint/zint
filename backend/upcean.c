@@ -788,7 +788,7 @@ int eanx(struct zint_symbol *symbol, unsigned char source[], int src_len) {
                     set_module(symbol, symbol->rows + 1, 0);
                     set_module(symbol, symbol->rows + 1, 68);
                     set_module(symbol, symbol->rows + 2, 1);
-                    set_module(symbol, symbol->rows + 1, 67);
+                    set_module(symbol, symbol->rows + 2, 67);
                     symbol->row_height[symbol->rows] = 2;
                     symbol->row_height[symbol->rows + 1] = 2;
                     symbol->row_height[symbol->rows + 2] = 2;
