@@ -454,7 +454,7 @@ int maxi_text_process(int mode, unsigned char source[], int length, int eci) {
 
     /* Insert ECI at the beginning of message if needed */
     /* Encode ECI assignment numbers according to table 3 */
-    if (eci != 3) {
+    if (eci != 0) {
         maxi_bump(set, character, 0);
         character[0] = 27; // ECI
         if (eci <= 31) {

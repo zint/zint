@@ -581,7 +581,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
         }
     }
 
-    if (symbol->eci > 3) {
+    if (symbol->eci > 0) {
         /* Encode ECI numbers according to Table 6 */
         target[tp] = 241; /* ECI Character */
         tp++;

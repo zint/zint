@@ -166,7 +166,7 @@ static void qr_binary(int datastream[], const int version, const int target_binl
         strcat(binary, "0101"); /* FNC1 */
     }
 
-    if (eci != 3) {
+    if (eci != 0) {
         strcat(binary, "0111"); /* ECI (Table 4) */
         if (eci <= 127) {
             bin_append(eci, 8, binary); /* 000000 to 000127 */
@@ -1338,7 +1338,7 @@ static int getBinaryLength(const int version,char inputMode[],const int inputDat
         count += 4;
     }
 
-    if (eci != 3) {
+    if (eci != 0) {
         count += 12;
     }
 
@@ -1425,7 +1425,7 @@ int qr_code(struct zint_symbol *symbol, const unsigned char source[], size_t len
 
     gs1 = (symbol->input_mode == GS1_MODE);
 
-    if ((symbol->input_mode == DATA_MODE) || (symbol->eci != 3)) {
+    if ((symbol->input_mode == DATA_MODE) || (symbol->eci != 0)) {
         for (i = 0; i < length; i++) {
             jisdata[i] = (int) source[i];
         }

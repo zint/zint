@@ -486,7 +486,7 @@ int dotcode_encode_message(struct zint_symbol *symbol, const unsigned char sourc
         }
     }
 
-    if (symbol->eci > 3) {
+    if (symbol->eci > 0) {
         codeword_array[array_length] = 108; // FNC2
         array_length++;
         if (symbol->eci <= 39) {

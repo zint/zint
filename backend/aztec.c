@@ -529,7 +529,7 @@ static int aztec_text_process(const unsigned char source[], const size_t src_len
         bin_append(0, 3, binary_string); // FLG(0)
     }
 
-    if (eci != 3) {
+    if (eci != 0) {
         bin_append(0, 5, binary_string); // P/S
         bin_append(0, 5, binary_string); // FLG(n)
         if (eci < 10) {

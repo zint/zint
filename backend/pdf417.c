@@ -606,7 +606,7 @@ static int pdf417(struct zint_symbol *symbol, unsigned char chaine[], const size
         mclength++;
     }
 
-    if (symbol->eci != 3) {
+    if (symbol->eci != 0) {
         /* Encoding ECI assignment number, according to Table 8 */
         if (symbol->eci <= 899) {
             chainemc[mclength] = 927; /* ECI */
@@ -956,7 +956,7 @@ int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], const size_
         return ZINT_ERROR_INVALID_OPTION;
     }
 
-    if (symbol->eci != 3) {
+    if (symbol->eci != 0) {
         /* Encoding ECI assignment number, according to Table 8 */
         if (symbol->eci <= 899) {
             chainemc[mclength] = 927; /* ECI */

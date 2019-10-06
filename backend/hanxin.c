@@ -70,7 +70,7 @@ static int calculate_binlength(char mode[], int source[], const size_t length, i
     int est_binlen = 0;
     int submode = 1;
 
-    if (eci != 3) {
+    if (eci != 0) {
         est_binlen += 12;
     }
 
@@ -336,7 +336,7 @@ static void calculate_binary(char binary[], char mode[], int source[], const siz
     int glyph;
     int submode;
 
-    if (eci != 3) {
+    if (eci != 0) {
         /* Encoding ECI assignment number, according to Table 5 */
         bin_append(8, 4, binary); // ECI
         if (eci <= 127) {
@@ -1249,7 +1249,7 @@ int han_xin(struct zint_symbol *symbol, const unsigned char source[], size_t len
     unsigned char *grid;
 #endif
 
-    if ((symbol->input_mode == DATA_MODE) || (symbol->eci != 3)) {
+    if ((symbol->input_mode == DATA_MODE) || (symbol->eci != 0)) {
         for (i = 0; i < length; i++) {
             gbdata[i] = (int) source[i];
         }

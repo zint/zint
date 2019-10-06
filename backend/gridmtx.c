@@ -366,7 +366,7 @@ static int gm_encode(int gbdata[], const size_t length, char binary[],const int 
         bin_append(10, 4, binary); /* FNC3 - Reader Initialisation */
     }
 
-    if (eci != 3) {
+    if (eci != 0) {
         /* ECI assignment according to Table 8 */
         bin_append(12, 4, binary); /* ECI */
         if (eci <= 1023) {
@@ -1021,7 +1021,7 @@ int grid_matrix(struct zint_symbol *symbol, const unsigned char source[], size_t
         word[i] = 0;
     }
 
-    if ((symbol->input_mode == DATA_MODE) || (symbol->eci != 3)) {
+    if ((symbol->input_mode == DATA_MODE) || (symbol->eci != 0)) {
         for (i = 0; i < length; i++) {
             gbdata[i] = (int) source[i];
         }

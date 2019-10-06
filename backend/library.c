@@ -71,7 +71,7 @@ struct zint_symbol *ZBarcode_Create() {
     symbol->bitmap = NULL;
     symbol->bitmap_width = 0;
     symbol->bitmap_height = 0;
-    symbol->eci = 3;
+    symbol->eci = 0; // Default 0 uses ECI 3
     symbol->dot_size = 4.0 / 5.0;
     symbol->debug = 0;
     return symbol;
@@ -1144,12 +1144,12 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
         error_buffer = error_number;
     }
 
-    if ((!(supports_eci(symbol->symbology))) && (symbol->eci != 3)) {
+    if ((!(supports_eci(symbol->symbology))) && (symbol->eci != 0)) {
         strcpy(symbol->errtxt, "217: Symbology does not support ECI switching");
         error_number = ZINT_ERROR_INVALID_OPTION;
     }
 
-    if ((symbol->eci < 3) || (symbol->eci > 999999)) {
+    if ((symbol->eci < 0) || (symbol->eci == 1) || (symbol->eci == 2) || (symbol->eci > 999999)) {
         strcpy(symbol->errtxt, "218: Invalid ECI mode");
         error_number = ZINT_ERROR_INVALID_OPTION;
     }
@@ -1191,8 +1191,8 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
     if ((input_mode < 0) || (input_mode > 2)) {
         input_mode = DATA_MODE;
     }
-
-    if ((symbol->eci != 3) && (symbol->eci != 26)) {
+    
+    if ((symbol->eci != 0) && (symbol->eci != 26)) {
         input_mode = DATA_MODE;
     }
 
