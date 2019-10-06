@@ -1,7 +1,7 @@
 /*  library.c - external functions of libzint
 
     libzint - the open source barcode library
-    Copyright (C) 2009-2018 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2019 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -184,11 +184,7 @@ extern int ultracode(struct zint_symbol *symbol, const unsigned char source[], c
 extern int plot_raster(struct zint_symbol *symbol, int rotate_angle, int file_type); /* Plot to PNG/BMP/PCX */
 extern int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_type); /* Plot to EPS/EMF/SVG */
 
-extern int render_plot(struct zint_symbol *symbol, float width, float height); /* Plot to gLabels */
-
-//extern int ps_plot(struct zint_symbol *symbol); /* Plot to EPS */
-//extern int svg_plot(struct zint_symbol *symbol); /* Plot to SVG */
-//extern int emf_plot(struct zint_symbol *symbol); /* Plot to Metafile */
+extern int render_plot(struct zint_symbol *symbol, float width, float height); /* Plot to gLabels - depreciated */
 
 void error_tag(char error_string[], int error_number) {
 
@@ -386,11 +382,11 @@ static void check_row_heights(struct zint_symbol *symbol) {
     }
 }
 
-static int gs1_compliant(const int symbology) {
-    /* Returns 1 if symbology supports GS1 data */
-
+static int check_force_gs1(const int symbology) {
+    /* Returns 1 if symbology MUST have GS1 data */
+    
     int result = 0;
-
+    
     switch (symbology) {
         case BARCODE_EAN128:
         case BARCODE_RSS_EXP:
@@ -405,6 +401,19 @@ static int gs1_compliant(const int symbology) {
         case BARCODE_RSS14STACK_CC:
         case BARCODE_RSS14_OMNI_CC:
         case BARCODE_RSS_EXPSTACK_CC:
+            result = 1;
+            break;
+    }
+    
+    return result;
+}
+
+static int gs1_compliant(const int symbology) {
+    /* Returns 1 if symbology supports GS1 data */
+
+    int result = check_force_gs1(symbology);
+
+    switch (symbology) {
         case BARCODE_CODE16K:
         case BARCODE_AZTEC:
         case BARCODE_DATAMATRIX:
@@ -1146,7 +1155,7 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
     }
 
     /* Start acting on input mode */
-    if (input_mode == GS1_MODE) {
+    if ((input_mode == GS1_MODE) || (check_force_gs1(symbol->symbology))) {
         for (i = 0; i < in_length; i++) {
             if (source[i] == '\0') {
                 strcpy(symbol->errtxt, "219: NULL characters not permitted in GS1 mode");

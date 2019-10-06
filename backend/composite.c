@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2017 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2019 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -1618,10 +1618,8 @@ int composite(struct zint_symbol *symbol, unsigned char source[], int length) {
     unsigned int bs = 20 * rs;
     unsigned int pri_len;
 #ifndef _MSC_VER
-    char reduced[rs];
     char binary_string[bs];
 #else
-    char* reduced = (char*) _alloca(rs);
     char* binary_string = (char*) _alloca(bs);
 #endif
     struct zint_symbol *linear;
@@ -1646,11 +1644,6 @@ int composite(struct zint_symbol *symbol, unsigned char source[], int length) {
         /* CC-C can only be used with a GS1-128 linear part */
         strcpy(symbol->errtxt, "447: Invalid mode (CC-C only valid with GS1-128 linear component)");
         return ZINT_ERROR_INVALID_OPTION;
-    }
-
-    error_number = gs1_verify(symbol, source, length, reduced);
-    if (error_number != 0) {
-        return error_number;
     }
 
     if (symbol->symbology == BARCODE_EAN128_CC) {
@@ -1705,7 +1698,7 @@ int composite(struct zint_symbol *symbol, unsigned char source[], int length) {
     }
 
     if (cc_mode == 1) {
-        i = cc_binary_string(symbol, reduced, binary_string, cc_mode, &cc_width, &ecc_level, linear_width);
+        i = cc_binary_string(symbol, (char *) source, binary_string, cc_mode, &cc_width, &ecc_level, linear_width);
         if (i == ZINT_ERROR_TOO_LONG) {
             cc_mode = 2;
         }
@@ -1713,7 +1706,7 @@ int composite(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     if (cc_mode == 2) {
         /* If the data didn't fit into CC-A it is recalculated for CC-B */
-        i = cc_binary_string(symbol, reduced, binary_string, cc_mode, &cc_width, &ecc_level, linear_width);
+        i = cc_binary_string(symbol, (char *) source, binary_string, cc_mode, &cc_width, &ecc_level, linear_width);
         if (i == ZINT_ERROR_TOO_LONG) {
             if (symbol->symbology != BARCODE_EAN128_CC) {
                 return ZINT_ERROR_TOO_LONG;
@@ -1725,7 +1718,7 @@ int composite(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     if (cc_mode == 3) {
         /* If the data didn't fit in CC-B (and linear part is GS1-128) it is recalculated for CC-C */
-        i = cc_binary_string(symbol, reduced, binary_string, cc_mode, &cc_width, &ecc_level, linear_width);
+        i = cc_binary_string(symbol, (char *) source, binary_string, cc_mode, &cc_width, &ecc_level, linear_width);
         if (i == ZINT_ERROR_TOO_LONG) {
             return ZINT_ERROR_TOO_LONG;
         }
