@@ -62,6 +62,8 @@
  -	Add option -gssep
  2019-09-18 2.6.6 HaO
  -	Framework 2.6.6 update
+ 2019-10-07 2.6.7 HaO
+ -	Framework 2.6.7 update
 */
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
@@ -101,7 +103,7 @@
 /*----------------------------------------------------------------------------*/
 /* > File option defines */
 
-#define VERSION "2.6.6"
+#define VERSION "2.6.7"
 
 /*----------------------------------------------------------------------------*/
 /* >>>>> Hepler defines */

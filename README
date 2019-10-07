@@ -73,7 +73,7 @@ maxicode code set correction
 cmake flags for debugging and sanitize options
 unit tests for the changes, with a simple test suite based on qrencode/tests
 
-Version 2.6.6 (not jet released):
+Version 2.6.6:
 Fixed bugs:
 Ticket 161: PDF row size may be set
 Ticket 155: PDF numeric compaction
@@ -81,6 +81,18 @@ Ticket 164: crash due to call of svg_plot withnull vector
 Ticket 119: Crash on bullseye raster drawing
 qtzint: Micro-QR version option choice corrected (+1 missing).
 Datamatrix: code corruption when ECI was encoded and base256 encoding was automatically chosen.
+
+Version 2.6.7 2019-10-07:
+
+Changes:
+Ticket 127: Allow to code ECI 3 if explicitly given for debug purposes.
+***Incompatible change**
+"--eci 3" now leads to included ECI information.
+"--eci 0" may now be used to not include any ECI information.
+The default of the parameter changed from 3 to 0.
+
+Fixed bugs:
+Ticket 146, 165: fix wrong encoding of RSS composite codes
 
 CONTACT US
 ----------

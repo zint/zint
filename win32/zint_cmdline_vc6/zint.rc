@@ -31,8 +31,8 @@ LANGUAGE LANG_GERMAN, SUBLANG_GERMAN
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,6,6,0
- PRODUCTVERSION 2,6,6,0
+ FILEVERSION 2,6,7,0
+ PRODUCTVERSION 2,6,7,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -50,7 +50,7 @@ BEGIN
             VALUE "Comments", "\0"
             VALUE "CompanyName", "\0"
             VALUE "FileDescription", "zint barcode generator\0"
-            VALUE "FileVersion", "2.6.6.0\0"
+            VALUE "FileVersion", "2.6.7.0\0"
             VALUE "InternalName", "zint.exe\0"
             VALUE "LegalCopyright", "Copyright © 2019 Robin Stuart\0"
             VALUE "LegalTrademarks", "\0"
@@ -58,7 +58,7 @@ BEGIN
             VALUE "OriginalFilename", "zint.exe\0"
             VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "zint\0"
-            VALUE "ProductVersion", "2.6.6.0\0"
+            VALUE "ProductVersion", "2.6.7.0\0"
             VALUE "SpecialBuild", "\0"
             VALUE "WWW", "http://www.sourceforge.net/projects/zint\0"
         END

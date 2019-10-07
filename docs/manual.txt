@@ -434,6 +434,8 @@ The ECI information is added to your code symbol as prefix data.
 
 The ECI-Value may be specified with the --eci switch, followed by the value in the column
 "ECI Code".
+The ECI-Value of 0 does not encode any ECI-Information in the code symbol. In this case, 
+the default encoding applies for the data which is "ISO-8859-1 - Latin alphabet No. 1".
 
 The first row of the table (ECI code 3) is the default value and does not lead to any ECI
 information included into the symbol.
@@ -444,10 +446,15 @@ The rows marked with a star (*) do not do this transformation. The data must be 
 as binary data (--binary switch) with the data in the encoding given by the "Character
 Encoding Scheme" column.
 
+Note: the "--eci 3" specification may only be used for special purposes. Using this parameter,
+the ECI information is explicitly added to the code symbol. Nevertheless, for ECI Code 3, this
+is not required, as this is the default encoding, which is also active without any ECI
+information.
+
 --------------------------------------------------------
 ECI Code  |  Character Encoding Scheme
 --------------------------------------------------------
-3         |  ISO-8859-1 - Latin alphabet No. 1 (default)
+3         |  ISO-8859-1 - Latin alphabet No. 1
 4         |  ISO-8859-2 - Latin alphabet No. 2
 5         |  ISO-8859-3 - Latin alphabet No. 3
 6         |  ISO-8859-4 - Latin alphabet No. 4
