@@ -53,7 +53,6 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <math.h>
-#include <assert.h>
 #ifdef _MSC_VER
 #include <malloc.h>
 #endif
@@ -67,6 +66,7 @@
 extern int general_rules(char type[]);
 extern int eanx(struct zint_symbol *symbol, unsigned char source[], int length);
 extern int ean_128(struct zint_symbol *symbol, unsigned char source[], const size_t length);
+extern void ean_leading_zeroes(struct zint_symbol *symbol, unsigned char source[], unsigned char local_source[]);
 extern int rss14(struct zint_symbol *symbol, unsigned char source[], int length);
 extern int rsslimited(struct zint_symbol *symbol, unsigned char source[], int length);
 extern int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int length);
@@ -151,7 +151,7 @@ static int cc_a(struct zint_symbol *symbol, char source[], int cc_width) {
         codeWords[i] = 0;
     }
 
-	bitlen = (int)strlen(source);
+    bitlen = (int)strlen(source);
 
     for (i = 0; i < 208; i++) {
         local_source[i] = '0';
@@ -1658,17 +1658,32 @@ int composite(struct zint_symbol *symbol, unsigned char source[], int length) {
     switch (symbol->symbology) {
             /* Determine width of 2D component according to ISO/IEC 24723 Table 1 */
         case BARCODE_EANX_CC:
-            switch (pri_len) {
-                case 7: /* EAN-8 */
-                case 10: /* EAN-8 + 2 */
-                case 13: /* EAN-8 + 5 */
+            cc_width = 0;
+            if (pri_len < 20) {
+                int padded_pri_len;
+                char padded_pri[20];
+                padded_pri[0] = '\0';
+                ean_leading_zeroes(symbol, (unsigned char*) symbol->primary, (unsigned char*) padded_pri);
+                padded_pri_len = strlen(padded_pri);
+                if (padded_pri_len <= 7) { /* EAN-8 */
                     cc_width = 3;
-                    break;
-                case 12: /* EAN-13 */
-                case 15: /* EAN-13 + 2 */
-                case 18: /* EAN-13 + 5 */
-                    cc_width = 4;
-                    break;
+                } else {
+                    switch (padded_pri_len) {
+                        case 10: /* EAN-8 + 2 */
+                        case 13: /* EAN-8 + 5 */
+                            cc_width = 3;
+                            break;
+                        case 12: /* EAN-13 */
+                        case 15: /* EAN-13 + 2 */
+                        case 18: /* EAN-13 + 5 */
+                            cc_width = 4;
+                            break;
+                    }
+                }
+            }
+            if (cc_width == 0) {
+                strcpy(symbol->errtxt, "449: Invalid length EAN input in linear component");
+                return ZINT_ERROR_TOO_LONG;
             }
             break;
         case BARCODE_EAN128_CC: cc_width = 4;
@@ -1789,19 +1804,19 @@ int composite(struct zint_symbol *symbol, unsigned char source[], int length) {
     switch (symbol->symbology) {
             /* Determine horizontal alignment (according to section 12.3) */
         case BARCODE_EANX_CC:
-            switch (pri_len) {
-                case 7: /* EAN-8 */
-                case 10: /* EAN-8 + 2 */
-                case 13: /* EAN-8 + 5 */
+            switch (ustrlen(linear->text)) { /* Use zero-padded length */
+                case 8: /* EAN-8 */
+                case 11: /* EAN-8 + 2 */
+                case 14: /* EAN-8 + 5 */
                     if (cc_mode == 1) {
                         bottom_shift = 3;
                     } else {
                         bottom_shift = 13;
                     }
                     break;
-                case 12: /* EAN-13 */
-                case 15: /* EAN-13 + 2 */
-                case 18: /* EAN-13 + 5 */
+                case 13: /* EAN-13 */
+                case 16: /* EAN-13 + 2 */
+                case 19: /* EAN-13 + 5 */
                     bottom_shift = 2;
                     break;
             }

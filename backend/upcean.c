@@ -617,7 +617,7 @@ void ean_leading_zeroes(struct zint_symbol *symbol, unsigned char source[], unsi
             if (first_len <= 7) {
                 zfirst_len = 7;
             }
-            if (second_len == 0) {
+            if (second_len == 0 && symbol->symbology == BARCODE_EANX) { /* No composite EAN-2/5 */
                 if (first_len <= 5) {
                     zfirst_len = 5;
                 }
@@ -686,7 +686,7 @@ void ean_leading_zeroes(struct zint_symbol *symbol, unsigned char source[], unsi
 
     /* Copy adjusted data back to local_source */
     strcat((char*) local_source, (char*) zfirst_part);
-    if (zsecond_len != 0) {
+    if (ustrlen(zsecond_part)) {
         strcat((char*) local_source, "+");
         strcat((char*) local_source, (char*) zsecond_part);
     }
