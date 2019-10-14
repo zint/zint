@@ -42,25 +42,26 @@ static void test_microqr_options(void)
         int ret_encode;
         float w;
         float h;
-        int ret_render;
+        int ret_vector;
         int expected_size;
     };
+    // Vi} :s/\/\*[ 0-9]*\*\//\=printf("\/*%2d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /* 0*/ { "12345", 0, 0, 0, 100, 100, 1, 11 },
-        /* 1*/ { "12345", 1, 0, 0, 100, 100, 1, 11 },
-        /* 2*/ { "12345", 2, 0, 0, 100, 100, 1, 13 },
-        /* 3*/ { "12345", 3, 0, 0, 100, 100, 1, 17 },
+        /* 0*/ { "12345", 0, 0, 0, 100, 100, 0, 11 },
+        /* 1*/ { "12345", 1, 0, 0, 100, 100, 0, 11 },
+        /* 2*/ { "12345", 2, 0, 0, 100, 100, 0, 13 },
+        /* 3*/ { "12345", 3, 0, 0, 100, 100, 0, 17 },
         /* 4*/ { "12345", 4, 0, ZINT_ERROR_INVALID_OPTION, 100, 100, -1, 0 },
-        /* 5*/ { "12345", 0, 1, 0, 100, 100, 1, 11 },
-        /* 6*/ { "12345", 0, 2, 0, 100, 100, 1, 13 },
-        /* 7*/ { "12345", 0, 3, 0, 100, 100, 1, 15 },
-        /* 8*/ { "12345", 0, 4, 0, 100, 100, 1, 17 },
-        /* 9*/ { "12345", 0, 5, 0, 100, 100, 1, 11 }, // Size > 4 ignored
-        /*10*/ { "12345", 1, 5, 0, 100, 100, 1, 11 }, // Ignored also if ECC given
-        /*11*/ { "12345", 1, 1, 0, 100, 100, 1, 11 },
-        /*12*/ { "12345", 1, 2, 0, 100, 100, 1, 13 },
-        /*13*/ { "12345", 1, 3, 0, 100, 100, 1, 15 },
-        /*14*/ { "12345", 1, 4, 0, 100, 100, 1, 17 },
+        /* 5*/ { "12345", 0, 1, 0, 100, 100, 0, 11 },
+        /* 6*/ { "12345", 0, 2, 0, 100, 100, 0, 13 },
+        /* 7*/ { "12345", 0, 3, 0, 100, 100, 0, 15 },
+        /* 8*/ { "12345", 0, 4, 0, 100, 100, 0, 17 },
+        /* 9*/ { "12345", 0, 5, 0, 100, 100, 0, 11 }, // Size > 4 ignored
+        /*10*/ { "12345", 1, 5, 0, 100, 100, 0, 11 }, // Ignored also if ECC given
+        /*11*/ { "12345", 1, 1, 0, 100, 100, 0, 11 },
+        /*12*/ { "12345", 1, 2, 0, 100, 100, 0, 13 },
+        /*13*/ { "12345", 1, 3, 0, 100, 100, 0, 15 },
+        /*14*/ { "12345", 1, 4, 0, 100, 100, 0, 17 },
         /*15*/ { "12345", 2, 1, ZINT_ERROR_INVALID_OPTION, 100, 100, -1, 0 },
         /*16*/ { "12345", 2, 2, 0, 100, 100, -1, 13 },
         /*17*/ { "12345", 2, 3, 0, 100, 100, -1, 15 },
@@ -70,29 +71,25 @@ static void test_microqr_options(void)
         /*21*/ { "12345", 3, 3, ZINT_ERROR_INVALID_OPTION, 100, 100, -1, 0 },
         /*22*/ { "12345", 3, 4, 0, 100, 100, -1, 17 },
         /*23*/ { "12345", 4, 4, ZINT_ERROR_INVALID_OPTION, 100, 100, -1, 0 },
-        /*24*/ { "12345", 5, 0, 0, 100, 100, 1, 11 }, // ECC > 4 ignored
-        /*25*/ { "12345", 5, 1, 0, 100, 100, 1, 11 }, // Ignored also if size given
-
-        /*26*/ { "123456", 1, 0, 0, 100, 100, 1, 13 },
+        /*24*/ { "12345", 5, 0, 0, 100, 100, 0, 11 }, // ECC > 4 ignored
+        /*25*/ { "12345", 5, 1, 0, 100, 100, 0, 11 }, // Ignored also if size given
+        /*26*/ { "123456", 1, 0, 0, 100, 100, 0, 13 },
         /*27*/ { "123456", 1, 1, ZINT_ERROR_TOO_LONG, 100, 100, -1, 0 },
-        /*28*/ { "123456", 1, 2, 0, 100, 100, 1, 13 },
-
-        /*29*/ { "ABCDEF", 1, 0, 0, 100, 100, 1, 13 },
-        /*30*/ { "ABCDEF", 1, 2, 0, 100, 100, 1, 13 },
+        /*28*/ { "123456", 1, 2, 0, 100, 100, 0, 13 },
+        /*29*/ { "ABCDEF", 1, 0, 0, 100, 100, 0, 13 },
+        /*30*/ { "ABCDEF", 1, 2, 0, 100, 100, 0, 13 },
         /*31*/ { "ABCDEF", 2, 2, ZINT_ERROR_TOO_LONG, 100, 100, -1, 0 },
-        /*32*/ { "ABCDE", 2, 0, 0, 100, 100, 1, 13 },
-
-        /*33*/ { "ABCDEABCDEABCD", 1, 0, 0, 100, 100, 1, 15 }, // 14 alphanumerics
-        /*34*/ { "ABCDEABCDEABCD", 1, 3, 0, 100, 100, 1, 15 },
+        /*32*/ { "ABCDE", 2, 0, 0, 100, 100, 0, 13 },
+        /*33*/ { "ABCDEABCDEABCD", 1, 0, 0, 100, 100, 0, 15 }, // 14 alphanumerics
+        /*34*/ { "ABCDEABCDEABCD", 1, 3, 0, 100, 100, 0, 15 },
         /*35*/ { "ABCDEABCDEABCD", 2, 3, ZINT_ERROR_TOO_LONG, 100, 100, -1, 0 },
-        /*36*/ { "ABCDEABCDEA", 2, 3, 0, 100, 100, 1, 15 }, // 11 alphanumerics
-
-        /*37*/ { "ABCDEFGHIJABCDEFGHIJA", 1, 0, 0, 100, 100, 1, 17 }, // 21 alphanumerics
-        /*38*/ { "ABCDEFGHIJABCDEFGHIJA", 1, 4, 0, 100, 100, 1, 17 },
+        /*36*/ { "ABCDEABCDEA", 2, 3, 0, 100, 100, 0, 15 }, // 11 alphanumerics
+        /*37*/ { "ABCDEFGHIJABCDEFGHIJA", 1, 0, 0, 100, 100, 0, 17 }, // 21 alphanumerics
+        /*38*/ { "ABCDEFGHIJABCDEFGHIJA", 1, 4, 0, 100, 100, 0, 17 },
         /*39*/ { "ABCDEFGHIJABCDEFGHIJA", 2, 4, ZINT_ERROR_TOO_LONG, 100, 100, -1, 0 },
-        /*40*/ { "ABCDEFGHIJABCDEFGH", 2, 4, 0, 100, 100, 1, 17 }, // 18 alphanumerics
+        /*40*/ { "ABCDEFGHIJABCDEFGH", 2, 4, 0, 100, 100, 0, 17 }, // 18 alphanumerics
         /*41*/ { "ABCDEFGHIJABCDEFGH", 3, 4, ZINT_ERROR_TOO_LONG, 100, 100, -1, 0 },
-        /*42*/ { "ABCDEFGHIJABC", 3, 4, 0, 100, 100, 1, 17 }, // 13 alphanumerics
+        /*42*/ { "ABCDEFGHIJABC", 3, 4, 0, 100, 100, 0, 17 }, // 13 alphanumerics
     };
     int data_size = sizeof(data) / sizeof(struct item);
 
@@ -109,9 +106,9 @@ static void test_microqr_options(void)
         ret = ZBarcode_Encode(symbol, data[i].data, length);
         assert_equal(ret, data[i].ret_encode, "i:%d ZBarcode_Encode ret %d != %d\n", i, ret, data[i].ret_encode);
 
-        if (data[i].ret_render != -1) {
-            ret = ZBarcode_Render( symbol, data[i].w, data[i].h );
-            assert_equal(ret, data[i].ret_render, "i:%d ZBarcode_Render ret %d != %d\n", i, ret, data[i].ret_render);
+        if (data[i].ret_vector != -1) {
+            ret = ZBarcode_Buffer_Vector(symbol, 0);
+            assert_equal(ret, data[i].ret_vector, "i:%d ZBarcode_Buffer_Vector ret %d != %d\n", i, ret, data[i].ret_vector);
             assert_equal(symbol->width, data[i].expected_size, "i:%d symbol->width %d != %d\n", i, symbol->width, data[i].expected_size);
             assert_equal(symbol->rows, data[i].expected_size, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_size);
         }

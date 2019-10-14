@@ -30,7 +30,7 @@
 
 #include "testcommon.h"
 
-static void test_encode_vector(void)
+static void test_koreapost(void)
 {
     testStart("");
 
@@ -41,40 +41,35 @@ static void test_encode_vector(void)
         float w;
         float h;
         int ret_vector;
-        unsigned char* expected_daft;
+
+        int expected_height;
+        int expected_rows;
+        int expected_width;
     };
-    // Vi} :s/\/\*[ 0-9]*\*\//\=printf("\/*%2d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /* 0*/ { "0100000000000AA000AA0A", 0, 100, 30, 0, "TFATTADAAATAFAFADFTAFATDTTDTTAAFTTFFTTDFTTFFTTAFADFDFAAFTDDFDADDAA" },
-        /* 1*/ { "0100000000009JA500AA0A", 0, 100, 30, 0, "TAFTTDADATTFDTFDFDFDTAATADADTTTATTFTDDDDTATDATDFTFFATAFFAFADAFFTDT" },
-        /* 2*/ { "1100000000000XY11     ", 0, 100, 30, 0, "TTDTTATTDTAATTDTAATTDTAATTDTTDDAATAADDATAATDDFAFTDDTAADDDTAAFDFAFF" },
-        /* 3*/ { "21B2254800659JW5O9QA6Y", 0, 100, 30, 0, "DAATATTTADTAATTFADDDDTTFTFDDDDFFDFDAFTADDTFFTDDATADTTFATTDAFDTFDDA" },
-        /* 4*/ { "11000000000000000XY11    ", 0, 100, 30, 0, "TTDTTATDDTTATTDTAATTDTAATDDTTATTDTTDATFTAATDDTAATDDTATATFAADDAATAATDDTAADFTFTA" },
-        /* 5*/ { "41038422416563762EF61AH8T", 0, 100, 30, 0, "DTTFATTDDTATTTATFTDFFFTFDFDAFTTTADTTFDTFDDDTDFDDFTFAADTFDTDTDTFAATAFDDTAATTDTT" },
+        /* 0*/ { "123456", 0, 100, 30, 0, 50, 1, 167 },
     };
     int data_size = sizeof(data) / sizeof(struct item);
-
-    char actual_daft[80];
 
     for (int i = 0; i < data_size; i++) {
 
         struct zint_symbol* symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        symbol->symbology = BARCODE_MAILMARK;
+        symbol->symbology = BARCODE_KOREAPOST;
         int length = strlen(data[i].data);
 
         ret = ZBarcode_Encode(symbol, data[i].data, length);
         assert_equal(ret, data[i].ret_encode, "i:%d ZBarcode_Encode ret %d != %d\n", i, ret, data[i].ret_encode);
 
-        assert_equal(symbol->rows, 3, "i:%d symbol->rows %d != 3\n", i, symbol->rows);
+        if (data[i].ret_vector != -1) {
+            assert_equal(symbol->height, data[i].expected_height, "i:%d symbol->height %d != %d\n", i, symbol->height, data[i].expected_height);
+            assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
+            assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n", i, symbol->width, data[i].expected_width);
 
-        ret = testUtilDAFTConvert(symbol, actual_daft, sizeof(actual_daft));
-        assert_nonzero(ret, "i:%d testUtilDAFTConvert ret == 0", i);
-        assert_zero(strcmp(actual_daft, data[i].expected_daft), "i:%d\n  actual %s\nexpected %s\n", i, actual_daft, data[i].expected_daft);
-
-        ret = ZBarcode_Buffer_Vector(symbol, 0);
-        assert_equal(ret, data[i].ret_vector, "i:%d ZBarcode_Buffer_Vector ret %d != %d\n", i, ret, data[i].ret_vector);
+            ret = ZBarcode_Buffer_Vector(symbol, 0);
+            assert_equal(ret, data[i].ret_vector, "i:%d ZBarcode_Buffer_Vector ret %d != %d\n", i, ret, data[i].ret_vector);
+        }
 
         ZBarcode_Delete(symbol);
     }
@@ -84,7 +79,7 @@ static void test_encode_vector(void)
 
 int main()
 {
-    test_encode_vector();
+    test_koreapost();
 
     testReport();
 

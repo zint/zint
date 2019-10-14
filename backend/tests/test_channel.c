@@ -41,25 +41,26 @@ static void test_encode(void)
         int ret_encode;
         float w;
         float h;
-        int ret_render;
+        int ret_vector;
     };
+    // Vi} :s/\/\*[ 0-9]*\*\//\=printf("\/*%2d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /* 0*/ { "0", 0, 0, 100, 30, 1 },
-        /* 1*/ { "1", 1, 0, 100, 30, 1 },
-        /* 2*/ { "26", 2, 0, 100, 30, 1 },
-        /* 3*/ { "026", 3, 0, 100, 30, 1 },
-        /* 4*/ { "0026", 3, 0, 100, 30, 1 },
+        /* 0*/ { "0", 0, 0, 100, 30, 0 },
+        /* 1*/ { "1", 1, 0, 100, 30, 0 },
+        /* 2*/ { "26", 2, 0, 100, 30, 0 },
+        /* 3*/ { "026", 3, 0, 100, 30, 0 },
+        /* 4*/ { "0026", 3, 0, 100, 30, 0 },
         /* 5*/ { "1234", 3, ZINT_ERROR_INVALID_DATA, 100, 30, -1 },
         /* 6*/ { "1234", 4, ZINT_ERROR_INVALID_DATA, 100, 30, -1 },
-        /* 7*/ { "292", 4, 0, 100, 30, 1 },
-        /* 8*/ { "1234", 5, 0, 100, 30, 1 },
-        /* 9*/ { "1234567", 0, 0, 100, 30, 1 },
-        /*10*/ { "576688", 7, 0, 100, 30, 1 },
+        /* 7*/ { "292", 4, 0, 100, 30, 0 },
+        /* 8*/ { "1234", 5, 0, 100, 30, 0 },
+        /* 9*/ { "1234567", 0, 0, 100, 30, 0 },
+        /*10*/ { "576688", 7, 0, 100, 30, 0 },
         /*11*/ { "576689", 7, ZINT_ERROR_INVALID_DATA, 100, 30, -1 },
-        /*12*/ { "1234567", 0, 0, 100, 30, 1 },
-        /*13*/ { "1234567", 8, 0, 100, 30, 1 },
+        /*12*/ { "1234567", 0, 0, 100, 30, 0 },
+        /*13*/ { "1234567", 8, 0, 100, 30, 0 },
         /*14*/ { "7742863", 8, ZINT_ERROR_INVALID_DATA, 100, 30, -1 },
-        /*15*/ { "0000000", 2, 0, 100, 30, 1 },
+        /*15*/ { "0000000", 2, 0, 100, 30, 0 },
         /*16*/ { "12345678", 8, ZINT_ERROR_TOO_LONG, 100, 30, -1 },
     };
     int data_size = sizeof(data) / sizeof(struct item);
@@ -76,9 +77,9 @@ static void test_encode(void)
         ret = ZBarcode_Encode(symbol, data[i].data, length);
         assert_equal(ret, data[i].ret_encode, "i:%d ZBarcode_Encode ret %d != %d\n", i, ret, data[i].ret_encode);
 
-        if (data[i].ret_render != -1) {
-            ret = ZBarcode_Render( symbol, data[i].w, data[i].h );
-            assert_equal(ret, data[i].ret_render, "i:%d ZBarcode_Render ret %d != %d\n", i, ret, data[i].ret_render);
+        if (data[i].ret_vector != -1) {
+            ret = ZBarcode_Buffer_Vector(symbol, 0);
+            assert_equal(ret, data[i].ret_vector, "i:%d ZBarcode_Buffer_Vector ret %d != %d\n", i, ret, data[i].ret_vector);
         }
 
         ZBarcode_Delete(symbol);

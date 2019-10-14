@@ -493,6 +493,7 @@ static int is_linear(const int symbology) {
         case BARCODE_ISBNX:
         case BARCODE_EAN14:
         case BARCODE_NVE18:
+        case BARCODE_KOREAPOST:
         case BARCODE_ONECODE:
         case BARCODE_PLESSEY:
         case BARCODE_TELEPEN_NUM:

@@ -60,17 +60,29 @@ void testReport();
 #define assert_nonnull(__ptr__, ...) assert_exp((__ptr__) != NULL, __VA_ARGS__)
 #define assert_equal(__e1__, __e2__, ...) assert_exp((__e1__) == (__e2__), __VA_ARGS__)
 #define assert_notequal(__e1__, __e2__, ...) assert_exp((__e1__) != (__e2__), __VA_ARGS__)
+#define assert_fail(...) assert_exp(0, __VA_ARGS__)
 #define assert_nothing(__exp__, ...) {printf(__VA_ARGS__); __exp__;}
 
-extern void render_free(struct zint_symbol *symbol); /* Free render structures */
+extern void vector_free(struct zint_symbol *symbol); /* Free vector structures */
 
+char* testUtilBarcodeName(int symbology);
 int testUtilDAFTConvert(const struct zint_symbol* symbol, char* buffer, int buffer_size);
+char* testUtilEscape(char* buffer, char* escaped, int escaped_size);
 char* testUtilReadCSVField(char* buffer, char* field, int field_size);
 int testUtilSymbolCmp(const struct zint_symbol* a, const struct zint_symbol* b);
-struct zint_render* testUtilRenderCpy(const struct zint_render* in);
-int testUtilRenderCmp(const struct zint_render* a, const struct zint_render* b);
+struct zint_vector* testUtilVectorCpy(const struct zint_vector* in);
+int testUtilVectorCmp(const struct zint_vector* a, const struct zint_vector* b);
 void testUtilLargeDump(const char* name, const short reg[]);
-void testUtilModulesDump(const struct zint_symbol* symbol);
+void testUtilModulesDump(const struct zint_symbol* symbol, char* prefix, char* postfix);
 int testUtilModulesCmp(const struct zint_symbol* symbol, const char* expected, int* row, int* width);
+int testUtilModulesDumpHex(const struct zint_symbol* symbol, char dump[], int dump_size);
+int testUtilExists(char* filename);
+int testUtilCmpPngs(char* file1, char* file2);
+int testUtilCmpSvgs(char* svg1, char* svg2);
+int testUtilCmpEpss(char* eps1, char* eps2);
+int testUtilCmpEmfs(char* emf1, char* emf2);
+int testUtilCmpGifs(char* gif1, char* gif2);
+int testUtilCmpBmps(char* bmp1, char* bmp2);
+int testUtilCmpPcxs(char* pcx1, char* pcx2);
 
 #endif /* TESTCOMMON_H */

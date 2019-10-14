@@ -46,14 +46,15 @@ static void test_best_supported_set(void)
         int ret;
         float w;
         float h;
-        int ret_render;
+        int ret_vector;
 
         int expected_rows;
         int expected_width;
+        char* comment;
         unsigned char* expected;
     };
     struct item data[] = {
-        /* 0*/ { BARCODE_MAXICODE, "am.//ab,\x1CTA# z\r!", 0, 100, 100, 1, 33, 30, // TODO: Better data and verify expected
+        /* 0*/ { BARCODE_MAXICODE, "am.//ab,\034TA# z\015!", 0, 100, 100, 0, 33, 30, "TODO: Better data and verify expected",
                     "111010000101111000111101010111"
                     "111110000000010100111000000000"
                     "110000101100110100111010101011"
@@ -91,6 +92,8 @@ static void test_best_supported_set(void)
     };
     int data_size = sizeof(data) / sizeof(struct item);
 
+    char escaped_data[1024];
+
     for (int i = 0; i < data_size; i++) {
 
         struct zint_symbol* symbol = ZBarcode_Create();
@@ -100,14 +103,14 @@ static void test_best_supported_set(void)
         int length = strlen(data[i].data);
 
         ret = ZBarcode_Encode(symbol, data[i].data, length);
-        assert_equal(ret, data[i].ret, "i:%d ret %d != %d\n", i, ret, data[i].ret);
-
-        ret = ZBarcode_Render( symbol, data[i].w, data[i].h );
-        assert_equal(ret, data[i].ret_render, "i:%d ZBarcode_Render ret %d != %d\n", i, ret, data[i].ret_render);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d\n", i, ret, data[i].ret);
 
         #ifdef TEST_GENERATE_EXPECTED
-        printf("symbology %d, data %s, length %d, rows %d, width %d\n", symbol->symbology, data[i].data, length, symbol->rows, symbol->width);
-        testUtilModulesDump(symbol);
+        printf("        /*%2d*/ { %s, \"%s\", %d, %.0f, %.0f, %d, %d, %d, \"%s\",\n",
+                i, testUtilBarcodeName(data[i].symbology), testUtilEscape(data[i].data, escaped_data, sizeof(escaped_data)), ret,
+                data[i].w, data[i].h, data[i].ret_vector, symbol->rows, symbol->width, data[i].comment);
+        testUtilModulesDump(symbol, "                    ",  "\n");
+        printf("                },\n");
         #else
 
         assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
@@ -116,6 +119,9 @@ static void test_best_supported_set(void)
         int width, row;
         ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
         assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d\n", i, ret, width, row);
+
+        ret = ZBarcode_Buffer_Vector(symbol, 0);
+        assert_equal(ret, data[i].ret_vector, "i:%d ZBarcode_Buffer_Vector ret %d != %d\n", i, ret, data[i].ret_vector);
         #endif
 
         ZBarcode_Delete(symbol);

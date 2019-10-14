@@ -40,6 +40,7 @@ static void test_upce_length(void)
         unsigned char* data;
         int ret;
     };
+    // Vi} :s/\/\*[ 0-9]*\*\//\=printf("\/*%2d*\/", line(".") - line("'<"))
     struct item data[] = {
         /* 0*/ { BARCODE_UPCE, "12345", 0 },
         /* 1*/ { BARCODE_UPCE_CHK, "12345", ZINT_ERROR_INVALID_CHECK },
@@ -55,7 +56,6 @@ static void test_upce_length(void)
         /*11*/ { BARCODE_UPCE_CHK, "12345670", 0 }, // 0 is correct check digit
         /*12*/ { BARCODE_UPCE, "123456789", ZINT_ERROR_TOO_LONG },
         /*13*/ { BARCODE_UPCE_CHK, "123456789", ZINT_ERROR_TOO_LONG },
-
         /*14*/ { BARCODE_UPCE, "123406", ZINT_ERROR_INVALID_DATA }, // If last digit (emode) 6, 2nd last can't be zero
     };
     int data_size = sizeof(data) / sizeof(struct item);
@@ -87,31 +87,32 @@ static void test_isbn(void)
         int ret_encode;
         float w;
         float h;
-        int ret_render;
+        int ret_vector;
     };
+    // Vi} :s/\/\*[ 0-9]*\*\//\=printf("\/*%2d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /* 0*/ { "0", 0, 100, 30, 1 }, // Left zero-padded if < 10 chars
+        /* 0*/ { "0", 0, 100, 30, 0 }, // Left zero-padded if < 10 chars
         /* 1*/ { "12345678", ZINT_ERROR_INVALID_CHECK, 100, 30, -1 },
-        /* 2*/ { "12345679", 0, 100, 30, 1 }, // 9 is correct check digit
-        /* 3*/ { "123456789", 0, 100, 30, 1 },
-        /* 4*/ { "0123456789", 0, 100, 30, 1 },
+        /* 2*/ { "12345679", 0, 100, 30, 0 }, // 9 is correct check digit
+        /* 3*/ { "123456789", 0, 100, 30, 0 },
+        /* 4*/ { "0123456789", 0, 100, 30, 0 },
         /* 5*/ { "1234567890", ZINT_ERROR_INVALID_CHECK, 100, 30, -1 },
-        /* 6*/ { "123456789X", 0, 100, 30, 1 }, // X is correct check digit
-        /* 7*/ { "8175257660", 0, 100, 30, 1 }, // 0 is correct check digit
-        /* 8*/ { "0590764845", 0, 100, 30, 1 }, // 5 is correct check digit
-        /* 9*/ { "0906495741", 0, 100, 30, 1 }, // 1 is correct check digit
-        /*10*/ { "0140430016", 0, 100, 30, 1 }, // 6 is correct check digit
-        /*11*/ { "0571086187", 0, 100, 30, 1 }, // 7 is correct check digit
-        /*12*/ { "0486600882", 0, 100, 30, 1 }, // 2 is correct check digit
+        /* 6*/ { "123456789X", 0, 100, 30, 0 }, // X is correct check digit
+        /* 7*/ { "8175257660", 0, 100, 30, 0 }, // 0 is correct check digit
+        /* 8*/ { "0590764845", 0, 100, 30, 0 }, // 5 is correct check digit
+        /* 9*/ { "0906495741", 0, 100, 30, 0 }, // 1 is correct check digit
+        /*10*/ { "0140430016", 0, 100, 30, 0 }, // 6 is correct check digit
+        /*11*/ { "0571086187", 0, 100, 30, 0 }, // 7 is correct check digit
+        /*12*/ { "0486600882", 0, 100, 30, 0 }, // 2 is correct check digit
         /*13*/ { "12345678901", ZINT_ERROR_TOO_LONG, 100, 30, -1 },
         /*14*/ { "123456789012", ZINT_ERROR_TOO_LONG, 100, 30, -1 },
         /*15*/ { "1234567890123", ZINT_ERROR_INVALID_DATA, 100, 30, -1 },
-        /*16*/ { "9784567890120", 0, 100, 30, 1 }, // 0 is correct check digit
-        /*17*/ { "9783161484100", 0, 100, 30, 1 }, // 0 is correct check digit
-        /*18*/ { "9781846688225", 0, 100, 30, 1 }, // 5 is correct check digit
-        /*19*/ { "9781847657954", 0, 100, 30, 1 }, // 4 is correct check digit
-        /*20*/ { "9781846688188", 0, 100, 30, 1 }, // 8 is correct check digit
-        /*21*/ { "9781847659293", 0, 100, 30, 1 }, // 3 is correct check digit
+        /*16*/ { "9784567890120", 0, 100, 30, 0 }, // 0 is correct check digit
+        /*17*/ { "9783161484100", 0, 100, 30, 0 }, // 0 is correct check digit
+        /*18*/ { "9781846688225", 0, 100, 30, 0 }, // 5 is correct check digit
+        /*19*/ { "9781847657954", 0, 100, 30, 0 }, // 4 is correct check digit
+        /*20*/ { "9781846688188", 0, 100, 30, 0 }, // 8 is correct check digit
+        /*21*/ { "9781847659293", 0, 100, 30, 0 }, // 3 is correct check digit
         /*22*/ { "97845678901201", ZINT_ERROR_TOO_LONG, 100, 30, -1 },
     };
     int data_size = sizeof(data) / sizeof(struct item);
@@ -127,9 +128,9 @@ static void test_isbn(void)
         ret = ZBarcode_Encode(symbol, data[i].data, length);
         assert_equal(ret, data[i].ret_encode, "i:%d ZBarcode_Encode ret %d != %d, errtxt %s\n", i, ret, data[i].ret_encode, symbol->errtxt);
 
-        if (data[i].ret_render != -1) {
-            ret = ZBarcode_Render( symbol, data[i].w, data[i].h );
-            assert_equal(ret, data[i].ret_render, "i:%d ZBarcode_Render ret %d != %d\n", i, ret, data[i].ret_render);
+        if (data[i].ret_vector != -1) {
+            ret = ZBarcode_Buffer_Vector(symbol, 0);
+            assert_equal(ret, data[i].ret_vector, "i:%d ZBarcode_Buffer_Vector ret %d != %d\n", i, ret, data[i].ret_vector);
         }
 
         ZBarcode_Delete(symbol);
@@ -138,7 +139,7 @@ static void test_isbn(void)
     testFinish();
 }
 
-static void test_render_same(void)
+static void test_vector_same(void)
 {
     testStart("");
 
@@ -149,21 +150,21 @@ static void test_render_same(void)
         int ret_encode;
         float w;
         float h;
-        int ret_render;
+        int ret_vector;
     };
     struct item data[] = {
-        /* 0*/ { BARCODE_UPCE, "123456", 0, 100, 30, 1 },
-        /* 1*/ { BARCODE_UPCE_CHK, "1234565", 0, 100, 30, 1 }, // 5 is correct check digit
-        /* 1*/ { BARCODE_ISBNX, "0195049969", 0, 100, 30, 1 }, // 9 is correct check digit
+        /* 0*/ { BARCODE_UPCE, "123456", 0, 100, 30, 0 },
+        /* 1*/ { BARCODE_UPCE_CHK, "1234565", 0, 100, 30, 0 }, // 5 is correct check digit
+        /* 2*/ { BARCODE_ISBNX, "0195049969", 0, 100, 30, 0 }, // 9 is correct check digit
     };
     int data_size = sizeof(data) / sizeof(struct item);
 
     for (int i = 0; i < data_size; i++) {
 
-        struct zint_render* renders[4];
-        int renders_size = sizeof(renders) / sizeof(struct zint_render*);
+        struct zint_vector* vectors[4];
+        int vectors_size = sizeof(vectors) / sizeof(struct zint_vector*);
 
-        for (int j = 0; j < renders_size; j++) {
+        for (int j = 0; j < vectors_size; j++) {
             struct zint_symbol* symbol = ZBarcode_Create();
             assert_nonnull(symbol, "Symbol not created\n");
 
@@ -173,24 +174,24 @@ static void test_render_same(void)
             ret = ZBarcode_Encode(symbol, data[i].data, length);
             assert_equal(ret, data[i].ret_encode, "i:%d ZBarcode_Encode ret %d != %d\n", i, ret, data[i].ret_encode);
 
-            ret = ZBarcode_Render(symbol, data[i].w, data[i].h);
-            assert_equal(ret, data[i].ret_render, "i:%d ZBarcode_Render ret %d != %d\n", i, ret, data[i].ret_render);
+            ret = ZBarcode_Buffer_Vector(symbol, 0);
+            assert_equal(ret, data[i].ret_vector, "i:%d ZBarcode_Buffer_Vector ret %d != %d\n", i, ret, data[i].ret_vector);
 
-            assert_nonnull(symbol->rendered, "i:%d symbol->rendered NULL\n", i);
-            renders[j] = testUtilRenderCpy(symbol->rendered);
+            assert_nonnull(symbol->vector, "i:%d symbol->vector NULL\n", i);
+            vectors[j] = testUtilVectorCpy(symbol->vector);
 
             ZBarcode_Delete(symbol);
         }
 
-        for (int j = 1; j < renders_size; j++) {
-            ret = testUtilRenderCmp(renders[j - 1], renders[j]);
-            assert_zero(ret, "i:%d testUtilRenderCmp ret %d != 0\n", i, ret);
+        for (int j = 1; j < vectors_size; j++) {
+            ret = testUtilVectorCmp(vectors[j - 1], vectors[j]);
+            assert_zero(ret, "i:%d testUtilVectorCmp ret %d != 0\n", i, ret);
         }
 
-        for (int j = 0; j < renders_size; j++) {
-            struct zint_symbol symbol_render;
-            symbol_render.rendered = renders[j];
-            render_free(&symbol_render);
+        for (int j = 0; j < vectors_size; j++) {
+            struct zint_symbol symbol_vector;
+            symbol_vector.vector = vectors[j];
+            vector_free(&symbol_vector);
         }
     }
 
@@ -201,7 +202,7 @@ int main()
 {
     test_upce_length();
     test_isbn();
-    test_render_same();
+    test_vector_same();
 
     testReport();
 
