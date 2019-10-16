@@ -41,6 +41,57 @@
 
 #include "common.h"
 
+void make_html_friendly(unsigned char * string, unsigned char * html_version) {
+    /* Convert text into HTML friendly format by doing the following:
+     * > becomes &gt;
+     * < becomes &lt;
+     * & becomes &amp;
+     */
+     
+     int i, html_pos;
+     
+     html_pos = 0;
+     html_version[html_pos] = '\0';
+     
+     for (i = 0; i < ustrlen(string); i++) {
+         switch(string[i]) {
+             case '>':
+                html_version[html_pos] = '&';
+                html_version[html_pos + 1] = 'g';
+                html_version[html_pos + 2] = 't';
+                html_version[html_pos + 3] = ';';
+                html_pos += 4;
+                html_version[html_pos] = '\0';
+             break;
+             
+             case '<':
+                html_version[html_pos] = '&';
+                html_version[html_pos + 1] = 'l';
+                html_version[html_pos + 2] = 't';
+                html_version[html_pos + 3] = ';';
+                html_pos += 4;
+                html_version[html_pos] = '\0';
+             break;
+             
+             case '&':
+                html_version[html_pos] = '&';
+                html_version[html_pos + 1] = 'a';
+                html_version[html_pos + 2] = 'm';
+                html_version[html_pos + 3] = 'p';
+                html_version[html_pos + 4] = ';';
+                html_pos += 5;
+                html_version[html_pos] = '\0';
+             break;
+             
+             default:
+                html_version[html_pos] = string[i];
+                html_pos++;
+                html_version[html_pos] = '\0';
+                break;
+         }
+     }
+}
+
 int svg_plot(struct zint_symbol *symbol) {
     FILE *fsvg;
     int error_number = 0;
@@ -52,6 +103,12 @@ int svg_plot(struct zint_symbol *symbol) {
     struct zint_vector_hexagon *hex;
     struct zint_vector_circle *circle;
     struct zint_vector_string *string;
+    
+#ifndef _MSC_VER
+    unsigned char html_string[200];
+#else
+    unsigned char* html_string = (unsigned char*) _alloca(200);
+#endif
 
     /* Check for no created vector set */
     /* E-Mail Christian Schmitz 2019-09-10: reason unknown  Ticket #164*/
@@ -122,7 +179,8 @@ int svg_plot(struct zint_symbol *symbol) {
     while (string) {
         fprintf(fsvg, "      <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"middle\"\n", string->x, string->y);
         fprintf(fsvg, "         font-family=\"Helvetica\" font-size=\"%.1f\" fill=\"#%s\" >\n", string->fsize, symbol->fgcolour);
-        fprintf(fsvg, "         %s\n", string->text);
+        make_html_friendly(string->text, html_string);
+        fprintf(fsvg, "         %s\n", html_string);
         fprintf(fsvg, "      </text>\n");
         string = string->next;
     }
