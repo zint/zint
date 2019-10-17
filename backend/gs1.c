@@ -82,8 +82,12 @@ int gs1_verify(struct zint_symbol *symbol, const unsigned char source[], const s
             strcpy(symbol->errtxt, "250: Extended ASCII characters are not supported by GS1");
             return ZINT_ERROR_INVALID_DATA;
         }
+        if (source[i] == '\0') {
+            strcpy(symbol->errtxt, "262: NUL characters not permitted in GS1 mode");
+            return ZINT_ERROR_INVALID_DATA;
+        }
         if (source[i] < 32) {
-            strcpy(symbol->errtxt, "251: Control characters are not supported by GS1 ");
+            strcpy(symbol->errtxt, "251: Control characters are not supported by GS1");
             return ZINT_ERROR_INVALID_DATA;
         }
     }
@@ -662,26 +666,3 @@ int gs1_verify(struct zint_symbol *symbol, const unsigned char source[], const s
     /* the character '[' in the reduced string refers to the FNC1 character */
     return 0;
 }
-
-int ugs1_verify(struct zint_symbol *symbol, const unsigned char source[], const unsigned int src_len, unsigned char reduced[]) {
-    /* Only to keep the compiler happy */
-#ifndef _MSC_VER
-    char temp[src_len + 5];
-#else
-    char* temp = (char*) _alloca(src_len + 5);
-#endif
-    int error_number;
-
-    error_number = gs1_verify(symbol, source, src_len, temp);
-    if (error_number != 0) {
-        return error_number;
-    }
-
-    if (strlen(temp) < src_len + 5) {
-        ustrcpy(reduced, (unsigned char*) temp);
-        return 0;
-    }
-    strcpy(symbol->errtxt, "261: ugs1_verify overflow");
-    return ZINT_ERROR_INVALID_DATA;
-}
-

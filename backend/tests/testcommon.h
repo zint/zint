@@ -27,6 +27,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* vim: set ts=4 sw=4 et : */
 /*
  * Adapted from qrencode/tests/common.h
  * Copyright (C) 2006-2017 Kentaro Fukuchi <kentaro@fukuchi.org>
@@ -66,6 +67,8 @@ void testReport();
 extern void vector_free(struct zint_symbol *symbol); /* Free vector structures */
 
 char* testUtilBarcodeName(int symbology);
+char* testUtilErrorName(int error_number);
+char* testUtilInputModeName(int input_mode);
 int testUtilDAFTConvert(const struct zint_symbol* symbol, char* buffer, int buffer_size);
 char* testUtilEscape(char* buffer, char* escaped, int escaped_size);
 char* testUtilReadCSVField(char* buffer, char* field, int field_size);

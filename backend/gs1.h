@@ -29,6 +29,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* vim: set ts=4 sw=4 et : */
 #ifndef __GS1_H
 #define __GS1_H
 
@@ -37,7 +38,6 @@ extern "C" {
 #endif /* __cplusplus */
 
     extern int gs1_verify(struct zint_symbol *symbol, const unsigned char source[], const size_t src_len, char reduced[]);
-    extern int ugs1_verify(struct zint_symbol *symbol, const unsigned char source[], const unsigned int src_len, unsigned char reduced[]);
 
 #ifdef __cplusplus
 }

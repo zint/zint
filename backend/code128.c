@@ -30,6 +30,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* vim: set ts=4 sw=4 et : */
 
 #include <stdio.h>
 #include <string.h>
@@ -689,7 +690,11 @@ int ean_128(struct zint_symbol *symbol, unsigned char source[], const size_t len
     float glyph_count;
     char dest[1000];
     int separator_row, linkage_flag, c_count;
-
+#ifndef _MSC_VER
+    char reduced[length + 1];
+#else
+    char* reduced = (char*) _alloca(length + 1);
+#endif
     error_number = 0;
     strcpy(dest, "");
     linkage_flag = 0;
@@ -707,13 +712,6 @@ int ean_128(struct zint_symbol *symbol, unsigned char source[], const size_t len
         strcpy(symbol->errtxt, "342: Input too long");
         return ZINT_ERROR_TOO_LONG;
     }
-    for (i = 0; i < length; i++) {
-        if (source[i] == '\0') {
-            /* Null characters not allowed! */
-            strcpy(symbol->errtxt, "343: NULL character in input data");
-            return ZINT_ERROR_INVALID_DATA;
-        }
-    }
 
     /* if part of a composite symbol make room for the separator pattern */
     if (symbol->symbology == BARCODE_EAN128_CC) {
@@ -722,12 +720,17 @@ int ean_128(struct zint_symbol *symbol, unsigned char source[], const size_t len
         symbol->rows += 1;
     }
 
+    error_number = gs1_verify(symbol, source, length, reduced);
+    if (error_number != 0) {
+        return error_number;
+    }
+
     /* Decide on mode using same system as PDF417 and rules of ISO 15417 Annex E */
     indexliste = 0;
     indexchaine = 0;
 
-    mode = parunmodd(source[indexchaine]);
-    if (source[indexchaine] == '[') {
+    mode = parunmodd(reduced[indexchaine]);
+    if (reduced[indexchaine] == '[') {
         mode = ABORC;
     }
 
@@ -737,16 +740,16 @@ int ean_128(struct zint_symbol *symbol, unsigned char source[], const size_t len
 
     do {
         list[1][indexliste] = mode;
-        while ((list[1][indexliste] == mode) && (indexchaine < (int) ustrlen(source))) {
+        while ((list[1][indexliste] == mode) && (indexchaine < (int) strlen(reduced))) {
             list[0][indexliste]++;
             indexchaine++;
-            mode = parunmodd(source[indexchaine]);
-            if (source[indexchaine] == '[') {
+            mode = parunmodd(reduced[indexchaine]);
+            if (reduced[indexchaine] == '[') {
                 mode = ABORC;
             }
         }
         indexliste++;
-    } while (indexchaine < (int) ustrlen(source));
+    } while (indexchaine < (int) strlen(reduced));
 
     dxsmooth(&indexliste);
 
@@ -774,7 +777,7 @@ int ean_128(struct zint_symbol *symbol, unsigned char source[], const size_t len
     c_count = 0;
     for (i = 0; i < read; i++) {
         if (set[i] == 'C') {
-            if (source[i] == '[') {
+            if (reduced[i] == '[') {
                 if (c_count & 1) {
                     if ((i - c_count) != 0) {
                         set[i - c_count] = 'B';
@@ -814,7 +817,7 @@ int ean_128(struct zint_symbol *symbol, unsigned char source[], const size_t len
     being too long */
     last_set = ' ';
     glyph_count = 0.0;
-    for (i = 0; i < (int) ustrlen(source); i++) {
+    for (i = 0; i < (int) strlen(reduced); i++) {
         if ((set[i] == 'a') || (set[i] == 'b')) {
             glyph_count = glyph_count + 1.0;
         }
@@ -825,7 +828,7 @@ int ean_128(struct zint_symbol *symbol, unsigned char source[], const size_t len
             }
         }
 
-        if ((set[i] == 'C') && (source[i] != '[')) {
+        if ((set[i] == 'C') && (reduced[i] != '[')) {
             glyph_count = glyph_count + 0.5;
         } else {
             glyph_count = glyph_count + 1.0;
@@ -885,20 +888,20 @@ int ean_128(struct zint_symbol *symbol, unsigned char source[], const size_t len
             bar_characters++;
         }
 
-        if (source[read] != '[') {
+        if (reduced[read] != '[') {
             switch (set[read]) { /* Encode data characters */
                 case 'A':
                 case 'a':
-                    c128_set_a(source[read], dest, values, &bar_characters);
+                    c128_set_a(reduced[read], dest, values, &bar_characters);
                     read++;
                     break;
                 case 'B':
                 case 'b':
-                    c128_set_b(source[read], dest, values, &bar_characters);
+                    c128_set_b(reduced[read], dest, values, &bar_characters);
                     read++;
                     break;
                 case 'C':
-                    c128_set_c(source[read], source[read + 1], dest, values, &bar_characters);
+                    c128_set_c(reduced[read], reduced[read + 1], dest, values, &bar_characters);
                     read += 2;
                     break;
             }
@@ -908,7 +911,7 @@ int ean_128(struct zint_symbol *symbol, unsigned char source[], const size_t len
             bar_characters++;
             read++;
         }
-    } while (read < (int) ustrlen(source));
+    } while (read < (int) strlen(reduced));
 
     /* "...note that the linkage flag is an extra code set character between
     the last data character and the Symbol Check Character" (GS1 Specification) */
@@ -919,7 +922,7 @@ int ean_128(struct zint_symbol *symbol, unsigned char source[], const size_t len
         case 1:
         case 2:
             /* CC-A or CC-B 2D component */
-            switch (set[ustrlen(source) - 1]) {
+            switch (set[strlen(reduced) - 1]) {
                 case 'A': linkage_flag = 100;
                     break;
                 case 'B': linkage_flag = 99;
@@ -930,7 +933,7 @@ int ean_128(struct zint_symbol *symbol, unsigned char source[], const size_t len
             break;
         case 3:
             /* CC-C 2D component */
-            switch (set[ustrlen(source) - 1]) {
+            switch (set[strlen(reduced) - 1]) {
                 case 'A': linkage_flag = 99;
                     break;
                 case 'B': linkage_flag = 101;

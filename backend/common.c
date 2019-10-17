@@ -29,6 +29,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* vim: set ts=4 sw=4 et : */
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -230,6 +231,11 @@ int is_extendable(const int symbology) {
     }
 
     return 0;
+}
+
+/* Indicates which symbols can have composite 2D component data */
+int is_composite(int symbology) {
+    return symbology >= BARCODE_EANX_CC && symbology <= BARCODE_RSS_EXPSTACK_CC;
 }
 
 int istwodigits(const unsigned char source[], const size_t position) {

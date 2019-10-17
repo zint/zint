@@ -29,6 +29,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* vim: set ts=4 sw=4 et : */
 
 /* The functions "combins" and "getRSSwidths" are copyright BSI and are
    released with permission under the following terms:
@@ -1865,13 +1866,19 @@ int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int src_len)
     int check_char, c_odd, c_even, elements[235], pattern_width, reader, writer;
     int separator_row;
 #ifndef _MSC_VER
-    char binary_string[(7 * src_len) + 1];
+    char reduced[src_len + 1], binary_string[(7 * src_len) + 1];
 #else
+    char* reduced = (char*) _alloca(src_len + 1);
     char* binary_string = (char*) _alloca((7 * src_len) + 1);
 #endif
 
     separator_row = 0;
     reader = 0;
+
+    i = gs1_verify(symbol, source, src_len, reduced);
+    if (i != 0) {
+        return i;
+    }
 
     if ((symbol->symbology == BARCODE_RSS_EXP_CC) || (symbol->symbology == BARCODE_RSS_EXPSTACK_CC)) {
         /* make space for a composite separator pattern */
@@ -1888,7 +1895,7 @@ int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int src_len)
         strcat(binary_string, "0");
     }
 
-    i = rss_binary_string(symbol, (char *) source, binary_string);
+    i = rss_binary_string(symbol, reduced, binary_string);
     if (i != 0) {
         return i;
     }

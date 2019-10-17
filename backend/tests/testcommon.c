@@ -27,6 +27,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* vim: set ts=4 sw=4 et : */
 /*
  * Adapted from qrencode/tests/common.c
  * Copyright (C) 2006-2017 Kentaro Fukuchi <kentaro@fukuchi.org>
@@ -252,11 +253,10 @@ char* testUtilBarcodeName(int symbology) {
         { BARCODE_GRIDMATRIX, "BARCODE_GRIDMATRIX", 142 },
         { BARCODE_UPNQR, "BARCODE_UPNQR", 143 },
         { BARCODE_ULTRA, "BARCODE_ULTRA", 144 },
-        { -1, "", 145 },
     };
     int data_size = sizeof(data) / sizeof(struct item);
 
-    if (symbology < 0 || symbology > data_size) {
+    if (symbology < 0 || symbology >= data_size) {
         return "";
     }
     if (data[symbology].val != symbology || (data[symbology].define != -1 && data[symbology].define != symbology)) { // Self-check
@@ -264,6 +264,69 @@ char* testUtilBarcodeName(int symbology) {
         abort();
     }
     return data[symbology].name;
+}
+
+char* testUtilErrorName(int error_number) {
+    struct item {
+        int define;
+        char* name;
+        int val;
+    };
+    struct item data[] = {
+        { -1, "", 0 },
+        { -1, "", 1 },
+        { ZINT_WARN_INVALID_OPTION, "ZINT_WARN_INVALID_OPTION", 2 },
+        { ZINT_WARN_USES_ECI, "ZINT_WARN_USES_ECI", 3 },
+        { -1, "", 4 },
+        { ZINT_ERROR_TOO_LONG, "ZINT_ERROR_TOO_LONG", 5 },
+        { ZINT_ERROR_INVALID_DATA, "ZINT_ERROR_INVALID_DATA", 6 },
+        { ZINT_ERROR_INVALID_CHECK, "ZINT_ERROR_INVALID_CHECK", 7 },
+        { ZINT_ERROR_INVALID_OPTION, "ZINT_ERROR_INVALID_OPTION", 8 },
+        { ZINT_ERROR_ENCODING_PROBLEM, "ZINT_ERROR_ENCODING_PROBLEM", 9 },
+        { ZINT_ERROR_FILE_ACCESS, "ZINT_ERROR_FILE_ACCESS", 10 },
+        { ZINT_ERROR_MEMORY, "ZINT_ERROR_MEMORY", 11 },
+    };
+    int data_size = sizeof(data) / sizeof(struct item);
+
+    if (error_number < 0 || error_number >= data_size) {
+        return "";
+    }
+    if (data[error_number].val != error_number || (data[error_number].define != -1 && data[error_number].define != error_number)) { // Self-check
+        fprintf(stderr, "testUtilErrorName data table out of sync (%d)\n", error_number);
+        abort();
+    }
+    return data[error_number].name;
+}
+
+char* testUtilInputModeName(int input_mode) {
+    struct item {
+        int define;
+        char* name;
+        int val;
+    };
+    struct item data[] = {
+        { DATA_MODE, "DATA_MODE", 0 },
+        { UNICODE_MODE, "UNICODE_MODE", 1 },
+        { GS1_MODE, "GS1_MODE", 2 },
+        { -1, "", 3 },
+        { -1, "", 4 },
+        { -1, "", 5 },
+        { -1, "", 6 },
+        { -1, "", 7 },
+        { DATA_MODE | ESCAPE_MODE, "DATA_MODE | ESCAPE_MODE", 8 },
+        { UNICODE_MODE | ESCAPE_MODE, "UNICODE_MODE | ESCAPE_MODE", 9 },
+        { GS1_MODE | ESCAPE_MODE, "GS1_MODE | ESCAPE_MODE", 10 },
+    };
+    int data_size = sizeof(data) / sizeof(struct item);
+
+    if (input_mode < 0 || input_mode >= data_size) {
+        return input_mode == -1 ? "-1" : "";
+    }
+    if (data[input_mode].val != input_mode || (data[input_mode].define != -1 && data[input_mode].define != input_mode)) { // Self-check
+        fprintf(stderr, "testUtilInputModeName data table out of sync (%d)\n", input_mode);
+        abort();
+    }
+    return data[input_mode].name;
 }
 
 int testUtilDAFTConvert(const struct zint_symbol* symbol, char* buffer, int buffer_size)

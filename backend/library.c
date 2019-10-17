@@ -28,6 +28,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* vim: set ts=4 sw=4 et : */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -385,22 +386,14 @@ static void check_row_heights(struct zint_symbol *symbol) {
 static int check_force_gs1(const int symbology) {
     /* Returns 1 if symbology MUST have GS1 data */
     
-    int result = 0;
-    
+    int result = is_composite(symbology);
+
     switch (symbology) {
         case BARCODE_EAN128:
+        case BARCODE_EAN14:
+        case BARCODE_NVE18:
         case BARCODE_RSS_EXP:
         case BARCODE_RSS_EXPSTACK:
-        case BARCODE_EANX_CC:
-        case BARCODE_EAN128_CC:
-        case BARCODE_RSS14_CC:
-        case BARCODE_RSS_LTD_CC:
-        case BARCODE_RSS_EXP_CC:
-        case BARCODE_UPCA_CC:
-        case BARCODE_UPCE_CC:
-        case BARCODE_RSS14STACK_CC:
-        case BARCODE_RSS14_OMNI_CC:
-        case BARCODE_RSS_EXPSTACK_CC:
             result = 1;
             break;
     }
@@ -1138,13 +1131,6 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
         error_number = ZINT_WARN_INVALID_OPTION;
     }
 
-    if (error_number > 4) {
-        error_tag(symbol->errtxt, error_number);
-        return error_number;
-    } else {
-        error_buffer = error_number;
-    }
-
     if ((!(supports_eci(symbol->symbology))) && (symbol->eci != 0)) {
         strcpy(symbol->errtxt, "217: Symbology does not support ECI switching");
         error_number = ZINT_ERROR_INVALID_OPTION;
@@ -1155,31 +1141,22 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
         error_number = ZINT_ERROR_INVALID_OPTION;
     }
 
-    /* Start acting on input mode */
-    if ((input_mode == GS1_MODE) || (check_force_gs1(symbol->symbology))) {
-        for (i = 0; i < in_length; i++) {
-            if (source[i] == '\0') {
-                strcpy(symbol->errtxt, "219: NULL characters not permitted in GS1 mode");
-                error_tag(symbol->errtxt, ZINT_ERROR_INVALID_DATA);
-                return ZINT_ERROR_INVALID_DATA;
-            }
-        }
-        if (gs1_compliant(symbol->symbology) == 1) {
-            error_number = ugs1_verify(symbol, source, in_length, local_source);
-            if (error_number != 0) {
-                return error_number;
-            }
-            in_length =(int)ustrlen(local_source);
-        } else {
-            strcpy(symbol->errtxt, "220: Selected symbology does not support GS1 mode");
-            error_tag(symbol->errtxt, ZINT_ERROR_INVALID_OPTION);
-            return ZINT_ERROR_INVALID_OPTION;
-        }
-    } else {
-        memcpy(local_source, source, in_length);
-        local_source[in_length] = '\0';
+    if ((symbol->dot_size < 0.01) || (symbol->dot_size > 20.0)) {
+        strcpy(symbol->errtxt, "221: Invalid dot size");
+        error_number = ZINT_ERROR_INVALID_OPTION;
     }
 
+    if (error_number > 4) {
+        error_tag(symbol->errtxt, error_number);
+        return error_number;
+    } else {
+        error_buffer = error_number;
+    }
+
+    memcpy(local_source, source, in_length);
+    local_source[in_length] = '\0';
+
+    /* Start acting on input mode */
     if (input_mode & ESCAPE_MODE) {
         error_number = escape_char_process(symbol, local_source, &in_length);
         if (error_number != 0) {
@@ -1187,6 +1164,30 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
             return error_number;
         }
         input_mode -= ESCAPE_MODE;
+    }
+
+    if ((input_mode == GS1_MODE) || (check_force_gs1(symbol->symbology))) {
+        if (gs1_compliant(symbol->symbology) == 1) {
+            // Reduce input for composite and non-forced symbologies, others (EAN128 and RSS_EXP based) will handle it themselves
+            if (is_composite(symbol->symbology) || !check_force_gs1(symbol->symbology)) {
+#ifndef _MSC_VER
+                char reduced[in_length + 1];
+#else
+                char* reduced = (char*) _alloca(in_length + 1);
+#endif
+                error_number = gs1_verify(symbol, local_source, in_length, reduced);
+                if (error_number != 0) {
+                    error_tag(symbol->errtxt, error_number);
+                    return error_number;
+                }
+                ustrcpy(local_source, reduced); // Cannot contain nul char
+                in_length = (int) ustrlen(local_source);
+            }
+        } else {
+            strcpy(symbol->errtxt, "220: Selected symbology does not support GS1 mode");
+            error_tag(symbol->errtxt, ZINT_ERROR_INVALID_OPTION);
+            return ZINT_ERROR_INVALID_OPTION;
+        }
     }
 
     if ((input_mode < 0) || (input_mode > 2)) {
@@ -1199,12 +1200,6 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
 
     if (input_mode == UNICODE_MODE) {
         strip_bom(local_source, &in_length);
-    }
-
-    if ((symbol->dot_size < 0.01) || (symbol->dot_size > 20.0)) {
-        strcpy(symbol->errtxt, "221: Invalid dot size");
-        error_tag(symbol->errtxt, ZINT_ERROR_INVALID_OPTION);
-        return ZINT_ERROR_INVALID_OPTION;
     }
     
     switch (symbol->symbology) {
@@ -1238,7 +1233,7 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
 #endif
                     size_t temp_len = in_length;
                     memcpy(temp, local_source, temp_len);
-					temp[temp_len] = '\0';
+                    temp[temp_len] = '\0';
                     error_number = utf_to_eci(symbol->eci, local_source, temp, &temp_len);
                     if (error_number == 0) {
                         in_length = (int) temp_len;
