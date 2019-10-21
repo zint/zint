@@ -27,7 +27,7 @@ namespace Zint {
 
     QZint::QZint() {
         m_symbol = BARCODE_CODE128;
-        m_height = 50;
+        m_height = 0;
         m_border = NO_BORDER;
         m_borderWidth = 0;
         m_securityLevel = -1;

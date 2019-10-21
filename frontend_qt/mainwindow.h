@@ -121,6 +121,7 @@ public slots:
 	void composite_ean_check();
 	void maxi_primary();
 	void change_print_scale();
+	void autoheight_clicked();
 
 protected:
     void resizeEvent(QResizeEvent *event);

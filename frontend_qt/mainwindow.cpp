@@ -160,6 +160,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags fl)
 	connect(btnMoreData, SIGNAL(clicked( bool )), SLOT(open_data_dialog()));
 	connect(btnSequence, SIGNAL(clicked( bool )), SLOT(open_sequence_dialog()));
 	connect(chkHRTHide, SIGNAL(stateChanged( int )), SLOT(update_preview()));
+    connect(chkAutoHeight, SIGNAL(stateChanged( int )), SLOT(autoheight_clicked()));
     connect(btnCopySVG, SIGNAL(clicked( bool )), SLOT(copy_to_clipboard_svg()));
     connect(btnCopyBMP, SIGNAL(clicked( bool )), SLOT(copy_to_clipboard_bmp()));
 }
@@ -327,6 +328,18 @@ void MainWindow::on_bgcolor_clicked()
         } else {
             m_bgcolor = temp;
         }
+}
+
+void MainWindow::autoheight_clicked()
+{
+    if (chkAutoHeight->isChecked()) {
+        lblHeight->setEnabled(false);
+        heightb->setEnabled(false);
+    } else {
+        lblHeight->setEnabled(true);
+        heightb->setEnabled(true);
+    }
+    update_preview();
 }
 
 void MainWindow::change_print_scale()
@@ -1032,7 +1045,11 @@ void MainWindow::update_preview()
 
 	m_bc.bc.setBorderType((Zint::QZint::BorderType)(btype->currentIndex()*2));
 	m_bc.bc.setBorderWidth(bwidth->value());
-	m_bc.bc.setHeight(heightb->value());
+    if(chkAutoHeight->isChecked()) {
+        m_bc.bc.setHeight(0);
+    } else {
+        m_bc.bc.setHeight(heightb->value());
+    }
 	m_bc.bc.setWhitespace(spnWhitespace->value());
 	m_bc.bc.setFgColor(m_fgcolor);
 	m_bc.bc.setBgColor(m_bgcolor);
