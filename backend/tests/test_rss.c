@@ -30,8 +30,6 @@
 
 #include "testcommon.h"
 
-extern int general_rules(char type[]);
-
 //#define TEST_RSS_BINARY_DIV_MODULO_DIVISOR_GENERATE_EXPECTED 1
 
 static void test_binary_div_modulo_divisor(void)

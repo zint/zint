@@ -273,7 +273,7 @@ char* testUtilErrorName(int error_number) {
         int val;
     };
     struct item data[] = {
-        { -1, "", 0 },
+        { 0, "0", 0 },
         { -1, "", 1 },
         { ZINT_WARN_INVALID_OPTION, "ZINT_WARN_INVALID_OPTION", 2 },
         { ZINT_WARN_USES_ECI, "ZINT_WARN_USES_ECI", 3 },
