@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2018 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2019 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -41,55 +41,48 @@
 
 #include "common.h"
 
-void make_html_friendly(unsigned char * string, unsigned char * html_version) {
-    /* Convert text into HTML friendly format by doing the following:
-     * > becomes &gt;
-     * < becomes &lt;
-     * & becomes &amp;
-     */
-     
-     int i, html_pos;
-     
-     html_pos = 0;
-     html_version[html_pos] = '\0';
-     
-     for (i = 0; i < ustrlen(string); i++) {
-         switch(string[i]) {
-             case '>':
-                html_version[html_pos] = '&';
-                html_version[html_pos + 1] = 'g';
-                html_version[html_pos + 2] = 't';
-                html_version[html_pos + 3] = ';';
+void make_html_friendly(unsigned char * string, char * html_version) {
+    /* Converts text to use HTML entity codes */
+
+    int i, html_pos;
+
+    html_pos = 0;
+    html_version[html_pos] = '\0';
+
+    for (i = 0; i < ustrlen(string); i++) {
+        switch(string[i]) {
+            case '>':
+                strcat(html_version, "&gt;");
                 html_pos += 4;
-                html_version[html_pos] = '\0';
-             break;
-             
-             case '<':
-                html_version[html_pos] = '&';
-                html_version[html_pos + 1] = 'l';
-                html_version[html_pos + 2] = 't';
-                html_version[html_pos + 3] = ';';
+                break;
+
+            case '<':
+                strcat(html_version, "&lt;");
                 html_pos += 4;
-                html_version[html_pos] = '\0';
-             break;
-             
-             case '&':
-                html_version[html_pos] = '&';
-                html_version[html_pos + 1] = 'a';
-                html_version[html_pos + 2] = 'm';
-                html_version[html_pos + 3] = 'p';
-                html_version[html_pos + 4] = ';';
+                break;
+
+            case '&':
+                strcat(html_version, "&amp;");
                 html_pos += 5;
-                html_version[html_pos] = '\0';
-             break;
-             
-             default:
+                break;
+
+            case '"':
+                strcat(html_version, "&quot;");
+                html_pos += 6;
+                break;
+
+            case '/':
+                strcat(html_version, "&frasl;");
+                html_pos += 7;
+                break;
+
+            default:
                 html_version[html_pos] = string[i];
                 html_pos++;
                 html_version[html_pos] = '\0';
                 break;
          }
-     }
+    }
 }
 
 int svg_plot(struct zint_symbol *symbol) {
@@ -98,16 +91,30 @@ int svg_plot(struct zint_symbol *symbol) {
     const char *locale = NULL;
     float ax, ay, bx, by, cx, cy, dx, dy, ex, ey, fx, fy;
     float radius;
-    
+
     struct zint_vector_rect *rect;
     struct zint_vector_hexagon *hex;
     struct zint_vector_circle *circle;
     struct zint_vector_string *string;
-    
+
+    int html_len = strlen((char *)symbol->text) + 1;
+
+    for (int i = 0; i < strlen((char *)symbol->text); i++) {
+        switch(symbol->text[i]) {
+            case '>':
+            case '<':
+            case '"':
+            case '&':
+            case '/':
+                html_len += 7;
+                break;
+        }
+    }
+
 #ifndef _MSC_VER
-    unsigned char html_string[200];
+    char html_string[html_len];
 #else
-    unsigned char* html_string = (unsigned char*) _alloca(200);
+    char* html_string = (unsigned char*) _alloca(html_len);
 #endif
 
     /* Check for no created vector set */
@@ -139,13 +146,12 @@ int svg_plot(struct zint_symbol *symbol) {
 
     fprintf(fsvg, "      <rect x=\"0\" y=\"0\" width=\"%d\" height=\"%d\" fill=\"#%s\" />\n", (int) ceil(symbol->vector->width), (int) ceil(symbol->vector->height), symbol->bgcolour);
 
-    
     rect = symbol->vector->rectangles;
     while (rect) {
         fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", rect->x, rect->y, rect->width, rect->height);
         rect = rect->next;
     }
-    
+
     hex = symbol->vector->hexagons;
     while (hex) {
         radius = hex->diameter / 2.0;
@@ -164,7 +170,7 @@ int svg_plot(struct zint_symbol *symbol) {
         fprintf(fsvg, "      <path d=\"M %.2f %.2f L %.2f %.2f L %.2f %.2f L %.2f %.2f L %.2f %.2f L %.2f %.2f Z\" />\n", ax, ay, bx, by, cx, cy, dx, dy, ex, ey, fx, fy);
         hex = hex->next;
     }
-    
+
     circle = symbol->vector->circles;
     while (circle) {
         if (circle->colour) {
@@ -174,7 +180,7 @@ int svg_plot(struct zint_symbol *symbol) {
         }
         circle = circle->next;
     }
-    
+
     string = symbol->vector->strings;
     while (string) {
         fprintf(fsvg, "      <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"middle\"\n", string->x, string->y);
