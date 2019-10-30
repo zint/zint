@@ -49,7 +49,7 @@
 // size.
 
 #include <stdio.h>		// only needed for debug (main)
-#include <stdlib.h>		// only needed for malloc/free
+#include <malloc.h>
 #include "reedsol.h"
 static int logmod; // 2**symsize - 1
 static int rlen;
@@ -74,6 +74,11 @@ void rs_init_gf(const int poly) {
         m++;
     b >>= 1;
     m--;
+
+    // Ensure m not negative to supress gcc -Walloc-size-larger-than
+    if (m < 0) {
+        m = 0;
+    }
 
     // Calculate the log/alog tables
     logmod = (1 << m) - 1;
