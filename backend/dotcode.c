@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2017 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2017-2019 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -32,6 +32,7 @@
 
 /*
  * Attempts to encode DotCode according to AIMD013 Rev 1.34a, dated Feb 19, 2009
+ * Incorporating suggestions from Terry Burton at BWIPP
  */
 
 #include <stdio.h>
@@ -49,6 +50,7 @@
 
 #define GF 113
 #define PM 3
+#define SCORE_UNLIT_EDGE    -99999
 
 /* DotCode symbol character dot patterns, from Annex C */
 static const unsigned short int dot_patterns[113] = {
@@ -105,7 +107,6 @@ const int score_array(char Dots[], int Hgt, int Wid) {
     int x, y, worstedge, first, last, sum;
     int penalty_local = 0;
     int penalty = 0;
-    int t = 0, b = 0, l = 0, r = 0;
 
     // first, guard against "pathelogical" gaps in the array
     if (Hgt & 1) {
@@ -165,9 +166,9 @@ const int score_array(char Dots[], int Hgt, int Wid) {
         }
     worstedge = sum + last - first;
     worstedge *= Hgt;
-    
+
     if (sum == 0) {
-        t = 1;
+        return SCORE_UNLIT_EDGE;      // guard against empty top edge
     }
 
     sum = 0;
@@ -188,9 +189,9 @@ const int score_array(char Dots[], int Hgt, int Wid) {
     if (sum < worstedge) {
         worstedge = sum;
     }
-    
+
     if (sum == 0) {
-        b = 2;
+        return SCORE_UNLIT_EDGE;      // guard against empty bottom edge
     }
 
     sum = 0;
@@ -211,9 +212,9 @@ const int score_array(char Dots[], int Hgt, int Wid) {
     if (sum < worstedge) {
         worstedge = sum;
     }
-    
+
     if (sum == 0) {
-        l = 4;
+        return SCORE_UNLIT_EDGE;      // guard against empty left edge
     }
 
     sum = 0;
@@ -234,12 +235,10 @@ const int score_array(char Dots[], int Hgt, int Wid) {
     if (sum < worstedge) {
         worstedge = sum;
     }
-    
-    if (sum == 0) {
-        r = 8;
-    }
 
-    penalty += (t + b + l + r) * 100000;
+    if (sum == 0) {
+        return SCORE_UNLIT_EDGE;      // guard against empty right edge
+    }
 
     // throughout the array, count the # of unprinted 5-somes (cross patterns)
     // plus the # of printed dots surrounded by 8 unprinted neighbors
@@ -667,7 +666,7 @@ int dotcode_encode_message(struct zint_symbol *symbol, const unsigned char sourc
             }
         }
 
-        /* Setp B3 */
+        /* Step B3 */
         if ((!done) && (encoding_mode == 'C')) {
             if (binary(source, input_position)) {
                 if (n_digits(source, input_position + 1, length) > 0) {
@@ -1212,7 +1211,7 @@ void fold_dotstream(char dot_stream[], int width, int height, char dot_array[]) 
 void apply_mask(int mask, int data_length, unsigned char *masked_codeword_array, unsigned char *codeword_array, int ecc_length, char *dot_stream) {
     int weight = 0;
     int j;
-    
+
     switch (mask) {
         case 0:
             masked_codeword_array[0] = 0;
@@ -1421,7 +1420,7 @@ int dotcode(struct zint_symbol *symbol, const unsigned char source[], int length
     for (i = 0; i < 4; i++) {
 
         apply_mask(i, data_length, masked_codeword_array, codeword_array, ecc_length, dot_stream);
-        
+
         dot_stream_length = make_dotstream(masked_codeword_array, (data_length + ecc_length + 1), dot_stream);
 
         /* Add pad bits */
@@ -1442,18 +1441,18 @@ int dotcode(struct zint_symbol *symbol, const unsigned char source[], int length
     best_mask = 0;
 
     for (i = 1; i < 4; i++) {
-        if (mask_score[i] > high_score) {
+        if (mask_score[i] >= high_score) {
             high_score = mask_score[i];
             best_mask = i;
         }
     }
-    
+
     /* Re-evaluate using forced corners if needed */
     if (best_mask <= (height * width) / 2) {
         for (i = 0; i < 4; i++) {
 
             apply_mask(i, data_length, masked_codeword_array, codeword_array, ecc_length, dot_stream);
-            
+
             dot_stream_length = make_dotstream(masked_codeword_array, (data_length + ecc_length + 1), dot_stream);
 
             /* Add pad bits */
@@ -1462,7 +1461,7 @@ int dotcode(struct zint_symbol *symbol, const unsigned char source[], int length
             }
 
             fold_dotstream(dot_stream, width, height, dot_array);
-            
+
             force_corners(width, height, dot_array);
 
             mask_score[i + 4] = score_array(dot_array, height, width);
@@ -1471,22 +1470,22 @@ int dotcode(struct zint_symbol *symbol, const unsigned char source[], int length
                 printf("Mask %d score is %d\n", i + 4, mask_score[i + 4]);
             }
         }
-        
+
         for (i = 4; i < 8; i++) {
-            if (mask_score[i] > high_score) {
+            if (mask_score[i] >= high_score) {
                 high_score = mask_score[i];
                 best_mask = i;
             }
         }
     }
-    
+
     if (debug) {
         printf("Applying mask %d\n", best_mask);
     }
 
     /* Apply best mask */
     apply_mask(best_mask % 4, data_length, masked_codeword_array, codeword_array, ecc_length, dot_stream);
-    
+
     dot_stream_length = make_dotstream(masked_codeword_array, (data_length + ecc_length + 1), dot_stream);
 
     /* Add pad bits */
@@ -1495,7 +1494,7 @@ int dotcode(struct zint_symbol *symbol, const unsigned char source[], int length
     }
 
     fold_dotstream(dot_stream, width, height, dot_array);
-    
+
     if (best_mask >= 4) {
         force_corners(width, height, dot_array);
     }
