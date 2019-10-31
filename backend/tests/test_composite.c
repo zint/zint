@@ -117,7 +117,7 @@ static void test_helper_generate(const struct zint_symbol* symbol, int ret, int 
     }
 }
 
-// Replicate examples from GS1 Specification standard and ISO/IEC 24723:2010
+// Replicate examples from GS1 General Specifications 19.1 and ISO/IEC 24723:2010
 static void test_examples(void)
 {
     testStart("");
@@ -137,7 +137,7 @@ static void test_examples(void)
         char* comment;
         unsigned char* expected;
     };
-    // Verified manually against GS1 Specification standard and ISO/IEC 24723:2010, with noted exceptions
+    // Verified manually against GS1 General Specifications 19.1 and ISO/IEC 24723:2010, with noted exceptions
     struct item data[] = {
         /* 0*/ { BARCODE_RSS14_OMNI_CC, "0401234567890", "[17]050101[10]ABC123", 1, 0, 0, 0, 11, 56, "Figure 5.1-5. GS1 DataBar Stacked Omnidirectional barcode with a Composite Component",
                     "01101100110101110001001100001000000110100111011110101001"

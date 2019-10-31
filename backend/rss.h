@@ -29,13 +29,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-
-#define NUMERIC		110
-#define ALPHA		97
-#define ISOIEC		105
-#define	INVALID_CHAR	100
-#define	ANY_ENC		120
-#define ALPHA_OR_ISO	121
+/* vim: set ts=4 sw=4 et : */
 
 /* RSS-14 Tables */
 static const unsigned short int g_sum_table[9] = {
