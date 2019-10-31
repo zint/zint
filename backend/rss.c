@@ -1426,17 +1426,13 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
         /* There is still one more numeric digit to encode */
         if (debug) printf("Adding extra (odd) numeric digit\n");
 
-        if (mode == NUMERIC) {
-            if ((remainder >= 4) && (remainder <= 6)) {
-                bin_append(ctoi(last_digit) + 1, 4, binary_string);
-            } else {
-                d1 = ctoi(last_digit);
-                d2 = 10;
-
-                bin_append((11 * d1) + d2 + 8, 7, binary_string);
-            }
+        if ((remainder >= 4) && (remainder <= 6)) {
+            bin_append(ctoi(last_digit) + 1, 4, binary_string);
         } else {
-            bin_append(last_digit - 43, 5, binary_string);
+            d1 = ctoi(last_digit);
+            d2 = 10;
+
+            bin_append((11 * d1) + d2 + 8, 7, binary_string);
         }
 
         remainder = 12 - (strlen(binary_string) % 12);
