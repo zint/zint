@@ -71,9 +71,9 @@ void make_html_friendly(unsigned char * string, char * html_version) {
                 html_pos += 6;
                 break;
 
-            case '/':
-                strcat(html_version, "&frasl;");
-                html_pos += 7;
+            case '\'':
+                strcat(html_version, "&apos;");
+                html_pos += 6;
                 break;
 
             default:
@@ -105,8 +105,8 @@ int svg_plot(struct zint_symbol *symbol) {
             case '<':
             case '"':
             case '&':
-            case '/':
-                html_len += 7;
+            case '\'':
+                html_len += 6;
                 break;
         }
     }
