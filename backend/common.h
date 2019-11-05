@@ -63,6 +63,7 @@ extern "C" {
     extern void lookup(const char set_string[], const char *table[], const char data, char dest[]);
     extern void bin_append(const int arg, const int length, char *binary);
     extern int posn(const char set_string[], const char data);
+    extern int ustrchr_cnt(const unsigned char string[], const size_t length, const unsigned char c);
     extern int module_is_set(const struct zint_symbol *symbol, const int y_coord, const int x_coord);
     extern void set_module(struct zint_symbol *symbol, const int y_coord, const int x_coord);
     extern int istwodigits(const unsigned char source[], const size_t position);

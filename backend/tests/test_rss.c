@@ -34,6 +34,7 @@
 //#define TEST_RSS_BINARY_DIV_MODULO_DIVISOR_GENERATE_EXPECTED 1
 //#define TEST_EXAMPLES_GENERATE_EXPECTED 1
 //#define TEST_GENERAL_FIELD_GENERATE_EXPECTED 1
+//#define TEST_BINARY_BUFFER_SIZE_GENERATE_EXPECTED 1
 
 static void test_binary_div_modulo_divisor(void)
 {
@@ -533,11 +534,63 @@ static void test_general_field(void)
     testFinish();
 }
 
+static void test_binary_buffer_size(void)
+{
+    testStart("");
+
+    int ret;
+    struct item {
+        unsigned char* data;
+        int ret;
+
+        int expected_rows;
+        int expected_width;
+        char* comment;
+    };
+    struct item data[] = {
+        /* 0*/ { "[91]1", 0, 1, 102, "Minimum digit" },
+        /* 1*/ { "[91]+", 0, 1, 102, "Minimum ISO-646" },
+        /* 2*/ { "[00]123456789012345678[00]123456789012345678[00]123456789012345678[91]12345678", 0, 1, 543, "70 == any AIs max" },
+        /* 3*/ { "[00]123456789012345678[00]123456789012345678[00]123456789012345678[91]123456789", ZINT_ERROR_TOO_LONG, 0, 0, "71 > any AIs max" },
+        /* 4*/ { "[01]12345678901234[00]123456789012345678[00]123456789012345678[91]1234567890123456", 0, 1, 543, "74 == 01 + other AIs max" },
+        /* 5*/ { "[01]12345678901234[00]123456789012345678[00]123456789012345678[91]12345678901234567", ZINT_ERROR_TOO_LONG, 0, 0, "75 > 01 + other AIs max" },
+        /* 6*/ { "[01]92345678901234[3920]123456789012345[00]123456789012345678[91]1234567890123456789", 0, 1, 543, "77 (incl. FNC1 after 3920) == 01 + 392x + other AIs max" },
+        /* 7*/ { "[01]92345678901234[3920]123456789012345[00]123456789012345678[91]12345678901234567890", ZINT_ERROR_TOO_LONG, 0, 0, "78 > 01 + 392x + other AIs max" },
+    };
+    int data_size = sizeof(data) / sizeof(struct item);
+
+    for (int i = 0; i < data_size; i++) {
+
+        struct zint_symbol* symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        symbol->symbology = BARCODE_RSS_EXP;
+        int length = strlen(data[i].data);
+
+        ret = ZBarcode_Encode(symbol, data[i].data, length);
+        assert_equal(ret, data[i].ret, "i:%d ret %d != %d %s\n", i, ret, data[i].ret, symbol->errtxt);
+
+        #ifdef TEST_BINARY_BUFFER_SIZE_GENERATE_EXPECTED
+        printf("        /*%2d*/ { \"%s\", %s, %d, %d, \"%s\" },\n",
+                i, data[i].data, testUtilErrorName(ret), symbol->rows, symbol->width, data[i].comment);
+        #else
+
+        assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);
+        assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
+        #endif
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
 int main()
 {
     test_binary_div_modulo_divisor();
     test_examples();
     test_general_field();
+    test_binary_buffer_size();
 
     testReport();
 

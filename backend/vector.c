@@ -28,6 +28,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* vim: set ts=4 sw=4 et : */
 
 #include <stdio.h>
 #include <string.h>
@@ -499,7 +500,7 @@ int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_type) {
                 int block_width = 0;
                 do {
                     block_width++;
-                } while (module_is_set(symbol, this_row, i + block_width) == module_is_set(symbol, this_row, i));
+				} while (i + block_width < symbol->width && module_is_set(symbol, this_row, i + block_width) == module_is_set(symbol, this_row, i));
                 if ((addon_latch == 0) && (r == (symbol->rows - 1)) && (i > main_symbol_width_x)) {
                     addon_text_posn = row_posn + 8.0f;
                     addon_latch = 1;

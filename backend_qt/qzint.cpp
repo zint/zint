@@ -306,9 +306,9 @@ namespace Zint {
         qreal gheight = m_zintSymbol->vector->height;
 
         if (paintRect.width() / gwidth < paintRect.height() / gheight) {
-            scale = (qreal) floor(paintRect.width() / gwidth);
+            scale = paintRect.width() / gwidth;
         } else {
-            scale = (qreal) floor(paintRect.height() / gheight);
+            scale = paintRect.height() / gheight;
         }
         
         xtr += (qreal) (paintRect.width() - gwidth * scale) / 2.0;

@@ -899,7 +899,6 @@ int calc_padding_ccc(int binary_length, int *cc_width, int lin_width, int *ecc) 
     int target_bitsize = 0;
     int byte_length, codewords_used, ecc_level, ecc_codewords, rows;
     int codewords_total, target_codewords, target_bytesize;
-    int i;
 
     byte_length = binary_length / 8;
     if (binary_length % 8 != 0) {
@@ -909,47 +908,46 @@ int calc_padding_ccc(int binary_length, int *cc_width, int lin_width, int *ecc) 
     codewords_used = (byte_length / 6) * 5;
     codewords_used += byte_length % 6;
 
-    ecc_level = 7;
-    if (codewords_used <= 1280) {
-        ecc_level = 6;
-    }
-    if (codewords_used <= 640) {
-        ecc_level = 5;
-    }
-    if (codewords_used <= 320) {
-        ecc_level = 4;
-    }
-    if (codewords_used <= 160) {
-        ecc_level = 3;
-    }
+    /* Recommended minimum ecc levels ISO/IEC 1543:2015 (PDF417) Annex E Table E.1,
+       restricted by CC-C codeword max 900 (30 cols * 30 rows), GS1 General Specifications 19.1 5.9.2.3 */
     if (codewords_used <= 40) {
         ecc_level = 2;
+    } else if (codewords_used <= 160) {
+        ecc_level = 3;
+    } else if (codewords_used <= 320) {
+        ecc_level = 4;
+    } else if (codewords_used <= 833) { /* 900 - 3 - 64 */
+        ecc_level = 5;
+    } else if (codewords_used <= 865) { /* 900 - 3 - 32 */
+        ecc_level = 4; /* Not recommended but allow to meet advertised "up to 2361 digits" (allows max 2372) */
+    } else {
+        return 0;
     }
     *(ecc) = ecc_level;
-    ecc_codewords = 1;
-    for (i = 1; i <= (ecc_level + 1); i++) {
-        ecc_codewords *= 2;
-    }
+    ecc_codewords = 1 << (ecc_level + 1);
 
     codewords_used += ecc_codewords;
     codewords_used += 3;
 
-    *(cc_width) = (lin_width - 62) / 17;
+    *(cc_width) = (lin_width - 53) / 17; // -53 = (6 left quiet zone + 10 right quiet zone - (17 * 3 + 18))
+    if (*(cc_width) > 30) {
+        *(cc_width) = 30;
+    }
+    rows = ceil((double) codewords_used / *(cc_width));
     /* stop the symbol from becoming too high */
-    do {
+    while (rows > 30 && *(cc_width) < 30) {
         *(cc_width) = *(cc_width) + 1;
-        rows = codewords_used / *(cc_width);
-    } while (rows > 90);
+        rows = ceil((double) codewords_used / *(cc_width));
+    }
 
-    if (codewords_used % *(cc_width) != 0) {
-        rows++;
+    if (rows > 30) {
+        return 0;
+    }
+    if (rows < 3) {
+        rows = 3;
     }
 
     codewords_total = *(cc_width) * rows;
-
-    if (codewords_total > 928) { // PDF_MAX
-        return 0;
-    }
 
     target_codewords = codewords_total - ecc_codewords;
     target_codewords -= 3;
@@ -1368,14 +1366,13 @@ int linear_dummy_run(unsigned char *source, int length) {
 int composite(struct zint_symbol *symbol, unsigned char source[], int length) {
     int error_number, cc_mode, cc_width, ecc_level;
     int j, i, k;
-    unsigned int rs = length + 1;
-    unsigned int bs = 20 * rs;
-    unsigned int pri_len;
+    unsigned int bs = 13 * length + 500 + 1; /* Allow for 8 bits + 5-bit latch per char + 500 bits overhead/padding */
 #ifndef _MSC_VER
     char binary_string[bs];
 #else
     char* binary_string = (char*) _alloca(bs);
 #endif
+    unsigned int pri_len;
     struct zint_symbol *linear;
     int top_shift, bottom_shift;
     int linear_width = 0;

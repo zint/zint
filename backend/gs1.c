@@ -29,6 +29,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* vim: set ts=4 sw=4 et : */
 
 #include <string.h>
 #include <stdlib.h>
@@ -73,7 +74,16 @@ int gs1_verify(struct zint_symbol *symbol, const unsigned char source[], const s
     int i, j, last_ai, ai_latch;
     char ai_string[6];
     int bracket_level, max_bracket_level, ai_length, max_ai_length, min_ai_length;
-    int ai_value[100], ai_location[100], ai_count, data_location[100], data_length[100];
+    int ai_count;
+	int ai_max = ustrchr_cnt(source, src_len, '[');
+#ifndef _MSC_VER
+    int ai_value[ai_max], ai_location[ai_max], data_location[ai_max], data_length[ai_max];
+#else
+    int ai_value = (int*) _alloca(ai_max * sizeof(int));
+    int ai_location = (int*) _alloca(ai_max * sizeof(int));
+    int data_location = (int*) _alloca(ai_max * sizeof(int));
+    int data_length = (int*) _alloca(ai_max * sizeof(int));
+#endif
     int error_latch;
 
     /* Detect extended ASCII characters */

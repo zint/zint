@@ -128,10 +128,22 @@ int posn(const char set_string[], const char data) {
 
     for (i = 0; i < n; i++) {
         if (data == set_string[i]) {
-         return i;
+            return i;
         }
     }
-   return -1;
+    return -1;
+}
+
+/* Returns the number of times a character occurs in a string */
+int ustrchr_cnt(const unsigned char string[], const size_t length, const unsigned char c) {
+    int count = 0;
+    int i;
+    for (i = 0; i < length; i++) {
+        if (string[i] == c) {
+            count++;
+        }
+    }
+    return count;
 }
 
 /* Return true (1) if a module is dark/black, otherwise false (0) */

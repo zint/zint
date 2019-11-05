@@ -22,6 +22,7 @@ BarcodeItem::BarcodeItem()
 {
 	w=693;
 	h=378; // Default widget size when created
+	ar = Zint::QZint::AspectRatioMode::IgnoreAspectRatio;
 }
 
 BarcodeItem::~BarcodeItem()

@@ -1463,7 +1463,7 @@ int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_str
         if (debug) printf("\tLength: %d\n", (int) strlen(binary_string));
     }
 
-    if (strlen(binary_string) > 252) {
+    if (strlen(binary_string) > 252) { /* 252 = (21 * 12) */
         strcpy(symbol->errtxt, "387: Input too long");
         return ZINT_ERROR_TOO_LONG;
     }
@@ -1516,11 +1516,12 @@ int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int src_len)
     int char_widths[21][8], checksum, check_widths[8], c_group;
     int check_char, c_odd, c_even, elements[235], pattern_width, reader, writer;
     int separator_row;
+    unsigned int bin_len = 13 * src_len + 200 + 1; /* Allow for 8 bits + 5-bit latch per char + 200 bits overhead/padding */
 #ifndef _MSC_VER
-    char reduced[src_len + 1], binary_string[(7 * src_len) + 1];
+    char reduced[src_len + 1], binary_string[bin_len];
 #else
     char* reduced = (char*) _alloca(src_len + 1);
-    char* binary_string = (char*) _alloca((7 * src_len) + 1);
+    char* binary_string = (char*) _alloca(bin_len);
 #endif
 
     separator_row = 0;
