@@ -72,10 +72,10 @@ void itostr(char ai_string[], int ai_value) {
 
 int gs1_verify(struct zint_symbol *symbol, const unsigned char source[], const size_t src_len, char reduced[]) {
     int i, j, last_ai, ai_latch;
-    char ai_string[6];
+    char ai_string[7]; /* 6 char max "(NNNN)" */
     int bracket_level, max_bracket_level, ai_length, max_ai_length, min_ai_length;
     int ai_count;
-	int ai_max = ustrchr_cnt(source, src_len, '[');
+    int ai_max = ustrchr_cnt(source, src_len, '[') + 1; /* Plus 1 so non-zero */
 #ifndef _MSC_VER
     int ai_value[ai_max], ai_location[ai_max], data_location[ai_max], data_length[ai_max];
 #else
@@ -238,6 +238,7 @@ int gs1_verify(struct zint_symbol *symbol, const unsigned char source[], const s
                 break;
                 
             // Length 4 Fixed
+            case 7040: // UIC+EXT
             case 8111: // POINTS
                 if (data_length[i] != 4) {
                     error_latch = 1;
@@ -279,6 +280,7 @@ int gs1_verify(struct zint_symbol *symbol, const unsigned char source[], const s
             case 414: // LOC NO
             case 415: // PAY TO
             case 416: // PROD/SERV LOC
+            case 417: // PARTY GLN
             case 7001: // NSN
                 if (data_length[i] != 13) {
                     error_latch = 1;
@@ -312,6 +314,7 @@ int gs1_verify(struct zint_symbol *symbol, const unsigned char source[], const s
             case 8006: // ITIP
             case 8017: // GSRN PROVIDER
             case 8018: // GSRN RECIPIENT
+            case 8026: // ITIP CONTENT
                 if (data_length[i] != 18) {
                     error_latch = 1;
                 } else {
@@ -401,6 +404,7 @@ int gs1_verify(struct zint_symbol *symbol, const unsigned char source[], const s
             case 712: // NHRN CN
             case 713: // NHRN DRN
             case 714: // NHRN AIM
+            case 7240: // PROTOCOL
             case 8002: // CMT NO
             case 8012: // VERSION
                 if (data_length[i] > 20) {
@@ -419,6 +423,15 @@ int gs1_verify(struct zint_symbol *symbol, const unsigned char source[], const s
                 }
                 break;
                 
+            // Length 28 Max
+            case 235: // TPX
+                if (data_length[i] > 28) {
+                    error_latch = 1;
+                } else {
+                    error_latch = 0;
+                }
+                break;
+
             // Length 30 Max
             case 240: // ADDITIONAL ID
             case 241: // CUST PART NO
@@ -577,7 +590,7 @@ int gs1_verify(struct zint_symbol *symbol, const unsigned char source[], const s
         }
         
         if (ai_value[i] == 7007) { // HARVEST DATE
-            if ((data_length[i] < 6) || (data_length[i] > 12)) {
+            if ((data_length[i] != 6) && (data_length[i] != 12)) {
                 error_latch = 1;
             } else {
                 error_latch = 0;
@@ -609,7 +622,7 @@ int gs1_verify(struct zint_symbol *symbol, const unsigned char source[], const s
         }
         
         if (ai_value[i] == 8008) { // PROD TIME
-            if ((data_length[i] < 9) || (data_length[i] > 12)) {
+            if ((data_length[i] != 8) && (data_length[i] != 10) && (data_length[i] != 12)) {
                 error_latch = 1;
             } else {
                 error_latch = 0;
