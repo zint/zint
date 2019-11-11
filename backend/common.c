@@ -220,13 +220,13 @@ int is_stackable(const int symbology) {
 
 /* Indicates which symbols can have addon (EAN-2 and EAN-5) */
 int is_extendable(const int symbology) {
-    if (symbology == BARCODE_EANX) {
+    if (symbology == BARCODE_EANX || symbology == BARCODE_EANX_CHK) {
         return 1;
     }
-    if (symbology == BARCODE_UPCA) {
+    if (symbology == BARCODE_UPCA || symbology == BARCODE_UPCA_CHK) {
         return 1;
     }
-    if (symbology == BARCODE_UPCE) {
+    if (symbology == BARCODE_UPCE || symbology == BARCODE_UPCE_CHK) {
         return 1;
     }
     if (symbology == BARCODE_ISBNX) {

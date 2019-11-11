@@ -27,6 +27,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* vim: set ts=4 sw=4 et : */
 
 #include "testcommon.h"
 
@@ -40,7 +41,7 @@ static void test_upce_length(void)
         unsigned char* data;
         int ret;
     };
-    // Vi} :s/\/\*[ 0-9]*\*\//\=printf("\/*%2d*\/", line(".") - line("'<"))
+    // s/\/\*[ 0-9]*\*\//\=printf("\/*%2d*\/", line(".") - line("'<"))
     struct item data[] = {
         /* 0*/ { BARCODE_UPCE, "12345", 0 },
         /* 1*/ { BARCODE_UPCE_CHK, "12345", ZINT_ERROR_INVALID_CHECK },
@@ -85,35 +86,50 @@ static void test_isbn(void)
     struct item {
         unsigned char* data;
         int ret_encode;
-        float w;
-        float h;
         int ret_vector;
     };
-    // Vi} :s/\/\*[ 0-9]*\*\//\=printf("\/*%2d*\/", line(".") - line("'<"))
+    // s/\/\*[ 0-9]*\*\//\=printf("\/*%2d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /* 0*/ { "0", 0, 100, 30, 0 }, // Left zero-padded if < 10 chars
-        /* 1*/ { "12345678", ZINT_ERROR_INVALID_CHECK, 100, 30, -1 },
-        /* 2*/ { "12345679", 0, 100, 30, 0 }, // 9 is correct check digit
-        /* 3*/ { "123456789", 0, 100, 30, 0 },
-        /* 4*/ { "0123456789", 0, 100, 30, 0 },
-        /* 5*/ { "1234567890", ZINT_ERROR_INVALID_CHECK, 100, 30, -1 },
-        /* 6*/ { "123456789X", 0, 100, 30, 0 }, // X is correct check digit
-        /* 7*/ { "8175257660", 0, 100, 30, 0 }, // 0 is correct check digit
-        /* 8*/ { "0590764845", 0, 100, 30, 0 }, // 5 is correct check digit
-        /* 9*/ { "0906495741", 0, 100, 30, 0 }, // 1 is correct check digit
-        /*10*/ { "0140430016", 0, 100, 30, 0 }, // 6 is correct check digit
-        /*11*/ { "0571086187", 0, 100, 30, 0 }, // 7 is correct check digit
-        /*12*/ { "0486600882", 0, 100, 30, 0 }, // 2 is correct check digit
-        /*13*/ { "12345678901", ZINT_ERROR_TOO_LONG, 100, 30, -1 },
-        /*14*/ { "123456789012", ZINT_ERROR_TOO_LONG, 100, 30, -1 },
-        /*15*/ { "1234567890123", ZINT_ERROR_INVALID_DATA, 100, 30, -1 },
-        /*16*/ { "9784567890120", 0, 100, 30, 0 }, // 0 is correct check digit
-        /*17*/ { "9783161484100", 0, 100, 30, 0 }, // 0 is correct check digit
-        /*18*/ { "9781846688225", 0, 100, 30, 0 }, // 5 is correct check digit
-        /*19*/ { "9781847657954", 0, 100, 30, 0 }, // 4 is correct check digit
-        /*20*/ { "9781846688188", 0, 100, 30, 0 }, // 8 is correct check digit
-        /*21*/ { "9781847659293", 0, 100, 30, 0 }, // 3 is correct check digit
-        /*22*/ { "97845678901201", ZINT_ERROR_TOO_LONG, 100, 30, -1 },
+        /* 0*/ { "0", 0, 0 }, // Left zero-padded if < 10 chars
+        /* 1*/ { "12345678", ZINT_ERROR_INVALID_CHECK, -1 },
+        /* 2*/ { "12345679", 0, 0 }, // 9 is correct check digit
+        /* 3*/ { "123456789", 0, 0 },
+        /* 4*/ { "0123456789", 0, 0 },
+        /* 5*/ { "1234567890", ZINT_ERROR_INVALID_CHECK, -1 },
+        /* 6*/ { "123456789X", 0, 0 }, // X is correct check digit
+        /* 7*/ { "8175257660", 0, 0 }, // 0 is correct check digit
+        /* 8*/ { "0590764845", 0, 0 }, // 5 is correct check digit
+        /* 9*/ { "0906495741", 0, 0 }, // 1 is correct check digit
+        /*10*/ { "0140430016", 0, 0 }, // 6 is correct check digit
+        /*11*/ { "0571086187", 0, 0 }, // 7 is correct check digit
+        /*12*/ { "0486600882", 0, 0 }, // 2 is correct check digit
+        /*13*/ { "12345678901", ZINT_ERROR_TOO_LONG, -1 },
+        /*14*/ { "123456789012", ZINT_ERROR_TOO_LONG, -1 },
+        /*15*/ { "1234567890123", ZINT_ERROR_INVALID_DATA, -1 },
+        /*16*/ { "9784567890120", 0, 0 }, // 0 is correct check digit
+        /*17*/ { "9783161484100", 0, 0 }, // 0 is correct check digit
+        /*18*/ { "9781846688225", 0, 0 }, // 5 is correct check digit
+        /*19*/ { "9781847657954", 0, 0 }, // 4 is correct check digit
+        /*20*/ { "9781846688188", 0, 0 }, // 8 is correct check digit
+        /*21*/ { "9781847659293", 0, 0 }, // 3 is correct check digit
+        /*22*/ { "97845678901201", ZINT_ERROR_TOO_LONG, -1 },
+        /*23*/ { "3954994+12", 0, 0 },
+        /*24*/ { "3954994+12345", 0, 0 },
+        /*25*/ { "3954994+123456", ZINT_ERROR_TOO_LONG, -1 },
+        /*26*/ { "3954994+", 0, 0 },
+        /*27*/ { "61954993+1", 0, 0 },
+        /*28*/ { "61954993+123", 0, 0 },
+        /*29*/ { "361954999+12", 0, 0 },
+        /*30*/ { "361954999+1234", 0, 0 },
+        /*31*/ { "361954999+12", 0, 0 },
+        /*32*/ { "199900003X+12", 0, 0 },
+        /*33*/ { "199900003X+12345", 0, 0 },
+        /*34*/ { "9791234567896+12", 0, 0 },
+        /*35*/ { "9791234567896+12345", 0, 0 },
+        /*36*/ { "9791234567896+", 0, 0 },
+        /*37*/ { "97912345678961+", ZINT_ERROR_TOO_LONG, -1 },
+        /*38*/ { "97912345678961+12345", ZINT_ERROR_TOO_LONG, -1 },
+        /*39*/ { "9791234567896+123456", ZINT_ERROR_TOO_LONG, -1 },
     };
     int data_size = sizeof(data) / sizeof(struct item);
 
@@ -148,14 +164,12 @@ static void test_vector_same(void)
         int symbology;
         unsigned char* data;
         int ret_encode;
-        float w;
-        float h;
         int ret_vector;
     };
     struct item data[] = {
-        /* 0*/ { BARCODE_UPCE, "123456", 0, 100, 30, 0 },
-        /* 1*/ { BARCODE_UPCE_CHK, "1234565", 0, 100, 30, 0 }, // 5 is correct check digit
-        /* 2*/ { BARCODE_ISBNX, "0195049969", 0, 100, 30, 0 }, // 9 is correct check digit
+        /* 0*/ { BARCODE_UPCE, "123456", 0, 0 },
+        /* 1*/ { BARCODE_UPCE_CHK, "1234565", 0, 0 }, // 5 is correct check digit
+        /* 2*/ { BARCODE_ISBNX, "0195049969", 0, 0 }, // 9 is correct check digit
     };
     int data_size = sizeof(data) / sizeof(struct item);
 

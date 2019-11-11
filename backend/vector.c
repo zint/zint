@@ -239,56 +239,25 @@ void vector_scale(struct zint_symbol *symbol) {
     return;
 }
 
-void delete_last_rect(struct zint_vector_rect *rect) {
-    struct zint_vector_rect *local;
-    
-    local = rect;
-    
-    if (local->next == NULL) {
-        free(local);
-        return;
-    }
-    
-    while (local->next->next != NULL) {
-        local = local->next;
-    }
-    
-    free(local->next);
-    local->next = NULL;
-}
-
-void bump_up_rect(struct zint_vector_rect *rect) {
-    struct zint_vector_rect *local;
-    
-    local = rect;
-    
-    while (local->next) {
-        local->x = local->next->x;
-        local->y = local->next->y;
-        local->height = local->next->height;
-        local->width = local->next->width;
-        local = local->next;
-    }
-    
-}
-
 void vector_reduce_rectangles(struct zint_symbol *symbol) {
     // Looks for vertically aligned rectangles and merges them together
-    struct zint_vector_rect *rect, *target = NULL;
+    struct zint_vector_rect *rect, *target, *prev;
 
     rect = symbol->vector->rectangles;
     while (rect) {
-        target = rect->next;
+        prev = rect;
+        target = prev->next;
         
         while (target) {
             
             if ((rect->x == target->x) && (rect->width == target->width) && ((rect->y + rect->height) == target->y)) {
                 rect->height += target->height;
-                bump_up_rect(target);
-                delete_last_rect(symbol->vector->rectangles);
+                prev->next = target->next;
+                free(target);
             } else {
-                target = target->next;
+                prev = target;
             }
+            target = prev->next;
         }
 
         rect = rect->next;
@@ -388,13 +357,15 @@ int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_type) {
      * borders or white space to add.
      */
 
-    while (!(module_is_set(symbol, symbol->rows - 1, symbol_lead_in))) {
-        symbol_lead_in++;
+    if (is_composite(symbol->symbology)) {
+        while (!(module_is_set(symbol, symbol->rows - 1, symbol_lead_in))) {
+            symbol_lead_in++;
+        }
     }
 
     /* Certain symbols need whitespace otherwise characters get chopped off the sides */
-    if ((((symbol->symbology == BARCODE_EANX || symbol->symbology == BARCODE_EANX_CHK) && (symbol->rows == 1)) ||
-            (symbol->symbology == BARCODE_EANX_CC)) || (symbol->symbology == BARCODE_ISBNX)) {
+    if ((symbol->symbology == BARCODE_EANX) || (symbol->symbology == BARCODE_EANX_CHK)
+            || (symbol->symbology == BARCODE_EANX_CC) || (symbol->symbology == BARCODE_ISBNX)) {
         switch (ustrlen(symbol->text)) {
             case 13: /* EAN 13 */
             case 16:
@@ -417,20 +388,20 @@ int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_type) {
                 main_symbol_width_x = 68 + symbol_lead_in;
                 upceanflag = 8;
         }
-    } else if (((symbol->symbology == BARCODE_UPCA || symbol->symbology == BARCODE_UPCA_CHK) && (symbol->rows == 1))
+    } else if ((symbol->symbology == BARCODE_UPCA) || (symbol->symbology == BARCODE_UPCA_CHK)
             || (symbol->symbology == BARCODE_UPCA_CC)) {
         upceanflag = 12;
-        if (symbol->whitespace_width < 10) {
+        if (symbol->whitespace_width == 0) {
             symbol->whitespace_width = 10;
-            main_symbol_width_x = 96 + symbol_lead_in;
         }
-    } else if (((symbol->symbology == BARCODE_UPCE || symbol->symbology == BARCODE_UPCE_CHK) && (symbol->rows == 1))
+        main_symbol_width_x = 96 + symbol_lead_in;
+    } else if ((symbol->symbology == BARCODE_UPCE) || (symbol->symbology == BARCODE_UPCE_CHK)
             || (symbol->symbology == BARCODE_UPCE_CC)) {
         upceanflag = 6;
         if (symbol->whitespace_width == 0) {
             symbol->whitespace_width = 10;
-            main_symbol_width_x = 51 + symbol_lead_in;
         }
+        main_symbol_width_x = 51 + symbol_lead_in;
     }
 
     if ((!symbol->show_hrt) || (ustrlen(symbol->text) == 0)) {
@@ -461,7 +432,7 @@ int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_type) {
     vector->width = (float)ceil(symbol->width + (2.0f * xoffset));
     vector->height = (float)ceil(symbol->height + text_offset + (2.0f * yoffset));
 
-    large_bar_height = (symbol->height - preset_height) / large_bar_count;
+    large_bar_height = large_bar_count ? (symbol->height - preset_height) / large_bar_count : 0 /*Not used if large_bar_count zero*/;
 
     if ((symbol->output_options & BARCODE_BOX) || (symbol->output_options & BARCODE_BIND)) {
         default_text_posn = symbol->height + text_offset + symbol->border_width + symbol->border_width;
@@ -500,7 +471,7 @@ int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_type) {
                 int block_width = 0;
                 do {
                     block_width++;
-				} while (i + block_width < symbol->width && module_is_set(symbol, this_row, i + block_width) == module_is_set(symbol, this_row, i));
+                } while (i + block_width < symbol->width && module_is_set(symbol, this_row, i + block_width) == module_is_set(symbol, this_row, i));
                 if ((addon_latch == 0) && (r == (symbol->rows - 1)) && (i > main_symbol_width_x)) {
                     addon_text_posn = row_posn + 8.0f;
                     addon_latch = 1;
@@ -644,12 +615,13 @@ int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_type) {
     }
     
     /* Add the text */
-    xoffset += symbol_lead_in;
-    row_posn = row_posn + large_bar_height;
-    
+
     if (!hide_text) {
         char textpart[10];
         float textwidth;
+
+        xoffset += symbol_lead_in;
+
         if (upceanflag == 8) {
             for (i = 0; i < 4; i++) {
                 textpart[i] = symbol->text[i];
@@ -791,6 +763,8 @@ int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_type) {
             // caculate start xoffset to center text
             vector_plot_add_string(symbol, symbol->text, (symbol->width / 2.0f) + xoffset, default_text_posn, text_height, (float)symbol->width, &last_string);
         }
+
+        xoffset -= symbol_lead_in; // Restore xoffset
     }
 
     //Remove control characters from readable text

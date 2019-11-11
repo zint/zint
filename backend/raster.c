@@ -29,6 +29,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* vim: set ts=4 sw=4 et : */
 
 #include <stdio.h>
 #ifdef _MSC_VER
@@ -680,29 +681,20 @@ int plot_raster_default(struct zint_symbol *symbol, int rotate_angle, int data_t
         to_latin1(symbol->text, local_text);
     } else {
         /* No text needed */
-        switch (symbol->symbology) {
-            case BARCODE_EANX:
-            case BARCODE_EANX_CC:
-            case BARCODE_ISBNX:
-            case BARCODE_UPCA:
-            case BARCODE_UPCE:
-            case BARCODE_UPCA_CC:
-            case BARCODE_UPCE_CC:
-                /* For these symbols use dummy text to ensure formatting is done
-                 * properly even if no text is required */
-                for (i = 0; i < ustrlen(symbol->text); i++) {
-                    if (symbol->text[i] == '+') {
-                        local_text[i] = '+';
-                    } else {
-                        local_text[i] = ' ';
-                    }
-                    local_text[ustrlen(symbol->text)] = '\0';
+        if (is_extendable(symbol->symbology)) {
+            /* For these symbols use dummy text to ensure formatting is done
+             * properly even if no text is required */
+            for (i = 0; i < ustrlen(symbol->text); i++) {
+                if (symbol->text[i] == '+') {
+                    local_text[i] = '+';
+                } else {
+                    local_text[i] = ' ';
                 }
-                break;
-            default:
-                /* For everything else, just remove the text */
-                local_text[0] = '\0';
-                break;
+                local_text[ustrlen(symbol->text)] = '\0';
+            }
+        } else {
+            /* For everything else, just remove the text */
+            local_text[0] = '\0';
         }
     }
 
@@ -738,13 +730,15 @@ int plot_raster_default(struct zint_symbol *symbol, int rotate_angle, int data_t
         large_bar_height = (symbol->height - preset_height) / large_bar_count;
     }
 
-    while (!(module_is_set(symbol, symbol->rows - 1, comp_offset))) {
-        comp_offset++;
+    if (is_composite(symbol->symbology)) {
+        while (!(module_is_set(symbol, symbol->rows - 1, comp_offset))) {
+            comp_offset++;
+        }
     }
 
     /* Certain symbols need whitespace otherwise characters get chopped off the sides */
-    if ((((symbol->symbology == BARCODE_EANX) && (symbol->rows == 1)) || (symbol->symbology == BARCODE_EANX_CC))
-            || (symbol->symbology == BARCODE_ISBNX)) {
+    if ((symbol->symbology == BARCODE_EANX) || (symbol->symbology == BARCODE_EANX_CHK)
+            || (symbol->symbology == BARCODE_EANX_CC) || (symbol->symbology == BARCODE_ISBNX)) {
         switch (ustrlen(local_text)) {
             case 13: /* EAN 13 */
             case 16:
@@ -757,20 +751,18 @@ int plot_raster_default(struct zint_symbol *symbol, int rotate_angle, int data_t
             default:
                 main_width = 68 + comp_offset;
         }
-    }
-
-    if (((symbol->symbology == BARCODE_UPCA) && (symbol->rows == 1)) || (symbol->symbology == BARCODE_UPCA_CC)) {
+    } else if ((symbol->symbology == BARCODE_UPCA) || (symbol->symbology == BARCODE_UPCA_CHK)
+            || (symbol->symbology == BARCODE_UPCA_CC)) {
         if (symbol->whitespace_width == 0) {
             symbol->whitespace_width = 10;
-            main_width = 96 + comp_offset;
         }
-    }
-
-    if (((symbol->symbology == BARCODE_UPCE) && (symbol->rows == 1)) || (symbol->symbology == BARCODE_UPCE_CC)) {
+        main_width = 96 + comp_offset;
+    } else if ((symbol->symbology == BARCODE_UPCE) || (symbol->symbology == BARCODE_UPCE_CHK)
+            || (symbol->symbology == BARCODE_UPCE_CC)) {
         if (symbol->whitespace_width == 0) {
             symbol->whitespace_width = 10;
-            main_width = 51 + comp_offset;
         }
+        main_width = 51 + comp_offset;
     }
 
     latch = 0;
@@ -867,7 +859,8 @@ int plot_raster_default(struct zint_symbol *symbol, int rotate_angle, int data_t
 
     xoffset += comp_offset;
 
-    if ((((symbol->symbology == BARCODE_EANX) && (symbol->rows == 1)) || (symbol->symbology == BARCODE_EANX_CC)) || (symbol->symbology == BARCODE_ISBNX)) {
+    if ((symbol->symbology == BARCODE_EANX) || (symbol->symbology == BARCODE_EANX_CHK)
+            || (symbol->symbology == BARCODE_EANX_CC) || (symbol->symbology == BARCODE_ISBNX)) {
         /* guard bar extensions and text formatting for EAN8 and EAN13 */
         switch (ustrlen(local_text)) {
             case 8: /* EAN-8 */
@@ -945,9 +938,9 @@ int plot_raster_default(struct zint_symbol *symbol, int rotate_angle, int data_t
                 break;
 
         }
-    }
 
-    if (((symbol->symbology == BARCODE_UPCA) && (symbol->rows == 1)) || (symbol->symbology == BARCODE_UPCA_CC)) {
+    } else if ((symbol->symbology == BARCODE_UPCA) || (symbol->symbology == BARCODE_UPCA_CHK)
+            || (symbol->symbology == BARCODE_UPCA_CC)) {
         /* guard bar extensions and text formatting for UPCA */
         latch = 1;
 
@@ -1018,9 +1011,8 @@ int plot_raster_default(struct zint_symbol *symbol, int rotate_angle, int data_t
                 break;
         }
 
-    }
-
-    if (((symbol->symbology == BARCODE_UPCE) && (symbol->rows == 1)) || (symbol->symbology == BARCODE_UPCE_CC)) {
+    } else if ((symbol->symbology == BARCODE_UPCE) || (symbol->symbology == BARCODE_UPCE_CHK)
+            || (symbol->symbology == BARCODE_UPCE_CC)) {
         /* guard bar extensions and text formatting for UPCE */
         draw_bar(pixelbuf, (0 + xoffset) * 2, 1 * 2, (4 + (int) yoffset) * 2, 5 * 2, image_width, image_height);
         draw_bar(pixelbuf, (2 + xoffset) * 2, 1 * 2, (4 + (int) yoffset) * 2, 5 * 2, image_width, image_height);

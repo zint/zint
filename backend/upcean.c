@@ -716,7 +716,7 @@ int eanx(struct zint_symbol *symbol, unsigned char source[], int src_len) {
             return error_number;
         }
     } else {
-        error_number = is_sane("0123456789Xx", source, src_len);
+        error_number = is_sane("0123456789Xx+", source, src_len);
         if (error_number == ZINT_ERROR_INVALID_DATA) {
             strcpy(symbol->errtxt, "285: Invalid characters in input");
             return error_number;
