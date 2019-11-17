@@ -1,7 +1,7 @@
 /*  hanxin.c - Han Xin Code
 
     libzint - the open source barcode library
-    Copyright (C) 2009-2017 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2019 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -451,7 +451,7 @@ static void calculate_binary(char binary[], char mode[], int source[], const siz
                     bin_append(encoding_value, 6, binary);
 
                     if (debug) {
-                        printf("%c (%d) ", (char) source[i], encoding_value);
+                        printf("%.2x [ASC %.2x] ", encoding_value, source[i + position]);
                     }
                     i++;
                 }
@@ -514,7 +514,7 @@ static void calculate_binary(char binary[], char mode[], int source[], const siz
                     /* Subset 2 */
                     if ((first_byte >= 0xa1) && (first_byte <= 0xa3)) {
                         if ((second_byte >= 0xa1) && (second_byte <= 0xfe)) {
-                            glyph = (0x5e * first_byte - 0xa1) + (second_byte - 0xa1) + 0xeb0;
+                            glyph = (0x5e * (first_byte - 0xa1)) + (second_byte - 0xa1) + 0xeb0;
                         }
                     }
 
@@ -524,7 +524,7 @@ static void calculate_binary(char binary[], char mode[], int source[], const siz
                     }
 
                     if (debug) {
-                        printf("%d ", glyph);
+                        printf("%.4x [GB %.4x] ", glyph, source[i + position]);
                     }
 
                     bin_append(glyph, 12, binary);
@@ -557,7 +557,7 @@ static void calculate_binary(char binary[], char mode[], int source[], const siz
                     glyph = (0x5e * (first_byte - 0xd8)) + (second_byte - 0xa1);
 
                     if (debug) {
-                        printf("%d ", glyph);
+                        printf("%.4x [GB %.4x] ", glyph, source[i + position]);
                     }
 
                     bin_append(glyph, 12, binary);
@@ -593,7 +593,7 @@ static void calculate_binary(char binary[], char mode[], int source[], const siz
                     }
 
                     if (debug) {
-                        printf("%d ", glyph);
+                        printf("%.4x ", glyph);
                     }
 
                     bin_append(glyph, 15, binary);
@@ -634,7 +634,7 @@ static void calculate_binary(char binary[], char mode[], int source[], const siz
                         printf("%d ", glyph);
                     }
 
-                    bin_append(glyph, 15, binary);
+                    bin_append(glyph, 21, binary);
                     i += 2;
                 }
 
@@ -1430,8 +1430,6 @@ int han_xin(struct zint_symbol *symbol, const unsigned char source[], size_t len
         data_codewords = hx_data_codewords_L4[version - 1];
     }
 
-    //printf("Version %d, ECC %d\n", version, ecc_level);
-
     size = (version * 2) + 21;
 
 #ifndef _MSC_VER
@@ -1454,6 +1452,15 @@ int han_xin(struct zint_symbol *symbol, const unsigned char source[], size_t len
         if (binary[i] == '1') {
             datastream[i / 8] += 0x80 >> (i % 8);
         }
+    }
+
+    if (symbol->debug) {
+        printf("Datastream length: %d\n", data_codewords);
+        printf("Datastream:\n");
+        for (i = 0; i < data_codewords; i++) {
+            printf("%.2x ", datastream[i]);
+        }
+        printf("\n");
     }
 
     hx_setup_grid(grid, size, version);
