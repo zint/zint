@@ -91,15 +91,20 @@ int svg_plot(struct zint_symbol *symbol) {
     const char *locale = NULL;
     float ax, ay, bx, by, cx, cy, dx, dy, ex, ey, fx, fy;
     float radius;
+    int i;
 
     struct zint_vector_rect *rect;
     struct zint_vector_hexagon *hex;
     struct zint_vector_circle *circle;
     struct zint_vector_string *string;
 
+#ifdef _MSC_VER
+    char* html_string;
+#endif
+
     int html_len = strlen((char *)symbol->text) + 1;
 
-    for (int i = 0; i < strlen((char *)symbol->text); i++) {
+    for (0; i < strlen((char *)symbol->text); i++) {
         switch(symbol->text[i]) {
             case '>':
             case '<':
@@ -114,7 +119,7 @@ int svg_plot(struct zint_symbol *symbol) {
 #ifndef _MSC_VER
     char html_string[html_len];
 #else
-    char* html_string = (unsigned char*) _alloca(html_len);
+    html_string = (char*) _alloca(html_len);
 #endif
 
     /* Check for no created vector set */

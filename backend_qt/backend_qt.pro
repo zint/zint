@@ -89,6 +89,7 @@ SOURCES += ../backend/2of5.c \
            ../backend/dotcode.c \
            ../backend/eci.c \
            ../backend/emf.c \
+           ../backend/general_field.c \
            ../backend/gif.c \
            ../backend/gridmtx.c \
            ../backend/gs1.c \

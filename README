@@ -94,6 +94,18 @@ The default of the parameter changed from 3 to 0.
 Fixed bugs:
 Ticket 146, 165: fix wrong encoding of RSS composite codes
 
+Version 2.6.8 2019-11-17:
+Changes:
+- Automatic height option added to qzint
+- DotCode in line with new specification
+- New GS1 AIs 7240, 235, 417, 7040, 8026, updated checks for 7007, 8008
+
+Fixed bugs:
+- Many improvements in composite codes
+- SVG output corrected for messages containing "<" and "&".
+- GS1-128 and RSS may only be used with GS1 contents
+- Han Xin chinese character handling
+
 CONTACT US
 ----------
 The home of Zint is:

@@ -156,6 +156,10 @@ SOURCE=..\backend\emf.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\backend\general_field.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\backend\gif.c
 # End Source File
 # Begin Source File

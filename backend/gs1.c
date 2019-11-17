@@ -75,16 +75,22 @@ int gs1_verify(struct zint_symbol *symbol, const unsigned char source[], const s
     char ai_string[7]; /* 6 char max "(NNNN)" */
     int bracket_level, max_bracket_level, ai_length, max_ai_length, min_ai_length;
     int ai_count;
+    int error_latch;
+#ifdef _MSC_VER
+    int *ai_value;
+    int *ai_location;
+    int *data_location;
+    int *data_length;
+#endif
     int ai_max = ustrchr_cnt(source, src_len, '[') + 1; /* Plus 1 so non-zero */
 #ifndef _MSC_VER
     int ai_value[ai_max], ai_location[ai_max], data_location[ai_max], data_length[ai_max];
 #else
-    int ai_value = (int*) _alloca(ai_max * sizeof(int));
-    int ai_location = (int*) _alloca(ai_max * sizeof(int));
-    int data_location = (int*) _alloca(ai_max * sizeof(int));
-    int data_length = (int*) _alloca(ai_max * sizeof(int));
+    ai_value = (int*) _alloca(ai_max * sizeof(int));
+    ai_location = (int*) _alloca(ai_max * sizeof(int));
+    data_location = (int*) _alloca(ai_max * sizeof(int));
+    data_length = (int*) _alloca(ai_max * sizeof(int));
 #endif
-    int error_latch;
 
     /* Detect extended ASCII characters */
     for (i = 0; i < src_len; i++) {
