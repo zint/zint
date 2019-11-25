@@ -1,6 +1,5 @@
-/* qr.h Data for QR Code */
+/* qr.h Data for QR Code, Micro QR Code and rMQR
 
-/*
     libzint - the open source barcode library
     Copyright (C) 2008-2017 Robin Stuart <rstuart114@gmail.com>
     Copyright (C) 2006 Kentaro Fukuchi <fukuchi@megaui.net>
@@ -38,6 +37,8 @@
 
 #define RHODIUM "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:"
 
+#define RMQR_VERSION    100
+
 /* From ISO/IEC 18004:2006 Table 7 */
 static const unsigned short int qr_data_codewords_L[] = {
     19, 34, 55, 80, 108, 136, 156, 194, 232, 274, 324, 370, 428, 461, 523, 589, 647,
@@ -69,6 +70,92 @@ static const unsigned short int qr_total_codewords[] = {
     2185, 2323, 2465, 2611, 2761, 2876, 3034, 3196, 3362, 3532, 3706
 };
 
+static const unsigned short int rmqr_height[] = {
+    7, 7, 7, 7, 7,
+    9, 9, 9, 9, 9,
+    11, 11, 11, 11, 11, 11,
+    13, 13, 13, 13, 13, 13,
+    15, 15, 15, 15, 15,
+    17, 17, 17, 17, 17
+};
+
+static const unsigned short int rmqr_width[] = {
+    43, 59, 77, 99, 139,
+    43, 59, 77, 99, 139,
+    27, 43, 59, 77, 99, 139,
+    27, 43, 59, 77, 99, 139,
+    43, 59, 77, 99, 139,
+    43, 59, 77, 99, 139
+};
+
+static const unsigned short int rmqr_data_codewords_M[] = {
+    6, 12, 20, 28, 44, // R7x
+    12, 21, 31, 42, 63, // R9x
+    7, 19, 31, 43, 57, 84, // R11x
+    12, 27, 38, 53, 73, 106, // R13x
+    33, 48, 67, 88, 127, // R15x
+    39, 56, 78, 100, 152 // R17x
+};
+
+static const unsigned short int rmqr_data_codewords_H[] = {
+    3, 7, 10, 14, 24, // R7x
+    7, 11, 17, 22, 33, // R9x
+    5, 11, 15, 23, 29, 42, // R11x
+    7, 13, 20, 29, 35, 54, // R13x
+    15, 26, 31, 48, 69, // R15x
+    21, 28, 38, 56, 76 // R17x
+};
+
+static const short int rmqr_fixed_height_upper_bound[] = {
+    -1, 4, 9, 15, 21, 26, 31
+};
+
+static const unsigned short int rmqr_total_codewords[] = {
+    13, 21, 32, 44, 68, // R7x
+    21, 33, 49, 66, 99, // R9x
+    15, 31, 47, 67, 89, 132, // R11x
+    21, 41, 60, 85, 113, 166, // R13x
+    51, 74, 103, 136, 199, // R15x
+    61, 88, 122, 160, 232 // R17x
+};
+
+
+static const unsigned short int rmqr_numeric_cci[] = {
+    4, 5, 6, 7, 7,
+    5, 6, 7, 7, 8,
+    5, 6, 7, 7, 8, 8,
+    5, 7, 7, 8, 8, 8,
+    7, 7, 8, 8, 9,
+    7, 8, 8, 8, 9
+};
+
+static const unsigned short int rmqr_alphanum_cci[] = {
+    4, 5, 5, 6, 6,
+    5, 5, 6, 6, 7,
+    4, 5, 6, 6, 7, 7,
+    5, 6, 6, 7, 7, 8,
+    6, 7, 7, 7, 8,
+    6, 7, 7, 8, 8
+};
+
+static const unsigned short int rmqr_byte_cci[] = {
+    3, 4, 5, 5, 6,
+    4, 5, 5, 6, 6,
+    3, 5, 5, 6, 6, 7,
+    4, 5, 6, 6, 7, 7,
+    6, 6, 7, 7, 7,
+    6, 6, 7, 7, 8
+};
+
+static const unsigned short int rmqr_kanji_cci[] = {
+    2, 3, 4, 5, 5,
+    3, 4, 5, 5, 6,
+    2, 4, 5, 5, 6, 6,
+    3, 5, 5, 6, 6, 7,
+    5, 5, 6, 6, 7,
+    5, 6, 6, 6, 7
+};
+
 static const char qr_blocks_L[] = {
     1, 1, 1, 1, 1, 2, 2, 2, 2, 4, 4, 4, 4, 4, 6, 6, 6, 6, 7, 8, 8, 9, 9, 10, 12, 12,
     12, 13, 14, 15, 16, 17, 18, 19, 19, 20, 21, 22, 24, 25
@@ -89,6 +176,24 @@ static const char qr_blocks_H[] = {
     32, 35, 37, 40, 42, 45, 48, 51, 54, 57, 60, 63, 66, 70, 74, 77, 81
 };
 
+static const char rmqr_blocks_M[] = {
+    1, 1, 1, 1, 1, // R7x
+    1, 1, 1, 1, 2, // R9x
+    1, 1, 1, 1, 2, 2, // R11x
+    1, 1, 1, 2, 2, 3, // R13x
+    1, 1, 2, 2, 3, // R15x
+    1, 2, 2, 3, 4 // R17x
+};
+
+static const char rmqr_blocks_H[] = {
+    1, 1, 1, 1, 2, // R7x
+    1, 1, 2, 2, 3, // R9x
+    1, 1, 2, 2, 2, 3, // R11x
+    1, 1, 2, 2, 3, 4, // R13x
+    2, 2, 3, 4, 5, // R15x
+    2, 2, 3, 4, 6 // R17x
+};
+
 static const unsigned short int qr_sizes[] = {
     21, 25, 29, 33, 37, 41, 45, 49, 53, 57, 61, 65, 69, 73, 77, 81, 85, 89, 93, 97,
     101, 105, 109, 113, 117, 121, 125, 129, 133, 137, 141, 145, 149, 153, 157, 161, 165, 169, 173, 177
@@ -102,6 +207,7 @@ static const char qr_align_loopsize[] = {
     0, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7
 };
 
+// Table E1 - Row/column coordinates of center module of alignment patterns
 static const unsigned short int qr_table_e1[] = {
     6, 18, 0, 0, 0, 0, 0,
     6, 22, 0, 0, 0, 0, 0,
@@ -144,6 +250,15 @@ static const unsigned short int qr_table_e1[] = {
     6, 30, 58, 86, 114, 142, 170
 };
 
+// Table D1 - Column coordinates of centre module of alignment patterns
+static const unsigned short int rmqr_table_d1[] = {
+    21, 0, 0, 0,
+    19, 39, 0, 0,
+    25, 51, 0, 0,
+    23, 49, 75, 0,
+    27, 55, 83, 111
+};
+
 static const unsigned int qr_annex_c[] = {
     /* Format information bit sequences */
     0x5412, 0x5125, 0x5e7c, 0x5b4b, 0x45f9, 0x40ce, 0x4f97, 0x4aa0, 0x77c4, 0x72f3, 0x7daa, 0x789d,
@@ -164,4 +279,26 @@ static const unsigned int qr_annex_c1[] = {
     0x4445, 0x4172, 0x4e2b, 0x4b1c, 0x55ae, 0x5099, 0x5fc0, 0x5af7, 0x6793, 0x62a4, 0x6dfd, 0x68ca, 0x7678, 0x734f,
     0x7c16, 0x7921, 0x06de, 0x03e9, 0x0cb0, 0x0987, 0x1735, 0x1202, 0x1d5b, 0x186c, 0x2508, 0x203f, 0x2f66, 0x2a51, 0x34e3,
     0x31d4, 0x3e8d, 0x3bba
+};
+
+static const unsigned int rmqr_format_info_left[] = {
+    /* rMQR format information for finder pattern side */
+    0x1FAB2, 0x1E597, 0x1DBDD, 0x1C4F8, 0x1B86C, 0x1A749, 0x19903, 0x18626, 0x17F0E, 0x1602B,
+    0x15E61, 0x14144, 0x13DD0, 0x122F5, 0x11CBF, 0x1039A, 0x0F1CA, 0x0EEEF, 0x0D0A5, 0x0CF80,
+    0x0B314, 0x0AC31, 0x0927B, 0x08D5E, 0x07476, 0x06B53, 0x05519, 0x04A3C, 0x036A8, 0x0298D,
+    0x017C7, 0x008E2, 0x3F367, 0x3EC42, 0x3D208, 0x3CD2D, 0x3B1B9, 0x3AE9C, 0x390D6, 0x38FF3,
+    0x376DB, 0x369FE, 0x357B4, 0x34891, 0x33405, 0x32B20, 0x3156A, 0x30A4F, 0x2F81F, 0x2E73A,
+    0x2D970, 0x2C655, 0x2BAC1, 0x2A5E4, 0x29BAE, 0x2848B, 0x27DA3, 0x26286, 0x25CCC, 0x243E9,
+    0x23F7D, 0x22058, 0x21E12, 0x20137
+};
+
+static const unsigned int rmqr_format_info_right[] = {
+    /* rMQR format information for subfinder pattern side */
+    0x20A7B, 0x2155E, 0x22B14, 0x23431, 0x248A5, 0x25780, 0x269CA, 0x276EF, 0x28FC7, 0x290E2,
+    0x2AEA8, 0x2B18D, 0x2CD19, 0x2D23C, 0x2EC76, 0x2F353, 0x30103, 0x31E26, 0x3206C, 0x33F49,
+    0x343DD, 0x35CF8, 0x362B2, 0x37D97, 0x384BF, 0x39B9A, 0x3A5D0, 0x3BAF5, 0x3C661, 0x3D944,
+    0x3E70E, 0x3F82B, 0x003AE, 0x01C8B, 0x022C1, 0x03DE4, 0x04170, 0x05E55, 0x0601F, 0x07F3A,
+    0x08612, 0x09937, 0x0A77D, 0x0B858, 0x0C4CC, 0x0DBE9, 0x0E5A3, 0x0FA86, 0x108D6, 0x117F3,
+    0x129B9, 0x1369C, 0x14A08, 0x1552D, 0x16B67, 0x17442, 0x18D6A, 0x1924F, 0x1AC05, 0x1B320,
+    0x1CFB4, 0x1D091, 0x1EEDB, 0x1F1FE
 };

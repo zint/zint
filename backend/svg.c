@@ -104,7 +104,7 @@ int svg_plot(struct zint_symbol *symbol) {
 
     int html_len = strlen((char *)symbol->text) + 1;
 
-    for (0; i < strlen((char *)symbol->text); i++) {
+    for (i = 0; i < strlen((char *)symbol->text); i++) {
         switch(symbol->text[i]) {
             case '>':
             case '<':
