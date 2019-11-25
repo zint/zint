@@ -1,7 +1,7 @@
 /* qr.h Data for QR Code, Micro QR Code and rMQR
 
     libzint - the open source barcode library
-    Copyright (C) 2008-2017 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2019 Robin Stuart <rstuart114@gmail.com>
     Copyright (C) 2006 Kentaro Fukuchi <fukuchi@megaui.net>
 
     Redistribution and use in source and binary forms, with or without
@@ -30,10 +30,10 @@
     SUCH DAMAGE.
  */
 
-#define LEVEL_L	1
-#define LEVEL_M	2
-#define LEVEL_Q	3
-#define LEVEL_H	4
+#define LEVEL_L    1
+#define LEVEL_M    2
+#define LEVEL_Q    3
+#define LEVEL_H    4
 
 #define RHODIUM "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:"
 
