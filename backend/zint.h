@@ -28,6 +28,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* vim: set ts=4 sw=4 et : */
 
 #ifndef ZINT_H
 #define ZINT_H
@@ -287,6 +288,10 @@ extern "C" {
 #define OUT_PCX_FILE        160
 #define OUT_JPG_FILE        180
 #define OUT_TIF_FILE        200
+
+// Debug flags
+#define ZINT_DEBUG_PRINT    1
+#define ZINT_DEBUG_TEST     2
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32) || defined(_MSC_VER)
 #if defined (DLL_EXPORT) || defined(PIC) || defined(_USRDLL)

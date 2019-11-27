@@ -29,6 +29,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* vim: set ts=4 sw=4 et : */
 
 #include <stdio.h>
 #include <string.h>
@@ -987,7 +988,7 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], const size_t lengt
     memset(binary_string, 0, 20000);
     memset(adjusted_string, 0, 20000);
 
-    if (symbol->input_mode == GS1_MODE) {
+    if ((symbol->input_mode & 0x07) == GS1_MODE) {
         gs1 = 1;
     } else {
         gs1 = 0;

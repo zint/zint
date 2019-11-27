@@ -29,6 +29,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* vim: set ts=4 sw=4 et : */
 
 #include <stdio.h>
 #include <math.h>
@@ -660,7 +661,7 @@ int codablock(struct zint_symbol *symbol,const unsigned char source[], const siz
         return ZINT_ERROR_INVALID_OPTION;
     }
     /* GS1 not implemented */
-    if  (symbol->input_mode == GS1_MODE) {
+    if  ((symbol->input_mode & 0x07) == GS1_MODE) {
         strcpy(symbol->errtxt, "412: GS1 mode not supported");
         return ZINT_ERROR_INVALID_OPTION;
     }

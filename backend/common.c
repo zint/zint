@@ -260,56 +260,81 @@ int istwodigits(const unsigned char source[], const size_t position) {
     return 0;
 }
 
+/* State machine to decode UTF-8 to Unicode codepoints (state 0 means done, state 12 means error) */
+unsigned int decode_utf8(unsigned int* state, unsigned int* codep, const unsigned char byte) {
+    /*
+        Copyright (c) 2008-2009 Bjoern Hoehrmann <bjoern@hoehrmann.de>
+
+        Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation
+        files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy,
+        modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+        Software is furnished to do so, subject to the following conditions:
+
+        The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+        See https://bjoern.hoehrmann.de/utf-8/decoder/dfa/ for details.
+     */
+
+    static const unsigned char utf8d[] = {
+        /* The first part of the table maps bytes to character classes that
+         * reduce the size of the transition table and create bitmasks. */
+         0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+         0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+         0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+         0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+         1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,  9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,
+         7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,  7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
+         8,8,2,2,2,2,2,2,2,2,2,2,2,2,2,2,  2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
+        10,3,3,3,3,3,3,3,3,3,3,3,3,4,3,3, 11,6,6,6,5,8,8,8,8,8,8,8,8,8,8,8,
+
+        /* The second part is a transition table that maps a combination
+         * of a state of the automaton and a character class to a state. */
+         0,12,24,36,60,96,84,12,12,12,48,72, 12,12,12,12,12,12,12,12,12,12,12,12,
+        12, 0,12,12,12,12,12, 0,12, 0,12,12, 12,24,12,12,12,12,12,24,12,24,12,12,
+        12,12,12,12,12,12,12,24,12,12,12,12, 12,24,12,12,12,12,12,12,12,24,12,12,
+        12,12,12,12,12,12,12,36,12,36,12,12, 12,36,12,12,12,12,12,36,12,36,12,12,
+        12,36,12,12,12,12,12,12,12,12,12,12,
+    };
+
+    unsigned int type = utf8d[byte];
+
+    *codep = *state != 0 ? (byte & 0x3fu) | (*codep << 6) : (0xff >> type) & byte;
+
+    *state = utf8d[256 + *state + type];
+
+    return *state;
+}
+
+/* Convert UTF-8 to UTF-16 for codepoints <= U+FFFF (ie four-byte sequences (requiring UTF-16 surrogates) not allowed) */
 int utf8toutf16(struct zint_symbol *symbol, const unsigned char source[], int vals[], size_t *length) {
     size_t bpos;
-    int    jpos, error_number;
-    int next;
+    int    jpos;
+    unsigned int codepoint, state = 0;
 
     bpos = 0;
     jpos = 0;
-    error_number = 0;
-    next = 0;
 
-    do {
-        if (source[bpos] <= 0x7f) {
-            /* 1 byte mode (7-bit ASCII) */
-            vals[jpos] = source[bpos];
-            next = bpos + 1;
-            jpos++;
-        } else {
-            if ((source[bpos] >= 0x80) && (source[bpos] <= 0xbf)) {
-                strcpy(symbol->errtxt, "240: Corrupt Unicode data");
-                return ZINT_ERROR_INVALID_DATA;
-            }
-            if ((source[bpos] >= 0xc0) && (source[bpos] <= 0xc1)) {
-                strcpy(symbol->errtxt, "241: Overlong encoding not supported");
-                return ZINT_ERROR_INVALID_DATA;
-            }
+    while (bpos < *length) {
+        do {
+            decode_utf8(&state, &codepoint, source[bpos++]);
+        } while (bpos < *length && state != 0 && state != 12);
 
-            if ((source[bpos] >= 0xc2) && (source[bpos] <= 0xdf)) {
-                /* 2 byte mode */
-                vals[jpos] = ((source[bpos] & 0x1f) << 6) + (source[bpos + 1] & 0x3f);
-                next = bpos + 2;
-                jpos++;
-            } else
-                if ((source[bpos] >= 0xe0) && (source[bpos] <= 0xef)) {
-                /* 3 byte mode */
-                vals[jpos] = ((source[bpos] & 0x0f) << 12) + ((source[bpos + 1] & 0x3f) << 6) + (source[bpos + 2] & 0x3f);
-                next = bpos + 3;
-                jpos++;
-            } else
-                if (source[bpos] >= 0xf0) {
-                strcpy(symbol->errtxt, "242: Unicode sequences of more than 3 bytes not supported");
-                return ZINT_ERROR_INVALID_DATA;
-            }
+        if (state != 0) {
+            strcpy(symbol->errtxt, "240: Corrupt Unicode data");
+            return ZINT_ERROR_INVALID_DATA;
+        }
+        if (codepoint > 0xffff) {
+            strcpy(symbol->errtxt, "242: Unicode sequences of more than 3 bytes not supported");
+            return ZINT_ERROR_INVALID_DATA;
         }
 
-        bpos = next;
+        vals[jpos] = codepoint;
+        jpos++;
 
-    } while (bpos < *length);
+    }
     *length = jpos;
 
-    return error_number;
+    return 0;
 }
 
 

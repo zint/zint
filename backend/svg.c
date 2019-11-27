@@ -29,6 +29,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* vim: set ts=4 sw=4 et : */
 
 #include <locale.h>
 #include <string.h>
@@ -104,7 +105,7 @@ int svg_plot(struct zint_symbol *symbol) {
 
     int html_len = strlen((char *)symbol->text) + 1;
 
-    for (0; i < strlen((char *)symbol->text); i++) {
+    for (i = 0; i < strlen((char *)symbol->text); i++) {
         switch(symbol->text[i]) {
             case '>':
             case '<':

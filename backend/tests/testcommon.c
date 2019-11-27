@@ -351,16 +351,38 @@ int testUtilDAFTConvert(const struct zint_symbol* symbol, char* buffer, int buff
     return TRUE;
 }
 
+/* Is string valid UTF-8? */
+int testUtilIsValidUTF8(const unsigned char str[], const size_t length) {
+    int i;
+    unsigned int codepoint, state = 0;
+
+    for (i = 0; i < length; i++) {
+        if (decode_utf8(&state, &codepoint, str[i]) == 12) {
+            return 0;
+        }
+    }
+
+    return state == 0;
+}
+
 char* testUtilEscape(char* buffer, char* escaped, int escaped_size)
 {
     int i;
-    char* b = buffer;
+    unsigned char* b = buffer;
+    int non_utf8 = !testUtilIsValidUTF8(buffer, strlen(buffer));
+
     for (i = 0; i < escaped_size && *b; b++) {
-        if (*b > '\0' && *b < ' ') {
+        if (non_utf8 || *b < ' ' || *b == '\177') {
             if (i < escaped_size - 4) {
                 sprintf(escaped + i, "\\%.3o", *b);
             }
             i += 4;
+        } else if (*b == '\\' || *b == '"') {
+            if (i < escaped_size - 2) {
+                escaped[i] = '\\';
+                escaped[i + 1] = *b;
+            }
+            i += 2;
         } else {
             escaped[i++] = *b;
         }

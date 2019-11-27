@@ -640,11 +640,13 @@ int ZBarcode_ValidID(int symbol_id) {
     return result;
 }
 
-static int extended_charset(struct zint_symbol *symbol, const unsigned char *source, const int length) {
+static int reduced_charset(struct zint_symbol *symbol, const unsigned char *source, size_t in_length);
+
+static int extended_or_reduced_charset(struct zint_symbol *symbol, const unsigned char *source, const int length) {
     int error_number = 0;
-        
-    /* These are the "elite" standards which can support multiple character sets */
+
     switch (symbol->symbology) {
+        /* These are the "elite" standards which have support for specific character sets */
         case BARCODE_QRCODE: error_number = qr_code(symbol, source, length);
             break;
         case BARCODE_MICROQR: error_number = microqr(symbol, source, length);
@@ -655,13 +657,15 @@ static int extended_charset(struct zint_symbol *symbol, const unsigned char *sou
             break;
         case BARCODE_UPNQR: error_number = upnqr(symbol, source, length);
             break;
+        default: error_number = reduced_charset(symbol, source, length);
+            break;
     }
 
     return error_number;
 }
 
 static int reduced_charset(struct zint_symbol *symbol, const unsigned char *source, size_t in_length) {
-    /* These are the "norm" standards which only support Latin-1 at most */
+    /* These are the "norm" standards which only support Latin-1 at most, though a few support ECI */
     int error_number = 0;
 
 #ifndef _MSC_VER
@@ -693,7 +697,8 @@ static int reduced_charset(struct zint_symbol *symbol, const unsigned char *sour
             preprocessed[in_length] = '\0';
             break;
         case UNICODE_MODE:
-            error_number = utf_to_eci(symbol->eci, source, preprocessed, &in_length);
+            /* Prior check ensures ECI only set for those that support it */
+            error_number = utf_to_eci(symbol->eci && symbol->eci <= 899 ? symbol->eci : 3, source, preprocessed, &in_length);
             if (error_number != 0) {
                 strcpy(symbol->errtxt, "204: Invalid characters in input data");
                 return error_number;
@@ -941,7 +946,7 @@ int escape_char_process(struct zint_symbol *symbol, unsigned char *input_string,
                     hex1 = ctoi(input_string[in_posn + 2]);
                     hex2 = ctoi(input_string[in_posn + 3]);
                     if ((hex1 >= 0) && (hex2 >= 0)) {
-                        if (hex1 > 7 && (symbol->input_mode & UNICODE_MODE) != 0) {
+                        if (hex1 > 7 && (symbol->input_mode & 0x07) == UNICODE_MODE) {
                             // Convert to UTF-8
                             escaped_string[out_posn] = 0xc0 + (hex1 >> 2);
                             out_posn++;
@@ -980,7 +985,6 @@ int escape_char_process(struct zint_symbol *symbol, unsigned char *input_string,
 
 int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int in_length) {
     int error_number, error_buffer, i;
-    int input_mode = symbol->input_mode;
 #ifdef _MSC_VER
     unsigned char* local_source;
 #endif
@@ -1146,6 +1150,10 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
         error_number = ZINT_ERROR_INVALID_OPTION;
     }
 
+    if ((symbol->input_mode & 0x07) > 2) {
+        symbol->input_mode = DATA_MODE; /* Reset completely */
+    }
+
     if (error_number > 4) {
         error_tag(symbol->errtxt, error_number);
         return error_number;
@@ -1157,16 +1165,19 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
     local_source[in_length] = '\0';
 
     /* Start acting on input mode */
-    if (input_mode & ESCAPE_MODE) {
+    if (symbol->input_mode & ESCAPE_MODE) {
         error_number = escape_char_process(symbol, local_source, &in_length);
         if (error_number != 0) {
             error_tag(symbol->errtxt, error_number);
             return error_number;
         }
-        input_mode -= ESCAPE_MODE;
     }
 
-    if ((input_mode == GS1_MODE) || (check_force_gs1(symbol->symbology))) {
+    if ((symbol->input_mode & 0x07) == UNICODE_MODE) {
+        strip_bom(local_source, &in_length);
+    }
+
+    if (((symbol->input_mode & 0x07) == GS1_MODE) || (check_force_gs1(symbol->symbology))) {
         if (gs1_compliant(symbol->symbology) == 1) {
             // Reduce input for composite and non-forced symbologies, others (EAN128 and RSS_EXP based) will handle it themselves
             if (is_composite(symbol->symbology) || !check_force_gs1(symbol->symbology)) {
@@ -1190,68 +1201,21 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
         }
     }
 
-    if ((input_mode < 0) || (input_mode > 2)) {
-        input_mode = DATA_MODE;
-    }
-    
-    if ((symbol->eci != 0) && (symbol->eci != 26)) {
-        input_mode = DATA_MODE;
-    }
+    error_number = extended_or_reduced_charset(symbol, local_source, in_length);
 
-    if (input_mode == UNICODE_MODE) {
-        strip_bom(local_source, &in_length);
-    }
-    
-    switch (symbol->symbology) {
-        case BARCODE_QRCODE:
-        case BARCODE_MICROQR:
-        case BARCODE_GRIDMATRIX:
-        case BARCODE_HANXIN:
-        case BARCODE_UPNQR:
-            error_number = extended_charset(symbol, local_source, in_length);
-            break;
-        default:
-            error_number = reduced_charset(symbol, local_source, in_length);
-            break;
-    }
-
-    if ((error_number == ZINT_ERROR_INVALID_DATA) && (supports_eci(symbol->symbology)
-            && (input_mode == UNICODE_MODE))) {
+    if ((error_number == ZINT_ERROR_INVALID_DATA) && symbol->eci == 0 && supports_eci(symbol->symbology)
+            && (symbol->input_mode & 0x07) == UNICODE_MODE) {
         /* Try another ECI mode */
         symbol->eci = get_best_eci(local_source, in_length);
 
-        switch (symbol->symbology) {
-            case BARCODE_QRCODE:
-            case BARCODE_MICROQR:
-            case BARCODE_GRIDMATRIX:
-            case BARCODE_HANXIN:
-                {
-#ifndef _MSC_VER
-                    unsigned char temp[in_length + 1];
-#else
-                    unsigned char *temp = (unsigned char*) _alloca(in_length + 1);
-#endif
-                    size_t temp_len = in_length;
-                    memcpy(temp, local_source, temp_len);
-                    temp[temp_len] = '\0';
-                    error_number = utf_to_eci(symbol->eci, local_source, temp, &temp_len);
-                    if (error_number == 0) {
-                        in_length = (int) temp_len;
-                        memcpy(local_source, temp, in_length);
-                        local_source[in_length] = '\0';
-                        error_number = extended_charset(symbol, local_source, in_length);
-                    }
-                }
-                break;
-            default:
-                error_number = reduced_charset(symbol, local_source, in_length);
-                break;
-        }
-        
+        error_number = extended_or_reduced_charset(symbol, local_source, in_length);
+
         if (error_number == 0) {
             error_number = ZINT_WARN_USES_ECI;
-            strcpy(symbol->errtxt, "222: Encoded data includes ECI");
-            if (symbol->debug) printf("Data ECI %d\n", symbol->eci);
+            if (!(symbol->debug & ZINT_DEBUG_TEST)) {
+                strcpy(symbol->errtxt, "222: Encoded data includes ECI");
+            }
+            if (symbol->debug & ZINT_DEBUG_PRINT) printf("Data ECI %d\n", symbol->eci);
         }
     }
 
@@ -1269,7 +1233,7 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
     }
     error_tag(symbol->errtxt, error_number);
 
-    if (error_number <= 5) {
+    if (error_number < 5) {
         check_row_heights(symbol);
     }
 

@@ -95,9 +95,58 @@ static void test_checks(void)
     testFinish();
 }
 
+static void test_input_mode(void)
+{
+    testStart("");
+
+    int ret;
+    struct item {
+        unsigned char* data;
+        int input_mode;
+        int ret;
+
+        int expected_input_mode;
+    };
+    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    struct item data[] = {
+        /*  0*/ { "1234", DATA_MODE, 0, DATA_MODE },
+        /*  1*/ { "1234", DATA_MODE | ESCAPE_MODE, 0, DATA_MODE | ESCAPE_MODE },
+        /*  2*/ { "1234", UNICODE_MODE, 0, UNICODE_MODE },
+        /*  3*/ { "1234", UNICODE_MODE | ESCAPE_MODE, 0, UNICODE_MODE | ESCAPE_MODE },
+        /*  4*/ { "[01]12345678901234", GS1_MODE, 0, GS1_MODE },
+        /*  5*/ { "[01]12345678901234", GS1_MODE | ESCAPE_MODE, 0, GS1_MODE | ESCAPE_MODE },
+        /*  6*/ { "1234", 4 | ESCAPE_MODE, 0, DATA_MODE }, // Unknown mode reset to bare DATA_MODE
+        /*  7*/ { "1234", -1, 0, DATA_MODE },
+        /*  8*/ { "1234", DATA_MODE | 0x10, 0, DATA_MODE | 0x10 }, // Unknown flags kept (but ignored)
+        /*  9*/ { "1234", UNICODE_MODE | 0x10, 0, UNICODE_MODE | 0x10 },
+        /* 10*/ { "[01]12345678901234", GS1_MODE | 0x20, 0, GS1_MODE | 0x20 },
+    };
+    int data_size = sizeof(data) / sizeof(struct item);
+
+    for (int i = 0; i < data_size; i++) {
+
+        struct zint_symbol* symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        symbol->symbology = BARCODE_CODE49; // Supports GS1
+        symbol->input_mode = data[i].input_mode;
+
+        int length = strlen(data[i].data);
+
+        ret = ZBarcode_Encode(symbol, data[i].data, length);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+        assert_equal(symbol->input_mode, data[i].expected_input_mode, "i:%d symbol->input_mode %d != %d\n", i, symbol->input_mode, data[i].expected_input_mode);
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
 int main()
 {
     test_checks();
+    test_input_mode();
 
     testReport();
 

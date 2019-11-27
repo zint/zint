@@ -37,6 +37,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* vim: set ts=4 sw=4 et : */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -528,7 +529,7 @@ static int look_ahead_test(const unsigned char inputData[], const size_t sourcel
 
 /* Encodes data using ASCII, C40, Text, X12, EDIFACT or Base 256 modes as appropriate
    Supports encoding FNC1 in supporting systems */
-static int dm200encode(struct zint_symbol *symbol, const unsigned char source[], unsigned char target[], int *last_mode, size_t *length_p, int process_buffer[], int *process_p) {
+static int dm200encode(struct zint_symbol *symbol, const unsigned char source[], unsigned char target[], int *last_mode, size_t *length_p, int process_buffer[], int *process_p, int *binlen_p) {
 
     size_t sp;
     int tp, i, gs1;
@@ -536,9 +537,9 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
     size_t inputlen = *length_p;
     int debug = symbol->debug;
 #ifndef _MSC_VER
-    char binary[2 * inputlen];
+    char binary[2 * inputlen + 1 + 4 + 1]; /* Allow for GS1/READER_INIT, ECI and nul chars overhead */
 #else
-    char* binary = (char*) _alloca(2 * inputlen);
+    char* binary = (char*) _alloca(2 * inputlen + 1 + 4 + 1);
 #endif
 
     sp = 0;
@@ -552,7 +553,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
     next_mode = DM_ASCII;
 
     /* gs1 flag values: 0: no gs1, 1: gs1 with FNC1 serparator, 2: GS separator */
-    if (symbol->input_mode == GS1_MODE) {
+    if ((symbol->input_mode & 0x07) == GS1_MODE) {
         if (symbol->output_options & GS1_GS_SEPARATOR) {
             gs1 = 2;
         } else {
@@ -971,7 +972,8 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
         }
 
         if (tp > 1558) {
-            return 0;
+            strcpy(symbol->errtxt, "520: Data too long to fit in symbol");
+            return ZINT_ERROR_TOO_LONG;
         }
 
     } /* while */
@@ -1018,7 +1020,8 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
     }
 
     *(last_mode) = current_mode;
-    return tp;
+    *binlen_p = tp;
+    return 0;
 }
 
 static int dm200encode_remainder(unsigned char target[], int target_length, const unsigned char source[], const size_t inputlen, const int last_mode, const int process_buffer[], const int process_p, const int symbols_left) {
@@ -1162,8 +1165,8 @@ static void add_tail(unsigned char target[], int tp, const int tail_length) {
 }
 
 int data_matrix_200(struct zint_symbol *symbol,const unsigned char source[], const size_t in_length) {
-	int i, skew = 0;
-   size_t inputlen=in_length;
+    int i, skew = 0;
+    size_t inputlen = in_length;
     unsigned char binary[2200];
     int binlen;
     int process_buffer[8]; /* holds remaining data to finalised */
@@ -1175,11 +1178,9 @@ int data_matrix_200(struct zint_symbol *symbol,const unsigned char source[], con
     int symbols_left;
 
     /* inputlen may be decremented by 2 if macro character is used */
-    binlen = dm200encode(symbol, source, binary, &last_mode, &inputlen, process_buffer, &process_p);
-
-    if (binlen == 0) {
-        strcpy(symbol->errtxt, "520: Data too long to fit in symbol");
-        return ZINT_ERROR_TOO_LONG;
+    error_number = dm200encode(symbol, source, binary, &last_mode, &inputlen, process_buffer, &process_p, &binlen);
+    if (error_number != 0) {
+        return error_number;
     }
 
     if ((symbol->option_2 >= 1) && (symbol->option_2 <= DMSIZESCOUNT)) {

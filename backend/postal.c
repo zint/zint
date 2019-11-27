@@ -30,6 +30,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* vim: set ts=4 sw=4 et : */
 
 #include <string.h>
 #include <stdlib.h>
@@ -582,11 +583,9 @@ int japan_post(struct zint_symbol *symbol, unsigned char source[], int length) {
     }
     if (check <= 9) {
         check_char = check + '0';
-    }
-    if (check == 10) {
+    } else if (check == 10) {
         check_char = '-';
-    }
-    if (check >= 11) {
+    } else {
         check_char = (check - 11) + 'a';
     }
     strcat(pattern, JapanTable[posn(KASUTSET, check_char)]);

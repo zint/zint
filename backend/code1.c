@@ -29,6 +29,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* vim: set ts=4 sw=4 et : */
 
 #include "common.h"
 #include "code1.h"
@@ -369,7 +370,7 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
     edi_p = 0;
     strcpy(decimal_binary, "");
 
-    if (symbol->input_mode == GS1_MODE) {
+    if ((symbol->input_mode & 0x07) == GS1_MODE) {
         gs1 = 1;
     } else {
         gs1 = 0;

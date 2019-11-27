@@ -29,6 +29,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* vim: set ts=4 sw=4 et : */
 
 /* Updated to comply with BS EN 12323:2005 */
 
@@ -273,7 +274,7 @@ int code16k(struct zint_symbol *symbol, unsigned char source[], const size_t len
     strcpy(width_pattern, "");
     input_length = length;
 
-    if (symbol->input_mode == GS1_MODE) {
+    if ((symbol->input_mode & 0x07) == GS1_MODE) {
         gs1 = 1;
     } else {
         gs1 = 0;

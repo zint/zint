@@ -1,0 +1,53 @@
+Zint backend test suite
+-----------------------
+
+To make:
+
+  cd <project-dir>
+  cd backend/tests
+  mkdir build
+  cd build
+  cmake ..
+  make
+
+To run all tests:
+
+  make test
+
+To run individual tests, eg:
+
+  ./test_common
+  ./test_vector
+
+To make with gcc sanitize, first set for libzint and make:
+
+  cd <project-dir>
+  cd build
+  cmake -DZINT_SANITIZE:BOOL=1 ..
+  make && sudo make install
+
+Then set for tests and make:
+
+  cd <project-dir>
+  cd backend/tests/build
+  cmake -DZINT_SANITIZE:BOOL=1 ..
+  make
+
+Similarly to make with gcc debug:
+
+  cd <project-dir>
+  cd build
+  cmake -DZINT_DEBUG:BOOL=1 ..
+  make && sudo make install
+
+  cd <project-dir>
+  cd backend/tests/build
+  cmake -DZINT_DEBUG:BOOL=1 ..
+  make
+
+To undo sanitize/debug, remake each after setting:
+
+  cmake -DZINT_SANITIZE:BOOL=0 ..
+  cmake -DZINT_DEBUG:BOOL=0 ..
+
+Note that sanitize is not safe to use in production, as it's a security risk.

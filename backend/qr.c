@@ -29,6 +29,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* vim: set ts=4 sw=4 et : */
 
 #include <string.h>
 #ifdef _MSC_VER
@@ -47,15 +48,14 @@ extern int utf_to_eci(const int eci, const unsigned char source[], unsigned char
 /* Returns true if input glyph is in the Alphanumeric set */
 static int in_alpha(const int glyph) {
     int retval = 0;
-    char cglyph = (char) glyph;
 
-    if ((cglyph >= '0') && (cglyph <= '9')) {
+    if ((glyph >= '0') && (glyph <= '9')) {
         retval = 1;
     }
-    if ((cglyph >= 'A') && (cglyph <= 'Z')) {
+    if ((glyph >= 'A') && (glyph <= 'Z')) {
         retval = 1;
     }
-    switch (cglyph) {
+    switch (glyph) {
         case ' ':
         case '$':
         case '%':
@@ -72,7 +72,7 @@ static int in_alpha(const int glyph) {
     return retval;
 }
 
-static void define_mode(char mode[],const int jisdata[], const size_t length,const int gs1) {
+static void define_mode(char mode[], const unsigned int jisdata[], const size_t length, const int gs1) {
     /* Values placed into mode[] are: K = Kanji, B = Binary, A = Alphanumeric, N = Numeric */
     size_t i;
     int    mlen, j;
@@ -95,16 +95,18 @@ static void define_mode(char mode[],const int jisdata[], const size_t length,con
     }
 
     /* If less than 6 numeric digits together then don't use numeric mode */
-    for (i = 0; i < length; i++) {
-        if (mode[i] == 'N') {
-            if (((i != 0) && (mode[i - 1] != 'N')) || (i == 0)) {
-                mlen = 0;
-                while (((mlen + i) < length) && (mode[mlen + i] == 'N')) {
-                    mlen++;
-                };
-                if (mlen < 6) {
-                    for (j = 0; j < mlen; j++) {
-                        mode[i + j] = 'A';
+    if (ustrchr_cnt((unsigned char*) mode, length, 'N') != length) {
+        for (i = 0; i < length; i++) {
+            if (mode[i] == 'N') {
+                if (((i != 0) && (mode[i - 1] != 'N')) || (i == 0)) {
+                    mlen = 0;
+                    while (((mlen + i) < length) && (mode[mlen + i] == 'N')) {
+                        mlen++;
+                    };
+                    if (mlen < 6) {
+                        for (j = 0; j < mlen; j++) {
+                            mode[i + j] = 'A';
+                        }
                     }
                 }
             }
@@ -112,16 +114,18 @@ static void define_mode(char mode[],const int jisdata[], const size_t length,con
     }
 
     /* If less than 4 alphanumeric characters together then don't use alphanumeric mode */
-    for (i = 0; i < length; i++) {
-        if (mode[i] == 'A') {
-            if (((i != 0) && (mode[i - 1] != 'A')) || (i == 0)) {
-                mlen = 0;
-                while (((mlen + i) < length) && (mode[mlen + i] == 'A')) {
-                    mlen++;
-                };
-                if (mlen < 4) {
-                    for (j = 0; j < mlen; j++) {
-                        mode[i + j] = 'B';
+    if (ustrchr_cnt((unsigned char*) mode, length, 'A') != length) {
+        for (i = 0; i < length; i++) {
+            if (mode[i] == 'A') {
+                if (((i != 0) && (mode[i - 1] != 'A')) || (i == 0)) {
+                    mlen = 0;
+                    while (((mlen + i) < length) && (mode[mlen + i] == 'A')) {
+                        mlen++;
+                    };
+                    if (mlen < 4) {
+                        for (j = 0; j < mlen; j++) {
+                            mode[i + j] = 'B';
+                        }
                     }
                 }
             }
@@ -147,7 +151,8 @@ static int tribus(const int version,const int a,const int b,const int c) {
 }
 
 /* Convert input data to a binary stream and add padding */
-static void qr_binary(int datastream[], const int version, const int target_binlen, const char mode[], const int jisdata[], const size_t length, const int gs1, const int eci, const int est_binlen,const int debug) {
+static void qr_binary(unsigned char datastream[], const int version, const int target_binlen, const char mode[], const unsigned int jisdata[], const size_t length,
+                        const int gs1, const int eci, const int est_binlen, const int debug) {
     int position = 0;
     int i;
     char padbits;
@@ -177,7 +182,7 @@ static void qr_binary(int datastream[], const int version, const int target_binl
         }
     }
 
-    if (debug) {
+    if (debug & ZINT_DEBUG_PRINT) {
         for (i = 0; i < length; i++) {
             printf("%c", mode[i]);
         }
@@ -189,7 +194,11 @@ static void qr_binary(int datastream[], const int version, const int target_binl
     do {
         char data_block = mode[position];
         int short_data_block_length = 0;
+        int double_byte = 0;
         do {
+            if (data_block == 'B' && jisdata[position + short_data_block_length] > 0xFF) {
+                double_byte++;
+            }
             short_data_block_length++;
         } while (((short_data_block_length + position) < length)
                 && (mode[position + short_data_block_length] == data_block));
@@ -203,13 +212,13 @@ static void qr_binary(int datastream[], const int version, const int target_binl
                 /* Character count indicator */
                 bin_append(short_data_block_length, tribus(version, 8, 10, 12), binary);
 
-                if (debug) {
+                if (debug & ZINT_DEBUG_PRINT) {
                     printf("Kanji block (length %d)\n\t", short_data_block_length);
                 }
 
                 /* Character representation */
                 for (i = 0; i < short_data_block_length; i++) {
-                    int jis = jisdata[position + i];
+                    unsigned int jis = jisdata[position + i];
                     int prod;
 
                     if (jis >= 0x8140 && jis <= 0x9ffc)
@@ -222,12 +231,12 @@ static void qr_binary(int datastream[], const int version, const int target_binl
 
                     bin_append(prod, 13, binary);
 
-                    if (debug) {
+                    if (debug & ZINT_DEBUG_PRINT) {
                         printf("0x%4X ", prod);
                     }
                 }
 
-                if (debug) {
+                if (debug & ZINT_DEBUG_PRINT) {
                     printf("\n");
                 }
 
@@ -238,28 +247,28 @@ static void qr_binary(int datastream[], const int version, const int target_binl
                 strcat(binary, "0100");
 
                 /* Character count indicator */
-                bin_append(short_data_block_length, tribus(version, 8, 16, 16), binary);
+                bin_append(short_data_block_length + double_byte, tribus(version, 8, 16, 16), binary);
 
-                if (debug) {
-                    printf("Byte block (length %d)\n\t", short_data_block_length);
+                if (debug & ZINT_DEBUG_PRINT) {
+                    printf("Byte block (length %d)\n\t", short_data_block_length + double_byte);
                 }
 
                 /* Character representation */
                 for (i = 0; i < short_data_block_length; i++) {
-                    int byte = jisdata[position + i];
+                    unsigned int byte = jisdata[position + i];
 
                     if (gs1 && (byte == '[')) {
                         byte = 0x1d; /* FNC1 */
                     }
 
-                    bin_append(byte, 8, binary);
+                    bin_append(byte, byte > 0xFF ? 16 : 8, binary);
 
-                    if (debug) {
+                    if (debug & ZINT_DEBUG_PRINT) {
                         printf("0x%2X(%d) ", byte, byte);
                     }
                 }
 
-                if (debug) {
+                if (debug & ZINT_DEBUG_PRINT) {
                     printf("\n");
                 }
 
@@ -275,11 +284,11 @@ static void qr_binary(int datastream[], const int version, const int target_binl
                         percent_count++;
                     }
                 }
-                
+
                 /* Character count indicator */
                 bin_append(short_data_block_length + percent_count, tribus(version, 9, 11, 13), binary);
 
-                if (debug) {
+                if (debug & ZINT_DEBUG_PRINT) {
                     printf("Alpha block (length %d)\n\t", short_data_block_length + percent_count);
                 }
 
@@ -352,12 +361,12 @@ static void qr_binary(int datastream[], const int version, const int target_binl
 
                     bin_append(prod, 1 + (5 * count), binary);
 
-                    if (debug) {
+                    if (debug & ZINT_DEBUG_PRINT) {
                         printf("0x%4X ", prod);
                     }
                 };
 
-                if (debug) {
+                if (debug & ZINT_DEBUG_PRINT) {
                     printf("\n");
                 }
 
@@ -370,7 +379,7 @@ static void qr_binary(int datastream[], const int version, const int target_binl
                 /* Character count indicator */
                 bin_append(short_data_block_length, tribus(version, 10, 12, 14), binary);
 
-                if (debug) {
+                if (debug & ZINT_DEBUG_PRINT) {
                     printf("Number block (length %d)\n\t", short_data_block_length);
                 }
 
@@ -398,14 +407,14 @@ static void qr_binary(int datastream[], const int version, const int target_binl
 
                     bin_append(prod, 1 + (3 * count), binary);
 
-                    if (debug) {
+                    if (debug & ZINT_DEBUG_PRINT) {
                         printf("0x%4X (%d)", prod, prod);
                     }
 
                     i += count;
                 };
 
-                if (debug) {
+                if (debug & ZINT_DEBUG_PRINT) {
                     printf("\n");
                 }
 
@@ -453,7 +462,7 @@ static void qr_binary(int datastream[], const int version, const int target_binl
         }
     }
 
-    if (debug) {
+    if (debug & ZINT_DEBUG_PRINT) {
         printf("Resulting codewords:\n\t");
         for (i = 0; i < target_binlen; i++) {
             printf("0x%2X ", datastream[i]);
@@ -463,25 +472,24 @@ static void qr_binary(int datastream[], const int version, const int target_binl
 }
 
 /* Split data into blocks, add error correction and then interleave the blocks and error correction data */
-static void add_ecc(int fullstream[],const int datastream[],const int version,const int data_cw,const int blocks) {
+static void add_ecc(unsigned char fullstream[], const unsigned char datastream[], const int version, const int data_cw, const int blocks, int debug) {
     int ecc_cw = qr_total_codewords[version - 1] - data_cw;
     int short_data_block_length = data_cw / blocks;
     int qty_long_blocks = data_cw % blocks;
     int qty_short_blocks = blocks - qty_long_blocks;
     int ecc_block_length = ecc_cw / blocks;
-    int i, j, length_this_block, posn, debug = 0;
-
+    int i, j, length_this_block, posn;
 
 #ifndef _MSC_VER
     unsigned char data_block[short_data_block_length + 2];
     unsigned char ecc_block[ecc_block_length + 2];
-    int interleaved_data[data_cw + 2];
-    int interleaved_ecc[ecc_cw + 2];
+    unsigned char interleaved_data[data_cw + 2];
+    unsigned char interleaved_ecc[ecc_cw + 2];
 #else
     unsigned char* data_block = (unsigned char *) _alloca(short_data_block_length + 2);
     unsigned char* ecc_block = (unsigned char *) _alloca(ecc_block_length + 2);
-    int* interleaved_data = (int *) _alloca((data_cw + 2) * sizeof (int));
-    int* interleaved_ecc = (int *) _alloca((ecc_cw + 2) * sizeof (int));
+    unsigned char* interleaved_data = (unsigned char *) _alloca(data_cw + 2);
+    unsigned char* interleaved_ecc = (unsigned char *) _alloca(ecc_cw + 2);
 #endif
 
     posn = 0;
@@ -498,7 +506,7 @@ static void add_ecc(int fullstream[],const int datastream[],const int version,co
         }
 
         for (j = 0; j < length_this_block; j++) {
-            data_block[j] = (unsigned char) datastream[posn + j];
+            data_block[j] = datastream[posn + j];
         }
 
         rs_init_gf(0x11d);
@@ -506,7 +514,7 @@ static void add_ecc(int fullstream[],const int datastream[],const int version,co
         rs_encode(length_this_block, data_block, ecc_block);
         rs_free();
 
-        if (debug) {
+        if (debug & ZINT_DEBUG_PRINT) {
             printf("Block %d: ", i + 1);
             for (j = 0; j < length_this_block; j++) {
                 printf("%2X ", data_block[j]);
@@ -522,15 +530,15 @@ static void add_ecc(int fullstream[],const int datastream[],const int version,co
         }
 
         for (j = 0; j < short_data_block_length; j++) {
-            interleaved_data[(j * blocks) + i] = (int) data_block[j];
+            interleaved_data[(j * blocks) + i] = data_block[j];
         }
 
         if (i >= qty_short_blocks) {
-            interleaved_data[(short_data_block_length * blocks) + (i - qty_short_blocks)] = (int) data_block[short_data_block_length];
+            interleaved_data[(short_data_block_length * blocks) + (i - qty_short_blocks)] = data_block[short_data_block_length];
         }
 
         for (j = 0; j < ecc_block_length; j++) {
-            interleaved_ecc[(j * blocks) + i] = (int) ecc_block[ecc_block_length - j - 1];
+            interleaved_ecc[(j * blocks) + i] = ecc_block[ecc_block_length - j - 1];
         }
 
         posn += length_this_block;
@@ -543,7 +551,7 @@ static void add_ecc(int fullstream[],const int datastream[],const int version,co
         fullstream[j + data_cw] = interleaved_ecc[j];
     }
 
-    if (debug) {
+    if (debug & ZINT_DEBUG_PRINT) {
         printf("\nData Stream: \n");
         for (j = 0; j < (data_cw + ecc_cw); j++) {
             printf("%2X ", fullstream[j]);
@@ -660,7 +668,7 @@ static void setup_grid(unsigned char* grid,const int size,const int version) {
     }
 }
 
-static int cwbit(const int* fullstream,const int i) {
+static int cwbit(const unsigned char* fullstream, const int i) {
     int resultant = 0;
 
     if (fullstream[(i / 8)] & (0x80 >> (i % 8))) {
@@ -670,7 +678,7 @@ static int cwbit(const int* fullstream,const int i) {
     return resultant;
 }
 
-static void populate_grid(unsigned char* grid,const int size,const int* fullstream,const int cw) {
+static void populate_grid(unsigned char* grid, const int size, const unsigned char* fullstream, const int cw) {
     int direction = 1; /* up */
     int row = 0; /* right hand side */
 
@@ -681,6 +689,7 @@ static void populate_grid(unsigned char* grid,const int size,const int* fullstre
     i = 0;
     do {
         int x = (size - 2) - (row * 2);
+
         if (x < 6)
             x--; /* skip over vertical timing pattern */
 
@@ -1321,7 +1330,7 @@ static size_t blockLength(const size_t start,const char inputMode[],const size_t
     return count;
 }
 
-static int getBinaryLength(const int version,char inputMode[],const int inputData[],const size_t inputLength,const int gs1,const int eci) {
+static int getBinaryLength(const int version, char inputMode[], const unsigned int inputData[], const size_t inputLength, const int gs1, const int eci) {
     /* Calculate the actual bitlength of the proposed binary string */
     size_t i;
     char currentMode;
@@ -1339,7 +1348,14 @@ static int getBinaryLength(const int version,char inputMode[],const int inputDat
     }
 
     if (eci != 0) {
-        count += 12;
+        count += 4;
+        if (eci <= 127) {
+            count += 8;
+        } else if (eci <= 16383) {
+            count += 16;
+        } else {
+            count += 24;
+        }
     }
 
     for (i = 0; i < inputLength; i++) {
@@ -1404,6 +1420,14 @@ static int getBinaryLength(const int version,char inputMode[],const int inputDat
     return count;
 }
 
+static void qr_test_codeword_dump(struct zint_symbol *symbol, unsigned char* codewords, int length) {
+    int i;
+    for (i = 0; i < length && i < 33; i++) { // 33*3 < errtxt 100 chars
+        sprintf(symbol->errtxt + i * 3, "%02X ", codewords[i]);
+    }
+    symbol->errtxt[strlen(symbol->errtxt) - 1] = '\0';
+}
+
 int qr_code(struct zint_symbol *symbol, const unsigned char source[], size_t length) {
     int i, j, est_binlen;
     int ecc_level, autosize, version, max_cw, target_binlen, blocks, size;
@@ -1411,48 +1435,37 @@ int qr_code(struct zint_symbol *symbol, const unsigned char source[], size_t len
     int canShrink;
 
 #ifndef _MSC_VER
-    int utfdata[length + 1];
-    int jisdata[length + 1];
+    unsigned int jisdata[length + 1];
     char mode[length + 1];
 #else
-    int* datastream;
-    int* fullstream;
+    unsigned char* datastream;
+    unsigned char* fullstream;
     unsigned char* grid;
-    int* utfdata = (int *) _alloca((length + 1) * sizeof (int));
-    int* jisdata = (int *) _alloca((length + 1) * sizeof (int));
+    unsigned int* jisdata = (unsigned int *) _alloca((length + 1) * sizeof (unsigned int));
     char* mode = (char *) _alloca(length + 1);
 #endif
 
-    gs1 = (symbol->input_mode == GS1_MODE);
+    gs1 = ((symbol->input_mode & 0x07) == GS1_MODE);
 
-    if ((symbol->input_mode == DATA_MODE) || (symbol->eci != 0)) {
-        for (i = 0; i < length; i++) {
-            jisdata[i] = (int) source[i];
-        }
+    if ((symbol->input_mode & 0x07) == DATA_MODE) {
+        sjis_cpy(source, &length, jisdata);
     } else {
-        /* Convert Unicode input to Shift-JIS */
-        int error_number = utf8toutf16(symbol, source, utfdata, &length);
-        if (error_number != 0) {
-            return error_number;
+        int done = 0;
+        if (symbol->eci != 20) { /* Unless ECI 20 (Shift JIS) */
+            /* Try single byte (Latin) conversion first */
+            int error_number = sjis_utf8tosb(symbol->eci && symbol->eci <= 899 ? symbol->eci : 3, source, &length, jisdata);
+            if (error_number == 0) {
+                done = 1;
+            } else if (symbol->eci && symbol->eci <= 899) {
+                strcpy(symbol->errtxt, "575: Invalid characters in input data");
+                return error_number;
+            }
         }
-
-        for (i = 0; i < length; i++) {
-            if (utfdata[i] <= 0xff) {
-                jisdata[i] = utfdata[i];
-            } else {
-                int glyph = 0;
-                j = 0;
-                do {
-                    if (sjis_lookup[j * 2] == utfdata[i]) {
-                        glyph = sjis_lookup[(j * 2) + 1];
-                    }
-                    j++;
-                } while ((j < 6843) && (glyph == 0));
-                if (glyph == 0) {
-                    strcpy(symbol->errtxt, "560: Invalid character in input data");
-                    return ZINT_ERROR_INVALID_DATA;
-                }
-                jisdata[i] = glyph;
+        if (!done) {
+            /* Try Shift-JIS */
+            int error_number = sjis_utf8tomb(symbol, source, &length, jisdata);
+            if (error_number != 0) {
+                return error_number;
             }
         }
     }
@@ -1569,7 +1582,7 @@ int qr_code(struct zint_symbol *symbol, const unsigned char source[], size_t len
             return ZINT_ERROR_TOO_LONG;
         }
     }
-    
+
     /* Ensure maxium error correction capacity */
     if (est_binlen <= qr_data_codewords_M[version - 1] * 8) {
         ecc_level = LEVEL_M;
@@ -1596,15 +1609,16 @@ int qr_code(struct zint_symbol *symbol, const unsigned char source[], size_t len
     }
 
 #ifndef _MSC_VER
-    int datastream[target_binlen + 1];
-    int fullstream[qr_total_codewords[version - 1] + 1];
+    unsigned char datastream[target_binlen + 1];
+    unsigned char fullstream[qr_total_codewords[version - 1] + 1];
 #else
-    datastream = (int *) _alloca((target_binlen + 1) * sizeof (int));
-    fullstream = (int *) _alloca((qr_total_codewords[version - 1] + 1) * sizeof (int));
+    datastream = (unsigned char *) _alloca(target_binlen + 1);
+    fullstream = (unsigned char *) _alloca(qr_total_codewords[version - 1] + 1);
 #endif
 
     qr_binary(datastream, version, target_binlen, mode, jisdata, length, gs1, symbol->eci, est_binlen, symbol->debug);
-    add_ecc(fullstream, datastream, version, target_binlen, blocks);
+    if (symbol->debug & ZINT_DEBUG_TEST) qr_test_codeword_dump(symbol, datastream, target_binlen);
+    add_ecc(fullstream, datastream, version, target_binlen, blocks, symbol->debug);
 
     size = qr_sizes[version - 1];
 #ifndef _MSC_VER
@@ -1647,9 +1661,7 @@ int qr_code(struct zint_symbol *symbol, const unsigned char source[], size_t len
     return 0;
 }
 
-/* NOTE: From this point forward concerns Micro QR Code only */
-
-static int micro_qr_intermediate(char binary[], const int jisdata[], const char mode[], const size_t length, int *kanji_used, int *alphanum_used, int *byte_used,const int debug) {
+static int micro_qr_intermediate(char binary[], const unsigned int jisdata[], const char mode[], const size_t length, int *kanji_used, int *alphanum_used, int *byte_used, const int debug) {
     /* Convert input data to an "intermediate stage" where data is binary encoded but
        control information is not */
     int position = 0;
@@ -1658,7 +1670,7 @@ static int micro_qr_intermediate(char binary[], const int jisdata[], const char 
 
     strcpy(binary, "");
 
-    if (debug) {
+    if (debug & ZINT_DEBUG_PRINT) {
         for (i = 0; i < length; i++) {
             printf("%c", mode[i]);
         }
@@ -1668,12 +1680,16 @@ static int micro_qr_intermediate(char binary[], const int jisdata[], const char 
     do {
         char data_block;
         int short_data_block_length = 0;
+        int double_byte = 0;
         if (strlen(binary) > 128) {
             return ZINT_ERROR_TOO_LONG;
         }
 
         data_block = mode[position];
         do {
+            if (data_block == 'B' && jisdata[position + short_data_block_length] > 0xFF) {
+                double_byte++;
+            }
             short_data_block_length++;
         } while (((short_data_block_length + position) < length) && (mode[position + short_data_block_length] == data_block));
 
@@ -1689,7 +1705,7 @@ static int micro_qr_intermediate(char binary[], const int jisdata[], const char 
                 buffer[1] = '\0';
                 strcat(binary, buffer);
 
-                if (debug) {
+                if (debug & ZINT_DEBUG_PRINT) {
                     printf("Kanji block (length %d)\n\t", short_data_block_length);
                 }
 
@@ -1708,7 +1724,7 @@ static int micro_qr_intermediate(char binary[], const int jisdata[], const char 
 
                     bin_append(prod, 13, binary);
 
-                    if (debug) {
+                    if (debug & ZINT_DEBUG_PRINT) {
                         printf("0x%4X ", prod);
                     }
 
@@ -1717,7 +1733,7 @@ static int micro_qr_intermediate(char binary[], const int jisdata[], const char 
                     }
                 }
 
-                if (debug) {
+                if (debug & ZINT_DEBUG_PRINT) {
                     printf("\n");
                 }
 
@@ -1729,21 +1745,21 @@ static int micro_qr_intermediate(char binary[], const int jisdata[], const char 
                 *byte_used = 1;
 
                 /* Character count indicator */
-                buffer[0] = short_data_block_length;
+                buffer[0] = short_data_block_length + double_byte;
                 buffer[1] = '\0';
                 strcat(binary, buffer);
 
-                if (debug) {
-                    printf("Byte block (length %d)\n\t", short_data_block_length);
+                if (debug & ZINT_DEBUG_PRINT) {
+                    printf("Byte block (length %d)\n\t", short_data_block_length + double_byte);
                 }
 
                 /* Character representation */
                 for (i = 0; i < short_data_block_length; i++) {
                     int byte = jisdata[position + i];
 
-                    bin_append(byte, 8, binary);
+                    bin_append(byte, byte > 0xFF ? 16 : 8, binary);
 
-                    if (debug) {
+                    if (debug & ZINT_DEBUG_PRINT) {
                         printf("0x%4X ", byte);
                     }
 
@@ -1752,7 +1768,7 @@ static int micro_qr_intermediate(char binary[], const int jisdata[], const char 
                     }
                 }
 
-                if (debug) {
+                if (debug & ZINT_DEBUG_PRINT) {
                     printf("\n");
                 }
 
@@ -1768,7 +1784,7 @@ static int micro_qr_intermediate(char binary[], const int jisdata[], const char 
                 buffer[1] = '\0';
                 strcat(binary, buffer);
 
-                if (debug) {
+                if (debug & ZINT_DEBUG_PRINT) {
                     printf("Alpha block (length %d)\n\t", short_data_block_length);
                 }
 
@@ -1790,7 +1806,7 @@ static int micro_qr_intermediate(char binary[], const int jisdata[], const char 
 
                     bin_append(prod, 1 + (5 * count), binary);
 
-                    if (debug) {
+                    if (debug & ZINT_DEBUG_PRINT) {
                         printf("0x%4X ", prod);
                     }
 
@@ -1801,7 +1817,7 @@ static int micro_qr_intermediate(char binary[], const int jisdata[], const char 
                     i += 2;
                 };
 
-                if (debug) {
+                if (debug & ZINT_DEBUG_PRINT) {
                     printf("\n");
                 }
 
@@ -1816,7 +1832,7 @@ static int micro_qr_intermediate(char binary[], const int jisdata[], const char 
                 buffer[1] = '\0';
                 strcat(binary, buffer);
 
-                if (debug) {
+                if (debug & ZINT_DEBUG_PRINT) {
                     printf("Number block (length %d)\n\t", short_data_block_length);
                 }
 
@@ -1844,7 +1860,7 @@ static int micro_qr_intermediate(char binary[], const int jisdata[], const char 
 
                     bin_append(prod, 1 + (3 * count), binary);
 
-                    if (debug) {
+                    if (debug & ZINT_DEBUG_PRINT) {
                         printf("0x%4X (%d)", prod, prod);
                     }
 
@@ -1855,7 +1871,7 @@ static int micro_qr_intermediate(char binary[], const int jisdata[], const char 
                     i += 3;
                 };
 
-                if (debug) {
+                if (debug & ZINT_DEBUG_PRINT) {
                     printf("\n");
                 }
 
@@ -1863,7 +1879,7 @@ static int micro_qr_intermediate(char binary[], const int jisdata[], const char 
         }
 
         position += short_data_block_length;
-    } while (position < length - 1);
+    } while (position < length);
 
     return 0;
 }
@@ -2000,7 +2016,7 @@ static void microqr_expand_binary(const char binary_stream[], char full_stream[]
     } while (i < length);
 }
 
-static void micro_qr_m1(char binary_data[]) {
+static void micro_qr_m1(struct zint_symbol *symbol, char binary_data[]) {
     int i, j, latch;
     int bits_total, bits_left;
     int data_codewords, ecc_codewords;
@@ -2071,6 +2087,8 @@ static void micro_qr_m1(char binary_data[]) {
         }
     }
 
+    if (symbol->debug & ZINT_DEBUG_TEST) qr_test_codeword_dump(symbol, data_blocks, data_codewords);
+
     /* Calculate Reed-Solomon error codewords */
     rs_init_gf(0x11d);
     rs_init_code(ecc_codewords, 0);
@@ -2083,7 +2101,7 @@ static void micro_qr_m1(char binary_data[]) {
     }
 }
 
-static void micro_qr_m2(char binary_data[],const int ecc_mode) {
+static void micro_qr_m2(struct zint_symbol *symbol, char binary_data[], const int ecc_mode) {
     int i, j, latch;
     int bits_total=0, bits_left;
     int data_codewords=0, ecc_codewords=0;
@@ -2149,6 +2167,8 @@ static void micro_qr_m2(char binary_data[],const int ecc_mode) {
         }
     }
 
+    if (symbol->debug & ZINT_DEBUG_TEST) qr_test_codeword_dump(symbol, data_blocks, data_codewords);
+
     /* Calculate Reed-Solomon error codewords */
     rs_init_gf(0x11d);
     rs_init_code(ecc_codewords, 0);
@@ -2163,7 +2183,7 @@ static void micro_qr_m2(char binary_data[],const int ecc_mode) {
     return;
 }
 
-static void micro_qr_m3(char binary_data[],const int ecc_mode) {
+static void micro_qr_m3(struct zint_symbol *symbol, char binary_data[], const int ecc_mode) {
     int i, j, latch;
     int bits_total=0, bits_left;
     int data_codewords=0, ecc_codewords=0;
@@ -2261,6 +2281,8 @@ static void micro_qr_m3(char binary_data[],const int ecc_mode) {
         }
     }
 
+    if (symbol->debug & ZINT_DEBUG_TEST) qr_test_codeword_dump(symbol, data_blocks, data_codewords);
+
     /* Calculate Reed-Solomon error codewords */
     rs_init_gf(0x11d);
     rs_init_code(ecc_codewords, 0);
@@ -2275,7 +2297,7 @@ static void micro_qr_m3(char binary_data[],const int ecc_mode) {
     return;
 }
 
-static void micro_qr_m4(char binary_data[],const int ecc_mode) {
+static void micro_qr_m4(struct zint_symbol *symbol, char binary_data[], const int ecc_mode) {
     int i, j, latch;
     int bits_total=0, bits_left;
     int data_codewords=0, ecc_codewords=0;
@@ -2347,6 +2369,8 @@ static void micro_qr_m4(char binary_data[],const int ecc_mode) {
             }
         }
     }
+
+    if (symbol->debug & ZINT_DEBUG_TEST) qr_test_codeword_dump(symbol, data_blocks, data_codewords);
 
     /* Calculate Reed-Solomon error codewords */
     rs_init_gf(0x11d);
@@ -2568,9 +2592,8 @@ int microqr(struct zint_symbol *symbol, const unsigned char source[], size_t len
     int    j, size;
     char binary_stream[200];
     char full_stream[200];
-    int utfdata[40];
 
-    int jisdata[40];
+    unsigned int jisdata[40];
     char mode[40];
     int error_number, kanji_used = 0, alphanum_used = 0, byte_used = 0;
     int version_valid[4];
@@ -2610,34 +2633,16 @@ int microqr(struct zint_symbol *symbol, const unsigned char source[], size_t len
         version_valid[i] = 1;
     }
 
-    if (symbol->input_mode == DATA_MODE) {
-        for (i = 0; i < length; i++) {
-            jisdata[i] = (int) source[i];
-        }
+    if ((symbol->input_mode & 0x07) == DATA_MODE) {
+        sjis_cpy(source, &length, jisdata);
     } else {
-        /* Convert Unicode input to Shift-JIS */
-        error_number = utf8toutf16(symbol, source, utfdata, &length);
+        /* Try ISO 8859-1 conversion first */
+        int error_number = sjis_utf8tosb(3, source, &length, jisdata);
         if (error_number != 0) {
-            return error_number;
-        }
-
-        for (i = 0; i < length; i++) {
-            if (utfdata[i] <= 0xff) {
-                jisdata[i] = utfdata[i];
-            } else {
-                int glyph = 0;
-                j = 0;
-                do {
-                    if (sjis_lookup[j * 2] == utfdata[i]) {
-                        glyph = sjis_lookup[(j * 2) + 1];
-                    }
-                    j++;
-                } while ((j < 6843) && (glyph == 0));
-                if (glyph == 0) {
-                    strcpy(symbol->errtxt, "563: Invalid character in input data");
-                    return ZINT_ERROR_INVALID_DATA;
-                }
-                jisdata[i] = glyph;
+            /* Try Shift-JIS */
+            int error_number = sjis_utf8tomb(symbol, source, &length, jisdata);
+            if (error_number != 0) {
+                return error_number;
             }
         }
     }
@@ -2677,7 +2682,7 @@ int microqr(struct zint_symbol *symbol, const unsigned char source[], size_t len
 
     get_bitlength(binary_count, binary_stream);
 
-    /* Eliminate possivle versions depending on type of content */
+    /* Eliminate possible versions depending on type of content */
     if (byte_used) {
         version_valid[0] = 0;
         version_valid[1] = 0;
@@ -2780,13 +2785,13 @@ int microqr(struct zint_symbol *symbol, const unsigned char source[], size_t len
     microqr_expand_binary(binary_stream, full_stream, version);
 
     switch (version) {
-        case 0: micro_qr_m1(full_stream);
+        case 0: micro_qr_m1(symbol, full_stream);
             break;
-        case 1: micro_qr_m2(full_stream, ecc_level);
+        case 1: micro_qr_m2(symbol, full_stream, ecc_level);
             break;
-        case 2: micro_qr_m3(full_stream, ecc_level);
+        case 2: micro_qr_m3(symbol, full_stream, ecc_level);
             break;
-        case 3: micro_qr_m4(full_stream, ecc_level);
+        case 3: micro_qr_m4(symbol, full_stream, ecc_level);
             break;
     }
 
@@ -2905,13 +2910,13 @@ int upnqr(struct zint_symbol *symbol, const unsigned char source[], size_t lengt
     int bitmask, error_number;
 
 #ifndef _MSC_VER
-    int jisdata[length + 1];
+    unsigned int jisdata[length + 1];
     char mode[length + 1];
 #else
-    int* datastream;
-    int* fullstream;
+    unsigned char* datastream;
+    unsigned char* fullstream;
     unsigned char* grid;
-    int* jisdata = (int *) _alloca((length + 1) * sizeof (int));
+    unsigned int* jisdata = (unsigned int *) _alloca((length + 1) * sizeof (unsigned int));
     char* mode = (char *) _alloca(length + 1);
 #endif
 
@@ -2921,11 +2926,13 @@ int upnqr(struct zint_symbol *symbol, const unsigned char source[], size_t lengt
     unsigned char* preprocessed = (unsigned char*) _alloca(length + 1);
 #endif
 
-    switch(symbol->input_mode) {
+    symbol->eci = 4; /* Set before any processing */
+
+    switch (symbol->input_mode & 0x07) {
         case DATA_MODE:
             /* Input is already in ISO-8859-2 format */
             for (i = 0; i < length; i++) {
-                jisdata[i] = (int) source[i];
+                jisdata[i] = source[i];
                 mode[i] = 'B';
             }
             break;
@@ -2940,13 +2947,12 @@ int upnqr(struct zint_symbol *symbol, const unsigned char source[], size_t lengt
                 return error_number;
             }
             for (i = 0; i < length; i++) {
-                jisdata[i] = (int) preprocessed[i];
+                jisdata[i] = preprocessed[i];
                 mode[i] = 'B';
             }
             break;
     }
 
-    symbol->eci = 4;
     est_binlen = getBinaryLength(15, mode, jisdata, length, 0, symbol->eci);
 
     ecc_level = LEVEL_M;
@@ -2962,15 +2968,16 @@ int upnqr(struct zint_symbol *symbol, const unsigned char source[], size_t lengt
     blocks = qr_blocks_M[version - 1];
 
 #ifndef _MSC_VER
-    int datastream[target_binlen + 1];
-    int fullstream[qr_total_codewords[version - 1] + 1];
+    unsigned char datastream[target_binlen + 1];
+    unsigned char fullstream[qr_total_codewords[version - 1] + 1];
 #else
-    datastream = (int *) _alloca((target_binlen + 1) * sizeof (int));
-    fullstream = (int *) _alloca((qr_total_codewords[version - 1] + 1) * sizeof (int));
+    datastream = (unsigned char *) _alloca(target_binlen + 1);
+    fullstream = (unsigned char *) _alloca(qr_total_codewords[version - 1] + 1);
 #endif
 
     qr_binary(datastream, version, target_binlen, mode, jisdata, length, 0, symbol->eci, est_binlen, symbol->debug);
-    add_ecc(fullstream, datastream, version, target_binlen, blocks);
+    if (symbol->debug & ZINT_DEBUG_TEST) qr_test_codeword_dump(symbol, datastream, target_binlen);
+    add_ecc(fullstream, datastream, version, target_binlen, blocks, symbol->debug);
 
     size = qr_sizes[version - 1];
 #ifndef _MSC_VER

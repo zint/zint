@@ -29,6 +29,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* vim: set ts=4 sw=4 et : */
 
 #include <string.h>
 #include <stdio.h>
@@ -55,7 +56,7 @@ int code_49(struct zint_symbol *symbol, unsigned char source[], const int length
         strcpy(symbol->errtxt, "430: Input too long");
         return ZINT_ERROR_TOO_LONG;
     }
-    if (symbol->input_mode == GS1_MODE) {
+    if ((symbol->input_mode & 0x07) == GS1_MODE) {
         gs1 = 1;
         strcpy(intermediate, "*"); /* FNC1 */
     } else {
