@@ -3280,14 +3280,14 @@ int rmqr(struct zint_symbol *symbol, const unsigned char source[], size_t length
             est_binlen = getBinaryLength(RMQR_VERSION + version, mode, jisdata, length, gs1, symbol->eci);
             footprint = rmqr_height[version] * rmqr_width[version];
             if (ecc_level == LEVEL_M) {
-                if (rmqr_data_codewords_M[version] >= (est_binlen / 8)) {
+                if (8 * rmqr_data_codewords_M[version] >= est_binlen) {
                     if (footprint < best_footprint) {
                         autosize = version;
                         best_footprint = footprint;
                     }
                 }
             } else {
-                if (rmqr_data_codewords_H[version] >= (est_binlen / 8)) {
+                if (8 * rmqr_data_codewords_H[version] >= est_binlen) {
                     if (footprint < best_footprint) {
                         autosize = version;
                         best_footprint = footprint;
@@ -3310,11 +3310,11 @@ int rmqr(struct zint_symbol *symbol, const unsigned char source[], size_t length
         for(i = version - 1; i > rmqr_fixed_height_upper_bound[symbol->option_2 - 33]; i--) {
             est_binlen = getBinaryLength(RMQR_VERSION + i, mode, jisdata, length, gs1, symbol->eci);
             if (ecc_level == LEVEL_M) {
-                if (rmqr_data_codewords_M[i] >= (est_binlen / 8)) {
+                if (8 * rmqr_data_codewords_M[i] >= est_binlen) {
                     version = i;
                 }
             } else {
-                if (rmqr_data_codewords_H[i] >= (est_binlen / 8)) {
+                if (8 * rmqr_data_codewords_H[i] >= est_binlen) {
                     version = i;
                 }
             }
