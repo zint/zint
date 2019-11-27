@@ -101,7 +101,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags fl)
         "PLANET",
         "Postnet",
         "QR Code (ISO 18004)",
-        "Reduced Micro QR (rMQR)",
+        "Rectangular Micro QR (rMQR)",
         "Royal Mail 4-state Barcode",
         "Royal Mail 4-state Mailmark",
         "Telepen",
@@ -567,6 +567,23 @@ void MainWindow::change_options()
         connect(m_optionWidget->findChild<QObject*>("radQRHIBC"), SIGNAL(clicked( bool )), SLOT(update_preview()));
     }
 
+    if(metaObject()->enumerator(0).value(bstyle->currentIndex()) == BARCODE_RMQR)
+    {
+        QFile file(":/grpRMQR.ui");
+        if (!file.open(QIODevice::ReadOnly))
+            return;
+        m_optionWidget=uiload.load(&file);
+        file.close();
+        tabMain->insertTab(1,m_optionWidget,tr("rMQR Code"));
+        connect(m_optionWidget->findChild<QObject*>("radRMQRAuto"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(m_optionWidget->findChild<QObject*>("radRMQRSize"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(m_optionWidget->findChild<QObject*>("radRMQRECC"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(m_optionWidget->findChild<QObject*>("cmbRMQRSize"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(m_optionWidget->findChild<QObject*>("cmbRMQRECC"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(m_optionWidget->findChild<QObject*>("radRMQRStand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(m_optionWidget->findChild<QObject*>("radRMQRGS1"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+    }
+
     if(metaObject()->enumerator(0).value(bstyle->currentIndex()) == BARCODE_HANXIN)
     {
         QFile file (":/grpHX.ui");
@@ -977,6 +994,19 @@ void MainWindow::update_preview()
 
             if(m_optionWidget->findChild<QRadioButton*>("radMQRECC")->isChecked())
                 m_bc.bc.setSecurityLevel(m_optionWidget->findChild<QComboBox*>("cmbMQRECC")->currentIndex() + 1);
+            break;
+
+        case BARCODE_RMQR:
+            m_bc.bc.setSymbol(BARCODE_RMQR);
+
+            if(m_optionWidget->findChild<QRadioButton*>("radRMQRGS1")->isChecked())
+                m_bc.bc.setInputMode(GS1_MODE);
+
+            if(m_optionWidget->findChild<QRadioButton*>("radRMQRSize")->isChecked())
+                m_bc.bc.setWidth(m_optionWidget->findChild<QComboBox*>("cmbRMQRSize")->currentIndex() + 1);
+
+            if(m_optionWidget->findChild<QRadioButton*>("radRMQRECC")->isChecked())
+                m_bc.bc.setSecurityLevel(m_optionWidget->findChild<QComboBox*>("cmbRMQRECC")->currentIndex() * 2 + 2);
             break;
 
         case BARCODE_GRIDMATRIX:

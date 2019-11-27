@@ -24,5 +24,6 @@
         <file>grpHX.ui</file>
         <file>grpDotCode.ui</file>
         <file>grpCodablockF.ui</file>
+        <file>grpRMQR.ui</file>
     </qresource>
 </RCC>
