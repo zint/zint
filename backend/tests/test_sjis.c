@@ -189,14 +189,15 @@ static void test_sjis_utf8tosb(void)
         unsigned int expected_jisdata[20];
         char* comment;
     };
-    // é U+00E9 in ISO 8859-1 0xE9, Win 1250 plus other Win
+    // é U+00E9 in ISO 8859-1 0xE9, Win 1250 plus other Win, in QR Kanji mode first byte range 0x81..9F, 0xE0..EB
     // β U+03B2 in ISO 8859-7 Greek 0xE2 (but not other ISO 8859 or Win page)
-    // ¥ U+00A5 in ISO 8859-1 0xA5, in QR Kanji mode first byte range 0x81..9F, 0xE0..EB
+    // ¥ U+00A5 in ISO 8859-1 0xA5, outside first byte range 0x81..9F, 0xE0..EB
     // ú U+00FA in ISO 8859-1 0xFA, outside first byte range
-    // à U+00FA in ISO 8859-1 0xE0, in first byte range
-    // ë U+00FA in ISO 8859-1 0xEB, in first byte range
-    // ì U+00FA in ISO 8859-1 0xEC, outside first byte range
+    // à U+00EO in ISO 8859-1 0xE0, in first byte range
+    // ë U+00EB in ISO 8859-1 0xEB, in first byte range
+    // ì U+00EC in ISO 8859-1 0xEC, outside first byte range
     // µ U+00B5 in ISO 8859-1 0xB5, outside first byte range
+    // À U+00C0 in ISO 8859-1 0xC0, outside first byte range and 0xEBxx second byte range
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
         /*  0*/ { 3, "é", -1, 0, 1, { 0xE9 }, "" },
@@ -205,6 +206,7 @@ static void test_sjis_utf8tosb(void)
         /*  3*/ { 3, "¥", -1, 0, 1, { 0xA5 }, "" },
         /*  4*/ { 3, "éa", -1, 0, 1, { 0xE961 }, "In QR Kanji mode range" },
         /*  5*/ { 3, "éaúbàcëdìeµ", -1, 0, 8, { 0xE961, 0xFA, 0x62, 0xE063, 0xEB64, 0xEC, 0x65, 0xB5 }, "" },
+        /*  6*/ { 3, "ëÀ", -1, 0, 2, { 0xEB, 0xC0 }, "Outside QR Kanji mode range" },
     };
 
     int data_size = sizeof(data) / sizeof(struct item);

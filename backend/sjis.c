@@ -52,8 +52,6 @@
  * License along with the GNU LIBICONV Library; see the file COPYING.LIB.
  * If not, see <https://www.gnu.org/licenses/>.
  */
-#include <stdlib.h>
-#include <stdio.h>
 #include <string.h>
 #include "common.h"
 #include "sjis.h"
@@ -100,7 +98,7 @@ static int jisx0201_wctomb(unsigned char* r, unsigned int wc, size_t n) {
  * JISX0208.1990-0 (libiconv-1.16/lib/jisx0208.h)
  */
 
-/* ZINT: Table converted from JIS X 0208 to Shift JIS values using php:
+/* ZINT: Table converted from JIS X 0208 to Shift JIS values using tools/cnv_sjis.php:
  * 
 while ($line = fgets(STDIN)) {
     echo preg_replace_callback('/0x([0-9a-f]{4})/', function ($matches) {

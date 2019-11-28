@@ -1257,6 +1257,7 @@ int han_xin(struct zint_symbol *symbol, const unsigned char source[], size_t len
         }
     } else {
         int posn;
+        unsigned char gb2312_buf[2]; /* Temporary use until gb18030_utf8tomb() implemented */
         /* Convert Unicode input to GB-18030 */
         int error_number = utf8toutf16(symbol, source, utfdata, &length);
         if (error_number != 0) {
@@ -1277,15 +1278,11 @@ int han_xin(struct zint_symbol *symbol, const unsigned char source[], size_t len
 
             /* Two bytes characters in GB-2312 */
             if (done == 0) {
-                j = 0;
-                do {
-                    if (gb2312_lookup[j * 2] == utfdata[i]) {
-                        gbdata[posn] = gb2312_lookup[(j * 2) + 1];
-                        posn++;
-                        done = 1;
-                    }
-                    j++;
-                } while ((j < 7445) && (done == 0));
+                if (gb2312_wctomb_zint(gb2312_buf, utfdata[i], 2) == 2) { /* Temporary use until gb18030_utf8tomb() implemented */
+                    gbdata[posn] = (gb2312_buf[0] << 8) | gb2312_buf[1];
+                    posn++;
+                    done = 1;
+                }
             }
 
             /* Two byte characters in GB-18030 */
