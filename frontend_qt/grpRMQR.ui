@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>grpRMQR</class>
+ <widget class="QWidget" name="grpRMQR">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>441</width>
+    <height>238</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QGridLayout" name="grpRMQROptions">
+     <item row="0" column="0">
+      <widget class="QRadioButton" name="radRMQRAuto">
+       <property name="text">
+        <string>A&amp;utomatic Resizing</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QRadioButton" name="radRMQRSize">
+       <property name="text">
+        <string>Adjust Si&amp;ze To:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QComboBox" name="cmbRMQRSize">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <item>
+        <property name="text">
+         <string>R7x43</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>R7x59</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>R7x77</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>R7x99</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>R7x139</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>R9x43</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>R9x59</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>R9x77</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>R9x99</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>R9x139</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>R11x27</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>R11x43</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>R11x59</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>R11x77</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>R11x99</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>R11x139</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>R13x27</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>R13x43</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>R13x59</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>R13x77</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>R13x99</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>R13x139</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>R15x43</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>R15x59</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>R15x77</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>R15x99</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>R15x139</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>R17x43</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>R17x59</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>R17x77</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>R17x99</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>R17x139</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>R7x Automatic Width</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>R9x Automatic Width</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>R11x Automatic Width</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>R13x Automatic Width</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>R15 x Automatic Width</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>R17 x Automatic Width</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QRadioButton" name="radRMQRECC">
+       <property name="text">
+        <string>Add &amp;Error Correction:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QComboBox" name="cmbRMQRECC">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <item>
+        <property name="text">
+         <string>~37% (Level M)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>~65% (Level H)</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="grpRMQRMode">
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>70</height>
+      </size>
+     </property>
+     <property name="title">
+      <string>Data Encoding</string>
+     </property>
+     <widget class="QWidget" name="gridLayoutWidget">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>30</y>
+        <width>411</width>
+        <height>80</height>
+       </rect>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_2">
+       <item row="0" column="0">
+        <widget class="QRadioButton" name="radRMQRStand">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>S&amp;tandard Mode</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QRadioButton" name="radRMQRGS1">
+         <property name="text">
+          <string>&amp;GS-1 Data Mode</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>radRMQRSize</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>cmbRMQRSize</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>89</x>
+     <y>39</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>255</x>
+     <y>46</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>radRMQRECC</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>cmbRMQRECC</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>95</x>
+     <y>79</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>308</x>
+     <y>79</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

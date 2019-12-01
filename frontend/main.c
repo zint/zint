@@ -67,7 +67,7 @@ void types(void) {
             "40: Postnet           86: UK Plessey              141: Code One\n"
             "47: MSI Plessey       87: Telepen Numeric         142: Grid Matrix\n"
             "49: FIM               89: ITF-14                  143: UPNQR\n"
-            "50: Logmars           90: KIX Code\n"
+            "50: Logmars           90: KIX Code                145: rMQR\n"
             );
 }
 
@@ -326,7 +326,7 @@ int batch_process(struct zint_symbol *symbol, char *filename, int mirror_mode, c
                                 output_file[o] = buffer[i];
                         }
                     }
-                    
+
                     // Skip escape characters
                     if ((buffer[i] == 0x5c) && (symbol->input_mode & ESCAPE_MODE)) {
                         i++;
@@ -712,9 +712,9 @@ int main(int argc, char **argv) {
                             fprintf(stderr, "%s\n", my_symbol->errtxt);
                             fflush(stderr);
                     }
-                    if (error_number < 5) {    
+                    if (error_number < 5) {
                         error_number = ZBarcode_Print(my_symbol, rotate_angle);
-                        
+
                         if (error_number != 0) {
                             fprintf(stderr, "%s\n", my_symbol->errtxt);
                             fflush(stderr);
