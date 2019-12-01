@@ -78,7 +78,6 @@ struct zint_symbol *ZBarcode_Create() {
     return symbol;
 }
 
-extern void render_free(struct zint_symbol *symbol); /* Free render structures */
 extern void vector_free(struct zint_symbol *symbol); /* Free vector structures */
 
 void ZBarcode_Clear(struct zint_symbol *symbol) {
@@ -101,7 +100,6 @@ void ZBarcode_Clear(struct zint_symbol *symbol) {
     symbol->bitmap_height = 0;
 
     // If there is a rendered version, ensure its memory is released
-    render_free(symbol);
     vector_free(symbol);
 }
 
@@ -110,7 +108,6 @@ void ZBarcode_Delete(struct zint_symbol *symbol) {
         free(symbol->bitmap);
 
     // If there is a rendered version, ensure its memory is released
-    render_free(symbol);
     vector_free(symbol);
 
     free(symbol);
@@ -184,8 +181,6 @@ extern int ultracode(struct zint_symbol *symbol, const unsigned char source[], c
 
 extern int plot_raster(struct zint_symbol *symbol, int rotate_angle, int file_type); /* Plot to PNG/BMP/PCX */
 extern int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_type); /* Plot to EPS/EMF/SVG */
-
-extern int render_plot(struct zint_symbol *symbol, float width, float height); /* Plot to gLabels - depreciated */
 
 void error_tag(char error_string[], int error_number) {
 
@@ -385,7 +380,7 @@ static void check_row_heights(struct zint_symbol *symbol) {
 
 static int check_force_gs1(const int symbology) {
     /* Returns 1 if symbology MUST have GS1 data */
-    
+
     int result = is_composite(symbology);
 
     switch (symbology) {
@@ -397,7 +392,7 @@ static int check_force_gs1(const int symbology) {
             result = 1;
             break;
     }
-    
+
     return result;
 }
 
@@ -449,7 +444,7 @@ static int is_matrix(const int symbology) {
 
 static int is_linear(const int symbology) {
     /* Returns 1 if symbology is linear (1 dimensional) */
-    
+
     int result = 0;
     switch (symbology) {
         case BARCODE_CODE11:
@@ -506,7 +501,7 @@ static int is_linear(const int symbology) {
             result = 1;
             break;
     }
-    
+
     return result;
 }
 
@@ -673,7 +668,7 @@ static int reduced_charset(struct zint_symbol *symbol, const unsigned char *sour
 #else
     unsigned char* preprocessed = (unsigned char*) _alloca(in_length + 1);
 #endif
-    
+
     if (symbol->symbology == BARCODE_CODE16K) {
         symbol->whitespace_width = 16;
         symbol->border_width = 2;
@@ -689,7 +684,7 @@ static int reduced_charset(struct zint_symbol *symbol, const unsigned char *sour
             symbol->output_options += BARCODE_BOX;
         }
     }
-    
+
     switch (symbol->input_mode & 0x07) {
         case DATA_MODE:
         case GS1_MODE:
@@ -705,11 +700,11 @@ static int reduced_charset(struct zint_symbol *symbol, const unsigned char *sour
             }
             break;
     }
-    
+
     if ((symbol->height == 0) && is_linear(symbol->symbology)) {
         symbol->height = 50;
     }
-    
+
     switch (symbol->symbology) {
         case BARCODE_C25MATRIX: error_number = matrix_two_of_five(symbol, preprocessed, in_length);
             break;
@@ -899,7 +894,7 @@ int escape_char_process(struct zint_symbol *symbol, unsigned char *input_string,
 
     in_posn = 0;
     out_posn = 0;
-    
+
     do {
         if (input_string[in_posn] == '\\') {
             switch (input_string[in_posn + 1]) {
@@ -973,11 +968,11 @@ int escape_char_process(struct zint_symbol *symbol, unsigned char *input_string,
         }
         out_posn++;
     } while (in_posn < *length);
-    
+
     memcpy(input_string, escaped_string, out_posn);
     input_string[out_posn] = '\0';
     *length = out_posn;
-    
+
     error_number = 0;
 
     return error_number;
@@ -1305,7 +1300,7 @@ int ZBarcode_Print(struct zint_symbol *symbol, int rotate_angle) {
             error_number = dump_plot(symbol);
         } else
             if (!(strcmp(output, "EPS"))) {
-            error_number = plot_vector(symbol, rotate_angle, OUT_EPS_FILE);  
+            error_number = plot_vector(symbol, rotate_angle, OUT_EPS_FILE);
         } else
             if (!(strcmp(output, "SVG"))) {
             error_number = plot_vector(symbol, rotate_angle, OUT_SVG_FILE);
@@ -1398,7 +1393,7 @@ int ZBarcode_Encode_and_Buffer(struct zint_symbol *symbol, unsigned char *input,
     if (error_number == 0) {
         error_number = first_err;
     }
-    
+
     return error_number;
 }
 
@@ -1416,7 +1411,7 @@ int ZBarcode_Encode_and_Buffer_Vector(struct zint_symbol *symbol, unsigned char 
     if (error_number == 0) {
         error_number = first_err;
     }
-    
+
     return error_number;
 }
 
@@ -1487,13 +1482,13 @@ int ZBarcode_Encode_File_and_Print(struct zint_symbol *symbol, char *filename, i
     if (error_number >= 5) {
         return error_number;
     }
-    
+
     first_err = error_number;
     error_number = ZBarcode_Print(symbol, rotate_angle);
     if (error_number == 0) {
         error_number = first_err;
     }
-    
+
     return error_number;
 }
 
@@ -1505,7 +1500,7 @@ int ZBarcode_Encode_File_and_Buffer(struct zint_symbol *symbol, char *filename, 
     if (error_number >= 5) {
         return error_number;
     }
-    
+
     first_err = error_number;
     error_number = ZBarcode_Buffer(symbol, rotate_angle);
     if (error_number == 0) {
@@ -1523,7 +1518,7 @@ int ZBarcode_Encode_File_and_Buffer_Vector(struct zint_symbol *symbol, char *fil
     if (error_number >= 5) {
         return error_number;
     }
-    
+
     first_err = error_number;
     error_number = ZBarcode_Buffer_Vector(symbol, rotate_angle);
     if (error_number == 0) {
@@ -1533,22 +1528,6 @@ int ZBarcode_Encode_File_and_Buffer_Vector(struct zint_symbol *symbol, char *fil
     return error_number;
 }
 
-/*
- * Rendering support, initially added by Sam Lown.
- *
- * Converts encoded data into an intermediate format to be interpreted
- * in other applications using this library.
- *
- * If the width and height are not set to zero, the barcode will be resized to those
- * dimensions. The symbol->scale and symbol->height values are totally ignored in this case.
- *
- */
-int ZBarcode_Render(struct zint_symbol *symbol, const float width, const float height) {
-    // Send the request to the render_plot method
-    return render_plot(symbol, width, height);
-}
-
 int ZBarcode_Version() {
     return (ZINT_VERSION_MAJOR * 10000) + (ZINT_VERSION_MINOR * 100) + ZINT_VERSION_RELEASE;
 }
-
