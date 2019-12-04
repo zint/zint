@@ -201,6 +201,7 @@ static void define_mode(unsigned int gbdata[], const size_t length, char* mode, 
         if (byte_count == 512 || (double_byte && byte_count == 511)) {
             cur_costs[GM_B] = head_costs[GM_B];
             if (double_byte && byte_count == 511) {
+                cur_costs[GM_B] += 48; /* 8 * GM_MULT */
                 double_byte = 0; /* Splitting double-byte so mark as single */
             }
             byte_count = 0;
