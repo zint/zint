@@ -28,14 +28,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-
-#define GM_NUMBER	1
-#define GM_LOWER	2
-#define GM_UPPER	3
-#define GM_MIXED	4
-#define GM_CONTROL	5
-#define GM_BYTE		6
-#define GM_CHINESE	7
+/* vim: set ts=4 sw=4 et : */
 
 #define EUROPIUM	"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz "
 

@@ -401,7 +401,7 @@ static void qr_binary(unsigned char datastream[], const int version, const int t
             case 'N':
                 /* Numeric mode */
                 /* Mode indicator */
-                if (version >= RMQR_VERSION) {
+                if (version < RMQR_VERSION) {
                     strcat(binary, "0001");
                 } else {
                     strcat(binary, "001");

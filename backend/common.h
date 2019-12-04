@@ -62,6 +62,7 @@ extern "C" {
     extern int is_sane(const char test_string[], const unsigned char source[], const size_t length);
     extern void lookup(const char set_string[], const char *table[], const char data, char dest[]);
     extern void bin_append(const int arg, const int length, char *binary);
+    extern void bin_append_posn(const int arg, const int length, char *binary, size_t posn);
     extern int posn(const char set_string[], const char data);
     extern int ustrchr_cnt(const unsigned char string[], const size_t length, const unsigned char c);
     extern int module_is_set(const struct zint_symbol *symbol, const int y_coord, const int x_coord);

@@ -54,9 +54,17 @@ int ctoi(const char source) {
 
 /* Convert an integer value to a string representing its binary equivalent */
 void bin_append(const int arg, const int length, char *binary) {
+    size_t posn = strlen(binary);
+
+    bin_append_posn(arg, length, binary, posn);
+
+    binary[posn + length] = '\0';
+}
+
+/* Convert an integer value to a string representing its binary equivalent at a set position */
+void bin_append_posn(const int arg, const int length, char *binary, size_t posn) {
     int i;
     int start;
-    size_t posn = strlen(binary);
 
     start = 0x01 << (length - 1);
 
@@ -66,9 +74,6 @@ void bin_append(const int arg, const int length, char *binary) {
             binary[posn + i] = '1';
         }
     }
-    binary[posn + length] = '\0';
-
-    return;
 }
 
 /* Converts an integer value to its hexadecimal character */
@@ -330,8 +335,8 @@ int utf8toutf16(struct zint_symbol *symbol, const unsigned char source[], int va
 
         vals[jpos] = codepoint;
         jpos++;
-
     }
+
     *length = jpos;
 
     return 0;
