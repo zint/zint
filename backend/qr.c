@@ -525,16 +525,16 @@ static void add_ecc(unsigned char fullstream[], const unsigned char datastream[]
     unsigned char* interleaved_ecc;
 #endif
 
-    short_data_block_length = data_cw / blocks;
-    qty_long_blocks = data_cw % blocks;
-    qty_short_blocks = blocks - qty_long_blocks;
-    ecc_block_length = ecc_cw / blocks;
-
     if (version < RMQR_VERSION) {
         ecc_cw = qr_total_codewords[version - 1] - data_cw;
     } else {
         ecc_cw = rmqr_total_codewords[version - RMQR_VERSION] - data_cw;
     }
+
+    short_data_block_length = data_cw / blocks;
+    qty_long_blocks = data_cw % blocks;
+    qty_short_blocks = blocks - qty_long_blocks;
+    ecc_block_length = ecc_cw / blocks;
 
 
 #ifndef _MSC_VER
