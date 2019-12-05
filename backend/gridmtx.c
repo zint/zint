@@ -171,7 +171,7 @@ static void define_mode(unsigned int gbdata[], const size_t length, char* mode, 
 #ifndef _MSC_VER
     char char_modes[length][GM_NUM_MODES];
 #else
-    char* char_modes = (char*) _alloca(length * GM_NUM_MODES);
+    char** char_modes = (char**) _alloca(length * GM_NUM_MODES);
 #endif
     memset(char_modes, 0, length * GM_NUM_MODES);
 

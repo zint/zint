@@ -240,10 +240,6 @@ SOURCE=..\backend\reedsol.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\backend\render.c
-# End Source File
-# Begin Source File
-
 SOURCE=..\backend\rss.c
 # End Source File
 # Begin Source File

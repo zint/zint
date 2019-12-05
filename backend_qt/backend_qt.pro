@@ -109,7 +109,6 @@ SOURCES += ../backend/2of5.c \
            ../backend/ps.c \
            ../backend/raster.c \
            ../backend/reedsol.c \
-            ../backend/render.c \
            ../backend/rss.c \
            ../backend/sjis.c \
            ../backend/svg.c \

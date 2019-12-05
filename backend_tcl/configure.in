@@ -84,6 +84,8 @@ TEA_ADD_SOURCES([
 	../backend/dmatrix.c
 	../backend/dotcode.c
 	../backend/eci.c
+    ../backend/gb2312.c
+    ../backend/general_field.c
 	../backend/gif.c
 	../backend/gridmtx.c
 	../backend/gs1.c
@@ -91,6 +93,7 @@ TEA_ADD_SOURCES([
 	../backend/imail.c
 	../backend/large.c
 	../backend/library.c
+    ../backend/mailmark.c
 	../backend/maxicode.c
 	../backend/medical.c
 	../backend/pcx.c
@@ -102,8 +105,8 @@ TEA_ADD_SOURCES([
 	../backend/qr.c
 	../backend/raster.c
 	../backend/reedsol.c
-	../backend/render.c
 	../backend/rss.c
+    ../backend/sjis.c
 	../backend/svg.c
 	../backend/telepen.c
 	../backend/tif.c

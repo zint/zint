@@ -513,6 +513,22 @@ static void qr_binary(unsigned char datastream[], const int version, const int t
 /* Split data into blocks, add error correction and then interleave the blocks and error correction data */
 static void add_ecc(unsigned char fullstream[], const unsigned char datastream[], const int version, const int data_cw, const int blocks, int debug) {
     int ecc_cw;
+    int short_data_block_length;
+    int qty_long_blocks;
+    int qty_short_blocks;
+    int ecc_block_length;
+    int i, j, length_this_block, posn;
+#ifdef _MSC_VER
+    unsigned char* data_block;
+    unsigned char* ecc_block;
+    unsigned char* interleaved_data;
+    unsigned char* interleaved_ecc;
+#endif
+
+    short_data_block_length = data_cw / blocks;
+    qty_long_blocks = data_cw % blocks;
+    qty_short_blocks = blocks - qty_long_blocks;
+    ecc_block_length = ecc_cw / blocks;
 
     if (version < RMQR_VERSION) {
         ecc_cw = qr_total_codewords[version - 1] - data_cw;
@@ -520,11 +536,6 @@ static void add_ecc(unsigned char fullstream[], const unsigned char datastream[]
         ecc_cw = rmqr_total_codewords[version - RMQR_VERSION] - data_cw;
     }
 
-    int short_data_block_length = data_cw / blocks;
-    int qty_long_blocks = data_cw % blocks;
-    int qty_short_blocks = blocks - qty_long_blocks;
-    int ecc_block_length = ecc_cw / blocks;
-    int i, j, length_this_block, posn;
 
 #ifndef _MSC_VER
     unsigned char data_block[short_data_block_length + 2];
@@ -532,10 +543,10 @@ static void add_ecc(unsigned char fullstream[], const unsigned char datastream[]
     unsigned char interleaved_data[data_cw + 2];
     unsigned char interleaved_ecc[ecc_cw + 2];
 #else
-    unsigned char* data_block = (unsigned char *) _alloca(short_data_block_length + 2);
-    unsigned char* ecc_block = (unsigned char *) _alloca(ecc_block_length + 2);
-    unsigned char* interleaved_data = (unsigned char *) _alloca(data_cw + 2);
-    unsigned char* interleaved_ecc = (unsigned char *) _alloca(ecc_cw + 2);
+    data_block = (unsigned char *) _alloca(short_data_block_length + 2);
+    ecc_block = (unsigned char *) _alloca(ecc_block_length + 2);
+    interleaved_data = (unsigned char *) _alloca(data_cw + 2);
+    interleaved_ecc = (unsigned char *) _alloca(ecc_cw + 2);
 #endif
 
     posn = 0;
