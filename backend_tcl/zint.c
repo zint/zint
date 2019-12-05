@@ -64,6 +64,9 @@
  -	Framework 2.6.6 update
  2019-10-07 2.6.7 HaO
  -	Framework 2.6.7 update
+ 2019-12-05 2.7.0 HaO
+ -	Framework 2.7.0 update
+ -  Add symbology rmqr
 */
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
@@ -103,7 +106,7 @@
 /*----------------------------------------------------------------------------*/
 /* > File option defines */
 
-#define VERSION "2.6.7"
+#define VERSION "2.7.0"
 
 /*----------------------------------------------------------------------------*/
 /* >>>>> Hepler defines */
@@ -218,6 +221,7 @@ static char *s_code_list[] = {
     "CodeOne",
     "GridMatrix",
     "UPNQR",
+    "rMQR",
     NULL};
 
 static int s_code_number[] = {
@@ -313,6 +317,7 @@ static int s_code_number[] = {
     BARCODE_CODEONE,
     BARCODE_GRIDMATRIX,
     BARCODE_UPNQR,
+    BARCODE_RMQR,
     0};
 
 /* ECI TCL encoding names.
@@ -368,7 +373,6 @@ static int s_eci_unicode_input[] = {
 static char version_string[] = VERSION;
 /* Help text */
 static char help_message[] = "zint tcl(stub,obj) dll\n"
-    "(c) 2018-11-02 Harald Oehlmann\n"
     " Generate barcode in tk images\n"
     "Usage:\n"
     " zint encode data photo option value...\n"

@@ -2651,6 +2651,18 @@ v2.6.3 - New symbology Royal Mail 4-state Mailmark. Added North America VIN
 verification. Bugfixes for TIF and EMF output and escape character handling.
 15/02/2018
 
+v2.6.4 Datamatrix DMRE updated to the ISO/IEC29158 version. This is incompatible
+in the way, that the old -vers numbers for DMRE are re-assigned.
+The separator of GS1-datamatrix may be switched from FNC1 to GS.
+GS1 field length check AI 8009 and 7230 to 7239 currected.
+
+v2.6.5: minor bugfixes
+
+v2.6.6: minor Bugfixes
+
+v2.7.0 Allow to code ECI 3 if explicitly given for debug purposes.
+New symbology rMQR.
+
 7.4 Sources of Information
 --------------------------
 Below is a list of some of the sources used in rough chronological order:

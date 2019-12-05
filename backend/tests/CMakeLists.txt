@@ -11,7 +11,7 @@ set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/"
 set(ZINT_DEBUG FALSE CACHE BOOL "Set debug compile flag")
 set(ZINT_SANITIZE FALSE CACHE BOOL "Set sanitize compile/link flags")
 
-find_package (LibZint 2.6.4 REQUIRED)
+find_package (LibZint 2.7.0 REQUIRED)
 find_package(PNG)
 
 if (PNG_FOUND)
