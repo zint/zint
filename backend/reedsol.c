@@ -49,7 +49,9 @@
 // size.
 
 #include <stdio.h>		// only needed for debug (main)
+#ifdef _MSC_VER
 #include <malloc.h>
+#endif
 #include "reedsol.h"
 static int logmod; // 2**symsize - 1
 static int rlen;
