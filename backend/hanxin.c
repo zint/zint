@@ -299,7 +299,7 @@ static int lookup_text2(unsigned int input) {
 
 /* Whether in numeric or not. If in numeric, *p_end is set to position after numeric, and *p_cost is set to per-numeric cost */
 static int in_numeric(const unsigned int gbdata[], const size_t length, const int posn, unsigned int* p_end, unsigned int* p_cost) {
-    int i;
+    int i, digit_cnt;
 
     if (posn < *p_end) {
         return 1;
@@ -308,12 +308,14 @@ static int in_numeric(const unsigned int gbdata[], const size_t length, const in
     /* Attempt to calculate the average 'cost' of using numeric mode in number of bits (times HX_MULT) */
     for (i = posn; i < length && i < posn + 4 && gbdata[i] >= '0' && gbdata[i] <= '9'; i++);
 
-    if (i == posn) {
+    digit_cnt = i - posn;
+
+    if (digit_cnt == 0) {
         *p_end = 0;
         return 0;
     }
     *p_end = i;
-    *p_cost = 60 / (i - posn); /* 60 == 10 * HX_MULT */
+    *p_cost = digit_cnt == 1 ? 60 /* 10 * HX_MULT */ : digit_cnt == 2 ? 30 /* (10 / 2) * HX_MULT */ : 20 /* (10 / 3) * HX_MULT */;
     return 1;
 }
 
@@ -382,7 +384,7 @@ static unsigned int hx_eod_cost(unsigned int state[], const int k) {
 
 /* Calculate cost of encoding character */
 static void hx_cur_cost(unsigned int state[], const unsigned int gbdata[], const size_t length, const int i, char* char_modes, unsigned int prev_costs[], unsigned int cur_costs[]) {
-    int cm_row = i * HX_NUM_MODES;
+    int cm_i = i * HX_NUM_MODES;
     int text1, text2;
     unsigned int* p_numeric_end = &state[0];
     unsigned int* p_numeric_cost = &state[1];
@@ -392,7 +394,7 @@ static void hx_cur_cost(unsigned int state[], const unsigned int gbdata[], const
 
     if (in_numeric(gbdata, length, i, p_numeric_end, p_numeric_cost)) {
         cur_costs[HX_N] = prev_costs[HX_N] + *p_numeric_cost;
-        char_modes[cm_row + HX_N] = 'n';
+        char_modes[cm_i + HX_N] = 'n';
     }
 
     text1 = lookup_text1(gbdata[i]) != -1;
@@ -405,30 +407,30 @@ static void hx_cur_cost(unsigned int state[], const unsigned int gbdata[], const
         } else {
             cur_costs[HX_T] = prev_costs[HX_T] + 36; /* 6 * HX_MULT */
         }
-        char_modes[cm_row + HX_T] = 't';
+        char_modes[cm_i + HX_T] = 't';
     } else {
         *p_text_submode = 1;
     }
 
     /* Binary mode can encode anything */
     cur_costs[HX_B] = prev_costs[HX_B] + (gbdata[i] > 0xFF ? 96 : 48); /* (16 : 8) * HX_MULT */
-    char_modes[cm_row + HX_B] = 'b';
+    char_modes[cm_i + HX_B] = 'b';
 
     if (isRegion1(gbdata[i])) {
         cur_costs[HX_1] = prev_costs[HX_1] + 72; /* 12 * HX_MULT */
-        char_modes[cm_row + HX_1] = '1';
+        char_modes[cm_i + HX_1] = '1';
     }
     if (isRegion2(gbdata[i])) {
         cur_costs[HX_2] = prev_costs[HX_2] + 72; /* 12 * HX_MULT */
-        char_modes[cm_row + HX_2] = '2';
+        char_modes[cm_i + HX_2] = '2';
     }
     if (isDoubleByte(gbdata[i])) {
         cur_costs[HX_D] = prev_costs[HX_D] + 90; /* 15 * HX_MULT */
-        char_modes[cm_row + HX_D] = 'd';
+        char_modes[cm_i + HX_D] = 'd';
     }
     if (in_fourbyte(gbdata, length, i, p_fourbyte_end, p_fourbyte_cost)) {
         cur_costs[HX_F] = prev_costs[HX_F] + *p_fourbyte_cost;
-        char_modes[cm_row + HX_F] = 'f';
+        char_modes[cm_i + HX_F] = 'f';
     }
 }
 

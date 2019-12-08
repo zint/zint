@@ -158,7 +158,7 @@ static unsigned int gm_eod_cost(unsigned int state[], const int k) {
 
 /* Calculate cost of encoding current character */
 static void gm_cur_cost(unsigned int state[], const unsigned int gbdata[], const size_t length, const int i, char* char_modes, unsigned int prev_costs[], unsigned int cur_costs[]) {
-    int cm_row = i * GM_NUM_MODES;
+    int cm_i = i * GM_NUM_MODES;
     int double_byte, space, numeric, lower, upper, control, double_digit, eol;
     unsigned int* p_numeral_end = &state[0];
     unsigned int* p_numeral_cost = &state[1];
@@ -175,7 +175,7 @@ static void gm_cur_cost(unsigned int state[], const unsigned int gbdata[], const
 
     /* Hanzi mode can encode anything */
     cur_costs[GM_H] = prev_costs[GM_H] + (double_digit || eol ? 39 : 78); /* (6.5 : 13) * GM_MULT */
-    char_modes[cm_row + GM_H] = GM_CHINESE;
+    char_modes[cm_i + GM_H] = GM_CHINESE;
 
     /* Byte mode can encode anything */
     if (*p_byte_count == 512 || (double_byte && *p_byte_count == 511)) {
@@ -187,33 +187,33 @@ static void gm_cur_cost(unsigned int state[], const unsigned int gbdata[], const
         *p_byte_count = 0;
     }
     cur_costs[GM_B] += prev_costs[GM_B] + (double_byte ? 96 : 48); /* (16 : 8) * GM_MULT */
-    char_modes[cm_row + GM_B] = GM_BYTE;
+    char_modes[cm_i + GM_B] = GM_BYTE;
     *p_byte_count += double_byte ? 2 : 1;
 
     if (in_numeral(gbdata, length, i, p_numeral_end, p_numeral_cost)) {
         cur_costs[GM_N] = prev_costs[GM_N] + *p_numeral_cost;
-        char_modes[cm_row + GM_N] = GM_NUMBER;
+        char_modes[cm_i + GM_N] = GM_NUMBER;
     }
 
     if (control) {
         cur_costs[GM_L] = prev_costs[GM_L] + 78; /* (7 + 6) * GM_MULT */
-        char_modes[cm_row + GM_L] = GM_LOWER;
+        char_modes[cm_i + GM_L] = GM_LOWER;
         cur_costs[GM_U] = prev_costs[GM_U] + 78; /* (7 + 6) * GM_MULT */
-        char_modes[cm_row + GM_U] = GM_UPPER;
+        char_modes[cm_i + GM_U] = GM_UPPER;
         cur_costs[GM_M] = prev_costs[GM_M] + 96; /* (10 + 6) * GM_MULT */
-        char_modes[cm_row + GM_M] = GM_MIXED;
+        char_modes[cm_i + GM_M] = GM_MIXED;
     } else {
         if (lower || space) {
             cur_costs[GM_L] = prev_costs[GM_L] + 30; /* 5 * GM_MULT */
-            char_modes[cm_row + GM_L] = GM_LOWER;
+            char_modes[cm_i + GM_L] = GM_LOWER;
         }
         if (upper || space) {
             cur_costs[GM_U] = prev_costs[GM_U] + 30; /* 5 * GM_MULT */
-            char_modes[cm_row + GM_U] = GM_UPPER;
+            char_modes[cm_i + GM_U] = GM_UPPER;
         }
         if (numeric || lower || upper || space) {
             cur_costs[GM_M] = prev_costs[GM_M] + 36; /* 6 * GM_MULT */
-            char_modes[cm_row + GM_M] = GM_MIXED;
+            char_modes[cm_i + GM_M] = GM_MIXED;
         }
     }
 }
