@@ -37,7 +37,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-int sjis_wctomb_zint(unsigned char* r, unsigned int wc, size_t n);
+int sjis_wctomb_zint(unsigned int* r, unsigned int wc);
 int sjis_utf8tomb(struct zint_symbol *symbol, const unsigned char source[], size_t* p_length, unsigned int* jisdata);
 int sjis_utf8tosb(int eci, const unsigned char source[], size_t* p_length, unsigned int* jisdata);
 void sjis_cpy(const unsigned char source[], size_t* p_length, unsigned int* jisdata);

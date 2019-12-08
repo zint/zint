@@ -24,6 +24,7 @@ HEADERS +=  ../backend/aztec.h \
             ../backend/composite.h \
             ../backend/dmatrix.h \
             ../backend/font.h \
+            ../backend/gb18030.h \
             ../backend/gb2312.h \
             ../backend/gridmtx.h \
             ../backend/gs1.h \
@@ -50,6 +51,8 @@ SOURCES += ../backend/2of5.c \
            ../backend/common.c \
            ../backend/composite.c \
            ../backend/dmatrix.c \
+           ../backend/gb18030.c \
+           ../backend/gb2312.c \
            ../backend/gridmtx.c \
            ../backend/gs1.c \
            ../backend/imail.c \
@@ -63,7 +66,6 @@ SOURCES += ../backend/2of5.c \
            ../backend/ps.c \
            ../backend/qr.c \
            ../backend/reedsol.c \
-           ../backend/render.c \
            ../backend/rss.c \
            ../backend/svg.c \
            ../backend/telepen.c \

@@ -35,18 +35,16 @@
 
 // As control convert to GB 2312 using simple table generated from unicode.org GB2312.TXT plus simple processing
 // GB2312.TXT no longer on unicode.org site but available from https://haible.de/bruno/charsets/conversion-tables/GB2312.html
-static int gb2312_wctomb_zint2(unsigned char* r, unsigned int wc, size_t n)
+static int gb2312_wctomb_zint2(unsigned int* r, unsigned int wc)
 {
     // Shortcut
     if ((wc > 0x0451 && wc < 0x2015) || (wc > 0x3229 && wc < 0x4E00) || (wc > 0x9FA0 && wc < 0xFF01) || wc > 0xFFE5) {
         return 0;
     }
-    int tab_length = sizeof(test_gb2312_tab) / sizeof(unsigned short);
-    for (int i = 0; i < tab_length; i += 2) {
+    int tab_length = sizeof(test_gb2312_tab) / sizeof(unsigned int);
+    for (int i = test_gb2312_tab_ind[wc >> 12]; i < tab_length; i += 2) {
         if (test_gb2312_tab[i + 1] == wc) {
-            unsigned short c = test_gb2312_tab[i] + 0x8080; // Table in GB 2312 not EUC-CN
-            r[0] = (c >> 8);
-            r[1] = c & 0xFF;
+            *r = test_gb2312_tab[i] + 0x8080; // Table in GB 2312 not EUC-CN
             return 2;
         }
     }
@@ -68,11 +66,9 @@ static void test_gb2312_wctomb_zint(void)
         if (i >= 0xD800 && i <= 0xDFFF) { // UTF-16 surrogates
             continue;
         }
-        buf[0] = buf[1] = buf2[0] = buf2[1] = 0;
-        ret = gb2312_wctomb_zint(buf, i, 2);
-        val = ret == 1 ? buf[0] : (buf[0] << 8) | buf[1];
-        ret2 = gb2312_wctomb_zint2(buf2, i, 2);
-        val2 = ret2 == 1 ? buf2[0] : (buf2[0] << 8) | buf2[1];
+        val = val2 = 0;
+        ret = gb2312_wctomb_zint(&val, i);
+        ret2 = gb2312_wctomb_zint2(&val2, i);
         if (i == 0xB7) { // Extra mapping middle dot U+00B7 to 0xA1A4, duplicate of U+30FB (Katakana middle dot)
             assert_equal(ret, 2, "i:%d 0x%04X ret %d != 2, val 0x%04X\n", i, i, ret, val);
             assert_equal(val, 0xA1A4, "i:%d 0x%04X val 0x%04X != 0xA1A4\n", i, i, val);
@@ -227,9 +223,9 @@ static void test_gb2312_cpy(void)
     struct item data[] = {
         /*  0*/ { "\351", -1, 0, 1, { 0xE9 }, "In GRIDMATRIX Chinese mode first-byte range but only one byte" },
         /*  1*/ { "\351\241", -1, 0, 1, { 0xE9A1 }, "In GRIDMATRIX Chinese range" },
-        /*  0*/ { "\241", -1, 0, 1, { 0xA1 }, "In first-byte range but only one byte" },
-        /*  0*/ { "\241\241", -1, 0, 1, { 0xA1A1 }, "In range" },
-        /*  0*/ { "\241\240\241\376\367\376\367\377", -1, 0, 6, { 0xA1, 0xA0, 0xA1FE, 0xF7FE, 0xF7, 0xFF }, "" },
+        /*  2*/ { "\241", -1, 0, 1, { 0xA1 }, "In first-byte range but only one byte" },
+        /*  3*/ { "\241\241", -1, 0, 1, { 0xA1A1 }, "In range" },
+        /*  4*/ { "\241\240\241\376\367\376\367\377", -1, 0, 6, { 0xA1, 0xA0, 0xA1FE, 0xF7FE, 0xF7, 0xFF }, "" },
     };
 
     int data_size = sizeof(data) / sizeof(struct item);

@@ -255,7 +255,7 @@ static void test_qr_input(void)
 
         #ifdef TEST_QR_INPUT_GENERATE_EXPECTED
         printf("        /*%3d*/ { %s, %d, \"%s\", %s, %d, \"%s\", \"%s\" },\n",
-                i, testUtilInputModeName(data[i].input_mode), data[i].eci, testUtilEscape(data[i].data, escaped, sizeof(escaped)), testUtilErrorName(data[i].ret),
+                i, testUtilInputModeName(data[i].input_mode), data[i].eci, testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), testUtilErrorName(data[i].ret),
                 ret < 5 ? symbol->eci : -1, symbol->errtxt, data[i].comment);
         #else
         if (ret < 5) {
@@ -348,7 +348,7 @@ static void test_microqr_input(void)
 
         #ifdef TEST_MICROQR_INPUT_GENERATE_EXPECTED
         printf("        /*%3d*/ { %s, \"%s\", %s, \"%s\", \"%s\" },\n",
-                i, testUtilInputModeName(data[i].input_mode), testUtilEscape(data[i].data, escaped, sizeof(escaped)), testUtilErrorName(data[i].ret),
+                i, testUtilInputModeName(data[i].input_mode), testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), testUtilErrorName(data[i].ret),
                 symbol->errtxt, data[i].comment);
         #else
         if (ret < 5) {
@@ -404,7 +404,7 @@ static void test_upnqr_input(void)
 
         #ifdef TEST_UPNQR_INPUT_GENERATE_EXPECTED
         printf("        /*%3d*/ { %s, \"%s\", %s, \"%s\", \"%s\" },\n",
-                i, testUtilInputModeName(data[i].input_mode), testUtilEscape(data[i].data, escaped, sizeof(escaped)), testUtilErrorName(data[i].ret),
+                i, testUtilInputModeName(data[i].input_mode), testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), testUtilErrorName(data[i].ret),
                 symbol->errtxt, data[i].comment);
         #else
         if (ret < 5) {

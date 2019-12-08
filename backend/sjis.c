@@ -62,32 +62,20 @@ extern int utf_to_eci(const int eci, const unsigned char source[], unsigned char
  * JISX0201.1976-0 (libiconv-1.16/lib/jisx0201.h)
  */
 
-static int jisx0201_wctomb(unsigned char* r, unsigned int wc, size_t n) {
+static int jisx0201_wctomb(unsigned int* r, unsigned int wc) {
     if (wc < 0x0080 && !(wc == 0x005c || wc == 0x007e)) {
-        if (n < 1) {
-            return -1;
-        }
         *r = wc;
         return 1;
     }
     if (wc == 0x00a5) {
-        if (n < 1) {
-            return -1;
-        }
         *r = 0x5c;
         return 1;
     }
     if (wc == 0x203e) {
-        if (n < 1) {
-            return -1;
-        }
         *r = 0x7e;
         return 1;
     }
     if (wc >= 0xff61 && wc < 0xffa0) {
-        if (n < 1) {
-            return -1;
-        }
         *r = wc - 0xfec0;
         return 1;
     }
@@ -1453,7 +1441,7 @@ static const Summary16 jisx0208_uni2indx_pageff[15] = {
   { 6877, 0x0000 }, { 6877, 0x0000 }, { 6877, 0x0028 },
 };
 
-static int jisx0208_wctomb(unsigned char* r, unsigned int wc, size_t n) {
+static int jisx0208_wctomb(unsigned int* r, unsigned int wc) {
     const Summary16 *summary = NULL;
     if (wc >= 0x0000 && wc < 0x0100) {
         summary = &jisx0208_uni2indx_page00[(wc>>4)];
@@ -1474,10 +1462,6 @@ static int jisx0208_wctomb(unsigned char* r, unsigned int wc, size_t n) {
         unsigned short used = summary->used;
         unsigned int i = wc & 0x0f;
         if (used & ((unsigned short) 1 << i)) {
-            unsigned short c;
-            if (n < 2) {
-                return -1;
-            }
             /* Keep in 'used' only the bits 0..i-1. */
             used &= ((unsigned short) 1 << i) - 1;
             /* Add 'summary->indx' and the number of bits set in 'used'. */
@@ -1485,8 +1469,7 @@ static int jisx0208_wctomb(unsigned char* r, unsigned int wc, size_t n) {
             used = (used & 0x3333) + ((used & 0xcccc) >> 2);
             used = (used & 0x0f0f) + ((used & 0xf0f0) >> 4);
             used = (used & 0x00ff) + (used >> 8);
-            c = jisx0208_2charset[summary->indx + used];
-            r[0] = (c >> 8); r[1] = (c & 0xff);
+            *r = jisx0208_2charset[summary->indx + used];
             return 2;
         }
     }
@@ -1497,19 +1480,19 @@ static int jisx0208_wctomb(unsigned char* r, unsigned int wc, size_t n) {
  * SHIFT_JIS (libiconv-1.16/lib/sjis.h)
  */
 
-/* Returns 1 or 2 on success, 0 if no mapping, -1 if buffer too small */
-int sjis_wctomb_zint(unsigned char* r, unsigned int wc, size_t n) {
+/* Returns 1 or 2 on success, 0 if no mapping */
+int sjis_wctomb_zint(unsigned int* r, unsigned int wc) {
     int ret;
 
     /* Try JIS X 0201-1976. */
-    ret = jisx0201_wctomb(r, wc, n);
+    ret = jisx0201_wctomb(r, wc);
     if (ret) {
         return ret;
     }
 
     /* Try JIS X 0208-1990. */
     /* ZINT: Note leaving mapping of full-width reverse solidus U+FF3C to 0x815F (duplicate of patched U+005C) to avoid having to regen tables */
-    ret = jisx0208_wctomb(r, wc, n);
+    ret = jisx0208_wctomb(r, wc);
     if (ret) {
         return ret;
     }
@@ -1519,13 +1502,9 @@ int sjis_wctomb_zint(unsigned char* r, unsigned int wc, size_t n) {
     /* ZINT: https://file.allitebooks.com/20160708/CJKV%20Information%20Processing.pdf (table 4-86, p. 286, 2nd ed.) */
     if (wc >= 0xe000 && wc < 0xe758) {
         unsigned char c1, c2;
-        if (n < 2) {
-            return -1;
-        }
         c1 = (unsigned int) (wc - 0xe000) / 188;
         c2 = (unsigned int) (wc - 0xe000) % 188;
-        r[0] = c1 + 0xf0;
-        r[1] = c2 < 0x3f ? c2 + 0x40 : c2 + 0x41;
+        *r = ((c1 + 0xf0) << 8) | (c2 < 0x3f ? c2 + 0x40 : c2 + 0x41);
         return 2;
     }
 
@@ -1534,30 +1513,23 @@ int sjis_wctomb_zint(unsigned char* r, unsigned int wc, size_t n) {
 
 /* Convert UTF-8 string to Shift JIS and place in array of ints */
 int sjis_utf8tomb(struct zint_symbol *symbol, const unsigned char source[], size_t* p_length, unsigned int* jisdata) {
-    int i, error_number, ret;
+    int i, error_number;
     unsigned int length;
-    unsigned char buf[2];
 #ifndef _MSC_VER
-    int utfdata[*p_length + 1]; /* Leave signed for the moment until `utf8toutf16()` signature changed */
+    unsigned int utfdata[*p_length + 1];
 #else
-    int* utfdata = (int*) _alloca((*p_length + 1) * sizeof(int));
+    unsigned int* utfdata = (unsigned int*) _alloca((*p_length + 1) * sizeof(unsigned int));
 #endif
 
-    error_number = utf8toutf16(symbol, source, utfdata, p_length);
+    error_number = utf8_to_unicode(symbol, source, utfdata, p_length, 1 /*disallow_4byte*/);
     if (error_number != 0) {
         return error_number;
     }
 
     for (i = 0, length = *p_length; i < length; i++) {
-        ret = sjis_wctomb_zint(buf, utfdata[i], 2);
-        if (ret <= 0) {
+        if (!sjis_wctomb_zint(jisdata + i, utfdata[i])) {
             strcpy(symbol->errtxt, "800: Invalid character in input data");
             return ZINT_ERROR_INVALID_DATA;
-        }
-        if (ret == 1) {
-            jisdata[i] = buf[0];
-        } else {
-            jisdata[i] = (buf[0] << 8) | buf[1];
         }
     }
 

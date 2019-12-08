@@ -37,7 +37,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-int gb2312_wctomb_zint(unsigned char* r, unsigned int wc, size_t n);
+int gb2312_wctomb_zint(unsigned int* r, unsigned int wc);
 int gb2312_utf8tomb(struct zint_symbol *symbol, const unsigned char source[], size_t* p_length, unsigned int* gbdata);
 int gb2312_utf8tosb(int eci, const unsigned char source[], size_t* p_length, unsigned int* gbdata);
 void gb2312_cpy(const unsigned char source[], size_t* p_length, unsigned int* gbdata);

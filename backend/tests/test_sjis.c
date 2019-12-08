@@ -34,10 +34,10 @@
 #include "../sjis.h"
 
 // As control convert to Shift JIS using simple table generated from https://www.unicode.org/Public/MAPPINGS/OBSOLETE/EASTASIA/JIS/SHIFTJIS.TXT plus simple processing
-static int sjis_wctomb_zint2(unsigned char* r, unsigned int wc, size_t n)
+static int sjis_wctomb_zint2(unsigned int* r, unsigned int wc)
 {
     if (wc < 0x20 || wc == 0x7F) {
-        r[0] = wc;
+        *r = wc;
         return 1;
     }
     // Shortcut
@@ -45,43 +45,34 @@ static int sjis_wctomb_zint2(unsigned char* r, unsigned int wc, size_t n)
         return 0;
     }
     if (wc >= 0xE000 && wc <= 0xE757) { // PUA mappings, not in SHIFTJIS.TXT
-        unsigned short c;
         if (wc <= 0xE0BB) {
-            c = wc - 0xE000 + 0xF040 + (wc >= 0xE000 + 0x3F);
+            *r = wc - 0xE000 + 0xF040 + (wc >= 0xE000 + 0x3F);
         } else if (wc <= 0xE177) {
-            c = wc - 0xE0BC + 0xF140 + (wc >= 0xE0BC + 0x3F);
+            *r = wc - 0xE0BC + 0xF140 + (wc >= 0xE0BC + 0x3F);
         } else if (wc <= 0xE233) {
-            c = wc - 0xE178 + 0xF240 + (wc >= 0xE178 + 0x3F);
+            *r = wc - 0xE178 + 0xF240 + (wc >= 0xE178 + 0x3F);
         } else if (wc <= 0xE2EF) {
-            c = wc - 0xE234 + 0xF340 + (wc >= 0xE234 + 0x3F);
+            *r = wc - 0xE234 + 0xF340 + (wc >= 0xE234 + 0x3F);
         } else if (wc <= 0xE3AB) {
-            c = wc - 0xE2F0 + 0xF440 + (wc >= 0xE2F0 + 0x3F);
+            *r = wc - 0xE2F0 + 0xF440 + (wc >= 0xE2F0 + 0x3F);
         } else if (wc <= 0xE467) {
-            c = wc - 0xE3AC + 0xF540 + (wc >= 0xE3AC + 0x3F);
+            *r = wc - 0xE3AC + 0xF540 + (wc >= 0xE3AC + 0x3F);
         } else if (wc <= 0xE523) {
-            c = wc - 0xE468 + 0xF640 + (wc >= 0xE468 + 0x3F);
+            *r = wc - 0xE468 + 0xF640 + (wc >= 0xE468 + 0x3F);
         } else if (wc <= 0xE5DF) {
-            c = wc - 0xE524 + 0xF740 + (wc >= 0xE524 + 0x3F);
+            *r = wc - 0xE524 + 0xF740 + (wc >= 0xE524 + 0x3F);
         } else if (wc <= 0xE69B) {
-            c = wc - 0xE5E0 + 0xF840 + (wc >= 0xE5E0 + 0x3F);
+            *r = wc - 0xE5E0 + 0xF840 + (wc >= 0xE5E0 + 0x3F);
         } else {
-            c = wc - 0xE69C + 0xF940 + (wc >= 0xE69C + 0x3F);
+            *r = wc - 0xE69C + 0xF940 + (wc >= 0xE69C + 0x3F);
         }
-        r[0] = (c >> 8);
-        r[1] = c & 0xFF;
         return 2;
     }
-    int tab_length = sizeof(test_sjis_tab) / sizeof(unsigned short);
-    for (int i = 0; i < tab_length; i += 2) {
+    int tab_length = sizeof(test_sjis_tab) / sizeof(unsigned int);
+    for (int i = test_sjis_tab_ind[wc >> 12]; i < tab_length; i += 2) {
         if (test_sjis_tab[i + 1] == wc) {
-            unsigned short c = test_sjis_tab[i];
-            if (c < 0xFF) {
-                r[0] = c;
-                return 1;
-            }
-            r[0] = (c >> 8);
-            r[1] = c & 0xFF;
-            return 2;
+            *r = test_sjis_tab[i];
+            return *r > 0xFF ? 2 : 1;
         }
     }
     return 0;
@@ -92,18 +83,15 @@ static void test_sjis_wctomb_zint(void)
     testStart("");
 
     int ret, ret2;
-    unsigned char buf[2], buf2[2];
     unsigned int val, val2;
 
     for (unsigned int i = 0; i < 0xFFFE; i++) {
         if (i >= 0xD800 && i <= 0xDFFF) { // UTF-16 surrogates
             continue;
         }
-        buf[0] = buf[1] = buf2[0] = buf2[1] = 0;
-        ret = sjis_wctomb_zint(buf, i, 2);
-        val = ret == 1 ? buf[0] : (buf[0] << 8) | buf[1];
-        ret2 = sjis_wctomb_zint2(buf2, i, 2);
-        val2 = ret2 == 1 ? buf2[0] : (buf2[0] << 8) | buf2[1];
+        val = val2 = 0;
+        ret = sjis_wctomb_zint(&val, i);
+        ret2 = sjis_wctomb_zint2(&val2, i);
         if (i == 0xFF3C) { // Extra mapping full-width reverse solidus U+FF3C to 0x815F, duplicate of U+005C (backslash)
             assert_equal(ret, 2, "i:%d 0x%04X ret %d != 2, val 0x%04X\n", i, i, ret, val);
             assert_equal(val, 0x815F, "i:%d 0x%04X val 0x%04X != 0x815F\n", i, i, val);

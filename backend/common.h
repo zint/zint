@@ -75,8 +75,15 @@ extern "C" {
     extern int is_extendable(const int symbology);
     extern int is_composite(const int symbology);
     extern unsigned int decode_utf8(unsigned int* state, unsigned int* codep, const unsigned char byte);
-    extern int utf8toutf16(struct zint_symbol *symbol, const unsigned char source[], int vals[], size_t *length);
+    extern int utf8_to_unicode(struct zint_symbol *symbol, const unsigned char source[], unsigned int vals[], size_t *length, int disallow_4byte);
     extern void set_minimum_height(struct zint_symbol *symbol, const int min_height);
+
+    typedef unsigned int* (*pn_head_costs)(unsigned int state[]);
+    typedef unsigned int (*pn_switch_cost)(unsigned int state[], const int j, const int k);
+    typedef unsigned int (*pn_eod_cost)(unsigned int state[], const int k);
+    typedef void (*pn_cur_cost)(unsigned int state[], const unsigned int data[], const size_t length, const int i, char* char_modes, unsigned int prev_costs[], unsigned int cur_costs[]);
+    extern void pn_define_mode(char* mode, const unsigned int data[], const size_t length, const int debug,
+                    unsigned int state[], const char mode_types[], const int num_modes, pn_head_costs head_costs, pn_switch_cost switch_cost, pn_eod_cost eod_cost, pn_cur_cost cur_cost);
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

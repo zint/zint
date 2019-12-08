@@ -253,6 +253,7 @@ char* testUtilBarcodeName(int symbology) {
         { BARCODE_GRIDMATRIX, "BARCODE_GRIDMATRIX", 142 },
         { BARCODE_UPNQR, "BARCODE_UPNQR", 143 },
         { BARCODE_ULTRA, "BARCODE_ULTRA", 144 },
+        { BARCODE_RMQR, "BARCODE_RMQR", 145 },
     };
     int data_size = sizeof(data) / sizeof(struct item);
 
@@ -365,13 +366,14 @@ int testUtilIsValidUTF8(const unsigned char str[], const size_t length) {
     return state == 0;
 }
 
-char* testUtilEscape(char* buffer, char* escaped, int escaped_size)
+char* testUtilEscape(char* buffer, int length, char* escaped, int escaped_size)
 {
     int i;
     unsigned char* b = buffer;
-    int non_utf8 = !testUtilIsValidUTF8(buffer, strlen(buffer));
+    unsigned char* be = buffer + length;
+    int non_utf8 = !testUtilIsValidUTF8(buffer, length);
 
-    for (i = 0; i < escaped_size && *b; b++) {
+    for (i = 0; b < be && i < escaped_size; b++) {
         if (non_utf8 || *b < ' ' || *b == '\177') {
             if (i < escaped_size - 4) {
                 sprintf(escaped + i, "\\%.3o", *b);
@@ -383,6 +385,12 @@ char* testUtilEscape(char* buffer, char* escaped, int escaped_size)
                 escaped[i + 1] = *b;
             }
             i += 2;
+        } else if (b + 1 < be && *b == 0xC2 && *(b + 1) < 0xA0) {
+            if (i < escaped_size - 8) {
+                sprintf(escaped + i, "\\%.3o\\%.3o", *b, *(b + 1));
+            }
+            i += 8;
+            b++;
         } else {
             escaped[i++] = *b;
         }

@@ -60,6 +60,7 @@ HEADERS +=  ../backend/aztec.h \
             ../backend/dmatrix.h \
             ../backend/eci.h \
             ../backend/font.h \
+            ../backend/gb18030.h \
             ../backend/gb2312.h \
             ../backend/gridmtx.h \
             ../backend/gs1.h \
@@ -90,6 +91,7 @@ SOURCES += ../backend/2of5.c \
            ../backend/dotcode.c \
            ../backend/eci.c \
            ../backend/emf.c \
+           ../backend/gb18030.c \
            ../backend/gb2312.c \
            ../backend/general_field.c \
            ../backend/gif.c \

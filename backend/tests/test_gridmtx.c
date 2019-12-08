@@ -180,7 +180,7 @@ static void test_input(void)
 
         #ifdef TEST_INPUT_GENERATE_EXPECTED
         printf("        /*%3d*/ { %s, %d, \"%s\", %s, %d, \"%s\", \"%s\" },\n",
-                i, testUtilInputModeName(data[i].input_mode), data[i].eci, testUtilEscape(data[i].data, escaped, sizeof(escaped)), testUtilErrorName(data[i].ret),
+                i, testUtilInputModeName(data[i].input_mode), data[i].eci, testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), testUtilErrorName(data[i].ret),
                 ret < 5 ? symbol->eci : -1, symbol->errtxt, data[i].comment);
         #else
         if (ret < 5) {

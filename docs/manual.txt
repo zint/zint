@@ -2276,7 +2276,7 @@ under
 development, so it is recommended it should not yet be used for a production
 environment. The symbology is capable of encoding characters in the GB18030
 character set (up to 4-byte characters) and is also able to support the ECI
-mechanism. Han Xin does not support the encoding of GS-1 data.
+mechanism. Support for the encoding of GS-1 data has not yet been implemented.
 
 The size of the symbol can be specified using the --ver= option or setting
 option_2 to a value between 1 and 84 according to the following table.
@@ -2382,10 +2382,6 @@ Mode  |  Recovery Capacity
 3     |  Approx 23%
 4     |  Approx 30%
 --------------------------
-
-It is not possible to select both symbol size and error correction capacity for
-the same symbol. If both options are selected then the error correction
-capacity selection will be ignored.
 
 6.7 Other Barcode-Like Markings
 -------------------------------

@@ -107,7 +107,7 @@ static void test_best_supported_set(void)
 
         #ifdef TEST_GENERATE_EXPECTED
         printf("        /*%2d*/ { %s, \"%s\", %d, %.0f, %.0f, %d, %d, %d, \"%s\",\n",
-                i, testUtilBarcodeName(data[i].symbology), testUtilEscape(data[i].data, escaped_data, sizeof(escaped_data)), ret,
+                i, testUtilBarcodeName(data[i].symbology), testUtilEscape(data[i].data, length, escaped_data, sizeof(escaped_data)), ret,
                 data[i].w, data[i].h, data[i].ret_vector, symbol->rows, symbol->width, data[i].comment);
         testUtilModulesDump(symbol, "                    ",  "\n");
         printf("                },\n");

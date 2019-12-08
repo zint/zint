@@ -30,7 +30,7 @@
  */
 /* vim: set ts=4 sw=4 et : */
 
-/* This file impliments Grid Matrix as specified in
+/* This file implements Grid Matrix as specified in
    AIM Global Document Number AIMD014 Rev. 1.63 Revised 9 Dec 2008 */
 
 #include <stdio.h>
@@ -44,13 +44,15 @@
 #include "gridmtx.h"
 #include "gb2312.h"
 
+/* define_mode() stuff */
+
 /* Bits multiplied by this for costs, so as to be whole integer divisible by 2 and 3 */
 #define GM_MULT 6
 
 static char numeral_nondigits[] = " +-.,"; /* Non-digit numeral set, excluding EOL (carriage return/linefeed) */
 
 /* Whether in numeral or not. If in numeral, *p_numeral_end is set to position after numeral, and *p_numeral_cost is set to per-numeral cost */
-static int numeral_lat(unsigned int gbdata[], const size_t length, const int posn, int* p_numeral_end, int* p_numeral_cost) {
+static int in_numeral(const unsigned int gbdata[], const size_t length, const int posn, unsigned int* p_numeral_end, unsigned int* p_numeral_cost) {
     int i, nondigit, nondigit_posn, digit_cnt;
 
     if (posn < *p_numeral_end) {
@@ -82,7 +84,7 @@ static int numeral_lat(unsigned int gbdata[], const size_t length, const int pos
         }
     }
     if (digit_cnt == 0) { /* Must have at least one digit */
-        *p_numeral_end = -1;
+        *p_numeral_end = 0;
         return 0;
     }
     if (nondigit && nondigit_posn == i - 1) { /* Non-digit can't be at end */
@@ -119,168 +121,109 @@ static int numeral_lat(unsigned int gbdata[], const size_t length, const int pos
 
 #define GM_NUM_MODES 6
 
-/* Calculate optimized encoding modes. Adapted from Project Nayuki */
-/*
- * Copyright (c) Project Nayuki. (MIT License)
- * https://www.nayuki.io/page/qr-code-generator-library
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of
- * this software and associated documentation files (the "Software"), to deal in
- * the Software without restriction, including without limitation the rights to
- * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
- * the Software, and to permit persons to whom the Software is furnished to do so,
- * subject to the following conditions:
- * - The above copyright notice and this permission notice shall be included in
- *   all copies or substantial portions of the Software.
- */
-static void define_mode(unsigned int gbdata[], const size_t length, char* mode, int debug) {
-    static char mode_types[] = { GM_CHINESE, GM_NUMBER, GM_LOWER, GM_UPPER, GM_MIXED, GM_BYTE }; /* Must be in same order as GM_H etc */
+/* Initial mode costs */
+static unsigned int head_costs[GM_NUM_MODES] = {
+/*  H            N (+pad prefix)    L            U            M            B (+byte count) */
+    4 * GM_MULT, (4 + 2) * GM_MULT, 4 * GM_MULT, 4 * GM_MULT, 4 * GM_MULT, (4 + 9) * GM_MULT
+};
 
-    /* Initial mode costs */
-    static unsigned int head_costs[GM_NUM_MODES] = {
-    /*  H            N (+pad prefix)    L            U            M            B (+byte count) */
-        4 * GM_MULT, (4 + 2) * GM_MULT, 4 * GM_MULT, 4 * GM_MULT, 4 * GM_MULT, (4 + 9) * GM_MULT
-    };
+static unsigned int* gm_head_costs(unsigned int state[]) {
+    return head_costs;
+}
 
-    /* Costs of switching modes - see AIMD014 Rev. 1.63 Table 9 – Type conversion codes */
+/* Cost of switching modes - see AIMD014 Rev. 1.63 Table 9 – Type conversion codes */
+static unsigned int gm_switch_cost(unsigned int state[], const int j, const int k) {
     static unsigned int switch_costs[GM_NUM_MODES][GM_NUM_MODES] = {
-        /*      H               N                      L             U             M             B  */
-        /*H*/ {                 0, (13 + 2) * GM_MULT, 13 * GM_MULT, 13 * GM_MULT, 13 * GM_MULT, (13 + 9) * GM_MULT },
-        /*N*/ { 10 * GM_MULT,                       0, 10 * GM_MULT, 10 * GM_MULT, 10 * GM_MULT, (10 + 9) * GM_MULT },
-        /*L*/ {  5 * GM_MULT,  (5 + 2) * GM_MULT,                 0,  5 * GM_MULT,  7 * GM_MULT,  (7 + 9) * GM_MULT },
-        /*U*/ {  5 * GM_MULT,  (5 + 2) * GM_MULT,  5 * GM_MULT,                 0,  7 * GM_MULT,  (7 + 9) * GM_MULT },
-        /*M*/ { 10 * GM_MULT, (10 + 2) * GM_MULT, 10 * GM_MULT, 10 * GM_MULT,                 0, (10 + 9) * GM_MULT },
-        /*B*/ {  4 * GM_MULT,  (4 + 2) * GM_MULT,  4 * GM_MULT,  4 * GM_MULT,  4 * GM_MULT,                       0 },
+        /*      H             N                   L             U             M             B  */
+        /*H*/ {            0, (13 + 2) * GM_MULT, 13 * GM_MULT, 13 * GM_MULT, 13 * GM_MULT, (13 + 9) * GM_MULT },
+        /*N*/ { 10 * GM_MULT,                  0, 10 * GM_MULT, 10 * GM_MULT, 10 * GM_MULT, (10 + 9) * GM_MULT },
+        /*L*/ {  5 * GM_MULT,  (5 + 2) * GM_MULT,            0,  5 * GM_MULT,  7 * GM_MULT,  (7 + 9) * GM_MULT },
+        /*U*/ {  5 * GM_MULT,  (5 + 2) * GM_MULT,  5 * GM_MULT,            0,  7 * GM_MULT,  (7 + 9) * GM_MULT },
+        /*M*/ { 10 * GM_MULT, (10 + 2) * GM_MULT, 10 * GM_MULT, 10 * GM_MULT,            0, (10 + 9) * GM_MULT },
+        /*B*/ {  4 * GM_MULT,  (4 + 2) * GM_MULT,  4 * GM_MULT,  4 * GM_MULT,  4 * GM_MULT,                  0 },
     };
 
-    /* Final end-of-data costs - see AIMD014 Rev. 1.63 Table 9 – Type conversion codes */
+    return switch_costs[j][k];
+}
+
+/* Final end-of-data cost - see AIMD014 Rev. 1.63 Table 9 – Type conversion codes */
+static unsigned int gm_eod_cost(unsigned int state[], const int k) {
     static unsigned int eod_costs[GM_NUM_MODES] = {
     /*  H             N             L            U            M             B  */
         13 * GM_MULT, 10 * GM_MULT, 5 * GM_MULT, 5 * GM_MULT, 10 * GM_MULT, 4 * GM_MULT
     };
 
-    unsigned int prev_costs[GM_NUM_MODES];
-    int i, j, k;
-    int byte_count = 0;
-    int numeral_end = -1, numeral_cost;
-    int cur_mode_index;
-    unsigned int min_cost;
+    return eod_costs[k];
+}
 
-    /* char_modes[i][j] represents the mode to encode the code point at index i such that the final segment ends in mode_types[j] and the
-     * total number of bits is minimized over all possible choices */
-#ifndef _MSC_VER
-    char char_modes[length][GM_NUM_MODES];
-#else
-    char** char_modes = (char**) _alloca(length * GM_NUM_MODES);
-#endif
-    memset(char_modes, 0, length * GM_NUM_MODES);
+/* Calculate cost of encoding current character */
+static void gm_cur_cost(unsigned int state[], const unsigned int gbdata[], const size_t length, const int i, char* char_modes, unsigned int prev_costs[], unsigned int cur_costs[]) {
+    int cm_row = i * GM_NUM_MODES;
+    int double_byte, space, numeric, lower, upper, control, double_digit, eol;
+    unsigned int* p_numeral_end = &state[0];
+    unsigned int* p_numeral_cost = &state[1];
+    unsigned int* p_byte_count = &state[2];
 
-    /* At the beginning of each iteration of the loop below, prev_costs[j] is the minimum number of 1/6 (1/GM_MULT) bits needed
-     * to encode the entire string prefix of length i, and end in mode_types[j] */
-    memcpy(prev_costs, head_costs, sizeof(head_costs));
+    double_byte = gbdata[i] > 0xFF;
+    space = gbdata[i] == ' ';
+    numeric = gbdata[i] >= '0' && gbdata[i] <= '9';
+    lower = gbdata[i] >= 'a' && gbdata[i] <= 'z';
+    upper = gbdata[i] >= 'A' && gbdata[i] <= 'Z';
+    control = !space && !numeric && !lower && !upper && gbdata[i] < 0x7F; /* Exclude DEL */
+    double_digit = i < length - 1 && numeric && gbdata[i + 1] >= '0' && gbdata[i + 1] <= '9';
+    eol = i < length - 1 && gbdata[i] == 13 && gbdata[i + 1] == 10;
 
-    /* Calculate costs using dynamic programming */
-    for (i = 0; i < length; i++) {
-        int double_byte, space, numeric, lower, upper, control, double_digit, eol;
-        unsigned int cur_costs[GM_NUM_MODES] = { 0, 0, 0, 0, 0, 0 };
+    /* Hanzi mode can encode anything */
+    cur_costs[GM_H] = prev_costs[GM_H] + (double_digit || eol ? 39 : 78); /* (6.5 : 13) * GM_MULT */
+    char_modes[cm_row + GM_H] = GM_CHINESE;
 
-        double_byte = gbdata[i] > 0xFF;
-        space = gbdata[i] == ' ';
-        numeric = gbdata[i] >= '0' && gbdata[i] <= '9';
-        lower = gbdata[i] >= 'a' && gbdata[i] <= 'z';
-        upper = gbdata[i] >= 'A' && gbdata[i] <= 'Z';
-        control = !space && !numeric && !lower && !upper && gbdata[i] < 0x7F; /* Exclude DEL */
-        double_digit = i < length - 1 && numeric && gbdata[i + 1] >= '0' && gbdata[i + 1] <= '9';
-        eol = i < length - 1 && gbdata[i] == 13 && gbdata[i + 1] == 10;
-
-        /* Hanzi mode can encode anything */
-        cur_costs[GM_H] = prev_costs[GM_H] + (double_digit || eol ? 39 : 78); /* (6.5 : 13) * GM_MULT */
-        char_modes[i][GM_H] = 'H';
-
-        /* Byte mode can encode anything */
-        if (byte_count == 512 || (double_byte && byte_count == 511)) {
-            cur_costs[GM_B] = head_costs[GM_B];
-            if (double_byte && byte_count == 511) {
-                cur_costs[GM_B] += 48; /* 8 * GM_MULT */
-                double_byte = 0; /* Splitting double-byte so mark as single */
-            }
-            byte_count = 0;
+    /* Byte mode can encode anything */
+    if (*p_byte_count == 512 || (double_byte && *p_byte_count == 511)) {
+        cur_costs[GM_B] = head_costs[GM_B];
+        if (double_byte && *p_byte_count == 511) {
+            cur_costs[GM_B] += 48; /* 8 * GM_MULT */
+            double_byte = 0; /* Splitting double-byte so mark as single */
         }
-        cur_costs[GM_B] += prev_costs[GM_B] + (double_byte ? 96 : 48); /* (16 : 8) * GM_MULT */
-        char_modes[i][GM_B] = 'B';
-        byte_count += double_byte ? 2 : 1;
+        *p_byte_count = 0;
+    }
+    cur_costs[GM_B] += prev_costs[GM_B] + (double_byte ? 96 : 48); /* (16 : 8) * GM_MULT */
+    char_modes[cm_row + GM_B] = GM_BYTE;
+    *p_byte_count += double_byte ? 2 : 1;
 
-        if (numeral_lat(gbdata, length, i, &numeral_end, &numeral_cost)) {
-            cur_costs[GM_N] = prev_costs[GM_N] + numeral_cost;
-            char_modes[i][GM_N] = 'N';
-        }
-
-        if (control) {
-            cur_costs[GM_L] = prev_costs[GM_L] + 78; /* (7 + 6) * GM_MULT */
-            char_modes[i][GM_L] = 'L';
-            cur_costs[GM_U] = prev_costs[GM_U] + 78; /* (7 + 6) * GM_MULT */
-            char_modes[i][GM_U] = 'U';
-            cur_costs[GM_M] = prev_costs[GM_M] + 96; /* (10 + 6) * GM_MULT */
-            char_modes[i][GM_M] = 'M';
-        } else {
-            if (lower || space) {
-                cur_costs[GM_L] = prev_costs[GM_L] + 30; /* 5 * GM_MULT */
-                char_modes[i][GM_L] = 'L';
-            }
-            if (upper || space) {
-                cur_costs[GM_U] = prev_costs[GM_U] + 30; /* 5 * GM_MULT */
-                char_modes[i][GM_U] = 'U';
-            }
-            if (numeric || lower || upper || space) {
-                cur_costs[GM_M] = prev_costs[GM_M] + 36; /* 6 * GM_MULT */
-                char_modes[i][GM_M] = 'M';
-            }
-        }
-
-        if (i == length - 1) { /* Add end of data costs if last character */
-            for (j = 0; j < GM_NUM_MODES; j++) {
-                if (char_modes[i][j]) {
-                    cur_costs[j] += eod_costs[j];
-                }
-            }
-        }
-
-        /* Start new segment at the end to switch modes */
-        for (j = 0; j < GM_NUM_MODES; j++) { /* To mode */
-            for (k = 0; k < GM_NUM_MODES; k++) { /* From mode */
-                if (j != k && char_modes[i][k]) {
-                    unsigned int new_cost = cur_costs[k] + switch_costs[k][j];
-                    if (!char_modes[i][j] || new_cost < cur_costs[j]) {
-                        cur_costs[j] = new_cost;
-                        char_modes[i][j] = mode_types[k];
-                    }
-                }
-            }
-        }
-
-        memcpy(prev_costs, cur_costs, sizeof(cur_costs));
+    if (in_numeral(gbdata, length, i, p_numeral_end, p_numeral_cost)) {
+        cur_costs[GM_N] = prev_costs[GM_N] + *p_numeral_cost;
+        char_modes[cm_row + GM_N] = GM_NUMBER;
     }
 
-    /* Find optimal ending mode */
-    cur_mode_index = 0;
-    min_cost = prev_costs[0];
-    for (i = 1; i < GM_NUM_MODES; i++) {
-        if (prev_costs[i] < min_cost) {
-            min_cost = prev_costs[i];
-            cur_mode_index = i;
+    if (control) {
+        cur_costs[GM_L] = prev_costs[GM_L] + 78; /* (7 + 6) * GM_MULT */
+        char_modes[cm_row + GM_L] = GM_LOWER;
+        cur_costs[GM_U] = prev_costs[GM_U] + 78; /* (7 + 6) * GM_MULT */
+        char_modes[cm_row + GM_U] = GM_UPPER;
+        cur_costs[GM_M] = prev_costs[GM_M] + 96; /* (10 + 6) * GM_MULT */
+        char_modes[cm_row + GM_M] = GM_MIXED;
+    } else {
+        if (lower || space) {
+            cur_costs[GM_L] = prev_costs[GM_L] + 30; /* 5 * GM_MULT */
+            char_modes[cm_row + GM_L] = GM_LOWER;
+        }
+        if (upper || space) {
+            cur_costs[GM_U] = prev_costs[GM_U] + 30; /* 5 * GM_MULT */
+            char_modes[cm_row + GM_U] = GM_UPPER;
+        }
+        if (numeric || lower || upper || space) {
+            cur_costs[GM_M] = prev_costs[GM_M] + 36; /* 6 * GM_MULT */
+            char_modes[cm_row + GM_M] = GM_MIXED;
         }
     }
+}
 
-    /* Get optimal mode for each code point by tracing backwards */
-    for (i = length - 1; i >= 0; i--) {
-        char cur_mode = char_modes[i][cur_mode_index];
-        cur_mode_index = strchr(mode_types, cur_mode) - mode_types;
-        mode[i] = cur_mode;
-    }
+/* Calculate optimized encoding modes */
+static void define_mode(char* mode, const unsigned int gbdata[], const size_t length, const int debug) {
+    static char mode_types[] = { GM_CHINESE, GM_NUMBER, GM_LOWER, GM_UPPER, GM_MIXED, GM_BYTE }; /* Must be in same order as GM_H etc */
+    unsigned int state[3] = { 0 /*numeral_end*/, 0 /*numeral_cost*/, 0 /*byte_count*/ };
 
-    if (debug & ZINT_DEBUG_PRINT) {
-        printf("  Mode: %.*s\n", (int)length, mode);
-    }
+    pn_define_mode(mode, gbdata, length, debug, state, mode_types, GM_NUM_MODES, gm_head_costs, gm_switch_cost, gm_eod_cost, gm_cur_cost);
 }
 
 /* Add the length indicator for byte encoded blocks */
@@ -352,7 +295,7 @@ static int gm_encode(unsigned int gbdata[], const size_t length, char binary[], 
         }
     }
 
-    define_mode(gbdata, length, mode, debug);
+    define_mode(mode, gbdata, length, debug);
 
     do {
         int next_mode = mode[sp];
@@ -774,14 +717,11 @@ static int gm_encode(unsigned int gbdata[], const size_t length, char binary[], 
 }
 
 static void gm_test_codeword_dump(struct zint_symbol *symbol, int* codewords, int length) {
-    int i, max, cnt_len;
-    if (length >= 33) {
+    int i, max = length, cnt_len = 0;
+    if (length > 33) {
         sprintf(symbol->errtxt, "(%d) ", length); /* Place the number of codewords at the front */
         cnt_len = strlen(symbol->errtxt);
         max = 33 - (cnt_len + 2) / 3;
-    } else {
-        max = length > 33 ? 33 : length;
-        cnt_len = 0;
     }
     for (i = 0; i < max; i++) { /* 33*3 < errtxt 100 chars */
         sprintf(symbol->errtxt + cnt_len + i * 3, "%02X ", codewords[i]);

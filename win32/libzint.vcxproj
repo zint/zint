@@ -319,6 +319,7 @@
     <ClCompile Include="..\backend\dotcode.c" />
     <ClCompile Include="..\backend\eci.c" />
     <ClCompile Include="..\backend\emf.c" />
+    <ClCompile Include="..\backend\gb18030.c" />
     <ClCompile Include="..\backend\gb2312.c" />
     <ClCompile Include="..\backend\general_field.c" />
     <ClCompile Include="..\backend\gif.c" />
@@ -340,7 +341,6 @@
     <ClCompile Include="..\backend\qr.c" />
     <ClCompile Include="..\backend\raster.c" />
     <ClCompile Include="..\backend\reedsol.c" />
-    <ClCompile Include="..\backend\render.c" />
     <ClCompile Include="..\backend\rss.c" />
     <ClCompile Include="..\backend\sjis.c" />
     <ClCompile Include="..\backend\svg.c" />

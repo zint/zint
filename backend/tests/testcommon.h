@@ -70,7 +70,7 @@ char* testUtilBarcodeName(int symbology);
 char* testUtilErrorName(int error_number);
 char* testUtilInputModeName(int input_mode);
 int testUtilDAFTConvert(const struct zint_symbol* symbol, char* buffer, int buffer_size);
-char* testUtilEscape(char* buffer, char* escaped, int escaped_size);
+char* testUtilEscape(char* buffer, int length, char* escaped, int escaped_size);
 char* testUtilReadCSVField(char* buffer, char* field, int field_size);
 int testUtilSymbolCmp(const struct zint_symbol* a, const struct zint_symbol* b);
 struct zint_vector* testUtilVectorCpy(const struct zint_vector* in);

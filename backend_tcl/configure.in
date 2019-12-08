@@ -84,6 +84,7 @@ TEA_ADD_SOURCES([
 	../backend/dmatrix.c
 	../backend/dotcode.c
 	../backend/eci.c
+    ../backend/gb18030.c
     ../backend/gb2312.c
     ../backend/general_field.c
 	../backend/gif.c
