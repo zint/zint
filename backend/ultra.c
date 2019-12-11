@@ -78,7 +78,7 @@ int ultra_find_fragment(unsigned char source[], int source_length, int position)
 }
 
 /* Encode characters in 8-bit mode */
-float look_ahead_eightbit(unsigned char source[], int in_length, int in_posn, char current_mode, int end_char, int cw[], int* cw_len)
+float look_ahead_eightbit(unsigned char source[], int in_length, int in_posn, char current_mode, int end_char, int cw[], int* cw_len, int gs1)
 {
     int codeword_count = 0;
     int i;
@@ -91,7 +91,11 @@ float look_ahead_eightbit(unsigned char source[], int in_length, int in_posn, ch
 
     i = in_posn;
     do {
-        cw[codeword_count] = source[i];
+        if ((source[i] == '[') && gs1) {
+            cw[codeword_count] = 268; // FNC1
+        } else {
+            cw[codeword_count] = source[i];
+        }
         i++;
         codeword_count++;
     } while ((i < in_length) && (i < end_char));
@@ -115,7 +119,7 @@ float look_ahead_eightbit(unsigned char source[], int in_length, int in_posn, ch
 }
 
 /* Encode character in the ASCII mode/submode (including numeric compression) */
-float look_ahead_ascii(unsigned char source[], int in_length, int in_posn, char current_mode, int symbol_mode, int end_char, int cw[], int* cw_len){
+float look_ahead_ascii(unsigned char source[], int in_length, int in_posn, char current_mode, int symbol_mode, int end_char, int cw[], int* cw_len, int gs1){
     int codeword_count = 0;
     int i;
     int first_digit, second_digit;
@@ -173,7 +177,11 @@ float look_ahead_ascii(unsigned char source[], int in_length, int in_posn, char 
         }
 
         if (source[i] < 0x7F) {
-            cw[codeword_count] = source[i];
+            if ((source[i] == '[') && gs1) {
+                cw[codeword_count] = 272; // FNC1
+            } else {
+                cw[codeword_count] = source[i];
+            }
             codeword_count++;
             i++;
         }
@@ -222,7 +230,7 @@ int get_subset(unsigned char source[], int in_length, int in_posn) {
 }
 
 /* Encode characters in the C43 compaction submode */
-float look_ahead_c43(unsigned char source[], int in_length, int in_posn, char current_mode, int end_char, int cw[], int* cw_len){
+float look_ahead_c43(unsigned char source[], int in_length, int in_posn, char current_mode, int end_char, int cw[], int* cw_len, int gs1){
     int codeword_count = 0;
     int subcodeword_count = 0;
     int i;
@@ -234,6 +242,7 @@ float look_ahead_c43(unsigned char source[], int in_length, int in_posn, char cu
     int base43_value;
     int letters_encoded = 0;
     int pad;
+    int gs1_latch = 0;
 
 #ifndef _MSC_VER
     int subcw[in_length];
@@ -358,6 +367,7 @@ float look_ahead_c43(unsigned char source[], int in_length, int in_posn, char cu
             new_subset = get_subset(source, in_length, subposn);
 
             if (((subset == 1) && (new_subset == 2)) && ((source[subposn] == '.') || (source[subposn] == ','))) {
+                /* <period> and <comma> characters available in both subsets */
                 new_subset = 1;
             }
 
@@ -369,7 +379,14 @@ float look_ahead_c43(unsigned char source[], int in_length, int in_posn, char cu
 
             subset = new_subset;
         }
-    } while ((subposn < in_length) && (subposn < end_char) && (subset != 0));
+
+        /* Check for FNC1 */
+        if (subposn < (in_length - 1)) {
+            if ((source[subposn + 1] == '[') && gs1) {
+                gs1_latch = 1;
+            }
+        }
+    } while ((subposn < in_length) && (subposn < end_char) && (subset != 0) && (gs1_latch == 0));
 
     pad = 3 - (subcodeword_count % 3);
     if (pad == 3) {
@@ -428,6 +445,7 @@ int ultra_generate_codewords(struct zint_symbol *symbol, const unsigned char sou
     int block_length;
     int fragment_length;
     int fragno;
+    int gs1 = 0;
 
 #ifndef _MSC_VER
     unsigned char crop_source[in_length];
@@ -512,23 +530,45 @@ int ultra_generate_codewords(struct zint_symbol *symbol, const unsigned char sou
 
     codeword_count++;
 
-    /* TODO: Check for 06 Macro Sequence and crop accordingly */
+    /* Check for 06 Macro Sequence and crop accordingly */
+    if (in_length >= 9
+            && source[0] == '[' && source[1] == ')' && source[2] == '>' && source[3] == '\x1e'
+            && source[4] == '0' && source[5] == '6' && source[6] == '\x1d'
+            && source[in_length - 2] == '\x1e' && source[in_length - 1] == '\x04') {
 
-    /* Make a cropped version of input data - removes http:// and https:// if needed */
-    for (i = input_posn; i < in_length; i++) {
-        crop_source[i - input_posn] = source[i];
+            if (symbol_mode == EIGHTBIT_MODE) {
+                codewords[codeword_count] = 271; // 06 Macro
+            } else {
+                codewords[codeword_count] = 273; // 06 Macro
+            }
+            codeword_count++;
+
+            for (i = input_posn + 7; i < (in_length - 2); i++) {
+                crop_source[i - input_posn] = source[i];
+            }
+            crop_length = in_length - 9;
+            crop_source[crop_length] = '\0';
+   } else {
+        /* Make a cropped version of input data - removes http:// and https:// if needed */
+        for (i = input_posn; i < in_length; i++) {
+            crop_source[i - input_posn] = source[i];
+        }
+        crop_length = in_length - input_posn;
+        crop_source[crop_length] = '\0';
     }
-    crop_length = in_length - input_posn;
-    crop_source[crop_length] = '\0';
+
+    if ((symbol->input_mode & 0x07) == GS1_MODE) {
+        gs1 = 1;
+    }
 
     /* Attempt encoding in all three modes to see which offers best compaction and store results */
     current_mode = symbol_mode;
     input_posn = 0;
     do {
         end_char = input_posn + PREDICT_WINDOW;
-        eightbit_score = look_ahead_eightbit(crop_source, crop_length, input_posn, current_mode, end_char, cw_fragment, &fragment_length);
-        ascii_score = look_ahead_ascii(crop_source, crop_length, input_posn, current_mode, symbol_mode, end_char, cw_fragment, &fragment_length);
-        c43_score = look_ahead_c43(crop_source, crop_length, input_posn, current_mode, end_char, cw_fragment, &fragment_length);
+        eightbit_score = look_ahead_eightbit(crop_source, crop_length, input_posn, current_mode, end_char, cw_fragment, &fragment_length, gs1);
+        ascii_score = look_ahead_ascii(crop_source, crop_length, input_posn, current_mode, symbol_mode, end_char, cw_fragment, &fragment_length, gs1);
+        c43_score = look_ahead_c43(crop_source, crop_length, input_posn, current_mode, end_char, cw_fragment, &fragment_length, gs1);
 
         mode[input_posn] = 'a';
         current_mode = ASCII_MODE;
@@ -557,11 +597,11 @@ int ultra_generate_codewords(struct zint_symbol *symbol, const unsigned char sou
 
         switch(mode[input_posn]) {
             case 'a':
-                ascii_score = look_ahead_ascii(crop_source, crop_length, input_posn, current_mode, symbol_mode, input_posn + block_length, cw_fragment, &fragment_length);
+                ascii_score = look_ahead_ascii(crop_source, crop_length, input_posn, current_mode, symbol_mode, input_posn + block_length, cw_fragment, &fragment_length, gs1);
                 current_mode = ASCII_MODE;
                 break;
             case 'c':
-                c43_score = look_ahead_c43(crop_source, crop_length, input_posn, current_mode, input_posn + block_length, cw_fragment, &fragment_length);
+                c43_score = look_ahead_c43(crop_source, crop_length, input_posn, current_mode, input_posn + block_length, cw_fragment, &fragment_length, gs1);
 
                 /* Substitute temporary latch if possible */
                 if ((current_mode == EIGHTBIT_MODE) && (cw_fragment[0] == 261) && (fragment_length >= 5) && (fragment_length <= 11)) {
@@ -578,7 +618,7 @@ int ultra_generate_codewords(struct zint_symbol *symbol, const unsigned char sou
                 }
                 break;
             case '8':
-                eightbit_score = look_ahead_eightbit(crop_source, crop_length, input_posn, current_mode, input_posn + block_length, cw_fragment, &fragment_length);
+                eightbit_score = look_ahead_eightbit(crop_source, crop_length, input_posn, current_mode, input_posn + block_length, cw_fragment, &fragment_length, gs1);
                 current_mode = EIGHTBIT_MODE;
                 break;
         }
@@ -599,6 +639,9 @@ int ultra_generate_codewords(struct zint_symbol *symbol, const unsigned char sou
 
 int ultracode(struct zint_symbol *symbol, const unsigned char source[], const size_t in_length) {
     int data_cw_count = 0;
+    int ecc_cw;
+    int ecc_level; // = Q in section 7.7.1
+    int misdecode_cw; // = P in section 7.7.1
 
 #ifndef _MSC_VER
     int data_codewords[in_length * 2];
@@ -614,6 +657,34 @@ int ultracode(struct zint_symbol *symbol, const unsigned char source[], const si
         printf("%d ", data_codewords[i]);
     }
     printf("\n");
+
+    /* Default ECC level is EC2 */
+    if ((symbol->option_1 <= 0) || (symbol->option_1 > 6)) {
+        ecc_level = 2;
+    } else {
+        ecc_level = symbol->option_1 - 1;
+    }
+
+    if (ecc_level == 0) {
+        misdecode_cw = 0;
+    } else {
+        misdecode_cw = 3;
+    }
+
+    /* ECC calculation from section 7.7.2 */
+    if ((data_cw_count % 25) == 0) {
+        ecc_cw = (ecc_level * (data_cw_count / 25)) + misdecode_cw + 2;
+    } else {
+        ecc_cw = (ecc_level * ((data_cw_count / 25) + 1)) + misdecode_cw + 2;
+    }
+
+    printf("ECC codewords: %d\n", ecc_cw);
+
+    /* Maximum capacity is 282 codewords */
+    if (data_cw_count + ecc_cw > 282) {
+        strcpy(symbol->errtxt, "Data too long for selected error correction capacity");
+        return ZINT_ERROR_TOO_LONG;
+    }
 
     strcpy(symbol->errtxt, "1000: Ultracode has not been implemented - yet!");
     return ZINT_ERROR_INVALID_OPTION;
