@@ -44,6 +44,8 @@
 
 #define PREDICT_WINDOW      12
 
+#define GFMUL(i, j) ((((i) == 0)||((j) == 0)) ? 0 : gfPwr[(gfLog[i] + gfLog[j])])
+
 static const char fragment[27][14] = {"http://", "https://", "http://www.", "https://www.",
         "ftp://", "www.", ".com", ".edu", ".gov", ".int", ".mil", ".net", ".org",
         ".mobi", ".coop", ".biz", ".info", "mailto:", "tel:", ".cgi", ".asp",
@@ -53,6 +55,86 @@ static const char ultra_c43_set1[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 .,%";
 static const char ultra_c43_set2[] = "abcdefghijklmnopqrstuvwxyz:/?#[]@=_~!.,-";
 static const char ultra_c43_set3[] = "{}`()\"+'<>|$;&\\^*";
 static const char ultra_digit[] = "0123456789,/";
+
+/* The following adapted from ECC283.C "RSEC codeword generator"
+ * from Annex B of Ultracode draft
+ * originally written by Ted Williams of Symbol Vision Corp.
+ * Dated 2001-03-09
+ * Corrected thanks to input from Terry Burton */
+
+/* Generate divisor polynomial gQ(x) for GF283() given the required ECC size, 3 to 101 */
+void ultra_genPoly(short EccSize, unsigned short gPoly[], unsigned short gfPwr[], unsigned short gfLog[]) {
+    int i, j;
+
+    gPoly[0] = 1;
+    for (i = 1; i < (EccSize + 1); i++) gPoly[i] = 0;
+
+    for (i = 0; i < EccSize; i++) {
+        for (j = i; j >= 0; j--)
+            gPoly[j + 1] = (gPoly[j] + GFMUL(gPoly[j + 1], gfPwr[i + 1])) % 283;
+        gPoly[0] = GFMUL(gPoly[0], gfPwr[i + 1]);
+    }
+    for (i = EccSize - 1; i >= 0; i -= 2) gPoly[i] = 283 - gPoly[i];
+
+    /* gPoly[i] is > 0 so modulo operation not needed */
+}
+
+/* Generate the log and antilog tables for GF283() multiplication & division */
+void ultra_initLogTables(unsigned short gfPwr[], unsigned short gfLog[]) {
+    int i, j;
+
+    for (j = 0; j < 283; j++) gfLog[j] = 0;
+    i = 1;
+    for (j = 0; j < 282; j++) {
+        /* j + 282 indicies save doing the modulo operation in GFMUL */
+        gfPwr[j + 282] = gfPwr[j] = (short) i;
+        gfLog[i] = (short) j;
+        i = (i * 3) % 283;
+    }
+}
+
+void ultra_gf283(short DataSize, short EccSize, int Message[]) {
+    /* Input is complete message codewords in array Message[282]
+     * DataSize is number of message codewords
+     * EccSize is number of Reed-Solomon GF(283) check codewords to generate
+     *
+     * Upon exit, Message[282] contains complete 282 codeword Symbol Message
+     * including leading zeroes corresponding to each truncated codeword */
+
+    unsigned short gPoly[283], gfPwr[(282 * 2)], gfLog[283];
+    int i, j, n;
+    unsigned short t;
+
+    /* first build the log & antilog tables used in multiplication & division */
+    ultra_initLogTables(gfPwr, gfLog);
+
+    /* then generate the division polynomial of length EccSize */
+    ultra_genPoly(EccSize, gPoly, gfPwr, gfLog);
+
+    /* zero all EccSize codeword values */
+    for (j = 281; (j > (281 - EccSize)); j--) Message[j] = 0;
+
+    /* shift message codewords to the right, leave space for ECC checkwords */
+    for (i = DataSize - 1; (i >= 0); j--, i--) Message[j] = Message[i];
+
+    /* add zeroes to pad left end Message[] for truncated codewords */
+    j++;
+    for (i = 0; i < j; i++) Message[i] = 0;
+
+    /* generate (EccSize) Reed-Solomon checkwords */
+    for (n = j; n < (j + DataSize); n++) {
+        t = (Message[j + DataSize] + Message[n]) % 283;
+        for (i = 0; i < (EccSize - 1); i++) {
+            Message[j + DataSize + i] = (Message[j + DataSize + i + 1] + 283
+            - GFMUL(t, gPoly[EccSize - 1 - i])) % 283;
+        }
+        Message[j + DataSize + EccSize - 1] = (283 - GFMUL(t, gPoly[0])) % 283;
+    }
+    for (i = j + DataSize; i < (j + DataSize + EccSize); i++)
+        Message[i] = (283 - Message[i]) % 283;
+}
+
+/* End of Ted Williams code */
 
 int ultra_find_fragment(unsigned char source[], int source_length, int position) {
     int retval = -1;
@@ -543,8 +625,8 @@ int ultra_generate_codewords(struct zint_symbol *symbol, const unsigned char sou
             }
             codeword_count++;
 
-            for (i = input_posn + 7; i < (in_length - 2); i++) {
-                crop_source[i - input_posn] = source[i];
+            for (i = 7; i < (in_length - 2); i++) {
+                crop_source[i - 7] = source[i];
             }
             crop_length = in_length - 9;
             crop_source[crop_length] = '\0';
@@ -639,24 +721,36 @@ int ultra_generate_codewords(struct zint_symbol *symbol, const unsigned char sou
 
 int ultracode(struct zint_symbol *symbol, const unsigned char source[], const size_t in_length) {
     int data_cw_count = 0;
-    int ecc_cw;
-    int ecc_level; // = Q in section 7.7.1
+    int ecc_cw; // = Q in section 7.7.1
+    int ecc_level;
     int misdecode_cw; // = P in section 7.7.1
+    int rows, columns;
+    int total_cws;
+    int pads;
+    int cw_memalloc;
+    int codeword[283];
+    int i, posn;
+    int acc;
+
+    cw_memalloc = in_length * 2;
+    if (cw_memalloc < 283) {
+        cw_memalloc = 283;
+    }
 
 #ifndef _MSC_VER
-    int data_codewords[in_length * 2];
+    int data_codewords[cw_memalloc];
 #else
-    int* data_codewords = (int *) _alloca(in_length * 2 * sizeof (int));
+    int* data_codewords = (int *) _alloca(cw_memalloc * sizeof (int));
 #endif /* _MSC_VER */
 
     data_cw_count = ultra_generate_codewords(symbol, source, in_length, data_codewords);
 
-    printf("Codewords returned = %d\n", data_cw_count);
+    //printf("Codewords returned = %d\n", data_cw_count);
 
-    for (int i = 0; i < data_cw_count; i++) {
-        printf("%d ", data_codewords[i]);
-    }
-    printf("\n");
+    //for (int i = 0; i < data_cw_count; i++) {
+    //    printf("%d ", data_codewords[i]);
+    //}
+    //printf("\n");
 
     /* Default ECC level is EC2 */
     if ((symbol->option_1 <= 0) || (symbol->option_1 > 6)) {
@@ -678,13 +772,72 @@ int ultracode(struct zint_symbol *symbol, const unsigned char source[], const si
         ecc_cw = (ecc_level * ((data_cw_count / 25) + 1)) + misdecode_cw + 2;
     }
 
-    printf("ECC codewords: %d\n", ecc_cw);
+    //printf("ECC codewords: %d\n", ecc_cw);
 
     /* Maximum capacity is 282 codewords */
     if (data_cw_count + ecc_cw > 282) {
         strcpy(symbol->errtxt, "Data too long for selected error correction capacity");
         return ZINT_ERROR_TOO_LONG;
     }
+
+    total_cws = data_cw_count + ecc_cw;
+
+    rows = 5;
+    if (total_cws < 164) {
+        rows = 4;
+    }
+    if (total_cws < 84) {
+        rows = 3;
+    }
+    if (total_cws < 40) {
+        rows = 2;
+    }
+
+    if ((total_cws % rows) == 0) {
+        pads = 0;
+        columns = total_cws / rows;
+    } else {
+        pads = rows - (total_cws % rows);
+        columns = (total_cws + pads) / rows;
+    }
+
+    printf("Calculated size is %d rows by %d columns\n", rows, columns);
+
+    acc = ecc_cw - misdecode_cw; // ACC = (Q-P) - section 6.11.6
+
+    /* Insert MCC and ACC into data codewords */
+    for (i = 282; i > 2; i--) {
+        data_codewords[i] = data_codewords[i - 2];
+    }
+    data_codewords[1] = data_cw_count += 2; // MCC
+    data_codewords[2] = acc; // ACC
+
+    /* Calculate error correction codewords (RSEC) */
+    ultra_gf283((short) data_cw_count, (short) ecc_cw, data_codewords);
+
+    /* Rearrange to make final codeword sequence */
+    posn = 0;
+    codeword[posn++] = data_codewords[282 - (data_cw_count + ecc_cw)]; // Start Character
+    codeword[posn++] = data_cw_count; // MCC
+    for (i = 0; i < ecc_cw; i++) {
+        codeword[posn++] = data_codewords[(282 - ecc_cw) + i]; // RSEC Region
+    }
+    codeword[posn++] = data_cw_count + ecc_cw; // TCC = C + Q - section 6.11.4
+    codeword[posn++] = 283; // Separator
+    codeword[posn++] = acc; // ACC
+    for (i = 0; i < (data_cw_count - 3); i++) {
+        codeword[posn++] = data_codewords[(282 - ((data_cw_count - 3) + ecc_cw)) + i]; // Data Region
+    }
+    for (i = 0; i < pads; i++) {
+        codeword[posn++] = 284; // Pad pattern
+    }
+    codeword[posn++] = ecc_cw; // QCC
+
+    printf("Rearranged codewords with ECC:\n");
+    for (i = 0; i < posn; i++) {
+        printf("%d ", codeword[i]);
+    }
+    printf("\n");
 
     strcpy(symbol->errtxt, "1000: Ultracode has not been implemented - yet!");
     return ZINT_ERROR_INVALID_OPTION;
