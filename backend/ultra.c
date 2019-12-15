@@ -56,6 +56,9 @@ static const char ultra_c43_set2[] = "abcdefghijklmnopqrstuvwxyz:/?#[]@=_~!.,-";
 static const char ultra_c43_set3[] = "{}`()\"+'<>|$;&\\^*";
 static const char ultra_digit[] = "0123456789,/";
 
+//static const int ultra_maxsize[] = {34, 78, 158, 282}; // According to Table 1
+static const int ultra_maxsize[] = {34, 82, 158, 282}; // Adjusted to allow 79-82 codeword range in 3-row symbols
+
 /* The following adapted from ECC283.C "RSEC codeword generator"
  * from Annex B of Ultracode draft
  * originally written by Ted Williams of Symbol Vision Corp.
@@ -783,14 +786,10 @@ int ultracode(struct zint_symbol *symbol, const unsigned char source[], const si
     total_cws = data_cw_count + ecc_cw;
 
     rows = 5;
-    if (total_cws < 164) {
-        rows = 4;
-    }
-    if (total_cws < 84) {
-        rows = 3;
-    }
-    if (total_cws < 40) {
-        rows = 2;
+    for (i = 2; i >= 0; i--) {
+        if (total_cws < ultra_maxsize[i]) {
+            rows--;
+        }
     }
 
     if ((total_cws % rows) == 0) {
