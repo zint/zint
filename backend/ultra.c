@@ -55,9 +55,56 @@ static const char ultra_c43_set1[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 .,%";
 static const char ultra_c43_set2[] = "abcdefghijklmnopqrstuvwxyz:/?#[]@=_~!.,-";
 static const char ultra_c43_set3[] = "{}`()\"+'<>|$;&\\^*";
 static const char ultra_digit[] = "0123456789,/";
+static const char ultra_colour[] = "WCBMRYGK";
 
 //static const int ultra_maxsize[] = {34, 78, 158, 282}; // According to Table 1
 static const int ultra_maxsize[] = {34, 82, 158, 282}; // Adjusted to allow 79-82 codeword range in 3-row symbols
+
+static const int dccu[] = {
+    051363, 051563, 051653, 053153, 053163, 053513, 053563, 053613, //  0-7
+    053653, 056153, 056163, 056313, 056353, 056363, 056513, 056563, //  8-15
+    051316, 051356, 051536, 051616, 053156, 053516, 053536, 053616, // 16-23
+    053636, 053656, 056136, 056156, 056316, 056356, 056516, 056536  // 24-31
+};
+
+static const int dccl[] = {
+    061351, 061361, 061531, 061561, 061631, 061651, 063131, 063151, //  0-7
+    063161, 063531, 063561, 063631, 065131, 065161, 065351, 065631, //  8-15
+    031351, 031361, 031531, 031561, 031631, 031651, 035131, 035151, // 16-23
+    035161, 035361, 035631, 035651, 036131, 036151, 036351, 036531  // 24-31
+};
+
+static const int tiles[] = {
+    013135, 013136, 013153, 013156, 013163, 013165, 013513, 013515, 013516, 013531, //   0-9
+    013535, 013536, 013561, 013563, 013565, 013613, 013615, 013616, 013631, 013635, //  10-19
+    013636, 013651, 013653, 013656, 015135, 015136, 015153, 015163, 015165, 015313, //  20-29
+    015315, 015316, 015351, 015353, 015356, 015361, 015363, 015365, 015613, 015615, //  30-39
+    015616, 015631, 015635, 015636, 015651, 015653, 015656, 016135, 016136, 016153, //  40-49
+    016156, 016165, 016313, 016315, 016316, 016351, 016353, 016356, 016361, 016363, //  50-59
+    016365, 016513, 016515, 016516, 016531, 016535, 016536, 016561, 016563, 016565, //  60-69
+    031315, 031316, 031351, 031356, 031361, 031365, 031513, 031515, 031516, 031531, //  70-79
+    031535, 031536, 031561, 031563, 031565, 031613, 031615, 031631, 031635, 031636, //  80-89
+    031651, 031653, 031656, 035131, 035135, 035136, 035151, 035153, 035156, 035161, //  90-99
+    035163, 035165, 035315, 035316, 035351, 035356, 035361, 035365, 035613, 035615, // 100-109
+    035616, 035631, 035635, 035636, 035651, 035653, 035656, 036131, 036135, 036136, // 110-119
+    036151, 036153, 036156, 036163, 036165, 036315, 036316, 036351, 036356, 036361, // 120-129
+    036365, 036513, 036515, 036516, 036531, 036535, 036536, 036561, 036563, 036565, // 130-139
+    051313, 051315, 051316, 051351, 051353, 051356, 051361, 051363, 051365, 051513, // 140-149
+    051516, 051531, 051536, 051561, 051563, 051613, 051615, 051616, 051631, 051635, // 150-159
+    051636, 051651, 051653, 051656, 053131, 053135, 053136, 053151, 053153, 053156, // 160-169
+    053161, 053163, 053165, 053513, 053516, 053531, 053536, 053561, 053563, 053613, // 170-179
+    053615, 053616, 053631, 053635, 053636, 053651, 053653, 053656, 056131, 056135, // 180-189
+    056136, 056151, 056153, 056156, 056161, 056163, 056165, 056313, 056315, 056316, // 190-199
+    056351, 056353, 056356, 056361, 056363, 056365, 056513, 056516, 056531, 056536, // 200-209
+    056561, 056563, 061313, 061315, 061316, 061351, 061353, 061356, 061361, 061363, // 210-219
+    061365, 061513, 061515, 061516, 061531, 061535, 061536, 061561, 061563, 061565, // 220-229
+    061615, 061631, 061635, 061651, 061653, 063131, 063135, 063136, 063151, 063153, // 230-239
+    063156, 063161, 063163, 063165, 063513, 063515, 063516, 063531, 063535, 063536, // 240-249
+    063561, 063563, 063565, 063613, 063615, 063631, 063635, 063651, 063653, 065131, // 250-259
+    065135, 065136, 065151, 065153, 065156, 065161, 065163, 065165, 065313, 065315, // 260-269
+    065316, 065351, 065353, 065356, 065361, 065363, 065365, 065613, 065615, 065631, // 270-279
+    065635, 065651, 065653, 056565, 051515                                     // 280-284
+};
 
 /* The following adapted from ECC283.C "RSEC codeword generator"
  * from Annex B of Ultracode draft
@@ -330,9 +377,9 @@ float look_ahead_c43(unsigned char source[], int in_length, int in_posn, char cu
     int gs1_latch = 0;
 
 #ifndef _MSC_VER
-    int subcw[in_length];
+    int subcw[(in_length + 3) * 2];
 #else
-    int * subcw = (int *) _alloca(in_length * sizeof (int));
+    int * subcw = (int *) _alloca((in_length + 3) * 2 * sizeof (int));
 #endif /* _MSC_VER */
 
     subset = get_subset(source, in_length, subposn);
@@ -487,7 +534,7 @@ float look_ahead_c43(unsigned char source[], int in_length, int in_posn, char cu
 
     //printf("C43 SUBFRAG: ");
     //for (i = 0; i < subcodeword_count; i++) {
-    //    printf("%d ", subcw[i]);
+    //   printf("%d ", subcw[i]);
     //}
     //printf("\n");
 
@@ -499,9 +546,9 @@ float look_ahead_c43(unsigned char source[], int in_length, int in_posn, char cu
         codeword_count++;
     }
 
-     //printf("C43 FRAG: ");
+    // printf("C43 FRAG: ");
     //for (i = 0; i < codeword_count; i++) {
-     //   printf("%d ", cw[i]);
+    //    printf("%d ", cw[i]);
     //}
     //printf("\n");
 
@@ -732,8 +779,11 @@ int ultracode(struct zint_symbol *symbol, const unsigned char source[], const si
     int pads;
     int cw_memalloc;
     int codeword[283];
-    int i, posn;
+    int i, j, posn;
     int acc;
+    int total_height, total_width;
+    char tilepat[6];
+    int tilex, tiley;
 
     cw_memalloc = in_length * 2;
     if (cw_memalloc < 283) {
@@ -783,7 +833,7 @@ int ultracode(struct zint_symbol *symbol, const unsigned char source[], const si
         return ZINT_ERROR_TOO_LONG;
     }
 
-    total_cws = data_cw_count + ecc_cw;
+    total_cws = data_cw_count + ecc_cw + 2 + misdecode_cw;
 
     rows = 5;
     for (i = 2; i >= 0; i--) {
@@ -797,7 +847,7 @@ int ultracode(struct zint_symbol *symbol, const unsigned char source[], const si
         columns = total_cws / rows;
     } else {
         pads = rows - (total_cws % rows);
-        columns = (total_cws + pads) / rows;
+        columns = (total_cws / rows) + 1;
     }
 
     printf("Calculated size is %d rows by %d columns\n", rows, columns);
@@ -837,6 +887,86 @@ int ultracode(struct zint_symbol *symbol, const unsigned char source[], const si
         printf("%d ", codeword[i]);
     }
     printf("\n");
+
+    total_height = (rows * 6) + 1;
+    total_width = columns + 6 + (columns / 15);
+
+    /* Build symbol */
+#ifndef _MSC_VER
+    char pattern[total_height * total_width];
+#else
+    char* pattern = (char *) _alloca(total_height * toal_width * sizeof (char));
+#endif /* _MSC_VER */
+
+    for (i = 0; i < (total_height * total_width); i++) {
+        pattern[i] = 'W';
+    }
+
+    /* Border */
+    for (i = 0; i < total_width; i++) {
+        pattern[i] = 'K'; // Top
+        pattern[(total_height * total_width) - i - 1] = 'K'; // Bottom
+    }
+    for (i = 0; i < total_height; i++) {
+        pattern[total_width * i] = 'K'; // Left
+        pattern[(total_width * i) + 3] = 'K';
+        pattern[(total_width * i) + (total_width - 1)] = 'K'; // Right
+    }
+
+    /* Clock tracks */
+    for (i = 0; i < total_height; i += 2) {
+        pattern[(total_width * i) + 1] = 'K'; // Primary vertical clock track
+        if (total_width > 20) {
+            pattern[(total_width * i) + 20] = 'K'; // Secondary vertical clock track
+        }
+        if (total_width > 36) {
+            pattern[(total_width * i) + 36] = 'K'; // Secondary vertical clock track
+        }
+        if (total_width > 52) {
+            pattern[(total_width * i) + 52] = 'K'; // Secondary vertical clock track
+        }
+    }
+    for (i = 6; i < total_height; i += 6) {
+        for (j = 5; j < total_width; j += 2) {
+            pattern[(total_width * i) + j] = 'K'; // Horizontal clock track
+        }
+    }
+
+    /* Place tiles */
+    tilepat[5] = '\0';
+    tilex = 0;
+    tiley = 0;
+    for (i = 0; i < posn; i++) {
+        for (j = 0; j < 5; j++) {
+            tilepat[4 - j] = ultra_colour[(tiles[codeword[i]] >> (3 * j)) & 0x07];
+        }
+        if ((tiley + 1) >= total_height) {
+            tiley = 0;
+            tilex++;
+
+            if (tilex == 15) {
+                tilex++;
+            }
+            if (tilex == 31) {
+                tilex++;
+            }
+            if (tilex == 47) {
+                tilex++;
+            }
+        }
+        //printf("[%d] = %s\n", codeword[i], tilepat);
+        for (j = 0; j < 5; j++) {
+            pattern[((tiley + j + 1) * total_width) + (tilex + 5)] = tilepat[j];
+        }
+        tiley += 6;
+    }
+
+    for (i = 0; i < (total_height * total_width); i++) {
+        printf("%c", pattern[i]);
+        if ((i + 1) % total_width == 0) {
+            printf("\n");
+        }
+    }
 
     strcpy(symbol->errtxt, "1000: Ultracode has not been implemented - yet!");
     return ZINT_ERROR_INVALID_OPTION;
