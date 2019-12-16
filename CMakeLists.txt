@@ -36,7 +36,7 @@ if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_GNUCC)
     if (ZINT_SANITIZE)
         add_compile_options("-fsanitize=undefined")
         add_compile_options("-fsanitize=address")
-        set (CMAKE_EXE_LINKER_FLAGS "-fsanitize=undefined -fsanitize=address")
+        set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=undefined -fsanitize=address")
     endif (ZINT_SANITIZE)
 endif (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_GNUCC)
 

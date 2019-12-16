@@ -356,8 +356,8 @@ static unsigned int* hx_head_costs(unsigned int state[]) {
     return head_costs;
 }
 
-/* Costs of switching modes */
-static unsigned int hx_switch_cost(unsigned int state[], const int j, const int k) {
+/* Cost of switching modes from k to j */
+static unsigned int hx_switch_cost(unsigned int state[], const int k, const int j) {
     static unsigned int switch_costs[HX_NUM_MODES][HX_NUM_MODES] = {
         /*      N                   T                   B                        1                   2                   D                   F */
         /*N*/ {                  0, (10 + 4) * HX_MULT, (10 + 4 + 13) * HX_MULT, (10 + 4) * HX_MULT, (10 + 4) * HX_MULT, (10 + 4) * HX_MULT, 10 * HX_MULT },
@@ -369,7 +369,7 @@ static unsigned int hx_switch_cost(unsigned int state[], const int j, const int 
         /*F*/ {        4 * HX_MULT,        4 * HX_MULT,      (4 + 13) * HX_MULT,        4 * HX_MULT,        4 * HX_MULT,        4 * HX_MULT,  0 },
     };
 
-    return switch_costs[j][k];
+    return switch_costs[k][j];
 }
 
 /* Final end-of-data costs */
@@ -1369,19 +1369,6 @@ static int hx_apply_bitmask(unsigned char *grid, int size) {
     return best_pattern;
 }
 
-static void hx_test_codeword_dump(struct zint_symbol *symbol, unsigned char* codewords, int length) {
-    int i, max = length, cnt_len = 0;
-    if (length > 33) {
-        sprintf(symbol->errtxt, "(%d) ", length); /* Place the number of codewords at the front */
-        cnt_len = strlen(symbol->errtxt);
-        max = 33 - (cnt_len + 2) / 3;
-    }
-    for (i = 0; i < max; i++) { /* 33*3 < errtxt 100 chars */
-        sprintf(symbol->errtxt + cnt_len + i * 3, "%02X ", codewords[i]);
-    }
-    symbol->errtxt[strlen(symbol->errtxt) - 1] = '\0'; /* Zap last space */
-}
-
 /* Han Xin Code - main */
 int han_xin(struct zint_symbol *symbol, const unsigned char source[], size_t length) {
     int est_binlen;
@@ -1555,7 +1542,7 @@ int han_xin(struct zint_symbol *symbol, const unsigned char source[], size_t len
         }
         printf("\n");
     }
-    if (symbol->debug & ZINT_DEBUG_TEST) hx_test_codeword_dump(symbol, datastream, data_codewords);
+    if (symbol->debug & ZINT_DEBUG_TEST) debug_test_codeword_dump(symbol, datastream, data_codewords);
 
     hx_setup_grid(grid, size, version);
 

@@ -459,3 +459,17 @@ void pn_define_mode(char* mode, const unsigned int data[], const size_t length, 
         printf("  Mode: %.*s\n", (int)length, mode);
     }
 }
+
+/* Dumps hex-formatted codewords in symbol->errtxt (for use in testing) */
+void debug_test_codeword_dump(struct zint_symbol *symbol, unsigned char* codewords, int length) {
+    int i, max = length, cnt_len = 0;
+    if (length > 30) { /* 30*3 < errtxt 92 (100 - "Warning ") chars */
+        sprintf(symbol->errtxt, "(%d) ", length); /* Place the number of codewords at the front */
+        cnt_len = strlen(symbol->errtxt);
+        max = 30 - (cnt_len + 2) / 3;
+    }
+    for (i = 0; i < max; i++) {
+        sprintf(symbol->errtxt + cnt_len + i * 3, "%02X ", codewords[i]);
+    }
+    symbol->errtxt[strlen(symbol->errtxt) - 1] = '\0'; /* Zap last space */
+}

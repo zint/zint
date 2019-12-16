@@ -131,8 +131,8 @@ static unsigned int* gm_head_costs(unsigned int state[]) {
     return head_costs;
 }
 
-/* Cost of switching modes - see AIMD014 Rev. 1.63 Table 9 – Type conversion codes */
-static unsigned int gm_switch_cost(unsigned int state[], const int j, const int k) {
+/* Cost of switching modes from k to j - see AIMD014 Rev. 1.63 Table 9 – Type conversion codes */
+static unsigned int gm_switch_cost(unsigned int state[], const int k, const int j) {
     static unsigned int switch_costs[GM_NUM_MODES][GM_NUM_MODES] = {
         /*      H             N                   L             U             M             B  */
         /*H*/ {            0, (13 + 2) * GM_MULT, 13 * GM_MULT, 13 * GM_MULT, 13 * GM_MULT, (13 + 9) * GM_MULT },
@@ -143,7 +143,7 @@ static unsigned int gm_switch_cost(unsigned int state[], const int j, const int 
         /*B*/ {  4 * GM_MULT,  (4 + 2) * GM_MULT,  4 * GM_MULT,  4 * GM_MULT,  4 * GM_MULT,                  0 },
     };
 
-    return switch_costs[j][k];
+    return switch_costs[k][j];
 }
 
 /* Final end-of-data cost - see AIMD014 Rev. 1.63 Table 9 – Type conversion codes */
@@ -232,7 +232,7 @@ static void add_byte_count(char binary[], const size_t byte_count_posn, const in
 }
 
 /* Add a control character to the data stream */
-void add_shift_char(char binary[], int shifty, int debug) {
+static void add_shift_char(char binary[], int shifty, int debug) {
     int i;
     int glyph = 0;
 
@@ -716,24 +716,11 @@ static int gm_encode(unsigned int gbdata[], const size_t length, char binary[], 
     return 0;
 }
 
-static void gm_test_codeword_dump(struct zint_symbol *symbol, int* codewords, int length) {
-    int i, max = length, cnt_len = 0;
-    if (length > 33) {
-        sprintf(symbol->errtxt, "(%d) ", length); /* Place the number of codewords at the front */
-        cnt_len = strlen(symbol->errtxt);
-        max = 33 - (cnt_len + 2) / 3;
-    }
-    for (i = 0; i < max; i++) { /* 33*3 < errtxt 100 chars */
-        sprintf(symbol->errtxt + cnt_len + i * 3, "%02X ", codewords[i]);
-    }
-    symbol->errtxt[strlen(symbol->errtxt) - 1] = '\0'; /* Zap last space */
-}
-
-static void gm_add_ecc(const char binary[], const size_t data_posn, const int layers, const int ecc_level, int word[]) {
+static void gm_add_ecc(const char binary[], const size_t data_posn, const int layers, const int ecc_level, unsigned char word[]) {
     int data_cw, i, j, wp, p;
     int n1, b1, n2, b2, e1, b3, e2;
     int block_size, ecc_size;
-    int data[1320], block[130];
+    unsigned char data[1320], block[130];
     unsigned char data_block[115], ecc_block[70];
 
     data_cw = gm_data_codewords[((layers - 1) * 5) + (ecc_level - 1)];
@@ -816,7 +803,7 @@ static void gm_add_ecc(const char binary[], const size_t data_posn, const int la
     }
 }
 
-void place_macromodule(char grid[], int x, int y, int word1, int word2, int size) {
+static void place_macromodule(char grid[], int x, int y, int word1, int word2, int size) {
     int i, j;
 
     i = (x * 6) + 1;
@@ -866,7 +853,7 @@ void place_macromodule(char grid[], int x, int y, int word1, int word2, int size
     }
 }
 
-void place_data_in_grid(int word[], char grid[], int modules, int size) {
+static void place_data_in_grid(unsigned char word[], char grid[], int modules, int size) {
     int x, y, macromodule, offset;
 
     offset = 13 - ((modules - 1) / 2);
@@ -879,7 +866,7 @@ void place_data_in_grid(int word[], char grid[], int modules, int size) {
 }
 
 /* Place the layer ID into each macromodule */
-void place_layer_id(char* grid, int size, int layers, int modules, int ecc_level) {
+static void place_layer_id(char* grid, int size, int layers, int modules, int ecc_level) {
     int i, j, layer, start, stop;
 
 #ifndef _MSC_VER
@@ -938,7 +925,8 @@ int grid_matrix(struct zint_symbol *symbol, const unsigned char source[], size_t
     int x, y, i;
     char binary[9300];
     int data_cw, input_latch = 0;
-    int word[1460], data_max, reader = 0;
+    unsigned char word[1460];
+    int data_max, reader = 0;
 
 #ifndef _MSC_VER
     unsigned int gbdata[length + 1];
@@ -1070,7 +1058,7 @@ int grid_matrix(struct zint_symbol *symbol, const unsigned char source[], size_t
     }
 
     gm_add_ecc(binary, data_cw, layers, ecc_level, word);
-    if (symbol->debug & ZINT_DEBUG_TEST) gm_test_codeword_dump(symbol, word, data_cw);
+    if (symbol->debug & ZINT_DEBUG_TEST) debug_test_codeword_dump(symbol, word, data_cw);
     size = 6 + (layers * 12);
     modules = 1 + (layers * 2);
 
@@ -1123,5 +1111,3 @@ int grid_matrix(struct zint_symbol *symbol, const unsigned char source[], size_t
 
     return 0;
 }
-
-

@@ -34,7 +34,7 @@
 
 #include "testcommon.h"
 
-#define TEST_IMAIL_CSV_MAX 1000
+#define TEST_IMAIL_CSV_MAX 500
 
 static void test_csv(void)
 {
