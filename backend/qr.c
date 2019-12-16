@@ -1809,7 +1809,6 @@ static void micro_qr_m1(struct zint_symbol *symbol, char binary_data[]) {
         bin_append(0, 4, binary_data);
     }
 
-
     data_codewords = 3;
     ecc_codewords = 2;
 
@@ -1887,7 +1886,6 @@ static void micro_qr_m2(struct zint_symbol *symbol, char binary_data[], const in
             strcat(binary_data, (i & 1) ? "00010001" : "11101100");
         }
     }
-
 
     if (ecc_mode == LEVEL_L) {
         data_codewords = 5;
@@ -1984,7 +1982,6 @@ static void micro_qr_m3(struct zint_symbol *symbol, char binary_data[], const in
         }
         bin_append(0, 4, binary_data);
     }
-
 
     if (ecc_mode == LEVEL_L) {
         data_codewords = 11;
@@ -2088,7 +2085,6 @@ static void micro_qr_m4(struct zint_symbol *symbol, char binary_data[], const in
             strcat(binary_data, (i & 1) ? "00010001" : "11101100");
         }
     }
-
 
     if (ecc_mode == LEVEL_L) {
         data_codewords = 16;
