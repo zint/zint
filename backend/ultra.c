@@ -60,6 +60,10 @@ static const char ultra_colour[] = "WCBMRYGK";
 //static const int ultra_maxsize[] = {34, 78, 158, 282}; // According to Table 1
 static const int ultra_maxsize[] = {34, 82, 158, 282}; // Adjusted to allow 79-82 codeword range in 3-row symbols
 
+static const int ultra_mincols[] = {5, 13, 23, 30}; // # Total Tile Columns from Table 1
+
+static const int kec[] = {0, 1, 2, 4, 6, 8}; // Value K(EC) from Table 12
+
 static const int dccu[] = {
     051363, 051563, 051653, 053153, 053163, 053513, 053563, 053613, //  0-7
     053653, 056153, 056163, 056313, 056353, 056363, 056513, 056563, //  8-15
@@ -630,11 +634,27 @@ int ultra_generate_codewords(struct zint_symbol *symbol, const unsigned char sou
                     // Avoids ECI 14 for non-existant ISO/IEC 8859-12
                     codewords[0]--;
                 }
-            } else if (symbol->eci > 18) {
+            } else if ((symbol->eci > 18) && (symbol->eci <= 898)) {
                 // ECI indicates use of character set outside ISO/IEC 8859
                 codewords[0] = 273 + (symbol->eci / 256);
                 codewords[1] = symbol->eci % 256;
                 codeword_count++;
+            } else if ((symbol->eci > 898) && (symbol->eci <= 9999)) {
+                // ECI beyond 898 needs to use fixed length encodable ECI invocation (section 7.6.2)
+                // Encode as 3 codewords
+                codewords[0] = 257; // ISO/IEC 8859-1 used to enter 8-bit mode
+                codewords[1] = 274; // Encode ECI as 3 codewords
+                codewords[2] = (symbol->eci / 100) + 128;
+                codewords[3] = (symbol->eci % 100) + 128;
+                codeword_count += 3;
+            } else if (symbol->eci >= 10000) {
+                // Encode as 4 codewords
+                codewords[0] = 257; // ISO/IEC 8859-1 used to enter 8-bit mode
+                codewords[1] = 275; // Encode ECI as 4 codewords
+                codewords[2] = (symbol->eci / 10000) + 128;
+                codewords[3] = ((symbol->eci % 10000) / 100) + 128;
+                codewords[4] = (symbol->eci % 100) + 128;
+                codeword_count += 4;
             } else {
                 codewords[0] = 257; // Default is assumed to be ISO/IEC 8859-1 (ECI 3)
             }
@@ -771,23 +791,27 @@ int ultra_generate_codewords(struct zint_symbol *symbol, const unsigned char sou
 
 int ultracode(struct zint_symbol *symbol, const unsigned char source[], const size_t in_length) {
     int data_cw_count = 0;
-    int ecc_cw; // = Q in section 7.7.1
+    int acc, qcc;
     int ecc_level;
-    int misdecode_cw; // = P in section 7.7.1
     int rows, columns;
     int total_cws;
     int pads;
     int cw_memalloc;
     int codeword[283];
     int i, j, posn;
-    int acc;
     int total_height, total_width;
     char tilepat[6];
     int tilex, tiley;
+    int dcc;
 
     cw_memalloc = in_length * 2;
     if (cw_memalloc < 283) {
         cw_memalloc = 283;
+    }
+
+    if (symbol->eci > 811799) {
+        strcpy(symbol->errtxt, "ECI value not supported by Ultracode");
+        return ZINT_ERROR_INVALID_OPTION;
     }
 
 #ifndef _MSC_VER
@@ -798,7 +822,7 @@ int ultracode(struct zint_symbol *symbol, const unsigned char source[], const si
 
     data_cw_count = ultra_generate_codewords(symbol, source, in_length, data_codewords);
 
-    //printf("Codewords returned = %d\n", data_cw_count);
+    printf("Codewords returned = %d\n", data_cw_count);
 
     //for (int i = 0; i < data_cw_count; i++) {
     //    printf("%d ", data_codewords[i]);
@@ -812,28 +836,27 @@ int ultracode(struct zint_symbol *symbol, const unsigned char source[], const si
         ecc_level = symbol->option_1 - 1;
     }
 
-    if (ecc_level == 0) {
-        misdecode_cw = 0;
-    } else {
-        misdecode_cw = 3;
-    }
-
     /* ECC calculation from section 7.7.2 */
-    if ((data_cw_count % 25) == 0) {
-        ecc_cw = (ecc_level * (data_cw_count / 25)) + misdecode_cw + 2;
+    if (ecc_level == 0) {
+        qcc = 3;
     } else {
-        ecc_cw = (ecc_level * ((data_cw_count / 25) + 1)) + misdecode_cw + 2;
-    }
+        if ((data_cw_count % 25) == 0) {
+            qcc = (kec[ecc_level] * (data_cw_count / 25)) + 3 + 2;
+        } else {
+            qcc = (kec[ecc_level] * ((data_cw_count / 25) + 1)) + 3 + 2;
+        }
 
-    //printf("ECC codewords: %d\n", ecc_cw);
+    }
+    acc = qcc - 3;
+
+    printf("ECC codewords: %d\n", qcc);
 
     /* Maximum capacity is 282 codewords */
-    if (data_cw_count + ecc_cw > 282) {
+    total_cws = data_cw_count + qcc + 5;
+    if (total_cws > 282) {
         strcpy(symbol->errtxt, "Data too long for selected error correction capacity");
         return ZINT_ERROR_TOO_LONG;
     }
-
-    total_cws = data_cw_count + ecc_cw + 2 + misdecode_cw;
 
     rows = 5;
     for (i = 2; i >= 0; i--) {
@@ -852,8 +875,6 @@ int ultracode(struct zint_symbol *symbol, const unsigned char source[], const si
 
     printf("Calculated size is %d rows by %d columns\n", rows, columns);
 
-    acc = ecc_cw - misdecode_cw; // ACC = (Q-P) - section 6.11.6
-
     /* Insert MCC and ACC into data codewords */
     for (i = 282; i > 2; i--) {
         data_codewords[i] = data_codewords[i - 2];
@@ -861,26 +882,26 @@ int ultracode(struct zint_symbol *symbol, const unsigned char source[], const si
     data_codewords[1] = data_cw_count += 2; // MCC
     data_codewords[2] = acc; // ACC
 
+    posn = 0;
     /* Calculate error correction codewords (RSEC) */
-    ultra_gf283((short) data_cw_count, (short) ecc_cw, data_codewords);
+    ultra_gf283((short) data_cw_count, (short) qcc, data_codewords);
 
     /* Rearrange to make final codeword sequence */
-    posn = 0;
-    codeword[posn++] = data_codewords[282 - (data_cw_count + ecc_cw)]; // Start Character
+    codeword[posn++] = data_codewords[282 - (data_cw_count + qcc)]; // Start Character
     codeword[posn++] = data_cw_count; // MCC
-    for (i = 0; i < ecc_cw; i++) {
-        codeword[posn++] = data_codewords[(282 - ecc_cw) + i]; // RSEC Region
+    for (i = 0; i < qcc; i++) {
+        codeword[posn++] = data_codewords[(282 - qcc) + i]; // RSEC Region
     }
-    codeword[posn++] = data_cw_count + ecc_cw; // TCC = C + Q - section 6.11.4
+    codeword[posn++] = data_cw_count + qcc; // TCC = C + Q - section 6.11.4
     codeword[posn++] = 283; // Separator
     codeword[posn++] = acc; // ACC
     for (i = 0; i < (data_cw_count - 3); i++) {
-        codeword[posn++] = data_codewords[(282 - ((data_cw_count - 3) + ecc_cw)) + i]; // Data Region
+        codeword[posn++] = data_codewords[(282 - ((data_cw_count - 3) + qcc)) + i]; // Data Region
     }
     for (i = 0; i < pads; i++) {
         codeword[posn++] = 284; // Pad pattern
     }
-    codeword[posn++] = ecc_cw; // QCC
+    codeword[posn++] = qcc; // QCC
 
     printf("Rearranged codewords with ECC:\n");
     for (i = 0; i < posn; i++) {
@@ -960,6 +981,28 @@ int ultracode(struct zint_symbol *symbol, const unsigned char source[], const si
         }
         tiley += 6;
     }
+
+    /* Add data column count */
+    dcc = columns - ultra_mincols[rows - 2];
+    tilex = 2;
+    tiley = (total_height - 11) / 2;
+    /* DCCU */
+    for (j = 0; j < 5; j++) {
+        tilepat[4 - j] = ultra_colour[(dccu[dcc] >> (3 * j)) & 0x07];
+    }
+    for (j = 0; j < 5; j++) {
+        pattern[((tiley + j) * total_width) + tilex] = tilepat[j];
+    }
+    /* DCCL */
+    tiley += 6;
+    for (j = 0; j < 5; j++) {
+        tilepat[4 - j] = ultra_colour[(dccl[dcc] >> (3 * j)) & 0x07];
+    }
+    for (j = 0; j < 5; j++) {
+        pattern[((tiley + j) * total_width) + tilex] = tilepat[j];
+    }
+
+    printf("DCC: %d\n", dcc);
 
     for (i = 0; i < (total_height * total_width); i++) {
         printf("%c", pattern[i]);
