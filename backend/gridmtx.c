@@ -53,7 +53,7 @@ static char numeral_nondigits[] = " +-.,"; /* Non-digit numeral set, excluding E
 
 /* Whether in numeral or not. If in numeral, *p_numeral_end is set to position after numeral, and *p_numeral_cost is set to per-numeral cost */
 static int in_numeral(const unsigned int gbdata[], const size_t length, const int posn, unsigned int* p_numeral_end, unsigned int* p_numeral_cost) {
-    int i, nondigit, nondigit_posn, digit_cnt;
+    int i, digit_cnt, nondigit, nondigit_posn;
 
     if (posn < *p_numeral_end) {
         return 1;
@@ -63,7 +63,7 @@ static int in_numeral(const unsigned int gbdata[], const size_t length, const in
     /* Also ensures that numeric mode is not selected when it cannot be used: for example in
        a string which has "2.2.0" (cannot have more than one non-numeric character for each
        block of three numeric characters) */
-    for (i = posn, nondigit = 0, digit_cnt = 0; i < length && i < posn + 4 && digit_cnt < 3; i++) {
+    for (i = posn, digit_cnt = 0, nondigit = 0, nondigit_posn = 0; i < length && i < posn + 4 && digit_cnt < 3; i++) {
         if (gbdata[i] >= '0' && gbdata[i] <= '9') {
             digit_cnt++;
         } else if (strchr(numeral_nondigits, gbdata[i])) {
