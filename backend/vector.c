@@ -247,10 +247,9 @@ void vector_reduce_rectangles(struct zint_symbol *symbol) {
     while (rect) {
         prev = rect;
         target = prev->next;
-        
+
         while (target) {
-            
-            if ((rect->x == target->x) && (rect->width == target->width) && ((rect->y + rect->height) == target->y)) {
+            if ((rect->x == target->x) && (rect->width == target->width) && ((rect->y + rect->height) == target->y) && (rect->colour == target->colour)) {
                 rect->height += target->height;
                 prev->next = target->next;
                 free(target);
@@ -331,7 +330,7 @@ int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_type) {
     addon_text_posn = 0.0;
     rect_count = 0;
     last_row_start = 0;
-    
+
     /*
      * Determine if there will be any addon texts and text height
      */
@@ -442,6 +441,7 @@ int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_type) {
 
     // Plot rectangles - most symbols created here
     if ((symbol->symbology != BARCODE_MAXICODE) && ((symbol->output_options & BARCODE_DOTTY_MODE) == 0)) {
+        printf("Got symbol %d\n", symbol->symbology);
         for (r = 0; r < symbol->rows; r++) {
             this_row = r;
             last_row_start = rect_count;
@@ -476,20 +476,18 @@ int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_type) {
                     addon_text_posn = row_posn + 8.0f;
                     addon_latch = 1;
                 }
-                if (latch == 1) {
-                    /* a bar */
+                if (module_is_set(symbol, this_row, i)) {
+                    /* a bar or colour block */
                     if (addon_latch == 0) {
                         rectangle = vector_plot_create_rect((float)(i + xoffset), row_posn, (float)block_width, row_height);
+                        if (symbol->symbology == BARCODE_ULTRA) {
+                            rectangle->colour = module_is_set(symbol, this_row, i);
+                        }
                     } else {
                         rectangle = vector_plot_create_rect((float)(i + xoffset), row_posn + 10.0f, (float)block_width, row_height - 5.0f);
                     }
-                    latch = 0;
-
                     vector_plot_add_rect(symbol, rectangle, &last_rectangle);
                     rect_count++;
-                } else {
-                    /* a space */
-                    latch = 1;
                 }
                 i += block_width;
 
@@ -522,7 +520,7 @@ int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_type) {
             for (i = 0; i < symbol->width; i++) {
                 if (module_is_set(symbol, r, i)) {
                     //struct zint_vector_hexagon *hexagon = vector_plot_create_hexagon(((i * 0.88) + ((r & 1) ? 1.76 : 1.32)), ((r * 0.76) + 0.76), symbol->dot_size);
-                    struct zint_vector_hexagon *hexagon = vector_plot_create_hexagon(((i * 1.23f) + 0.615f + ((r & 1) ? 0.615f : 0.0f)) + xoffset, 
+                    struct zint_vector_hexagon *hexagon = vector_plot_create_hexagon(((i * 1.23f) + 0.615f + ((r & 1) ? 0.615f : 0.0f)) + xoffset,
                                                                                      ((r * 1.067f) + 0.715f) + yoffset, symbol->dot_size);
                     vector_plot_add_hexagon(symbol, hexagon, &last_hexagon);
                 }
@@ -558,7 +556,7 @@ int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_type) {
             i++;
         }
     }
-                
+
     if (upceanflag == 8) {
         i = 0;
         for (rect = symbol->vector->rectangles; rect != NULL; rect = rect->next) {
@@ -575,7 +573,7 @@ int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_type) {
             i++;
         }
     }
-    
+
     if (upceanflag == 12) {
         i = 0;
         for (rect = symbol->vector->rectangles; rect != NULL; rect = rect->next) {
@@ -596,7 +594,7 @@ int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_type) {
             i++;
         }
     }
-    
+
     if (upceanflag == 13) {
         i = 0;
         for (rect = symbol->vector->rectangles; rect != NULL; rect = rect->next) {
@@ -613,7 +611,7 @@ int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_type) {
             i++;
         }
     }
-    
+
     /* Add the text */
 
     if (!hide_text) {
