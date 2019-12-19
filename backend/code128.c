@@ -76,7 +76,7 @@ static const char *C128Table[107] = {
 };
 
 /* Determine appropriate mode for a given character */
-int parunmodd(const unsigned char llyth) {
+INTERNAL int parunmodd(const unsigned char llyth) {
     int modd;
     modd = 0;
 
@@ -102,7 +102,7 @@ int parunmodd(const unsigned char llyth) {
 /**
  * bring together same type blocks
  */
-void grwp(int *indexliste) {
+static void grwp(int *indexliste) {
 
     /* bring together same type blocks */
     if (*(indexliste) > 1) {
@@ -131,7 +131,7 @@ void grwp(int *indexliste) {
 /**
  * Implements rules from ISO 15417 Annex E
  */
-void dxsmooth(int *indexliste) {
+static void dxsmooth(int *indexliste) {
     int i, last, next;
 
     for (i = 0; i < *(indexliste); i++) {
@@ -241,7 +241,7 @@ void dxsmooth(int *indexliste) {
  * Translate Code 128 Set A characters into barcodes.
  * This set handles all control characters NULL to US.
  */
-void c128_set_a(unsigned char source, char dest[], int values[], int *bar_chars) {
+static void c128_set_a(unsigned char source, char dest[], int values[], int *bar_chars) {
 
     if (source > 127) {
         if (source < 160) {
@@ -268,7 +268,7 @@ void c128_set_a(unsigned char source, char dest[], int values[], int *bar_chars)
  * This set handles all characters which are not part of long numbers and not
  * control characters.
  */
-void c128_set_b(unsigned char source, char dest[], int values[], int *bar_chars) {
+static void c128_set_b(unsigned char source, char dest[], int values[], int *bar_chars) {
     if (source > 127) {
         strcat(dest, C128Table[source - 32 - 128]);
         values[(*bar_chars)] = source - 32 - 128;
@@ -282,7 +282,7 @@ void c128_set_b(unsigned char source, char dest[], int values[], int *bar_chars)
 /* Translate Code 128 Set C characters into barcodes
  * This set handles numbers in a compressed form
  */
-void c128_set_c(unsigned char source_a, unsigned char source_b, char dest[], int values[], int *bar_chars) {
+static void c128_set_c(unsigned char source_a, unsigned char source_b, char dest[], int values[], int *bar_chars) {
     int weight;
 
     weight = (10 * ctoi(source_a)) + ctoi(source_b);
@@ -292,7 +292,7 @@ void c128_set_c(unsigned char source_a, unsigned char source_b, char dest[], int
 }
 
 /* Handle Code 128 and NVE-18 */
-int code_128(struct zint_symbol *symbol, unsigned char source[], const size_t length) {
+INTERNAL int code_128(struct zint_symbol *symbol, unsigned char source[], const size_t length) {
     int i, j, k, values[170] = {0}, bar_characters, read, total_sum;
     int error_number, indexchaine, indexliste, f_state;
     size_t sourcelen;
@@ -683,7 +683,7 @@ int code_128(struct zint_symbol *symbol, unsigned char source[], const size_t le
 }
 
 /* Handle EAN-128 (Now known as GS1-128) */
-int ean_128(struct zint_symbol *symbol, unsigned char source[], const size_t length) {
+INTERNAL int ean_128(struct zint_symbol *symbol, unsigned char source[], const size_t length) {
     int i, j, values[170], bar_characters, read, total_sum;
     int error_number, indexchaine, indexliste;
     char set[170], mode, last_set;
@@ -994,7 +994,7 @@ int ean_128(struct zint_symbol *symbol, unsigned char source[], const size_t len
 }
 
 /* Add check digit if encoding an NVE18 symbol */
-int nve_18(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int nve_18(struct zint_symbol *symbol, unsigned char source[], int length) {
     int error_number, zeroes, i, nve_check, total_sum, sourcelen;
     unsigned char ean128_equiv[25];
 
@@ -1037,7 +1037,7 @@ int nve_18(struct zint_symbol *symbol, unsigned char source[], int length) {
 }
 
 /* EAN-14 - A version of EAN-128 */
-int ean_14(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int ean_14(struct zint_symbol *symbol, unsigned char source[], int length) {
     int i, count, check_digit;
     int error_number, zeroes;
     unsigned char ean128_equiv[20];
@@ -1077,5 +1077,3 @@ int ean_14(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     return error_number;
 }
-
-

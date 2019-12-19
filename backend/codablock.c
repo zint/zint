@@ -94,7 +94,7 @@ typedef struct sCharacterSetTable
  * The result is an or of CodeA,CodeB,CodeC,CodeFNC1 in dependency of the
  * possible Code 128 character sets.
  */
-int GetPossibleCharacterSet(unsigned char C)
+static int GetPossibleCharacterSet(unsigned char C)
 {
     if (C<='\x19')      /* Dec:31 */
         return CodeA;
@@ -173,7 +173,7 @@ static void CreateCharacterSetTable(CharacterSetTable T[], unsigned char *data,c
  * one bundle into the line (up to here). This is calculated online because
  * it depends on the space in the line.
  */
-int RemainingDigits(CharacterSetTable *T, int charCur,int emptyColumns)
+static int RemainingDigits(CharacterSetTable *T, int charCur,int emptyColumns)
 {
     int digitCount;     /* Numerical digits fitting in the line */
     int runChar;
@@ -541,7 +541,7 @@ static int Rows2Columns(CharacterSetTable *T, unsigned char *data, const size_t 
 
 /* Print a character in character set A
  */
-void A2C128_A(uchar **ppOutPos,uchar c)
+static void A2C128_A(uchar **ppOutPos,uchar c)
 {
     uchar * pOutPos = *ppOutPos;
     switch(c){
@@ -564,7 +564,7 @@ void A2C128_A(uchar **ppOutPos,uchar c)
 }
 /* Output c in Set B
  */
-void A2C128_B(uchar **ppOutPos,uchar c)
+static void A2C128_B(uchar **ppOutPos,uchar c)
 {
     uchar * pOutPos = *ppOutPos;
     switch(c){
@@ -581,7 +581,7 @@ void A2C128_B(uchar **ppOutPos,uchar c)
 }
 /* Output c1, c2 in Set C
  */
-void A2C128_C(uchar **ppOutPos,uchar c1,uchar c2)
+static void A2C128_C(uchar **ppOutPos,uchar c1,uchar c2)
 {
     uchar * pOutPos = *ppOutPos;
     switch(c1){
@@ -594,7 +594,7 @@ void A2C128_C(uchar **ppOutPos,uchar c1,uchar c2)
 }
 /* Output a character in Characterset
  */
-void ASCIIZ128(uchar **ppOutPos, int CharacterSet,uchar c1, uchar c2)
+static void ASCIIZ128(uchar **ppOutPos, int CharacterSet,uchar c1, uchar c2)
 {
     if (CharacterSet==CodeA)
         A2C128_A(ppOutPos,c1);
@@ -605,7 +605,7 @@ void ASCIIZ128(uchar **ppOutPos, int CharacterSet,uchar c1, uchar c2)
 }
 /* XLate Table A of Codablock-F Specification and call output
  */
-void SumASCII(uchar **ppOutPos, int Sum, int CharacterSet)
+static void SumASCII(uchar **ppOutPos, int Sum, int CharacterSet)
 {
     switch (CharacterSet){
     case CodeA:
@@ -628,7 +628,7 @@ void SumASCII(uchar **ppOutPos, int Sum, int CharacterSet)
 
 /* Main function called by zint framework
  */
-int codablock(struct zint_symbol *symbol,const unsigned char source[], const size_t length) {
+INTERNAL int codablock(struct zint_symbol *symbol,const unsigned char source[], const size_t length) {
     size_t charCur,dataLength;
     int Error;
     int rows, columns, useColumns;
@@ -1005,5 +1005,3 @@ int codablock(struct zint_symbol *symbol,const unsigned char source[], const siz
     }
     return 0;
 }
-
-

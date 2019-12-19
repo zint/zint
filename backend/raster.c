@@ -49,14 +49,14 @@
 #define SSET	"0123456789ABCDEF"
 
 #ifndef NO_PNG
-extern int png_pixel_plot(struct zint_symbol *symbol, char *pixelbuf);
+INTERNAL int png_pixel_plot(struct zint_symbol *symbol, char *pixelbuf);
 #endif /* NO_PNG */
-extern int bmp_pixel_plot(struct zint_symbol *symbol, char *pixelbuf);
-extern int pcx_pixel_plot(struct zint_symbol *symbol, char *pixelbuf);
-extern int gif_pixel_plot(struct zint_symbol *symbol, char *pixelbuf);
-extern int tif_pixel_plot(struct zint_symbol *symbol, char *pixelbuf);
+INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, char *pixelbuf);
+INTERNAL int pcx_pixel_plot(struct zint_symbol *symbol, char *pixelbuf);
+INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, char *pixelbuf);
+INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, char *pixelbuf);
 
-void buffer_plot(struct zint_symbol *symbol, char *pixelbuf) {
+static void buffer_plot(struct zint_symbol *symbol, char *pixelbuf) {
     /* Place pixelbuffer into symbol */
     int fgred, fggrn, fgblu, bgred, bggrn, bgblu;
     int row, column, i;
@@ -90,7 +90,7 @@ void buffer_plot(struct zint_symbol *symbol, char *pixelbuf) {
     }
 }
 
-int save_raster_image_to_file(struct zint_symbol *symbol, int image_height, int image_width, char *pixelbuf, int rotate_angle, int image_type) {
+static int save_raster_image_to_file(struct zint_symbol *symbol, int image_height, int image_width, char *pixelbuf, int rotate_angle, int image_type) {
     int error_number;
     int row, column;
 
@@ -208,7 +208,7 @@ int save_raster_image_to_file(struct zint_symbol *symbol, int image_height, int 
     return error_number;
 }
 
-void draw_bar(char *pixelbuf, int xpos, int xlen, int ypos, int ylen, int image_width, int image_height) {
+static void draw_bar(char *pixelbuf, int xpos, int xlen, int ypos, int ylen, int image_width, int image_height) {
     /* Draw a rectangle */
     int i, j, png_ypos;
 
@@ -223,7 +223,7 @@ void draw_bar(char *pixelbuf, int xpos, int xlen, int ypos, int ylen, int image_
     }
 }
 
-void draw_circle(char *pixelbuf, int image_width, int image_height, int x0, int y0, float radius, char fill) {
+static void draw_circle(char *pixelbuf, int image_width, int image_height, int x0, int y0, float radius, char fill) {
     int x, y;
     int radius_i = (int) radius;
 
@@ -239,7 +239,7 @@ void draw_circle(char *pixelbuf, int image_width, int image_height, int x0, int 
     }
 }
 
-void draw_bullseye(char *pixelbuf, int image_width, int image_height, int xoffset, int yoffset, int scaler) {
+static void draw_bullseye(char *pixelbuf, int image_width, int image_height, int xoffset, int yoffset, int scaler) {
     /* Central bullseye in Maxicode symbols */
     float x = 14.5 * scaler;
     float y = 15.0 * scaler;
@@ -256,7 +256,7 @@ void draw_bullseye(char *pixelbuf, int image_width, int image_height, int xoffse
     draw_circle(pixelbuf, image_width, image_height, x + xoffset, y + yoffset, (0.602 * scaler) + 1, '0');
 }
 
-void draw_hexagon(char *pixelbuf, int image_width, char *scaled_hexagon, int hexagon_size, int xposn, int yposn) {
+static void draw_hexagon(char *pixelbuf, int image_width, char *scaled_hexagon, int hexagon_size, int xposn, int yposn) {
     /* Put a hexagon into the pixel buffer */
     int i, j;
 
@@ -269,7 +269,7 @@ void draw_hexagon(char *pixelbuf, int image_width, char *scaled_hexagon, int hex
     }
 }
 
-void draw_letter(char *pixelbuf, unsigned char letter, int xposn, int yposn, int textflags, int image_width, int image_height) {
+static void draw_letter(char *pixelbuf, unsigned char letter, int xposn, int yposn, int textflags, int image_width, int image_height) {
     /* Put a letter into a position */
     int skip;
 
@@ -387,7 +387,7 @@ void draw_letter(char *pixelbuf, unsigned char letter, int xposn, int yposn, int
 }
 
 /* Plot a string into the pixel buffer */
-void draw_string(char *pixbuf, char input_string[], int xposn, int yposn, int textflags, int image_width, int image_height) {
+static void draw_string(char *pixbuf, char input_string[], int xposn, int yposn, int textflags, int image_width, int image_height) {
     int i, string_length, string_left_hand, letter_width = 7;
 
     switch (textflags) {
@@ -413,7 +413,7 @@ void draw_string(char *pixbuf, char input_string[], int xposn, int yposn, int te
 
 }
 
-void plot_hexline(char *scaled_hexagon, int hexagon_size, float start_x, float start_y, float end_x, float end_y) {
+static void plot_hexline(char *scaled_hexagon, int hexagon_size, float start_x, float start_y, float end_x, float end_y) {
     /* Draw a straight line from start to end */
     int i;
     float inc_x, inc_y;
@@ -430,7 +430,7 @@ void plot_hexline(char *scaled_hexagon, int hexagon_size, float start_x, float s
     }
 }
 
-void plot_hexagon(char *scaled_hexagon, int hexagon_size) {
+static void plot_hexagon(char *scaled_hexagon, int hexagon_size) {
     /* Create a hexagon shape and fill it */
     int line, i;
 
@@ -486,7 +486,7 @@ void plot_hexagon(char *scaled_hexagon, int hexagon_size) {
     }
 }
 
-int plot_raster_maxicode(struct zint_symbol *symbol, int rotate_angle, int data_type) {
+static int plot_raster_maxicode(struct zint_symbol *symbol, int rotate_angle, int data_type) {
     /* Plot a MaxiCode symbol with hexagons and bullseye */
     int i, row, column, xposn;
     int image_height, image_width;
@@ -566,7 +566,7 @@ int plot_raster_maxicode(struct zint_symbol *symbol, int rotate_angle, int data_
 }
 
 /* Convert UTF-8 to Latin1 Codepage for the interpretation line */
-void to_latin1(unsigned char source[], unsigned char preprocessed[]) {
+static void to_latin1(unsigned char source[], unsigned char preprocessed[]) {
     int j, i, input_length;
 
     input_length = ustrlen(source);
@@ -604,7 +604,7 @@ void to_latin1(unsigned char source[], unsigned char preprocessed[]) {
     return;
 }
 
-int plot_raster_dotty(struct zint_symbol *symbol, int rotate_angle, int data_type) {
+static int plot_raster_dotty(struct zint_symbol *symbol, int rotate_angle, int data_type) {
     float scaler = 2 * symbol->scale;
     char *scaled_pixelbuf;
     int r, i;
@@ -654,7 +654,7 @@ int plot_raster_dotty(struct zint_symbol *symbol, int rotate_angle, int data_typ
     return error_number;
 }
 
-int plot_raster_default(struct zint_symbol *symbol, int rotate_angle, int data_type) {
+static int plot_raster_default(struct zint_symbol *symbol, int rotate_angle, int data_type) {
     int textdone, main_width, comp_offset, large_bar_count;
     char textpart[10], addon[6];
     float addon_text_posn, preset_height, large_bar_height;
@@ -1118,7 +1118,7 @@ int plot_raster_default(struct zint_symbol *symbol, int rotate_angle, int data_t
     return error_number;
 }
 
-int plot_raster(struct zint_symbol *symbol, int rotate_angle, int file_type) {
+INTERNAL int plot_raster(struct zint_symbol *symbol, int rotate_angle, int file_type) {
     int error;
 
 #ifdef NO_PNG
@@ -1139,5 +1139,3 @@ int plot_raster(struct zint_symbol *symbol, int rotate_angle, int file_type) {
 
     return error;
 }
-
-

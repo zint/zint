@@ -91,7 +91,7 @@ static int general_field_next_none(char* general_field, int i, int general_field
 
 /* Attempts to apply encoding rules from sections 7.2.5.5.1 to 7.2.5.5.3
  * of ISO/IEC 24724:2011 (same as sections 5.4.1 to 5.4.3 of ISO/IEC 24723:2010) */
-int general_field_encode(char* general_field, int* p_mode, int* p_last_digit, char binary_string[]) {
+INTERNAL int general_field_encode(char* general_field, int* p_mode, int* p_last_digit, char binary_string[]) {
     int i, d1, d2;
     int mode = *p_mode;
     int last_digit = 0; /* Set to odd remaining digit at end if any */

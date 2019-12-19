@@ -29,6 +29,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* vim: set ts=4 sw=4 et : */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -42,15 +43,7 @@
 #include <malloc.h>
 #endif
 
-int tbump_up(int input) {
-    /* Strings length must be a multiple of 4 bytes */
-    if ((input % 2) == 1) {
-        input++;
-    }
-    return input;
-}
-
-int tif_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
+INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
     int fgred, fggrn, fgblu, bgred, bggrn, bgblu;
     int i;
     int rows_per_strip, strip_count;

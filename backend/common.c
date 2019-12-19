@@ -32,16 +32,15 @@
 /* vim: set ts=4 sw=4 et : */
 #include <string.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include "common.h"
 
 /* Local replacement for strlen() with unsigned char strings */
-size_t ustrlen(const unsigned char data[]) {
+INTERNAL size_t ustrlen(const unsigned char data[]) {
     return strlen((const char*) data);
 }
 
 /* Converts a character 0-9 to its equivalent integer value */
-int ctoi(const char source) {
+INTERNAL int ctoi(const char source) {
     if ((source >= '0') && (source <= '9'))
         return (source - '0');
     if ((source >= 'A') && (source <= 'F'))
@@ -51,9 +50,8 @@ int ctoi(const char source) {
     return -1;
 }
 
-
 /* Convert an integer value to a string representing its binary equivalent */
-void bin_append(const int arg, const int length, char *binary) {
+INTERNAL void bin_append(const int arg, const int length, char *binary) {
     size_t posn = strlen(binary);
 
     bin_append_posn(arg, length, binary, posn);
@@ -62,7 +60,7 @@ void bin_append(const int arg, const int length, char *binary) {
 }
 
 /* Convert an integer value to a string representing its binary equivalent at a set position */
-void bin_append_posn(const int arg, const int length, char *binary, size_t posn) {
+INTERNAL void bin_append_posn(const int arg, const int length, char *binary, size_t posn) {
     int i;
     int start;
 
@@ -77,15 +75,16 @@ void bin_append_posn(const int arg, const int length, char *binary, size_t posn)
 }
 
 /* Converts an integer value to its hexadecimal character */
-char itoc(const int source) {
+INTERNAL char itoc(const int source) {
     if ((source >= 0) && (source <= 9)) {
         return ('0' + source);
     } else {
         return ('A' + (source - 10));
     }
 }
+
 /* Converts lower case characters to upper case in a string source[] */
-void to_upper(unsigned char source[]) {
+INTERNAL void to_upper(unsigned char source[]) {
     size_t i, src_len = ustrlen(source);
 
     for (i = 0; i < src_len; i++) {
@@ -96,7 +95,7 @@ void to_upper(unsigned char source[]) {
 }
 
 /* Verifies that a string only uses valid characters */
-int is_sane(const char test_string[], const unsigned char source[], const size_t length) {
+INTERNAL int is_sane(const char test_string[], const unsigned char source[], const size_t length) {
     unsigned int j;
     size_t i, lt = strlen(test_string);
 
@@ -117,7 +116,7 @@ int is_sane(const char test_string[], const unsigned char source[], const size_t
 }
 
 /* Replaces huge switch statements for looking up in tables */
-void lookup(const char set_string[], const char *table[], const char data, char dest[]) {
+INTERNAL void lookup(const char set_string[], const char *table[], const char data, char dest[]) {
     size_t i, n = strlen(set_string);
 
     for (i = 0; i < n; i++) {
@@ -128,7 +127,7 @@ void lookup(const char set_string[], const char *table[], const char data, char 
 }
 
 /* Returns the position of data in set_string */
-int posn(const char set_string[], const char data) {
+INTERNAL int posn(const char set_string[], const char data) {
     int i, n = (int)strlen(set_string);
 
     for (i = 0; i < n; i++) {
@@ -140,7 +139,7 @@ int posn(const char set_string[], const char data) {
 }
 
 /* Returns the number of times a character occurs in a string */
-int ustrchr_cnt(const unsigned char string[], const size_t length, const unsigned char c) {
+INTERNAL int ustrchr_cnt(const unsigned char string[], const size_t length, const unsigned char c) {
     int count = 0;
     int i;
     for (i = 0; i < length; i++) {
@@ -152,22 +151,22 @@ int ustrchr_cnt(const unsigned char string[], const size_t length, const unsigne
 }
 
 /* Return true (1) if a module is dark/black, otherwise false (0) */
-int module_is_set(const struct zint_symbol *symbol, const int y_coord, const int x_coord) {
+INTERNAL int module_is_set(const struct zint_symbol *symbol, const int y_coord, const int x_coord) {
     return (symbol->encoded_data[y_coord][x_coord / 7] >> (x_coord % 7)) & 1;
 }
 
 /* Set a module to dark/black */
-void set_module(struct zint_symbol *symbol, const int y_coord, const int x_coord) {
+INTERNAL void set_module(struct zint_symbol *symbol, const int y_coord, const int x_coord) {
     symbol->encoded_data[y_coord][x_coord / 7] |= 1 << (x_coord % 7);
 }
 
 /* Set (or unset) a module to white */
-void unset_module(struct zint_symbol *symbol, const int y_coord, const int x_coord) {
+INTERNAL void unset_module(struct zint_symbol *symbol, const int y_coord, const int x_coord) {
     symbol->encoded_data[y_coord][x_coord / 7] &= ~(1 << (x_coord % 7));
 }
 
 /* Expands from a width pattern to a bit pattern */
-void expand(struct zint_symbol *symbol, const char data[]) {
+INTERNAL void expand(struct zint_symbol *symbol, const char data[]) {
 
     size_t reader, n = strlen(data);
     int writer, i;
@@ -201,7 +200,7 @@ void expand(struct zint_symbol *symbol, const char data[]) {
 }
 
 /* Indicates which symbologies can have row binding */
-int is_stackable(const int symbology) {
+INTERNAL int is_stackable(const int symbology) {
     if (symbology < BARCODE_PDF417) {
         return 1;
     }
@@ -224,7 +223,7 @@ int is_stackable(const int symbology) {
 }
 
 /* Indicates which symbols can have addon (EAN-2 and EAN-5) */
-int is_extendable(const int symbology) {
+INTERNAL int is_extendable(const int symbology) {
     if (symbology == BARCODE_EANX || symbology == BARCODE_EANX_CHK) {
         return 1;
     }
@@ -251,11 +250,11 @@ int is_extendable(const int symbology) {
 }
 
 /* Indicates which symbols can have composite 2D component data */
-int is_composite(int symbology) {
+INTERNAL int is_composite(int symbology) {
     return symbology >= BARCODE_EANX_CC && symbology <= BARCODE_RSS_EXPSTACK_CC;
 }
 
-int istwodigits(const unsigned char source[], const size_t position) {
+INTERNAL int istwodigits(const unsigned char source[], const size_t position) {
     if ((source[position] >= '0') && (source[position] <= '9')) {
         if ((source[position + 1] >= '0') && (source[position + 1] <= '9')) {
             return 1;
@@ -266,7 +265,7 @@ int istwodigits(const unsigned char source[], const size_t position) {
 }
 
 /* State machine to decode UTF-8 to Unicode codepoints (state 0 means done, state 12 means error) */
-unsigned int decode_utf8(unsigned int* state, unsigned int* codep, const unsigned char byte) {
+INTERNAL unsigned int decode_utf8(unsigned int* state, unsigned int* codep, const unsigned char byte) {
     /*
         Copyright (c) 2008-2009 Bjoern Hoehrmann <bjoern@hoehrmann.de>
 
@@ -312,7 +311,7 @@ unsigned int decode_utf8(unsigned int* state, unsigned int* codep, const unsigne
 
 /* Convert UTF-8 to Unicode. If `disallow_4byte` unset, allow all values (UTF-32).
  * If `disallow_4byte` set, only allow codepoints <= U+FFFF (ie four-byte sequences not allowed) (UTF-16, no surrogates) */
-int utf8_to_unicode(struct zint_symbol *symbol, const unsigned char source[], unsigned int vals[], size_t *length, int disallow_4byte) {
+INTERNAL int utf8_to_unicode(struct zint_symbol *symbol, const unsigned char source[], unsigned int vals[], size_t *length, int disallow_4byte) {
     size_t bpos;
     int    jpos;
     unsigned int codepoint, state = 0;
@@ -344,7 +343,7 @@ int utf8_to_unicode(struct zint_symbol *symbol, const unsigned char source[], un
 }
 
 /* Enforce minimum permissable height of rows */
-void set_minimum_height(struct zint_symbol *symbol, const int min_height) {
+INTERNAL void set_minimum_height(struct zint_symbol *symbol, const int min_height) {
     int fixed_height = 0;
     int zero_count = 0;
     int i;
@@ -369,7 +368,7 @@ void set_minimum_height(struct zint_symbol *symbol, const int min_height) {
 }
 
 /* Calculate optimized encoding modes. Adapted from Project Nayuki */
-void pn_define_mode(char* mode, const unsigned int data[], const size_t length, const int debug,
+INTERNAL void pn_define_mode(char* mode, const unsigned int data[], const size_t length, const int debug,
         unsigned int state[], const char mode_types[], const int num_modes, pn_head_costs head_costs, pn_switch_cost switch_cost, pn_eod_cost eod_cost, pn_cur_cost cur_cost) {
     /*
      * Copyright (c) Project Nayuki. (MIT License)
@@ -400,12 +399,12 @@ void pn_define_mode(char* mode, const unsigned int data[], const size_t length, 
     cur_costs = (unsigned int*) _alloca(num_modes * sizeof(unsigned int));
 #endif
 
-    /* char_modes[i * num_modes + j] represents the mode to encode the code point at index i such that the final segment ends in
-     * mode_types[j] and the total number of bits is minimized over all possible choices */
+    /* char_modes[i * num_modes + j] represents the mode to encode the code point at index i such that the final
+     * segment ends in mode_types[j] and the total number of bits is minimized over all possible choices */
     memset(char_modes, 0, length * num_modes);
 
-    /* At the beginning of each iteration of the loop below, prev_costs[j] is the minimum number of 1/6 (1/GM_MULT) bits needed
-     * to encode the entire string prefix of length i, and end in mode_types[j] */
+    /* At the beginning of each iteration of the loop below, prev_costs[j] is the minimum number of 1/6 (1/XX_MULT)
+     * bits needed to encode the entire string prefix of length i, and end in mode_types[j] */
     memcpy(prev_costs, (*head_costs)(state), num_modes * sizeof(unsigned int));
 
     /* Calculate costs using dynamic programming */
@@ -460,6 +459,7 @@ void pn_define_mode(char* mode, const unsigned int data[], const size_t length, 
     }
 }
 
+#ifdef ZINT_TEST
 /* Dumps hex-formatted codewords in symbol->errtxt (for use in testing) */
 void debug_test_codeword_dump(struct zint_symbol *symbol, unsigned char* codewords, int length) {
     int i, max = length, cnt_len = 0;
@@ -473,3 +473,4 @@ void debug_test_codeword_dump(struct zint_symbol *symbol, unsigned char* codewor
     }
     symbol->errtxt[strlen(symbol->errtxt) - 1] = '\0'; /* Zap last space */
 }
+#endif

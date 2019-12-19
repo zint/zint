@@ -29,6 +29,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* vim: set ts=4 sw=4 et : */
 
 #define SODIUM	"0123456789X"
 
@@ -56,7 +57,7 @@ static char *TeleTable[] = {
     "3113111113", "11311111111111", "331111111111", "111113111113", "31111111111111", "111311111113", "131111111113"
 };
 
-int telepen(struct zint_symbol *symbol, unsigned char source[], const size_t src_len) {
+INTERNAL int telepen(struct zint_symbol *symbol, unsigned char source[], const size_t src_len) {
     unsigned int i, count, check_digit;
     int error_number;
     char dest[512]; /*14 + 30 * 14 + 14 + 14 + 1 ~ 512 */
@@ -103,7 +104,7 @@ int telepen(struct zint_symbol *symbol, unsigned char source[], const size_t src
     return error_number;
 }
 
-int telepen_num(struct zint_symbol *symbol, unsigned char source[], const size_t src_len) {
+INTERNAL int telepen_num(struct zint_symbol *symbol, unsigned char source[], const size_t src_len) {
     unsigned int count, check_digit, glyph;
     int error_number;
     size_t i,temp_length = src_len;
@@ -165,4 +166,3 @@ int telepen_num(struct zint_symbol *symbol, unsigned char source[], const size_t
     ustrcpy(symbol->text, temp);
     return error_number;
 }
-

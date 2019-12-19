@@ -49,7 +49,7 @@
 /* Bits multiplied by this for costs, so as to be whole integer divisible by 2 and 3 */
 #define GM_MULT 6
 
-static char numeral_nondigits[] = " +-.,"; /* Non-digit numeral set, excluding EOL (carriage return/linefeed) */
+static const char numeral_nondigits[] = " +-.,"; /* Non-digit numeral set, excluding EOL (carriage return/linefeed) */
 
 /* Whether in numeral or not. If in numeral, *p_numeral_end is set to position after numeral, and *p_numeral_cost is set to per-numeral cost */
 static int in_numeral(const unsigned int gbdata[], const size_t length, const int posn, unsigned int* p_numeral_end, unsigned int* p_numeral_cost) {
@@ -133,7 +133,7 @@ static unsigned int* gm_head_costs(unsigned int state[]) {
 
 /* Cost of switching modes from k to j - see AIMD014 Rev. 1.63 Table 9 – Type conversion codes */
 static unsigned int gm_switch_cost(unsigned int state[], const int k, const int j) {
-    static unsigned int switch_costs[GM_NUM_MODES][GM_NUM_MODES] = {
+    static const unsigned int switch_costs[GM_NUM_MODES][GM_NUM_MODES] = {
         /*      H             N                   L             U             M             B  */
         /*H*/ {            0, (13 + 2) * GM_MULT, 13 * GM_MULT, 13 * GM_MULT, 13 * GM_MULT, (13 + 9) * GM_MULT },
         /*N*/ { 10 * GM_MULT,                  0, 10 * GM_MULT, 10 * GM_MULT, 10 * GM_MULT, (10 + 9) * GM_MULT },
@@ -148,7 +148,7 @@ static unsigned int gm_switch_cost(unsigned int state[], const int k, const int 
 
 /* Final end-of-data cost - see AIMD014 Rev. 1.63 Table 9 – Type conversion codes */
 static unsigned int gm_eod_cost(unsigned int state[], const int k) {
-    static unsigned int eod_costs[GM_NUM_MODES] = {
+    static const unsigned int eod_costs[GM_NUM_MODES] = {
     /*  H             N             L            U            M             B  */
         13 * GM_MULT, 10 * GM_MULT, 5 * GM_MULT, 5 * GM_MULT, 10 * GM_MULT, 4 * GM_MULT
     };
@@ -220,7 +220,7 @@ static void gm_cur_cost(unsigned int state[], const unsigned int gbdata[], const
 
 /* Calculate optimized encoding modes */
 static void define_mode(char* mode, const unsigned int gbdata[], const size_t length, const int debug) {
-    static char mode_types[] = { GM_CHINESE, GM_NUMBER, GM_LOWER, GM_UPPER, GM_MIXED, GM_BYTE }; /* Must be in same order as GM_H etc */
+    static const char mode_types[] = { GM_CHINESE, GM_NUMBER, GM_LOWER, GM_UPPER, GM_MIXED, GM_BYTE }; /* Must be in same order as GM_H etc */
     unsigned int state[3] = { 0 /*numeral_end*/, 0 /*numeral_cost*/, 0 /*byte_count*/ };
 
     pn_define_mode(mode, gbdata, length, debug, state, mode_types, GM_NUM_MODES, gm_head_costs, gm_switch_cost, gm_eod_cost, gm_cur_cost);
@@ -919,7 +919,7 @@ static void place_layer_id(char* grid, int size, int layers, int modules, int ec
     }
 }
 
-int grid_matrix(struct zint_symbol *symbol, const unsigned char source[], size_t length) {
+INTERNAL int grid_matrix(struct zint_symbol *symbol, const unsigned char source[], size_t length) {
     int size, modules, error_number;
     int auto_layers, min_layers, layers, auto_ecc_level, min_ecc_level, ecc_level;
     int x, y, i;
@@ -1058,7 +1058,9 @@ int grid_matrix(struct zint_symbol *symbol, const unsigned char source[], size_t
     }
 
     gm_add_ecc(binary, data_cw, layers, ecc_level, word);
+#ifdef ZINT_TEST
     if (symbol->debug & ZINT_DEBUG_TEST) debug_test_codeword_dump(symbol, word, data_cw);
+#endif
     size = 6 + (layers * 12);
     modules = 1 + (layers * 2);
 

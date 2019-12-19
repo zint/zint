@@ -29,6 +29,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* vim: set ts=4 sw=4 et : */
 
 /* In version 0.5 this file was 1,553 lines long! */
 
@@ -95,17 +96,17 @@ static const char *C93Table[47] = {
 };
 
 /* Global Variables for Channel Code */
-int S[11], B[11];
-long value;
-long target_value;
-char pattern[30];
+static int S[11], B[11];
+static long value;
+static long target_value;
+static char pattern[30];
 
 /* Function Prototypes */
-void NextS(int Chan, int i, int MaxS, int MaxB);
-void NextB(int Chan, int i, int MaxB, int MaxS);
+static void NextS(int Chan, int i, int MaxS, int MaxB);
+static void NextB(int Chan, int i, int MaxB, int MaxS);
 
 /* *********************** CODE 11 ******************** */
-int code_11(struct zint_symbol *symbol, unsigned char source[], int length) { /* Code 11 */
+INTERNAL int code_11(struct zint_symbol *symbol, unsigned char source[], int length) { /* Code 11 */
 
     unsigned int i;
     int h, c_digit, c_weight, c_count, k_digit, k_weight, k_count;
@@ -186,7 +187,7 @@ int code_11(struct zint_symbol *symbol, unsigned char source[], int length) { /*
 }
 
 /* Code 39 */
-int c39(struct zint_symbol *symbol, unsigned char source[], const size_t length) {
+INTERNAL int c39(struct zint_symbol *symbol, unsigned char source[], const size_t length) {
     unsigned int i;
     unsigned int counter;
     int error_number;
@@ -290,7 +291,7 @@ int c39(struct zint_symbol *symbol, unsigned char source[], const size_t length)
 }
 
 /* Pharmazentral Nummer (PZN) */
-int pharmazentral(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int pharmazentral(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     int i, error_number, zeroes;
     unsigned int count, check_digit;
@@ -334,7 +335,7 @@ int pharmazentral(struct zint_symbol *symbol, unsigned char source[], int length
 }
 
 /* Extended Code 39 - ISO/IEC 16388:2007 Annex A */
-int ec39(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int ec39(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     unsigned char buffer[150] = {0};
     unsigned int i;
@@ -366,7 +367,7 @@ int ec39(struct zint_symbol *symbol, unsigned char source[], int length) {
 }
 
 /* Code 93 is an advancement on Code 39 and the definition is a lot tighter */
-int c93(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int c93(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     /* SILVER includes the extra characters a, b, c and d to represent Code 93 specific
        shift characters 1, 2, 3 and 4 respectively. These characters are never used by
@@ -465,7 +466,7 @@ int c93(struct zint_symbol *symbol, unsigned char source[], int length) {
    licenses and fees. AIM USA, its member companies, or individual officers
    assume no liability for the use of this document." */
 
-void CheckCharacter() {
+static void CheckCharacter() {
 
     if (value == target_value) {
         int i;
@@ -481,7 +482,7 @@ void CheckCharacter() {
     }
 }
 
-void NextB(int Chan, int i, int MaxB, int MaxS) {
+static void NextB(int Chan, int i, int MaxB, int MaxS) {
     int b;
 
     b = (S[i] + B[i - 1] + S[i - 1] + B[i - 2] > 4) ? 1 : 2;
@@ -497,7 +498,7 @@ void NextB(int Chan, int i, int MaxB, int MaxS) {
     }
 }
 
-void NextS(int Chan, int i, int MaxS, int MaxB) {
+static void NextS(int Chan, int i, int MaxS, int MaxB) {
     int s;
 
     for (s = (i < Chan + 2) ? 1 : MaxS; s <= MaxS; s++) {
@@ -507,7 +508,7 @@ void NextS(int Chan, int i, int MaxS, int MaxB) {
 }
 
 /* Channel Code - According to ANSI/AIM BC12-1998 */
-int channel_code(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int channel_code(struct zint_symbol *symbol, unsigned char source[], int length) {
     int channels, i;
     int error_number = 0, range = 0, zeroes;
     char hrt[9];
@@ -596,7 +597,7 @@ int channel_code(struct zint_symbol *symbol, unsigned char source[], int length)
 
 
 /* Vehicle Identification Number (VIN) */
-int vin(struct zint_symbol *symbol, const unsigned char source[], const size_t in_length) {
+INTERNAL int vin(struct zint_symbol *symbol, const unsigned char source[], const size_t in_length) {
     
     /* This code verifies the check digit present in North American VIN codes */
     
@@ -692,4 +693,3 @@ int vin(struct zint_symbol *symbol, const unsigned char source[], const size_t i
     
     return 0;
 }
-

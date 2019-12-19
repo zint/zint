@@ -29,6 +29,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* vim: set ts=4 sw=4 et : */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -49,7 +50,7 @@ static const char *MSITable[10] = {
 };
 
 /* Not MSI/Plessey but the older Plessey standard */
-int plessey(struct zint_symbol *symbol, unsigned char source[], const size_t length) {
+INTERNAL int plessey(struct zint_symbol *symbol, unsigned char source[], const size_t length) {
 
     unsigned int i;
     unsigned char *checkptr;
@@ -111,7 +112,7 @@ int plessey(struct zint_symbol *symbol, unsigned char source[], const size_t len
 }
 
 /* Plain MSI Plessey - does not calculate any check character */
-int msi_plessey(struct zint_symbol *symbol, unsigned char source[], const size_t length) {
+static int msi_plessey(struct zint_symbol *symbol, unsigned char source[], const size_t length) {
 
 	size_t i;
     char dest[512]; /* 2 + 55 * 8 + 3 + 1 ~ 512 */
@@ -138,7 +139,7 @@ int msi_plessey(struct zint_symbol *symbol, unsigned char source[], const size_t
 
 /* MSI Plessey with Modulo 10 check digit - algorithm from Barcode Island
  * http://www.barcodeisland.com/ */
-int msi_plessey_mod10(struct zint_symbol *symbol, unsigned char source[], int length) {
+static int msi_plessey_mod10(struct zint_symbol *symbol, unsigned char source[], int length) {
 
 
     unsigned long i, wright, dau, pedwar, pump, n;
@@ -205,7 +206,7 @@ int msi_plessey_mod10(struct zint_symbol *symbol, unsigned char source[], int le
 
 /* MSI Plessey with two Modulo 10 check digits - algorithm from
  * Barcode Island http://www.barcodeisland.com/ */
-int msi_plessey_mod1010(struct zint_symbol *symbol, unsigned char source[], const unsigned int src_len) {
+static int msi_plessey_mod1010(struct zint_symbol *symbol, unsigned char source[], const unsigned int src_len) {
 
 
     unsigned long i, n, wright, dau, pedwar, pump, chwech;
@@ -309,7 +310,7 @@ int msi_plessey_mod1010(struct zint_symbol *symbol, unsigned char source[], cons
 
 /* Calculate a Modulo 11 check digit using the system discussed on Wikipedia -
     see http://en.wikipedia.org/wiki/Talk:MSI_Barcode */
-int msi_plessey_mod11(struct zint_symbol *symbol, unsigned char source[], const unsigned int src_len) {
+static int msi_plessey_mod11(struct zint_symbol *symbol, unsigned char source[], const unsigned int src_len) {
     /* uses the IBM weight system */
     int i, weight, x, check;
     int error_number;
@@ -367,7 +368,7 @@ int msi_plessey_mod11(struct zint_symbol *symbol, unsigned char source[], const 
 
 /* Combining the Barcode Island and Wikipedia code
  * Verified against http://www.bokai.com/BarcodeJSP/applet/BarcodeSampleApplet.htm */
-int msi_plessey_mod1110(struct zint_symbol *symbol, unsigned char source[], const unsigned int src_len) {
+static int msi_plessey_mod1110(struct zint_symbol *symbol, unsigned char source[], const unsigned int src_len) {
     /* Weighted using the IBM system */
     unsigned long i, weight, x, check, wright, dau, pedwar, pump;
     size_t h;
@@ -462,7 +463,7 @@ int msi_plessey_mod1110(struct zint_symbol *symbol, unsigned char source[], cons
     return error_number;
 }
 
-int msi_handle(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int msi_handle(struct zint_symbol *symbol, unsigned char source[], int length) {
     int error_number;
 
     error_number = is_sane(NEON, source, length);
@@ -491,4 +492,3 @@ int msi_handle(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     return error_number;
 }
-

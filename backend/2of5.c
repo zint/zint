@@ -29,6 +29,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* vim: set ts=4 sw=4 et : */
 
 #include <string.h>
 #include <stdio.h>
@@ -59,7 +60,7 @@ static inline char check_digit(unsigned int count) {
 }
 
 /* Code 2 of 5 Standard (Code 2 of 5 Matrix) */
-int matrix_two_of_five(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int matrix_two_of_five(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     int i, error_number;
     char dest[512]; /* 6 + 80 * 6 + 6 + 1 ~ 512*/
@@ -90,7 +91,7 @@ int matrix_two_of_five(struct zint_symbol *symbol, unsigned char source[], int l
 }
 
 /* Code 2 of 5 Industrial */
-int industrial_two_of_five(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int industrial_two_of_five(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     int i, error_number;
     char dest[512]; /* 6 + 40 * 10 + 6 + 1 */
@@ -121,7 +122,7 @@ int industrial_two_of_five(struct zint_symbol *symbol, unsigned char source[], i
 }
 
 /* Code 2 of 5 IATA */
-int iata_two_of_five(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int iata_two_of_five(struct zint_symbol *symbol, unsigned char source[], int length) {
     int i, error_number;
     char dest[512]; /* 4 + 45 * 10 + 3 + 1 */
 
@@ -151,7 +152,7 @@ int iata_two_of_five(struct zint_symbol *symbol, unsigned char source[], int len
 }
 
 /* Code 2 of 5 Data Logic */
-int logic_two_of_five(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int logic_two_of_five(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     int i, error_number;
     char dest[512]; /* 4 + 80 * 6 + 3 + 1 */
@@ -182,7 +183,7 @@ int logic_two_of_five(struct zint_symbol *symbol, unsigned char source[], int le
 }
 
 /* Code 2 of 5 Interleaved */
-int interleaved_two_of_five(struct zint_symbol *symbol, const unsigned char source[], size_t length) {
+INTERNAL int interleaved_two_of_five(struct zint_symbol *symbol, const unsigned char source[], size_t length) {
 
     int i, j, error_number;
     char bars[7], spaces[7], mixed[14], dest[1000];
@@ -243,7 +244,7 @@ int interleaved_two_of_five(struct zint_symbol *symbol, const unsigned char sour
 }
 
 /* Interleaved 2-of-5 (ITF) */
-int itf14(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int itf14(struct zint_symbol *symbol, unsigned char source[], int length) {
     int i, error_number, zeroes;
     unsigned int count;
     char localstr[16];
@@ -284,7 +285,7 @@ int itf14(struct zint_symbol *symbol, unsigned char source[], int length) {
 }
 
 /* Deutshe Post Leitcode */
-int dpleit(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int dpleit(struct zint_symbol *symbol, unsigned char source[], int length) {
     int i, error_number;
     unsigned int count;
     char localstr[16];
@@ -321,7 +322,7 @@ int dpleit(struct zint_symbol *symbol, unsigned char source[], int length) {
 }
 
 /* Deutsche Post Identcode */
-int dpident(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int dpident(struct zint_symbol *symbol, unsigned char source[], int length) {
     int i, error_number, zeroes;
     unsigned int count;
     char localstr[16];
@@ -355,5 +356,3 @@ int dpident(struct zint_symbol *symbol, unsigned char source[], int length) {
     ustrcpy(symbol->text, (unsigned char*) localstr);
     return error_number;
 }
-
-

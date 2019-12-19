@@ -28,6 +28,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* vim: set ts=4 sw=4 et : */
 
 /* Developed according to [MS-EMF] - v20160714, Released July 14, 2016
  * and [MS-WMF] - v20160714, Released July 14, 2016 */
@@ -41,7 +42,7 @@
 #include "common.h"
 #include "emf.h"
 
-int count_rectangles(struct zint_symbol *symbol) {
+static int count_rectangles(struct zint_symbol *symbol) {
     int rectangles = 0;
     struct zint_vector_rect *rect;
 
@@ -54,7 +55,7 @@ int count_rectangles(struct zint_symbol *symbol) {
     return rectangles;
 }
 
-int count_circles(struct zint_symbol *symbol) {
+static int count_circles(struct zint_symbol *symbol) {
     int circles = 0;
     struct zint_vector_circle *circ;
 
@@ -67,7 +68,7 @@ int count_circles(struct zint_symbol *symbol) {
     return circles;
 }
 
-int count_hexagons(struct zint_symbol *symbol) {
+static int count_hexagons(struct zint_symbol *symbol) {
     int hexagons = 0;
     struct zint_vector_hexagon *hex;
 
@@ -80,7 +81,7 @@ int count_hexagons(struct zint_symbol *symbol) {
     return hexagons;
 }
 
-int count_strings(struct zint_symbol *symbol) {
+static int count_strings(struct zint_symbol *symbol) {
     int strings = 0;
     struct zint_vector_string *str;
 
@@ -93,7 +94,7 @@ int count_strings(struct zint_symbol *symbol) {
     return strings;
 }
 
-void utfle_copy(unsigned char *output, unsigned char *input, int length) {
+static void utfle_copy(unsigned char *output, unsigned char *input, int length) {
     int i;
     int o;
 
@@ -117,7 +118,7 @@ void utfle_copy(unsigned char *output, unsigned char *input, int length) {
     } while (i < length);
 }
 
-int bump_up(int input) {
+static int bump_up(int input) {
     /* Strings length must be a multiple of 4 bytes */
     if ((input % 2) == 1) {
         input++;
@@ -125,7 +126,7 @@ int bump_up(int input) {
     return input;
 }
 
-int emf_plot(struct zint_symbol *symbol) {
+INTERNAL int emf_plot(struct zint_symbol *symbol) {
     int i,j;
     FILE *emf_file;
     int fgred, fggrn, fgblu, bgred, bggrn, bgblu;

@@ -39,7 +39,7 @@
 #include <string.h>
 #include <math.h>
 
-void horiz(struct zint_symbol *symbol, int row_no, int full) {
+static void horiz(struct zint_symbol *symbol, int row_no, int full) {
     int i;
 
     if (full) {
@@ -53,7 +53,7 @@ void horiz(struct zint_symbol *symbol, int row_no, int full) {
     }
 }
 
-void central_finder(struct zint_symbol *symbol, int start_row, int row_count, int full_rows) {
+static void central_finder(struct zint_symbol *symbol, int start_row, int row_count, int full_rows) {
     int i;
 
     for (i = 0; i < row_count; i++) {
@@ -69,7 +69,7 @@ void central_finder(struct zint_symbol *symbol, int start_row, int row_count, in
     }
 }
 
-void vert(struct zint_symbol *symbol, int column, int height, int top) {
+static void vert(struct zint_symbol *symbol, int column, int height, int top) {
     int i;
 
     if (top) {
@@ -83,7 +83,7 @@ void vert(struct zint_symbol *symbol, int column, int height, int top) {
     }
 }
 
-void spigot(struct zint_symbol *symbol, int row_no) {
+static void spigot(struct zint_symbol *symbol, int row_no) {
     int i;
 
     for (i = symbol->width - 1; i > 0; i--) {
@@ -93,7 +93,7 @@ void spigot(struct zint_symbol *symbol, int row_no) {
     }
 }
 
-int isedi(unsigned char input) {
+static int isedi(unsigned char input) {
     int result = 0;
 
     if (input == 13) {
@@ -118,7 +118,7 @@ int isedi(unsigned char input) {
     return result;
 }
 
-int dq4bi(unsigned char source[], int sourcelen, int position) {
+static int dq4bi(unsigned char source[], int sourcelen, int position) {
     int i;
 
     for (i = position; isedi(source[position + i]) && ((position + i) < sourcelen); i++);
@@ -350,7 +350,7 @@ static int c1_look_ahead_test(unsigned char source[], int sourcelen, int positio
     return best_scheme;
 }
 
-int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int target[], int length) {
+static int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int target[], int length) {
     int current_mode, next_mode;
     int sp, tp, gs1, i, j, p, latch;
     int c40_buffer[6], c40_p;
@@ -1172,7 +1172,7 @@ int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int t
     return tp;
 }
 
-void block_copy(struct zint_symbol *symbol, char grid[][120], int start_row, int start_col, int height, int width, int row_offset, int col_offset) {
+static void block_copy(struct zint_symbol *symbol, char grid[][120], int start_row, int start_col, int height, int width, int row_offset, int col_offset) {
     int i, j;
 
     for (i = start_row; i < (start_row + height); i++) {
@@ -1184,7 +1184,7 @@ void block_copy(struct zint_symbol *symbol, char grid[][120], int start_row, int
     }
 }
 
-int code_one(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int code_one(struct zint_symbol *symbol, unsigned char source[], int length) {
     int size = 1, i, j;
 
     char datagrid[136][120];
@@ -1770,5 +1770,3 @@ int code_one(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     return 0;
 }
-
-

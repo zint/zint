@@ -40,7 +40,6 @@
 /* vim: set ts=4 sw=4 et : */
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
 #include <assert.h>
@@ -52,8 +51,8 @@
 #define ceilf ceil
 #endif
 #endif
-#include "reedsol.h"
 #include "common.h"
+#include "reedsol.h"
 #include "dmatrix.h"
 
 /* Annex M placement alorithm low level */
@@ -1164,7 +1163,7 @@ static void add_tail(unsigned char target[], int tp, const int tail_length) {
     }
 }
 
-int data_matrix_200(struct zint_symbol *symbol,const unsigned char source[], const size_t in_length) {
+static int data_matrix_200(struct zint_symbol *symbol,const unsigned char source[], const size_t in_length) {
     int i, skew = 0;
     size_t inputlen = in_length;
     unsigned char binary[2200];
@@ -1327,7 +1326,7 @@ int data_matrix_200(struct zint_symbol *symbol,const unsigned char source[], con
     return error_number;
 }
 
-int dmatrix(struct zint_symbol *symbol, const unsigned char source[], const size_t in_length) {
+INTERNAL int dmatrix(struct zint_symbol *symbol, const unsigned char source[], const size_t in_length) {
     int error_number;
 
     if (symbol->option_1 <= 1) {
@@ -1341,5 +1340,3 @@ int dmatrix(struct zint_symbol *symbol, const unsigned char source[], const size
 
     return error_number;
 }
-
-

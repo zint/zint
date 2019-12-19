@@ -39,7 +39,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
-    extern int general_field_encode(char* general_field, int* p_mode, int* p_last_digit, char binary_string[]);
+    INTERNAL int general_field_encode(char* general_field, int* p_mode, int* p_last_digit, char binary_string[]);
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

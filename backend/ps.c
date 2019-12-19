@@ -29,6 +29,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* vim: set ts=4 sw=4 et : */
 
 #include <locale.h>
 #include <string.h>
@@ -37,7 +38,7 @@
 #include <math.h>
 #include "common.h"
 
-int ps_plot(struct zint_symbol *symbol) {
+INTERNAL int ps_plot(struct zint_symbol *symbol) {
     FILE *feps;
     int fgred, fggrn, fgblu, bgred, bggrn, bgblu;
     float red_ink, green_ink, blue_ink, red_paper, green_paper, blue_paper;

@@ -33,7 +33,7 @@
 #include <string.h>
 #include "common.h"
 
-int ultracode(struct zint_symbol *symbol, const unsigned char source[], const size_t in_length) {
+INTERNAL int ultracode(struct zint_symbol *symbol, const unsigned char source[], const size_t in_length) {
 
 
     strcpy(symbol->errtxt, "1000: Ultracode has not been implemented - yet!");

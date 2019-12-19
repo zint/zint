@@ -28,6 +28,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* vim: set ts=4 sw=4 et : */
 
 // It is not written with high efficiency in mind, so is probably
 // not suitable for real-time encoding.  The aim was to keep it
@@ -48,12 +49,10 @@
 // malloc/free can be avoided by using static arrays of a suitable
 // size.
 
-#include <stdio.h>		// only needed for debug (main)
 #ifdef _MSC_VER
 #include <malloc.h>
-#else
-#include <stdlib.h>
 #endif
+#include "common.h"
 #include "reedsol.h"
 static int logmod; // 2**symsize - 1
 static int rlen;
@@ -70,7 +69,7 @@ static int *logt = NULL, *alog = NULL, *rspoly = NULL;
 // polynomial.  e.g. for ECC200 (8-bit symbols) the polynomial is
 // a**8 + a**5 + a**3 + a**2 + 1, which translates to 0x12d.
 
-void rs_init_gf(const int poly) {
+INTERNAL void rs_init_gf(const int poly) {
     int m, b, p, v;
 
     // Find the top bit, and hence the symbol size
@@ -105,7 +104,7 @@ void rs_init_gf(const int poly) {
 // (x + 2**i)*(x + 2**(i+1))*...   [nsym terms]
 // For ECC200, index is 1.
 
-void rs_init_code(const int nsym, int index) {
+INTERNAL void rs_init_code(const int nsym, int index) {
     int i, k;
 
     rspoly = (int *) malloc(sizeof (int) * (nsym + 1));
@@ -125,7 +124,7 @@ void rs_init_code(const int nsym, int index) {
     }
 }
 
-void rs_encode(const size_t len,const unsigned char *data, unsigned char *res) {
+INTERNAL void rs_encode(const size_t len,const unsigned char *data, unsigned char *res) {
     int i, k;
     for (i = 0; i < rlen; i++)
         res[i] = 0;
@@ -145,7 +144,7 @@ void rs_encode(const size_t len,const unsigned char *data, unsigned char *res) {
 }
 
 /* The same as above but for larger bitlengths - Aztec code compatible */
-void rs_encode_long(const int len, const unsigned int *data, unsigned int *res) {
+INTERNAL void rs_encode_long(const int len, const unsigned int *data, unsigned int *res) {
     int i, k;
     for (i = 0; i < rlen; i++)
         res[i] = 0;
@@ -165,10 +164,9 @@ void rs_encode_long(const int len, const unsigned int *data, unsigned int *res) 
 }
 
 /* Free memory */
-void rs_free(void) {
+INTERNAL void rs_free(void) {
     free(logt);
     free(alog);
     free(rspoly);
     rspoly = NULL;
 }
-

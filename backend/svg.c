@@ -42,7 +42,7 @@
 
 #include "common.h"
 
-void make_html_friendly(unsigned char * string, char * html_version) {
+static void make_html_friendly(unsigned char * string, char * html_version) {
     /* Converts text to use HTML entity codes */
 
     int i, html_pos;
@@ -86,7 +86,7 @@ void make_html_friendly(unsigned char * string, char * html_version) {
     }
 }
 
-int svg_plot(struct zint_symbol *symbol) {
+INTERNAL int svg_plot(struct zint_symbol *symbol) {
     FILE *fsvg;
     int error_number = 0;
     const char *locale = NULL;

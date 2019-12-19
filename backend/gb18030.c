@@ -57,7 +57,7 @@
 #include "gb2312.h"
 #include "gb18030.h"
 
-extern int utf_to_eci(const int eci, const unsigned char source[], unsigned char dest[], size_t *length); /* Convert Unicode to other encodings */
+INTERNAL int utf_to_eci(const int eci, const unsigned char source[], unsigned char dest[], size_t *length); /* Convert Unicode to other encodings */
 
 /*
  * CP936 extensions (libiconv-1.16/lib/cp936ext.h)
@@ -2795,7 +2795,7 @@ static const unsigned short gb18030_pua2charset[31*3] = {
   0xe864, 0xe864,  0xfea0,
 };
 
-int gb18030_wctomb_zint(unsigned int* r1, unsigned int* r2, unsigned int wc) {
+INTERNAL int gb18030_wctomb_zint(unsigned int* r1, unsigned int* r2, unsigned int wc) {
     int ret;
 
     /* Code set 0 (ASCII) */
@@ -2867,7 +2867,7 @@ int gb18030_wctomb_zint(unsigned int* r1, unsigned int* r2, unsigned int wc) {
 }
 
 /* Convert UTF-8 string to GB 18030 and place in array of ints */
-int gb18030_utf8tomb(struct zint_symbol *symbol, const unsigned char source[], size_t* p_length, unsigned int* gbdata) {
+INTERNAL int gb18030_utf8tomb(struct zint_symbol *symbol, const unsigned char source[], size_t* p_length, unsigned int* gbdata) {
     int i, j, error_number, ret;
     unsigned int length;
 #ifndef _MSC_VER
@@ -2902,7 +2902,7 @@ int gb18030_utf8tomb(struct zint_symbol *symbol, const unsigned char source[], s
 }
 
 /* Convert UTF-8 string to single byte ECI and place in array of ints */
-int gb18030_utf8tosb(int eci, const unsigned char source[], size_t* p_length, unsigned int* gbdata) {
+INTERNAL int gb18030_utf8tosb(int eci, const unsigned char source[], size_t* p_length, unsigned int* gbdata) {
     int error_number;
 #ifndef _MSC_VER
     unsigned char single_byte[*p_length + 1];
@@ -2922,7 +2922,7 @@ int gb18030_utf8tosb(int eci, const unsigned char source[], size_t* p_length, un
 }
 
 /* Copy byte input stream to array of ints, putting double-bytes that match HANXIN Chinese mode in single entry, and quad-bytes in 2 entries */
-void gb18030_cpy(const unsigned char source[], size_t* p_length, unsigned int* gbdata) {
+INTERNAL void gb18030_cpy(const unsigned char source[], size_t* p_length, unsigned int* gbdata) {
     int i, j, done;
     unsigned int length;
     unsigned char c1, c2, c3, c4;

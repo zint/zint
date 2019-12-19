@@ -19,6 +19,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules" )
 
 set(ZINT_DEBUG FALSE CACHE BOOL "Set debug compile flag")
 set(ZINT_SANITIZE FALSE CACHE BOOL "Set sanitize compile/link flags")
+set(ZINT_TEST FALSE CACHE BOOL "Set test compile flag")
 
 include (SetPaths.cmake)
 
@@ -38,6 +39,9 @@ if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_GNUCC)
         add_compile_options("-fsanitize=address")
         set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=undefined -fsanitize=address")
     endif (ZINT_SANITIZE)
+    if (ZINT_TEST)
+        add_definitions("-DZINT_TEST")
+    endif (ZINT_TEST)
 endif (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_GNUCC)
 
 

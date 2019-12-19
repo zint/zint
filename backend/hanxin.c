@@ -358,7 +358,7 @@ static unsigned int* hx_head_costs(unsigned int state[]) {
 
 /* Cost of switching modes from k to j */
 static unsigned int hx_switch_cost(unsigned int state[], const int k, const int j) {
-    static unsigned int switch_costs[HX_NUM_MODES][HX_NUM_MODES] = {
+    static const unsigned int switch_costs[HX_NUM_MODES][HX_NUM_MODES] = {
         /*      N                   T                   B                        1                   2                   D                   F */
         /*N*/ {                  0, (10 + 4) * HX_MULT, (10 + 4 + 13) * HX_MULT, (10 + 4) * HX_MULT, (10 + 4) * HX_MULT, (10 + 4) * HX_MULT, 10 * HX_MULT },
         /*T*/ {  (6 + 4) * HX_MULT,                  0,  (6 + 4 + 13) * HX_MULT,  (6 + 4) * HX_MULT,  (6 + 4) * HX_MULT,  (6 + 4) * HX_MULT,  6 * HX_MULT },
@@ -374,7 +374,7 @@ static unsigned int hx_switch_cost(unsigned int state[], const int k, const int 
 
 /* Final end-of-data costs */
 static unsigned int hx_eod_cost(unsigned int state[], const int k) {
-    static unsigned int eod_costs[HX_NUM_MODES] = {
+    static const unsigned int eod_costs[HX_NUM_MODES] = {
     /*  N             T            B  1             2             D             F */
         10 * HX_MULT, 6 * HX_MULT, 0, 12 * HX_MULT, 12 * HX_MULT, 15 * HX_MULT, 0
     };
@@ -436,7 +436,7 @@ static void hx_cur_cost(unsigned int state[], const unsigned int gbdata[], const
 
 /* Calculate optimized encoding modes */
 static void hx_define_mode(char* mode, const unsigned int gbdata[], const size_t length, const int debug) {
-    static char mode_types[] = { 'n', 't', 'b', '1', '2', 'd', 'f' }; /* Must be in same order as HX_N etc */
+    static const char mode_types[] = { 'n', 't', 'b', '1', '2', 'd', 'f' }; /* Must be in same order as HX_N etc */
     unsigned int state[5] = { 0 /*numeric_end*/, 0 /*numeric_cost*/, 1 /*text_submode*/, 0 /*fourbyte_end*/, 0 /*fourbyte_cost*/ };
 
     pn_define_mode(mode, gbdata, length, debug, state, mode_types, HX_NUM_MODES, hx_head_costs, hx_switch_cost, hx_eod_cost, hx_cur_cost);
@@ -1370,7 +1370,7 @@ static int hx_apply_bitmask(unsigned char *grid, int size) {
 }
 
 /* Han Xin Code - main */
-int han_xin(struct zint_symbol *symbol, const unsigned char source[], size_t length) {
+INTERNAL int han_xin(struct zint_symbol *symbol, const unsigned char source[], size_t length) {
     int est_binlen;
     int ecc_level = symbol->option_1;
     int i, j, version;
@@ -1542,7 +1542,9 @@ int han_xin(struct zint_symbol *symbol, const unsigned char source[], size_t len
         }
         printf("\n");
     }
+#ifdef ZINT_TEST
     if (symbol->debug & ZINT_DEBUG_TEST) debug_test_codeword_dump(symbol, datastream, data_codewords);
+#endif
 
     hx_setup_grid(grid, size, version);
 

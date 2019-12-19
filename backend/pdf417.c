@@ -30,6 +30,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* vim: set ts=4 sw=4 et : */
 
 /*  This code is adapted from "Code barre PDF 417 / PDF 417 barcode" v2.5.0
     which is Copyright (C) 2004 (Grandzebu).
@@ -81,11 +82,11 @@ static const char MicroAutosize[56] = {
     1, 14, 2, 7, 3, 25, 8, 16, 5, 17, 9, 6, 10, 11, 28, 12, 19, 13, 29, 20, 30, 21, 22, 31, 23, 32, 33, 34
 };
 
-int liste[2][1000]; /* global */
+static int liste[2][1000]; /* global */
 
 /* 866 */
 
-int quelmode(char codeascii) {
+static int quelmode(char codeascii) {
     int mode = BYT;
     if ((codeascii == '\t') || (codeascii == '\n') || (codeascii == '\r') || ((codeascii >= ' ') && (codeascii <= '~'))) {
         mode = TEX;
@@ -99,7 +100,7 @@ int quelmode(char codeascii) {
 }
 
 /* 844 */
-void regroupe(int *indexliste) {
+static void regroupe(int *indexliste) {
 
     /* bring together same type blocks */
     if (*(indexliste) > 1) {
@@ -127,7 +128,7 @@ void regroupe(int *indexliste) {
 }
 
 /* 478 */
-void pdfsmooth(int *indexliste) {
+static void pdfsmooth(int *indexliste) {
     int i, crnt, last, next, length;
 
     for (i = 0; i < *(indexliste); i++) {
@@ -223,7 +224,7 @@ void pdfsmooth(int *indexliste) {
 }
 
 /* 547 */
-void textprocess(int *chainemc, int *mclength, char chaine[], int start, int length) {
+static void textprocess(int *chainemc, int *mclength, char chaine[], int start, int length) {
     int j, indexlistet, curtable, listet[2][5000], chainet[5000], wnet;
 
     wnet = 0;
@@ -414,7 +415,7 @@ void textprocess(int *chainemc, int *mclength, char chaine[], int start, int len
 }
 
 /* 671 */
-void byteprocess(int *chainemc, int *mclength, unsigned char chaine[], int start, int length) {
+INTERNAL void byteprocess(int *chainemc, int *mclength, unsigned char chaine[], int start, int length) {
     int debug = 0;
 
     if (debug) printf("\nEntering byte mode at position %d\n", start);
@@ -482,7 +483,7 @@ void byteprocess(int *chainemc, int *mclength, unsigned char chaine[], int start
 }
 
 /* 712 */
-void numbprocess(int *chainemc, int *mclength, char chaine[], int start, int length) {
+static void numbprocess(int *chainemc, int *mclength, char chaine[], int start, int length) {
     int j, loop, dummy[100], diviseur, nombre;
     char chainemod[50], chainemult[100], temp;
 
@@ -837,7 +838,7 @@ static int pdf417(struct zint_symbol *symbol, unsigned char chaine[], const size
 }
 
 /* 345 */
-int pdf417enc(struct zint_symbol *symbol, unsigned char source[], const size_t length) {
+INTERNAL int pdf417enc(struct zint_symbol *symbol, unsigned char source[], const size_t length) {
     int codeerr, error_number;
 
     error_number = 0;
@@ -890,7 +891,7 @@ int pdf417enc(struct zint_symbol *symbol, unsigned char source[], const size_t l
 }
 
 /* like PDF417 only much smaller! */
-int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], const size_t length) {
+INTERNAL int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], const size_t length) {
     int i, k, j, indexchaine, indexliste, mode, longueur, mccorrection[50], offset;
     int total, chainemc[2700], mclength, dummy[5], codeerr;
     char pattern[580];
@@ -1313,5 +1314,3 @@ int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], const size_
 
     return codeerr;
 }
-
-

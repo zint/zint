@@ -65,12 +65,12 @@
 
 #define UINT unsigned short
 
-extern int eanx(struct zint_symbol *symbol, unsigned char source[], int length);
-extern int ean_128(struct zint_symbol *symbol, unsigned char source[], const size_t length);
-extern void ean_leading_zeroes(struct zint_symbol *symbol, unsigned char source[], unsigned char local_source[]);
-extern int rss14(struct zint_symbol *symbol, unsigned char source[], int length);
-extern int rsslimited(struct zint_symbol *symbol, unsigned char source[], int length);
-extern int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int length);
+INTERNAL int eanx(struct zint_symbol *symbol, unsigned char source[], int length);
+INTERNAL int ean_128(struct zint_symbol *symbol, unsigned char source[], const size_t length);
+INTERNAL void ean_leading_zeroes(struct zint_symbol *symbol, unsigned char source[], unsigned char local_source[]);
+INTERNAL int rss14(struct zint_symbol *symbol, unsigned char source[], int length);
+INTERNAL int rsslimited(struct zint_symbol *symbol, unsigned char source[], int length);
+INTERNAL int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int length);
 
 static UINT pwr928[69][7];
 
@@ -796,7 +796,7 @@ static int calc_padding_cca(int binary_length, int cc_width) {
         return target_bitsize;
 }
 
-int calc_padding_ccb(int binary_length, int cc_width) {
+static int calc_padding_ccb(int binary_length, int cc_width) {
     int target_bitsize = 0;
 
     switch (cc_width) {
@@ -895,7 +895,7 @@ int calc_padding_ccb(int binary_length, int cc_width) {
     return target_bitsize;
 }
 
-int calc_padding_ccc(int binary_length, int *cc_width, int lin_width, int *ecc) {
+static int calc_padding_ccc(int binary_length, int *cc_width, int lin_width, int *ecc) {
     int target_bitsize = 0;
     int byte_length, codewords_used, ecc_level, ecc_codewords, rows;
     int codewords_total, target_codewords, target_bytesize;
@@ -1344,7 +1344,7 @@ static int cc_binary_string(struct zint_symbol *symbol, const char source[], cha
     return 0;
 }
 
-int linear_dummy_run(unsigned char *source, int length) {
+static int linear_dummy_run(unsigned char *source, int length) {
     struct zint_symbol *dummy;
     int error_number;
     int linear_width;
@@ -1363,7 +1363,7 @@ int linear_dummy_run(unsigned char *source, int length) {
     }
 }
 
-int composite(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int length) {
     int error_number, cc_mode, cc_width, ecc_level;
     int j, i, k;
     unsigned int bs = 13 * length + 500 + 1; /* Allow for 8 bits + 5-bit latch per char + 500 bits overhead/padding */

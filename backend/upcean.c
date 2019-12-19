@@ -28,6 +28,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* vim: set ts=4 sw=4 et : */
 
 #define SODIUM	"0123456789+"
 #define EAN2	102
@@ -80,7 +81,7 @@ static const char *EANsetB[10] = {
 };
 
 /* Calculate the correct check digit for a UPC barcode */
-char upc_check(char source[]) {
+static char upc_check(char source[]) {
     unsigned int i, count, check_digit;
 
     count = 0;
@@ -101,7 +102,7 @@ char upc_check(char source[]) {
 }
 
 /* UPC A is usually used for 12 digit numbers, but this function takes a source of any length */
-void upca_draw(char source[], char dest[]) {
+static void upca_draw(char source[], char dest[]) {
     unsigned int i, half_way;
 
     half_way = strlen(source) / 2;
@@ -124,7 +125,7 @@ void upca_draw(char source[], char dest[]) {
 }
 
 /* Make a UPC A barcode when we haven't been given the check digit */
-int upca(struct zint_symbol *symbol, unsigned char source[], char dest[]) {
+static int upca(struct zint_symbol *symbol, unsigned char source[], char dest[]) {
     int length;
     char gtin[15];
 
@@ -148,7 +149,7 @@ int upca(struct zint_symbol *symbol, unsigned char source[], char dest[]) {
 }
 
 /* UPC E is a zero-compressed version of UPC A */
-int upce(struct zint_symbol *symbol, unsigned char source[], char dest[]) {
+static int upce(struct zint_symbol *symbol, unsigned char source[], char dest[]) {
     unsigned int i, num_system;
     char emode, equivalent[12], check_digit, parity[8], temp[9];
     char hrt[9];
@@ -302,7 +303,7 @@ int upce(struct zint_symbol *symbol, unsigned char source[], char dest[]) {
 }
 
 /* EAN-2 and EAN-5 add-on codes */
-void add_on(unsigned char source[], char dest[], int mode) {
+static void add_on(unsigned char source[], char dest[], int mode) {
     char parity[6];
     unsigned int i, code_type;
 
@@ -362,7 +363,7 @@ void add_on(unsigned char source[], char dest[], int mode) {
 /* ************************ EAN-13 ****************** */
 
 /* Calculate the correct check digit for a EAN-13 barcode */
-char ean_check(char source[]) {
+static char ean_check(char source[]) {
     int i;
     unsigned int h, count, check_digit;
 
@@ -383,7 +384,7 @@ char ean_check(char source[]) {
     return itoc(check_digit);
 }
 
-int ean13(struct zint_symbol *symbol, unsigned char source[], char dest[]) {
+static int ean13(struct zint_symbol *symbol, unsigned char source[], char dest[]) {
     unsigned int length, i, half_way;
     char parity[6];
     char gtin[15];
@@ -437,7 +438,7 @@ int ean13(struct zint_symbol *symbol, unsigned char source[], char dest[]) {
 }
 
 /* Make an EAN-8 barcode when we haven't been given the check digit */
-int ean8(struct zint_symbol *symbol, unsigned char source[], char dest[]) {
+static int ean8(struct zint_symbol *symbol, unsigned char source[], char dest[]) {
     /* EAN-8 is basically the same as UPC-A but with fewer digits */
     int length;
     char gtin[10];
@@ -463,7 +464,7 @@ int ean8(struct zint_symbol *symbol, unsigned char source[], char dest[]) {
 }
 
 /* For ISBN(13) only */
-char isbn13_check(unsigned char source[]) {
+static char isbn13_check(unsigned char source[]) {
     unsigned int i, weight, sum, check, h;
 
     sum = 0;
@@ -483,7 +484,7 @@ char isbn13_check(unsigned char source[]) {
 }
 
 /* For ISBN(10) and SBN only */
-char isbn_check(unsigned char source[]) {
+static char isbn_check(unsigned char source[]) {
     unsigned int i, weight, sum, check, h;
     char check_char;
 
@@ -564,7 +565,7 @@ static int isbn(struct zint_symbol *symbol, unsigned char source[], const size_t
 }
 
 /* Add leading zeroes to EAN and UPC strings */
-void ean_leading_zeroes(struct zint_symbol *symbol, unsigned char source[], unsigned char local_source[]) {
+INTERNAL void ean_leading_zeroes(struct zint_symbol *symbol, unsigned char source[], unsigned char local_source[]) {
     unsigned char first_part[20], second_part[20], zfirst_part[20], zsecond_part[20];
     int with_addon = 0;
     int first_len = 0, second_len = 0, zfirst_len = 0, zsecond_len = 0, i, h;
@@ -693,7 +694,7 @@ void ean_leading_zeroes(struct zint_symbol *symbol, unsigned char source[], unsi
 }
 
 /* splits string to parts before and after '+' parts */
-int eanx(struct zint_symbol *symbol, unsigned char source[], int src_len) {
+INTERNAL int eanx(struct zint_symbol *symbol, unsigned char source[], int src_len) {
     unsigned char first_part[20] = {0}, second_part[20] = {0}, dest[1000] = {0};
     unsigned char local_source[20] = {0};
     unsigned int latch, reader, writer, with_addon;
@@ -912,4 +913,3 @@ int eanx(struct zint_symbol *symbol, unsigned char source[], int src_len) {
 
     return 0;
 }
-

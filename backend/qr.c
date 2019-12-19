@@ -39,10 +39,9 @@
 #include "sjis.h"
 #include "qr.h"
 #include "reedsol.h"
-#include <stdlib.h>     /* abs */
 #include <assert.h>
 
-extern int utf_to_eci(const int eci, const unsigned char source[], unsigned char dest[], size_t *length); /* Convert Unicode to other encodings */
+INTERNAL int utf_to_eci(const int eci, const unsigned char source[], unsigned char dest[], size_t *length); /* Convert Unicode to other encodings */
 
 /* Returns true if input glyph is in the Alphanumeric set */
 static int is_alpha(const unsigned int glyph, const int gs1) {
@@ -140,7 +139,7 @@ static int in_alpha(const unsigned int jisdata[], const size_t length, const int
 #define QR_B   2 /* Byte */
 #define QR_K   3 /* Kanji */
 
-static char mode_types[] = { 'N', 'A', 'B', 'K', }; /* Must be in same order as QR_N etc */
+static const char mode_types[] = { 'N', 'A', 'B', 'K', }; /* Must be in same order as QR_N etc */
 
 #define QR_NUM_MODES 4
 
@@ -159,7 +158,7 @@ static char mode_types[] = { 'N', 'A', 'B', 'K', }; /* Must be in same order as 
 
 /* Initial mode costs */
 static unsigned int* qr_head_costs(unsigned int state[]) {
-    static int head_costs[7][QR_NUM_MODES] = {
+    static const int head_costs[7][QR_NUM_MODES] = {
         /* N                    A                   B                   K */
         { (10 + 4) * QR_MULT,  (9 + 4) * QR_MULT,  (8 + 4) * QR_MULT,  (8 + 4) * QR_MULT, }, /* QR */
         { (12 + 4) * QR_MULT, (11 + 4) * QR_MULT, (16 + 4) * QR_MULT, (10 + 4) * QR_MULT, },
@@ -260,7 +259,7 @@ static int mode_bits(const int version) {
 
 /* Return character count indicator bits based on version and mode */
 static int cci_bits(const int version, const int mode) {
-    static int cci_bits[7][QR_NUM_MODES] = {
+    static const int cci_bits[7][QR_NUM_MODES] = {
         /* N   A   B   K */
         { 10,  9,  8,  8, }, /* QRCODE */
         { 12, 11, 16, 10, },
@@ -1523,7 +1522,7 @@ static int getBinaryLength(const int version, char inputMode[], const unsigned i
     return count;
 }
 
-int qr_code(struct zint_symbol *symbol, const unsigned char source[], size_t length) {
+INTERNAL int qr_code(struct zint_symbol *symbol, const unsigned char source[], size_t length) {
     int i, j, est_binlen;
     int ecc_level, autosize, version, max_cw, target_codewords, blocks, size;
     int bitmask, gs1;
@@ -1715,7 +1714,9 @@ int qr_code(struct zint_symbol *symbol, const unsigned char source[], size_t len
 #endif
 
     qr_binary(datastream, version, target_codewords, mode, jisdata, length, gs1, symbol->eci, est_binlen, symbol->debug);
+#ifdef ZINT_TEST
     if (symbol->debug & ZINT_DEBUG_TEST) debug_test_codeword_dump(symbol, datastream, target_codewords);
+#endif
     add_ecc(fullstream, datastream, version, target_codewords, blocks, symbol->debug);
 
     size = qr_sizes[version - 1];
@@ -1827,8 +1828,9 @@ static void micro_qr_m1(struct zint_symbol *symbol, char binary_data[]) {
             data_blocks[2] += 0x80 >> j;
         }
     }
-
+#ifdef ZINT_TEST
     if (symbol->debug & ZINT_DEBUG_TEST) debug_test_codeword_dump(symbol, data_blocks, data_codewords);
+#endif
 
     /* Calculate Reed-Solomon error codewords */
     rs_init_gf(0x11d);
@@ -1907,8 +1909,9 @@ static void micro_qr_m2(struct zint_symbol *symbol, char binary_data[], const in
             }
         }
     }
-
+#ifdef ZINT_TEST
     if (symbol->debug & ZINT_DEBUG_TEST) debug_test_codeword_dump(symbol, data_blocks, data_codewords);
+#endif
 
     /* Calculate Reed-Solomon error codewords */
     rs_init_gf(0x11d);
@@ -2021,8 +2024,9 @@ static void micro_qr_m3(struct zint_symbol *symbol, char binary_data[], const in
             }
         }
     }
-
+#ifdef ZINT_TEST
     if (symbol->debug & ZINT_DEBUG_TEST) debug_test_codeword_dump(symbol, data_blocks, data_codewords);
+#endif
 
     /* Calculate Reed-Solomon error codewords */
     rs_init_gf(0x11d);
@@ -2110,8 +2114,9 @@ static void micro_qr_m4(struct zint_symbol *symbol, char binary_data[], const in
             }
         }
     }
-
+#ifdef ZINT_TEST
     if (symbol->debug & ZINT_DEBUG_TEST) debug_test_codeword_dump(symbol, data_blocks, data_codewords);
+#endif
 
     /* Calculate Reed-Solomon error codewords */
     rs_init_gf(0x11d);
@@ -2328,7 +2333,7 @@ static int micro_apply_bitmask(unsigned char *grid,const int size) {
     return best_pattern;
 }
 
-int microqr(struct zint_symbol *symbol, const unsigned char source[], size_t length) {
+INTERNAL int microqr(struct zint_symbol *symbol, const unsigned char source[], size_t length) {
     size_t i;
     int    j, size;
     char full_stream[200];
@@ -2624,7 +2629,7 @@ int microqr(struct zint_symbol *symbol, const unsigned char source[], size_t len
 }
 
 /* For UPNQR the symbol size and error correction capacity is fixed */
-int upnqr(struct zint_symbol *symbol, const unsigned char source[], size_t length) {
+INTERNAL int upnqr(struct zint_symbol *symbol, const unsigned char source[], size_t length) {
     int i, j, est_binlen;
     int ecc_level, version, target_codewords, blocks, size;
     int bitmask, error_number;
@@ -2695,7 +2700,9 @@ int upnqr(struct zint_symbol *symbol, const unsigned char source[], size_t lengt
 #endif
 
     qr_binary(datastream, version, target_codewords, mode, jisdata, length, 0, symbol->eci, est_binlen, symbol->debug);
+#ifdef ZINT_TEST
     if (symbol->debug & ZINT_DEBUG_TEST) debug_test_codeword_dump(symbol, datastream, target_codewords);
+#endif
     add_ecc(fullstream, datastream, version, target_codewords, blocks, symbol->debug);
 
     size = qr_sizes[version - 1];
@@ -2848,7 +2855,7 @@ static void setup_rmqr_grid(unsigned char* grid,const int h_size,const int v_siz
 }
 
 /* rMQR according to 2018 draft standard */
-int rmqr(struct zint_symbol *symbol, const unsigned char source[], size_t length) {
+INTERNAL int rmqr(struct zint_symbol *symbol, const unsigned char source[], size_t length) {
     int i, j, est_binlen;
     int ecc_level, autosize, version, max_cw, target_codewords, blocks, h_size, v_size;
     int gs1;
@@ -3006,7 +3013,9 @@ int rmqr(struct zint_symbol *symbol, const unsigned char source[], size_t length
 #endif
 
     qr_binary(datastream, RMQR_VERSION + version, target_codewords, mode, jisdata, length, gs1, 0 /*eci*/, est_binlen, symbol->debug);
+#ifdef ZINT_TEST
     if (symbol->debug & ZINT_DEBUG_TEST) debug_test_codeword_dump(symbol, datastream, target_codewords);
+#endif
     add_ecc(fullstream, datastream, RMQR_VERSION + version, target_codewords, blocks, symbol->debug);
 
     h_size = rmqr_width[version];

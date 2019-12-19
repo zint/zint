@@ -10,6 +10,7 @@ set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/"
 
 set(ZINT_DEBUG FALSE CACHE BOOL "Set debug compile flag")
 set(ZINT_SANITIZE FALSE CACHE BOOL "Set sanitize compile/link flags")
+set(ZINT_TEST FALSE CACHE BOOL "Set test compile flag")
 
 find_package (LibZint 2.7.0 REQUIRED)
 find_package(PNG)
@@ -29,6 +30,9 @@ if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
         add_compile_options("-fsanitize=address")
         set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=undefined -fsanitize=address")
     endif (ZINT_SANITIZE)
+    if (ZINT_TEST)
+        add_definitions("-DZINT_TEST")
+    endif (ZINT_TEST)
 endif ()
 
 add_library(testcommon

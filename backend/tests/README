@@ -1,14 +1,24 @@
 Zint backend test suite
 -----------------------
 
-To make:
+To make, first make libzint with ZINT_TEST defined:
+
+  cd <project-dir>
+  mkdir build
+  cd build
+  cmake -DZINT_TEST:BOOL:1 ..
+  make
+
+Then make the tests:
 
   cd <project-dir>
   cd backend/tests
   mkdir build
   cd build
-  cmake ..
+  cmake -DZINT_TEST:BOOL:1 ..
   make
+
+(ZINT_TEST is needed to export INTERNAL functions for use and testing.)
 
 To run all tests:
 
@@ -50,4 +60,8 @@ To undo sanitize/debug, remake each after setting:
   cmake -DZINT_SANITIZE:BOOL=0 ..
   cmake -DZINT_DEBUG:BOOL=0 ..
 
-Note that sanitize is not safe to use in production, as it's a security risk.
+To get a clean libzint, set the above and also:
+
+  cmake -DZINT_TEST:BOOL=0 ..
+
+(The tests will now fail to link.)

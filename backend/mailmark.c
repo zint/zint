@@ -29,6 +29,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* vim: set ts=4 sw=4 et : */
 
 /* 
  * Developed in accordance with "Royal Mail Mailmark barcode C encoding and deconding instructions"
@@ -81,7 +82,7 @@ static const unsigned short extender_group_l[26] = {
     2, 5, 7, 8, 13, 14, 15, 16, 21, 22, 23, 0, 1, 3, 4, 6, 9, 10, 11, 12, 17, 18, 19, 20, 24, 25
 };
 
-int verify_character(char input, char type) {
+static int verify_character(char input, char type) {
     int val = 0;
     
     switch (type) {
@@ -106,7 +107,7 @@ int verify_character(char input, char type) {
     }
 }
 
-int verify_postcode(char* postcode, int type) {
+static int verify_postcode(char* postcode, int type) {
     int i;
     char pattern[11];
     
@@ -122,7 +123,7 @@ int verify_postcode(char* postcode, int type) {
 }
 
 /* Royal Mail Mailmark */
-int mailmark(struct zint_symbol *symbol, const unsigned char source[], const size_t in_length) {
+INTERNAL int mailmark(struct zint_symbol *symbol, const unsigned char source[], const size_t in_length) {
     
     char local_source[28];
     int format;

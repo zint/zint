@@ -29,6 +29,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* vim: set ts=4 sw=4 et : */
 
 /* Includes corrections thanks to Monica Swanson @ Source Technologies */
 #include "common.h"
@@ -37,10 +38,10 @@
 #include <string.h>
 #include <stdlib.h>
 
-int maxi_codeword[144];
+static int maxi_codeword[144];
 
 /* Handles error correction of primary message */
-void maxi_do_primary_check() {
+static void maxi_do_primary_check() {
     unsigned char data[15];
     unsigned char results[15];
     int j;
@@ -61,7 +62,7 @@ void maxi_do_primary_check() {
 }
 
 /* Handles error correction of odd characters in secondary */
-void maxi_do_secondary_chk_odd(int ecclen) {
+static void maxi_do_secondary_chk_odd(int ecclen) {
     unsigned char data[100];
     unsigned char results[30];
     int j;
@@ -85,7 +86,7 @@ void maxi_do_secondary_chk_odd(int ecclen) {
 }
 
 /* Handles error correction of even characters in secondary */
-void maxi_do_secondary_chk_even(int ecclen) {
+static void maxi_do_secondary_chk_even(int ecclen) {
     unsigned char data[100];
     unsigned char results[30];
     int j;
@@ -109,7 +110,7 @@ void maxi_do_secondary_chk_even(int ecclen) {
 }
 
 /* Moves everything up so that a shift or latch can be inserted */
-void maxi_bump(int set[], int character[], int bump_posn) {
+static void maxi_bump(int set[], int character[], int bump_posn) {
     int i;
 
     for (i = 143; i > bump_posn; i--) {
@@ -119,7 +120,7 @@ void maxi_bump(int set[], int character[], int bump_posn) {
 }
 
 /* If the value is present in  array, return the value, else return badvalue */
-int value_in_array(int val, int arr[], int badvalue, int arrLength){
+static int value_in_array(int val, int arr[], int badvalue, int arrLength) {
     int i;
     for(i = 0; i < arrLength; i++){
         if(arr[i] == val) return val;
@@ -128,7 +129,7 @@ int value_in_array(int val, int arr[], int badvalue, int arrLength){
 }
 
 /* Choose the best set from previous and next set in the range of the setval array, if no value can be found we return setval[0] */
-int bestSurroundingSet(int index, int length, int set[], int setval[], int setLength) {
+static int bestSurroundingSet(int index, int length, int set[], int setval[], int setLength) {
     int badValue = -1;
     int option1 = value_in_array(set[index - 1], setval, badValue, setLength);
     if (index + 1 < length) {
@@ -146,7 +147,7 @@ int bestSurroundingSet(int index, int length, int set[], int setval[], int setLe
 }
 
 /* Format text according to Appendix A */
-int maxi_text_process(int mode, unsigned char source[], int length, int eci) {
+static int maxi_text_process(int mode, unsigned char source[], int length, int eci) {
     /* This code doesn't make use of [Lock in C], [Lock in D]
     and [Lock in E] and so is not always the most efficient at
     compressing data, but should suffice for most applications */
@@ -533,7 +534,7 @@ int maxi_text_process(int mode, unsigned char source[], int length, int eci) {
 }
 
 /* Format structured primary for Mode 2 */
-void maxi_do_primary_2(char postcode[], int country, int service) {
+static void maxi_do_primary_2(char postcode[], int country, int service) {
     size_t postcode_length;
    int    postcode_num, i;
 
@@ -559,7 +560,7 @@ void maxi_do_primary_2(char postcode[], int country, int service) {
 }
 
 /* Format structured primary for Mode 3 */
-void maxi_do_primary_3(char postcode[], int country, int service) {
+static void maxi_do_primary_3(char postcode[], int country, int service) {
     int i, h;
 
     h = strlen(postcode);
@@ -589,7 +590,7 @@ void maxi_do_primary_3(char postcode[], int country, int service) {
     maxi_codeword[9] = ((service & 0x3f0) >> 4);
 }
 
-int maxicode(struct zint_symbol *symbol, unsigned char local_source[], const int length) {
+INTERNAL int maxicode(struct zint_symbol *symbol, unsigned char local_source[], const int length) {
     int i, j, block, bit, mode, lp = 0;
     int bit_pattern[7], internal_error = 0, eclen;
     char postcode[12], countrystr[4], servicestr[4];
@@ -734,5 +735,3 @@ int maxicode(struct zint_symbol *symbol, unsigned char local_source[], const int
 
     return internal_error;
 }
-
-

@@ -56,7 +56,7 @@
 #include "common.h"
 #include "gb2312.h"
 
-extern int utf_to_eci(const int eci, const unsigned char source[], unsigned char dest[], size_t *length); /* Convert Unicode to other encodings */
+INTERNAL int utf_to_eci(const int eci, const unsigned char source[], unsigned char dest[], size_t *length); /* Convert Unicode to other encodings */
 
 /*
  * GB2312.1980-0 (libiconv-1.16/lib/gb2312.h)
@@ -1499,7 +1499,7 @@ static const Summary16 gb2312_uni2indx_pageff[15] = {
   { 7441, 0x0000 }, { 7441, 0x0000 }, { 7441, 0x002b },
 };
 
-int gb2312_wctomb_zint(unsigned int* r, unsigned int wc) {
+INTERNAL int gb2312_wctomb_zint(unsigned int* r, unsigned int wc) {
     const Summary16 *summary = NULL;
     if (wc >= 0x0000 && wc < 0x0460) {
         if (wc == 0x00b7) { /* ZINT: Patched to duplicate map to 0xA1A4 */
@@ -1541,7 +1541,7 @@ int gb2312_wctomb_zint(unsigned int* r, unsigned int wc) {
 }
 
 /* Convert UTF-8 string to GB 2312 (EUC-CN) and place in array of ints */
-int gb2312_utf8tomb(struct zint_symbol *symbol, const unsigned char source[], size_t* p_length, unsigned int* gbdata) {
+INTERNAL int gb2312_utf8tomb(struct zint_symbol *symbol, const unsigned char source[], size_t* p_length, unsigned int* gbdata) {
     int i, error_number;
     unsigned int length;
 #ifndef _MSC_VER
@@ -1570,7 +1570,7 @@ int gb2312_utf8tomb(struct zint_symbol *symbol, const unsigned char source[], si
 }
 
 /* Convert UTF-8 string to single byte ECI and place in array of ints */
-int gb2312_utf8tosb(int eci, const unsigned char source[], size_t* p_length, unsigned int* gbdata) {
+INTERNAL int gb2312_utf8tosb(int eci, const unsigned char source[], size_t* p_length, unsigned int* gbdata) {
     int error_number;
 #ifndef _MSC_VER
     unsigned char single_byte[*p_length + 1];
@@ -1590,7 +1590,7 @@ int gb2312_utf8tosb(int eci, const unsigned char source[], size_t* p_length, uns
 }
 
 /* Copy byte input stream to array of ints, putting double-bytes that match GRIDMATRIX Chinese mode in single entry */
-void gb2312_cpy(const unsigned char source[], size_t* p_length, unsigned int* gbdata) {
+INTERNAL void gb2312_cpy(const unsigned char source[], size_t* p_length, unsigned int* gbdata) {
     int i, j;
     unsigned int length;
     unsigned char c1, c2;

@@ -53,7 +53,7 @@
 #define CANDB 98
 #define CANDBB 99
 
-extern int parunmodd(const unsigned char llyth);
+INTERNAL int parunmodd(const unsigned char llyth);
 
 static int list[2][170];
 
@@ -257,7 +257,7 @@ static void c16k_set_c(const unsigned char source_a, unsigned char source_b, uns
     (*bar_chars)++;
 }
 
-int code16k(struct zint_symbol *symbol, unsigned char source[], const size_t length) {
+INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], const size_t length) {
     char width_pattern[100];
     int current_row, rows_needed, looper, first_check, second_check;
     int indexchaine, f_state;
@@ -732,6 +732,3 @@ int code16k(struct zint_symbol *symbol, unsigned char source[], const size_t len
     symbol->width = 70;
     return errornum;
 }
-
-
-

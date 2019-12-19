@@ -970,7 +970,7 @@ static void populate_map() {
     AztecMap[(avoidReferenceGrid(76) * 151) + avoidReferenceGrid(77)] = 1;
 }
 
-int aztec(struct zint_symbol *symbol, unsigned char source[], const size_t length) {
+INTERNAL int aztec(struct zint_symbol *symbol, unsigned char source[], const size_t length) {
     int x, y, i, j, p, data_blocks, ecc_blocks, layers, total_bits;
     char binary_string[20000], bit_pattern[20045], descriptor[42];
     char adjusted_string[20000];
@@ -1582,7 +1582,7 @@ int aztec(struct zint_symbol *symbol, unsigned char source[], const size_t lengt
 }
 
 /* Encodes Aztec runes as specified in ISO/IEC 24778:2008 Annex A */
-int aztec_runes(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int aztec_runes(struct zint_symbol *symbol, unsigned char source[], int length) {
     int input_value, error_number, i, y, x;
     char binary_string[28];
     unsigned char data_codewords[3], ecc_codewords[6];
@@ -1692,4 +1692,3 @@ int aztec_runes(struct zint_symbol *symbol, unsigned char source[], int length) 
 
     return 0;
 }
-

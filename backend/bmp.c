@@ -29,6 +29,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* vim: set ts=4 sw=4 et : */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -43,7 +44,7 @@
 
 #define SSET	"0123456789ABCDEF"
 
-int bmp_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
+INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
     int i, row, column;
     int fgred, fggrn, fgblu, bgred, bggrn, bgblu;
     int row_size;
@@ -145,4 +146,3 @@ int bmp_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
     free(bitmap);
     return 0;
 }
-

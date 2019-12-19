@@ -29,6 +29,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* vim: set ts=4 sw=4 et : */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -123,7 +124,7 @@ static void FlushStringTable(statestruct *pState) {
     }
 }
 
-unsigned short FindPixelOutlet(statestruct *pState, unsigned short HeadNode, unsigned char Byte) {
+static unsigned short FindPixelOutlet(statestruct *pState, unsigned short HeadNode, unsigned char Byte) {
     unsigned short Outlet;
 
     Outlet = (pState->NodeAxon)[HeadNode];
@@ -176,7 +177,7 @@ static char NextCode(statestruct *pState, unsigned char * pPixelValueCur, unsign
     return 1;
 }
 
-int gif_lzw(unsigned char *pOut, int OutLength, unsigned char *pIn, int InLen) {
+static int gif_lzw(unsigned char *pOut, int OutLength, unsigned char *pIn, int InLen) {
     unsigned char PixelValueCur;
     unsigned char CodeBits;
     unsigned short Pos;
@@ -260,7 +261,7 @@ int gif_lzw(unsigned char *pOut, int OutLength, unsigned char *pIn, int InLen) {
     }
 }
 
-int gif_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
+INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
     char outbuf[10];
     FILE *gif_file;
     unsigned short usTemp;

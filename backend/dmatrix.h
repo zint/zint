@@ -29,6 +29,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* vim: set ts=4 sw=4 et : */
 
 /*
     Containes Extended Rectangular Data Matrix (DMRE)
@@ -36,19 +37,8 @@
     Contact: harald.oehlmann@eurodatacouncil.org
  */
 
-#include "common.h"
-
-#ifndef __IEC16022ECC200_H
-#define __IEC16022ECC200_H
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
-
-extern int data_matrix_200(struct zint_symbol *symbol, const unsigned char source[], const size_t in_length);
-
-#ifdef __cplusplus
-}
-#endif /* __cplusplus */
+#ifndef __DMATRIX_H
+#define __DMATRIX_H
 
 #define MAXBARCODE 3116
 
@@ -255,6 +245,4 @@ static const unsigned short int matrixrsblock[] = {
     /*44*/ 56, /*104x104*/ 68, /*120x120*/ 62, /*132x132*/ 62  /*144x144*/
 };
 
-
-#endif
-
+#endif /* __DMATRIX_H */

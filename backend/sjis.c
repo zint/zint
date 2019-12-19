@@ -56,7 +56,7 @@
 #include "common.h"
 #include "sjis.h"
 
-extern int utf_to_eci(const int eci, const unsigned char source[], unsigned char dest[], size_t *length); /* Convert Unicode to other encodings */
+INTERNAL int utf_to_eci(const int eci, const unsigned char source[], unsigned char dest[], size_t *length); /* Convert Unicode to other encodings */
 
 /*
  * JISX0201.1976-0 (libiconv-1.16/lib/jisx0201.h)
@@ -1481,7 +1481,7 @@ static int jisx0208_wctomb(unsigned int* r, unsigned int wc) {
  */
 
 /* Returns 1 or 2 on success, 0 if no mapping */
-int sjis_wctomb_zint(unsigned int* r, unsigned int wc) {
+INTERNAL int sjis_wctomb_zint(unsigned int* r, unsigned int wc) {
     int ret;
 
     /* Try JIS X 0201-1976. */
@@ -1512,7 +1512,7 @@ int sjis_wctomb_zint(unsigned int* r, unsigned int wc) {
 }
 
 /* Convert UTF-8 string to Shift JIS and place in array of ints */
-int sjis_utf8tomb(struct zint_symbol *symbol, const unsigned char source[], size_t* p_length, unsigned int* jisdata) {
+INTERNAL int sjis_utf8tomb(struct zint_symbol *symbol, const unsigned char source[], size_t* p_length, unsigned int* jisdata) {
     int i, error_number;
     unsigned int length;
 #ifndef _MSC_VER
@@ -1537,7 +1537,7 @@ int sjis_utf8tomb(struct zint_symbol *symbol, const unsigned char source[], size
 }
 
 /* Convert UTF-8 string to single byte ECI and place in array of ints */
-int sjis_utf8tosb(int eci, const unsigned char source[], size_t* p_length, unsigned int* jisdata) {
+INTERNAL int sjis_utf8tosb(int eci, const unsigned char source[], size_t* p_length, unsigned int* jisdata) {
     int error_number;
 #ifndef _MSC_VER
     unsigned char single_byte[*p_length + 1];
@@ -1557,7 +1557,7 @@ int sjis_utf8tosb(int eci, const unsigned char source[], size_t* p_length, unsig
 }
 
 /* Copy byte input stream to array of ints, putting double-bytes that match QR Kanji mode in single entry */
-void sjis_cpy(const unsigned char source[], size_t* p_length, unsigned int* jisdata) {
+INTERNAL void sjis_cpy(const unsigned char source[], size_t* p_length, unsigned int* jisdata) {
     int i, j;
     unsigned int jis, length;
     unsigned char c;
