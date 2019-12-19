@@ -78,6 +78,46 @@ static void test_upce_length(void)
     testFinish();
 }
 
+// Note requires ZINT_SANITIZE to be set
+static void test_upca_print(void)
+{
+    testStart("");
+
+    int ret;
+    struct item {
+        int symbology;
+        unsigned char* data;
+        int ret;
+    };
+    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    struct item data[] = {
+        /*  0*/ { BARCODE_UPCA, "01234567890", 0 },
+    };
+    int data_size = sizeof(data) / sizeof(struct item);
+
+    for (int i = 0; i < data_size; i++) {
+
+        struct zint_symbol* symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        symbol->symbology = data[i].symbology;
+        int length = strlen(data[i].data);
+
+        ret = ZBarcode_Encode(symbol, data[i].data, length);
+        assert_equal(ret, data[i].ret, "i:%d ret %d != %d\n", i, ret, data[i].ret);
+
+        strcpy(symbol->outfile, "out.gif");
+        ret = ZBarcode_Print(symbol, 0);
+        assert_zero(ret, "i:%d %s ZBarcode_Print %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, ret);
+
+        assert_zero(remove(symbol->outfile), "i:%d remove(%s) != 0\n", i, symbol->outfile);
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
 static void test_isbn(void)
 {
     testStart("");
@@ -215,6 +255,7 @@ static void test_vector_same(void)
 int main()
 {
     test_upce_length();
+    test_upca_print();
     test_isbn();
     test_vector_same();
 

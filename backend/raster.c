@@ -837,7 +837,7 @@ static int plot_raster_default(struct zint_symbol *symbol, int rotate_angle, int
             block_width = 0;
             do {
                 block_width++;
-            } while ((i + block_width < symbol->width )&& module_is_set(symbol, this_row, i + block_width) == module_is_set(symbol, this_row, i));
+            } while ((i + block_width < symbol->width) && module_is_set(symbol, this_row, i + block_width) == module_is_set(symbol, this_row, i));
             if ((addon_latch == 0) && (r == 0) && (i > main_width)) {
                 plot_height = (int) (row_height - 5.0);
                 plot_yposn = (int) (row_posn - 5.0);
@@ -949,7 +949,7 @@ static int plot_raster_default(struct zint_symbol *symbol, int rotate_angle, int
             block_width = 0;
             do {
                 block_width++;
-            } while (module_is_set(symbol, symbol->rows - 1, i + block_width) == module_is_set(symbol, symbol->rows - 1, i));
+            } while ((i + block_width < symbol->width) && module_is_set(symbol, symbol->rows - 1, i + block_width) == module_is_set(symbol, symbol->rows - 1, i));
             if (latch == 1) {
                 /* a bar */
                 draw_bar(pixelbuf, (i + xoffset - comp_offset) * 2, block_width * 2, (4 + (int) yoffset) * 2, 5 * 2, image_width, image_height);
@@ -968,7 +968,7 @@ static int plot_raster_default(struct zint_symbol *symbol, int rotate_angle, int
             block_width = 0;
             do {
                 block_width++;
-            } while (module_is_set(symbol, symbol->rows - 1, i + block_width) == module_is_set(symbol, symbol->rows - 1, i));
+            } while ((i + block_width < symbol->width) && module_is_set(symbol, symbol->rows - 1, i + block_width) == module_is_set(symbol, symbol->rows - 1, i));
             if (latch == 1) {
                 /* a bar */
                 draw_bar(pixelbuf, (i + xoffset - comp_offset) * 2, block_width * 2, (4 + (int) yoffset) * 2, 5 * 2, image_width, image_height);
