@@ -419,7 +419,6 @@ void MainWindow::change_options()
         m_optionWidget=uiload.load(&file);
         file.close();
         tabMain->insertTab(1,m_optionWidget,tr("PDF417"));
-        connect(m_optionWidget->findChild<QObject*>("codewords"),  SIGNAL(valueChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("cmbPDFECC"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("cmbPDFCols"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radPDFTruncated"), SIGNAL(clicked( bool )), SLOT(update_preview()));
@@ -859,7 +858,6 @@ void MainWindow::update_preview()
         case BARCODE_PDF417:
             m_bc.bc.setWidth(m_optionWidget->findChild<QComboBox*>("cmbPDFCols")->currentIndex());
             m_bc.bc.setSecurityLevel(m_optionWidget->findChild<QComboBox*>("cmbPDFECC")->currentIndex()-1);
-            m_bc.bc.setPdf417CodeWords(m_optionWidget->findChild<QSpinBox*>("codewords")->value());
             if(m_optionWidget->findChild<QRadioButton*>("radPDFStand")->isChecked())
                 m_bc.bc.setSymbol(BARCODE_PDF417);
 

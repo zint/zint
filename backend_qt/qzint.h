@@ -65,9 +65,6 @@ public:
     int borderWidth() const;
 	void setBorderWidth(int boderWidth);
 
-    int pdf417CodeWords() const;
-	void setPdf417CodeWords(int pdf417CodeWords);
-
     int securityLevel() const;
 	void setSecurityLevel(int securityLevel);
         
@@ -111,7 +108,6 @@ private:
 	int m_borderWidth;
 	int m_width;
 	int m_securityLevel;
-	int m_pdf417CodeWords;
 	int m_input_mode;
 	QColor m_fgColor;
 	QColor m_bgColor;

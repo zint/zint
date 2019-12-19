@@ -205,32 +205,6 @@
       </widget>
      </item>
      <item row="2" column="0" >
-      <widget class="QLabel" name="lblPDFWords" >
-       <property name="text" >
-        <string>Ma&amp;ximum Codeword Lengh:</string>
-       </property>
-       <property name="alignment" >
-        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-       </property>
-       <property name="buddy" >
-        <cstring>codewords</cstring>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="1" >
-      <widget class="QSpinBox" name="codewords" >
-       <property name="minimum" >
-        <number>928</number>
-       </property>
-       <property name="maximum" >
-        <number>1800</number>
-       </property>
-       <property name="value" >
-        <number>928</number>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="0" >
       <widget class="QRadioButton" name="radPDFStand" >
        <property name="text" >
         <string>S&amp;tandard</string>
@@ -240,14 +214,14 @@
        </property>
       </widget>
      </item>
-     <item row="3" column="1" >
+     <item row="2" column="1" >
       <widget class="QRadioButton" name="radPDFHIBC" >
        <property name="text" >
         <string>&amp;HIBC PDF417</string>
        </property>
       </widget>
      </item>
-     <item row="4" column="0" >
+     <item row="3" column="0" >
       <widget class="QRadioButton" name="radPDFTruncated" >
        <property name="text" >
         <string>&amp;Truncated</string>
