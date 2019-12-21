@@ -121,12 +121,15 @@ executable and follow the instructions on-screen.
 
 2.3 Apple macOS
 ---------------
-Zint can be compiled on macOS from the command line using the same steps as shown
-for Linux above. Currently the Zint Barcode Studio GUI is not known to work on
-macOS. The Zint developers do not currently have access to Apple hardware and
-so are not able to provide support or binaries for macOS. If you are a macOS
-developer, however, or if you have any success in building Zint on macOS, we
-would love to hear from you.
+Zint can be installed using Homebrew. To install homebrew input the following
+line into the MacOS terminal
+
+/usr/bin/ruby -e "$(curl -fsSL
+         https://raw.githubusercontent.com/Homebrew/install/master/install)"
+
+Once homebrew is installed use the following command to install Zint.
+
+brew install zint 
 
 2.4 zint tcl backend
 --------------------
@@ -1549,7 +1552,7 @@ where symbol size needs to be kept to a minimum. 34 predefined symbol sizes are
 available with 1 - 4 columns and 4 - 44 rows. The maximum size MicroPDF417
 symbol can hold 250 alphanumeric characters or 366 digits. The amount of error
 correction used is dependent on symbol size. The number of columns used can be
-determined using the –cols switch or option_2 as with PDF417. This symbology
+determined using the --cols switch or option_2 as with PDF417. This symbology
 uses Latin-1 character encoding by default but also supports the ECI encoding
 mechanism. A separate symbology ID can be used to encode Health Industry
 Barcode (HIBC) data which adds a leading '+' character and a modulo-49 check
@@ -2434,6 +2437,9 @@ Microsoft, Windows and the Windows logo are either registered trademarks or
 trademarks of Microsoft Corporation in the United States and/or other countries.
 
 Linux is the registered trademark of Linus Torvalds in the U.S. and other
+countries.
+
+Mac and macOS are trademarks of Apple Inc., registered in the U.S. and other
 countries.
 
 Zint.org.uk website design and hosting provided by Robert Elliott.
