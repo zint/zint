@@ -1,4 +1,4 @@
-*******************************************************************************
+﻿*******************************************************************************
 * For reference the following is a text-only version of the Zint manual.      *
 * The full version can be accessed at http://zint.org.uk/Manual.aspx          *
 *******************************************************************************
@@ -33,7 +33,7 @@ Some of the words and phrases used in this document are specific to barcoding,
 and so a brief explanation is given to help understanding:
 
 symbol: A symbol is an image which encodes data according to one of the
-        standards. This encompases barcodes (linear symbols) as well as any of
+        standards. This encompasses barcodes (linear symbols) as well as any of
         the other methods of representing data used in this program.
 
 symbology: A method of encoding data to create a certain type of symbol.
@@ -42,7 +42,7 @@ linear: A linear symbol is one which consists of bars and spaces, and is what
         most people associate with the term "barcode". Examples include EAN.
 
 stacked: A stacked symbol consists of multiple linear symbols placed one above
-        another and which together hold the message, usually allong side some
+        another and which together hold the message, usually alongside some
         error correction data. Examples include PDF417.
 
 matrix: A matrix symbol is one based on a (usually square) grid of elements.
@@ -59,12 +59,12 @@ composite: A composite symbology is one which is made up of elements which are
         both linear and stacked. Those currently supported are made up of a
         linear "primary" message above which is printed a stacked component
         based on the PDF417 symbology. These symbols also have a separator
-        which seperates the linear and the stacked components.
+        which separates the linear and the stacked components.
 
 GS-1 data: This is a structured way of representing information which consists
         of "chunks" of data, each of which starts with an Application
         Identifier. The AI identifies what type of information is being
-        encoded. See Appendix C.
+        encoded.
 
 Reader Initialisation: Some symbologies allow a special character to be included
         which can be detected by the scanning equipment as signifying that the
@@ -75,7 +75,7 @@ Reader Initialisation: Some symbologies allow a special character to be included
 
 ECI:    The ECI mechanism allows for multi-language data to be encoded in
         symbols which would usually support only Latin-1 characters. This can
-        be useful, for example, if you need to encode cyrillic characters, but
+        be useful, for example, if you need to encode Cyrillic characters, but
         should be used with caution as not all scanners support this method.
 
 2. Installing Zint
@@ -153,7 +153,7 @@ removed from this text-only version)
 =========================
 This section describes how to encode data using the command line front end
 program. The examples given are for the Linux platform, but the same options
-are available for Windows - just rememer to include the executable file
+are available for Windows - just remember to include the executable file
 extension. i.e.:
 
 zint.exe -d "This Text"
@@ -300,7 +300,7 @@ Numeric Value  |  Barcode Name
 97             |  Micro QR Code
 98             |  HIBC Code 128
 99             |  HIBC Code 39
-102            |  HIBC Data Matrix ECC200
+102            |  HIBC Data Matrix
 104            |  HIBC QR Code
 106            |  HIBC PDF417
 108            |  HIBC MicroPDF417
@@ -371,7 +371,7 @@ command
 zint -r -d "This"
 
 gives an inverted Code 128 symbol. This is not practical for most symbologies
-but white-on-black is allowed by the Data Matrix ECC200 and Aztec Code
+but white-on-black is allowed by the Data Matrix and Aztec Code
 symbology specifications.
 
 For more specific needs the foreground (ink) and background (paper) colours
@@ -538,7 +538,7 @@ Input            |  Filenames Generated
 ------------------
 The finished image files can be output directly to stdout for use as part of
 a pipe by using the --direct option. By default --direct will output data
-as a PNG image, but this can be altered by supplimenting the --direct option
+as a PNG image, but this can be altered by supplementing the --direct option
 with a --filetype= option followed by the suffix of the file type required.
 For example:
 
@@ -741,7 +741,7 @@ pointer is set to the first memory location in the array and the values
 "barcode_width" and "barcode_height" indicate the size of the resulting image
 in pixels. Rotation and colour options can be used at the same time as using
 the buffer functions in the same way as when saving to a raster image. The
-pixel data can be extracted from the array by the methd shown in
+pixel data can be extracted from the array by the method shown in
 the example below where render_pixel() is assumed to be a function for drawing
 a pixel on the screen implemented by the external application:
 
@@ -981,7 +981,7 @@ Value   |
 68      | BARCODE_AUSDIRECT       | Australia Post Redirection
 69      | BARCODE_ISBNX           | ISBN (EAN-13 with verification stage)
 70      | BARCODE_RM4SCC          | Royal Mail 4 State (RM4SCC)
-71      | BARCODE_DATAMATRIX      | Data Matrix ECC200
+71      | BARCODE_DATAMATRIX      | Data Matrix (ECC200)
 72      | BARCODE_EAN14           | EAN-14
 73      | BARCODE_VIN             | Vehicle Identification Number (America)
 74      | BARCODE_CODABLOCKF      | Codablock-F
@@ -1087,7 +1087,7 @@ whereas
 
 my_symbol->input_mode = DATA_MODE + GS1_MODE;
 
-is not valid. Permissable escape sequences are listed in section 4.1.
+is not valid. Permissible escape sequences are listed in section 4.1.
 
 
 5.10 Verifying Symbology Availability
@@ -1107,7 +1107,7 @@ if(ZBarcode_ValidID(BARCODE_PDF417) != 0) {
 }
 
 [1] This value is ignored for Australia Post 4-State Barcodes, PostNet, PLANET,
-USPS OneCode, RM4SCC, PDF417, Data Matrix ECC200, Maxicode, QR Code, GS1
+USPS OneCode, RM4SCC, PDF417, Data Matrix, Maxicode, QR Code, GS1
 DataBar-14 Stacked, PDF417 and MicroPDF417 - all of which have a fixed height.
 
 [2] This value is ignored for Code 16k, Codablock-F and ITF-14 symbols.
@@ -1391,10 +1391,10 @@ the GS1 General Specification. Application Identifiers (AIs) should be entered
 using [square bracket] notation. These will be converted to (round brackets)
 for the human readable text. This will allow round brackets to be used in the
 data strings to be encoded. Fixed length data should be entered at the
-appropriate length for correct encoding (see Appendix C). GS1-128 does not
-support extended ASCII characters. Check digits for GTIN data (AI 01) are not
-generated and need to be included in the input data. The following is an example
-of a valid GS1-128 input:
+appropriate length for correct encoding. GS1-128 does not support extended
+ASCII characters. Check digits for GTIN data (AI 01) are not generated and
+need to be included in the input data. The following is an example of a valid
+GS1-128 input:
 
 zint --barcode=16 -d "[01]98898765432106[3202]012345[15]991231"
 
@@ -1447,8 +1447,8 @@ brackets) before it is included in the human readable text attached to the
 symbol. This method allows the inclusion of rounded brackets in the data to be
 encoded. GTIN data (AI 01) should also include the check digit data as this is
 not calculated by Zint when this symbology is encoded. Fixed length data should
-be entered at the appropriate length for correct encoding (see Appendix C). The
-following is an example of a valid DataBar Expanded input:
+be entered at the appropriate length for correct encoding. The following is
+an example of a valid DataBar Expanded input:
 
 zint --barcode=31 -d "[01]98898765432106[3202]012345[15]991231"
 
@@ -1549,7 +1549,7 @@ where symbol size needs to be kept to a minimum. 34 predefined symbol sizes are
 available with 1 - 4 columns and 4 - 44 rows. The maximum size MicroPDF417
 symbol can hold 250 alphanumeric characters or 366 digits. The amount of error
 correction used is dependent on symbol size. The number of columns used can be
-determined using the --cols switch or option_2 as with PDF417. This symbology
+determined using the –cols switch or option_2 as with PDF417. This symbology
 uses Latin-1 character encoding by default but also supports the ECI encoding
 mechanism. A separate symbology ID can be used to encode Health Industry
 Barcode (HIBC) data which adds a leading '+' character and a modulo-49 check
@@ -1692,7 +1692,7 @@ input), PostNet10 (5 digit ZIP + 4 digit user data) and PostNet12 (5 digit ZIP
 ------------
 Used by the United States Postal Service until 2009, the PLANET (Postal Alpha
 Numeric Encoding Technique) barcode was used for encoding routing data on mail
-items. Planet uses numerical input data and includes a modulo-10 check digit.
+items. PLANET uses numerical input data and includes a modulo-10 check digit.
 While Zint will encode PLANET symbols of any length, standard lengths used by
 USPS were Planet12 (11 digit input) and Planet14 (13 digit input).
 
@@ -1748,13 +1748,13 @@ A-Z and needs to be 11 characters in length. No check digit is included.
 The RM4SCC standard is used by the Royal Mail in the UK to encode postcode and
 customer data on mail items. Data input can consist of numbers 0-9 and letters
 A-Z and usually includes delivery postcode followed by house number. For
-example "W1J0TR01" for 1 Picadilly Circus in London. Check digit data is
+example "W1J0TR01" for 1 Piccadilly Circus in London. Check digit data is
 generated by Zint.
 
 6.5.4 Royal Mail 4-State Mailmark
 ---------------------------------
 Developed in 2014 as a replacement for RM4SCC this 4-state symbol includes
-Reed Solomon error correction. Input is a pre-formatted alpanumeric string of
+Reed Solomon error correction. Input is a pre-formatted alphanumeric string of
 22 (for Barcode C) or 26 (for Barcode L) characters, producing a symbol with
 66 or 78 bars respectively. Some of the permitted inputs include a number of
 trailing space characters - these will be appended by Zint if not included in
@@ -1785,11 +1785,11 @@ A-Z and Dash (-). A modulo 19 check digit is added by Zint.
 
 6.6 Two-Dimensional Matrix Symbols
 ----------------------------------
-6.6.1 Data Matrix ECC200 (ISO 16022)
-------------------------------------
+6.6.1 Data Matrix (ISO 16022)
+-----------------------------
 Also known as Semacode this symbology was developed in 1989 by Acuity CiMatrix
 in partnership with the US DoD and NASA. The symbol can encode a large amount
-of data in a small area. Data Matrix ECC200 can encode characters in the
+of data in a small area. Data Matrix can encode characters in the
 Latin-1 set by default but also supports encoding using other character sets
 using the ECI mechanism. It can also encode GS1 data. The size of the
 generated symbol can also be adjusted using the --vers= option or by setting
@@ -1867,7 +1867,7 @@ Input  |  Symbol Size
 DMRE symbol sizes may be activated in automatic size mode using the option
 --dmre or by the API option_3 = DM_DMRE
 
-GS1 symbology may use FNC1 (prefered) or GS as separator.
+GS1 symbology may use FNC1 (preferred) or GS as separator.
 Use the option --gssep to change to GS or use the API
 output_options+=GS1_GS_SEPARATOR
 
@@ -2060,7 +2060,7 @@ Characters | Meaning
            |    or up to 6 alphanumeric characters (for mode 3). Remaining
            |    unused characters should be filled with the SPACE character
            |    (ASCII 32).
-10 - 12    | Three digit country code according to ISO 3166 (see Appendix B)
+10 - 12    | Three digit country code according to ISO 3166.
 13 - 15    | Three digit service code. This depends on your parcel courier.
 ----------------------------------------------------------------------------
 
@@ -2191,7 +2191,7 @@ Annex A.
 6.6.9 Code One
 --------------
 A matrix symbology developed by Ted Williams in 1992 which encodes data in a
-way similar to Data Matrix ECC200. Code One is able to encode the Latin-1
+way similar to Data Matrix. Code One is able to encode the Latin-1
 character set or GS1 data. There are two types of Code One symbol - variable
 height symbols which are roughly square (versions A thought to H) and
 fixed-height versions (version S and T). These can be selected by using --vers=
@@ -2219,7 +2219,7 @@ version T symbols is determined by the length of the input data.
 6.6.10 Grid Matrix
 -----------------
 By default Grid Matrix supports encoding in Latin-1 and Chinese characters
-within the GB 2312 standard set to be encoded in a checkerboard pattern. Input
+within the GB 2312 standard set to be encoded in a chequerboard pattern. Input
 should be entered as Unicode (UTF-8) with conversion to GB 2312 being carried
 out automatically by Zint. The symbology also supports the ECI mechanism. The
 size of the symbol and the error correction capacity can be specified. If you
@@ -2797,395 +2797,3 @@ E   |     |     |  ®      |  ¾  |  Î  |  Þ  |  î  |  þ
 F   |     |     |  ¯      |  ¿  |  Ï  |  ß  |  î  |  ÿ
 ------------------------------------------------------
 
-B. Three Digit Country Codes (ISO 3166)
----------------------------------------
-Below are some of the three digit country codes (in right-hand column) as
-determined by ISO 3166 for use with Maxicode symbols.
-
-Country                                         A 2     A 3     Number
-----------------------------------------------------------------------
-AALAND ISLANDS                                  AX      ALA     248
-AFGHANISTAN                                     AF      AFG     004
-ALBANIA                                         AL      ALB     008
-ALGERIA                                         DZ      DZA     012
-AMERICAN SAMOA                                  AS      ASM     016
-ANDORRA                                         AD      AND     020
-ANGOLA                                          AO      AGO     024
-ANGUILLA                                        AI      AIA     660
-ANTARCTICA                                      AQ      ATA     010
-ANTIGUA AND BARBUDA                             AG      ATG     028
-ARGENTINA                                       AR      ARG     032
-ARMENIA                                         AM      ARM     051
-ARUBA                                           AW      ABW     533
-AUSTRALIA                                       AU      AUS     036
-AUSTRIA                                         AT      AUT     040
-AZERBAIJAN                                      AZ      AZE     031
-BAHAMAS                                         BS      BHS     044
-BAHRAIN                                         BH      BHR     048
-BANGLADESH                                      BD      BGD     050
-BARBADOS                                        BB      BRB     052
-BELARUS                                         BY      BLR     112
-BELGIUM                                         BE      BEL     056
-BELIZE                                          BZ      BLZ     084
-BENIN                                           BJ      BEN     204
-BERMUDA                                         BM      BMU     060
-BHUTAN                                          BT      BTN     064
-BOLIVIA                                         BO      BOL     068
-BOSNIA AND HERZEGOWINA                          BA      BIH     070
-BOTSWANA                                        BW      BWA     072
-BOUVET ISLAND                                   BV      BVT     074
-BRAZIL                                          BR      BRA     076
-BRITISH INDIAN OCEAN TERRITORY                  IO      IOT     086
-BRUNEI DARUSSALAM                               BN      BRN     096
-BULGARIA                                        BG      BGR     100
-BURKINA FASO                                    BF      BFA     854
-BURUNDI                                         BI      BDI     108
-CAMBODIA                                        KH      KHM     116
-CAMEROON                                        CM      CMR     120
-CANADA                                          CA      CAN     124
-CAPE VERDE                                      CV      CPV     132
-CAYMAN ISLANDS                                  KY      CYM     136
-CENTRAL AFRICAN REPUBLIC                        CF      CAF     140
-CHAD                                            TD      TCD     148
-CHILE                                           CL      CHL     152
-CHINA                                           CN      CHN     156
-CHRISTMAS ISLAND                                CX      CXR     162
-COCOS (KEELING) ISLANDS                         CC      CCK     166
-COLOMBIA                                        CO      COL     170
-COMOROS                                         KM      COM     174
-CONGO, Democratic Republic of (was Zaire)       CD      COD     180
-CONGO, Republic of                              CG      COG     178
-COOK ISLANDS                                    CK      COK     184
-COSTA RICA                                      CR      CRI     188
-COTE D'IVOIRE                                   CI      CIV     384
-CROATIA (local name: Hrvatska)                  HR      HRV     191
-CUBA                                            CU      CUB     192
-CYPRUS                                          CY      CYP     196
-CZECH REPUBLIC                                  CZ      CZE     203
-DENMARK                                         DK      DNK     208
-DJIBOUTI                                        DJ      DJI     262
-DOMINICA                                        DM      DMA     212
-DOMINICAN REPUBLIC                              DO      DOM     214
-ECUADOR                                         EC      ECU     218
-EGYPT                                           EG      EGY     818
-EL SALVADOR                                     SV      SLV     222
-EQUATORIAL GUINEA                               GQ      GNQ     226
-ERITREA                                         ER      ERI     232
-ESTONIA                                         EE      EST     233
-ETHIOPIA                                        ET      ETH     231
-FALKLAND ISLANDS (MALVINAS)                     FK      FLK     238
-FAROE ISLANDS                                   FO      FRO     234
-FIJI                                            FJ      FJI     242
-FINLAND                                         FI      FIN     246
-FRANCE                                          FR      FRA     250
-FRENCH GUIANA                                   GF      GUF     254
-FRENCH POLYNESIA                                PF      PYF     258
-FRENCH SOUTHERN TERRITORIES                     TF      ATF     260
-GABON                                           GA      GAB     266
-GAMBIA                                          GM      GMB     270
-GEORGIA                                         GE      GEO     268
-GERMANY                                         DE      DEU     276
-GHANA                                           GH      GHA     288
-GIBRALTAR                                       GI      GIB     292
-GREECE                                          GR      GRC     300
-GREENLAND                                       GL      GRL     304
-GRENADA                                         GD      GRD     308
-GUADELOUPE                                      GP      GLP     312
-GUAM                                            GU      GUM     316
-GUATEMALA                                       GT      GTM     320
-GUINEA                                          GN      GIN     324
-GUINEA-BISSAU                                   GW      GNB     624
-GUYANA                                          GY      GUY     328
-HAITI                                           HT      HTI     332
-HEARD AND MC DONALD ISLANDS                     HM      HMD     334
-HONDURAS                                        HN      HND     340
-HONG KONG                                       HK      HKG     344
-HUNGARY                                         HU      HUN     348
-ICELAND                                         IS      ISL     352
-INDIA                                           IN      IND     356
-INDONESIA                                       ID      IDN     360
-IRAN (ISLAMIC REPUBLIC OF)                      IR      IRN     364
-IRAQ                                            IQ      IRQ     368
-IRELAND                                         IE      IRL     372
-ISRAEL                                          IL      ISR     376
-ITALY                                           IT      ITA     380
-JAMAICA                                         JM      JAM     388
-JAPAN                                           JP      JPN     392
-JORDAN                                          JO      JOR     400
-KAZAKHSTAN                                      KZ      KAZ     398
-KENYA                                           KE      KEN     404
-KIRIBATI                                        KI      KIR     296
-KOREA, DEMOCRATIC PEOPLE'S REPUBLIC OF          KP      PRK     408
-KOREA, REPUBLIC OF                              KR      KOR     410
-KUWAIT                                          KW      KWT     414
-KYRGYZSTAN                                      KG      KGZ     417
-LAO PEOPLE'S DEMOCRATIC REPUBLIC                LA      LAO     418
-LATVIA                                          LV      LVA     428
-LEBANON                                         LB      LBN     422
-LESOTHO                                         LS      LSO     426
-LIBERIA                                         LR      LBR     430
-LIBYAN ARAB JAMAHIRIYA                          LY      LBY     434
-LIECHTENSTEIN                                   LI      LIE     438
-LITHUANIA                                       LT      LTU     440
-LUXEMBOURG                                      LU      LUX     442
-MACAU                                           MO      MAC     446
-MACEDONIA, THE FORMER YUGOSLAV REPUBLIC OF      MK      MKD     807
-MADAGASCAR                                      MG      MDG     450
-MALAWI                                          MW      MWI     454
-MALAYSIA                                        MY      MYS     458
-MALDIVES                                        MV      MDV     462
-MALI                                            ML      MLI     466
-MALTA                                           MT      MLT     470
-MARSHALL ISLANDS                                MH      MHL     584
-MARTINIQUE                                      MQ      MTQ     474
-MAURITANIA                                      MR      MRT     478
-MAURITIUS                                       MU      MUS     480
-MAYOTTE                                         YT      MYT     175
-MEXICO                                          MX      MEX     484
-MICRONESIA, FEDERATED STATES OF                 FM      FSM     583
-MOLDOVA, REPUBLIC OF                            MD      MDA     498
-MONACO                                          MC      MCO     492
-MONGOLIA                                        MN      MNG     496
-MONTSERRAT                                      MS      MSR     500
-MOROCCO                                         MA      MAR     504
-MOZAMBIQUE                                      MZ      MOZ     508
-MYANMAR                                         MM      MMR     104
-NAMIBIA                                         NA      NAM     516
-NAURU                                           NR      NRU     520
-NEPAL                                           NP      NPL     524
-NETHERLANDS                                     NL      NLD     528
-NETHERLANDS ANTILLES                            AN      ANT     530
-NEW CALEDONIA                                   NC      NCL     540
-NEW ZEALAND                                     NZ      NZL     554
-NICARAGUA                                       NI      NIC     558
-NIGER                                           NE      NER     562
-NIGERIA                                         NG      NGA     566
-NIUE                                            NU      NIU     570
-NORFOLK ISLAND                                  NF      NFK     574
-NORTHERN MARIANA ISLANDS                        MP      MNP     580
-NORWAY                                          NO      NOR     578
-OMAN                                            OM      OMN     512
-PAKISTAN                                        PK      PAK     586
-PALAU                                           PW      PLW     585
-PALESTINIAN TERRITORY, Occupied                 PS      PSE     275
-PANAMA                                          PA      PAN     591
-PAPUA NEW GUINEA                                PG      PNG     598
-PARAGUAY                                        PY      PRY     600
-PERU                                            PE      PER     604
-PHILIPPINES                                     PH      PHL     608
-PITCAIRN                                        PN      PCN     612
-POLAND                                          PL      POL     616
-PORTUGAL                                        PT      PRT     620
-PUERTO RICO                                     PR      PRI     630
-QATAR                                           QA      QAT     634
-REUNION                                         RE      REU     638
-ROMANIA                                         RO      ROU     642
-RUSSIAN FEDERATION                              RU      RUS     643
-RWANDA                                          RW      RWA     646
-SAINT HELENA                                    SH      SHN     654
-SAINT KITTS AND NEVIS                           KN      KNA     659
-SAINT LUCIA                                     LC      LCA     662
-SAINT PIERRE AND MIQUELON                       PM      SPM     666
-SAINT VINCENT AND THE GRENADINES                VC      VCT     670
-SAMOA                                           WS      WSM     882
-SAN MARINO                                      SM      SMR     674
-SAO TOME AND PRINCIPE                           ST      STP     678
-SAUDI ARABIA                                    SA      SAU     682
-SENEGAL                                         SN      SEN     686
-SERBIA AND MONTENEGRO                           CS      SCG     891
-SEYCHELLES                                      SC      SYC     690
-SIERRA LEONE                                    SL      SLE     694
-SINGAPORE                                       SG      SGP     702
-SLOVAKIA                                        SK      SVK     703
-SLOVENIA                                        SI      SVN     705
-SOLOMON ISLANDS                                 SB      SLB     090
-SOMALIA                                         SO      SOM     706
-SOUTH AFRICA                                    ZA      ZAF     710
-SOUTH GEORGIA AND THE SOUTH SANDWICH ISLANDS    GS      SGS     239
-SPAIN                                           ES      ESP     724
-SRI LANKA                                       LK      LKA     144
-SUDAN                                           SD      SDN     736
-SURINAME                                        SR      SUR     740
-SVALBARD AND JAN MAYEN ISLANDS                  SJ      SJM     744
-SWAZILAND                                       SZ      SWZ     748
-SWEDEN                                          SE      SWE     752
-SWITZERLAND                                     CH      CHE     756
-SYRIAN ARAB REPUBLIC                            SY      SYR     760
-TAIWAN                                          TW      TWN     158
-TAJIKISTAN                                      TJ      TJK     762
-TANZANIA, UNITED REPUBLIC OF                    TZ      TZA     834
-THAILAND                                        TH      THA     764
-TIMOR-LESTE                                     TL      TLS     626
-TOGO                                            TG      TGO     768
-TOKELAU                                         TK      TKL     772
-TONGA                                           TO      TON     776
-TRINIDAD AND TOBAGO                             TT      TTO     780
-TUNISIA                                         TN      TUN     788
-TURKEY                                          TR      TUR     792
-TURKMENISTAN                                    TM      TKM     795
-TURKS AND CAICOS ISLANDS                        TC      TCA     796
-TUVALU                                          TV      TUV     798
-UGANDA                                          UG      UGA     800
-UKRAINE                                         UA      UKR     804
-UNITED ARAB EMIRATES                            AE      ARE     784
-UNITED KINGDOM                                  GB      GBR     826
-UNITED STATES                                   US      USA     840
-UNITED STATES MINOR OUTLYING ISLANDS            UM      UMI     581
-URUGUAY                                         UY      URY     858
-UZBEKISTAN                                      UZ      UZB     860
-VANUATU                                         VU      VUT     548
-VATICAN CITY STATE (HOLY SEE)                   VA      VAT     336
-VENEZUELA                                       VE      VEN     862
-VIET NAM                                        VN      VNM     704
-VIRGIN ISLANDS (BRITISH)                        VG      VGB     092
-VIRGIN ISLANDS (U.S.)                           VI      VIR     850
-WALLIS AND FUTUNA ISLANDS                       WF      WLF     876
-WESTERN SAHARA                                  EH      ESH     732
-YEMEN                                           YE      YEM     887
-ZAMBIA                                          ZM      ZMB     894
-ZIMBABWE                                        ZW      ZWE     716
-
-C. GS1 General Specification
-----------------------------
-The GS1 General Specification defines a global standard for encoding data about
-products. Data is encoded as a series of number pairs where the first number,
-usually shown in (brackets) is an application identifier (AI), and the second
-is a formatted representation of the data. For example (21)6773 can be read as
-"Serial Number 6773" where the AI (21) signifies that the data is a serial
-number. Note that when using Zint AI data is entered using [square] brackets.
-This allows rounded brackets to be included in the data which is allowed by the
-specification. When the barcode symbol is generated these square brackets are
-replaced by rounded brackets in any text displayed. A list of valid AI numbers
-is given below.
-
-C.1 Application Identifiers [1]
----------------------------
-00   Serial Shipping Container Code (SSCC)
-01   Global Trade Item Number (GTIN)
-02   # of containers
-10   Batch Number
-11   Production Date
-13   Packaging Date
-15   Sell by Date (Quality Control)
-17   Expiration Date
-20   Product Variant
-21   Serial Number
-22   HIBCC Quantity, Date, Batch and Link
-23x  Lot Number
-240  Additional Product Identification
-250  Second Serial Number
-30   Quantity Each
-310y Product Net Weight in kg
-311y Product Length/1st Dimension, in meters
-312y Product Width/Diameter/2nd Dimension, in meters
-313y Product Depth/Thickness/3rd Dimension, in meters
-314y Product Area, in square meters
-315y Product Volume, in liters
-316y product Volume, in cubic meters
-320y Product Net Weight, in pounds
-321y Product Length/1st Dimension, in inches
-322y Product Length/1st Dimension, in feet
-323y Product Length/1st Dimension, in yards
-324y Product Width/Diameter/2nd Dimension, in inches
-325y Product Width/Diameter/2nd Dimension, in feet
-326y Product Width/Diameter/2nd Dimension, in yards
-327y Product Depth/Thickness/3rd Dimension, in inches
-328y Product Depth/Thickness/3rd Dimension, in feet
-329y Product Depth/Thickness/3rd Dimension, in yards
-330y Container Gross Weight (kg)
-331y Container Length/1st Dimension (Meters)
-332y Container Width/Diameter/2nd Dimension (Meters)
-333y Container Depth/Thickness/3rd Dimension (Meters)
-334y Container Area (Square Meters)
-335y Container Gross Volume (Liters)
-336y Container Gross Volume (Cubic Meters)
-340y Container Gross Weight (Pounds)
-341y Container Length/1st Dimension, in inches
-342y Container Length/1st Dimension, in feet
-343y Container Length/1st Dimension in, in yards
-344y Container Width/Diameter/2nd Dimension, in inches
-345y Container Width/Diameter/2nd Dimension, in feet
-346y Container Width/Diameter/2nd Dimension, in yards
-347y Container Depth/Thickness/Height/3rd Dimension, in inches
-348y Container Depth/Thickness/Height/3rd Dimension, in feet
-349y Container Depth/Thickness/Height/3rd Dimension, in yards
-350y Product Area (Square Inches)
-351y Product Area (Square Feet)
-352y Product Area (Square Yards)
-353y Container Area (Square Inches)
-354y Container Area (Square Feet)
-355y Container Area (Suqare Yards)
-356y Net Weight (Troy Ounces)
-360y Product Volume (Quarts)
-361y Product Volume (Gallons)
-362y Container Gross Volume (Quarts)
-363y Container Gross Volume (Gallons)
-364y Product Volume (Cubic Inches)
-365y Product Volume (Cubic Feet)
-366y Product Volume (Cubic Yards)
-367y Container Gross Volume (Cubic Inches)
-368y Container Gross Volume (Cubic Feet)
-369y Container Gross Volume (Cubic Yards)
-37   Number of Units Contained
-400  Customer Purchase Order Number
-410  Ship To/Deliver To Location Code (Global Location Number)
-411  Bill To/Invoice Location Code (Global Location Number)
-412  Purchase From Location Code (Global Location Number)
-420  Ship To/Deliver To Postal Code (Single Postal Authority)
-421  Ship To/Deliver To Postal Code (Multiple Postal Authority)
-8001 Roll Products - Width/Length/Core Diameter
-8002 Electronic Serial Number (ESN) for Cellular Phone
-8003 Global Returnable Asset Identifier
-8004 Global Individual Asset Identifier
-8005 Price per Unit of Measure
-8100 Coupon Extended Code: Number System and Offer
-8101 Coupon Extended Code: Number System, Offer, End of Offer
-8102 Coupon Extended Code: Number System preceded by 090 Mutually Agreed
-     Between Trading Partners
-91   Internal Company Codes
-92   Internal Company Codes
-93   Internal Company Codes
-94   Internal Company Codes
-95   Internal Company Codes
-96   Internal Company Codes
-97   Internal Company Codes
-98   Internal Company Codes
-99   Internal Company Codes
-
-C.2 Fixed Length Fields
------------------------
-The GS1 Specification requires that some of the data to be encoded fits a
-standard length field. Zint will generate an error if the correct data lengths
-are not entered. The following table details which AIs have fixed length data
-fields and how long the data should be for each:
-
-------------------------------------
-Application  |  Number of Characters
-Identifier   |  (AI and Data Field)
-------------------------------------
-00           |  20
-01           |  16
-02           |  16
-03           |  16
-04           |  18
-11           |  8
-12           |  8
-13           |  8
-14           |  8
-15           |  8
-16           |  8
-17           |  8
-18           |  8
-19           |  8
-20           |  4
-31           |  10
-32           |  10
-33           |  10
-34           |  10
-35           |  10
-36           |  10
-41           |  16
-------------------------------------
-
-[1] This information taken from Wikipedia (http://en.wikipedia.org/wiki/GS1) and
-used under the terms of the GNU Free Documentation License .
