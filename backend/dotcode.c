@@ -496,8 +496,8 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
             // the next three codewords valued A, B & C encode the ECI value of
             // (A - 40) * 12769 + B * 113 + C + 40 (Section 5.2.1)
             int a, b, c;
-            a = (symbol->eci - 40) % 12769;
-            b = ((symbol->eci - 40) - (12769 * a)) % 113;
+            a = (symbol->eci - 40) / 12769;
+            b = ((symbol->eci - 40) - (12769 * a)) / 113;
             c = (symbol->eci - 40) - (12769 * a) - (113 * b);
 
             codeword_array[array_length] = a + 40;
