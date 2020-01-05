@@ -756,7 +756,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
                 process_buffer[*process_p] = value;
                 (*process_p)++;
 
-                if (*process_p >= 3) {
+                while (*process_p >= 3) {
                     int iv;
 
                     iv = (1600 * process_buffer[0]) + (40 * process_buffer[1]) + (process_buffer[2]) + 1;
@@ -824,7 +824,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
                 process_buffer[*process_p] = value;
                 (*process_p)++;
 
-                if (*process_p >= 3) {
+                while (*process_p >= 3) {
                     int iv;
 
                     iv = (1600 * process_buffer[0]) + (40 * process_buffer[1]) + (process_buffer[2]) + 1;
@@ -885,7 +885,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
                 process_buffer[*process_p] = value;
                 (*process_p)++;
 
-                if (*process_p >= 3) {
+                while (*process_p >= 3) {
                     int iv;
 
                     iv = (1600 * process_buffer[0]) + (40 * process_buffer[1]) + (process_buffer[2]) + 1;
@@ -932,7 +932,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
                 sp++;
             }
 
-            if (*process_p >= 4) {
+            while (*process_p >= 4) {
                 target[tp] = (unsigned char) ((process_buffer[0] << 2) + ((process_buffer[1] & 0x30) >> 4));
                 tp++;
                 target[tp] = ((process_buffer[1] & 0x0f) << 4) + ((process_buffer[2] & 0x3c) >> 2);
@@ -1253,7 +1253,7 @@ static int data_matrix_200(struct zint_symbol *symbol,const unsigned char source
 #ifdef DEBUG
     {
         int CWCount;
-		int posCur;
+        int posCur;
         if (skew)
             CWCount = 1558 + 620;
         else
@@ -1289,7 +1289,7 @@ static int data_matrix_200(struct zint_symbol *symbol,const unsigned char source
         // Print position matrix as in standard
         for (y = NR - 1; y >= 0; y--) {
             for (x = 0; x < NC; x++) {
-				int v;
+                int v;
                 if (x != 0)
                     fprintf(stderr, "|");
                 v = places[(NR - y - 1) * NC + x];
