@@ -441,7 +441,6 @@ int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_type) {
 
     // Plot rectangles - most symbols created here
     if ((symbol->symbology != BARCODE_MAXICODE) && ((symbol->output_options & BARCODE_DOTTY_MODE) == 0)) {
-        printf("Got symbol %d\n", symbol->symbology);
         for (r = 0; r < symbol->rows; r++) {
             this_row = r;
             last_row_start = rect_count;

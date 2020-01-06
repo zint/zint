@@ -158,6 +158,46 @@ int png_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
         for (column = 0; column < symbol->bitmap_width; column++) {
             i = column * 3;
             switch (*(pixelbuf + (symbol->bitmap_width * row) + column)) {
+                case 'W': // White
+                    outdata[i] = 255;
+                    outdata[i + 1] = 255;
+                    outdata[i + 2] = 255;
+                    break;
+                case 'C': // Cyan
+                    outdata[i] = 0;
+                    outdata[i + 1] = 255;
+                    outdata[i + 2] = 255;
+                    break;
+                case 'B': // Blue
+                    outdata[i] = 0;
+                    outdata[i + 1] = 0;
+                    outdata[i + 2] = 255;
+                    break;
+                case 'M': // Magenta
+                    outdata[i] = 255;
+                    outdata[i + 1] = 0;
+                    outdata[i + 2] = 255;
+                    break;
+                case 'R': // Red
+                    outdata[i] = 255;
+                    outdata[i + 1] = 0;
+                    outdata[i + 2] = 0;
+                    break;
+                case 'Y': // Yellow
+                    outdata[i] = 255;
+                    outdata[i + 1] = 255;
+                    outdata[i + 2] = 0;
+                    break;
+                case 'G': // Green
+                    outdata[i] = 0;
+                    outdata[i + 1] = 255;
+                    outdata[i + 2] = 0;
+                    break;
+                case 'K': // Black
+                    outdata[i] = 0;
+                    outdata[i + 1] = 0;
+                    outdata[i + 2] = 0;
+                    break;
                 case '1':
                     outdata[i] = fgred;
                     outdata[i + 1] = fggrn;
