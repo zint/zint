@@ -37,6 +37,70 @@
 #include <math.h>
 #include "common.h"
 
+void colour_to_pscolor(int option, int colour, char* output) {
+
+    strcpy(output, "");
+    if ((option & CMYK_COLOUR) == 0) {
+        // Use RGB colour space
+        switch(colour) {
+            case 0: // White
+                strcat(output, "1.00 1.00 1.00");
+                break;
+            case 1: // Cyan
+                strcat(output, "0.00 1.00 1.00");
+                break;
+            case 2: // Blue
+                strcat(output, "0.00 0.00 1.00");
+                break;
+            case 3: // Magenta
+                strcat(output, "1.00 0.00 1.00");
+                break;
+            case 4: // Red
+                strcat(output, "1.00 0.00 0.00");
+                break;
+            case 5: // Yellow
+                strcat(output, "1.00 1.00 0.00");
+                break;
+            case 6: // Green
+                strcat(output, "0.00 1.00 0.00");
+                break;
+            default: // Black
+                strcat(output, "0.00 0.00 0.00");
+                break;
+        }
+        strcat(output, " setrgbcolor");
+    } else {
+        // Use CMYK colour space
+        switch(colour) {
+            case 0: // White
+                strcat(output, "0.00 0.00 0.00 0.00");
+                break;
+            case 1: // Cyan
+                strcat(output, "1.00 0.00 0.00 0.00");
+                break;
+            case 2: // Blue
+                strcat(output, "1.00 1.00 0.00 0.00");
+                break;
+            case 3: // Magenta
+                strcat(output, "0.00 1.00 0.00 0.00");
+                break;
+            case 4: // Red
+                strcat(output, "0.00 1.00 1.00 0.00");
+                break;
+            case 5: // Yellow
+                strcat(output, "0.00 0.00 1.00 0.00");
+                break;
+            case 6: // Green
+                strcat(output, "1.00 0.00 1.00 0.00");
+                break;
+            default: // Black
+                strcat(output, "0.00 0.00 0.00 1.00");
+                break;
+        }
+        strcat(output, " setcmykcolor");
+    }
+}
+
 int ps_plot(struct zint_symbol *symbol) {
     FILE *feps;
     int fgred, fggrn, fgblu, bgred, bggrn, bgblu;
@@ -46,7 +110,9 @@ int ps_plot(struct zint_symbol *symbol) {
     int error_number = 0;
     float ax, ay, bx, by, cx, cy, dx, dy, ex, ey, fx, fy;
     float radius;
-    
+    int colour_index, colour_rect_counter;
+    char ps_color[30];
+
     struct zint_vector_rect *rect;
     struct zint_vector_hexagon *hex;
     struct zint_vector_circle *circle;
@@ -152,19 +218,42 @@ int ps_plot(struct zint_symbol *symbol) {
     fprintf(feps, "%.2f 0.00 TB 0.00 %.2f TR\n", symbol->vector->height, symbol->vector->width);
 
     fprintf(feps, "TE\n");
-    if ((symbol->output_options & CMYK_COLOUR) == 0) {
-        fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
-    } else {
-        fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n", cyan_ink, magenta_ink, yellow_ink, black_ink);
+    if (symbol->symbology != BARCODE_ULTRA) {
+        if ((symbol->output_options & CMYK_COLOUR) == 0) {
+            fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
+        } else {
+            fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n", cyan_ink, magenta_ink, yellow_ink, black_ink);
+        }
     }
-    
+
     // Rectangles
-    rect = symbol->vector->rectangles;
-    while (rect) {
-        fprintf(feps, "%.2f %.2f TB %.2f %.2f TR\n", rect->height, (symbol->vector->height - rect->y) - rect->height, rect->x, rect->width);
-        rect = rect->next;
+    if (symbol->symbology == BARCODE_ULTRA) {
+        for (colour_index = 0; colour_index <= 7; colour_index++) {
+            colour_rect_counter = 0;
+            rect = symbol->vector->rectangles;
+            while (rect) {
+                if (rect->colour == colour_index) {
+                    if (colour_rect_counter == 0) {
+                        //Set new colour
+                        colour_to_pscolor(symbol->output_options, colour_index, ps_color);
+                        fprintf(feps, "%s\n", ps_color);
+                    }
+                    colour_rect_counter++;
+                    fprintf(feps, "%.2f %.2f TB %.2f %.2f TR\n", rect->height, (symbol->vector->height - rect->y) - rect->height, rect->x, rect->width);
+                    fprintf(feps, "TE\n");
+                }
+                rect = rect->next;
+            }
+        }
+    } else {
+        rect = symbol->vector->rectangles;
+        while (rect) {
+            fprintf(feps, "%.2f %.2f TB %.2f %.2f TR\n", rect->height, (symbol->vector->height - rect->y) - rect->height, rect->x, rect->width);
+            fprintf(feps, "TE\n");
+            rect = rect->next;
+        }
     }
-    
+
     // Hexagons
     hex = symbol->vector->hexagons;
     while (hex) {
@@ -184,7 +273,7 @@ int ps_plot(struct zint_symbol *symbol) {
         fprintf(feps, "%.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f TH\n", ax, ay, bx, by, cx, cy, dx, dy, ex, ey, fx, fy);
         hex = hex->next;
     }
-    
+
     // Circles
     circle = symbol->vector->circles;
     while (circle) {
@@ -209,7 +298,7 @@ int ps_plot(struct zint_symbol *symbol) {
         }
         circle = circle->next;
     }
-    
+
     // Text
     string = symbol->vector->strings;
     while (string) {
@@ -224,8 +313,8 @@ int ps_plot(struct zint_symbol *symbol) {
         fprintf(feps, "setmatrix\n");
         string = string->next;
     }
-    
-    fprintf(feps, "\nshowpage\n");
+
+    //fprintf(feps, "\nshowpage\n");
 
     if (symbol->output_options & BARCODE_STDOUT) {
         fflush(feps);
