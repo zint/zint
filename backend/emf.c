@@ -41,6 +41,51 @@
 #include "common.h"
 #include "emf.h"
 
+int colour_to_red(int colour) {
+    int return_val = 0;
+
+    switch(colour) {
+        case 0: // White
+        case 3: // Magenta
+        case 4: // Red
+        case 5: // Yellow
+            return_val = 255;
+            break;
+    }
+
+    return return_val;
+}
+
+int colour_to_green(int colour) {
+    int return_val = 0;
+
+    switch(colour) {
+        case 0: // White
+        case 1: // Cyan
+        case 5: // Yellow
+        case 6: // Green
+            return_val = 255;
+            break;
+    }
+
+    return return_val;
+}
+
+int colour_to_blue(int colour) {
+    int return_val = 0;
+
+    switch(colour) {
+        case 0: // White
+        case 1: // Cyan
+        case 2: // Blue
+        case 3: // Magenta
+            return_val = 255;
+            break;
+    }
+
+    return return_val;
+}
+
 int count_rectangles(struct zint_symbol *symbol) {
     int rectangles = 0;
     struct zint_vector_rect *rect;
@@ -136,6 +181,8 @@ int emf_plot(struct zint_symbol *symbol) {
     int string_count, this_text;
     int bytecount, recordcount;
     float radius;
+    int colours_used = 0;
+    int rectangle_count_bycolour[8];
     unsigned char *this_string[6];
     uint32_t spacing;
 
@@ -150,8 +197,10 @@ int emf_plot(struct zint_symbol *symbol) {
     emr_eof_t emr_eof;
     emr_createbrushindirect_t emr_createbrushindirect_fg;
     emr_createbrushindirect_t emr_createbrushindirect_bg;
+    emr_createbrushindirect_t emr_createbrushindirect_colour[8]; // Used for colour symbols only
     emr_selectobject_t emr_selectobject_fgbrush;
     emr_selectobject_t emr_selectobject_bgbrush;
+    emr_selectobject_t emr_selectobject_colour[8]; // Used for colour symbols only
     emr_createpen_t emr_createpen;
     emr_selectobject_t emr_selectobject_pen;
     emr_rectangle_t background;
@@ -190,7 +239,24 @@ int emf_plot(struct zint_symbol *symbol) {
     hexagon = (emr_polygon_t*) _alloca(hexagon_count * sizeof (emr_polygon_t));
     text = (emr_exttextoutw_t*) _alloca(string_count * sizeof (emr_exttextoutw_t));
 #endif
-    
+
+    //Calculate how many coloured rectangles
+    if (symbol->symbology == BARCODE_ULTRA) {
+        for (i = 0; i < 8; i++) {
+            rectangle_count_bycolour[i] = 0;
+        }
+
+        rect = symbol->vector->rectangles;
+        this_rectangle = 0;
+        while (rect) {
+            if (rectangle_count_bycolour[rect->colour] == 0) {
+                colours_used++;
+            }
+            rectangle_count_bycolour[rect->colour]++;
+            rect = rect->next;
+        }
+    }
+
     /* Header */
     emr_header.type = 0x00000001; // EMR_HEADER
     emr_header.size = 88; // Assuming no additional data in header
@@ -217,21 +283,9 @@ int emf_plot(struct zint_symbol *symbol) {
     recordcount = 1;
 
     /* Create Brushes */
-    emr_createbrushindirect_fg.type = 0x00000027; // EMR_CREATEBRUSHINDIRECT
-    emr_createbrushindirect_fg.size = 24;
-    emr_createbrushindirect_fg.ih_brush = 1;
-    emr_createbrushindirect_fg.log_brush.brush_style = 0x0000; // BS_SOLID
-    emr_createbrushindirect_fg.log_brush.color.red = fgred;
-    emr_createbrushindirect_fg.log_brush.color.green = fggrn;
-    emr_createbrushindirect_fg.log_brush.color.blue = fgblu;
-    emr_createbrushindirect_fg.log_brush.color.reserved = 0;
-    emr_createbrushindirect_fg.log_brush.brush_hatch = 0x0006; // HS_SOLIDCLR
-    bytecount += 24;
-    recordcount++;
-
     emr_createbrushindirect_bg.type = 0x00000027; // EMR_CREATEBRUSHINDIRECT
     emr_createbrushindirect_bg.size = 24;
-    emr_createbrushindirect_bg.ih_brush = 2;
+    emr_createbrushindirect_bg.ih_brush = 1;
     emr_createbrushindirect_bg.log_brush.brush_style = 0x0000; // BS_SOLID
     emr_createbrushindirect_bg.log_brush.color.red = bgred;
     emr_createbrushindirect_bg.log_brush.color.green = bggrn;
@@ -241,22 +295,60 @@ int emf_plot(struct zint_symbol *symbol) {
     bytecount += 24;
     recordcount++;
 
-    emr_selectobject_fgbrush.type = 0x00000025; // EMR_SELECTOBJECT
-    emr_selectobject_fgbrush.size = 12;
-    emr_selectobject_fgbrush.ih_object = 1;
-    bytecount += 12;
-    recordcount++;
+    if (symbol->symbology == BARCODE_ULTRA) {
+        for (i = 0; i < 8; i++) {
+            emr_createbrushindirect_colour[i].type = 0x00000027; // EMR_CREATEBRUSHINDIRECT
+            emr_createbrushindirect_colour[i].size = 24;
+            emr_createbrushindirect_colour[i].ih_brush = 2 + i;
+            emr_createbrushindirect_colour[i].log_brush.brush_style = 0x0000; // BS_SOLID
+            emr_createbrushindirect_colour[i].log_brush.color.red = colour_to_red(i);
+            emr_createbrushindirect_colour[i].log_brush.color.green = colour_to_green(i);
+            emr_createbrushindirect_colour[i].log_brush.color.blue = colour_to_blue(i);
+            emr_createbrushindirect_colour[i].log_brush.color.reserved = 0;
+            emr_createbrushindirect_colour[i].log_brush.brush_hatch = 0x0006; // HS_SOLIDCLR
+        }
+        bytecount += colours_used * 24;
+        recordcount += colours_used;
+    } else {
+        emr_createbrushindirect_fg.type = 0x00000027; // EMR_CREATEBRUSHINDIRECT
+        emr_createbrushindirect_fg.size = 24;
+        emr_createbrushindirect_fg.ih_brush = 2;
+        emr_createbrushindirect_fg.log_brush.brush_style = 0x0000; // BS_SOLID
+        emr_createbrushindirect_fg.log_brush.color.red = fgred;
+        emr_createbrushindirect_fg.log_brush.color.green = fggrn;
+        emr_createbrushindirect_fg.log_brush.color.blue = fgblu;
+        emr_createbrushindirect_fg.log_brush.color.reserved = 0;
+        emr_createbrushindirect_fg.log_brush.brush_hatch = 0x0006; // HS_SOLIDCLR
+        bytecount += 24;
+        recordcount++;
+    }
 
     emr_selectobject_bgbrush.type = 0x00000025; // EMR_SELECTOBJECT
     emr_selectobject_bgbrush.size = 12;
-    emr_selectobject_bgbrush.ih_object = 2;
+    emr_selectobject_bgbrush.ih_object = 1;
     bytecount += 12;
     recordcount++;
+
+    if (symbol->symbology == BARCODE_ULTRA) {
+        for (i = 0; i < 8; i++) {
+            emr_selectobject_colour[i].type = 0x00000025; // EMR_SELECTOBJECT
+            emr_selectobject_colour[i].size = 12;
+            emr_selectobject_colour[i].ih_object = 2 + i;
+        }
+        bytecount += colours_used * 12;
+        recordcount += colours_used;
+    } else {
+        emr_selectobject_fgbrush.type = 0x00000025; // EMR_SELECTOBJECT
+        emr_selectobject_fgbrush.size = 12;
+        emr_selectobject_fgbrush.ih_object = 2;
+        bytecount += 12;
+        recordcount++;
+    }
 
     /* Create Pens */
     emr_createpen.type = 0x00000026; // EMR_CREATEPEN
     emr_createpen.size = 28;
-    emr_createpen.ih_pen = 3;
+    emr_createpen.ih_pen = 10;
     emr_createpen.log_pen.pen_style = 0x00000005; // PS_NULL
     emr_createpen.log_pen.width.x = 1;
     emr_createpen.log_pen.width.y = 0; // ignored
@@ -269,7 +361,7 @@ int emf_plot(struct zint_symbol *symbol) {
 
     emr_selectobject_pen.type = 0x00000025; // EMR_SELECTOBJECT
     emr_selectobject_pen.size = 12;
-    emr_selectobject_pen.ih_object = 3;
+    emr_selectobject_pen.ih_object = 10;
     bytecount += 12;
     recordcount++;
 
@@ -459,8 +551,18 @@ int emf_plot(struct zint_symbol *symbol) {
 
     fwrite(&emr_header, sizeof (emr_header_t), 1, emf_file);
 
-    fwrite(&emr_createbrushindirect_fg, sizeof (emr_createbrushindirect_t), 1, emf_file);
     fwrite(&emr_createbrushindirect_bg, sizeof (emr_createbrushindirect_t), 1, emf_file);
+
+    if (symbol->symbology == BARCODE_ULTRA) {
+        for (i = 0; i < 8; i++) {
+            if (rectangle_count_bycolour[i]) {
+                fwrite(&emr_createbrushindirect_colour[i], sizeof (emr_createbrushindirect_t), 1, emf_file);
+            }
+        }
+    } else {
+        fwrite(&emr_createbrushindirect_fg, sizeof (emr_createbrushindirect_t), 1, emf_file);
+    }
+
     fwrite(&emr_createpen, sizeof (emr_createpen_t), 1, emf_file);
 
     if (symbol->vector->strings) {
@@ -471,11 +573,29 @@ int emf_plot(struct zint_symbol *symbol) {
     fwrite(&emr_selectobject_pen, sizeof (emr_selectobject_t), 1, emf_file);
     fwrite(&background, sizeof (emr_rectangle_t), 1, emf_file);
 
-    fwrite(&emr_selectobject_fgbrush, sizeof (emr_selectobject_t), 1, emf_file);
+    if (symbol->symbology == BARCODE_ULTRA) {
+        for(i = 0; i < 8; i++) {
+            if (rectangle_count_bycolour[i]) {
+                fwrite(&emr_selectobject_colour[i], sizeof (emr_selectobject_t), 1, emf_file);
 
-    // Rectangles
-    for (i = 0; i < rectangle_count; i++) {
-        fwrite(&rectangle[i], sizeof (emr_rectangle_t), 1, emf_file);
+                rect = symbol->vector->rectangles;
+                this_rectangle = 0;
+                while (rect) {
+                    if (rect->colour == i) {
+                        fwrite(&rectangle[this_rectangle], sizeof (emr_rectangle_t), 1, emf_file);
+                    }
+                    this_rectangle++;
+                    rect = rect->next;
+                }
+            }
+        }
+    } else {
+        fwrite(&emr_selectobject_fgbrush, sizeof (emr_selectobject_t), 1, emf_file);
+
+        // Rectangles
+        for (i = 0; i < rectangle_count; i++) {
+            fwrite(&rectangle[i], sizeof (emr_rectangle_t), 1, emf_file);
+        }
     }
 
     // Hexagons
