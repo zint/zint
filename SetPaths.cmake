@@ -1,6 +1,6 @@
 # - Find include and library dirs, and define a some macros
 #
-# This module defines a bunch of variables used as locations for install directories. 
+# This module defines a bunch of variables used as locations for install directories.
 # They can be relative (to CMAKE_INSTALL_PREFIX) or absolute.
 # Under Windows they are always relative.
 #
@@ -57,10 +57,30 @@
 # Copyright (c) 2006, Laurent Montel, <montel@kde.org>
 # Copyright (c) 2008, BogDan Vatra, <bogdan@licentia.eu>
 #
-# Redistribution and use is allowed according to the terms of the BSD license.
-# For details see the accompanying COPYING-CMAKE-SCRIPTS file.
-
-
+#    Redistribution and use in source and binary forms, with or without
+#    modification, are permitted provided that the following conditions
+#    are met:
+#
+#    1. Redistributions of source code must retain the above copyright
+#       notice, this list of conditions and the following disclaimer.
+#    2. Redistributions in binary form must reproduce the above copyright
+#       notice, this list of conditions and the following disclaimer in the
+#       documentation and/or other materials provided with the distribution.
+#    3. Neither the name of the project nor the names of its contributors
+#       may be used to endorse or promote products derived from this software
+#       without specific prior written permission.
+#
+#    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+#    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+#    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+#    ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE
+#    FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+#    DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+#    OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+#    HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+#    LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+#    OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+#    SUCH DAMAGE.
 
 ########## the following are directories where stuff will be installed to  ###########
 #
@@ -179,7 +199,7 @@ endif (WIN32)
 
 # The INSTALL_TARGETS_DEFAULT_ARGS variable should be used when libraries are installed.
 # The arguments are also ok for regular executables, i.e. executables which don't go
-# into sbin/ or libexec/, but for installing executables the basic syntax 
+# into sbin/ or libexec/, but for installing executables the basic syntax
 # INSTALL(TARGETS kate DESTINATION "${BIN_INSTALL_DIR}")
 # is enough, so using this variable there doesn't help a lot.
 # The variable must not be used for installing plugins.
@@ -189,7 +209,7 @@ endif (WIN32)
 # This will install libraries correctly under UNIX, OSX and Windows (i.e. dll's go
 # into bin/.
 # Later on it will be possible to extend this for installing OSX frameworks
-# The COMPONENT Devel argument has the effect that static libraries belong to the 
+# The COMPONENT Devel argument has the effect that static libraries belong to the
 # "Devel" install component. If we use this also for all install() commands
 # for header files, it will be possible to install
 #   -everything: make install OR cmake -P cmake_install.cmake
@@ -216,13 +236,13 @@ set(CMAKE_SYSTEM_INCLUDE_PATH ${CMAKE_SYSTEM_INCLUDE_PATH}
 set(CMAKE_SYSTEM_PROGRAM_PATH ${CMAKE_SYSTEM_PROGRAM_PATH}
                               "${BIN_INSTALL_DIR}" )
 
-set(CMAKE_SYSTEM_LIBRARY_PATH ${CMAKE_SYSTEM_LIBRARY_PATH} 
+set(CMAKE_SYSTEM_LIBRARY_PATH ${CMAKE_SYSTEM_LIBRARY_PATH}
                               "${LIB_INSTALL_DIR}" )
 
 # under Windows dlls may be also installed in bin/
 if(WIN32)
-  set(CMAKE_SYSTEM_LIBRARY_PATH ${CMAKE_SYSTEM_LIBRARY_PATH} 
-                                "${_CMAKE_INSTALL_DIR}/bin" 
+  set(CMAKE_SYSTEM_LIBRARY_PATH ${CMAKE_SYSTEM_LIBRARY_PATH}
+                                "${_CMAKE_INSTALL_DIR}/bin"
                                 "${CMAKE_INSTALL_PREFIX}/bin" )
 endif(WIN32)
 
