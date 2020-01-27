@@ -109,6 +109,28 @@ Fixed bugs:
 - GS1-128 and RSS may only be used with GS1 contents
 - Han Xin chinese character handling
 
+Version 2.7.1 not released jet:
+Changes:
+- Ultracode and colour code support
+- QR encoding optimized to get smaller code matrix results
+- PDF417: do not use option_1 to give the maximum number of codewords (928).
+  Option removed in qtzint.
+- Removed annex B (3 digit country codes) and annex C (GS1 General Specification)
+  from the manual. This material may be found elsewhere.
+- MAC homebrew remark added to the documentation
+- Correct cmake file to match BSD-3-clause licence
+Bugs:
+- Correct uninitialized warning in gridmatrix.call
+- do not export internal functions
+- raster painting of UPC-A bound check
+- pdf417 documentation corrected: change flag -security to -secure
+- Dot Code encoding ECI number corrected
+- Corrected postscript plotting error
+- Datamatrix: corrected possible buffer overrun in 3 characters to 2 byte
+  encodings.
+- In 2.7.0 removed interface "ZBarcode_Render" still declared
+- vc6 make was missing (trivial) resource.h
+
 CONTACT US
 ----------
 The home of Zint is:

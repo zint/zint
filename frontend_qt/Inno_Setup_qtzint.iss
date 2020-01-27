@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "qtZint"
-#define MyAppVersion "2.5.1"
+#define MyAppVersion "2.7.0"
 #define MyAppPublisher "Robin Stuart"
 #define MyAppURL "http://zint.org.uk/"
 #define MyAppExeName "qtZint.exe"
@@ -37,9 +37,9 @@ Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescrip
 
 [Files]
 Source: "release\qtZint.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "release\Qt5Core.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "release\Qt5Gui.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "release\Qt5Widgets.dll"; DestDir: "{app}"; Flags: ignoreversion
+;Source: "release\Qt5Core.dll"; DestDir: "{app}"; Flags: ignoreversion
+;Source: "release\Qt5Gui.dll"; DestDir: "{app}"; Flags: ignoreversion
+;Source: "release\Qt5Widgets.dll"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
