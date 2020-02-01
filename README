@@ -109,11 +109,10 @@ Fixed bugs:
 - GS1-128 and RSS may only be used with GS1 contents
 - Han Xin chinese character handling
 
-Version 2.7.1 not released jet:
+Version 2.7.1 2020-02-01:
 Changes:
-- Ultracode and colour code support
 - QR encoding optimized to get smaller code matrix results
-- PDF417: do not use option_1 to give the maximum number of codewords (928).
+- PDF417: remove obsolete codeword number option in qzint.
   Option removed in qtzint.
 - Removed annex B (3 digit country codes) and annex C (GS1 General Specification)
   from the manual. This material may be found elsewhere.

@@ -264,7 +264,7 @@ bool MainWindow::save()
 void MainWindow::about()
 {
     QMessageBox::about(this, tr("About Zint"),
-       tr("<h2>Zint Barcode Studio 2.7.0</h2>"
+       tr("<h2>Zint Barcode Studio 2.7.1</h2>"
            "<p>A free barcode generator"
            "<p>Instruction manual is available at the project homepage:<br>"
            "<a href=\"http://www.zint.org.uk\">http://www.zint.org.uk</a>"

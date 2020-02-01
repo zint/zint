@@ -67,6 +67,8 @@
  2019-12-05 2.7.0 HaO
  -	Framework 2.7.0 update
  -  Add symbology rmqr
+ 2020-02-01 2.7.1 HaO
+ -	Framework 2.7.1 update
 */
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
@@ -106,7 +108,7 @@
 /*----------------------------------------------------------------------------*/
 /* > File option defines */
 
-#define VERSION "2.7.0"
+#define VERSION "2.7.1"
 
 /*----------------------------------------------------------------------------*/
 /* >>>>> Hepler defines */

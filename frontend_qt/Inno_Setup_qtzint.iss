@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "qtZint"
-#define MyAppVersion "2.7.0"
+#define MyAppVersion "2.7.1"
 #define MyAppPublisher "Robin Stuart"
 #define MyAppURL "http://zint.org.uk/"
 #define MyAppExeName "qtZint.exe"
