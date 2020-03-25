@@ -104,7 +104,7 @@ static int clr_row(char *Dots, const int Hgt, const int Wid, const int y) {
 }
 
 /* Dot pattern scoring routine from Annex A */
-static const int score_array(char Dots[], int Hgt, int Wid) {
+static int score_array(char Dots[], int Hgt, int Wid) {
     int x, y, worstedge, first, last, sum;
     int penalty_local = 0;
     int penalty = 0;
@@ -441,10 +441,10 @@ static int ahead_b(const unsigned char source[], int position, int length) {
 }
 
 /* checks if the next character is in the range 128 to 255  (Annex F.II.I) */
-static int binary(const unsigned char source[], int position) {
+static int binary(const unsigned char source[], int length, int position) {
     int retval = 0;
 
-    if (source[position] >= 128) {
+    if (position < length && source[position] >= 128) {
         retval = 1;
     }
 
@@ -669,7 +669,7 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
 
         /* Step B3 */
         if ((!done) && (encoding_mode == 'C')) {
-            if (binary(source, input_position)) {
+            if (binary(source, length, input_position)) {
                 if (n_digits(source, input_position + 1, length) > 0) {
                     if ((source[input_position] - 128) < 32) {
                         codeword_array[array_length] = 110; // Bin Shift A
@@ -805,7 +805,7 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
 
         /* Step C3 */
         if ((!done) && (encoding_mode == 'B')) {
-            if (binary(source, input_position)) {
+            if (binary(source, length, input_position)) {
                 if (datum_b(source, input_position + 1, length)) {
                     if ((source[input_position] - 128) < 32) {
                         codeword_array[array_length] = 110; // Bin Shift A
@@ -907,7 +907,7 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
 
         /* Step D3 */
         if ((!done) && (encoding_mode == 'A')) {
-            if (binary(source, input_position)) {
+            if (binary(source, length, input_position)) {
                 if (datum_a(source, input_position + 1, length)) {
                     if ((source[input_position] - 128) < 32) {
                         codeword_array[array_length] = 110; // Bin Shift A
@@ -1000,10 +1000,10 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
          * base 103 into five base 259 values..."
          */
         if ((!done) && (encoding_mode == 'X')) {
-            if (binary(source, input_position)
-                    || binary(source, input_position + 1)
-                    || binary(source, input_position + 2)
-                    || binary(source, input_position + 3)) {
+            if (binary(source, length, input_position)
+                    || binary(source, length, input_position + 1)
+                    || binary(source, length, input_position + 2)
+                    || binary(source, length, input_position + 3)) {
                 binary_buffer *= 259;
                 binary_buffer += source[input_position];
                 binary_buffer_size++;
@@ -1212,6 +1212,8 @@ static void fold_dotstream(char dot_stream[], int width, int height, char dot_ar
 static void apply_mask(int mask, int data_length, unsigned char *masked_codeword_array, unsigned char *codeword_array, int ecc_length, char *dot_stream) {
     int weight = 0;
     int j;
+
+    (void)dot_stream; /* Not currently used */
 
     switch (mask) {
         case 0:
