@@ -96,7 +96,7 @@ typedef struct sCharacterSetTable
  */
 static int GetPossibleCharacterSet(unsigned char C)
 {
-    if (C<='\x19')      /* Dec:31 */
+    if (C<='\x1f')      /* Control chars */
         return CodeA;
     if (C>='0' && C<='9')
         return ZTNum;   /* ZTNum=CodeA+CodeB+CodeC */
@@ -206,7 +206,7 @@ static int RemainingDigits(CharacterSetTable *T, int charCur,int emptyColumns)
  *  Return value    Resulting row count
  */
 
-static int Columns2Rows(CharacterSetTable *T, unsigned char *data, const size_t dataLength,
+static int Columns2Rows(struct zint_symbol *symbol, CharacterSetTable *T, unsigned char *data, const size_t dataLength,
         int * pRows, int * pUseColumns, int * pSet, int * pFillings)
 {
     int useColumns;     /* Usable Characters per line */
@@ -419,9 +419,9 @@ static int Columns2Rows(CharacterSetTable *T, unsigned char *data, const size_t 
             }
         }
     } while(rowsCur>44);
-    #ifdef _DEBUG
+    if (symbol->debug & ZINT_DEBUG_PRINT) {
         printf("  -> out: rowsCur <%i>, useColumns <%i>, fillings <%i>\n",rowsCur,useColumns,fillings);
-    #endif
+    }
     *pUseColumns=useColumns;
     *pRows=rowsCur;
     *pFillings=fillings;
@@ -429,7 +429,7 @@ static int Columns2Rows(CharacterSetTable *T, unsigned char *data, const size_t 
 }
 /* Find columns if row count is given.
  */
-static int Rows2Columns(CharacterSetTable *T, unsigned char *data, const size_t dataLength,
+static int Rows2Columns(struct zint_symbol *symbol, CharacterSetTable *T, unsigned char *data, const size_t dataLength,
         int * pRows, int * pUseColumns, int * pSet, int * pFillings)
 {
     int rowsCur;
@@ -451,9 +451,9 @@ static int Rows2Columns(CharacterSetTable *T, unsigned char *data, const size_t 
 
     rowsRequested=*pRows;
 
-    #ifdef _DEBUG
+    if (symbol->debug & ZINT_DEBUG_PRINT) {
         fprintf(stderr,"Optimizer : Searching <%i> rows\n",rowsRequested);
-    #endif
+    }
 
     if (rowsRequested==1)
         /* OneLiners are self-calibrating */
@@ -472,7 +472,7 @@ static int Rows2Columns(CharacterSetTable *T, unsigned char *data, const size_t 
         pTestList[testListSize] = testColumns;
         testListSize++;
         useColumns=testColumns; /* Make a copy because it may be modified */
-        errorCur = Columns2Rows(T, data, dataLength, &rowsCur, &useColumns, pSet, &fillings);
+        errorCur = Columns2Rows(symbol, T, data, dataLength, &rowsCur, &useColumns, pSet, &fillings);
         if (errorCur != 0)
             return errorCur;
         if (rowsCur<=rowsRequested) {
@@ -707,21 +707,22 @@ INTERNAL int codablock(struct zint_symbol *symbol,const unsigned char source[], 
         } else {
             /* use 1/1 aspect/ratio Codablock */
             columns = ((int)floor(sqrt(1.0*dataLength))+5);
-            if (columns > 64)
+            if (columns > 64) {
                 columns = 64;
-                #ifdef _DEBUG
+            }
+            if (symbol->debug & ZINT_DEBUG_PRINT) {
                 printf("Auto column count for %zu characters:%d\n",dataLength,columns);
-                #endif
+            }
         }
     }
     /* There are 5 Codewords for Organisation Start(2),row(1),CheckSum,Stop */
     useColumns = columns - 5;
     if ( rows > 0 ) {
         /* row count given */
-        Error=Rows2Columns(T,data,dataLength,&rows,&useColumns,pSet,&fillings);
+        Error = Rows2Columns(symbol, T, data, dataLength, &rows, &useColumns, pSet, &fillings);
     } else {
         /* column count given */
-        Error=Columns2Rows(T,data,dataLength,&rows,&useColumns,pSet,&fillings);
+        Error = Columns2Rows(symbol, T, data, dataLength, &rows, &useColumns, pSet, &fillings);
     }
     if (Error != 0) {
         strcpy(symbol->errtxt, "413: Data string to long");
@@ -738,8 +739,7 @@ INTERNAL int codablock(struct zint_symbol *symbol,const unsigned char source[], 
         }
     }
 
-    #ifdef _DEBUG
-    {   /* start a new level of local variables */
+    if (symbol->debug & ZINT_DEBUG_PRINT) { /* start a new level of local variables */
         int DPos;
         printf("\nData:");
         for (DPos=0 ; DPos< dataLength ; DPos++)
@@ -768,7 +768,6 @@ INTERNAL int codablock(struct zint_symbol *symbol,const unsigned char source[], 
             fputc((pSet[DPos]&CFill)==0?'.':'X',stdout);
         fputc('\n',stdout);
     }
-    #endif
 
     columns = useColumns + 5;
 
@@ -968,7 +967,7 @@ INTERNAL int codablock(struct zint_symbol *symbol,const unsigned char source[], 
         pOutPos++;
     } /* End Lineloop */
 
-    #ifdef _DEBUG
+    if (symbol->debug & ZINT_DEBUG_PRINT) {
         /* Dump the output to the screen
          */
         printf("\nCode 128 Code Numbers:\n");
@@ -984,7 +983,7 @@ INTERNAL int codablock(struct zint_symbol *symbol,const unsigned char source[], 
             }
         }
         printf("rows=%i columns=%i fillings=%i\n", rows, columns, fillings);
-    #endif
+    }
 
     /* Paint the C128 patterns */
     for (r = 0; r < rows; r++) {

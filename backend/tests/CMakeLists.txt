@@ -52,6 +52,7 @@ endmacro(zint_add_test)
 
 zint_add_test(auspost, test_auspost)
 zint_add_test(channel, test_channel)
+zint_add_test(codablock, test_codablock)
 zint_add_test(common, test_common)
 zint_add_test(composite, test_composite)
 zint_add_test(dmatrix, test_dmatrix)
