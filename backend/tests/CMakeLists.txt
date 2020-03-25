@@ -50,6 +50,7 @@ macro(zint_add_test test_name test_command)
     add_test(${test_name} ${test_command})
 endmacro(zint_add_test)
 
+zint_add_test(auspost, test_auspost)
 zint_add_test(channel, test_channel)
 zint_add_test(common, test_common)
 zint_add_test(composite, test_composite)

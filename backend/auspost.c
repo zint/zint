@@ -110,7 +110,12 @@ INTERNAL int australia_post(struct zint_symbol *symbol, unsigned char source[], 
     char fcc[3] = {0, 0, 0}, dpid[10];
     char localstr[30];
 
-    error_number = 0;
+    /* Check input immediately to catch nuls */
+    error_number = is_sane(GDSET, source, length);
+    if (error_number == ZINT_ERROR_INVALID_DATA) {
+        strcpy(symbol->errtxt, "404: Invalid characters in data");
+        return error_number;
+    }
     strcpy(localstr, "");
 
     /* Do all of the length checking first to avoid stack smashing */
@@ -165,12 +170,6 @@ INTERNAL int australia_post(struct zint_symbol *symbol, unsigned char source[], 
 
     strcat(localstr, (char*) source);
     h = strlen(localstr);
-    error_number = is_sane(GDSET, (unsigned char *) localstr, h);
-    if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "404: Invalid characters in data");
-        return error_number;
-    }
-
     /* Verifiy that the first 8 characters are numbers */
     memcpy(dpid, localstr, 8);
     dpid[8] = '\0';
