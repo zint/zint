@@ -253,7 +253,7 @@ static void test_vector_same(void)
 }
 
 // #181 Christian Hartlage OSS-Fuzz
-static void test_eanx_fuzz(void)
+static void test_fuzz(void)
 {
     testStart("");
 
@@ -267,6 +267,15 @@ static void test_eanx_fuzz(void)
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%2d*\/", line(".") - line("'<"))
     struct item data[] = {
         /* 0*/ { BARCODE_EANX, "55++15", -1, ZINT_ERROR_INVALID_DATA },
+        /* 1*/ { BARCODE_EANX, "+123456789012345678", -1, ZINT_ERROR_TOO_LONG },
+        /* 2*/ { BARCODE_EANX_CHK, "+123456789012345678", -1, ZINT_ERROR_TOO_LONG },
+        /* 3*/ { BARCODE_UPCA, "+123456789012345678", -1, ZINT_ERROR_TOO_LONG },
+        /* 4*/ { BARCODE_UPCA_CHK, "+123456789012345678", -1, ZINT_ERROR_TOO_LONG },
+        /* 5*/ { BARCODE_UPCE, "+123456789012345678", -1, ZINT_ERROR_TOO_LONG },
+        /* 6*/ { BARCODE_UPCE_CHK, "+123456789012345678", -1, ZINT_ERROR_TOO_LONG },
+        /* 7*/ { BARCODE_ISBNX, "+123456789012345678", -1, ZINT_ERROR_TOO_LONG },
+        /* 8*/ { BARCODE_EANX, "+12345", -1, 0 },
+        /* 9*/ { BARCODE_EANX, "+123456", -1, ZINT_ERROR_TOO_LONG },
     };
     int data_size = sizeof(data) / sizeof(struct item);
 
@@ -296,7 +305,7 @@ int main()
     test_upca_print();
     test_isbn();
     test_vector_same();
-    test_eanx_fuzz();
+    test_fuzz();
 
     testReport();
 

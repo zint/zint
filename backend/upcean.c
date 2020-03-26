@@ -594,6 +594,9 @@ INTERNAL void ean_leading_zeroes(struct zint_symbol *symbol, unsigned char sourc
         first_part[i + 1] = '\0';
     }
 
+    if (second_len >= 6) { /* Allow 6 (actual max 5) so as to trigger too long error */
+        second_len = 6;
+    }
     for (i = 0; i < second_len; i++) {
         second_part[i] = source[i + first_len + 1];
         second_part[i + 1] = '\0';
@@ -695,11 +698,10 @@ INTERNAL void ean_leading_zeroes(struct zint_symbol *symbol, unsigned char sourc
 
 /* splits string to parts before and after '+' parts */
 INTERNAL int eanx(struct zint_symbol *symbol, unsigned char source[], int src_len) {
-    unsigned char first_part[20] = {0}, second_part[20] = {0}, dest[1000] = {0};
+    unsigned char first_part[20] = {0}, second_part[7] = {0}, dest[1000] = {0};
     unsigned char local_source[20] = {0};
     unsigned int latch, reader, writer, with_addon;
     int error_number, i, plus_count;
-
 
     with_addon = FALSE;
     latch = FALSE;

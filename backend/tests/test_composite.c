@@ -1610,6 +1610,53 @@ static void test_encodation_11(void)
     testFinish();
 }
 
+// #181 Christian Hartlage OSS-Fuzz
+static void test_fuzz(void)
+{
+    testStart("");
+
+    int ret;
+    struct item {
+        int symbology;
+        unsigned char* data;
+        int length;
+        unsigned char* composite;
+        int ret;
+    };
+    // s/\/\*[ 0-9]*\*\//\=printf("\/*%2d*\/", line(".") - line("'<"))
+    struct item data[] = {
+        /* 0*/ { BARCODE_EANX_CC, "+123456789012345678", -1, "[21]A12345678", ZINT_ERROR_TOO_LONG },
+        /* 1*/ { BARCODE_UPCA_CC, "+123456789012345678", -1, "[21]A12345678", ZINT_ERROR_TOO_LONG },
+        /* 2*/ { BARCODE_UPCE_CC, "+123456789012345678", -1, "[21]A12345678", ZINT_ERROR_TOO_LONG },
+        /* 3*/ { BARCODE_EANX_CC, "+12345", -1, "[21]A12345678", 0 },
+        /* 4*/ { BARCODE_EANX_CC, "+123456", -1, "[21]A12345678", ZINT_ERROR_TOO_LONG },
+    };
+    int data_size = sizeof(data) / sizeof(struct item);
+
+    for (int i = 0; i < data_size; i++) {
+
+        struct zint_symbol* symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        symbol->symbology = data[i].symbology;
+        int length = data[i].length;
+        if (length == -1) {
+            length = strlen(data[i].data);
+        }
+        assert_zero(length >= 128, "i:%d length %d >= 128\n", i, length);
+        strcpy(symbol->primary, data[i].data);
+
+        int composite_length = strlen(data[i].composite);
+
+        ret = ZBarcode_Encode(symbol, data[i].composite, composite_length);
+        assert_equal(ret, data[i].ret, "i:%d ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
 int main()
 {
     test_eanx_leading_zeroes();
@@ -1620,6 +1667,7 @@ int main()
     test_encodation_0();
     test_encodation_10();
     test_encodation_11();
+    test_fuzz();
 
     testReport();
 
