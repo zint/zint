@@ -60,7 +60,7 @@ static char *TeleTable[] = {
 INTERNAL int telepen(struct zint_symbol *symbol, unsigned char source[], const size_t src_len) {
     unsigned int i, count, check_digit;
     int error_number;
-    char dest[512]; /*14 + 30 * 14 + 14 + 14 + 1 ~ 512 */
+    char dest[521]; /* 12 (start) + 30 * 16 (max for nuls) + 16 (check digit) + 12 (stop) + 1 = 521 */
 
     error_number = 0;
 
@@ -108,7 +108,7 @@ INTERNAL int telepen_num(struct zint_symbol *symbol, unsigned char source[], con
     unsigned int count, check_digit, glyph;
     int error_number;
     size_t i,temp_length = src_len;
-    char dest[1024]; /* 14 + 60 * 14 + 14 + 14 + 1 ~ 1024 */
+    char dest[521]; /* 12 (start) + 30 * 16 (max for nuls) + 16 (check digit) + 12 (stop) + 1 = 521 */
     unsigned char temp[64];
 
     count = 0;
