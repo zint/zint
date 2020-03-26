@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2019 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2020 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -30,6 +30,9 @@
 /* vim: set ts=4 sw=4 et : */
 
 #include "testcommon.h"
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 static void test_checks(void)
 {
@@ -143,10 +146,64 @@ static void test_input_mode(void)
     testFinish();
 }
 
+// #181 Nico Gunkel OSS-Fuzz
+static void test_encode_file_zero_length(void)
+{
+    testStart("");
+
+    int ret;
+    char filename[] = "in.bin";
+    int fd;
+
+    struct zint_symbol* symbol = ZBarcode_Create();
+    assert_nonnull(symbol, "Symbol not created\n");
+
+    (void)remove(filename); // In case junk hanging around
+    fd = creat(filename, S_IRUSR);
+    assert_nonzero(fd, "Input file not created\n");
+    assert_zero(close(fd), "close(%s) != 0\n", filename);
+
+    ret = ZBarcode_Encode_File(symbol, filename);
+    assert_equal(ret, ZINT_ERROR_INVALID_DATA, "ret %d != ZINT_ERROR_INVALID_DATA\n", ret);
+
+    assert_zero(remove(filename), "remove(%s) != 0\n", filename);
+
+    ZBarcode_Delete(symbol);
+
+    testFinish();
+}
+
+// #181 Nico Gunkel OSS-Fuzz (buffer not freed on fread() error) Note: unable to reproduce fread() error using this method
+static void test_encode_file_directory(void)
+{
+    testStart("");
+
+    int ret;
+    char dirname[] = "in_dir";
+    int fd;
+
+    struct zint_symbol* symbol = ZBarcode_Create();
+    assert_nonnull(symbol, "Symbol not created\n");
+
+    (void)rmdir(dirname); // In case junk hanging around
+    assert_zero(mkdir(dirname, 0700), "mkdir(%s, 0700) != 0\n", dirname);
+
+    ret = ZBarcode_Encode_File(symbol, dirname);
+    assert_equal(ret, ZINT_ERROR_INVALID_DATA, "ret %d != ZINT_ERROR_INVALID_DATA (%s)\n", ret, symbol->errtxt);
+
+    assert_zero(rmdir(dirname), "rmdir(%s) != 0\n", dirname);
+
+    ZBarcode_Delete(symbol);
+
+    testFinish();
+}
+
 int main()
 {
     test_checks();
     test_input_mode();
+    test_encode_file_zero_length();
+    test_encode_file_directory();
 
     testReport();
 

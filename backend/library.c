@@ -1424,13 +1424,14 @@ int ZBarcode_Encode_and_Buffer_Vector(struct zint_symbol *symbol, unsigned char 
 int ZBarcode_Encode_File(struct zint_symbol *symbol, char *filename) {
     FILE *file;
     unsigned char *buffer;
-    unsigned long fileLen;
-    unsigned int nRead = 0, n = 0;
+    long fileLen;
+    size_t n;
+    int nRead = 0;
     int ret;
 
     if (!strcmp(filename, "-")) {
         file = stdin;
-        fileLen = 7100;
+        fileLen = 7900;
     } else {
         file = fopen(filename, "rb");
         if (!file) {
@@ -1444,9 +1445,15 @@ int ZBarcode_Encode_File(struct zint_symbol *symbol, char *filename) {
         fileLen = ftell(file);
         fseek(file, 0, SEEK_SET);
 
-        if (fileLen > 7100) {
-            /* The largest amount of data that can be encoded is 7089 numeric digits in QR Code */
+        if (fileLen > 7900) {
+            /* The largest amount of data that can be encoded is 7827 numeric digits in Han Xin Code */
             strcpy(symbol->errtxt, "230: Input file too long");
+            error_tag(symbol->errtxt, ZINT_ERROR_INVALID_DATA);
+            fclose(file);
+            return ZINT_ERROR_INVALID_DATA;
+        }
+        if (fileLen <= 0) {
+            strcpy(symbol->errtxt, "235: Input file empty or unseekable");
             error_tag(symbol->errtxt, ZINT_ERROR_INVALID_DATA);
             fclose(file);
             return ZINT_ERROR_INVALID_DATA;
@@ -1458,8 +1465,9 @@ int ZBarcode_Encode_File(struct zint_symbol *symbol, char *filename) {
     if (!buffer) {
         strcpy(symbol->errtxt, "231: Internal memory error");
         error_tag(symbol->errtxt, ZINT_ERROR_MEMORY);
-        if (strcmp(filename, "-"))
+        if (strcmp(filename, "-")) {
             fclose(file);
+        }
         return ZINT_ERROR_MEMORY;
     }
 
@@ -1469,12 +1477,18 @@ int ZBarcode_Encode_File(struct zint_symbol *symbol, char *filename) {
         n = fread(buffer + nRead, 1, fileLen - nRead, file);
         if (ferror(file)) {
             strcpy(symbol->errtxt, strerror(errno));
+            if (strcmp(filename, "-")) {
+                fclose(file);
+            }
+            free(buffer);
             return ZINT_ERROR_INVALID_DATA;
         }
         nRead += n;
     } while (!feof(file) && (0 < n) && (nRead < fileLen));
 
-    fclose(file);
+    if (strcmp(filename, "-")) {
+        fclose(file);
+    }
     ret = ZBarcode_Encode(symbol, buffer, nRead);
     free(buffer);
     return ret;
