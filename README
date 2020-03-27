@@ -130,6 +130,18 @@ Bugs:
 - In 2.7.0 removed interface "ZBarcode_Render" still declared
 - vc6 make was missing (trivial) resource.h
 
+Version 2.7.2 Not released jet
+Changes:
+(New) Tests for auspost, codablock, composite, dotcode, general, telepen, upcean
+Bugs:
+- Ticket 181 penetration test found many bugs:
+  - Auspost: null bytes in content caused segfault
+  - Codablock: data 0x1a..0x1f caused segfault
+  - Dotcode: overrun in binary mode
+  - empty or unreadable input file
+  - telepen: buffer overflow
+  - EANUCC: buffer overflow on multiple + (multiple extension bars)
+
 CONTACT US
 ----------
 The home of Zint is:
