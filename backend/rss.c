@@ -568,7 +568,7 @@ INTERNAL int rss14(struct zint_symbol *symbol, unsigned char source[], int src_l
         }
         symbol->row_height[symbol->rows] = 7;
         /* separator pattern */
-        for (i = 4; i < 46; i++) {
+        for (i = 1; i < 46; i++) {
             if (module_is_set(symbol, symbol->rows - 2, i) == module_is_set(symbol, symbol->rows, i)) {
                 if (!(module_is_set(symbol, symbol->rows - 2, i))) {
                     set_module(symbol, symbol->rows - 1, i);
@@ -579,6 +579,9 @@ INTERNAL int rss14(struct zint_symbol *symbol, unsigned char source[], int src_l
                 }
             }
         }
+        unset_module(symbol, symbol->rows - 1, 1);
+        unset_module(symbol, symbol->rows - 1, 2);
+        unset_module(symbol, symbol->rows - 1, 3);
         symbol->row_height[symbol->rows - 1] = 1;
         if (symbol->symbology == BARCODE_RSS14STACK_CC) {
             /* separator pattern for composite symbol */
