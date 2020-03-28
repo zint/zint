@@ -1,7 +1,7 @@
 /* pdf417.c - Handles PDF417 stacked symbology */
 
 /*  Zint - A barcode generating program using libpng
-    Copyright (C) 2008-2017 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2020 Robin Stuart <rstuart114@gmail.com>
     Portions Copyright (C) 2004 Grandzebu
     Bug Fixes thanks to KL Chin <klchin@users.sourceforge.net>
 
@@ -44,7 +44,6 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <stdlib.h>
 #include <math.h>
 #ifndef _MSC_VER
 #include <stdint.h>
@@ -82,7 +81,10 @@ static const char MicroAutosize[56] = {
     1, 14, 2, 7, 3, 25, 8, 16, 5, 17, 9, 6, 10, 11, 28, 12, 19, 13, 29, 20, 30, 21, 22, 31, 23, 32, 33, 34
 };
 
-static int liste[2][1000]; /* global */
+#define PDF417_MAX_LEN          2710    /* ISO/IEC 15438:2015 5.1.1 c) 3) Max possible number of characters at error correction level 0 (Numeric Compaction mode) */
+#define MICRO_PDF417_MAX_LEN    366     /* ISO/IEC 24728:2006 5.1.1 c) 3) Max possible number of characters (Numeric Compaction mode) */
+
+static int liste[2][PDF417_MAX_LEN]; /* global */
 
 /* 866 */
 
@@ -225,11 +227,11 @@ static void pdfsmooth(int *indexliste) {
 
 /* 547 */
 static void textprocess(int *chainemc, int *mclength, char chaine[], int start, int length) {
-    int j, indexlistet, curtable, listet[2][5000], chainet[5000], wnet;
+    int j, indexlistet, curtable, listet[2][PDF417_MAX_LEN], chainet[PDF417_MAX_LEN], wnet;
 
     wnet = 0;
 
-    for (j = 0; j < 1000; j++) {
+    for (j = 0; j < PDF417_MAX_LEN; j++) {
         listet[0][j] = 0;
     }
     /* listet will contain the table numbers and the value of each characters */
@@ -440,7 +442,7 @@ INTERNAL void byteprocess(int *chainemc, int *mclength, unsigned char chaine[], 
         len = 0;
 
         while (len < length) {
-			uint64_t total;
+            uint64_t total;
             unsigned int chunkLen = length - len;
             if (6 <= chunkLen) /* Take groups of 6 */ {
                 chunkLen = 6;
@@ -518,7 +520,7 @@ static void numbprocess(int *chainemc, int *mclength, char chaine[], int start, 
             while (strlen(chainemod) != 0) {
                 nombre *= 10;
                 nombre += ctoi(chainemod[0]);
-                for (loop = 0; loop < strlen(chainemod); loop++) {
+                for (loop = 0; loop < (int)strlen(chainemod); loop++) {
                     chainemod[loop] = chainemod[loop + 1];
                 }
                 if (nombre < diviseur) {
@@ -553,9 +555,13 @@ static void numbprocess(int *chainemc, int *mclength, char chaine[], int start, 
 /* 366 */
 static int pdf417(struct zint_symbol *symbol, unsigned char chaine[], const size_t length) {
     int i, k, j, indexchaine, indexliste, mode, longueur, loop, mccorrection[520], offset;
-    int total, chainemc[2700], mclength, c1, c2, c3, dummy[35], calcheight;
+    int total, chainemc[PDF417_MAX_LEN], mclength, c1, c2, c3, dummy[35], calcheight;
     char pattern[580];
     int debug = symbol->debug;
+
+    if (length > PDF417_MAX_LEN) {
+        return 2;
+    }
 
     /* 456 */
     indexliste = 0;
@@ -563,20 +569,20 @@ static int pdf417(struct zint_symbol *symbol, unsigned char chaine[], const size
 
     mode = quelmode(chaine[indexchaine]);
 
-    for (i = 0; i < 1000; i++) {
+    for (i = 0; i < PDF417_MAX_LEN; i++) {
         liste[0][i] = 0;
     }
 
     /* 463 */
     do {
         liste[1][indexliste] = mode;
-        while ((liste[1][indexliste] == mode) && (indexchaine < length)) {
+        while ((liste[1][indexliste] == mode) && (indexchaine < (int)length)) {
             liste[0][indexliste]++;
             indexchaine++;
             mode = quelmode(chaine[indexchaine]);
         }
         indexliste++;
-    } while (indexchaine < length);
+    } while (indexchaine < (int)length);
 
     /* 474 */
     pdfsmooth(&indexliste);
@@ -813,7 +819,7 @@ static int pdf417(struct zint_symbol *symbol, unsigned char chaine[], const size
             bin_append(0x3FA29, 18, pattern); /* Row Stop */
         }
 
-        for (loop = 0; loop < strlen(pattern); loop++) {
+        for (loop = 0; loop < (int)strlen(pattern); loop++) {
             if (pattern[loop] == '1') {
                 set_module(symbol, i, loop);
             }
@@ -893,11 +899,16 @@ INTERNAL int pdf417enc(struct zint_symbol *symbol, unsigned char source[], const
 /* like PDF417 only much smaller! */
 INTERNAL int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], const size_t length) {
     int i, k, j, indexchaine, indexliste, mode, longueur, mccorrection[50], offset;
-    int total, chainemc[2700], mclength, dummy[5], codeerr;
+    int total, chainemc[PDF417_MAX_LEN], mclength, dummy[5], codeerr;
     char pattern[580];
     int variant, LeftRAPStart, CentreRAPStart, RightRAPStart, StartCluster;
     int LeftRAP, CentreRAP, RightRAP, Cluster, loop, calcheight;
     int debug = 0;
+
+    if (length > MICRO_PDF417_MAX_LEN) {
+        strcpy(symbol->errtxt, "474: Input data too long");
+        return ZINT_ERROR_TOO_LONG;
+    }
 
     /* Encoding starts out the same as PDF417, so use the same code */
     codeerr = 0;
@@ -908,20 +919,20 @@ INTERNAL int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], co
 
     mode = quelmode(chaine[indexchaine]);
 
-    for (i = 0; i < 1000; i++) {
+    for (i = 0; i < PDF417_MAX_LEN; i++) {
         liste[0][i] = 0;
     }
 
     /* 463 */
     do {
         liste[1][indexliste] = mode;
-        while ((liste[1][indexliste] == mode) && (indexchaine < length)) {
+        while ((liste[1][indexliste] == mode) && (indexchaine < (int)length)) {
             liste[0][indexliste]++;
             indexchaine++;
             mode = quelmode(chaine[indexchaine]);
         }
         indexliste++;
-    } while (indexchaine < length);
+    } while (indexchaine < (int)length);
 
     /* 474 */
     pdfsmooth(&indexliste);
@@ -1274,7 +1285,7 @@ INTERNAL int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], co
         if (debug) printf("%s\n", pattern);
 
         /* so now pattern[] holds the string of '1's and '0's. - copy this to the symbol */
-        for (loop = 0; loop < strlen(pattern); loop++) {
+        for (loop = 0; loop < (int)strlen(pattern); loop++) {
             if (pattern[loop] == '1') {
                 set_module(symbol, i, loop);
             }
