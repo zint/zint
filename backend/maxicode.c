@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2010-2017 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2010-2020 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -36,7 +36,6 @@
 #include "maxicode.h"
 #include "reedsol.h"
 #include <string.h>
-#include <stdlib.h>
 
 static int maxi_codeword[144];
 
@@ -294,7 +293,7 @@ static int maxi_text_process(int mode, unsigned char source[], int length, int e
     }
     /* Number compression not allowed in primary message */
     count = 0;
-    for (i = j; i < 143; i++) {
+    for (i = j; i < 144; i++) {
         if ((set[i] == 1) && ((character[i] >= 48) && (character[i] <= 57))) {
             /* Character is a number */
             count++;
@@ -426,7 +425,7 @@ static int maxi_text_process(int mode, unsigned char source[], int length, int e
     do {
         if (set[i] == 6) {
             /* Number compression */
-            char substring[11];
+            char substring[10];
             int value;
 
             for (j = 0; j < 9; j++) {
@@ -443,7 +442,7 @@ static int maxi_text_process(int mode, unsigned char source[], int length, int e
             character[i + 5] = (value & 0x3f);
 
             i += 6;
-            for (j = i; j < 140; j++) {
+            for (j = i; j < 141; j++) {
                 set[j] = set[j + 3];
                 character[j] = character[j + 3];
             }
@@ -451,7 +450,7 @@ static int maxi_text_process(int mode, unsigned char source[], int length, int e
         } else {
             i++;
         }
-    } while (i <= 143);
+    } while (i <= 135); /* 144 - 9 */
 
     /* Insert ECI at the beginning of message if needed */
     /* Encode ECI assignment numbers according to table 3 */
