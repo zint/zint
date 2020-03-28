@@ -721,6 +721,9 @@ static int aztec_text_process(const unsigned char source[], const size_t src_len
                 for (count = 0; ((i + count) < reduced_length) && (reduced_encode_mode[i + count] == 'B'); count++);
 
                 if (count > 2079) {
+                    free(encode_mode);
+                    free(reduced_source);
+                    free(reduced_encode_mode);
                     return ZINT_ERROR_TOO_LONG;
                 }
 
