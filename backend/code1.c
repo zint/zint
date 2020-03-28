@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2017 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2020 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -442,7 +442,7 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigne
                 if (j == 13) {
                     latch = 0;
                     for (i = sp + 13; i < length; i++) {
-                        if (!((source[sp + i] >= '0') && (source[sp + i] <= '9'))) {
+                        if (!((source[i] >= '0') && (source[i] <= '9'))) {
                             latch = 1;
                         }
                     }
