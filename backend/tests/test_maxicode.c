@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2019 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2020 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -27,13 +27,11 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* vim: set ts=4 sw=4 et : */
 
-#include <stdio.h>
-#include <string.h>
-#include <zint.h>
 #include "testcommon.h"
 
-//#define TEST_GENERATE_EXPECTED 1
+//#define TEST_BEST_SUPPORTED_SET_GENERATE_EXPECTED 1
 
 static void test_best_supported_set(void)
 {
@@ -105,7 +103,7 @@ static void test_best_supported_set(void)
         ret = ZBarcode_Encode(symbol, data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d\n", i, ret, data[i].ret);
 
-        #ifdef TEST_GENERATE_EXPECTED
+        #ifdef TEST_BEST_SUPPORTED_SET_GENERATE_EXPECTED
         printf("        /*%2d*/ { %s, \"%s\", %d, %.0f, %.0f, %d, %d, %d, \"%s\",\n",
                 i, testUtilBarcodeName(data[i].symbology), testUtilEscape(data[i].data, length, escaped_data, sizeof(escaped_data)), ret,
                 data[i].w, data[i].h, data[i].ret_vector, symbol->rows, symbol->width, data[i].comment);
@@ -130,9 +128,52 @@ static void test_best_supported_set(void)
     testFinish();
 }
 
+// #181 Nico Gunkel OSS-Fuzz
+static void test_fuzz(void)
+{
+    testStart("");
+
+    int ret;
+    struct item {
+        int symbology;
+        unsigned char* data;
+        int length;
+        int ret;
+    };
+    // s/\/\*[ 0-9]*\*\//\=printf("\/*%2d*\/", line(".") - line("'<"))
+    struct item data[] = {
+        /* 0*/ { BARCODE_MAXICODE, "\223\223\223\223\223\200\000\060\060\020\122\104\060\343\000\000\040\104\104\104\104\177\377\040\000\324\336\000\000\000\000\104\060\060\060\060\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\060\104\104\000\000\000\040\104\104\104\104\177\377\377\377\324\336\000\000\000\000\104\377\104\001\104\104\104\104\104\104\233\233\060\060\060\060\060\060\060\060\060\325\074", 107, ZINT_ERROR_TOO_LONG }, // Original OSS-Fuzz triggering data
+        /* 1*/ { BARCODE_MAXICODE, "AaAaAaAaAaAaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA123456789", -1, ZINT_ERROR_TOO_LONG }, // Add 6 lowercase a's so 6 SHIFTS inserted so 6 + 138 (max input len) = 144 and numbers come at end of buffer
+        /* 2*/ { BARCODE_MAXICODE, "AaAaAaAaAaAaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA123456789A", -1, ZINT_ERROR_TOO_LONG },
+        /* 3*/ { BARCODE_MAXICODE, "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678", -1, ZINT_ERROR_TOO_LONG }, // First 6 chars ignored for number compaction so max numeric digits appears to be 135 not 138 (for mode 4 anyway) TODO: investigate further
+        /* 4*/ { BARCODE_MAXICODE, "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345", -1, 0 },
+    };
+    int data_size = sizeof(data) / sizeof(struct item);
+
+    for (int i = 0; i < data_size; i++) {
+
+        struct zint_symbol* symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        symbol->symbology = data[i].symbology;
+        int length = data[i].length;
+        if (length == -1) {
+            length = strlen(data[i].data);
+        }
+
+        ret = ZBarcode_Encode(symbol, data[i].data, length);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
 int main()
 {
     test_best_supported_set();
+    test_fuzz();
 
     testReport();
 
