@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2019 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2020 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -1386,7 +1386,7 @@ static int rss_binary_string(struct zint_symbol *symbol, char source[], char bin
     rest of the data (if any) goes into a general-purpose data compaction field */
 
     j = 0;
-    for (i = read_posn; i < strlen(source); i++) {
+    for (i = read_posn; i < (int) strlen(source); i++) {
         general_field[j] = source[i];
         j++;
     }

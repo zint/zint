@@ -51,6 +51,7 @@ macro(zint_add_test test_name test_command)
 endmacro(zint_add_test)
 
 zint_add_test(auspost, test_auspost)
+zint_add_test(aztec, test_aztec)
 zint_add_test(channel, test_channel)
 zint_add_test(codablock, test_codablock)
 zint_add_test(code1, test_code1)
