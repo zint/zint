@@ -554,16 +554,17 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
             }
         }
 
+        /* Step B */
         if ((input_position == length - 1) && (inside_macro == 100)) {
             // inside_macro only gets set to 100 if the last character is EOT
             input_position++;
             done = 1;
             if (debug) {
-                printf("A ");
+                printf("B ");
             }
         }
 
-        /* Step B1 */
+        /* Step C1 */
         if ((!done) && (encoding_mode == 'C')) {
             if ((array_length == 0) && (length > 9)) {
                 if ((source[input_position] == '[')
@@ -583,7 +584,7 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
                             inside_macro = 97;
                             done = 1;
                             if (debug) {
-                                printf("B1/1 ");
+                                printf("C1/1 ");
                             }
                         }
 
@@ -596,7 +597,7 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
                             inside_macro = 98;
                             done = 1;
                             if (debug) {
-                                printf("B1/2 ");
+                                printf("C1/2 ");
                             }
                         }
 
@@ -609,7 +610,7 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
                             inside_macro = 99;
                             done = 1;
                             if (debug) {
-                                printf("B1/3 ");
+                                printf("C1/3 ");
                             }
                         }
                     }
@@ -624,14 +625,14 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
                         inside_macro = 100;
                         done = 1;
                         if (debug) {
-                            printf("B1/4 ");
+                            printf("C1/4 ");
                         }
                     }
                 }
             }
         }
 
-        /* Step B2 */
+        /* Step C2 */
         if ((!done) && (encoding_mode == 'C')) {
             if (seventeen_ten(source, input_position, length)) {
                 codeword_array[array_length] = 100; // (17)...(10)
@@ -645,7 +646,7 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
                 input_position += 10;
                 done = 1;
                 if (debug) {
-                    printf("B2/1 ");
+                    printf("C2/1 ");
                 }
             }
         }
@@ -662,12 +663,12 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
                 array_length++;
                 done = 1;
                 if (debug) {
-                    printf("B2/2 ");
+                    printf("C2/2 ");
                 }
             }
         }
 
-        /* Step B3 */
+        /* Step C3 */
         if ((!done) && (encoding_mode == 'C')) {
             if (binary(source, length, input_position)) {
                 if (n_digits(source, input_position + 1, length) > 0) {
@@ -690,12 +691,12 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
                 }
                 done = 1;
                 if (debug) {
-                    printf("B3 ");
+                    printf("C3 ");
                 }
             }
         }
 
-        /* Step B4 */
+        /* Step C4 */
         if ((!done) && (encoding_mode == 'C')) {
             int m = ahead_a(source, input_position, length);
             int n = ahead_b(source, input_position, length);
@@ -709,7 +710,16 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
                     array_length++;
 
                     for (i = 0; i < n; i++) {
-                        codeword_array[array_length] = source[input_position] - 32;
+                        if (source[input_position] >= 32) {
+                            codeword_array[array_length] = source[input_position] - 32;
+                        } else {
+                            switch(source[input_position]) {
+                                case 9: codeword_array[array_length] = 97; break; // HT
+                                case 28: codeword_array[array_length] = 98; break; // FS
+                                case 29: codeword_array[array_length] = 99; break; // GS
+                                case 30: codeword_array[array_length] = 100; break; // RS
+                            }
+                        }
                         array_length++;
                         input_position++;
                     }
@@ -721,11 +731,11 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
             }
             done = 1;
             if (debug) {
-                printf("B4 ");
+                printf("C4 ");
             }
         }
 
-        /* Step C1 */
+        /* Step D1 */
         if ((!done) && (encoding_mode == 'B')) {
             int n = try_c(source, input_position, length);
 
@@ -745,12 +755,12 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
                 }
                 done = 1;
                 if (debug) {
-                    printf("C1 ");
+                    printf("D1 ");
                 }
             }
         }
 
-        /* Step C2 */
+        /* Step D2 */
         if ((!done) && (encoding_mode == 'B')) {
             if ((source[input_position] == '[') && ((symbol->input_mode & 0x07) == GS1_MODE)) {
                 codeword_array[array_length] = 107; // FNC1
@@ -758,7 +768,7 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
                 input_position++;
                 done = 1;
                 if (debug) {
-                    printf("C2/1 ");
+                    printf("D2/1 ");
                 }
             } else {
                 if (datum_b(source, input_position, length)) {
@@ -796,119 +806,17 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
                         array_length++;
                         input_position++;
                         if (debug) {
-                            printf("C2/2 ");
+                            printf("D2/2 ");
                         }
                     }
                 }
             }
         }
 
-        /* Step C3 */
+        /* Step D3 */
         if ((!done) && (encoding_mode == 'B')) {
             if (binary(source, length, input_position)) {
                 if (datum_b(source, input_position + 1, length)) {
-                    if ((source[input_position] - 128) < 32) {
-                        codeword_array[array_length] = 110; // Bin Shift A
-                        array_length++;
-                        codeword_array[array_length] = source[input_position] - 128 + 64;
-                        array_length++;
-                    } else {
-                        codeword_array[array_length] = 111; // Bin Shift B
-                        array_length++;
-                        codeword_array[array_length] = source[input_position] - 128 - 32;
-                        array_length++;
-                    }
-                    input_position++;
-                } else {
-                    codeword_array[array_length] = 112; // Bin Latch
-                    array_length++;
-                    encoding_mode = 'X';
-                }
-                done = 1;
-                if (debug) {
-                    printf("C3 ");
-                }
-            }
-        }
-
-        /* Step C4 */
-        if ((!done) && (encoding_mode == 'B')) {
-            if (ahead_a(source, input_position, length) == 1) {
-                codeword_array[array_length] = 101; // Shift A
-                array_length++;
-                if (source[input_position] < 32) {
-                    codeword_array[array_length] = source[input_position] + 64;
-                } else {
-                    codeword_array[array_length] = source[input_position] - 32;
-                }
-                array_length++;
-                input_position++;
-            } else {
-                codeword_array[array_length] = 102; // Latch A
-                array_length++;
-                encoding_mode = 'A';
-            }
-            done = 1;
-            if (debug) {
-                printf("C4 ");
-            }
-        }
-
-        /* Step D1 */
-        if ((!done) && (encoding_mode == 'A')) {
-            int n = try_c(source, input_position, length);
-            if (n >= 2) {
-                if (n <= 4) {
-                    codeword_array[array_length] = 103 + (n - 2); // nx Shift C
-                    array_length++;
-                    for (i = 0; i < n; i++) {
-                        codeword_array[array_length] = ((source[input_position] - '0') * 10) + (source[input_position + 1] - '0');
-                        array_length++;
-                        input_position += 2;
-                    }
-                } else {
-                    codeword_array[array_length] = 106; // Latch C
-                    array_length++;
-                    encoding_mode = 'C';
-                }
-                done = 1;
-                if (debug) {
-                    printf("D1 ");
-                }
-            }
-        }
-
-        /* Step D2 */
-        if ((!done) && (encoding_mode == 'A')) {
-            if ((source[input_position] == '[') && ((symbol->input_mode & 0x07) == GS1_MODE)) {
-                codeword_array[array_length] = 107; // FNC1
-                array_length++;
-                input_position++;
-                done = 1;
-                if (debug) {
-                    printf("D2/1 ");
-                }
-            } else {
-                if (datum_a(source, input_position, length)) {
-                    if (source[input_position] < 32) {
-                        codeword_array[array_length] = source[input_position] + 64;
-                    } else {
-                        codeword_array[array_length] = source[input_position] - 32;
-                    }
-                    array_length++;
-                    input_position++;
-                    done = 1;
-                    if (debug) {
-                        printf("D2/2 ");
-                    }
-                }
-            }
-        }
-
-        /* Step D3 */
-        if ((!done) && (encoding_mode == 'A')) {
-            if (binary(source, length, input_position)) {
-                if (datum_a(source, input_position + 1, length)) {
                     if ((source[input_position] - 128) < 32) {
                         codeword_array[array_length] = 110; // Bin Shift A
                         array_length++;
@@ -934,6 +842,108 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
         }
 
         /* Step D4 */
+        if ((!done) && (encoding_mode == 'B')) {
+            if (ahead_a(source, input_position, length) == 1) {
+                codeword_array[array_length] = 101; // Shift A
+                array_length++;
+                if (source[input_position] < 32) {
+                    codeword_array[array_length] = source[input_position] + 64;
+                } else {
+                    codeword_array[array_length] = source[input_position] - 32;
+                }
+                array_length++;
+                input_position++;
+            } else {
+                codeword_array[array_length] = 102; // Latch A
+                array_length++;
+                encoding_mode = 'A';
+            }
+            done = 1;
+            if (debug) {
+                printf("D4 ");
+            }
+        }
+
+        /* Step E1 */
+        if ((!done) && (encoding_mode == 'A')) {
+            int n = try_c(source, input_position, length);
+            if (n >= 2) {
+                if (n <= 4) {
+                    codeword_array[array_length] = 103 + (n - 2); // nx Shift C
+                    array_length++;
+                    for (i = 0; i < n; i++) {
+                        codeword_array[array_length] = ((source[input_position] - '0') * 10) + (source[input_position + 1] - '0');
+                        array_length++;
+                        input_position += 2;
+                    }
+                } else {
+                    codeword_array[array_length] = 106; // Latch C
+                    array_length++;
+                    encoding_mode = 'C';
+                }
+                done = 1;
+                if (debug) {
+                    printf("E1 ");
+                }
+            }
+        }
+
+        /* Step E2 */
+        if ((!done) && (encoding_mode == 'A')) {
+            if ((source[input_position] == '[') && ((symbol->input_mode & 0x07) == GS1_MODE)) {
+                codeword_array[array_length] = 107; // FNC1
+                array_length++;
+                input_position++;
+                done = 1;
+                if (debug) {
+                    printf("E2/1 ");
+                }
+            } else {
+                if (datum_a(source, input_position, length)) {
+                    if (source[input_position] < 32) {
+                        codeword_array[array_length] = source[input_position] + 64;
+                    } else {
+                        codeword_array[array_length] = source[input_position] - 32;
+                    }
+                    array_length++;
+                    input_position++;
+                    done = 1;
+                    if (debug) {
+                        printf("E2/2 ");
+                    }
+                }
+            }
+        }
+
+        /* Step E3 */
+        if ((!done) && (encoding_mode == 'A')) {
+            if (binary(source, length, input_position)) {
+                if (datum_a(source, input_position + 1, length)) {
+                    if ((source[input_position] - 128) < 32) {
+                        codeword_array[array_length] = 110; // Bin Shift A
+                        array_length++;
+                        codeword_array[array_length] = source[input_position] - 128 + 64;
+                        array_length++;
+                    } else {
+                        codeword_array[array_length] = 111; // Bin Shift B
+                        array_length++;
+                        codeword_array[array_length] = source[input_position] - 128 - 32;
+                        array_length++;
+                    }
+                    input_position++;
+                } else {
+                    codeword_array[array_length] = 112; // Bin Latch
+                    array_length++;
+                    encoding_mode = 'X';
+                }
+                done = 1;
+                if (debug) {
+                    printf("E3 ");
+                }
+            }
+        }
+
+        /* Step E4 */
         if ((!done) && (encoding_mode == 'A')) {
             int n = ahead_b(source, input_position, length);
 
@@ -941,7 +951,16 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
                 codeword_array[array_length] = 95 + n; // nx Shift B
                 array_length++;
                 for (i = 0; i < n; i++) {
-                    codeword_array[array_length] = source[input_position] - 32;
+                    if (source[input_position] >= 32) {
+                        codeword_array[array_length] = source[input_position] - 32;
+                    } else {
+                        switch(source[input_position]) {
+                            case 9: codeword_array[array_length] = 97; break; // HT
+                            case 28: codeword_array[array_length] = 98; break; // FS
+                            case 29: codeword_array[array_length] = 99; break; // GS
+                            case 30: codeword_array[array_length] = 100; break; // RS
+                        }
+                    }
                     array_length++;
                     input_position++;
                 }
@@ -952,11 +971,11 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
             }
             done = 1;
             if (debug) {
-                printf("D4 ");
+                printf("E4 ");
             }
         }
 
-        /* Step E1 */
+        /* Step F1 */
         if ((!done) && (encoding_mode == 'X')) {
             int n = try_c(source, input_position, length);
 
@@ -989,12 +1008,12 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
                 }
                 done = 1;
                 if (debug) {
-                    printf("E1 ");
+                    printf("F1 ");
                 }
             }
         }
 
-        /* Step E2 */
+        /* Step F2 */
         /* Section 5.2.1.1 para D.2.i states:
          * "Groups of six codewords, each valued between 0 and 102, are radix converted from
          * base 103 into five base 259 values..."
@@ -1024,12 +1043,12 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
                 input_position++;
                 done = 1;
                 if (debug) {
-                    printf("E2 ");
+                    printf("F2 ");
                 }
             }
         }
 
-        /* Step E3 */
+        /* Step F3 */
         if ((!done) && (encoding_mode == 'X')) {
             /* Empty binary buffer */
             for (i = 0; i < (binary_buffer_size + 1); i++) {
@@ -1054,7 +1073,7 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
             array_length++;
             done = 1;
             if (debug) {
-                printf("E3 ");
+                printf("F3 ");
             }
         }
     } while (input_position < length);
@@ -1209,11 +1228,9 @@ static void fold_dotstream(char dot_stream[], int width, int height, char dot_ar
     }
 }
 
-static void apply_mask(int mask, int data_length, unsigned char *masked_codeword_array, unsigned char *codeword_array, int ecc_length, char *dot_stream) {
+static void apply_mask(int mask, int data_length, unsigned char *masked_codeword_array, unsigned char *codeword_array, int ecc_length) {
     int weight = 0;
     int j;
-
-    (void)dot_stream; /* Not currently used */
 
     switch (mask) {
         case 0:
@@ -1413,6 +1430,7 @@ INTERNAL int dotcode(struct zint_symbol *symbol, const unsigned char source[], i
 
     ecc_length = 3 + (data_length / 2);
 
+
 #ifndef _MSC_VER
     unsigned char masked_codeword_array[data_length + 1 + ecc_length];
 #else
@@ -1422,7 +1440,7 @@ INTERNAL int dotcode(struct zint_symbol *symbol, const unsigned char source[], i
     /* Evaluate data mask options */
     for (i = 0; i < 4; i++) {
 
-        apply_mask(i, data_length, masked_codeword_array, codeword_array, ecc_length, dot_stream);
+        apply_mask(i, data_length, masked_codeword_array, codeword_array, ecc_length);
 
         dot_stream_length = make_dotstream(masked_codeword_array, (data_length + ecc_length + 1), dot_stream);
 
@@ -1454,7 +1472,7 @@ INTERNAL int dotcode(struct zint_symbol *symbol, const unsigned char source[], i
     if (best_mask <= (height * width) / 2) {
         for (i = 0; i < 4; i++) {
 
-            apply_mask(i, data_length, masked_codeword_array, codeword_array, ecc_length, dot_stream);
+            apply_mask(i, data_length, masked_codeword_array, codeword_array, ecc_length);
 
             dot_stream_length = make_dotstream(masked_codeword_array, (data_length + ecc_length + 1), dot_stream);
 
@@ -1487,7 +1505,7 @@ INTERNAL int dotcode(struct zint_symbol *symbol, const unsigned char source[], i
     }
 
     /* Apply best mask */
-    apply_mask(best_mask % 4, data_length, masked_codeword_array, codeword_array, ecc_length, dot_stream);
+    apply_mask(best_mask % 4, data_length, masked_codeword_array, codeword_array, ecc_length);
 
     dot_stream_length = make_dotstream(masked_codeword_array, (data_length + ecc_length + 1), dot_stream);
 
