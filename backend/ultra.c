@@ -125,7 +125,7 @@ static const int tiles[] = {
  * 
  * symbol->option_1 = ULTRA_COMPRESSION;
  * 
- * Code compression should be enabled by default when is has been implemented according to
+ * Code compression should be enabled by default when it has been implemented according to
  * a more reliable version of the specification.
  */
 
@@ -705,7 +705,7 @@ int ultra_generate_codewords(struct zint_symbol *symbol, const unsigned char sou
     }
 
     /* Attempt encoding in all three modes to see which offers best compaction and store results */
-    if (symbol->option_1 != ULTRA_COMPRESSION) {
+    if (symbol->option_1 == ULTRA_COMPRESSION) {
         current_mode = symbol_mode;
         input_locn = 0;
         do {
