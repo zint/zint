@@ -1,7 +1,7 @@
 /*  ultra.c - Ultracode
 
     libzint - the open source barcode library
-    Copyright (C) 2019 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -116,6 +116,18 @@ static const int tiles[] = {
  * originally written by Ted Williams of Symbol Vision Corp.
  * Dated 2001-03-09
  * Corrected thanks to input from Terry Burton */
+
+/* 
+ * NOTE: Included here is an attempt to allow code compression within Ultracode. Unfortunately
+ * the copy of the standard this was written from was an early draft which includes self
+ * contradictions, so this is a "best guess" implementation. Because it is not guaranteed
+ * to be correct this compression is not applied by default. To enable compression set
+ * 
+ * symbol->option_1 = ULTRA_COMPRESSION;
+ * 
+ * Code compression should be enabled by default when is has been implemented according to
+ * a more reliable version of the specification.
+ */
 
 /* Generate divisor polynomial gQ(x) for GF283() given the required ECC size, 3 to 101 */
 void ultra_genPoly(short EccSize, unsigned short gPoly[], unsigned short gfPwr[], unsigned short gfLog[]) {
@@ -239,15 +251,8 @@ float look_ahead_eightbit(unsigned char source[], int in_length, int in_locn, ch
 
     letters_encoded = i - in_locn;
 
-    //printf("8BIT FRAG: ");
-    //for (i = 0; i < codeword_count; i++) {
-    //    printf("%d ", cw[i]);
-    //}
-    //printf("\n");
-
     *cw_len = codeword_count;
 
-    //printf("%d letters in %d codewords\n", letters_encoded, codeword_count);
     if (codeword_count == 0) {
         return 0.0;
     } else {
@@ -326,15 +331,8 @@ float look_ahead_ascii(unsigned char source[], int in_length, int in_locn, char 
 
     letters_encoded = i - in_locn;
 
-    //printf("ASCII FRAG: ");
-    //for (i = 0; i < codeword_count; i++) {
-    //    printf("%d ", cw[i]);
-    //}
-    //printf("\n");
-
     *cw_len = codeword_count;
 
-    //printf("%d letters in %d codewords\n", letters_encoded, codeword_count);
     if (codeword_count == 0) {
         return 0.0;
     } else {
@@ -529,19 +527,13 @@ float look_ahead_c43(unsigned char source[], int in_length, int in_locn, char cu
     if (pad == 3) {
         pad = 0;
     }
-    //printf("Pad = %d\n", pad);
+
     for (i = 0; i < pad; i++) {
         subcw[subcodeword_count] = 42; // Latch to other C43 set used as pad
         subcodeword_count++;
     }
 
     letters_encoded = sublocn - in_locn;
-
-    //printf("C43 SUBFRAG: ");
-    //for (i = 0; i < subcodeword_count; i++) {
-    //   printf("%d ", subcw[i]);
-    //}
-    //printf("\n");
 
     for (i = 0; i < subcodeword_count; i += 3) {
         base43_value = (43 * 43 * subcw[i]) + (43 * subcw[i + 1]) + subcw[i + 2];
@@ -551,15 +543,8 @@ float look_ahead_c43(unsigned char source[], int in_length, int in_locn, char cu
         codeword_count++;
     }
 
-    // printf("C43 FRAG: ");
-    //for (i = 0; i < codeword_count; i++) {
-    //    printf("%d ", cw[i]);
-    //}
-    //printf("\n");
-
     *cw_len = codeword_count;
 
-    //printf("%d letters in %d codewords\n", letters_encoded, codeword_count);
     if (codeword_count == 0) {
         return 0.0;
     } else {
@@ -585,13 +570,13 @@ int ultra_generate_codewords(struct zint_symbol *symbol, const unsigned char sou
     int gs1 = 0;
 
 #ifndef _MSC_VER
-    unsigned char crop_source[in_length];
-    char mode[in_length];
-    int cw_fragment[in_length];
+    unsigned char crop_source[in_length + 1];
+    char mode[in_length + 1];
+    int cw_fragment[in_length + 1];
 #else
-    unsigned char * crop_source = (unsigned char *) _alloca(in_length * sizeof (unsigned char));
-    char * mode = (char *) _alloca(in_length * sizeof (char));
-    int * cw_fragment = (int *) _alloca(in_length * sizeof (int));
+    unsigned char * crop_source = (unsigned char *) _alloca((in_length + 1) * sizeof (unsigned char));
+    char * mode = (char *) _alloca(in_length + 1 * sizeof (char));
+    int * cw_fragment = (int *) _alloca(in_length + 1 * sizeof (int));
 #endif /* _MSC_VER */
 
     /* Section 7.6.2 indicates that ECI \000003 to \811799 are supported */
@@ -607,6 +592,11 @@ int ultra_generate_codewords(struct zint_symbol *symbol, const unsigned char sou
         if (source[i] >= 0x80) {
             symbol_mode = EIGHTBIT_MODE;
         }
+    }
+    
+    if (symbol->option_1 != ULTRA_COMPRESSION) {
+        // Force eight-bit mode by default as other modes are poorly documented
+        symbol_mode = EIGHTBIT_MODE;
     }
 
     if (symbol->output_options & READER_INIT) {
@@ -715,28 +705,35 @@ int ultra_generate_codewords(struct zint_symbol *symbol, const unsigned char sou
     }
 
     /* Attempt encoding in all three modes to see which offers best compaction and store results */
-    current_mode = symbol_mode;
-    input_locn = 0;
-    do {
-        end_char = input_locn + PREDICT_WINDOW;
-        eightbit_score = look_ahead_eightbit(crop_source, crop_length, input_locn, current_mode, end_char, cw_fragment, &fragment_length, gs1);
-        ascii_score = look_ahead_ascii(crop_source, crop_length, input_locn, current_mode, symbol_mode, end_char, cw_fragment, &fragment_length, gs1);
-        c43_score = look_ahead_c43(crop_source, crop_length, input_locn, current_mode, end_char, cw_fragment, &fragment_length, gs1);
+    if (symbol->option_1 != ULTRA_COMPRESSION) {
+        current_mode = symbol_mode;
+        input_locn = 0;
+        do {
+            end_char = input_locn + PREDICT_WINDOW;
+            eightbit_score = look_ahead_eightbit(crop_source, crop_length, input_locn, current_mode, end_char, cw_fragment, &fragment_length, gs1);
+            ascii_score = look_ahead_ascii(crop_source, crop_length, input_locn, current_mode, symbol_mode, end_char, cw_fragment, &fragment_length, gs1);
+            c43_score = look_ahead_c43(crop_source, crop_length, input_locn, current_mode, end_char, cw_fragment, &fragment_length, gs1);
 
-        mode[input_locn] = 'a';
-        current_mode = ASCII_MODE;
+            mode[input_locn] = 'a';
+            current_mode = ASCII_MODE;
 
-        if ((c43_score > ascii_score) && (c43_score > eightbit_score)) {
-            mode[input_locn] = 'c';
-            current_mode = C43_MODE;
-        }
+            if ((c43_score > ascii_score) && (c43_score > eightbit_score)) {
+                mode[input_locn] = 'c';
+                current_mode = C43_MODE;
+            }
 
-        if ((eightbit_score > ascii_score) && (eightbit_score > c43_score)) {
+            if ((eightbit_score > ascii_score) && (eightbit_score > c43_score)) {
+                mode[input_locn] = '8';
+                current_mode = EIGHTBIT_MODE;
+            }
+            input_locn++;
+        } while (input_locn < crop_length);
+    } else {
+        // Force eight-bit mode
+        for (input_locn = 0; input_locn < crop_length; input_locn++) {
             mode[input_locn] = '8';
-            current_mode = EIGHTBIT_MODE;
         }
-        input_locn++;
-    } while (input_locn < crop_length);
+    }
     mode[input_locn] = '\0';
 
     /* Use results from test to perform actual mode switching */
@@ -784,9 +781,6 @@ int ultra_generate_codewords(struct zint_symbol *symbol, const unsigned char sou
         input_locn += block_length;
     } while (input_locn < crop_length);
 
-    //printf("RED: %s\n", crop_source);
-    //printf("MOD: %s\n", mode);
-
     return codeword_count;
 }
 
@@ -823,12 +817,9 @@ int ultracode(struct zint_symbol *symbol, const unsigned char source[], const si
 
     data_cw_count = ultra_generate_codewords(symbol, source, in_length, data_codewords);
 
-    printf("Codewords returned = %d\n", data_cw_count);
-
-    //for (int i = 0; i < data_cw_count; i++) {
-    //    printf("%d ", data_codewords[i]);
-    //}
-    //printf("\n");
+    if (symbol->debug) {
+        printf("Codewords returned = %d\n", data_cw_count);
+    }
 
     /* Default ECC level is EC2 */
     if ((symbol->option_1 <= 0) || (symbol->option_1 > 6)) {
@@ -850,7 +841,9 @@ int ultracode(struct zint_symbol *symbol, const unsigned char source[], const si
     }
     acc = qcc - 3;
 
-    printf("ECC codewords: %d\n", qcc);
+    if (symbol->debug) {
+        printf("ECC codewords: %d\n", qcc);
+    }
 
     /* Maximum capacity is 282 codewords */
     total_cws = data_cw_count + qcc + 5;
@@ -874,7 +867,9 @@ int ultracode(struct zint_symbol *symbol, const unsigned char source[], const si
         columns = (total_cws / rows) + 1;
     }
 
-    printf("Calculated size is %d rows by %d columns\n", rows, columns);
+    if (symbol->debug) {
+        printf("Calculated size is %d rows by %d columns\n", rows, columns);
+    }
 
     /* Insert MCC and ACC into data codewords */
     for (i = 282; i > 2; i--) {
@@ -904,11 +899,13 @@ int ultracode(struct zint_symbol *symbol, const unsigned char source[], const si
     }
     codeword[locn++] = qcc; // QCC
 
-    printf("Rearranged codewords with ECC:\n");
-    for (i = 0; i < locn; i++) {
-        printf("%d ", codeword[i]);
+    if (symbol->debug) {
+        printf("Rearranged codewords with ECC:\n");
+        for (i = 0; i < locn; i++) {
+            printf("%d ", codeword[i]);
+        }
+        printf("\n");
     }
-    printf("\n");
 
     total_height = (rows * 6) + 1;
     total_width = columns + 6 + (columns / 15);
@@ -976,7 +973,7 @@ int ultracode(struct zint_symbol *symbol, const unsigned char source[], const si
                 tilex++;
             }
         }
-        //printf("[%d] = %s\n", codeword[i], tilepat);
+
         for (j = 0; j < 5; j++) {
             pattern[((tiley + j + 1) * total_width) + (tilex + 5)] = tilepat[j];
         }
@@ -1003,12 +1000,14 @@ int ultracode(struct zint_symbol *symbol, const unsigned char source[], const si
         pattern[((tiley + j) * total_width) + tilex] = tilepat[j];
     }
 
-    printf("DCC: %d\n", dcc);
+    if (symbol->debug) {
+        printf("DCC: %d\n", dcc);
 
-    for (i = 0; i < (total_height * total_width); i++) {
-        printf("%c", pattern[i]);
-        if ((i + 1) % total_width == 0) {
-            printf("\n");
+        for (i = 0; i < (total_height * total_width); i++) {
+            printf("%c", pattern[i]);
+            if ((i + 1) % total_width == 0) {
+                printf("\n");
+            }
         }
     }
 

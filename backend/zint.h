@@ -267,6 +267,9 @@ extern "C" {
 #define DM_SQUARE               100
 #define DM_DMRE                 101
 
+// Ultracode specific option
+#define ULTRA_COMPRESSION       128
+
 // Warning and error conditions
 #define ZINT_WARN_INVALID_OPTION        2
 #define ZINT_WARN_USES_ECI              3
