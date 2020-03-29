@@ -749,13 +749,13 @@ the example below where render_pixel() is assumed to be a function for drawing
 a pixel on the screen implemented by the external application:
 
 int row, col, i = 0;
-unsigned int red, blue, green;
+int red, blue, green;
 
 for (row = 0; row < my_symbol->bitmap_height; row++) {
      for (column = 0; col < my_symbol->bitmap_width; column++) {
-          red = my_symbol->bitmap[i];
-          green = my_symbol->bitmap[i + 1];
-          blue = my_symbol->bitmap[i + 2];
+          red = (int) my_symbol->bitmap[i];
+          green = (int) my_symbol->bitmap[i + 1];
+          blue = (int) my_symbol->bitmap[i + 2];
           render_pixel(row, column, red, green, blue);
           i += 3;
      }
@@ -826,7 +826,8 @@ row_height       | array of     | Representation of the       | (output only)
 errtxt           | character    | Error message in the event  | (output only)
                  |    string    |    that an error ocurred.   |
 bitmap           | pointer to   | Pointer to stored bitmap    | (output only)
-                 |    character |    image.                   |
+                 |    unsigned  |    image.                   |
+                 |    character |                             |
                  |    array     |                             |
 bitmap_width     | integer      | Width of stored bitmap      | (output only)
                  |              |    image (in pixels).       |
