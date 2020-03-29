@@ -186,6 +186,11 @@ static void test_examples(void)
         /*15*/ { BARCODE_RSS_EXP, "[10]12A", 0, 1, 102, "24724:2011 Figure F.3 — GS1 DataBar Expanded",
                     "010100000110100000101111111100001010001000000010110101111100100111001011110000000010011101111111010101"
                },
+        /*16*/ { BARCODE_RSS14STACK, "0000000000000", 0, 3, 50, "#183 GS1 DataBar Stacked separator alternation; verified manually against tec-it.com (bwipp differs)",
+                    "01010100100000000100011111111001011111110010101010"
+                    "00000101011111111010100000001010100000001101010000"
+                    "10101010110000000101111111110111011111111011010101"
+               },
     };
     int data_size = sizeof(data) / sizeof(struct item);
 
