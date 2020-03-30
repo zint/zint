@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2019 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2020 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -144,6 +144,7 @@ static void test_input(void)
         /* 21*/ { UNICODE_MODE, 0, "Summer Palace Ticket for 6 June 2015 13:00;2015年6月6日夜01時00分PM頤和園のチケット;2015년6월6일13시오후여름궁전티켓.2015年6月6号下午13:00的颐和园门票;", -1, 0, 0, "(189) 27 38 C3 0A 35 F9 CF 99 92 F9 26 A3 E7 3E 76 C9 AE A3 7F CC 08 04 0C CD EE 44 06 C4", "T20 B64 N4 H(f)1 T1 H(f)1 T1 H(f)1 T2 H(f)9 B35 (GB 18030)" },
         /* 22*/ { UNICODE_MODE, 0, "\000\014\033 #/059:<@AMZ", 15, 0, 0, "2F 80 31 B7 1F AF E0 05 27 EB 2E CB E2 96 8F F0 00", "T15 (ASCII)" },
         /* 23*/ { UNICODE_MODE, 0, "Z[\\`alz{~\177", -1, 0, 0, "28 FE CF 4E 3E 92 FF 7E E7 CF 7F 00 00", "T10 (ASCII)" },
+        /* 24*/ { UNICODE_MODE, 26, "\2021\2033", -1, 0, 26, "81 A7 01 B1 D8 00 00 00 00", "ECI-26 H(f)1 (GB 18030)" },
     };
     int data_size = sizeof(data) / sizeof(struct item);
 

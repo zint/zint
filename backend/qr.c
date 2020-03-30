@@ -1,7 +1,7 @@
 /* qr.c Handles QR Code, Micro QR Code, UPNQR and rMQR
 
     libzint - the open source barcode library
-    Copyright (C) 2009 - 2019 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009 - 2020 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -76,8 +76,8 @@ static int is_alpha(const unsigned int glyph, const int gs1) {
 #define QR_MULT 6
 
 /* Whether in numeric or not. If in numeric, *p_end is set to position after numeric, and *p_cost is set to per-numeric cost */
-static int in_numeric(const unsigned int jisdata[], const size_t length, const int posn, unsigned int* p_end, unsigned int* p_cost) {
-    int i, digit_cnt;
+static int in_numeric(const unsigned int jisdata[], const size_t length, const unsigned int posn, unsigned int* p_end, unsigned int* p_cost) {
+    unsigned int i, digit_cnt;
 
     if (posn < *p_end) {
         return 1;
@@ -98,7 +98,7 @@ static int in_numeric(const unsigned int jisdata[], const size_t length, const i
 }
 
 /* Whether in alpha or not. If in alpha, *p_end is set to position after alpha, and *p_cost is set to per-alpha cost. For GS1, *p_pcent set if 2nd char percent */
-static int in_alpha(const unsigned int jisdata[], const size_t length, const int posn, unsigned int* p_end, unsigned int* p_cost, unsigned int* p_pcent, unsigned int gs1) {
+static int in_alpha(const unsigned int jisdata[], const size_t length, const unsigned int posn, unsigned int* p_end, unsigned int* p_cost, unsigned int* p_pcent, unsigned int gs1) {
     int two_alphas;
 
     if (posn < *p_end) {
@@ -200,6 +200,7 @@ static unsigned int* qr_head_costs(unsigned int state[]) {
 
 /* Costs of switching modes from k to j */
 static unsigned int qr_switch_cost(unsigned int state[], const int k, const int j) {
+    (void)k; /* Unused */
     return state[j]; /* Same as head cost */
 }
 
@@ -326,7 +327,7 @@ static int terminator_bits(const int version) {
 /* Convert input data to a binary stream and add padding */
 static void qr_binary(unsigned char datastream[], const int version, const int target_codewords, const char mode[], const unsigned int jisdata[], const size_t length,
             const int gs1, const int eci, const int est_binlen, const int debug) {
-    int position = 0;
+    unsigned int position = 0;
     int i;
     int termbits, padbits;
     int current_binlen, current_bytes;
@@ -360,7 +361,7 @@ static void qr_binary(unsigned char datastream[], const int version, const int t
     }
 
     if (debug & ZINT_DEBUG_PRINT) {
-        for (i = 0; i < length; i++) {
+        for (i = 0; i < (int) length; i++) {
             printf("%c", mode[i]);
         }
         printf("\n");
@@ -1428,9 +1429,8 @@ static size_t blockLength(const size_t start,const char inputMode[],const size_t
 
 static int getBinaryLength(const int version, char inputMode[], const unsigned int inputData[], const size_t inputLength, const int gs1, const int eci, const int debug) {
     /* Calculate the actual bitlength of the proposed binary string */
-    size_t i;
+    size_t i, j;
     char currentMode;
-    int    j;
     int count = 0;
     int alphalength;
     int blocklength;
@@ -1830,6 +1830,8 @@ static void micro_qr_m1(struct zint_symbol *symbol, char binary_data[]) {
     }
 #ifdef ZINT_TEST
     if (symbol->debug & ZINT_DEBUG_TEST) debug_test_codeword_dump(symbol, data_blocks, data_codewords);
+#else
+    (void)symbol; /* Unused */
 #endif
 
     /* Calculate Reed-Solomon error codewords */
@@ -1911,6 +1913,8 @@ static void micro_qr_m2(struct zint_symbol *symbol, char binary_data[], const in
     }
 #ifdef ZINT_TEST
     if (symbol->debug & ZINT_DEBUG_TEST) debug_test_codeword_dump(symbol, data_blocks, data_codewords);
+#else
+    (void)symbol; /* Unused */
 #endif
 
     /* Calculate Reed-Solomon error codewords */
@@ -2026,6 +2030,8 @@ static void micro_qr_m3(struct zint_symbol *symbol, char binary_data[], const in
     }
 #ifdef ZINT_TEST
     if (symbol->debug & ZINT_DEBUG_TEST) debug_test_codeword_dump(symbol, data_blocks, data_codewords);
+#else
+    (void)symbol; /* Unused */
 #endif
 
     /* Calculate Reed-Solomon error codewords */
@@ -2116,6 +2122,8 @@ static void micro_qr_m4(struct zint_symbol *symbol, char binary_data[], const in
     }
 #ifdef ZINT_TEST
     if (symbol->debug & ZINT_DEBUG_TEST) debug_test_codeword_dump(symbol, data_blocks, data_codewords);
+#else
+    (void)symbol; /* Unused */
 #endif
 
     /* Calculate Reed-Solomon error codewords */
@@ -2168,8 +2176,8 @@ static void micro_setup_grid(unsigned char* grid,const int size) {
 static void micro_populate_grid(unsigned char* grid,const int size,const char full_stream[]) {
     int direction = 1; /* up */
     int row = 0; /* right hand side */
-    size_t n;
-    int i, y;
+    size_t n, i;
+    int y;
 
     n = strlen(full_stream);
     y = size - 1;
@@ -2334,8 +2342,7 @@ static int micro_apply_bitmask(unsigned char *grid,const int size) {
 }
 
 INTERNAL int microqr(struct zint_symbol *symbol, const unsigned char source[], size_t length) {
-    size_t i;
-    int    j, size;
+    size_t i, size, j;
     char full_stream[200];
 
     unsigned int jisdata[40];
@@ -2656,7 +2663,7 @@ INTERNAL int upnqr(struct zint_symbol *symbol, const unsigned char source[], siz
     switch (symbol->input_mode & 0x07) {
         case DATA_MODE:
             /* Input is already in ISO-8859-2 format */
-            for (i = 0; i < length; i++) {
+            for (i = 0; i < (int) length; i++) {
                 jisdata[i] = source[i];
                 mode[i] = 'B';
             }
@@ -2671,7 +2678,7 @@ INTERNAL int upnqr(struct zint_symbol *symbol, const unsigned char source[], siz
                 strcpy(symbol->errtxt, "572: Invalid characters in input data");
                 return error_number;
             }
-            for (i = 0; i < length; i++) {
+            for (i = 0; i < (int) length; i++) {
                 jisdata[i] = preprocessed[i];
                 mode[i] = 'B';
             }
@@ -2742,7 +2749,7 @@ INTERNAL int upnqr(struct zint_symbol *symbol, const unsigned char source[], siz
     return 0;
 }
 
-static void setup_rmqr_grid(unsigned char* grid,const int h_size,const int v_size,const int version) {
+static void setup_rmqr_grid(unsigned char* grid, const int h_size, const int v_size) {
     int i, j;
     char alignment[] = {0x1F, 0x11, 0x15, 0x11, 0x1F};
     int h_version, finder_position;
@@ -3033,7 +3040,7 @@ INTERNAL int rmqr(struct zint_symbol *symbol, const unsigned char source[], size
         }
     }
 
-    setup_rmqr_grid(grid, h_size, v_size, version);
+    setup_rmqr_grid(grid, h_size, v_size);
     populate_grid(grid, h_size, v_size, fullstream, rmqr_total_codewords[version]);
 
     /* apply bitmask */

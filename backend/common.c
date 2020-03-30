@@ -141,7 +141,7 @@ INTERNAL int posn(const char set_string[], const char data) {
 /* Returns the number of times a character occurs in a string */
 INTERNAL int ustrchr_cnt(const unsigned char string[], const size_t length, const unsigned char c) {
     int count = 0;
-    int i;
+    unsigned int i;
     for (i = 0; i < length; i++) {
         if (string[i] == c) {
             count++;
@@ -408,12 +408,12 @@ INTERNAL void pn_define_mode(char* mode, const unsigned int data[], const size_t
     memcpy(prev_costs, (*head_costs)(state), num_modes * sizeof(unsigned int));
 
     /* Calculate costs using dynamic programming */
-    for (i = 0, cm_i = 0; i < length; i++, cm_i += num_modes) {
+    for (i = 0, cm_i = 0; i < (int) length; i++, cm_i += num_modes) {
         memset(cur_costs, 0, num_modes * sizeof(unsigned int));
 
         (*cur_cost)(state, data, length, i, char_modes, prev_costs, cur_costs);
 
-        if (eod_cost && i == length - 1) { /* Add end of data costs if last character */
+        if (eod_cost && i == (int) length - 1) { /* Add end of data costs if last character */
             for (j = 0; j < num_modes; j++) {
                 if (char_modes[cm_i + j]) {
                     cur_costs[j] += (*eod_cost)(state, j);

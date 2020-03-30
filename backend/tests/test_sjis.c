@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2019 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2020 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -236,9 +236,9 @@ static void test_sjis_cpy(void)
     struct item data[] = {
         /*  0*/ { "\351", -1, 0, 1, { 0xE9 }, "In QR Kanji mode first-byte range but only one byte" },
         /*  1*/ { "\351\141", -1, 0, 1, { 0xE961 }, "In QR Kanji mode range" },
-        /*  0*/ { "\201", -1, 0, 1, { 0x81 }, "In QR Kanji mode first-byte range but only one byte" },
-        /*  0*/ { "\201\141", -1, 0, 1, { 0x8161 }, "In QR Kanji mode range" },
-        /*  0*/ { "\201\077\201\100\237\374\237\375\340\077\340\100\353\277\353\300", -1, 0, 12, { 0x81, 0x3F, 0x8140, 0x9FFC, 0x9F, 0xFD, 0xE0, 0x3F, 0xE040, 0xEBBF, 0xEB, 0xC0 }, "" },
+        /*  2*/ { "\201", -1, 0, 1, { 0x81 }, "In QR Kanji mode first-byte range but only one byte" },
+        /*  3*/ { "\201\141", -1, 0, 1, { 0x8161 }, "In QR Kanji mode range" },
+        /*  4*/ { "\201\077\201\100\237\374\237\375\340\077\340\100\353\277\353\300", -1, 0, 12, { 0x81, 0x3F, 0x8140, 0x9FFC, 0x9F, 0xFD, 0xE0, 0x3F, 0xE040, 0xEBBF, 0xEB, 0xC0 }, "" },
     };
 
     int data_size = sizeof(data) / sizeof(struct item);

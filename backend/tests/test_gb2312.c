@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2019 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2020 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -216,7 +216,7 @@ static void test_gb2312_cpy(void)
         int length;
         int ret;
         size_t ret_length;
-        unsigned int expected_jisdata[20];
+        unsigned int expected_gbdata[20];
         char* comment;
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
@@ -230,17 +230,17 @@ static void test_gb2312_cpy(void)
 
     int data_size = sizeof(data) / sizeof(struct item);
 
-    unsigned int jisdata[20];
+    unsigned int gbdata[20];
 
     for (int i = 0; i < data_size; i++) {
 
         int length = data[i].length == -1 ? strlen(data[i].data) : data[i].length;
         size_t ret_length = length;
 
-        gb2312_cpy(data[i].data, &ret_length, jisdata);
+        gb2312_cpy(data[i].data, &ret_length, gbdata);
         assert_equal(ret_length, data[i].ret_length, "i:%d ret_length %zu != %zu\n", i, ret_length, data[i].ret_length);
         for (int j = 0; j < ret_length; j++) {
-            assert_equal(jisdata[j], data[i].expected_jisdata[j], "i:%d jisdata[%d] %04X != %04X\n", i, j, jisdata[j], data[i].expected_jisdata[j]);
+            assert_equal(gbdata[j], data[i].expected_gbdata[j], "i:%d gbdata[%d] %04X != %04X\n", i, j, gbdata[j], data[i].expected_gbdata[j]);
         }
     }
 

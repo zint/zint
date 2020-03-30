@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2019 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2020 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -1443,7 +1443,7 @@ static const Summary16 jisx0208_uni2indx_pageff[15] = {
 
 static int jisx0208_wctomb(unsigned int* r, unsigned int wc) {
     const Summary16 *summary = NULL;
-    if (wc >= 0x0000 && wc < 0x0100) {
+    if (wc < 0x0100) {
         summary = &jisx0208_uni2indx_page00[(wc>>4)];
     } else if (wc >= 0x0300 && wc < 0x0460) {
         summary = &jisx0208_uni2indx_page03[(wc>>4)-0x030];
@@ -1513,8 +1513,8 @@ INTERNAL int sjis_wctomb_zint(unsigned int* r, unsigned int wc) {
 
 /* Convert UTF-8 string to Shift JIS and place in array of ints */
 INTERNAL int sjis_utf8tomb(struct zint_symbol *symbol, const unsigned char source[], size_t* p_length, unsigned int* jisdata) {
-    int i, error_number;
-    unsigned int length;
+    int error_number;
+    unsigned int i, length;
 #ifndef _MSC_VER
     unsigned int utfdata[*p_length + 1];
 #else
@@ -1558,9 +1558,9 @@ INTERNAL int sjis_utf8tosb(int eci, const unsigned char source[], size_t* p_leng
 
 /* Copy byte input stream to array of ints, putting double-bytes that match QR Kanji mode in single entry */
 INTERNAL void sjis_cpy(const unsigned char source[], size_t* p_length, unsigned int* jisdata) {
-    int i, j;
-    unsigned int jis, length;
+    unsigned int i, j, jis, length;
     unsigned char c;
+
     for (i = 0, j = 0, length = *p_length; i < length; i++, j++) {
         c = source[i];
         if (((c >= 0x81 && c <= 0x9F) || (c >= 0xE0 && c <= 0xEB)) && length - i >= 2) {

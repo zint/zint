@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2019 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2020 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -2868,8 +2868,8 @@ INTERNAL int gb18030_wctomb_zint(unsigned int* r1, unsigned int* r2, unsigned in
 
 /* Convert UTF-8 string to GB 18030 and place in array of ints */
 INTERNAL int gb18030_utf8tomb(struct zint_symbol *symbol, const unsigned char source[], size_t* p_length, unsigned int* gbdata) {
-    int i, j, error_number, ret;
-    unsigned int length;
+    int error_number, ret;
+    unsigned int i, j, length;
 #ifndef _MSC_VER
     unsigned int utfdata[*p_length + 1];
 #else
@@ -2923,9 +2923,10 @@ INTERNAL int gb18030_utf8tosb(int eci, const unsigned char source[], size_t* p_l
 
 /* Copy byte input stream to array of ints, putting double-bytes that match HANXIN Chinese mode in single entry, and quad-bytes in 2 entries */
 INTERNAL void gb18030_cpy(const unsigned char source[], size_t* p_length, unsigned int* gbdata) {
-    int i, j, done;
-    unsigned int length;
+    unsigned int i, j, length;
+    int done;
     unsigned char c1, c2, c3, c4;
+
     for (i = 0, j = 0, length = *p_length; i < length; i++, j++) {
         done = 0;
         c1 = source[i];

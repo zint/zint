@@ -1,7 +1,7 @@
 /*  hanxin.c - Han Xin Code
 
     libzint - the open source barcode library
-    Copyright (C) 2009-2019 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2020 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -298,8 +298,8 @@ static int lookup_text2(unsigned int input) {
 #define HX_MULT 6
 
 /* Whether in numeric or not. If in numeric, *p_end is set to position after numeric, and *p_cost is set to per-numeric cost */
-static int in_numeric(const unsigned int gbdata[], const size_t length, const int posn, unsigned int* p_end, unsigned int* p_cost) {
-    int i, digit_cnt;
+static int in_numeric(const unsigned int gbdata[], const size_t length, const unsigned int posn, unsigned int* p_end, unsigned int* p_cost) {
+    unsigned int i, digit_cnt;
 
     if (posn < *p_end) {
         return 1;
@@ -320,7 +320,7 @@ static int in_numeric(const unsigned int gbdata[], const size_t length, const in
 }
 
 /* Whether in four-byte or not. If in four-byte, *p_fourbyte is set to position after four-byte, and *p_fourbyte_cost is set to per-position cost */
-static int in_fourbyte(const unsigned int gbdata[], const size_t length, const int posn, unsigned int* p_end, unsigned int* p_cost) {
+static int in_fourbyte(const unsigned int gbdata[], const size_t length, const unsigned int posn, unsigned int* p_end, unsigned int* p_cost) {
     if (posn < *p_end) {
         return 1;
     }
@@ -353,6 +353,7 @@ static unsigned int* hx_head_costs(unsigned int state[]) {
         4 * HX_MULT, 4 * HX_MULT, (4 + 13) * HX_MULT, 4 * HX_MULT, 4 * HX_MULT, 4 * HX_MULT, 0
     };
 
+    (void)state; /* Unused */
     return head_costs;
 }
 
@@ -369,6 +370,7 @@ static unsigned int hx_switch_cost(unsigned int state[], const int k, const int 
         /*F*/ {        4 * HX_MULT,        4 * HX_MULT,      (4 + 13) * HX_MULT,        4 * HX_MULT,        4 * HX_MULT,        4 * HX_MULT,  0 },
     };
 
+    (void)state; /* Unused */
     return switch_costs[k][j];
 }
 
@@ -379,6 +381,7 @@ static unsigned int hx_eod_cost(unsigned int state[], const int k) {
         10 * HX_MULT, 6 * HX_MULT, 0, 12 * HX_MULT, 12 * HX_MULT, 15 * HX_MULT, 0
     };
 
+    (void)state; /* Unused */
     return eod_costs[k];
 }
 
@@ -444,7 +447,7 @@ static void hx_define_mode(char* mode, const unsigned int gbdata[], const size_t
 
 /* Convert input data to binary stream */
 static void calculate_binary(char binary[], char mode[], unsigned int source[], const size_t length, const int eci, int debug) {
-    int position = 0;
+    unsigned int position = 0;
     int i, count, encoding_value;
     int first_byte, second_byte;
     int third_byte, fourth_byte;
@@ -1401,7 +1404,7 @@ INTERNAL int han_xin(struct zint_symbol *symbol, const unsigned char source[], s
         int done = 0;
         if (symbol->eci != 29) { /* Unless ECI 29 (GB) */
             /* Try single byte (Latin) conversion first */
-            int error_number = gb2312_utf8tosb(symbol->eci && symbol->eci <= 899 ? symbol->eci : 3, source, &length, gbdata);
+            int error_number = gb18030_utf8tosb(symbol->eci && symbol->eci <= 899 ? symbol->eci : 3, source, &length, gbdata);
             if (error_number == 0) {
                 done = 1;
             } else if (symbol->eci && symbol->eci <= 899) {
