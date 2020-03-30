@@ -18,7 +18,9 @@ else(PNG_FOUND)
 endif(PNG_FOUND)
 
 add_library(zint SHARED ${zint_SRCS})
-add_library(zint-static STATIC ${zint_SRCS})
+if(ZINT_STATIC)
+	add_library(zint-static STATIC ${zint_SRCS})
+endif(ZINT_STATIC)
 
 set_target_properties(zint PROPERTIES 	SOVERSION "${ZINT_VERSION_MAJOR}.${ZINT_VERSION_MINOR}"
 					VERSION ${ZINT_VERSION})

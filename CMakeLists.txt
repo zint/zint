@@ -20,6 +20,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules" )
 set(ZINT_DEBUG FALSE CACHE BOOL "Set debug compile flag")
 set(ZINT_SANITIZE FALSE CACHE BOOL "Set sanitize compile/link flags")
 set(ZINT_TEST FALSE CACHE BOOL "Set test compile flag")
+set(ZINT_STATIC FALSE CACHE BOOL "Build static library")
 
 include (SetPaths.cmake)
 
