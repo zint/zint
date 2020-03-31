@@ -45,7 +45,7 @@ static void test_fuzz(void)
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /*  0*/ { "(\207'", -1, DATA_MODE, 0 }, // 0x28,0x87,0x27 Note: should but doesn't trigger sanitize error if no length check, for some reason; TODO: determine why
+        /*  0*/ { "(\207'", -1, DATA_MODE, 0 }, // 0x28,0x87,0x27 Note: should but doesn't trigger sanitize error if no length check, for some reason; UPDATE: use up-to-date gcc (9)!
         /*  1*/ {
                     "\133\061\106\133\061\106\070\161\116\133\116\116\067\040\116\016\000\116\125\111\125\125\316\125\125\116\116\116\116\117\116\125"
                     "\111\125\103\316\125\125\116\116\116\116\117\000\000\116\136\116\116\001\116\316\076\116\116\057\136\116\116\134\000\000\116\116"
@@ -62,6 +62,11 @@ static void test_fuzz(void)
                     "\071\071\071\011\071\071\071\071\071\071\071\071\071\071\071\071\071\071\105\105\105\105\105\105\105\105\105\105\105\105\105\071"
                     "\071\071\071\071\071", // Original OSS-Fuzz triggering data for index out of bounds (encoding of HT/FS/GS/RS when shifting to code set B)
                     421, UNICODE_MODE, ZINT_WARN_USES_ECI },
+        /*  2*/ { "\233:", -1, UNICODE_MODE, ZINT_WARN_USES_ECI }, // Original OSS-Fuzz triggering data for codeword_array buffer overflow, L777
+        /*  3*/ { "\241\034", -1, UNICODE_MODE, ZINT_WARN_USES_ECI }, // As above L793
+        /*  4*/ { "\270\036", -1, UNICODE_MODE, ZINT_WARN_USES_ECI }, // As above L799
+        /*  5*/ { "\237\032", -1, UNICODE_MODE, ZINT_WARN_USES_ECI }, // As above L904
+        /*  6*/ { "\237", -1, UNICODE_MODE, ZINT_WARN_USES_ECI }, // As above L1090
     };
     int data_size = sizeof(data) / sizeof(struct item);
 

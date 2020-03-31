@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2017-2019 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2017-2020 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -38,7 +38,6 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <stdlib.h>
 #include <math.h>
 #ifndef _MSC_VER
 #include <stdint.h>
@@ -1297,16 +1296,17 @@ INTERNAL int dotcode(struct zint_symbol *symbol, const unsigned char source[], i
     int binary_finish = 0;
     int debug = symbol->debug;
     int padding_dots, is_first;
+    int codeword_array_len = length * 4 + 8; /* Allow up to 4 codewords per input + 2 (FNC) + 4 (ECI) + 2 (special char 1st position) */
 #ifdef _MSC_VER
     unsigned char* masked_codeword_array;
 #endif
 
 #ifndef _MSC_VER
-    unsigned char codeword_array[length * 3];
+    unsigned char codeword_array[codeword_array_len];
 #else
     char* dot_stream;
     char* dot_array;
-    unsigned char* codeword_array = (unsigned char *) _alloca(length * 3 * sizeof (unsigned char));
+    unsigned char* codeword_array = (unsigned char *) _alloca(codeword_array_len);
 #endif /* _MSC_VER */
 
     if (symbol->eci > 811799) {
