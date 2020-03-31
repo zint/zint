@@ -137,10 +137,19 @@ Bugs:
 - Ticket 181 penetration test found many bugs:
   - Auspost: null bytes in content caused segfault
   - Codablock: data 0x1a..0x1f caused segfault
-  - Dotcode: overrun in binary mode
+  - Dotcode: overrun in binary mode, overrun in codeword_array buffer
+      Correct encoding of HT/FS/GS/RS when shifting to code set B
   - empty or unreadable input file
   - telepen: buffer overflow
   - EANUCC: buffer overflow on multiple + (multiple extension bars)
+  - Maxicode: index overrun on numeric compaction
+  - CodeOne: Simple i indexing not sp + i in C1_ASCII numeric latch loop.
+  - Aztec: free memory, 
+- Ticket 183: Databar stacked separator correction
+- Ticket 182: Output bitmap type was char, where some targets assigned 0
+  if pixel colour >127 (e.g. negative). API change to use unsigned char.
+- HanXin: wrong codepage, gb2312 instead gb18030.
+- PDF417: corrected alloced sizes to max characters
 
 CONTACT US
 ----------
