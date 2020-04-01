@@ -1,7 +1,7 @@
 /*  vector.c - Creates vector image objects
 
     libzint - the open source barcode library
-    Copyright (C) 2018 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2018 - 2020 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -193,13 +193,18 @@ INTERNAL void vector_free(struct zint_symbol *symbol) {
     }
 }
 
-static void vector_scale(struct zint_symbol *symbol) {
+static void vector_scale(struct zint_symbol *symbol, int file_type) {
     struct zint_vector_rect *rect;
     struct zint_vector_hexagon *hex;
     struct zint_vector_circle *circle;
     struct zint_vector_string *string;
     float scale = symbol->scale * 2.0f;
 
+    if ((file_type == OUT_EMF_FILE) && (symbol->symbology == BARCODE_MAXICODE)) {
+        // Increase size to overcome limitations in EMF file format
+        scale *= 20;
+    }
+    
     symbol->vector->width *= scale;
     symbol->vector->height *= scale;
 
@@ -820,7 +825,7 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
 
     vector_reduce_rectangles(symbol);
 
-    vector_scale(symbol);
+    vector_scale(symbol, file_type);
 
     switch (file_type) {
         case OUT_EPS_FILE:
