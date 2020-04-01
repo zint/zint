@@ -441,11 +441,9 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigne
 
                 if (j == 13) {
                     latch = 0;
-                    if ((length - sp) >= 14) {
-                        for (i = sp + 13; i < length; i++) {
-                            if (!((source[i] >= '0') && (source[i] <= '9'))) {
-                                latch = 1;
-                            }
+                    for (i = sp + 13; i < length; i++) {
+                        if (!((source[i] >= '0') && (source[i] <= '9'))) {
+                            latch = 1;
                         }
                     }
 
@@ -492,11 +490,9 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigne
 
                             if (j == 7) {
                                 latch = 0;
-                                if ((length - sp) >= 8) {
-                                    for (i = sp + 7; i < length; i++) {
-                                        if (!((source[sp + i] >= '0') && (source[sp + i] <= '9'))) {
-                                            latch = 1;
-                                        }
+                                for (i = sp + 7; i < length; i++) {
+                                    if (!((source[i] >= '0') && (source[i] <= '9'))) {
+                                        latch = 1;
                                     }
                                 }
 
