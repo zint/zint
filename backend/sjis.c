@@ -1537,7 +1537,7 @@ INTERNAL int sjis_utf8tomb(struct zint_symbol *symbol, const unsigned char sourc
 }
 
 /* Convert UTF-8 string to single byte ECI and place in array of ints */
-INTERNAL int sjis_utf8tosb(int eci, const unsigned char source[], size_t* p_length, unsigned int* jisdata) {
+INTERNAL int sjis_utf8tosb(int eci, const unsigned char source[], size_t* p_length, unsigned int* jisdata, int full_multibyte) {
     int error_number;
 #ifndef _MSC_VER
     unsigned char single_byte[*p_length + 1];
@@ -1551,30 +1551,38 @@ INTERNAL int sjis_utf8tosb(int eci, const unsigned char source[], size_t* p_leng
         return error_number;
     }
 
-    sjis_cpy(single_byte, p_length, jisdata);
+    sjis_cpy(single_byte, p_length, jisdata, full_multibyte);
 
     return 0;
 }
 
-/* Copy byte input stream to array of ints, putting double-bytes that match QR Kanji mode in single entry */
-INTERNAL void sjis_cpy(const unsigned char source[], size_t* p_length, unsigned int* jisdata) {
+/* If `full_multibyte` set, copy byte input stream to array of ints, putting double-bytes that match QR Kanji mode in a single entry.
+ * If `full_multibyte` not set, do a straight copy */
+INTERNAL void sjis_cpy(const unsigned char source[], size_t* p_length, unsigned int* jisdata, int full_multibyte) {
     unsigned int i, j, jis, length;
     unsigned char c;
 
-    for (i = 0, j = 0, length = *p_length; i < length; i++, j++) {
-        c = source[i];
-        if (((c >= 0x81 && c <= 0x9F) || (c >= 0xE0 && c <= 0xEB)) && length - i >= 2) {
-            jis = (c << 8) | source[i + 1];
-            if ((jis >= 0x8140 && jis <= 0x9FFC) || (jis >= 0xE040 && jis <= 0xEBBF)) {
-                /* This may or may not be valid Shift JIS, but don't care as long as it can be encoded in QR Kanji mode */
-                jisdata[j] = jis;
-                i++;
+    if (full_multibyte) {
+        for (i = 0, j = 0, length = *p_length; i < length; i++, j++) {
+            c = source[i];
+            if (((c >= 0x81 && c <= 0x9F) || (c >= 0xE0 && c <= 0xEB)) && length - i >= 2) {
+                jis = (c << 8) | source[i + 1];
+                if ((jis >= 0x8140 && jis <= 0x9FFC) || (jis >= 0xE040 && jis <= 0xEBBF)) {
+                    /* This may or may not be valid Shift JIS, but don't care as long as it can be encoded in QR Kanji mode */
+                    jisdata[j] = jis;
+                    i++;
+                } else {
+                    jisdata[j] = c;
+                }
             } else {
                 jisdata[j] = c;
             }
-        } else {
-            jisdata[j] = c;
+        }
+        *p_length = j;
+    } else {
+        /* Straight copy */
+        for (i = 0, length = *p_length; i < length; i++) {
+            jisdata[i] = source[i];
         }
     }
-    *p_length = j;
 }

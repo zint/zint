@@ -152,6 +152,7 @@ static void test_gb2312_utf8tosb(void)
     int ret;
     struct item {
         int eci;
+        int full_multibyte;
         unsigned char* data;
         int length;
         int ret;
@@ -173,15 +174,24 @@ static void test_gb2312_utf8tosb(void)
     // ÿ U+00FF in ISO 8859-1 0xFF, outside first byte and second byte range
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /*  0*/ { 3, "é", -1, 0, 1, { 0xE9 }, "First byte in range but only one byte" },
-        /*  1*/ { 3, "β", -1, ZINT_ERROR_INVALID_DATA, -1, {}, "Not in ECI 3 (ISO 8859-1)" },
-        /*  2*/ { 9, "β", -1, 0, 1, { 0xE2 }, "In ECI 9 (ISO 8859-7)" },
-        /*  3*/ { 3, "¥", -1, 0, 1, { 0xA5 }, "First byte in range but only one byte" },
-        /*  4*/ { 3, "¡é", -1, 0, 1, { 0xA1E9 }, "In GRIDMATRIX Chinese mode range" },
-        /*  5*/ { 3, "¡\302\240", -1, 0, 2, { 0xA1, 0xA0 }, "First byte in range but not second" },
-        /*  6*/ { 3, "©é", -1, 0, 1, { 0xA9E9 }, "In GRIDMATRIX Chinese mode range" },
-        /*  7*/ { 3, "©ÿ", -1, 0, 2, { 0xA9, 0xFF }, "First byte in range but not second" },
-        /*  8*/ { 3, "éaéé©ªª©¯é°°é÷éø", -1, 0, 10, { 0xE9, 0x61, 0xE9E9, 0xA9AA, 0xAA, 0xA9AF, 0xE9B0, 0xB0E9, 0xF7E9, 0xF8 }, "" },
+        /*  0*/ { 3, 0, "é", -1, 0, 1, { 0xE9 }, "Not full multibyte" },
+        /*  1*/ { 3, 1, "é", -1, 0, 1, { 0xE9 }, "First byte in range but only one byte" },
+        /*  2*/ { 3, 0, "β", -1, ZINT_ERROR_INVALID_DATA, -1, {}, "Not in ECI 3 (ISO 8859-1)" },
+        /*  3*/ { 3, 1, "β", -1, ZINT_ERROR_INVALID_DATA, -1, {}, "Not in ECI 3 (ISO 8859-1)" },
+        /*  4*/ { 9, 0, "β", -1, 0, 1, { 0xE2 }, "In ECI 9 (ISO 8859-7)" },
+        /*  5*/ { 9, 1, "β", -1, 0, 1, { 0xE2 }, "In ECI 9 (ISO 8859-7)" },
+        /*  6*/ { 3, 0, "¥", -1, 0, 1, { 0xA5 }, "Not full multibyte" },
+        /*  7*/ { 3, 1, "¥", -1, 0, 1, { 0xA5 }, "First byte in range but only one byte" },
+        /*  8*/ { 3, 0, "¡é", -1, 0, 2, { 0xA1, 0xE9 }, "Not full multibyte" },
+        /*  9*/ { 3, 1, "¡é", -1, 0, 1, { 0xA1E9 }, "In GRIDMATRIX Chinese mode range" },
+        /* 10*/ { 3, 0, "¡\302\240", -1, 0, 2, { 0xA1, 0xA0 }, "Not full multibyte" },
+        /* 11*/ { 3, 1, "¡\302\240", -1, 0, 2, { 0xA1, 0xA0 }, "First byte in range but not second" },
+        /* 12*/ { 3, 0, "©é", -1, 0, 2, { 0xA9, 0xE9 }, "Not full multibyte" },
+        /* 13*/ { 3, 1, "©é", -1, 0, 1, { 0xA9E9 }, "In GRIDMATRIX Chinese mode range" },
+        /* 14*/ { 3, 0, "©ÿ", -1, 0, 2, { 0xA9, 0xFF }, "Not full multibyte" },
+        /* 15*/ { 3, 1, "©ÿ", -1, 0, 2, { 0xA9, 0xFF }, "First byte in range but not second" },
+        /* 16*/ { 3, 0, "éaéé©ªª©¯é°°é÷éø", -1, 0, 16, { 0xE9, 0x61, 0xE9, 0xE9, 0xA9, 0xAA, 0xAA, 0xA9, 0xAF, 0xE9, 0xB0, 0xB0, 0xE9, 0xF7, 0xE9, 0xF8 }, "" },
+        /* 17*/ { 3, 1, "éaéé©ªª©¯é°°é÷éø", -1, 0, 10, { 0xE9, 0x61, 0xE9E9, 0xA9AA, 0xAA, 0xA9AF, 0xE9B0, 0xB0E9, 0xF7E9, 0xF8 }, "" },
     };
 
     int data_size = sizeof(data) / sizeof(struct item);
@@ -193,7 +203,7 @@ static void test_gb2312_utf8tosb(void)
         int length = data[i].length == -1 ? strlen(data[i].data) : data[i].length;
         size_t ret_length = length;
 
-        ret = gb2312_utf8tosb(data[i].eci, data[i].data, &ret_length, gbdata);
+        ret = gb2312_utf8tosb(data[i].eci, data[i].data, &ret_length, gbdata, data[i].full_multibyte);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d\n", i, ret, data[i].ret);
         if (ret == 0) {
             assert_equal(ret_length, data[i].ret_length, "i:%d ret_length %zu != %zu\n", i, ret_length, data[i].ret_length);
@@ -212,6 +222,7 @@ static void test_gb2312_cpy(void)
 
     int ret;
     struct item {
+        int full_multibyte;
         unsigned char* data;
         int length;
         int ret;
@@ -221,11 +232,16 @@ static void test_gb2312_cpy(void)
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /*  0*/ { "\351", -1, 0, 1, { 0xE9 }, "In GRIDMATRIX Chinese mode first-byte range but only one byte" },
-        /*  1*/ { "\351\241", -1, 0, 1, { 0xE9A1 }, "In GRIDMATRIX Chinese range" },
-        /*  2*/ { "\241", -1, 0, 1, { 0xA1 }, "In first-byte range but only one byte" },
-        /*  3*/ { "\241\241", -1, 0, 1, { 0xA1A1 }, "In range" },
-        /*  4*/ { "\241\240\241\376\367\376\367\377", -1, 0, 6, { 0xA1, 0xA0, 0xA1FE, 0xF7FE, 0xF7, 0xFF }, "" },
+        /*  0*/ { 0, "\351", -1, 0, 1, { 0xE9 }, "Not full multibyte" },
+        /*  1*/ { 1, "\351", -1, 0, 1, { 0xE9 }, "In GRIDMATRIX Chinese mode first-byte range but only one byte" },
+        /*  2*/ { 0, "\351\241", -1, 0, 2, { 0xE9, 0xA1 }, "Not full multibyte" },
+        /*  3*/ { 1, "\351\241", -1, 0, 1, { 0xE9A1 }, "In GRIDMATRIX Chinese range" },
+        /*  4*/ { 0, "\241", -1, 0, 1, { 0xA1 }, "Not full multibyte" },
+        /*  5*/ { 1, "\241", -1, 0, 1, { 0xA1 }, "In first-byte range but only one byte" },
+        /*  6*/ { 0, "\241\241", -1, 0, 2, { 0xA1, 0xA1 }, "Not full multibyte" },
+        /*  7*/ { 1, "\241\241", -1, 0, 1, { 0xA1A1 }, "In range" },
+        /*  8*/ { 0, "\241\240\241\376\367\376\367\377", -1, 0, 8, { 0xA1, 0xA0, 0xA1, 0xFE, 0xF7, 0xFE, 0xF7, 0xFF }, "" },
+        /*  9*/ { 1, "\241\240\241\376\367\376\367\377", -1, 0, 6, { 0xA1, 0xA0, 0xA1FE, 0xF7FE, 0xF7, 0xFF }, "" },
     };
 
     int data_size = sizeof(data) / sizeof(struct item);
@@ -237,7 +253,7 @@ static void test_gb2312_cpy(void)
         int length = data[i].length == -1 ? strlen(data[i].data) : data[i].length;
         size_t ret_length = length;
 
-        gb2312_cpy(data[i].data, &ret_length, gbdata);
+        gb2312_cpy(data[i].data, &ret_length, gbdata, data[i].full_multibyte);
         assert_equal(ret_length, data[i].ret_length, "i:%d ret_length %zu != %zu\n", i, ret_length, data[i].ret_length);
         for (int j = 0; j < ret_length; j++) {
             assert_equal(gbdata[j], data[i].expected_gbdata[j], "i:%d gbdata[%d] %04X != %04X\n", i, j, gbdata[j], data[i].expected_gbdata[j]);

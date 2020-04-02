@@ -1,7 +1,7 @@
 /*  gb2312.h - Unicode to GB 2312-1980 (EUC-CN)
 
     libzint - the open source barcode library
-    Copyright (C) 2009-2017 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2020 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -39,8 +39,8 @@ extern "C" {
 
 INTERNAL int gb2312_wctomb_zint(unsigned int* r, unsigned int wc);
 INTERNAL int gb2312_utf8tomb(struct zint_symbol *symbol, const unsigned char source[], size_t* p_length, unsigned int* gbdata);
-INTERNAL int gb2312_utf8tosb(int eci, const unsigned char source[], size_t* p_length, unsigned int* gbdata);
-INTERNAL void gb2312_cpy(const unsigned char source[], size_t* p_length, unsigned int* gbdata);
+INTERNAL int gb2312_utf8tosb(int eci, const unsigned char source[], size_t* p_length, unsigned int* gbdata, int full_multibyte);
+INTERNAL void gb2312_cpy(const unsigned char source[], size_t* p_length, unsigned int* gbdata, int full_multibyte);
 
 #ifdef __cplusplus
 }

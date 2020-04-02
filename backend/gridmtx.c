@@ -35,7 +35,6 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <stdlib.h>
 #ifdef _MSC_VER
 #include <malloc.h>
 #endif
@@ -927,6 +926,7 @@ INTERNAL int grid_matrix(struct zint_symbol *symbol, const unsigned char source[
     int size, modules, error_number;
     int auto_layers, min_layers, layers, auto_ecc_level, min_ecc_level, ecc_level;
     int x, y, i;
+    int full_multibyte;
     char binary[9300];
     int data_cw, input_latch = 0;
     unsigned char word[1460];
@@ -943,13 +943,15 @@ INTERNAL int grid_matrix(struct zint_symbol *symbol, const unsigned char source[
         word[i] = 0;
     }
 
+    full_multibyte = symbol->option_3 == ZINT_FULL_MULTIBYTE; /* If set use Hanzi mode in DATA_MODE or for single-byte Latin */
+
     if ((symbol->input_mode & 0x07) == DATA_MODE) {
-        gb2312_cpy(source, &length, gbdata);
+        gb2312_cpy(source, &length, gbdata, full_multibyte);
     } else {
         int done = 0;
         if (symbol->eci != 29) { /* Unless ECI 29 (GB) */
             /* Try single byte (Latin) conversion first */
-            int error_number = gb2312_utf8tosb(symbol->eci && symbol->eci <= 899 ? symbol->eci : 3, source, &length, gbdata);
+            int error_number = gb2312_utf8tosb(symbol->eci && symbol->eci <= 899 ? symbol->eci : 3, source, &length, gbdata, full_multibyte);
             if (error_number == 0) {
                 done = 1;
             } else if (symbol->eci && symbol->eci <= 899) {

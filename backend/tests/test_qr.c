@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2019 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2020 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -140,6 +140,7 @@ static void test_qr_input(void)
     struct item {
         int input_mode;
         int eci;
+        int option_3;
         unsigned char* data;
         int ret;
         int expected_eci;
@@ -159,84 +160,97 @@ static void test_qr_input(void)
     // 点 U+70B9 kanji, in Shift JIS 0x935F (\223\137), UTF-8 E782B9
     // 茗 U+8317 kanji, in Shift JIS 0xE4AA (\344\252), UTF-8 E88C97
     // テ U+30C6 katakana, in Shift JIS 0x8365 (\203\145), UTF-8 E38386
+    // Á U+00C1, UTF-8 C381; ȁ U+0201, UTF-8 C881; Ȃ U+0202, UTF-8 C882; ¢ U+00A2, UTF-8 C2A2; á U+00E1, UTF-8 C3A1
     struct item data[] = {
-        /*  0*/ { UNICODE_MODE, 0, "é", 0, 0, "40 1E 90 EC 11 EC 11 EC 11", "B1 (ISO 8859-1)" },
-        /*  1*/ { UNICODE_MODE, 3, "é", 0, 3, "70 34 01 E9 00 EC 11 EC 11", "ECI-3 B1 (ISO 8859-1)" },
-        /*  2*/ { UNICODE_MODE, 20, "é", ZINT_ERROR_INVALID_DATA, -1, "Error 800: Invalid character in input data", "é not in Shift JIS" },
-        /*  3*/ { UNICODE_MODE, 26, "é", 0, 26, "71 A4 02 C3 A9 00 EC 11 EC", "ECI-26 B2 (UTF-8)" },
-        /*  4*/ { DATA_MODE, 0, "é", 0, 0, "40 2C 3A 90 EC 11 EC 11 EC", "B2 (UTF-8)" },
-        /*  5*/ { DATA_MODE, 0, "\351", 0, 0, "40 1E 90 EC 11 EC 11 EC 11", "B1 (ISO 8859-1)" },
-        /*  6*/ { UNICODE_MODE, 0, "β", 0, 0, "80 11 00 00 EC 11 EC 11 EC", "K1 (Shift JIS)" },
-        /*  7*/ { UNICODE_MODE, 9, "β", 0, 9, "70 94 01 E2 00 EC 11 EC 11", "ECI-9 B1 (ISO 8859-7)" },
-        /*  8*/ { UNICODE_MODE, 20, "β", 0, 20, "71 48 01 10 00 00 EC 11 EC", "ECI-20 K1 (Shift JIS)" },
-        /*  9*/ { UNICODE_MODE, 26, "β", 0, 26, "71 A4 02 CE B2 00 EC 11 EC", "ECI-26 B2 (UTF-8)" },
-        /* 10*/ { DATA_MODE, 0, "β", 0, 0, "40 2C EB 20 EC 11 EC 11 EC", "B2 (UTF-8)" },
-        /* 11*/ { UNICODE_MODE, 0, "ก", ZINT_WARN_USES_ECI, 13, "Warning 70 D4 01 A1 00 EC 11 EC 11", "ECI-13 B1 (ISO 8859-11)" },
-        /* 12*/ { UNICODE_MODE, 13, "ก", 0, 13, "70 D4 01 A1 00 EC 11 EC 11", "ECI-13 B1 (ISO 8859-11)" },
-        /* 13*/ { UNICODE_MODE, 20, "ก", ZINT_ERROR_INVALID_DATA, -1, "Error 800: Invalid character in input data", "ก not in Shift JIS" },
-        /* 14*/ { UNICODE_MODE, 26, "ก", 0, 26, "71 A4 03 E0 B8 81 00 EC 11", "ECI-26 B3 (UTF-8)" },
-        /* 15*/ { DATA_MODE, 0, "ก", 0, 0, "40 3E 0B 88 10 EC 11 EC 11", "B3 (UTF-8)" },
-        /* 16*/ { UNICODE_MODE, 0, "Ж", 0, 0, "80 11 23 80 EC 11 EC 11 EC", "K1 (Shift JIS)" },
-        /* 17*/ { UNICODE_MODE, 7, "Ж", 0, 7, "70 74 01 B6 00 EC 11 EC 11", "ECI-7 B1 (ISO 8859-5)" },
-        /* 18*/ { UNICODE_MODE, 20, "Ж", 0, 20, "71 48 01 12 38 00 EC 11 EC", "ECI-20 K1 (Shift JIS)" },
-        /* 19*/ { UNICODE_MODE, 26, "Ж", 0, 26, "71 A4 02 D0 96 00 EC 11 EC", "ECI-26 B2 (UTF-8)" },
-        /* 20*/ { DATA_MODE, 0, "Ж", 0, 0, "40 2D 09 60 EC 11 EC 11 EC", "B2 (UTF-8)" },
-        /* 21*/ { UNICODE_MODE, 0, "ກ", ZINT_WARN_USES_ECI, 26, "Warning 71 A4 03 E0 BA 81 00 EC 11", "ECI-26 B3 (UTF-8)" },
-        /* 22*/ { UNICODE_MODE, 20, "ກ", ZINT_ERROR_INVALID_DATA, -1, "Error 800: Invalid character in input data", "ກ not in Shift JIS" },
-        /* 23*/ { UNICODE_MODE, 26, "ກ", 0, 26, "71 A4 03 E0 BA 81 00 EC 11", "ECI-26 B3 (UTF-8)" },
-        /* 24*/ { DATA_MODE, 0, "ກ", 0, 0, "40 3E 0B A8 10 EC 11 EC 11", "B3 (UTF-8)" },
-        /* 25*/ { UNICODE_MODE, 0, "\\", 0, 0, "40 15 C0 EC 11 EC 11 EC 11", "B1 (ASCII)" },
-        /* 26*/ { UNICODE_MODE, 20, "\\", 0, 20, "71 48 01 00 F8 00 EC 11 EC", "ECI-20 K1 (Shift JIS)" },
-        /* 27*/ { UNICODE_MODE, 20, "[", 0, 20, "71 44 01 5B 00 EC 11 EC 11", "B1 (ASCII)" },
-        /* 28*/ { UNICODE_MODE, 20, "\177", 0, 20, "71 44 01 7F 00 EC 11 EC 11", "ECI-20 B1 (ASCII)" },
-        /* 29*/ { UNICODE_MODE, 0, "¥", 0, 0, "40 1A 50 EC 11 EC 11 EC 11", "B1 (ISO 8859-1) (same bytes as ･ Shift JIS below, so ambiguous)" },
-        /* 30*/ { UNICODE_MODE, 3, "¥", 0, 3, "70 34 01 A5 00 EC 11 EC 11", "ECI-3 B1 (ISO 8859-1)" },
-        /* 31*/ { UNICODE_MODE, 20, "¥", 0, 20, "71 44 01 5C 00 EC 11 EC 11", "ECI-20 B1 (Shift JIS) (to single-byte backslash codepoint 5C, so byte mode)" },
-        /* 32*/ { UNICODE_MODE, 26, "¥", 0, 26, "71 A4 02 C2 A5 00 EC 11 EC", "ECI-26 B2 (UTF-8)" },
-        /* 33*/ { DATA_MODE, 0, "¥", 0, 0, "40 2C 2A 50 EC 11 EC 11 EC", "B2 (UTF-8)" },
-        /* 34*/ { UNICODE_MODE, 0, "･", 0, 0, "40 1A 50 EC 11 EC 11 EC 11", "B1 (Shift JIS) single-byte codepoint A5 (same bytes as ¥ ISO 8859-1 above, so ambiguous)" },
-        /* 35*/ { UNICODE_MODE, 3, "･", ZINT_ERROR_INVALID_DATA, -1, "Error 575: Invalid characters in input data", "" },
-        /* 36*/ { UNICODE_MODE, 20, "･", 0, 20, "71 44 01 A5 00 EC 11 EC 11", "ECI-20 B1 (Shift JIS) single-byte codepoint A5" },
-        /* 37*/ { UNICODE_MODE, 26, "･", 0, 26, "71 A4 03 EF BD A5 00 EC 11", "ECI-26 B3 (UTF-8)" },
-        /* 38*/ { DATA_MODE, 0, "･", 0, 0, "40 3E FB DA 50 EC 11 EC 11", "B3 (UTF-8)" },
-        /* 39*/ { UNICODE_MODE, 0, "¿", 0, 0, "40 1B F0 EC 11 EC 11 EC 11", "B1 (ISO 8859-1) (same bytes as ｿ Shift JIS below, so ambiguous)" },
-        /* 40*/ { UNICODE_MODE, 3, "¿", 0, 3, "70 34 01 BF 00 EC 11 EC 11", "ECI-3 B1 (ISO 8859-1)" },
-        /* 41*/ { UNICODE_MODE, 20, "¿", ZINT_ERROR_INVALID_DATA, -1, "Error 800: Invalid character in input data", "¿ not in Shift JIS" },
-        /* 42*/ { UNICODE_MODE, 26, "¿", 0, 26, "71 A4 02 C2 BF 00 EC 11 EC", "ECI-26 B2 (UTF-8)" },
-        /* 43*/ { DATA_MODE, 0, "¿", 0, 0, "40 2C 2B F0 EC 11 EC 11 EC", "B2 (UTF-8)" },
-        /* 44*/ { UNICODE_MODE, 0, "ｿ", 0, 0, "40 1B F0 EC 11 EC 11 EC 11", "B1 (Shift JIS) single-byte codepoint BF (same bytes as ¿ ISO 8859-1 above, so ambiguous)" },
-        /* 45*/ { UNICODE_MODE, 3, "ｿ", ZINT_ERROR_INVALID_DATA, -1, "Error 575: Invalid characters in input data", "" },
-        /* 46*/ { UNICODE_MODE, 20, "ｿ", 0, 20, "71 44 01 BF 00 EC 11 EC 11", "ECI-20 B1 (Shift JIS) single-byte codepoint BF" },
-        /* 47*/ { UNICODE_MODE, 26, "ｿ", 0, 26, "71 A4 03 EF BD BF 00 EC 11", "ECI-26 B3 (UTF-8)" },
-        /* 48*/ { DATA_MODE, 0, "ｿ", 0, 0, "40 3E FB DB F0 EC 11 EC 11", "B3 (UTF-8)" },
-        /* 49*/ { UNICODE_MODE, 0, "~", 0, 0, "40 17 E0 EC 11 EC 11 EC 11", "B1 (ASCII) (same bytes as ‾ Shift JIS below, so ambiguous)" },
-        /* 50*/ { UNICODE_MODE, 3, "~", 0, 3, "70 34 01 7E 00 EC 11 EC 11", "ECI-3 B1 (ASCII)" },
-        /* 51*/ { UNICODE_MODE, 20, "~", ZINT_ERROR_INVALID_DATA, -1, "Error 800: Invalid character in input data", "tilde not in Shift JIS (codepoint used for overline)" },
-        /* 52*/ { UNICODE_MODE, 0, "‾", 0, 0, "40 17 E0 EC 11 EC 11 EC 11", "B1 (Shift JIS) single-byte codepoint 7E (same bytes as ~ ASCII above, so ambiguous)" },
-        /* 53*/ { UNICODE_MODE, 3, "‾", ZINT_ERROR_INVALID_DATA, -1, "Error 575: Invalid characters in input data", "" },
-        /* 54*/ { UNICODE_MODE, 20, "‾", 0, 20, "71 44 01 7E 00 EC 11 EC 11", "ECI-20 B1 (Shift JIS) (to single-byte tilde codepoint 7E, so byte mode)" },
-        /* 55*/ { UNICODE_MODE, 26, "‾", 0, 26, "71 A4 03 E2 80 BE 00 EC 11", "ECI-26 B3 (UTF-8)" },
-        /* 56*/ { DATA_MODE, 0, "‾", 0, 0, "40 3E 28 0B E0 EC 11 EC 11", "B3 (UTF-8)" },
-        /* 57*/ { UNICODE_MODE, 0, "点", 0, 0, "80 16 CF 80 EC 11 EC 11 EC", "K1 (Shift JIS)" },
-        /* 58*/ { UNICODE_MODE, 3, "点", ZINT_ERROR_INVALID_DATA, -1, "Error 575: Invalid characters in input data", "" },
-        /* 59*/ { UNICODE_MODE, 20, "点", 0, 20, "71 48 01 6C F8 00 EC 11 EC", "ECI-20 K1 (Shift JIS)" },
-        /* 60*/ { UNICODE_MODE, 26, "点", 0, 26, "71 A4 03 E7 82 B9 00 EC 11", "ECI-26 B3 (UTF-8)" },
-        /* 61*/ { DATA_MODE, 0, "点", 0, 0, "40 3E 78 2B 90 EC 11 EC 11", "B3 (UTF-8)" },
-        /* 62*/ { DATA_MODE, 0, "\223\137", 0, 0, "80 16 CF 80 EC 11 EC 11 EC", "K1 (Shift JIS)" },
-        /* 63*/ { UNICODE_MODE, 0, "¥･点", 0, 0, "40 45 CA 59 35 F0 EC 11 EC", "B4 (Shift JIS) (optimized to byte mode only)" },
-        /* 64*/ { UNICODE_MODE, 3, "¥･点", ZINT_ERROR_INVALID_DATA, -1, "Error 575: Invalid characters in input data", "" },
-        /* 65*/ { UNICODE_MODE, 20, "¥･点", 0, 20, "71 44 04 5C A5 93 5F 00 EC", "ECI-20 B4 (Shift JIS)" },
-        /* 66*/ { UNICODE_MODE, 26, "¥･点", 0, 26, "71 A4 08 C2 A5 EF BD A5 E7 82 B9 00 EC", "ECI-26 B8 (UTF-8)" },
-        /* 67*/ { DATA_MODE, 0, "\134\245\223\137", 0, 0, "40 45 CA 59 35 F0 EC 11 EC", "B8 (Shift JIS)" },
-        /* 68*/ { DATA_MODE, 0, "¥･点", 0, 0, "40 8C 2A 5E FB DA 5E 78 2B 90 EC 11 EC", "B8 (UTF-8)" },
-        /* 69*/ { UNICODE_MODE, 0, "点茗", 0, 0, "80 26 CF EA A8 00 EC 11 EC", "K2 (Shift JIS)" },
-        /* 70*/ { UNICODE_MODE, 0, "点茗テ", 0, 0, "80 36 CF EA A8 34 A0 EC 11", "K3 (Shift JIS)" },
-        /* 71*/ { UNICODE_MODE, 0, "点茗テ点", 0, 0, "80 46 CF EA A8 34 AD 9F 00", "K4 (Shift JIS)" },
-        /* 72*/ { UNICODE_MODE, 0, "点茗テ点茗", 0, 0, "80 56 CF EA A8 34 AD 9F D5 50 00 EC 11", "K5 (Shift JIS)" },
-        /* 73*/ { UNICODE_MODE, 0, "点茗テ点茗テ", 0, 0, "80 66 CF EA A8 34 AD 9F D5 50 69 40 EC", "K6 (Shift JIS)" },
-        /* 74*/ { UNICODE_MODE, 0, "点茗テ点茗テｿ", 0, 0, "80 66 CF EA A8 34 AD 9F D5 50 69 50 06 FC 00 EC", "K6 B1 (Shift JIS)" },
-        /* 75*/ { DATA_MODE, 0, "\223\137\344\252\203\145\223\137\344\252\203\145\277", 0, 0, "80 66 CF EA A8 34 AD 9F D5 50 69 50 06 FC 00 EC", "K6 B1 (Shift JIS)" },
-        /* 76*/ { DATA_MODE, 0, "点茗テ点茗テｿ", 0, 0, "41 5E 78 2B 9E 88 C9 7E 38 38 6E 78 2B 9E 88 C9 7E 38 38 6E FB DB F0 EC 11 EC 11 EC", "B21 (UTF-8)" },
+        /*  0*/ { UNICODE_MODE, 0, -1, "é", 0, 0, "40 1E 90 EC 11 EC 11 EC 11", "B1 (ISO 8859-1)" },
+        /*  1*/ { UNICODE_MODE, 3, -1, "é", 0, 3, "70 34 01 E9 00 EC 11 EC 11", "ECI-3 B1 (ISO 8859-1)" },
+        /*  2*/ { UNICODE_MODE, 20, -1, "é", ZINT_ERROR_INVALID_DATA, -1, "Error 800: Invalid character in input data", "é not in Shift JIS" },
+        /*  3*/ { UNICODE_MODE, 26, -1, "é", 0, 26, "71 A4 02 C3 A9 00 EC 11 EC", "ECI-26 B2 (UTF-8)" },
+        /*  4*/ { DATA_MODE, 0, -1, "é", 0, 0, "40 2C 3A 90 EC 11 EC 11 EC", "B2 (UTF-8)" },
+        /*  5*/ { DATA_MODE, 0, -1, "\351", 0, 0, "40 1E 90 EC 11 EC 11 EC 11", "B1 (ISO 8859-1)" },
+        /*  6*/ { UNICODE_MODE, 0, -1, "β", 0, 0, "80 11 00 00 EC 11 EC 11 EC", "K1 (Shift JIS)" },
+        /*  7*/ { UNICODE_MODE, 9, -1, "β", 0, 9, "70 94 01 E2 00 EC 11 EC 11", "ECI-9 B1 (ISO 8859-7)" },
+        /*  8*/ { UNICODE_MODE, 20, -1, "β", 0, 20, "71 48 01 10 00 00 EC 11 EC", "ECI-20 K1 (Shift JIS)" },
+        /*  9*/ { UNICODE_MODE, 26, -1, "β", 0, 26, "71 A4 02 CE B2 00 EC 11 EC", "ECI-26 B2 (UTF-8)" },
+        /* 10*/ { DATA_MODE, 0, -1, "β", 0, 0, "40 2C EB 20 EC 11 EC 11 EC", "B2 (UTF-8)" },
+        /* 11*/ { UNICODE_MODE, 0, -1, "ก", ZINT_WARN_USES_ECI, 13, "Warning 70 D4 01 A1 00 EC 11 EC 11", "ECI-13 B1 (ISO 8859-11)" },
+        /* 12*/ { UNICODE_MODE, 13, -1, "ก", 0, 13, "70 D4 01 A1 00 EC 11 EC 11", "ECI-13 B1 (ISO 8859-11)" },
+        /* 13*/ { UNICODE_MODE, 20, -1, "ก", ZINT_ERROR_INVALID_DATA, -1, "Error 800: Invalid character in input data", "ก not in Shift JIS" },
+        /* 14*/ { UNICODE_MODE, 26, -1, "ก", 0, 26, "71 A4 03 E0 B8 81 00 EC 11", "ECI-26 B3 (UTF-8)" },
+        /* 15*/ { DATA_MODE, 0, -1, "ก", 0, 0, "40 3E 0B 88 10 EC 11 EC 11", "B3 (UTF-8)" },
+        /* 16*/ { UNICODE_MODE, 0, -1, "Ж", 0, 0, "80 11 23 80 EC 11 EC 11 EC", "K1 (Shift JIS)" },
+        /* 17*/ { UNICODE_MODE, 7, -1, "Ж", 0, 7, "70 74 01 B6 00 EC 11 EC 11", "ECI-7 B1 (ISO 8859-5)" },
+        /* 18*/ { UNICODE_MODE, 20, -1, "Ж", 0, 20, "71 48 01 12 38 00 EC 11 EC", "ECI-20 K1 (Shift JIS)" },
+        /* 19*/ { UNICODE_MODE, 26, -1, "Ж", 0, 26, "71 A4 02 D0 96 00 EC 11 EC", "ECI-26 B2 (UTF-8)" },
+        /* 20*/ { DATA_MODE, 0, -1, "Ж", 0, 0, "40 2D 09 60 EC 11 EC 11 EC", "B2 (UTF-8)" },
+        /* 21*/ { UNICODE_MODE, 0, -1, "ກ", ZINT_WARN_USES_ECI, 26, "Warning 71 A4 03 E0 BA 81 00 EC 11", "ECI-26 B3 (UTF-8)" },
+        /* 22*/ { UNICODE_MODE, 20, -1, "ກ", ZINT_ERROR_INVALID_DATA, -1, "Error 800: Invalid character in input data", "ກ not in Shift JIS" },
+        /* 23*/ { UNICODE_MODE, 26, -1, "ກ", 0, 26, "71 A4 03 E0 BA 81 00 EC 11", "ECI-26 B3 (UTF-8)" },
+        /* 24*/ { DATA_MODE, 0, -1, "ກ", 0, 0, "40 3E 0B A8 10 EC 11 EC 11", "B3 (UTF-8)" },
+        /* 25*/ { UNICODE_MODE, 0, -1, "\\", 0, 0, "40 15 C0 EC 11 EC 11 EC 11", "B1 (ASCII)" },
+        /* 26*/ { UNICODE_MODE, 20, -1, "\\", 0, 20, "71 48 01 00 F8 00 EC 11 EC", "ECI-20 K1 (Shift JIS)" },
+        /* 27*/ { UNICODE_MODE, 20, -1, "[", 0, 20, "71 44 01 5B 00 EC 11 EC 11", "B1 (ASCII)" },
+        /* 28*/ { UNICODE_MODE, 20, -1, "\177", 0, 20, "71 44 01 7F 00 EC 11 EC 11", "ECI-20 B1 (ASCII)" },
+        /* 29*/ { UNICODE_MODE, 0, -1, "¥", 0, 0, "40 1A 50 EC 11 EC 11 EC 11", "B1 (ISO 8859-1) (same bytes as ･ Shift JIS below, so ambiguous)" },
+        /* 30*/ { UNICODE_MODE, 3, -1, "¥", 0, 3, "70 34 01 A5 00 EC 11 EC 11", "ECI-3 B1 (ISO 8859-1)" },
+        /* 31*/ { UNICODE_MODE, 20, -1, "¥", 0, 20, "71 44 01 5C 00 EC 11 EC 11", "ECI-20 B1 (Shift JIS) (to single-byte backslash codepoint 5C, so byte mode)" },
+        /* 32*/ { UNICODE_MODE, 26, -1, "¥", 0, 26, "71 A4 02 C2 A5 00 EC 11 EC", "ECI-26 B2 (UTF-8)" },
+        /* 33*/ { DATA_MODE, 0, -1, "¥", 0, 0, "40 2C 2A 50 EC 11 EC 11 EC", "B2 (UTF-8)" },
+        /* 34*/ { UNICODE_MODE, 0, -1, "･", 0, 0, "40 1A 50 EC 11 EC 11 EC 11", "B1 (Shift JIS) single-byte codepoint A5 (same bytes as ¥ ISO 8859-1 above, so ambiguous)" },
+        /* 35*/ { UNICODE_MODE, 3, -1, "･", ZINT_ERROR_INVALID_DATA, -1, "Error 575: Invalid characters in input data", "" },
+        /* 36*/ { UNICODE_MODE, 20, -1, "･", 0, 20, "71 44 01 A5 00 EC 11 EC 11", "ECI-20 B1 (Shift JIS) single-byte codepoint A5" },
+        /* 37*/ { UNICODE_MODE, 26, -1, "･", 0, 26, "71 A4 03 EF BD A5 00 EC 11", "ECI-26 B3 (UTF-8)" },
+        /* 38*/ { DATA_MODE, 0, -1, "･", 0, 0, "40 3E FB DA 50 EC 11 EC 11", "B3 (UTF-8)" },
+        /* 39*/ { UNICODE_MODE, 0, -1, "¿", 0, 0, "40 1B F0 EC 11 EC 11 EC 11", "B1 (ISO 8859-1) (same bytes as ｿ Shift JIS below, so ambiguous)" },
+        /* 40*/ { UNICODE_MODE, 3, -1, "¿", 0, 3, "70 34 01 BF 00 EC 11 EC 11", "ECI-3 B1 (ISO 8859-1)" },
+        /* 41*/ { UNICODE_MODE, 20, -1, "¿", ZINT_ERROR_INVALID_DATA, -1, "Error 800: Invalid character in input data", "¿ not in Shift JIS" },
+        /* 42*/ { UNICODE_MODE, 26, -1, "¿", 0, 26, "71 A4 02 C2 BF 00 EC 11 EC", "ECI-26 B2 (UTF-8)" },
+        /* 43*/ { DATA_MODE, 0, -1, "¿", 0, 0, "40 2C 2B F0 EC 11 EC 11 EC", "B2 (UTF-8)" },
+        /* 44*/ { UNICODE_MODE, 0, -1, "ｿ", 0, 0, "40 1B F0 EC 11 EC 11 EC 11", "B1 (Shift JIS) single-byte codepoint BF (same bytes as ¿ ISO 8859-1 above, so ambiguous)" },
+        /* 45*/ { UNICODE_MODE, 3, -1, "ｿ", ZINT_ERROR_INVALID_DATA, -1, "Error 575: Invalid characters in input data", "" },
+        /* 46*/ { UNICODE_MODE, 20, -1, "ｿ", 0, 20, "71 44 01 BF 00 EC 11 EC 11", "ECI-20 B1 (Shift JIS) single-byte codepoint BF" },
+        /* 47*/ { UNICODE_MODE, 26, -1, "ｿ", 0, 26, "71 A4 03 EF BD BF 00 EC 11", "ECI-26 B3 (UTF-8)" },
+        /* 48*/ { DATA_MODE, 0, -1, "ｿ", 0, 0, "40 3E FB DB F0 EC 11 EC 11", "B3 (UTF-8)" },
+        /* 49*/ { UNICODE_MODE, 0, -1, "~", 0, 0, "40 17 E0 EC 11 EC 11 EC 11", "B1 (ASCII) (same bytes as ‾ Shift JIS below, so ambiguous)" },
+        /* 50*/ { UNICODE_MODE, 3, -1, "~", 0, 3, "70 34 01 7E 00 EC 11 EC 11", "ECI-3 B1 (ASCII)" },
+        /* 51*/ { UNICODE_MODE, 20, -1, "~", ZINT_ERROR_INVALID_DATA, -1, "Error 800: Invalid character in input data", "tilde not in Shift JIS (codepoint used for overline)" },
+        /* 52*/ { UNICODE_MODE, 0, -1, "‾", 0, 0, "40 17 E0 EC 11 EC 11 EC 11", "B1 (Shift JIS) single-byte codepoint 7E (same bytes as ~ ASCII above, so ambiguous)" },
+        /* 53*/ { UNICODE_MODE, 3, -1, "‾", ZINT_ERROR_INVALID_DATA, -1, "Error 575: Invalid characters in input data", "" },
+        /* 54*/ { UNICODE_MODE, 20, -1, "‾", 0, 20, "71 44 01 7E 00 EC 11 EC 11", "ECI-20 B1 (Shift JIS) (to single-byte tilde codepoint 7E, so byte mode)" },
+        /* 55*/ { UNICODE_MODE, 26, -1, "‾", 0, 26, "71 A4 03 E2 80 BE 00 EC 11", "ECI-26 B3 (UTF-8)" },
+        /* 56*/ { DATA_MODE, 0, -1, "‾", 0, 0, "40 3E 28 0B E0 EC 11 EC 11", "B3 (UTF-8)" },
+        /* 57*/ { UNICODE_MODE, 0, -1, "点", 0, 0, "80 16 CF 80 EC 11 EC 11 EC", "K1 (Shift JIS)" },
+        /* 58*/ { UNICODE_MODE, 3, -1, "点", ZINT_ERROR_INVALID_DATA, -1, "Error 575: Invalid characters in input data", "" },
+        /* 59*/ { UNICODE_MODE, 20, -1, "点", 0, 20, "71 48 01 6C F8 00 EC 11 EC", "ECI-20 K1 (Shift JIS)" },
+        /* 60*/ { UNICODE_MODE, 26, -1, "点", 0, 26, "71 A4 03 E7 82 B9 00 EC 11", "ECI-26 B3 (UTF-8)" },
+        /* 61*/ { DATA_MODE, 0, -1, "点", 0, 0, "40 3E 78 2B 90 EC 11 EC 11", "B3 (UTF-8)" },
+        /* 62*/ { DATA_MODE, 0, -1, "\223\137", 0, 0, "40 29 35 F0 EC 11 EC 11 EC", "B2 (Shift JIS) (not full multibyte)" },
+        /* 63*/ { DATA_MODE, 0, 200, "\223\137", 0, 0, "80 16 CF 80 EC 11 EC 11 EC", "K1 (Shift JIS)" },
+        /* 64*/ { UNICODE_MODE, 0, -1, "¥･点", 0, 0, "40 45 CA 59 35 F0 EC 11 EC", "B4 (Shift JIS) (optimized to byte mode only)" },
+        /* 65*/ { UNICODE_MODE, 3, -1, "¥･点", ZINT_ERROR_INVALID_DATA, -1, "Error 575: Invalid characters in input data", "" },
+        /* 66*/ { UNICODE_MODE, 20, -1, "¥･点", 0, 20, "71 44 04 5C A5 93 5F 00 EC", "ECI-20 B4 (Shift JIS)" },
+        /* 67*/ { UNICODE_MODE, 26, -1, "¥･点", 0, 26, "71 A4 08 C2 A5 EF BD A5 E7 82 B9 00 EC", "ECI-26 B8 (UTF-8)" },
+        /* 68*/ { DATA_MODE, 0, -1, "\134\245\223\137", 0, 0, "40 45 CA 59 35 F0 EC 11 EC", "B8 (Shift JIS)" },
+        /* 69*/ { DATA_MODE, 0, -1, "¥･点", 0, 0, "40 8C 2A 5E FB DA 5E 78 2B 90 EC 11 EC", "B8 (UTF-8)" },
+        /* 70*/ { UNICODE_MODE, 0, -1, "点茗", 0, 0, "80 26 CF EA A8 00 EC 11 EC", "K2 (Shift JIS)" },
+        /* 71*/ { UNICODE_MODE, 0, -1, "点茗テ", 0, 0, "80 36 CF EA A8 34 A0 EC 11", "K3 (Shift JIS)" },
+        /* 72*/ { UNICODE_MODE, 0, -1, "点茗テ点", 0, 0, "80 46 CF EA A8 34 AD 9F 00", "K4 (Shift JIS)" },
+        /* 73*/ { UNICODE_MODE, 0, -1, "点茗テ点茗", 0, 0, "80 56 CF EA A8 34 AD 9F D5 50 00 EC 11", "K5 (Shift JIS)" },
+        /* 74*/ { UNICODE_MODE, 0, -1, "点茗テ点茗テ", 0, 0, "80 66 CF EA A8 34 AD 9F D5 50 69 40 EC", "K6 (Shift JIS)" },
+        /* 75*/ { UNICODE_MODE, 0, -1, "点茗テ点茗テｿ", 0, 0, "80 66 CF EA A8 34 AD 9F D5 50 69 50 06 FC 00 EC", "K6 B1 (Shift JIS)" },
+        /* 76*/ { DATA_MODE, 0, -1, "\223\137\344\252\203\145\223\137\344\252\203\145\277", 0, 0, "40 D9 35 FE 4A A8 36 59 35 FE 4A A8 36 5B F0 EC", "B13 (Shift JIS)" },
+        /* 77*/ { DATA_MODE, 0, 200, "\223\137\344\252\203\145\223\137\344\252\203\145\277", 0, 0, "80 66 CF EA A8 34 AD 9F D5 50 69 50 06 FC 00 EC", "K6 B1 (Shift JIS) (full multibyte)" },
+        /* 78*/ { DATA_MODE, 0, -1, "点茗テ点茗テｿ", 0, 0, "41 5E 78 2B 9E 88 C9 7E 38 38 6E 78 2B 9E 88 C9 7E 38 38 6E FB DB F0 EC 11 EC 11 EC", "B21 (UTF-8)" },
+        /* 79*/ { DATA_MODE, 0, -1, "ÁȁȁȁȁȁȁȂ¢", 0, 0, "41 2C 38 1C 88 1C 88 1C 88 1C 88 1C 88 1C 88 1C 88 2C 2A 20 EC 11", "B18 (UTF-8)" },
+        /* 80*/ { DATA_MODE, 0, 200, "ÁȁȁȁȁȁȁȂ¢", 0, 0, "41 2C 38 1C 88 1C 88 1C 88 1C 88 1C 88 1C 88 1C 88 2C 2A 20 EC 11", "B18 (UTF-8) (full multibyte)" },
+        /* 81*/ { DATA_MODE, 0, -1, "ÁȁȁȁȁȁȁȁȂ¢", 0, 0, "41 4C 38 1C 88 1C 88 1C 88 1C 88 1C 88 1C 88 1C 88 1C 88 2C 2A 20", "B20 (UTF-8)" },
+        /* 82*/ { DATA_MODE, 0, 200, "ÁȁȁȁȁȁȁȁȂ¢", 0, 0, "40 1C 38 09 04 40 22 01 10 08 80 44 02 20 11 00 88 0A 12 00 D1 00", "B1 K9 B1 (UTF-8) (full multibyte)" },
+        /* 83*/ { UNICODE_MODE, 0, -1, "ÁȁȁȁȁȁȁȂ¢", ZINT_WARN_USES_ECI, 26, "Warning 71 A4 12 C3 81 C8 81 C8 81 C8 81 C8 81 C8 81 C8 81 C8 82 C2 A2 00", "B18 (UTF-8)" },
+        /* 84*/ { UNICODE_MODE, 0, 200, "ÁȁȁȁȁȁȁȂ¢", ZINT_WARN_USES_ECI, 26, "Warning 71 A4 12 C3 81 C8 81 C8 81 C8 81 C8 81 C8 81 C8 81 C8 82 C2 A2 00", "B18 (UTF-8)" },
+        /* 85*/ { UNICODE_MODE, 0, -1, "ÁȁȁȁȁȁȁȁȂ¢", ZINT_WARN_USES_ECI, 26, "Warning 71 A4 14 C3 81 C8 81 C8 81 C8 81 C8 81 C8 81 C8 81 C8 81 C8 82 C2 A2 00 EC 11 EC 11", "B20 (UTF-8)" },
+        /* 86*/ { UNICODE_MODE, 0, 200, "ÁȁȁȁȁȁȁȁȂ¢", ZINT_WARN_USES_ECI, 26, "Warning 71 A4 01 C3 80 90 44 02 20 11 00 88 04 40 22 01 10 08 80 A1 20 0D 10 00 EC 11 EC 11", "B1 K9 B1 (UTF-8) (full multibyte)" },
+        /* 87*/ { UNICODE_MODE, 0, -1, "áA", 0, 0, "40 2E 14 10 EC 11 EC 11 EC", "B2 (ISO 8859-1)" },
+        /* 88*/ { UNICODE_MODE, 0, 200, "áA", 0, 0, "80 1C 00 80 EC 11 EC 11 EC", "K1 (ISO 8859-1) (full multibyte)" },
     };
     int data_size = sizeof(data) / sizeof(struct item);
 
@@ -250,6 +264,9 @@ static void test_qr_input(void)
         symbol->symbology = BARCODE_QRCODE;
         symbol->input_mode = data[i].input_mode;
         symbol->eci = data[i].eci;
+        if (data[i].option_3 != -1) {
+            symbol->option_3 = data[i].option_3;
+        }
         symbol->debug = ZINT_DEBUG_TEST; // Needed to get codeword dump in errtxt
 
         int length = strlen(data[i].data);
@@ -258,9 +275,9 @@ static void test_qr_input(void)
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d\n", i, ret, data[i].ret);
 
         #ifdef TEST_QR_INPUT_GENERATE_EXPECTED
-        printf("        /*%3d*/ { %s, %d, \"%s\", %s, %d, \"%s\", \"%s\" },\n",
-                i, testUtilInputModeName(data[i].input_mode), data[i].eci, testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), testUtilErrorName(data[i].ret),
-                ret < 5 ? symbol->eci : -1, symbol->errtxt, data[i].comment);
+        printf("        /*%3d*/ { %s, %d, %d, \"%s\", %s, %d, \"%s\", \"%s\" },\n",
+                i, testUtilInputModeName(data[i].input_mode), data[i].eci, data[i].option_3, testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
+                testUtilErrorName(data[i].ret), ret < 5 ? symbol->eci : -1, symbol->errtxt, data[i].comment);
         #else
         if (ret < 5) {
 
@@ -391,6 +408,7 @@ static void test_qr_optimize(void)
         if (data[i].option_1 != -1) {
             symbol->option_1 = data[i].option_1;
         }
+        symbol->option_3 = ZINT_FULL_MULTIBYTE;
         symbol->debug = ZINT_DEBUG_TEST;
 
         int length = strlen(data[i].data);
@@ -1028,6 +1046,7 @@ static void test_microqr_input(void)
     int ret;
     struct item {
         int input_mode;
+        int option_3;
         unsigned char* data;
         int ret;
         char* expected;
@@ -1045,38 +1064,49 @@ static void test_microqr_input(void)
     // ‾ U+203E overline, not in ISO/Win, in Shift JIS single-byte 0x7E (\176) (tilde), UTF-8 E280BE
     // 点 U+70B9 kanji, in Shift JIS 0x935F (\223\137), UTF-8 E782B9
     // 茗 U+8317 kanji, in Shift JIS 0xE4AA (\344\252), UTF-8 E88C97
+    // Á U+00C1, UTF-8 C381; ȁ U+0201, UTF-8 C881; Ȃ U+0202, UTF-8 C882; ¢ U+00A2, UTF-8 C2A2; á U+00E1, UTF-8 C3A1
     struct item data[] = {
-        /*  0*/ { UNICODE_MODE, "é", 0, "87 A4 00 EC 11 EC 11 EC 00", "B1 (ISO 8859-1)" },
-        /*  1*/ { DATA_MODE, "é", 0, "8B 0E A4 00 EC 11 EC 11 00", "B2 (UTF-8)" },
-        /*  2*/ { UNICODE_MODE, "β", 0, "C8 80 00 00 EC 11 EC 11 00", "K1 (Shift JIS)" },
-        /*  3*/ { UNICODE_MODE, "ก", ZINT_ERROR_INVALID_DATA, "Error 800: Invalid character in input data", "ก not in Shift JIS" },
-        /*  4*/ { UNICODE_MODE, "Ж", 0, "C8 91 C0 00 EC 11 EC 11 00", "K1 (Shift JIS)" },
-        /*  5*/ { UNICODE_MODE, "ກ", ZINT_ERROR_INVALID_DATA, "Error 800: Invalid character in input data", "ກ not in Shift JIS" },
-        /*  6*/ { UNICODE_MODE, "\\", 0, "85 70 00 EC 11 EC 11 EC 00", "B1 (ASCII)" },
-        /*  7*/ { UNICODE_MODE, "¥", 0, "86 94 00 EC 11 EC 11 EC 00", "B1 (ISO 8859-1) (same bytes as ･ Shift JIS below, so ambiguous)" },
-        /*  8*/ { UNICODE_MODE, "･", 0, "86 94 00 EC 11 EC 11 EC 00", "B1 (Shift JIS) single-byte codepoint A5 (same bytes as ¥ ISO 8859-1 above, so ambiguous)" },
-        /*  9*/ { UNICODE_MODE, "¿", 0, "86 FC 00 EC 11 EC 11 EC 00", "B1 (ISO 8859-1) (same bytes as ｿ Shift JIS below, so ambiguous)" },
-        /* 10*/ { UNICODE_MODE, "ｿ", 0, "86 FC 00 EC 11 EC 11 EC 00", "B1 (Shift JIS) (same bytes as ¿ ISO 8859-1 above, so ambiguous)" },
-        /* 11*/ { UNICODE_MODE, "~", 0, "85 F8 00 EC 11 EC 11 EC 00", "B1 (ASCII) (same bytes as ‾ Shift JIS below, so ambiguous)" },
-        /* 12*/ { UNICODE_MODE, "‾", 0, "85 F8 00 EC 11 EC 11 EC 00", "B1 (Shift JIS) (same bytes as ~ ASCII above, so ambiguous)" },
-        /* 13*/ { UNICODE_MODE, "点", 0, "CB 67 C0 00 EC 11 EC 11 00", "K1 (Shift JIS)" },
-        /* 14*/ { DATA_MODE, "\223\137", 0, "CB 67 C0 00 EC 11 EC 11 00", "K1 (Shift JIS)" },
-        /* 15*/ { DATA_MODE, "点", 0, "8F 9E 0A E4 00 EC 11 EC 00", "B3 (UTF-8)" },
-        /* 16*/ { UNICODE_MODE, "茗", 0, "CE AA 80 00 EC 11 EC 11 00", "K1 (Shift JIS)" },
-        /* 17*/ { DATA_MODE, "\344\252", 0, "CE AA 80 00 EC 11 EC 11 00", "K1 (Shift JIS)" },
-        /* 18*/ { DATA_MODE, "茗", 0, "8F A2 32 5C 00 EC 11 EC 00", "B3 (UTF-8)" },
-        /* 19*/ { UNICODE_MODE, "¥点", 0, "8D 72 4D 7C 00 EC 11 EC 00", "B3 (Shift JIS) (optimized from B1 K1)" },
-        /* 20*/ { DATA_MODE, "\134\223\137", 0, "8D 72 4D 7C 00 EC 11 EC 00", "B3 (Shift JIS) (optimized from B1 K1)" },
-        /* 21*/ { DATA_MODE, "¥点", 0, "97 0A 97 9E 0A E4 00 EC 00", "B5 (UTF-8)" },
-        /* 22*/ { UNICODE_MODE, "点茗", 0, "D3 67 F5 54 00 EC 11 EC 00", "K2 (Shift JIS)" },
-        /* 23*/ { DATA_MODE, "\223\137\344\252", 0, "D3 67 F5 54 00 EC 11 EC 00", "K2 (Shift JIS)" },
-        /* 24*/ { DATA_MODE, "点茗", 0, "9B 9E 0A E7 A2 32 5C 00 00", "B6 (UTF-8)" },
-        /* 25*/ { UNICODE_MODE, "点茗･", 0, "D3 67 F5 55 0D 28 00 EC 00", "K2 B1 (Shift JIS)" },
-        /* 26*/ { DATA_MODE, "\223\137\344\252\245", 0, "D3 67 F5 55 0D 28 00 EC 00", "K2 B1 (Shift JIS)" },
-        /* 27*/ { DATA_MODE, "点茗･", 0, "A7 9E 0A E7 A2 32 5F BE F6 94 00", "B9 (UTF-8)" },
-        /* 28*/ { UNICODE_MODE, "¥点茗･", 0, "99 72 4D 7F 92 AA 94 00 00", "B6 (Shift JIS) (optimized from B1 K2 B1)" },
-        /* 29*/ { DATA_MODE, "\134\223\137\344\252\245", 0, "99 72 4D 7F 92 AA 94 00 00", "B6 (Shift JIS) (optimized from B1 K2 B1)" },
-        /* 30*/ { DATA_MODE, "¥点茗･", 0, "4B C2 A5 E7 82 B9 E8 8C 97 EF BD A5 00 00", "B11 (UTF-8)" },
+        /*  0*/ { UNICODE_MODE, -1, "é", 0, "87 A4 00 EC 11 EC 11 EC 00", "B1 (ISO 8859-1)" },
+        /*  1*/ { DATA_MODE, -1, "é", 0, "8B 0E A4 00 EC 11 EC 11 00", "B2 (UTF-8)" },
+        /*  2*/ { UNICODE_MODE, -1, "β", 0, "C8 80 00 00 EC 11 EC 11 00", "K1 (Shift JIS)" },
+        /*  3*/ { UNICODE_MODE, -1, "ก", ZINT_ERROR_INVALID_DATA, "Error 800: Invalid character in input data", "ก not in Shift JIS" },
+        /*  4*/ { UNICODE_MODE, -1, "Ж", 0, "C8 91 C0 00 EC 11 EC 11 00", "K1 (Shift JIS)" },
+        /*  5*/ { UNICODE_MODE, -1, "ກ", ZINT_ERROR_INVALID_DATA, "Error 800: Invalid character in input data", "ກ not in Shift JIS" },
+        /*  6*/ { UNICODE_MODE, -1, "\\", 0, "85 70 00 EC 11 EC 11 EC 00", "B1 (ASCII)" },
+        /*  7*/ { UNICODE_MODE, -1, "¥", 0, "86 94 00 EC 11 EC 11 EC 00", "B1 (ISO 8859-1) (same bytes as ･ Shift JIS below, so ambiguous)" },
+        /*  8*/ { UNICODE_MODE, -1, "･", 0, "86 94 00 EC 11 EC 11 EC 00", "B1 (Shift JIS) single-byte codepoint A5 (same bytes as ¥ ISO 8859-1 above, so ambiguous)" },
+        /*  9*/ { UNICODE_MODE, -1, "¿", 0, "86 FC 00 EC 11 EC 11 EC 00", "B1 (ISO 8859-1) (same bytes as ｿ Shift JIS below, so ambiguous)" },
+        /* 10*/ { UNICODE_MODE, -1, "ｿ", 0, "86 FC 00 EC 11 EC 11 EC 00", "B1 (Shift JIS) (same bytes as ¿ ISO 8859-1 above, so ambiguous)" },
+        /* 11*/ { UNICODE_MODE, -1, "~", 0, "85 F8 00 EC 11 EC 11 EC 00", "B1 (ASCII) (same bytes as ‾ Shift JIS below, so ambiguous)" },
+        /* 12*/ { UNICODE_MODE, -1, "‾", 0, "85 F8 00 EC 11 EC 11 EC 00", "B1 (Shift JIS) (same bytes as ~ ASCII above, so ambiguous)" },
+        /* 13*/ { UNICODE_MODE, -1, "点", 0, "CB 67 C0 00 EC 11 EC 11 00", "K1 (Shift JIS)" },
+        /* 14*/ { DATA_MODE, -1, "\223\137", 0, "8A 4D 7C 00 EC 11 EC 11 00", "B2 (Shift JIS)" },
+        /* 15*/ { DATA_MODE, 200, "\223\137", 0, "CB 67 C0 00 EC 11 EC 11 00", "K1 (Shift JIS) (full multibyte)" },
+        /* 16*/ { DATA_MODE, -1, "点", 0, "8F 9E 0A E4 00 EC 11 EC 00", "B3 (UTF-8)" },
+        /* 17*/ { UNICODE_MODE, -1, "茗", 0, "CE AA 80 00 EC 11 EC 11 00", "K1 (Shift JIS)" },
+        /* 18*/ { DATA_MODE, -1, "\344\252", 0, "8B 92 A8 00 EC 11 EC 11 00", "B2 (Shift JIS)" },
+        /* 19*/ { DATA_MODE, 200, "\344\252", 0, "CE AA 80 00 EC 11 EC 11 00", "K1 (Shift JIS) (full multibyte)" },
+        /* 20*/ { DATA_MODE, -1, "茗", 0, "8F A2 32 5C 00 EC 11 EC 00", "B3 (UTF-8)" },
+        /* 21*/ { UNICODE_MODE, -1, "¥点", 0, "8D 72 4D 7C 00 EC 11 EC 00", "B3 (Shift JIS) (optimized from B1 K1)" },
+        /* 22*/ { DATA_MODE, -1, "\134\223\137", 0, "8D 72 4D 7C 00 EC 11 EC 00", "B3 (Shift JIS) (optimized from B1 K1)" },
+        /* 23*/ { DATA_MODE, -1, "¥点", 0, "97 0A 97 9E 0A E4 00 EC 00", "B5 (UTF-8)" },
+        /* 24*/ { UNICODE_MODE, -1, "点茗", 0, "D3 67 F5 54 00 EC 11 EC 00", "K2 (Shift JIS)" },
+        /* 25*/ { DATA_MODE, -1, "\223\137\344\252", 0, "92 4D 7F 92 A8 00 EC 11 00", "B4 (Shift JIS)" },
+        /* 26*/ { DATA_MODE, 200, "\223\137\344\252", 0, "D3 67 F5 54 00 EC 11 EC 00", "K2 (Shift JIS) (full multibyte)" },
+        /* 27*/ { DATA_MODE, -1, "点茗", 0, "9B 9E 0A E7 A2 32 5C 00 00", "B6 (UTF-8)" },
+        /* 28*/ { DATA_MODE, 200, "点茗", 0, "9B 9E 0A E7 A2 32 5C 00 00", "B6 (UTF-8)" },
+        /* 29*/ { UNICODE_MODE, -1, "点茗･", 0, "D3 67 F5 55 0D 28 00 EC 00", "K2 B1 (Shift JIS)" },
+        /* 30*/ { DATA_MODE, -1, "\223\137\344\252\245", 0, "96 4D 7F 92 AA 94 00 EC 00", "B5 (Shift JIS)" },
+        /* 31*/ { DATA_MODE, 200, "\223\137\344\252\245", 0, "D3 67 F5 55 0D 28 00 EC 00", "K2 B1 (Shift JIS) (full multibyte)" },
+        /* 32*/ { DATA_MODE, -1, "点茗･", 0, "A7 9E 0A E7 A2 32 5F BE F6 94 00", "B9 (UTF-8)" },
+        /* 33*/ { UNICODE_MODE, -1, "¥点茗･", 0, "99 72 4D 7F 92 AA 94 00 00", "B6 (Shift JIS) (optimized from B1 K2 B1)" },
+        /* 34*/ { DATA_MODE, -1, "\134\223\137\344\252\245", 0, "99 72 4D 7F 92 AA 94 00 00", "B6 (Shift JIS) (optimized from B1 K2 B1)" },
+        /* 35*/ { DATA_MODE, -1, "¥点茗･", 0, "4B C2 A5 E7 82 B9 E8 8C 97 EF BD A5 00 00", "B11 (UTF-8)" },
+        /* 36*/ { DATA_MODE, -1, "ÁȁȁȁȂ¢", 0, "4C C3 81 C8 81 C8 81 C8 81 C8 82 C2 A2 00", "B12 (UTF-8)" },
+        /* 37*/ { DATA_MODE, -1, "ÁȁȁȁȁȂ¢", 0, "4E C3 81 C8 81 C8 81 C8 81 C8 81 C8 82 C2 A2 00", "B14 (UTF-8)" },
+        /* 38*/ { DATA_MODE, 200, "ÁȁȁȁȁȂ¢", 0, "41 C3 6C 08 80 44 02 20 11 00 88 0A 12 0D 10 00", "B1 K6 B1 (UTF-8) (full multibyte)" },
+        /* 39*/ { UNICODE_MODE, -1, "áA", 0, "8B 85 04 00 EC 11 EC 11 00", "B2 (ISO 8859-1)" },
+        /* 40*/ { UNICODE_MODE, 200, "áA", 0, "CE 00 40 00 EC 11 EC 11 00", "K1 (ISO 8859-1) (full multibyte)" },
     };
     int data_size = sizeof(data) / sizeof(struct item);
 
@@ -1089,6 +1119,9 @@ static void test_microqr_input(void)
 
         symbol->symbology = BARCODE_MICROQR;
         symbol->input_mode = data[i].input_mode;
+        if (data[i].option_3 != -1) {
+            symbol->option_3 = data[i].option_3;
+        }
         symbol->debug = ZINT_DEBUG_TEST; // Needed to get codeword dump in errtxt
 
         int length = strlen(data[i].data);
@@ -1097,9 +1130,9 @@ static void test_microqr_input(void)
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d\n", i, ret, data[i].ret);
 
         #ifdef TEST_MICROQR_INPUT_GENERATE_EXPECTED
-        printf("        /*%3d*/ { %s, \"%s\", %s, \"%s\", \"%s\" },\n",
-                i, testUtilInputModeName(data[i].input_mode), testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), testUtilErrorName(data[i].ret),
-                symbol->errtxt, data[i].comment);
+        printf("        /*%3d*/ { %s, %d, \"%s\", %s, \"%s\", \"%s\" },\n",
+                i, testUtilInputModeName(data[i].input_mode), data[i].option_3, testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
+                testUtilErrorName(data[i].ret), symbol->errtxt, data[i].comment);
         #else
         if (ret < 5) {
             assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
@@ -1232,6 +1265,7 @@ static void test_microqr_optimize(void)
         if (data[i].option_2 != -1) {
             symbol->option_2 = data[i].option_2;
         }
+        symbol->option_3 = ZINT_FULL_MULTIBYTE;
         symbol->debug = ZINT_DEBUG_TEST;
 
         int length = strlen(data[i].data);
@@ -1795,6 +1829,7 @@ static void test_rmqr_input(void)
     int ret;
     struct item {
         int input_mode;
+        int option_3;
         unsigned char* data;
         int ret;
         char* expected;
@@ -1806,21 +1841,21 @@ static void test_rmqr_input(void)
     // Ж U+0416 in ISO 8859-5 Cyrillic (but not other ISO 8859), Win 1251, in Shift JIS 0x8447, UTF-8 D096
     // ກ U+0E81 Lao not in any ISO 8859 (or Win page) or Shift JIS, UTF-8 E0BA81
     // ¥ U+00A5 in ISO 8859-1 0xA5 (\245), in Shift JIS single-byte 0x5C (\134) (backslash); 0xA5 same codepoint as single-byte half-width katakana ･ (U+FF65) in Shift JIS (below), UTF-8 C2A5
-    // ･ U+FF65 half-width katakana, not in ISO/Win, in Shift JIS single-byte 0xA5 (\245), UTF-8 EFBDA5
-    // ¿ U+00BF in ISO 8859-1 0xBF (\277), not in Shift JIS; 0xBF same codepoint as single-byte half-width katakana ｿ (U+FF7F) in Shift JIS (below), UTF-8 C2BF
-    // ｿ U+FF7F half-width katakana, not in ISO/Win, in Shift JIS single-byte 0xBF (\277), UTF-8 EFBDBF
-    // ‾ U+203E overline, not in ISO/Win, in Shift JIS single-byte 0x7E (\176) (tilde), UTF-8 E280BE
     // 点 U+70B9 kanji, in Shift JIS 0x935F (\223\137), UTF-8 E782B9
-    // 茗 U+8317 kanji, in Shift JIS 0xE4AA (\344\252), UTF-8 E88C97
-    // テ U+30C6 katakana, in Shift JIS 0x8365 (\203\145), UTF-8 E38386
+    // Á U+00C1, UTF-8 C381; ȁ U+0201, UTF-8 C881; Ȃ U+0202, UTF-8 C882; ¢ U+00A2, UTF-8 C2A2
     struct item data[] = {
-        /*  0*/ { UNICODE_MODE, "é", 0, "67 A4 00 EC 11", "B1 (ISO 8859-1)" },
-        /*  1*/ { DATA_MODE, "é", 0, "6B 0E A4 00 EC", "B2 (UTF-8)" },
-        /*  2*/ { DATA_MODE, "\351", 0, "67 A4 00 EC 11", "B1 (ISO 8859-1)" },
-        /*  3*/ { UNICODE_MODE, "β", 0, "88 80 00 EC 11", "K1 (Shift JIS)" },
-        /*  4*/ { UNICODE_MODE, "ก", ZINT_ERROR_INVALID_DATA, "Error 800: Invalid character in input data", "ก not in ISO 8859-1 or Shift JIS" },
-        /*  5*/ { UNICODE_MODE, "Ж", 0, "88 91 C0 EC 11", "K1 (Shift JIS)" },
-        /*  6*/ { UNICODE_MODE, "¥･点", 0, "71 72 96 4D 7C", "B2 K1 (Shift JIS) (optimized to byte mode only)" },
+        /*  0*/ { UNICODE_MODE, -1, "é", 0, "67 A4 00 EC 11", "B1 (ISO 8859-1)" },
+        /*  1*/ { DATA_MODE, -1, "é", 0, "6B 0E A4 00 EC", "B2 (UTF-8)" },
+        /*  2*/ { DATA_MODE, -1, "\351", 0, "67 A4 00 EC 11", "B1 (ISO 8859-1)" },
+        /*  3*/ { UNICODE_MODE, -1, "β", 0, "88 80 00 EC 11", "K1 (Shift JIS)" },
+        /*  4*/ { UNICODE_MODE, -1, "ก", ZINT_ERROR_INVALID_DATA, "Error 800: Invalid character in input data", "ก not in ISO 8859-1 or Shift JIS" },
+        /*  5*/ { UNICODE_MODE, -1, "Ж", 0, "88 91 C0 EC 11", "K1 (Shift JIS)" },
+        /*  6*/ { UNICODE_MODE, -1, "¥･点", 0, "71 72 96 4D 7C", "B2 K1 (Shift JIS) (optimized to byte mode only)" },
+        /*  7*/ { DATA_MODE, -1, "ÁȁȁȁȂ¢", 0, "6C C3 81 C8 81 C8 81 C8 81 C8 82 C2 A2 00 EC 11 EC 11 EC", "B12 (UTF-8)" },
+        /*  8*/ { DATA_MODE, -1, "ÁȁȁȁȁȂ¢", 0, "6E C3 81 C8 81 C8 81 C8 81 C8 81 C8 82 C2 A2 00 EC 11 EC", "B14 (UTF-8)" },
+        /*  9*/ { DATA_MODE, 200, "ÁȁȁȁȁȂ¢", 0, "61 C3 8C 08 80 44 02 20 11 00 88 0A 13 0D 10 EC 11 EC 11", "B1 K6 B1 (UTF-8) (full multibyte)" },
+        /* 10*/ { UNICODE_MODE, -1, "áA", 0, "6B 85 04 00 EC", "B2 (ISO 8859-1)" },
+        /* 11*/ { UNICODE_MODE, 200, "áA", 0, "8E 00 40 EC 11", "K1 (ISO 8859-1) (full multibyte)" },
     };
     int data_size = sizeof(data) / sizeof(struct item);
 
@@ -1833,6 +1868,9 @@ static void test_rmqr_input(void)
 
         symbol->symbology = BARCODE_RMQR;
         symbol->input_mode = data[i].input_mode;
+        if (data[i].option_3 != -1) {
+            symbol->option_3 = data[i].option_3;
+        }
         symbol->debug = ZINT_DEBUG_TEST; // Needed to get codeword dump in errtxt
 
         int length = strlen(data[i].data);
@@ -1841,9 +1879,9 @@ static void test_rmqr_input(void)
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d\n", i, ret, data[i].ret);
 
         #ifdef TEST_RMQR_INPUT_GENERATE_EXPECTED
-        printf("        /*%3d*/ { %s, \"%s\", %s, \"%s\", \"%s\" },\n",
-                i, testUtilInputModeName(data[i].input_mode), testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), testUtilErrorName(data[i].ret),
-                symbol->errtxt, data[i].comment);
+        printf("        /*%3d*/ { %s, %d, \"%s\", %s, \"%s\", \"%s\" },\n",
+                i, testUtilInputModeName(data[i].input_mode), data[i].option_3, testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
+                testUtilErrorName(data[i].ret), symbol->errtxt, data[i].comment);
         #else
         if (ret < 5) {
             assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
@@ -1965,6 +2003,7 @@ static void test_rmqr_optimize(void)
         if (data[i].option_1 != -1) {
             symbol->option_1 = data[i].option_1;
         }
+        symbol->option_3 = ZINT_FULL_MULTIBYTE;
         symbol->debug = ZINT_DEBUG_TEST;
 
         int length = strlen(data[i].data);

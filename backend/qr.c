@@ -1526,6 +1526,7 @@ INTERNAL int qr_code(struct zint_symbol *symbol, const unsigned char source[], s
     int i, j, est_binlen;
     int ecc_level, autosize, version, max_cw, target_codewords, blocks, size;
     int bitmask, gs1;
+    int full_multibyte;
     int canShrink;
 
 #ifndef _MSC_VER
@@ -1540,14 +1541,15 @@ INTERNAL int qr_code(struct zint_symbol *symbol, const unsigned char source[], s
 #endif
 
     gs1 = ((symbol->input_mode & 0x07) == GS1_MODE);
+    full_multibyte = symbol->option_3 == ZINT_FULL_MULTIBYTE; /* If set use Kanji mode in DATA_MODE or for single-byte Latin */
 
     if ((symbol->input_mode & 0x07) == DATA_MODE) {
-        sjis_cpy(source, &length, jisdata);
+        sjis_cpy(source, &length, jisdata, full_multibyte);
     } else {
         int done = 0;
         if (symbol->eci != 20) { /* Unless ECI 20 (Shift JIS) */
             /* Try single byte (Latin) conversion first */
-            int error_number = sjis_utf8tosb(symbol->eci && symbol->eci <= 899 ? symbol->eci : 3, source, &length, jisdata);
+            int error_number = sjis_utf8tosb(symbol->eci && symbol->eci <= 899 ? symbol->eci : 3, source, &length, jisdata, full_multibyte);
             if (error_number == 0) {
                 done = 1;
             } else if (symbol->eci && symbol->eci <= 899) {
@@ -2344,6 +2346,7 @@ static int micro_apply_bitmask(unsigned char *grid,const int size) {
 INTERNAL int microqr(struct zint_symbol *symbol, const unsigned char source[], size_t length) {
     size_t i, size, j;
     char full_stream[200];
+    int full_multibyte;
 
     unsigned int jisdata[40];
     char mode[40];
@@ -2381,11 +2384,13 @@ INTERNAL int microqr(struct zint_symbol *symbol, const unsigned char source[], s
         ecc_level = symbol->option_1;
     }
 
+    full_multibyte = symbol->option_3 == ZINT_FULL_MULTIBYTE; /* If set use Kanji mode in DATA_MODE or for single-byte Latin */
+
     if ((symbol->input_mode & 0x07) == DATA_MODE) {
-        sjis_cpy(source, &length, jisdata);
+        sjis_cpy(source, &length, jisdata, full_multibyte);
     } else {
         /* Try ISO 8859-1 conversion first */
-        int error_number = sjis_utf8tosb(3, source, &length, jisdata);
+        int error_number = sjis_utf8tosb(3, source, &length, jisdata, full_multibyte);
         if (error_number != 0) {
             /* Try Shift-JIS */
             error_number = sjis_utf8tomb(symbol, source, &length, jisdata);
@@ -2866,6 +2871,7 @@ INTERNAL int rmqr(struct zint_symbol *symbol, const unsigned char source[], size
     int i, j, est_binlen;
     int ecc_level, autosize, version, max_cw, target_codewords, blocks, h_size, v_size;
     int gs1;
+    int full_multibyte;
     int footprint, best_footprint, format_data;
     unsigned int left_format_info, right_format_info;
 
@@ -2881,12 +2887,13 @@ INTERNAL int rmqr(struct zint_symbol *symbol, const unsigned char source[], size
 #endif
 
     gs1 = ((symbol->input_mode & 0x07) == GS1_MODE);
+    full_multibyte = symbol->option_3 == ZINT_FULL_MULTIBYTE; /* If set use Kanji mode in DATA_MODE or for single-byte Latin */
 
     if ((symbol->input_mode & 0x07) == DATA_MODE) {
-        sjis_cpy(source, &length, jisdata);
+        sjis_cpy(source, &length, jisdata, full_multibyte);
     } else {
         /* Try ISO 8859-1 conversion first */
-        int error_number = sjis_utf8tosb(3, source, &length, jisdata);
+        int error_number = sjis_utf8tosb(3, source, &length, jisdata, full_multibyte);
         if (error_number != 0) {
             /* Try Shift-JIS */
             error_number = sjis_utf8tomb(symbol, source, &length, jisdata);

@@ -157,7 +157,7 @@ static void test_gb18030_utf8tomb(void)
         int length;
         int ret;
         size_t ret_length;
-        unsigned int expected_gbdata[20];
+        unsigned int expected_gbdata[30];
         char* comment;
     };
     // é U+00E9 in ISO 8859-1 plus other ISO 8859 (but not in ISO 8859-7 or ISO 8859-11), Win 1250 plus other Win, in GB 18030 0xA8A6, UTF-8 C3A9
@@ -184,7 +184,7 @@ static void test_gb18030_utf8tomb(void)
     int data_size = sizeof(data) / sizeof(struct item);
 
     struct zint_symbol symbol;
-    unsigned int gbdata[20];
+    unsigned int gbdata[30];
 
     for (int i = 0; i < data_size; i++) {
 
@@ -211,11 +211,12 @@ static void test_gb18030_utf8tosb(void)
     int ret;
     struct item {
         int eci;
+        int full_multibyte;
         unsigned char* data;
         int length;
         int ret;
         size_t ret_length;
-        unsigned int expected_gbdata[20];
+        unsigned int expected_gbdata[30];
         char* comment;
     };
     // é U+00E9 in ISO 8859-1 0xE9, Win 1250 plus other Win, in HANXIN Chinese mode first byte range 0x81..FE
@@ -226,31 +227,44 @@ static void test_gb18030_utf8tosb(void)
     // 9 U+0039 in ASCII 0x39, outside first byte range, outside double-byte second byte range and quad-byte third byte range, in quad-byte second/fourth byte ranges
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /*  0*/ { 3, "é", -1, 0, 1, { 0xE9 }, "First byte in range but only one byte" },
-        /*  1*/ { 3, "β", -1, ZINT_ERROR_INVALID_DATA, -1, {}, "Not in ECI 3 (ISO 8859-1)" },
-        /*  2*/ { 9, "β", -1, 0, 1, { 0xE2 }, "In ECI 9 (ISO 8859-7)" },
-        /*  3*/ { 3, "¥", -1, 0, 1, { 0xA5 }, "First byte in range but only one byte" },
-        /*  4*/ { 3, "¥é", -1, 0, 1, { 0xA5E9 }, "In double-byte range" },
-        /*  5*/ { 3, "¥ÿ", -1, 0, 2, { 0xA5, 0xFF }, "First byte in range but not second" },
-        /*  6*/ { 3, "¥9é9", -1, 0, 2, { 0xA539, 0xE939 }, "In quad-byte range" },
-        /*  7*/ { 3, "¥9", -1, 0, 2, { 0xA5, 0x39 }, "In quad-byte first/second range but only 2 bytes, not in double-byte range" },
-        /*  8*/ { 3, "¥9é", -1, 0, 3, { 0xA5, 0x39, 0xE9 }, "In quad-byte first/second/third range but only 3 bytes, no bytes in double-byte range" },
-        /*  9*/ { 3, "¥9é@", -1, 0, 3, { 0xA5, 0x39, 0xE940 }, "In quad-byte first/second/third range but not fourth, second 2 bytes in double-byte range" },
-        /* 10*/ { 3, "¥@é9", -1, 0, 3, { 0xA540, 0xE9, 0x39 }, "In quad-byte first/third/fourth range but not second, first 2 bytes in double-byte range" },
-        /* 11*/ { 3, "¥9@9", -1, 0, 4, { 0xA5, 0x39, 0x40, 0x39 }, "In quad-byte first/second/fourth range but not third, no bytes in double-byte range" },
-        /* 12*/ { 3, "é9éé¥9é@¥9é9¥9é0é@@¥¥é0é1", -1, 0, 15, { 0xE9, 0x39, 0xE9E9, 0xA5, 0x39, 0xE940, 0xA539, 0xE939, 0xA539, 0xE930, 0xE940, 0x40, 0xA5A5, 0xE930, 0xE931 }, "" },
+        /*  1*/ { 3, 0, "é", -1, 0, 1, { 0xE9 }, "Not full multibyte" },
+        /*  2*/ { 3, 1, "é", -1, 0, 1, { 0xE9 }, "First byte in range but only one byte" },
+        /*  3*/ { 3, 0, "β", -1, ZINT_ERROR_INVALID_DATA, -1, {}, "Not full multibyte" },
+        /*  4*/ { 3, 1, "β", -1, ZINT_ERROR_INVALID_DATA, -1, {}, "Not in ECI 3 (ISO 8859-1)" },
+        /*  5*/ { 9, 0, "β", -1, 0, 1, { 0xE2 }, "Not full multibyte" },
+        /*  6*/ { 9, 1, "β", -1, 0, 1, { 0xE2 }, "In ECI 9 (ISO 8859-7)" },
+        /*  7*/ { 3, 0, "¥", -1, 0, 1, { 0xA5 }, "Not full multibyte" },
+        /*  8*/ { 3, 1, "¥", -1, 0, 1, { 0xA5 }, "First byte in range but only one byte" },
+        /*  9*/ { 3, 0, "¥é", -1, 0, 2, { 0xA5, 0xE9 }, "Not full multibyte" },
+        /* 10*/ { 3, 1, "¥é", -1, 0, 1, { 0xA5E9 }, "In double-byte range" },
+        /* 11*/ { 3, 0, "¥ÿ", -1, 0, 2, { 0xA5, 0xFF }, "Not full multibyte" },
+        /* 12*/ { 3, 1, "¥ÿ", -1, 0, 2, { 0xA5, 0xFF }, "First byte in range but not second" },
+        /* 13*/ { 3, 0, "¥9é9", -1, 0, 4, { 0xA5, 0x39, 0xE9, 0x39 }, "Not full multibyte" },
+        /* 14*/ { 3, 1, "¥9é9", -1, 0, 2, { 0xA539, 0xE939 }, "In quad-byte range" },
+        /* 15*/ { 3, 0, "¥9", -1, 0, 2, { 0xA5, 0x39 }, "Not full multibyte" },
+        /* 16*/ { 3, 1, "¥9", -1, 0, 2, { 0xA5, 0x39 }, "In quad-byte first/second range but only 2 bytes, not in double-byte range" },
+        /* 17*/ { 3, 0, "¥9é", -1, 0, 3, { 0xA5, 0x39, 0xE9 }, "Not full multibyte" },
+        /* 18*/ { 3, 1, "¥9é", -1, 0, 3, { 0xA5, 0x39, 0xE9 }, "In quad-byte first/second/third range but only 3 bytes, no bytes in double-byte range" },
+        /* 19*/ { 3, 0, "¥9é@", -1, 0, 4, { 0xA5, 0x39, 0xE9, 0x40 }, "Not full multibyte" },
+        /* 20*/ { 3, 1, "¥9é@", -1, 0, 3, { 0xA5, 0x39, 0xE940 }, "In quad-byte first/second/third range but not fourth, second 2 bytes in double-byte range" },
+        /* 21*/ { 3, 0, "¥@é9", -1, 0, 4, { 0xA5, 0x40, 0xE9, 0x39 }, "Not full multibyte" },
+        /* 22*/ { 3, 1, "¥@é9", -1, 0, 3, { 0xA540, 0xE9, 0x39 }, "In quad-byte first/third/fourth range but not second, first 2 bytes in double-byte range" },
+        /* 23*/ { 3, 0, "¥9@9", -1, 0, 4, { 0xA5, 0x39, 0x40, 0x39 }, "Not full multibyte" },
+        /* 24*/ { 3, 1, "¥9@9", -1, 0, 4, { 0xA5, 0x39, 0x40, 0x39 }, "In quad-byte first/second/fourth range but not third, no bytes in double-byte range" },
+        /* 25*/ { 3, 0, "é9éé¥9é@¥9é9¥9é0é@@¥¥é0é1", -1, 0, 25, { 0xE9, 0x39, 0xE9, 0xE9, 0xA5, 0x39, 0xE9, 0x40, 0xA5, 0x39, 0xE9, 0x39, 0xA5, 0x39, 0xE9, 0x30, 0xE9, 0x40, 0x40, 0xA5, 0xA5, 0xE9, 0x30, 0xE9, 0x31 }, "" },
+        /* 26*/ { 3, 1, "é9éé¥9é@¥9é9¥9é0é@@¥¥é0é1", -1, 0, 15, { 0xE9, 0x39, 0xE9E9, 0xA5, 0x39, 0xE940, 0xA539, 0xE939, 0xA539, 0xE930, 0xE940, 0x40, 0xA5A5, 0xE930, 0xE931 }, "" },
     };
 
     int data_size = sizeof(data) / sizeof(struct item);
 
-    unsigned int gbdata[20];
+    unsigned int gbdata[30];
 
     for (int i = 0; i < data_size; i++) {
 
         int length = data[i].length == -1 ? strlen(data[i].data) : data[i].length;
         size_t ret_length = length;
 
-        ret = gb18030_utf8tosb(data[i].eci, data[i].data, &ret_length, gbdata);
+        ret = gb18030_utf8tosb(data[i].eci, data[i].data, &ret_length, gbdata, data[i].full_multibyte);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d\n", i, ret, data[i].ret);
         if (ret == 0) {
             assert_equal(ret_length, data[i].ret_length, "i:%d ret_length %zu != %zu\n", i, ret_length, data[i].ret_length);
@@ -269,32 +283,38 @@ static void test_gb18030_cpy(void)
 
     int ret;
     struct item {
+        int full_multibyte;
         unsigned char* data;
         int length;
         int ret;
         size_t ret_length;
-        unsigned int expected_gbdata[20];
+        unsigned int expected_gbdata[30];
         char* comment;
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /*  0*/ { "\351", -1, 0, 1, { 0xE9 }, "In HANXIN Chinese mode first-byte range but only one byte" },
-        /*  1*/ { "\351\241", -1, 0, 1, { 0xE9A1 }, "In HANXIN Chinese range" },
-        /*  2*/ { "\241", -1, 0, 1, { 0xA1 }, "In first-byte range but only one byte" },
-        /*  3*/ { "\241\241", -1, 0, 1, { 0xA1A1 }, "In range" },
-        /*  4*/ { "\241\240\241\376\367\376\367\377\2012\2013", -1, 0, 7, { 0xA1A0, 0xA1FE, 0xF7FE, 0xF7, 0xFF, 0x8132, 0x8133 }, "" },
+        /*  0*/ { 0, "\351", -1, 0, 1, { 0xE9 }, "Not full multibyte" },
+        /*  1*/ { 1, "\351", -1, 0, 1, { 0xE9 }, "In HANXIN Chinese mode first-byte range but only one byte" },
+        /*  2*/ { 0, "\351\241", -1, 0, 2, { 0xE9, 0xA1 }, "Not full multibyte" },
+        /*  3*/ { 1, "\351\241", -1, 0, 1, { 0xE9A1 }, "In HANXIN Chinese range" },
+        /*  4*/ { 0, "\241", -1, 0, 1, { 0xA1 }, "Not full multibyte" },
+        /*  5*/ { 1, "\241", -1, 0, 1, { 0xA1 }, "In first-byte range but only one byte" },
+        /*  6*/ { 0, "\241\241", -1, 0, 2, { 0xA1, 0xA1 }, "Not full multibyte" },
+        /*  7*/ { 1, "\241\241", -1, 0, 1, { 0xA1A1 }, "In range" },
+        /*  8*/ { 0, "\241\240\241\376\367\376\367\377\2012\2013", -1, 0, 12, { 0xA1, 0xA0, 0xA1, 0xFE, 0xF7, 0xFE, 0xF7, 0xFF, 0x81, 0x32, 0x81, 0x33 }, "" },
+        /*  9*/ { 1, "\241\240\241\376\367\376\367\377\2012\2013", -1, 0, 7, { 0xA1A0, 0xA1FE, 0xF7FE, 0xF7, 0xFF, 0x8132, 0x8133 }, "" },
     };
 
     int data_size = sizeof(data) / sizeof(struct item);
 
-    unsigned int gbdata[20];
+    unsigned int gbdata[30];
 
     for (int i = 0; i < data_size; i++) {
 
         int length = data[i].length == -1 ? strlen(data[i].data) : data[i].length;
         size_t ret_length = length;
 
-        gb18030_cpy(data[i].data, &ret_length, gbdata);
+        gb18030_cpy(data[i].data, &ret_length, gbdata, data[i].full_multibyte);
         assert_equal(ret_length, data[i].ret_length, "i:%d ret_length %zu != %zu\n", i, ret_length, data[i].ret_length);
         for (int j = 0; j < ret_length; j++) {
             assert_equal(gbdata[j], data[i].expected_gbdata[j], "i:%d gbdata[%d] %04X != %04X\n", i, j, gbdata[j], data[i].expected_gbdata[j]);
