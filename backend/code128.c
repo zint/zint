@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2019 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2020 Robin Stuart <rstuart114@gmail.com>
     Bugfixes thanks to Christian Sakowski and BogDan Vatra
 
     Redistribution and use in source and binary forms, with or without
@@ -34,7 +34,6 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <stdlib.h>
 #ifdef _MSC_VER
 #include <malloc.h>
 #endif
@@ -51,8 +50,6 @@
 #define LATCHC 95
 #define AORB 96
 #define ABORC 97
-
-#define DPDSET	"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ*"
 
 static int list[2][170];
 
@@ -295,7 +292,7 @@ static void c128_set_c(unsigned char source_a, unsigned char source_b, char dest
 INTERNAL int code_128(struct zint_symbol *symbol, unsigned char source[], const size_t length) {
     int i, j, k, values[170] = {0}, bar_characters, read, total_sum;
     int error_number, indexchaine, indexliste, f_state;
-    size_t sourcelen;
+    int sourcelen;
     char set[170] = {' '}, fset[170] = {' '}, mode, last_set, current_set = ' ';
     float glyph_count;
     char dest[1000];
@@ -310,7 +307,7 @@ INTERNAL int code_128(struct zint_symbol *symbol, unsigned char source[], const 
     f_state = 0;
 
     if (sourcelen > 160) {
-        /* This only blocks rediculously long input - the actual length of the
+        /* This only blocks ridiculously long input - the actual length of the
            resulting barcode depends on the type of data, so this is trapped later */
         strcpy(symbol->errtxt, "340: Input too long");
         return ZINT_ERROR_TOO_LONG;
@@ -707,7 +704,7 @@ INTERNAL int ean_128(struct zint_symbol *symbol, unsigned char source[], const s
     memset(set, ' ', sizeof (set));
 
     if (length > 160) {
-        /* This only blocks rediculously long input - the actual length of the
+        /* This only blocks ridiculously long input - the actual length of the
         resulting barcode depends on the type of data, so this is trapped later */
         strcpy(symbol->errtxt, "342: Input too long");
         return ZINT_ERROR_TOO_LONG;
@@ -978,7 +975,7 @@ INTERNAL int ean_128(struct zint_symbol *symbol, unsigned char source[], const s
         }
     }
 
-    for (i = 0; i < length; i++) {
+    for (i = 0; i < (int) length; i++) {
         if ((source[i] != '[') && (source[i] != ']')) {
             symbol->text[i] = source[i];
         }
