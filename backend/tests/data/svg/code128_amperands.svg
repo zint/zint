@@ -1,0 +1,41 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+   "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="180" height="118" version="1.1"
+   xmlns="http://www.w3.org/2000/svg">
+   <desc>Zint Generated Symbol
+   </desc>
+
+   <g id="barcode" fill="#000000">
+      <rect x="0" y="0" width="180" height="118" fill="#FFFFFF" />
+      <rect x="0.00" y="0.00" width="4.00" height="100.00" />
+      <rect x="6.00" y="0.00" width="2.00" height="100.00" />
+      <rect x="12.00" y="0.00" width="2.00" height="100.00" />
+      <rect x="22.00" y="0.00" width="6.00" height="100.00" />
+      <rect x="32.00" y="0.00" width="4.00" height="100.00" />
+      <rect x="38.00" y="0.00" width="2.00" height="100.00" />
+      <rect x="44.00" y="0.00" width="4.00" height="100.00" />
+      <rect x="50.00" y="0.00" width="4.00" height="100.00" />
+      <rect x="56.00" y="0.00" width="4.00" height="100.00" />
+      <rect x="66.00" y="0.00" width="4.00" height="100.00" />
+      <rect x="74.00" y="0.00" width="4.00" height="100.00" />
+      <rect x="82.00" y="0.00" width="4.00" height="100.00" />
+      <rect x="88.00" y="0.00" width="2.00" height="100.00" />
+      <rect x="94.00" y="0.00" width="4.00" height="100.00" />
+      <rect x="102.00" y="0.00" width="2.00" height="100.00" />
+      <rect x="110.00" y="0.00" width="2.00" height="100.00" />
+      <rect x="116.00" y="0.00" width="4.00" height="100.00" />
+      <rect x="126.00" y="0.00" width="2.00" height="100.00" />
+      <rect x="132.00" y="0.00" width="4.00" height="100.00" />
+      <rect x="138.00" y="0.00" width="6.00" height="100.00" />
+      <rect x="146.00" y="0.00" width="2.00" height="100.00" />
+      <rect x="154.00" y="0.00" width="4.00" height="100.00" />
+      <rect x="164.00" y="0.00" width="6.00" height="100.00" />
+      <rect x="172.00" y="0.00" width="2.00" height="100.00" />
+      <rect x="176.00" y="0.00" width="4.00" height="100.00" />
+      <text x="90.00" y="118.00" text-anchor="middle"
+         font-family="Helvetica" font-size="18.0" fill="#000000" >
+         &lt;&gt;&quot;&amp;&apos;
+      </text>
+   </g>
+</svg>

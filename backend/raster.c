@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2017 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009 - 2020 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -36,7 +36,6 @@
 #include <fcntl.h>
 #include <io.h>
 #endif
-#include <stdlib.h>
 #include <string.h>
 #include "common.h"
 
@@ -684,7 +683,7 @@ static int plot_raster_default(struct zint_symbol *symbol, int rotate_angle, int
         if (is_extendable(symbol->symbology)) {
             /* For these symbols use dummy text to ensure formatting is done
              * properly even if no text is required */
-            for (i = 0; i < ustrlen(symbol->text); i++) {
+            for (i = 0; i < (int) ustrlen(symbol->text); i++) {
                 if (symbol->text[i] == '+') {
                     local_text[i] = '+';
                 } else {
@@ -769,7 +768,7 @@ static int plot_raster_default(struct zint_symbol *symbol, int rotate_angle, int
     r = 0;
     /* Isolate add-on text */
     if (is_extendable(symbol->symbology)) {
-        for (i = 0; i < ustrlen(local_text); i++) {
+        for (i = 0; i < (int) ustrlen(local_text); i++) {
             if (latch == 1) {
                 addon[r] = local_text[i];
                 r++;
@@ -1069,7 +1068,8 @@ static int plot_raster_default(struct zint_symbol *symbol, int rotate_angle, int
                     }
                 } else {
                     for (r = 1; r < symbol->rows; r++) {
-                        draw_bar(pixelbuf, (xoffset + 11) * 2 , (symbol->width - 25) * 2, ((r * row_height) + textoffset + yoffset - 1) * 2, 2 * 2, image_width, image_height);
+                        /* Avoid 11-module start and stop chars */
+                        draw_bar(pixelbuf, (xoffset + 11) * 2 , (symbol->width - 22) * 2, ((r * row_height) + textoffset + yoffset - 1) * 2, 2 * 2, image_width, image_height);
                     }
                 }
             }

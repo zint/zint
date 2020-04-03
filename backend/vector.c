@@ -32,7 +32,6 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <stdlib.h>
 #include <math.h>
 
 #ifdef _MSC_VER
@@ -293,6 +292,9 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
     int this_row;
     int addon_latch = 0;
     struct zint_vector_string *string;
+
+    (void)rotate_angle; /* Not currently implemented */
+
     // Sanity check colours
     to_upper((unsigned char*) symbol->fgcolour);
     to_upper((unsigned char*) symbol->bgcolour);
@@ -792,7 +794,8 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
                     rectangle = vector_plot_create_rect((float)xoffset, (r * row_height) + yoffset - 1, (float)symbol->width, 2.0f);
                     vector_plot_add_rect(symbol, rectangle, &last_rectangle);
                 } else {
-                    rectangle = vector_plot_create_rect(xoffset + 11.0f, (r * row_height) + yoffset - 1, symbol->width - 25.0f, 2.0);
+                    /* Avoid 11-module start and stop chars */
+                    rectangle = vector_plot_create_rect(xoffset + 11, (r * row_height) + yoffset - 1, symbol->width - 22, 2.0);
                     vector_plot_add_rect(symbol, rectangle, &last_rectangle);
                 }
             }

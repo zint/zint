@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2019 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008 - 2020 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -142,6 +142,7 @@ static void test_buffer_vector(void)
         /* 89*/ { BARCODE_CODEONE, "12345678901234567890", "", 22, 22, 22, 44.0, 44.0 },
         /* 90*/ { BARCODE_GRIDMATRIX, "ABC", "", 18, 18, 18, 36.0, 36.0 },
         /* 91*/ { BARCODE_UPNQR, "1234567890AB", "", 77, 77, 77, 154.0, 154.0 },
+        /* 92*/ { BARCODE_RMQR, "12345", "", 11, 11, 27, 54.0, 22.0 },
     };
     int data_size = sizeof(data) / sizeof(struct item);
 

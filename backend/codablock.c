@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2016 Harald Oehlmann
+    Copyright (C) 2016 - 2020 Harald Oehlmann
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -34,7 +34,6 @@
 #include <stdio.h>
 #include <math.h>
 #include <string.h>
-#include <stdlib.h>
 #ifdef _MSC_VER
 #include <malloc.h>
 #endif
@@ -116,7 +115,7 @@ static int GetPossibleCharacterSet(unsigned char C)
  *  int CFollowing  The number of characters encodable in CodeC if we
  *          start here.
  */
-static void CreateCharacterSetTable(CharacterSetTable T[], unsigned char *data,const size_t dataLength)
+static void CreateCharacterSetTable(CharacterSetTable T[], unsigned char *data, const int dataLength)
 {
     int charCur;
     int runChar;
@@ -147,7 +146,7 @@ static void CreateCharacterSetTable(CharacterSetTable T[], unsigned char *data,c
             /* CodeC possible */
             runChar=charCur;
             do{
-                /* Wether this is FNC1 wether next is */
+                /* Whether this is FNC1, whether next is */
                 /* numeric */
                 if (T[runChar].CharacterSet==ZTFNC1)
                     /* FNC1 */
@@ -194,19 +193,18 @@ static int RemainingDigits(CharacterSetTable *T, int charCur,int emptyColumns)
 }
 
 /* Find the Character distribution at a given column count.
- * If to many rows (>44) are requested the columns is extended.
- * A oneLigner may be choosen if shorter.
+ * If too many rows (>44) are requested the columns are extended.
+ * A one-liner may be choosen if shorter.
  * Parameters :
  *  T       Pointer on the Characters which fit in the row
  *          If a different count is calculated it is corrected
  *          in the callers workspace.
  *  pFillings   Output of filling characters
  *  pSet        Output of the character sets used, allocated by me.
- *  Data        The Data string to encode, exceptionnally not an out
  *  Return value    Resulting row count
  */
 
-static int Columns2Rows(struct zint_symbol *symbol, CharacterSetTable *T, unsigned char *data, const size_t dataLength,
+static int Columns2Rows(struct zint_symbol *symbol, CharacterSetTable *T, const int dataLength,
         int * pRows, int * pUseColumns, int * pSet, int * pFillings)
 {
     int useColumns;     /* Usable Characters per line */
@@ -398,7 +396,7 @@ static int Columns2Rows(struct zint_symbol *symbol, CharacterSetTable *T, unsign
             switch (emptyColumns) {
             case 1:
                 pSet[charCur-1]|=CFill;
-                /* Glide in following block without break */
+                /* fall through */
             case 0:
                 ++rowsCur;
                 fillings=useColumns-2+emptyColumns;
@@ -429,7 +427,7 @@ static int Columns2Rows(struct zint_symbol *symbol, CharacterSetTable *T, unsign
 }
 /* Find columns if row count is given.
  */
-static int Rows2Columns(struct zint_symbol *symbol, CharacterSetTable *T, unsigned char *data, const size_t dataLength,
+static int Rows2Columns(struct zint_symbol *symbol, CharacterSetTable *T, const int dataLength,
         int * pRows, int * pUseColumns, int * pSet, int * pFillings)
 {
     int rowsCur;
@@ -440,7 +438,7 @@ static int Rows2Columns(struct zint_symbol *symbol, CharacterSetTable *T, unsign
     int useColumns;
     int testColumns;    /* To enter into Width2Rows */
     int backupColumns = 0;
-    int fBackupOk = 0;      /* The memorysed set is o.k. */
+    int fBackupOk = 0;      /* The memorised set is o.k. */
     int testListSize = 0;
     int pTestList[62];
 #ifndef _MSC_VER
@@ -472,7 +470,7 @@ static int Rows2Columns(struct zint_symbol *symbol, CharacterSetTable *T, unsign
         pTestList[testListSize] = testColumns;
         testListSize++;
         useColumns=testColumns; /* Make a copy because it may be modified */
-        errorCur = Columns2Rows(symbol, T, data, dataLength, &rowsCur, &useColumns, pSet, &fillings);
+        errorCur = Columns2Rows(symbol, T, dataLength, &rowsCur, &useColumns, pSet, &fillings);
         if (errorCur != 0)
             return errorCur;
         if (rowsCur<=rowsRequested) {
@@ -629,7 +627,7 @@ static void SumASCII(uchar **ppOutPos, int Sum, int CharacterSet)
 /* Main function called by zint framework
  */
 INTERNAL int codablock(struct zint_symbol *symbol,const unsigned char source[], const size_t length) {
-    size_t charCur,dataLength;
+    int charCur, dataLength;
     int Error;
     int rows, columns, useColumns;
     int fillings;
@@ -638,8 +636,8 @@ INTERNAL int codablock(struct zint_symbol *symbol,const unsigned char source[], 
     int rowCur;
     int characterSetCur;
     int emptyColumns;
-        char dest[1000];
-        int r, c;
+    char dest[1000];
+    int r, c;
 #ifdef _MSC_VER
     CharacterSetTable *T;
     unsigned char *data;
@@ -651,7 +649,7 @@ INTERNAL int codablock(struct zint_symbol *symbol,const unsigned char source[], 
     /* option1: rows 0: automatic, 1..44 */
     rows = symbol->option_1;
     if (rows > 44) {
-        strcpy(symbol->errtxt, "410: Row parameter not in 0..44");
+        strcpy(symbol->errtxt, "410: Rows parameter not in 0..44");
         return ZINT_ERROR_INVALID_OPTION;
     }
     /* option_2: (usable data) columns: 0: automatic, 6..66 */
@@ -677,7 +675,7 @@ INTERNAL int codablock(struct zint_symbol *symbol,const unsigned char source[], 
         dataLength++;
     }
     /* Replace all Codes>127 with <fnc4>Code-128 */
-    for (charCur=0;charCur<length;charCur++) {
+    for (charCur = 0; charCur < (int) length; charCur++) {
         if (source[charCur]>127)
         {
             data[dataLength] = aFNC4;
@@ -711,7 +709,7 @@ INTERNAL int codablock(struct zint_symbol *symbol,const unsigned char source[], 
                 columns = 64;
             }
             if (symbol->debug & ZINT_DEBUG_PRINT) {
-                printf("Auto column count for %zu characters:%d\n",dataLength,columns);
+                printf("Auto column count for %d characters:%d\n", dataLength, columns);
             }
         }
     }
@@ -719,20 +717,20 @@ INTERNAL int codablock(struct zint_symbol *symbol,const unsigned char source[], 
     useColumns = columns - 5;
     if ( rows > 0 ) {
         /* row count given */
-        Error = Rows2Columns(symbol, T, data, dataLength, &rows, &useColumns, pSet, &fillings);
+        Error = Rows2Columns(symbol, T, dataLength, &rows, &useColumns, pSet, &fillings);
     } else {
         /* column count given */
-        Error = Columns2Rows(symbol, T, data, dataLength, &rows, &useColumns, pSet, &fillings);
+        Error = Columns2Rows(symbol, T, dataLength, &rows, &useColumns, pSet, &fillings);
     }
     if (Error != 0) {
-        strcpy(symbol->errtxt, "413: Data string to long");
+        strcpy(symbol->errtxt, "413: Data string too long");
         return Error;
     }
     /* Checksum */
     Sum1=Sum2=0;
     if (rows>1)
     {
-        size_t charCur;
+        int charCur;
         for (charCur=0 ; charCur<dataLength ; charCur++) {
             Sum1=(Sum1 + (charCur%86+1)*data[charCur])%86;
             Sum2=(Sum2 + (charCur%86)*data[charCur])%86;
@@ -744,7 +742,6 @@ INTERNAL int codablock(struct zint_symbol *symbol,const unsigned char source[], 
         printf("\nData:");
         for (DPos=0 ; DPos< dataLength ; DPos++)
             fputc(data[DPos],stdout);
-
         printf("\n Set:");
         for (DPos=0 ; DPos< dataLength ; DPos++) {
             switch (pSet[DPos]&(CodeA+CodeB+CodeC)) {
@@ -863,8 +860,8 @@ INTERNAL int codablock(struct zint_symbol *symbol,const unsigned char source[], 
             while (emptyColumns>0)
             {
                 /* ? Change character set */
-                /* not at first possition (It was then the start set) */
-                /* +++ special case for one-ligner */
+                /* not at first position (It was then the start set) */
+                /* +++ special case for one-liner */
                 if (emptyColumns<useColumns || (rows == 1 && charCur!=0) )
                 {
                     if ((pSet[charCur]&CodeA)!=0)
