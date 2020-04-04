@@ -124,11 +124,11 @@ INTERNAL void rs_init_code(const int nsym, int index) {
     }
 }
 
-INTERNAL void rs_encode(const size_t len,const unsigned char *data, unsigned char *res) {
+INTERNAL void rs_encode(const size_t len, const unsigned char *data, unsigned char *res) {
     int i, k;
     for (i = 0; i < rlen; i++)
         res[i] = 0;
-    for (i = 0; i < len; i++) {
+    for (i = 0; i < (int) len; i++) {
         int m = res[rlen - 1] ^ data[i];
         for (k = rlen - 1; k > 0; k--) {
             if (m && rspoly[k])

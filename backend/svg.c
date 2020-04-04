@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2019 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009 - 2020 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -33,7 +33,6 @@
 
 #include <locale.h>
 #include <string.h>
-#include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
 #ifdef _MSC_VER
@@ -50,7 +49,7 @@ static void make_html_friendly(unsigned char * string, char * html_version) {
     html_pos = 0;
     html_version[html_pos] = '\0';
 
-    for (i = 0; i < ustrlen(string); i++) {
+    for (i = 0; i < (int) ustrlen(string); i++) {
         switch(string[i]) {
             case '>':
                 strcat(html_version, "&gt;");
@@ -105,7 +104,7 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
 
     int html_len = strlen((char *)symbol->text) + 1;
 
-    for (i = 0; i < strlen((char *)symbol->text); i++) {
+    for (i = 0; i < (int) strlen((char *)symbol->text); i++) {
         switch(symbol->text[i]) {
             case '>':
             case '<':

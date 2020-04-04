@@ -455,7 +455,7 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
     int input_position, array_length, i;
     char encoding_mode;
     int inside_macro;
-    int debug = symbol->debug;
+    int debug = (symbol->debug & ZINT_DEBUG_PRINT);
     int binary_buffer_size = 0;
     int lawrencium[6]; // Reversed radix 103 values
 

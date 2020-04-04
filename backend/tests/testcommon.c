@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2019 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019 - 2020 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -33,8 +33,6 @@
  * Copyright (C) 2006-2017 Kentaro Fukuchi <kentaro@fukuchi.org>
  */
 
-#include <stdio.h>
-#include <string.h>
 #include "testcommon.h"
 #ifndef NO_PNG
 #include <png.h>
@@ -354,7 +352,7 @@ int testUtilDAFTConvert(const struct zint_symbol* symbol, char* buffer, int buff
 
 /* Is string valid UTF-8? */
 int testUtilIsValidUTF8(const unsigned char str[], const size_t length) {
-    int i;
+    size_t i;
     unsigned int codepoint, state = 0;
 
     for (i = 0; i < length; i++) {
@@ -954,7 +952,7 @@ int testUtilCmpPngs(char* png1, char* png2)
     return ret;
 }
 
-static int testUtilCmpTxts(char* txt1, char* txt2)
+int testUtilCmpTxts(char* txt1, char* txt2)
 {
     int ret = -1;
     FILE* fp1;
@@ -1005,7 +1003,7 @@ static int testUtilCmpTxts(char* txt1, char* txt2)
     return ret;
 }
 
-static int testUtilCmpBins(char* bin1, char* bin2)
+int testUtilCmpBins(char* bin1, char* bin2)
 {
     int ret = -1;
     FILE* fp1;
@@ -1113,24 +1111,4 @@ int testUtilCmpEpss(char* eps1, char* eps2)
     fclose(fp2);
 
     return ret;
-}
-
-int testUtilCmpEmfs(char* emf1, char* emf2)
-{
-    return testUtilCmpBins(emf1, emf2);
-}
-
-int testUtilCmpGifs(char* gif1, char* gif2)
-{
-    return testUtilCmpBins(gif1, gif2);
-}
-
-int testUtilCmpBmps(char* bmp1, char* bmp2)
-{
-    return testUtilCmpBins(bmp1, bmp2);
-}
-
-int testUtilCmpPcxs(char* pcx1, char* pcx2)
-{
-    return testUtilCmpBins(pcx1, pcx2);
 }

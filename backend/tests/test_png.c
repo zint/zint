@@ -47,8 +47,7 @@ static void test_print(void)
         char* expected_file;
     };
     struct item data[] = {
-        /* 0*/ { BARCODE_CODE128, -1, -1, "AIM", "../data/png/code128_aim.png" },
-        /* 1*/ { BARCODE_CODABLOCKF, 3, -1, "AAAAAAAAA", "../data/png/codablockf_3rows.png" },
+        /*  0*/ { BARCODE_CODABLOCKF, 3, -1, "AAAAAAAAA", "../data/png/codablockf_3rows.png"},
     };
     int data_size = sizeof(data) / sizeof(struct item);
 
@@ -88,13 +87,15 @@ static void test_print(void)
 
         #ifdef TEST_PRINT_GENERATE_EXPECTED
 
-        printf("        /*%2d*/ { %s, \"%s\", \"%s\"},\n", i, testUtilBarcodeName(data[i].symbology), testUtilEscape(data[i].data, length, escaped, escaped_size), data[i].expected_file);
+        printf("        /*%3d*/ { %s, %d, %d, \"%s\", \"%s\"},\n",
+                i, testUtilBarcodeName(data[i].symbology), data[i].option_1, data[i].option_2, testUtilEscape(data[i].data, length, escaped, escaped_size), data[i].expected_file);
         ret = rename(symbol->outfile, data[i].expected_file);
         assert_zero(ret, "i:%d rename(%s, %s) ret %d != 0\n", i, symbol->outfile, data[i].expected_file, ret);
 
         #else
 
         assert_nonzero(testUtilExists(symbol->outfile), "i:%d testUtilExists(%s) == 0\n", i, symbol->outfile);
+        assert_nonzero(testUtilExists(data[i].expected_file), "i:%d testUtilExists(%s) == 0\n", i, data[i].expected_file);
 
         ret = testUtilCmpPngs(symbol->outfile, data[i].expected_file);
         assert_zero(ret, "i:%d %s testUtilCmpPngs(%s, %s) %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, data[i].expected_file, ret);

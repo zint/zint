@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2019 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019 - 2020 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -60,15 +60,15 @@ static void test_utf8_to_unicode(void)
 
     for (int i = 0; i < data_size; i++) {
 
-        int length = data[i].length == -1 ? strlen(data[i].data) : data[i].length;
+        int length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
         size_t ret_length = length;
 
         ret = utf8_to_unicode(&symbol, data[i].data, vals, &ret_length, data[i].disallow_4byte);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d\n", i, ret, data[i].ret);
         if (ret == 0) {
             assert_equal(ret_length, data[i].ret_length, "i:%d ret_length %ld != %ld\n", i, ret_length, data[i].ret_length);
-            for (int j = 0; j < ret_length; j++) {
-                assert_equal(vals[j], data[i].expected_vals[j], "i:%d vals[%d] %04X != %04X\n", i, j, vals[j], data[i].expected_vals[j]);
+            for (size_t j = 0; j < ret_length; j++) {
+                assert_equal(vals[j], data[i].expected_vals[j], "i:%d vals[%zu] %04X != %04X\n", i, j, vals[j], data[i].expected_vals[j]);
             }
         }
     }

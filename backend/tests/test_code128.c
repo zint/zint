@@ -52,8 +52,9 @@ static void test_input(void)
         /*  2*/ { BARCODE_CODE128, UNICODE_MODE, "éAéAéAéAéAéAéAéAéAéAéAéAéAéAéAéAéAéAéAé", -1, 0 }, // 39 chars
         /*  3*/ { BARCODE_CODE128, UNICODE_MODE, "éAéAéAéAéAéAéAéAéAéAéAéAéAéAéAéAéAéAéAéA", -1, ZINT_ERROR_TOO_LONG }, // 40 chars (+ 20 shifts)
         /*  4*/ { BARCODE_CODE128, UNICODE_MODE, "\302\200", -1, ZINT_ERROR_INVALID_DATA }, // PAD U+0080, not in ISO 8859-1 although encodable in CODE128
-        /*  5*/ { BARCODE_CODE128, UNICODE_MODE, "\000\037é", 4, 0 },
-        /*  6*/ { BARCODE_CODE128B, UNICODE_MODE, "\000\037é", 4, 0 },
+        /*  5*/ { BARCODE_CODE128, DATA_MODE, "\302\200", -1, 0 }, // PAD U+0080, use binary
+        /*  6*/ { BARCODE_CODE128, UNICODE_MODE, "\000\037é", 4, 0 },
+        /*  7*/ { BARCODE_CODE128B, UNICODE_MODE, "\000\037é", 4, 0 },
     };
     int data_size = sizeof(data) / sizeof(struct item);
 
@@ -67,7 +68,7 @@ static void test_input(void)
         symbol->symbology = data[i].symbology;
         symbol->input_mode = data[i].input_mode;
 
-        int length = data[i].length == -1 ? strlen(data[i].data) : data[i].length;
+        int length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
 
         ret = ZBarcode_Encode(symbol, data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);

@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2016-2017 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2016 - 2020 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -32,7 +32,6 @@
 /* vim: set ts=4 sw=4 et : */
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <math.h>
 #include "common.h"
@@ -47,8 +46,9 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
     int fgred, fggrn, fgblu, bgred, bggrn, bgblu;
     int i;
     int rows_per_strip, strip_count;
-    int free_memory;
-    int row, column, strip, bytes_put;
+    unsigned int free_memory;
+    int row, column, strip;
+    unsigned int bytes_put;
     FILE *tif_file;
 #ifdef _MSC_VER
     uint32_t* strip_offset;
@@ -113,10 +113,6 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
     }
 
     if (free_memory > 0xffff0000) {
-#ifdef _MSC_VER
-        free(strip_offset);
-        free(strip_bytes);
-#endif
         strcpy(symbol->errtxt, "670: Output file size too big");
         return ZINT_ERROR_MEMORY;
     }

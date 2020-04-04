@@ -1,7 +1,7 @@
 /*  emf.c - Support for Microsoft Enhanced Metafile Format
 
     libzint - the open source barcode library
-    Copyright (C) 2016-2018 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2016 - 2020 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -181,10 +181,10 @@ INTERNAL int emf_plot(struct zint_symbol *symbol) {
     string_count = count_strings(symbol);
 
 #ifndef _MSC_VER
-    emr_rectangle_t rectangle[rectangle_count];
-    emr_ellipse_t circle[circle_count];
-    emr_polygon_t hexagon[hexagon_count];
-    emr_exttextoutw_t text[string_count];
+    emr_rectangle_t rectangle[rectangle_count ? rectangle_count : 1]; // Avoid sanitize runtime error by making always non-zero
+    emr_ellipse_t circle[circle_count ? circle_count : 1];
+    emr_polygon_t hexagon[hexagon_count ? hexagon_count : 1];
+    emr_exttextoutw_t text[string_count ? string_count: 1];
 #else
     rectangle = (emr_rectangle_t*) _alloca(rectangle_count * sizeof (emr_rectangle_t));
     circle = (emr_ellipse_t*) _alloca(circle_count * sizeof (emr_ellipse_t));
@@ -509,6 +509,7 @@ INTERNAL int emf_plot(struct zint_symbol *symbol) {
         fwrite(&emr_selectobject_font, sizeof (emr_selectobject_t), 1, emf_file);
         fwrite(&text[i], sizeof (emr_exttextoutw_t), 1, emf_file);
         fwrite(this_string[i], bump_up(text[i].w_emr_text.chars + 1) * 2, 1, emf_file);
+        free(this_string[i]);
         for (j = 0; j < bump_up(text[i].w_emr_text.chars + 1); j++) {
             fwrite(&spacing, 4, 1, emf_file);
         }

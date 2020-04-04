@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019 - 2020 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -30,6 +30,85 @@
 /* vim: set ts=4 sw=4 et : */
 
 #include "testcommon.h"
+
+#define TEST_ENCODE_GENERATE_EXPECTED 1
+
+// TODO: Verify against AIM standard
+static void test_encode(void)
+{
+    testStart("");
+
+    int ret;
+    struct item {
+        int input_mode;
+        int option_2;
+        unsigned char* data;
+        int ret;
+
+        int expected_rows;
+        int expected_width;
+        char* comment;
+        char* expected;
+    };
+    struct item data[] = {
+        /*  0*/ { UNICODE_MODE, -1, "2741", 0, 10, 13, "Verified manually againt bwipp (tec-it differs)",
+                    "1010001010101"
+                    "0001000000000"
+                    "1000100010101"
+                    "0100000101000"
+                    "0000101000100"
+                    "0100010000010"
+                    "1000101010001"
+                    "0101010001000"
+                    "1000100010101"
+                    "0101000100010"
+               },
+    };
+    int data_size = sizeof(data) / sizeof(struct item);
+
+    char escaped[1024];
+
+    for (int i = 0; i < data_size; i++) {
+
+        struct zint_symbol* symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        symbol->symbology = BARCODE_DOTCODE;
+        symbol->input_mode = data[i].input_mode;
+        if (data[i].option_2 != -1) {
+            symbol->option_2 = data[i].option_2;
+        }
+        symbol->debug = ZINT_DEBUG_PRINT;
+
+        int length = strlen(data[i].data);
+
+        ret = ZBarcode_Encode(symbol, data[i].data, length);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+
+        #ifdef TEST_ENCODE_GENERATE_EXPECTED
+        printf("        /*%3d*/ { %s, %d, \"%s\", %s, %d, %d, \"%s\",\n",
+                i, testUtilInputModeName(data[i].input_mode), data[i].option_2, testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
+                testUtilErrorName(data[i].ret), symbol->rows, symbol->width, data[i].comment);
+        testUtilModulesDump(symbol, "                    ", "\n");
+        printf("               },\n");
+        #else
+        if (ret < 5) {
+            assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);
+            assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
+
+            if (ret == 0) {
+                int width, row;
+                ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
+                assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, ret, width, row, data[i].data);
+            }
+        }
+        #endif
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
 
 // #181 Christian Hartlage / Nico Gunkel OSS-Fuzz
 static void test_fuzz(void)
@@ -95,6 +174,7 @@ static void test_fuzz(void)
 
 int main()
 {
+    test_encode();
     test_fuzz();
 
     testReport();

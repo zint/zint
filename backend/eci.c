@@ -1,7 +1,7 @@
 /*  eci.c - Extended Channel Interpretations
 
     libzint - the open source barcode library
-    Copyright (C) 2009-2017 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009 - 2020 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -32,7 +32,6 @@
 
 #include <string.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include "eci.h"
 #include "common.h"
 #ifdef _MSC_VER
@@ -70,7 +69,7 @@ INTERNAL int utf_to_eci(const int eci, const unsigned char source[], unsigned ch
             bytelen = 2;
             glyph = (source[in_posn] & 0x1f) << 6;
 
-            if (*length < (in_posn + 2)) {
+            if ((int) *length < (in_posn + 2)) {
                 return ZINT_ERROR_INVALID_DATA;
             }
 
@@ -86,11 +85,11 @@ INTERNAL int utf_to_eci(const int eci, const unsigned char source[], unsigned ch
             bytelen = 3;
             glyph = (source[in_posn] & 0x0f) << 12;
 
-            if (*length < (in_posn + 2)) {
+            if ((int) *length < (in_posn + 2)) {
                 return ZINT_ERROR_INVALID_DATA;
             }
 
-            if (*length < (in_posn + 3)) {
+            if ((int) *length < (in_posn + 3)) {
                 return ZINT_ERROR_INVALID_DATA;
             }
 
@@ -246,7 +245,7 @@ INTERNAL int utf_to_eci(const int eci, const unsigned char source[], unsigned ch
 
         in_posn += bytelen;
         out_posn++;
-    } while (in_posn < *length);
+    } while (in_posn < (int) *length);
     dest[out_posn] = '\0';
     *length = out_posn;
 
