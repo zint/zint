@@ -777,7 +777,8 @@ static int aztec_text_process(const unsigned char source[], const size_t src_len
 
         if ((reduced_encode_mode[i] == 'P') || (reduced_encode_mode[i] == 'p')) {
             if (gs1 && (reduced_source[i] == '[')) {
-                if (!az_bin_append(0, 5, binary_string)) return ZINT_ERROR_TOO_LONG; // FLG(0) = FNC1
+                if (!az_bin_append(0, 5, binary_string)) return ZINT_ERROR_TOO_LONG; // FLG(n)
+                if (!az_bin_append(0, 3, binary_string)) return ZINT_ERROR_TOO_LONG; // FLG(0) = FNC1
             } else if (reduced_source[i] == 13) {
                 if (!az_bin_append(1, 5, binary_string)) return ZINT_ERROR_TOO_LONG; // CR
             } else if (reduced_source[i] == 'a') {
@@ -982,7 +983,7 @@ INTERNAL int aztec(struct zint_symbol *symbol, unsigned char source[], const siz
     unsigned char desc_data[4], desc_ecc[6];
     int err_code, ecc_level, compact, data_length, data_maxsize, codeword_size, adjusted_length;
     int remainder, padbits, count, gs1, adjustment_size;
-    int debug = symbol->debug, reader = 0;
+    int debug = (symbol->debug & ZINT_DEBUG_PRINT), reader = 0;
     int comp_loop = 4;
 
 #ifdef _MSC_VER
