@@ -1,7 +1,7 @@
 /*  zint.h - definitions for libzint
 
     libzint - the open source barcode library
-    Copyright (C) 2009-2019 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2020 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -263,9 +263,12 @@ extern "C" {
 #define GS1_MODE                2
 #define ESCAPE_MODE             8
 
-// Data Matrix specific options
+// Data Matrix specific options (option_3)
 #define DM_SQUARE               100
 #define DM_DMRE                 101
+
+// QR, Han Xin, Grid Matrix specific options (option_3)
+#define ZINT_FULL_MULTIBYTE     200
 
 // Warning and error conditions
 #define ZINT_WARN_INVALID_OPTION        2

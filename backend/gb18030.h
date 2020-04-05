@@ -1,7 +1,7 @@
 /*  gb18030.h - Unicode to GB 18030
 
     libzint - the open source barcode library
-    Copyright (C) 2009-2017 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2020 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -39,8 +39,8 @@ extern "C" {
 
 INTERNAL int gb18030_wctomb_zint(unsigned int* r1, unsigned int* r2, unsigned int wc);
 INTERNAL int gb18030_utf8tomb(struct zint_symbol *symbol, const unsigned char source[], size_t* p_length, unsigned int* gbdata);
-INTERNAL int gb18030_utf8tosb(int eci, const unsigned char source[], size_t* p_length, unsigned int* gbdata);
-INTERNAL void gb18030_cpy(const unsigned char source[], size_t* p_length, unsigned int* gbdata);
+INTERNAL int gb18030_utf8tosb(int eci, const unsigned char source[], size_t* p_length, unsigned int* gbdata, int full_multibyte);
+INTERNAL void gb18030_cpy(const unsigned char source[], size_t* p_length, unsigned int* gbdata, int full_multibyte);
 
 #ifdef __cplusplus
 }

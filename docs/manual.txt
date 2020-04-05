@@ -218,9 +218,9 @@ For example:
 
 zint -o here.png -d "This Text"
 
-This draws a Code 128 barcode in the file here.png. If an encapsulated Post Script
-file is needed simply append the file name with .eps, and so on for the other
-supported file types:
+This draws a Code 128 barcode in the file here.png. If an encapsulated Post
+Script file is needed simply append the file name with .eps, and so on for the
+other supported file types:
 
 zint -o there.eps -d "This Text"
 
@@ -377,8 +377,8 @@ gives an inverted Code 128 symbol. This is not practical for most symbologies
 but white-on-black is allowed by the Data Matrix and Aztec Code
 symbology specifications.
 
-For more specific needs the foreground (ink) and background (paper) colours
-can be specified using the --fg= and --bg= options followed by a number in RRGGBB
+For more specific needs the foreground (ink) and background (paper) colours can
+be specified using the --fg= and --bg= options followed by a number in RRGGBB
 hexadecimal notation (the same system used in HTML). For example the command
 
 zint --fg=004700 -d "This"
@@ -407,16 +407,16 @@ example for PNG images a scale of 5 will increase the x-dimension to 10 pixels.
 By default all input data is assumed to be encoded in Unicode (UTF-8) format.
 Many barcode symbologies encode data using Latin-1 (ISO-8851-1) character
 encoding, so input is converted from Unicode to Latin-1 before being put in the
-symbol. In addition QR Code, Micro QR Code, Han Xin Code and Grid Matrix
-standards can encode Chinese or Japanese characters which are also converted
-from Unicode. If Zint encounters characters which can not be encoded using the
-default character encoding then it will take advantage of the ECI (Extended
-Channel Interpretations) mechanism to encode the data. Be aware that not all
-barcode readers support ECI mode, so this can sometimes lead to unreadable
-barcodes. If you are using characters beyond those supported by Latin-1 then
-you should check that the resulting barcode can be understood by your target
-barcode reader. Zint will generate a warning message when ECI codes have been
-inserted into a symbol.
+symbol. In addition QR Code, Micro QR Code, Rectangular Micro QR Code, Han Xin
+Code and Grid Matrix can encode Japanese or Chinese characters which are also
+converted from Unicode. If Zint encounters characters which can not be encoded
+using the default character encoding then it will take advantage of the ECI
+(Extended Channel Interpretations) mechanism to encode the data. Be aware that
+not all barcode readers support ECI mode, so this can sometimes lead to
+unreadable barcodes. If you are using characters beyond those supported by
+Latin-1 then you should check that the resulting barcode can be understood by
+your target barcode reader. Zint will generate a warning message when ECI codes
+have been inserted into a symbol.
 
 GS1 data can be encoded in a number of symbologies. Application identifiers
 should be enclosed in [square brackets] followed by the data to be encoded (see
@@ -425,35 +425,47 @@ doesn't need to be set) for EAN-128, DataBar and Composite symbologies but is
 also available for Code 16k, Data Matrix, Aztec Code, DotCode and QR Code.
 
 HIBC data may also be encoded in the symbologies Code 39, Code128, Codablock-F,
-Datamatrix, QR-Code, PDF417 and Aztec-Code. Within this mode, the leading '+' and the
-check character is automatically added.
+Data Matrix, QR Code, PDF417 and Aztec Code. Within this mode, the leading '+'
+and the check character are automatically added.
 
 The --binary option prevents Zint from performing any convertion of the data
 before placing in the barcode symbol and should be used if you are encoding raw
-binary or encrypted data.
+binary or encrypted data. For an example involving QR Code and UTF-8 encoding,
+see Ex3 below.
 
-If your data contains non ISO-Latin-1 characters, you may encode it using an ECI-aware
-Symbology and an ECI value from the table below.
+The --fullmultibyte option uses the multibyte modes of QR Code, Micro QR Code,
+Rectangular Micro QR Code, Han Xin Code and Grid Matrix for binary and Latin
+data, maximizing density. You should check your barcode reader supports this use
+before enabling it.
+
+If your data contains non ISO-Latin-1 characters, you may encode it using an
+ECI-aware symbology and an ECI value from the table below.
 The ECI information is added to your code symbol as prefix data.
 
-The ECI-Value may be specified with the --eci switch, followed by the value in the column
-"ECI Code".
-The ECI-Value of 0 does not encode any ECI-Information in the code symbol. In this case,
-the default encoding applies for the data which is "ISO-8859-1 - Latin alphabet No. 1".
+The ECI value may be specified with the --eci switch, followed by the value in
+the column "ECI Code".
+The ECI value of 0 does not encode any ECI information in the code symbol. In
+this case, the default encoding applies for the data which is "ISO-8859-1 -
+Latin alphabet No. 1".
 
-The first row of the table (ECI code 3) is the default value and does not lead to any ECI
-information included into the symbol.
+The first row of the table (ECI code 3) is the default value and does not lead
+to any ECI information being included in the symbol.
 
-The input data should be utf-8 formatted. Zint automatically translates the data into the
-target encoding.
-The rows marked with a star (*) do not do this transformation. The data must be specified
-as binary data (--binary switch) with the data in the encoding given by the "Character
-Encoding Scheme" column.
+The input data should be UTF-8 formatted. Zint automatically translates the
+data into the target encoding.
+The rows marked with a star (*) do not do this transformation. The data must be
+specified as binary data (--binary switch) with the data in the encoding given
+by the "Character Encoding Scheme" column.
+The row marked with a double star (**) only does this transformation for QR
+Code, Micro QR Code and Rectangular Micro QR Code.
+The row marked with a triple star (***) only does this transformation for Han
+Xin Code and Grid Matrix. Han Xin Code can encode GB 18030. Grid Matrix can
+encode the subset GB 2312.
 
-Note: the "--eci 3" specification may only be used for special purposes. Using this parameter,
-the ECI information is explicitly added to the code symbol. Nevertheless, for ECI Code 3, this
-is not required, as this is the default encoding, which is also active without any ECI
-information.
+Note: the "--eci 3" specification should only be used for special purposes.
+Using this parameter, the ECI information is explicitly added to the code
+symbol. Nevertheless, for ECI Code 3, this is not required, as this is the
+default encoding, which is also active without any ECI information.
 
 --------------------------------------------------------
 ECI Code  |  Character Encoding Scheme
@@ -473,7 +485,7 @@ ECI Code  |  Character Encoding Scheme
 16        |  ISO-8859-14 - Latin alphabet No. 8 (Celtic)
 17        |  ISO-8859-15 - Latin alphabet No. 9
 18        |  ISO-8859-16 - Latin alphabet No. 10
-20 *      |  Shift-JIS (JISX 0208 amd JISX 0201)
+20 **     |  Shift-JIS (JISX 0208 amd JISX 0201)
 21        |  Windows-1250 - Latin 2 (Central Europe)
 22        |  Windows-1251 - Cyrillic
 23        |  Windows-1252 - Latin 1
@@ -482,24 +494,32 @@ ECI Code  |  Character Encoding Scheme
 26        |  Unicode (UTF-8)
 27        |  ISO-646:1991 7-bit character set
 28 *      |  Big-5 (Taiwan) Chinese Character Set
-29 *      |  GB (PRC) Chinese Character Set
+29 ***    |  GB (PRC) Chinese Character Set
 30 *      |  Korean Character Set (KSX1001:1998)
 --------------------------------------------------------
 
-Two examples:
-Ex1: The Euro sign should be encoded in ISO-8859-15.
+Three examples:
+Ex1: The Euro sign can be encoded in ISO-8859-15.
 The Euro-Sign has the ISO8859-15 codepoint hex A4.
 It is encoded in utf-8 as the hex sequence: e2 82 ac
 Those 3 bytes are contained in the file "utf8euro.txt"
 This command will generate the corresponding code:
+
 zint.exe -b 71 --square --scale 10 --eci 17 -i utf8euro.txt
 
-Ex2: The Chinese character with Unicode codepoint hex 5e38 should be
-encoded in big5 encoding. The big5 ECI is marked in the upper table to
-require input data in big5 instead of utf-8.  The big5 representation of
-this character are the two hex bytes: 9c 75 (contained in the file big5char.txt).
-The generation command is:
-zint.exe -b 71 --square --scale 10 --eci 28 --binary -i big5char.txt
+Ex2: The Chinese character with Unicode codepoint hex 5E38 can be encoded in
+Big5 encoding. The Big5 ECI is marked in the upper table to require input data
+in Big5 instead of UTF-8. The Big5 representation of this character is the two
+hex bytes: 9C 75 (contained in the file big5char.txt).
+The generation command for Data Matrix is:
+
+zint -b 71 --square --scale 10 --eci 28 --binary -i big5char.txt
+
+Ex3: Some decoders (in particular mobile app ones) for QR Code assume UTF-8
+encoding by default and do not support ECI. In this case supply UTF-8 data and
+use the --binary switch:
+
+zint -b 58 --binary -d "UTF-8 data"
 
 4.11 Batch processing
 ---------------------
@@ -645,8 +665,9 @@ creates and then deletes a symbol:
 #include <zint.h>
 int main()
 {
-    struct zint_symbol *my_symbol;my_symbol = ZBarcode_Create();
-    if(my_symbol != NULL)
+    struct zint_symbol *my_symbol;
+    my_symbol = ZBarcode_Create();
+    if (my_symbol != NULL)
     {
         printf("Symbol successfully created!\n");
     }
@@ -721,8 +742,8 @@ The "rotate_angle" value can be used to rotate the image when outputting as a
 raster image. Valid values are 0, 90, 180 and 270.
 
 The ZBarcode_Encode_File() and ZBarcode_Encode_File_and_Print() functions can
-be used to encode data read directly from a text file where the filename is given
-in the "filename" string.
+be used to encode data read directly from a text file where the filename is
+given in the "filename" string.
 
 5.4 Buffering Symbols in Memory
 -------------------------------
@@ -732,8 +753,8 @@ allow you to do this:
 
 int ZBarcode_Buffer(struct zint_symbol *symbol, int rotate_angle);
 
-int ZBarcide_Encode_and_Buffer(struct zint_symbol *symbol, unsigned char
-      *input, int length, int rotate_angle);
+int ZBarcide_Encode_and_Buffer(struct zint_symbol *symbol, unsigned char *input,
+      int length, int rotate_angle);
 
 int ZBarcode_Encode_File_and_Buffer(struct zint_symbol *symbol, char *filename,
       int rotate_angle);
@@ -905,16 +926,16 @@ int main(int argc, char **argv)
     my_symbol = ZBarcode_Create();
     strcpy(my_symbol->fgcolour, "nonsense");
     error = ZBarcode_Encode_and_Print(my_symbol, argv[1], 0, 0);
-    if(error != 0)
+    if (error != 0)
     {
-    /* some error occurred */
+        /* some warning or error occurred */
         printf("%s\n", my_symbol->errtxt);
     }
-    if(error > WARN_INVALID_OPTION)
+    if (error >= ZINT_ERROR_TOO_LONG)
     {
-    /* stop now */
+        /* stop now */
         ZBarcode_Delete(my_symbol);
-    return 1;
+        return 1;
     }
     /* otherwise carry on with the rest of the application */
     ZBarcode_Delete(my_symbol);
@@ -1045,8 +1066,8 @@ Value   |
 5.8 Adjusting other output options
 ----------------------------------
 The output_options variable can be used to adjust various aspects of the output
-file. To select more than one option from the table below simply add them together
-when adjusting this value:
+file. To select more than one option from the table below simply add them
+together when adjusting this value:
 
 my_symbol->output_options += BARCODE_BIND + READER_INIT;
 
@@ -1104,7 +1125,7 @@ This function allows you to check whether a given symbology is available. A
 non-zero return value indicates that the given symbology is available. For
 example:
 
-if(ZBarcode_ValidID(BARCODE_PDF417) != 0) {
+if (ZBarcode_ValidID(BARCODE_PDF417) != 0) {
     printf("PDF417 available");
 } else {
     printf("PDF417 not available");
@@ -1146,8 +1167,8 @@ numeric input (digits 0-9).
 6.1.2.2 IATA Code 2 of 5
 ------------------------
 Used for baggage handling in the air-transport industry by the International
-Air Transport Agency, this self-checking code will encode any length numeric input
-(digits 0-9) and does not include a check digit.
+Air Transport Agency, this self-checking code will encode any length numeric
+input (digits 0-9) and does not include a check digit.
 
 6.1.2.3 Industrial Code 2 of 5
 ------------------------------
@@ -1258,8 +1279,8 @@ and validates the check digit before encoding.
 6.1.4.2 SBN, ISBN and ISBN-13
 -----------------------------
 EAN-13 symbols (also known as Bookland EAN-13) can also be produced from
-9-digit SBN, 10-digit ISBN or 13-digit ISBN-13 data. The relevant check digit needs
-to be present in the input data and will be verified before the symbol is
+9-digit SBN, 10-digit ISBN or 13-digit ISBN-13 data. The relevant check digit
+needs to be present in the input data and will be verified before the symbol is
 generated. In addition EAN-2 and EAN-5 add-on symbols can be added using the +
 symbol as with UPC symbols.
 
@@ -1340,7 +1361,8 @@ check digit.
 ---------------
 A variation of Code 39 used by the Italian Ministry of Health ("Ministero della
 Sanità") for encoding identifiers on pharmaceutical products. This symbology
-requires a numeric input up to 8 digits in length. A check digit is added by Zint.
+requires a numeric input up to 8 digits in length. A check digit is added by
+Zint.
 
 6.1.8.7 HIBC Code 39
 --------------------
@@ -1425,7 +1447,8 @@ Also known as RSS (Reduced Spaced Symbology) these symbols are due to replace
 GS1-128 symbols in accordance with the GS1 General Specification. If a GS1
 DataBar symbol is to be printed with a 2D component as specified in ISO 24723
 set option_1 = 2 or use the option --mode=2 at the command prompt. See section
-6.3 of this manual to find out how to generate DataBar symbols with 2D components.
+6.3 of this manual to find out how to generate DataBar symbols with 2D
+components.
 
 6.1.12.1 DataBar-14 and DataBar-14 Truncated
 --------------------------------------------
@@ -1504,8 +1527,8 @@ error = ZBarcode_Encode(my_symbol, "That");
 
 error = ZBarcode_Print(my_symbol);
 
-A more sophisticated method is to use some type of line indexing which
-indicates to the barcode reader which order the symbols should be read. This is
+A more sophisticated method is to use some type of line indexing which indicates
+to the barcode reader which order the symbols should be read. This is
 demonstrated by the symbologies below.
 
 6.2.2 Codablock-F
@@ -1580,8 +1603,8 @@ Input is the same as for GS1 DataBar Expanded (see section 6.1.12.3). In
 addition the width of the symbol can be altered using the --cols switch or
 option_2. In this case the number of columns relates to the number of character
 pairs on each row of the symbol. This symbol can be generated with a two-
-dimensional component to make a composite symbol. For symbols with a 2D component
-the number of columns must be at least 2.
+dimensional component to make a composite symbol. For symbols with a 2D
+component the number of columns must be at least 2.
 
 6.2.10 Code 49
 -------------
@@ -1743,11 +1766,11 @@ requires an 8-digit DPID input.
 
 6.5.2 Dutch Post KIX Code
 -------------------------
-This Symbology is used by Royal Dutch TPG Post (Netherlands) for Postal code
+This symbology is used by Royal Dutch TPG Post (Netherlands) for Postal code
 and automatic mail sorting. Data input can consist of numbers 0-9 and letters
 A-Z and needs to be 11 characters in length. No check digit is included.
 
-6.5.3 Royal Mail 4-State Country Code (RM4SCC)
+6.5.3 Royal Mail 4-State Customer Code (RM4SCC)
 ----------------------------------------------
 The RM4SCC standard is used by the Royal Mail in the UK to encode postcode and
 customer data on mail items. Data input can consist of numbers 0-9 and letters
@@ -1949,6 +1972,10 @@ conversion to Shift-JIS being carried out by Zint. A separate symbology ID can
 be used to encode Health Industry Barcode (HIBC) data which adds a leading '+'
 character and a modulo-49 check digit to the encoded data.
 
+Non-ASCII data density may be maximized by using the --fullmultibyte switch or
+by setting option_3 to ZINT_FULL_MULTIBYTE, but check that your barcode reader
+supports this before using.
+
 6.6.3 Micro QR Code (ISO 18004)
 -------------------------------
 A miniature version of the QR Code symbol for short messages. ECC levels can be
@@ -1968,6 +1995,9 @@ Input  |  Version  |  Symbol Size
 3      |  M3       |  15 x 15
 4      |  M4       |  17 x 17
 ---------------------------------
+
+For barcode readers that support it, non-ASCII data density may be maximized by
+using the --fullmultibyte switch or by setting option_3 to ZINT_FULL_MULTIBYTE.
 
 6.6.4 Rectangular Micro QR Code (rMQR)
 --------------------------------------
@@ -2033,13 +2063,16 @@ Input  |  Version  |  Symbol Size
 38     |  Fixed height 17
 ---------------------------------
 
+For barcode readers that support it, non-ASCII data density may be maximized by
+using the --fullmultibyte switch or by setting option_3 to ZINT_FULL_MULTIBYTE.
+
 6.6.5 UPNQR (Univerzalnega Plačilnega Naloga QR)
 ------------------------------------------------
 A variation of QR Code used by Združenje Bank Slovenije (Bank Association of
 Slovenia). The size, error correction level and ECI are set by Zint and do not
-need to be specified. UPNQR is unusual in that it uses ISO-8859-2 formatted data.
-Zint will accept UTF-8 data and convert it to ISO-8859-2, or if your data is
-already ISO-8859-2 formatted use the --binary switch or if using the API set
+need to be specified. UPNQR is unusual in that it uses ISO-8859-2 formatted
+data. Zint will accept UTF-8 data and convert it to ISO-8859-2, or if your data
+is already ISO-8859-2 formatted use the --binary switch or if using the API set
 symbol->input_mode = DATA MODE;
 
 The following example creates a symbol from data saved as an ISO-8859-2 file:
@@ -2068,8 +2101,8 @@ Characters | Meaning
 13 - 15    | Three digit service code. This depends on your parcel courier.
 ----------------------------------------------------------------------------
 
-The primary message can be set at the command prompt using the --primary= switch.
-The secondary message uses the normal data entry method. For example:
+The primary message can be set at the command prompt using the --primary=
+switch. The secondary message uses the normal data entry method. For example:
 
 zint -o test.eps -b 57 --primary='999999999840012' -d 'Secondary Message Here'
 
@@ -2261,6 +2294,10 @@ Mode  |  Error Correction Capacity
 5     |  Approximately 50%
 ----------------------------------
 
+Non-ASCII data density may be maximized by using the --fullmultibyte switch or
+by setting option_3 to ZINT_FULL_MULTIBYTE, but check that your barcode reader
+supports this before using.
+
 6.6.11 DotCode
 -------------
 DotCode uses a grid of dots in a rectangular formation to encode characters up
@@ -2275,8 +2312,7 @@ error correction codewords.
 
 6.6.12 Han Xin Code
 -------------------
-Also known as Chinese Sensible Code, Han Xin is a symbology which is still
-under
+Also known as Chinese Sensible Code, Han Xin is a symbology which is still under
 development, so it is recommended it should not yet be used for a production
 environment. The symbology is capable of encoding characters in the GB18030
 character set (up to 4-byte characters) and is also able to support the ECI
@@ -2387,6 +2423,10 @@ Mode  |  Recovery Capacity
 4     |  Approx 30%
 --------------------------
 
+Non-ASCII data density may be maximized by using the --fullmultibyte switch or
+by setting option_3 to ZINT_FULL_MULTIBYTE, but check that your barcode reader
+supports this before using.
+
 6.7 Other Barcode-Like Markings
 -------------------------------
 6.7.1. Facing Identification Mark (FIM)
@@ -2424,7 +2464,7 @@ are ignored.
 ================================
 7.1 License
 -----------
-Zint, libzint and Zint Barcode Studio are Copyright © 2016 Robin Stuart. All
+Zint, libzint and Zint Barcode Studio are Copyright © 2020 Robin Stuart. All
 historical versions are distributed under the GNU General Public License
 version 3 or later. Version 2.5 is released under a dual license: the encoding
 library is released under the BSD license whereas the GUI, Zint Barcode Studio,
@@ -2654,8 +2694,8 @@ v2.6.3 - New symbology Royal Mail 4-state Mailmark. Added North America VIN
 verification. Bugfixes for TIF and EMF output and escape character handling.
 15/02/2018
 
-v2.6.4 - Datamatrix DMRE updated to the ISO/IEC29158 version. This is incompatible
-in the way, that the old -vers numbers for DMRE are re-assigned.
+v2.6.4 - Datamatrix DMRE updated to the ISO/IEC29158 version. This is
+incompatible in the way, that the old -vers numbers for DMRE are re-assigned.
 The separator of GS1-datamatrix may be switched from FNC1 to GS.
 GS1 field length check AI 8009 and 7230 to 7239 currected.
 
@@ -2671,7 +2711,8 @@ v2.7.0 - new features:
 - New GS1 AIs 7240, 235, 417, 7040, 8026, updated checks for 7007, 8008
 - New Symbology rMQR
 - QR and Gridmatrix optimisation for GB2312
-- removed depreciated interface for gLabels program. Please use current interface.
+- removed depreciated interface for gLabels program. Please use current
+  interface.
 
 7.4 Sources of Information
 --------------------------
@@ -2706,8 +2747,8 @@ international standards:
 > ISO/IEC 12323:2005 AIDC technologies - Symbology specifications - Code 16K
 > ISO/IEC 15417:2007 Information technology - Automatic identification and data
      capture techniques - Code 128 bar code symbology specification
-> ISO/IEC 15438:20062015 Information technology - Automatic identification and
-     data capture techniques - PDF417 bar code symbology specification
+> ISO/IEC 15438:2015 Information technology - Automatic identification and data
+     capture techniques - PDF417 bar code symbology specification
 > ISO/IEC 16022:2006 Information technology - Automatic identification and data
      capture techniques - Data Matrix ECC200 bar code symbology specification
 > ISO/IEC 16023:2000 Information technology - International symbology
@@ -2716,6 +2757,9 @@ international standards:
      capture techniques - Code 39 bar code symbology specification
 > ISO/IEC 18004:2015 Information technology - Automatic identification and data
      capture techniques - QR Code bar code symbology specification
+> ISO/IEC DIS 20830:2019 (Draft 2019-10-10) Information technology - Automatic
+     identification and data capture techniques - Han Xin Code bar code
+     symbology specification
 > ISO/IEC 24723:2010 Information technology - Automatic identification and data
      capture techniques - GS1 Composite bar code symbology specification
 > ISO/IEC 24724:2011 Information technology - Automatic identification and data
@@ -2724,6 +2768,9 @@ international standards:
      capture techniques - MicroPDF417 bar code symbology specification
 > ISO/IEC 24778:2008 Information technology - Automatic identification and data
      capture techniques - Aztec Code bar code symbology specification
+> ISO/IEC JTC1/SC31N000 (Draft 2018-6-8) Information technology - Automatic
+     identification and data capture techniques - Rectangular Micro QR Code
+     (rMQR) bar code symbology specification
 > Uniform Symbology Specification Code One (AIM Inc., 1994)
 > ANSI/AIM BC12-1998 - Uniform Symbology Specification Channel Code
 > ANSI/AIM BC6-2000 - Uniform Symbology Specification Code 49
@@ -2736,9 +2783,7 @@ international standards:
 > AIMD014 (v 1.63) - Information technology, Automatic identification and data
      capture techniques - Bar code symbology specification - Grid Matrix
      (Released 9th Dec 2008)
-> AIMD-015:2010 (v 0.8) – DRAFT Bar code symbology specification – Han Xin Code
-     (Revised 25th March 2010)
-> GS1 General Specifications Version 8.0
+> GS1 General Specifications Release 20.0 (Jan 2020)
 > AIM ITS/04-001 International Technical Standard – Extended Channel
      Interpretations Part 1: Identification Schemes and Protocol (Released 24th
      May 2004)

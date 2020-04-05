@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2016 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2020 Robin Stuart <rstuart114@gmail.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -96,6 +96,7 @@ void usage(void) {
             "  --esc                 Process escape characters in input data\n"
             "  --filetype=TYPE       Set output file type (PNG/EPS/SVG/PNG/EPS/GIF/TXT)\n"
             "  --fg=COLOUR           Specify a foreground colour (in hex)\n"
+            "  --fullmultibyte       Use multibyte mode for binary and Latin (QR Code/Han Xin/Grid Matrix)\n"
             "  --gs1                 Treat input as GS1 compatible data\n"
             "  --gssep               Use separator GS for GS1\n"
             "  -h, --help            Display help message\n"
@@ -377,6 +378,20 @@ int batch_process(struct zint_symbol *symbol, char *filename, int mirror_mode, c
     return error_number;
 }
 
+int is_fullmultibyte(struct zint_symbol* symbol) {
+	switch (symbol->symbology) {
+		case BARCODE_QRCODE:
+		case BARCODE_MICROQR:
+		//case BARCODE_HIBC_QR: Note character set restricted to ASCII subset
+		//case BARCODE_UPNQR: Note does not use Kanji mode
+		case BARCODE_RMQR:
+		case BARCODE_HANXIN:
+		case BARCODE_GRIDMATRIX:
+			return 1;
+	}
+	return 0;
+}
+
 int main(int argc, char **argv) {
     struct zint_symbol *my_symbol;
     int error_number;
@@ -384,6 +399,7 @@ int main(int argc, char **argv) {
     int generated;
     int batch_mode;
     int mirror_mode;
+	int fullmultibyte;
     char filetype[4];
     int i;
 
@@ -394,6 +410,7 @@ int main(int argc, char **argv) {
     my_symbol->input_mode = UNICODE_MODE;
     batch_mode = 0;
     mirror_mode = 0;
+    fullmultibyte = 0;
 
     for (i = 0; i < 4; i++) {
         filetype[i] = '\0';
@@ -435,6 +452,7 @@ int main(int argc, char **argv) {
             {"gs1", 0, 0, 0},
             {"gssep", 0, 0, 0},
             {"binary", 0, 0, 0},
+            {"fullmultibyte", 0, 0, 0},
             {"notext", 0, 0, 0},
             {"square", 0, 0, 0},
             {"dmre", 0, 0, 0},
@@ -504,6 +522,9 @@ int main(int argc, char **argv) {
                 }
                 if (!strcmp(long_options[option_index].name, "bg")) {
                     strncpy(my_symbol->bgcolour, optarg, 7);
+                }
+                if (!strcmp(long_options[option_index].name, "fullmultibyte")) {
+                    fullmultibyte = 1;
                 }
                 if (!strcmp(long_options[option_index].name, "notext")) {
                     my_symbol->show_hrt = 0;
@@ -706,6 +727,9 @@ int main(int argc, char **argv) {
                         strcat(my_symbol->outfile, ".");
                         strcat(my_symbol->outfile, filetype);
                     }
+					if (fullmultibyte && is_fullmultibyte(my_symbol)) {
+						my_symbol->option_3 = ZINT_FULL_MULTIBYTE;
+					}
                     error_number = ZBarcode_Encode(my_symbol, (unsigned char*) optarg, strlen(optarg));
                     generated = 1;
                     if (error_number != 0) {
@@ -729,6 +753,9 @@ int main(int argc, char **argv) {
                 break;
 
             case 'i': /* Take data from file */
+				if (fullmultibyte && is_fullmultibyte(my_symbol)) {
+					my_symbol->option_3 = ZINT_FULL_MULTIBYTE;
+				}
                 if (batch_mode == 0) {
                     error_number = ZBarcode_Encode_File(my_symbol, optarg);
                     generated = 1;

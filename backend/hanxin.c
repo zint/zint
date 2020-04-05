@@ -34,7 +34,6 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <stdlib.h>
 #ifdef _MSC_VER
 #include <malloc.h>
 #endif
@@ -1377,6 +1376,7 @@ INTERNAL int han_xin(struct zint_symbol *symbol, const unsigned char source[], s
     int est_binlen;
     int ecc_level = symbol->option_1;
     int i, j, version;
+    int full_multibyte;
     int data_codewords = 0, size;
     int codewords;
     int bitmask;
@@ -1398,13 +1398,15 @@ INTERNAL int han_xin(struct zint_symbol *symbol, const unsigned char source[], s
     unsigned char *grid;
 #endif
 
+    full_multibyte = symbol->option_3 == ZINT_FULL_MULTIBYTE; /* If set use Hanzi mode in DATA_MODE or for single-byte Latin */
+
     if ((symbol->input_mode & 0x07) == DATA_MODE) {
-        gb18030_cpy(source, &length, gbdata);
+        gb18030_cpy(source, &length, gbdata, full_multibyte);
     } else {
         int done = 0;
         if (symbol->eci != 29) { /* Unless ECI 29 (GB) */
             /* Try single byte (Latin) conversion first */
-            int error_number = gb18030_utf8tosb(symbol->eci && symbol->eci <= 899 ? symbol->eci : 3, source, &length, gbdata);
+            int error_number = gb18030_utf8tosb(symbol->eci && symbol->eci <= 899 ? symbol->eci : 3, source, &length, gbdata, full_multibyte);
             if (error_number == 0) {
                 done = 1;
             } else if (symbol->eci && symbol->eci <= 899) {
