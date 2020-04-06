@@ -18,6 +18,9 @@ pack [::ttk::combobox .c -values [lsort [zint symbologies]] -state readonly] \
 pack [::ttk::entry .e] -side top -fill x -padx $padx -pady $pady
 .e insert end 12345
 bind .e <Return> Generate
+pack [::ttk::entry .o] -side top -fill x -padx $padx -pady $pady
+.o insert end "-bold 1"
+bind .o <Return> Generate
 pack [::ttk::button .b -text Generate -command Generate] -fill x -side top \
     -padx $padx -pady $pady
 proc Generate {} {
@@ -25,7 +28,7 @@ proc Generate {} {
     ::zintimg configure -width 1 -height 1
     ::zintimg blank
     ::zintimg configure -width 0 -height 0
-    if {[catch {zint encode [.e get] ::zintimg -barcode [.c get]} e]} {
+    if {[catch {zint encode [.e get] ::zintimg -barcode [.c get] {*}[.o get]} e]} {
         tk_messageBox -message $e -title "Zint error"
     } else {
 	set w [image width ::zintimg]

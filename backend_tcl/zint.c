@@ -69,6 +69,8 @@
  -  Add symbology rmqr
  2020-02-01 2.7.1 HaO
  -	Framework 2.7.1 update
+ 2020-04-06 HaO
+ -	Added option -fullmultibyte
 */
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
@@ -401,6 +403,7 @@ static char help_message[] = "zint tcl(stub,obj) dll\n"
     "   -dotsize number: radius ratio of dots from 0.01 to 1.0\n" 
     "   -scale double: Scale the image to this factor\n"
     "   -format binary|unicode|gs1: input data format. Default:unicode\n"
+	"   -fullmultibyte: allow multibyte compaction for xQR, HanXin, Gridmatrix\n"
 	"   -gssep bool: for gs1, use gs as separator instead fnc1 (Datamatrix only)\n"
     "   -eci number: ECI to use\n"
     "   -notext bool: no interpretation line\n"
@@ -560,6 +563,7 @@ static int Encode(Tcl_Interp *interp, int objc,
     int destWidth = 0;
     int destHeight = 0;
     int ECIIndex = 0;
+	int fFullMultiByte = 0;
     /*------------------------------------------------------------------------*/
     /* >> Check if at least data and object is given and a pair number of */
     /* >> options */
@@ -589,13 +593,13 @@ static int Encode(Tcl_Interp *interp, int objc,
             "-dmre", "-dotsize", "-dotty", "-eci", "-fg", "-format", "-gssep",
 			"-height", "-init", "-mode", "-notext", "-primary", "-rotate",
 			"-rows", "-scale", "-secure", "-smalltext", "-square", "-to",
-			"-vers", "-whitesp", NULL};
+			"-vers", "-whitesp", "-fullmultibyte", NULL};
         enum iOption {
             iBarcode, iBG, iBind, iBold, iBorder, iBox, iCols,
             iDMRE, iDotSize, iDotty, iECI, iFG, iFormat, iGSSep, iHeight,
             iInit, iMode, iNoText, iPrimary, iRotate, iRows,
             iScale, iSecure, iSmallText, iSquare, iTo, iVers,
-            iWhiteSp
+            iWhiteSp, iFullMultiByte
             };
         int optionIndex;
         int intValue;
@@ -622,6 +626,7 @@ static int Encode(Tcl_Interp *interp, int objc,
         case iNoText:
         case iSmallText:
         case iSquare:
+		case iFullMultiByte:
             /* >> Binary options */
             if (TCL_OK != Tcl_GetBooleanFromObj(interp, objv[optionPos+1],
                     &intValue))
@@ -725,6 +730,9 @@ static int Encode(Tcl_Interp *interp, int objc,
             } else {
                 hSymbol->output_options &= ~GS1_GS_SEPARATOR;
             }
+            break;
+		case iFullMultiByte:
+			fFullMultiByte = intValue;
             break;
         case iECI:
             if(Tcl_GetIndexFromObj(interp, objv[optionPos+1],
@@ -925,6 +933,23 @@ static int Encode(Tcl_Interp *interp, int objc,
             }
         }
     }
+    /*------------------------------------------------------------------------*/
+	/* >>> Set fullmultibyte option if symbology matches*/
+	/* On wrong symbology, option is ignored (as does the zint program)*/
+	if (fFullMultiByte) {
+		switch (hSymbol->symbology) {
+			case BARCODE_QRCODE:
+			case BARCODE_MICROQR:
+			/*case BARCODE_HIBC_QR: Note character set restricted to ASCII subset*/
+			/*case BARCODE_UPNQR: Note does not use Kanji mode*/
+			case BARCODE_RMQR:
+			case BARCODE_HANXIN:
+			case BARCODE_GRIDMATRIX:
+				hSymbol->option_3 = ZINT_FULL_MULTIBYTE;
+				break;
+		}
+
+	}
     /*------------------------------------------------------------------------*/
     /* >>> Prepare input dstring and encode it to ECI encoding*/
     Tcl_DStringInit(& dsInput);
