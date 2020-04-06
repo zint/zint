@@ -132,7 +132,15 @@ Bugs:
 
 Version 2.7.2 Not released jet
 Changes:
-(New) Tests for auspost, codablock, composite, dotcode, general, telepen, upcean
+(New) Tests for auspost, codablock, composite, dotcode, general, telepen, upcean,
+  all output formats, 
+- QR, Han Xin, Grid Matrix: the multi byte compaction schemes (ex: Kanji)
+  are used by some decoders as codepage information (Ex: GB2312) and output
+  may be translated to UTF-8. This may destroy the data in a not controlable
+  manner.
+  In consequence, multibyte compaction schemes are disabled by default.
+  The new option --fullmultibyte (option_3 = ZINT_FULL_MULTIBYTE) enables this
+  optimisation.
 Bugs:
 - Ticket 181 penetration test found many bugs:
   - Auspost: null bytes in content caused segfault
@@ -144,12 +152,13 @@ Bugs:
   - EANUCC: buffer overflow on multiple + (multiple extension bars)
   - Maxicode: index overrun on numeric compaction
   - CodeOne: Simple i indexing not sp + i in C1_ASCII numeric latch loop.
-  - Aztec: free memory, 
+  - Aztec: free memory
 - Ticket 183: Databar stacked separator correction
 - Ticket 182: Output bitmap type was char, where some targets assigned 0
   if pixel colour >127 (e.g. negative). API change to use unsigned char.
 - HanXin: wrong codepage, gb2312 instead gb18030.
 - PDF417: corrected alloced sizes to max characters
+- Ticket 189: FNC1 encodation fixed (FLG(0) missing after FLG(n))
 
 CONTACT US
 ----------
