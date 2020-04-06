@@ -270,6 +270,9 @@ extern "C" {
 // QR, Han Xin, Grid Matrix specific options (option_3)
 #define ZINT_FULL_MULTIBYTE     200
 
+// Ultracode specific option
+#define ULTRA_COMPRESSION       128
+
 // Warning and error conditions
 #define ZINT_WARN_INVALID_OPTION        2
 #define ZINT_WARN_USES_ECI              3

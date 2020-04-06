@@ -152,7 +152,11 @@ INTERNAL int ustrchr_cnt(const unsigned char string[], const size_t length, cons
 
 /* Return true (1) if a module is dark/black, otherwise false (0) */
 INTERNAL int module_is_set(const struct zint_symbol *symbol, const int y_coord, const int x_coord) {
-    return (symbol->encoded_data[y_coord][x_coord / 7] >> (x_coord % 7)) & 1;
+    if (symbol->symbology == BARCODE_ULTRA) {
+        return symbol->encoded_data[y_coord][x_coord];
+    } else {
+        return (symbol->encoded_data[y_coord][x_coord / 7] >> (x_coord % 7)) & 1;
+    }
 }
 
 /* Set a module to dark/black */

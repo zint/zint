@@ -1,6 +1,6 @@
 /***************************************************************************
  *   Copyright (C) 2008 by BogDan Vatra <bogdan@licentia.eu>               *
- *   Copyright (C) 2009-2019 by Robin Stuart <rstuart114@gmail.com>        *
+ *   Copyright (C) 2009-2020 by Robin Stuart <rstuart114@gmail.com>        *
  *                                                                         *
  *   This program is free software: you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -107,6 +107,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags fl)
         "Telepen",
         "Telepen Numeric",
         "UK Plessey",
+        "Ultracode",
         "UPNQR",
         "Universal Product Code (UPC-A)",
         "Universal Product Code (UPC-E)",
