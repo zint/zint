@@ -428,15 +428,26 @@ HIBC data may also be encoded in the symbologies Code 39, Code128, Codablock-F,
 Data Matrix, QR Code, PDF417 and Aztec Code. Within this mode, the leading '+'
 and the check character are automatically added.
 
-The --binary option prevents Zint from performing any convertion of the data
-before placing in the barcode symbol and should be used if you are encoding raw
-binary or encrypted data. For an example involving QR Code and UTF-8 encoding,
-see Ex3 below.
+The --binary option encodes the input data as given. Automatic code page
+translations to ECI pages is disabled. This may be used for raw binary
+or binary encrypted data.
+This switch plays together with the build-in ECI logic and examples may
+be found in that section.
 
 The --fullmultibyte option uses the multibyte modes of QR Code, Micro QR Code,
 Rectangular Micro QR Code, Han Xin Code and Grid Matrix for binary and Latin
-data, maximizing density. You should check your barcode reader supports this use
-before enabling it.
+data, maximizing density.
+Please check your reader device for not having the following
+non-standard property: this option may switch to multibyte (ex. Kanji)
+compression within the code to obtain a smaller code matrix. The Kanji mode is
+a compaction mode and does not inform about contained Kanji characters.
+Nevertheless, some decoders take blocks which are encoded in Kanji
+compaction and output them as Kanji characters, typically be applying a
+transformation to UTF8. The result is unpredictable, as zint
+--fullmultibyte chooses the compaction type only on the criteria to
+obtain smaller codes and not to inform about the presence of Kanji
+characters.
+An example decoder with this property is the zxing decoder app.
 
 If your data contains non ISO-Latin-1 characters, you may encode it using an
 ECI-aware symbology and an ECI value from the table below.
