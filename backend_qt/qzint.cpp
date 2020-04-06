@@ -1,7 +1,7 @@
 /***************************************************************************
  *   Copyright (C) 2008 by BogDan Vatra                                    *
  *   bogdan@licentia.eu                                                    *
- *   Copyright (C) 2010-2017 Robin Stuart                                  *
+ *   Copyright (C) 2010-2020 Robin Stuart                                  *
  *                                                                         *
  *   This program is free software: you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -333,7 +333,36 @@ namespace Zint {
         // Plot rectangles
         rect = m_zintSymbol->vector->rectangles;
         while (rect) {
-            painter.fillRect(rect->x, rect->y, rect->width, rect->height, QBrush(m_fgColor));
+            if (rect->colour == -1) {
+                painter.fillRect(rect->x, rect->y, rect->width, rect->height, QBrush(m_fgColor));
+            } else {
+                switch(rect->colour) {
+                    case 0: // White
+                        painter.fillRect(rect->x, rect->y, rect->width, rect->height, QBrush(Qt::white));
+                        break;
+                    case 1: // Cyan
+                        painter.fillRect(rect->x, rect->y, rect->width, rect->height, QBrush(Qt::cyan));
+                        break;                    
+                    case 2: // Blue
+                        painter.fillRect(rect->x, rect->y, rect->width, rect->height, QBrush(Qt::blue));
+                        break;                    
+                    case 3: // Magenta
+                        painter.fillRect(rect->x, rect->y, rect->width, rect->height, QBrush(Qt::magenta));
+                        break;                    
+                    case 4: // Red
+                        painter.fillRect(rect->x, rect->y, rect->width, rect->height, QBrush(Qt::red));
+                        break;                    
+                    case 5: // Yellow
+                        painter.fillRect(rect->x, rect->y, rect->width, rect->height, QBrush(Qt::yellow));
+                        break;                    
+                    case 6: // Green
+                        painter.fillRect(rect->x, rect->y, rect->width, rect->height, QBrush(Qt::green));
+                        break;                    
+                    default:
+                        painter.fillRect(rect->x, rect->y, rect->width, rect->height, QBrush(Qt::black));
+                        break;
+                }
+            }
             rect = rect->next;
         }
         
