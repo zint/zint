@@ -328,6 +328,7 @@ Numeric Value  |  Barcode Name
 141            |  Code One
 142            |  Grid Matrix
 143            |  UPNQR (Univerzalnega Plačilnega Naloga QR)
+144            |  Ultracode
 145            |  Rectangular Micro QR Code (rMQR)
 --------------------------------------------------------------------------------
 
@@ -1071,6 +1072,7 @@ Value   |
 141     | BARCODE_CODEONE         | Code One
 142     | BARCODE_GRIDMATRIX      | Grid Matrix
 143     | BARCODE_UPNQR           | UPNQR (Univerzalnega Plačilnega Naloga QR)
+144     | BARCODE_ULTRA           | Ultracode
 145     | BARCODE_RMQR            | Rectangular Micro QR Code (rMQR)
 --------------------------------------------------------------------------------
 
@@ -2438,6 +2440,32 @@ Non-ASCII data density may be maximized by using the --fullmultibyte switch or
 by setting option_3 to ZINT_FULL_MULTIBYTE, but check that your barcode reader
 supports this before using.
 
+6.6.13 Ultracode
+----------------
+This symbology uses a grid of coloured elements to encode data. ECI and GS-1
+modes are supported. The amount of error correction can be set using the
+--secure= option or by setting option_1 to a value as shown in the following
+table:
+
+-----------------------------------------------------------------
+Value | EC Level | Amount of symbol holding error correction data
+-----------------------------------------------------------------
+1     | EC0      | 0% - Error detection only
+2     | EC1      | Approx 5%
+3     | EC2      | Approx 9% - Default value
+4     | EC3      | Approx 17%
+5     | EC4      | Approx 25%
+6     | EC5      | Approx 33%
+-----------------------------------------------------------------
+
+Zint does not currently implement data compression by default, but this can
+be initiated through the API by setting
+
+symbol->option_3 = ULTRA_COMPRESSION;
+
+WARNING: Ultracode data compression is experimental and should not be used
+in a production environment.
+
 6.7 Other Barcode-Like Markings
 -------------------------------
 6.7.1. Facing Identification Mark (FIM)
@@ -2724,6 +2752,9 @@ v2.7.0 - new features:
 - QR and Gridmatrix optimisation for GB2312
 - removed depreciated interface for gLabels program. Please use current
   interface.
+  
+v2.8.0
+- Add Ultracode implementation
 
 7.4 Sources of Information
 --------------------------
@@ -2794,6 +2825,8 @@ international standards:
 > AIMD014 (v 1.63) - Information technology, Automatic identification and data
      capture techniques - Bar code symbology specification - Grid Matrix
      (Released 9th Dec 2008)
+> AIMD/TSC15032-43 (v 0.99c) - International Technical Specification –
+     Ultracode Symbology (Draft) (Released 4th Nov 2015)
 > GS1 General Specifications Release 20.0 (Jan 2020)
 > AIM ITS/04-001 International Technical Standard – Extended Channel
      Interpretations Part 1: Identification Schemes and Protocol (Released 24th
