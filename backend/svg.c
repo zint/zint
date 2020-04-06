@@ -41,6 +41,35 @@
 
 #include "common.h"
 
+void pick_colour(int colour, char colour_code[]) {
+    switch(colour) {
+        case 0: // White
+            strcpy(colour_code, "ffffff");
+            break;
+        case 1: // Cyan
+            strcpy(colour_code, "00ffff");
+            break;
+        case 2: // Blue
+            strcpy(colour_code, "0000ff");
+            break;
+        case 3: // Magenta
+            strcpy(colour_code, "ff00ff");
+            break;
+        case 4: // Red
+            strcpy(colour_code, "ff0000");
+            break;
+        case 5: // Yellow
+            strcpy(colour_code, "ffff00");
+            break;
+        case 6: // Green
+            strcpy(colour_code, "00ff00");
+            break;
+        default: // Black
+            strcpy(colour_code, "000000");
+            break;
+    }
+}
+
 static void make_html_friendly(unsigned char * string, char * html_version) {
     /* Converts text to use HTML entity codes */
 
@@ -98,6 +127,8 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
     struct zint_vector_circle *circle;
     struct zint_vector_string *string;
 
+    char colour_code[7];
+
 #ifdef _MSC_VER
     char* html_string;
 #endif
@@ -153,7 +184,12 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
 
     rect = symbol->vector->rectangles;
     while (rect) {
-        fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", rect->x, rect->y, rect->width, rect->height);
+        if (rect->colour == -1) {
+            fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", rect->x, rect->y, rect->width, rect->height);
+        } else {
+            pick_colour(rect->colour, colour_code);
+            fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" fill=\"#%s\" />\n", rect->x, rect->y, rect->width, rect->height, colour_code);
+        }
         rect = rect->next;
     }
 
