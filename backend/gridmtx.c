@@ -230,6 +230,8 @@ static void define_mode(char* mode, const unsigned int gbdata[], const size_t le
 
 /* Add the length indicator for byte encoded blocks */
 static void add_byte_count(char binary[], const size_t byte_count_posn, const int byte_count) {
+    /* AIMD014 6.3.7: "Let L be the number of bytes of input data to be encoded in the 8-bit binary data set.
+     * First output (L-1) as a 9-bit binary prefix to record the number of bytes..." */
     bin_append_posn(byte_count - 1, 9, binary, byte_count_posn);
 }
 

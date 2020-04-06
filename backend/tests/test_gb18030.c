@@ -188,14 +188,14 @@ static void test_gb18030_utf8tomb(void)
 
     for (int i = 0; i < data_size; i++) {
 
-        int length = data[i].length == -1 ? strlen(data[i].data) : data[i].length;
+        int length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
         size_t ret_length = length;
 
         ret = gb18030_utf8tomb(&symbol, data[i].data, &ret_length, gbdata);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d (%s)\n", i, ret, data[i].ret, symbol.errtxt);
         if (ret == 0) {
             assert_equal(ret_length, data[i].ret_length, "i:%d ret_length %zu != %zu\n", i, ret_length, data[i].ret_length);
-            for (int j = 0; j < ret_length; j++) {
+            for (int j = 0; j < (int) ret_length; j++) {
                 assert_equal(gbdata[j], data[i].expected_gbdata[j], "i:%d gbdata[%d] 0x%04X != 0x%04X\n", i, j, gbdata[j], data[i].expected_gbdata[j]);
             }
         }
@@ -261,14 +261,14 @@ static void test_gb18030_utf8tosb(void)
 
     for (int i = 0; i < data_size; i++) {
 
-        int length = data[i].length == -1 ? strlen(data[i].data) : data[i].length;
+        int length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
         size_t ret_length = length;
 
         ret = gb18030_utf8tosb(data[i].eci, data[i].data, &ret_length, gbdata, data[i].full_multibyte);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d\n", i, ret, data[i].ret);
         if (ret == 0) {
             assert_equal(ret_length, data[i].ret_length, "i:%d ret_length %zu != %zu\n", i, ret_length, data[i].ret_length);
-            for (int j = 0; j < ret_length; j++) {
+            for (int j = 0; j < (int) ret_length; j++) {
                 assert_equal(gbdata[j], data[i].expected_gbdata[j], "i:%d gbdata[%d] %04X != %04X\n", i, j, gbdata[j], data[i].expected_gbdata[j]);
             }
         }
@@ -311,12 +311,12 @@ static void test_gb18030_cpy(void)
 
     for (int i = 0; i < data_size; i++) {
 
-        int length = data[i].length == -1 ? strlen(data[i].data) : data[i].length;
+        int length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
         size_t ret_length = length;
 
         gb18030_cpy(data[i].data, &ret_length, gbdata, data[i].full_multibyte);
         assert_equal(ret_length, data[i].ret_length, "i:%d ret_length %zu != %zu\n", i, ret_length, data[i].ret_length);
-        for (int j = 0; j < ret_length; j++) {
+        for (int j = 0; j < (int) ret_length; j++) {
             assert_equal(gbdata[j], data[i].expected_gbdata[j], "i:%d gbdata[%d] %04X != %04X\n", i, j, gbdata[j], data[i].expected_gbdata[j]);
         }
     }

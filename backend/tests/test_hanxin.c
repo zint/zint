@@ -173,7 +173,7 @@ static void test_input(void)
         }
         symbol->debug = ZINT_DEBUG_TEST; // Needed to get codeword dump in errtxt
 
-        int length = data[i].length == -1 ? strlen(data[i].data) : data[i].length;
+        int length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
 
         ret = ZBarcode_Encode(symbol, data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);

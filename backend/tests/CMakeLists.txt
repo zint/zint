@@ -1,4 +1,4 @@
-# Copyright (C) 2019 Robin Stuart <rstuart114@gmail.com>
+# Copyright (C) 2019 - 2020 Robin Stuart <rstuart114@gmail.com>
 # Adapted from qrencode/tests/CMakeLists.txt
 # Copyright (C) 2006-2017 Kentaro Fukuchi <kentaro@fukuchi.org>
 
@@ -70,6 +70,7 @@ zint_add_test(imail, test_imail)
 zint_add_test(library, test_library)
 zint_add_test(mailmark, test_mailmark)
 zint_add_test(maxicode, test_maxicode)
+zint_add_test(pcx, test_pcx)
 zint_add_test(pdf417, test_pdf417)
 zint_add_test(png, test_png)
 zint_add_test(postal, test_postal)
