@@ -2755,6 +2755,8 @@ v2.7.0 - new features:
   
 v2.8.0
 - Add Ultracode implementation
+- Disable full multi byte compression for QR family, Han Xin and Gridmatrix by
+  default. It may be enabled by a new option.
 
 7.4 Sources of Information
 --------------------------
