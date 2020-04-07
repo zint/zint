@@ -47,10 +47,10 @@
 /* Index of transparent color, -1 for no transparent color
  * This might be set into a variable if transparency is activated as an option
  */
-#define TRANSPARENT_INDEX (-1)
+#define TRANSPARENT_INDEX (15)
 
-/* Used bit depth, may be changed for bigger pallet in future */
-#define DESTINATION_IMAGE_BITS 1
+/* Used bit depth: 10 value pallet is 4 bit */
+#define DESTINATION_IMAGE_BITS 4
 #include <stdlib.h>
 
 typedef struct s_statestruct {
@@ -68,6 +68,30 @@ typedef struct s_statestruct {
     unsigned short NodeNext[4096];
     unsigned char NodePix[4096];
 } statestruct;
+
+/* Transform a Pixel to a lzw colourmap index.
+ * See the 16 entries colour map definition in the code at the end for the mapping
+ */
+static unsigned char PixelToCode(unsigned char PixelValue)
+{
+    
+    switch (PixelValue)
+    {
+        case '0': return 0; /* standard background */
+        case '1': return 1; /* standard foreground */
+        case 'W': return 2; /* white */
+        case 'C': return 3; /* cyan */
+        case 'B': return 4; /* blue */
+        case 'M': return 5; /* magenta */
+        case 'R': return 6; /* red */
+        case 'Y': return 7; /* yellow */
+        case 'G': return 8; /* green */
+        case 'K': return 9; /* black */
+        case 'T': return 15; /* transparent */
+        default: return 15;  /* error case - return  */
+    }
+}
+
 
 static char BufferNextByte(statestruct *pState) {
     (pState->OutPosCur)++;
@@ -144,7 +168,7 @@ static char NextCode(statestruct *pState, unsigned char * pPixelValueCur, unsign
     if ((pState->InLen) == 0)
         return AddCodeToBuffer(pState, UpNode, CodeBits);
 
-    *pPixelValueCur = (*(pState->pIn)) - '0';
+    *pPixelValueCur = PixelToCode(*(pState->pIn));
     (pState->pIn)++;
     (pState->InLen)--;
     /* Follow the string table and the data stream to the end of the longest string that has a code */
@@ -153,7 +177,7 @@ static char NextCode(statestruct *pState, unsigned char * pPixelValueCur, unsign
         if ((pState->InLen) == 0)
             return AddCodeToBuffer(pState, UpNode, CodeBits);
 
-        *pPixelValueCur = (*(pState->pIn)) - '0';
+        *pPixelValueCur = PixelToCode(*(pState->pIn));
         (pState->pIn)++;
         (pState->InLen)--;
     }
@@ -191,12 +215,12 @@ static int gif_lzw(unsigned char *pOut, int OutLength, unsigned char *pIn, int I
     if (State.InLen == 0)
         return 0;
 
-    PixelValueCur = (unsigned char) ((*(State.pIn)) - '0');
+    PixelValueCur = PixelToCode(*(State.pIn));
     (State.pIn)++;
     (State.InLen)--;
-    CodeBits = 3;
-    State.ClearCode = 4;
-    State.FreeCode = 6;
+    CodeBits = DESTINATION_IMAGE_BITS+1;
+    State.ClearCode = (1 << DESTINATION_IMAGE_BITS);
+    State.FreeCode = State.ClearCode+2;
     State.OutBitsFree = 8;
     State.OutPosCur = -1;
     State.fByteCountByteSet = 0;
@@ -210,7 +234,7 @@ static int gif_lzw(unsigned char *pOut, int OutLength, unsigned char *pIn, int I
     FlushStringTable(&State);
 
     /* Write what the GIF specification calls the "code size". */
-    (State.pOut)[State.OutPosCur] = 2;
+    (State.pOut)[State.OutPosCur] = DESTINATION_IMAGE_BITS;
     /* Reserve first bytecount byte */
     if (BufferNextByte(&State))
         return 0;
@@ -255,14 +279,14 @@ static int gif_lzw(unsigned char *pOut, int OutLength, unsigned char *pIn, int I
             if (AddCodeToBuffer(&State, State.ClearCode, CodeBits))
                 return 0;
 
-            CodeBits = (unsigned char) (1 + 2);
+            CodeBits = (unsigned char) (1 + DESTINATION_IMAGE_BITS);
             State.FreeCode = (unsigned short) (State.ClearCode + 2);
         }
     }
 }
 
 INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
-    char outbuf[10];
+    unsigned char outbuf[10];
     FILE *gif_file;
     unsigned short usTemp;
     int byte_out;
@@ -315,6 +339,11 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
     outbuf[3] = (unsigned char) ((0xff00 & usTemp) / 0x100);
     /* write ImageBits-1 to the three least significant bits of byte 5  of
      * the Screen Descriptor
+     * Bits 76543210
+     *      1        : Global colour map
+     *       111     : 8 bit colour depth of the palette
+     *          0    : Not ordered in decreasing importance
+     *           011 : 4 bit palette
      */
     outbuf[4] = (unsigned char) (0xf0 | (0x7 & (DESTINATION_IMAGE_BITS - 1)));
     /*  Background color = colortable index 0 */
@@ -322,16 +351,49 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
     /* Byte 7 must be 0x00  */
     outbuf[6] = 0x00;
     fwrite(outbuf, 7, 1, gif_file);
-    /* Global Color Table (6) */
-    /* RGB 0 color */
+    /* Global Color Table (16*3) */
+    /* Colour index 0: RGB 0 color */
     outbuf[0] = (unsigned char) (16 * ctoi(symbol->bgcolour[0])) + ctoi(symbol->bgcolour[1]);
     outbuf[1] = (unsigned char) (16 * ctoi(symbol->bgcolour[2])) + ctoi(symbol->bgcolour[3]);
     outbuf[2] = (unsigned char) (16 * ctoi(symbol->bgcolour[4])) + ctoi(symbol->bgcolour[5]);
-    /* RGB 1 color */
+    /* Colour index 1: RGB 1 color */
     outbuf[3] = (unsigned char) (16 * ctoi(symbol->fgcolour[0])) + ctoi(symbol->fgcolour[1]);
     outbuf[4] = (unsigned char) (16 * ctoi(symbol->fgcolour[2])) + ctoi(symbol->fgcolour[3]);
     outbuf[5] = (unsigned char) (16 * ctoi(symbol->fgcolour[4])) + ctoi(symbol->fgcolour[5]);
-    fwrite(outbuf, 6, 1, gif_file);
+    /* Colour index 2: "W" for White color */
+    outbuf[6] = 255; outbuf[7] = 255; outbuf[8] = 255;
+    fwrite(outbuf, 9, 1, gif_file);
+    /* Colour index 3: "C" for Cyan colour */
+    outbuf[0] = 0; outbuf[1] = 255; outbuf[2] = 255;
+    /* Colour index 4: "B" for Blue colour */
+    outbuf[3] = 0; outbuf[4] = 0; outbuf[5] = 255;
+    /* Colour index 5: "M" for Magenta colour */
+    outbuf[6] = 255; outbuf[7] = 0; outbuf[8] = 255;
+    fwrite(outbuf, 9, 1, gif_file);
+    /* Colour index 6: "R" for red colour */
+    outbuf[0] = 255; outbuf[1] = 0; outbuf[2] = 0;
+    /* Colour index 7: "Y" for yellow colour */
+    outbuf[3] = 255; outbuf[4] = 255; outbuf[5] = 0;
+    /* Colour index 8: "G" for green colour */
+    outbuf[6] = 0; outbuf[7] = 255; outbuf[8] = 0;
+    fwrite(outbuf, 9, 1, gif_file);
+    /* Colour index 9: "K" for black colour */
+    outbuf[0] = 0; outbuf[1] = 0; outbuf[2] = 0;
+    /* Colour index 10: unused, set to black colour*/
+    outbuf[3] = 0; outbuf[4] = 0; outbuf[5] = 0;
+    /* Colour index 11: unused, set to black colour */
+    outbuf[6] = 0; outbuf[7] = 0; outbuf[8] = 0;
+    fwrite(outbuf, 9, 1, gif_file);
+    /* Colour index 12: unused, set to black colour */
+    outbuf[0] = 0; outbuf[1] = 0; outbuf[2] = 0;
+    /* Colour index 13: unused, set to black colour*/
+    outbuf[3] = 0; outbuf[4] = 0; outbuf[5] = 0;
+    /* Colour index 14: unused, set to black colour */
+    outbuf[6] = 0; outbuf[7] = 0; outbuf[8] = 0;
+    fwrite(outbuf, 9, 1, gif_file);
+    /* Colour index 15: transparent colour */
+    outbuf[0] = 0; outbuf[1] = 0; outbuf[2] = 0;
+    fwrite(outbuf, 3, 1, gif_file);
 
     /* Graphic control extension (8) */
     /* A graphic control extension block is used for overlay gifs.
@@ -380,7 +442,7 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
      * information on the local color table.
      * There is no local color table if its most significant bit is reset.
      */
-    outbuf[9] = (unsigned char) (0 | (0x7 & (DESTINATION_IMAGE_BITS - 1)));
+    outbuf[9] = 0x00;
     fwrite(outbuf, 10, 1, gif_file);
 
     /* call lzw encoding */
