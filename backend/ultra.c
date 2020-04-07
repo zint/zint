@@ -123,7 +123,7 @@ static const int tiles[] = {
  * contradictions, so this is a "best guess" implementation. Because it is not guaranteed
  * to be correct this compression is not applied by default. To enable compression set
  * 
- * symbol->option_1 = ULTRA_COMPRESSION;
+ * symbol->option_3 = ULTRA_COMPRESSION;
  * 
  * Code compression should be enabled by default when it has been implemented according to
  * a more reliable version of the specification.
@@ -594,7 +594,7 @@ int ultra_generate_codewords(struct zint_symbol *symbol, const unsigned char sou
         }
     }
     
-    if (symbol->option_1 != ULTRA_COMPRESSION) {
+    if (symbol->option_3 != ULTRA_COMPRESSION) {
         // Force eight-bit mode by default as other modes are poorly documented
         symbol_mode = EIGHTBIT_MODE;
     }
@@ -705,7 +705,7 @@ int ultra_generate_codewords(struct zint_symbol *symbol, const unsigned char sou
     }
 
     /* Attempt encoding in all three modes to see which offers best compaction and store results */
-    if (symbol->option_1 == ULTRA_COMPRESSION) {
+    if (symbol->option_3 == ULTRA_COMPRESSION) {
         current_mode = symbol_mode;
         input_locn = 0;
         do {
