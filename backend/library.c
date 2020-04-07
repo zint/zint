@@ -1,7 +1,7 @@
 /*  library.c - external functions of libzint
 
     libzint - the open source barcode library
-    Copyright (C) 2009-2019 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009 - 2020 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -410,6 +410,7 @@ static int gs1_compliant(const int symbology) {
         case BARCODE_QRCODE:
         case BARCODE_DOTCODE:
         case BARCODE_RMQR:
+        case BARCODE_ULTRA:
             result = 1;
             break;
     }
