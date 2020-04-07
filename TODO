@@ -5,7 +5,7 @@ Backend
  * Create filters for more output file formats.
  * The code was developed to be easy to understand rather than efficient so may
    benefit from some memory optimisation for embedded systems.
- * Support for Ultra Code, Super Code and Data Strip desirable, and any other
+ * Support for Super Code and Data Strip desirable, and any other
    industry symbologies not currently included.
 
 GUI Frontend
