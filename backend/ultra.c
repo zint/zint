@@ -798,6 +798,10 @@ INTERNAL int ultracode(struct zint_symbol *symbol, const unsigned char source[],
     char tilepat[6];
     int tilex, tiley;
     int dcc;
+#ifdef _MSC_VER
+    int* data_codewords;
+	char* pattern;
+#endif /* _MSC_VER */
 
     cw_memalloc = in_length * 2;
     if (cw_memalloc < 283) {
@@ -812,7 +816,7 @@ INTERNAL int ultracode(struct zint_symbol *symbol, const unsigned char source[],
 #ifndef _MSC_VER
     int data_codewords[cw_memalloc];
 #else
-    int* data_codewords = (int *) _alloca(cw_memalloc * sizeof (int));
+    data_codewords = (int *) _alloca(cw_memalloc * sizeof (int));
 #endif /* _MSC_VER */
 
     data_cw_count = ultra_generate_codewords(symbol, source, in_length, data_codewords);
@@ -914,7 +918,7 @@ INTERNAL int ultracode(struct zint_symbol *symbol, const unsigned char source[],
 #ifndef _MSC_VER
     char pattern[total_height * total_width];
 #else
-    char* pattern = (char *) _alloca(total_height * toal_width * sizeof (char));
+    pattern = (char *) _alloca(total_height * total_width * sizeof (char));
 #endif /* _MSC_VER */
 
     for (i = 0; i < (total_height * total_width); i++) {
