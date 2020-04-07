@@ -136,8 +136,8 @@ extern "C" {
     };
 
 #define ZINT_VERSION_MAJOR      2
-#define ZINT_VERSION_MINOR      7
-#define ZINT_VERSION_RELEASE    1
+#define ZINT_VERSION_MINOR      8
+#define ZINT_VERSION_RELEASE    0
 
     /* Tbarcode 7 codes */
 #define BARCODE_CODE11          1
