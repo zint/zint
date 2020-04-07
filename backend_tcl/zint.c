@@ -71,6 +71,8 @@
  -	Framework 2.7.1 update
  2020-04-06 HaO
  -	Added option -fullmultibyte
+ 2020-04-07 2.8.0 HaO
+ - Added symbology "UltraCode".
 */
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
@@ -110,7 +112,7 @@
 /*----------------------------------------------------------------------------*/
 /* > File option defines */
 
-#define VERSION "2.7.1"
+#define VERSION "2.8.0"
 
 /*----------------------------------------------------------------------------*/
 /* >>>>> Hepler defines */
@@ -225,6 +227,7 @@ static char *s_code_list[] = {
     "CodeOne",
     "GridMatrix",
     "UPNQR",
+	"UltraCode",
     "rMQR",
     NULL};
 
@@ -321,6 +324,7 @@ static int s_code_number[] = {
     BARCODE_CODEONE,
     BARCODE_GRIDMATRIX,
     BARCODE_UPNQR,
+	BARCODE_ULTRA,
     BARCODE_RMQR,
     0};
 
