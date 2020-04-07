@@ -1166,6 +1166,7 @@ INTERNAL int plot_raster(struct zint_symbol *symbol, int rotate_angle, int file_
 
 #ifdef NO_PNG
     if (file_type == OUT_PNG_FILE) {
+		strcpy(symbol->errtxt, "660: PNG format disabled on compile time");
         return ZINT_ERROR_INVALID_OPTION;
     }
 #endif /* NO_PNG */
