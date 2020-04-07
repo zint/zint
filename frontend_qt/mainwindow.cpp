@@ -686,6 +686,21 @@ void MainWindow::change_options()
         tabMain->insertTab(1,m_optionWidget,tr("GS1 DataBar Stacked"));
         connect(m_optionWidget->findChild<QObject*>("cmbCols"), SIGNAL(currentIndexChanged ( int )), SLOT(update_preview()));
     }
+    
+    if(metaObject()->enumerator(0).value(bstyle->currentIndex()) == BARCODE_ULTRA)
+    {
+        QFile file(":/grpUltra.ui");
+        if (!file.open(QIODevice::ReadOnly))
+            return;
+        m_optionWidget=uiload.load(&file);
+        file.close();
+        tabMain->insertTab(1,m_optionWidget,tr("Ultracode"));
+        connect(m_optionWidget->findChild<QObject*>("radUltraAuto"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(m_optionWidget->findChild<QObject*>("radUltraEcc"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(m_optionWidget->findChild<QObject*>("cmbUltraEcc"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(m_optionWidget->findChild<QObject*>("radUltraStand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(m_optionWidget->findChild<QObject*>("radUltraGS1"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+    }
 
     switch(metaObject()->enumerator(0).value(bstyle->currentIndex()))
     {
@@ -1056,6 +1071,14 @@ void MainWindow::update_preview()
 
             if(m_optionWidget->findChild<QRadioButton*>("radHXECC")->isChecked())
                 m_bc.bc.setSecurityLevel(m_optionWidget->findChild<QComboBox*>("cmbHXECC")->currentIndex() + 1);
+            break;
+            
+        case BARCODE_ULTRA:
+            m_bc.bc.setSymbol(BARCODE_ULTRA);
+            if(m_optionWidget->findChild<QRadioButton*>("radUltraEcc")->isChecked())
+                m_bc.bc.setSecurityLevel(m_optionWidget->findChild<QComboBox*>("cmbUltraEcc")->currentIndex() + 1);
+            if(m_optionWidget->findChild<QRadioButton*>("radUltraGS1")->isChecked())
+                m_bc.bc.setInputMode(GS1_MODE);
             break;
 
         default:

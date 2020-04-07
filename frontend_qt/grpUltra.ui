@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>grpAztec</class>
+ <widget class="QWidget" name="grpAztec">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>461</width>
+    <height>237</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QGridLayout" name="gridLayout">
+     <item row="0" column="0">
+      <widget class="QRadioButton" name="radUltraAuto">
+       <property name="text">
+        <string>A&amp;utomatic Resizing</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QComboBox" name="cmbUltraEcc">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="currentIndex">
+        <number>0</number>
+       </property>
+       <item>
+        <property name="text">
+         <string>ECO - Error Detection Only</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>EC1 - Approx 5%</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>EC2 - Approx 9%</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>EC3 - Approx 17%</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>EC4 - Approx 25%</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>EC5 - Approx 33%</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QRadioButton" name="radUltraEcc">
+       <property name="text">
+        <string>Error Correction Level:</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBox">
+     <property name="title">
+      <string>Encoding Mode</string>
+     </property>
+     <widget class="QWidget" name="layoutWidget">
+      <property name="geometry">
+       <rect>
+        <x>30</x>
+        <y>30</y>
+        <width>453</width>
+        <height>71</height>
+       </rect>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_2">
+       <item row="1" column="1">
+        <widget class="QRadioButton" name="radUltraGS1">
+         <property name="text">
+          <string>GS1 Data Mode</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QRadioButton" name="radUltraStand">
+         <property name="text">
+          <string>Standard Mode</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>radUltraEcc</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>cmbUltraEcc</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>85</x>
+     <y>47</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>331</x>
+     <y>47</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>
