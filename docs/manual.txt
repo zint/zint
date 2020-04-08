@@ -437,18 +437,12 @@ be found in that section.
 
 The --fullmultibyte option uses the multibyte modes of QR Code, Micro QR Code,
 Rectangular Micro QR Code, Han Xin Code and Grid Matrix for binary and Latin
-data, maximizing density.
-Please check your reader device for not having the following
-non-standard property: this option may switch to multibyte (ex. Kanji)
-compression within the code to obtain a smaller code matrix. The Kanji mode is
-a compaction mode and does not inform about contained Kanji characters.
-Nevertheless, some decoders take blocks which are encoded in Kanji
-compaction and output them as Kanji characters, typically be applying a
-transformation to UTF8. The result is unpredictable, as zint
---fullmultibyte chooses the compaction type only on the criteria to
-obtain smaller codes and not to inform about the presence of Kanji
-characters.
-An example decoder with this property is the zxing decoder app.
+data, maximizing density. This is achieved by using compression designed for
+Kanji characters, however some decoders take blocks which are encoded this
+way and interpret them as Kanji characters, typically by applying a
+transformation to UTF8 and thus causing data corruption. Symbols encoded
+with this option should be checked against decoders before they are used.
+The popular open-source ZXing decoder is known to exhibit this behaviour.
 
 If your data contains non ISO-Latin-1 characters, you may encode it using an
 ECI-aware symbology and an ECI value from the table below.
