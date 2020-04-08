@@ -34,7 +34,7 @@
 
 //#define TEST_PRINT_GENERATE_EXPECTED    1
 //#define TEST_PRINT_OVERWRITE_EXPECTED   "bmp,emf,eps,gif,pcx,png,svg,tif,txt"
-#define TEST_PRINT_OVERWRITE_EXPECTED   ""
+//#define TEST_PRINT_OVERWRITE_EXPECTED   "gif"
 
 static void test_print(void)
 {
