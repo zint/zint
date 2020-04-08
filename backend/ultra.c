@@ -575,8 +575,8 @@ int ultra_generate_codewords(struct zint_symbol *symbol, const unsigned char sou
     int cw_fragment[in_length + 1];
 #else
     unsigned char * crop_source = (unsigned char *) _alloca((in_length + 1) * sizeof (unsigned char));
-    char * mode = (char *) _alloca(in_length + 1 * sizeof (char));
-    int * cw_fragment = (int *) _alloca(in_length + 1 * sizeof (int));
+    char * mode = (char *) _alloca((in_length + 1) * sizeof (char));
+    int * cw_fragment = (int *) _alloca((in_length + 1) * sizeof (int));
 #endif /* _MSC_VER */
 
     /* Section 7.6.2 indicates that ECI \000003 to \811799 are supported */
