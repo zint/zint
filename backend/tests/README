@@ -6,7 +6,7 @@ To make, first make libzint with ZINT_TEST defined:
   cd <project-dir>
   mkdir build
   cd build
-  cmake -DZINT_TEST:BOOL:1 ..
+  cmake -DZINT_TEST:BOOL=1 ..
   make
 
 Then make the tests:
@@ -15,7 +15,7 @@ Then make the tests:
   cd backend/tests
   mkdir build
   cd build
-  cmake -DZINT_TEST:BOOL:1 ..
+  cmake -DZINT_TEST:BOOL=1 ..
   make
 
 (ZINT_TEST is needed to export INTERNAL functions for use and testing.)
