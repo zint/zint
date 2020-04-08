@@ -1026,9 +1026,5 @@ INTERNAL int ultracode(struct zint_symbol *symbol, const unsigned char source[],
         }
     }
 
-    /* Override any user selected colours */
-    strcpy(symbol->fgcolour, "000000");
-    strcpy(symbol->bgcolour, "ffffff");
-
     return 0;
 }
