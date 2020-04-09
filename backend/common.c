@@ -477,4 +477,21 @@ void debug_test_codeword_dump(struct zint_symbol *symbol, unsigned char* codewor
     }
     symbol->errtxt[strlen(symbol->errtxt) - 1] = '\0'; /* Zap last space */
 }
+
+void debug_test_codeword_dump_int(struct zint_symbol *symbol, int* codewords, int length) {
+    int i, max = 0, cnt_len, errtxt_len;
+    char temp[20];
+    errtxt_len = sprintf(symbol->errtxt, "(%d) ", length); /* Place the number of codewords at the front */
+    for (i = 0, cnt_len = errtxt_len; i < length; i++) {
+        cnt_len += sprintf(temp, "%d ", codewords[i]);
+        if (cnt_len > 92) {
+            break;
+        }
+        max++;
+    }
+    for (i = 0; i < max; i++) {
+        errtxt_len += sprintf(symbol->errtxt + errtxt_len, "%d ", codewords[i]);
+    }
+    symbol->errtxt[strlen(symbol->errtxt) - 1] = '\0'; /* Zap last space */
+}
 #endif

@@ -76,9 +76,39 @@ static void test_utf8_to_unicode(void)
     testFinish();
 }
 
+static void test_debug_test_codeword_dump_int(void)
+{
+    testStart("");
+
+    int ret;
+    struct item {
+        int codewords[50];
+        int length;
+        char* expected;
+    };
+    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    struct item data[] = {
+        /*  0*/ { { 2147483647, -2147483646, 2147483647, 0, 2147483647, 2147483647, 2147483647, 2147483647, 123456 }, 10, "(10) 2147483647 -2147483646 2147483647 0 2147483647 2147483647 2147483647 2147483647 123456" },
+        /*  1*/ { { 2147483647, -2147483646, 2147483647, 0, 2147483647, 2147483647, 2147483647, 2147483647, 1234567 }, 10, "(10) 2147483647 -2147483646 2147483647 0 2147483647 2147483647 2147483647 2147483647" },
+    };
+    int data_size = sizeof(data) / sizeof(struct item);
+
+    struct zint_symbol symbol;
+
+    for (int i = 0; i < data_size; i++) {
+
+        debug_test_codeword_dump_int(&symbol, data[i].codewords, data[i].length);
+        assert_nonzero(strlen(symbol.errtxt) < 92, "i:%d strlen(%s) >= 92 (%zu)\n", i, symbol.errtxt, strlen(symbol.errtxt));
+        assert_zero(strcmp(symbol.errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0 (%zu, %zu)\n", i, symbol.errtxt, data[i].expected, strlen(symbol.errtxt), strlen(data[i].expected));
+    }
+
+    testFinish();
+}
+
 int main()
 {
     test_utf8_to_unicode();
+    test_debug_test_codeword_dump_int();
 
     testReport();
 

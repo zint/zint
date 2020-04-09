@@ -328,6 +328,16 @@ char* testUtilInputModeName(int input_mode) {
     return data[input_mode].name;
 }
 
+char* testUtilOption3Name(int option_3) {
+    switch (option_3) {
+        case DM_SQUARE: return "DM_SQUARE";
+        case DM_DMRE: return "DM_DMRE";
+        case ZINT_FULL_MULTIBYTE: return "ZINT_FULL_MULTIBYTE";
+        case ULTRA_COMPRESSION: return "ULTRA_COMPRESSION";
+    }
+    return "-1";
+}
+
 int testUtilDAFTConvert(const struct zint_symbol* symbol, char* buffer, int buffer_size)
 {
     buffer[0] = '\0';
@@ -680,7 +690,7 @@ void testUtilModulesDump(const struct zint_symbol* symbol, char* prefix, char* p
         }
         putchar('"');
         for (w = 0; w < symbol->width; w++) {
-            putchar(module_is_set(symbol, r, w) ? '1' : '0');
+            putchar(module_is_set(symbol, r, w) + '0');
         }
         putchar('"');
         if (*postfix) {
@@ -696,7 +706,7 @@ int testUtilModulesCmp(const struct zint_symbol* symbol, const char* expected, i
     int r, w = 0;
     for (r = 0; r < symbol->rows && e < ep; r++) {
         for (w = 0; w < symbol->width && e < ep; w++) {
-            if (module_is_set(symbol, r, w) != (*e == '1')) {
+            if (module_is_set(symbol, r, w) + '0' != *e) {
                 *row = r;
                 *width = w;
                 return 1 /*fail*/;

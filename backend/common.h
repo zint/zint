@@ -92,6 +92,7 @@ extern "C" {
 
     #ifdef ZINT_TEST
     void debug_test_codeword_dump(struct zint_symbol *symbol, unsigned char* codewords, int length);
+    void debug_test_codeword_dump_int(struct zint_symbol *symbol, int* codewords, int length);
     #endif
 
 #ifdef __cplusplus

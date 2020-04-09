@@ -34,7 +34,6 @@
 
 //#define TEST_PRINT_GENERATE_EXPECTED    1
 //#define TEST_PRINT_OVERWRITE_EXPECTED   "bmp,emf,eps,gif,pcx,png,svg,tif,txt"
-//#define TEST_PRINT_OVERWRITE_EXPECTED   "gif"
 
 static void test_print(void)
 {
@@ -52,6 +51,7 @@ static void test_print(void)
         /*  0*/ { BARCODE_CODE128, -1, -1, "AIM", "code128_aim" },
         /*  1*/ { BARCODE_QRCODE, 2, 1, "1234567890", "qr_v1_m" },
         /*  2*/ { BARCODE_DOTCODE, -1, -1, "2741", "dotcode_aim_fig7" },
+        /*  3*/ { BARCODE_ULTRA, -1, -1, "A", "ultracode_a" },
     };
     int data_size = sizeof(data) / sizeof(struct item);
 
