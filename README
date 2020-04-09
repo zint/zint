@@ -18,7 +18,7 @@ Composite Symbology, Data Matrix, QR Code, Maxicode, Aztec Code, EAN-13,
 Micro QR, Korea Post Barcode, HIBC Code 128, HIBC Code 39, HIBC Data Matrix,
 HIBC PDF417, HIBC MicroPDF417, HIBC QR Code, HIBC Aztec Code, Japanese Postal
 Code, Code 49, Channel Code, Code One, Grid Matrix, FIM and Flattermarken,
-Codablock-F, DotCode, Han Xin Code, rMQR.
+Codablock-F, DotCode, Han Xin Code, rMQR and Ultracode.
 
 Output can be saved as BMP, EPS, GIF, PCX, TIF, EMF, PNG or SVG. 
 
@@ -130,7 +130,7 @@ Bugs:
 - In 2.7.0 removed interface "ZBarcode_Render" still declared
 - vc6 make was missing (trivial) resource.h
 
-Version 2.8.0 Not released jet
+Version 2.8.0 2020-04-10:
 Changes:
 (New) Tests for auspost, codablock, composite, dotcode, general, telepen, upcean,
   all output formats, 
@@ -141,7 +141,7 @@ Changes:
   In consequence, multibyte compaction schemes are disabled by default.
   The new option --fullmultibyte (option_3 = ZINT_FULL_MULTIBYTE) enables this
   optimisation.
-- Add mew symbology "Ultra Code" with the ability to output colour codes.
+- Add new symbology "Ultra Code" with the ability to output colour codes.
 Bugs:
 - Ticket 181 penetration test found many bugs:
   - Auspost: null bytes in content caused segfault
