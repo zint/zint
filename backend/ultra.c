@@ -856,10 +856,11 @@ INTERNAL int ultracode(struct zint_symbol *symbol, const unsigned char source[],
     if (symbol->debug & ZINT_DEBUG_PRINT) {
         printf("Codewords returned = %d\n", data_cw_count);
     }
+#ifdef ZINT_TEST
     if (symbol->debug & ZINT_DEBUG_TEST) {
         debug_test_codeword_dump_int(symbol, data_codewords, data_cw_count);
     }
-
+#endif
     /* Default ECC level is EC2 */
     if ((symbol->option_1 <= 0) || (symbol->option_1 > 6)) {
         ecc_level = 2;
