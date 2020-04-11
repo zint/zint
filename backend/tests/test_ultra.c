@@ -66,13 +66,12 @@ static void test_input(void)
         /* 13*/ { UNICODE_MODE, 9, -1, ULTRA_COMPRESSION, "A", 0, "(2) 272 65", "Note ECI ignored and not outputted if ULTRA_COMPRESSION and all ASCII" },
         /* 14*/ { UNICODE_MODE, 15, -1, -1, "Ŗ", 0, "(2) 268 170", "" },
         /* 15*/ { GS1_MODE, 0, -1, -1, "[01]03453120000011[17]20121125[10]ABCD1234", ZINT_ERROR_INVALID_DATA, "Error 259: Invalid data length for AI (17)", "AIMD/TSC15032-43 G.6 Invalid [17] 4-digit year used in example" },
-        /* 16*/ { GS1_MODE, 0, -1, -1, "[01]03453120000011[17]121125[10]ABCD1234", 0, "(20) 273 129 131 173 159 148 128 128 139 145 140 139 153 138 65 66 67 68 140 162", "" },
-        /* 17*/ { GS1_MODE, 0, -1, -1, "[01]03453120000011[17]121125[10]ABCD1234", 0, "(20) 273 129 131 173 159 148 128 128 139 145 140 139 153 138 65 66 67 68 140 162", "" },
-        /* 18*/ { GS1_MODE, 0, -1, -1, "[17]120508[10]ABCD1234[410]9501101020917", 0, "(21) 273 145 140 133 136 138 65 66 67 68 140 162 272 169 137 178 139 129 130 137 145", "" },
-        /* 19*/ { GS1_MODE, 0, -1, -1, "[17]120508[10]ABCDEFGHI[410]9501101020917", 0, "(21) 273 145 140 133 136 138 65 66 67 68 140 162 272 169 137 178 139 129 130 137 145", "" },
-        /* 20*/ { UNICODE_MODE, 0, -1, ULTRA_COMPRESSION, "ftp://", 0, "(4) 272 280 269 165", "" },
-        /* 21*/ { UNICODE_MODE, 0, -1, ULTRA_COMPRESSION, ".cgi", 0, "(4) 272 280 274 131", "" },
-        /* 22*/ { UNICODE_MODE, 0, -1, ULTRA_COMPRESSION, "ftp://a.cgi", 0, "(6) 272 280 269 165 6 107", "" },
+        /* 16*/ { GS1_MODE, 0, -1, -1, "[01]03453120000011[17]121125[10]ABCD1234", 0, "(20) 273 129 131 173 159 148 128 128 139 145 140 139 153 138 65 66 67 68 140 162", "Mode: a (34)" },
+        /* 17*/ { GS1_MODE, 0, -1, -1, "[17]120508[10]ABCD1234[410]9501101020917", 0, "(21) 273 145 140 133 136 138 65 66 67 68 140 162 272 169 137 178 139 129 130 137 145", "Mode: a (35)" },
+        /* 18*/ { GS1_MODE, 0, -1, -1, "[17]120508[10]ABCDEFGHI[410]9501101020917", 0, "(24) 273 145 140 133 136 138 65 66 67 68 69 70 71 72 73 272 169 137 178 139 129 130 137 145", "Mode: a (36)" },
+        /* 19*/ { UNICODE_MODE, 0, -1, ULTRA_COMPRESSION, "ftp://", 0, "(4) 272 280 269 165", "Mode: c (6)" },
+        /* 20*/ { UNICODE_MODE, 0, -1, ULTRA_COMPRESSION, ".cgi", 0, "(4) 272 280 274 131", "Mode: c (4)" },
+        /* 21*/ { UNICODE_MODE, 0, -1, ULTRA_COMPRESSION, "ftp://a.cgi", 0, "(6) 272 280 269 165 6 107", "Mode: c (11)" },
     };
     int data_size = sizeof(data) / sizeof(struct item);
 
@@ -92,8 +91,8 @@ static void test_input(void)
         if (data[i].option_3 != -1) {
             symbol->option_3 = data[i].option_3;
         }
-        //symbol->debug = ZINT_DEBUG_PRINT | ZINT_DEBUG_TEST;
         symbol->debug = ZINT_DEBUG_TEST; // Needed to get codeword dump in errtxt
+        //symbol->debug |= ZINT_DEBUG_PRINT;
 
         int length = strlen(data[i].data);
 
