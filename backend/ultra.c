@@ -59,8 +59,7 @@ static const char ultra_digit[] = "0123456789,/";
 static const char ultra_colour[] = "WCBMRYGK";
 
 //static const int ultra_maxsize[] = {34, 78, 158, 282}; // According to Table 1
-//static const int ultra_maxsize[] = {34, 82, 158, 282}; // Adjusted to allow 79-82 codeword range in 3-row symbols
-static const int ultra_maxsize[] = {38, 91, 158, 282}; // Adjusted again to ensure DCC is never negative
+static const int ultra_maxsize[] = {34, 81, 158, 282}; // Adjusted to allow 79-81 codeword range in 3-row symbols (only 1 secondary vertical clock track, not 2, so 3 extra)
 
 static const int ultra_mincols[] = {5, 13, 23, 30}; // # Total Tile Columns from Table 1
 
@@ -131,7 +130,7 @@ static const int tiles[] = {
  */
 
 /* Generate divisor polynomial gQ(x) for GF283() given the required ECC size, 3 to 101 */
-void ultra_genPoly(short EccSize, unsigned short gPoly[], unsigned short gfPwr[], unsigned short gfLog[]) {
+static void ultra_genPoly(short EccSize, unsigned short gPoly[], unsigned short gfPwr[], unsigned short gfLog[]) {
     int i, j;
 
     gPoly[0] = 1;
@@ -148,7 +147,7 @@ void ultra_genPoly(short EccSize, unsigned short gPoly[], unsigned short gfPwr[]
 }
 
 /* Generate the log and antilog tables for GF283() multiplication & division */
-void ultra_initLogTables(unsigned short gfPwr[], unsigned short gfLog[]) {
+static void ultra_initLogTables(unsigned short gfPwr[], unsigned short gfLog[]) {
     int i, j;
 
     for (j = 0; j < 283; j++) gfLog[j] = 0;
@@ -161,7 +160,7 @@ void ultra_initLogTables(unsigned short gfPwr[], unsigned short gfLog[]) {
     }
 }
 
-void ultra_gf283(short DataSize, short EccSize, int Message[]) {
+static void ultra_gf283(short DataSize, short EccSize, int Message[]) {
     /* Input is complete message codewords in array Message[282]
      * DataSize is number of message codewords
      * EccSize is number of Reed-Solomon GF(283) check codewords to generate
@@ -204,7 +203,7 @@ void ultra_gf283(short DataSize, short EccSize, int Message[]) {
 
 /* End of Ted Williams code */
 
-int ultra_find_fragment(unsigned char source[], int source_length, int position) {
+static int ultra_find_fragment(const unsigned char source[], int source_length, int position) {
     int retval = -1;
     int j, k, latch;
 
@@ -228,7 +227,7 @@ int ultra_find_fragment(unsigned char source[], int source_length, int position)
 }
 
 /* Encode characters in 8-bit mode */
-float look_ahead_eightbit(unsigned char source[], int in_length, int in_locn, char current_mode, int end_char, int cw[], int* cw_len, int gs1)
+static float look_ahead_eightbit(unsigned char source[], int in_length, int in_locn, char current_mode, int end_char, int cw[], int* cw_len, int gs1)
 {
     int codeword_count = 0;
     int i;
@@ -262,7 +261,7 @@ float look_ahead_eightbit(unsigned char source[], int in_length, int in_locn, ch
 }
 
 /* Encode character in the ASCII mode/submode (including numeric compression) */
-float look_ahead_ascii(unsigned char source[], int in_length, int in_locn, char current_mode, int symbol_mode, int end_char, int cw[], int* cw_len, int* encoded, int gs1) {
+static float look_ahead_ascii(unsigned char source[], int in_length, int in_locn, char current_mode, int symbol_mode, int end_char, int cw[], int* cw_len, int* encoded, int gs1) {
     int codeword_count = 0;
     int i;
     int first_digit, second_digit, done;
@@ -350,7 +349,7 @@ float look_ahead_ascii(unsigned char source[], int in_length, int in_locn, char 
     }
 }
 
-int get_subset(unsigned char source[], int in_length, int in_locn) {
+static int get_subset(unsigned char source[], int in_length, int in_locn) {
     int fragno;
     int subset = 0;
 
@@ -375,7 +374,7 @@ int get_subset(unsigned char source[], int in_length, int in_locn) {
 }
 
 /* Encode characters in the C43 compaction submode */
-float look_ahead_c43(unsigned char source[], int in_length, int in_locn, char current_mode, int end_char, int cw[], int* cw_len, int* encoded, int gs1) {
+static float look_ahead_c43(unsigned char source[], int in_length, int in_locn, char current_mode, int end_char, int cw[], int* cw_len, int* encoded, int gs1) {
     int codeword_count = 0;
     int subcodeword_count = 0;
     int i;
@@ -567,7 +566,7 @@ float look_ahead_c43(unsigned char source[], int in_length, int in_locn, char cu
 }
 
 /* Produces a set of codewords which are "somewhat" optimised - this could be improved on */
-int ultra_generate_codewords(struct zint_symbol *symbol, const unsigned char source[], const size_t in_length, int codewords[]) {
+static int ultra_generate_codewords(struct zint_symbol *symbol, const unsigned char source[], const size_t in_length, int codewords[]) {
     int i;
     int crop_length;
     int codeword_count = 0;
@@ -762,7 +761,7 @@ int ultra_generate_codewords(struct zint_symbol *symbol, const unsigned char sou
             mode[input_locn] = '8';
         }
     }
-    mode[input_locn] = '\0';
+    mode[crop_length] = '\0';
 
     if (symbol->debug & ZINT_DEBUG_PRINT) {
         printf("Mode: %s (%zu)\n", mode, strlen(mode));
@@ -824,7 +823,7 @@ INTERNAL int ultracode(struct zint_symbol *symbol, const unsigned char source[],
     int total_cws;
     int pads;
     int cw_memalloc;
-    int codeword[282 + 4];
+    int codeword[282 + 3]; // Allow for 3 pads in final 57th (60th incl. clock tracks) column of 5-row symbol (57 * 5 == 285)
     int i, j, locn;
     int total_height, total_width;
     char tilepat[6];
@@ -861,6 +860,9 @@ INTERNAL int ultracode(struct zint_symbol *symbol, const unsigned char source[],
         debug_test_codeword_dump_int(symbol, data_codewords, data_cw_count);
     }
 #endif
+
+    data_cw_count += 2; // 2 == MCC + ACC (data codeword count includes start char)
+
     /* Default ECC level is EC2 */
     if ((symbol->option_1 <= 0) || (symbol->option_1 > 6)) {
         ecc_level = 2;
@@ -886,7 +888,7 @@ INTERNAL int ultracode(struct zint_symbol *symbol, const unsigned char source[],
     }
 
     /* Maximum capacity is 282 codewords */
-    total_cws = data_cw_count + qcc + 5;
+    total_cws = data_cw_count + qcc + 3; // 3 == TCC pattern + RSEC pattern + QCC pattern
     if (total_cws > 282) {
         strcpy(symbol->errtxt, "591: Data too long for selected error correction capacity");
         return ZINT_ERROR_TOO_LONG;
@@ -894,7 +896,7 @@ INTERNAL int ultracode(struct zint_symbol *symbol, const unsigned char source[],
 
     rows = 5;
     for (i = 2; i >= 0; i--) {
-        if (total_cws < ultra_maxsize[i]) {
+        if (total_cws - 6 <= ultra_maxsize[i]) { // Total codewords less 6 overhead (Start + MCC + ACC + 3 TCC/RSEC/QCC patterns)
             rows--;
         }
     }
@@ -906,6 +908,7 @@ INTERNAL int ultracode(struct zint_symbol *symbol, const unsigned char source[],
         pads = rows - (total_cws % rows);
         columns = (total_cws / rows) + 1;
     }
+    columns += columns / 15; // Secondary vertical clock tracks
 
     if (symbol->debug & ZINT_DEBUG_PRINT) {
         printf("Calculated size is %d rows by %d columns\n", rows, columns);
@@ -915,7 +918,7 @@ INTERNAL int ultracode(struct zint_symbol *symbol, const unsigned char source[],
     for (i = 282; i > 2; i--) {
         data_codewords[i] = data_codewords[i - 2];
     }
-    data_codewords[1] = data_cw_count += 2; // MCC
+    data_codewords[1] = data_cw_count; // MCC
     data_codewords[2] = acc; // ACC
 
     locn = 0;
@@ -948,7 +951,7 @@ INTERNAL int ultracode(struct zint_symbol *symbol, const unsigned char source[],
     }
 
     total_height = (rows * 6) + 1;
-    total_width = columns + 6 + (columns / 15);
+    total_width = columns + 6;
 
     /* Build symbol */
 #ifndef _MSC_VER
