@@ -260,7 +260,7 @@ INTERNAL int emf_plot(struct zint_symbol *symbol) {
 
     /* Header */
     emr_header.type = 0x00000001; // EMR_HEADER
-    emr_header.size = 88; // Assuming no additional data in header
+    emr_header.size = 108; // Including extensions
     emr_header.emf_header.bounds.left = 0;
     emr_header.emf_header.bounds.right = ceil(symbol->vector->width);
     emr_header.emf_header.bounds.bottom = ceil(symbol->vector->height);
@@ -280,7 +280,14 @@ INTERNAL int emf_plot(struct zint_symbol *symbol) {
     emr_header.emf_header.device.cy = 1000;
     emr_header.emf_header.millimeters.cx = 300;
     emr_header.emf_header.millimeters.cy = 300;
-    bytecount = 88;
+    /* HeaderExtension1 */
+    emr_header.emf_header.cb_pixel_format = 0x0000; // None set
+    emr_header.emf_header.off_pixel_format = 0x0000; // None set
+    emr_header.emf_header.b_open_gl = 0x0000; // OpenGL not present
+    /* HeaderExtension2 */
+    emr_header.emf_header.micrometers.cx = 0;
+    emr_header.emf_header.micrometers.cy = 0;
+    bytecount = 108;
     recordcount = 1;
 
     /* Create Brushes */
@@ -624,9 +631,12 @@ INTERNAL int emf_plot(struct zint_symbol *symbol) {
     }
 
     // Text
+    if (string_count > 0) {
+        fwrite(&emr_selectobject_font, sizeof (emr_selectobject_t), 1, emf_file);
+    }
+    
     for (i = 0; i < string_count; i++) {
         spacing = 8 * symbol->scale;
-        fwrite(&emr_selectobject_font, sizeof (emr_selectobject_t), 1, emf_file);
         fwrite(&text[i], sizeof (emr_exttextoutw_t), 1, emf_file);
         fwrite(this_string[i], bump_up(text[i].w_emr_text.chars + 1) * 2, 1, emf_file);
         free(this_string[i]);
