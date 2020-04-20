@@ -162,6 +162,12 @@ Bugs:
 - Ticket 189: FNC1 encodation fixed (FLG(0) missing after FLG(n))
 - PCX format: added missing bytes_per_line if bitmap width is odd.
 
+Version 2.8.1 Not released jet
+Bugs:
+- Ticket 185 EMF export corrections
+  - fine scaling by the use of float arithmetic
+  - full header (extension1&2) with correct size field
+
 CONTACT US
 ----------
 The home of Zint is:
