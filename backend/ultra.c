@@ -214,6 +214,7 @@ static int ultra_find_fragment(const unsigned char source[], int source_length, 
             for (k = 0; k < (int) strlen(fragment[j]); k++) {
                 if (source[position + k] != fragment[j][k]) {
                     latch = 0;
+                    break;
                 }
             }
         }
@@ -308,13 +309,13 @@ static float look_ahead_ascii(unsigned char source[], int in_length, int in_locn
                     codeword_count++;
                     i += 2;
                     done = 1;
-                } else if ((first_digit >= 0) && (first_digit <= 10) && (second_digit == 11)) {
+                } else if ((first_digit >= 0) && (first_digit <= 9) && (second_digit == 11)) {
                     /* Single digit or decimal point followed by field deliminator */
                     cw[codeword_count] = first_digit + 248;
                     codeword_count++;
                     i += 2;
                     done = 1;
-                } else if ((first_digit == 11) && (second_digit >= 0) && (second_digit <= 10)) {
+                } else if ((first_digit == 11) && (second_digit >= 0) && (second_digit <= 9)) {
                     /* Field deliminator followed by single digit or decimal point */
                     cw[codeword_count] = second_digit + 259;
                     codeword_count++;
@@ -349,36 +350,79 @@ static float look_ahead_ascii(unsigned char source[], int in_length, int in_locn
     }
 }
 
-static int get_subset(unsigned char source[], int in_length, int in_locn) {
+/* Returns true if should latch to subset other than given `subset` */
+static int c43_should_latch_other(const unsigned char data[], const size_t length, const unsigned int locn, int subset, int gs1) {
+    unsigned int i, fraglen, predict_window;
+    int cnt, alt_cnt, fragno;
+    const char* set = subset == 1 ? ultra_c43_set1 : ultra_c43_set2;
+    const char* alt_set = subset == 2 ? ultra_c43_set1 : ultra_c43_set2;
+
+    if (locn + 3 > length) {
+        return 0;
+    }
+    predict_window = locn + 3;
+
+    for (i = locn, cnt = 0, alt_cnt = 0; i < predict_window; i++) {
+        if (data[i] <= 0x1F || data[i] >= 0x7F || (gs1 && data[i] == '[')) {
+            break;
+        }
+
+        fragno = ultra_find_fragment(data, length, i);
+        if (fragno != -1 && fragno != 26) {
+            fraglen = strlen(fragment[fragno]);
+            predict_window += fraglen;
+            if (predict_window > length) {
+                predict_window = length;
+            }
+            i += fraglen - 1;
+        } else {
+            if (strchr(set, data[i]) != NULL) {
+                cnt++;
+            }
+            if (strchr(alt_set, data[i]) != NULL) {
+                alt_cnt++;
+            }
+        }
+    }
+
+    return alt_cnt > cnt;
+}
+
+static int get_subset(unsigned char source[], int in_length, int in_locn, int current_subset) {
     int fragno;
     int subset = 0;
-
-    if (posn(ultra_c43_set1, source[in_locn]) != -1) {
-        subset = 1;
-    }
-
-    if (posn(ultra_c43_set2, source[in_locn]) != -1) {
-        subset = 2;
-    }
-
-    if (posn(ultra_c43_set3, source[in_locn]) != -1) {
-        subset = 3;
-    }
 
     fragno = ultra_find_fragment(source, in_length, in_locn);
     if ((fragno != -1) && (fragno != 26)) {
         subset = 3;
+    } else if (current_subset == 2) {
+        if (posn(ultra_c43_set2, source[in_locn]) != -1) {
+            subset = 2;
+        } else if (posn(ultra_c43_set1, source[in_locn]) != -1) {
+            subset = 1;
+        }
+    } else {
+        if (posn(ultra_c43_set1, source[in_locn]) != -1) {
+            subset = 1;
+        } else if (posn(ultra_c43_set2, source[in_locn]) != -1) {
+            subset = 2;
+        }
+    }
+
+    if (subset == 0) {
+        if (posn(ultra_c43_set3, source[in_locn]) != -1) {
+            subset = 3;
+        }
     }
 
     return subset;
 }
 
 /* Encode characters in the C43 compaction submode */
-static float look_ahead_c43(unsigned char source[], int in_length, int in_locn, char current_mode, int end_char, int cw[], int* cw_len, int* encoded, int gs1) {
+static float look_ahead_c43(unsigned char source[], int in_length, int in_locn, char current_mode, int end_char, int subset, int cw[], int* cw_len, int* encoded, int gs1, int debug) {
     int codeword_count = 0;
     int subcodeword_count = 0;
     int i;
-    int subset = 0;
     int fragno;
     int sublocn = in_locn;
     int new_subset;
@@ -386,19 +430,12 @@ static float look_ahead_c43(unsigned char source[], int in_length, int in_locn, 
     int base43_value;
     int letters_encoded = 0;
     int pad;
-    int gs1_latch = 0;
 
 #ifndef _MSC_VER
     int subcw[(in_length + 3) * 2];
 #else
     int * subcw = (int *) _alloca((in_length + 3) * 2 * sizeof (int));
 #endif /* _MSC_VER */
-
-    subset = get_subset(source, in_length, sublocn);
-
-    if (subset == 0) {
-        return 0.0;
-    }
 
     if (current_mode == EIGHTBIT_MODE) {
         /* Check for permissable URL C43 macro sequences, otherwise encode directly */
@@ -469,6 +506,34 @@ static float look_ahead_c43(unsigned char source[], int in_length, int in_locn, 
     unshift_set = subset;
 
     do {
+        /* Check for FNC1 */
+        if (gs1 && source[sublocn] == '[') {
+            break;
+        }
+
+        new_subset = get_subset(source, in_length, sublocn, subset);
+
+        if (new_subset == 0) {
+            break;
+        }
+
+        if ((new_subset != subset) && ((new_subset == 1) || (new_subset == 2))) {
+            if (c43_should_latch_other(source, in_length, sublocn, subset, gs1)) {
+                subcw[subcodeword_count] = 42; // Latch to other C43 set
+                subcodeword_count++;
+                unshift_set = new_subset;
+            } else {
+                subcw[subcodeword_count] = 40; // Shift to other C43 set for 1 char
+                subcodeword_count++;
+                subcw[subcodeword_count] = posn(new_subset == 1 ? ultra_c43_set1 : ultra_c43_set2, source[sublocn]);
+                subcodeword_count++;
+                sublocn++;
+                continue;
+            }
+        }
+
+        subset = new_subset;
+
         if (subset == 1) {
             subcw[subcodeword_count] = posn(ultra_c43_set1, source[sublocn]);
             subcodeword_count++;
@@ -507,30 +572,7 @@ static float look_ahead_c43(unsigned char source[], int in_length, int in_locn, 
             subset = unshift_set;
         }
 
-        if (sublocn < in_length && sublocn < end_char) {
-            new_subset = get_subset(source, in_length, sublocn);
-
-            if (((subset == 1) && (new_subset == 2)) && ((source[sublocn] == '.') || (source[sublocn] == ','))) {
-                /* <period> and <comma> characters available in both subsets */
-                new_subset = 1;
-            }
-
-            if ((new_subset != subset) && ((new_subset == 1) || (new_subset == 2))) {
-                subcw[subcodeword_count] = 42; // Latch to other C43 set
-                subcodeword_count++;
-                unshift_set = new_subset;
-            }
-
-            subset = new_subset;
-        }
-
-        /* Check for FNC1 */
-        if (sublocn < (in_length - 1)) {
-            if ((source[sublocn + 1] == '[') && gs1) {
-                gs1_latch = 1;
-            }
-        }
-    } while ((sublocn < in_length) && (sublocn < end_char) && (subset != 0) && (gs1_latch == 0));
+    } while ((sublocn < in_length) && (sublocn < end_char));
 
     pad = 3 - (subcodeword_count % 3);
     if (pad == 3) {
@@ -540,6 +582,12 @@ static float look_ahead_c43(unsigned char source[], int in_length, int in_locn, 
     for (i = 0; i < pad; i++) {
         subcw[subcodeword_count] = 42; // Latch to other C43 set used as pad
         subcodeword_count++;
+    }
+
+    if (debug & ZINT_DEBUG_PRINT) {
+        printf("C43 codewords %.*s: (%d)", in_length, source + in_locn, subcodeword_count);
+        for (i = 0; i < subcodeword_count; i++) printf( " %d", subcw[i]);
+        printf("\n");
     }
 
     letters_encoded = sublocn - in_locn;
@@ -554,7 +602,6 @@ static float look_ahead_c43(unsigned char source[], int in_length, int in_locn, 
         cw[codeword_count] = base43_value % 282;
         codeword_count++;
     }
-
 
     *cw_len = codeword_count;
 
@@ -573,6 +620,7 @@ static int ultra_generate_codewords(struct zint_symbol *symbol, const unsigned c
     int input_locn = 0;
     char symbol_mode;
     char current_mode;
+    int subset;
     float eightbit_score;
     float ascii_score;
     float c43_score;
@@ -592,13 +640,6 @@ static int ultra_generate_codewords(struct zint_symbol *symbol, const unsigned c
     char * mode = (char *) _alloca((in_length + 1) * sizeof (char));
     int * cw_fragment = (int *) _alloca((in_length * 2 + 1) * sizeof (int));
 #endif /* _MSC_VER */
-
-    /* Section 7.6.2 indicates that ECI \000003 to \811799 are supported */
-    /* but this seems to contradict Table 5 which only shows up to \000898 */
-    if (symbol->eci > 898) {
-        strcpy(symbol->errtxt, "592: ECI value out of range");
-        return ZINT_ERROR_INVALID_OPTION;
-    }
 
     if ((symbol->input_mode & 0x07) == GS1_MODE) {
         gs1 = 1;
@@ -638,7 +679,7 @@ static int ultra_generate_codewords(struct zint_symbol *symbol, const unsigned c
             }
         } else {
             if ((symbol->eci >= 3) && (symbol->eci <= 18) && (symbol->eci != 14)) {
-                // ECI indicate use of character set within ISO/IEC 8859
+                // ECI indicates use of character set within ISO/IEC 8859
                 codewords[0] = 257 + (symbol->eci - 3);
                 if (codewords[0] > 267) {
                     // Avoids ECI 14 for non-existant ISO/IEC 8859-12
@@ -646,11 +687,14 @@ static int ultra_generate_codewords(struct zint_symbol *symbol, const unsigned c
                 }
             } else if ((symbol->eci > 18) && (symbol->eci <= 898)) {
                 // ECI indicates use of character set outside ISO/IEC 8859
-                codewords[0] = 273 + (symbol->eci / 256);
+                codewords[0] = 275 + (symbol->eci / 256);
                 codewords[1] = symbol->eci % 256;
                 codeword_count++;
-            } else if ((symbol->eci > 898) && (symbol->eci <= 9999)) {
-                // ECI beyond 898 needs to use fixed length encodable ECI invocation (section 7.6.2)
+            } else if (symbol->eci == 899) {
+                // Non-language byte data
+                codewords[0] = 280;
+            } else if ((symbol->eci > 899) && (symbol->eci <= 9999)) {
+                // ECI beyond 899 needs to use fixed length encodable ECI invocation (section 7.6.2)
                 // Encode as 3 codewords
                 codewords[0] = 257; // ISO/IEC 8859-1 used to enter 8-bit mode
                 codewords[1] = 274; // Encode ECI as 3 codewords
@@ -727,7 +771,8 @@ static int ultra_generate_codewords(struct zint_symbol *symbol, const unsigned c
             end_char = input_locn + PREDICT_WINDOW;
             eightbit_score = look_ahead_eightbit(crop_source, crop_length, input_locn, current_mode, end_char, cw_fragment, &fragment_length, gs1);
             ascii_score = look_ahead_ascii(crop_source, crop_length, input_locn, current_mode, symbol_mode, end_char, cw_fragment, &fragment_length, &ascii_encoded, gs1);
-            c43_score = look_ahead_c43(crop_source, crop_length, input_locn, current_mode, end_char, cw_fragment, &fragment_length, &c43_encoded, gs1);
+            subset = c43_should_latch_other(crop_source, crop_length, input_locn, 1 /*subset*/, gs1) ? 2 : 1;
+            c43_score = look_ahead_c43(crop_source, crop_length, input_locn, current_mode, end_char, subset, cw_fragment, &fragment_length, &c43_encoded, gs1, 0 /*debug*/);
 
             mode[input_locn] = 'a';
             current_mode = ASCII_MODE;
@@ -782,7 +827,8 @@ static int ultra_generate_codewords(struct zint_symbol *symbol, const unsigned c
                 current_mode = ASCII_MODE;
                 break;
             case 'c':
-                look_ahead_c43(crop_source, crop_length, input_locn, current_mode, input_locn + block_length, cw_fragment, &fragment_length, NULL, gs1);
+                subset = c43_should_latch_other(crop_source, crop_length, input_locn, 1 /*subset*/, gs1) ? 2 : 1;
+                look_ahead_c43(crop_source, crop_length, input_locn, current_mode, input_locn + block_length, subset, cw_fragment, &fragment_length, NULL, gs1, symbol->debug);
 
                 /* Substitute temporary latch if possible */
                 if ((current_mode == EIGHTBIT_MODE) && (cw_fragment[0] == 260) && (fragment_length >= 5) && (fragment_length <= 11)) {
