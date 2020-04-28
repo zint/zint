@@ -233,7 +233,6 @@ static int cc_a(struct zint_symbol *symbol, char source[], int cc_width) {
     for (i = 0; i < 8; i++) {
         rsCodeWords[i] = 0;
     }
-    total = 0;
     for (i = 0; i < cwCnt; i++) {
         total = (codeWords[i] + rsCodeWords[k - 1]) % 929;
         for (j = k - 1; j >= 0; j--) {
@@ -486,7 +485,6 @@ static int cc_b(struct zint_symbol *symbol, char source[], int cc_width) {
     for (loop = 0; loop < 50; loop++) {
         mccorrection[loop] = 0;
     }
-    total = 0;
     for (i = 0; i < longueur; i++) {
         total = (chainemc[i] + mccorrection[k - 1]) % 929;
         for (j = k - 1; j >= 0; j--) {
@@ -657,7 +655,6 @@ static int cc_c(struct zint_symbol *symbol, char source[], int cc_width, int ecc
     for (loop = 0; loop < 520; loop++) {
         mccorrection[loop] = 0;
     }
-    total = 0;
     for (i = 0; i < longueur; i++) {
         total = (chainemc[i] + mccorrection[k - 1]) % 929;
         for (j = k - 1; j >= 0; j--) {
@@ -1065,6 +1062,7 @@ static int cc_binary_string(struct zint_symbol *symbol, const char source[], cha
         following the two-digit AI 90 starts with an alphanumeric string which
         complies with a specific format." (para 5.3.2) */
 
+        memset(ninety, 0, source_len + 1);
         i = 0;
         do {
             ninety[i] = source[i + 2];
