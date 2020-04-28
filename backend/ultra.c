@@ -240,7 +240,7 @@ static float look_ahead_eightbit(unsigned char source[], int in_length, int in_l
     }
 
     i = in_locn;
-    do {
+    while ((i < in_length) && (i < end_char)) {
         if ((source[i] == '[') && gs1) {
             cw[codeword_count] = 268; // FNC1
         } else {
@@ -248,7 +248,7 @@ static float look_ahead_eightbit(unsigned char source[], int in_length, int in_l
         }
         i++;
         codeword_count++;
-    } while ((i < in_length) && (i < end_char));
+    }
 
     letters_encoded = i - in_locn;
 
@@ -816,10 +816,11 @@ static int ultra_generate_codewords(struct zint_symbol *symbol, const unsigned c
     current_mode = symbol_mode;
     input_locn = 0;
     do {
+        fragment_length = 0;
         block_length = 0;
-        do {
+        while (input_locn + block_length < crop_length && mode[input_locn + block_length] == mode[input_locn]) {
             block_length++;
-        } while (mode[input_locn + block_length] == mode[input_locn]);
+        }
 
         switch(mode[input_locn]) {
             case 'a':
