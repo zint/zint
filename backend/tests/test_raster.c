@@ -38,6 +38,7 @@ static void test_chk_extendable(void)
     int ret;
     struct item {
         int symbology;
+        int show_hrt;
         unsigned char* data;
         int ret;
 
@@ -51,9 +52,10 @@ static void test_chk_extendable(void)
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%2d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /* 0*/ { BARCODE_EANX_CHK, "1234567890128+12", 0, 50, 1, 124, 288, 118, 5, 224 },
-        /* 1*/ { BARCODE_UPCA_CHK, "12345678905+12345", 0, 50, 1, 151, 342, 118, 5, 258 },
-        /* 2*/ { BARCODE_UPCE_CHK, "12345670+12", 0, 50, 1, 80, 200, 118, 5, 147 },
+        /* 0*/ { BARCODE_EANX_CHK, -1, "1234567890128+12", 0, 50, 1, 124, 288, 118, 5, 224 },
+        /* 1*/ { BARCODE_UPCA_CHK, -1, "12345678905+12345", 0, 50, 1, 151, 342, 118, 5, 258 },
+        /* 2*/ { BARCODE_UPCE_CHK, -1, "12345670+12", 0, 50, 1, 80, 200, 118, 5, 147 },
+        /* 3*/ { BARCODE_UPCE_CHK, 0, "12345670+12", 0, 50, 1, 80, 200, 118, 5, 147 },
     };
     int data_size = sizeof(data) / sizeof(struct item);
 
@@ -63,6 +65,9 @@ static void test_chk_extendable(void)
         assert_nonnull(symbol, "Symbol not created\n");
 
         symbol->symbology = data[i].symbology;
+        if (data[i].show_hrt != -1) {
+            symbol->show_hrt = data[i].show_hrt;
+        }
         int length = strlen(data[i].data);
 
         ret = ZBarcode_Encode_and_Buffer(symbol, data[i].data, length, 0);
@@ -84,7 +89,11 @@ static void test_chk_extendable(void)
                 break;
             }
         }
-        assert_nonzero(addon_text_bits_set, "i:%d (%d) addon_text_bits_set zero\n", i, data[i].symbology);
+        if (symbol->show_hrt) {
+            assert_nonzero(addon_text_bits_set, "i:%d (%d) addon_text_bits_set zero\n", i, data[i].symbology);
+        } else {
+            assert_zero(addon_text_bits_set, "i:%d (%d) addon_text_bits_set non-zero\n", i, data[i].symbology);
+        }
 
         ZBarcode_Delete(symbol);
     }

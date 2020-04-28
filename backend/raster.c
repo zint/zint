@@ -720,6 +720,7 @@ static int plot_raster_default(struct zint_symbol *symbol, int rotate_angle, int
     unsigned char* local_text = (unsigned char*) _alloca(ustrlen(symbol->text) + 1);
 #endif
 
+    memset(local_text, 0, ustrlen(symbol->text) + 1);
     if (symbol->show_hrt != 0) {
         /* Copy text from symbol */
         to_latin1(symbol->text, local_text);
@@ -734,8 +735,8 @@ static int plot_raster_default(struct zint_symbol *symbol, int rotate_angle, int
                 } else {
                     local_text[i] = ' ';
                 }
-                local_text[ustrlen(symbol->text)] = '\0';
             }
+            local_text[ustrlen(symbol->text)] = '\0';
         } else {
             /* For everything else, just remove the text */
             local_text[0] = '\0';
@@ -744,7 +745,6 @@ static int plot_raster_default(struct zint_symbol *symbol, int rotate_angle, int
 
     textdone = 0;
     main_width = symbol->width;
-    strcpy(addon, "");
     comp_offset = 0;
     addon_text_posn = 0.0;
     row_height = 0;
