@@ -205,13 +205,14 @@ static void ultra_gf283(short DataSize, short EccSize, int Message[]) {
 
 static int ultra_find_fragment(const unsigned char source[], int source_length, int position) {
     int retval = -1;
-    int j, k, latch;
+    int j, k, latch, fraglen;
 
     for (j = 0; j < 27; j++) {
         latch = 0;
-        if ((position + (int) strlen(fragment[j])) <= source_length) {
+        fraglen = strlen(fragment[j]);
+        if ((position + fraglen) <= source_length) {
             latch = 1;
-            for (k = 0; k < (int) strlen(fragment[j]); k++) {
+            for (k = 0; k < fraglen; k++) {
                 if (source[position + k] != fragment[j][k]) {
                     latch = 0;
                     break;
