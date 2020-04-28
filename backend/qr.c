@@ -694,15 +694,15 @@ static void add_ecc(unsigned char fullstream[], const unsigned char datastream[]
 
 
 #ifndef _MSC_VER
-    unsigned char data_block[short_data_block_length + 2];
-    unsigned char ecc_block[ecc_block_length + 2];
-    unsigned char interleaved_data[data_cw + 2];
-    unsigned char interleaved_ecc[ecc_cw + 2];
+    unsigned char data_block[short_data_block_length + 1];
+    unsigned char ecc_block[ecc_block_length];
+    unsigned char interleaved_data[data_cw];
+    unsigned char interleaved_ecc[ecc_cw];
 #else
-    data_block = (unsigned char *) _alloca(short_data_block_length + 2);
-    ecc_block = (unsigned char *) _alloca(ecc_block_length + 2);
-    interleaved_data = (unsigned char *) _alloca(data_cw + 2);
-    interleaved_ecc = (unsigned char *) _alloca(ecc_cw + 2);
+    data_block = (unsigned char *) _alloca(short_data_block_length + 1);
+    ecc_block = (unsigned char *) _alloca(ecc_block_length);
+    interleaved_data = (unsigned char *) _alloca(data_cw);
+    interleaved_ecc = (unsigned char *) _alloca(ecc_cw);
 #endif
 
     posn = 0;
@@ -747,7 +747,8 @@ static void add_ecc(unsigned char fullstream[], const unsigned char datastream[]
         }
 
         if (i >= qty_short_blocks) {
-            interleaved_data[(short_data_block_length * blocks) + (i - qty_short_blocks)] = data_block[short_data_block_length];
+            /* NOLINT suppress clang-tidy warning: data_block[short_data_block_length] set for i >= qty_short_blocks */
+            interleaved_data[(short_data_block_length * blocks) + (i - qty_short_blocks)] = data_block[short_data_block_length]; // NOLINT
         }
 
         for (j = 0; j < ecc_block_length; j++) {
@@ -758,10 +759,10 @@ static void add_ecc(unsigned char fullstream[], const unsigned char datastream[]
     }
 
     for (j = 0; j < data_cw; j++) {
-        fullstream[j] = interleaved_data[j];
+        fullstream[j] = interleaved_data[j]; // NOLINT suppress clang-tidy warning: interleaved_data[data_cw] fully set
     }
     for (j = 0; j < ecc_cw; j++) {
-        fullstream[j + data_cw] = interleaved_ecc[j];
+        fullstream[j + data_cw] = interleaved_ecc[j]; // NOLINT suppress clang-tidy warning: interleaved_ecc[ecc_cw] fully set
     }
 
     if (debug & ZINT_DEBUG_PRINT) {
@@ -900,7 +901,7 @@ static void populate_grid(unsigned char* grid, const int h_size, const int v_siz
     n = cw * 8;
     y = v_size - 1;
     i = 0;
-    do {
+    while (i < n) {
         int x = (h_size - 2) - (row * 2);
 
         if ((x < 6) && (v_size == h_size))
@@ -943,7 +944,7 @@ static void populate_grid(unsigned char* grid, const int h_size, const int v_siz
             y = v_size - 1;
             direction = 1;
         }
-    } while (i < n);
+    }
 }
 
 #ifdef ZINTLOG
@@ -1071,9 +1072,10 @@ static int evaluate(unsigned char *eval,const int size,const int pattern) {
     /* Test 2: Block of modules in same color */
     for (x = 0; x < size - 1; x++) {
         for (y = 0; y < size - 1; y++) {
-            if (((local[(y * size) + x] == local[((y + 1) * size) + x]) &&
+            /* NOLINT suppress clang-tidy warning: local[size * size] fully set */
+            if (((local[(y * size) + x] == local[((y + 1) * size) + x]) && // NOLINT
                     (local[(y * size) + x] == local[(y * size) + (x + 1)])) &&
-                    (local[(y * size) + x] == local[((y + 1) * size) + (x + 1)])) {
+                    (local[(y * size) + x] == local[((y + 1) * size) + (x + 1)])) { // NOLINT
                 result += 3;
             }
         }
