@@ -167,6 +167,9 @@ Bugs:
 - Ticket 185 EMF export corrections
   - fine scaling by the use of float arithmetic
   - full header (extension1&2) with correct size field
+- Ticket 190: Aztec buffer overrun fixed
+- Ticket 191 suppress clang-tidy warnings: raster.c, composite.c, qr.c
+- Ultracode internal encoding bugs, ECI 899
 
 CONTACT US
 ----------
