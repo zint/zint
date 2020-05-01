@@ -105,6 +105,10 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
             strcpy(symbol->errtxt, "251: Control characters are not supported by GS1");
             return ZINT_ERROR_INVALID_DATA;
         }
+        if (source[i] == 127) {
+            strcpy(symbol->errtxt, "263: DEL characters are not supported by GS1");
+            return ZINT_ERROR_INVALID_DATA;
+        }
     }
 
     if (source[0] != '[') {
