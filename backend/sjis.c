@@ -53,6 +53,9 @@
  * If not, see <https://www.gnu.org/licenses/>.
  */
 #include <string.h>
+#ifdef _MSC_VER
+#include <malloc.h>
+#endif
 #include "common.h"
 #include "sjis.h"
 

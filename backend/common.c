@@ -32,6 +32,9 @@
 /* vim: set ts=4 sw=4 et : */
 #include <string.h>
 #include <stdio.h>
+#ifdef _MSC_VER
+#include <malloc.h>
+#endif
 #include "common.h"
 
 /* Local replacement for strlen() with unsigned char strings */
