@@ -170,6 +170,9 @@ Bugs:
 - Ticket 190: Aztec buffer overrun fixed
 - Ticket 191 suppress clang-tidy warnings: raster.c, composite.c, qr.c
 - Ultracode internal encoding bugs, ECI 899
+- Dotcode: adopt to AIM DOC Revision 4
+- GS1 data: exclude DEL character
+- Ticket 192: missing malloc.h include for Windows compilers.
 
 CONTACT US
 ----------
