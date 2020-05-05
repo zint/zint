@@ -248,7 +248,6 @@ INTERNAL int emf_plot(struct zint_symbol *symbol) {
         }
 
         rect = symbol->vector->rectangles;
-        this_rectangle = 0;
         while (rect) {
             if (rectangle_count_bycolour[rect->colour] == 0) {
                 colours_used++;
@@ -634,11 +633,11 @@ INTERNAL int emf_plot(struct zint_symbol *symbol) {
     if (string_count > 0) {
         fwrite(&emr_selectobject_font, sizeof (emr_selectobject_t), 1, emf_file);
     }
-    
+
     for (i = 0; i < string_count; i++) {
         spacing = 8 * symbol->scale;
         fwrite(&text[i], sizeof (emr_exttextoutw_t), 1, emf_file);
-        fwrite(this_string[i], bump_up(text[i].w_emr_text.chars + 1) * 2, 1, emf_file);
+        fwrite(this_string[i], bump_up(text[i].w_emr_text.chars + 1) * 2, 1, emf_file); // NOLINT text set 0..(string_count - 1)
         free(this_string[i]);
         for (j = 0; j < bump_up(text[i].w_emr_text.chars + 1); j++) {
             fwrite(&spacing, 4, 1, emf_file);
