@@ -32,19 +32,19 @@
 #include "testcommon.h"
 #include <sys/stat.h>
 
-//#define TEST_PRINT_GENERATE_EXPECTED 1
+static void test_print(int index, int generate, int debug) {
 
-static void test_print(void)
-{
     testStart("");
+
+    int have_inkscape = testUtilHaveInkscape();
 
     int ret;
     struct item {
         int symbology;
         int option_1;
         int option_2;
-        unsigned char* data;
-        char* expected_file;
+        unsigned char *data;
+        char *expected_file;
     };
     struct item data[] = {
         /*  0*/ { BARCODE_CODE128, -1, -1, "<>\"&'", "../data/svg/code128_amperands.svg" },
@@ -52,21 +52,23 @@ static void test_print(void)
     };
     int data_size = sizeof(data) / sizeof(struct item);
 
-    char* data_dir = "../data/svg";
-    char* svg = "out.svg";
+    char *data_dir = "../data/svg";
+    char *svg = "out.svg";
     char escaped[1024];
     int escaped_size = 1024;
 
-    #ifdef TEST_PRINT_GENERATE_EXPECTED
-    if (!testUtilExists(data_dir)) {
-        ret = mkdir(data_dir, 0755);
-        assert_zero(ret, "mkdir(%s) ret %d != 0\n", data_dir, ret);
+    if (generate) {
+        if (!testUtilExists(data_dir)) {
+            ret = mkdir(data_dir, 0755);
+            assert_zero(ret, "mkdir(%s) ret %d != 0\n", data_dir, ret);
+        }
     }
-    #endif
 
     for (int i = 0; i < data_size; i++) {
 
-        struct zint_symbol* symbol = ZBarcode_Create();
+        if (index != -1 && i != index) continue;
+
+        struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
         symbol->symbology = data[i].symbology;
@@ -76,6 +78,7 @@ static void test_print(void)
         if (data[i].option_2 != -1) {
             symbol->option_2 = data[i].option_2;
         }
+        symbol->debug |= debug;
 
         int length = strlen(data[i].data);
 
@@ -86,23 +89,24 @@ static void test_print(void)
         ret = ZBarcode_Print(symbol, 0);
         assert_zero(ret, "i:%d %s ZBarcode_Print %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, ret);
 
-        #ifdef TEST_PRINT_GENERATE_EXPECTED
+        if (generate) {
+            printf("        /*%3d*/ { %s, %d, %d, \"%s\", \"%s\"},\n",
+                    i, testUtilBarcodeName(data[i].symbology), data[i].option_1, data[i].option_2,
+                    testUtilEscape(data[i].data, length, escaped, escaped_size), data[i].expected_file);
+            ret = rename(symbol->outfile, data[i].expected_file);
+            assert_zero(ret, "i:%d rename(%s, %s) ret %d != 0\n", i, symbol->outfile, data[i].expected_file, ret);
+            if (have_inkscape) {
+                ret = testUtilVerifyInkscape(data[i].expected_file, debug);
+                assert_zero(ret, "i:%d %s inkscape %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), data[i].expected_file, ret);
+            }
+        } else {
+            assert_nonzero(testUtilExists(symbol->outfile), "i:%d testUtilExists(%s) == 0\n", i, symbol->outfile);
+            assert_nonzero(testUtilExists(data[i].expected_file), "i:%d testUtilExists(%s) == 0\n", i, data[i].expected_file);
 
-        printf("        /*%3d*/ { %s, %d, %d, \"%s\", \"%s\"},\n",
-                i, testUtilBarcodeName(data[i].symbology), data[i].option_1, data[i].option_2, testUtilEscape(data[i].data, length, escaped, escaped_size), data[i].expected_file);
-        ret = rename(symbol->outfile, data[i].expected_file);
-        assert_zero(ret, "i:%d rename(%s, %s) ret %d != 0\n", i, symbol->outfile, data[i].expected_file, ret);
-
-        #else
-
-        assert_nonzero(testUtilExists(symbol->outfile), "i:%d testUtilExists(%s) == 0\n", i, symbol->outfile);
-        assert_nonzero(testUtilExists(data[i].expected_file), "i:%d testUtilExists(%s) == 0\n", i, data[i].expected_file);
-
-        ret = testUtilCmpSvgs(symbol->outfile, data[i].expected_file);
-        assert_zero(ret, "i:%d %s testUtilCmpSvgs(%s, %s) %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, data[i].expected_file, ret);
-        assert_zero(remove(symbol->outfile), "i:%d remove(%s) != 0\n", i, symbol->outfile);
-
-        #endif
+            ret = testUtilCmpSvgs(symbol->outfile, data[i].expected_file);
+            assert_zero(ret, "i:%d %s testUtilCmpSvgs(%s, %s) %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, data[i].expected_file, ret);
+            assert_zero(remove(symbol->outfile), "i:%d remove(%s) != 0\n", i, symbol->outfile);
+        }
 
         ZBarcode_Delete(symbol);
     }
@@ -110,9 +114,13 @@ static void test_print(void)
     testFinish();
 }
 
-int main()
-{
-    test_print();
+int main(int argc, char *argv[]) {
+
+    testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
+        { "test_print", test_print, 1, 1, 1 },
+    };
+
+    testRun(argc, argv, funcs, ARRAY_SIZE(funcs));
 
     testReport();
 

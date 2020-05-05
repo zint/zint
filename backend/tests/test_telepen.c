@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -32,14 +32,14 @@
 #include "testcommon.h"
 
 // #181 Nico Gunkel OSS-Fuzz
-static void test_fuzz(void)
-{
+static void test_fuzz(int index, int debug) {
+
     testStart("");
 
     int ret;
     struct item {
         int symbology;
-        unsigned char* data;
+        unsigned char *data;
         int length;
         int ret;
     };
@@ -57,14 +57,15 @@ static void test_fuzz(void)
 
     for (int i = 0; i < data_size; i++) {
 
-        struct zint_symbol* symbol = ZBarcode_Create();
+        if (index != -1 && i != index) continue;
+
+        struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
         symbol->symbology = data[i].symbology;
-        int length = data[i].length;
-        if (length == -1) {
-            length = strlen(data[i].data);
-        }
+        symbol->debug |= debug;
+
+        int length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
 
         ret = ZBarcode_Encode(symbol, data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
@@ -75,9 +76,13 @@ static void test_fuzz(void)
     testFinish();
 }
 
-int main()
-{
-    test_fuzz();
+int main(int argc, char *argv[]) {
+
+    testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
+        { "test_fuzz", test_fuzz, 1, 0, 1 },
+    };
+
+    testRun(argc, argv, funcs, ARRAY_SIZE(funcs));
 
     testReport();
 

@@ -31,25 +31,24 @@
 
 #include "testcommon.h"
 
-static void test_pcx(void)
-{
+static void test_pcx(int index, int debug) {
+
     testStart("");
 
-	if (system("identify --version > /dev/null") != 0) {
-		printf("SKIPPED. ImageMagick identify not available\n");
-		testFinish();
-		return;
-	}
+    if (!testUtilHaveIdentify()) {
+        testSkip("ImageMagick identify not available");
+        return;
+    }
 
     int ret;
     struct item {
         int symbology;
         int option_1;
         int option_2;
-		char* fgcolour;
-		char* bgcolour;
-		float scale;
-        unsigned char* data;
+        char *fgcolour;
+        char *bgcolour;
+        float scale;
+        unsigned char *data;
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
@@ -64,53 +63,61 @@ static void test_pcx(void)
         /*  8*/ { BARCODE_DOTCODE, -1, -1, "C2C100", "E0E1F2", 0, "2741" },
         /*  9*/ { BARCODE_ULTRA, -1, -1, NULL, NULL, 0, "ULTRACODE_123456789!" },
     };
-    int data_size = sizeof(data) / sizeof(struct item);
+    int data_size = ARRAY_SIZE(data);
 
-	for (int i = 0; i < data_size; i++) {
+    for (int i = 0; i < data_size; i++) {
 
-		struct zint_symbol* symbol = ZBarcode_Create();
-		assert_nonnull(symbol, "Symbol not created\n");
+        if (index != -1 && i != index) continue;
 
-		symbol->symbology = data[i].symbology;
-		if (data[i].option_1 != -1) {
-			symbol->option_1 = data[i].option_1;
-		}
-		if (data[i].option_2 != -1) {
-			symbol->option_2 = data[i].option_2;
-		}
-		if (data[i].fgcolour != NULL) {
-			strcpy(symbol->fgcolour, data[i].fgcolour);
-		}
-		if (data[i].bgcolour != NULL) {
-			strcpy(symbol->bgcolour, data[i].bgcolour);
-		}
-		if (data[i].scale != 0) {
-			symbol->scale = data[i].scale;
-		}
+        struct zint_symbol *symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
 
-		int length = strlen(data[i].data);
+        symbol->symbology = data[i].symbology;
+        if (data[i].option_1 != -1) {
+            symbol->option_1 = data[i].option_1;
+        }
+        if (data[i].option_2 != -1) {
+            symbol->option_2 = data[i].option_2;
+        }
+        if (data[i].fgcolour != NULL) {
+            strcpy(symbol->fgcolour, data[i].fgcolour);
+        }
+        if (data[i].bgcolour != NULL) {
+            strcpy(symbol->bgcolour, data[i].bgcolour);
+        }
+        if (data[i].scale != 0) {
+            symbol->scale = data[i].scale;
+        }
+        symbol->debug |= debug;
 
-		ret = ZBarcode_Encode(symbol, data[i].data, length);
-		assert_zero(ret, "i:%d %s ZBarcode_Encode ret %d != 0 %s\n", i, testUtilBarcodeName(data[i].symbology), ret, symbol->errtxt);
+        int length = strlen(data[i].data);
 
-		char* filename = "out.pcx";
-		strcpy(symbol->outfile, filename);
-		ret = ZBarcode_Print(symbol, 0);
-		assert_zero(ret, "i:%d %s ZBarcode_Print %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, ret);
+        ret = ZBarcode_Encode(symbol, data[i].data, length);
+        assert_zero(ret, "i:%d %s ZBarcode_Encode ret %d != 0 %s\n", i, testUtilBarcodeName(data[i].symbology), ret, symbol->errtxt);
 
-		//ret = system("identify out.pcx > /dev/null");
-		ret = system("identify out.pcx");
-		assert_zero(ret, "i:%d %s identify %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, ret);
+        char *filename = "out.pcx";
+        strcpy(symbol->outfile, filename);
+        ret = ZBarcode_Print(symbol, 0);
+        assert_zero(ret, "i:%d %s ZBarcode_Print %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, ret);
 
-		ZBarcode_Delete(symbol);
-	}
+        ret = testUtilVerifyIdentify(symbol->outfile, debug);
+        assert_zero(ret, "i:%d %s identify %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, ret);
+
+        assert_zero(remove(symbol->outfile), "i:%d remove(%s) != 0\n", i, symbol->outfile);
+
+        ZBarcode_Delete(symbol);
+    }
 
     testFinish();
 }
 
-int main()
-{
-	test_pcx();
+int main(int argc, char *argv[]) {
+
+    testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
+        { "test_pcx", test_pcx, 1, 0, 1 },
+    };
+
+    testRun(argc, argv, funcs, ARRAY_SIZE(funcs));
 
     testReport();
 

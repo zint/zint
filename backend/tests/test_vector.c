@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008 - 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019 - 2020 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -31,17 +31,15 @@
 
 #include "testcommon.h"
 
-//#define TEST_BUFFER_VECTOR_GENERATE_EXPECTED 1
+static void test_buffer_vector(int index, int generate, int debug) {
 
-static void test_buffer_vector(void)
-{
     testStart("");
 
     int ret;
     struct item {
         int symbology;
-        unsigned char* data;
-        char* composite;
+        unsigned char *data;
+        char *composite;
 
         int expected_height;
         int expected_rows;
@@ -146,15 +144,18 @@ static void test_buffer_vector(void)
     };
     int data_size = sizeof(data) / sizeof(struct item);
 
-    char* text;
+    char *text;
 
     for (int i = 0; i < data_size; i++) {
 
-        struct zint_symbol* symbol = ZBarcode_Create();
+        if (index != -1 && i != index) continue;
+
+        struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
         symbol->symbology = data[i].symbology;
         symbol->input_mode = UNICODE_MODE;
+        symbol->debug |= debug;
 
         if (strlen(data[i].composite)) {
             text = data[i].composite;
@@ -171,22 +172,19 @@ static void test_buffer_vector(void)
         assert_zero(ret, "i:%d ZBarcode_Buffer_Vector(%d) ret %d != 0\n", i, data[i].symbology, ret);
         assert_nonnull(symbol->vector, "i:%d ZBarcode_Buffer_Vector(%d) vector NULL\n", i, data[i].symbology);
 
-        #ifdef TEST_BUFFER_VECTOR_GENERATE_EXPECTED
-        printf("        /*%3d*/ { %s, \"%s\", \"%s\", %d, %d, %d, %.1f, %.1f },\n",
-                i, testUtilBarcodeName(data[i].symbology), data[i].data, data[i].composite,
-                symbol->height, symbol->rows, symbol->width, symbol->vector->width, symbol->vector->height);
-
-        #else
-
-        assert_equal(symbol->height, data[i].expected_height, "i:%d (%s) symbol->height %d != %d\n", i, testUtilBarcodeName(data[i].symbology), symbol->height, data[i].expected_height);
-        assert_equal(symbol->rows, data[i].expected_rows, "i:%d (%s) symbol->rows %d != %d\n", i, testUtilBarcodeName(data[i].symbology), symbol->rows, data[i].expected_rows);
-        assert_equal(symbol->width, data[i].expected_width, "i:%d (%s) symbol->width %d != %d\n", i, testUtilBarcodeName(data[i].symbology), symbol->width, data[i].expected_width);
-        assert_equal(symbol->vector->width, data[i].expected_vector_width, "i:%d (%s) symbol->vector->width %f != %f\n",
-            i, testUtilBarcodeName(data[i].symbology), symbol->vector->width, data[i].expected_vector_width);
-        assert_equal(symbol->vector->height, data[i].expected_vector_height, "i:%d (%s) symbol->vector->height %f != %f\n",
-            i, testUtilBarcodeName(data[i].symbology), symbol->vector->height, data[i].expected_vector_height);
-
-        #endif
+        if (generate) {
+            printf("        /*%3d*/ { %s, \"%s\", \"%s\", %d, %d, %d, %.1f, %.1f },\n",
+                    i, testUtilBarcodeName(data[i].symbology), data[i].data, data[i].composite,
+                    symbol->height, symbol->rows, symbol->width, symbol->vector->width, symbol->vector->height);
+        } else {
+            assert_equal(symbol->height, data[i].expected_height, "i:%d (%s) symbol->height %d != %d\n", i, testUtilBarcodeName(data[i].symbology), symbol->height, data[i].expected_height);
+            assert_equal(symbol->rows, data[i].expected_rows, "i:%d (%s) symbol->rows %d != %d\n", i, testUtilBarcodeName(data[i].symbology), symbol->rows, data[i].expected_rows);
+            assert_equal(symbol->width, data[i].expected_width, "i:%d (%s) symbol->width %d != %d\n", i, testUtilBarcodeName(data[i].symbology), symbol->width, data[i].expected_width);
+            assert_equal(symbol->vector->width, data[i].expected_vector_width, "i:%d (%s) symbol->vector->width %f != %f\n",
+                i, testUtilBarcodeName(data[i].symbology), symbol->vector->width, data[i].expected_vector_width);
+            assert_equal(symbol->vector->height, data[i].expected_vector_height, "i:%d (%s) symbol->vector->height %f != %f\n",
+                i, testUtilBarcodeName(data[i].symbology), symbol->vector->height, data[i].expected_vector_height);
+        }
 
         ZBarcode_Delete(symbol);
     }
@@ -195,14 +193,14 @@ static void test_buffer_vector(void)
 }
 
 // Checks that symbol lead-in (composite offset) isn't used to calc string position for non-composite barcodes
-static void test_noncomposite_string_x(void)
-{
+static void test_noncomposite_string_x(int index, int debug) {
+
     testStart("");
 
     int ret;
     struct item {
         int symbology;
-        unsigned char* data;
+        unsigned char *data;
 
         int expected_width;
         float expected_string_x;
@@ -217,11 +215,14 @@ static void test_noncomposite_string_x(void)
 
     for (int i = 0; i < data_size; i++) {
 
-        struct zint_symbol* symbol = ZBarcode_Create();
+        if (index != -1 && i != index) continue;
+
+        struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
         symbol->symbology = data[i].symbology;
         symbol->input_mode = UNICODE_MODE;
+        symbol->debug |= debug;
 
         int length = strlen(data[i].data);
 
@@ -244,14 +245,14 @@ static void test_noncomposite_string_x(void)
 }
 
 // Checks UPCA/UPCE main_symbol_width_x (used for addon formatting) set whether whitespace width set or not
-static void test_upcean_whitespace_width(void)
-{
+static void test_upcean_whitespace_width(int index, int debug) {
+
     testStart("");
 
     int ret;
     struct item {
         int symbology;
-        unsigned char* data;
+        unsigned char *data;
         int whitespace_width;
 
         int expected_width;
@@ -268,17 +269,20 @@ static void test_upcean_whitespace_width(void)
     };
     int data_size = sizeof(data) / sizeof(struct item);
 
-    struct zint_vector_string* string;
+    struct zint_vector_string *string;
     int string_cnt;
 
     for (int i = 0; i < data_size; i++) {
 
-        struct zint_symbol* symbol = ZBarcode_Create();
+        if (index != -1 && i != index) continue;
+
+        struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
         symbol->symbology = data[i].symbology;
         symbol->input_mode = UNICODE_MODE;
         symbol->whitespace_width = data[i].whitespace_width;
+        symbol->debug |= debug;
 
         int length = strlen(data[i].data);
 
@@ -307,11 +311,15 @@ static void test_upcean_whitespace_width(void)
     testFinish();
 }
 
-int main()
-{
-    test_buffer_vector();
-    test_noncomposite_string_x();
-    test_upcean_whitespace_width();
+int main(int argc, char *argv[]) {
+
+    testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
+        { "test_buffer_vector", test_buffer_vector, 1, 1, 1 },
+        { "test_noncomposite_string_x", test_noncomposite_string_x, 1, 0, 1 },
+        { "test_upcean_whitespace_width", test_upcean_whitespace_width, 1, 0, 1 },
+    };
+
+    testRun(argc, argv, funcs, ARRAY_SIZE(funcs));
 
     testReport();
 

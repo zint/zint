@@ -20,14 +20,35 @@ Then make the tests:
 
 (ZINT_TEST is needed to export INTERNAL functions for use and testing.)
 
-To run all tests:
+------------------------------------------------------------------------------
 
-  make test
+To run all tests (within <project-dir>/backend/tests/build):
+
+  ctest
 
 To run individual tests, eg:
 
   ./test_common
   ./test_vector
+
+To run a single test function within an individual test, use '-f <func-name>':
+
+  ./test_common -f utf8_to_unicode
+  ./test_dotcode -f input
+
+To run a single dataset item in a single test function, use '-i <index>':
+
+  ./test_dotcode -f input -i 2
+
+To show debug info (if any), use '-d <flag>':
+
+  ./test_dotcode -f input -i 2 -d 1
+
+To generate test data, use '-g':
+
+  ./test_dotcode -f encode -g
+
+------------------------------------------------------------------------------
 
 To make with gcc sanitize, first set for libzint and make:
 

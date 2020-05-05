@@ -31,18 +31,17 @@
 
 #include "testcommon.h"
 
-//#define TEST_PDF417_ENCODE_GENERATE_EXPECTED 1
+static void test_options(int index, int debug) {
 
-static void test_pdf417_options(void)
-{
     testStart("");
 
     int ret;
     struct item {
-        unsigned char* data;
+        int symbology;
         int option_1;
         int option_2;
         int option_3;
+        unsigned char *data;
         int ret_encode;
         int ret_vector;
 
@@ -54,14 +53,14 @@ static void test_pdf417_options(void)
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /*  0*/ { "12345", -1, -1, -1, 0, 0, 2, 2, 6, 103, -1 }, // ECC auto-set to 2, cols auto-set to 2
-        /*  1*/ { "12345", -1, -1, 928, 0, 0, 2, 2, 6, 103, 0 }, // Option 3 ignored
-        /*  2*/ { "12345", -1, -1, 300, 0, 0, 2, 2, 6, 103, 0 }, // Option 3 ignored
-        /*  3*/ { "12345", 3, -1, -1, 0, 0, 3, 3, 7, 120, -1 }, // ECC 3, cols auto-set to 3
-        /*  4*/ { "12345", 3, 2, -1, 0, 0, 3, 2, 10, 103, -1 }, // ECC 3, cols 2
-        /*  5*/ { "12345", 8, 2, -1, ZINT_ERROR_TOO_LONG, -1, 8, 3, 0, 0, -1 }, // ECC 8, cols 2, fails
-        /*  6*/ { "12345", 7, 2, -1, 0, 0, 7, 3, 87, 120, -1 }, // ECC 7, cols 2 auto-upped to 3
-        /*  7*/ { "12345", -1, 10, -1, 0, 0, 2, 10, 3, 239, -1 }, // ECC auto-set to 2, cols 10
+        /*  0*/ { BARCODE_PDF417, -1, -1, -1, "12345", 0, 0, 2, 2, 6, 103, -1 }, // ECC auto-set to 2, cols auto-set to 2
+        /*  1*/ { BARCODE_PDF417, -1, -1, 928, "12345", 0, 0, 2, 2, 6, 103, 0 }, // Option 3 ignored
+        /*  2*/ { BARCODE_PDF417, -1, -1, 300, "12345", 0, 0, 2, 2, 6, 103, 0 }, // Option 3 ignored
+        /*  3*/ { BARCODE_PDF417, 3, -1, -1, "12345", 0, 0, 3, 3, 7, 120, -1 }, // ECC 3, cols auto-set to 3
+        /*  4*/ { BARCODE_PDF417, 3, 2, -1, "12345", 0, 0, 3, 2, 10, 103, -1 }, // ECC 3, cols 2
+        /*  5*/ { BARCODE_PDF417, 8, 2, -1, "12345", ZINT_ERROR_TOO_LONG, -1, 8, 3, 0, 0, -1 }, // ECC 8, cols 2, fails
+        /*  6*/ { BARCODE_PDF417, 7, 2, -1, "12345", 0, 0, 7, 3, 87, 120, -1 }, // ECC 7, cols 2 auto-upped to 3
+        /*  7*/ { BARCODE_PDF417, -1, 10, -1, "12345", 0, 0, 2, 10, 3, 239, -1 }, // ECC auto-set to 2, cols 10
     };
     int data_size = sizeof(data) / sizeof(struct item);
 
@@ -69,10 +68,12 @@ static void test_pdf417_options(void)
 
     for (int i = 0; i < data_size; i++) {
 
-        struct zint_symbol* symbol = ZBarcode_Create();
+        if (index != -1 && i != index) continue;
+
+        struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        symbol->symbology = BARCODE_PDF417;
+        symbol->symbology = data[i].symbology;
         if (data[i].option_1 != -1) {
             symbol->option_1 = data[i].option_1;
         }
@@ -82,6 +83,8 @@ static void test_pdf417_options(void)
         if (data[i].option_3 != -1) {
             symbol->option_3 = data[i].option_3;
         }
+        symbol->debug |= debug;
+
         int length = strlen(data[i].data);
 
         ret = ZBarcode_Encode(symbol, data[i].data, length);
@@ -98,7 +101,7 @@ static void test_pdf417_options(void)
 		assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
 		assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n", i, symbol->width, data[i].expected_width);
 
-        if (data[i].compare_previous != -1) {
+        if (index == -1 && data[i].compare_previous != -1) {
             ret = testUtilSymbolCmp(symbol, &previous_symbol);
             assert_equal(!ret, !data[i].compare_previous, "i:%d testUtilSymbolCmp !ret %d != %d\n", i, ret, data[i].compare_previous);
         }
@@ -115,25 +118,26 @@ static void test_pdf417_options(void)
     testFinish();
 }
 
-static void test_pdf417_encode(void)
-{
+static void test_encode(int index, int generate, int debug) {
+
     testStart("");
 
     int ret;
     struct item {
+        int symbology;
         int input_mode;
-        unsigned char* data;
         int option_1;
         int option_2;
+        unsigned char *data;
         int ret;
 
         int expected_rows;
         int expected_width;
-        char* comment;
-        char* expected;
+        char *comment;
+        char *expected;
     };
     struct item data[] = {
-        /*  0*/ { UNICODE_MODE, "PDF417 Symbology Standard", 2, 2, 0, 13, 103, "ISO 15438:2015 Figure 1 **NOT SAME** TODO: investigate",
+        /*  0*/ { BARCODE_PDF417, UNICODE_MODE, 2, 2, "PDF417 Symbology Standard", 0, 13, 103, "ISO 15438:2015 Figure 1 **NOT SAME** TODO: investigate",
                     "1111111101010100011110101001111000101011000110000001000011000110010011110101011110000111111101000101001"
                     "1111111101010100011111010100011000110110000011110101101000011100010011111101010011100111111101000101001"
                     "1111111101010100011101010111111000111010000111110101011001101111000011010100011111000111111101000101001"
@@ -153,10 +157,12 @@ static void test_pdf417_encode(void)
 
     for (int i = 0; i < data_size; i++) {
 
-        struct zint_symbol* symbol = ZBarcode_Create();
+        if (index != -1 && i != index) continue;
+
+        struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        symbol->symbology = BARCODE_PDF417;
+        symbol->symbology = data[i].symbology;
         symbol->input_mode = data[i].input_mode;
         if (data[i].option_1 != -1) {
             symbol->option_1 = data[i].option_1;
@@ -164,30 +170,31 @@ static void test_pdf417_encode(void)
         if (data[i].option_2 != -1) {
             symbol->option_2 = data[i].option_2;
         }
+        symbol->debug |= debug;
 
         int length = strlen(data[i].data);
 
         ret = ZBarcode_Encode(symbol, data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
-        #ifdef TEST_PDF417_ENCODE_GENERATE_EXPECTED
-        printf("        /*%3d*/ { %s, \"%s\", %d, %d, %s, %d, %d, \"%s\",\n",
-                i, testUtilInputModeName(data[i].input_mode), data[i].data, data[i].option_1, data[i].option_2, testUtilErrorName(data[i].ret),
-                symbol->rows, symbol->width, data[i].comment);
-        testUtilModulesDump(symbol, "                    ", "\n");
-        printf("               },\n");
-        #else
-        if (ret < 5) {
-            assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);
-            assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
+        if (generate) {
+            printf("        /*%3d*/ { %s, %s, %d, %d, \"%s\", %s, %d, %d, \"%s\",\n",
+                    i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode), data[i].option_1, data[i].option_2,
+                    data[i].data, testUtilErrorName(data[i].ret), symbol->rows, symbol->width, data[i].comment);
+            testUtilModulesDump(symbol, "                    ", "\n");
+            printf("               },\n");
+        } else {
+            if (ret < 5) {
+                assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);
+                assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
 
-            if (ret == 0) {
-                int width, row;
-                ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
-                assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, ret, width, row, data[i].data);
+                if (ret == 0) {
+                    int width, row;
+                    ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
+                    assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, ret, width, row, data[i].data);
+                }
             }
         }
-        #endif
 
         ZBarcode_Delete(symbol);
     }
@@ -196,14 +203,14 @@ static void test_pdf417_encode(void)
 }
 
 // #181 Nico Gunkel OSS-Fuzz
-static void test_fuzz(void)
-{
+static void test_fuzz(int index, int debug) {
+
     testStart("");
 
     int ret;
     struct item {
         int symbology;
-        unsigned char* data;
+        unsigned char *data;
         int length;
         int option_1;
         int ret;
@@ -460,13 +467,17 @@ static void test_fuzz(void)
 
     for (int i = 0; i < data_size; i++) {
 
-        struct zint_symbol* symbol = ZBarcode_Create();
+        if (index != -1 && i != index) continue;
+
+        struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
         symbol->symbology = data[i].symbology;
         if (data[i].option_1 != -1) {
             symbol->option_1 = data[i].option_1;
         }
+        symbol->debug |= debug;
+
         int length = data[i].length;
         if (length == -1) {
             length = strlen(data[i].data);
@@ -481,12 +492,15 @@ static void test_fuzz(void)
     testFinish();
 }
 
-int main()
-{
-    test_pdf417_options();
-    test_pdf417_encode();
+int main(int argc, char *argv[]) {
 
-    test_fuzz();
+    testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
+        { "test_options", test_options, 1, 0, 1 },
+        { "test_encode", test_encode, 1, 1, 1 },
+        { "test_fuzz", test_fuzz, 1, 0, 1 },
+    };
+
+    testRun(argc, argv, funcs, ARRAY_SIZE(funcs));
 
     testReport();
 

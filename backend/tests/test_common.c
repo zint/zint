@@ -31,19 +31,19 @@
 
 #include "testcommon.h"
 
-static void test_utf8_to_unicode(void)
-{
+static void test_utf8_to_unicode(int index, int debug) {
+
     testStart("");
 
     int ret;
     struct item {
-        unsigned char* data;
+        unsigned char *data;
         int length;
         int disallow_4byte;
         int ret;
         size_t ret_length;
         int expected_vals[20];
-        char* comment;
+        char *comment;
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
@@ -57,8 +57,11 @@ static void test_utf8_to_unicode(void)
 
     int vals[20];
     struct zint_symbol symbol;
+    symbol.debug |= debug;
 
     for (int i = 0; i < data_size; i++) {
+
+        if (index != -1 && i != index) continue;
 
         int length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
         size_t ret_length = length;
@@ -76,15 +79,15 @@ static void test_utf8_to_unicode(void)
     testFinish();
 }
 
-static void test_debug_test_codeword_dump_int(void)
-{
+static void test_debug_test_codeword_dump_int(int index, int debug) {
+
     testStart("");
 
     int ret;
     struct item {
         int codewords[50];
         int length;
-        char* expected;
+        char *expected;
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
@@ -94,8 +97,11 @@ static void test_debug_test_codeword_dump_int(void)
     int data_size = sizeof(data) / sizeof(struct item);
 
     struct zint_symbol symbol;
+    symbol.debug |= debug;
 
     for (int i = 0; i < data_size; i++) {
+
+        if (index != -1 && i != index) continue;
 
         debug_test_codeword_dump_int(&symbol, data[i].codewords, data[i].length);
         assert_nonzero(strlen(symbol.errtxt) < 92, "i:%d strlen(%s) >= 92 (%zu)\n", i, symbol.errtxt, strlen(symbol.errtxt));
@@ -105,10 +111,14 @@ static void test_debug_test_codeword_dump_int(void)
     testFinish();
 }
 
-int main()
-{
-    test_utf8_to_unicode();
-    test_debug_test_codeword_dump_int();
+int main(int argc, char *argv[]) {
+
+    testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
+        { "test_utf8_to_unicode", test_utf8_to_unicode, 1, 0, 1 },
+        { "test_debug_test_codeword_dump_int", test_debug_test_codeword_dump_int, 1, 0, 1 },
+    };
+
+    testRun(argc, argv, funcs, ARRAY_SIZE(funcs));
 
     testReport();
 

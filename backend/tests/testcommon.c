@@ -39,18 +39,20 @@
 #include <zlib.h>
 #include <setjmp.h>
 #endif
+#include <unistd.h>
+#include <errno.h>
 
 extern int module_is_set(const struct zint_symbol *symbol, const int y_coord, const int x_coord);
 
 static int tests = 0;
 static int failed = 0;
+static int skipped = 0;
 int assertionFailed = 0;
 int assertionNum = 0;
 static const char *testName = NULL;
 static const char *testFunc = NULL;
 
-void testStartReal(const char *func, const char *name)
-{
+void testStartReal(const char *func, const char *name) {
     tests++;
     testName = name;
     testFunc = func;
@@ -59,8 +61,7 @@ void testStartReal(const char *func, const char *name)
     printf("_____%d: %s: %s...\n", tests, func, name);
 }
 
-void testEnd(int result)
-{
+void testEnd(int result) {
     if (testName[0]) {
         printf(".....%d: %s: %s ", tests, testFunc, testName);
     } else {
@@ -74,8 +75,7 @@ void testEnd(int result)
     }
 }
 
-void testFinish(void)
-{
+void testFinish(void) {
     if (testName[0]) {
         printf(".....%d: %s: %s ", tests, testFunc, testName);
     } else {
@@ -89,20 +89,144 @@ void testFinish(void)
     }
 }
 
-void testReport()
-{
-    if ( failed ) {
+void testSkip(const char *msg) {
+    skipped++;
+    if (testName[0]) {
+        printf(".....%d: %s: %s ", tests, testFunc, testName);
+    } else {
+        printf(".....%d: %s: ", tests, testFunc);
+    }
+    if (assertionFailed) {
+        printf("FAILED. (%d assertions failed.)\n", assertionFailed);
+        failed++;
+    } else {
+        printf("SKIPPED. %s. (%d assertions passed.)\n", msg, assertionNum);
+    }
+}
+
+void testReport() {
+    if (failed && skipped) {
+        printf("Total %d tests, %d skipped, %d fails.\n", tests, skipped, failed);
+        exit(-1);
+    }
+    if (failed) {
         printf("Total %d tests, %d fails.\n", tests, failed);
         exit(-1);
+    }
+    if (skipped) {
+        printf("Total %d tests, %d skipped.\n", tests, skipped);
     } else {
         printf("Total %d tests, all passed.\n", tests);
     }
 }
 
-char* testUtilBarcodeName(int symbology) {
+void testRun(int argc, char *argv[], testFunction funcs[], int funcs_size) {
+    int i, opt, ran;
+    long long_opt;
+    char *optarg_endptr = NULL;
+    int debug = 0;
+    char *func = NULL;
+    char func_buf[256 + 5];
+    int index = -1;
+    int generate = 0;
+
+    typedef void (*func_void)(void);
+    typedef void (*func_debug)(int debug);
+    typedef void (*func_index)(int index);
+    typedef void (*func_index_debug)(int index, int debug);
+    typedef void (*func_generate)(int generate);
+    typedef void (*func_generate_debug)(int generate, int debug);
+    typedef void (*func_index_generate)(int index, int generate);
+    typedef void (*func_index_generate_debug)(int index, int generate, int debug);
+
+    while ((opt = getopt(argc, argv, "d:f:gi:")) != -1) {
+        switch (opt) {
+            case 'd':
+                errno = 0;
+                long_opt = strtol(optarg, &optarg_endptr, 10);
+                if (errno || optarg_endptr == optarg || long_opt < 0 || long_opt > INT_MAX) {
+                    fprintf(stderr, "testRun: -d debug value invalid\n");
+                    debug = 0;
+                } else {
+                    debug = long_opt;
+                }
+                break;
+            case 'f':
+                if (strlen(optarg) < 256) {
+                    if (strncmp(optarg, "test_", 5) == 0) {
+                        strcpy(func_buf, optarg);
+                    } else {
+                        strcpy(func_buf, "test_");
+                        strcat(func_buf, optarg);
+                    }
+                    func = func_buf;
+                } else {
+                    fprintf(stderr, "testRun: -f func value too long\n");
+                    func = NULL;
+                }
+                break;
+            case 'g':
+                generate = 1;
+                break;
+            case 'i':
+                errno = 0;
+                long_opt = strtol(optarg, &optarg_endptr, 10);
+                if (errno || optarg_endptr == optarg || long_opt < 0 || long_opt > INT_MAX) {
+                    fprintf(stderr, "testRun: -i index value invalid\n");
+                    index = -1;
+                } else {
+                    index = long_opt;
+                }
+                break;
+        }
+    }
+
+    ran = 0;
+    for (i = 0; i < funcs_size; i++) {
+        if (func && strcmp(func, funcs[i].name) != 0) {
+            continue;
+        }
+        if (funcs[i].has_index && funcs[i].has_generate && funcs[i].has_debug) {
+            (*(func_index_generate_debug)funcs[i].func)(index, generate, debug);
+        } else if (funcs[i].has_index && funcs[i].has_generate) {
+            if (debug) fprintf(stderr, "testRun %s: -d ignored\n", funcs[i].name);
+            (*(func_index_generate)funcs[i].func)(index, generate);
+        } else if (funcs[i].has_index && funcs[i].has_debug) {
+            if (generate) fprintf(stderr, "testRun %s: -g ignored\n", funcs[i].name);
+            (*(func_index_debug)funcs[i].func)(index, debug);
+        } else if (funcs[i].has_index) {
+            if (generate) fprintf(stderr, "testRun %s: -g ignored\n", funcs[i].name);
+            if (debug) fprintf(stderr, "testRun %s: -d ignored\n", funcs[i].name);
+            (*(func_index)funcs[i].func)(index);
+        } else if (funcs[i].has_generate && funcs[i].has_debug) {
+            if (index != -1) fprintf(stderr, "testRun %s: -i index ignored\n", funcs[i].name);
+            (*(func_generate_debug)funcs[i].func)(generate, debug);
+        } else if (funcs[i].has_generate) {
+            if (index != -1) fprintf(stderr, "testRun %s: -i index ignored\n", funcs[i].name);
+            if (debug) fprintf(stderr, "testRun %s: -d ignored\n", funcs[i].name);
+            (*(func_generate)funcs[i].func)(generate);
+        } else if (funcs[i].has_debug) {
+            if (index != -1) fprintf(stderr, "testRun %s: -i index ignored\n", funcs[i].name);
+            if (generate) fprintf(stderr, "testRun %s -g ignored\n", funcs[i].name);
+            (*(func_debug)funcs[i].func)(debug);
+        } else {
+            if (index != -1) fprintf(stderr, "testRun %s: -i index ignored\n", funcs[i].name);
+            if (generate) fprintf(stderr, "testRun %s -g ignored\n", funcs[i].name);
+            if (debug) fprintf(stderr, "testRun %s: -d ignored\n", funcs[i].name);
+            (*(func_void)funcs[i].func)();
+        }
+        ran++;
+    }
+
+    if (func && !ran) {
+        fprintf(stderr, "testRun: unknown -f func arg\n");
+    }
+}
+
+char *testUtilBarcodeName(int symbology) {
     struct item {
         int define;
-        char* name;
+        char *name;
         int val;
     };
     struct item data[] = {
@@ -265,10 +389,10 @@ char* testUtilBarcodeName(int symbology) {
     return data[symbology].name;
 }
 
-char* testUtilErrorName(int error_number) {
+char *testUtilErrorName(int error_number) {
     struct item {
         int define;
-        char* name;
+        char *name;
         int val;
     };
     struct item data[] = {
@@ -297,10 +421,10 @@ char* testUtilErrorName(int error_number) {
     return data[error_number].name;
 }
 
-char* testUtilInputModeName(int input_mode) {
+char *testUtilInputModeName(int input_mode) {
     struct item {
         int define;
-        char* name;
+        char *name;
         int val;
     };
     struct item data[] = {
@@ -328,7 +452,7 @@ char* testUtilInputModeName(int input_mode) {
     return data[input_mode].name;
 }
 
-char* testUtilOption3Name(int option_3) {
+char *testUtilOption3Name(int option_3) {
     switch (option_3) {
         case DM_SQUARE: return "DM_SQUARE";
         case DM_DMRE: return "DM_DMRE";
@@ -338,10 +462,9 @@ char* testUtilOption3Name(int option_3) {
     return "-1";
 }
 
-int testUtilDAFTConvert(const struct zint_symbol* symbol, char* buffer, int buffer_size)
-{
+int testUtilDAFTConvert(const struct zint_symbol *symbol, char *buffer, int buffer_size) {
     buffer[0] = '\0';
-    char* b = buffer;
+    char *b = buffer;
     for (int i = 0; i < symbol->width && b < buffer + buffer_size; i += 2) {
         if (module_is_set(symbol, 0, i) && module_is_set(symbol, 2, i)) {
             *b++ = 'F';
@@ -374,11 +497,10 @@ int testUtilIsValidUTF8(const unsigned char str[], const size_t length) {
     return state == 0;
 }
 
-char* testUtilEscape(char* buffer, int length, char* escaped, int escaped_size)
-{
+char *testUtilEscape(char *buffer, int length, char *escaped, int escaped_size) {
     int i;
-    unsigned char* b = buffer;
-    unsigned char* be = buffer + length;
+    unsigned char *b = buffer;
+    unsigned char *be = buffer + length;
     int non_utf8 = !testUtilIsValidUTF8(buffer, length);
 
     for (i = 0; b < be && i < escaped_size; b++) {
@@ -410,10 +532,9 @@ char* testUtilEscape(char* buffer, int length, char* escaped, int escaped_size)
     return escaped;
 }
 
-char* testUtilReadCSVField(char* buffer, char* field, int field_size)
-{
+char *testUtilReadCSVField(char *buffer, char *field, int field_size) {
     int i;
-    char* b = buffer;
+    char *b = buffer;
     for (i = 0; i < field_size && *b && *b != ',' && *b != '\n' && *b != '\r'; i++) {
         field[i] = *b++;
     }
@@ -424,8 +545,7 @@ char* testUtilReadCSVField(char* buffer, char* field, int field_size)
     return b;
 }
 
-int testUtilSymbolCmp(const struct zint_symbol* a, const struct zint_symbol* b)
-{
+int testUtilSymbolCmp(const struct zint_symbol *a, const struct zint_symbol *b) {
     if (a->symbology != b->symbology) {
         return 1;
     }
@@ -461,9 +581,8 @@ int testUtilSymbolCmp(const struct zint_symbol* a, const struct zint_symbol* b)
     return 0;
 }
 
-struct zint_vector* testUtilVectorCpy(const struct zint_vector* in)
-{
-    struct zint_vector* out = (struct zint_vector*)malloc(sizeof(struct zint_vector));
+struct zint_vector *testUtilVectorCpy(const struct zint_vector *in) {
+    struct zint_vector *out = malloc(sizeof(struct zint_vector));
     out->width = in->width;
     out->height = in->height;
     out->rectangles = NULL;
@@ -471,21 +590,21 @@ struct zint_vector* testUtilVectorCpy(const struct zint_vector* in)
     out->circles = NULL;
     out->hexagons = NULL;
 
-    struct zint_vector_rect* rect;
-    struct zint_vector_string* string;
-    struct zint_vector_circle* circle;
-    struct zint_vector_hexagon* hexagon;
+    struct zint_vector_rect *rect;
+    struct zint_vector_string *string;
+    struct zint_vector_circle *circle;
+    struct zint_vector_hexagon *hexagon;
 
-    struct zint_vector_rect** outrect;
-    struct zint_vector_string** outstring;
-    struct zint_vector_circle** outcircle;
-    struct zint_vector_hexagon** outhexagon;
+    struct zint_vector_rect **outrect;
+    struct zint_vector_string **outstring;
+    struct zint_vector_circle **outcircle;
+    struct zint_vector_hexagon **outhexagon;
 
     // Copy rectangles
     rect = in->rectangles;
     outrect = &(out->rectangles);
     while (rect) {
-        *outrect = (struct zint_vector_rect*) malloc(sizeof(struct zint_vector_rect));
+        *outrect = malloc(sizeof(struct zint_vector_rect));
         memcpy(*outrect, rect, sizeof(struct zint_vector_rect));
         outrect = &((*outrect)->next);
         rect = rect->next;
@@ -496,9 +615,9 @@ struct zint_vector* testUtilVectorCpy(const struct zint_vector* in)
     string = in->strings;
     outstring = &(out->strings);
     while (string) {
-        *outstring = (struct zint_vector_string*) malloc(sizeof(struct zint_vector_string));
+        *outstring = malloc(sizeof(struct zint_vector_string));
         memcpy(*outstring, string, sizeof(struct zint_vector_string));
-        (*outstring)->text = (unsigned char*) malloc(sizeof(unsigned char) * (ustrlen(string->text) + 1));
+        (*outstring)->text = malloc(sizeof(unsigned char) * (ustrlen(string->text) + 1));
         ustrcpy((*outstring)->text, string->text);
         outstring = &((*outstring)->next);
         string = string->next;
@@ -509,7 +628,7 @@ struct zint_vector* testUtilVectorCpy(const struct zint_vector* in)
     circle = in->circles;
     outcircle = &(out->circles);
     while (circle) {
-        *outcircle = (struct zint_vector_circle*) malloc(sizeof(struct zint_vector_circle));
+        *outcircle = malloc(sizeof(struct zint_vector_circle));
         memcpy(*outcircle, circle, sizeof(struct zint_vector_circle));
         outcircle = &((*outcircle)->next);
         circle = circle->next;
@@ -520,7 +639,7 @@ struct zint_vector* testUtilVectorCpy(const struct zint_vector* in)
     hexagon = in->hexagons;
     outhexagon = &(out->hexagons);
     while (hexagon) {
-        *outhexagon = (struct zint_vector_hexagon*) malloc(sizeof(struct zint_vector_hexagon));
+        *outhexagon = malloc(sizeof(struct zint_vector_hexagon));
         memcpy(*outhexagon, hexagon, sizeof(struct zint_vector_hexagon));
         outhexagon = &((*outhexagon)->next);
         hexagon = hexagon->next;
@@ -530,17 +649,16 @@ struct zint_vector* testUtilVectorCpy(const struct zint_vector* in)
     return out;
 }
 
-int testUtilVectorCmp(const struct zint_vector* a, const struct zint_vector* b)
-{
-    struct zint_vector_rect* arect;
-    struct zint_vector_string* astring;
-    struct zint_vector_circle* acircle;
-    struct zint_vector_hexagon* ahexagon;
+int testUtilVectorCmp(const struct zint_vector *a, const struct zint_vector *b) {
+    struct zint_vector_rect *arect;
+    struct zint_vector_string *astring;
+    struct zint_vector_circle *acircle;
+    struct zint_vector_hexagon *ahexagon;
 
-    struct zint_vector_rect* brect;
-    struct zint_vector_string* bstring;
-    struct zint_vector_circle* bcircle;
-    struct zint_vector_hexagon* bhexagon;
+    struct zint_vector_rect *brect;
+    struct zint_vector_string *bstring;
+    struct zint_vector_circle *bcircle;
+    struct zint_vector_hexagon *bhexagon;
 
     if (a->width != b->width) {
         return 1;
@@ -665,8 +783,7 @@ int testUtilVectorCmp(const struct zint_vector* a, const struct zint_vector* b)
     return 0;
 }
 
-void testUtilLargeDump(const char* name, const short int reg[])
-{
+void testUtilLargeDump(const char *name, const short int reg[]) {
     unsigned words[4];
     words[0] = words[1] = words[2] = words[3] = 0;
     int w = 0;
@@ -681,8 +798,7 @@ void testUtilLargeDump(const char* name, const short int reg[])
     printf("%4x 0x%08x%08x%08x %s", words[3], words[2], words[1], words[0], name);
 }
 
-void testUtilModulesDump(const struct zint_symbol* symbol, char* prefix, char* postfix)
-{
+void testUtilModulesDump(const struct zint_symbol *symbol, char *prefix, char *postfix) {
     int r, w;
     for (r = 0; r < symbol->rows; r++) {
         if (*prefix) {
@@ -699,10 +815,9 @@ void testUtilModulesDump(const struct zint_symbol* symbol, char* prefix, char* p
     }
 }
 
-int testUtilModulesCmp(const struct zint_symbol* symbol, const char* expected, int* row, int* width)
-{
-    const char* e = expected;
-    const char* ep = expected + strlen(expected);
+int testUtilModulesCmp(const struct zint_symbol *symbol, const char *expected, int *row, int *width) {
+    const char *e = expected;
+    const char *ep = expected + strlen(expected);
     int r, w = 0;
     for (r = 0; r < symbol->rows && e < ep; r++) {
         for (w = 0; w < symbol->width && e < ep; w++) {
@@ -719,14 +834,13 @@ int testUtilModulesCmp(const struct zint_symbol* symbol, const char* expected, i
     return e != ep || r != symbol->rows || w != symbol->width ? 1 /*fail*/ : 0 /*success*/;
 }
 
-int testUtilModulesDumpHex(const struct zint_symbol* symbol, char dump[], int dump_size)
-{
+int testUtilModulesDumpHex(const struct zint_symbol *symbol, char dump[], int dump_size) {
     int i, r;
     char hex[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8',
         '9', 'A', 'B', 'C', 'D', 'E', 'F'};
     int space = 0;
-    char* d = dump;
-    char* de = dump + dump_size;
+    char *d = dump;
+    char *de = dump + dump_size;
 
     for (r = 0; r < symbol->rows && d < de; r++) {
         int byt = 0;
@@ -758,9 +872,8 @@ int testUtilModulesDumpHex(const struct zint_symbol* symbol, char dump[], int du
     return d - dump;
 }
 
-int testUtilExists(char* filename)
-{
-    FILE* fp = fopen(filename, "r");
+int testUtilExists(char *filename) {
+    FILE *fp = fopen(filename, "r");
     if (fp == NULL) {
         return 0;
     }
@@ -768,12 +881,11 @@ int testUtilExists(char* filename)
     return 1;
 }
 
-int testUtilCmpPngs(char* png1, char* png2)
-{
+int testUtilCmpPngs(char *png1, char *png2) {
     int ret = -1;
 #ifndef NO_PNG
-    FILE* fp1;
-    FILE* fp2;
+    FILE *fp1;
+    FILE *fp2;
     png_structp png_ptr1, png_ptr2;
     png_infop info_ptr1, info_ptr2;
     int width1, height1, width2, height2;
@@ -925,7 +1037,7 @@ int testUtilCmpPngs(char* png1, char* png2)
         return 11;
     }
 
-    row1 = (png_byte*)malloc(rowbytes1);
+    row1 = malloc(rowbytes1);
     if (!row1) {
         png_destroy_read_struct(&png_ptr1, &info_ptr1, (png_infopp)NULL);
         png_destroy_read_struct(&png_ptr2, &info_ptr2, (png_infopp)NULL);
@@ -933,7 +1045,7 @@ int testUtilCmpPngs(char* png1, char* png2)
         fclose(fp2);
         return 12;
     }
-    row2 = (png_byte*)malloc(rowbytes2);
+    row2 = malloc(rowbytes2);
     if (!row2) {
         free(row1);
         png_destroy_read_struct(&png_ptr1, &info_ptr1, (png_infopp)NULL);
@@ -962,11 +1074,10 @@ int testUtilCmpPngs(char* png1, char* png2)
     return ret;
 }
 
-int testUtilCmpTxts(char* txt1, char* txt2)
-{
+int testUtilCmpTxts(char *txt1, char *txt2) {
     int ret = -1;
-    FILE* fp1;
-    FILE* fp2;
+    FILE *fp1;
+    FILE *fp2;
     char buf1[1024];
     char buf2[1024];
     size_t len1 = 0, len2 = 0;
@@ -1013,11 +1124,10 @@ int testUtilCmpTxts(char* txt1, char* txt2)
     return ret;
 }
 
-int testUtilCmpBins(char* bin1, char* bin2)
-{
+int testUtilCmpBins(char *bin1, char *bin2) {
     int ret = -1;
-    FILE* fp1;
-    FILE* fp2;
+    FILE *fp1;
+    FILE *fp2;
     char buf1[1024];
     char buf2[1024];
     size_t len1 = 0, len2 = 0;
@@ -1054,16 +1164,14 @@ int testUtilCmpBins(char* bin1, char* bin2)
     return ret;
 }
 
-int testUtilCmpSvgs(char* svg1, char* svg2)
-{
+int testUtilCmpSvgs(char *svg1, char *svg2) {
     return testUtilCmpTxts(svg1, svg2);
 }
 
-int testUtilCmpEpss(char* eps1, char* eps2)
-{
+int testUtilCmpEpss(char *eps1, char *eps2) {
     int ret = -1;
-    FILE* fp1;
-    FILE* fp2;
+    FILE *fp1;
+    FILE *fp2;
     char buf1[1024];
     char buf2[1024];
     size_t len1 = 0, len2 = 0;
@@ -1121,4 +1229,72 @@ int testUtilCmpEpss(char* eps1, char* eps2)
     fclose(fp2);
 
     return ret;
+}
+
+int testUtilHaveIdentify() {
+    return system("identify --version > /dev/null") == 0;
+}
+
+int testUtilVerifyIdentify(char *filename, int debug) {
+    int ret;
+    char buf[512 + 128];
+
+    if (strlen(filename) > 512) {
+        return -1;
+    }
+    // Verbose option does a more thorough check
+    if (debug & ZINT_DEBUG_PRINT) {
+        // Verbose very noisy though so for quick check just return default output
+        if (debug & 4) {
+            sprintf(buf, "identify %s", filename);
+        } else {
+            sprintf(buf, "identify -verbose %s", filename);
+        }
+    } else {
+        sprintf(buf, "identify -verbose %s > /dev/null", filename);
+    }
+
+    return system(buf);
+}
+
+int testUtilHaveInkscape() {
+    return system("inkscape -z -V > /dev/null") == 0;
+}
+
+int testUtilVerifyInkscape(char *filename, int debug) {
+    int ret;
+    char buf[512 + 128];
+
+    if (strlen(filename) > 512) {
+        return -1;
+    }
+    if (debug & ZINT_DEBUG_PRINT) {
+        sprintf(buf, "inkscape -z -f %s", filename); // Prints nothing unless bad
+        printf("%s\n", buf);
+    } else {
+        sprintf(buf, "inkscape -z -f %s > /dev/null", filename);
+    }
+
+    return system(buf);
+}
+
+int testUtilHaveGhostscript() {
+    return system("gs -v > /dev/null") == 0;
+}
+
+int testUtilVerifyGhostscript(char *filename, int debug) {
+    int ret;
+    char buf[512 + 128];
+
+    if (strlen(filename) > 512) {
+        return -1;
+    }
+    if (debug & ZINT_DEBUG_PRINT) {
+        sprintf(buf, "gs -dNOPAUSE -dBATCH -sDEVICE=nullpage -q %s", filename); // Prints nothing of interest with or without -q unless bad
+        printf("%s\n", buf);
+    } else {
+        sprintf(buf, "gs -dNOPAUSE -dBATCH -sDEVICE=nullpage -q %s", filename);
+    }
+
+    return system(buf);
 }

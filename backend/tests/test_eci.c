@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2019 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019 - 2020 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -31,17 +31,18 @@
 
 #include "testcommon.h"
 
-static void test_bom(void)
-{
+static void test_bom(int debug) {
+
     testStart("");
 
-    struct zint_symbol* symbol = ZBarcode_Create();
+    struct zint_symbol *symbol = ZBarcode_Create();
     assert_nonnull(symbol, "Symbol not created\n");
 
     symbol->symbology = BARCODE_QRCODE;
     symbol->input_mode = UNICODE_MODE;
     symbol->option_1 = 4;
     symbol->option_2 = 1;
+    symbol->debug |= debug;
 
     char data[] = "\xEF\xBB\xBF‹"; // U+FEFF BOM, with U+2039 (only in Windows pages)
     int length = strlen(data);
@@ -83,15 +84,16 @@ static void test_bom(void)
     testFinish();
 }
 
-static void test_iso_8859_16(void)
-{
+static void test_iso_8859_16(int debug) {
+
     testStart("");
 
-    struct zint_symbol* symbol = ZBarcode_Create();
+    struct zint_symbol *symbol = ZBarcode_Create();
     assert_nonnull(symbol, "Symbol not created\n");
 
     symbol->symbology = BARCODE_QRCODE;
     symbol->input_mode = UNICODE_MODE;
+    symbol->debug |= debug;
 
     char data[] = "Ț"; // U+021A only in ISO 8859-16
     int length = strlen(data);
@@ -107,8 +109,8 @@ static void test_iso_8859_16(void)
 }
 
 // Only testing standard non-extended barcodes here, ie not QRCODE, MICROQR, GRIDMATRIX, HANXIN or UPNQR
-static void test_reduced_charset_input(void)
-{
+static void test_reduced_charset_input(int index, int debug) {
+
     testStart("");
 
     int ret;
@@ -116,10 +118,10 @@ static void test_reduced_charset_input(void)
         int symbology;
         int input_mode;
         int eci;
-        unsigned char* data;
+        unsigned char *data;
         int ret;
         int expected_eci;
-        char* comment;
+        char *comment;
     };
     // é U+00E9 in ISO 8859-1 plus other ISO 8859 (but not in ISO 8859-7 or ISO 8859-11), Win 1250 plus other Win, not in Shift JIS
     // β U+03B2 in ISO 8859-7 Greek (but not other ISO 8859 or Win page), in Shift JIS
@@ -214,12 +216,15 @@ static void test_reduced_charset_input(void)
 
     for (int i = 0; i < data_size; i++) {
 
-        struct zint_symbol* symbol = ZBarcode_Create();
+        if (index != -1 && i != index) continue;
+
+        struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
         symbol->symbology = data[i].symbology;
         symbol->input_mode = data[i].input_mode;
         symbol->eci = data[i].eci;
+        symbol->debug |= debug;
 
         int length = strlen(data[i].data);
 
@@ -236,11 +241,15 @@ static void test_reduced_charset_input(void)
     testFinish();
 }
 
-int main()
-{
-    test_bom();
-    test_iso_8859_16();
-    test_reduced_charset_input();
+int main(int argc, char *argv[]) {
+
+    testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
+        { "test_bom", test_bom, 0, 0, 1 },
+        { "test_iso_8859_16", test_iso_8859_16, 0, 0, 1 },
+        { "test_reduced_charset_input", test_reduced_charset_input, 1, 0, 1 },
+    };
+
+    testRun(argc, argv, funcs, ARRAY_SIZE(funcs));
 
     testReport();
 

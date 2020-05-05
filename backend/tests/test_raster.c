@@ -31,15 +31,15 @@
 
 #include "testcommon.h"
 
-static void test_chk_extendable(void)
-{
+static void test_chk_extendable(int index, int debug) {
+
     testStart("");
 
     int ret;
     struct item {
         int symbology;
         int show_hrt;
-        unsigned char* data;
+        unsigned char *data;
         int ret;
 
         int expected_height;
@@ -61,13 +61,17 @@ static void test_chk_extendable(void)
 
     for (int i = 0; i < data_size; i++) {
 
-        struct zint_symbol* symbol = ZBarcode_Create();
+        if (index != -1 && i != index) continue;
+
+        struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
         symbol->symbology = data[i].symbology;
         if (data[i].show_hrt != -1) {
             symbol->show_hrt = data[i].show_hrt;
         }
+        symbol->debug |= debug;
+
         int length = strlen(data[i].data);
 
         ret = ZBarcode_Encode_and_Buffer(symbol, data[i].data, length, 0);
@@ -101,9 +105,13 @@ static void test_chk_extendable(void)
     testFinish();
 }
 
-int main()
-{
-    test_chk_extendable();
+int main(int argc, char *argv[]) {
+
+    testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
+        { "test_chk_extendable", test_chk_extendable, 1, 0, 1 },
+    };
+
+    testRun(argc, argv, funcs, ARRAY_SIZE(funcs));
 
     testReport();
 

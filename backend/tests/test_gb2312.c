@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019 - 2020 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -35,8 +35,7 @@
 
 // As control convert to GB 2312 using simple table generated from unicode.org GB2312.TXT plus simple processing
 // GB2312.TXT no longer on unicode.org site but available from https://haible.de/bruno/charsets/conversion-tables/GB2312.html
-static int gb2312_wctomb_zint2(unsigned int* r, unsigned int wc)
-{
+static int gb2312_wctomb_zint2(unsigned int *r, unsigned int wc) {
     // Shortcut
     if ((wc > 0x0451 && wc < 0x2015) || (wc > 0x3229 && wc < 0x4E00) || (wc > 0x9FA0 && wc < 0xFF01) || wc > 0xFFE5) {
         return 0;
@@ -51,8 +50,8 @@ static int gb2312_wctomb_zint2(unsigned int* r, unsigned int wc)
     return 0;
 }
 
-static void test_gb2312_wctomb_zint(void)
-{
+static void test_gb2312_wctomb_zint(void) {
+
     testStart("");
 
     int ret, ret2;
@@ -88,18 +87,18 @@ static void test_gb2312_wctomb_zint(void)
     testFinish();
 }
 
-static void test_gb2312_utf8tomb(void)
-{
+static void test_gb2312_utf8tomb(int index) {
+
     testStart("");
 
     int ret;
     struct item {
-        unsigned char* data;
+        unsigned char *data;
         int length;
         int ret;
         size_t ret_length;
         unsigned int expected_gbdata[20];
-        char* comment;
+        char *comment;
     };
     // é U+00E9 in ISO 8859-1 plus other ISO 8859 (but not in ISO 8859-7 or ISO 8859-11), Win 1250 plus other Win, in GB 2312 0xA8A6, UTF-8 C3A9
     // β U+03B2 in ISO 8859-7 Greek (but not other ISO 8859 or Win page), in GB 2312 0xA6C2, UTF-8 CEB2
@@ -129,6 +128,8 @@ static void test_gb2312_utf8tomb(void)
 
     for (int i = 0; i < data_size; i++) {
 
+        if (index != -1 && i != index) continue;
+
         int length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
         size_t ret_length = length;
 
@@ -145,20 +146,20 @@ static void test_gb2312_utf8tomb(void)
     testFinish();
 }
 
-static void test_gb2312_utf8tosb(void)
-{
+static void test_gb2312_utf8tosb(int index) {
+
     testStart("");
 
     int ret;
     struct item {
         int eci;
         int full_multibyte;
-        unsigned char* data;
+        unsigned char *data;
         int length;
         int ret;
         size_t ret_length;
         unsigned int expected_gbdata[20];
-        char* comment;
+        char *comment;
     };
     // é U+00E9 in ISO 8859-1 0xE9, Win 1250 plus other Win, in GRIDMATRIX Chinese mode first byte range 0xA1..A9, 0xB0..F7
     // β U+03B2 in ISO 8859-7 Greek 0xE2 (but not other ISO 8859 or Win page)
@@ -200,6 +201,8 @@ static void test_gb2312_utf8tosb(void)
 
     for (int i = 0; i < data_size; i++) {
 
+        if (index != -1 && i != index) continue;
+
         int length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
         size_t ret_length = length;
 
@@ -216,19 +219,19 @@ static void test_gb2312_utf8tosb(void)
     testFinish();
 }
 
-static void test_gb2312_cpy(void)
-{
+static void test_gb2312_cpy(int index) {
+
     testStart("");
 
     int ret;
     struct item {
         int full_multibyte;
-        unsigned char* data;
+        unsigned char *data;
         int length;
         int ret;
         size_t ret_length;
         unsigned int expected_gbdata[20];
-        char* comment;
+        char *comment;
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
@@ -250,6 +253,8 @@ static void test_gb2312_cpy(void)
 
     for (int i = 0; i < data_size; i++) {
 
+        if (index != -1 && i != index) continue;
+
         int length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
         size_t ret_length = length;
 
@@ -263,12 +268,16 @@ static void test_gb2312_cpy(void)
     testFinish();
 }
 
-int main()
-{
-    test_gb2312_wctomb_zint();
-    test_gb2312_utf8tomb();
-    test_gb2312_utf8tosb();
-    test_gb2312_cpy();
+int main(int argc, char *argv[]) {
+
+    testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
+        { "test_gb2312_wctomb_zint", test_gb2312_wctomb_zint, 0, 0, 0 },
+        { "test_gb2312_utf8tomb", test_gb2312_utf8tomb, 1, 0, 0 },
+        { "test_gb2312_utf8tosb", test_gb2312_utf8tosb, 1, 0, 0 },
+        { "test_gb2312_cpy", test_gb2312_cpy, 1, 0, 0 },
+    };
+
+    testRun(argc, argv, funcs, ARRAY_SIZE(funcs));
 
     testReport();
 

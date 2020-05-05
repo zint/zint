@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019 - 2020 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -31,16 +31,13 @@
 
 #include "testcommon.h"
 
-//#define TEST_INPUT_GENERATE_EXPECTED 1
-//#define TEST_ENCODE_GENERATE_EXPECTED 1
+static void test_options(int index, int debug) {
 
-static void test_options(void)
-{
     testStart("");
 
     int ret;
     struct item {
-        unsigned char* data;
+        unsigned char *data;
         int option_1;
         int option_2;
         int ret_encode;
@@ -66,7 +63,9 @@ static void test_options(void)
 
     for (int i = 0; i < data_size; i++) {
 
-        struct zint_symbol* symbol = ZBarcode_Create();
+        if (index != -1 && i != index) continue;
+
+        struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
         symbol->symbology = BARCODE_HANXIN;
@@ -76,6 +75,7 @@ static void test_options(void)
         if (data[i].option_2 != -1) {
             symbol->option_2 = data[i].option_2;
         }
+        symbol->debug |= debug;
 
         int length = strlen(data[i].data);
 
@@ -95,8 +95,8 @@ static void test_options(void)
     testFinish();
 }
 
-static void test_input(void)
-{
+static void test_input(int index, int generate, int debug) {
+
     testStart("");
 
     int ret;
@@ -104,12 +104,12 @@ static void test_input(void)
         int input_mode;
         int eci;
         int option_3;
-        unsigned char* data;
+        unsigned char *data;
         int length;
         int ret;
         int expected_eci;
-        char* expected;
-        char* comment;
+        char *expected;
+        char *comment;
     };
     // é U+00E9 in ISO 8859-1 plus other ISO 8859 (but not in ISO 8859-7 or ISO 8859-11), Win 1250 plus other Win, in GB 18030 0xA8A6, UTF-8 C3A9
     // β U+03B2 in ISO 8859-7 Greek 0xE2 (but not other ISO 8859 or Win page), in GB 18030 0xA6C2, UTF-8 CEB2
@@ -162,7 +162,9 @@ static void test_input(void)
 
     for (int i = 0; i < data_size; i++) {
 
-        struct zint_symbol* symbol = ZBarcode_Create();
+        if (index != -1 && i != index) continue;
+
+        struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
         symbol->symbology = BARCODE_HANXIN;
@@ -172,23 +174,23 @@ static void test_input(void)
             symbol->option_3 = data[i].option_3;
         }
         symbol->debug = ZINT_DEBUG_TEST; // Needed to get codeword dump in errtxt
+        symbol->debug |= debug;
 
         int length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
 
         ret = ZBarcode_Encode(symbol, data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
-        #ifdef TEST_INPUT_GENERATE_EXPECTED
-        printf("        /*%3d*/ { %s, %d, %d, \"%s\", %d, %s, %d, \"%s\", \"%s\" },\n",
-                i, testUtilInputModeName(data[i].input_mode), data[i].eci, data[i].option_3, testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), data[i].length,
-                testUtilErrorName(data[i].ret), ret < 5 ? symbol->eci : -1, symbol->errtxt, data[i].comment);
-        #else
-        if (ret < 5) {
-
-            assert_equal(symbol->eci, data[i].expected_eci, "i:%d eci %d != %d\n", i, symbol->eci, data[i].expected_eci);
-            assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
+        if (generate) {
+            printf("        /*%3d*/ { %s, %d, %d, \"%s\", %d, %s, %d, \"%s\", \"%s\" },\n",
+                    i, testUtilInputModeName(data[i].input_mode), data[i].eci, data[i].option_3, testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), data[i].length,
+                    testUtilErrorName(data[i].ret), ret < 5 ? symbol->eci : -1, symbol->errtxt, data[i].comment);
+        } else {
+            if (ret < 5) {
+                assert_equal(symbol->eci, data[i].expected_eci, "i:%d eci %d != %d\n", i, symbol->eci, data[i].expected_eci);
+                assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
+            }
         }
-        #endif
 
         ZBarcode_Delete(symbol);
     }
@@ -196,13 +198,13 @@ static void test_input(void)
     testFinish();
 }
 
-static void test_encode(void)
-{
+static void test_encode(int index, int generate, int debug) {
+
     testStart("");
 
     int ret;
     struct item {
-        unsigned char* data;
+        unsigned char *data;
         int input_mode;
         int option_1;
         int option_2;
@@ -210,8 +212,8 @@ static void test_encode(void)
 
         int expected_rows;
         int expected_width;
-        char* comment;
-        char* expected;
+        char *comment;
+        char *expected;
     };
     struct item data[] = {
         /*  0*/ { "1234", UNICODE_MODE, -1, -1, 0, 23, 23, "",
@@ -369,7 +371,9 @@ static void test_encode(void)
 
     for (int i = 0; i < data_size; i++) {
 
-        struct zint_symbol* symbol = ZBarcode_Create();
+        if (index != -1 && i != index) continue;
+
+        struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
         symbol->symbology = BARCODE_HANXIN;
@@ -380,30 +384,31 @@ static void test_encode(void)
         if (data[i].option_2 != -1) {
             symbol->option_2 = data[i].option_2;
         }
+        symbol->debug |= debug;
 
         int length = strlen(data[i].data);
 
         ret = ZBarcode_Encode(symbol, data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
-        #ifdef TEST_ENCODE_GENERATE_EXPECTED
-        printf("        /*%3d*/ { \"%s\", %s, %d, %d, %s, %d, %d, \"%s\",\n",
-                i, data[i].data, testUtilInputModeName(data[i].input_mode), data[i].option_1, data[i].option_2, testUtilErrorName(data[i].ret),
-                symbol->rows, symbol->width, data[i].comment);
-        testUtilModulesDump(symbol, "                    ", "\n");
-        printf("               },\n");
-        #else
-        if (ret < 5) {
-            assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);
-            assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
+        if (generate) {
+            printf("        /*%3d*/ { \"%s\", %s, %d, %d, %s, %d, %d, \"%s\",\n",
+                    i, data[i].data, testUtilInputModeName(data[i].input_mode), data[i].option_1, data[i].option_2, testUtilErrorName(data[i].ret),
+                    symbol->rows, symbol->width, data[i].comment);
+            testUtilModulesDump(symbol, "                    ", "\n");
+            printf("               },\n");
+        } else {
+            if (ret < 5) {
+                assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);
+                assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
 
-            if (ret == 0) {
-                int width, row;
-                ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
-                assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, ret, width, row, data[i].data);
+                if (ret == 0) {
+                    int width, row;
+                    ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
+                    assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, ret, width, row, data[i].data);
+                }
             }
         }
-        #endif
 
         ZBarcode_Delete(symbol);
     }
@@ -411,11 +416,15 @@ static void test_encode(void)
     testFinish();
 }
 
-int main()
-{
-    test_options();
-    test_input();
-    test_encode();
+int main(int argc, char *argv[]) {
+
+    testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
+        { "test_options", test_options, 1, 0, 1 },
+        { "test_input", test_input, 1, 1, 1 },
+        { "test_encode", test_encode, 1, 1, 1 },
+    };
+
+    testRun(argc, argv, funcs, ARRAY_SIZE(funcs));
 
     testReport();
 

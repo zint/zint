@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008 - 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019 - 2020 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -29,36 +29,41 @@
  */
 /* vim: set ts=4 sw=4 et : */
 
-//#define TEST_ENCODE_GENERATE_EXPECTED 1
-
 #include "testcommon.h"
 
-static void test_options(void)
-{
+static void test_options(int index, int debug) {
+
     testStart("");
 
     int ret;
     struct item {
-        unsigned char* data;
         int option_1;
         int option_2;
+        unsigned char *data;
         int ret;
-        char* comment;
+        char *comment;
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /*  0*/ { "é", -1, -1, 0, "" },
+        /*  0*/ { -1, -1, "é", 0, "" },
     };
     int data_size = sizeof(data) / sizeof(struct item);
 
     for (int i = 0; i < data_size; i++) {
 
-        struct zint_symbol* symbol = ZBarcode_Create();
+        if (index != -1 && i != index) continue;
+
+        struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
         symbol->symbology = BARCODE_CODABLOCKF;
-        symbol->option_1 = data[i].option_1;
-        symbol->option_2 = data[i].option_2;
+        if (data[i].option_1 != -1) {
+            symbol->option_1 = data[i].option_1;
+        }
+        if (data[i].option_2 != -1) {
+            symbol->option_2 = data[i].option_2;
+        }
+        symbol->debug |= debug;
 
         int length = strlen(data[i].data);
 
@@ -71,8 +76,8 @@ static void test_options(void)
     testFinish();
 }
 
-static void test_encode(void)
-{
+static void test_encode(int index, int generate, int debug) {
+
     testStart("");
 
     int ret;
@@ -80,13 +85,13 @@ static void test_encode(void)
         int input_mode;
         int option_1;
         int option_2;
-        unsigned char* data;
+        unsigned char *data;
         int ret;
 
         int expected_rows;
         int expected_width;
-        char* comment;
-        char* expected;
+        char *comment;
+        char *expected;
     };
     struct item data[] = {
         /*  0*/ { UNICODE_MODE, -1, -1, "AIM", 0, 1, 68, "Same as CODE128",
@@ -127,7 +132,9 @@ static void test_encode(void)
 
     for (int i = 0; i < data_size; i++) {
 
-        struct zint_symbol* symbol = ZBarcode_Create();
+        if (index != -1 && i != index) continue;
+
+        struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
         symbol->symbology = BARCODE_CODABLOCKF;
@@ -138,31 +145,31 @@ static void test_encode(void)
         if (data[i].option_2 != -1) {
             symbol->option_2 = data[i].option_2;
         }
-        //symbol->debug = ZINT_DEBUG_PRINT;
+        symbol->debug |= debug;
 
         int length = strlen(data[i].data);
 
         ret = ZBarcode_Encode(symbol, data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
-        #ifdef TEST_ENCODE_GENERATE_EXPECTED
-        printf("        /*%3d*/ { %s, %d, %d, \"%s\", %s, %d, %d, \"%s\",\n",
-                i, testUtilInputModeName(data[i].input_mode), data[i].option_1, data[i].option_2, testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
-                testUtilErrorName(data[i].ret), symbol->rows, symbol->width, data[i].comment);
-        testUtilModulesDump(symbol, "                    ", "\n");
-        printf("               },\n");
-        #else
-        if (ret < 5) {
-            assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);
-            assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
+        if (generate) {
+            printf("        /*%3d*/ { %s, %d, %d, \"%s\", %s, %d, %d, \"%s\",\n",
+                    i, testUtilInputModeName(data[i].input_mode), data[i].option_1, data[i].option_2, testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
+                    testUtilErrorName(data[i].ret), symbol->rows, symbol->width, data[i].comment);
+            testUtilModulesDump(symbol, "                    ", "\n");
+            printf("               },\n");
+        } else {
+            if (ret < 5) {
+                assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);
+                assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
 
-            if (ret == 0) {
-                int width, row;
-                ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
-                assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, ret, width, row, data[i].data);
+                if (ret == 0) {
+                    int width, row;
+                    ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
+                    assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, ret, width, row, data[i].data);
+                }
             }
         }
-        #endif
 
         ZBarcode_Delete(symbol);
     }
@@ -171,13 +178,13 @@ static void test_encode(void)
 }
 
 // #181 Christian Hartlage OSS-Fuzz
-static void test_fuzz(void)
-{
+static void test_fuzz(int index, int debug) {
+
     testStart("");
 
     int ret;
     struct item {
-        unsigned char* data;
+        unsigned char *data;
         int length;
         int ret;
     };
@@ -189,10 +196,14 @@ static void test_fuzz(void)
 
     for (int i = 0; i < data_size; i++) {
 
-        struct zint_symbol* symbol = ZBarcode_Create();
+        if (index != -1 && i != index) continue;
+
+        struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
         symbol->symbology = BARCODE_CODABLOCKF;
+        symbol->debug |= debug;
+
         int length = data[i].length;
         if (length == -1) {
             length = strlen(data[i].data);
@@ -207,11 +218,15 @@ static void test_fuzz(void)
     testFinish();
 }
 
-int main()
-{
-    test_options();
-    test_encode();
-    test_fuzz();
+int main(int argc, char *argv[]) {
+
+    testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
+        { "test_options", test_options, 1, 0, 1 },
+        { "test_encode", test_encode, 1, 1, 1 },
+        { "test_fuzz", test_fuzz, 1, 0, 1 },
+    };
+
+    testRun(argc, argv, funcs, ARRAY_SIZE(funcs));
 
     testReport();
 

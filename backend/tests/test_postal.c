@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2019 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019 - 2020 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -31,13 +31,13 @@
 
 #include "testcommon.h"
 
-static void test_koreapost(void)
-{
+static void test_koreapost(int index, int debug) {
+
     testStart("");
 
     int ret;
     struct item {
-        unsigned char* data;
+        unsigned char *data;
         int ret_encode;
         int ret_vector;
 
@@ -52,10 +52,14 @@ static void test_koreapost(void)
 
     for (int i = 0; i < data_size; i++) {
 
-        struct zint_symbol* symbol = ZBarcode_Create();
+        if (index != -1 && i != index) continue;
+
+        struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
         symbol->symbology = BARCODE_KOREAPOST;
+        symbol->debug |= debug;
+
         int length = strlen(data[i].data);
 
         ret = ZBarcode_Encode(symbol, data[i].data, length);
@@ -76,20 +80,20 @@ static void test_koreapost(void)
     testFinish();
 }
 
-static void test_japanpost(void)
-{
+static void test_japanpost(int index, int debug) {
+
     testStart("");
 
     int ret;
     struct item {
-        unsigned char* data;
+        unsigned char *data;
         int ret_encode;
         int ret_vector;
 
         int expected_height;
         int expected_rows;
         int expected_width;
-        char* comment;
+        char *comment;
     };
     struct item data[] = {
         /* 0*/ { "123", 0, 0, 8, 3, 133, "Check 3" },
@@ -100,10 +104,14 @@ static void test_japanpost(void)
 
     for (int i = 0; i < data_size; i++) {
 
-        struct zint_symbol* symbol = ZBarcode_Create();
+        if (index != -1 && i != index) continue;
+
+        struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
         symbol->symbology = BARCODE_JAPANPOST;
+        symbol->debug |= debug;
+
         int length = strlen(data[i].data);
 
         ret = ZBarcode_Encode(symbol, data[i].data, length);
@@ -124,10 +132,14 @@ static void test_japanpost(void)
     testFinish();
 }
 
-int main()
-{
-    test_koreapost();
-    test_japanpost();
+int main(int argc, char *argv[]) {
+
+    testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
+        { "test_koreapost", test_koreapost, 1, 0, 1 },
+        { "test_japanpost", test_japanpost, 1, 0, 1 },
+    };
+
+    testRun(argc, argv, funcs, ARRAY_SIZE(funcs));
 
     testReport();
 

@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2019 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019 - 2020 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -31,23 +31,15 @@
 
 #include "testcommon.h"
 
-//#define TEST_EXAMPLES_GENERATE_EXPECTED 1
-//#define TEST_ODD_NUMBERED_NUMERIC_GENERATE_EXPECTED 1
-//#define TEST_EAN128_CC_SHIFT_GENERATE_EXPECTED 1
-//#define TEST_EAN128_CC_WIDTH_GENERATE_EXPECTED 1
-//#define TEST_ENCODATION_0_GENERATE_EXPECTED 1
-//#define TEST_ENCODATION_10_GENERATE_EXPECTED 1
-//#define TEST_ENCODATION_11_GENERATE_EXPECTED 1
+static void test_eanx_leading_zeroes(int index, int debug) {
 
-static void test_eanx_leading_zeroes(void)
-{
     testStart("");
 
     int ret;
     struct item {
         int symbology;
-        unsigned char* data;
-        unsigned char* composite;
+        unsigned char *data;
+        unsigned char *composite;
         int ret;
 
         int expected_rows;
@@ -84,10 +76,14 @@ static void test_eanx_leading_zeroes(void)
 
     for (int i = 0; i < data_size; i++) {
 
-        struct zint_symbol* symbol = ZBarcode_Create();
+        if (index != -1 && i != index) continue;
+
+        struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
         symbol->symbology = data[i].symbology;
+        symbol->debug |= debug;
+
         int length = strlen(data[i].data);
         assert_zero(length >= 128, "i:%d length %d >= 128\n", i, length);
         strcpy(symbol->primary, data[i].data);
@@ -105,8 +101,7 @@ static void test_eanx_leading_zeroes(void)
     testFinish();
 }
 
-static void test_helper_generate(const struct zint_symbol* symbol, int ret, int i, unsigned char* data, unsigned char* composite, int option_1, int option_2, int option_3, char* comment)
-{
+static void test_helper_generate(const struct zint_symbol *symbol, int ret, int i, unsigned char *data, unsigned char *composite, int option_1, int option_2, int option_3, char *comment) {
     if (ret == 0) {
         printf("        /*%2d*/ { %s, \"%s\", \"%s\", %d, %d, %d, %d, %d, %d, \"%s\",\n",
                 i, testUtilBarcodeName(symbol->symbology), data, composite, option_1, option_2, option_3, ret, symbol->rows, symbol->width, comment);
@@ -119,15 +114,15 @@ static void test_helper_generate(const struct zint_symbol* symbol, int ret, int 
 }
 
 // Replicate examples from GS1 General Specifications 19.1 and ISO/IEC 24723:2010
-static void test_examples(void)
-{
+static void test_examples(int index, int generate, int debug) {
+
     testStart("");
 
     int ret;
     struct item {
         int symbology;
-        unsigned char* data;
-        unsigned char* composite;
+        unsigned char *data;
+        unsigned char *composite;
         int option_1;
         int option_2;
         int option_3;
@@ -135,8 +130,8 @@ static void test_examples(void)
 
         int expected_rows;
         int expected_width;
-        char* comment;
-        unsigned char* expected;
+        char *comment;
+        unsigned char *expected;
     };
     // Verified manually against GS1 General Specifications 19.1 and ISO/IEC 24723:2010, with noted exceptions
     struct item data[] = {
@@ -297,13 +292,17 @@ static void test_examples(void)
 
     for (int i = 0; i < data_size; i++) {
 
-        struct zint_symbol* symbol = ZBarcode_Create();
+        if (index != -1 && i != index) continue;
+
+        struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
         symbol->symbology = data[i].symbology;
         symbol->option_1 = data[i].option_1;
         symbol->option_2 = data[i].option_2;
         symbol->option_3 = data[i].option_3;
+        symbol->debug |= debug;
+
         int length = strlen(data[i].data);
         assert_zero(length >= 128, "i:%d length %d >= 128\n", i, length);
         strcpy(symbol->primary, data[i].data);
@@ -313,19 +312,18 @@ static void test_examples(void)
         ret = ZBarcode_Encode(symbol, data[i].composite, composite_length);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d %s\n", i, ret, data[i].ret, symbol->errtxt);
 
-        #ifdef TEST_EXAMPLES_GENERATE_EXPECTED
-        test_helper_generate(symbol, ret, i, data[i].data, data[i].composite, data[i].option_1, data[i].option_2, data[i].option_3, data[i].comment);
-        #else
+        if (generate) {
+            test_helper_generate(symbol, ret, i, data[i].data, data[i].composite, data[i].option_1, data[i].option_2, data[i].option_3, data[i].comment);
+        } else {
+            assert_equal(symbol->rows, data[i].expected_rows, "i:%d %s symbol->rows %d != %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), symbol->rows, data[i].expected_rows, data[i].data);
+            assert_equal(symbol->width, data[i].expected_width, "i:%d %s symbol->width %d != %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), symbol->width, data[i].expected_width, data[i].data);
 
-        assert_equal(symbol->rows, data[i].expected_rows, "i:%d %s symbol->rows %d != %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), symbol->rows, data[i].expected_rows, data[i].data);
-        assert_equal(symbol->width, data[i].expected_width, "i:%d %s symbol->width %d != %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), symbol->width, data[i].expected_width, data[i].data);
-
-        if (ret == 0) {
-            int width, row;
-            ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
-            assert_zero(ret, "i:%d %s testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), ret, width, row, data[i].data);
+            if (ret == 0) {
+                int width, row;
+                ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
+                assert_zero(ret, "i:%d %s testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), ret, width, row, data[i].data);
+            }
         }
-        #endif
 
         ZBarcode_Delete(symbol);
     }
@@ -333,15 +331,15 @@ static void test_examples(void)
     testFinish();
 }
 
-static void test_odd_numbered_numeric(void)
-{
+static void test_odd_numbered_numeric(int index, int generate, int debug) {
+
     testStart("");
 
     int ret;
     struct item {
         int symbology;
-        unsigned char* data;
-        unsigned char* composite;
+        unsigned char *data;
+        unsigned char *composite;
         int option_1;
         int option_2;
         int option_3;
@@ -349,8 +347,8 @@ static void test_odd_numbered_numeric(void)
 
         int expected_rows;
         int expected_width;
-        char* comment;
-        unsigned char* expected;
+        char *comment;
+        unsigned char *expected;
     };
     // Verified manually against tec-it.com and bwipp
     struct item data[] = {
@@ -451,13 +449,17 @@ static void test_odd_numbered_numeric(void)
 
     for (int i = 0; i < data_size; i++) {
 
-        struct zint_symbol* symbol = ZBarcode_Create();
+        if (index != -1 && i != index) continue;
+
+        struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
         symbol->symbology = data[i].symbology;
         symbol->option_1 = data[i].option_1;
         symbol->option_2 = data[i].option_2;
         symbol->option_3 = data[i].option_3;
+        symbol->debug |= debug;
+
         int length = strlen(data[i].data);
         assert_zero(length >= 128, "i:%d length %d >= 128\n", i, length);
         strcpy(symbol->primary, data[i].data);
@@ -467,19 +469,18 @@ static void test_odd_numbered_numeric(void)
         ret = ZBarcode_Encode(symbol, data[i].composite, composite_length);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d %s\n", i, ret, data[i].ret, symbol->errtxt);
 
-        #ifdef TEST_ODD_NUMBERED_NUMERIC_GENERATE_EXPECTED
-        test_helper_generate(symbol, ret, i, data[i].data, data[i].composite, data[i].option_1, data[i].option_2, data[i].option_3, data[i].comment);
-        #else
+        if (generate) {
+            test_helper_generate(symbol, ret, i, data[i].data, data[i].composite, data[i].option_1, data[i].option_2, data[i].option_3, data[i].comment);
+        } else {
+            assert_equal(symbol->rows, data[i].expected_rows, "i:%d %s symbol->rows %d != %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), symbol->rows, data[i].expected_rows, data[i].data);
+            assert_equal(symbol->width, data[i].expected_width, "i:%d %s symbol->width %d != %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), symbol->width, data[i].expected_width, data[i].data);
 
-        assert_equal(symbol->rows, data[i].expected_rows, "i:%d %s symbol->rows %d != %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), symbol->rows, data[i].expected_rows, data[i].data);
-        assert_equal(symbol->width, data[i].expected_width, "i:%d %s symbol->width %d != %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), symbol->width, data[i].expected_width, data[i].data);
-
-        if (ret == 0) {
-            int width, row;
-            ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
-            assert_zero(ret, "i:%d %s testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), ret, width, row, data[i].data);
+            if (ret == 0) {
+                int width, row;
+                ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
+                assert_zero(ret, "i:%d %s testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), ret, width, row, data[i].data);
+            }
         }
-        #endif
 
         ZBarcode_Delete(symbol);
     }
@@ -487,15 +488,15 @@ static void test_odd_numbered_numeric(void)
     testFinish();
 }
 
-static void test_ean128_cc_shift(void)
-{
+static void test_ean128_cc_shift(int index, int generate, int debug) {
+
     testStart("");
 
     int ret;
     struct item {
         int symbology;
-        unsigned char* data;
-        unsigned char* composite;
+        unsigned char *data;
+        unsigned char *composite;
         int option_1;
         int option_2;
         int option_3;
@@ -503,8 +504,8 @@ static void test_ean128_cc_shift(void)
 
         int expected_rows;
         int expected_width;
-        char* comment;
-        unsigned char* expected;
+        char *comment;
+        unsigned char *expected;
     };
     // Verified manually with bwipp (tec-it.com seems to be off by 2 for top shifts > 1)
     struct item data[] = {
@@ -553,13 +554,17 @@ static void test_ean128_cc_shift(void)
 
     for (int i = 0; i < data_size; i++) {
 
-        struct zint_symbol* symbol = ZBarcode_Create();
+        if (index != -1 && i != index) continue;
+
+        struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
         symbol->symbology = data[i].symbology;
         symbol->option_1 = data[i].option_1;
         symbol->option_2 = data[i].option_2;
         symbol->option_3 = data[i].option_3;
+        symbol->debug |= debug;
+
         int length = strlen(data[i].data);
         assert_zero(length >= 128, "i:%d length %d >= 128\n", i, length);
         strcpy(symbol->primary, data[i].data);
@@ -569,19 +574,18 @@ static void test_ean128_cc_shift(void)
         ret = ZBarcode_Encode(symbol, data[i].composite, composite_length);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d %s\n", i, ret, data[i].ret, symbol->errtxt);
 
-        #ifdef TEST_EAN128_CC_SHIFT_GENERATE_EXPECTED
-        test_helper_generate(symbol, ret, i, data[i].data, data[i].composite, data[i].option_1, data[i].option_2, data[i].option_3, data[i].comment);
-        #else
+        if (generate) {
+            test_helper_generate(symbol, ret, i, data[i].data, data[i].composite, data[i].option_1, data[i].option_2, data[i].option_3, data[i].comment);
+        } else {
+            assert_equal(symbol->rows, data[i].expected_rows, "i:%d %s symbol->rows %d != %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), symbol->rows, data[i].expected_rows, data[i].data);
+            assert_equal(symbol->width, data[i].expected_width, "i:%d %s symbol->width %d != %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), symbol->width, data[i].expected_width, data[i].data);
 
-        assert_equal(symbol->rows, data[i].expected_rows, "i:%d %s symbol->rows %d != %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), symbol->rows, data[i].expected_rows, data[i].data);
-        assert_equal(symbol->width, data[i].expected_width, "i:%d %s symbol->width %d != %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), symbol->width, data[i].expected_width, data[i].data);
-
-        if (ret == 0) {
-            int width, row;
-            ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
-            assert_zero(ret, "i:%d %s testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), ret, width, row, data[i].data);
+            if (ret == 0) {
+                int width, row;
+                ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
+                assert_zero(ret, "i:%d %s testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), ret, width, row, data[i].data);
+            }
         }
-        #endif
 
         ZBarcode_Delete(symbol);
     }
@@ -589,19 +593,19 @@ static void test_ean128_cc_shift(void)
     testFinish();
 }
 
-static void test_ean128_cc_width(void)
-{
+static void test_ean128_cc_width(int index, int generate, int debug) {
+
     testStart("");
 
     int ret;
     struct item {
-        unsigned char* data;
-        unsigned char* composite;
+        unsigned char *data;
+        unsigned char *composite;
         int ret;
 
         int expected_rows;
         int expected_width;
-        char* comment;
+        char *comment;
     };
     // Verified manually with bwipp (except very large tests)
     struct item data[] = {
@@ -623,11 +627,15 @@ static void test_ean128_cc_width(void)
 
     for (int i = 0; i < data_size; i++) {
 
-        struct zint_symbol* symbol = ZBarcode_Create();
+        if (index != -1 && i != index) continue;
+
+        struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
         symbol->symbology = BARCODE_EAN128_CC;
         symbol->option_1 = 3;
+        symbol->debug |= debug;
+
         int length = strlen(data[i].data);
         assert_zero(length >= 128, "i:%d length %d >= 128\n", i, length);
         strcpy(symbol->primary, data[i].data);
@@ -637,14 +645,13 @@ static void test_ean128_cc_width(void)
         ret = ZBarcode_Encode(symbol, data[i].composite, composite_length);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d %s\n", i, ret, data[i].ret, symbol->errtxt);
 
-        #ifdef TEST_EAN128_CC_WIDTH_GENERATE_EXPECTED
-        printf("        /*%2d*/ { \"%s\", \"%s\", %s, %d, %d, \"%s\" },\n",
-                i, data[i].data, data[i].composite, testUtilErrorName(ret), symbol->rows, symbol->width, data[i].comment);
-        #else
-
-        assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);
-        assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
-        #endif
+        if (generate) {
+            printf("        /*%2d*/ { \"%s\", \"%s\", %s, %d, %d, \"%s\" },\n",
+                    i, data[i].data, data[i].composite, testUtilErrorName(ret), symbol->rows, symbol->width, data[i].comment);
+        } else {
+            assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);
+            assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
+        }
 
         ZBarcode_Delete(symbol);
     }
@@ -653,15 +660,15 @@ static void test_ean128_cc_width(void)
 }
 
 // Test general-purpose data compaction
-static void test_encodation_0(void)
-{
+static void test_encodation_0(int index, int generate, int debug) {
+
     testStart("");
 
     int ret;
     struct item {
         int symbology;
-        unsigned char* data;
-        unsigned char* composite;
+        unsigned char *data;
+        unsigned char *composite;
         int option_1;
         int option_2;
         int option_3;
@@ -669,8 +676,8 @@ static void test_encodation_0(void)
 
         int expected_rows;
         int expected_width;
-        char* comment;
-        unsigned char* expected;
+        char *comment;
+        unsigned char *expected;
     };
     // Verified manually against tec-it.com (with noted exception) and/or bwipp
     struct item data[] = {
@@ -1086,13 +1093,17 @@ static void test_encodation_0(void)
 
     for (int i = 0; i < data_size; i++) {
 
-        struct zint_symbol* symbol = ZBarcode_Create();
+        if (index != -1 && i != index) continue;
+
+        struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
         symbol->symbology = data[i].symbology;
         symbol->option_1 = data[i].option_1;
         symbol->option_2 = data[i].option_2;
         symbol->option_3 = data[i].option_3;
+        symbol->debug |= debug;
+
         int length = strlen(data[i].data);
         assert_zero(length >= 128, "i:%d length %d >= 128\n", i, length);
         strcpy(symbol->primary, data[i].data);
@@ -1102,19 +1113,18 @@ static void test_encodation_0(void)
         ret = ZBarcode_Encode(symbol, data[i].composite, composite_length);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d %s\n", i, ret, data[i].ret, symbol->errtxt);
 
-        #ifdef TEST_ENCODATION_0_GENERATE_EXPECTED
-        test_helper_generate(symbol, ret, i, data[i].data, data[i].composite, data[i].option_1, data[i].option_2, data[i].option_3, data[i].comment);
-        #else
+        if (generate) {
+            test_helper_generate(symbol, ret, i, data[i].data, data[i].composite, data[i].option_1, data[i].option_2, data[i].option_3, data[i].comment);
+        } else {
+            assert_equal(symbol->rows, data[i].expected_rows, "i:%d %s symbol->rows %d != %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), symbol->rows, data[i].expected_rows, data[i].data);
+            assert_equal(symbol->width, data[i].expected_width, "i:%d %s symbol->width %d != %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), symbol->width, data[i].expected_width, data[i].data);
 
-        assert_equal(symbol->rows, data[i].expected_rows, "i:%d %s symbol->rows %d != %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), symbol->rows, data[i].expected_rows, data[i].data);
-        assert_equal(symbol->width, data[i].expected_width, "i:%d %s symbol->width %d != %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), symbol->width, data[i].expected_width, data[i].data);
-
-        if (ret == 0) {
-            int width, row;
-            ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
-            assert_zero(ret, "i:%d %s testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), ret, width, row, data[i].data);
+            if (ret == 0) {
+                int width, row;
+                ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
+                assert_zero(ret, "i:%d %s testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), ret, width, row, data[i].data);
+            }
         }
-        #endif
 
         ZBarcode_Delete(symbol);
     }
@@ -1122,15 +1132,15 @@ static void test_encodation_0(void)
     testFinish();
 }
 
-static void test_encodation_10(void)
-{
+static void test_encodation_10(int index, int generate, int debug) {
+
     testStart("");
 
     int ret;
     struct item {
         int symbology;
-        unsigned char* data;
-        unsigned char* composite;
+        unsigned char *data;
+        unsigned char *composite;
         int option_1;
         int option_2;
         int option_3;
@@ -1138,8 +1148,8 @@ static void test_encodation_10(void)
 
         int expected_rows;
         int expected_width;
-        char* comment;
-        unsigned char* expected;
+        char *comment;
+        unsigned char *expected;
     };
     // Verified manually against bwipp (and with noted exceptions, tec-it.com)
     struct item data[] = {
@@ -1214,13 +1224,17 @@ static void test_encodation_10(void)
 
     for (int i = 0; i < data_size; i++) {
 
-        struct zint_symbol* symbol = ZBarcode_Create();
+        if (index != -1 && i != index) continue;
+
+        struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
         symbol->symbology = data[i].symbology;
         symbol->option_1 = data[i].option_1;
         symbol->option_2 = data[i].option_2;
         symbol->option_3 = data[i].option_3;
+        symbol->debug |= debug;
+
         int length = strlen(data[i].data);
         assert_zero(length >= 128, "i:%d length %d >= 128\n", i, length);
         strcpy(symbol->primary, data[i].data);
@@ -1230,19 +1244,18 @@ static void test_encodation_10(void)
         ret = ZBarcode_Encode(symbol, data[i].composite, composite_length);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d %s\n", i, ret, data[i].ret, symbol->errtxt);
 
-        #ifdef TEST_ENCODATION_10_GENERATE_EXPECTED
-        test_helper_generate(symbol, ret, i, data[i].data, data[i].composite, data[i].option_1, data[i].option_2, data[i].option_3, data[i].comment);
-        #else
+        if (generate) {
+            test_helper_generate(symbol, ret, i, data[i].data, data[i].composite, data[i].option_1, data[i].option_2, data[i].option_3, data[i].comment);
+        } else {
+            assert_equal(symbol->rows, data[i].expected_rows, "i:%d %s symbol->rows %d != %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), symbol->rows, data[i].expected_rows, data[i].data);
+            assert_equal(symbol->width, data[i].expected_width, "i:%d %s symbol->width %d != %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), symbol->width, data[i].expected_width, data[i].data);
 
-        assert_equal(symbol->rows, data[i].expected_rows, "i:%d %s symbol->rows %d != %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), symbol->rows, data[i].expected_rows, data[i].data);
-        assert_equal(symbol->width, data[i].expected_width, "i:%d %s symbol->width %d != %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), symbol->width, data[i].expected_width, data[i].data);
-
-        if (ret == 0) {
-            int width, row;
-            ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
-            assert_zero(ret, "i:%d %s testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), ret, width, row, data[i].data);
+            if (ret == 0) {
+                int width, row;
+                ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
+                assert_zero(ret, "i:%d %s testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), ret, width, row, data[i].data);
+            }
         }
-        #endif
 
         ZBarcode_Delete(symbol);
     }
@@ -1250,15 +1263,15 @@ static void test_encodation_10(void)
     testFinish();
 }
 
-static void test_encodation_11(void)
+static void test_encodation_11(int index, int generate, int debug)
 {
     testStart("");
 
     int ret;
     struct item {
         int symbology;
-        unsigned char* data;
-        unsigned char* composite;
+        unsigned char *data;
+        unsigned char *composite;
         int option_1;
         int option_2;
         int option_3;
@@ -1266,8 +1279,8 @@ static void test_encodation_11(void)
 
         int expected_rows;
         int expected_width;
-        char* comment;
-        unsigned char* expected;
+        char *comment;
+        unsigned char *expected;
     };
     // Verified manually against tec-it.com (with noted exception) (bwipp 2019-10-13 has some issues with encodation 11 so not used)
     struct item data[] = {
@@ -1574,13 +1587,17 @@ static void test_encodation_11(void)
 
     for (int i = 0; i < data_size; i++) {
 
-        struct zint_symbol* symbol = ZBarcode_Create();
+        if (index != -1 && i != index) continue;
+
+        struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
         symbol->symbology = data[i].symbology;
         symbol->option_1 = data[i].option_1;
         symbol->option_2 = data[i].option_2;
         symbol->option_3 = data[i].option_3;
+        symbol->debug |= debug;
+
         int length = strlen(data[i].data);
         assert_zero(length >= 128, "i:%d length %d >= 128\n", i, length);
         strcpy(symbol->primary, data[i].data);
@@ -1590,19 +1607,18 @@ static void test_encodation_11(void)
         ret = ZBarcode_Encode(symbol, data[i].composite, composite_length);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d %s\n", i, ret, data[i].ret, symbol->errtxt);
 
-        #ifdef TEST_ENCODATION_11_GENERATE_EXPECTED
-        test_helper_generate(symbol, ret, i, data[i].data, data[i].composite, data[i].option_1, data[i].option_2, data[i].option_3, data[i].comment);
-        #else
+        if (generate) {
+            test_helper_generate(symbol, ret, i, data[i].data, data[i].composite, data[i].option_1, data[i].option_2, data[i].option_3, data[i].comment);
+        } else {
+            assert_equal(symbol->rows, data[i].expected_rows, "i:%d %s symbol->rows %d != %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), symbol->rows, data[i].expected_rows, data[i].data);
+            assert_equal(symbol->width, data[i].expected_width, "i:%d %s symbol->width %d != %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), symbol->width, data[i].expected_width, data[i].data);
 
-        assert_equal(symbol->rows, data[i].expected_rows, "i:%d %s symbol->rows %d != %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), symbol->rows, data[i].expected_rows, data[i].data);
-        assert_equal(symbol->width, data[i].expected_width, "i:%d %s symbol->width %d != %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), symbol->width, data[i].expected_width, data[i].data);
-
-        if (ret == 0) {
-            int width, row;
-            ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
-            assert_zero(ret, "i:%d %s testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), ret, width, row, data[i].data);
+            if (ret == 0) {
+                int width, row;
+                ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
+                assert_zero(ret, "i:%d %s testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), ret, width, row, data[i].data);
+            }
         }
-        #endif
 
         ZBarcode_Delete(symbol);
     }
@@ -1611,16 +1627,16 @@ static void test_encodation_11(void)
 }
 
 // #181 Christian Hartlage OSS-Fuzz
-static void test_fuzz(void)
+static void test_fuzz(int index, int debug)
 {
     testStart("");
 
     int ret;
     struct item {
         int symbology;
-        unsigned char* data;
+        unsigned char *data;
         int length;
-        unsigned char* composite;
+        unsigned char *composite;
         int ret;
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%2d*\/", line(".") - line("'<"))
@@ -1635,10 +1651,14 @@ static void test_fuzz(void)
 
     for (int i = 0; i < data_size; i++) {
 
-        struct zint_symbol* symbol = ZBarcode_Create();
+        if (index != -1 && i != index) continue;
+
+        struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
         symbol->symbology = data[i].symbology;
+        symbol->debug |= debug;
+
         int length = data[i].length;
         if (length == -1) {
             length = strlen(data[i].data);
@@ -1657,17 +1677,21 @@ static void test_fuzz(void)
     testFinish();
 }
 
-int main()
-{
-    test_eanx_leading_zeroes();
-    test_examples();
-    test_odd_numbered_numeric();
-    test_ean128_cc_shift();
-    test_ean128_cc_width();
-    test_encodation_0();
-    test_encodation_10();
-    test_encodation_11();
-    test_fuzz();
+int main(int argc, char *argv[]) {
+
+    testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
+        { "test_eanx_leading_zeroes", test_eanx_leading_zeroes, 1, 0, 1 },
+        { "test_examples", test_examples, 1, 1, 1 },
+        { "test_odd_numbered_numeric", test_odd_numbered_numeric, 1, 1, 1 },
+        { "test_ean128_cc_shift", test_ean128_cc_shift, 1, 1, 1 },
+        { "test_ean128_cc_width", test_ean128_cc_width, 1, 1, 1 },
+        { "test_encodation_0", test_encodation_0, 1, 1, 1 },
+        { "test_encodation_10", test_encodation_10, 1, 1, 1 },
+        { "test_encodation_11", test_encodation_11, 1, 1, 1 },
+        { "test_fuzz", test_fuzz, 1, 0, 1 },
+    };
+
+    testRun(argc, argv, funcs, ARRAY_SIZE(funcs));
 
     testReport();
 

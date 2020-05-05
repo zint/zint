@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019 - 2020 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -31,16 +31,13 @@
 
 #include "testcommon.h"
 
-//#define TEST_BEST_SUPPORTED_SET_GENERATE_EXPECTED 1
+static void test_best_supported_set(int index, int generate, int debug) {
 
-static void test_best_supported_set(void)
-{
     testStart("");
 
     int ret;
     struct item {
-        int symbology;
-        unsigned char* data;
+        unsigned char *data;
         int ret;
         float w;
         float h;
@@ -48,11 +45,11 @@ static void test_best_supported_set(void)
 
         int expected_rows;
         int expected_width;
-        char* comment;
-        unsigned char* expected;
+        char *comment;
+        unsigned char *expected;
     };
     struct item data[] = {
-        /* 0*/ { BARCODE_MAXICODE, "am.//ab,\034TA# z\015!", 0, 100, 100, 0, 33, 30, "TODO: Better data and verify expected",
+        /* 0*/ { "am.//ab,\034TA# z\015!", 0, 100, 100, 0, 33, 30, "TODO: Better data and verify expected",
                     "111010000101111000111101010111"
                     "111110000000010100111000000000"
                     "110000101100110100111010101011"
@@ -94,33 +91,36 @@ static void test_best_supported_set(void)
 
     for (int i = 0; i < data_size; i++) {
 
-        struct zint_symbol* symbol = ZBarcode_Create();
+        if (index != -1 && i != index) continue;
+
+        struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        symbol->symbology = data[i].symbology;
+        symbol->symbology = BARCODE_MAXICODE;
+        symbol->debug |= debug;
+
         int length = strlen(data[i].data);
 
         ret = ZBarcode_Encode(symbol, data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d\n", i, ret, data[i].ret);
 
-        #ifdef TEST_BEST_SUPPORTED_SET_GENERATE_EXPECTED
-        printf("        /*%2d*/ { %s, \"%s\", %d, %.0f, %.0f, %d, %d, %d, \"%s\",\n",
-                i, testUtilBarcodeName(data[i].symbology), testUtilEscape(data[i].data, length, escaped_data, sizeof(escaped_data)), ret,
-                data[i].w, data[i].h, data[i].ret_vector, symbol->rows, symbol->width, data[i].comment);
-        testUtilModulesDump(symbol, "                    ",  "\n");
-        printf("                },\n");
-        #else
+        if (generate) {
+            printf("        /*%2d*/ { \"%s\", %d, %.0f, %.0f, %d, %d, %d, \"%s\",\n",
+                    i, testUtilEscape(data[i].data, length, escaped_data, sizeof(escaped_data)), ret,
+                    data[i].w, data[i].h, data[i].ret_vector, symbol->rows, symbol->width, data[i].comment);
+            testUtilModulesDump(symbol, "                    ",  "\n");
+            printf("                },\n");
+        } else {
+            assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
+            assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n", i, symbol->width, data[i].expected_width);
 
-        assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
-        assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n", i, symbol->width, data[i].expected_width);
+            int width, row;
+            ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
+            assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d\n", i, ret, width, row);
 
-        int width, row;
-        ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
-        assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d\n", i, ret, width, row);
-
-        ret = ZBarcode_Buffer_Vector(symbol, 0);
-        assert_equal(ret, data[i].ret_vector, "i:%d ZBarcode_Buffer_Vector ret %d != %d\n", i, ret, data[i].ret_vector);
-        #endif
+            ret = ZBarcode_Buffer_Vector(symbol, 0);
+            assert_equal(ret, data[i].ret_vector, "i:%d ZBarcode_Buffer_Vector ret %d != %d\n", i, ret, data[i].ret_vector);
+        }
 
         ZBarcode_Delete(symbol);
     }
@@ -129,33 +129,36 @@ static void test_best_supported_set(void)
 }
 
 // #181 Nico Gunkel OSS-Fuzz
-static void test_fuzz(void)
-{
+static void test_fuzz(int index, int debug) {
+
     testStart("");
 
     int ret;
     struct item {
-        int symbology;
-        unsigned char* data;
+        unsigned char *data;
         int length;
         int ret;
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%2d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /* 0*/ { BARCODE_MAXICODE, "\223\223\223\223\223\200\000\060\060\020\122\104\060\343\000\000\040\104\104\104\104\177\377\040\000\324\336\000\000\000\000\104\060\060\060\060\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\060\104\104\000\000\000\040\104\104\104\104\177\377\377\377\324\336\000\000\000\000\104\377\104\001\104\104\104\104\104\104\233\233\060\060\060\060\060\060\060\060\060\325\074", 107, ZINT_ERROR_TOO_LONG }, // Original OSS-Fuzz triggering data
-        /* 1*/ { BARCODE_MAXICODE, "AaAaAaAaAaAaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA123456789", -1, ZINT_ERROR_TOO_LONG }, // Add 6 lowercase a's so 6 SHIFTS inserted so 6 + 138 (max input len) = 144 and numbers come at end of buffer
-        /* 2*/ { BARCODE_MAXICODE, "AaAaAaAaAaAaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA123456789A", -1, ZINT_ERROR_TOO_LONG },
-        /* 3*/ { BARCODE_MAXICODE, "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678", -1, ZINT_ERROR_TOO_LONG }, // First 6 chars ignored for number compaction so max numeric digits appears to be 135 not 138 (for mode 4 anyway) TODO: investigate further
-        /* 4*/ { BARCODE_MAXICODE, "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345", -1, 0 },
+        /* 0*/ { "\223\223\223\223\223\200\000\060\060\020\122\104\060\343\000\000\040\104\104\104\104\177\377\040\000\324\336\000\000\000\000\104\060\060\060\060\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\060\104\104\000\000\000\040\104\104\104\104\177\377\377\377\324\336\000\000\000\000\104\377\104\001\104\104\104\104\104\104\233\233\060\060\060\060\060\060\060\060\060\325\074", 107, ZINT_ERROR_TOO_LONG }, // Original OSS-Fuzz triggering data
+        /* 1*/ { "AaAaAaAaAaAaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA123456789", -1, ZINT_ERROR_TOO_LONG }, // Add 6 lowercase a's so 6 SHIFTS inserted so 6 + 138 (max input len) = 144 and numbers come at end of buffer
+        /* 2*/ { "AaAaAaAaAaAaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA123456789A", -1, ZINT_ERROR_TOO_LONG },
+        /* 3*/ { "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678", -1, ZINT_ERROR_TOO_LONG }, // First 6 chars ignored for number compaction so max numeric digits appears to be 135 not 138 (for mode 4 anyway) TODO: investigate further
+        /* 4*/ { "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345", -1, 0 },
     };
     int data_size = sizeof(data) / sizeof(struct item);
 
     for (int i = 0; i < data_size; i++) {
 
-        struct zint_symbol* symbol = ZBarcode_Create();
+        if (index != -1 && i != index) continue;
+
+        struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        symbol->symbology = data[i].symbology;
+        symbol->symbology = BARCODE_MAXICODE;
+        symbol->debug |= debug;
+
         int length = data[i].length;
         if (length == -1) {
             length = strlen(data[i].data);
@@ -170,10 +173,14 @@ static void test_fuzz(void)
     testFinish();
 }
 
-int main()
-{
-    test_best_supported_set();
-    test_fuzz();
+int main(int argc, char *argv[]) {
+
+    testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
+        { "test_best_supported_set", test_best_supported_set, 1, 1, 1 },
+        { "test_fuzz", test_fuzz, 1, 0, 1 },
+    };
+
+    testRun(argc, argv, funcs, ARRAY_SIZE(funcs));
 
     testReport();
 

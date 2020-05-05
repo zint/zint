@@ -32,11 +32,94 @@
 #include "testcommon.h"
 #include <sys/stat.h>
 
-//#define TEST_PRINT_GENERATE_EXPECTED 1
+extern int png_pixel_plot(struct zint_symbol *symbol, char *pixelbuf);
 
-static void test_print(void)
-{
+static void test_pixel_plot(int index, int debug) {
+
     testStart("");
+
+    if (!testUtilHaveIdentify()) {
+        testSkip("ImageMagick identify not available");
+        return;
+    }
+
+    int ret;
+    struct item {
+        int width;
+        int height;
+        unsigned char *pattern;
+        int repeat;
+    };
+    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    struct item data[] = {
+        /*  0*/ { 1, 1, "1", 0 },
+        /*  1*/ { 2, 1, "11", 0 },
+        /*  2*/ { 2, 2, "10", 1 },
+        /*  3*/ { 3, 1, "101", 0 },
+        /*  4*/ { 3, 2, "101010", 0 },
+        /*  5*/ { 3, 3, "101010101", 0 },
+        /*  6*/ { 8, 2, "CBMWKRYGGYRKWMBC", 0 },
+    };
+    int data_size = ARRAY_SIZE(data);
+
+    char *png = "out.png";
+    char escaped[1024];
+    int escaped_size = 1024;
+
+    char data_buf[2731 * 5 + 1];
+
+    for (int i = 0; i < data_size; i++) {
+
+        if (index != -1 && i != index) continue;
+
+        struct zint_symbol *symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        strcpy(symbol->outfile, png);
+
+        symbol->bitmap_width = data[i].width;
+        symbol->bitmap_height = data[i].height;
+
+        int size = data[i].width * data[i].height;
+        assert_nonzero(size < (int) sizeof(data_buf), "i:%d png_pixel_plot size %d < sizeof(data_buf) %d\n", i, size, (int) sizeof(data_buf));
+
+        if (data[i].repeat) {
+            int len = strlen(data[i].pattern);
+            for (int j = 0; j < size; j += len) {
+                memcpy(data_buf + j, data[i].pattern, len);
+            }
+            if (size % len) {
+                memcpy(data_buf + size - size % len, data[i].pattern, size % len);
+            }
+            data_buf[size] = '\0';
+        } else {
+            strcpy(data_buf, data[i].pattern);
+        }
+        assert_equal(size, (int) strlen(data_buf), "i:%d png_pixel_plot size %d != strlen(data_buf) %d\n", i, size, (int) strlen(data_buf));
+
+        symbol->bitmap = data_buf;
+
+        ret = png_pixel_plot(symbol, data_buf);
+        assert_zero(ret, "i:%d png_pixel_plot ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
+
+        ret = testUtilVerifyIdentify(symbol->outfile, debug);
+        assert_zero(ret, "i:%d identify %s ret %d != 0\n", i, symbol->outfile, ret);
+
+        assert_zero(remove(symbol->outfile), "i:%d remove(%s) != 0\n", i, symbol->outfile);
+
+        symbol->bitmap = NULL;
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
+static void test_print(int index, int generate, int debug) {
+
+    testStart("");
+
+    int have_identify = testUtilHaveIdentify();
 
     int ret;
     struct item {
@@ -47,23 +130,25 @@ static void test_print(void)
         char* expected_file;
     };
     struct item data[] = {
-        /*  0*/ { BARCODE_CODABLOCKF, 3, -1, "AAAAAAAAA", "../data/png/codablockf_3rows.png"},
+        /*  0*/ { BARCODE_CODABLOCKF, 3, -1, "AAAAAAAAA", "../data/png/codablockf_3rows.png" },
     };
-    int data_size = sizeof(data) / sizeof(struct item);
+    int data_size = ARRAY_SIZE(data);
 
     char* data_dir = "../data/png";
     char* png = "out.png";
     char escaped[1024];
     int escaped_size = 1024;
 
-    #ifdef TEST_PRINT_GENERATE_EXPECTED
-    if (!testUtilExists(data_dir)) {
-        ret = mkdir(data_dir, 0755);
-        assert_zero(ret, "mkdir(%s) ret %d != 0\n", data_dir, ret);
+    if (generate) {
+        if (!testUtilExists(data_dir)) {
+            ret = mkdir(data_dir, 0755);
+            assert_zero(ret, "mkdir(%s) ret %d != 0\n", data_dir, ret);
+        }
     }
-    #endif
 
     for (int i = 0; i < data_size; i++) {
+
+        if (index != -1 && i != index) continue;
 
         struct zint_symbol* symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -75,6 +160,7 @@ static void test_print(void)
         if (data[i].option_2 != -1) {
             symbol->option_2 = data[i].option_2;
         }
+        symbol->debug |= debug;
 
         int length = strlen(data[i].data);
 
@@ -85,23 +171,24 @@ static void test_print(void)
         ret = ZBarcode_Print(symbol, 0);
         assert_zero(ret, "i:%d %s ZBarcode_Print %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, ret);
 
-        #ifdef TEST_PRINT_GENERATE_EXPECTED
+        if (generate) {
+            printf("        /*%3d*/ { %s, %d, %d, \"%s\", \"%s\"},\n",
+                    i, testUtilBarcodeName(data[i].symbology), data[i].option_1, data[i].option_2,
+                    testUtilEscape(data[i].data, length, escaped, escaped_size), data[i].expected_file);
+            ret = rename(symbol->outfile, data[i].expected_file);
+            assert_zero(ret, "i:%d rename(%s, %s) ret %d != 0\n", i, symbol->outfile, data[i].expected_file, ret);
+            if (have_identify) {
+                ret = testUtilVerifyIdentify(data[i].expected_file, debug);
+                assert_zero(ret, "i:%d %s identify %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), data[i].expected_file, ret);
+            }
+        } else {
+            assert_nonzero(testUtilExists(symbol->outfile), "i:%d testUtilExists(%s) == 0\n", i, symbol->outfile);
+            assert_nonzero(testUtilExists(data[i].expected_file), "i:%d testUtilExists(%s) == 0\n", i, data[i].expected_file);
 
-        printf("        /*%3d*/ { %s, %d, %d, \"%s\", \"%s\"},\n",
-                i, testUtilBarcodeName(data[i].symbology), data[i].option_1, data[i].option_2, testUtilEscape(data[i].data, length, escaped, escaped_size), data[i].expected_file);
-        ret = rename(symbol->outfile, data[i].expected_file);
-        assert_zero(ret, "i:%d rename(%s, %s) ret %d != 0\n", i, symbol->outfile, data[i].expected_file, ret);
-
-        #else
-
-        assert_nonzero(testUtilExists(symbol->outfile), "i:%d testUtilExists(%s) == 0\n", i, symbol->outfile);
-        assert_nonzero(testUtilExists(data[i].expected_file), "i:%d testUtilExists(%s) == 0\n", i, data[i].expected_file);
-
-        ret = testUtilCmpPngs(symbol->outfile, data[i].expected_file);
-        assert_zero(ret, "i:%d %s testUtilCmpPngs(%s, %s) %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, data[i].expected_file, ret);
-        assert_zero(remove(symbol->outfile), "i:%d remove(%s) != 0\n", i, symbol->outfile);
-
-        #endif
+            ret = testUtilCmpPngs(symbol->outfile, data[i].expected_file);
+            assert_zero(ret, "i:%d %s testUtilCmpPngs(%s, %s) %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, data[i].expected_file, ret);
+            assert_zero(remove(symbol->outfile), "i:%d remove(%s) != 0\n", i, symbol->outfile);
+        }
 
         ZBarcode_Delete(symbol);
     }
@@ -109,9 +196,14 @@ static void test_print(void)
     testFinish();
 }
 
-int main()
-{
-    test_print();
+int main(int argc, char *argv[]) {
+
+    testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
+        { "test_pixel_plot", test_pixel_plot, 1, 0, 1 },
+        { "test_print", test_print, 1, 1, 1 },
+    };
+
+    testRun(argc, argv, funcs, ARRAY_SIZE(funcs));
 
     testReport();
 

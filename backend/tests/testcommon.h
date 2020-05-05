@@ -40,6 +40,10 @@
 #include <string.h>
 #include "../common.h"
 
+#ifndef ARRAY_SIZE
+#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
+#endif
+
 extern int assertionFailed;
 extern int assertionNum;
 
@@ -48,10 +52,14 @@ extern int assertionNum;
 void testStartReal(const char *func, const char *name);
 void testEnd(int result);
 void testFinish(void);
+void testSkip(const char *msg);
 void testReport();
 
+typedef struct s_testFunction { const char *name; void *func; int has_index; int has_generate; int has_debug; } testFunction;
+void testRun(int argc, char *argv[], testFunction funcs[], int funcs_size);
+
 #define assert_exp(__exp__, ...) \
-{assertionNum++;if(!(__exp__)) {assertionFailed++; printf(__VA_ARGS__);testFinish();return;}}
+{assertionNum++; if (!(__exp__)) {assertionFailed++; printf(__VA_ARGS__); testFinish(); return;}}
 
 #define assert_zero(__exp__, ...) assert_exp((__exp__) == 0, __VA_ARGS__)
 #define assert_nonzero(__exp__, ...) assert_exp((__exp__) != 0, __VA_ARGS__)
@@ -64,25 +72,31 @@ void testReport();
 
 extern void vector_free(struct zint_symbol *symbol); /* Free vector structures */
 
-char* testUtilBarcodeName(int symbology);
-char* testUtilErrorName(int error_number);
-char* testUtilInputModeName(int input_mode);
-char* testUtilOption3Name(int option_3);
-int testUtilDAFTConvert(const struct zint_symbol* symbol, char* buffer, int buffer_size);
-char* testUtilEscape(char* buffer, int length, char* escaped, int escaped_size);
-char* testUtilReadCSVField(char* buffer, char* field, int field_size);
-int testUtilSymbolCmp(const struct zint_symbol* a, const struct zint_symbol* b);
-struct zint_vector* testUtilVectorCpy(const struct zint_vector* in);
-int testUtilVectorCmp(const struct zint_vector* a, const struct zint_vector* b);
-void testUtilLargeDump(const char* name, const short reg[]);
-void testUtilModulesDump(const struct zint_symbol* symbol, char* prefix, char* postfix);
-int testUtilModulesCmp(const struct zint_symbol* symbol, const char* expected, int* row, int* width);
-int testUtilModulesDumpHex(const struct zint_symbol* symbol, char dump[], int dump_size);
-int testUtilExists(char* filename);
-int testUtilCmpPngs(char* file1, char* file2);
-int testUtilCmpTxts(char* txt1, char* txt2);
-int testUtilCmpBins(char* bin1, char* bin2);
-int testUtilCmpSvgs(char* svg1, char* svg2);
-int testUtilCmpEpss(char* eps1, char* eps2);
+char *testUtilBarcodeName(int symbology);
+char *testUtilErrorName(int error_number);
+char *testUtilInputModeName(int input_mode);
+char *testUtilOption3Name(int option_3);
+int testUtilDAFTConvert(const struct zint_symbol *symbol, char *buffer, int buffer_size);
+char *testUtilEscape(char *buffer, int length, char *escaped, int escaped_size);
+char *testUtilReadCSVField(char *buffer, char *field, int field_size);
+int testUtilSymbolCmp(const struct zint_symbol *a, const struct zint_symbol *b);
+struct zint_vector *testUtilVectorCpy(const struct zint_vector *in);
+int testUtilVectorCmp(const struct zint_vector *a, const struct zint_vector *b);
+void testUtilLargeDump(const char *name, const short reg[]);
+void testUtilModulesDump(const struct zint_symbol *symbol, char *prefix, char *postfix);
+int testUtilModulesCmp(const struct zint_symbol *symbol, const char *expected, int *row, int *width);
+int testUtilModulesDumpHex(const struct zint_symbol *symbol, char dump[], int dump_size);
+int testUtilExists(char *filename);
+int testUtilCmpPngs(char *file1, char *file2);
+int testUtilCmpTxts(char *txt1, char *txt2);
+int testUtilCmpBins(char *bin1, char *bin2);
+int testUtilCmpSvgs(char *svg1, char *svg2);
+int testUtilCmpEpss(char *eps1, char *eps2);
+int testUtilHaveIdentify();
+int testUtilVerifyIdentify(char *filename, int debug);
+int testUtilHaveInkscape();
+int testUtilVerifyInkscape(char *filename, int debug);
+int testUtilHaveGhostscript();
+int testUtilVerifyGhostscript(char *filename, int debug);
 
 #endif /* TESTCOMMON_H */

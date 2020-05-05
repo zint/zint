@@ -31,12 +31,11 @@
 
 #include "testcommon.h"
 
-//#define TEST_GS1_REDUCE_GENERATE_EXPECTED
-
 /*
  * Check that EAN128 and RSS_EXP based symbologies reduce GS1 data
  */
-static void test_gs1_reduce(void) {
+static void test_gs1_reduce(int index, int generate, int debug) {
+
     testStart("");
 
     int ret;
@@ -170,6 +169,8 @@ static void test_gs1_reduce(void) {
 
     for (int i = 0; i < data_size; i++) {
 
+        if (index != -1 && i != index) continue;
+
         struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
@@ -177,6 +178,7 @@ static void test_gs1_reduce(void) {
         if (data[i].input_mode != -1) {
             symbol->input_mode = data[i].input_mode;
         }
+        symbol->debug |= debug;
 
         if (strlen(data[i].composite)) {
             text = data[i].composite;
@@ -188,25 +190,25 @@ static void test_gs1_reduce(void) {
 
         ret = ZBarcode_Encode(symbol, text, length);
 
-        #ifdef TEST_GS1_REDUCE_GENERATE_EXPECTED
-        if (data[i].ret == 0) {
-            printf("        /*%2d*/ { %s, %s, \"%s\", \"%s\", %d, \"%s\",\n",
-                    i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode), data[i].data, data[i].composite, data[i].ret, data[i].comment);
-            testUtilModulesDump(symbol, "                    ", "\n");
-            printf("               },\n");
+        if (generate) {
+            if (data[i].ret == 0) {
+                printf("        /*%2d*/ { %s, %s, \"%s\", \"%s\", %d, \"%s\",\n",
+                        i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode), data[i].data, data[i].composite, data[i].ret, data[i].comment);
+                testUtilModulesDump(symbol, "                    ", "\n");
+                printf("               },\n");
+            } else {
+                printf("        /*%2d*/ { %s, %s, \"%s\", \"%s\", %s, \"%s\", \"\" },\n",
+                        i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode), data[i].data, data[i].composite, testUtilErrorName(data[i].ret), data[i].comment);
+            }
         } else {
-            printf("        /*%2d*/ { %s, %s, \"%s\", \"%s\", %s, \"%s\", \"\" },\n",
-                    i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode), data[i].data, data[i].composite, testUtilErrorName(data[i].ret), data[i].comment);
-        }
-        #else
-        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d %s\n", i, ret, data[i].ret, symbol->errtxt);
+            assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d %s\n", i, ret, data[i].ret, symbol->errtxt);
 
-        if (ret == 0) {
-            int width, row;
-            ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
-            assert_zero(ret, "i:%d %s testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), ret, width, row, data[i].data);
+            if (ret == 0) {
+                int width, row;
+                ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
+                assert_zero(ret, "i:%d %s testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), ret, width, row, data[i].data);
+            }
         }
-        #endif
 
         ZBarcode_Delete(symbol);
     }
@@ -214,7 +216,8 @@ static void test_gs1_reduce(void) {
     testFinish();
 }
 
-static void test_hrt(void) {
+static void test_hrt(int index, int debug) {
+
     testStart("");
 
     int ret;
@@ -238,10 +241,13 @@ static void test_hrt(void) {
 
     for (int i = 0; i < data_size; i++) {
 
+        if (index != -1 && i != index) continue;
+
         struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
         symbol->symbology = data[i].symbology;
+        symbol->debug |= debug;
 
         if (strlen(data[i].composite)) {
             text = data[i].composite;
@@ -264,7 +270,8 @@ static void test_hrt(void) {
 
 extern int gs1_verify(struct zint_symbol *symbol, const unsigned char source[], const size_t src_len, char reduced[]);
 
-static void test_gs1_verify(void) {
+static void test_gs1_verify(int index) {
+
     testStart("");
 
     int ret;
@@ -765,6 +772,8 @@ static void test_gs1_verify(void) {
 
     for (int i = 0; i < data_size; i++) {
 
+        if (index != -1 && i != index) continue;
+
         struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
@@ -783,7 +792,8 @@ static void test_gs1_verify(void) {
     testFinish();
 }
 
-static void test_input_mode(void) {
+static void test_input_mode(int index, int debug) {
+
     testStart("");
 
     int ret;
@@ -842,6 +852,8 @@ static void test_input_mode(void) {
 
     for (int i = 0; i < data_size; i++) {
 
+        if (index != -1 && i != index) continue;
+
         struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
@@ -850,6 +862,7 @@ static void test_input_mode(void) {
         if (data[i].output_options != -1) {
             symbol->output_options = data[i].output_options;
         }
+        symbol->debug |= debug;
 
         if (strlen(data[i].composite)) {
             text = data[i].composite;
@@ -861,7 +874,7 @@ static void test_input_mode(void) {
 
         ret = ZBarcode_Encode(symbol, text, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d %s\n", i, ret, data[i].ret, symbol->errtxt);
-        if (data[i].compare_previous) {
+        if (index == -1 && data[i].compare_previous) {
             ret = testUtilSymbolCmp(symbol, &previous_symbol);
             assert_zero(ret, "i:%d testUtilSymbolCmp ret %d != 0\n", i, ret);
         }
@@ -873,11 +886,16 @@ static void test_input_mode(void) {
     testFinish();
 }
 
-int main() {
-    test_gs1_reduce();
-    test_hrt();
-    test_gs1_verify();
-    test_input_mode();
+int main(int argc, char *argv[]) {
+
+    testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
+        { "test_gs1_reduce", test_gs1_reduce, 1, 1, 1 },
+        { "test_hrt", test_hrt, 1, 0, 1 },
+        { "test_gs1_verify", test_gs1_verify, 1, 0, 0 },
+        { "test_input_mode", test_input_mode, 1, 0, 1 },
+    };
+
+    testRun(argc, argv, funcs, ARRAY_SIZE(funcs));
 
     testReport();
 

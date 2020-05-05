@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2019 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019 - 2020 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -36,11 +36,11 @@
 
 #define TEST_IMAIL_CSV_MAX 500
 
-static void test_csv(void)
-{
+static void test_csv(int index, int debug) {
+
     testStart("");
 
-    FILE* fd = fopen("../data/imail/usps/uspsIMbEncoderTestCases.csv", "r");
+    FILE *fd = fopen("../data/imail/usps/uspsIMbEncoderTestCases.csv", "r");
     assert_nonnull(fd, "open ../data/imail/usps/uspsIMbEncoderTestCases.csv");
 
     char buffer[1024];
@@ -58,15 +58,18 @@ static void test_csv(void)
     while (fgets(buffer, sizeof(buffer), fd) != NULL) {
 
         lc++;
+
+        if (index != -1 && lc != index) continue;
+
         #ifdef TEST_IMAIL_CSV_MAX
-        if (lc > TEST_IMAIL_CSV_MAX) {
+        if (lc > TEST_IMAIL_CSV_MAX && index == -1) {
             break;
         }
         #endif
 
         id[0] = tracking_code[0] = routing_code[0] = expected_daft[0] = return_code[0] = '\0';
 
-        char* b = testUtilReadCSVField(buffer, id, sizeof(id));
+        char *b = testUtilReadCSVField(buffer, id, sizeof(id));
         assert_nonnull(b, "lc:%d id b == NULL", lc);
         assert_equal(*b, ',', "lc:%d id *b %c != ','", lc, *b);
 
@@ -92,10 +95,11 @@ static void test_csv(void)
 
         assert_nonzero(strlen(data), "lc:%d strlen(data) == 0", lc);
 
-        struct zint_symbol* symbol = ZBarcode_Create();
+        struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
         symbol->symbology = BARCODE_ONECODE;
+        symbol->debug |= debug;
 
         ret = ZBarcode_Encode(symbol, data, strlen(data));
 
@@ -120,9 +124,13 @@ static void test_csv(void)
     testFinish();
 }
 
-int main()
-{
-    test_csv();
+int main(int argc, char *argv[]) {
+
+    testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
+        { "test_csv", test_csv, 1, 0, 1 },
+    };
+
+    testRun(argc, argv, funcs, ARRAY_SIZE(funcs));
 
     testReport();
 

@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2019 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019 - 2020 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -31,14 +31,14 @@
 
 #include "testcommon.h"
 
-static void test_upce_length(void)
-{
+static void test_upce_length(int index, int debug) {
+
     testStart("");
 
     int ret;
     struct item {
         int symbology;
-        unsigned char* data;
+        unsigned char *data;
         int ret;
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%2d*\/", line(".") - line("'<"))
@@ -63,10 +63,14 @@ static void test_upce_length(void)
 
     for (int i = 0; i < data_size; i++) {
 
-        struct zint_symbol* symbol = ZBarcode_Create();
+        if (index != -1 && i != index) continue;
+
+        struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
         symbol->symbology = data[i].symbology;
+        symbol->debug |= debug;
+
         int length = strlen(data[i].data);
 
         ret = ZBarcode_Encode(symbol, data[i].data, length);
@@ -79,14 +83,14 @@ static void test_upce_length(void)
 }
 
 // Note requires ZINT_SANITIZE to be set
-static void test_upca_print(void)
-{
+static void test_upca_print(int index, int debug) {
+
     testStart("");
 
     int ret;
     struct item {
         int symbology;
-        unsigned char* data;
+        unsigned char *data;
         int ret;
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
@@ -97,10 +101,14 @@ static void test_upca_print(void)
 
     for (int i = 0; i < data_size; i++) {
 
-        struct zint_symbol* symbol = ZBarcode_Create();
+        if (index != -1 && i != index) continue;
+
+        struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
         symbol->symbology = data[i].symbology;
+        symbol->debug |= debug;
+
         int length = strlen(data[i].data);
 
         ret = ZBarcode_Encode(symbol, data[i].data, length);
@@ -118,13 +126,13 @@ static void test_upca_print(void)
     testFinish();
 }
 
-static void test_isbn(void)
-{
+static void test_isbn(int index, int debug) {
+
     testStart("");
 
     int ret;
     struct item {
-        unsigned char* data;
+        unsigned char *data;
         int ret_encode;
         int ret_vector;
     };
@@ -175,10 +183,14 @@ static void test_isbn(void)
 
     for (int i = 0; i < data_size; i++) {
 
-        struct zint_symbol* symbol = ZBarcode_Create();
+        if (index != -1 && i != index) continue;
+
+        struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
         symbol->symbology = BARCODE_ISBNX;
+        symbol->debug |= debug;
+
         int length = strlen(data[i].data);
 
         ret = ZBarcode_Encode(symbol, data[i].data, length);
@@ -195,14 +207,14 @@ static void test_isbn(void)
     testFinish();
 }
 
-static void test_vector_same(void)
-{
+static void test_vector_same(int index, int debug) {
+
     testStart("");
 
     int ret;
     struct item {
         int symbology;
-        unsigned char* data;
+        unsigned char *data;
         int ret_encode;
         int ret_vector;
     };
@@ -215,14 +227,18 @@ static void test_vector_same(void)
 
     for (int i = 0; i < data_size; i++) {
 
-        struct zint_vector* vectors[4];
+        if (index != -1 && i != index) continue;
+
+        struct zint_vector *vectors[4];
         int vectors_size = sizeof(vectors) / sizeof(struct zint_vector*);
 
         for (int j = 0; j < vectors_size; j++) {
-            struct zint_symbol* symbol = ZBarcode_Create();
+            struct zint_symbol *symbol = ZBarcode_Create();
             assert_nonnull(symbol, "Symbol not created\n");
 
             symbol->symbology = data[i].symbology;
+            symbol->debug |= debug;
+
             int length = strlen(data[i].data);
 
             ret = ZBarcode_Encode(symbol, data[i].data, length);
@@ -253,14 +269,14 @@ static void test_vector_same(void)
 }
 
 // #181 Christian Hartlage OSS-Fuzz
-static void test_fuzz(void)
-{
+static void test_fuzz(int index, int debug) {
+
     testStart("");
 
     int ret;
     struct item {
         int symbology;
-        unsigned char* data;
+        unsigned char *data;
         int length;
         int ret;
     };
@@ -281,10 +297,14 @@ static void test_fuzz(void)
 
     for (int i = 0; i < data_size; i++) {
 
-        struct zint_symbol* symbol = ZBarcode_Create();
+        if (index != -1 && i != index) continue;
+
+        struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
         symbol->symbology = data[i].symbology;
+        symbol->debug |= debug;
+
         int length = data[i].length;
         if (length == -1) {
             length = strlen(data[i].data);
@@ -299,13 +319,17 @@ static void test_fuzz(void)
     testFinish();
 }
 
-int main()
-{
-    test_upce_length();
-    test_upca_print();
-    test_isbn();
-    test_vector_same();
-    test_fuzz();
+int main(int argc, char *argv[]) {
+
+    testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
+        { "test_upce_length", test_upce_length, 1, 0, 1 },
+        { "test_upca_print", test_upca_print, 1, 0, 1 },
+        { "test_isbn", test_isbn, 1, 0, 1 },
+        { "test_vector_same", test_vector_same, 1, 0, 1 },
+        { "test_fuzz", test_fuzz, 1, 0, 1 },
+    };
+
+    testRun(argc, argv, funcs, ARRAY_SIZE(funcs));
 
     testReport();
 

@@ -2,46 +2,46 @@
 # Adapted from qrencode/tests/CMakeLists.txt
 # Copyright (C) 2006-2017 Kentaro Fukuchi <kentaro@fukuchi.org>
 
-cmake_minimum_required (VERSION 3.9)
+cmake_minimum_required(VERSION 3.9)
 
 enable_testing()
 
-set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
 set(ZINT_DEBUG FALSE CACHE BOOL "Set debug compile flag")
 set(ZINT_SANITIZE FALSE CACHE BOOL "Set sanitize compile/link flags")
 set(ZINT_TEST FALSE CACHE BOOL "Set test compile flag")
 
-find_package (LibZint 2.7.1 REQUIRED)
+find_package(LibZint 2.7.1 REQUIRED)
 find_package(PNG)
 
-if (PNG_FOUND)
+if(PNG_FOUND)
     include_directories(${PNG_INCLUDES})
-else (PNG_FOUND)
+else()
     add_definitions(-DNO_PNG)
-endif (PNG_FOUND)
+endif()
 
-if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
-    if (ZINT_DEBUG)
+if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
+    if(ZINT_DEBUG)
         add_compile_options("-g")
-    endif (ZINT_DEBUG)
-    if (ZINT_SANITIZE)
+    endif()
+    if(ZINT_SANITIZE)
         add_compile_options("-fsanitize=undefined")
         add_compile_options("-fsanitize=address")
-        set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=undefined -fsanitize=address")
-    endif (ZINT_SANITIZE)
-    if (ZINT_TEST)
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=undefined -fsanitize=address")
+    endif()
+    if(ZINT_TEST)
         add_definitions("-DZINT_TEST")
-    endif (ZINT_TEST)
-endif ()
+    endif()
+endif()
 
 add_library(testcommon
     testcommon.c testcommon.h)
-if (PNG_FOUND)
+if(PNG_FOUND)
     target_link_libraries(testcommon ZINT::ZINT ${PNG_LIBRARIES})
-else (PNG_FOUND)
+else()
     target_link_libraries(testcommon ZINT::ZINT)
-endif (PNG_FOUND)
+endif()
 
 macro(zint_add_test test_name test_command)
     set(ADDITIONAL_LIBS "${ARGN}" ${LIBRARY_FLAGS})

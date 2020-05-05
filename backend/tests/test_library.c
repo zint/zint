@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019 - 2020 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -34,21 +34,21 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-static void test_checks(void)
-{
+static void test_checks(int index, int debug) {
+
     testStart("");
 
     int ret;
     struct item {
         int symbology;
-        unsigned char* data;
+        unsigned char *data;
         int length;
         int input_mode;
         int eci;
         float dot_size;
         int ret;
 
-        char* expected;
+        char *expected;
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%2d*\/", line(".") - line("'<"))
     struct item data[] = {
@@ -65,13 +65,15 @@ static void test_checks(void)
     };
     int data_size = sizeof(data) / sizeof(struct item);
 
-    char* text;
-    char* primary;
+    char *text;
+    char *primary;
     char escaped_primary[1024];
 
     for (int i = 0; i < data_size; i++) {
 
-        struct zint_symbol* symbol = ZBarcode_Create();
+        if (index != -1 && i != index) continue;
+
+        struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
         symbol->symbology = data[i].symbology;
@@ -84,6 +86,8 @@ static void test_checks(void)
         if (data[i].dot_size != -1) {
             symbol->dot_size = data[i].dot_size;
         }
+        symbol->debug |= debug;
+
         int length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
 
         ret = ZBarcode_Encode(symbol, data[i].data, length);
@@ -98,13 +102,13 @@ static void test_checks(void)
     testFinish();
 }
 
-static void test_input_mode(void)
-{
+static void test_input_mode(int index, int debug) {
+
     testStart("");
 
     int ret;
     struct item {
-        unsigned char* data;
+        unsigned char *data;
         int input_mode;
         int ret;
 
@@ -128,11 +132,14 @@ static void test_input_mode(void)
 
     for (int i = 0; i < data_size; i++) {
 
-        struct zint_symbol* symbol = ZBarcode_Create();
+        if (index != -1 && i != index) continue;
+
+        struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
         symbol->symbology = BARCODE_CODE49; // Supports GS1
         symbol->input_mode = data[i].input_mode;
+        symbol->debug |= debug;
 
         int length = strlen(data[i].data);
 
@@ -147,15 +154,15 @@ static void test_input_mode(void)
 }
 
 // #181 Nico Gunkel OSS-Fuzz
-static void test_encode_file_zero_length(void)
-{
+static void test_encode_file_zero_length(void) {
+
     testStart("");
 
     int ret;
     char filename[] = "in.bin";
     int fd;
 
-    struct zint_symbol* symbol = ZBarcode_Create();
+    struct zint_symbol *symbol = ZBarcode_Create();
     assert_nonnull(symbol, "Symbol not created\n");
 
     (void)remove(filename); // In case junk hanging around
@@ -174,15 +181,15 @@ static void test_encode_file_zero_length(void)
 }
 
 // #181 Nico Gunkel OSS-Fuzz (buffer not freed on fread() error) Note: unable to reproduce fread() error using this method
-static void test_encode_file_directory(void)
-{
+static void test_encode_file_directory(void) {
+
     testStart("");
 
     int ret;
     char dirname[] = "in_dir";
     int fd;
 
-    struct zint_symbol* symbol = ZBarcode_Create();
+    struct zint_symbol *symbol = ZBarcode_Create();
     assert_nonnull(symbol, "Symbol not created\n");
 
     (void)rmdir(dirname); // In case junk hanging around
@@ -198,12 +205,16 @@ static void test_encode_file_directory(void)
     testFinish();
 }
 
-int main()
-{
-    test_checks();
-    test_input_mode();
-    test_encode_file_zero_length();
-    test_encode_file_directory();
+int main(int argc, char *argv[]) {
+
+    testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
+        { "test_checks", test_checks, 1, 0, 1 },
+        { "test_input_mode", test_input_mode, 1, 0, 1 },
+        { "test_encode_file_zero_length", test_encode_file_zero_length, 0, 0, 0 },
+        { "test_encode_file_directory", test_encode_file_directory, 0, 0, 0 },
+    };
+
+    testRun(argc, argv, funcs, ARRAY_SIZE(funcs));
 
     testReport();
 
