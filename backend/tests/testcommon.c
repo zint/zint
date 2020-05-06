@@ -545,6 +545,17 @@ char *testUtilReadCSVField(char *buffer, char *field, int field_size) {
     return b;
 }
 
+void testUtilStrCpyRepeat(char *buffer, char *repeat, int size) {
+    int i;
+    int len = strlen(repeat);
+    int max = size - len;
+    for (i = 0; i < max; i += len) {
+        memcpy(buffer + i, repeat, len);
+    }
+    memcpy(buffer + i, repeat, size - i);
+    buffer[size] = '\0';
+}
+
 int testUtilSymbolCmp(const struct zint_symbol *a, const struct zint_symbol *b) {
     if (a->symbology != b->symbology) {
         return 1;

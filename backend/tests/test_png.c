@@ -66,7 +66,7 @@ static void test_pixel_plot(int index, int debug) {
     char escaped[1024];
     int escaped_size = 1024;
 
-    char data_buf[2731 * 5 + 1];
+    char data_buf[8 * 2 + 1];
 
     for (int i = 0; i < data_size; i++) {
 
@@ -84,14 +84,7 @@ static void test_pixel_plot(int index, int debug) {
         assert_nonzero(size < (int) sizeof(data_buf), "i:%d png_pixel_plot size %d < sizeof(data_buf) %d\n", i, size, (int) sizeof(data_buf));
 
         if (data[i].repeat) {
-            int len = strlen(data[i].pattern);
-            for (int j = 0; j < size; j += len) {
-                memcpy(data_buf + j, data[i].pattern, len);
-            }
-            if (size % len) {
-                memcpy(data_buf + size - size % len, data[i].pattern, size % len);
-            }
-            data_buf[size] = '\0';
+            testUtilStrCpyRepeat(data_buf, data[i].pattern, size);
         } else {
             strcpy(data_buf, data[i].pattern);
         }

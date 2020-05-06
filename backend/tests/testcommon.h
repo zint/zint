@@ -79,6 +79,7 @@ char *testUtilOption3Name(int option_3);
 int testUtilDAFTConvert(const struct zint_symbol *symbol, char *buffer, int buffer_size);
 char *testUtilEscape(char *buffer, int length, char *escaped, int escaped_size);
 char *testUtilReadCSVField(char *buffer, char *field, int field_size);
+void testUtilStrCpyRepeat(char *buffer, char *repeat, int size);
 int testUtilSymbolCmp(const struct zint_symbol *a, const struct zint_symbol *b);
 struct zint_vector *testUtilVectorCpy(const struct zint_vector *in);
 int testUtilVectorCmp(const struct zint_vector *a, const struct zint_vector *b);
