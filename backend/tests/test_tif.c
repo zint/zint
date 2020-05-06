@@ -31,8 +31,9 @@
 
 #include "testcommon.h"
 
-extern int gif_pixel_plot(struct zint_symbol *symbol, char *pixelbuf);
+extern int tif_pixel_plot(struct zint_symbol *symbol, char *pixelbuf);
 
+// For overview when debugging: ./test_tiff -f pixel_plot -d 5
 static void test_pixel_plot(int index, int debug) {
 
     testStart("");
@@ -53,22 +54,40 @@ static void test_pixel_plot(int index, int debug) {
     struct item data[] = {
         /*  0*/ { 1, 1, "1", 0 },
         /*  1*/ { 2, 1, "11", 0 },
-        /*  2*/ { 3, 1, "101", 0 },
-        /*  3*/ { 4, 1, "1010", 0 },
-        /*  4*/ { 5, 1, "10101", 0 },
-        /*  5*/ { 3, 2, "101010", 0 },
-        /*  6*/ { 3, 3, "101010101", 0 },
-        /*  7*/ { 8, 2, "CBMWKRYGGYRKWMBC", 0 },
-        /*  8*/ { 20, 30, "WWCWBWMWRWYWGWKCCWCMCRCYCGCKBWBCBBMBRBYBGBKMWMCMBMMRMYMGMKRWRCRBRMRRYRGRKYWYCYBYMYRYYGYKGWGCGBGMGRGYGGKKWKCKBKMKRKYKGKK", 1 }, // Single LZW block, size 255
-        /*  9*/ { 19, 32, "WWCWBWMWRWYWGWKCCWCMCRCYCGCKBWBCBBMBRBYBGBKMWMCMBMMRMYMGMKRWRCRBRMRRYRGRKYWYCYBYMYRYYGYKGWGCGBGMGRGYGGKKWK", 1 }, // Two LZW blocks, last size 1
+        /*  2*/ { 1, 2, "11", 0 },
+        /*  3*/ { 2, 2, "10", 1 },
+        /*  4*/ { 3, 1, "101", 0 },
+        /*  5*/ { 1, 3, "101", 0 },
+        /*  6*/ { 4, 1, "1010", 0 },
+        /*  7*/ { 1, 4, "1010", 0 },
+        /*  8*/ { 5, 1, "10101", 0 },
+        /*  9*/ { 1, 5, "10101", 0 },
+        /* 10*/ { 3, 2, "101", 1 },
+        /* 11*/ { 100, 2, "10", 1 },
+        /* 12*/ { 2, 100, "10", 1 },
+        /* 13*/ { 3, 3, "101010101", 0 },
+        /* 14*/ { 4, 3, "10", 1 },
+        /* 15*/ { 3, 4, "10", 1 },
+        /* 16*/ { 52, 51, "10", 1 }, // Strip Count 1, Rows Per Strip 51 (52 * 51 * 3 == 7956)
+        /* 17*/ { 52, 52, "10", 1 }, // Strip Count 1, Rows Per Strip 52 (52 * 52 * 3 == 8112)
+        /* 18*/ { 53, 52, "10", 1 }, // Strip Count 2, Rows Per Strip 51 (53 * 51 * 3 == 8109)
+        /* 19*/ { 53, 53, "10", 1 }, // Strip Count 2, Rows Per Strip 51
+        /* 20*/ { 2730, 1, "10", 1 }, // Strip Count 1, Rows Per Strip 1 (2730 * 1 * 3 == 8190)
+        /* 21*/ { 1, 2730, "10", 1 }, // Strip Count 1, Rows Per Strip 2730
+        /* 22*/ { 2730, 2, "10", 1 }, // Strip Count 2, Rows Per Strip 1
+        /* 23*/ { 2, 2730, "10", 1 }, // Strip Count 2, Rows Per Strip 1365 (2 * 1365 * 3 == 8190)
+        /* 24*/ { 2730, 3, "10", 1 }, // Strip Count 3, Rows Per Strip 1
+        /* 25*/ { 3, 2730, "10", 1 }, // Strip Count 3, Rows Per Strip 910 (3 * 910 * 3 == 8190)
+        /* 26*/ { 2731, 4, "10", 1 }, // Strip Count 4, Rows Per Strip 1 (2731 * 1 * 3 == 8193) - large rows in 1 strip, even if > 8192
+        /* 27*/ { 4, 2731, "10", 1 }, // Strip Count 5, Rows Per Strip 682 (4 * 682 * 3 == 8184)
     };
     int data_size = ARRAY_SIZE(data);
 
-    char *gif = "out.gif";
+    char *tif = "out.tif";
     char escaped[1024];
     int escaped_size = 1024;
 
-    char data_buf[19 * 32 + 1]; // 19 * 32 == 608
+    char data_buf[2731 * 4 + 1];
 
     for (int i = 0; i < data_size; i++) {
 
@@ -77,31 +96,33 @@ static void test_pixel_plot(int index, int debug) {
         struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        strcpy(symbol->outfile, gif);
+        strcpy(symbol->outfile, tif);
 
         symbol->bitmap_width = data[i].width;
         symbol->bitmap_height = data[i].height;
         symbol->debug |= debug;
 
         int size = data[i].width * data[i].height;
-        assert_nonzero(size < (int) sizeof(data_buf), "i:%d gif_pixel_plot size %d < sizeof(data_buf) %d\n", i, size, (int) sizeof(data_buf));
+        assert_nonzero(size < (int) sizeof(data_buf), "i:%d tif_pixel_plot size %d < sizeof(data_buf) %d\n", i, size, (int) sizeof(data_buf));
 
         if (data[i].repeat) {
             testUtilStrCpyRepeat(data_buf, data[i].pattern, size);
         } else {
             strcpy(data_buf, data[i].pattern);
         }
-        assert_equal(size, (int) strlen(data_buf), "i:%d gif_pixel_plot size %d != strlen(data_buf) %d\n", i, size, (int) strlen(data_buf));
+        assert_equal(size, (int) strlen(data_buf), "i:%d tif_pixel_plot size %d != strlen(data_buf) %d\n", i, size, (int) strlen(data_buf));
 
         symbol->bitmap = data_buf;
 
-        ret = gif_pixel_plot(symbol, data_buf);
-        assert_zero(ret, "i:%d gif_pixel_plot ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
+        ret = tif_pixel_plot(symbol, data_buf);
+        assert_zero(ret, "i:%d tif_pixel_plot ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
 
         ret = testUtilVerifyIdentify(symbol->outfile, debug);
         assert_zero(ret, "i:%d identify %s ret %d != 0\n", i, symbol->outfile, ret);
 
-        assert_zero(remove(symbol->outfile), "i:%d remove(%s) != 0\n", i, symbol->outfile);
+        if (!(debug & 8)) {
+            assert_zero(remove(symbol->outfile), "i:%d remove(%s) != 0\n", i, symbol->outfile);
+        }
 
         symbol->bitmap = NULL;
 

@@ -79,6 +79,7 @@ static void test_pixel_plot(int index, int debug) {
 
         symbol->bitmap_width = data[i].width;
         symbol->bitmap_height = data[i].height;
+        symbol->debug |= debug;
 
         int size = data[i].width * data[i].height;
         assert_nonzero(size < (int) sizeof(data_buf), "i:%d png_pixel_plot size %d < sizeof(data_buf) %d\n", i, size, (int) sizeof(data_buf));

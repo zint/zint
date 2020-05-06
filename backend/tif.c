@@ -1,4 +1,5 @@
 /* tif.c - Aldus Tagged Image File Format support */
+/* TIFF Revision 6.0 https://www.adobe.io/content/dam/udp/en/open/standards/tiff/TIFF6.pdf */
 
 /*
     libzint - the open source barcode library
@@ -67,6 +68,9 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
     bggrn = (16 * ctoi(symbol->bgcolour[2])) + ctoi(symbol->bgcolour[3]);
     bgblu = (16 * ctoi(symbol->bgcolour[4])) + ctoi(symbol->bgcolour[5]);
 
+    /* TIFF Rev 6 Section 7 p.27 "Set RowsPerStrip such that the size of each strip is about 8K bytes...
+     * Note that extremely wide high resolution images may have rows larger than 8K bytes; in this case,
+     * RowsPerStrip should be 1, and the strip will be larger than 8K." */
     rows_per_strip = 8192 / (symbol->bitmap_width * 3);
     if (rows_per_strip == 0) {
         rows_per_strip = 1;
@@ -81,13 +85,12 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
         rows_per_strip = symbol->bitmap_height;
     }
 
-    if (strip_count == 1) {
-        rows_per_strip = (rows_per_strip / 2) + 1;
-        strip_count++;
+    if (symbol->debug & ZINT_DEBUG_PRINT) {
+        printf("TIFF (%dx%d) Strip Count %d, Rows Per Strip %d\n", symbol->bitmap_width, symbol->bitmap_height, strip_count, rows_per_strip);
     }
 
 #ifndef _MSC_VER
-    uint32_t strip_offset[strip_count];
+    uint32_t strip_offset[strip_count]; // NOLINT(clang-analyzer-core.VLASize) strip_count >= 1
     uint32_t strip_bytes[strip_count];
 #else
     strip_offset = (uint32_t*) _alloca(strip_count * sizeof(uint32_t));
@@ -201,7 +204,7 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
             bytes_put += 3;
         }
 
-        if ((bytes_put + 3) >= strip_bytes[strip]) {
+        if (strip < strip_count && (bytes_put + 3) >= strip_bytes[strip]) {
             // End of strip, pad if strip length is odd
             if (strip_bytes[strip] % 2 == 1) {
                 putc(0, tif_file);
@@ -249,8 +252,12 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
     ifd.strip_offsets.tag = 0x0111;
     ifd.strip_offsets.type = 4; // LONG
     ifd.strip_offsets.count = strip_count;
-    ifd.strip_offsets.offset = free_memory;
-    free_memory += strip_count * 4;
+    if (strip_count == 1) {
+        ifd.strip_offsets.offset = strip_offset[0];
+    } else {
+        ifd.strip_offsets.offset = free_memory;
+        free_memory += strip_count * 4;
+    }
 
     ifd.samples_per_pixel.tag = 0x0115;
     ifd.samples_per_pixel.type = 3;
@@ -265,8 +272,12 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
     ifd.strip_byte_counts.tag = 0x0117;
     ifd.strip_byte_counts.type = 4;
     ifd.strip_byte_counts.count = strip_count;
-    ifd.strip_byte_counts.offset = free_memory;
-    free_memory += strip_count * 4;
+    if (strip_count == 1) {
+        ifd.strip_byte_counts.offset = strip_bytes[0];
+    } else {
+        ifd.strip_byte_counts.offset = free_memory;
+        free_memory += strip_count * 4;
+    }
 
     ifd.x_resolution.tag = 0x011a;
     ifd.x_resolution.type = 5;
@@ -298,14 +309,16 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
     fwrite(&temp, 2, 1, tif_file); // Green Bytes
     fwrite(&temp, 2, 1, tif_file); // Blue Bytes
 
-    /* Strip offsets */
-    for(i = 0; i < strip_count; i++) {
-        fwrite(&strip_offset[i], 4, 1, tif_file);
-    }
+    if (strip_count != 1) {
+        /* Strip offsets */
+        for (i = 0; i < strip_count; i++) {
+            fwrite(&strip_offset[i], 4, 1, tif_file);
+        }
 
-    /* Strip byte lengths */
-    for(i = 0; i < strip_count; i++) {
-        fwrite(&strip_bytes[i], 4, 1, tif_file);
+        /* Strip byte lengths */
+        for (i = 0; i < strip_count; i++) {
+            fwrite(&strip_bytes[i], 4, 1, tif_file);
+        }
     }
 
     /* X Resolution */
