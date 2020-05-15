@@ -494,7 +494,7 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
         }
         
         if (ai_value[i] == 253) { // GDTI
-            if ((data_length[i] < 14) || (data_length[i] > 30)) {
+            if ((data_length[i] < 13) || (data_length[i] > 30)) {
                 error_latch = 1;
             } else {
                 error_latch = 0;
@@ -502,7 +502,7 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
         }
         
         if (ai_value[i] == 255) { // GCN
-            if ((data_length[i] < 14) || (data_length[i] > 25)) {
+            if ((data_length[i] < 13) || (data_length[i] > 25)) {
                 error_latch = 1;
             } else {
                 error_latch = 0;
