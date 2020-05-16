@@ -40,8 +40,6 @@
 #include "common.h"
 #include "gs1.h"
 
-#define TRUE 1
-#define FALSE 0
 #define SHIFTA 90
 #define LATCHA 91
 #define SHIFTB 92
@@ -75,7 +73,6 @@ static const char *C128Table[107] = {
 /* Determine appropriate mode for a given character */
 INTERNAL int parunmodd(const unsigned char llyth) {
     int modd;
-    modd = 0;
 
     if (llyth <= 31) {
         modd = SHIFTA;
@@ -111,7 +108,7 @@ static void grwp(int *indexliste) {
                 list[0][i - 1] = list[0][i - 1] + list[0][i];
                 j = i + 1;
 
-                /* decreace the list */
+                /* decrease the list */
                 while (j < *(indexliste)) {
                     list[0][j - 1] = list[0][j];
                     list[1][j - 1] = list[1][j];
@@ -132,7 +129,7 @@ static void dxsmooth(int *indexliste) {
     int i, last, next;
 
     for (i = 0; i < *(indexliste); i++) {
-        int current = list[1][i];
+        int current = list[1][i]; /* Either ABORC, AORB, SHIFTA or SHIFTB */
         int length = list[0][i];
         if (i != 0) {
             last = list[1][i - 1];
@@ -146,97 +143,82 @@ static void dxsmooth(int *indexliste) {
         }
 
         if (i == 0) { /* first block */
-            if ((*(indexliste) == 1) && ((length == 2) && (current == ABORC))) {
-                /* Rule 1a */
-                list[1][i] = LATCHC;
-            }
             if (current == ABORC) {
-                if (length >= 4) {
+                if ((*(indexliste) == 1) && (length == 2)) {
+                    /* Rule 1a */
+                    list[1][i] = LATCHC;
+                    current = LATCHC;
+                } else if (length >= 4) {
                     /* Rule 1b */
                     list[1][i] = LATCHC;
+                    current = LATCHC;
                 } else {
-                    list[1][i] = AORB;
-                    current = AORB;
+                    current = AORB; /* Determine below */
                 }
             }
-            if (current == SHIFTA) {
-                /* Rule 1c */
-                list[1][i] = LATCHA;
-            }
-            if ((current == AORB) && (next == SHIFTA)) {
-                /* Rule 1c */
-                list[1][i] = LATCHA;
-                current = LATCHA;
-            }
             if (current == AORB) {
+                if (next == SHIFTA) {
+                    /* Rule 1c */
+                    list[1][i] = LATCHA;
+                } else {
+                    /* Rule 1d */
+                    list[1][i] = LATCHB;
+                }
+            } else if (current == SHIFTA) {
+                /* Rule 1c */
+                list[1][i] = LATCHA;
+            } else if (current == SHIFTB) { /* Unless LATCHC set above, can only be SHIFTB */
                 /* Rule 1d */
                 list[1][i] = LATCHB;
             }
         } else {
-            if ((current == ABORC) && (length >= 4)) {
-                /* Rule 3 */
-                list[1][i] = LATCHC;
-                current = LATCHC;
-            }
             if (current == ABORC) {
-                list[1][i] = AORB;
-                current = AORB;
-            }
-            if ((current == AORB) && (last == LATCHA)) {
-                list[1][i] = LATCHA;
-                current = LATCHA;
-            }
-            if ((current == AORB) && (last == LATCHB)) {
-                list[1][i] = LATCHB;
-                current = LATCHB;
-            }
-            if ((current == AORB) && (next == SHIFTA)) {
-                list[1][i] = LATCHA;
-                current = LATCHA;
-            }
-            if ((current == AORB) && (next == SHIFTB)) {
-                list[1][i] = LATCHB;
-                current = LATCHB;
+                if (length >= 4) {
+                    /* Rule 3 */
+                    list[1][i] = LATCHC;
+                    current = LATCHC;
+                } else {
+                    current = AORB; /* Determine below */
+                }
             }
             if (current == AORB) {
-                list[1][i] = LATCHB;
-                current = LATCHB;
+                if (last == LATCHA || last == SHIFTB) { /* Maintain state */
+                    list[1][i] = LATCHA;
+                } else if (last == LATCHB || last == SHIFTA) { /* Maintain state */
+                    list[1][i] = LATCHB;
+                } else if (next == SHIFTA) {
+                    list[1][i] = LATCHA;
+                } else {
+                    list[1][i] = LATCHB;
+                }
+            } else if (current == SHIFTA) {
+                if (length > 1) {
+                    /* Rule 4 */
+                    list[1][i] = LATCHA;
+                } else if (last == LATCHA || last == SHIFTB) { /* Maintain state */
+                    list[1][i] = LATCHA;
+                } else if (last == LATCHC) {
+                    list[1][i] = LATCHA;
+                }
+            } else if (current == SHIFTB) { /* Unless LATCHC set above, can only be SHIFTB */
+                if (length > 1) {
+                    /* Rule 5 */
+                    list[1][i] = LATCHB;
+                } else if (last == LATCHB || last == SHIFTA) { /* Maintain state */
+                    list[1][i] = LATCHB;
+                } else if (last == LATCHC) {
+                    list[1][i] = LATCHB;
+                }
             }
-            if ((current == SHIFTA) && (length > 1)) {
-                /* Rule 4 */
-                list[1][i] = LATCHA;
-                current = LATCHA;
-            }
-            if ((current == SHIFTB) && (length > 1)) {
-                /* Rule 5 */
-                list[1][i] = LATCHB;
-                current = LATCHB;
-            }
-            if ((current == SHIFTA) && (last == LATCHA)) {
-                list[1][i] = LATCHA;
-                current = LATCHA;
-            }
-            if ((current == SHIFTB) && (last == LATCHB)) {
-                list[1][i] = LATCHB;
-                current = LATCHB;
-            }
-            if ((current == SHIFTA) && (last == LATCHC)) {
-                list[1][i] = LATCHA;
-                current = LATCHA;
-            }
-            if ((current == SHIFTB) && (last == LATCHC)) {
-                list[1][i] = LATCHB;
-                current = LATCHB;
-            }
-        } /* Rule 2 is implimented elsewhere, Rule 6 is implied */
+        } /* Rule 2 is implemented elsewhere, Rule 6 is implied */
     }
-    grwp(indexliste);
 
+    grwp(indexliste);
 }
 
 /**
  * Translate Code 128 Set A characters into barcodes.
- * This set handles all control characters NULL to US.
+ * This set handles all control characters NUL to US.
  */
 static void c128_set_a(unsigned char source, char dest[], int values[], int *bar_chars) {
 
@@ -288,12 +270,12 @@ static void c128_set_c(unsigned char source_a, unsigned char source_b, char dest
     (*bar_chars)++;
 }
 
-/* Handle Code 128 and NVE-18 */
-INTERNAL int code_128(struct zint_symbol *symbol, unsigned char source[], const size_t length) {
+/* Handle Code 128, 128B and HIBC 128 */
+INTERNAL int code_128(struct zint_symbol *symbol, const unsigned char source[], const size_t length) {
     int i, j, k, values[170] = {0}, bar_characters, read, total_sum;
     int error_number, indexchaine, indexliste, f_state;
     int sourcelen;
-    char set[170] = {' '}, fset[170] = {' '}, mode, last_set, current_set = ' ';
+    char set[170] = {0}, fset[170], mode, last_set, current_set = ' ';
     float glyph_count;
     char dest[1000];
 
@@ -302,7 +284,6 @@ INTERNAL int code_128(struct zint_symbol *symbol, unsigned char source[], const 
 
     sourcelen = length;
 
-    j = 0;
     bar_characters = 0;
     f_state = 0;
 
@@ -315,8 +296,7 @@ INTERNAL int code_128(struct zint_symbol *symbol, unsigned char source[], const 
 
     /* Detect extended ASCII characters */
     for (i = 0; i < sourcelen; i++) {
-        if (source[i] >= 128)
-            fset[i] = 'f';
+        fset[i] = source[i] >= 128 ? 'f' : ' ';
     }
     fset[i] = '\0';
 
@@ -346,10 +326,15 @@ INTERNAL int code_128(struct zint_symbol *symbol, unsigned char source[], const 
     for (i = 1; i < sourcelen; i++) {
         if ((fset[i - 1] == 'F') && (fset[i] == ' ')) {
             /* Detected a change from 8859-1 to 646 - count how long for */
-            for (j = 0; (fset[i + j] == ' ') && ((i + j) < sourcelen); j++);
-            if ((j < 5) || ((j < 3) && ((i + j) == (sourcelen - 1)))) {
-                /* Uses the same figures recommended by Annex E note 3 */
+            for (j = 0; ((i + j) < sourcelen) && (fset[i + j] == ' '); j++);
+            /* Count how many 8859-1 beyond */
+            k = 0;
+            if (i + j < sourcelen) {
+                for (k = 1; ((i + j + k) < sourcelen) && (fset[i + j + k] != ' '); k++);
+            }
+            if (j < 3 || (j < 5 && k > 2)) {
                 /* Change to shifting back rather than latching back */
+                /* Inverts the same figures recommended by Annex E note 3 */
                 for (k = 0; k < j; k++) {
                     fset[i + k] = 'n';
                 }
@@ -427,26 +412,14 @@ INTERNAL int code_128(struct zint_symbol *symbol, unsigned char source[], const 
         }
     }
 
-    /* Adjust for strings which start with shift characters - make them latch instead */
-    if (set[0] == 'a') {
-        i = 0;
-        do {
-            set[i] = 'A';
-            i++;
-        } while (set[i] == 'a');
-    }
-
-    if (set[0] == 'b') {
-        i = 0;
-        do {
-            set[i] = 'B';
-            i++;
-        } while (set[i] == 'b');
+    if (symbol->debug & ZINT_DEBUG_PRINT) {
+        printf(" Set: %s (%d)\n", set, (int) strlen(set));
+        printf("FSet: %s (%d)\n", fset, (int) strlen(fset));
     }
 
     /* Now we can calculate how long the barcode is going to be - and stop it from
        being too long */
-    last_set = ' ';
+    last_set = set[0];
     glyph_count = 0.0;
     for (i = 0; i < sourcelen; i++) {
         if ((set[i] == 'a') || (set[i] == 'b')) {
@@ -537,7 +510,6 @@ INTERNAL int code_128(struct zint_symbol *symbol, unsigned char source[], const 
         }
     }
     bar_characters++;
-    last_set = set[0];
 
     if (fset[0] == 'F') {
         switch (current_set) {
@@ -663,18 +635,33 @@ INTERNAL int code_128(struct zint_symbol *symbol, unsigned char source[], const 
     } while (read < sourcelen);
 
     /* check digit calculation */
-    total_sum = 0;
+    total_sum = values[0] % 103; /* Mod as we go along to avoid overflow */
 
-    for (i = 0; i < bar_characters; i++) {
-        if (i > 0) {
-            values[i] *= i;
-        }
-        total_sum += values[i];
+    for (i = 1; i < bar_characters; i++) {
+        total_sum = (total_sum + values[i] * i) % 103;
     }
-    strcat(dest, C128Table[total_sum % 103]);
+    strcat(dest, C128Table[total_sum]);
+    values[bar_characters] = total_sum;
+    bar_characters++;
 
     /* Stop character */
     strcat(dest, C128Table[106]);
+    values[bar_characters] = 106;
+    bar_characters++;
+
+    if (symbol->debug & ZINT_DEBUG_PRINT) {
+        printf("Codewords:");
+        for (i = 0; i < bar_characters; i++) {
+            printf(" %d", values[i]);
+        }
+        printf("\n");
+    }
+#ifdef ZINT_TEST
+    if (symbol->debug & ZINT_DEBUG_TEST) {
+        debug_test_codeword_dump_int(symbol, values, bar_characters);
+    }
+#endif
+
     expand(symbol, dest);
     return error_number;
 }
@@ -687,16 +674,15 @@ INTERNAL int ean_128(struct zint_symbol *symbol, unsigned char source[], const s
     float glyph_count;
     char dest[1000];
     int separator_row, linkage_flag, c_count;
+    int reduced_length;
 #ifndef _MSC_VER
     char reduced[length + 1];
 #else
     char* reduced = (char*) _alloca(length + 1);
 #endif
-    error_number = 0;
     strcpy(dest, "");
     linkage_flag = 0;
 
-    j = 0;
     bar_characters = 0;
     separator_row = 0;
 
@@ -721,6 +707,7 @@ INTERNAL int ean_128(struct zint_symbol *symbol, unsigned char source[], const s
     if (error_number != 0) {
         return error_number;
     }
+    reduced_length = strlen(reduced);
 
     /* Decide on mode using same system as PDF417 and rules of ISO 15417 Annex E */
     indexliste = 0;
@@ -737,7 +724,7 @@ INTERNAL int ean_128(struct zint_symbol *symbol, unsigned char source[], const s
 
     do {
         list[1][indexliste] = mode;
-        while ((list[1][indexliste] == mode) && (indexchaine < (int) strlen(reduced))) {
+        while ((list[1][indexliste] == mode) && (indexchaine < reduced_length)) {
             list[0][indexliste]++;
             indexchaine++;
             mode = parunmodd(reduced[indexchaine]);
@@ -746,7 +733,7 @@ INTERNAL int ean_128(struct zint_symbol *symbol, unsigned char source[], const s
             }
         }
         indexliste++;
-    } while (indexchaine < (int) strlen(reduced));
+    } while (indexchaine < reduced_length);
 
     dxsmooth(&indexliste);
 
@@ -810,11 +797,16 @@ INTERNAL int ean_128(struct zint_symbol *symbol, unsigned char source[], const s
         }
     }
 
+    if (symbol->debug & ZINT_DEBUG_PRINT) {
+        printf("Data: %s (%d)\n", reduced, reduced_length);
+        printf(" Set: %.*s\n", reduced_length, set);
+    }
+
     /* Now we can calculate how long the barcode is going to be - and stop it from
     being too long */
-    last_set = ' ';
+    last_set = set[0];
     glyph_count = 0.0;
-    for (i = 0; i < (int) strlen(reduced); i++) {
+    for (i = 0; i < reduced_length; i++) {
         if ((set[i] == 'a') || (set[i] == 'b')) {
             glyph_count = glyph_count + 1.0;
         }
@@ -908,7 +900,7 @@ INTERNAL int ean_128(struct zint_symbol *symbol, unsigned char source[], const s
             bar_characters++;
             read++;
         }
-    } while (read < (int) strlen(reduced));
+    } while (read < reduced_length);
 
     /* "...note that the linkage flag is an extra code set character between
     the last data character and the Symbol Check Character" (GS1 Specification) */
@@ -919,7 +911,7 @@ INTERNAL int ean_128(struct zint_symbol *symbol, unsigned char source[], const s
         case 1:
         case 2:
             /* CC-A or CC-B 2D component */
-            switch (set[strlen(reduced) - 1]) {
+            switch (set[reduced_length - 1]) {
                 case 'A': linkage_flag = 100;
                     break;
                 case 'B': linkage_flag = 99;
@@ -930,7 +922,7 @@ INTERNAL int ean_128(struct zint_symbol *symbol, unsigned char source[], const s
             break;
         case 3:
             /* CC-C 2D component */
-            switch (set[strlen(reduced) - 1]) {
+            switch (set[reduced_length - 1]) {
                 case 'A': linkage_flag = 99;
                     break;
                 case 'B': linkage_flag = 101;
@@ -948,22 +940,28 @@ INTERNAL int ean_128(struct zint_symbol *symbol, unsigned char source[], const s
     }
 
     /* check digit calculation */
-    total_sum = 0;
-    for (i = 0; i < bar_characters; i++) {
-        if (i > 0) {
-            values[i] *= i;
+    total_sum = values[0] % 103; /* Mod as we go along to avoid overflow */
 
-        }
-        total_sum += values[i];
+    for (i = 1; i < bar_characters; i++) {
+        total_sum = (total_sum + values[i] * i) % 103;
     }
-    strcat(dest, C128Table[total_sum % 103]);
-    values[bar_characters] = total_sum % 103;
+    strcat(dest, C128Table[total_sum]);
+    values[bar_characters] = total_sum;
     bar_characters++;
 
     /* Stop character */
     strcat(dest, C128Table[106]);
     values[bar_characters] = 106;
     bar_characters++;
+
+    if (symbol->debug & ZINT_DEBUG_PRINT) {
+        printf("Codewords:");
+        for (i = 0; i < bar_characters; i++) {
+            printf(" %d", values[i]);
+        }
+        printf("\n");
+    }
+
     expand(symbol, dest);
 
     /* Add the separator pattern for composite symbols */

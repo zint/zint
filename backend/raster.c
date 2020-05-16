@@ -1095,7 +1095,7 @@ static int plot_raster_default(struct zint_symbol *symbol, int rotate_angle, int
     /* Put boundary bars or box around symbol */
     if ((symbol->output_options & BARCODE_BOX) || (symbol->output_options & BARCODE_BIND)) {
         /* boundary bars */
-        if (symbol->symbology != BARCODE_CODABLOCKF) {
+        if (symbol->symbology != BARCODE_CODABLOCKF && symbol->symbology != BARCODE_HIBC_BLOCKF) {
             draw_bar(pixelbuf, 0, (symbol->width + xoffset + xoffset) * 2, textoffset * 2, symbol->border_width * 2, image_width, image_height, DEFAULT_INK);
             draw_bar(pixelbuf, 0, (symbol->width + xoffset + xoffset) * 2, (textoffset + symbol->height + symbol->border_width) * 2, symbol->border_width * 2, image_width, image_height, DEFAULT_INK);
         } else {
@@ -1104,15 +1104,19 @@ static int plot_raster_default(struct zint_symbol *symbol, int rotate_angle, int
         }
         if ((symbol->output_options & BARCODE_BIND) != 0) {
             if ((symbol->rows > 1) && (is_stackable(symbol->symbology) == 1)) {
+                double sep_height = 2;
+                if (symbol->option_3 > 0 && symbol->option_3 <= 4) {
+                    sep_height = symbol->option_3;
+                }
                 /* row binding */
-                if (symbol->symbology != BARCODE_CODABLOCKF) {
+                if (symbol->symbology != BARCODE_CODABLOCKF && symbol->symbology != BARCODE_HIBC_BLOCKF) {
                     for (r = 1; r < symbol->rows; r++) {
-                        draw_bar(pixelbuf, xoffset * 2, symbol->width * 2, ((r * row_height) + textoffset + yoffset - 1) * 2, 2 * 2, image_width, image_height, DEFAULT_INK);
+                        draw_bar(pixelbuf, xoffset * 2, symbol->width * 2, ((r * row_height) + textoffset + yoffset - sep_height / 2) * 2, sep_height * 2, image_width, image_height, DEFAULT_INK);
                     }
                 } else {
                     for (r = 1; r < symbol->rows; r++) {
                         /* Avoid 11-module start and stop chars */
-                        draw_bar(pixelbuf, (xoffset + 11) * 2 , (symbol->width - 22) * 2, ((r * row_height) + textoffset + yoffset - 1) * 2, 2 * 2, image_width, image_height, DEFAULT_INK);
+                        draw_bar(pixelbuf, (xoffset + 11) * 2, (symbol->width - 22) * 2, ((r * row_height) + textoffset + yoffset - sep_height / 2) * 2, sep_height * 2, image_width, image_height, DEFAULT_INK);
                     }
                 }
             }

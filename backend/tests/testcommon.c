@@ -389,6 +389,34 @@ char *testUtilBarcodeName(int symbology) {
     return data[symbology].name;
 }
 
+int testUtilSetSymbol(struct zint_symbol *symbol, int symbology, int input_mode, int eci, int option_1, int option_2, int option_3, int output_options, char *data, int length, int debug) {
+    symbol->symbology = symbology;
+    if (input_mode != -1) {
+        symbol->input_mode = input_mode;
+    }
+    if (eci != -1) {
+        symbol->eci = eci;
+    }
+    if (option_1 != -1) {
+        symbol->option_1 = option_1;
+    }
+    if (option_2 != -1) {
+        symbol->option_2 = option_2;
+    }
+    if (option_3 != -1) {
+        symbol->option_3 = option_3;
+    }
+    if (output_options != -1) {
+        symbol->output_options = output_options;
+    }
+    symbol->debug |= debug;
+    if (length == -1) {
+        length = strlen(data);
+    }
+
+    return length;
+}
+
 char *testUtilErrorName(int error_number) {
     struct item {
         int define;
@@ -499,9 +527,9 @@ int testUtilIsValidUTF8(const unsigned char str[], const size_t length) {
 
 char *testUtilEscape(char *buffer, int length, char *escaped, int escaped_size) {
     int i;
-    unsigned char *b = buffer;
-    unsigned char *be = buffer + length;
-    int non_utf8 = !testUtilIsValidUTF8(buffer, length);
+    unsigned char *b = (unsigned char *) buffer;
+    unsigned char *be = b + length;
+    int non_utf8 = !testUtilIsValidUTF8(b, length);
 
     for (i = 0; b < be && i < escaped_size; b++) {
         if (non_utf8 || *b < ' ' || *b == '\177') {

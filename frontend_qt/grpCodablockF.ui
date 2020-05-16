@@ -16,129 +16,337 @@
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <layout class="QGridLayout" name="gridLayout">
-     <item row="2" column="0">
-      <widget class="QRadioButton" name="radCbfSetHeight">
+     <item row="0" column="0">
+      <widget class="QLabel" name="labelWidth">
        <property name="text">
-        <string>Set Symbol Height (Rows)</string>
+        <string>S&amp;ymbol Width (Columns)</string>
+       </property>
+       <property name="buddy">
+        <cstring>cmbCbfWidth</cstring>
        </property>
       </widget>
      </item>
-     <item row="1" column="0">
-      <widget class="QRadioButton" name="radCbfSetWidth">
-       <property name="text">
-        <string>Set Symbol Width (Columns)</string>
-       </property>
-       <property name="checked">
-        <bool>false</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="2">
+     <item row="0" column="1">
       <widget class="QComboBox" name="cmbCbfWidth">
        <item>
         <property name="text">
-         <string>6</string>
+         <string>Default</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>7</string>
+         <string>9 (4 data)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>8</string>
+         <string>10 (5 data)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>9</string>
+         <string>11 (6 data)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>10</string>
+         <string>12 (7 data)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>11</string>
+         <string>13 (8 data)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>12</string>
+         <string>14 (9 data)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>13</string>
+         <string>15 (10 data)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>14</string>
+         <string>16 (11 data)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>15</string>
+         <string>17 (12 data)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>16</string>
+         <string>18 (13 data)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>17</string>
+         <string>19 (14 data)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>18</string>
+         <string>20 (15 data)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>19</string>
+         <string>21 (16 data)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>20</string>
+         <string>22 (17 data)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>21</string>
+         <string>23 (18 data)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>22</string>
+         <string>24 (19 data)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>23</string>
+         <string>25 (20 data)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>24</string>
+         <string>26 (21 data)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>25</string>
+         <string>27 (22 data)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>28 (23 data)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>29 (24 data)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>30 (25 data)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>31 (26 data)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>32 (27 data)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>33 (28 data)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>34 (29 data)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>35 (30 data)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>36 (31 data)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>37 (32 data)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>38 (33 data)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>39 (34 data)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>40 (35 data)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>41 (36 data)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>42 (37 data)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>43 (38 data)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>44 (39 data)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>45 (40 data)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>46 (41 data)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>47 (42 data)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>48 (43 data)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>49 (44 data)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>50 (45 data)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>51 (46 data)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>52 (47 data)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>53 (48 data)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>54 (49 data)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>55 (50 data)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>56 (51 data)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>57 (52 data)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>58 (53 data)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>59 (54 data)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>60 (55 data)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>61 (56 data)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>62 (57 data)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>63 (58 data)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>64 (59 data)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>65 (60 data)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>66 (61 data)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>67 (62 data)</string>
         </property>
        </item>
       </widget>
      </item>
-     <item row="2" column="2">
+     <item row="1" column="0">
+      <widget class="QLabel" name="labelHeight">
+       <property name="text">
+        <string>Symbo&amp;l Height (Rows)</string>
+       </property>
+       <property name="buddy">
+        <cstring>cmbCbfHeight</cstring>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
       <widget class="QComboBox" name="cmbCbfHeight">
+       <item>
+        <property name="text">
+         <string>Default</string>
+        </property>
+       </item>
        <item>
         <property name="text">
          <string>1</string>
@@ -264,29 +472,185 @@
          <string>25</string>
         </property>
        </item>
+       <item>
+        <property name="text">
+         <string>26</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>27</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>28</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>29</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>30</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>31</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>32</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>33</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>34</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>35</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>36</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>37</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>38</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>39</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>40</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>41</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>42</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>43</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>44</string>
+        </property>
+       </item>
       </widget>
      </item>
-     <item row="0" column="0">
-      <widget class="QRadioButton" name="radCbfAutosize">
+     <item row="2" column="0">
+      <widget class="QLabel" name="labelRowSeparatorHeight">
        <property name="text">
-        <string>Automatic Size</string>
+        <string>Row Separator Height</string>
        </property>
-       <property name="checked">
-        <bool>true</bool>
+       <property name="buddy">
+        <cstring>cmbCbfRowSepHeight</cstring>
        </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QComboBox" name="cmbCbfRowSepHeight">
+       <item>
+        <property name="text">
+         <string>Default (2 X)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>1 X</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>2 X</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>3 X</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>4 X</string>
+        </property>
+       </item>
       </widget>
      </item>
     </layout>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBoxEncodingMode">
+     <property name="title">
+      <string>Encoding Mode</string>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <property name="sizeConstraint">
+       <enum>QLayout::SetMinimumSize</enum>
+      </property>
+      <item>
+       <widget class="QRadioButton" name="radCbfStand">
+        <property name="text">
+         <string>Standard Mode</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="radCbfHIBC">
+        <property name="text">
+         <string>HIBC Codabloc&amp;k-F Mode</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
    </item>
    <item>
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
      </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Minimum</enum>
+     </property>
      <property name="sizeHint" stdset="0">
       <size>
        <width>20</width>
-       <height>40</height>
+       <height>43</height>
       </size>
      </property>
     </spacer>

@@ -206,7 +206,8 @@ INTERNAL void expand(struct zint_symbol *symbol, const char data[]) {
     symbol->rows = symbol->rows + 1;
 }
 
-/* Indicates which symbologies can have row binding */
+/* Indicates which symbologies can have row binding
+ * Note: if change this must also change version in frontend/main.c */
 INTERNAL int is_stackable(const int symbology) {
     if (symbology < BARCODE_PDF417) {
         return 1;
@@ -223,6 +224,7 @@ INTERNAL int is_stackable(const int symbology) {
         case BARCODE_ITF14:
         case BARCODE_CODE32:
         case BARCODE_CODABLOCKF:
+        case BARCODE_HIBC_BLOCKF:
             return 1;
     }
 

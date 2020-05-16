@@ -130,7 +130,7 @@ INTERNAL int itf14(struct zint_symbol *symbol, unsigned char source[], int lengt
 INTERNAL int dpleit(struct zint_symbol *symbol, unsigned char source[], int length); /* Deutsche Post Leitcode */
 INTERNAL int dpident(struct zint_symbol *symbol, unsigned char source[], int length); /* Deutsche Post Identcode */
 INTERNAL int c93(struct zint_symbol *symbol, unsigned char source[], int length); /* Code 93 - a re-working of Code 39+, generates 2 check digits */
-INTERNAL int code_128(struct zint_symbol *symbol, unsigned char source[], const size_t length); /* Code 128 and NVE-18 */
+INTERNAL int code_128(struct zint_symbol *symbol, const unsigned char source[], const size_t length); /* Code 128 and NVE-18 */
 INTERNAL int ean_128(struct zint_symbol *symbol, unsigned char source[], const size_t length); /* EAN-128 (GS1-128) */
 INTERNAL int code_11(struct zint_symbol *symbol, unsigned char source[], int length); /* Code 11 */
 INTERNAL int msi_handle(struct zint_symbol *symbol, unsigned char source[], int length); /* MSI Plessey */
@@ -903,6 +903,10 @@ static int escape_char_process(struct zint_symbol *symbol, unsigned char *input_
 
     do {
         if (input_string[in_posn] == '\\') {
+            if (in_posn + 1 >= *length) {
+                strcpy(symbol->errtxt, "236: Incomplete escape character in input data");
+                return ZINT_ERROR_INVALID_DATA;
+            }
             switch (input_string[in_posn + 1]) {
                 case '0': escaped_string[out_posn] = 0x00; /* Null */
                     in_posn += 2;

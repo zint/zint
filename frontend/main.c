@@ -18,6 +18,7 @@
     with this program; if not, write to the Free Software Foundation, Inc.,
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
+/* vim: set ts=4 sw=4 et : */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -60,7 +61,7 @@ void types(void) {
             "30: GS1 DataBar Ltd   79: GS1 DataBar Stack       136: Comp UPC-E\n"
             "31: GS1 DataBar ExpOm 80: GS1 DataBar Stack Omni  137: Comp DataBar Stack\n"
             "32: Telepen Alpha     81: GS1 DataBar ESO         138: Comp DataBar Stack Omni\n"
-            "34: UPC-A             82: Planet                  1139: Comp DataBar ESO\n"
+            "34: UPC-A             82: Planet                  139: Comp DataBar ESO\n"
             "35: UPC-A + Check     84: MicroPDF                140: Channel Code\n"
             "37: UPC-E             85: USPS OneCode            141: Code One\n"
             "38: UPC-E + Check     86: UK Plessey              142: Grid Matrix\n"
@@ -88,16 +89,16 @@ void usage(void) {
             "  --cols=NUMBER         Set the number of data columns in symbol\n"
             "  -d, --data=DATA       Set the symbol content\n"
             "  --direct              Send output to stdout\n"
+            "  --dmre                Allow Data Matrix Rectangular Extended\n"
             "  --dotsize=NUMBER      Set radius of dots in dotty mode\n"
             "  --dotty               Use dots instead of squares for matrix symbols\n"
-            "  --dmre                Allow Data Matrix Rectangular Extended\n"
             "  --dump                Dump hexadecimal representation to stdout\n"
             "  -e, --ecinos          Display table of ECI character encodings\n"
             "  --eci=NUMBER          Set the ECI mode for raw data\n"
             "  --esc                 Process escape characters in input data\n"
-            "  --filetype=TYPE       Set output file type (PNG/EPS/SVG/PNG/EPS/GIF/TXT)\n"
             "  --fg=COLOUR           Specify a foreground colour (in hex)\n"
-            "  --fullmultibyte       Use multibyte mode for binary and Latin (QR Code/Han Xin/Grid Matrix)\n"
+            "  --filetype=TYPE       Set output file type (PNG/EPS/SVG/PNG/EPS/GIF/TXT)\n"
+            "  --fullmultibyte       Use multibyte for binary/Latin (QR/Han Xin/Grid Matrix)\n"
             "  --gs1                 Treat input as GS1 compatible data\n"
             "  --gssep               Use separator GS for GS1\n"
             "  -h, --help            Display help message\n"
@@ -109,8 +110,9 @@ void usage(void) {
             "  --notext              Remove human readable text\n"
             "  -o, --output=FILE     Send output to FILE. (default is out.png)\n"
             "  --primary=STRING      Set structured primary message (Maxicode/Composite)\n"
-            "  --secure=NUMBER       Set error correction level\n"
             "  --scale=NUMBER        Adjust size of x-dimension\n"
+            "  --secure=NUMBER       Set error correction level\n"
+            "  --separator=NUMBER    Set height of row separator bars (stacked symbologies)\n"
             "  --small               Use half-size text in PNG images\n"
             "  --square              Force Data Matrix symbols to be square\n"
             "  -r, --reverse         Reverse colours (white on black)\n"
@@ -380,17 +382,42 @@ int batch_process(struct zint_symbol *symbol, char *filename, int mirror_mode, c
 }
 
 int is_fullmultibyte(struct zint_symbol* symbol) {
-	switch (symbol->symbology) {
-		case BARCODE_QRCODE:
-		case BARCODE_MICROQR:
-		//case BARCODE_HIBC_QR: Note character set restricted to ASCII subset
-		//case BARCODE_UPNQR: Note does not use Kanji mode
-		case BARCODE_RMQR:
-		case BARCODE_HANXIN:
-		case BARCODE_GRIDMATRIX:
-			return 1;
-	}
-	return 0;
+    switch (symbol->symbology) {
+        case BARCODE_QRCODE:
+        case BARCODE_MICROQR:
+        //case BARCODE_HIBC_QR: Note character set restricted to ASCII subset
+        //case BARCODE_UPNQR: Note does not use Kanji mode
+        case BARCODE_RMQR:
+        case BARCODE_HANXIN:
+        case BARCODE_GRIDMATRIX:
+            return 1;
+    }
+    return 0;
+}
+
+/* Indicates which symbologies can have row binding
+ * Note: if change this must also change version in backend/common.c */
+int is_stackable(const int symbology) {
+    if (symbology < BARCODE_PDF417) {
+        return 1;
+    }
+
+    switch (symbology) {
+        case BARCODE_CODE128B:
+        case BARCODE_ISBNX:
+        case BARCODE_EAN14:
+        case BARCODE_NVE18:
+        case BARCODE_KOREAPOST:
+        case BARCODE_PLESSEY:
+        case BARCODE_TELEPEN_NUM:
+        case BARCODE_ITF14:
+        case BARCODE_CODE32:
+        case BARCODE_CODABLOCKF:
+        case BARCODE_HIBC_BLOCKF:
+            return 1;
+    }
+
+    return 0;
 }
 
 int main(int argc, char **argv) {
@@ -400,7 +427,8 @@ int main(int argc, char **argv) {
     int generated;
     int batch_mode;
     int mirror_mode;
-	int fullmultibyte;
+    int fullmultibyte;
+    int separator;
     char filetype[4];
     int i;
 
@@ -412,6 +440,7 @@ int main(int argc, char **argv) {
     batch_mode = 0;
     mirror_mode = 0;
     fullmultibyte = 0;
+    separator = 0;
 
     for (i = 0; i < 4; i++) {
         filetype[i] = '\0';
@@ -450,6 +479,7 @@ int main(int argc, char **argv) {
             {"mode", 1, 0, 0},
             {"primary", 1, 0, 0},
             {"scale", 1, 0, 0},
+            {"separator", 1, 0, 0},
             {"gs1", 0, 0, 0},
             {"gssep", 0, 0, 0},
             {"binary", 0, 0, 0},
@@ -547,6 +577,15 @@ int main(int argc, char **argv) {
                         my_symbol->scale = 1.0;
                     }
                 }
+                if (!strcmp(long_options[option_index].name, "separator")) {
+                    separator = atoi(optarg);
+                    if (separator < 0 || separator > 4) {
+                        /* Negative and greater than 4 values are not permitted */
+                        fprintf(stderr, "Warning 127: Invalid separator value\n");
+                        fflush(stderr);
+                        separator = 0;
+                    }
+                }
                 if (!strcmp(long_options[option_index].name, "dotsize")) {
                     my_symbol->dot_size = (float) (atof(optarg));
                     if (my_symbol->dot_size < 0.01) {
@@ -584,7 +623,7 @@ int main(int argc, char **argv) {
                 }
 
                 if (!strcmp(long_options[option_index].name, "cols")) {
-                    if ((atoi(optarg) >= 1) && (atoi(optarg) <= 66)) {
+                    if ((atoi(optarg) >= 1) && (atoi(optarg) <= 67)) {
                         my_symbol->option_2 = atoi(optarg);
                     } else {
                         fprintf(stderr, "Warning 111: Number of columns out of range\n");
@@ -681,7 +720,7 @@ int main(int argc, char **argv) {
                     if ((atoi(optarg) >= 0) && (atoi(optarg) <= 100)) {
                         my_symbol->fontsize = atoi(optarg);
                     } else {
-                        fprintf(stderr, "Warning 125: Invalid font size\n");
+                        fprintf(stderr, "Warning 126: Invalid font size\n");
                         fflush(stderr);
                     }
                 }
@@ -728,9 +767,11 @@ int main(int argc, char **argv) {
                         strcat(my_symbol->outfile, ".");
                         strcat(my_symbol->outfile, filetype);
                     }
-					if (fullmultibyte && is_fullmultibyte(my_symbol)) {
-						my_symbol->option_3 = ZINT_FULL_MULTIBYTE;
-					}
+                    if (fullmultibyte && is_fullmultibyte(my_symbol)) {
+                        my_symbol->option_3 = ZINT_FULL_MULTIBYTE;
+                    } else if (separator && is_stackable(my_symbol->symbology)) {
+                        my_symbol->option_3 = separator;
+                    }
                     error_number = ZBarcode_Encode(my_symbol, (unsigned char*) optarg, strlen(optarg));
                     generated = 1;
                     if (error_number != 0) {
@@ -754,9 +795,11 @@ int main(int argc, char **argv) {
                 break;
 
             case 'i': /* Take data from file */
-				if (fullmultibyte && is_fullmultibyte(my_symbol)) {
-					my_symbol->option_3 = ZINT_FULL_MULTIBYTE;
-				}
+                if (fullmultibyte && is_fullmultibyte(my_symbol)) {
+                    my_symbol->option_3 = ZINT_FULL_MULTIBYTE;
+                } else if (separator && is_stackable(my_symbol->symbology)) {
+                    my_symbol->option_3 = separator;
+                }
                 if (batch_mode == 0) {
                     error_number = ZBarcode_Encode_File(my_symbol, optarg);
                     generated = 1;
@@ -824,4 +867,3 @@ int main(int argc, char **argv) {
 
     return error_number;
 }
-

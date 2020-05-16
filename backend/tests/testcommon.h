@@ -72,6 +72,7 @@ void testRun(int argc, char *argv[], testFunction funcs[], int funcs_size);
 
 extern void vector_free(struct zint_symbol *symbol); /* Free vector structures */
 
+int testUtilSetSymbol(struct zint_symbol *symbol, int symbology, int input_mode, int eci, int option_1, int option_2, int option_3, int output_options, char *data, int length, int debug);
 char *testUtilBarcodeName(int symbology);
 char *testUtilErrorName(int error_number);
 char *testUtilInputModeName(int input_mode);

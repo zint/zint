@@ -13,6 +13,7 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
+/* vim: set ts=4 sw=4 et : */
 
 #include <QDebug>
 #include <QGraphicsScene>
@@ -526,11 +527,11 @@ void MainWindow::change_options()
         m_optionWidget=uiload.load(&file);
         file.close();
         tabMain->insertTab(1,m_optionWidget,tr("Codablock-F"));
-        connect(m_optionWidget->findChild<QObject*>("radCbfAutosize"), SIGNAL(toggled( bool )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("radCbfSetWidth"), SIGNAL(toggled( bool )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("radCbfSetHeight"), SIGNAL(toggled( bool )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("cmbCbfWidth"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("cmbCbfHeight"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(m_optionWidget->findChild<QObject*>("cmbCbfRowSepHeight"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(m_optionWidget->findChild<QObject*>("radCbfStand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(m_optionWidget->findChild<QObject*>("radCbfHIBC"), SIGNAL(clicked( bool )), SLOT(update_preview()));
     }
 
     if(metaObject()->enumerator(0).value(bstyle->currentIndex()) == BARCODE_DATAMATRIX)
@@ -769,6 +770,7 @@ void MainWindow::update_preview()
 {
     int width = view->geometry().width();
     int height = view->geometry().height();
+    int item_val;
 
     //m_bc.ar=(Zint::QZint::AspectRatioMode)1;
     if(chkComposite->isChecked() == true) {
@@ -779,6 +781,7 @@ void MainWindow::update_preview()
     }
     m_bc.bc.setSecurityLevel(0);
     m_bc.bc.setWidth(0);
+    m_bc.bc.setOption3(0);
     m_bc.bc.setInputMode(UNICODE_MODE);
     m_bc.bc.setHideText(0);
     if(chkHRTHide->isChecked() == false) {
@@ -945,14 +948,27 @@ void MainWindow::update_preview()
                 m_bc.bc.setInputMode(GS1_MODE);
             break;
 
-            case BARCODE_CODABLOCKF:
+        case BARCODE_CODABLOCKF:
+            if (m_optionWidget->findChild<QRadioButton*>("radCbfHIBC")->isChecked()) {
+                m_bc.bc.setSymbol(BARCODE_HIBC_BLOCKF);
+            } else {
                 m_bc.bc.setSymbol(BARCODE_CODABLOCKF);
-                if(m_optionWidget->findChild<QRadioButton*>("radCbfSetWidth")->isChecked())
-                    m_bc.bc.setWidth(m_optionWidget->findChild<QComboBox*>("cmbCbfWidth")->currentIndex() + 6);
-                // Height selection uses option 1 in zint_symbol
-                if(m_optionWidget->findChild<QRadioButton*>("radCbfSetHeight")->isChecked())
-                    m_bc.bc.setSecurityLevel(m_optionWidget->findChild<QComboBox*>("cmbCbfHeight")->currentIndex() + 1);
-                break;
+            }
+            item_val = m_optionWidget->findChild<QComboBox*>("cmbCbfWidth")->currentIndex();
+            if (item_val) {
+                m_bc.bc.setWidth(item_val - 1 + 9);
+            }
+            // Height selection uses option 1 in zint_symbol
+            item_val = m_optionWidget->findChild<QComboBox*>("cmbCbfHeight")->currentIndex();
+            if (item_val) {
+                m_bc.bc.setSecurityLevel(item_val);
+            }
+            // Row separator height selection uses option 3 in zint_symbol
+            item_val = m_optionWidget->findChild<QComboBox*>("cmbCbfRowSepHeight")->currentIndex();
+            if (item_val) {
+                m_bc.bc.setOption3(item_val);
+            }
+            break;
 
         case BARCODE_DATAMATRIX:
             m_bc.bc.setSecurityLevel(1);

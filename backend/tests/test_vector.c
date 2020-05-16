@@ -31,6 +31,35 @@
 
 #include "testcommon.h"
 
+static struct zint_vector_rect *find_rect(struct zint_symbol *symbol, int x, int y, int height, int width) {
+    struct zint_vector_rect *rect;
+
+    if (symbol->vector == NULL) {
+        return NULL;
+    }
+    for (rect = symbol->vector->rectangles; rect != NULL; rect = rect->next) {
+        if (rect->x == x && rect->y == y) {
+            if (height && width) {
+                if (rect->height == height && rect->width == width) {
+                    break;
+                }
+            } else if (height) {
+                if (rect->height == height) {
+                    break;
+                }
+            } else if (width) {
+                if (rect->width == width) {
+                    break;
+                }
+            } else {
+                break;
+            }
+        }
+    }
+
+    return rect;
+}
+
 static void test_buffer_vector(int index, int generate, int debug) {
 
     testStart("");
@@ -96,7 +125,7 @@ static void test_buffer_vector(int index, int generate, int debug) {
         /* 45*/ { BARCODE_DATAMATRIX, "ABC", "", 10, 10, 10, 20.0, 20.0 },
         /* 46*/ { BARCODE_EAN14, "1234567890123", "", 50, 1, 134, 268.0, 118.0 },
         /* 47*/ { BARCODE_VIN, "00000000000000000", "", 50, 1, 246, 492.0, 118.0 },
-        /* 48*/ { BARCODE_CODABLOCKF, "0000000000", "", 10, 1, 90, 188.0, 28.0 },
+        /* 48*/ { BARCODE_CODABLOCKF, "0000000000", "", 20, 2, 101, 210.0, 48.0 },
         /* 49*/ { BARCODE_NVE18, "12345678901234567", "", 50, 1, 156, 312.0, 118.0 },
         /* 50*/ { BARCODE_JAPANPOST, "0000000000", "", 8, 3, 133, 266.0, 16.0 },
         /* 51*/ { BARCODE_KOREAPOST, "123456", "", 50, 1, 167, 334.0, 118.0 },
@@ -119,7 +148,7 @@ static void test_buffer_vector(int index, int generate, int debug) {
         /* 68*/ { BARCODE_HIBC_QR, "1234567890AB", "", 21, 21, 21, 42.0, 42.0 },
         /* 69*/ { BARCODE_HIBC_PDF, "0000000000", "", 27, 9, 103, 206.0, 54.0 },
         /* 70*/ { BARCODE_HIBC_MICPDF, "0000000000", "", 34, 17, 38, 76.0, 68.0 },
-        /* 71*/ { BARCODE_HIBC_BLOCKF, "0000000000", "", 40, 4, 90, 188.0, 88.0 },
+        /* 71*/ { BARCODE_HIBC_BLOCKF, "0000000000", "", 30, 3, 101, 210.0, 68.0 },
         /* 72*/ { BARCODE_HIBC_AZTEC, "1234567890AB", "", 19, 19, 19, 38.0, 38.0 },
         /* 73*/ { BARCODE_DOTCODE, "ABC", "", 11, 11, 16, 32.0, 22.0 },
         /* 74*/ { BARCODE_HANXIN, "1234567890AB", "", 23, 23, 23, 46.0, 46.0 },
@@ -311,12 +340,74 @@ static void test_upcean_whitespace_width(int index, int debug) {
     testFinish();
 }
 
+static void test_row_separator(int index, int debug) {
+
+    testStart("");
+
+    int ret;
+    struct item {
+        int symbology;
+        int option_3;
+        unsigned char *data;
+        int ret;
+
+        int expected_height;
+        int expected_rows;
+        int expected_width;
+        int expected_separator_row;
+        int expected_separator_col;
+        int expected_separator_height;
+    };
+    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    struct item data[] = {
+        /*  0*/ { BARCODE_CODABLOCKF, -1, "A", 0, 20, 2, 101, 22, 26, 4 },
+        /*  1*/ { BARCODE_CODABLOCKF, 0, "A", 0, 20, 2, 101, 22, 26, 4 }, // Same as default
+        /*  2*/ { BARCODE_CODABLOCKF, 1, "A", 0, 20, 2, 101, 23, 26, 2 },
+        /*  3*/ { BARCODE_CODABLOCKF, 2, "A", 0, 20, 2, 101, 22, 26, 4 }, // Same as default
+        /*  4*/ { BARCODE_CODABLOCKF, 3, "A", 0, 20, 2, 101, 21, 26, 6 },
+        /*  5*/ { BARCODE_CODABLOCKF, 4, "A", 0, 20, 2, 101, 20, 26, 8 },
+        /*  6*/ { BARCODE_CODABLOCKF, 5, "A", 0, 20, 2, 101, 22, 26, 4 }, // > 4 ignored, same as default
+    };
+    int data_size = ARRAY_SIZE(data);
+
+    struct zint_vector_rect *rect;
+
+    for (int i = 0; i < data_size; i++) {
+
+        if (index != -1 && i != index) continue;
+
+        struct zint_symbol *symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        int length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, -1, data[i].option_3, -1 /*output_options*/, data[i].data, -1, debug);
+
+        ret = ZBarcode_Encode(symbol, data[i].data, length);
+        assert_zero(ret, "i:%d ZBarcode_Encode(%d) ret %d != 0 %s\n", i, data[i].symbology, ret, symbol->errtxt);
+
+        ret = ZBarcode_Buffer_Vector(symbol, 0);
+        assert_zero(ret, "i:%d ZBarcode_Buffer_Vector(%d) ret %d != 0\n", i, data[i].symbology, ret);
+        assert_nonnull(symbol->vector, "i:%d ZBarcode_Buffer_Vector(%d) vector NULL\n", i, data[i].symbology);
+
+        assert_equal(symbol->height, data[i].expected_height, "i:%d (%d) symbol->height %d != %d\n", i, data[i].symbology, symbol->height, data[i].expected_height);
+        assert_equal(symbol->rows, data[i].expected_rows, "i:%d (%d) symbol->rows %d != %d\n", i, data[i].symbology, symbol->rows, data[i].expected_rows);
+        assert_equal(symbol->width, data[i].expected_width, "i:%d (%d) symbol->width %d != %d\n", i, data[i].symbology, symbol->width, data[i].expected_width);
+
+        rect = find_rect(symbol, data[i].expected_separator_col, data[i].expected_separator_row, data[i].expected_separator_height, 0);
+        assert_nonnull(rect, "i:%d (%d) find_rect(%d, %d, %d) NULL\n", i, data[i].symbology, data[i].expected_separator_col, data[i].expected_separator_row, data[i].expected_separator_height);
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
 int main(int argc, char *argv[]) {
 
     testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
         { "test_buffer_vector", test_buffer_vector, 1, 1, 1 },
         { "test_noncomposite_string_x", test_noncomposite_string_x, 1, 0, 1 },
         { "test_upcean_whitespace_width", test_upcean_whitespace_width, 1, 0, 1 },
+        { "test_row_separator", test_row_separator, 1, 0, 1 },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

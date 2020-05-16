@@ -14,6 +14,7 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
+/* vim: set ts=4 sw=4 et : */
 
 #include "qzint.h"
 #include <stdio.h>
@@ -71,7 +72,7 @@ namespace Zint {
         } else {
             m_zintSymbol->show_hrt = 1;
         }
-		m_zintSymbol->option_3 = m_option_3;
+        m_zintSymbol->option_3 = m_option_3;
         QByteArray bstr = m_text.toUtf8();
         QByteArray pstr = m_primaryMessage.left(99).toLatin1();
         strcpy(m_zintSymbol->primary, pstr.data());
@@ -236,7 +237,7 @@ namespace Zint {
         } else {
             m_zintSymbol->show_hrt = 1;
         }
-		m_zintSymbol->option_3 = m_option_3;
+        m_zintSymbol->option_3 = m_option_3;
         m_zintSymbol->scale = m_scale;
         QByteArray bstr = m_text.toUtf8();
         QByteArray pstr = m_primaryMessage.left(99).toLatin1();
@@ -262,6 +263,8 @@ namespace Zint {
         struct zint_vector_circle *circle;
         struct zint_vector_string *string;
         qreal radius;
+
+        (void)mode; /* Not currently used */
 
         encode();
 

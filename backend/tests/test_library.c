@@ -153,6 +153,60 @@ static void test_input_mode(int index, int debug) {
     testFinish();
 }
 
+static void test_escape_char_process(int index, int generate, int debug) {
+
+    testStart("");
+
+    int ret;
+    struct item {
+        unsigned char *data;
+        int ret;
+        int expected_width;
+        char *expected;
+        char *comment;
+    };
+    struct item data[] = {
+        /*  0*/ { "\\0\\E\\a\\b\\t\\n\\v\\f\\r\\e\\G\\R\\x81\\\\", 0, 200, "(18) 103 64 68 71 72 73 74 75 76 77 91 93 94 101 65 60 44 106", "" },
+        /*  1*/ { "\\c", ZINT_ERROR_INVALID_DATA, 0, "Error 234: Unrecognised escape character in input data", "" },
+        /*  2*/ { "\\", ZINT_ERROR_INVALID_DATA, 0, "Error 236: Incomplete escape character in input data", "" },
+        /*  3*/ { "\\x", ZINT_ERROR_INVALID_DATA, 0, "Error 232: Incomplete escape character in input data", "" },
+        /*  4*/ { "\\x1", ZINT_ERROR_INVALID_DATA, 0, "Error 232: Incomplete escape character in input data", "" },
+        /*  5*/ { "\\x1g", ZINT_ERROR_INVALID_DATA, 0, "Error 233: Corrupt escape character in input data", "" },
+    };
+    int data_size = ARRAY_SIZE(data);
+
+    char escaped[1024];
+
+    for (int i = 0; i < data_size; i++) {
+
+        if (index != -1 && i != index) continue;
+
+        struct zint_symbol *symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        symbol->debug = ZINT_DEBUG_TEST; // Needed to get codeword dump in errtxt
+
+        int length = testUtilSetSymbol(symbol, BARCODE_CODE128, DATA_MODE | ESCAPE_MODE, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
+
+        ret = ZBarcode_Encode(symbol, data[i].data, length);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+
+        if (generate) {
+            printf("        /*%3d*/ { \"%s\", %s, %d, \"%s\", \"%s\" },\n",
+                    i, testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), testUtilErrorName(data[i].ret), symbol->width, symbol->errtxt, data[i].comment);
+        } else {
+            if (ret < 5) {
+                assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
+                assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
+            }
+        }
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
 // #181 Nico Gunkel OSS-Fuzz
 static void test_encode_file_zero_length(void) {
 
@@ -210,6 +264,7 @@ int main(int argc, char *argv[]) {
     testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
         { "test_checks", test_checks, 1, 0, 1 },
         { "test_input_mode", test_input_mode, 1, 0, 1 },
+        { "test_escape_char_process", test_escape_char_process, 1, 1, 1 },
         { "test_encode_file_zero_length", test_encode_file_zero_length, 0, 0, 0 },
         { "test_encode_file_directory", test_encode_file_directory, 0, 0, 0 },
     };

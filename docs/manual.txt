@@ -1545,18 +1545,25 @@ error = ZBarcode_Encode(my_symbol, "That");
 
 error = ZBarcode_Print(my_symbol);
 
+The stacked barcode rows can be separated by row separator bars by specifying
+--bind (output_options |= BARCODE_BIND). The height of the row separator bars
+in x-dimension multiples (default 2, minimum 1, maximum 4) can be set by
+--separator= (option_3):
+
+zind --bind --separator=1 -d 'This' -d 'That'
+
 A more sophisticated method is to use some type of line indexing which indicates
 to the barcode reader which order the symbols should be read. This is
 demonstrated by the symbologies below.
 
 6.2.2 Codablock-F
 -----------------
-This is a stacked symbology based on Code 128 which can encode ASCII code set
-data up to a maximum length of 2725 characters. The width of the Codablock-F
-symbol can be set using the --cols= option at the command line or option_2.
-Alternatively the height (number of rows) can be set using the --rows= option
-at the command line or by setting option_1. Zint does not support encoding of
-GS1 data in Codablock-F symbols.
+This is a stacked symbology based on Code 128 which can encode extended ASCII
+code set data up to a maximum length of 2725 characters. The width of the
+Codablock-F symbol can be set using the --cols= option at the command line or
+option_2. The height (number of rows) can be set using the --rows= option at the
+command line or by setting option_1. Zint does not support encoding of GS1 data
+in Codablock-F symbols.
 
 6.2.3 Code 16k (EN 12323)
 -------------------------
