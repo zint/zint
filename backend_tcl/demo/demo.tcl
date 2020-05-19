@@ -52,7 +52,7 @@ proc Generate {} {
 	::zintimg blank
 	::zintimg configure -width 0 -height 0
 	catch {
-	    zint encode [.e get] ::zintimg -barcode [.c get] -scale $sx
+	    zint encode [.e get] ::zintimg -barcode [.c get] -scale $sx {*}[.o get]} e]
 	}
     }
 }

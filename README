@@ -173,6 +173,22 @@ Bugs:
 - Dotcode: adopt to AIM DOC Revision 4
 - GS1 data: exclude DEL character
 - Ticket 192: missing malloc.h include for Windows compilers.
+- Correct GS1 AI 253 & 255 length from 14 to 13
+- Codablock F changes:
+  - FNC4 may not be split over rows.
+  - Use Code128 routine for one line Codablock FIM
+  - Correct column range to 9 ... 62
+  - allow new options: row count and column count, border_width and HIBC mode
+  - pad correctly empty and last row
+- Code128 changes:
+  - Correctly encode CodeA charset with control-character only data
+  - Improve coding of Extended ASCII (FNC4)
+  - Checksum calculation overflow protection
+  - EAN128 may reduce length
+- New option "-separator=" for zint to specify the separator height of stacked
+  symbologies.
+- Check for incomplete escape sequences on data specification: "\" without following
+  character.
 
 CONTACT US
 ----------

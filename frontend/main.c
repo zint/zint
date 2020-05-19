@@ -397,7 +397,7 @@ int is_fullmultibyte(struct zint_symbol* symbol) {
 
 /* Indicates which symbologies can have row binding
  * Note: if change this must also change version in backend/common.c */
-int is_stackable(const int symbology) {
+static int is_stackable(const int symbology) {
     if (symbology < BARCODE_PDF417) {
         return 1;
     }

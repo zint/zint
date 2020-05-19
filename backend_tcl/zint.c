@@ -73,6 +73,9 @@
  -	Added option -fullmultibyte
  2020-04-07 2.8.0 HaO
  - Added symbology "UltraCode".
+ 2020-05-19 HaO
+ - Added option -separator to specify stacked symbology separator width
+ - -cols maximum changed from 66 to 67
 */
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
@@ -129,6 +132,8 @@ static int Zint(ClientData unused, Tcl_Interp *interp, int objc,
     Tcl_Obj *CONST objv[]);
 static int Encode(Tcl_Interp *interp, int objc,
     Tcl_Obj *CONST objv[]);
+static int is_fullmultibyte(struct zint_symbol* symbol);
+static int is_stackable(const int symbology);
 /*----------------------------------------------------------------------------*/
 /* >>>> File Global Variables */
 
@@ -399,6 +404,7 @@ static char help_message[] = "zint tcl(stub,obj) dll\n"
     "   -rows integer: Codablock F: number of rows\n"
     "   -vers integer: Symbology option, QR-Code, Plessy\n"
     "   -dmre bool: Allow Data Matrix Rectangular Extended\n"
+    "   -separator 0..4 (default: 1) : Stacked symbologies: separator width\n"
     "   -rotate angle: Image rotation by 0,90 or 270 degrees\n"
     "   -secure integer: EC Level (PDF417, QR)\n"
     "   -mode: Structured primary data mode (Maxicode, Composite)\n"
@@ -568,6 +574,7 @@ static int Encode(Tcl_Interp *interp, int objc,
     int destHeight = 0;
     int ECIIndex = 0;
 	int fFullMultiByte = 0;
+    int Separator = 1;
     /*------------------------------------------------------------------------*/
     /* >> Check if at least data and object is given and a pair number of */
     /* >> options */
@@ -597,13 +604,13 @@ static int Encode(Tcl_Interp *interp, int objc,
             "-dmre", "-dotsize", "-dotty", "-eci", "-fg", "-format", "-gssep",
 			"-height", "-init", "-mode", "-notext", "-primary", "-rotate",
 			"-rows", "-scale", "-secure", "-smalltext", "-square", "-to",
-			"-vers", "-whitesp", "-fullmultibyte", NULL};
+			"-vers", "-whitesp", "-fullmultibyte", "-separator", NULL};
         enum iOption {
             iBarcode, iBG, iBind, iBold, iBorder, iBox, iCols,
             iDMRE, iDotSize, iDotty, iECI, iFG, iFormat, iGSSep, iHeight,
             iInit, iMode, iNoText, iPrimary, iRotate, iRows,
             iScale, iSecure, iSmallText, iSquare, iTo, iVers,
-            iWhiteSp, iFullMultiByte
+            iWhiteSp, iFullMultiByte, iSeparator
             };
         int optionIndex;
         int intValue;
@@ -666,6 +673,7 @@ static int Encode(Tcl_Interp *interp, int objc,
         case iSecure:
         case iVers:
         case iWhiteSp:
+        case iSeparator:
             /* >> Int */
             if (TCL_OK != Tcl_GetIntFromObj(interp, objv[optionPos+1],
                     &intValue))
@@ -810,11 +818,20 @@ static int Encode(Tcl_Interp *interp, int objc,
                 hSymbol->height = intValue;
             }
             break;
+        case iSeparator:
+            if (intValue < 0 || intValue > 4) {
+                Tcl_SetObjResult(interp,
+                    Tcl_NewStringObj("Separator out of range", -1));
+                fError = 1;
+            } else {
+                Separator = intValue;
+            }
+            break;
         case iCols:
         case iVers:
             /* >> Int in Option 2 */
             if (intValue < 1
-                || (optionIndex==iCols && intValue > 66)
+                || (optionIndex==iCols && intValue > 67)
                 || (optionIndex==iVers && intValue > 47))
             {
                 Tcl_SetObjResult(interp,
@@ -938,22 +955,13 @@ static int Encode(Tcl_Interp *interp, int objc,
         }
     }
     /*------------------------------------------------------------------------*/
-	/* >>> Set fullmultibyte option if symbology matches*/
-	/* On wrong symbology, option is ignored (as does the zint program)*/
-	if (fFullMultiByte) {
-		switch (hSymbol->symbology) {
-			case BARCODE_QRCODE:
-			case BARCODE_MICROQR:
-			/*case BARCODE_HIBC_QR: Note character set restricted to ASCII subset*/
-			/*case BARCODE_UPNQR: Note does not use Kanji mode*/
-			case BARCODE_RMQR:
-			case BARCODE_HANXIN:
-			case BARCODE_GRIDMATRIX:
-				hSymbol->option_3 = ZINT_FULL_MULTIBYTE;
-				break;
-		}
-
-	}
+    /* >>> option_3 is set by two values depending on the symbology */
+    /* On wrong symbology, the option is ignored(as does the zint program)*/
+    if (fFullMultiByte && is_fullmultibyte(hSymbol)) {
+        hSymbol->option_3 = ZINT_FULL_MULTIBYTE;
+    } else if (Separator && is_stackable(hSymbol->symbology)) {
+        hSymbol->option_3 = Separator;
+    }
     /*------------------------------------------------------------------------*/
     /* >>> Prepare input dstring and encode it to ECI encoding*/
     Tcl_DStringInit(& dsInput);
@@ -1046,4 +1054,42 @@ static int Encode(Tcl_Interp *interp, int objc,
     return TCL_OK;
 }
 
+static int is_fullmultibyte(struct zint_symbol* symbol) {
+    switch (symbol->symbology) {
+        case BARCODE_QRCODE:
+        case BARCODE_MICROQR:
+        //case BARCODE_HIBC_QR: Note character set restricted to ASCII subset
+        //case BARCODE_UPNQR: Note does not use Kanji mode
+        case BARCODE_RMQR:
+        case BARCODE_HANXIN:
+        case BARCODE_GRIDMATRIX:
+            return 1;
+    }
+    return 0;
+}
+
+/* Indicates which symbologies can have row binding
+ * Note: if change this must also change version in backend/common.c */
+static int is_stackable(const int symbology) {
+    if (symbology < BARCODE_PDF417) {
+        return 1;
+    }
+
+    switch (symbology) {
+        case BARCODE_CODE128B:
+        case BARCODE_ISBNX:
+        case BARCODE_EAN14:
+        case BARCODE_NVE18:
+        case BARCODE_KOREAPOST:
+        case BARCODE_PLESSEY:
+        case BARCODE_TELEPEN_NUM:
+        case BARCODE_ITF14:
+        case BARCODE_CODE32:
+        case BARCODE_CODABLOCKF:
+        case BARCODE_HIBC_BLOCKF:
+            return 1;
+    }
+
+    return 0;
+}
 
