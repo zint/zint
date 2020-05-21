@@ -332,6 +332,7 @@
     <ClCompile Include="..\backend\mailmark.c" />
     <ClCompile Include="..\backend\maxicode.c" />
     <ClCompile Include="..\backend\medical.c" />
+    <ClCompile Include="..\backend\output.c" />
     <ClCompile Include="..\backend\pcx.c" />
     <ClCompile Include="..\backend\pdf417.c" />
     <ClCompile Include="..\backend\plessey.c" />
@@ -354,6 +355,7 @@
     <ClInclude Include="..\backend\aztec.h" />
     <ClInclude Include="..\backend\bmp.h" />
     <ClInclude Include="..\backend\code1.h" />
+    <ClInclude Include="..\backend\code128.h" />
     <ClInclude Include="..\backend\code49.h" />
     <ClInclude Include="..\backend\common.h" />
     <ClInclude Include="..\backend\composite.h" />
@@ -372,6 +374,7 @@
     <ClInclude Include="..\backend\maxicode.h" />
     <ClInclude Include="..\backend\maxipng.h" />
     <ClInclude Include="..\backend\ms_stdint.h" />
+    <ClInclude Include="..\backend\output.h" />
     <ClInclude Include="..\backend\pcx.h" />
     <ClInclude Include="..\backend\pdf417.h" />
     <ClInclude Include="..\backend\qr.h" />

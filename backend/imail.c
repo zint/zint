@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2017 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008 - 2020 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -35,12 +35,11 @@
     is Copyright (C) 2006 United States Postal Service */
 
 #include <string.h>
-#include <stdlib.h>
 #include <stdio.h>
 #include "common.h"
 #include "large.h"
 
-#define SODIUM	"0123456789-"
+#define SODIUM  "0123456789-"
 
 /* The following lookup tables were generated using the code in Appendix C */
 
@@ -203,7 +202,7 @@ static const unsigned short int AppxD_IV[130] = {
  ** USPS_MSB_Math_CRC11GenerateFrameCheckSequence
  **
  ** Inputs:
- **   ByteAttayPtr is the address of a 13 byte array holding 102 bytes which
+ **   ByteAttayPtr is the address of a 13 byte array holding 102 bits which
  **   are right justified - ie: the leftmost 2 bits of the first byte do not
  **   hold data and must be set to zero.
  **
@@ -255,9 +254,7 @@ INTERNAL int imail(struct zint_symbol *symbol, unsigned char source[], int lengt
     int codeword[10];
     unsigned short characters[10];
     short int bar_map[130];
-    int zip_len;
-
-    error_number = 0;
+    int zip_len, len;
 
     if (length > 32) {
         strcpy(symbol->errtxt, "450: Input too long");
@@ -358,7 +355,7 @@ INTERNAL int imail(struct zint_symbol *symbol, unsigned char source[], int lengt
         accum[i] = 0;
     }
 
-    for (read = 0; read < strlen(zip_adder); read++) {
+    for (read = 0, len = strlen(zip_adder); read < len; read++) {
 
         binary_multiply(accum, "10");
         binary_load(y_reg, "0", 1);
@@ -398,7 +395,7 @@ INTERNAL int imail(struct zint_symbol *symbol, unsigned char source[], int lengt
 
     /* and then the rest */
 
-    for (read = 2; read < strlen(tracker); read++) {
+    for (read = 2, len = strlen(tracker); read < len; read++) {
 
         binary_multiply(accum, "10");
         binary_load(y_reg, "0", 1);
@@ -415,7 +412,6 @@ INTERNAL int imail(struct zint_symbol *symbol, unsigned char source[], int lengt
     accum[103] = 0;
     accum[102] = 0;
 
-    memset(byte_array, 0, 13);
     for (j = 0; j < 13; j++) {
         i = 96 - (8 * j);
         byte_array[j] = 0;
@@ -547,7 +543,7 @@ INTERNAL int imail(struct zint_symbol *symbol, unsigned char source[], int lengt
 
     /* Translate 4-state data pattern to symbol */
     read = 0;
-    for (i = 0; i < strlen(data_pattern); i++) {
+    for (i = 0, len = strlen(data_pattern); i < len; i++) {
         if ((data_pattern[i] == '1') || (data_pattern[i] == '0')) {
             set_module(symbol, 0, read);
         }

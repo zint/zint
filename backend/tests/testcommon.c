@@ -490,6 +490,53 @@ char *testUtilOption3Name(int option_3) {
     return "-1";
 }
 
+char *testUtilOutputOptionsName(int output_options) {
+    static char buf[512];
+
+    struct item {
+        char *name;
+        int define;
+        int val;
+    };
+    struct item data[] = {
+        { "BARCODE_NO_ASCII", BARCODE_NO_ASCII, 1 },
+        { "BARCODE_BIND", BARCODE_BIND, 2 },
+        { "BARCODE_BOX", BARCODE_BOX, 4 },
+        { "BARCODE_STDOUT", BARCODE_STDOUT, 8 },
+        { "READER_INIT", READER_INIT, 16 },
+        { "SMALL_TEXT", SMALL_TEXT, 32 },
+        { "BOLD_TEXT", BOLD_TEXT, 64 },
+        { "CMYK_COLOUR", CMYK_COLOUR, 128 },
+        { "BARCODE_DOTTY_MODE", BARCODE_DOTTY_MODE, 256 },
+        { "GS1_GS_SEPARATOR", GS1_GS_SEPARATOR, 512 },
+    };
+    int data_size = ARRAY_SIZE(data);
+    int set = 0;
+    int i;
+
+    if (output_options == -1) {
+        return "-1";
+    }
+    if (output_options == 0) {
+        return "0";
+    }
+    buf[0] = '\0';
+    for (i = 0; i < data_size; i++) {
+        if (data[i].define != data[i].val) { // Self-check
+            fprintf(stderr, "testUtilOutputOptionsName data table out of sync (%d)\n", i);
+            abort();
+        }
+        if (output_options & data[i].define) {
+            if (set) {
+                strcat(buf, " | ");
+            }
+            strcat(buf, data[i].name);
+            set = 1;
+        }
+    }
+    return buf;
+}
+
 int testUtilDAFTConvert(const struct zint_symbol *symbol, char *buffer, int buffer_size) {
     buffer[0] = '\0';
     char *b = buffer;
@@ -909,6 +956,33 @@ int testUtilModulesDumpHex(const struct zint_symbol *symbol, char dump[], int du
     }
     *d = '\0';
     return d - dump;
+}
+
+void testUtilBitmapPrint(const struct zint_symbol *symbol) {
+    static char colour[] = { '0', 'C', 'B', 'M', 'R', 'Y', 'G', '1' };
+    int row, column, i, j;
+
+    fputs("     ", stdout);
+    for (column = 0; column < symbol->bitmap_width; column += 10) printf("%-3d       ", column);
+    fputs("\n     ", stdout);
+    for (column = 0; column < symbol->bitmap_width; column++) printf("%d", column % 10);
+    putchar('\n');
+
+    for (row = 0; row < symbol->bitmap_height; row++) {
+        printf("%3d: ", row);
+        for (column = 0; column < symbol->bitmap_width; column++) {
+            i = ((row * symbol->bitmap_width) + column) * 3;
+            j = (symbol->bitmap[i] == 0) + (symbol->bitmap[i + 1] == 0) * 2 + (symbol->bitmap[i + 2] == 0) * 4;
+            putchar(colour[j]);
+        }
+        putchar('\n');
+    }
+
+    fputs("     ", stdout);
+    for (column = 0; column < symbol->bitmap_width; column++) printf("%d", column % 10);
+    fputs("\n     ", stdout);
+    for (column = 0; column < symbol->bitmap_width; column += 10) printf("%-3d       ", column);
+    putchar('\n');
 }
 
 int testUtilExists(char *filename) {

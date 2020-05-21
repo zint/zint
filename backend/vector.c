@@ -39,8 +39,7 @@
 #endif
 
 #include "common.h"
-
-#define SSET "0123456789ABCDEF"
+#include "output.h"
 
 INTERNAL int ps_plot(struct zint_symbol *symbol);
 INTERNAL int svg_plot(struct zint_symbol *symbol);
@@ -281,6 +280,7 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
     float textpos, large_bar_height, preset_height, row_height, row_posn = 0.0;
     float text_offset, text_height;
     int xoffset, yoffset, textdone, main_symbol_width_x;
+    int roffset, boffset;
     char addon[6];
     int large_bar_count, symbol_lead_in;
     float addon_text_posn;
@@ -295,26 +295,9 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
     (void)rotate_angle; /* Not currently implemented */
 
     // Sanity check colours
-    to_upper((unsigned char*) symbol->fgcolour);
-    to_upper((unsigned char*) symbol->bgcolour);
-
-    if (strlen(symbol->fgcolour) != 6) {
-        strcpy(symbol->errtxt, "661: Malformed foreground colour target");
-        return ZINT_ERROR_INVALID_OPTION;
-    }
-    if (strlen(symbol->bgcolour) != 6) {
-        strcpy(symbol->errtxt, "662: Malformed background colour target");
-        return ZINT_ERROR_INVALID_OPTION;
-    }
-    error_number = is_sane(SSET, (unsigned char*) symbol->fgcolour, strlen(symbol->fgcolour));
-    if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "663: Malformed foreground colour target");
-        return ZINT_ERROR_INVALID_OPTION;
-    }
-    error_number = is_sane(SSET, (unsigned char*) symbol->bgcolour, strlen(symbol->bgcolour));
-    if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "664: Malformed background colour target");
-        return ZINT_ERROR_INVALID_OPTION;
+    error_number = check_colour_options(symbol);
+    if (error_number != 0) {
+        return error_number;
     }
 
     // Free any previous rendering structures
@@ -330,7 +313,6 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
 
     row_height = 0;
     textdone = 0;
-    textpos = 0.0;
     main_symbol_width_x = symbol->width;
     strcpy(addon, "");
     symbol_lead_in = 0;
@@ -421,9 +403,7 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
     if (symbol->output_options & SMALL_TEXT)
         text_height *= 0.8f;
 
-    xoffset = symbol->border_width + symbol->whitespace_width;
-    yoffset = symbol->border_width;
-
+    set_whitespace_offsets(symbol, &xoffset, &yoffset, &roffset, &boffset);
 
     // Determine if height should be overridden
     large_bar_count = 0;
@@ -435,8 +415,8 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
         }
     }
 
-    vector->width = (float)ceil(symbol->width + (2.0f * xoffset));
-    vector->height = (float)ceil(symbol->height + text_offset + (2.0f * yoffset));
+    vector->width = (float)ceil(symbol->width + (xoffset + roffset));
+    vector->height = (float)ceil(symbol->height + text_offset + (yoffset + boffset));
 
     large_bar_height = large_bar_count ? (symbol->height - preset_height) / large_bar_count : 0 /*Not used if large_bar_count zero*/;
 
@@ -467,11 +447,6 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
             row_posn += yoffset;
 
             i = 0;
-            if (module_is_set(symbol, this_row, 0)) {
-                latch = 1;
-            } else {
-                latch = 0;
-            }
 
             do {
                 int block_width = 0;
@@ -504,8 +479,8 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
     // Plot Maxicode symbols
     if (symbol->symbology == BARCODE_MAXICODE) {
         struct zint_vector_circle *circle;
-        vector->width = 37.0f + (2.0f * xoffset);
-        vector->height = 36.0f + (2.0f * yoffset);
+        vector->width = 37.0f + (xoffset + roffset);
+        vector->height = 36.0f + (yoffset + boffset);
 
         // Bullseye
         circle = vector_plot_create_circle(17.88f + xoffset, 17.8f + yoffset, 10.85f, 0);
@@ -785,8 +760,7 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
     // Binding and boxes
     if ((symbol->output_options & BARCODE_BIND) != 0) {
         if ((symbol->rows > 1) && (is_stackable(symbol->symbology) == 1)) {
-            double sep_height = 2;
-
+            double sep_height = 1;
             if (symbol->option_3 > 0 && symbol->option_3 <= 4) {
                 sep_height = symbol->option_3;
             }
@@ -796,8 +770,8 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
                     rectangle = vector_plot_create_rect((float)xoffset, (r * row_height) + yoffset - sep_height / 2, (float)symbol->width, sep_height);
                     vector_plot_add_rect(symbol, rectangle, &last_rectangle);
                 } else {
-                    /* Avoid 11-module start and stop chars */
-                    rectangle = vector_plot_create_rect(xoffset + 11, (r * row_height) + yoffset - sep_height / 2, symbol->width - 22, sep_height);
+                    /* Avoid 11-module start and 13-module stop chars */
+                    rectangle = vector_plot_create_rect(xoffset + 11, (r * row_height) + yoffset - sep_height / 2, symbol->width - 24, sep_height);
                     vector_plot_add_rect(symbol, rectangle, &last_rectangle);
                 }
             }
@@ -806,14 +780,14 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
     if ((symbol->output_options & BARCODE_BOX) || (symbol->output_options & BARCODE_BIND)) {
         // Top
         rectangle = vector_plot_create_rect(0.0f, 0.0f, vector->width, (float)symbol->border_width);
-        if (symbol->symbology == BARCODE_CODABLOCKF || symbol->symbology == BARCODE_HIBC_BLOCKF) {
+        if (!(symbol->output_options & BARCODE_BOX) && (symbol->symbology == BARCODE_CODABLOCKF || symbol->symbology == BARCODE_HIBC_BLOCKF)) {
             rectangle->x = (float)xoffset;
             rectangle->width -= (2.0f * xoffset);
         }
         vector_plot_add_rect(symbol, rectangle, &last_rectangle);
         // Bottom
         rectangle = vector_plot_create_rect(0.0f, vector->height - symbol->border_width - text_offset, vector->width, (float)symbol->border_width);
-        if (symbol->symbology == BARCODE_CODABLOCKF || symbol->symbology == BARCODE_HIBC_BLOCKF) {
+        if (!(symbol->output_options & BARCODE_BOX) && (symbol->symbology == BARCODE_CODABLOCKF || symbol->symbology == BARCODE_HIBC_BLOCKF)) {
             rectangle->x = (float)xoffset;
             rectangle->width -= (2.0f * xoffset);
         }
@@ -846,5 +820,4 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
     }
 
     return error_number;
-
 }

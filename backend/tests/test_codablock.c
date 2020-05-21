@@ -169,8 +169,8 @@ static void test_reader_init(int index, int generate, int debug) {
         char *comment;
     };
     struct item data[] = {
-        /*  0*/ { BARCODE_CODABLOCKF, UNICODE_MODE, 16, "1234", 0, 2, 101, "67 64 40 60 63 0C 22 2B 6A 67 64 0B 63 64 3A 1C 29 6A", "CodeB FNC3 CodeC 12 34 / CodeB Pads" },
-        /*  1*/ { BARCODE_HIBC_BLOCKF, UNICODE_MODE, 16, "123456", 0, 3, 101, "67 64 41 60 0B 11 12 22 6A 67 63 2B 22 38 64 2A 1B 6A 67 64 0C 63 64 2B 2F 52 6A", "CodeB FNC3 + 1 2 / CodeC 34 56 CodeB J" },
+        /*  0*/ { BARCODE_CODABLOCKF, UNICODE_MODE, READER_INIT, "1234", 0, 2, 101, "67 64 40 60 63 0C 22 2B 6A 67 64 0B 63 64 3A 1C 29 6A", "CodeB FNC3 CodeC 12 34 / CodeB Pads" },
+        /*  1*/ { BARCODE_HIBC_BLOCKF, UNICODE_MODE, READER_INIT, "123456", 0, 3, 101, "67 64 41 60 0B 11 12 22 6A 67 63 2B 22 38 64 2A 1B 6A 67 64 0C 63 64 2B 2F 52 6A", "CodeB FNC3 + 1 2 / CodeC 34 56 CodeB J" },
     };
     int data_size = ARRAY_SIZE(data);
 
@@ -191,8 +191,8 @@ static void test_reader_init(int index, int generate, int debug) {
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (generate) {
-            printf("        /*%3d*/ { %s, %s, %d, \"%s\", %s, %d, %d, \"%s\", \"%s\" },\n",
-                    i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode), data[i].output_options,
+            printf("        /*%3d*/ { %s, %s, %s, \"%s\", %s, %d, %d, \"%s\", \"%s\" },\n",
+                    i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode), testUtilOutputOptionsName(data[i].output_options),
                     testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
                     testUtilErrorName(data[i].ret), symbol->rows, symbol->width, symbol->errtxt, data[i].comment);
         } else {

@@ -656,7 +656,7 @@ INTERNAL int codablock(struct zint_symbol *symbol,const unsigned char source[], 
         if (Error < 5) {
             symbol->output_options |= BARCODE_BIND;
             if (symbol->border_width == 0) { /* Allow override if non-zero */
-                symbol->border_width = 2;
+                symbol->border_width = 1; /* AIM ISS-X-24 Section 4.6.1 b) (note change from previous default 2) */
             }
         }
         return Error;
@@ -981,7 +981,8 @@ INTERNAL int codablock(struct zint_symbol *symbol,const unsigned char source[], 
     symbol->output_options |= BARCODE_BIND;
 
     if (symbol->border_width == 0) { /* Allow override if non-zero */
-        symbol->border_width = 2;
+        symbol->border_width = 1; /* AIM ISS-X-24 Section 4.6.1 b) (note change from previous default 2) */
     }
+
     return 0;
 }

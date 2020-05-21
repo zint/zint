@@ -97,6 +97,7 @@ TEA_ADD_SOURCES([
     ../backend/mailmark.c
 	../backend/maxicode.c
 	../backend/medical.c
+    ../backend/output.c
 	../backend/pcx.c
 	../backend/pdf417.c
 	../backend/plessey.c

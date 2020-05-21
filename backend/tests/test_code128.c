@@ -165,12 +165,12 @@ static void test_reader_init(int index, int generate, int debug) {
         char *comment;
     };
     struct item data[] = {
-        /*  0*/ { BARCODE_CODE128, UNICODE_MODE, 16, "A", 0, 1, 57, "(5) 104 96 33 60 106", "StartA FNC3 A" },
-        /*  1*/ { BARCODE_CODE128, UNICODE_MODE, 16, "12", 0, 1, 68, "(6) 104 96 99 12 22 106", "StartB FNC3 CodeC 12" },
-        /*  2*/ { BARCODE_CODE128B, UNICODE_MODE, 16, "\0371234", 0, 1, 101, "(9) 103 96 95 17 18 19 20 6 106", "StartA FNC3 US 1 2 3 4" },
-        /*  3*/ { BARCODE_EAN128, GS1_MODE, 16, "[90]12", 0, 1, 68, "", "Reader Initialise not supported by GS1 barcodes (use CODE128)" },
-        /*  4*/ { BARCODE_EAN14, GS1_MODE, 16, "12", 0, 1, 134, "", "Reader Initialise not supported by GS1 barcodes (use CODE128)" },
-        /*  5*/ { BARCODE_NVE18, GS1_MODE, 16, "12", 0, 1, 156, "", "Reader Initialise not supported by GS1 barcodes (use CODE128)" },
+        /*  0*/ { BARCODE_CODE128, UNICODE_MODE, READER_INIT, "A", 0, 1, 57, "(5) 104 96 33 60 106", "StartA FNC3 A" },
+        /*  1*/ { BARCODE_CODE128, UNICODE_MODE, READER_INIT, "12", 0, 1, 68, "(6) 104 96 99 12 22 106", "StartB FNC3 CodeC 12" },
+        /*  2*/ { BARCODE_CODE128B, UNICODE_MODE, READER_INIT, "\0371234", 0, 1, 101, "(9) 103 96 95 17 18 19 20 6 106", "StartA FNC3 US 1 2 3 4" },
+        /*  3*/ { BARCODE_EAN128, GS1_MODE, READER_INIT, "[90]12", 0, 1, 68, "(6) 105 102 90 12 11 106", "StartC FNC1 90 12 (Reader Initialise not supported by GS1 barcodes (use CODE128))" },
+        /*  4*/ { BARCODE_EAN14, GS1_MODE, READER_INIT, "12", 0, 1, 134, "(12) 105 102 1 0 0 0 0 0 1 25 30 106", "StartC FNC1 01 00 (5) 01 (Reader Initialise not supported by GS1 barcodes (use CODE128))" },
+        /*  5*/ { BARCODE_NVE18, GS1_MODE, READER_INIT, "12", 0, 1, 156, "(14) 105 102 0 0 0 0 0 0 0 0 1 25 80 106", "StartC FNC1 00 (8) 01 (Reader Initialise not supported by GS1 barcodes (use CODE128))" },
     };
     int data_size = ARRAY_SIZE(data);
 
@@ -191,8 +191,8 @@ static void test_reader_init(int index, int generate, int debug) {
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (generate) {
-            printf("        /*%3d*/ { %s, %s, %d, \"%s\", %s, %d, %d, \"%s\", \"%s\" },\n",
-                    i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode), data[i].output_options,
+            printf("        /*%3d*/ { %s, %s, %s, \"%s\", %s, %d, %d, \"%s\", \"%s\" },\n",
+                    i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode), testUtilOutputOptionsName(data[i].output_options),
                     testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
                     testUtilErrorName(data[i].ret), symbol->rows, symbol->width, symbol->errtxt, data[i].comment);
         } else {
@@ -288,6 +288,76 @@ static void test_input(int index, int generate, int debug) {
         if (generate) {
             printf("        /*%3d*/ { %s, \"%s\", %d, %s, %d, \"%s\", \"%s\" },\n",
                     i, testUtilInputModeName(data[i].input_mode), testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), data[i].length,
+                    testUtilErrorName(data[i].ret), symbol->width, symbol->errtxt, data[i].comment);
+        } else {
+            if (ret < 5) {
+                assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
+                assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
+            }
+        }
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
+static void test_ean128_input(int index, int generate, int debug) {
+
+    testStart("");
+
+    int ret;
+    struct item {
+        unsigned char *data;
+        int ret;
+        int expected_width;
+        char *expected;
+        char *comment;
+    };
+    struct item data[] = {
+        /*  0*/ { "[90]1[90]1", 0, 123, "(11) 105 102 90 100 17 102 25 99 1 56 106", "StartC FNC1 90 CodeB 1 FNC1 9" },
+        /*  1*/ { "[90]1[90]12", 0, 123, "(11) 105 102 90 100 17 99 102 90 12 13 106", "StartC FNC1 90 CodeB 1 CodeC FNC1 90 12" },
+        /*  2*/ { "[90]1[90]123", 0, 134, "(12) 105 102 90 100 17 102 25 99 1 23 57 106", "StartC FNC1 90 CodeB 1 FNC1 9 CodeC 01 23" },
+        /*  3*/ { "[90]12[90]1", 0, 123, "(11) 105 102 90 12 102 100 25 99 1 19 106", "StartC FNC1 90 12 FNC1 CodeB 9 CodeC 01" },
+        /*  4*/ { "[90]12[90]12", 0, 101, "(9) 105 102 90 12 102 90 12 14 106", "StartC FNC1 90 12 FNC1 90 12" },
+        /*  5*/ { "[90]12[90]123", 0, 134, "(12) 105 102 90 12 102 100 25 99 1 23 20 106", "StartC FNC1 90 12 FNC1 CodeB 9 CodeC 01 23" },
+        /*  6*/ { "[90]123[90]1", 0, 134, "(12) 105 102 90 12 100 19 102 25 99 1 34 106", "StartC FNC1 90 12 CodeB 3 FNC1 9 CodeC 01" },
+        /*  7*/ { "[90]123[90]1234", 0, 145, "(13) 105 102 90 12 100 19 99 102 90 12 34 98 106", "StartC FNC1 90 12 CodeB 3 CodeC FNC1 90 12 34" },
+        /*  8*/ { "[90]1[90]1[90]1", 0, 178, "(16) 105 102 90 100 17 102 25 99 1 102 100 25 99 1 51 106", "StartC FNC1 90 CodeB 1 FNC1 9 CodeC 01 FNC1 CodeB 9 CodeC 01" },
+        /*  9*/ { "[90]1[90]12[90]1", 0, 178, "(16) 105 102 90 100 17 99 102 90 12 102 100 25 99 1 8 106", "StartC FNC1 90 CodeB 1 CodeC FNC1 90 12 FNC1 CodeB 9 CodeC 01" },
+        /* 10*/ { "[90]1[90]123[90]1", 0, 189, "(17) 105 102 90 100 17 102 25 99 1 23 102 100 25 99 1 70 106", "StartC FNC1 90 CodeB 1 FNC1 9 CodeC 01 23 FNC1 CodeB 9 CodeC 01" },
+        /* 11*/ { "[90]12[90]123[90]1", 0, 189, "(17) 105 102 90 12 102 100 25 99 1 23 102 100 25 99 1 33 106", "StartC FNC1 90 12 FNC1 CodeB 9 CodeC 01 23 FNC1 CodeB 9 CodeC 01" },
+        /* 12*/ { "[90]12[90]123[90]12", 0, 167, "(15) 105 102 90 12 102 100 25 99 1 23 102 90 12 11 106", "StartC FNC1 90 12 FNC1 CodeB 9 CodeC 01 23 FNC1 90 12" },
+        /* 13*/ { "[90]123[90]1[90]1", 0, 189, "(17) 105 102 90 12 100 19 102 25 99 1 102 100 25 99 1 47 106", "StartC FNC1 90 12 CodeB 3 FNC1 9 CodeC 01 FNC1 CodeB 9 CodeC 01" },
+        /* 14*/ { "[90]123[90]12[90]1", 0, 189, "(17) 105 102 90 12 100 19 99 102 90 12 102 100 25 99 1 80 106", "StartC FNC1 90 12 CodeB 3 CodeC FNC1 90 12 FNC1 CodeB 9 CodeC 01" },
+        /* 15*/ { "[90]123[90]123[90]12", 0, 178, "(16) 105 102 90 12 100 19 102 25 99 1 23 102 90 12 47 106", "StartC FNC1 90 12 CodeB 3 FNC1 9 CodeC 01 23 FNC1 90 12" },
+        /* 16*/ { "[90]123[90]1234[90]1", 0, 200, "(18) 105 102 90 12 100 19 99 102 90 12 34 102 100 25 99 1 26 106", "StartC FNC1 90 12 CodeB 3 CodeC FNC1 90 12 34 FNC1 CodeB 9 CodeC 01" },
+        /* 17*/ { "[90]123[90]1234[90]123", 0, 211, "(19) 105 102 90 12 100 19 99 102 90 12 34 102 100 25 99 1 23 85 106", "StartC FNC1 90 12 CodeB 3 CodeC FNC1 90 12 34 FNC1 CodeB 9 CodeC 01 23" },
+        /* 18*/ { "[90]12345[90]1234[90]1", 0, 211, "(19) 105 102 90 12 34 100 21 99 102 90 12 34 102 100 25 99 1 30 106", "StartC FNC1 90 12 34 CodeB 5 CodeC FNC1 90 12 34 FNC1 CodeB 9 CodeC 01" },
+        /* 19*/ { "[90]1A[90]1", 0, 134, "(12) 104 102 25 16 17 33 102 25 99 1 65 106", "StartB FNC1 9 0 1 A FNC1 9 CodeC 01" },
+        /* 20*/ { "[90]12A[90]123", 0, 145, "(13) 105 102 90 12 100 33 102 25 99 1 23 25 106", "StartC FNC1 90 12 CodeB A FNC1 9 CodeC 01 23" },
+        /* 21*/ { "[90]123[90]A234[90]123", 0, 244, "(22) 105 102 90 12 100 19 99 102 90 100 33 18 99 34 102 100 25 99 1 23 37 106", "StartC FNC1 90 12 CodeB 3 CodeC FNC1 90 CodeB A 2 CodeC 34 FNC1 CodeB 9 CodeC 01 23" }    };
+    int data_size = sizeof(data) / sizeof(struct item);
+
+    char escaped[1024];
+
+    for (int i = 0; i < data_size; i++) {
+
+        if (index != -1 && i != index) continue;
+
+        struct zint_symbol *symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        symbol->debug = ZINT_DEBUG_TEST; // Needed to get codeword dump in errtxt
+
+        int length = testUtilSetSymbol(symbol, BARCODE_EAN128, GS1_MODE, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
+
+        ret = ZBarcode_Encode(symbol, data[i].data, length);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+
+        if (generate) {
+            printf("        /*%3d*/ { \"%s\", %s, %d, \"%s\", \"%s\" },\n",
+                    i, testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
                     testUtilErrorName(data[i].ret), symbol->width, symbol->errtxt, data[i].comment);
         } else {
             if (ret < 5) {
@@ -444,6 +514,7 @@ int main(int argc, char *argv[]) {
         { "test_hrt", test_hrt, 1, 0, 1 },
         { "test_reader_init", test_reader_init, 1, 1, 1 },
         { "test_input", test_input, 1, 1, 1 },
+        { "test_ean128_input", test_ean128_input, 1, 1, 1 },
         { "test_encode", test_encode, 1, 1, 1 },
     };
 

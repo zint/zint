@@ -19,7 +19,7 @@
      <item row="0" column="0">
       <widget class="QLabel" name="labelWidth">
        <property name="text">
-        <string>S&amp;ymbol Width (Columns)</string>
+        <string>S&amp;ymbol Width (Columns):</string>
        </property>
        <property name="buddy">
         <cstring>cmbCbfWidth</cstring>
@@ -30,7 +30,7 @@
       <widget class="QComboBox" name="cmbCbfWidth">
        <item>
         <property name="text">
-         <string>Default</string>
+         <string>Automatic</string>
         </property>
        </item>
        <item>
@@ -333,7 +333,7 @@
      <item row="1" column="0">
       <widget class="QLabel" name="labelHeight">
        <property name="text">
-        <string>Symbo&amp;l Height (Rows)</string>
+        <string>Symbo&amp;l Height (Rows):</string>
        </property>
        <property name="buddy">
         <cstring>cmbCbfHeight</cstring>
@@ -344,7 +344,7 @@
       <widget class="QComboBox" name="cmbCbfHeight">
        <item>
         <property name="text">
-         <string>Default</string>
+         <string>Automatic</string>
         </property>
        </item>
        <item>
@@ -572,7 +572,7 @@
      <item row="2" column="0">
       <widget class="QLabel" name="labelRowSeparatorHeight">
        <property name="text">
-        <string>Row Separator Height</string>
+        <string>Row Separator Height:</string>
        </property>
        <property name="buddy">
         <cstring>cmbCbfRowSepHeight</cstring>
@@ -583,12 +583,7 @@
       <widget class="QComboBox" name="cmbCbfRowSepHeight">
        <item>
         <property name="text">
-         <string>Default (2 X)</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>1 X</string>
+         <string>Default (1 X)</string>
         </property>
        </item>
        <item>

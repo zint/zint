@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2018 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008 - 2020 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -40,7 +40,6 @@
  */
 
 #include <string.h>
-#include <stdlib.h>
 #include <stdio.h>
 #ifdef _MSC_VER
 #include <malloc.h>
@@ -145,7 +144,7 @@ INTERNAL int mailmark(struct zint_symbol *symbol, const unsigned char source[], 
     short int extender[27];
     char bar[80];
     int check_count;
-    int i, j;
+    int i, j, len;
     int length = (int) in_length;
     
     if (length > 26) {
@@ -243,7 +242,6 @@ INTERNAL int mailmark(struct zint_symbol *symbol, const unsigned char source[], 
      * 7 = International designation
      */
     
-    postcode_type = 0;
     if (strcmp(postcode, "XY11     ") == 0) {
         postcode_type = 7;
     } else {
@@ -573,7 +571,7 @@ INTERNAL int mailmark(struct zint_symbol *symbol, const unsigned char source[], 
     
     /* Translate 4-state data pattern to symbol */
     j = 0;
-    for (i = 0; i < strlen(bar); i++) {
+    for (i = 0, len = strlen(bar); i < len; i++) {
         if ((bar[i] == 'F') || (bar[i] == 'A')) {
             set_module(symbol, 0, j);
         }

@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2017 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009 - 2020 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -33,11 +33,10 @@
 
 #include <string.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include "common.h"
 #include "code49.h"
 
-#define INSET	"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%!&*"
+#define INSET   "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%!&*"
 
 /* "!" represents Shift 1 and "&" represents Shift 2, "*" represents FNC1 */
 
@@ -50,7 +49,7 @@ INTERNAL int code_49(struct zint_symbol *symbol, unsigned char source[], const i
     int pad_count = 0;
     char pattern[80];
     int gs1;
-    size_t h;
+    int h, len;
 
     if (length > 81) {
         strcpy(symbol->errtxt, "430: Input too long");
@@ -299,6 +298,21 @@ INTERNAL int code_49(struct zint_symbol *symbol, unsigned char source[], const i
     }
     c_grid[rows - 1][7] = j % 49;
 
+    if (symbol->debug & ZINT_DEBUG_PRINT) {
+        printf("Codewords:\n");
+        for (i = 0; i < rows; i++) {
+            for (j = 0; j < 8; j++) {
+                printf(" %2d", c_grid[i][j]);
+            }
+            printf("\n");
+        }
+    }
+#ifdef ZINT_TEST
+    if (symbol->debug & ZINT_DEBUG_TEST) {
+        debug_test_codeword_dump_int(symbol, (int *)c_grid, rows * 8);
+    }
+#endif
+
     /* Transfer data to symbol character array (w grid) */
     for (i = 0; i < rows; i++) {
         for (j = 0; j < 4; j++) {
@@ -327,7 +341,7 @@ INTERNAL int code_49(struct zint_symbol *symbol, unsigned char source[], const i
         /* Expand into symbol */
         symbol->row_height[i] = 10;
 
-        for (j = 0; j < strlen(pattern); j++) {
+        for (j = 0, len = strlen(pattern); j < len; j++) {
             if (pattern[j] == '1') {
                 set_module(symbol, i, j);
             }
@@ -336,11 +350,12 @@ INTERNAL int code_49(struct zint_symbol *symbol, unsigned char source[], const i
 
     symbol->rows = rows;
     symbol->width = strlen(pattern);
-    symbol->whitespace_width = 10;
-    if (!(symbol->output_options & BARCODE_BIND)) {
-        symbol->output_options += BARCODE_BIND;
+
+    symbol->output_options |= BARCODE_BIND;
+
+    if (symbol->border_width == 0) { /* Allow override if non-zero */
+        symbol->border_width = 1; /* ANSI/AIM BC6-2000 Section 2.1 (note change from previous default 2) */
     }
-    symbol->border_width = 2;
 
     return 0;
 }

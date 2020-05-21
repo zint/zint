@@ -37,19 +37,10 @@
 #ifdef _MSC_VER
 #include <malloc.h>
 #endif
+#include <assert.h>
 #include "common.h"
+#include "code128.h"
 #include "gs1.h"
-
-#define SHIFTA 90
-#define LATCHA 91
-#define SHIFTB 92
-#define LATCHB 93
-#define SHIFTC 94
-#define LATCHC 95
-#define AORB 96
-#define ABORC 97
-
-static int list[2][170];
 
 /* Code 128 tables checked against ISO/IEC 15417:2007 */
 
@@ -96,7 +87,7 @@ INTERNAL int parunmodd(const unsigned char llyth) {
 /**
  * bring together same type blocks
  */
-static void grwp(int *indexliste) {
+static void grwp(int list[2][C128_MAX], int *indexliste) {
 
     /* bring together same type blocks */
     if (*(indexliste) > 1) {
@@ -125,7 +116,7 @@ static void grwp(int *indexliste) {
 /**
  * Implements rules from ISO 15417 Annex E
  */
-static void dxsmooth(int *indexliste) {
+INTERNAL void dxsmooth(int list[2][C128_MAX], int *indexliste) {
     int i, last, next;
 
     for (i = 0; i < *(indexliste); i++) {
@@ -213,7 +204,7 @@ static void dxsmooth(int *indexliste) {
         } /* Rule 2 is implemented elsewhere, Rule 6 is implied */
     }
 
-    grwp(indexliste);
+    grwp(list, indexliste);
 }
 
 /**
@@ -272,12 +263,16 @@ static void c128_set_c(unsigned char source_a, unsigned char source_b, char dest
 
 /* Handle Code 128, 128B and HIBC 128 */
 INTERNAL int code_128(struct zint_symbol *symbol, const unsigned char source[], const size_t length) {
-    int i, j, k, values[170] = {0}, bar_characters, read, total_sum;
+    int i, j, k, values[C128_MAX] = {0}, bar_characters, read, total_sum;
     int error_number, indexchaine, indexliste, f_state;
     int sourcelen;
-    char set[170] = {0}, fset[170], mode, last_set, current_set = ' ';
+    int list[2][C128_MAX] = {{0}};
+    char set[C128_MAX] = {0}, fset[C128_MAX], mode, last_set, current_set = ' ';
     float glyph_count;
     char dest[1000];
+
+    /* Suppresses clang-analyzer-core.UndefinedBinaryOperatorResult warning on fset which is fully set */
+    assert(length > 0);
 
     error_number = 0;
     strcpy(dest, "");
@@ -287,7 +282,7 @@ INTERNAL int code_128(struct zint_symbol *symbol, const unsigned char source[], 
     bar_characters = 0;
     f_state = 0;
 
-    if (sourcelen > 160) {
+    if (sourcelen > C128_MAX) {
         /* This only blocks ridiculously long input - the actual length of the
            resulting barcode depends on the type of data, so this is trapped later */
         strcpy(symbol->errtxt, "340: Input too long");
@@ -298,7 +293,6 @@ INTERNAL int code_128(struct zint_symbol *symbol, const unsigned char source[], 
     for (i = 0; i < sourcelen; i++) {
         fset[i] = source[i] >= 128 ? 'f' : ' ';
     }
-    fset[i] = '\0';
 
     /* Decide when to latch to extended mode - Annex E note 3 */
     j = 0;
@@ -351,15 +345,14 @@ INTERNAL int code_128(struct zint_symbol *symbol, const unsigned char source[], 
         mode = AORB;
     }
 
-    for (i = 0; i < 170; i++) {
-        list[0][i] = 0;
-    }
-
     do {
         list[1][indexliste] = mode;
         while ((list[1][indexliste] == mode) && (indexchaine < sourcelen)) {
             list[0][indexliste]++;
             indexchaine++;
+            if (indexchaine == sourcelen) {
+                break;
+            }
             mode = parunmodd(source[indexchaine]);
             if ((symbol->symbology == BARCODE_CODE128B) && (mode == ABORC)) {
                 mode = AORB;
@@ -368,7 +361,7 @@ INTERNAL int code_128(struct zint_symbol *symbol, const unsigned char source[], 
         indexliste++;
     } while (indexchaine < sourcelen);
 
-    dxsmooth(&indexliste);
+    dxsmooth(list, &indexliste);
 
     /* Resolve odd length LATCHC blocks */
     if ((list[1][0] == LATCHC) && (list[0][0] & 1)) {
@@ -413,8 +406,9 @@ INTERNAL int code_128(struct zint_symbol *symbol, const unsigned char source[], 
     }
 
     if (symbol->debug & ZINT_DEBUG_PRINT) {
-        printf(" Set: %s (%d)\n", set, (int) strlen(set));
-        printf("FSet: %s (%d)\n", fset, (int) strlen(fset));
+        printf("Data: %.*s (%d)\n", sourcelen, source, sourcelen);
+        printf(" Set: %.*s\n", sourcelen, set);
+        printf("FSet: %.*s\n", sourcelen, fset);
     }
 
     /* Now we can calculate how long the barcode is going to be - and stop it from
@@ -668,9 +662,10 @@ INTERNAL int code_128(struct zint_symbol *symbol, const unsigned char source[], 
 
 /* Handle EAN-128 (Now known as GS1-128) */
 INTERNAL int ean_128(struct zint_symbol *symbol, unsigned char source[], const size_t length) {
-    int i, j, values[170], bar_characters, read, total_sum;
+    int i, j, values[C128_MAX] = {0}, bar_characters, read, total_sum;
     int error_number, indexchaine, indexliste;
-    char set[170], mode, last_set;
+    int list[2][C128_MAX] = {{0}};
+    char set[C128_MAX] = {0}, mode, last_set;
     float glyph_count;
     char dest[1000];
     int separator_row, linkage_flag, c_count;
@@ -680,16 +675,14 @@ INTERNAL int ean_128(struct zint_symbol *symbol, unsigned char source[], const s
 #else
     char* reduced = (char*) _alloca(length + 1);
 #endif
+
     strcpy(dest, "");
     linkage_flag = 0;
 
     bar_characters = 0;
     separator_row = 0;
 
-    memset(values, 0, sizeof (values));
-    memset(set, ' ', sizeof (set));
-
-    if (length > 160) {
+    if (length > C128_MAX) {
         /* This only blocks ridiculously long input - the actual length of the
         resulting barcode depends on the type of data, so this is trapped later */
         strcpy(symbol->errtxt, "342: Input too long");
@@ -718,15 +711,14 @@ INTERNAL int ean_128(struct zint_symbol *symbol, unsigned char source[], const s
         mode = ABORC;
     }
 
-    for (i = 0; i < 170; i++) {
-        list[0][i] = 0;
-    }
-
     do {
         list[1][indexliste] = mode;
         while ((list[1][indexliste] == mode) && (indexchaine < reduced_length)) {
             list[0][indexliste]++;
             indexchaine++;
+            if (indexchaine == reduced_length) {
+                break;
+            }
             mode = parunmodd(reduced[indexchaine]);
             if (reduced[indexchaine] == '[') {
                 mode = ABORC;
@@ -735,7 +727,7 @@ INTERNAL int ean_128(struct zint_symbol *symbol, unsigned char source[], const s
         indexliste++;
     } while (indexchaine < reduced_length);
 
-    dxsmooth(&indexliste);
+    dxsmooth(list, &indexliste);
 
     /* Put set data into set[] */
     read = 0;
@@ -961,6 +953,11 @@ INTERNAL int ean_128(struct zint_symbol *symbol, unsigned char source[], const s
         }
         printf("\n");
     }
+#ifdef ZINT_TEST
+    if (symbol->debug & ZINT_DEBUG_TEST) {
+        debug_test_codeword_dump_int(symbol, values, bar_characters);
+    }
+#endif
 
     expand(symbol, dest);
 

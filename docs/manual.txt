@@ -49,11 +49,11 @@ matrix: A matrix symbol is one based on a (usually square) grid of elements.
         Examples include Data Matrix, but Maxicode and DotCode are also
         considered matrix symbologies.
 
-x-dimension: The x-dimension of a symbol is size (usually the width) of the
+X-dimension: The X-dimension of a symbol is size (usually the width) of the
         smallest element. For a linear symbology this is the width of the
-        smallest bar. The default size of the x-dimension in a raster image
+        smallest bar. The default size of the X-dimension in a raster image
         is 2 pixels. Many symbologies have a fixed width-to-height ratio where
-        the height is expressed as a multiple of the x-dimension.
+        the height is expressed as a multiple of the X-dimension.
 
 composite: A composite symbology is one which is made up of elements which are
         both linear and stacked. Those currently supported are made up of a
@@ -211,6 +211,7 @@ Escape Character  |  ASCII Equivalent  |  Interpretation
 \e                |  0x1B              |  Escape
 \G                |  0x1D              |  Group Selector
 \R                |  0x1E              |  Record Selector
+\\                |  0x5C              |  Backslash
 \xNN              |  0xNN              |  Any other 8-bit character
                   |                    |     where NN is hexadecimal
 --------------------------------------------------------------------
@@ -411,8 +412,8 @@ with raster image (PNG, BMP, GIF and PCX) output.
 4.9 Adjusting image size
 ------------------------
 The scale of the image can be altered using the --scale= option followed by a
-multiple of the default x-dimension. The default x-dimension is 2 pixels. For
-example for PNG images a scale of 5 will increase the x-dimension to 10 pixels.
+multiple of the default X-dimension. The default X-dimension is 2 pixels. For
+example for PNG images a scale of 5 will increase the X-dimension to 10 pixels.
 
 4.10 Input modes
 ----------------
@@ -451,7 +452,7 @@ Rectangular Micro QR Code, Han Xin Code and Grid Matrix for binary and Latin
 data, maximizing density. This is achieved by using compression designed for
 Kanji characters, however some decoders take blocks which are encoded this
 way and interpret them as Kanji characters, typically by applying a
-transformation to UTF8 and thus causing data corruption. Symbols encoded
+transformation to UTF-8 and thus causing data corruption. Symbols encoded
 with this option should be checked against decoders before they are used.
 The popular open-source ZXing decoder is known to exhibit this behaviour.
 
@@ -517,8 +518,8 @@ ECI Code  |  Character Encoding Scheme
 
 Three examples:
 Ex1: The Euro sign can be encoded in ISO-8859-15.
-The Euro-Sign has the ISO8859-15 codepoint hex A4.
-It is encoded in utf-8 as the hex sequence: e2 82 ac
+The Euro-Sign has the ISO-8859-15 codepoint hex A4.
+It is encoded in UTF-8 as the hex sequence: e2 82 ac
 Those 3 bytes are contained in the file "utf8euro.txt"
 This command will generate the corresponding code:
 
@@ -626,7 +627,7 @@ Matrix codes can be rendered as a series of dots or circles rather than the
 normal squares by using the --dotty option. This option is only available for
 matrix symbologies, and is automatically selected for DotCode. The size of
 the dots can be adjusted using the --dotsize= option followed by the radius
-of the dot, where that radius is given as a multiple of the x-dimension.
+of the dot, where that radius is given as a multiple of the X-dimension.
 
 4.15 Help options
 -----------------
@@ -817,7 +818,7 @@ whitespace_width | integer      | Whtespace width.            | 0
 border_width     | integer      | Border width.               | 0
 output_options   | integer      | Set various output file     | (none)
                  |              |    parameters (see section  |
-                 |              |    5.8). [2]                |
+                 |              |    5.8).                    |
 fgcolour         | character    | Foreground (ink) colour as  | "000000"
                  |    string    |    RGB hexadecimal string.  |
                  |              |    Must be 6 characters     |
@@ -832,7 +833,8 @@ outfile          | character    | Contains the name of the    | "out.png"
                  |    string    |    file to output a result- |
                  |              |    ing barcode symbol to.   |
                  |              |    Must end in .png, .gif,  |
-                 |              |    .eps, .pcx, .svg or .txt |
+                 |              |    .bmp, .emf, .eps, .pcx,  |
+                 |              |    .svg, .tif or .txt       |
 option_1         | integer      | Symbol specific options.    | (automatic)
 option_2         | integer      | Symbol specific options.    | (automatic)
 option_3         | integer      | Symbol specific options.    | (automatic)
@@ -840,8 +842,8 @@ scale            | float        | Scale factor for adjusting  | 1.0
                  |              |    size of image.           |
 input_mode       | integer      | Set encoding of input data  | UNICODE_MODE
                  |              |    (see section 5.9)        |
-eci              | integer      | Extended Channel Interpre-  | 3
-                 |              |    tation mode.             |
+eci              | integer      | Extended Channel Interpre-  | 0 (none)
+                 |              |    tation code.             |
 primary          | character    | Primary message data for    | NULL
                  |    string    |    more complex symbols.    |
 text             | unsigned     | Human readable text, which  | NULL
@@ -1084,10 +1086,10 @@ Value   |
 5.8 Adjusting other output options
 ----------------------------------
 The output_options variable can be used to adjust various aspects of the output
-file. To select more than one option from the table below simply add them
+file. To select more than one option from the table below simply or them
 together when adjusting this value:
 
-my_symbol->output_options += BARCODE_BIND + READER_INIT;
+my_symbol->output_options |= BARCODE_BIND | READER_INIT;
 
 --------------------------------------------------------------------------------
 Value               |  Effect
@@ -1104,7 +1106,7 @@ BOLD_TEXT           |  Embolden the human readable text.
 CMYK_COLOUR         |  Select the CMYK colour space option for encapsulated
                     |      PostScript files.
 BARCODE_DOTTY_MODE  |  Plot a matrix symbol using dots rather than squares.
-GS1_GS_SEPARATOR    |  Use GS instead FNC1 as GS1 separator.
+GS1_GS_SEPARATOR    |  Use GS instead FNC1 as GS1 separator (Data Matrix).
 --------------------------------------------------------------------------------
 
 5.9 Setting the Input Mode
@@ -1546,11 +1548,11 @@ error = ZBarcode_Encode(my_symbol, "That");
 error = ZBarcode_Print(my_symbol);
 
 The stacked barcode rows can be separated by row separator bars by specifying
---bind (output_options |= BARCODE_BIND). The height of the row separator bars
-in x-dimension multiples (default 2, minimum 1, maximum 4) can be set by
+--bind (output_options |= BARCODE_BIND). The height of the row separator bars in
+multiples of the X-dimension (minimum and default 1, maximum 4) can be set by
 --separator= (option_3):
 
-zind --bind --separator=1 -d 'This' -d 'That'
+zind --bind --separator=2 -d 'This' -d 'That'
 
 A more sophisticated method is to use some type of line indexing which indicates
 to the barcode reader which order the symbols should be read. This is
@@ -1919,9 +1921,9 @@ Input  |  Symbol Size
 DMRE symbol sizes may be activated in automatic size mode using the option
 --dmre or by the API option_3 = DM_DMRE
 
-GS1 symbology may use FNC1 (preferred) or GS as separator.
+GS1 data may be encoded using FNC1 (preferred) or GS as separator.
 Use the option --gssep to change to GS or use the API
-output_options+=GS1_GS_SEPARATOR
+output_options |= GS1_GS_SEPARATOR
 
 6.6.2 QR Code (ISO 18004)
 -------------------------

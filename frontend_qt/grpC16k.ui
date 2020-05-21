@@ -17,23 +17,69 @@
    <item>
     <layout class="QGridLayout" name="gridLayout">
      <item row="0" column="0">
-      <widget class="QRadioButton" name="radC16kStand">
+      <widget class="QLabel" name="labelRowSeparatorHeight">
        <property name="text">
-        <string>S&amp;tandard Mode</string>
+        <string>Row Separator Height:</string>
        </property>
-       <property name="checked">
-        <bool>true</bool>
+       <property name="buddy">
+        <cstring>cmbC16kRowSepHeight</cstring>
        </property>
       </widget>
      </item>
-     <item row="1" column="0">
-      <widget class="QRadioButton" name="radC16kGS1">
-       <property name="text">
-        <string>&amp;GS-1 Data Mode</string>
-       </property>
+     <item row="0" column="1">
+      <widget class="QComboBox" name="cmbC16kRowSepHeight">
+       <item>
+        <property name="text">
+         <string>Default (1 X)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>2 X</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>3 X</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>4 X</string>
+        </property>
+       </item>
       </widget>
      </item>
     </layout>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBoxEncodingMode">
+     <property name="title">
+      <string>Encoding Mode</string>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <property name="sizeConstraint">
+       <enum>QLayout::SetMinimumSize</enum>
+      </property>
+      <item>
+       <widget class="QRadioButton" name="radC16kStand">
+        <property name="text">
+         <string>S&amp;tandard Mode</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="radC16kGS1">
+        <property name="text">
+         <string>&amp;GS-1 Data Mode</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
    </item>
    <item>
     <spacer name="verticalSpacer">

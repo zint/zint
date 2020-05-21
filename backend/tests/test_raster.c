@@ -36,6 +36,231 @@ static int is_row_column_black(struct zint_symbol *symbol, int row, int column) 
     return symbol->bitmap[i] == 0 && symbol->bitmap[i + 1] == 0 && symbol->bitmap[i + 2] == 0; // Black
 }
 
+static void test_options(int index, int debug) {
+
+    testStart("");
+
+    int ret;
+    struct item {
+        int symbology;
+        char *fgcolour;
+        char *bgcolour;
+        int rotate_angle;
+        unsigned char *data;
+        int ret;
+        int expected_rows;
+        int expected_width;
+        int expected_bitmap_width;
+        int expected_bitmap_height;
+    };
+    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    struct item data[] = {
+        /*  0*/ { BARCODE_CODE128, "123456", "7890AB", 0, "A", 0, 1, 46, 92, 118 },
+        /*  1*/ { BARCODE_CODE128, "123456", "7890ab", 90, "A", 0, 1, 46, 118, 92 },
+        /*  2*/ { BARCODE_CODE128, NULL, NULL, 180, "A", 0, 1, 46, 92, 118 },
+        /*  3*/ { BARCODE_CODE128, NULL, NULL, 270, "A", 0, 1, 46, 118, 92 },
+        /*  4*/ { BARCODE_CODE128, NULL, NULL, 181, "A", ZINT_ERROR_INVALID_OPTION, -1, -1, -1, -1 },
+        /*  5*/ { BARCODE_CODE128, "12345", NULL, 0, "A", ZINT_ERROR_INVALID_OPTION, -1, -1, -1, -1 },
+        /*  6*/ { BARCODE_CODE128, NULL, "1234567", 0, "A", ZINT_ERROR_INVALID_OPTION, -1, -1, -1, -1 },
+        /*  7*/ { BARCODE_CODE128, "12345 ", NULL, 0, "A", ZINT_ERROR_INVALID_OPTION, -1, -1, -1, -1 },
+        /*  8*/ { BARCODE_CODE128, NULL, "EEFFGG", 0, "A", ZINT_ERROR_INVALID_OPTION, -1, -1, -1, -1 },
+    };
+    int data_size = ARRAY_SIZE(data);
+
+    for (int i = 0; i < data_size; i++) {
+
+        if (index != -1 && i != index) continue;
+
+        struct zint_symbol *symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        int length = testUtilSetSymbol(symbol, BARCODE_CODE128, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
+
+        if (data[i].fgcolour) {
+            strcpy(symbol->fgcolour, data[i].fgcolour);
+        }
+        if (data[i].bgcolour) {
+            strcpy(symbol->bgcolour, data[i].bgcolour);
+        }
+
+        ret = ZBarcode_Encode_and_Buffer(symbol, data[i].data, length, data[i].rotate_angle);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+
+        if (ret < 5) {
+            assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);
+            assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
+            assert_equal(symbol->bitmap_width, data[i].expected_bitmap_width, "i:%d symbol->bitmap_width %d != %d\n", i, symbol->bitmap_width, data[i].expected_bitmap_width);
+            assert_equal(symbol->bitmap_height, data[i].expected_bitmap_height, "i:%d symbol->bitmap_height %d != %d\n", i, symbol->bitmap_height, data[i].expected_bitmap_height);
+        }
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
+static void test_buffer(int index, int generate, int debug) {
+
+    testStart("");
+
+    int ret;
+    struct item {
+        int symbology;
+        unsigned char *data;
+        char *composite;
+
+        int expected_height;
+        int expected_rows;
+        int expected_width;
+        int expected_bitmap_width;
+        int expected_bitmap_height;
+    };
+    struct item data[] = {
+        /*  0*/ { BARCODE_CODE11, "0000000000", "", 50, 1, 99, 198, 118 },
+        /*  1*/ { BARCODE_C25MATRIX, "0000000000", "", 50, 1, 117, 234, 118 },
+        /*  2*/ { BARCODE_C25INTER, "0000000000", "", 50, 1, 99, 198, 118 },
+        /*  3*/ { BARCODE_C25IATA, "0000000000", "", 50, 1, 149, 298, 118 },
+        /*  4*/ { BARCODE_C25LOGIC, "0000000000", "", 50, 1, 109, 218, 118 },
+        /*  5*/ { BARCODE_C25IND, "0000000000", "", 50, 1, 159, 318, 118 },
+        /*  6*/ { BARCODE_CODE39, "0000000000", "", 50, 1, 155, 310, 118 },
+        /*  7*/ { BARCODE_EXCODE39, "0000000000", "", 50, 1, 155, 310, 118 },
+        /*  8*/ { BARCODE_EANX, "123456789012", "", 50, 1, 95, 230, 118 },
+        /*  9*/ { BARCODE_EANX_CHK, "1234567890128", "", 50, 1, 95, 230, 118 },
+        /* 10*/ { BARCODE_EAN128, "[01]12345678901234", "", 50, 1, 134, 268, 118 },
+        /* 11*/ { BARCODE_CODABAR, "A00000000B", "", 50, 1, 102, 204, 118 },
+        /* 12*/ { BARCODE_CODE128, "0000000000", "", 50, 1, 90, 180, 118 },
+        /* 13*/ { BARCODE_DPLEIT, "1234567890123", "", 50, 1, 135, 270, 118 },
+        /* 14*/ { BARCODE_DPIDENT, "12345678901", "", 50, 1, 117, 234, 118 },
+        /* 15*/ { BARCODE_CODE16K, "0000000000", "", 20, 2, 70, 162, 44 },
+        /* 16*/ { BARCODE_CODE49, "0000000000", "", 20, 2, 70, 162, 44 },
+        /* 17*/ { BARCODE_CODE93, "0000000000", "", 50, 1, 127, 254, 118 },
+        /* 18*/ { BARCODE_FLAT, "1234567890", "", 50, 1, 90, 180, 100 },
+        /* 19*/ { BARCODE_RSS14, "1234567890123", "", 50, 1, 96, 192, 118 },
+        /* 20*/ { BARCODE_RSS_LTD, "1234567890123", "", 50, 1, 74, 148, 118 },
+        /* 21*/ { BARCODE_RSS_EXP, "[01]12345678901234", "", 34, 1, 134, 268, 86 },
+        /* 22*/ { BARCODE_TELEPEN, "0000000000", "", 50, 1, 208, 416, 118 },
+        /* 23*/ { BARCODE_UPCA, "12345678904", "", 50, 1, 95, 230, 118 },
+        /* 24*/ { BARCODE_UPCA_CHK, "12345678905", "", 50, 1, 95, 230, 118 },
+        /* 25*/ { BARCODE_UPCE, "1234567", "", 50, 1, 51, 142, 118 },
+        /* 26*/ { BARCODE_UPCE_CHK, "12345670", "", 50, 1, 51, 142, 118 },
+        /* 27*/ { BARCODE_POSTNET, "00000000000", "", 12, 2, 185, 370, 24 },
+        /* 28*/ { BARCODE_MSI_PLESSEY, "0000000000", "", 50, 1, 127, 254, 118 },
+        /* 29*/ { BARCODE_FIM, "A", "", 50, 1, 17, 34, 100 },
+        /* 30*/ { BARCODE_LOGMARS, "0000000000", "", 50, 1, 207, 414, 118 },
+        /* 31*/ { BARCODE_PHARMA, "123456", "", 50, 1, 58, 116, 100 },
+        /* 32*/ { BARCODE_PZN, "123456", "", 50, 1, 142, 284, 118 },
+        /* 33*/ { BARCODE_PHARMA_TWO, "12345678", "", 10, 2, 29, 58, 20 },
+        /* 34*/ { BARCODE_PDF417, "0000000000", "", 21, 7, 103, 206, 42 },
+        /* 35*/ { BARCODE_PDF417TRUNC, "0000000000", "", 21, 7, 68, 136, 42 },
+        /* 36*/ { BARCODE_MAXICODE, "0000000000", "", 165, 33, 30, 300, 300 },
+        /* 37*/ { BARCODE_QRCODE, "1234567890AB", "", 21, 21, 21, 42, 42 },
+        /* 38*/ { BARCODE_CODE128B, "0000000000", "", 50, 1, 145, 290, 118 },
+        /* 39*/ { BARCODE_AUSPOST, "12345678901234567890123", "", 8, 3, 133, 266, 16 },
+        /* 40*/ { BARCODE_AUSREPLY, "12345678", "", 8, 3, 73, 146, 16 },
+        /* 41*/ { BARCODE_AUSROUTE, "12345678", "", 8, 3, 73, 146, 16 },
+        /* 42*/ { BARCODE_AUSREDIRECT, "12345678", "", 8, 3, 73, 146, 16 },
+        /* 43*/ { BARCODE_ISBNX, "123456789", "", 50, 1, 95, 230, 118 },
+        /* 44*/ { BARCODE_RM4SCC, "0000000000", "", 8, 3, 91, 182, 16 },
+        /* 45*/ { BARCODE_DATAMATRIX, "ABC", "", 10, 10, 10, 20, 20 },
+        /* 46*/ { BARCODE_EAN14, "1234567890123", "", 50, 1, 134, 268, 118 },
+        /* 47*/ { BARCODE_VIN, "00000000000000000", "", 50, 1, 246, 492, 118 },
+        /* 48*/ { BARCODE_CODABLOCKF, "0000000000", "", 20, 2, 101, 242, 44 },
+        /* 49*/ { BARCODE_NVE18, "12345678901234567", "", 50, 1, 156, 312, 118 },
+        /* 50*/ { BARCODE_JAPANPOST, "0000000000", "", 8, 3, 133, 266, 16 },
+        /* 51*/ { BARCODE_KOREAPOST, "123456", "", 50, 1, 167, 334, 118 },
+        /* 52*/ { BARCODE_RSS14STACK, "0000000000000", "", 13, 3, 50, 100, 26 },
+        /* 53*/ { BARCODE_RSS14STACK_OMNI, "0000000000000", "", 69, 5, 50, 100, 138 },
+        /* 54*/ { BARCODE_RSS_EXPSTACK, "[01]12345678901234", "", 71, 5, 102, 204, 142 },
+        /* 55*/ { BARCODE_PLANET, "00000000000", "", 12, 2, 185, 370, 24 },
+        /* 56*/ { BARCODE_MICROPDF417, "0000000000", "", 12, 6, 82, 164, 24 },
+        /* 57*/ { BARCODE_ONECODE, "12345678901234567890", "", 8, 3, 129, 258, 16 },
+        /* 58*/ { BARCODE_PLESSEY, "0000000000", "", 50, 1, 227, 454, 118 },
+        /* 59*/ { BARCODE_TELEPEN_NUM, "0000000000", "", 50, 1, 128, 256, 118 },
+        /* 60*/ { BARCODE_ITF14, "0000000000", "", 50, 1, 135, 382, 150 },
+        /* 61*/ { BARCODE_KIX, "123456ABCDE", "", 8, 3, 87, 174, 16 },
+        /* 62*/ { BARCODE_AZTEC, "1234567890AB", "", 15, 15, 15, 30, 30 },
+        /* 63*/ { BARCODE_DAFT, "DAFTDAFTDAFTDAFT", "", 8, 3, 31, 62, 16 },
+        /* 64*/ { BARCODE_MICROQR, "12345", "", 11, 11, 11, 22, 22 },
+        /* 65*/ { BARCODE_HIBC_128, "0000000000", "", 50, 1, 134, 268, 118 },
+        /* 66*/ { BARCODE_HIBC_39, "0000000000", "", 50, 1, 223, 446, 118 },
+        /* 67*/ { BARCODE_HIBC_DM, "ABC", "", 12, 12, 12, 24, 24 },
+        /* 68*/ { BARCODE_HIBC_QR, "1234567890AB", "", 21, 21, 21, 42, 42 },
+        /* 69*/ { BARCODE_HIBC_PDF, "0000000000", "", 27, 9, 103, 206, 54 },
+        /* 70*/ { BARCODE_HIBC_MICPDF, "0000000000", "", 34, 17, 38, 76, 68 },
+        /* 71*/ { BARCODE_HIBC_BLOCKF, "0000000000", "", 30, 3, 101, 242, 64 },
+        /* 72*/ { BARCODE_HIBC_AZTEC, "1234567890AB", "", 19, 19, 19, 38, 38 },
+        /* 73*/ { BARCODE_DOTCODE, "ABC", "", 11, 11, 16, 33, 23 },
+        /* 74*/ { BARCODE_HANXIN, "1234567890AB", "", 23, 23, 23, 46, 46 },
+        /* 75*/ { BARCODE_MAILMARK, "01000000000000000AA00AA0A", "", 10, 3, 155, 310, 20 },
+        /* 76*/ { BARCODE_AZRUNE, "255", "", 11, 11, 11, 22, 22 },
+        /* 77*/ { BARCODE_CODE32, "12345678", "", 50, 1, 103, 206, 118 },
+        /* 78*/ { BARCODE_EANX_CC, "123456789012", "[20]01", 50, 7, 99, 238, 118 },
+        /* 79*/ { BARCODE_EAN128_CC, "[01]12345678901234", "[20]01", 50, 5, 145, 290, 118 },
+        /* 80*/ { BARCODE_RSS14_CC, "1234567890123", "[20]01", 21, 5, 100, 200, 60 },
+        /* 81*/ { BARCODE_RSS_LTD_CC, "1234567890123", "[20]01", 19, 6, 74, 148, 56 },
+        /* 82*/ { BARCODE_RSS_EXP_CC, "[01]12345678901234", "[20]01", 41, 5, 134, 268, 100 },
+        /* 83*/ { BARCODE_UPCA_CC, "12345678901", "[20]01", 50, 7, 99, 238, 118 },
+        /* 84*/ { BARCODE_UPCE_CC, "1234567", "[20]01", 50, 9, 55, 150, 118 },
+        /* 85*/ { BARCODE_RSS14STACK_CC, "0000000000000", "[20]01", 24, 9, 56, 112, 48 },
+        /* 86*/ { BARCODE_RSS14_OMNI_CC, "0000000000000", "[20]01", 80, 11, 56, 112, 160 },
+        /* 87*/ { BARCODE_RSS_EXPSTACK_CC, "[01]12345678901234", "[20]01", 78, 9, 102, 204, 156 },
+        /* 88*/ { BARCODE_CHANNEL, "00", "", 50, 1, 19, 38, 118 },
+        /* 89*/ { BARCODE_CODEONE, "12345678901234567890", "", 22, 22, 22, 44, 44 },
+        /* 90*/ { BARCODE_GRIDMATRIX, "ABC", "", 18, 18, 18, 36, 36 },
+        /* 91*/ { BARCODE_UPNQR, "1234567890AB", "", 77, 77, 77, 154, 154 },
+        /* 92*/ { BARCODE_ULTRA, "0000000000", "", 13, 13, 18, 36, 26 },
+        /* 93*/ { BARCODE_RMQR, "12345", "", 11, 11, 27, 54, 22 },
+    };
+    int data_size = ARRAY_SIZE(data);
+
+    char *text;
+
+    for (int i = 0; i < data_size; i++) {
+
+        if (index != -1 && i != index) continue;
+
+        struct zint_symbol *symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        symbol->symbology = data[i].symbology;
+        symbol->input_mode = UNICODE_MODE;
+        symbol->debug |= debug;
+
+        if (strlen(data[i].composite)) {
+            text = data[i].composite;
+            strcpy(symbol->primary, data[i].data);
+        } else {
+            text = data[i].data;
+        }
+        int length = strlen(text);
+
+        ret = ZBarcode_Encode(symbol, text, length);
+        assert_zero(ret, "i:%d ZBarcode_Encode(%d) ret %d != 0 %s\n", i, data[i].symbology, ret, symbol->errtxt);
+
+        ret = ZBarcode_Buffer(symbol, 0);
+        assert_zero(ret, "i:%d ZBarcode_Buffer(%d) ret %d != 0\n", i, data[i].symbology, ret);
+        assert_nonnull(symbol->bitmap, "i:%d ZBarcode_Buffer(%d) bitmap NULL\n", i, data[i].symbology);
+
+        if (generate) {
+            printf("        /*%3d*/ { %s, \"%s\", \"%s\", %d, %d, %d, %d, %d },\n",
+                    i, testUtilBarcodeName(data[i].symbology), data[i].data, data[i].composite,
+                    symbol->height, symbol->rows, symbol->width, symbol->bitmap_width, symbol->bitmap_height);
+        } else {
+            assert_equal(symbol->height, data[i].expected_height, "i:%d (%s) symbol->height %d != %d\n", i, testUtilBarcodeName(data[i].symbology), symbol->height, data[i].expected_height);
+            assert_equal(symbol->rows, data[i].expected_rows, "i:%d (%s) symbol->rows %d != %d\n", i, testUtilBarcodeName(data[i].symbology), symbol->rows, data[i].expected_rows);
+            assert_equal(symbol->width, data[i].expected_width, "i:%d (%s) symbol->width %d != %d\n", i, testUtilBarcodeName(data[i].symbology), symbol->width, data[i].expected_width);
+            assert_equal(symbol->bitmap_width, data[i].expected_bitmap_width, "i:%d (%s) symbol->bitmap_width %d != %d\n",
+                i, testUtilBarcodeName(data[i].symbology), symbol->bitmap_width, data[i].expected_bitmap_width);
+            assert_equal(symbol->bitmap_height, data[i].expected_bitmap_height, "i:%d (%s) symbol->bitmap_height %d != %d\n",
+                i, testUtilBarcodeName(data[i].symbology), symbol->bitmap_height, data[i].expected_bitmap_height);
+        }
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
 static void test_chk_extendable(int index, int debug) {
 
     testStart("");
@@ -116,6 +341,7 @@ static void test_row_separator(int index, int debug) {
     int ret;
     struct item {
         int symbology;
+        int option_1;
         int option_3;
         unsigned char *data;
         int ret;
@@ -131,13 +357,14 @@ static void test_row_separator(int index, int debug) {
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /*  0*/ { BARCODE_CODABLOCKF, -1, "A", 0, 20, 2, 101, 210, 48, 22, 28, 4 }, // Col 28 TODO: investigate extra 2 compared to vector 26
-        /*  1*/ { BARCODE_CODABLOCKF, 0, "A", 0, 20, 2, 101, 210, 48, 22, 28, 4 }, // Same as default
-        /*  2*/ { BARCODE_CODABLOCKF, 1, "A", 0, 20, 2, 101, 210, 48, 23, 28, 2 },
-        /*  3*/ { BARCODE_CODABLOCKF, 2, "A", 0, 20, 2, 101, 210, 48, 22, 28, 4 }, // Same as default
-        /*  4*/ { BARCODE_CODABLOCKF, 3, "A", 0, 20, 2, 101, 210, 48, 21, 28, 6 },
-        /*  5*/ { BARCODE_CODABLOCKF, 4, "A", 0, 20, 2, 101, 210, 48, 20, 28, 8 },
-        /*  6*/ { BARCODE_CODABLOCKF, 5, "A", 0, 20, 2, 101, 210, 48, 22, 28, 4 }, // > 4 ignored, same as default
+        /*  0*/ { BARCODE_CODABLOCKF, -1, -1, "A", 0, 20, 2, 101, 242, 44, 21, 42, 2 },
+        /*  1*/ { BARCODE_CODABLOCKF, -1, 0, "A", 0, 20, 2, 101, 242, 44, 21, 42, 2 }, // Same as default
+        /*  2*/ { BARCODE_CODABLOCKF, -1, 1, "A", 0, 20, 2, 101, 242, 44, 21, 42, 2 }, // Same as default
+        /*  3*/ { BARCODE_CODABLOCKF, -1, 2, "A", 0, 20, 2, 101, 242, 44, 20, 42, 4 },
+        /*  4*/ { BARCODE_CODABLOCKF, -1, 3, "A", 0, 20, 2, 101, 242, 44, 19, 42, 6 },
+        /*  5*/ { BARCODE_CODABLOCKF, -1, 4, "A", 0, 20, 2, 101, 242, 44, 18, 42, 8 },
+        /*  6*/ { BARCODE_CODABLOCKF, -1, 5, "A", 0, 20, 2, 101, 242, 44, 21, 42, 2 }, // > 4 ignored, same as default
+        /*  7*/ { BARCODE_CODABLOCKF, 1, -1, "A", 0, 5, 1, 46, 132, 14, 0, 20 + 2, 2 }, // CODE128 top separator, add 2 to skip over end of start char
     };
     int data_size = ARRAY_SIZE(data);
 
@@ -148,7 +375,7 @@ static void test_row_separator(int index, int debug) {
         struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        int length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, -1, data[i].option_3, -1 /*output_options*/, data[i].data, -1, debug);
+        int length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, data[i].option_1, -1, data[i].option_3, -1 /*output_options*/, data[i].data, -1, debug);
 
         ret = ZBarcode_Encode_and_Buffer(symbol, data[i].data, length, 0);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d\n", i, ret, data[i].ret);
@@ -162,18 +389,95 @@ static void test_row_separator(int index, int debug) {
 
         int j, separator_bits_set;
 
+        //testUtilBitmapPrint(symbol);
+
         for (j = data[i].expected_separator_row; j < data[i].expected_separator_row + data[i].expected_separator_height; j++) {
             separator_bits_set = is_row_column_black(symbol, j, data[i].expected_separator_col);
             assert_nonzero(separator_bits_set, "i:%d (%d) separator_bits_set (%d, %d) zero\n", i, data[i].symbology, j, data[i].expected_separator_col);
         }
 
-        j = data[i].expected_separator_row - 1;
-        separator_bits_set = is_row_column_black(symbol, j, data[i].expected_separator_col);
-        assert_zero(separator_bits_set, "i:%d (%d) separator_bits_set (%d, %d) before non-zero\n", i, data[i].symbology, j, data[i].expected_separator_col);
+        if (symbol->rows > 1) {
+            j = data[i].expected_separator_row - 1;
+            separator_bits_set = is_row_column_black(symbol, j, data[i].expected_separator_col + 2); // Need to add 2 to skip to 1st blank of start row character
+            assert_zero(separator_bits_set, "i:%d (%d) separator_bits_set (%d, %d) before non-zero\n", i, data[i].symbology, j, data[i].expected_separator_col);
+        }
 
         j = data[i].expected_separator_row + data[i].expected_separator_height;
-        separator_bits_set = is_row_column_black(symbol, j, data[i].expected_separator_col);
+        separator_bits_set = is_row_column_black(symbol, j, data[i].expected_separator_col + 2); // Need to add 2 to skip to 1st blank of start row character
         assert_zero(separator_bits_set, "i:%d (%d) separator_bits_set (%d, %d) after non-zero\n", i, data[i].symbology, j, data[i].expected_separator_col);
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
+static void test_draw_string_wrap(int index, int debug) {
+
+    testStart("");
+
+    int ret;
+    struct item {
+        int symbology;
+        int output_options;
+        unsigned char *data;
+        unsigned char* text;
+
+        int expected_height;
+        int expected_rows;
+        int expected_width;
+        int expected_bitmap_width;
+        int expected_bitmap_height;
+        int expected_no_text_row;
+        int expected_no_text_col;
+    };
+    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    struct item data[] = {
+        /*  0*/ { BARCODE_CODE128, -1, "12", "              E", 50, 1, 46, 92, 118, 104, 0 },
+        /*  1*/ { BARCODE_CODE128, BOLD_TEXT, "12", "           E", 50, 1, 46, 92, 118, 104, 0 },
+        /*  2*/ { BARCODE_CODE128, SMALL_TEXT, "12", "                   E", 50, 1, 46, 92, 118, 103, 0 },
+    };
+    int data_size = sizeof(data) / sizeof(struct item);
+
+    for (int i = 0; i < data_size; i++) {
+
+        if (index != -1 && i != index) continue;
+
+        struct zint_symbol *symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        int length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, -1, -1, data[i].output_options, data[i].data, -1, debug);
+
+        ret = ZBarcode_Encode(symbol, data[i].data, length);
+        assert_zero(ret, "i:%d ZBarcode_Encode(%d) ret %d != 0 %s\n", i, data[i].symbology, ret, symbol->errtxt);
+
+        // Cheat by overwriting text
+        strcpy(symbol->text, data[i].text);
+
+        ret = ZBarcode_Buffer(symbol, 0);
+        assert_zero(ret, "i:%d ZBarcode_Buffer(%d) ret %d != 0\n", i, data[i].symbology, ret);
+        assert_nonnull(symbol->bitmap, "i:%d (%d) symbol->bitmap NULL\n", i, data[i].symbology);
+
+        assert_equal(symbol->height, data[i].expected_height, "i:%d (%d) symbol->height %d != %d\n", i, data[i].symbology, symbol->height, data[i].expected_height);
+        assert_equal(symbol->rows, data[i].expected_rows, "i:%d (%d) symbol->rows %d != %d\n", i, data[i].symbology, symbol->rows, data[i].expected_rows);
+        assert_equal(symbol->width, data[i].expected_width, "i:%d (%d) symbol->width %d != %d\n", i, data[i].symbology, symbol->width, data[i].expected_width);
+        assert_equal(symbol->bitmap_width, data[i].expected_bitmap_width, "i:%d (%d) symbol->bitmap_width %d != %d\n", i, data[i].symbology, symbol->bitmap_width, data[i].expected_bitmap_width);
+        assert_equal(symbol->bitmap_height, data[i].expected_bitmap_height, "i:%d (%d) symbol->bitmap_height %d != %d\n", i, data[i].symbology, symbol->bitmap_height, data[i].expected_bitmap_height);
+
+        //testUtilBitmapPrint(symbol);
+
+        ret = ZBarcode_Print(symbol, 0);
+        assert_zero(ret, "i:%d ZBarcode_Print(%d) ret %d != 0\n", i, data[i].symbology, ret);
+
+        int text_bits_set = 0;
+        int row = data[i].expected_no_text_row;
+        for (int column = data[i].expected_no_text_col; column < data[i].expected_no_text_col + 16; column++) {
+            if (is_row_column_black(symbol, row, column)) {
+                text_bits_set = 1;
+                break;
+            }
+        }
+        assert_zero(text_bits_set, "i:%d (%d) text_bits_set non-zero\n", i, data[i].symbology);
 
         ZBarcode_Delete(symbol);
     }
@@ -184,8 +488,11 @@ static void test_row_separator(int index, int debug) {
 int main(int argc, char *argv[]) {
 
     testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
+        { "test_options", test_options, 1, 0, 1 },
+        { "test_buffer", test_buffer, 1, 1, 1 },
         { "test_chk_extendable", test_chk_extendable, 1, 0, 1 },
         { "test_row_separator", test_row_separator, 1, 0, 1 },
+        { "test_draw_string_wrap", test_draw_string_wrap, 1, 0, 1 },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

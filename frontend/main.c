@@ -37,7 +37,7 @@
 #endif
 
 /* Print list of supported symbologies */
-void types(void) {
+static void types(void) {
     printf( " 1: Code 11           52: PZN                      97: Micro QR Code\n"
             " 2: Standard 2of5     53: Pharma Two-Track         98: HIBC Code 128\n"
             " 3: Interleaved 2of5  55: PDF417                   99: HIBC Code 39\n"
@@ -74,16 +74,16 @@ void types(void) {
 }
 
 /* Output usage information */
-void usage(void) {
+static void usage(void) {
     printf( "Zint version %d.%d.%d\n"
-            "Encode input data in a barcode and save as BMP/EMF/EPS/GIF/PCX/PNG/SVG/TIF\n\n"
+            "Encode input data in a barcode and save as BMP/EMF/EPS/GIF/PCX/PNG/SVG/TIF/TXT\n\n"
             "  -b, --barcode=NUMBER  Number of barcode type (default is 20 (=Code128)).\n"
             "  --batch               Treat each line of input file as a separate data set\n"
             "  --bg=COLOUR           Specify a background colour (in hex)\n"
             "  --binary              Treat input as raw binary data\n"
             "  --bind                Add boundary bars\n"
             "  --bold                Use bold text\n"
-            "  --border=NUMBER       Set width of border in multiples of x-dimension\n"
+            "  --border=NUMBER       Set width of border in multiples of X-dimension\n"
             "  --box                 Add a box around the symbol\n"
             "  --cmyk                Use CMYK colour space in EPS symbols\n"
             "  --cols=NUMBER         Set the number of data columns in symbol\n"
@@ -94,15 +94,15 @@ void usage(void) {
             "  --dotty               Use dots instead of squares for matrix symbols\n"
             "  --dump                Dump hexadecimal representation to stdout\n"
             "  -e, --ecinos          Display table of ECI character encodings\n"
-            "  --eci=NUMBER          Set the ECI mode for raw data\n"
+            "  --eci=NUMBER          Set the ECI (Extended Channel Interpretation) code\n"
             "  --esc                 Process escape characters in input data\n"
             "  --fg=COLOUR           Specify a foreground colour (in hex)\n"
-            "  --filetype=TYPE       Set output file type (PNG/EPS/SVG/PNG/EPS/GIF/TXT)\n"
+            "  --filetype=TYPE       Set output file type BMP/EMF/EPS/GIF/PCX/PNG/SVG/TIF/TXT\n"
             "  --fullmultibyte       Use multibyte for binary/Latin (QR/Han Xin/Grid Matrix)\n"
             "  --gs1                 Treat input as GS1 compatible data\n"
-            "  --gssep               Use separator GS for GS1\n"
+            "  --gssep               Use separator GS for GS1 (Data Matrix)\n"
             "  -h, --help            Display help message\n"
-            "  --height=NUMBER       Set height of symbol in multiples of x-dimension\n"
+            "  --height=NUMBER       Set height of symbol in multiples of X-dimension\n"
             "  -i, --input=FILE      Read input data from FILE\n"
             "  --init                Create reader initialisation/programming symbol\n"
             "  --mirror              Use batch data to determine filename\n"
@@ -110,22 +110,22 @@ void usage(void) {
             "  --notext              Remove human readable text\n"
             "  -o, --output=FILE     Send output to FILE. (default is out.png)\n"
             "  --primary=STRING      Set structured primary message (Maxicode/Composite)\n"
-            "  --scale=NUMBER        Adjust size of x-dimension\n"
+            "  --scale=NUMBER        Adjust size of X-dimension\n"
             "  --secure=NUMBER       Set error correction level\n"
             "  --separator=NUMBER    Set height of row separator bars (stacked symbologies)\n"
-            "  --small               Use half-size text in PNG images\n"
+            "  --small               Use small text\n"
             "  --square              Force Data Matrix symbols to be square\n"
             "  -r, --reverse         Reverse colours (white on black)\n"
-            "  --rotate=NUMBER       Rotate symbol by NUMBER degrees (PNG/BMP/PCX)\n"
+            "  --rotate=NUMBER       Rotate symbol by NUMBER degrees (BMP/GIF/PCX/PNG/TIF)\n"
             "  --rows=NUMBER         Set number of rows (Codablock-F)\n"
             "  -t, --types           Display table of barcode types\n"
             "  --vers=NUMBER         Set symbol version (QR Code/Han Xin)\n"
-            "  -w, --whitesp=NUMBER  Set Width of whitespace in multiples of x-dimension\n"
+            "  -w, --whitesp=NUMBER  Set width of whitespace in multiples of X-dimension\n"
             , ZINT_VERSION_MAJOR, ZINT_VERSION_MINOR, ZINT_VERSION_RELEASE);
 }
 
 /* Display supported ECI codes */
-void show_eci(void) {
+static void show_eci(void) {
     printf( " 3: ISO-8859-1 - Latin alphabet No. 1 (default)\n"
             " 4: ISO-8859-2 - Latin alphabet No. 2\n"
             " 5: ISO-8859-3 - Latin alphabet No. 3\n"
@@ -157,7 +157,7 @@ void show_eci(void) {
 }
 
 /* Verifies that a string only uses valid characters */
-int validator(char test_string[], char source[]) {
+static int validator(char test_string[], char source[]) {
     unsigned int i, j;
 
     for (i = 0; i < strlen(source); i++) {
@@ -195,7 +195,7 @@ static void concat(char dest[], char source[]) {
     }
 }
 
-int batch_process(struct zint_symbol *symbol, char *filename, int mirror_mode, char *filetype, int rotate_angle) {
+static int batch_process(struct zint_symbol *symbol, char *filename, int mirror_mode, char *filetype, int rotate_angle) {
     FILE *file;
     unsigned char buffer[7100];
     unsigned char character = 0;
@@ -381,7 +381,7 @@ int batch_process(struct zint_symbol *symbol, char *filename, int mirror_mode, c
     return error_number;
 }
 
-int is_fullmultibyte(struct zint_symbol* symbol) {
+static int is_fullmultibyte(struct zint_symbol* symbol) {
     switch (symbol->symbology) {
         case BARCODE_QRCODE:
         case BARCODE_MICROQR:
@@ -578,6 +578,11 @@ int main(int argc, char **argv) {
                     }
                 }
                 if (!strcmp(long_options[option_index].name, "separator")) {
+                    error_number = validator(NESET, optarg);
+                    if (error_number == ZINT_ERROR_INVALID_DATA) {
+                        fprintf(stderr, "Error 128: Invalid separator value\n");
+                        exit(1);
+                    }
                     separator = atoi(optarg);
                     if (separator < 0 || separator > 4) {
                         /* Negative and greater than 4 values are not permitted */

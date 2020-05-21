@@ -159,6 +159,7 @@ static void test_escape_char_process(int index, int generate, int debug) {
 
     int ret;
     struct item {
+        int input_mode;
         unsigned char *data;
         int ret;
         int expected_width;
@@ -166,12 +167,13 @@ static void test_escape_char_process(int index, int generate, int debug) {
         char *comment;
     };
     struct item data[] = {
-        /*  0*/ { "\\0\\E\\a\\b\\t\\n\\v\\f\\r\\e\\G\\R\\x81\\\\", 0, 200, "(18) 103 64 68 71 72 73 74 75 76 77 91 93 94 101 65 60 44 106", "" },
-        /*  1*/ { "\\c", ZINT_ERROR_INVALID_DATA, 0, "Error 234: Unrecognised escape character in input data", "" },
-        /*  2*/ { "\\", ZINT_ERROR_INVALID_DATA, 0, "Error 236: Incomplete escape character in input data", "" },
-        /*  3*/ { "\\x", ZINT_ERROR_INVALID_DATA, 0, "Error 232: Incomplete escape character in input data", "" },
-        /*  4*/ { "\\x1", ZINT_ERROR_INVALID_DATA, 0, "Error 232: Incomplete escape character in input data", "" },
-        /*  5*/ { "\\x1g", ZINT_ERROR_INVALID_DATA, 0, "Error 233: Corrupt escape character in input data", "" },
+        /*  0*/ { DATA_MODE, "\\0\\E\\a\\b\\t\\n\\v\\f\\r\\e\\G\\R\\x81\\\\", 0, 200, "(18) 103 64 68 71 72 73 74 75 76 77 91 93 94 101 65 60 44 106", "" },
+        /*  1*/ { DATA_MODE, "\\c", ZINT_ERROR_INVALID_DATA, 0, "Error 234: Unrecognised escape character in input data", "" },
+        /*  2*/ { DATA_MODE, "\\", ZINT_ERROR_INVALID_DATA, 0, "Error 236: Incomplete escape character in input data", "" },
+        /*  3*/ { DATA_MODE, "\\x", ZINT_ERROR_INVALID_DATA, 0, "Error 232: Incomplete escape character in input data", "" },
+        /*  4*/ { DATA_MODE, "\\x1", ZINT_ERROR_INVALID_DATA, 0, "Error 232: Incomplete escape character in input data", "" },
+        /*  5*/ { DATA_MODE, "\\x1g", ZINT_ERROR_INVALID_DATA, 0, "Error 233: Corrupt escape character in input data", "" },
+        /*  6*/ { UNICODE_MODE, "\\xA01\\xFF", 0, 90, "(8) 104 100 0 17 100 95 100 106", "" },
     };
     int data_size = ARRAY_SIZE(data);
 
@@ -186,14 +188,15 @@ static void test_escape_char_process(int index, int generate, int debug) {
 
         symbol->debug = ZINT_DEBUG_TEST; // Needed to get codeword dump in errtxt
 
-        int length = testUtilSetSymbol(symbol, BARCODE_CODE128, DATA_MODE | ESCAPE_MODE, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        int length = testUtilSetSymbol(symbol, BARCODE_CODE128, data[i].input_mode | ESCAPE_MODE, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (generate) {
-            printf("        /*%3d*/ { \"%s\", %s, %d, \"%s\", \"%s\" },\n",
-                    i, testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), testUtilErrorName(data[i].ret), symbol->width, symbol->errtxt, data[i].comment);
+            printf("        /*%3d*/ { %s, \"%s\", %s, %d, \"%s\", \"%s\" },\n",
+                    i, testUtilInputModeName(data[i].input_mode), testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
+                    testUtilErrorName(data[i].ret), symbol->width, symbol->errtxt, data[i].comment);
         } else {
             if (ret < 5) {
                 assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);

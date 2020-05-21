@@ -516,6 +516,7 @@ void MainWindow::change_options()
         m_optionWidget=uiload.load(&file);
         file.close();
         tabMain->insertTab(1,m_optionWidget,tr("Code 16K"));
+        connect(m_optionWidget->findChild<QObject*>("cmbC16kRowSepHeight"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radC16kStand"), SIGNAL(toggled( bool )), SLOT(update_preview()));
     }
 
@@ -674,6 +675,7 @@ void MainWindow::change_options()
         m_optionWidget=uiload.load(&file);
         file.close();
         tabMain->insertTab(1,m_optionWidget,tr("Code 49"));
+        connect(m_optionWidget->findChild<QObject*>("cmbC49RowSepHeight"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radC49GS1"), SIGNAL(toggled( bool )), SLOT(update_preview()));
     }
 
@@ -946,6 +948,11 @@ void MainWindow::update_preview()
                 m_bc.bc.setInputMode(UNICODE_MODE);
             else
                 m_bc.bc.setInputMode(GS1_MODE);
+            // Row separator height selection uses option 3 in zint_symbol
+            item_val = m_optionWidget->findChild<QComboBox*>("cmbC16kRowSepHeight")->currentIndex();
+            if (item_val) {
+                m_bc.bc.setOption3(item_val + 1); // Zero-based
+            }
             break;
 
         case BARCODE_CODABLOCKF:
@@ -966,7 +973,7 @@ void MainWindow::update_preview()
             // Row separator height selection uses option 3 in zint_symbol
             item_val = m_optionWidget->findChild<QComboBox*>("cmbCbfRowSepHeight")->currentIndex();
             if (item_val) {
-                m_bc.bc.setOption3(item_val);
+                m_bc.bc.setOption3(item_val + 1); // Zero-based
             }
             break;
 
@@ -1078,6 +1085,11 @@ void MainWindow::update_preview()
             m_bc.bc.setSymbol(BARCODE_CODE49);
             if(m_optionWidget->findChild<QRadioButton*>("radC49GS1")->isChecked())
                 m_bc.bc.setInputMode(GS1_MODE);
+            // Row separator height selection uses option 3 in zint_symbol
+            item_val = m_optionWidget->findChild<QComboBox*>("cmbC49RowSepHeight")->currentIndex();
+            if (item_val) {
+                m_bc.bc.setOption3(item_val + 1); // Zero-based
+            }
             break;
 
         case BARCODE_HANXIN:
