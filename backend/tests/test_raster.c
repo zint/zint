@@ -485,6 +485,74 @@ static void test_draw_string_wrap(int index, int debug) {
     testFinish();
 }
 
+static void test_border_whitespace(int index, int debug) {
+
+    testStart("");
+
+    int ret;
+    struct item {
+        int symbology;
+        int whitespace_width;
+        int border_width;
+        int output_options;
+        unsigned char *data;
+        int ret;
+
+        int expected_height;
+        int expected_rows;
+        int expected_width;
+        int expected_bitmap_width;
+        int expected_bitmap_height;
+    };
+    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    struct item data[] = {
+        /*  0*/ { BARCODE_CODE128, -1, -1, -1, "A123", 0, 50, 1, 79, 158, 118 },
+        /*  1*/ { BARCODE_CODE128, -1, 2, -1, "A123", 0, 50, 1, 79, 158, 118 },
+        /*  2*/ { BARCODE_CODE128, -1, 2, BARCODE_BIND, "A123", 0, 50, 1, 79, 158, 118 },
+        /*  3*/ { BARCODE_CODE128, -1, 2, BARCODE_BOX, "A123", 0, 50, 1, 79, 158, 118 },
+        /*  4*/ { BARCODE_CODE128, 3, -1, -1, "A123", 0, 50, 1, 79, 170, 118 },
+        /*  5*/ { BARCODE_CODE128, 3, 4, -1, "A123", 0, 50, 1, 79, 170, 118 },
+        /*  6*/ { BARCODE_CODE128, 3, 4, BARCODE_BIND, "A123", 0, 50, 1, 79, 170, 118 },
+        /*  7*/ { BARCODE_CODE128, 3, 4, BARCODE_BOX, "A123", 0, 50, 1, 79, 170, 118 },
+    };
+    int data_size = ARRAY_SIZE(data);
+
+    struct zint_vector_rect *rect;
+
+    for (int i = 0; i < data_size; i++) {
+
+        if (index != -1 && i != index) continue;
+
+        struct zint_symbol *symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        int length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        if (data[i].whitespace_width != -1) {
+            symbol->whitespace_width = data[i].whitespace_width;
+        }
+        if (data[i].border_width != -1) {
+            symbol->border_width = data[i].border_width;
+        }
+
+        ret = ZBarcode_Encode(symbol, data[i].data, length);
+        assert_zero(ret, "i:%d ZBarcode_Encode(%d) ret %d != 0 %s\n", i, data[i].symbology, ret, symbol->errtxt);
+
+        ret = ZBarcode_Buffer(symbol, 0);
+        assert_zero(ret, "i:%d ZBarcode_Buffer(%d) ret %d != 0\n", i, data[i].symbology, ret);
+        assert_nonnull(symbol->bitmap, "i:%d (%d) symbol->bitmap NULL\n", i, data[i].symbology);
+
+        assert_equal(symbol->height, data[i].expected_height, "i:%d (%d) symbol->height %d != %d\n", i, data[i].symbology, symbol->height, data[i].expected_height);
+        assert_equal(symbol->rows, data[i].expected_rows, "i:%d (%d) symbol->rows %d != %d\n", i, data[i].symbology, symbol->rows, data[i].expected_rows);
+        assert_equal(symbol->width, data[i].expected_width, "i:%d (%d) symbol->width %d != %d\n", i, data[i].symbology, symbol->width, data[i].expected_width);
+        assert_equal(symbol->bitmap_width, data[i].expected_bitmap_width, "i:%d (%d) symbol->bitmap_width %d != %d\n", i, data[i].symbology, symbol->bitmap_width, data[i].expected_bitmap_width);
+        assert_equal(symbol->bitmap_height, data[i].expected_bitmap_height, "i:%d (%d) symbol->bitmap_height %d != %d\n", i, data[i].symbology, symbol->bitmap_height, data[i].expected_bitmap_height);
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
 int main(int argc, char *argv[]) {
 
     testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
@@ -493,6 +561,7 @@ int main(int argc, char *argv[]) {
         { "test_chk_extendable", test_chk_extendable, 1, 0, 1 },
         { "test_row_separator", test_row_separator, 1, 0, 1 },
         { "test_draw_string_wrap", test_draw_string_wrap, 1, 0, 1 },
+        { "test_border_whitespace", test_border_whitespace, 1, 0, 1 },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

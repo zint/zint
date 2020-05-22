@@ -423,7 +423,7 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
     if ((symbol->output_options & BARCODE_BOX) || (symbol->output_options & BARCODE_BIND)) {
         default_text_posn = symbol->height + text_offset + symbol->border_width + symbol->border_width;
     } else {
-        default_text_posn = symbol->height + text_offset + symbol->border_width;
+        default_text_posn = symbol->height + text_offset;
     }
 
     // Plot rectangles - most symbols created here

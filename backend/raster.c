@@ -814,11 +814,7 @@ static int plot_raster_default(struct zint_symbol *symbol, int rotate_angle, int
     }
     memset(pixelbuf, DEFAULT_PAPER, image_width * image_height);
 
-    if ((symbol->output_options & BARCODE_BOX) || (symbol->output_options & BARCODE_BIND)) {
-        default_text_posn = image_height - 17;
-    } else {
-        default_text_posn = image_height - 17 - symbol->border_width - symbol->border_width;
-    }
+    default_text_posn = image_height - 17;
 
     row_posn = textoffset + yoffset;
     next_yposn = textoffset + yoffset;
