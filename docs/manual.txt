@@ -61,7 +61,7 @@ composite: A composite symbology is one which is made up of elements which are
         based on the PDF417 symbology. These symbols also have a separator
         which separates the linear and the stacked components.
 
-GS-1 data: This is a structured way of representing information which consists
+GS1 data: This is a structured way of representing information which consists
         of "chunks" of data, each of which starts with an Application
         Identifier. The AI identifies what type of information is being
         encoded.
@@ -269,7 +269,7 @@ Numeric Value  |  Barcode Name
 28             |  Flattermarken
 29             |  GS1 DataBar-14
 30             |  GS1 DataBar Limited
-31             |  GS1 DataBar Extended
+31             |  GS1 DataBar Expanded
 32             |  Telepen Alpha
 34             |  UPC A
 35             |  UPC A + Check Digit
@@ -329,7 +329,7 @@ Numeric Value  |  Barcode Name
 131            |  Composite Symbol with GS1-128 linear component
 132            |  Composite Symbol with GS1 DataBar-14 linear component
 133            |  Composite Symbol with GS1 DataBar Limited component
-134            |  Composite Symbol with GS1 DataBar Extended component
+134            |  Composite Symbol with GS1 DataBar Expanded component
 135            |  Composite Symbol with UPC A linear component
 136            |  Composite Symbol with UPC E linear component
 137            |  Composite Symbol with GS1 DataBar-14 Stacked component
@@ -1001,7 +1001,7 @@ Value   |
 28      | BARCODE_FLAT            | Flattermarken
 29      | BARCODE_RSS14           | GS1 DataBar-14
 30      | BARCODE_RSS_LTD         | GS1 DataBar Limited
-31      | BARCODE_RSS_EXP         | GS1 DataBar Extended
+31      | BARCODE_RSS_EXP         | GS1 DataBar Expanded
 32      | BARCODE_TELEPEN         | Telepen Alpha
 34      | BARCODE_UPCA            | UPC A
 35      | BARCODE_UPCA_CHK        | UPC A + Check Digit
@@ -1027,7 +1027,7 @@ Value   |
 70      | BARCODE_RM4SCC          | Royal Mail 4 State (RM4SCC)
 71      | BARCODE_DATAMATRIX      | Data Matrix (ECC200)
 72      | BARCODE_EAN14           | EAN-14
-73      | BARCODE_VIN             | Vehicle Identification Number (America)
+73      | BARCODE_VIN             | Vehicle Identification Number
 74      | BARCODE_CODABLOCKF      | Codablock-F
 75      | BARCODE_NVE18           | NVE-18
 76      | BARCODE_JAPANPOST       | Japanese Postal Code
@@ -1065,7 +1065,7 @@ Value   |
         |                         |    component
 133     | BARCODE_RSS_LTD_CC      | Composite Symbol with GS1 DataBar Limited
         |                         |    component
-134     | BARCODE_RSS_EXP_CC      | Composite Symbol with GS1 DataBar Extended
+134     | BARCODE_RSS_EXP_CC      | Composite Symbol with GS1 DataBar Expanded
         |                         |    component
 135     | BARCODE_UPCA_CC         | Composite Symbol with UPC A linear component
 136     | BARCODE_UPCE_CC         | Composite Symbol with UPC E linear component
@@ -1168,8 +1168,9 @@ They consist of a number of bars and a number of spaces of differing widths.
 -------------
 Developed by Intermec in 1977, Code 11 is similar to Code 2 of 5 Matrix and is
 primarily used in telecommunications. The symbol can encode any length string
-consisting of the digits 0-9 and the dash character (-). One modulo-11 check
-digit is calculated.
+consisting of the digits 0-9 and the dash character (-). Two modulo-11 check
+digits are added by default. To add just one check digit, set option_2 = 1 or
+--vers=1. To add no check digits, set option_2 = 2 or --vers=2.
 
 6.1.2 Code 2 of 5
 -----------------
@@ -1314,7 +1315,7 @@ Ltd. in the UK. The symbol can encode any length data consisting of digits
 -----------------
 Based on Plessey and developed by MSE Data Corporation, MSI Plessey is
 available with a range of check digit options available by setting option_2 or
-by using the --ver= switch. Any length numeric (digits 0-9) input can be
+by using the --vers= switch. Any length numeric (digits 0-9) input can be
 encoded. The table below shows the options available:
 
 -------------------------------------------
@@ -1350,32 +1351,32 @@ Standard Code 39 was developed in 1974 by Intermec. Input data can be of any
 length and can include the characters 0-9, A-Z, dash (-), full stop (.), space,
 asterisk (*), dollar ($), slash (/), plus (+) and percent (%). The standard
 does not require a check digit but a modulo-43 check digit can be added if
-required by setting option_2 = 1 or using --ver=1.
+required by setting option_2 = 1 or using --vers=1.
 
 6.1.8.2 Extended Code 39
 ------------------------
 Also known as Code 39e and Code39+, this symbology expands on Standard Code 39
 to provide support to the full ASCII character set. The standard does not
 require a check digit but a modulo-43 check digit can be added if required by
-setting option_2 = 1 or using --ver=1.
+setting option_2 = 1 or using --vers=1.
 
 6.1.8.3 Code 93
 ---------------
 A variation of Extended Code 39, Code 93 also supports full ASCII text. Two
 check digits are added by Zint.
 
-6.1.8.4 PZN
------------
-PZN is a Code 39 based symbology used by the pharmaceutical industry in
-Germany. PZN encodes a 6 digit number to which Zint will add a modulo-10
-check digit.
+6.1.8.4 PZN (Pharmazentralnummer)
+---------------------------------
+PZN is a Code 39 based symbology used by the pharmaceutical industry in Germany.
+PZN encodes a 7 digit number to which Zint will add a modulo-11 check digit.
 
 6.1.8.5 LOGMARS
 ---------------
 LOGMARS (Logistics Applications of Automated Marking and Reading Symbols) is a
 variation of the Code 39 symbology used by the US Department of Defence.
-LOGMARS encodes the same character set as Standard Code 39 and adds a modulo-43
-check digit.
+LOGMARS encodes the same character set as Standard Code 39. It does not require
+a check digit but a modulo-43 check digit can be added by setting option_2 = 1
+or using --vers=1.
 
 6.1.8.6 Code 32
 ---------------
@@ -1392,9 +1393,10 @@ standards.
 
 6.1.8.8 Vehicle Identification Number (VIN)
 -------------------------------------------
-This option includes a verification stage for vehicle identification numbers
-used in North America which include a check digit. For European vehicle
-identification numbers use Standard Code 39.
+A variation of Code 39 that for vehicle identification numbers used in North
+America (first character '1' to '5') has a check character verification stage.
+An Import character prefix 'I' can be added by setting option_2 = 1 or using
+--vers=1.
 
 6.1.9 Codabar (EN 798)
 ----------------------
@@ -1404,7 +1406,8 @@ purposes. The American Blood Commission adopted Codabar in 1977 as the standard
 symbology for blood identification. Codabar can encode any length string
 starting and ending with the letters A-D and containing between these letters
 the numbers 0-9, dash (-), dollar ($), colon (:), slash (/), full stop (.) or
-plus (+). No check digit is generated.
+plus (+). No check digit is generated by default, but a modulo-16 one can be
+added by setting option_2 = 1 or using --vers=1.
 
 6.1.10 Pharmacode
 -----------------
@@ -1508,10 +1511,10 @@ check digit.
 -------------------
 A highly compressed symbol for numeric data. The number of channels in the
 symbol can be between 3 and 8 and this can be specified by setting the value of
-option_2. It can also be determined by the length of the input data e.g. a
-three character input string generates a 4 channel code by default. The maximum
-values permitted depend on the number of channels used as shown in the table
-below:
+option_2 or using the --vers= option. It can also be determined by the length of
+the input data e.g. a three character input string generates a 4 channel code by
+default. The maximum values permitted depend on the number of channels used as
+shown in the table below:
 
 --------------------------------------------
 Channels  |  Minimum Value  |  Maximum Value
@@ -1662,7 +1665,7 @@ Value   |
         |                         |    component
 133     | BARCODE_RSS_LTD_CC      | Composite Symbol with GS1 DataBar Limited
         |                         |    component
-134     | BARCODE_RSS_EXP_CC      | Composite Symbol with GS1 DataBar Extended
+134     | BARCODE_RSS_EXP_CC      | Composite Symbol with GS1 DataBar Expanded
         |                         |    component
 135     | BARCODE_UPCA_CC         | Composite Symbol with UPC A linear component
 136     | BARCODE_UPCE_CC         | Composite Symbol with UPC E linear component
@@ -2028,8 +2031,8 @@ using the --fullmultibyte switch or by setting option_3 to ZINT_FULL_MULTIBYTE.
 
 6.6.4 Rectangular Micro QR Code (rMQR)
 --------------------------------------
-A rectangular version of QR Code. Like QR code rMQR supports encoding of
-GS-1 data, Latin-1 and Kanji characters in the Shift-JIS encoding scheme.
+A rectangular version of QR Code. Like QR code rMQR supports encoding of GS1
+data, Latin-1 and Kanji characters in the Shift-JIS encoding scheme.
 It does not support other ISO 8859 character sets or Unicode. As with other
 symbologies data should be entered as UTF-8 with the conversion to Shift-JIS
 being handled by Zint. The amount of ECC codewords can be adjusted using
@@ -2174,7 +2177,7 @@ size dependent on the length of the data to be encoded. Error correction
 codewords will normally be generated to fill at least 23% of the symbol. Two
 options are available to change this behaviour:
 
-The size of the symbol can be specified using the --ver= option or setting
+The size of the symbol can be specified using the --vers= option or setting
 option_2 to a value between 1 and 36 according to the following table. The
 symbols marked with an asterisk (*) in the table below are "compact" symbols,
 meaning they have a smaller bulls-eye pattern at the centre of the symbol.
@@ -2288,7 +2291,7 @@ should be entered as Unicode (UTF-8) with conversion to GB 2312 being carried
 out automatically by Zint. The symbology also supports the ECI mechanism. The
 size of the symbol and the error correction capacity can be specified. If you
 specify both of these values then Zint will make a 'best-fit' attempt to
-satisfy  both conditions. The symbol size can be specified using the --ver=
+satisfy  both conditions. The symbol size can be specified using the --vers=
 option or by setting option_2, and the error correction capacity can be
 specified by using the --secure= option or by setting option_1 according to
 the following tables:
@@ -2329,7 +2332,7 @@ supports this before using.
 -------------
 DotCode uses a grid of dots in a rectangular formation to encode characters up
 to a maximum of approximately 450 characters (or 900 numeric digits). The
-symbology supports ECI encoding and GS-1 data encoding. By default Zint will
+symbology supports ECI encoding and GS1 data encoding. By default Zint will
 produce a symbol which is approximately square, however the width of the symbol
 can be adjusted by using the --cols= option or by setting option_2. Outputting
 DotCode to raster images (PNG, GIF, BMP, PCX) will require setting the scale of
@@ -2343,9 +2346,9 @@ Also known as Chinese Sensible Code, Han Xin is a symbology which is still under
 development, so it is recommended it should not yet be used for a production
 environment. The symbology is capable of encoding characters in the GB18030
 character set (up to 4-byte characters) and is also able to support the ECI
-mechanism. Support for the encoding of GS-1 data has not yet been implemented.
+mechanism. Support for the encoding of GS1 data has not yet been implemented.
 
-The size of the symbol can be specified using the --ver= option or setting
+The size of the symbol can be specified using the --vers= option or setting
 option_2 to a value between 1 and 84 according to the following table.
 
 ---------------------
@@ -2456,7 +2459,7 @@ supports this before using.
 
 6.6.13 Ultracode
 ----------------
-This symbology uses a grid of coloured elements to encode data. ECI and GS-1
+This symbology uses a grid of coloured elements to encode data. ECI and GS1
 modes are supported. The amount of error correction can be set using the
 --secure= option or by setting option_1 to a value as shown in the following
 table:

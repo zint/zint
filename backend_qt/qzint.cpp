@@ -34,17 +34,19 @@ namespace Zint {
         m_securityLevel = -1;
         m_fgColor = Qt::black;
         m_bgColor = Qt::white;
-        m_zintSymbol = 0;
+        m_zintSymbol = NULL;
         m_error = 0;
-        m_input_mode = UNICODE_MODE + ESCAPE_MODE;
+        m_input_mode = UNICODE_MODE;
         m_scale = 1.0;
         m_option_3 = 0;
         m_hidetext = 0;
         m_dot_size = 4.0 / 5.0;
         target_size_horiz = 0;
         target_size_vert = 0;
-        m_width = 0;
+        m_option_2 = 0;
         m_whitespace = 0;
+        m_gssep = false;
+        m_debug = false;
     }
 
     QZint::~QZint() {
@@ -52,20 +54,20 @@ namespace Zint {
             ZBarcode_Delete(m_zintSymbol);
     }
 
-    void QZint::encode() {
+    void QZint::resetSymbol() {
         if (m_zintSymbol)
             ZBarcode_Delete(m_zintSymbol);
 
         m_lastError.clear();
         m_zintSymbol = ZBarcode_Create();
-        m_zintSymbol->output_options = m_border;
+        m_zintSymbol->output_options |= m_border;
         m_zintSymbol->symbology = m_symbol;
         m_zintSymbol->height = m_height;
         m_zintSymbol->whitespace_width = m_whitespace;
         m_zintSymbol->border_width = m_borderWidth;
         m_zintSymbol->option_1 = m_securityLevel;
         m_zintSymbol->input_mode = m_input_mode;
-        m_zintSymbol->option_2 = m_width;
+        m_zintSymbol->option_2 = m_option_2;
         m_zintSymbol->dot_size = m_dot_size;
         if (m_hidetext) {
             m_zintSymbol->show_hrt = 0;
@@ -73,13 +75,27 @@ namespace Zint {
             m_zintSymbol->show_hrt = 1;
         }
         m_zintSymbol->option_3 = m_option_3;
+        m_zintSymbol->scale = m_scale;
+        if (m_gssep) {
+            m_zintSymbol->output_options |= GS1_GS_SEPARATOR;
+        }
+        if (m_debug) {
+            m_zintSymbol->debug |= ZINT_DEBUG_PRINT;
+        }
+
+        strcpy(m_zintSymbol->fgcolour, m_fgColor.name().toLatin1().right(6));
+        strcpy(m_zintSymbol->bgcolour, m_bgColor.name().toLatin1().right(6));
+
+        strcpy(m_zintSymbol->primary, m_primaryMessage.toLatin1().left(127));
+    }
+
+    void QZint::encode() {
+        resetSymbol();
         QByteArray bstr = m_text.toUtf8();
-        QByteArray pstr = m_primaryMessage.left(99).toLatin1();
-        strcpy(m_zintSymbol->primary, pstr.data());
         m_error = ZBarcode_Encode_and_Buffer_Vector(m_zintSymbol, (unsigned char*) bstr.data(), bstr.length(), 0);
         m_lastError = m_zintSymbol->errtxt;
 
-        switch (m_zintSymbol->output_options) {
+        switch (m_zintSymbol->output_options & (BARCODE_BIND | BARCODE_BOX)) {
             case 0: m_border = NO_BORDER;
                 break;
             case 2: m_border = BIND;
@@ -99,6 +115,10 @@ namespace Zint {
         m_symbol = symbol;
     }
 
+    int QZint::inputMode() const {
+        return m_input_mode;
+    }
+
     void QZint::setInputMode(int input_mode) {
         m_input_mode = input_mode;
     }
@@ -111,11 +131,6 @@ namespace Zint {
         m_text = text;
     }
 
-    void QZint::setTargetSize(int width, int height) {
-        target_size_horiz = width;
-        target_size_vert = height;
-    }
-
     QString QZint::primaryMessage() const {
         return m_primaryMessage;
     }
@@ -124,12 +139,20 @@ namespace Zint {
         m_primaryMessage = primaryMessage;
     }
 
+    int QZint::height() const {
+        return m_height;
+    }
+
     void QZint::setHeight(int height) {
         m_height = height;
     }
 
-    void QZint::setWidth(int width) {
-        m_width = width;
+    int QZint::option2() const {
+        return m_option_2;
+    }
+
+    void QZint::setOption2(int option) {
+        m_option_2 = option;
     }
 
     void QZint::setOption3(int option) {
@@ -193,14 +216,6 @@ namespace Zint {
     void QZint::setSecurityLevel(int securityLevel) {
         m_securityLevel = securityLevel;
     }
-    
-    int QZint::getError() {
-        return m_error;
-    }
-
-    QString QZint::error_message() const {
-        return m_lastError;
-    }
 
     int QZint::mode() const {
         return m_securityLevel;
@@ -214,40 +229,39 @@ namespace Zint {
         m_hidetext = hide;
     }
 
+    void QZint::setTargetSize(int width, int height) {
+        target_size_horiz = width;
+        target_size_vert = height;
+    }
+
+    void QZint::setGSSep(bool gssep) {
+        m_gssep = gssep;
+    }
+
+    void QZint::setDebug(bool debug) {
+        m_debug = debug;
+    }
+
+    int QZint::getError() const {
+        return m_error;
+    }
+
+    QString QZint::error_message() const {
+        return m_lastError;
+    }
+
+    const QString & QZint::lastError() const {
+        return m_lastError;
+    }
+
+    bool QZint::hasErrors() const {
+        return m_lastError.length();
+    }
+
     bool QZint::save_to_file(QString filename) {
-        if (m_zintSymbol)
-            ZBarcode_Delete(m_zintSymbol);
-
-        QString fg_colour_hash = m_fgColor.name();
-        QString bg_colour_hash = m_bgColor.name();
-
-        m_lastError.clear();
-        m_zintSymbol = ZBarcode_Create();
-        m_zintSymbol->output_options = m_border;
-        m_zintSymbol->symbology = m_symbol;
-        m_zintSymbol->height = m_height;
-        m_zintSymbol->whitespace_width = m_whitespace;
-        m_zintSymbol->border_width = m_borderWidth;
-        m_zintSymbol->option_1 = m_securityLevel;
-        m_zintSymbol->input_mode = m_input_mode;
-        m_zintSymbol->option_2 = m_width;
-        m_zintSymbol->dot_size = m_dot_size;
-        if (m_hidetext) {
-            m_zintSymbol->show_hrt = 0;
-        } else {
-            m_zintSymbol->show_hrt = 1;
-        }
-        m_zintSymbol->option_3 = m_option_3;
-        m_zintSymbol->scale = m_scale;
+        resetSymbol();
+        strcpy(m_zintSymbol->outfile, filename.toLatin1().left(255));
         QByteArray bstr = m_text.toUtf8();
-        QByteArray pstr = m_primaryMessage.left(99).toLatin1();
-        QByteArray fstr = filename.left(255).toLatin1();
-        strcpy(m_zintSymbol->primary, pstr.data());
-        strcpy(m_zintSymbol->outfile, fstr.data());
-        QByteArray fgcol = fg_colour_hash.right(6).toLatin1();
-        QByteArray bgcol = bg_colour_hash.right(6).toLatin1();
-        strcpy(m_zintSymbol->fgcolour, fgcol.data());
-        strcpy(m_zintSymbol->bgcolour, bgcol.data());
         m_error = ZBarcode_Encode_and_Print(m_zintSymbol, (unsigned char*) bstr.data(), bstr.length(), 0);
         if (m_error >= 5) {
             m_lastError = m_zintSymbol->errtxt;
@@ -404,14 +418,4 @@ namespace Zint {
         
         painter.restore();
     }
-
-    const QString & QZint::lastError() const {
-        return m_lastError;
-    }
-
-    bool QZint::hasErrors() {
-        return m_lastError.length();
-    }
-
 }
-

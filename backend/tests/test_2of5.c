@@ -46,14 +46,26 @@ static void test_large(int index, int debug) {
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /*  0*/ { BARCODE_TELEPEN, "\177", 30, 0, 1, 528 },
-        /*  1*/ { BARCODE_TELEPEN, "\177", 31, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  2*/ { BARCODE_TELEPEN_NUM, "1", 60, 0, 1, 528 },
-        /*  3*/ { BARCODE_TELEPEN_NUM, "1", 61, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  0*/ { BARCODE_C25MATRIX, "1", 80, 0, 1, 817 },
+        /*  1*/ { BARCODE_C25MATRIX, "1", 81, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  2*/ { BARCODE_C25INTER, "1", 89, 0, 1, 819 },
+        /*  3*/ { BARCODE_C25INTER, "1", 90, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  4*/ { BARCODE_C25IATA, "1", 45, 0, 1, 639 },
+        /*  5*/ { BARCODE_C25IATA, "1", 46, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  6*/ { BARCODE_C25LOGIC, "1", 80, 0, 1, 809 },
+        /*  7*/ { BARCODE_C25LOGIC, "1", 81, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  8*/ { BARCODE_C25IND, "1", 45, 0, 1, 649 },
+        /*  9*/ { BARCODE_C25IND, "1", 46, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 10*/ { BARCODE_DPLEIT, "1", 13, 0, 1, 135 },
+        /* 11*/ { BARCODE_DPLEIT, "1", 14, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 12*/ { BARCODE_DPIDENT, "1", 11, 0, 1, 117 },
+        /* 13*/ { BARCODE_DPIDENT, "1", 12, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 14*/ { BARCODE_ITF14, "1", 13, 0, 1, 135 },
+        /* 15*/ { BARCODE_ITF14, "1", 14, ZINT_ERROR_TOO_LONG, -1, -1 },
     };
     int data_size = ARRAY_SIZE(data);
 
-    char data_buf[64];
+    char data_buf[4096];
 
     for (int i = 0; i < data_size; i++) {
 
@@ -65,7 +77,7 @@ static void test_large(int index, int debug) {
         testUtilStrCpyRepeat(data_buf, data[i].pattern, data[i].length);
         assert_equal(data[i].length, (int) strlen(data_buf), "i:%d length %d != strlen(data_buf) %d\n", i, data[i].length, (int) strlen(data_buf));
 
-        int length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data_buf, data[i].length, debug);
+        int length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, -1 /*option_2*/, -1, -1 /*output_options*/, data_buf, data[i].length, debug);
 
         ret = ZBarcode_Encode(symbol, data_buf, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
@@ -89,20 +101,21 @@ static void test_hrt(int index, int debug) {
     struct item {
         int symbology;
         unsigned char *data;
-        int length;
-
         unsigned char *expected;
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /*  0*/ { BARCODE_TELEPEN, "ABC1234.;$", -1, "ABC1234.;$" },
-        /*  1*/ { BARCODE_TELEPEN, "abc1234.;$", -1, "abc1234.;$" },
-        /*  2*/ { BARCODE_TELEPEN, "ABC1234\001", -1, "ABC1234\001" },
-        /*  3*/ { BARCODE_TELEPEN, "ABC\0001234", 8, "ABC 1234" },
-        /*  4*/ { BARCODE_TELEPEN_NUM, "1234", -1, "1234" },
-        /*  5*/ { BARCODE_TELEPEN_NUM, "123X", -1, "123X" },
-        /*  6*/ { BARCODE_TELEPEN_NUM, "123x", -1, "123X" }, // Converts to upper
-        /*  7*/ { BARCODE_TELEPEN_NUM, "12345", -1, "012345" }, // Adds leading zero if odd
+        /*  0*/ { BARCODE_C25MATRIX, "123456789", "123456789" },
+        /*  1*/ { BARCODE_C25INTER, "123456789", "0123456789" }, // Adds leading zero if odd
+        /*  2*/ { BARCODE_C25IATA, "123456789", "123456789" },
+        /*  3*/ { BARCODE_C25LOGIC, "123456789", "123456789" },
+        /*  4*/ { BARCODE_C25IND, "123456789", "123456789" },
+        /*  5*/ { BARCODE_DPLEIT, "123456789", "00001234567890" }, // Leading zeroes added to make 13 + appended checksum
+        /*  6*/ { BARCODE_DPLEIT, "1234567890123", "12345678901236" },
+        /*  7*/ { BARCODE_DPIDENT, "123456789", "001234567890" }, // Leading zeroes added to make 11 + appended checksum
+        /*  8*/ { BARCODE_DPIDENT, "12345678901", "123456789016" },
+        /*  9*/ { BARCODE_ITF14, "123456789", "00001234567895" }, // Leading zeroes added to make 13 + appended checksum
+        /* 10*/ { BARCODE_ITF14, "1234567890123", "12345678901231" },
     };
     int data_size = ARRAY_SIZE(data);
 
@@ -115,7 +128,7 @@ static void test_hrt(int index, int debug) {
         struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        int length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, data[i].length, debug);
+        int length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, data[i].data, length);
         assert_zero(ret, "i:%d ZBarcode_Encode ret %d != 0 %s\n", i, ret, symbol->errtxt);
@@ -136,22 +149,20 @@ static void test_input(int index, int debug) {
     struct item {
         int symbology;
         unsigned char *data;
-        int length;
         int ret;
         int expected_rows;
         int expected_width;
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /*  0*/ { BARCODE_TELEPEN, " !\"#$%&'()*+,-./0123456789:;<", -1, 0, 1, 512 },
-        /*  1*/ { BARCODE_TELEPEN, "AZaz\176\001", -1, 0, 1, 144 },
-        /*  2*/ { BARCODE_TELEPEN, "\000\177", 2, 0, 1, 80 },
-        /*  3*/ { BARCODE_TELEPEN, "é", -1, ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /*  4*/ { BARCODE_TELEPEN_NUM, "1234567890", -1, 0, 1, 128 },
-        /*  5*/ { BARCODE_TELEPEN_NUM, "123456789A", -1, ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /*  6*/ { BARCODE_TELEPEN_NUM, "123456789X", -1, 0, 1, 128 }, // [0-9]X allowed
-        /*  7*/ { BARCODE_TELEPEN_NUM, "12345678X9", -1, ZINT_ERROR_INVALID_DATA, -1, -1 }, // X[0-9] not allowed
-        /*  8*/ { BARCODE_TELEPEN_NUM, "1X34567X9X", -1, 0, 1, 128 }, // [0-9]X allowed multiple times
+        /*  0*/ { BARCODE_C25MATRIX, "A", ZINT_ERROR_INVALID_DATA, -1, -1 },
+        /*  1*/ { BARCODE_C25INTER, "A", ZINT_ERROR_INVALID_DATA, -1, -1 },
+        /*  2*/ { BARCODE_C25IATA, "A", ZINT_ERROR_INVALID_DATA, -1, -1 },
+        /*  3*/ { BARCODE_C25LOGIC, "A", ZINT_ERROR_INVALID_DATA, -1, -1 },
+        /*  4*/ { BARCODE_C25IND, "A", ZINT_ERROR_INVALID_DATA, -1, -1 },
+        /*  5*/ { BARCODE_DPLEIT, "A", ZINT_ERROR_INVALID_DATA, -1, -1 },
+        /*  6*/ { BARCODE_DPIDENT, "A", ZINT_ERROR_INVALID_DATA, -1, -1 },
+        /*  7*/ { BARCODE_ITF14, "A", ZINT_ERROR_INVALID_DATA, -1, -1 },
     };
     int data_size = ARRAY_SIZE(data);
 
@@ -162,7 +173,7 @@ static void test_input(int index, int debug) {
         struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        int length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, data[i].length, debug);
+        int length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, -1 /*option_2*/, -1, -1 /*output_options*/, data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
@@ -178,8 +189,6 @@ static void test_input(int index, int debug) {
     testFinish();
 }
 
-// Telepen Barcode Symbology information and History (BSiH) https://telepen.co.uk/wp-content/uploads/2018/10/Barcode-Symbology-information-and-History.pdf
-// E2326U: SB Telepen Barcode Fonts Guide Issue 2 (Apr 2009) https://telepen.co.uk/wp-content/uploads/2018/09/SB-Telepen-Barcode-Fonts-V2.pdf
 static void test_encode(int index, int generate, int debug) {
 
     testStart("");
@@ -188,7 +197,6 @@ static void test_encode(int index, int generate, int debug) {
     struct item {
         int symbology;
         unsigned char *data;
-        int length;
         int ret;
 
         int expected_rows;
@@ -196,33 +204,49 @@ static void test_encode(int index, int generate, int debug) {
         char *comment;
         char *expected;
     };
+    // BARCODE_ITF14 examples verified manually against GS1 General Specifications 20.0
     struct item data[] = {
-        /*  0*/ { BARCODE_TELEPEN, "1A", -1, 0, 1, 80, "Telepen BSiH Example, same",
-                    "10101010101110001011101000100010101110111011100010100010001110101110001010101010"
+        /*  0*/ { BARCODE_C25MATRIX, "87654321", 0, 1, 97, "Standard Code 2 of 5; verified manually against bwipp and tec-it",
+                    "1111010101110100010101000111010001110101110111010101110111011100010101000101110111010111011110101"
                 },
-        /*  1*/ { BARCODE_TELEPEN, "ABC", -1, 0, 1, 96, "Telepen E2326U Example, same",
-                    "101010101011100010111011101110001110001110111000101011101110101011101000101000101110001010101010"
+        /*  1*/ { BARCODE_C25INTER, "87654321", 0, 1, 81, "Interleaved Code 2 of 5; verified manually against bwipp and tec-it",
+                    "101011101010111000100010001110111000101010001000111010111010001110101011100011101"
                 },
-        /*  2*/ { BARCODE_TELEPEN, "RST", -1, 0, 1, 96, "Verified manually against bwipp and tec-it",
-                    "101010101011100011100011100010101010111010111000111010111000101010111000111011101110001010101010"
+        /*  2*/ { BARCODE_C25INTER, "602003", 0, 1, 63, "DX cartridge barcode https://en.wikipedia.org/wiki/Interleaved_2_of_5 example",
+                    "101010111011100010001010111010001000111010001000111011101011101"
                 },
-        /*  3*/ { BARCODE_TELEPEN, "?@", -1, 0, 1, 80, "ASCII count 127, check 0; verified manually against bwipp and tec-it",
-                    "10101010101110001010101010101110111011101110101011101110111011101110001010101010"
+        /*  3*/ { BARCODE_C25IATA, "87654321", 0, 1, 121, "IATA Code 2 of 5; verified manually against bwipp and tec-it",
+                    "1010111010101110101010101110111010111011101010111010111010101010111010111011101110101010101110101011101110101010111011101"
                 },
-        /*  4*/ { BARCODE_TELEPEN, "\000", 1, 0, 1, 64, "Verified manually against bwipp and tec-it",
-                    "1010101010111000111011101110111011101110111011101110001010101010"
+        /*  4*/ { BARCODE_C25LOGIC, "87654321", 0, 1, 89, "Code 2 of 5 Data Logic; verified manually against bwipp and tec-it",
+                    "10101110100010101000111010001110101110111010101110111011100010101000101110111010111011101"
                 },
-        /*  5*/ { BARCODE_TELEPEN_NUM, "1234567890", -1, 0, 1, 128, "Verified manually against bwipp and tec-it",
-                    "10101010101110001010101110101110101000101010001010101110101110001011101010001000101110001010101010101011101010101110001010101010"
+        /*  5*/ { BARCODE_C25IND, "87654321", 0, 1, 131, "Industrial Code 2 of 5; verified manually against bwipp and tec-it",
+                    "11101110101110101011101010101011101110101110111010101110101110101010101110101110111011101010101011101010111011101010101110111010111"
                 },
-        /*  6*/ { BARCODE_TELEPEN_NUM, "123456789", -1, 0, 1, 128, "Verified manually against bwipp (012345679) and tec-it (012345679)",
-                    "10101010101110001110101010111010111000100010001011101110001110001000101010001010111010100010100010111000101110101110001010101010"
+        /*  6*/ { BARCODE_DPLEIT, "87654321", 0, 1, 135, "Deutsche Post Leitcode; verified manually against bwipp and tec-it (0000087654321)",
+                    "101010101110001110001010101110001110001010001011101110001010100010001110111011101011100010100011101110001010100011101000100010111011101"
                 },
-        /*  7*/ { BARCODE_TELEPEN_NUM, "123X", -1, 0, 1, 80, "Verified manually against bwipp and tec-it",
-                    "10101010101110001010101110101110111010111000111011101011101110001110001010101010"
+        /*  7*/ { BARCODE_DPLEIT, "5082300702800", 0, 1, 135, "Deutsche Post Leitcode https://de.wikipedia.org/wiki/Leitcode example",
+                    "101011101011100010001011101000101110100011101110100010001010101110111000100010100011101110100011101010001110001010001011100011101011101"
                 },
-        /*  8*/ { BARCODE_TELEPEN_NUM, "1X3X", -1, 0, 1, 80, "Verified manually against bwipp and tec-it",
-                    "10101010101110001110001110001110111010111000111010111010101110001110001010101010"
+        /*  8*/ { BARCODE_DPIDENT, "87654321", 0, 1, 117, "Deutsche Post Identcode; verified manually against bwipp and tec-it (00087654321)",
+                    "101010101110001110001010001011101110001010100010001110111011101011100010100011101110001010100011101000100010111011101"
+                },
+        /*  9*/ { BARCODE_DPIDENT, "39601313414", 0, 1, 117, "Deutsche Post Identcode https://de.wikipedia.org/wiki/Leitcode example",
+                    "101011101110001010001010111011100010001011100010001010111011100010001010111010001011101011100010101110001000111011101"
+                },
+        /* 10*/ { BARCODE_ITF14, "87654321", 0, 1, 135, "ITF-14; verified manually against bwipp and tec-it (0000087654321)",
+                    "101010101110001110001010101110001110001010001011101110001010100010001110111011101011100010100011101110001010100011101000101011100011101"
+                },
+        /* 11*/ { BARCODE_ITF14, "0950110153000", 0, 1, 135, "GS1 General Specifications Figure 5.1-2",
+                    "101010100011101110001011101011100010001011100010101011100010001011101110100011100010001110101010101110001110001010001000111011101011101"
+                },
+        /* 12*/ { BARCODE_ITF14, "1540014128876", 0, 1, 135, "GS1 General Specifications Figure 5.3.2.4-1",
+                    "101011100010100010111010101110001000111010001011101110100010001011101011100010001110101000111011101010111000100010001110001110101011101"
+                },
+        /* 13*/ { BARCODE_ITF14, "0950110153001", 0, 1, 135, "GS1 General Specifications Figure 5.3.6-1",
+                    "101010100011101110001011101011100010001011100010101011100010001011101110100011100010001110101010101110001110001011101010001000111011101"
                 },
     };
     int data_size = ARRAY_SIZE(data);
@@ -236,14 +260,14 @@ static void test_encode(int index, int generate, int debug) {
         struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        int length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, data[i].length, debug);
+        int length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, -1 /*option_2*/, -1, -1 /*output_options*/, data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (generate) {
-            printf("        /*%3d*/ { %s, \"%s\", %d, %s, %d, %d, \"%s\",\n",
-                    i, testUtilBarcodeName(data[i].symbology), testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), data[i].length,
+            printf("        /*%3d*/ { %s, \"%s\", %s, %d, %d, \"%s\",\n",
+                    i, testUtilBarcodeName(data[i].symbology), testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
                     testUtilErrorName(data[i].ret), symbol->rows, symbol->width, data[i].comment);
             testUtilModulesDump(symbol, "                    ", "\n");
             printf("                },\n");
@@ -266,52 +290,6 @@ static void test_encode(int index, int generate, int debug) {
     testFinish();
 }
 
-// #181 Nico Gunkel OSS-Fuzz
-static void test_fuzz(int index, int debug) {
-
-    testStart("");
-
-    int ret;
-    struct item {
-        int symbology;
-        unsigned char *data;
-        int length;
-        int ret;
-    };
-    // Note NULs where using DELs code (16 binary characters wide)
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%2d*\/", line(".") - line("'<"))
-    struct item data[] = {
-        /* 0*/ { BARCODE_TELEPEN, "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000", 30, 0 },
-        /* 1*/ { BARCODE_TELEPEN, "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000", 31, ZINT_ERROR_TOO_LONG },
-        /* 2*/ { BARCODE_TELEPEN_NUM, "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000", 60, ZINT_ERROR_INVALID_DATA },
-        /* 3*/ { BARCODE_TELEPEN_NUM, "040404040404040404040404040404040404040404040404040404040404", 60, 0 },
-        /* 4*/ { BARCODE_TELEPEN_NUM, "1234567890123456789012345678901234567890123456789012345678901", 61, ZINT_ERROR_TOO_LONG },
-        /* 5*/ { BARCODE_TELEPEN_NUM, "00000000000000000000000000000000000000000000000000000000000X", 60, 0 },
-        /* 6*/ { BARCODE_TELEPEN_NUM, "999999999999999999999999999999999999999999999999999999999999", 60, 0 },
-    };
-    int data_size = sizeof(data) / sizeof(struct item);
-
-    for (int i = 0; i < data_size; i++) {
-
-        if (index != -1 && i != index) continue;
-
-        struct zint_symbol *symbol = ZBarcode_Create();
-        assert_nonnull(symbol, "Symbol not created\n");
-
-        symbol->symbology = data[i].symbology;
-        symbol->debug |= debug;
-
-        int length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
-
-        ret = ZBarcode_Encode(symbol, data[i].data, length);
-        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
-
-        ZBarcode_Delete(symbol);
-    }
-
-    testFinish();
-}
-
 int main(int argc, char *argv[]) {
 
     testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
@@ -319,7 +297,6 @@ int main(int argc, char *argv[]) {
         { "test_hrt", test_hrt, 1, 0, 1 },
         { "test_input", test_input, 1, 0, 1 },
         { "test_encode", test_encode, 1, 1, 1 },
-        { "test_fuzz", test_fuzz, 1, 0, 1 },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

@@ -10,40 +10,22 @@
     <height>339</height>
    </rect>
   </property>
+  <property name="maximumSize">
+   <size>
+    <width>600</width>
+    <height>16777215</height>
+   </size>
+  </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <layout class="QGridLayout" name="gridLayout">
-     <item row="1" column="0">
-      <widget class="QRadioButton" name="radDM200Stand">
-       <property name="text">
-        <string>S&amp;tandard</string>
-       </property>
-       <property name="checked">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QRadioButton" name="radDM200HIBC">
-       <property name="text">
-        <string>&amp;HIBC Data Matrix</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="0">
-      <widget class="QRadioButton" name="radDM200GS1">
-       <property name="text">
-        <string>&amp;GS-1 Data Mode</string>
-       </property>
-      </widget>
-     </item>
      <item row="0" column="0">
       <widget class="QLabel" name="lblDM200Size">
        <property name="text">
-        <string>Si&amp;ze:</string>
+        <string>Size:</string>
        </property>
        <property name="buddy">
         <cstring>cmbDM200Size</cstring>
@@ -52,6 +34,9 @@
      </item>
      <item row="0" column="1">
       <widget class="QComboBox" name="cmbDM200Size">
+       <property name="maxVisibleItems">
+        <number>21</number>
+       </property>
        <item>
         <property name="text">
          <string>Automatic</string>
@@ -302,6 +287,42 @@
     </layout>
    </item>
    <item>
+    <widget class="QGroupBox" name="groupBoxDM200EncodingMode">
+     <property name="title">
+      <string>Encoding Mode</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayoutDM200EncodingMode">
+      <property name="sizeConstraint">
+       <enum>QLayout::SetMinimumSize</enum>
+      </property>
+      <item row="0" column="0">
+       <widget class="QRadioButton" name="radDM200Stand">
+        <property name="text">
+         <string>Standard Mode</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QRadioButton" name="radDM200GS1">
+        <property name="text">
+         <string>GS1 Data Mode</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QRadioButton" name="radDM200HIBC">
+        <property name="text">
+         <string>HIBC Data Matrix</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
     <widget class="QCheckBox" name="chkDMRectangle">
      <property name="text">
       <string>Suppress Rectangular Symbols in Automatic Mode</string>
@@ -315,6 +336,16 @@
     <widget class="QCheckBox" name="chkDMRE">
      <property name="text">
       <string>Allow DMRE in Automatic Mode</string>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="chkDMGSSep">
+     <property name="text">
+      <string>Use separator GS for GS1</string>
      </property>
      <property name="checked">
       <bool>false</bool>

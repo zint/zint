@@ -77,7 +77,7 @@ static void types(void) {
 static void usage(void) {
     printf( "Zint version %d.%d.%d\n"
             "Encode input data in a barcode and save as BMP/EMF/EPS/GIF/PCX/PNG/SVG/TIF/TXT\n\n"
-            "  -b, --barcode=NUMBER  Number of barcode type (default is 20 (=Code128)).\n"
+            "  -b, --barcode=NUMBER  Number of barcode type. Default is 20 (Code 128)\n"
             "  --batch               Treat each line of input file as a separate data set\n"
             "  --bg=COLOUR           Specify a background colour (in hex)\n"
             "  --binary              Treat input as raw binary data\n"
@@ -108,7 +108,7 @@ static void usage(void) {
             "  --mirror              Use batch data to determine filename\n"
             "  --mode=NUMBER         Set encoding mode (Maxicode/Composite)\n"
             "  --notext              Remove human readable text\n"
-            "  -o, --output=FILE     Send output to FILE. (default is out.png)\n"
+            "  -o, --output=FILE     Send output to FILE. Default is out.png\n"
             "  --primary=STRING      Set structured primary message (Maxicode/Composite)\n"
             "  --scale=NUMBER        Adjust size of X-dimension\n"
             "  --secure=NUMBER       Set error correction level\n"
@@ -119,7 +119,7 @@ static void usage(void) {
             "  --rotate=NUMBER       Rotate symbol by NUMBER degrees (BMP/GIF/PCX/PNG/TIF)\n"
             "  --rows=NUMBER         Set number of rows (Codablock-F)\n"
             "  -t, --types           Display table of barcode types\n"
-            "  --vers=NUMBER         Set symbol version (QR Code/Han Xin)\n"
+            "  --vers=NUMBER         Set symbol version (size, check digits, other options)\n"
             "  -w, --whitesp=NUMBER  Set width of whitespace in multiples of X-dimension\n"
             , ZINT_VERSION_MAJOR, ZINT_VERSION_MINOR, ZINT_VERSION_RELEASE);
 }

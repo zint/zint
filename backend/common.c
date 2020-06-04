@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2017 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008 - 2020 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -30,17 +30,11 @@
     SUCH DAMAGE.
  */
 /* vim: set ts=4 sw=4 et : */
-#include <string.h>
 #include <stdio.h>
 #ifdef _MSC_VER
 #include <malloc.h>
 #endif
 #include "common.h"
-
-/* Local replacement for strlen() with unsigned char strings */
-INTERNAL size_t ustrlen(const unsigned char data[]) {
-    return strlen((const char*) data);
-}
 
 /* Converts a character 0-9 to its equivalent integer value */
 INTERNAL int ctoi(const char source) {
@@ -153,23 +147,28 @@ INTERNAL int ustrchr_cnt(const unsigned char string[], const size_t length, cons
     return count;
 }
 
-/* Return true (1) if a module is dark/black, otherwise false (0) */
+/* Return true (1) if a module is dark/black/colour, otherwise false (0) */
 INTERNAL int module_is_set(const struct zint_symbol *symbol, const int y_coord, const int x_coord) {
     if (symbol->symbology == BARCODE_ULTRA) {
         return symbol->encoded_data[y_coord][x_coord];
     } else {
-        return (symbol->encoded_data[y_coord][x_coord / 7] >> (x_coord % 7)) & 1;
+        return (symbol->encoded_data[y_coord][x_coord / 8] >> (x_coord % 8)) & 1;
     }
 }
 
 /* Set a module to dark/black */
 INTERNAL void set_module(struct zint_symbol *symbol, const int y_coord, const int x_coord) {
-    symbol->encoded_data[y_coord][x_coord / 7] |= 1 << (x_coord % 7);
+    symbol->encoded_data[y_coord][x_coord / 8] |= 1 << (x_coord % 8);
+}
+
+/* Set a module to a colour */
+INTERNAL void set_module_colour(struct zint_symbol *symbol, const int y_coord, const int x_coord, const int colour) {
+    symbol->encoded_data[y_coord][x_coord] = colour;
 }
 
 /* Set (or unset) a module to white */
 INTERNAL void unset_module(struct zint_symbol *symbol, const int y_coord, const int x_coord) {
-    symbol->encoded_data[y_coord][x_coord / 7] &= ~(1 << (x_coord % 7));
+    symbol->encoded_data[y_coord][x_coord / 8] &= ~(1 << (x_coord % 8));
 }
 
 /* Expands from a width pattern to a bit pattern */
@@ -263,11 +262,10 @@ INTERNAL int is_composite(int symbology) {
     return symbology >= BARCODE_EANX_CC && symbology <= BARCODE_RSS_EXPSTACK_CC;
 }
 
-INTERNAL int istwodigits(const unsigned char source[], const size_t position) {
-    if ((source[position] >= '0') && (source[position] <= '9')) {
-        if ((source[position + 1] >= '0') && (source[position + 1] <= '9')) {
-            return 1;
-        }
+INTERNAL int istwodigits(const unsigned char source[], const int length, const int position) {
+    if ((position + 1 < length) && (source[position] >= '0') && (source[position] <= '9')
+            && (source[position + 1] >= '0') && (source[position + 1] <= '9')) {
+        return 1;
     }
 
     return 0;

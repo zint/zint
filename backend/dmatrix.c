@@ -571,7 +571,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
 
     if (symbol->output_options & READER_INIT) {
         if (gs1) {
-            strcpy(symbol->errtxt, "519: Cannot encode in GS1 mode and Reader Initialisation at the same time");
+            strcpy(symbol->errtxt, "521: Cannot encode in GS1 mode and Reader Initialisation at the same time");
             return ZINT_ERROR_INVALID_OPTION;
         } else {
             target[tp] = 234;
@@ -643,7 +643,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
         if (current_mode == DM_ASCII) {
             next_mode = DM_ASCII;
 
-            if (istwodigits(source, sp) && ((sp + 1) != inputlen)) {
+            if (istwodigits(source, inputlen, sp)) {
                 target[tp] = (unsigned char) ((10 * ctoi(source[sp])) + ctoi(source[sp + 1]) + 130);
                 if (debug) printf("N%d ", target[tp] - 130);
                 tp++;

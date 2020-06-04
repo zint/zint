@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2017 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008 - 2020 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -31,9 +31,7 @@
  */
 /* vim: set ts=4 sw=4 et : */
 
-#include <string.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include "common.h"
 #ifdef _MSC_VER
 #include <malloc.h>
@@ -203,19 +201,19 @@ INTERNAL int interleaved_two_of_five(struct zint_symbol *symbol, const unsigned 
         return error_number;
     }
 
-    ustrcpy(temp, (unsigned char *) "");
+    ustrcpy(temp, "");
     /* Input must be an even number of characters for Interlaced 2 of 5 to work:
        if an odd number of characters has been entered then add a leading zero */
     if (length & 1) {
-        ustrcpy(temp, (unsigned char *) "0");
+        ustrcpy(temp, "0");
         length++;
     }
-    strcat((char*) temp, (char*) source);
+    ustrcat(temp, source);
 
     /* start character */
     strcpy(dest, "1111");
 
-    for (i = 0; i < length; i += 2) {
+    for (i = 0; i < (int) length; i += 2) {
         int k = 0;
         /* look up the bars and the spaces and put them in two strings */
         strcpy(bars, "");
@@ -267,7 +265,7 @@ INTERNAL int itf14(struct zint_symbol *symbol, unsigned char source[], int lengt
     for (i = 0; i < zeroes; i++) {
         localstr[i] = '0';
     }
-    strcpy(localstr + zeroes, (char *) source);
+    ustrcpy(localstr + zeroes, source);
 
     /* Calculate the check digit - the same method used for EAN-13 */
     for (i = 12; i >= 0; i--) {
@@ -280,7 +278,7 @@ INTERNAL int itf14(struct zint_symbol *symbol, unsigned char source[], int lengt
     localstr[13] = check_digit(count);
     localstr[14] = '\0';
     error_number = interleaved_two_of_five(symbol, (unsigned char *) localstr, strlen(localstr));
-    ustrcpy(symbol->text, (unsigned char*) localstr);
+    ustrcpy(symbol->text, localstr);
     return error_number;
 }
 
@@ -305,7 +303,7 @@ INTERNAL int dpleit(struct zint_symbol *symbol, unsigned char source[], int leng
     zeroes = 13 - length;
     for (i = 0; i < zeroes; i++)
         localstr[i] = '0';
-    strcpy(localstr + zeroes, (char *) source);
+    ustrcpy(localstr + zeroes, source);
 
     for (i = 12; i >= 0; i--) {
         count += 4 * ctoi(localstr[i]);
@@ -317,7 +315,7 @@ INTERNAL int dpleit(struct zint_symbol *symbol, unsigned char source[], int leng
     localstr[13] = check_digit(count);
     localstr[14] = '\0';
     error_number = interleaved_two_of_five(symbol, (unsigned char *) localstr, strlen(localstr));
-    ustrcpy(symbol->text, (unsigned char*) localstr);
+    ustrcpy(symbol->text, localstr);
     return error_number;
 }
 
@@ -341,7 +339,7 @@ INTERNAL int dpident(struct zint_symbol *symbol, unsigned char source[], int len
     zeroes = 11 - length;
     for (i = 0; i < zeroes; i++)
         localstr[i] = '0';
-    strcpy(localstr + zeroes, (char *) source);
+    ustrcpy(localstr + zeroes, source);
 
     for (i = 10; i >= 0; i--) {
         count += 4 * ctoi(localstr[i]);
@@ -353,6 +351,6 @@ INTERNAL int dpident(struct zint_symbol *symbol, unsigned char source[], int len
     localstr[11] = check_digit(count);
     localstr[12] = '\0';
     error_number = interleaved_two_of_five(symbol, (unsigned char *) localstr, strlen(localstr));
-    ustrcpy(symbol->text, (unsigned char*) localstr);
+    ustrcpy(symbol->text, localstr);
     return error_number;
 }

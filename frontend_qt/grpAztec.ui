@@ -10,6 +10,12 @@
     <height>237</height>
    </rect>
   </property>
+  <property name="maximumSize">
+   <size>
+    <width>600</width>
+    <height>16777215</height>
+   </size>
+  </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
@@ -19,7 +25,7 @@
      <item row="0" column="0">
       <widget class="QRadioButton" name="radAztecAuto">
        <property name="text">
-        <string>A&amp;utomatic Resizing</string>
+        <string>Automatic Resizing</string>
        </property>
        <property name="checked">
         <bool>true</bool>
@@ -29,7 +35,7 @@
      <item row="1" column="0">
       <widget class="QRadioButton" name="radAztecSize">
        <property name="text">
-        <string>Adjust Si&amp;ze To:</string>
+        <string>Adjust Size To:</string>
        </property>
       </widget>
      </item>
@@ -223,7 +229,7 @@
      <item row="2" column="0">
       <widget class="QRadioButton" name="radAztecECC">
        <property name="text">
-        <string>Add Minimum &amp;Error Correction:</string>
+        <string>Add Minimum Error Correction:</string>
        </property>
       </widget>
      </item>
@@ -257,47 +263,56 @@
     </layout>
    </item>
    <item>
-    <widget class="QGroupBox" name="groupBox">
+    <widget class="QGroupBox" name="groupBoxAztecEncodingMode">
      <property name="title">
       <string>Encoding Mode</string>
      </property>
-     <widget class="QWidget" name="layoutWidget">
-      <property name="geometry">
-       <rect>
-        <x>30</x>
-        <y>30</y>
-        <width>453</width>
-        <height>71</height>
-       </rect>
+     <layout class="QGridLayout" name="gridLayoutAztecEncodingMode">
+      <property name="sizeConstraint">
+       <enum>QLayout::SetMinimumSize</enum>
       </property>
-      <layout class="QGridLayout" name="gridLayout_2">
-       <item row="2" column="0">
-        <widget class="QRadioButton" name="radAztecHIBC">
-         <property name="text">
-          <string>HIBC Aztec Code</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <widget class="QRadioButton" name="radAztecGS1">
-         <property name="text">
-          <string>GS1 Data Mode</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QRadioButton" name="radAztecStand">
-         <property name="text">
-          <string>Standard Mode</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
+      <item row="0" column="0">
+       <widget class="QRadioButton" name="radAztecStand">
+        <property name="text">
+         <string>Standard Mode</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QRadioButton" name="radAztecGS1">
+        <property name="text">
+         <string>GS1 Data Mode</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QRadioButton" name="radAztecHIBC">
+        <property name="text">
+         <string>HIBC Aztec Code</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::MinimumExpanding</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>43</height>
+      </size>
+     </property>
+    </spacer>
    </item>
   </layout>
  </widget>

@@ -18,17 +18,20 @@ FORMS += extData.ui \
          extExport.ui \
          extSequence.ui \
          grpAztec.ui \
+         grpC11.ui \
          grpC128.ui \
          grpC16k.ui \
          grpC39.ui \
          grpC49.ui \
          grpChannel.ui \
+         grpCodabar.ui \
          grpCodeOne.ui \
          grpCodablockF.ui \
          grpDBExtend.ui \
          grpDM.ui \
          grpGrid.ui \
          grpHX.ui \
+         grpLOGMARS.ui \
          grpMaxicode.ui \
          grpMicroPDF.ui \
          grpMQR.ui \
@@ -36,6 +39,7 @@ FORMS += extData.ui \
          grpPDF417.ui \
          grpQR.ui \
          grpRMQR.ui \
+         grpVIN.ui \
          mainWindow.ui \
          grpDotCode.ui
 

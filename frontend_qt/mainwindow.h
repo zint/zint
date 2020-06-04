@@ -62,6 +62,7 @@ public:
         CODE49           = 24,
         CODE93           = 25,
         CODE_ONE         = 141,
+        DAFT             = 93,
         DATAMATRIX       = 71,
         DPIDENT          = 22,
         DPLEIT           = 21,
@@ -106,7 +107,8 @@ public:
         UPNQR            = 143,
         UPCA             = 34,
         UPCE             = 37,
-        ONECODE          = 85
+        ONECODE          = 85,
+        VIN              = 73
     };
 
 public:

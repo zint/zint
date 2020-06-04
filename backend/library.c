@@ -31,7 +31,6 @@
 /* vim: set ts=4 sw=4 et : */
 
 #include <stdio.h>
-#include <string.h>
 #include <errno.h>
 #ifdef _MSC_VER
 #include <malloc.h>
@@ -39,7 +38,7 @@
 #include "common.h"
 #include "gs1.h"
 
-#define TECHNETIUM	"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%"
+#define TECHNETIUM  "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%"
 
 struct zint_symbol *ZBarcode_Create() {
     struct zint_symbol *symbol;
@@ -65,14 +64,12 @@ struct zint_symbol *ZBarcode_Create() {
     symbol->show_hrt = 1; // Show human readable text
     symbol->fontsize = 8;
     symbol->input_mode = DATA_MODE;
-    strcpy(symbol->primary, "");
-    memset(&(symbol->encoded_data[0][0]), 0, sizeof (symbol->encoded_data));
-    memset(&(symbol->row_height[0]), 0, sizeof (symbol->row_height));
     symbol->bitmap = NULL;
     symbol->bitmap_width = 0;
     symbol->bitmap_height = 0;
     symbol->eci = 0; // Default 0 uses ECI 3
     symbol->dot_size = 4.0 / 5.0;
+    symbol->vector = NULL;
     symbol->debug = 0;
     return symbol;
 }
@@ -1339,6 +1336,14 @@ int ZBarcode_Buffer(struct zint_symbol *symbol, int rotate_angle) {
             return ZINT_ERROR_INVALID_OPTION;
     }
 
+    if (symbol->output_options & BARCODE_DOTTY_MODE) {
+        if (!(is_matrix(symbol->symbology))) {
+            strcpy(symbol->errtxt, "237: Selected symbology cannot be rendered as dots");
+            error_tag(symbol->errtxt, ZINT_ERROR_INVALID_OPTION);
+            return ZINT_ERROR_INVALID_OPTION;
+        }
+    }
+
     error_number = plot_raster(symbol, rotate_angle, OUT_BUFFER);
     error_tag(symbol->errtxt, error_number);
     return error_number;
@@ -1357,6 +1362,14 @@ int ZBarcode_Buffer_Vector(struct zint_symbol *symbol, int rotate_angle) {
             strcpy(symbol->errtxt, "228: Invalid rotation angle");
             error_tag(symbol->errtxt, ZINT_ERROR_INVALID_OPTION);
             return ZINT_ERROR_INVALID_OPTION;
+    }
+
+    if (symbol->output_options & BARCODE_DOTTY_MODE) {
+        if (!(is_matrix(symbol->symbology))) {
+            strcpy(symbol->errtxt, "238: Selected symbology cannot be rendered as dots");
+            error_tag(symbol->errtxt, ZINT_ERROR_INVALID_OPTION);
+            return ZINT_ERROR_INVALID_OPTION;
+        }
     }
 
     error_number = plot_vector(symbol, rotate_angle, OUT_BUFFER);

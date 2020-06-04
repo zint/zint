@@ -61,12 +61,20 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, char *pixelbuf);
 
 static const char ultra_colour[] = "WCBMRYGK";
 
-static void buffer_plot(struct zint_symbol *symbol, char *pixelbuf) {
+static int buffer_plot(struct zint_symbol *symbol, char *pixelbuf) {
     /* Place pixelbuffer into symbol */
     int fgred, fggrn, fgblu, bgred, bggrn, bgblu;
     int row, column, i;
 
+    if (symbol->bitmap != NULL) {
+        free(symbol->bitmap);
+        symbol->bitmap = NULL;
+    }
     symbol->bitmap = (unsigned char *) malloc(symbol->bitmap_width * symbol->bitmap_height * 3);
+    if (symbol->bitmap == NULL) {
+        strcpy(symbol->errtxt, "661: Insufficient memory for bitmap buffer");
+        return ZINT_ERROR_MEMORY;
+    }
 
     fgred = (16 * ctoi(symbol->fgcolour[0])) + ctoi(symbol->fgcolour[1]);
     fggrn = (16 * ctoi(symbol->fgcolour[2])) + ctoi(symbol->fgcolour[3]);
@@ -133,6 +141,8 @@ static void buffer_plot(struct zint_symbol *symbol, char *pixelbuf) {
             }
         }
     }
+
+    return 0;
 }
 
 static int save_raster_image_to_file(struct zint_symbol *symbol, int image_height, int image_width, char *pixelbuf, int rotate_angle, int image_type) {
@@ -194,8 +204,7 @@ static int save_raster_image_to_file(struct zint_symbol *symbol, int image_heigh
 
     switch (image_type) {
         case OUT_BUFFER:
-            buffer_plot(symbol, rotated_pixbuf);
-            error_number = 0;
+            error_number = buffer_plot(symbol, rotated_pixbuf);
             break;
         case OUT_PNG_FILE:
 #ifndef NO_PNG

@@ -10,6 +10,12 @@
     <height>123</height>
    </rect>
   </property>
+  <property name="maximumSize">
+   <size>
+    <width>600</width>
+    <height>16777215</height>
+   </size>
+  </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
@@ -30,7 +36,7 @@
       <widget class="QComboBox" name="cmbC49RowSepHeight">
        <item>
         <property name="text">
-         <string>Default (1 X)</string>
+         <string>1 X (default)</string>
         </property>
        </item>
        <item>
@@ -53,28 +59,28 @@
     </layout>
    </item>
    <item>
-    <widget class="QGroupBox" name="groupBoxEncodingMode">
+    <widget class="QGroupBox" name="groupBoxC49EncodingMode">
      <property name="title">
       <string>Encoding Mode</string>
      </property>
-     <layout class="QHBoxLayout" name="horizontalLayout">
+     <layout class="QGridLayout" name="gridLayoutC49EncodingMode">
       <property name="sizeConstraint">
        <enum>QLayout::SetMinimumSize</enum>
       </property>
-      <item>
+      <item row="0" column="0">
        <widget class="QRadioButton" name="radC49Stand">
         <property name="text">
-         <string>S&amp;tandard Mode</string>
+         <string>Standard Mode</string>
         </property>
         <property name="checked">
          <bool>true</bool>
         </property>
        </widget>
       </item>
-      <item>
+      <item row="0" column="1">
        <widget class="QRadioButton" name="radC49GS1">
         <property name="text">
-         <string>&amp;GS-1 Data Mode</string>
+         <string>GS1 Data Mode</string>
         </property>
        </widget>
       </item>

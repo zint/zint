@@ -37,7 +37,6 @@
 #define TESTCOMMON_H
 
 #include <stdio.h>
-#include <string.h>
 #include "../common.h"
 
 #ifndef ARRAY_SIZE

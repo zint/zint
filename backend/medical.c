@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2017 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008 - 2020 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -32,15 +32,14 @@
 /* vim: set ts=4 sw=4 et : */
 
 #include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
 #include "common.h"
 
 INTERNAL int c39(struct zint_symbol *symbol, unsigned char source[], const size_t length);
 
 /* Codabar table checked against EN 798:1995 */
 
-#define CALCIUM	"0123456789-$:/.+ABCD"
+#define CALCIUM         "0123456789-$:/.+ABCD"
+#define CALCIUM_INNER   "0123456789-$:/.+"
 
 static const char *CodaTable[20] = {
     "11111221", "11112211", "11121121", "22111111", "11211211", "21111211",
@@ -198,6 +197,7 @@ INTERNAL int codabar(struct zint_symbol *symbol, unsigned char source[], int len
 
     int i, error_number;
     char dest[512];
+    int add_checksum, count, checksum;
 
     strcpy(dest, "");
 
@@ -205,26 +205,52 @@ INTERNAL int codabar(struct zint_symbol *symbol, unsigned char source[], int len
         strcpy(symbol->errtxt, "356: Input too long");
         return ZINT_ERROR_TOO_LONG;
     }
-    to_upper(source);
-    error_number = is_sane(CALCIUM, source, length);
-    if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "357: Invalid characters in data");
-        return error_number;
+    /* BS EN 798:1995 4.2 "'Codabar' symbols shall consist of ... b) start character;
+     * c) one or more symbol characters representing data ... d) stop character ..." */
+    if (length < 3) {
+        strcpy(symbol->errtxt, "362: Input too short");
+        return ZINT_ERROR_TOO_LONG;
     }
+    to_upper(source);
+
     /* Codabar must begin and end with the characters A, B, C or D */
     if ((source[0] != 'A') && (source[0] != 'B') && (source[0] != 'C')
             && (source[0] != 'D')) {
-        strcpy(symbol->errtxt, "358: Invalid characters in data");
+        strcpy(symbol->errtxt, "358: Does not begin with \"A\", \"B\", \"C\" or \"D\"");
+        return ZINT_ERROR_INVALID_DATA;
+    }
+    if ((source[length - 1] != 'A') && (source[length - 1] != 'B') &&
+            (source[length - 1] != 'C') && (source[length - 1] != 'D')) {
+        strcpy(symbol->errtxt, "359: Does not end with \"A\", \"B\", \"C\" or \"D\"");
         return ZINT_ERROR_INVALID_DATA;
     }
 
-    if ((source[length - 1] != 'A') && (source[length - 1] != 'B') &&
-            (source[length - 1] != 'C') && (source[length - 1] != 'D')) {
-        strcpy(symbol->errtxt, "359: Invalid characters in data");
-        return ZINT_ERROR_INVALID_DATA;
+    /* And must not use A, B, C or D otherwise (BS EN 798:1995 4.3.2) */
+    error_number = is_sane(CALCIUM_INNER, source + 1, length - 2);
+    if (error_number) {
+        strcpy(symbol->errtxt, "363: Cannot contain \"A\", \"B\", \"C\" or \"D\"");
+        return error_number;
+    }
+
+    add_checksum = symbol->option_2 == 1;
+    if (add_checksum) {
+        count = 0;
     }
 
     for (i = 0; i < length; i++) {
+        if (add_checksum) {
+            count += strchr(CALCIUM, source[i]) - CALCIUM;
+            if (i + 1 == length) {
+                checksum = count % 16;
+                if (checksum) {
+                    checksum = 16 - checksum;
+                }
+                if (symbol->debug & ZINT_DEBUG_PRINT) {
+                    printf("Codabar: %s, count %d, checksum %d\n", source, count, checksum);
+                }
+                strcat(dest, CodaTable[checksum]);
+            }
+        }
         lookup(CALCIUM, CodaTable, source[i], dest);
     }
 
@@ -255,11 +281,10 @@ INTERNAL int code32(struct zint_symbol *symbol, unsigned char source[], int leng
     /* Add leading zeros as required */
     zeroes = 8 - length;
     memset(localstr, '0', zeroes);
-    strcpy(localstr + zeroes, (char*) source);
+    ustrcpy(localstr + zeroes, source);
 
     /* Calculate the check digit */
     checksum = 0;
-    checkpart = 0;
     for (i = 0; i < 4; i++) {
         checkpart = ctoi(localstr[i * 2]);
         checksum += checkpart;
@@ -302,8 +327,8 @@ INTERNAL int code32(struct zint_symbol *symbol, unsigned char source[], int leng
     }
 
     /* Override the normal text output with the Pharmacode number */
-    strcpy((char*) symbol->text, "A");
-    strcat((char*) symbol->text, (char*) localstr);
+    ustrcpy(symbol->text, "A");
+    ustrcat(symbol->text, localstr);
 
     return error_number;
 }

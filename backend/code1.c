@@ -36,7 +36,6 @@
 #include "reedsol.h"
 #include "large.h"
 #include <stdio.h>
-#include <string.h>
 #include <math.h>
 
 static void horiz(struct zint_symbol *symbol, int row_no, int full) {
@@ -121,10 +120,14 @@ static int isedi(unsigned char input) {
 static int dq4bi(unsigned char source[], int sourcelen, int position) {
     int i;
 
-    for (i = position; isedi(source[position + i]) && ((position + i) < sourcelen); i++);
+    for (i = 0; ((position + i) < sourcelen) && isedi(source[position + i]); i++);
 
     if ((position + i) == sourcelen) {
         /* Reached end of input */
+        return 0;
+    }
+    if (i == 0) {
+        /* Not EDI */
         return 0;
     }
 
@@ -320,7 +323,6 @@ static int c1_look_ahead_test(unsigned char source[], int sourcelen, int positio
             if (c40_count < edi_count) {
                 best_scheme = C1_C40;
             } else {
-                done = 0;
                 if (c40_count == edi_count) {
                     if (dq4bi(source, sourcelen, position)) {
                         best_scheme = C1_EDI;
@@ -361,7 +363,6 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigne
 
     sp = 0;
     tp = 0;
-    latch = 0;
     memset(c40_buffer, 0, sizeof(*c40_buffer));
     c40_p = 0;
     memset(text_buffer, 0, sizeof(*text_buffer));
@@ -455,7 +456,7 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigne
             }
 
             if (next_mode == C1_ASCII) { /* Step B3 */
-                if (istwodigits(source, sp) && ((sp + 1) != length)) {
+                if (istwodigits(source, length, sp)) {
                     target[tp] = (10 * ctoi(source[sp])) + ctoi(source[sp + 1]) + 130;
                     tp++;
                     sp += 2;
@@ -1304,14 +1305,17 @@ INTERNAL int code_one(struct zint_symbol *symbol, unsigned char source[], int le
 
     if (symbol->option_2 == 10) {
         /* Version T */
-        unsigned int data[40], ecc[25];
-        unsigned int stream[65];
+        unsigned int data[80] = {0}; /* Allow for doubled digits */
+        unsigned int ecc[22];
+        unsigned int stream[60];
         int data_length;
         int data_cw, ecc_cw, block_width;
 
-        for (i = 0; i < 40; i++) {
-            data[i] = 0;
+        if (length > 80) {
+            strcpy(symbol->errtxt, "519: Input data too long");
+            return ZINT_ERROR_TOO_LONG;
         }
+
         data_length = c1_encode(symbol, source, data, length);
 
         if (data_length == 0) {

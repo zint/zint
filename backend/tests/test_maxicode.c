@@ -31,6 +31,193 @@
 
 #include "testcommon.h"
 
+static void test_large(int index, int debug) {
+
+    testStart("");
+
+    int ret;
+    struct item {
+        int option_1;
+        unsigned char *pattern;
+        int length;
+        char* primary;
+        int ret;
+        int expected_rows;
+        int expected_width;
+    };
+    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    struct item data[] = {
+        /*  0*/ { -1, "1", 132, "", 0, 33, 30 }, // 138 according to ISO/IEC 16023:2000 TODO: investigate (see also test_fuzz)
+        /*  1*/ { -1, "1", 133, "", ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  2*/ { -1, "A", 93, "", 0, 33, 30 },
+        /*  3*/ { -1, "A", 94, "", ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  4*/ { -1, "\001", 91, "", 0, 33, 30 },
+        /*  5*/ { -1, "\001", 92, "", ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  6*/ { -1, "\200", 91, "", 0, 33, 30 },
+        /*  7*/ { -1, "\200", 92, "", ZINT_ERROR_TOO_LONG, -1, -1 },
+    };
+    int data_size = ARRAY_SIZE(data);
+
+    char data_buf[256];
+
+    for (int i = 0; i < data_size; i++) {
+
+        if (index != -1 && i != index) continue;
+
+        struct zint_symbol *symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        testUtilStrCpyRepeat(data_buf, data[i].pattern, data[i].length);
+        assert_equal(data[i].length, (int) strlen(data_buf), "i:%d length %d != strlen(data_buf) %d\n", i, data[i].length, (int) strlen(data_buf));
+
+        int length = testUtilSetSymbol(symbol, BARCODE_MAXICODE, -1 /*input_mode*/, -1 /*eci*/, data[i].option_1, -1, -1, -1 /*output_options*/, data_buf, data[i].length, debug);
+        strcpy(symbol->primary, data[i].primary);
+
+        ret = ZBarcode_Encode(symbol, data_buf, length);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+
+        if (ret < 5) {
+            assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
+            assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n", i, symbol->width, data[i].expected_width);
+        }
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
+static void test_encode(int index, int generate, int debug) {
+
+    testStart("");
+
+    int ret;
+    struct item {
+        int input_mode;
+        int option_1;
+        unsigned char *data;
+        char* primary;
+        int ret;
+
+        int expected_rows;
+        int expected_width;
+        char *comment;
+        char *expected;
+    };
+    struct item data[] = {
+        /*  0*/ { -1, -1, "THIS IS A 93 CHARACTER CODE SET A MESSAGE THAT FILLS A MODE 4, UNAPPENDED, MAXICODE SYMBOL...", "", 0, 33, 30, "ISO/IEC 16023:2000 Figure 2",
+                    "011111010000001000001000100111"
+                    "000100000001000000001010000000"
+                    "001011001100100110110010010010"
+                    "100000010001100010010000000000"
+                    "001011000000101000001010110011"
+                    "111010001000001011001000111100"
+                    "100000000110000010010000000000"
+                    "000010100010010010001001111100"
+                    "111011100000001000000110000000"
+                    "000000011011000000010100011000"
+                    "101111000001010110001100000011"
+                    "001110001010000000111010001110"
+                    "000111100000000000100001011000"
+                    "100010000000000000000111001000"
+                    "100000001000000000011000001000"
+                    "000010111000000000000010000010"
+                    "111000001000000000001000001101"
+                    "011000000000000000001000100100"
+                    "000000101100000000001001010001"
+                    "101010001000000000100111001100"
+                    "001000011000000000011100001010"
+                    "000000000000000000110000100000"
+                    "101011001010100001000101010001"
+                    "100011110010101001101010001010"
+                    "011010000000000101011010011111"
+                    "000001110011111111111100010100"
+                    "001110100111000101011000011100"
+                    "110111011100100001101001010110"
+                    "000001011011101010010111001100"
+                    "111000110111100010001111011110"
+                    "101111010111111000010110111001"
+                    "001001101111101101101010011100"
+                    "001011000000111101100100001000"
+                },
+        /*  1*/ { -1, 4, "MaxiCode (19 chars)", "", 0, 33, 30, "ISO/IEC 16023:2000 Figure H1 **NOT SAME** TODO: investigate",
+                    "001101011111011100000010101111"
+                    "101100010001001100010000001100"
+                    "101100001010001111001001111101"
+                    "010101010101010101010101010100"
+                    "000000000000000000000000000111"
+                    "101010101010101010101010101000"
+                    "010101010101010101010101010111"
+                    "000000000000000000000000000010"
+                    "101010101010101010101010101000"
+                    "010101011111111100000001010100"
+                    "000000000011110110001000000000"
+                    "101010101110000000111010101000"
+                    "010101100010000000001101010101"
+                    "000000101000000000001000000000"
+                    "101010000000000000011010101000"
+                    "010101010000000000001101010100"
+                    "000000001000000000001000000011"
+                    "101010110000000000001010101010"
+                    "010101101100000000010101010111"
+                    "000000100000000000000000000000"
+                    "101010010110000000000110101011"
+                    "010101010110000000001001010100"
+                    "000000000110001011000000000010"
+                    "101010100110111001010010101000"
+                    "010101010101010101010000101111"
+                    "000000000000000000001100100000"
+                    "101010101010101010100101000001"
+                    "000011000111010110101100010000"
+                    "111001111110111110011000111111"
+                    "000001110010000010110001100100"
+                    "000111000000001111011000010010"
+                    "010110010110001110100000010100"
+                    "010011110011000001010111100111"
+                },
+    };
+    int data_size = ARRAY_SIZE(data);
+
+    char escaped[1024];
+
+    for (int i = 0; i < data_size; i++) {
+
+        if (index != -1 && i != index) continue;
+
+        struct zint_symbol *symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        int length = testUtilSetSymbol(symbol, BARCODE_MAXICODE, data[i].input_mode, -1 /*eci*/, data[i].option_1, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        strcpy(symbol->primary, data[i].primary);
+
+        ret = ZBarcode_Encode(symbol, data[i].data, length);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+
+        if (generate) {
+            printf("        /*%3d*/ { %s, %d, \"%s\", \"%s\", %s, %d, %d, \"%s\",\n",
+                    i, testUtilInputModeName(data[i].input_mode), data[i].option_1, testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), data[i].primary,
+                    testUtilErrorName(data[i].ret), symbol->rows, symbol->width, data[i].comment);
+            testUtilModulesDump(symbol, "                    ", "\n");
+            printf("                },\n");
+        } else {
+            if (ret < 5) {
+                assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);
+                assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
+
+                if (ret == 0) {
+                    int width, row;
+                    ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
+                    assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, ret, width, row, data[i].data);
+                }
+            }
+        }
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
 static void test_best_supported_set(int index, int generate, int debug) {
 
     testStart("");
@@ -176,6 +363,8 @@ static void test_fuzz(int index, int debug) {
 int main(int argc, char *argv[]) {
 
     testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
+        { "test_large", test_large, 1, 0, 1 },
+        { "test_encode", test_encode, 1, 1, 1 },
         { "test_best_supported_set", test_best_supported_set, 1, 1, 1 },
         { "test_fuzz", test_fuzz, 1, 0, 1 },
     };
