@@ -36,7 +36,6 @@
 #include <malloc.h>
 #endif
 #include <stdio.h>
-#include <string.h>
 #include "common.h"
 
 #define EIGHTBIT_MODE       10
@@ -287,7 +286,7 @@ static float look_ahead_ascii(unsigned char source[], int in_length, int in_locn
     do {
         /* Check for double digits */
         done = 0;
-        if (in_locn != (in_length - 1)) {
+        if (i + 1 < in_length) {
             first_digit = posn(ultra_digit, source[i]);
             second_digit = posn(ultra_digit, source[i + 1]);
             if ((first_digit != -1) && (second_digit != -1)) {
@@ -506,7 +505,7 @@ static float look_ahead_c43(unsigned char source[], int in_length, int in_locn, 
     }
     unshift_set = subset;
 
-    do {
+    while ((sublocn < in_length) && (sublocn < end_char)) {
         /* Check for FNC1 */
         if (gs1 && source[sublocn] == '[') {
             break;
@@ -572,8 +571,7 @@ static float look_ahead_c43(unsigned char source[], int in_length, int in_locn, 
             }
             subset = unshift_set;
         }
-
-    } while ((sublocn < in_length) && (sublocn < end_char));
+    }
 
     pad = 3 - (subcodeword_count % 3);
     if (pad == 3) {
@@ -1109,7 +1107,7 @@ INTERNAL int ultracode(struct zint_symbol *symbol, const unsigned char source[],
     for (i = 0; i < total_height; i++) {
         symbol->row_height[i] = 1;
         for(j = 0; j < total_width; j++) {
-            symbol->encoded_data[i][j] = posn(ultra_colour, pattern[(i * total_width) + j]);
+            set_module_colour(symbol, i, j, posn(ultra_colour, pattern[(i * total_width) + j]));
         }
     }
 

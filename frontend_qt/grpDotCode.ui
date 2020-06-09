@@ -10,6 +10,12 @@
     <height>223</height>
    </rect>
   </property>
+  <property name="maximumSize">
+   <size>
+    <width>600</width>
+    <height>16777215</height>
+   </size>
+  </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
@@ -19,7 +25,7 @@
      <item row="0" column="1">
       <widget class="QComboBox" name="cmbDotCols">
        <property name="maxVisibleItems">
-        <number>11</number>
+        <number>21</number>
        </property>
        <item>
         <property name="text">
@@ -314,29 +320,44 @@
        </property>
       </widget>
      </item>
-     <item row="2" column="0">
-      <widget class="QRadioButton" name="radDotStan">
-       <property name="text">
-        <string>Standard &amp;Mode</string>
-       </property>
-       <property name="checked">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="1">
-      <widget class="QRadioButton" name="radDotGs1">
-       <property name="text">
-        <string>GS-&amp;1 Data Mode</string>
-       </property>
-      </widget>
-     </item>
     </layout>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBoxDotEncodingMode">
+     <property name="title">
+      <string>Encoding Mode</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayoutDotEncodingMode">
+      <property name="sizeConstraint">
+       <enum>QLayout::SetMinimumSize</enum>
+      </property>
+      <item row="0" column="0">
+       <widget class="QRadioButton" name="radDotStand">
+        <property name="text">
+         <string>S&amp;tandard Mode</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QRadioButton" name="radDotGS1">
+        <property name="text">
+         <string>&amp;GS1 Data Mode</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
    </item>
    <item>
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::MinimumExpanding</enum>
      </property>
      <property name="sizeHint" stdset="0">
       <size>

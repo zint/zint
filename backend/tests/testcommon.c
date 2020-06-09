@@ -624,6 +624,10 @@ void testUtilStrCpyRepeat(char *buffer, char *repeat, int size) {
     int i;
     int len = strlen(repeat);
     int max = size - len;
+    if (len == 0) {
+        fprintf(stderr, "testUtilStrCpyRepeat: only use non-empty, non-NUL single-byte data for repeat pattern\n");
+        abort();
+    }
     for (i = 0; i < max; i += len) {
         memcpy(buffer + i, repeat, len);
     }

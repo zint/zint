@@ -33,8 +33,8 @@
 /* vim: set ts=4 sw=4 et : */
 
 #include <stdio.h>
-#include <string.h>
 #include <math.h>
+#include <assert.h>
 #include "common.h"
 #include "tif.h"
 #ifdef _MSC_VER
@@ -76,6 +76,9 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
         rows_per_strip = 1;
     }
 
+    /* Suppresses clang-tidy clang-analyzer-core.VLASize warning */
+    assert(symbol->bitmap_height > 0);
+
     strip_count = symbol->bitmap_height / rows_per_strip;
     if ((symbol->bitmap_height % rows_per_strip) != 0) {
         strip_count++;
@@ -90,7 +93,7 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
     }
 
 #ifndef _MSC_VER
-    uint32_t strip_offset[strip_count]; // NOLINT(clang-analyzer-core.VLASize) strip_count >= 1
+    uint32_t strip_offset[strip_count];
     uint32_t strip_bytes[strip_count];
 #else
     strip_offset = (uint32_t*) _alloca(strip_count * sizeof(uint32_t));

@@ -31,6 +31,57 @@
 
 #include "testcommon.h"
 
+static void test_large(int index, int debug) {
+
+    testStart("");
+
+    int ret;
+    struct item {
+        unsigned char *pattern;
+        int length;
+        int ret;
+        int expected_rows;
+        int expected_width;
+    };
+    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    struct item data[] = {
+        /*  0*/ { "1", 2751, 0, 162, 162 },
+        /*  1*/ { "1", 2752, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  1*/ { "A", 1836, 0, 162, 162 },
+        /*  2*/ { "A", 1837, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  3*/ { "\200", 1143, 0, 162, 162 },
+        /*  4*/ { "\200", 1144, ZINT_ERROR_TOO_LONG, -1, -1 },
+    };
+    int data_size = ARRAY_SIZE(data);
+
+    char data_buf[2753];
+
+    for (int i = 0; i < data_size; i++) {
+
+        if (index != -1 && i != index) continue;
+
+        struct zint_symbol *symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        testUtilStrCpyRepeat(data_buf, data[i].pattern, data[i].length);
+        assert_equal(data[i].length, (int) strlen(data_buf), "i:%d length %d != strlen(data_buf) %d\n", i, data[i].length, (int) strlen(data_buf));
+
+        int length = testUtilSetSymbol(symbol, BARCODE_GRIDMATRIX, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data_buf, data[i].length, debug);
+
+        ret = ZBarcode_Encode(symbol, data_buf, length);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+
+        if (ret < 5) {
+            assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
+            assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n", i, symbol->width, data[i].expected_width);
+        }
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
 static void test_options(int index, int debug) {
 
     testStart("");
@@ -375,6 +426,7 @@ static void test_encode(int index, int generate, int debug) {
 int main(int argc, char *argv[]) {
 
     testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
+        { "test_large", test_large, 1, 0, 1 },
         { "test_options", test_options, 1, 0, 1 },
         { "test_input", test_input, 1, 1, 1 },
         { "test_encode", test_encode, 1, 1, 1 },

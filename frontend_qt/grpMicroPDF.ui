@@ -10,6 +10,12 @@
     <height>376</height>
    </rect>
   </property>
+  <property name="maximumSize">
+   <size>
+    <width>600</width>
+    <height>16777215</height>
+   </size>
+  </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
@@ -58,24 +64,36 @@
        </item>
       </widget>
      </item>
-     <item row="1" column="0">
-      <widget class="QRadioButton" name="radMPDFStand">
-       <property name="text">
-        <string>S&amp;tandard</string>
-       </property>
-       <property name="checked">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="0">
-      <widget class="QRadioButton" name="radMPDFHIBC">
-       <property name="text">
-        <string>&amp;HIBC MicroPDF417</string>
-       </property>
-      </widget>
-     </item>
     </layout>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBoxMPDFEncodingMode">
+     <property name="title">
+      <string>Encoding Mode</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayoutMPDFEncodingMode">
+      <property name="sizeConstraint">
+       <enum>QLayout::SetMinimumSize</enum>
+      </property>
+      <item row="0" column="0">
+       <widget class="QRadioButton" name="radMPDFStand">
+        <property name="text">
+         <string>Standard Mode</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QRadioButton" name="radMPDFHIBC">
+        <property name="text">
+         <string>HIBC MicroPDF417</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
    </item>
    <item>
     <spacer name="verticalSpacer">

@@ -64,6 +64,8 @@ static void test_large(int index, int debug) {
         /* 13*/ { BARCODE_EAN14, "12345678901234", -1, ZINT_ERROR_TOO_LONG, -1 },
         /* 14*/ { BARCODE_NVE18, "12345678901234567", -1, 0, 156 },
         /* 15*/ { BARCODE_NVE18, "123456789012345678", -1, ZINT_ERROR_TOO_LONG, -1 },
+        /* 16*/ { BARCODE_HIBC_128, "1", 110, 0, 684 },
+        /* 17*/ { BARCODE_HIBC_128, "1", 111, ZINT_ERROR_TOO_LONG, -1 },
     };
     int data_size = ARRAY_SIZE(data);
 
@@ -122,6 +124,8 @@ static void test_hrt(int index, int debug) {
         /*  5*/ { BARCODE_CODE128, DATA_MODE, "abcd\351", -1, "abcd\351" },
         /*  6*/ { BARCODE_CODE128B, UNICODE_MODE, "abcdé", -1, "abcdé" },
         /*  7*/ { BARCODE_CODE128B, DATA_MODE, "abcd\351", -1, "abcd\351" },
+        /*  8*/ { BARCODE_HIBC_128, UNICODE_MODE, "1234567890", -1, "*+12345678900*" },
+        /*  9*/ { BARCODE_HIBC_128, UNICODE_MODE, "a99912345", -1, "*+A999123457*" }, // Converts to upper
         // BARCODE_EAN128, BARCODE_EAN14, BARCODE_NVE18 hrt tested in test_gs1.c
     };
     int data_size = ARRAY_SIZE(data);
@@ -171,6 +175,7 @@ static void test_reader_init(int index, int generate, int debug) {
         /*  3*/ { BARCODE_EAN128, GS1_MODE, READER_INIT, "[90]12", 0, 1, 68, "(6) 105 102 90 12 11 106", "StartC FNC1 90 12 (Reader Initialise not supported by GS1 barcodes (use CODE128))" },
         /*  4*/ { BARCODE_EAN14, GS1_MODE, READER_INIT, "12", 0, 1, 134, "(12) 105 102 1 0 0 0 0 0 1 25 30 106", "StartC FNC1 01 00 (5) 01 (Reader Initialise not supported by GS1 barcodes (use CODE128))" },
         /*  5*/ { BARCODE_NVE18, GS1_MODE, READER_INIT, "12", 0, 1, 156, "(14) 105 102 0 0 0 0 0 0 0 0 1 25 80 106", "StartC FNC1 00 (8) 01 (Reader Initialise not supported by GS1 barcodes (use CODE128))" },
+        /*  6*/ { BARCODE_HIBC_128, UNICODE_MODE, READER_INIT, "A", 0, 1, 79, "(7) 104 96 11 33 24 5 106", "StartA FNC3 + A 8 (check) (Not sensible, use CODE128)" },
     };
     int data_size = ARRAY_SIZE(data);
 
@@ -372,6 +377,57 @@ static void test_ean128_input(int index, int generate, int debug) {
     testFinish();
 }
 
+static void test_hibc_input(int index, int generate, int debug) {
+
+    testStart("");
+
+    int ret;
+    struct item {
+        unsigned char *data;
+        int ret;
+        int expected_width;
+        char *expected;
+        char *comment;
+    };
+    struct item data[] = {
+        /*  0*/ { ",", ZINT_ERROR_INVALID_DATA, -1, "", "" },
+        /*  1*/ { "A99912345/$$52001510X3", 0, 255, "(23) 104 11 33 99 99 91 23 45 100 15 4 4 99 52 0 15 10 100 56 19 19 53 106", "Check digit 3" },
+    };
+    int data_size = ARRAY_SIZE(data);
+
+    char escaped[1024];
+
+    for (int i = 0; i < data_size; i++) {
+
+        if (index != -1 && i != index) continue;
+
+        struct zint_symbol *symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        symbol->debug = ZINT_DEBUG_TEST; // Needed to get codeword dump in errtxt
+
+        int length = testUtilSetSymbol(symbol, BARCODE_HIBC_128, UNICODE_MODE, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
+
+        ret = ZBarcode_Encode(symbol, data[i].data, length);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+
+        if (generate) {
+            printf("        /*%3d*/ { \"%s\", %s, %d, \"%s\", \"%s\" },\n",
+                    i, testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
+                    testUtilErrorName(data[i].ret), symbol->width, symbol->errtxt, data[i].comment);
+        } else {
+            if (ret < 5) {
+                assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
+                assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
+            }
+        }
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
 static void test_encode(int index, int generate, int debug) {
 
     testStart("");
@@ -459,11 +515,26 @@ static void test_encode(int index, int generate, int debug) {
         /* 22*/ { BARCODE_EAN128, GS1_MODE, "[8005]000365[10]123456", 0, 1, 156, "GS1 General Specifications Figure 7.8.5.2-2",
                     "110100111001111010111010100111100100010011001101100110010010011000100101100001111010111011001000100101100111001000101100011100010110101100001001100011101011"
                 },
-        /* 23*/ { BARCODE_EAN14, GS1_MODE, "4070071967072", 0, 1, 134, "Verified manually against bwipp and tec-it",
+        /* 23*/ { BARCODE_EAN128, GS1_MODE, "[403]27653113+99000900090010", 0, 1, 222, "DHL Leitcode https://www.dhl.de/de/geschaeftskunden/paket/information/geschaeftskunden/abrechnung/leitcodierung.html",
+                    "110100111001111010111011000101000110001101101100101000011011101110110001001001011110111011001011100110001001001011101111010111011110110110011001100100100011011001100110010010001101100110011001000100110001000101100011101011"
+                },
+        /* 24*/ { BARCODE_EAN128, GS1_MODE, "[00]340433935039756615", 0, 1, 156, "DHL Identcode https://www.dhl.de/de/geschaeftskunden/paket/information/geschaeftskunden/abrechnung/leitcodierung.html",
+                    "110100111001111010111011011001100100010110001001000110010100011000101000111101100010111011010001000110000100101001000011010111001100100111001101100011101011"
+                },
+        /* 25*/ { BARCODE_EAN14, GS1_MODE, "4070071967072", 0, 1, 134, "Verified manually against bwipp and tec-it",
                     "11010011100111101011101100110110011000101000101100001001001100010011001011100100001011001001100010011001001110110111001001100011101011"
                 },
-        /* 24*/ { BARCODE_NVE18, GS1_MODE, "40700000071967072", 0, 1, 156, "Verified manually against bwipp (sscc18) and tec-it",
+        /* 26*/ { BARCODE_NVE18, GS1_MODE, "40700000071967072", 0, 1, 156, "Verified manually against bwipp (sscc18) and tec-it",
                     "110100111001111010111011011001100110001010001011000010011011001100110110011001001100010011001011100100001011001001100010011001001110110111011101100011101011"
+                },
+        /* 27*/ { BARCODE_HIBC_128, UNICODE_MODE, "83278F8G9H0J2G", 0, 1, 211, "ANSI/HIBC 2.6 - 2016 Section 4.1, not same, uses different encoding (eg begins StartA instead of StartB)",
+                    "1101001000011000100100111010011001011101111011000110110110000101001011110111010001100010111010011001101000100011100101100110001010001001110110010110111000110011100101101000100010001001100111101010001100011101011"
+                },
+        /* 28*/ { BARCODE_HIBC_128, UNICODE_MODE, "A123BJC5D6E71", 0, 1, 200, "ANSI/HIBC 2.6 - 2016 Figure 1, same",
+                    "11010010000110001001001010001100010011100110110011100101100101110010001011000101101110001000100011011011100100101100010001100111010010001101000111011011101001110011011010001000110001101101100011101011"
+                },
+        /* 29*/ { BARCODE_HIBC_128, UNICODE_MODE, "$$52001510X3G", 0, 1, 178, "ANSI/HIBC 2.6 - 2016 Figure 5, same",
+                    "1101001000011000100100100100011001001000110010111011110110111000101101100110010111001100110010001001011110111011100010110110010111001101000100010110001000100011110101100011101011"
                 },
     };
     int data_size = sizeof(data) / sizeof(struct item);
@@ -515,6 +586,7 @@ int main(int argc, char *argv[]) {
         { "test_reader_init", test_reader_init, 1, 1, 1 },
         { "test_input", test_input, 1, 1, 1 },
         { "test_ean128_input", test_ean128_input, 1, 1, 1 },
+        { "test_hibc_input", test_hibc_input, 1, 1, 1 },
         { "test_encode", test_encode, 1, 1, 1 },
     };
 

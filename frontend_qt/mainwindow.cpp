@@ -35,8 +35,9 @@
 #include <stdio.h>
 
 MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags fl)
-        : QWidget(parent, fl),m_optionWidget(0)
+        : QWidget(parent, fl), m_optionWidget(0)
 {
+    m_bc.bc.setDebug(QCoreApplication::arguments().contains("--verbose"));
 
     QCoreApplication::setOrganizationName("zint");
     QCoreApplication::setOrganizationDomain("zint.org.uk");
@@ -68,6 +69,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags fl)
         "Code 49",
         "Code 93",
         "Code One",
+        "DAFT Code",
         "Data Matrix (ISO 16022)",
         "Deutsche Post Identcode",
         "Deutsche Post Leitcode",
@@ -112,7 +114,8 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags fl)
         "UPNQR",
         "Universal Product Code (UPC-A)",
         "Universal Product Code (UPC-E)",
-        "USPS Intelligent Mail"
+        "USPS Intelligent Mail",
+        "VIN (Vehicle Identification Number)"
     };
 
     scene = new QGraphicsScene(this);
@@ -151,6 +154,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags fl)
     connect(chkComposite, SIGNAL(stateChanged( int )), SLOT(composite_enable()));
     connect(chkComposite, SIGNAL(stateChanged( int )), SLOT(update_preview()));
     connect(cmbCompType, SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+    connect(chkEscape, SIGNAL(stateChanged( int )), SLOT(update_preview()));
     connect(spnWhitespace, SIGNAL(valueChanged( int )), SLOT(update_preview()));
     connect(btnAbout, SIGNAL(clicked( bool )), SLOT(about()));
     connect(btnSave, SIGNAL(clicked( bool )), SLOT(save()));
@@ -391,11 +395,12 @@ void MainWindow::copy_to_clipboard_bmp()
 void MainWindow::change_options()
 {
     QUiLoader uiload;
+    int symbology = metaObject()->enumerator(0).value(bstyle->currentIndex());
 
     if (tabMain->count()==3)
         tabMain->removeTab(1);
 
-    if(metaObject()->enumerator(0).value(bstyle->currentIndex()) == BARCODE_CODE128)
+    if (symbology == BARCODE_CODE128)
     {
         QFile file(":/grpC128.ui");
         if (!file.open(QIODevice::ReadOnly))
@@ -413,7 +418,7 @@ void MainWindow::change_options()
     else
         chkComposite->setText(tr("Add 2D Component"));
 
-    if(metaObject()->enumerator(0).value(bstyle->currentIndex()) == BARCODE_PDF417)
+    if (symbology == BARCODE_PDF417)
     {
         QFile file(":/grpPDF417.ui");
         if (!file.open(QIODevice::ReadOnly))
@@ -426,9 +431,10 @@ void MainWindow::change_options()
         connect(m_optionWidget->findChild<QObject*>("radPDFTruncated"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radPDFStand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radPDFHIBC"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+
     }
 
-    if(metaObject()->enumerator(0).value(bstyle->currentIndex()) == BARCODE_MICROPDF417)
+    if (symbology == BARCODE_MICROPDF417)
     {
         QFile file(":/grpMicroPDF.ui");
         if (!file.open(QIODevice::ReadOnly))
@@ -440,7 +446,7 @@ void MainWindow::change_options()
         connect(m_optionWidget->findChild<QObject*>("radMPDFStand"), SIGNAL(toggled( bool )), SLOT(update_preview()));
     }
 
-    if(metaObject()->enumerator(0).value(bstyle->currentIndex()) == BARCODE_DOTCODE)
+    if (symbology == BARCODE_DOTCODE)
     {
         QFile file(":/grpDotCode.ui");
         if (!file.open(QIODevice::ReadOnly))
@@ -449,12 +455,12 @@ void MainWindow::change_options()
         file.close();
         tabMain->insertTab(1,m_optionWidget,tr("DotCode"));
         connect(m_optionWidget->findChild<QObject*>("cmbDotCols"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("radDotStan"), SIGNAL(clicked( bool )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("radDotGs1"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(m_optionWidget->findChild<QObject*>("radDotStand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(m_optionWidget->findChild<QObject*>("radDotGS1"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("txtDotSize"), SIGNAL(textChanged( QString )), SLOT(update_preview()));
     }
 
-    if(metaObject()->enumerator(0).value(bstyle->currentIndex()) == BARCODE_AZTEC)
+    if (symbology == BARCODE_AZTEC)
     {
         QFile file(":/grpAztec.ui");
         if (!file.open(QIODevice::ReadOnly))
@@ -472,7 +478,7 @@ void MainWindow::change_options()
         connect(m_optionWidget->findChild<QObject*>("radAztecHIBC"), SIGNAL(clicked( bool )), SLOT(update_preview()));
     }
 
-    if(metaObject()->enumerator(0).value(bstyle->currentIndex()) == BARCODE_MSI_PLESSEY)
+    if (symbology == BARCODE_MSI_PLESSEY)
     {
         QFile file(":/grpMSICheck.ui");
         if (!file.open(QIODevice::ReadOnly))
@@ -483,8 +489,20 @@ void MainWindow::change_options()
         connect(m_optionWidget->findChild<QObject*>("cmbMSICheck"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
     }
 
-    if((metaObject()->enumerator(0).value(bstyle->currentIndex()) == BARCODE_CODE39) ||
-        (metaObject()->enumerator(0).value(bstyle->currentIndex()) == BARCODE_EXCODE39))
+    if (symbology == BARCODE_CODE11)
+    {
+        QFile file(":/grpC11.ui");
+        if (!file.open(QIODevice::ReadOnly))
+            return;
+        m_optionWidget=uiload.load(&file);
+        file.close();
+        tabMain->insertTab(1,m_optionWidget,tr("Code 11"));
+        connect(m_optionWidget->findChild<QObject*>("radC11TwoCheckDigits"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(m_optionWidget->findChild<QObject*>("radC11OneCheckDigit"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(m_optionWidget->findChild<QObject*>("radC11NoCheckDigits"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+    }
+
+    if ((symbology == BARCODE_CODE39) || (symbology == BARCODE_EXCODE39))
     {
         QFile file(":/grpC39.ui");
         if (!file.open(QIODevice::ReadOnly))
@@ -495,7 +513,7 @@ void MainWindow::change_options()
         connect(m_optionWidget->findChild<QObject*>("radC39Stand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radC39Check"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radC39HIBC"), SIGNAL(clicked( bool )), SLOT(update_preview()));
-        if(metaObject()->enumerator(0).value(bstyle->currentIndex()) == BARCODE_EXCODE39)
+        if (symbology == BARCODE_EXCODE39)
         {
             if(m_optionWidget->findChild<QRadioButton*>("radC39HIBC")->isChecked() == true)
             {
@@ -508,7 +526,19 @@ void MainWindow::change_options()
             m_optionWidget->findChild<QRadioButton*>("radC39HIBC")->setEnabled(true);
     }
 
-    if(metaObject()->enumerator(0).value(bstyle->currentIndex()) == BARCODE_CODE16K)
+    if (symbology == BARCODE_LOGMARS)
+    {
+        QFile file(":/grpLOGMARS.ui");
+        if (!file.open(QIODevice::ReadOnly))
+            return;
+        m_optionWidget=uiload.load(&file);
+        file.close();
+        tabMain->insertTab(1,m_optionWidget,tr("LOGMARS"));
+        connect(m_optionWidget->findChild<QObject*>("radLOGMARSStand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(m_optionWidget->findChild<QObject*>("radLOGMARSCheck"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+    }
+
+    if (symbology == BARCODE_CODE16K)
     {
         QFile file(":/grpC16k.ui");
         if (!file.open(QIODevice::ReadOnly))
@@ -520,7 +550,18 @@ void MainWindow::change_options()
         connect(m_optionWidget->findChild<QObject*>("radC16kStand"), SIGNAL(toggled( bool )), SLOT(update_preview()));
     }
 
-    if(metaObject()->enumerator(0).value(bstyle->currentIndex()) == BARCODE_CODABLOCKF)
+    if (symbology == BARCODE_CODABAR)
+    {
+        QFile file(":/grpCodabar.ui");
+        if (!file.open(QIODevice::ReadOnly))
+            return;
+        m_optionWidget=uiload.load(&file);
+        file.close();
+        tabMain->insertTab(1,m_optionWidget,tr("Codabar"));
+        connect(m_optionWidget->findChild<QObject*>("chkCodabarCheck"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+    }
+
+    if (symbology == BARCODE_CODABLOCKF)
     {
         QFile file (":/grpCodablockF.ui");
         if (!file.open(QIODevice::ReadOnly))
@@ -535,7 +576,7 @@ void MainWindow::change_options()
         connect(m_optionWidget->findChild<QObject*>("radCbfHIBC"), SIGNAL(clicked( bool )), SLOT(update_preview()));
     }
 
-    if(metaObject()->enumerator(0).value(bstyle->currentIndex()) == BARCODE_DATAMATRIX)
+    if (symbology == BARCODE_DATAMATRIX)
     {
         QFile file(":/grpDM.ui");
         if (!file.open(QIODevice::ReadOnly))
@@ -549,9 +590,10 @@ void MainWindow::change_options()
         connect(m_optionWidget->findChild<QObject*>("cmbDM200Size"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("chkDMRectangle"), SIGNAL(stateChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("chkDMRE"), SIGNAL(stateChanged( int )), SLOT(update_preview()));
+        connect(m_optionWidget->findChild<QObject*>("chkDMGSSep"), SIGNAL(stateChanged( int )), SLOT(update_preview()));
     }
 
-    if(metaObject()->enumerator(0).value(bstyle->currentIndex()) == BARCODE_QRCODE)
+    if (symbology == BARCODE_QRCODE)
     {
         QFile file(":/grpQR.ui");
         if (!file.open(QIODevice::ReadOnly))
@@ -559,9 +601,6 @@ void MainWindow::change_options()
         m_optionWidget=uiload.load(&file);
         file.close();
         tabMain->insertTab(1,m_optionWidget,tr("QR Code"));
-        connect(m_optionWidget->findChild<QObject*>("radQRAuto"), SIGNAL(clicked( bool )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("radQRSize"), SIGNAL(clicked( bool )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("radQRECC"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("cmbQRSize"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("cmbQRECC"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radQRStand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
@@ -569,7 +608,7 @@ void MainWindow::change_options()
         connect(m_optionWidget->findChild<QObject*>("radQRHIBC"), SIGNAL(clicked( bool )), SLOT(update_preview()));
     }
 
-    if(metaObject()->enumerator(0).value(bstyle->currentIndex()) == BARCODE_RMQR)
+    if (symbology == BARCODE_RMQR)
     {
         QFile file(":/grpRMQR.ui");
         if (!file.open(QIODevice::ReadOnly))
@@ -577,16 +616,13 @@ void MainWindow::change_options()
         m_optionWidget=uiload.load(&file);
         file.close();
         tabMain->insertTab(1,m_optionWidget,tr("rMQR Code"));
-        connect(m_optionWidget->findChild<QObject*>("radRMQRAuto"), SIGNAL(clicked( bool )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("radRMQRSize"), SIGNAL(clicked( bool )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("radRMQRECC"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("cmbRMQRSize"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("cmbRMQRECC"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radRMQRStand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radRMQRGS1"), SIGNAL(clicked( bool )), SLOT(update_preview()));
     }
 
-    if(metaObject()->enumerator(0).value(bstyle->currentIndex()) == BARCODE_HANXIN)
+    if (symbology == BARCODE_HANXIN)
     {
         QFile file (":/grpHX.ui");
         if (!file.open(QIODevice::ReadOnly))
@@ -594,14 +630,11 @@ void MainWindow::change_options()
         m_optionWidget=uiload.load(&file);
         file.close();
         tabMain->insertTab(1,m_optionWidget,tr("Han Xin Code"));
-        connect(m_optionWidget->findChild<QObject*>("radHXAuto"), SIGNAL(clicked( bool )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("radHXSize"), SIGNAL(clicked( bool )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("radHXECC"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("cmbHXSize"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("cmbHXECC"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
     }
 
-    if(metaObject()->enumerator(0).value(bstyle->currentIndex()) == BARCODE_MICROQR)
+    if (symbology == BARCODE_MICROQR)
     {
         QFile file(":/grpMQR.ui");
         if (!file.open(QIODevice::ReadOnly))
@@ -609,14 +642,11 @@ void MainWindow::change_options()
         m_optionWidget=uiload.load(&file);
         file.close();
         tabMain->insertTab(1,m_optionWidget,tr("Micro QR Code"));
-        connect(m_optionWidget->findChild<QObject*>("radMQRAuto"), SIGNAL(clicked( bool )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("radMQRSize"), SIGNAL(clicked( bool )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("radMQRECC"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("cmbMQRSize"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("cmbMQRECC"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
     }
 
-    if(metaObject()->enumerator(0).value(bstyle->currentIndex()) == BARCODE_GRIDMATRIX)
+    if (symbology == BARCODE_GRIDMATRIX)
     {
         QFile file(":/grpGrid.ui");
         if (!file.open(QIODevice::ReadOnly))
@@ -624,14 +654,11 @@ void MainWindow::change_options()
         m_optionWidget=uiload.load(&file);
         file.close();
         tabMain->insertTab(1,m_optionWidget,tr("Grid Matrix"));
-        connect(m_optionWidget->findChild<QObject*>("radGridAuto"), SIGNAL(clicked( bool )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("radGridSize"), SIGNAL(clicked( bool )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("radGridECC"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("cmbGridSize"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("cmbGridECC"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
     }
 
-    if(metaObject()->enumerator(0).value(bstyle->currentIndex()) == BARCODE_MAXICODE)
+    if (symbology == BARCODE_MAXICODE)
     {
         QFile file(":/grpMaxicode.ui");
         if (!file.open(QIODevice::ReadOnly))
@@ -644,7 +671,7 @@ void MainWindow::change_options()
         connect(m_optionWidget->findChild<QObject*>("txtMaxiPrimary"), SIGNAL(textChanged( const QString& )), SLOT(update_preview()));
     }
 
-    if(metaObject()->enumerator(0).value(bstyle->currentIndex()) == BARCODE_CHANNEL)
+    if (symbology == BARCODE_CHANNEL)
     {
         QFile file(":/grpChannel.ui");
         if (!file.open(QIODevice::ReadOnly))
@@ -655,7 +682,7 @@ void MainWindow::change_options()
         connect(m_optionWidget->findChild<QObject*>("cmbChannel"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
     }
 
-    if(metaObject()->enumerator(0).value(bstyle->currentIndex()) == BARCODE_CODEONE)
+    if (symbology == BARCODE_CODEONE)
     {
         QFile file(":/grpCodeOne.ui");
         if (!file.open(QIODevice::ReadOnly))
@@ -667,7 +694,7 @@ void MainWindow::change_options()
         connect(m_optionWidget->findChild<QObject*>("radC1GS1"), SIGNAL(toggled( bool )), SLOT(update_preview()));
     }
 
-    if(metaObject()->enumerator(0).value(bstyle->currentIndex()) == BARCODE_CODE49)
+    if (symbology == BARCODE_CODE49)
     {
         QFile file(":/grpC49.ui");
         if (!file.open(QIODevice::ReadOnly))
@@ -679,7 +706,7 @@ void MainWindow::change_options()
         connect(m_optionWidget->findChild<QObject*>("radC49GS1"), SIGNAL(toggled( bool )), SLOT(update_preview()));
     }
 
-    if(metaObject()->enumerator(0).value(bstyle->currentIndex()) == BARCODE_RSS_EXPSTACK)
+    if (symbology == BARCODE_RSS_EXPSTACK)
     {
         QFile file(":/grpDBExtend.ui");
         if (!file.open(QIODevice::ReadOnly))
@@ -690,7 +717,7 @@ void MainWindow::change_options()
         connect(m_optionWidget->findChild<QObject*>("cmbCols"), SIGNAL(currentIndexChanged ( int )), SLOT(update_preview()));
     }
     
-    if(metaObject()->enumerator(0).value(bstyle->currentIndex()) == BARCODE_ULTRA)
+    if (symbology == BARCODE_ULTRA)
     {
         QFile file(":/grpUltra.ui");
         if (!file.open(QIODevice::ReadOnly))
@@ -705,7 +732,18 @@ void MainWindow::change_options()
         connect(m_optionWidget->findChild<QObject*>("radUltraGS1"), SIGNAL(clicked( bool )), SLOT(update_preview()));
     }
 
-    switch(metaObject()->enumerator(0).value(bstyle->currentIndex()))
+    if (symbology == BARCODE_VIN)
+    {
+        QFile file(":/grpVIN.ui");
+        if (!file.open(QIODevice::ReadOnly))
+            return;
+        m_optionWidget=uiload.load(&file);
+        file.close();
+        tabMain->insertTab(1,m_optionWidget,tr("VIN"));
+        connect(m_optionWidget->findChild<QObject*>("chkVINImportChar"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+    }
+
+    switch (symbology)
     {
         case BARCODE_CODE128:
         case BARCODE_EANX:
@@ -773,6 +811,7 @@ void MainWindow::update_preview()
     int width = view->geometry().width();
     int height = view->geometry().height();
     int item_val;
+    QCheckBox *checkBox;
 
     //m_bc.ar=(Zint::QZint::AspectRatioMode)1;
     if(chkComposite->isChecked() == true) {
@@ -782,13 +821,17 @@ void MainWindow::update_preview()
         m_bc.bc.setText(txtData->text());
     }
     m_bc.bc.setSecurityLevel(0);
-    m_bc.bc.setWidth(0);
+    m_bc.bc.setOption2(0);
     m_bc.bc.setOption3(0);
     m_bc.bc.setInputMode(UNICODE_MODE);
+    if (chkEscape->isChecked()) {
+        m_bc.bc.setInputMode(m_bc.bc.inputMode() | ESCAPE_MODE);
+    }
     m_bc.bc.setHideText(0);
     if(chkHRTHide->isChecked() == false) {
         m_bc.bc.setHideText(1);
     }
+    m_bc.bc.setGSSep(false);
     switch(metaObject()->enumerator(0).value(bstyle->currentIndex()))
     {
         case BARCODE_CODE128:
@@ -873,11 +916,11 @@ void MainWindow::update_preview()
                 m_bc.bc.setSymbol(BARCODE_RSS_EXPSTACK);
 
             if(m_optionWidget->findChild<QComboBox*>("cmbCols")->currentIndex() != 0)
-                m_bc.bc.setWidth(m_optionWidget->findChild<QComboBox*>("cmbCols")->currentIndex());
+                m_bc.bc.setOption2(m_optionWidget->findChild<QComboBox*>("cmbCols")->currentIndex());
             break;
 
         case BARCODE_PDF417:
-            m_bc.bc.setWidth(m_optionWidget->findChild<QComboBox*>("cmbPDFCols")->currentIndex());
+            m_bc.bc.setOption2(m_optionWidget->findChild<QComboBox*>("cmbPDFCols")->currentIndex());
             m_bc.bc.setSecurityLevel(m_optionWidget->findChild<QComboBox*>("cmbPDFECC")->currentIndex()-1);
             if(m_optionWidget->findChild<QRadioButton*>("radPDFStand")->isChecked())
                 m_bc.bc.setSymbol(BARCODE_PDF417);
@@ -890,7 +933,7 @@ void MainWindow::update_preview()
             break;
 
         case BARCODE_MICROPDF417:
-            m_bc.bc.setWidth(m_optionWidget->findChild<QComboBox*>("cmbMPDFCols")->currentIndex());
+            m_bc.bc.setOption2(m_optionWidget->findChild<QComboBox*>("cmbMPDFCols")->currentIndex());
             if(m_optionWidget->findChild<QRadioButton*>("radMPDFStand")->isChecked())
                 m_bc.bc.setSymbol(BARCODE_MICROPDF417);
 
@@ -900,8 +943,8 @@ void MainWindow::update_preview()
 
         case BARCODE_DOTCODE:
             m_bc.bc.setSymbol(BARCODE_DOTCODE);
-            m_bc.bc.setWidth(m_optionWidget->findChild<QComboBox*>("cmbDotCols")->currentIndex());
-            if(m_optionWidget->findChild<QRadioButton*>("radDotGs1")->isChecked())
+            m_bc.bc.setOption2(m_optionWidget->findChild<QComboBox*>("cmbDotCols")->currentIndex());
+            if(m_optionWidget->findChild<QRadioButton*>("radDotGS1")->isChecked())
                 m_bc.bc.setInputMode(GS1_MODE);
             m_bc.bc.setDotSize(m_optionWidget->findChild<QLineEdit*>("txtDotSize")->text().toFloat());
             break;
@@ -909,7 +952,7 @@ void MainWindow::update_preview()
         case BARCODE_AZTEC:
             m_bc.bc.setSymbol(BARCODE_AZTEC);
             if(m_optionWidget->findChild<QRadioButton*>("radAztecSize")->isChecked())
-                m_bc.bc.setWidth(m_optionWidget->findChild<QComboBox*>("cmbAztecSize")->currentIndex() + 1);
+                m_bc.bc.setOption2(m_optionWidget->findChild<QComboBox*>("cmbAztecSize")->currentIndex() + 1);
 
             if(m_optionWidget->findChild<QRadioButton*>("radAztecECC")->isChecked())
                 m_bc.bc.setSecurityLevel(m_optionWidget->findChild<QComboBox*>("cmbAztecECC")->currentIndex() + 1);
@@ -922,7 +965,16 @@ void MainWindow::update_preview()
 
         case BARCODE_MSI_PLESSEY:
             m_bc.bc.setSymbol(BARCODE_MSI_PLESSEY);
-            m_bc.bc.setWidth(m_optionWidget->findChild<QComboBox*>("cmbMSICheck")->currentIndex());
+            m_bc.bc.setOption2(m_optionWidget->findChild<QComboBox*>("cmbMSICheck")->currentIndex());
+            break;
+
+        case BARCODE_CODE11:
+            m_bc.bc.setSymbol(BARCODE_CODE11);
+            if (m_optionWidget->findChild<QRadioButton*>("radC11OneCheckDigit")->isChecked()) {
+                m_bc.bc.setOption2(1);
+            } else if (m_optionWidget->findChild<QRadioButton*>("radC11NoCheckDigits")->isChecked()) {
+                m_bc.bc.setOption2(2);
+            }
             break;
 
         case BARCODE_CODE39:
@@ -932,16 +984,24 @@ void MainWindow::update_preview()
             {
                 m_bc.bc.setSymbol(BARCODE_CODE39);
                 if(m_optionWidget->findChild<QRadioButton*>("radC39Check")->isChecked())
-                    m_bc.bc.setWidth(1);
+                    m_bc.bc.setOption2(1);
             }
             break;
 
         case BARCODE_EXCODE39:
             m_bc.bc.setSymbol(BARCODE_EXCODE39);
             if(m_optionWidget->findChild<QRadioButton*>("radC39Check")->isChecked())
-                m_bc.bc.setWidth(1);
+                m_bc.bc.setOption2(1);
 
             break;
+
+        case BARCODE_LOGMARS:
+            m_bc.bc.setSymbol(BARCODE_LOGMARS);
+            if (m_optionWidget->findChild<QRadioButton*>("radLOGMARSCheck")->isChecked()) {
+                m_bc.bc.setOption2(1);
+            }
+            break;
+
         case BARCODE_CODE16K:
             m_bc.bc.setSymbol(BARCODE_CODE16K);
             if(m_optionWidget->findChild<QRadioButton*>("radC16kStand")->isChecked())
@@ -955,6 +1015,13 @@ void MainWindow::update_preview()
             }
             break;
 
+        case BARCODE_CODABAR:
+            m_bc.bc.setSymbol(BARCODE_CODABAR);
+            if (m_optionWidget->findChild<QCheckBox*>("chkCodabarCheck")->isChecked()) {
+                m_bc.bc.setOption2(1);
+            }
+            break;
+
         case BARCODE_CODABLOCKF:
             if (m_optionWidget->findChild<QRadioButton*>("radCbfHIBC")->isChecked()) {
                 m_bc.bc.setSymbol(BARCODE_HIBC_BLOCKF);
@@ -963,7 +1030,7 @@ void MainWindow::update_preview()
             }
             item_val = m_optionWidget->findChild<QComboBox*>("cmbCbfWidth")->currentIndex();
             if (item_val) {
-                m_bc.bc.setWidth(item_val - 1 + 9);
+                m_bc.bc.setOption2(item_val - 1 + 9);
             }
             // Height selection uses option 1 in zint_symbol
             item_val = m_optionWidget->findChild<QComboBox*>("cmbCbfHeight")->currentIndex();
@@ -984,10 +1051,18 @@ void MainWindow::update_preview()
             else
                 m_bc.bc.setSymbol(BARCODE_DATAMATRIX);
 
-            if(m_optionWidget->findChild<QRadioButton*>("radDM200GS1")->isChecked())
+            if (m_optionWidget->findChild<QRadioButton*>("radDM200GS1")->isChecked()) {
                 m_bc.bc.setInputMode(GS1_MODE);
+                checkBox = m_optionWidget->findChild<QCheckBox*>("chkDMGSSep");
+                checkBox->setEnabled(true);
+                if (checkBox->isChecked()) {
+                    m_bc.bc.setGSSep(true);
+                }
+            } else {
+                m_optionWidget->findChild<QCheckBox*>("chkDMGSSep")->setEnabled(false);
+            }
 
-            m_bc.bc.setWidth(m_optionWidget->findChild<QComboBox*>("cmbDM200Size")->currentIndex());
+            m_bc.bc.setOption2(m_optionWidget->findChild<QComboBox*>("cmbDM200Size")->currentIndex());
 
             if (m_optionWidget->findChild<QComboBox*>("cmbDM200Size")->currentIndex() == 0) {
                 // Supressing rectangles or allowing DMRE only makes sense if in automatic size mode
@@ -1017,20 +1092,28 @@ void MainWindow::update_preview()
             if(m_optionWidget->findChild<QRadioButton*>("radQRGS1")->isChecked())
                 m_bc.bc.setInputMode(GS1_MODE);
 
-            if(m_optionWidget->findChild<QRadioButton*>("radQRSize")->isChecked())
-                m_bc.bc.setWidth(m_optionWidget->findChild<QComboBox*>("cmbQRSize")->currentIndex() + 1);
-
-            if(m_optionWidget->findChild<QRadioButton*>("radQRECC")->isChecked())
-                m_bc.bc.setSecurityLevel(m_optionWidget->findChild<QComboBox*>("cmbQRECC")->currentIndex() + 1);
+            printf("cmbQRSize stylesheet %s\n", (const char *) m_optionWidget->findChild<QComboBox*>("cmbQRSize")->styleSheet().toLatin1());
+            item_val = m_optionWidget->findChild<QComboBox*>("cmbQRSize")->currentIndex();
+            if (item_val) {
+                m_bc.bc.setOption2(item_val);
+            }
+            printf("cmbQRECC stylesheet %s\n", (const char *) m_optionWidget->findChild<QComboBox*>("cmbQRECC")->styleSheet().toLatin1());
+            item_val = m_optionWidget->findChild<QComboBox*>("cmbQRECC")->currentIndex();
+            if (item_val) {
+                m_bc.bc.setSecurityLevel(item_val);
+            }
             break;
 
         case BARCODE_MICROQR:
             m_bc.bc.setSymbol(BARCODE_MICROQR);
-            if(m_optionWidget->findChild<QRadioButton*>("radMQRSize")->isChecked())
-                m_bc.bc.setWidth(m_optionWidget->findChild<QComboBox*>("cmbMQRSize")->currentIndex() + 1);
-
-            if(m_optionWidget->findChild<QRadioButton*>("radMQRECC")->isChecked())
-                m_bc.bc.setSecurityLevel(m_optionWidget->findChild<QComboBox*>("cmbMQRECC")->currentIndex() + 1);
+            item_val = m_optionWidget->findChild<QComboBox*>("cmbMQRSize")->currentIndex();
+            if (item_val) {
+                m_bc.bc.setOption2(item_val);
+            }
+            item_val = m_optionWidget->findChild<QComboBox*>("cmbMQRECC")->currentIndex();
+            if (item_val) {
+                m_bc.bc.setSecurityLevel(item_val);
+            }
             break;
 
         case BARCODE_RMQR:
@@ -1039,20 +1122,26 @@ void MainWindow::update_preview()
             if(m_optionWidget->findChild<QRadioButton*>("radRMQRGS1")->isChecked())
                 m_bc.bc.setInputMode(GS1_MODE);
 
-            if(m_optionWidget->findChild<QRadioButton*>("radRMQRSize")->isChecked())
-                m_bc.bc.setWidth(m_optionWidget->findChild<QComboBox*>("cmbRMQRSize")->currentIndex() + 1);
-
-            if(m_optionWidget->findChild<QRadioButton*>("radRMQRECC")->isChecked())
-                m_bc.bc.setSecurityLevel(m_optionWidget->findChild<QComboBox*>("cmbRMQRECC")->currentIndex() * 2 + 2);
+            item_val = m_optionWidget->findChild<QComboBox*>("cmbRMQRSize")->currentIndex();
+            if (item_val) {
+                m_bc.bc.setOption2(item_val);
+            }
+            item_val = m_optionWidget->findChild<QComboBox*>("cmbRMQRECC")->currentIndex();
+            if (item_val) {
+                m_bc.bc.setSecurityLevel(item_val * 2); // Levels 2 (M) and 4 (H) only
+            }
             break;
 
         case BARCODE_GRIDMATRIX:
             m_bc.bc.setSymbol(BARCODE_GRIDMATRIX);
-            if(m_optionWidget->findChild<QRadioButton*>("radGridSize")->isChecked())
-                m_bc.bc.setWidth(m_optionWidget->findChild<QComboBox*>("cmbGridSize")->currentIndex() + 1);
-
-            if(m_optionWidget->findChild<QRadioButton*>("radGridECC")->isChecked())
-                m_bc.bc.setSecurityLevel(m_optionWidget->findChild<QComboBox*>("cmbGridECC")->currentIndex() + 1);
+            item_val = m_optionWidget->findChild<QComboBox*>("cmbGridSize")->currentIndex();
+            if (item_val) {
+                m_bc.bc.setOption2(item_val);
+            }
+            item_val = m_optionWidget->findChild<QComboBox*>("cmbGridECC")->currentIndex();
+            if (item_val) {
+                m_bc.bc.setSecurityLevel(item_val);
+            }
             break;
 
         case BARCODE_MAXICODE:
@@ -1069,16 +1158,16 @@ void MainWindow::update_preview()
         case BARCODE_CHANNEL:
             m_bc.bc.setSymbol(BARCODE_CHANNEL);
             if(m_optionWidget->findChild<QComboBox*>("cmbChannel")->currentIndex() == 0)
-                m_bc.bc.setWidth(0);
+                m_bc.bc.setOption2(0);
             else
-                m_bc.bc.setWidth(m_optionWidget->findChild<QComboBox*>("cmbChannel")->currentIndex() + 2);
+                m_bc.bc.setOption2(m_optionWidget->findChild<QComboBox*>("cmbChannel")->currentIndex() + 2);
             break;
 
         case BARCODE_CODEONE:
             m_bc.bc.setSymbol(BARCODE_CODEONE);
             if(m_optionWidget->findChild<QRadioButton*>("radC1GS1")->isChecked())
                 m_bc.bc.setInputMode(GS1_MODE);
-            m_bc.bc.setWidth(m_optionWidget->findChild<QComboBox*>("cmbC1Size")->currentIndex());
+            m_bc.bc.setOption2(m_optionWidget->findChild<QComboBox*>("cmbC1Size")->currentIndex());
             break;
 
         case BARCODE_CODE49:
@@ -1094,11 +1183,14 @@ void MainWindow::update_preview()
 
         case BARCODE_HANXIN:
             m_bc.bc.setSymbol(BARCODE_HANXIN);
-            if(m_optionWidget->findChild<QRadioButton*>("radHXSize")->isChecked())
-                m_bc.bc.setWidth(m_optionWidget->findChild<QComboBox*>("cmbHXSize")->currentIndex() + 1);
-
-            if(m_optionWidget->findChild<QRadioButton*>("radHXECC")->isChecked())
-                m_bc.bc.setSecurityLevel(m_optionWidget->findChild<QComboBox*>("cmbHXECC")->currentIndex() + 1);
+            item_val = m_optionWidget->findChild<QComboBox*>("cmbHXSize")->currentIndex();
+            if (item_val) {
+                m_bc.bc.setOption2(item_val);
+            }
+            item_val = m_optionWidget->findChild<QComboBox*>("cmbHXECC")->currentIndex();
+            if (item_val) {
+                m_bc.bc.setSecurityLevel(item_val);
+            }
             break;
             
         case BARCODE_ULTRA:
@@ -1107,6 +1199,13 @@ void MainWindow::update_preview()
                 m_bc.bc.setSecurityLevel(m_optionWidget->findChild<QComboBox*>("cmbUltraEcc")->currentIndex() + 1);
             if(m_optionWidget->findChild<QRadioButton*>("radUltraGS1")->isChecked())
                 m_bc.bc.setInputMode(GS1_MODE);
+            break;
+
+        case BARCODE_VIN:
+            m_bc.bc.setSymbol(BARCODE_VIN);
+            if (m_optionWidget->findChild<QCheckBox*>("chkVINImportChar")->isChecked()) {
+                m_bc.bc.setOption2(m_bc.bc.option2() | 1); // Import character 'I' prefix
+            }
             break;
 
         default:

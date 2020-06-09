@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>grpC39</class>
- <widget class="QWidget" name="grpC39">
+ <class>grpVIN</class>
+ <widget class="QWidget" name="grpVIN">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>254</width>
+    <width>400</width>
     <height>131</height>
    </rect>
   </property>
@@ -23,26 +23,12 @@
    <item>
     <layout class="QGridLayout" name="gridLayout">
      <item row="0" column="0">
-      <widget class="QRadioButton" name="radC39Stand">
+      <widget class="QCheckBox" name="chkVINImportChar">
        <property name="text">
-        <string>No Check Digit</string>
+        <string>Import Character Prefix</string>
        </property>
        <property name="checked">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="0">
-      <widget class="QRadioButton" name="radC39HIBC">
-       <property name="text">
-        <string>HIBC 39</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1">
-      <widget class="QRadioButton" name="radC39Check">
-       <property name="text">
-        <string>Mod-43 Check Digit</string>
+        <bool>false</bool>
        </property>
       </widget>
      </item>

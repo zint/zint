@@ -30,6 +30,61 @@
 
 #include "testcommon.h"
 
+static void test_input(int index, int debug) {
+
+    testStart("");
+
+    int ret;
+    struct item {
+        unsigned char *data;
+        int ret;
+        int expected_rows;
+        int expected_width;
+    };
+    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    struct item data[] = {
+        /*  0*/ { "41038422416563762XY11     ", 0, 3, 155 },
+        /*  1*/ { "41038422416563762XY11      ", ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  2*/ { "41038422416563762xy11     ", 0, 3, 155 }, // Case insensitive
+        /*  3*/ { "41038422416563762xy11    .", ZINT_ERROR_INVALID_DATA, -1, -1 },
+        /*  4*/ { "0100000000000AA000AA0A", 0, 3, 131, }, // Length 22, Mailmark C (2 digit chain id)
+        /*  5*/ { "5100000000000AA000AA0A", ZINT_ERROR_INVALID_DATA, -1, -1 }, // 1st char format 0-4 only
+        /*  6*/ { "0000000000000AA000AA0A", ZINT_ERROR_INVALID_DATA, -1, -1 }, // 2nd char version id 1-4 only
+        /*  7*/ { "01F0000000000AA000AA0A", ZINT_ERROR_INVALID_DATA, -1, -1 }, // 3rd char class 0-9A-E only
+        /*  8*/ { "0100A00000000AA000AA0A", ZINT_ERROR_INVALID_DATA, -1, -1 }, // 4-5th chars chain id 2 digits
+        /*  9*/ { "010000000000AAA000AA0A", ZINT_ERROR_INVALID_DATA, -1, -1 }, // 6-13th chars item id 8 digits
+        /* 10*/ { "010000000000 AA000AA0A", ZINT_ERROR_INVALID_DATA, -1, -1 }, // Remaining chars post code, TODO: test various types
+        /* 11*/ { "01000000000000000AA000AA0A", 0, 3, 155, }, // Length 26, Mailmark L (6 digit chain id)
+        /* 12*/ { "010A0000000000000AA000AA0A", ZINT_ERROR_INVALID_DATA, -1, -1 }, // 4-9th chars chain id 6 digits
+        /* 13*/ { "010A000000000000AAA000AA0A", ZINT_ERROR_INVALID_DATA, -1, -1 }, // Post code
+    };
+    int data_size = ARRAY_SIZE(data);
+
+    for (int i = 0; i < data_size; i++) {
+
+        if (index != -1 && i != index) continue;
+
+        struct zint_symbol *symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        int length = testUtilSetSymbol(symbol, BARCODE_MAILMARK, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
+
+        ret = ZBarcode_Encode(symbol, data[i].data, length);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+
+        if (ret < 5) {
+            assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
+            assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n", i, symbol->width, data[i].expected_width);
+        }
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
+// Royal Mail Mailmark barcode L encoding and decoding (Sep 2015) RMMBLED
+// https://www.royalmail.com/sites/default/files/Mailmark-4-state-barcode-L-encoding-and-decoding-instructions-Sept-2015.pdf
 static void test_encode_vector(int index, int debug) {
 
     testStart("");
@@ -49,8 +104,8 @@ static void test_encode_vector(int index, int debug) {
         /* 1*/ { "0100000000009JA500AA0A", 0, 100, 30, 0, "TAFTTDADATTFDTFDFDFDTAATADADTTTATTFTDDDDTATDATDFTFFATAFFAFADAFFTDT" },
         /* 2*/ { "1100000000000XY11     ", 0, 100, 30, 0, "TTDTTATTDTAATTDTAATTDTAATTDTTDDAATAADDATAATDDFAFTDDTAADDDTAAFDFAFF" },
         /* 3*/ { "21B2254800659JW5O9QA6Y", 0, 100, 30, 0, "DAATATTTADTAATTFADDDDTTFTFDDDDFFDFDAFTADDTFFTDDATADTTFATTDAFDTFDDA" },
-        /* 4*/ { "11000000000000000XY11    ", 0, 100, 30, 0, "TTDTTATDDTTATTDTAATTDTAATDDTTATTDTTDATFTAATDDTAATDDTATATFAADDAATAATDDTAADFTFTA" },
-        /* 5*/ { "41038422416563762EF61AH8T", 0, 100, 30, 0, "DTTFATTDDTATTTATFTDFFFTFDFDAFTTTADTTFDTFDDDTDFDDFTFAADTFDTDTDTFAATAFDDTAATTDTT" },
+        /* 4*/ { "11000000000000000XY11    ", 0, 100, 30, 0, "TTDTTATDDTTATTDTAATTDTAATDDTTATTDTTDATFTAATDDTAATDDTATATFAADDAATAATDDTAADFTFTA" }, // Example from RMMBLED
+        /* 5*/ { "41038422416563762EF61AH8T", 0, 100, 30, 0, "DTTFATTDDTATTTATFTDFFFTFDFDAFTTTADTTFDTFDDDTDFDDFTFAADTFDTDTDTFAATAFDDTAATTDTT" }, // Example from RMMBLED
     };
     int data_size = sizeof(data) / sizeof(struct item);
 
@@ -89,6 +144,7 @@ static void test_encode_vector(int index, int debug) {
 int main(int argc, char *argv[]) {
 
     testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
+        { "test_input", test_input, 1, 0, 1 },
         { "test_encode_vector", test_encode_vector, 1, 0, 1 },
     };
 

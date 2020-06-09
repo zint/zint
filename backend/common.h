@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2017 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009 - 2020 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -36,20 +36,24 @@
 #define __COMMON_H
 
 #ifndef FALSE
-#define FALSE		0
+#define FALSE   0
 #endif
 
 #ifndef TRUE
-#define TRUE		1
+#define TRUE    1
 #endif
 
 /* The most commonly used set */
-#define NEON	"0123456789"
+#define NEON   "0123456789"
 
 #include "zint.h"
 #include <stdlib.h>
+#include <string.h>
 
-#define ustrcpy(target,source) strcpy((char*)target,(const char*)source)
+/* Helpers to cast away char pointer signedness */
+#define ustrlen(source) strlen((const char *) (source))
+#define ustrcpy(target, source) strcpy((char *) (target), (const char *) (source))
+#define ustrcat(target, source) strcat((char *) (target), (const char *) (source))
 
 #if defined(__GNUC__) && !defined(ZINT_TEST)
 #define INTERNAL __attribute__ ((visibility ("hidden")))
@@ -61,7 +65,6 @@
 extern "C" {
 #endif /* __cplusplus */
 
-    INTERNAL size_t ustrlen(const unsigned char data[]);
     INTERNAL int ctoi(const char source);
     INTERNAL char itoc(const int source);
     INTERNAL void to_upper(unsigned char source[]);
@@ -73,12 +76,13 @@ extern "C" {
     INTERNAL int ustrchr_cnt(const unsigned char string[], const size_t length, const unsigned char c);
     INTERNAL int module_is_set(const struct zint_symbol *symbol, const int y_coord, const int x_coord);
     INTERNAL void set_module(struct zint_symbol *symbol, const int y_coord, const int x_coord);
-    INTERNAL int istwodigits(const unsigned char source[], const size_t position);
-    INTERNAL void expand(struct zint_symbol *symbol, const char data[]);
+    INTERNAL void set_module_colour(struct zint_symbol *symbol, const int y_coord, const int x_coord, const int colour);
     INTERNAL void unset_module(struct zint_symbol *symbol, const int y_coord, const int x_coord);
+    INTERNAL void expand(struct zint_symbol *symbol, const char data[]);
     INTERNAL int is_stackable(const int symbology);
     INTERNAL int is_extendable(const int symbology);
     INTERNAL int is_composite(const int symbology);
+    INTERNAL int istwodigits(const unsigned char source[], int length, const int position);
     INTERNAL unsigned int decode_utf8(unsigned int* state, unsigned int* codep, const unsigned char byte);
     INTERNAL int utf8_to_unicode(struct zint_symbol *symbol, const unsigned char source[], unsigned int vals[], size_t *length, int disallow_4byte);
     INTERNAL void set_minimum_height(struct zint_symbol *symbol, const int min_height);

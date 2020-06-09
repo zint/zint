@@ -13,6 +13,7 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
+/* vim: set ts=4 sw=4 et : */
 
 #ifndef BARCODERENDER_H
 #define BARCODERENDER_H
@@ -29,98 +30,105 @@ class QZint
 private:
 
 public:
-	 enum BorderType{NO_BORDER=0, BIND=2, BOX=4};
-	 enum AspectRatioMode{IgnoreAspectRatio=0, KeepAspectRatio=1, CenterBarCode=2};
+     enum BorderType{NO_BORDER=0, BIND=2, BOX=4};
+     enum AspectRatioMode{IgnoreAspectRatio=0, KeepAspectRatio=1, CenterBarCode=2};
 
 public:
-	QZint();
-	~QZint();
+    QZint();
+    ~QZint();
 
     int  symbol() const;
-	void setSymbol(int symbol);
+    void setSymbol(int symbol);
+
+    int inputMode() const;
+    void setInputMode(int input_mode);
 
     QString text() const;
-	void setText(const QString & text);
+    void setText(const QString & text);
 
     QString primaryMessage() const;
-	void setPrimaryMessage(const QString & primaryMessage);
+    void setPrimaryMessage(const QString & primaryMessage);
 
-	void setHeight(int height);
-	int height();
+    int height() const;
+    void setHeight(int height);
 
-	void setWidth(int width);
-	int width();
+    int option2() const;
+    void setOption2(int option);
 
-	void setOption3(int option);
-
-    QColor fgColor() const;
-	void setFgColor(const QColor & fgColor);
-
-    QColor bgColor() const;
-	void setBgColor(const QColor & bgColor);
-
-    BorderType borderType() const;
-	void setBorderType(BorderType border);
-
-    int borderWidth() const;
-	void setBorderWidth(int boderWidth);
-
-    int securityLevel() const;
-	void setSecurityLevel(int securityLevel);
-        
-        int getError();
+    void setOption3(int option);
 
     float scale() const;
-	void setScale(float scale);
+    void setScale(float scale);
 
-        void setDotSize(float dot_size);
+    void setDotSize(float dot_size);
+
+    QColor fgColor() const;
+    void setFgColor(const QColor & fgColor);
+
+    QColor bgColor() const;
+    void setBgColor(const QColor & bgColor);
+
+    BorderType borderType() const;
+    void setBorderType(BorderType border);
+
+    int borderWidth() const;
+    void setBorderWidth(int boderWidth);
+
+    int securityLevel() const;
+    void setSecurityLevel(int securityLevel);
 
     int mode() const;
-	void setMode(int securityLevel);
+    void setMode(int securityLevel);
 
-	void setInputMode(int input_mode);
+    void setWhitespace(int whitespace);
 
-	void setWhitespace(int whitespace);
+    void setHideText(bool hide);
+
+    void setTargetSize(int width, int height);
+
+    void setGSSep(bool gssep);
+
+    void setDebug(bool debug);
+
+    int getError() const;
 
     QString error_message() const;
 
-	void render(QPainter & painter, const QRectF & paintRect, AspectRatioMode mode=IgnoreAspectRatio);
-
     const QString & lastError() const;
-	bool hasErrors();
+    bool hasErrors() const;
 
-	bool save_to_file(QString filename);
+    bool save_to_file(QString filename);
 
-	void setHideText(bool hide);
-
-        void setTargetSize(int width, int height);
+    void render(QPainter & painter, const QRectF & paintRect, AspectRatioMode mode=IgnoreAspectRatio);
 
 private:
-	void encode();
-    int module_set(int y_coord, int x_coord) const;
+    void resetSymbol();
+    void encode();
 
 private:
-	int m_symbol;
-	QString m_text;
-	QString m_primaryMessage;
-	int m_height;
-	BorderType m_border;
-	int m_borderWidth;
-	int m_width;
-	int m_securityLevel;
-	int m_input_mode;
-	QColor m_fgColor;
-	QColor m_bgColor;
-	QString m_lastError;
-	int m_error;
-	int m_whitespace;
-	zint_symbol * m_zintSymbol;
-	float m_scale;
-	int m_option_3;
-	bool m_hidetext;
+    int m_symbol;
+    QString m_text;
+    QString m_primaryMessage;
+    int m_height;
+    BorderType m_border;
+    int m_borderWidth;
+    int m_option_2;
+    int m_securityLevel;
+    int m_input_mode;
+    QColor m_fgColor;
+    QColor m_bgColor;
+    QString m_lastError;
+    int m_error;
+    int m_whitespace;
+    zint_symbol * m_zintSymbol;
+    float m_scale;
+    int m_option_3;
+    bool m_hidetext;
     float m_dot_size;
     int target_size_horiz;
     int target_size_vert;
+    bool m_gssep;
+    bool m_debug;
 };
 }
 #endif

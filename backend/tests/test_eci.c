@@ -137,7 +137,7 @@ static void test_reduced_charset_input(int index, int debug) {
         /*  2*/ { BARCODE_CODE39, UNICODE_MODE, 0, "é", ZINT_ERROR_INVALID_DATA, -1, "ASCII subset only" },
         /*  3*/ { BARCODE_EXCODE39, UNICODE_MODE, 0, "é", ZINT_ERROR_INVALID_DATA, -1, "ASCII only" },
         /*  4*/ { BARCODE_EANX, UNICODE_MODE, 0, "é", ZINT_ERROR_INVALID_DATA, -1, "Numbers only" },
-        /*  5*/ { BARCODE_CODABAR, UNICODE_MODE, 0, "é", ZINT_ERROR_INVALID_DATA, -1, "ASCII subset only" },
+        /*  5*/ { BARCODE_CODABAR, UNICODE_MODE, 0, "AéB", ZINT_ERROR_INVALID_DATA, -1, "ASCII subset only" },
         /*  6*/ { BARCODE_CODE128, UNICODE_MODE, 0, "é", 0, 0, "" },
         /*  7*/ { BARCODE_CODE128, UNICODE_MODE, 3, "é", ZINT_ERROR_INVALID_OPTION, -1, "Does not support ECI" },
         /*  8*/ { BARCODE_CODE128, UNICODE_MODE, 0, "β", ZINT_ERROR_INVALID_DATA, -1, "β not in ISO 8859-1" },
