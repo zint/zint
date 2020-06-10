@@ -354,6 +354,7 @@
   <ItemGroup>
     <ClInclude Include="..\backend\aztec.h" />
     <ClInclude Include="..\backend\bmp.h" />
+    <ClInclude Include="..\backend\channel_precalcs.h" />
     <ClInclude Include="..\backend\code1.h" />
     <ClInclude Include="..\backend\code128.h" />
     <ClInclude Include="..\backend\code49.h" />

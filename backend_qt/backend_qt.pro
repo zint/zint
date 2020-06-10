@@ -54,6 +54,7 @@ SOURCES += qrencode/bitstream.c \
 
 HEADERS +=  ../backend/aztec.h \
             ../backend/bmp.h \
+            ../backend/channel_precalcs.h \
             ../backend/code128.h \
             ../backend/code49.h \
             ../backend/common.h \

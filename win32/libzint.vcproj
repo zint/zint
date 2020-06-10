@@ -406,6 +406,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\backend\channel_precalcs.h"
+				>
+			</File>
+			<File
 				RelativePath="..\backend\code1.h"
 				>
 			</File>

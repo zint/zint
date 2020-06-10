@@ -18,6 +18,7 @@ DEFINES +=  _CRT_SECURE_NO_WARNINGS _CRT_NONSTDC_NO_WARNINGS ZINT_VERSION=\\\"$$
 }
 
 HEADERS +=  ../backend/aztec.h \
+            ../backend/channel_precalcs.h \
             ../backend/code1.h \
             ../backend/code49.h \
             ../backend/common.h \
