@@ -163,6 +163,24 @@ Bugs:
 - PCX format: added missing bytes_per_line if bitmap width is odd.
 
 Version 2.8.1 Not released jet
+Changes:
+- Dotcode: adopt to AIM DOC Revision 4
+- New option "-separator=" for zint to specify the separator height of stacked
+  symbologies.
+- make internal routines invisible by a static function definition.
+- CODE11: make adding check digits an option, selectable to 2 (default as now),
+  1 or none
+- LOGMARS restrict max length to 30 per MIL-STD-1189 Rev. B; make check digit
+  optional
+- CODE39/EXCODE39: max length now 85
+- VIN code extended to international licence plates
+- CODABAR: 3 data characters minimum (plus start/stop), check digit option added
+- QT GUI: 
+  - GRIDMATRIX/HX/MQR/QRCODE/RMQR: allow separate selection of size/ECC
+  - add DAFT and VIN Symbolgies
+  - Separarator option for DATAMATRIX
+  - parse escape sequences
+  - gui element reassigments
 Bugs:
 - Ticket 185 EMF export corrections
   - fine scaling by the use of float arithmetic
@@ -170,7 +188,6 @@ Bugs:
 - Ticket 190: Aztec buffer overrun fixed
 - Ticket 191 suppress clang-tidy warnings: raster.c, composite.c, qr.c
 - Ultracode internal encoding bugs, ECI 899
-- Dotcode: adopt to AIM DOC Revision 4
 - GS1 data: exclude DEL character
 - Ticket 192: missing malloc.h include for Windows compilers.
 - Correct GS1 AI 253 & 255 length from 14 to 13
@@ -186,15 +203,16 @@ Bugs:
   - Improve coding of Extended ASCII (FNC4)
   - Checksum calculation overflow protection
   - EAN128 may reduce length
-- New option "-separator=" for zint to specify the separator height of stacked
-  symbologies.
 - Check for incomplete escape sequences on data specification: "\" without following
   character.
 - Code16K fixes: remove extended ASCII latch, pad character
 - Restructuring to have common code centralized:
   - Code128 routines for Codablock&Code16K
   - output.c has common routines from raster.c and symbologies.
-- make internal routines invisible by a static function definition.
+- HIBC_39: restrict max length to 68 otherwise to avoid overrun
+- Code One: protect agains overrun
+- Telepen: allow DEL
+
 
 CONTACT US
 ----------
