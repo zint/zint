@@ -175,6 +175,7 @@ Changes:
 - CODE39/EXCODE39: max length now 85
 - VIN code extended to international licence plates
 - CODABAR: 3 data characters minimum (plus start/stop), check digit option added
+- Channel Code: performance improvement
 - QT GUI: 
   - GRIDMATRIX/HX/MQR/QRCODE/RMQR: allow separate selection of size/ECC
   - add DAFT and VIN Symbolgies
