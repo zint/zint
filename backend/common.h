@@ -59,7 +59,13 @@
 #define INTERNAL __attribute__ ((visibility ("hidden")))
 #else
 #define INTERNAL
-#endif /* defined(__GNUC__) && !defined(ZINT_TEST) */
+#endif
+
+#if defined(ZINT_TEST)
+#define STATIC_UNLESS_ZINT_TEST
+#else
+#define STATIC_UNLESS_ZINT_TEST static
+#endif
 
 #ifdef __cplusplus
 extern "C" {

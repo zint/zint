@@ -1200,7 +1200,7 @@ INTERNAL int code_one(struct zint_symbol *symbol, unsigned char source[], int le
     if (symbol->option_2 == 9) {
         /* Version S */
         int codewords;
-        short int elreg[112];
+        large_int elreg;
         unsigned int data[15], ecc[15];
         int stream[30];
         int block_width;
@@ -1230,20 +1230,14 @@ INTERNAL int code_one(struct zint_symbol *symbol, unsigned char source[], int le
             block_width = 2;
         }
 
-        binary_load(elreg, (char *) source, length);
+        large_load_str_u64(&elreg, source, length);
 
         for (i = 0; i < 15; i++) {
             data[i] = 0;
             ecc[i] = 0;
         }
 
-        for (i = 0; i < codewords; i++) {
-            data[codewords - i - 1] += 1 * elreg[(i * 5)];
-            data[codewords - i - 1] += 2 * elreg[(i * 5) + 1];
-            data[codewords - i - 1] += 4 * elreg[(i * 5) + 2];
-            data[codewords - i - 1] += 8 * elreg[(i * 5) + 3];
-            data[codewords - i - 1] += 16 * elreg[(i * 5) + 4];
-        }
+        large_uint_array(&elreg, data, codewords, 5 /*bits*/);
 
         rs_init_gf(0x25);
         rs_init_code(codewords, 1);

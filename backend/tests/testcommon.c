@@ -873,39 +873,29 @@ int testUtilVectorCmp(const struct zint_vector *a, const struct zint_vector *b) 
     return 0;
 }
 
-void testUtilLargeDump(const char *name, const short int reg[]) {
-    unsigned words[4];
-    words[0] = words[1] = words[2] = words[3] = 0;
-    int w = 0;
-    for (int i = 0; i < 112; i += 32 ) {
-        for (int j = 0; j < 32 && i + j < 112; j++) {
-            if (reg[i + j]) {
-                words[w] += 1 << j;
-            }
-        }
-        w++;
-    }
-    printf("%4x 0x%08x%08x%08x %s", words[3], words[2], words[1], words[0], name);
-}
-
 void testUtilModulesDump(const struct zint_symbol *symbol, char *prefix, char *postfix) {
-    int r, w;
+    int r;
     for (r = 0; r < symbol->rows; r++) {
-        if (*prefix) {
-            fputs(prefix, stdout);
-        }
-        putchar('"');
-        for (w = 0; w < symbol->width; w++) {
-            putchar(module_is_set(symbol, r, w) + '0');
-        }
-        putchar('"');
-        if (*postfix) {
-            fputs(postfix, stdout);
-        }
+        testUtilModulesDumpRow(symbol, r, prefix, postfix);
     }
 }
 
-int testUtilModulesCmp(const struct zint_symbol *symbol, const char *expected, int *row, int *width) {
+void testUtilModulesDumpRow(const struct zint_symbol *symbol, int row, char *prefix, char *postfix) {
+    int w;
+    if (*prefix) {
+        fputs(prefix, stdout);
+    }
+    putchar('"');
+    for (w = 0; w < symbol->width; w++) {
+        putchar(module_is_set(symbol, row, w) + '0');
+    }
+    putchar('"');
+    if (*postfix) {
+        fputs(postfix, stdout);
+    }
+}
+
+int testUtilModulesCmp(const struct zint_symbol *symbol, const char *expected, int *width, int *row) {
     const char *e = expected;
     const char *ep = expected + strlen(expected);
     int r, w = 0;
@@ -922,6 +912,21 @@ int testUtilModulesCmp(const struct zint_symbol *symbol, const char *expected, i
     *row = r;
     *width = w;
     return e != ep || r != symbol->rows || w != symbol->width ? 1 /*fail*/ : 0 /*success*/;
+}
+
+int testUtilModulesCmpRow(const struct zint_symbol *symbol, int row, const char *expected, int *width) {
+    const char *e = expected;
+    const char *ep = expected + strlen(expected);
+    int w;
+    for (w = 0; w < symbol->width && e < ep; w++) {
+        if (module_is_set(symbol, row, w) + '0' != *e) {
+            *width = w;
+            return 1 /*fail*/;
+        }
+        e++;
+    }
+    *width = w;
+    return e != ep || w != symbol->width ? 1 /*fail*/ : 0 /*success*/;
 }
 
 int testUtilModulesDumpHex(const struct zint_symbol *symbol, char dump[], int dump_size) {
@@ -960,6 +965,32 @@ int testUtilModulesDumpHex(const struct zint_symbol *symbol, char dump[], int du
     }
     *d = '\0';
     return d - dump;
+}
+
+char *testUtilUIntArrayDump(unsigned int *array, int size, char *dump, int dump_size) {
+    int i, cnt_len = 0;
+
+    for (i = 0; i < size; i++) {
+        cnt_len += sprintf(dump + cnt_len, "%X ", array[i]);
+        if (cnt_len + 19 > dump_size) {
+            break;
+        }
+    }
+    dump[cnt_len ? cnt_len - 1 : 0] = '\0';
+    return dump;
+}
+
+char *testUtilUCharArrayDump(unsigned char *array, int size, char *dump, int dump_size) {
+    int i, cnt_len = 0;
+
+    for (i = 0; i < size; i++) {
+        cnt_len += sprintf(dump + cnt_len, "%X ", array[i]);
+        if (cnt_len + 3 > dump_size) {
+            break;
+        }
+    }
+    dump[cnt_len ? cnt_len - 1 : 0] = '\0';
+    return dump;
 }
 
 void testUtilBitmapPrint(const struct zint_symbol *symbol) {

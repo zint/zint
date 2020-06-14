@@ -1,6 +1,7 @@
 # Copyright (C) 2019 - 2020 Robin Stuart <rstuart114@gmail.com>
 # Adapted from qrencode/tests/CMakeLists.txt
 # Copyright (C) 2006-2017 Kentaro Fukuchi <kentaro@fukuchi.org>
+# vim: set ts=4 sw=4 et :
 
 cmake_minimum_required(VERSION 3.9)
 
@@ -35,8 +36,7 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
     endif()
 endif()
 
-add_library(testcommon
-    testcommon.c testcommon.h)
+add_library(testcommon testcommon.c testcommon.h)
 if(PNG_FOUND)
     target_link_libraries(testcommon ZINT::ZINT ${PNG_LIBRARIES})
 else()
@@ -48,7 +48,7 @@ macro(zint_add_test test_name test_command)
     add_executable(${test_command} ${test_command}.c)
     target_link_libraries(${test_command} testcommon ${ADDITIONAL_LIBS})
     add_test(${test_name} ${test_command})
-endmacro(zint_add_test)
+endmacro()
 
 zint_add_test(2of5, test_2of5)
 zint_add_test(auspost, test_auspost)
@@ -74,6 +74,7 @@ zint_add_test(gridmtx, test_gridmtx)
 zint_add_test(gs1, test_gs1)
 zint_add_test(hanxin, test_hanxin)
 zint_add_test(imail, test_imail)
+zint_add_test(large, test_large)
 zint_add_test(library, test_library)
 zint_add_test(mailmark, test_mailmark)
 zint_add_test(maxicode, test_maxicode)

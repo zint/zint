@@ -34,7 +34,7 @@
 
 #include "testcommon.h"
 
-#define TEST_IMAIL_CSV_MAX 300
+//#define TEST_IMAIL_CSV_MAX 300
 
 static void test_csv(int index, int debug) {
 
@@ -59,7 +59,7 @@ static void test_csv(int index, int debug) {
 
         lc++;
 
-        if (index != -1 && lc != index) continue;
+        if (index != -1 && lc != index + 1) continue;
 
         #ifdef TEST_IMAIL_CSV_MAX
         if (lc > TEST_IMAIL_CSV_MAX && index == -1) {
@@ -178,7 +178,7 @@ static void test_input(int index, int debug) {
         /*  1*/ { "123456789012345678901234567890123", ZINT_ERROR_TOO_LONG, -1, -1 },
         /*  2*/ { "A", ZINT_ERROR_INVALID_DATA, -1, -1 },
         /*  3*/ { "12345678901234567890", 0, 3, 129 }, // Tracker only, no ZIP
-        /*  4*/ { "12355678901234567890", 0, 3, 129 }, // Tracker 4th char > 4
+        /*  4*/ { "15345678901234567890", ZINT_ERROR_INVALID_DATA, -1, -1 }, // Tracker 2nd char > 4
         /*  5*/ { "1234567890123456789", ZINT_ERROR_INVALID_DATA, -1, -1 }, // Tracker 20 chars
         /*  6*/ { "12345678901234567890-1234", ZINT_ERROR_INVALID_DATA, -1, -1 }, // ZIP wrong len
         /*  7*/ { "12345678901234567890-12345", 0, 3, 129 },
