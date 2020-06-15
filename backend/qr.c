@@ -240,7 +240,7 @@ static void qr_cur_cost(unsigned int state[], const unsigned int jisdata[], cons
 static void qr_define_mode(char mode[], const unsigned int jisdata[], const size_t length, const int gs1, const int version, const int debug) {
     unsigned int state[11] = {
         0 /*N*/, 0 /*A*/, 0 /*B*/, 0 /*K*/,
-        version, gs1,
+        (unsigned int) version, (unsigned int) gs1,
         0 /*numeric_end*/, 0 /*numeric_cost*/, 0 /*alpha_end*/, 0 /*alpha_cost*/, 0 /*alpha_pcent*/
     };
 

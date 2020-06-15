@@ -55,7 +55,7 @@ INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
     data_offset = sizeof (bitmap_file_header_t) + sizeof (bitmap_info_header_t);
     file_size = data_offset + data_size;
 
-    bitmap_file_start = malloc(file_size);
+    bitmap_file_start = (unsigned char *) malloc(file_size);
     if (bitmap_file_start == NULL) {
         strcpy(symbol->errtxt, "602: Out of memory");
         return ZINT_ERROR_MEMORY;

@@ -280,7 +280,7 @@ INTERNAL void large_uchar_array(const large_int *t, unsigned char *uchar_array, 
 #ifndef _MSC_VER
     unsigned int uint_array[size ? size : 1]; /* Avoid run-time warning if size is 0 */
 #else
-    unsigned int *uint_array = _alloca((size ? size : 1) * sizeof(unsigned int));
+    unsigned int *uint_array = (unsigned int *) _alloca((size ? size : 1) * sizeof(unsigned int));
 #endif
 
     large_uint_array(t, uint_array, size, bits);
