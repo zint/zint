@@ -34,7 +34,6 @@
 /*  The function "USPS_MSB_Math_CRC11GenerateFrameCheckSequence"
     is Copyright (C) 2006 United States Postal Service */
 
-#include <string.h>
 #include <stdio.h>
 #include "common.h"
 #include "large.h"
@@ -247,8 +246,9 @@ INTERNAL int imail(struct zint_symbol *symbol, unsigned char source[], int lengt
     char data_pattern[200];
     int error_number;
     int i, j, read;
-    char zip[35], tracker[35], zip_adder[11], temp[2];
-    short int accum[112], x_reg[112], y_reg[112];
+    char zip[35], tracker[35], temp[2];
+    large_int accum;
+    large_int byte_array_reg;
     unsigned char byte_array[13];
     unsigned short usps_crc;
     int codeword[10];
@@ -315,184 +315,62 @@ INTERNAL int imail(struct zint_symbol *symbol, unsigned char source[], int lengt
 
     /* Routing code first */
 
-    for (i = 0; i < 112; i++) {
-        accum[i] = 0;
-    }
-
-    for (read = 0; read < zip_len; read++) {
-
-        binary_multiply(accum, "10");
-        binary_load(x_reg, "0", 1);
-
-        for (i = 0; i < 4; i++) {
-            if (ctoi(zip[read]) & (0x01 << i)) x_reg[i] = 1;
-        }
-
-        binary_add(accum, x_reg);
-    }
+    large_load_str_u64(&accum, (unsigned char *) zip, zip_len);
 
     /* add weight to routing code */
-
-    for (i = 0; i < 112; i++) {
-        x_reg[i] = accum[i];
-    }
-
     if (zip_len > 9) {
-        strcpy(zip_adder, "1000100001");
-    } else {
-        if (zip_len > 5) {
-            strcpy(zip_adder, "100001");
-        } else {
-            if (zip_len > 0) {
-                strcpy(zip_adder, "1");
-            } else {
-                strcpy(zip_adder, "0");
-            }
-        }
+        large_add_u64(&accum, 1000100001);
+    } else if (zip_len > 5) {
+        large_add_u64(&accum, 100001);
+    } else if (zip_len > 0) {
+        large_add_u64(&accum, 1);
     }
-
-    for (i = 0; i < 112; i++) {
-        accum[i] = 0;
-    }
-
-    for (read = 0, len = strlen(zip_adder); read < len; read++) {
-
-        binary_multiply(accum, "10");
-        binary_load(y_reg, "0", 1);
-
-        for (i = 0; i < 4; i++) {
-            if (ctoi(zip_adder[read]) & (0x01 << i)) y_reg[i] = 1;
-        }
-
-        binary_add(accum, y_reg);
-    }
-
-    binary_add(accum, x_reg);
 
     /* tracking code */
 
     /* multiply by 10 */
-    binary_multiply(accum, "10");
-    binary_load(y_reg, "0", 1);
+    large_mul_u64(&accum, 10);
 
     /* add first digit of tracker */
-    for (i = 0; i < 4; i++) {
-        if (ctoi(tracker[0]) & (0x01 << i)) y_reg[i] = 1;
-    }
-
-    binary_add(accum, y_reg);
+    large_add_u64(&accum, ctoi(tracker[0]));
 
     /* multiply by 5 */
-    binary_multiply(accum, "5");
-    binary_load(y_reg, "0", 1);
+    large_mul_u64(&accum, 5);
 
     /* add second digit */
-    for (i = 0; i < 4; i++) {
-        if (ctoi(tracker[1]) & (0x01 << i)) y_reg[i] = 1;
-    }
-
-    binary_add(accum, y_reg);
+    large_add_u64(&accum, ctoi(tracker[1]));
 
     /* and then the rest */
 
     for (read = 2, len = strlen(tracker); read < len; read++) {
 
-        binary_multiply(accum, "10");
-        binary_load(y_reg, "0", 1);
-
-        for (i = 0; i < 4; i++) {
-            if (ctoi(tracker[read]) & (0x01 << i)) y_reg[i] = 1;
-        }
-
-        binary_add(accum, y_reg);
+        large_mul_u64(&accum, 10);
+        large_add_u64(&accum, ctoi(tracker[read]));
     }
 
     /* *** Step 2 - Generation of 11-bit CRC on Binary Data *** */
 
-    accum[103] = 0;
-    accum[102] = 0;
+    large_load(&byte_array_reg, &accum);
 
-    for (j = 0; j < 13; j++) {
-        i = 96 - (8 * j);
-        byte_array[j] = 0;
-        byte_array[j] += accum[i];
-        byte_array[j] += 2 * accum[i + 1];
-        byte_array[j] += 4 * accum[i + 2];
-        byte_array[j] += 8 * accum[i + 3];
-        byte_array[j] += 16 * accum[i + 4];
-        byte_array[j] += 32 * accum[i + 5];
-        byte_array[j] += 64 * accum[i + 6];
-        byte_array[j] += 128 * accum[i + 7];
-    }
+    large_unset_bit(&byte_array_reg, 102);
+    large_unset_bit(&byte_array_reg, 103);
+
+    large_uchar_array(&byte_array_reg, byte_array, 13, 8 /*bits*/);
 
     usps_crc = USPS_MSB_Math_CRC11GenerateFrameCheckSequence(byte_array);
 
     /* *** Step 3 - Conversion from Binary Data to Codewords *** */
 
     /* start with codeword J which is base 636 */
-    for (i = 0; i < 112; i++) {
-        x_reg[i] = 0;
-        y_reg[i] = 0;
-    }
-
-    x_reg[101] = 1;
-    x_reg[98] = 1;
-    x_reg[97] = 1;
-    x_reg[96] = 1;
-    x_reg[95] = 1;
-    x_reg[94] = 1;
-
-    for (i = 92; i >= 0; i--) {
-        y_reg[i] = !islarger(x_reg, accum);
-        if (y_reg[i] == 1) {
-            binary_subtract(accum, x_reg);
-        }
-        shiftdown(x_reg);
-    }
-
-    codeword[9] = (accum[9] * 512) + (accum[8] * 256) + (accum[7] * 128) + (accum[6] * 64) +
-            (accum[5] * 32) + (accum[4] * 16) + (accum[3] * 8) + (accum[2] * 4) +
-            (accum[1] * 2) + accum[0];
+    codeword[9] = large_div_u64(&accum, 636);
 
     /* then codewords I to B with base 1365 */
 
     for (j = 8; j > 0; j--) {
-        for (i = 0; i < 112; i++) {
-            accum[i] = y_reg[i];
-            y_reg[i] = 0;
-            x_reg[i] = 0;
-        }
-        x_reg[101] = 1;
-        x_reg[99] = 1;
-        x_reg[97] = 1;
-        x_reg[95] = 1;
-        x_reg[93] = 1;
-        x_reg[91] = 1;
-        for (i = 91; i >= 0; i--) {
-            y_reg[i] = !islarger(x_reg, accum);
-            if (y_reg[i] == 1) {
-                binary_subtract(accum, x_reg);
-            }
-            shiftdown(x_reg);
-        }
-
-        codeword[j] = (accum[10] * 1024) + (accum[9] * 512) + (accum[8] * 256) +
-                (accum[7] * 128) + (accum[6] * 64) + (accum[5] * 32) +
-                (accum[4] * 16) + (accum[3] * 8) + (accum[2] * 4) +
-                (accum[1] * 2) + accum[0];
+        codeword[j] = large_div_u64(&accum, 1365);
     }
 
-    codeword[0] = (y_reg[10] * 1024) + (y_reg[9] * 512) + (y_reg[8] * 256) +
-            (y_reg[7] * 128) + (y_reg[6] * 64) + (y_reg[5] * 32) +
-            (y_reg[4] * 16) + (y_reg[3] * 8) + (y_reg[2] * 4) +
-            (y_reg[1] * 2) + y_reg[0];
-
-    for (i = 0; i < 8; i++) {
-        if (codeword[i] == 1365) {
-            codeword[i] = 0;
-            codeword[i + 1]++;
-        }
-    }
+    codeword[0] = large_lo(&accum);
 
     /* *** Step 4 - Inserting Additional Information into Codewords *** */
 

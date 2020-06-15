@@ -84,10 +84,13 @@ void testUtilStrCpyRepeat(char *buffer, char *repeat, int size);
 int testUtilSymbolCmp(const struct zint_symbol *a, const struct zint_symbol *b);
 struct zint_vector *testUtilVectorCpy(const struct zint_vector *in);
 int testUtilVectorCmp(const struct zint_vector *a, const struct zint_vector *b);
-void testUtilLargeDump(const char *name, const short reg[]);
-void testUtilModulesDump(const struct zint_symbol *symbol, char *prefix, char *postfix);
-int testUtilModulesCmp(const struct zint_symbol *symbol, const char *expected, int *row, int *width);
+void testUtilModulesDump(const struct zint_symbol *symbol, char *prefix, char *postfix); // TODO: should be called Print not Dump
+void testUtilModulesDumpRow(const struct zint_symbol *symbol, int row, char *prefix, char *postfix); // TODO: should be called Print not Dump
+int testUtilModulesCmp(const struct zint_symbol *symbol, const char *expected, int *width, int *row);
+int testUtilModulesCmpRow(const struct zint_symbol *symbol, int row, const char *expected, int *width);
 int testUtilModulesDumpHex(const struct zint_symbol *symbol, char dump[], int dump_size);
+char *testUtilUIntArrayDump(unsigned int *array, int size, char *dump, int dump_size);
+char *testUtilUCharArrayDump(unsigned char *array, int size, char *dump, int dump_size);
 void testUtilBitmapPrint(const struct zint_symbol *symbol);
 int testUtilExists(char *filename);
 int testUtilCmpPngs(char *file1, char *file2);

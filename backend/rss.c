@@ -64,8 +64,6 @@
  */
 
 #include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
 #ifdef _MSC_VER
 #include <malloc.h>
 #endif
@@ -162,11 +160,12 @@ static void getRSSwidths(int val, int n, int elements, int maxWidth, int noNarro
 
 /* GS1 DataBar-14 */
 INTERNAL int rss14(struct zint_symbol *symbol, unsigned char source[], int src_len) {
-    int error_number = 0, i, j, mask;
-    short int accum[112], left_reg[112], right_reg[112], x_reg[112], y_reg[112];
-    int data_character[4], data_group[4], v_odd[4], v_even[4];
+    int error_number = 0, i, j;
+    large_int accum;
+    uint64_t left_pair, right_pair;
+    int data_character[4] = {0}, data_group[4] = {0}, v_odd[4], v_even[4];
     int data_widths[8][4], checksum, c_left, c_right, total_widths[46], writer;
-    char latch, temp[32];
+    char latch;
     int separator_row;
 
     separator_row = 0;
@@ -192,110 +191,25 @@ INTERNAL int rss14(struct zint_symbol *symbol, unsigned char source[], int src_l
             break;
     }
 
-    for (i = 0; i < 112; i++) {
-        accum[i] = 0;
-        x_reg[i] = 0;
-        y_reg[i] = 0;
-    }
+    large_load_str_u64(&accum, source, src_len);
 
-    for (i = 0; i < 4; i++) {
-        data_character[i] = 0;
-        data_group[i] = 0;
-    }
-
-    binary_load(accum, (char*) source, src_len);
-    strcpy(temp, "10000000000000");
     if (symbol->option_1 == 2) {
         /* Add symbol linkage flag */
-        binary_load(y_reg, temp, strlen(temp));
-        binary_add(accum, y_reg);
-        for (i = 0; i < 112; i++) {
-            y_reg[i] = 0;
-        }
+        large_add_u64(&accum, 10000000000000);
     }
 
     /* Calculate left and right pair values */
-    strcpy(temp, "4537077");
-    binary_load(x_reg, temp, strlen(temp));
 
-    for (i = 0; i < 24; i++) {
-        shiftup(x_reg);
-    }
-
-    for (i = 24; i >= 0; i--) {
-        y_reg[i] = !islarger(x_reg, accum);
-        if (y_reg[i] == 1) {
-            binary_subtract(accum, x_reg);
-        }
-        shiftdown(x_reg);
-    }
-
-    for (i = 0; i < 112; i++) {
-        left_reg[i] = y_reg[i];
-        right_reg[i] = accum[i];
-    }
+    right_pair = large_div_u64(&accum, 4537077);
+    left_pair = large_lo(&accum);
 
     /* Calculate four data characters */
-    strcpy(temp, "1597");
-    binary_load(x_reg, temp, strlen(temp));
-    for (i = 0; i < 112; i++) {
-        accum[i] = left_reg[i];
-    }
 
-    for (i = 0; i < 24; i++) {
-        shiftup(x_reg);
-    }
+    data_character[0] = left_pair / 1597;
+    data_character[1] = left_pair % 1597;
 
-    for (i = 24; i >= 0; i--) {
-        y_reg[i] = !islarger(x_reg, accum);
-        if (y_reg[i] == 1) {
-            binary_subtract(accum, x_reg);
-        }
-        shiftdown(x_reg);
-    }
-
-    data_character[0] = 0;
-    data_character[1] = 0;
-    mask = 0x2000;
-    for (i = 13; i >= 0; i--) {
-        if (y_reg[i] == 1) {
-            data_character[0] += mask;
-        }
-        if (accum[i] == 1) {
-            data_character[1] += mask;
-        }
-        mask = mask >> 1;
-    }
-    strcpy(temp, "1597");
-    binary_load(x_reg, temp, strlen(temp));
-    for (i = 0; i < 112; i++) {
-        accum[i] = right_reg[i];
-    }
-
-    for (i = 0; i < 24; i++) {
-        shiftup(x_reg);
-    }
-
-    for (i = 24; i >= 0; i--) {
-        y_reg[i] = !islarger(x_reg, accum);
-        if (y_reg[i] == 1) {
-            binary_subtract(accum, x_reg);
-        }
-        shiftdown(x_reg);
-    }
-
-    data_character[2] = 0;
-    data_character[3] = 0;
-    mask = 0x2000;
-    for (i = 13; i >= 0; i--) {
-        if (y_reg[i] == 1) {
-            data_character[2] += mask;
-        }
-        if (accum[i] == 1) {
-            data_character[3] += mask;
-        }
-        mask = mask >> 1;
-    }
+    data_character[2] = right_pair / 1597;
+    data_character[3] = right_pair % 1597;
 
     /* Calculate odd and even subset values */
 
@@ -736,12 +650,13 @@ INTERNAL int rss14(struct zint_symbol *symbol, unsigned char source[], int src_l
 
 /* GS1 DataBar Limited */
 INTERNAL int rsslimited(struct zint_symbol *symbol, unsigned char source[], int src_len) {
-    int error_number = 0, i, mask;
-    short int accum[112], left_reg[112], right_reg[112], x_reg[112], y_reg[112];
+    int error_number = 0, i;
+    large_int accum;
+    uint64_t left_character, right_character;
     int left_group, right_group, left_odd, left_even, right_odd, right_even;
-    int left_character, right_character, left_widths[14], right_widths[14];
+    int left_widths[14], right_widths[14];
     int checksum, check_elements[14], total_widths[46], writer, j, check_digit, count;
-    char latch, hrt[15], temp[32];
+    char latch, hrt[15];
     int separator_row;
 
     separator_row = 0;
@@ -769,172 +684,60 @@ INTERNAL int rsslimited(struct zint_symbol *symbol, unsigned char source[], int 
         symbol->rows += 1;
     }
 
-    for (i = 0; i < 112; i++) {
-        accum[i] = 0;
-        x_reg[i] = 0;
-        y_reg[i] = 0;
-    }
+    large_load_str_u64(&accum, source, src_len);
 
-    binary_load(accum, (char*) source, src_len);
     if (symbol->option_1 == 2) {
         /* Add symbol linkage flag */
-        strcpy(temp, "2015133531096");
-        binary_load(y_reg, temp, strlen(temp));
-        binary_add(accum, y_reg);
-        for (i = 0; i < 112; i++) {
-            y_reg[i] = 0;
-        }
+        large_add_u64(&accum, 2015133531096);
     }
 
     /* Calculate left and right pair values */
-    strcpy(temp, "2013571");
-    binary_load(x_reg, temp, strlen(temp));
 
-    for (i = 0; i < 24; i++) {
-        shiftup(x_reg);
-    }
+    right_character = large_div_u64(&accum, 2013571);
+    left_character = large_lo(&accum);
 
-    for (i = 24; i >= 0; i--) {
-        y_reg[i] = !islarger(x_reg, accum);
-        if (y_reg[i] == 1) {
-            binary_subtract(accum, x_reg);
-        }
-        shiftdown(x_reg);
-    }
-
-    for (i = 0; i < 112; i++) {
-        left_reg[i] = y_reg[i];
-        right_reg[i] = accum[i];
-    }
-
-    left_group = 0;
-    strcpy(temp, "183063");
-    binary_load(accum, temp, strlen(temp));
-    if (islarger(left_reg, accum)) {
-        left_group = 1;
-    }
-    strcpy(temp, "820063");
-    binary_load(accum, temp, strlen(temp));
-    if (islarger(left_reg, accum)) {
-        left_group = 2;
-    }
-    strcpy(temp, "1000775");
-    binary_load(accum, temp, strlen(temp));
-    if (islarger(left_reg, accum)) {
-        left_group = 3;
-    }
-    strcpy(temp, "1491020");
-    binary_load(accum, temp, strlen(temp));
-    if (islarger(left_reg, accum)) {
-        left_group = 4;
-    }
-    strcpy(temp, "1979844");
-    binary_load(accum, temp, strlen(temp));
-    if (islarger(left_reg, accum)) {
-        left_group = 5;
-    }
-    strcpy(temp, "1996938");
-    binary_load(accum, temp, strlen(temp));
-    if (islarger(left_reg, accum)) {
+    if (left_character >= 1996939) {
         left_group = 6;
+        left_character -= 1996939;
+    } else if (left_character >= 1979845) {
+        left_group = 5;
+        left_character -= 1979845;
+    } else if (left_character >= 1491021) {
+        left_group = 4;
+        left_character -= 1491021;
+    } else if (left_character >= 1000776) {
+        left_group = 3;
+        left_character -= 1000776;
+    } else if (left_character >= 820064) {
+        left_group = 2;
+        left_character -= 820064;
+    } else if (left_character >= 183064) {
+        left_group = 1;
+        left_character -= 183064;
+    } else {
+        left_group = 0;
     }
-    right_group = 0;
-    strcpy(temp, "183063");
-    binary_load(accum, temp, strlen(temp));
-    if (islarger(right_reg, accum)) {
-        right_group = 1;
-    }
-    strcpy(temp, "820063");
-    binary_load(accum, temp, strlen(temp));
-    if (islarger(right_reg, accum)) {
-        right_group = 2;
-    }
-    strcpy(temp, "1000775");
-    binary_load(accum, temp, strlen(temp));
-    if (islarger(right_reg, accum)) {
-        right_group = 3;
-    }
-    strcpy(temp, "1491020");
-    binary_load(accum, temp, strlen(temp));
-    if (islarger(right_reg, accum)) {
-        right_group = 4;
-    }
-    strcpy(temp, "1979844");
-    binary_load(accum, temp, strlen(temp));
-    if (islarger(right_reg, accum)) {
-        right_group = 5;
-    }
-    strcpy(temp, "1996938");
-    binary_load(accum, temp, strlen(temp));
-    if (islarger(right_reg, accum)) {
+
+    if (right_character >= 1996939) {
         right_group = 6;
-    }
-
-    switch (left_group) {
-        case 1: strcpy(temp, "183064");
-            binary_load(accum, temp, strlen(temp));
-            binary_subtract(left_reg, accum);
-            break;
-        case 2: strcpy(temp, "820064");
-            binary_load(accum, temp, strlen(temp));
-            binary_subtract(left_reg, accum);
-            break;
-        case 3: strcpy(temp, "1000776");
-            binary_load(accum, temp, strlen(temp));
-            binary_subtract(left_reg, accum);
-            break;
-        case 4: strcpy(temp, "1491021");
-            binary_load(accum, temp, strlen(temp));
-            binary_subtract(left_reg, accum);
-            break;
-        case 5: strcpy(temp, "1979845");
-            binary_load(accum, temp, strlen(temp));
-            binary_subtract(left_reg, accum);
-            break;
-        case 6: strcpy(temp, "1996939");
-            binary_load(accum, temp, strlen(temp));
-            binary_subtract(left_reg, accum);
-            break;
-    }
-
-    switch (right_group) {
-        case 1: strcpy(temp, "183064");
-            binary_load(accum, temp, strlen(temp));
-            binary_subtract(right_reg, accum);
-            break;
-        case 2: strcpy(temp, "820064");
-            binary_load(accum, temp, strlen(temp));
-            binary_subtract(right_reg, accum);
-            break;
-        case 3: strcpy(temp, "1000776");
-            binary_load(accum, temp, strlen(temp));
-            binary_subtract(right_reg, accum);
-            break;
-        case 4: strcpy(temp, "1491021");
-            binary_load(accum, temp, strlen(temp));
-            binary_subtract(right_reg, accum);
-            break;
-        case 5: strcpy(temp, "1979845");
-            binary_load(accum, temp, strlen(temp));
-            binary_subtract(right_reg, accum);
-            break;
-        case 6: strcpy(temp, "1996939");
-            binary_load(accum, temp, strlen(temp));
-            binary_subtract(right_reg, accum);
-            break;
-    }
-
-    left_character = 0;
-    right_character = 0;
-    mask = 0x800000;
-    for (i = 23; i >= 0; i--) {
-        if (left_reg[i] == 1) {
-            left_character += mask;
-        }
-        if (right_reg[i] == 1) {
-            right_character += mask;
-        }
-        mask = mask >> 1;
+        right_character -= 1996939;
+    } else if (right_character >= 1979845) {
+        right_group = 5;
+        right_character -= 1979845;
+    } else if (right_character >= 1491021) {
+        right_group = 4;
+        right_character -= 1491021;
+    } else if (right_character >= 1000776) {
+        right_group = 3;
+        right_character -= 1000776;
+    } else if (right_character >= 820064) {
+        right_group = 2;
+        right_character -= 820064;
+    } else if (right_character >= 183064) {
+        right_group = 1;
+        right_character -= 183064;
+    } else {
+        right_group = 0;
     }
 
     left_odd = left_character / t_even_ltd[left_group];
@@ -1062,7 +865,7 @@ INTERNAL int rsslimited(struct zint_symbol *symbol, unsigned char source[], int 
 
 /* Handles all data encodation from section 7.2.5 of ISO/IEC 24724 */
 static int rss_binary_string(struct zint_symbol *symbol, char source[], char binary_string[]) {
-    int encoding_method, i, j, read_posn, last_digit, debug = symbol->debug, mode = NUMERIC;
+    int encoding_method, i, j, read_posn, last_digit, debug = (symbol->debug & ZINT_DEBUG_PRINT), mode = NUMERIC;
     int symbol_characters, characters_per_row;
 #ifndef _MSC_VER
     char general_field[strlen(source) + 1];
