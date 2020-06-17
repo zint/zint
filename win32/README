@@ -1,7 +1,8 @@
-Visual Studio 2017 - library and zint.exe
------------------------------------------
+Visual Studio 2017
+------------------
 
-To build the zint library DLL and the command line tool "zint.exe" with PNG support:
+To build the zint library DLL and the command line tool "zint.exe" with PNG
+support for x86/Win32:
 
 Install git (https://git-scm.com/downloads)
 Install cmake (https://cmake.org/download/)
@@ -11,8 +12,8 @@ Open a "Developer Command Prompt for VS 2017" (should be available under the
 
 Make sure git and cmake are in your PATH, e.g. (your paths may differ)
 
-  set PATH="C:\Program Files\Git\cmd";%PATH%
-  set PATH="C:\Program Files\CMake\bin";%PATH%
+  set "PATH=C:\Program Files\Git\cmd;%PATH%"
+  set "PATH=C:\Program Files\CMake\bin;%PATH%"
 
 Download zint, zlib and libpng by going to the directory you want to clone them
 into:
@@ -51,13 +52,51 @@ and then lpng:
   cd ..
 
 If you now open "<project-directory>\zint\win32\zint.sln" with Visual Studio
-2017, you should be able to build both the Release and Debug configurations.
+2017, you should be able to build the Release configuration for Win32.
 
+"zint.dll" and "zint.exe" will be in "<project-dir>\zint\win32\Release".
 
-Visual Studio 2017 - qtZint.exe
--------------------------------
+To build Zint Studio ("qtZint.exe"), you need to have Qt installed, which
+involves signing up for a Qt account and installing the Qt Maintenance Tool.
+Using this tool you can install various versions of Qt and various optional
+components.
 
-TODO
+The following requires the "MSVC 2017 32-bit" component to be installed.
+
+As of writing Qt 5.14.2 is the latest release that includes this component and
+is used here. Add the location of this component to your PATH, e.g. (your path
+may differ):
+
+  set "PATH=C:\Qt\5.14.2\msvc2017\bin;%PATH%"
+
+Next build the zint backend Qt library:
+
+  cd zint\backend_qt
+
+  qmake backend_qt_zintdll.pro
+  nmake clean
+  nmake release
+
+  cd ..\..
+
+Then "qtZint.exe":
+
+  cd zint\frontend_qt
+
+  qmake frontend_qt_zintdll.pro
+  nmake clean
+  nmake release
+
+  cd ..\..
+
+This creates "<project-directory>\zint\frontend_qt\release\qtZint.exe". It
+requires the zint DLL to run, so add its location to your PATH:
+
+  set "PATH=<project-directory>\zint\win32\Release;%PATH%"
+
+You should now be able to run Zint Studio:
+
+  zint\frontend_qt\release\qtZint
 
 
 Visual Studio 2015
@@ -67,6 +106,9 @@ The solution and project files for Visual Studio 2015 have been moved to the
 sub-directory vs2015 and are no longer maintained. However by copying the steps
 above and adapting the settings from the Visual Studio 2017 project files (and
 adding any sources missing), they should be pretty serviceable.
+
+For information on building a standalone version of Zint Studio using Visual
+Studio 2015, see "frontend_qt/howto_build_qzint_using_msvs2015.txt"
 
 
 Visual C++ 6

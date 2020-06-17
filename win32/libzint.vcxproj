@@ -78,9 +78,9 @@
     </ProjectReference>
     <Link>
       <AdditionalDependencies>libpng16_static.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)zintd.dll</OutputFile>
-      <AdditionalLibraryDirectories>..\..\lpng\Build\Release;..\..\zlib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <IgnoreSpecificDefaultLibraries>libcmtd.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <OutputFile>$(OutDir)zint.dll</OutputFile>
+      <AdditionalLibraryDirectories>..\..\lpng\build\Release;..\..\zlib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>libcmtd.lib;msvcrt.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <TargetMachine>MachineX86</TargetMachine>
@@ -113,7 +113,7 @@
     <Link>
       <AdditionalDependencies>libpng16_static.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)zint.dll</OutputFile>
-      <AdditionalLibraryDirectories>..\..\lpng\Build\Release;..\..\zlib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\lpng\build\Release;..\..\zlib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>

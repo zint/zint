@@ -82,9 +82,6 @@
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat />
     </ClCompile>
-    <Link>
-      <AdditionalLibraryDirectories>d:\opt\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-    </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\frontend\getopt.c" />
