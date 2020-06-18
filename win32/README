@@ -1,7 +1,7 @@
 Visual Studio 2017
 ------------------
 
-To build the zint library DLL and the command line tool "zint.exe" with PNG
+To build the Zint library DLL and the command line tool "zint.exe" with PNG
 support for x86/Win32:
 
 Install git (https://git-scm.com/downloads)
@@ -18,7 +18,8 @@ Make sure git and cmake are in your PATH, e.g. (your paths may differ)
 Download zint, zlib and libpng by going to the directory you want to clone them
 into:
 
-  cd <project-directory>
+  set "PROJECT_DIR=<project-directory>"
+  cd %PROJECT_DIR%
 
 and cloning each:
 
@@ -51,13 +52,14 @@ and then lpng:
 
   cd ..
 
-If you now open "<project-directory>\zint\win32\zint.sln" with Visual Studio
-2017, you should be able to build the Release configuration for Win32.
+If you now open "%PROJECT_DIR%\zint\win32\zint.sln" with Visual Studio 2017, you
+should be able to build the Release configuration for Win32.
 
-"zint.dll" and "zint.exe" will be in "<project-dir>\zint\win32\Release".
+"zint.dll" and "zint.exe" will be in "zint\win32\Release".
 
 To build Zint Studio ("qtZint.exe"), you need to have Qt installed, which
 involves signing up for a Qt account and installing the Qt Maintenance Tool.
+(https://www.qt.io/download-qt-installer)
 Using this tool you can install various versions of Qt and various optional
 components.
 
@@ -69,7 +71,7 @@ may differ):
 
   set "PATH=C:\Qt\5.14.2\msvc2017\bin;%PATH%"
 
-Next build the zint backend Qt library:
+Next build the Zint backend Qt library:
 
   cd zint\backend_qt
 
@@ -89,10 +91,10 @@ Then "qtZint.exe":
 
   cd ..\..
 
-This creates "<project-directory>\zint\frontend_qt\release\qtZint.exe". It
-requires the zint DLL to run, so add its location to your PATH:
+This creates "zint\frontend_qt\release\qtZint.exe". It requires the Zint DLL to
+run, so add its location to your PATH:
 
-  set "PATH=<project-directory>\zint\win32\Release;%PATH%"
+  set "PATH=%PROJECT_DIR%\zint\win32\Release;%PATH%"
 
 You should now be able to run Zint Studio:
 
@@ -117,7 +119,104 @@ Visual C++ 6
 See "win32\zint_cmdline_vc6\readme.txt"
 
 
-MSYS/MINGW
+MinGW/MSYS
 ----------
 
-TODO
+If not already installed, download and run the MinGW Installation Manager setup
+(https://osdn.net/projects/mingw/downloads/68260/mingw-get-setup.exe/) and
+using it install the packages:
+
+  mingw-developer-toolkit-bin
+  mingw32-base-bin
+  mingw32-gcc-g++-bin
+  msys-base-bin
+
+(This should include mingw32-libz-dll)
+
+Any reasonably modern version of Qt can be used. The following uses Qt 5.14.2.
+Using the Qt Maintenance Tool (see the Visual Studio 2017 instructions above)
+install the "MinGW 7.3.0 32-bit" component.
+
+(Note the Qt MinGW version does not necessarily have to match the version of
+MinGW installed, but the closer the better).
+
+Open a MinGW/MSYS shell by clicking/running e.g. (your path may differ)
+
+  C:\MinGW\msys\1.0\msys.bat
+
+As above make sure git and cmake are in your PATH.
+
+Add the Qt MinGW 7.3.0 32-bit component to your PATH, e.g. (your path may
+differ):
+
+  export PATH="/c/Qt/5.14.2/mingw73_32/bin":${PATH}
+
+Go into the directory you want to use and clone zint and libpng:
+
+  PROJECT_DIR="<project-directory>"
+  cd ${PROJECT_DIR}
+
+  git clone https://git.code.sf.net/p/zint/code zint
+  git clone https://git.code.sf.net/p/libpng/code lpng
+
+To compile lpng on MSYS, a bit of fiddling is needed. Go to the directory:
+
+  cd lpng
+
+On Windows git usually converts UNIX line endings to DOS ones. Undo this:
+
+  dos2unix * scripts/*
+
+Attempt to do the usual GNU make:
+
+  ./configure
+  make
+
+This will fail with a syntax error. To fix:
+
+  sed -i 's/\r//' pnglibconf.h
+
+And then do the make again:
+
+  make
+  make install
+
+  cd ..
+
+The lpng includes should be in "/usr/local/include". Tell gcc to search there by
+setting C_INCLUDE_PATH:
+
+  export C_INCLUDE_PATH=/usr/local/include
+
+Now we should be able to build zint normally, except for telling cmake to
+generate MSYS compatible makefiles:
+
+  cd zint
+
+  mkdir build
+  cd build
+  cmake -G "MSYS Makefiles" ..
+  make
+
+  cd ../..
+
+This creates:
+
+zint/build/backend/libzint.dll
+zint/build/frontend/zint.exe
+zint/build/backend_qt/libQZint.dll
+zint/build/frontend_qt/zint-qt.exe
+
+The Zint command line tool "zint.exe" needs "libzint.dll" to run so add its
+location to your PATH:
+
+  export PATH="${PROJECT_DIR}/zint/build/backend":${PATH}
+
+  zint/build/frontend/zint
+
+Zint Studio "zint-qt.exe" needs "libQZint.dll" to run so add its location to
+your PATH:
+
+  export PATH="${PROJECT_DIR}/zint/build/backend_qt":${PATH}
+
+  zint/build/frontend_qt/zint-qt

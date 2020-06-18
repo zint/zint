@@ -808,7 +808,7 @@ static int ultra_generate_codewords(struct zint_symbol *symbol, const unsigned c
     mode[crop_length] = '\0';
 
     if (symbol->debug & ZINT_DEBUG_PRINT) {
-        printf("Mode: %s (%zu)\n", mode, strlen(mode));
+        printf("Mode: %s (%d)\n", mode, (int) strlen(mode));
     }
 
     /* Use results from test to perform actual mode switching */

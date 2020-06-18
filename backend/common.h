@@ -55,7 +55,7 @@
 #define ustrcpy(target, source) strcpy((char *) (target), (const char *) (source))
 #define ustrcat(target, source) strcat((char *) (target), (const char *) (source))
 
-#if defined(__GNUC__) && !defined(ZINT_TEST)
+#if defined(__GNUC__) && !defined(_WIN32) && !defined(ZINT_TEST)
 #define INTERNAL __attribute__ ((visibility ("hidden")))
 #else
 #define INTERNAL
