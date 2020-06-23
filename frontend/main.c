@@ -652,7 +652,7 @@ int main(int argc, char **argv) {
                     }
                 }
                 if (!strcmp(long_options[option_index].name, "secure")) {
-                    if ((atoi(optarg) >= 1) && (atoi(optarg) <= 8)) {
+                    if ((atoi(optarg) >= 0) && (atoi(optarg) <= 8)) {
                         my_symbol->option_1 = atoi(optarg);
                     } else {
                         fprintf(stderr, "Warning 114: ECC level out of range\n");

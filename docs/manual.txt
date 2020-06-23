@@ -2227,8 +2227,8 @@ Note that in symbols which have a specified size the amount of error correction
 is dependent on the length of the data input and Zint will allow error
 correction capacities as low as 3 codewords.
 
-Alternatively the amount of error correction data can be specified by use of
-the --mode= option or by setting option_1 to a value from the following table:
+Alternatively the amount of error correction data can be specified by use of the
+--secure= option or by setting option_1 to a value from the following table:
 
 ----------------------------------
 Mode  |  Error Correction Capacity
@@ -2441,7 +2441,7 @@ Input  |  Symbol Size
 ---------------------
 
 There are four levels of error correction capacity available for Han Xin Code
-which can be set by using the --mode= option or by setting option_1 to a value
+which can be set by using the --secure= option or by setting option_1 to a value
 from the following table:
 
 --------------------------
