@@ -111,7 +111,7 @@ static void usage(void) {
             "  -o, --output=FILE     Send output to FILE. Default is out.png\n"
             "  --primary=STRING      Set structured primary message (Maxicode/Composite)\n"
             "  --scale=NUMBER        Adjust size of X-dimension\n"
-            "  --secure=NUMBER       Set error correction level\n"
+            "  --secure=NUMBER       Set error correction level (ECC)\n"
             "  --separator=NUMBER    Set height of row separator bars (stacked symbologies)\n"
             "  --small               Use small text\n"
             "  --square              Force Data Matrix symbols to be square\n"
@@ -603,7 +603,7 @@ int main(int argc, char **argv) {
                 if (!strcmp(long_options[option_index].name, "border")) {
                     error_number = validator(NESET, optarg);
                     if (error_number == ZINT_ERROR_INVALID_DATA) {
-                        fprintf(stderr, "Error 107: Invalid border width\n");
+                        fprintf(stderr, "Error 107: Invalid border width value\n");
                         exit(1);
                     }
                     if ((atoi(optarg) >= 0) && (atoi(optarg) <= 1000)) {
@@ -616,7 +616,7 @@ int main(int argc, char **argv) {
                 if (!strcmp(long_options[option_index].name, "height")) {
                     error_number = validator(NESET, optarg);
                     if (error_number == ZINT_ERROR_INVALID_DATA) {
-                        fprintf(stderr, "Error 109: Invalid symbol height\n");
+                        fprintf(stderr, "Error 109: Invalid symbol height value\n");
                         exit(1);
                     }
                     if ((atoi(optarg) >= 1) && (atoi(optarg) <= 1000)) {
@@ -628,6 +628,11 @@ int main(int argc, char **argv) {
                 }
 
                 if (!strcmp(long_options[option_index].name, "cols")) {
+                    error_number = validator(NESET, optarg);
+                    if (error_number == ZINT_ERROR_INVALID_DATA) {
+                        fprintf(stderr, "Error 131: Invalid columns value\n");
+                        exit(1);
+                    }
                     if ((atoi(optarg) >= 1) && (atoi(optarg) <= 67)) {
                         my_symbol->option_2 = atoi(optarg);
                     } else {
@@ -636,6 +641,11 @@ int main(int argc, char **argv) {
                     }
                 }
                 if (!strcmp(long_options[option_index].name, "rows")) {
+                    error_number = validator(NESET, optarg);
+                    if (error_number == ZINT_ERROR_INVALID_DATA) {
+                        fprintf(stderr, "Error 132: Invalid rows value\n");
+                        exit(1);
+                    }
                     if ((atoi(optarg) >= 1) && (atoi(optarg) <= 44)) {
                         my_symbol->option_1 = atoi(optarg);
                     } else {
@@ -644,14 +654,24 @@ int main(int argc, char **argv) {
                     }
                 }
                 if (!strcmp(long_options[option_index].name, "vers")) {
+                    error_number = validator(NESET, optarg);
+                    if (error_number == ZINT_ERROR_INVALID_DATA) {
+                        fprintf(stderr, "Error 133: Invalid version value\n");
+                        exit(1);
+                    }
                     if ((atoi(optarg) >= 1) && (atoi(optarg) <= 84)) {
                         my_symbol->option_2 = atoi(optarg);
                     } else {
-                        fprintf(stderr, "Warning 113: Invalid Version\n");
+                        fprintf(stderr, "Warning 113: Invalid version\n");
                         fflush(stderr);
                     }
                 }
                 if (!strcmp(long_options[option_index].name, "secure")) {
+                    error_number = validator(NESET, optarg);
+                    if (error_number == ZINT_ERROR_INVALID_DATA) {
+                        fprintf(stderr, "Error 134: Invalid ECC value\n");
+                        exit(1);
+                    }
                     if ((atoi(optarg) >= 0) && (atoi(optarg) <= 8)) {
                         my_symbol->option_1 = atoi(optarg);
                     } else {
@@ -660,16 +680,21 @@ int main(int argc, char **argv) {
                     }
                 }
                 if (!strcmp(long_options[option_index].name, "primary")) {
-                    if (strlen(optarg) <= 90) {
+                    if (strlen(optarg) <= 127) {
                         strcpy(my_symbol->primary, optarg);
                     } else {
-                        fprintf(stderr, "Error 115: Primary data string too long");
+                        fprintf(stderr, "Error 115: Primary data string too long\n");
                         fflush(stderr);
                     }
                 }
                 if (!strcmp(long_options[option_index].name, "mode")) {
-                    if ((optarg[0] >= '0') && (optarg[0] <= '6')) {
-                        my_symbol->option_1 = optarg[0] - '0';
+                    error_number = validator(NESET, optarg);
+                    if (error_number == ZINT_ERROR_INVALID_DATA) {
+                        fprintf(stderr, "Error 136: Invalid mode value\n");
+                        exit(1);
+                    }
+                    if ((atoi(optarg) >= 0) && (atoi(optarg) <= 6)) {
+                        my_symbol->option_1 = atoi(optarg);
                     } else {
                         fprintf(stderr, "Warning 116: Invalid mode\n");
                         fflush(stderr);
@@ -679,7 +704,7 @@ int main(int argc, char **argv) {
                     /* Only certain inputs allowed */
                     error_number = validator(NESET, optarg);
                     if (error_number == ZINT_ERROR_INVALID_DATA) {
-                        fprintf(stderr, "Error 117: Invalid rotation parameter\n");
+                        fprintf(stderr, "Error 117: Invalid rotation value\n");
                         exit(1);
                     }
                     switch (atoi(optarg)) {
@@ -689,7 +714,11 @@ int main(int argc, char **argv) {
                             break;
                         case 270: rotate_angle = 270;
                             break;
-                        default: rotate_angle = 0;
+                        case 0: rotate_angle = 0;
+                            break;
+                        default:
+                            fprintf(stderr, "Warning 137: Invalid rotation parameter\n");
+                            fflush(stderr);
                             break;
                     }
                 }
@@ -706,6 +735,11 @@ int main(int argc, char **argv) {
                     strncpy(filetype, optarg, (size_t) 3);
                 }
                 if (!strcmp(long_options[option_index].name, "eci")) {
+                    error_number = validator(NESET, optarg);
+                    if (error_number == ZINT_ERROR_INVALID_DATA) {
+                        fprintf(stderr, "Error 138: Invalid ECI value\n");
+                        exit(1);
+                    }
                     if ((atoi(optarg) >= 0) && (atoi(optarg) <= 999999)) {
                         my_symbol->eci = atoi(optarg);
                     } else {
@@ -722,6 +756,11 @@ int main(int argc, char **argv) {
                     my_symbol->debug = 1;
                 }
                 if (!strcmp(long_options[option_index].name, "fontsize")) {
+                    error_number = validator(NESET, optarg);
+                    if (error_number == ZINT_ERROR_INVALID_DATA) {
+                        fprintf(stderr, "Error 130: Invalid font size value\n");
+                        exit(1);
+                    }
                     if ((atoi(optarg) >= 0) && (atoi(optarg) <= 100)) {
                         my_symbol->fontsize = atoi(optarg);
                     } else {
@@ -761,7 +800,7 @@ int main(int argc, char **argv) {
                 if ((atoi(optarg) >= 0) && (atoi(optarg) <= 1000)) {
                     my_symbol->whitespace_width = atoi(optarg);
                 } else {
-                    fprintf(stderr, "Warning 121: Whitespace value out of range");
+                    fprintf(stderr, "Warning 121: Whitespace value out of range\n");
                     fflush(stderr);
                 }
                 break;
@@ -794,7 +833,7 @@ int main(int argc, char **argv) {
                         }
                     }
                 } else {
-                    fprintf(stderr, "Warning 122: Can't define data in batch mode");
+                    fprintf(stderr, "Warning 122: Can't define data in batch mode\n");
                     fflush(stderr);
                 }
                 break;
