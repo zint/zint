@@ -33,7 +33,6 @@
 /* vim: set ts=4 sw=4 et : */
 
 #include <stdio.h>
-#include <string.h>
 #ifdef _MSC_VER
 #include <malloc.h>
 #endif
@@ -648,7 +647,8 @@ INTERNAL int code_128(struct zint_symbol *symbol, const unsigned char source[], 
         for (i = 0; i < bar_characters; i++) {
             printf(" %d", values[i]);
         }
-        printf("\n");
+        printf(" (%d)\n", bar_characters);
+        printf("Barspaces: %s\n", dest);
     }
 #ifdef ZINT_TEST
     if (symbol->debug & ZINT_DEBUG_TEST) {
@@ -951,7 +951,8 @@ INTERNAL int ean_128(struct zint_symbol *symbol, unsigned char source[], const s
         for (i = 0; i < bar_characters; i++) {
             printf(" %d", values[i]);
         }
-        printf("\n");
+        printf(" (%d)\n", bar_characters);
+        printf("Barspaces: %s\n", dest);
     }
 #ifdef ZINT_TEST
     if (symbol->debug & ZINT_DEBUG_TEST) {

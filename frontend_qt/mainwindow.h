@@ -80,8 +80,8 @@ public:
         RSS14STACK       = 79,
         RSS14STACK_OMNI  = 80,
         HANXIN           = 116,
-        ITF14            = 89,
         ISBNX            = 69,
+        ITF14            = 89,
         JAPANPOST        = 76,
         KOREAPOST        = 77,
         LOGMARS          = 50,
@@ -104,9 +104,9 @@ public:
         TELEPEN_NUM      = 87,
         PLESSEY          = 86,
         ULTRA            = 144,
-        UPNQR            = 143,
         UPCA             = 34,
         UPCE             = 37,
+        UPNQR            = 143,
         ONECODE          = 85,
         VIN              = 73
     };

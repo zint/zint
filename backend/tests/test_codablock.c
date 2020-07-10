@@ -320,6 +320,8 @@ static void test_encode(int index, int generate, int debug) {
 
     testStart("");
 
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); // Only do BWIPP test if asked, too slow otherwise
+
     int ret;
     struct item {
         int symbology;
@@ -330,54 +332,55 @@ static void test_encode(int index, int generate, int debug) {
 
         int expected_rows;
         int expected_width;
+        int bwipp_cmp;
         char *comment;
         char *expected;
     };
     struct item data[] = {
-        /*  0*/ { BARCODE_CODABLOCKF, 1, -1, "AIM", 0, 1, 68, "Same as CODE128",
+        /*  0*/ { BARCODE_CODABLOCKF, 1, -1, "AIM", 0, 1, 68, 1, "Same as CODE128 (not supported by BWIPP)",
                     "11010010000101000110001100010001010111011000101110110001100011101011"
                 },
-        /*  1*/ { BARCODE_CODABLOCKF, -1, -1, "AAAAAAA", 0, 3, 101, "Defaults to rows 3, columns 9 (4 data); verified manually against bwipp and tec-it",
+        /*  1*/ { BARCODE_CODABLOCKF, -1, -1, "AAAAAAA", 0, 3, 101, 1, "Defaults to rows 3, columns 9 (4 data); verified manually against tec-it",
                     "11010000100101111011101001011000010100011000101000110001010001100010100011000110110011001100011101011"
                     "11010000100101111011101100010010010100011000101000110001010001100010111011110100100111101100011101011"
                     "11010000100101111011101011001110010111011110101111011101100001010011011101110111100101001100011101011"
                 },
-        /*  2*/ { BARCODE_CODABLOCKF, -1, -1, "AAAAAAAAAA", 0, 3, 101, "Defaults to rows 3, columns 9 (4 data); verified manually against bwipp and tec-it",
+        /*  2*/ { BARCODE_CODABLOCKF, -1, -1, "AAAAAAAAAA", 0, 3, 101, 1, "Defaults to rows 3, columns 9 (4 data); verified manually against tec-it",
                     "11010000100101111011101001011000010100011000101000110001010001100010100011000110110011001100011101011"
                     "11010000100101111011101100010010010100011000101000110001010001100010100011000111101000101100011101011"
                     "11010000100101111011101011001110010100011000101000110001110110010010010110000111000101101100011101011"
                 },
-        /*  3*/ { BARCODE_CODABLOCKF, -1, -1, "AAAAAAAAAAA", 0, 4, 101, "Defaults to rows 4, columns 9 (4 data); verified manually against bwipp and tec-it",
+        /*  3*/ { BARCODE_CODABLOCKF, -1, -1, "AAAAAAAAAAA", 0, 4, 101, 1, "Defaults to rows 4, columns 9 (4 data); verified manually against tec-it",
                     "11010000100101111011101001000011010100011000101000110001010001100010100011000110011001101100011101011"
                     "11010000100101111011101100010010010100011000101000110001010001100010100011000111101000101100011101011"
                     "11010000100101111011101011001110010100011000101000110001010001100010111011110100111101001100011101011"
                     "11010000100101111011101001101110010111011110101111011101110101100011101100100110010111001100011101011"
                 },
-        /*  4*/ { BARCODE_CODABLOCKF, -1, -1, "AAAAAAAAAAAAAA", 0, 4, 101, "Defaults to rows 4, columns 9 (4 data); verified manually against bwipp and tec-it",
+        /*  4*/ { BARCODE_CODABLOCKF, -1, -1, "AAAAAAAAAAAAAA", 0, 4, 101, 1, "Defaults to rows 4, columns 9 (4 data); verified manually against tec-it",
                     "11010000100101111011101001000011010100011000101000110001010001100010100011000110011001101100011101011"
                     "11010000100101111011101100010010010100011000101000110001010001100010100011000111101000101100011101011"
                     "11010000100101111011101011001110010100011000101000110001010001100010100011000101111011101100011101011"
                     "11010000100101111011101001101110010100011000101000110001011110100010111011000100110000101100011101011"
                 },
-        /*  5*/ { BARCODE_CODABLOCKF, -1, -1, "AAAAAAAAAAAAAAA", 0, 5, 101, "Defaults to rows 5, columns 9 (4 data); verified manually against bwipp (columns=4) and tec-it",
+        /*  5*/ { BARCODE_CODABLOCKF, -1, -1, "AAAAAAAAAAAAAAA", 0, 5, 101, 1, "Defaults to rows 5, columns 9 (4 data); verified manually against tec-it",
                     "11010000100101111011101000010110010100011000101000110001010001100010100011000100100011001100011101011"
                     "11010000100101111011101100010010010100011000101000110001010001100010100011000111101000101100011101011"
                     "11010000100101111011101011001110010100011000101000110001010001100010100011000101111011101100011101011"
                     "11010000100101111011101001101110010100011000101000110001010001100010111011110111101001001100011101011"
                     "11010000100101111011101001100111010111011110101111011101000110001010111101000110001010001100011101011"
                 },
-        /*  6*/ { BARCODE_CODABLOCKF, -1, 14, "AAAAAAAAAAAAAAA", 0, 2, 156, "Rows 2, columns 14 (9 data); verified manually against bwipp (columns=9) and tec-it",
+        /*  6*/ { BARCODE_CODABLOCKF, -1, 14, "AAAAAAAAAAAAAAA", 0, 2, 156, 1, "Rows 2, columns 14 (9 data); verified manually against tec-it",
                     "110100001001011110111010100001100101000110001010001100010100011000101000110001010001100010100011000101000110001010001100010100011000110001000101100011101011"
                     "110100001001011110111011000100100101000110001010001100010100011000101000110001010001100010100011000101110111101110111101011011000110111000101101100011101011"
                 },
-        /*  7*/ { BARCODE_CODABLOCKF, -1, -1, "AAAAAAAAAAAAAAAA", 0, 5, 101, "Defaults to rows 5, columns 9 (4 data); verified manually against bwipp (columns=4) and tec-it",
+        /*  7*/ { BARCODE_CODABLOCKF, -1, -1, "AAAAAAAAAAAAAAAA", 0, 5, 101, 1, "Defaults to rows 5, columns 9 (4 data); verified manually against tec-it",
                     "11010000100101111011101000010110010100011000101000110001010001100010100011000100100011001100011101011"
                     "11010000100101111011101100010010010100011000101000110001010001100010100011000111101000101100011101011"
                     "11010000100101111011101011001110010100011000101000110001010001100010100011000101111011101100011101011"
                     "11010000100101111011101001101110010100011000101000110001010001100010100011000111101011101100011101011"
                     "11010000100101111011101001100111010111011110101111011101011100011010001100010100011101101100011101011"
                 },
-        /*  8*/ { BARCODE_CODABLOCKF, -1, -1, "AAAAAAAAAAAAAAAAAAAAAAAAA", 0, 6, 112, "Defaults to rows 6, columns 10 (5 data); verified manually against bwipp (columns=5) and tec-it",
+        /*  8*/ { BARCODE_CODABLOCKF, -1, -1, "AAAAAAAAAAAAAAAAAAAAAAAAA", 0, 6, 112, 1, "Defaults to rows 6, columns 10 (5 data); verified manually against tec-it",
                     "1101000010010111101110100001001101010001100010100011000101000110001010001100010100011000110110001101100011101011"
                     "1101000010010111101110110001001001010001100010100011000101000110001010001100010100011000110010011101100011101011"
                     "1101000010010111101110101100111001010001100010100011000101000110001010001100010100011000110011101001100011101011"
@@ -385,23 +388,23 @@ static void test_encode(int index, int generate, int debug) {
                     "1101000010010111101110100110011101010001100010100011000101000110001010001100010100011000111001001101100011101011"
                     "1101000010010111101110101110011001011101111010111101110101110111101110100011010100001100110001010001100011101011"
                 },
-        /*  9*/ { BARCODE_CODABLOCKF, 4, -1, "CODABLOCK F 34567890123456789010040digit", 0, 4, 145, "AIM ISS-X-24 Figure 1",
+        /*  9*/ { BARCODE_CODABLOCKF, 4, -1, "CODABLOCK F 34567890123456789010040digit", 0, 4, 145, 1, "AIM ISS-X-24 Figure 1",
                     "1101000010010111101110100100001101000100011010001110110101100010001010001100010001011000100011011101000111011010001000110110110011001100011101011"
                     "1101000010010111101110110001001001011000111011011001100100011000101101100110010111011110100010110001110001011011000010100101100111001100011101011"
                     "1101000010010111011110100011011101101111011010110011100100010110001110001011011000010100110111101101100100010010010001100100011000101100011101011"
                     "1101000010010111101110100110111001001110110010000100110100001101001001101000010000110100100111101001101110111010111000110110010000101100011101011"
                 },
-        /* 10*/ { BARCODE_CODABLOCKF, 3, -1, "CODABLOCK F Symbology", 0, 3, 145, "AIM ISS-X-24 Figure on front page",
+        /* 10*/ { BARCODE_CODABLOCKF, 3, -1, "CODABLOCK F Symbology", 0, 3, 145, 1, "AIM ISS-X-24 Figure on front page",
                     "1101000010010111101110100101100001000100011010001110110101100010001010001100010001011000100011011101000111011010001000110111010111101100011101011"
                     "1101000010010111101110110001001001011000111011011001100100011000101101100110011011101000110110111101111011101010010000110100100111101100011101011"
                     "1101000010010111101110101100111001000111101011001010000100011110101001101000011011011110101110111101000011001011011101110101001111001100011101011"
                 },
-        /* 11*/ { BARCODE_HIBC_BLOCKF, 3, -1, "A123BJC5D6E71", 0, 3, 123, "Verified manually against tec-it; differs from bwipp (columns=6) which uses Code C for final 71 (same no. of codewords)",
+        /* 11*/ { BARCODE_HIBC_BLOCKF, 3, -1, "A123BJC5D6E71", 0, 3, 123, 0, "Verified manually against tec-it; differs from BWIPP (columns=6) which uses Code C for final 71 (same no. of codewords)",
                     "110100001001011110111010010110000110001001001010001100010011100110110011100101100101110010001011000100100001101100011101011"
                     "110100001001011110111011000100100101101110001000100011011011100100101100010001100111010010001101000111001001101100011101011"
                     "110100001001011110111010110011100111011011101001110011011010001000101110111101011100011011001110100100100110001100011101011"
                 },
-        /* 12*/ { BARCODE_HIBC_BLOCKF, -1, -1, "$$52001510X3G", 0, 4, 101, "Verified manually against bwipp (columns=4); tec-it differs as adds unnecessary Code C at end of 1st line",
+        /* 12*/ { BARCODE_HIBC_BLOCKF, -1, -1, "$$52001510X3G", 0, 4, 101, 1, "tec-it differs as adds unnecessary Code C at end of 1st line",
                     "11010000100101111011101001000011011000100100100100011001001000110011011100100101110011001100011101011"
                     "11010000100101110111101011000111011001001110110011011001101110100010111101110100001100101100011101011"
                     "11010000100101111011101011001110010011101100111000101101100101110011010001000100100011001100011101011"
@@ -411,6 +414,8 @@ static void test_encode(int index, int generate, int debug) {
     int data_size = ARRAY_SIZE(data);
 
     char escaped[1024];
+    char bwipp_buf[8192];
+    char bwipp_msg[1024];
 
     for (int i = 0; i < data_size; i++) {
 
@@ -425,9 +430,9 @@ static void test_encode(int index, int generate, int debug) {
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (generate) {
-            printf("        /*%3d*/ { %s, %d, %d, \"%s\", %s, %d, %d, \"%s\",\n",
+            printf("        /*%3d*/ { %s, %d, %d, \"%s\", %s, %d, %d, %d, \"%s\",\n",
                     i, testUtilBarcodeName(data[i].symbology), data[i].option_1, data[i].option_2, testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
-                    testUtilErrorName(data[i].ret), symbol->rows, symbol->width, data[i].comment);
+                    testUtilErrorName(data[i].ret), symbol->rows, data[i].bwipp_cmp, symbol->width, data[i].comment);
             testUtilModulesDump(symbol, "                    ", "\n");
             printf("                },\n");
         } else {
@@ -439,6 +444,19 @@ static void test_encode(int index, int generate, int debug) {
                     int width, row;
                     ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
                     assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, ret, width, row, data[i].data);
+                }
+
+                if (do_bwipp && testUtilCanBwipp(symbol->symbology, data[i].option_1, data[i].option_2, -1, debug)) {
+                    if (!data[i].bwipp_cmp) {
+                        if (debug & ZINT_DEBUG_TEST_PRINT) printf("%d: %s skipped, not BWIPP compatible\n", i, testUtilBarcodeName(symbol->symbology));
+                    } else {
+                        ret = testUtilBwipp(symbol, data[i].option_1, data[i].option_2, -1, data[i].data, length, NULL, bwipp_buf, sizeof(bwipp_buf));
+                        assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), ret);
+
+                        ret = testUtilBwippCmp(symbol, bwipp_msg, bwipp_buf, data[i].expected);
+                        assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
+                                       i, testUtilBarcodeName(data[i].symbology), ret, bwipp_msg, bwipp_buf, data[i].expected);
+                    }
                 }
             }
         }

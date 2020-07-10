@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2019 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008 - 2020 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -50,20 +50,18 @@
  */
 
 #include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
 #include <assert.h>
 #include <math.h>
 #ifdef _MSC_VER
 #include <malloc.h>
 #endif
 #include "common.h"
-#include "composite.h"
 #include "pdf417.h"
 #include "gs1.h"
 #include "general_field.h"
 
 #define UINT unsigned short
+#include "composite.h"
 
 INTERNAL int eanx(struct zint_symbol *symbol, unsigned char source[], int length);
 INTERNAL int ean_128(struct zint_symbol *symbol, unsigned char source[], const size_t length);
@@ -71,8 +69,6 @@ INTERNAL void ean_leading_zeroes(struct zint_symbol *symbol, unsigned char sourc
 INTERNAL int rss14(struct zint_symbol *symbol, unsigned char source[], int length);
 INTERNAL int rsslimited(struct zint_symbol *symbol, unsigned char source[], int length);
 INTERNAL int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int length);
-
-static UINT pwr928[69][7];
 
 static int _min(int first, int second) {
 
@@ -85,26 +81,6 @@ static int _min(int first, int second) {
 /* gets bit in bitString at bitPos */
 static int getBit(UINT *bitStr, int bitPos) {
     return !!(bitStr[bitPos >> 4] & (0x8000 >> (bitPos & 15)));
-}
-
-/* initialize pwr928 encoding table */
-static void init928(void) {
-    int i, j, v;
-    int cw[7];
-    cw[6] = 1L;
-    for (i = 5; i >= 0; i--)
-        cw[i] = 0;
-
-    for (i = 0; i < 7; i++)
-        pwr928[0][i] = cw[i];
-    for (j = 1; j < 69; j++) {
-        for (v = 0, i = 6; i >= 1; i--) {
-            v = (2 * cw[i]) + (v / 928);
-            pwr928[j][i] = cw[i] = v % 928;
-        }
-        pwr928[j][0] = cw[0] = (2 * cw[0]) + (v / 928);
-    }
-    return;
 }
 
 /* converts bit string to base 928 values, codeWords[0] is highest order */
@@ -171,7 +147,6 @@ static int cc_a(struct zint_symbol *symbol, char source[], int cc_width) {
         }
     }
 
-    init928();
     /* encode codeWords from bitStr */
     cwCnt = encode928(bitStr, codeWords, bitlen);
 
@@ -332,6 +307,10 @@ static int cc_a(struct zint_symbol *symbol, char source[], int cc_width) {
         }
     }
 
+    if (symbol->debug & ZINT_DEBUG_PRINT) {
+        printf("CC-A Columns: %d, Rows: %d\n", cc_width, symbol->rows);
+    }
+
     return 0;
 }
 
@@ -341,7 +320,7 @@ static int cc_b(struct zint_symbol *symbol, char source[], int cc_width) {
 #ifndef _MSC_VER
     unsigned char data_string[(strlen(source) / 8) + 3];
 #else
-    unsigned char* data_string = (unsigned char*) _alloca((strlen(source) / 8) + 3);
+    unsigned char *data_string = (unsigned char *) _alloca((strlen(source) / 8) + 3);
 #endif
     int chainemc[180], mclength;
     int k, j, p, longueur, mccorrection[50], offset;
@@ -584,6 +563,10 @@ static int cc_b(struct zint_symbol *symbol, char source[], int cc_width) {
         }
     }
 
+    if (symbol->debug & ZINT_DEBUG_PRINT) {
+        printf("CC-B Columns: %d, Rows: %d\n", cc_width, symbol->rows);
+    }
+
     return 0;
 }
 
@@ -593,7 +576,7 @@ static int cc_c(struct zint_symbol *symbol, char source[], int cc_width, int ecc
 #ifndef _MSC_VER
     unsigned char data_string[(strlen(source) / 8) + 4];
 #else
-    unsigned char* data_string = (unsigned char*) _alloca((strlen(source) / 8) + 4);
+    unsigned char *data_string = (unsigned char *) _alloca((strlen(source) / 8) + 4);
 #endif
     int chainemc[1000], mclength, k;
     int offset, longueur, loop, total, j, mccorrection[520];
@@ -724,6 +707,10 @@ static int cc_c(struct zint_symbol *symbol, char source[], int cc_width, int ecc
     symbol->rows = (mclength / cc_width);
     symbol->width = (int)strlen(pattern);
 
+    if (symbol->debug & ZINT_DEBUG_PRINT) {
+        printf("CC-C Columns: %d, Rows: %d\n", cc_width, symbol->rows);
+    }
+
     return 0;
 }
 
@@ -788,9 +775,9 @@ static int calc_padding_cca(int binary_length, int cc_width) {
                 target_bitsize = 78;
             }
             break;
-        }
+    }
 
-        return target_bitsize;
+    return target_bitsize;
 }
 
 static int calc_padding_ccb(int binary_length, int cc_width) {
@@ -957,7 +944,8 @@ static int calc_padding_ccc(int binary_length, int *cc_width, int lin_width, int
     return target_bitsize;
 }
 
-static int cc_binary_string(struct zint_symbol *symbol, const char source[], char binary_string[], int cc_mode, int *cc_width, int *ecc, int lin_width) { /* Handles all data encodation from section 5 of ISO/IEC 24723 */
+/* Handles all data encodation from section 5 of ISO/IEC 24723 */
+static int cc_binary_string(struct zint_symbol *symbol, const char source[], char binary_string[], int cc_mode, int *cc_width, int *ecc, int lin_width) {
     int encoding_method, read_posn, alpha_pad;
     int i, j, ai_crop, ai_crop_posn, fnc1_latch;
     int ai90_mode, last_digit, remainder, binary_length;
@@ -966,9 +954,10 @@ static int cc_binary_string(struct zint_symbol *symbol, const char source[], cha
 #ifndef _MSC_VER
     char general_field[source_len + 1];
 #else
-    char* general_field = (char*) _alloca(source_len + 1);
+    char *general_field = (char *) _alloca(source_len + 1);
 #endif
     int target_bitsize;
+    int debug = symbol->debug & ZINT_DEBUG_PRINT;
 
     encoding_method = 1;
     read_posn = 0;
@@ -976,7 +965,6 @@ static int cc_binary_string(struct zint_symbol *symbol, const char source[], cha
     ai_crop_posn = -1;
     fnc1_latch = 0;
     alpha_pad = 0;
-    ai90_mode = 0;
     *ecc = 0;
     target_bitsize = 0;
     mode = NUMERIC;
@@ -993,6 +981,7 @@ static int cc_binary_string(struct zint_symbol *symbol, const char source[], cha
 
     if (encoding_method == 1) {
         strcat(binary_string, "0");
+        if (debug) printf("CC-%c Encodation Method: 0\n", 'A' + (cc_mode - 1));
     }
 
     if (encoding_method == 2) {
@@ -1046,6 +1035,8 @@ static int cc_binary_string(struct zint_symbol *symbol, const char source[], cha
                 /* Note an alphanumeric FNC1 is also a numeric latch, so now in numeric mode */
             }
         }
+
+        if (debug) printf("CC-%c Encodation Method: 10, Compaction Field: %.*s\n", 'A' + (cc_mode - 1), read_posn, source);
     }
 
     if (encoding_method == 3) {
@@ -1053,7 +1044,7 @@ static int cc_binary_string(struct zint_symbol *symbol, const char source[], cha
 #ifndef _MSC_VER
         char ninety[source_len + 1];
 #else
-        char* ninety = (char*) _alloca(source_len + 1);
+        char *ninety = (char *) _alloca(source_len + 1);
 #endif
         int ninety_len, alpha, alphanum, numeric, test1, test2, test3;
 
@@ -1126,30 +1117,30 @@ static int cc_binary_string(struct zint_symbol *symbol, const char source[], cha
             /* Alpha mode is a special mode for AI 90 */
 
             if (alphanum == 0 && alpha > numeric) {
-                /* Alphabetic mode */
+                /* Alpha mode */
                 strcat(binary_string, "11");
                 ai90_mode = 2;
             } else if (alphanum == 0 && alpha == 0) {
                 /* Numeric mode */
                 strcat(binary_string, "10");
                 ai90_mode = 3;
-            } else {
+            } else { /* Note if first 4 are digits then it would be shorter to go into NUMERIC mode first; not implemented */
                 /* Alphanumeric mode */
                 strcat(binary_string, "0");
                 ai90_mode = 1;
-                mode = ALPHA;
+                mode = ALPHANUMERIC;
             }
 
             next_ai_posn = 2 + ninety_len;
 
-            if (source[next_ai_posn] == '[') {
+            if (next_ai_posn < source_len && source[next_ai_posn] == '[') {
                 /* There are more AIs afterwards */
-                if ((source[next_ai_posn + 1] == '2') && (source[next_ai_posn + 2] == '1')) {
+                if (next_ai_posn + 2 < source_len && (source[next_ai_posn + 1] == '2') && (source[next_ai_posn + 2] == '1')) {
                     /* AI 21 follows */
                     ai_crop = 1;
-                }
-
-                if ((source[next_ai_posn + 1] == '8') && (source[next_ai_posn + 2] == '0') && (source[next_ai_posn + 3] == '0') && (source[next_ai_posn + 4] == '4')) {
+                } else if (next_ai_posn + 4 < source_len
+                        && (source[next_ai_posn + 1] == '8') && (source[next_ai_posn + 2] == '0')
+                        && (source[next_ai_posn + 3] == '0') && (source[next_ai_posn + 4] == '4')) {
                     /* AI 8004 follows */
                     ai_crop = 3;
                 }
@@ -1220,10 +1211,15 @@ static int cc_binary_string(struct zint_symbol *symbol, const char source[], cha
                 alpha_pad = 1; /* This is overwritten if a general field is encoded */
             }
 
+            if (debug) {
+                printf("CC-%c Encodation Method: 11, Compaction Field: %.*s, Binary: %s (%d)\n",
+                        'A' + (cc_mode - 1), read_posn, source, binary_string, (int) strlen(binary_string));
+            }
         } else {
             /* Use general field encodation instead */
             strcat(binary_string, "0");
             read_posn = 0;
+            if (debug) printf("CC-%c Encodation Method: 0\n", 'A' + (cc_mode - 1));
         }
     }
 
@@ -1248,6 +1244,12 @@ static int cc_binary_string(struct zint_symbol *symbol, const char source[], cha
         }
     }
     general_field[j] = '\0';
+
+    if (debug) {
+        printf("Mode %s, General Field: %.40s%s\n",
+                mode == NUMERIC ? "NUMERIC" : mode == ALPHANUMERIC ? "ALPHANUMERIC" : "ISO646",
+                general_field, strlen(general_field) > 40 ? "..." : "");
+    }
 
     if (strlen(general_field) != 0) {
         alpha_pad = 0;
@@ -1322,7 +1324,6 @@ static int cc_binary_string(struct zint_symbol *symbol, const char source[], cha
         /* Now add padding to binary string */
         if (alpha_pad == 1) {
             strcat(binary_string, "11111");
-            alpha_pad = 0;
             /* Extra FNC1 character required after Alpha encodation (section 5.3.3) */
         }
 
@@ -1337,6 +1338,11 @@ static int cc_binary_string(struct zint_symbol *symbol, const char source[], cha
         if (strlen(binary_string) > (unsigned int) target_bitsize) {
             binary_string[target_bitsize] = '\0';
         }
+    }
+
+    if (debug) {
+        printf("ECC: %d, CC width %d\n", *ecc, *cc_width);
+        printf("Binary: %s (%d)\n", binary_string, (int) strlen(binary_string));
     }
 
     return 0;
@@ -1368,7 +1374,7 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
 #ifndef _MSC_VER
     char binary_string[bs];
 #else
-    char* binary_string = (char*) _alloca(bs);
+    char *binary_string = (char *) _alloca(bs);
 #endif
     unsigned int pri_len;
     struct zint_symbol *linear;
@@ -1402,6 +1408,9 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
             strcpy(symbol->errtxt, "448: Invalid data");
             return ZINT_ERROR_INVALID_DATA;
         }
+        if (symbol->debug & ZINT_DEBUG_PRINT) {
+            printf("GS1-128 linear width: %d\n", linear_width);
+        }
     }
 
     switch (symbol->symbology) {
@@ -1412,7 +1421,7 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
                 int padded_pri_len;
                 char padded_pri[20];
                 padded_pri[0] = '\0';
-                ean_leading_zeroes(symbol, (unsigned char*) symbol->primary, (unsigned char*) padded_pri);
+                ean_leading_zeroes(symbol, (unsigned char *) symbol->primary, (unsigned char *) padded_pri);
                 padded_pri_len = strlen(padded_pri);
                 if (padded_pri_len <= 7) { /* EAN-8 */
                     cc_width = 3;
@@ -1511,6 +1520,7 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
     linear = ZBarcode_Create(); /* Symbol contains the 2D component and Linear contains the rest */
 
     linear->symbology = symbol->symbology;
+    linear->debug = symbol->debug;
 
     if (linear->symbology != BARCODE_EAN128_CC) {
         /* Set the "component linkage" flag in the linear component */
@@ -1598,7 +1608,7 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
             break;
         case BARCODE_RSS14_CC: bottom_shift = 4;
             break;
-        case BARCODE_RSS_LTD_CC: 
+        case BARCODE_RSS_LTD_CC:
             if (cc_mode == 1) {
                 top_shift = 1;
             } else {
@@ -1625,6 +1635,10 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
             }
             top_shift = k;
             break;
+    }
+
+    if (symbol->debug & ZINT_DEBUG_PRINT) {
+        printf("Top shift: %d, Bottom shift: %d\n", top_shift, bottom_shift);
     }
 
     if (top_shift != 0) {
@@ -1660,7 +1674,8 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
         symbol->width += top_shift;
     }
     symbol->rows += linear->rows;
-    ustrcpy(symbol->text, (unsigned char *) linear->text);
+
+    ustrcpy(symbol->text, linear->text);
 
     ZBarcode_Delete(linear);
 

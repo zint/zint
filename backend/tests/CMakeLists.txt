@@ -22,6 +22,14 @@ else()
     add_definitions(-DNO_PNG)
 endif()
 
+set(BWIPP_TAR ${CMAKE_CURRENT_SOURCE_DIR}/tools/bwipp_dump.ps.tar.xz)
+set(BWIPP_PS ${CMAKE_CURRENT_SOURCE_DIR}/tools/bwipp_dump.ps)
+
+if(NOT EXISTS ${BWIPP_PS})
+    execute_process(COMMAND ${CMAKE_COMMAND} -E tar -xf ${BWIPP_TAR}
+                    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tools)
+endif()
+
 if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
     if(ZINT_DEBUG)
         add_compile_options("-g")

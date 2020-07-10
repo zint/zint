@@ -432,6 +432,8 @@ static void test_encode(int index, int generate, int debug) {
 
     testStart("");
 
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); // Only do BWIPP test if asked, too slow otherwise
+
     int ret;
     struct item {
         int symbology;
@@ -521,10 +523,10 @@ static void test_encode(int index, int generate, int debug) {
         /* 24*/ { BARCODE_EAN128, GS1_MODE, "[00]340433935039756615", 0, 1, 156, "DHL Identcode https://www.dhl.de/de/geschaeftskunden/paket/information/geschaeftskunden/abrechnung/leitcodierung.html",
                     "110100111001111010111011011001100100010110001001000110010100011000101000111101100010111011010001000110000100101001000011010111001100100111001101100011101011"
                 },
-        /* 25*/ { BARCODE_EAN14, GS1_MODE, "4070071967072", 0, 1, 134, "Verified manually against bwipp and tec-it",
+        /* 25*/ { BARCODE_EAN14, GS1_MODE, "4070071967072", 0, 1, 134, "Verified manually against tec-it",
                     "11010011100111101011101100110110011000101000101100001001001100010011001011100100001011001001100010011001001110110111001001100011101011"
                 },
-        /* 26*/ { BARCODE_NVE18, GS1_MODE, "40700000071967072", 0, 1, 156, "Verified manually against bwipp (sscc18) and tec-it",
+        /* 26*/ { BARCODE_NVE18, GS1_MODE, "40700000071967072", 0, 1, 156, "Verified manually against tec-it",
                     "110100111001111010111011011001100110001010001011000010011011001100110110011001001100010011001011100100001011001001100010011001001110110111011101100011101011"
                 },
         /* 27*/ { BARCODE_HIBC_128, UNICODE_MODE, "83278F8G9H0J2G", 0, 1, 211, "ANSI/HIBC 2.6 - 2016 Section 4.1, not same, uses different encoding (eg begins StartA instead of StartB)",
@@ -540,6 +542,8 @@ static void test_encode(int index, int generate, int debug) {
     int data_size = sizeof(data) / sizeof(struct item);
 
     char escaped[1024];
+    char bwipp_buf[8192];
+    char bwipp_msg[1024];
 
     for (int i = 0; i < data_size; i++) {
 
@@ -568,6 +572,15 @@ static void test_encode(int index, int generate, int debug) {
                     int width, row;
                     ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
                     assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, ret, width, row, data[i].data);
+                }
+
+                if (do_bwipp && testUtilCanBwipp(symbol->symbology, -1, -1, -1, debug)) {
+                    ret = testUtilBwipp(symbol, -1, -1, -1, data[i].data, length, NULL, bwipp_buf, sizeof(bwipp_buf));
+                    assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), ret);
+
+                    ret = testUtilBwippCmp(symbol, bwipp_msg, bwipp_buf, data[i].expected);
+                    assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
+                                   i, testUtilBarcodeName(data[i].symbology), ret, bwipp_msg, bwipp_buf, data[i].expected);
                 }
             }
         }

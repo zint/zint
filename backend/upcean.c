@@ -1,7 +1,7 @@
 /*  upcean.c - Handles UPC, EAN and ISBN
 
     libzint - the open source barcode library
-    Copyright (C) 2008-2017 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008 - 2020 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -30,13 +30,11 @@
  */
 /* vim: set ts=4 sw=4 et : */
 
-#define SODIUM	"0123456789+"
-#define EAN2	102
-#define EAN5	105
+#define SODIUM  "0123456789+"
+#define EAN2    102
+#define EAN5    105
 
 #include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
 #include "common.h"
 
 /* UPC and EAN tables checked against EN 797:1996 */
@@ -264,6 +262,10 @@ static int upce(struct zint_symbol *symbol, unsigned char source[], char dest[])
     /* Get the check digit from the expanded UPCA code */
 
     check_digit = upc_check(equivalent);
+
+    if (symbol->debug & ZINT_DEBUG_PRINT) {
+        printf("UPC-E: %s, Check digit: %c\n", equivalent, check_digit);
+    }
 
     /* Use the number system and check digit information to choose a parity scheme */
     if (num_system == 1) {

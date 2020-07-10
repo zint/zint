@@ -184,6 +184,8 @@ static void test_encode(int index, int generate, int debug) {
 
     testStart("");
 
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); // Only do BWIPP test if asked, too slow otherwise
+
     int ret;
     struct item {
         int symbology;
@@ -228,6 +230,8 @@ static void test_encode(int index, int generate, int debug) {
     int data_size = ARRAY_SIZE(data);
 
     char escaped[1024];
+    char bwipp_buf[8192];
+    char bwipp_msg[1024];
 
     for (int i = 0; i < data_size; i++) {
 
@@ -256,6 +260,15 @@ static void test_encode(int index, int generate, int debug) {
                     int width, row;
                     ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
                     assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, ret, width, row, data[i].data);
+                }
+
+                if (do_bwipp && testUtilCanBwipp(symbol->symbology, -1, -1, -1, debug)) {
+                    ret = testUtilBwipp(symbol, -1, -1, -1, data[i].data, length, NULL, bwipp_buf, sizeof(bwipp_buf));
+                    assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), ret);
+
+                    ret = testUtilBwippCmp(symbol, bwipp_msg, bwipp_buf, data[i].expected);
+                    assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
+                                   i, testUtilBarcodeName(data[i].symbology), ret, bwipp_msg, bwipp_buf, data[i].expected);
                 }
             }
         }

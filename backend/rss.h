@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2007-2017 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2007 - 2020 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -56,7 +56,6 @@ static const char widest_even[9] = {
     1, 3, 5, 6, 8, 7, 5, 3, 1
 };
 
-static int widths[8];
 static const char finder_pattern[45] = {
     3, 8, 2, 1, 1,
     3, 5, 5, 1, 1,

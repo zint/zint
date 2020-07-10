@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2019 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019 - 2020 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -31,7 +31,6 @@
  */
 /* vim: set ts=4 sw=4 et : */
 
-#include <string.h>
 #include "common.h"
 #include "general_field.h"
 
@@ -39,12 +38,12 @@ static char alphanum_puncs[] = "*,-./";
 static char isoiec_puncs[] = "!\"%&'()*+,-./:;<=>?_ ";
 
 /* Returns type of char at `i`. FNC1 counted as NUMERIC. Returns 0 if invalid char */
-static int general_field_type(char* general_field, int i) {
+static int general_field_type(char *general_field, int i) {
     if (general_field[i] == '[' || (general_field[i] >= '0' && general_field[i] <= '9')) {
         return NUMERIC;
     }
     if ((general_field[i] >= 'A' && general_field[i] <= 'Z') || strchr(alphanum_puncs, general_field[i])) {
-        return ALPHA;
+        return ALPHANUMERIC;
     }
     if ((general_field[i] >= 'a' && general_field[i] <= 'z') || strchr(isoiec_puncs, general_field[i])) {
         return ISOIEC;
@@ -53,7 +52,7 @@ static int general_field_type(char* general_field, int i) {
 }
 
 /* Returns true if next (including `i`) `num` chars of type `type`, or if given (non-zero), `type2` */
-static int general_field_next(char* general_field, int i, int general_field_len, int num, int type, int type2) {
+static int general_field_next(char *general_field, int i, int general_field_len, int num, int type, int type2) {
     if (i + num > general_field_len) {
         return 0;
     }
@@ -67,7 +66,7 @@ static int general_field_next(char* general_field, int i, int general_field_len,
 }
 
 /* Returns true if next (including `i`) `num` up to `max_num` chars of type `type` and occur at end */
-static int general_field_next_terminate(char* general_field, int i, int general_field_len, int num, int max_num, int type) {
+static int general_field_next_terminate(char *general_field, int i, int general_field_len, int num, int max_num, int type) {
     if (i + max_num < general_field_len) {
         return 0;
     }
@@ -80,7 +79,7 @@ static int general_field_next_terminate(char* general_field, int i, int general_
 }
 
 /* Returns true if none of the next (including `i`) `num` chars (or end occurs) of type `type` */
-static int general_field_next_none(char* general_field, int i, int general_field_len, int num, int type) {
+static int general_field_next_none(char *general_field, int i, int general_field_len, int num, int type) {
     for (; i < general_field_len && num; i++, num--) {
         if (general_field_type(general_field, i) == type) {
             return 0;
@@ -91,7 +90,7 @@ static int general_field_next_none(char* general_field, int i, int general_field
 
 /* Attempts to apply encoding rules from sections 7.2.5.5.1 to 7.2.5.5.3
  * of ISO/IEC 24724:2011 (same as sections 5.4.1 to 5.4.3 of ISO/IEC 24723:2010) */
-INTERNAL int general_field_encode(char* general_field, int* p_mode, int* p_last_digit, char binary_string[]) {
+INTERNAL int general_field_encode(char *general_field, int *p_mode, int *p_last_digit, char binary_string[]) {
     int i, d1, d2;
     int mode = *p_mode;
     int last_digit = 0; /* Set to odd remaining digit at end if any */
@@ -107,7 +106,7 @@ INTERNAL int general_field_encode(char* general_field, int* p_mode, int* p_last_
                 if (i < general_field_len - 1) { /* If at least 2 characters remain */
                     if (type != NUMERIC || general_field_type(general_field, i + 1) != NUMERIC) { /* 7.2.5.5.1/5.4.1 a) */
                         strcat(binary_string, "0000"); /* Alphanumeric latch */
-                        mode = ALPHA;
+                        mode = ALPHANUMERIC;
                     } else {
                         d1 = general_field[i] == '[' ? 10 : ctoi(general_field[i]);
                         d2 = general_field[i + 1] == '[' ? 10 : ctoi(general_field[i + 1]);
@@ -117,14 +116,14 @@ INTERNAL int general_field_encode(char* general_field, int* p_mode, int* p_last_
                 } else { /* If 1 character remains */
                     if (type != NUMERIC) { /* 7.2.5.5.1/5.4.1 b) */
                         strcat(binary_string, "0000"); /* Alphanumeric latch */
-                        mode = ALPHA;
+                        mode = ALPHANUMERIC;
                     } else {
                         last_digit = general_field[i]; /* Ending with single digit. 7.2.5.5.1 c) and 5.4.1 c) dealt with separately outside this procedure */
                         i++;
                     }
                 }
                 break;
-            case ALPHA:
+            case ALPHANUMERIC:
                 if (general_field[i] == '[') { /* 7.2.5.5.2/5.4.2 a) */
                     strcat(binary_string, "01111");
                     mode = NUMERIC;
@@ -132,7 +131,7 @@ INTERNAL int general_field_encode(char* general_field, int* p_mode, int* p_last_
                 } else if (type == ISOIEC) { /* 7.2.5.5.2/5.4.2 b) */
                     strcat(binary_string, "00100"); /* ISO/IEC 646 latch */
                     mode = ISOIEC;
-                } else if (general_field_next(general_field, i, general_field_len, 6, NUMERIC, 0)) { /* 7.2.5.5.2/5.4.2 c) */
+               } else if (general_field_next(general_field, i, general_field_len, 6, NUMERIC, 0)) { /* 7.2.5.5.2/5.4.2 c) */
                     strcat(binary_string, "000"); /* Numeric latch */
                     mode = NUMERIC;
                 } else if (general_field_next_terminate(general_field, i, general_field_len, 4, 5 /*Can limit to 5 max due to above*/, NUMERIC)) { /* 7.2.5.5.2/5.4.2 d) */
@@ -159,10 +158,10 @@ INTERNAL int general_field_encode(char* general_field, int* p_mode, int* p_last_
                     if (next_10_not_isoiec && general_field_next(general_field, i, general_field_len, 4, NUMERIC, 0)) { /* 7.2.5.5.3/5.4.3 b) */
                         strcat(binary_string, "000"); /* Numeric latch */
                         mode = NUMERIC;
-                    } else if (next_10_not_isoiec && general_field_next(general_field, i, general_field_len, 5, ALPHA, NUMERIC)) { /* 7.2.5.5.3/5.4.3 c) */
+                    } else if (next_10_not_isoiec && general_field_next(general_field, i, general_field_len, 5, ALPHANUMERIC, NUMERIC)) { /* 7.2.5.5.3/5.4.3 c) */
                         /* Note this rule can produce longer bitstreams if most of the alphanumerics are numeric */
                         strcat(binary_string, "00100"); /* Alphanumeric latch */
-                        mode = ALPHA;
+                        mode = ALPHANUMERIC;
                     } else if ((general_field[i] >= '0') && (general_field[i] <= '9')) {
                         bin_append(general_field[i] - 43, 5, binary_string);
                         i++;

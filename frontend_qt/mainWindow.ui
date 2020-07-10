@@ -454,7 +454,7 @@ p, li { white-space: pre-wrap; }
              <item row="3" column="0">
               <widget class="QLabel" name="lblWhitespace">
                <property name="text">
-                <string>&amp;Whitespace:</string>
+                <string>Horizontal &amp;Whitespace:</string>
                </property>
                <property name="alignment">
                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>

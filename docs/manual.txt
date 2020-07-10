@@ -267,14 +267,14 @@ Numeric Value  |  Barcode Name
 24             |  Code 49
 25             |  Code 93
 28             |  Flattermarken
-29             |  GS1 DataBar-14
+29             |  GS1 DataBar Omnidirectional (including GS1 DataBar Truncated)
 30             |  GS1 DataBar Limited
 31             |  GS1 DataBar Expanded
 32             |  Telepen Alpha
-34             |  UPC A
-35             |  UPC A + Check Digit
-37             |  UPC E
-38             |  UPC E + Check Digit
+34             |  UPC-A
+35             |  UPC-A + Check Digit
+37             |  UPC-E
+38             |  UPC-E + Check Digit
 40             |  PostNet
 47             |  MSI Plessey
 49             |  FIM
@@ -295,17 +295,17 @@ Numeric Value  |  Barcode Name
 70             |  Royal Mail 4 State (RM4SCC)
 71             |  Data Matrix (ECC200)
 72             |  EAN-14
-73             |  Vehicle Identification Number (America)
+73             |  Vehicle Identification Number
 74             |  Codablock-F
 75             |  NVE-18
 76             |  Japanese Postal Code
 77             |  Korea Post
-79             |  GS1 DataBar-14 Stacked
-80             |  GS1 DataBar-14 Stacked Omnidirectional
+79             |  GS1 DataBar Stacked (stacked version of GS1 DataBar Truncated)
+80             |  GS1 DataBar Stacked Omnidirectional
 81             |  GS1 DataBar Expanded Stacked
 82             |  PLANET
 84             |  MicroPDF417
-85             |  USPS OneCode
+85             |  USPS Intelligent Mail (OneCode)
 86             |  Plessey Code
 87             |  Telepen Numeric
 89             |  ITF-14
@@ -327,13 +327,14 @@ Numeric Value  |  Barcode Name
 129            |  Code 32
 130            |  Composite Symbol with EAN linear component
 131            |  Composite Symbol with GS1-128 linear component
-132            |  Composite Symbol with GS1 DataBar-14 linear component
-133            |  Composite Symbol with GS1 DataBar Limited component
-134            |  Composite Symbol with GS1 DataBar Expanded component
-135            |  Composite Symbol with UPC A linear component
-136            |  Composite Symbol with UPC E linear component
-137            |  Composite Symbol with GS1 DataBar-14 Stacked component
-138            |  Composite Symbol with GS1 DataBar-14 Stacked Omnidirectional
+132            |  Composite Symbol with GS1 DataBar Omnidirectional linear
+               |     component
+133            |  Composite Symbol with GS1 DataBar Limited linear component
+134            |  Composite Symbol with GS1 DataBar Expanded linear component
+135            |  Composite Symbol with UPC-A linear component
+136            |  Composite Symbol with UPC-E linear component
+137            |  Composite Symbol with GS1 DataBar Stacked component
+138            |  Composite Symbol with GS1 DataBar Stacked Omnidirectional
                |     component
 139            |  Composite Symbol with GS1 DataBar Expanded Stacked component
 140            |  Channel Code
@@ -434,8 +435,9 @@ have been inserted into a symbol.
 GS1 data can be encoded in a number of symbologies. Application identifiers
 should be enclosed in [square brackets] followed by the data to be encoded (see
 5.1.12.3). To encode GS1 data use the --gs1 option. GS1 mode is assumed (and
-doesn't need to be set) for EAN-128, DataBar and Composite symbologies but is
-also available for Code 16k, Data Matrix, Aztec Code, DotCode and QR Code.
+doesn't need to be set) for GS1-128, EAN-14, DataBar and Composite symbologies
+but is also available for Aztec Code, Code 16k, Code 49, Code One, Data Matrix,
+DotCode, QR Code and Ultracode.
 
 HIBC data may also be encoded in the symbologies Code 39, Code128, Codablock-F,
 Data Matrix, QR Code, PDF417 and Aztec Code. Within this mode, the leading '+'
@@ -999,14 +1001,14 @@ Value   |
 24      | BARCODE_CODE49          | Code 49
 25      | BARCODE_CODE93          | Code 93
 28      | BARCODE_FLAT            | Flattermarken
-29      | BARCODE_RSS14           | GS1 DataBar-14
+29      | BARCODE_RSS14           | GS1 DataBar Omnidirectional
 30      | BARCODE_RSS_LTD         | GS1 DataBar Limited
 31      | BARCODE_RSS_EXP         | GS1 DataBar Expanded
 32      | BARCODE_TELEPEN         | Telepen Alpha
-34      | BARCODE_UPCA            | UPC A
-35      | BARCODE_UPCA_CHK        | UPC A + Check Digit
-37      | BARCODE_UPCE            | UPC E
-38      | BARCODE_UPCE_CHK        | UPC E + Check Digit
+34      | BARCODE_UPCA            | UPC-A
+35      | BARCODE_UPCA_CHK        | UPC-A + Check Digit
+37      | BARCODE_UPCE            | UPC-E
+38      | BARCODE_UPCE_CHK        | UPC-E + Check Digit
 40      | BARCODE_POSTNET         | PostNet
 47      | BARCODE_MSI_PLESSEY     | MSI Plessey
 49      | BARCODE_FIM             | FIM
@@ -1032,12 +1034,12 @@ Value   |
 75      | BARCODE_NVE18           | NVE-18
 76      | BARCODE_JAPANPOST       | Japanese Postal Code
 77      | BARCODE_KOREAPOST       | Korea Post
-79      | BARCODE_RSS14STACK      | GS1 DataBar-14 Stacked
-80      | BARCODE_RSS14STACK_OMNI | GS1 DataBar-14 Stacked Omnidirectional
+79      | BARCODE_RSS14STACK      | GS1 DataBar Stacked
+80      | BARCODE_RSS14STACK_OMNI | GS1 DataBar Stacked Omnidirectional
 81      | BARCODE_RSS_EXPSTACK    | GS1 DataBar Expanded Stacked
 82      | BARCODE_PLANET          | PLANET
 84      | BARCODE_MICROPDF417     | MicroPDF417
-85      | BARCODE_ONECODE         | USPS OneCode
+85      | BARCODE_ONECODE         | USPS Intelligent Mail (OneCode)
 86      | BARCODE_PLESSEY         | Plessey Code
 87      | BARCODE_TELEPEN_NUM     | Telepen Numeric
 89      | BARCODE_ITF14           | ITF-14
@@ -1061,18 +1063,18 @@ Value   |
 130     | BARCODE_EANX_CC         | Composite Symbol with EAN linear component
 131     | BARCODE_EAN128_CC       | Composite Symbol with GS1-128 linear
         |                         |    component
-132     | BARCODE_RSS14_CC        | Composite Symbol with GS1 DataBar-14 linear
-        |                         |    component
+132     | BARCODE_RSS14_CC        | Composite Symbol with GS1 DataBar
+        |                         |    Omnidirectional linear component
 133     | BARCODE_RSS_LTD_CC      | Composite Symbol with GS1 DataBar Limited
-        |                         |    component
+        |                         |    linear component
 134     | BARCODE_RSS_EXP_CC      | Composite Symbol with GS1 DataBar Expanded
+        |                         |    linear component
+135     | BARCODE_UPCA_CC         | Composite Symbol with UPC-A linear component
+136     | BARCODE_UPCE_CC         | Composite Symbol with UPC-E linear component
+137     | BARCODE_RSS14STACK_CC   | Composite Symbol with GS1 DataBar Stacked
         |                         |    component
-135     | BARCODE_UPCA_CC         | Composite Symbol with UPC A linear component
-136     | BARCODE_UPCE_CC         | Composite Symbol with UPC E linear component
-137     | BARCODE_RSS14STACK_CC   | Composite Symbol with GS1 DataBar-14
-        |                         |    Stacked component
-138     | BARCODE_RSS14_OMNI_CC   | Composite Symbol with GS1 DataBar-14
-        |                         |    Stacked Omnidirectional component
+138     | BARCODE_RSS14_OMNI_CC   | Composite Symbol with GS1 DataBar Stacked
+        |                         |    Omnidirectional component
 139     | BARCODE_RSS_EXPSTACK_CC | Composite Symbol with GS1 DataBar Expanded
         |                         |    Stacked component
 140     | BARCODE_CHANNEL         | Channel Code
@@ -1152,8 +1154,8 @@ if (ZBarcode_ValidID(BARCODE_PDF417) != 0) {
 }
 
 [1] This value is ignored for Australia Post 4-State Barcodes, PostNet, PLANET,
-USPS OneCode, RM4SCC, PDF417, Data Matrix, Maxicode, QR Code, GS1
-DataBar-14 Stacked, PDF417 and MicroPDF417 - all of which have a fixed height.
+USPS Intelligent Mail, RM4SCC, PDF417, Data Matrix, Maxicode, QR Code, GS1
+DataBar Stacked, PDF417 and MicroPDF417 - all of which have a fixed height.
 
 [2] This value is ignored for Code 16k, Codablock-F and ITF-14 symbols.
 
@@ -1435,15 +1437,15 @@ suppresses mode C in favour of mode B.
 
 6.1.11.3 GS1-128
 ----------------
-A variation of Code 128 also known as UCC/EAN-128, this symbology is defined by
-the GS1 General Specification. Application Identifiers (AIs) should be entered
-using [square bracket] notation. These will be converted to (round brackets)
-for the human readable text. This will allow round brackets to be used in the
-data strings to be encoded. Fixed length data should be entered at the
-appropriate length for correct encoding. GS1-128 does not support extended
-ASCII characters. Check digits for GTIN data (AI 01) are not generated and
-need to be included in the input data. The following is an example of a valid
-GS1-128 input:
+A variation of Code 128 previously known as UCC/EAN-128, this symbology is
+defined by the GS1 General Specifications. Application Identifiers (AIs) should
+be entered using [square bracket] notation. These will be converted to (round
+brackets) for the human readable text. This will allow round brackets to be used
+in the data strings to be encoded. Fixed length data should be entered at the
+appropriate length for correct encoding. GS1-128 does not support extended ASCII
+characters. Check digits for GTIN data (AI 01) are not generated and need to be
+included in the input data. The following is an example of a valid GS1-128
+input:
 
 zint --barcode=16 -d "[01]98898765432106[3202]012345[15]991231"
 
@@ -1466,39 +1468,42 @@ standards.
 
 6.1.12 GS1 DataBar (ISO 24724)
 ------------------------------
-Also known as RSS (Reduced Spaced Symbology) these symbols are due to replace
-GS1-128 symbols in accordance with the GS1 General Specification. If a GS1
-DataBar symbol is to be printed with a 2D component as specified in ISO 24723
-set option_1 = 2 or use the option --mode=2 at the command prompt. See section
-6.3 of this manual to find out how to generate DataBar symbols with 2D
+Previously known as RSS (Reduced Spaced Symbology) these symbols are due to
+replace GS1-128 symbols in accordance with the GS1 General Specifications. If a
+GS1 DataBar symbol is to be printed with a 2D component as specified in ISO
+24723 set option_1 = 2 or use the option --mode=2 at the command prompt. See
+section 6.3 of this manual to find out how to generate DataBar symbols with 2D
 components.
 
-6.1.12.1 DataBar-14 and DataBar-14 Truncated
---------------------------------------------
-Also known as RSS-14 this standard encodes a 13 digit item code. A check digit
-and application identifier of (01) are added by Zint. To produce a truncated
-symbol set the symbol height to a value between 32 and 13. Normal DataBar-14
-symbols should have a height of 33 or greater.
+6.1.12.1 DataBar Omnidirectional and DataBar Truncated
+------------------------------------------------------
+Previously known as RSS-14 this standard encodes a 13 digit item code. A check
+digit and application identifier of (01) are added by Zint. (A 14 digit code
+that appends the check digit may be given, in which case the check digit will be
+verified.) To produce a truncated symbol set the symbol height to a value
+between 32 and 13. Normal DataBar Omnidirectional symbols should have a height
+of 33 or greater.
 
 6.1.12.2 DataBar Limited
 ------------------------
-Also known as RSS Limited this standard encodes a 13 digit item code and can be
-used in the same way as DataBar-14 above. DataBar Limited, however, is limited
-to data starting with digits 0 and 1 (i.e. numbers in the range 0 to
-1999999999999). As with DataBar-14 a check digit and application identifier of
-(01) are added by Zint.
+Previously known as RSS Limited this standard encodes a 13 digit item code and
+can be used in the same way as DataBar above. DataBar Limited, however, is
+limited to data starting with digits 0 and 1 (i.e. numbers in the range 0 to
+1999999999999). As with DataBar Omnidirectional a check digit and application
+identifier of (01) are added by Zint, and a 14 digit code may be given in which
+case the check digit will be verified.
 
 6.1.12.3 DataBar Expanded
 -------------------------
-Also known as RSS Expanded this is a variable length symbology capable of
+Previously known as RSS Expanded this is a variable length symbology capable of
 encoding data from a number of AIs in a single symbol. AIs should be encased in
 [square brackets] in the input data. This will be converted to (rounded
 brackets) before it is included in the human readable text attached to the
 symbol. This method allows the inclusion of rounded brackets in the data to be
 encoded. GTIN data (AI 01) should also include the check digit data as this is
 not calculated by Zint when this symbology is encoded. Fixed length data should
-be entered at the appropriate length for correct encoding. The following is
-an example of a valid DataBar Expanded input:
+be entered at the appropriate length for correct encoding. The following is an
+example of a valid DataBar Expanded input:
 
 zint --barcode=31 -d "[01]98898765432106[3202]012345[15]991231"
 
@@ -1612,19 +1617,19 @@ mechanism. A separate symbology ID can be used to encode Health Industry
 Barcode (HIBC) data which adds a leading '+' character and a modulo-49 check
 digit to the encoded data.
 
-6.2.7 GS1 DataBar-14 Stacked (ISO 24724)
-----------------------------------------
-A stacked variation of the GS1 DataBar-14 symbol requiring the same input (see
-section 6.1.12.1). The height of this symbol is fixed. The data is encoded in
-two rows of bars with a central finder pattern. This symbol can be generated
+6.2.7 GS1 DataBar Stacked (ISO 24724)
+-------------------------------------
+A stacked variation of the GS1 DataBar Truncated symbol requiring the same input
+(see section 6.1.12.1). The height of this symbol is fixed. The data is encoded
+in two rows of bars with a central finder pattern. This symbol can be generated
 with a two-dimensional component to make a composite symbol.
 
-6.2.8 GS1 DataBar-14 Stacked Omnidirectional (ISO 24724)
---------------------------------------------------------
-Another variation of the GS1 DataBar-14 symbol requiring the same input (see
-section 6.1.12.1). The data is encoded in two rows of bars with a central
-finder pattern. This symbol can be generated with a two-dimensional component
-to make a composite symbol.
+6.2.8 GS1 DataBar Stacked Omnidirectional (ISO 24724)
+-----------------------------------------------------
+A stacked variation of the GS1 DataBar Omnidirectional symbol requiring the same
+input (see section 6.1.12.1). The data is encoded in two rows of bars with a
+central finder pattern. This symbol can be generated with a two-dimensional
+component to make a composite symbol.
 
 6.2.9 GS1 DataBar Expanded Stacked (ISO 24724)
 ----------------------------------------------
@@ -1647,7 +1652,7 @@ characters or 81 numeric digits. GS1 data encoding is also supported.
 ---------------------------------
 Composite symbols employ a mixture of components to give more comprehensive
 information about a product. The permissible contents of a composite symbol is
-determined by the terms of the GS1 General Specification. Composite symbols
+determined by the terms of the GS1 General Specifications. Composite symbols
 consist of a linear component which can be an EAN, UPC, GS1-128 or GS1 DataBar
 symbol, a 2D component which is based on PDF417 or MicroPDF417, and a separator
 pattern. The type of linear component to be used is determined using the -b or
@@ -1661,18 +1666,18 @@ Value   |
 130     | BARCODE_EANX_CC         | Composite Symbol with EAN linear component
 131     | BARCODE_EAN128_CC       | Composite Symbol with GS1-128 linear
         |                         |    component
-132     | BARCODE_RSS14_CC        | Composite Symbol with GS1 DataBar-14 linear
-        |                         |    component
+132     | BARCODE_RSS14_CC        | Composite Symbol with GS1 DataBar
+        |                         |    Omnidirectional linear component
 133     | BARCODE_RSS_LTD_CC      | Composite Symbol with GS1 DataBar Limited
-        |                         |    component
+        |                         |    linear component
 134     | BARCODE_RSS_EXP_CC      | Composite Symbol with GS1 DataBar Expanded
+        |                         |    linear component
+135     | BARCODE_UPCA_CC         | Composite Symbol with UPC-A linear component
+136     | BARCODE_UPCE_CC         | Composite Symbol with UPC-E linear component
+137     | BARCODE_RSS14STACK_CC   | Composite Symbol with GS1 DataBar Stacked
         |                         |    component
-135     | BARCODE_UPCA_CC         | Composite Symbol with UPC A linear component
-136     | BARCODE_UPCE_CC         | Composite Symbol with UPC E linear component
-137     | BARCODE_RSS14STACK_CC   | Composite Symbol with GS1 DataBar-14
-        |                         |    Stacked component
-138     | BARCODE_RSS14_OMNI_CC   | Composite Symbol with GS1 DataBar-14
-        |                         |    Stacked Omnidirectional component
+138     | BARCODE_RSS14_OMNI_CC   | Composite Symbol with GS1 DataBar Stacked
+        |                         |    Omnidirectional component
 139     | BARCODE_RSS_EXPSTACK_CC | Composite Symbol with GS1 DataBar Expanded
         |                         |    Stacked component
 --------------------------------------------------------------------------------
@@ -1817,15 +1822,15 @@ Reed Solomon error correction. Input is a pre-formatted alphanumeric string of
 trailing space characters - these will be appended by Zint if not included in
 the input data.
 
-6.5.5 USPS OneCode
-------------------
-Also known as the Intelligent Mail Barcode and used in the US by the United
-States Postal Service (USPS), the OneCode system replaced the PostNet and
-PLANET symbologies in 2009. OneCode is a fixed length (65-bar) symbol which
+6.5.5 USPS Intelligent Mail
+---------------------------
+Also known as the OneCode barcode and used in the US by the United States Postal
+Service (USPS), the Intelligent Mail system replaced the PostNet and PLANET
+symbologies in 2009. Intelligent Mail is a fixed length (65-bar) symbol which
 combines routing and customer information in a single symbol. Input data
 consists of a 20 digit tracking code, followed by a dash (-), followed by a
-delivery point zip-code which can be 0, 5, 9 or 11 digits in length. For
-example all of the following inputs are valid data entries:
+delivery point zip-code which can be 0, 5, 9 or 11 digits in length. For example
+all of the following inputs are valid data entries:
 
 "01234567094987654321"
 

@@ -196,6 +196,10 @@ INTERNAL int code_11(struct zint_symbol *symbol, unsigned char source[], int len
         }
     }
 
+    if (symbol->debug & ZINT_DEBUG_PRINT) {
+        printf("Check digit (%d): %s\n", num_check_digits, num_check_digits ? checkstr : "<none>");
+    }
+
     /* Stop character */
     strcat(dest, "11221");
 

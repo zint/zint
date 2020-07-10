@@ -37,7 +37,7 @@
 MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags fl)
         : QWidget(parent, fl), m_optionWidget(0)
 {
-    m_bc.bc.setDebug(QCoreApplication::arguments().contains("--verbose"));
+    m_bc.bc.setDebug(QCoreApplication::arguments().contains("--verbose")); // Undocumented command line debug flag
 
     QCoreApplication::setOrganizationName("zint");
     QCoreApplication::setOrganizationDomain("zint.org.uk");
@@ -80,15 +80,15 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags fl)
         "Facing Identification Mark (FIM)",
         "Flattermarken",
         "Grid Matrix",
-        "GS1 DataBar Expanded Omnidirectional",
-        "GS1 DataBar Expanded Stacked Omnidirectional",
+        "GS1 DataBar Expanded",
+        "GS1 DataBar Expanded Stacked",
         "GS1 DataBar Limited",
-        "GS1 DataBar Omnidirectional",
+        "GS1 DataBar Omnidirectional (and Truncated)",
         "GS1 DataBar Stacked",
         "GS1 DataBar Stacked Omnidirectional",
         "Han Xin (Chinese Sensible) Code",
-        "ITF-14",
         "International Standard Book Number (ISBN)",
+        "ITF-14",
         "Japanese Postal Barcode",
         "Korean Postal Barcode",
         "LOGMARS",
@@ -111,10 +111,10 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags fl)
         "Telepen Numeric",
         "UK Plessey",
         "Ultracode",
-        "UPNQR",
         "Universal Product Code (UPC-A)",
         "Universal Product Code (UPC-E)",
-        "USPS Intelligent Mail",
+        "UPNQR",
+        "USPS Intelligent Mail (OneCode)",
         "VIN (Vehicle Identification Number)"
     };
 
@@ -124,26 +124,32 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags fl)
     view->setScene(scene);
 
     m_fgcolor=qRgb(settings.value("studio/ink/red", 0).toInt(),
-                settings.value("studio/ink/green", 0).toInt(),
-                settings.value("studio/ink/blue", 0).toInt());
+                    settings.value("studio/ink/green", 0).toInt(),
+                    settings.value("studio/ink/blue", 0).toInt());
     m_bgcolor=qRgb(settings.value("studio/paper/red", 0xff).toInt(),
-                settings.value("studio/paper/green", 0xff).toInt(),
-                settings.value("studio/paper/blue", 0xff).toInt());
-    for (int i=0;i<metaObject()->enumerator(0).keyCount();i++) {
+                    settings.value("studio/paper/green", 0xff).toInt(),
+                    settings.value("studio/paper/blue", 0xff).toInt());
+
+    for (int i = 0; i < metaObject()->enumerator(0).keyCount(); i++) {
         bstyle->addItem(metaObject()->enumerator(0).key(i));
-        bstyle->setItemText(i,bstyle_text[i]);
+        bstyle->setItemText(i, bstyle_text[i]);
     }
+
     bstyle->setCurrentIndex(settings.value("studio/symbology", 10).toInt());
-        txtData->setText(settings.value("studio/data", "Your Data Here!").toString());
-        txtComposite->setText(settings.value("studio/composite_text", "Your Data Here!").toString());
-        heightb->setValue(settings.value("studio/appearance/height", 50).toInt());
-        bwidth->setValue(settings.value("studio/appearance/border", 50).toInt());
-        spnWhitespace->setValue(settings.value("studio/appearance/whitespace", 0).toInt());
-        spnScale->setValue(settings.value("studio/appearance/scale", 1.0).toFloat());
-        btype->setCurrentIndex(settings.value("studio/appearance/border_type", 0).toInt());
+
+    txtData->setText(settings.value("studio/data", "Your Data Here!").toString());
+    txtComposite->setText(settings.value("studio/composite_text", "Your Data Here!").toString());
+    heightb->setValue(settings.value("studio/appearance/height", 50).toInt());
+    bwidth->setValue(settings.value("studio/appearance/border", 50).toInt());
+    spnWhitespace->setValue(settings.value("studio/appearance/whitespace", 0).toInt());
+    spnScale->setValue(settings.value("studio/appearance/scale", 1.0).toFloat());
+    btype->setCurrentIndex(settings.value("studio/appearance/border_type", 0).toInt());
+
     change_options();
-        scene->addItem(&m_bc);
+    scene->addItem(&m_bc);
+
     update_preview();
+
     connect(bstyle, SIGNAL(currentIndexChanged( int )), SLOT(change_options()));
     connect(bstyle, SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
     connect(heightb, SIGNAL(valueChanged( int )), SLOT(update_preview()));
@@ -253,17 +259,17 @@ bool MainWindow::save()
     }
 
     if(m_bc.bc.save_to_file(filename) == false) {
-            if (m_bc.bc.getError() > 4) {
-        QMessageBox::critical(this,tr("Save Error"),m_bc.bc.error_message());
-                return false;
-            } else {
-                QMessageBox::warning(this, tr("Save Warning"),m_bc.bc.error_message());
-                return true;
-            }
+        if (m_bc.bc.getError() > 4) {
+            QMessageBox::critical(this, tr("Save Error"), m_bc.bc.error_message());
+            return false;
+        } else {
+            QMessageBox::warning(this, tr("Save Warning"), m_bc.bc.error_message());
+            return true;
+        }
     }
 
-        settings.setValue("studio/default_dir", filename.mid(0, filename.lastIndexOf(QDir::separator())));
-        settings.setValue("studio/default_suffix", suffix);
+    settings.setValue("studio/default_dir", filename.mid(0, filename.lastIndexOf(QDir::separator())));
+    settings.setValue("studio/default_suffix", suffix);
     return true;
 }
 
@@ -1092,12 +1098,10 @@ void MainWindow::update_preview()
             if(m_optionWidget->findChild<QRadioButton*>("radQRGS1")->isChecked())
                 m_bc.bc.setInputMode(GS1_MODE);
 
-            printf("cmbQRSize stylesheet %s\n", (const char *) m_optionWidget->findChild<QComboBox*>("cmbQRSize")->styleSheet().toLatin1());
             item_val = m_optionWidget->findChild<QComboBox*>("cmbQRSize")->currentIndex();
             if (item_val) {
                 m_bc.bc.setOption2(item_val);
             }
-            printf("cmbQRECC stylesheet %s\n", (const char *) m_optionWidget->findChild<QComboBox*>("cmbQRECC")->styleSheet().toLatin1());
             item_val = m_optionWidget->findChild<QComboBox*>("cmbQRECC")->currentIndex();
             if (item_val) {
                 m_bc.bc.setSecurityLevel(item_val);

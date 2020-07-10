@@ -120,7 +120,7 @@ static void test_pixel_plot(int index, int debug) {
         ret = testUtilVerifyIdentify(symbol->outfile, debug);
         assert_zero(ret, "i:%d identify %s ret %d != 0\n", i, symbol->outfile, ret);
 
-        if (!(debug & 8)) {
+        if (!(debug & ZINT_DEBUG_TEST_KEEP_OUTFILE)) {
             assert_zero(remove(symbol->outfile), "i:%d remove(%s) != 0\n", i, symbol->outfile);
         }
 

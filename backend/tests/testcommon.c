@@ -225,157 +225,157 @@ void testRun(int argc, char *argv[], testFunction funcs[], int funcs_size) {
 
 char *testUtilBarcodeName(int symbology) {
     struct item {
-        int define;
         char *name;
+        int define;
         int val;
     };
     struct item data[] = {
-        { -1, "", 0 },
-        { BARCODE_CODE11, "BARCODE_CODE11", 1 },
-        { BARCODE_C25MATRIX, "BARCODE_C25MATRIX", 2 },
-        { BARCODE_C25INTER, "BARCODE_C25INTER", 3 },
-        { BARCODE_C25IATA, "BARCODE_C25IATA", 4 },
-        { -1, "", 5 },
-        { BARCODE_C25LOGIC, "BARCODE_C25LOGIC", 6 },
-        { BARCODE_C25IND, "BARCODE_C25IND", 7 },
-        { BARCODE_CODE39, "BARCODE_CODE39", 8 },
-        { BARCODE_EXCODE39, "BARCODE_EXCODE39", 9 },
-        { -1, "", 10 },
-        { -1, "", 11 },
-        { -1, "", 12 },
-        { BARCODE_EANX, "BARCODE_EANX", 13 },
-        { BARCODE_EANX_CHK, "BARCODE_EANX_CHK", 14 },
-        { -1, "", 15 },
-        { BARCODE_EAN128, "BARCODE_EAN128", 16 },
-        { -1, "", 17 },
-        { BARCODE_CODABAR, "BARCODE_CODABAR", 18 },
-        { -1, "", 19 },
-        { BARCODE_CODE128, "BARCODE_CODE128", 20 },
-        { BARCODE_DPLEIT, "BARCODE_DPLEIT", 21 },
-        { BARCODE_DPIDENT, "BARCODE_DPIDENT", 22 },
-        { BARCODE_CODE16K, "BARCODE_CODE16K", 23 },
-        { BARCODE_CODE49, "BARCODE_CODE49", 24 },
-        { BARCODE_CODE93, "BARCODE_CODE93", 25 },
-        { -1, "", 26 },
-        { -1, "", 27 },
-        { BARCODE_FLAT, "BARCODE_FLAT", 28 },
-        { BARCODE_RSS14, "BARCODE_RSS14", 29 },
-        { BARCODE_RSS_LTD, "BARCODE_RSS_LTD", 30 },
-        { BARCODE_RSS_EXP, "BARCODE_RSS_EXP", 31 },
-        { BARCODE_TELEPEN, "BARCODE_TELEPEN", 32 },
-        { -1, "", 33 },
-        { BARCODE_UPCA, "BARCODE_UPCA", 34 },
-        { BARCODE_UPCA_CHK, "BARCODE_UPCA_CHK", 35 },
-        { -1, "", 36 },
-        { BARCODE_UPCE, "BARCODE_UPCE", 37 },
-        { BARCODE_UPCE_CHK, "BARCODE_UPCE_CHK", 38 },
-        { -1, "", 39 },
-        { BARCODE_POSTNET, "BARCODE_POSTNET", 40 },
-        { -1, "", 41 },
-        { -1, "", 42 },
-        { -1, "", 43 },
-        { -1, "", 44 },
-        { -1, "", 45 },
-        { -1, "", 46 },
-        { BARCODE_MSI_PLESSEY, "BARCODE_MSI_PLESSEY", 47 },
-        { -1, "", 48 },
-        { BARCODE_FIM, "BARCODE_FIM", 49 },
-        { BARCODE_LOGMARS, "BARCODE_LOGMARS", 50 },
-        { BARCODE_PHARMA, "BARCODE_PHARMA", 51 },
-        { BARCODE_PZN, "BARCODE_PZN", 52 },
-        { BARCODE_PHARMA_TWO, "BARCODE_PHARMA_TWO", 53 },
-        { -1, "", 54 },
-        { BARCODE_PDF417, "BARCODE_PDF417", 55 },
-        { BARCODE_PDF417TRUNC, "BARCODE_PDF417TRUNC", 56 },
-        { BARCODE_MAXICODE, "BARCODE_MAXICODE", 57 },
-        { BARCODE_QRCODE, "BARCODE_QRCODE", 58 },
-        { -1, "", 59 },
-        { BARCODE_CODE128B, "BARCODE_CODE128B", 60 },
-        { -1, "", 61 },
-        { -1, "", 62 },
-        { BARCODE_AUSPOST, "BARCODE_AUSPOST", 63 },
-        { -1, "", 64 },
-        { -1, "", 65 },
-        { BARCODE_AUSREPLY, "BARCODE_AUSREPLY", 66 },
-        { BARCODE_AUSROUTE, "BARCODE_AUSROUTE", 67 },
-        { BARCODE_AUSREDIRECT, "BARCODE_AUSREDIRECT", 68 },
-        { BARCODE_ISBNX, "BARCODE_ISBNX", 69 },
-        { BARCODE_RM4SCC, "BARCODE_RM4SCC", 70 },
-        { BARCODE_DATAMATRIX, "BARCODE_DATAMATRIX", 71 },
-        { BARCODE_EAN14, "BARCODE_EAN14", 72 },
-        { BARCODE_VIN, "BARCODE_VIN", 73 },
-        { BARCODE_CODABLOCKF, "BARCODE_CODABLOCKF", 74 },
-        { BARCODE_NVE18, "BARCODE_NVE18", 75 },
-        { BARCODE_JAPANPOST, "BARCODE_JAPANPOST", 76 },
-        { BARCODE_KOREAPOST, "BARCODE_KOREAPOST", 77 },
-        { -1, "", 78 },
-        { BARCODE_RSS14STACK, "BARCODE_RSS14STACK", 79 },
-        { BARCODE_RSS14STACK_OMNI, "BARCODE_RSS14STACK_OMNI", 80 },
-        { BARCODE_RSS_EXPSTACK, "BARCODE_RSS_EXPSTACK", 81 },
-        { BARCODE_PLANET, "BARCODE_PLANET", 82 },
-        { -1, "", 83 },
-        { BARCODE_MICROPDF417, "BARCODE_MICROPDF417", 84 },
-        { BARCODE_ONECODE, "BARCODE_ONECODE", 85 },
-        { BARCODE_PLESSEY, "BARCODE_PLESSEY", 86 },
-        { BARCODE_TELEPEN_NUM, "BARCODE_TELEPEN_NUM", 87 },
-        { -1, "", 88 },
-        { BARCODE_ITF14, "BARCODE_ITF14", 89 },
-        { BARCODE_KIX, "BARCODE_KIX", 90 },
-        { -1, "", 91 },
-        { BARCODE_AZTEC, "BARCODE_AZTEC", 92 },
-        { BARCODE_DAFT, "BARCODE_DAFT", 93 },
-        { -1, "", 94 },
-        { -1, "", 95 },
-        { -1, "", 96 },
-        { BARCODE_MICROQR, "BARCODE_MICROQR", 97 },
-        { BARCODE_HIBC_128, "BARCODE_HIBC_128", 98 },
-        { BARCODE_HIBC_39, "BARCODE_HIBC_39", 99 },
-        { -1, "", 100 },
-        { -1, "", 101 },
-        { BARCODE_HIBC_DM, "BARCODE_HIBC_DM", 102 },
-        { -1, "", 103 },
-        { BARCODE_HIBC_QR, "BARCODE_HIBC_QR", 104 },
-        { -1, "", 105 },
-        { BARCODE_HIBC_PDF, "BARCODE_HIBC_PDF", 106 },
-        { -1, "", 107 },
-        { BARCODE_HIBC_MICPDF, "BARCODE_HIBC_MICPDF", 108 },
-        { -1, "", 109 },
-        { BARCODE_HIBC_BLOCKF, "BARCODE_HIBC_BLOCKF", 110 },
-        { -1, "", 111 },
-        { BARCODE_HIBC_AZTEC, "BARCODE_HIBC_AZTEC", 112 },
-        { -1, "", 113 },
-        { -1, "", 114 },
-        { BARCODE_DOTCODE, "BARCODE_DOTCODE", 115 },
-        { BARCODE_HANXIN, "BARCODE_HANXIN", 116 },
-        { -1, "", 117 },
-        { -1, "", 118 },
-        { -1, "", 119 },
-        { -1, "", 120 },
-        { BARCODE_MAILMARK, "BARCODE_MAILMARK", 121 },
-        { -1, "", 122 },
-        { -1, "", 123 },
-        { -1, "", 124 },
-        { -1, "", 125 },
-        { -1, "", 126 },
-        { -1, "", 127 },
-        { BARCODE_AZRUNE, "BARCODE_AZRUNE", 128 },
-        { BARCODE_CODE32, "BARCODE_CODE32", 129 },
-        { BARCODE_EANX_CC, "BARCODE_EANX_CC", 130 },
-        { BARCODE_EAN128_CC, "BARCODE_EAN128_CC", 131 },
-        { BARCODE_RSS14_CC, "BARCODE_RSS14_CC", 132 },
-        { BARCODE_RSS_LTD_CC, "BARCODE_RSS_LTD_CC", 133 },
-        { BARCODE_RSS_EXP_CC, "BARCODE_RSS_EXP_CC", 134 },
-        { BARCODE_UPCA_CC, "BARCODE_UPCA_CC", 135 },
-        { BARCODE_UPCE_CC, "BARCODE_UPCE_CC", 136 },
-        { BARCODE_RSS14STACK_CC, "BARCODE_RSS14STACK_CC", 137 },
-        { BARCODE_RSS14_OMNI_CC, "BARCODE_RSS14_OMNI_CC", 138 },
-        { BARCODE_RSS_EXPSTACK_CC, "BARCODE_RSS_EXPSTACK_CC", 139 },
-        { BARCODE_CHANNEL, "BARCODE_CHANNEL", 140 },
-        { BARCODE_CODEONE, "BARCODE_CODEONE", 141 },
-        { BARCODE_GRIDMATRIX, "BARCODE_GRIDMATRIX", 142 },
-        { BARCODE_UPNQR, "BARCODE_UPNQR", 143 },
-        { BARCODE_ULTRA, "BARCODE_ULTRA", 144 },
-        { BARCODE_RMQR, "BARCODE_RMQR", 145 },
+        { "", -1, 0 },
+        { "BARCODE_CODE11", BARCODE_CODE11, 1 },
+        { "BARCODE_C25MATRIX", BARCODE_C25MATRIX, 2 },
+        { "BARCODE_C25INTER", BARCODE_C25INTER, 3 },
+        { "BARCODE_C25IATA", BARCODE_C25IATA, 4 },
+        { "", -1, 5 },
+        { "BARCODE_C25LOGIC", BARCODE_C25LOGIC, 6 },
+        { "BARCODE_C25IND", BARCODE_C25IND, 7 },
+        { "BARCODE_CODE39", BARCODE_CODE39, 8 },
+        { "BARCODE_EXCODE39", BARCODE_EXCODE39, 9 },
+        { "", -1, 10 },
+        { "", -1, 11 },
+        { "", -1, 12 },
+        { "BARCODE_EANX", BARCODE_EANX, 13 },
+        { "BARCODE_EANX_CHK", BARCODE_EANX_CHK, 14 },
+        { "", -1, 15 },
+        { "BARCODE_EAN128", BARCODE_EAN128, 16 },
+        { "", -1, 17 },
+        { "BARCODE_CODABAR", BARCODE_CODABAR, 18 },
+        { "", -1, 19 },
+        { "BARCODE_CODE128", BARCODE_CODE128, 20 },
+        { "BARCODE_DPLEIT", BARCODE_DPLEIT, 21 },
+        { "BARCODE_DPIDENT", BARCODE_DPIDENT, 22 },
+        { "BARCODE_CODE16K", BARCODE_CODE16K, 23 },
+        { "BARCODE_CODE49", BARCODE_CODE49, 24 },
+        { "BARCODE_CODE93", BARCODE_CODE93, 25 },
+        { "", -1, 26 },
+        { "", -1, 27 },
+        { "BARCODE_FLAT", BARCODE_FLAT, 28 },
+        { "BARCODE_RSS14", BARCODE_RSS14, 29 },
+        { "BARCODE_RSS_LTD", BARCODE_RSS_LTD, 30 },
+        { "BARCODE_RSS_EXP", BARCODE_RSS_EXP, 31 },
+        { "BARCODE_TELEPEN", BARCODE_TELEPEN, 32 },
+        { "", -1, 33 },
+        { "BARCODE_UPCA", BARCODE_UPCA, 34 },
+        { "BARCODE_UPCA_CHK", BARCODE_UPCA_CHK, 35 },
+        { "", -1, 36 },
+        { "BARCODE_UPCE", BARCODE_UPCE, 37 },
+        { "BARCODE_UPCE_CHK", BARCODE_UPCE_CHK, 38 },
+        { "", -1, 39 },
+        { "BARCODE_POSTNET", BARCODE_POSTNET, 40 },
+        { "", -1, 41 },
+        { "", -1, 42 },
+        { "", -1, 43 },
+        { "", -1, 44 },
+        { "", -1, 45 },
+        { "", -1, 46 },
+        { "BARCODE_MSI_PLESSEY", BARCODE_MSI_PLESSEY, 47 },
+        { "", -1, 48 },
+        { "BARCODE_FIM", BARCODE_FIM, 49 },
+        { "BARCODE_LOGMARS", BARCODE_LOGMARS, 50 },
+        { "BARCODE_PHARMA", BARCODE_PHARMA, 51 },
+        { "BARCODE_PZN", BARCODE_PZN, 52 },
+        { "BARCODE_PHARMA_TWO", BARCODE_PHARMA_TWO, 53 },
+        { "", -1, 54 },
+        { "BARCODE_PDF417", BARCODE_PDF417, 55 },
+        { "BARCODE_PDF417TRUNC", BARCODE_PDF417TRUNC, 56 },
+        { "BARCODE_MAXICODE", BARCODE_MAXICODE, 57 },
+        { "BARCODE_QRCODE", BARCODE_QRCODE, 58 },
+        { "", -1, 59 },
+        { "BARCODE_CODE128B", BARCODE_CODE128B, 60 },
+        { "", -1, 61 },
+        { "", -1, 62 },
+        { "BARCODE_AUSPOST", BARCODE_AUSPOST, 63 },
+        { "", -1, 64 },
+        { "", -1, 65 },
+        { "BARCODE_AUSREPLY", BARCODE_AUSREPLY, 66 },
+        { "BARCODE_AUSROUTE", BARCODE_AUSROUTE, 67 },
+        { "BARCODE_AUSREDIRECT", BARCODE_AUSREDIRECT, 68 },
+        { "BARCODE_ISBNX", BARCODE_ISBNX, 69 },
+        { "BARCODE_RM4SCC", BARCODE_RM4SCC, 70 },
+        { "BARCODE_DATAMATRIX", BARCODE_DATAMATRIX, 71 },
+        { "BARCODE_EAN14", BARCODE_EAN14, 72 },
+        { "BARCODE_VIN", BARCODE_VIN, 73 },
+        { "BARCODE_CODABLOCKF", BARCODE_CODABLOCKF, 74 },
+        { "BARCODE_NVE18", BARCODE_NVE18, 75 },
+        { "BARCODE_JAPANPOST", BARCODE_JAPANPOST, 76 },
+        { "BARCODE_KOREAPOST", BARCODE_KOREAPOST, 77 },
+        { "", -1, 78 },
+        { "BARCODE_RSS14STACK", BARCODE_RSS14STACK, 79 },
+        { "BARCODE_RSS14STACK_OMNI", BARCODE_RSS14STACK_OMNI, 80 },
+        { "BARCODE_RSS_EXPSTACK", BARCODE_RSS_EXPSTACK, 81 },
+        { "BARCODE_PLANET", BARCODE_PLANET, 82 },
+        { "", -1, 83 },
+        { "BARCODE_MICROPDF417", BARCODE_MICROPDF417, 84 },
+        { "BARCODE_ONECODE", BARCODE_ONECODE, 85 },
+        { "BARCODE_PLESSEY", BARCODE_PLESSEY, 86 },
+        { "BARCODE_TELEPEN_NUM", BARCODE_TELEPEN_NUM, 87 },
+        { "", -1, 88 },
+        { "BARCODE_ITF14", BARCODE_ITF14, 89 },
+        { "BARCODE_KIX", BARCODE_KIX, 90 },
+        { "", -1, 91 },
+        { "BARCODE_AZTEC", BARCODE_AZTEC, 92 },
+        { "BARCODE_DAFT", BARCODE_DAFT, 93 },
+        { "", -1, 94 },
+        { "", -1, 95 },
+        { "", -1, 96 },
+        { "BARCODE_MICROQR", BARCODE_MICROQR, 97 },
+        { "BARCODE_HIBC_128", BARCODE_HIBC_128, 98 },
+        { "BARCODE_HIBC_39", BARCODE_HIBC_39, 99 },
+        { "", -1, 100 },
+        { "", -1, 101 },
+        { "BARCODE_HIBC_DM", BARCODE_HIBC_DM, 102 },
+        { "", -1, 103 },
+        { "BARCODE_HIBC_QR", BARCODE_HIBC_QR, 104 },
+        { "", -1, 105 },
+        { "BARCODE_HIBC_PDF", BARCODE_HIBC_PDF, 106 },
+        { "", -1, 107 },
+        { "BARCODE_HIBC_MICPDF", BARCODE_HIBC_MICPDF, 108 },
+        { "", -1, 109 },
+        { "BARCODE_HIBC_BLOCKF", BARCODE_HIBC_BLOCKF, 110 },
+        { "", -1, 111 },
+        { "BARCODE_HIBC_AZTEC", BARCODE_HIBC_AZTEC, 112 },
+        { "", -1, 113 },
+        { "", -1, 114 },
+        { "BARCODE_DOTCODE", BARCODE_DOTCODE, 115 },
+        { "BARCODE_HANXIN", BARCODE_HANXIN, 116 },
+        { "", -1, 117 },
+        { "", -1, 118 },
+        { "", -1, 119 },
+        { "", -1, 120 },
+        { "BARCODE_MAILMARK", BARCODE_MAILMARK, 121 },
+        { "", -1, 122 },
+        { "", -1, 123 },
+        { "", -1, 124 },
+        { "", -1, 125 },
+        { "", -1, 126 },
+        { "", -1, 127 },
+        { "BARCODE_AZRUNE", BARCODE_AZRUNE, 128 },
+        { "BARCODE_CODE32", BARCODE_CODE32, 129 },
+        { "BARCODE_EANX_CC", BARCODE_EANX_CC, 130 },
+        { "BARCODE_EAN128_CC", BARCODE_EAN128_CC, 131 },
+        { "BARCODE_RSS14_CC", BARCODE_RSS14_CC, 132 },
+        { "BARCODE_RSS_LTD_CC", BARCODE_RSS_LTD_CC, 133 },
+        { "BARCODE_RSS_EXP_CC", BARCODE_RSS_EXP_CC, 134 },
+        { "BARCODE_UPCA_CC", BARCODE_UPCA_CC, 135 },
+        { "BARCODE_UPCE_CC", BARCODE_UPCE_CC, 136 },
+        { "BARCODE_RSS14STACK_CC", BARCODE_RSS14STACK_CC, 137 },
+        { "BARCODE_RSS14_OMNI_CC", BARCODE_RSS14_OMNI_CC, 138 },
+        { "BARCODE_RSS_EXPSTACK_CC", BARCODE_RSS_EXPSTACK_CC, 139 },
+        { "BARCODE_CHANNEL", BARCODE_CHANNEL, 140 },
+        { "BARCODE_CODEONE", BARCODE_CODEONE, 141 },
+        { "BARCODE_GRIDMATRIX", BARCODE_GRIDMATRIX, 142 },
+        { "BARCODE_UPNQR", BARCODE_UPNQR, 143 },
+        { "BARCODE_ULTRA", BARCODE_ULTRA, 144 },
+        { "BARCODE_RMQR", BARCODE_RMQR, 145 },
     };
     int data_size = sizeof(data) / sizeof(struct item);
 
@@ -419,23 +419,23 @@ int testUtilSetSymbol(struct zint_symbol *symbol, int symbology, int input_mode,
 
 char *testUtilErrorName(int error_number) {
     struct item {
-        int define;
         char *name;
+        int define;
         int val;
     };
     struct item data[] = {
-        { 0, "0", 0 },
-        { -1, "", 1 },
-        { ZINT_WARN_INVALID_OPTION, "ZINT_WARN_INVALID_OPTION", 2 },
-        { ZINT_WARN_USES_ECI, "ZINT_WARN_USES_ECI", 3 },
-        { -1, "", 4 },
-        { ZINT_ERROR_TOO_LONG, "ZINT_ERROR_TOO_LONG", 5 },
-        { ZINT_ERROR_INVALID_DATA, "ZINT_ERROR_INVALID_DATA", 6 },
-        { ZINT_ERROR_INVALID_CHECK, "ZINT_ERROR_INVALID_CHECK", 7 },
-        { ZINT_ERROR_INVALID_OPTION, "ZINT_ERROR_INVALID_OPTION", 8 },
-        { ZINT_ERROR_ENCODING_PROBLEM, "ZINT_ERROR_ENCODING_PROBLEM", 9 },
-        { ZINT_ERROR_FILE_ACCESS, "ZINT_ERROR_FILE_ACCESS", 10 },
-        { ZINT_ERROR_MEMORY, "ZINT_ERROR_MEMORY", 11 },
+        { "0", 0, 0 },
+        { "", -1, 1 },
+        { "ZINT_WARN_INVALID_OPTION", ZINT_WARN_INVALID_OPTION, 2 },
+        { "ZINT_WARN_USES_ECI", ZINT_WARN_USES_ECI, 3 },
+        { "", -1, 4 },
+        { "ZINT_ERROR_TOO_LONG", ZINT_ERROR_TOO_LONG, 5 },
+        { "ZINT_ERROR_INVALID_DATA", ZINT_ERROR_INVALID_DATA, 6 },
+        { "ZINT_ERROR_INVALID_CHECK", ZINT_ERROR_INVALID_CHECK, 7 },
+        { "ZINT_ERROR_INVALID_OPTION", ZINT_ERROR_INVALID_OPTION, 8 },
+        { "ZINT_ERROR_ENCODING_PROBLEM", ZINT_ERROR_ENCODING_PROBLEM, 9 },
+        { "ZINT_ERROR_FILE_ACCESS", ZINT_ERROR_FILE_ACCESS, 10 },
+        { "ZINT_ERROR_MEMORY", ZINT_ERROR_MEMORY, 11 },
     };
     int data_size = sizeof(data) / sizeof(struct item);
 
@@ -451,22 +451,22 @@ char *testUtilErrorName(int error_number) {
 
 char *testUtilInputModeName(int input_mode) {
     struct item {
-        int define;
         char *name;
+        int define;
         int val;
     };
     struct item data[] = {
-        { DATA_MODE, "DATA_MODE", 0 },
-        { UNICODE_MODE, "UNICODE_MODE", 1 },
-        { GS1_MODE, "GS1_MODE", 2 },
-        { -1, "", 3 },
-        { -1, "", 4 },
-        { -1, "", 5 },
-        { -1, "", 6 },
-        { -1, "", 7 },
-        { DATA_MODE | ESCAPE_MODE, "DATA_MODE | ESCAPE_MODE", 8 },
-        { UNICODE_MODE | ESCAPE_MODE, "UNICODE_MODE | ESCAPE_MODE", 9 },
-        { GS1_MODE | ESCAPE_MODE, "GS1_MODE | ESCAPE_MODE", 10 },
+        { "DATA_MODE", DATA_MODE, 0 },
+        { "UNICODE_MODE", UNICODE_MODE, 1 },
+        { "GS1_MODE", GS1_MODE, 2 },
+        { "", -1, 3 },
+        { "", -1, 4 },
+        { "", -1, 5 },
+        { "", -1, 6 },
+        { "", -1, 7 },
+        { "DATA_MODE | ESCAPE_MODE", DATA_MODE | ESCAPE_MODE, 8 },
+        { "UNICODE_MODE | ESCAPE_MODE", UNICODE_MODE | ESCAPE_MODE, 9 },
+        { "GS1_MODE | ESCAPE_MODE", GS1_MODE | ESCAPE_MODE, 10 },
     };
     int data_size = sizeof(data) / sizeof(struct item);
 
@@ -1391,9 +1391,9 @@ int testUtilVerifyIdentify(char *filename, int debug) {
         return -1;
     }
     // Verbose option does a more thorough check
-    if (debug & ZINT_DEBUG_PRINT) {
+    if (debug & ZINT_DEBUG_TEST_PRINT) {
         // Verbose very noisy though so for quick check just return default output
-        if (debug & 4) {
+        if (debug & ZINT_DEBUG_TEST_LESS_NOISY) {
             sprintf(buf, "identify %s", filename);
         } else {
             sprintf(buf, "identify -verbose %s", filename);
@@ -1416,7 +1416,7 @@ int testUtilVerifyInkscape(char *filename, int debug) {
     if (strlen(filename) > 512) {
         return -1;
     }
-    if (debug & ZINT_DEBUG_PRINT) {
+    if (debug & ZINT_DEBUG_TEST_PRINT) {
         sprintf(buf, "inkscape -z -f %s", filename); // Prints nothing unless bad
         printf("%s\n", buf);
     } else {
@@ -1437,12 +1437,522 @@ int testUtilVerifyGhostscript(char *filename, int debug) {
     if (strlen(filename) > 512) {
         return -1;
     }
-    if (debug & ZINT_DEBUG_PRINT) {
-        sprintf(buf, "gs -dNOPAUSE -dBATCH -sDEVICE=nullpage -q %s", filename); // Prints nothing of interest with or without -q unless bad
+    if (debug & ZINT_DEBUG_TEST_PRINT) {
+        sprintf(buf, "gs -dNOPAUSE -dBATCH -dNODISPLAY -q %s", filename); // Prints nothing of interest with or without -q unless bad
         printf("%s\n", buf);
     } else {
-        sprintf(buf, "gs -dNOPAUSE -dBATCH -sDEVICE=nullpage -q %s", filename);
+        sprintf(buf, "gs -dNOPAUSE -dBATCH -dNODISPLAY -q %s", filename);
     }
 
     return system(buf);
+}
+
+static char *testUtilBwippName(int symbology, int option_1, int option_2, int option_3, int *linear_row_height, int *gs1_cvt) {
+    struct item {
+        char *name;
+        int define;
+        int val;
+        int can_option_1;
+        int can_option_2;
+        int can_option_3;
+        int linear_row_height;
+        int gs1_cvt;
+    };
+    struct item data[] = {
+        { "", -1, 0, 0, 0, 0, 0, 0, },
+        { "code11", BARCODE_CODE11, 1, 0, 1, 0, 0, 0, },
+        { "matrix2of5", BARCODE_C25MATRIX, 2, 0, 0, 0, 0, 0, },
+        { "interleaved2of5", BARCODE_C25INTER, 3, 0, 0, 0, 0, 0, },
+        { "iata2of5", BARCODE_C25IATA, 4, 0, 0, 0, 0, 0, },
+        { "", -1, 5, 0, 0, 0, 0, 0, },
+        { "datalogic2of5", BARCODE_C25LOGIC, 6, 0, 0, 0, 0, 0, },
+        { "industrial2of5", BARCODE_C25IND, 7, 0, 0, 0, 0, 0, },
+        { "code39", BARCODE_CODE39, 8, 0, 1, 0, 0, 0, },
+        { "code39ext", BARCODE_EXCODE39, 9, 0, 1, 0, 0, 0, },
+        { "", -1, 10, 0, 0, 0, 0, 0, },
+        { "", -1, 11, 0, 0, 0, 0, 0, },
+        { "", -1, 12, 0, 0, 0, 0, 0, },
+        { "ean13", BARCODE_EANX, 13, 0, 0, 0, 0, 0, },
+        { "ean13", BARCODE_EANX_CHK, 14, 0, 0, 0, 0, 0, },
+        { "", -1, 15, 0, 0, 0, 0, 0, },
+        { "gs1-128", BARCODE_EAN128, 16, 0, 0, 0, 0, 1 /*gs1_cnt*/, },
+        { "", -1, 17, 0, 0, 0, 0, 0, },
+        { "rationalizedCodabar", BARCODE_CODABAR, 18, 0, 0, 0, 0, 0, },
+        { "", -1, 19, 0, 0, 0, 0, 0, },
+        { "code128", BARCODE_CODE128, 20, 0, 0, 0, 0, 0, },
+        { "leitcode", BARCODE_DPLEIT, 21, 0, 0, 0, 0, 0, },
+        { "identcode", BARCODE_DPIDENT, 22, 0, 0, 0, 0, 0, },
+        { "code16k", BARCODE_CODE16K, 23, 0, 0, 0, 0, 0, },
+        { "code49", BARCODE_CODE49, 24, 0, 0, 0, 0, 0, },
+        { "code93", BARCODE_CODE93, 25, 0, 0, 0, 0, 0, },
+        { "", -1, 26, 0, 0, 0, 0, 0, },
+        { "", -1, 27, 0, 0, 0, 0, 0, },
+        { "flattermarken", BARCODE_FLAT, 28, 0, 0, 0, 0, 0, },
+        { "databaromni", BARCODE_RSS14, 29, 0, 0, 0, 0, 1 /*gs1_cvt*/, },
+        { "databarlimited", BARCODE_RSS_LTD, 30, 0, 0, 0, 0, 1, },
+        { "databarexpanded", BARCODE_RSS_EXP, 31, 0, 1, 0, 1 /*linear_row_height*/, 1, },
+        { "telepen", BARCODE_TELEPEN, 32, 0, 0, 0, 0, 0, },
+        { "", -1, 33, 0, 0, 0, 0, 0, },
+        { "upca", BARCODE_UPCA, 34, 0, 0, 0, 0, 0, },
+        { "upca", BARCODE_UPCA_CHK, 35, 0, 0, 0, 0, 0, },
+        { "", -1, 36, 0, 0, 0, 0, 0, },
+        { "upce", BARCODE_UPCE, 37, 0, 0, 0, 0, 0, },
+        { "upce", BARCODE_UPCE_CHK, 38, 0, 0, 0, 0, 0, },
+        { "", -1, 39, 0, 0, 0, 0, 0, },
+        { "postnet", BARCODE_POSTNET, 40, 0, 0, 0, 0, 0, },
+        { "", -1, 41, 0, 0, 0, 0, 0, },
+        { "", -1, 42, 0, 0, 0, 0, 0, },
+        { "", -1, 43, 0, 0, 0, 0, 0, },
+        { "", -1, 44, 0, 0, 0, 0, 0, },
+        { "", -1, 45, 0, 0, 0, 0, 0, },
+        { "", -1, 46, 0, 0, 0, 0, 0, },
+        { "msi", BARCODE_MSI_PLESSEY, 47, 0, 0, 0, 0, 0, },
+        { "", -1, 48, 0, 0, 0, 0, 0, },
+        { "symbol", BARCODE_FIM, 49, 0, 0, 0, 0, 0, },
+        { "code39", BARCODE_LOGMARS, 50, 0, 1, 0, 0, 0, },
+        { "pharmacode", BARCODE_PHARMA, 51, 0, 0, 0, 0, 0, },
+        { "pzn", BARCODE_PZN, 52, 0, 0, 0, 0, 0, },
+        { "pharmacode2", BARCODE_PHARMA_TWO, 53, 0, 0, 0, 0, 0, },
+        { "", -1, 54, 0, 0, 0, 0, 0, },
+        { "pdf417", BARCODE_PDF417, 55, 0, 0, 0, 0, 0, },
+        { "pdf417compact", BARCODE_PDF417TRUNC, 56, 0, 0, 0, 0, 0, },
+        { "maxicode", BARCODE_MAXICODE, 57, 0, 0, 0, 0, 0, },
+        { "qrcode", BARCODE_QRCODE, 58, 0, 0, 0, 0, 0, },
+        { "", -1, 59, 0, 0, 0, 0, 0, },
+        { "", BARCODE_CODE128B, 60, 0, 0, 0, 0, 0, },
+        { "", -1, 61, 0, 0, 0, 0, 0, },
+        { "", -1, 62, 0, 0, 0, 0, 0, },
+        { "auspost", BARCODE_AUSPOST, 63, 0, 0, 0, 0, 0, },
+        { "", -1, 64, 0, 0, 0, 0, 0, },
+        { "", -1, 65, 0, 0, 0, 0, 0, },
+        { "", BARCODE_AUSREPLY, 66, 0, 0, 0, 0, 0, },
+        { "", BARCODE_AUSROUTE, 67, 0, 0, 0, 0, 0, },
+        { "", BARCODE_AUSREDIRECT, 68, 0, 0, 0, 0, 0, },
+        { "isbn", BARCODE_ISBNX, 69, 0, 0, 0, 0, 0, },
+        { "royalmail", BARCODE_RM4SCC, 70, 0, 0, 0, 0, 0, },
+        { "datamatrix", BARCODE_DATAMATRIX, 71, 0, 0, 0, 0, 0, },
+        { "ean14", BARCODE_EAN14, 72, 0, 0, 0, 0, 1 /*gs1_cvt*/, },
+        { "code39", BARCODE_VIN, 73, 0, 0, 0, 0, 0, },
+        { "codablockf", BARCODE_CODABLOCKF, 74, 1, 1, 0, 0, 0, },
+        { "sscc18", BARCODE_NVE18, 75, 0, 0, 0, 0, 1 /*gs1_cvt*/, },
+        { "japanpost", BARCODE_JAPANPOST, 76, 0, 0, 0, 0, 0, },
+        { "", BARCODE_KOREAPOST, 77, 0, 0, 0, 0, 0, },
+        { "", -1, 78, 0, 0, 0, 0, 0, },
+        { "databarstacked", BARCODE_RSS14STACK, 79, 0, 0, 0, 0, 1 /*gs1_cvt*/, },
+        { "databarstackedomni", BARCODE_RSS14STACK_OMNI, 80, 0, 0, 0, 0, 1, },
+        { "databarexpandedstacked", BARCODE_RSS_EXPSTACK, 81, 0, 1, 0, 0, 1, },
+        { "planet", BARCODE_PLANET, 82, 0, 0, 0, 0, 0, },
+        { "", -1, 83, 0, 0, 0, 0, 0, },
+        { "micropdf417", BARCODE_MICROPDF417, 84, 0, 0, 0, 0, 0, },
+        { "onecode", BARCODE_ONECODE, 85, 0, 0, 0, 0, 0, },
+        { "plessey", BARCODE_PLESSEY, 86, 0, 0, 0, 0, 0, },
+        { "telepennumeric", BARCODE_TELEPEN_NUM, 87, 0, 0, 0, 0, 0, },
+        { "", -1, 88, 0, 0, 0, 0, 0, },
+        { "itf14", BARCODE_ITF14, 89, 0, 0, 0, 0, 0, },
+        { "kix", BARCODE_KIX, 90, 0, 0, 0, 0, 0, },
+        { "", -1, 91, 0, 0, 0, 0, 0, },
+        { "azteccode", BARCODE_AZTEC, 92, 0, 0, 0, 0, 0, },
+        { "daft", BARCODE_DAFT, 93, 0, 0, 0, 0, 0, },
+        { "", -1, 94, 0, 0, 0, 0, 0, },
+        { "", -1, 95, 0, 0, 0, 0, 0, },
+        { "", -1, 96, 0, 0, 0, 0, 0, },
+        { "microqrcode", BARCODE_MICROQR, 97, 0, 0, 0, 0, 0, },
+        { "hibccode128", BARCODE_HIBC_128, 98, 0, 0, 0, 0, 0, },
+        { "hibccode39", BARCODE_HIBC_39, 99, 0, 0, 0, 0, 0, },
+        { "", -1, 100, 0, 0, 0, 0, 0, },
+        { "", -1, 101, 0, 0, 0, 0, 0, },
+        { "hibcdatamatrix", BARCODE_HIBC_DM, 102, 0, 0, 0, 0, 0, },
+        { "", -1, 103, 0, 0, 0, 0, 0, },
+        { "hibcqrcode", BARCODE_HIBC_QR, 104, 0, 0, 0, 0, 0, },
+        { "", -1, 105, 0, 0, 0, 0, 0, },
+        { "hibcpdf417", BARCODE_HIBC_PDF, 106, 0, 0, 0, 0, 0, },
+        { "", -1, 107, 0, 0, 0, 0, 0, },
+        { "hibcmicropdf417", BARCODE_HIBC_MICPDF, 108, 0, 0, 0, 0, 0, },
+        { "", -1, 109, 0, 0, 0, 0, 0, },
+        { "hibccodablockf", BARCODE_HIBC_BLOCKF, 110, 1, 1, 0, 0, 0, },
+        { "", -1, 111, 0, 0, 0, 0, 0, },
+        { "hibcazteccode", BARCODE_HIBC_AZTEC, 112, 0, 0, 0, 0, 0, },
+        { "", -1, 113, 0, 0, 0, 0, 0, },
+        { "", -1, 114, 0, 0, 0, 0, 0, },
+        { "dotcode", BARCODE_DOTCODE, 115, 0, 0, 0, 0, 0, },
+        { "hanxin", BARCODE_HANXIN, 116, 0, 0, 0, 0, 0, },
+        { "", -1, 117, 0, 0, 0, 0, 0, },
+        { "", -1, 118, 0, 0, 0, 0, 0, },
+        { "", -1, 119, 0, 0, 0, 0, 0, },
+        { "", -1, 120, 0, 0, 0, 0, 0, },
+        { "mailmark", BARCODE_MAILMARK, 121, 0, 0, 0, 0, 0, },
+        { "", -1, 122, 0, 0, 0, 0, 0, },
+        { "", -1, 123, 0, 0, 0, 0, 0, },
+        { "", -1, 124, 0, 0, 0, 0, 0, },
+        { "", -1, 125, 0, 0, 0, 0, 0, },
+        { "", -1, 126, 0, 0, 0, 0, 0, },
+        { "", -1, 127, 0, 0, 0, 0, 0, },
+        { "aztecrune", BARCODE_AZRUNE, 128, 0, 0, 0, 0, 0, },
+        { "code32", BARCODE_CODE32, 129, 0, 0, 0, 0, 0, },
+        { "ean13composite", BARCODE_EANX_CC, 130, 1, 0, 0, 72 /*linear_row_height*/, 1 /*gs1_cvt*/, },
+        { "gs1-128composite", BARCODE_EAN128_CC, 131, 1, 0, 0, 36, 1, },
+        { "databaromnicomposite", BARCODE_RSS14_CC, 132, 1, 0, 0, 33, 1, },
+        { "databarlimitedcomposite", BARCODE_RSS_LTD_CC, 133, 1, 0, 0, 0, 1, },
+        { "databarexpandedcomposite", BARCODE_RSS_EXP_CC, 134, 1, 1, 0, 0, 1, },
+        { "upcacomposite", BARCODE_UPCA_CC, 135, 1, 0, 0, 72, 1, },
+        { "upcecomposite", BARCODE_UPCE_CC, 136, 1, 0, 0, 72, 1, },
+        { "databarstackedcomposite", BARCODE_RSS14STACK_CC, 137, 1, 0, 0, 0, 1, },
+        { "databarstackedomnicomposite", BARCODE_RSS14_OMNI_CC, 138, 1, 0, 0, 0, 1, },
+        { "databarexpandedstackedcomposite", BARCODE_RSS_EXPSTACK_CC, 139, 1, 1, 0, 0, 1, },
+        { "channelcode", BARCODE_CHANNEL, 140, 0, 0, 0, 0, 0, },
+        { "codeone", BARCODE_CODEONE, 141, 0, 0, 0, 0, 0, },
+        { "", BARCODE_GRIDMATRIX, 142, 0, 0, 0, 0, 0, },
+        { "", BARCODE_UPNQR, 143, 0, 0, 0, 0, 0, },
+        { "ultracode", BARCODE_ULTRA, 144, 0, 0, 0, 0, 0, },
+        { "rectangularmicroqrcode", BARCODE_RMQR, 145, 0, 0, 0, 0, 0, },
+    };
+    int data_size = ARRAY_SIZE(data);
+
+    if (symbology < 0 || symbology >= data_size) {
+        return NULL;
+    }
+    if (data[symbology].val != symbology || (data[symbology].define != -1 && data[symbology].define != symbology)) { // Self-check
+        fprintf(stderr, "testUtilBarcodeName data table out of sync (%d)\n", symbology);
+        abort();
+    }
+    if (data[symbology].name[0] == '\0') {
+        return NULL;
+    }
+    if ((option_1 != -1 && !data[symbology].can_option_1) || (option_2 != -1 && !data[symbology].can_option_2)
+             || (option_3 != -1 && !data[symbology].can_option_3)) {
+        return NULL;
+    }
+
+    if (symbology == BARCODE_CODE11) {
+        if (option_2 != 1 && option_2 != 2) { /* 2 check digits (Zint default) not supported */
+            return NULL;
+        }
+    } else if (symbology == BARCODE_CODABLOCKF || symbology == BARCODE_HIBC_BLOCKF) {
+        if (option_1 == 1) { /* Single row i.e. CODE128 not supported */
+            return NULL;
+        }
+    }
+
+    if (linear_row_height) {
+        *linear_row_height = data[symbology].linear_row_height;
+    }
+    if (gs1_cvt) {
+        *gs1_cvt = data[symbology].gs1_cvt;
+    }
+
+    return data[symbology].name;
+}
+
+int testUtilCanBwipp(int symbology, int option_1, int option_2, int option_3, int debug) {
+    if (testUtilBwippName(symbology, option_1, option_2, option_3, NULL, NULL) != NULL) {
+        return 1;
+    }
+    if (debug & ZINT_DEBUG_TEST_PRINT) {
+        printf("testUtilCanBwipp: not supported %s, option_1 %d, option_2 %d, option_3 %d\n", testUtilBarcodeName(symbology), option_1, option_2, option_3);
+    }
+
+    return 0;
+}
+
+static void testUtilBwippCvtGS1Data(char *bwipp_data) {
+    char *b;
+
+    for (b = bwipp_data; *b; b++) {
+        if (*b == '[') {
+            *b = '(';
+        } else if (*b == ']') {
+            *b = ')';
+        }
+    }
+}
+
+static char *testUtilBwippEscape(char *bwipp_data, int bwipp_data_size, const char *data, int length, int *parse) {
+    char *b = bwipp_data;
+    char *be = b + bwipp_data_size;
+    unsigned char *d = (unsigned char *) data;
+    unsigned char *de = (unsigned char *) data + length;
+
+    *parse = 0;
+
+    while (b < be && d < de) {
+        if (*d < 0x20 || *d >= 0x7F || *d == '\'') { /* Escape single quote also to avoid having to do proper shell escaping TODO: proper shell escaping */
+            sprintf(b, "^%03u", *d++);
+            b += 4;
+            *parse = 1;
+        } else {
+            *b++ = *d++;
+        }
+    }
+
+    if (b == be && d < de) {
+        fprintf(stderr, "testUtilBwippEscape: bwipp_data buffer full\n");
+        return NULL;
+    }
+    *b = '\0';
+
+    return bwipp_data;
+}
+
+#define GS_INITIAL_LEN  35 /* Length of cmd up to -q */
+
+int testUtilBwipp(const struct zint_symbol *symbol, int option_1, int option_2, int option_3, const char *data, int length, const char *primary, char *buffer, int buffer_size) {
+    const char *cmd_fmt = "gs -dNOPAUSE -dBATCH -dNODISPLAY -q -sb=%s -sd='%s' ../tools/bwipp_dump.ps";
+    const char *cmd_opts_fmt = "gs -dNOPAUSE -dBATCH -dNODISPLAY -q -sb=%s -sd='%s' -so='%s' ../tools/bwipp_dump.ps";
+    const char *cmd_fmt2 = "gs -dNOPAUSE -dBATCH -dNODISPLAY -q -sb=%s -sd='%.2043s' -sd2='%s' ../tools/bwipp_dump.ps"; // If data > 2K
+    const char *cmd_opts_fmt2 = "gs -dNOPAUSE -dBATCH -dNODISPLAY -q -sb=%s -sd='%.2043s' -sd2='%s' -so='%s' ../tools/bwipp_dump.ps";
+
+    int symbology = symbol->symbology;
+    int data_len = length == -1 ? (int) strlen(data) : length;
+    int primary_len = primary ? (int) strlen(primary) : 0;
+    int max_data_len = 4 + primary_len + 1 + 1 + data_len * 4; /* 4 AI prefix + primary + '|' + leading zero + escaped data */
+
+    char cmd[max_data_len + 1024];
+    char *bwipp_barcode = NULL;
+    char *bwipp_opts = NULL;
+    char bwipp_data[max_data_len + 1];
+    char bwipp_opts_buf[512];
+    int bwipp_row_height[symbol->rows];
+    int linear_row_height;
+    int gs1_cvt;
+
+    FILE *fp = NULL;
+    int cnt;
+
+    char *b = buffer;
+    char *be = buffer + buffer_size;
+    int r, h;
+    int parse;
+
+    bwipp_data[0] = bwipp_opts_buf[0] = '\0';
+
+    bwipp_barcode = testUtilBwippName(symbology, option_1, option_2, option_3, &linear_row_height, &gs1_cvt);
+    if (!bwipp_barcode) {
+        fprintf(stderr, "testUtilBwipp: no mapping for %s, option_1 %d, option_2 %d, option_3 %d\n", testUtilBarcodeName(symbology), option_1, option_2, option_3);
+        return -1;
+    }
+
+    for (r = 0; r < symbol->rows; r++) {
+        bwipp_row_height[r] = symbol->row_height[r];
+    }
+    if (linear_row_height) {
+        bwipp_row_height[symbol->rows - 1] = linear_row_height;
+    }
+
+    if (is_composite(symbology)) {
+        if (symbology == BARCODE_EANX_CC && primary_len <= 7) {
+            bwipp_barcode = "ean8composite";
+        }
+        if (!primary) {
+            fprintf(stderr, "testUtilBwipp: no primary data given %s\n", testUtilBarcodeName(symbology));
+            return -1;
+        }
+        if (*primary != '[' && symbology != BARCODE_EANX_CC && symbology != BARCODE_UPCE_CC && symbology != BARCODE_UPCA_CC) {
+            strcat(bwipp_data, "(01)");
+        }
+        strcat(bwipp_data, primary);
+        strcat(bwipp_data, "|");
+        strcat(bwipp_data, data);
+        testUtilBwippCvtGS1Data(bwipp_data);
+
+        if (option_1 > 0) {
+            sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%sccversion=%c", strlen(bwipp_opts_buf) ? " " : "", option_1 == 1 ? 'a' : option_1 == 2 ? 'b' : 'c');
+            bwipp_opts = bwipp_opts_buf;
+        }
+        if (option_2 > 0) {
+            sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%ssegments=%d", strlen(bwipp_opts_buf) ? " " : "", option_2 * 2);
+            bwipp_opts = bwipp_opts_buf;
+        }
+    } else {
+        if (gs1_cvt) {
+            if (*data != '[') {
+                strcat(bwipp_data, symbology == BARCODE_NVE18 ? "(00)" : "(01)");
+            }
+            strcat(bwipp_data, data);
+            testUtilBwippCvtGS1Data(bwipp_data);
+
+            if (option_2 > 0) {
+                if (symbology == BARCODE_RSS_EXP || symbology == BARCODE_RSS_EXPSTACK) {
+                    sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%ssegments=%d", strlen(bwipp_opts_buf) ? " " : "", option_2 * 2);
+                    bwipp_opts = bwipp_opts_buf;
+                }
+            }
+        } else {
+            testUtilBwippEscape(bwipp_data, sizeof(bwipp_data), data, data_len, &parse);
+            if (parse) {
+                sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%sparse", strlen(bwipp_opts_buf) ? " " : "");
+                bwipp_opts = bwipp_opts_buf;
+            }
+
+            if (symbology == BARCODE_CODE93) {
+                sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%sincludecheck", strlen(bwipp_opts_buf) ? " " : "");
+                if (parse) {
+                    bwipp_barcode = "code93ext";
+                }
+                bwipp_opts = bwipp_opts_buf;
+            } else if (symbology == BARCODE_PZN) {
+                sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%spzn8", strlen(bwipp_opts_buf) ? " " : "");
+                bwipp_opts = bwipp_opts_buf;
+            } else if (symbology == BARCODE_TELEPEN_NUM) {
+                if (data_len & 1) { // Add leading zero
+                    memmove(bwipp_data + 1, bwipp_data, strlen(bwipp_data) + 1);
+                    *bwipp_data = '0';
+                }
+            } else if (symbology == BARCODE_CODABLOCKF || symbology == BARCODE_HIBC_BLOCKF) {
+                sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%ssepheight=0", strlen(bwipp_opts_buf) ? " " : "");
+                if (option_1 > 0) {
+                    sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%srows=%d", strlen(bwipp_opts_buf) ? " " : "", option_1);
+                }
+                //} else { /* BWIPP does not really support both row and column given */
+                    if (option_2 > 0) {
+                        sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%scolumns=%d", strlen(bwipp_opts_buf) ? " " : "", option_2 - 5);
+                    } else {
+                        sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%scolumns=%d", strlen(bwipp_opts_buf) ? " " : "", (symbol->width - 57) / 11);
+                    }
+                //}
+                bwipp_opts = bwipp_opts_buf;
+            } else if (symbology == BARCODE_CODE11 || symbology == BARCODE_CODE39 || symbology == BARCODE_EXCODE39 || symbology == BARCODE_LOGMARS) {
+                if (option_2 > 0) {
+                    if (option_2 == 1) {
+                        sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%sincludecheck", strlen(bwipp_opts_buf) ? " " : "");
+                    }
+                    bwipp_opts = bwipp_opts_buf; /* Set always as option_2 == 2 is bwipp default */
+                }
+            }
+        }
+    }
+
+    if ((option_1 != -1 || option_2 != -1 || option_3 != -1) && !bwipp_opts) {
+        fprintf(stderr, "testUtilBwipp: no mapping option_1 %d, option_2 %d, option_3 %d for symbology %s\n", option_1, option_2, option_3, testUtilBarcodeName(symbology));
+        return -1;
+    }
+
+    if (bwipp_opts) {
+        if (data_len >= 2043) { /* Ghostscript's `arg_str_max` 2048 less "-sd=" */
+            sprintf(cmd, cmd_opts_fmt2, bwipp_barcode, bwipp_data, bwipp_data + 2043, bwipp_opts);
+        } else {
+            sprintf(cmd, cmd_opts_fmt, bwipp_barcode, bwipp_data, bwipp_opts);
+        }
+    } else {
+        if (data_len >= 2043) {
+            sprintf(cmd, cmd_fmt2, bwipp_barcode, bwipp_data, bwipp_data + 2043);
+        } else {
+            sprintf(cmd, cmd_fmt, bwipp_barcode, bwipp_data);
+        }
+    }
+
+    /* Hack in various adjustments */
+    if (symbology == BARCODE_RSS14 || symbology == BARCODE_RSS_LTD || symbology == BARCODE_RSS_EXP) {
+        /* Begin with space */
+        memmove(cmd + GS_INITIAL_LEN + 5, cmd + GS_INITIAL_LEN, strlen(cmd) + 1 - GS_INITIAL_LEN);
+        memcpy(cmd + GS_INITIAL_LEN, " -sbs", 5);
+    }
+    if (symbology == BARCODE_CODE11 || symbology == BARCODE_CODE39 || symbology == BARCODE_EXCODE39 || symbology == BARCODE_PZN || symbology == BARCODE_VIN) {
+        /* Ratio 3 width bar/space -> 2 width */
+        memmove(cmd + GS_INITIAL_LEN + 8, cmd + GS_INITIAL_LEN, strlen(cmd) + 1 - GS_INITIAL_LEN);
+        memcpy(cmd + GS_INITIAL_LEN, " -sr=0.6", 8);
+    }
+    if (symbology == BARCODE_CODE11 || symbology == BARCODE_CODE39 || symbology == BARCODE_EXCODE39 || symbology == BARCODE_HIBC_39
+            || symbology == BARCODE_LOGMARS || symbology == BARCODE_PZN || symbology == BARCODE_VIN) {
+        /* End sbs loop on bar */
+        memmove(cmd + GS_INITIAL_LEN + 6, cmd + GS_INITIAL_LEN, strlen(cmd) + 1 - GS_INITIAL_LEN);
+        memcpy(cmd + GS_INITIAL_LEN, " -selb", 6);
+    }
+
+    if (symbol->debug & ZINT_DEBUG_TEST_PRINT) {
+        printf("testUtilBwipp: cmd %s\n", cmd);
+    }
+
+    fp = popen(cmd, "r");
+    if (!fp) {
+        fprintf(stderr, "testUtilBwipp: failed to run '%s'\n", cmd);
+        return -1;
+    }
+
+    for (r = 0; r < symbol->rows; r++) {
+        if (b + symbol->width > be) {
+            fprintf(stderr, "testUtilBwipp: row %d, width %d, row width iteration overrun (%s)\n", r, symbol->width, cmd);
+            pclose(fp);
+            return -1;
+        }
+        cnt = fread(b, 1, symbol->width, fp);
+        if (cnt != symbol->width) {
+            fprintf(stderr, "testUtilBwipp: failed to read symbol->width %d bytes, cnt %d (%s)\n", symbol->width, cnt, cmd);
+            pclose(fp);
+            return -1;
+        }
+        b += cnt;
+        for (h = bwipp_row_height[r]; h > 1; h--) { /* Ignore row copies if any */
+            cnt = fread(b, 1, symbol->width, fp);
+            if (cnt != symbol->width) {
+                fprintf(stderr, "testUtilBwipp: failed to read/ignore symbol->width %d bytes, cnt %d (%s)\n", symbol->width, cnt, cmd);
+                pclose(fp);
+                return -1;
+            }
+        }
+    }
+    *b = '\0';
+
+    if (fgetc(fp) != EOF) {
+        fprintf(stderr, "testUtilBwipp: failed to read full stream (%s)\n", cmd);
+        pclose(fp);
+        return -1;
+    }
+
+    pclose(fp);
+
+    return 0;
+}
+
+int testUtilBwippCmp(const struct zint_symbol *symbol, char *msg, const char *bwipp_buf, const char *expected) {
+    int bwipp_len = strlen(bwipp_buf);
+    int expected_len = strlen(expected);
+    int ret_memcmp;
+    int i;
+
+    (void)symbol;
+
+    if (bwipp_len != expected_len) {
+        sprintf(msg, "bwipp_len %d != expected_len %d", bwipp_len, expected_len);
+        return 2;
+    }
+
+    ret_memcmp = memcmp(bwipp_buf, expected, expected_len);
+    if (ret_memcmp != 0) {
+        for (i = 0; i < expected_len; i++) {
+            if (bwipp_buf[i] != expected[i]) {
+                break;
+            }
+        }
+        sprintf(msg, "bwipp memcmp %d != 0, at %d, len %d", ret_memcmp, i, expected_len);
+        return ret_memcmp;
+    }
+
+    return 0;
+}
+
+int testUtilBwippCmpRow(const struct zint_symbol *symbol, int row, char *msg, const char *bwipp_buf, const char *expected) {
+    int bwipp_len = strlen(bwipp_buf);
+    int expected_len = strlen(expected);
+    int ret_memcmp;
+    int i, j;
+
+    (void)symbol;
+
+    if (bwipp_len != expected_len * symbol->rows) {
+        sprintf(msg, "bwipp_len %d != expected_len %d * symbol->rows %d", bwipp_len, expected_len, symbol->rows);
+        return 2;
+    }
+
+    ret_memcmp = memcmp(bwipp_buf + expected_len * row, expected, expected_len);
+    if (ret_memcmp != 0) {
+        for (i = 0, j = expected_len * row; i < expected_len; i++, j++) {
+            if (bwipp_buf[j] != expected[i]) {
+                break;
+            }
+        }
+        sprintf(msg, "bwipp memcmp %d != 0, at %d (%d), len %d", ret_memcmp, i, j, expected_len);
+        return ret_memcmp;
+    }
+
+    return 0;
 }

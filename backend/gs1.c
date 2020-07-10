@@ -31,7 +31,6 @@
  */
 /* vim: set ts=4 sw=4 et : */
 
-#include <string.h>
 #include <stdio.h>
 #ifdef _MSC_VER
 #include <malloc.h>
@@ -67,6 +66,18 @@ static void itostr(char ai_string[], int ai_value) {
     temp[0] = itoc(unit);
     strcat(ai_string, temp);
     strcat(ai_string, ")");
+}
+
+/* Returns the number of times a character occurs in a string */
+static int ustrchr_cnt(const unsigned char string[], const size_t length, const unsigned char c) {
+    int count = 0;
+    unsigned int i;
+    for (i = 0; i < length; i++) {
+        if (string[i] == c) {
+            count++;
+        }
+    }
+    return count;
 }
 
 INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[], const size_t src_len, char reduced[]) {
