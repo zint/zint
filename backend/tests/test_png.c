@@ -125,6 +125,16 @@ static void test_print(int index, int generate, int debug) {
     };
     struct item data[] = {
         /*  0*/ { BARCODE_CODABLOCKF, 3, -1, "AAAAAAAAA", "../data/png/codablockf_3rows.png" },
+        /*  1*/ { BARCODE_EANX, -1, -1, "9771384524017+12", "../data/png/ean13_2addon_ggs_5.2.2.5.1-2.png" },
+        /*  2*/ { BARCODE_EANX, -1, -1, "9780877799306+54321", "../data/png/ean13_5addon_ggs_5.2.2.5.2-2.png" },
+        /*  3*/ { BARCODE_UPCA, -1, -1, "012345678905+24", "../data/png/upca_2addon_ggs_5.2.6.6-5.png" },
+        /*  4*/ { BARCODE_UPCA, -1, -1, "614141234417+12345", "../data/png/upca_5addon.png" },
+        /*  5*/ { BARCODE_UPCE, -1, -1, "1234567+12", "../data/png/upce_2addon.png" },
+        /*  6*/ { BARCODE_UPCE, -1, -1, "1234567+12345", "../data/png/upce_5addon.png" },
+        /*  7*/ { BARCODE_EANX, -1, -1, "1234567+12", "../data/png/ean8_2addon.png" },
+        /*  8*/ { BARCODE_EANX, -1, -1, "1234567+12345", "../data/png/ean8_5addon.png" },
+        /*  9*/ { BARCODE_EANX, -1, -1, "12345", "../data/png/ean5.png" },
+        /* 10*/ { BARCODE_EANX, -1, -1, "12", "../data/png/ean2.png" },
     };
     int data_size = ARRAY_SIZE(data);
 

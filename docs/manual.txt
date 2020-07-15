@@ -297,7 +297,7 @@ Numeric Value  |  Barcode Name
 72             |  EAN-14
 73             |  Vehicle Identification Number
 74             |  Codablock-F
-75             |  NVE-18
+75             |  NVE-18 (SSCC-18)
 76             |  Japanese Postal Code
 77             |  Korea Post
 79             |  GS1 DataBar Stacked (stacked version of GS1 DataBar Truncated)
@@ -352,7 +352,7 @@ example:
 
 zint --height=100 -d "This Text"
 
-This specifies a symbol height of 100 times the x-resolution of the symbol.
+This specifies a symbol height of 100 times the X-dimension of the symbol.
 
 4.5 Adjusting whitespace
 ------------------------
@@ -361,7 +361,7 @@ altered using the –w switch. For example:
 
 zint -w 10 -d "This Text"
 
-This specifies a whitespace width of 10 times the x-resolution of the symbol.
+This specifies a whitespace width of 10 times the X-dimension of the symbol.
 
 4.6 Adding boundary bars and boxes
 ----------------------------------
@@ -376,7 +376,7 @@ For example:
 
 zint --box --border=10 -d "This"
 
-gives a box with a width 10 times the x-resolution of the symbol.
+gives a box with a width 10 times the X-dimension of the symbol.
 
 4.7 Using colour
 ----------------
@@ -1031,7 +1031,7 @@ Value   |
 72      | BARCODE_EAN14           | EAN-14
 73      | BARCODE_VIN             | Vehicle Identification Number
 74      | BARCODE_CODABLOCKF      | Codablock-F
-75      | BARCODE_NVE18           | NVE-18
+75      | BARCODE_NVE18           | NVE-18 (SSCC-18)
 76      | BARCODE_JAPANPOST       | Japanese Postal Code
 77      | BARCODE_KOREAPOST       | Korea Post
 79      | BARCODE_RSS14STACK      | GS1 DataBar Stacked
@@ -1245,8 +1245,13 @@ my_symbol->symbology = BARCODE_UPCA;
 
 error = ZBarcode_Encode_and_Print(my_symbol, "72527270270+12345");
 
-If your input data already includes the check digit symbology 35 can be used
-which takes a 12 digit input and validates the check digit before encoding.
+If your input data already includes the check digit symbology BARCODE_UPCA_CHK
+(35) can be used which takes a 12 digit input and validates the check digit
+before encoding.
+
+You can adjust the gap between the main symbol and an add-on in multiples of
+the X-dimension by setting --addongap= (option_2) to a value between 9 (default)
+and 12.
 
 6.1.3.2 UPC Version E
 ---------------------
@@ -1265,8 +1270,13 @@ my_symbol->symbology = BARCODE_UPCE;
 
 error = ZBarcode_Encode_and_Print(my_symbol, "1123456");
 
-If your input data already includes the check digit symbology 38 can be used
-which takes a 7 or 8 digit input and validates the check digit before encoding.
+If your input data already includes the check digit symbology BARCODE_UPCE_CHK
+(38) can be used which takes a 7 or 8 digit input and validates the check digit
+before encoding.
+
+You can adjust the gap between the main symbol and an add-on in multiples of
+the X-dimension by setting --addongap= (option_2) to a value between 7 (default)
+and 12.
 
 6.1.4 European Article Number (EN 797)
 --------------------------------------
@@ -1296,8 +1306,12 @@ error = ZBarcode_Encode_and_Print(my_symbol, "7432365+54321");
 All of the EAN symbols include check digits which are added by Zint.
 
 If you are encoding an EAN-8 or EAN-13 symbol and your data already includes
-the check digit then you can use symbology 14 which takes an 8 or 13 digit input
-and validates the check digit before encoding.
+the check digit then you can use symbology BARCODE_EANX_CHK (14) which takes an
+8 or 13 digit input and validates the check digit before encoding.
+
+You can adjust the gap between the main symbol and an add-on in multiples of
+the X-dimension by setting --addongap= (option_2) to a value between 7 (default)
+and 12.
 
 6.1.4.2 SBN, ISBN and ISBN-13
 -----------------------------
@@ -1305,7 +1319,8 @@ EAN-13 symbols (also known as Bookland EAN-13) can also be produced from
 9-digit SBN, 10-digit ISBN or 13-digit ISBN-13 data. The relevant check digit
 needs to be present in the input data and will be verified before the symbol is
 generated. In addition EAN-2 and EAN-5 add-on symbols can be added using the +
-symbol as with UPC symbols.
+symbol as with UPC symbols, and the gap set with --addongap= (option_2) to
+between 7 (default) and 12.
 
 6.1.5 Plessey
 -------------
@@ -1454,11 +1469,12 @@ zint --barcode=16 -d "[01]98898765432106[3202]012345[15]991231"
 A shorter version of GS1-128 which encodes GTIN data only. A 13 digit number is
 required. The GTIN check digit and AI (01) are added by Zint.
 
-6.1.11.5 NVE-18
----------------
-A variation of Code 128 the "Nummer der Versandeinheit" standard includes both
-modulo-10 and modulo-103 check digits. NVE-18 requires a 17 digit numerical
-input and check digits are added by Zint.
+6.1.11.5 NVE-18 (SSCC-18)
+-------------------------
+A variation of Code 128 the "Nummer der Versandeinheit" standard, also known as
+SSCC-18 (Serial Shipping Container Code), includes both modulo-10 and modulo-103
+check digits. NVE-18 requires a 17 digit numerical input. Check digits and AI
+(00) are added by Zint.
 
 6.1.11.6 HIBC Code 128
 ----------------------

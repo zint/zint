@@ -432,7 +432,7 @@ static void test_encode(int index, int generate, int debug) {
         if (generate) {
             printf("        /*%3d*/ { %s, %d, %d, \"%s\", %s, %d, %d, %d, \"%s\",\n",
                     i, testUtilBarcodeName(data[i].symbology), data[i].option_1, data[i].option_2, testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
-                    testUtilErrorName(data[i].ret), symbol->rows, data[i].bwipp_cmp, symbol->width, data[i].comment);
+                    testUtilErrorName(data[i].ret), symbol->rows, symbol->width, data[i].bwipp_cmp, data[i].comment);
             testUtilModulesDump(symbol, "                    ", "\n");
             printf("                },\n");
         } else {
@@ -448,7 +448,7 @@ static void test_encode(int index, int generate, int debug) {
 
                 if (do_bwipp && testUtilCanBwipp(symbol->symbology, data[i].option_1, data[i].option_2, -1, debug)) {
                     if (!data[i].bwipp_cmp) {
-                        if (debug & ZINT_DEBUG_TEST_PRINT) printf("%d: %s skipped, not BWIPP compatible\n", i, testUtilBarcodeName(symbol->symbology));
+                        if (debug & ZINT_DEBUG_TEST_PRINT) printf("%d: %s not BWIPP compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
                     } else {
                         ret = testUtilBwipp(symbol, data[i].option_1, data[i].option_2, -1, data[i].data, length, NULL, bwipp_buf, sizeof(bwipp_buf));
                         assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), ret);

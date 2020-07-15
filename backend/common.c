@@ -218,28 +218,22 @@ INTERNAL int is_stackable(const int symbology) {
     return 0;
 }
 
-/* Indicates which symbols can have addon (EAN-2 and EAN-5) */
+/* Indicates which symbols can have addon (EAN-2 and EAN-5)
+ * Note: if change this must also change version in frontend/main.c */
 INTERNAL int is_extendable(const int symbology) {
-    if (symbology == BARCODE_EANX || symbology == BARCODE_EANX_CHK) {
-        return 1;
-    }
-    if (symbology == BARCODE_UPCA || symbology == BARCODE_UPCA_CHK) {
-        return 1;
-    }
-    if (symbology == BARCODE_UPCE || symbology == BARCODE_UPCE_CHK) {
-        return 1;
-    }
-    if (symbology == BARCODE_ISBNX) {
-        return 1;
-    }
-    if (symbology == BARCODE_UPCA_CC) {
-        return 1;
-    }
-    if (symbology == BARCODE_UPCE_CC) {
-        return 1;
-    }
-    if (symbology == BARCODE_EANX_CC) {
-        return 1;
+
+    switch (symbology) {
+        case BARCODE_EANX:
+        case BARCODE_EANX_CHK:
+        case BARCODE_UPCA:
+        case BARCODE_UPCA_CHK:
+        case BARCODE_UPCE:
+        case BARCODE_UPCE_CHK:
+        case BARCODE_ISBNX:
+        case BARCODE_EANX_CC:
+        case BARCODE_UPCA_CC:
+        case BARCODE_UPCE_CC:
+            return 1;
     }
 
     return 0;

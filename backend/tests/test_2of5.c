@@ -193,6 +193,8 @@ static void test_encode(int index, int generate, int debug) {
 
     testStart("");
 
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); // Only do BWIPP test if asked, too slow otherwise
+
     int ret;
     struct item {
         int symbology;
@@ -206,37 +208,37 @@ static void test_encode(int index, int generate, int debug) {
     };
     // BARCODE_ITF14 examples verified manually against GS1 General Specifications 20.0
     struct item data[] = {
-        /*  0*/ { BARCODE_C25MATRIX, "87654321", 0, 1, 97, "Standard Code 2 of 5; verified manually against bwipp and tec-it",
+        /*  0*/ { BARCODE_C25MATRIX, "87654321", 0, 1, 97, "Standard Code 2 of 5; note zint uses 4X start/end wides while BWIPP uses 3X",
                     "1111010101110100010101000111010001110101110111010101110111011100010101000101110111010111011110101"
                 },
-        /*  1*/ { BARCODE_C25INTER, "87654321", 0, 1, 81, "Interleaved Code 2 of 5; verified manually against bwipp and tec-it",
+        /*  1*/ { BARCODE_C25INTER, "87654321", 0, 1, 81, "Interleaved Code 2 of 5; verified manually against tec-it",
                     "101011101010111000100010001110111000101010001000111010111010001110101011100011101"
                 },
         /*  2*/ { BARCODE_C25INTER, "602003", 0, 1, 63, "DX cartridge barcode https://en.wikipedia.org/wiki/Interleaved_2_of_5 example",
                     "101010111011100010001010111010001000111010001000111011101011101"
                 },
-        /*  3*/ { BARCODE_C25IATA, "87654321", 0, 1, 121, "IATA Code 2 of 5; verified manually against bwipp and tec-it",
+        /*  3*/ { BARCODE_C25IATA, "87654321", 0, 1, 121, "IATA Code 2 of 5; verified manually against tec-it",
                     "1010111010101110101010101110111010111011101010111010111010101010111010111011101110101010101110101011101110101010111011101"
                 },
-        /*  4*/ { BARCODE_C25LOGIC, "87654321", 0, 1, 89, "Code 2 of 5 Data Logic; verified manually against bwipp and tec-it",
+        /*  4*/ { BARCODE_C25LOGIC, "87654321", 0, 1, 89, "Code 2 of 5 Data Logic; verified manually against tec-it",
                     "10101110100010101000111010001110101110111010101110111011100010101000101110111010111011101"
                 },
-        /*  5*/ { BARCODE_C25IND, "87654321", 0, 1, 131, "Industrial Code 2 of 5; verified manually against bwipp and tec-it",
+        /*  5*/ { BARCODE_C25IND, "87654321", 0, 1, 131, "Industrial Code 2 of 5; verified manually against tec-it",
                     "11101110101110101011101010101011101110101110111010101110101110101010101110101110111011101010101011101010111011101010101110111010111"
                 },
-        /*  6*/ { BARCODE_DPLEIT, "87654321", 0, 1, 135, "Deutsche Post Leitcode; verified manually against bwipp and tec-it (0000087654321)",
+        /*  6*/ { BARCODE_DPLEIT, "0000087654321", 0, 1, 135, "Deutsche Post Leitcode; verified manually against tec-it",
                     "101010101110001110001010101110001110001010001011101110001010100010001110111011101011100010100011101110001010100011101000100010111011101"
                 },
         /*  7*/ { BARCODE_DPLEIT, "5082300702800", 0, 1, 135, "Deutsche Post Leitcode https://de.wikipedia.org/wiki/Leitcode example",
                     "101011101011100010001011101000101110100011101110100010001010101110111000100010100011101110100011101010001110001010001011100011101011101"
                 },
-        /*  8*/ { BARCODE_DPIDENT, "87654321", 0, 1, 117, "Deutsche Post Identcode; verified manually against bwipp and tec-it (00087654321)",
+        /*  8*/ { BARCODE_DPIDENT, "00087654321", 0, 1, 117, "Deutsche Post Identcode; verified manually against tec-it",
                     "101010101110001110001010001011101110001010100010001110111011101011100010100011101110001010100011101000100010111011101"
                 },
         /*  9*/ { BARCODE_DPIDENT, "39601313414", 0, 1, 117, "Deutsche Post Identcode https://de.wikipedia.org/wiki/Leitcode example",
                     "101011101110001010001010111011100010001011100010001010111011100010001010111010001011101011100010101110001000111011101"
                 },
-        /* 10*/ { BARCODE_ITF14, "87654321", 0, 1, 135, "ITF-14; verified manually against bwipp and tec-it (0000087654321)",
+        /* 10*/ { BARCODE_ITF14, "0000087654321", 0, 1, 135, "ITF-14; verified manually against tec-it",
                     "101010101110001110001010101110001110001010001011101110001010100010001110111011101011100010100011101110001010100011101000101011100011101"
                 },
         /* 11*/ { BARCODE_ITF14, "0950110153000", 0, 1, 135, "GS1 General Specifications Figure 5.1-2",
@@ -252,6 +254,8 @@ static void test_encode(int index, int generate, int debug) {
     int data_size = ARRAY_SIZE(data);
 
     char escaped[1024];
+    char bwipp_buf[4096];
+    char bwipp_msg[1024];
 
     for (int i = 0; i < data_size; i++) {
 
@@ -280,6 +284,15 @@ static void test_encode(int index, int generate, int debug) {
                     int width, row;
                     ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
                     assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, ret, width, row, data[i].data);
+                }
+
+                if (do_bwipp && testUtilCanBwipp(symbol->symbology, -1, -1, -1, debug)) {
+                    ret = testUtilBwipp(symbol, -1, -1, -1, data[i].data, length, NULL, bwipp_buf, sizeof(bwipp_buf));
+                    assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), ret);
+
+                    ret = testUtilBwippCmp(symbol, bwipp_msg, bwipp_buf, data[i].expected);
+                    assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
+                                   i, testUtilBarcodeName(data[i].symbology), ret, bwipp_msg, bwipp_buf, data[i].expected);
                 }
             }
         }

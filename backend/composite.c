@@ -328,6 +328,7 @@ static int cc_b(struct zint_symbol *symbol, char source[], int cc_width) {
     char pattern[580];
     int variant, LeftRAPStart, CentreRAPStart, RightRAPStart, StartCluster;
     int LeftRAP, CentreRAP, RightRAP, Cluster, loop;
+    int columns;
 
     length = strlen(source) / 8;
 
@@ -445,10 +446,10 @@ static int cc_b(struct zint_symbol *symbol, char source[], int cc_width) {
     /* Now we have the variant we can load the data - from here on the same as MicroPDF417 code */
     variant--;
     assert(variant >= 0);
-    symbol->option_2 = MicroVariants[variant]; /* columns */
+    columns = MicroVariants[variant]; /* columns */
     symbol->rows = MicroVariants[variant + 34]; /* rows */
     k = MicroVariants[variant + 68]; /* number of EC CWs */
-    longueur = (symbol->option_2 * symbol->rows) - k; /* number of non-EC CWs */
+    longueur = (columns * symbol->rows) - k; /* number of non-EC CWs */
     i = longueur - mclength; /* amount of padding required */
     offset = MicroVariants[variant + 102]; /* coefficient offset */
 
@@ -506,8 +507,8 @@ static int cc_b(struct zint_symbol *symbol, char source[], int cc_width) {
         for (j = 0; j < 5; j++) {
             dummy[j] = 0;
         }
-        for (j = 0; j < symbol->option_2; j++) {
-            dummy[j + 1] = chainemc[i * symbol->option_2 + j];
+        for (j = 0; j < columns; j++) {
+            dummy[j + 1] = chainemc[i * columns + j];
         }
         /* Copy the data into codebarre */
         bin_append(rap_side[LeftRAP - 1], 10, pattern);

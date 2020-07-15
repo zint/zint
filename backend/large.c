@@ -244,7 +244,7 @@ INTERNAL void large_unset_bit(large_int *t, int bit) {
     }
 }
 
-/* Ouput large_int into an unsigned int array of size `size`, each element containing `bits` bits */
+/* Output large_int into an unsigned int array of size `size`, each element containing `bits` bits */
 INTERNAL void large_uint_array(const large_int *t, unsigned int *uint_array, int size, int bits) {
     int i, j;
     uint64_t mask;

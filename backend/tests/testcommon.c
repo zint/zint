@@ -383,7 +383,7 @@ char *testUtilBarcodeName(int symbology) {
         return "";
     }
     if (data[symbology].val != symbology || (data[symbology].define != -1 && data[symbology].define != symbology)) { // Self-check
-        fprintf(stderr, "testUtilBarcodeName data table out of sync (%d)\n", symbology);
+        fprintf(stderr, "testUtilBarcodeName: data table out of sync (%d)\n", symbology);
         abort();
     }
     return data[symbology].name;
@@ -443,7 +443,7 @@ char *testUtilErrorName(int error_number) {
         return "";
     }
     if (data[error_number].val != error_number || (data[error_number].define != -1 && data[error_number].define != error_number)) { // Self-check
-        fprintf(stderr, "testUtilErrorName data table out of sync (%d)\n", error_number);
+        fprintf(stderr, "testUtilErrorName: data table out of sync (%d)\n", error_number);
         abort();
     }
     return data[error_number].name;
@@ -474,7 +474,7 @@ char *testUtilInputModeName(int input_mode) {
         return input_mode == -1 ? "-1" : "";
     }
     if (data[input_mode].val != input_mode || (data[input_mode].define != -1 && data[input_mode].define != input_mode)) { // Self-check
-        fprintf(stderr, "testUtilInputModeName data table out of sync (%d)\n", input_mode);
+        fprintf(stderr, "testUtilInputModeName: data table out of sync (%d)\n", input_mode);
         abort();
     }
     return data[input_mode].name;
@@ -487,7 +487,11 @@ char *testUtilOption3Name(int option_3) {
         case ZINT_FULL_MULTIBYTE: return "ZINT_FULL_MULTIBYTE";
         case ULTRA_COMPRESSION: return "ULTRA_COMPRESSION";
     }
-    return "-1";
+    if (option_3 != -1 && option_3 != 0) {
+        fprintf(stderr, "testUtilOption3Name: unknown value (%d)\n", option_3);
+        abort();
+    }
+    return option_3 ? "-1" : "0";
 }
 
 char *testUtilOutputOptionsName(int output_options) {
@@ -523,7 +527,7 @@ char *testUtilOutputOptionsName(int output_options) {
     buf[0] = '\0';
     for (i = 0; i < data_size; i++) {
         if (data[i].define != data[i].val) { // Self-check
-            fprintf(stderr, "testUtilOutputOptionsName data table out of sync (%d)\n", i);
+            fprintf(stderr, "testUtilOutputOptionsName: data table out of sync (%d)\n", i);
             abort();
         }
         if (output_options & data[i].define) {
@@ -531,8 +535,12 @@ char *testUtilOutputOptionsName(int output_options) {
                 strcat(buf, " | ");
             }
             strcat(buf, data[i].name);
-            set = 1;
+            set |= data[i].define;
         }
+    }
+    if (set != output_options) {
+        fprintf(stderr, "testUtilOutputOptionsName: unknown output option(s) %d (%d)\n", output_options & set, output_options);
+        abort();
     }
     return buf;
 }
@@ -1472,10 +1480,10 @@ static char *testUtilBwippName(int symbology, int option_1, int option_2, int op
         { "", -1, 10, 0, 0, 0, 0, 0, },
         { "", -1, 11, 0, 0, 0, 0, 0, },
         { "", -1, 12, 0, 0, 0, 0, 0, },
-        { "ean13", BARCODE_EANX, 13, 0, 0, 0, 0, 0, },
-        { "ean13", BARCODE_EANX_CHK, 14, 0, 0, 0, 0, 0, },
+        { "ean13", BARCODE_EANX, 13, 0, 1, 0, 0, 1 /*gs1_cvt*/, },
+        { "ean13", BARCODE_EANX_CHK, 14, 0, 1, 0, 0, 1, },
         { "", -1, 15, 0, 0, 0, 0, 0, },
-        { "gs1-128", BARCODE_EAN128, 16, 0, 0, 0, 0, 1 /*gs1_cnt*/, },
+        { "gs1-128", BARCODE_EAN128, 16, 0, 0, 0, 0, 1 /*gs1_cvt*/, },
         { "", -1, 17, 0, 0, 0, 0, 0, },
         { "rationalizedCodabar", BARCODE_CODABAR, 18, 0, 0, 0, 0, 0, },
         { "", -1, 19, 0, 0, 0, 0, 0, },
@@ -1493,11 +1501,11 @@ static char *testUtilBwippName(int symbology, int option_1, int option_2, int op
         { "databarexpanded", BARCODE_RSS_EXP, 31, 0, 1, 0, 1 /*linear_row_height*/, 1, },
         { "telepen", BARCODE_TELEPEN, 32, 0, 0, 0, 0, 0, },
         { "", -1, 33, 0, 0, 0, 0, 0, },
-        { "upca", BARCODE_UPCA, 34, 0, 0, 0, 0, 0, },
-        { "upca", BARCODE_UPCA_CHK, 35, 0, 0, 0, 0, 0, },
+        { "upca", BARCODE_UPCA, 34, 0, 1, 0, 0, 1 /*gs1_cvt*/, },
+        { "upca", BARCODE_UPCA_CHK, 35, 0, 1, 0, 0, 1, },
         { "", -1, 36, 0, 0, 0, 0, 0, },
-        { "upce", BARCODE_UPCE, 37, 0, 0, 0, 0, 0, },
-        { "upce", BARCODE_UPCE_CHK, 38, 0, 0, 0, 0, 0, },
+        { "upce", BARCODE_UPCE, 37, 0, 1, 0, 0, 1 /*gs1_cvt*/, },
+        { "upce", BARCODE_UPCE_CHK, 38, 0, 1, 0, 0, 1, },
         { "", -1, 39, 0, 0, 0, 0, 0, },
         { "postnet", BARCODE_POSTNET, 40, 0, 0, 0, 0, 0, },
         { "", -1, 41, 0, 0, 0, 0, 0, },
@@ -1528,7 +1536,7 @@ static char *testUtilBwippName(int symbology, int option_1, int option_2, int op
         { "", BARCODE_AUSREPLY, 66, 0, 0, 0, 0, 0, },
         { "", BARCODE_AUSROUTE, 67, 0, 0, 0, 0, 0, },
         { "", BARCODE_AUSREDIRECT, 68, 0, 0, 0, 0, 0, },
-        { "isbn", BARCODE_ISBNX, 69, 0, 0, 0, 0, 0, },
+        { "isbn", BARCODE_ISBNX, 69, 0, 1, 0, 0, 1 /*gs1_cvt*/, },
         { "royalmail", BARCODE_RM4SCC, 70, 0, 0, 0, 0, 0, },
         { "datamatrix", BARCODE_DATAMATRIX, 71, 0, 0, 0, 0, 0, },
         { "ean14", BARCODE_EAN14, 72, 0, 0, 0, 0, 1 /*gs1_cvt*/, },
@@ -1612,7 +1620,7 @@ static char *testUtilBwippName(int symbology, int option_1, int option_2, int op
         return NULL;
     }
     if (data[symbology].val != symbology || (data[symbology].define != -1 && data[symbology].define != symbology)) { // Self-check
-        fprintf(stderr, "testUtilBarcodeName data table out of sync (%d)\n", symbology);
+        fprintf(stderr, "testUtilBwippName: data table out of sync (%d)\n", symbology);
         abort();
     }
     if (data[symbology].name[0] == '\0') {
@@ -1654,14 +1662,22 @@ int testUtilCanBwipp(int symbology, int option_1, int option_2, int option_3, in
     return 0;
 }
 
-static void testUtilBwippCvtGS1Data(char *bwipp_data) {
+static void testUtilBwippCvtGS1Data(char *bwipp_data, int upcean, int *addon_posn) {
     char *b;
+    int pipe = 0;
 
+    *addon_posn = 0;
     for (b = bwipp_data; *b; b++) {
+        if (upcean && *b == '|') {
+            pipe = 1;
+        }
         if (*b == '[') {
             *b = '(';
         } else if (*b == ']') {
             *b = ')';
+        } else if (*b == '+' && upcean && !pipe) {
+            *b = ' ';
+            *addon_posn = b - bwipp_data;
         }
     }
 }
@@ -1693,6 +1709,24 @@ static char *testUtilBwippEscape(char *bwipp_data, int bwipp_data_size, const ch
     return bwipp_data;
 }
 
+static void testUtilISBNHyphenate(char *bwipp_data, int addon_posn) {
+    /* Hack in 4 hyphens in fixed format, wrong for many ISBNs */
+    char temp[13 + 4 + 1 + 5 + 1];
+    int len = strlen(bwipp_data);
+    int i, j;
+
+    if (len < 13 || (addon_posn && addon_posn < 13 ) || len >= (int) sizeof(temp)) {
+        return;
+    }
+    for (i = 0, j = 0; i <= len; i++, j++) {
+        if (i == 3 || i == 5 || i == 10 || i == 12) {
+            temp[j++] = '-';
+        }
+        temp[j] = bwipp_data[i];
+    }
+    strcpy(bwipp_data, temp);
+}
+
 #define GS_INITIAL_LEN  35 /* Length of cmd up to -q */
 
 int testUtilBwipp(const struct zint_symbol *symbol, int option_1, int option_2, int option_3, const char *data, int length, const char *primary, char *buffer, int buffer_size) {
@@ -1704,7 +1738,7 @@ int testUtilBwipp(const struct zint_symbol *symbol, int option_1, int option_2, 
     int symbology = symbol->symbology;
     int data_len = length == -1 ? (int) strlen(data) : length;
     int primary_len = primary ? (int) strlen(primary) : 0;
-    int max_data_len = 4 + primary_len + 1 + 1 + data_len * 4; /* 4 AI prefix + primary + '|' + leading zero + escaped data */
+    int max_data_len = 4 + primary_len + 1 + 1 + data_len * 4 + 32; /* 4 AI prefix + primary + '|' + leading zero + escaped data + fudge */
 
     char cmd[max_data_len + 1024];
     char *bwipp_barcode = NULL;
@@ -1723,6 +1757,10 @@ int testUtilBwipp(const struct zint_symbol *symbol, int option_1, int option_2, 
     int r, h;
     int parse;
 
+    int upcean = is_extendable(symbology);
+    int upca = symbology == BARCODE_UPCA || symbology == BARCODE_UPCA_CHK || symbology == BARCODE_UPCA_CC;
+    int addon_posn;
+
     bwipp_data[0] = bwipp_opts_buf[0] = '\0';
 
     bwipp_barcode = testUtilBwippName(symbology, option_1, option_2, option_3, &linear_row_height, &gs1_cvt);
@@ -1739,20 +1777,27 @@ int testUtilBwipp(const struct zint_symbol *symbol, int option_1, int option_2, 
     }
 
     if (is_composite(symbology)) {
-        if (symbology == BARCODE_EANX_CC && primary_len <= 7) {
-            bwipp_barcode = "ean8composite";
-        }
         if (!primary) {
             fprintf(stderr, "testUtilBwipp: no primary data given %s\n", testUtilBarcodeName(symbology));
             return -1;
         }
-        if (*primary != '[' && symbology != BARCODE_EANX_CC && symbology != BARCODE_UPCE_CC && symbology != BARCODE_UPCA_CC) {
+        if (*primary != '[' && !upcean) {
             strcat(bwipp_data, "(01)");
         }
         strcat(bwipp_data, primary);
         strcat(bwipp_data, "|");
         strcat(bwipp_data, data);
-        testUtilBwippCvtGS1Data(bwipp_data);
+        testUtilBwippCvtGS1Data(bwipp_data, upcean, &addon_posn);
+
+        if (upcean) {
+            if (symbology == BARCODE_EANX_CC && (primary_len <= 8 || (addon_posn && addon_posn <= 8))) {
+                bwipp_barcode = "ean8composite";
+            }
+            if (addon_posn) {
+                sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%saddongap=%d", strlen(bwipp_opts_buf) ? " " : "", option_2 > 0 ? option_2 : upca ? 9 : 7);
+                bwipp_opts = bwipp_opts_buf;
+            }
+        }
 
         if (option_1 > 0) {
             sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%sccversion=%c", strlen(bwipp_opts_buf) ? " " : "", option_1 == 1 ? 'a' : option_1 == 2 ? 'b' : 'c');
@@ -1764,11 +1809,24 @@ int testUtilBwipp(const struct zint_symbol *symbol, int option_1, int option_2, 
         }
     } else {
         if (gs1_cvt) {
-            if (*data != '[') {
+            if (*data != '[' && !upcean) {
                 strcat(bwipp_data, symbology == BARCODE_NVE18 ? "(00)" : "(01)");
             }
             strcat(bwipp_data, data);
-            testUtilBwippCvtGS1Data(bwipp_data);
+            testUtilBwippCvtGS1Data(bwipp_data, upcean, &addon_posn);
+
+            if (upcean) {
+                if ((symbology == BARCODE_EANX || symbology == BARCODE_EANX_CHK) && (data_len <= 8 || (addon_posn && addon_posn <= 8))) {
+                    bwipp_barcode = data_len <= 3 ? "ean2" : data_len <= 5 ? "ean5" : "ean8";
+                }
+                if (symbology == BARCODE_ISBNX) {
+                    testUtilISBNHyphenate(bwipp_data, addon_posn);
+                }
+                if (addon_posn) {
+                    sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%saddongap=%d", strlen(bwipp_opts_buf) ? " " : "", option_2 > 0 ? option_2 : upca ? 9 : 7);
+                    bwipp_opts = bwipp_opts_buf;
+                }
+            }
 
             if (option_2 > 0) {
                 if (symbology == BARCODE_RSS_EXP || symbology == BARCODE_RSS_EXPSTACK) {
@@ -1802,13 +1860,11 @@ int testUtilBwipp(const struct zint_symbol *symbol, int option_1, int option_2, 
                 if (option_1 > 0) {
                     sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%srows=%d", strlen(bwipp_opts_buf) ? " " : "", option_1);
                 }
-                //} else { /* BWIPP does not really support both row and column given */
-                    if (option_2 > 0) {
-                        sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%scolumns=%d", strlen(bwipp_opts_buf) ? " " : "", option_2 - 5);
-                    } else {
-                        sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%scolumns=%d", strlen(bwipp_opts_buf) ? " " : "", (symbol->width - 57) / 11);
-                    }
-                //}
+                if (option_2 > 0) {
+                    sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%scolumns=%d", strlen(bwipp_opts_buf) ? " " : "", option_2 - 5);
+                } else {
+                    sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%scolumns=%d", strlen(bwipp_opts_buf) ? " " : "", (symbol->width - 57) / 11);
+                }
                 bwipp_opts = bwipp_opts_buf;
             } else if (symbology == BARCODE_CODE11 || symbology == BARCODE_CODE39 || symbology == BARCODE_EXCODE39 || symbology == BARCODE_LOGMARS) {
                 if (option_2 > 0) {
@@ -1843,19 +1899,35 @@ int testUtilBwipp(const struct zint_symbol *symbol, int option_1, int option_2, 
     /* Hack in various adjustments */
     if (symbology == BARCODE_RSS14 || symbology == BARCODE_RSS_LTD || symbology == BARCODE_RSS_EXP) {
         /* Begin with space */
-        memmove(cmd + GS_INITIAL_LEN + 5, cmd + GS_INITIAL_LEN, strlen(cmd) + 1 - GS_INITIAL_LEN);
-        memcpy(cmd + GS_INITIAL_LEN, " -sbs", 5);
+        char adj[5] = " -sbs";
+        memmove(cmd + GS_INITIAL_LEN + sizeof(adj), cmd + GS_INITIAL_LEN, strlen(cmd) + 1 - GS_INITIAL_LEN);
+        memcpy(cmd + GS_INITIAL_LEN, adj, sizeof(adj));
     }
     if (symbology == BARCODE_CODE11 || symbology == BARCODE_CODE39 || symbology == BARCODE_EXCODE39 || symbology == BARCODE_PZN || symbology == BARCODE_VIN) {
         /* Ratio 3 width bar/space -> 2 width */
-        memmove(cmd + GS_INITIAL_LEN + 8, cmd + GS_INITIAL_LEN, strlen(cmd) + 1 - GS_INITIAL_LEN);
-        memcpy(cmd + GS_INITIAL_LEN, " -sr=0.6", 8);
+        char adj[8] = " -sr=0.6";
+        memmove(cmd + GS_INITIAL_LEN + sizeof(adj), cmd + GS_INITIAL_LEN, strlen(cmd) + 1 - GS_INITIAL_LEN);
+        memcpy(cmd + GS_INITIAL_LEN, adj, sizeof(adj));
+    }
+    if (symbology == BARCODE_C25INTER || symbology == BARCODE_DPLEIT || symbology == BARCODE_DPIDENT || symbology == BARCODE_ITF14) {
+        /* Ratio 2 width bar/space -> 3 width */
+        char adj[8] = " -sr=1.3";
+        memmove(cmd + GS_INITIAL_LEN + sizeof(adj), cmd + GS_INITIAL_LEN, strlen(cmd) + 1 - GS_INITIAL_LEN);
+        memcpy(cmd + GS_INITIAL_LEN, adj, sizeof(adj));
     }
     if (symbology == BARCODE_CODE11 || symbology == BARCODE_CODE39 || symbology == BARCODE_EXCODE39 || symbology == BARCODE_HIBC_39
-            || symbology == BARCODE_LOGMARS || symbology == BARCODE_PZN || symbology == BARCODE_VIN) {
+            || symbology == BARCODE_LOGMARS || symbology == BARCODE_PZN || symbology == BARCODE_VIN
+            || symbology == BARCODE_C25INTER || symbology == BARCODE_DPLEIT || symbology == BARCODE_DPIDENT || symbology == BARCODE_ITF14) {
         /* End sbs loop on bar */
-        memmove(cmd + GS_INITIAL_LEN + 6, cmd + GS_INITIAL_LEN, strlen(cmd) + 1 - GS_INITIAL_LEN);
-        memcpy(cmd + GS_INITIAL_LEN, " -selb", 6);
+        char adj[6] = " -selb";
+        memmove(cmd + GS_INITIAL_LEN + sizeof(adj), cmd + GS_INITIAL_LEN, strlen(cmd) + 1 - GS_INITIAL_LEN);
+        memcpy(cmd + GS_INITIAL_LEN, adj, sizeof(adj));
+    }
+    if (symbology == BARCODE_C25MATRIX) {
+        /* Zint uses 4X start/stop wides while BWIPP uses 3X - convert */
+        char adj[91] = " -sp='i 0 eq i limit 4 sub eq or sbs i get 3 eq and { (1111) print true } { false } ifelse'";
+        memmove(cmd + GS_INITIAL_LEN + sizeof(adj), cmd + GS_INITIAL_LEN, strlen(cmd) + 1 - GS_INITIAL_LEN);
+        memcpy(cmd + GS_INITIAL_LEN, adj, sizeof(adj));
     }
 
     if (symbol->debug & ZINT_DEBUG_TEST_PRINT) {

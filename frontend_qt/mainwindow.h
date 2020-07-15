@@ -129,6 +129,7 @@ public slots:
 
 protected:
     void resizeEvent(QResizeEvent *event);
+    void upcean_addon_gap(QComboBox *comboBox, QLabel* label, int base);
 
 private slots:
     bool save();

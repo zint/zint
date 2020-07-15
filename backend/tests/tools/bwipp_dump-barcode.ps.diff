@@ -1,5 +1,5 @@
---- ../../../../postscriptbarcode/build/monolithic/barcode.ps	2020-07-10 13:08:57.215118693 +0100
-+++ ../tools/bwipp_dump.ps	2020-07-10 13:44:00.892056648 +0100
+--- ../../../../postscriptbarcode/build/monolithic/barcode.ps	2020-07-14 14:52:24.208222925 +0100
++++ ../tools/bwipp_dump.ps	2020-07-14 17:29:15.314238749 +0100
 @@ -29,6 +29,8 @@
  % CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  % IN THE SOFTWARE.
@@ -9,7 +9,7 @@
  % --BEGIN TEMPLATE--
  
  % --BEGIN RESOURCE preamble--
-@@ -24484,34 +24486,72 @@
+@@ -24485,34 +24487,80 @@
          pop
      } ifelse
  
@@ -64,7 +64,7 @@
 +    } {
 +        /linsym exch def
 +        /linpixs [
-+            linsym /sbs get { 1 index 1 eq {{0}} {{1}} ifelse repeat } forall % Alternates x 1/0's
++            linsym /sbs get { cvi 1 index 1 eq {{0}} {{1}} ifelse repeat } forall  % Alternates x 1/0's
 +        ] def
 +        /linheight linsym /bhs get 0 get 72 mul cvi def
  
@@ -75,18 +75,26 @@
 +
 +        /linpad [ ccpixx 97 sub {0} repeat ] def
 +
++        /diff linpixs length linpad length add 2 add ccpixx sub def  % An add-on can make linear wider than composite
++        diff 0 gt {  % Left align composite
++            /ccrpad [ diff {0} repeat ] def
++            /pixx ccpixx diff add def
++        } {
++            /ccrpad 0 array def
++            /pixx ccpixx def
++        } ifelse
++
 +        /pixs [
 +            0 ccpixx ccpixs length 1 sub {
 +                /i exch def
-+                2 { ccpixs i ccpixx getinterval aload pop } repeat
++                2 { ccpixs i ccpixx getinterval aload pop ccrpad aload pop } repeat
 +            } for
-+            2 { linpad aload pop 0 1  93 {0} repeat  1 0 } repeat
-+            2 { linpad aload pop 1 0  93 {0} repeat  0 1 } repeat
-+            2 { linpad aload pop 0 1  93 {0} repeat  1 0 } repeat
++            2 { linpad aload pop 0 1  93 {0} repeat  1 0 ccrpad aload pop } repeat
++            2 { linpad aload pop 1 0  93 {0} repeat  0 1 ccrpad aload pop } repeat
++            2 { linpad aload pop 0 1  93 {0} repeat  1 0 ccrpad aload pop } repeat
 +            linheight { linpad aload pop 0 linpixs aload pop 0 } repeat
 +        ] def
 +
-+        /pixx ccpixx def
 +        /pixy pixs length pixx idiv def
 +        <<
 +        /ren //renmatrix
@@ -101,7 +109,7 @@
  
      end
  
-@@ -24570,7 +24610,7 @@
+@@ -24571,7 +24619,7 @@
          pop
      } ifelse
  
@@ -110,7 +118,7 @@
  
      % Get the result of encoding with ean8 and gs1-cc
      options (lintype) (ean8) put
-@@ -24578,29 +24618,67 @@
+@@ -24579,29 +24627,75 @@
      options (dontdraw) true put
  
      % Plot the linear part
@@ -157,7 +165,7 @@
 +    } {
 +        /linsym exch def
 +        /linpixs [
-+            linsym /sbs get { 1 index 1 eq {{0}} {{1}} ifelse repeat } forall % Alternates x 1/0's
++            linsym /sbs get { cvi 1 index 1 eq {{0}} {{1}} ifelse repeat } forall  % Alternates x 1/0's
 +        ] def
 +        /linheight linsym /bhs get 0 get 72 mul cvi def
  
@@ -172,18 +180,26 @@
 -    grestore
 +        /linpad [ ccpixx 69 sub {0} repeat ] def
 +
++        /diff linpixs length linpad length add 2 add ccpixx sub def  % An add-on can make linear wider than composite
++        diff 0 gt {  % Left align composite
++            /ccrpad [ diff {0} repeat ] def
++            /pixx ccpixx diff add def
++        } {
++            /ccrpad 0 array def
++            /pixx ccpixx def
++        } ifelse
++
 +        /pixs [
 +            0 ccpixx ccpixs length 1 sub {
 +                /i exch def
-+                2 { ccpixs i ccpixx getinterval aload pop } repeat
++                2 { ccpixs i ccpixx getinterval aload pop ccrpad aload pop } repeat
 +            } for
-+            2 { linpad aload pop 0 1  65 {0} repeat  1 0 } repeat
-+            2 { linpad aload pop 1 0  65 {0} repeat  0 1 } repeat
-+            2 { linpad aload pop 0 1  65 {0} repeat  1 0 } repeat
++            2 { linpad aload pop 0 1  65 {0} repeat  1 0 ccrpad aload pop } repeat
++            2 { linpad aload pop 1 0  65 {0} repeat  0 1 ccrpad aload pop } repeat
++            2 { linpad aload pop 0 1  65 {0} repeat  1 0 ccrpad aload pop } repeat
 +            linheight { linpad aload pop 0 linpixs aload pop 0 } repeat
 +        ] def
 +
-+        /pixx ccpixx def
 +        /pixy pixs length pixx idiv def
 +        <<
 +        /ren //renmatrix
@@ -198,7 +214,7 @@
  
      end
  
-@@ -24659,34 +24737,72 @@
+@@ -24660,34 +24754,80 @@
          pop
      } ifelse
  
@@ -253,7 +269,7 @@
 +    } {
 +        /linsym exch def
 +        /linpixs [
-+            linsym /sbs get { 1 index 1 eq {{0}} {{1}} ifelse repeat } forall % Alternates x 1/0's
++            linsym /sbs get { cvi 1 index 1 eq {{0}} {{1}} ifelse repeat } forall  % Alternates x 1/0's
 +        ] def
 +        /linheight linsym /bhs get 0 get 72 mul cvi def
  
@@ -264,18 +280,26 @@
 +
 +        /linpad [ ccpixx 97 sub {0} repeat ] def
 +
++        /diff linpixs length linpad length add 2 add ccpixx sub def  % An add-on can make linear wider than composite
++        diff 0 gt {  % Left align composite
++            /ccrpad [ diff {0} repeat ] def
++            /pixx ccpixx diff add def
++        } {
++            /ccrpad 0 array def
++            /pixx ccpixx def
++        } ifelse
++
 +        /pixs [
 +            0 ccpixx ccpixs length 1 sub {
 +                /i exch def
-+                2 { ccpixs i ccpixx getinterval aload pop } repeat
++                2 { ccpixs i ccpixx getinterval aload pop ccrpad aload pop } repeat
 +            } for
-+            2 { linpad aload pop 0 1  93 {0} repeat  1 0 } repeat
-+            2 { linpad aload pop 1 0  93 {0} repeat  0 1 } repeat
-+            2 { linpad aload pop 0 1  93 {0} repeat  1 0 } repeat
++            2 { linpad aload pop 0 1  93 {0} repeat  1 0 ccrpad aload pop } repeat
++            2 { linpad aload pop 1 0  93 {0} repeat  0 1 ccrpad aload pop } repeat
++            2 { linpad aload pop 0 1  93 {0} repeat  1 0 ccrpad aload pop } repeat
 +            linheight { linpad aload pop 0 linpixs aload pop 0 } repeat
 +        ] def
 +
-+        /pixx ccpixx def
 +        /pixy pixs length pixx idiv def
 +        <<
 +        /ren //renmatrix
@@ -290,7 +314,7 @@
  
      end
  
-@@ -24760,34 +24876,72 @@
+@@ -24761,34 +24901,80 @@
          /opt options
      >> def
  
@@ -345,7 +369,7 @@
 +    } {
 +        /linsym exch def
 +        /linpixs [
-+            linsym /sbs get { 1 index 1 eq {{0}} {{1}} ifelse repeat } forall % Alternates x 1/0's
++            linsym /sbs get { cvi 1 index 1 eq {{0}} {{1}} ifelse repeat } forall  % Alternates x 1/0's
 +        ] def
 +        /linheight linsym /bhs get 0 get 72 mul cvi def
  
@@ -356,18 +380,26 @@
 +
 +        /linpad [ ccpixx 53 sub {0} repeat ] def
 +
++        /diff linpixs length linpad length add 2 add ccpixx sub def  % An add-on can make linear wider than composite
++        diff 0 gt {  % Left align composite
++            /ccrpad [ diff {0} repeat ] def
++            /pixx ccpixx diff add def
++        } {
++            /ccrpad 0 array def
++            /pixx ccpixx def
++        } ifelse
++
 +        /pixs [
 +            0 ccpixx ccpixs length 1 sub {
 +                /i exch def
-+                2 { ccpixs i ccpixx getinterval aload pop } repeat
++                2 { ccpixs i ccpixx getinterval aload pop ccrpad aload pop } repeat
 +            } for
-+            2 { linpad aload pop 0 1  49 {0} repeat  1 0 } repeat
-+            2 { linpad aload pop 1 0  49 {0} repeat  0 1 } repeat
-+            2 { linpad aload pop 0 1  49 {0} repeat  1 0 } repeat
++            2 { linpad aload pop 0 1  49 {0} repeat  1 0 ccrpad aload pop } repeat
++            2 { linpad aload pop 1 0  49 {0} repeat  0 1 ccrpad aload pop } repeat
++            2 { linpad aload pop 0 1  49 {0} repeat  1 0 ccrpad aload pop } repeat
 +            linheight { linpad aload pop 0 linpixs aload pop 0 } repeat
 +        ] def
 +
-+        /pixx ccpixx def
 +        /pixy pixs length pixx idiv def
 +        <<
 +        /ren //renmatrix
@@ -382,7 +414,7 @@
  
      end
  
-@@ -24846,7 +25000,7 @@
+@@ -24847,7 +25033,7 @@
          pop
      } ifelse
  
@@ -391,7 +423,7 @@
  
      options (lintype) (databaromni) put
      options (linkage) true put
-@@ -24857,7 +25011,7 @@
+@@ -24858,7 +25044,7 @@
      linear options //databaromni exec
      dup (sbs) get /linsbs exch def
      dup (bhs) get 0 get 72 mul /linheight exch def
@@ -400,7 +432,7 @@
  
      % Plot the separator
      /sepfinder {
-@@ -24888,20 +25042,66 @@
+@@ -24889,20 +25075,66 @@
      sep 0 [0 0 0] putinterval
      sep sep length 4 sub [0 0 0 0] putinterval
      18 sepfinder 64 sepfinder
@@ -436,14 +468,14 @@
 +        /ccpixs compsym /pixs get def
 +        /ccpixx compsym /pixx get def
 +
-+        /linpixs [ 0 % Begin with left guard space
-+            linsbs { 1 index 0 eq {{1}} {{0}} ifelse repeat } forall % Alternates x 1/0's
++        /linpixs [ 0  % Begin with left guard space
++            linsbs { cvi 1 index 0 eq {{1}} {{0}} ifelse repeat } forall  % Alternates x 1/0's
 +        ] def
-+        /sep [ 0 sep aload pop ] def % Pad with left guard space
++        /sep [ 0 sep aload pop ] def  % Pad with left guard space
 +
 +        /linheight linheight cvi def
 +        /diff linpixs length ccpixx sub def
-+        diff 0 gt { % Centre align composite, doubling up rows
++        diff 0 gt {  % Centre align composite, doubling up rows
 +            /ccpad [ diff 2 idiv {0} repeat ] def
 +            /pixs [
 +                0 ccpixx ccpixs length 1 sub {
@@ -453,10 +485,10 @@
 +                sep aload pop linheight { linpixs aload pop } repeat
 +            ] def
 +            /pixx linpixs length def
-+        } { % Right pad composite, doubling up rows, and left pad (right align) separator/linear
++        } {  % Right pad composite, doubling up rows, and left pad (right align) separator/linear
 +            /linpad [ diff neg 1 add {0} repeat ] def
 +            /pixs [
-+                0 ccpixx ccpixs length 1 sub { % Right pad composite with 1 space
++                0 ccpixx ccpixs length 1 sub {  % Right pad composite with 1 space
 +                    /i exch def
 +                    2 { ccpixs i ccpixx getinterval aload pop 0 } repeat
 +                } for
@@ -479,7 +511,7 @@
  
      end
  
-@@ -24959,7 +25159,7 @@
+@@ -24960,7 +25192,7 @@
          pop
      } ifelse
  
@@ -488,7 +520,7 @@
  
      options (lintype) (databarstacked) put
      options (linkage) true put
-@@ -24970,7 +25170,7 @@
+@@ -24971,7 +25203,7 @@
      linear options //databarstacked exec
      dup (pixs) get 0 2 index (pixx) get getinterval /bot exch def
      dup (pixy) get /linheight exch def
@@ -497,7 +529,7 @@
  
      % Plot the separator
      /sepfinder {
-@@ -24998,20 +25198,52 @@
+@@ -24999,20 +25231,52 @@
      sep 0 [ 0 0 0 0 ] putinterval
      sep sep length 4 sub [ 0 0 0 0 ] putinterval
      18 sepfinder
@@ -537,12 +569,12 @@
 +        /pixx ccpixx 1 add def
 +        /linpad [ pixx linwidth sub {0} repeat ] def
 +        /pixs [
-+            0 ccpixx ccpixs length 1 sub { % Left pad composite with 1 space, doubling up rows
++            0 ccpixx ccpixs length 1 sub {  % Left pad composite with 1 space, doubling up rows
 +                /i exch def
 +                2 { 0 ccpixs i ccpixx getinterval aload pop } repeat
 +            } for
 +            sep aload pop linpad aload pop
-+            0 linwidth linpixs length 1 sub { % Right pad linear
++            0 linwidth linpixs length 1 sub {  % Right pad linear
 +                /i exch def
 +                linpixs i linwidth getinterval aload pop linpad aload pop
 +            } for
@@ -562,7 +594,7 @@
  
      end
  
-@@ -25069,7 +25301,7 @@
+@@ -25070,7 +25334,7 @@
          pop
      } ifelse
  
@@ -571,7 +603,7 @@
  
      options (lintype) (databarstackedomni) put
      options (linkage) true put
-@@ -25080,7 +25312,7 @@
+@@ -25081,7 +25345,7 @@
      linear options //databarstackedomni exec
      dup (pixs) get 0 2 index (pixx) get getinterval /bot exch def
      dup (pixy) get /linheight exch def
@@ -580,7 +612,7 @@
  
      % Plot the separator
      /sepfinder {
-@@ -25108,20 +25340,52 @@
+@@ -25109,20 +25373,52 @@
      sep 0 [ 0 0 0 0 ] putinterval
      sep sep length 4 sub [ 0 0 0 0 ] putinterval
      18 sepfinder
@@ -620,12 +652,12 @@
 +        /pixx ccpixx 1 add def
 +        /linpad [ pixx linwidth sub {0} repeat ] def
 +        /pixs [
-+            0 ccpixx ccpixs length 1 sub { % Left pad composite with 1 space, doubling up rows
++            0 ccpixx ccpixs length 1 sub {  % Left pad composite with 1 space, doubling up rows
 +                /i exch def
 +                2 { 0 ccpixs i ccpixx getinterval aload pop } repeat
 +            } for
 +            sep aload pop linpad aload pop
-+            0 linwidth linpixs length 1 sub { % Right pad linear
++            0 linwidth linpixs length 1 sub {  % Right pad linear
 +                /i exch def
 +                linpixs i linwidth getinterval aload pop linpad aload pop
 +            } for
@@ -645,7 +677,7 @@
  
      end
  
-@@ -25294,7 +25558,7 @@
+@@ -25295,7 +25591,7 @@
          pop
      } ifelse
  
@@ -654,7 +686,7 @@
  
      options (lintype) (databarlimited) put
      options (linkage) true put
-@@ -25305,7 +25569,7 @@
+@@ -25306,7 +25602,7 @@
      linear options //databarlimited exec
      dup (sbs) get /linsbs exch def
      dup (bhs) get 0 get 72 mul /linheight exch def
@@ -663,7 +695,7 @@
  
      % Plot the separator
      mark
-@@ -25313,22 +25577,68 @@
+@@ -25314,22 +25610,68 @@
      counttomark 1 sub array astore /sep exch def pop pop
      sep 0 [0 0 0] putinterval
      sep sep length 4 sub [0 0 0 0] putinterval
@@ -703,14 +735,14 @@
 +        /ccpixx compsym /pixx get def
  
 -    grestore
-+        /linpixs [ 0 % Begin with left guard space
-+            linsbs { 1 index 0 eq {{1}} {{0}} ifelse repeat } forall % Alternates x 1/0's
++        /linpixs [ 0  % Begin with left guard space
++            linsbs { cvi 1 index 0 eq {{1}} {{0}} ifelse repeat } forall  % Alternates x 1/0's
 +        ] def
-+        /sep [ 0 sep aload pop ] def % Offset by 1
++        /sep [ 0 sep aload pop ] def  % Offset by 1
 +
 +        /linheight linheight cvi def
 +        /diff linpixs length ccpixx sub def
-+        diff 0 gt { % 2 column - centre align
++        diff 0 gt {  % 2 column - centre align
 +            /ccpad [ diff 2 idiv {0} repeat ] def
 +            /pixs [
 +                0 ccpixx ccpixs length 1 sub {
@@ -720,10 +752,10 @@
 +                sep aload pop linheight { linpixs aload pop } repeat
 +            ] def
 +            /pixx linpixs length def
-+        } { % 3/4 column - right pad 1 and right align separator/linear
++        } {  % 3/4 column - right pad 1 and right align separator/linear
 +            /linpad [ diff neg 1 add {0} repeat ] def
 +            /pixs [
-+                0 ccpixx ccpixs length 1 sub { % Right pad composite with 1 space
++                0 ccpixx ccpixs length 1 sub {  % Right pad composite with 1 space
 +                    /i exch def
 +                    2 { ccpixs i ccpixx getinterval aload pop 0 } repeat
 +                } for
@@ -746,7 +778,7 @@
  
      end
  
-@@ -25387,7 +25697,7 @@
+@@ -25388,7 +25730,7 @@
          pop
      } ifelse
  
@@ -755,7 +787,7 @@
  
      options (lintype) (databarexpanded) put
      options (linkage) true put
-@@ -25398,7 +25708,7 @@
+@@ -25399,7 +25741,7 @@
      linear options //databarexpanded exec
      dup (sbs) get /linsbs exch def
      dup (bhs) get 0 get 72 mul /linheight exch def
@@ -764,7 +796,7 @@
  
      % Plot the separator
      /sepfinder {
-@@ -25427,20 +25737,60 @@
+@@ -25428,20 +25770,60 @@
          18 98 bot length 13 sub {} for
          69 98 bot length 13 sub {} for
      ] {sepfinder} forall
@@ -800,10 +832,10 @@
 +        /ccpixs compsym /pixs get def
 +        /ccpixx compsym /pixx get def
 +
-+        /linpixs [ 0 % Begin with left guard space
-+            linsbs { 1 index 0 eq {{1}} {{0}} ifelse repeat } forall % Alternates x 1/0's
++        /linpixs [ 0  % Begin with left guard space
++            linsbs { cvi 1 index 0 eq {{1}} {{0}} ifelse repeat } forall  % Alternates x 1/0's
 +        ] def
-+        /sep [ 0 sep aload pop ] def % Offset by 1
++        /sep [ 0 sep aload pop ] def  % Offset by 1
 +
 +        /linheight linheight cvi def
 +        /diff linpixs length ccpixx sub def
@@ -837,7 +869,7 @@
  
      end
  
-@@ -25498,7 +25848,7 @@
+@@ -25499,7 +25881,7 @@
          pop
      } ifelse
  
@@ -846,7 +878,7 @@
  
      options (lintype) (databarexpandedstacked) put
      options (linkage) true put
-@@ -25509,7 +25859,7 @@
+@@ -25510,7 +25892,7 @@
      linear options //databarexpandedstacked exec
      dup (pixs) get 0 2 index (pixx) get getinterval /bot exch def
      dup (pixy) get /linheight exch def
@@ -855,7 +887,7 @@
  
      % Plot the separator
      /sepfinder {
-@@ -25529,27 +25879,55 @@
+@@ -25530,27 +25912,55 @@
          } for
      } bind def
      /sep [ bot {1 exch sub} forall ] def
@@ -900,10 +932,10 @@
 +        /ccpixx compsym /pixx get def
 +
 +        /pixx sep length def
-+        /cclpad [ pixx ccpixx sub 1 add 2 idiv {0} repeat ] def % Add 1 to allow for odd difference
++        /cclpad [ pixx ccpixx sub 1 add 2 idiv {0} repeat ] def  % Add 1 to allow for odd difference
 +        /ccrpad [ pixx ccpixx sub 2 idiv {0} repeat ] def
 +        /pixs [
-+            0 ccpixx ccpixs length 1 sub { % Centre align composite
++            0 ccpixx ccpixs length 1 sub {  % Centre align composite
 +                /i exch def
 +                2 { cclpad aload pop ccpixs i ccpixx getinterval aload pop ccrpad aload pop } repeat
 +            } for
@@ -925,7 +957,7 @@
  
      end
  
-@@ -25608,7 +25986,7 @@
+@@ -25609,7 +26019,7 @@
          pop
      } ifelse
  
@@ -934,7 +966,7 @@
  
      options (inkspread) (0) put
      options (dontdraw) true put
-@@ -25635,35 +26013,87 @@
+@@ -25636,35 +26046,87 @@
      linear << options {} forall >> //gs1-128 exec
      dup (sbs) get /linsbs exch def
      dup (bhs) get 0 get 72 mul /linheight exch def
@@ -989,23 +1021,23 @@
 +        /ccpixx compsym /pixx get def
 +
 +        /linpixs [
-+            linsbs { 1 index 1 eq {{0}} {{1}} ifelse repeat } forall % Alternates x 1/0's
++            linsbs { cvi 1 index 1 eq {{0}} {{1}} ifelse repeat } forall  % Alternates x 1/0's
 +        ] def
 +
-+        x 0 gt { % Left pad composite
++        x 0 gt {  % Left pad composite
 +            /cclpad [ x {0} repeat ] def
 +            /linlpad 0 array def
 +            /diff linwidth ccpixx x add sub def
-+        } { % Left pad linear
++        } {  % Left pad linear
 +            /cclpad 0 array def
 +            /linlpad [ x neg {0} repeat ] def
 +            /diff linwidth x sub ccpixx sub def
 +        } ifelse
 +
-+        diff 0 gt { % Right pad composite
++        diff 0 gt {  % Right pad composite
 +            /ccrpad [ diff {0} repeat ] def
 +            /linrpad 0 array def
-+        } { % Right pad linear
++        } {  % Right pad linear
 +            /ccrpad 0 array def
 +            /linrpad [ diff neg {0} repeat ] def
 +        } ifelse
@@ -1036,7 +1068,7 @@
  
      end
  
-@@ -26961,3 +27391,115 @@
+@@ -26962,3 +27424,124 @@
  % --END ENCODER hibcazteccode--
  
  % --END TEMPLATE--
@@ -1099,15 +1131,15 @@
 +ret /pixs known {
 +    /pixs ret /pixs get def
 +
-+    n ret /pixx known and { % If newlines requested and have row width
++    n ret /pixx known and {  % If newlines requested and have row width
 +        /pixx ret /pixx get def
-+        0 pixx pixs length 1 sub { % For i = 0; i < pixs length; i += pixx
-+            pixs exch pixx getinterval { % For j = i; j < i + pixx; j++
++        0 pixx pixs length 1 sub {  % For i = 0; i < pixs length; i += pixx
++            pixs exch pixx getinterval {  % For j = i; j < i + pixx; j++
 +                1 string cvs print
 +            } forall
 +            (\n) print
 +        } for
-+    } { % Else dump the whole thing, no newlines
++    } {  % Else dump the whole thing, no newlines
 +        pixs { 1 string cvs print } forall
 +    } ifelse
 +} {
@@ -1115,10 +1147,17 @@
 +    ret /sbs known {
 +        /sbs ret /sbs get def
 +
-+        % Check if given ratio arg to adjust width of bars/spaces (eg "0.6" reduces 3 -> 2)
++        % Check if given preprocessor override
++        systemdict /p known {
++            /p systemdict /p get cvx def
++        } {
++            /p { false } def
++        } ifelse
++
++        % Check if given ratio arg to adjust width of bars/spaces (e.g. "0.6" reduces 3 -> 2, "1.3" increases 2 -> 3)
 +        systemdict /r known {
 +            /r systemdict /r get cvr def
-+            /f { r mul ceiling cvi } def
++            /f { r mul round cvi } def
 +        } {
 +            /f {} def
 +        } ifelse
@@ -1135,11 +1174,13 @@
 +
 +        0 1 limit {
 +            /i exch def
-+            i 2 mod 0 eq {           % i is even
-+                sbs i get f { (1) print } repeat
-+            } {
-+                sbs i get f { (0) print } repeat
-+            } ifelse
++            p not {  % If not preprocessed
++                i 2 mod 0 eq {           % i is even
++                    sbs i get f cvi { (1) print } repeat
++                } {
++                    sbs i get f cvi { (0) print } repeat
++                } ifelse
++            } if
 +        } for
 +        n { (\n) print } if
 +    } if

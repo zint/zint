@@ -29,6 +29,8 @@
         <file>grpCodablockF.ui</file>
         <file>grpRMQR.ui</file>
         <file>grpUltra.ui</file>
+        <file>grpUPCA.ui</file>
+        <file>grpUPCEAN.ui</file>
         <file>grpVIN.ui</file>
     </qresource>
 </RCC>

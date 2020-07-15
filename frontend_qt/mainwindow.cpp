@@ -96,7 +96,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags fl)
         "MicroPDF417 (ISO 24728)",
         "Micro QR Code",
         "MSI Plessey",
-        "NVE-18",
+        "NVE-18 (SSCC-18)",
         "PDF417 (ISO 15438)",
         "Pharmacode",
         "Pharmacode 2-track",
@@ -722,7 +722,7 @@ void MainWindow::change_options()
         tabMain->insertTab(1,m_optionWidget,tr("GS1 DataBar Stacked"));
         connect(m_optionWidget->findChild<QObject*>("cmbCols"), SIGNAL(currentIndexChanged ( int )), SLOT(update_preview()));
     }
-    
+
     if (symbology == BARCODE_ULTRA)
     {
         QFile file(":/grpUltra.ui");
@@ -736,6 +736,36 @@ void MainWindow::change_options()
         connect(m_optionWidget->findChild<QObject*>("cmbUltraEcc"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radUltraStand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radUltraGS1"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+    }
+
+    if (symbology == BARCODE_UPCA || symbology == BARCODE_UPCA_CHK || symbology == BARCODE_UPCA_CC)
+    {
+        QFile file(":/grpUPCA.ui");
+        if (!file.open(QIODevice::ReadOnly))
+            return;
+        m_optionWidget=uiload.load(&file);
+        file.close();
+        tabMain->insertTab(1, m_optionWidget, tr("UPC-A"));
+        connect(m_optionWidget->findChild<QObject*>("cmbUPCAAddonGap"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+    }
+
+    if (symbology == BARCODE_EANX || symbology == BARCODE_EANX_CHK || symbology == BARCODE_EANX_CC
+            || symbology == BARCODE_UPCE || symbology == BARCODE_UPCE_CHK || symbology == BARCODE_UPCE_CC
+            || symbology == BARCODE_ISBNX)
+    {
+        QFile file(":/grpUPCEAN.ui");
+        if (!file.open(QIODevice::ReadOnly))
+            return;
+        m_optionWidget=uiload.load(&file);
+        file.close();
+        if (symbology == BARCODE_UPCE || symbology == BARCODE_UPCE_CHK || symbology == BARCODE_UPCE_CC) {
+            tabMain->insertTab(1, m_optionWidget, tr("UPC-E"));
+        } else if (symbology == BARCODE_ISBNX) {
+            tabMain->insertTab(1, m_optionWidget, tr("ISBN"));
+        } else {
+            tabMain->insertTab(1, m_optionWidget, tr("EAN"));
+        }
+        connect(m_optionWidget->findChild<QObject*>("cmbUPCEANAddonGap"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
     }
 
     if (symbology == BARCODE_VIN)
@@ -812,8 +842,27 @@ void MainWindow::maxi_primary()
     }
 }
 
+void MainWindow::upcean_addon_gap(QComboBox *comboBox, QLabel* label, int base)
+{
+    const QRegularExpression addonRE("^[0-9X]+[+][0-9]+$");
+    int item_val;
+
+    if (txtData->text().contains(addonRE)) {
+        comboBox->setEnabled(true);
+        label->setEnabled(true);
+        item_val = comboBox->currentIndex();
+        if (item_val) {
+            m_bc.bc.setOption2(item_val + base);
+        }
+    } else {
+        comboBox->setEnabled(false);
+        label->setEnabled(false);
+    }
+}
+
 void MainWindow::update_preview()
 {
+    int symbology = metaObject()->enumerator(0).value(bstyle->currentIndex());
     int width = view->geometry().width();
     int height = view->geometry().height();
     int item_val;
@@ -838,8 +887,9 @@ void MainWindow::update_preview()
         m_bc.bc.setHideText(1);
     }
     m_bc.bc.setGSSep(false);
-    switch(metaObject()->enumerator(0).value(bstyle->currentIndex()))
-    {
+
+    switch (symbology) {
+
         case BARCODE_CODE128:
             if(m_optionWidget->findChild<QRadioButton*>("radC128Stand")->isChecked())
                 m_bc.bc.setSymbol(BARCODE_CODE128);
@@ -864,6 +914,12 @@ void MainWindow::update_preview()
                 m_bc.bc.setSymbol(BARCODE_EANX_CC);
             else
                 m_bc.bc.setSymbol(BARCODE_EANX);
+            upcean_addon_gap(m_optionWidget->findChild<QComboBox*>("cmbUPCEANAddonGap"), m_optionWidget->findChild<QLabel*>("lblUPCEANAddonGap"), 7 /*base*/);
+            break;
+
+        case BARCODE_ISBNX:
+            m_bc.bc.setSymbol(symbology);
+            upcean_addon_gap(m_optionWidget->findChild<QComboBox*>("cmbUPCEANAddonGap"), m_optionWidget->findChild<QLabel*>("lblUPCEANAddonGap"), 7 /*base*/);
             break;
 
         case BARCODE_UPCA:
@@ -871,6 +927,7 @@ void MainWindow::update_preview()
                 m_bc.bc.setSymbol(BARCODE_UPCA_CC);
             else
                 m_bc.bc.setSymbol(BARCODE_UPCA);
+            upcean_addon_gap(m_optionWidget->findChild<QComboBox*>("cmbUPCAAddonGap"), m_optionWidget->findChild<QLabel*>("lblUPCAAddonGap"), 9 /*base*/);
             break;
 
         case BARCODE_UPCE:
@@ -878,6 +935,7 @@ void MainWindow::update_preview()
                 m_bc.bc.setSymbol(BARCODE_UPCE_CC);
             else
                 m_bc.bc.setSymbol(BARCODE_UPCE);
+            upcean_addon_gap(m_optionWidget->findChild<QComboBox*>("cmbUPCEANAddonGap"), m_optionWidget->findChild<QLabel*>("lblUPCEANAddonGap"), 7 /*base*/);
             break;
 
         case BARCODE_RSS14:
@@ -1196,7 +1254,7 @@ void MainWindow::update_preview()
                 m_bc.bc.setSecurityLevel(item_val);
             }
             break;
-            
+
         case BARCODE_ULTRA:
             m_bc.bc.setSymbol(BARCODE_ULTRA);
             if(m_optionWidget->findChild<QRadioButton*>("radUltraEcc")->isChecked())
@@ -1213,7 +1271,7 @@ void MainWindow::update_preview()
             break;
 
         default:
-            m_bc.bc.setSymbol(metaObject()->enumerator(0).value(bstyle->currentIndex()));
+            m_bc.bc.setSymbol(symbology);
             break;
     }
 

@@ -49,6 +49,16 @@ static void test_print(int index, int generate, int debug) {
     struct item data[] = {
         /*  0*/ { BARCODE_CODE128, -1, -1, "<>\"&'", "../data/svg/code128_amperands.svg" },
         /*  1*/ { BARCODE_CODABLOCKF, 3, -1, "AAAAAAAAA", "../data/svg/codablockf_3rows.svg"},
+        /*  2*/ { BARCODE_EANX, -1, -1, "9771384524017+12", "../data/svg/ean13_2addon_ggs_5.2.2.5.1-2.svg" },
+        /*  3*/ { BARCODE_EANX, -1, -1, "9780877799306+54321", "../data/svg/ean13_5addon_ggs_5.2.2.5.2-2.svg" },
+        /*  4*/ { BARCODE_UPCA, -1, -1, "012345678905+24", "../data/svg/upca_2addon_ggs_5.2.6.6-5.svg" },
+        /*  5*/ { BARCODE_UPCA, -1, -1, "614141234417+12345", "../data/svg/upca_5addon.svg" },
+        /*  6*/ { BARCODE_UPCE, -1, -1, "1234567+12", "../data/svg/upce_2addon.svg" },
+        /*  7*/ { BARCODE_UPCE, -1, -1, "1234567+12345", "../data/svg/upce_5addon.svg" },
+        /*  8*/ { BARCODE_EANX, -1, -1, "1234567+12", "../data/svg/ean8_2addon.svg" },
+        /*  9*/ { BARCODE_EANX, -1, -1, "1234567+12345", "../data/svg/ean8_5addon.svg" },
+        /* 10*/ { BARCODE_EANX, -1, -1, "12345", "../data/svg/ean5.svg" },
+        /* 11*/ { BARCODE_EANX, -1, -1, "12", "../data/svg/ean2.svg" },
     };
     int data_size = sizeof(data) / sizeof(struct item);
 

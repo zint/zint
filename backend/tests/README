@@ -44,9 +44,17 @@ To show debug info (if any), use '-d <flag>':
 
   ./test_dotcode -f input -i 2 -d 1
 
+(for other flags see <project-dir>/backend/tests/testcommon.h)
+
 To generate test data, use '-g':
 
   ./test_dotcode -f encode -g
+
+To run a test against BWIPP (if any), use '-d 128':
+
+  ./test_composite -d 128
+
+(see also <project-dir>/backend/tests/tools/run_bwipp_tests.sh)
 
 ------------------------------------------------------------------------------
 

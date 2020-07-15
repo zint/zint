@@ -672,14 +672,6 @@ static int reduced_charset(struct zint_symbol *symbol, const unsigned char *sour
     unsigned char* preprocessed = (unsigned char*) _alloca(in_length + 1);
 #endif
 
-    if (symbol->symbology == BARCODE_ITF14) {
-        symbol->whitespace_width = 20;
-        symbol->border_width = 8;
-        if (!(symbol->output_options & BARCODE_BOX)) {
-            symbol->output_options += BARCODE_BOX;
-        }
-    }
-
     switch (symbol->input_mode & 0x07) {
         case DATA_MODE:
         case GS1_MODE:

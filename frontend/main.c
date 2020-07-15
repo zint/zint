@@ -78,6 +78,7 @@ static void usage(void) {
     printf( "Zint version %d.%d.%d\n"
             "Encode input data in a barcode and save as BMP/EMF/EPS/GIF/PCX/PNG/SVG/TIF/TXT\n\n"
             "  -b, --barcode=NUMBER  Number of barcode type. Default is 20 (Code 128)\n"
+            "  --addongap=NUMBER     Set add-on gap in multiples of X-dimension for UPC/EAN\n"
             "  --batch               Treat each line of input file as a separate data set\n"
             "  --bg=COLOUR           Specify a background colour (in hex)\n"
             "  --binary              Treat input as raw binary data\n"
@@ -420,6 +421,27 @@ static int is_stackable(const int symbology) {
     return 0;
 }
 
+/* Indicates which symbols can have addon (EAN-2 and EAN-5)
+ * Note: if change this must also change version in backend/common.c */
+static int is_extendable(const int symbology) {
+
+    switch (symbology) {
+        case BARCODE_EANX:
+        case BARCODE_EANX_CHK:
+        case BARCODE_UPCA:
+        case BARCODE_UPCA_CHK:
+        case BARCODE_UPCE:
+        case BARCODE_UPCE_CHK:
+        case BARCODE_ISBNX:
+        case BARCODE_EANX_CC:
+        case BARCODE_UPCA_CC:
+        case BARCODE_UPCE_CC:
+            return 1;
+    }
+
+    return 0;
+}
+
 int main(int argc, char **argv) {
     struct zint_symbol *my_symbol;
     int error_number;
@@ -429,6 +451,7 @@ int main(int argc, char **argv) {
     int mirror_mode;
     int fullmultibyte;
     int separator;
+    int addon_gap;
     char filetype[4];
     int i;
 
@@ -441,6 +464,7 @@ int main(int argc, char **argv) {
     mirror_mode = 0;
     fullmultibyte = 0;
     separator = 0;
+    addon_gap = 0;
 
     for (i = 0; i < 4; i++) {
         filetype[i] = '\0';
@@ -491,6 +515,7 @@ int main(int argc, char **argv) {
             {"small", 0, 0, 0},
             {"bold", 0, 0, 0},
             {"cmyk", 0, 0, 0},
+            {"addongap", 1, 0, 0},
             {"batch", 0, 0, 0},
             {"mirror", 0, 0, 0},
             {"dotty", 0, 0, 0},
@@ -589,6 +614,19 @@ int main(int argc, char **argv) {
                         fprintf(stderr, "Warning 127: Invalid separator value\n");
                         fflush(stderr);
                         separator = 0;
+                    }
+                }
+                if (!strcmp(long_options[option_index].name, "addongap")) {
+                    error_number = validator(NESET, optarg);
+                    if (error_number == ZINT_ERROR_INVALID_DATA) {
+                        fprintf(stderr, "Error 139: Invalid add-on gap value\n");
+                        exit(1);
+                    }
+                    addon_gap = atoi(optarg);
+                    if (addon_gap < 7 || addon_gap > 12) {
+                        fprintf(stderr, "Warning 140: Invalid add-on gap value\n");
+                        fflush(stderr);
+                        addon_gap = 0;
                     }
                 }
                 if (!strcmp(long_options[option_index].name, "dotsize")) {
@@ -815,6 +853,9 @@ int main(int argc, char **argv) {
                         my_symbol->option_3 = ZINT_FULL_MULTIBYTE;
                     } else if (separator && is_stackable(my_symbol->symbology)) {
                         my_symbol->option_3 = separator;
+                    }
+                    if (addon_gap && is_extendable(my_symbol->symbology)) {
+                        my_symbol->option_2 = addon_gap;
                     }
                     error_number = ZBarcode_Encode(my_symbol, (unsigned char*) optarg, strlen(optarg));
                     generated = 1;
