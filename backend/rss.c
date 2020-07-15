@@ -1510,9 +1510,14 @@ INTERNAL int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int
         for (current_row = 1; current_row <= stack_rows; current_row++) {
             int special_case_row = 0;
             int elements_in_sub;
-            int sub_elements[235];
-            for (i = 0; i < 235; i++) {
-                sub_elements[i] = 0;
+            int sub_elements[235] = {0};
+            int num_columns;
+
+            /* Number of columns in current row */
+            if (current_row * symbol->option_2 > codeblocks) {
+                num_columns = codeblocks - current_block;
+            } else {
+                num_columns = symbol->option_2;
             }
 
             /* Row Start */
@@ -1520,34 +1525,40 @@ INTERNAL int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int
             sub_elements[1] = 1;
             elements_in_sub = 2;
 
-            /* Row Data */
-            if (((symbol->option_2 & 1) || (current_row & 1)) ||
-                    ((current_row == stack_rows) && (codeblocks != (current_row * symbol->option_2)) &&
-                    (((current_row * symbol->option_2) - codeblocks) & 1))) {
+            /* If last row and is partial and even-numbered, and have even columns (segment pairs), and odd number of finders */
+            if ((current_row == stack_rows) && (num_columns != symbol->option_2) &&
+                    !(current_row & 1) && !(symbol->option_2 & 1) && (num_columns & 1)) { /* Odd number of finders == odd number of columns */
+                /* Special case bottom row */
+                special_case_row = 1;
+                sub_elements[0] = 2; /* Extra space (latch set below) */
+            }
+
+            /* If odd number of columns or current row odd-numbered or special case last row then left-to-right, else right-to-left */
+            if ((symbol->option_2 & 1) || (current_row & 1) || special_case_row) {
                 left_to_right = 1;
             } else {
                 left_to_right = 0;
             }
+
+            if (symbol->debug & ZINT_DEBUG_PRINT) {
+                if (current_row == stack_rows) {
+                    printf("Last row: number of columns: %d / %d, left to right: %d, special case: %d\n", num_columns, symbol->option_2, left_to_right, special_case_row);
+                }
+            }
+
+            /* Row Data */
             reader = 0;
             do {
-                if (left_to_right) {
-                    /* left to right */
-                    i = 2 + (current_block * 21);
-                    for (j = 0; j < 21; j++) {
-                        if ((i + j) < pattern_width) {
+                i = 2 + (current_block * 21);
+                for (j = 0; j < 21; j++) {
+                    if ((i + j) < pattern_width) {
+                        if (left_to_right) {
                             sub_elements[j + (reader * 21) + 2] = elements[i + j];
+                        } else {
+                            sub_elements[(20 - j) + (num_columns - 1 - reader) * 21 + 2] = elements[i + j];
                         }
-                        elements_in_sub++;
                     }
-                } else {
-                    /* right to left */
-                    i = 2 + (((current_row * symbol->option_2) - reader - 1) * 21);
-                    for (j = 0; j < 21; j++) {
-                        if ((i + j) < pattern_width) {
-                            sub_elements[(20 - j) + (reader * 21) + 2] = elements[i + j];
-                        }
-                        elements_in_sub++;
-                    }
+                    elements_in_sub++;
                 }
                 reader++;
                 current_block++;
@@ -1558,15 +1569,7 @@ INTERNAL int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int
             sub_elements[elements_in_sub + 1] = 1;
             elements_in_sub += 2;
 
-            latch = (current_row & 1) ? '0' : '1';
-
-            if ((current_row == stack_rows) && (codeblocks != (current_row * symbol->option_2)) &&
-                    ((current_row & 1) == 0) && ((symbol->option_2 & 1) == 0)) {
-                /* Special case bottom row */
-                special_case_row = 1;
-                sub_elements[0] = 2;
-                latch = '0';
-            }
+            latch = (current_row & 1) || special_case_row ? '0' : '1';
 
             writer = 0;
             for (i = 0; i < elements_in_sub; i++) {
