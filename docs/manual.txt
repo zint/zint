@@ -283,7 +283,7 @@ Numeric Value  |  Barcode Name
 52             |  PZN
 53             |  Pharmacode Two-Track
 55             |  PDF417
-56             |  PDF417 Truncated
+56             |  Compact PDF417
 57             |  Maxicode
 58             |  QR Code
 60             |  Code 128 (Subset B)
@@ -441,7 +441,9 @@ DotCode, QR Code and Ultracode.
 
 HIBC data may also be encoded in the symbologies Code 39, Code128, Codablock-F,
 Data Matrix, QR Code, PDF417 and Aztec Code. Within this mode, the leading '+'
-and the check character are automatically added.
+and the check character are automatically added, conforming to HIBC Labeler
+Identification Code (HIBC LIC). For HIBC Provider Applications Standard
+(HIBC PAS), preface the data with a slash "/".
 
 The --binary option encodes the input data as given. Automatic code page
 translations to ECI pages is disabled. This may be used for raw binary
@@ -1017,7 +1019,7 @@ Value   |
 52      | BARCODE_PZN             | PZN
 53      | BARCODE_PHARMA_TWO      | Pharmacode Two-Track
 55      | BARCODE_PDF417          | PDF417
-56      | BARCODE_PDF417TRUNC     | PDF417 Truncated
+56      | BARCODE_PDF417TRUNC     | Compact PDF417 (Truncated PDF417)
 57      | BARCODE_MAXICODE        | Maxicode
 58      | BARCODE_QRCODE          | QR Code
 60      | BARCODE_CODE128B        | Code 128 (Subset B)
@@ -1618,7 +1620,7 @@ digit to the encoded data.
 
 6.2.5 Compact PDF417
 --------------------
-Also known as truncated PDF417. Options are the same as for PDF417 above.
+Previously known as Truncated PDF417. Options are the same as for PDF417 above.
 
 6.2.6 MicroPDF417 (ISO 24728)
 -----------------------------

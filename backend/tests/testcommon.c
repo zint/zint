@@ -1522,8 +1522,8 @@ static char *testUtilBwippName(int symbology, int option_1, int option_2, int op
         { "pzn", BARCODE_PZN, 52, 0, 0, 0, 0, 0, },
         { "pharmacode2", BARCODE_PHARMA_TWO, 53, 0, 0, 0, 0, 0, },
         { "", -1, 54, 0, 0, 0, 0, 0, },
-        { "pdf417", BARCODE_PDF417, 55, 0, 0, 0, 0, 0, },
-        { "pdf417compact", BARCODE_PDF417TRUNC, 56, 0, 0, 0, 0, 0, },
+        { "pdf417", BARCODE_PDF417, 55, 1, 1, 0, 0, 0, },
+        { "pdf417compact", BARCODE_PDF417TRUNC, 56, 1, 1, 0, 0, 0, },
         { "maxicode", BARCODE_MAXICODE, 57, 0, 0, 0, 0, 0, },
         { "qrcode", BARCODE_QRCODE, 58, 0, 0, 0, 0, 0, },
         { "", -1, 59, 0, 0, 0, 0, 0, },
@@ -1551,7 +1551,7 @@ static char *testUtilBwippName(int symbology, int option_1, int option_2, int op
         { "databarexpandedstacked", BARCODE_RSS_EXPSTACK, 81, 0, 1, 0, 0, 1, },
         { "planet", BARCODE_PLANET, 82, 0, 0, 0, 0, 0, },
         { "", -1, 83, 0, 0, 0, 0, 0, },
-        { "micropdf417", BARCODE_MICROPDF417, 84, 0, 0, 0, 0, 0, },
+        { "micropdf417", BARCODE_MICROPDF417, 84, 0, 1, 0, 0, 0, },
         { "onecode", BARCODE_ONECODE, 85, 0, 0, 0, 0, 0, },
         { "plessey", BARCODE_PLESSEY, 86, 0, 0, 0, 0, 0, },
         { "telepennumeric", BARCODE_TELEPEN_NUM, 87, 0, 0, 0, 0, 0, },
@@ -1573,9 +1573,9 @@ static char *testUtilBwippName(int symbology, int option_1, int option_2, int op
         { "", -1, 103, 0, 0, 0, 0, 0, },
         { "hibcqrcode", BARCODE_HIBC_QR, 104, 0, 0, 0, 0, 0, },
         { "", -1, 105, 0, 0, 0, 0, 0, },
-        { "hibcpdf417", BARCODE_HIBC_PDF, 106, 0, 0, 0, 0, 0, },
+        { "hibcpdf417", BARCODE_HIBC_PDF, 106, 1, 1, 0, 0, 0, },
         { "", -1, 107, 0, 0, 0, 0, 0, },
-        { "hibcmicropdf417", BARCODE_HIBC_MICPDF, 108, 0, 0, 0, 0, 0, },
+        { "hibcmicropdf417", BARCODE_HIBC_MICPDF, 108, 0, 1, 0, 0, 0, },
         { "", -1, 109, 0, 0, 0, 0, 0, },
         { "hibccodablockf", BARCODE_HIBC_BLOCKF, 110, 1, 1, 0, 0, 0, },
         { "", -1, 111, 0, 0, 0, 0, 0, },
@@ -1691,7 +1691,9 @@ static char *testUtilBwippEscape(char *bwipp_data, int bwipp_data_size, const ch
     *parse = 0;
 
     while (b < be && d < de) {
-        if (*d < 0x20 || *d >= 0x7F || *d == '\'') { /* Escape single quote also to avoid having to do proper shell escaping TODO: proper shell escaping */
+        /* Have to escape double quote otherwise Ghostscript gives "Unterminated quote in @-file" for some reason */
+        /* Escape single quote also to avoid having to do proper shell escaping TODO: proper shell escaping */
+        if (*d < 0x20 || *d >= 0x7F || *d == '^' || *d == '"' || *d == '\'') {
             sprintf(b, "^%03u", *d++);
             b += 4;
             *parse = 1;
@@ -1872,6 +1874,17 @@ int testUtilBwipp(const struct zint_symbol *symbol, int option_1, int option_2, 
                         sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%sincludecheck", strlen(bwipp_opts_buf) ? " " : "");
                     }
                     bwipp_opts = bwipp_opts_buf; /* Set always as option_2 == 2 is bwipp default */
+                }
+            } else if (symbology == BARCODE_PDF417 || symbology == BARCODE_PDF417TRUNC || symbology == BARCODE_HIBC_PDF
+                    || symbology == BARCODE_MICROPDF417 || symbology == BARCODE_HIBC_MICPDF) {
+                for (r = 0; r < symbol->rows; r++) bwipp_row_height[r] = 1; /* Change from 3 */
+                if (option_1 >= 0) {
+                    sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%seclevel=%d", strlen(bwipp_opts_buf) ? " " : "", option_1);
+                    bwipp_opts = bwipp_opts_buf;
+                }
+                if (option_2 > 0) {
+                    sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%scolumns=%d", strlen(bwipp_opts_buf) ? " " : "", option_2);
+                    bwipp_opts = bwipp_opts_buf;
                 }
             }
         }

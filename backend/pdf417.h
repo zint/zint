@@ -511,4 +511,4 @@ static const unsigned short int rap_centre[52] = {
     0x2DC, 0x2DE
 };
 
-void byteprocess(int *chainemc, int *mclength, unsigned char chaine[], int start, int length);
+void byteprocess(int *chainemc, int *mclength, unsigned char chaine[], int start, int length, int debug);

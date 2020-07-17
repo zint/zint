@@ -6,6 +6,7 @@
 ./test_code128 -f encode -d $(expr 128 + 16)
 ./test_composite -d $(expr 128 + 16)
 ./test_gs1 -f gs1_reduce -d $(expr 128 + 16)
+./test_pdf417 -f encode -d $(expr 128 + 16)
 ./test_rss -d $(expr 128 + 16)
 ./test_telepen -f encode -d $(expr 128 + 16)
 ./test_upcean -f encode -d $(expr 128 + 16)

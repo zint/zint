@@ -41,7 +41,7 @@ static void types(void) {
     printf( " 1: Code 11           52: PZN                      97: Micro QR Code\n"
             " 2: Standard 2of5     53: Pharma Two-Track         98: HIBC Code 128\n"
             " 3: Interleaved 2of5  55: PDF417                   99: HIBC Code 39\n"
-            " 4: IATA 2of5         56: PDF417 Trunc            102: HIBC Data Matrix\n"
+            " 4: IATA 2of5         56: Compact PDF417          102: HIBC Data Matrix\n"
             " 6: Data Logic        57: Maxicode                104: HIBC QR Code\n"
             " 7: Industrial 2of5   58: QR Code                 106: HIBC PDF417\n"
             " 8: Code 39           60: Code 128-B              108: HIBC MicroPDF417\n"

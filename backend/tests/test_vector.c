@@ -195,7 +195,7 @@ static void test_buffer_vector(int index, int generate, int debug) {
         /* 54*/ { BARCODE_PZN, "123456", "", 50, 1, 142, 284, 118 },
         /* 55*/ { BARCODE_PHARMA_TWO, "12345678", "", 10, 2, 29, 58, 20 },
         /* 56*/ { BARCODE_PDF417, "0000000000", "", 21, 7, 103, 206, 42 },
-        /* 57*/ { BARCODE_PDF417TRUNC, "0000000000", "", 21, 7, 68, 136, 42 },
+        /* 57*/ { BARCODE_PDF417TRUNC, "0000000000", "", 21, 7, 69, 138, 42 },
         /* 58*/ { BARCODE_MAXICODE, "0000000000", "", 165, 33, 30, 74, 72 }, // Differs from raster
         /* 59*/ { BARCODE_QRCODE, "1234567890AB", "", 21, 21, 21, 42, 42 },
         /* 60*/ { BARCODE_CODE128B, "0000000000", "", 50, 1, 145, 290, 118 },

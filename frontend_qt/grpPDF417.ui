@@ -165,47 +165,47 @@
        </item>
        <item>
         <property name="text" >
-         <string>2 words</string>
+         <string>0 (2 words)</string>
         </property>
        </item>
        <item>
         <property name="text" >
-         <string>4 words</string>
+         <string>1 (4 words)</string>
         </property>
        </item>
        <item>
         <property name="text" >
-         <string>8 words</string>
+         <string>2 (8 words)</string>
         </property>
        </item>
        <item>
         <property name="text" >
-         <string>16 words</string>
+         <string>3 (16 words)</string>
         </property>
        </item>
        <item>
         <property name="text" >
-         <string>32 words</string>
+         <string>4 (32 words)</string>
         </property>
        </item>
        <item>
         <property name="text" >
-         <string>64 words</string>
+         <string>5 (64 words)</string>
         </property>
        </item>
        <item>
         <property name="text" >
-         <string>128 words</string>
+         <string>6 (128 words)</string>
         </property>
        </item>
        <item>
         <property name="text" >
-         <string>256 words</string>
+         <string>7 (256 words)</string>
         </property>
        </item>
        <item>
         <property name="text" >
-         <string>512 words</string>
+         <string>8 (512 words)</string>
         </property>
        </item>
       </widget>
@@ -241,7 +241,7 @@
       <item row="1" column="0">
        <widget class="QRadioButton" name="radPDFTruncated">
         <property name="text">
-         <string>Truncated</string>
+         <string>Compact PDF417</string>
         </property>
        </widget>
       </item>
