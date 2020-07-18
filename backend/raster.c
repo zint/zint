@@ -83,7 +83,7 @@ static int buffer_plot(struct zint_symbol *symbol, char *pixelbuf) {
     bgred = (16 * ctoi(symbol->bgcolour[0])) + ctoi(symbol->bgcolour[1]);
     bggrn = (16 * ctoi(symbol->bgcolour[2])) + ctoi(symbol->bgcolour[3]);
     bgblu = (16 * ctoi(symbol->bgcolour[4])) + ctoi(symbol->bgcolour[5]);
-    
+
     for (row = 0; row < symbol->bitmap_height; row++) {
         for (column = 0; column < symbol->bitmap_width; column++) {
             i = ((row * symbol->bitmap_width) + column) * 3;
@@ -643,6 +643,45 @@ static int plot_raster_dotty(struct zint_symbol *symbol, int rotate_angle, int d
     return error_number;
 }
 
+/* Convert UTF-8 to Latin1 Codepage for the interpretation line */
+static void to_latin1(const unsigned char source[], unsigned char preprocessed[]) {
+    int j, i, input_length;
+
+    input_length = ustrlen(source);
+
+    j = 0;
+    i = 0;
+    while (i < input_length) {
+        switch (source[i]) {
+            case 0xC2:
+                /* UTF-8 C2xxh */
+                /* Character range: C280h (latin: 80h) to C2BFh (latin: BFh) */
+                i++;
+                preprocessed[j] = source[i];
+                j++;
+                break;
+            case 0xC3:
+                /* UTF-8 C3xx */
+                /* Character range: C380h (latin: C0h) to C3BFh (latin: FFh) */
+                i++;
+                preprocessed[j] = source[i] + 64;
+                j++;
+                break;
+            default:
+                /* Process ASCII (< 80h), all other unicode points are ignored */
+                if (source[i] < 128) {
+                    preprocessed[j] = source[i];
+                    j++;
+                }
+                break;
+        }
+        i++;
+    }
+    preprocessed[j] = '\0';
+
+    return;
+}
+
 static int plot_raster_default(struct zint_symbol *symbol, int rotate_angle, int data_type) {
     int error_number;
     double large_bar_height;
@@ -915,9 +954,15 @@ static int plot_raster_default(struct zint_symbol *symbol, int rotate_angle, int
         }
 
         if (!textdone) {
+#ifndef _MSC_VER
+            unsigned char local_text[ustrlen(symbol->text) + 1];
+#else
+            unsigned char* local_text = (unsigned char*) _alloca(ustrlen(symbol->text) + 1);
+#endif
+            to_latin1(symbol->text, local_text);
             /* Put the human readable text at the bottom */
             textpos = 2 * (main_width / 2 + xoffset);
-            draw_string(pixelbuf, symbol->text, textpos, default_text_posn, textflags, image_width, image_height);
+            draw_string(pixelbuf, local_text, textpos, default_text_posn, textflags, image_width, image_height);
         }
     }
 
