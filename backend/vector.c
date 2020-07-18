@@ -294,7 +294,6 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
     struct zint_vector_hexagon *last_hexagon = NULL;
     struct zint_vector_string *last_string = NULL;
     struct zint_vector_circle *last_circle = NULL;
-    struct zint_vector_string *string;
 
     (void)rotate_angle; /* Not currently implemented */
 
@@ -629,17 +628,6 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
             /* Put normal human readable text at the bottom (and centered) */
             // calculate start xoffset to center text
             vector_plot_add_string(symbol, symbol->text, main_width / 2.0 + xoffset, default_text_posn, text_height, symbol->width, &last_string);
-
-            // Remove control characters from readable text
-            // This only applies to Code 128
-            string = symbol->vector->strings;
-            if (string) {
-                for (i = 0; i < string->length; i++) {
-                    if (string->text[i] < ' ') {
-                        string->text[i] = ' ';
-                    }
-                }
-            }
         }
 
         xoffset -= comp_offset; // Restore xoffset

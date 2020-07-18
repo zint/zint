@@ -812,72 +812,76 @@ program, of course, these options can be altered. The way this is done is
 by altering the contents of the zint_symbol structure between the creation and
 encoding stages. The zint_symbol structure consists of the following variables:
 
--------------------------------------------------------------------------------
-Variable Name    | Type         | Meaning                     | Default Value
--------------------------------------------------------------------------------
-symbology        | integer      | Symbol to use (see section  | BARCODE_CODE128
-                 |              |    5.7).                    |
-height           | integer      | Symbol height. [1]          | 50
-whitespace_width | integer      | Whtespace width.            | 0
-border_width     | integer      | Border width.               | 0
-output_options   | integer      | Set various output file     | (none)
-                 |              |    parameters (see section  |
-                 |              |    5.8).                    |
-fgcolour         | character    | Foreground (ink) colour as  | "000000"
-                 |    string    |    RGB hexadecimal string.  |
-                 |              |    Must be 6 characters     |
-                 |              |    followed by terminating  |
-                 |              |    \0 character.            |
-bgcolour         | character    | Background (paper) colour   | "ffffff"
-                 |    string    |    as RGB hexadecimal       |
-                 |              |    string. Must be 6 chara- |
-                 |              |    ters followed by termin- |
-                 |              |    ating \0 character.      |
-outfile          | character    | Contains the name of the    | "out.png"
-                 |    string    |    file to output a result- |
-                 |              |    ing barcode symbol to.   |
-                 |              |    Must end in .png, .gif,  |
-                 |              |    .bmp, .emf, .eps, .pcx,  |
-                 |              |    .svg, .tif or .txt       |
-option_1         | integer      | Symbol specific options.    | (automatic)
-option_2         | integer      | Symbol specific options.    | (automatic)
-option_3         | integer      | Symbol specific options.    | (automatic)
-scale            | float        | Scale factor for adjusting  | 1.0
-                 |              |    size of image.           |
-input_mode       | integer      | Set encoding of input data  | UNICODE_MODE
-                 |              |    (see section 5.9)        |
-eci              | integer      | Extended Channel Interpre-  | 0 (none)
-                 |              |    tation code.             |
-primary          | character    | Primary message data for    | NULL
-                 |    string    |    more complex symbols.    |
-text             | unsigned     | Human readable text, which  | NULL
-                 |    character |    usually consists of in-  |
-                 |    string    |    put data plus one more   |
-                 |              |    check digit. Uses UTF-8  |
-                 |              |    formatting.              |
-show_hrt         | integer      | Set to 0 to hide text.      | 1
-dot_size         | float        | Size of dots used in dotty  | 4.0 / 5.0
-                 |              |    mode.                    |
-rows             | integer      | Number of rows used by the  | (output only)
-                 |              |    the symbol.              |
-width            | integer      | Width of the generated sym- | (output only)
-                 |              |    bol.                     |
-encoding_data    | array of     | Representation of the       | (output only)
-                 |    character |    encoded data.            |
-                 |    strings   |                             |
-row_height       | array of     | Representation of the       | (output only)
-                 |    integers  |    height of a row.         |
-errtxt           | character    | Error message in the event  | (output only)
-                 |    string    |    that an error ocurred.   |
-bitmap           | pointer to   | Pointer to stored bitmap    | (output only)
-                 |    unsigned  |    image.                   |
-                 |    character |                             |
-                 |    array     |                             |
-bitmap_width     | integer      | Width of stored bitmap      | (output only)
-                 |              |    image (in pixels).       |
-bitmap_height    | integer      | Height of stored bitmap     | (output only)
-                 |              |    image (in pixels).       |
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+Variable Name     | Type         | Meaning                     | Default Value
+--------------------------------------------------------------------------------
+symbology         | integer      | Symbol to use (see section  | BARCODE_CODE128
+                  |              |    5.7).                    |
+height            | integer      | Symbol height. [1]          | 50
+whitespace_width  | integer      | Whtespace width.            | 0
+border_width      | integer      | Border width.               | 0
+output_options    | integer      | Set various output file     | 0 (none)
+                  |              |    parameters (see section  |
+                  |              |    5.8).                    |
+fgcolour          | character    | Foreground (ink) colour as  | "000000"
+                  |    string    |    RGB hexadecimal string.  |
+                  |              |    Must be 6 characters     |
+                  |              |    followed by terminating  |
+                  |              |    \0 character.            |
+bgcolour          | character    | Background (paper) colour   | "ffffff"
+                  |    string    |    as RGB hexadecimal       |
+                  |              |    string. Must be 6 chara- |
+                  |              |    ters followed by termin- |
+                  |              |    ating \0 character.      |
+outfile           | character    | Contains the name of the    | "out.png"
+                  |    string    |    file to output a result- |
+                  |              |    ing barcode symbol to.   |
+                  |              |    Must end in .png, .gif,  |
+                  |              |    .bmp, .emf, .eps, .pcx,  |
+                  |              |    .svg, .tif or .txt       |
+scale             | float        | Scale factor for adjusting  | 1.0
+                  |              |    size of image.           |
+option_1          | integer      | Symbol specific options.    | -1
+option_2          | integer      | Symbol specific options.    | 0
+option_3          | integer      | Symbol specific options.    | 0
+show_hrt          | integer      | Set to 0 to hide text.      | 1
+input_mode        | integer      | Set encoding of input data  | DATA_MODE
+                  |              |    (see section 5.9)        |
+eci               | integer      | Extended Channel Interpre-  | 0 (none)
+                  |              |    tation code.             |
+text              | unsigned     | Human readable text, which  | "" (empty)
+                  |    character |    usually consists of in-  |
+                  |    string    |    put data plus one more   |
+                  |              |    check digit. Uses UTF-8  |
+                  |              |    formatting.              |
+primary           | character    | Primary message data for    | "" (empty)
+                  |    string    |    more complex symbols.    |
+dot_size          | float        | Size of dots used in dotty  | 4.0 / 5.0
+                  |              |    mode.                    |
+rows              | integer      | Number of rows used by the  | (output only)
+                  |              |    the symbol.              |
+width             | integer      | Width of the generated sym- | (output only)
+                  |              |    bol.                     |
+encoding_data     | array of     | Representation of the       | (output only)
+                  |    character |    encoded data.            |
+                  |    strings   |                             |
+row_height        | array of     | Representation of the       | (output only)
+                  |    integers  |    height of a row.         |
+errtxt            | character    | Error message in the event  | (output only)
+                  |    string    |    that an error ocurred.   |
+bitmap            | pointer to   | Pointer to stored bitmap    | (output only)
+                  |    unsigned  |    image.                   |
+                  |    character |                             |
+                  |    array     |                             |
+bitmap_width      | integer      | Width of stored bitmap      | (output only)
+                  |              |    image (in pixels).       |
+bitmap_height     | integer      | Height of stored bitmap     | (output only)
+                  |              |    image (in pixels).       |
+bitmap_byte_length| integer      | Size of BMP bitmap data.    | (output only)
+vector            | pointer to   | Pointer to vector header    | (output only)
+                  |    vector    |    containing pointers to   |
+                  |    structure |    vector elements.         |
+--------------------------------------------------------------------------------
 
 To alter these values use the syntax shown in the example below. This code has
 the same result as the previous example except the output is now taller and
@@ -1127,14 +1131,14 @@ GS1_MODE      |  Encodes GS1 data using FNC1 characters.
 ESCAPE_MODE   |  Process input data for escape sequences.
 -----------------------------------------------------------------------------
 
-DATA_MODE, UNICODE_MODE and GS1_MODE are mutually exclusive, whereas
-ESCAPE_MODE is optional. So, for example, you can set
+DATA_MODE, UNICODE_MODE and GS1_MODE are mutually exclusive, whereas ESCAPE_MODE
+is optional. So, for example, you can set
 
-my_symbol->input_mode = UNICODE_MODE + ESCAPE_MODE;
+my_symbol->input_mode = UNICODE_MODE | ESCAPE_MODE;
 
 whereas
 
-my_symbol->input_mode = DATA_MODE + GS1_MODE;
+my_symbol->input_mode = DATA_MODE | GS1_MODE;
 
 is not valid. Permissible escape sequences are listed in section 4.1.
 

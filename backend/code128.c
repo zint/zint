@@ -259,6 +259,39 @@ static void c128_set_c(unsigned char source_a, unsigned char source_b, char dest
     (*bar_chars)++;
 }
 
+/* Treats source as ISO 8859-1 and copies into symbol->text, converting to UTF-8. Returns length of symbol->text */
+STATIC_UNLESS_ZINT_TEST int hrt_cpy_iso8859_1(struct zint_symbol *symbol, const unsigned char *source, int source_len) {
+    int i, j;
+
+    for (i = 0, j = 0; i < source_len && j < (int) sizeof(symbol->text); i++) {
+        if (source[i] < 0x80) {
+            symbol->text[j++] = source[i] >= ' ' && source[i] != 0x7F ? source[i] : ' ';
+        } else if (source[i] < 0xC0) {
+            if (source[i] >= 0xA0) { /* 0x80-0x9F not valid ISO 8859-1 */
+                if (j + 2 >= (int) sizeof(symbol->text)) {
+                    break;
+                }
+                symbol->text[j++] = 0xC2;
+                symbol->text[j++] = source[i];
+            } else {
+                symbol->text[j++] = ' ';
+            }
+        } else {
+            if (j + 2 >= (int) sizeof(symbol->text)) {
+                break;
+            }
+            symbol->text[j++] = 0xC3;
+            symbol->text[j++] = source[i] - 0x40;
+        }
+    }
+    if (j == sizeof(symbol->text)) {
+        j--;
+    }
+    symbol->text[j] = '\0';
+
+    return j;
+}
+
 /* Handle Code 128, 128B and HIBC 128 */
 INTERNAL int code_128(struct zint_symbol *symbol, const unsigned char source[], const size_t length) {
     int i, j, k, values[C128_MAX] = {0}, bar_characters, read, total_sum;
@@ -656,6 +689,9 @@ INTERNAL int code_128(struct zint_symbol *symbol, const unsigned char source[], 
 #endif
 
     expand(symbol, dest);
+
+    hrt_cpy_iso8859_1(symbol, source, length);
+
     return error_number;
 }
 

@@ -118,7 +118,7 @@ extern "C" {
         int fontsize;
         int input_mode;
         int eci;
-        unsigned char text[128];
+        unsigned char text[128]; /* UTF-8 */
         int rows;
         int width;
         char primary[128];
@@ -337,4 +337,3 @@ extern "C" {
 #endif /* __cplusplus */
 
 #endif /* ZINT_H */
-

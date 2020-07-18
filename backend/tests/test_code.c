@@ -126,14 +126,14 @@ static void test_hrt(int index, int debug) {
         /*  7*/ { BARCODE_EXCODE39, -1, "ABC1234", -1, "ABC1234" },
         /*  8*/ { BARCODE_EXCODE39, -1, "abc1234", -1, "abc1234" },
         /*  9*/ { BARCODE_EXCODE39, 1, "abc1234", -1, "abc1234" }, // With checksum (not displayed)
-        /* 10*/ { BARCODE_EXCODE39, -1, "a%\000\001$\177z\033\037!+/\\@A~", 16, "a% \001$\177z\033\037!+/\\@A~" }, // NUL replaced with space
+        /* 10*/ { BARCODE_EXCODE39, -1, "a%\000\001$\177z\033\037!+/\\@A~", 16, "a%  $ z  !+/\\@A~" }, // NUL, ctrls and DEL replaced with spaces
         /* 11*/ { BARCODE_LOGMARS, -1, "ABC1234", -1, "ABC1234" },
         /* 12*/ { BARCODE_LOGMARS, -1, "abc1234", -1, "ABC1234" }, // Converts to upper
         /* 13*/ { BARCODE_LOGMARS, 1, "abc1234", -1, "ABC12340" }, // With checksum
         /* 14*/ { BARCODE_LOGMARS, 1, "12345/ABCDE", -1, "12345/ABCDET" }, // With checksum
         /* 15*/ { BARCODE_CODE93, -1, "ABC1234", -1, "ABC1234S5" }, // 2 checksums added (note check digits not shown by bwipp or tec-it)
         /* 16*/ { BARCODE_CODE93, -1, "abc1234", -1, "abc1234ZG" },
-        /* 17*/ { BARCODE_CODE93, -1, "A\001a\000b\177d\037e", 9, "A\001a b\177d\037e1R" }, // NUL replaced with space 
+        /* 17*/ { BARCODE_CODE93, -1, "A\001a\000b\177d\037e", 9, "A a b d e1R" }, // NUL, ctrls and DEL replaced with spaces
         /* 18*/ { BARCODE_PZN, -1, "12345", -1, "PZN -00123458" }, // Pads with zeroes if length < 7
         /* 19*/ { BARCODE_PZN, -1, "123456", -1, "PZN -01234562" },
         /* 20*/ { BARCODE_PZN, -1, "1234567", -1, "PZN -12345678" },

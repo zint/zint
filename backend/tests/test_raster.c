@@ -448,7 +448,7 @@ static void test_row_separator(int index, int debug) {
         /*  4*/ { BARCODE_CODABLOCKF, -1, 3, "A", 0, 20, 2, 101, 242, 44, 19, 42, 6 },
         /*  5*/ { BARCODE_CODABLOCKF, -1, 4, "A", 0, 20, 2, 101, 242, 44, 18, 42, 8 },
         /*  6*/ { BARCODE_CODABLOCKF, -1, 5, "A", 0, 20, 2, 101, 242, 44, 21, 42, 2 }, // > 4 ignored, same as default
-        /*  7*/ { BARCODE_CODABLOCKF, 1, -1, "A", 0, 5, 1, 46, 132, 14, 0, 20 + 2, 2 }, // CODE128 top separator, add 2 to skip over end of start char
+        /*  7*/ { BARCODE_CODABLOCKF, 1, -1, "A", 0, 5, 1, 46, 132, 32, 0, 20 + 2, 2 }, // CODE128 top separator, add 2 to skip over end of start char; note now includes HRT
     };
     int data_size = ARRAY_SIZE(data);
 

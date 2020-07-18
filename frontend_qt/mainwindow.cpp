@@ -161,6 +161,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags fl)
     connect(chkComposite, SIGNAL(stateChanged( int )), SLOT(update_preview()));
     connect(cmbCompType, SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
     connect(chkEscape, SIGNAL(stateChanged( int )), SLOT(update_preview()));
+    connect(chkData, SIGNAL(stateChanged( int )), SLOT(update_preview()));
     connect(spnWhitespace, SIGNAL(valueChanged( int )), SLOT(update_preview()));
     connect(btnAbout, SIGNAL(clicked( bool )), SLOT(about()));
     connect(btnSave, SIGNAL(clicked( bool )), SLOT(save()));
@@ -860,6 +861,16 @@ void MainWindow::upcean_addon_gap(QComboBox *comboBox, QLabel* label, int base)
     }
 }
 
+void MainWindow::set_gs1_mode(bool gs1_mode)
+{
+    if (gs1_mode) {
+        m_bc.bc.setInputMode(GS1_MODE | (m_bc.bc.inputMode() & ~0x07)); // Keep upper bits
+        chkData->setEnabled(false);
+    } else {
+        chkData->setEnabled(true);
+    }
+}
+
 void MainWindow::update_preview()
 {
     int symbology = metaObject()->enumerator(0).value(bstyle->currentIndex());
@@ -878,7 +889,12 @@ void MainWindow::update_preview()
     m_bc.bc.setSecurityLevel(0);
     m_bc.bc.setOption2(0);
     m_bc.bc.setOption3(0);
-    m_bc.bc.setInputMode(UNICODE_MODE);
+    chkData->setEnabled(true);
+    if (chkData->isChecked()) {
+        m_bc.bc.setInputMode(DATA_MODE);
+    } else {
+        m_bc.bc.setInputMode(UNICODE_MODE);
+    }
     if (chkEscape->isChecked()) {
         m_bc.bc.setInputMode(m_bc.bc.inputMode() | ESCAPE_MODE);
     }
@@ -1008,8 +1024,7 @@ void MainWindow::update_preview()
         case BARCODE_DOTCODE:
             m_bc.bc.setSymbol(BARCODE_DOTCODE);
             m_bc.bc.setOption2(m_optionWidget->findChild<QComboBox*>("cmbDotCols")->currentIndex());
-            if(m_optionWidget->findChild<QRadioButton*>("radDotGS1")->isChecked())
-                m_bc.bc.setInputMode(GS1_MODE);
+            set_gs1_mode(m_optionWidget->findChild<QRadioButton*>("radDotGS1")->isChecked());
             m_bc.bc.setDotSize(m_optionWidget->findChild<QLineEdit*>("txtDotSize")->text().toFloat());
             break;
 
@@ -1021,8 +1036,7 @@ void MainWindow::update_preview()
             if(m_optionWidget->findChild<QRadioButton*>("radAztecECC")->isChecked())
                 m_bc.bc.setSecurityLevel(m_optionWidget->findChild<QComboBox*>("cmbAztecECC")->currentIndex() + 1);
 
-            if(m_optionWidget->findChild<QRadioButton*>("radAztecGS1")->isChecked())
-                m_bc.bc.setInputMode(GS1_MODE);
+            set_gs1_mode(m_optionWidget->findChild<QRadioButton*>("radAztecGS1")->isChecked());
             if(m_optionWidget->findChild<QRadioButton*>("radAztecHIBC")->isChecked())
                 m_bc.bc.setSymbol(BARCODE_HIBC_AZTEC);
             break;
@@ -1068,10 +1082,7 @@ void MainWindow::update_preview()
 
         case BARCODE_CODE16K:
             m_bc.bc.setSymbol(BARCODE_CODE16K);
-            if(m_optionWidget->findChild<QRadioButton*>("radC16kStand")->isChecked())
-                m_bc.bc.setInputMode(UNICODE_MODE);
-            else
-                m_bc.bc.setInputMode(GS1_MODE);
+            set_gs1_mode(m_optionWidget->findChild<QRadioButton*>("radC16kStand")->isChecked());
             // Row separator height selection uses option 3 in zint_symbol
             item_val = m_optionWidget->findChild<QComboBox*>("cmbC16kRowSepHeight")->currentIndex();
             if (item_val) {
@@ -1116,13 +1127,14 @@ void MainWindow::update_preview()
                 m_bc.bc.setSymbol(BARCODE_DATAMATRIX);
 
             if (m_optionWidget->findChild<QRadioButton*>("radDM200GS1")->isChecked()) {
-                m_bc.bc.setInputMode(GS1_MODE);
+                set_gs1_mode(true);
                 checkBox = m_optionWidget->findChild<QCheckBox*>("chkDMGSSep");
                 checkBox->setEnabled(true);
                 if (checkBox->isChecked()) {
                     m_bc.bc.setGSSep(true);
                 }
             } else {
+                set_gs1_mode(false);
                 m_optionWidget->findChild<QCheckBox*>("chkDMGSSep")->setEnabled(false);
             }
 
@@ -1153,8 +1165,7 @@ void MainWindow::update_preview()
             else
                 m_bc.bc.setSymbol(BARCODE_QRCODE);
 
-            if(m_optionWidget->findChild<QRadioButton*>("radQRGS1")->isChecked())
-                m_bc.bc.setInputMode(GS1_MODE);
+            set_gs1_mode(m_optionWidget->findChild<QRadioButton*>("radQRGS1")->isChecked());
 
             item_val = m_optionWidget->findChild<QComboBox*>("cmbQRSize")->currentIndex();
             if (item_val) {
@@ -1181,8 +1192,7 @@ void MainWindow::update_preview()
         case BARCODE_RMQR:
             m_bc.bc.setSymbol(BARCODE_RMQR);
 
-            if(m_optionWidget->findChild<QRadioButton*>("radRMQRGS1")->isChecked())
-                m_bc.bc.setInputMode(GS1_MODE);
+            set_gs1_mode(m_optionWidget->findChild<QRadioButton*>("radRMQRGS1")->isChecked());
 
             item_val = m_optionWidget->findChild<QComboBox*>("cmbRMQRSize")->currentIndex();
             if (item_val) {
@@ -1227,15 +1237,13 @@ void MainWindow::update_preview()
 
         case BARCODE_CODEONE:
             m_bc.bc.setSymbol(BARCODE_CODEONE);
-            if(m_optionWidget->findChild<QRadioButton*>("radC1GS1")->isChecked())
-                m_bc.bc.setInputMode(GS1_MODE);
+            set_gs1_mode(m_optionWidget->findChild<QRadioButton*>("radC1GS1")->isChecked());
             m_bc.bc.setOption2(m_optionWidget->findChild<QComboBox*>("cmbC1Size")->currentIndex());
             break;
 
         case BARCODE_CODE49:
             m_bc.bc.setSymbol(BARCODE_CODE49);
-            if(m_optionWidget->findChild<QRadioButton*>("radC49GS1")->isChecked())
-                m_bc.bc.setInputMode(GS1_MODE);
+            set_gs1_mode(m_optionWidget->findChild<QRadioButton*>("radC49GS1")->isChecked());
             // Row separator height selection uses option 3 in zint_symbol
             item_val = m_optionWidget->findChild<QComboBox*>("cmbC49RowSepHeight")->currentIndex();
             if (item_val) {
@@ -1259,8 +1267,7 @@ void MainWindow::update_preview()
             m_bc.bc.setSymbol(BARCODE_ULTRA);
             if(m_optionWidget->findChild<QRadioButton*>("radUltraEcc")->isChecked())
                 m_bc.bc.setSecurityLevel(m_optionWidget->findChild<QComboBox*>("cmbUltraEcc")->currentIndex() + 1);
-            if(m_optionWidget->findChild<QRadioButton*>("radUltraGS1")->isChecked())
-                m_bc.bc.setInputMode(GS1_MODE);
+            set_gs1_mode(m_optionWidget->findChild<QRadioButton*>("radUltraGS1")->isChecked());
             break;
 
         case BARCODE_VIN:

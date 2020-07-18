@@ -643,8 +643,8 @@ static int plot_raster_dotty(struct zint_symbol *symbol, int rotate_angle, int d
     return error_number;
 }
 
-/* Convert UTF-8 to Latin1 Codepage for the interpretation line */
-static void to_latin1(const unsigned char source[], unsigned char preprocessed[]) {
+/* Convert UTF-8 to ISO 8859-1 for draw_string() human readable text */
+static void to_iso8859_1(const unsigned char source[], unsigned char preprocessed[]) {
     int j, i, input_length;
 
     input_length = ustrlen(source);
@@ -959,7 +959,7 @@ static int plot_raster_default(struct zint_symbol *symbol, int rotate_angle, int
 #else
             unsigned char* local_text = (unsigned char*) _alloca(ustrlen(symbol->text) + 1);
 #endif
-            to_latin1(symbol->text, local_text);
+            to_iso8859_1(symbol->text, local_text);
             /* Put the human readable text at the bottom */
             textpos = 2 * (main_width / 2 + xoffset);
             draw_string(pixelbuf, local_text, textpos, default_text_posn, textflags, image_width, image_height);

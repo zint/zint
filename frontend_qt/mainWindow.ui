@@ -322,14 +322,28 @@ p, li { white-space: pre-wrap; }
             </widget>
            </item>
            <item>
-            <widget class="QCheckBox" name="chkEscape">
-             <property name="text">
-              <string>Parse Escape Sequences</string>
-             </property>
-             <property name="checked">
-              <bool>false</bool>
-             </property>
-            </widget>
+            <layout class="QHBoxLayout" name="escDataLayout">
+             <item>
+              <widget class="QCheckBox" name="chkEscape">
+               <property name="text">
+                <string>Parse Escape Sequences</string>
+               </property>
+               <property name="checked">
+                <bool>false</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="chkData">
+               <property name="text">
+                <string>Data (binary) &amp;Mode</string>
+               </property>
+               <property name="checked">
+                <bool>false</bool>
+               </property>
+              </widget>
+             </item>
+            </layout>
            </item>
           </layout>
          </widget>

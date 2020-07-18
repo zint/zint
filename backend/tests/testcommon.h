@@ -83,6 +83,7 @@ char *testUtilInputModeName(int input_mode);
 char *testUtilOption3Name(int option_3);
 char *testUtilOutputOptionsName(int output_options);
 int testUtilDAFTConvert(const struct zint_symbol *symbol, char *buffer, int buffer_size);
+int testUtilIsValidUTF8(const unsigned char str[], const size_t length);
 char *testUtilEscape(char *buffer, int length, char *escaped, int escaped_size);
 char *testUtilReadCSVField(char *buffer, char *field, int field_size);
 void testUtilStrCpyRepeat(char *buffer, char *repeat, int size);

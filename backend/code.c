@@ -391,7 +391,7 @@ INTERNAL int ec39(struct zint_symbol *symbol, unsigned char source[], int length
     error_number = c39(symbol, buffer, ustrlen(buffer));
 
     for (i = 0; i < length; i++)
-        symbol->text[i] = source[i] ? source[i] : ' ';
+        symbol->text[i] = source[i] >= ' ' && source[i] != 0x7F ? source[i] : ' ';
     symbol->text[length] = '\0';
 
     return error_number;
@@ -426,7 +426,7 @@ INTERNAL int c93(struct zint_symbol *symbol, unsigned char source[], int length)
             return ZINT_ERROR_INVALID_DATA;
         }
         strcat(buffer, C93Ctrl[source[i]]);
-        symbol->text[i] = source[i] ? source[i] : ' ';
+        symbol->text[i] = source[i] >= ' ' && source[i] != 0x7F ? source[i] : ' ';
     }
 
     /* Now we can check the true length of the barcode */

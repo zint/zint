@@ -970,7 +970,7 @@ static int escape_char_process(struct zint_symbol *symbol, unsigned char *input_
 }
 
 int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int in_length) {
-    int error_number, error_buffer, i;
+    int error_number, error_buffer;
 #ifdef _MSC_VER
     unsigned char* local_source;
 #endif
@@ -1206,15 +1206,6 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
     }
 
     if (error_number == 0) {
-        if ((symbol->symbology == BARCODE_CODE128) || (symbol->symbology == BARCODE_CODE128B)) {
-            for (i = 0; i < in_length; i++) {
-                if (local_source[i] == '\0') {
-                    symbol->text[i] = ' ';
-                } else {
-                    symbol->text[i] = local_source[i];
-                }
-            }
-        }
         error_number = error_buffer;
     }
     error_tag(symbol->errtxt, error_number);
