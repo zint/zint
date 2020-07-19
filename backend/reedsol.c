@@ -52,6 +52,7 @@
 #ifdef _MSC_VER
 #include <malloc.h>
 #endif
+#include <assert.h>
 #include "common.h"
 #include "reedsol.h"
 static int logmod; // 2**symsize - 1
@@ -71,6 +72,9 @@ static int *logt = NULL, *alog = NULL, *rspoly = NULL;
 
 INTERNAL void rs_init_gf(const int poly) {
     int m, b, p, v;
+
+    // Suppress clang-tidy clang-analyzer-core.UndefinedBinaryOperatorResult warning
+    assert(poly >= 2);
 
     // Find the top bit, and hence the symbol size
     for (b = 1, m = 0; b <= poly; b <<= 1)

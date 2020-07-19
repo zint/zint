@@ -35,7 +35,6 @@
 #include "common.h"
 #include "maxicode.h"
 #include "reedsol.h"
-#include <string.h>
 
 static int maxi_codeword[144];
 
@@ -270,7 +269,7 @@ static int maxi_text_process(int mode, unsigned char source[], int length, int e
                 if (set[i] == 2) {
                     character[i] = 51;
                 }
-                done = 1;
+                // done = 1 // As long as last branch not needed
             }
         }
     }

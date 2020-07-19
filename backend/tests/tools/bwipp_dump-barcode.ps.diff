@@ -1,5 +1,5 @@
---- ../../../../postscriptbarcode/build/monolithic/barcode.ps	2020-07-14 14:52:24.208222925 +0100
-+++ ../tools/bwipp_dump.ps	2020-07-14 17:29:15.314238749 +0100
+--- ../../../../postscriptbarcode/build/monolithic/barcode.ps	2020-07-17 22:03:49.625837028 +0100
++++ ../tools/bwipp_dump.ps	2020-07-17 22:10:29.222780872 +0100
 @@ -29,6 +29,8 @@
  % CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  % IN THE SOFTWARE.

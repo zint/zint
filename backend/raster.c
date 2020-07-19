@@ -33,16 +33,14 @@
 
 #include <stdio.h>
 #ifdef _MSC_VER
+#include <malloc.h>
 #include <fcntl.h>
 #include <io.h>
 #endif
 #include <math.h>
+#include <assert.h>
 #include "common.h"
 #include "output.h"
-
-#ifdef _MSC_VER
-#include <malloc.h>
-#endif /* _MSC_VER */
 
 #include "font.h" /* Font for human readable text */
 
@@ -436,6 +434,7 @@ static void draw_string(char *pixbuf, unsigned char input_string[], int xposn, i
     string_left_hand = xposn - ((letter_width * string_length) / 2);
 
     for (i = 0; i < string_length; i++) {
+        // NOLINTNEXTLINE(clang-analyzer-core.CallAndMessage) suppress (probable) false positive about 2nd arg input_string[i] being uninitialized
         draw_letter(pixbuf, input_string[i], string_left_hand + (i * letter_width), yposn, textflags, image_width, image_height);
     }
 }
@@ -656,6 +655,7 @@ static void to_iso8859_1(const unsigned char source[], unsigned char preprocesse
             case 0xC2:
                 /* UTF-8 C2xxh */
                 /* Character range: C280h (latin: 80h) to C2BFh (latin: BFh) */
+                assert(i + 1 < input_length);
                 i++;
                 preprocessed[j] = source[i];
                 j++;
@@ -663,6 +663,7 @@ static void to_iso8859_1(const unsigned char source[], unsigned char preprocesse
             case 0xC3:
                 /* UTF-8 C3xx */
                 /* Character range: C380h (latin: C0h) to C3BFh (latin: FFh) */
+                assert(i + 1 < input_length);
                 i++;
                 preprocessed[j] = source[i] + 64;
                 j++;
@@ -954,11 +955,7 @@ static int plot_raster_default(struct zint_symbol *symbol, int rotate_angle, int
         }
 
         if (!textdone) {
-#ifndef _MSC_VER
-            unsigned char local_text[ustrlen(symbol->text) + 1];
-#else
-            unsigned char* local_text = (unsigned char*) _alloca(ustrlen(symbol->text) + 1);
-#endif
+            unsigned char local_text[sizeof(symbol->text)];
             to_iso8859_1(symbol->text, local_text);
             /* Put the human readable text at the bottom */
             textpos = 2 * (main_width / 2 + xoffset);

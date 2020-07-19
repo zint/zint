@@ -1291,6 +1291,8 @@ INTERNAL int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int
     char* binary_string = (char*) _alloca(bin_len);
 #endif
 
+    separator_row = 0;
+
     i = gs1_verify(symbol, source, src_len, reduced);
     if (i != 0) {
         return i;

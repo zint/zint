@@ -30,7 +30,6 @@
  */
 /* vim: set ts=4 sw=4 et : */
 
-#include <string.h>
 #ifdef _MSC_VER
 #include <malloc.h>
 #endif
@@ -692,6 +691,9 @@ static void add_ecc(unsigned char fullstream[], const unsigned char datastream[]
     qty_short_blocks = blocks - qty_long_blocks;
     ecc_block_length = ecc_cw / blocks;
 
+    /* Suppress some clang-tidy clang-analyzer-core.UndefinedBinaryOperatorResult/uninitialized.Assign warnings */
+    assert(short_data_block_length >= 0);
+    assert(ecc_block_length * blocks == ecc_cw);
 
 #ifndef _MSC_VER
     unsigned char data_block[short_data_block_length + 1];
@@ -747,8 +749,7 @@ static void add_ecc(unsigned char fullstream[], const unsigned char datastream[]
         }
 
         if (i >= qty_short_blocks) {
-            /* NOLINT suppress clang-tidy warning: data_block[short_data_block_length] set for i >= qty_short_blocks */
-            interleaved_data[(short_data_block_length * blocks) + (i - qty_short_blocks)] = data_block[short_data_block_length]; // NOLINT
+            interleaved_data[(short_data_block_length * blocks) + (i - qty_short_blocks)] = data_block[short_data_block_length];
         }
 
         for (j = 0; j < ecc_block_length; j++) {
@@ -988,6 +989,8 @@ static int evaluate(unsigned char *eval,const int size,const int pattern) {
     char* local = (char *) _alloca((size * size) * sizeof (char));
 #endif
 
+    /* Suppresses clang-tidy clang-analyzer-core.UndefinedBinaryOperatorResult warnings */
+    assert(size > 0);
 
 #ifdef ZINTLOG
     write_log("");
@@ -1072,10 +1075,9 @@ static int evaluate(unsigned char *eval,const int size,const int pattern) {
     /* Test 2: Block of modules in same color */
     for (x = 0; x < size - 1; x++) {
         for (y = 0; y < size - 1; y++) {
-            /* NOLINT suppress clang-tidy warning: local[size * size] fully set */
-            if (((local[(y * size) + x] == local[((y + 1) * size) + x]) && // NOLINT
+            if (((local[(y * size) + x] == local[((y + 1) * size) + x]) &&
                     (local[(y * size) + x] == local[(y * size) + (x + 1)])) &&
-                    (local[(y * size) + x] == local[((y + 1) * size) + (x + 1)])) { // NOLINT
+                    (local[(y * size) + x] == local[((y + 1) * size) + (x + 1)])) {
                 result += 3;
             }
         }

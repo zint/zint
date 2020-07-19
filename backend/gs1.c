@@ -674,7 +674,6 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
 
     /* Resolve AI data - put resulting string in 'reduced' */
     j = 0;
-    last_ai = 0;
     ai_latch = 1;
     for (i = 0; i < (int) src_len; i++) {
         if ((source[i] != '[') && (source[i] != ']')) {

@@ -34,7 +34,6 @@
    AIM Global Document Number AIMD014 Rev. 1.63 Revised 9 Dec 2008 */
 
 #include <stdio.h>
-#include <string.h>
 #ifdef _MSC_VER
 #include <malloc.h>
 #endif
@@ -277,7 +276,6 @@ static int gm_encode(unsigned int gbdata[], const size_t length, char binary[], 
 
     sp = 0;
     current_mode = 0;
-    last_mode = 0;
     number_pad_posn = 0;
 
     if (reader) {

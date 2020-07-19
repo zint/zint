@@ -34,7 +34,7 @@
  * and [MS-WMF] - v20160714, Released July 14, 2016 */
 
 #include <stdio.h>
-#include <string.h>
+#include <assert.h>
 #include <math.h>
 #ifdef _MSC_VER
 #include <malloc.h>
@@ -634,10 +634,13 @@ INTERNAL int emf_plot(struct zint_symbol *symbol) {
         fwrite(&emr_selectobject_font, sizeof (emr_selectobject_t), 1, emf_file);
     }
 
+    /* Suppresses clang-tidy clang-analyzer-core.UndefinedBinaryOperatorResult warning */
+    assert((symbol->vector->strings == NULL && string_count == 0) || (symbol->vector->strings != NULL && string_count > 0));
+
     for (i = 0; i < string_count; i++) {
         spacing = 8 * symbol->scale;
         fwrite(&text[i], sizeof (emr_exttextoutw_t), 1, emf_file);
-        fwrite(this_string[i], bump_up(text[i].w_emr_text.chars + 1) * 2, 1, emf_file); // NOLINT text set 0..(string_count - 1)
+        fwrite(this_string[i], bump_up(text[i].w_emr_text.chars + 1) * 2, 1, emf_file);
         free(this_string[i]);
         for (j = 0; j < bump_up(text[i].w_emr_text.chars + 1); j++) {
             fwrite(&spacing, 4, 1, emf_file);

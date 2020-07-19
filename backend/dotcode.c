@@ -37,7 +37,7 @@
  */
 
 #include <stdio.h>
-#include <string.h>
+#include <assert.h>
 #include <math.h>
 #ifndef _MSC_VER
 #include <stdint.h>
@@ -322,7 +322,7 @@ static void rsencode(int nd, int nc, unsigned char *wd) {
             wd[start + i * step] = 0;
         }
         for (i = 0; i < ND; i++) {
-            k = (wd[start + i * step] + wd[start + ND * step]) % GF; // NOLINT wd set 0..(nd - 1) and start + i * step <= nd - 1
+            k = (wd[start + i * step] + wd[start + ND * step]) % GF;
             for (j = 0; j < NC - 1; j++) {
                 wd[start + (ND + j) * step] = (GF - ((c[j + 1] * k) % GF) + wd[start + (ND + j + 1) * step]) % GF;
             }
@@ -391,7 +391,7 @@ static int datum_c(const unsigned char source[], int position, int length) {
 static int n_digits(const unsigned char source[], int position, int length) {
     int i;
 
-    for (i = position; ((source[i] >= '0') && (source[i] <= '9')) && (i < length); i++);
+    for (i = position; (i < length) && ((source[i] >= '0') && (source[i] <= '9')); i++);
 
     return i - position;
 }
@@ -490,11 +490,7 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
     int lawrencium[6]; // Reversed radix 103 values
     int nx;
 
-#if defined(_MSC_VER) && _MSC_VER == 1200
     uint64_t binary_buffer = 0;
-#else
-    uint64_t binary_buffer = 0ULL;
-#endif
 
     input_position = 0;
     array_length = 0;
@@ -1130,7 +1126,7 @@ static size_t make_dotstream(unsigned char masked_array[], int array_length, cha
 
     /* The rest of the data uses 9-bit dot patterns from Annex C */
     for (i = 1; i < array_length; i++) {
-        bin_append(dot_patterns[masked_array[i]], 9, dot_stream); // NOLINT masked_array values modulo 113 and fully set
+        bin_append(dot_patterns[masked_array[i]], 9, dot_stream);
     }
 
     return strlen(dot_stream);
@@ -1334,6 +1330,9 @@ INTERNAL int dotcode(struct zint_symbol *symbol, const unsigned char source[], i
     }
 
     data_length = dotcode_encode_message(symbol, source, length, codeword_array, &binary_finish);
+
+    /* Suppresses clang-tidy clang-analyzer-core.UndefinedBinaryOperatorResult/uninitialized.ArraySubscript warnings */
+    assert(data_length > 0);
 
     ecc_length = 3 + (data_length / 2);
 

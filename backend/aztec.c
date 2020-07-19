@@ -32,7 +32,6 @@
 /* vim: set ts=4 sw=4 et : */
 
 #include <stdio.h>
-#include <string.h>
 #ifdef _MSC_VER
 #include <malloc.h>
 #endif
@@ -1579,7 +1578,6 @@ INTERNAL int aztec_runes(struct zint_symbol *symbol, unsigned char source[], int
     char binary_string[28];
     unsigned char data_codewords[3], ecc_codewords[6];
 
-    error_number = 0;
     input_value = 0;
     if (length > 3) {
         strcpy(symbol->errtxt, "507: Input too large");
