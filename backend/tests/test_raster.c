@@ -749,6 +749,81 @@ static void test_code128_utf8(int index, int debug) {
     testFinish();
 }
 
+static void test_scale(int index, int debug) {
+
+    testStart("");
+
+    int ret;
+    struct item {
+        int symbology;
+        int option_2;
+        float scale;
+        unsigned char *data;
+
+        int expected_height;
+        int expected_rows;
+        int expected_width;
+        int expected_bitmap_width;
+        int expected_bitmap_height;
+        int expected_set_row;
+        int expected_set_rows;
+        int expected_set_col;
+        int expected_set_len;
+    };
+    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    struct item data[] = {
+        /*  0*/ { BARCODE_PDF417, -1, 0, "1", 18, 6, 103, 206, 36, 0, 36, 170, 14 }, // With no scaling
+        /*  1*/ { BARCODE_PDF417, -1, 0.6, "1", 18, 6, 103, 206 * 0.6, 36 * 0.6, 0, 36 * 0.6, 170 * 0.6 + 1, 14 * 0.6 }, // +1 set_col due to some scaling inversion difference
+        /*  2*/ { BARCODE_PDF417, -1, 1.2, "1", 18, 6, 103, 206 * 1.2, 36 * 1.2, 0, 36 * 1.2, 170 * 1.2 + 1, 14 * 1.2 }, // +1 set_col due to some scaling inversion difference
+    };
+    int data_size = ARRAY_SIZE(data);
+
+    for (int i = 0; i < data_size; i++) {
+
+        if (index != -1 && i != index) continue;
+
+        struct zint_symbol *symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        int length = testUtilSetSymbol(symbol, data[i].symbology, UNICODE_MODE, -1 /*eci*/, -1 /*option_1*/, data[i].option_2, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        if (data[i].scale) {
+            symbol->scale = data[i].scale;
+        }
+
+        ret = ZBarcode_Encode(symbol, data[i].data, length);
+        assert_zero(ret, "i:%d ZBarcode_Encode(%d) ret %d != 0 %s\n", i, data[i].symbology, ret, symbol->errtxt);
+
+        ret = ZBarcode_Buffer(symbol, 0);
+        assert_zero(ret, "i:%d ZBarcode_Buffer(%d) ret %d != 0\n", i, data[i].symbology, ret);
+        assert_nonnull(symbol->bitmap, "i:%d (%d) symbol->bitmap NULL\n", i, data[i].symbology);
+
+        assert_equal(symbol->height, data[i].expected_height, "i:%d (%d) symbol->height %d != %d\n", i, data[i].symbology, symbol->height, data[i].expected_height);
+        assert_equal(symbol->rows, data[i].expected_rows, "i:%d (%d) symbol->rows %d != %d\n", i, data[i].symbology, symbol->rows, data[i].expected_rows);
+        assert_equal(symbol->width, data[i].expected_width, "i:%d (%d) symbol->width %d != %d\n", i, data[i].symbology, symbol->width, data[i].expected_width);
+        assert_equal(symbol->bitmap_width, data[i].expected_bitmap_width, "i:%d (%d) symbol->bitmap_width %d != %d\n", i, data[i].symbology, symbol->bitmap_width, data[i].expected_bitmap_width);
+        assert_equal(symbol->bitmap_height, data[i].expected_bitmap_height, "i:%d (%d) symbol->bitmap_height %d != %d\n", i, data[i].symbology, symbol->bitmap_height, data[i].expected_bitmap_height);
+
+        if (index != -1) testUtilBitmapPrint(symbol);
+
+        ret = ZBarcode_Print(symbol, 0);
+        assert_zero(ret, "i:%d ZBarcode_Print(%d) ret %d != 0\n", i, data[i].symbology, ret);
+
+        for (int row = data[i].expected_set_row; row < data[i].expected_set_rows; row++) {
+            int bits_set = 0;
+            for (int column = data[i].expected_set_col; column < data[i].expected_set_col + data[i].expected_set_len; column++) {
+                if (is_row_column_black(symbol, row, column)) {
+                    bits_set++;
+                }
+            }
+            assert_equal(bits_set, data[i].expected_set_len, "i:%d (%d) row %d bits_set %d != expected_set_len %d\n", i, data[i].symbology, row, bits_set, data[i].expected_set_len);
+        }
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
 int main(int argc, char *argv[]) {
 
     testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
@@ -759,6 +834,7 @@ int main(int argc, char *argv[]) {
         { "test_output_options", test_output_options, 1, 0, 1 },
         { "test_draw_string_wrap", test_draw_string_wrap, 1, 0, 1 },
         { "test_code128_utf8", test_code128_utf8, 1, 0, 1 },
+        { "test_scale", test_scale, 1, 0, 1 },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

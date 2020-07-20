@@ -1019,9 +1019,10 @@ static int plot_raster_default(struct zint_symbol *symbol, int rotate_angle, int
         memset(scaled_pixelbuf, DEFAULT_PAPER, scale_width * scale_height);
 
         for (vert = 0; vert < scale_height; vert++) {
-            double vert_scaled = (vert * image_width) / scaler;
+            int vert_row = vert * scale_width;
+            int image_vert_row = ((int) (vert / scaler)) * image_width;
             for (horiz = 0; horiz < scale_width; horiz++) {
-                *(scaled_pixelbuf + (vert * scale_width) + horiz) = *(pixelbuf + (int) (vert_scaled + (horiz / scaler)));
+                *(scaled_pixelbuf + vert_row + horiz) = *(pixelbuf + image_vert_row + (int) (horiz / scaler));
             }
         }
 
