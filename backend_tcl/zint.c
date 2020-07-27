@@ -76,6 +76,25 @@
  2020-05-19 HaO
  - Added option -separator to specify stacked symbology separator width
  - -cols maximum changed from 66 to 67
+ 2020-07-27 2.9.0 HaO
+ - added option "-addongap"
+ - Renamed symbology names:
+    - Matrix2of5 -> Standard2of5
+    - PDF417Trunc -> PDF417Compact
+    - RSS14Stacked -> GS1DataBarStacked
+    - RSS14Stacked -> GS1DataBarStacked
+    - RSS14StackedOmni -> GS1DataBarSstackedOmni
+    - RSS14ExpandedStacked -> GS1DataBarExpandedStacked
+    - OneCode -> USPSIntelligentMail
+    - EAN128-CC -> GS1-128-CC
+    - RSS14-CC -> GS1DataBarOmni-CC
+    - RSSLimited-CC -> GS1DataBarLimited-CC
+    - RSSExpandedStacked-CC -> GS1DataBarExpanded-CC
+    - RSSEXPanded-CC -> GS1DataBarExpanded-CC
+    - RSS14Stacked-CC -> GS1DataBarStacked-CC
+    - RSS14Omni-CC -> GS1DataBarStackedOmni-CC
+    - RSSExpandedStacked-CC -> GS1DataBarExpandedStacked-CC
+    *** Potential incompatibility ***
 */
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
@@ -115,7 +134,7 @@
 /*----------------------------------------------------------------------------*/
 /* > File option defines */
 
-#define VERSION "2.8.0"
+#define VERSION "2.9.0"
 
 /*----------------------------------------------------------------------------*/
 /* >>>>> Hepler defines */
@@ -134,6 +153,7 @@ static int Encode(Tcl_Interp *interp, int objc,
     Tcl_Obj *CONST objv[]);
 static int is_fullmultibyte(struct zint_symbol* symbol);
 static int is_stackable(const int symbology);
+static int is_extendable(const int symbology);
 /*----------------------------------------------------------------------------*/
 /* >>>> File Global Variables */
 
@@ -141,7 +161,7 @@ static int is_stackable(const int symbology);
 
 static char *s_code_list[] = {
     "Code11",
-    "Matrix2of5",
+    "Standard2of5",
     "Interleaved2of5",
     "IATAC2of5",
     "Logic2of5",
@@ -149,7 +169,7 @@ static char *s_code_list[] = {
     "Code39",
     "Code39Extended",
     "EAN",
-	"EAN+Check",
+    "EAN+Check",
     "GS1-128",
     "Codabar",
     "Code128",
@@ -164,7 +184,7 @@ static char *s_code_list[] = {
     "GS1DataBarExpanded",
     "Telepen",
     "UPC-A",
-	"UPC-A+Check",
+    "UPC-A+Check",
     "UPC-E",
     "UPC-E+Check",
     "Postnet",
@@ -175,7 +195,7 @@ static char *s_code_list[] = {
     "PZN",
     "PharmaTwo",
     "PDF417",
-    "PDF417Truncated",
+    "PDF417Compact",
     "MaxiCode",
     "QR",
     "Code128B",
@@ -187,17 +207,17 @@ static char *s_code_list[] = {
     "RM4SCC",
     "Datamatrix",
     "EAN14",
-	"VIN",
+    "VIN",
     "CodablockF",
     "NVE18",
     "JapanPost",
     "KoreaPost",
-    "RSS14Stacked",
-    "RSS14SstackedOmni",
-    "RSSExpandedStacked",
+    "GS1DataBarStacked",
+    "GS1DataBarSstackedOmni",
+    "GS1DataBarExpandedStacked",
     "Planet",
     "MicroPDF417",
-    "OneCode",
+    "USPSIntelligentMail",
     "Plessey",
     "TelepenNum",
     "ITF14",
@@ -213,21 +233,21 @@ static char *s_code_list[] = {
     "HIBC-MicroPDF",
     "HIBC-CodablockF",
     "HIBCAztec",
-	"DotCode",
-	"HanXin",
-	"MailMark",
+    "DotCode",
+    "HanXin",
+    "MailMark",
     "AztecRunes",
     "Code32",
     "EAN-CC",
-    "EAN128-CC",
-    "RSS14-CC",
-    "RSSLimited-CC",
-    "RSSEXPanded-CC",
+    "GS1-128-CC",
+    "GS1DataBarOmni-CC",
+    "GS1DataBarLimited-CC",
+    "GS1DataBarExpanded-CC",
     "UPCA-CC",
     "UPCE-CC",
-    "RSS14Stacked-CC",
-    "RSS14Omni-CC",
-    "RSSExpandedStacked-CC",
+    "GS1DataBarStacked-CC",
+    "GS1DataBarStackedOmni-CC",
+    "GS1DataBarExpandedStacked-CC",
     "Channel",
     "CodeOne",
     "GridMatrix",
@@ -392,6 +412,7 @@ static char help_message[] = "zint tcl(stub,obj) dll\n"
     "  data: data to encode in the symbol\n"
     "  photo: a tcl photo image handle ('p' after 'image create photo p')\n"
     "  Available options:\n"
+    "   -addongap number: (7..12, default: 9) set add-on gap in multiple of module size (UPC/EAN-CC)\n"
     "   -barcode choice: symbology, use 'zint symbology' to get a list\n"
     "   -bind bool: bars above/below the code, size set by -border\n"
     "   -border integer: width of a border around the symbol. Use with -bind/-box 1\n"
@@ -573,7 +594,8 @@ static int Encode(Tcl_Interp *interp, int objc,
     int destWidth = 0;
     int destHeight = 0;
     int ECIIndex = 0;
-	int fFullMultiByte = 0;
+    int fFullMultiByte = 0;
+    int addon_gap = 0;
     int Separator = 1;
     /*------------------------------------------------------------------------*/
     /* >> Check if at least data and object is given and a pair number of */
@@ -600,13 +622,13 @@ static int Encode(Tcl_Interp *interp, int objc,
         /*--------------------------------------------------------------------*/
         /* Option list and indexes */
         char *optionList[] = {
-            "-barcode", "-bg", "-bind", "-bold", "-border", "-box", "-cols",
-            "-dmre", "-dotsize", "-dotty", "-eci", "-fg", "-format", "-gssep",
-			"-height", "-init", "-mode", "-notext", "-primary", "-rotate",
-			"-rows", "-scale", "-secure", "-smalltext", "-square", "-to",
-			"-vers", "-whitesp", "-fullmultibyte", "-separator", NULL};
+            "-addongap", "-barcode", "-bg", "-bind", "-bold", "-border", "-box",
+            "-cols", "-dmre", "-dotsize", "-dotty", "-eci", "-fg", "-format",
+            "-gssep", "-height", "-init", "-mode", "-notext", "-primary",
+            "-rotate", "-rows", "-scale", "-secure", "-smalltext", "-square",
+            "-to", "-vers", "-whitesp", "-fullmultibyte", "-separator", NULL};
         enum iOption {
-            iBarcode, iBG, iBind, iBold, iBorder, iBox, iCols,
+            iAddonGap, iBarcode, iBG, iBind, iBold, iBorder, iBox, iCols,
             iDMRE, iDotSize, iDotty, iECI, iFG, iFormat, iGSSep, iHeight,
             iInit, iMode, iNoText, iPrimary, iRotate, iRows,
             iScale, iSecure, iSmallText, iSquare, iTo, iVers,
@@ -664,6 +686,7 @@ static int Encode(Tcl_Interp *interp, int objc,
                 fError = 1;
             }
             break;
+        case iAddonGap:
         case iBorder:
         case iCols:
         case iHeight:
@@ -699,6 +722,15 @@ static int Encode(Tcl_Interp *interp, int objc,
         }
         /*--------------------------------------------------------------------*/
         switch (optionIndex) {
+        case iAddonGap:
+            if (intValue < 7 || intValue > 12) {
+                Tcl_SetObjResult(interp,
+                    Tcl_NewStringObj("Invalid add-on gap value not within 7 to 12", -1));
+                fError = 1;
+            } else {
+                addon_gap = intValue;
+            }
+            break;
         case iBind:
             if (intValue) {
                 hSymbol->output_options |= BARCODE_BIND;
@@ -963,6 +995,12 @@ static int Encode(Tcl_Interp *interp, int objc,
         hSymbol->option_3 = Separator;
     }
     /*------------------------------------------------------------------------*/
+    /* >>> option_2 is set by two values depending on the symbology */
+    /* On wrong symbology, the option is ignored(as does the zint program)*/
+    if (addon_gap && is_extendable(hSymbol->symbology)) {
+        hSymbol->option_2 = addon_gap;
+    }
+    /*------------------------------------------------------------------------*/
     /* >>> Prepare input dstring and encode it to ECI encoding*/
     Tcl_DStringInit(& dsInput);
     /*------------------------------------------------------------------------*/
@@ -1087,6 +1125,27 @@ static int is_stackable(const int symbology) {
         case BARCODE_CODE32:
         case BARCODE_CODABLOCKF:
         case BARCODE_HIBC_BLOCKF:
+            return 1;
+    }
+
+    return 0;
+}
+
+/* Indicates which symbols can have addon (EAN-2 and EAN-5)
+ * Note: if change this must also change version in backend/common.c */
+static int is_extendable(const int symbology) {
+
+    switch (symbology) {
+        case BARCODE_EANX:
+        case BARCODE_EANX_CHK:
+        case BARCODE_UPCA:
+        case BARCODE_UPCA_CHK:
+        case BARCODE_UPCE:
+        case BARCODE_UPCE_CHK:
+        case BARCODE_ISBNX:
+        case BARCODE_EANX_CC:
+        case BARCODE_UPCA_CC:
+        case BARCODE_UPCE_CC:
             return 1;
     }
 

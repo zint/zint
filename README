@@ -162,7 +162,7 @@ Bugs:
 - Ticket 189: FNC1 encodation fixed (FLG(0) missing after FLG(n))
 - PCX format: added missing bytes_per_line if bitmap width is odd.
 
-Version 2.8.1 Not released jet
+Version 2.9.0 Not released jet
 Changes:
 - Dotcode: adopt to AIM DOC Revision 4
 - New option "-separator=" for zint to specify the separator height of stacked
@@ -182,6 +182,25 @@ Changes:
   - Separarator option for DATAMATRIX
   - parse escape sequences
   - gui element reassigments
+- UPC/EAN/ITF-14 Composite: Ticket 72: new option --addongap (default:9) to set
+  the gap between code and composite.
+- TCL Backend: The following symbology names were renamed:
+  - Matrix2of5 -> Standard2of5
+  - PDF417Trunc -> PDF417Compact
+  - RSS14Stacked -> GS1DataBarStacked
+  - RSS14Stacked -> GS1DataBarStacked
+  - RSS14StackedOmni -> GS1DataBarSstackedOmni
+  - RSS14ExpandedStacked -> GS1DataBarExpandedStacked
+  - OneCode -> USPSIntelligentMail
+  - EAN128-CC -> GS1-128-CC
+  - RSS14-CC -> GS1DataBarOmni-CC
+  - RSSLimited-CC -> GS1DataBarLimited-CC
+  - RSSExpandedStacked-CC -> GS1DataBarExpanded-CC
+  - RSSEXPanded-CC -> GS1DataBarExpanded-CC
+  - RSS14Stacked-CC -> GS1DataBarStacked-CC
+  - RSS14Omni-CC -> GS1DataBarStackedOmni-CC
+  - RSSExpandedStacked-CC -> GS1DataBarExpandedStacked-CC
+  *** Potential incompatibility ***
 Bugs:
 - Ticket 185 EMF export corrections
   - fine scaling by the use of float arithmetic
@@ -204,8 +223,8 @@ Bugs:
   - Improve coding of Extended ASCII (FNC4)
   - Checksum calculation overflow protection
   - EAN128 may reduce length
-- Check for incomplete escape sequences on data specification: "\" without following
-  character.
+- Check for incomplete escape sequences on data specification: "\" without
+  following character.
 - Code16K fixes: remove extended ASCII latch, pad character
 - Restructuring to have common code centralized:
   - Code128 routines for Codablock&Code16K
@@ -213,7 +232,16 @@ Bugs:
 - HIBC_39: restrict max length to 68 otherwise to avoid overrun
 - Code One: protect agains overrun
 - Telepen: allow DEL
-
+- GS1 Databar/ GS1-128 Composite:
+  - Separator bar corrections
+  - Ticket 200: spurious additional row
+  - Correct names in GUI
+- Compact PDF417:
+  - Add missing stop pattern.
+  - Rename in GUI: "PDF417 Truncated" to "Compact PDF417".
+- PDF417: Optimize text compaction mode switch.
+- Human readable representation: Code128, Code39, Code93 special characters
+  are shown by a blank.
 
 CONTACT US
 ----------
