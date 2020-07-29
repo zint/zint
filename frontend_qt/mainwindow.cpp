@@ -277,7 +277,7 @@ bool MainWindow::save()
 void MainWindow::about()
 {
     QMessageBox::about(this, tr("About Zint"),
-       tr("<h2>Zint Barcode Studio 2.8.0</h2>"
+       tr("<h2>Zint Barcode Studio 2.9.0 </h2>"
            "<p>A free barcode generator"
            "<p>Instruction manual is available at the project homepage:<br>"
            "<a href=\"http://www.zint.org.uk\">http://www.zint.org.uk</a>"
@@ -1006,7 +1006,7 @@ void MainWindow::update_preview()
                 m_bc.bc.setSymbol(BARCODE_PDF417);
 
             if(m_optionWidget->findChild<QRadioButton*>("radPDFTruncated")->isChecked())
-                m_bc.bc.setSymbol(BARCODE_PDF417TRUNC);
+                m_bc.bc.setSymbol(BARCODE_PDF417COMP);
 
             if(m_optionWidget->findChild<QRadioButton*>("radPDFHIBC")->isChecked())
                 m_bc.bc.setSymbol(BARCODE_HIBC_PDF);

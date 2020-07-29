@@ -26,7 +26,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Zint Barcode Studio 2.8</string>
+   <string>Zint Barcode Studio</string>
   </property>
   <property name="windowIcon">
    <iconset resource="resources.qrc">

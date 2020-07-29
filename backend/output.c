@@ -272,7 +272,7 @@ static int quiet_zones(struct zint_symbol *symbol, int *left, int *right, int *t
             break;
 
         case BARCODE_PDF417:
-        case BARCODE_PDF417TRUNC:
+        case BARCODE_PDF417COMP:
         case BARCODE_HIBC_PDF:
             /* ISO/IEC 15438:2015 Section 5.8.3 */
             *left = *right = *top = *bottom = 2;

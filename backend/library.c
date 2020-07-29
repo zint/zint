@@ -516,7 +516,7 @@ static int supports_eci(const int symbology) {
         case BARCODE_MAXICODE:
         case BARCODE_MICROPDF417:
         case BARCODE_PDF417:
-        case BARCODE_PDF417TRUNC:
+        case BARCODE_PDF417COMP:
         case BARCODE_QRCODE:
         case BARCODE_DOTCODE:
         case BARCODE_GRIDMATRIX:
@@ -570,7 +570,7 @@ int ZBarcode_ValidID(int symbol_id) {
         case BARCODE_PZN:
         case BARCODE_PHARMA_TWO:
         case BARCODE_PDF417:
-        case BARCODE_PDF417TRUNC:
+        case BARCODE_PDF417COMP:
         case BARCODE_MAXICODE:
         case BARCODE_QRCODE:
         case BARCODE_CODE128B:
@@ -830,7 +830,7 @@ static int reduced_charset(struct zint_symbol *symbol, const unsigned char *sour
         case BARCODE_DATAMATRIX: error_number = dmatrix(symbol, preprocessed, in_length);
             break;
         case BARCODE_PDF417:
-        case BARCODE_PDF417TRUNC:
+        case BARCODE_PDF417COMP:
             error_number = pdf417enc(symbol, preprocessed, in_length);
             break;
         case BARCODE_MICROPDF417: error_number = micro_pdf417(symbol, preprocessed, in_length);

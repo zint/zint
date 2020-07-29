@@ -796,7 +796,7 @@ static int pdf417(struct zint_symbol *symbol, unsigned char chaine[], const size
             strcat(pattern, "0");
         }
 
-        if (symbol->symbology != BARCODE_PDF417TRUNC) {
+        if (symbol->symbology != BARCODE_PDF417COMP) {
             bin_append(pdf_bitpattern[offset + dummy[j]], 16, pattern);
             strcat(pattern, "0");
             bin_append(0x3FA29, 18, pattern); /* Row Stop */

@@ -136,7 +136,7 @@ extern "C" {
     };
 
 #define ZINT_VERSION_MAJOR      2
-#define ZINT_VERSION_MINOR      8
+#define ZINT_VERSION_MINOR      9
 #define ZINT_VERSION_RELEASE    0
 
     /* Tbarcode 7 codes */
@@ -180,7 +180,8 @@ extern "C" {
 #define BARCODE_PZN             52
 #define BARCODE_PHARMA_TWO      53
 #define BARCODE_PDF417          55
-#define BARCODE_PDF417TRUNC     56
+#define BARCODE_PDF417COMP      56
+#define BARCODE_PDF417TRUNC     56 // Legacy
 #define BARCODE_MAXICODE        57
 #define BARCODE_QRCODE          58
 #define BARCODE_CODE128B        60

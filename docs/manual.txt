@@ -1023,7 +1023,7 @@ Value   |
 52      | BARCODE_PZN             | PZN
 53      | BARCODE_PHARMA_TWO      | Pharmacode Two-Track
 55      | BARCODE_PDF417          | PDF417
-56      | BARCODE_PDF417TRUNC     | Compact PDF417 (Truncated PDF417)
+56*     | BARCODE_PDF417COMP      | Compact PDF417 (Truncated PDF417)
 57      | BARCODE_MAXICODE        | Maxicode
 58      | BARCODE_QRCODE          | QR Code
 60      | BARCODE_CODE128B        | Code 128 (Subset B)

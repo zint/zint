@@ -286,7 +286,7 @@ char *testUtilBarcodeName(int symbology) {
         { "BARCODE_PHARMA_TWO", BARCODE_PHARMA_TWO, 53 },
         { "", -1, 54 },
         { "BARCODE_PDF417", BARCODE_PDF417, 55 },
-        { "BARCODE_PDF417TRUNC", BARCODE_PDF417TRUNC, 56 },
+        { "BARCODE_PDF417COMP", BARCODE_PDF417COMP, 56 },
         { "BARCODE_MAXICODE", BARCODE_MAXICODE, 57 },
         { "BARCODE_QRCODE", BARCODE_QRCODE, 58 },
         { "", -1, 59 },
@@ -1523,7 +1523,7 @@ static char *testUtilBwippName(int symbology, int option_1, int option_2, int op
         { "pharmacode2", BARCODE_PHARMA_TWO, 53, 0, 0, 0, 0, 0, },
         { "", -1, 54, 0, 0, 0, 0, 0, },
         { "pdf417", BARCODE_PDF417, 55, 1, 1, 0, 0, 0, },
-        { "pdf417compact", BARCODE_PDF417TRUNC, 56, 1, 1, 0, 0, 0, },
+        { "pdf417compact", BARCODE_PDF417COMP, 56, 1, 1, 0, 0, 0, },
         { "maxicode", BARCODE_MAXICODE, 57, 0, 0, 0, 0, 0, },
         { "qrcode", BARCODE_QRCODE, 58, 0, 0, 0, 0, 0, },
         { "", -1, 59, 0, 0, 0, 0, 0, },
@@ -1875,7 +1875,7 @@ int testUtilBwipp(const struct zint_symbol *symbol, int option_1, int option_2, 
                     }
                     bwipp_opts = bwipp_opts_buf; /* Set always as option_2 == 2 is bwipp default */
                 }
-            } else if (symbology == BARCODE_PDF417 || symbology == BARCODE_PDF417TRUNC || symbology == BARCODE_HIBC_PDF
+            } else if (symbology == BARCODE_PDF417 || symbology == BARCODE_PDF417COMP || symbology == BARCODE_HIBC_PDF
                     || symbology == BARCODE_MICROPDF417 || symbology == BARCODE_HIBC_MICPDF) {
                 for (r = 0; r < symbol->rows; r++) bwipp_row_height[r] = 1; /* Change from 3 */
                 if (option_1 >= 0) {
