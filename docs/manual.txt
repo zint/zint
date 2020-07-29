@@ -989,7 +989,7 @@ Numeric | Name                    | Barcode Name
 Value   |
 --------------------------------------------------------------------------------
 1       | BARCODE_CODE11          | Code 11
-2       | BARCODE_C25MATRIX       | Standard Code 2 of 5
+2*      | BARCODE_C25STANDARD     | Standard Code 2 of 5
 3       | BARCODE_C25INTER        | Interleaved 2 of 5
 4       | BARCODE_C25IATA         | Code 2 of 5 IATA
 6       | BARCODE_C25LOGIC        | Code 2 of 5 Data Logic
@@ -998,7 +998,7 @@ Value   |
 9       | BARCODE_EXCODE39        | Extended Code 3 of 9 (Code 39+)
 13      | BARCODE_EANX            | EAN
 14      | BARCODE_EANX_CHK        | EAN + Check Digit
-16      | BARCODE_EAN128          | GS1-128 (UCC.EAN-128)
+16*     | BARCODE_GS1_128         | GS1-128 (UCC.EAN-128)
 18      | BARCODE_CODABAR         | Codabar
 20      | BARCODE_CODE128         | Code 128 (automatic subset switching)
 21      | BARCODE_DPLEIT          | Deutshe Post Leitcode
@@ -1007,9 +1007,9 @@ Value   |
 24      | BARCODE_CODE49          | Code 49
 25      | BARCODE_CODE93          | Code 93
 28      | BARCODE_FLAT            | Flattermarken
-29      | BARCODE_RSS14           | GS1 DataBar Omnidirectional
-30      | BARCODE_RSS_LTD         | GS1 DataBar Limited
-31      | BARCODE_RSS_EXP         | GS1 DataBar Expanded
+29*     | BARCODE_DBAR_OMN        | GS1 DataBar Omnidirectional
+30*     | BARCODE_DBAR_LTD        | GS1 DataBar Limited
+31*     | BARCODE_DBAR_EXP        | GS1 DataBar Expanded
 32      | BARCODE_TELEPEN         | Telepen Alpha
 34      | BARCODE_UPCA            | UPC-A
 35      | BARCODE_UPCA_CHK        | UPC-A + Check Digit
@@ -1040,12 +1040,12 @@ Value   |
 75      | BARCODE_NVE18           | NVE-18 (SSCC-18)
 76      | BARCODE_JAPANPOST       | Japanese Postal Code
 77      | BARCODE_KOREAPOST       | Korea Post
-79      | BARCODE_RSS14STACK      | GS1 DataBar Stacked
-80      | BARCODE_RSS14STACK_OMNI | GS1 DataBar Stacked Omnidirectional
-81      | BARCODE_RSS_EXPSTACK    | GS1 DataBar Expanded Stacked
+79*     | BARCODE_DBAR_STK        | GS1 DataBar Stacked
+80*     | BARCODE_DBAR_OMNSTK     | GS1 DataBar Stacked Omnidirectional
+81*     | BARCODE_DBAR_EXPSTK     | GS1 DataBar Expanded Stacked
 82      | BARCODE_PLANET          | PLANET
 84      | BARCODE_MICROPDF417     | MicroPDF417
-85      | BARCODE_ONECODE         | USPS Intelligent Mail (OneCode)
+85*     | BARCODE_USPS_IMAIL      | USPS Intelligent Mail (OneCode)
 86      | BARCODE_PLESSEY         | Plessey Code
 87      | BARCODE_TELEPEN_NUM     | Telepen Numeric
 89      | BARCODE_ITF14           | ITF-14
@@ -1067,21 +1067,21 @@ Value   |
 128     | BARCODE_AZRUNE          | Aztec Runes
 129     | BARCODE_CODE32          | Code 32
 130     | BARCODE_EANX_CC         | Composite Symbol with EAN linear component
-131     | BARCODE_EAN128_CC       | Composite Symbol with GS1-128 linear
+131*    | BARCODE_GS1_128_CC      | Composite Symbol with GS1-128 linear
         |                         |    component
-132     | BARCODE_RSS14_CC        | Composite Symbol with GS1 DataBar
+132*    | BARCODE_DBAR_OMN_CC     | Composite Symbol with GS1 DataBar
         |                         |    Omnidirectional linear component
-133     | BARCODE_RSS_LTD_CC      | Composite Symbol with GS1 DataBar Limited
+133*    | BARCODE_DBAR_LTD_CC     | Composite Symbol with GS1 DataBar Limited
         |                         |    linear component
-134     | BARCODE_RSS_EXP_CC      | Composite Symbol with GS1 DataBar Expanded
+134*    | BARCODE_DBAR_EXP_CC     | Composite Symbol with GS1 DataBar Expanded
         |                         |    linear component
 135     | BARCODE_UPCA_CC         | Composite Symbol with UPC-A linear component
 136     | BARCODE_UPCE_CC         | Composite Symbol with UPC-E linear component
-137     | BARCODE_RSS14STACK_CC   | Composite Symbol with GS1 DataBar Stacked
+137*    | BARCODE_DBAR_STK_CC     | Composite Symbol with GS1 DataBar Stacked
         |                         |    component
-138     | BARCODE_RSS14_OMNI_CC   | Composite Symbol with GS1 DataBar Stacked
+138*    | BARCODE_DBAR_OMNSTK_CC  | Composite Symbol with GS1 DataBar Stacked
         |                         |    Omnidirectional component
-139     | BARCODE_RSS_EXPSTACK_CC | Composite Symbol with GS1 DataBar Expanded
+139*    | BARCODE_DBAR_EXPSTK_CC  | Composite Symbol with GS1 DataBar Expanded
         |                         |    Stacked component
 140     | BARCODE_CHANNEL         | Channel Code
 141     | BARCODE_CODEONE         | Code One
@@ -1090,6 +1090,11 @@ Value   |
 144     | BARCODE_ULTRA           | Ultracode
 145     | BARCODE_RMQR            | Rectangular Micro QR Code (rMQR)
 --------------------------------------------------------------------------------
+
+Note: Symbologies marked with an asterisk (*) in the above table used different
+enumeration in Zint before version 2.9.0. For example, symbology 29 used the name
+"BARCODE_RSS14". These names are now depreciated but are still recognised by
+Zint and will continue to be supported in future versions.
 
 5.8 Adjusting other output options
 ----------------------------------
@@ -1686,21 +1691,21 @@ Numeric | Name                    | Barcode Name
 Value   |
 --------------------------------------------------------------------------------
 130     | BARCODE_EANX_CC         | Composite Symbol with EAN linear component
-131     | BARCODE_EAN128_CC       | Composite Symbol with GS1-128 linear
+131     | BARCODE_GS1_128_CC      | Composite Symbol with GS1-128 linear
         |                         |    component
-132     | BARCODE_RSS14_CC        | Composite Symbol with GS1 DataBar
+132     | BARCODE_DBAR_OMN_CC     | Composite Symbol with GS1 DataBar
         |                         |    Omnidirectional linear component
-133     | BARCODE_RSS_LTD_CC      | Composite Symbol with GS1 DataBar Limited
+133     | BARCODE_DBAR_LTD_CC     | Composite Symbol with GS1 DataBar Limited
         |                         |    linear component
-134     | BARCODE_RSS_EXP_CC      | Composite Symbol with GS1 DataBar Expanded
+134     | BARCODE_DBAR_EXP_CC     | Composite Symbol with GS1 DataBar Expanded
         |                         |    linear component
 135     | BARCODE_UPCA_CC         | Composite Symbol with UPC-A linear component
 136     | BARCODE_UPCE_CC         | Composite Symbol with UPC-E linear component
-137     | BARCODE_RSS14STACK_CC   | Composite Symbol with GS1 DataBar Stacked
+137     | BARCODE_DBAR_STK_CC     | Composite Symbol with GS1 DataBar Stacked
         |                         |    component
-138     | BARCODE_RSS14_OMNI_CC   | Composite Symbol with GS1 DataBar Stacked
+138     | BARCODE_DBAR_OMNSTK_CC  | Composite Symbol with GS1 DataBar Stacked
         |                         |    Omnidirectional component
-139     | BARCODE_RSS_EXPSTACK_CC | Composite Symbol with GS1 DataBar Expanded
+139     | BARCODE_DBAR_EXPSTK_CC  | Composite Symbol with GS1 DataBar Expanded
         |                         |    Stacked component
 --------------------------------------------------------------------------------
 

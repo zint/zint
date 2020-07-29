@@ -381,11 +381,11 @@ static int check_force_gs1(const int symbology) {
     int result = is_composite(symbology);
 
     switch (symbology) {
-        case BARCODE_EAN128:
+        case BARCODE_GS1_128:
         case BARCODE_EAN14:
         case BARCODE_NVE18:
-        case BARCODE_RSS_EXP:
-        case BARCODE_RSS_EXPSTACK:
+        case BARCODE_DBAR_EXP:
+        case BARCODE_DBAR_EXPSTK:
             result = 1;
             break;
     }
@@ -448,7 +448,7 @@ static int is_linear(const int symbology) {
     int result = 0;
     switch (symbology) {
         case BARCODE_CODE11:
-        case BARCODE_C25MATRIX:
+        case BARCODE_C25STANDARD:
         case BARCODE_C25INTER:
         case BARCODE_C25IATA:
         case BARCODE_C25LOGIC:
@@ -457,16 +457,16 @@ static int is_linear(const int symbology) {
         case BARCODE_EXCODE39:
         case BARCODE_EANX:
         case BARCODE_EANX_CHK:
-        case BARCODE_EAN128:
+        case BARCODE_GS1_128:
         case BARCODE_CODABAR:
         case BARCODE_CODE128:
         case BARCODE_DPLEIT:
         case BARCODE_DPIDENT:
         case BARCODE_CODE93:
         case BARCODE_FLAT:
-        case BARCODE_RSS14:
-        case BARCODE_RSS_LTD:
-        case BARCODE_RSS_EXP:
+        case BARCODE_DBAR_OMN:
+        case BARCODE_DBAR_LTD:
+        case BARCODE_DBAR_EXP:
         case BARCODE_TELEPEN:
         case BARCODE_UPCA:
         case BARCODE_UPCA_CHK:
@@ -482,7 +482,7 @@ static int is_linear(const int symbology) {
         case BARCODE_EAN14:
         case BARCODE_NVE18:
         case BARCODE_KOREAPOST:
-        case BARCODE_ONECODE:
+        case BARCODE_USPS_IMAIL:
         case BARCODE_PLESSEY:
         case BARCODE_TELEPEN_NUM:
         case BARCODE_ITF14:
@@ -490,10 +490,10 @@ static int is_linear(const int symbology) {
         case BARCODE_HIBC_39:
         case BARCODE_CODE32:
         case BARCODE_EANX_CC:
-        case BARCODE_EAN128_CC:
-        case BARCODE_RSS14_CC:
-        case BARCODE_RSS_LTD_CC:
-        case BARCODE_RSS_EXP_CC:
+        case BARCODE_GS1_128_CC:
+        case BARCODE_DBAR_OMN_CC:
+        case BARCODE_DBAR_LTD_CC:
+        case BARCODE_DBAR_EXP_CC:
         case BARCODE_UPCA_CC:
         case BARCODE_UPCE_CC:
         case BARCODE_CHANNEL:
@@ -536,7 +536,7 @@ int ZBarcode_ValidID(int symbol_id) {
 
     switch (symbol_id) {
         case BARCODE_CODE11:
-        case BARCODE_C25MATRIX:
+        case BARCODE_C25STANDARD:
         case BARCODE_C25INTER:
         case BARCODE_C25IATA:
         case BARCODE_C25LOGIC:
@@ -545,7 +545,7 @@ int ZBarcode_ValidID(int symbol_id) {
         case BARCODE_EXCODE39:
         case BARCODE_EANX:
         case BARCODE_EANX_CHK:
-        case BARCODE_EAN128:
+        case BARCODE_GS1_128:
         case BARCODE_CODABAR:
         case BARCODE_CODE128:
         case BARCODE_DPLEIT:
@@ -554,9 +554,9 @@ int ZBarcode_ValidID(int symbol_id) {
         case BARCODE_CODE49:
         case BARCODE_CODE93:
         case BARCODE_FLAT:
-        case BARCODE_RSS14:
-        case BARCODE_RSS_LTD:
-        case BARCODE_RSS_EXP:
+        case BARCODE_DBAR_OMN:
+        case BARCODE_DBAR_LTD:
+        case BARCODE_DBAR_EXP:
         case BARCODE_TELEPEN:
         case BARCODE_UPCA:
         case BARCODE_UPCA_CHK:
@@ -585,12 +585,12 @@ int ZBarcode_ValidID(int symbol_id) {
         case BARCODE_NVE18:
         case BARCODE_JAPANPOST:
         case BARCODE_KOREAPOST:
-        case BARCODE_RSS14STACK:
-        case BARCODE_RSS14STACK_OMNI:
-        case BARCODE_RSS_EXPSTACK:
+        case BARCODE_DBAR_STK:
+        case BARCODE_DBAR_OMNSTK:
+        case BARCODE_DBAR_EXPSTK:
         case BARCODE_PLANET:
         case BARCODE_MICROPDF417:
-        case BARCODE_ONECODE:
+        case BARCODE_USPS_IMAIL:
         case BARCODE_PLESSEY:
         case BARCODE_TELEPEN_NUM:
         case BARCODE_ITF14:
@@ -609,15 +609,15 @@ int ZBarcode_ValidID(int symbol_id) {
         case BARCODE_AZRUNE:
         case BARCODE_CODE32:
         case BARCODE_EANX_CC:
-        case BARCODE_EAN128_CC:
-        case BARCODE_RSS14_CC:
-        case BARCODE_RSS_LTD_CC:
-        case BARCODE_RSS_EXP_CC:
+        case BARCODE_GS1_128_CC:
+        case BARCODE_DBAR_OMN_CC:
+        case BARCODE_DBAR_LTD_CC:
+        case BARCODE_DBAR_EXP_CC:
         case BARCODE_UPCA_CC:
         case BARCODE_UPCE_CC:
-        case BARCODE_RSS14STACK_CC:
-        case BARCODE_RSS14_OMNI_CC:
-        case BARCODE_RSS_EXPSTACK_CC:
+        case BARCODE_DBAR_STK_CC:
+        case BARCODE_DBAR_OMNSTK_CC:
+        case BARCODE_DBAR_EXPSTK_CC:
         case BARCODE_CHANNEL:
         case BARCODE_CODEONE:
         case BARCODE_GRIDMATRIX:
@@ -693,7 +693,7 @@ static int reduced_charset(struct zint_symbol *symbol, const unsigned char *sour
     }
 
     switch (symbol->symbology) {
-        case BARCODE_C25MATRIX: error_number = matrix_two_of_five(symbol, preprocessed, in_length);
+        case BARCODE_C25STANDARD: error_number = matrix_two_of_five(symbol, preprocessed, in_length);
             break;
         case BARCODE_C25IND: error_number = industrial_two_of_five(symbol, preprocessed, in_length);
             break;
@@ -715,7 +715,7 @@ static int reduced_charset(struct zint_symbol *symbol, const unsigned char *sour
         case BARCODE_EANX_CHK:
             error_number = eanx(symbol, preprocessed, in_length);
             break;
-        case BARCODE_EAN128: error_number = ean_128(symbol, preprocessed, in_length);
+        case BARCODE_GS1_128: error_number = ean_128(symbol, preprocessed, in_length);
             break;
         case BARCODE_CODE39: error_number = c39(symbol, preprocessed, in_length);
             break;
@@ -769,31 +769,31 @@ static int reduced_charset(struct zint_symbol *symbol, const unsigned char *sour
             break;
         case BARCODE_PHARMA_TWO: error_number = pharma_two(symbol, preprocessed, in_length);
             break;
-        case BARCODE_ONECODE: error_number = imail(symbol, preprocessed, in_length);
+        case BARCODE_USPS_IMAIL: error_number = imail(symbol, preprocessed, in_length);
             break;
         case BARCODE_ISBNX: error_number = eanx(symbol, preprocessed, in_length);
             break;
-        case BARCODE_RSS14:
-        case BARCODE_RSS14STACK:
-        case BARCODE_RSS14STACK_OMNI:
+        case BARCODE_DBAR_OMN:
+        case BARCODE_DBAR_STK:
+        case BARCODE_DBAR_OMNSTK:
             error_number = rss14(symbol, preprocessed, in_length);
             break;
-        case BARCODE_RSS_LTD: error_number = rsslimited(symbol, preprocessed, in_length);
+        case BARCODE_DBAR_LTD: error_number = rsslimited(symbol, preprocessed, in_length);
             break;
-        case BARCODE_RSS_EXP:
-        case BARCODE_RSS_EXPSTACK:
+        case BARCODE_DBAR_EXP:
+        case BARCODE_DBAR_EXPSTK:
             error_number = rssexpanded(symbol, preprocessed, in_length);
             break;
         case BARCODE_EANX_CC:
-        case BARCODE_EAN128_CC:
-        case BARCODE_RSS14_CC:
-        case BARCODE_RSS_LTD_CC:
-        case BARCODE_RSS_EXP_CC:
+        case BARCODE_GS1_128_CC:
+        case BARCODE_DBAR_OMN_CC:
+        case BARCODE_DBAR_LTD_CC:
+        case BARCODE_DBAR_EXP_CC:
         case BARCODE_UPCA_CC:
         case BARCODE_UPCE_CC:
-        case BARCODE_RSS14STACK_CC:
-        case BARCODE_RSS14_OMNI_CC:
-        case BARCODE_RSS_EXPSTACK_CC:
+        case BARCODE_DBAR_STK_CC:
+        case BARCODE_DBAR_OMNSTK_CC:
+        case BARCODE_DBAR_EXPSTK_CC:
             error_number = composite(symbol, preprocessed, in_length);
             break;
         case BARCODE_KIX: error_number = kix_code(symbol, preprocessed, in_length);
@@ -1007,7 +1007,7 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
 
     /* symbol->symbologys 1 to 86 are defined by tbarcode */
     if (symbol->symbology == 5) {
-        symbol->symbology = BARCODE_C25MATRIX;
+        symbol->symbology = BARCODE_C25STANDARD;
     }
     if ((symbol->symbology >= 10) && (symbol->symbology <= 12)) {
         symbol->symbology = BARCODE_EANX;
@@ -1031,7 +1031,7 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
         error_number = ZINT_ERROR_INVALID_OPTION;
     }
     if (symbol->symbology == 33) {
-        symbol->symbology = BARCODE_EAN128;
+        symbol->symbology = BARCODE_GS1_128;
     }
     if (symbol->symbology == 36) {
         symbol->symbology = BARCODE_UPCA;
@@ -1060,13 +1060,13 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
         symbol->symbology = BARCODE_AUSPOST;
     }
     if (symbol->symbology == 78) {
-        symbol->symbology = BARCODE_RSS14;
+        symbol->symbology = BARCODE_DBAR_OMN;
     }
     if (symbol->symbology == 83) {
         symbol->symbology = BARCODE_PLANET;
     }
     if (symbol->symbology == 88) {
-        symbol->symbology = BARCODE_EAN128;
+        symbol->symbology = BARCODE_GS1_128;
     }
     if (symbol->symbology == 91) {
         strcpy(symbol->errtxt, "212: Symbology out of range, using Code 128");

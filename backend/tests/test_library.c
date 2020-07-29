@@ -58,10 +58,10 @@ static void test_checks(int index, int debug) {
         /* 3*/ { BARCODE_QRCODE, "1234", -1, -1, 999999 + 1, -1, ZINT_ERROR_INVALID_OPTION, "Error 218: Invalid ECI mode" },
         /* 4*/ { BARCODE_CODE128, "1234", -1, -1, -1, 20.1, ZINT_ERROR_INVALID_OPTION, "Error 221: Invalid dot size" },
         /* 5*/ { BARCODE_CODE128, "1234", -1, GS1_MODE, -1, -1, ZINT_ERROR_INVALID_OPTION, "Error 220: Selected symbology does not support GS1 mode" },
-        /* 6*/ { BARCODE_EAN128, "[21]12\0004", 8, GS1_MODE, -1, -1, ZINT_ERROR_INVALID_DATA, "Error 262: NUL characters not permitted in GS1 mode" },
-        /* 7*/ { BARCODE_EAN128, "[21]12é4", -1, GS1_MODE, -1, -1, ZINT_ERROR_INVALID_DATA, "Error 250: Extended ASCII characters are not supported by GS1" },
-        /* 8*/ { BARCODE_EAN128, "[21]12\0074", -1, GS1_MODE, -1, -1, ZINT_ERROR_INVALID_DATA, "Error 251: Control characters are not supported by GS1" },
-        /* 9*/ { BARCODE_EAN128, "[21]1234", -1, GS1_MODE, -1, -1, 0, "" },
+        /* 6*/ { BARCODE_GS1_128, "[21]12\0004", 8, GS1_MODE, -1, -1, ZINT_ERROR_INVALID_DATA, "Error 262: NUL characters not permitted in GS1 mode" },
+        /* 7*/ { BARCODE_GS1_128, "[21]12é4", -1, GS1_MODE, -1, -1, ZINT_ERROR_INVALID_DATA, "Error 250: Extended ASCII characters are not supported by GS1" },
+        /* 8*/ { BARCODE_GS1_128, "[21]12\0074", -1, GS1_MODE, -1, -1, ZINT_ERROR_INVALID_DATA, "Error 251: Control characters are not supported by GS1" },
+        /* 9*/ { BARCODE_GS1_128, "[21]1234", -1, GS1_MODE, -1, -1, 0, "" },
     };
     int data_size = sizeof(data) / sizeof(struct item);
 

@@ -46,8 +46,8 @@ static void test_large(int index, int debug) {
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /*  0*/ { BARCODE_C25MATRIX, "1", 80, 0, 1, 817 },
-        /*  1*/ { BARCODE_C25MATRIX, "1", 81, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  0*/ { BARCODE_C25STANDARD, "1", 80, 0, 1, 817 },
+        /*  1*/ { BARCODE_C25STANDARD, "1", 81, ZINT_ERROR_TOO_LONG, -1, -1 },
         /*  2*/ { BARCODE_C25INTER, "1", 89, 0, 1, 819 },
         /*  3*/ { BARCODE_C25INTER, "1", 90, ZINT_ERROR_TOO_LONG, -1, -1 },
         /*  4*/ { BARCODE_C25IATA, "1", 45, 0, 1, 639 },
@@ -105,7 +105,7 @@ static void test_hrt(int index, int debug) {
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /*  0*/ { BARCODE_C25MATRIX, "123456789", "123456789" },
+        /*  0*/ { BARCODE_C25STANDARD, "123456789", "123456789" },
         /*  1*/ { BARCODE_C25INTER, "123456789", "0123456789" }, // Adds leading zero if odd
         /*  2*/ { BARCODE_C25IATA, "123456789", "123456789" },
         /*  3*/ { BARCODE_C25LOGIC, "123456789", "123456789" },
@@ -155,7 +155,7 @@ static void test_input(int index, int debug) {
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /*  0*/ { BARCODE_C25MATRIX, "A", ZINT_ERROR_INVALID_DATA, -1, -1 },
+        /*  0*/ { BARCODE_C25STANDARD, "A", ZINT_ERROR_INVALID_DATA, -1, -1 },
         /*  1*/ { BARCODE_C25INTER, "A", ZINT_ERROR_INVALID_DATA, -1, -1 },
         /*  2*/ { BARCODE_C25IATA, "A", ZINT_ERROR_INVALID_DATA, -1, -1 },
         /*  3*/ { BARCODE_C25LOGIC, "A", ZINT_ERROR_INVALID_DATA, -1, -1 },
@@ -208,7 +208,7 @@ static void test_encode(int index, int generate, int debug) {
     };
     // BARCODE_ITF14 examples verified manually against GS1 General Specifications 20.0
     struct item data[] = {
-        /*  0*/ { BARCODE_C25MATRIX, "87654321", 0, 1, 97, "Standard Code 2 of 5; note zint uses 4X start/end wides while BWIPP uses 3X",
+        /*  0*/ { BARCODE_C25STANDARD, "87654321", 0, 1, 97, "Standard Code 2 of 5; note zint uses 4X start/end wides while BWIPP uses 3X",
                     "1111010101110100010101000111010001110101110111010101110111011100010101000101110111010111011110101"
                 },
         /*  1*/ { BARCODE_C25INTER, "87654321", 0, 1, 81, "Interleaved Code 2 of 5; verified manually against tec-it",

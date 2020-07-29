@@ -141,7 +141,8 @@ extern "C" {
 
     /* Tbarcode 7 codes */
 #define BARCODE_CODE11          1
-#define BARCODE_C25MATRIX       2
+#define BARCODE_C25STANDARD     2
+#define BARCODE_C25MATRIX       2 // Legacy
 #define BARCODE_C25INTER        3
 #define BARCODE_C25IATA         4
 #define BARCODE_C25LOGIC        6
@@ -150,7 +151,8 @@ extern "C" {
 #define BARCODE_EXCODE39        9
 #define BARCODE_EANX            13
 #define BARCODE_EANX_CHK        14
-#define BARCODE_EAN128          16
+#define BARCODE_GS1_128         16
+#define BARCODE_EAN128          16 // Legacy
 #define BARCODE_CODABAR         18
 #define BARCODE_CODE128         20
 #define BARCODE_DPLEIT          21
@@ -159,9 +161,12 @@ extern "C" {
 #define BARCODE_CODE49          24
 #define BARCODE_CODE93          25
 #define BARCODE_FLAT            28
-#define BARCODE_RSS14           29
-#define BARCODE_RSS_LTD         30
-#define BARCODE_RSS_EXP         31
+#define BARCODE_DBAR_OMN        29
+#define BARCODE_RSS14           29 // Legacy
+#define BARCODE_DBAR_LTD        30
+#define BARCODE_RSS_LTD         30 // Legacy
+#define BARCODE_DBAR_EXP        31
+#define BARCODE_RSS_EXP         31 // Legacy
 #define BARCODE_TELEPEN         32
 #define BARCODE_UPCA            34
 #define BARCODE_UPCA_CHK        35
@@ -192,12 +197,16 @@ extern "C" {
 #define BARCODE_NVE18           75
 #define BARCODE_JAPANPOST       76
 #define BARCODE_KOREAPOST       77
-#define BARCODE_RSS14STACK      79
-#define BARCODE_RSS14STACK_OMNI 80
-#define BARCODE_RSS_EXPSTACK    81
+#define BARCODE_DBAR_STK        79
+#define BARCODE_RSS14STACK      79 // Legacy
+#define BARCODE_DBAR_OMNSTK     80
+#define BARCODE_RSS14STACK_OMNI 80 // Legacy
+#define BARCODE_DBAR_EXPSTK     81
+#define BARCODE_RSS_EXPSTACK    81 // Legacy
 #define BARCODE_PLANET          82
 #define BARCODE_MICROPDF417     84
-#define BARCODE_ONECODE         85
+#define BARCODE_USPS_IMAIL      85
+#define BARCODE_ONECODE         85 // Legacy
 #define BARCODE_PLESSEY         86
 
     /* Tbarcode 8 codes */
@@ -229,15 +238,22 @@ extern "C" {
 #define BARCODE_AZRUNE          128
 #define BARCODE_CODE32          129
 #define BARCODE_EANX_CC         130
-#define BARCODE_EAN128_CC       131
-#define BARCODE_RSS14_CC        132
-#define BARCODE_RSS_LTD_CC      133
-#define BARCODE_RSS_EXP_CC      134
+#define BARCODE_GS1_128_CC      131
+#define BARCODE_EAN128_CC       131 // Legacy
+#define BARCODE_DBAR_OMN_CC     132
+#define BARCODE_RSS14_CC        132 // Legacy
+#define BARCODE_DBAR_LTD_CC     133
+#define BARCODE_RSS_LTD_CC      133 // Legacy
+#define BARCODE_DBAR_EXP_CC     134
+#define BARCODE_RSS_EXP_CC      134 // Legacy
 #define BARCODE_UPCA_CC         135
 #define BARCODE_UPCE_CC         136
-#define BARCODE_RSS14STACK_CC   137
-#define BARCODE_RSS14_OMNI_CC   138
-#define BARCODE_RSS_EXPSTACK_CC 139
+#define BARCODE_DBAR_STK_CC     137
+#define BARCODE_RSS14STACK_CC   137 // Legacy
+#define BARCODE_DBAR_OMNSTK_CC  138
+#define BARCODE_RSS14_OMNI_CC   138 // Legacy
+#define BARCODE_DBAR_EXPSTK_CC  139
+#define BARCODE_RSS_EXPSTACK_CC 139 // Legacy
 #define BARCODE_CHANNEL         140
 #define BARCODE_CODEONE         141
 #define BARCODE_GRIDMATRIX      142

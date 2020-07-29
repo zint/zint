@@ -133,7 +133,7 @@ static void test_reduced_charset_input(int index, int debug) {
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
         /*  0*/ { BARCODE_CODE11, UNICODE_MODE, 0, "é", ZINT_ERROR_INVALID_DATA, -1, "ASCII subset only" },
-        /*  1*/ { BARCODE_C25MATRIX, UNICODE_MODE, 0, "é", ZINT_ERROR_INVALID_DATA, -1, "Numbers only" },
+        /*  1*/ { BARCODE_C25STANDARD, UNICODE_MODE, 0, "é", ZINT_ERROR_INVALID_DATA, -1, "Numbers only" },
         /*  2*/ { BARCODE_CODE39, UNICODE_MODE, 0, "é", ZINT_ERROR_INVALID_DATA, -1, "ASCII subset only" },
         /*  3*/ { BARCODE_EXCODE39, UNICODE_MODE, 0, "é", ZINT_ERROR_INVALID_DATA, -1, "ASCII only" },
         /*  4*/ { BARCODE_EANX, UNICODE_MODE, 0, "é", ZINT_ERROR_INVALID_DATA, -1, "Numbers only" },
@@ -148,8 +148,8 @@ static void test_reduced_charset_input(int index, int debug) {
         /* 13*/ { BARCODE_CODE49, UNICODE_MODE, 0, "é", ZINT_ERROR_INVALID_DATA, -1, "ASCII only" },
         /* 14*/ { BARCODE_CODE93, UNICODE_MODE, 0, "é", ZINT_ERROR_INVALID_DATA, -1, "ASCII subset only" },
         /* 15*/ { BARCODE_FLAT, UNICODE_MODE, 0, "é", ZINT_ERROR_INVALID_DATA, -1, "Numbers only" },
-        /* 16*/ { BARCODE_RSS14, UNICODE_MODE, 0, "é", ZINT_ERROR_INVALID_DATA, -1, "Numbers only" },
-        /* 17*/ { BARCODE_RSS_EXP, UNICODE_MODE, 0, "é", ZINT_ERROR_INVALID_DATA, -1, "ASCII subset only" },
+        /* 16*/ { BARCODE_DBAR_OMN, UNICODE_MODE, 0, "é", ZINT_ERROR_INVALID_DATA, -1, "Numbers only" },
+        /* 17*/ { BARCODE_DBAR_EXP, UNICODE_MODE, 0, "é", ZINT_ERROR_INVALID_DATA, -1, "ASCII subset only" },
         /* 18*/ { BARCODE_LOGMARS, UNICODE_MODE, 0, "é", ZINT_ERROR_INVALID_DATA, -1, "ASCII subset only" },
         /* 19*/ { BARCODE_PDF417, UNICODE_MODE, 0, "é", 0, 0, "" },
         /* 20*/ { BARCODE_PDF417, UNICODE_MODE, 3, "é", 0, 3, "Supports ECI" },
@@ -193,7 +193,7 @@ static void test_reduced_charset_input(int index, int debug) {
         /* 58*/ { BARCODE_MICROPDF417, UNICODE_MODE, 0, "β", ZINT_WARN_USES_ECI, 9, "" },
         /* 59*/ { BARCODE_MICROPDF417, UNICODE_MODE, 9, "β", 0, 9, "" },
         /* 60*/ { BARCODE_MICROPDF417, UNICODE_MODE, 26, "テ", 0, 26, "" },
-        /* 61*/ { BARCODE_ONECODE, UNICODE_MODE, 0, "é", ZINT_ERROR_INVALID_DATA, -1, "Numbers/dash only" },
+        /* 61*/ { BARCODE_USPS_IMAIL, UNICODE_MODE, 0, "é", ZINT_ERROR_INVALID_DATA, -1, "Numbers/dash only" },
         /* 62*/ { BARCODE_AZTEC, UNICODE_MODE, 0, "é", 0, 0, "" },
         /* 63*/ { BARCODE_AZTEC, UNICODE_MODE, 3, "é", 0, 3, "Supports ECI" },
         /* 64*/ { BARCODE_AZTEC, UNICODE_MODE, 0, "β", ZINT_WARN_USES_ECI, 9, "" },

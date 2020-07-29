@@ -170,7 +170,7 @@ static int quiet_zones(struct zint_symbol *symbol, int *left, int *right, int *t
             /* TODO */
             break;
 
-        case BARCODE_C25MATRIX:
+        case BARCODE_C25STANDARD:
         case BARCODE_C25INTER:
         case BARCODE_C25IATA:
         case BARCODE_C25LOGIC:
@@ -190,8 +190,8 @@ static int quiet_zones(struct zint_symbol *symbol, int *left, int *right, int *t
             *left = *right = 10;
             done = 1;
             break;
-        case BARCODE_EAN128: /* GS1-128 */
-        case BARCODE_EAN128_CC:
+        case BARCODE_GS1_128: /* GS1-128 */
+        case BARCODE_GS1_128_CC:
         case BARCODE_EAN14:
             /* GS1 General Specifications 20.0 Section 5.4.4.2 */
             *left = *right = 10;
@@ -224,22 +224,22 @@ static int quiet_zones(struct zint_symbol *symbol, int *left, int *right, int *t
             /* TODO */
             break;
 
-        case BARCODE_RSS14: /* GS1 Databar Omnidirectional */
-        case BARCODE_RSS_LTD: /* GS1 Databar Limited */
-        case BARCODE_RSS_EXP: /* GS1 Databar Expanded */
-        case BARCODE_RSS14STACK: /* GS1 DataBar Stacked */
-        case BARCODE_RSS14STACK_OMNI: /* GS1 DataBar Stacked Omnidirectional */
-        case BARCODE_RSS_EXPSTACK: /* GS1 Databar Expanded Stacked */
+        case BARCODE_DBAR_OMN: /* GS1 Databar Omnidirectional */
+        case BARCODE_DBAR_LTD: /* GS1 Databar Limited */
+        case BARCODE_DBAR_EXP: /* GS1 Databar Expanded */
+        case BARCODE_DBAR_STK: /* GS1 DataBar Stacked */
+        case BARCODE_DBAR_OMNSTK: /* GS1 DataBar Stacked Omnidirectional */
+        case BARCODE_DBAR_EXPSTK: /* GS1 Databar Expanded Stacked */
             /* GS1 General Specifications 20.0 Section 5.5.1.1 - Quiet Zones: None required */
             *left = *right = 0;
             done = 1;
             break;
-        case BARCODE_RSS14_CC:
-        case BARCODE_RSS_LTD_CC:
-        case BARCODE_RSS_EXP_CC:
-        case BARCODE_RSS14STACK_CC:
-        case BARCODE_RSS14_OMNI_CC:
-        case BARCODE_RSS_EXPSTACK_CC:
+        case BARCODE_DBAR_OMN_CC:
+        case BARCODE_DBAR_LTD_CC:
+        case BARCODE_DBAR_EXP_CC:
+        case BARCODE_DBAR_STK_CC:
+        case BARCODE_DBAR_OMNSTK_CC:
+        case BARCODE_DBAR_EXPSTK_CC:
             /* GS1 General Specifications 20.0 Sections 5.9.2.1 (CC-A) & 5.9.2.2 (CC-B) */
             *left = *right = 1;
             done = 1;
@@ -335,7 +335,7 @@ static int quiet_zones(struct zint_symbol *symbol, int *left, int *right, int *t
             /* TODO */
             break;
 
-        case BARCODE_ONECODE:
+        case BARCODE_USPS_IMAIL:
             /* USPS-B-3200 (2015) Section 2.3.2 left/right 0.125" ~ 6X, top/bottom 0.026" ~ 1X */
             *left = *right = 6; // TODO: Proper inch to X calc
             *top = *bottom = 1; // TODO: Proper inch to X calc

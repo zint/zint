@@ -725,7 +725,7 @@ INTERNAL int ean_128(struct zint_symbol *symbol, unsigned char source[], const s
     }
 
     /* if part of a composite symbol make room for the separator pattern */
-    if (symbol->symbology == BARCODE_EAN128_CC) {
+    if (symbol->symbology == BARCODE_GS1_128_CC) {
         separator_row = symbol->rows;
         symbol->row_height[symbol->rows] = 1;
         symbol->rows += 1;
@@ -998,7 +998,7 @@ INTERNAL int ean_128(struct zint_symbol *symbol, unsigned char source[], const s
     expand(symbol, dest);
 
     /* Add the separator pattern for composite symbols */
-    if (symbol->symbology == BARCODE_EAN128_CC) {
+    if (symbol->symbology == BARCODE_GS1_128_CC) {
         for (i = 0; i < symbol->width; i++) {
             if (!(module_is_set(symbol, separator_row + 1, i))) {
                 set_module(symbol, separator_row, i);

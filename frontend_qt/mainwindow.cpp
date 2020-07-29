@@ -713,7 +713,7 @@ void MainWindow::change_options()
         connect(m_optionWidget->findChild<QObject*>("radC49GS1"), SIGNAL(toggled( bool )), SLOT(update_preview()));
     }
 
-    if (symbology == BARCODE_RSS_EXPSTACK)
+    if (symbology == BARCODE_DBAR_EXPSTK)
     {
         QFile file(":/grpDBExtend.ui");
         if (!file.open(QIODevice::ReadOnly))
@@ -786,12 +786,12 @@ void MainWindow::change_options()
         case BARCODE_EANX:
         case BARCODE_UPCA:
         case BARCODE_UPCE:
-        case BARCODE_RSS14:
-        case BARCODE_RSS_LTD:
-        case BARCODE_RSS_EXP:
-        case BARCODE_RSS14STACK:
-        case BARCODE_RSS14STACK_OMNI:
-        case BARCODE_RSS_EXPSTACK:
+        case BARCODE_DBAR_OMN:
+        case BARCODE_DBAR_LTD:
+        case BARCODE_DBAR_EXP:
+        case BARCODE_DBAR_STK:
+        case BARCODE_DBAR_OMNSTK:
+        case BARCODE_DBAR_EXPSTK:
             grpComposite->show();
             break;
         default:
@@ -916,9 +916,9 @@ void MainWindow::update_preview()
             if(m_optionWidget->findChild<QRadioButton*>("radC128EAN")->isChecked())
             {
                 if(chkComposite->isChecked())
-                    m_bc.bc.setSymbol(BARCODE_EAN128_CC);
+                    m_bc.bc.setSymbol(BARCODE_GS1_128_CC);
                 else
-                    m_bc.bc.setSymbol(BARCODE_EAN128);
+                    m_bc.bc.setSymbol(BARCODE_GS1_128);
             }
 
             if(m_optionWidget->findChild<QRadioButton*>("radC128HIBC")->isChecked())
@@ -954,46 +954,46 @@ void MainWindow::update_preview()
             upcean_addon_gap(m_optionWidget->findChild<QComboBox*>("cmbUPCEANAddonGap"), m_optionWidget->findChild<QLabel*>("lblUPCEANAddonGap"), 7 /*base*/);
             break;
 
-        case BARCODE_RSS14:
+        case BARCODE_DBAR_OMN:
             if(chkComposite->isChecked())
-                m_bc.bc.setSymbol(BARCODE_RSS14_CC);
+                m_bc.bc.setSymbol(BARCODE_DBAR_OMN_CC);
             else
-                m_bc.bc.setSymbol(BARCODE_RSS14);
+                m_bc.bc.setSymbol(BARCODE_DBAR_OMN);
             break;
 
-        case BARCODE_RSS_LTD:
+        case BARCODE_DBAR_LTD:
             if(chkComposite->isChecked())
-                m_bc.bc.setSymbol(BARCODE_RSS_LTD_CC);
+                m_bc.bc.setSymbol(BARCODE_DBAR_LTD_CC);
             else
-                m_bc.bc.setSymbol(BARCODE_RSS_LTD);
+                m_bc.bc.setSymbol(BARCODE_DBAR_LTD);
             break;
 
-        case BARCODE_RSS_EXP:
+        case BARCODE_DBAR_EXP:
             if(chkComposite->isChecked())
-                m_bc.bc.setSymbol(BARCODE_RSS_EXP_CC);
+                m_bc.bc.setSymbol(BARCODE_DBAR_EXP_CC);
             else
-                m_bc.bc.setSymbol(BARCODE_RSS_EXP);
+                m_bc.bc.setSymbol(BARCODE_DBAR_EXP);
             break;
 
-        case BARCODE_RSS14STACK:
+        case BARCODE_DBAR_STK:
             if(chkComposite->isChecked())
-                m_bc.bc.setSymbol(BARCODE_RSS14STACK_CC);
+                m_bc.bc.setSymbol(BARCODE_DBAR_STK_CC);
             else
-                m_bc.bc.setSymbol(BARCODE_RSS14STACK);
+                m_bc.bc.setSymbol(BARCODE_DBAR_STK);
             break;
 
-        case BARCODE_RSS14STACK_OMNI:
+        case BARCODE_DBAR_OMNSTK:
             if(chkComposite->isChecked())
-                m_bc.bc.setSymbol(BARCODE_RSS14_OMNI_CC);
+                m_bc.bc.setSymbol(BARCODE_DBAR_OMNSTK_CC);
             else
-                m_bc.bc.setSymbol(BARCODE_RSS14STACK_OMNI);
+                m_bc.bc.setSymbol(BARCODE_DBAR_OMNSTK);
             break;
 
-        case BARCODE_RSS_EXPSTACK:
+        case BARCODE_DBAR_EXPSTK:
             if(chkComposite->isChecked())
-                m_bc.bc.setSymbol(BARCODE_RSS_EXPSTACK_CC);
+                m_bc.bc.setSymbol(BARCODE_DBAR_EXPSTK_CC);
             else
-                m_bc.bc.setSymbol(BARCODE_RSS_EXPSTACK);
+                m_bc.bc.setSymbol(BARCODE_DBAR_EXPSTK);
 
             if(m_optionWidget->findChild<QComboBox*>("cmbCols")->currentIndex() != 0)
                 m_bc.bc.setOption2(m_optionWidget->findChild<QComboBox*>("cmbCols")->currentIndex());

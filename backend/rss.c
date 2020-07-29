@@ -1,4 +1,4 @@
-/* rss.c - Handles Reduced Space Symbology (GS1 DataBar) */
+/* rss.c - GS1 DataBar (formerly Reduced Space Symbology) */
 
 /*
     libzint - the open source barcode library
@@ -302,9 +302,9 @@ INTERNAL int rss14(struct zint_symbol *symbol, unsigned char source[], int src_l
 
     /* make some room for a separator row for composite symbols */
     switch (symbol->symbology) {
-        case BARCODE_RSS14_CC:
-        case BARCODE_RSS14STACK_CC:
-        case BARCODE_RSS14_OMNI_CC:
+        case BARCODE_DBAR_OMN_CC:
+        case BARCODE_DBAR_STK_CC:
+        case BARCODE_DBAR_OMNSTK_CC:
             separator_row = symbol->rows;
             symbol->row_height[separator_row] = 1;
             symbol->rows += 1;
@@ -470,7 +470,7 @@ INTERNAL int rss14(struct zint_symbol *symbol, unsigned char source[], int src_l
     }
 
     /* Put this data into the symbol */
-    if ((symbol->symbology == BARCODE_RSS14) || (symbol->symbology == BARCODE_RSS14_CC)) {
+    if ((symbol->symbology == BARCODE_DBAR_OMN) || (symbol->symbology == BARCODE_DBAR_OMN_CC)) {
         writer = 0;
         latch = '0';
         for (i = 0; i < 46; i++) {
@@ -479,7 +479,7 @@ INTERNAL int rss14(struct zint_symbol *symbol, unsigned char source[], int src_l
         if (symbol->width < writer) {
             symbol->width = writer;
         }
-        if (symbol->symbology == BARCODE_RSS14_CC) {
+        if (symbol->symbology == BARCODE_DBAR_OMN_CC) {
             /* separator pattern for composite symbol */
             rss14_separator(symbol, 96, separator_row, 1 /*above*/, 18, 63, 0 /*bottom_finder_value_3*/);
         }
@@ -491,7 +491,7 @@ INTERNAL int rss14(struct zint_symbol *symbol, unsigned char source[], int src_l
         set_minimum_height(symbol, 14); // Minimum height is 14X for truncated symbol
     }
 
-    if ((symbol->symbology == BARCODE_RSS14STACK) || (symbol->symbology == BARCODE_RSS14STACK_CC)) {
+    if ((symbol->symbology == BARCODE_DBAR_STK) || (symbol->symbology == BARCODE_DBAR_STK_CC)) {
         /* top row */
         writer = 0;
         latch = '0';
@@ -531,7 +531,7 @@ INTERNAL int rss14(struct zint_symbol *symbol, unsigned char source[], int src_l
         unset_module(symbol, symbol->rows - 1, 3);
         symbol->row_height[symbol->rows - 1] = 1;
 
-        if (symbol->symbology == BARCODE_RSS14STACK_CC) {
+        if (symbol->symbology == BARCODE_DBAR_STK_CC) {
             /* separator pattern for composite symbol */
             rss14_separator(symbol, 50, separator_row, 1 /*above*/, 18, 0, 0 /*bottom_finder_value_3*/);
         }
@@ -541,7 +541,7 @@ INTERNAL int rss14(struct zint_symbol *symbol, unsigned char source[], int src_l
         }
     }
 
-    if ((symbol->symbology == BARCODE_RSS14STACK_OMNI) || (symbol->symbology == BARCODE_RSS14_OMNI_CC)) {
+    if ((symbol->symbology == BARCODE_DBAR_OMNSTK) || (symbol->symbology == BARCODE_DBAR_OMNSTK_CC)) {
         /* top row */
         writer = 0;
         latch = '0';
@@ -579,7 +579,7 @@ INTERNAL int rss14(struct zint_symbol *symbol, unsigned char source[], int src_l
             symbol->width = 50;
         }
 
-        if (symbol->symbology == BARCODE_RSS14_OMNI_CC) {
+        if (symbol->symbology == BARCODE_DBAR_OMNSTK_CC) {
             /* separator pattern for composite symbol */
             rss14_separator(symbol, 50, separator_row, 1 /*above*/, 18, 0, 0 /*bottom_finder_value_3*/);
         }
@@ -631,7 +631,7 @@ INTERNAL int rsslimited(struct zint_symbol *symbol, unsigned char source[], int 
     }
 
     /* make some room for a separator row for composite symbols */
-    if (symbol->symbology == BARCODE_RSS_LTD_CC) {
+    if (symbol->symbology == BARCODE_DBAR_LTD_CC) {
         separator_row = symbol->rows;
         symbol->row_height[separator_row] = 1;
         symbol->rows += 1;
@@ -748,7 +748,7 @@ INTERNAL int rsslimited(struct zint_symbol *symbol, unsigned char source[], int 
     symbol->rows = symbol->rows + 1;
 
     /* add separator pattern if composite symbol */
-    if (symbol->symbology == BARCODE_RSS_LTD_CC) {
+    if (symbol->symbology == BARCODE_DBAR_LTD_CC) {
         for (i = 4; i < 70; i++) {
             if (!(module_is_set(symbol, separator_row + 1, i))) {
                 set_module(symbol, separator_row, i);
@@ -1109,7 +1109,7 @@ static int rss_binary_string(struct zint_symbol *symbol, char source[], char bin
     }
     symbol_characters = ((strlen(binary_string) + remainder) / 12) + 1;
 
-    if ((symbol->symbology == BARCODE_RSS_EXPSTACK) || (symbol->symbology == BARCODE_RSS_EXPSTACK_CC)) {
+    if ((symbol->symbology == BARCODE_DBAR_EXPSTK) || (symbol->symbology == BARCODE_DBAR_EXPSTK_CC)) {
         characters_per_row = symbol->option_2 * 2;
 
         if ((characters_per_row < 2) || (characters_per_row > 20)) {
@@ -1146,7 +1146,7 @@ static int rss_binary_string(struct zint_symbol *symbol, char source[], char bin
         }
         symbol_characters = ((strlen(binary_string) + remainder) / 12) + 1;
 
-        if ((symbol->symbology == BARCODE_RSS_EXPSTACK) || (symbol->symbology == BARCODE_RSS_EXPSTACK_CC)) {
+        if ((symbol->symbology == BARCODE_DBAR_EXPSTK) || (symbol->symbology == BARCODE_DBAR_EXPSTK_CC)) {
             characters_per_row = symbol->option_2 * 2;
 
             if ((characters_per_row < 2) || (characters_per_row > 20)) {
@@ -1298,7 +1298,7 @@ INTERNAL int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int
         return i;
     }
 
-    if ((symbol->symbology == BARCODE_RSS_EXP_CC) || (symbol->symbology == BARCODE_RSS_EXPSTACK_CC)) {
+    if ((symbol->symbology == BARCODE_DBAR_EXP_CC) || (symbol->symbology == BARCODE_DBAR_EXPSTK_CC)) {
         /* make space for a composite separator pattern */
         separator_row = symbol->rows;
         symbol->row_height[separator_row] = 1;
@@ -1448,7 +1448,7 @@ INTERNAL int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int
         }
     }
 
-    if ((symbol->symbology == BARCODE_RSS_EXP) || (symbol->symbology == BARCODE_RSS_EXP_CC)) {
+    if ((symbol->symbology == BARCODE_DBAR_EXP) || (symbol->symbology == BARCODE_DBAR_EXP_CC)) {
         /* Copy elements into symbol */
 
         elements[0] = 1; // left guard
@@ -1606,7 +1606,7 @@ INTERNAL int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int
         symbol->rows = symbol->rows - 3;
     }
 
-    if (symbol->symbology == BARCODE_RSS_EXP_CC || symbol->symbology == BARCODE_RSS_EXPSTACK_CC) {
+    if (symbol->symbology == BARCODE_DBAR_EXP_CC || symbol->symbology == BARCODE_DBAR_EXPSTK_CC) {
         /* Composite separator */
         rssexp_separator(symbol, symbol->width, 4, separator_row, 1 /*above*/, 0 /*special_case_row*/, 1 /*left_to_right*/, 0 /*odd_last_row*/, NULL);
     }
