@@ -369,7 +369,7 @@ Zint allows the symbol to be bound with 'boundary bars' using the option
 --bind. These bars help to prevent misreading of the symbol by corrupting a
 scan if the scanning beam strays off the top or bottom of the symbol. Zint can
 also put a border right around the symbol and its whitespace with the --box
-option. This option is automatically selected for ITF-14 symbols.
+option.
 
 The width of the boundary or box can be specified using the --border switch.
 For example:
@@ -377,6 +377,9 @@ For example:
 zint --box --border=10 -d "This"
 
 gives a box with a width 10 times the X-dimension of the symbol.
+
+These options are ignored for Code 16k and Codablock-F. Special considerations
+apply to ITF-14 - see the specific section for that symbology.
 
 4.7 Using colour
 ----------------
@@ -1092,7 +1095,7 @@ Value   |
 --------------------------------------------------------------------------------
 
 Note: Symbologies marked with an asterisk (*) in the above table used different
-enumeration in Zint before version 2.9.0. For example, symbology 29 used the name
+names in Zint before version 2.9.0. For example, symbology 29 used the name
 "BARCODE_RSS14". These names are now depreciated but are still recognised by
 Zint and will continue to be supported in future versions.
 
@@ -1168,7 +1171,8 @@ if (ZBarcode_ValidID(BARCODE_PDF417) != 0) {
 USPS Intelligent Mail, RM4SCC, PDF417, Data Matrix, Maxicode, QR Code, GS1
 DataBar Stacked, PDF417 and MicroPDF417 - all of which have a fixed height.
 
-[2] This value is ignored for Code 16k, Codablock-F and ITF-14 symbols.
+[2] This value is ignored for Code 16k and Codablock-F. Special considerations
+apply to ITF-14 - see the specific section for that symbology.
 
 6. Types of Symbology
 =====================
@@ -1225,6 +1229,13 @@ input (digits 0-9).
 ITF-14, also known as UPC Shipping Container Symbol or Case Code is based on
 Interleaved Code 2 of 5 and requires a 13 digit numeric input (digits 0-9). One
 modulo-10 check digit is added by Zint.
+
+If no border option is specified Zint defaults to adding a bounding box with a
+border width of 5. This behaviour can be overridden by using the --bind otion
+(or adding BARCODE_BIND to symbol->output_options). Similarly the border width
+can be overriden using --border= (or by setting symbol->border_width). If a
+symbol with no border is explicitly required this can be achieved by setting
+the border type to box or bind and setting the border width to 0.
 
 6.1.2.7 Deutsche Post Leitcode
 ------------------------------

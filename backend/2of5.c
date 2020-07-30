@@ -280,10 +280,13 @@ INTERNAL int itf14(struct zint_symbol *symbol, unsigned char source[], int lengt
     error_number = interleaved_two_of_five(symbol, (unsigned char *) localstr, strlen(localstr));
     ustrcpy(symbol->text, localstr);
 
-    symbol->output_options |= BARCODE_BOX;
-    if (symbol->border_width == 0) { /* Allow override if non-zero */
-        /* GS1 General Specifications 20.0 Sections 5.3.2.4 & 5.3.6 (4.83 / 1.016 ~ 4.75) */
-        symbol->border_width = 5; /* Note change from previous value 8 */
+    if (!((symbol->output_options & BARCODE_BOX) || (symbol->output_options & BARCODE_BIND))) {
+        // If no option has been selected then uses default box option
+        symbol->output_options |= BARCODE_BOX;
+        if (symbol->border_width == 0) { /* Allow override if non-zero */
+            /* GS1 General Specifications 20.0 Sections 5.3.2.4 & 5.3.6 (4.83 / 1.016 ~ 4.75) */
+            symbol->border_width = 5; /* Note change from previous value 8 */
+        }
     }
 
     return error_number;
