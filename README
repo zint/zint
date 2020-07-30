@@ -162,7 +162,7 @@ Bugs:
 - Ticket 189: FNC1 encodation fixed (FLG(0) missing after FLG(n))
 - PCX format: added missing bytes_per_line if bitmap width is odd.
 
-Version 2.9.0 Not released jet
+Version 2.9.0 2020-07-31:
 Changes:
 - Dotcode: adopt to AIM DOC Revision 4
 - New option "-separator=" for zint to specify the separator height of stacked
