@@ -260,6 +260,7 @@ Bugs:
 - PDF417: Optimize text compaction mode switch.
 - Human readable representation: Code128, Code39, Code93 special characters
   are shown by a blank.
+- ITF14: Ticket 201: allow bind option
 
 CONTACT US
 ----------
