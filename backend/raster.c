@@ -572,16 +572,18 @@ static int plot_raster_maxicode(struct zint_symbol *symbol, int rotate_angle, in
     // Virtual hexagon
     //draw_hexagon(pixelbuf, image_width, scaled_hexagon, hexagon_size, ((14 * 10) + (2 * xoffset)) * scaler, ((16 * 9) + (2 * yoffset)) * scaler);
 
-    if ((symbol->output_options & BARCODE_BOX) || (symbol->output_options & BARCODE_BIND)) {
-        /* boundary bars */
-        draw_bar(pixelbuf, 0, image_width, 0, symbol->border_width * 2, image_width, image_height, DEFAULT_INK);
-        draw_bar(pixelbuf, 0, image_width, 300 + (symbol->border_width * 2), symbol->border_width * 2, image_width, image_height, DEFAULT_INK);
-    }
+    if (symbol->border_width > 0) {
+        if ((symbol->output_options & BARCODE_BOX) || (symbol->output_options & BARCODE_BIND)) {
+            /* boundary bars */
+            draw_bar(pixelbuf, 0, image_width, 0, symbol->border_width * 2, image_width, image_height, DEFAULT_INK);
+            draw_bar(pixelbuf, 0, image_width, 300 + (symbol->border_width * 2), symbol->border_width * 2, image_width, image_height, DEFAULT_INK);
+        }
 
-    if (symbol->output_options & BARCODE_BOX) {
-        /* side bars */
-        draw_bar(pixelbuf, 0, symbol->border_width * 2, 0, image_height, image_width, image_height, DEFAULT_INK);
-        draw_bar(pixelbuf, 300 + ((symbol->border_width + symbol->whitespace_width + symbol->whitespace_width) * 2), symbol->border_width * 2, 0, image_height, image_width, image_height, DEFAULT_INK);
+        if (symbol->output_options & BARCODE_BOX) {
+            /* side bars */
+            draw_bar(pixelbuf, 0, symbol->border_width * 2, 0, image_height, image_width, image_height, DEFAULT_INK);
+            draw_bar(pixelbuf, 300 + ((symbol->border_width + symbol->whitespace_width + symbol->whitespace_width) * 2), symbol->border_width * 2, 0, image_height, image_width, image_height, DEFAULT_INK);
+        }
     }
 
     error_number = save_raster_image_to_file(symbol, image_height, image_width, pixelbuf, rotate_angle, data_type);
@@ -965,41 +967,42 @@ static int plot_raster_default(struct zint_symbol *symbol, int rotate_angle, int
 
     xoffset -= comp_offset;
 
-    /* Put boundary bars or box around symbol */
-    if ((symbol->output_options & BARCODE_BOX) || (symbol->output_options & BARCODE_BIND)) {
-        /* boundary bars */
-        if ((symbol->output_options & BARCODE_BOX) || (symbol->symbology != BARCODE_CODABLOCKF && symbol->symbology != BARCODE_HIBC_BLOCKF)) {
-            draw_bar(pixelbuf, 0, (symbol->width + xoffset + roffset) * 2, textoffset * 2, symbol->border_width * 2, image_width, image_height, DEFAULT_INK);
-            draw_bar(pixelbuf, 0, (symbol->width + xoffset + roffset) * 2, (textoffset + symbol->height + symbol->border_width) * 2, symbol->border_width * 2, image_width, image_height, DEFAULT_INK);
-        } else {
-            draw_bar(pixelbuf, xoffset * 2, symbol->width * 2, textoffset * 2, symbol->border_width * 2, image_width, image_height, DEFAULT_INK);
-            draw_bar(pixelbuf, xoffset * 2, symbol->width * 2, (textoffset + symbol->height + symbol->border_width) * 2, symbol->border_width * 2, image_width, image_height, DEFAULT_INK);
-        }
-        if ((symbol->output_options & BARCODE_BIND) != 0) {
-            if ((symbol->rows > 1) && (is_stackable(symbol->symbology) == 1)) {
-                double sep_height = 1;
-                if (symbol->option_3 > 0 && symbol->option_3 <= 4) {
-                    sep_height = symbol->option_3;
+    // Binding and boxes
+    if ((symbol->output_options & BARCODE_BIND) != 0) {
+        if ((symbol->rows > 1) && (is_stackable(symbol->symbology) == 1)) {
+            double sep_height = 1;
+            if (symbol->option_3 > 0 && symbol->option_3 <= 4) {
+                sep_height = symbol->option_3;
+            }
+            /* row binding */
+            if (symbol->symbology != BARCODE_CODABLOCKF && symbol->symbology != BARCODE_HIBC_BLOCKF) {
+                for (r = 1; r < symbol->rows; r++) {
+                    draw_bar(pixelbuf, xoffset * 2, symbol->width * 2, ((r * row_height) + textoffset + yoffset - sep_height / 2) * 2, sep_height * 2, image_width, image_height, DEFAULT_INK);
                 }
-                /* row binding */
-                if (symbol->symbology != BARCODE_CODABLOCKF && symbol->symbology != BARCODE_HIBC_BLOCKF) {
-                    for (r = 1; r < symbol->rows; r++) {
-                        draw_bar(pixelbuf, xoffset * 2, symbol->width * 2, ((r * row_height) + textoffset + yoffset - sep_height / 2) * 2, sep_height * 2, image_width, image_height, DEFAULT_INK);
-                    }
-                } else {
-                    for (r = 1; r < symbol->rows; r++) {
-                        /* Avoid 11-module start and 13-module stop chars */
-                        draw_bar(pixelbuf, (xoffset + 11) * 2, (symbol->width - 24) * 2, ((r * row_height) + textoffset + yoffset - sep_height / 2) * 2, sep_height * 2, image_width, image_height, DEFAULT_INK);
-                    }
+            } else {
+                for (r = 1; r < symbol->rows; r++) {
+                    /* Avoid 11-module start and 13-module stop chars */
+                    draw_bar(pixelbuf, (xoffset + 11) * 2, (symbol->width - 24) * 2, ((r * row_height) + textoffset + yoffset - sep_height / 2) * 2, sep_height * 2, image_width, image_height, DEFAULT_INK);
                 }
             }
         }
     }
-
-    if (symbol->output_options & BARCODE_BOX) {
-        /* side bars */
-        draw_bar(pixelbuf, 0, symbol->border_width * 2, textoffset * 2, (symbol->height + (2 * symbol->border_width)) * 2, image_width, image_height, DEFAULT_INK);
-        draw_bar(pixelbuf, (symbol->width + xoffset + roffset - symbol->border_width) * 2, symbol->border_width * 2, textoffset * 2, (symbol->height + (2 * symbol->border_width)) * 2, image_width, image_height, DEFAULT_INK);
+    if (symbol->border_width > 0) {
+        if ((symbol->output_options & BARCODE_BOX) || (symbol->output_options & BARCODE_BIND)) {
+            /* boundary bars */
+            if ((symbol->output_options & BARCODE_BOX) || (symbol->symbology != BARCODE_CODABLOCKF && symbol->symbology != BARCODE_HIBC_BLOCKF)) {
+                draw_bar(pixelbuf, 0, (symbol->width + xoffset + roffset) * 2, textoffset * 2, symbol->border_width * 2, image_width, image_height, DEFAULT_INK);
+                draw_bar(pixelbuf, 0, (symbol->width + xoffset + roffset) * 2, (textoffset + symbol->height + symbol->border_width) * 2, symbol->border_width * 2, image_width, image_height, DEFAULT_INK);
+            } else {
+                draw_bar(pixelbuf, xoffset * 2, symbol->width * 2, textoffset * 2, symbol->border_width * 2, image_width, image_height, DEFAULT_INK);
+                draw_bar(pixelbuf, xoffset * 2, symbol->width * 2, (textoffset + symbol->height + symbol->border_width) * 2, symbol->border_width * 2, image_width, image_height, DEFAULT_INK);
+            }
+        }
+        if ((symbol->output_options & BARCODE_BOX)) {
+            /* side bars */
+            draw_bar(pixelbuf, 0, symbol->border_width * 2, textoffset * 2, (symbol->height + (2 * symbol->border_width)) * 2, image_width, image_height, DEFAULT_INK);
+            draw_bar(pixelbuf, (symbol->width + xoffset + roffset - symbol->border_width) * 2, symbol->border_width * 2, textoffset * 2, (symbol->height + (2 * symbol->border_width)) * 2, image_width, image_height, DEFAULT_INK);
+        }
     }
 
     if (scaler <= 0) {

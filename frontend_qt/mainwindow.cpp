@@ -407,6 +407,9 @@ void MainWindow::change_options()
     if (tabMain->count()==3)
         tabMain->removeTab(1);
 
+    chkComposite->setText(tr("Add 2D Component"));
+    btype->setItemText(0, tr("No border"));
+
     if (symbology == BARCODE_CODE128)
     {
         QFile file(":/grpC128.ui");
@@ -422,8 +425,6 @@ void MainWindow::change_options()
         connect(m_optionWidget->findChild<QObject*>("radC128EAN"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radC128HIBC"), SIGNAL(clicked( bool )), SLOT(update_preview()));
     }
-    else
-        chkComposite->setText(tr("Add 2D Component"));
 
     if (symbology == BARCODE_PDF417)
     {
@@ -553,6 +554,7 @@ void MainWindow::change_options()
         m_optionWidget=uiload.load(&file);
         file.close();
         tabMain->insertTab(1,m_optionWidget,tr("Code 16K"));
+        btype->setItemText(0, tr("Default (bind)"));
         connect(m_optionWidget->findChild<QObject*>("cmbC16kRowSepHeight"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radC16kStand"), SIGNAL(toggled( bool )), SLOT(update_preview()));
     }
@@ -576,6 +578,7 @@ void MainWindow::change_options()
         m_optionWidget=uiload.load(&file);
         file.close();
         tabMain->insertTab(1,m_optionWidget,tr("Codablock-F"));
+        btype->setItemText(0, tr("Default (bind)"));
         connect(m_optionWidget->findChild<QObject*>("cmbCbfWidth"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("cmbCbfHeight"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("cmbCbfRowSepHeight"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
@@ -598,6 +601,11 @@ void MainWindow::change_options()
         connect(m_optionWidget->findChild<QObject*>("chkDMRectangle"), SIGNAL(stateChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("chkDMRE"), SIGNAL(stateChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("chkDMGSSep"), SIGNAL(stateChanged( int )), SLOT(update_preview()));
+    }
+
+    if (symbology == BARCODE_ITF14)
+    {
+        btype->setItemText(0, tr("Default (box, non-zero width)"));
     }
 
     if (symbology == BARCODE_QRCODE)

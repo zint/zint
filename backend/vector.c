@@ -342,7 +342,7 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
     vector->width = ceil(symbol->width + (xoffset + roffset));
     vector->height = ceil(symbol->height + textoffset + (yoffset + boffset));
 
-    if ((symbol->output_options & BARCODE_BOX) || (symbol->output_options & BARCODE_BIND)) {
+    if (symbol->border_width > 0 && ((symbol->output_options & BARCODE_BOX) || (symbol->output_options & BARCODE_BIND))) {
         default_text_posn = symbol->height + textoffset + symbol->border_width + symbol->border_width;
     } else {
         default_text_posn = symbol->height + textoffset;
@@ -641,11 +641,13 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
                 sep_height = symbol->option_3;
             }
             /* row binding */
-            for (r = 1; r < symbol->rows; r++) {
-                if (symbol->symbology != BARCODE_CODABLOCKF && symbol->symbology != BARCODE_HIBC_BLOCKF) {
+            if (symbol->symbology != BARCODE_CODABLOCKF && symbol->symbology != BARCODE_HIBC_BLOCKF) {
+                for (r = 1; r < symbol->rows; r++) {
                     rectangle = vector_plot_create_rect(xoffset, (r * row_height) + yoffset - sep_height / 2, symbol->width, sep_height);
                     vector_plot_add_rect(symbol, rectangle, &last_rectangle);
-                } else {
+                }
+            } else {
+                for (r = 1; r < symbol->rows; r++) {
                     /* Avoid 11-module start and 13-module stop chars */
                     rectangle = vector_plot_create_rect(xoffset + 11, (r * row_height) + yoffset - sep_height / 2, symbol->width - 24, sep_height);
                     vector_plot_add_rect(symbol, rectangle, &last_rectangle);
@@ -653,29 +655,31 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
             }
         }
     }
-    if ((symbol->output_options & BARCODE_BOX) || (symbol->output_options & BARCODE_BIND)) {
-        // Top
-        rectangle = vector_plot_create_rect(0.0, 0.0, vector->width, symbol->border_width);
-        if (!(symbol->output_options & BARCODE_BOX) && (symbol->symbology == BARCODE_CODABLOCKF || symbol->symbology == BARCODE_HIBC_BLOCKF)) {
-            rectangle->x = xoffset;
-            rectangle->width -= (2.0 * xoffset);
+    if (symbol->border_width > 0) {
+        if ((symbol->output_options & BARCODE_BOX) || (symbol->output_options & BARCODE_BIND)) {
+            // Top
+            rectangle = vector_plot_create_rect(0.0, 0.0, vector->width, symbol->border_width);
+            if (!(symbol->output_options & BARCODE_BOX) && (symbol->symbology == BARCODE_CODABLOCKF || symbol->symbology == BARCODE_HIBC_BLOCKF)) {
+                rectangle->x = xoffset;
+                rectangle->width -= (2.0 * xoffset);
+            }
+            vector_plot_add_rect(symbol, rectangle, &last_rectangle);
+            // Bottom
+            rectangle = vector_plot_create_rect(0.0, vector->height - symbol->border_width - textoffset, vector->width, symbol->border_width);
+            if (!(symbol->output_options & BARCODE_BOX) && (symbol->symbology == BARCODE_CODABLOCKF || symbol->symbology == BARCODE_HIBC_BLOCKF)) {
+                rectangle->x = xoffset;
+                rectangle->width -= (2.0 * xoffset);
+            }
+            vector_plot_add_rect(symbol, rectangle, &last_rectangle);
         }
-        vector_plot_add_rect(symbol, rectangle, &last_rectangle);
-        // Bottom
-        rectangle = vector_plot_create_rect(0.0, vector->height - symbol->border_width - textoffset, vector->width, symbol->border_width);
-        if (!(symbol->output_options & BARCODE_BOX) && (symbol->symbology == BARCODE_CODABLOCKF || symbol->symbology == BARCODE_HIBC_BLOCKF)) {
-            rectangle->x = xoffset;
-            rectangle->width -= (2.0 * xoffset);
+        if (symbol->output_options & BARCODE_BOX) {
+            // Left
+            rectangle = vector_plot_create_rect(0.0, 0.0, symbol->border_width, vector->height - textoffset);
+            vector_plot_add_rect(symbol, rectangle, &last_rectangle);
+            // Right
+            rectangle = vector_plot_create_rect(vector->width - symbol->border_width, 0.0, symbol->border_width, vector->height - textoffset);
+            vector_plot_add_rect(symbol, rectangle, &last_rectangle);
         }
-        vector_plot_add_rect(symbol, rectangle, &last_rectangle);
-    }
-    if (symbol->output_options & BARCODE_BOX) {
-        // Left
-        rectangle = vector_plot_create_rect(0.0, 0.0, symbol->border_width, vector->height - textoffset);
-        vector_plot_add_rect(symbol, rectangle, &last_rectangle);
-        // Right
-        rectangle = vector_plot_create_rect(vector->width - symbol->border_width, 0.0, symbol->border_width, vector->height - textoffset);
-        vector_plot_add_rect(symbol, rectangle, &last_rectangle);
     }
 
     vector_reduce_rectangles(symbol);

@@ -422,7 +422,7 @@ example for PNG images a scale of 5 will increase the X-dimension to 10 pixels.
 4.10 Input modes
 ----------------
 By default all input data is assumed to be encoded in Unicode (UTF-8) format.
-Many barcode symbologies encode data using Latin-1 (ISO-8851-1) character
+Many barcode symbologies encode data using Latin-1 (ISO-8859-1) character
 encoding, so input is converted from Unicode to Latin-1 before being put in the
 symbol. In addition QR Code, Micro QR Code, Rectangular Micro QR Code, Han Xin
 Code and Grid Matrix can encode Japanese or Chinese characters which are also

@@ -425,6 +425,7 @@ static void test_row_separator(int index, int debug) {
     int ret;
     struct item {
         int symbology;
+        int border_width;
         int option_1;
         int option_3;
         unsigned char *data;
@@ -441,14 +442,15 @@ static void test_row_separator(int index, int debug) {
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /*  0*/ { BARCODE_CODABLOCKF, -1, -1, "A", 0, 20, 2, 101, 242, 44, 21, 42, 2 },
-        /*  1*/ { BARCODE_CODABLOCKF, -1, 0, "A", 0, 20, 2, 101, 242, 44, 21, 42, 2 }, // Same as default
-        /*  2*/ { BARCODE_CODABLOCKF, -1, 1, "A", 0, 20, 2, 101, 242, 44, 21, 42, 2 }, // Same as default
-        /*  3*/ { BARCODE_CODABLOCKF, -1, 2, "A", 0, 20, 2, 101, 242, 44, 20, 42, 4 },
-        /*  4*/ { BARCODE_CODABLOCKF, -1, 3, "A", 0, 20, 2, 101, 242, 44, 19, 42, 6 },
-        /*  5*/ { BARCODE_CODABLOCKF, -1, 4, "A", 0, 20, 2, 101, 242, 44, 18, 42, 8 },
-        /*  6*/ { BARCODE_CODABLOCKF, -1, 5, "A", 0, 20, 2, 101, 242, 44, 21, 42, 2 }, // > 4 ignored, same as default
-        /*  7*/ { BARCODE_CODABLOCKF, 1, -1, "A", 0, 5, 1, 46, 132, 32, 0, 20 + 2, 2 }, // CODE128 top separator, add 2 to skip over end of start char; note now includes HRT
+        /*  0*/ { BARCODE_CODABLOCKF, -1, -1, -1, "A", 0, 20, 2, 101, 242, 44, 21, 42, 2 },
+        /*  1*/ { BARCODE_CODABLOCKF, -1, -1, 0, "A", 0, 20, 2, 101, 242, 44, 21, 42, 2 }, // Same as default
+        /*  2*/ { BARCODE_CODABLOCKF, -1, -1, 1, "A", 0, 20, 2, 101, 242, 44, 21, 42, 2 }, // Same as default
+        /*  3*/ { BARCODE_CODABLOCKF, -1, -1, 2, "A", 0, 20, 2, 101, 242, 44, 20, 42, 4 },
+        /*  4*/ { BARCODE_CODABLOCKF, -1, -1, 3, "A", 0, 20, 2, 101, 242, 44, 19, 42, 6 },
+        /*  5*/ { BARCODE_CODABLOCKF, -1, -1, 4, "A", 0, 20, 2, 101, 242, 44, 18, 42, 8 },
+        /*  6*/ { BARCODE_CODABLOCKF, -1, -1, 5, "A", 0, 20, 2, 101, 242, 44, 21, 42, 2 }, // > 4 ignored, same as default
+        /*  7*/ { BARCODE_CODABLOCKF, -1, 1, -1, "A", 0, 5, 1, 46, 132, 32, 0, 20 + 2, 2 }, // CODE128 top separator, add 2 to skip over end of start char; note now includes HRT
+        /*  8*/ { BARCODE_CODABLOCKF, 0, -1, -1, "A", 0, 20, 2, 101, 242, 44, 21, 42, 2 }, // Border width zero, same as default
     };
     int data_size = ARRAY_SIZE(data);
 
@@ -460,6 +462,9 @@ static void test_row_separator(int index, int debug) {
         assert_nonnull(symbol, "Symbol not created\n");
 
         int length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, data[i].option_1, -1, data[i].option_3, -1 /*output_options*/, data[i].data, -1, debug);
+        if (data[i].border_width != -1) {
+            symbol->border_width = data[i].border_width;
+        }
 
         ret = ZBarcode_Encode_and_Buffer(symbol, data[i].data, length, 0);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d\n", i, ret, data[i].ret);
@@ -496,6 +501,88 @@ static void test_row_separator(int index, int debug) {
     testFinish();
 }
 
+static void test_stacking(int index, int debug) {
+
+    testStart("");
+
+    int ret;
+    struct item {
+        int symbology;
+        int output_options;
+        int option_1;
+        int option_3;
+        unsigned char *data;
+        unsigned char *data2;
+
+        int expected_height;
+        int expected_rows;
+        int expected_width;
+        int expected_bitmap_width;
+        int expected_bitmap_height;
+        int expected_separator_row;
+        int expected_separator_col;
+        int expected_separator_height;
+    };
+    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    struct item data[] = {
+        /*  0*/ { BARCODE_CODE128, -1, -1, -1, "A", "B", 50, 2, 46, 92, 118, -1, -1, -1 },
+        /*  1*/ { BARCODE_CODE128, BARCODE_BIND, -1, -1, "A", "B", 50, 2, 46, 92, 118, 49, 4, 2 },
+        /*  2*/ { BARCODE_CODE128, BARCODE_BIND, -1, 2, "A", "B", 50, 2, 46, 92, 118, 48, 4, 4 },
+    };
+    int data_size = ARRAY_SIZE(data);
+
+    for (int i = 0; i < data_size; i++) {
+
+        if (index != -1 && i != index) continue;
+
+        struct zint_symbol *symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        int length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, data[i].option_1, -1, data[i].option_3, data[i].output_options, data[i].data, -1, debug);
+        ret = ZBarcode_Encode(symbol, data[i].data, length);
+        assert_zero(ret, "i:%d ret %d != zero\n", i, ret);
+
+        int length2 = strlen(data[i].data2);
+        ret = ZBarcode_Encode(symbol, data[i].data2, length2);
+        assert_zero(ret, "i:%d ret %d != zero\n", i, ret);
+
+        ret = ZBarcode_Buffer(symbol, 0);
+        assert_zero(ret, "i:%d ret %d != zero\n", i, ret);
+        assert_nonnull(symbol->bitmap, "i:%d (%d) symbol->bitmap NULL\n", i, data[i].symbology);
+
+        assert_equal(symbol->height, data[i].expected_height, "i:%d (%d) symbol->height %d != %d\n", i, data[i].symbology, symbol->height, data[i].expected_height);
+        assert_equal(symbol->rows, data[i].expected_rows, "i:%d (%d) symbol->rows %d != %d\n", i, data[i].symbology, symbol->rows, data[i].expected_rows);
+        assert_equal(symbol->width, data[i].expected_width, "i:%d (%d) symbol->width %d != %d\n", i, data[i].symbology, symbol->width, data[i].expected_width);
+        assert_equal(symbol->bitmap_width, data[i].expected_bitmap_width, "i:%d (%d) symbol->bitmap_width %d != %d\n", i, data[i].symbology, symbol->bitmap_width, data[i].expected_bitmap_width);
+        assert_equal(symbol->bitmap_height, data[i].expected_bitmap_height, "i:%d (%d) symbol->bitmap_height %d != %d\n", i, data[i].symbology, symbol->bitmap_height, data[i].expected_bitmap_height);
+
+        int j, separator_bits_set;
+
+        if (index != -1) testUtilBitmapPrint(symbol);
+
+        if (data[i].expected_separator_row != -1) {
+            for (j = data[i].expected_separator_row; j < data[i].expected_separator_row + data[i].expected_separator_height; j++) {
+                separator_bits_set = is_row_column_black(symbol, j, data[i].expected_separator_col);
+                assert_nonzero(separator_bits_set, "i:%d (%d) separator_bits_set (%d, %d) zero\n", i, data[i].symbology, j, data[i].expected_separator_col);
+            }
+
+            if (symbol->rows > 1) {
+                j = data[i].expected_separator_row - 1;
+                separator_bits_set = is_row_column_black(symbol, j, data[i].expected_separator_col);
+                assert_zero(separator_bits_set, "i:%d (%d) separator_bits_set (%d, %d) before non-zero\n", i, data[i].symbology, j, data[i].expected_separator_col);
+            }
+
+            j = data[i].expected_separator_row + data[i].expected_separator_height;
+            separator_bits_set = is_row_column_black(symbol, j, data[i].expected_separator_col);
+            assert_zero(separator_bits_set, "i:%d (%d) separator_bits_set (%d, %d) after non-zero\n", i, data[i].symbology, j, data[i].expected_separator_col);
+        }
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
 static void test_output_options(int index, int debug) {
 
     testStart("");
@@ -525,39 +612,44 @@ static void test_output_options(int index, int debug) {
         /*  2*/ { BARCODE_CODE128, -1, 2, BARCODE_BIND, "A123", 0, 50, 1, 79, 158, 126, 1, 0, 4 },
         /*  3*/ { BARCODE_CODE128, -1, 2, BARCODE_BIND, "A123", 0, 50, 1, 79, 158, 126, 0, 4, 4 },
         /*  4*/ { BARCODE_CODE128, -1, 2, BARCODE_BOX, "A123", 0, 50, 1, 79, 166, 126, 1, 4, 4 },
-        /*  5*/ { BARCODE_CODE128, -1, -1, -1, "A123", 0, 50, 1, 79, 158, 118, 0, 0, 8 },
-        /*  6*/ { BARCODE_CODE128, 3, -1, -1, "A123", 0, 50, 1, 79, 170, 118, 1, 0, 8 },
-        /*  7*/ { BARCODE_CODE128, 3, 4, -1, "A123", 0, 50, 1, 79, 170, 118, 1, 0, 8 },
-        /*  8*/ { BARCODE_CODE128, 3, 4, BARCODE_BIND, "A123", 0, 50, 1, 79, 170, 134, 1, 0, 0 },
-        /*  9*/ { BARCODE_CODE128, 3, 4, BARCODE_BIND, "A123", 0, 50, 1, 79, 170, 134, 0, 8, 0 },
-        /* 10*/ { BARCODE_CODE128, 3, 4, BARCODE_BOX, "A123", 0, 50, 1, 79, 186, 134, 1, 8, 0 },
-        /* 11*/ { BARCODE_CODE128, -1, -1, BARCODE_DOTTY_MODE, "A123", ZINT_ERROR_INVALID_OPTION, -1, -1, -1, -1, -1, -1, -1, -1 },
-        /* 12*/ { BARCODE_QRCODE, -1, -1, -1, "A123", 0, 21, 21, 21, 42, 42, 0, 2, 2 },
-        /* 13*/ { BARCODE_QRCODE, -1, 3, -1, "A123", 0, 21, 21, 21, 42, 42, 0, 2, 2 },
-        /* 14*/ { BARCODE_QRCODE, -1, 3, BARCODE_BIND, "A123", 0, 21, 21, 21, 42, 54, 1, 2, 2 },
-        /* 15*/ { BARCODE_QRCODE, -1, 3, BARCODE_BIND, "A123", 0, 21, 21, 21, 42, 54, 0, 20, 0 },
-        /* 16*/ { BARCODE_QRCODE, -1, 3, BARCODE_BOX, "A123", 0, 21, 21, 21, 54, 54, 1, 20, 0 },
-        /* 17*/ { BARCODE_QRCODE, -1, -1, -1, "A123", 0, 21, 21, 21, 42, 42, 1, 0, 0 },
-        /* 18*/ { BARCODE_QRCODE, 5, -1, -1, "A123", 0, 21, 21, 21, 62, 42, 0, 0, 0 },
-        /* 19*/ { BARCODE_QRCODE, 5, 6, -1, "A123", 0, 21, 21, 21, 62, 42, 0, 0, 0 },
-        /* 20*/ { BARCODE_QRCODE, 5, 6, BARCODE_BIND, "A123", 0, 21, 21, 21, 62, 66, 1, 0, 0 },
-        /* 21*/ { BARCODE_QRCODE, 5, 6, BARCODE_BIND, "A123", 0, 21, 21, 21, 62, 66, 0, 12, 0 },
-        /* 22*/ { BARCODE_QRCODE, 5, 6, BARCODE_BOX, "A123", 0, 21, 21, 21, 86, 66, 1, 12, 0 },
-        /* 23*/ { BARCODE_QRCODE, -1, -1, BARCODE_DOTTY_MODE, "A123", 0, 21, 21, 21, 43, 43, -1, -1, -1 }, // TODO: investigate +1 size
-        /* 24*/ { BARCODE_QRCODE, -1, 4, BARCODE_DOTTY_MODE, "A123", 0, 21, 21, 21, 43, 43, -1, -1, -1 },
-        /* 25*/ { BARCODE_QRCODE, -1, 4, BARCODE_BIND | BARCODE_DOTTY_MODE, "A123", 0, 21, 21, 21, 43, 59, -1, -1, -1 }, // TODO: fix (bind/box in dotty mode)
-        /* 26*/ { BARCODE_QRCODE, 1, 4, BARCODE_BOX | BARCODE_DOTTY_MODE, "A123", 0, 21, 21, 21, 63, 59, -1, -1, -1 }, // TODO: fix (bind/box in dotty mode)
-        /* 27*/ { BARCODE_MAXICODE, -1, -1, -1, "A123", 0, 165, 33, 30, 300, 300, 0, 0, 0 },
-        /* 28*/ { BARCODE_MAXICODE, -1, 5, -1, "A123", 0, 165, 33, 30, 300, 300, 0, 0, 0 },
-        /* 29*/ { BARCODE_MAXICODE, -1, 5, BARCODE_BIND, "A123", 0, 165, 33, 30, 300, 320, 1, 0, 0 },
-        /* 30*/ { BARCODE_MAXICODE, -1, 5, BARCODE_BIND, "A123", 0, 165, 33, 30, 300, 320, 0, 10, 0 },
-        /* 31*/ { BARCODE_MAXICODE, -1, 5, BARCODE_BOX, "A123", 0, 165, 33, 30, 320, 320, 1, 10, 0 },
-        /* 32*/ { BARCODE_MAXICODE, -1, -1, -1, "A123", 0, 165, 33, 30, 300, 300, 1, 0, 14 },
-        /* 33*/ { BARCODE_MAXICODE, 6, -1, -1, "A123", 0, 165, 33, 30, 324, 300, 0, 0, 14 },
-        /* 34*/ { BARCODE_MAXICODE, 6, 5, BARCODE_BIND, "A123", 0, 165, 33, 30, 324, 320, 1, 10, 25 },
-        /* 35*/ { BARCODE_MAXICODE, 6, 5, BARCODE_BIND, "A123", 0, 165, 33, 30, 324, 320, 0, 10, 9 },
-        /* 36*/ { BARCODE_MAXICODE, 6, 5, BARCODE_BOX, "A123", 0, 165, 33, 30, 344, 320, 1, 10, 9 },
-        /* 37*/ { BARCODE_MAXICODE, -1, -1, BARCODE_DOTTY_MODE, "A123", ZINT_ERROR_INVALID_OPTION, -1, -1, -1, -1, -1, -1, -1, -1 },
+        /*  5*/ { BARCODE_CODE128, -1, 0, BARCODE_BIND, "A123", 0, 50, 1, 79, 158, 118, 0, 0, 4 },
+        /*  6*/ { BARCODE_CODE128, -1, 0, BARCODE_BOX, "A123", 0, 50, 1, 79, 158, 118, 0, 4, 4 },
+        /*  7*/ { BARCODE_CODE128, -1, -1, -1, "A123", 0, 50, 1, 79, 158, 118, 0, 0, 8 },
+        /*  8*/ { BARCODE_CODE128, 3, -1, -1, "A123", 0, 50, 1, 79, 170, 118, 1, 0, 8 },
+        /*  9*/ { BARCODE_CODE128, 3, 4, -1, "A123", 0, 50, 1, 79, 170, 118, 1, 0, 8 },
+        /* 10*/ { BARCODE_CODE128, 3, 4, BARCODE_BIND, "A123", 0, 50, 1, 79, 170, 134, 1, 0, 0 },
+        /* 11*/ { BARCODE_CODE128, 3, 4, BARCODE_BIND, "A123", 0, 50, 1, 79, 170, 134, 0, 8, 0 },
+        /* 12*/ { BARCODE_CODE128, 3, 4, BARCODE_BOX, "A123", 0, 50, 1, 79, 186, 134, 1, 8, 0 },
+        /* 13*/ { BARCODE_CODE128, -1, -1, BARCODE_DOTTY_MODE, "A123", ZINT_ERROR_INVALID_OPTION, -1, -1, -1, -1, -1, -1, -1, -1 },
+        /* 14*/ { BARCODE_QRCODE, -1, -1, -1, "A123", 0, 21, 21, 21, 42, 42, 0, 2, 2 },
+        /* 15*/ { BARCODE_QRCODE, -1, 3, -1, "A123", 0, 21, 21, 21, 42, 42, 0, 2, 2 },
+        /* 16*/ { BARCODE_QRCODE, -1, 3, BARCODE_BIND, "A123", 0, 21, 21, 21, 42, 54, 1, 2, 2 },
+        /* 17*/ { BARCODE_QRCODE, -1, 3, BARCODE_BIND, "A123", 0, 21, 21, 21, 42, 54, 0, 20, 0 },
+        /* 18*/ { BARCODE_QRCODE, -1, 3, BARCODE_BOX, "A123", 0, 21, 21, 21, 54, 54, 1, 20, 0 },
+        /* 19*/ { BARCODE_QRCODE, -1, -1, -1, "A123", 0, 21, 21, 21, 42, 42, 1, 0, 0 },
+        /* 20*/ { BARCODE_QRCODE, 5, -1, -1, "A123", 0, 21, 21, 21, 62, 42, 0, 0, 0 },
+        /* 21*/ { BARCODE_QRCODE, 5, 6, -1, "A123", 0, 21, 21, 21, 62, 42, 0, 0, 0 },
+        /* 22*/ { BARCODE_QRCODE, 5, 6, BARCODE_BIND, "A123", 0, 21, 21, 21, 62, 66, 1, 0, 0 },
+        /* 23*/ { BARCODE_QRCODE, 5, 6, BARCODE_BIND, "A123", 0, 21, 21, 21, 62, 66, 0, 12, 0 },
+        /* 24*/ { BARCODE_QRCODE, 5, 6, BARCODE_BOX, "A123", 0, 21, 21, 21, 86, 66, 1, 12, 0 },
+        /* 25*/ { BARCODE_QRCODE, -1, -1, BARCODE_DOTTY_MODE, "A123", 0, 21, 21, 21, 43, 43, -1, -1, -1 }, // TODO: investigate +1 size
+        /* 26*/ { BARCODE_QRCODE, -1, 4, BARCODE_DOTTY_MODE, "A123", 0, 21, 21, 21, 43, 43, -1, -1, -1 },
+        /* 27*/ { BARCODE_QRCODE, -1, 4, BARCODE_BIND | BARCODE_DOTTY_MODE, "A123", 0, 21, 21, 21, 43, 59, -1, -1, -1 }, // TODO: fix (bind/box in dotty mode)
+        /* 28*/ { BARCODE_QRCODE, 1, 4, BARCODE_BOX | BARCODE_DOTTY_MODE, "A123", 0, 21, 21, 21, 63, 59, -1, -1, -1 }, // TODO: fix (bind/box in dotty mode)
+        /* 29*/ { BARCODE_MAXICODE, -1, -1, -1, "A123", 0, 165, 33, 30, 300, 300, 0, 0, 0 },
+        /* 30*/ { BARCODE_MAXICODE, -1, 5, -1, "A123", 0, 165, 33, 30, 300, 300, 0, 0, 0 },
+        /* 31*/ { BARCODE_MAXICODE, -1, 5, BARCODE_BIND, "A123", 0, 165, 33, 30, 300, 320, 1, 0, 0 },
+        /* 32*/ { BARCODE_MAXICODE, -1, 5, BARCODE_BIND, "A123", 0, 165, 33, 30, 300, 320, 0, 10, 0 },
+        /* 33*/ { BARCODE_MAXICODE, -1, 5, BARCODE_BOX, "A123", 0, 165, 33, 30, 320, 320, 1, 10, 0 },
+        /* 34*/ { BARCODE_MAXICODE, -1, -1, -1, "A123", 0, 165, 33, 30, 300, 300, 1, 0, 14 },
+        /* 35*/ { BARCODE_MAXICODE, 6, -1, -1, "A123", 0, 165, 33, 30, 324, 300, 0, 0, 14 },
+        /* 36*/ { BARCODE_MAXICODE, 6, 5, BARCODE_BIND, "A123", 0, 165, 33, 30, 324, 320, 1, 10, 25 },
+        /* 37*/ { BARCODE_MAXICODE, 6, 5, BARCODE_BIND, "A123", 0, 165, 33, 30, 324, 320, 0, 10, 9 },
+        /* 38*/ { BARCODE_MAXICODE, 6, 5, BARCODE_BOX, "A123", 0, 165, 33, 30, 344, 320, 1, 10, 9 },
+        /* 39*/ { BARCODE_MAXICODE, -1, -1, BARCODE_DOTTY_MODE, "A123", ZINT_ERROR_INVALID_OPTION, -1, -1, -1, -1, -1, -1, -1, -1 },
+        /* 40*/ { BARCODE_ITF14, -1, -1, -1, "123", 0, 50, 1, 135, 330, 138, 1, 110, 0 },
+        /* 41*/ { BARCODE_ITF14, -1, 0, -1, "123", 0, 50, 1, 135, 330, 138, 1, 110, 0 },
+        /* 42*/ { BARCODE_ITF14, -1, 0, BARCODE_BOX, "123", 0, 50, 1, 135, 310, 118, 0, 100, 0 },
     };
     int data_size = ARRAY_SIZE(data);
 
@@ -598,9 +690,9 @@ static void test_output_options(int index, int debug) {
             if (data[i].expected_set != -1) {
                 ret = is_row_column_black(symbol, data[i].expected_set_row, data[i].expected_set_col);
                 if (data[i].expected_set) {
-                    assert_nonzero(ret, "i:%d (%d) is_row_column_black(%d, %d) non-zero\n", i, data[i].symbology, data[i].expected_set_row, data[i].expected_set_col);
+                    assert_nonzero(ret, "i:%d (%d) is_row_column_black(%d, %d) zero\n", i, data[i].symbology, data[i].expected_set_row, data[i].expected_set_col);
                 } else {
-                    assert_zero(ret, "i:%d (%d) is_row_column_black(%d, %d) zero\n", i, data[i].symbology, data[i].expected_set_row, data[i].expected_set_col);
+                    assert_zero(ret, "i:%d (%d) is_row_column_black(%d, %d) non-zero\n", i, data[i].symbology, data[i].expected_set_row, data[i].expected_set_col);
                 }
             }
         }
@@ -831,6 +923,7 @@ int main(int argc, char *argv[]) {
         { "test_buffer", test_buffer, 1, 1, 1 },
         { "test_upcean_hrt", test_upcean_hrt, 1, 0, 1 },
         { "test_row_separator", test_row_separator, 1, 0, 1 },
+        { "test_stacking", test_stacking, 1, 0, 1 },
         { "test_output_options", test_output_options, 1, 0, 1 },
         { "test_draw_string_wrap", test_draw_string_wrap, 1, 0, 1 },
         { "test_code128_utf8", test_code128_utf8, 1, 0, 1 },

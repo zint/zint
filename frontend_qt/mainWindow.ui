@@ -448,6 +448,9 @@ p, li { white-space: pre-wrap; }
                <property name="toolTip">
                 <string>Add border or box</string>
                </property>
+               <property name="minimumContentsLength">
+                <number>24</number>
+               </property>
                <item>
                 <property name="text">
                  <string>No border</string>
