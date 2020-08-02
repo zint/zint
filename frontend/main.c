@@ -108,6 +108,7 @@ static void usage(void) {
             "  --init                Create reader initialisation/programming symbol\n"
             "  --mirror              Use batch data to determine filename\n"
             "  --mode=NUMBER         Set encoding mode (Maxicode/Composite)\n"
+            "  --nobackground        Remove background (PNG/SVG/EPS only)\n"
             "  --notext              Remove human readable text\n"
             "  -o, --output=FILE     Send output to FILE. Default is out.png\n"
             "  --primary=STRING      Set structured primary message (Maxicode/Composite)\n"
@@ -508,6 +509,7 @@ int main(int argc, char **argv) {
             {"gssep", 0, 0, 0},
             {"binary", 0, 0, 0},
             {"fullmultibyte", 0, 0, 0},
+            {"nobackground", 0, 0, 0},
             {"notext", 0, 0, 0},
             {"square", 0, 0, 0},
             {"dmre", 0, 0, 0},
@@ -574,10 +576,10 @@ int main(int argc, char **argv) {
                     }
                 }
                 if (!strcmp(long_options[option_index].name, "fg")) {
-                    strncpy(my_symbol->fgcolour, optarg, 7);
+                    strncpy(my_symbol->fgcolour, optarg, 9);
                 }
                 if (!strcmp(long_options[option_index].name, "bg")) {
-                    strncpy(my_symbol->bgcolour, optarg, 7);
+                    strncpy(my_symbol->bgcolour, optarg, 9);
                 }
                 if (!strcmp(long_options[option_index].name, "fullmultibyte")) {
                     fullmultibyte = 1;
@@ -805,6 +807,9 @@ int main(int argc, char **argv) {
                         fprintf(stderr, "Warning 126: Invalid font size\n");
                         fflush(stderr);
                     }
+                }
+                if (!strcmp(long_options[option_index].name, "nobackground")) {
+                    strcpy(my_symbol->bgcolour, "ffffff00");
                 }
                 break;
 

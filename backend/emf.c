@@ -186,6 +186,7 @@ INTERNAL int emf_plot(struct zint_symbol *symbol) {
     int rectangle_count_bycolour[8];
     unsigned char *this_string[6];
     uint32_t spacing;
+    int draw_background = 1;
 
     float ax, ay, bx, by, cx, cy, dx, dy, ex, ey, fx, fy;
 
@@ -223,6 +224,12 @@ INTERNAL int emf_plot(struct zint_symbol *symbol) {
     bgred = (16 * ctoi(symbol->bgcolour[0])) + ctoi(symbol->bgcolour[1]);
     bggrn = (16 * ctoi(symbol->bgcolour[2])) + ctoi(symbol->bgcolour[3]);
     bgblu = (16 * ctoi(symbol->bgcolour[4])) + ctoi(symbol->bgcolour[5]);
+    
+    if (strlen(symbol->bgcolour) > 6) {
+        if ((ctoi(symbol->bgcolour[6]) == 0) && (ctoi(symbol->bgcolour[7]) == 0)) {
+            draw_background = 0;
+        }
+    }
 
     rectangle_count = count_rectangles(symbol);
     circle_count = count_circles(symbol);
@@ -372,15 +379,17 @@ INTERNAL int emf_plot(struct zint_symbol *symbol) {
     bytecount += 12;
     recordcount++;
 
-    /* Make background from a rectangle */
-    background.type = 0x0000002b; // EMR_RECTANGLE;
-    background.size = 24;
-    background.box.top = 0;
-    background.box.left = 0;
-    background.box.right = emr_header.emf_header.bounds.right;
-    background.box.bottom = emr_header.emf_header.bounds.bottom;
-    bytecount += 24;
-    recordcount++;
+    if (draw_background) {
+        /* Make background from a rectangle */
+        background.type = 0x0000002b; // EMR_RECTANGLE;
+        background.size = 24;
+        background.box.top = 0;
+        background.box.left = 0;
+        background.box.right = emr_header.emf_header.bounds.right;
+        background.box.bottom = emr_header.emf_header.bounds.bottom;
+        bytecount += 24;
+        recordcount++;
+    }
 
     //Rectangles
     rect = symbol->vector->rectangles;
@@ -578,7 +587,9 @@ INTERNAL int emf_plot(struct zint_symbol *symbol) {
 
     fwrite(&emr_selectobject_bgbrush, sizeof (emr_selectobject_t), 1, emf_file);
     fwrite(&emr_selectobject_pen, sizeof (emr_selectobject_t), 1, emf_file);
-    fwrite(&background, sizeof (emr_rectangle_t), 1, emf_file);
+    if (draw_background) {
+        fwrite(&background, sizeof (emr_rectangle_t), 1, emf_file);
+    }
 
     if (symbol->symbology == BARCODE_ULTRA) {
         for(i = 0; i < 8; i++) {

@@ -39,11 +39,11 @@
 INTERNAL int output_check_colour_options(struct zint_symbol *symbol) {
     int error_number;
 
-    if (strlen(symbol->fgcolour) != 6) {
+    if ((strlen(symbol->fgcolour) != 6) && (strlen(symbol->fgcolour) != 8)) {
         strcpy(symbol->errtxt, "651: Malformed foreground colour target");
         return ZINT_ERROR_INVALID_OPTION;
     }
-    if (strlen(symbol->bgcolour) != 6) {
+    if ((strlen(symbol->bgcolour) != 6) && (strlen(symbol->bgcolour) != 8)) {
         strcpy(symbol->errtxt, "652: Malformed background colour target");
         return ZINT_ERROR_INVALID_OPTION;
     }
@@ -57,7 +57,7 @@ INTERNAL int output_check_colour_options(struct zint_symbol *symbol) {
         return ZINT_ERROR_INVALID_OPTION;
     }
 
-    error_number = is_sane(SSET, (unsigned char *) symbol->bgcolour, strlen(symbol->fgcolour));
+    error_number = is_sane(SSET, (unsigned char *) symbol->bgcolour, strlen(symbol->bgcolour));
     if (error_number == ZINT_ERROR_INVALID_DATA) {
         strcpy(symbol->errtxt, "654: Malformed background colour target");
         return ZINT_ERROR_INVALID_OPTION;

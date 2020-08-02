@@ -79,11 +79,12 @@ INTERNAL int png_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
     png_infop info_ptr;
     int i, row, column;
     int fgred, fggrn, fgblu, bgred, bggrn, bgblu;
+    int fgalpha, bgalpha, use_alpha;
 
 #ifndef _MSC_VER
-    unsigned char outdata[symbol->bitmap_width * 3];
+    unsigned char outdata[symbol->bitmap_width * 4];
 #else
-    unsigned char* outdata = (unsigned char*) _alloca(symbol->bitmap_width * 3);
+    unsigned char* outdata = (unsigned char*) _alloca(symbol->bitmap_width * 4);
 #endif
 
     graphic = &wpng_info;
@@ -97,6 +98,22 @@ INTERNAL int png_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
     bgred = (16 * ctoi(symbol->bgcolour[0])) + ctoi(symbol->bgcolour[1]);
     bggrn = (16 * ctoi(symbol->bgcolour[2])) + ctoi(symbol->bgcolour[3]);
     bgblu = (16 * ctoi(symbol->bgcolour[4])) + ctoi(symbol->bgcolour[5]);
+
+    use_alpha = 0;
+    
+    if (strlen(symbol->fgcolour) > 6) {
+        fgalpha = (16 * ctoi(symbol->fgcolour[6])) + ctoi(symbol->fgcolour[7]);
+        if (fgalpha != 0xff) use_alpha = 1;
+    } else {
+        fgalpha = 0xff;
+    }
+    
+    if (strlen(symbol->bgcolour) > 6) {
+        bgalpha = (16 * ctoi(symbol->bgcolour[6])) + ctoi(symbol->bgcolour[7]);
+        if (bgalpha != 0xff) use_alpha = 1;
+    } else {
+        bgalpha = 0xff;
+    }
 
     /* Open output file in binary mode */
     if (symbol->output_options & BARCODE_STDOUT) {
@@ -142,10 +159,14 @@ INTERNAL int png_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
     png_set_compression_level(png_ptr, 9);
 
     /* set Header block */
-    png_set_IHDR(png_ptr, info_ptr, graphic->width, graphic->height,
-            8, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE,
-            PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
-
+    if (use_alpha)
+        png_set_IHDR(png_ptr, info_ptr, graphic->width, graphic->height,
+                8, PNG_COLOR_TYPE_RGBA, PNG_INTERLACE_NONE,
+                PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
+    else
+        png_set_IHDR(png_ptr, info_ptr, graphic->width, graphic->height,
+                8, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE,
+                PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
     /* write all chunks up to (but not including) first IDAT */
     png_write_info(png_ptr, info_ptr);
 
@@ -158,56 +179,67 @@ INTERNAL int png_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
         unsigned char *image_data;
         for (column = 0; column < symbol->bitmap_width; column++) {
             i = column * 3;
+            if (use_alpha) i += column;
             switch (*(pixelbuf + (symbol->bitmap_width * row) + column)) {
                 case 'W': // White
                     outdata[i] = 255;
                     outdata[i + 1] = 255;
                     outdata[i + 2] = 255;
+                    if (use_alpha) outdata[i + 3] = fgalpha;
                     break;
                 case 'C': // Cyan
                     outdata[i] = 0;
                     outdata[i + 1] = 255;
                     outdata[i + 2] = 255;
+                    if (use_alpha) outdata[i + 3] = fgalpha;
                     break;
                 case 'B': // Blue
                     outdata[i] = 0;
                     outdata[i + 1] = 0;
                     outdata[i + 2] = 255;
+                    if (use_alpha) outdata[i + 3] = fgalpha;
                     break;
                 case 'M': // Magenta
                     outdata[i] = 255;
                     outdata[i + 1] = 0;
                     outdata[i + 2] = 255;
+                    if (use_alpha) outdata[i + 3] = fgalpha;
                     break;
                 case 'R': // Red
                     outdata[i] = 255;
                     outdata[i + 1] = 0;
                     outdata[i + 2] = 0;
+                    if (use_alpha) outdata[i + 3] = fgalpha;
                     break;
                 case 'Y': // Yellow
                     outdata[i] = 255;
                     outdata[i + 1] = 255;
                     outdata[i + 2] = 0;
+                    if (use_alpha) outdata[i + 3] = fgalpha;
                     break;
                 case 'G': // Green
                     outdata[i] = 0;
                     outdata[i + 1] = 255;
                     outdata[i + 2] = 0;
+                    if (use_alpha) outdata[i + 3] = fgalpha;
                     break;
                 case 'K': // Black
                     outdata[i] = 0;
                     outdata[i + 1] = 0;
                     outdata[i + 2] = 0;
+                    if (use_alpha) outdata[i + 3] = fgalpha;
                     break;
                 case '1':
                     outdata[i] = fgred;
                     outdata[i + 1] = fggrn;
                     outdata[i + 2] = fgblu;
+                    if (use_alpha) outdata[i + 3] = fgalpha;
                     break;
                 default:
                     outdata[i] = bgred;
                     outdata[i + 1] = bggrn;
                     outdata[i + 2] = bgblu;
+                    if (use_alpha) outdata[i + 3] = bgalpha;
                     break;
 
             }

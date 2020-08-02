@@ -121,6 +121,10 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
     float ax, ay, bx, by, cx, cy, dx, dy, ex, ey, fx, fy;
     float radius;
     int i;
+    char fgcolour_string[7];
+    char bgcolour_string[7];
+    int bg_alpha = 0xff;
+    int fg_alpha = 0xff;
 
     struct zint_vector_rect *rect;
     struct zint_vector_hexagon *hex;
@@ -133,6 +137,20 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
     char* html_string;
 #endif
 
+    for (i = 0; i < 6; i++) {
+        fgcolour_string[i] = symbol->fgcolour[i];
+        bgcolour_string[i] = symbol->bgcolour[i];
+    }
+    fgcolour_string[6] = '\0';
+    bgcolour_string[6] = '\0';
+    
+    if (strlen(symbol->fgcolour) > 6) {
+        fg_alpha = (16 * ctoi(symbol->fgcolour[6])) + ctoi(symbol->fgcolour[7]);
+    }
+    if (strlen(symbol->bgcolour) > 6) {
+        bg_alpha = (16 * ctoi(symbol->bgcolour[6])) + ctoi(symbol->bgcolour[7]);
+    }
+    
     int html_len = strlen((char *)symbol->text) + 1;
 
     for (i = 0; i < (int) strlen((char *)symbol->text); i++) {
@@ -178,18 +196,27 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
     fprintf(fsvg, "   xmlns=\"http://www.w3.org/2000/svg\">\n");
     fprintf(fsvg, "   <desc>Zint Generated Symbol\n");
     fprintf(fsvg, "   </desc>\n");
-    fprintf(fsvg, "\n   <g id=\"barcode\" fill=\"#%s\">\n", symbol->fgcolour);
+    fprintf(fsvg, "\n   <g id=\"barcode\" fill=\"#%s\">\n", fgcolour_string);
 
-    fprintf(fsvg, "      <rect x=\"0\" y=\"0\" width=\"%d\" height=\"%d\" fill=\"#%s\" />\n", (int) ceil(symbol->vector->width), (int) ceil(symbol->vector->height), symbol->bgcolour);
+    if (bg_alpha != 0) {
+        fprintf(fsvg, "      <rect x=\"0\" y=\"0\" width=\"%d\" height=\"%d\" fill=\"#%s\"", (int) ceil(symbol->vector->width), (int) ceil(symbol->vector->height), bgcolour_string);
+        if (bg_alpha != 0xff) {
+            fprintf(fsvg, " opacity=\"%.3f\"", (float) bg_alpha / 255.0);
+        }
+        fprintf(fsvg, " />\n");
+    }
 
     rect = symbol->vector->rectangles;
     while (rect) {
-        if (rect->colour == -1) {
-            fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" />\n", rect->x, rect->y, rect->width, rect->height);
-        } else {
+        fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\"", rect->x, rect->y, rect->width, rect->height);
+        if (rect->colour != -1) {
             pick_colour(rect->colour, colour_code);
-            fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" fill=\"#%s\" />\n", rect->x, rect->y, rect->width, rect->height, colour_code);
+            fprintf(fsvg, " fill=\"#%s\"", colour_code);
         }
+        if (fg_alpha != 0xff) {
+            fprintf(fsvg, " opacity=\"%.3f\"", (float) fg_alpha / 255.0);
+        }
+        fprintf(fsvg, " />\n");
         rect = rect->next;
     }
 
@@ -208,24 +235,41 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
         dx = hex->x;
         ex = hex->x - (0.86 * radius);
         fx = hex->x - (0.86 * radius);
-        fprintf(fsvg, "      <path d=\"M %.2f %.2f L %.2f %.2f L %.2f %.2f L %.2f %.2f L %.2f %.2f L %.2f %.2f Z\" />\n", ax, ay, bx, by, cx, cy, dx, dy, ex, ey, fx, fy);
+        fprintf(fsvg, "      <path d=\"M %.2f %.2f L %.2f %.2f L %.2f %.2f L %.2f %.2f L %.2f %.2f L %.2f %.2f Z\"", ax, ay, bx, by, cx, cy, dx, dy, ex, ey, fx, fy);
+        if (fg_alpha != 0xff) {
+            fprintf(fsvg, " opacity=\"%.3f\"", (float) fg_alpha / 255.0);
+        }
+        fprintf(fsvg, " />\n");
         hex = hex->next;
     }
 
     circle = symbol->vector->circles;
     while (circle) {
+        fprintf(fsvg, "      <circle cx=\"%.2f\" cy=\"%.2f\" r=\"%.2f\"", circle->x, circle->y, circle->diameter / 2.0);
+        
         if (circle->colour) {
-            fprintf(fsvg, "      <circle cx=\"%.2f\" cy=\"%.2f\" r=\"%.2f\" fill=\"#%s\" />\n", circle->x, circle->y, circle->diameter / 2.0, symbol->bgcolour);
+            fprintf(fsvg, " fill=\"#%s\"", bgcolour_string);
+            if (bg_alpha != 0xff) {
+                // This doesn't work how the user is likely to expect - more work needed!
+                fprintf(fsvg, " opacity=\"%.3f\"", (float) bg_alpha / 255.0);
+            }
         } else {
-            fprintf(fsvg, "      <circle cx=\"%.2f\" cy=\"%.2f\" r=\"%.2f\" fill=\"#%s\" />\n", circle->x, circle->y, circle->diameter / 2.0, symbol->fgcolour);
+            if (fg_alpha != 0xff) {
+                fprintf(fsvg, " opacity=\"%.3f\"", (float) fg_alpha / 255.0);
+            }
         }
+        fprintf(fsvg, " />\n");
         circle = circle->next;
     }
 
     string = symbol->vector->strings;
     while (string) {
         fprintf(fsvg, "      <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"middle\"\n", string->x, string->y);
-        fprintf(fsvg, "         font-family=\"Helvetica\" font-size=\"%.1f\" fill=\"#%s\" >\n", string->fsize, symbol->fgcolour);
+        fprintf(fsvg, "         font-family=\"Helvetica\" font-size=\"%.1f\"", string->fsize);
+        if (fg_alpha != 0xff) {
+            fprintf(fsvg, " opacity=\"%.3f\"", (float) fg_alpha / 255.0);
+        }
+        fprintf(fsvg, " >\n");
         make_html_friendly(string->text, html_string);
         fprintf(fsvg, "         %s\n", html_string);
         fprintf(fsvg, "      </text>\n");

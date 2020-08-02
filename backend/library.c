@@ -55,7 +55,9 @@ struct zint_symbol *ZBarcode_Create() {
     symbol->rows = 0;
     symbol->width = 0;
     strcpy(symbol->fgcolour, "000000");
+    symbol->fgcolor = &symbol->fgcolour[0];
     strcpy(symbol->bgcolour, "ffffff");
+    symbol->bgcolor = &symbol->bgcolour[0];
     strcpy(symbol->outfile, "out.png");
     symbol->scale = 1.0;
     symbol->option_1 = -1;
@@ -67,6 +69,7 @@ struct zint_symbol *ZBarcode_Create() {
     symbol->bitmap = NULL;
     symbol->bitmap_width = 0;
     symbol->bitmap_height = 0;
+    symbol->alphamap = NULL;
     symbol->eci = 0; // Default 0 uses ECI 3
     symbol->dot_size = 4.0 / 5.0;
     symbol->vector = NULL;

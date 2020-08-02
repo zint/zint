@@ -37,25 +37,12 @@
 extern "C" {
 #endif /* __cplusplus */
 
-    struct zint_render_line {
-        float x, y, length, width;
-        struct zint_render_line *next; /* Pointer to next line */
-    };
-
     struct zint_vector_rect {
         float x, y, height, width;
         int colour;
         struct zint_vector_rect *next;
     };
-
-    struct zint_render_string {
-        float x, y, fsize;
-        float width; /* Suggested string width, may be 0 if none recommended */
-        int length;
-        unsigned char *text;
-        struct zint_render_string *next; /* Pointer to next character */
-    };
-
+    
     struct zint_vector_string {
         float x, y, fsize;
         float width; /* Suggested string width, may be 0 if none recommended */
@@ -64,33 +51,15 @@ extern "C" {
         struct zint_vector_string *next; /* Pointer to next character */
     };
 
-    struct zint_render_ring {
-        float x, y, radius, line_width;
-        struct zint_render_ring *next; /* Pointer to next ring */
-    };
-
     struct zint_vector_circle {
         float x, y, diameter;
         int colour;
         struct zint_vector_circle *next; /* Pointer to next circle */
     };
 
-    struct zint_render_hexagon {
-        float x, y, height;
-        struct zint_render_hexagon *next; /* Pointer to next hexagon */
-    };
-
     struct zint_vector_hexagon {
         float x, y, diameter;
         struct zint_vector_hexagon *next; /* Pointer to next hexagon */
-    };
-
-    struct zint_render {
-        float width, height;
-        struct zint_render_line *lines; /* Pointer to first line */
-        struct zint_render_string *strings; /* Pointer to first string */
-        struct zint_render_ring *rings; /* Pointer to first ring */
-        struct zint_render_hexagon *hexagons; /* Pointer to first hexagon */
     };
 
     struct zint_vector {
@@ -108,7 +77,9 @@ extern "C" {
         int border_width;
         int output_options;
         char fgcolour[10];
+        char *fgcolor; // pointer to fgcolour
         char bgcolour[10];
+        char *bgcolor; // pointer to bgcolour
         char outfile[256];
         float scale;
         int option_1;
@@ -128,6 +99,7 @@ extern "C" {
         unsigned char *bitmap;
         int bitmap_width;
         int bitmap_height;
+        unsigned char *alphamap;
         unsigned int bitmap_byte_length;
         float dot_size;
         struct zint_vector *vector;
