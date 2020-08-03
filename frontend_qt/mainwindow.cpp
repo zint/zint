@@ -74,6 +74,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags fl)
         "Deutsche Post Identcode",
         "Deutsche Post Leitcode",
         "DotCode",
+        "DPD Code",
         "Dutch Post KIX",
         "EAN-14",
         "European Article Number (EAN)",

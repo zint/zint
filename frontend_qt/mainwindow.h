@@ -67,6 +67,7 @@ public:
         DPIDENT          = 22,
         DPLEIT           = 21,
         DOTCODE          = 115,
+        DPD              = 96,
         KIX              = 90,
         EAN14            = 72,
         EANX             = 13,
