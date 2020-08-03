@@ -25,7 +25,7 @@
       <rect x="96.00" y="0.00" width="4.00" height="100.00" />
       <rect x="106.00" y="0.00" width="2.00" height="100.00" />
       <text x="61.00" y="118.00" text-anchor="middle"
-         font-family="Helvetica" font-size="22.0" fill="#000000" >
+         font-family="Helvetica" font-size="22.0" >
          12345
       </text>
    </g>

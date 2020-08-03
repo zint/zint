@@ -46,19 +46,19 @@
       <rect x="256.00" y="20.00" width="2.00" height="90.00" />
       <rect x="262.00" y="20.00" width="4.00" height="90.00" />
       <text x="8.00" y="118.00" text-anchor="middle"
-         font-family="Helvetica" font-size="22.0" fill="#000000" >
+         font-family="Helvetica" font-size="22.0" >
          9
       </text>
       <text x="70.00" y="118.00" text-anchor="middle"
-         font-family="Helvetica" font-size="22.0" fill="#000000" >
+         font-family="Helvetica" font-size="22.0" >
          771384
       </text>
       <text x="164.00" y="118.00" text-anchor="middle"
-         font-family="Helvetica" font-size="22.0" fill="#000000" >
+         font-family="Helvetica" font-size="22.0" >
          524017
       </text>
       <text x="246.00" y="16.00" text-anchor="middle"
-         font-family="Helvetica" font-size="22.0" fill="#000000" >
+         font-family="Helvetica" font-size="22.0" >
          12
       </text>
    </g>

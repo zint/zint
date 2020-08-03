@@ -28,7 +28,7 @@
       <rect x="128.00" y="0.00" width="2.00" height="100.00" />
       <rect x="132.00" y="0.00" width="4.00" height="100.00" />
       <text x="68.00" y="118.00" text-anchor="middle"
-         font-family="Helvetica" font-size="18.0" fill="#000000" >
+         font-family="Helvetica" font-size="18.0" >
          AIM
       </text>
    </g>

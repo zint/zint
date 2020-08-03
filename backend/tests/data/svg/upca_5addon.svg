@@ -55,23 +55,23 @@
       <rect x="308.00" y="20.00" width="4.00" height="80.00" />
       <rect x="318.00" y="20.00" width="2.00" height="80.00" />
       <text x="8.00" y="114.00" text-anchor="middle"
-         font-family="Helvetica" font-size="16.0" fill="#000000" >
+         font-family="Helvetica" font-size="16.0" >
          6
       </text>
       <text x="72.00" y="118.00" text-anchor="middle"
-         font-family="Helvetica" font-size="22.0" fill="#000000" >
+         font-family="Helvetica" font-size="22.0" >
          14141
       </text>
       <text x="154.00" y="118.00" text-anchor="middle"
-         font-family="Helvetica" font-size="22.0" fill="#000000" >
+         font-family="Helvetica" font-size="22.0" >
          23441
       </text>
       <text x="218.00" y="114.00" text-anchor="middle"
-         font-family="Helvetica" font-size="16.0" fill="#000000" >
+         font-family="Helvetica" font-size="16.0" >
          7
       </text>
       <text x="278.00" y="16.00" text-anchor="middle"
-         font-family="Helvetica" font-size="22.0" fill="#000000" >
+         font-family="Helvetica" font-size="22.0" >
          12345
       </text>
    </g>

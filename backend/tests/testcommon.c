@@ -326,7 +326,7 @@ char *testUtilBarcodeName(int symbology) {
         { "BARCODE_DAFT", BARCODE_DAFT, 93 },
         { "", -1, 94 },
         { "", -1, 95 },
-        { "", -1, 96 },
+        { "BARCODE_DPD", BARCODE_DPD, 96 },
         { "BARCODE_MICROQR", BARCODE_MICROQR, 97 },
         { "BARCODE_HIBC_128", BARCODE_HIBC_128, 98 },
         { "BARCODE_HIBC_39", BARCODE_HIBC_39, 99 },

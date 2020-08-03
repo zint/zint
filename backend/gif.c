@@ -286,7 +286,7 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
     int paletteSize;
     statestruct State;
     int transparent_index;
-    int bgindex, fgindex;
+    int bgindex = -1, fgindex = -1;
 
     unsigned char backgroundColourIndex;
     unsigned char RGBCur[3];

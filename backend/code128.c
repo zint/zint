@@ -1112,7 +1112,7 @@ INTERNAL int ean_14(struct zint_symbol *symbol, unsigned char source[], int leng
 INTERNAL int dpd_parcel(struct zint_symbol *symbol, unsigned char source[], int length) {
     int error_number = 0;
     int i, p;
-    char identifier;
+    unsigned char identifier;
     const int mod = 36;
     int cd; // Check digit
     

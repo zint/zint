@@ -33,19 +33,19 @@
       <rect x="164.00" y="20.00" width="2.00" height="80.00" />
       <rect x="170.00" y="20.00" width="4.00" height="80.00" />
       <text x="8.00" y="114.00" text-anchor="middle"
-         font-family="Helvetica" font-size="16.0" fill="#000000" >
+         font-family="Helvetica" font-size="16.0" >
          1
       </text>
       <text x="66.00" y="118.00" text-anchor="middle"
-         font-family="Helvetica" font-size="22.0" fill="#000000" >
+         font-family="Helvetica" font-size="22.0" >
          234567
       </text>
       <text x="128.00" y="114.00" text-anchor="middle"
-         font-family="Helvetica" font-size="16.0" fill="#000000" >
+         font-family="Helvetica" font-size="16.0" >
          0
       </text>
       <text x="154.00" y="16.00" text-anchor="middle"
-         font-family="Helvetica" font-size="22.0" fill="#000000" >
+         font-family="Helvetica" font-size="22.0" >
          12
       </text>
    </g>

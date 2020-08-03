@@ -47,15 +47,15 @@
       <rect x="244.00" y="20.00" width="4.00" height="90.00" />
       <rect x="254.00" y="20.00" width="2.00" height="90.00" />
       <text x="48.00" y="118.00" text-anchor="middle"
-         font-family="Helvetica" font-size="22.0" fill="#000000" >
+         font-family="Helvetica" font-size="22.0" >
          1234
       </text>
       <text x="114.00" y="118.00" text-anchor="middle"
-         font-family="Helvetica" font-size="22.0" fill="#000000" >
+         font-family="Helvetica" font-size="22.0" >
          5670
       </text>
       <text x="210.00" y="16.00" text-anchor="middle"
-         font-family="Helvetica" font-size="22.0" fill="#000000" >
+         font-family="Helvetica" font-size="22.0" >
          12345
       </text>
    </g>

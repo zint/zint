@@ -55,19 +55,19 @@
       <rect x="310.00" y="20.00" width="4.00" height="90.00" />
       <rect x="318.00" y="20.00" width="2.00" height="90.00" />
       <text x="8.00" y="118.00" text-anchor="middle"
-         font-family="Helvetica" font-size="22.0" fill="#000000" >
+         font-family="Helvetica" font-size="22.0" >
          9
       </text>
       <text x="70.00" y="118.00" text-anchor="middle"
-         font-family="Helvetica" font-size="22.0" fill="#000000" >
+         font-family="Helvetica" font-size="22.0" >
          780877
       </text>
       <text x="164.00" y="118.00" text-anchor="middle"
-         font-family="Helvetica" font-size="22.0" fill="#000000" >
+         font-family="Helvetica" font-size="22.0" >
          799306
       </text>
       <text x="274.00" y="16.00" text-anchor="middle"
-         font-family="Helvetica" font-size="22.0" fill="#000000" >
+         font-family="Helvetica" font-size="22.0" >
          54321
       </text>
    </g>
