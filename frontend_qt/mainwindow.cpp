@@ -124,12 +124,14 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags fl)
     setupUi(this);
     view->setScene(scene);
 
-    m_fgcolor=qRgb(settings.value("studio/ink/red", 0).toInt(),
+    m_fgcolor=qRgba(settings.value("studio/ink/red", 0).toInt(),
                     settings.value("studio/ink/green", 0).toInt(),
-                    settings.value("studio/ink/blue", 0).toInt());
-    m_bgcolor=qRgb(settings.value("studio/paper/red", 0xff).toInt(),
+                    settings.value("studio/ink/blue", 0).toInt(),
+                    settings.value("studio/ink/alpha", 0xff).toInt());
+    m_bgcolor=qRgba(settings.value("studio/paper/red", 0xff).toInt(),
                     settings.value("studio/paper/green", 0xff).toInt(),
-                    settings.value("studio/paper/blue", 0xff).toInt());
+                    settings.value("studio/paper/blue", 0xff).toInt(),
+                    settings.value("studio/paper/alpha", 0xff).toInt());
 
     for (int i = 0; i < metaObject()->enumerator(0).keyCount(); i++) {
         bstyle->addItem(metaObject()->enumerator(0).key(i));
@@ -185,9 +187,11 @@ MainWindow::~MainWindow()
     settings.setValue("studio/ink/red", m_fgcolor.red());
     settings.setValue("studio/ink/green", m_fgcolor.green());
     settings.setValue("studio/ink/blue", m_fgcolor.blue());
+    settings.setValue("studio/ink/alpha", m_fgcolor.alpha());
     settings.setValue("studio/paper/red", m_bgcolor.red());
     settings.setValue("studio/paper/green", m_bgcolor.green());
     settings.setValue("studio/paper/blue", m_bgcolor.blue());
+    settings.setValue("studio/paper/alpha", m_bgcolor.alpha());
     settings.setValue("studio/data", txtData->text());
     settings.setValue("studio/composite_text", txtComposite->toPlainText());
     settings.setValue("studio/appearance/height", heightb->value());
@@ -205,8 +209,8 @@ void MainWindow::resizeEvent(QResizeEvent* event)
 
 void MainWindow::reset_view()
 {
-    m_fgcolor=qRgb(0,0,0);
-    m_bgcolor=qRgb(0xff,0xff,0xff);
+    m_fgcolor=qRgba(0,0,0,0xff);
+    m_bgcolor=qRgba(0xff,0xff,0xff,0xff);
     update_preview();
 }
 
@@ -321,7 +325,7 @@ int MainWindow::open_sequence_dialog()
 void MainWindow::on_fgcolor_clicked()
 {
     QColor temp = m_fgcolor;
-    m_fgcolor=QColorDialog::getColor(m_fgcolor,this,"Set foreground colour");
+    m_fgcolor=QColorDialog::getColor(m_fgcolor,this,"Set foreground colour",QColorDialog::ShowAlphaChannel);
     if (m_fgcolor.isValid()) {
         update_preview();
     } else {
@@ -332,7 +336,7 @@ void MainWindow::on_fgcolor_clicked()
 void MainWindow::on_bgcolor_clicked()
 {
     QColor temp = m_bgcolor;
-    m_bgcolor=QColorDialog::getColor(m_bgcolor,this,"Set background colour");
+    m_bgcolor=QColorDialog::getColor(m_bgcolor,this,"Set background colour",QColorDialog::ShowAlphaChannel);
     if (m_bgcolor.isValid()) {
         update_preview();
     } else {
