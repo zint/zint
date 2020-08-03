@@ -46,6 +46,8 @@ extern "C" {
 #define LATCHC 95
 #define AORB 96
 #define ABORC 97
+    
+#define KRSET "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 INTERNAL int parunmodd(const unsigned char llyth);
 INTERNAL void dxsmooth(int list[2][C128_MAX], int *indexliste);

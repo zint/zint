@@ -95,6 +95,10 @@ void ZBarcode_Clear(struct zint_symbol *symbol) {
         free(symbol->bitmap);
         symbol->bitmap = NULL;
     }
+    if (symbol->alphamap != NULL) {
+        free(symbol->alphamap);
+        symbol->alphamap = NULL;
+    }
     symbol->bitmap_width = 0;
     symbol->bitmap_height = 0;
 
@@ -105,6 +109,8 @@ void ZBarcode_Clear(struct zint_symbol *symbol) {
 void ZBarcode_Delete(struct zint_symbol *symbol) {
     if (symbol->bitmap != NULL)
         free(symbol->bitmap);
+    if (symbol->alphamap != NULL)
+        free(symbol->alphamap);
 
     // If there is a rendered version, ensure its memory is released
     vector_free(symbol);
@@ -178,6 +184,7 @@ INTERNAL int vin(struct zint_symbol *symbol, const unsigned char source[], const
 INTERNAL int mailmark(struct zint_symbol *symbol, const unsigned char source[], const size_t in_length); /* Royal Mail 4-state Mailmark */
 INTERNAL int ultracode(struct zint_symbol *symbol, const unsigned char source[], const size_t in_length); /* Ultracode */
 INTERNAL int rmqr(struct zint_symbol *symbol, const unsigned char source[], const size_t in_length); /* rMQR */
+INTERNAL int dpd_parcel(struct zint_symbol *symbol, const unsigned char source[], const size_t in_length); /* DPD Code */
 
 INTERNAL int plot_raster(struct zint_symbol *symbol, int rotate_angle, int file_type); /* Plot to PNG/BMP/PCX */
 INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_type); /* Plot to EPS/EMF/SVG */
@@ -501,6 +508,7 @@ static int is_linear(const int symbology) {
         case BARCODE_UPCE_CC:
         case BARCODE_CHANNEL:
         case BARCODE_VIN:
+        case BARCODE_DPD:
             result = 1;
             break;
     }
@@ -632,6 +640,7 @@ int ZBarcode_ValidID(int symbol_id) {
         case BARCODE_MAILMARK:
         case BARCODE_ULTRA:
         case BARCODE_RMQR:
+        case BARCODE_DPD:
             result = 1;
             break;
     }
@@ -851,6 +860,8 @@ static int reduced_charset(struct zint_symbol *symbol, const unsigned char *sour
         case BARCODE_MAILMARK: error_number = mailmark(symbol, preprocessed, in_length);
             break;
         case BARCODE_ULTRA: error_number = ultracode(symbol, preprocessed, in_length);
+            break;
+        case BARCODE_DPD: error_number = dpd_parcel(symbol, preprocessed, in_length);
             break;
     }
 
@@ -1076,7 +1087,7 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
         symbol->symbology = BARCODE_CODE128;
         error_number = ZINT_WARN_INVALID_OPTION;
     }
-    if ((symbol->symbology >= 94) && (symbol->symbology <= 96)) {
+    if ((symbol->symbology >= 94) && (symbol->symbology <= 95)) {
         strcpy(symbol->errtxt, "213: Symbology out of range, using Code 128");
         symbol->symbology = BARCODE_CODE128;
         error_number = ZINT_WARN_INVALID_OPTION;

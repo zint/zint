@@ -188,6 +188,7 @@ extern "C" {
 #define BARCODE_KIX             90
 #define BARCODE_AZTEC           92
 #define BARCODE_DAFT            93
+#define BARCODE_DPD             96
 #define BARCODE_MICROQR         97
 
     /* Tbarcode 9 codes */

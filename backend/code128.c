@@ -1105,3 +1105,78 @@ INTERNAL int ean_14(struct zint_symbol *symbol, unsigned char source[], int leng
 
     return error_number;
 }
+
+/* DPD (Deutsher Paket Dienst) Code */
+/* Specification at ftp://dpd.at/Datenspezifikationen/EN/gbs_V4.0.2_hauptdokument.pdf 
+ * or https://docplayer.net/33728877-Dpd-parcel-label-specification.html */
+INTERNAL int dpd_parcel(struct zint_symbol *symbol, unsigned char source[], int length) {
+    int error_number = 0;
+    int i, p;
+    char identifier;
+    const int mod = 36;
+    int cd; // Check digit
+    
+    if (length != 28) {
+        strcpy(symbol->errtxt, "349: DPD input wrong length");
+        return ZINT_ERROR_TOO_LONG;
+    }
+
+    identifier = source[0];
+    source[0] = 'A';
+    
+    to_upper(source);
+    error_number = is_sane(KRSET, source, length);
+    if (error_number == ZINT_ERROR_INVALID_DATA) {
+        strcpy(symbol->errtxt, "350: Invalid character in DPD data");
+        return error_number;
+    }
+    
+    if ((identifier < 32) || (identifier > 127)) {
+        strcpy(symbol->errtxt, "351: Invalid DPD identifier");
+        return ZINT_ERROR_INVALID_DATA;
+    }
+    
+    source[0] = identifier;
+    error_number = code_128(symbol, source, length);
+    
+    cd = mod;
+    
+    p = 0;
+    for (i = 1; i < length; i++) {
+        symbol->text[p] = source[i];
+        p++;
+        
+        cd += posn(KRSET, source[i]);
+        if (cd > mod) cd -= mod;
+        cd *= 2;
+        if (cd >= (mod + 1)) cd -= mod + 1;
+        
+        switch (i) {
+            case 4:
+            case 7:
+            case 11:
+            case 15:
+            case 19:
+            case 21:
+            case 24:
+            case 27:
+                symbol->text[p] = ' ';
+                p++;
+                break;
+        }
+    }
+    
+    cd = mod + 1 - cd;
+    if (cd == mod) cd = 0;
+    
+    if (cd < 10) {
+        symbol->text[p] = cd + '0';
+    } else {
+        symbol->text[p] = (cd - 10) + 'A';
+    }
+    p++;
+    
+    symbol->text[p] = '\0';
+    
+    return error_number;
+}

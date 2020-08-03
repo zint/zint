@@ -313,6 +313,7 @@ Numeric Value  |  Barcode Name
 90             |  Dutch Post KIX Code
 92             |  Aztec Code
 93             |  DAFT Code
+96             |  DPD Code
 97             |  Micro QR Code
 98             |  HIBC Code 128
 99             |  HIBC Code 39
@@ -1087,6 +1088,7 @@ Value   |
 90      | BARCODE_KIX             | Dutch Post KIX Code
 92      | BARCODE_AZTEC           | Aztec Code
 93      | BARCODE_DAFT            | DAFT Code
+96      | BARCODE_DPD             | DPD Code
 97      | BARCODE_MICROQR         | Micro QR Code
 98      | BARCODE_HIBC_128        | HIBC Code 128
 99      | BARCODE_HIBC_39         | HIBC Code 39
@@ -1535,6 +1537,12 @@ check digits. NVE-18 requires a 17 digit numerical input. Check digits and AI
 This option adds a leading '+' character and a trailing modulo-49 check digit
 to a standard Code 128 symbol as required by the Health Industry Barcode
 standards.
+
+6.1.11.7 DPD Code
+-----------------
+Another variation of Code 128 as used by DPD (Deutsher Paket Dienst). Requires
+a 28 character alphanumeric input. Zint formats human readable text as
+specified by DPD and adds a modulo-36 check character.
 
 6.1.12 GS1 DataBar (ISO 24724)
 ------------------------------
