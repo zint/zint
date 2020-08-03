@@ -420,7 +420,7 @@ will give different results for PNG and SVG. Experimentation is advised!
 Also note that these options don't work properly with Maxicode yet.
 
 In addition the --nobackground option will simply remove the background from
-PNG, SVG, EMF and EPS files.
+PNG, GIF, SVG, EMF and EPS files.
 
 4.8 Rotating the Symbol
 -----------------------
@@ -931,8 +931,9 @@ int main(int argc, char **argv)
     return 0;
 }
 
-Background removal for PNG, SVG, EMF and EPS files can be achieved by setting
-the background alpha to "00" where the values for R, G and B will be ignored:
+Background removal for PNG, GIF, SVG, EMF and EPS files can be achieved by
+setting the background alpha to "00" where the values for R, G and B will be
+ignored:
 
 strcpy(my_symbol->bgcolour, "55555500");
 
