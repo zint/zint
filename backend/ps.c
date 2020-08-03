@@ -112,6 +112,13 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
     float radius;
     int colour_index, colour_rect_counter;
     char ps_color[30];
+    int draw_background = 1;
+    
+    if (strlen(symbol->bgcolour) > 6) {
+        if ((ctoi(symbol->bgcolour[6]) == 0) && (ctoi(symbol->bgcolour[7]) == 0)) {
+            draw_background = 0;
+        }
+    }
 
     struct zint_vector_rect *rect;
     struct zint_vector_hexagon *hex;
@@ -210,14 +217,19 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
     fprintf(feps, "newpath\n");
 
     /* Now the actual representation */
-    if ((symbol->output_options & CMYK_COLOUR) == 0) {
-        fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_paper, green_paper, blue_paper);
-    } else {
-        fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n", cyan_paper, magenta_paper, yellow_paper, black_paper);
+    
+    //Background
+    if (draw_background) {
+        if ((symbol->output_options & CMYK_COLOUR) == 0) {
+            fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_paper, green_paper, blue_paper);
+        } else {
+            fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n", cyan_paper, magenta_paper, yellow_paper, black_paper);
+        }
+        
+        fprintf(feps, "%.2f 0.00 TB 0.00 %.2f TR\n", symbol->vector->height, symbol->vector->width);
+        fprintf(feps, "TE\n");
     }
-    fprintf(feps, "%.2f 0.00 TB 0.00 %.2f TR\n", symbol->vector->height, symbol->vector->width);
 
-    fprintf(feps, "TE\n");
     if (symbol->symbology != BARCODE_ULTRA) {
         if ((symbol->output_options & CMYK_COLOUR) == 0) {
             fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
