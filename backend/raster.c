@@ -64,21 +64,43 @@ static int buffer_plot(struct zint_symbol *symbol, char *pixelbuf) {
     int fgred, fggrn, fgblu, bgred, bggrn, bgblu;
     int fgalpha, bgalpha;
     int row, column, i;
+    int plot_alpha = 0;
+    
+    if (strlen(symbol->fgcolour) > 6) {
+        fgalpha = (16 * ctoi(symbol->fgcolour[6])) + ctoi(symbol->fgcolour[7]);
+        plot_alpha = 1;
+    } else {
+        fgalpha = 0xff;
+    }
+    
+    if (strlen(symbol->bgcolour) > 6) {
+        bgalpha = (16 * ctoi(symbol->bgcolour[6])) + ctoi(symbol->bgcolour[7]);
+        plot_alpha = 1;
+    } else {
+        bgalpha = 0xff;
+    }
 
     /* Free any previous bitmap */
     if (symbol->bitmap != NULL) {
         free(symbol->bitmap);
         symbol->bitmap = NULL;
     }
+    if (symbol->alphamap != NULL) {
+        free(symbol->alphamap);
+        symbol->alphamap = NULL;
+    }
+    
     symbol->bitmap = (unsigned char *) malloc(symbol->bitmap_width * symbol->bitmap_height * 3);
     if (symbol->bitmap == NULL) {
         strcpy(symbol->errtxt, "661: Insufficient memory for bitmap buffer");
         return ZINT_ERROR_MEMORY;
     }
-    symbol->alphamap = (unsigned char *) malloc(symbol->bitmap_width * symbol->bitmap_height);
-    if (symbol->alphamap == NULL) {
-        strcpy(symbol->errtxt, "662: Insufficient memory for alphamap buffer");
-        return ZINT_ERROR_MEMORY;
+    if (plot_alpha) {
+        symbol->alphamap = (unsigned char *) malloc(symbol->bitmap_width * symbol->bitmap_height);
+        if (symbol->alphamap == NULL) {
+            strcpy(symbol->errtxt, "662: Insufficient memory for alphamap buffer");
+            return ZINT_ERROR_MEMORY;
+        }
     }
 
     fgred = (16 * ctoi(symbol->fgcolour[0])) + ctoi(symbol->fgcolour[1]);
@@ -87,18 +109,6 @@ static int buffer_plot(struct zint_symbol *symbol, char *pixelbuf) {
     bgred = (16 * ctoi(symbol->bgcolour[0])) + ctoi(symbol->bgcolour[1]);
     bggrn = (16 * ctoi(symbol->bgcolour[2])) + ctoi(symbol->bgcolour[3]);
     bgblu = (16 * ctoi(symbol->bgcolour[4])) + ctoi(symbol->bgcolour[5]);
-    
-    if (strlen(symbol->fgcolour) > 6) {
-        fgalpha = (16 * ctoi(symbol->fgcolour[6])) + ctoi(symbol->fgcolour[7]);
-    } else {
-        fgalpha = 0xff;
-    }
-    
-    if (strlen(symbol->bgcolour) > 6) {
-        bgalpha = (16 * ctoi(symbol->bgcolour[6])) + ctoi(symbol->bgcolour[7]);
-    } else {
-        bgalpha = 0xff;
-    }
 
     for (row = 0; row < symbol->bitmap_height; row++) {
         for (column = 0; column < symbol->bitmap_width; column++) {
@@ -108,61 +118,61 @@ static int buffer_plot(struct zint_symbol *symbol, char *pixelbuf) {
                     symbol->bitmap[i] = 255;
                     symbol->bitmap[i + 1] = 255;
                     symbol->bitmap[i + 2] = 255;
-                    symbol->alphamap[i / 3] = fgalpha;
+                    if (plot_alpha) symbol->alphamap[i / 3] = fgalpha;
                     break;
                 case 'C': // Cyan
                     symbol->bitmap[i] = 0;
                     symbol->bitmap[i + 1] = 255;
                     symbol->bitmap[i + 2] = 255;
-                    symbol->alphamap[i / 3] = fgalpha;
+                    if (plot_alpha) symbol->alphamap[i / 3] = fgalpha;
                     break;
                 case 'B': // Blue
                     symbol->bitmap[i] = 0;
                     symbol->bitmap[i + 1] = 0;
                     symbol->bitmap[i + 2] = 255;
-                    symbol->alphamap[i / 3] = fgalpha;
+                    if (plot_alpha) symbol->alphamap[i / 3] = fgalpha;
                     break;
                 case 'M': // Magenta
                     symbol->bitmap[i] = 255;
                     symbol->bitmap[i + 1] = 0;
                     symbol->bitmap[i + 2] = 255;
-                    symbol->alphamap[i / 3] = fgalpha;
+                    if (plot_alpha) symbol->alphamap[i / 3] = fgalpha;
                     break;
                 case 'R': // Red
                     symbol->bitmap[i] = 255;
                     symbol->bitmap[i + 1] = 0;
                     symbol->bitmap[i + 2] = 0;
-                    symbol->alphamap[i / 3] = fgalpha;
+                    if (plot_alpha) symbol->alphamap[i / 3] = fgalpha;
                     break;
                 case 'Y': // Yellow
                     symbol->bitmap[i] = 255;
                     symbol->bitmap[i + 1] = 255;
                     symbol->bitmap[i + 2] = 0;
-                    symbol->alphamap[i / 3] = fgalpha;
+                    if (plot_alpha) symbol->alphamap[i / 3] = fgalpha;
                     break;
                 case 'G': // Green
                     symbol->bitmap[i] = 0;
                     symbol->bitmap[i + 1] = 255;
                     symbol->bitmap[i + 2] = 0;
-                    symbol->alphamap[i / 3] = fgalpha;
+                    if (plot_alpha) symbol->alphamap[i / 3] = fgalpha;
                     break;
                 case 'K': // Black
                     symbol->bitmap[i] = 0;
                     symbol->bitmap[i + 1] = 0;
                     symbol->bitmap[i + 2] = 0;
-                    symbol->alphamap[i / 3] = fgalpha;
+                    if (plot_alpha) symbol->alphamap[i / 3] = fgalpha;
                     break;
                 case DEFAULT_INK:
                     symbol->bitmap[i] = fgred;
                     symbol->bitmap[i + 1] = fggrn;
                     symbol->bitmap[i + 2] = fgblu;
-                    symbol->alphamap[i / 3] = fgalpha;
+                    if (plot_alpha) symbol->alphamap[i / 3] = fgalpha;
                     break;
                 default: // DEFAULT_PAPER
                     symbol->bitmap[i] = bgred;
                     symbol->bitmap[i + 1] = bggrn;
                     symbol->bitmap[i + 2] = bgblu;
-                    symbol->alphamap[i / 3] = bgalpha;
+                    if (plot_alpha) symbol->alphamap[i / 3] = bgalpha;
                     break;
             }
         }

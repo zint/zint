@@ -846,7 +846,7 @@ output_options    | integer      | Set various output file     | 0 (none)
                   |              |    parameters (see section  |
                   |              |    5.8).                    |
 fgcolour          | character    | Foreground (ink) colour as  | "000000"
-                  |    string    |    RGB/RGBA hexadecimal  |
+                  |    string    |    RGB/RGBA hexadecimal     |
                   |              |    string. Must be 6 or 8   |
                   |              |    characters followed by   |
                   |              |    terminating \0.          |
@@ -903,6 +903,10 @@ bitmap_width      | integer      | Width of stored bitmap      | (output only)
                   |              |    image (in pixels).       |
 bitmap_height     | integer      | Height of stored bitmap     | (output only)
                   |              |    image (in pixels).       |
+alphamap          | pointer to   | Pointer to array            | (output only)
+                  |    unsigned  |    representing alpha       |
+                  |    character |    channel (or NULL if no   |
+                  |    array     |    alpha channel needed).   |
 bitmap_byte_length| integer      | Size of BMP bitmap data.    | (output only)
 vector            | pointer to   | Pointer to vector header    | (output only)
                   |    vector    |    containing pointers to   |
