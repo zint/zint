@@ -1,0 +1,32 @@
+Zint frontend test suite
+------------------------
+
+See <project-dir>/backend/tests/README first to build the backend test suite, as
+its library <project-dir>/backend/tests/build/libtestcommon.a is used here. Then
+
+  cd <project-dir>
+  cd frontend/tests
+  mkdir build
+  cd build
+  cmake ..
+  make
+
+If the backend test suite was made with -DZINT_SANITIZE:BOOL=1 then instead
+
+  cd <project-dir>
+  cd frontend/tests
+  mkdir build
+  cd build
+  cmake -DZINT_SANITIZE:BOOL=1 ..
+  make
+
+-DZINT_DEBUG:BOOL=1 can also be used.
+
+------------------------------------------------------------------------------
+
+Only a single test is defined:
+
+./test_args
+
+As with the backend tests, individual test functions and single dataset items
+can be run using '-f <func-name>' and '-i <index>' etc.

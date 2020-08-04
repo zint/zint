@@ -13,7 +13,7 @@ set(ZINT_DEBUG FALSE CACHE BOOL "Set debug compile flag")
 set(ZINT_SANITIZE FALSE CACHE BOOL "Set sanitize compile/link flags")
 set(ZINT_TEST FALSE CACHE BOOL "Set test compile flag")
 
-find_package(LibZint 2.7.1 REQUIRED)
+find_package(LibZint REQUIRED)
 find_package(PNG)
 
 if(PNG_FOUND)

@@ -27,13 +27,15 @@
 #include <getopt.h>
 #include <zint.h>
 #else
+#include <malloc.h>
 #include "getopt.h"
 #include "zint.h"
 #endif
+
 #define NESET "0123456789"
 
-#ifdef _MSC_VER
-#include <malloc.h>
+#ifndef ARRAY_SIZE
+#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 #endif
 
 /* Print list of supported symbologies */
@@ -112,14 +114,14 @@ static void usage(void) {
             "  --notext              Remove human readable text\n"
             "  -o, --output=FILE     Send output to FILE. Default is out.png\n"
             "  --primary=STRING      Set structured primary message (Maxicode/Composite)\n"
+            "  -r, --reverse         Reverse colours (white on black)\n"
+            "  --rotate=NUMBER       Rotate symbol by NUMBER degrees (BMP/GIF/PCX/PNG/TIF)\n"
+            "  --rows=NUMBER         Set number of rows (Codablock-F)\n"
             "  --scale=NUMBER        Adjust size of X-dimension\n"
             "  --secure=NUMBER       Set error correction level (ECC)\n"
             "  --separator=NUMBER    Set height of row separator bars (stacked symbologies)\n"
             "  --small               Use small text\n"
             "  --square              Force Data Matrix symbols to be square\n"
-            "  -r, --reverse         Reverse colours (white on black)\n"
-            "  --rotate=NUMBER       Rotate symbol by NUMBER degrees (BMP/GIF/PCX/PNG/TIF)\n"
-            "  --rows=NUMBER         Set number of rows (Codablock-F)\n"
             "  -t, --types           Display table of barcode types\n"
             "  --vers=NUMBER         Set symbol version (size, check digits, other options)\n"
             "  -w, --whitesp=NUMBER  Set width of whitespace in multiples of X-dimension\n"
@@ -186,43 +188,93 @@ static char itoc(int source) {
     }
 }
 
-/* Concatinates dest[] with the contents of source[], copying /0 as well */
-static void concat(char dest[], char source[]) {
-    unsigned int i, j, n;
+/* Converts upper case characters to lower case in a string source[] */
+static void to_lower(char source[]) {
+    int i, src_len = strlen(source);
 
-    j = strlen(dest);
-    n = strlen(source);
-    for (i = 0; i <= n; i++) {
-        dest[i + j] = source[i];
+    for (i = 0; i < src_len; i++) {
+        if ((source[i] >= 'A') && (source[i] <= 'Z')) {
+            source[i] = (source[i] - 'A') + 'a';
+        }
     }
+}
+
+static char *filetypes[] = {
+    "bmp", "emf", "eps", "gif", "pcx", "png", "svg", "tif", "txt", // TODO: Determine if PNG available
+};
+
+/* Whether `filetype` supported by Zint */
+static int supported_filetype(char *filetype) {
+    char lc_filetype[4] = {0};
+    int i;
+
+    strncpy(lc_filetype, filetype, 3);
+    to_lower(lc_filetype);
+
+    for (i = 0; i < (int) ARRAY_SIZE(filetypes); i++) {
+        if (strcmp(lc_filetype, filetypes[i]) == 0) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+/* Get file extension, excluding those of 4 or more letters */
+static char *get_extension(char *file) {
+    char *dot;
+
+    dot = strrchr(file, '.');
+    if (dot && strlen(file) - (dot - file) <= 4) { /* Only recognize up to 3 letter extensions */
+        return dot + 1;
+    }
+    return NULL;
+}
+
+/* Set extension of `file` to `filetype`, replacing existing extension if any.
+ * Does nothing if file already has `filetype` extension */
+static void set_extension(char *file, char *filetype) {
+    char lc_filetype[4] = {0};
+    char *extension;
+    char lc_extension[4];
+
+    strncpy(lc_filetype, filetype, 3);
+    to_lower(lc_filetype);
+
+    extension = get_extension(file);
+    if (extension) {
+        strcpy(lc_extension, extension);
+        to_lower(lc_extension);
+        if (strcmp(lc_filetype, lc_extension) == 0) {
+            return;
+        }
+        *(extension - 1) = '\0'; /* Cut off at dot */
+    }
+    if (strlen(file) > 251) {
+        file[251] = '\0';
+    }
+    strcat(file, ".");
+    strcat(file, filetype);
 }
 
 static int batch_process(struct zint_symbol *symbol, char *filename, int mirror_mode, char *filetype, int rotate_angle) {
     FILE *file;
-    unsigned char buffer[7100];
+    unsigned char buffer[7828] = {0}; // 7828 maximum HanXin input
     unsigned char character = 0;
     int posn = 0, error_number = 0, line_count = 1;
     char output_file[256];
     char number[12], reverse_number[12];
     int inpos, local_line_count;
-    char format_string[127], reversed_string[127], format_char;
+    char format_string[256], reversed_string[256], format_char;
     int format_len, i, o;
-    char adjusted[2];
+    char adjusted[2] = {0};
 
-    memset(buffer, 0, sizeof (unsigned char) * 7100);
-    memset(format_string, 0, sizeof (unsigned char) * 127);
     if (symbol->outfile[0] == '\0') {
         strcpy(format_string, "~~~~~.");
         strcat(format_string, filetype);
     } else {
-        if (strlen(format_string) < 127) {
-            strcpy(format_string, symbol->outfile);
-        } else {
-            strcpy(symbol->errtxt, "101: Format string too long");
-            return ZINT_ERROR_INVALID_DATA;
-        }
+        strcpy(format_string, symbol->outfile);
+        set_extension(format_string, filetype);
     }
-    memset(adjusted, 0, sizeof (char) * 2);
 
     if (!strcmp(filename, "-")) {
         file = stdin;
@@ -242,7 +294,7 @@ static int batch_process(struct zint_symbol *symbol, char *filename, int mirror_
         }
         character = (unsigned char) intChar;
         if (character == '\n') {
-            if (buffer[posn - 1] == '\r') {
+            if (posn > 0 && buffer[posn - 1] == '\r') {
                 /* CR+LF - assume Windows formatting and remove CR */
                 posn--;
                 buffer[posn] = '\0';
@@ -251,10 +303,10 @@ static int batch_process(struct zint_symbol *symbol, char *filename, int mirror_
             if (mirror_mode == 0) {
                 inpos = 0;
                 local_line_count = line_count;
-                memset(number, 0, sizeof (char) * 12);
-                memset(reverse_number, 0, sizeof (char) * 12);
-                memset(reversed_string, 0, sizeof (char) * 127);
-                memset(output_file, 0, sizeof (char) * 127);
+                memset(number, 0, sizeof(number));
+                memset(reverse_number, 0, sizeof(reverse_number));
+                memset(reversed_string, 0, sizeof(reversed_string));
+                memset(output_file, 0, sizeof(output_file));
                 do {
                     number[inpos] = itoc(local_line_count % 10);
                     local_line_count /= 10;
@@ -299,7 +351,7 @@ static int batch_process(struct zint_symbol *symbol, char *filename, int mirror_
                             adjusted[0] = format_string[i - 1];
                             break;
                     }
-                    concat(reversed_string, adjusted);
+                    strcat(reversed_string, adjusted);
                 }
 
                 for (i = 0; i < format_len; i++) {
@@ -310,7 +362,6 @@ static int batch_process(struct zint_symbol *symbol, char *filename, int mirror_
                 i = 0;
                 o = 0;
                 do {
-                //for (i = 0; (i < posn && i < 250); i++) {
                     if (buffer[i] < 0x20) {
                         output_file[o] = '_';
                     } else {
@@ -330,6 +381,7 @@ static int batch_process(struct zint_symbol *symbol, char *filename, int mirror_
                                 break;
                             default:
                                 output_file[o] = buffer[i];
+                                break;
                         }
                     }
 
@@ -342,7 +394,7 @@ static int batch_process(struct zint_symbol *symbol, char *filename, int mirror_
                     }
                     i++;
                     o++;
-                } while (i < posn && o < 250);
+                } while (i < posn && o < 251);
 
                 /* Add file extension */
                 output_file[o] = '.';
@@ -358,14 +410,14 @@ static int batch_process(struct zint_symbol *symbol, char *filename, int mirror_
                 fflush(stderr);
             }
             ZBarcode_Clear(symbol);
-            memset(buffer, 0, sizeof (unsigned char) * 7100);
+            memset(buffer, 0, sizeof(buffer));
             posn = 0;
             line_count++;
         } else {
             buffer[posn] = character;
             posn++;
         }
-        if (posn > 7090) {
+        if (posn >= (int) sizeof(buffer)) {
             fprintf(stderr, "On line %d: Error 103: Input data too long\n", line_count);
             fflush(stderr);
             do {
@@ -443,33 +495,33 @@ static int is_extendable(const int symbology) {
     return 0;
 }
 
+typedef struct { char *arg; int opt; } arg_opt;
+
 int main(int argc, char **argv) {
     struct zint_symbol *my_symbol;
-    int error_number;
-    int rotate_angle;
-    int generated;
-    int batch_mode;
-    int mirror_mode;
-    int fullmultibyte;
-    int separator;
-    int addon_gap;
-    char filetype[4];
+    int error_number = 0;
+    int rotate_angle = 0;
+    int help = 0;
+    int data_cnt = 0;
+    int input_cnt = 0;
+    int batch_mode = 0;
+    int mirror_mode = 0;
+    int fullmultibyte = 0;
+    int separator = 0;
+    int addon_gap = 0;
+    char filetype[4] = {0};
     int i;
+    int ret;
+    char *outfile_extension;
+    int data_arg_num = 0;
+#ifndef _MSC_VER
+    arg_opt arg_opts[(argc + 1) / 2];
+#else
+    arg_opt *arg_opts = (arg_opt *) _alloca(((argc + 1) / 2) * sizeof(arg_opt));
+#endif
 
-    error_number = 0;
-    rotate_angle = 0;
-    generated = 0;
     my_symbol = ZBarcode_Create();
     my_symbol->input_mode = UNICODE_MODE;
-    batch_mode = 0;
-    mirror_mode = 0;
-    fullmultibyte = 0;
-    separator = 0;
-    addon_gap = 0;
-
-    for (i = 0; i < 4; i++) {
-        filetype[i] = '\0';
-    }
 
     if (argc == 1) {
         usage();
@@ -479,57 +531,57 @@ int main(int argc, char **argv) {
     while (1) {
         int option_index = 0;
         static struct option long_options[] = {
-            {"help", 0, 0, 'h'},
-            {"types", 0, 0, 't'},
-            {"ecinos", 0, 0, 'e'},
-            {"bind", 0, 0, 0},
-            {"box", 0, 0, 0},
-            {"direct", 0, 0, 0},
-            {"dump", 0, 0, 0},
+            {"addongap", 1, 0, 0},
             {"barcode", 1, 0, 'b'},
-            {"height", 1, 0, 0},
-            {"whitesp", 1, 0, 'w'},
-            {"border", 1, 0, 0},
-            {"data", 1, 0, 'd'},
-            {"output", 1, 0, 'o'},
-            {"input", 1, 0, 'i'},
-            {"fg", 1, 0, 0},
+            {"batch", 0, 0, 0},
+            {"binary", 0, 0, 0},
             {"bg", 1, 0, 0},
+            {"bind", 0, 0, 0},
+            {"bold", 0, 0, 0},
+            {"border", 1, 0, 0},
+            {"box", 0, 0, 0},
+            {"cmyk", 0, 0, 0},
             {"cols", 1, 0, 0},
-            {"rows", 1, 0, 0},
-            {"vers", 1, 0, 0},
-            {"rotate", 1, 0, 0},
-            {"secure", 1, 0, 0},
-            {"reverse", 1, 0, 'r'},
-            {"mode", 1, 0, 0},
-            {"primary", 1, 0, 0},
-            {"scale", 1, 0, 0},
-            {"separator", 1, 0, 0},
+            {"data", 1, 0, 'd'},
+            {"direct", 0, 0, 0},
+            {"dmre", 0, 0, 0},
+            {"dotsize", 1, 0, 0},
+            {"dotty", 0, 0, 0},
+            {"dump", 0, 0, 0},
+            {"eci", 1, 0, 0},
+            {"ecinos", 0, 0, 'e'},
+            {"esc", 0, 0, 0},
+            {"fg", 1, 0, 0},
+            {"filetype", 1, 0, 0},
+            {"fontsize", 1, 0, 0},
+            {"fullmultibyte", 0, 0, 0},
             {"gs1", 0, 0, 0},
             {"gssep", 0, 0, 0},
-            {"binary", 0, 0, 0},
-            {"fullmultibyte", 0, 0, 0},
+            {"height", 1, 0, 0},
+            {"help", 0, 0, 'h'},
+            {"init", 0, 0, 0},
+            {"input", 1, 0, 'i'},
+            {"mirror", 0, 0, 0},
+            {"mode", 1, 0, 0},
             {"nobackground", 0, 0, 0},
             {"notext", 0, 0, 0},
-            {"square", 0, 0, 0},
-            {"dmre", 0, 0, 0},
-            {"init", 0, 0, 0},
+            {"output", 1, 0, 'o'},
+            {"primary", 1, 0, 0},
+            {"reverse", 0, 0, 'r'},
+            {"rotate", 1, 0, 0},
+            {"rows", 1, 0, 0},
+            {"scale", 1, 0, 0},
+            {"secure", 1, 0, 0},
+            {"separator", 1, 0, 0},
             {"small", 0, 0, 0},
-            {"bold", 0, 0, 0},
-            {"cmyk", 0, 0, 0},
-            {"addongap", 1, 0, 0},
-            {"batch", 0, 0, 0},
-            {"mirror", 0, 0, 0},
-            {"dotty", 0, 0, 0},
-            {"dotsize", 1, 0, 0},
-            {"eci", 1, 0, 0},
-            {"filetype", 1, 0, 0},
-            {"esc", 0, 0, 0},
-            {"fontsize", 1, 0, 0},
+            {"square", 0, 0, 0},
+            {"types", 0, 0, 't'},
             {"verbose", 0, 0, 0}, // Currently undocumented, output some debug info
+            {"vers", 1, 0, 0},
+            {"whitesp", 1, 0, 'w'},
             {0, 0, 0, 0}
         };
-        int c = getopt_long(argc, argv, "htb:w:d:o:i:rcmpe", long_options, &option_index);
+        int c = getopt_long(argc, argv, "b:d:ehi:o:rtw:", long_options, &option_index);
         if (c == -1) break;
 
         switch (c) {
@@ -563,17 +615,13 @@ int main(int argc, char **argv) {
                 }
                 if (!strcmp(long_options[option_index].name, "dump")) {
                     my_symbol->output_options += BARCODE_STDOUT;
-                    strncpy(my_symbol->outfile, "dummy.txt", 10);
+                    strcpy(my_symbol->outfile, "dummy.txt");
                 }
                 if (!strcmp(long_options[option_index].name, "gs1")) {
-                    my_symbol->input_mode = GS1_MODE;
+                    my_symbol->input_mode = (my_symbol->input_mode & ~0x07) | GS1_MODE;
                 }
                 if (!strcmp(long_options[option_index].name, "binary")) {
-                    if (my_symbol->input_mode & ESCAPE_MODE) {
-                        my_symbol->input_mode = DATA_MODE + ESCAPE_MODE;
-                    } else {
-                        my_symbol->input_mode = DATA_MODE;
-                    }
+                    my_symbol->input_mode = (my_symbol->input_mode & ~0x07) | DATA_MODE;
                 }
                 if (!strcmp(long_options[option_index].name, "fg")) {
                     strncpy(my_symbol->fgcolour, optarg, 9);
@@ -666,7 +714,6 @@ int main(int argc, char **argv) {
                         fflush(stderr);
                     }
                 }
-
                 if (!strcmp(long_options[option_index].name, "cols")) {
                     error_number = validator(NESET, optarg);
                     if (error_number == ZINT_ERROR_INVALID_DATA) {
@@ -763,8 +810,13 @@ int main(int argc, char **argv) {
                     }
                 }
                 if (!strcmp(long_options[option_index].name, "batch")) {
-                    /* Switch to batch processing mode */
-                    batch_mode = 1;
+                    if (data_cnt == 0) {
+                        /* Switch to batch processing mode */
+                        batch_mode = 1;
+                    } else {
+                        fprintf(stderr, "Warning 141: Can't use batch mode if data given, ignoring\n");
+                        fflush(stderr);
+                    }
                 }
                 if (!strcmp(long_options[option_index].name, "mirror")) {
                     /* Use filenames which reflect content */
@@ -772,7 +824,12 @@ int main(int argc, char **argv) {
                 }
                 if (!strcmp(long_options[option_index].name, "filetype")) {
                     /* Select the type of output file */
-                    strncpy(filetype, optarg, (size_t) 3);
+                    if (!supported_filetype(optarg)) {
+                        fprintf(stderr, "Warning 142: File type '%s' not supported, ignoring\n", optarg);
+                        fflush(stderr);
+                    } else {
+                        strncpy(filetype, optarg, (size_t) 3);
+                    }
                 }
                 if (!strcmp(long_options[option_index].name, "eci")) {
                     error_number = validator(NESET, optarg);
@@ -788,9 +845,7 @@ int main(int argc, char **argv) {
                     }
                 }
                 if (!strcmp(long_options[option_index].name, "esc")) {
-                    if (!(my_symbol->input_mode & ESCAPE_MODE)) {
-                        my_symbol->input_mode += ESCAPE_MODE;
-                    }
+                    my_symbol->input_mode |= ESCAPE_MODE;
                 }
                 if (!strcmp(long_options[option_index].name, "verbose")) {
                     my_symbol->debug = 1;
@@ -815,20 +870,23 @@ int main(int argc, char **argv) {
 
             case 'h':
                 usage();
+                help = 1;
                 break;
 
             case 't':
                 types();
+                help = 1;
                 break;
 
             case 'e':
                 show_eci();
+                help = 1;
                 break;
 
             case 'b':
                 error_number = validator(NESET, optarg);
                 if (error_number == ZINT_ERROR_INVALID_DATA) {
-                    fprintf(stderr, "Error 119: Invalid barcode type\n");
+                    fprintf(stderr, "Error 119: Invalid barcode type '%s'\n", optarg);
                     exit(1);
                 }
                 my_symbol->symbology = atoi(optarg);
@@ -837,7 +895,7 @@ int main(int argc, char **argv) {
             case 'w':
                 error_number = validator(NESET, optarg);
                 if (error_number == ZINT_ERROR_INVALID_DATA) {
-                    fprintf(stderr, "Error 120: Invalid whitespace value\n");
+                    fprintf(stderr, "Error 120: Invalid whitespace value '%s'\n", optarg);
                     exit(1);
                 }
                 if ((atoi(optarg) >= 0) && (atoi(optarg) <= 1000)) {
@@ -850,80 +908,30 @@ int main(int argc, char **argv) {
 
             case 'd': /* we have some data! */
                 if (batch_mode == 0) {
-                    if (filetype[0] != '\0') {
-                        strcat(my_symbol->outfile, ".");
-                        strcat(my_symbol->outfile, filetype);
-                    }
-                    if (fullmultibyte && is_fullmultibyte(my_symbol)) {
-                        my_symbol->option_3 = ZINT_FULL_MULTIBYTE;
-                    } else if (separator && is_stackable(my_symbol->symbology)) {
-                        my_symbol->option_3 = separator;
-                    }
-                    if (addon_gap && is_extendable(my_symbol->symbology)) {
-                        my_symbol->option_2 = addon_gap;
-                    }
-                    error_number = ZBarcode_Encode(my_symbol, (unsigned char*) optarg, strlen(optarg));
-                    generated = 1;
-                    if (error_number != 0) {
-                            fprintf(stderr, "%s\n", my_symbol->errtxt);
-                            fflush(stderr);
-                    }
-                    if (error_number < 5) {
-                        error_number = ZBarcode_Print(my_symbol, rotate_angle);
-
-                        if (error_number != 0) {
-                            fprintf(stderr, "%s\n", my_symbol->errtxt);
-                            fflush(stderr);
-                            ZBarcode_Delete(my_symbol);
-                            return 1;
-                        }
-                    }
+                    arg_opts[data_arg_num].arg = optarg;
+                    arg_opts[data_arg_num].opt = c;
+                    data_arg_num++;
+                    data_cnt++;
                 } else {
-                    fprintf(stderr, "Warning 122: Can't define data in batch mode\n");
+                    fprintf(stderr, "Warning 122: Can't define data in batch mode, ignoring '%s'\n", optarg);
                     fflush(stderr);
                 }
                 break;
 
             case 'i': /* Take data from file */
-                if (fullmultibyte && is_fullmultibyte(my_symbol)) {
-                    my_symbol->option_3 = ZINT_FULL_MULTIBYTE;
-                } else if (separator && is_stackable(my_symbol->symbology)) {
-                    my_symbol->option_3 = separator;
-                }
-                if (batch_mode == 0) {
-                    error_number = ZBarcode_Encode_File(my_symbol, optarg);
-                    generated = 1;
-                    if (error_number != 0) {
-                        fprintf(stderr, "%s\n", my_symbol->errtxt);
-                        fflush(stderr);
-                    }
-                    if (error_number < 5) {
-                        error_number = ZBarcode_Print(my_symbol, rotate_angle);
-                        if (error_number != 0) {
-                            fprintf(stderr, "%s\n", my_symbol->errtxt);
-                            fflush(stderr);
-                            ZBarcode_Delete(my_symbol);
-                            return 1;
-                        }
-                    }
+                if (batch_mode == 0 || input_cnt == 0) {
+                    arg_opts[data_arg_num].arg = optarg;
+                    arg_opts[data_arg_num].opt = c;
+                    data_arg_num++;
+                    input_cnt++;
                 } else {
-                    /* Take each line of text as a separate data set */
-                    if (filetype[0] == '\0') {
-                        strcpy(filetype, "png");
-                    }
-                    error_number = batch_process(my_symbol, optarg, mirror_mode, filetype, rotate_angle);
-                    generated = 1;
-                    if (error_number != 0) {
-                        fprintf(stderr, "%s\n", my_symbol->errtxt);
-                        fflush(stderr);
-                        ZBarcode_Delete(my_symbol);
-                        return 1;
-                    }
+                    fprintf(stderr, "Warning 143: Can only define one input file in batch mode, ignoring '%s'\n", optarg);
+                    fflush(stderr);
                 }
                 break;
 
             case 'o':
-                strncpy(my_symbol->outfile, optarg, 250);
+                strncpy(my_symbol->outfile, optarg, 255);
                 break;
 
             case 'r':
@@ -937,6 +945,7 @@ int main(int argc, char **argv) {
             default:
                 fprintf(stderr, "Error 123: ?? getopt error 0%o\n", c);
                 fflush(stderr);
+                break;
         }
     }
 
@@ -948,7 +957,60 @@ int main(int argc, char **argv) {
         fflush(stderr);
     }
 
-    if (generated == 0) {
+    if (data_arg_num) {
+        if (fullmultibyte && is_fullmultibyte(my_symbol)) {
+            my_symbol->option_3 = ZINT_FULL_MULTIBYTE;
+        } else if (separator && is_stackable(my_symbol->symbology)) {
+            my_symbol->option_3 = separator;
+        }
+        if (addon_gap && is_extendable(my_symbol->symbology)) {
+            my_symbol->option_2 = addon_gap;
+        }
+
+        if (batch_mode) {
+            /* Take each line of text as a separate data set */
+            if (data_arg_num > 1) {
+                fprintf(stderr, "Warning 144: Processing first input file '%s' only\n", arg_opts[0].arg);
+                fflush(stderr);
+            }
+            if (filetype[0] == '\0') {
+                outfile_extension = get_extension(my_symbol->outfile);
+                // TODO: Determine if PNG available
+                strcpy(filetype, outfile_extension && supported_filetype(outfile_extension) ? outfile_extension : "png");
+            }
+            error_number = batch_process(my_symbol, arg_opts[0].arg, mirror_mode, filetype, rotate_angle);
+            if (error_number != 0) {
+                fprintf(stderr, "%s\n", my_symbol->errtxt);
+                fflush(stderr);
+            }
+        } else {
+            if (*filetype != '\0') {
+                set_extension(my_symbol->outfile, filetype);
+            }
+            for (i = 0; i < data_arg_num; i++) {
+                if (arg_opts[i].opt == 'd') {
+                    ret = ZBarcode_Encode(my_symbol, (unsigned char *) arg_opts[i].arg, strlen(arg_opts[i].arg));
+                } else {
+                    ret = ZBarcode_Encode_File(my_symbol, arg_opts[i].arg);
+                }
+                if (ret != 0) {
+                    fprintf(stderr, "%s\n", my_symbol->errtxt);
+                    fflush(stderr);
+                    if (error_number < 5) {
+                        error_number = ret;
+                    }
+                }
+            }
+            if (error_number < 5) {
+                error_number = ZBarcode_Print(my_symbol, rotate_angle);
+
+                if (error_number != 0) {
+                    fprintf(stderr, "%s\n", my_symbol->errtxt);
+                    fflush(stderr);
+                }
+            }
+        }
+    } else if (help == 0) {
         fprintf(stderr, "Warning 124: No data received, no symbol generated\n");
         fflush(stderr);
     }

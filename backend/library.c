@@ -235,7 +235,7 @@ static int dump_plot(struct zint_symbol *symbol) {
                 space++;
                 byt = 0;
             }
-            if (space == 2) {
+            if (space == 2 && i + 1 < symbol->width) {
                 fputc(' ', f);
                 space = 0;
             }

@@ -86,7 +86,7 @@ INTERNAL void to_upper(unsigned char source[]) {
 
     for (i = 0; i < src_len; i++) {
         if ((source[i] >= 'a') && (source[i] <= 'z')) {
-            source [i] = (source[i] - 'a') + 'A';
+            source[i] = (source[i] - 'a') + 'A';
         }
     }
 }

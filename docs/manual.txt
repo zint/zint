@@ -184,9 +184,7 @@ zint -d "This Text"
 This will encode the text "This Text". Zint will use the default symbology,
 Code 128, and output to the default file out.png in the current directory.
 Alternatively, if libpng was not present when Zint was built, the default
-output file will be out.gif. The -d switch and the input data should always
-be the last entry on the command line input. Any options given after this
-will be ignored.
+output file will be out.gif.
 
 The data input to Zint is assumed to be encoded in Unicode (UTF-8) format. If
 you are encoding characters beyond the 7-bit ASCII set using a scheme other than
@@ -222,8 +220,7 @@ Escape Character  |  ASCII Equivalent  |  Interpretation
 
 Input data can be read directly from file using the -i switch as shown below.
 The input file is assumed to be Unicode (UTF-8) formatted unless an alternative
-mode is selected. This command replaces the use of the -d switch and should
-similarly be the last option given.
+mode is selected. This command replaces the use of the -d switch.
 
 zint -i ./somefile.txt
 
@@ -2006,7 +2003,6 @@ Input  |  Symbol Size
 47     |  26 x 48
 48     |  26 x 64
 ---------------------
-
 
 DMRE symbol sizes may be activated in automatic size mode using the option
 --dmre or by the API option_3 = DM_DMRE

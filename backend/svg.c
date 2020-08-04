@@ -183,7 +183,7 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
         fsvg = fopen(symbol->outfile, "w");
     }
     if (fsvg == NULL) {
-        strcpy(symbol->errtxt, "660: Could not open output file");
+        strcpy(symbol->errtxt, "680: Could not open output file");
         return ZINT_ERROR_FILE_ACCESS;
     }
 
