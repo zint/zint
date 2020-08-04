@@ -113,18 +113,17 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
     int colour_index, colour_rect_counter;
     char ps_color[30];
     int draw_background = 1;
-    
-    if (strlen(symbol->bgcolour) > 6) {
-        if ((ctoi(symbol->bgcolour[6]) == 0) && (ctoi(symbol->bgcolour[7]) == 0)) {
-            draw_background = 0;
-        }
-    }
-
     struct zint_vector_rect *rect;
     struct zint_vector_hexagon *hex;
     struct zint_vector_circle *circle;
     struct zint_vector_string *string;
     const char *locale = NULL;
+
+    if (strlen(symbol->bgcolour) > 6) {
+        if ((ctoi(symbol->bgcolour[6]) == 0) && (ctoi(symbol->bgcolour[7]) == 0)) {
+            draw_background = 0;
+        }
+    }
 
     if (symbol->output_options & BARCODE_STDOUT) {
         feps = stdout;

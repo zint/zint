@@ -20,6 +20,9 @@
 #include <stdio.h>
 #include <math.h>
 #include <QFontMetrics>
+/* the following include was necessary to compile with QT 5.18 on Windows */
+/* QT 8.7 did not require it. */
+#include <QPainterPath>
 
 namespace Zint {
     static const char* fontstyle = "Arial";
@@ -84,13 +87,8 @@ namespace Zint {
         }
 
         strcpy(m_zintSymbol->fgcolour, m_fgColor.name().toLatin1().right(6));
-        if (m_fgColor.alpha() != 0xff) {
-            strcat(m_zintSymbol->fgcolour, m_fgColor.name(QColor::HexArgb).toLatin1().mid(1,2));
-        }
         strcpy(m_zintSymbol->bgcolour, m_bgColor.name().toLatin1().right(6));
-        if (m_bgColor.alpha() != 0xff) {
-            strcat(m_zintSymbol->bgcolour, m_bgColor.name(QColor::HexArgb).toLatin1().mid(1,2));
-        }
+
         strcpy(m_zintSymbol->primary, m_primaryMessage.toLatin1().left(127));
     }
 

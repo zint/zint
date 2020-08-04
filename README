@@ -261,6 +261,14 @@ Bugs:
 - Human readable representation: Code128, Code39, Code93 special characters
   are shown by a blank.
 - ITF14: Ticket 201: allow bind option
+Version 2.9.1 not released jet:
+Changes:
+- Implement transparency support
+  - -nobackground option added
+  - -fg and -bg may contain an alpha channel
+  - structure zint_symbol may now contain an alpha channel as output
+- Added DPD Symbology
+Bugs:
 
 CONTACT US
 ----------

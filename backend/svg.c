@@ -132,6 +132,7 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
     struct zint_vector_string *string;
 
     char colour_code[7];
+    int html_len;
 
 #ifdef _MSC_VER
     char* html_string;
@@ -151,7 +152,7 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
         bg_alpha = (16 * ctoi(symbol->bgcolour[6])) + ctoi(symbol->bgcolour[7]);
     }
     
-    int html_len = strlen((char *)symbol->text) + 1;
+    html_len = strlen((char *)symbol->text) + 1;
 
     for (i = 0; i < (int) strlen((char *)symbol->text); i++) {
         switch(symbol->text[i]) {
