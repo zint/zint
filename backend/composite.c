@@ -1521,6 +1521,7 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
     linear = ZBarcode_Create(); /* Symbol contains the 2D component and Linear contains the rest */
 
     linear->symbology = symbol->symbology;
+    linear->option_2 = symbol->option_2;
     linear->debug = symbol->debug;
 
     if (linear->symbology != BARCODE_GS1_128_CC) {
