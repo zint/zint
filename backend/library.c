@@ -886,6 +886,7 @@ static int escape_char_process(struct zint_symbol *symbol, unsigned char *input_
     int error_number;
     int in_posn, out_posn;
     int hex1, hex2;
+    int i, unicode;
 
 #ifndef _MSC_VER
     unsigned char escaped_string[*length + 1];
@@ -962,6 +963,35 @@ static int escape_char_process(struct zint_symbol *symbol, unsigned char *input_
                     break;
                 case '\\': escaped_string[out_posn] = '\\';
                     in_posn += 2;
+                    break;
+                case 'u':
+                    if (in_posn + 6 > *length) {
+                        strcpy(symbol->errtxt, "235: Incomplete unicode escape character in input data");
+                        return ZINT_ERROR_INVALID_DATA;
+                    }
+                    unicode = 0;
+                    for (i = 0; i < 4; i++) {
+                        if (ctoi(input_string[in_posn + i + 2]) == -1) {
+                            strcpy(symbol->errtxt, "236: Corrupt unicode escape character in input data");
+                            return ZINT_ERROR_INVALID_DATA;
+                        }
+                        unicode = unicode << 4;
+                        unicode += ctoi(input_string[in_posn + i + 2]);
+                    }
+                    if (unicode >= 0x800) {
+                        escaped_string[out_posn] = 0xe0 + ((unicode & 0xf000) >> 12);
+                        out_posn++;
+                        escaped_string[out_posn] = 0x80 + ((unicode & 0x0fc0) >> 6);
+                        out_posn++;
+                        escaped_string[out_posn] = 0x80 + (unicode & 0x003f);
+                    } else if (unicode >= 0x80) {
+                        escaped_string[out_posn] = 0xc0 + ((unicode & 0x07c0) >> 6);
+                        out_posn++;
+                        escaped_string[out_posn] = 0x80 + (unicode & 0x003f);
+                    } else {
+                        escaped_string[out_posn] = unicode & 0x7f;
+                    }
+                    in_posn += 6;
                     break;
                 default: strcpy(symbol->errtxt, "234: Unrecognised escape character in input data");
                     return ZINT_ERROR_INVALID_DATA;

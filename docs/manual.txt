@@ -215,6 +215,9 @@ Escape Character  |  ASCII Equivalent  |  Interpretation
 \\                |  0x5C              |  Backslash
 \xNN              |  0xNN              |  Any other 8-bit character
                   |                    |     where NN is hexadecimal
+\uNNNN            |                    |  Any 16-bit Unicode
+                  |                    |     character where NNNN
+                  |                    |     is hexadecimal
 --------------------------------------------------------------------
 
 Input data can be read directly from file using the -i switch as shown below.
