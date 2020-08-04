@@ -207,6 +207,7 @@ INTERNAL int emf_plot(struct zint_symbol *symbol) {
     emr_selectobject_t emr_selectobject_pen;
     emr_rectangle_t background;
     emr_extcreatefontindirectw_t emr_extcreatefontindirectw;
+    emr_settextcolor_t emr_settextcolor;
     emr_selectobject_t emr_selectobject_font;
     //emr_extcreatefontindirectw_t emr_extcreatefontindirectw_big;
     //emr_selectobject_t emr_selectobject_font_big;
@@ -493,10 +494,19 @@ INTERNAL int emf_plot(struct zint_symbol *symbol) {
         utfle_copy(emr_extcreatefontindirectw.elw.facename, (unsigned char*) "sans-serif", 10);
         bytecount += 104;
         recordcount++;
-
+        
         emr_selectobject_font.type = 0x00000025; // EMR_SELECTOBJECT
         emr_selectobject_font.size = 12;
         emr_selectobject_font.ih_object = 4;
+        bytecount += 12;
+        recordcount++;
+        
+        emr_settextcolor.type = 0x0000018; // EMR_SETTEXTCOLOR
+        emr_settextcolor.size = 12;
+        emr_settextcolor.color.red = fgred;
+        emr_settextcolor.color.green = fggrn;
+        emr_settextcolor.color.blue = fgblu;
+        emr_settextcolor.color.reserved = 0;
         bytecount += 12;
         recordcount++;
     }
@@ -643,6 +653,7 @@ INTERNAL int emf_plot(struct zint_symbol *symbol) {
     // Text
     if (string_count > 0) {
         fwrite(&emr_selectobject_font, sizeof (emr_selectobject_t), 1, emf_file);
+        fwrite(&emr_settextcolor, sizeof (emr_settextcolor_t), 1, emf_file);
     }
 
     /* Suppresses clang-tidy clang-analyzer-core.UndefinedBinaryOperatorResult warning */

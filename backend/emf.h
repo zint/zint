@@ -187,6 +187,12 @@ extern "C" {
         log_font_t elw;
     } emr_extcreatefontindirectw_t;
 
+    typedef struct emr_settextcolor {
+        uint32_t type;
+        uint32_t size;
+        color_ref_t color;
+    } emr_settextcolor_t;
+    
     typedef struct emr_exttextoutw {
         uint32_t type;
         uint32_t size;
