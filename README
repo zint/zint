@@ -180,7 +180,7 @@ Changes:
   - GRIDMATRIX/HX/MQR/QRCODE/RMQR: allow separate selection of size/ECC
   - add DAFT and VIN Symbolgies
   - Separarator option for DATAMATRIX
-  - parse escape sequences
+  - Ticket 162: parse escape sequences
   - gui element reassigments
 - UPC/EAN/ITF-14 Composite: Ticket 72: new option --addongap (default:9) to set
   the gap between code and composite.
@@ -264,8 +264,8 @@ Bugs:
 
 Version 2.9.1 2020-08-04:
 Changes:
-- Implement transparency support
-  - -nobackground option added
+- Ticket 122: Implement transparency support
+  - Ticket 129: -nobackground option added
   - -fg and -bg may contain an alpha channel
   - structure zint_symbol may now contain an alpha channel as output
 - Added DPD Symbology
@@ -273,6 +273,10 @@ Changes:
 Bugs:
 - EMF text colour does not change
 - Fix QPainterPath dependency for Visual Studio
+
+Version 2.9.2 not released jet:
+Changes:
+- Command line switches -d or -i for code data may now be at any position.
 
 CONTACT US
 ----------
