@@ -434,18 +434,33 @@ INTERNAL int emf_plot(struct zint_symbol *symbol) {
         hexagon[this_hexagon].count = 6;
 
         radius = hex->diameter / 2.0;
-        ay = hex->y + (1.0 * radius);
-        by = hex->y + (0.5 * radius);
-        cy = hex->y - (0.5 * radius);
-        dy = hex->y - (1.0 * radius);
-        ey = hex->y - (0.5 * radius);
-        fy = hex->y + (0.5 * radius);
-        ax = hex->x;
-        bx = hex->x + (0.86 * radius);
-        cx = hex->x + (0.86 * radius);
-        dx = hex->x;
-        ex = hex->x - (0.86 * radius);
-        fx = hex->x - (0.86 * radius);
+        if ((hex->rotation == 0) || (hex->rotation == 180)) {
+            ay = hex->y + (1.0 * radius);
+            by = hex->y + (0.5 * radius);
+            cy = hex->y - (0.5 * radius);
+            dy = hex->y - (1.0 * radius);
+            ey = hex->y - (0.5 * radius);
+            fy = hex->y + (0.5 * radius);
+            ax = hex->x;
+            bx = hex->x + (0.86 * radius);
+            cx = hex->x + (0.86 * radius);
+            dx = hex->x;
+            ex = hex->x - (0.86 * radius);
+            fx = hex->x - (0.86 * radius);
+        } else {
+            ay = hex->y;
+            by = hex->y + (0.86 * radius);
+            cy = hex->y + (0.86 * radius);
+            dy = hex->y;
+            ey = hex->y - (0.86 * radius);
+            fy = hex->y - (0.86 * radius);
+            ax = hex->x - (1.0 * radius);
+            bx = hex->x - (0.5 * radius);
+            cx = hex->x + (0.5 * radius);
+            dx = hex->x + (1.0 * radius);
+            ex = hex->x + (0.5 * radius);
+            fx = hex->x - (0.5 * radius);
+        }
 
         hexagon[this_hexagon].a_points_a.x = ax;
         hexagon[this_hexagon].a_points_a.y = ay;

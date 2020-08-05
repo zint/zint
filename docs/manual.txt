@@ -425,8 +425,8 @@ PNG, GIF, SVG, EMF and EPS files.
 4.8 Rotating the Symbol
 -----------------------
 The symbol can be rotated through four orientations using the --rotate= option
-followed by the angle of rotation as shown below. This option is only available
-with raster image (PNG, BMP, GIF and PCX) output.
+followed by the angle of rotation as shown below. This option does not (yet)
+apply to EMF file output.
 
 --rotate=0 (default)
 --rotate=90

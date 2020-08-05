@@ -47,6 +47,7 @@ extern "C" {
         float x, y, fsize;
         float width; /* Suggested string width, may be 0 if none recommended */
         int length;
+        int rotation;
         unsigned char *text;
         struct zint_vector_string *next; /* Pointer to next character */
     };
@@ -59,6 +60,7 @@ extern "C" {
 
     struct zint_vector_hexagon {
         float x, y, diameter;
+        int rotation;
         struct zint_vector_hexagon *next; /* Pointer to next hexagon */
     };
 

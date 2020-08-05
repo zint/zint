@@ -224,18 +224,33 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
     hex = symbol->vector->hexagons;
     while (hex) {
         radius = hex->diameter / 2.0;
-        ay = hex->y + (1.0 * radius);
-        by = hex->y + (0.5 * radius);
-        cy = hex->y - (0.5 * radius);
-        dy = hex->y - (1.0 * radius);
-        ey = hex->y - (0.5 * radius);
-        fy = hex->y + (0.5 * radius);
-        ax = hex->x;
-        bx = hex->x + (0.86 * radius);
-        cx = hex->x + (0.86 * radius);
-        dx = hex->x;
-        ex = hex->x - (0.86 * radius);
-        fx = hex->x - (0.86 * radius);
+        if ((hex->rotation == 0) || (hex->rotation == 180)) {
+            ay = hex->y + (1.0 * radius);
+            by = hex->y + (0.5 * radius);
+            cy = hex->y - (0.5 * radius);
+            dy = hex->y - (1.0 * radius);
+            ey = hex->y - (0.5 * radius);
+            fy = hex->y + (0.5 * radius);
+            ax = hex->x;
+            bx = hex->x + (0.86 * radius);
+            cx = hex->x + (0.86 * radius);
+            dx = hex->x;
+            ex = hex->x - (0.86 * radius);
+            fx = hex->x - (0.86 * radius);
+        } else {
+            ay = hex->y;
+            by = hex->y + (0.86 * radius);
+            cy = hex->y + (0.86 * radius);
+            dy = hex->y;
+            ey = hex->y - (0.86 * radius);
+            fy = hex->y - (0.86 * radius);
+            ax = hex->x - (1.0 * radius);
+            bx = hex->x - (0.5 * radius);
+            cx = hex->x + (0.5 * radius);
+            dx = hex->x + (1.0 * radius);
+            ex = hex->x + (0.5 * radius);
+            fx = hex->x - (0.5 * radius);
+        }
         fprintf(fsvg, "      <path d=\"M %.2f %.2f L %.2f %.2f L %.2f %.2f L %.2f %.2f L %.2f %.2f L %.2f %.2f Z\"", ax, ay, bx, by, cx, cy, dx, dy, ex, ey, fx, fy);
         if (fg_alpha != 0xff) {
             fprintf(fsvg, " opacity=\"%.3f\"", (float) fg_alpha / 255.0);
@@ -269,6 +284,9 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
         fprintf(fsvg, "         font-family=\"Helvetica\" font-size=\"%.1f\"", string->fsize);
         if (fg_alpha != 0xff) {
             fprintf(fsvg, " opacity=\"%.3f\"", (float) fg_alpha / 255.0);
+        }
+        if (string->rotation != 0) {
+            fprintf(fsvg, " transform=\"rotate(%d,%.2f,%.2f)\"", string->rotation, string->x, string->y);
         }
         fprintf(fsvg, " >\n");
         make_html_friendly(string->text, html_string);

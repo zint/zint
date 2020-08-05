@@ -80,6 +80,7 @@ static struct zint_vector_hexagon *vector_plot_create_hexagon(double x, double y
     hexagon->x = x;
     hexagon->y = y;
     hexagon->diameter = (diameter * 5.0) / 4.0; // Ugly kludge for legacy support
+    hexagon->rotation = 0;
 
     return hexagon;
 }
@@ -132,6 +133,7 @@ static int vector_plot_add_string(struct zint_symbol *symbol,
     string->width = width;
     string->fsize = fsize;
     string->length = ustrlen(text);
+    string->rotation = 0;
     string->text = (unsigned char*) malloc(sizeof (unsigned char) * (ustrlen(text) + 1));
     ustrcpy(string->text, text);
 
@@ -238,6 +240,116 @@ static void vector_scale(struct zint_symbol *symbol, int file_type) {
         string->fsize *= scale;
         string = string->next;
     }
+    return;
+}
+
+static void vector_rotate(struct zint_symbol *symbol, int rotate_angle) {
+    // Rotates the image
+    struct zint_vector_rect *rect;
+    struct zint_vector_hexagon *hex;
+    struct zint_vector_circle *circle;
+    struct zint_vector_string *string;
+    int temp;
+    
+    if (rotate_angle == 0) {
+        // No rotation needed
+        return;
+    }
+    
+    rect = symbol->vector->rectangles;
+    while (rect) {
+        if (rotate_angle == 90) {
+            temp = rect->x;
+            rect->x = symbol->vector->height - (rect->y + rect->height);
+            rect->y = temp;
+            temp = rect->width;
+            rect->width = rect->height;
+            rect->height = temp;
+        }
+        if (rotate_angle == 180) {
+            rect->x = symbol->vector->width - (rect->x + rect->width);
+            rect->y = symbol->vector->height - (rect->y + rect->height);
+        }
+        if (rotate_angle == 270) {
+            temp = rect->x;
+            rect->x = rect->y;
+            rect->y = symbol->vector->width - (temp + rect->width);
+            temp = rect->width;
+            rect->width = rect->height;
+            rect->height = temp;
+        }
+        rect = rect->next;
+    }
+    
+    hex = symbol->vector->hexagons;
+    while (hex) {
+        if (rotate_angle == 90) {
+            temp = hex->x;
+            hex->x = symbol->vector->height - hex->y;
+            hex->y = temp;
+            hex->rotation = 90;
+        }
+        if (rotate_angle == 180) {
+            hex->x = symbol->vector->width - hex->x;
+            hex->y = symbol->vector->height - hex->y;
+            hex->rotation = 180;
+        }
+        if (rotate_angle == 270) {
+            temp = hex->x;
+            hex->x = hex->y;
+            hex->y = symbol->vector->width - temp;
+            hex->rotation = 270;
+        }
+        hex = hex->next;
+    }
+    
+    circle = symbol->vector->circles;
+    while (circle) {
+        if (rotate_angle == 90) {
+            temp = circle->x;
+            circle->x = symbol->vector->height - circle->y;
+            circle->y = temp;
+        }
+        if (rotate_angle == 180) {
+            circle->x = symbol->vector->width - circle->x;
+            circle->y = symbol->vector->height - circle->y;
+        }
+        if (rotate_angle == 270) {
+            temp = circle->x;
+            circle->x = circle->y;
+            circle->y = symbol->vector->width - temp;
+        }
+        circle = circle->next;
+    }
+    
+    string = symbol->vector->strings;
+    while (string) {
+        if (rotate_angle == 90) {
+            temp = string->x;
+            string->x = symbol->vector->height - string->y;
+            string->y = temp;
+            string->rotation = 90;
+        }
+        if (rotate_angle == 180) {
+            string->x = symbol->vector->width - string->x;
+            string->y = symbol->vector->height - string->y;
+            string->rotation = 180;
+        }
+        if (rotate_angle == 270) {
+            temp = string->x;
+            string->x = string->y;
+            string->y = symbol->vector->width - temp;
+            string->rotation = 270;
+        }
+        string = string->next;
+    }
+    
+    if ((rotate_angle == 90) || (rotate_angle == 270)) {
+        temp = symbol->vector->height;
+        symbol->vector->height = symbol->vector->width;
+        symbol->vector->width = temp;
+    }
+
     return;
 }
 
@@ -628,6 +740,7 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
             /* Put normal human readable text at the bottom (and centered) */
             // calculate start xoffset to center text
             vector_plot_add_string(symbol, symbol->text, main_width / 2.0 + xoffset, default_text_posn, text_height, symbol->width, &last_string);
+            printf("%s\n", symbol->text);
         }
 
         xoffset -= comp_offset; // Restore xoffset
@@ -685,6 +798,11 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
     vector_reduce_rectangles(symbol);
 
     vector_scale(symbol, file_type);
+    
+    if (file_type != OUT_EMF_FILE) {
+        /* Should be possible for EMF but not sure how to rotate text */
+        vector_rotate(symbol, rotate_angle);
+    }
 
     switch (file_type) {
         case OUT_EPS_FILE:

@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2018 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2020 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -269,18 +269,33 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
     hex = symbol->vector->hexagons;
     while (hex) {
         radius = hex->diameter / 2.0;
-        ay = (symbol->vector->height - hex->y) + (1.0 * radius);
-        by = (symbol->vector->height - hex->y) + (0.5 * radius);
-        cy = (symbol->vector->height - hex->y) - (0.5 * radius);
-        dy = (symbol->vector->height - hex->y) - (1.0 * radius);
-        ey = (symbol->vector->height - hex->y) - (0.5 * radius);
-        fy = (symbol->vector->height - hex->y) + (0.5 * radius);
-        ax = hex->x;
-        bx = hex->x + (0.86 * radius);
-        cx = hex->x + (0.86 * radius);
-        dx = hex->x;
-        ex = hex->x - (0.86 * radius);
-        fx = hex->x - (0.86 * radius);
+        if ((hex->rotation == 0) || (hex->rotation == 180)) {
+            ay = (symbol->vector->height - hex->y) + (1.0 * radius);
+            by = (symbol->vector->height - hex->y) + (0.5 * radius);
+            cy = (symbol->vector->height - hex->y) - (0.5 * radius);
+            dy = (symbol->vector->height - hex->y) - (1.0 * radius);
+            ey = (symbol->vector->height - hex->y) - (0.5 * radius);
+            fy = (symbol->vector->height - hex->y) + (0.5 * radius);
+            ax = hex->x;
+            bx = hex->x + (0.86 * radius);
+            cx = hex->x + (0.86 * radius);
+            dx = hex->x;
+            ex = hex->x - (0.86 * radius);
+            fx = hex->x - (0.86 * radius);
+        } else {
+            ay = (symbol->vector->height - hex->y);
+            by = (symbol->vector->height - hex->y) + (0.86 * radius);
+            cy = (symbol->vector->height - hex->y) + (0.86 * radius);
+            dy = (symbol->vector->height - hex->y);
+            ey = (symbol->vector->height - hex->y) - (0.86 * radius);
+            fy = (symbol->vector->height - hex->y) - (0.86 * radius);
+            ax = hex->x - (1.0 * radius);
+            bx = hex->x - (0.5 * radius);
+            cx = hex->x + (0.5 * radius);
+            dx = hex->x + (1.0 * radius);
+            ex = hex->x + (0.5 * radius);
+            fx = hex->x - (0.5 * radius);
+        }
         fprintf(feps, "%.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f TH\n", ax, ay, bx, by, cx, cy, dx, dy, ex, ey, fx, fy);
         hex = hex->next;
     }
@@ -312,15 +327,23 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
 
     // Text
     string = symbol->vector->strings;
+
     while (string) {
         fprintf(feps, "matrix currentmatrix\n");
         fprintf(feps, "/Helvetica findfont\n");
         fprintf(feps, "%.2f scalefont setfont\n", string->fsize);
         fprintf(feps, " 0 0 moveto %.2f %.2f translate 0.00 rotate 0 0 moveto\n", string->x, (symbol->vector->height - string->y));
         fprintf(feps, " (%s) stringwidth\n", string->text);
+        if (string->rotation != 0) {
+            fprintf(feps, "gsave\n");
+            fprintf(feps, "%d rotate\n", 360 - string->rotation);
+        }
         fprintf(feps, "pop\n");
         fprintf(feps, "-2 div 0 rmoveto\n");
         fprintf(feps, " (%s) show\n", string->text);
+        if (string->rotation != 0) {
+            fprintf(feps, "grestore\n");
+        }
         fprintf(feps, "setmatrix\n");
         string = string->next;
     }
