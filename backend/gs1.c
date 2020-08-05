@@ -689,12 +689,12 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
             ai_string[2] = '\0';
             last_ai = atoi(ai_string);
             ai_latch = 0;
-            /* The following values from "GS-1 General Specification version 8.0 issue 2, May 2008"
-            figure 5.4.8.2.1 - 1 "Element Strings with Pre-Defined Length Using Application Identifiers" */
+            /* The following values from "GS-1 General Specification Release 20.0"
+            figure 7.8.4-2 "Element Strings with Predefined Length Using Application Identifiers" */
             if (
                     ((last_ai >= 0) && (last_ai <= 4))
                     || ((last_ai >= 11) && (last_ai <= 20))
-                    || (last_ai == 23) /* legacy support - see 5.3.8.2.2 */
+                    || (last_ai == 23) /* legacy support */
                     || ((last_ai >= 31) && (last_ai <= 36))
                     || (last_ai == 41)
                     ) {
