@@ -515,9 +515,9 @@ int main(int argc, char **argv) {
     char *outfile_extension;
     int data_arg_num = 0;
 #ifndef _MSC_VER
-    arg_opt arg_opts[(argc + 1) / 2];
+    arg_opt arg_opts[argc];
 #else
-    arg_opt *arg_opts = (arg_opt *) _alloca(((argc + 1) / 2) * sizeof(arg_opt));
+    arg_opt *arg_opts = (arg_opt *) _alloca(argc * sizeof(arg_opt));
 #endif
 
     my_symbol = ZBarcode_Create();

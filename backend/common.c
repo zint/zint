@@ -240,7 +240,7 @@ INTERNAL int is_extendable(const int symbology) {
 }
 
 /* Indicates which symbols can have composite 2D component data */
-INTERNAL int is_composite(int symbology) {
+INTERNAL int is_composite(const int symbology) {
     return symbology >= BARCODE_EANX_CC && symbology <= BARCODE_DBAR_EXPSTK_CC;
 }
 
