@@ -740,7 +740,6 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
             /* Put normal human readable text at the bottom (and centered) */
             // calculate start xoffset to center text
             vector_plot_add_string(symbol, symbol->text, main_width / 2.0 + xoffset, default_text_posn, text_height, symbol->width, &last_string);
-            printf("%s\n", symbol->text);
         }
 
         xoffset -= comp_offset; // Restore xoffset
