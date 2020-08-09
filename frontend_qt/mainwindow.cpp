@@ -1095,7 +1095,7 @@ void MainWindow::update_preview()
 
         case BARCODE_CODE16K:
             m_bc.bc.setSymbol(BARCODE_CODE16K);
-            set_gs1_mode(m_optionWidget->findChild<QRadioButton*>("radC16kStand")->isChecked());
+            set_gs1_mode(m_optionWidget->findChild<QRadioButton*>("radC16kGS1")->isChecked());
             // Row separator height selection uses option 3 in zint_symbol
             item_val = m_optionWidget->findChild<QComboBox*>("cmbC16kRowSepHeight")->currentIndex();
             if (item_val) {
