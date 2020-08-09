@@ -128,7 +128,7 @@ For fresh releases you will get a warning message from Microsoft Defender
 SmartScreen that this is an "unrecognised app". This happens because Zint is
 a free and open-source software project with no advertising and hence no
 income, meaning we are not able to afford the $664 per year to have the
-application digitially signed by Microsoft.
+application digitally signed by Microsoft.
 
 2.3 Apple macOS
 ---------------
@@ -895,7 +895,7 @@ encoding_data     | array of     | Representation of the       | (output only)
 row_height        | array of     | Representation of the       | (output only)
                   |    integers  |    height of a row.         |
 errtxt            | character    | Error message in the event  | (output only)
-                  |    string    |    that an error ocurred.   |
+                  |    string    |    that an error occurred.  |
 bitmap            | pointer to   | Pointer to stored bitmap    | (output only)
                   |    unsigned  |    image.                   |
                   |    character |                             |
@@ -1266,9 +1266,9 @@ Interleaved Code 2 of 5 and requires a 13 digit numeric input (digits 0-9). One
 modulo-10 check digit is added by Zint.
 
 If no border option is specified Zint defaults to adding a bounding box with a
-border width of 5. This behaviour can be overridden by using the --bind otion
+border width of 5. This behaviour can be overridden by using the --bind option
 (or adding BARCODE_BIND to symbol->output_options). Similarly the border width
-can be overriden using --border= (or by setting symbol->border_width). If a
+can be overridden using --border= (or by setting symbol->border_width). If a
 symbol with no border is explicitly required this can be achieved by setting
 the border type to box or bind and setting the border width to 0.
 
@@ -2821,7 +2821,7 @@ KDE and Windows.
 12/5/2017
 
 v2.6.1 - Various bugfixes to backend, including improved Aztec code processing.
-Many improvements to GUI including resizable screens and more output while
+Many improvements to GUI including resizeable screens and more output while
 batch processing, more consistent use of dialogues.
 27/8/2017
 
@@ -2836,7 +2836,7 @@ verification. Bugfixes for TIF and EMF output and escape character handling.
 v2.6.4 - Datamatrix DMRE updated to the ISO/IEC29158 version. This is
 incompatible in the way, that the old -vers numbers for DMRE are re-assigned.
 The separator of GS1-datamatrix may be switched from FNC1 to GS.
-GS1 field length check AI 8009 and 7230 to 7239 currected.
+GS1 field length check AI 8009 and 7230 to 7239 corrected.
 
 v2.6.5 - minor bugfixes
 
