@@ -503,9 +503,9 @@ INTERNAL int output_process_upcean(struct zint_symbol *symbol, int *p_main_width
 }
 
 /* Calculate large bar height i.e. linear bars */
-INTERNAL double output_large_bar_height(struct zint_symbol *symbol) {
+INTERNAL float output_large_bar_height(struct zint_symbol *symbol) {
     int i, large_bar_count, preset_height;
-    double large_bar_height;
+    float large_bar_height;
 
     large_bar_count = 0;
     preset_height = 0;
@@ -517,9 +517,9 @@ INTERNAL double output_large_bar_height(struct zint_symbol *symbol) {
     }
 
     if (large_bar_count) {
-        large_bar_height = (double) (symbol->height - preset_height) / large_bar_count;
+        large_bar_height = (float) (symbol->height - preset_height) / large_bar_count;
     } else {
-        large_bar_height = 0.0; /* Not used if large_bar_count zero */
+        large_bar_height = 0.0f; /* Not used if large_bar_count zero */
     }
 
     return large_bar_height;

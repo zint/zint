@@ -287,7 +287,7 @@ static void draw_bar(char *pixelbuf, int xpos, int xlen, int ypos, int ylen, int
     }
 }
 
-static void draw_circle(char *pixelbuf, int image_width, int image_height, int x0, int y0, double radius, char fill) {
+static void draw_circle(char *pixelbuf, int image_width, int image_height, int x0, int y0, float radius, char fill) {
     int x, y;
     int radius_i = (int) radius;
 
@@ -305,19 +305,19 @@ static void draw_circle(char *pixelbuf, int image_width, int image_height, int x
 
 static void draw_bullseye(char *pixelbuf, int image_width, int image_height, int xoffset, int yoffset, int scaler) {
     /* Central bullseye in Maxicode symbols */
-    double x = 14.5 * scaler;
-    double y = 15.0 * scaler;
-    if(scaler < 10) {
-        x = 16.0 * scaler;
-        y = 16.5 * scaler;
+    float x = 14.5f * scaler;
+    float y = 15.0f * scaler;
+    if (scaler < 10) {
+        x = 16.0f * scaler;
+        y = 16.5f * scaler;
     }
 
-    draw_circle(pixelbuf, image_width, image_height, x + xoffset, y + yoffset, (4.571 * scaler) + 1, DEFAULT_INK);
-    draw_circle(pixelbuf, image_width, image_height, x + xoffset, y + yoffset, (3.779 * scaler) + 1, DEFAULT_PAPER);
-    draw_circle(pixelbuf, image_width, image_height, x + xoffset, y + yoffset, (2.988 * scaler) + 1, DEFAULT_INK);
-    draw_circle(pixelbuf, image_width, image_height, x + xoffset, y + yoffset, (2.196 * scaler) + 1, DEFAULT_PAPER);
-    draw_circle(pixelbuf, image_width, image_height, x + xoffset, y + yoffset, (1.394 * scaler) + 1, DEFAULT_INK);
-    draw_circle(pixelbuf, image_width, image_height, x + xoffset, y + yoffset, (0.602 * scaler) + 1, DEFAULT_PAPER);
+    draw_circle(pixelbuf, image_width, image_height, x + xoffset, y + yoffset, (4.571f * scaler) + 1.0f, DEFAULT_INK);
+    draw_circle(pixelbuf, image_width, image_height, x + xoffset, y + yoffset, (3.779f * scaler) + 1.0f, DEFAULT_PAPER);
+    draw_circle(pixelbuf, image_width, image_height, x + xoffset, y + yoffset, (2.988f * scaler) + 1.0f, DEFAULT_INK);
+    draw_circle(pixelbuf, image_width, image_height, x + xoffset, y + yoffset, (2.196f * scaler) + 1.0f, DEFAULT_PAPER);
+    draw_circle(pixelbuf, image_width, image_height, x + xoffset, y + yoffset, (1.394f * scaler) + 1.0f, DEFAULT_INK);
+    draw_circle(pixelbuf, image_width, image_height, x + xoffset, y + yoffset, (0.602f * scaler) + 1.0f, DEFAULT_PAPER);
 }
 
 static void draw_hexagon(char *pixelbuf, int image_width, char *scaled_hexagon, int hexagon_size, int xposn, int yposn) {
@@ -477,17 +477,17 @@ static void draw_string(char *pixbuf, unsigned char input_string[], int xposn, i
     }
 }
 
-static void plot_hexline(char *scaled_hexagon, int hexagon_size, double start_x, double start_y, double end_x, double end_y) {
+static void plot_hexline(char *scaled_hexagon, int hexagon_size, float start_x, float start_y, float end_x, float end_y) {
     /* Draw a straight line from start to end */
     int i;
-    double inc_x, inc_y;
+    float inc_x, inc_y;
 
     inc_x = (end_x - start_x) / hexagon_size;
     inc_y = (end_y - start_y) / hexagon_size;
 
     for (i = 0; i < hexagon_size; i++) {
-        double this_x = start_x + (i * inc_x);
-        double this_y = start_y + (i * inc_y);
+        float this_x = start_x + (i * inc_x);
+        float this_y = start_y + (i * inc_y);
         if (((this_x >= 0) && (this_x < hexagon_size)) && ((this_y >= 0) && (this_y < hexagon_size))) {
                 scaled_hexagon[(hexagon_size * (int)this_y) + (int)this_x] = DEFAULT_INK;
         }
@@ -498,37 +498,37 @@ static void plot_hexagon(char *scaled_hexagon, int hexagon_size) {
     /* Create a hexagon shape and fill it */
     int line, i;
 
-    double x_offset[6];
-    double y_offset[6];
-    double start_x, start_y;
-    double end_x, end_y;
+    float x_offset[6];
+    float y_offset[6];
+    float start_x, start_y;
+    float end_x, end_y;
 
-    x_offset[0] = 0.0;
-    x_offset[1] = 0.86;
-    x_offset[2] = 0.86;
-    x_offset[3] = 0.0;
-    x_offset[4] = -0.86;
-    x_offset[5] = -0.86;
+    x_offset[0] = 0.0f;
+    x_offset[1] = 0.86f;
+    x_offset[2] = 0.86f;
+    x_offset[3] = 0.0f;
+    x_offset[4] = -0.86f;
+    x_offset[5] = -0.86f;
 
-    y_offset[0] = 1.0;
-    y_offset[1] = 0.5;
-    y_offset[2] = -0.5;
-    y_offset[3] = -1.0;
-    y_offset[4] = -0.5;
-    y_offset[5] = 0.5;
+    y_offset[0] = 1.0f;
+    y_offset[1] = 0.5f;
+    y_offset[2] = -0.5f;
+    y_offset[3] = -1.0f;
+    y_offset[4] = -0.5f;
+    y_offset[5] = 0.5f;
 
     /* Plot hexagon outline */
     for (line = 0; line < 5; line++) {
-        start_x = (hexagon_size / 2.0) + ((hexagon_size / 2.0) * x_offset[line]);
-        start_y = (hexagon_size / 2.0) + ((hexagon_size / 2.0) * y_offset[line]);
-        end_x = (hexagon_size / 2.0) + ((hexagon_size / 2.0) * x_offset[line + 1]);
-        end_y = (hexagon_size / 2.0) + ((hexagon_size / 2.0) * y_offset[line + 1]);
+        start_x = (hexagon_size / 2.0f) + ((hexagon_size / 2.0f) * x_offset[line]);
+        start_y = (hexagon_size / 2.0f) + ((hexagon_size / 2.0f) * y_offset[line]);
+        end_x = (hexagon_size / 2.0f) + ((hexagon_size / 2.0f) * x_offset[line + 1]);
+        end_y = (hexagon_size / 2.0f) + ((hexagon_size / 2.0f) * y_offset[line + 1]);
         plot_hexline(scaled_hexagon, hexagon_size, start_x, start_y, end_x, end_y);
     }
-    start_x = (hexagon_size / 2.0) + ((hexagon_size / 2.0) * x_offset[line]);
-    start_y = (hexagon_size / 2.0) + ((hexagon_size / 2.0) * y_offset[line]);
-    end_x = (hexagon_size / 2.0) + ((hexagon_size / 2.0) * x_offset[0]);
-    end_y = (hexagon_size / 2.0) + ((hexagon_size / 2.0) * y_offset[0]);
+    start_x = (hexagon_size / 2.0f) + ((hexagon_size / 2.0f) * x_offset[line]);
+    start_y = (hexagon_size / 2.0f) + ((hexagon_size / 2.0f) * y_offset[line]);
+    end_x = (hexagon_size / 2.0f) + ((hexagon_size / 2.0f) * x_offset[0]);
+    end_y = (hexagon_size / 2.0f) + ((hexagon_size / 2.0f) * y_offset[0]);
     plot_hexline(scaled_hexagon, hexagon_size, start_x, start_y, end_x, end_y);
 
     /* Fill hexagon */
@@ -558,12 +558,12 @@ static int plot_raster_maxicode(struct zint_symbol *symbol, int rotate_angle, in
     int error_number;
     int xoffset, yoffset;
     int roffset, boffset;
-    double scaler = symbol->scale;
+    float scaler = symbol->scale;
     char *scaled_hexagon;
     int hexagon_size;
 
-    if (scaler <= 0) {
-        scaler = 0.5;
+    if (scaler <= 0.0f) {
+        scaler = 0.5f;
     }
 
     output_set_whitespace_offsets(symbol, &xoffset, &yoffset, &roffset, &boffset);
@@ -605,7 +605,7 @@ static int plot_raster_maxicode(struct zint_symbol *symbol, int rotate_angle, in
         }
     }
 
-    draw_bullseye(pixelbuf, image_width, image_height, (2.0 * xoffset), (2.0 * yoffset), scaler * 10);
+    draw_bullseye(pixelbuf, image_width, image_height, (2 * xoffset), (2 * yoffset), scaler * 10);
 
     // Virtual hexagon
     //draw_hexagon(pixelbuf, image_width, scaled_hexagon, hexagon_size, ((14 * 10) + (2 * xoffset)) * scaler, ((16 * 9) + (2 * yoffset)) * scaler);
@@ -631,8 +631,8 @@ static int plot_raster_maxicode(struct zint_symbol *symbol, int rotate_angle, in
 }
 
 static int plot_raster_dotty(struct zint_symbol *symbol, int rotate_angle, int data_type) {
-    double scaler = 2 * symbol->scale;
-    double half_scaler, dot_size_scaled;
+    float scaler = 2 * symbol->scale;
+    float half_scaler, dot_size_scaled;
     char *scaled_pixelbuf;
     int r, i;
     int scale_width, scale_height;
@@ -647,8 +647,8 @@ static int plot_raster_dotty(struct zint_symbol *symbol, int rotate_angle, int d
     image_width = symbol->width + xoffset + roffset;
     image_height = symbol->height + yoffset + boffset;
 
-    if (scaler < 2.0) {
-        scaler = 2.0;
+    if (scaler < 2.0f) {
+        scaler = 2.0f;
     }
     scale_width = (image_width * scaler) + 1;
     scale_height = (image_height * scaler) + 1;
@@ -661,10 +661,10 @@ static int plot_raster_dotty(struct zint_symbol *symbol, int rotate_angle, int d
     memset(scaled_pixelbuf, DEFAULT_PAPER, scale_width * scale_height);
 
     /* Plot the body of the symbol to the pixel buffer */
-    half_scaler = scaler / 2.0;
-    dot_size_scaled = (symbol->dot_size * scaler) / 2.0;
+    half_scaler = scaler / 2.0f;
+    dot_size_scaled = (symbol->dot_size * scaler) / 2.0f;
     for (r = 0; r < symbol->rows; r++) {
-        double row_scaled = (r + yoffset) * scaler + half_scaler;
+        float row_scaled = (r + yoffset) * scaler + half_scaler;
         for (i = 0; i < symbol->width; i++) {
             if (module_is_set(symbol, r, i)) {
                 draw_circle(scaled_pixelbuf, scale_width, scale_height,
@@ -725,15 +725,15 @@ static void to_iso8859_1(const unsigned char source[], unsigned char preprocesse
 
 static int plot_raster_default(struct zint_symbol *symbol, int rotate_angle, int data_type) {
     int error_number;
-    double large_bar_height;
+    float large_bar_height;
     int textdone;
     int main_width, comp_offset, addon_gap;
     unsigned char addon[6];
     int xoffset, yoffset, roffset, boffset;
-    double addon_text_posn;
+    float addon_text_posn;
     int textoffset;
     int default_text_posn;
-    double row_height, row_posn;
+    float row_height, row_posn;
     int upceanflag = 0;
     int addon_latch = 0;
     unsigned char textpart1[5], textpart2[7], textpart3[7], textpart4[2];
@@ -747,7 +747,7 @@ static int plot_raster_default(struct zint_symbol *symbol, int rotate_angle, int
     int next_yposn;
     int latch;
     int block_width;
-    double scaler = symbol->scale;
+    float scaler = symbol->scale;
     int scale_width, scale_height;
     char *scaled_pixelbuf;
     int horiz, vert;
@@ -764,7 +764,7 @@ static int plot_raster_default(struct zint_symbol *symbol, int rotate_angle, int
 
     output_set_whitespace_offsets(symbol, &xoffset, &yoffset, &roffset, &boffset);
 
-    addon_text_posn = 0.0;
+    addon_text_posn = 0.0f;
     hide_text = ((!symbol->show_hrt) || (ustrlen(symbol->text) == 0));
 
     if (symbol->output_options & SMALL_TEXT) {
@@ -790,7 +790,7 @@ static int plot_raster_default(struct zint_symbol *symbol, int rotate_angle, int
 
     default_text_posn = image_height - 17;
 
-    row_height = 0.0;
+    row_height = 0.0f;
     row_posn = textoffset + yoffset;
     next_yposn = textoffset + yoffset;
 
@@ -821,11 +821,11 @@ static int plot_raster_default(struct zint_symbol *symbol, int rotate_angle, int
 
             if ((addon_latch == 0) && (r == 0) && (i > main_width)) {
                 if (upceanflag == 12 || upceanflag == 6) { /* UPC-A/E add-ons don't descend */
-                    plot_height = row_height > 8.0 ? row_height - 8.0 : 1;
+                    plot_height = row_height > 8.0f ? row_height - 8.0f : 1;
                     plot_yposn = row_posn;
                 } else {
-                    plot_height = row_height > 3.0 ? row_height - 3.0 : 1;
-                    plot_yposn = row_posn - 5;
+                    plot_height = row_height > 3.0f ? row_height - 3.0f : 1;
+                    plot_yposn = row_posn - 5.0f;
                 }
                 addon_latch = 1;
             }
@@ -1008,7 +1008,7 @@ static int plot_raster_default(struct zint_symbol *symbol, int rotate_angle, int
     // Binding and boxes
     if ((symbol->output_options & BARCODE_BIND) != 0) {
         if ((symbol->rows > 1) && (is_stackable(symbol->symbology) == 1)) {
-            double sep_height = 1;
+            float sep_height = 1.0f;
             if (symbol->option_3 > 0 && symbol->option_3 <= 4) {
                 sep_height = symbol->option_3;
             }
@@ -1043,11 +1043,11 @@ static int plot_raster_default(struct zint_symbol *symbol, int rotate_angle, int
         }
     }
 
-    if (scaler <= 0) {
-        scaler = 0.5;
+    if (scaler <= 0.0f) {
+        scaler = 0.5f;
     }
 
-    if (scaler != 1.0) {
+    if (scaler != 1.0f) {
         scale_width = image_width * scaler;
         scale_height = image_height * scaler;
 

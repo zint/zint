@@ -44,7 +44,7 @@ INTERNAL int ps_plot(struct zint_symbol *symbol);
 INTERNAL int svg_plot(struct zint_symbol *symbol);
 INTERNAL int emf_plot(struct zint_symbol *symbol);
 
-static struct zint_vector_rect *vector_plot_create_rect(double x, double y, double width, double height) {
+static struct zint_vector_rect *vector_plot_create_rect(float x, float y, float width, float height) {
     struct zint_vector_rect *rect;
 
     rect = (struct zint_vector_rect*) malloc(sizeof (struct zint_vector_rect));
@@ -71,7 +71,7 @@ static int vector_plot_add_rect(struct zint_symbol *symbol, struct zint_vector_r
     return 1;
 }
 
-static struct zint_vector_hexagon *vector_plot_create_hexagon(double x, double y, double diameter) {
+static struct zint_vector_hexagon *vector_plot_create_hexagon(float x, float y, float diameter) {
     struct zint_vector_hexagon *hexagon;
 
     hexagon = (struct zint_vector_hexagon*) malloc(sizeof (struct zint_vector_hexagon));
@@ -79,7 +79,7 @@ static struct zint_vector_hexagon *vector_plot_create_hexagon(double x, double y
     hexagon->next = NULL;
     hexagon->x = x;
     hexagon->y = y;
-    hexagon->diameter = (diameter * 5.0) / 4.0; // Ugly kludge for legacy support
+    hexagon->diameter = (diameter * 5.0f) / 4.0f; // Ugly kludge for legacy support
     hexagon->rotation = 0;
 
     return hexagon;
@@ -96,7 +96,7 @@ static int vector_plot_add_hexagon(struct zint_symbol *symbol, struct zint_vecto
     return 1;
 }
 
-static struct zint_vector_circle *vector_plot_create_circle(double x, double y, double diameter, int colour) {
+static struct zint_vector_circle *vector_plot_create_circle(float x, float y, float diameter, int colour) {
     struct zint_vector_circle *circle;
 
     circle = (struct zint_vector_circle *) malloc(sizeof (struct zint_vector_circle));
@@ -122,7 +122,7 @@ static int vector_plot_add_circle(struct zint_symbol *symbol, struct zint_vector
 }
 
 static int vector_plot_add_string(struct zint_symbol *symbol,
-        unsigned char *text, double x, double y, double fsize, double width,
+        unsigned char *text, float x, float y, float fsize, float width,
         struct zint_vector_string **last_string) {
     struct zint_vector_string *string;
 
@@ -197,7 +197,7 @@ static void vector_scale(struct zint_symbol *symbol, int file_type) {
     struct zint_vector_hexagon *hex;
     struct zint_vector_circle *circle;
     struct zint_vector_string *string;
-    double scale = symbol->scale * 2.0;
+    float scale = symbol->scale * 2.0f;
 
     if ((file_type == OUT_EMF_FILE) && (symbol->symbology == BARCODE_MAXICODE)) {
         // Increase size to overcome limitations in EMF file format
@@ -381,15 +381,15 @@ static void vector_reduce_rectangles(struct zint_symbol *symbol) {
 
 INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_type) {
     int error_number;
-    double large_bar_height;
+    float large_bar_height;
     int textdone;
     int main_width, comp_offset, addon_gap;
     unsigned char addon[6];
     int xoffset, yoffset, roffset, boffset;
-    double addon_text_posn;
+    float addon_text_posn;
     int textoffset;
     int default_text_posn;
-    double row_height, row_posn;
+    float row_height, row_posn;
     int upceanflag = 0;
     int addon_latch = 0;
     unsigned char textpart1[5], textpart2[7], textpart3[7], textpart4[2];
@@ -397,7 +397,7 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
     int hide_text = 0;
     int i, r;
 
-    double text_height;
+    float text_height;
     int rect_count, last_row_start;
     int this_row;
 
@@ -406,8 +406,6 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
     struct zint_vector_hexagon *last_hexagon = NULL;
     struct zint_vector_string *last_string = NULL;
     struct zint_vector_circle *last_circle = NULL;
-
-    (void)rotate_angle; /* Not currently implemented */
 
     // Free any previous rendering structures
     vector_free(symbol);
@@ -438,18 +436,18 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
 
     output_set_whitespace_offsets(symbol, &xoffset, &yoffset, &roffset, &boffset);
 
-    addon_text_posn = 0.0;
+    addon_text_posn = 0.0f;
     hide_text = ((!symbol->show_hrt) || (ustrlen(symbol->text) == 0));
 
     if (hide_text) {
-        text_height = 0.0;
-        textoffset = upceanflag ? 9.0 : 0.0;
+        text_height = 0.0f;
+        textoffset = upceanflag ? 9.0f : 0.0f;
     } else {
-        text_height = upceanflag ? 11.0 : 9.0;
-        textoffset = 9.0;
+        text_height = upceanflag ? 11.0f : 9.0f;
+        textoffset = 9.0f;
     }
     if (symbol->output_options & SMALL_TEXT)
-        text_height *= 0.8;
+        text_height *= 0.8f;
 
     vector->width = ceil(symbol->width + (xoffset + roffset));
     vector->height = ceil(symbol->height + textoffset + (yoffset + boffset));
@@ -460,7 +458,7 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
         default_text_posn = symbol->height + textoffset;
     }
 
-    row_height = 0.0;
+    row_height = 0.0f;
     rect_count = 0;
     last_row_start = 0;
 
@@ -474,7 +472,7 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
             } else {
                 row_height = symbol->row_height[this_row];
             }
-            row_posn = 0;
+            row_posn = 0.0f;
             for (i = 0; i < r; i++) {
                 if (symbol->row_height[i] == 0) {
                     row_posn += large_bar_height;
@@ -492,7 +490,7 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
                     block_width++;
                 } while (i + block_width < symbol->width && module_is_set(symbol, this_row, i + block_width) == module_is_set(symbol, this_row, i));
                 if ((addon_latch == 0) && (r == (symbol->rows - 1)) && (i > main_width)) {
-                    addon_text_posn = row_posn + 8.0;
+                    addon_text_posn = row_posn + 8.0f;
                     addon_latch = 1;
                 }
                 if (module_is_set(symbol, this_row, i)) {
@@ -504,9 +502,9 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
                         }
                     } else {
                         if (upceanflag == 12 || upceanflag == 6) { /* UPC-A/E don't descend */
-                            rectangle = vector_plot_create_rect(i + xoffset, row_posn + 10.0, block_width, row_height > 10.0 ? row_height - 10.0 : 1.0);
+                            rectangle = vector_plot_create_rect(i + xoffset, row_posn + 10.0f, block_width, row_height > 10.0f ? row_height - 10.0f : 1.0f);
                         } else {
-                            rectangle = vector_plot_create_rect(i + xoffset, row_posn + 10.0, block_width, row_height > 5.0 ? row_height - 5.0 : 1.0);
+                            rectangle = vector_plot_create_rect(i + xoffset, row_posn + 10.0f, block_width, row_height > 5.0f ? row_height - 5.0f : 1.0f);
                         }
                     }
                     vector_plot_add_rect(symbol, rectangle, &last_rectangle);
@@ -521,21 +519,21 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
     // Plot Maxicode symbols
     if (symbol->symbology == BARCODE_MAXICODE) {
         struct zint_vector_circle *circle;
-        vector->width = 37.0 + (xoffset + roffset);
-        vector->height = 36.0 + (yoffset + boffset);
+        vector->width = 37.0f + (xoffset + roffset);
+        vector->height = 36.0f + (yoffset + boffset);
 
         // Bullseye
-        circle = vector_plot_create_circle(17.88 + xoffset, 17.8 + yoffset, 10.85, 0);
+        circle = vector_plot_create_circle(17.88f + xoffset, 17.8f + yoffset, 10.85f, 0);
         vector_plot_add_circle(symbol, circle, &last_circle);
-        circle = vector_plot_create_circle(17.88 + xoffset, 17.8 + yoffset, 8.97, 1);
+        circle = vector_plot_create_circle(17.88f + xoffset, 17.8f + yoffset, 8.97f, 1);
         vector_plot_add_circle(symbol, circle, &last_circle);
-        circle = vector_plot_create_circle(17.88 + xoffset, 17.8 + yoffset, 7.10, 0);
+        circle = vector_plot_create_circle(17.88f + xoffset, 17.8f + yoffset, 7.10f, 0);
         vector_plot_add_circle(symbol, circle, &last_circle);
-        circle = vector_plot_create_circle(17.88 + xoffset, 17.8 + yoffset, 5.22, 1);
+        circle = vector_plot_create_circle(17.88f + xoffset, 17.8f + yoffset, 5.22f, 1);
         vector_plot_add_circle(symbol, circle, &last_circle);
-        circle = vector_plot_create_circle(17.88 + xoffset, 17.8 + yoffset, 3.31, 0);
+        circle = vector_plot_create_circle(17.88f + xoffset, 17.8f + yoffset, 3.31f, 0);
         vector_plot_add_circle(symbol, circle, &last_circle);
-        circle = vector_plot_create_circle(17.88 + xoffset, 17.8 + yoffset, 1.43, 1);
+        circle = vector_plot_create_circle(17.88f + xoffset, 17.8f + yoffset, 1.43f, 1);
         vector_plot_add_circle(symbol, circle, &last_circle);
 
         /* Hexagons */
@@ -543,8 +541,8 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
             for (i = 0; i < symbol->width; i++) {
                 if (module_is_set(symbol, r, i)) {
                     //struct zint_vector_hexagon *hexagon = vector_plot_create_hexagon(((i * 0.88) + ((r & 1) ? 1.76 : 1.32)), ((r * 0.76) + 0.76), symbol->dot_size);
-                    struct zint_vector_hexagon *hexagon = vector_plot_create_hexagon(((i * 1.23) + 0.615 + ((r & 1) ? 0.615 : 0.0)) + xoffset,
-                                                                                     ((r * 1.067) + 0.715) + yoffset, symbol->dot_size);
+                    struct zint_vector_hexagon *hexagon = vector_plot_create_hexagon(((i * 1.23f) + 0.615f + ((r & 1) ? 0.615f : 0.0f)) + xoffset,
+                                                                                     ((r * 1.067f) + 0.715f) + yoffset, symbol->dot_size);
                     vector_plot_add_hexagon(symbol, hexagon, &last_hexagon);
                 }
             }
@@ -556,7 +554,7 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
         for (r = 0; r < symbol->rows; r++) {
             for (i = 0; i < symbol->width; i++) {
                 if (module_is_set(symbol, r, i)) {
-                    struct zint_vector_circle *circle = vector_plot_create_circle(i + 0.5 + xoffset, r + 0.5 + yoffset, 1.0, 0);
+                    struct zint_vector_circle *circle = vector_plot_create_circle(i + 0.5f + xoffset, r + 0.5f + yoffset, 1.0f, 0);
                     vector_plot_add_circle(symbol, circle, &last_circle);
                 }
             }
@@ -574,7 +572,7 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
                     case 14:
                     case 15:
                     case 16:
-                        rect->height += 5.0;
+                        rect->height += 5.0f;
                         break;
                 }
                 i++;
@@ -589,7 +587,7 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
                     case 11:
                     case 20:
                     case 21:
-                        rect->height += 5.0;
+                        rect->height += 5.0f;
                         break;
                 }
                 i++;
@@ -608,7 +606,7 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
                     case 27:
                     case 28:
                     case 29:
-                        rect->height += 5.0;
+                        rect->height += 5.0f;
                         break;
                 }
                 i++;
@@ -623,7 +621,7 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
                     case 15:
                     case 28:
                     case 29:
-                        rect->height += 5.0;
+                        rect->height += 5.0f;
                         break;
                 }
                 i++;
@@ -638,36 +636,36 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
         xoffset += comp_offset;
 
         if (upceanflag) {
-            double textwidth;
+            float textwidth;
             output_upcean_split_text(upceanflag, symbol->text, textpart1, textpart2, textpart3, textpart4);
 
             if (upceanflag == 6) { /* UPC-E */
                 textpos = -5 + xoffset;
-                textwidth = 6.2;
-                vector_plot_add_string(symbol, textpart1, textpos, default_text_posn - 2.0, text_height * (8.0 / 11.0), textwidth, &last_string);
+                textwidth = 6.2f;
+                vector_plot_add_string(symbol, textpart1, textpos, default_text_posn - 2.0f, text_height * (8.0f / 11.0f), textwidth, &last_string);
                 textpos = 24 + xoffset;
-                textwidth = 6.0 * 8.5;
+                textwidth = 6.0f * 8.5f;
                 vector_plot_add_string(symbol, textpart2, textpos, default_text_posn, text_height, textwidth, &last_string);
                 textpos = 55 + xoffset;
-                textwidth = 6.2;
-                vector_plot_add_string(symbol, textpart3, textpos, default_text_posn - 2.0, text_height * (8.0 / 11.0), textwidth, &last_string);
+                textwidth = 6.2f;
+                vector_plot_add_string(symbol, textpart3, textpos, default_text_posn - 2.0f, text_height * (8.0f / 11.0f), textwidth, &last_string);
                 textdone = 1;
                 switch (ustrlen(addon)) {
                     case 2:
                         textpos = 61 + xoffset + addon_gap;
-                        textwidth = 2.0 * 8.5;
+                        textwidth = 2.0f * 8.5f;
                         vector_plot_add_string(symbol, addon, textpos, addon_text_posn, text_height, textwidth, &last_string);
                         break;
                     case 5:
                         textpos = 75 + xoffset + addon_gap;
-                        textwidth = 5.0 * 8.5;
+                        textwidth = 5.0f * 8.5f;
                         vector_plot_add_string(symbol, addon, textpos, addon_text_posn, text_height, textwidth, &last_string);
                         break;
                 }
 
             } else if (upceanflag == 8) { /* EAN-8 */
                 textpos = 17 + xoffset;
-                textwidth = 4.0 * 8.5;
+                textwidth = 4.0f * 8.5f;
                 vector_plot_add_string(symbol, textpart1, textpos, default_text_posn, text_height, textwidth, &last_string);
                 textpos = 50 + xoffset;
                 vector_plot_add_string(symbol, textpart2, textpos, default_text_posn, text_height, textwidth, &last_string);
@@ -675,48 +673,48 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
                 switch (ustrlen(addon)) {
                     case 2:
                         textpos = 77 + xoffset + addon_gap;
-                        textwidth = 2.0 * 8.5;
+                        textwidth = 2.0f * 8.5f;
                         vector_plot_add_string(symbol, addon, textpos, addon_text_posn, text_height, textwidth, &last_string);
                         break;
                     case 5:
                         textpos = 91 + xoffset + addon_gap;
-                        textwidth = 5.0 * 8.5;
+                        textwidth = 5.0f * 8.5f;
                         vector_plot_add_string(symbol, addon, textpos, addon_text_posn, text_height, textwidth, &last_string);
                         break;
                 }
 
             } else if (upceanflag == 12) { /* UPC-A */
                 textpos = -5 + xoffset;
-                textwidth = 6.2;
-                vector_plot_add_string(symbol, textpart1, textpos, default_text_posn - 2.0, text_height * (8.0 / 11.0), textwidth, &last_string);
+                textwidth = 6.2f;
+                vector_plot_add_string(symbol, textpart1, textpos, default_text_posn - 2.0f, text_height * (8.0f / 11.0f), textwidth, &last_string);
                 textpos = 27 + xoffset;
-                textwidth = 5.0 * 8.5;
+                textwidth = 5.0f * 8.5f;
                 vector_plot_add_string(symbol, textpart2, textpos, default_text_posn, text_height, textwidth, &last_string);
                 textpos = 68 + xoffset;
                 vector_plot_add_string(symbol, textpart3, textpos, default_text_posn, text_height, textwidth, &last_string);
                 textpos = 100 + xoffset;
-                textwidth = 6.2;
-                vector_plot_add_string(symbol, textpart4, textpos, default_text_posn - 2.0, text_height * (8.0 / 11.0), textwidth, &last_string);
+                textwidth = 6.2f;
+                vector_plot_add_string(symbol, textpart4, textpos, default_text_posn - 2.0f, text_height * (8.0f / 11.0f), textwidth, &last_string);
                 textdone = 1;
                 switch (ustrlen(addon)) {
                     case 2:
                         textpos = 107 + xoffset + addon_gap;
-                        textwidth = 2.0 * 8.5;
+                        textwidth = 2.0f * 8.5f;
                         vector_plot_add_string(symbol, addon, textpos, addon_text_posn, text_height, textwidth, &last_string);
                         break;
                     case 5:
                         textpos = 121 + xoffset + addon_gap;
-                        textwidth = 5.0 * 8.5;
+                        textwidth = 5.0f * 8.5f;
                         vector_plot_add_string(symbol, addon, textpos, addon_text_posn, text_height, textwidth, &last_string);
                         break;
                 }
 
             } else if (upceanflag == 13) { /* EAN-13 */
                 textpos = -7 + xoffset;
-                textwidth = 8.5;
+                textwidth = 8.5f;
                 vector_plot_add_string(symbol, textpart1, textpos, default_text_posn, text_height, textwidth, &last_string);
                 textpos = 24 + xoffset;
-                textwidth = 6.0 * 8.5;
+                textwidth = 6.0f * 8.5f;
                 vector_plot_add_string(symbol, textpart2, textpos, default_text_posn, text_height, textwidth, &last_string);
                 textpos = 71 + xoffset;
                 vector_plot_add_string(symbol, textpart3, textpos, default_text_posn, text_height, textwidth, &last_string);
@@ -724,12 +722,12 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
                 switch (ustrlen(addon)) {
                     case 2:
                         textpos = 105 + xoffset + addon_gap;
-                        textwidth = 2.0 * 8.5;
+                        textwidth = 2.0f * 8.5f;
                         vector_plot_add_string(symbol, addon, textpos, addon_text_posn, text_height, textwidth, &last_string);
                         break;
                     case 5:
                         textpos = 119 + xoffset + addon_gap;
-                        textwidth = 5.0 * 8.5;
+                        textwidth = 5.0f * 8.5f;
                         vector_plot_add_string(symbol, addon, textpos, addon_text_posn, text_height, textwidth, &last_string);
                         break;
                 }
@@ -739,7 +737,7 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
         if (!textdone) {
             /* Put normal human readable text at the bottom (and centered) */
             // calculate start xoffset to center text
-            vector_plot_add_string(symbol, symbol->text, main_width / 2.0 + xoffset, default_text_posn, text_height, symbol->width, &last_string);
+            vector_plot_add_string(symbol, symbol->text, main_width / 2.0f + xoffset, default_text_posn, text_height, symbol->width, &last_string);
         }
 
         xoffset -= comp_offset; // Restore xoffset
@@ -748,7 +746,7 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
     // Binding and boxes
     if ((symbol->output_options & BARCODE_BIND) != 0) {
         if ((symbol->rows > 1) && (is_stackable(symbol->symbology) == 1)) {
-            double sep_height = 1;
+            float sep_height = 1.0f;
             if (symbol->option_3 > 0 && symbol->option_3 <= 4) {
                 sep_height = symbol->option_3;
             }
@@ -770,26 +768,26 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
     if (symbol->border_width > 0) {
         if ((symbol->output_options & BARCODE_BOX) || (symbol->output_options & BARCODE_BIND)) {
             // Top
-            rectangle = vector_plot_create_rect(0.0, 0.0, vector->width, symbol->border_width);
+            rectangle = vector_plot_create_rect(0.0f, 0.0f, vector->width, symbol->border_width);
             if (!(symbol->output_options & BARCODE_BOX) && (symbol->symbology == BARCODE_CODABLOCKF || symbol->symbology == BARCODE_HIBC_BLOCKF)) {
                 rectangle->x = xoffset;
-                rectangle->width -= (2.0 * xoffset);
+                rectangle->width -= (2.0f * xoffset);
             }
             vector_plot_add_rect(symbol, rectangle, &last_rectangle);
             // Bottom
-            rectangle = vector_plot_create_rect(0.0, vector->height - symbol->border_width - textoffset, vector->width, symbol->border_width);
+            rectangle = vector_plot_create_rect(0.0f, vector->height - symbol->border_width - textoffset, vector->width, symbol->border_width);
             if (!(symbol->output_options & BARCODE_BOX) && (symbol->symbology == BARCODE_CODABLOCKF || symbol->symbology == BARCODE_HIBC_BLOCKF)) {
                 rectangle->x = xoffset;
-                rectangle->width -= (2.0 * xoffset);
+                rectangle->width -= (2.0f * xoffset);
             }
             vector_plot_add_rect(symbol, rectangle, &last_rectangle);
         }
         if (symbol->output_options & BARCODE_BOX) {
             // Left
-            rectangle = vector_plot_create_rect(0.0, 0.0, symbol->border_width, vector->height - textoffset);
+            rectangle = vector_plot_create_rect(0.0f, 0.0f, symbol->border_width, vector->height - textoffset);
             vector_plot_add_rect(symbol, rectangle, &last_rectangle);
             // Right
-            rectangle = vector_plot_create_rect(vector->width - symbol->border_width, 0.0, symbol->border_width, vector->height - textoffset);
+            rectangle = vector_plot_create_rect(vector->width - symbol->border_width, 0.0f, symbol->border_width, vector->height - textoffset);
             vector_plot_add_rect(symbol, rectangle, &last_rectangle);
         }
     }
