@@ -277,6 +277,10 @@ Bugs:
 Version 2.9.2 not released jet:
 Changes:
 - Command line switches -d or -i for code data may now be at any position.
+- Add rotation for vector formats (excluding emf)
+- Change double to float for performance in many internal places
+Bugs:
+- Code16k selects GS1 mode by default in GUI
 
 CONTACT US
 ----------
