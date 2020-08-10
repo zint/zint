@@ -491,44 +491,46 @@ static void test_checks(int index, int debug) {
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /*  0*/ { -2, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1, -1, -1, -1, -1,   "Error 139: Invalid add-on gap value" },
-        /*  1*/ {  6, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1, -1, -1, -1, -1,   "Warning 140: Invalid add-on gap value\nD2 13 9B 39 63 AC" },
-        /*  2*/ { -1, -2,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1, -1, -1, -1, -1,   "Error 107: Invalid border width value" },
-        /*  3*/ { -1, 1001, -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1, -1, -1, -1, -1,   "Warning 108: Border width out of range\nD2 13 9B 39 63 AC" },
-        /*  4*/ { -1, -1,   -1, 0.009, -1,      NULL,  -1, -1, -1, -1, -1, -1, -1, -1, -1,   "Warning 106: Invalid dot radius value\nD2 13 9B 39 63 AC" },
-        /*  5*/ { -1, -1,   -2, -1,    -1,      NULL,  -1, -1, -1, -1, -1, -1, -1, -1, -1,   "Error 131: Invalid columns value" },
-        /*  6*/ { -1, -1,   68, -1,    -1,      NULL,  -1, -1, -1, -1, -1, -1, -1, -1, -1,   "Warning 111: Number of columns out of range\nD2 13 9B 39 63 AC" },
-        /*  7*/ { -1, -1,   -1, -1,    -2,      NULL,  -1, -1, -1, -1, -1, -1, -1, -1, -1,   "Error 138: Invalid ECI value" },
-        /*  8*/ { -1, -1,   -1, -1,    1000000, NULL,  -1, -1, -1, -1, -1, -1, -1, -1, -1,   "Warning 118: Invalid ECI code\nD2 13 9B 39 63 AC" },
-        /*  9*/ { -1, -1,   -1, -1,    -1,      "jpg", -1, -1, -1, -1, -1, -1, -1, -1, -1,   "Warning 142: File type 'jpg' not supported, ignoring\nD2 13 9B 39 63 AC" },
-        /* 10*/ { -1, -1,   -1, -1,    -1,      NULL,  -2, -1, -1, -1, -1, -1, -1, -1, -1,   "Error 109: Invalid symbol height value" },
-        /* 11*/ { -1, -1,   -1, -1,    -1,      NULL,   0, -1, -1, -1, -1, -1, -1, -1, -1,   "Warning 110: Symbol height out of range\nD2 13 9B 39 63 AC" },
-        /* 12*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -2, -1, -1, -1, -1, -1, -1, -1,   "Error 136: Invalid mode value" },
-        /* 13*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,  7, -1, -1, -1, -1, -1, -1, -1,   "Warning 116: Invalid mode\nD2 13 9B 39 63 AC" },
-        /* 14*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -2, -1, -1, -1, -1, -1, -1,   "Error 117: Invalid rotation value" },
-        /* 15*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, 45, -1, -1, -1, -1, -1, -1,   "Warning 137: Invalid rotation parameter\nD2 13 9B 39 63 AC" },
-        /* 16*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -2, -1, -1, -1, -1, -1,   "Error 132: Invalid rows value" },
-        /* 17*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, 45, -1, -1, -1, -1, -1,   "Warning 112: Number of rows out of range\nD2 13 9B 39 63 AC" },
-        /* 18*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -2, -1, -1, -1, -1,   "Warning 105: Invalid scale value\nD2 13 9B 39 63 AC" },
-        /* 19*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1, -2, -1, -1, -1,   "Error 134: Invalid ECC value" },
-        /* 20*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1,  9, -1, -1, -1,   "Warning 114: ECC level out of range\nD2 13 9B 39 63 AC" },
-        /* 21*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1, -1, -2, -1, -1,   "Error 128: Invalid separator value" },
-        /* 22*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1, -1,  5, -1, -1,   "Warning 127: Invalid separator value\nD2 13 9B 39 63 AC" },
-        /* 23*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1, -1, -1, -2, -1,   "Error 133: Invalid version value" },
-        /* 24*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1, -1, -1, 85, -1,   "Warning 113: Invalid version\nD2 13 9B 39 63 AC" },
-        /* 25*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1, -1, -1, -1, -2,   "Error 120: Invalid whitespace value '-2'" },
-        /* 26*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1, -1, -1, -1, 1001, "Warning 121: Whitespace value out of range\nD2 13 9B 39 63 AC" },
+        /*  0*/ { -2, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1,   -1, -1, -1, -1,   "Error 139: Invalid add-on gap value" },
+        /*  1*/ {  6, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1,   -1, -1, -1, -1,   "Warning 140: Invalid add-on gap value" },
+        /*  2*/ { -1, -2,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1,   -1, -1, -1, -1,   "Error 107: Invalid border width value" },
+        /*  3*/ { -1, 1001, -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1,   -1, -1, -1, -1,   "Warning 108: Border width out of range" },
+        /*  4*/ { -1, -1,   -1, 0.009, -1,      NULL,  -1, -1, -1, -1, -1,   -1, -1, -1, -1,   "Warning 106: Invalid dot radius value" },
+        /*  5*/ { -1, -1,   -2, -1,    -1,      NULL,  -1, -1, -1, -1, -1,   -1, -1, -1, -1,   "Error 131: Invalid columns value" },
+        /*  6*/ { -1, -1,   68, -1,    -1,      NULL,  -1, -1, -1, -1, -1,   -1, -1, -1, -1,   "Warning 111: Number of columns out of range" },
+        /*  7*/ { -1, -1,   -1, -1,    -2,      NULL,  -1, -1, -1, -1, -1,   -1, -1, -1, -1,   "Error 138: Invalid ECI value" },
+        /*  8*/ { -1, -1,   -1, -1,    1000000, NULL,  -1, -1, -1, -1, -1,   -1, -1, -1, -1,   "Warning 118: Invalid ECI code" },
+        /*  9*/ { -1, -1,   -1, -1,    -1,      "jpg", -1, -1, -1, -1, -1,   -1, -1, -1, -1,   "Warning 142: File type 'jpg' not supported, ignoring" },
+        /* 10*/ { -1, -1,   -1, -1,    -1,      NULL,  -2, -1, -1, -1, -1,   -1, -1, -1, -1,   "Error 109: Invalid symbol height value" },
+        /* 11*/ { -1, -1,   -1, -1,    -1,      NULL,   0, -1, -1, -1, -1,   -1, -1, -1, -1,   "Warning 110: Symbol height out of range" },
+        /* 12*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -2, -1, -1, -1,   -1, -1, -1, -1,   "Error 136: Invalid mode value" },
+        /* 13*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,  7, -1, -1, -1,   -1, -1, -1, -1,   "Warning 116: Invalid mode" },
+        /* 14*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -2, -1, -1,   -1, -1, -1, -1,   "Error 117: Invalid rotation value" },
+        /* 15*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, 45, -1, -1,   -1, -1, -1, -1,   "Warning 137: Invalid rotation parameter" },
+        /* 16*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -2, -1,   -1, -1, -1, -1,   "Error 132: Invalid rows value" },
+        /* 17*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, 45, -1,   -1, -1, -1, -1,   "Warning 112: Number of rows out of range" },
+        /* 18*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -2,   -1, -1, -1, -1,   "Warning 105: Invalid scale value" },
+        /* 19*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, 0.49, -1, -1, -1, -1,   "Warning 146: Scaling less than 0.5 will be set to 0.5 for 'png' output" },
+        /* 20*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1,   -2, -1, -1, -1,   "Error 134: Invalid ECC value" },
+        /* 21*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1,    9, -1, -1, -1,   "Warning 114: ECC level out of range" },
+        /* 22*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1,   -1, -2, -1, -1,   "Error 128: Invalid separator value" },
+        /* 23*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1,   -1,  5, -1, -1,   "Warning 127: Invalid separator value" },
+        /* 24*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1,   -1, -1, -2, -1,   "Error 133: Invalid version value" },
+        /* 25*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1,   -1, -1, 85, -1,   "Warning 113: Invalid version" },
+        /* 26*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1,   -1, -1, -1, -2,   "Error 120: Invalid whitespace value '-2'" },
+        /* 27*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1,   -1, -1, -1, 1001, "Warning 121: Whitespace value out of range" },
     };
     int data_size = ARRAY_SIZE(data);
 
     char cmd[4096];
     char buf[4096];
+    char *outfilename = "out.png";
 
     for (int i = 0; i < data_size; i++) {
 
         if (index != -1 && i != index) continue;
 
-        strcpy(cmd, "zint --dump -d '1'");
+        strcpy(cmd, "zint -d '1'");
         if (debug & ZINT_DEBUG_PRINT) {
             strcat(cmd, " --verbose");
         }
@@ -553,6 +555,10 @@ static void test_checks(int index, int debug) {
 
         assert_nonnull(exec(cmd, buf, sizeof(buf) - 1, debug, i), "i:%d exec(%s) NULL\n", i, cmd);
         assert_zero(strcmp(buf, data[i].expected), "i:%d buf (%s) != expected (%s)\n", i, buf, data[i].expected);
+
+        if (strncmp(data[i].expected, "Warning", 7) == 0) {
+            assert_zero(remove(outfilename), "i:%d remove(%s) != 0 (%d)\n", i, outfilename, errno);
+        }
     }
 
     testFinish();

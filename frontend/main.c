@@ -115,7 +115,7 @@ static void usage(void) {
             "  -o, --output=FILE     Send output to FILE. Default is out.png\n"
             "  --primary=STRING      Set structured primary message (Maxicode/Composite)\n"
             "  -r, --reverse         Reverse colours (white on black)\n"
-            "  --rotate=NUMBER       Rotate symbol by NUMBER degrees (BMP/GIF/PCX/PNG/TIF)\n"
+            "  --rotate=NUMBER       Rotate symbol by NUMBER degrees\n"
             "  --rows=NUMBER         Set number of rows (Codablock-F)\n"
             "  --scale=NUMBER        Adjust size of X-dimension\n"
             "  --secure=NUMBER       Set error correction level (ECC)\n"
@@ -254,6 +254,25 @@ static void set_extension(char *file, char *filetype) {
     }
     strcat(file, ".");
     strcat(file, filetype);
+}
+
+static char *raster_filetypes[] = {
+    "bmp", "gif", "pcx", "png", "tif", // TODO: Determine if PNG available
+};
+
+static int is_raster(char *filetype) {
+    int i;
+    char lc_filetype[4] = {0};
+
+    strcpy(lc_filetype, filetype);
+    to_lower(lc_filetype);
+
+    for (i = 0; i < (int) ARRAY_SIZE(raster_filetypes); i++) {
+        if (strcmp(lc_filetype, raster_filetypes[i]) == 0) {
+            return 1;
+        }
+    }
+    return 0;
 }
 
 static int batch_process(struct zint_symbol *symbol, char *filename, int mirror_mode, char *filetype, int rotate_angle) {
@@ -978,6 +997,10 @@ int main(int argc, char **argv) {
                 // TODO: Determine if PNG available
                 strcpy(filetype, outfile_extension && supported_filetype(outfile_extension) ? outfile_extension : "png");
             }
+            if (my_symbol->scale < 0.5f && is_raster(filetype)) {
+                fprintf(stderr, "Warning 145: Scaling less than 0.5 will be set to 0.5 for '%s' output\n", filetype);
+                fflush(stderr);
+            }
             error_number = batch_process(my_symbol, arg_opts[0].arg, mirror_mode, filetype, rotate_angle);
             if (error_number != 0) {
                 fprintf(stderr, "%s\n", my_symbol->errtxt);
@@ -986,6 +1009,10 @@ int main(int argc, char **argv) {
         } else {
             if (*filetype != '\0') {
                 set_extension(my_symbol->outfile, filetype);
+            }
+            if (my_symbol->scale < 0.5f && is_raster(get_extension(my_symbol->outfile))) {
+                fprintf(stderr, "Warning 146: Scaling less than 0.5 will be set to 0.5 for '%s' output\n", get_extension(my_symbol->outfile));
+                fflush(stderr);
             }
             for (i = 0; i < data_arg_num; i++) {
                 if (arg_opts[i].opt == 'd') {
