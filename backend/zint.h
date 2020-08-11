@@ -105,7 +105,6 @@ extern "C" {
         unsigned int bitmap_byte_length;
         float dot_size;
         struct zint_vector *vector;
-        struct zint_render *rendered;
         int debug;
     };
 
@@ -248,6 +247,7 @@ extern "C" {
 #define CMYK_COLOUR             128
 #define BARCODE_DOTTY_MODE      256
 #define GS1_GS_SEPARATOR        512
+#define OUT_BUFFER_INTERMEDIATE 1024
 
 // Input data types
 #define DATA_MODE               0
@@ -276,7 +276,7 @@ extern "C" {
 #define ZINT_ERROR_FILE_ACCESS          10
 #define ZINT_ERROR_MEMORY               11
 
-// Raster file types
+// File types
 #define OUT_BUFFER              0
 #define OUT_SVG_FILE            10
 #define OUT_EPS_FILE            20

@@ -89,7 +89,7 @@ static int buffer_plot(struct zint_symbol *symbol, char *pixelbuf) {
         free(symbol->alphamap);
         symbol->alphamap = NULL;
     }
-    
+
     symbol->bitmap = (unsigned char *) malloc(symbol->bitmap_width * symbol->bitmap_height * 3);
     if (symbol->bitmap == NULL) {
         strcpy(symbol->errtxt, "661: Insufficient memory for bitmap buffer");
@@ -181,7 +181,7 @@ static int buffer_plot(struct zint_symbol *symbol, char *pixelbuf) {
     return 0;
 }
 
-static int save_raster_image_to_file(struct zint_symbol *symbol, int image_height, int image_width, char *pixelbuf, int rotate_angle, int image_type) {
+static int save_raster_image_to_file(struct zint_symbol *symbol, int image_height, int image_width, char *pixelbuf, int rotate_angle, int file_type) {
     int error_number;
     int row, column;
 
@@ -238,9 +238,23 @@ static int save_raster_image_to_file(struct zint_symbol *symbol, int image_heigh
             break;
     }
 
-    switch (image_type) {
+    switch (file_type) {
         case OUT_BUFFER:
-            error_number = buffer_plot(symbol, rotated_pixbuf);
+            if (symbol->output_options & OUT_BUFFER_INTERMEDIATE) {
+                if (symbol->bitmap != NULL) {
+                    free(symbol->bitmap);
+                    symbol->bitmap = NULL;
+                }
+                if (symbol->alphamap != NULL) {
+                    free(symbol->alphamap);
+                    symbol->alphamap = NULL;
+                }
+                symbol->bitmap = (unsigned char *) rotated_pixbuf;
+                rotate_angle = 0; /* Suppress freeing buffer if rotated */
+                error_number = 0;
+            } else {
+                error_number = buffer_plot(symbol, rotated_pixbuf);
+            }
             break;
         case OUT_PNG_FILE:
 #ifndef NO_PNG
@@ -550,7 +564,7 @@ static void plot_hexagon(char *scaled_hexagon, int hexagon_size) {
     }
 }
 
-static int plot_raster_maxicode(struct zint_symbol *symbol, int rotate_angle, int data_type) {
+static int plot_raster_maxicode(struct zint_symbol *symbol, int rotate_angle, int file_type) {
     /* Plot a MaxiCode symbol with hexagons and bullseye */
     int row, column, xposn;
     int image_height, image_width;
@@ -624,13 +638,15 @@ static int plot_raster_maxicode(struct zint_symbol *symbol, int rotate_angle, in
         }
     }
 
-    error_number = save_raster_image_to_file(symbol, image_height, image_width, pixelbuf, rotate_angle, data_type);
+    error_number = save_raster_image_to_file(symbol, image_height, image_width, pixelbuf, rotate_angle, file_type);
     free(scaled_hexagon);
-    free(pixelbuf);
+    if (rotate_angle || file_type != OUT_BUFFER || !(symbol->output_options & OUT_BUFFER_INTERMEDIATE)) {
+        free(pixelbuf);
+    }
     return error_number;
 }
 
-static int plot_raster_dotty(struct zint_symbol *symbol, int rotate_angle, int data_type) {
+static int plot_raster_dotty(struct zint_symbol *symbol, int rotate_angle, int file_type) {
     float scaler = 2 * symbol->scale;
     float half_scaler, dot_size_scaled;
     char *scaled_pixelbuf;
@@ -676,8 +692,10 @@ static int plot_raster_dotty(struct zint_symbol *symbol, int rotate_angle, int d
         }
     }
 
-    error_number = save_raster_image_to_file(symbol, scale_height, scale_width, scaled_pixelbuf, rotate_angle, data_type);
-    free(scaled_pixelbuf);
+    error_number = save_raster_image_to_file(symbol, scale_height, scale_width, scaled_pixelbuf, rotate_angle, file_type);
+    if (rotate_angle || file_type != OUT_BUFFER || !(symbol->output_options & OUT_BUFFER_INTERMEDIATE)) {
+        free(scaled_pixelbuf);
+    }
 
     return error_number;
 }
@@ -723,7 +741,7 @@ static void to_iso8859_1(const unsigned char source[], unsigned char preprocesse
     return;
 }
 
-static int plot_raster_default(struct zint_symbol *symbol, int rotate_angle, int data_type) {
+static int plot_raster_default(struct zint_symbol *symbol, int rotate_angle, int file_type) {
     int error_number;
     float large_bar_height;
     int textdone;
@@ -1085,12 +1103,14 @@ static int plot_raster_default(struct zint_symbol *symbol, int rotate_angle, int
             }
         }
 
-        error_number = save_raster_image_to_file(symbol, scale_height, scale_width, scaled_pixelbuf, rotate_angle, data_type);
+        error_number = save_raster_image_to_file(symbol, scale_height, scale_width, scaled_pixelbuf, rotate_angle, file_type);
         free(scaled_pixelbuf);
     } else {
-        error_number = save_raster_image_to_file(symbol, image_height, image_width, pixelbuf, rotate_angle, data_type);
+        error_number = save_raster_image_to_file(symbol, image_height, image_width, pixelbuf, rotate_angle, file_type);
     }
-    free(pixelbuf);
+    if (rotate_angle || file_type != OUT_BUFFER || !(symbol->output_options & OUT_BUFFER_INTERMEDIATE)) {
+        free(pixelbuf);
+    }
     return error_number;
 }
 
