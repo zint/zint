@@ -41,18 +41,31 @@
 
 INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
     int i, row, column;
-    unsigned int fgred, fggrn, fgblu, bgred, bggrn, bgblu;
     int row_size;
+    int bits_per_pixel;
+    int colour_count;
     unsigned int data_offset, data_size, file_size;
     unsigned char *bitmap_file_start, *bmp_posn;
     unsigned char *bitmap;
     FILE *bmp_file;
     bitmap_file_header_t file_header;
     bitmap_info_header_t info_header;
+    color_ref_t bg_color_ref;
+    color_ref_t fg_color_ref;
 
-    row_size = 4 * ((24 * symbol->bitmap_width + 31) / 32);
+    if (symbol->symbology == BARCODE_ULTRA) {
+        bits_per_pixel = 24;
+        colour_count = 0;
+    } else {
+        bits_per_pixel = 1;
+        colour_count = 2;
+    }
+    row_size = 4 * ((bits_per_pixel * symbol->bitmap_width + 31) / 32);
     data_size = symbol->bitmap_height * row_size;
     data_offset = sizeof (bitmap_file_header_t) + sizeof (bitmap_info_header_t);
+    if (symbol->symbology != BARCODE_ULTRA) {
+        data_offset += (2 * (sizeof(color_ref_t)));
+    }
     file_size = data_offset + data_size;
 
     bitmap_file_start = (unsigned char *) malloc(file_size);
@@ -64,69 +77,82 @@ INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
 
     bitmap = bitmap_file_start + data_offset;
 
-    fgred = (16 * ctoi(symbol->fgcolour[0])) + ctoi(symbol->fgcolour[1]);
-    fggrn = (16 * ctoi(symbol->fgcolour[2])) + ctoi(symbol->fgcolour[3]);
-    fgblu = (16 * ctoi(symbol->fgcolour[4])) + ctoi(symbol->fgcolour[5]);
-    bgred = (16 * ctoi(symbol->bgcolour[0])) + ctoi(symbol->bgcolour[1]);
-    bggrn = (16 * ctoi(symbol->bgcolour[2])) + ctoi(symbol->bgcolour[3]);
-    bgblu = (16 * ctoi(symbol->bgcolour[4])) + ctoi(symbol->bgcolour[5]);
+    fg_color_ref.red = (16 * ctoi(symbol->fgcolour[0])) + ctoi(symbol->fgcolour[1]);
+    fg_color_ref.green = (16 * ctoi(symbol->fgcolour[2])) + ctoi(symbol->fgcolour[3]);
+    fg_color_ref.blue = (16 * ctoi(symbol->fgcolour[4])) + ctoi(symbol->fgcolour[5]);
+    fg_color_ref.reserved = 0x00;
+    bg_color_ref.red = (16 * ctoi(symbol->bgcolour[0])) + ctoi(symbol->bgcolour[1]);
+    bg_color_ref.green = (16 * ctoi(symbol->bgcolour[2])) + ctoi(symbol->bgcolour[3]);
+    bg_color_ref.blue = (16 * ctoi(symbol->bgcolour[4])) + ctoi(symbol->bgcolour[5]);
+    bg_color_ref.reserved = 0x00;
 
     /* Pixel Plotting */
-    for (row = 0; row < symbol->bitmap_height; row++) {
-        for (column = 0; column < symbol->bitmap_width; column++) {
-            i = (3 * column) + (row * row_size);
-            switch (*(pixelbuf + (symbol->bitmap_width * (symbol->bitmap_height - row - 1)) + column)) {
-                case 'W': // White
-                    bitmap[i] = 255;
-                    bitmap[i + 1] = 255;
-                    bitmap[i + 2] = 255;
-                    break;
-                case 'C': // Cyan
-                    bitmap[i] = 255;
-                    bitmap[i + 1] = 255;
-                    bitmap[i + 2] = 0;
-                    break;
-                case 'B': // Blue
-                    bitmap[i] = 255;
-                    bitmap[i + 1] = 0;
-                    bitmap[i + 2] = 0;
-                    break;
-                case 'M': // Magenta
-                    bitmap[i] = 255;
-                    bitmap[i + 1] = 0;
-                    bitmap[i + 2] = 255;
-                    break;
-                case 'R': // Red
-                    bitmap[i] = 0;
-                    bitmap[i + 1] = 0;
-                    bitmap[i + 2] = 255;
-                    break;
-                case 'Y': // Yellow
-                    bitmap[i] = 0;
-                    bitmap[i + 1] = 255;
-                    bitmap[i + 2] = 255;
-                    break;
-                case 'G': // Green
-                    bitmap[i] = 0;
-                    bitmap[i + 1] = 255;
-                    bitmap[i + 2] = 0;
-                    break;
-                case 'K': // Black
-                    bitmap[i] = 0;
-                    bitmap[i + 1] = 0;
-                    bitmap[i + 2] = 0;
-                    break;
-                case '1':
-                    bitmap[i] = fgblu;
-                    bitmap[i + 1] = fggrn;
-                    bitmap[i + 2] = fgred;
-                    break;
-                default:
-                    bitmap[i] = bgblu;
-                    bitmap[i + 1] = bggrn;
-                    bitmap[i + 2] = bgred;
-                    break;
+    if (symbol->symbology == BARCODE_ULTRA) {
+        for (row = 0; row < symbol->bitmap_height; row++) {
+            for (column = 0; column < symbol->bitmap_width; column++) {
+                i = (3 * column) + (row * row_size);
+                switch (*(pixelbuf + (symbol->bitmap_width * (symbol->bitmap_height - row - 1)) + column)) {
+                    case 'W': // White
+                        bitmap[i] = 255;
+                        bitmap[i + 1] = 255;
+                        bitmap[i + 2] = 255;
+                        break;
+                    case 'C': // Cyan
+                        bitmap[i] = 255;
+                        bitmap[i + 1] = 255;
+                        bitmap[i + 2] = 0;
+                        break;
+                    case 'B': // Blue
+                        bitmap[i] = 255;
+                        bitmap[i + 1] = 0;
+                        bitmap[i + 2] = 0;
+                        break;
+                    case 'M': // Magenta
+                        bitmap[i] = 255;
+                        bitmap[i + 1] = 0;
+                        bitmap[i + 2] = 255;
+                        break;
+                    case 'R': // Red
+                        bitmap[i] = 0;
+                        bitmap[i + 1] = 0;
+                        bitmap[i + 2] = 255;
+                        break;
+                    case 'Y': // Yellow
+                        bitmap[i] = 0;
+                        bitmap[i + 1] = 255;
+                        bitmap[i + 2] = 255;
+                        break;
+                    case 'G': // Green
+                        bitmap[i] = 0;
+                        bitmap[i + 1] = 255;
+                        bitmap[i + 2] = 0;
+                        break;
+                    case 'K': // Black
+                        bitmap[i] = 0;
+                        bitmap[i + 1] = 0;
+                        bitmap[i + 2] = 0;
+                        break;
+                    case '1':
+                        bitmap[i] = fg_color_ref.blue;
+                        bitmap[i + 1] = fg_color_ref.green;
+                        bitmap[i + 2] = fg_color_ref.red;
+                        break;
+                    default:
+                        bitmap[i] = bg_color_ref.blue;
+                        bitmap[i + 1] = bg_color_ref.green;
+                        bitmap[i + 2] = bg_color_ref.red;
+                        break;
 
+                }
+            }
+        }
+    } else {
+        for (row = 0; row < symbol->bitmap_height; row++) {
+            for (column = 0; column < symbol->bitmap_width; column++) {
+                i = (column / 8) + (row * row_size);
+                if ((*(pixelbuf + (symbol->bitmap_width * (symbol->bitmap_height - row - 1)) + column)) == '1') {
+                    bitmap[i] += (0x01 << (7 - (column % 8)));
+                }
             }
         }
     }
@@ -142,18 +168,25 @@ INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
     info_header.width = symbol->bitmap_width;
     info_header.height = symbol->bitmap_height;
     info_header.colour_planes = 1;
-    info_header.bits_per_pixel = 24;
+    info_header.bits_per_pixel = bits_per_pixel;
     info_header.compression_method = 0; // BI_RGB
     info_header.image_size = 0;
     info_header.horiz_res = 0;
     info_header.vert_res = 0;
-    info_header.colours = 0;
-    info_header.important_colours = 0;
-
+    info_header.colours = colour_count;
+    info_header.important_colours = colour_count;
+    
     bmp_posn = bitmap_file_start;
     memcpy(bitmap_file_start, &file_header, sizeof (bitmap_file_header_t));
     bmp_posn += sizeof (bitmap_file_header_t);
     memcpy(bmp_posn, &info_header, sizeof (bitmap_info_header_t));
+    
+    if (symbol->symbology != BARCODE_ULTRA) {
+        bmp_posn += sizeof(bitmap_info_header_t);
+        memcpy(bmp_posn, &bg_color_ref, sizeof(color_ref_t));
+        bmp_posn += sizeof(color_ref_t);
+        memcpy(bmp_posn, &fg_color_ref, sizeof(color_ref_t));
+    }
 
     /* Open output file in binary mode */
     if ((symbol->output_options & BARCODE_STDOUT) != 0) {
