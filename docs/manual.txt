@@ -839,7 +839,7 @@ int row, col, i = 0;
 for (row = 0; row < my_symbol->bitmap_height; row++) {
      for (col = 0; col < my_symbol->bitmap_width; col++) {
           render_pixel(row, col, my_symbol->bitmap[i]);
-		  i++;
+          i++;
      }
 }
 
