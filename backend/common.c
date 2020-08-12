@@ -449,6 +449,51 @@ INTERNAL void pn_define_mode(char *mode, const unsigned int data[], const size_t
     }
 }
 
+INTERNAL int colour_to_red(int colour) {
+    int return_val = 0;
+
+    switch(colour) {
+        case 8: // White
+        case 3: // Magenta
+        case 4: // Red
+        case 5: // Yellow
+            return_val = 255;
+            break;
+    }
+
+    return return_val;
+}
+
+INTERNAL int colour_to_green(int colour) {
+    int return_val = 0;
+
+    switch(colour) {
+        case 8: // White
+        case 1: // Cyan
+        case 5: // Yellow
+        case 6: // Green
+            return_val = 255;
+            break;
+    }
+
+    return return_val;
+}
+
+INTERNAL int colour_to_blue(int colour) {
+    int return_val = 0;
+
+    switch(colour) {
+        case 8: // White
+        case 1: // Cyan
+        case 2: // Blue
+        case 3: // Magenta
+            return_val = 255;
+            break;
+    }
+
+    return return_val;
+}
+
 #ifdef ZINT_TEST
 /* Dumps hex-formatted codewords in symbol->errtxt (for use in testing) */
 void debug_test_codeword_dump(struct zint_symbol *symbol, unsigned char *codewords, int length) {

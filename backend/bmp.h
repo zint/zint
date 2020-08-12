@@ -67,9 +67,9 @@ extern "C" {
     } bitmap_info_header_t;
     
     typedef struct color_ref {
-        uint8_t red;
-        uint8_t green;
         uint8_t blue;
+        uint8_t green;
+        uint8_t red;
         uint8_t reserved;
     } color_ref_t;
 

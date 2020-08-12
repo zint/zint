@@ -42,51 +42,6 @@
 #include "common.h"
 #include "emf.h"
 
-int colour_to_red(int colour) {
-    int return_val = 0;
-
-    switch(colour) {
-        case 8: // White
-        case 3: // Magenta
-        case 4: // Red
-        case 5: // Yellow
-            return_val = 255;
-            break;
-    }
-
-    return return_val;
-}
-
-int colour_to_green(int colour) {
-    int return_val = 0;
-
-    switch(colour) {
-        case 8: // White
-        case 1: // Cyan
-        case 5: // Yellow
-        case 6: // Green
-            return_val = 255;
-            break;
-    }
-
-    return return_val;
-}
-
-int colour_to_blue(int colour) {
-    int return_val = 0;
-
-    switch(colour) {
-        case 8: // White
-        case 1: // Cyan
-        case 2: // Blue
-        case 3: // Magenta
-            return_val = 255;
-            break;
-    }
-
-    return return_val;
-}
-
 static int count_rectangles(struct zint_symbol *symbol) {
     int rectangles = 0;
     struct zint_vector_rect *rect;
@@ -617,18 +572,15 @@ INTERNAL int emf_plot(struct zint_symbol *symbol) {
     }
 
     if (symbol->symbology == BARCODE_ULTRA) {
-        printf("Using Ultra draw\n");
         for(i = 0; i < 8; i++) {
             if (rectangle_count_bycolour[i]) {
                 fwrite(&emr_selectobject_colour[i], sizeof (emr_selectobject_t), 1, emf_file);
 
-                printf("colour %d\n", i);
                 rect = symbol->vector->rectangles;
                 this_rectangle = 0;
                 while (rect) {
                     if (rect->colour == i) {
                         fwrite(&rectangle[this_rectangle], sizeof (emr_rectangle_t), 1, emf_file);
-                        printf("rect\n");
                     }
                     this_rectangle++;
                     rect = rect->next;
