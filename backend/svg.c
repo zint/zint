@@ -43,9 +43,6 @@
 
 void pick_colour(int colour, char colour_code[]) {
     switch(colour) {
-        case 0: // White
-            strcpy(colour_code, "ffffff");
-            break;
         case 1: // Cyan
             strcpy(colour_code, "00ffff");
             break;
@@ -63,6 +60,9 @@ void pick_colour(int colour, char colour_code[]) {
             break;
         case 6: // Green
             strcpy(colour_code, "00ff00");
+            break;
+        case 8: // White
+            strcpy(colour_code, "ffffff");
             break;
         default: // Black
             strcpy(colour_code, "000000");

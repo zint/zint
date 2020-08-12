@@ -43,9 +43,6 @@ void colour_to_pscolor(int option, int colour, char* output) {
     if ((option & CMYK_COLOUR) == 0) {
         // Use RGB colour space
         switch(colour) {
-            case 0: // White
-                strcat(output, "1.00 1.00 1.00");
-                break;
             case 1: // Cyan
                 strcat(output, "0.00 1.00 1.00");
                 break;
@@ -64,6 +61,9 @@ void colour_to_pscolor(int option, int colour, char* output) {
             case 6: // Green
                 strcat(output, "0.00 1.00 0.00");
                 break;
+            case 8: // White
+                strcat(output, "1.00 1.00 1.00");
+                break;
             default: // Black
                 strcat(output, "0.00 0.00 0.00");
                 break;
@@ -72,9 +72,6 @@ void colour_to_pscolor(int option, int colour, char* output) {
     } else {
         // Use CMYK colour space
         switch(colour) {
-            case 0: // White
-                strcat(output, "0.00 0.00 0.00 0.00");
-                break;
             case 1: // Cyan
                 strcat(output, "1.00 0.00 0.00 0.00");
                 break;
@@ -92,6 +89,9 @@ void colour_to_pscolor(int option, int colour, char* output) {
                 break;
             case 6: // Green
                 strcat(output, "1.00 0.00 1.00 0.00");
+                break;
+            case 8: // White
+                strcat(output, "0.00 0.00 0.00 0.00");
                 break;
             default: // Black
                 strcat(output, "0.00 0.00 0.00 1.00");
@@ -239,7 +239,7 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
 
     // Rectangles
     if (symbol->symbology == BARCODE_ULTRA) {
-        for (colour_index = 0; colour_index <= 7; colour_index++) {
+        for (colour_index = 0; colour_index <= 8; colour_index++) {
             colour_rect_counter = 0;
             rect = symbol->vector->rectangles;
             while (rect) {

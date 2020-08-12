@@ -345,9 +345,6 @@ namespace Zint {
                 painter.fillRect(rect->x, rect->y, rect->width, rect->height, QBrush(m_fgColor));
             } else {
                 switch(rect->colour) {
-                    case 0: // White
-                        painter.fillRect(rect->x, rect->y, rect->width, rect->height, QBrush(Qt::white));
-                        break;
                     case 1: // Cyan
                         painter.fillRect(rect->x, rect->y, rect->width, rect->height, QBrush(Qt::cyan));
                         break;                    
@@ -365,7 +362,10 @@ namespace Zint {
                         break;                    
                     case 6: // Green
                         painter.fillRect(rect->x, rect->y, rect->width, rect->height, QBrush(Qt::green));
-                        break;                    
+                        break;               
+                    case 8: // White
+                        painter.fillRect(rect->x, rect->y, rect->width, rect->height, QBrush(Qt::white));
+                        break;
                     default:
                         painter.fillRect(rect->x, rect->y, rect->width, rect->height, QBrush(Qt::black));
                         break;

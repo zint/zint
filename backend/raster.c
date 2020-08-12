@@ -57,7 +57,7 @@ INTERNAL int pcx_pixel_plot(struct zint_symbol *symbol, char *pixelbuf);
 INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, char *pixelbuf);
 INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, char *pixelbuf);
 
-static const char ultra_colour[] = "WCBMRYGK";
+static const char ultra_colour[] = "0CBMRYGKW";
 
 static int buffer_plot(struct zint_symbol *symbol, char *pixelbuf) {
     /* Place pixelbuffer into symbol */

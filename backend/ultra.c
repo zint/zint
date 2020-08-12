@@ -55,7 +55,7 @@ static const char ultra_c43_set1[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 .,%";
 static const char ultra_c43_set2[] = "abcdefghijklmnopqrstuvwxyz:/?#[]@=_~!.,-";
 static const char ultra_c43_set3[] = "{}`()\"+'<>|$;&\\^*";
 static const char ultra_digit[] = "0123456789,/";
-static const char ultra_colour[] = "WCBMRYGK";
+static const char ultra_colour[] = "0CBMRYGKW";
 
 //static const int ultra_maxsize[] = {34, 78, 158, 282}; // According to Table 1
 static const int ultra_maxsize[] = {34, 81, 158, 282}; // Adjusted to allow 79-81 codeword range in 3-row symbols (only 1 secondary vertical clock track, not 2, so 3 extra)
