@@ -138,7 +138,7 @@ INTERNAL int emf_plot(struct zint_symbol *symbol) {
     int bytecount, recordcount;
     float radius;
     int colours_used = 0;
-    int rectangle_count_bycolour[8];
+    int rectangle_count_bycolour[9];
     unsigned char *this_string[6];
     uint32_t spacing;
     int draw_background = 1;
@@ -206,7 +206,7 @@ INTERNAL int emf_plot(struct zint_symbol *symbol) {
 
     //Calculate how many coloured rectangles
     if (symbol->symbology == BARCODE_ULTRA) {
-        for (i = 0; i < 8; i++) {
+        for (i = 0; i <= 8; i++) {
             rectangle_count_bycolour[i] = 0;
         }
 
@@ -233,7 +233,11 @@ INTERNAL int emf_plot(struct zint_symbol *symbol) {
     emr_header.emf_header.frame.bottom = emr_header.emf_header.bounds.bottom * 30;
     emr_header.emf_header.record_signature = 0x464d4520; // ENHMETA_SIGNATURE
     emr_header.emf_header.version = 0x00010000;
-    emr_header.emf_header.handles = 4; // Number of graphics objects
+    if (symbol->symbology == BARCODE_ULTRA) {
+        emr_header.emf_header.handles = 11; // Number of graphics objects
+    } else {
+        emr_header.emf_header.handles = 4;
+    }
     emr_header.emf_header.reserved = 0x0000;
     emr_header.emf_header.n_description = 0;
     emr_header.emf_header.off_description = 0;
@@ -271,9 +275,9 @@ INTERNAL int emf_plot(struct zint_symbol *symbol) {
             emr_createbrushindirect_colour[i].size = 24;
             emr_createbrushindirect_colour[i].ih_brush = 2 + i;
             emr_createbrushindirect_colour[i].log_brush.brush_style = 0x0000; // BS_SOLID
-            emr_createbrushindirect_colour[i].log_brush.color.red = colour_to_red(i);
-            emr_createbrushindirect_colour[i].log_brush.color.green = colour_to_green(i);
-            emr_createbrushindirect_colour[i].log_brush.color.blue = colour_to_blue(i);
+            emr_createbrushindirect_colour[i].log_brush.color.red = colour_to_red(i + 1);
+            emr_createbrushindirect_colour[i].log_brush.color.green = colour_to_green(i + 1);
+            emr_createbrushindirect_colour[i].log_brush.color.blue = colour_to_blue(i + 1);
             emr_createbrushindirect_colour[i].log_brush.color.reserved = 0;
             emr_createbrushindirect_colour[i].log_brush.brush_hatch = 0x0006; // HS_SOLIDCLR
         }
@@ -551,7 +555,7 @@ INTERNAL int emf_plot(struct zint_symbol *symbol) {
 
     if (symbol->symbology == BARCODE_ULTRA) {
         for (i = 0; i < 8; i++) {
-            if (rectangle_count_bycolour[i]) {
+            if (rectangle_count_bycolour[i + 1]) {
                 fwrite(&emr_createbrushindirect_colour[i], sizeof (emr_createbrushindirect_t), 1, emf_file);
             }
         }
@@ -573,13 +577,13 @@ INTERNAL int emf_plot(struct zint_symbol *symbol) {
 
     if (symbol->symbology == BARCODE_ULTRA) {
         for(i = 0; i < 8; i++) {
-            if (rectangle_count_bycolour[i]) {
+            if (rectangle_count_bycolour[i + 1]) {
                 fwrite(&emr_selectobject_colour[i], sizeof (emr_selectobject_t), 1, emf_file);
 
                 rect = symbol->vector->rectangles;
                 this_rectangle = 0;
                 while (rect) {
-                    if (rect->colour == i) {
+                    if (rect->colour == i + 1) {
                         fwrite(&rectangle[this_rectangle], sizeof (emr_rectangle_t), 1, emf_file);
                     }
                     this_rectangle++;
