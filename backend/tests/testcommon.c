@@ -513,6 +513,7 @@ char *testUtilOutputOptionsName(int output_options) {
         { "CMYK_COLOUR", CMYK_COLOUR, 128 },
         { "BARCODE_DOTTY_MODE", BARCODE_DOTTY_MODE, 256 },
         { "GS1_GS_SEPARATOR", GS1_GS_SEPARATOR, 512 },
+        { "OUT_BUFFER_INTERMEDIATE", OUT_BUFFER_INTERMEDIATE, 1024 },
     };
     int data_size = ARRAY_SIZE(data);
     int set = 0;
@@ -1014,9 +1015,13 @@ void testUtilBitmapPrint(const struct zint_symbol *symbol) {
     for (row = 0; row < symbol->bitmap_height; row++) {
         printf("%3d: ", row);
         for (column = 0; column < symbol->bitmap_width; column++) {
-            i = ((row * symbol->bitmap_width) + column) * 3;
-            j = (symbol->bitmap[i] == 0) + (symbol->bitmap[i + 1] == 0) * 2 + (symbol->bitmap[i + 2] == 0) * 4;
-            putchar(colour[j]);
+            if (symbol->output_options & OUT_BUFFER_INTERMEDIATE) {
+                putchar(symbol->bitmap[(row * symbol->bitmap_width) + column]);
+            } else {
+                i = ((row * symbol->bitmap_width) + column) * 3;
+                j = (symbol->bitmap[i] == 0) + (symbol->bitmap[i + 1] == 0) * 2 + (symbol->bitmap[i + 2] == 0) * 4;
+                putchar(colour[j]);
+            }
         }
         putchar('\n');
     }
