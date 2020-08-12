@@ -10,8 +10,10 @@
       <rect x="0" y="0" width="26" height="26" fill="#FFFFFF" />
       <rect x="0.00" y="0.00" width="26.00" height="2.00" fill="#000000" />
       <rect x="0.00" y="2.00" width="2.00" height="2.00" fill="#000000" />
+      <rect x="2.00" y="2.00" width="2.00" height="2.00" fill="#ffffff" />
       <rect x="4.00" y="2.00" width="2.00" height="2.00" fill="#ffff00" />
       <rect x="6.00" y="2.00" width="2.00" height="22.00" fill="#000000" />
+      <rect x="8.00" y="2.00" width="2.00" height="22.00" fill="#ffffff" />
       <rect x="10.00" y="2.00" width="2.00" height="2.00" fill="#00ff00" />
       <rect x="12.00" y="2.00" width="6.00" height="2.00" fill="#ff00ff" />
       <rect x="18.00" y="2.00" width="4.00" height="2.00" fill="#ffff00" />
@@ -26,6 +28,7 @@
       <rect x="18.00" y="4.00" width="2.00" height="2.00" fill="#ff00ff" />
       <rect x="20.00" y="4.00" width="4.00" height="2.00" fill="#00ff00" />
       <rect x="0.00" y="6.00" width="2.00" height="2.00" fill="#000000" />
+      <rect x="2.00" y="6.00" width="2.00" height="2.00" fill="#ffffff" />
       <rect x="4.00" y="6.00" width="2.00" height="2.00" fill="#00ff00" />
       <rect x="10.00" y="6.00" width="2.00" height="2.00" fill="#00ff00" />
       <rect x="12.00" y="6.00" width="2.00" height="2.00" fill="#00ffff" />
@@ -41,6 +44,7 @@
       <rect x="20.00" y="8.00" width="2.00" height="2.00" fill="#00ff00" />
       <rect x="22.00" y="8.00" width="2.00" height="2.00" fill="#ff00ff" />
       <rect x="0.00" y="10.00" width="2.00" height="2.00" fill="#000000" />
+      <rect x="2.00" y="10.00" width="2.00" height="2.00" fill="#ffffff" />
       <rect x="4.00" y="10.00" width="2.00" height="2.00" fill="#ff00ff" />
       <rect x="10.00" y="10.00" width="2.00" height="2.00" fill="#00ffff" />
       <rect x="12.00" y="10.00" width="2.00" height="2.00" fill="#ff00ff" />
@@ -49,11 +53,16 @@
       <rect x="18.00" y="10.00" width="2.00" height="2.00" fill="#00ff00" />
       <rect x="20.00" y="10.00" width="4.00" height="2.00" fill="#ffff00" />
       <rect x="0.00" y="12.00" width="4.00" height="2.00" fill="#000000" />
+      <rect x="4.00" y="12.00" width="2.00" height="2.00" fill="#ffffff" />
       <rect x="10.00" y="12.00" width="2.00" height="2.00" fill="#000000" />
+      <rect x="12.00" y="12.00" width="2.00" height="2.00" fill="#ffffff" />
       <rect x="14.00" y="12.00" width="2.00" height="2.00" fill="#000000" />
+      <rect x="16.00" y="12.00" width="2.00" height="2.00" fill="#ffffff" />
       <rect x="18.00" y="12.00" width="2.00" height="2.00" fill="#000000" />
+      <rect x="20.00" y="12.00" width="2.00" height="2.00" fill="#ffffff" />
       <rect x="22.00" y="12.00" width="4.00" height="2.00" fill="#000000" />
       <rect x="0.00" y="14.00" width="2.00" height="2.00" fill="#000000" />
+      <rect x="2.00" y="14.00" width="2.00" height="2.00" fill="#ffffff" />
       <rect x="4.00" y="14.00" width="2.00" height="2.00" fill="#00ff00" />
       <rect x="10.00" y="14.00" width="4.00" height="2.00" fill="#00ffff" />
       <rect x="14.00" y="14.00" width="2.00" height="2.00" fill="#ff00ff" />
@@ -66,6 +75,7 @@
       <rect x="14.00" y="16.00" width="2.00" height="2.00" fill="#00ffff" />
       <rect x="16.00" y="16.00" width="8.00" height="2.00" fill="#ff00ff" />
       <rect x="0.00" y="18.00" width="2.00" height="2.00" fill="#000000" />
+      <rect x="2.00" y="18.00" width="2.00" height="2.00" fill="#ffffff" />
       <rect x="4.00" y="18.00" width="2.00" height="2.00" fill="#ffff00" />
       <rect x="10.00" y="18.00" width="4.00" height="2.00" fill="#00ffff" />
       <rect x="14.00" y="18.00" width="2.00" height="2.00" fill="#ff00ff" />
@@ -82,6 +92,7 @@
       <rect x="20.00" y="20.00" width="2.00" height="2.00" fill="#00ff00" />
       <rect x="22.00" y="20.00" width="2.00" height="2.00" fill="#00ffff" />
       <rect x="0.00" y="22.00" width="2.00" height="2.00" fill="#000000" />
+      <rect x="2.00" y="22.00" width="2.00" height="2.00" fill="#ffffff" />
       <rect x="4.00" y="22.00" width="2.00" height="2.00" fill="#00ffff" />
       <rect x="10.00" y="22.00" width="4.00" height="2.00" fill="#ff00ff" />
       <rect x="14.00" y="22.00" width="2.00" height="2.00" fill="#ffff00" />

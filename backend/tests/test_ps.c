@@ -41,29 +41,22 @@ static void test_print(int index, int generate, int debug) {
     int ret;
     struct item {
         int symbology;
+        int whitespace_width;
         int option_1;
         int option_2;
+        char *fgcolour;
+        char *bgcolour;
         unsigned char *data;
         char *expected_file;
     };
     struct item data[] = {
-        /*  0*/ { BARCODE_CODE128, -1, -1, "<>\"&'", "../data/svg/code128_amperands.svg" },
-        /*  1*/ { BARCODE_CODABLOCKF, 3, -1, "AAAAAAAAA", "../data/svg/codablockf_3rows.svg"},
-        /*  2*/ { BARCODE_EANX, -1, -1, "9771384524017+12", "../data/svg/ean13_2addon_ggs_5.2.2.5.1-2.svg" },
-        /*  3*/ { BARCODE_EANX, -1, -1, "9780877799306+54321", "../data/svg/ean13_5addon_ggs_5.2.2.5.2-2.svg" },
-        /*  4*/ { BARCODE_UPCA, -1, -1, "012345678905+24", "../data/svg/upca_2addon_ggs_5.2.6.6-5.svg" },
-        /*  5*/ { BARCODE_UPCA, -1, -1, "614141234417+12345", "../data/svg/upca_5addon.svg" },
-        /*  6*/ { BARCODE_UPCE, -1, -1, "1234567+12", "../data/svg/upce_2addon.svg" },
-        /*  7*/ { BARCODE_UPCE, -1, -1, "1234567+12345", "../data/svg/upce_5addon.svg" },
-        /*  8*/ { BARCODE_EANX, -1, -1, "1234567+12", "../data/svg/ean8_2addon.svg" },
-        /*  9*/ { BARCODE_EANX, -1, -1, "1234567+12345", "../data/svg/ean8_5addon.svg" },
-        /* 10*/ { BARCODE_EANX, -1, -1, "12345", "../data/svg/ean5.svg" },
-        /* 11*/ { BARCODE_EANX, -1, -1, "12", "../data/svg/ean2.svg" },
+        /*  0*/ { BARCODE_CODE39, -1, -1, -1, "147AD0", "FC9630", "123", "../data/eps/code39_fg_bg.eps" },
+        /*  1*/ { BARCODE_ULTRA, 1, -1, -1, "147AD0", "FC9630", "123", "../data/eps/ultra_fg_bg.eps" },
     };
     int data_size = ARRAY_SIZE(data);
 
-    char *data_dir = "../data/svg";
-    char *svg = "out.svg";
+    char *data_dir = "../data/eps";
+    char *eps = "out.eps";
     char escaped[1024];
     int escaped_size = 1024;
 
@@ -82,17 +75,26 @@ static void test_print(int index, int generate, int debug) {
         assert_nonnull(symbol, "Symbol not created\n");
 
         int length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, data[i].option_1, data[i].option_2, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        if (data[i].whitespace_width != -1) {
+            symbol->whitespace_width = data[i].whitespace_width;
+        }
+        if (data[i].fgcolour != NULL) {
+            strcpy(symbol->fgcolour, data[i].fgcolour);
+        }
+        if (data[i].bgcolour != NULL) {
+            strcpy(symbol->bgcolour, data[i].bgcolour);
+        }
 
         ret = ZBarcode_Encode(symbol, data[i].data, length);
         assert_zero(ret, "i:%d %s ZBarcode_Encode ret %d != 0 %s\n", i, testUtilBarcodeName(data[i].symbology), ret, symbol->errtxt);
 
-        strcpy(symbol->outfile, svg);
+        strcpy(symbol->outfile, eps);
         ret = ZBarcode_Print(symbol, 0);
         assert_zero(ret, "i:%d %s ZBarcode_Print %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, ret);
 
         if (generate) {
-            printf("        /*%3d*/ { %s, %d, %d, \"%s\", \"%s\"},\n",
-                    i, testUtilBarcodeName(data[i].symbology), data[i].option_1, data[i].option_2,
+            printf("        /*%3d*/ { %s, %d, %d, %d, \"%s\", \"%s\", \"%s\", \"%s\"},\n",
+                    i, testUtilBarcodeName(data[i].symbology), data[i].whitespace_width, data[i].option_1, data[i].option_2, data[i].fgcolour, data[i].bgcolour,
                     testUtilEscape(data[i].data, length, escaped, escaped_size), data[i].expected_file);
             ret = rename(symbol->outfile, data[i].expected_file);
             assert_zero(ret, "i:%d rename(%s, %s) ret %d != 0\n", i, symbol->outfile, data[i].expected_file, ret);
@@ -104,8 +106,8 @@ static void test_print(int index, int generate, int debug) {
             assert_nonzero(testUtilExists(symbol->outfile), "i:%d testUtilExists(%s) == 0\n", i, symbol->outfile);
             assert_nonzero(testUtilExists(data[i].expected_file), "i:%d testUtilExists(%s) == 0\n", i, data[i].expected_file);
 
-            ret = testUtilCmpSvgs(symbol->outfile, data[i].expected_file);
-            assert_zero(ret, "i:%d %s testUtilCmpSvgs(%s, %s) %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, data[i].expected_file, ret);
+            ret = testUtilCmpEpss(symbol->outfile, data[i].expected_file);
+            assert_zero(ret, "i:%d %s testUtilCmpEpss(%s, %s) %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, data[i].expected_file, ret);
             assert_zero(remove(symbol->outfile), "i:%d remove(%s) != 0\n", i, symbol->outfile);
         }
 
