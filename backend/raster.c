@@ -1104,12 +1104,15 @@ static int plot_raster_default(struct zint_symbol *symbol, int rotate_angle, int
         }
 
         error_number = save_raster_image_to_file(symbol, scale_height, scale_width, scaled_pixelbuf, rotate_angle, file_type);
-        free(scaled_pixelbuf);
+        if (rotate_angle || file_type != OUT_BUFFER || !(symbol->output_options & OUT_BUFFER_INTERMEDIATE)) {
+            free(scaled_pixelbuf);
+        }
+        free(pixelbuf);
     } else {
         error_number = save_raster_image_to_file(symbol, image_height, image_width, pixelbuf, rotate_angle, file_type);
-    }
-    if (rotate_angle || file_type != OUT_BUFFER || !(symbol->output_options & OUT_BUFFER_INTERMEDIATE)) {
-        free(pixelbuf);
+        if (rotate_angle || file_type != OUT_BUFFER || !(symbol->output_options & OUT_BUFFER_INTERMEDIATE)) {
+            free(pixelbuf);
+        }
     }
     return error_number;
 }
