@@ -279,8 +279,16 @@ Changes:
 - Command line switches -d or -i for code data may now be at any position.
 - Add rotation for vector formats (excluding emf)
 - Change double to float for performance in many internal places
+- Ticket 197: Allow scaling in substeps.
+  Warn if scaling < 0.5 as pixels are lost.
+- Ticket 197: add output option to bypass time-intensive buffer_plot()
+  (OUT_BUFFER_INTERMEDIATE)
+- Reduce BMP size by using 1 bit per pixel (except Ultracode)
+
 Bugs:
 - Code16k selects GS1 mode by default in GUI
+- Ultracode: use white pixels instead background for white modules.
+- EMF: fix Ultracode colours.
 
 CONTACT US
 ----------
