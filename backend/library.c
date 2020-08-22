@@ -74,6 +74,7 @@ struct zint_symbol *ZBarcode_Create() {
     symbol->dot_size = 4.0 / 5.0;
     symbol->vector = NULL;
     symbol->debug = 0;
+    symbol->warn_level = WARN_DEFAULT;
     return symbol;
 }
 
@@ -1044,9 +1045,13 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
 
     /* First check the symbology field */
     if (symbol->symbology < 1) {
-        strcpy(symbol->errtxt, "206: Symbology out of range, using Code 128");
-        symbol->symbology = BARCODE_CODE128;
-        error_number = ZINT_WARN_INVALID_OPTION;
+        strcpy(symbol->errtxt, "206: Symbology out of range");
+        if (symbol->warn_level == WARN_FAIL_ALL) {
+            return ZINT_ERROR_INVALID_OPTION;
+        } else {
+            symbol->symbology = BARCODE_CODE128;
+            error_number = ZINT_WARN_INVALID_OPTION;
+        }
     }
 
     /* symbol->symbologys 1 to 86 are defined by tbarcode */
@@ -1063,9 +1068,13 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
         symbol->symbology = BARCODE_UPCA;
     }
     if (symbol->symbology == 19) {
-        strcpy(symbol->errtxt, "207: Codabar 18 not supported, using Codabar");
-        symbol->symbology = BARCODE_CODABAR;
-        error_number = ZINT_WARN_INVALID_OPTION;
+        strcpy(symbol->errtxt, "207: Codabar 18 not supported");
+        if (symbol->warn_level == WARN_FAIL_ALL) {
+            return WARN_FAIL_ALL;
+        } else {
+            symbol->symbology = BARCODE_CODABAR;
+            error_number = ZINT_WARN_INVALID_OPTION;
+        }
     }
     if (symbol->symbology == 26) {
         symbol->symbology = BARCODE_UPCA;
@@ -1090,9 +1099,13 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
         symbol->symbology = BARCODE_NVE18;
     }
     if (symbol->symbology == 54) {
-        strcpy(symbol->errtxt, "210: General Parcel Code not supported, using Code 128");
-        symbol->symbology = BARCODE_CODE128;
-        error_number = ZINT_WARN_INVALID_OPTION;
+        strcpy(symbol->errtxt, "210: General Parcel Code not supported");
+        if (symbol->warn_level == WARN_FAIL_ALL) {
+            return ZINT_ERROR_INVALID_OPTION;
+        } else {
+            symbol->symbology = BARCODE_CODE128;
+            error_number = ZINT_WARN_INVALID_OPTION;
+        }
     }
     if ((symbol->symbology == 59) || (symbol->symbology == 61)) {
         symbol->symbology = BARCODE_CODE128;
@@ -1113,14 +1126,22 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
         symbol->symbology = BARCODE_GS1_128;
     }
     if (symbol->symbology == 91) {
-        strcpy(symbol->errtxt, "212: Symbology out of range, using Code 128");
-        symbol->symbology = BARCODE_CODE128;
-        error_number = ZINT_WARN_INVALID_OPTION;
+        strcpy(symbol->errtxt, "212: Symbology out of range");
+        if (symbol->warn_level == WARN_FAIL_ALL) {
+            return ZINT_ERROR_INVALID_OPTION;
+        } else {
+            symbol->symbology = BARCODE_CODE128;
+            error_number = ZINT_WARN_INVALID_OPTION;
+        }
     }
     if ((symbol->symbology >= 94) && (symbol->symbology <= 95)) {
-        strcpy(symbol->errtxt, "213: Symbology out of range, using Code 128");
-        symbol->symbology = BARCODE_CODE128;
-        error_number = ZINT_WARN_INVALID_OPTION;
+        strcpy(symbol->errtxt, "213: Symbology out of range");
+        if (symbol->warn_level == WARN_FAIL_ALL) {
+            return ZINT_ERROR_INVALID_OPTION;
+        } else {
+            symbol->symbology = BARCODE_CODE128;
+            error_number = ZINT_WARN_INVALID_OPTION;
+        }
     }
     if (symbol->symbology == 100) {
         symbol->symbology = BARCODE_HIBC_128;
@@ -1144,25 +1165,37 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
         symbol->symbology = BARCODE_HIBC_BLOCKF;
     }
     if ((symbol->symbology == 113) || (symbol->symbology == 114)) {
-        strcpy(symbol->errtxt, "214: Symbology out of range, using Code 128");
-        symbol->symbology = BARCODE_CODE128;
-        error_number = ZINT_WARN_INVALID_OPTION;
+        strcpy(symbol->errtxt, "214: Symbology out of range");
+        if (symbol->warn_level == WARN_FAIL_ALL) {
+            return ZINT_ERROR_INVALID_OPTION;
+        } else {
+            symbol->symbology = BARCODE_CODE128;
+            error_number = ZINT_WARN_INVALID_OPTION;
+        }
     }
     if (symbol->symbology == 115) {
         symbol->symbology = BARCODE_DOTCODE;
     }
     if ((symbol->symbology >= 117) && (symbol->symbology <= 127)) {
         if (symbol->symbology != 121) {
-            strcpy(symbol->errtxt, "215: Symbology out of range, using Code 128");
-            symbol->symbology = BARCODE_CODE128;
-            error_number = ZINT_WARN_INVALID_OPTION;
+            strcpy(symbol->errtxt, "215: Symbology out of range");
+            if (symbol->warn_level == WARN_FAIL_ALL) {
+                return ZINT_ERROR_INVALID_OPTION;
+            } else {
+                symbol->symbology = BARCODE_CODE128;
+                error_number = ZINT_WARN_INVALID_OPTION;
+            }
         }
     }
     /* Everything from 128 up is Zint-specific */
     if (symbol->symbology > 145) {
-        strcpy(symbol->errtxt, "216: Symbology out of range, using Code 128");
-        symbol->symbology = BARCODE_CODE128;
-        error_number = ZINT_WARN_INVALID_OPTION;
+        strcpy(symbol->errtxt, "216: Symbology out of range");
+        if (symbol->warn_level == WARN_FAIL_ALL) {
+            return ZINT_ERROR_INVALID_OPTION;
+        } else {
+            symbol->symbology = BARCODE_CODE128;
+            error_number = ZINT_WARN_INVALID_OPTION;
+        }
     }
 
     if ((!(supports_eci(symbol->symbology))) && (symbol->eci != 0)) {

@@ -86,6 +86,7 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
     int bracket_level, max_bracket_level, ai_length, max_ai_length, min_ai_length;
     int ai_count;
     int error_latch;
+    int error_value;
 #ifdef _MSC_VER
     int *ai_value;
     int *ai_location;
@@ -124,7 +125,11 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
 
     if (source[0] != '[') {
         strcpy(symbol->errtxt, "252: Data does not start with an AI");
-        return ZINT_ERROR_INVALID_DATA;
+        if (symbol->warn_level != WARN_ZPL_COMPAT) {
+            return ZINT_ERROR_INVALID_DATA;
+        } else {
+            error_value = ZINT_WARN_NONCOMPLIANT;
+        }
     }
 
     /* Check the position of the brackets */
@@ -135,6 +140,7 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
     min_ai_length = 5;
     j = 0;
     ai_latch = 0;
+    error_value = 0;
     for (i = 0; i < (int) src_len; i++) {
         ai_length += j;
         if (((j == 1) && (source[i] != ']')) && ((source[i] < '0') || (source[i] > '9'))) {
@@ -661,14 +667,22 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
             itostr(ai_string, ai_value[i]);
             strcpy(symbol->errtxt, "259: Invalid data length for AI ");
             strcat(symbol->errtxt, ai_string);
-            return ZINT_ERROR_INVALID_DATA;
+            if (symbol->warn_level != WARN_ZPL_COMPAT) {
+                return ZINT_ERROR_INVALID_DATA;
+            } else {
+                error_value = ZINT_WARN_NONCOMPLIANT;
+            }
         }
 
         if (error_latch == 2) {
             itostr(ai_string, ai_value[i]);
             strcpy(symbol->errtxt, "260: Invalid AI value ");
             strcat(symbol->errtxt, ai_string);
-            return ZINT_ERROR_INVALID_DATA;
+            if (symbol->warn_level != WARN_ZPL_COMPAT) {
+                return ZINT_ERROR_INVALID_DATA;
+            } else {
+                error_value = ZINT_WARN_NONCOMPLIANT;
+            }
         }
     }
 
@@ -706,5 +720,5 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
     reduced[j] = '\0';
 
     /* the character '[' in the reduced string refers to the FNC1 character */
-    return 0;
+    return error_value;
 }

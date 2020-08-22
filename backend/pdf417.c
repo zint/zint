@@ -836,13 +836,21 @@ INTERNAL int pdf417enc(struct zint_symbol *symbol, unsigned char source[], const
 
     if ((symbol->option_1 < -1) || (symbol->option_1 > 8)) {
         strcpy(symbol->errtxt, "460: Security value out of range");
-        symbol->option_1 = -1;
-        error_number = ZINT_WARN_INVALID_OPTION;
+        if (symbol->warn_level == WARN_FAIL_ALL) {
+            return ZINT_ERROR_INVALID_OPTION;
+        } else {
+            symbol->option_1 = -1;
+            error_number = ZINT_WARN_INVALID_OPTION;
+        }
     }
     if ((symbol->option_2 < 0) || (symbol->option_2 > 30)) {
         strcpy(symbol->errtxt, "461: Number of columns out of range");
-        symbol->option_2 = 0;
-        error_number = ZINT_WARN_INVALID_OPTION;
+        if (symbol->warn_level == WARN_FAIL_ALL) {
+            return ZINT_ERROR_INVALID_OPTION;
+        } else {
+            symbol->option_2 = 0;
+            error_number = ZINT_WARN_INVALID_OPTION;
+        }
     }
 
     /* 349 */
@@ -973,8 +981,12 @@ INTERNAL int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], co
     }
     if (symbol->option_2 > 4) {
         strcpy(symbol->errtxt, "468: Specified width out of range");
-        symbol->option_2 = 0;
-        codeerr = ZINT_WARN_INVALID_OPTION;
+        if (symbol->warn_level == WARN_FAIL_ALL) {
+            return ZINT_ERROR_INVALID_OPTION;
+        } else {
+            symbol->option_2 = 0;
+            codeerr = ZINT_WARN_INVALID_OPTION;
+        }
     }
 
     if (debug) {
@@ -991,23 +1003,35 @@ INTERNAL int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], co
 
     if ((symbol->option_2 == 1) && (mclength > 20)) {
         /* the user specified 1 column but the data doesn't fit - go to automatic */
-        symbol->option_2 = 0;
         strcpy(symbol->errtxt, "469: Specified symbol size too small for data");
-        codeerr = ZINT_WARN_INVALID_OPTION;
+        if (symbol->warn_level == WARN_FAIL_ALL) {
+            return ZINT_ERROR_INVALID_OPTION;
+        } else {
+            symbol->option_2 = 0;
+            codeerr = ZINT_WARN_INVALID_OPTION;
+        }
     }
 
     if ((symbol->option_2 == 2) && (mclength > 37)) {
         /* the user specified 2 columns but the data doesn't fit - go to automatic */
-        symbol->option_2 = 0;
         strcpy(symbol->errtxt, "470: Specified symbol size too small for data");
-        codeerr = ZINT_WARN_INVALID_OPTION;
+        if (symbol->warn_level == WARN_FAIL_ALL) {
+            return ZINT_ERROR_INVALID_OPTION;
+        } else {
+            symbol->option_2 = 0;
+            codeerr = ZINT_WARN_INVALID_OPTION;
+        }
     }
 
     if ((symbol->option_2 == 3) && (mclength > 82)) {
         /* the user specified 3 columns but the data doesn't fit - go to automatic */
-        symbol->option_2 = 0;
         strcpy(symbol->errtxt, "471: Specified symbol size too small for data");
-        codeerr = ZINT_WARN_INVALID_OPTION;
+        if (symbol->warn_level == WARN_FAIL_ALL) {
+            return ZINT_ERROR_INVALID_OPTION;
+        } else {
+            symbol->option_2 = 0;
+            codeerr = ZINT_WARN_INVALID_OPTION;
+        }
     }
 
     if (symbol->option_2 == 1) {

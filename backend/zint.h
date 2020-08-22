@@ -106,6 +106,7 @@ extern "C" {
         float dot_size;
         struct zint_vector *vector;
         int debug;
+        int warn_level;
     };
 
 #define ZINT_VERSION_MAJOR      2
@@ -268,6 +269,7 @@ extern "C" {
 // Warning and error conditions
 #define ZINT_WARN_INVALID_OPTION        2
 #define ZINT_WARN_USES_ECI              3
+#define ZINT_WARN_NONCOMPLIANT          4
 #define ZINT_ERROR_TOO_LONG             5
 #define ZINT_ERROR_INVALID_DATA	        6
 #define ZINT_ERROR_INVALID_CHECK        7
@@ -291,6 +293,11 @@ extern "C" {
 // Debug flags
 #define ZINT_DEBUG_PRINT    1
 #define ZINT_DEBUG_TEST     2
+
+// Warning warn
+#define WARN_DEFAULT     0
+#define WARN_ZPL_COMPAT  1
+#define WARN_FAIL_ALL    2
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32) || defined(_MSC_VER)
 #if defined (DLL_EXPORT) || defined(PIC) || defined(_USRDLL)

@@ -1018,7 +1018,11 @@ INTERNAL int aztec(struct zint_symbol *symbol, unsigned char source[], const siz
 
     if (!((symbol->option_1 >= -1) && (symbol->option_1 <= 4))) {
         strcpy(symbol->errtxt, "503: Invalid error correction level - using default instead");
-        err_code = ZINT_WARN_INVALID_OPTION;
+        if (symbol->warn_level == WARN_FAIL_ALL) {
+            return ZINT_ERROR_INVALID_OPTION;
+        } else {
+            err_code = ZINT_WARN_INVALID_OPTION;
+        }
         symbol->option_1 = -1;
     }
 

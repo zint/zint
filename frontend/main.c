@@ -125,6 +125,8 @@ static void usage(void) {
             "  -t, --types           Display table of barcode types\n"
             "  --vers=NUMBER         Set symbol version (size, check digits, other options)\n"
             "  -w, --whitesp=NUMBER  Set width of whitespace in multiples of X-dimension\n"
+            "  --werror              Convert all warnings into errors\n"
+            "  --wzpl                ZPL compatibility mode (allows non-standard symbols)\n"
             , ZINT_VERSION_MAJOR, ZINT_VERSION_MINOR, ZINT_VERSION_RELEASE);
 }
 
@@ -884,6 +886,12 @@ int main(int argc, char **argv) {
                 }
                 if (!strcmp(long_options[option_index].name, "nobackground")) {
                     strcpy(my_symbol->bgcolour, "ffffff00");
+                }
+                if (!strcmp(long_options[option_index].name, "werror")) {
+                    my_symbol->warn_level = WARN_FAIL_ALL;
+                }
+                if (!strcmp(long_options[option_index].name, "wzpl")) {
+                    my_symbol->warn_level = WARN_ZPL_COMPAT;
                 }
                 break;
 
