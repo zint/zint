@@ -1,0 +1,26 @@
+This folder contains some extra tools to provide functionality which
+may be useful, or just interesting, but fall outside the remit of the
+Zint program. These small programs have been written by Robin Stuart
+and are released to the public domain.
+
+Font Encoding Tools
+-------------------
+daft.c
+ida_2d.c
+stroke.c
+zebu_pdf.c
+
+These code snippets show how Zint can be used to create the text
+necessary to display symbols using a range of fonts available online.
+See the individual files for information about the specific fonts.
+Some of these fonts are free whereas others require licensing, check the
+specific websites before use.
+
+Obsolete Symbologies
+--------------------
+cuecat.c
+kartrak.c
+sunburst.c
+
+These are stand-alone tools for encoding data in some more obscure and
+obsolete formats. More information is given within the file.
