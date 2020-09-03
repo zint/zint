@@ -185,7 +185,7 @@ INTERNAL int vin(struct zint_symbol *symbol, const unsigned char source[], const
 INTERNAL int mailmark(struct zint_symbol *symbol, const unsigned char source[], const size_t in_length); /* Royal Mail 4-state Mailmark */
 INTERNAL int ultracode(struct zint_symbol *symbol, const unsigned char source[], const size_t in_length); /* Ultracode */
 INTERNAL int rmqr(struct zint_symbol *symbol, const unsigned char source[], const size_t in_length); /* rMQR */
-INTERNAL int dpd_parcel(struct zint_symbol *symbol, const unsigned char source[], const size_t in_length); /* DPD Code */
+INTERNAL int dpd_parcel(struct zint_symbol *symbol, unsigned char source[], int length); /* DPD Code */
 
 INTERNAL int plot_raster(struct zint_symbol *symbol, int rotate_angle, int file_type); /* Plot to PNG/BMP/PCX */
 INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_type); /* Plot to EPS/EMF/SVG */
