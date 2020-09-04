@@ -1,5 +1,5 @@
 Name:      zint
-Version:   2.7.1
+Version:   2.9.1
 Release:   2%{?dist}
 Summary:   A barcode generator and library
 License:   GPLv3+

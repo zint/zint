@@ -56,6 +56,8 @@ TRANSLATIONS = frontend_de.ts
 
 RESOURCES += resources.qrc
 
+RC_FILE += res/qtZint.rc
+
 # Static target following http://qt-project.org/wiki/Build_Standalone_Qt_Application_for_Windows
 CONFIG += static
 

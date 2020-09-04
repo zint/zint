@@ -39,7 +39,7 @@
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <AdditionalIncludeDirectories>d:\opt1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;ZINT_VERSION="2.4.0";NO_PNG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;ZINT_VERSION="2.9.1.9";NO_PNG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>
       </ExceptionHandling>
@@ -71,6 +71,8 @@
     <ClCompile Include="..\..\backend\2of5.c" />
     <ClCompile Include="..\..\backend\auspost.c" />
     <ClCompile Include="..\..\backend\aztec.c" />
+    <ClCompile Include="..\..\backend\bmp.c" />
+    <ClCompile Include="..\..\backend\codablock.c" />
     <ClCompile Include="..\..\backend\code.c" />
     <ClCompile Include="..\..\backend\code1.c" />
     <ClCompile Include="..\..\backend\code128.c" />
@@ -82,48 +84,72 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_LIB|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\backend\dmatrix.c" />
+    <ClCompile Include="..\..\backend\dotcode.c" />
+    <ClCompile Include="..\..\backend\eci.c" />
+    <ClCompile Include="..\..\backend\emf.c" />
+    <ClCompile Include="..\..\backend\gb18030.c" />
+    <ClCompile Include="..\..\backend\gb2312.c" />
+    <ClCompile Include="..\..\backend\general_field.c" />
+    <ClCompile Include="..\..\backend\gif.c" />
     <ClCompile Include="..\..\backend\gridmtx.c" />
     <ClCompile Include="..\..\backend\gs1.c" />
+    <ClCompile Include="..\..\backend\hanxin.c" />
     <ClCompile Include="..\..\backend\imail.c" />
     <ClCompile Include="..\..\backend\large.c" />
     <ClCompile Include="..\..\backend\library.c" />
+    <ClCompile Include="..\..\backend\mailmark.c" />
     <ClCompile Include="..\..\backend\maxicode.c" />
     <ClCompile Include="..\..\backend\medical.c" />
+    <ClCompile Include="..\..\backend\output.c" />
+    <ClCompile Include="..\..\backend\pcx.c" />
     <ClCompile Include="..\..\backend\pdf417.c" />
     <ClCompile Include="..\..\backend\plessey.c" />
     <ClCompile Include="..\..\backend\png.c" />
     <ClCompile Include="..\..\backend\postal.c" />
     <ClCompile Include="..\..\backend\ps.c" />
     <ClCompile Include="..\..\backend\qr.c" />
+    <ClCompile Include="..\..\backend\raster.c" />
     <ClCompile Include="..\..\backend\reedsol.c" />
-    <ClCompile Include="..\..\backend\render.c" />
     <ClCompile Include="..\..\backend\rss.c" />
+    <ClCompile Include="..\..\backend\sjis.c" />
     <ClCompile Include="..\..\backend\svg.c" />
     <ClCompile Include="..\..\backend\telepen.c" />
+    <ClCompile Include="..\..\backend\tif.c" />
+    <ClCompile Include="..\..\backend\ultra.c" />
     <ClCompile Include="..\..\backend\upcean.c" />
+    <ClCompile Include="..\..\backend\vector.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\backend\aztec.h" />
+    <ClInclude Include="..\..\backend\bmp.h" />
     <ClInclude Include="..\..\backend\channel_precalcs.h" />
     <ClInclude Include="..\..\backend\code1.h" />
+    <ClInclude Include="..\..\backend\code128.h" />
     <ClInclude Include="..\..\backend\code49.h" />
     <ClInclude Include="..\..\backend\common.h" />
     <ClInclude Include="..\..\backend\composite.h" />
     <ClInclude Include="..\..\backend\dmatrix.h" />
+    <ClInclude Include="..\..\backend\eci.h" />
+    <ClInclude Include="..\..\backend\emf.h" />
     <ClInclude Include="..\..\backend\font.h" />
+    <ClInclude Include="..\..\backend\gb18030.h" />
     <ClInclude Include="..\..\backend\gb2312.h" />
+    <ClInclude Include="..\..\backend\general_field.h" />
     <ClInclude Include="..\..\backend\gridmtx.h" />
     <ClInclude Include="..\..\backend\gs1.h" />
+    <ClInclude Include="..\..\backend\hanxin.h" />
     <ClInclude Include="..\..\backend\large.h" />
     <ClInclude Include="..\..\backend\maxicode.h" />
-    <ClInclude Include="..\..\backend\maxipng.h" />
     <ClInclude Include="..\..\backend\ms_stdint.h" />
+    <ClInclude Include="..\..\backend\output.h" />
+    <ClInclude Include="..\..\backend\pcx.h" />
     <ClInclude Include="..\..\backend\pdf417.h" />
     <ClInclude Include="..\..\backend\qr.h" />
     <ClInclude Include="..\..\backend\reedsol.h" />
-    <ClInclude Include="..\..\backend\resource.h" />
     <ClInclude Include="..\..\backend\rss.h" />
     <ClInclude Include="..\..\backend\sjis.h" />
+    <ClInclude Include="..\..\backend\stdint_msvc.h" />
+    <ClInclude Include="..\..\backend\tif.h" />
     <ClInclude Include="..\..\backend\zint.h" />
   </ItemGroup>
   <ItemGroup>

@@ -5,6 +5,8 @@
 #include <winver.h>
 
 
+#define VER_FILEVERSION        2,9,1,9
+#define VER_FILEVERSION_STR    "2,9,1,9\0"
 
 #ifdef GCC_WINDRES
 
@@ -16,9 +18,9 @@ VS_VERSION_INFO VERSIONINFO
 
 #endif
 
- FILEVERSION 2,3,0,0
+ FILEVERSION VER_FILEVERSION
 
- PRODUCTVERSION 2,3,0,0
+ PRODUCTVERSION VER_FILEVERSION
 
   FILEFLAGSMASK		VS_FFI_FILEFLAGSMASK
 
@@ -52,11 +54,11 @@ BEGIN
 
             VALUE "FileDescription", "qtZint barcode generator"
 
-            VALUE "FileVersion", "2.3.2.0"
+            VALUE "FileVersion", VER_FILEVERSION_STR
 
             VALUE "InternalName", "qtZint"
 
-            VALUE "LegalCopyright", "Copyright © 2010 Robin Stuart & BogDan Vatra"
+            VALUE "LegalCopyright", "Copyright © 2020 Robin Stuart & BogDan Vatra"
 
             VALUE "License", "GNU General Public License version 3"
 
@@ -64,7 +66,7 @@ BEGIN
 
             VALUE "ProductName", "Zint Barcode Studio"
 
-            VALUE "ProductVersion", "2.3.2.0"
+            VALUE "ProductVersion", VER_FILEVERSION_STR
 
             VALUE "WWW", "http://www.zint.org.uk"
 

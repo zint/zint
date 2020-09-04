@@ -199,7 +199,11 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
 
     /* Start writing the header */
     fprintf(feps, "%%!PS-Adobe-3.0 EPSF-3.0\n");
-    fprintf(feps, "%%%%Creator: Zint %d.%d.%d\n", ZINT_VERSION_MAJOR, ZINT_VERSION_MINOR, ZINT_VERSION_RELEASE);
+    if (ZINT_VERSION_BUILD) {
+        fprintf(feps, "%%%%Creator: Zint %d.%d.%d.%d\n", ZINT_VERSION_MAJOR, ZINT_VERSION_MINOR, ZINT_VERSION_RELEASE, ZINT_VERSION_BUILD);
+    } else {
+        fprintf(feps, "%%%%Creator: Zint %d.%d.%d\n", ZINT_VERSION_MAJOR, ZINT_VERSION_MINOR, ZINT_VERSION_RELEASE);
+    }
     fprintf(feps, "%%%%Title: Zint Generated Symbol\n");
     fprintf(feps, "%%%%Pages: 0\n");
     fprintf(feps, "%%%%BoundingBox: 0 0 %d %d\n", (int) ceil(symbol->vector->width), (int) ceil(symbol->vector->height));

@@ -77,8 +77,12 @@ static void types(void) {
 
 /* Output usage information */
 static void usage(void) {
-    printf( "Zint version %d.%d.%d\n"
-            "Encode input data in a barcode and save as BMP/EMF/EPS/GIF/PCX/PNG/SVG/TIF/TXT\n\n"
+    if (ZINT_VERSION_BUILD) {
+        printf( "Zint version %d.%d.%d.%d\n", ZINT_VERSION_MAJOR, ZINT_VERSION_MINOR, ZINT_VERSION_RELEASE, ZINT_VERSION_BUILD);
+    } else {
+        printf( "Zint version %d.%d.%d\n", ZINT_VERSION_MAJOR, ZINT_VERSION_MINOR, ZINT_VERSION_RELEASE);
+    }
+    printf( "Encode input data in a barcode and save as BMP/EMF/EPS/GIF/PCX/PNG/SVG/TIF/TXT\n\n"
             "  -b, --barcode=NUMBER  Number of barcode type. Default is 20 (Code 128)\n"
             "  --addongap=NUMBER     Set add-on gap in multiples of X-dimension for UPC/EAN\n"
             "  --batch               Treat each line of input file as a separate data set\n"
@@ -127,7 +131,7 @@ static void usage(void) {
             "  -w, --whitesp=NUMBER  Set width of whitespace in multiples of X-dimension\n"
             "  --werror              Convert all warnings into errors\n"
             "  --wzpl                ZPL compatibility mode (allows non-standard symbols)\n"
-            , ZINT_VERSION_MAJOR, ZINT_VERSION_MINOR, ZINT_VERSION_RELEASE);
+            );
 }
 
 /* Display supported ECI codes */

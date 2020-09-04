@@ -19,7 +19,7 @@ TARGET = QtZint
 INCLUDEPATH += ../backend
 
 #EDIT THIS !!!!
-DEFINES += ZINT_VERSION="\\\"2.7.1\\\""
+DEFINES += ZINT_VERSION="\\\"2.9.1.9\\\""
 
 !contains(DEFINES, NO_PNG) {
     INCLUDEPATH += ../../lpng
@@ -129,7 +129,7 @@ SOURCES += ../backend/2of5.c \
            ../backend/png.c \
            qzint.cpp
 
-VERSION = 2.7.1
+VERSION = 2.9.1.9
 
 #DESTDIR = .
 

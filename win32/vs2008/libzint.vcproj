@@ -42,7 +42,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\..\support\lpng169;&quot;..\..\zlib128-dll\include&quot;"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;ZINT_VERSION=&quot;\&quot;2.4.4\&quot;&quot;;BUILD_ZINT_DLL;ZLIB_DLL;PNG_DLL;DEBUG"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;ZINT_VERSION=&quot;\&quot;2.9.1.9\&quot;&quot;;BUILD_ZINT_DLL;ZLIB_DLL;PNG_DLL;DEBUG"
 				MinimalRebuild="true"
 				ExceptionHandling="0"
 				BasicRuntimeChecks="3"
@@ -127,7 +127,7 @@
 				Optimization="2"
 				EnableIntrinsicFunctions="false"
 				AdditionalIncludeDirectories="..\..\..\support\lpng169;&quot;..\..\zlib128-dll\include&quot;"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;ZINT_VERSION=&quot;\&quot;2.4.4\&quot;&quot;;BUILD_ZINT_DLL;ZLIB_DLL;PNG_DLL"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;ZINT_VERSION=&quot;\&quot;2.9.1.9\&quot;&quot;;BUILD_ZINT_DLL;ZLIB_DLL;PNG_DLL"
 				StringPooling="true"
 				ExceptionHandling="0"
 				RuntimeLibrary="2"
@@ -212,7 +212,7 @@
 				Optimization="2"
 				EnableIntrinsicFunctions="false"
 				AdditionalIncludeDirectories="d:\opt\include"
-				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;ZINT_VERSION=&quot;\&quot;2.4.4\&quot;&quot;"
+				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;ZINT_VERSION=&quot;\&quot;2.9.1.9\&quot;&quot;"
 				StringPooling="true"
 				ExceptionHandling="0"
 				RuntimeLibrary="2"
@@ -276,6 +276,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\backend\bmp.c"
+				>
+			</File>
+			<File
+				RelativePath="..\backend\codablock.c"
+				>
+			</File>
+			<File
 				RelativePath="..\backend\code.c"
 				>
 			</File>
@@ -320,11 +328,43 @@
 				>
 			</File>
 			<File
+				RelativePath="..\backend\dotcode.c"
+				>
+			</File>
+			<File
+				RelativePath="..\backend\eci.c"
+				>
+			</File>
+			<File
+				RelativePath="..\backend\emf.c"
+				>
+			</File>
+			<File
+				RelativePath="..\backend\gb18030.c"
+				>
+			</File>
+			<File
+				RelativePath="..\backend\gb2312.c"
+				>
+			</File>
+			<File
+				RelativePath="..\backend\general_field.c"
+				>
+			</File>
+			<File
+				RelativePath="..\backend\gif.c"
+				>
+			</File>
+			<File
 				RelativePath="..\backend\gridmtx.c"
 				>
 			</File>
 			<File
 				RelativePath="..\backend\gs1.c"
+				>
+			</File>
+			<File
+				RelativePath="..\backend\hanxin.c"
 				>
 			</File>
 			<File
@@ -340,11 +380,23 @@
 				>
 			</File>
 			<File
+				RelativePath="..\backend\mailmark.c"
+				>
+			</File>
+			<File
 				RelativePath="..\backend\maxicode.c"
 				>
 			</File>
 			<File
 				RelativePath="..\backend\medical.c"
+				>
+			</File>
+			<File
+				RelativePath="..\backend\output.c"
+				>
+			</File>
+			<File
+				RelativePath="..\backend\pcx.c"
 				>
 			</File>
 			<File
@@ -372,15 +424,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\backend\raster.c"
+				>
+			</File>
+			<File
 				RelativePath="..\backend\reedsol.c"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\render.c"
+				RelativePath="..\backend\rss.c"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\rss.c"
+				RelativePath="..\backend\sjis.c"
 				>
 			</File>
 			<File
@@ -392,7 +448,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\backend\tif.c"
+				>
+			</File>
+			<File
+				RelativePath="..\backend\ultra.c"
+				>
+			</File>
+			<File
 				RelativePath="..\backend\upcean.c"
+				>
+			</File>
+			<File
+				RelativePath="..\backend\vector.c"
 				>
 			</File>
 		</Filter>
@@ -414,6 +482,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\backend\code128.h"
+				>
+			</File>
+			<File
 				RelativePath="..\backend\code49.h"
 				>
 			</File>
@@ -426,11 +498,15 @@
 				>
 			</File>
 			<File
-				RelativePath="..\backend\dm200.h"
+				RelativePath="..\backend\dmatrix.h"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\dmatrix.h"
+				RelativePath="..\backend\eci.h"
+				>
+			</File>
+			<File
+				RelativePath="..\backend\emf.h"
 				>
 			</File>
 			<File
@@ -438,7 +514,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\backend\gb18030.h"
+				>
+			</File>
+			<File
 				RelativePath="..\backend\gb2312.h"
+				>
+			</File>
+			<File
+				RelativePath="..\backend\general_field.h"
 				>
 			</File>
 			<File
@@ -450,6 +534,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\backend\hanxin.h"
+				>
+			</File>
+			<File
 				RelativePath="..\backend\large.h"
 				>
 			</File>
@@ -458,11 +546,15 @@
 				>
 			</File>
 			<File
-				RelativePath="..\backend\maxipng.h"
+				RelativePath="..\backend\ms_stdint.h"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\ms_stdint.h"
+				RelativePath="..\backend\output.h"
+				>
+			</File>
+			<File
+				RelativePath="..\backend\pcx.h"
 				>
 			</File>
 			<File
@@ -478,15 +570,19 @@
 				>
 			</File>
 			<File
-				RelativePath="..\backend\resource.h"
-				>
-			</File>
-			<File
 				RelativePath="..\backend\rss.h"
 				>
 			</File>
 			<File
 				RelativePath="..\backend\sjis.h"
+				>
+			</File>
+			<File
+				RelativePath="..\backend\stdint_msvc.h"
+				>
+			</File>
+			<File
+				RelativePath="..\backend\tif.h"
 				>
 			</File>
 			<File

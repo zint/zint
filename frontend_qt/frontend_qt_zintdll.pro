@@ -48,6 +48,8 @@ SOURCES += barcodeitem.cpp \
         
 RESOURCES += resources.qrc
 
+RC_FILE += res/qtZint.rc
+
 INCLUDEPATH += ../backend_qt ../backend
 
 LIBS += -lQtZintDLL -lzint

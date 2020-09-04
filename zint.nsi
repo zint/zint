@@ -10,7 +10,7 @@
 ;******************************************************************************
 !define PRODUCT_NAME "Zint"
 !define PRODUCT_EXE "qtZint.exe"
-!define PRODUCT_VERSION "2.7.1.0"
+!define PRODUCT_VERSION "2.9.1.9"
 !define PRODUCT_WEB_SITE "http://www.zint.org.uk"
 !define PRODUCT_PUBLISHER "Robin Stuart & BogDan Vatra"
 !define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\${PRODUCT_EXE}"
@@ -195,7 +195,7 @@ VIAddVersionKey /LANG=${LANG_ENGLISH} "ProductName" "${PRODUCT_NAME}"
 VIAddVersionKey /LANG=${LANG_ENGLISH} "CompanyName" "${PRODUCT_PUBLISHER}"
 VIAddVersionKey /LANG=${LANG_ENGLISH} "FileDescription" "${PRODUCT_NAME} Setup"
 VIAddVersionKey /LANG=${LANG_ENGLISH} "FileVersion" "${PRODUCT_VERSION}"
-VIAddVersionKey /LANG=${LANG_ENGLISH} "LegalCopyright" "Copyright © 2010 Robin Stuart & BogDan Vatra"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "LegalCopyright" "Copyright © 2020 Robin Stuart & BogDan Vatra"
 VIAddVersionKey /LANG=${LANG_ENGLISH} "License" "GNU General Public License version 3"
 VIAddVersionKey /LANG=${LANG_ENGLISH} "WWW" "${PRODUCT_WEB_SITE}"
 ;******************************************************************************

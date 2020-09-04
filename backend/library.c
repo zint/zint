@@ -1618,5 +1618,8 @@ int ZBarcode_Encode_File_and_Buffer_Vector(struct zint_symbol *symbol, char *fil
 }
 
 int ZBarcode_Version() {
+    if (ZINT_VERSION_BUILD) {
+        return (ZINT_VERSION_MAJOR * 10000) + (ZINT_VERSION_MINOR * 100) + ZINT_VERSION_RELEASE * 10 + ZINT_VERSION_BUILD;
+    }
     return (ZINT_VERSION_MAJOR * 10000) + (ZINT_VERSION_MINOR * 100) + ZINT_VERSION_RELEASE;
 }

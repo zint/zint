@@ -281,15 +281,23 @@ bool MainWindow::save()
 
 void MainWindow::about()
 {
+    QString zint_version;
+    if (ZINT_VERSION_BUILD) {
+        QTextStream(&zint_version) << ZINT_VERSION_MAJOR << "." << ZINT_VERSION_MINOR << "." << ZINT_VERSION_RELEASE << "." << ZINT_VERSION_BUILD;
+    } else {
+        QTextStream(&zint_version) << ZINT_VERSION_MAJOR << "." << ZINT_VERSION_MINOR << "." << ZINT_VERSION_RELEASE;
+    }
+
     QMessageBox::about(this, tr("About Zint"),
-       tr("<h2>Zint Barcode Studio 2.9.0 </h2>"
+        /*: %1 is Zint version, %2 is Qt version */
+        tr("<h2>Zint Barcode Studio %1</h2>"
            "<p>A free barcode generator"
            "<p>Instruction manual is available at the project homepage:<br>"
            "<a href=\"http://www.zint.org.uk\">http://www.zint.org.uk</a>"
            "<p>Copyright &copy; 2006-2020 Robin Stuart and others.<br>"
            "Qt back end by BogDan Vatra<br>"
            "Windows port by Harald Oehlmann</p>"
-           "<p>Qt version " QT_VERSION_STR
+           "<p>Qt version %2"
            "<p>With thanks to Norbert Szab&oacute;, Robert Elliott, "
                "Milton Neal, Git Lost and many others at Sourceforge."
            "<p>Released under the GNU General Public License ver. 3 or later.<br>"
@@ -302,7 +310,7 @@ void MainWindow::about()
            "ISO/IEC 24724:2011, ISO/IEC 24728:2006, ISO/IEC 24778:2008,<br>"
            "ISO/IEC 21471:2019, ANSI-HIBC 2.3-2009, ANSI/AIM BC6-2000,<br>"
            "ANSI/AIM BC12-1998, AIMD014 (v 1.63), USPS-B-3200"
-           "</small></td></tr></table>"));
+           "</small></td></tr></table>").arg(zint_version).arg(QT_VERSION_STR));
 }
 
 int MainWindow::open_data_dialog()
