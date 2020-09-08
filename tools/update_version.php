@@ -2,7 +2,7 @@
 /* Update Zint version number in various files */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2019 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020 Robin Stuart <rstuart114@gmail.com>
 */
 /* Run from project directory
  *
