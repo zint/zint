@@ -172,7 +172,7 @@ static void test_buffer_vector(int index, int generate, int debug) {
         /* 31*/ { BARCODE_CODE93, "0000000000", "", 50, 1, 127, 254, 118 },
         /* 32*/ { BARCODE_FLAT, "1234567890", "", 50, 1, 90, 180, 100 },
         /* 33*/ { BARCODE_DBAR_OMN, "1234567890123", "", 50, 1, 96, 192, 118 },
-        /* 34*/ { BARCODE_DBAR_LTD, "1234567890123", "", 50, 1, 74, 148, 118 },
+        /* 34*/ { BARCODE_DBAR_LTD, "1234567890123", "", 50, 1, 79, 158.0, 118.0 },
         /* 35*/ { BARCODE_DBAR_EXP, "[01]12345678901234", "", 34, 1, 134, 268, 86 },
         /* 36*/ { BARCODE_TELEPEN, "0000000000", "", 50, 1, 208, 416, 118 },
         /* 37*/ { BARCODE_UPCA, "12345678904", "", 50, 1, 95, 226, 118 },
@@ -246,7 +246,7 @@ static void test_buffer_vector(int index, int generate, int debug) {
         /*105*/ { BARCODE_EANX_CC, "123456789012+12345", "[20]01", 50, 7, 153, 338, 118 },
         /*106*/ { BARCODE_GS1_128_CC, "[01]12345678901234", "[20]01", 50, 5, 145, 290, 118 },
         /*107*/ { BARCODE_DBAR_OMN_CC, "1234567890123", "[20]01", 21, 5, 100, 200, 60 },
-        /*108*/ { BARCODE_DBAR_LTD_CC, "1234567890123", "[20]01", 19, 6, 74, 148, 56 },
+        /*108*/ { BARCODE_DBAR_LTD_CC, "1234567890123", "[20]01", 19, 6, 79, 158.0, 56.0 },
         /*109*/ { BARCODE_DBAR_EXP_CC, "[01]12345678901234", "[20]01", 41, 5, 134, 268, 100 },
         /*110*/ { BARCODE_UPCA_CC, "12345678901", "[20]01", 50, 7, 99, 234, 118 },
         /*111*/ { BARCODE_UPCA_CC, "12345678901+12", "[20]01", 50, 7, 128, 284, 118 },
@@ -706,7 +706,7 @@ static void test_noncomposite_string_x(int index, int debug) {
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%2d*\/", line(".") - line("'<"))
     struct item data[] = {
         /* 0*/ { BARCODE_DBAR_OMN, "1234567890123", 96, 96 },
-        /* 1*/ { BARCODE_DBAR_LTD, "1234567890123", 74, 74 },
+        /* 1*/ { BARCODE_DBAR_LTD, "1234567890123", 79, 79 },
         /* 2*/ { BARCODE_DBAR_EXP, "[01]12345678901234", 134, 134 },
     };
     int data_size = sizeof(data) / sizeof(struct item);

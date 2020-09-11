@@ -598,7 +598,7 @@ INTERNAL int rsslimited(struct zint_symbol *symbol, unsigned char source[], int 
     uint64_t left_character, right_character;
     int left_group, right_group, left_odd, left_even, right_odd, right_even;
     int left_widths[14], right_widths[14];
-    int checksum, check_elements[14], total_widths[46], writer;
+    int checksum, check_elements[14], total_widths[47], writer;
     char latch;
     int separator_row;
     int widths[7];
@@ -731,6 +731,7 @@ INTERNAL int rsslimited(struct zint_symbol *symbol, unsigned char source[], int 
     total_widths[1] = 1;
     total_widths[44] = 1;
     total_widths[45] = 1;
+    total_widths[46] = 5;
     for (i = 0; i < 14; i++) {
         total_widths[i + 2] = left_widths[i];
         total_widths[i + 16] = check_elements[i];
@@ -739,7 +740,7 @@ INTERNAL int rsslimited(struct zint_symbol *symbol, unsigned char source[], int 
 
     writer = 0;
     latch = '0';
-    for (i = 0; i < 46; i++) {
+    for (i = 0; i < 47; i++) {
         writer = rss_expand(symbol, writer, &latch, total_widths[i]);
     }
     if (symbol->width < writer) {
