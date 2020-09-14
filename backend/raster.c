@@ -477,7 +477,7 @@ static void draw_string(char *pixbuf, unsigned char input_string[], int xposn, i
     if (textflags & UPCEAN_TEXT) { /* Needs to be before SMALL_TEXT check */
         /* No bold for UPCEAN */
         letter_width = textflags & SMALL_TEXT ? UPCEAN_SMALL_FONT_WIDTH : UPCEAN_FONT_WIDTH;
-        letter_gap = 5;
+        letter_gap = 4;
     } else if (textflags & SMALL_TEXT) { // small font 5x9
         /* No bold for small */
         letter_width = SMALL_FONT_WIDTH;
