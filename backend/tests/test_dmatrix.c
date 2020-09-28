@@ -130,6 +130,75 @@ static void test_buffer(int index, int debug) {
     testFinish();
 }
 
+static void test_input(int index, int generate, int debug) {
+
+    testStart("");
+
+    int ret;
+    struct item {
+        int input_mode;
+        int eci;
+        int option_1;
+        int option_2;
+        int option_3;
+        unsigned char *data;
+        int ret;
+
+        int expected_eci;
+        int expected_rows;
+        int expected_width;
+        char *expected;
+        char *comment;
+    };
+    struct item data[] = {
+        /*  0*/ { UNICODE_MODE, 0, -1, -1, -1, "0466010592130100000k*AGUATY80", 0, 0, 18, 18, "(32) 86 C4 83 87 DE 8F 83 82 82 31 6C EE 08 85 D6 D2 EF 65 93 B0 1C 3C 76 FB D4 AB 16 11", "" },
+        /*  1*/ { UNICODE_MODE, 0, -1, 5, -1, "0466010592130100000k*AGUATY80", 0, 0, 18, 18, "(32) 86 C4 83 87 DE 8F 83 82 82 31 6C EE 08 85 D6 D2 EF 65 93 B0 1C 3C 76 FB D4 AB 16 11", "" },
+        /*  2*/ { UNICODE_MODE, 0, -1, -1, -1, "0466010592130100000k*AGUATY8", 0, 0, 18, 18, "(32) 86 C4 83 87 DE 8F 83 82 82 E6 19 5C 07 B7 82 5F D4 3D 65 B5 97 30 00 FC 2C 4C 30 52", "" },
+        /*  3*/ { UNICODE_MODE, 0, -1, -1, -1, "0466010592130100000k*AGUATY80U", 0, 0, 20, 20, "(40) 86 C4 83 87 DE 8F 83 82 82 31 6C EE 08 85 D6 D2 EF 65 FE 56 81 76 4F AB 22 B8 6F 0A", "" },
+        /*  4*/ { UNICODE_MODE, 0, -1, 5, -1, "0466010592130100000k*AGUATY80U", ZINT_ERROR_TOO_LONG, -1, 0, 0, "Error 522: Input too long for selected symbol size", "" },
+        /*  5*/ { UNICODE_MODE, 0, -1, 6, -1, "0466010592130100000k*AGUATY80U", 0, 0, 20, 20, "(40) 86 C4 83 87 DE 8F 83 82 82 31 6C EE 08 85 D6 D2 EF 65 FE 56 81 76 4F AB 22 B8 6F 0A", "" },
+        /*  6*/ { UNICODE_MODE, 0, -1, -1, -1, "0466010592130100000k*AGUATY80UA", 0, 0, 20, 20, "(40) 86 C4 83 87 DE 8F 83 82 82 31 6C E6 07 B7 82 5F D4 3D 1E 5F FE 81 1E 1B B0 FE E7 54", "" },
+        /*  7*/ { UNICODE_MODE, 0, -1, -1, -1, "A*0>B1*", 0, 0, 14, 14, "EE 57 AD 0E DE FE 2B 81 F8 05 75 94 1E 5F 24 0C A0 D3", "X12 symbols_left 3, process_p 1" },
+        /*  8*/ { UNICODE_MODE, 0, -1, -1, -1, "A*0>B1*2", 0, 0, 14, 14, "EE 57 AD 0E DE FE 2B 33 E7 BB FB 78 F9 F5 4B 11 BB 5A", "X12 symbols_left 3, process_p 2" },
+        /*  9*/ { UNICODE_MODE, 0, -1, -1, -1, "A*0>B1*2>", 0, 0, 14, 14, "EE 57 AD 0E DE 07 33 FE 75 99 1B 4D 76 0E 9E 49 E0 37", "X12 symbols_left 1, process_p 0" },
+    };
+    int data_size = ARRAY_SIZE(data);
+
+    char escaped[1024];
+
+    for (int i = 0; i < data_size; i++) {
+
+        if (index != -1 && i != index) continue;
+
+        struct zint_symbol *symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        symbol->debug = ZINT_DEBUG_TEST; // Needed to get codeword dump in errtxt
+
+        int length = testUtilSetSymbol(symbol, BARCODE_DATAMATRIX, data[i].input_mode, data[i].eci, data[i].option_1, data[i].option_2, data[i].option_3, -1 /*output_options*/, data[i].data, -1, debug);
+
+        ret = ZBarcode_Encode(symbol, data[i].data, length);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d\n", i, ret, data[i].ret);
+
+        if (generate) {
+            printf("        /*%3d*/ { %s, %d, %d, %d, %d, \"%s\", %s, %d, %d, %d, \"%s\", \"%s\" },\n",
+                    i, testUtilInputModeName(data[i].input_mode), data[i].eci, data[i].option_1, data[i].option_2, data[i].option_3, testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
+                    testUtilErrorName(data[i].ret), ret < 5 ? symbol->eci : -1, symbol->rows, symbol->width, symbol->errtxt, data[i].comment);
+        } else {
+            if (ret < 5) {
+                assert_equal(symbol->eci, data[i].expected_eci, "i:%d eci %d != %d\n", i, symbol->eci, data[i].expected_eci);
+                assert_equal(symbol->rows, data[i].expected_rows, "i:%d rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
+                assert_equal(symbol->width, data[i].expected_width, "i:%d width %d != %d\n", i, symbol->width, data[i].expected_width);
+                assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
+            }
+        }
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
 static void test_encode(int index, int generate, int debug) {
 
     testStart("");
@@ -412,6 +481,7 @@ int main(int argc, char *argv[]) {
     testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
         { "test_large", test_large, 1, 0, 1 },
         { "test_buffer", test_buffer, 1, 0, 1 },
+        { "test_input", test_input, 1, 1, 1 },
         { "test_encode", test_encode, 1, 1, 1 },
     };
 

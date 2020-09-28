@@ -534,7 +534,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
     int tp, i, gs1;
     int current_mode, next_mode;
     size_t inputlen = *length_p;
-    int debug = symbol->debug;
+    int debug = symbol->debug & ZINT_DEBUG_PRINT;
 #ifndef _MSC_VER
     char binary[2 * inputlen + 1 + 4 + 1]; /* Allow for GS1/READER_INIT, ECI and nul chars overhead */
 #else
@@ -1023,12 +1023,13 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
     return 0;
 }
 
-static int dm200encode_remainder(unsigned char target[], int target_length, const unsigned char source[], const size_t inputlen, const int last_mode, const int process_buffer[], const int process_p, const int symbols_left) {
-    int debug = 0;
+static int dm200encode_remainder(unsigned char target[], int target_length, const unsigned char source[], const size_t inputlen,
+        const int last_mode, const int process_buffer[], const int process_p, const int symbols_left, int debug) {
 
     switch (last_mode) {
         case DM_C40:
         case DM_TEXT:
+            if (debug) printf(" %s symbols_left %d, process_p %d\n", last_mode == DM_C40 ? "C40" : "TEXT", symbols_left, process_p);
             if (process_p == 1) // 1 data character left to encode.
             {
                 if (symbols_left > 1) {
@@ -1058,11 +1059,12 @@ static int dm200encode_remainder(unsigned char target[], int target_length, cons
             break;
 
         case DM_X12:
+            if (debug) printf(" X12 symbols_left %d, process_p %d\n", symbols_left, process_p);
             if ((symbols_left == process_p) && (process_p == 1)) {
                 // Unlatch not required!
                 target[target_length] = source[inputlen - 1] + 1;
                 target_length++;
-            } else {
+            } else if (symbols_left) {
                 target[target_length] = (254);
                 target_length++; // Unlatch.
 
@@ -1081,6 +1083,7 @@ static int dm200encode_remainder(unsigned char target[], int target_length, cons
             break;
 
         case DM_EDIFACT:
+            if (debug) printf(" EDIFACT symbols_left %d, process_p %d\n", symbols_left, process_p);
             if (symbols_left <= 2) // Unlatch not required!
             {
                 if (process_p == 1) {
@@ -1223,7 +1226,7 @@ static int data_matrix_200(struct zint_symbol *symbol,const unsigned char source
 
     // Now we know the symbol size we can handle the remaining data in the process buffer.
     symbols_left = matrixbytes[symbolsize] - binlen;
-    binlen = dm200encode_remainder(binary, binlen, source, inputlen, last_mode, process_buffer, process_p, symbols_left);
+    binlen = dm200encode_remainder(binary, binlen, source, inputlen, last_mode, process_buffer, process_p, symbols_left, symbol->debug & ZINT_DEBUG_PRINT);
 
     if (binlen > matrixbytes[symbolsize]) {
         strcpy(symbol->errtxt, "523: Data too long to fit in symbol");
@@ -1263,6 +1266,9 @@ static int data_matrix_200(struct zint_symbol *symbol,const unsigned char source
             printf(" %3i", binary[posCur]);
         puts("\n");
     }
+#endif
+#ifdef ZINT_TEST
+    if (symbol->debug & ZINT_DEBUG_TEST) debug_test_codeword_dump(symbol, binary, skew ? 1558 + 620 : bytes + rsblock * (bytes / datablock));
 #endif
     { // placement
         int x, y, NC, NR, *places;
