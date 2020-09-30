@@ -36,10 +36,8 @@
 #include "maxicode.h"
 #include "reedsol.h"
 
-static int maxi_codeword[144];
-
 /* Handles error correction of primary message */
-static void maxi_do_primary_check() {
+static void maxi_do_primary_check(int maxi_codeword[144]) {
     unsigned char data[15];
     unsigned char results[15];
     int j;
@@ -60,7 +58,7 @@ static void maxi_do_primary_check() {
 }
 
 /* Handles error correction of odd characters in secondary */
-static void maxi_do_secondary_chk_odd(int ecclen) {
+static void maxi_do_secondary_chk_odd(int maxi_codeword[144], int ecclen) {
     unsigned char data[100];
     unsigned char results[30];
     int j;
@@ -84,7 +82,7 @@ static void maxi_do_secondary_chk_odd(int ecclen) {
 }
 
 /* Handles error correction of even characters in secondary */
-static void maxi_do_secondary_chk_even(int ecclen) {
+static void maxi_do_secondary_chk_even(int maxi_codeword[144], int ecclen) {
     unsigned char data[100];
     unsigned char results[30];
     int j;
@@ -145,7 +143,7 @@ static int bestSurroundingSet(int index, int length, int set[], int setval[], in
 }
 
 /* Format text according to Appendix A */
-static int maxi_text_process(int mode, unsigned char source[], int length, int eci) {
+static int maxi_text_process(int maxi_codeword[144], int mode, unsigned char source[], int length, int eci) {
     /* This code doesn't make use of [Lock in C], [Lock in D]
     and [Lock in E] and so is not always the most efficient at
     compressing data, but should suffice for most applications */
@@ -532,7 +530,7 @@ static int maxi_text_process(int mode, unsigned char source[], int length, int e
 }
 
 /* Format structured primary for Mode 2 */
-static void maxi_do_primary_2(char postcode[], int country, int service) {
+static void maxi_do_primary_2(int maxi_codeword[144], char postcode[], int country, int service) {
     size_t postcode_length;
    int    postcode_num, i;
 
@@ -558,7 +556,7 @@ static void maxi_do_primary_2(char postcode[], int country, int service) {
 }
 
 /* Format structured primary for Mode 3 */
-static void maxi_do_primary_3(char postcode[], int country, int service) {
+static void maxi_do_primary_3(int maxi_codeword[144], char postcode[], int country, int service) {
     int i, h;
 
     h = strlen(postcode);
@@ -590,15 +588,14 @@ static void maxi_do_primary_3(char postcode[], int country, int service) {
 
 INTERNAL int maxicode(struct zint_symbol *symbol, unsigned char local_source[], const int length) {
     int i, j, block, bit, mode, lp = 0;
-    int bit_pattern[7], internal_error = 0, eclen;
+    int bit_pattern[7], error_number = 0, eclen;
+    int maxi_codeword[144] = {0};
     char postcode[12], countrystr[4], servicestr[4];
 
     mode = symbol->option_1;
     strcpy(postcode, "");
     strcpy(countrystr, "");
     strcpy(servicestr, "");
-
-    memset(maxi_codeword, 0, sizeof (maxi_codeword));
 
     if (mode == -1) { /* If mode is unspecified */
         lp = strlen(symbol->primary);
@@ -627,13 +624,13 @@ INTERNAL int maxicode(struct zint_symbol *symbol, unsigned char local_source[], 
             lp = strlen(symbol->primary);
         }
         if (lp != 15) {
-            strcpy(symbol->errtxt, "551: Invalid Primary String");
+            strcpy(symbol->errtxt, "551: Invalid Primary Message");
             return ZINT_ERROR_INVALID_DATA;
         }
 
         for (i = 9; i < 15; i++) { /* check that country code and service are numeric */
             if ((symbol->primary[i] < '0') || (symbol->primary[i] > '9')) {
-                strcpy(symbol->errtxt, "552: Invalid Primary String");
+                strcpy(symbol->errtxt, "552: Invalid Primary Message");
                 return ZINT_ERROR_INVALID_DATA;
             }
         }
@@ -665,31 +662,31 @@ INTERNAL int maxicode(struct zint_symbol *symbol, unsigned char local_source[], 
         service = atoi(servicestr);
 
         if (mode == 2) {
-            maxi_do_primary_2(postcode, countrycode, service);
+            maxi_do_primary_2(maxi_codeword, postcode, countrycode, service);
         }
         if (mode == 3) {
-            maxi_do_primary_3(postcode, countrycode, service);
+            maxi_do_primary_3(maxi_codeword, postcode, countrycode, service);
         }
     } else {
         maxi_codeword[0] = mode;
     }
 
-    i = maxi_text_process(mode, local_source, length, symbol->eci);
+    i = maxi_text_process(maxi_codeword, mode, local_source, length, symbol->eci);
     if (i == ZINT_ERROR_TOO_LONG) {
         strcpy(symbol->errtxt, "553: Input data too long");
         return i;
     }
 
     /* All the data is sorted - now do error correction */
-    maxi_do_primary_check(); /* always EEC */
+    maxi_do_primary_check(maxi_codeword); /* always EEC */
 
     if (mode == 5)
         eclen = 56; // 68 data codewords , 56 error corrections
     else
         eclen = 40; // 84 data codewords,  40 error corrections
 
-    maxi_do_secondary_chk_even(eclen / 2); // do error correction of even
-    maxi_do_secondary_chk_odd(eclen / 2); // do error correction of odd
+    maxi_do_secondary_chk_even(maxi_codeword, eclen / 2); // do error correction of even
+    maxi_do_secondary_chk_odd(maxi_codeword, eclen / 2); // do error correction of odd
 
     /* Copy data into symbol grid */
     for (i = 0; i < 33; i++) {
@@ -731,5 +728,5 @@ INTERNAL int maxicode(struct zint_symbol *symbol, unsigned char local_source[], 
     symbol->width = 30;
     symbol->rows = 33;
 
-    return internal_error;
+    return error_number;
 }

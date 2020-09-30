@@ -55,7 +55,7 @@
 #include "reedsol.h"
 #include "dmatrix.h"
 
-/* Annex M placement alorithm low level */
+/* Annex M placement algorithm low level */
 static void ecc200placementbit(int *array, const int NR, const int NC, int r, int c, const int p, const char b) {
     if (r < 0) {
         r += NR;

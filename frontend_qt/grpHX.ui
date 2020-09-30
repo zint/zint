@@ -506,6 +506,19 @@
     </layout>
    </item>
    <item>
+    <widget class="QCheckBox" name="chkHXFullMultibyte">
+     <property name="text">
+      <string>Full Multibyte</string>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
+     <property name="toolTip">
+      <string>Use Hanzi multibyte encoding for binary and Latin data</string>
+     </property>
+    </widget>
+   </item>
+   <item>
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>

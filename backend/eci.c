@@ -45,8 +45,8 @@ INTERNAL int utf_to_eci(const int eci, const unsigned char source[], unsigned ch
     int ext;
     int done;
     
-    if (eci == 26) {
-        /* Unicode mode, do not process - just copy data across */
+    if (eci == 26 || eci == 899) {
+        /* Unicode or 8-bit binary data, do not process - just copy data across */
         memcpy(dest, source, *length);
         dest[*length] = '\0';
         return 0;

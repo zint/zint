@@ -135,7 +135,7 @@ INTERNAL int posn(const char set_string[], const char data) {
     return -1;
 }
 
-/* Return true (1) if a module is dark/black/colour, otherwise false (0) */
+/* Return true (1-8) if a module is dark/black/colour, otherwise false (0) */
 INTERNAL int module_is_set(const struct zint_symbol *symbol, const int y_coord, const int x_coord) {
     if (symbol->symbology == BARCODE_ULTRA) {
         return symbol->encoded_data[y_coord][x_coord];
@@ -154,7 +154,7 @@ INTERNAL void set_module_colour(struct zint_symbol *symbol, const int y_coord, c
     symbol->encoded_data[y_coord][x_coord] = colour;
 }
 
-/* Set (or unset) a module to white */
+/* Set a dark/black module to white (i.e. unset) */
 INTERNAL void unset_module(struct zint_symbol *symbol, const int y_coord, const int x_coord) {
     symbol->encoded_data[y_coord][x_coord / 8] &= ~(1 << (x_coord % 8));
 }
@@ -193,10 +193,9 @@ INTERNAL void expand(struct zint_symbol *symbol, const char data[]) {
     symbol->rows = symbol->rows + 1;
 }
 
-/* Indicates which symbologies can have row binding
- * Note: if change this must also change version in frontend/main.c */
+/* Indicates which symbologies can have row binding */
 INTERNAL int is_stackable(const int symbology) {
-    if (symbology < BARCODE_PDF417) {
+    if (symbology < BARCODE_PHARMA_TWO && symbology != BARCODE_POSTNET) {
         return 1;
     }
 
@@ -218,8 +217,7 @@ INTERNAL int is_stackable(const int symbology) {
     return 0;
 }
 
-/* Indicates which symbols can have addon (EAN-2 and EAN-5)
- * Note: if change this must also change version in frontend/main.c */
+/* Indicates which symbols can have addon (EAN-2 and EAN-5) */
 INTERNAL int is_extendable(const int symbology) {
 
     switch (symbology) {

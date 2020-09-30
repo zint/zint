@@ -32,13 +32,14 @@
 /* vim: set ts=4 sw=4 et : */
 
 #include <locale.h>
-#include <string.h>
-#include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#ifdef _MSC_VER
+#include <malloc.h>
+#endif
 #include "common.h"
 
-void colour_to_pscolor(int option, int colour, char* output) {
+static void colour_to_pscolor(int option, int colour, char* output) {
     strcpy(output, "");
     if ((option & CMYK_COLOUR) == 0) {
         // Use RGB colour space
@@ -101,6 +102,35 @@ void colour_to_pscolor(int option, int colour, char* output) {
     }
 }
 
+STATIC_UNLESS_ZINT_TEST void ps_convert(const unsigned char *string, unsigned char *ps_string) {
+    const unsigned char *s;
+    unsigned char *p = ps_string;
+
+    for (s = string; *s; s++) {
+        switch (*s) {
+            case '(':
+            case ')':
+            case '\\':
+                *p++ = '\\';
+                *p++ = *s;
+                break;
+            case 0xC2: /* See `to_iso8859_1()` in raster.c */
+                *p++ = *++s;
+                break;
+            case 0xC3:
+                *p++ = *++s + 64;
+                break;
+            default:
+                if (*s < 0x80) {
+                    *p++ = *s;
+                }
+                break;
+
+        }
+    }
+    *p = '\0';
+}
+
 INTERNAL int ps_plot(struct zint_symbol *symbol) {
     FILE *feps;
     int fgred, fggrn, fgblu, bgred, bggrn, bgblu;
@@ -118,6 +148,13 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
     struct zint_vector_circle *circle;
     struct zint_vector_string *string;
     const char *locale = NULL;
+    const char *font;
+    int i, len;
+    int ps_len = 0;
+    int iso_latin1 = 0;
+#ifdef _MSC_VER
+    unsigned char *ps_string;
+#endif
 
     if (strlen(symbol->bgcolour) > 6) {
         if ((ctoi(symbol->bgcolour[6]) == 0) && (ctoi(symbol->bgcolour[7]) == 0)) {
@@ -196,6 +233,28 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
         magenta_paper = 0.0;
         yellow_paper = 0.0;
     }
+
+    for (i = 0, len = (int) ustrlen(symbol->text); i < len; i++) {
+        switch (symbol->text[i]) {
+            case '(':
+            case ')':
+            case '\\':
+                ps_len += 2;
+                break;
+            default:
+                if (!iso_latin1 && symbol->text[i] >= 0x80) {
+                    iso_latin1 = 1;
+                }
+                ps_len++; /* Will overcount 2 byte UTF-8 chars */
+                break;
+        }
+    }
+
+#ifndef _MSC_VER
+    unsigned char ps_string[ps_len + 1];
+#else
+    ps_string = (unsigned char *) _alloca(ps_len + 1);
+#endif
 
     /* Start writing the header */
     fprintf(feps, "%%!PS-Adobe-3.0 EPSF-3.0\n");
@@ -330,21 +389,44 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
     }
 
     // Text
+
     string = symbol->vector->strings;
 
+    if (string) {
+        if ((symbol->output_options & BOLD_TEXT) && (!is_extendable(symbol->symbology) || (symbol->output_options & SMALL_TEXT))) {
+            font = "Helvetica-Bold";
+        } else {
+            font = "Helvetica";
+        }
+        if (iso_latin1) { /* Change encoding to ISO 8859-1, see Postscript Language Reference Manual 2nd Edition Example 5.6 */
+            fprintf(feps, "/%s findfont\n", font);
+            fprintf(feps, "dup length dict begin\n");
+            fprintf(feps, "{1 index /FID ne {def} {pop pop} ifelse} forall\n");
+            fprintf(feps, "/Encoding ISOLatin1Encoding def\n");
+            fprintf(feps, "currentdict\n");
+            fprintf(feps, "end\n");
+            fprintf(feps, "/Helvetica-ISOLatin1 exch definefont pop\n");
+            font = "Helvetica-ISOLatin1";
+        }
+    }
     while (string) {
+        ps_convert(string->text, ps_string);
         fprintf(feps, "matrix currentmatrix\n");
-        fprintf(feps, "/Helvetica findfont\n");
+        fprintf(feps, "/%s findfont\n", font);
         fprintf(feps, "%.2f scalefont setfont\n", string->fsize);
         fprintf(feps, " 0 0 moveto %.2f %.2f translate 0.00 rotate 0 0 moveto\n", string->x, (symbol->vector->height - string->y));
-        fprintf(feps, " (%s) stringwidth\n", string->text);
+        if (string->halign == 0 || string->halign == 2) { /* Need width for middle or right align */
+            fprintf(feps, " (%s) stringwidth\n", ps_string);
+        }
         if (string->rotation != 0) {
             fprintf(feps, "gsave\n");
             fprintf(feps, "%d rotate\n", 360 - string->rotation);
         }
-        fprintf(feps, "pop\n");
-        fprintf(feps, "-2 div 0 rmoveto\n");
-        fprintf(feps, " (%s) show\n", string->text);
+        if (string->halign == 0 || string->halign == 2) {
+            fprintf(feps, "pop\n");
+            fprintf(feps, "%s 0 rmoveto\n", string->halign == 2 ? "neg" : "-2 div");
+        }
+        fprintf(feps, " (%s) show\n", ps_string);
         if (string->rotation != 0) {
             fprintf(feps, "grestore\n");
         }

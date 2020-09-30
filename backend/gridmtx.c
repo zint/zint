@@ -221,7 +221,7 @@ static void gm_cur_cost(unsigned int state[], const unsigned int gbdata[], const
 
 /* Calculate optimized encoding modes */
 static void define_mode(char* mode, const unsigned int gbdata[], const size_t length, const int debug) {
-    static const char mode_types[] = { GM_CHINESE, GM_NUMBER, GM_LOWER, GM_UPPER, GM_MIXED, GM_BYTE }; /* Must be in same order as GM_H etc */
+    static const char mode_types[] = { GM_CHINESE, GM_NUMBER, GM_LOWER, GM_UPPER, GM_MIXED, GM_BYTE, '\0' }; /* Must be in same order as GM_H etc */
     unsigned int state[3] = { 0 /*numeral_end*/, 0 /*numeral_cost*/, 0 /*byte_count*/ };
 
     pn_define_mode(mode, gbdata, length, debug, state, mode_types, GM_NUM_MODES, gm_head_costs, gm_switch_cost, gm_eod_cost, gm_cur_cost);

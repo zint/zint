@@ -48,6 +48,7 @@ extern "C" {
         float width; /* Suggested string width, may be 0 if none recommended */
         int length;
         int rotation;
+        int halign; /* Horizontal alignment: 0 for centre (middle, 1 for left (start), 2 for right (end) */
         unsigned char *text;
         struct zint_vector_string *next; /* Pointer to next character */
     };
@@ -271,6 +272,7 @@ extern "C" {
 #define ZINT_WARN_INVALID_OPTION        2
 #define ZINT_WARN_USES_ECI              3
 #define ZINT_WARN_NONCOMPLIANT          4
+#define ZINT_ERROR                      5 /* Warn/error marker, not returned */
 #define ZINT_ERROR_TOO_LONG             5
 #define ZINT_ERROR_INVALID_DATA	        6
 #define ZINT_ERROR_INVALID_CHECK        7
@@ -291,14 +293,26 @@ extern "C" {
 #define OUT_JPG_FILE            180
 #define OUT_TIF_FILE            200
 
-// Debug flags
-#define ZINT_DEBUG_PRINT    1
-#define ZINT_DEBUG_TEST     2
-
 // Warning warn
 #define WARN_DEFAULT     0
 #define WARN_ZPL_COMPAT  1
 #define WARN_FAIL_ALL    2
+
+// Capability flags
+#define ZINT_CAP_HRT            0x0001
+#define ZINT_CAP_STACKABLE      0x0002
+#define ZINT_CAP_EXTENDABLE     0x0004
+#define ZINT_CAP_COMPOSITE      0x0008
+#define ZINT_CAP_ECI            0x0010
+#define ZINT_CAP_GS1            0x0020
+#define ZINT_CAP_DOTTY          0x0040
+#define ZINT_CAP_FIXED_RATIO    0x0100 /* Aspect ratio */
+#define ZINT_CAP_READER_INIT    0x0200
+#define ZINT_CAP_FULL_MULTIBYTE 0x0400
+
+// Debug flags
+#define ZINT_DEBUG_PRINT        1
+#define ZINT_DEBUG_TEST         2
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32) || defined(_MSC_VER)
 #if defined (DLL_EXPORT) || defined(PIC) || defined(_USRDLL)
@@ -330,6 +344,7 @@ extern "C" {
     ZINT_EXTERN int ZBarcode_Encode_File_and_Buffer_Vector(struct zint_symbol *symbol, char *filename, int rotate_angle);
 
     ZINT_EXTERN int ZBarcode_ValidID(int symbol_id);
+    ZINT_EXTERN unsigned int ZBarcode_Cap(int symbol_id, unsigned int cap_flag);
     ZINT_EXTERN int ZBarcode_Version();
 
 #ifdef __cplusplus

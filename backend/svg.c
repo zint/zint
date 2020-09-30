@@ -125,6 +125,8 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
     char bgcolour_string[7];
     int bg_alpha = 0xff;
     int fg_alpha = 0xff;
+    const char *font_family = "Helvetica, sans-serif";
+    int bold;
 
     struct zint_vector_rect *rect;
     struct zint_vector_hexagon *hex;
@@ -278,10 +280,15 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
         circle = circle->next;
     }
 
+    bold = (symbol->output_options & BOLD_TEXT) && (!is_extendable(symbol->symbology) || (symbol->output_options & SMALL_TEXT));
     string = symbol->vector->strings;
     while (string) {
-        fprintf(fsvg, "      <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"middle\"\n", string->x, string->y);
-        fprintf(fsvg, "         font-family=\"Helvetica\" font-size=\"%.1f\"", string->fsize);
+        const char *halign = string->halign == 2 ? "end" : string->halign == 1 ? "start" : "middle";
+        fprintf(fsvg, "      <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"%s\"\n", string->x, string->y, halign);
+        fprintf(fsvg, "         font-family=\"%s\" font-size=\"%.1f\"", font_family, string->fsize);
+        if (bold) {
+            fprintf(fsvg, " font-weight=\"bold\"");
+        }
         if (fg_alpha != 0xff) {
             fprintf(fsvg, " opacity=\"%.3f\"", (float) fg_alpha / 255.0);
         }

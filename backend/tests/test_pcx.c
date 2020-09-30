@@ -52,16 +52,16 @@ static void test_pcx(int index, int debug) {
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /*  0*/ { BARCODE_CODE128, -1, -1, NULL, NULL, 0, "AIM" },
-        /*  1*/ { BARCODE_QRCODE, 2, 1, NULL, NULL, 0, "1234567890" },
-        /*  2*/ { BARCODE_DOTCODE, -1, -1, NULL, NULL, 0, "2741" },
-        /*  3*/ { BARCODE_MAXICODE, -1, -1, NULL, NULL, 0, "1" },
-        /*  4*/ { BARCODE_GRIDMATRIX, -1, -1, NULL, NULL, 0.75, "Grid Matrix" },
+        /*  0*/ { BARCODE_CODE128, -1, -1, "", "", 0, "AIM" },
+        /*  1*/ { BARCODE_QRCODE, 2, 1, "", "", 0, "1234567890" },
+        /*  2*/ { BARCODE_DOTCODE, -1, -1, "", "", 0, "2741" },
+        /*  3*/ { BARCODE_MAXICODE, -1, -1, "", "", 0, "1" },
+        /*  4*/ { BARCODE_GRIDMATRIX, -1, -1, "", "", 0.75, "Grid Matrix" },
         /*  5*/ { BARCODE_CODABLOCKF, -1, 20, "FFFFFF", "000000", 0, "1234567890123456789012345678901234567890" },
-        /*  6*/ { BARCODE_CODE128, -1, -1, "C3C3C3", NULL, 0, "AIM" },
-        /*  7*/ { BARCODE_QRCODE, 2, 1, NULL, "D2E3F4", 0, "1234567890" },
+        /*  6*/ { BARCODE_CODE128, -1, -1, "C3C3C3", "", 0, "AIM" },
+        /*  7*/ { BARCODE_QRCODE, 2, 1, "", "D2E3F4", 0, "1234567890" },
         /*  8*/ { BARCODE_DOTCODE, -1, -1, "C2C100", "E0E1F2", 0, "2741" },
-        /*  9*/ { BARCODE_ULTRA, -1, -1, NULL, NULL, 0, "ULTRACODE_123456789!" },
+        /*  9*/ { BARCODE_ULTRA, -1, -1, "", "", 0, "ULTRACODE_123456789!" },
     };
     int data_size = ARRAY_SIZE(data);
 
@@ -79,10 +79,10 @@ static void test_pcx(int index, int debug) {
         if (data[i].option_2 != -1) {
             symbol->option_2 = data[i].option_2;
         }
-        if (data[i].fgcolour != NULL) {
+        if (*data[i].fgcolour) {
             strcpy(symbol->fgcolour, data[i].fgcolour);
         }
-        if (data[i].bgcolour != NULL) {
+        if (*data[i].bgcolour) {
             strcpy(symbol->bgcolour, data[i].bgcolour);
         }
         if (data[i].scale != 0) {

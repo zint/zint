@@ -5,6 +5,7 @@ project(QZint)
 include_directories(BEFORE "${CMAKE_SOURCE_DIR}/backend" )
 
 set(QZint_SRCS qzint.cpp)
+QT5_WRAP_CPP(QZint_SRCS qzint.h)
 
 add_library(QZint SHARED ${QZint_SRCS})
 

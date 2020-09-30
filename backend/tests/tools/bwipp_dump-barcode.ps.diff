@@ -1,5 +1,5 @@
---- ../../../../postscriptbarcode/build/monolithic/barcode.ps	2020-09-11 07:39:13.775630088 +0100
-+++ ../tools/bwipp_dump.ps	2020-09-11 07:57:38.915196229 +0100
+--- ../../../../postscriptbarcode/build/monolithic/barcode.ps	2020-09-18 02:41:06.166708679 +0100
++++ ../tools/bwipp_dump.ps	2020-09-18 03:56:06.144846176 +0100
 @@ -29,6 +29,8 @@
  % CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  % IN THE SOFTWARE.
@@ -9,7 +9,7 @@
  % --BEGIN TEMPLATE--
  
  % --BEGIN RESOURCE preamble--
-@@ -25344,34 +25346,80 @@
+@@ -25403,34 +25405,80 @@
          pop
      } ifelse
  
@@ -109,7 +109,7 @@
  
      end
  
-@@ -25430,7 +25478,7 @@
+@@ -25489,7 +25537,7 @@
          pop
      } ifelse
  
@@ -118,7 +118,7 @@
  
      % Get the result of encoding with ean8 and gs1-cc
      options (lintype) (ean8) put
-@@ -25438,29 +25486,75 @@
+@@ -25497,29 +25545,75 @@
      options (dontdraw) true put
  
      % Plot the linear part
@@ -214,7 +214,7 @@
  
      end
  
-@@ -25519,34 +25613,80 @@
+@@ -25578,34 +25672,80 @@
          pop
      } ifelse
  
@@ -314,7 +314,7 @@
  
      end
  
-@@ -25620,34 +25760,80 @@
+@@ -25679,34 +25819,80 @@
          /opt options
      >> def
  
@@ -414,7 +414,7 @@
  
      end
  
-@@ -25706,7 +25892,7 @@
+@@ -25765,7 +25951,7 @@
          pop
      } ifelse
  
@@ -423,7 +423,7 @@
  
      options (lintype) (databaromni) put
      options (linkage) true put
-@@ -25717,7 +25903,7 @@
+@@ -25776,7 +25962,7 @@
      linear options //databaromni exec
      dup (sbs) get /linsbs exch def
      dup (bhs) get 0 get 72 mul /linheight exch def
@@ -432,7 +432,7 @@
  
      % Plot the separator
      /sepfinder {
-@@ -25748,20 +25934,66 @@
+@@ -25807,20 +25993,66 @@
      sep 0 [0 0 0] putinterval
      sep sep length 4 sub [0 0 0 0] putinterval
      18 sepfinder 64 sepfinder
@@ -511,7 +511,7 @@
  
      end
  
-@@ -25819,7 +26051,7 @@
+@@ -25878,7 +26110,7 @@
          pop
      } ifelse
  
@@ -520,7 +520,7 @@
  
      options (lintype) (databarstacked) put
      options (linkage) true put
-@@ -25830,7 +26062,7 @@
+@@ -25889,7 +26121,7 @@
      linear options //databarstacked exec
      dup (pixs) get 0 2 index (pixx) get getinterval /bot exch def
      dup (pixy) get /linheight exch def
@@ -529,7 +529,7 @@
  
      % Plot the separator
      /sepfinder {
-@@ -25858,20 +26090,52 @@
+@@ -25917,20 +26149,52 @@
      sep 0 [ 0 0 0 0 ] putinterval
      sep sep length 4 sub [ 0 0 0 0 ] putinterval
      18 sepfinder
@@ -594,7 +594,7 @@
  
      end
  
-@@ -25929,7 +26193,7 @@
+@@ -25988,7 +26252,7 @@
          pop
      } ifelse
  
@@ -603,7 +603,7 @@
  
      options (lintype) (databarstackedomni) put
      options (linkage) true put
-@@ -25940,7 +26204,7 @@
+@@ -25999,7 +26263,7 @@
      linear options //databarstackedomni exec
      dup (pixs) get 0 2 index (pixx) get getinterval /bot exch def
      dup (pixy) get /linheight exch def
@@ -612,7 +612,7 @@
  
      % Plot the separator
      /sepfinder {
-@@ -25968,20 +26232,52 @@
+@@ -26027,20 +26291,52 @@
      sep 0 [ 0 0 0 0 ] putinterval
      sep sep length 4 sub [ 0 0 0 0 ] putinterval
      18 sepfinder
@@ -677,7 +677,7 @@
  
      end
  
-@@ -26154,7 +26450,7 @@
+@@ -26213,7 +26509,7 @@
          pop
      } ifelse
  
@@ -686,7 +686,7 @@
  
      options (lintype) (databarlimited) put
      options (linkage) true put
-@@ -26165,7 +26461,7 @@
+@@ -26224,7 +26520,7 @@
      linear options //databarlimited exec
      dup (sbs) get /linsbs exch def
      dup (bhs) get 0 get 72 mul /linheight exch def
@@ -695,7 +695,7 @@
  
      % Plot the separator
      mark
-@@ -26173,22 +26469,68 @@
+@@ -26232,22 +26528,68 @@
      counttomark 1 sub array astore /sep exch def pop pop
      sep 0 [0 0 0] putinterval
      sep sep length 9 sub [0 0 0 0 0 0 0 0 0] putinterval % 4 + 5 right guard spaces
@@ -778,7 +778,7 @@
  
      end
  
-@@ -26247,7 +26589,7 @@
+@@ -26306,7 +26648,7 @@
          pop
      } ifelse
  
@@ -787,7 +787,7 @@
  
      options (lintype) (databarexpanded) put
      options (linkage) true put
-@@ -26258,7 +26600,7 @@
+@@ -26317,7 +26659,7 @@
      linear options //databarexpanded exec
      dup (sbs) get /linsbs exch def
      dup (bhs) get 0 get 72 mul /linheight exch def
@@ -796,7 +796,7 @@
  
      % Plot the separator
      /sepfinder {
-@@ -26287,20 +26629,60 @@
+@@ -26346,20 +26688,60 @@
          18 98 bot length 13 sub {} for
          69 98 bot length 13 sub {} for
      ] {sepfinder} forall
@@ -869,7 +869,7 @@
  
      end
  
-@@ -26358,7 +26740,7 @@
+@@ -26417,7 +26799,7 @@
          pop
      } ifelse
  
@@ -878,7 +878,7 @@
  
      options (lintype) (databarexpandedstacked) put
      options (linkage) true put
-@@ -26369,7 +26751,7 @@
+@@ -26428,7 +26810,7 @@
      linear options //databarexpandedstacked exec
      dup (pixs) get 0 2 index (pixx) get getinterval /bot exch def
      dup (pixy) get /linheight exch def
@@ -887,7 +887,7 @@
  
      % Plot the separator
      /sepfinder {
-@@ -26389,27 +26771,55 @@
+@@ -26448,27 +26830,55 @@
          } for
      } bind def
      /sep [ bot {1 exch sub} forall ] def
@@ -957,7 +957,7 @@
  
      end
  
-@@ -26468,7 +26878,7 @@
+@@ -26527,7 +26937,7 @@
          pop
      } ifelse
  
@@ -966,7 +966,7 @@
  
      options (inkspread) (0) put
      options (dontdraw) true put
-@@ -26495,35 +26905,87 @@
+@@ -26554,35 +26964,87 @@
      linear << options {} forall >> //gs1-128 exec
      dup (sbs) get /linsbs exch def
      dup (bhs) get 0 get 72 mul /linheight exch def
@@ -1068,7 +1068,7 @@
  
      end
  
-@@ -27821,3 +28283,124 @@
+@@ -27880,3 +28342,176 @@
  % --END ENCODER hibcazteccode--
  
  % --END TEMPLATE--
@@ -1131,13 +1131,16 @@
 +ret /pixs known {
 +    /pixs ret /pixs get def
 +
-+    n ret /pixx known and {  % If newlines requested and have row width
++    /xs systemdict /xs known { systemdict /xs get cvi } { 0 } ifelse def
++    /xe systemdict /xe known { systemdict /xe get cvi } { 0 } ifelse def
++
++    n xs 0 ne or xe 0 ne or ret /pixx known and {  % If newlines or start/end indexes requested and have row width
 +        /pixx ret /pixx get def
-+        0 pixx pixs length 1 sub {  % For i = 0; i < pixs length; i += pixx
-+            pixs exch pixx getinterval {  % For j = i; j < i + pixx; j++
++        xs pixx pixs length 1 sub xe sub {  % For i = xs; i < pixs length - xe; i += pixx
++            pixs exch pixx xs sub xe sub getinterval {  % For j = i; j < i + pixx - xs -xe; j++
 +                1 string cvs print
 +            } forall
-+            (\n) print
++            n { (\n) print } if
 +        } for
 +    } {  % Else dump the whole thing, no newlines
 +        pixs { 1 string cvs print } forall
@@ -1172,17 +1175,66 @@
 +            sbs length 1 sub
 +        } ifelse def
 +
-+        0 1 limit {
-+            /i exch def
-+            p not {  % If not preprocessed
++        % If should use bhs/bbs to emulate rows (DAFT/pharmacode2) (hacky)
++        /nosbs false def
++        /minh 999999 def
++        /midh 0 def
++        /maxh 0 def
++        /maxb 0 def
++        systemdict /hs known ret /bhs known and ret /bbs known and {
++            /bhs ret /bhs get def
++            /bbs ret /bbs get def
++            0 1 bhs length 1 sub {
++                /i exch def
++                /h bhs i get def
++                /b bbs i get def
++                h minh lt { /minh h def } if
++                h maxh gt { /maxh h def } if
++                h minh ne h maxh ne and { /midh h def } if
++                b maxb gt { /maxb b def } if
++            } for
++            0 1 limit {
++                /i exch def
 +                i 2 mod 0 eq {           % i is even
-+                    sbs i get f cvi { (1) print } repeat
++                    /h bhs i 2 idiv get def
++                    /b bbs i 2 idiv get def
++                    h maxh eq h midh eq b maxb eq and or maxb 0 ne b maxb eq and midh 0 eq and h minh eq and or { (1) } { (0) } ifelse print  % Yeah, me too
 +                } {
-+                    sbs i get f cvi { (0) print } repeat
++                    (0) print
 +                } ifelse
-+            } if
-+        } for
-+        n { (\n) print } if
++            } for
++            n { (\n) print } if
++            maxb 0 ne midh 0 eq and maxb 0 eq minh maxh eq and or { /nosbs true def } if  % No tracker (pharmacode2)
++        } if
++
++        % Process sbs
++        nosbs not {
++            0 1 limit {
++                /i exch def
++                p not {  % If not preprocessed
++                    i 2 mod 0 eq {           % i is even
++                        sbs i get f cvi { (1) print } repeat
++                    } {
++                        sbs i get f cvi { (0) print } repeat
++                    } ifelse
++                } if
++            } for
++            n { (\n) print } if
++        } if
++
++        % Third row if DAFT, second row if no tracker (pharmacode2)
++        maxb 0 ne midh 0 ne or minh maxh eq or {
++            0 1 limit {
++                /i exch def
++                i 2 mod 0 eq {           % i is even
++                    /b bbs i 2 idiv get def
++                    b 0 eq { (1) } { (0) } ifelse print
++                } {
++                    (0) print
++                } ifelse
++            } for
++            n { (\n) print } if
++        } if
 +    } if
 +} ifelse
 +

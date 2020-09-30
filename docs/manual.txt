@@ -50,7 +50,7 @@ matrix: A matrix symbol is one based on a (usually square) grid of elements.
         Examples include Data Matrix, but Maxicode and DotCode are also
         considered matrix symbologies.
 
-X-dimension: The X-dimension of a symbol is size (usually the width) of the
+X-dimension: The X-dimension of a symbol is the size (usually the width) of the
         smallest element. For a linear symbology this is the width of the
         smallest bar. The default size of the X-dimension in a raster image
         is 2 pixels. Many symbologies have a fixed width-to-height ratio where
@@ -79,6 +79,7 @@ ECI:    The ECI mechanism allows for multi-language data to be encoded in
         be useful, for example, if you need to encode Cyrillic characters, but
         should be used with caution as not all scanners support this method.
 
+
 2. Installing Zint
 ==================
 
@@ -100,10 +101,9 @@ make install
 
 The command line program can be accessed by typing
 
-zint {options} -d {data}
+zint {options}
 
-Notice that the data needs to be entered after all other options. Any options
-given after the data will be ignored. The GUI can be accessed by typing
+The GUI can be accessed by typing
 
 zint-qt
 
@@ -140,12 +140,13 @@ line into the MacOS terminal
 
 Once homebrew is installed use the following command to install Zint.
 
-brew install zint 
+brew install zint
 
 2.4 zint tcl backend
 --------------------
-The tcl backend may be build using the provided TEA build on Linux, Windows,
+The tcl backend may be built using the provided TEA build on Linux, Windows,
 Mac-OS and Android. For Windows, a MS-VC6 makefile is also available.
+
 
 3. Using Zint Barcode Studio
 ============================
@@ -169,10 +170,17 @@ removed from this text-only version)
 This section describes how to encode data using the command line front end
 program. The examples given are for the Linux platform, but the same options
 are available for Windows - just remember to include the executable file
-extension. i.e.:
+extension if ".EXE" is not in your PATHEXT environment variable, i.e.:
 
 zint.exe -d "This Text"
 
+For compatibility with Windows the examples use double quotes to delimit data,
+though on Linux single quotes are generally preferable as they stop the shell
+from processing any characters such as backslash or dollar. A single quote
+itself is dealt with by terminating the single-quoted text, backslashing the
+single quote, and then continuing:
+
+zint -d 'Text containing a single quote '\'' in the middle'
 
 4.1 Inputting data
 ------------------
@@ -349,8 +357,8 @@ Numeric Value  |  Barcode Name
 
 4.4 Adjusting height
 --------------------
-The height of a linear symbol can be adjusted using the --height switch. For
-example:
+The height of a symbol (except those with a fixed width-to-height ratio) can be
+adjusted using the --height switch. For example:
 
 zint --height=100 -d "This Text"
 
@@ -452,8 +460,8 @@ using the default character encoding then it will take advantage of the ECI
 not all barcode readers support ECI mode, so this can sometimes lead to
 unreadable barcodes. If you are using characters beyond those supported by
 Latin-1 then you should check that the resulting barcode can be understood by
-your target barcode reader. Zint will generate a warning message when ECI codes
-have been inserted into a symbol.
+your target barcode reader. Zint will generate a warning message when an ECI
+code that has not been explicitly requested has been inserted into a symbol.
 
 GS1 data can be encoded in a number of symbologies. Application identifiers
 should be enclosed in [square brackets] followed by the data to be encoded (see
@@ -469,18 +477,18 @@ Identification Code (HIBC LIC). For HIBC Provider Applications Standard
 (HIBC PAS), preface the data with a slash "/".
 
 The --binary option encodes the input data as given. Automatic code page
-translations to ECI pages is disabled. This may be used for raw binary
-or binary encrypted data.
-This switch plays together with the build-in ECI logic and examples may
+translations to ECI pages is disabled. This may be used for raw binary or binary
+encrypted data.
+This switch plays together with the built-in ECI logic and examples may
 be found in that section.
 
 The --fullmultibyte option uses the multibyte modes of QR Code, Micro QR Code,
 Rectangular Micro QR Code, Han Xin Code and Grid Matrix for binary and Latin
 data, maximizing density. This is achieved by using compression designed for
-Kanji characters, however some decoders take blocks which are encoded this
-way and interpret them as Kanji characters, typically by applying a
-transformation to UTF-8 and thus causing data corruption. Symbols encoded
-with this option should be checked against decoders before they are used.
+Kanji/Hanzi characters, however some decoders take blocks which are encoded this
+way and interpret them as Kanji/Hanzi characters, typically by applying a
+transformation to UTF-8 and thus causing data corruption. Symbols encoded with
+this option should be checked against decoders before they are used.
 The popular open-source ZXing decoder is known to exhibit this behaviour.
 
 If your data contains non ISO-Latin-1 characters, you may encode it using an
@@ -538,14 +546,14 @@ ECI Code  |  Character Encoding Scheme
 25 *      |  UCS-2 Unicode (High order byte first)
 26        |  Unicode (UTF-8)
 27        |  ISO-646:1991 7-bit character set
-28 *      |  Big-5 (Taiwan) Chinese Character Set
+28 *      |  Big5 (Taiwan) Chinese Character Set
 29 ***    |  GB (PRC) Chinese Character Set
 30 *      |  Korean Character Set (KSX1001:1998)
 --------------------------------------------------------
 
 Three examples:
 Ex1: The Euro sign can be encoded in ISO-8859-15.
-The Euro-Sign has the ISO-8859-15 codepoint hex A4.
+The Euro sign has the ISO-8859-15 codepoint hex A4.
 It is encoded in UTF-8 as the hex sequence: e2 82 ac
 Those 3 bytes are contained in the file "utf8euro.txt"
 This command will generate the corresponding code:
@@ -688,6 +696,7 @@ Additional options are available which are specific to certain symbologies.
 These may, for example, control the amount of error correction data or the
 size of the symbol. These options are discussed in section 6 of this guide.
 
+
 5. Using the API
 ================
 Zint has been written using the C language and currently only has an API for
@@ -733,7 +742,6 @@ code takes a string from the command line and outputs a Code 128 symbol in a
 PNG file named out.png (or a GIF file called out.gif if libpng is not present)
 in the current working directory:
 
-#include <stdio.h>
 #include <zint.h>
 int main(int argc, char **argv)
 {
@@ -748,7 +756,6 @@ int main(int argc, char **argv)
 This can also be done in one stage using the ZBarcode_Encode_and_Print()
 function as shown in the next example:
 
-#include <stdio.h>
 #include <zint.h>
 int main(int argc, char **argv)
 {
@@ -765,8 +772,8 @@ Input data should be Unicode (UTF-8) formatted.
 --------------------------------------------
 The functions for encoding and printing barcodes are defined as:
 
-int ZBarcode_Encode(struct zint_symbol *symbol, unsigned char *input, int
-length);
+int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source,
+      int in_length);
 
 int ZBarcode_Encode_File(struct zint_symbol *symbol, char *filename);
 
@@ -798,7 +805,7 @@ allow you to do this:
 
 int ZBarcode_Buffer(struct zint_symbol *symbol, int rotate_angle);
 
-int ZBarcide_Encode_and_Buffer(struct zint_symbol *symbol, unsigned char *input,
+int ZBarcode_Encode_and_Buffer(struct zint_symbol *symbol, unsigned char *input,
       int length, int rotate_angle);
 
 int ZBarcode_Encode_File_and_Buffer(struct zint_symbol *symbol, char *filename,
@@ -934,12 +941,12 @@ To alter these values use the syntax shown in the example below. This code has
 the same result as the previous example except the output is now taller and
 plotted in green.
 
-#include <stdio.h>
 #include <zint.h>
 #include <string.h>
 int main(int argc, char **argv)
 {
-    struct zint_symbol *my_symbol;my_symbol = ZBarcode_Create();
+    struct zint_symbol *my_symbol;
+	my_symbol = ZBarcode_Create();
     strcpy(my_symbol->fgcolour, "00ff00");
     my_symbol->height = 400;
     ZBarcode_Encode_and_Print(my_symbol, argv[1], 0, 0);
@@ -960,9 +967,9 @@ application. In addition the errtxt value is used to give a message detailing
 the nature of the error. The errors generated by Zint are given in the table
 below:
 
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 Return Value                 |  Meaning
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 ZINT_WARN_INVALID_OPTION     |  One of the values in zint_struct was set
                              |     incorrectly but Zint has made a guess at
                              |     what it should have been and generated a
@@ -970,6 +977,12 @@ ZINT_WARN_INVALID_OPTION     |  One of the values in zint_struct was set
 ZINT_WARN_USES_ECI           |  Zint has automatically inserted an ECI
                              |     character. The symbol may not be readable
                              |     with some readers.
+ZINT_WARN_NONCOMPLIANT       |  The symbol was created but is not compliant with
+                             |     certain standards set in its specification
+                             |     (e.g. height, GS1 AI data lengths).
+ZINT_ERROR                   |  Marks the divide between warnings and errors.
+                             |     For return values greater than or equal to
+							 |     this no symbol is generated.
 ZINT_ERROR_TOO_LONG          |  The input data is too long or too short for the
                              |     selected symbology. No symbol has been
                              |     generated.
@@ -992,7 +1005,7 @@ ZINT_ERROR_FILE_ACCESS       |  Zint was unable to open the requested output
                              |     problem.
 ZINT_ERROR_MEMORY            |  Zint ran out of memory. This should only be a
                              |     problem with legacy systems.
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 To catch errors use an integer variable as shown in the code below:
 
@@ -1011,7 +1024,7 @@ int main(int argc, char **argv)
         /* some warning or error occurred */
         printf("%s\n", my_symbol->errtxt);
     }
-    if (error >= ZINT_ERROR_TOO_LONG)
+    if (error >= ZINT_ERROR)
     {
         /* stop now */
         ZBarcode_Delete(my_symbol);
@@ -1024,14 +1037,14 @@ int main(int argc, char **argv)
 
 This code will exit with the appropriate message:
 
-error: malformed foreground colour target
+Error 653: Malformed foreground colour target
 
 5.7 Specifying a Symbology
 --------------------------
 Symbologies can be specified by number or by name as shown in the following
 table. For example
 
-symbol->symbology= BARCODE_LOGMARS;
+symbol->symbology = BARCODE_LOGMARS;
 
 means the same as
 
@@ -1173,7 +1186,7 @@ BOLD_TEXT               |  Embolden the human readable text.
 CMYK_COLOUR             |  Select the CMYK colour space option for encapsulated
                         |     PostScript files.
 BARCODE_DOTTY_MODE      |  Plot a matrix symbol using dots rather than squares.
-GS1_GS_SEPARATOR        |  Use GS instead FNC1 as GS1 separator (Data Matrix).
+GS1_GS_SEPARATOR        |  Use GS instead of FNC1 as GS1 separator (Data Matrix)
 OUT_BUFFER_INTERMEDIATE |  Return the bitmap buffer as ASCII values instead of
                         |     separate colour channels (OUT_BUFFER only).
 --------------------------------------------------------------------------------
@@ -1203,7 +1216,6 @@ my_symbol->input_mode = DATA_MODE | GS1_MODE;
 
 is not valid. Permissible escape sequences are listed in section 4.1.
 
-
 5.10 Verifying Symbology Availability
 -------------------------------------
 An additional function available in the API is defined as:
@@ -1215,10 +1227,62 @@ non-zero return value indicates that the given symbology is available. For
 example:
 
 if (ZBarcode_ValidID(BARCODE_PDF417) != 0) {
-    printf("PDF417 available");
+    printf("PDF417 available\n");
 } else {
-    printf("PDF417 not available");
+    printf("PDF417 not available\n");
 }
+
+5.11 Checking Symbology Capabilities
+------------------------------------
+It can be useful for frontend programs to know the capabilities of a symbology.
+This can be determined using another additional function:
+
+unsigned int ZBarcode_Cap(int symbol_id, unsigned int cap_flag);
+
+by oring the flags below in the "cap_flag" argument and checking the return to
+see which are set.
+
+-------------------------------------------------------------------------------
+Value                    |  Meaning
+-------------------------------------------------------------------------------
+ZINT_CAP_HRT             |  Can the symbology print Human Readable Text?
+ZINT_CAP_STACKABLE       |  Is the symbology stackable?
+ZINT_CAP_EXTENDABLE      |  Is the symbology extendable with add-on data?
+                         |     (i.e. is it UPC/EAN?)
+ZINT_CAP_COMPOSITE       |  Does the symbology support composite data?
+                         |     (see 6.3 below)
+ZINT_CAP_ECI             |  Does the symbology support Extended Channel
+                         |     Interpretations?
+ZINT_CAP_GS1             |  Does the symbology support GS1 data?
+ZINT_CAP_DOTTY           |  Can the symbology be outputted as dots?
+ZINT_CAP_FIXED_RATIO     |  Does the symbology have a fixed width-to-height
+                         |     (aspect) ratio?
+ZINT_CAP_READER_INIT     |  Does the symbology support Reader Initialisation?
+ZINT_CAP_FULL_MULTIBYTE  |  Is the ZINT_FULL_MULTIBYTE option applicable?
+-------------------------------------------------------------------------------
+
+For example:
+
+unsigned int cap = ZBarcode_Cap(BARCODE_PDF417, ZINT_CAP_HRT | ZINT_CAP_ECI);
+if (cap & ZINT_CAP_HRT) {
+    printf("PDF417 supports HRT\n");
+} else {
+    printf("PDF417 does not support HRT\n");
+}
+if (cap & ZINT_CAP_ECI) {
+    printf("PDF417 supports ECI\n");
+} else {
+    printf("PDF417 does not support ECI\n");
+}
+
+5.11 Zint Version
+-----------------
+Lastly, the version of the Zint library linked to is returned by:
+
+int ZBarcode_Version();
+
+The version parts are separated by hundreds. For instance, version "2.9.1" is
+returned as "20901".
 
 [1] This value is ignored for Australia Post 4-State Barcodes, PostNet, PLANET,
 USPS Intelligent Mail, RM4SCC, PDF417, Data Matrix, Maxicode, QR Code, GS1
@@ -1226,6 +1290,7 @@ DataBar Stacked, PDF417 and MicroPDF417 - all of which have a fixed height.
 
 [2] This value is ignored for Code 16k and Codablock-F. Special considerations
 apply to ITF-14 - see the specific section for that symbology.
+
 
 6. Types of Symbology
 =====================
@@ -1251,7 +1316,7 @@ before using these standards.
 
 6.1.2.1 Standard Code 2 of 5
 ----------------------------
-Also known as Code 2 of 5 Matrix is a self-checking code used in industrial
+Also known as Code 2 of 5 Matrix this is a self-checking code used in industrial
 applications and photo development. Standard Code 2 of 5 will encode any length
 numeric input (digits 0-9).
 
@@ -1318,7 +1383,7 @@ or encode a data string with the + character included:
 
 my_symbol->symbology = BARCODE_UPCA;
 
-error = ZBarcode_Encode_and_Print(my_symbol, "72527270270+12345");
+error = ZBarcode_Encode_and_Print(my_symbol, "72527270270+12345", 0, 0);
 
 If your input data already includes the check digit symbology BARCODE_UPCA_CHK
 (35) can be used which takes a 12 digit input and validates the check digit
@@ -1343,7 +1408,7 @@ or
 
 my_symbol->symbology = BARCODE_UPCE;
 
-error = ZBarcode_Encode_and_Print(my_symbol, "1123456");
+error = ZBarcode_Encode_and_Print(my_symbol, "1123456", 0, 0);
 
 If your input data already includes the check digit symbology BARCODE_UPCE_CHK
 (38) can be used which takes a 7 or 8 digit input and validates the check digit
@@ -1374,9 +1439,9 @@ be achieved using the API:
 
 my_symbol->symbology = BARCODE_EANX;
 
-error = ZBarcode_Encode_and_Print(my_symbol, "54321");
+error = ZBarcode_Encode_and_Print(my_symbol, "54321", 0, 0);
 
-error = ZBarcode_Encode_and_Print(my_symbol, "7432365+54321");
+error = ZBarcode_Encode_and_Print(my_symbol, "7432365+54321", 0, 0);
 
 All of the EAN symbols include check digits which are added by Zint.
 
@@ -1638,7 +1703,7 @@ the vehicle industry, is to simply stack one-dimensional codes on top of each
 other. This can be achieved at the command prompt by giving more than one set
 of input data. For example
 
-zint -d 'This' -d 'That'
+zint -d "This" -d "That"
 
 will draw two Code 128 symbols, one on top of the other. The same result can be
 achieved using the API by executing the ZBarcode_Encode() function more than
@@ -1646,9 +1711,9 @@ once on a symbol. For example:
 
 my_symbol->symbology = BARCODE_CODE128;
 
-error = ZBarcode_Encode(my_symbol, "This");
+error = ZBarcode_Encode(my_symbol, "This", 0);
 
-error = ZBarcode_Encode(my_symbol, "That");
+error = ZBarcode_Encode(my_symbol, "That", 0);
 
 error = ZBarcode_Print(my_symbol);
 
@@ -1657,7 +1722,7 @@ The stacked barcode rows can be separated by row separator bars by specifying
 multiples of the X-dimension (minimum and default 1, maximum 4) can be set by
 --separator= (option_3):
 
-zind --bind --separator=2 -d 'This' -d 'That'
+zind --bind --separator=2 -d "This" -d "That"
 
 A more sophisticated method is to use some type of line indexing which indicates
 to the barcode reader which order the symbols should be read. This is
@@ -1790,13 +1855,13 @@ This creates an EAN-13 linear component with the data "331234567890" and a 2D
 CC-A (see below) component with the data "(99)1234-abcd". The same results can
 be achieved using the API as shown below:
 
-my_symbol->symbology = 130;
+my_symbol->symbology = BARCODE_EANX_CC;
 
 my_symbol->option_1 = 1;
 
 strcpy(my_symbol->primary, "331234567890");
 
-ZBarcode_Encode_and_Print(my_symbol, "[99]1234-abcd");
+ZBarcode_Encode_and_Print(my_symbol, "[99]1234-abcd", 0, 0);
 
 EAN-2 and EAN-5 add-on data can be used with EAN and UPC symbols using the +
 symbol as described in section 6.1.3 and 5.1.4.
@@ -2617,6 +2682,7 @@ and 'T' where these refer to descender, ascender, full (ascender and descender)
 and tracker (neither ascender nor descender) respectively. All other characters
 are ignored.
 
+
 7. Legal and Version Information
 ================================
 7.1 License
@@ -2936,7 +3002,7 @@ international standards:
 > Uniform Symbology Specification Code One (AIM Inc., 1994)
 > ANSI/AIM BC12-1998 - Uniform Symbology Specification Channel Code
 > ANSI/AIM BC6-2000 - Uniform Symbology Specification Code 49
-> ANSI/HIBC 2.3-2009 - The Health Industry Bar Code (HIBC) Supplier Labeling
+> ANSI/HIBC 2.6-2016 - The Health Industry Bar Code (HIBC) Supplier Labeling
      Standard
 > AIM ISS-X-24 - Uniform Symbology Specification Codablock F
 > AIMD013 (v 1.34a) – Information technology – Automaic identification and data
@@ -2953,6 +3019,7 @@ international standards:
      May 2004)
 > AIM ITS/04-023 International Technical Standard – Extended Channel
      Interpretations Part 3: Register (Released 15th July 2004)
+
 
 A. Character Encoding
 =====================

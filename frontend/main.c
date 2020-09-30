@@ -159,7 +159,7 @@ static void show_eci(void) {
             "25: ** UCS-2 Unicode (High order byte first)\n"
             "26: Unicode (UTF-8)\n"
             "27: ISO-646:1991 7-bit character set\n"
-            "28: ** Big-5 (Taiwan) Chinese Character Set\n"
+            "28: ** Big5 (Taiwan) Chinese Character Set\n"
             "29: ** GB (PRC) Chinese Character Set\n"
             "30: ** Korean Character Set (KSX1001:1998)\n"
             "** See note in section 4.10 of the manual\n"
@@ -460,66 +460,6 @@ static int batch_process(struct zint_symbol *symbol, char *filename, int mirror_
     return error_number;
 }
 
-static int is_fullmultibyte(struct zint_symbol* symbol) {
-    switch (symbol->symbology) {
-        case BARCODE_QRCODE:
-        case BARCODE_MICROQR:
-        //case BARCODE_HIBC_QR: Note character set restricted to ASCII subset
-        //case BARCODE_UPNQR: Note does not use Kanji mode
-        case BARCODE_RMQR:
-        case BARCODE_HANXIN:
-        case BARCODE_GRIDMATRIX:
-            return 1;
-    }
-    return 0;
-}
-
-/* Indicates which symbologies can have row binding
- * Note: if change this must also change version in backend/common.c */
-static int is_stackable(const int symbology) {
-    if (symbology < BARCODE_PDF417) {
-        return 1;
-    }
-
-    switch (symbology) {
-        case BARCODE_CODE128B:
-        case BARCODE_ISBNX:
-        case BARCODE_EAN14:
-        case BARCODE_NVE18:
-        case BARCODE_KOREAPOST:
-        case BARCODE_PLESSEY:
-        case BARCODE_TELEPEN_NUM:
-        case BARCODE_ITF14:
-        case BARCODE_CODE32:
-        case BARCODE_CODABLOCKF:
-        case BARCODE_HIBC_BLOCKF:
-            return 1;
-    }
-
-    return 0;
-}
-
-/* Indicates which symbols can have addon (EAN-2 and EAN-5)
- * Note: if change this must also change version in backend/common.c */
-static int is_extendable(const int symbology) {
-
-    switch (symbology) {
-        case BARCODE_EANX:
-        case BARCODE_EANX_CHK:
-        case BARCODE_UPCA:
-        case BARCODE_UPCA_CHK:
-        case BARCODE_UPCE:
-        case BARCODE_UPCE_CHK:
-        case BARCODE_ISBNX:
-        case BARCODE_EANX_CC:
-        case BARCODE_UPCA_CC:
-        case BARCODE_UPCE_CC:
-            return 1;
-    }
-
-    return 0;
-}
-
 typedef struct { char *arg; int opt; } arg_opt;
 
 int main(int argc, char **argv) {
@@ -670,11 +610,11 @@ int main(int argc, char **argv) {
                 }
                 if (!strcmp(long_options[option_index].name, "scale")) {
                     my_symbol->scale = (float) (atof(optarg));
-                    if (my_symbol->scale < 0.01) {
+                    if (my_symbol->scale < 0.01f) {
                         /* Zero and negative values are not permitted */
                         fprintf(stderr, "Warning 105: Invalid scale value\n");
                         fflush(stderr);
-                        my_symbol->scale = 1.0;
+                        my_symbol->scale = 1.0f;
                     }
                 }
                 if (!strcmp(long_options[option_index].name, "separator")) {
@@ -706,11 +646,11 @@ int main(int argc, char **argv) {
                 }
                 if (!strcmp(long_options[option_index].name, "dotsize")) {
                     my_symbol->dot_size = (float) (atof(optarg));
-                    if (my_symbol->dot_size < 0.01) {
+                    if (my_symbol->dot_size < 0.01f) {
                         /* Zero and negative values are not permitted */
                         fprintf(stderr, "Warning 106: Invalid dot radius value\n");
                         fflush(stderr);
-                        my_symbol->dot_size = 4.0F / 5.0F;
+                        my_symbol->dot_size = 4.0f / 5.0f;
                     }
                 }
                 if (!strcmp(long_options[option_index].name, "border")) {
@@ -989,12 +929,13 @@ int main(int argc, char **argv) {
     }
 
     if (data_arg_num) {
-        if (fullmultibyte && is_fullmultibyte(my_symbol)) {
+        unsigned int cap = ZBarcode_Cap(my_symbol->symbology, ZINT_CAP_FULL_MULTIBYTE | ZINT_CAP_STACKABLE | ZINT_CAP_EXTENDABLE);
+        if (fullmultibyte && (cap & ZINT_CAP_FULL_MULTIBYTE)) {
             my_symbol->option_3 = ZINT_FULL_MULTIBYTE;
-        } else if (separator && is_stackable(my_symbol->symbology)) {
+        } else if (separator && (cap & ZINT_CAP_STACKABLE)) {
             my_symbol->option_3 = separator;
         }
-        if (addon_gap && is_extendable(my_symbol->symbology)) {
+        if (addon_gap && (cap & ZINT_CAP_EXTENDABLE)) {
             my_symbol->option_2 = addon_gap;
         }
 
@@ -1035,12 +976,12 @@ int main(int argc, char **argv) {
                 if (ret != 0) {
                     fprintf(stderr, "%s\n", my_symbol->errtxt);
                     fflush(stderr);
-                    if (error_number < 5) {
+                    if (error_number < ZINT_ERROR) {
                         error_number = ret;
                     }
                 }
             }
-            if (error_number < 5) {
+            if (error_number < ZINT_ERROR) {
                 error_number = ZBarcode_Print(my_symbol, rotate_angle);
 
                 if (error_number != 0) {

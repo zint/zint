@@ -156,9 +156,6 @@ static int Zint(ClientData unused, Tcl_Interp *interp, int objc,
     Tcl_Obj *CONST objv[]);
 static int Encode(Tcl_Interp *interp, int objc,
     Tcl_Obj *CONST objv[]);
-static int is_fullmultibyte(struct zint_symbol* symbol);
-static int is_stackable(const int symbology);
-static int is_extendable(const int symbology);
 /*----------------------------------------------------------------------------*/
 /* >>>> File Global Variables */
 
@@ -1004,15 +1001,15 @@ static int Encode(Tcl_Interp *interp, int objc,
     /*------------------------------------------------------------------------*/
     /* >>> option_3 is set by two values depending on the symbology */
     /* On wrong symbology, the option is ignored(as does the zint program)*/
-    if (fFullMultiByte && is_fullmultibyte(hSymbol)) {
+    if (fFullMultiByte && ZBarcode_Cap(hSymbol->symbology, ZINT_CAP_FULL_MULTIBYTE)) {
         hSymbol->option_3 = ZINT_FULL_MULTIBYTE;
-    } else if (Separator && is_stackable(hSymbol->symbology)) {
+    } else if (Separator && ZBarcode_Cap(hSymbol->symbology, ZINT_CAP_STACKABLE)) {
         hSymbol->option_3 = Separator;
     }
     /*------------------------------------------------------------------------*/
     /* >>> option_2 is set by two values depending on the symbology */
     /* On wrong symbology, the option is ignored(as does the zint program)*/
-    if (addon_gap && is_extendable(hSymbol->symbology)) {
+    if (addon_gap && ZBarcode_Cap(hSymbol->symbology, ZINT_CAP_EXTENDABLE)) {
         hSymbol->option_2 = addon_gap;
     }
     /*------------------------------------------------------------------------*/
@@ -1061,7 +1058,7 @@ static int Encode(Tcl_Interp *interp, int objc,
         {
             Tcl_SetObjResult(interp, Tcl_NewStringObj(hSymbol->errtxt, -1));
         }        
-        if( 5 <= ErrorNumber )
+        if( ZINT_ERROR <= ErrorNumber )
         {
             /* >> Encode error */
             fError = 1;
@@ -1131,64 +1128,3 @@ static int Encode(Tcl_Interp *interp, int objc,
     }
     return TCL_OK;
 }
-
-static int is_fullmultibyte(struct zint_symbol* symbol) {
-    switch (symbol->symbology) {
-        case BARCODE_QRCODE:
-        case BARCODE_MICROQR:
-        //case BARCODE_HIBC_QR: Note character set restricted to ASCII subset
-        //case BARCODE_UPNQR: Note does not use Kanji mode
-        case BARCODE_RMQR:
-        case BARCODE_HANXIN:
-        case BARCODE_GRIDMATRIX:
-            return 1;
-    }
-    return 0;
-}
-
-/* Indicates which symbologies can have row binding
- * Note: if change this must also change version in backend/common.c */
-static int is_stackable(const int symbology) {
-    if (symbology < BARCODE_PDF417) {
-        return 1;
-    }
-
-    switch (symbology) {
-        case BARCODE_CODE128B:
-        case BARCODE_ISBNX:
-        case BARCODE_EAN14:
-        case BARCODE_NVE18:
-        case BARCODE_KOREAPOST:
-        case BARCODE_PLESSEY:
-        case BARCODE_TELEPEN_NUM:
-        case BARCODE_ITF14:
-        case BARCODE_CODE32:
-        case BARCODE_CODABLOCKF:
-        case BARCODE_HIBC_BLOCKF:
-            return 1;
-    }
-
-    return 0;
-}
-
-/* Indicates which symbols can have addon (EAN-2 and EAN-5)
- * Note: if change this must also change version in backend/common.c */
-static int is_extendable(const int symbology) {
-
-    switch (symbology) {
-        case BARCODE_EANX:
-        case BARCODE_EANX_CHK:
-        case BARCODE_UPCA:
-        case BARCODE_UPCA_CHK:
-        case BARCODE_UPCE:
-        case BARCODE_UPCE_CHK:
-        case BARCODE_ISBNX:
-        case BARCODE_EANX_CC:
-        case BARCODE_UPCA_CC:
-        case BARCODE_UPCE_CC:
-            return 1;
-    }
-
-    return 0;
-}
-

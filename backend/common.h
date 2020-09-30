@@ -89,7 +89,8 @@ extern "C" {
     INTERNAL int is_composite(const int symbology);
     INTERNAL int istwodigits(const unsigned char source[], const int length, const int position);
     INTERNAL unsigned int decode_utf8(unsigned int *state, unsigned int *codep, const unsigned char byte);
-    INTERNAL int utf8_to_unicode(struct zint_symbol *symbol, const unsigned char source[], unsigned int vals[], size_t *length, int disallow_4byte);
+    INTERNAL int utf8_to_unicode(struct zint_symbol *symbol, const unsigned char source[], unsigned int vals[],
+                    size_t *length, int disallow_4byte);
     INTERNAL void set_minimum_height(struct zint_symbol *symbol, const int min_height);
 
     typedef unsigned int *(*pn_head_costs)(unsigned int state[]);

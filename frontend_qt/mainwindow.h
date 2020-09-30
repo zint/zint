@@ -113,7 +113,7 @@ public:
     };
 
 public:
-    MainWindow(QWidget* parent = 0, Qt::WindowFlags fl = 0);
+    MainWindow(QWidget* parent = 0, Qt::WindowFlags fl = Qt::WindowFlags());
     ~MainWindow();
 
 
@@ -122,16 +122,37 @@ public slots:
     void change_options();
     void on_fgcolor_clicked();
     void on_bgcolor_clicked();
-    void composite_enable();
+    void composite_ui_set();
     void composite_ean_check();
     void maxi_primary();
     void change_print_scale();
-    void autoheight_clicked();
+    void change_cmyk();
+    void autoheight_ui_set();
+    void HRTShow_ui_set();
+    void dotty_ui_set();
+    void on_encoded();
+	void filter_symbologies();
 
 protected:
     void resizeEvent(QResizeEvent *event);
-    void upcean_addon_gap(QComboBox *comboBox, QLabel* label, int base);
+	void combobox_item_enabled(QComboBox *comboBox, int index, bool enabled);
+    void upcean_addon_gap(QComboBox *comboBox, QLabel *label, int base);
     void set_gs1_mode(bool gs1_mode);
+	bool fixed_height();
+	bool no_hrt();
+	const char *get_setting_name(int symbology);
+	int get_button_group_index(const QStringList &children);
+	void set_radiobutton_from_setting(QSettings &settings, const QString &setting, const QStringList &children, int default_val = 0);
+	int get_combobox_index(const QString &child);
+	void set_combobox_from_setting(QSettings &settings, const QString &setting, const QString &child, int default_val = 0);
+	int get_checkbox_val(const QString &child);
+	void set_checkbox_from_setting(QSettings &settings, const QString &setting, const QString &child, int default_val = 0);
+	float get_doublespinbox_val(const QString &child);
+	void set_doublespinbox_from_setting(QSettings &settings, const QString &setting, const QString &child, float default_val = 0);
+	QString get_lineedit_val(const QString &child);
+	void set_lineedit_from_setting(QSettings &settings, const QString &setting, const QString &child, const char *default_val = "");
+	void save_sub_settings(QSettings &settings, int symbology);
+	void load_sub_settings(QSettings &settings, int symbology);
 
 private slots:
     bool save();
@@ -148,6 +169,7 @@ private:
     BarcodeItem m_bc;
     QWidget *m_optionWidget;
     QGraphicsScene *scene;
+	int m_symbology;
 };
 
 #endif

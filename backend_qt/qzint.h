@@ -19,18 +19,16 @@
 #define BARCODERENDER_H
 #include <QColor>
 #include <QPainter>
-
 #include "zint.h"
 
 namespace Zint
 {
 
-class QZint
+class QZint : public QObject
 {
-private:
+    Q_OBJECT
 
 public:
-     enum BorderType{NO_BORDER=0, BIND=2, BOX=4};
      enum AspectRatioMode{IgnoreAspectRatio=0, KeepAspectRatio=1, CenterBarCode=2};
 
 public:
@@ -60,6 +58,9 @@ public:
     float scale() const;
     void setScale(float scale);
 
+    bool dotty() const;
+    void setDotty(bool botty);
+
     void setDotSize(float dot_size);
 
     QColor fgColor() const;
@@ -68,8 +69,10 @@ public:
     QColor bgColor() const;
     void setBgColor(const QColor & bgColor);
 
-    BorderType borderType() const;
-    void setBorderType(BorderType border);
+    void setCMYK(bool cmyk);
+
+    int borderType() const;
+    void setBorderType(int borderTypeIndex);
 
     int borderWidth() const;
     void setBorderWidth(int boderWidth);
@@ -82,13 +85,29 @@ public:
 
     void setWhitespace(int whitespace);
 
-    void setHideText(bool hide);
+    void setFontSetting(int fontSettingIndex);
+
+    void setShowText(bool show);
 
     void setTargetSize(int width, int height);
 
     void setGSSep(bool gssep);
 
+    int rotateAngle() const;
+    void setRotateAngle(int rotateIndex);
+
+    void setECI(int ECIIndex);
+
+    void setReaderInit(bool reader_init);
+
     void setDebug(bool debug);
+
+    bool hasHRT(int symbology = 0) const;
+    bool isExtendable(int symbology = 0) const;
+    bool supportsECI(int symbology = 0) const;
+    bool isFixedRatio(int symbology = 0) const;
+    bool isDotty(int symbology = 0) const;
+    bool supportsReaderInit(int symbology = 0) const;
 
     int getError() const;
 
@@ -101,33 +120,43 @@ public:
 
     void render(QPainter & painter, const QRectF & paintRect, AspectRatioMode mode=IgnoreAspectRatio);
 
+signals:
+    void encoded();
+
 private:
     void resetSymbol();
     void encode();
+    static Qt::GlobalColor colourToQtColor(int colour);
 
 private:
     int m_symbol;
     QString m_text;
     QString m_primaryMessage;
     int m_height;
-    BorderType m_border;
+    int m_borderType;
     int m_borderWidth;
+    int m_fontSetting;
     int m_option_2;
     int m_securityLevel;
     int m_input_mode;
     QColor m_fgColor;
     QColor m_bgColor;
+    bool m_cmyk;
     QString m_lastError;
     int m_error;
     int m_whitespace;
     zint_symbol * m_zintSymbol;
     float m_scale;
     int m_option_3;
-    bool m_hidetext;
+    bool m_show_hrt;
+    int m_eci;
+    int m_rotate_angle;
+    bool m_dotty;
     float m_dot_size;
     int target_size_horiz;
     int target_size_vert;
     bool m_gssep;
+    bool m_reader_init;
     bool m_debug;
 };
 }

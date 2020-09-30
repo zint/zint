@@ -109,7 +109,7 @@ static void c16k_set_c(const unsigned char source_a, unsigned char source_b, int
 
 INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], const size_t length) {
     char width_pattern[100];
-    int current_row, rows_needed, looper, first_check, second_check;
+    int current_row, rows, looper, first_check, second_check;
     int indexchaine;
     int list[2][C128_MAX] = {{0}};
     char set[C128_MAX] = {0}, fset[C128_MAX], mode, last_set, current_set;
@@ -117,14 +117,14 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], const s
     int values[C128_MAX] = {0};
     int bar_characters;
     float glyph_count;
-    int errornum, first_sum, second_sum;
+    int error_number, first_sum, second_sum;
     int input_length;
     int gs1, c_count;
 
     /* Suppresses clang-analyzer-core.UndefinedBinaryOperatorResult warning on fset which is fully set */
     assert(length > 0);
 
-    errornum = 0;
+    error_number = 0;
     strcpy(width_pattern, "");
     input_length = length;
 
@@ -287,13 +287,13 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], const s
     /* Calculate how tall the symbol will be */
     glyph_count = glyph_count + 2.0;
     i = (int)glyph_count;
-    rows_needed = (i / 5);
+    rows = (i / 5);
     if (i % 5 > 0) {
-        rows_needed++;
+        rows++;
     }
 
-    if (rows_needed == 1) {
-        rows_needed = 2;
+    if (rows == 1) {
+        rows = 2;
     }
 
     /* start with the mode character - Table 2 */
@@ -319,7 +319,7 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], const s
                 m = 6;
             }
         }
-        values[bar_characters] = (7 * (rows_needed - 2)) + m; /* see 4.3.4.2 */
+        values[bar_characters] = (7 * (rows - 2)) + m; /* see 4.3.4.2 */
         values[bar_characters + 1] = 96; /* FNC3 */
         bar_characters += 2;
     } else {
@@ -339,7 +339,7 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], const s
                 m = 6;
             }
         }
-        values[bar_characters] = (7 * (rows_needed - 2)) + m; /* see 4.3.4.2 */
+        values[bar_characters] = (7 * (rows - 2)) + m; /* see 4.3.4.2 */
         bar_characters++;
     }
 
@@ -457,7 +457,7 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], const s
     }
 #endif
 
-    for (current_row = 0; current_row < rows_needed; current_row++) {
+    for (current_row = 0; current_row < rows; current_row++) {
         int writer;
         int flip_flop;
         int len;
@@ -491,7 +491,7 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], const s
         symbol->row_height[current_row] = 10;
     }
 
-    symbol->rows = rows_needed;
+    symbol->rows = rows;
     symbol->width = 70;
 
     symbol->output_options |= BARCODE_BIND;
@@ -500,5 +500,5 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], const s
         symbol->border_width = 1; /* BS EN 12323:2005 Section 4.3.7 minimum (note change from previous default 2) */
     }
 
-    return errornum;
+    return error_number;
 }

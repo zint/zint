@@ -77,11 +77,11 @@ void testRun(int argc, char *argv[], testFunction funcs[], int funcs_size);
 extern void vector_free(struct zint_symbol *symbol); /* Free vector structures */
 
 int testUtilSetSymbol(struct zint_symbol *symbol, int symbology, int input_mode, int eci, int option_1, int option_2, int option_3, int output_options, char *data, int length, int debug);
-char *testUtilBarcodeName(int symbology);
-char *testUtilErrorName(int error_number);
-char *testUtilInputModeName(int input_mode);
-char *testUtilOption3Name(int option_3);
-char *testUtilOutputOptionsName(int output_options);
+const char *testUtilBarcodeName(int symbology);
+const char *testUtilErrorName(int error_number);
+const char *testUtilInputModeName(int input_mode);
+const char *testUtilOption3Name(int option_3);
+const char *testUtilOutputOptionsName(int output_options);
 int testUtilDAFTConvert(const struct zint_symbol *symbol, char *buffer, int buffer_size);
 int testUtilIsValidUTF8(const unsigned char str[], const size_t length);
 char *testUtilEscape(char *buffer, int length, char *escaped, int escaped_size);
@@ -111,7 +111,7 @@ int testUtilVerifyInkscape(char *filename, int debug);
 int testUtilHaveGhostscript();
 int testUtilVerifyGhostscript(char *filename, int debug);
 int testUtilCanBwipp(int symbology, int option_1, int option_2, int option_3, int debug);
-int testUtilBwipp(const struct zint_symbol *symbol, int option_1, int option_2, int option_3, const char *data, int length, const char *primary, char *buffer, int buffer_size);
+int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int option_2, int option_3, const char *data, int length, const char *primary, char *buffer, int buffer_size);
 int testUtilBwippCmp(const struct zint_symbol *symbol, char *msg, const char *bwipp_buf, const char *expected);
 int testUtilBwippCmpRow(const struct zint_symbol *symbol, int row, char *msg, const char *bwipp_buf, const char *expected);
 

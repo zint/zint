@@ -204,6 +204,8 @@ static void test_encode(int index, int generate, int debug) {
 
     testStart("");
 
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); // Only do BWIPP test if asked, too slow otherwise
+
     int ret;
     struct item {
         int symbology;
@@ -220,39 +222,41 @@ static void test_encode(int index, int generate, int debug) {
         /*  0*/ { BARCODE_CODABAR, -1, "A37859B", 0, 1, 72, "BS EN 798:1995 Figure 1",
                     "101100100101100101010100101101010011010101101010010110100101010010010110"
                 },
-        /*  1*/ { BARCODE_CODABAR, -1, "A0123456789-$:/.+D", 0, 1, 186, "Verified manually against bwipp and tec-it",
+        /*  1*/ { BARCODE_CODABAR, -1, "A0123456789-$:/.+D", 0, 1, 186, "Verified manually against tec-it",
                     "101100100101010100110101011001010100101101100101010101101001011010100101001010110100101101010011010101101001010101001101010110010101101011011011011010110110110110101011011011010100110010"
                 },
-        /*  2*/ { BARCODE_CODABAR, 1, "A1B", 0, 1, 43, "Verified manually against bwipp and tect-it",
+        /*  2*/ { BARCODE_CODABAR, 1, "A1B", 0, 1, 43, "Verified manually against tec-it",
                     "1011001001010101100101101101101010010010110"
                 },
-        /*  3*/ { BARCODE_CODABAR, 1, "A+B", 0, 1, 43, "Verified manually against bwipp and tect-it",
+        /*  3*/ { BARCODE_CODABAR, 1, "A+B", 0, 1, 43, "Verified manually against tec-it",
                     "1011001001010110110110101010011010010010110"
                 },
-        /*  4*/ { BARCODE_CODABAR, 1, "B0123456789-$:/.+B", 0, 1, 196, "Verified manually against bwipp and tec-it",
+        /*  4*/ { BARCODE_CODABAR, 1, "B0123456789-$:/.+B", 0, 1, 196, "Verified manually against tec-it",
                     "1001001011010101001101010110010101001011011001010101011010010110101001010010101101001011010100110101011010010101010011010101100101011010110110110110101101101101101010110110110100101011010010010110"
                 },
-        /*  5*/ { BARCODE_PHARMA, -1, "131070", 0, 1, 78, "Verified manually against bwipp and tec-it",
+        /*  5*/ { BARCODE_PHARMA, -1, "131070", 0, 1, 78, "",
                     "111001110011100111001110011100111001110011100111001110011100111001110011100111"
                 },
-        /*  6*/ { BARCODE_PHARMA, -1, "123456", 0, 1, 58, "Verified manually against bwipp and tec-it",
+        /*  6*/ { BARCODE_PHARMA, -1, "123456", 0, 1, 58, "",
                     "1110011100111001001001001110010010011100100100100100100111"
                 },
-        /*  7*/ { BARCODE_PHARMA_TWO, -1, "64570080", 0, 2, 31, "Verified manually against bwipp and tec-it",
+        /*  7*/ { BARCODE_PHARMA_TWO, -1, "64570080", 0, 2, 31, "Verified manually against tec-it",
                     "1010101010101010101010101010101"
                     "1010101010101010101010101010101"
                 },
-        /*  8*/ { BARCODE_PHARMA_TWO, -1, "29876543", 0, 2, 31, "Verified manually against bwipp and tec-it",
+        /*  8*/ { BARCODE_PHARMA_TWO, -1, "29876543", 0, 2, 31, "Verified manually against tec-it",
                     "0010100010001010001010001000101"
                     "1000101010100000100000101010000"
                 },
-        /*  9*/ { BARCODE_CODE32, -1, "34567890", 0, 1, 103, "Verified manually against bwipp and tec-it",
+        /*  9*/ { BARCODE_CODE32, -1, "34567890", 0, 1, 103, "Verified manually against tec-it",
                     "1001011011010101101001011010110010110101011011010010101100101101011010010101101010101100110100101101101"
                 },
     };
     int data_size = ARRAY_SIZE(data);
 
     char escaped[1024];
+    char bwipp_buf[8192];
+    char bwipp_msg[1024];
 
     for (int i = 0; i < data_size; i++) {
 
@@ -277,10 +281,17 @@ static void test_encode(int index, int generate, int debug) {
                 assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);
                 assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
 
-                if (ret == 0) {
-                    int width, row;
-                    ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
-                    assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, ret, width, row, data[i].data);
+                int width, row;
+                ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
+                assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, ret, width, row, data[i].data);
+
+                if (do_bwipp && testUtilCanBwipp(symbol->symbology, -1, data[i].option_2, -1, debug)) {
+                    ret = testUtilBwipp(i, symbol, -1, data[i].option_2, -1, data[i].data, length, NULL, bwipp_buf, sizeof(bwipp_buf));
+                    assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+
+                    ret = testUtilBwippCmp(symbol, bwipp_msg, bwipp_buf, data[i].expected);
+                    assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
+                                   i, testUtilBarcodeName(symbol->symbology), ret, bwipp_msg, bwipp_buf, data[i].expected);
                 }
             }
         }

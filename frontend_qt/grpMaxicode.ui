@@ -41,7 +41,7 @@
         <bool>false</bool>
        </property>
        <property name="text">
-        <string>&amp;Primary Data:</string>
+        <string>&amp;Primary Message:</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -96,7 +96,7 @@
         </sizepolicy>
        </property>
        <property name="text">
-        <string>Primary Data Here!</string>
+        <string>Primary Message Here!</string>
        </property>
       </widget>
      </item>

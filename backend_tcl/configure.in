@@ -14,7 +14,7 @@
 # so you can encode the package version directly into the source files.
 #-----------------------------------------------------------------------
 
-AC_INIT([zint], [2.9.0])
+AC_INIT([zint], [2.9.1.9])
 
 #--------------------------------------------------------------------
 # Call TEA_INIT as the first TEA_ macro to set up initial vars.
@@ -71,7 +71,6 @@ TEA_ADD_SOURCES([
 	../backend/auspost.c
 	../backend/aztec.c
 	../backend/bmp.c
-	../backend/emf.c
 	../backend/codablock.c
 	../backend/code128.c
 	../backend/code16k.c
@@ -84,9 +83,10 @@ TEA_ADD_SOURCES([
 	../backend/dmatrix.c
 	../backend/dotcode.c
 	../backend/eci.c
-    ../backend/gb18030.c
-    ../backend/gb2312.c
-    ../backend/general_field.c
+	../backend/emf.c
+	../backend/gb18030.c
+	../backend/gb2312.c
+	../backend/general_field.c
 	../backend/gif.c
 	../backend/gridmtx.c
 	../backend/gs1.c
@@ -94,10 +94,10 @@ TEA_ADD_SOURCES([
 	../backend/imail.c
 	../backend/large.c
 	../backend/library.c
-    ../backend/mailmark.c
+	../backend/mailmark.c
 	../backend/maxicode.c
 	../backend/medical.c
-    ../backend/output.c
+	../backend/output.c
 	../backend/pcx.c
 	../backend/pdf417.c
 	../backend/plessey.c
@@ -108,11 +108,13 @@ TEA_ADD_SOURCES([
 	../backend/raster.c
 	../backend/reedsol.c
 	../backend/rss.c
-    ../backend/sjis.c
+	../backend/sjis.c
 	../backend/svg.c
 	../backend/telepen.c
 	../backend/tif.c
+	../backend/ultra.c
 	../backend/upcean.c
+	../backend/vector.c
 	zint.c
 ])
 TEA_ADD_CFLAGS([-I../backend -DNO_PNG=1 -DZINT_VERSION=PACKAGE_VERSION])

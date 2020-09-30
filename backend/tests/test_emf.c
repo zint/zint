@@ -53,7 +53,7 @@ static void test_emf(int index, int debug) {
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /*  0*/ { BARCODE_EANX, -1, -1, NULL, NULL, 0, "210987654321+54321" }, // #185 Byte count, font data, HeaderExtension1/2
+        /*  0*/ { BARCODE_EANX, -1, -1, "", "", 0, "210987654321+54321" }, // #185 Byte count, font data, HeaderExtension1/2
         /*  1*/ { BARCODE_MAXICODE, -1, 20, "E0E0E0", "700070", 0, "THIS IS A 93 CHARACTER CODE SET A MESSAGE THAT FILLS A MODE 4, UNAPPENDED, MAXICODE SYMBOL..." }, // #185 Maxicode scaling
     };
     int data_size = ARRAY_SIZE(data);
@@ -66,10 +66,10 @@ static void test_emf(int index, int debug) {
         assert_nonnull(symbol, "Symbol not created\n");
 
         int length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, data[i].option_1, data[i].option_2, -1, -1 /*output_options*/, data[i].data, -1, debug);
-        if (data[i].fgcolour != NULL) {
+        if (*data[i].fgcolour) {
             strcpy(symbol->fgcolour, data[i].fgcolour);
         }
-        if (data[i].bgcolour != NULL) {
+        if (*data[i].bgcolour) {
             strcpy(symbol->bgcolour, data[i].bgcolour);
         }
         if (data[i].scale != 0) {
@@ -104,6 +104,8 @@ static void test_print(int index, int generate, int debug) {
     int ret;
     struct item {
         int symbology;
+        int input_mode;
+        int output_options;
         int whitespace_width;
         int option_1;
         int option_2;
@@ -113,8 +115,14 @@ static void test_print(int index, int generate, int debug) {
         char* expected_file;
     };
     struct item data[] = {
-        /*  0*/ { BARCODE_TELEPEN, -1, -1, -1, "147AD0", "FC9630", "123", "../data/emf/telenum_fg_bg.emf" },
-        /*  1*/ { BARCODE_ULTRA, 5, -1, -1, "147AD0", "FC9630", "123", "../data/emf/ultracode_fg_bg.emf" },
+        /*  0*/ { BARCODE_CODE128, UNICODE_MODE, BOLD_TEXT, -1, -1, -1, "", "", "Égjpqy", "../data/emf/code128_egrave_bold.emf" },
+        /*  1*/ { BARCODE_TELEPEN, -1, -1, -1, -1, -1, "147AD0", "FC9630", "123", "../data/emf/telenum_fg_bg.emf" },
+        /*  2*/ { BARCODE_ULTRA, -1, -1, 5, -1, -1, "147AD0", "FC9630", "123", "../data/emf/ultracode_fg_bg.emf" },
+        /*  3*/ { BARCODE_EANX, -1, -1, -1, -1, -1, "", "", "9780877799306+54321", "../data/emf/ean13_5addon_ggs_5.2.2.5.2-2.emf" },
+        /*  4*/ { BARCODE_UPCA, -1, -1, -1, -1, -1, "", "", "012345678905+24", "../data/emf/upca_2addon_ggs_5.2.6.6-5.emf" },
+        /*  5*/ { BARCODE_UPCE, -1, -1, -1, -1, -1, "", "", "0123456+12", "../data/emf/upce_2addon.emf" },
+        /*  6*/ { BARCODE_UPCE, -1, SMALL_TEXT | BOLD_TEXT, -1, -1, -1, "", "", "0123456+12", "../data/emf/upce_2addon_small_bold.emf" },
+        /*  7*/ { BARCODE_ITF14, -1, BOLD_TEXT, -1, -1, -1, "", "", "123", "../data/emf/itf14_bold.emf" },
     };
     int data_size = ARRAY_SIZE(data);
 
@@ -137,14 +145,14 @@ static void test_print(int index, int generate, int debug) {
         struct zint_symbol* symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        int length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, data[i].option_1, data[i].option_2, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        int length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, data[i].option_1, data[i].option_2, -1, data[i].output_options, data[i].data, -1, debug);
         if (data[i].whitespace_width != -1) {
             symbol->whitespace_width = data[i].whitespace_width;
         }
-        if (data[i].fgcolour != NULL) {
+        if (*data[i].fgcolour) {
             strcpy(symbol->fgcolour, data[i].fgcolour);
         }
-        if (data[i].bgcolour != NULL) {
+        if (*data[i].bgcolour) {
             strcpy(symbol->bgcolour, data[i].bgcolour);
         }
 
@@ -156,9 +164,9 @@ static void test_print(int index, int generate, int debug) {
         assert_zero(ret, "i:%d %s ZBarcode_Print %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, ret);
 
         if (generate) {
-            printf("        /*%3d*/ { %s, %d, %d, %d, \"%s\", \"%s\", \"%s\", \"%s\"},\n",
-                    i, testUtilBarcodeName(data[i].symbology), data[i].whitespace_width, data[i].option_1, data[i].option_2, data[i].fgcolour, data[i].bgcolour,
-                    testUtilEscape(data[i].data, length, escaped, escaped_size), data[i].expected_file);
+            printf("        /*%3d*/ { %s, %s, %s, %d, %d, %d, \"%s\", \"%s\", \"%s\", \"%s\"},\n",
+                    i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode), testUtilOutputOptionsName(data[i].output_options), data[i].whitespace_width,
+                    data[i].option_1, data[i].option_2, data[i].fgcolour, data[i].bgcolour, testUtilEscape(data[i].data, length, escaped, escaped_size), data[i].expected_file);
             ret = rename(symbol->outfile, data[i].expected_file);
             assert_zero(ret, "i:%d rename(%s, %s) ret %d != 0\n", i, symbol->outfile, data[i].expected_file, ret);
             if (have_inkscape) {

@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2036
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zint", "zint.vcxproj", "{3169C7FA-E52C-4BFC-B7BB-E55EBA133770}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libzint", "libzint.vcxproj", "{5C08DC40-8F7D-475E-AA3C-814DED735A4B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C246B2E9-C3A0-4505-BECA-1FDFC59C7BE5}"
+	ProjectSection(SolutionItems) = preProject
+		..\.editorconfig = ..\.editorconfig
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3169C7FA-E52C-4BFC-B7BB-E55EBA133770}.Debug|Win32.ActiveCfg = Debug|Win32
+		{3169C7FA-E52C-4BFC-B7BB-E55EBA133770}.Debug|Win32.Build.0 = Debug|Win32
+		{3169C7FA-E52C-4BFC-B7BB-E55EBA133770}.Release|Win32.ActiveCfg = Release|Win32
+		{3169C7FA-E52C-4BFC-B7BB-E55EBA133770}.Release|Win32.Build.0 = Release|Win32
+		{5C08DC40-8F7D-475E-AA3C-814DED735A4B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{5C08DC40-8F7D-475E-AA3C-814DED735A4B}.Debug|Win32.Build.0 = Debug|Win32
+		{5C08DC40-8F7D-475E-AA3C-814DED735A4B}.Release|Win32.ActiveCfg = Release|Win32
+		{5C08DC40-8F7D-475E-AA3C-814DED735A4B}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5F58D857-0A43-4DC0-AA25-1AD65E537C6A}
+	EndGlobalSection
+EndGlobal

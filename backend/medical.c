@@ -58,7 +58,8 @@ INTERNAL int pharma_one(struct zint_symbol *symbol, unsigned char source[], int 
        - http://en.wikipedia.org/wiki/Pharmacode */
 
     /* This code uses the One Track Pharamacode calculating algorithm as recommended by
-       the specification at http://www.laetus.com/laetus.php?request=file&id=69 */
+       the specification at http://www.laetus.com/laetus.php?request=file&id=69
+       (http://www.gomaro.ch/ftproot/Laetus_PHARMA-CODE.pdf) */
 
     unsigned long int tester;
     int counter, error_number, h;

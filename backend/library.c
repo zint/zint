@@ -59,7 +59,7 @@ struct zint_symbol *ZBarcode_Create() {
     strcpy(symbol->bgcolour, "ffffff");
     symbol->bgcolor = &symbol->bgcolour[0];
     strcpy(symbol->outfile, "out.png");
-    symbol->scale = 1.0;
+    symbol->scale = 1.0f;
     symbol->option_1 = -1;
     symbol->option_2 = 0;
     symbol->option_3 = 0;
@@ -71,7 +71,7 @@ struct zint_symbol *ZBarcode_Create() {
     symbol->bitmap_height = 0;
     symbol->alphamap = NULL;
     symbol->eci = 0; // Default 0 uses ECI 3
-    symbol->dot_size = 4.0 / 5.0;
+    symbol->dot_size = 4.0f / 5.0f;
     symbol->vector = NULL;
     symbol->debug = 0;
     symbol->warn_level = WARN_DEFAULT;
@@ -82,6 +82,8 @@ INTERNAL void vector_free(struct zint_symbol *symbol); /* Free vector structures
 
 void ZBarcode_Clear(struct zint_symbol *symbol) {
     int i, j;
+
+    if (!symbol) return;
 
     for (i = 0; i < symbol->rows; i++) {
         for (j = 0; j < symbol->width; j++) {
@@ -108,6 +110,8 @@ void ZBarcode_Clear(struct zint_symbol *symbol) {
 }
 
 void ZBarcode_Delete(struct zint_symbol *symbol) {
+    if (!symbol) return;
+
     if (symbol->bitmap != NULL)
         free(symbol->bitmap);
     if (symbol->alphamap != NULL)
@@ -196,7 +200,7 @@ static void error_tag(char error_string[], int error_number) {
         char error_buffer[100];
         strcpy(error_buffer, error_string);
 
-        if (error_number > 4) {
+        if (error_number >= ZINT_ERROR) {
             strcpy(error_string, "Error ");
         } else {
             strcpy(error_string, "Warning ");
@@ -426,12 +430,13 @@ static int gs1_compliant(const int symbology) {
     return result;
 }
 
-static int is_matrix(const int symbology) {
-    /* Returns 1 if symbology is a matrix design */
+static int is_dotty(const int symbology) {
+    /* Returns 1 if symbology is a matrix design renderable as dots */
 
     int result = 0;
 
     switch (symbology) {
+        /* Note MAXICODE and ULTRA absent */
         case BARCODE_QRCODE:
         case BARCODE_DATAMATRIX:
         case BARCODE_MICROQR:
@@ -446,6 +451,25 @@ static int is_matrix(const int symbology) {
         case BARCODE_DOTCODE:
         case BARCODE_UPNQR:
         case BARCODE_RMQR:
+            result = 1;
+            break;
+    }
+
+    return result;
+}
+
+static int is_fixed_ratio(const int symbology) {
+    /* Returns 1 if symbology has fixed aspect ratio (matrix design) */
+
+    int result = 0;
+
+    if (is_dotty(symbology)) {
+        return 1;
+    }
+
+    switch (symbology) {
+        case BARCODE_MAXICODE:
+        case BARCODE_ULTRA:
             result = 1;
             break;
     }
@@ -536,6 +560,119 @@ static int supports_eci(const int symbology) {
         case BARCODE_ULTRA:
             result = 1;
             break;
+    }
+
+    return result;
+}
+
+static int has_hrt(const int symbology) {
+    /* Returns 1 if symbology supports HRT */
+
+    if (is_fixed_ratio(symbology)) {
+        return 0;
+    }
+
+    switch (symbology) { /* These don't support HRT */
+        case BARCODE_CODE16K:
+        case BARCODE_CODE49:
+        case BARCODE_FLAT:
+        case BARCODE_POSTNET:
+        case BARCODE_FIM:
+        case BARCODE_PHARMA:
+        case BARCODE_PHARMA_TWO:
+        case BARCODE_PDF417:
+        case BARCODE_PDF417COMP:
+        case BARCODE_AUSPOST:
+        case BARCODE_AUSREPLY:
+        case BARCODE_AUSROUTE:
+        case BARCODE_AUSREDIRECT:
+        case BARCODE_RM4SCC:
+        case BARCODE_CODABLOCKF:
+        case BARCODE_JAPANPOST:
+        case BARCODE_DBAR_STK:
+        case BARCODE_DBAR_OMNSTK:
+        case BARCODE_DBAR_EXPSTK:
+        case BARCODE_PLANET:
+        case BARCODE_MICROPDF417:
+        case BARCODE_USPS_IMAIL:
+        case BARCODE_KIX:
+        case BARCODE_DAFT:
+        case BARCODE_HIBC_PDF:
+        case BARCODE_HIBC_MICPDF:
+        case BARCODE_HIBC_BLOCKF:
+        case BARCODE_MAILMARK:
+        case BARCODE_DBAR_STK_CC:
+        case BARCODE_DBAR_OMNSTK_CC:
+        case BARCODE_DBAR_EXPSTK_CC:
+            return 0;
+            break;
+    }
+
+    return 1;
+}
+
+unsigned int ZBarcode_Cap(int symbol_id, unsigned int cap_flag) {
+    unsigned int result = 0;
+
+    if (!ZBarcode_ValidID(symbol_id)) {
+        return 0;
+    }
+
+    if ((cap_flag & ZINT_CAP_HRT) && has_hrt(symbol_id)) {
+        result |= ZINT_CAP_HRT;
+    }
+    if ((cap_flag & ZINT_CAP_STACKABLE) && is_stackable(symbol_id)) {
+        result |= ZINT_CAP_STACKABLE;
+    }
+    if ((cap_flag & ZINT_CAP_EXTENDABLE) && is_extendable(symbol_id)) {
+        result |= ZINT_CAP_EXTENDABLE;
+    }
+    if ((cap_flag & ZINT_CAP_COMPOSITE) && is_composite(symbol_id)) {
+        result |= ZINT_CAP_COMPOSITE;
+    }
+    if ((cap_flag & ZINT_CAP_ECI) && supports_eci(symbol_id)) {
+        result |= ZINT_CAP_ECI;
+    }
+    if ((cap_flag & ZINT_CAP_GS1) && gs1_compliant(symbol_id)) {
+        result |= ZINT_CAP_GS1;
+    }
+    if ((cap_flag & ZINT_CAP_DOTTY) && is_dotty(symbol_id)) {
+        result |= ZINT_CAP_DOTTY;
+    }
+    if ((cap_flag & ZINT_CAP_FIXED_RATIO) && is_fixed_ratio(symbol_id)) {
+        result |= ZINT_CAP_FIXED_RATIO;
+    }
+    if (cap_flag & ZINT_CAP_READER_INIT) {
+        /* Note does not include HIBC versions */
+        switch (symbol_id) {
+            case BARCODE_CODE128: /* Note does not include GS1_128 or NVE18 */
+            case BARCODE_CODE128B:
+            case BARCODE_CODE16K:
+            case BARCODE_CODABLOCKF:
+            case BARCODE_PDF417:
+            case BARCODE_PDF417COMP:
+            case BARCODE_DATAMATRIX:
+            case BARCODE_MICROPDF417:
+            case BARCODE_AZTEC:
+            case BARCODE_DOTCODE:
+            case BARCODE_GRIDMATRIX:
+            case BARCODE_ULTRA:
+                result |= ZINT_CAP_READER_INIT;
+                break;
+        }
+    }
+    if (cap_flag & ZINT_CAP_FULL_MULTIBYTE) {
+        switch (symbol_id) {
+            case BARCODE_QRCODE:
+            case BARCODE_MICROQR:
+            //case BARCODE_HIBC_QR: Note character set restricted to ASCII subset
+            //case BARCODE_UPNQR: Note does not use Kanji mode
+            case BARCODE_RMQR:
+            case BARCODE_HANXIN:
+            case BARCODE_GRIDMATRIX:
+                result |= ZINT_CAP_FULL_MULTIBYTE;
+                break;
+        }
     }
 
     return result;
@@ -1019,8 +1156,16 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
 #ifdef _MSC_VER
     unsigned char* local_source;
 #endif
+
+    if (!symbol) return ZINT_ERROR_INVALID_DATA;
+
     error_number = 0;
 
+    if (source == NULL) {
+        strcpy(symbol->errtxt, "200: Input data NULL");
+        error_tag(symbol->errtxt, ZINT_ERROR_INVALID_DATA);
+        return ZINT_ERROR_INVALID_DATA;
+    }
     if (in_length <= 0) {
         in_length = (int)ustrlen(source);
     }
@@ -1208,7 +1353,7 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
         error_number = ZINT_ERROR_INVALID_OPTION;
     }
 
-    if ((symbol->dot_size < 0.01) || (symbol->dot_size > 20.0)) {
+    if ((symbol->dot_size < 0.01f) || (symbol->dot_size > 20.0f)) {
         strcpy(symbol->errtxt, "221: Invalid dot size");
         error_number = ZINT_ERROR_INVALID_OPTION;
     }
@@ -1217,7 +1362,7 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
         symbol->input_mode = DATA_MODE; /* Reset completely */
     }
 
-    if (error_number > 4) {
+    if (error_number >= ZINT_ERROR) {
         error_tag(symbol->errtxt, error_number);
         return error_number;
     } else {
@@ -1251,6 +1396,9 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
 #endif
                 error_number = gs1_verify(symbol, local_source, in_length, reduced);
                 if (error_number != 0) {
+                    if (is_composite(symbol->symbology)) {
+                        strcat(symbol->errtxt, " in 2D component");
+                    }
                     error_tag(symbol->errtxt, error_number);
                     return error_number;
                 }
@@ -1287,7 +1435,7 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
     }
     error_tag(symbol->errtxt, error_number);
 
-    if (error_number < 5) {
+    if (error_number < ZINT_ERROR) {
         check_row_heights(symbol);
     }
 
@@ -1296,6 +1444,8 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
 
 int ZBarcode_Print(struct zint_symbol *symbol, int rotate_angle) {
     int error_number;
+
+    if (!symbol) return ZINT_ERROR_INVALID_DATA;
 
     switch (rotate_angle) {
         case 0:
@@ -1310,7 +1460,7 @@ int ZBarcode_Print(struct zint_symbol *symbol, int rotate_angle) {
     }
 
     if (symbol->output_options & BARCODE_DOTTY_MODE) {
-        if (!(is_matrix(symbol->symbology))) {
+        if (!(is_dotty(symbol->symbology))) {
             strcpy(symbol->errtxt, "224: Selected symbology cannot be rendered as dots");
             error_tag(symbol->errtxt, ZINT_ERROR_INVALID_OPTION);
             return ZINT_ERROR_INVALID_OPTION;
@@ -1326,31 +1476,31 @@ int ZBarcode_Print(struct zint_symbol *symbol, int rotate_angle) {
         to_upper((unsigned char*) output);
 
         if (!(strcmp(output, "PNG"))) {
-            if (symbol->scale < 1.0) {
+            if (symbol->scale < 1.0f) {
                 symbol->text[0] = '\0';
             }
             error_number = plot_raster(symbol, rotate_angle, OUT_PNG_FILE);
         } else
             if (!(strcmp(output, "BMP"))) {
-            if (symbol->scale < 1.0) {
+            if (symbol->scale < 1.0f) {
                 symbol->text[0] = '\0';
             }
             error_number = plot_raster(symbol, rotate_angle, OUT_BMP_FILE);
         } else
             if (!(strcmp(output, "PCX"))) {
-            if (symbol->scale < 1.0) {
+            if (symbol->scale < 1.0f) {
                 symbol->text[0] = '\0';
             }
             error_number = plot_raster(symbol, rotate_angle, OUT_PCX_FILE);
         } else
             if (!(strcmp(output, "GIF"))) {
-            if (symbol->scale < 1.0) {
+            if (symbol->scale < 1.0f) {
                 symbol->text[0] = '\0';
             }
             error_number = plot_raster(symbol, rotate_angle, OUT_GIF_FILE);
         } else
             if (!(strcmp(output, "TIF"))) {
-            if (symbol->scale < 1.0) {
+            if (symbol->scale < 1.0f) {
                 symbol->text[0] = '\0';
             }
             error_number = plot_raster(symbol, rotate_angle, OUT_TIF_FILE);
@@ -1384,6 +1534,8 @@ int ZBarcode_Print(struct zint_symbol *symbol, int rotate_angle) {
 int ZBarcode_Buffer(struct zint_symbol *symbol, int rotate_angle) {
     int error_number;
 
+    if (!symbol) return ZINT_ERROR_INVALID_DATA;
+
     switch (rotate_angle) {
         case 0:
         case 90:
@@ -1397,7 +1549,7 @@ int ZBarcode_Buffer(struct zint_symbol *symbol, int rotate_angle) {
     }
 
     if (symbol->output_options & BARCODE_DOTTY_MODE) {
-        if (!(is_matrix(symbol->symbology))) {
+        if (!(is_dotty(symbol->symbology))) {
             strcpy(symbol->errtxt, "237: Selected symbology cannot be rendered as dots");
             error_tag(symbol->errtxt, ZINT_ERROR_INVALID_OPTION);
             return ZINT_ERROR_INVALID_OPTION;
@@ -1412,6 +1564,8 @@ int ZBarcode_Buffer(struct zint_symbol *symbol, int rotate_angle) {
 int ZBarcode_Buffer_Vector(struct zint_symbol *symbol, int rotate_angle) {
     int error_number;
 
+    if (!symbol) return ZINT_ERROR_INVALID_DATA;
+
     switch (rotate_angle) {
         case 0:
         case 90:
@@ -1425,7 +1579,7 @@ int ZBarcode_Buffer_Vector(struct zint_symbol *symbol, int rotate_angle) {
     }
 
     if (symbol->output_options & BARCODE_DOTTY_MODE) {
-        if (!(is_matrix(symbol->symbology))) {
+        if (!(is_dotty(symbol->symbology))) {
             strcpy(symbol->errtxt, "238: Selected symbology cannot be rendered as dots");
             error_tag(symbol->errtxt, ZINT_ERROR_INVALID_OPTION);
             return ZINT_ERROR_INVALID_OPTION;
@@ -1442,7 +1596,7 @@ int ZBarcode_Encode_and_Print(struct zint_symbol *symbol, unsigned char *input, 
     int first_err;
 
     error_number = ZBarcode_Encode(symbol, input, length);
-    if (error_number >= 5) {
+    if (error_number >= ZINT_ERROR) {
         return error_number;
     }
 
@@ -1459,7 +1613,7 @@ int ZBarcode_Encode_and_Buffer(struct zint_symbol *symbol, unsigned char *input,
     int first_err;
 
     error_number = ZBarcode_Encode(symbol, input, length);
-    if (error_number >= 5) {
+    if (error_number >= ZINT_ERROR) {
         return error_number;
     }
 
@@ -1477,7 +1631,7 @@ int ZBarcode_Encode_and_Buffer_Vector(struct zint_symbol *symbol, unsigned char 
     int first_err;
 
     error_number = ZBarcode_Encode(symbol, input, length);
-    if (error_number >= 5) {
+    if (error_number >= ZINT_ERROR) {
         return error_number;
     }
 
@@ -1497,6 +1651,14 @@ int ZBarcode_Encode_File(struct zint_symbol *symbol, char *filename) {
     size_t n;
     int nRead = 0;
     int ret;
+
+    if (!symbol) return ZINT_ERROR_INVALID_DATA;
+
+    if (!filename) {
+        strcpy(symbol->errtxt, "239: Filename NULL");
+        error_tag(symbol->errtxt, ZINT_ERROR_INVALID_OPTION);
+        return ZINT_ERROR_INVALID_DATA;
+    }
 
     if (!strcmp(filename, "-")) {
         file = stdin;
@@ -1568,7 +1730,7 @@ int ZBarcode_Encode_File_and_Print(struct zint_symbol *symbol, char *filename, i
     int first_err;
 
     error_number = ZBarcode_Encode_File(symbol, filename);
-    if (error_number >= 5) {
+    if (error_number >= ZINT_ERROR) {
         return error_number;
     }
 
@@ -1586,7 +1748,7 @@ int ZBarcode_Encode_File_and_Buffer(struct zint_symbol *symbol, char *filename, 
     int first_err;
 
     error_number = ZBarcode_Encode_File(symbol, filename);
-    if (error_number >= 5) {
+    if (error_number >= ZINT_ERROR) {
         return error_number;
     }
 
@@ -1604,7 +1766,7 @@ int ZBarcode_Encode_File_and_Buffer_Vector(struct zint_symbol *symbol, char *fil
     int first_err;
 
     error_number = ZBarcode_Encode_File(symbol, filename);
-    if (error_number >= 5) {
+    if (error_number >= ZINT_ERROR) {
         return error_number;
     }
 

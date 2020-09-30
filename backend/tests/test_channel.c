@@ -247,103 +247,103 @@ static void test_encode(int index, int generate, int debug) {
         /* 36*/ { -1, "7742862", 0, 1, 39, "ANSI/AIM BC12-1998 Figure F1 Channel 8 bottom",
                     "101010101000000001111110101101010110101"
                 },
-        /* 37*/ { -1, "01", 0, 1, 19, "Edge case for initial_precalcs table; verified manually against bwipp",
+        /* 37*/ { -1, "01", 0, 1, 19, "Edge case for initial_precalcs table",
                     "1010101010110110001"
                 },
-        /* 38*/ { -1, "001", 0, 1, 23, "Edge case for initial_precalcs table; verified manually against bwipp",
+        /* 38*/ { -1, "001", 0, 1, 23, "Edge case for initial_precalcs table",
                     "10101010101101011000011"
                 },
-        /* 39*/ { -1, "0001", 0, 1, 27, "Edge case for initial_precalcs table; verified manually against bwipp",
+        /* 39*/ { -1, "0001", 0, 1, 27, "Edge case for initial_precalcs table",
                     "101010101011010101110000011"
                 },
-        /* 40*/ { -1, "00001", 0, 1, 31, "Edge case for initial_precalcs table; verified manually against bwipp",
+        /* 40*/ { -1, "00001", 0, 1, 31, "Edge case for initial_precalcs table",
                     "1010101010110101011011000000111"
                 },
-        /* 41*/ { -1, "000001", 0, 1, 35, "Edge case for initial_precalcs table; verified manually against bwipp",
+        /* 41*/ { -1, "000001", 0, 1, 35, "Edge case for initial_precalcs table",
                     "10101010101101010110101100000001111"
                 },
-        /* 42*/ { -1, "0000001", 0, 1, 39, "Edge case for initial_precalcs table; verified manually against bwipp",
+        /* 42*/ { -1, "0000001", 0, 1, 39, "Edge case for initial_precalcs table",
                     "101010101011010101101010111000000001111"
                 },
-        /* 43*/ { -1, "115337", 0, 1, 35, "Edge case for channel_precalcs7 table; verified manually against bwipp",
+        /* 43*/ { -1, "115337", 0, 1, 35, "Edge case for channel_precalcs7 table",
                     "10101010101110100101001000111100011"
                 },
-        /* 44*/ { -1, "115338", 0, 1, 35, "Edge case for channel_precalcs7 table; verified manually against bwipp",
+        /* 44*/ { -1, "115338", 0, 1, 35, "Edge case for channel_precalcs7 table",
                     "10101010101110100101001000111110001"
                 },
-        /* 45*/ { -1, "115339", 0, 1, 35, "Edge case for channel_precalcs7 table; verified manually against bwipp",
+        /* 45*/ { -1, "115339", 0, 1, 35, "Edge case for channel_precalcs7 table",
                     "10101010101110100101001000010011111"
                 },
-        /* 46*/ { -1, "230675", 0, 1, 35, "Edge case for channel_precalcs7 table; verified manually against bwipp",
+        /* 46*/ { -1, "230675", 0, 1, 35, "Edge case for channel_precalcs7 table",
                     "10101010100101100011001111010011001"
                 },
-        /* 47*/ { -1, "230676", 0, 1, 35, "Edge case for channel_precalcs7 table; verified manually against bwipp",
+        /* 47*/ { -1, "230676", 0, 1, 35, "Edge case for channel_precalcs7 table",
                     "10101010100101100011001111010001011"
                 },
-        /* 48*/ { -1, "230677", 0, 1, 35, "Edge case for channel_precalcs7 table; verified manually against bwipp",
+        /* 48*/ { -1, "230677", 0, 1, 35, "Edge case for channel_precalcs7 table",
                     "10101010100101100011001111010001101"
                 },
-        /* 49*/ { -1, "346013", 0, 1, 35, "Edge case for channel_precalcs7 table; verified manually against bwipp",
+        /* 49*/ { -1, "346013", 0, 1, 35, "Edge case for channel_precalcs7 table",
                     "10101010100110011101010001011000111"
                 },
-        /* 50*/ { -1, "346014", 0, 1, 35, "Edge case for channel_precalcs7 table; verified manually against bwipp",
+        /* 50*/ { -1, "346014", 0, 1, 35, "Edge case for channel_precalcs7 table",
                     "10101010100110011101010001011100011"
                 },
-        /* 51*/ { -1, "346015", 0, 1, 35, "Edge case for channel_precalcs7 table; verified manually against bwipp",
+        /* 51*/ { -1, "346015", 0, 1, 35, "Edge case for channel_precalcs7 table",
                     "10101010100110011101010001011110001"
                 },
-        /* 52*/ { -1, "0119120", 0, 1, 39, "Edge case for channel_precalcs8 table; verified manually against bwipp",
+        /* 52*/ { -1, "0119120", 0, 1, 39, "Edge case for channel_precalcs8 table",
                     "101010101011010111000011000100111010011"
                 },
-        /* 53*/ { -1, "0119121", 0, 1, 39, "Edge case for channel_precalcs8 table; verified manually against bwipp",
+        /* 53*/ { -1, "0119121", 0, 1, 39, "Edge case for channel_precalcs8 table",
                     "101010101011010111000011000100111011001"
                 },
-        /* 54*/ { -1, "0119122", 0, 1, 39, "Edge case for channel_precalcs8 table; verified manually against bwipp",
+        /* 54*/ { -1, "0119122", 0, 1, 39, "Edge case for channel_precalcs8 table",
                     "101010101011010111000011000100111001011"
                 },
-        /* 55*/ { -1, "0238241", 0, 1, 39, "Edge case for channel_precalcs8 table; verified manually against bwipp",
+        /* 55*/ { -1, "0238241", 0, 1, 39, "Edge case for channel_precalcs8 table",
                     "101010101011010001011011001100011110001"
                 },
-        /* 56*/ { -1, "0238242", 0, 1, 39, "Edge case for channel_precalcs8 table; verified manually against bwipp",
+        /* 56*/ { -1, "0238242", 0, 1, 39, "Edge case for channel_precalcs8 table",
                     "101010101011010001011011001100001001111"
                 },
-        /* 57*/ { -1, "0238243", 0, 1, 39, "Edge case for channel_precalcs8 table; verified manually against bwipp",
+        /* 57*/ { -1, "0238243", 0, 1, 39, "Edge case for channel_precalcs8 table",
                     "101010101011010001011011001100001100111"
                 },
-        /* 58*/ { -1, "1072088", 0, 1, 39, "Edge case for channel_precalcs8 table; verified manually against bwipp",
+        /* 58*/ { -1, "1072088", 0, 1, 39, "Edge case for channel_precalcs8 table",
                     "101010101011001111101000101100011001001"
                 },
-        /* 59*/ { -1, "1072089", 0, 1, 39, "Edge case for channel_precalcs8 table; verified manually against bwipp",
+        /* 59*/ { -1, "1072089", 0, 1, 39, "Edge case for channel_precalcs8 table",
                     "101010101011001111101000101100011000101"
                 },
-        /* 60*/ { -1, "1072090", 0, 1, 39, "Edge case for channel_precalcs8 table; verified manually against bwipp",
+        /* 60*/ { -1, "1072090", 0, 1, 39, "Edge case for channel_precalcs8 table",
                     "101010101011001111101000101100001010011"
                 },
-        /* 61*/ { -1, "4169234", 0, 1, 39, "Edge case for channel_precalcs8 table; verified manually against bwipp",
+        /* 61*/ { -1, "4169234", 0, 1, 39, "Edge case for channel_precalcs8 table",
                     "101010101001101001101101111011000100001"
                 },
-        /* 62*/ { -1, "4169235", 0, 1, 39, "Edge case for channel_precalcs8 table; verified manually against bwipp",
+        /* 62*/ { -1, "4169235", 0, 1, 39, "Edge case for channel_precalcs8 table",
                     "101010101001101001101101111011000010001"
                 },
-        /* 63*/ { -1, "4169236", 0, 1, 39, "Edge case for channel_precalcs8 table; verified manually against bwipp",
+        /* 63*/ { -1, "4169236", 0, 1, 39, "Edge case for channel_precalcs8 table",
                     "101010101001101001101101111011000001001"
                 },
-        /* 64*/ { -1, "6075170", 0, 1, 39, "Edge case for channel_precalcs8 table; verified manually against bwipp",
+        /* 64*/ { -1, "6075170", 0, 1, 39, "Edge case for channel_precalcs8 table",
                     "101010101000100011101010001110111001011"
                 },
-        /* 65*/ { -1, "6075171", 0, 1, 39, "Edge case for channel_precalcs8 table; verified manually against bwipp",
+        /* 65*/ { -1, "6075171", 0, 1, 39, "Edge case for channel_precalcs8 table",
                     "101010101000100011101010001110111001101"
                 },
-        /* 66*/ { -1, "6075172", 0, 1, 39, "Edge case for channel_precalcs8 table; verified manually against bwipp",
+        /* 66*/ { -1, "6075172", 0, 1, 39, "Edge case for channel_precalcs8 table",
                     "101010101000100011101010001110111101001"
                 },
-        /* 67*/ { -1, "7623743", 0, 1, 39, "Edge case for channel_precalcs8 table; verified manually against bwipp",
+        /* 67*/ { -1, "7623743", 0, 1, 39, "Edge case for channel_precalcs8 table",
                     "101010101000001110010101101100101001111"
                 },
-        /* 68*/ { -1, "7623744", 0, 1, 39, "Edge case for channel_precalcs8 table; verified manually against bwipp",
+        /* 68*/ { -1, "7623744", 0, 1, 39, "Edge case for channel_precalcs8 table",
                     "101010101000001110010101101100101100111"
                 },
-        /* 69*/ { -1, "7623745", 0, 1, 39, "Edge case for channel_precalcs8 table; verified manually against bwipp",
+        /* 69*/ { -1, "7623745", 0, 1, 39, "Edge case for channel_precalcs8 table",
                     "101010101000001110010101101100101110011"
                 },
     };
@@ -376,14 +376,12 @@ static void test_encode(int index, int generate, int debug) {
                 assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);
                 assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
 
-                if (ret == 0) {
-                    int width, row;
-                    ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
-                    assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, ret, width, row, data[i].data);
-                }
+                int width, row;
+                ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
+                assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, ret, width, row, data[i].data);
 
                 if (do_bwipp && testUtilCanBwipp(symbol->symbology, -1, data[i].option_2, -1, debug)) {
-                    ret = testUtilBwipp(symbol, -1, data[i].option_2, -1, data[i].data, length, NULL, bwipp_buf, sizeof(bwipp_buf));
+                    ret = testUtilBwipp(i, symbol, -1, data[i].option_2, -1, data[i].data, length, NULL, bwipp_buf, sizeof(bwipp_buf));
                     assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
 
                     ret = testUtilBwippCmp(symbol, bwipp_msg, bwipp_buf, data[i].expected);

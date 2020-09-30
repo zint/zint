@@ -165,12 +165,12 @@ static void test_binary_div_modulo_divisor(int index, int generate, int debug) {
             assert_zero(ret, "i:%d ZBarcode_Buffer_Vector ret %d != 0\n", i, ret);
 
             if (do_bwipp && testUtilCanBwipp(symbol->symbology, -1, -1, -1, debug)) {
-                ret = testUtilBwipp(symbol, -1, -1, -1, text, length, symbol->primary, bwipp_buf, sizeof(bwipp_buf));
-                assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), ret);
+                ret = testUtilBwipp(i, symbol, -1, -1, -1, text, length, symbol->primary, bwipp_buf, sizeof(bwipp_buf));
+                assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
 
                 ret = testUtilBwippCmpRow(symbol, symbol->rows - 1, bwipp_msg, bwipp_buf, data[i].expected);
                 assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
-                               i, testUtilBarcodeName(data[i].symbology), ret, bwipp_msg, bwipp_buf, data[i].expected);
+                               i, testUtilBarcodeName(symbol->symbology), ret, bwipp_msg, bwipp_buf, data[i].expected);
             }
         }
 
@@ -640,7 +640,7 @@ static void test_examples(int index, int generate, int debug) {
     for (int i = 0; i < data_size; i++) {
 
         if (index != -1 && i != index) continue;
-        if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d\n", i);
+        if ((debug & ZINT_DEBUG_TEST_PRINT) && !(debug & ZINT_DEBUG_TEST_LESS_NOISY)) printf("i:%d\n", i);
 
         struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -664,12 +664,12 @@ static void test_examples(int index, int generate, int debug) {
             assert_zero(ret, "i:%d %s testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), ret, width, row, data[i].data);
 
             if (do_bwipp && testUtilCanBwipp(symbol->symbology, -1, data[i].option_2, -1, debug)) {
-                ret = testUtilBwipp(symbol, -1, data[i].option_2, -1, data[i].data, length, NULL, bwipp_buf, sizeof(bwipp_buf));
-                assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), ret);
+                ret = testUtilBwipp(i, symbol, -1, data[i].option_2, -1, data[i].data, length, NULL, bwipp_buf, sizeof(bwipp_buf));
+                assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
 
                 ret = testUtilBwippCmp(symbol, bwipp_msg, bwipp_buf, data[i].expected);
                 assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
-                               i, testUtilBarcodeName(data[i].symbology), ret, bwipp_msg, bwipp_buf, data[i].expected);
+                               i, testUtilBarcodeName(symbol->symbology), ret, bwipp_msg, bwipp_buf, data[i].expected);
             }
         }
 

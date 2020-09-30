@@ -438,7 +438,7 @@ static void hx_cur_cost(unsigned int state[], const unsigned int gbdata[], const
 
 /* Calculate optimized encoding modes */
 static void hx_define_mode(char* mode, const unsigned int gbdata[], const size_t length, const int debug) {
-    static const char mode_types[] = { 'n', 't', 'b', '1', '2', 'd', 'f' }; /* Must be in same order as HX_N etc */
+    static const char mode_types[] = { 'n', 't', 'b', '1', '2', 'd', 'f', '\0' }; /* Must be in same order as HX_N etc */
     unsigned int state[5] = { 0 /*numeric_end*/, 0 /*numeric_cost*/, 1 /*text_submode*/, 0 /*fourbyte_end*/, 0 /*fourbyte_cost*/ };
 
     pn_define_mode(mode, gbdata, length, debug, state, mode_types, HX_NUM_MODES, hx_head_costs, hx_switch_cost, hx_eod_cost, hx_cur_cost);

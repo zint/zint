@@ -980,7 +980,7 @@ INTERNAL int aztec(struct zint_symbol *symbol, unsigned char source[], const siz
     char binary_string[AZTEC_BIN_CAPACITY + 1], bit_pattern[20045], descriptor[42];
     char adjusted_string[AZTEC_MAX_CAPACITY + 1];
     unsigned char desc_data[4], desc_ecc[6];
-    int err_code, ecc_level, compact, data_length, data_maxsize, codeword_size, adjusted_length;
+    int error_number, ecc_level, compact, data_length, data_maxsize, codeword_size, adjusted_length;
     int remainder, padbits, count, gs1, adjustment_size;
     int debug = (symbol->debug & ZINT_DEBUG_PRINT), reader = 0;
     int comp_loop = 4;
@@ -1009,11 +1009,11 @@ INTERNAL int aztec(struct zint_symbol *symbol, unsigned char source[], const siz
 
     populate_map();
 
-    err_code = aztec_text_process(source, length, binary_string, gs1, symbol->eci, symbol->debug);
+    error_number = aztec_text_process(source, length, binary_string, gs1, symbol->eci, debug);
 
-    if (err_code != 0) {
+    if (error_number != 0) {
         strcpy(symbol->errtxt, "502: Input too long or too many extended ASCII characters");
-        return err_code;
+        return error_number;
     }
 
     if (!((symbol->option_1 >= -1) && (symbol->option_1 <= 4))) {
@@ -1021,7 +1021,7 @@ INTERNAL int aztec(struct zint_symbol *symbol, unsigned char source[], const siz
         if (symbol->warn_level == WARN_FAIL_ALL) {
             return ZINT_ERROR_INVALID_OPTION;
         } else {
-            err_code = ZINT_WARN_INVALID_OPTION;
+            error_number = ZINT_WARN_INVALID_OPTION;
         }
         symbol->option_1 = -1;
     }
@@ -1573,7 +1573,7 @@ INTERNAL int aztec(struct zint_symbol *symbol, unsigned char source[], const siz
         symbol->width = 151 - (2 * AztecOffset[layers - 1]);
     }
 
-    return err_code;
+    return error_number;
 }
 
 /* Encodes Aztec runes as specified in ISO/IEC 24778:2008 Annex A */

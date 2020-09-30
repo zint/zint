@@ -138,7 +138,7 @@ static int in_alpha(const unsigned int jisdata[], const size_t length, const uns
 #define QR_B   2 /* Byte */
 #define QR_K   3 /* Kanji */
 
-static const char mode_types[] = { 'N', 'A', 'B', 'K', }; /* Must be in same order as QR_N etc */
+static const char mode_types[] = { 'N', 'A', 'B', 'K', '\0' }; /* Must be in same order as QR_N etc */
 
 #define QR_NUM_MODES 4
 

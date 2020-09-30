@@ -219,17 +219,17 @@ void testRun(int argc, char *argv[], testFunction funcs[], int funcs_size) {
     }
 
     if (func && !ran) {
-        fprintf(stderr, "testRun: unknown -f func arg\n");
+        fprintf(stderr, "testRun: unknown -f func arg '%s'\n", func);
     }
 }
 
-char *testUtilBarcodeName(int symbology) {
+const char *testUtilBarcodeName(int symbology) {
     struct item {
-        char *name;
+        const char *name;
         int define;
         int val;
     };
-    struct item data[] = {
+    static const struct item data[] = {
         { "", -1, 0 },
         { "BARCODE_CODE11", BARCODE_CODE11, 1 },
         { "BARCODE_C25STANDARD", BARCODE_C25STANDARD, 2 },
@@ -377,7 +377,7 @@ char *testUtilBarcodeName(int symbology) {
         { "BARCODE_ULTRA", BARCODE_ULTRA, 144 },
         { "BARCODE_RMQR", BARCODE_RMQR, 145 },
     };
-    int data_size = sizeof(data) / sizeof(struct item);
+    static const int data_size = sizeof(data) / sizeof(struct item);
 
     if (symbology < 0 || symbology >= data_size) {
         return "";
@@ -417,18 +417,18 @@ int testUtilSetSymbol(struct zint_symbol *symbol, int symbology, int input_mode,
     return length;
 }
 
-char *testUtilErrorName(int error_number) {
+const char *testUtilErrorName(int error_number) {
     struct item {
-        char *name;
+        const char *name;
         int define;
         int val;
     };
-    struct item data[] = {
+    static const struct item data[] = {
         { "0", 0, 0 },
         { "", -1, 1 },
         { "ZINT_WARN_INVALID_OPTION", ZINT_WARN_INVALID_OPTION, 2 },
         { "ZINT_WARN_USES_ECI", ZINT_WARN_USES_ECI, 3 },
-        { "", -1, 4 },
+        { "ZINT_WARN_NONCOMPLIANT", ZINT_WARN_NONCOMPLIANT, 4 },
         { "ZINT_ERROR_TOO_LONG", ZINT_ERROR_TOO_LONG, 5 },
         { "ZINT_ERROR_INVALID_DATA", ZINT_ERROR_INVALID_DATA, 6 },
         { "ZINT_ERROR_INVALID_CHECK", ZINT_ERROR_INVALID_CHECK, 7 },
@@ -437,7 +437,7 @@ char *testUtilErrorName(int error_number) {
         { "ZINT_ERROR_FILE_ACCESS", ZINT_ERROR_FILE_ACCESS, 10 },
         { "ZINT_ERROR_MEMORY", ZINT_ERROR_MEMORY, 11 },
     };
-    int data_size = sizeof(data) / sizeof(struct item);
+    static const int data_size = sizeof(data) / sizeof(struct item);
 
     if (error_number < 0 || error_number >= data_size) {
         return "";
@@ -449,13 +449,13 @@ char *testUtilErrorName(int error_number) {
     return data[error_number].name;
 }
 
-char *testUtilInputModeName(int input_mode) {
+const char *testUtilInputModeName(int input_mode) {
     struct item {
-        char *name;
+        const char *name;
         int define;
         int val;
     };
-    struct item data[] = {
+    static const struct item data[] = {
         { "DATA_MODE", DATA_MODE, 0 },
         { "UNICODE_MODE", UNICODE_MODE, 1 },
         { "GS1_MODE", GS1_MODE, 2 },
@@ -468,7 +468,7 @@ char *testUtilInputModeName(int input_mode) {
         { "UNICODE_MODE | ESCAPE_MODE", UNICODE_MODE | ESCAPE_MODE, 9 },
         { "GS1_MODE | ESCAPE_MODE", GS1_MODE | ESCAPE_MODE, 10 },
     };
-    int data_size = sizeof(data) / sizeof(struct item);
+    static const int data_size = sizeof(data) / sizeof(struct item);
 
     if (input_mode < 0 || input_mode >= data_size) {
         return input_mode == -1 ? "-1" : "";
@@ -480,7 +480,7 @@ char *testUtilInputModeName(int input_mode) {
     return data[input_mode].name;
 }
 
-char *testUtilOption3Name(int option_3) {
+const char *testUtilOption3Name(int option_3) {
     switch (option_3) {
         case DM_SQUARE: return "DM_SQUARE";
         case DM_DMRE: return "DM_DMRE";
@@ -494,15 +494,15 @@ char *testUtilOption3Name(int option_3) {
     return option_3 ? "-1" : "0";
 }
 
-char *testUtilOutputOptionsName(int output_options) {
+const char *testUtilOutputOptionsName(int output_options) {
     static char buf[512];
 
     struct item {
-        char *name;
+        const char *name;
         int define;
         int val;
     };
-    struct item data[] = {
+    static const struct item data[] = {
         { "BARCODE_NO_ASCII", BARCODE_NO_ASCII, 1 },
         { "BARCODE_BIND", BARCODE_BIND, 2 },
         { "BARCODE_BOX", BARCODE_BOX, 4 },
@@ -515,7 +515,7 @@ char *testUtilOutputOptionsName(int output_options) {
         { "GS1_GS_SEPARATOR", GS1_GS_SEPARATOR, 512 },
         { "OUT_BUFFER_INTERMEDIATE", OUT_BUFFER_INTERMEDIATE, 1024 },
     };
-    int data_size = ARRAY_SIZE(data);
+    static int const data_size = ARRAY_SIZE(data);
     int set = 0;
     int i;
 
@@ -1460,9 +1460,9 @@ int testUtilVerifyGhostscript(char *filename, int debug) {
     return system(buf);
 }
 
-static char *testUtilBwippName(int symbology, int option_1, int option_2, int option_3, int *linear_row_height, int *gs1_cvt) {
+static const char *testUtilBwippName(int symbology, int option_1, int option_2, int option_3, int *linear_row_height, int *gs1_cvt) {
     struct item {
-        char *name;
+        const char *name;
         int define;
         int val;
         int can_option_1;
@@ -1471,7 +1471,7 @@ static char *testUtilBwippName(int symbology, int option_1, int option_2, int op
         int linear_row_height;
         int gs1_cvt;
     };
-    struct item data[] = {
+    static const struct item data[] = {
         { "", -1, 0, 0, 0, 0, 0, 0, },
         { "code11", BARCODE_CODE11, 1, 0, 1, 0, 0, 0, },
         { "matrix2of5", BARCODE_C25STANDARD, 2, 0, 0, 0, 0, 0, },
@@ -1490,13 +1490,13 @@ static char *testUtilBwippName(int symbology, int option_1, int option_2, int op
         { "", -1, 15, 0, 0, 0, 0, 0, },
         { "gs1-128", BARCODE_GS1_128, 16, 0, 0, 0, 0, 1 /*gs1_cvt*/, },
         { "", -1, 17, 0, 0, 0, 0, 0, },
-        { "rationalizedCodabar", BARCODE_CODABAR, 18, 0, 0, 0, 0, 0, },
+        { "rationalizedCodabar", BARCODE_CODABAR, 18, 0, 1, 0, 0, 0, },
         { "", -1, 19, 0, 0, 0, 0, 0, },
         { "code128", BARCODE_CODE128, 20, 0, 0, 0, 0, 0, },
         { "leitcode", BARCODE_DPLEIT, 21, 0, 0, 0, 0, 0, },
         { "identcode", BARCODE_DPIDENT, 22, 0, 0, 0, 0, 0, },
-        { "code16k", BARCODE_CODE16K, 23, 0, 0, 0, 0, 0, },
-        { "code49", BARCODE_CODE49, 24, 0, 0, 0, 0, 0, },
+        { "code16k", BARCODE_CODE16K, 23, 0, 0, 0, 8 /*linear_row_height*/, 0, },
+        { "code49", BARCODE_CODE49, 24, 0, 0, 0, 8 /*linear_row_height*/, 0, },
         { "code93", BARCODE_CODE93, 25, 0, 0, 0, 0, 0, },
         { "", -1, 26, 0, 0, 0, 0, 0, },
         { "", -1, 27, 0, 0, 0, 0, 0, },
@@ -1523,7 +1523,7 @@ static char *testUtilBwippName(int symbology, int option_1, int option_2, int op
         { "", -1, 48, 0, 0, 0, 0, 0, },
         { "symbol", BARCODE_FIM, 49, 0, 0, 0, 0, 0, },
         { "code39", BARCODE_LOGMARS, 50, 0, 1, 0, 0, 0, },
-        { "pharmacode", BARCODE_PHARMA, 51, 0, 0, 0, 0, 0, },
+        { "pharmacode", BARCODE_PHARMA, 51, 0, 0, 0, 1 /*linear_row_height*/, 0, },
         { "pzn", BARCODE_PZN, 52, 0, 0, 0, 0, 0, },
         { "pharmacode2", BARCODE_PHARMA_TWO, 53, 0, 0, 0, 0, 0, },
         { "", -1, 54, 0, 0, 0, 0, 0, },
@@ -1546,14 +1546,14 @@ static char *testUtilBwippName(int symbology, int option_1, int option_2, int op
         { "datamatrix", BARCODE_DATAMATRIX, 71, 0, 0, 0, 0, 0, },
         { "ean14", BARCODE_EAN14, 72, 0, 0, 0, 0, 1 /*gs1_cvt*/, },
         { "code39", BARCODE_VIN, 73, 0, 0, 0, 0, 0, },
-        { "codablockf", BARCODE_CODABLOCKF, 74, 1, 1, 0, 0, 0, },
+        { "codablockf", BARCODE_CODABLOCKF, 74, 1, 1, 0, 10 /*linear_row_height*/, 0, },
         { "sscc18", BARCODE_NVE18, 75, 0, 0, 0, 0, 1 /*gs1_cvt*/, },
         { "japanpost", BARCODE_JAPANPOST, 76, 0, 0, 0, 0, 0, },
         { "", BARCODE_KOREAPOST, 77, 0, 0, 0, 0, 0, },
         { "", -1, 78, 0, 0, 0, 0, 0, },
         { "databarstacked", BARCODE_DBAR_STK, 79, 0, 0, 0, 0, 1 /*gs1_cvt*/, },
-        { "databarstackedomni", BARCODE_DBAR_OMNSTK, 80, 0, 0, 0, 0, 1, },
-        { "databarexpandedstacked", BARCODE_DBAR_EXPSTK, 81, 0, 1, 0, 0, 1, },
+        { "databarstackedomni", BARCODE_DBAR_OMNSTK, 80, 0, 0, 0, 33 /*linear_row_height*/, 1, },
+        { "databarexpandedstacked", BARCODE_DBAR_EXPSTK, 81, 0, 1, 0, 34 /*linear_row_height*/, 1, },
         { "planet", BARCODE_PLANET, 82, 0, 0, 0, 0, 0, },
         { "", -1, 83, 0, 0, 0, 0, 0, },
         { "micropdf417", BARCODE_MICROPDF417, 84, 0, 1, 0, 0, 0, },
@@ -1582,7 +1582,7 @@ static char *testUtilBwippName(int symbology, int option_1, int option_2, int op
         { "", -1, 107, 0, 0, 0, 0, 0, },
         { "hibcmicropdf417", BARCODE_HIBC_MICPDF, 108, 0, 1, 0, 0, 0, },
         { "", -1, 109, 0, 0, 0, 0, 0, },
-        { "hibccodablockf", BARCODE_HIBC_BLOCKF, 110, 1, 1, 0, 0, 0, },
+        { "hibccodablockf", BARCODE_HIBC_BLOCKF, 110, 1, 1, 0, 10 /*linear_row_height*/, 0, },
         { "", -1, 111, 0, 0, 0, 0, 0, },
         { "hibcazteccode", BARCODE_HIBC_AZTEC, 112, 0, 0, 0, 0, 0, },
         { "", -1, 113, 0, 0, 0, 0, 0, },
@@ -1593,7 +1593,7 @@ static char *testUtilBwippName(int symbology, int option_1, int option_2, int op
         { "", -1, 118, 0, 0, 0, 0, 0, },
         { "", -1, 119, 0, 0, 0, 0, 0, },
         { "", -1, 120, 0, 0, 0, 0, 0, },
-        { "mailmark", BARCODE_MAILMARK, 121, 0, 0, 0, 0, 0, },
+        { "", BARCODE_MAILMARK, 121, 0, 0, 0, 0, 0, }, /* Note BWIPP mailmark is Data Matrix variant */
         { "", -1, 122, 0, 0, 0, 0, 0, },
         { "", -1, 123, 0, 0, 0, 0, 0, },
         { "", -1, 124, 0, 0, 0, 0, 0, },
@@ -1605,13 +1605,13 @@ static char *testUtilBwippName(int symbology, int option_1, int option_2, int op
         { "ean13composite", BARCODE_EANX_CC, 130, 1, 1, 0, 72 /*linear_row_height*/, 1 /*gs1_cvt*/, },
         { "gs1-128composite", BARCODE_GS1_128_CC, 131, 1, 0, 0, 36, 1, },
         { "databaromnicomposite", BARCODE_DBAR_OMN_CC, 132, 1, 0, 0, 33, 1, },
-        { "databarlimitedcomposite", BARCODE_DBAR_LTD_CC, 133, 1, 0, 0, 0, 1, },
-        { "databarexpandedcomposite", BARCODE_DBAR_EXP_CC, 134, 1, 1, 0, 0, 1, },
+        { "databarlimitedcomposite", BARCODE_DBAR_LTD_CC, 133, 1, 0, 0, 10 /*linear_row_height*/, 1, },
+        { "databarexpandedcomposite", BARCODE_DBAR_EXP_CC, 134, 1, 1, 0, 34 /*linear_row_height*/, 1, },
         { "upcacomposite", BARCODE_UPCA_CC, 135, 1, 1, 0, 72, 1, },
         { "upcecomposite", BARCODE_UPCE_CC, 136, 1, 1, 0, 72, 1, },
         { "databarstackedcomposite", BARCODE_DBAR_STK_CC, 137, 1, 0, 0, 0, 1, },
-        { "databarstackedomnicomposite", BARCODE_DBAR_OMNSTK_CC, 138, 1, 0, 0, 0, 1, },
-        { "databarexpandedstackedcomposite", BARCODE_DBAR_EXPSTK_CC, 139, 1, 1, 0, 0, 1, },
+        { "databarstackedomnicomposite", BARCODE_DBAR_OMNSTK_CC, 138, 1, 0, 0, 33 /*linear_row_height*/, 1, },
+        { "databarexpandedstackedcomposite", BARCODE_DBAR_EXPSTK_CC, 139, 1, 1, 0, 34 /*linear_row_height*/, 1, },
         { "channelcode", BARCODE_CHANNEL, 140, 0, 0, 0, 0, 0, },
         { "codeone", BARCODE_CODEONE, 141, 0, 0, 0, 0, 0, },
         { "", BARCODE_GRIDMATRIX, 142, 0, 0, 0, 0, 0, },
@@ -1619,7 +1619,7 @@ static char *testUtilBwippName(int symbology, int option_1, int option_2, int op
         { "ultracode", BARCODE_ULTRA, 144, 0, 0, 0, 0, 0, },
         { "rectangularmicroqrcode", BARCODE_RMQR, 145, 0, 0, 0, 0, 0, },
     };
-    int data_size = ARRAY_SIZE(data);
+    static const int data_size = ARRAY_SIZE(data);
 
     if (symbology < 0 || symbology >= data_size) {
         return NULL;
@@ -1736,7 +1736,7 @@ static void testUtilISBNHyphenate(char *bwipp_data, int addon_posn) {
 
 #define GS_INITIAL_LEN  35 /* Length of cmd up to -q */
 
-int testUtilBwipp(const struct zint_symbol *symbol, int option_1, int option_2, int option_3, const char *data, int length, const char *primary, char *buffer, int buffer_size) {
+int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int option_2, int option_3, const char *data, int length, const char *primary, char *buffer, int buffer_size) {
     const char *cmd_fmt = "gs -dNOPAUSE -dBATCH -dNODISPLAY -q -sb=%s -sd='%s' ../tools/bwipp_dump.ps";
     const char *cmd_opts_fmt = "gs -dNOPAUSE -dBATCH -dNODISPLAY -q -sb=%s -sd='%s' -so='%s' ../tools/bwipp_dump.ps";
     const char *cmd_fmt2 = "gs -dNOPAUSE -dBATCH -dNODISPLAY -q -sb=%s -sd='%.2043s' -sd2='%s' ../tools/bwipp_dump.ps"; // If data > 2K
@@ -1748,7 +1748,7 @@ int testUtilBwipp(const struct zint_symbol *symbol, int option_1, int option_2, 
     int max_data_len = 4 + primary_len + 1 + 1 + data_len * 4 + 32; /* 4 AI prefix + primary + '|' + leading zero + escaped data + fudge */
 
     char cmd[max_data_len + 1024];
-    char *bwipp_barcode = NULL;
+    const char *bwipp_barcode = NULL;
     char *bwipp_opts = NULL;
     char bwipp_data[max_data_len + 1];
     char bwipp_opts_buf[512];
@@ -1764,6 +1764,7 @@ int testUtilBwipp(const struct zint_symbol *symbol, int option_1, int option_2, 
     int r, h;
     int parse;
 
+    int composite = is_composite(symbology);
     int upcean = is_extendable(symbology);
     int upca = symbology == BARCODE_UPCA || symbology == BARCODE_UPCA_CHK || symbology == BARCODE_UPCA_CC;
     int addon_posn;
@@ -1772,20 +1773,25 @@ int testUtilBwipp(const struct zint_symbol *symbol, int option_1, int option_2, 
 
     bwipp_barcode = testUtilBwippName(symbology, option_1, option_2, option_3, &linear_row_height, &gs1_cvt);
     if (!bwipp_barcode) {
-        fprintf(stderr, "testUtilBwipp: no mapping for %s, option_1 %d, option_2 %d, option_3 %d\n", testUtilBarcodeName(symbology), option_1, option_2, option_3);
+        fprintf(stderr, "i:%d testUtilBwipp: no mapping for %s, option_1 %d, option_2 %d, option_3 %d\n", index, testUtilBarcodeName(symbology), option_1, option_2, option_3);
         return -1;
     }
 
     for (r = 0; r < symbol->rows; r++) {
-        bwipp_row_height[r] = symbol->row_height[r];
+        bwipp_row_height[r] = symbol->row_height[r] ? symbol->row_height[r] : linear_row_height;
+        //fprintf(stderr, "bwipp_row_height[%d] %d, symbol->row_height[%d] %d\n", r, bwipp_row_height[r], r, symbol->row_height[r]);
     }
-    if (linear_row_height) {
-        bwipp_row_height[symbol->rows - 1] = linear_row_height;
+    if (symbology == BARCODE_DBAR_EXP) {
+        bwipp_row_height[symbol->rows - 1] = 1;
+    } else if (symbology == BARCODE_DBAR_OMN_CC) {
+        bwipp_row_height[symbol->rows - 1] = 33;
+    } else if (symbology == BARCODE_GS1_128_CC) {
+        bwipp_row_height[symbol->rows - 1] = 36;
     }
 
     if (is_composite(symbology)) {
         if (!primary) {
-            fprintf(stderr, "testUtilBwipp: no primary data given %s\n", testUtilBarcodeName(symbology));
+            fprintf(stderr, "i:%d testUtilBwipp: no primary data given %s\n", index, testUtilBarcodeName(symbology));
             return -1;
         }
         if (*primary != '[' && !upcean) {
@@ -1804,6 +1810,7 @@ int testUtilBwipp(const struct zint_symbol *symbol, int option_1, int option_2, 
                 sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%saddongap=%d", strlen(bwipp_opts_buf) ? " " : "", option_2 > 0 ? option_2 : upca ? 9 : 7);
                 bwipp_opts = bwipp_opts_buf;
             }
+            bwipp_row_height[symbol->rows - 1] = 72;
         }
 
         if (option_1 > 0) {
@@ -1873,7 +1880,7 @@ int testUtilBwipp(const struct zint_symbol *symbol, int option_1, int option_2, 
                     sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%scolumns=%d", strlen(bwipp_opts_buf) ? " " : "", (symbol->width - 57) / 11);
                 }
                 bwipp_opts = bwipp_opts_buf;
-            } else if (symbology == BARCODE_CODE11 || symbology == BARCODE_CODE39 || symbology == BARCODE_EXCODE39 || symbology == BARCODE_LOGMARS) {
+            } else if (symbology == BARCODE_CODE11 || symbology == BARCODE_CODE39 || symbology == BARCODE_EXCODE39 || symbology == BARCODE_LOGMARS || symbology == BARCODE_CODABAR) {
                 if (option_2 > 0) {
                     if (option_2 == 1) {
                         sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%sincludecheck", strlen(bwipp_opts_buf) ? " " : "");
@@ -1891,12 +1898,49 @@ int testUtilBwipp(const struct zint_symbol *symbol, int option_1, int option_2, 
                     sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%scolumns=%d", strlen(bwipp_opts_buf) ? " " : "", option_2);
                     bwipp_opts = bwipp_opts_buf;
                 }
+            } else if (symbology == BARCODE_POSTNET || symbology == BARCODE_PLANET || symbology == BARCODE_RM4SCC || symbology == BARCODE_JAPANPOST || symbology == BARCODE_KIX
+                    || symbology == BARCODE_DAFT || symbology == BARCODE_USPS_IMAIL || symbology == BARCODE_AUSPOST || symbology == BARCODE_PHARMA_TWO) {
+                for (r = 0; r < symbol->rows; r++) bwipp_row_height[r] = 1; /* Zap */
+                if (symbology == BARCODE_KIX) {
+                    to_upper(bwipp_data);
+                } else if (symbology == BARCODE_USPS_IMAIL) {
+                    char *dash = strchr(bwipp_data, '-');
+                    if (dash) {
+                        memmove(dash, dash + 1, strlen(dash));
+                    }
+                } else if (symbology == BARCODE_AUSPOST) {
+                    const char *prefix;
+                    if (data_len == 8) {
+                        prefix = "11";
+                    } else if (data_len == 13 || data_len == 16) {
+                        prefix = "59";
+                        if (data_len == 16) {
+                            sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%scustinfoenc=numeric", strlen(bwipp_opts_buf) ? " " : "");
+                            bwipp_opts = bwipp_opts_buf;
+                        }
+                    } else {
+                        prefix = "62";
+                        if (data_len == 23) {
+                            sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%scustinfoenc=numeric", strlen(bwipp_opts_buf) ? " " : "");
+                            bwipp_opts = bwipp_opts_buf;
+                        }
+                    }
+                    memmove(bwipp_data + 2, bwipp_data, data_len + 1);
+                    memmove(bwipp_data, prefix, 2);
+                }
+            } else if (symbology == BARCODE_FIM) {
+                strcpy(bwipp_data, "fima");
+                bwipp_data[3] = data[0] - 'A' + 'a';
+            } else if (symbology == BARCODE_CODE16K || symbology == BARCODE_CODE49) {
+                for (r = 0; r < symbol->rows; r++) bwipp_row_height[r] = 8; /* Change from 10 */
+                sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%ssepheight=0", strlen(bwipp_opts_buf) ? " " : "");
+                bwipp_opts = bwipp_opts_buf;
             }
         }
     }
 
     if ((option_1 != -1 || option_2 != -1 || option_3 != -1) && !bwipp_opts) {
-        fprintf(stderr, "testUtilBwipp: no mapping option_1 %d, option_2 %d, option_3 %d for symbology %s\n", option_1, option_2, option_3, testUtilBarcodeName(symbology));
+        fprintf(stderr, "i:%d testUtilBwipp: no mapping option_1 %d, option_2 %d, option_3 %d for symbology %s\n", index, option_1, option_2, option_3, testUtilBarcodeName(symbology));
         return -1;
     }
 
@@ -1921,7 +1965,8 @@ int testUtilBwipp(const struct zint_symbol *symbol, int option_1, int option_2, 
         memmove(cmd + GS_INITIAL_LEN + sizeof(adj), cmd + GS_INITIAL_LEN, strlen(cmd) + 1 - GS_INITIAL_LEN);
         memcpy(cmd + GS_INITIAL_LEN, adj, sizeof(adj));
     }
-    if (symbology == BARCODE_CODE11 || symbology == BARCODE_CODE39 || symbology == BARCODE_EXCODE39 || symbology == BARCODE_PZN || symbology == BARCODE_VIN) {
+    if (symbology == BARCODE_CODE11 || symbology == BARCODE_CODE39 || symbology == BARCODE_EXCODE39 || symbology == BARCODE_CODABAR
+            || symbology == BARCODE_PHARMA || symbology == BARCODE_PZN || symbology == BARCODE_CODE32 || symbology == BARCODE_VIN) {
         /* Ratio 3 width bar/space -> 2 width */
         char adj[8] = " -sr=0.6";
         memmove(cmd + GS_INITIAL_LEN + sizeof(adj), cmd + GS_INITIAL_LEN, strlen(cmd) + 1 - GS_INITIAL_LEN);
@@ -1933,9 +1978,16 @@ int testUtilBwipp(const struct zint_symbol *symbol, int option_1, int option_2, 
         memmove(cmd + GS_INITIAL_LEN + sizeof(adj), cmd + GS_INITIAL_LEN, strlen(cmd) + 1 - GS_INITIAL_LEN);
         memcpy(cmd + GS_INITIAL_LEN, adj, sizeof(adj));
     }
+    if (symbology == BARCODE_FIM) {
+        /* Ratio 2 width bar/space -> 1 width */
+        char adj[8] = " -sr=0.5";
+        memmove(cmd + GS_INITIAL_LEN + sizeof(adj), cmd + GS_INITIAL_LEN, strlen(cmd) + 1 - GS_INITIAL_LEN);
+        memcpy(cmd + GS_INITIAL_LEN, adj, sizeof(adj));
+    }
     if (symbology == BARCODE_CODE11 || symbology == BARCODE_CODE39 || symbology == BARCODE_EXCODE39 || symbology == BARCODE_HIBC_39
-            || symbology == BARCODE_LOGMARS || symbology == BARCODE_PZN || symbology == BARCODE_VIN
-            || symbology == BARCODE_C25INTER || symbology == BARCODE_DPLEIT || symbology == BARCODE_DPIDENT || symbology == BARCODE_ITF14) {
+            || symbology == BARCODE_LOGMARS || symbology == BARCODE_PHARMA || symbology == BARCODE_PZN || symbology == BARCODE_CODE32 || symbology == BARCODE_VIN
+            || symbology == BARCODE_C25INTER || symbology == BARCODE_DPLEIT || symbology == BARCODE_DPIDENT || symbology == BARCODE_ITF14
+            || symbology == BARCODE_PHARMA_TWO) {
         /* End sbs loop on bar */
         char adj[6] = " -selb";
         memmove(cmd + GS_INITIAL_LEN + sizeof(adj), cmd + GS_INITIAL_LEN, strlen(cmd) + 1 - GS_INITIAL_LEN);
@@ -1947,26 +1999,38 @@ int testUtilBwipp(const struct zint_symbol *symbol, int option_1, int option_2, 
         memmove(cmd + GS_INITIAL_LEN + sizeof(adj), cmd + GS_INITIAL_LEN, strlen(cmd) + 1 - GS_INITIAL_LEN);
         memcpy(cmd + GS_INITIAL_LEN, adj, sizeof(adj));
     }
+    if (symbology == BARCODE_POSTNET || symbology == BARCODE_PLANET || symbology == BARCODE_RM4SCC || symbology == BARCODE_JAPANPOST || symbology == BARCODE_KIX
+            || symbology == BARCODE_DAFT || symbology == BARCODE_USPS_IMAIL || symbology == BARCODE_AUSPOST || symbology == BARCODE_PHARMA_TWO) {
+        /* Emulate rows with BWIPP heights. */
+        char adj[5] = " -shs";
+        memmove(cmd + GS_INITIAL_LEN + sizeof(adj), cmd + GS_INITIAL_LEN, strlen(cmd) + 1 - GS_INITIAL_LEN);
+        memcpy(cmd + GS_INITIAL_LEN, adj, sizeof(adj));
+    }
+    if (symbology == BARCODE_CODE16K || symbology == BARCODE_CODE49) {
+        char adj[15] = " -sxs=10 -sxe=1"; /* Strip first 10 and last zero */
+        memmove(cmd + GS_INITIAL_LEN + sizeof(adj), cmd + GS_INITIAL_LEN, strlen(cmd) + 1 - GS_INITIAL_LEN);
+        memcpy(cmd + GS_INITIAL_LEN, adj, sizeof(adj));
+    }
 
     if (symbol->debug & ZINT_DEBUG_TEST_PRINT) {
-        printf("testUtilBwipp: cmd %s\n", cmd);
+        printf("i:%d testUtilBwipp: cmd %s\n", index, cmd);
     }
 
     fp = popen(cmd, "r");
     if (!fp) {
-        fprintf(stderr, "testUtilBwipp: failed to run '%s'\n", cmd);
+        fprintf(stderr, "i:%d testUtilBwipp: failed to run '%s'\n", index, cmd);
         return -1;
     }
 
     for (r = 0; r < symbol->rows; r++) {
         if (b + symbol->width > be) {
-            fprintf(stderr, "testUtilBwipp: row %d, width %d, row width iteration overrun (%s)\n", r, symbol->width, cmd);
+            fprintf(stderr, "i:%d testUtilBwipp: row %d, width %d, row width iteration overrun (%s)\n", index, r, symbol->width, cmd);
             pclose(fp);
             return -1;
         }
         cnt = fread(b, 1, symbol->width, fp);
         if (cnt != symbol->width) {
-            fprintf(stderr, "testUtilBwipp: failed to read symbol->width %d bytes, cnt %d (%s)\n", symbol->width, cnt, cmd);
+            fprintf(stderr, "i:%d testUtilBwipp: failed to read symbol->width %d bytes, cnt %d (%s)\n", index, symbol->width, cnt, cmd);
             pclose(fp);
             return -1;
         }
@@ -1974,7 +2038,8 @@ int testUtilBwipp(const struct zint_symbol *symbol, int option_1, int option_2, 
         for (h = bwipp_row_height[r]; h > 1; h--) { /* Ignore row copies if any */
             cnt = fread(b, 1, symbol->width, fp);
             if (cnt != symbol->width) {
-                fprintf(stderr, "testUtilBwipp: failed to read/ignore symbol->width %d bytes, cnt %d (%s)\n", symbol->width, cnt, cmd);
+                fprintf(stderr, "i:%d testUtilBwipp: failed to read/ignore symbol->width %d bytes, cnt %d, h %d, bwipp_row_height[%d] %d, symbol->row_height[%d] %d (%s)\n",
+                        index, symbol->width, cnt, h, r, bwipp_row_height[r], r, symbol->row_height[r], cmd);
                 pclose(fp);
                 return -1;
             }
@@ -1983,7 +2048,7 @@ int testUtilBwipp(const struct zint_symbol *symbol, int option_1, int option_2, 
     *b = '\0';
 
     if (fgetc(fp) != EOF) {
-        fprintf(stderr, "testUtilBwipp: failed to read full stream (%s)\n", cmd);
+        fprintf(stderr, "i:%d testUtilBwipp: failed to read full stream (%s)\n", index, cmd);
         pclose(fp);
         return -1;
     }

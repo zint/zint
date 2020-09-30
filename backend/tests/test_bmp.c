@@ -158,10 +158,10 @@ static void test_print(int index, int generate, int debug) {
         if (data[i].whitespace_width != -1) {
             symbol->whitespace_width = data[i].whitespace_width;
         }
-        if (data[i].fgcolour != NULL) {
+        if (*data[i].fgcolour) {
             strcpy(symbol->fgcolour, data[i].fgcolour);
         }
-        if (data[i].bgcolour != NULL) {
+        if (*data[i].bgcolour) {
             strcpy(symbol->bgcolour, data[i].bgcolour);
         }
 

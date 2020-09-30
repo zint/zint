@@ -196,6 +196,8 @@ static void test_encode(int index, int generate, int debug) {
 
     testStart("");
 
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); // Only do BWIPP test if asked, too slow otherwise
+
     int ret;
     struct item {
         int symbology;
@@ -208,22 +210,42 @@ static void test_encode(int index, int generate, int debug) {
         char *expected;
     };
     struct item data[] = {
-        /*  0*/ { BARCODE_AUSPOST, "119618420932573854", 0, 3, 133, "Australia Post Customer Barcoding Tech Specs Diagram 1; verified manually against tec-it",
-                    "1000001010001010101000100010101000001010100000000000000000100000101000101000001000100000001000101000101000101000101000001000100010100"
-                    "1010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101"
-                    "0000101010101000100000101010100010100000101010101000101000101000100000000000101000101000100000000000001000000010100010001010101000000"
+        /*  0*/ { BARCODE_AUSPOST, "96184209", 0, 3, 73, "Australia Post Customer Barcoding Tech Specs Diagram 1; verified manually against tec-it",
+                    "1000101010100010001010100000101010001010001000001010000010001000001000100"
+                    "1010101010101010101010101010101010101010101010101010101010101010101010101"
+                    "0000100010000010101010001010000010101010001000101010001000100010000010000"
                 },
-        /*  1*/ { BARCODE_AUSREPLY, "12345678", 0, 3, 73, "Verified manually against tec-it",
+        /*  1*/ { BARCODE_AUSPOST, "3221132412345678", 0, 3, 103, "59 Custom 2 N encoding",
+                    "1000100000101010100010001010101010101000101010101000101010101000001000100000101000000000001000000000100"
+                    "1010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101"
+                    "0000001000100010101010101000100000101010000010001010001000000010101010001010000010001010101000100000000"
+                },
+        /*  2*/ { BARCODE_AUSPOST, "32211324Ab #2", 0, 3, 103, "59 Custom 2 C encoding",
+                    "1000100000101010100010001010101010101000101010101010001010100010100000101000100000000010100000100010100"
+                    "1010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101"
+                    "0000001000100010101010101000100000101010000010101010001010100010000000100000001000101010000010000000000"
+                },
+        /*  3*/ { BARCODE_AUSPOST, "32211324123456789012345", 0, 3, 133, "62 Custom 3 N encoding",
+                    "1000001010001010100010001010101010101000101010101000101010101000001000100000001010101010100010101010100000100000100010101010100010100"
+                    "1010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101"
+                    "0000101010100010101010101000100000101010000010001010001000000010101010001010001010101000101000100000001000001010000010001010100010000"
+                },
+        /*  4*/ { BARCODE_AUSPOST, "32211324aBCd#F hIz", 0, 3, 133, "62 Custom 3 C encoding",
+                    "1000001010001010100010001010101010101000101010000010101010100010000010100010100010100010000010000000000000100010100010101010000000100"
+                    "1010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101"
+                    "0000101010100010101010101000100000101010000010100010100010101010001010000010001010100000100010101000000000101000001010100000000010000"
+                },
+        /*  5*/ { BARCODE_AUSREPLY, "12345678", 0, 3, 73, "Verified manually against tec-it",
                     "1000101010001010100010101010100000100010000000001000001000000000100010100"
                     "1010101010101010101010101010101010101010101010101010101010101010101010101"
                     "0000000000101000101000100000001010101000101000000000100010101000101000000"
                 },
-        /*  2*/ { BARCODE_AUSROUTE, "34567890", 0, 3, 73, "Verified manually against tec-it",
+        /*  6*/ { BARCODE_AUSROUTE, "34567890", 0, 3, 73, "Verified manually against tec-it",
                     "1000000000101010101010000010001000000010101000100010101010000000101000100"
                     "1010101010101010101010101010101010101010101010101010101010101010101010101"
                     "0000101010000010000000101010100010100010101000100010101010001010001000000"
                 },
-        /*  3*/ { BARCODE_AUSREDIRECT, "98765432", 0, 3, 73, "Verified manually against tec-it",
+        /*  7*/ { BARCODE_AUSREDIRECT, "98765432", 0, 3, 73, "Verified manually against tec-it",
                     "1000001010000010000000100010100010101010100000101010101000100010100010100"
                     "1010101010101010101010101010101010101010101010101010101010101010101010101"
                     "0000001010100010101010001010001000000010101000000000001010101000001010000"
@@ -232,6 +254,8 @@ static void test_encode(int index, int generate, int debug) {
     int data_size = ARRAY_SIZE(data);
 
     char escaped[1024];
+    char bwipp_buf[8192];
+    char bwipp_msg[1024];
 
     for (int i = 0; i < data_size; i++) {
 
@@ -256,10 +280,17 @@ static void test_encode(int index, int generate, int debug) {
                 assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);
                 assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
 
-                if (ret == 0) {
-                    int width, row;
-                    ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
-                    assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, ret, width, row, data[i].data);
+                int width, row;
+                ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
+                assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, ret, width, row, data[i].data);
+
+                if (do_bwipp && testUtilCanBwipp(symbol->symbology, -1, -1, -1, debug)) {
+                    ret = testUtilBwipp(i, symbol, -1, -1, -1, data[i].data, length, NULL, bwipp_buf, sizeof(bwipp_buf));
+                    assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+
+                    ret = testUtilBwippCmp(symbol, bwipp_msg, bwipp_buf, data[i].expected);
+                    assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
+                                   i, testUtilBarcodeName(symbol->symbology), ret, bwipp_msg, bwipp_buf, data[i].expected);
                 }
             }
         }

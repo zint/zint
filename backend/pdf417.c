@@ -537,6 +537,7 @@ static int pdf417(struct zint_symbol *symbol, unsigned char chaine[], const size
     int total, chainemc[PDF417_MAX_LEN], mclength, c1, c2, c3, dummy[35], calcheight;
     int liste[2][PDF417_MAX_LEN] = {{0}};
     char pattern[580];
+    int error_number = 0;
     int debug = symbol->debug & ZINT_DEBUG_PRINT;
 
     if (length > PDF417_MAX_LEN) {
@@ -760,13 +761,15 @@ static int pdf417(struct zint_symbol *symbol, unsigned char chaine[], const size
     }
 #endif
 
+    symbol->rows = mclength / symbol->option_2;
+
     /* 818 - The CW string is finished */
-    c1 = (mclength / symbol->option_2 - 1) / 3;
-    c2 = symbol->option_1 * 3 + (mclength / symbol->option_2 - 1) % 3;
+    c1 = (symbol->rows - 1) / 3;
+    c2 = symbol->option_1 * 3 + (symbol->rows - 1) % 3;
     c3 = symbol->option_2 - 1;
 
     /* we now encode each row */
-    for (i = 0; i <= (mclength / symbol->option_2) - 1; i++) {
+    for (i = 0; i < symbol->rows; i++) {
         for (j = 0; j < symbol->option_2; j++) {
             dummy[j + 1] = chainemc[i * symbol->option_2 + j];
         }
@@ -821,11 +824,10 @@ static int pdf417(struct zint_symbol *symbol, unsigned char chaine[], const size
         symbol->row_height[j] = calcheight;
     }
     
-    symbol->rows = (mclength / symbol->option_2);
-    symbol->width =(int)strlen(pattern);
+    symbol->width = (int) strlen(pattern);
 
     /* 843 */
-    return 0;
+    return error_number;
 }
 
 /* 345 */

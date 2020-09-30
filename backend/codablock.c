@@ -629,7 +629,7 @@ static void SumASCII(uchar **ppOutPos, int Sum, int CharacterSet)
  */
 INTERNAL int codablock(struct zint_symbol *symbol,const unsigned char source[], const size_t length) {
     int charCur, dataLength;
-    int Error;
+    int error_number;
     int rows, columns, useColumns;
     int fillings;
     int Sum1,Sum2;
@@ -652,14 +652,15 @@ INTERNAL int codablock(struct zint_symbol *symbol,const unsigned char source[], 
     /* option1: rows <= 0: automatic, 1..44 */
     rows = symbol->option_1;
     if (rows == 1) {
-        Error = code_128(symbol, source, length);
-        if (Error < 5) {
+        error_number = code_128(symbol, source, length); /* Only returns errors, not warnings */
+        if (error_number < ZINT_ERROR) {
             symbol->output_options |= BARCODE_BIND;
             if (symbol->border_width == 0) { /* Allow override if non-zero */
                 symbol->border_width = 1; /* AIM ISS-X-24 Section 4.6.1 b) (note change from previous default 2) */
             }
+            symbol->text[0] = '\0'; /* Disable HRT for compatibility with CODABLOCKF */
         }
-        return Error;
+        return error_number;
     }
     if (rows > 44) {
         strcpy(symbol->errtxt, "410: Rows parameter not in 0..44");
@@ -723,14 +724,14 @@ INTERNAL int codablock(struct zint_symbol *symbol,const unsigned char source[], 
     useColumns = columns - 5;
     if ( rows > 0 ) {
         /* row count given */
-        Error = Rows2Columns(symbol, T, dataLength, &rows, &useColumns, pSet, &fillings);
+        error_number = Rows2Columns(symbol, T, dataLength, &rows, &useColumns, pSet, &fillings);
     } else {
         /* column count given */
-        Error = Columns2Rows(symbol, T, dataLength, &rows, &useColumns, pSet, &fillings);
+        error_number = Columns2Rows(symbol, T, dataLength, &rows, &useColumns, pSet, &fillings);
     }
-    if (Error != 0) {
+    if (error_number != 0) {
         strcpy(symbol->errtxt, "413: Data string too long");
-        return Error;
+        return error_number;
     }
     /* Suppresses clang-analyzer-core.VLASize warning */
     assert(rows >= 2 && useColumns >= 4);
@@ -984,5 +985,5 @@ INTERNAL int codablock(struct zint_symbol *symbol,const unsigned char source[], 
         symbol->border_width = 1; /* AIM ISS-X-24 Section 4.6.1 b) (note change from previous default 2) */
     }
 
-    return 0;
+    return error_number;
 }

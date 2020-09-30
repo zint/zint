@@ -135,7 +135,7 @@ INTERNAL int post_plot(struct zint_symbol *symbol, unsigned char source[], int l
             set_module(symbol, 0, writer);
         }
         set_module(symbol, 1, writer);
-        writer += 3;
+        writer += 2;
     }
     symbol->row_height[0] = 6;
     symbol->row_height[1] = 6;
@@ -145,7 +145,7 @@ INTERNAL int post_plot(struct zint_symbol *symbol, unsigned char source[], int l
     return error_number;
 }
 
-/* Handles the PLANET  system used for item tracking in the US */
+/* Handles the PLANET system used for item tracking in the US */
 static int planet(struct zint_symbol *symbol, unsigned char source[], char dest[], int length) {
     int i, sum, check_digit;
     int error_number;
@@ -197,12 +197,13 @@ INTERNAL int planet_plot(struct zint_symbol *symbol, unsigned char source[], int
             set_module(symbol, 0, writer);
         }
         set_module(symbol, 1, writer);
-        writer += 3;
+        writer += 2;
     }
     symbol->row_height[0] = 6;
     symbol->row_height[1] = 6;
     symbol->rows = 2;
     symbol->width = writer - 1;
+
     return error_number;
 }
 
@@ -241,13 +242,13 @@ INTERNAL int korea_post(struct zint_symbol *symbol, unsigned char source[], int 
     lookup(NEON, KoreaTable, localstr[6], dest);
     expand(symbol, dest);
     ustrcpy(symbol->text, (unsigned char*) localstr);
+
     return error_number;
 }
 
 /* The simplest barcode symbology ever! Supported by MS Word, so here it is!
     glyphs from http://en.wikipedia.org/wiki/Facing_Identification_Mark */
 INTERNAL int fim(struct zint_symbol *symbol, unsigned char source[], int length) {
-
     char dest[16] = {0};
 
     if (length > 1) {
@@ -279,11 +280,12 @@ INTERNAL int fim(struct zint_symbol *symbol, unsigned char source[], int length)
     }
 
     expand(symbol, dest);
+
     return 0;
 }
 
 /* Handles the 4 State barcodes used in the UK by Royal Mail */
-static char rm4scc(char source[], unsigned char dest[], int length) {
+static char rm4scc(unsigned char source[], char dest[], int length) {
     int i;
     int top, bottom, row, column, check_digit;
     char values[3], set_copy[] = KRSET;
@@ -292,10 +294,10 @@ static char rm4scc(char source[], unsigned char dest[], int length) {
     bottom = 0;
 
     /* start character */
-    strcpy((char*) dest, "1");
+    strcpy(dest, "1");
 
     for (i = 0; i < length; i++) {
-        lookup(KRSET, RoyalTable, source[i], (char*) dest);
+        lookup(KRSET, RoyalTable, source[i], dest);
         strcpy(values, RoyalValues[posn(KRSET, source[i])]);
         top += ctoi(values[0]);
         bottom += ctoi(values[1]);
@@ -311,10 +313,10 @@ static char rm4scc(char source[], unsigned char dest[], int length) {
         column = 5;
     }
     check_digit = (6 * row) + column;
-    strcat((char*) dest, RoyalTable[check_digit]);
+    strcat(dest, RoyalTable[check_digit]);
 
     /* stop character */
-    strcat((char*) dest, "0");
+    strcat(dest, "0");
 
     return set_copy[check_digit];
 }
@@ -337,7 +339,7 @@ INTERNAL int royal_plot(struct zint_symbol *symbol, unsigned char source[], int 
         strcpy(symbol->errtxt, "489: Invalid characters in data");
         return error_number;
     }
-    /*check = */rm4scc((char*) source, (unsigned char*) height_pattern, length);
+    /*check = */rm4scc(source, height_pattern, length);
 
     writer = 0;
     h = strlen(height_pattern);
@@ -487,6 +489,7 @@ INTERNAL int flattermarken(struct zint_symbol *symbol, unsigned char source[], i
     }
 
     expand(symbol, dest);
+
     return error_number;
 }
 

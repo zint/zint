@@ -15,7 +15,7 @@
  ***************************************************************************/
 /* vim: set ts=4 sw=4 et : */
 
-#include <QDebug>
+//#include <QDebug>
 #include <QGraphicsScene>
 #include <QImage>
 #include <QColorDialog>
@@ -28,6 +28,8 @@
 #include <QClipboard>
 #include <QMimeData>
 #include <QColor>
+#include <QListView>
+#include <QShortcut>
 
 #include "mainwindow.h"
 #include "datawindow.h"
@@ -35,7 +37,7 @@
 #include <stdio.h>
 
 MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags fl)
-        : QWidget(parent, fl), m_optionWidget(0)
+        : QWidget(parent, fl), m_optionWidget(NULL), m_symbology(0)
 {
     m_bc.bc.setDebug(QCoreApplication::arguments().contains("--verbose")); // Undocumented command line debug flag
 
@@ -62,7 +64,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags fl)
         "Code 2 of 5 IATA",
         "Code 2 of 5 Industrial",
         "Code 2 of 5 Interleaved",
-        "Code 2 of 5 Matrix",
+        "Code 2 of 5 Standard",
         "Code 32 (Italian Pharmacode)",
         "Code 39 (ISO 16388)",
         "Code 39 Extended",
@@ -124,47 +126,75 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags fl)
     setupUi(this);
     view->setScene(scene);
 
-    m_fgcolor=qRgba(settings.value("studio/ink/red", 0).toInt(),
+    restoreGeometry(settings.value("studio/window_geometry").toByteArray());
+
+    m_fgcolor.setRgb(settings.value("studio/ink/red", 0).toInt(),
                     settings.value("studio/ink/green", 0).toInt(),
                     settings.value("studio/ink/blue", 0).toInt(),
                     settings.value("studio/ink/alpha", 0xff).toInt());
-    m_bgcolor=qRgba(settings.value("studio/paper/red", 0xff).toInt(),
+    m_bgcolor.setRgb(settings.value("studio/paper/red", 0xff).toInt(),
                     settings.value("studio/paper/green", 0xff).toInt(),
                     settings.value("studio/paper/blue", 0xff).toInt(),
                     settings.value("studio/paper/alpha", 0xff).toInt());
 
-    for (int i = 0; i < metaObject()->enumerator(0).keyCount(); i++) {
+    int cnt = metaObject()->enumerator(0).keyCount();
+    for (int i = 0; i < cnt; i++) {
         bstyle->addItem(metaObject()->enumerator(0).key(i));
         bstyle->setItemText(i, bstyle_text[i]);
     }
+#ifdef _WIN32
+    bstyle->setMaxVisibleItems(cnt); /* Apart from increasing combo size, seems to be needed for filter to work */
+#endif
+#if QT_VERSION <  0x50A00
+    /* Prior to Qt 5.10 comboboxes have display issues when filtered (scrollers not accounted for), so disable */
+    filter_bstyle->hide();
+#endif
 
     bstyle->setCurrentIndex(settings.value("studio/symbology", 10).toInt());
 
     txtData->setText(settings.value("studio/data", "Your Data Here!").toString());
     txtComposite->setText(settings.value("studio/composite_text", "Your Data Here!").toString());
+    chkComposite->setChecked(settings.value("studio/chk_composite").toInt() ? true : false);
+    cmbCompType->setCurrentIndex(settings.value("studio/comp_type", 0).toInt());
+    cmbECI->setCurrentIndex(settings.value("studio/appearance/eci", 0).toInt());
+    chkEscape->setChecked(settings.value("studio/chk_escape").toInt() ? true : false);
+    chkData->setChecked(settings.value("studio/chk_data").toInt() ? true : false);
+    chkRInit->setChecked(settings.value("studio/chk_rinit").toInt() ? true : false);
+    chkAutoHeight->setChecked(settings.value("studio/appearance/autoheight", 1).toInt() ? true : false);
     heightb->setValue(settings.value("studio/appearance/height", 50).toInt());
-    bwidth->setValue(settings.value("studio/appearance/border", 50).toInt());
+    bwidth->setValue(settings.value("studio/appearance/border", 0).toInt());
     spnWhitespace->setValue(settings.value("studio/appearance/whitespace", 0).toInt());
     spnScale->setValue(settings.value("studio/appearance/scale", 1.0).toFloat());
     btype->setCurrentIndex(settings.value("studio/appearance/border_type", 0).toInt());
+    cmbFontSetting->setCurrentIndex(settings.value("studio/appearance/font_setting", 0).toInt());
+    chkHRTShow->setChecked(settings.value("studio/appearance/chk_hrt_show", 1).toInt() ? true : false);
+    chkCMYK->setChecked(settings.value("studio/appearance/cmyk", 0).toInt() ? true : false);
+    cmbRotate->setCurrentIndex(settings.value("studio/appearance/rotate", 0).toInt());
+    chkDotty->setChecked(settings.value("studio/appearance/dotty", 0).toInt() ? true : false);
+    spnDotSize->setValue(settings.value("studio/appearance/dot_size", 4.0 / 5.0).toFloat());
 
     change_options();
+
     scene->addItem(&m_bc);
 
     update_preview();
 
     connect(bstyle, SIGNAL(currentIndexChanged( int )), SLOT(change_options()));
     connect(bstyle, SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+    connect(filter_bstyle, SIGNAL(textChanged( const QString& )), SLOT(filter_symbologies()));
     connect(heightb, SIGNAL(valueChanged( int )), SLOT(update_preview()));
     connect(bwidth,  SIGNAL(valueChanged( int )), SLOT(update_preview()));
     connect(btype, SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+    connect(cmbFontSetting, SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
     connect(txtData, SIGNAL(textChanged( const QString& )), SLOT(update_preview()));
     connect(txtComposite, SIGNAL(textChanged()), SLOT(update_preview()));
-    connect(chkComposite, SIGNAL(stateChanged( int )), SLOT(composite_enable()));
+    connect(chkComposite, SIGNAL(stateChanged( int )), SLOT(composite_ui_set()));
     connect(chkComposite, SIGNAL(stateChanged( int )), SLOT(update_preview()));
     connect(cmbCompType, SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+    connect(cmbECI, SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
     connect(chkEscape, SIGNAL(stateChanged( int )), SLOT(update_preview()));
     connect(chkData, SIGNAL(stateChanged( int )), SLOT(update_preview()));
+    connect(chkRInit, SIGNAL(stateChanged( int )), SLOT(update_preview()));
     connect(spnWhitespace, SIGNAL(valueChanged( int )), SLOT(update_preview()));
     connect(btnAbout, SIGNAL(clicked( bool )), SLOT(about()));
     connect(btnSave, SIGNAL(clicked( bool )), SLOT(save()));
@@ -173,16 +203,30 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags fl)
     connect(btnReset, SIGNAL(clicked( bool )), SLOT(reset_view()));
     connect(btnMoreData, SIGNAL(clicked( bool )), SLOT(open_data_dialog()));
     connect(btnSequence, SIGNAL(clicked( bool )), SLOT(open_sequence_dialog()));
-    connect(chkHRTHide, SIGNAL(stateChanged( int )), SLOT(update_preview()));
-    connect(chkAutoHeight, SIGNAL(stateChanged( int )), SLOT(autoheight_clicked()));
+    connect(chkAutoHeight, SIGNAL(stateChanged( int )), SLOT(autoheight_ui_set()));
+    connect(chkAutoHeight, SIGNAL(stateChanged( int )), SLOT(update_preview()));
+    connect(chkHRTShow, SIGNAL(stateChanged( int )), SLOT(HRTShow_ui_set()));
+    connect(chkHRTShow, SIGNAL(stateChanged( int )), SLOT(update_preview()));
+    connect(chkCMYK, SIGNAL(stateChanged( int )), SLOT(change_cmyk()));
+    connect(cmbRotate, SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+    connect(chkDotty, SIGNAL(stateChanged( int )), SLOT(dotty_ui_set()));
+    connect(chkDotty, SIGNAL(stateChanged( int )), SLOT(update_preview()));
+    connect(spnDotSize, SIGNAL(valueChanged( double )), SLOT(update_preview()));
     connect(btnCopySVG, SIGNAL(clicked( bool )), SLOT(copy_to_clipboard_svg()));
     connect(btnCopyBMP, SIGNAL(clicked( bool )), SLOT(copy_to_clipboard_bmp()));
+
+    connect(&m_bc.bc, SIGNAL(encoded()), SLOT(on_encoded()));
+
+    QShortcut *ctrl_q = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q), this);
+    connect(ctrl_q, SIGNAL(activated()), SLOT(quit_now()));
 }
 
 MainWindow::~MainWindow()
 {
     QSettings settings;
 
+    settings.setValue("studio/window_geometry", saveGeometry());
+    settings.setValue("studio/tab_index", tabMain->currentIndex());
     settings.setValue("studio/symbology", bstyle->currentIndex());
     settings.setValue("studio/ink/red", m_fgcolor.red());
     settings.setValue("studio/ink/green", m_fgcolor.green());
@@ -194,11 +238,26 @@ MainWindow::~MainWindow()
     settings.setValue("studio/paper/alpha", m_bgcolor.alpha());
     settings.setValue("studio/data", txtData->text());
     settings.setValue("studio/composite_text", txtComposite->toPlainText());
+    settings.setValue("studio/chk_composite", chkComposite->isChecked() ? 1 : 0);
+    settings.setValue("studio/comp_type", cmbCompType->currentIndex());
+    settings.setValue("studio/eci", cmbECI->currentIndex());
+    settings.setValue("studio/chk_escape", chkEscape->isChecked() ? 1 : 0);
+    settings.setValue("studio/chk_data", chkData->isChecked() ? 1 : 0);
+    settings.setValue("studio/chk_rinit", chkRInit->isChecked() ? 1 : 0);
+    settings.setValue("studio/appearance/autoheight", chkAutoHeight->isChecked() ? 1 : 0);
     settings.setValue("studio/appearance/height", heightb->value());
     settings.setValue("studio/appearance/border", bwidth->value());
     settings.setValue("studio/appearance/whitespace", spnWhitespace->value());
     settings.setValue("studio/appearance/scale", spnScale->value());
     settings.setValue("studio/appearance/border_type", btype->currentIndex());
+    settings.setValue("studio/appearance/font_setting", cmbFontSetting->currentIndex());
+    settings.setValue("studio/appearance/chk_hrt_show", chkHRTShow->isChecked() ? 1 : 0);
+    settings.setValue("studio/appearance/chk_cmyk", chkCMYK->isChecked() ? 1 : 0);
+    settings.setValue("studio/appearance/rotate", cmbRotate->currentIndex());
+    settings.setValue("studio/appearance/chk_dotty", chkDotty->isChecked() ? 1 : 0);
+    settings.setValue("studio/appearance/dot_size", spnDotSize->value());
+
+    save_sub_settings(settings, m_bc.bc.symbol());
 }
 
 void MainWindow::resizeEvent(QResizeEvent* event)
@@ -209,8 +268,8 @@ void MainWindow::resizeEvent(QResizeEvent* event)
 
 void MainWindow::reset_view()
 {
-    m_fgcolor=qRgba(0,0,0,0xff);
-    m_bgcolor=qRgba(0xff,0xff,0xff,0xff);
+    m_fgcolor.setRgb(0, 0, 0, 0xff);
+    m_bgcolor.setRgb(0xff, 0xff, 0xff, 0xff);
     update_preview();
 }
 
@@ -227,16 +286,16 @@ bool MainWindow::save()
 
 #ifdef NO_PNG
     suffix = settings.value("studio/default_suffix", "gif").toString();
-    save_dialog.setNameFilter(tr("Encapsulated Post Script (*.eps);;Graphics Interchange Format (*.gif);;Scalable Vector Graphic (*.svg);;Windows Bitmap (*.bmp);;ZSoft PC Painter Image (*.pcx);;Extended Metafile (*.emf);;Tagged Image File Format (*.tif)"));
+    save_dialog.setNameFilter(tr("Encapsulated PostScript (*.eps);;Graphics Interchange Format (*.gif);;Scalable Vector Graphic (*.svg);;Windows Bitmap (*.bmp);;ZSoft PC Painter Image (*.pcx);;Extended Metafile (*.emf);;Tagged Image File Format (*.tif)"));
 #else
     suffix = settings.value("studio/default_suffix", "png").toString();
-    save_dialog.setNameFilter(tr("Portable Network Graphic (*.png);;Encapsulated Post Script (*.eps);;Graphics Interchange Format (*.gif);;Scalable Vector Graphic (*.svg);;Windows Bitmap (*.bmp);;ZSoft PC Painter Image (*.pcx);;Extended Metafile (*.emf);;Tagged Image File Format (*.tif)"));
+    save_dialog.setNameFilter(tr("Portable Network Graphic (*.png);;Encapsulated PostScript (*.eps);;Graphics Interchange Format (*.gif);;Scalable Vector Graphic (*.svg);;Windows Bitmap (*.bmp);;ZSoft PC Painter Image (*.pcx);;Extended Metafile (*.emf);;Tagged Image File Format (*.tif)"));
 #endif
 
     if (QString::compare(suffix, "png", Qt::CaseInsensitive) == 0)
         save_dialog.selectNameFilter("Portable Network Graphic (*.png)");
     if (QString::compare(suffix, "eps", Qt::CaseInsensitive) == 0)
-        save_dialog.selectNameFilter("Encapsulated Post Script (*.eps)");
+        save_dialog.selectNameFilter("Encapsulated PostScript (*.eps)");
     if (QString::compare(suffix, "gif", Qt::CaseInsensitive) == 0)
         save_dialog.selectNameFilter("Graphics Interchange Format (*.gif)");
     if (QString::compare(suffix, "svg", Qt::CaseInsensitive) == 0)
@@ -265,7 +324,7 @@ bool MainWindow::save()
     }
 
     if(m_bc.bc.save_to_file(filename) == false) {
-        if (m_bc.bc.getError() > 4) {
+        if (m_bc.bc.getError() >= ZINT_ERROR) {
             QMessageBox::critical(this, tr("Save Error"), m_bc.bc.error_message());
             return false;
         } else {
@@ -304,11 +363,11 @@ void MainWindow::about()
            "\"QR Code\" is a Registered Trademark of Denso Corp.<br>"
            "\"Telepen\" is a Registered Trademark of SB Electronics."
            "<p><table border=1><tr><td><small>Currently supported standards include:<br>"
-           "EN 797:1996, EN 798:1996, EN 12323:2005, ISO/IEC 15417:2007,<br>"
+           "BS 797:1996, BS 798:1996, ISO/IEC 12323:2005, ISO/IEC 15417:2007,<br>"
            "ISO/IEC 15438:2015, ISO/IEC 16022:2006, ISO/IEC 16023:2000,<br>"
            "ISO/IEC 16388:2007, ISO/IEC 18004:2015, ISO/IEC 24723:2010,<br>"
            "ISO/IEC 24724:2011, ISO/IEC 24728:2006, ISO/IEC 24778:2008,<br>"
-           "ISO/IEC 21471:2019, ANSI-HIBC 2.3-2009, ANSI/AIM BC6-2000,<br>"
+           "ISO/IEC 21471:2019, ANSI-HIBC 2.6-2016, ANSI/AIM BC6-2000,<br>"
            "ANSI/AIM BC12-1998, AIMD014 (v 1.63), USPS-B-3200"
            "</small></td></tr></table>").arg(zint_version).arg(QT_VERSION_STR));
 }
@@ -352,22 +411,115 @@ void MainWindow::on_bgcolor_clicked()
     }
 }
 
-void MainWindow::autoheight_clicked()
+void MainWindow::autoheight_ui_set()
 {
-    if (chkAutoHeight->isChecked()) {
+    if (!chkAutoHeight->isEnabled() || chkAutoHeight->isChecked()) {
         lblHeight->setEnabled(false);
         heightb->setEnabled(false);
     } else {
         lblHeight->setEnabled(true);
         heightb->setEnabled(true);
     }
-    update_preview();
+}
+
+void MainWindow::HRTShow_ui_set()
+{
+    if (chkHRTShow->isEnabled() && chkHRTShow->isChecked()) {
+        lblFontSetting->setEnabled(true);
+        cmbFontSetting->setEnabled(true);
+    } else {
+        lblFontSetting->setEnabled(false);
+        cmbFontSetting->setEnabled(false);
+    }
+}
+
+void MainWindow::dotty_ui_set()
+{
+    int symbology = metaObject()->enumerator(0).value(bstyle->currentIndex());
+
+    if (symbology == BARCODE_DOTCODE) {
+        chkDotty->setEnabled(false);
+        lblDotSize->setEnabled(true);
+        spnDotSize->setEnabled(true);
+    } else {
+        if (chkDotty->isEnabled() && chkDotty->isChecked()) {
+            lblDotSize->setEnabled(true);
+            spnDotSize->setEnabled(true);
+        } else {
+            lblDotSize->setEnabled(false);
+            spnDotSize->setEnabled(false);
+        }
+    }
+}
+
+void MainWindow::on_encoded()
+{
+    if (!chkAutoHeight->isEnabled() || chkAutoHeight->isChecked()) {
+        heightb->setValue(m_bc.bc.height());
+    }
+}
+
+void MainWindow::filter_symbologies()
+{
+    QString filter = filter_bstyle->text().simplified(); /* `simplified()` trims and reduces inner whitespace to a single space - nice! */
+    QListView *view = qobject_cast<QListView *>(bstyle->view());
+    QStandardItemModel *model = qobject_cast<QStandardItemModel*>(bstyle->model());
+    QStandardItem *item;
+
+    if (!view || !model) {
+        return;
+    }
+
+    /* QString::split() only introduced Qt 5.14, so too new for us to use */
+    QStringList filter_list;
+    if (!filter.isEmpty()) {
+        int i, j;
+        for (i = 0; (j = filter.indexOf(" ", i)) != -1; i = j + 1) {
+            filter_list << filter.mid(i, j - i);
+        }
+        filter_list << filter.mid(i);
+    }
+    int filter_cnt = filter_list.size();
+    int cnt = metaObject()->enumerator(0).keyCount();
+
+    if (filter_cnt) {
+        for (int i = 0; i < cnt; i++) {
+            bool hidden = view->isRowHidden(i);
+            bool hide = true;
+            for (int j = 0; j < filter_cnt; j++) {
+                if (bstyle->itemText(i).contains(filter_list[j], Qt::CaseInsensitive)) {
+                    hide = false;
+                    break;
+                }
+            }
+            if ((hide && !hidden) || (!hide && hidden)) {
+                // https://stackoverflow.com/questions/25172220/how-to-hide-qcombobox-items-instead-of-clearing-them-out
+                item = model->item(i);
+                item->setFlags(hide ? item->flags() & ~Qt::ItemIsEnabled : item->flags() | Qt::ItemIsEnabled);
+                view->setRowHidden(i, hide);
+            }
+        }
+    } else {
+        for (int i = 0; i < cnt; i++) {
+            if (view->isRowHidden(i)) {
+                item = model->item(i);
+                item->setFlags(item->flags() | Qt::ItemIsEnabled);
+                view->setRowHidden(i, false);
+            }
+        }
+    }
 }
 
 void MainWindow::change_print_scale()
 {
     /* This value is only used when printing (saving) to file */
     m_bc.bc.setScale((float)spnScale->value());
+}
+
+void MainWindow::change_cmyk()
+{
+    /* This value is only used when printing (saving) to file */
+    m_bc.bc.setCMYK(chkCMYK->isChecked());
 }
 
 void MainWindow::quit_now()
@@ -378,16 +530,17 @@ void MainWindow::quit_now()
 void MainWindow::copy_to_clipboard_svg()
 {
     QClipboard *clipboard = QGuiApplication::clipboard();
-    QMimeData *data = new QMimeData;
     QString filename = ".zint.svg";
     double scale = spnScale->value();
 
     spnScale->setValue(5);
 
     if (!m_bc.bc.save_to_file(filename)) {
+        spnScale->setValue(scale);
         return;
     }
 
+    QMimeData *data = new QMimeData;
     data->setImageData(QImage(filename));
     clipboard->setMimeData(data, QClipboard::Clipboard);
 
@@ -399,13 +552,13 @@ void MainWindow::copy_to_clipboard_svg()
 void MainWindow::copy_to_clipboard_bmp()
 {
     QClipboard *clipboard = QGuiApplication::clipboard();
-    QMimeData *data = new QMimeData;
     QString filename = ".zint.bmp";
 
     if (!m_bc.bc.save_to_file(filename)) {
         return;
     }
 
+    QMimeData *data = new QMimeData;
     data->setImageData(QImage(filename));
     clipboard->setMimeData(data, QClipboard::Clipboard);
 
@@ -415,13 +568,24 @@ void MainWindow::copy_to_clipboard_bmp()
 void MainWindow::change_options()
 {
     QUiLoader uiload;
+    QSettings settings;
+
+    bool initial_load = m_symbology == 0;
+    int original_tab_count = tabMain->count();
+    int original_tab_index = tabMain->currentIndex();
     int symbology = metaObject()->enumerator(0).value(bstyle->currentIndex());
+
+    if (m_symbology) {
+        save_sub_settings(settings, m_symbology);
+    }
 
     if (tabMain->count()==3)
         tabMain->removeTab(1);
 
     chkComposite->setText(tr("Add 2D Component"));
     btype->setItemText(0, tr("No border"));
+    combobox_item_enabled(cmbFontSetting, 1, true);
+    cmbFontSetting->setItemText(2, tr("Small"));
 
     if (symbology == BARCODE_CODE128)
     {
@@ -478,7 +642,6 @@ void MainWindow::change_options()
         connect(m_optionWidget->findChild<QObject*>("cmbDotCols"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radDotStand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radDotGS1"), SIGNAL(clicked( bool )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("txtDotSize"), SIGNAL(textChanged( QString )), SLOT(update_preview()));
     }
 
     if (symbology == BARCODE_AZTEC)
@@ -530,12 +693,12 @@ void MainWindow::change_options()
             return;
         m_optionWidget=uiload.load(&file);
         file.close();
-        tabMain->insertTab(1,m_optionWidget,tr("Code 39"));
         connect(m_optionWidget->findChild<QObject*>("radC39Stand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radC39Check"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radC39HIBC"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         if (symbology == BARCODE_EXCODE39)
         {
+            tabMain->insertTab(1,m_optionWidget,tr("Code 39 Extended"));
             if(m_optionWidget->findChild<QRadioButton*>("radC39HIBC")->isChecked() == true)
             {
                 m_optionWidget->findChild<QRadioButton*>("radC39HIBC")->setChecked(false);
@@ -543,8 +706,10 @@ void MainWindow::change_options()
             }
             m_optionWidget->findChild<QRadioButton*>("radC39HIBC")->setEnabled(false);
         }
-        else
+        else {
+            tabMain->insertTab(1,m_optionWidget,tr("Code 39"));
             m_optionWidget->findChild<QRadioButton*>("radC39HIBC")->setEnabled(true);
+        }
     }
 
     if (symbology == BARCODE_LOGMARS)
@@ -634,6 +799,7 @@ void MainWindow::change_options()
         connect(m_optionWidget->findChild<QObject*>("radQRStand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radQRGS1"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radQRHIBC"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(m_optionWidget->findChild<QObject*>("chkQRFullMultibyte"), SIGNAL(stateChanged( int )), SLOT(update_preview()));
     }
 
     if (symbology == BARCODE_RMQR)
@@ -648,6 +814,7 @@ void MainWindow::change_options()
         connect(m_optionWidget->findChild<QObject*>("cmbRMQRECC"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radRMQRStand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radRMQRGS1"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(m_optionWidget->findChild<QObject*>("chkRMQRFullMultibyte"), SIGNAL(stateChanged( int )), SLOT(update_preview()));
     }
 
     if (symbology == BARCODE_HANXIN)
@@ -660,6 +827,7 @@ void MainWindow::change_options()
         tabMain->insertTab(1,m_optionWidget,tr("Han Xin Code"));
         connect(m_optionWidget->findChild<QObject*>("cmbHXSize"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("cmbHXECC"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(m_optionWidget->findChild<QObject*>("chkHXFullMultibyte"), SIGNAL(stateChanged( int )), SLOT(update_preview()));
     }
 
     if (symbology == BARCODE_MICROQR)
@@ -672,6 +840,7 @@ void MainWindow::change_options()
         tabMain->insertTab(1,m_optionWidget,tr("Micro QR Code"));
         connect(m_optionWidget->findChild<QObject*>("cmbMQRSize"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("cmbMQRECC"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(m_optionWidget->findChild<QObject*>("chkMQRFullMultibyte"), SIGNAL(stateChanged( int )), SLOT(update_preview()));
     }
 
     if (symbology == BARCODE_GRIDMATRIX)
@@ -684,6 +853,7 @@ void MainWindow::change_options()
         tabMain->insertTab(1,m_optionWidget,tr("Grid Matrix"));
         connect(m_optionWidget->findChild<QObject*>("cmbGridSize"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("cmbGridECC"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(m_optionWidget->findChild<QObject*>("chkGridFullMultibyte"), SIGNAL(stateChanged( int )), SLOT(update_preview()));
     }
 
     if (symbology == BARCODE_MAXICODE)
@@ -768,6 +938,11 @@ void MainWindow::change_options()
         m_optionWidget=uiload.load(&file);
         file.close();
         tabMain->insertTab(1, m_optionWidget, tr("UPC-A"));
+        combobox_item_enabled(cmbFontSetting, 1, false);
+        if (cmbFontSetting->currentIndex() == 1) {
+            cmbFontSetting->setCurrentIndex(0);
+        }
+        cmbFontSetting->setItemText(2, tr("Small (vector only)"));
         connect(m_optionWidget->findChild<QObject*>("cmbUPCAAddonGap"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
     }
 
@@ -787,6 +962,11 @@ void MainWindow::change_options()
         } else {
             tabMain->insertTab(1, m_optionWidget, tr("EAN"));
         }
+        combobox_item_enabled(cmbFontSetting, 1, false);
+        if (cmbFontSetting->currentIndex() == 1) {
+            cmbFontSetting->setCurrentIndex(0);
+        }
+        cmbFontSetting->setItemText(2, tr("Small (vector only)"));
         connect(m_optionWidget->findChild<QObject*>("cmbUPCEANAddonGap"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
     }
 
@@ -816,23 +996,47 @@ void MainWindow::change_options()
             grpComposite->show();
             break;
         default:
-            chkComposite->setChecked(false);
             grpComposite->hide();
             break;
     }
-    tabMain->setCurrentIndex(0);
+    cmbECI->setEnabled(m_bc.bc.supportsECI(symbology)); /* Will need checking again in update_preview() as encoding mode dependent (HIBC) */
+    chkRInit->setEnabled(m_bc.bc.supportsReaderInit(symbology)); /* Ditto (HIBC and GS1) */
+    chkAutoHeight->setEnabled(!m_bc.bc.isFixedRatio(symbology));
+    chkHRTShow->setEnabled(m_bc.bc.hasHRT(symbology));
+    chkDotty->setEnabled(m_bc.bc.isDotty(symbology));
+
+    load_sub_settings(settings, symbology);
+
+    composite_ui_set();
+    autoheight_ui_set();
+    HRTShow_ui_set();
+    dotty_ui_set();
+
+    if (initial_load) {
+        tabMain->setCurrentIndex(settings.value("studio/tab_index", 0).toInt());
+    } else if (original_tab_count == tabMain->count()) {
+        tabMain->setCurrentIndex(original_tab_index);
+    } else if (original_tab_count > tabMain->count()) {
+        tabMain->setCurrentIndex(original_tab_index == 2 ? 1 : 0);
+    } else {
+        tabMain->setCurrentIndex(original_tab_index == 1 ? 2 : 0);
+    }
 }
 
-void MainWindow::composite_enable()
+void MainWindow::composite_ui_set()
 {
-    if(chkComposite->isChecked() == true)
+    if (!grpComposite->isHidden() && chkComposite->isChecked())
     {
         lblCompType->setEnabled(true);
         cmbCompType->setEnabled(true);
         lblComposite->setEnabled(true);
         txtComposite->setEnabled(true);
-        if (metaObject()->enumerator(0).value(bstyle->currentIndex())==BARCODE_CODE128)
-            m_optionWidget->findChild<QRadioButton*>("radC128EAN")->setChecked(true);
+        if (metaObject()->enumerator(0).value(bstyle->currentIndex()) == BARCODE_CODE128) {
+            QRadioButton *radioButton = m_optionWidget->findChild<QRadioButton*>("radC128EAN");
+            if (radioButton) {
+                radioButton->setChecked(true);
+            }
+        }
     }
     else
     {
@@ -847,7 +1051,8 @@ void MainWindow::composite_ean_check()
 {
     if (metaObject()->enumerator(0).value(bstyle->currentIndex())!=BARCODE_CODE128)
         return;
-    if(!m_optionWidget->findChild<QRadioButton*>("radC128EAN")->isChecked())
+    QRadioButton *radioButton = m_optionWidget->findChild<QRadioButton*>("radC128EAN");
+    if (radioButton && !radioButton->isChecked())
         chkComposite->setChecked(false);
 }
 
@@ -864,7 +1069,19 @@ void MainWindow::maxi_primary()
     }
 }
 
-void MainWindow::upcean_addon_gap(QComboBox *comboBox, QLabel* label, int base)
+// Taken from https://stackoverflow.com/questions/38915001/disable-specific-items-in-qcombobox
+void MainWindow::combobox_item_enabled(QComboBox *comboBox, int index, bool enabled)
+{
+    QStandardItemModel *model = qobject_cast<QStandardItemModel*>(comboBox->model());
+    if (model) {
+        QStandardItem *item = model->item(index);
+        if (item) {
+            item->setEnabled(enabled);
+        }
+    }
+}
+
+void MainWindow::upcean_addon_gap(QComboBox *comboBox, QLabel *label, int base)
 {
     const QRegularExpression addonRE("^[0-9X]+[+][0-9]+$");
     int item_val;
@@ -901,7 +1118,7 @@ void MainWindow::update_preview()
     QCheckBox *checkBox;
 
     //m_bc.ar=(Zint::QZint::AspectRatioMode)1;
-    if(chkComposite->isChecked() == true) {
+    if (!grpComposite->isHidden() && chkComposite->isChecked()) {
         m_bc.bc.setPrimaryMessage(txtData->text());
         m_bc.bc.setText(txtComposite->toPlainText());
     } else {
@@ -919,11 +1136,8 @@ void MainWindow::update_preview()
     if (chkEscape->isChecked()) {
         m_bc.bc.setInputMode(m_bc.bc.inputMode() | ESCAPE_MODE);
     }
-    m_bc.bc.setHideText(0);
-    if(chkHRTHide->isChecked() == false) {
-        m_bc.bc.setHideText(1);
-    }
     m_bc.bc.setGSSep(false);
+    m_bc.bc.setDotSize(0.4f / 0.5f);
 
     switch (symbology) {
 
@@ -1046,7 +1260,6 @@ void MainWindow::update_preview()
             m_bc.bc.setSymbol(BARCODE_DOTCODE);
             m_bc.bc.setOption2(m_optionWidget->findChild<QComboBox*>("cmbDotCols")->currentIndex());
             set_gs1_mode(m_optionWidget->findChild<QRadioButton*>("radDotGS1")->isChecked());
-            m_bc.bc.setDotSize(m_optionWidget->findChild<QLineEdit*>("txtDotSize")->text().toFloat());
             break;
 
         case BARCODE_AZTEC:
@@ -1196,6 +1409,9 @@ void MainWindow::update_preview()
             if (item_val) {
                 m_bc.bc.setSecurityLevel(item_val);
             }
+            if (m_optionWidget->findChild<QCheckBox*>("chkQRFullMultibyte")->isChecked()) {
+                m_bc.bc.setOption3(ZINT_FULL_MULTIBYTE);
+            }
             break;
 
         case BARCODE_MICROQR:
@@ -1207,6 +1423,9 @@ void MainWindow::update_preview()
             item_val = m_optionWidget->findChild<QComboBox*>("cmbMQRECC")->currentIndex();
             if (item_val) {
                 m_bc.bc.setSecurityLevel(item_val);
+            }
+            if (m_optionWidget->findChild<QCheckBox*>("chkMQRFullMultibyte")->isChecked()) {
+                m_bc.bc.setOption3(ZINT_FULL_MULTIBYTE);
             }
             break;
 
@@ -1223,6 +1442,9 @@ void MainWindow::update_preview()
             if (item_val) {
                 m_bc.bc.setSecurityLevel(item_val * 2); // Levels 2 (M) and 4 (H) only
             }
+            if (m_optionWidget->findChild<QCheckBox*>("chkRMQRFullMultibyte")->isChecked()) {
+                m_bc.bc.setOption3(ZINT_FULL_MULTIBYTE);
+            }
             break;
 
         case BARCODE_GRIDMATRIX:
@@ -1234,6 +1456,9 @@ void MainWindow::update_preview()
             item_val = m_optionWidget->findChild<QComboBox*>("cmbGridECC")->currentIndex();
             if (item_val) {
                 m_bc.bc.setSecurityLevel(item_val);
+            }
+            if (m_optionWidget->findChild<QCheckBox*>("chkGridFullMultibyte")->isChecked()) {
+                m_bc.bc.setOption3(ZINT_FULL_MULTIBYTE);
             }
             break;
 
@@ -1282,6 +1507,9 @@ void MainWindow::update_preview()
             if (item_val) {
                 m_bc.bc.setSecurityLevel(item_val);
             }
+            if (m_optionWidget->findChild<QCheckBox*>("chkHXFullMultibyte")->isChecked()) {
+                m_bc.bc.setOption3(ZINT_FULL_MULTIBYTE);
+            }
             break;
 
         case BARCODE_ULTRA:
@@ -1302,22 +1530,713 @@ void MainWindow::update_preview()
             m_bc.bc.setSymbol(symbology);
             break;
     }
+    m_symbology = m_bc.bc.symbol();
 
-    if(chkComposite->isChecked())
+    /* Recheck ECI and Reader Init */
+    cmbECI->setEnabled(m_bc.bc.supportsECI());
+    lblECI->setEnabled(cmbECI->isEnabled());
+    chkRInit->setEnabled(m_bc.bc.supportsReaderInit() && (m_bc.bc.inputMode() & 0x07) != GS1_MODE);
+
+    if (!grpComposite->isHidden() && chkComposite->isChecked())
         m_bc.bc.setSecurityLevel(cmbCompType->currentIndex());
 
-    m_bc.bc.setBorderType((Zint::QZint::BorderType)(btype->currentIndex()*2));
-    m_bc.bc.setBorderWidth(bwidth->value());
-    if(chkAutoHeight->isChecked()) {
+    if (!chkAutoHeight->isEnabled() || chkAutoHeight->isChecked()) {
         m_bc.bc.setHeight(0);
     } else {
         m_bc.bc.setHeight(heightb->value());
     }
+    m_bc.bc.setECI(cmbECI->isEnabled() ? cmbECI->currentIndex() : 0);
+    m_bc.bc.setReaderInit(chkRInit->isEnabled() && chkRInit->isChecked());
+    m_bc.bc.setShowText(chkHRTShow->isEnabled() && chkHRTShow->isChecked());
+    m_bc.bc.setBorderType(btype->currentIndex());
+    m_bc.bc.setBorderWidth(bwidth->value());
     m_bc.bc.setWhitespace(spnWhitespace->value());
+    m_bc.bc.setFontSetting(cmbFontSetting->currentIndex());
+    m_bc.bc.setRotateAngle(cmbRotate->currentIndex());
+    m_bc.bc.setDotty(chkDotty->isEnabled() && chkDotty->isChecked());
+    if (m_symbology == BARCODE_DOTCODE || (chkDotty->isEnabled() && chkDotty->isChecked())) {
+        m_bc.bc.setDotSize(spnDotSize->value());
+    }
     m_bc.bc.setFgColor(m_fgcolor);
     m_bc.bc.setBgColor(m_bgcolor);
+    change_print_scale();
+    change_cmyk();
     m_bc.setSize(width - 10, height - 10);
     m_bc.update();
-    scene->setSceneRect(0, 0, width - 10, height - 10);
+    scene->setSceneRect(m_bc.boundingRect());
     scene->update();
+}
+
+/* Return settings subsection name for a symbol */
+const char *MainWindow::get_setting_name(int symbology) {
+    struct item {
+        const char *name;
+        int define;
+        int val;
+    };
+    static const struct item data[] = {
+        { "", -1, 0 },
+        { "code11", BARCODE_CODE11, 1 },
+        { "c25standard", BARCODE_C25STANDARD, 2 },
+        { "c25inter", BARCODE_C25INTER, 3 },
+        { "c25iata", BARCODE_C25IATA, 4 },
+        { "", -1, 5 },
+        { "c25logic", BARCODE_C25LOGIC, 6 },
+        { "c25ind", BARCODE_C25IND, 7 },
+        { "code39", BARCODE_CODE39, 8 },
+        { "excode39", BARCODE_EXCODE39, 9 },
+        { "", -1, 10 },
+        { "", -1, 11 },
+        { "", -1, 12 },
+        { "eanx", BARCODE_EANX, 13 },
+        { "eanx", BARCODE_EANX_CHK, 14 },
+        { "", -1, 15 },
+        { "code128", BARCODE_GS1_128, 16 },
+        { "", -1, 17 },
+        { "codabar", BARCODE_CODABAR, 18 },
+        { "", -1, 19 },
+        { "code128", BARCODE_CODE128, 20 },
+        { "dpleit", BARCODE_DPLEIT, 21 },
+        { "dpident", BARCODE_DPIDENT, 22 },
+        { "code16k", BARCODE_CODE16K, 23 },
+        { "code49", BARCODE_CODE49, 24 },
+        { "code93", BARCODE_CODE93, 25 },
+        { "", -1, 26 },
+        { "", -1, 27 },
+        { "flat", BARCODE_FLAT, 28 },
+        { "dbar_omn", BARCODE_DBAR_OMN, 29 },
+        { "dbar_ltd", BARCODE_DBAR_LTD, 30 },
+        { "dbar_exp", BARCODE_DBAR_EXP, 31 },
+        { "telepen", BARCODE_TELEPEN, 32 },
+        { "", -1, 33 },
+        { "upca", BARCODE_UPCA, 34 },
+        { "upca", BARCODE_UPCA_CHK, 35 },
+        { "", -1, 36 },
+        { "upce", BARCODE_UPCE, 37 },
+        { "upce", BARCODE_UPCE_CHK, 38 },
+        { "", -1, 39 },
+        { "postnet", BARCODE_POSTNET, 40 },
+        { "", -1, 41 },
+        { "", -1, 42 },
+        { "", -1, 43 },
+        { "", -1, 44 },
+        { "", -1, 45 },
+        { "", -1, 46 },
+        { "msi_plessey", BARCODE_MSI_PLESSEY, 47 },
+        { "", -1, 48 },
+        { "fim", BARCODE_FIM, 49 },
+        { "logmars", BARCODE_LOGMARS, 50 },
+        { "pharma", BARCODE_PHARMA, 51 },
+        { "pzn", BARCODE_PZN, 52 },
+        { "pharma_two", BARCODE_PHARMA_TWO, 53 },
+        { "", -1, 54 },
+        { "pdf417", BARCODE_PDF417, 55 },
+        { "pdf417", BARCODE_PDF417COMP, 56 },
+        { "maxicode", BARCODE_MAXICODE, 57 },
+        { "qrcode", BARCODE_QRCODE, 58 },
+        { "", -1, 59 },
+        { "code128", BARCODE_CODE128B, 60 },
+        { "", -1, 61 },
+        { "", -1, 62 },
+        { "auspost", BARCODE_AUSPOST, 63 },
+        { "", -1, 64 },
+        { "", -1, 65 },
+        { "ausreply", BARCODE_AUSREPLY, 66 },
+        { "ausroute", BARCODE_AUSROUTE, 67 },
+        { "ausredirect", BARCODE_AUSREDIRECT, 68 },
+        { "isbnx", BARCODE_ISBNX, 69 },
+        { "rm4scc", BARCODE_RM4SCC, 70 },
+        { "datamatrix", BARCODE_DATAMATRIX, 71 },
+        { "ean14", BARCODE_EAN14, 72 },
+        { "vin", BARCODE_VIN, 73 },
+        { "codablockf", BARCODE_CODABLOCKF, 74 },
+        { "nve18", BARCODE_NVE18, 75 },
+        { "japanpost", BARCODE_JAPANPOST, 76 },
+        { "koreapost", BARCODE_KOREAPOST, 77 },
+        { "", -1, 78 },
+        { "dbar_stk", BARCODE_DBAR_STK, 79 },
+        { "dbar_omnstk", BARCODE_DBAR_OMNSTK, 80 },
+        { "dbar_expstk", BARCODE_DBAR_EXPSTK, 81 },
+        { "planet", BARCODE_PLANET, 82 },
+        { "", -1, 83 },
+        { "micropdf417", BARCODE_MICROPDF417, 84 },
+        { "usps_imail", BARCODE_USPS_IMAIL, 85 },
+        { "plessey", BARCODE_PLESSEY, 86 },
+        { "telepen_num", BARCODE_TELEPEN_NUM, 87 },
+        { "", -1, 88 },
+        { "itf14", BARCODE_ITF14, 89 },
+        { "kix", BARCODE_KIX, 90 },
+        { "", -1, 91 },
+        { "aztec", BARCODE_AZTEC, 92 },
+        { "daft", BARCODE_DAFT, 93 },
+        { "", -1, 94 },
+        { "", -1, 95 },
+        { "dpd", BARCODE_DPD, 96 },
+        { "microqr", BARCODE_MICROQR, 97 },
+        { "code128", BARCODE_HIBC_128, 98 },
+        { "code39", BARCODE_HIBC_39, 99 },
+        { "", -1, 100 },
+        { "", -1, 101 },
+        { "datamatrix", BARCODE_HIBC_DM, 102 },
+        { "", -1, 103 },
+        { "qrcode", BARCODE_HIBC_QR, 104 },
+        { "", -1, 105 },
+        { "pdf417", BARCODE_HIBC_PDF, 106 },
+        { "", -1, 107 },
+        { "micropdf417", BARCODE_HIBC_MICPDF, 108 },
+        { "", -1, 109 },
+        { "codablockf", BARCODE_HIBC_BLOCKF, 110 },
+        { "", -1, 111 },
+        { "aztec", BARCODE_HIBC_AZTEC, 112 },
+        { "", -1, 113 },
+        { "", -1, 114 },
+        { "dotcode", BARCODE_DOTCODE, 115 },
+        { "hanxin", BARCODE_HANXIN, 116 },
+        { "", -1, 117 },
+        { "", -1, 118 },
+        { "", -1, 119 },
+        { "", -1, 120 },
+        { "mailmark", BARCODE_MAILMARK, 121 },
+        { "", -1, 122 },
+        { "", -1, 123 },
+        { "", -1, 124 },
+        { "", -1, 125 },
+        { "", -1, 126 },
+        { "", -1, 127 },
+        { "azrune", BARCODE_AZRUNE, 128 },
+        { "code32", BARCODE_CODE32, 129 },
+        { "eanx", BARCODE_EANX_CC, 130 },
+        { "code128", BARCODE_GS1_128_CC, 131 },
+        { "dbar_omn", BARCODE_DBAR_OMN_CC, 132 },
+        { "dbar_ltd", BARCODE_DBAR_LTD_CC, 133 },
+        { "dbar_exp", BARCODE_DBAR_EXP_CC, 134 },
+        { "upca", BARCODE_UPCA_CC, 135 },
+        { "upce", BARCODE_UPCE_CC, 136 },
+        { "dbar_stk", BARCODE_DBAR_STK_CC, 137 },
+        { "dbar_omnstk", BARCODE_DBAR_OMNSTK_CC, 138 },
+        { "dbar_expstk", BARCODE_DBAR_EXPSTK_CC, 139 },
+        { "channel", BARCODE_CHANNEL, 140 },
+        { "codeone", BARCODE_CODEONE, 141 },
+        { "gridmatrix", BARCODE_GRIDMATRIX, 142 },
+        { "upnqr", BARCODE_UPNQR, 143 },
+        { "ultra", BARCODE_ULTRA, 144 },
+        { "rmqr", BARCODE_RMQR, 145 },
+    };
+    static const int data_size = sizeof(data) / sizeof(struct item);
+
+    if (symbology < 0 || symbology >= data_size) {
+        return "";
+    }
+    if (data[symbology].val != symbology || (data[symbology].define != -1 && data[symbology].define != symbology)) { // Self-check
+        fprintf(stderr, "MainWindow::get_setting_name: data table out of sync (%d)\n", symbology);
+        return "";
+    }
+    return data[symbology].name;
+}
+
+/* Helper to return index of selected radio button in group, checking for NULL */
+int MainWindow::get_button_group_index(const QStringList &children) {
+    QRadioButton *radioButton;
+    for (int index = 0; index < children.size(); index++) {
+        radioButton = m_optionWidget->findChild<QRadioButton*>(children[index]);
+        if (radioButton && radioButton->isChecked()) {
+            return index;
+        }
+    }
+    return 0;
+}
+
+/* Helper to set radio button in group from index in settings, checking for NULL */
+void MainWindow::set_radiobutton_from_setting(QSettings &settings, const QString &setting, const QStringList &children, int default_val) {
+    int index = settings.value(setting, default_val).toInt();
+    QRadioButton *radioButton;
+    if (index >= 0 && index < children.size()) {
+        radioButton = m_optionWidget->findChild<QRadioButton*>(children[index]);
+    } else {
+        radioButton = m_optionWidget->findChild<QRadioButton*>(children[0]);
+    }
+    if (radioButton) {
+        radioButton->setChecked(true);
+    }
+}
+
+/* Helper to return index of selected item in combobox, checking for NULL */
+int MainWindow::get_combobox_index(const QString &child) {
+    QComboBox *comboBox = m_optionWidget->findChild<QComboBox*>(child);
+    return comboBox ? comboBox->currentIndex() : 0;
+}
+
+/* Helper to set item in combobox from index in settings, checking for NULL */
+void MainWindow::set_combobox_from_setting(QSettings &settings, const QString &setting, const QString &child, int default_val) {
+    QComboBox *comboBox = m_optionWidget->findChild<QComboBox*>(child);
+    if (comboBox) {
+        comboBox->setCurrentIndex(settings.value(setting, default_val).toInt());
+    }
+}
+
+/* Helper to return if checkbox checked, checking for NULL */
+int MainWindow::get_checkbox_val(const QString &child) {
+    QCheckBox *checkBox = m_optionWidget->findChild<QCheckBox*>(child);
+    return checkBox && checkBox->isChecked() ? 1 : 0;
+}
+
+/* Helper to set checkbox from settings, checking for NULL */
+void MainWindow::set_checkbox_from_setting(QSettings &settings, const QString &setting, const QString &child, int default_val) {
+    QCheckBox *checkBox = m_optionWidget->findChild<QCheckBox*>(child);
+    if (checkBox) {
+        checkBox->setChecked(settings.value(setting, default_val).toInt() ? true : false);
+    }
+}
+
+/* Helper to return text of line edit, checking for NULL */
+QString MainWindow::get_lineedit_val(const QString &child) {
+    QLineEdit *lineEdit = m_optionWidget->findChild<QLineEdit*>(child);
+    return lineEdit ? lineEdit->text() : "";
+}
+
+/* Helper to set line edit from settings, checking for NULL */
+void MainWindow::set_lineedit_from_setting(QSettings &settings, const QString &setting, const QString &child, const char *default_val) {
+    QLineEdit *lineEdit = m_optionWidget->findChild<QLineEdit*>(child);
+    if (lineEdit) {
+        lineEdit->setText(settings.value(setting, default_val).toString());
+    }
+}
+
+/* Save settings for an individual symbol */
+void MainWindow::save_sub_settings(QSettings &settings, int symbology) {
+
+    const char *name = get_setting_name(symbology);
+    if (*name) {
+        settings.setValue(QString("studio/bc/%1/data").arg(name), txtData->text());
+        if (!grpComposite->isHidden()) {
+            settings.setValue(QString("studio/bc/%1/composite_text").arg(name), txtComposite->toPlainText());
+            settings.setValue(QString("studio/bc/%1/chk_composite").arg(name), chkComposite->isChecked() ? 1 : 0);
+            settings.setValue(QString("studio/bc/%1/comp_type").arg(name), cmbCompType->currentIndex());
+        }
+        if (cmbECI->isEnabled()) {
+            settings.setValue(QString("studio/bc/%1/eci").arg(name), cmbECI->currentIndex());
+        }
+        settings.setValue(QString("studio/bc/%1/chk_escape").arg(name), chkEscape->isChecked() ? 1 : 0);
+        settings.setValue(QString("studio/bc/%1/chk_data").arg(name), chkData->isChecked() ? 1 : 0);
+        if (chkRInit->isEnabled()) {
+            settings.setValue(QString("studio/bc/%1/chk_rinit").arg(name), chkRInit->isChecked() ? 1 : 0);
+        }
+        if (chkAutoHeight->isEnabled()) {
+            settings.setValue(QString("studio/bc/%1/appearance/autoheight").arg(name), chkAutoHeight->isChecked() ? 1 : 0);
+            settings.setValue(QString("studio/bc/%1/appearance/height").arg(name), heightb->value());
+        }
+        settings.setValue(QString("studio/bc/%1/appearance/border").arg(name), bwidth->value());
+        settings.setValue(QString("studio/bc/%1/appearance/whitespace").arg(name), spnWhitespace->value());
+        settings.setValue(QString("studio/bc/%1/appearance/scale").arg(name), spnScale->value());
+        settings.setValue(QString("studio/bc/%1/appearance/border_type").arg(name), btype->currentIndex());
+        if (chkHRTShow->isEnabled()) {
+            settings.setValue(QString("studio/bc/%1/appearance/font_setting").arg(name), cmbFontSetting->currentIndex());
+            settings.setValue(QString("studio/bc/%1/appearance/chk_hrt_show").arg(name), chkHRTShow->isChecked() ? 1 : 0);
+        }
+        settings.setValue(QString("studio/bc/%1/appearance/cmyk").arg(name), chkCMYK->isChecked() ? 1 : 0);
+        settings.setValue(QString("studio/bc/%1/appearance/rotate").arg(name), cmbRotate->currentIndex());
+        if (symbology == BARCODE_DOTCODE || chkDotty->isEnabled()) {
+            settings.setValue(QString("studio/bc/%1/appearance/chk_dotty").arg(name), chkDotty->isChecked() ? 1 : 0);
+            settings.setValue(QString("studio/bc/%1/appearance/dot_size").arg(name), spnDotSize->value());
+        }
+        settings.setValue(QString("studio/bc/%1/ink/red").arg(name), m_fgcolor.red());
+        settings.setValue(QString("studio/bc/%1/ink/green").arg(name), m_fgcolor.green());
+        settings.setValue(QString("studio/bc/%1/ink/blue").arg(name), m_fgcolor.blue());
+        settings.setValue(QString("studio/bc/%1/ink/alpha").arg(name), m_fgcolor.alpha());
+        settings.setValue(QString("studio/bc/%1/paper/red").arg(name), m_bgcolor.red());
+        settings.setValue(QString("studio/bc/%1/paper/green").arg(name), m_bgcolor.green());
+        settings.setValue(QString("studio/bc/%1/paper/blue").arg(name), m_bgcolor.blue());
+        settings.setValue(QString("studio/bc/%1/paper/alpha").arg(name), m_bgcolor.alpha());
+    }
+
+    switch (symbology) {
+        case BARCODE_CODE128:
+        case BARCODE_CODE128B:
+        case BARCODE_GS1_128:
+        case BARCODE_GS1_128_CC:
+        case BARCODE_HIBC_128:
+            settings.setValue("studio/bc/code128/encoding_mode", get_button_group_index(QStringList() << "radC128Stand" << "radC128EAN" << "radC128CSup" << "radC128HIBC"));
+            break;
+
+        case BARCODE_PDF417:
+        case BARCODE_PDF417COMP:
+        case BARCODE_HIBC_PDF:
+            settings.setValue("studio/bc/pdf417/cols", get_combobox_index("cmbPDFCols"));
+            settings.setValue("studio/bc/pdf417/ecc", get_combobox_index("cmbPDFECC"));
+            settings.setValue("studio/bc/pdf417/encoding_mode", get_button_group_index(QStringList() << "radPDFStand" << "radPDFTruncated" << "radPDFHIBC"));
+            break;
+
+        case BARCODE_MICROPDF417:
+        case BARCODE_HIBC_MICPDF:
+            settings.setValue("studio/bc/micropdf417/cols", get_combobox_index("cmbMPDFCols"));
+            settings.setValue("studio/bc/micropdf417/encoding_mode", get_button_group_index(QStringList() << "radMPDFStand" << "radMPDFHIBC"));
+            break;
+
+        case BARCODE_DOTCODE:
+            settings.setValue("studio/bc/dotcode/cols", get_combobox_index("cmbDotCols"));
+            settings.setValue("studio/bc/dotcode/encoding_mode", get_button_group_index(QStringList() << "radDotStand" << "radDotGS1"));
+            break;
+
+        case BARCODE_AZTEC:
+        case BARCODE_HIBC_AZTEC:
+            settings.setValue("studio/bc/aztec/autoresizing", get_button_group_index(QStringList() << "radAztecAuto" << "radAztecSize" << "radAztecECC"));
+            settings.setValue("studio/bc/aztec/size", get_combobox_index("cmbAztecSize"));
+            settings.setValue("studio/bc/aztec/ecc", get_combobox_index("cmbAztecECC"));
+            settings.setValue("studio/bc/aztec/encoding_mode", get_button_group_index(QStringList() << "radAztecStand" << "radAztecGS1" << "radAztecHIBC"));
+            break;
+
+        case BARCODE_MSI_PLESSEY:
+            settings.setValue("studio/bc/msi_plessey/check_digit", get_combobox_index("cmbMSICheck"));
+            break;
+
+        case BARCODE_CODE11:
+            settings.setValue("studio/bc/code11/check_digit", get_button_group_index(QStringList() << "radC11TwoCheckDigits" << "radC11OneCheckDigit" << "radC11NoCheckDigits"));
+            break;
+
+        case BARCODE_CODE39:
+        case BARCODE_HIBC_39:
+            settings.setValue("studio/bc/code39/check_digit", get_button_group_index(QStringList() << "radC39Stand" << "radC39Check" << "radC39HIBC"));
+            break;
+
+        case BARCODE_EXCODE39:
+            settings.setValue("studio/bc/excode39/check_digit", get_button_group_index(QStringList() << "radC39Stand" << "radC39Check"));
+            break;
+
+        case BARCODE_LOGMARS:
+            settings.setValue("studio/bc/logmars/check_digit", get_button_group_index(QStringList() << "radLOGMARSStand" << "radLOGMARSCheck"));
+            break;
+
+        case BARCODE_CODE16K:
+            settings.setValue("studio/bc/code16k/row_sep_height", get_combobox_index("cmbC16kRowSepHeight"));
+            settings.setValue("studio/bc/code16k/encoding_mode", get_button_group_index(QStringList() << "radC16kStand" << "radC16kGS1"));
+            break;
+
+        case BARCODE_CODABAR:
+            settings.setValue("studio/bc/codabar/chk_check_char", get_checkbox_val("chkCodabarCheck"));
+            break;
+
+        case BARCODE_CODABLOCKF:
+        case BARCODE_HIBC_BLOCKF:
+            settings.setValue("studio/bc/codablockf/width", get_combobox_index("cmbCbfWidth"));
+            settings.setValue("studio/bc/codablockf/height", get_combobox_index("cmbCbfHeight"));
+            settings.setValue("studio/bc/codablockf/row_sep_height", get_combobox_index("cmbCbfRowSepHeight"));
+            settings.setValue("studio/bc/codablockf/encoding_mode", get_button_group_index(QStringList() << "radCbfStand" << "radCbfHIBC"));
+            break;
+
+        case BARCODE_DATAMATRIX:
+        case BARCODE_HIBC_DM:
+            settings.setValue("studio/bc/datamatrix/size", get_combobox_index("cmbDM200Size"));
+            settings.setValue("studio/bc/datamatrix/encoding_mode", get_button_group_index(QStringList() << "radDM200Stand" << "radDM200GS1" << "radDM200HIBC"));
+            settings.setValue("studio/bc/datamatrix/chk_suppress_rect", get_checkbox_val("chkDMRectangle"));
+            settings.setValue("studio/bc/datamatrix/chk_allow_dmre", get_checkbox_val("chkDMRE"));
+            settings.setValue("studio/bc/datamatrix/chk_gs_sep", get_checkbox_val("chkDMGSSep"));
+            break;
+
+        case BARCODE_QRCODE:
+        case BARCODE_HIBC_QR:
+            settings.setValue("studio/bc/qrcode/size", get_combobox_index("cmbQRSize"));
+            settings.setValue("studio/bc/qrcode/ecc", get_combobox_index("cmbQRECC"));
+            settings.setValue("studio/bc/qrcode/encoding_mode", get_button_group_index(QStringList() << "radDM200Stand" << "radQRGS1" << "radQRHIBC"));
+            settings.setValue("studio/bc/qrcode/chk_full_multibyte", get_checkbox_val("chkQRFullMultibyte"));
+            break;
+
+        case BARCODE_RMQR:
+            settings.setValue("studio/bc/rmqr/size", get_combobox_index("cmbRMQRSize"));
+            settings.setValue("studio/bc/rmqr/ecc", get_combobox_index("cmbRMQRECC"));
+            settings.setValue("studio/bc/rmqr/encoding_mode", get_button_group_index(QStringList() << "radQRStand" << "radRMQRGS1"));
+            settings.setValue("studio/bc/rmqr/chk_full_multibyte", get_checkbox_val("chkRMQRFullMultibyte"));
+            break;
+
+        case BARCODE_HANXIN:
+            settings.setValue("studio/bc/hanxin/size", get_combobox_index("cmbHXSize"));
+            settings.setValue("studio/bc/hanxin/ecc", get_combobox_index("cmbHXECC"));
+            settings.setValue("studio/bc/hanxin/chk_full_multibyte", get_checkbox_val("chkHXFullMultibyte"));
+            break;
+
+        case BARCODE_MICROQR:
+            settings.setValue("studio/bc/microqr/size", get_combobox_index("cmbMQRSize"));
+            settings.setValue("studio/bc/microqr/ecc", get_combobox_index("cmbMQRECC"));
+            settings.setValue("studio/bc/microqr/chk_full_multibyte", get_checkbox_val("chkMQRFullMultibyte"));
+            break;
+
+        case BARCODE_GRIDMATRIX:
+            settings.setValue("studio/bc/gridmatrix/size", get_combobox_index("cmbGridSize"));
+            settings.setValue("studio/bc/gridmatrix/ecc", get_combobox_index("cmbGridECC"));
+            settings.setValue("studio/bc/gridmatrix/chk_full_multibyte", get_checkbox_val("chkGridFullMultibyte"));
+            break;
+
+        case BARCODE_MAXICODE:
+            settings.setValue("studio/bc/maxicode/mode", get_combobox_index("cmbMaxiMode"));
+            settings.setValue("studio/bc/maxicode/primary_message", get_lineedit_val("txtMaxiPrimary"));
+            break;
+
+        case BARCODE_CODEONE:
+            settings.setValue("studio/bc/codeone/size", get_combobox_index("cmbC1Size"));
+            settings.setValue("studio/bc/codeone/encoding_mode", get_button_group_index(QStringList() << "radC1Stand" << "radC1GS1"));
+            break;
+
+        case BARCODE_CODE49:
+            settings.setValue("studio/bc/code49/row_sep_height", get_combobox_index("cmbC49RowSepHeight"));
+            settings.setValue("studio/bc/code49/encoding_mode", get_button_group_index(QStringList() << "radC49Stand" << "radC49GS1"));
+            break;
+
+        case BARCODE_DBAR_EXPSTK:
+        case BARCODE_DBAR_EXPSTK_CC:
+            settings.setValue("studio/bc/dbar_expstk/cols", get_combobox_index("cmbCols"));
+            break;
+
+        case BARCODE_ULTRA:
+            settings.setValue("studio/bc/ultra/autoresizing", get_button_group_index(QStringList() << "radUltraAuto" << "radUltraEcc"));
+            settings.setValue("studio/bc/ultra/ecc", get_combobox_index("cmbUltraEcc"));
+            settings.setValue("studio/bc/ultra/encoding_mode", get_button_group_index(QStringList() << "radUltraStand" << "radUltraGS1"));
+            break;
+
+        case BARCODE_UPCA:
+        case BARCODE_UPCA_CHK:
+        case BARCODE_UPCA_CC:
+            settings.setValue("studio/bc/upca/addongap", get_combobox_index("cmbUPCAAddonGap"));
+            break;
+
+        case BARCODE_EANX:
+        case BARCODE_EANX_CHK:
+        case BARCODE_EANX_CC:
+            settings.setValue("studio/bc/eanx/addongap", get_combobox_index("cmbUPCEANAddonGap"));
+            break;
+
+        case BARCODE_UPCE:
+        case BARCODE_UPCE_CHK:
+        case BARCODE_UPCE_CC:
+            settings.setValue("studio/bc/upce/addongap", get_combobox_index("cmbUPCEANAddonGap"));
+            break;
+
+        case BARCODE_ISBNX:
+            settings.setValue("studio/bc/isnbx/addongap", get_combobox_index("cmbUPCEANAddonGap"));
+            break;
+
+        case BARCODE_VIN:
+            settings.setValue("studio/bc/vin/chk_import_char_prefix", get_checkbox_val("chkVINImportChar"));
+            break;
+    }
+}
+
+/* Load settings for an individual symbol */
+void MainWindow::load_sub_settings(QSettings &settings, int symbology) {
+
+    const char *name = get_setting_name(symbology);
+    if (*name) {
+        const QString &data = settings.value(QString("studio/bc/%1/data").arg(name), "").toString();
+        if (!data.isEmpty()) {
+            txtData->setText(data);
+        }
+        if (!grpComposite->isHidden()) {
+            const QString &composite_text = settings.value(QString("studio/bc/%1/composite_text").arg(name), "").toString();
+            if (!composite_text.isEmpty()) {
+                txtComposite->setText(composite_text);
+            }
+            chkComposite->setChecked(settings.value(QString("studio/bc/%1/chk_composite").arg(name), 0).toInt() ? true : false);
+            cmbCompType->setCurrentIndex(settings.value(QString("studio/bc/%1/comp_type").arg(name), 0).toInt());
+        }
+        if (cmbECI->isEnabled()) {
+            cmbECI->setCurrentIndex(settings.value(QString("studio/bc/%1/eci").arg(name), 0).toInt());
+        }
+        chkEscape->setChecked(settings.value(QString("studio/bc/%1/chk_escape").arg(name)).toInt() ? true : false);
+        chkData->setChecked(settings.value(QString("studio/bc/%1/chk_data").arg(name)).toInt() ? true : false);
+        if (chkRInit->isEnabled()) {
+            chkRInit->setChecked(settings.value(QString("studio/bc/%1/chk_rinit").arg(name)).toInt() ? true : false);
+        }
+        if (chkAutoHeight->isEnabled()) {
+            chkAutoHeight->setChecked(settings.value(QString("studio/bc/%1/appearance/autoheight").arg(name), 1).toInt() ? true : false);
+            heightb->setValue(settings.value(QString("studio/bc/%1/appearance/height").arg(name), 50).toInt());
+        }
+        bwidth->setValue(settings.value(QString("studio/bc/%1/appearance/border").arg(name), 0).toInt());
+        spnWhitespace->setValue(settings.value(QString("studio/bc/%1/appearance/whitespace").arg(name), 0).toInt());
+        spnScale->setValue(settings.value(QString("studio/bc/%1/appearance/scale").arg(name), 1.0).toFloat());
+        btype->setCurrentIndex(settings.value(QString("studio/bc/%1/appearance/border_type").arg(name), 0).toInt());
+        if (chkHRTShow->isEnabled()) {
+            cmbFontSetting->setCurrentIndex(settings.value(QString("studio/bc/%1/appearance/font_setting").arg(name), 0).toInt());
+            chkHRTShow->setChecked(settings.value(QString("studio/bc/%1/appearance/chk_hrt_show").arg(name), 1).toInt() ? true : false);
+        }
+        chkCMYK->setChecked(settings.value(QString("studio/bc/%1/appearance/cmyk").arg(name), 0).toInt() ? true : false);
+        cmbRotate->setCurrentIndex(settings.value(QString("studio/bc/%1/appearance/rotate").arg(name), 0).toInt());
+        if (symbology == BARCODE_DOTCODE || chkDotty->isEnabled()) {
+            chkDotty->setChecked(settings.value(QString("studio/bc/%1/appearance/chk_dotty").arg(name), 0).toInt() ? true : false);
+            spnDotSize->setValue(settings.value(QString("studio/bc/%1/appearance/dot_size").arg(name), 0.4f / 0.5f).toFloat());
+        }
+        m_fgcolor.setRgb(settings.value(QString("studio/bc/%1/ink/red").arg(name), 0).toInt(),
+                        settings.value(QString("studio/bc/%1/ink/green").arg(name), 0).toInt(),
+                        settings.value(QString("studio/bc/%1/ink/blue").arg(name), 0).toInt(),
+                        settings.value(QString("studio/bc/%1/ink/alpha").arg(name), 0xff).toInt());
+        m_bgcolor.setRgb(settings.value(QString("studio/bc/%1/paper/red").arg(name), 0xff).toInt(),
+                        settings.value(QString("studio/bc/%1/paper/green").arg(name), 0xff).toInt(),
+                        settings.value(QString("studio/bc/%1/paper/blue").arg(name), 0xff).toInt(),
+                        settings.value(QString("studio/bc/%1/paper/alpha").arg(name), 0xff).toInt());
+    }
+
+    switch (symbology) {
+        case BARCODE_CODE128:
+        case BARCODE_CODE128B:
+        case BARCODE_GS1_128:
+        case BARCODE_GS1_128_CC:
+        case BARCODE_HIBC_128:
+            set_radiobutton_from_setting(settings, "studio/bc/code128/encoding_mode", QStringList() << "radC128Stand" << "radC128EAN" << "radC128CSup" << "radC128HIBC");
+            break;
+
+        case BARCODE_PDF417:
+        case BARCODE_PDF417COMP:
+        case BARCODE_HIBC_PDF:
+            set_combobox_from_setting(settings, "studio/bc/pdf417/cols", "cmbPDFCols");
+            set_combobox_from_setting(settings, "studio/bc/pdf417/ecc", "cmbPDFECC");
+            set_radiobutton_from_setting(settings, "studio/bc/pdf417/encoding_mode", QStringList() << "radPDFStand" << "radPDFTruncated" << "radPDFHIBC");
+            break;
+
+        case BARCODE_MICROPDF417:
+        case BARCODE_HIBC_MICPDF:
+            set_combobox_from_setting(settings, "studio/bc/micropdf417/cols", "cmbMPDFCols");
+            set_radiobutton_from_setting(settings, "studio/bc/micropdf417/encoding_mode", QStringList() << "radMPDFStand" << "radMPDFHIBC");
+            break;
+
+        case BARCODE_DOTCODE:
+            set_combobox_from_setting(settings, "studio/bc/dotcode/cols", "cmbDotCols");
+            set_radiobutton_from_setting(settings, "studio/bc/dotcode/encoding_mode", QStringList() << "radDotStand" << "radDotGS1");
+            break;
+
+        case BARCODE_AZTEC:
+        case BARCODE_HIBC_AZTEC:
+            set_radiobutton_from_setting(settings, "studio/bc/aztec/autoresizing", QStringList() << "radAztecAuto" << "radAztecSize" << "radAztecECC");
+            set_combobox_from_setting(settings, "studio/bc/aztec/size", "cmbAztecSize");
+            set_combobox_from_setting(settings, "studio/bc/aztec/ecc", "cmbAztecECC");
+            set_radiobutton_from_setting(settings, "studio/bc/aztec/encoding_mode", QStringList() << "radAztecStand" << "radAztecGS1" << "radAztecHIBC");
+            break;
+
+        case BARCODE_MSI_PLESSEY:
+            set_combobox_from_setting(settings, "studio/bc/msi_plessey/check_digit", "cmbMSICheck");
+            break;
+
+        case BARCODE_CODE11:
+            set_radiobutton_from_setting(settings, "studio/bc/code11/check_digit", QStringList() << "radC11TwoCheckDigits" << "radC11OneCheckDigit" << "radC11NoCheckDigits");
+            break;
+
+        case BARCODE_CODE39:
+        case BARCODE_HIBC_39:
+            set_radiobutton_from_setting(settings, "studio/bc/code39/check_digit", QStringList() << "radC39Stand" << "radC39Check" << "radC39HIBC");
+            break;
+
+        case BARCODE_EXCODE39:
+            set_radiobutton_from_setting(settings, "studio/bc/excode39/check_digit", QStringList() << "radC39Stand" << "radC39Check");
+            break;
+
+        case BARCODE_LOGMARS:
+            set_radiobutton_from_setting(settings, "studio/bc/logmars/check_digit", QStringList() << "radLOGMARSStand" << "radLOGMARSCheck");
+            break;
+
+        case BARCODE_CODE16K:
+            set_combobox_from_setting(settings, "studio/bc/code16k/row_sep_height", "cmbC16kRowSepHeight");
+            set_radiobutton_from_setting(settings, "studio/bc/code16k/encoding_mode", QStringList() << "radC16kStand" << "radC16kGS1");
+            break;
+
+        case BARCODE_CODABAR:
+            set_checkbox_from_setting(settings, "studio/bc/codabar/chk_check_char", "chkCodabarCheck");
+            break;
+
+        case BARCODE_CODABLOCKF:
+        case BARCODE_HIBC_BLOCKF:
+            set_combobox_from_setting(settings, "studio/bc/codablockf/width", "cmbCbfWidth");
+            set_combobox_from_setting(settings, "studio/bc/codablockf/height", "cmbCbfHeight");
+            set_combobox_from_setting(settings, "studio/bc/codablockf/row_sep_height", "cmbCbfRowSepHeight");
+            set_radiobutton_from_setting(settings, "studio/bc/codablockf/encoding_mode", QStringList() << "radCbfStand" << "radCbfHIBC");
+            break;
+
+        case BARCODE_DATAMATRIX:
+        case BARCODE_HIBC_DM:
+            set_combobox_from_setting(settings, "studio/bc/datamatrix/size", "cmbDM200Size");
+            set_radiobutton_from_setting(settings, "studio/bc/datamatrix/encoding_mode", QStringList() << "radDM200Stand" << "radDM200GS1" << "radDM200HIBC");
+            set_checkbox_from_setting(settings, "studio/bc/datamatrix/chk_suppress_rect", "chkDMRectangle");
+            set_checkbox_from_setting(settings, "studio/bc/datamatrix/chk_allow_dmre", "chkDMRE");
+            set_checkbox_from_setting(settings, "studio/bc/datamatrix/chk_gs_sep", "chkDMGSSep");
+            break;
+
+        case BARCODE_QRCODE:
+        case BARCODE_HIBC_QR:
+            set_combobox_from_setting(settings, "studio/bc/qrcode/size", "cmbQRSize");
+            set_combobox_from_setting(settings, "studio/bc/qrcode/ecc", "cmbQRECC");
+            set_radiobutton_from_setting(settings, "studio/bc/qrcode/encoding_mode", QStringList() << "radDM200Stand" << "radQRGS1" << "radQRHIBC");
+            set_checkbox_from_setting(settings, "studio/bc/qrcode/chk_full_multibyte", "chkQRFullMultibyte");
+            break;
+
+        case BARCODE_RMQR:
+            set_combobox_from_setting(settings, "studio/bc/rmqr/size", "cmbRMQRSize");
+            set_combobox_from_setting(settings, "studio/bc/rmqr/ecc", "cmbRMQRECC");
+            set_radiobutton_from_setting(settings, "studio/bc/rmqr/encoding_mode", QStringList() << "radQRStand" << "radRMQRGS1");
+            set_checkbox_from_setting(settings, "studio/bc/rmqr/chk_full_multibyte", "chkRMQRFullMultibyte");
+            break;
+
+        case BARCODE_HANXIN:
+            set_combobox_from_setting(settings, "studio/bc/hanxin/size", "cmbHXSize");
+            set_combobox_from_setting(settings, "studio/bc/hanxin/ecc", "cmbHXECC");
+            set_checkbox_from_setting(settings, "studio/bc/hanxin/chk_full_multibyte", "chkHXFullMultibyte");
+            break;
+
+        case BARCODE_MICROQR:
+            set_combobox_from_setting(settings, "studio/bc/microqr/size", "cmbMQRSize");
+            set_combobox_from_setting(settings, "studio/bc/microqr/ecc", "cmbMQRECC");
+            set_checkbox_from_setting(settings, "studio/bc/microqr/chk_full_multibyte", "chkMQRFullMultibyte");
+            break;
+
+        case BARCODE_GRIDMATRIX:
+            set_combobox_from_setting(settings, "studio/bc/gridmatrix/size", "cmbGridSize");
+            set_combobox_from_setting(settings, "studio/bc/gridmatrix/ecc", "cmbGridECC");
+            set_checkbox_from_setting(settings, "studio/bc/gridmatrix/chk_full_multibyte", "chkGridFullMultibyte");
+            break;
+
+        case BARCODE_MAXICODE:
+            set_combobox_from_setting(settings, "studio/bc/maxicode/mode", "cmbMaxiMode", 1);
+            set_lineedit_from_setting(settings, "studio/bc/maxicode/primary_message", "txtMaxiPrimary", "Primary Message Here!");
+            break;
+
+        case BARCODE_CODEONE:
+            set_combobox_from_setting(settings, "studio/bc/codeone/size", "cmbC1Size");
+            set_radiobutton_from_setting(settings, "studio/bc/codeone/encoding_mode", QStringList() << "radC1Stand" << "radC1GS1");
+            break;
+
+        case BARCODE_CODE49:
+            set_combobox_from_setting(settings, "studio/bc/code49/row_sep_height", "cmbC49RowSepHeight");
+            set_radiobutton_from_setting(settings, "studio/bc/code49/encoding_mode", QStringList() << "radC49Stand" << "radC49GS1");
+            break;
+
+        case BARCODE_DBAR_EXPSTK:
+            set_combobox_from_setting(settings, "studio/bc/dbar_expstk/cols", "cmbCols");
+            break;
+
+        case BARCODE_ULTRA:
+            set_radiobutton_from_setting(settings, "studio/bc/ultra/autoresizing", QStringList() << "radUltraAuto" << "radUltraEcc");
+            set_combobox_from_setting(settings, "studio/bc/ultra/ecc", "cmbUltraEcc");
+            set_radiobutton_from_setting(settings, "studio/bc/ultra/encoding_mode", QStringList() << "radUltraStand" << "radUltraGS1");
+            break;
+
+        case BARCODE_UPCA:
+        case BARCODE_UPCA_CHK:
+        case BARCODE_UPCA_CC:
+            set_combobox_from_setting(settings, "studio/bc/upca/addongap", "cmbUPCAAddonGap");
+            break;
+
+        case BARCODE_EANX:
+        case BARCODE_EANX_CHK:
+        case BARCODE_EANX_CC:
+            set_combobox_from_setting(settings, "studio/bc/eanx/addongap", "cmbUPCEANAddonGap");
+            break;
+
+        case BARCODE_UPCE:
+        case BARCODE_UPCE_CHK:
+        case BARCODE_UPCE_CC:
+            set_combobox_from_setting(settings, "studio/bc/upce/addongap", "cmbUPCEANAddonGap");
+            break;
+
+        case BARCODE_ISBNX:
+            set_combobox_from_setting(settings, "studio/bc/isbnx/addongap", "cmbUPCEANAddonGap");
+            break;
+
+        case BARCODE_VIN:
+            set_checkbox_from_setting(settings, "studio/bc/vin/chk_import_char_prefix", "chkVINImportChar");
+            break;
+    }
 }

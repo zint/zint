@@ -47,14 +47,15 @@ static void test_print(int index, int generate, int debug) {
         int symbology;
         int option_1;
         int option_2;
+        float scale;
         unsigned char *data;
         char *expected_file;
     };
     struct item data[] = {
-        /*  0*/ { BARCODE_CODE128, -1, -1, "AIM", "code128_aim" },
-        /*  1*/ { BARCODE_QRCODE, 2, 1, "1234567890", "qr_v1_m" },
-        /*  2*/ { BARCODE_DOTCODE, -1, -1, "2741", "dotcode_aim_fig7" },
-        /*  3*/ { BARCODE_ULTRA, -1, -1, "A", "ultracode_a" },
+        /*  0*/ { BARCODE_CODE128, -1, -1, -1, "AIM", "code128_aim" },
+        /*  1*/ { BARCODE_QRCODE, 2, 1, -1, "1234567890", "qr_v1_m" },
+        /*  2*/ { BARCODE_DOTCODE, -1, -1, 5, "2741", "dotcode_aim_fig7" },
+        /*  3*/ { BARCODE_ULTRA, -1, -1, -1, "A", "ultracode_a" },
     };
     int data_size = sizeof(data) / sizeof(struct item);
 
@@ -98,16 +99,10 @@ static void test_print(int index, int generate, int debug) {
             struct zint_symbol *symbol = ZBarcode_Create();
             assert_nonnull(symbol, "Symbol not created\n");
 
-            symbol->symbology = data[i].symbology;
-            if (data[i].option_1 != -1) {
-                symbol->option_1 = data[i].option_1;
+            int length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, data[i].option_1, data[i].option_2, -1, -1 /*output_options*/, data[i].data, -1, debug);
+            if (data[i].scale != -1) {
+                symbol->scale = data[i].scale;
             }
-            if (data[i].option_2 != -1) {
-                symbol->option_2 = data[i].option_2;
-            }
-            symbol->debug |= debug;
-
-            int length = strlen(data[i].data);
 
             ret = ZBarcode_Encode(symbol, data[i].data, length);
             assert_zero(ret, "i:%d %s ZBarcode_Encode ret %d != 0 %s\n", i, testUtilBarcodeName(data[i].symbology), ret, symbol->errtxt);
@@ -126,8 +121,9 @@ static void test_print(int index, int generate, int debug) {
 
             if (generate) {
                 if (j == 0) {
-                    printf("        /*%3d*/ { %s, %d, %d, \"%s\", \"%s\" },\n",
-                            i, testUtilBarcodeName(data[i].symbology), data[i].option_1, data[i].option_2, testUtilEscape(data[i].data, length, escaped, escaped_size), data[i].expected_file);
+                    printf("        /*%3d*/ { %s, %d, %d, %.8g, \"%s\", \"%s\" },\n",
+                            i, testUtilBarcodeName(data[i].symbology), data[i].option_1, data[i].option_2, data[i].scale,
+                            testUtilEscape(data[i].data, length, escaped, escaped_size), data[i].expected_file);
                 }
                 if (strstr(TEST_PRINT_OVERWRITE_EXPECTED, exts[j])) {
                     ret = rename(symbol->outfile, expected_file);

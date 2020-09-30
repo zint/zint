@@ -81,12 +81,28 @@ static int count_hexagons(struct zint_symbol *symbol) {
     return hexagons;
 }
 
-static int count_strings(struct zint_symbol *symbol) {
+static int count_strings(struct zint_symbol *symbol, int *fsize, int *fsize2, int *halign, int *halign1, int *halign2) {
     int strings = 0;
     struct zint_vector_string *str;
 
+    *fsize = *fsize2 = *halign = *halign1 = *halign2 = 0;
+
     str = symbol->vector->strings;
     while (str) {
+        /* Allow 2 font sizes */
+        if (*fsize == 0) {
+            *fsize = (int) str->fsize;
+        } else if (str->fsize != *fsize && *fsize2 == 0) {
+            *fsize2 = (int) str->fsize;
+        }
+        /* Only 3 haligns possible */
+        if (str->halign) {
+            if (str->halign == 1) {
+                *halign1 = str->halign;
+            } else {
+                *halign2 = str->halign;
+            }
+        }
         strings++;
         str = str->next;
     }
@@ -126,8 +142,22 @@ static int bump_up(int input) {
     return input;
 }
 
-INTERNAL int emf_plot(struct zint_symbol *symbol) {
-    int i,j;
+static int utfle_length(unsigned char *input, int length) {
+    int result = 0;
+    int i;
+
+    for (i = 0; i < length; i++) {
+        result++;
+        if (input[i] >= 0x80) { /* 2 byte UTF-8 counts as one UTF-16LE character */
+            i++;
+        }
+    }
+
+    return result;
+}
+
+INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
+    int i;
     FILE *emf_file;
     int fgred, fggrn, fgblu, bgred, bggrn, bgblu;
     int error_number = 0;
@@ -140,8 +170,11 @@ INTERNAL int emf_plot(struct zint_symbol *symbol) {
     int colours_used = 0;
     int rectangle_count_bycolour[9];
     unsigned char *this_string[6];
-    uint32_t spacing;
+    int width, height;
+    int utfle_len;
+    int bumped_len;
     int draw_background = 1;
+    int bold;
 
     float ax, ay, bx, by, cx, cy, dx, dy, ex, ey, fx, fy;
 
@@ -152,6 +185,8 @@ INTERNAL int emf_plot(struct zint_symbol *symbol) {
 
     emr_header_t emr_header;
     emr_eof_t emr_eof;
+    emr_mapmode_t emr_mapmode;
+    emr_setworldtransform_t emr_setworldtransform;
     emr_createbrushindirect_t emr_createbrushindirect_fg;
     emr_createbrushindirect_t emr_createbrushindirect_bg;
     emr_createbrushindirect_t emr_createbrushindirect_colour[8]; // Used for colour symbols only
@@ -161,17 +196,31 @@ INTERNAL int emf_plot(struct zint_symbol *symbol) {
     emr_createpen_t emr_createpen;
     emr_selectobject_t emr_selectobject_pen;
     emr_rectangle_t background;
-    emr_extcreatefontindirectw_t emr_extcreatefontindirectw;
     emr_settextcolor_t emr_settextcolor;
+
+    int fsize;
+    emr_extcreatefontindirectw_t emr_extcreatefontindirectw;
     emr_selectobject_t emr_selectobject_font;
-    //emr_extcreatefontindirectw_t emr_extcreatefontindirectw_big;
-    //emr_selectobject_t emr_selectobject_font_big;
+    int fsize2;
+    emr_extcreatefontindirectw_t emr_extcreatefontindirectw2;
+    emr_selectobject_t emr_selectobject_font2;
+    int halign;
+    emr_settextalign_t emr_settextalign;
+    int halign1;
+    emr_settextalign_t emr_settextalign1;
+    int halign2;
+    emr_settextalign_t emr_settextalign2;
+
+    int current_fsize;
+    int current_halign;
 
 #ifdef _MSC_VER
     emr_rectangle_t *rectangle;
     emr_ellipse_t *circle;
     emr_polygon_t *hexagon;
     emr_exttextoutw_t *text;
+    int *text_fsizes;
+    int *text_haligns;
 #endif
 
     fgred = (16 * ctoi(symbol->fgcolour[0])) + ctoi(symbol->fgcolour[1]);
@@ -190,18 +239,22 @@ INTERNAL int emf_plot(struct zint_symbol *symbol) {
     rectangle_count = count_rectangles(symbol);
     circle_count = count_circles(symbol);
     hexagon_count = count_hexagons(symbol);
-    string_count = count_strings(symbol);
+    string_count = count_strings(symbol, &fsize, &fsize2, &halign, &halign1, &halign2);
 
 #ifndef _MSC_VER
     emr_rectangle_t rectangle[rectangle_count ? rectangle_count : 1]; // Avoid sanitize runtime error by making always non-zero
     emr_ellipse_t circle[circle_count ? circle_count : 1];
     emr_polygon_t hexagon[hexagon_count ? hexagon_count : 1];
     emr_exttextoutw_t text[string_count ? string_count: 1];
+    int text_fsizes[string_count ? string_count: 1];
+    int text_haligns[string_count ? string_count: 1];
 #else
     rectangle = (emr_rectangle_t*) _alloca(rectangle_count * sizeof (emr_rectangle_t));
     circle = (emr_ellipse_t*) _alloca(circle_count * sizeof (emr_ellipse_t));
     hexagon = (emr_polygon_t*) _alloca(hexagon_count * sizeof (emr_polygon_t));
     text = (emr_exttextoutw_t*) _alloca(string_count * sizeof (emr_exttextoutw_t));
+    text_fsizes = (int *) _alloca(string_count * sizeof (int));
+    text_haligns = (int *) _alloca(string_count * sizeof (int));
 #endif
 
     //Calculate how many coloured rectangles
@@ -220,12 +273,15 @@ INTERNAL int emf_plot(struct zint_symbol *symbol) {
         }
     }
 
+    width = ceil(symbol->vector->width);
+    height = ceil(symbol->vector->height);
+
     /* Header */
     emr_header.type = 0x00000001; // EMR_HEADER
     emr_header.size = 108; // Including extensions
     emr_header.emf_header.bounds.left = 0;
-    emr_header.emf_header.bounds.right = ceil(symbol->vector->width);
-    emr_header.emf_header.bounds.bottom = ceil(symbol->vector->height);
+    emr_header.emf_header.bounds.right = rotate_angle == 90 || rotate_angle == 270 ? height : width;
+    emr_header.emf_header.bounds.bottom = rotate_angle == 90 || rotate_angle == 270 ? width : height;
     emr_header.emf_header.bounds.top = 0;
     emr_header.emf_header.frame.left = 0;
     emr_header.emf_header.frame.right = emr_header.emf_header.bounds.right * 30;
@@ -236,7 +292,7 @@ INTERNAL int emf_plot(struct zint_symbol *symbol) {
     if (symbol->symbology == BARCODE_ULTRA) {
         emr_header.emf_header.handles = 11; // Number of graphics objects
     } else {
-        emr_header.emf_header.handles = 4;
+        emr_header.emf_header.handles = fsize2 ? 5 : 4;
     }
     emr_header.emf_header.reserved = 0x0000;
     emr_header.emf_header.n_description = 0;
@@ -255,6 +311,25 @@ INTERNAL int emf_plot(struct zint_symbol *symbol) {
     emr_header.emf_header.micrometers.cy = 0;
     bytecount = 108;
     recordcount = 1;
+
+    emr_mapmode.type = 0x00000011; // EMR_SETMAPMODE
+    emr_mapmode.size = 12;
+    emr_mapmode.mapmode = 0x01; // MM_TEXT
+    bytecount += 12;
+    recordcount++;
+
+    if (rotate_angle) {
+        emr_setworldtransform.type = 0x00000023; // EMR_SETWORLDTRANSFORM
+        emr_setworldtransform.size = 32;
+        emr_setworldtransform.m11 = rotate_angle == 90 ? 0.0f : rotate_angle == 180 ? -1.0f : 0.0f;
+        emr_setworldtransform.m12 = rotate_angle == 90 ? 1.0f : rotate_angle == 180 ? 0.0f : -1.0f;
+        emr_setworldtransform.m21 = rotate_angle == 90 ? -1.0f : rotate_angle == 180 ? 0.0f : 1.0f;
+        emr_setworldtransform.m22 = rotate_angle == 90 ? 0.0f : rotate_angle == 180 ? -1.0f : 0.0f;
+        emr_setworldtransform.dx = rotate_angle == 90 ? height : rotate_angle == 180 ? width : 0.0f;
+        emr_setworldtransform.dy = rotate_angle == 90 ? 0.0f : rotate_angle == 180 ? height : width;
+        bytecount += 32;
+        recordcount++;
+    }
 
     /* Create Brushes */
     emr_createbrushindirect_bg.type = 0x00000027; // EMR_CREATEBRUSHINDIRECT
@@ -444,37 +519,60 @@ INTERNAL int emf_plot(struct zint_symbol *symbol) {
         hex = hex->next;
     }
 
-    /* Create font records */
+    /* Create font records, alignment records and text color */
     if (symbol->vector->strings) {
+        bold = (symbol->output_options & BOLD_TEXT) && (!is_extendable(symbol->symbology) || (symbol->output_options & SMALL_TEXT));
+        memset(&emr_extcreatefontindirectw, 0, sizeof(emr_extcreatefontindirectw));
         emr_extcreatefontindirectw.type = 0x00000052; // EMR_EXTCREATEFONTINDIRECTW
         emr_extcreatefontindirectw.size = 104;
-        emr_extcreatefontindirectw.ih_fonts = 4;
-        emr_extcreatefontindirectw.elw.height = 16 * symbol->scale;
+        emr_extcreatefontindirectw.ih_fonts = 11;
+        emr_extcreatefontindirectw.elw.height = fsize;
         emr_extcreatefontindirectw.elw.width = 0; // automatic
-        emr_extcreatefontindirectw.elw.escapement = 0;
-        emr_extcreatefontindirectw.elw.orientation = 0;
-        emr_extcreatefontindirectw.elw.weight = 400;
-        emr_extcreatefontindirectw.elw.italic = 0x00;
-        emr_extcreatefontindirectw.elw.underline = 0x00;
-        emr_extcreatefontindirectw.elw.strike_out = 0x00;
-        emr_extcreatefontindirectw.elw.char_set = 0x01;
+        emr_extcreatefontindirectw.elw.weight = bold ? 700 : 400;
+        emr_extcreatefontindirectw.elw.char_set = 0x00; // ANSI_CHARSET
         emr_extcreatefontindirectw.elw.out_precision = 0x00; // OUT_DEFAULT_PRECIS
         emr_extcreatefontindirectw.elw.clip_precision = 0x00; // CLIP_DEFAULT_PRECIS
-        emr_extcreatefontindirectw.elw.quality = 0x00;
-        emr_extcreatefontindirectw.elw.pitch_and_family = 0x00;
-        for (i = 0; i < 64; i++) {
-            emr_extcreatefontindirectw.elw.facename[i] = '\0';
-        }
+        emr_extcreatefontindirectw.elw.pitch_and_family = 0x02 | (0x02 << 6); // FF_SWISS | VARIABLE_PITCH
         utfle_copy(emr_extcreatefontindirectw.elw.facename, (unsigned char*) "sans-serif", 10);
         bytecount += 104;
         recordcount++;
-        
+
         emr_selectobject_font.type = 0x00000025; // EMR_SELECTOBJECT
         emr_selectobject_font.size = 12;
-        emr_selectobject_font.ih_object = 4;
+        emr_selectobject_font.ih_object = 11;
         bytecount += 12;
         recordcount++;
-        
+
+        if (fsize2) {
+            memcpy(&emr_extcreatefontindirectw2, &emr_extcreatefontindirectw, sizeof(emr_extcreatefontindirectw));
+            emr_extcreatefontindirectw2.ih_fonts = 12;
+            emr_extcreatefontindirectw2.elw.height = fsize2;
+            bytecount += 104;
+            recordcount++;
+
+            emr_selectobject_font2.type = 0x00000025; // EMR_SELECTOBJECT
+            emr_selectobject_font2.size = 12;
+            emr_selectobject_font2.ih_object = 12;
+            bytecount += 12;
+            recordcount++;
+        }
+
+        /* Note select aligns counted below in strings loop */
+
+        emr_settextalign.type = 0x00000016; // EMR_SETTEXTALIGN
+        emr_settextalign.size = 12;
+        emr_settextalign.text_alignment_mode = 0x0006 | 0x0018; // TA_CENTER | TA_BASELINE
+        if (halign1) {
+            emr_settextalign1.type = 0x00000016; // EMR_SETTEXTALIGN
+            emr_settextalign1.size = 12;
+            emr_settextalign1.text_alignment_mode = 0x0000 | 0x0018; // TA_LEFT | TA_BASELINE
+        }
+        if (halign2) {
+            emr_settextalign2.type = 0x00000016; // EMR_SETTEXTALIGN
+            emr_settextalign2.size = 12;
+            emr_settextalign2.text_alignment_mode = 0x0002 | 0x0018; // TA_RIGHT | TA_BASELINE
+        }
+
         emr_settextcolor.type = 0x0000018; // EMR_SETTEXTCOLOR
         emr_settextcolor.size = 12;
         emr_settextcolor.color.red = fgred;
@@ -486,38 +584,57 @@ INTERNAL int emf_plot(struct zint_symbol *symbol) {
     }
 
     //Text
-    str = symbol->vector->strings;
     this_text = 0;
-    while (str) {
-        this_string[this_text] = (unsigned char *) malloc(bump_up(str->length + 1) * 2);
-        text[this_text].type = 0x00000054; // EMR_EXTTEXTOUTW
-        text[this_text].size = 76 + (6 * bump_up(str->length + 1));
-        text[this_text].bounds.top = 0; // ignored
-        text[this_text].bounds.left = 0; // ignored
-        text[this_text].bounds.right = 0xffffffff; // ignored
-        text[this_text].bounds.bottom = 0xffffffff; // ignored
-        text[this_text].i_graphics_mode = 0x00000001; // GM_COMPATIBLE
-        text[this_text].ex_scale = 1.0;
-        text[this_text].ey_scale = 1.0;
-        text[this_text].w_emr_text.reference.x = str->x - (4 * str->length * symbol->scale); // text left
-        text[this_text].w_emr_text.reference.y = str->y - (16 * symbol->scale); // text top
-        text[this_text].w_emr_text.chars = str->length;
-        text[this_text].w_emr_text.off_string = 76;
-        text[this_text].w_emr_text.options = 0;
-        text[this_text].w_emr_text.rectangle.top = 0;
-        text[this_text].w_emr_text.rectangle.left = 0;
-        text[this_text].w_emr_text.rectangle.right = 0xffffffff;
-        text[this_text].w_emr_text.rectangle.bottom = 0xffffffff;
-        text[this_text].w_emr_text.off_dx = 76 + (2 * bump_up(str->length + 1));
-        for (i = 0; i < bump_up(str->length + 1) * 2; i++) {
-            this_string[this_text][i] = '\0';
-        }
-        utfle_copy(this_string[this_text], str->text, str->length);
-        bytecount += 76 + (6 * bump_up(str->length + 1));
-        recordcount++;
+    // Loop over font sizes so that they're grouped together, so only have to select font twice at most
+    for (current_fsize = fsize; current_fsize; current_fsize = fsize2) {
+        str = symbol->vector->strings;
+        current_halign = -1;
+        while (str) {
+            if (str->fsize != current_fsize) {
+                str = str->next;
+                continue;
+            }
+            text_fsizes[this_text] = str->fsize;
+            text_haligns[this_text] = str->halign;
+            if (text_haligns[this_text] != current_halign) {
+                current_halign = text_haligns[this_text];
+                bytecount += 12;
+                recordcount++;
+            }
+            assert(str->length > 0);
+            utfle_len = utfle_length(str->text, str->length);
+            bumped_len = bump_up(utfle_len) * 2;
+            this_string[this_text] = (unsigned char *) malloc(bumped_len);
+            memset(this_string[this_text], 0, bumped_len);
+            text[this_text].type = 0x00000054; // EMR_EXTTEXTOUTW
+            text[this_text].size = 76 + bumped_len;
+            text[this_text].bounds.top = 0; // ignored
+            text[this_text].bounds.left = 0; // ignored
+            text[this_text].bounds.right = 0xffffffff; // ignored
+            text[this_text].bounds.bottom = 0xffffffff; // ignored
+            text[this_text].i_graphics_mode = 0x00000002; // GM_ADVANCED
+            text[this_text].ex_scale = 1.0f;
+            text[this_text].ey_scale = 1.0f;
+            text[this_text].w_emr_text.reference.x = str->x;
+            text[this_text].w_emr_text.reference.y = str->y;
+            text[this_text].w_emr_text.chars = utfle_len;
+            text[this_text].w_emr_text.off_string = 76;
+            text[this_text].w_emr_text.options = 0;
+            text[this_text].w_emr_text.rectangle.top = 0;
+            text[this_text].w_emr_text.rectangle.left = 0;
+            text[this_text].w_emr_text.rectangle.right = 0xffffffff;
+            text[this_text].w_emr_text.rectangle.bottom = 0xffffffff;
+            text[this_text].w_emr_text.off_dx = 0;
+            utfle_copy(this_string[this_text], str->text, str->length);
+            bytecount += 76 + bumped_len;
+            recordcount++;
 
-        this_text++;
-        str = str->next;
+            this_text++;
+            str = str->next;
+        }
+        if (current_fsize == fsize2) {
+            break;
+        }
     }
 
     /* Create EOF record */
@@ -551,6 +668,12 @@ INTERNAL int emf_plot(struct zint_symbol *symbol) {
 
     fwrite(&emr_header, sizeof (emr_header_t), 1, emf_file);
 
+    fwrite(&emr_mapmode, sizeof (emr_mapmode_t), 1, emf_file);
+
+    if (rotate_angle) {
+        fwrite(&emr_setworldtransform, sizeof (emr_setworldtransform_t), 1, emf_file);
+    }
+
     fwrite(&emr_createbrushindirect_bg, sizeof (emr_createbrushindirect_t), 1, emf_file);
 
     if (symbol->symbology == BARCODE_ULTRA) {
@@ -567,6 +690,9 @@ INTERNAL int emf_plot(struct zint_symbol *symbol) {
 
     if (symbol->vector->strings) {
         fwrite(&emr_extcreatefontindirectw, sizeof (emr_extcreatefontindirectw_t), 1, emf_file);
+        if (fsize2) {
+            fwrite(&emr_extcreatefontindirectw2, sizeof (emr_extcreatefontindirectw_t), 1, emf_file);
+        }
     }
 
     fwrite(&emr_selectobject_bgbrush, sizeof (emr_selectobject_t), 1, emf_file);
@@ -633,14 +759,26 @@ INTERNAL int emf_plot(struct zint_symbol *symbol) {
     /* Suppresses clang-tidy clang-analyzer-core.UndefinedBinaryOperatorResult warning */
     assert((symbol->vector->strings == NULL && string_count == 0) || (symbol->vector->strings != NULL && string_count > 0));
 
+    current_fsize = fsize;
+    current_halign = -1;
     for (i = 0; i < string_count; i++) {
-        spacing = 8 * symbol->scale;
-        fwrite(&text[i], sizeof (emr_exttextoutw_t), 1, emf_file);
-        fwrite(this_string[i], bump_up(text[i].w_emr_text.chars + 1) * 2, 1, emf_file);
-        free(this_string[i]);
-        for (j = 0; j < bump_up(text[i].w_emr_text.chars + 1); j++) {
-            fwrite(&spacing, 4, 1, emf_file);
+        if (text_fsizes[i] != current_fsize) {
+            current_fsize = text_fsizes[i];
+            fwrite(&emr_selectobject_font2, sizeof (emr_selectobject_t), 1, emf_file);
         }
+        if (text_haligns[i] != current_halign) {
+            current_halign = text_haligns[i];
+            if (current_halign == 0) {
+                fwrite(&emr_settextalign, sizeof (emr_settextalign_t), 1, emf_file);
+            } else if (current_halign == 1) {
+                fwrite(&emr_settextalign1, sizeof (emr_settextalign_t), 1, emf_file);
+            } else {
+                fwrite(&emr_settextalign2, sizeof (emr_settextalign_t), 1, emf_file);
+            }
+        }
+        fwrite(&text[i], sizeof (emr_exttextoutw_t), 1, emf_file);
+        fwrite(this_string[i], bump_up(text[i].w_emr_text.chars) * 2, 1, emf_file);
+        free(this_string[i]);
     }
 
     fwrite(&emr_eof, sizeof (emr_eof_t), 1, emf_file);
