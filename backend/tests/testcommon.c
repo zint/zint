@@ -1397,8 +1397,7 @@ int testUtilHaveIdentify() {
 }
 
 int testUtilVerifyIdentify(char *filename, int debug) {
-    int ret;
-    char buf[512 + 128];
+    char cmd[512 + 128];
 
     if (strlen(filename) > 512) {
         return -1;
@@ -1407,36 +1406,90 @@ int testUtilVerifyIdentify(char *filename, int debug) {
     if (debug & ZINT_DEBUG_TEST_PRINT) {
         // Verbose very noisy though so for quick check just return default output
         if (debug & ZINT_DEBUG_TEST_LESS_NOISY) {
-            sprintf(buf, "identify %s", filename);
+            sprintf(cmd, "identify %s", filename);
         } else {
-            sprintf(buf, "identify -verbose %s", filename);
+            sprintf(cmd, "identify -verbose %s", filename);
         }
     } else {
-        sprintf(buf, "identify -verbose %s > /dev/null", filename);
+        sprintf(cmd, "identify -verbose %s > /dev/null", filename);
     }
 
-    return system(buf);
+    return system(cmd);
 }
 
-int testUtilHaveInkscape() {
-    return system("inkscape -z -V > /dev/null") == 0;
+int testUtilHaveLibreOffice() {
+    return system("libreoffice --version > /dev/null") == 0;
 }
 
-int testUtilVerifyInkscape(char *filename, int debug) {
-    int ret;
-    char buf[512 + 128];
+int testUtilVerifyLibreOffice(char *filename, int debug) {
+    char cmd[512 + 128];
+    char svg[512];
+    char *slash, *dot;
+    char buf[32768];
+    char *b = buf, *be = buf + sizeof(buf) - 1;
+    FILE *fp;
+    int len;
 
+    /* Hack to read SVG produced by LibreOffice and search for 'x="-32767"' which indicates it didn't load barcode file */
     if (strlen(filename) > 512) {
         return -1;
     }
-    if (debug & ZINT_DEBUG_TEST_PRINT) {
-        sprintf(buf, "inkscape -z -f %s", filename); // Prints nothing unless bad
-        printf("%s\n", buf);
+    slash = strrchr(filename, '/');
+    if (slash) {
+        strcpy(svg, slash + 1);
     } else {
-        sprintf(buf, "inkscape -z -f %s > /dev/null", filename);
+        strcpy(svg, filename);
+    }
+    dot = strrchr(svg, '.');
+    if (dot) {
+        strcpy(dot, ".svg");
+    } else {
+        strcat(svg, ".svg");
+    }
+    if (strcmp(svg, filename) == 0) {
+        fprintf(stderr, "testUtilVerifyLibreOffice: input '%s' same as svg '%s'\n", filename, svg);
+        return -1;
     }
 
-    return system(buf);
+    sprintf(cmd, "libreoffice --convert-to svg %s > /dev/null 2>&1", filename);
+    if (debug & ZINT_DEBUG_TEST_PRINT) {
+        printf("%s\n", cmd);
+    }
+    if (system(cmd) != 0) {
+        fprintf(stderr, "testUtilVerifyLibreOffice: failed to run '%s'\n", cmd);
+        return -1;
+    }
+
+    fp = fopen(svg, "r");
+    if (!fp) {
+        fprintf(stderr, "testUtilVerifyLibreOffice: failed to open '%s' (%s)\n", svg, cmd);
+        return -1;
+    }
+    while (!feof(fp) && b < be) {
+        if (fgets(b, be - b, fp) == NULL) {
+            fprintf(stderr, "testUtilVerifyLibreOffice: failed to get line from '%s' (%s)\n", svg, cmd);
+            fclose(fp);
+            return -1;
+        }
+        len = (int) strlen(b);
+        if (len == 0) {
+            break;
+        }
+        b += len;
+    }
+    *b = '\0';
+    fclose(fp);
+
+    if (strlen(buf) < 1024) {
+        fprintf(stderr, "testUtilVerifyLibreOffice: failed to get much input from '%s' (%s)\n", svg, cmd);
+        return -1;
+    }
+    if (strstr(buf, "x=\"-32767\"") != NULL) {
+        return -1;
+    }
+    remove(svg);
+
+    return 0;
 }
 
 int testUtilHaveGhostscript() {
@@ -1444,17 +1497,38 @@ int testUtilHaveGhostscript() {
 }
 
 int testUtilVerifyGhostscript(char *filename, int debug) {
-    int ret;
+    char cmd[512 + 128];
+
+    if (strlen(filename) > 512) {
+        return -1;
+    }
+    if (debug & ZINT_DEBUG_TEST_PRINT) {
+        sprintf(cmd, "gs -dNOPAUSE -dBATCH -dNODISPLAY -q %s", filename); // Prints nothing of interest with or without -q unless bad
+        printf("%s\n", cmd);
+    } else {
+        sprintf(cmd, "gs -dNOPAUSE -dBATCH -dNODISPLAY -q %s", filename);
+    }
+
+    return system(cmd);
+}
+
+/* v.Nu https://github.com/validator/validator
+ * Needs "$INSTALL_DIR/vnu-runtime-image/bin" in PATH */
+int testUtilHaveVnu() {
+    return system("vnu --version > /dev/null") == 0;
+}
+
+int testUtilVerifyVnu(char *filename, int debug) {
     char buf[512 + 128];
 
     if (strlen(filename) > 512) {
         return -1;
     }
     if (debug & ZINT_DEBUG_TEST_PRINT) {
-        sprintf(buf, "gs -dNOPAUSE -dBATCH -dNODISPLAY -q %s", filename); // Prints nothing of interest with or without -q unless bad
+        sprintf(buf, "vnu --svg --verbose %s", filename);
         printf("%s\n", buf);
     } else {
-        sprintf(buf, "gs -dNOPAUSE -dBATCH -dNODISPLAY -q %s", filename);
+        sprintf(buf, "vnu --svg %s", filename);
     }
 
     return system(buf);
@@ -1764,7 +1838,6 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
     int r, h;
     int parse;
 
-    int composite = is_composite(symbology);
     int upcean = is_extendable(symbology);
     int upca = symbology == BARCODE_UPCA || symbology == BARCODE_UPCA_CHK || symbology == BARCODE_UPCA_CC;
     int addon_posn;
@@ -1902,7 +1975,7 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                     || symbology == BARCODE_DAFT || symbology == BARCODE_USPS_IMAIL || symbology == BARCODE_AUSPOST || symbology == BARCODE_PHARMA_TWO) {
                 for (r = 0; r < symbol->rows; r++) bwipp_row_height[r] = 1; /* Zap */
                 if (symbology == BARCODE_KIX) {
-                    to_upper(bwipp_data);
+                    to_upper((unsigned char *) bwipp_data);
                 } else if (symbology == BARCODE_USPS_IMAIL) {
                     char *dash = strchr(bwipp_data, '-');
                     if (dash) {

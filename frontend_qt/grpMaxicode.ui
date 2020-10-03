@@ -41,7 +41,7 @@
         <bool>false</bool>
        </property>
        <property name="text">
-        <string>&amp;Primary Message:</string>
+        <string>P&amp;rimary Message:</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>

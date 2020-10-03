@@ -48,7 +48,7 @@ static void test_pcx(int index, int debug) {
         char *fgcolour;
         char *bgcolour;
         float scale;
-        unsigned char *data;
+        char *data;
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
@@ -92,7 +92,7 @@ static void test_pcx(int index, int debug) {
 
         int length = strlen(data[i].data);
 
-        ret = ZBarcode_Encode(symbol, data[i].data, length);
+        ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_zero(ret, "i:%d %s ZBarcode_Encode ret %d != 0 %s\n", i, testUtilBarcodeName(data[i].symbology), ret, symbol->errtxt);
 
         char *filename = "out.pcx";

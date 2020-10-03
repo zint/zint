@@ -146,7 +146,7 @@
      <item row="1" column="0" >
       <widget class="QLabel" name="lblPDFECC" >
        <property name="text" >
-        <string>&amp;Error Correction Capacity:</string>
+        <string>E&amp;rror Correction Capacity:</string>
        </property>
        <property name="alignment" >
         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -224,7 +224,7 @@
       <item row="0" column="0">
        <widget class="QRadioButton" name="radPDFStand">
         <property name="text">
-         <string>Standard Mode</string>
+         <string>S&amp;tandard Mode</string>
         </property>
         <property name="checked">
          <bool>true</bool>
@@ -234,7 +234,7 @@
       <item row="0" column="1">
        <widget class="QRadioButton" name="radPDFHIBC">
         <property name="text">
-         <string>HIBC PDF417</string>
+         <string>H&amp;IBC PDF417</string>
         </property>
        </widget>
       </item>

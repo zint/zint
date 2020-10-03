@@ -112,7 +112,7 @@ static void test_sjis_utf8tomb(int index) {
 
     int ret;
     struct item {
-        unsigned char *data;
+        char *data;
         int length;
         int ret;
         size_t ret_length;
@@ -151,7 +151,7 @@ static void test_sjis_utf8tomb(int index) {
         int length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
         size_t ret_length = length;
 
-        ret = sjis_utf8tomb(&symbol, data[i].data, &ret_length, jisdata);
+        ret = sjis_utf8tomb(&symbol, (unsigned char *) data[i].data, &ret_length, jisdata);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d (%s)\n", i, ret, data[i].ret, symbol.errtxt);
         if (ret == 0) {
             assert_equal(ret_length, data[i].ret_length, "i:%d ret_length %zu != %zu\n", i, ret_length, data[i].ret_length);
@@ -172,7 +172,7 @@ static void test_sjis_utf8tosb(int index) {
     struct item {
         int eci;
         int full_multibyte;
-        unsigned char *data;
+        char *data;
         int length;
         int ret;
         size_t ret_length;
@@ -217,7 +217,7 @@ static void test_sjis_utf8tosb(int index) {
         int length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
         size_t ret_length = length;
 
-        ret = sjis_utf8tosb(data[i].eci, data[i].data, &ret_length, jisdata, data[i].full_multibyte);
+        ret = sjis_utf8tosb(data[i].eci, (unsigned char *) data[i].data, &ret_length, jisdata, data[i].full_multibyte);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d\n", i, ret, data[i].ret);
         if (ret == 0) {
             assert_equal(ret_length, data[i].ret_length, "i:%d ret_length %zu != %zu\n", i, ret_length, data[i].ret_length);
@@ -234,10 +234,9 @@ static void test_sjis_cpy(int index) {
 
     testStart("");
 
-    int ret;
     struct item {
         int full_multibyte;
-        unsigned char *data;
+        char *data;
         int length;
         int ret;
         size_t ret_length;
@@ -268,7 +267,7 @@ static void test_sjis_cpy(int index) {
         int length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
         size_t ret_length = length;
 
-        sjis_cpy(data[i].data, &ret_length, jisdata, data[i].full_multibyte);
+        sjis_cpy((unsigned char *) data[i].data, &ret_length, jisdata, data[i].full_multibyte);
         assert_equal(ret_length, data[i].ret_length, "i:%d ret_length %zu != %zu\n", i, ret_length, data[i].ret_length);
         for (int j = 0; j < (int) ret_length; j++) {
             assert_equal(jisdata[j], data[i].expected_jisdata[j], "i:%d jisdata[%d] %04X != %04X\n", i, j, jisdata[j], data[i].expected_jisdata[j]);

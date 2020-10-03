@@ -25,7 +25,7 @@
      <item row="0" column="0">
       <widget class="QLabel" name="lblChannel">
        <property name="text">
-        <string>Symbol Size:</string>
+        <string>Symbol Si&amp;ze:</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -108,7 +108,7 @@
       <item row="0" column="0">
        <widget class="QRadioButton" name="radC1Stand">
         <property name="text">
-         <string>Standard Mode</string>
+         <string>S&amp;tandard Mode</string>
         </property>
         <property name="checked">
          <bool>true</bool>
@@ -118,7 +118,7 @@
       <item row="0" column="1">
        <widget class="QRadioButton" name="radC1GS1">
         <property name="text">
-         <string>GS1 Data Mode</string>
+         <string>GS&amp;1 Data Mode</string>
         </property>
        </widget>
       </item>

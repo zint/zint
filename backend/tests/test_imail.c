@@ -53,7 +53,6 @@ static void test_csv(int index, int debug) {
     char actual_daft[70];
 
     int ret;
-    int i;
     int lc = 0;
     while (fgets(buffer, sizeof(buffer), fd) != NULL) {
 
@@ -101,7 +100,7 @@ static void test_csv(int index, int debug) {
         symbol->symbology = BARCODE_USPS_IMAIL;
         symbol->debug |= debug;
 
-        ret = ZBarcode_Encode(symbol, data, strlen(data));
+        ret = ZBarcode_Encode(symbol, (unsigned char *) data, strlen(data));
 
         if (strcmp(return_code, "00") == 0) {
 
@@ -130,16 +129,14 @@ static void test_hrt(int index, int debug) {
 
     int ret;
     struct item {
-        unsigned char *data;
-        unsigned char *expected;
+        char *data;
+        char *expected;
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
         /*  0*/ { "53379777234994544928-51135759461", "" }, // None
     };
     int data_size = ARRAY_SIZE(data);
-
-    char *text;
 
     for (int i = 0; i < data_size; i++) {
 
@@ -150,10 +147,10 @@ static void test_hrt(int index, int debug) {
 
         int length = testUtilSetSymbol(symbol, BARCODE_USPS_IMAIL, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
 
-        ret = ZBarcode_Encode(symbol, data[i].data, length);
+        ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_zero(ret, "i:%d ZBarcode_Encode ret %d != 0 %s\n", i, ret, symbol->errtxt);
 
-        assert_zero(strcmp(symbol->text, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->text, data[i].expected);
+        assert_zero(strcmp((char *) symbol->text, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->text, data[i].expected);
 
         ZBarcode_Delete(symbol);
     }
@@ -167,7 +164,7 @@ static void test_input(int index, int debug) {
 
     int ret;
     struct item {
-        unsigned char *data;
+        char *data;
         int ret;
         int expected_rows;
         int expected_width;
@@ -199,7 +196,7 @@ static void test_input(int index, int debug) {
 
         int length = testUtilSetSymbol(symbol, BARCODE_USPS_IMAIL, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
 
-        ret = ZBarcode_Encode(symbol, data[i].data, length);
+        ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (ret < 5) {
@@ -221,7 +218,7 @@ static void test_encode(int index, int generate, int debug) {
 
     int ret;
     struct item {
-        unsigned char *data;
+        char *data;
         int ret;
 
         int expected_rows;
@@ -251,7 +248,7 @@ static void test_encode(int index, int generate, int debug) {
 
         int length = testUtilSetSymbol(symbol, BARCODE_USPS_IMAIL, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
 
-        ret = ZBarcode_Encode(symbol, data[i].data, length);
+        ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (generate) {

@@ -47,7 +47,7 @@ static void test_pixel_plot(int index, int debug) {
     struct item {
         int width;
         int height;
-        unsigned char *pattern;
+        char *pattern;
         int repeat;
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
@@ -63,8 +63,6 @@ static void test_pixel_plot(int index, int debug) {
     int data_size = ARRAY_SIZE(data);
 
     char *png = "out.png";
-    char escaped[1024];
-    int escaped_size = 1024;
 
     char data_buf[8 * 2 + 1];
 
@@ -91,7 +89,7 @@ static void test_pixel_plot(int index, int debug) {
         }
         assert_equal(size, (int) strlen(data_buf), "i:%d png_pixel_plot size %d != strlen(data_buf) %d\n", i, size, (int) strlen(data_buf));
 
-        symbol->bitmap = data_buf;
+        symbol->bitmap = (unsigned char *) data_buf;
 
         ret = png_pixel_plot(symbol, data_buf);
         assert_zero(ret, "i:%d png_pixel_plot ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
@@ -125,7 +123,7 @@ static void test_print(int index, int generate, int debug) {
         int option_2;
         int height;
         float scale;
-        unsigned char *data;
+        char *data;
         char *composite;
         char *expected_file;
         char *comment;
@@ -205,7 +203,7 @@ static void test_print(int index, int generate, int debug) {
         }
         int text_length = strlen(text);
 
-        ret = ZBarcode_Encode(symbol, text, text_length);
+        ret = ZBarcode_Encode(symbol, (unsigned char *) text, text_length);
         assert_zero(ret, "i:%d %s ZBarcode_Encode ret %d != 0 %s\n", i, testUtilBarcodeName(data[i].symbology), ret, symbol->errtxt);
 
         strcpy(symbol->outfile, png);

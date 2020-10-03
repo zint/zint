@@ -25,7 +25,7 @@
      <item row="0" column="0">
       <widget class="QLabel" name="labelHXSize">
        <property name="text">
-        <string>Size:</string>
+        <string>Si&amp;ze:</string>
        </property>
        <property name="buddy">
         <cstring>cmbHXSize</cstring>
@@ -467,7 +467,7 @@
      <item row="1" column="0">
       <widget class="QLabel" name="labelHXECC">
        <property name="text">
-        <string>Error Correction:</string>
+        <string>E&amp;rror Correction:</string>
        </property>
        <property name="buddy">
         <cstring>cmbHXECC</cstring>
@@ -508,7 +508,7 @@
    <item>
     <widget class="QCheckBox" name="chkHXFullMultibyte">
      <property name="text">
-      <string>Full Multibyte</string>
+      <string>&amp;Full Multibyte</string>
      </property>
      <property name="checked">
       <bool>false</bool>

@@ -25,7 +25,7 @@
      <item row="0" column="0">
       <widget class="QLabel" name="lblDM200Size">
        <property name="text">
-        <string>Size:</string>
+        <string>Si&amp;ze:</string>
        </property>
        <property name="buddy">
         <cstring>cmbDM200Size</cstring>
@@ -298,7 +298,7 @@
       <item row="0" column="0">
        <widget class="QRadioButton" name="radDM200Stand">
         <property name="text">
-         <string>Standard Mode</string>
+         <string>S&amp;tandard Mode</string>
         </property>
         <property name="checked">
          <bool>true</bool>
@@ -308,14 +308,14 @@
       <item row="0" column="1">
        <widget class="QRadioButton" name="radDM200GS1">
         <property name="text">
-         <string>GS1 Data Mode</string>
+         <string>GS&amp;1 Data Mode</string>
         </property>
        </widget>
       </item>
       <item row="1" column="0">
        <widget class="QRadioButton" name="radDM200HIBC">
         <property name="text">
-         <string>HIBC Data Matrix</string>
+         <string>H&amp;IBC Data Matrix</string>
         </property>
        </widget>
       </item>
@@ -325,7 +325,7 @@
    <item>
     <widget class="QCheckBox" name="chkDMRectangle">
      <property name="text">
-      <string>Suppress Rectangular Symbols in Automatic Mode</string>
+      <string>Suppress &amp;Rectangular Symbols in Automatic Mode</string>
      </property>
      <property name="checked">
       <bool>true</bool>
@@ -335,7 +335,7 @@
    <item>
     <widget class="QCheckBox" name="chkDMRE">
      <property name="text">
-      <string>Allow DMRE in Automatic Mode</string>
+      <string>Allo&amp;w DMRE in Automatic Mode</string>
      </property>
      <property name="checked">
       <bool>false</bool>
@@ -345,7 +345,7 @@
    <item>
     <widget class="QCheckBox" name="chkDMGSSep">
      <property name="text">
-      <string>Use separator GS for GS1</string>
+      <string>&amp;Use separator GS for GS1</string>
      </property>
      <property name="checked">
       <bool>false</bool>

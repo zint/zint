@@ -25,7 +25,7 @@
      <item row="0" column="0">
       <widget class="QLabel" name="labelRowSeparatorHeight">
        <property name="text">
-        <string>Row Separator Height:</string>
+        <string>&amp;Row Separator Height:</string>
        </property>
        <property name="buddy">
         <cstring>cmbC16kRowSepHeight</cstring>
@@ -70,7 +70,7 @@
       <item row="0" column="0">
        <widget class="QRadioButton" name="radC16kStand">
         <property name="text">
-         <string>Standard Mode</string>
+         <string>S&amp;tandard Mode</string>
         </property>
         <property name="checked">
          <bool>true</bool>
@@ -80,7 +80,7 @@
       <item row="0" column="1">
        <widget class="QRadioButton" name="radC16kGS1">
         <property name="text">
-         <string>GS1 Data Mode</string>
+         <string>GS&amp;1 Data Mode</string>
         </property>
        </widget>
       </item>

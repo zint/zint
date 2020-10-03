@@ -17,7 +17,7 @@
    <item>
     <widget class="QCheckBox" name="chkCodabarCheck">
      <property name="text">
-      <string>Add Check Character (Mod-16)</string>
+      <string>Add &amp;Check Character (Mod-16)</string>
      </property>
      <property name="checked">
       <bool>false</bool>

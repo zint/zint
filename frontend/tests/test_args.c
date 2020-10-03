@@ -161,7 +161,6 @@ static void test_dump_args(int index, int debug) {
 
     testStart("");
 
-    int ret;
     struct item {
         int b;
         char *data;
@@ -280,7 +279,6 @@ static void test_input(int index, int debug) {
 
     testStart("");
 
-    int ret;
     struct item {
         int b;
         int batch;
@@ -351,7 +349,6 @@ static void test_batch_input(int index, int debug) {
 
     testStart("");
 
-    int ret;
     struct item {
         int b;
         char *data;
@@ -410,7 +407,6 @@ static void test_batch_large(int index, int debug) {
 
     testStart("");
 
-    int ret;
     struct item {
         int b;
         int mirror;
@@ -469,7 +465,6 @@ static void test_checks(int index, int debug) {
 
     testStart("");
 
-    int ret;
     struct item {
         int addongap;
         int border;

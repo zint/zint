@@ -25,7 +25,7 @@
      <item row="0" column="0">
       <widget class="QLabel" name="labelWidth">
        <property name="text">
-        <string>Symbol Width (Columns):</string>
+        <string>Symbol &amp;Width (Columns):</string>
        </property>
        <property name="buddy">
         <cstring>cmbCbfWidth</cstring>
@@ -342,7 +342,7 @@
      <item row="1" column="0">
       <widget class="QLabel" name="labelHeight">
        <property name="text">
-        <string>Symbol Height (Rows):</string>
+        <string>Symbol &amp;Height (Rows):</string>
        </property>
        <property name="buddy">
         <cstring>cmbCbfHeight</cstring>
@@ -584,7 +584,7 @@
      <item row="2" column="0">
       <widget class="QLabel" name="labelRowSeparatorHeight">
        <property name="text">
-        <string>Row Separator Height:</string>
+        <string>&amp;Row Separator Height:</string>
        </property>
        <property name="buddy">
         <cstring>cmbCbfRowSepHeight</cstring>
@@ -629,7 +629,7 @@
       <item>
        <widget class="QRadioButton" name="radCbfStand">
         <property name="text">
-         <string>Standard Mode</string>
+         <string>S&amp;tandard Mode</string>
         </property>
         <property name="checked">
          <bool>true</bool>
@@ -639,7 +639,7 @@
       <item>
        <widget class="QRadioButton" name="radCbfHIBC">
         <property name="text">
-         <string>HIBC Codablock-F</string>
+         <string>H&amp;IBC Codablock-F</string>
         </property>
        </widget>
       </item>

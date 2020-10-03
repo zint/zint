@@ -42,28 +42,57 @@
             <item>
              <widget class="QLabel" name="label">
               <property name="text">
-               <string>Start Value:</string>
+               <string>&amp;Start Value:</string>
+              </property>
+              <property name="buddy">
+               <cstring>linStartVal</cstring>
+              </property>
+              <property name="toolTip">
+               <string>Start sequence at this value</string>
               </property>
              </widget>
             </item>
             <item>
              <widget class="QLabel" name="label_2">
               <property name="text">
-               <string>End Value:</string>
+               <string>End &amp;Value:</string>
+              </property>
+              <property name="buddy">
+               <cstring>linEndVal</cstring>
+              </property>
+              <property name="toolTip">
+               <string>End sequence at this value</string>
               </property>
              </widget>
             </item>
             <item>
              <widget class="QLabel" name="lblIncrement">
               <property name="text">
-               <string>Increment By:</string>
+               <string>Increment &amp;By:</string>
+              </property>
+              <property name="buddy">
+               <cstring>linIncVal</cstring>
+              </property>
+              <property name="toolTip">
+               <string>Go from start to end in steps of this amount</string>
               </property>
              </widget>
             </item>
             <item>
              <widget class="QLabel" name="label_4">
               <property name="text">
-               <string>Format:</string>
+               <string>&amp;Format:</string>
+              </property>
+              <property name="buddy">
+               <cstring>linFormat</cstring>
+              </property>
+              <property name="toolTip">
+               <string>Format sequence using special characters&lt;table cellpadding=&quot;3&quot;&gt;
+&lt;tr&gt;&lt;td&gt;#&lt;/td&gt;&lt;td&gt;Number or space&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;$&lt;/td&gt;&lt;td&gt;Number or &apos;0&apos;&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;*&lt;/td&gt;&lt;td&gt;Number or &apos;*&apos;&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;Other&lt;/td&gt;&lt;td&gt;Insert literally&lt;/td&gt;&lt;/tr&gt;
+&lt;/table&gt;</string>
               </property>
              </widget>
             </item>
@@ -72,6 +101,9 @@
               <property name="text">
                <string>Sequence:</string>
               </property>
+              <property name="toolTip">
+               <string>Create a data sequence</string>
+              </property>
              </widget>
             </item>
             <item>
@@ -79,12 +111,21 @@
               <property name="text">
                <string>Sequence File:</string>
               </property>
+              <property name="toolTip">
+               <string>Get a data sequence from a file</string>
+              </property>
              </widget>
             </item>
             <item>
-             <widget class="QLabel" name="label_7">
+             <widget class="QLabel" name="lblExport">
               <property name="text">
                <string>Generate Bar Codes:</string>
+              </property>
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="toolTip">
+               <string>Save the symbols to files</string>
               </property>
              </widget>
             </item>
@@ -100,12 +141,18 @@
               <property name="frame">
                <bool>true</bool>
               </property>
+              <property name="toolTip">
+               <string>Start sequence at this value</string>
+              </property>
              </widget>
             </item>
             <item>
              <widget class="QLineEdit" name="linEndVal">
               <property name="text">
                <string>10</string>
+              </property>
+              <property name="toolTip">
+               <string>End sequence at this value</string>
               </property>
              </widget>
             </item>
@@ -114,12 +161,23 @@
               <property name="text">
                <string>1</string>
               </property>
+              <property name="toolTip">
+               <string>Go from start to end in steps of this amount</string>
+              </property>
              </widget>
             </item>
             <item>
              <widget class="QLineEdit" name="linFormat">
               <property name="text">
                <string>$$$$$$</string>
+              </property>
+              <property name="toolTip">
+               <string>Format sequence using special characters&lt;table cellpadding=&quot;3&quot;&gt;
+&lt;tr&gt;&lt;td&gt;#&lt;/td&gt;&lt;td&gt;Number or space&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;$&lt;/td&gt;&lt;td&gt;Number or &apos;0&apos;&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;*&lt;/td&gt;&lt;td&gt;Number or &apos;*&apos;&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;Other&lt;/td&gt;&lt;td&gt;Insert literally&lt;/td&gt;&lt;/tr&gt;
+&lt;/table&gt;</string>
               </property>
              </widget>
             </item>
@@ -129,17 +187,17 @@
                <string>Create a data sequence</string>
               </property>
               <property name="text">
-               <string>Create</string>
+               <string>Crea&amp;te</string>
               </property>
              </widget>
             </item>
             <item>
              <widget class="QPushButton" name="btnImport">
               <property name="toolTip">
-               <string>Get a data sequence from file</string>
+               <string>Get a data sequence from a file</string>
               </property>
               <property name="text">
-               <string>Import...</string>
+               <string>&amp;Import...</string>
               </property>
              </widget>
             </item>
@@ -149,10 +207,10 @@
                <bool>false</bool>
               </property>
               <property name="toolTip">
-               <string>Save the symbols to file</string>
+               <string>Save the symbols to files</string>
               </property>
               <property name="text">
-               <string>Export...</string>
+               <string>&amp;Export...</string>
               </property>
              </widget>
             </item>
@@ -172,7 +230,10 @@
         </sizepolicy>
        </property>
        <property name="title">
-        <string>Sequence Preview</string>
+        <string>Sequence &amp;Data</string>
+       </property>
+       <property name="toolTip">
+        <string>The data to be encoded, one line per symbol</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -212,14 +273,20 @@
      <item>
       <widget class="QPushButton" name="btnReset">
        <property name="text">
-        <string>Reset</string>
+        <string>&amp;Reset</string>
+       </property>
+       <property name="toolTip">
+        <string>Clear the sequence data</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="btnClose">
        <property name="text">
-        <string>Close</string>
+        <string>&amp;Close</string>
+       </property>
+       <property name="toolTip">
+        <string>Close window</string>
        </property>
       </widget>
      </item>

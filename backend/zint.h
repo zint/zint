@@ -48,7 +48,7 @@ extern "C" {
         float width; /* Suggested string width, may be 0 if none recommended */
         int length;
         int rotation;
-        int halign; /* Horizontal alignment: 0 for centre (middle, 1 for left (start), 2 for right (end) */
+        int halign; /* Horizontal alignment: 0 for centre (middle), 1 for left (start), 2 for right (end) */
         unsigned char *text;
         struct zint_vector_string *next; /* Pointer to next character */
     };
@@ -274,7 +274,7 @@ extern "C" {
 #define ZINT_WARN_NONCOMPLIANT          4
 #define ZINT_ERROR                      5 /* Warn/error marker, not returned */
 #define ZINT_ERROR_TOO_LONG             5
-#define ZINT_ERROR_INVALID_DATA	        6
+#define ZINT_ERROR_INVALID_DATA         6
 #define ZINT_ERROR_INVALID_CHECK        7
 #define ZINT_ERROR_INVALID_OPTION       8
 #define ZINT_ERROR_ENCODING_PROBLEM     9

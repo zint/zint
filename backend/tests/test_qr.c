@@ -37,7 +37,7 @@ static void test_qr_options(int index, int debug) {
 
     int ret;
     struct item {
-        unsigned char *data;
+        char *data;
         int option_1;
         int option_2;
         int ret_encode;
@@ -102,7 +102,7 @@ static void test_qr_options(int index, int debug) {
 
         int length = strlen(data[i].data);
 
-        ret = ZBarcode_Encode(symbol, data[i].data, length);
+        ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret_encode, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret_encode, symbol->errtxt);
         if (index == -1 && data[i].compare_previous != -1) {
             ret = testUtilSymbolCmp(symbol, &previous_symbol);
@@ -132,7 +132,7 @@ static void test_qr_input(int index, int generate, int debug) {
         int input_mode;
         int eci;
         int option_3;
-        unsigned char *data;
+        char *data;
         int ret;
         int expected_eci;
         char *expected;
@@ -265,7 +265,7 @@ static void test_qr_input(int index, int generate, int debug) {
 
         int length = strlen(data[i].data);
 
-        ret = ZBarcode_Encode(symbol, data[i].data, length);
+        ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d\n", i, ret, data[i].ret);
 
         if (generate) {
@@ -292,7 +292,7 @@ static void test_qr_gs1(int index, int generate, int debug) {
 
     int ret;
     struct item {
-        unsigned char *data;
+        char *data;
         int ret;
         char *expected;
         char *comment;
@@ -327,7 +327,7 @@ static void test_qr_gs1(int index, int generate, int debug) {
 
         int length = strlen(data[i].data);
 
-        ret = ZBarcode_Encode(symbol, data[i].data, length);
+        ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d\n", i, ret, data[i].ret);
 
         if (generate) {
@@ -352,7 +352,7 @@ static void test_qr_optimize(int index, int generate, int debug) {
     int ret;
     struct item {
         int input_mode;
-        unsigned char *data;
+        char *data;
         int option_1;
         int ret;
         char *expected;
@@ -412,7 +412,7 @@ static void test_qr_optimize(int index, int generate, int debug) {
 
         int length = strlen(data[i].data);
 
-        ret = ZBarcode_Encode(symbol, data[i].data, length);
+        ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d\n", i, ret, data[i].ret);
 
         if (generate) {
@@ -436,7 +436,7 @@ static void test_qr_encode(int index, int generate, int debug) {
     int ret;
     struct item {
         int input_mode;
-        unsigned char *data;
+        char *data;
         int option_1;
         int option_2;
         int ret;
@@ -935,7 +935,7 @@ static void test_qr_encode(int index, int generate, int debug) {
 
         int length = strlen(data[i].data);
 
-        ret = ZBarcode_Encode(symbol, data[i].data, length);
+        ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (generate) {
@@ -969,7 +969,7 @@ static void test_microqr_options(int index, int debug) {
 
     int ret;
     struct item {
-        unsigned char *data;
+        char *data;
         int option_1;
         int option_2;
         int ret_encode;
@@ -1051,7 +1051,7 @@ static void test_microqr_options(int index, int debug) {
 
         int length = strlen(data[i].data);
 
-        ret = ZBarcode_Encode(symbol, data[i].data, length);
+        ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret_encode, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret_encode, symbol->errtxt);
         if (index == -1 && data[i].compare_previous != -1) {
             ret = testUtilSymbolCmp(symbol, &previous_symbol);
@@ -1080,7 +1080,7 @@ static void test_microqr_input(int index, int generate, int debug) {
     struct item {
         int input_mode;
         int option_3;
-        unsigned char *data;
+        char *data;
         int ret;
         char *expected;
         char *comment;
@@ -1162,7 +1162,7 @@ static void test_microqr_input(int index, int generate, int debug) {
 
         int length = strlen(data[i].data);
 
-        ret = ZBarcode_Encode(symbol, data[i].data, length);
+        ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d\n", i, ret, data[i].ret);
 
         if (generate) {
@@ -1188,7 +1188,7 @@ static void test_microqr_padding(int index, int generate, int debug) {
 
     int ret;
     struct item {
-        unsigned char *data;
+        char *data;
         int option_1;
         int ret;
         char *expected;
@@ -1242,7 +1242,7 @@ static void test_microqr_padding(int index, int generate, int debug) {
 
         int length = strlen(data[i].data);
 
-        ret = ZBarcode_Encode(symbol, data[i].data, length);
+        ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (generate) {
@@ -1268,7 +1268,7 @@ static void test_microqr_optimize(int index, int generate, int debug) {
     int ret;
     struct item {
         int input_mode;
-        unsigned char *data;
+        char *data;
         int option_1;
         int option_2;
         int ret;
@@ -1312,7 +1312,7 @@ static void test_microqr_optimize(int index, int generate, int debug) {
 
         int length = strlen(data[i].data);
 
-        ret = ZBarcode_Encode(symbol, data[i].data, length);
+        ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (generate) {
@@ -1336,7 +1336,7 @@ static void test_microqr_encode(int index, int generate, int debug) {
     int ret;
     struct item {
         int input_mode;
-        unsigned char *data;
+        char *data;
         int option_1;
         int option_2;
         int ret;
@@ -1522,7 +1522,7 @@ static void test_microqr_encode(int index, int generate, int debug) {
 
         int length = strlen(data[i].data);
 
-        ret = ZBarcode_Encode(symbol, data[i].data, length);
+        ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (generate) {
@@ -1557,7 +1557,7 @@ static void test_upnqr_input(int index, int generate, int debug) {
     int ret;
     struct item {
         int input_mode;
-        unsigned char *data;
+        char *data;
         int ret;
         char *expected;
         char *comment;
@@ -1589,7 +1589,7 @@ static void test_upnqr_input(int index, int generate, int debug) {
 
         int length = strlen(data[i].data);
 
-        ret = ZBarcode_Encode(symbol, data[i].data, length);
+        ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d\n", i, ret, data[i].ret);
         assert_equal(symbol->eci, 4, "i:%d ZBarcode_Encode symbol->eci %d != 4\n", i, symbol->eci);
 
@@ -1616,7 +1616,7 @@ static void test_upnqr_encode(int index, int generate, int debug) {
     int ret;
     struct item {
         int input_mode;
-        unsigned char *data;
+        char *data;
         int option_1;
         int option_2;
         int ret;
@@ -1729,7 +1729,7 @@ static void test_upnqr_encode(int index, int generate, int debug) {
 
         int length = strlen(data[i].data);
 
-        ret = ZBarcode_Encode(symbol, data[i].data, length);
+        ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (generate) {
@@ -1763,7 +1763,7 @@ static void test_rmqr_options(int index, int debug) {
 
     int ret;
     struct item {
-        unsigned char *data;
+        char *data;
         int option_1;
         int option_2;
         int ret_encode;
@@ -1861,7 +1861,7 @@ static void test_rmqr_options(int index, int debug) {
 
         int length = strlen(data[i].data);
 
-        ret = ZBarcode_Encode(symbol, data[i].data, length);
+        ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret_encode, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret_encode, symbol->errtxt);
 
         if (data[i].ret_vector != -1) {
@@ -1885,7 +1885,7 @@ static void test_rmqr_input(int index, int generate, int debug) {
     struct item {
         int input_mode;
         int option_3;
-        unsigned char *data;
+        char *data;
         int ret;
         char *expected;
         char *comment;
@@ -1933,7 +1933,7 @@ static void test_rmqr_input(int index, int generate, int debug) {
 
         int length = strlen(data[i].data);
 
-        ret = ZBarcode_Encode(symbol, data[i].data, length);
+        ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d\n", i, ret, data[i].ret);
 
         if (generate) {
@@ -1958,7 +1958,7 @@ static void test_rmqr_gs1(int index, int generate, int debug) {
 
     int ret;
     struct item {
-        unsigned char *data;
+        char *data;
         int ret;
         char *expected;
         char *comment;
@@ -1994,7 +1994,7 @@ static void test_rmqr_gs1(int index, int generate, int debug) {
 
         int length = strlen(data[i].data);
 
-        ret = ZBarcode_Encode(symbol, data[i].data, length);
+        ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d\n", i, ret, data[i].ret);
 
         if (generate) {
@@ -2019,7 +2019,7 @@ static void test_rmqr_optimize(int index, int generate, int debug) {
     int ret;
     struct item {
         int input_mode;
-        unsigned char *data;
+        char *data;
         int option_1;
         int ret;
         char *expected;
@@ -2071,7 +2071,7 @@ static void test_rmqr_optimize(int index, int generate, int debug) {
 
         int length = strlen(data[i].data);
 
-        ret = ZBarcode_Encode(symbol, data[i].data, length);
+        ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (generate) {
@@ -2095,7 +2095,7 @@ static void test_rmqr_encode(int index, int generate, int debug) {
     int ret;
     struct item {
         int input_mode;
-        unsigned char *data;
+        char *data;
         int option_1;
         int option_2;
         int ret;
@@ -2156,7 +2156,7 @@ static void test_rmqr_encode(int index, int generate, int debug) {
 
         int length = strlen(data[i].data);
 
-        ret = ZBarcode_Encode(symbol, data[i].data, length);
+        ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (generate) {

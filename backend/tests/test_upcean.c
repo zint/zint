@@ -38,7 +38,7 @@ static void test_upce_length(int index, int debug) {
     int ret;
     struct item {
         int symbology;
-        unsigned char *data;
+        char *data;
         int ret;
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%2d*\/", line(".") - line("'<"))
@@ -73,7 +73,7 @@ static void test_upce_length(int index, int debug) {
 
         int length = strlen(data[i].data);
 
-        ret = ZBarcode_Encode(symbol, data[i].data, length);
+        ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         ZBarcode_Delete(symbol);
@@ -90,7 +90,7 @@ static void test_upca_print(int index, int debug) {
     int ret;
     struct item {
         int symbology;
-        unsigned char *data;
+        char *data;
         int ret;
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
@@ -111,7 +111,7 @@ static void test_upca_print(int index, int debug) {
 
         int length = strlen(data[i].data);
 
-        ret = ZBarcode_Encode(symbol, data[i].data, length);
+        ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         strcpy(symbol->outfile, "out.gif");
@@ -132,7 +132,7 @@ static void test_isbn(int index, int debug) {
 
     int ret;
     struct item {
-        unsigned char *data;
+        char *data;
         int ret_encode;
         int ret_vector;
     };
@@ -196,7 +196,7 @@ static void test_isbn(int index, int debug) {
 
         int length = strlen(data[i].data);
 
-        ret = ZBarcode_Encode(symbol, data[i].data, length);
+        ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret_encode, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret_encode, symbol->errtxt);
 
         if (data[i].ret_vector != -1) {
@@ -217,7 +217,7 @@ static void test_vector_same(int index, int debug) {
     int ret;
     struct item {
         int symbology;
-        unsigned char *data;
+        char *data;
         int ret_encode;
         int ret_vector;
     };
@@ -244,7 +244,7 @@ static void test_vector_same(int index, int debug) {
 
             int length = strlen(data[i].data);
 
-            ret = ZBarcode_Encode(symbol, data[i].data, length);
+            ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
             assert_equal(ret, data[i].ret_encode, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret_encode, symbol->errtxt);
 
             ret = ZBarcode_Buffer_Vector(symbol, 0);
@@ -283,7 +283,7 @@ static void test_encode(int index, int generate, int debug) {
     struct item {
         int symbology;
         int option_2;
-        unsigned char *data;
+        char *data;
         int ret;
 
         int expected_rows;
@@ -415,7 +415,7 @@ static void test_encode(int index, int generate, int debug) {
 
         int length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, data[i].option_2, -1, -1 /*output_options*/, data[i].data, -1, debug);
 
-        ret = ZBarcode_Encode(symbol, data[i].data, length);
+        ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (generate) {
@@ -457,7 +457,7 @@ static void test_fuzz(int index, int debug) {
     int ret;
     struct item {
         int symbology;
-        unsigned char *data;
+        char *data;
         int length;
         int ret;
     };
@@ -491,7 +491,7 @@ static void test_fuzz(int index, int debug) {
             length = strlen(data[i].data);
         }
 
-        ret = ZBarcode_Encode(symbol, data[i].data, length);
+        ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         ZBarcode_Delete(symbol);

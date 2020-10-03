@@ -44,12 +44,12 @@ static void test_gs1_reduce(int index, int generate, int debug) {
     struct item {
         int symbology;
         int input_mode;
-        unsigned char *data;
-        unsigned char *composite;
+        char *data;
+        char *composite;
         int ret;
 
         char *comment;
-        unsigned char *expected;
+        char *expected;
     };
     struct item data[] = {
         /* 0*/ { BARCODE_GS1_128, -1, "12345678901234", "", ZINT_ERROR_INVALID_DATA, "GS1 data required", "" },
@@ -193,7 +193,7 @@ static void test_gs1_reduce(int index, int generate, int debug) {
         }
         int length = strlen(text);
 
-        ret = ZBarcode_Encode(symbol, text, length);
+        ret = ZBarcode_Encode(symbol, (unsigned char *) text, length);
 
         if (generate) {
             if (data[i].ret == 0) {
@@ -237,10 +237,10 @@ static void test_hrt(int index, int debug) {
     int ret;
     struct item {
         int symbology;
-        unsigned char *data;
-        unsigned char *composite;
+        char *data;
+        char *composite;
 
-        unsigned char *expected;
+        char *expected;
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
@@ -275,10 +275,10 @@ static void test_hrt(int index, int debug) {
         }
         int length = strlen(text);
 
-        ret = ZBarcode_Encode(symbol, text, length);
+        ret = ZBarcode_Encode(symbol, (unsigned char *) text, length);
         assert_zero(ret, "i:%d ZBarcode_Encode ret %d != 0 %s\n", i, ret, symbol->errtxt);
 
-        assert_zero(strcmp(symbol->text, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->text, data[i].expected);
+        assert_zero(strcmp((char *) symbol->text, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->text, data[i].expected);
 
         ZBarcode_Delete(symbol);
     }
@@ -294,7 +294,7 @@ static void test_gs1_verify(int index) {
 
     int ret;
     struct item {
-        unsigned char *data;
+        char *data;
         int ret;
         char *expected;
     };
@@ -801,7 +801,7 @@ static void test_gs1_verify(int index) {
 
         int length = strlen(data[i].data);
 
-        ret = gs1_verify(symbol, data[i].data, length, reduced);
+        ret = gs1_verify(symbol, (unsigned char *) data[i].data, length, reduced);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d (length %d \"%s\") %s\n", i, ret, data[i].ret, length, data[i].data, symbol->errtxt);
 
         if (ret == 0) {
@@ -821,8 +821,8 @@ static void test_input_mode(int index, int debug) {
     int ret;
     struct item {
         int symbology;
-        unsigned char *data;
-        unsigned char *composite;
+        char *data;
+        char *composite;
         int input_mode;
         int output_options;
         int ret;
@@ -894,7 +894,7 @@ static void test_input_mode(int index, int debug) {
         }
         int length = strlen(text);
 
-        ret = ZBarcode_Encode(symbol, text, length);
+        ret = ZBarcode_Encode(symbol, (unsigned char *) text, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d %s\n", i, ret, data[i].ret, symbol->errtxt);
         if (index == -1 && data[i].compare_previous) {
             ret = testUtilSymbolCmp(symbol, &previous_symbol);

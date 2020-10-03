@@ -74,7 +74,7 @@
     </rect>
    </property>
    <property name="toolTip">
-    <string>Sat the naming convention used by the files</string>
+    <string>Set the naming convention used by the files</string>
    </property>
    <item>
     <property name="text">
@@ -153,7 +153,7 @@
     <string>Find a destination for your files</string>
    </property>
    <property name="text">
-    <string>...</string>
+    <string>&amp;...</string>
    </property>
   </widget>
   <widget class="QLabel" name="label">
@@ -166,7 +166,13 @@
     </rect>
    </property>
    <property name="text">
-    <string>Destination Path:</string>
+    <string>&amp;Destination Path:</string>
+   </property>
+   <property name="toolTip">
+    <string>Destination folder</string>
+   </property>
+   <property name="buddy">
+    <cstring>linDestPath</cstring>
    </property>
   </widget>
   <widget class="QLabel" name="label_2">
@@ -179,7 +185,13 @@
     </rect>
    </property>
    <property name="text">
-    <string>File Name Prefix:</string>
+    <string>File Name &amp;Prefix:</string>
+   </property>
+   <property name="toolTip">
+    <string>The first part of the filenames</string>
+   </property>
+   <property name="buddy">
+    <cstring>linPrefix</cstring>
    </property>
   </widget>
   <widget class="QLabel" name="label_3">
@@ -192,7 +204,13 @@
     </rect>
    </property>
    <property name="text">
-    <string>File Name:</string>
+    <string>File &amp;Name:</string>
+   </property>
+   <property name="toolTip">
+    <string>Set the naming convention used by the files</string>
+   </property>
+   <property name="buddy">
+    <cstring>cmbFileName</cstring>
    </property>
   </widget>
   <widget class="QLabel" name="label_4">
@@ -205,7 +223,13 @@
     </rect>
    </property>
    <property name="text">
-    <string>File Format:</string>
+    <string>File &amp;Format:</string>
+   </property>
+   <property name="toolTip">
+    <string>The type of file which you want to create</string>
+   </property>
+   <property name="buddy">
+    <cstring>cmbFileFormat</cstring>
    </property>
   </widget>
   <widget class="QPushButton" name="btnCancel">
@@ -218,7 +242,10 @@
     </rect>
    </property>
    <property name="text">
-    <string>Close</string>
+    <string>&amp;Close</string>
+   </property>
+   <property name="toolTip">
+    <string>Close window</string>
    </property>
   </widget>
   <widget class="QPushButton" name="btnOK">
@@ -231,23 +258,26 @@
     </rect>
    </property>
    <property name="text">
-    <string>Export</string>
+    <string>&amp;Export</string>
+   </property>
+   <property name="toolTip">
+    <string>Create files</string>
    </property>
   </widget>
   <widget class="QPlainTextEdit" name="txtFeedback">
    <property name="geometry">
     <rect>
-     <x>0</x>
+     <x>10</x>
      <y>180</y>
-     <width>441</width>
-     <height>321</height>
+     <width>430</width>
+     <height>315</height>
     </rect>
    </property>
   </widget>
   <widget class="QLabel" name="lblFeedback">
    <property name="geometry">
     <rect>
-     <x>0</x>
+     <x>10</x>
      <y>160</y>
      <width>101</width>
      <height>17</height>

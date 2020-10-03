@@ -25,7 +25,7 @@
      <item>
       <widget class="QLabel" name="lblUPCEANAddonGap">
        <property name="text">
-        <string>&amp;Add-on Gap:</string>
+        <string>A&amp;dd-on Gap:</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>

@@ -25,7 +25,7 @@
      <item row="0" column="0">
       <widget class="QLabel" name="labelGridSize">
        <property name="text">
-        <string>Size:</string>
+        <string>Si&amp;ze:</string>
        </property>
        <property name="buddy">
         <cstring>cmbGridSize</cstring>
@@ -109,7 +109,7 @@
      <item row="1" column="0">
       <widget class="QLabel" name="labelGridECC">
        <property name="text">
-        <string>Error Correction:</string>
+        <string>E&amp;rror Correction:</string>
        </property>
        <property name="buddy">
         <cstring>cmbGridECC</cstring>
@@ -182,7 +182,7 @@
    <item>
     <widget class="QCheckBox" name="chkGridFullMultibyte">
      <property name="text">
-      <string>Full Multibyte</string>
+      <string>&amp;Full Multibyte</string>
      </property>
      <property name="checked">
       <bool>false</bool>

@@ -36,7 +36,7 @@
 
 int clz_u64(uint64_t x);
 
-static void test_clz_u64(int index, int debug) {
+static void test_clz_u64(int index) {
 
     testStart("");
 
@@ -187,11 +187,10 @@ static void test_clz_u64(int index, int debug) {
     testFinish();
 }
 
-static void test_load(int index, int debug) {
+static void test_load(int index) {
 
     testStart("");
 
-    int ret;
     struct item {
         large_int t;
         large_int s;
@@ -224,14 +223,13 @@ static void test_load(int index, int debug) {
     testFinish();
 }
 
-static void test_load_str_u64(int index, int debug) {
+static void test_load_str_u64(int index) {
 
     testStart("");
 
-    int ret;
     struct item {
         large_int t;
-        const unsigned char *s;
+        const char *s;
         int length;
         large_int expected;
     };
@@ -254,7 +252,7 @@ static void test_load_str_u64(int index, int debug) {
 
         if (index != -1 && i != index) continue;
 
-        large_load_str_u64(&data[i].t, data[i].s, data[i].length == -1 ? (int) strlen(data[i].s) : data[i].length);
+        large_load_str_u64(&data[i].t, (unsigned char *) data[i].s, data[i].length == -1 ? (int) strlen(data[i].s) : data[i].length);
 
         assert_equal(data[i].t.lo, data[i].expected.lo, "i:%d lo 0x%lX (%s) != expected lo 0x%lX (%s)\n",
                         i, data[i].t.lo, large_dump(&data[i].t, t_dump), data[i].expected.lo, large_dump(&data[i].expected, expected_dump));
@@ -265,11 +263,10 @@ static void test_load_str_u64(int index, int debug) {
     testFinish();
 }
 
-static void test_add_u64(int index, int debug) {
+static void test_add_u64(int index) {
 
     testStart("");
 
-    int ret;
     struct item {
         large_int t;
         uint64_t s;
@@ -309,11 +306,10 @@ static void test_add_u64(int index, int debug) {
     testFinish();
 }
 
-static void test_sub_u64(int index, int debug) {
+static void test_sub_u64(int index) {
 
     testStart("");
 
-    int ret;
     struct item {
         large_int t;
         uint64_t s;
@@ -353,11 +349,10 @@ static void test_sub_u64(int index, int debug) {
     testFinish();
 }
 
-static void test_mul_u64(int index, int debug) {
+static void test_mul_u64(int index) {
 
     testStart("");
 
-    int ret;
     struct item {
         large_int t;
         uint64_t s;
@@ -410,7 +405,7 @@ static void test_mul_u64(int index, int debug) {
     testFinish();
 }
 
-static void test_div_u64(int index, int debug) {
+static void test_div_u64(int index) {
 
     testStart("");
 
@@ -535,11 +530,10 @@ static void test_div_u64(int index, int debug) {
     testFinish();
 }
 
-static void test_unset_bit(int index, int debug) {
+static void test_unset_bit(int index) {
 
     testStart("");
 
-    int ret;
     struct item {
         large_int t;
         int s;
@@ -699,11 +693,10 @@ static void test_unset_bit(int index, int debug) {
     testFinish();
 }
 
-static void test_uint_array(int index, int debug) {
+static void test_uint_array(int index) {
 
     testStart("");
 
-    int ret;
     struct item {
         large_int t;
         int size;
@@ -784,11 +777,10 @@ static void test_uint_array(int index, int debug) {
     testFinish();
 }
 
-static void test_dump(int index, int debug) {
+static void test_dump(int index) {
 
     testStart("");
 
-    int ret;
     struct item {
         large_int t;
         char *expected;
@@ -863,16 +855,16 @@ static void test_dump(int index, int debug) {
 int main(int argc, char *argv[]) {
 
     testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
-        { "test_clz_u64", test_clz_u64, 1, 0, 1 },
-        { "test_load", test_load, 1, 0, 1 },
-        { "test_load_str_u64", test_load_str_u64, 1, 0, 1 },
-        { "test_add_u64", test_add_u64, 1, 0, 1 },
-        { "test_sub_u64", test_sub_u64, 1, 0, 1 },
-        { "test_mul_u64", test_mul_u64, 1, 0, 1 },
-        { "test_div_u64", test_div_u64, 1, 0, 1 },
-        { "test_unset_bit", test_unset_bit, 1, 0, 1 },
-        { "test_uint_array", test_uint_array, 1, 0, 1 },
-        { "test_dump", test_dump, 1, 0, 1 },
+        { "test_clz_u64", test_clz_u64, 1, 0, 0 },
+        { "test_load", test_load, 1, 0, 0 },
+        { "test_load_str_u64", test_load_str_u64, 1, 0, 0 },
+        { "test_add_u64", test_add_u64, 1, 0, 0 },
+        { "test_sub_u64", test_sub_u64, 1, 0, 0 },
+        { "test_mul_u64", test_mul_u64, 1, 0, 0 },
+        { "test_div_u64", test_div_u64, 1, 0, 0 },
+        { "test_unset_bit", test_unset_bit, 1, 0, 0 },
+        { "test_uint_array", test_uint_array, 1, 0, 0 },
+        { "test_dump", test_dump, 1, 0, 0 },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

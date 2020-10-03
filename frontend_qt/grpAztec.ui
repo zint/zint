@@ -25,7 +25,7 @@
      <item row="0" column="0">
       <widget class="QRadioButton" name="radAztecAuto">
        <property name="text">
-        <string>Automatic Resizing</string>
+        <string>Auto&amp;matic Resizing</string>
        </property>
        <property name="checked">
         <bool>true</bool>
@@ -35,7 +35,7 @@
      <item row="1" column="0">
       <widget class="QRadioButton" name="radAztecSize">
        <property name="text">
-        <string>Adjust Size To:</string>
+        <string>Adjust Si&amp;ze To:</string>
        </property>
       </widget>
      </item>
@@ -229,7 +229,7 @@
      <item row="2" column="0">
       <widget class="QRadioButton" name="radAztecECC">
        <property name="text">
-        <string>Add Minimum Error Correction:</string>
+        <string>Add Minimum E&amp;rror Correction:</string>
        </property>
       </widget>
      </item>
@@ -274,7 +274,7 @@
       <item row="0" column="0">
        <widget class="QRadioButton" name="radAztecStand">
         <property name="text">
-         <string>Standard Mode</string>
+         <string>S&amp;tandard Mode</string>
         </property>
         <property name="checked">
          <bool>true</bool>
@@ -284,14 +284,14 @@
       <item row="0" column="1">
        <widget class="QRadioButton" name="radAztecGS1">
         <property name="text">
-         <string>GS1 Data Mode</string>
+         <string>GS&amp;1 Data Mode</string>
         </property>
        </widget>
       </item>
       <item row="1" column="0">
        <widget class="QRadioButton" name="radAztecHIBC">
         <property name="text">
-         <string>HIBC Aztec Code</string>
+         <string>H&amp;IBC Aztec Code</string>
         </property>
        </widget>
       </item>

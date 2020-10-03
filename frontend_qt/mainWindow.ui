@@ -129,7 +129,7 @@
          </property>
          <widget class="QWidget" name="tabGeneral">
           <attribute name="title">
-           <string>General</string>
+           <string>&amp;General</string>
           </attribute>
           <layout class="QVBoxLayout" name="verticalLayout_3">
            <item>
@@ -167,7 +167,7 @@
 or import from file</string>
                 </property>
                 <property name="text">
-                 <string>...</string>
+                 <string>&amp;...</string>
                 </property>
                </widget>
               </item>
@@ -301,7 +301,7 @@ or import from file</string>
                    <bool>false</bool>
                   </property>
                   <property name="text">
-                   <string>&amp;2D Component Data:</string>
+                   <string>2D &amp;Component Data:</string>
                   </property>
                   <property name="buddy">
                    <cstring>txtComposite</cstring>
@@ -540,22 +540,23 @@ p, li { white-space: pre-wrap; }
              <item>
               <widget class="QCheckBox" name="chkEscape">
                <property name="toolTip">
-                <string>Process escape sequences in input data
-\0 - NUL character (0x00)
-\E - End of Transmission (0x04)
-\a - Bell (0x07)
-\b - Backspace (0x08)
-\t - Horizontal Tab (0x09)
-\n - Line Feed (0x0A)
-\v - Vertical Tab (0x0B)
-\f - Form Feed (0x0C)
-\r - Carriage Return (0x0D)
-\e - Escape (0x1B)
-\G - Group Selector (0x1D)
-\R - Record Selector (0x1E)
-\\ - Backslash (0x5C)
-\xNN - 8-bit character (N hex)
-\uNNNN - 16-bit Unicode (N hex)</string>
+                <string>Process escape sequences in input data&lt;table cellpadding=&quot;3&quot;&gt;
+&lt;tr&gt;&lt;td&gt;\0&lt;/td&gt;&lt;td&gt;NUL character (0x00)&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;\E&lt;/td&gt;&lt;td&gt;End of Transmission (0x04)&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;\a&lt;/td&gt;&lt;td&gt;Bell (0x07)&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;\b&lt;/td&gt;&lt;td&gt;Backspace (0x08)&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;\t&lt;/td&gt;&lt;td&gt;Horizontal Tab (0x09)&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;\n&lt;/td&gt;&lt;td&gt;Line Feed (0x0A)&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;\v&lt;/td&gt;&lt;td&gt;Vertical Tab (0x0B)&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;\f&lt;/td&gt;&lt;td&gt;Form Feed (0x0C)&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;\r&lt;/td&gt;&lt;td&gt;Carriage Return (0x0D)&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;\e&lt;/td&gt;&lt;td&gt;Escape (0x1B)&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;\G&lt;/td&gt;&lt;td&gt;Group Selector (0x1D)&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;\R&lt;/td&gt;&lt;td&gt;Record Selector (0x1E)&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;\\&lt;/td&gt;&lt;td&gt;Backslash (0x5C)&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;\xNN&lt;/td&gt;&lt;td&gt;8-bit character (N hex)&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;\uNNNN&lt;/td&gt;&lt;td&gt;16-bit Unicode (N hex)&lt;/td&gt;&lt;/tr&gt;
+&lt;/table&gt;</string>
                </property>
                <property name="text">
                 <string>&amp;Parse Escapes</string>
@@ -605,7 +606,7 @@ p, li { white-space: pre-wrap; }
            </size>
           </property>
           <attribute name="title">
-           <string>Appearance</string>
+           <string>A&amp;ppearance</string>
           </attribute>
           <layout class="QVBoxLayout" name="verticalLayout_4">
            <item>
@@ -773,7 +774,7 @@ p, li { white-space: pre-wrap; }
              <item row="5" column="0">
               <widget class="QLabel" name="lblScale">
                <property name="text">
-                <string>&amp;Printing Scale:</string>
+                <string>Printing Sca&amp;le:</string>
                </property>
                <property name="alignment">
                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -874,7 +875,7 @@ p, li { white-space: pre-wrap; }
                 <bool>true</bool>
                </property>
                <property name="text">
-                <string>Colour: </string>
+                <string>Colour:</string>
                </property>
                <property name="alignment">
                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1003,7 +1004,7 @@ p, li { white-space: pre-wrap; }
                 <bool>false</bool>
                </property>
                <property name="text">
-                <string>&amp;Dot Size:</string>
+                <string>Dot S&amp;ize:</string>
                </property>
                <property name="alignment">
                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1123,13 +1124,6 @@ p, li { white-space: pre-wrap; }
    </item>
   </layout>
  </widget>
- <tabstops>
-  <tabstop>tabMain</tabstop>
-  <tabstop>txtData</tabstop>
-  <tabstop>chkComposite</tabstop>
-  <tabstop>cmbCompType</tabstop>
-  <tabstop>txtComposite</tabstop>
- </tabstops>
  <resources>
   <include location="resources.qrc"/>
  </resources>

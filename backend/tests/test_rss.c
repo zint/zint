@@ -1059,8 +1059,6 @@ static void test_hrt(int index, int debug) {
     };
     int data_size = ARRAY_SIZE(data);
 
-    char *text;
-
     for (int i = 0; i < data_size; i++) {
 
         if (index != -1 && i != index) continue;

@@ -47,7 +47,7 @@ static void test_pixel_plot(int index, int debug) {
     struct item {
         int width;
         int height;
-        unsigned char *pattern;
+        char *pattern;
         int repeat;
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
@@ -84,8 +84,6 @@ static void test_pixel_plot(int index, int debug) {
     int data_size = ARRAY_SIZE(data);
 
     char *tif = "out.tif";
-    char escaped[1024];
-    int escaped_size = 1024;
 
     char data_buf[2731 * 4 + 1];
 
@@ -112,7 +110,7 @@ static void test_pixel_plot(int index, int debug) {
         }
         assert_equal(size, (int) strlen(data_buf), "i:%d tif_pixel_plot size %d != strlen(data_buf) %d\n", i, size, (int) strlen(data_buf));
 
-        symbol->bitmap = data_buf;
+        symbol->bitmap = (unsigned char *) data_buf;
 
         ret = tif_pixel_plot(symbol, data_buf);
         assert_zero(ret, "i:%d tif_pixel_plot ret %d != 0 (%s)\n", i, ret, symbol->errtxt);

@@ -4,6 +4,7 @@
 # vim: set ts=4 sw=4 et :
 
 cmake_minimum_required(VERSION 3.9)
+project(zint_backend_tests)
 
 enable_testing()
 
@@ -30,18 +31,36 @@ if(NOT EXISTS ${BWIPP_PS})
                     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tools)
 endif()
 
-if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
-    if(ZINT_DEBUG)
+include(CheckCCompilerFlag)
+
+check_c_compiler_flag(-Wall C_COMPILER_FLAG_WALL)
+if(C_COMPILER_FLAG_WALL)
+    add_compile_options("-Wall")
+endif()
+
+check_c_compiler_flag(-Wextra C_COMPILER_FLAG_WEXTRA)
+if(C_COMPILER_FLAG_WEXTRA)
+    add_compile_options("-Wextra")
+endif()
+
+if(ZINT_DEBUG)
+    check_c_compiler_flag(-g C_COMPILER_FLAG_G)
+    if(C_COMPILER_FLAG_G)
         add_compile_options("-g")
     endif()
-    if(ZINT_SANITIZE)
+endif()
+
+if(ZINT_SANITIZE)
+    # check_c_compiler_flag fails for -fsanitize
+    if(${CMAKE_C_COMPILER_ID} STREQUAL "GNU")
         add_compile_options("-fsanitize=undefined")
         add_compile_options("-fsanitize=address")
-        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=undefined -fsanitize=address")
+        link_libraries("-fsanitize=undefined -fsanitize=address")
     endif()
-    if(ZINT_TEST)
-        add_definitions("-DZINT_TEST")
-    endif()
+endif()
+
+if(ZINT_TEST)
+    add_definitions("-DZINT_TEST")
 endif()
 
 add_library(testcommon testcommon.c testcommon.h)

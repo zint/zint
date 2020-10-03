@@ -321,7 +321,7 @@
       <item row="0" column="1">
        <widget class="QRadioButton" name="radDotGS1">
         <property name="text">
-         <string>&amp;GS1 Data Mode</string>
+         <string>GS&amp;1 Data Mode</string>
         </property>
        </widget>
       </item>

@@ -32,7 +32,7 @@
       <item row="0" column="0">
        <widget class="QRadioButton" name="radC128Stand">
         <property name="text">
-         <string>Standard Mode</string>
+         <string>S&amp;tandard Mode</string>
         </property>
         <property name="checked">
          <bool>true</bool>
@@ -42,21 +42,21 @@
       <item row="0" column="1">
        <widget class="QRadioButton" name="radC128CSup">
         <property name="text">
-         <string>Subset C Supression</string>
+         <string>Subset &amp;C Suppression</string>
         </property>
        </widget>
       </item>
       <item row="1" column="0">
        <widget class="QRadioButton" name="radC128EAN">
         <property name="text">
-         <string>GS1-128</string>
+         <string>GS&amp;1-128</string>
         </property>
        </widget>
       </item>
       <item row="1" column="1">
        <widget class="QRadioButton" name="radC128HIBC">
         <property name="text">
-         <string>HIBC 128</string>
+         <string>H&amp;IBC 128</string>
         </property>
        </widget>
       </item>

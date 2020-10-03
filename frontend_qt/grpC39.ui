@@ -25,7 +25,7 @@
      <item row="0" column="0">
       <widget class="QRadioButton" name="radC39Stand">
        <property name="text">
-        <string>No Check Digit</string>
+        <string>&amp;No Check Digit</string>
        </property>
        <property name="checked">
         <bool>true</bool>
@@ -35,14 +35,14 @@
      <item row="1" column="0">
       <widget class="QRadioButton" name="radC39HIBC">
        <property name="text">
-        <string>HIBC 39</string>
+        <string>H&amp;IBC 39</string>
        </property>
       </widget>
      </item>
      <item row="0" column="1">
       <widget class="QRadioButton" name="radC39Check">
        <property name="text">
-        <string>Mod-43 Check Digit</string>
+        <string>&amp;Mod-43 Check Digit</string>
        </property>
       </widget>
      </item>

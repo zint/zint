@@ -71,7 +71,7 @@ static void test_bom(int debug) {
         "111111100101101000101";
 
     int ret;
-    ret = ZBarcode_Encode(symbol, data, length);
+    ret = ZBarcode_Encode(symbol, (unsigned char *) data, length);
     assert_equal(ret, ZINT_WARN_USES_ECI, "ZBarcode_Encode ret %d != ZINT_WARN_USES_ECI\n", ret);
     assert_equal(symbol->eci, 21, "eci %d != 21\n", symbol->eci); // ECI 21 == Windows-1250
 
@@ -99,7 +99,7 @@ static void test_iso_8859_16(int debug) {
     int length = strlen(data);
 
     int ret;
-    ret = ZBarcode_Encode(symbol, data, length);
+    ret = ZBarcode_Encode(symbol, (unsigned char *) data, length);
     assert_equal(ret, ZINT_WARN_USES_ECI, "ZBarcode_Encode ret %d != ZINT_WARN_USES_ECI\n", ret);
     assert_equal(symbol->eci, 18, "eci %d != 18\n", symbol->eci); // ECI 18 == ISO 8859-16
 
@@ -118,7 +118,7 @@ static void test_reduced_charset_input(int index, int debug) {
         int symbology;
         int input_mode;
         int eci;
-        unsigned char *data;
+        char *data;
         int ret;
         int expected_eci;
         char *comment;
@@ -228,7 +228,7 @@ static void test_reduced_charset_input(int index, int debug) {
 
         int length = strlen(data[i].data);
 
-        ret = ZBarcode_Encode(symbol, data[i].data, length);
+        ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (data[i].expected_eci != -1) {

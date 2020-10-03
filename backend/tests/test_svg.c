@@ -36,53 +36,59 @@ static void test_print(int index, int generate, int debug) {
 
     testStart("");
 
-    int have_inkscape = testUtilHaveInkscape();
+    int have_libreoffice = 0;
+    int have_vnu = 0;
+    if (generate) {
+        have_libreoffice = testUtilHaveLibreOffice();
+        have_vnu = testUtilHaveVnu();
+    }
 
     int ret;
     struct item {
         int symbology;
         int input_mode;
+        int border_width;
         int output_options;
         int show_hrt;
         int option_1;
         int option_2;
-        unsigned char *data;
+        char *data;
         char *composite;
         char *expected_file;
     };
     struct item data[] = {
-        /*  0*/ { BARCODE_CODE128, -1, -1, -1, -1, -1, "<>\"&'", "", "../data/svg/code128_amperands.svg" },
-        /*  1*/ { BARCODE_CODE128, UNICODE_MODE, BOLD_TEXT, -1, -1, -1, "Égjpqy", "", "../data/svg/code128_egrave_bold.svg" },
-        /*  2*/ { BARCODE_CODE128, UNICODE_MODE, BOLD_TEXT | BARCODE_BOX, -1, -1, -1, "Égjpqy", "", "../data/svg/code128_egrave_bold_box3.svg" },
-        /*  3*/ { BARCODE_GS1_128_CC, -1, -1, -1, 3, -1, "[00]030123456789012340", "[02]13012345678909[37]24[10]1234567ABCDEFG", "../data/svg/gs1_128_cc_fig12.svg" },
-        /*  4*/ { BARCODE_CODABLOCKF, -1, -1, -1, 3, -1, "AAAAAAAAA", "", "../data/svg/codablockf_3rows.svg" },
-        /*  5*/ { BARCODE_EANX, -1, -1, -1, -1, -1, "9771384524017+12", "", "../data/svg/ean13_2addon_ggs_5.2.2.5.1-2.svg" },
-        /*  6*/ { BARCODE_EANX, -1, -1, -1, -1, -1, "9780877799306+54321", "", "../data/svg/ean13_5addon_ggs_5.2.2.5.2-2.svg" },
-        /*  7*/ { BARCODE_EANX_CC, -1, -1, -1, 1, -1, "123456789012+12", "[91]123456789012345678901", "../data/svg/ean13_cc_2addon_cca_4x4.svg" },
-        /*  8*/ { BARCODE_EANX_CC, -1, -1, -1, 2, -1, "123456789012+54321", "[91]1234567890", "../data/svg/ean13_cc_5addon_ccb_3x4.svg" },
-        /*  9*/ { BARCODE_EANX_CC, -1, -1, 0, 2, -1, "123456789012+54321", "[91]1234567890", "../data/svg/ean13_cc_5addon_ccb_3x4_notext.svg" },
-        /* 10*/ { BARCODE_UPCA, -1, -1, -1, -1, -1, "012345678905+24", "", "../data/svg/upca_2addon_ggs_5.2.6.6-5.svg" },
-        /* 11*/ { BARCODE_UPCA, -1, -1, -1, -1, -1, "614141234417+12345", "", "../data/svg/upca_5addon.svg" },
-        /* 12*/ { BARCODE_UPCA, -1, BARCODE_BIND, -1, -1, -1, "614141234417+12345", "", "../data/svg/upca_5addon_bind3.svg" },
-        /* 13*/ { BARCODE_UPCA, -1, SMALL_TEXT | BOLD_TEXT, -1, -1, -1, "614141234417+12345", "", "../data/svg/upca_5addon_small_bold.svg" },
-        /* 14*/ { BARCODE_UPCA_CC, -1, -1, -1, 1, -1, "12345678901+12", "[91]123456789", "../data/svg/upca_cc_2addon_cca_3x4.svg" },
-        /* 15*/ { BARCODE_UPCA_CC, -1, -1, -1, 2, -1, "12345678901+12121", "[91]1234567890123", "../data/svg/upca_cc_5addon_ccb_4x4.svg" },
-        /* 16*/ { BARCODE_UPCA_CC, -1, -1, 0, 2, -1, "12345678901+12121", "[91]1234567890123", "../data/svg/upca_cc_5addon_ccb_4x4_notext.svg" },
-        /* 17*/ { BARCODE_UPCA_CC, -1, BARCODE_BIND, -1, 2, -1, "12345678901+12121", "[91]1234567890123", "../data/svg/upca_cc_5addon_ccb_4x4_bind3.svg" },
-        /* 18*/ { BARCODE_UPCE, -1, -1, -1, -1, -1, "1234567+12", "", "../data/svg/upce_2addon.svg" },
-        /* 19*/ { BARCODE_UPCE, -1, -1, -1, -1, -1, "1234567+12345", "", "../data/svg/upce_5addon.svg" },
-        /* 20*/ { BARCODE_UPCE, -1, -1, 0, -1, -1, "1234567+12345", "", "../data/svg/upce_5addon_notext.svg" },
-        /* 21*/ { BARCODE_UPCE_CC, -1, -1, -1, 1, -1, "0654321+89", "[91]1", "../data/svg/upce_cc_2addon_cca_5x2.svg" },
-        /* 22*/ { BARCODE_UPCE_CC, -1, -1, -1, 2, -1, "1876543+56789", "[91]12345", "../data/svg/upce_cc_5addon_ccb_8x2.svg" },
-        /* 23*/ { BARCODE_UPCE_CC, -1, -1, 0, 2, -1, "1876543+56789", "[91]12345", "../data/svg/upce_cc_5addon_ccb_8x2_notext.svg" },
-        /* 24*/ { BARCODE_EANX, -1, -1, -1, -1, -1, "1234567+12", "", "../data/svg/ean8_2addon.svg" },
-        /* 25*/ { BARCODE_EANX, -1, -1, -1, -1, -1, "1234567+12345", "", "../data/svg/ean8_5addon.svg" },
-        /* 26*/ { BARCODE_EANX_CC, -1, -1, -1, 1, -1, "9876543+65", "[91]1234567", "../data/svg/ean8_cc_2addon_cca_4x3.svg" },
-        /* 27*/ { BARCODE_EANX_CC, -1, -1, -1, 2, -1, "9876543+74083", "[91]123456789012345678", "../data/svg/ean8_cc_5addon_ccb_8x3.svg" },
-        /* 28*/ { BARCODE_EANX, -1, -1, -1, -1, -1, "12345", "", "../data/svg/ean5.svg" },
-        /* 29*/ { BARCODE_EANX, -1, -1, -1, -1, -1, "12", "", "../data/svg/ean2.svg" },
-        /* 30*/ { BARCODE_CODE39, -1, SMALL_TEXT, -1, -1, -1, "123", "", "../data/svg/code39_small.svg" },
-        /* 31*/ { BARCODE_POSTNET, -1, -1, -1, -1, -1, "12345", "", "../data/svg/postnet_zip.svg" },
+        /*  0*/ { BARCODE_CODE128, -1, -1, -1, -1, -1, -1, "<>\"&'", "", "../data/svg/code128_amperands.svg" },
+        /*  1*/ { BARCODE_CODE128, UNICODE_MODE, -1, BOLD_TEXT, -1, -1, -1, "Égjpqy", "", "../data/svg/code128_egrave_bold.svg" },
+        /*  2*/ { BARCODE_CODE128, UNICODE_MODE, 3, BOLD_TEXT | BARCODE_BOX, -1, -1, -1, "Égjpqy", "", "../data/svg/code128_egrave_bold_box3.svg" },
+        /*  3*/ { BARCODE_GS1_128_CC, -1, -1, -1, -1, 3, -1, "[00]030123456789012340", "[02]13012345678909[37]24[10]1234567ABCDEFG", "../data/svg/gs1_128_cc_fig12.svg" },
+        /*  4*/ { BARCODE_CODABLOCKF, -1, -1, -1, -1, 3, -1, "AAAAAAAAA", "", "../data/svg/codablockf_3rows.svg" },
+        /*  5*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, "9771384524017+12", "", "../data/svg/ean13_2addon_ggs_5.2.2.5.1-2.svg" },
+        /*  6*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, "9780877799306+54321", "", "../data/svg/ean13_5addon_ggs_5.2.2.5.2-2.svg" },
+        /*  7*/ { BARCODE_EANX_CC, -1, -1, -1, -1, 1, -1, "123456789012+12", "[91]123456789012345678901", "../data/svg/ean13_cc_2addon_cca_4x4.svg" },
+        /*  8*/ { BARCODE_EANX_CC, -1, -1, -1, -1, 2, -1, "123456789012+54321", "[91]1234567890", "../data/svg/ean13_cc_5addon_ccb_3x4.svg" },
+        /*  9*/ { BARCODE_EANX_CC, -1, -1, -1, 0, 2, -1, "123456789012+54321", "[91]1234567890", "../data/svg/ean13_cc_5addon_ccb_3x4_notext.svg" },
+        /* 10*/ { BARCODE_UPCA, -1, -1, -1, -1, -1, -1, "012345678905+24", "", "../data/svg/upca_2addon_ggs_5.2.6.6-5.svg" },
+        /* 11*/ { BARCODE_UPCA, -1, -1, -1, -1, -1, -1, "614141234417+12345", "", "../data/svg/upca_5addon.svg" },
+        /* 12*/ { BARCODE_UPCA, -1, 3, BARCODE_BIND, -1, -1, -1, "614141234417+12345", "", "../data/svg/upca_5addon_bind3.svg" },
+        /* 13*/ { BARCODE_UPCA, -1, -1, SMALL_TEXT | BOLD_TEXT, -1, -1, -1, "614141234417+12345", "", "../data/svg/upca_5addon_small_bold.svg" },
+        /* 14*/ { BARCODE_UPCA_CC, -1, -1, -1, -1, 1, -1, "12345678901+12", "[91]123456789", "../data/svg/upca_cc_2addon_cca_3x4.svg" },
+        /* 15*/ { BARCODE_UPCA_CC, -1, -1, -1, -1, 2, -1, "12345678901+12121", "[91]1234567890123", "../data/svg/upca_cc_5addon_ccb_4x4.svg" },
+        /* 16*/ { BARCODE_UPCA_CC, -1, -1, -1, 0, 2, -1, "12345678901+12121", "[91]1234567890123", "../data/svg/upca_cc_5addon_ccb_4x4_notext.svg" },
+        /* 17*/ { BARCODE_UPCA_CC, -1, 3, BARCODE_BIND, -1, 2, -1, "12345678901+12121", "[91]1234567890123", "../data/svg/upca_cc_5addon_ccb_4x4_bind3.svg" },
+        /* 18*/ { BARCODE_UPCE, -1, -1, -1, -1, -1, -1, "1234567+12", "", "../data/svg/upce_2addon.svg" },
+        /* 19*/ { BARCODE_UPCE, -1, -1, -1, -1, -1, -1, "1234567+12345", "", "../data/svg/upce_5addon.svg" },
+        /* 20*/ { BARCODE_UPCE, -1, -1, -1, 0, -1, -1, "1234567+12345", "", "../data/svg/upce_5addon_notext.svg" },
+        /* 21*/ { BARCODE_UPCE_CC, -1, -1, -1, -1, 1, -1, "0654321+89", "[91]1", "../data/svg/upce_cc_2addon_cca_5x2.svg" },
+        /* 22*/ { BARCODE_UPCE_CC, -1, -1, -1, -1, 2, -1, "1876543+56789", "[91]12345", "../data/svg/upce_cc_5addon_ccb_8x2.svg" },
+        /* 23*/ { BARCODE_UPCE_CC, -1, -1, -1, 0, 2, -1, "1876543+56789", "[91]12345", "../data/svg/upce_cc_5addon_ccb_8x2_notext.svg" },
+        /* 24*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, "1234567+12", "", "../data/svg/ean8_2addon.svg" },
+        /* 25*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, "1234567+12345", "", "../data/svg/ean8_5addon.svg" },
+        /* 26*/ { BARCODE_EANX_CC, -1, -1, -1, -1, 1, -1, "9876543+65", "[91]1234567", "../data/svg/ean8_cc_2addon_cca_4x3.svg" },
+        /* 27*/ { BARCODE_EANX_CC, -1, -1, -1, -1, 2, -1, "9876543+74083", "[91]123456789012345678", "../data/svg/ean8_cc_5addon_ccb_8x3.svg" },
+        /* 28*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, "12345", "", "../data/svg/ean5.svg" },
+        /* 29*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, "12", "", "../data/svg/ean2.svg" },
+        /* 30*/ { BARCODE_CODE39, -1, -1, SMALL_TEXT, -1, -1, -1, "123", "", "../data/svg/code39_small.svg" },
+        /* 31*/ { BARCODE_POSTNET, -1, -1, -1, -1, -1, -1, "12345", "", "../data/svg/postnet_zip.svg" },
     };
     int data_size = ARRAY_SIZE(data);
 
@@ -110,8 +116,8 @@ static void test_print(int index, int generate, int debug) {
         if (data[i].show_hrt != -1) {
             symbol->show_hrt = data[i].show_hrt;
         }
-        if (data[i].output_options & (BARCODE_BOX | BARCODE_BIND)) {
-            symbol->border_width = 3;
+        if (data[i].border_width != -1) {
+            symbol->border_width = data[i].border_width;
         }
         if (strlen(data[i].composite)) {
             text = data[i].composite;
@@ -121,7 +127,7 @@ static void test_print(int index, int generate, int debug) {
         }
         int text_length = strlen(text);
 
-        ret = ZBarcode_Encode(symbol, text, text_length);
+        ret = ZBarcode_Encode(symbol, (unsigned char *) text, text_length);
         assert_zero(ret, "i:%d %s ZBarcode_Encode ret %d != 0 %s\n", i, testUtilBarcodeName(data[i].symbology), ret, symbol->errtxt);
 
         strcpy(symbol->outfile, svg);
@@ -129,14 +135,18 @@ static void test_print(int index, int generate, int debug) {
         assert_zero(ret, "i:%d %s ZBarcode_Print %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, ret);
 
         if (generate) {
-            printf("        /*%3d*/ { %s, %s, %s, %d, %d, %d, \"%s\", \"%s\", \"%s\" },\n",
-                    i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode), testUtilOutputOptionsName(data[i].output_options),
+            printf("        /*%3d*/ { %s, %s, %d, %s, %d, %d, %d, \"%s\", \"%s\", \"%s\" },\n",
+                    i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode), data[i].border_width, testUtilOutputOptionsName(data[i].output_options),
                     data[i].show_hrt, data[i].option_1, data[i].option_2, testUtilEscape(data[i].data, length, escaped, escaped_size), data[i].composite, data[i].expected_file);
             ret = rename(symbol->outfile, data[i].expected_file);
             assert_zero(ret, "i:%d rename(%s, %s) ret %d != 0\n", i, symbol->outfile, data[i].expected_file, ret);
-            if (have_inkscape) {
-                ret = testUtilVerifyInkscape(data[i].expected_file, debug);
-                assert_zero(ret, "i:%d %s inkscape %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), data[i].expected_file, ret);
+            if (have_libreoffice) {
+                ret = testUtilVerifyLibreOffice(data[i].expected_file, debug);
+                assert_zero(ret, "i:%d %s libreoffice %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), data[i].expected_file, ret);
+            }
+            if (have_vnu) {
+                ret = testUtilVerifyVnu(data[i].expected_file, debug); // Very slow
+                assert_zero(ret, "i:%d %s vnu libreoffice %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), data[i].expected_file, ret);
             }
         } else {
             assert_nonzero(testUtilExists(symbol->outfile), "i:%d testUtilExists(%s) == 0\n", i, symbol->outfile);

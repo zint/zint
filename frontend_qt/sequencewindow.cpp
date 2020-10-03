@@ -158,8 +158,10 @@ void SequenceWindow::check_generate()
 	preview_copy = txtPreview->toPlainText();
 	if(preview_copy.isEmpty()) {
 		btnExport->setEnabled(false);
+		lblExport->setEnabled(false);
 	} else {
 		btnExport->setEnabled(true);
+		lblExport->setEnabled(true);
 	}
 }
 

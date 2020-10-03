@@ -284,7 +284,7 @@ Numeric Value  |  Barcode Name
 35             |  UPC-A + Check Digit
 37             |  UPC-E
 38             |  UPC-E + Check Digit
-40             |  PostNet
+40             |  POSTNET
 47             |  MSI Plessey
 49             |  FIM
 50             |  LOGMARS
@@ -946,7 +946,7 @@ plotted in green.
 int main(int argc, char **argv)
 {
     struct zint_symbol *my_symbol;
-	my_symbol = ZBarcode_Create();
+    my_symbol = ZBarcode_Create();
     strcpy(my_symbol->fgcolour, "00ff00");
     my_symbol->height = 400;
     ZBarcode_Encode_and_Print(my_symbol, argv[1], 0, 0);
@@ -982,7 +982,7 @@ ZINT_WARN_NONCOMPLIANT       |  The symbol was created but is not compliant with
                              |     (e.g. height, GS1 AI data lengths).
 ZINT_ERROR                   |  Marks the divide between warnings and errors.
                              |     For return values greater than or equal to
-							 |     this no symbol is generated.
+                             |     this no symbol is generated.
 ZINT_ERROR_TOO_LONG          |  The input data is too long or too short for the
                              |     selected symbology. No symbol has been
                              |     generated.
@@ -1081,7 +1081,7 @@ Value   |
 35      | BARCODE_UPCA_CHK        | UPC-A + Check Digit
 37      | BARCODE_UPCE            | UPC-E
 38      | BARCODE_UPCE_CHK        | UPC-E + Check Digit
-40      | BARCODE_POSTNET         | PostNet
+40      | BARCODE_POSTNET         | POSTNET
 47      | BARCODE_MSI_PLESSEY     | MSI Plessey
 49      | BARCODE_FIM             | FIM
 50      | BARCODE_LOGMARS         | LOGMARS
@@ -1284,7 +1284,7 @@ int ZBarcode_Version();
 The version parts are separated by hundreds. For instance, version "2.9.1" is
 returned as "20901".
 
-[1] This value is ignored for Australia Post 4-State Barcodes, PostNet, PLANET,
+[1] This value is ignored for Australia Post 4-State Barcodes, POSTNET, PLANET,
 USPS Intelligent Mail, RM4SCC, PDF417, Data Matrix, Maxicode, QR Code, GS1
 DataBar Stacked, PDF417 and MicroPDF417 - all of which have a fixed height.
 
@@ -1587,8 +1587,8 @@ Latin-1 character set is shown in Appendix A.
 6.1.11.2 Code 128 Subset B
 --------------------------
 It is sometimes advantageous to stop Code 128 from using subset mode C which
-compresses numerical data. The BARCODE_CODE128B option (symbology 60)
-suppresses mode C in favour of mode B.
+compresses numerical data. The BARCODE_CODE128B option (symbology 60) suppresses
+mode C in favour of mode B.
 
 6.1.11.3 GS1-128
 ----------------
@@ -1903,11 +1903,11 @@ Developed by Laetus, Pharmacode Two-Track is an alternative system to
 Pharmacode One-Track used for the identification of pharmaceuticals. The
 symbology is able to encode whole numbers between 4 and 64570080.
 
-6.4.2 PostNet
+6.4.2 POSTNET
 -------------
-Used by the United States Postal Service until 2009, the PostNet barcode was
-used for encoding zip-codes on mail items. PostNet uses numerical input data
-and includes a modulo-10 check digit. While Zint will encode PostNet symbols of
+Used by the United States Postal Service until 2009, the POSTNET barcode was
+used for encoding zip-codes on mail items. POSTNET uses numerical input data
+and includes a modulo-10 check digit. While Zint will encode POSTNET symbols of
 any length, standard lengths as used by USPS were PostNet6 (5 digits ZIP
 input), PostNet10 (5 digit ZIP + 4 digit user data) and PostNet12 (5 digit ZIP
 + 6 digit user data).
@@ -1987,7 +1987,7 @@ the input data.
 6.5.5 USPS Intelligent Mail
 ---------------------------
 Also known as the OneCode barcode and used in the US by the United States Postal
-Service (USPS), the Intelligent Mail system replaced the PostNet and PLANET
+Service (USPS), the Intelligent Mail system replaced the POSTNET and PLANET
 symbologies in 2009. Intelligent Mail is a fixed length (65-bar) symbol which
 combines routing and customer information in a single symbol. Input data
 consists of a 20 digit tracking code, followed by a dash (-), followed by a
@@ -2661,7 +2661,7 @@ generated using the characters A-D as shown in the table below.
 Code Letter  |  Usage
 ----------------------------------------------------------------------------
 A            |  Used for courtesy reply mail and metered reply mail with a
-             |     pre-printed PostNet symbol.
+             |     pre-printed POSTNET symbol.
 B            |  Used for business reply mail without a pre-printed zip code.
 C            |  Used for business reply mail with a pre-printed zip code.
 D            |  Used for Information Based Indicia (IBI) postage.
@@ -2817,7 +2817,7 @@ Code. Rearranged symbology numbers to match Tbarcode v8. Corrected a never
 ending loop bug in EAN-128. 29/9/2008
 
 v2.0 beta r2 - Many corrections and bugfixes. (Code 11, Code 128, EAN-128,
-Aztec Code, Codablock-F, Code 16k, Postnet, PLANET, NVE-18, PZN, Data Matrix
+Aztec Code, Codablock-F, Code 16k, POSTNET, PLANET, NVE-18, PZN, Data Matrix
 ECC200, Maxicode and QR Code)
 
 v2.0 - Made corrections to Aztec Code and tested output with bcTester. Added

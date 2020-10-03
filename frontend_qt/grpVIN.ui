@@ -25,7 +25,7 @@
      <item row="0" column="0">
       <widget class="QCheckBox" name="chkVINImportChar">
        <property name="text">
-        <string>Import Character Prefix</string>
+        <string>&amp;Import Character Prefix</string>
        </property>
        <property name="checked">
         <bool>false</bool>

@@ -25,10 +25,17 @@
      <item row="0" column="0">
       <widget class="QRadioButton" name="radUltraAuto">
        <property name="text">
-        <string>A&amp;utomatic Resizing</string>
+        <string>Auto&amp;matic Resizing</string>
        </property>
        <property name="checked">
         <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QRadioButton" name="radUltraEcc">
+       <property name="text">
+        <string>E&amp;rror Correction Level:</string>
        </property>
       </widget>
      </item>
@@ -72,13 +79,6 @@
        </item>
       </widget>
      </item>
-     <item row="1" column="0">
-      <widget class="QRadioButton" name="radUltraEcc">
-       <property name="text">
-        <string>Error Correction Level:</string>
-       </property>
-      </widget>
-     </item>
     </layout>
    </item>
    <item>
@@ -93,7 +93,7 @@
       <item row="0" column="0">
        <widget class="QRadioButton" name="radUltraStand">
         <property name="text">
-         <string>Standard Mode</string>
+         <string>S&amp;tandard Mode</string>
         </property>
         <property name="checked">
          <bool>true</bool>
@@ -103,7 +103,7 @@
       <item row="0" column="1">
        <widget class="QRadioButton" name="radUltraGS1">
         <property name="text">
-         <string>GS1 Data Mode</string>
+         <string>GS&amp;1 Data Mode</string>
         </property>
        </widget>
       </item>

@@ -38,9 +38,16 @@ static void test_print(int index, int generate, int debug) {
 
     testStart("");
 
-    int have_identify = testUtilHaveIdentify();
-    int have_inkscape = testUtilHaveInkscape();
-    int have_ghostscript = testUtilHaveGhostscript();
+    int have_identify = 0;
+    int have_libreoffice = 0;
+    int have_ghostscript = 0;
+    int have_vnu = 0;
+    if (generate) {
+        have_identify = testUtilHaveIdentify();
+        have_libreoffice = testUtilHaveLibreOffice();
+        have_ghostscript = testUtilHaveGhostscript();
+        have_vnu = testUtilHaveVnu();
+    }
 
     int ret;
     struct item {
@@ -48,7 +55,7 @@ static void test_print(int index, int generate, int debug) {
         int option_1;
         int option_2;
         float scale;
-        unsigned char *data;
+        char *data;
         char *expected_file;
     };
     struct item data[] = {
@@ -104,7 +111,7 @@ static void test_print(int index, int generate, int debug) {
                 symbol->scale = data[i].scale;
             }
 
-            ret = ZBarcode_Encode(symbol, data[i].data, length);
+            ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
             assert_zero(ret, "i:%d %s ZBarcode_Encode ret %d != 0 %s\n", i, testUtilBarcodeName(data[i].symbology), ret, symbol->errtxt);
 
             strcpy(symbol->outfile, "out.");
@@ -134,9 +141,13 @@ static void test_print(int index, int generate, int debug) {
                             assert_zero(ret, "i:%d %s ghostscript %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), expected_file, ret);
                         }
                     } else if (strcmp(exts[j], "svg") == 0 || strcmp(exts[j], "emf") == 0) {
-                        if (have_inkscape) {
-                            ret = testUtilVerifyInkscape(expected_file, debug);
-                            assert_zero(ret, "i:%d %s inkscape %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), expected_file, ret);
+                        if (have_libreoffice) {
+                            ret = testUtilVerifyLibreOffice(expected_file, debug); // Slow
+                            assert_zero(ret, "i:%d %s libreoffice %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), expected_file, ret);
+                        }
+                        if (have_vnu && strcmp(exts[j], "svg") == 0) {
+                            ret = testUtilVerifyVnu(expected_file, debug); // Very slow
+                            assert_zero(ret, "i:%d %s vnu %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), expected_file, ret);
                         }
                     } else if (strcmp(exts[j], "txt") != 0) { // I.e. rasters
                         if (have_identify) {

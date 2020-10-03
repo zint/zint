@@ -36,7 +36,7 @@ static void test_print(int index, int generate, int debug) {
 
     testStart("");
 
-    int have_inkscape = testUtilHaveInkscape();
+    int have_ghostscript = testUtilHaveGhostscript();
 
     int ret;
     struct item {
@@ -48,7 +48,7 @@ static void test_print(int index, int generate, int debug) {
         int option_2;
         char *fgcolour;
         char *bgcolour;
-        unsigned char *data;
+        char *data;
         char *expected_file;
     };
     struct item data[] = {
@@ -94,7 +94,7 @@ static void test_print(int index, int generate, int debug) {
             strcpy(symbol->bgcolour, data[i].bgcolour);
         }
 
-        ret = ZBarcode_Encode(symbol, data[i].data, length);
+        ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_zero(ret, "i:%d %s ZBarcode_Encode ret %d != 0 %s\n", i, testUtilBarcodeName(data[i].symbology), ret, symbol->errtxt);
 
         strcpy(symbol->outfile, eps);
@@ -107,9 +107,9 @@ static void test_print(int index, int generate, int debug) {
                     data[i].option_1, data[i].option_2, data[i].fgcolour, data[i].bgcolour, testUtilEscape(data[i].data, length, escaped, escaped_size), data[i].expected_file);
             ret = rename(symbol->outfile, data[i].expected_file);
             assert_zero(ret, "i:%d rename(%s, %s) ret %d != 0\n", i, symbol->outfile, data[i].expected_file, ret);
-            if (have_inkscape) {
-                ret = testUtilVerifyInkscape(data[i].expected_file, debug);
-                assert_zero(ret, "i:%d %s inkscape %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), data[i].expected_file, ret);
+            if (have_ghostscript) {
+                ret = testUtilVerifyGhostscript(data[i].expected_file, debug);
+                assert_zero(ret, "i:%d %s ghostscript %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), data[i].expected_file, ret);
             }
         } else {
             assert_nonzero(testUtilExists(symbol->outfile), "i:%d testUtilExists(%s) == 0\n", i, symbol->outfile);
@@ -128,14 +128,13 @@ static void test_print(int index, int generate, int debug) {
 
 void ps_convert(const unsigned char *string, unsigned char *ps_string);
 
-static void test_ps_convert(int index, int debug) {
+static void test_ps_convert(int index) {
 
     testStart("");
 
-    int ret;
     struct item {
-        unsigned char *data;
-        unsigned char *expected;
+        char *data;
+        char *expected;
     };
     struct item data[] = {
         /*  0*/ { "1\\(é)2€3", "1\\\\\\(\351\\)23" },
@@ -148,8 +147,8 @@ static void test_ps_convert(int index, int debug) {
 
         if (index != -1 && i != index) continue;
 
-        ps_convert(data[i].data, converted);
-        assert_zero(strcmp(converted, data[i].expected), "i:%d ps_convert(%s) %s != %s\n", i, data[i].data, converted, data[i].expected);
+        ps_convert((unsigned char *) data[i].data, converted);
+        assert_zero(strcmp((char *) converted, data[i].expected), "i:%d ps_convert(%s) %s != %s\n", i, data[i].data, converted, data[i].expected);
     }
 
     testFinish();
@@ -159,7 +158,7 @@ int main(int argc, char *argv[]) {
 
     testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
         { "test_print", test_print, 1, 1, 1 },
-        { "test_ps_convert", test_ps_convert, 1, 0, 1 },
+        { "test_ps_convert", test_ps_convert, 1, 0, 0 },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

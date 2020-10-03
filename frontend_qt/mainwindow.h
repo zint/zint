@@ -25,10 +25,7 @@
 #include "ui_mainWindow.h"
 #include "barcodeitem.h"
 
-class QAction;
-class QActionGroup;
 class QLabel;
-class QMenu;
 
 class MainWindow : public QWidget, private Ui::mainWindow
 {
@@ -138,8 +135,6 @@ protected:
 	void combobox_item_enabled(QComboBox *comboBox, int index, bool enabled);
     void upcean_addon_gap(QComboBox *comboBox, QLabel *label, int base);
     void set_gs1_mode(bool gs1_mode);
-	bool fixed_height();
-	bool no_hrt();
 	const char *get_setting_name(int symbology);
 	int get_button_group_index(const QStringList &children);
 	void set_radiobutton_from_setting(QSettings &settings, const QString &setting, const QStringList &children, int default_val = 0);

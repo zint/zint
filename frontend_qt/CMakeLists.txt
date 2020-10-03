@@ -8,11 +8,11 @@ set(zint-qt_SRCS barcodeitem.cpp  main.cpp  mainwindow.cpp datawindow.cpp sequen
 QT5_WRAP_CPP(zint-qt_SRCS mainwindow.h datawindow.h sequencewindow.h exportwindow.h)
 
 QT5_WRAP_UI(zint-qt_SRCS mainWindow.ui extData.ui extSequence.ui extExport.ui)
-#               grpAztec.ui  grpC49.ui         grpDBExtend.ui  grpLOGMARS.ui   grpPDF417.ui  grpUPCA.ui
-#               grpC11.ui    grpChannel.ui     grpDM.ui        grpMaxicode.ui  grpPZN.ui     grpUPCEAN.ui
-#               grpC128.ui   grpCodabar.ui     grpDotCode.ui   grpMicroPDF.ui  grpQR.ui      grpVIN.ui
-#               grpC16k.ui   grpCodablockF.ui  grpGrid.ui      grpMQR.ui       grpRMQR.ui
-#               grpC39.ui    grpCodeOne.ui     grpHX.ui        grpMSICheck.ui  grpUltra.ui
+#               grpAztec.ui  grpC49.ui         grpDBExtend.ui  grpLOGMARS.ui   grpPDF417.ui  grpUPCEAN.ui
+#               grpC11.ui    grpChannel.ui     grpDM.ui        grpMaxicode.ui  grpQR.ui      grpVIN.ui
+#               grpC128.ui   grpCodabar.ui     grpDotCode.ui   grpMicroPDF.ui  grpRMQR.ui
+#               grpC16k.ui   grpCodablockF.ui  grpGrid.ui      grpMQR.ui       grpUltra.ui
+#               grpC39.ui    grpCodeOne.ui     grpHX.ui        grpMSICheck.ui  grpUPCA.ui
 
 QT5_ADD_RESOURCES(zint-qt_SRCS resources.qrc)
 
