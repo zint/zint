@@ -301,7 +301,7 @@ or import from file</string>
                    <bool>false</bool>
                   </property>
                   <property name="text">
-                   <string>2D &amp;Component Data:</string>
+                   <string>2D C&amp;omponent Data:</string>
                   </property>
                   <property name="buddy">
                    <cstring>txtComposite</cstring>
@@ -540,26 +540,26 @@ p, li { white-space: pre-wrap; }
              <item>
               <widget class="QCheckBox" name="chkEscape">
                <property name="toolTip">
-                <string>Process escape sequences in input data&lt;table cellpadding=&quot;3&quot;&gt;
-&lt;tr&gt;&lt;td&gt;\0&lt;/td&gt;&lt;td&gt;NUL character (0x00)&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;\E&lt;/td&gt;&lt;td&gt;End of Transmission (0x04)&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;\a&lt;/td&gt;&lt;td&gt;Bell (0x07)&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;\b&lt;/td&gt;&lt;td&gt;Backspace (0x08)&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;\t&lt;/td&gt;&lt;td&gt;Horizontal Tab (0x09)&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;\n&lt;/td&gt;&lt;td&gt;Line Feed (0x0A)&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;\v&lt;/td&gt;&lt;td&gt;Vertical Tab (0x0B)&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;\f&lt;/td&gt;&lt;td&gt;Form Feed (0x0C)&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;\r&lt;/td&gt;&lt;td&gt;Carriage Return (0x0D)&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;\e&lt;/td&gt;&lt;td&gt;Escape (0x1B)&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;\G&lt;/td&gt;&lt;td&gt;Group Selector (0x1D)&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;\R&lt;/td&gt;&lt;td&gt;Record Selector (0x1E)&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;\\&lt;/td&gt;&lt;td&gt;Backslash (0x5C)&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;\xNN&lt;/td&gt;&lt;td&gt;8-bit character (N hex)&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;\uNNNN&lt;/td&gt;&lt;td&gt;16-bit Unicode (N hex)&lt;/td&gt;&lt;/tr&gt;
+                <string>Process escape sequences in input data&lt;table cellspacing=&quot;3&quot;&gt;
+&lt;tr&gt;&lt;td&gt;\0&amp;nbsp;&lt;/td&gt;&lt;td&gt;NUL character (0x00)&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;\E&amp;nbsp;&lt;/td&gt;&lt;td&gt;End of Transmission (0x04)&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;\a&amp;nbsp;&lt;/td&gt;&lt;td&gt;Bell (0x07)&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;\b&amp;nbsp;&lt;/td&gt;&lt;td&gt;Backspace (0x08)&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;\t&amp;nbsp;&lt;/td&gt;&lt;td&gt;Horizontal Tab (0x09)&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;\n&amp;nbsp;&lt;/td&gt;&lt;td&gt;Line Feed (0x0A)&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;\v&amp;nbsp;&lt;/td&gt;&lt;td&gt;Vertical Tab (0x0B)&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;\f&amp;nbsp;&lt;/td&gt;&lt;td&gt;Form Feed (0x0C)&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;\r&amp;nbsp;&lt;/td&gt;&lt;td&gt;Carriage Return (0x0D)&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;\e&amp;nbsp;&lt;/td&gt;&lt;td&gt;Escape (0x1B)&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;\G&amp;nbsp;&lt;/td&gt;&lt;td&gt;Group Selector (0x1D)&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;\R&amp;nbsp;&lt;/td&gt;&lt;td&gt;Record Selector (0x1E)&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;\\&amp;nbsp;&lt;/td&gt;&lt;td&gt;Backslash (0x5C)&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;\xNN&amp;nbsp;&lt;/td&gt;&lt;td&gt;8-bit character (N hex)&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;\uNNNN&amp;nbsp;&lt;/td&gt;&lt;td&gt;16-bit Unicode (N hex)&lt;/td&gt;&lt;/tr&gt;
 &lt;/table&gt;</string>
                </property>
                <property name="text">
-                <string>&amp;Parse Escapes</string>
+                <string>Parse Es&amp;capes</string>
                </property>
                <property name="checked">
                 <bool>false</bool>

@@ -241,7 +241,7 @@
       <item row="1" column="0">
        <widget class="QRadioButton" name="radPDFTruncated">
         <property name="text">
-         <string>Compact PDF417</string>
+         <string>&amp;Compact PDF417</string>
         </property>
        </widget>
       </item>

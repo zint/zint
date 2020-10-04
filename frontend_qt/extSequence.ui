@@ -87,7 +87,7 @@
                <cstring>linFormat</cstring>
               </property>
               <property name="toolTip">
-               <string>Format sequence using special characters&lt;table cellpadding=&quot;3&quot;&gt;
+               <string>Format sequence using special characters&lt;table cellspacing=&quot;3&quot;&gt;
 &lt;tr&gt;&lt;td&gt;#&lt;/td&gt;&lt;td&gt;Number or space&lt;/td&gt;&lt;/tr&gt;
 &lt;tr&gt;&lt;td&gt;$&lt;/td&gt;&lt;td&gt;Number or &apos;0&apos;&lt;/td&gt;&lt;/tr&gt;
 &lt;tr&gt;&lt;td&gt;*&lt;/td&gt;&lt;td&gt;Number or &apos;*&apos;&lt;/td&gt;&lt;/tr&gt;
@@ -172,7 +172,7 @@
                <string>$$$$$$</string>
               </property>
               <property name="toolTip">
-               <string>Format sequence using special characters&lt;table cellpadding=&quot;3&quot;&gt;
+               <string>Format sequence using special characters&lt;table cellspacing=&quot;3&quot;&gt;
 &lt;tr&gt;&lt;td&gt;#&lt;/td&gt;&lt;td&gt;Number or space&lt;/td&gt;&lt;/tr&gt;
 &lt;tr&gt;&lt;td&gt;$&lt;/td&gt;&lt;td&gt;Number or &apos;0&apos;&lt;/td&gt;&lt;/tr&gt;
 &lt;tr&gt;&lt;td&gt;*&lt;/td&gt;&lt;td&gt;Number or &apos;*&apos;&lt;/td&gt;&lt;/tr&gt;

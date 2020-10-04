@@ -57,20 +57,20 @@ will be converted to spaces</string>
        </property>
        <property name="toolTip">
         <string>Get input data from a file. Certain characters &lt;br/&gt;will be converted to escape sequences
-&lt;table cellpadding=&quot;3&quot;&gt;
-&lt;tr&gt;&lt;td&gt;End of Transmission (0x04)&lt;/td&gt;&lt;td&gt;\E&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Bell (0x07)&lt;/td&gt;&lt;td&gt;\a&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Backspace (0x08)&lt;/td&gt;&lt;td&gt;\b&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Horizontal Tab (0x09)&lt;/td&gt;&lt;td&gt;\t&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Vertical Tab (0x0B)&lt;/td&gt;&lt;td&gt;\v&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Form Feed (0x0C)&lt;/td&gt;&lt;td&gt;\f&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Carriage Return (0x0D)&lt;/td&gt;&lt;td&gt;\r&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Escape (0x1B)&lt;/td&gt;&lt;td&gt;\e&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Group Selector (0x1D)&lt;/td&gt;&lt;td&gt;\G&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Record Selector (0x1E)&lt;/td&gt;&lt;td&gt;\R&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Backslash (0x5C)&lt;/td&gt;&lt;td&gt;\\&lt;/td&gt;&lt;/tr&gt;
+&lt;table cellspacing=&quot;3&quot;&gt;
+&lt;tr&gt;&lt;td&gt;End of Transmission (0x04)&lt;/td&gt;&lt;td&gt;&amp;nbsp;\E&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;Bell (0x07)&lt;/td&gt;&lt;td&gt;&amp;nbsp;\a&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;Backspace (0x08)&lt;/td&gt;&lt;td&gt;&amp;nbsp;\b&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;Horizontal Tab (0x09)&lt;/td&gt;&lt;td&gt;&amp;nbsp;\t&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;Vertical Tab (0x0B)&lt;/td&gt;&lt;td&gt;&amp;nbsp;\v&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;Form Feed (0x0C)&lt;/td&gt;&lt;td&gt;&amp;nbsp;\f&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;Carriage Return (0x0D)&lt;/td&gt;&lt;td&gt;&amp;nbsp;\r&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;Escape (0x1B)&lt;/td&gt;&lt;td&gt;&amp;nbsp;\e&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;Group Selector (0x1D)&lt;/td&gt;&lt;td&gt;&amp;nbsp;\G&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;Record Selector (0x1E)&lt;/td&gt;&lt;td&gt;&amp;nbsp;\R&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;Backslash (0x5C)&lt;/td&gt;&lt;td&gt;&amp;nbsp;\\&lt;/td&gt;&lt;/tr&gt;
 &lt;/table&gt;
-Note that newlines (Line Feed (0x0A)) are &lt;br/&gt;not included</string>
+Note that newlines (Line Feeds (0x0A)) are &lt;br/&gt;not included</string>
        </property>
       </widget>
      </item>

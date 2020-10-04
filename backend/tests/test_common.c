@@ -37,12 +37,12 @@ static void test_utf8_to_unicode(int index, int debug) {
 
     int ret;
     struct item {
-        unsigned char *data;
+        char *data;
         int length;
         int disallow_4byte;
         int ret;
         size_t ret_length;
-        int expected_vals[20];
+        unsigned int expected_vals[20];
         char *comment;
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
@@ -55,7 +55,7 @@ static void test_utf8_to_unicode(int index, int debug) {
     };
     int data_size = sizeof(data) / sizeof(struct item);
 
-    int vals[20];
+    unsigned int vals[20];
     struct zint_symbol symbol;
     symbol.debug |= debug;
 
@@ -66,7 +66,7 @@ static void test_utf8_to_unicode(int index, int debug) {
         int length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
         size_t ret_length = length;
 
-        ret = utf8_to_unicode(&symbol, data[i].data, vals, &ret_length, data[i].disallow_4byte);
+        ret = utf8_to_unicode(&symbol, (unsigned char *) data[i].data, vals, &ret_length, data[i].disallow_4byte);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d\n", i, ret, data[i].ret);
         if (ret == 0) {
             assert_equal(ret_length, data[i].ret_length, "i:%d ret_length %ld != %ld\n", i, ret_length, data[i].ret_length);
@@ -83,7 +83,6 @@ static void test_debug_test_codeword_dump_int(int index, int debug) {
 
     testStart("");
 
-    int ret;
     struct item {
         int codewords[50];
         int length;

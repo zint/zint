@@ -31,6 +31,63 @@
 
 #include "testcommon.h"
 
+static void test_reader_init(int index, int generate, int debug) {
+
+    testStart("");
+
+    int ret;
+    struct item {
+        int input_mode;
+        int output_options;
+        int option_3;
+        char *data;
+        int ret;
+        int expected_rows;
+        int expected_width;
+        char *expected;
+        char *comment;
+    };
+    struct item data[] = {
+        /*  0*/ { UNICODE_MODE, READER_INIT, 0, "A", 0, 13, 14, "(3) 257 269 65", "8-bit FNC3 A" },
+        /*  1*/ { UNICODE_MODE, READER_INIT, ULTRA_COMPRESSION, "A", 0, 13, 14, "(3) 272 271 65", "ASCII FNC3 A Note: draft spec inconsistent and FNC3 may be 272 in ASCII mode (and FNC1 271)" },
+    };
+    int data_size = ARRAY_SIZE(data);
+
+    char escaped[1024];
+
+    for (int i = 0; i < data_size; i++) {
+
+        if (index != -1 && i != index) continue;
+
+        struct zint_symbol *symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        symbol->debug = ZINT_DEBUG_TEST; // Needed to get codeword dump in errtxt
+
+        int length = testUtilSetSymbol(symbol, BARCODE_ULTRA, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1 /*option_2*/, data[i].option_3, data[i].output_options, data[i].data, -1, debug);
+
+        ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+
+        if (generate) {
+            printf("        /*%3d*/ { %s, %s, %s, \"%s\", %s, %d, %d, \"%s\", \"%s\" },\n",
+                    i, testUtilInputModeName(data[i].input_mode), testUtilOutputOptionsName(data[i].output_options), testUtilOption3Name(data[i].option_3),
+                    testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
+                    testUtilErrorName(data[i].ret), symbol->rows, symbol->width, symbol->errtxt, data[i].comment);
+        } else {
+            if (ret < 5) {
+                assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);
+                assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
+                assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
+            }
+        }
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
 static void test_input(int index, int generate, int debug) {
 
     testStart("");
@@ -464,6 +521,7 @@ static void test_encode(int index, int generate, int debug) {
 int main(int argc, char *argv[]) {
 
     testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
+        { "test_reader_init", test_reader_init, 1, 1, 1 },
         { "test_input", test_input, 1, 1, 1 },
         { "test_encode", test_encode, 1, 1, 1 },
     };

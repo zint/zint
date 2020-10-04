@@ -38,7 +38,7 @@ static void test_large(int index, int debug) {
     int ret;
     struct item {
         int symbology;
-        unsigned char *pattern;
+        char *pattern;
         int length;
         int ret;
         int expected_rows;
@@ -71,7 +71,7 @@ static void test_large(int index, int debug) {
 
         int length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data_buf, data[i].length, debug);
 
-        ret = ZBarcode_Encode(symbol, data_buf, length);
+        ret = ZBarcode_Encode(symbol, (unsigned char *) data_buf, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (ret < 5) {
@@ -92,7 +92,7 @@ static void test_buffer(int index, int debug) {
 
     int ret;
     struct item {
-        unsigned char *data;
+        char *data;
         int eci;
         int input_mode;
         int output_options;
@@ -121,7 +121,7 @@ static void test_buffer(int index, int debug) {
 
         int length = strlen(data[i].data);
 
-        ret = ZBarcode_Encode(symbol, data[i].data, length);
+        ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d\n", i, ret, data[i].ret);
 
         ZBarcode_Delete(symbol);
@@ -141,7 +141,7 @@ static void test_input(int index, int generate, int debug) {
         int option_1;
         int option_2;
         int option_3;
-        unsigned char *data;
+        char *data;
         int ret;
 
         int expected_eci;
@@ -177,7 +177,7 @@ static void test_input(int index, int generate, int debug) {
 
         int length = testUtilSetSymbol(symbol, BARCODE_DATAMATRIX, data[i].input_mode, data[i].eci, data[i].option_1, data[i].option_2, data[i].option_3, -1 /*output_options*/, data[i].data, -1, debug);
 
-        ret = ZBarcode_Encode(symbol, data[i].data, length);
+        ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d\n", i, ret, data[i].ret);
 
         if (generate) {
@@ -207,7 +207,7 @@ static void test_encode(int index, int generate, int debug) {
     struct item {
         int symbology;
         int input_mode;
-        unsigned char *data;
+        char *data;
         int ret;
 
         int expected_rows;
@@ -448,7 +448,7 @@ static void test_encode(int index, int generate, int debug) {
 
         int length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
 
-        ret = ZBarcode_Encode(symbol, data[i].data, length);
+        ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d\n", i, ret, data[i].ret);
 
         if (generate) {
