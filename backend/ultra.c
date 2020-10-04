@@ -660,6 +660,7 @@ static int ultra_generate_codewords(struct zint_symbol *symbol, const unsigned c
 
     if (symbol->output_options & READER_INIT) {
         /* Reader Initialisation mode */
+        codeword_count = 2;
         if (symbol_mode == ASCII_MODE) {
             codewords[0] = 272; // 7-bit ASCII mode
             codewords[1] = 271; // FNC3
@@ -667,9 +668,9 @@ static int ultra_generate_codewords(struct zint_symbol *symbol, const unsigned c
             codewords[0] = 257; // 8859-1
             codewords[1] = 269; // FNC3
         }
-        codeword_count = 2;
     } else {
         /* Calculate start character codeword */
+        codeword_count = 1;
         if (symbol_mode == ASCII_MODE) {
             if (gs1) {
                 codewords[0] = 273;
@@ -688,7 +689,7 @@ static int ultra_generate_codewords(struct zint_symbol *symbol, const unsigned c
                 // ECI indicates use of character set outside ISO/IEC 8859
                 codewords[0] = 275 + (symbol->eci / 256);
                 codewords[1] = symbol->eci % 256;
-                codeword_count++;
+                codeword_count = 2;
             } else if (symbol->eci == 899) {
                 // Non-language byte data
                 codewords[0] = 280;
@@ -699,7 +700,7 @@ static int ultra_generate_codewords(struct zint_symbol *symbol, const unsigned c
                 codewords[1] = 274; // Encode ECI as 3 codewords
                 codewords[2] = (symbol->eci / 100) + 128;
                 codewords[3] = (symbol->eci % 100) + 128;
-                codeword_count += 3;
+                codeword_count = 4;
             } else if (symbol->eci >= 10000) {
                 // Encode as 4 codewords
                 codewords[0] = 257; // ISO/IEC 8859-1 used to enter 8-bit mode
@@ -707,7 +708,7 @@ static int ultra_generate_codewords(struct zint_symbol *symbol, const unsigned c
                 codewords[2] = (symbol->eci / 10000) + 128;
                 codewords[3] = ((symbol->eci % 10000) / 100) + 128;
                 codewords[4] = (symbol->eci % 100) + 128;
-                codeword_count += 4;
+                codeword_count = 5;
             } else {
                 codewords[0] = 257; // Default is assumed to be ISO/IEC 8859-1 (ECI 3)
             }
@@ -732,8 +733,6 @@ static int ultra_generate_codewords(struct zint_symbol *symbol, const unsigned c
             }
         }
     }
-
-    codeword_count++;
 
     /* Check for 06 Macro Sequence and crop accordingly */
     if (in_length >= 9
@@ -969,6 +968,7 @@ INTERNAL int ultracode(struct zint_symbol *symbol, const unsigned char source[],
 
     locn = 0;
     /* Calculate error correction codewords (RSEC) */
+    
     ultra_gf283((short) data_cw_count, (short) qcc, data_codewords);
 
     /* Rearrange to make final codeword sequence */

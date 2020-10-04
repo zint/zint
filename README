@@ -289,6 +289,7 @@ Bugs:
 - Code16k selects GS1 mode by default in GUI
 - Ultracode: use white pixels instead background for white modules.
 - EMF: fix Ultracode colours.
+- Ultracode: fix count of codewords when using reader init mode
 
 CONTACT US
 ----------
