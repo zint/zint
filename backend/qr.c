@@ -2822,9 +2822,11 @@ static void setup_rmqr_grid(unsigned char* grid, const int h_size, const int v_s
 
     /* Add alignment patterns */
     if (h_size > 27) {
+		h_version = 0; // Suppress compiler warning [-Wmaybe-uninitialized]
         for(i = 0; i < 5; i++) {
             if (h_size == rmqr_width[i]) {
                 h_version = i;
+				break;
             }
         }
 

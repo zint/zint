@@ -115,8 +115,10 @@ void testReport() {
     }
     if (skipped) {
         printf("Total %d tests, %d skipped.\n", tests, skipped);
-    } else {
+    } else if (tests) {
         printf("Total %d tests, all passed.\n", tests);
+    } else {
+        printf("Total %d tests.\n", tests);
     }
 }
 

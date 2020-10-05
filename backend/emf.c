@@ -756,13 +756,10 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
         fwrite(&emr_settextcolor, sizeof (emr_settextcolor_t), 1, emf_file);
     }
 
-    /* Suppresses clang-tidy clang-analyzer-core.UndefinedBinaryOperatorResult warning */
-    assert((symbol->vector->strings == NULL && string_count == 0) || (symbol->vector->strings != NULL && string_count > 0));
-
     current_fsize = fsize;
     current_halign = -1;
     for (i = 0; i < string_count; i++) {
-        if (text_fsizes[i] != current_fsize) {
+        if (text_fsizes[i] != current_fsize) { // NOLINT(clang-analyzer-core.UndefinedBinaryOperatorResult) suppress clang-tidy warning: text_fsizes fully set
             current_fsize = text_fsizes[i];
             fwrite(&emr_selectobject_font2, sizeof (emr_selectobject_t), 1, emf_file);
         }

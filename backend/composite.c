@@ -65,7 +65,7 @@
 
 INTERNAL int eanx(struct zint_symbol *symbol, unsigned char source[], int length);
 INTERNAL int ean_128(struct zint_symbol *symbol, unsigned char source[], const size_t length);
-INTERNAL void ean_leading_zeroes(struct zint_symbol *symbol, unsigned char source[], unsigned char local_source[]);
+INTERNAL void ean_leading_zeroes(struct zint_symbol *symbol, unsigned char source[], unsigned char local_source[], int *p_with_addon);
 INTERNAL int rss14(struct zint_symbol *symbol, unsigned char source[], int length);
 INTERNAL int rsslimited(struct zint_symbol *symbol, unsigned char source[], int length);
 INTERNAL int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int length);
@@ -1276,7 +1276,7 @@ static int cc_binary_string(struct zint_symbol *symbol, const char source[], cha
     }
 
     if (target_bitsize == 0) {
-        strcpy(symbol->errtxt, "442: Input too long for selected 2d component");
+        strcpy(symbol->errtxt, "442: Input too long for selected 2D component");
         return ZINT_ERROR_TOO_LONG;
     }
 
@@ -1317,7 +1317,7 @@ static int cc_binary_string(struct zint_symbol *symbol, const char source[], cha
     }
 
     if (target_bitsize == 0) {
-        strcpy(symbol->errtxt, "444: Input too long for selected 2d component");
+        strcpy(symbol->errtxt, "444: Input too long for selected 2D component");
         return ZINT_ERROR_TOO_LONG;
     }
 
@@ -1423,28 +1423,33 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
             cc_width = 0;
             if (pri_len < 20) {
                 int padded_pri_len;
-                char padded_pri[20];
+                int with_addon;
+                char padded_pri[21];
                 padded_pri[0] = '\0';
-                ean_leading_zeroes(symbol, (unsigned char *) symbol->primary, (unsigned char *) padded_pri);
+                ean_leading_zeroes(symbol, (unsigned char *) symbol->primary, (unsigned char *) padded_pri, &with_addon);
                 padded_pri_len = strlen(padded_pri);
                 if (padded_pri_len <= 7) { /* EAN-8 */
                     cc_width = 3;
                 } else {
                     switch (padded_pri_len) {
                         case 10: /* EAN-8 + 2 */
-                        case 13: /* EAN-8 + 5 */
                             cc_width = 3;
+                            break;
+                        case 13: /* EAN-13 CHK or EAN-8 + 5 */
+                            cc_width = with_addon ? 3 : 4;
                             break;
                         case 12: /* EAN-13 */
                         case 15: /* EAN-13 + 2 */
+                        case 16: /* EAN-13 CHK + 2 */
                         case 18: /* EAN-13 + 5 */
+                        case 19: /* EAN-13 CHK + 5 */
                             cc_width = 4;
                             break;
                     }
                 }
             }
             if (cc_width == 0) {
-                strcpy(symbol->errtxt, "449: Invalid length EAN input in linear component");
+                strcpy(symbol->errtxt, "449: Input wrong length in linear component");
                 return ZINT_ERROR_TOO_LONG;
             }
             break;
@@ -1647,7 +1652,7 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
     }
 
     if (top_shift != 0) {
-        /* Move the 2d component of the symbol horizontally */
+        /* Move the 2D component of the symbol horizontally */
         for (i = 0; i <= symbol->rows; i++) {
             for (j = (symbol->width + top_shift); j >= top_shift; j--) {
                 if (module_is_set(symbol, i, j - top_shift)) {

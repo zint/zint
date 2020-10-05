@@ -532,6 +532,9 @@ namespace Zint {
         string = m_zintSymbol->vector->strings;
         if (string) {
             painter.setRenderHint(QPainter::Antialiasing);
+            QPen p;
+            p.setColor(m_fgColor);
+            painter.setPen(p);
             bool bold = (m_zintSymbol->output_options & BOLD_TEXT) && (!isExtendable() || (m_zintSymbol->output_options & SMALL_TEXT));
             QFont font(fontStyle, -1 /*pointSize*/, bold ? QFont::Bold : -1);
             while (string) {

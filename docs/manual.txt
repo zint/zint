@@ -1275,7 +1275,7 @@ if (cap & ZINT_CAP_ECI) {
     printf("PDF417 does not support ECI\n");
 }
 
-5.11 Zint Version
+5.12 Zint Version
 -----------------
 Lastly, the version of the Zint library linked to is returned by:
 
@@ -1968,7 +1968,7 @@ and automatic mail sorting. Data input can consist of numbers 0-9 and letters
 A-Z and needs to be 11 characters in length. No check digit is included.
 
 6.5.3 Royal Mail 4-State Customer Code (RM4SCC)
-----------------------------------------------
+-----------------------------------------------
 The RM4SCC standard is used by the Royal Mail in the UK to encode postcode and
 customer data on mail items. Data input can consist of numbers 0-9 and letters
 A-Z and usually includes delivery postcode followed by house number. For
