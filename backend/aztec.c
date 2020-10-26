@@ -49,14 +49,14 @@ static int count_doubles(const unsigned char source[], const int posn, const siz
     int i = posn;
     int cond = 1;
 
-    do {
+    while ((i + 1 < (int) src_len) && cond) {
         if (((source[i] == '.') || (source[i] == ',')) && (source[i + 1] == ' ')) {
             c++;
         } else {
             cond = 0;
         }
         i += 2;
-    } while ((i < (int) src_len) && cond);
+    }
 
     return c;
 }
@@ -66,14 +66,14 @@ static int count_cr(unsigned char source[], int posn, int length) {
     int i = posn;
     int cond = 1;
 
-    do {
+    while ((i < length) && cond) {
         if (source[i] == 13) {
             c++;
         } else {
             cond = 0;
         }
         i++;
-    } while ((i < length) && cond);
+    }
 
     return c;
 }
@@ -83,14 +83,14 @@ static int count_dotcomma(unsigned char source[], int posn, int length) {
     int i = posn;
     int cond = 1;
 
-    do {
+    while ((i < length) && cond) {
         if ((source[i] == '.') || (source[i] == ',')) {
             c++;
         } else {
             cond = 0;
         }
         i++;
-    } while ((i < length) && cond);
+    }
 
     return c;
 }
@@ -100,14 +100,14 @@ static int count_spaces(unsigned char source[], int posn, int length) {
     int i = posn;
     int cond = 1;
 
-    do {
+    while ((i < length) && cond) {
         if (source[i] == ' ') {
             c++;
         } else {
             cond = 0;
         }
         i++;
-    } while ((i < length) && cond);
+    }
 
     return c;
 }
@@ -168,7 +168,7 @@ static int aztec_text_process(const unsigned char source[], const size_t src_len
     // Deal first with letter combinations which can be combined to one codeword
     // Combinations are (CR LF) (. SP) (, SP) (: SP) in Punct mode
     current_mode = 'U';
-    for (i = 0; i < (int) src_len - 1; i++) {
+    for (i = 0; i + 1 < (int) src_len; i++) {
         // Combination (CR LF) should always be in Punct mode
         if ((source[i] == 13) && (source[i + 1] == 10)) {
             encode_mode[i] = 'P';
@@ -249,19 +249,19 @@ static int aztec_text_process(const unsigned char source[], const size_t src_len
     i = 0;
     j = 0;
     while (i < (int) src_len) {
-        if ((source[i] == 13) && (source[i + 1] == 10)) { // CR LF
+        if ((source[i] == 13) && (i + 1 < (int) src_len) && (source[i + 1] == 10)) { // CR LF
             reduced_source[j] = 'a';
             reduced_encode_mode[j] = encode_mode[i];
             i += 2;
-        } else if (((source[i] == '.') && (source[i + 1] == ' ')) && (encode_mode[i] == 'P')) {
+        } else if ((source[i] == '.') && (i + 1 < (int) src_len) && (source[i + 1] == ' ') && (encode_mode[i] == 'P')) {
             reduced_source[j] = 'b';
             reduced_encode_mode[j] = encode_mode[i];
             i += 2;
-        } else if (((source[i] == ',') && (source[i + 1] == ' ')) && (encode_mode[i] == 'P')) {
+        } else if ((source[i] == ',') && (i + 1 < (int) src_len) && (source[i + 1] == ' ') && (encode_mode[i] == 'P')) {
             reduced_source[j] = 'c';
             reduced_encode_mode[j] = encode_mode[i];
             i += 2;
-        } else if ((source[i] == ':') && (source[i + 1] == ' ')) {
+        } else if ((source[i] == ':') && (i + 1 < (int) src_len) && (source[i + 1] == ' ')) {
             reduced_source[j] = 'd';
             reduced_encode_mode[j] = encode_mode[i];
             i += 2;
@@ -530,7 +530,7 @@ static int aztec_text_process(const unsigned char source[], const size_t src_len
         printf("\n");
     }
 
-    strcpy(binary_string, "");
+    *binary_string = '\0';
 
     if (gs1) {
         bin_append(0, 5, binary_string); // P/S
@@ -1128,25 +1128,20 @@ INTERNAL int aztec(struct zint_symbol *symbol, unsigned char source[], const siz
             j = 0;
             count = 0;
             for (i = 0; i < data_length; i++) {
-
                 if ((j + 1) % codeword_size == 0) {
                     // Last bit of codeword
                     /* 7.3.1.2 "whenever the first B-1 bits ... are all “0”s, then a dummy “1” is inserted..."
                      * "Similarly a message codeword that starts with B-1 “1”s has a dummy “0” inserted..." */
 
-                    if (count == (codeword_size - 1)) {
-                        // Codeword of B-1 '1's
-                        adjusted_string[j] = '0';
+                    if (count == 0 || count == (codeword_size - 1)) {
+                        // Codeword of B-1 '0's or B-1 '1's
+                        adjusted_string[j] = count == 0 ? '1' : '0';
                         j++;
+                        count = binary_string[i] == '1' ? 1 : 0;
+                    } else {
+                        count = 0;
                     }
 
-                    if (count == 0) {
-                        // Codeword of B-1 '0's
-                        adjusted_string[j] = '1';
-                        j++;
-                    }
-
-                    count = 0;
                 } else if (binary_string[i] == '1') { /* Skip B so only counting B-1 */
                     count++;
                 }
@@ -1235,19 +1230,15 @@ INTERNAL int aztec(struct zint_symbol *symbol, unsigned char source[], const siz
             if ((j + 1) % codeword_size == 0) {
                 // Last bit of codeword
 
-                if (count == (codeword_size - 1)) {
-                    // Codeword of B-1 '1's
-                    adjusted_string[j] = '0';
+                if (count == 0 || count == (codeword_size - 1)) {
+                    // Codeword of B-1 '0's or B-1 '1's
+                    adjusted_string[j] = count == 0 ? '1' : '0';
                     j++;
+                    count = binary_string[i] == '1' ? 1 : 0;
+                } else {
+                    count = 0;
                 }
 
-                if (count == 0) {
-                    // Codeword of B-1 '0's
-                    adjusted_string[j] = '1';
-                    j++;
-                }
-
-                count = 0;
             } else if (binary_string[i] == '1') { /* Skip B so only counting B-1 */
                 count++;
             }
@@ -1581,6 +1572,7 @@ INTERNAL int aztec_runes(struct zint_symbol *symbol, unsigned char source[], int
     int input_value, error_number, i, y, x;
     char binary_string[28];
     unsigned char data_codewords[3], ecc_codewords[6];
+    int debug = symbol->debug & ZINT_DEBUG_PRINT;
 
     input_value = 0;
     if (length > 3) {
@@ -1609,7 +1601,7 @@ INTERNAL int aztec_runes(struct zint_symbol *symbol, unsigned char source[], int
         return ZINT_ERROR_INVALID_DATA;
     }
 
-    strcpy(binary_string, "");
+    *binary_string = '\0';
     bin_append(input_value, 8, binary_string);
 
     data_codewords[0] = 0;
@@ -1634,8 +1626,6 @@ INTERNAL int aztec_runes(struct zint_symbol *symbol, unsigned char source[], int
     rs_init_code(5, 1);
     rs_encode(2, data_codewords, ecc_codewords);
     rs_free();
-
-    strcpy(binary_string, "");
 
     for (i = 0; i < 5; i++) {
         if (ecc_codewords[4 - i] & 0x08) {
@@ -1666,6 +1656,10 @@ INTERNAL int aztec_runes(struct zint_symbol *symbol, unsigned char source[], int
         } else {
             binary_string[i] = '1';
         }
+    }
+
+    if (debug) {
+        printf("Binary String: %.28s\n", binary_string);
     }
 
     for (y = 8; y < 19; y++) {

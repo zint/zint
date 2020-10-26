@@ -665,7 +665,7 @@ static void test_encode(int index, int generate, int debug) {
                 ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
                 assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, ret, width, row, data[i].data);
 
-                if (do_bwipp && testUtilCanBwipp(symbol->symbology, -1, -1, -1, debug)) {
+                if (do_bwipp && testUtilCanBwipp(i, symbol, -1, -1, -1, debug)) {
                     if (!data[i].bwipp_cmp) {
                         if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not BWIPP compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
                     } else {

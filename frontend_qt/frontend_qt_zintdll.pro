@@ -36,6 +36,8 @@ FORMS += extData.ui \
          grpPDF417.ui \
          grpQR.ui \
          grpRMQR.ui \
+         grpUPCA.ui \
+         grpUPCEAN.ui \
          grpVIN.ui \
          mainWindow.ui
 

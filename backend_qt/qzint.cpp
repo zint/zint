@@ -411,7 +411,6 @@ namespace Zint {
         struct zint_vector_hexagon *hex;
         struct zint_vector_circle *circle;
         struct zint_vector_string *string;
-        qreal radius;
 
         (void)mode; /* Not currently used */
 
@@ -454,9 +453,6 @@ namespace Zint {
         xtr += (qreal) (paintRect.width() - gwidth * scale) / 2.0;
         ytr += (qreal) (paintRect.height() - gheight * scale) / 2.0;
 
-        painter.setBackground(QBrush(m_bgColor));
-        painter.fillRect(paintRect, QBrush(m_bgColor));
-
         if (m_rotate_angle) {
             painter.translate(paintRect.width() / 2.0, paintRect.height() / 2.0); // Need to rotate around centre
             painter.rotate(m_rotate_angle);
@@ -465,6 +461,9 @@ namespace Zint {
 
         painter.translate(xtr, ytr);
         painter.scale(scale, scale);
+
+        QBrush bgBrush(m_bgColor);
+        painter.fillRect(QRectF(0, 0, gwidth, gheight), bgBrush);
 
         //Red square for diagnostics
         //painter.fillRect(QRect(0, 0, m_zintSymbol->vector->width, m_zintSymbol->vector->height), QBrush(QColor(255,0,0,255)));
@@ -488,19 +487,25 @@ namespace Zint {
         hex = m_zintSymbol->vector->hexagons;
         if (hex) {
             painter.setRenderHint(QPainter::Antialiasing);
-            QBrush brush(m_fgColor);
+            QBrush fgBrush(m_fgColor);
+            qreal previous_diameter = 0.0, radius = 0.0, half_radius = 0.0, half_sqrt3_radius = 0.0;
             while (hex) {
-                radius = hex->diameter / 2.0;
+                if (previous_diameter != hex->diameter) {
+                    previous_diameter = hex->diameter;
+                    radius = 0.5 * previous_diameter;
+                    half_radius = 0.25 * previous_diameter;
+                    half_sqrt3_radius = 0.43301270189221932338 * previous_diameter;
+                }
 
                 QPainterPath pt;
-                pt.moveTo(hex->x, hex->y + (1.0 * radius));
-                pt.lineTo(hex->x + (0.86 * radius), hex->y + (0.5 * radius));
-                pt.lineTo(hex->x + (0.86 * radius), hex->y - (0.5 * radius));
-                pt.lineTo(hex->x, hex->y - (1.0 * radius));
-                pt.lineTo(hex->x - (0.86 * radius), hex->y - (0.5 * radius));
-                pt.lineTo(hex->x - (0.86 * radius), hex->y + (0.5 * radius));
-                pt.lineTo(hex->x, hex->y + (1.0 * radius));
-                painter.fillPath(pt, brush);
+                pt.moveTo(hex->x, hex->y + radius);
+                pt.lineTo(hex->x + half_sqrt3_radius, hex->y + half_radius);
+                pt.lineTo(hex->x + half_sqrt3_radius, hex->y - half_radius);
+                pt.lineTo(hex->x, hex->y - radius);
+                pt.lineTo(hex->x - half_sqrt3_radius, hex->y - half_radius);
+                pt.lineTo(hex->x - half_sqrt3_radius, hex->y + half_radius);
+                pt.lineTo(hex->x, hex->y + radius);
+                painter.fillPath(pt, fgBrush);
 
                 hex = hex->next;
             }
@@ -511,19 +516,25 @@ namespace Zint {
         if (circle) {
             painter.setRenderHint(QPainter::Antialiasing);
             QPen p;
+            QBrush fgBrush(m_fgColor);
+            qreal previous_diameter = 0.0, radius = 0.0;
             while (circle) {
+                if (previous_diameter != circle->diameter) {
+                    previous_diameter = circle->diameter;
+                    radius = 0.5 * previous_diameter;
+                }
                 if (circle->colour) { // Set means use background colour
                     p.setColor(m_bgColor);
                     p.setWidth(0);
                     painter.setPen(p);
-                    painter.setBrush(QBrush(m_bgColor));
+                    painter.setBrush(bgBrush);
                 } else {
                     p.setColor(m_fgColor);
                     p.setWidth(0);
                     painter.setPen(p);
-                    painter.setBrush(QBrush(m_fgColor));
+                    painter.setBrush(fgBrush);
                 }
-                painter.drawEllipse(QPointF(circle->x, circle->y), (double) circle->diameter / 2.0, (double) circle->diameter / 2.0);
+                painter.drawEllipse(QPointF(circle->x, circle->y), radius, radius);
                 circle = circle->next;
             }
         }

@@ -101,14 +101,14 @@ static char upc_check(char source[]) {
 
 /* UPC A is usually used for 12 digit numbers, but this function takes a source of any length */
 static void upca_draw(char source[], char dest[]) {
-    unsigned int i, half_way;
+    unsigned int i, half_way, length = strlen(source);
 
-    half_way = strlen(source) / 2;
+    half_way = length / 2;
 
     /* start character */
     strcat(dest, "111");
 
-    for (i = 0; i <= strlen(source); i++) {
+    for (i = 0; i < length; i++) {
         if (i == half_way) {
             /* middle character - separates manufacturer no. from product no. */
             /* also inverts right hand characters */
@@ -157,7 +157,7 @@ static int upca(struct zint_symbol *symbol, unsigned char source[], char dest[])
 
 /* UPC E is a zero-compressed version of UPC A */
 static int upce(struct zint_symbol *symbol, unsigned char source[], char dest[]) {
-    unsigned int i, num_system;
+    unsigned int i, num_system, length;
     char emode, equivalent[12], check_digit, parity[8], temp[9];
     char hrt[9];
     int error_number = 0;
@@ -285,7 +285,8 @@ static int upce(struct zint_symbol *symbol, unsigned char source[], char dest[])
     /* start character */
     strcat(dest, "111");
 
-    for (i = 0; i <= ustrlen(source); i++) {
+    length = ustrlen(source);
+    for (i = 0; i < length; i++) {
         switch (parity[i]) {
             case 'A': lookup(NEON, EANsetA, source[i], dest);
                 break;
@@ -321,7 +322,7 @@ static int upce(struct zint_symbol *symbol, unsigned char source[], char dest[])
 /* EAN-2 and EAN-5 add-on codes */
 static void add_on(unsigned char source[], char dest[], int addon_gap) {
     char parity[6];
-    unsigned int i, code_type;
+    unsigned int i, code_type, length;
 
     /* If an add-on then append with space */
     if (addon_gap != 0) {
@@ -363,7 +364,8 @@ static void add_on(unsigned char source[], char dest[], int addon_gap) {
         strcpy(parity, EAN5Parity[parity_bit]);
     }
 
-    for (i = 0; i < ustrlen(source); i++) {
+    length = ustrlen(source);
+    for (i = 0; i < length; i++) {
         switch (parity[i]) {
             case 'A': lookup(NEON, EANsetA, source[i], dest);
                 break;
@@ -441,7 +443,7 @@ static int ean13(struct zint_symbol *symbol, unsigned char source[], char dest[]
     /* start character */
     strcat(dest, "111");
     length = strlen(gtin);
-    for (i = 1; i <= length; i++) {
+    for (i = 1; i < length; i++) {
         if (i == half_way) {
             /* middle character - separates manufacturer no. from product no. */
             /* also inverses right hand characters */

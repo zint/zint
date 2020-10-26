@@ -166,7 +166,8 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
     int hexagon_count, this_hexagon;
     int string_count, this_text;
     int bytecount, recordcount;
-    float radius;
+    float previous_diameter;
+    float radius, half_radius, half_sqrt3_radius;
     int colours_used = 0;
     int rectangle_count_bycolour[9];
     unsigned char *this_string[6];
@@ -443,10 +444,14 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
     }
 
     //Circles
+    previous_diameter = radius = 0.0f;
     circ = symbol->vector->circles;
     this_circle = 0;
     while (circ) {
-        radius = circ->diameter / 2.0;
+        if (previous_diameter != circ->diameter) {
+            previous_diameter = circ->diameter;
+            radius = (float) (0.5 * previous_diameter);
+        }
         circle[this_circle].type = 0x0000002a; // EMR_ELLIPSE
         circle[this_circle].size = 24;
         circle[this_circle].box.top = circ->y - radius;
@@ -460,6 +465,7 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
     }
 
     //Hexagons
+    previous_diameter = radius = half_radius = half_sqrt3_radius = 0.0f;
     hex = symbol->vector->hexagons;
     this_hexagon = 0;
     while (hex) {
@@ -467,33 +473,38 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
         hexagon[this_hexagon].size = 76;
         hexagon[this_hexagon].count = 6;
 
-        radius = hex->diameter / 2.0;
+        if (previous_diameter != hex->diameter) {
+            previous_diameter = hex->diameter;
+            radius = (float) (0.5 * previous_diameter);
+            half_radius = (float) (0.25 * previous_diameter);
+            half_sqrt3_radius = (float) (0.43301270189221932338 * previous_diameter);
+        }
         if ((hex->rotation == 0) || (hex->rotation == 180)) {
-            ay = hex->y + (1.0 * radius);
-            by = hex->y + (0.5 * radius);
-            cy = hex->y - (0.5 * radius);
-            dy = hex->y - (1.0 * radius);
-            ey = hex->y - (0.5 * radius);
-            fy = hex->y + (0.5 * radius);
+            ay = hex->y + radius;
+            by = hex->y + half_radius;
+            cy = hex->y - half_radius;
+            dy = hex->y - radius;
+            ey = hex->y - half_radius;
+            fy = hex->y + half_radius;
             ax = hex->x;
-            bx = hex->x + (0.86 * radius);
-            cx = hex->x + (0.86 * radius);
+            bx = hex->x + half_sqrt3_radius;
+            cx = hex->x + half_sqrt3_radius;
             dx = hex->x;
-            ex = hex->x - (0.86 * radius);
-            fx = hex->x - (0.86 * radius);
+            ex = hex->x - half_sqrt3_radius;
+            fx = hex->x - half_sqrt3_radius;
         } else {
             ay = hex->y;
-            by = hex->y + (0.86 * radius);
-            cy = hex->y + (0.86 * radius);
+            by = hex->y + half_sqrt3_radius;
+            cy = hex->y + half_sqrt3_radius;
             dy = hex->y;
-            ey = hex->y - (0.86 * radius);
-            fy = hex->y - (0.86 * radius);
-            ax = hex->x - (1.0 * radius);
-            bx = hex->x - (0.5 * radius);
-            cx = hex->x + (0.5 * radius);
-            dx = hex->x + (1.0 * radius);
-            ex = hex->x + (0.5 * radius);
-            fx = hex->x - (0.5 * radius);
+            ey = hex->y - half_sqrt3_radius;
+            fy = hex->y - half_sqrt3_radius;
+            ax = hex->x - radius;
+            bx = hex->x - half_radius;
+            cx = hex->x + half_radius;
+            dx = hex->x + radius;
+            ex = hex->x + half_radius;
+            fx = hex->x - half_radius;
         }
 
         hexagon[this_hexagon].a_points_a.x = ax;

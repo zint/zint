@@ -100,35 +100,61 @@ ENDIF(APPLE)
 add_subdirectory(backend)
 add_subdirectory(frontend)
 
-find_package(Qt5Widgets)
-find_package(Qt5Gui)
-find_package(Qt5UiTools)
+if($ENV{CMAKE_PREFIX_PATH} MATCHES "6[.][0-9][.][0-9]")
+    set(USE_QT6 TRUE)
+    message(STATUS "Using Qt6")
+    cmake_policy(SET CMP0012 NEW) # Recognize constants in if()
+    cmake_policy(SET CMP0072 NEW) # Choose OpenGL over legacy GL
+    find_package(Qt6Widgets)
+    find_package(Qt6Gui)
+    find_package(Qt6UiTools)
 
-if (Qt5Widgets_FOUND)
-    if (Qt5Gui_FOUND)
-        if (Qt5UiTools_FOUND)
-            set( QT_USE_QTGUI   TRUE )
-            set( QT_USE_QTUITOOLS TRUE )
-            set( QT_USE_QTXML TRUE )
-            include_directories(
-                ${CMAKE_CURRENT_SOURCE_DIR}
-                ${Qt5Widgets_INCLUDES}
-                ${Qt5Gui_INCLUDES}
-                ${Qt5UiTools_INCLUDES}
-                ${CMAKE_CURRENT_BINARY_DIR}
-                )
-            add_subdirectory(backend_qt)
-            add_subdirectory(frontend_qt)
-        endif(Qt5UiTools_FOUND)
-    endif(Qt5Gui_FOUND)
-endif(Qt5Widgets_FOUND)
+    if(Qt6Widgets_FOUND AND Qt6Gui_FOUND AND Qt6UiTools_FOUND)
+        set(QT_USE_QTGUI TRUE)
+        set(QT_USE_QTUITOOLS TRUE)
+        set(QT_USE_QTXML TRUE)
+        include_directories(
+            ${CMAKE_CURRENT_SOURCE_DIR}
+            ${Qt6Widgets_INCLUDES}
+            ${Qt6Gui_INCLUDES}
+            ${Qt6UiTools_INCLUDES}
+            ${CMAKE_CURRENT_BINARY_DIR}
+            )
+        add_subdirectory(backend_qt)
+        add_subdirectory(frontend_qt)
+    else()
+        message(STATUS "Could NOT find Qt6")
+    endif()
+else()
+    message(STATUS "Using Qt5")
+    find_package(Qt5Widgets)
+    find_package(Qt5Gui)
+    find_package(Qt5UiTools)
 
-CONFIGURE_FILE(
+    if(Qt5Widgets_FOUND AND Qt5Gui_FOUND AND Qt5UiTools_FOUND)
+        set(QT_USE_QTGUI TRUE)
+        set(QT_USE_QTUITOOLS TRUE)
+        set(QT_USE_QTXML TRUE)
+        include_directories(
+            ${CMAKE_CURRENT_SOURCE_DIR}
+            ${Qt5Widgets_INCLUDES}
+            ${Qt5Gui_INCLUDES}
+            ${Qt5UiTools_INCLUDES}
+            ${CMAKE_CURRENT_BINARY_DIR}
+            )
+        add_subdirectory(backend_qt)
+        add_subdirectory(frontend_qt)
+    else()
+        message(STATUS "Could NOT find Qt5")
+    endif()
+endif()
+
+configure_file(
   "${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in"
   "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
   IMMEDIATE @ONLY)
 
-ADD_CUSTOM_TARGET(uninstall
+add_custom_target(uninstall
   "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake")
 
 # staniek: don't install 

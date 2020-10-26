@@ -1,5 +1,5 @@
---- ../../../../postscriptbarcode/build/monolithic/barcode.ps	2020-10-02 20:03:59.411955883 +0100
-+++ ../tools/bwipp_dump.ps	2020-10-03 01:47:30.454223200 +0100
+--- ../../../../postscriptbarcode/build/monolithic/barcode.ps	2020-10-26 01:13:25.080992540 +0000
++++ ../tools/bwipp_dump.ps	2020-10-26 11:19:21.268222231 +0000
 @@ -29,6 +29,8 @@
  % CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  % IN THE SOFTWARE.
@@ -9,7 +9,7 @@
  % --BEGIN TEMPLATE--
  
  % --BEGIN RESOURCE preamble--
-@@ -25404,34 +25406,80 @@
+@@ -24466,34 +24468,80 @@
          pop
      } ifelse
  
@@ -109,7 +109,7 @@
  
      end
  
-@@ -25490,7 +25538,7 @@
+@@ -24552,7 +24600,7 @@
          pop
      } ifelse
  
@@ -118,7 +118,7 @@
  
      % Get the result of encoding with ean8 and gs1-cc
      options (lintype) (ean8) put
-@@ -25498,29 +25546,75 @@
+@@ -24560,29 +24608,75 @@
      options (dontdraw) true put
  
      % Plot the linear part
@@ -214,7 +214,7 @@
  
      end
  
-@@ -25579,34 +25673,80 @@
+@@ -24641,34 +24735,80 @@
          pop
      } ifelse
  
@@ -314,7 +314,7 @@
  
      end
  
-@@ -25680,34 +25820,80 @@
+@@ -24742,34 +24882,80 @@
          /opt options
      >> def
  
@@ -414,7 +414,7 @@
  
      end
  
-@@ -25766,7 +25952,7 @@
+@@ -24828,7 +25014,7 @@
          pop
      } ifelse
  
@@ -423,7 +423,7 @@
  
      options (lintype) (databaromni) put
      options (linkage) true put
-@@ -25777,7 +25963,7 @@
+@@ -24839,7 +25025,7 @@
      linear options //databaromni exec
      dup (sbs) get /linsbs exch def
      dup (bhs) get 0 get 72 mul /linheight exch def
@@ -432,7 +432,7 @@
  
      % Plot the separator
      /sepfinder {
-@@ -25808,20 +25994,66 @@
+@@ -24870,20 +25056,66 @@
      sep 0 [0 0 0] putinterval
      sep sep length 4 sub [0 0 0 0] putinterval
      18 sepfinder 64 sepfinder
@@ -511,7 +511,7 @@
  
      end
  
-@@ -25879,7 +26111,7 @@
+@@ -24941,7 +25173,7 @@
          pop
      } ifelse
  
@@ -520,7 +520,7 @@
  
      options (lintype) (databarstacked) put
      options (linkage) true put
-@@ -25890,7 +26122,7 @@
+@@ -24952,7 +25184,7 @@
      linear options //databarstacked exec
      dup (pixs) get 0 2 index (pixx) get getinterval /bot exch def
      dup (pixy) get /linheight exch def
@@ -529,7 +529,7 @@
  
      % Plot the separator
      /sepfinder {
-@@ -25918,20 +26150,52 @@
+@@ -24980,20 +25212,52 @@
      sep 0 [ 0 0 0 0 ] putinterval
      sep sep length 4 sub [ 0 0 0 0 ] putinterval
      18 sepfinder
@@ -594,7 +594,7 @@
  
      end
  
-@@ -25989,7 +26253,7 @@
+@@ -25051,7 +25315,7 @@
          pop
      } ifelse
  
@@ -603,7 +603,7 @@
  
      options (lintype) (databarstackedomni) put
      options (linkage) true put
-@@ -26000,7 +26264,7 @@
+@@ -25062,7 +25326,7 @@
      linear options //databarstackedomni exec
      dup (pixs) get 0 2 index (pixx) get getinterval /bot exch def
      dup (pixy) get /linheight exch def
@@ -612,7 +612,7 @@
  
      % Plot the separator
      /sepfinder {
-@@ -26028,20 +26292,52 @@
+@@ -25090,20 +25354,52 @@
      sep 0 [ 0 0 0 0 ] putinterval
      sep sep length 4 sub [ 0 0 0 0 ] putinterval
      18 sepfinder
@@ -677,7 +677,7 @@
  
      end
  
-@@ -26214,7 +26510,7 @@
+@@ -25276,7 +25572,7 @@
          pop
      } ifelse
  
@@ -686,7 +686,7 @@
  
      options (lintype) (databarlimited) put
      options (linkage) true put
-@@ -26225,7 +26521,7 @@
+@@ -25287,7 +25583,7 @@
      linear options //databarlimited exec
      dup (sbs) get /linsbs exch def
      dup (bhs) get 0 get 72 mul /linheight exch def
@@ -695,7 +695,7 @@
  
      % Plot the separator
      mark
-@@ -26233,22 +26529,68 @@
+@@ -25295,22 +25591,68 @@
      counttomark 1 sub array astore /sep exch def pop pop
      sep 0 [0 0 0] putinterval
      sep sep length 9 sub [0 0 0 0 0 0 0 0 0] putinterval % 4 + 5 right guard spaces
@@ -778,7 +778,7 @@
  
      end
  
-@@ -26307,7 +26649,7 @@
+@@ -25369,7 +25711,7 @@
          pop
      } ifelse
  
@@ -787,7 +787,7 @@
  
      options (lintype) (databarexpanded) put
      options (linkage) true put
-@@ -26318,7 +26660,7 @@
+@@ -25380,7 +25722,7 @@
      linear options //databarexpanded exec
      dup (sbs) get /linsbs exch def
      dup (bhs) get 0 get 72 mul /linheight exch def
@@ -796,7 +796,7 @@
  
      % Plot the separator
      /sepfinder {
-@@ -26347,20 +26689,60 @@
+@@ -25409,20 +25751,60 @@
          18 98 bot length 13 sub {} for
          69 98 bot length 13 sub {} for
      ] {sepfinder} forall
@@ -869,7 +869,7 @@
  
      end
  
-@@ -26418,7 +26800,7 @@
+@@ -25480,7 +25862,7 @@
          pop
      } ifelse
  
@@ -878,7 +878,7 @@
  
      options (lintype) (databarexpandedstacked) put
      options (linkage) true put
-@@ -26429,7 +26811,7 @@
+@@ -25491,7 +25873,7 @@
      linear options //databarexpandedstacked exec
      dup (pixs) get 0 2 index (pixx) get getinterval /bot exch def
      dup (pixy) get /linheight exch def
@@ -887,14 +887,7 @@
  
      % Plot the separator
      /sepfinder {
-@@ -26449,27 +26831,55 @@
-         } for
-     } bind def
-     /sep [ bot {1 exch sub} forall ] def
--    sep 0 [ 0 0 0 ] putinterval
-+    sep 0 [ 0 0 0 0 ] putinterval
-     sep sep length 4 sub [ 0 0 0 0 ] putinterval
-     [  % Finder pattern module positions
+@@ -25517,21 +25899,49 @@
          19 98 bot length 13 sub {} for
          70 98 bot length 13 sub {} for
      ] {sepfinder} forall
@@ -957,7 +950,7 @@
  
      end
  
-@@ -26528,7 +26938,7 @@
+@@ -25590,7 +26000,7 @@
          pop
      } ifelse
  
@@ -966,7 +959,7 @@
  
      options (inkspread) (0) put
      options (dontdraw) true put
-@@ -26555,35 +26965,87 @@
+@@ -25617,35 +26027,87 @@
      linear << options {} forall >> //gs1-128 exec
      dup (sbs) get /linsbs exch def
      dup (bhs) get 0 get 72 mul /linheight exch def
@@ -1068,7 +1061,7 @@
  
      end
  
-@@ -27881,3 +28343,176 @@
+@@ -26919,3 +27381,176 @@
  % --END ENCODER hibcazteccode--
  
  % --END TEMPLATE--

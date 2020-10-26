@@ -64,9 +64,10 @@ INTERNAL void bin_append_posn(const int arg, const int length, char *binary, siz
     start = 0x01 << (length - 1);
 
     for (i = 0; i < length; i++) {
-        binary[posn + i] = '0';
         if (arg & (start >> i)) {
             binary[posn + i] = '1';
+        } else {
+            binary[posn + i] = '0';
         }
     }
 }
@@ -114,18 +115,19 @@ INTERNAL int is_sane(const char test_string[], const unsigned char source[], con
 
 /* Replaces huge switch statements for looking up in tables */
 INTERNAL void lookup(const char set_string[], const char *table[], const char data, char dest[]) {
-    size_t i, n = strlen(set_string);
+    int i, n = (int) strlen(set_string);
 
     for (i = 0; i < n; i++) {
         if (data == set_string[i]) {
             strcat(dest, table[i]);
+            break;
         }
     }
 }
 
 /* Returns the position of data in set_string */
 INTERNAL int posn(const char set_string[], const char data) {
-    int i, n = (int)strlen(set_string);
+    int i, n = (int) strlen(set_string);
 
     for (i = 0; i < n; i++) {
         if (data == set_string[i]) {
@@ -162,22 +164,23 @@ INTERNAL void unset_module(struct zint_symbol *symbol, const int y_coord, const 
 /* Expands from a width pattern to a bit pattern */
 INTERNAL void expand(struct zint_symbol *symbol, const char data[]) {
 
-    size_t reader, n = strlen(data);
+    int reader, n = (int) strlen(data);
     int writer, i;
-    char latch;
+    int latch, num;
 
     writer = 0;
-    latch = '1';
+    latch = 1;
 
     for (reader = 0; reader < n; reader++) {
-        for (i = 0; i < ctoi(data[reader]); i++) {
-            if (latch == '1') {
+        num = ctoi(data[reader]);
+        for (i = 0; i < num; i++) {
+            if (latch) {
                 set_module(symbol, symbol->rows, writer);
             }
             writer++;
         }
 
-        latch = (latch == '1' ? '0' : '1');
+        latch = !latch;
     }
 
     if (symbol->symbology != BARCODE_PHARMA) {

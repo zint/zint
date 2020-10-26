@@ -139,7 +139,8 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
     float cyan_paper, magenta_paper, yellow_paper, black_paper;
     int error_number = 0;
     float ax, ay, bx, by, cx, cy, dx, dy, ex, ey, fx, fy;
-    float radius;
+    float previous_diameter;
+    float radius, half_radius, half_sqrt3_radius;
     int colour_index, colour_rect_counter;
     char ps_color[30];
     int draw_background = 1;
@@ -180,58 +181,58 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
     bgred = (16 * ctoi(symbol->bgcolour[0])) + ctoi(symbol->bgcolour[1]);
     bggrn = (16 * ctoi(symbol->bgcolour[2])) + ctoi(symbol->bgcolour[3]);
     bgblu = (16 * ctoi(symbol->bgcolour[4])) + ctoi(symbol->bgcolour[5]);
-    red_ink = fgred / 256.0;
-    green_ink = fggrn / 256.0;
-    blue_ink = fgblu / 256.0;
-    red_paper = bgred / 256.0;
-    green_paper = bggrn / 256.0;
-    blue_paper = bgblu / 256.0;
+    red_ink = (float) (fgred / 256.0);
+    green_ink = (float) (fggrn / 256.0);
+    blue_ink = (float) (fgblu / 256.0);
+    red_paper = (float) (bgred / 256.0);
+    green_paper = (float) (bggrn / 256.0);
+    blue_paper = (float) (bgblu / 256.0);
 
     /* Convert RGB to CMYK */
     if (red_ink > green_ink) {
         if (blue_ink > red_ink) {
-            black_ink = 1 - blue_ink;
+            black_ink = 1.0f - blue_ink;
         } else {
-            black_ink = 1 - red_ink;
+            black_ink = 1.0f - red_ink;
         }
     } else {
         if (blue_ink > red_ink) {
-            black_ink = 1 - blue_ink;
+            black_ink = 1.0f - blue_ink;
         } else {
-            black_ink = 1 - green_ink;
+            black_ink = 1.0f - green_ink;
         }
     }
-    if (black_ink < 1.0) {
-        cyan_ink = (1 - red_ink - black_ink) / (1 - black_ink);
-        magenta_ink = (1 - green_ink - black_ink) / (1 - black_ink);
-        yellow_ink = (1 - blue_ink - black_ink) / (1 - black_ink);
+    if (black_ink < 1.0f) {
+        cyan_ink = (1.0f - red_ink - black_ink) / (1.0f - black_ink);
+        magenta_ink = (1.0f - green_ink - black_ink) / (1.0f - black_ink);
+        yellow_ink = (1.0f - blue_ink - black_ink) / (1.0f - black_ink);
     } else {
-        cyan_ink = 0.0;
-        magenta_ink = 0.0;
-        yellow_ink = 0.0;
+        cyan_ink = 0.0f;
+        magenta_ink = 0.0f;
+        yellow_ink = 0.0f;
     }
 
     if (red_paper > green_paper) {
         if (blue_paper > red_paper) {
-            black_paper = 1 - blue_paper;
+            black_paper = 1.0f - blue_paper;
         } else {
-            black_paper = 1 - red_paper;
+            black_paper = 1.0f - red_paper;
         }
     } else {
         if (blue_paper > red_paper) {
-            black_paper = 1 - blue_paper;
+            black_paper = 1.0f - blue_paper;
         } else {
-            black_paper = 1 - green_paper;
+            black_paper = 1.0f - green_paper;
         }
     }
-    if (black_paper < 1.0) {
-        cyan_paper = (1 - red_paper - black_paper) / (1 - black_paper);
-        magenta_paper = (1 - green_paper - black_paper) / (1 - black_paper);
-        yellow_paper = (1 - blue_paper - black_paper) / (1 - black_paper);
+    if (black_paper < 1.0f) {
+        cyan_paper = (1.0f - red_paper - black_paper) / (1.0f - black_paper);
+        magenta_paper = (1.0f - green_paper - black_paper) / (1.0f - black_paper);
+        yellow_paper = (1.0f - blue_paper - black_paper) / (1.0f - black_paper);
     } else {
-        cyan_paper = 0.0;
-        magenta_paper = 0.0;
-        yellow_paper = 0.0;
+        cyan_paper = 0.0f;
+        magenta_paper = 0.0f;
+        yellow_paper = 0.0f;
     }
 
     for (i = 0, len = (int) ustrlen(symbol->text); i < len; i++) {
@@ -329,43 +330,54 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
     }
 
     // Hexagons
+    previous_diameter = radius = half_radius = half_sqrt3_radius = 0.0f;
     hex = symbol->vector->hexagons;
     while (hex) {
-        radius = hex->diameter / 2.0;
+        if (previous_diameter != hex->diameter) {
+            previous_diameter = hex->diameter;
+            radius = (float) (0.5 * previous_diameter);
+            half_radius = (float) (0.25 * previous_diameter);
+            half_sqrt3_radius = (float) (0.43301270189221932338 * previous_diameter);
+        }
         if ((hex->rotation == 0) || (hex->rotation == 180)) {
-            ay = (symbol->vector->height - hex->y) + (1.0 * radius);
-            by = (symbol->vector->height - hex->y) + (0.5 * radius);
-            cy = (symbol->vector->height - hex->y) - (0.5 * radius);
-            dy = (symbol->vector->height - hex->y) - (1.0 * radius);
-            ey = (symbol->vector->height - hex->y) - (0.5 * radius);
-            fy = (symbol->vector->height - hex->y) + (0.5 * radius);
+            ay = (symbol->vector->height - hex->y) + radius;
+            by = (symbol->vector->height - hex->y) + half_radius;
+            cy = (symbol->vector->height - hex->y) - half_radius;
+            dy = (symbol->vector->height - hex->y) - radius;
+            ey = (symbol->vector->height - hex->y) - half_radius;
+            fy = (symbol->vector->height - hex->y) + half_radius;
             ax = hex->x;
-            bx = hex->x + (0.86 * radius);
-            cx = hex->x + (0.86 * radius);
+            bx = hex->x + half_sqrt3_radius;
+            cx = hex->x + half_sqrt3_radius;
             dx = hex->x;
-            ex = hex->x - (0.86 * radius);
-            fx = hex->x - (0.86 * radius);
+            ex = hex->x - half_sqrt3_radius;
+            fx = hex->x - half_sqrt3_radius;
         } else {
             ay = (symbol->vector->height - hex->y);
-            by = (symbol->vector->height - hex->y) + (0.86 * radius);
-            cy = (symbol->vector->height - hex->y) + (0.86 * radius);
+            by = (symbol->vector->height - hex->y) + half_sqrt3_radius;
+            cy = (symbol->vector->height - hex->y) + half_sqrt3_radius;
             dy = (symbol->vector->height - hex->y);
-            ey = (symbol->vector->height - hex->y) - (0.86 * radius);
-            fy = (symbol->vector->height - hex->y) - (0.86 * radius);
-            ax = hex->x - (1.0 * radius);
-            bx = hex->x - (0.5 * radius);
-            cx = hex->x + (0.5 * radius);
-            dx = hex->x + (1.0 * radius);
-            ex = hex->x + (0.5 * radius);
-            fx = hex->x - (0.5 * radius);
+            ey = (symbol->vector->height - hex->y) - half_sqrt3_radius;
+            fy = (symbol->vector->height - hex->y) - half_sqrt3_radius;
+            ax = hex->x - radius;
+            bx = hex->x - half_radius;
+            cx = hex->x + half_radius;
+            dx = hex->x + radius;
+            ex = hex->x + half_radius;
+            fx = hex->x - half_radius;
         }
         fprintf(feps, "%.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f TH\n", ax, ay, bx, by, cx, cy, dx, dy, ex, ey, fx, fy);
         hex = hex->next;
     }
 
     // Circles
+    previous_diameter = radius = 0.0f;
     circle = symbol->vector->circles;
     while (circle) {
+        if (previous_diameter != circle->diameter) {
+            previous_diameter = circle->diameter;
+            radius = (float) (0.5 * previous_diameter);
+        }
         if (circle->colour) {
             // A 'white' circle
             if ((symbol->output_options & CMYK_COLOUR) == 0) {
@@ -373,7 +385,7 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
             } else {
                 fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n", cyan_paper, magenta_paper, yellow_paper, black_paper);
             }
-            fprintf(feps, "%.2f %.2f %.2f TD\n", circle->x, (symbol->vector->height - circle->y), circle->diameter / 2.0);
+            fprintf(feps, "%.2f %.2f %.2f TD\n", circle->x, (symbol->vector->height - circle->y), radius);
             if (circle->next) {
                 if ((symbol->output_options & CMYK_COLOUR) == 0) {
                     fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
@@ -383,7 +395,7 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
             }
         } else {
             // A 'black' circle
-            fprintf(feps, "%.2f %.2f %.2f TD\n", circle->x, (symbol->vector->height - circle->y), circle->diameter / 2.0);
+            fprintf(feps, "%.2f %.2f %.2f TD\n", circle->x, (symbol->vector->height - circle->y), radius);
         }
         circle = circle->next;
     }

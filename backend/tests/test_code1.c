@@ -234,7 +234,7 @@ static void test_encode(int index, int generate, int debug) {
                 ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
                 assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, ret, width, row, data[i].data);
 
-                if (do_bwipp && testUtilCanBwipp(symbol->symbology, -1, data[i].option_2, -1, debug)) {
+                if (do_bwipp && testUtilCanBwipp(i, symbol, -1, data[i].option_2, -1, debug)) {
                     ret = testUtilBwipp(i, symbol, -1, data[i].option_2, -1, data[i].data, length, NULL, bwipp_buf, sizeof(bwipp_buf));
                     assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
 

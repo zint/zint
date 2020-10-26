@@ -1265,7 +1265,7 @@ static void test_examples(int index, int generate, int debug) {
             ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
             assert_zero(ret, "i:%d %s testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), ret, width, row, data[i].data);
 
-            if (do_bwipp && testUtilCanBwipp(symbol->symbology, data[i].option_1, -1, -1, debug)) {
+            if (do_bwipp && testUtilCanBwipp(i, symbol, data[i].option_1, -1, -1, debug)) {
                 ret = testUtilBwipp(i, symbol, data[i].option_1, -1, -1, data[i].composite, composite_length, symbol->primary, bwipp_buf, sizeof(bwipp_buf));
                 assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
 
@@ -1431,7 +1431,7 @@ static void test_odd_numbered_numeric(int index, int generate, int debug) {
             ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
             assert_zero(ret, "i:%d %s testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), ret, width, row, data[i].data);
 
-            if (do_bwipp && testUtilCanBwipp(symbol->symbology, data[i].option_1, -1, -1, debug)) {
+            if (do_bwipp && testUtilCanBwipp(i, symbol, data[i].option_1, -1, -1, debug)) {
                 ret = testUtilBwipp(i, symbol, data[i].option_1, -1, -1, data[i].composite, composite_length, symbol->primary, bwipp_buf, sizeof(bwipp_buf));
                 assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
 
@@ -1561,7 +1561,7 @@ static void test_ean128_cc_shift(int index, int generate, int debug) {
             ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
             assert_zero(ret, "i:%d %s testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), ret, width, row, data[i].data);
 
-            if (do_bwipp && testUtilCanBwipp(symbol->symbology, data[i].option_1, -1, -1, debug)) {
+            if (do_bwipp && testUtilCanBwipp(i, symbol, data[i].option_1, -1, -1, debug)) {
                 if (!data[i].bwipp_cmp) {
                     if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not BWIPP compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
                 } else {
@@ -2112,7 +2112,7 @@ static void test_encodation_0(int index, int generate, int debug) {
             ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
             assert_zero(ret, "i:%d %s testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), ret, width, row, data[i].data);
 
-            if (do_bwipp && testUtilCanBwipp(symbol->symbology, data[i].option_1, -1, -1, debug)) {
+            if (do_bwipp && testUtilCanBwipp(i, symbol, data[i].option_1, -1, -1, debug)) {
                 ret = testUtilBwipp(i, symbol, data[i].option_1, -1, -1, data[i].composite, composite_length, symbol->primary, bwipp_buf, sizeof(bwipp_buf));
                 assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
 
@@ -2251,7 +2251,7 @@ static void test_encodation_10(int index, int generate, int debug) {
             ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
             assert_zero(ret, "i:%d %s testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), ret, width, row, data[i].data);
 
-            if (do_bwipp && testUtilCanBwipp(symbol->symbology, data[i].option_1, -1, -1, debug)) {
+            if (do_bwipp && testUtilCanBwipp(i, symbol, data[i].option_1, -1, -1, debug)) {
                 ret = testUtilBwipp(i, symbol, data[i].option_1, -1, -1, data[i].composite, composite_length, symbol->primary, bwipp_buf, sizeof(bwipp_buf));
                 assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
 
@@ -2633,7 +2633,7 @@ static void test_encodation_11(int index, int generate, int debug) {
                 ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
                 assert_zero(ret, "i:%d %s testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), ret, width, row, data[i].data);
 
-                if (do_bwipp && testUtilCanBwipp(symbol->symbology, data[i].option_1, -1, -1, debug)) {
+                if (do_bwipp && testUtilCanBwipp(i, symbol, data[i].option_1, -1, -1, debug)) {
                     ret = testUtilBwipp(i, symbol, data[i].option_1, -1, -1, data[i].composite, composite_length, symbol->primary, bwipp_buf, sizeof(bwipp_buf));
                     assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
 
@@ -2786,7 +2786,7 @@ static void test_addongap(int index, int generate, int debug) {
             ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
             assert_zero(ret, "i:%d %s testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), ret, width, row, data[i].data);
 
-            if (do_bwipp && testUtilCanBwipp(symbol->symbology, data[i].option_1, data[i].option_2, -1, debug)) {
+            if (do_bwipp && testUtilCanBwipp(i, symbol, data[i].option_1, data[i].option_2, -1, debug)) {
                 ret = testUtilBwipp(i, symbol, data[i].option_1, data[i].option_2, -1, composite, composite_length, symbol->primary, bwipp_buf, sizeof(bwipp_buf));
                 assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
 

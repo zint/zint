@@ -22,11 +22,11 @@ able to encode data in over 50 barcode symbologies (types of barcode), for each
 of which it is possible to translate that data from either Unicode (UTF-8) or a
 raw 8-bit data stream. The image can be rendered as either a Portable Network
 Graphic (PNG) image, Windows Bitmap (BMP), Graphics Interchange Format (GIF),
-ZSoft Paintbrush image (PCX), as Encapsulated Post Script (EPS) or as a
-Scalable Vector Graphic (SVG). Many options are available for setting the
-characteristics of the output image including the size and colour of the image,
-the amount of error correction used in the symbol and, in the case of raster
-images, the orientation of the image.
+ZSoft Paintbrush image (PCX), Tagged Image File Format (TIF), Enhanced Metafile
+Format (EMF), as Encapsulated Post Script (EPS), or as a Scalable Vector Graphic
+(SVG). Many options are available for setting the characteristics of the output
+image including the size and colour of the image, the amount of error correction
+used in the symbol and the orientation of the image.
 
 1.1 Terms of Reference
 ----------------------
@@ -388,8 +388,8 @@ zint --box --border=10 -d "This"
 
 gives a box with a width 10 times the X-dimension of the symbol.
 
-These options are ignored for Code 16k and Codablock-F. Special considerations
-apply to ITF-14 - see the specific section for that symbology.
+These options are ignored for Code 16k, Code 49 and Codablock-F. Special
+considerations apply to ITF-14 - see the specific section for that symbology.
 
 4.7 Using colour
 ----------------
@@ -433,8 +433,7 @@ PNG, GIF, SVG, EMF and EPS files.
 4.8 Rotating the Symbol
 -----------------------
 The symbol can be rotated through four orientations using the --rotate= option
-followed by the angle of rotation as shown below. This option does not (yet)
-apply to EMF file output.
+followed by the angle of rotation as shown below.
 
 --rotate=0 (default)
 --rotate=90
@@ -627,6 +626,7 @@ supported output file formats are shown in the following table:
 Abbreviation |  File format
 --------------------------------------------------------------
 BMP          |  Windows Bitmap
+EMF          |  Enhanced Metafile Format
 EPS          |  Encapsulated PostScript
 GIF          |  Graphics Interchange Format
 PCX          |  ZSoft Paintbrush image
@@ -790,8 +790,8 @@ string. This allows the encoding of NUL (ASCII 0) characters in those
 symbologies which allow this. A value of 0 will disable this function and Zint
 will encode data up to the first NUL character in the input string.
 
-The "rotate_angle" value can be used to rotate the image when outputting as a
-raster image. Valid values are 0, 90, 180 and 270.
+The "rotate_angle" value can be used to rotate the image when outputting. Valid
+values are 0, 90, 180 and 270.
 
 The ZBarcode_Encode_File() and ZBarcode_Encode_File_and_Print() functions can
 be used to encode data read directly from a text file where the filename is
@@ -816,10 +816,10 @@ saving the image to file it is placed in an unsigned character array. The
 "bitmap" pointer is set to the first memory location in the array and the values
 "barcode_width" and "barcode_height" indicate the size of the resulting image
 in pixels. Rotation and colour options can be used at the same time as using
-the buffer functions in the same way as when saving to a raster image. The
-pixel data can be extracted from the array by the method shown in the example
-below where render_pixel() is assumed to be a function for drawing a pixel on
-the screen implemented by the external application:
+the buffer functions in the same way as when saving to a file. The pixel data
+can be extracted from the array by the method shown in the example below where
+render_pixel() is assumed to be a function for drawing a pixel on the screen
+implemented by the external application:
 
 int row, col, i = 0;
 int red, blue, green;
@@ -2377,7 +2377,7 @@ Input  |  Symbol Size
 24     |  101 x 101
 25     |  105 x 105
 26     |  109 x 109
-28     |  113 x 113
+27     |  113 x 113
 28     |  117 x 117
 29     |  121 x 121
 30     |  125 x 125

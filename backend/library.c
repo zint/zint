@@ -48,12 +48,6 @@ struct zint_symbol *ZBarcode_Create() {
 
     memset(symbol, 0, sizeof (*symbol));
     symbol->symbology = BARCODE_CODE128;
-    symbol->height = 0;
-    symbol->whitespace_width = 0;
-    symbol->border_width = 0;
-    symbol->output_options = 0;
-    symbol->rows = 0;
-    symbol->width = 0;
     strcpy(symbol->fgcolour, "000000");
     symbol->fgcolor = &symbol->fgcolour[0];
     strcpy(symbol->bgcolour, "ffffff");
@@ -61,19 +55,14 @@ struct zint_symbol *ZBarcode_Create() {
     strcpy(symbol->outfile, "out.png");
     symbol->scale = 1.0f;
     symbol->option_1 = -1;
-    symbol->option_2 = 0;
-    symbol->option_3 = 0;
     symbol->show_hrt = 1; // Show human readable text
     symbol->fontsize = 8;
     symbol->input_mode = DATA_MODE;
     symbol->bitmap = NULL;
-    symbol->bitmap_width = 0;
-    symbol->bitmap_height = 0;
     symbol->alphamap = NULL;
     symbol->eci = 0; // Default 0 uses ECI 3
     symbol->dot_size = 4.0f / 5.0f;
     symbol->vector = NULL;
-    symbol->debug = 0;
     symbol->warn_level = WARN_DEFAULT;
     return symbol;
 }
@@ -786,9 +775,9 @@ int ZBarcode_ValidID(int symbol_id) {
     return result;
 }
 
-static int reduced_charset(struct zint_symbol *symbol, const unsigned char *source, size_t in_length);
+static int reduced_charset(struct zint_symbol *symbol, unsigned char *source, size_t in_length);
 
-static int extended_or_reduced_charset(struct zint_symbol *symbol, const unsigned char *source, const int length) {
+static int extended_or_reduced_charset(struct zint_symbol *symbol, unsigned char *source, const int length) {
     int error_number = 0;
 
     switch (symbol->symbology) {
@@ -812,30 +801,25 @@ static int extended_or_reduced_charset(struct zint_symbol *symbol, const unsigne
     return error_number;
 }
 
-static int reduced_charset(struct zint_symbol *symbol, const unsigned char *source, size_t in_length) {
+static int reduced_charset(struct zint_symbol *symbol, unsigned char *source, size_t in_length) {
     /* These are the "norm" standards which only support Latin-1 at most, though a few support ECI */
     int error_number = 0;
+    unsigned char *preprocessed = source;
 
 #ifndef _MSC_VER
-    unsigned char preprocessed[in_length + 1];
+    unsigned char preprocessed_buf[in_length + 1];
 #else
-    unsigned char* preprocessed = (unsigned char*) _alloca(in_length + 1);
+    unsigned char *preprocessed_buf = (unsigned char *) _alloca(in_length + 1);
 #endif
 
-    switch (symbol->input_mode & 0x07) {
-        case DATA_MODE:
-        case GS1_MODE:
-            memcpy(preprocessed, source, in_length);
-            preprocessed[in_length] = '\0';
-            break;
-        case UNICODE_MODE:
-            /* Prior check ensures ECI only set for those that support it */
-            error_number = utf_to_eci(symbol->eci && symbol->eci <= 899 ? symbol->eci : 3, source, preprocessed, &in_length);
-            if (error_number != 0) {
-                strcpy(symbol->errtxt, "204: Invalid characters in input data");
-                return error_number;
-            }
-            break;
+    if ((symbol->input_mode & 0x07) == UNICODE_MODE) {
+        /* Prior check ensures ECI only set for those that support it */
+        preprocessed = preprocessed_buf;
+        error_number = utf_to_eci(symbol->eci && symbol->eci <= 899 ? symbol->eci : 3, source, preprocessed, &in_length);
+        if (error_number != 0) {
+            strcpy(symbol->errtxt, "204: Invalid characters in input data");
+            return error_number;
+        }
     }
 
     if ((symbol->height == 0) && is_linear(symbol->symbology)) {
@@ -1197,22 +1181,16 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
             symbol->symbology = BARCODE_CODE128;
             error_number = ZINT_WARN_INVALID_OPTION;
         }
-    }
-
     /* symbol->symbologys 1 to 86 are defined by tbarcode */
-    if (symbol->symbology == 5) {
+    } else if (symbol->symbology == 5) {
         symbol->symbology = BARCODE_C25STANDARD;
-    }
-    if ((symbol->symbology >= 10) && (symbol->symbology <= 12)) {
+    } else if ((symbol->symbology >= 10) && (symbol->symbology <= 12)) {
         symbol->symbology = BARCODE_EANX;
-    }
-    if (symbol->symbology == 15) {
+    } else if (symbol->symbology == 15) {
         symbol->symbology = BARCODE_EANX;
-    }
-    if (symbol->symbology == 17) {
+    } else if (symbol->symbology == 17) {
         symbol->symbology = BARCODE_UPCA;
-    }
-    if (symbol->symbology == 19) {
+    } else if (symbol->symbology == 19) {
         strcpy(symbol->errtxt, "207: Codabar 18 not supported");
         if (symbol->warn_level == WARN_FAIL_ALL) {
             return WARN_FAIL_ALL;
@@ -1220,30 +1198,22 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
             symbol->symbology = BARCODE_CODABAR;
             error_number = ZINT_WARN_INVALID_OPTION;
         }
-    }
-    if (symbol->symbology == 26) {
+    } else if (symbol->symbology == 26) {
         symbol->symbology = BARCODE_UPCA;
-    }
-    if (symbol->symbology == 27) {
+    } else if (symbol->symbology == 27) {
         strcpy(symbol->errtxt, "208: UPCD1 not supported");
         error_number = ZINT_ERROR_INVALID_OPTION;
-    }
-    if (symbol->symbology == 33) {
+    } else if (symbol->symbology == 33) {
         symbol->symbology = BARCODE_GS1_128;
-    }
-    if (symbol->symbology == 36) {
+    } else if (symbol->symbology == 36) {
         symbol->symbology = BARCODE_UPCA;
-    }
-    if ((symbol->symbology >= 41) && (symbol->symbology <= 45)) {
+    } else if ((symbol->symbology >= 41) && (symbol->symbology <= 45)) {
         symbol->symbology = BARCODE_POSTNET;
-    }
-    if (symbol->symbology == 46) {
+    } else if (symbol->symbology == 46) {
         symbol->symbology = BARCODE_PLESSEY;
-    }
-    if (symbol->symbology == 48) {
+    } else if (symbol->symbology == 48) {
         symbol->symbology = BARCODE_NVE18;
-    }
-    if (symbol->symbology == 54) {
+    } else if (symbol->symbology == 54) {
         strcpy(symbol->errtxt, "210: General Parcel Code not supported");
         if (symbol->warn_level == WARN_FAIL_ALL) {
             return ZINT_ERROR_INVALID_OPTION;
@@ -1251,26 +1221,19 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
             symbol->symbology = BARCODE_CODE128;
             error_number = ZINT_WARN_INVALID_OPTION;
         }
-    }
-    if ((symbol->symbology == 59) || (symbol->symbology == 61)) {
+    } else if ((symbol->symbology == 59) || (symbol->symbology == 61)) {
         symbol->symbology = BARCODE_CODE128;
-    }
-    if (symbol->symbology == 62) {
+    } else if (symbol->symbology == 62) {
         symbol->symbology = BARCODE_CODE93;
-    }
-    if ((symbol->symbology == 64) || (symbol->symbology == 65)) {
+    } else if ((symbol->symbology == 64) || (symbol->symbology == 65)) {
         symbol->symbology = BARCODE_AUSPOST;
-    }
-    if (symbol->symbology == 78) {
+    } else if (symbol->symbology == 78) {
         symbol->symbology = BARCODE_DBAR_OMN;
-    }
-    if (symbol->symbology == 83) {
+    } else if (symbol->symbology == 83) {
         symbol->symbology = BARCODE_PLANET;
-    }
-    if (symbol->symbology == 88) {
+    } else if (symbol->symbology == 88) {
         symbol->symbology = BARCODE_GS1_128;
-    }
-    if (symbol->symbology == 91) {
+    } else if (symbol->symbology == 91) {
         strcpy(symbol->errtxt, "212: Symbology out of range");
         if (symbol->warn_level == WARN_FAIL_ALL) {
             return ZINT_ERROR_INVALID_OPTION;
@@ -1278,8 +1241,7 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
             symbol->symbology = BARCODE_CODE128;
             error_number = ZINT_WARN_INVALID_OPTION;
         }
-    }
-    if ((symbol->symbology >= 94) && (symbol->symbology <= 95)) {
+    } else if ((symbol->symbology >= 94) && (symbol->symbology <= 95)) {
         strcpy(symbol->errtxt, "213: Symbology out of range");
         if (symbol->warn_level == WARN_FAIL_ALL) {
             return ZINT_ERROR_INVALID_OPTION;
@@ -1287,29 +1249,21 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
             symbol->symbology = BARCODE_CODE128;
             error_number = ZINT_WARN_INVALID_OPTION;
         }
-    }
-    if (symbol->symbology == 100) {
+    } else if (symbol->symbology == 100) {
         symbol->symbology = BARCODE_HIBC_128;
-    }
-    if (symbol->symbology == 101) {
+    } else if (symbol->symbology == 101) {
         symbol->symbology = BARCODE_HIBC_39;
-    }
-    if (symbol->symbology == 103) {
+    } else if (symbol->symbology == 103) {
         symbol->symbology = BARCODE_HIBC_DM;
-    }
-    if (symbol->symbology == 105) {
+    } else if (symbol->symbology == 105) {
         symbol->symbology = BARCODE_HIBC_QR;
-    }
-    if (symbol->symbology == 107) {
+    } else if (symbol->symbology == 107) {
         symbol->symbology = BARCODE_HIBC_PDF;
-    }
-    if (symbol->symbology == 109) {
+    } else if (symbol->symbology == 109) {
         symbol->symbology = BARCODE_HIBC_MICPDF;
-    }
-    if (symbol->symbology == 111) {
+    } else if (symbol->symbology == 111) {
         symbol->symbology = BARCODE_HIBC_BLOCKF;
-    }
-    if ((symbol->symbology == 113) || (symbol->symbology == 114)) {
+    } else if ((symbol->symbology == 113) || (symbol->symbology == 114)) {
         strcpy(symbol->errtxt, "214: Symbology out of range");
         if (symbol->warn_level == WARN_FAIL_ALL) {
             return ZINT_ERROR_INVALID_OPTION;
@@ -1317,11 +1271,9 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
             symbol->symbology = BARCODE_CODE128;
             error_number = ZINT_WARN_INVALID_OPTION;
         }
-    }
-    if (symbol->symbology == 115) {
+    } else if (symbol->symbology == 115) {
         symbol->symbology = BARCODE_DOTCODE;
-    }
-    if ((symbol->symbology >= 117) && (symbol->symbology <= 127)) {
+    } else if ((symbol->symbology >= 117) && (symbol->symbology <= 127)) {
         if (symbol->symbology != 121) {
             strcpy(symbol->errtxt, "215: Symbology out of range");
             if (symbol->warn_level == WARN_FAIL_ALL) {
@@ -1331,9 +1283,8 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
                 error_number = ZINT_WARN_INVALID_OPTION;
             }
         }
-    }
     /* Everything from 128 up is Zint-specific */
-    if (symbol->symbology > 145) {
+    } else if (symbol->symbology > 145) {
         strcpy(symbol->errtxt, "216: Symbology out of range");
         if (symbol->warn_level == WARN_FAIL_ALL) {
             return ZINT_ERROR_INVALID_OPTION;

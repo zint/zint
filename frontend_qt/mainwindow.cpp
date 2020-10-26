@@ -286,10 +286,10 @@ bool MainWindow::save()
 
 #ifdef NO_PNG
     suffix = settings.value("studio/default_suffix", "gif").toString();
-    save_dialog.setNameFilter(tr("Encapsulated PostScript (*.eps);;Graphics Interchange Format (*.gif);;Scalable Vector Graphic (*.svg);;Windows Bitmap (*.bmp);;ZSoft PC Painter Image (*.pcx);;Extended Metafile (*.emf);;Tagged Image File Format (*.tif)"));
+    save_dialog.setNameFilter(tr("Encapsulated PostScript (*.eps);;Graphics Interchange Format (*.gif);;Scalable Vector Graphic (*.svg);;Windows Bitmap (*.bmp);;ZSoft PC Painter Image (*.pcx);;Enhanced Metafile (*.emf);;Tagged Image File Format (*.tif)"));
 #else
     suffix = settings.value("studio/default_suffix", "png").toString();
-    save_dialog.setNameFilter(tr("Portable Network Graphic (*.png);;Encapsulated PostScript (*.eps);;Graphics Interchange Format (*.gif);;Scalable Vector Graphic (*.svg);;Windows Bitmap (*.bmp);;ZSoft PC Painter Image (*.pcx);;Extended Metafile (*.emf);;Tagged Image File Format (*.tif)"));
+    save_dialog.setNameFilter(tr("Portable Network Graphic (*.png);;Encapsulated PostScript (*.eps);;Graphics Interchange Format (*.gif);;Scalable Vector Graphic (*.svg);;Windows Bitmap (*.bmp);;ZSoft PC Painter Image (*.pcx);;Enhanced Metafile (*.emf);;Tagged Image File Format (*.tif)"));
 #endif
 
     if (QString::compare(suffix, "png", Qt::CaseInsensitive) == 0)
@@ -305,7 +305,7 @@ bool MainWindow::save()
     if (QString::compare(suffix, "pcx", Qt::CaseInsensitive) == 0)
         save_dialog.selectNameFilter("ZSoft PC Painter Image (*.pcx)");
     if (QString::compare(suffix, "emf", Qt::CaseInsensitive) == 0)
-        save_dialog.selectNameFilter("Extended Metafile (*.emf)");
+        save_dialog.selectNameFilter("Enhanced Metafile (*.emf)");
     if (QString::compare(suffix, "tif", Qt::CaseInsensitive) == 0)
         save_dialog.selectNameFilter("Tagged Image File Format (*.tif)");
 

@@ -112,7 +112,7 @@ int testUtilHaveGhostscript();
 int testUtilVerifyGhostscript(char *filename, int debug);
 int testUtilHaveVnu();
 int testUtilVerifyVnu(char *filename, int debug);
-int testUtilCanBwipp(int symbology, int option_1, int option_2, int option_3, int debug);
+int testUtilCanBwipp(int index, const struct zint_symbol *symbol, int option_1, int option_2, int option_3, int debug);
 int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int option_2, int option_3, const char *data, int length, const char *primary, char *buffer, int buffer_size);
 int testUtilBwippCmp(const struct zint_symbol *symbol, char *msg, const char *bwipp_buf, const char *expected);
 int testUtilBwippCmpRow(const struct zint_symbol *symbol, int row, char *msg, const char *bwipp_buf, const char *expected);

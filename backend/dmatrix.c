@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2017 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009 - 2020 Robin Stuart <rstuart114@gmail.com>
 
     developed from and including some functions from:
         IEC16022 bar code generation
@@ -40,8 +40,6 @@
 /* vim: set ts=4 sw=4 et : */
 
 #include <stdio.h>
-#include <ctype.h>
-#include <string.h>
 #include <assert.h>
 #include <math.h>
 #ifdef _MSC_VER
@@ -528,7 +526,8 @@ static int look_ahead_test(const unsigned char inputData[], const size_t sourcel
 
 /* Encodes data using ASCII, C40, Text, X12, EDIFACT or Base 256 modes as appropriate
    Supports encoding FNC1 in supporting systems */
-static int dm200encode(struct zint_symbol *symbol, const unsigned char source[], unsigned char target[], int *last_mode, size_t *length_p, int process_buffer[], int *process_p, int *binlen_p) {
+static int dm200encode(struct zint_symbol *symbol, const unsigned char source[], unsigned char target[],
+        int *last_mode, int *last_shift, size_t *length_p, int process_buffer[], int *process_p, int *binlen_p) {
 
     size_t sp;
     int tp, i, gs1;
@@ -543,7 +542,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
 
     sp = 0;
     tp = 0;
-    memset(process_buffer, 0, 8);
+    memset(process_buffer, 0, 8 * sizeof(int));
     *process_p = 0;
     strcpy(binary, "");
 
@@ -645,7 +644,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
 
             if (istwodigits(source, inputlen, sp)) {
                 target[tp] = (unsigned char) ((10 * ctoi(source[sp])) + ctoi(source[sp + 1]) + 130);
-                if (debug) printf("N%d ", target[tp] - 130);
+                if (debug) printf("N%02d ", target[tp] - 130);
                 tp++;
                 strcat(binary, " ");
                 sp += 2;
@@ -735,17 +734,20 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
                     shift_set = c40_shift[source[sp] - 128];
                     value = c40_value[source[sp] - 128];
                 } else {
-                    shift_set = c40_shift[source[sp]];
-                    value = c40_value[source[sp]];
-                }
-
-                if (gs1 && (source[sp] == '[')) {
-                    if (gs1 == 2) {
-                        shift_set = c40_shift[29];
-                        value = c40_value[29]; /* GS */
+                    if (gs1 && (source[sp] == '[')) {
+                        if (gs1 == 2) {
+                            shift_set = c40_shift[29];
+                            value = c40_value[29]; /* GS */
+                        } else {
+                            shift_set = 2;
+                            value = 27; /* FNC1 */
+                        }
                     } else {
-                        shift_set = 2;
-                        value = 27; /* FNC1 */
+                        shift_set = c40_shift[source[sp]];
+                        value = c40_value[source[sp]];
+                    }
+                    if (*process_p % 3 == 2) {
+                        *last_shift = shift_set;
                     }
                 }
 
@@ -803,17 +805,20 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
                     shift_set = text_shift[source[sp] - 128];
                     value = text_value[source[sp] - 128];
                 } else {
-                    shift_set = text_shift[source[sp]];
-                    value = text_value[source[sp]];
-                }
-
-                if (gs1 && (source[sp] == '[')) {
-                    if (gs1 == 2) {
-                        shift_set = text_shift[29];
-                        value = text_value[29]; /* GS */
+                    if (gs1 && (source[sp] == '[')) {
+                        if (gs1 == 2) {
+                            shift_set = text_shift[29];
+                            value = text_value[29]; /* GS */
+                        } else {
+                            shift_set = 2;
+                            value = 27; /* FNC1 */
+                        }
                     } else {
-                        shift_set = 2;
-                        value = 27; /* FNC1 */
+                        shift_set = text_shift[source[sp]];
+                        value = text_value[source[sp]];
+                    }
+                    if (*process_p % 3 == 2) {
+                        *last_shift = shift_set;
                     }
                 }
 
@@ -865,20 +870,15 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
                 int value = 0;
                 if (source[sp] == 13) {
                     value = 0;
-                }
-                if (source[sp] == '*') {
+                } else if (source[sp] == '*') {
                     value = 1;
-                }
-                if (source[sp] == '>') {
+                } else if (source[sp] == '>') {
                     value = 2;
-                }
-                if (source[sp] == ' ') {
+                } else if (source[sp] == ' ') {
                     value = 3;
-                }
-                if ((source[sp] >= '0') && (source[sp] <= '9')) {
+                } else if ((source[sp] >= '0') && (source[sp] <= '9')) {
                     value = (source[sp] - '0') + 4;
-                }
-                if ((source[sp] >= 'A') && (source[sp] <= 'Z')) {
+                } else if ((source[sp] >= 'A') && (source[sp] <= 'Z')) {
                     value = (source[sp] - 'A') + 14;
                 }
 
@@ -977,6 +977,8 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
 
     } /* while */
 
+    if (debug) printf("\n");
+
     /* Add length and randomising algorithm to b256 */
     i = 0;
     while (i < tp) {
@@ -1024,19 +1026,28 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
 }
 
 static int dm200encode_remainder(unsigned char target[], int target_length, const unsigned char source[], const size_t inputlen,
-        const int last_mode, const int process_buffer[], const int process_p, const int symbols_left, int debug) {
+        const int last_mode, const int last_shift, const int process_buffer[], const int process_p, const int symbols_left, int debug) {
 
     switch (last_mode) {
         case DM_C40:
         case DM_TEXT:
-            if (debug) printf(" %s symbols_left %d, process_p %d\n", last_mode == DM_C40 ? "C40" : "TEXT", symbols_left, process_p);
+            /* NOTE: the use of a 0-padded doublet is only mentioned in ISO/IEC 16022:2006 for case 5.2.5.2 (b) when 2 symbols and
+             * 2 C40/Text characters are left, but using it here also for other cases. This matches the behaviour of tec-it (but
+             * not BWIPP) and is used for figures 4.15-1-1 and 4.15-1-1 in GS1 General Specifications. */
+
+            if (debug) printf("%s last_shift %d, symbols_left %d, process_p %d ", last_mode == DM_C40 ? "C40" : "TEX", last_shift, symbols_left, process_p);
             if (process_p == 1) // 1 data character left to encode.
             {
+                if (last_shift) {
+                    target[target_length - 1] -= last_shift - 1; // Remove shift from second half of previous doublet leaving pad value (0)
+                }
                 if (symbols_left > 1) {
                     target[target_length] = 254;
                     target_length++; // Unlatch and encode remaining data in ascii.
+                    if (debug) printf("ASC ");
                 }
                 target[target_length] = source[inputlen - 1] + 1;
+                if (debug) printf("A%02X ", target[target_length] - 1);
                 target_length++;
             } else if (process_p == 2) // 2 data characters left to encode.
             {
@@ -1046,55 +1057,62 @@ static int dm200encode_remainder(unsigned char target[], int target_length, cons
                 target_length++;
                 target[target_length] = (unsigned char) (intValue % 256);
                 target_length++;
+                if (debug) printf("[%d %d %d] ", process_buffer[0], process_buffer[1], 0);
                 if (symbols_left > 2) {
                     target[target_length] = 254; // Unlatch
                     target_length++;
+                    if (debug) printf("ASC ");
                 }
             } else {
                 if (symbols_left > 0) {
                     target[target_length] = 254; // Unlatch
                     target_length++;
+                    if (debug) printf("ASC ");
                 }
             }
             break;
 
         case DM_X12:
-            if (debug) printf(" X12 symbols_left %d, process_p %d\n", symbols_left, process_p);
+            if (debug) printf("X12 symbols_left %d, process_p %d ", symbols_left, process_p);
             if ((symbols_left == process_p) && (process_p == 1)) {
                 // Unlatch not required!
                 target[target_length] = source[inputlen - 1] + 1;
+                if (debug) printf("A%02X ", target[target_length] - 1);
                 target_length++;
             } else if (symbols_left) {
                 target[target_length] = (254);
                 target_length++; // Unlatch.
+                if (debug) printf("ASC ");
 
                 if (process_p == 1) {
                     target[target_length] = source[inputlen - 1] + 1;
+                    if (debug) printf("A%02X ", target[target_length] - 1);
                     target_length++;
-                }
-
-                if (process_p == 2) {
+                } else if (process_p == 2) {
                     target[target_length] = source[inputlen - 2] + 1;
+                    if (debug) printf("A%02X ", target[target_length] - 1);
                     target_length++;
                     target[target_length] = source[inputlen - 1] + 1;
+                    if (debug) printf("A%02X ", target[target_length] - 1);
                     target_length++;
                 }
             }
             break;
 
         case DM_EDIFACT:
-            if (debug) printf(" EDIFACT symbols_left %d, process_p %d\n", symbols_left, process_p);
+            if (debug) printf("EDI symbols_left %d, process_p %d ", symbols_left, process_p);
             if (symbols_left <= 2) // Unlatch not required!
             {
                 if (process_p == 1) {
                     target[target_length] = source[inputlen - 1] + 1;
+                    if (debug) printf("A%02X ", target[target_length] - 1);
                     target_length++;
-                }
-
-                if (process_p == 2) {
+                } else if (process_p == 2) {
                     target[target_length] = source[inputlen - 2] + 1;
+                    if (debug) printf("A%02X ", target[target_length] - 1);
                     target_length++;
                     target[target_length] = source[inputlen - 1] + 1;
+                    if (debug) printf("A%02X ", target[target_length] - 1);
                     target_length++;
                 }
             } else {
@@ -1102,31 +1120,29 @@ static int dm200encode_remainder(unsigned char target[], int target_length, cons
                 if (process_p == 0) {
                     target[target_length] = (unsigned char) (31 << 2);
                     target_length++;
-                }
-
-                if (process_p == 1) {
+                    if (debug) printf("[31 0 0 0] ");
+                } else if (process_p == 1) {
                     target[target_length] = (unsigned char) ((process_buffer[0] << 2) + ((31 & 0x30) >> 4));
                     target_length++;
                     target[target_length] = (unsigned char) ((31 & 0x0f) << 4);
                     target_length++;
-                }
-
-                if (process_p == 2) {
+                    if (debug) printf("[%d 31 0 0] ", process_buffer[0]);
+                } else if (process_p == 2) {
                     target[target_length] = (unsigned char) ((process_buffer[0] << 2) + ((process_buffer[1] & 0x30) >> 4));
                     target_length++;
                     target[target_length] = (unsigned char) (((process_buffer[1] & 0x0f) << 4) + ((31 & 0x3c) >> 2));
                     target_length++;
                     target[target_length] = (unsigned char) (((31 & 0x03) << 6));
                     target_length++;
-                }
-
-                if (process_p == 3) {
+                    if (debug) printf("[%d %d 31 0] ", process_buffer[0], process_buffer[1]);
+                } else if (process_p == 3) {
                     target[target_length] = (unsigned char) ((process_buffer[0] << 2) + ((process_buffer[1] & 0x30) >> 4));
                     target_length++;
                     target[target_length] = (unsigned char) (((process_buffer[1] & 0x0f) << 4) + ((process_buffer[2] & 0x3c) >> 2));
                     target_length++;
                     target[target_length] = (unsigned char) (((process_buffer[2] & 0x03) << 6) + 31);
                     target_length++;
+                    if (debug) printf("[%d %d %d 31] ", process_buffer[0], process_buffer[1], process_buffer[2]);
                 }
             }
             break;
@@ -1134,9 +1150,9 @@ static int dm200encode_remainder(unsigned char target[], int target_length, cons
 
     if (debug) {
         int i;
-        printf("\n\n");
+        printf("\nData (%d): ", target_length);
         for (i = 0; i < target_length; i++)
-            printf("%03d ", target[i]);
+            printf("%d ", target[i]);
 
         printf("\n");
     }
@@ -1177,10 +1193,12 @@ static int data_matrix_200(struct zint_symbol *symbol,const unsigned char source
     int taillength, error_number = 0;
     int H, W, FH, FW, datablock, bytes, rsblock;
     int last_mode = DM_ASCII;
+    int last_shift = 0;
     int symbols_left;
+    int debug = symbol->debug & ZINT_DEBUG_PRINT;
 
     /* inputlen may be decremented by 2 if macro character is used */
-    error_number = dm200encode(symbol, source, binary, &last_mode, &inputlen, process_buffer, &process_p, &binlen);
+    error_number = dm200encode(symbol, source, binary, &last_mode, &last_shift, &inputlen, process_buffer, &process_p, &binlen);
     if (error_number != 0) {
         return error_number;
     }
@@ -1226,7 +1244,7 @@ static int data_matrix_200(struct zint_symbol *symbol,const unsigned char source
 
     // Now we know the symbol size we can handle the remaining data in the process buffer.
     symbols_left = matrixbytes[symbolsize] - binlen;
-    binlen = dm200encode_remainder(binary, binlen, source, inputlen, last_mode, process_buffer, process_p, symbols_left, symbol->debug & ZINT_DEBUG_PRINT);
+    binlen = dm200encode_remainder(binary, binlen, source, inputlen, last_mode, last_shift, process_buffer, process_p, symbols_left, debug);
 
     if (binlen > matrixbytes[symbolsize]) {
         strcpy(symbol->errtxt, "523: Data too long to fit in symbol");
@@ -1246,27 +1264,23 @@ static int data_matrix_200(struct zint_symbol *symbol,const unsigned char source
     if (taillength != 0) {
         add_tail(binary, binlen, taillength);
     }
+    if (debug) {
+        printf("Pads (%d): ", taillength);
+        for (i = binlen; i < binlen + taillength; i++) printf("%d ", binary[i]);
+        printf("\n");
+    }
 
     // ecc code
     if (symbolsize == INTSYMBOL144) {
         skew = 1;
     }
     ecc200(binary, bytes, datablock, rsblock, skew);
-    // Print Codewords
-#ifdef DEBUG
-    {
-        int CWCount;
-        int posCur;
-        if (skew)
-            CWCount = 1558 + 620;
-        else
-            CWCount = bytes + rsblock * (bytes / datablock);
-        printf("Codewords (%i):", CWCount);
-        for (posCur = 0; posCur < CWCount; posCur++)
-            printf(" %3i", binary[posCur]);
-        puts("\n");
+    if (debug) {
+        printf("ECC (%d): ", rsblock * (bytes / datablock));
+        for (i = bytes; i < bytes + rsblock * (bytes / datablock); i++) printf("%d ", binary[i]);
+        printf("\n");
     }
-#endif
+
 #ifdef ZINT_TEST
     if (symbol->debug & ZINT_DEBUG_TEST) debug_test_codeword_dump(symbol, binary, skew ? 1558 + 620 : bytes + rsblock * (bytes / datablock));
 #endif

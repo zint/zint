@@ -667,28 +667,34 @@ static int plot_raster_dotty(struct zint_symbol *symbol, int rotate_angle, int f
     int r, i;
     int scale_width, scale_height;
     int error_number = 0;
-    int image_width, image_height;
     int xoffset, yoffset, roffset, boffset;
-    int dot_overspill = 0;
+    float dot_overspill;
+    float dotoffset;
     float dotradius_scaled;
+    int dot_overspill_scaled;
+
+    if (scaler < 2.0f) {
+        scaler = 2.0f;
+    }
 
     symbol->height = symbol->rows; // This is true because only 2d matrix symbols are processed here
 
     output_set_whitespace_offsets(symbol, &xoffset, &yoffset, &roffset, &boffset);
 
-    dot_overspill = (int) ceil(symbol->dot_size - 1); /* Allow for exceeding 1X */
-    if (dot_overspill < 0) {
-        dot_overspill = 0;
+    dot_overspill = symbol->dot_size - 1.0f; /* Allow for exceeding 1X */
+    if (dot_overspill < 0.0f) {
+        dotoffset = -dot_overspill / 2.0f;
+        dot_overspill_scaled = 0;
+    } else {
+        dotoffset = 0.0f;
+        dot_overspill_scaled = dot_overspill * scaler;
+    }
+    if (dot_overspill_scaled == 0) {
+        dot_overspill_scaled = 1;
     }
 
-    image_width = symbol->width + dot_overspill + xoffset + roffset;
-    image_height = symbol->height + dot_overspill + yoffset + boffset;
-
-    if (scaler < 2.0f) {
-        scaler = 2.0f;
-    }
-    scale_width = image_width * scaler;
-    scale_height = image_height * scaler;
+    scale_width = (symbol->width + xoffset + roffset) * scaler + dot_overspill_scaled;
+    scale_height = (symbol->height + yoffset + boffset) * scaler + dot_overspill_scaled;
 
     /* Apply scale options by creating another pixel buffer */
     if (!(scaled_pixelbuf = (char *) malloc(scale_width * scale_height))) {
@@ -700,11 +706,11 @@ static int plot_raster_dotty(struct zint_symbol *symbol, int rotate_angle, int f
     /* Plot the body of the symbol to the pixel buffer */
     dotradius_scaled = (symbol->dot_size * scaler) / 2.0f;
     for (r = 0; r < symbol->rows; r++) {
-        float row_scaled = (r + yoffset) * scaler + dotradius_scaled;
+        float row_scaled = (r + dotoffset + yoffset) * scaler + dotradius_scaled;
         for (i = 0; i < symbol->width; i++) {
             if (module_is_set(symbol, r, i)) {
                 draw_circle(scaled_pixelbuf, scale_width, scale_height,
-                        (i + xoffset) * scaler + dotradius_scaled,
+                        (i + dotoffset + xoffset) * scaler + dotradius_scaled,
                         row_scaled,
                         dotradius_scaled,
                         DEFAULT_INK);
@@ -1178,14 +1184,12 @@ INTERNAL int plot_raster(struct zint_symbol *symbol, int rotate_angle, int file_
         return error;
     }
 
-    if (symbol->output_options & BARCODE_DOTTY_MODE) {
+    if (symbol->symbology == BARCODE_MAXICODE) {
+        error = plot_raster_maxicode(symbol, rotate_angle, file_type);
+    } else if (symbol->output_options & BARCODE_DOTTY_MODE) {
         error = plot_raster_dotty(symbol, rotate_angle, file_type);
     } else {
-        if (symbol->symbology == BARCODE_MAXICODE) {
-            error = plot_raster_maxicode(symbol, rotate_angle, file_type);
-        } else {
-            error = plot_raster_default(symbol, rotate_angle, file_type);
-        }
+        error = plot_raster_default(symbol, rotate_angle, file_type);
     }
 
     return error;

@@ -79,7 +79,7 @@ static struct zint_vector_hexagon *vector_plot_create_hexagon(float x, float y, 
     hexagon->next = NULL;
     hexagon->x = x;
     hexagon->y = y;
-    hexagon->diameter = (diameter * 5.0f) / 4.0f; // Ugly kludge for legacy support
+    hexagon->diameter = diameter;
     hexagon->rotation = 0;
 
     return hexagon;
@@ -407,7 +407,7 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
     float dot_overspill = 0.0f;
     float dotoffset = 0.0f;
 
-    int rect_count, last_row_start;
+    int rect_count, last_row_start = 0;
     int this_row;
 
     struct zint_vector *vector;
@@ -469,14 +469,16 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
     if ((symbol->symbology != BARCODE_MAXICODE) && (symbol->output_options & BARCODE_DOTTY_MODE)) {
         dot_overspill = symbol->dot_size - 1.0f; /* Allow for exceeding 1X */
         if (dot_overspill < 0.0f) {
+            dotoffset = -dot_overspill / 2.0f;
             dot_overspill = 0.0f;
         } else {
-            dotoffset = 0.1f; /* Fudge for anti-aliasing */
+            dot_overspill += 0.1f; /* Fudge for anti-aliasing */
+            dotoffset = 0.05f;
         }
     }
 
-    vector->width = symbol->width + dotoffset * 2.0f + dot_overspill + (xoffset + roffset);
-    vector->height = symbol->height + textoffset + dotoffset * 2.0f + dot_overspill + (yoffset + boffset);
+    vector->width = symbol->width + dot_overspill + (xoffset + roffset);
+    vector->height = symbol->height + textoffset + dot_overspill + (yoffset + boffset);
 
     if (symbol->border_width > 0 && ((symbol->output_options & BARCODE_BOX) || (symbol->output_options & BARCODE_BIND))) {
         default_text_posn = symbol->height + text_height + text_gap + symbol->border_width + symbol->border_width;
@@ -484,11 +486,52 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
         default_text_posn = symbol->height + text_height + text_gap;
     }
 
-    rect_count = 0;
-    last_row_start = 0;
+    // Plot Maxicode symbols
+    if (symbol->symbology == BARCODE_MAXICODE) {
+        struct zint_vector_circle *circle;
+        float hex_diameter = (float) (symbol->dot_size * 5.0 / 4.0); // Ugly kludge for legacy support
+        vector->width = 37.0f + (xoffset + roffset);
+        vector->height = 36.0f + (yoffset + boffset);
 
+        // Bullseye
+        circle = vector_plot_create_circle(17.88f + xoffset, 17.8f + yoffset, 10.85f, 0);
+        vector_plot_add_circle(symbol, circle, &last_circle);
+        circle = vector_plot_create_circle(17.88f + xoffset, 17.8f + yoffset, 8.97f, 1);
+        vector_plot_add_circle(symbol, circle, &last_circle);
+        circle = vector_plot_create_circle(17.88f + xoffset, 17.8f + yoffset, 7.10f, 0);
+        vector_plot_add_circle(symbol, circle, &last_circle);
+        circle = vector_plot_create_circle(17.88f + xoffset, 17.8f + yoffset, 5.22f, 1);
+        vector_plot_add_circle(symbol, circle, &last_circle);
+        circle = vector_plot_create_circle(17.88f + xoffset, 17.8f + yoffset, 3.31f, 0);
+        vector_plot_add_circle(symbol, circle, &last_circle);
+        circle = vector_plot_create_circle(17.88f + xoffset, 17.8f + yoffset, 1.43f, 1);
+        vector_plot_add_circle(symbol, circle, &last_circle);
+
+        /* Hexagons */
+        for (r = 0; r < symbol->rows; r++) {
+            for (i = 0; i < symbol->width; i++) {
+                if (module_is_set(symbol, r, i)) {
+                    //struct zint_vector_hexagon *hexagon = vector_plot_create_hexagon(((i * 0.88) + ((r & 1) ? 1.76 : 1.32)), ((r * 0.76) + 0.76), hex_diameter);
+                    struct zint_vector_hexagon *hexagon = vector_plot_create_hexagon(((i * 1.23f) + 0.615f + ((r & 1) ? 0.615f : 0.0f)) + xoffset,
+                                                                                     ((r * 1.067f) + 0.715f) + yoffset, hex_diameter);
+                    vector_plot_add_hexagon(symbol, hexagon, &last_hexagon);
+                }
+            }
+        }
+    // Dotty mode
+    } else if (symbol->output_options & BARCODE_DOTTY_MODE) {
+        float dotradius = symbol->dot_size / 2.0f;
+        for (r = 0; r < symbol->rows; r++) {
+            for (i = 0; i < symbol->width; i++) {
+                if (module_is_set(symbol, r, i)) {
+                    struct zint_vector_circle *circle = vector_plot_create_circle(i + dotradius + dotoffset + xoffset, r + dotradius + dotoffset + yoffset, symbol->dot_size, 0);
+                    vector_plot_add_circle(symbol, circle, &last_circle);
+                }
+            }
+        }
     // Plot rectangles - most symbols created here
-    if ((symbol->symbology != BARCODE_MAXICODE) && ((symbol->output_options & BARCODE_DOTTY_MODE) == 0)) {
+    } else {
+        rect_count = 0;
         row_posn = yoffset;
         for (r = 0; r < symbol->rows; r++) {
             this_row = r;
@@ -534,52 +577,6 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
             } while (i < symbol->width);
 
             row_posn += row_height;
-        }
-    }
-
-    // Plot Maxicode symbols
-    if (symbol->symbology == BARCODE_MAXICODE) {
-        struct zint_vector_circle *circle;
-        vector->width = 37.0f + (xoffset + roffset);
-        vector->height = 36.0f + (yoffset + boffset);
-
-        // Bullseye
-        circle = vector_plot_create_circle(17.88f + xoffset, 17.8f + yoffset, 10.85f, 0);
-        vector_plot_add_circle(symbol, circle, &last_circle);
-        circle = vector_plot_create_circle(17.88f + xoffset, 17.8f + yoffset, 8.97f, 1);
-        vector_plot_add_circle(symbol, circle, &last_circle);
-        circle = vector_plot_create_circle(17.88f + xoffset, 17.8f + yoffset, 7.10f, 0);
-        vector_plot_add_circle(symbol, circle, &last_circle);
-        circle = vector_plot_create_circle(17.88f + xoffset, 17.8f + yoffset, 5.22f, 1);
-        vector_plot_add_circle(symbol, circle, &last_circle);
-        circle = vector_plot_create_circle(17.88f + xoffset, 17.8f + yoffset, 3.31f, 0);
-        vector_plot_add_circle(symbol, circle, &last_circle);
-        circle = vector_plot_create_circle(17.88f + xoffset, 17.8f + yoffset, 1.43f, 1);
-        vector_plot_add_circle(symbol, circle, &last_circle);
-
-        /* Hexagons */
-        for (r = 0; r < symbol->rows; r++) {
-            for (i = 0; i < symbol->width; i++) {
-                if (module_is_set(symbol, r, i)) {
-                    //struct zint_vector_hexagon *hexagon = vector_plot_create_hexagon(((i * 0.88) + ((r & 1) ? 1.76 : 1.32)), ((r * 0.76) + 0.76), symbol->dot_size);
-                    struct zint_vector_hexagon *hexagon = vector_plot_create_hexagon(((i * 1.23f) + 0.615f + ((r & 1) ? 0.615f : 0.0f)) + xoffset,
-                                                                                     ((r * 1.067f) + 0.715f) + yoffset, symbol->dot_size);
-                    vector_plot_add_hexagon(symbol, hexagon, &last_hexagon);
-                }
-            }
-        }
-    }
-
-    // Dotty mode
-    if ((symbol->symbology != BARCODE_MAXICODE) && (symbol->output_options & BARCODE_DOTTY_MODE)) {
-        float dotradius = symbol->dot_size / 2.0f;
-        for (r = 0; r < symbol->rows; r++) {
-            for (i = 0; i < symbol->width; i++) {
-                if (module_is_set(symbol, r, i)) {
-                    struct zint_vector_circle *circle = vector_plot_create_circle(i + dotradius + dotoffset + xoffset, r + dotradius + dotoffset + yoffset, symbol->dot_size, 0);
-                    vector_plot_add_circle(symbol, circle, &last_circle);
-                }
-            }
         }
     }
 
