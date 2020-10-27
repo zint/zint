@@ -29,6 +29,7 @@
 ExportWindow::ExportWindow()
 {
     QSettings settings;
+    settings.setIniCodec("UTF-8");
     setupUi(this);
 
     linDestPath->setText(settings.value("studio/export/destination", QDir::toNativeSeparators(QDir::homePath())).toString());
@@ -44,6 +45,7 @@ ExportWindow::ExportWindow()
 ExportWindow::~ExportWindow()
 {
     QSettings settings;
+    settings.setIniCodec("UTF-8");
 
     settings.setValue("studio/export/destination", linDestPath->text());
     settings.setValue("studio/export/file_prefix", linPrefix->text());
@@ -59,6 +61,7 @@ void ExportWindow::quit_now()
 void ExportWindow::get_directory()
 {
     QSettings settings;
+    settings.setIniCodec("UTF-8");
     QString directory;
     QFileDialog fdialog;
 

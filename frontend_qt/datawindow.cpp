@@ -73,6 +73,7 @@ void DataWindow::okay()
 void DataWindow::from_file()
 {
     QSettings settings;
+    settings.setIniCodec("UTF-8");
     QFileDialog open_dialog;
     QString filename;
     QFile file;

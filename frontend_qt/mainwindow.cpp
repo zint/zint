@@ -46,6 +46,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags fl)
     QCoreApplication::setApplicationName("Barcode Studio");
 
     QSettings settings;
+    settings.setIniCodec("UTF-8");
 
     char bstyle_text[][50] = {
         "Australia Post Redirect Code",
@@ -224,6 +225,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags fl)
 MainWindow::~MainWindow()
 {
     QSettings settings;
+    settings.setIniCodec("UTF-8");
 
     settings.setValue("studio/window_geometry", saveGeometry());
     settings.setValue("studio/tab_index", tabMain->currentIndex());
@@ -276,6 +278,7 @@ void MainWindow::reset_view()
 bool MainWindow::save()
 {
     QSettings settings;
+    settings.setIniCodec("UTF-8");
     QFileDialog save_dialog;
     QString filename;
     QString suffix;
@@ -569,6 +572,7 @@ void MainWindow::change_options()
 {
     QUiLoader uiload;
     QSettings settings;
+    settings.setIniCodec("UTF-8");
 
     bool initial_load = m_symbology == 0;
     int original_tab_count = tabMain->count();

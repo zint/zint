@@ -31,7 +31,8 @@
 SequenceWindow::SequenceWindow()
 {
 	setupUi(this);
-        QSettings settings;
+    QSettings settings;
+    settings.setIniCodec("UTF-8");
 	QValidator *intvalid = new QIntValidator(this);
 
         linStartVal->setText(settings.value("studio/sequence/start_value", "1").toString());
@@ -53,6 +54,7 @@ SequenceWindow::SequenceWindow()
 SequenceWindow::~SequenceWindow()
 {
     QSettings settings;
+    settings.setIniCodec("UTF-8");
 
     settings.setValue("studio/sequence/start_value", linStartVal->text());
     settings.setValue("studio/sequence/end_value", linEndVal->text());
@@ -168,6 +170,7 @@ void SequenceWindow::check_generate()
 void SequenceWindow::import()
 {
     QSettings settings;
+    settings.setIniCodec("UTF-8");
     QFileDialog import_dialog;
     QString filename;
     QFile file;
