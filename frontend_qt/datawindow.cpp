@@ -1,6 +1,6 @@
 /*
     Zint Barcode Generator - the open source barcode generator
-    Copyright (C) 2009-2017 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009 - 2020 Robin Stuart <rstuart114@gmail.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,8 +16,9 @@
     with this program; if not, write to the Free Software Foundation, Inc.,
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
+/* vim: set ts=4 sw=4 et : */
 
-#include <QDebug>
+//#include <QDebug>
 #include <QFileDialog>
 #include <QUiLoader>
 #include <QStringList>
@@ -25,27 +26,26 @@
 #include <QSettings>
 
 #include "datawindow.h"
-#include <stdio.h>
 
 DataWindow::DataWindow()
 {
-	setupUi(this);
+    setupUi(this);
 
-	connect(btnCancel, SIGNAL( clicked( bool )), SLOT(quit_now()));
-	connect(btnReset, SIGNAL( clicked( bool )), SLOT(clear_data()));
-	connect(btnOK, SIGNAL( clicked( bool )), SLOT(okay()));
+    connect(btnCancel, SIGNAL( clicked( bool )), SLOT(quit_now()));
+    connect(btnReset, SIGNAL( clicked( bool )), SLOT(clear_data()));
+    connect(btnOK, SIGNAL( clicked( bool )), SLOT(okay()));
 }
 
 DataWindow::DataWindow(const QString &input)
 {
-	setupUi(this);
-	txtDataInput->setPlainText(input);
-	txtDataInput->moveCursor(QTextCursor::End, QTextCursor::MoveAnchor);
+    setupUi(this);
+    txtDataInput->setPlainText(input);
+    txtDataInput->moveCursor(QTextCursor::End, QTextCursor::MoveAnchor);
 
-	connect(btnCancel, SIGNAL( clicked( bool )), SLOT(quit_now()));
-	connect(btnReset, SIGNAL( clicked( bool )), SLOT(clear_data()));
-	connect(btnOK, SIGNAL( clicked( bool )), SLOT(okay()));
-	connect(btnFromFile, SIGNAL( clicked( bool )), SLOT(from_file()));
+    connect(btnCancel, SIGNAL( clicked( bool )), SLOT(quit_now()));
+    connect(btnReset, SIGNAL( clicked( bool )), SLOT(clear_data()));
+    connect(btnOK, SIGNAL( clicked( bool )), SLOT(okay()));
+    connect(btnFromFile, SIGNAL( clicked( bool )), SLOT(from_file()));
 }
 
 DataWindow::~DataWindow()
@@ -54,20 +54,20 @@ DataWindow::~DataWindow()
 
 void DataWindow::quit_now()
 {
-	Valid = 0;
-	close();
+    Valid = 0;
+    close();
 }
 
 void DataWindow::clear_data()
 {
-	txtDataInput->clear();
+    txtDataInput->clear();
 }
 
 void DataWindow::okay()
 {
-	Valid = 1;
-	DataOutput = txtDataInput->toPlainText();
-	close();
+    Valid = 1;
+    DataOutput = txtDataInput->toPlainText();
+    close();
 }
 
 void DataWindow::from_file()
