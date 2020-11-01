@@ -32,6 +32,7 @@
 
 #include <stdio.h>
 #include <errno.h>
+#include <limits.h>
 #ifdef _MSC_VER
 #include <malloc.h>
 #endif
@@ -47,6 +48,7 @@ struct zint_symbol *ZBarcode_Create() {
     if (!symbol) return NULL;
 
     memset(symbol, 0, sizeof (*symbol));
+
     symbol->symbology = BARCODE_CODE128;
     strcpy(symbol->fgcolour, "000000");
     symbol->fgcolor = &symbol->fgcolour[0];
@@ -64,6 +66,7 @@ struct zint_symbol *ZBarcode_Create() {
     symbol->dot_size = 4.0f / 5.0f;
     symbol->vector = NULL;
     symbol->warn_level = WARN_DEFAULT;
+
     return symbol;
 }
 
@@ -115,7 +118,6 @@ void ZBarcode_Delete(struct zint_symbol *symbol) {
 INTERNAL int get_best_eci(unsigned char source[], size_t length); /* Calculate suitable ECI mode */
 INTERNAL int utf_to_eci(const int eci, const unsigned char source[], unsigned char dest[], size_t *length); /* Convert Unicode to other encodings */
 
-
 INTERNAL int eanx(struct zint_symbol *symbol, unsigned char source[], int length); /* EAN system barcodes */
 INTERNAL int c39(struct zint_symbol *symbol, unsigned char source[], const size_t length); /* Code 3 from 9 (or Code 39) */
 INTERNAL int pharmazentral(struct zint_symbol *symbol, unsigned char source[], int length); /* Pharmazentral Nummer (PZN) */
@@ -147,8 +149,8 @@ INTERNAL int imail(struct zint_symbol *symbol, unsigned char source[], int lengt
 INTERNAL int royal_plot(struct zint_symbol *symbol, unsigned char source[], int length); /* RM4SCC */
 INTERNAL int australia_post(struct zint_symbol *symbol, unsigned char source[], int length); /* Australia Post 4-state */
 INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[],const size_t length); /* Code 16k */
-INTERNAL int pdf417enc(struct zint_symbol *symbol, unsigned char source[], const size_t length); /* PDF417 */
-INTERNAL int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], const size_t length); /* Micro PDF417 */
+INTERNAL int pdf417enc(struct zint_symbol *symbol, unsigned char source[], int length); /* PDF417 */
+INTERNAL int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], int length); /* Micro PDF417 */
 INTERNAL int maxicode(struct zint_symbol *symbol, unsigned char source[], int length); /* Maxicode */
 INTERNAL int rss14(struct zint_symbol *symbol, unsigned char source[], int length); /* RSS-14 */
 INTERNAL int rsslimited(struct zint_symbol *symbol, unsigned char source[], int length); /* RSS Limited */
@@ -221,8 +223,14 @@ static int dump_plot(struct zint_symbol *symbol) {
         int byt = 0;
         for (i = 0; i < symbol->width; i++) {
             byt = byt << 1;
-            if (module_is_set(symbol, r, i)) {
-                byt += 1;
+            if (symbol->symbology == BARCODE_ULTRA) {
+                if (module_colour_is_set(symbol, r, i)) {
+                    byt += 1;
+                }
+            } else {
+                if (module_is_set(symbol, r, i)) {
+                    byt += 1;
+                }
             }
             if (((i + 1) % 4) == 0) {
                 fputc(hex[byt], f);
@@ -256,7 +264,7 @@ static int dump_plot(struct zint_symbol *symbol) {
 static int hibc(struct zint_symbol *symbol, unsigned char source[], size_t length) {
     size_t i;
     int    counter, error_number;
-    char to_process[113], temp[2], check_digit;
+    char to_process[113], check_digit;
 
     /* without "+" and check: max 110 characters in HIBC 2.6 */
     if (length > 110) {
@@ -270,7 +278,6 @@ static int hibc(struct zint_symbol *symbol, unsigned char source[], size_t lengt
         return error_number;
     }
 
-    strcpy(to_process, "+");
     counter = 41;
     for (i = 0; i < length; i++) {
         counter += posn(TECHNETIUM, source[i]);
@@ -304,26 +311,25 @@ static int hibc(struct zint_symbol *symbol, unsigned char source[], size_t lengt
         }
     }
 
-    temp[0] = check_digit;
-    temp[1] = '\0';
-
-    strcat(to_process, (char *) source);
-    strcat(to_process, temp);
-    length = strlen(to_process);
+    to_process[0] = '+';
+    memcpy(to_process + 1, source, length);
+    to_process[length + 1] = check_digit;
+    length += 2;
+    to_process[length] = '\0';
 
     switch (symbol->symbology) {
         case BARCODE_HIBC_128:
             error_number = code_128(symbol, (unsigned char *) to_process, length);
-            ustrcpy(symbol->text, (unsigned char*) "*");
-            strcat((char*) symbol->text, to_process);
-            strcat((char*) symbol->text, "*");
+            ustrcpy(symbol->text, "*");
+            ustrcat(symbol->text, to_process);
+            ustrcat(symbol->text, "*");
             break;
         case BARCODE_HIBC_39:
             symbol->option_2 = 0;
             error_number = c39(symbol, (unsigned char *) to_process, length);
-            ustrcpy(symbol->text, (unsigned char*) "*");
-            strcat((char*) symbol->text, to_process);
-            strcat((char*) symbol->text, "*");
+            ustrcpy(symbol->text, "*");
+            ustrcat(symbol->text, to_process);
+            ustrcat(symbol->text, "*");
             break;
         case BARCODE_HIBC_DM:
             error_number = dmatrix(symbol, (unsigned char *) to_process, length);
@@ -669,110 +675,29 @@ unsigned int ZBarcode_Cap(int symbol_id, unsigned int cap_flag) {
 
 int ZBarcode_ValidID(int symbol_id) {
     /* Checks whether a symbology is supported */
+    static const unsigned char ids[146] = {
+          0,   1,   2,   3,   4,   0,   6,   7,   8,   9,
+          0,   0,   0,  13,  14,   0,  16,   0,  18,   0,
+         20,  21,  22,  23,  24,  25,   0,   0,  28,  29,
+         30,  31,  32,   0,  34,  35,   0,  37,  38,   0,
+         40,   0,   0,   0,   0,   0,   0,  47,   0,  49,
+         50,  51,  52,  53,   0,  55,  56,  57,  58,   0,
+         60,   0,   0,  63,   0,   0,  66,  67,  68,  69,
+         70,  71,  72,  73,  74,  75,  76,  77,   0,  79,
+         80,  81,  82,   0,  84,  85,  86,  87,   0,  89,
+         90,   0,  92,  93,   0,   0,  96,  97,  98,  99,
+          0,   0, 102,   0, 104,   0, 106,   0, 108,   0,
+        110,   0, 112,   0,   0, 115, 116,   0,   0,   0,
+          0, 121,   0,   0,   0,   0,   0,   0, 128, 129,
+        130, 131, 132, 133, 134, 135, 136, 137, 138, 139,
+        140, 141, 142, 143, 144, 145,
+    };
 
-    int result = 0;
-
-    switch (symbol_id) {
-        case BARCODE_CODE11:
-        case BARCODE_C25STANDARD:
-        case BARCODE_C25INTER:
-        case BARCODE_C25IATA:
-        case BARCODE_C25LOGIC:
-        case BARCODE_C25IND:
-        case BARCODE_CODE39:
-        case BARCODE_EXCODE39:
-        case BARCODE_EANX:
-        case BARCODE_EANX_CHK:
-        case BARCODE_GS1_128:
-        case BARCODE_CODABAR:
-        case BARCODE_CODE128:
-        case BARCODE_DPLEIT:
-        case BARCODE_DPIDENT:
-        case BARCODE_CODE16K:
-        case BARCODE_CODE49:
-        case BARCODE_CODE93:
-        case BARCODE_FLAT:
-        case BARCODE_DBAR_OMN:
-        case BARCODE_DBAR_LTD:
-        case BARCODE_DBAR_EXP:
-        case BARCODE_TELEPEN:
-        case BARCODE_UPCA:
-        case BARCODE_UPCA_CHK:
-        case BARCODE_UPCE:
-        case BARCODE_UPCE_CHK:
-        case BARCODE_POSTNET:
-        case BARCODE_MSI_PLESSEY:
-        case BARCODE_FIM:
-        case BARCODE_LOGMARS:
-        case BARCODE_PHARMA:
-        case BARCODE_PZN:
-        case BARCODE_PHARMA_TWO:
-        case BARCODE_PDF417:
-        case BARCODE_PDF417COMP:
-        case BARCODE_MAXICODE:
-        case BARCODE_QRCODE:
-        case BARCODE_CODE128B:
-        case BARCODE_AUSPOST:
-        case BARCODE_AUSREPLY:
-        case BARCODE_AUSROUTE:
-        case BARCODE_AUSREDIRECT:
-        case BARCODE_ISBNX:
-        case BARCODE_RM4SCC:
-        case BARCODE_DATAMATRIX:
-        case BARCODE_EAN14:
-        case BARCODE_NVE18:
-        case BARCODE_JAPANPOST:
-        case BARCODE_KOREAPOST:
-        case BARCODE_DBAR_STK:
-        case BARCODE_DBAR_OMNSTK:
-        case BARCODE_DBAR_EXPSTK:
-        case BARCODE_PLANET:
-        case BARCODE_MICROPDF417:
-        case BARCODE_USPS_IMAIL:
-        case BARCODE_PLESSEY:
-        case BARCODE_TELEPEN_NUM:
-        case BARCODE_ITF14:
-        case BARCODE_KIX:
-        case BARCODE_AZTEC:
-        case BARCODE_DAFT:
-        case BARCODE_MICROQR:
-        case BARCODE_HIBC_128:
-        case BARCODE_HIBC_39:
-        case BARCODE_HIBC_DM:
-        case BARCODE_HIBC_QR:
-        case BARCODE_HIBC_PDF:
-        case BARCODE_HIBC_MICPDF:
-        case BARCODE_HIBC_AZTEC:
-        case BARCODE_HIBC_BLOCKF:
-        case BARCODE_AZRUNE:
-        case BARCODE_CODE32:
-        case BARCODE_EANX_CC:
-        case BARCODE_GS1_128_CC:
-        case BARCODE_DBAR_OMN_CC:
-        case BARCODE_DBAR_LTD_CC:
-        case BARCODE_DBAR_EXP_CC:
-        case BARCODE_UPCA_CC:
-        case BARCODE_UPCE_CC:
-        case BARCODE_DBAR_STK_CC:
-        case BARCODE_DBAR_OMNSTK_CC:
-        case BARCODE_DBAR_EXPSTK_CC:
-        case BARCODE_CHANNEL:
-        case BARCODE_CODEONE:
-        case BARCODE_GRIDMATRIX:
-        case BARCODE_HANXIN:
-        case BARCODE_DOTCODE:
-        case BARCODE_CODABLOCKF:
-        case BARCODE_UPNQR:
-        case BARCODE_VIN:
-        case BARCODE_MAILMARK:
-        case BARCODE_ULTRA:
-        case BARCODE_RMQR:
-        case BARCODE_DPD:
-            result = 1;
-            break;
+    if (symbol_id <= 0 || symbol_id > 145) {
+        return 0;
     }
 
-    return result;
+    return ids[symbol_id] != 0;
 }
 
 static int reduced_charset(struct zint_symbol *symbol, unsigned char *source, size_t in_length);
@@ -1088,13 +1013,13 @@ static int escape_char_process(struct zint_symbol *symbol, unsigned char *input_
                     break;
                 case 'u':
                     if (in_posn + 6 > *length) {
-                        strcpy(symbol->errtxt, "235: Incomplete unicode escape character in input data");
+                        strcpy(symbol->errtxt, "209: Incomplete unicode escape character in input data");
                         return ZINT_ERROR_INVALID_DATA;
                     }
                     unicode = 0;
                     for (i = 0; i < 4; i++) {
                         if (ctoi(input_string[in_posn + i + 2]) == -1) {
-                            strcpy(symbol->errtxt, "236: Corrupt unicode escape character in input data");
+                            strcpy(symbol->errtxt, "211: Corrupt unicode escape character in input data");
                             return ZINT_ERROR_INVALID_DATA;
                         }
                         unicode = unicode << 4;
@@ -1173,135 +1098,141 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
 #endif
 
     /* First check the symbology field */
-    if (symbol->symbology < 1) {
-        strcpy(symbol->errtxt, "206: Symbology out of range");
-        if (symbol->warn_level == WARN_FAIL_ALL) {
-            return ZINT_ERROR_INVALID_OPTION;
-        } else {
-            symbol->symbology = BARCODE_CODE128;
-            error_number = ZINT_WARN_INVALID_OPTION;
-        }
-    /* symbol->symbologys 1 to 86 are defined by tbarcode */
-    } else if (symbol->symbology == 5) {
-        symbol->symbology = BARCODE_C25STANDARD;
-    } else if ((symbol->symbology >= 10) && (symbol->symbology <= 12)) {
-        symbol->symbology = BARCODE_EANX;
-    } else if (symbol->symbology == 15) {
-        symbol->symbology = BARCODE_EANX;
-    } else if (symbol->symbology == 17) {
-        symbol->symbology = BARCODE_UPCA;
-    } else if (symbol->symbology == 19) {
-        strcpy(symbol->errtxt, "207: Codabar 18 not supported");
-        if (symbol->warn_level == WARN_FAIL_ALL) {
-            return WARN_FAIL_ALL;
-        } else {
-            symbol->symbology = BARCODE_CODABAR;
-            error_number = ZINT_WARN_INVALID_OPTION;
-        }
-    } else if (symbol->symbology == 26) {
-        symbol->symbology = BARCODE_UPCA;
-    } else if (symbol->symbology == 27) {
-        strcpy(symbol->errtxt, "208: UPCD1 not supported");
-        error_number = ZINT_ERROR_INVALID_OPTION;
-    } else if (symbol->symbology == 33) {
-        symbol->symbology = BARCODE_GS1_128;
-    } else if (symbol->symbology == 36) {
-        symbol->symbology = BARCODE_UPCA;
-    } else if ((symbol->symbology >= 41) && (symbol->symbology <= 45)) {
-        symbol->symbology = BARCODE_POSTNET;
-    } else if (symbol->symbology == 46) {
-        symbol->symbology = BARCODE_PLESSEY;
-    } else if (symbol->symbology == 48) {
-        symbol->symbology = BARCODE_NVE18;
-    } else if (symbol->symbology == 54) {
-        strcpy(symbol->errtxt, "210: General Parcel Code not supported");
-        if (symbol->warn_level == WARN_FAIL_ALL) {
-            return ZINT_ERROR_INVALID_OPTION;
-        } else {
-            symbol->symbology = BARCODE_CODE128;
-            error_number = ZINT_WARN_INVALID_OPTION;
-        }
-    } else if ((symbol->symbology == 59) || (symbol->symbology == 61)) {
-        symbol->symbology = BARCODE_CODE128;
-    } else if (symbol->symbology == 62) {
-        symbol->symbology = BARCODE_CODE93;
-    } else if ((symbol->symbology == 64) || (symbol->symbology == 65)) {
-        symbol->symbology = BARCODE_AUSPOST;
-    } else if (symbol->symbology == 78) {
-        symbol->symbology = BARCODE_DBAR_OMN;
-    } else if (symbol->symbology == 83) {
-        symbol->symbology = BARCODE_PLANET;
-    } else if (symbol->symbology == 88) {
-        symbol->symbology = BARCODE_GS1_128;
-    } else if (symbol->symbology == 91) {
-        strcpy(symbol->errtxt, "212: Symbology out of range");
-        if (symbol->warn_level == WARN_FAIL_ALL) {
-            return ZINT_ERROR_INVALID_OPTION;
-        } else {
-            symbol->symbology = BARCODE_CODE128;
-            error_number = ZINT_WARN_INVALID_OPTION;
-        }
-    } else if ((symbol->symbology >= 94) && (symbol->symbology <= 95)) {
-        strcpy(symbol->errtxt, "213: Symbology out of range");
-        if (symbol->warn_level == WARN_FAIL_ALL) {
-            return ZINT_ERROR_INVALID_OPTION;
-        } else {
-            symbol->symbology = BARCODE_CODE128;
-            error_number = ZINT_WARN_INVALID_OPTION;
-        }
-    } else if (symbol->symbology == 100) {
-        symbol->symbology = BARCODE_HIBC_128;
-    } else if (symbol->symbology == 101) {
-        symbol->symbology = BARCODE_HIBC_39;
-    } else if (symbol->symbology == 103) {
-        symbol->symbology = BARCODE_HIBC_DM;
-    } else if (symbol->symbology == 105) {
-        symbol->symbology = BARCODE_HIBC_QR;
-    } else if (symbol->symbology == 107) {
-        symbol->symbology = BARCODE_HIBC_PDF;
-    } else if (symbol->symbology == 109) {
-        symbol->symbology = BARCODE_HIBC_MICPDF;
-    } else if (symbol->symbology == 111) {
-        symbol->symbology = BARCODE_HIBC_BLOCKF;
-    } else if ((symbol->symbology == 113) || (symbol->symbology == 114)) {
-        strcpy(symbol->errtxt, "214: Symbology out of range");
-        if (symbol->warn_level == WARN_FAIL_ALL) {
-            return ZINT_ERROR_INVALID_OPTION;
-        } else {
-            symbol->symbology = BARCODE_CODE128;
-            error_number = ZINT_WARN_INVALID_OPTION;
-        }
-    } else if (symbol->symbology == 115) {
-        symbol->symbology = BARCODE_DOTCODE;
-    } else if ((symbol->symbology >= 117) && (symbol->symbology <= 127)) {
-        if (symbol->symbology != 121) {
-            strcpy(symbol->errtxt, "215: Symbology out of range");
+    if (!ZBarcode_ValidID(symbol->symbology)) {
+        if (symbol->symbology < 1) {
+            strcpy(symbol->errtxt, "206: Symbology out of range");
             if (symbol->warn_level == WARN_FAIL_ALL) {
-                return ZINT_ERROR_INVALID_OPTION;
+                error_number = ZINT_ERROR_INVALID_OPTION;
+            } else {
+                symbol->symbology = BARCODE_CODE128;
+                error_number = ZINT_WARN_INVALID_OPTION;
+            }
+        /* symbol->symbologys 1 to 86 are defined by tbarcode */
+        } else if (symbol->symbology == 5) {
+            symbol->symbology = BARCODE_C25STANDARD;
+        } else if ((symbol->symbology >= 10) && (symbol->symbology <= 12)) {
+            symbol->symbology = BARCODE_EANX;
+        } else if (symbol->symbology == 15) {
+            symbol->symbology = BARCODE_EANX;
+        } else if (symbol->symbology == 17) {
+            symbol->symbology = BARCODE_UPCA;
+        } else if (symbol->symbology == 19) {
+            strcpy(symbol->errtxt, "207: Codabar 18 not supported");
+            if (symbol->warn_level == WARN_FAIL_ALL) {
+                error_number = ZINT_ERROR_INVALID_OPTION;
+            } else {
+                symbol->symbology = BARCODE_CODABAR;
+                error_number = ZINT_WARN_INVALID_OPTION;
+            }
+        } else if (symbol->symbology == 26) {
+            symbol->symbology = BARCODE_UPCA;
+        } else if (symbol->symbology == 27) {
+            strcpy(symbol->errtxt, "208: UPCD1 not supported");
+            error_number = ZINT_ERROR_INVALID_OPTION;
+        } else if (symbol->symbology == 33) {
+            symbol->symbology = BARCODE_GS1_128;
+        } else if (symbol->symbology == 36) {
+            symbol->symbology = BARCODE_UPCA;
+        } else if ((symbol->symbology >= 41) && (symbol->symbology <= 45)) {
+            symbol->symbology = BARCODE_POSTNET;
+        } else if (symbol->symbology == 46) {
+            symbol->symbology = BARCODE_PLESSEY;
+        } else if (symbol->symbology == 48) {
+            symbol->symbology = BARCODE_NVE18;
+        } else if (symbol->symbology == 54) {
+            strcpy(symbol->errtxt, "210: General Parcel Code not supported");
+            if (symbol->warn_level == WARN_FAIL_ALL) {
+                error_number = ZINT_ERROR_INVALID_OPTION;
+            } else {
+                symbol->symbology = BARCODE_CODE128;
+                error_number = ZINT_WARN_INVALID_OPTION;
+            }
+        } else if ((symbol->symbology == 59) || (symbol->symbology == 61)) {
+            symbol->symbology = BARCODE_CODE128;
+        } else if (symbol->symbology == 62) {
+            symbol->symbology = BARCODE_CODE93;
+        } else if ((symbol->symbology == 64) || (symbol->symbology == 65)) {
+            symbol->symbology = BARCODE_AUSPOST;
+        } else if (symbol->symbology == 78) {
+            symbol->symbology = BARCODE_DBAR_OMN;
+        } else if (symbol->symbology == 83) {
+            symbol->symbology = BARCODE_PLANET;
+        } else if (symbol->symbology == 88) {
+            symbol->symbology = BARCODE_GS1_128;
+        } else if (symbol->symbology == 91) {
+            strcpy(symbol->errtxt, "212: Symbology out of range");
+            if (symbol->warn_level == WARN_FAIL_ALL) {
+                error_number = ZINT_ERROR_INVALID_OPTION;
+            } else {
+                symbol->symbology = BARCODE_CODE128;
+                error_number = ZINT_WARN_INVALID_OPTION;
+            }
+        } else if ((symbol->symbology >= 94) && (symbol->symbology <= 95)) {
+            strcpy(symbol->errtxt, "213: Symbology out of range");
+            if (symbol->warn_level == WARN_FAIL_ALL) {
+                error_number = ZINT_ERROR_INVALID_OPTION;
+            } else {
+                symbol->symbology = BARCODE_CODE128;
+                error_number = ZINT_WARN_INVALID_OPTION;
+            }
+        } else if (symbol->symbology == 100) {
+            symbol->symbology = BARCODE_HIBC_128;
+        } else if (symbol->symbology == 101) {
+            symbol->symbology = BARCODE_HIBC_39;
+        } else if (symbol->symbology == 103) {
+            symbol->symbology = BARCODE_HIBC_DM;
+        } else if (symbol->symbology == 105) {
+            symbol->symbology = BARCODE_HIBC_QR;
+        } else if (symbol->symbology == 107) {
+            symbol->symbology = BARCODE_HIBC_PDF;
+        } else if (symbol->symbology == 109) {
+            symbol->symbology = BARCODE_HIBC_MICPDF;
+        } else if (symbol->symbology == 111) {
+            symbol->symbology = BARCODE_HIBC_BLOCKF;
+        } else if ((symbol->symbology == 113) || (symbol->symbology == 114)) {
+            strcpy(symbol->errtxt, "214: Symbology out of range");
+            if (symbol->warn_level == WARN_FAIL_ALL) {
+                error_number = ZINT_ERROR_INVALID_OPTION;
+            } else {
+                symbol->symbology = BARCODE_CODE128;
+                error_number = ZINT_WARN_INVALID_OPTION;
+            }
+        } else if (symbol->symbology == 115) {
+            symbol->symbology = BARCODE_DOTCODE;
+        } else if ((symbol->symbology >= 117) && (symbol->symbology <= 127)) {
+            if (symbol->symbology != 121) {
+                strcpy(symbol->errtxt, "215: Symbology out of range");
+                if (symbol->warn_level == WARN_FAIL_ALL) {
+                    error_number = ZINT_ERROR_INVALID_OPTION;
+                } else {
+                    symbol->symbology = BARCODE_CODE128;
+                    error_number = ZINT_WARN_INVALID_OPTION;
+                }
+            }
+        /* Everything from 128 up is Zint-specific */
+        } else if (symbol->symbology > 145) {
+            strcpy(symbol->errtxt, "216: Symbology out of range");
+            if (symbol->warn_level == WARN_FAIL_ALL) {
+                error_number = ZINT_ERROR_INVALID_OPTION;
             } else {
                 symbol->symbology = BARCODE_CODE128;
                 error_number = ZINT_WARN_INVALID_OPTION;
             }
         }
-    /* Everything from 128 up is Zint-specific */
-    } else if (symbol->symbology > 145) {
-        strcpy(symbol->errtxt, "216: Symbology out of range");
-        if (symbol->warn_level == WARN_FAIL_ALL) {
-            return ZINT_ERROR_INVALID_OPTION;
-        } else {
-            symbol->symbology = BARCODE_CODE128;
-            error_number = ZINT_WARN_INVALID_OPTION;
+        if (error_number >= ZINT_ERROR) {
+            error_tag(symbol->errtxt, error_number);
+            return error_number;
         }
     }
 
-    if ((!(supports_eci(symbol->symbology))) && (symbol->eci != 0)) {
-        strcpy(symbol->errtxt, "217: Symbology does not support ECI switching");
-        error_number = ZINT_ERROR_INVALID_OPTION;
-    }
-
-    if ((symbol->eci < 0) || (symbol->eci == 1) || (symbol->eci == 2) || (symbol->eci > 999999)) {
-        strcpy(symbol->errtxt, "218: Invalid ECI mode");
-        error_number = ZINT_ERROR_INVALID_OPTION;
+    if (symbol->eci != 0) {
+        if (!(supports_eci(symbol->symbology))) {
+            strcpy(symbol->errtxt, "217: Symbology does not support ECI switching");
+            error_number = ZINT_ERROR_INVALID_OPTION;
+        } else if ((symbol->eci < 0) || (symbol->eci == 1) || (symbol->eci == 2) || (symbol->eci > 999999)) {
+            strcpy(symbol->errtxt, "218: Invalid ECI mode");
+            error_number = ZINT_ERROR_INVALID_OPTION;
+        }
     }
 
     if ((symbol->dot_size < 0.01f) || (symbol->dot_size > 20.0f)) {
@@ -1316,9 +1247,8 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
     if (error_number >= ZINT_ERROR) {
         error_tag(symbol->errtxt, error_number);
         return error_number;
-    } else {
-        error_buffer = error_number;
     }
+    error_buffer = error_number;
 
     memcpy(local_source, source, in_length);
     local_source[in_length] = '\0';
@@ -1524,7 +1454,7 @@ int ZBarcode_Buffer_Vector(struct zint_symbol *symbol, int rotate_angle) {
         case 270:
             break;
         default:
-            strcpy(symbol->errtxt, "228: Invalid rotation angle");
+            strcpy(symbol->errtxt, "219: Invalid rotation angle");
             error_tag(symbol->errtxt, ZINT_ERROR_INVALID_OPTION);
             return ZINT_ERROR_INVALID_OPTION;
     }
@@ -1607,7 +1537,7 @@ int ZBarcode_Encode_File(struct zint_symbol *symbol, char *filename) {
 
     if (!filename) {
         strcpy(symbol->errtxt, "239: Filename NULL");
-        error_tag(symbol->errtxt, ZINT_ERROR_INVALID_OPTION);
+        error_tag(symbol->errtxt, ZINT_ERROR_INVALID_DATA);
         return ZINT_ERROR_INVALID_DATA;
     }
 
@@ -1617,8 +1547,8 @@ int ZBarcode_Encode_File(struct zint_symbol *symbol, char *filename) {
     } else {
         file = fopen(filename, "rb");
         if (!file) {
-            strcpy(symbol->errtxt, "229: Unable to read input file");
-            error_tag(symbol->errtxt, ZINT_ERROR_INVALID_OPTION);
+            sprintf(symbol->errtxt, "229: Unable to read input file (%.30s)", strerror(errno));
+            error_tag(symbol->errtxt, ZINT_ERROR_INVALID_DATA);
             return ZINT_ERROR_INVALID_DATA;
         }
 
@@ -1627,14 +1557,14 @@ int ZBarcode_Encode_File(struct zint_symbol *symbol, char *filename) {
         fileLen = ftell(file);
         fseek(file, 0, SEEK_SET);
 
-        if (fileLen > 7900) {
+        if (fileLen > 7900 && fileLen != LONG_MAX) { /* On many Linux distros ftell() returns LONG_MAX not -1 on error */
             /* The largest amount of data that can be encoded is 7827 numeric digits in Han Xin Code */
             strcpy(symbol->errtxt, "230: Input file too long");
             error_tag(symbol->errtxt, ZINT_ERROR_INVALID_DATA);
             fclose(file);
             return ZINT_ERROR_INVALID_DATA;
         }
-        if (fileLen <= 0) {
+        if (fileLen <= 0 || fileLen == LONG_MAX) {
             strcpy(symbol->errtxt, "235: Input file empty or unseekable");
             error_tag(symbol->errtxt, ZINT_ERROR_INVALID_DATA);
             fclose(file);
@@ -1658,7 +1588,8 @@ int ZBarcode_Encode_File(struct zint_symbol *symbol, char *filename) {
     do {
         n = fread(buffer + nRead, 1, fileLen - nRead, file);
         if (ferror(file)) {
-            strcpy(symbol->errtxt, strerror(errno));
+            sprintf(symbol->errtxt, "241: Input file read error (%.30s)", strerror(errno));
+            error_tag(symbol->errtxt, ZINT_ERROR_INVALID_DATA);
             if (strcmp(filename, "-")) {
                 fclose(file);
             }

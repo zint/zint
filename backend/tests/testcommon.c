@@ -42,7 +42,10 @@
 #include <unistd.h>
 #include <errno.h>
 
+#ifndef COMMON_INLINE
 extern int module_is_set(const struct zint_symbol *symbol, const int y_coord, const int x_coord);
+extern int module_colour_is_set(const struct zint_symbol *symbol, const int y_coord, const int x_coord);
+#endif
 
 static int tests = 0;
 static int failed = 0;
@@ -656,10 +659,20 @@ int testUtilSymbolCmp(const struct zint_symbol *a, const struct zint_symbol *b) 
     if (a->width != b->width) {
         return 3;
     }
-    for (int i = 0; i < a->rows; i++) {
-        for (int j = 0; j < a->width; j++) {
-            if (module_is_set(a, i, j) != module_is_set(b, i, j)) {
-                return 4;
+    if (a->symbology == BARCODE_ULTRA) {
+        for (int i = 0; i < a->rows; i++) {
+            for (int j = 0; j < a->width; j++) {
+                if (module_colour_is_set(a, i, j) != module_colour_is_set(b, i, j)) {
+                    return 4;
+                }
+            }
+        }
+    } else {
+        for (int i = 0; i < a->rows; i++) {
+            for (int j = 0; j < a->width; j++) {
+                if (module_is_set(a, i, j) != module_is_set(b, i, j)) {
+                    return 4;
+                }
             }
         }
     }
@@ -884,21 +897,27 @@ int testUtilVectorCmp(const struct zint_vector *a, const struct zint_vector *b) 
     return 0;
 }
 
-void testUtilModulesDump(const struct zint_symbol *symbol, char *prefix, char *postfix) {
+void testUtilModulesDump(const struct zint_symbol *symbol, const char *prefix, const char *postfix) {
     int r;
     for (r = 0; r < symbol->rows; r++) {
         testUtilModulesDumpRow(symbol, r, prefix, postfix);
     }
 }
 
-void testUtilModulesDumpRow(const struct zint_symbol *symbol, int row, char *prefix, char *postfix) {
+void testUtilModulesDumpRow(const struct zint_symbol *symbol, int row, const char *prefix, const char *postfix) {
     int w;
     if (*prefix) {
         fputs(prefix, stdout);
     }
     putchar('"');
-    for (w = 0; w < symbol->width; w++) {
-        putchar(module_is_set(symbol, row, w) + '0');
+    if (symbol->symbology == BARCODE_ULTRA) {
+        for (w = 0; w < symbol->width; w++) {
+            putchar(module_colour_is_set(symbol, row, w) + '0');
+        }
+    } else {
+        for (w = 0; w < symbol->width; w++) {
+            putchar(module_is_set(symbol, row, w) + '0');
+        }
     }
     putchar('"');
     if (*postfix) {
@@ -910,14 +929,27 @@ int testUtilModulesCmp(const struct zint_symbol *symbol, const char *expected, i
     const char *e = expected;
     const char *ep = expected + strlen(expected);
     int r, w = 0;
-    for (r = 0; r < symbol->rows && e < ep; r++) {
-        for (w = 0; w < symbol->width && e < ep; w++) {
-            if (module_is_set(symbol, r, w) + '0' != *e) {
-                *row = r;
-                *width = w;
-                return 1 /*fail*/;
+    if (symbol->symbology == BARCODE_ULTRA) {
+        for (r = 0; r < symbol->rows && e < ep; r++) {
+            for (w = 0; w < symbol->width && e < ep; w++) {
+                if (module_colour_is_set(symbol, r, w) + '0' != *e) {
+                    *row = r;
+                    *width = w;
+                    return 1 /*fail*/;
+                }
+                e++;
             }
-            e++;
+        }
+    } else {
+        for (r = 0; r < symbol->rows && e < ep; r++) {
+            for (w = 0; w < symbol->width && e < ep; w++) {
+                if (module_is_set(symbol, r, w) + '0' != *e) {
+                    *row = r;
+                    *width = w;
+                    return 1 /*fail*/;
+                }
+                e++;
+            }
         }
     }
     *row = r;
@@ -929,12 +961,22 @@ int testUtilModulesCmpRow(const struct zint_symbol *symbol, int row, const char 
     const char *e = expected;
     const char *ep = expected + strlen(expected);
     int w;
-    for (w = 0; w < symbol->width && e < ep; w++) {
-        if (module_is_set(symbol, row, w) + '0' != *e) {
-            *width = w;
-            return 1 /*fail*/;
+    if (symbol->symbology == BARCODE_ULTRA) {
+        for (w = 0; w < symbol->width && e < ep; w++) {
+            if (module_colour_is_set(symbol, row, w) + '0' != *e) {
+                *width = w;
+                return 1 /*fail*/;
+            }
+            e++;
         }
-        e++;
+    } else {
+        for (w = 0; w < symbol->width && e < ep; w++) {
+            if (module_is_set(symbol, row, w) + '0' != *e) {
+                *width = w;
+                return 1 /*fail*/;
+            }
+            e++;
+        }
     }
     *width = w;
     return e != ep || w != symbol->width ? 1 /*fail*/ : 0 /*success*/;
@@ -956,8 +998,14 @@ int testUtilModulesDumpHex(const struct zint_symbol *symbol, char dump[], int du
                 space = 0;
             }
             byt = byt << 1;
-            if (module_is_set(symbol, r, i)) {
-                byt += 1;
+            if (symbol->symbology == BARCODE_ULTRA) {
+                if (module_colour_is_set(symbol, r, i)) {
+                    byt += 1;
+                }
+            } else {
+                if (module_is_set(symbol, r, i)) {
+                    byt += 1;
+                }
             }
             if (d < de && ((i + 1) % 4) == 0) {
                 *d++ = hex[byt];
@@ -1004,35 +1052,103 @@ char *testUtilUCharArrayDump(unsigned char *array, int size, char *dump, int dum
     return dump;
 }
 
-void testUtilBitmapPrint(const struct zint_symbol *symbol) {
-    static char colour[] = { '0', 'C', 'B', 'M', 'R', 'Y', 'G', '1' };
+void testUtilBitmapPrint(const struct zint_symbol *symbol, const char *prefix, const char *postfix) {
+    static char colour[] = { '0', 'C', 'M', 'B', 'Y', 'G', 'R', '1' };
     int row, column, i, j;
 
-    fputs("     ", stdout);
-    for (column = 0; column < symbol->bitmap_width; column += 10) printf("%-3d       ", column);
-    fputs("\n     ", stdout);
-    for (column = 0; column < symbol->bitmap_width; column++) printf("%d", column % 10);
-    putchar('\n');
+    if (!prefix) {
+        fputs("     ", stdout);
+        for (column = 0; column < symbol->bitmap_width; column += 10) printf("%-3d       ", column);
+        fputs("\n     ", stdout);
+        for (column = 0; column < symbol->bitmap_width; column++) printf("%d", column % 10);
+        putchar('\n');
+    }
 
     for (row = 0; row < symbol->bitmap_height; row++) {
-        printf("%3d: ", row);
+        if (!prefix) {
+            printf("%3d: ", row);
+        } else {
+            if (*prefix) {
+                fputs(prefix, stdout);
+            }
+            putchar('"');
+        }
         for (column = 0; column < symbol->bitmap_width; column++) {
             if (symbol->output_options & OUT_BUFFER_INTERMEDIATE) {
                 putchar(symbol->bitmap[(row * symbol->bitmap_width) + column]);
             } else {
                 i = ((row * symbol->bitmap_width) + column) * 3;
-                j = (symbol->bitmap[i] == 0) + (symbol->bitmap[i + 1] == 0) * 2 + (symbol->bitmap[i + 2] == 0) * 4;
-                putchar(colour[j]);
+                if ((symbol->bitmap[i] == 0 || symbol->bitmap[i] == 0xff) && (symbol->bitmap[i + 1] == 0 || symbol->bitmap[i + 1] == 0xff)
+                        && (symbol->bitmap[i + 2] == 0 || symbol->bitmap[i + 2] == 0xff)) {
+                    j = (symbol->bitmap[i] == 0) + (symbol->bitmap[i + 1] == 0) * 2 + (symbol->bitmap[i + 2] == 0) * 4;
+                    putchar(colour[j]);
+                } else {
+                    printf("%02X%02X%02X", symbol->bitmap[i], symbol->bitmap[i + 1], symbol->bitmap[i + 2]);
+                }
             }
         }
-        putchar('\n');
+        if (!postfix) {
+            putchar('\n');
+        } else {
+            putchar('"');
+            if (*postfix) {
+                fputs(postfix, stdout);
+            }
+        }
     }
 
-    fputs("     ", stdout);
-    for (column = 0; column < symbol->bitmap_width; column++) printf("%d", column % 10);
-    fputs("\n     ", stdout);
-    for (column = 0; column < symbol->bitmap_width; column += 10) printf("%-3d       ", column);
-    putchar('\n');
+    if (!postfix) {
+        fputs("     ", stdout);
+        for (column = 0; column < symbol->bitmap_width; column++) printf("%d", column % 10);
+        fputs("\n     ", stdout);
+        for (column = 0; column < symbol->bitmap_width; column += 10) printf("%-3d       ", column);
+        putchar('\n');
+    }
+}
+
+int testUtilBitmapCmp(const struct zint_symbol *symbol, const char *expected, int *row, int *column) {
+    static char colour[] = { '0', 'C', 'M', 'B', 'Y', 'G', 'R', '1' };
+    int r, c, i, j;
+    const char *e = expected;
+    const char *ep = expected + strlen(expected);
+    char buf[7];
+
+    for (r = 0; r < symbol->bitmap_height; r++) {
+        for (c = 0; c < symbol->bitmap_width; c++) {
+            if (symbol->output_options & OUT_BUFFER_INTERMEDIATE) {
+                if (*e != symbol->bitmap[(r * symbol->bitmap_width) + c]) {
+                    *row = r;
+                    *column = c;
+                    return 1 /*fail*/;
+                }
+                e++;
+            } else {
+                i = ((r * symbol->bitmap_width) + c) * 3;
+                if ((symbol->bitmap[i] == 0 || symbol->bitmap[i] == 0xff) && (symbol->bitmap[i + 1] == 0 || symbol->bitmap[i + 1] == 0xff)
+                        && (symbol->bitmap[i + 2] == 0 || symbol->bitmap[i + 2] == 0xff)) {
+                    j = (symbol->bitmap[i] == 0) + (symbol->bitmap[i + 1] == 0) * 2 + (symbol->bitmap[i + 2] == 0) * 4;
+                    if (*e != colour[j]) {
+                        *row = r;
+                        *column = c;
+                        return 1 /*fail*/;
+                    }
+                    e++;
+                } else {
+                    sprintf(buf, "%02X%02X%02X", symbol->bitmap[i], symbol->bitmap[i + 1], symbol->bitmap[i + 2]);
+                    if (strncmp(buf, e, 6) != 0) {
+                        *row = r;
+                        *column = c;
+                        return 1 /*fail*/;
+                    }
+                    e += 6;
+                }
+            }
+        }
+    }
+
+    *row = r;
+    *column = c;
+    return e != ep || r != symbol->bitmap_height || c != symbol->bitmap_width ? 1 /*fail*/ : 0 /*success*/;
 }
 
 int testUtilExists(char *filename) {

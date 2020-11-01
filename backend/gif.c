@@ -273,7 +273,7 @@ static int gif_lzw(statestruct *pState, int paletteBitSize) {
 /*
  * Called function to save in gif format
  */
-INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
+INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf) {
     unsigned char outbuf[10];
     FILE *gif_file;
     unsigned short usTemp;
@@ -290,6 +290,7 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
 
     unsigned char backgroundColourIndex;
     unsigned char RGBCur[3];
+    unsigned char RGBUnused[3] = {0,0,0};
 
     int colourIndex;
 
@@ -525,8 +526,7 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
     fwrite(paletteRGB, 3*paletteCount, 1, gif_file);
     /* add unused palette items to fill palette size */
     for (paletteIndex = paletteCount; paletteIndex < paletteSize; paletteIndex++) {
-        unsigned char RGBCur[3] = {0,0,0};
-        fwrite(RGBCur, 3, 1, gif_file);
+        fwrite(RGBUnused, 3, 1, gif_file);
     }
 
     /* Graphic control extension (8) */
@@ -580,7 +580,7 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
     fwrite(outbuf, 10, 1, gif_file);
 
     /* prepare state array */
-    State.pIn = (unsigned char *) pixelbuf;
+    State.pIn = pixelbuf;
     State.InLen = symbol->bitmap_height * symbol->bitmap_width;
     State.pOut = (unsigned char *) lzwoutbuf;
     State.OutLength = lzoutbufSize;

@@ -31,7 +31,7 @@
 
 #include "testcommon.h"
 
-extern int gif_pixel_plot(struct zint_symbol *symbol, char *pixelbuf);
+extern int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf);
 
 static void test_pixel_plot(int index, int debug) {
 
@@ -93,7 +93,7 @@ static void test_pixel_plot(int index, int debug) {
 
         symbol->bitmap = (unsigned char *) data_buf;
 
-        ret = gif_pixel_plot(symbol, data_buf);
+        ret = gif_pixel_plot(symbol, (unsigned char *) data_buf);
         assert_zero(ret, "i:%d gif_pixel_plot ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
 
         ret = testUtilVerifyIdentify(symbol->outfile, debug);

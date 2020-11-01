@@ -43,7 +43,7 @@
 #include <malloc.h>
 #endif
 
-INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
+INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf) {
     int fgred, fggrn, fgblu, bgred, bggrn, bgblu;
     int i;
     int rows_per_strip, strip_count;

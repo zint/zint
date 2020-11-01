@@ -39,7 +39,7 @@
 #include <fcntl.h>
 #endif
 
-INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
+INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf) {
     int i, row, column;
     int row_size;
     int bits_per_pixel;

@@ -49,7 +49,7 @@ INTERNAL int ctoi(const char source) {
 
 /* Convert an integer value to a string representing its binary equivalent */
 INTERNAL void bin_append(const int arg, const int length, char *binary) {
-    size_t posn = strlen(binary);
+    int posn = (int) strlen(binary);
 
     bin_append_posn(arg, length, binary, posn);
 
@@ -57,7 +57,7 @@ INTERNAL void bin_append(const int arg, const int length, char *binary) {
 }
 
 /* Convert an integer value to a string representing its binary equivalent at a set position */
-INTERNAL void bin_append_posn(const int arg, const int length, char *binary, size_t posn) {
+INTERNAL int bin_append_posn(const int arg, const int length, char *binary, int posn) {
     int i;
     int start;
 
@@ -70,6 +70,7 @@ INTERNAL void bin_append_posn(const int arg, const int length, char *binary, siz
             binary[posn + i] = '0';
         }
     }
+    return posn + length;
 }
 
 /* Converts an integer value to its hexadecimal character */
@@ -137,28 +138,31 @@ INTERNAL int posn(const char set_string[], const char data) {
     return -1;
 }
 
-/* Return true (1-8) if a module is dark/black/colour, otherwise false (0) */
+#ifndef COMMON_INLINE
+/* Return true (1) if a module is dark/black, otherwise false (0) */
 INTERNAL int module_is_set(const struct zint_symbol *symbol, const int y_coord, const int x_coord) {
-    if (symbol->symbology == BARCODE_ULTRA) {
-        return symbol->encoded_data[y_coord][x_coord];
-    } else {
-        return (symbol->encoded_data[y_coord][x_coord / 8] >> (x_coord % 8)) & 1;
-    }
+    return (symbol->encoded_data[y_coord][x_coord >> 3] >> (x_coord & 0x07)) & 1;
 }
 
 /* Set a module to dark/black */
 INTERNAL void set_module(struct zint_symbol *symbol, const int y_coord, const int x_coord) {
-    symbol->encoded_data[y_coord][x_coord / 8] |= 1 << (x_coord % 8);
+    symbol->encoded_data[y_coord][x_coord >> 3] |= 1 << (x_coord & 0x07);
+}
+
+/* Return true (1-8) if a module is colour, otherwise false (0) */
+INTERNAL int module_colour_is_set(const struct zint_symbol *symbol, const int y_coord, const int x_coord) {
+    return symbol->encoded_data[y_coord][x_coord];
 }
 
 /* Set a module to a colour */
 INTERNAL void set_module_colour(struct zint_symbol *symbol, const int y_coord, const int x_coord, const int colour) {
     symbol->encoded_data[y_coord][x_coord] = colour;
 }
+#endif
 
 /* Set a dark/black module to white (i.e. unset) */
 INTERNAL void unset_module(struct zint_symbol *symbol, const int y_coord, const int x_coord) {
-    symbol->encoded_data[y_coord][x_coord / 8] &= ~(1 << (x_coord % 8));
+    symbol->encoded_data[y_coord][x_coord >> 3] &= ~(1 << (x_coord & 0x07));
 }
 
 /* Expands from a width pattern to a bit pattern */

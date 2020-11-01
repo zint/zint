@@ -43,7 +43,7 @@
 #include <malloc.h>
 #endif
 
-INTERNAL int pcx_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
+INTERNAL int pcx_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf) {
     int fgred, fggrn, fgblu, bgred, bggrn, bgblu;
     int row, column, i, colour;
     int run_count;

@@ -46,22 +46,30 @@ static void test_checks(int index, int debug) {
         int input_mode;
         int eci;
         float dot_size;
+        int warn_level;
         int ret;
 
         char *expected;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%2d*\/", line(".") - line("'<"))
+    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /* 0*/ { BARCODE_CODE128, "1234", -1, -1, 3, -1, ZINT_ERROR_INVALID_OPTION, "Error 217: Symbology does not support ECI switching" },
-        /* 1*/ { BARCODE_CODE128, "1234", -1, -1, 0, -1, 0, "" },
-        /* 2*/ { BARCODE_QRCODE, "1234", -1, -1, 3, -1, 0, "" },
-        /* 3*/ { BARCODE_QRCODE, "1234", -1, -1, 999999 + 1, -1, ZINT_ERROR_INVALID_OPTION, "Error 218: Invalid ECI mode" },
-        /* 4*/ { BARCODE_CODE128, "1234", -1, -1, -1, 20.1, ZINT_ERROR_INVALID_OPTION, "Error 221: Invalid dot size" },
-        /* 5*/ { BARCODE_CODE128, "1234", -1, GS1_MODE, -1, -1, ZINT_ERROR_INVALID_OPTION, "Error 220: Selected symbology does not support GS1 mode" },
-        /* 6*/ { BARCODE_GS1_128, "[21]12\0004", 8, GS1_MODE, -1, -1, ZINT_ERROR_INVALID_DATA, "Error 262: NUL characters not permitted in GS1 mode" },
-        /* 7*/ { BARCODE_GS1_128, "[21]12é4", -1, GS1_MODE, -1, -1, ZINT_ERROR_INVALID_DATA, "Error 250: Extended ASCII characters are not supported by GS1" },
-        /* 8*/ { BARCODE_GS1_128, "[21]12\0074", -1, GS1_MODE, -1, -1, ZINT_ERROR_INVALID_DATA, "Error 251: Control characters are not supported by GS1" },
-        /* 9*/ { BARCODE_GS1_128, "[21]1234", -1, GS1_MODE, -1, -1, 0, "" },
+        /*  0*/ { BARCODE_CODE128, "1234", -1, -1, 3, -1, -1, ZINT_ERROR_INVALID_OPTION, "Error 217: Symbology does not support ECI switching" },
+        /*  1*/ { BARCODE_CODE128, "1234", -1, -1, 0, -1, -1, 0, "" },
+        /*  2*/ { BARCODE_QRCODE, "1234", -1, -1, 3, -1, -1, 0, "" },
+        /*  3*/ { BARCODE_QRCODE, "1234", -1, -1, 999999 + 1, -1, -1, ZINT_ERROR_INVALID_OPTION, "Error 218: Invalid ECI mode" },
+        /*  4*/ { BARCODE_CODE128, "1234", -1, -1, -1, 20.1, -1, ZINT_ERROR_INVALID_OPTION, "Error 221: Invalid dot size" },
+        /*  5*/ { BARCODE_CODE128, "1234", -1, GS1_MODE, -1, -1, -1, ZINT_ERROR_INVALID_OPTION, "Error 220: Selected symbology does not support GS1 mode" },
+        /*  6*/ { BARCODE_GS1_128, "[21]12\0004", 8, GS1_MODE, -1, -1, -1, ZINT_ERROR_INVALID_DATA, "Error 262: NUL characters not permitted in GS1 mode" },
+        /*  7*/ { BARCODE_GS1_128, "[21]12é4", -1, GS1_MODE, -1, -1, -1, ZINT_ERROR_INVALID_DATA, "Error 250: Extended ASCII characters are not supported by GS1" },
+        /*  8*/ { BARCODE_GS1_128, "[21]12\0074", -1, GS1_MODE, -1, -1, -1, ZINT_ERROR_INVALID_DATA, "Error 251: Control characters are not supported by GS1" },
+        /*  9*/ { BARCODE_GS1_128, "[21]1234", -1, GS1_MODE, -1, -1, -1, 0, "" },
+        /* 10*/ { 0, "1", -1, -1, -1, -1, -1, ZINT_WARN_INVALID_OPTION, "Warning 206: Symbology out of range" },
+        /* 11*/ { 0, "1", -1, -1, -1, -1, WARN_FAIL_ALL, ZINT_ERROR_INVALID_OPTION, "Error 206: Symbology out of range" },
+        /* 12*/ { 0, "1", -1, -1, 1, -1, -1, ZINT_ERROR_INVALID_OPTION, "Error 217: Symbology does not support ECI switching" }, // Not supporting beats invalid ECI
+        /* 13*/ { 0, "1", -1, -1, 1, -1, WARN_FAIL_ALL, ZINT_ERROR_INVALID_OPTION, "Error 206: Symbology out of range" },
+        /* 14*/ { 0, "1", -1, -1, -1, 0.009, -1, ZINT_ERROR_INVALID_OPTION, "Error 221: Invalid dot size" },
+        /* 15*/ { 0, "1", -1, -1, -1, 0.009, WARN_FAIL_ALL, ZINT_ERROR_INVALID_OPTION, "Error 206: Symbology out of range" },
+        /* 16*/ { 0, "1", -1, -1, 1, 0.009, -1, ZINT_ERROR_INVALID_OPTION, "Error 221: Invalid dot size" }, // Invalid dot size beats invalid ECI
     };
     int data_size = sizeof(data) / sizeof(struct item);
 
@@ -81,6 +89,9 @@ static void test_checks(int index, int debug) {
         }
         if (data[i].dot_size != -1) {
             symbol->dot_size = data[i].dot_size;
+        }
+        if (data[i].warn_level != -1) {
+            symbol->warn_level = data[i].warn_level;
         }
         symbol->debug |= debug;
 
@@ -384,6 +395,29 @@ static void test_bad_args(void) {
     testFinish();
 }
 
+static void test_valid_id(void) {
+
+    testStart("");
+
+    int ret;
+    const char *name;
+
+    for (int symbol_id = -1; symbol_id < 160; symbol_id++) {
+        ret = ZBarcode_ValidID(symbol_id);
+        name = testUtilBarcodeName(symbol_id);
+        assert_nonnull(name, "testUtilBarcodeName(%d) NULL\n", symbol_id);
+        if (ret) {
+            assert_equal(ret, 1, "ZBarcode_Valid(%d) != 1\n", symbol_id);
+            assert_nonzero(*name != '\0', "testUtilBarcodeName(%d) empty when ZBarcode_Valid() true\n", symbol_id);
+        } else {
+            assert_zero(ret, "ZBarcode_Valid(%d) != 0\n", symbol_id);
+            assert_zero(*name, "testUtilBarcodeName(%d) non-empty when ZBarcode_Valid() false\n", symbol_id);
+        }
+    }
+
+    testFinish();
+}
+
 int main(int argc, char *argv[]) {
 
     testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
@@ -394,6 +428,7 @@ int main(int argc, char *argv[]) {
         { "test_encode_file_zero_length", test_encode_file_zero_length, 0, 0, 0 },
         { "test_encode_file_directory", test_encode_file_directory, 0, 0, 0 },
         { "test_bad_args", test_bad_args, 0, 0, 0 },
+        { "test_valid_id", test_valid_id, 0, 0, 0 },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

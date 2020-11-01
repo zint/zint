@@ -127,6 +127,7 @@ static int vector_plot_add_string(struct zint_symbol *symbol,
     struct zint_vector_string *string;
 
     string = (struct zint_vector_string*) malloc(sizeof (struct zint_vector_string));
+    if (!string) return 0;
     string->next = NULL;
     string->x = x;
     string->y = y;
@@ -136,6 +137,7 @@ static int vector_plot_add_string(struct zint_symbol *symbol,
     string->rotation = 0;
     string->halign = halign;
     string->text = (unsigned char*) malloc(sizeof (unsigned char) * (ustrlen(text) + 1));
+    if (!string->text) { free(string); return 0; }
     ustrcpy(string->text, text);
 
     if (*last_string)
@@ -382,14 +384,14 @@ static void vector_reduce_rectangles(struct zint_symbol *symbol) {
 
 INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_type) {
     int error_number;
-    int large_bar_height;
+    float large_bar_height;
     int textdone = 0;
     int main_width;
     int comp_offset = 0;
     unsigned char addon[6];
-    int addon_gap;
+    int addon_gap = 0;
     float addon_text_posn = 0.0f;
-    float addon_bar_height;
+    float addon_bar_height = 0.0f;
     int xoffset, yoffset, roffset, boffset;
     float textoffset;
     float default_text_posn;
@@ -401,7 +403,7 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
     int hide_text;
     int i, r;
     int text_height; /* Font pixel size (so whole integers) */
-    int upcae_outside_text_height; /* UPC-A/E outside digits font size */
+    int upcae_outside_text_height = 0; /* UPC-A/E outside digits font size */
     float digit_ascent_factor = 0.25f; /* Assuming digit ascent roughly 25% less than font size */
     float text_gap; /* Gap between barcode and text */
     float dot_overspill = 0.0f;
@@ -540,41 +542,58 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
 
             i = 0;
 
-            do {
-                int block_width = 0;
+            if (symbol->symbology == BARCODE_ULTRA) {
                 do {
-                    block_width++;
-                } while (i + block_width < symbol->width && module_is_set(symbol, this_row, i + block_width) == module_is_set(symbol, this_row, i));
-                if ((addon_latch == 0) && (r == (symbol->rows - 1)) && (i > main_width)) {
-                    addon_text_posn = row_posn + text_height - text_height * digit_ascent_factor;
-                    if (addon_text_posn < 0.0f) {
-                        addon_text_posn = 0.0f;
-                    }
-                    addon_bar_height = row_height - (addon_text_posn - row_posn) + text_gap;
-                    if (upceanflag != 12 && upceanflag != 6) { /* UPC-A/E don't descend */
-                        addon_bar_height += 5.0f;
-                    }
-                    if (addon_bar_height < 0.5f) {
-                        addon_bar_height = 0.5f;
-                    }
-                    addon_latch = 1;
-                }
-                if (module_is_set(symbol, this_row, i)) {
-                    /* a bar or colour block */
-                    if (addon_latch == 0) {
+                    int module_fill = module_colour_is_set(symbol, this_row, i);
+                    int block_width = 0;
+                    do {
+                        block_width++;
+                    } while (i + block_width < symbol->width && module_colour_is_set(symbol, this_row, i + block_width) == module_fill);
+                    if (module_fill) {
+                        /* a colour block */
                         rectangle = vector_plot_create_rect(i + xoffset, row_posn, block_width, row_height);
-                        if (symbol->symbology == BARCODE_ULTRA) {
-                            rectangle->colour = module_is_set(symbol, this_row, i);
-                        }
-                    } else {
-                        rectangle = vector_plot_create_rect(i + xoffset, addon_text_posn - text_gap, block_width, addon_bar_height);
+                        rectangle->colour = module_colour_is_set(symbol, this_row, i);
+                        vector_plot_add_rect(symbol, rectangle, &last_rectangle);
+                        rect_count++;
                     }
-                    vector_plot_add_rect(symbol, rectangle, &last_rectangle);
-                    rect_count++;
-                }
-                i += block_width;
+                    i += block_width;
 
-            } while (i < symbol->width);
+                } while (i < symbol->width);
+            } else {
+                do {
+                    int module_fill = module_is_set(symbol, this_row, i);
+                    int block_width = 0;
+                    do {
+                        block_width++;
+                    } while (i + block_width < symbol->width && module_is_set(symbol, this_row, i + block_width) == module_fill);
+                    if (upceanflag && (addon_latch == 0) && (r == (symbol->rows - 1)) && (i > main_width)) {
+                        addon_text_posn = row_posn + text_height - text_height * digit_ascent_factor;
+                        if (addon_text_posn < 0.0f) {
+                            addon_text_posn = 0.0f;
+                        }
+                        addon_bar_height = row_height - (addon_text_posn - row_posn) + text_gap;
+                        if (upceanflag != 12 && upceanflag != 6) { /* UPC-A/E don't descend */
+                            addon_bar_height += 5.0f;
+                        }
+                        if (addon_bar_height < 0.5f) {
+                            addon_bar_height = 0.5f;
+                        }
+                        addon_latch = 1;
+                    }
+                    if (module_fill) {
+                        /* a bar */
+                        if (addon_latch == 0) {
+                            rectangle = vector_plot_create_rect(i + xoffset, row_posn, block_width, row_height);
+                        } else {
+                            rectangle = vector_plot_create_rect(i + xoffset, addon_text_posn - text_gap, block_width, addon_bar_height);
+                        }
+                        vector_plot_add_rect(symbol, rectangle, &last_rectangle);
+                        rect_count++;
+                    }
+                    i += block_width;
+
+                } while (i < symbol->width);
+            }
 
             row_posn += row_height;
         }

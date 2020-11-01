@@ -34,11 +34,8 @@
 /* this file contains the character table, the pre-calculated coefficients and the
    codeword patterns taken from lines 416 to 454 of pdf417.frm */
 
-#define TRUE 1
-#define FALSE 0
-#define TEX 900
-#define BYT 901
-#define NUM 902
+#ifndef __PDF417_H
+#define __PDF417_H
 
 /* PDF417 error correction coefficients from Grand Zebu */
 static const unsigned short int coefrs[1022] = {
@@ -511,4 +508,6 @@ static const unsigned short int rap_centre[52] = {
     0x2DC, 0x2DE
 };
 
-void byteprocess(int *chainemc, int *mclength, unsigned char chaine[], int start, int length, int debug);
+INTERNAL void byteprocess(int *chainemc, int *mclength, unsigned char chaine[], int start, int length, int debug);
+
+#endif /* __PDF417_H */

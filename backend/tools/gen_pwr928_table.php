@@ -35,7 +35,7 @@ for ($j = 1; $j < 69; $j++) {
     $pwr928[$j][0] = $cw[0] = (2 * $cw[0]) + (int)($v / 928);
 }
 
-printf("static UINT pwr928[69][7] = {\n");
+printf("static const UINT pwr928[69][7] = {\n");
 for ($i = 0; $i < 69; $i++) {
     printf("    { ");
     for ($j = 0; $j < 7; $j++) {

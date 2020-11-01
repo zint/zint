@@ -73,6 +73,7 @@ void testRun(int argc, char *argv[], testFunction funcs[], int funcs_size);
 #define ZINT_DEBUG_TEST_LESS_NOISY      32
 #define ZINT_DEBUG_TEST_KEEP_OUTFILE    64
 #define ZINT_DEBUG_TEST_BWIPP           128
+#define ZINT_DEBUG_TEST_PERFORMANCE     256
 
 extern void vector_free(struct zint_symbol *symbol); /* Free vector structures */
 
@@ -90,14 +91,15 @@ void testUtilStrCpyRepeat(char *buffer, char *repeat, int size);
 int testUtilSymbolCmp(const struct zint_symbol *a, const struct zint_symbol *b);
 struct zint_vector *testUtilVectorCpy(const struct zint_vector *in);
 int testUtilVectorCmp(const struct zint_vector *a, const struct zint_vector *b);
-void testUtilModulesDump(const struct zint_symbol *symbol, char *prefix, char *postfix); // TODO: should be called Print not Dump
-void testUtilModulesDumpRow(const struct zint_symbol *symbol, int row, char *prefix, char *postfix); // TODO: should be called Print not Dump
+void testUtilModulesDump(const struct zint_symbol *symbol, const char *prefix, const char *postfix); // TODO: should be called Print not Dump
+void testUtilModulesDumpRow(const struct zint_symbol *symbol, int row, const char *prefix, const char *postfix); // TODO: should be called Print not Dump
 int testUtilModulesCmp(const struct zint_symbol *symbol, const char *expected, int *width, int *row);
 int testUtilModulesCmpRow(const struct zint_symbol *symbol, int row, const char *expected, int *width);
 int testUtilModulesDumpHex(const struct zint_symbol *symbol, char dump[], int dump_size);
 char *testUtilUIntArrayDump(unsigned int *array, int size, char *dump, int dump_size);
 char *testUtilUCharArrayDump(unsigned char *array, int size, char *dump, int dump_size);
-void testUtilBitmapPrint(const struct zint_symbol *symbol);
+void testUtilBitmapPrint(const struct zint_symbol *symbol, const char *prefix, const char *postfix);
+int testUtilBitmapCmp(const struct zint_symbol *symbol, const char *expected, int *row, int *column);
 int testUtilExists(char *filename);
 int testUtilCmpPngs(char *file1, char *file2);
 int testUtilCmpTxts(char *txt1, char *txt2);

@@ -72,14 +72,32 @@ static void writepng_error_handler(png_structp png_ptr, png_const_charp msg) {
     longjmp(graphic->jmpbuf, 1);
 }
 
-INTERNAL int png_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
+INTERNAL int png_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf) {
     struct mainprog_info_type wpng_info;
     struct mainprog_info_type *graphic;
     png_structp png_ptr;
     png_infop info_ptr;
-    int i, row, column;
-    int fgred, fggrn, fgblu, bgred, bggrn, bgblu;
-    int fgalpha, bgalpha, use_alpha;
+    int row, column;
+    unsigned char fg[4], bg[4];
+    unsigned char white[4] =   { 0xff, 0xff, 0xff, 0xff };
+    unsigned char cyan[4] =    {    0, 0xff, 0xff, 0xff };
+    unsigned char blue[4] =    {    0,    0, 0xff, 0xff };
+    unsigned char magenta[4] = { 0xff,    0, 0xff, 0xff };
+    unsigned char red[4] =     { 0xff,    0,    0, 0xff };
+    unsigned char yellow[4] =  { 0xff, 0xff,    0, 0xff };
+    unsigned char green[4] =   {    0, 0xff,    0, 0xff };
+    unsigned char black[4] =   {    0,    0,    0, 0xff };
+    unsigned char *map[91] = {
+        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, /* 0x00-0F */
+        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, /* 0x10-1F */
+        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, /* 0x20-2F */
+        bg, fg, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, /* 0-9 */
+        NULL, NULL, NULL, NULL, NULL, NULL, NULL, /* :;<=>?@ */
+        NULL, blue, cyan, NULL, NULL, NULL, green, NULL, NULL, NULL, black, NULL, magenta, /* A-M */
+        NULL, NULL, NULL, NULL, red, NULL, NULL, NULL, NULL, white, NULL, yellow, NULL /* N-Z */
+    };
+    int use_alpha, incr;
+    unsigned char *image_data;
 
 #ifndef _MSC_VER
     unsigned char outdata[symbol->bitmap_width * 4];
@@ -92,27 +110,28 @@ INTERNAL int png_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
     graphic->width = symbol->bitmap_width;
     graphic->height = symbol->bitmap_height;
 
-    fgred = (16 * ctoi(symbol->fgcolour[0])) + ctoi(symbol->fgcolour[1]);
-    fggrn = (16 * ctoi(symbol->fgcolour[2])) + ctoi(symbol->fgcolour[3]);
-    fgblu = (16 * ctoi(symbol->fgcolour[4])) + ctoi(symbol->fgcolour[5]);
-    bgred = (16 * ctoi(symbol->bgcolour[0])) + ctoi(symbol->bgcolour[1]);
-    bggrn = (16 * ctoi(symbol->bgcolour[2])) + ctoi(symbol->bgcolour[3]);
-    bgblu = (16 * ctoi(symbol->bgcolour[4])) + ctoi(symbol->bgcolour[5]);
+    fg[0] = (16 * ctoi(symbol->fgcolour[0])) + ctoi(symbol->fgcolour[1]);
+    fg[1] = (16 * ctoi(symbol->fgcolour[2])) + ctoi(symbol->fgcolour[3]);
+    fg[2] = (16 * ctoi(symbol->fgcolour[4])) + ctoi(symbol->fgcolour[5]);
+    bg[0] = (16 * ctoi(symbol->bgcolour[0])) + ctoi(symbol->bgcolour[1]);
+    bg[1] = (16 * ctoi(symbol->bgcolour[2])) + ctoi(symbol->bgcolour[3]);
+    bg[2] = (16 * ctoi(symbol->bgcolour[4])) + ctoi(symbol->bgcolour[5]);
 
     use_alpha = 0;
     
     if (strlen(symbol->fgcolour) > 6) {
-        fgalpha = (16 * ctoi(symbol->fgcolour[6])) + ctoi(symbol->fgcolour[7]);
-        if (fgalpha != 0xff) use_alpha = 1;
+        fg[3] = (16 * ctoi(symbol->fgcolour[6])) + ctoi(symbol->fgcolour[7]);
+        white[3] = cyan[3] = blue[3] = magenta[3] = red[3] = yellow[3] = green[3] = black[3] = fg[3];
+        if (fg[3] != 0xff) use_alpha = 1;
     } else {
-        fgalpha = 0xff;
+        fg[3] = 0xff;
     }
     
     if (strlen(symbol->bgcolour) > 6) {
-        bgalpha = (16 * ctoi(symbol->bgcolour[6])) + ctoi(symbol->bgcolour[7]);
-        if (bgalpha != 0xff) use_alpha = 1;
+        bg[3] = (16 * ctoi(symbol->bgcolour[6])) + ctoi(symbol->bgcolour[7]);
+        if (bg[3] != 0xff) use_alpha = 1;
     } else {
-        bgalpha = 0xff;
+        bg[3] = 0xff;
     }
 
     /* Open output file in binary mode */
@@ -175,78 +194,15 @@ INTERNAL int png_pixel_plot(struct zint_symbol *symbol, char *pixelbuf) {
     png_set_packing(png_ptr);
 
     /* Pixel Plotting */
+    incr = use_alpha ? 4 : 3;
     for (row = 0; row < symbol->bitmap_height; row++) {
-        unsigned char *image_data;
-        for (column = 0; column < symbol->bitmap_width; column++) {
-            i = column * 3;
-            if (use_alpha) i += column;
-            switch (*(pixelbuf + (symbol->bitmap_width * row) + column)) {
-                case 'W': // White
-                    outdata[i] = 255;
-                    outdata[i + 1] = 255;
-                    outdata[i + 2] = 255;
-                    if (use_alpha) outdata[i + 3] = fgalpha;
-                    break;
-                case 'C': // Cyan
-                    outdata[i] = 0;
-                    outdata[i + 1] = 255;
-                    outdata[i + 2] = 255;
-                    if (use_alpha) outdata[i + 3] = fgalpha;
-                    break;
-                case 'B': // Blue
-                    outdata[i] = 0;
-                    outdata[i + 1] = 0;
-                    outdata[i + 2] = 255;
-                    if (use_alpha) outdata[i + 3] = fgalpha;
-                    break;
-                case 'M': // Magenta
-                    outdata[i] = 255;
-                    outdata[i + 1] = 0;
-                    outdata[i + 2] = 255;
-                    if (use_alpha) outdata[i + 3] = fgalpha;
-                    break;
-                case 'R': // Red
-                    outdata[i] = 255;
-                    outdata[i + 1] = 0;
-                    outdata[i + 2] = 0;
-                    if (use_alpha) outdata[i + 3] = fgalpha;
-                    break;
-                case 'Y': // Yellow
-                    outdata[i] = 255;
-                    outdata[i + 1] = 255;
-                    outdata[i + 2] = 0;
-                    if (use_alpha) outdata[i + 3] = fgalpha;
-                    break;
-                case 'G': // Green
-                    outdata[i] = 0;
-                    outdata[i + 1] = 255;
-                    outdata[i + 2] = 0;
-                    if (use_alpha) outdata[i + 3] = fgalpha;
-                    break;
-                case 'K': // Black
-                    outdata[i] = 0;
-                    outdata[i + 1] = 0;
-                    outdata[i + 2] = 0;
-                    if (use_alpha) outdata[i + 3] = fgalpha;
-                    break;
-                case '1':
-                    outdata[i] = fgred;
-                    outdata[i + 1] = fggrn;
-                    outdata[i + 2] = fgblu;
-                    if (use_alpha) outdata[i + 3] = fgalpha;
-                    break;
-                default:
-                    outdata[i] = bgred;
-                    outdata[i + 1] = bggrn;
-                    outdata[i + 2] = bgblu;
-                    if (use_alpha) outdata[i + 3] = bgalpha;
-                    break;
-
-            }
+        int p = symbol->bitmap_width * row;
+        image_data = outdata;
+        for (column = 0; column < symbol->bitmap_width; column++, p++, image_data += incr) {
+            memcpy(image_data, map[pixelbuf[p]], incr);
         }
         /* write row contents to file */
-        image_data = outdata;
-        png_write_row(png_ptr, image_data);
+        png_write_row(png_ptr, outdata);
     }
 
     /* End the file */

@@ -67,6 +67,22 @@
 #define STATIC_UNLESS_ZINT_TEST static
 #endif
 
+#define COMMON_INLINE   1
+
+#ifdef COMMON_INLINE
+/* Return true (1) if a module is dark/black, otherwise false (0) */
+#define module_is_set(s, y, x) (((s)->encoded_data[(y)][(x) >> 3] >> ((x) & 0x07)) & 1)
+
+/* Set a module to dark/black */
+#define set_module(s, y, x) do { (s)->encoded_data[(y)][(x) >> 3] |= 1 << ((x) & 0x07); } while (0)
+
+/* Return true (1-8) if a module is colour, otherwise false (0) */
+#define module_colour_is_set(s, y, x) ((s)->encoded_data[(y)][(x)])
+
+/* Set a module to a colour */
+#define set_module_colour(s, y, x, c) do { (s)->encoded_data[(y)][(x)] = (c); } while (0)
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
@@ -77,11 +93,14 @@ extern "C" {
     INTERNAL int is_sane(const char test_string[], const unsigned char source[], const size_t length);
     INTERNAL void lookup(const char set_string[], const char *table[], const char data, char dest[]);
     INTERNAL void bin_append(const int arg, const int length, char *binary);
-    INTERNAL void bin_append_posn(const int arg, const int length, char *binary, size_t posn);
+    INTERNAL int bin_append_posn(const int arg, const int length, char *binary, int posn);
     INTERNAL int posn(const char set_string[], const char data);
+    #ifndef COMMON_INLINE
     INTERNAL int module_is_set(const struct zint_symbol *symbol, const int y_coord, const int x_coord);
     INTERNAL void set_module(struct zint_symbol *symbol, const int y_coord, const int x_coord);
+    INTERNAL int module_colour_is_set(const struct zint_symbol *symbol, const int y_coord, const int x_coord);
     INTERNAL void set_module_colour(struct zint_symbol *symbol, const int y_coord, const int x_coord, const int colour);
+    #endif
     INTERNAL void unset_module(struct zint_symbol *symbol, const int y_coord, const int x_coord);
     INTERNAL void expand(struct zint_symbol *symbol, const char data[]);
     INTERNAL int is_stackable(const int symbology);

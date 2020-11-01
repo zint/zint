@@ -281,7 +281,7 @@ static void test_buffer(int index, int generate, int debug) {
         assert_zero(ret, "i:%d ZBarcode_Buffer(%s) ret %d != 0 (%s)\n", i, testUtilBarcodeName(data[i].symbology), ret, symbol->errtxt);
         assert_nonnull(symbol->bitmap, "i:%d ZBarcode_Buffer(%s) bitmap NULL\n", i, testUtilBarcodeName(data[i].symbology));
 
-        if (index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) testUtilBitmapPrint(symbol);
+        if (index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) testUtilBitmapPrint(symbol, NULL, NULL);
 
         if (generate) {
             printf("        /*%3d*/ { %s, \"%s\", \"%s\", %d, %d, %d, %d, %d },\n",
@@ -383,7 +383,7 @@ static void test_upcean_hrt(int index, int debug) {
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d\n", i, ret, data[i].ret);
         assert_nonnull(symbol->bitmap, "i:%d (%d) symbol->bitmap NULL\n", i, data[i].symbology);
 
-        if (index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) testUtilBitmapPrint(symbol);
+        if (index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) testUtilBitmapPrint(symbol, NULL, NULL);
 
         assert_equal(symbol->height, data[i].expected_height, "i:%d (%s) symbol->height %d != %d\n", i, testUtilBarcodeName(data[i].symbology), symbol->height, data[i].expected_height);
         assert_equal(symbol->rows, data[i].expected_rows, "i:%d (%s) symbol->rows %d != %d\n", i, testUtilBarcodeName(data[i].symbology), symbol->rows, data[i].expected_rows);
@@ -500,7 +500,7 @@ static void test_row_separator(int index, int debug) {
 
         int j, separator_bits_set;
 
-        if (index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) testUtilBitmapPrint(symbol);
+        if (index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) testUtilBitmapPrint(symbol, NULL, NULL);
 
         for (j = data[i].expected_separator_row; j < data[i].expected_separator_row + data[i].expected_separator_height; j++) {
             separator_bits_set = is_row_column_black(symbol, j, data[i].expected_separator_col);
@@ -580,7 +580,7 @@ static void test_stacking(int index, int debug) {
 
         int j, separator_bits_set;
 
-        if (index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) testUtilBitmapPrint(symbol);
+        if (index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) testUtilBitmapPrint(symbol, NULL, NULL);
 
         if (data[i].expected_separator_row != -1) {
             for (j = data[i].expected_separator_row; j < data[i].expected_separator_row + data[i].expected_separator_height; j++) {
@@ -722,7 +722,7 @@ static void test_output_options(int index, int debug) {
         if (ret < 5) {
             assert_nonnull(symbol->bitmap, "i:%d (%s) symbol->bitmap NULL\n", i, testUtilBarcodeName(data[i].symbology));
 
-            if (index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) testUtilBitmapPrint(symbol);
+            if (index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) testUtilBitmapPrint(symbol, NULL, NULL);
 
             assert_equal(symbol->height, data[i].expected_height, "i:%d (%s) symbol->height %d != %d\n", i, testUtilBarcodeName(data[i].symbology), symbol->height, data[i].expected_height);
             assert_equal(symbol->rows, data[i].expected_rows, "i:%d (%s) symbol->rows %d != %d\n", i, testUtilBarcodeName(data[i].symbology), symbol->rows, data[i].expected_rows);
@@ -802,7 +802,7 @@ static void test_draw_string_wrap(int index, int debug) {
         assert_equal(symbol->bitmap_width, data[i].expected_bitmap_width, "i:%d (%d) symbol->bitmap_width %d != %d\n", i, data[i].symbology, symbol->bitmap_width, data[i].expected_bitmap_width);
         assert_equal(symbol->bitmap_height, data[i].expected_bitmap_height, "i:%d (%d) symbol->bitmap_height %d != %d\n", i, data[i].symbology, symbol->bitmap_height, data[i].expected_bitmap_height);
 
-        if (index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) testUtilBitmapPrint(symbol);
+        if (index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) testUtilBitmapPrint(symbol, NULL, NULL);
 
         ret = ZBarcode_Print(symbol, 0);
         assert_zero(ret, "i:%d ZBarcode_Print(%d) ret %d != 0\n", i, data[i].symbology, ret);
@@ -868,7 +868,7 @@ static void test_code128_utf8(int index, int debug) {
         assert_equal(symbol->bitmap_width, data[i].expected_bitmap_width, "i:%d (%d) symbol->bitmap_width %d != %d\n", i, BARCODE_CODE128, symbol->bitmap_width, data[i].expected_bitmap_width);
         assert_equal(symbol->bitmap_height, data[i].expected_bitmap_height, "i:%d (%d) symbol->bitmap_height %d != %d\n", i, BARCODE_CODE128, symbol->bitmap_height, data[i].expected_bitmap_height);
 
-        if (index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) testUtilBitmapPrint(symbol);
+        if (index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) testUtilBitmapPrint(symbol, NULL, NULL);
 
         ret = ZBarcode_Print(symbol, 0);
         assert_zero(ret, "i:%d ZBarcode_Print(%d) ret %d != 0\n", i, BARCODE_CODE128, ret);
@@ -972,7 +972,7 @@ static void test_scale(int index, int debug) {
         assert_zero(ret, "i:%d ZBarcode_Buffer(%d) ret %d != 0\n", i, data[i].symbology, ret);
         assert_nonnull(symbol->bitmap, "i:%d (%d) symbol->bitmap NULL\n", i, data[i].symbology);
 
-        if (index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) testUtilBitmapPrint(symbol);
+        if (index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) testUtilBitmapPrint(symbol, NULL, NULL);
 
         assert_equal(symbol->height, data[i].expected_height, "i:%d (%d) symbol->height %d != %d\n", i, data[i].symbology, symbol->height, data[i].expected_height);
         assert_equal(symbol->rows, data[i].expected_rows, "i:%d (%d) symbol->rows %d != %d\n", i, data[i].symbology, symbol->rows, data[i].expected_rows);
@@ -1002,6 +1002,189 @@ static void test_scale(int index, int debug) {
     testFinish();
 }
 
+static void test_buffer_plot(int index, int generate, int debug) {
+
+    testStart("");
+
+    int ret;
+    struct item {
+        int symbology;
+        int option_1;
+        int option_2;
+        int whitespace_width;
+        int output_options;
+        char *fgcolour;
+        char *bgcolour;
+        char *data;
+
+        int expected_height;
+        int expected_rows;
+        int expected_width;
+        int expected_bitmap_width;
+        int expected_bitmap_height;
+        char *expected_bitmap;
+    };
+    struct item data[] = {
+        /*  0*/ { BARCODE_PDF417, 0, 1, -1, -1, "", "", "1", 15, 5, 86, 86, 15,
+                    "11111111010101000111101010111100001110101001110000011101010111000000111111101000101001"
+                    "11111111010101000111101010111100001110101001110000011101010111000000111111101000101001"
+                    "11111111010101000111101010111100001110101001110000011101010111000000111111101000101001"
+                    "11111111010101000111111010101110001011111101001100011111101010111000111111101000101001"
+                    "11111111010101000111111010101110001011111101001100011111101010111000111111101000101001"
+                    "11111111010101000111111010101110001011111101001100011111101010111000111111101000101001"
+                    "11111111010101000110101011111000001111110101101000011101010111111000111111101000101001"
+                    "11111111010101000110101011111000001111110101101000011101010111111000111111101000101001"
+                    "11111111010101000110101011111000001111110101101000011101010111111000111111101000101001"
+                    "11111111010101000101011110011110001110111101100100011010111101111100111111101000101001"
+                    "11111111010101000101011110011110001110111101100100011010111101111100111111101000101001"
+                    "11111111010101000101011110011110001110111101100100011010111101111100111111101000101001"
+                    "11111111010101000111010111001100001110100111000110011101011100110000111111101000101001"
+                    "11111111010101000111010111001100001110100111000110011101011100110000111111101000101001"
+                    "11111111010101000111010111001100001110100111000110011101011100110000111111101000101001"
+                },
+        /*  1*/ { BARCODE_PDF417, 0, 1, -1, -1, "FF0000", "00FF0099", "1", 15, 5, 86, 86, 15,
+                    "RRRRRRRRGRGRGRGGGRRRRGRGRGRRRRGGGGRRRGRGRGGRRRGGGGGRRRGRGRGRRRGGGGGGRRRRRRRGRGGGRGRGGR"
+                    "RRRRRRRRGRGRGRGGGRRRRGRGRGRRRRGGGGRRRGRGRGGRRRGGGGGRRRGRGRGRRRGGGGGGRRRRRRRGRGGGRGRGGR"
+                    "RRRRRRRRGRGRGRGGGRRRRGRGRGRRRRGGGGRRRGRGRGGRRRGGGGGRRRGRGRGRRRGGGGGGRRRRRRRGRGGGRGRGGR"
+                    "RRRRRRRRGRGRGRGGGRRRRRRGRGRGRRRGGGRGRRRRRRGRGGRRGGGRRRRRRGRGRGRRRGGGRRRRRRRGRGGGRGRGGR"
+                    "RRRRRRRRGRGRGRGGGRRRRRRGRGRGRRRGGGRGRRRRRRGRGGRRGGGRRRRRRGRGRGRRRGGGRRRRRRRGRGGGRGRGGR"
+                    "RRRRRRRRGRGRGRGGGRRRRRRGRGRGRRRGGGRGRRRRRRGRGGRRGGGRRRRRRGRGRGRRRGGGRRRRRRRGRGGGRGRGGR"
+                    "RRRRRRRRGRGRGRGGGRRGRGRGRRRRRGGGGGRRRRRRGRGRRGRGGGGRRRGRGRGRRRRRRGGGRRRRRRRGRGGGRGRGGR"
+                    "RRRRRRRRGRGRGRGGGRRGRGRGRRRRRGGGGGRRRRRRGRGRRGRGGGGRRRGRGRGRRRRRRGGGRRRRRRRGRGGGRGRGGR"
+                    "RRRRRRRRGRGRGRGGGRRGRGRGRRRRRGGGGGRRRRRRGRGRRGRGGGGRRRGRGRGRRRRRRGGGRRRRRRRGRGGGRGRGGR"
+                    "RRRRRRRRGRGRGRGGGRGRGRRRRGGRRRRGGGRRRGRRRRGRRGGRGGGRRGRGRRRRGRRRRRGGRRRRRRRGRGGGRGRGGR"
+                    "RRRRRRRRGRGRGRGGGRGRGRRRRGGRRRRGGGRRRGRRRRGRRGGRGGGRRGRGRRRRGRRRRRGGRRRRRRRGRGGGRGRGGR"
+                    "RRRRRRRRGRGRGRGGGRGRGRRRRGGRRRRGGGRRRGRRRRGRRGGRGGGRRGRGRRRRGRRRRRGGRRRRRRRGRGGGRGRGGR"
+                    "RRRRRRRRGRGRGRGGGRRRGRGRRRGGRRGGGGRRRGRGGRRRGGGRRGGRRRGRGRRRGGRRGGGGRRRRRRRGRGGGRGRGGR"
+                    "RRRRRRRRGRGRGRGGGRRRGRGRRRGGRRGGGGRRRGRGGRRRGGGRRGGRRRGRGRRRGGRRGGGGRRRRRRRGRGGGRGRGGR"
+                    "RRRRRRRRGRGRGRGGGRRRGRGRRRGGRRGGGGRRRGRGGRRRGGGRRGGRRRGRGRRRGGRRGGGGRRRRRRRGRGGGRGRGGR"
+                },
+        /*  2*/ { BARCODE_PDF417, 0, 1, 1, -1, "FFFF0033", "00FF00", "1", 15, 5, 86, 88, 15,
+                    "GYYYYYYYYGYGYGYGGGYYYYGYGYGYYYYGGGGYYYGYGYGGYYYGGGGGYYYGYGYGYYYGGGGGGYYYYYYYGYGGGYGYGGYG"
+                    "GYYYYYYYYGYGYGYGGGYYYYGYGYGYYYYGGGGYYYGYGYGGYYYGGGGGYYYGYGYGYYYGGGGGGYYYYYYYGYGGGYGYGGYG"
+                    "GYYYYYYYYGYGYGYGGGYYYYGYGYGYYYYGGGGYYYGYGYGGYYYGGGGGYYYGYGYGYYYGGGGGGYYYYYYYGYGGGYGYGGYG"
+                    "GYYYYYYYYGYGYGYGGGYYYYYYGYGYGYYYGGGYGYYYYYYGYGGYYGGGYYYYYYGYGYGYYYGGGYYYYYYYGYGGGYGYGGYG"
+                    "GYYYYYYYYGYGYGYGGGYYYYYYGYGYGYYYGGGYGYYYYYYGYGGYYGGGYYYYYYGYGYGYYYGGGYYYYYYYGYGGGYGYGGYG"
+                    "GYYYYYYYYGYGYGYGGGYYYYYYGYGYGYYYGGGYGYYYYYYGYGGYYGGGYYYYYYGYGYGYYYGGGYYYYYYYGYGGGYGYGGYG"
+                    "GYYYYYYYYGYGYGYGGGYYGYGYGYYYYYGGGGGYYYYYYGYGYYGYGGGGYYYGYGYGYYYYYYGGGYYYYYYYGYGGGYGYGGYG"
+                    "GYYYYYYYYGYGYGYGGGYYGYGYGYYYYYGGGGGYYYYYYGYGYYGYGGGGYYYGYGYGYYYYYYGGGYYYYYYYGYGGGYGYGGYG"
+                    "GYYYYYYYYGYGYGYGGGYYGYGYGYYYYYGGGGGYYYYYYGYGYYGYGGGGYYYGYGYGYYYYYYGGGYYYYYYYGYGGGYGYGGYG"
+                    "GYYYYYYYYGYGYGYGGGYGYGYYYYGGYYYYGGGYYYGYYYYGYYGGYGGGYYGYGYYYYGYYYYYGGYYYYYYYGYGGGYGYGGYG"
+                    "GYYYYYYYYGYGYGYGGGYGYGYYYYGGYYYYGGGYYYGYYYYGYYGGYGGGYYGYGYYYYGYYYYYGGYYYYYYYGYGGGYGYGGYG"
+                    "GYYYYYYYYGYGYGYGGGYGYGYYYYGGYYYYGGGYYYGYYYYGYYGGYGGGYYGYGYYYYGYYYYYGGYYYYYYYGYGGGYGYGGYG"
+                    "GYYYYYYYYGYGYGYGGGYYYGYGYYYGGYYGGGGYYYGYGGYYYGGGYYGGYYYGYGYYYGGYYGGGGYYYYYYYGYGGGYGYGGYG"
+                    "GYYYYYYYYGYGYGYGGGYYYGYGYYYGGYYGGGGYYYGYGGYYYGGGYYGGYYYGYGYYYGGYYGGGGYYYYYYYGYGGGYGYGGYG"
+                    "GYYYYYYYYGYGYGYGGGYYYGYGYYYGGYYGGGGYYYGYGGYYYGGGYYGGYYYGYGYYYGGYYGGGGYYYYYYYGYGGGYGYGGYG"
+                },
+        /*  3*/ { BARCODE_ULTRA, -1, -1, -1, -1, "FF00007F", "00FF0000", "1", 13, 13, 13, 13, 13,
+                    "1111111111111"
+                    "10Y10GYCGYYC1"
+                    "11C10MGYCGGG1"
+                    "10G10GYCMCYC1"
+                    "11Y10YMMGYGY1"
+                    "10M10CGGCMYM1"
+                    "1101010101011"
+                    "10G10CYMGCCC1"
+                    "11C10MCGCMMM1"
+                    "10Y10CGCGYCY1"
+                    "11M10GMMMMGC1"
+                    "10C10MYYYGMY1"
+                    "1111111111111"
+                },
+        /*  4*/ { BARCODE_ULTRA, -1, -1, 1, -1, "", "00FF0000", "1", 13, 13, 13, 15, 13,
+                    "G1111111111111G"
+                    "G10Y10GYCGYYC1G"
+                    "G11C10MGYCGGG1G"
+                    "G10G10GYCMCYC1G"
+                    "G11Y10YMMGYGY1G"
+                    "G10M10CGGCMYM1G"
+                    "G1101010101011G"
+                    "G10G10CYMGCCC1G"
+                    "G11C10MCGCMMM1G"
+                    "G10Y10CGCGYCY1G"
+                    "G11M10GMMMMGC1G"
+                    "G10C10MYYYGMY1G"
+                    "G1111111111111G"
+                },
+        /*  5*/ { BARCODE_CHANNEL, -1, -1, 1, -1, "30313233", "CFCECDCC", "1", 5, 1, 19, 21, 5,
+                    "CFCECD303132CFCECD303132CFCECD303132CFCECD303132CFCECD303132CFCECD303132303132CFCECD303132303132CFCECDCFCECDCFCECD303132CFCECD"
+                    "CFCECD303132CFCECD303132CFCECD303132CFCECD303132CFCECD303132CFCECD303132303132CFCECD303132303132CFCECDCFCECDCFCECD303132CFCECD"
+                    "CFCECD303132CFCECD303132CFCECD303132CFCECD303132CFCECD303132CFCECD303132303132CFCECD303132303132CFCECDCFCECDCFCECD303132CFCECD"
+                    "CFCECD303132CFCECD303132CFCECD303132CFCECD303132CFCECD303132CFCECD303132303132CFCECD303132303132CFCECDCFCECDCFCECD303132CFCECD"
+                    "CFCECD303132CFCECD303132CFCECD303132CFCECD303132CFCECD303132CFCECD303132303132CFCECD303132303132CFCECDCFCECDCFCECD303132CFCECD"
+                },
+    };
+    int data_size = ARRAY_SIZE(data);
+
+    int row, column;
+    int fg_len, bg_len;
+
+    for (int i = 0; i < data_size; i++) {
+
+        if (index != -1 && i != index) continue;
+        if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d\n", i);
+
+        struct zint_symbol *symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        int length = testUtilSetSymbol(symbol, data[i].symbology, UNICODE_MODE, -1 /*eci*/, data[i].option_1, data[i].option_2, -1, data[i].output_options, data[i].data, -1, debug);
+        if (data[i].whitespace_width != -1) {
+            symbol->whitespace_width = data[i].whitespace_width;
+        }
+        if (*data[i].fgcolour) {
+            strcpy(symbol->fgcolour, data[i].fgcolour);
+        }
+        if (*data[i].bgcolour) {
+            strcpy(symbol->bgcolour, data[i].bgcolour);
+        }
+        /* Keep dumps small */
+        symbol->show_hrt = 0;
+        symbol->scale = 0.5f;
+        symbol->height = 1;
+
+        ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
+        assert_zero(ret, "i:%d ZBarcode_Encode(%s) ret %d != 0 (%s)\n", i, testUtilBarcodeName(data[i].symbology), ret, symbol->errtxt);
+
+        ret = ZBarcode_Buffer(symbol, 0);
+        assert_zero(ret, "i:%d ZBarcode_Buffer(%s) ret %d != 0 (%s)\n", i, testUtilBarcodeName(data[i].symbology), ret, symbol->errtxt);
+        assert_nonnull(symbol->bitmap, "i:%d ZBarcode_Buffer(%s) bitmap NULL\n", i, testUtilBarcodeName(data[i].symbology));
+
+        if (index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) testUtilBitmapPrint(symbol, NULL, NULL);
+
+        if (generate) {
+            printf("        /*%3d*/ { %s, %d, %d, %d, %s, \"%s\", \"%s\", \"%s\", %d, %d, %d, %d, %d,\n",
+                    i, testUtilBarcodeName(data[i].symbology), data[i].option_1, data[i].option_2, data[i].whitespace_width, testUtilOutputOptionsName(data[i].output_options),
+                    data[i].fgcolour, data[i].bgcolour, data[i].data, symbol->height, symbol->rows, symbol->width, symbol->bitmap_width, symbol->bitmap_height);
+            testUtilBitmapPrint(symbol, "                    ", "\n");
+            printf("                },\n");
+        } else {
+            assert_equal(symbol->height, data[i].expected_height, "i:%d (%s) symbol->height %d != %d\n", i, testUtilBarcodeName(data[i].symbology), symbol->height, data[i].expected_height);
+            assert_equal(symbol->rows, data[i].expected_rows, "i:%d (%s) symbol->rows %d != %d\n", i, testUtilBarcodeName(data[i].symbology), symbol->rows, data[i].expected_rows);
+            assert_equal(symbol->width, data[i].expected_width, "i:%d (%s) symbol->width %d != %d\n", i, testUtilBarcodeName(data[i].symbology), symbol->width, data[i].expected_width);
+            assert_equal(symbol->bitmap_width, data[i].expected_bitmap_width, "i:%d (%s) symbol->bitmap_width %d != %d\n",
+                i, testUtilBarcodeName(data[i].symbology), symbol->bitmap_width, data[i].expected_bitmap_width);
+            assert_equal(symbol->bitmap_height, data[i].expected_bitmap_height, "i:%d (%s) symbol->bitmap_height %d != %d\n",
+                i, testUtilBarcodeName(data[i].symbology), symbol->bitmap_height, data[i].expected_bitmap_height);
+
+            ret = testUtilBitmapCmp(symbol, data[i].expected_bitmap, &row, &column);
+            assert_zero(ret, "i:%d (%s) testUtilBitmapCmp ret %d != 0 column %d row %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), ret, column, row, data[i].data);
+
+            fg_len = strlen(data[i].fgcolour);
+            bg_len = strlen(data[i].bgcolour);
+            if (fg_len > 6 || bg_len > 6) {
+                assert_nonnull(symbol->alphamap, "i:%d ZBarcode_Buffer(%s) alphamap NULL\n", i, testUtilBarcodeName(data[i].symbology));
+                // TODO: check alphamap
+            } else {
+                assert_null(symbol->alphamap, "i:%d ZBarcode_Buffer(%s) alphamap not NULL\n", i, testUtilBarcodeName(data[i].symbology));
+            }
+        }
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
 int main(int argc, char *argv[]) {
 
     testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
@@ -1014,6 +1197,7 @@ int main(int argc, char *argv[]) {
         { "test_draw_string_wrap", test_draw_string_wrap, 1, 0, 1 },
         { "test_code128_utf8", test_code128_utf8, 1, 0, 1 },
         { "test_scale", test_scale, 1, 0, 1 },
+        { "test_buffer_plot", test_buffer_plot, 1, 1, 1 },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));
