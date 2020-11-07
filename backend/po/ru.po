@@ -1,0 +1,548 @@
+# Zint barcode encoding library
+# Copyright (C) 2020 Robin Stuart <rstuart114@gmail.com>
+# This file is distributed under the same license as the libzint package.
+# Robin Stuart <rstuart114@gmail.com>, 2020.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: LIBZINT 2.9.1\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2020-11-07 21:47+0000\n"
+"PO-Revision-Date: 2020-11-07 21:47+0000\n"
+"Last-Translator: Василий Павлов <halmet94@gmail.com> \n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: ru\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: library.c:1306
+msgid " in 2D component"
+msgstr ""
+
+#: composite.c:1419 composite.c:1576
+msgid " in linear component"
+msgstr ""
+
+#: composite.c:1403
+msgid "2D component input data too long"
+msgstr ""
+
+#: upcean.c:964
+msgid "Add-on input wrong length"
+msgstr ""
+
+#: medical.c:243
+msgid "Can't contain \"A\", \"B\", \"C\" or \"D\""
+msgstr ""
+
+#: aztec.c:1007 code16k.c:318 dmatrix.c:574
+msgid "Can't encode in GS1 and Reader Initialisation mode at the same time"
+msgstr ""
+
+#: emf.c:677 gif.c:318 gif.c:326 library.c:218 png.c:142 png.c:150 ps.c:173
+#: svg.c:197 tif.c:132 tif.c:140 bmp.c:181 bmp.c:191 pcx.c:107 pcx.c:115
+msgid "Can't open output file"
+msgstr "Не могу открыть выходной файл"
+
+#: library.c:1135
+msgid "Codabar 18 not supported"
+msgstr ""
+
+#: codablock.c:674
+msgid "Columns parameter not 0 or in range 9 to 67"
+msgstr ""
+
+#: gs1.c:120
+msgid "Control characters are not supported by GS1"
+msgstr ""
+
+#: common.c:323
+msgid "Corrupt Unicode data"
+msgstr "Данные Юникода повреждены"
+
+#: library.c:1031
+msgid "Corrupt Unicode escape character in input data"
+msgstr ""
+
+#: library.c:1014
+msgid "Corrupt escape character in input data"
+msgstr ""
+
+#: gs1.c:125
+msgid "DEL characters are not supported by GS1"
+msgstr ""
+
+#: gs1.c:132
+msgid "Data does not start with an AI"
+msgstr "Данные не начинаются с ИИ"
+
+#: medical.c:85 medical.c:129
+msgid "Data out of range"
+msgstr ""
+
+#: library.c:273
+msgid "Data too long for HIBC LIC"
+msgstr ""
+
+#: aztec.c:1307
+msgid "Data too long for reader initialisation symbol"
+msgstr "Данные слишком долго для читающего инициализирующего символа"
+
+#: ultra.c:940
+msgid "Data too long for selected error correction capacity"
+msgstr ""
+
+#: aztec.c:1288
+msgid "Data too long for specified Aztec Code symbol size"
+msgstr ""
+
+#: pdf417.c:653
+msgid "Data too long for specified number of columns"
+msgstr ""
+
+#: medical.c:229
+msgid "Does not begin with \"A\", \"B\", \"C\" or \"D\""
+msgstr ""
+
+#: medical.c:235
+msgid "Does not end with \"A\", \"B\", \"C\" or \"D\""
+msgstr ""
+
+#: ultra.c:889
+msgid "ECI value not supported by Ultracode"
+msgstr ""
+
+#: gs1.c:244
+msgid "Empty data field in input data"
+msgstr ""
+
+#: library.c:1335
+msgid "Encoded data includes ECI"
+msgstr ""
+
+#: qr.c:2380
+msgid "Error correction level H not available"
+msgstr "Уровень исправления ошибок H недоступен"
+
+#: qr.c:2932
+msgid "Error correction level L not available in rMQR"
+msgstr "Уровень исправления ошибок L недоступен"
+
+#: qr.c:2938
+msgid "Error correction level Q not available in rMQR"
+msgstr "Уровень исправления ошибок Q недоступен"
+
+#: qr.c:2391
+msgid "Error correction level Q requires Version M4"
+msgstr "Уровень исправления ошибок Q недоступен"
+
+#: gs1.c:110
+msgid "Extended ASCII characters are not supported by GS1"
+msgstr "Расширенная таблица символов ASCII не поддерживается GS1"
+
+#: library.c:1575
+msgid "Filename NULL"
+msgstr ""
+
+#: gs1.c:185
+msgid "Found nested brackets in input data"
+msgstr ""
+
+#: library.c:1160
+msgid "General Parcel Code not supported"
+msgstr ""
+
+#: library.c:1024
+msgid "Incomplete Unicode escape character in input data"
+msgstr ""
+
+#: library.c:955 library.c:997
+msgid "Incomplete escape character in input data"
+msgstr ""
+
+#: upcean.c:581 upcean.c:599
+msgid "Incorrect ISBN check"
+msgstr "Неверная проверка ISBN"
+
+#: upcean.c:599
+msgid "Incorrect SBN check"
+msgstr "Неверная проверка SBN"
+
+#: library.c:1086
+msgid "Input data NULL"
+msgstr ""
+
+#: library.c:1607
+msgid "Input file empty or unseekable"
+msgstr ""
+
+#: library.c:1632
+#, c-format
+msgid "Input file read error (%.30s)"
+msgstr ""
+
+#: library.c:1600
+msgid "Input file too long"
+msgstr ""
+
+#: rss.c:635
+msgid "Input out of range"
+msgstr ""
+
+#: aztec.c:1587 aztec.c:1610
+msgid "Input too large"
+msgstr ""
+
+#: 2of5.c:68 2of5.c:101 2of5.c:133 2of5.c:166 2of5.c:204 2of5.c:264 2of5.c:317
+#: codablock.c:736 code16k.c:139 code16k.c:285 code49.c:221 imail.c:261
+#: maxicode.c:680 pdf417.c:515 pdf417.c:638 pdf417.c:852 pdf417.c:954 rss.c:287
+#: rss.c:613 rss.c:1183 upcean.c:762 auspost.c:157 code128.c:320 code128.c:484
+#: code128.c:726 code128.c:858 code128.c:1038 code1.c:1019 code1.c:1165
+#: code1.c:1213 code1.c:1315 code1.c:1327 code1.c:1423 code.c:115 code.c:234
+#: code.c:238 code.c:242 code.c:387 code.c:636 composite.c:1305 dmatrix.c:976
+#: dmatrix.c:1254 gridmtx.c:983 gridmtx.c:1067 mailmark.c:150 medical.c:71
+#: medical.c:170 medical.c:213 plessey.c:61 plessey.c:122 plessey.c:155
+#: plessey.c:224 plessey.c:327 plessey.c:392 postal.c:221 postal.c:262
+#: postal.c:342 postal.c:388 postal.c:437 postal.c:493 postal.c:528 qr.c:2371
+#: qr.c:2467 qr.c:2475 qr.c:2487 telepen.c:71 telepen.c:120
+msgid "Input too long"
+msgstr "Введено слишком много данных"
+
+#: composite.c:1281 composite.c:1324
+msgid "Input too long for selected 2D component"
+msgstr "Слишком много данных для выбранного 2d-компонента"
+
+#: aztec.c:1116 hanxin.c:1484 qr.c:1596 qr.c:2949
+msgid "Input too long for selected error correction level"
+msgstr "Слишком длинный ввод для выбранного уровня коррекции ошибок"
+
+#: code1.c:1439 dmatrix.c:1242 gridmtx.c:1010 hanxin.c:1498 qr.c:1685 qr.c:2510
+#: qr.c:2716 qr.c:3030
+msgid "Input too long for selected symbol size"
+msgstr "Слишком длинный ввод для выбранного размера символа"
+
+#: aztec.c:1017
+msgid "Input too long or too many extended ASCII characters"
+msgstr "Выходные данные слишком длинные или слишком много расширенных символов ASCII"
+
+#: medical.c:220
+msgid "Input too short"
+msgstr ""
+
+#: 2of5.c:355 upcean.c:566 upcean.c:846 upcean.c:879 upcean.c:889 upcean.c:908
+#: upcean.c:918 upcean.c:937 auspost.c:145 code128.c:1081 code128.c:1129
+#: code.c:338 postal.c:93 postal.c:157
+msgid "Input wrong length"
+msgstr "Введена неправильная длина"
+
+#: composite.c:1460
+msgid "Input wrong length in linear component"
+msgstr ""
+
+#: code.c:749
+msgid "Input wrong length, 17 characters required"
+msgstr ""
+
+#: raster.c:131
+msgid "Insufficient memory for alphamap buffer"
+msgstr ""
+
+#: raster.c:123
+msgid "Insufficient memory for bitmap buffer"
+msgstr ""
+
+#: raster.c:178 raster.c:675 raster.c:834 raster.c:1139
+msgid "Insufficient memory for pixel buffer"
+msgstr "Недостаточно памяти для пиксельного буфера"
+
+#: library.c:1618
+msgid "Internal memory error"
+msgstr ""
+
+#: gs1.c:192
+msgid "Invalid AI in input data (AI too long)"
+msgstr ""
+
+#: gs1.c:199
+msgid "Invalid AI in input data (AI too short)"
+msgstr ""
+
+#: gs1.c:206
+msgid "Invalid AI in input data (non-numeric characters in AI)"
+msgstr ""
+
+#: gs1.c:692
+msgid "Invalid AI value "
+msgstr ""
+
+#: aztec.c:1213
+msgid "Invalid Aztec Code size"
+msgstr ""
+
+#: imail.c:308
+msgid "Invalid Barcode Identifier"
+msgstr ""
+
+#: mailmark.c:202
+msgid "Invalid Class"
+msgstr ""
+
+#: code128.c:1146
+msgid "Invalid DPD identifier"
+msgstr ""
+
+#: dotcode.c:1329 library.c:1257 pdf417.c:568 pdf417.c:907 gridmtx.c:976
+msgid "Invalid ECI"
+msgstr ""
+
+#: upcean.c:574
+msgid "Invalid ISBN"
+msgstr ""
+
+#: mailmark.c:227
+msgid "Invalid Item ID"
+msgstr ""
+
+#: maxicode.c:617
+msgid "Invalid Maxicode Mode"
+msgstr ""
+
+#: code.c:367
+msgid "Invalid PZN Data"
+msgstr ""
+
+#: maxicode.c:629 maxicode.c:636
+msgid "Invalid Primary Message"
+msgstr ""
+
+#: mailmark.c:214
+msgid "Invalid Supply Chain ID"
+msgstr ""
+
+#: upcean.c:243 upcean.c:254 upcean.c:270
+msgid "Invalid UPC-E data"
+msgstr ""
+
+#: mailmark.c:194
+msgid "Invalid Version ID"
+msgstr ""
+
+#: imail.c:315
+msgid "Invalid ZIP code"
+msgstr ""
+
+#: upcean.c:791
+msgid "Invalid add-on data"
+msgstr ""
+
+#: auspost.c:183
+msgid "Invalid character in DPID"
+msgstr ""
+
+#: 2of5.c:74 2of5.c:107 2of5.c:139 2of5.c:172 2of5.c:210 2of5.c:271 2of5.c:323
+#: 2of5.c:361 aztec.c:1593 code49.c:69 gb2312.c:1567 imail.c:267 library.c:280
+#: library.c:749 rss.c:293 rss.c:619 rss.c:962 upcean.c:559 upcean.c:770
+#: upcean.c:777 auspost.c:117 auspost.c:150 code128.c:1045 code128.c:1088
+#: code128.c:1140 code.c:121 code.c:249 code.c:344 code.c:396 code.c:439
+#: code.c:642 code.c:756 composite.c:1262 gb18030.c:2894 gridmtx.c:959
+#: hanxin.c:1414 mailmark.c:178 medical.c:77 medical.c:176 medical.c:291
+#: plessey.c:67 plessey.c:479 postal.c:99 postal.c:163 postal.c:227
+#: postal.c:285 postal.c:349 postal.c:395 postal.c:445 postal.c:499
+#: postal.c:539 qr.c:1561 qr.c:2700 sjis.c:1535 telepen.c:81 telepen.c:128
+msgid "Invalid character in data"
+msgstr "Недопустимые символы в данных"
+
+#: rss.c:300 rss.c:626 upcean.c:144 upcean.c:314 upcean.c:434 upcean.c:493
+#: code.c:800
+msgid "Invalid check digit"
+msgstr ""
+
+#: code.c:127
+msgid "Invalid check digit version"
+msgstr ""
+
+#: gs1.c:680
+msgid "Invalid data length for AI "
+msgstr ""
+
+#: library.c:1264
+msgid "Invalid dot size"
+msgstr "Недопустимый размер точек"
+
+#: aztec.c:1023
+msgid "Invalid error correction level - using default instead"
+msgstr ""
+
+#: mailmark.c:186
+msgid "Invalid format"
+msgstr ""
+
+#: code1.c:1218
+msgid "Invalid input data (Version S encodes numeric input only)"
+msgstr "Недопустимые входные данные (Версия S кодирует только числовой ввод)"
+
+#: imail.c:303
+msgid "Invalid length tracking code"
+msgstr ""
+
+#: composite.c:1411
+msgid "Invalid mode (CC-C only valid with GS1-128 linear component)"
+msgstr ""
+
+#: telepen.c:146
+msgid "Invalid position of X in Telepen data"
+msgstr ""
+
+#: mailmark.c:282
+msgid "Invalid postcode"
+msgstr ""
+
+#: qr.c:2955
+msgid "Invalid rMQR symbol size"
+msgstr ""
+
+#: library.c:1366 library.c:1459 library.c:1491
+msgid "Invalid rotation angle"
+msgstr "Недопустимый угол поворота"
+
+#: code1.c:1199
+msgid "Invalid symbol size"
+msgstr ""
+
+#: gs1.c:178
+msgid "Malformed AI in input data (brackets don't match)"
+msgstr "Искажённый AI во входных данных (скобки не совпадают)"
+
+#: output.c:49 output.c:66
+msgid "Malformed background colour target"
+msgstr "Плохо сформированный целевой цвет"
+
+#: output.c:44 output.c:59
+msgid "Malformed foreground colour target"
+msgstr "Плохо сформированный целевой цвет"
+
+#: gs1.c:115
+msgid "NUL characters not permitted in GS1 mode"
+msgstr "NULL-символы не разрешены в режиме GS1"
+
+#: library.c:1095
+msgid "No input data"
+msgstr ""
+
+#: composite.c:1397
+msgid "No primary (linear) message in 2D composite"
+msgstr "Нет первичного (линейного) сообщения в 2D-композите"
+
+#: pdf417.c:819
+msgid "Number of columns out of range"
+msgstr ""
+
+#: dmatrix.c:1362
+msgid "Older Data Matrix standards are no longer supported"
+msgstr "Старые стандарты Data Matrix больше не поддерживаются"
+
+#: png.c:159 png.c:167 bmp.c:73
+msgid "Out of memory"
+msgstr ""
+
+#: tif.c:123
+msgid "Output file size too big"
+msgstr "Размер выходного файла слишком большой"
+
+#: raster.c:1172
+msgid "PNG format disabled at compile time"
+msgstr ""
+
+#: codablock.c:667
+msgid "Rows parameter not in range 0 to 44"
+msgstr ""
+
+#: pdf417.c:809
+msgid "Security value out of range"
+msgstr ""
+
+#: library.c:1374 library.c:1467 library.c:1499
+msgid "Selected symbology cannot be rendered as dots"
+msgstr ""
+
+#: library.c:1316
+msgid "Selected symbology does not support GS1 mode"
+msgstr ""
+
+#: dotcode.c:1419
+msgid "Specified symbol size has a dimension which is too small"
+msgstr ""
+
+#: dotcode.c:1413
+msgid "Specified symbol size is too large"
+msgstr ""
+
+#: pdf417.c:983 pdf417.c:995 pdf417.c:1007
+msgid "Specified symbol size too small for data"
+msgstr ""
+
+#: pdf417.c:959
+msgid "Specified width out of range"
+msgstr ""
+
+#: library.c:1253
+msgid "Symbology does not support ECI switching"
+msgstr ""
+
+#: library.c:1117 library.c:1181 library.c:1190 library.c:1213 library.c:1225
+#: library.c:1236
+msgid "Symbology out of range"
+msgstr "Символика вне диапазона"
+
+#: library.c:1146
+msgid "UPCD1 not supported"
+msgstr "UPCD1 не поддерживается"
+
+#: qr.c:2693
+msgid "UPNQR does not support GS-1 encoding"
+msgstr "UPNQR не поддерживает кодирование GS-1"
+
+#: library.c:1587
+#, c-format
+msgid "Unable to read input file (%.30s)"
+msgstr ""
+
+#: common.c:328
+msgid "Unicode sequences of more than 3 bytes not supported"
+msgstr "Unicode-последовательности более 3-х байтов не поддерживаются"
+
+#: library.c:1431 library.c:1437
+msgid "Unknown output format"
+msgstr ""
+
+#: gif.c:420
+msgid "Unknown pixel colour"
+msgstr ""
+
+#: library.c:1054
+msgid "Unrecognised escape character in input data"
+msgstr ""
+
+#: code.c:703
+msgid "Value out of range"
+msgstr ""
+
+#: qr.c:2386
+msgid "Version M1 supports error correction level L only"
+msgstr ""
+
+#: png.c:175
+msgid "libpng error occurred"
+msgstr ""
+
+#: png.c:61
+#, c-format
+msgid "writepng libpng error: %s (F30)\n"
+msgstr ""
+
+#: png.c:68
+#, c-format
+msgid "writepng severe error:  jmpbuf not recoverable; terminating. (F31)\n"
+msgstr ""
