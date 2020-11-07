@@ -1563,7 +1563,8 @@ INTERNAL int gb2312_utf8tomb(struct zint_symbol *symbol, const unsigned char sou
             gbdata[i] = utfdata[i];
         } else {
             if (!gb2312_wctomb_zint(gbdata + i, utfdata[i])) {
-                strcpy(symbol->errtxt, "810: Invalid character in input data");
+                symbol->err_origin = 810;
+                strcpy(symbol->errtxt, _("Invalid character in data"));
                 return ZINT_ERROR_INVALID_DATA;
             }
         }

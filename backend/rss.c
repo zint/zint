@@ -283,18 +283,21 @@ INTERNAL int rss14(struct zint_symbol *symbol, unsigned char source[], int src_l
     separator_row = 0;
 
     if (src_len > 14) { /* Allow check digit to be specified (will be verified and ignored) */
-        strcpy(symbol->errtxt, "380: Input too long");
+        symbol->err_origin = 380;
+        strcpy(symbol->errtxt, _("Input too long"));
         return ZINT_ERROR_TOO_LONG;
     }
     error_number = is_sane(NEON, source, src_len);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "381: Invalid characters in data");
+        symbol->err_origin = 381;
+        strcpy(symbol->errtxt, _("Invalid character in data"));
         return error_number;
     }
 
     if (src_len == 14) { /* Verify check digit */
         if (calc_check_digit(source) != ctoi(source[13])) {
-            strcpy(symbol->errtxt, "388: Invalid check digit");
+            symbol->err_origin = 388;
+            strcpy(symbol->errtxt, _("Invalid check digit"));
             return ZINT_ERROR_INVALID_CHECK;
         }
         src_len--; /* Ignore */
@@ -606,18 +609,21 @@ INTERNAL int rsslimited(struct zint_symbol *symbol, unsigned char source[], int 
     separator_row = 0;
 
     if (src_len > 14) { /* Allow check digit to be specified (will be verified and ignored) */
-        strcpy(symbol->errtxt, "382: Input too long");
+        symbol->err_origin = 382;
+        strcpy(symbol->errtxt, _("Input too long"));
         return ZINT_ERROR_TOO_LONG;
     }
     error_number = is_sane(NEON, source, src_len);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "383: Invalid characters in data");
+        symbol->err_origin = 383;
+        strcpy(symbol->errtxt, _("Invalid character in data"));
         return error_number;
     }
 
     if (src_len == 14) { /* Verify check digit */
         if (calc_check_digit(source) != ctoi(source[13])) {
-            strcpy(symbol->errtxt, "389: Invalid check digit");
+            symbol->err_origin = 389;
+            strcpy(symbol->errtxt, _("Invalid check digit"));
             return ZINT_ERROR_INVALID_CHECK;
         }
         src_len--; /* Ignore */
@@ -625,7 +631,8 @@ INTERNAL int rsslimited(struct zint_symbol *symbol, unsigned char source[], int 
 
     if (src_len == 13) {
         if ((source[0] != '0') && (source[0] != '1')) {
-            strcpy(symbol->errtxt, "384: Input out of range");
+            symbol->err_origin = 384;
+            strcpy(symbol->errtxt, _("Input out of range"));
             return ZINT_ERROR_INVALID_DATA;
         }
     }
@@ -951,7 +958,8 @@ static int rss_binary_string(struct zint_symbol *symbol, char source[], char bin
         if ((source[i] < '0') || (source[i] > '9')) {
             if ((source[i] != '[') && (source[i] != ']')) {
                 /* Something is wrong */
-                strcpy(symbol->errtxt, "385: Invalid characters in input data");
+                symbol->err_origin = 385;
+                strcpy(symbol->errtxt, _("Invalid character in data"));
                 return ZINT_ERROR_INVALID_DATA;
             }
         }
@@ -1098,7 +1106,8 @@ static int rss_binary_string(struct zint_symbol *symbol, char source[], char bin
 
     if (!general_field_encode(general_field, &mode, &last_digit, binary_string)) {
         /* Invalid characters in input data */
-        strcpy(symbol->errtxt, "386: Invalid characters in input data");
+        symbol->err_origin = 386;
+        strcpy(symbol->errtxt, "Invalid characters in input data");
         return ZINT_ERROR_INVALID_DATA;
     }
     if (debug) printf("Resultant binary = %s\n", binary_string);
@@ -1170,7 +1179,8 @@ static int rss_binary_string(struct zint_symbol *symbol, char source[], char bin
     }
 
     if (strlen(binary_string) > 252) { /* 252 = (21 * 12) */
-        strcpy(symbol->errtxt, "387: Input too long");
+        symbol->err_origin = 387;
+        strcpy(symbol->errtxt, _("Input too long"));
         return ZINT_ERROR_TOO_LONG;
     }
 

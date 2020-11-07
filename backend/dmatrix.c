@@ -570,7 +570,8 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
 
     if (symbol->output_options & READER_INIT) {
         if (gs1) {
-            strcpy(symbol->errtxt, "521: Cannot encode in GS1 mode and Reader Initialisation at the same time");
+            symbol->err_origin = 521;
+            strcpy(symbol->errtxt, _("Can't encode in GS1 and Reader Initialisation mode at the same time"));
             return ZINT_ERROR_INVALID_OPTION;
         } else {
             target[tp] = 234;
@@ -971,7 +972,8 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
         }
 
         if (tp > 1558) {
-            strcpy(symbol->errtxt, "520: Data too long to fit in symbol");
+            symbol->err_origin = 520;
+            strcpy(symbol->errtxt, _("Input too long"));
             return ZINT_ERROR_TOO_LONG;
         }
 
@@ -1236,7 +1238,8 @@ static int data_matrix_200(struct zint_symbol *symbol,const unsigned char source
         // The symbol size was given by --ver (option_2)
         // Thus check if the data fits into this symbol size and use this size
         if (calcsize > optionsize) {
-            strcpy(symbol->errtxt, "522: Input too long for selected symbol size");
+            symbol->err_origin = 522;
+            strcpy(symbol->errtxt, _("Input too long for selected symbol size"));
             return ZINT_ERROR_TOO_LONG;
         }
         symbolsize = optionsize;
@@ -1247,7 +1250,8 @@ static int data_matrix_200(struct zint_symbol *symbol,const unsigned char source
     binlen = dm200encode_remainder(binary, binlen, source, inputlen, last_mode, last_shift, process_buffer, process_p, symbols_left, debug);
 
     if (binlen > matrixbytes[symbolsize]) {
-        strcpy(symbol->errtxt, "523: Data too long to fit in symbol");
+        symbol->err_origin = 523;
+        strcpy(symbol->errtxt, _("Input too long"));
         return ZINT_ERROR_TOO_LONG;
     }
 
@@ -1354,7 +1358,8 @@ INTERNAL int dmatrix(struct zint_symbol *symbol, const unsigned char source[], c
         error_number = data_matrix_200(symbol, source, in_length);
     } else {
         /* ECC 000 - 140 */
-        strcpy(symbol->errtxt, "524: Older Data Matrix standards are no longer supported");
+        symbol->err_origin = 524;
+        strcpy(symbol->errtxt, _("Older Data Matrix standards are no longer supported"));
         error_number = ZINT_ERROR_INVALID_OPTION;
     }
 

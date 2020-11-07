@@ -103,14 +103,16 @@ INTERNAL int pcx_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     if (symbol->output_options & BARCODE_STDOUT) {
 #ifdef _MSC_VER
         if (-1 == _setmode(_fileno(stdout), _O_BINARY)) {
-            strcpy(symbol->errtxt, "620: Can't open output file");
+            symbol->err_origin = 620;
+            strcpy(symbol->errtxt, _("Can't open output file"));
             return ZINT_ERROR_FILE_ACCESS;
         }
 #endif
         pcx_file = stdout;
     } else {
         if (!(pcx_file = fopen(symbol->outfile, "wb"))) {
-            strcpy(symbol->errtxt, "621: Can't open output file");
+            symbol->err_origin = 621;
+            strcpy(symbol->errtxt, _("Can't open output file"));
             return ZINT_ERROR_FILE_ACCESS;
         }
     }

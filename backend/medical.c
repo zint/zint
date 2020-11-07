@@ -67,19 +67,22 @@ INTERNAL int pharma_one(struct zint_symbol *symbol, unsigned char source[], int 
     char dest[64]; /* 17 * 2 + 1 */
 
     if (length > 6) {
-        strcpy(symbol->errtxt, "350: Input too long");
+        symbol->err_origin = 350;
+        strcpy(symbol->errtxt, _("Input too long"));
         return ZINT_ERROR_TOO_LONG;
     }
     error_number = is_sane(NEON, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "351: Invalid characters in data");
+        symbol->err_origin = 351;
+        strcpy(symbol->errtxt, _("Invalid character in data"));
         return error_number;
     }
 
     tester = atoi((char*) source);
 
     if ((tester < 3) || (tester > 131070)) {
-        strcpy(symbol->errtxt, "352: Data out of range");
+        symbol->err_origin = 352;
+        strcpy(symbol->errtxt, _("Data out of range"));
         return ZINT_ERROR_INVALID_DATA;
     }
 
@@ -122,7 +125,8 @@ static int pharma_two_calc(struct zint_symbol *symbol, unsigned char source[], c
     tester = atoi((char*) source);
 
     if ((tester < 4) || (tester > 64570080)) {
-        strcpy(symbol->errtxt, "353: Data out of range");
+        symbol->err_origin = 353;
+        strcpy(symbol->errtxt, _("Data out of range"));
         return ZINT_ERROR_INVALID_DATA;
     }
     error_number = 0;
@@ -162,12 +166,14 @@ INTERNAL int pharma_two(struct zint_symbol *symbol, unsigned char source[], int 
     strcpy(height_pattern, "");
 
     if (length > 8) {
-        strcpy(symbol->errtxt, "354: Input too long");
+        symbol->err_origin = 354;
+        strcpy(symbol->errtxt, _("Input too long"));
         return ZINT_ERROR_TOO_LONG;
     }
     error_number = is_sane(NEON, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "355: Invalid characters in data");
+        symbol->err_origin = 355;
+        strcpy(symbol->errtxt, _("Invalid character in data"));
         return error_number;
     }
     error_number = pharma_two_calc(symbol, source, height_pattern);
@@ -203,13 +209,15 @@ INTERNAL int codabar(struct zint_symbol *symbol, unsigned char source[], int len
     strcpy(dest, "");
 
     if (length > 60) { /* No stack smashing please */
-        strcpy(symbol->errtxt, "356: Input too long");
+        symbol->err_origin = 356;
+        strcpy(symbol->errtxt, _("Input too long"));
         return ZINT_ERROR_TOO_LONG;
     }
     /* BS EN 798:1995 4.2 "'Codabar' symbols shall consist of ... b) start character;
      * c) one or more symbol characters representing data ... d) stop character ..." */
     if (length < 3) {
-        strcpy(symbol->errtxt, "362: Input too short");
+        symbol->err_origin = 362;
+        strcpy(symbol->errtxt, _("Input too short"));
         return ZINT_ERROR_TOO_LONG;
     }
     to_upper(source);
@@ -217,19 +225,22 @@ INTERNAL int codabar(struct zint_symbol *symbol, unsigned char source[], int len
     /* Codabar must begin and end with the characters A, B, C or D */
     if ((source[0] != 'A') && (source[0] != 'B') && (source[0] != 'C')
             && (source[0] != 'D')) {
-        strcpy(symbol->errtxt, "358: Does not begin with \"A\", \"B\", \"C\" or \"D\"");
+        symbol->err_origin = 358;
+        strcpy(symbol->errtxt, _("Does not begin with \"A\", \"B\", \"C\" or \"D\""));
         return ZINT_ERROR_INVALID_DATA;
     }
     if ((source[length - 1] != 'A') && (source[length - 1] != 'B') &&
             (source[length - 1] != 'C') && (source[length - 1] != 'D')) {
-        strcpy(symbol->errtxt, "359: Does not end with \"A\", \"B\", \"C\" or \"D\"");
+        symbol->err_origin = 359;
+        strcpy(symbol->errtxt, _("Does not end with \"A\", \"B\", \"C\" or \"D\""));
         return ZINT_ERROR_INVALID_DATA;
     }
 
     /* And must not use A, B, C or D otherwise (BS EN 798:1995 4.3.2) */
     error_number = is_sane(CALCIUM_INNER, source + 1, length - 2);
     if (error_number) {
-        strcpy(symbol->errtxt, "363: Cannot contain \"A\", \"B\", \"C\" or \"D\"");
+        symbol->err_origin = 363;
+        strcpy(symbol->errtxt, _("Can't contain \"A\", \"B\", \"C\" or \"D\""));
         return error_number;
     }
 
@@ -270,12 +281,14 @@ INTERNAL int code32(struct zint_symbol *symbol, unsigned char source[], int leng
 
     /* Validate the input */
     if (length > 8) {
-        strcpy(symbol->errtxt, "360: Input too long");
+        symbol->err_origin = 360;
+        strcpy(symbol->errtxt, "Input too long");
         return ZINT_ERROR_TOO_LONG;
     }
     error_number = is_sane(NEON, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "361: Invalid characters in data");
+        symbol->err_origin = 361;
+        strcpy(symbol->errtxt, _("Invalid character in data"));
         return error_number;
     }
 

@@ -119,14 +119,16 @@ static int buffer_plot(struct zint_symbol *symbol, unsigned char *pixelbuf) {
 
     symbol->bitmap = (unsigned char *) malloc((size_t) symbol->bitmap_width * symbol->bitmap_height * 3);
     if (symbol->bitmap == NULL) {
-        strcpy(symbol->errtxt, "661: Insufficient memory for bitmap buffer");
+        symbol->err_origin = 661;
+        strcpy(symbol->errtxt, _("Insufficient memory for bitmap buffer"));
         return ZINT_ERROR_MEMORY;
     }
 
     if (plot_alpha) {
         symbol->alphamap = (unsigned char *) malloc((size_t) symbol->bitmap_width * symbol->bitmap_height);
         if (symbol->alphamap == NULL) {
-            strcpy(symbol->errtxt, "662: Insufficient memory for alphamap buffer");
+            symbol->err_origin = 662;
+            strcpy(symbol->errtxt, _("Insufficient memory for alphamap buffer"));
             return ZINT_ERROR_MEMORY;
         }
         for (row = 0; row < symbol->bitmap_height; row++) {
@@ -172,7 +174,8 @@ static int save_raster_image_to_file(struct zint_symbol *symbol, int image_heigh
 
     if (rotate_angle) {
         if (!(rotated_pixbuf = (unsigned char *) malloc((size_t) image_width * image_height))) {
-            strcpy(symbol->errtxt, "650: Insufficient memory for pixel buffer");
+            symbol->err_origin = 650;
+            strcpy(symbol->errtxt, _("Insufficient memory for pixel buffer"));
             return ZINT_ERROR_ENCODING_PROBLEM;
         }
     }
@@ -569,7 +572,8 @@ static int plot_raster_maxicode(struct zint_symbol *symbol, int rotate_angle, in
     image_height = ceil((double) (300 + 2 * (yoffset + boffset)) * scaler);
 
     if (!(pixelbuf = (unsigned char *) malloc((size_t) image_width * image_height))) {
-        strcpy(symbol->errtxt, "655: Insufficient memory for pixel buffer");
+        symbol->err_origin = 655;
+        strcpy(symbol->errtxt, "Insufficient memory for pixel buffer");
         return ZINT_ERROR_ENCODING_PROBLEM;
     }
     memset(pixelbuf, DEFAULT_PAPER, (size_t) image_width * image_height);
@@ -577,7 +581,8 @@ static int plot_raster_maxicode(struct zint_symbol *symbol, int rotate_angle, in
     hexagon_size = ceil(scaler * 10);
 
     if (!(scaled_hexagon = (unsigned char *) malloc((size_t) hexagon_size * hexagon_size))) {
-        strcpy(symbol->errtxt, "656: Insufficient memory for pixel buffer");
+        symbol->err_origin = 656;
+        strcpy(symbol->errtxt, "Insufficient memory for pixel buffer");
         free(pixelbuf);
         return ZINT_ERROR_ENCODING_PROBLEM;
     }
@@ -666,7 +671,8 @@ static int plot_raster_dotty(struct zint_symbol *symbol, int rotate_angle, int f
 
     /* Apply scale options by creating another pixel buffer */
     if (!(scaled_pixelbuf = (unsigned char *) malloc((size_t) scale_width * scale_height))) {
-        strcpy(symbol->errtxt, "657: Insufficient memory for pixel buffer");
+        symbol->err_origin = 657;
+        strcpy(symbol->errtxt, _("Insufficient memory for pixel buffer"));
         return ZINT_ERROR_ENCODING_PROBLEM;
     }
     memset(scaled_pixelbuf, DEFAULT_PAPER, (size_t) scale_width * scale_height);
@@ -824,7 +830,8 @@ static int plot_raster_default(struct zint_symbol *symbol, int rotate_angle, int
     image_height = (symbol->height + textoffset + yoffset + boffset) * si;
 
     if (!(pixelbuf = (unsigned char *) malloc((size_t) image_width * image_height))) {
-        strcpy(symbol->errtxt, "658: Insufficient memory for pixel buffer");
+        symbol->err_origin = 658;
+        strcpy(symbol->errtxt, _("Insufficient memory for pixel buffer"));
         return ZINT_ERROR_ENCODING_PROBLEM;
     }
     memset(pixelbuf, DEFAULT_PAPER, (size_t) image_width * image_height);
@@ -1128,7 +1135,8 @@ static int plot_raster_default(struct zint_symbol *symbol, int rotate_angle, int
         /* Apply scale options by creating another pixel buffer */
         if (!(scaled_pixelbuf = (unsigned char *) malloc((size_t) scale_width * scale_height))) {
             free(pixelbuf);
-            strcpy(symbol->errtxt, "659: Insufficient memory for pixel buffer");
+            symbol->err_origin = 659;
+            strcpy(symbol->errtxt, _("Insufficient memory for pixel buffer"));
             return ZINT_ERROR_ENCODING_PROBLEM;
         }
         memset(scaled_pixelbuf, DEFAULT_PAPER, (size_t) scale_width * scale_height);
@@ -1160,7 +1168,8 @@ INTERNAL int plot_raster(struct zint_symbol *symbol, int rotate_angle, int file_
 
 #ifdef NO_PNG
     if (file_type == OUT_PNG_FILE) {
-        strcpy(symbol->errtxt, "660: PNG format disabled at compile time");
+        symbol->err_origin = 660;
+        strcpy(symbol->errtxt, _("PNG format disabled at compile time"));
         return ZINT_ERROR_INVALID_OPTION;
     }
 #endif /* NO_PNG */

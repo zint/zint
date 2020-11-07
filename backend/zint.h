@@ -99,6 +99,7 @@ extern "C" {
         unsigned char encoded_data[200][143];
         int row_height[200]; /* Largest symbol is 189 x 189 Han Xin */
         char errtxt[100];
+        int err_origin;
         unsigned char *bitmap;
         int bitmap_width;
         int bitmap_height;

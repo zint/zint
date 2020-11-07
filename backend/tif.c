@@ -119,7 +119,8 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     }
 
     if (free_memory > 0xffff0000) {
-        strcpy(symbol->errtxt, "670: Output file size too big");
+        symbol->err_origin = 670;
+        strcpy(symbol->errtxt, _("Output file size too big"));
         return ZINT_ERROR_MEMORY;
     }
 
@@ -127,14 +128,16 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     if (symbol->output_options & BARCODE_STDOUT) {
 #ifdef _MSC_VER
         if (-1 == _setmode(_fileno(stdout), _O_BINARY)) {
-            strcpy(symbol->errtxt, "671: Can't open output file");
+            symbol->err_origin = 671;
+            strcpy(symbol->errtxt, _("Can't open output file"));
             return ZINT_ERROR_FILE_ACCESS;
         }
 #endif
         tif_file = stdout;
     } else {
         if (!(tif_file = fopen(symbol->outfile, "wb"))) {
-            strcpy(symbol->errtxt, "672: Can't open output file");
+            symbol->err_origin = 672;
+            strcpy(symbol->errtxt, _("Can't open output file"));
             return ZINT_ERROR_FILE_ACCESS;
         }
     }

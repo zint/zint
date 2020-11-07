@@ -1531,7 +1531,8 @@ INTERNAL int sjis_utf8tomb(struct zint_symbol *symbol, const unsigned char sourc
 
     for (i = 0, length = *p_length; i < length; i++) {
         if (!sjis_wctomb_zint(jisdata + i, utfdata[i])) {
-            strcpy(symbol->errtxt, "800: Invalid character in input data");
+            symbol->err_origin = 800;
+            strcpy(symbol->errtxt, _("Invalid character in data"));
             return ZINT_ERROR_INVALID_DATA;
         }
     }

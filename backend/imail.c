@@ -257,12 +257,14 @@ INTERNAL int imail(struct zint_symbol *symbol, unsigned char source[], int lengt
     int zip_len, len;
 
     if (length > 32) {
-        strcpy(symbol->errtxt, "450: Input too long");
+        symbol->err_origin = 450;
+        strcpy(symbol->errtxt, _("Input too long"));
         return ZINT_ERROR_TOO_LONG;
     }
     error_number = is_sane(SODIUM, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "451: Invalid characters in data");
+        symbol->err_origin = 451;
+        strcpy(symbol->errtxt, _("Invalid character in data"));
         return error_number;
     }
 
@@ -297,17 +299,20 @@ INTERNAL int imail(struct zint_symbol *symbol, unsigned char source[], int lengt
     }
 
     if (strlen(tracker) != 20) {
-        strcpy(symbol->errtxt, "452: Invalid length tracking code");
+        symbol->err_origin = 452;
+        strcpy(symbol->errtxt, _("Invalid length tracking code"));
         return ZINT_ERROR_INVALID_DATA;
     }
     if (tracker[1] > '4') {
-        strcpy(symbol->errtxt, "454: Invalid Barcode Identifier");
+        symbol->err_origin = 454;
+        strcpy(symbol->errtxt, _("Invalid Barcode Identifier"));
         return ZINT_ERROR_INVALID_DATA;
     }
 
     zip_len = strlen(zip);
     if (zip_len != 0 && zip_len != 5 && zip_len != 9 && zip_len != 11) {
-        strcpy(symbol->errtxt, "453: Invalid ZIP code");
+        symbol->err_origin = 453;
+        strcpy(symbol->errtxt, _("Invalid ZIP code"));
         return ZINT_ERROR_INVALID_DATA;
     }
 

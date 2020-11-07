@@ -314,14 +314,16 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     if ((symbol->output_options & BARCODE_STDOUT) != 0) {
 #ifdef _MSC_VER
         if (-1 == _setmode(_fileno(stdout), _O_BINARY)) {
-            strcpy(symbol->errtxt, "610: Can't open output file");
+            symbol->err_origin = 610;
+            strcpy(symbol->errtxt, _("Can't open output file"));
             return ZINT_ERROR_FILE_ACCESS;
         }
 #endif
         gif_file = stdout;
     } else {
         if (!(gif_file = fopen(symbol->outfile, "wb"))) {
-            strcpy(symbol->errtxt, "611: Can't open output file");
+            symbol->err_origin = 611;
+            strcpy(symbol->errtxt, _("Can't open output file"));
             return ZINT_ERROR_FILE_ACCESS;
         }
     }
@@ -414,7 +416,8 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
                 RGBCur[0] = 0; RGBCur[1] = 0; RGBCur[2] = 0;
                 break;
             default: /* error case - return  */
-                strcpy(symbol->errtxt, "611: unknown pixel colour");
+                symbol->err_origin = 611;
+                strcpy(symbol->errtxt, _("Unknown pixel colour"));
                 return ZINT_ERROR_INVALID_DATA;
         }
         /* Search, if RGB value is already present */

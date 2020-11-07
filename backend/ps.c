@@ -169,7 +169,8 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
         feps = fopen(symbol->outfile, "w");
     }
     if (feps == NULL) {
-        strcpy(symbol->errtxt, "645: Could not open output file");
+        symbol->err_origin = 645;
+        strcpy(symbol->errtxt, _("Can't open output file"));
         return ZINT_ERROR_FILE_ACCESS;
     }
 

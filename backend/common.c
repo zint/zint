@@ -319,11 +319,13 @@ INTERNAL int utf8_to_unicode(struct zint_symbol *symbol, const unsigned char sou
         } while (bpos < *length && state != 0 && state != 12);
 
         if (state != 0) {
-            strcpy(symbol->errtxt, "240: Corrupt Unicode data");
+            symbol->err_origin = 240;
+            strcpy(symbol->errtxt, _("Corrupt Unicode data"));
             return ZINT_ERROR_INVALID_DATA;
         }
         if (disallow_4byte && codepoint > 0xffff) {
-            strcpy(symbol->errtxt, "242: Unicode sequences of more than 3 bytes not supported");
+            symbol->err_origin = 242;
+            strcpy(symbol->errtxt, _("Unicode sequences of more than 3 bytes not supported"));
             return ZINT_ERROR_INVALID_DATA;
         }
 

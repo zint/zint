@@ -69,7 +69,8 @@ INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
 
     bitmap_file_start = (unsigned char *) malloc(file_size);
     if (bitmap_file_start == NULL) {
-        strcpy(symbol->errtxt, "602: Out of memory");
+        symbol->err_origin = 602;
+        strcpy(symbol->errtxt, _("Out of memory"));
         return ZINT_ERROR_MEMORY;
     }
     memset(bitmap_file_start, 0, file_size); /* Not required but keeps padding bytes consistent */
@@ -176,7 +177,8 @@ INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     if ((symbol->output_options & BARCODE_STDOUT) != 0) {
 #ifdef _MSC_VER
         if (-1 == _setmode(_fileno(stdout), _O_BINARY)) {
-            strcpy(symbol->errtxt, "600: Can't open output file");
+            symbol->err_origin = 600;
+            strcpy(symbol->errtxt, _("Can't open output file"));
             free(bitmap_file_start);
             return ZINT_ERROR_FILE_ACCESS;
         }
@@ -185,7 +187,8 @@ INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     } else {
         if (!(bmp_file = fopen(symbol->outfile, "wb"))) {
             free(bitmap_file_start);
-            strcpy(symbol->errtxt, "601: Can't open output file");
+            symbol->err_origin = 601;
+            strcpy(symbol->errtxt, _("Can't open output file"));
             return ZINT_ERROR_FILE_ACCESS;
         }
     }

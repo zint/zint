@@ -1003,7 +1003,8 @@ INTERNAL int aztec(struct zint_symbol *symbol, unsigned char source[], const siz
         comp_loop = 1;
     }
     if (gs1 && reader) {
-        strcpy(symbol->errtxt, "501: Cannot encode in GS1 and Reader Initialisation mode at the same time");
+        symbol->err_origin = 501;
+        strcpy(symbol->errtxt, _("Can't encode in GS1 and Reader Initialisation mode at the same time"));
         return ZINT_ERROR_INVALID_OPTION;
     }
 
@@ -1012,12 +1013,14 @@ INTERNAL int aztec(struct zint_symbol *symbol, unsigned char source[], const siz
     error_number = aztec_text_process(source, length, binary_string, gs1, symbol->eci, debug);
 
     if (error_number != 0) {
-        strcpy(symbol->errtxt, "502: Input too long or too many extended ASCII characters");
+        symbol->err_origin = 502;
+        strcpy(symbol->errtxt, _("Input too long or too many extended ASCII characters"));
         return error_number;
     }
 
     if (!((symbol->option_1 >= -1) && (symbol->option_1 <= 4))) {
-        strcpy(symbol->errtxt, "503: Invalid error correction level - using default instead");
+        symbol->err_origin = 503;
+        strcpy(symbol->errtxt, _("Invalid error correction level - using default instead"));
         if (symbol->warn_level == WARN_FAIL_ALL) {
             return ZINT_ERROR_INVALID_OPTION;
         } else {
@@ -1109,7 +1112,8 @@ INTERNAL int aztec(struct zint_symbol *symbol, unsigned char source[], const siz
             }
 
             if (layers == 0) { /* Couldn't find a symbol which fits the data */
-                strcpy(symbol->errtxt, "504: Input too long (too many bits for selected ECC)");
+                symbol->err_origin = 504;
+                strcpy(symbol->errtxt, _("Input too long for selected error correction level"));
                 return ZINT_ERROR_TOO_LONG;
             }
 
@@ -1205,7 +1209,8 @@ INTERNAL int aztec(struct zint_symbol *symbol, unsigned char source[], const siz
             layers = symbol->option_2 - 4;
         }
         if ((symbol->option_2 < 0) || (symbol->option_2 > 36)) {
-            strcpy(symbol->errtxt, "510: Invalid Aztec Code size");
+            symbol->err_origin = 510;
+            strcpy(symbol->errtxt, _("Invalid Aztec Code size"));
             return ZINT_ERROR_INVALID_OPTION;
         }
 
@@ -1279,7 +1284,8 @@ INTERNAL int aztec(struct zint_symbol *symbol, unsigned char source[], const siz
         }
 
         if (adjusted_length > data_maxsize) {
-            strcpy(symbol->errtxt, "505: Data too long for specified Aztec Code symbol size");
+            symbol->err_origin = 505;
+            strcpy(symbol->errtxt, _("Data too long for specified Aztec Code symbol size"));
             return ZINT_ERROR_TOO_LONG;
         }
 
@@ -1297,7 +1303,8 @@ INTERNAL int aztec(struct zint_symbol *symbol, unsigned char source[], const siz
     }
 
     if (reader && (layers > 22)) {
-        strcpy(symbol->errtxt, "506: Data too long for reader initialisation symbol");
+        symbol->err_origin = 506;
+        strcpy(symbol->errtxt, _("Data too long for reader initialisation symbol"));
         return ZINT_ERROR_TOO_LONG;
     }
 
@@ -1576,12 +1583,14 @@ INTERNAL int aztec_runes(struct zint_symbol *symbol, unsigned char source[], int
 
     input_value = 0;
     if (length > 3) {
-        strcpy(symbol->errtxt, "507: Input too large");
+        symbol->err_origin = 507;
+        strcpy(symbol->errtxt, _("Input too large"));
         return ZINT_ERROR_INVALID_DATA;
     }
     error_number = is_sane(NEON, source, length);
     if (error_number != 0) {
-        strcpy(symbol->errtxt, "508: Invalid characters in input");
+        symbol->err_origin = 508;
+        strcpy(symbol->errtxt, _("Invalid character in data"));
         return ZINT_ERROR_INVALID_DATA;
     }
     switch (length) {
@@ -1597,7 +1606,8 @@ INTERNAL int aztec_runes(struct zint_symbol *symbol, unsigned char source[], int
     }
 
     if (input_value > 255) {
-        strcpy(symbol->errtxt, "509: Input too large");
+        symbol->err_origin = 509;
+        strcpy(symbol->errtxt, _("Input too large"));
         return ZINT_ERROR_INVALID_DATA;
     }
 

@@ -50,6 +50,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+/* i18n */
+#include <libintl.h>
+#include <locale.h>
+#define _(STRING) gettext(STRING)
+
 /* Helpers to cast away char pointer signedness */
 #define ustrlen(source) strlen((const char *) (source))
 #define ustrcpy(target, source) strcpy((char *) (target), (const char *) (source))

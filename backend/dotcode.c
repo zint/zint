@@ -1325,7 +1325,8 @@ INTERNAL int dotcode(struct zint_symbol *symbol, const unsigned char source[], i
 #endif /* _MSC_VER */
 
     if (symbol->eci > 811799) {
-        strcpy(symbol->errtxt, "525: Invalid ECI");
+        symbol->err_origin = 525;
+        strcpy(symbol->errtxt, _("Invalid ECI"));
         return ZINT_ERROR_INVALID_OPTION;
     }
 
@@ -1408,12 +1409,14 @@ INTERNAL int dotcode(struct zint_symbol *symbol, const unsigned char source[], i
     }
 
     if ((height > 200) || (width > 200)) {
-        strcpy(symbol->errtxt, "526: Specified symbol size is too large");
+        symbol->err_origin = 526;
+        strcpy(symbol->errtxt, _("Specified symbol size is too large"));
         return ZINT_ERROR_INVALID_OPTION;
     }
 
     if ((height < 5) || (width < 5)) {
-        strcpy(symbol->errtxt, "527: Specified symbol size has a dimension which is too small");
+        symbol->err_origin = 527;
+        strcpy(symbol->errtxt, _("Specified symbol size has a dimension which is too small"));
         return ZINT_ERROR_INVALID_OPTION;
     }
 

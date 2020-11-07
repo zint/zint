@@ -146,7 +146,8 @@ INTERNAL int mailmark(struct zint_symbol *symbol, const unsigned char source[], 
     int length = (int) in_length;
     
     if (length > 26) {
-        strcpy(symbol->errtxt, "580: Input too long");
+        symbol->err_origin = 580;
+        strcpy(symbol->errtxt, _("Input too long"));
         return ZINT_ERROR_TOO_LONG;
     }
     
@@ -173,28 +174,32 @@ INTERNAL int mailmark(struct zint_symbol *symbol, const unsigned char source[], 
     }
     
     if (is_sane(RUBIDIUM, (unsigned char *) local_source, length) != 0) {
-        strcpy(symbol->errtxt, "581: Invalid characters in input data");
+        symbol->err_origin = 581;
+        strcpy(symbol->errtxt, _("Invalid character in data"));
         return ZINT_ERROR_INVALID_DATA;
     }
 
     // Format is in the range 0-4
     format = ctoi(local_source[0]);
     if ((format < 0) || (format > 4)) {
-        strcpy(symbol->errtxt, "582: Invalid format");
+        symbol->err_origin = 582;
+        strcpy(symbol->errtxt, _("Invalid format"));
         return ZINT_ERROR_INVALID_DATA;
     }
     
     // Version ID is in the range 1-4
     version_id = ctoi(local_source[1]) - 1;
     if ((version_id < 0) || (version_id > 3)) {
-        strcpy(symbol->errtxt, "583: Invalid Version ID");
+        symbol->err_origin = 583;
+        strcpy(symbol->errtxt, _("Invalid Version ID"));
         return ZINT_ERROR_INVALID_DATA;
     }
     
     // Class is in the range 0-9,A-E
     mail_class = ctoi(local_source[2]);
     if ((mail_class < 0) || (mail_class > 14)) {
-        strcpy(symbol->errtxt, "584: Invalid Class");
+        symbol->err_origin = 584;
+        strcpy(symbol->errtxt, _("Invalid Class"));
         return ZINT_ERROR_INVALID_DATA;
     }
     
@@ -205,7 +210,8 @@ INTERNAL int mailmark(struct zint_symbol *symbol, const unsigned char source[], 
             supply_chain_id *= 10;
             supply_chain_id += ctoi(local_source[i]);
         } else {
-            strcpy(symbol->errtxt, "585: Invalid Supply Chain ID");
+            symbol->err_origin = 585;
+            strcpy(symbol->errtxt, _("Invalid Supply Chain ID"));
             return ZINT_ERROR_INVALID_DATA;
         }
     }
@@ -217,7 +223,8 @@ INTERNAL int mailmark(struct zint_symbol *symbol, const unsigned char source[], 
             item_id *= 10;
             item_id += (long) ctoi(local_source[i]);
         } else {
-            strcpy(symbol->errtxt, "586: Invalid Item ID");
+            symbol->err_origin = 586;
+            strcpy(symbol->errtxt, _("Invalid Item ID"));
             return ZINT_ERROR_INVALID_DATA;
         }
     }
@@ -271,7 +278,8 @@ INTERNAL int mailmark(struct zint_symbol *symbol, const unsigned char source[], 
     // Verify postcode type
     if (postcode_type != 7) {
         if (verify_postcode(postcode, postcode_type) != 0) {
-            strcpy(symbol->errtxt, "587: Invalid postcode");
+            symbol->err_origin = 587;
+            strcpy(symbol->errtxt, _("Invalid postcode"));
             return ZINT_ERROR_INVALID_DATA;
         }
     }

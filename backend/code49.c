@@ -52,7 +52,8 @@ INTERNAL int code_49(struct zint_symbol *symbol, unsigned char source[], const i
     int h, len;
 
     if (length > 81) {
-        strcpy(symbol->errtxt, "430: Input too long");
+        symbol->err_origin = 430;
+        strcpy(symbol->errtxt, "Input too long");
         return ZINT_ERROR_TOO_LONG;
     }
     if ((symbol->input_mode & 0x07) == GS1_MODE) {
@@ -64,7 +65,8 @@ INTERNAL int code_49(struct zint_symbol *symbol, unsigned char source[], const i
 
     for (i = 0; i < length; i++) {
         if (source[i] > 127) {
-            strcpy(symbol->errtxt, "431: Invalid characters in input data");
+            symbol->err_origin = 431;
+            strcpy(symbol->errtxt, _("Invalid character in data"));
             return ZINT_ERROR_INVALID_DATA;
         }
         if (gs1 && (source[i] == '['))
@@ -215,7 +217,8 @@ INTERNAL int code_49(struct zint_symbol *symbol, unsigned char source[], const i
     }
 
     if (codeword_count > 49) {
-        strcpy(symbol->errtxt, "432: Input too long");
+        symbol->err_origin = 432;
+        strcpy(symbol->errtxt, _("Input too long"));
         return ZINT_ERROR_TOO_LONG;
     }
 

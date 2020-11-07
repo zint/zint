@@ -511,7 +511,8 @@ static int pdf417(struct zint_symbol *symbol, unsigned char chaine[], const int 
     int debug = symbol->debug & ZINT_DEBUG_PRINT;
 
     if (length > PDF417_MAX_LEN) {
-        strcpy(symbol->errtxt, "463: Input string too long");
+        symbol->err_origin = 463;
+        strcpy(symbol->errtxt, _("Input too long"));
         return ZINT_ERROR_TOO_LONG;
     }
 
@@ -563,7 +564,8 @@ static int pdf417(struct zint_symbol *symbol, unsigned char chaine[], const int 
 
     if (symbol->eci != 0) {
         if (symbol->eci > 811799) {
-            strcpy(symbol->errtxt, "472: Invalid ECI");
+            symbol->err_origin = 472;
+            strcpy(symbol->errtxt, _("Invalid ECI"));
             return ZINT_ERROR_INVALID_OPTION;
         }
         /* Encoding ECI assignment number, according to Table 8 */
@@ -632,7 +634,8 @@ static int pdf417(struct zint_symbol *symbol, unsigned char chaine[], const int 
     longueur = mclength;
     if (longueur + k > 928) {
         /* Enforce maximum codeword limit */
-        strcpy(symbol->errtxt, "464: Input string too long");
+        symbol->err_origin = 464;
+        strcpy(symbol->errtxt, _("Input too long"));
         return ZINT_ERROR_TOO_LONG;
     }
 
@@ -646,7 +649,8 @@ static int pdf417(struct zint_symbol *symbol, unsigned char chaine[], const int 
         symbol->option_2 = symbol->option_2 + 1;
 
         if (((longueur + k) / symbol->option_2) > 90) {
-            strcpy(symbol->errtxt, "465: Data too long for specified number of columns");
+            symbol->err_origin = 465;
+            strcpy(symbol->errtxt, _("Data too long for specified number of columns"));
             return ZINT_ERROR_TOO_LONG;
         }
     }
@@ -801,7 +805,8 @@ INTERNAL int pdf417enc(struct zint_symbol *symbol, unsigned char source[], int l
     error_number = 0;
 
     if ((symbol->option_1 < -1) || (symbol->option_1 > 8)) {
-        strcpy(symbol->errtxt, "460: Security value out of range");
+        symbol->err_origin = 460;
+        strcpy(symbol->errtxt, _("Security value out of range"));
         if (symbol->warn_level == WARN_FAIL_ALL) {
             return ZINT_ERROR_INVALID_OPTION;
         } else {
@@ -810,7 +815,8 @@ INTERNAL int pdf417enc(struct zint_symbol *symbol, unsigned char source[], int l
         }
     }
     if ((symbol->option_2 < 0) || (symbol->option_2 > 30)) {
-        strcpy(symbol->errtxt, "461: Number of columns out of range");
+        symbol->err_origin = 461;
+        strcpy(symbol->errtxt, _("Number of columns out of range"));
         if (symbol->warn_level == WARN_FAIL_ALL) {
             return ZINT_ERROR_INVALID_OPTION;
         } else {
@@ -842,7 +848,8 @@ INTERNAL int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], in
     int debug = symbol->debug & ZINT_DEBUG_PRINT;
 
     if (length > MICRO_PDF417_MAX_LEN) {
-        strcpy(symbol->errtxt, "474: Input data too long");
+        symbol->err_origin = 474;
+        strcpy(symbol->errtxt, _("Input too long"));
         return ZINT_ERROR_TOO_LONG;
     }
 
@@ -896,7 +903,8 @@ INTERNAL int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], in
     }
 
     if (symbol->eci > 811799) {
-        strcpy(symbol->errtxt, "473: Invalid ECI");
+        symbol->err_origin = 473;
+        strcpy(symbol->errtxt, _("Invalid ECI"));
         return ZINT_ERROR_INVALID_OPTION;
     }
 
@@ -942,11 +950,13 @@ INTERNAL int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], in
     /* This is where it all changes! */
 
     if (mclength > 126) {
-        strcpy(symbol->errtxt, "467: Input data too long");
+        symbol->err_origin = 467;
+        strcpy(symbol->errtxt, _("Input too long"));
         return ZINT_ERROR_TOO_LONG;
     }
     if (symbol->option_2 > 4) {
-        strcpy(symbol->errtxt, "468: Specified width out of range");
+        symbol->err_origin = 468;
+        strcpy(symbol->errtxt, _("Specified width out of range"));
         if (symbol->warn_level == WARN_FAIL_ALL) {
             return ZINT_ERROR_INVALID_OPTION;
         } else {
@@ -969,7 +979,8 @@ INTERNAL int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], in
 
     if ((symbol->option_2 == 1) && (mclength > 20)) {
         /* the user specified 1 column but the data doesn't fit - go to automatic */
-        strcpy(symbol->errtxt, "469: Specified symbol size too small for data");
+        symbol->err_origin = 469;
+        strcpy(symbol->errtxt, _("Specified symbol size too small for data"));
         if (symbol->warn_level == WARN_FAIL_ALL) {
             return ZINT_ERROR_INVALID_OPTION;
         } else {
@@ -980,7 +991,8 @@ INTERNAL int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], in
 
     if ((symbol->option_2 == 2) && (mclength > 37)) {
         /* the user specified 2 columns but the data doesn't fit - go to automatic */
-        strcpy(symbol->errtxt, "470: Specified symbol size too small for data");
+        symbol->err_origin = 470;
+        strcpy(symbol->errtxt, _("Specified symbol size too small for data"));
         if (symbol->warn_level == WARN_FAIL_ALL) {
             return ZINT_ERROR_INVALID_OPTION;
         } else {
@@ -991,7 +1003,8 @@ INTERNAL int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], in
 
     if ((symbol->option_2 == 3) && (mclength > 82)) {
         /* the user specified 3 columns but the data doesn't fit - go to automatic */
-        strcpy(symbol->errtxt, "471: Specified symbol size too small for data");
+        symbol->err_origin = 471;
+        strcpy(symbol->errtxt, _("Specified symbol size too small for data"));
         if (symbol->warn_level == WARN_FAIL_ALL) {
             return ZINT_ERROR_INVALID_OPTION;
         } else {

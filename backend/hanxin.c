@@ -1410,7 +1410,8 @@ INTERNAL int han_xin(struct zint_symbol *symbol, const unsigned char source[], s
             if (error_number == 0) {
                 done = 1;
             } else if (symbol->eci && symbol->eci <= 899) {
-                strcpy(symbol->errtxt, "575: Invalid characters in input data");
+                symbol->err_origin = 575;
+                strcpy(symbol->errtxt, _("Invalid character in data"));
                 return error_number;
             }
         }
@@ -1479,7 +1480,8 @@ INTERNAL int han_xin(struct zint_symbol *symbol, const unsigned char source[], s
     }
 
     if (version == 85) {
-        strcpy(symbol->errtxt, "541: Input too long for selected error correction level");
+        symbol->err_origin = 541;
+        strcpy(symbol->errtxt, _("Input too long for selected error correction level"));
         return ZINT_ERROR_TOO_LONG;
     }
 
@@ -1492,7 +1494,8 @@ INTERNAL int han_xin(struct zint_symbol *symbol, const unsigned char source[], s
     }
 
     if ((symbol->option_2 != 0) && (symbol->option_2 < version)) {
-        strcpy(symbol->errtxt, "542: Input too long for selected symbol size");
+        symbol->err_origin = 542;
+        strcpy(symbol->errtxt, _("Input too long for selected symbol size"));
         return ZINT_ERROR_TOO_LONG;
     }
 

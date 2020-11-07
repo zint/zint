@@ -673,7 +673,8 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
         emf_file = fopen(symbol->outfile, "wb");
     }
     if (emf_file == NULL) {
-        strcpy(symbol->errtxt, "640: Could not open output file");
+        symbol->err_origin = 640;
+        strcpy(symbol->errtxt, _("Can't open output file"));
         return ZINT_ERROR_FILE_ACCESS;
     }
 

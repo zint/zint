@@ -885,7 +885,8 @@ INTERNAL int ultracode(struct zint_symbol *symbol, const unsigned char source[],
     }
 
     if (symbol->eci > 811799) {
-        strcpy(symbol->errtxt, "590: ECI value not supported by Ultracode");
+        symbol->err_origin = 590;
+        strcpy(symbol->errtxt, _("ECI value not supported by Ultracode"));
         return ZINT_ERROR_INVALID_OPTION;
     }
 
@@ -935,7 +936,8 @@ INTERNAL int ultracode(struct zint_symbol *symbol, const unsigned char source[],
     /* Maximum capacity is 282 codewords */
     total_cws = data_cw_count + qcc + 3; // 3 == TCC pattern + RSEC pattern + QCC pattern
     if (total_cws > 282) {
-        strcpy(symbol->errtxt, "591: Data too long for selected error correction capacity");
+        symbol->err_origin = 591;
+        strcpy(symbol->errtxt, _("Data too long for selected error correction capacity"));
         return ZINT_ERROR_TOO_LONG;
     }
 

@@ -663,13 +663,15 @@ INTERNAL int codablock(struct zint_symbol *symbol,const unsigned char source[], 
         return error_number;
     }
     if (rows > 44) {
-        strcpy(symbol->errtxt, "410: Rows parameter not in 0..44");
+        symbol->err_origin = 410;
+        strcpy(symbol->errtxt, _("Rows parameter not in range 0 to 44"));
         return ZINT_ERROR_INVALID_OPTION;
     }
     /* option_2: (usable data) columns: <= 0: automatic, 9..67 (min 9 == 4 data, max 67 == 62 data) */
     columns = symbol->option_2;
     if ( ! (columns <= 0 || (columns >= 9 && columns <= 67)) ) {
-        strcpy(symbol->errtxt, "411: Columns parameter not in 0, 9..67");
+        symbol->err_origin = 411;
+        strcpy(symbol->errtxt, _("Columns parameter not 0 or in range 9 to 67"));
         return ZINT_ERROR_INVALID_OPTION;
     }
 
@@ -730,7 +732,8 @@ INTERNAL int codablock(struct zint_symbol *symbol,const unsigned char source[], 
         error_number = Columns2Rows(symbol, T, dataLength, &rows, &useColumns, pSet, &fillings);
     }
     if (error_number != 0) {
-        strcpy(symbol->errtxt, "413: Data string too long");
+        symbol->err_origin = 413;
+        strcpy(symbol->errtxt, _("Input too long"));
         return error_number;
     }
     /* Suppresses clang-analyzer-core.VLASize warning */

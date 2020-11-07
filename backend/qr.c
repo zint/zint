@@ -1557,7 +1557,8 @@ INTERNAL int qr_code(struct zint_symbol *symbol, const unsigned char source[], s
             if (error_number == 0) {
                 done = 1;
             } else if (symbol->eci && symbol->eci <= 899) {
-                strcpy(symbol->errtxt, "575: Invalid characters in input data");
+                symbol->err_origin = 575;
+                strcpy(symbol->errtxt, _("Invalid character in data"));
                 return error_number;
             }
         }
@@ -1591,7 +1592,8 @@ INTERNAL int qr_code(struct zint_symbol *symbol, const unsigned char source[], s
     }
 
     if (est_binlen > (8 * max_cw)) {
-        strcpy(symbol->errtxt, "561: Input too long for selected error correction level");
+        symbol->err_origin = 561;
+        strcpy(symbol->errtxt, _("Input too long for selected error correction level"));
         return ZINT_ERROR_TOO_LONG;
     }
 
@@ -1679,7 +1681,8 @@ INTERNAL int qr_code(struct zint_symbol *symbol, const unsigned char source[], s
         }
 
         if (symbol->option_2 < version) {
-            strcpy(symbol->errtxt, "569: Input too long for selected symbol size");
+            symbol->err_origin = 569;
+            strcpy(symbol->errtxt, _("Input too long for selected symbol size"));
             return ZINT_ERROR_TOO_LONG;
         }
     }
@@ -2364,7 +2367,8 @@ INTERNAL int microqr(struct zint_symbol *symbol, const unsigned char source[], s
 #endif
 
     if (length > 35) {
-        strcpy(symbol->errtxt, "562: Input data too long");
+        symbol->err_origin = 562;
+        strcpy(symbol->errtxt, _("Input too long"));
         return ZINT_ERROR_TOO_LONG;
     }
 
@@ -2372,16 +2376,19 @@ INTERNAL int microqr(struct zint_symbol *symbol, const unsigned char source[], s
     ecc_level = LEVEL_L;
     if (symbol->option_1 >= 1 && symbol->option_1 <= 4) {
         if (symbol->option_1 == 4) {
-            strcpy(symbol->errtxt, "566: Error correction level H not available");
+            symbol->err_origin = 566;
+            strcpy(symbol->errtxt, _("Error correction level H not available"));
             return ZINT_ERROR_INVALID_OPTION;
         }
         if (symbol->option_2 >= 1 && symbol->option_2 <= 4) {
             if (symbol->option_2 == 1 && symbol->option_1 != 1) {
-                strcpy(symbol->errtxt, "574: Version M1 supports error correction level L only");
+                symbol->err_origin = 574;
+                strcpy(symbol->errtxt, _("Version M1 supports error correction level L only"));
                 return ZINT_ERROR_INVALID_OPTION;
             }
             if (symbol->option_2 != 4 && symbol->option_1 == 3) {
-                strcpy(symbol->errtxt, "575: Error correction level Q requires Version M4");
+                symbol->err_origin = 575;
+                strcpy(symbol->errtxt, _("Error correction level Q requires Version M4"));
                 return ZINT_ERROR_INVALID_OPTION;
             }
         }
@@ -2456,14 +2463,16 @@ INTERNAL int microqr(struct zint_symbol *symbol, const unsigned char source[], s
         version_valid[2] = 0;
     }
     if (binary_count[3] > 128) {
-        strcpy(symbol->errtxt, "565: Input data too long");
+        symbol->err_origin = 565;
+        strcpy(symbol->errtxt, _("Input too long"));
         return ZINT_ERROR_TOO_LONG;
     }
 
     /* Eliminate possible versions depending on binary length and error correction level specified */
     if (ecc_level == LEVEL_Q) {
         if (binary_count[3] > 80) {
-            strcpy(symbol->errtxt, "567: Input data too long");
+            symbol->err_origin = 567;
+            strcpy(symbol->errtxt, _("Input too long"));
             return ZINT_ERROR_TOO_LONG;
         }
     } else if (ecc_level == LEVEL_M) {
@@ -2474,7 +2483,8 @@ INTERNAL int microqr(struct zint_symbol *symbol, const unsigned char source[], s
             version_valid[2] = 0;
         }
         if (binary_count[3] > 112) {
-            strcpy(symbol->errtxt, "568: Input data too long");
+            symbol->err_origin = 568;
+            strcpy(symbol->errtxt, _("Input too long"));
             return ZINT_ERROR_TOO_LONG;
         }
     }
@@ -2496,7 +2506,8 @@ INTERNAL int microqr(struct zint_symbol *symbol, const unsigned char source[], s
         if (symbol->option_2 - 1 >= autoversion) {
             version = symbol->option_2 - 1;
         } else {
-            strcpy(symbol->errtxt, "570: Input too long for selected symbol size");
+            symbol->err_origin = 570;
+            strcpy(symbol->errtxt, _("Input too long for selected symbol size"));
             return ZINT_ERROR_TOO_LONG;
         }
     }
@@ -2678,13 +2689,15 @@ INTERNAL int upnqr(struct zint_symbol *symbol, const unsigned char source[], siz
             }
             break;
         case GS1_MODE:
-            strcpy(symbol->errtxt, "571: UPNQR does not support GS-1 encoding");
+            symbol->err_origin = 571;
+            strcpy(symbol->errtxt, _("UPNQR does not support GS-1 encoding"));
             return ZINT_ERROR_INVALID_OPTION;
             break;
         case UNICODE_MODE:
             error_number = utf_to_eci(4, source, preprocessed, &length);
             if (error_number != 0) {
-                strcpy(symbol->errtxt, "572: Invalid characters in input data");
+                symbol->err_origin = 572;
+                strcpy(symbol->errtxt, _("Invalid character in data"));
                 return error_number;
             }
             for (i = 0; i < (int) length; i++) {
@@ -2699,7 +2712,8 @@ INTERNAL int upnqr(struct zint_symbol *symbol, const unsigned char source[], siz
     ecc_level = LEVEL_M;
 
     if (est_binlen > 3320) {
-        strcpy(symbol->errtxt, "573: Input too long for selected symbol");
+        symbol->err_origin = 573;
+        strcpy(symbol->errtxt, _("Input too long for selected symbol size"));
         return ZINT_ERROR_TOO_LONG;
     }
 
@@ -2914,12 +2928,14 @@ INTERNAL int rmqr(struct zint_symbol *symbol, const unsigned char source[], size
     ecc_level = LEVEL_M;
     max_cw = 152;
     if (symbol->option_1 == 1) {
-        strcpy(symbol->errtxt, "576: Error correction level L not available in rMQR");
+        symbol->err_origin = 576;
+        strcpy(symbol->errtxt, _("Error correction level L not available in rMQR"));
         return ZINT_ERROR_INVALID_OPTION;
     }
 
     if (symbol->option_1 == 3) {
-        strcpy(symbol->errtxt, "577: Error correction level Q not available in rMQR");
+        symbol->err_origin = 577;
+        strcpy(symbol->errtxt, _("Error correction level Q not available in rMQR"));
         return ZINT_ERROR_INVALID_OPTION;
     }
 
@@ -2929,12 +2945,14 @@ INTERNAL int rmqr(struct zint_symbol *symbol, const unsigned char source[], size
     }
 
     if (est_binlen > (8 * max_cw)) {
-        strcpy(symbol->errtxt, "578: Input too long for selected error correction level");
+        symbol->err_origin = 578;
+        strcpy(symbol->errtxt, _("Input too long for selected error correction level"));
         return ZINT_ERROR_TOO_LONG;
     }
 
     if ((symbol->option_2 < 0) || (symbol->option_2 > 38)) {
-        strcpy(symbol->errtxt, "579: Invalid rMQR symbol size");
+        symbol->err_origin = 579;
+        strcpy(symbol->errtxt, _("Invalid rMQR symbol size"));
         return ZINT_ERROR_INVALID_OPTION;
     }
 
@@ -3008,7 +3026,8 @@ INTERNAL int rmqr(struct zint_symbol *symbol, const unsigned char source[], size
 
     if (est_binlen > (target_codewords * 8)) {
         // User has selected a symbol too small for the data
-        strcpy(symbol->errtxt, "580: Input too long for selected symbol size");
+        symbol->err_origin = 580;
+        strcpy(symbol->errtxt, _("Input too long for selected symbol size"));
         return ZINT_ERROR_TOO_LONG;
     }
 

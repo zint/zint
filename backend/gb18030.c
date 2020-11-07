@@ -2890,7 +2890,8 @@ INTERNAL int gb18030_utf8tomb(struct zint_symbol *symbol, const unsigned char so
         } else {
             ret = gb18030_wctomb_zint(gbdata + j, gbdata + j + 1, utfdata[i]);
             if (ret == 0) {
-                strcpy(symbol->errtxt, "820: Invalid character in input data");
+                symbol->err_origin = 820;
+                strcpy(symbol->errtxt, _("Invalid character in data"));
                 return ZINT_ERROR_INVALID_DATA;
             }
             if (ret == 4) {

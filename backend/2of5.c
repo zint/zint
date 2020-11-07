@@ -64,12 +64,14 @@ INTERNAL int matrix_two_of_five(struct zint_symbol *symbol, unsigned char source
     char dest[512]; /* 6 + 80 * 6 + 6 + 1 ~ 512*/
 
     if (length > 80) {
-        strcpy(symbol->errtxt, "301: Input too long");
+        symbol->err_origin = 301;
+        strcpy(symbol->errtxt, _("Input too long"));
         return ZINT_ERROR_TOO_LONG;
     }
     error_number = is_sane(NEON, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "302: Invalid characters in data");
+        symbol->err_origin = 302;
+        strcpy(symbol->errtxt, _("Invalid character in data"));
         return error_number;
     }
 
@@ -95,12 +97,14 @@ INTERNAL int industrial_two_of_five(struct zint_symbol *symbol, unsigned char so
     char dest[512]; /* 6 + 40 * 10 + 6 + 1 */
 
     if (length > 45) {
-        strcpy(symbol->errtxt, "303: Input too long");
+        symbol->err_origin = 303;
+        strcpy(symbol->errtxt, _("Input too long"));
         return ZINT_ERROR_TOO_LONG;
     }
     error_number = is_sane(NEON, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "304: Invalid character in data");
+        symbol->err_origin = 304;
+        strcpy(symbol->errtxt, _("Invalid character in data"));
         return error_number;
     }
 
@@ -125,12 +129,14 @@ INTERNAL int iata_two_of_five(struct zint_symbol *symbol, unsigned char source[]
     char dest[512]; /* 4 + 45 * 10 + 3 + 1 */
 
     if (length > 45) {
-        strcpy(symbol->errtxt, "305: Input too long");
+        symbol->err_origin = 305;
+        strcpy(symbol->errtxt, _("Input too long"));
         return ZINT_ERROR_TOO_LONG;
     }
     error_number = is_sane(NEON, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "306: Invalid characters in data");
+        symbol->err_origin = 306;
+        strcpy(symbol->errtxt, _("Invalid character in data"));
         return error_number;
     }
 
@@ -156,12 +162,14 @@ INTERNAL int logic_two_of_five(struct zint_symbol *symbol, unsigned char source[
     char dest[512]; /* 4 + 80 * 6 + 3 + 1 */
 
     if (length > 80) {
-        strcpy(symbol->errtxt, "307: Input too long");
+        symbol->err_origin = 307;
+        strcpy(symbol->errtxt, _("Input too long"));
         return ZINT_ERROR_TOO_LONG;
     }
     error_number = is_sane(NEON, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "308: Invalid characters in data");
+        symbol->err_origin = 308;
+        strcpy(symbol->errtxt, _("Invalid character in data"));
         return error_number;
     }
 
@@ -192,12 +200,14 @@ INTERNAL int interleaved_two_of_five(struct zint_symbol *symbol, const unsigned 
 #endif
 
     if (length > 89) {
-        strcpy(symbol->errtxt, "309: Input too long");
+        symbol->err_origin = 309;
+        strcpy(symbol->errtxt, _("Input too long"));
         return ZINT_ERROR_TOO_LONG;
     }
     error_number = is_sane(NEON, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "310: Invalid characters in data");
+        symbol->err_origin = 310;
+        strcpy(symbol->errtxt, _("Invalid character in data"));
         return error_number;
     }
 
@@ -250,13 +260,15 @@ INTERNAL int itf14(struct zint_symbol *symbol, unsigned char source[], int lengt
     count = 0;
 
     if (length > 13) {
-        strcpy(symbol->errtxt, "311: Input too long");
+        symbol->err_origin = 311;
+        strcpy(symbol->errtxt, _("Input too long"));
         return ZINT_ERROR_TOO_LONG;
     }
 
     error_number = is_sane(NEON, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "312: Invalid character in data");
+        symbol->err_origin = 312;
+        strcpy(symbol->errtxt, _("Invalid character in data"));
         return error_number;
     }
 
@@ -301,12 +313,14 @@ INTERNAL int dpleit(struct zint_symbol *symbol, unsigned char source[], int leng
 
     count = 0;
     if (length > 13) {
-        strcpy(symbol->errtxt, "313: Input wrong length");
+        symbol->err_origin = 313;
+        strcpy(symbol->errtxt, _("Input too long"));
         return ZINT_ERROR_TOO_LONG;
     }
     error_number = is_sane(NEON, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "314: Invalid characters in data");
+        symbol->err_origin = 314;
+        strcpy(symbol->errtxt, _("Invalid character in data"));
         return error_number;
     }
 
@@ -337,12 +351,14 @@ INTERNAL int dpident(struct zint_symbol *symbol, unsigned char source[], int len
 
     count = 0;
     if (length > 11) {
-        strcpy(symbol->errtxt, "315: Input wrong length");
+        symbol->err_origin = 315;
+        strcpy(symbol->errtxt, _("Input wrong length"));
         return ZINT_ERROR_TOO_LONG;
     }
     error_number = is_sane(NEON, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "316: Invalid characters in data");
+        symbol->err_origin = 316;
+        strcpy(symbol->errtxt, _("Invalid character in data"));
         return error_number;
     }
 

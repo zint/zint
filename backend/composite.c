@@ -1258,7 +1258,8 @@ static int cc_binary_string(struct zint_symbol *symbol, const char source[], cha
 
     if (!general_field_encode(general_field, &mode, &last_digit, binary_string)) {
         /* Invalid characters in input data */
-        strcpy(symbol->errtxt, "441: Invalid characters in input data");
+        symbol->err_origin = 441;
+        strcpy(symbol->errtxt, _("Invalid character in data"));
         return ZINT_ERROR_INVALID_DATA;
     }
 
@@ -1276,7 +1277,8 @@ static int cc_binary_string(struct zint_symbol *symbol, const char source[], cha
     }
 
     if (target_bitsize == 0) {
-        strcpy(symbol->errtxt, "442: Input too long for selected 2D component");
+        symbol->err_origin = 442;
+        strcpy(symbol->errtxt, _("Input too long for selected 2D component"));
         return ZINT_ERROR_TOO_LONG;
     }
 
@@ -1299,7 +1301,8 @@ static int cc_binary_string(struct zint_symbol *symbol, const char source[], cha
     }
 
     if (strlen(binary_string) > 11805) { /* (2361 * 5) */
-        strcpy(symbol->errtxt, "443: Input too long");
+        symbol->err_origin = 443;
+        strcpy(symbol->errtxt, _("Input too long"));
         return ZINT_ERROR_TOO_LONG;
     }
 
@@ -1317,7 +1320,8 @@ static int cc_binary_string(struct zint_symbol *symbol, const char source[], cha
     }
 
     if (target_bitsize == 0) {
-        strcpy(symbol->errtxt, "444: Input too long for selected 2D component");
+        symbol->err_origin = 444;
+        strcpy(symbol->errtxt, _("Input too long for selected 2D component"));
         return ZINT_ERROR_TOO_LONG;
     }
 
@@ -1389,19 +1393,22 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
     error_number = 0;
     pri_len = (int)strlen(symbol->primary);
     if (pri_len == 0) {
-        strcpy(symbol->errtxt, "445: No primary (linear) message in 2D composite");
+        symbol->err_origin = 445;
+        strcpy(symbol->errtxt, _("No primary (linear) message in 2D composite"));
         return ZINT_ERROR_INVALID_OPTION;
     }
 
     if (length > 2990) {
-        strcpy(symbol->errtxt, "446: 2D component input data too long");
+        symbol->err_origin = 446;
+        strcpy(symbol->errtxt, _("2D component input data too long"));
         return ZINT_ERROR_TOO_LONG;
     }
 
     cc_mode = symbol->option_1;
     if ((cc_mode == 3) && (symbol->symbology != BARCODE_GS1_128_CC)) {
         /* CC-C can only be used with a GS1-128 linear part */
-        strcpy(symbol->errtxt, "447: Invalid mode (CC-C only valid with GS1-128 linear component)");
+        symbol->err_origin = 447;
+        strcpy(symbol->errtxt, _("Invalid mode (CC-C only valid with GS1-128 linear component)"));
         return ZINT_ERROR_INVALID_OPTION;
     }
 
@@ -1409,7 +1416,7 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
         /* Do a test run of encoding the linear component to establish its width */
         linear_width = linear_dummy_run((unsigned char *) symbol->primary, pri_len, symbol->errtxt);
         if (linear_width == 0) {
-            strcat(symbol->errtxt, " in linear component");
+            strcat(symbol->errtxt, _(" in linear component"));
             return ZINT_ERROR_INVALID_DATA;
         }
         if (symbol->debug & ZINT_DEBUG_PRINT) {
@@ -1449,7 +1456,8 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
                 }
             }
             if (cc_width == 0) {
-                strcpy(symbol->errtxt, "449: Input wrong length in linear component");
+                symbol->err_origin = 449;
+                strcpy(symbol->errtxt, _("Input wrong length in linear component"));
                 return ZINT_ERROR_TOO_LONG;
             }
             break;
@@ -1565,7 +1573,7 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
 
     if (error_number != 0) {
         strcpy(symbol->errtxt, linear->errtxt);
-        strcat(symbol->errtxt, " in linear component");
+        strcat(symbol->errtxt, _(" in linear component"));
         ZBarcode_Delete(linear);
         return error_number;
     }

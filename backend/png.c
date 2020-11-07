@@ -58,14 +58,14 @@ struct mainprog_info_type {
 static void writepng_error_handler(png_structp png_ptr, png_const_charp msg) {
     struct mainprog_info_type *graphic;
 
-    fprintf(stderr, "writepng libpng error: %s (F30)\n", msg);
+    fprintf(stderr, _("writepng libpng error: %s (F30)\n"), msg);
     fflush(stderr);
 
     graphic = (struct mainprog_info_type*) png_get_error_ptr(png_ptr);
     if (graphic == NULL) {
         /* we are completely hosed now */
         fprintf(stderr,
-                "writepng severe error:  jmpbuf not recoverable; terminating. (F31)\n");
+                _("writepng severe error:  jmpbuf not recoverable; terminating. (F31)\n"));
         fflush(stderr);
         return;
     }
@@ -138,14 +138,16 @@ INTERNAL int png_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     if (symbol->output_options & BARCODE_STDOUT) {
 #ifdef _MSC_VER
         if (-1 == _setmode(_fileno(stdout), _O_BINARY)) {
-            strcpy(symbol->errtxt, "631: Can't open output file");
+            symbol->err_origin = 631;
+            strcpy(symbol->errtxt, _("Can't open output file"));
             return ZINT_ERROR_FILE_ACCESS;
         }
 #endif
         graphic->outfile = stdout;
     } else {
         if (!(graphic->outfile = fopen(symbol->outfile, "wb"))) {
-            strcpy(symbol->errtxt, "632: Can't open output file");
+            symbol->err_origin = 632;
+            strcpy(symbol->errtxt, _("Can't open output file"));
             return ZINT_ERROR_FILE_ACCESS;
         }
     }
@@ -153,21 +155,24 @@ INTERNAL int png_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     /* Set up error handling routine as proc() above */
     png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, graphic, writepng_error_handler, NULL);
     if (!png_ptr) {
-        strcpy(symbol->errtxt, "633: Out of memory");
+        symbol->err_origin = 633;
+        strcpy(symbol->errtxt, _("Out of memory"));
         return ZINT_ERROR_MEMORY;
     }
 
     info_ptr = png_create_info_struct(png_ptr);
     if (!info_ptr) {
         png_destroy_write_struct(&png_ptr, NULL);
-        strcpy(symbol->errtxt, "634: Out of memory");
+        symbol->err_origin = 634;
+        strcpy(symbol->errtxt, _("Out of memory"));
         return ZINT_ERROR_MEMORY;
     }
 
     /* catch jumping here */
     if (setjmp(graphic->jmpbuf)) {
         png_destroy_write_struct(&png_ptr, &info_ptr);
-        strcpy(symbol->errtxt, "635: libpng error occurred");
+        symbol->err_origin = 635;
+        strcpy(symbol->errtxt, _("libpng error occurred"));
         return ZINT_ERROR_MEMORY;
     }
 

@@ -106,25 +106,30 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
     /* Detect extended ASCII characters */
     for (i = 0; i < (int) src_len; i++) {
         if (source[i] >= 128) {
-            strcpy(symbol->errtxt, "250: Extended ASCII characters are not supported by GS1");
+            symbol->err_origin = 250;
+            strcpy(symbol->errtxt, _("Extended ASCII characters are not supported by GS1"));
             return ZINT_ERROR_INVALID_DATA;
         }
         if (source[i] == '\0') {
-            strcpy(symbol->errtxt, "262: NUL characters not permitted in GS1 mode");
+            symbol->err_origin = 262;
+            strcpy(symbol->errtxt, _("NUL characters not permitted in GS1 mode"));
             return ZINT_ERROR_INVALID_DATA;
         }
         if (source[i] < 32) {
-            strcpy(symbol->errtxt, "251: Control characters are not supported by GS1");
+            symbol->err_origin = 251;
+            strcpy(symbol->errtxt, _("Control characters are not supported by GS1"));
             return ZINT_ERROR_INVALID_DATA;
         }
         if (source[i] == 127) {
-            strcpy(symbol->errtxt, "263: DEL characters are not supported by GS1");
+            symbol->err_origin = 263;
+            strcpy(symbol->errtxt, _("DEL characters are not supported by GS1"));
             return ZINT_ERROR_INVALID_DATA;
         }
     }
 
     if (source[0] != '[') {
-        strcpy(symbol->errtxt, "252: Data does not start with an AI");
+        symbol->err_origin = 252;
+        strcpy(symbol->errtxt, _("Data does not start with an AI"));
         if (symbol->warn_level != WARN_ZPL_COMPAT) {
             return ZINT_ERROR_INVALID_DATA;
         } else {
@@ -169,31 +174,36 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
 
     if (bracket_level != 0) {
         /* Not all brackets are closed */
-        strcpy(symbol->errtxt, "253: Malformed AI in input data (brackets don\'t match)");
+        symbol->err_origin = 253;
+        strcpy(symbol->errtxt, _("Malformed AI in input data (brackets don\'t match)"));
         return ZINT_ERROR_INVALID_DATA;
     }
 
     if (max_bracket_level > 1) {
         /* Nested brackets */
-        strcpy(symbol->errtxt, "254: Found nested brackets in input data");
+        symbol->err_origin = 254;
+        strcpy(symbol->errtxt, _("Found nested brackets in input data"));
         return ZINT_ERROR_INVALID_DATA;
     }
 
     if (max_ai_length > 4) {
         /* AI is too long */
-        strcpy(symbol->errtxt, "255: Invalid AI in input data (AI too long)");
+        symbol->err_origin = 255;
+        strcpy(symbol->errtxt, _("Invalid AI in input data (AI too long)"));
         return ZINT_ERROR_INVALID_DATA;
     }
 
     if (min_ai_length <= 1) {
         /* AI is too short */
-        strcpy(symbol->errtxt, "256: Invalid AI in input data (AI too short)");
+        symbol->err_origin = 256;
+        strcpy(symbol->errtxt, _("Invalid AI in input data (AI too short)"));
         return ZINT_ERROR_INVALID_DATA;
     }
 
     if (ai_latch == 1) {
         /* Non-numeric data in AI */
-        strcpy(symbol->errtxt, "257: Invalid AI in input data (non-numeric characters in AI)");
+        symbol->err_origin = 257;
+        strcpy(symbol->errtxt, _("Invalid AI in input data (non-numeric characters in AI)"));
         return ZINT_ERROR_INVALID_DATA;
     }
 
@@ -230,7 +240,8 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
     for (i = 0; i < ai_count; i++) {
         if (data_length[i] == 0) {
             /* No data for given AI */
-            strcpy(symbol->errtxt, "258: Empty data field in input data");
+            symbol->err_origin = 258;
+            strcpy(symbol->errtxt, _("Empty data field in input data"));
             return ZINT_ERROR_INVALID_DATA;
         }
     }
@@ -665,7 +676,8 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
 
         if (error_latch == 1) {
             itostr(ai_string, ai_value[i]);
-            strcpy(symbol->errtxt, "259: Invalid data length for AI ");
+            symbol->err_origin = 259;
+            strcpy(symbol->errtxt, _("Invalid data length for AI "));
             strcat(symbol->errtxt, ai_string);
             if (symbol->warn_level != WARN_ZPL_COMPAT) {
                 return ZINT_ERROR_INVALID_DATA;
@@ -676,7 +688,8 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
 
         if (error_latch == 2) {
             itostr(ai_string, ai_value[i]);
-            strcpy(symbol->errtxt, "260: Invalid AI value ");
+            symbol->err_origin = 260;
+            strcpy(symbol->errtxt, _("Invalid AI value "));
             strcat(symbol->errtxt, ai_string);
             if (symbol->warn_level != WARN_ZPL_COMPAT) {
                 return ZINT_ERROR_INVALID_DATA;

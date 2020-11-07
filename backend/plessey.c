@@ -57,12 +57,14 @@ INTERNAL int plessey(struct zint_symbol *symbol, unsigned char source[], const s
     int error_number;
 
     if (length > 65) {
-        strcpy(symbol->errtxt, "370: Input too long");
+        symbol->err_origin = 370;
+        strcpy(symbol->errtxt, _("Input too long"));
         return ZINT_ERROR_TOO_LONG;
     }
     error_number = is_sane(SSET, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "371: Invalid characters in data");
+        symbol->err_origin = 371;
+        strcpy(symbol->errtxt, _("Invalid character in data"));
         return error_number;
     }
     checkptr = (unsigned char *) calloc(1, length * 4 + 8);
@@ -116,7 +118,8 @@ static int msi_plessey(struct zint_symbol *symbol, unsigned char source[], const
     char dest[512]; /* 2 + 55 * 8 + 3 + 1 ~ 512 */
 
     if (length > 55) {
-        strcpy(symbol->errtxt, "372: Input too long");
+        symbol->err_origin = 372;
+        strcpy(symbol->errtxt, _("Input too long"));
         return ZINT_ERROR_TOO_LONG;
     }
 
@@ -148,7 +151,8 @@ static int msi_plessey_mod10(struct zint_symbol *symbol, unsigned char source[],
     error_number = 0;
 
     if (length > 18) {
-        strcpy(symbol->errtxt, "373: Input too long");
+        symbol->err_origin = 373;
+        strcpy(symbol->errtxt, _("Input too long"));
         return ZINT_ERROR_TOO_LONG;
     }
 
@@ -216,7 +220,8 @@ static int msi_plessey_mod1010(struct zint_symbol *symbol, unsigned char source[
 
     if (src_len > 18) {
         /* No Entry Stack Smashers! limit because of str->number conversion*/
-        strcpy(symbol->errtxt, "374: Input too long");
+        symbol->err_origin = 374;
+        strcpy(symbol->errtxt, _("Input too long"));
         return ZINT_ERROR_TOO_LONG;
     }
 
@@ -318,7 +323,8 @@ static int msi_plessey_mod11(struct zint_symbol *symbol, unsigned char source[],
     error_number = 0;
 
     if (src_len > 55) {
-        strcpy(symbol->errtxt, "375: Input too long");
+        symbol->err_origin = 375;
+        strcpy(symbol->errtxt, _("Input too long"));
         return ZINT_ERROR_TOO_LONG;
     }
 
@@ -382,7 +388,8 @@ static int msi_plessey_mod1110(struct zint_symbol *symbol, unsigned char source[
     error_number = 0;
 
     if (src_len > 18) {
-        strcpy(symbol->errtxt, "376: Input too long");
+        symbol->err_origin = 376;
+        strcpy(symbol->errtxt, _("Input too long"));
         return ZINT_ERROR_TOO_LONG;
     }
 
@@ -468,7 +475,8 @@ INTERNAL int msi_handle(struct zint_symbol *symbol, unsigned char source[], int 
 
     error_number = is_sane(NEON, source, length);
     if (error_number != 0) {
-        strcpy(symbol->errtxt, "377: Invalid characters in input data");
+        symbol->err_origin = 377;
+        strcpy(symbol->errtxt, _("Invalid character in data"));
         return ZINT_ERROR_INVALID_DATA;
     }
 
