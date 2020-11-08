@@ -58,14 +58,14 @@ struct mainprog_info_type {
 static void writepng_error_handler(png_structp png_ptr, png_const_charp msg) {
     struct mainprog_info_type *graphic;
 
-    fprintf(stderr, _("writepng libpng error: %s (F30)\n"), msg);
+    fprintf(stderr, _("libpng error: %s\n"), msg);
     fflush(stderr);
 
     graphic = (struct mainprog_info_type*) png_get_error_ptr(png_ptr);
     if (graphic == NULL) {
         /* we are completely hosed now */
         fprintf(stderr,
-                _("writepng severe error:  jmpbuf not recoverable; terminating. (F31)\n"));
+                _("libpng error: jmpbuf not recoverable; terminating\n"));
         fflush(stderr);
         return;
     }

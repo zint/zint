@@ -192,9 +192,9 @@ static void error_tag(char error_string[], int error_number, int err_origin) {
         strcpy(error_buffer, error_string);
 
         if (error_number >= ZINT_ERROR) {
-            sprintf(error_string, "Error %d: ", err_origin);
+            sprintf(error_string, _("Error %d: "), err_origin);
         } else {
-            sprintf(error_string, "Warning %d: ", err_origin);
+            sprintf(error_string, _("Warning %d: "), err_origin);
         }
 
         strcat(error_string, error_buffer);

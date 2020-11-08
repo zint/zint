@@ -980,7 +980,7 @@ INTERNAL int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], in
     if ((symbol->option_2 == 1) && (mclength > 20)) {
         /* the user specified 1 column but the data doesn't fit - go to automatic */
         symbol->err_origin = 469;
-        strcpy(symbol->errtxt, _("Specified symbol size too small for data"));
+        strcpy(symbol->errtxt, _("Input too long for selected symbol size"));
         if (symbol->warn_level == WARN_FAIL_ALL) {
             return ZINT_ERROR_INVALID_OPTION;
         } else {
@@ -992,7 +992,7 @@ INTERNAL int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], in
     if ((symbol->option_2 == 2) && (mclength > 37)) {
         /* the user specified 2 columns but the data doesn't fit - go to automatic */
         symbol->err_origin = 470;
-        strcpy(symbol->errtxt, _("Specified symbol size too small for data"));
+        strcpy(symbol->errtxt, _("Input too long for selected symbol size"));
         if (symbol->warn_level == WARN_FAIL_ALL) {
             return ZINT_ERROR_INVALID_OPTION;
         } else {
@@ -1004,7 +1004,7 @@ INTERNAL int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], in
     if ((symbol->option_2 == 3) && (mclength > 82)) {
         /* the user specified 3 columns but the data doesn't fit - go to automatic */
         symbol->err_origin = 471;
-        strcpy(symbol->errtxt, _("Specified symbol size too small for data"));
+        strcpy(symbol->errtxt, _("Input too long for selected symbol size"));
         if (symbol->warn_level == WARN_FAIL_ALL) {
             return ZINT_ERROR_INVALID_OPTION;
         } else {

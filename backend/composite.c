@@ -1400,7 +1400,7 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
 
     if (length > 2990) {
         symbol->err_origin = 446;
-        strcpy(symbol->errtxt, _("2D component input data too long"));
+        strcpy(symbol->errtxt, _("Input too long for selected 2D component"));
         return ZINT_ERROR_TOO_LONG;
     }
 

@@ -937,7 +937,7 @@ INTERNAL int ultracode(struct zint_symbol *symbol, const unsigned char source[],
     total_cws = data_cw_count + qcc + 3; // 3 == TCC pattern + RSEC pattern + QCC pattern
     if (total_cws > 282) {
         symbol->err_origin = 591;
-        strcpy(symbol->errtxt, _("Data too long for selected error correction capacity"));
+        strcpy(symbol->errtxt, _("Input too long for selected error correction level"));
         return ZINT_ERROR_TOO_LONG;
     }
 

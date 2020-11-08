@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: LIBZINT 2.9.1\n"
+"Project-Id-Version: libzint 2.9.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-07 19:17+0000\n"
+"POT-Creation-Date: 2020-11-08 08:26+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -23,10 +23,6 @@ msgstr ""
 
 #: composite.c:1419 composite.c:1576
 msgid " in linear component"
-msgstr ""
-
-#: composite.c:1403
-msgid "2D component input data too long"
 msgstr ""
 
 #: upcean.c:964
@@ -90,14 +86,6 @@ msgstr ""
 msgid "Data too long for reader initialisation symbol"
 msgstr ""
 
-#: ultra.c:940
-msgid "Data too long for selected error correction capacity"
-msgstr ""
-
-#: aztec.c:1288
-msgid "Data too long for specified Aztec Code symbol size"
-msgstr ""
-
 #: pdf417.c:653
 msgid "Data too long for specified number of columns"
 msgstr ""
@@ -120,6 +108,11 @@ msgstr ""
 
 #: library.c:1335
 msgid "Encoded data includes ECI"
+msgstr ""
+
+#: library.c:195
+#, c-format
+msgid "Error %d: "
 msgstr ""
 
 #: qr.c:2380
@@ -210,16 +203,17 @@ msgstr ""
 msgid "Input too long"
 msgstr ""
 
-#: composite.c:1281 composite.c:1324
+#: composite.c:1281 composite.c:1324 composite.c:1403
 msgid "Input too long for selected 2D component"
 msgstr ""
 
-#: aztec.c:1116 hanxin.c:1484 qr.c:1596 qr.c:2949
+#: aztec.c:1116 hanxin.c:1484 qr.c:1596 qr.c:2949 ultra.c:940
 msgid "Input too long for selected error correction level"
 msgstr ""
 
-#: code1.c:1439 dmatrix.c:1242 gridmtx.c:1010 hanxin.c:1498 qr.c:1685 qr.c:2510
-#: qr.c:2716 qr.c:3030
+#: aztec.c:1288 pdf417.c:983 pdf417.c:995 pdf417.c:1007 code1.c:1439
+#: dmatrix.c:1242 gridmtx.c:1010 hanxin.c:1498 qr.c:1685 qr.c:2510 qr.c:2716
+#: qr.c:3030
 msgid "Input too long for selected symbol size"
 msgstr ""
 
@@ -479,10 +473,6 @@ msgstr ""
 msgid "Specified symbol size is too large"
 msgstr ""
 
-#: pdf417.c:983 pdf417.c:995 pdf417.c:1007
-msgid "Specified symbol size too small for data"
-msgstr ""
-
 #: pdf417.c:959
 msgid "Specified width out of range"
 msgstr ""
@@ -533,16 +523,21 @@ msgstr ""
 msgid "Version M1 supports error correction level L only"
 msgstr ""
 
+#: library.c:197
+#, c-format
+msgid "Warning %d: "
+msgstr ""
+
 #: png.c:175
 msgid "libpng error occurred"
 msgstr ""
 
 #: png.c:61
 #, c-format
-msgid "writepng libpng error: %s (F30)\n"
+msgid "libpng error: %s\n"
 msgstr ""
 
 #: png.c:68
 #, c-format
-msgid "writepng severe error:  jmpbuf not recoverable; terminating. (F31)\n"
+msgid "libpng error: jmpbuf not recoverable; terminating\n"
 msgstr ""

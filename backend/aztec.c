@@ -1285,7 +1285,7 @@ INTERNAL int aztec(struct zint_symbol *symbol, unsigned char source[], const siz
 
         if (adjusted_length > data_maxsize) {
             symbol->err_origin = 505;
-            strcpy(symbol->errtxt, _("Data too long for specified Aztec Code symbol size"));
+            strcpy(symbol->errtxt, _("Input too long for selected symbol size"));
             return ZINT_ERROR_TOO_LONG;
         }
 
