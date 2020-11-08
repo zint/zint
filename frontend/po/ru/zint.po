@@ -397,9 +397,9 @@ msgstr ""
 #: main.c:87
 #, c-format
 msgid "Zint version %d.%d.%d\n"
-msgstr "Версия Zint %d.%d.%d"
+msgstr "Версия Zint %d.%d.%d\n"
 
 #: main.c:85
 #, c-format
 msgid "Zint version %d.%d.%d.%d\n"
-msgstr "Версия Zint %d.%d.%d.%d"
+msgstr "Версия Zint %d.%d.%d.%d\n"
