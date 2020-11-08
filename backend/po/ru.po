@@ -113,7 +113,7 @@ msgstr ""
 #: library.c:195
 #, c-format
 msgid "Error %d: "
-msgstr ""
+msgstr "Ошибка %d: "
 
 #: qr.c:2380
 msgid "Error correction level H not available"
@@ -526,7 +526,7 @@ msgstr ""
 #: library.c:197
 #, c-format
 msgid "Warning %d: "
-msgstr ""
+msgstr "Предупреждение %d: "
 
 #: png.c:175
 msgid "libpng error occurred"
