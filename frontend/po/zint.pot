@@ -1,20 +1,20 @@
-# Zint barcode encoder
-# Copyright (C) 2020 Robin Stuart <rstuart114@gmail.com>
-# This file is distributed under the same license as the zint package.
-# Robin Stuart <rstuart114@gmail.com>, 2020.
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: zint 2.9.1\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-08 09:50+0000\n"
+"Project-Id-Version: libzint 2.9\n"
+"Report-Msgid-Bugs-To: rstuart114@gmail.com\n"
+"POT-Creation-Date: 2020-11-20 19:19+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
 #: main.c:47
@@ -88,23 +88,23 @@ msgid ""
 "** See note in section 4.10 of the manual\n"
 msgstr ""
 
-#: main.c:674
+#: main.c:678
 msgid "Border width out of range"
 msgstr ""
 
-#: main.c:893
+#: main.c:897
 msgid "Can only define one input file in batch mode, ignoring"
 msgstr ""
 
-#: main.c:882
+#: main.c:886
 msgid "Can't define data in batch mode, ignoring"
 msgstr ""
 
-#: main.c:782
+#: main.c:786
 msgid "Can't use batch mode if data given, ignoring"
 msgstr ""
 
-#: main.c:734
+#: main.c:738
 msgid "ECC level out of range"
 msgstr ""
 
@@ -176,7 +176,7 @@ msgstr ""
 msgid "Error %d: %s"
 msgstr ""
 
-#: main.c:792
+#: main.c:796
 msgid "File type not supported, ignoring"
 msgstr ""
 
@@ -184,91 +184,91 @@ msgstr ""
 msgid "Input too long"
 msgstr ""
 
-#: main.c:728
+#: main.c:732
 msgid "Invalid ECC value"
 msgstr ""
 
-#: main.c:806
+#: main.c:810
 msgid "Invalid ECI code"
 msgstr ""
 
-#: main.c:800
+#: main.c:804
 msgid "Invalid ECI value"
 msgstr ""
 
-#: main.c:648 main.c:653
+#: main.c:652 main.c:657
 msgid "Invalid add-on gap value"
 msgstr ""
 
-#: main.c:856
+#: main.c:860
 msgid "Invalid barcode type"
 msgstr ""
 
-#: main.c:668
+#: main.c:672
 msgid "Invalid border width value"
 msgstr ""
 
-#: main.c:692
+#: main.c:696
 msgid "Invalid columns value"
 msgstr ""
 
-#: main.c:661
+#: main.c:665
 msgid "Invalid dot radius value"
 msgstr ""
 
-#: main.c:818 main.c:824
+#: main.c:822 main.c:828
 msgid "Invalid font size"
 msgstr ""
 
-#: main.c:753
+#: main.c:757
 msgid "Invalid mode"
 msgstr ""
 
-#: main.c:747
+#: main.c:751
 msgid "Invalid mode value"
 msgstr ""
 
-#: main.c:916
+#: main.c:920
 msgid "Invalid option"
 msgstr ""
 
-#: main.c:760 main.c:773
+#: main.c:764 main.c:777
 msgid "Invalid rotation value"
 msgstr ""
 
-#: main.c:704
+#: main.c:708
 msgid "Invalid rows value"
 msgstr ""
 
-#: main.c:628
+#: main.c:632
 msgid "Invalid scale value"
 msgstr ""
 
-#: main.c:635
+#: main.c:639
 msgid "Invalid separator value"
 msgstr ""
 
-#: main.c:641
+#: main.c:645
 msgid "Invalid seperator value"
 msgstr ""
 
-#: main.c:680
+#: main.c:684
 msgid "Invalid symbol height value"
 msgstr ""
 
-#: main.c:722
+#: main.c:726
 msgid "Invalid version"
 msgstr ""
 
-#: main.c:716
+#: main.c:720
 msgid "Invalid version value"
 msgstr ""
 
-#: main.c:865
+#: main.c:869
 msgid "Invalid whitespace value"
 msgstr ""
 
-#: main.c:983
+#: main.c:987
 msgid "No data received, no symbol generated"
 msgstr ""
 
@@ -276,11 +276,11 @@ msgstr ""
 msgid "No newline at end of file"
 msgstr ""
 
-#: main.c:698
+#: main.c:702
 msgid "Number of columns out of range"
 msgstr ""
 
-#: main.c:710
+#: main.c:714
 msgid "Number of rows out of range"
 msgstr ""
 
@@ -294,19 +294,19 @@ msgstr ""
 msgid "On line %d: %s\n"
 msgstr ""
 
-#: main.c:741
+#: main.c:745
 msgid "Primary data string too long"
 msgstr ""
 
-#: main.c:937
+#: main.c:941
 msgid "Processing first input file only"
 msgstr ""
 
-#: main.c:945 main.c:957
+#: main.c:949 main.c:961
 msgid "Scaling less than 0.5 will be set to 0.5"
 msgstr ""
 
-#: main.c:686
+#: main.c:690
 msgid "Symbol height out of range"
 msgstr ""
 
@@ -314,7 +314,7 @@ msgstr ""
 msgid "Unable to read input file"
 msgstr ""
 
-#: main.c:910
+#: main.c:914
 msgid "Unknown getopt error"
 msgstr ""
 
@@ -323,7 +323,7 @@ msgstr ""
 msgid "Warning %d: %s"
 msgstr ""
 
-#: main.c:871
+#: main.c:875
 msgid "Whitespace value out of range"
 msgstr ""
 

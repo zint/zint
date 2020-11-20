@@ -498,6 +498,10 @@ int main(int argc, char **argv) {
     arg_opt *arg_opts = (arg_opt *) _alloca(argc * sizeof(arg_opt));
 #endif
 
+    setlocale (LC_ALL, "");
+    bindtextdomain ("zint", "/usr/share/locale/");
+    textdomain ("zint");
+    
     my_symbol = ZBarcode_Create();
     my_symbol->input_mode = UNICODE_MODE;
 
