@@ -1071,6 +1071,12 @@ static int escape_char_process(struct zint_symbol *symbol, unsigned char *input_
     return error_number;
 }
 
+void set_i18n() {
+    setlocale (LC_ALL, "");
+    bindtextdomain ("libzint", "/usr/share/locale/");
+    textdomain ("libzint");
+}
+
 int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int in_length) {
     int error_number, error_buffer;
 #ifdef _MSC_VER
@@ -1079,6 +1085,8 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
 
     if (!symbol) return ZINT_ERROR_INVALID_DATA;
 
+    set_i18n();
+    
     error_number = 0;
 
     if (source == NULL) {
@@ -1354,6 +1362,8 @@ int ZBarcode_Print(struct zint_symbol *symbol, int rotate_angle) {
     int error_number;
 
     if (!symbol) return ZINT_ERROR_INVALID_DATA;
+    
+    set_i18n();
 
     switch (rotate_angle) {
         case 0:
@@ -1447,6 +1457,8 @@ int ZBarcode_Buffer(struct zint_symbol *symbol, int rotate_angle) {
     int error_number;
 
     if (!symbol) return ZINT_ERROR_INVALID_DATA;
+    
+    set_i18n();
 
     switch (rotate_angle) {
         case 0:
@@ -1479,6 +1491,8 @@ int ZBarcode_Buffer_Vector(struct zint_symbol *symbol, int rotate_angle) {
     int error_number;
 
     if (!symbol) return ZINT_ERROR_INVALID_DATA;
+    
+    set_i18n();
 
     switch (rotate_angle) {
         case 0:
@@ -1569,6 +1583,8 @@ int ZBarcode_Encode_File(struct zint_symbol *symbol, char *filename) {
     int ret;
 
     if (!symbol) return ZINT_ERROR_INVALID_DATA;
+    
+    set_i18n();
 
     if (!filename) {
         symbol->err_origin = 239;

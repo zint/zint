@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: libzint 2.9\n"
 "Report-Msgid-Bugs-To: rstuart114@gmail.com\n"
-"POT-Creation-Date: 2020-11-20 19:56+0000\n"
+"POT-Creation-Date: 2020-11-21 16:40+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: library.c:1306
+#: library.c:1314
 msgid " in 2D component"
 msgstr ""
 
@@ -42,7 +42,7 @@ msgstr ""
 msgid "Can't open output file"
 msgstr ""
 
-#: library.c:1135
+#: library.c:1143
 msgid "Codabar 18 not supported"
 msgstr ""
 
@@ -106,7 +106,7 @@ msgstr ""
 msgid "Empty data field in input data"
 msgstr ""
 
-#: library.c:1335
+#: library.c:1343
 msgid "Encoded data includes ECI"
 msgstr ""
 
@@ -135,7 +135,7 @@ msgstr ""
 msgid "Extended ASCII characters are not supported by GS1"
 msgstr ""
 
-#: library.c:1575
+#: library.c:1591
 msgid "Filename NULL"
 msgstr ""
 
@@ -143,7 +143,7 @@ msgstr ""
 msgid "Found nested brackets in input data"
 msgstr ""
 
-#: library.c:1160
+#: library.c:1168
 msgid "General Parcel Code not supported"
 msgstr ""
 
@@ -163,20 +163,20 @@ msgstr ""
 msgid "Incorrect SBN check"
 msgstr ""
 
-#: library.c:1086
+#: library.c:1094
 msgid "Input data NULL"
 msgstr ""
 
-#: library.c:1607
+#: library.c:1623
 msgid "Input file empty or unseekable"
 msgstr ""
 
-#: library.c:1632
+#: library.c:1648
 #, c-format
 msgid "Input file read error (%.30s)"
 msgstr ""
 
-#: library.c:1600
+#: library.c:1616
 msgid "Input file too long"
 msgstr ""
 
@@ -251,7 +251,7 @@ msgstr ""
 msgid "Insufficient memory for pixel buffer"
 msgstr ""
 
-#: library.c:1618
+#: library.c:1634
 msgid "Internal memory error"
 msgstr ""
 
@@ -287,7 +287,7 @@ msgstr ""
 msgid "Invalid DPD identifier"
 msgstr ""
 
-#: dotcode.c:1329 library.c:1257 pdf417.c:568 pdf417.c:907 gridmtx.c:976
+#: dotcode.c:1329 library.c:1265 pdf417.c:568 pdf417.c:907 gridmtx.c:976
 msgid "Invalid ECI"
 msgstr ""
 
@@ -361,7 +361,7 @@ msgstr ""
 msgid "Invalid data length for AI "
 msgstr ""
 
-#: library.c:1264
+#: library.c:1272
 msgid "Invalid dot size"
 msgstr ""
 
@@ -397,7 +397,7 @@ msgstr ""
 msgid "Invalid rMQR symbol size"
 msgstr ""
 
-#: library.c:1366 library.c:1459 library.c:1491
+#: library.c:1376 library.c:1471 library.c:1505
 msgid "Invalid rotation angle"
 msgstr ""
 
@@ -421,7 +421,7 @@ msgstr ""
 msgid "NUL characters not permitted in GS1 mode"
 msgstr ""
 
-#: library.c:1095
+#: library.c:1103
 msgid "No input data"
 msgstr ""
 
@@ -457,11 +457,11 @@ msgstr ""
 msgid "Security value out of range"
 msgstr ""
 
-#: library.c:1374 library.c:1467 library.c:1499
+#: library.c:1384 library.c:1479 library.c:1513
 msgid "Selected symbology cannot be rendered as dots"
 msgstr ""
 
-#: library.c:1316
+#: library.c:1324
 msgid "Selected symbology does not support GS1 mode"
 msgstr ""
 
@@ -477,16 +477,16 @@ msgstr ""
 msgid "Specified width out of range"
 msgstr ""
 
-#: library.c:1253
+#: library.c:1261
 msgid "Symbology does not support ECI switching"
 msgstr ""
 
-#: library.c:1117 library.c:1181 library.c:1190 library.c:1213 library.c:1225
-#: library.c:1236
+#: library.c:1125 library.c:1189 library.c:1198 library.c:1221 library.c:1233
+#: library.c:1244
 msgid "Symbology out of range"
 msgstr ""
 
-#: library.c:1146
+#: library.c:1154
 msgid "UPCD1 not supported"
 msgstr ""
 
@@ -494,7 +494,7 @@ msgstr ""
 msgid "UPNQR does not support GS-1 encoding"
 msgstr ""
 
-#: library.c:1587
+#: library.c:1603
 #, c-format
 msgid "Unable to read input file (%.30s)"
 msgstr ""
@@ -503,7 +503,7 @@ msgstr ""
 msgid "Unicode sequences of more than 3 bytes not supported"
 msgstr ""
 
-#: library.c:1431 library.c:1437
+#: library.c:1441 library.c:1447
 msgid "Unknown output format"
 msgstr ""
 
