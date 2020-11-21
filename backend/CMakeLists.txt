@@ -42,3 +42,15 @@ endif(MSVC)
 
 install(TARGETS zint  ${INSTALL_TARGETS_DEFAULT_ARGS} )
 install(FILES zint.h DESTINATION ${INCLUDE_INSTALL_DIR} COMPONENT Devel)
+
+# LOCALEDIR must be set up before including po/CMakeLists.txt
+if (DEFINED LOCALE_INSTALL_DIR)
+	set(LOCALEDIR "${LOCALE_INSTALL_DIR}")
+else(DEFINED LOCALE_INSTALL_DIR)
+	set(LOCALEDIR "${CMAKE_INSTALL_PREFIX}/locale")
+endif(DEFINED LOCALE_INSTALL_DIR)
+
+add_definitions(-DINSTALL_PREFIX="${CMAKE_INSTALL_PREFIX}")
+add_definitions(-DLOCALE_DIR="${LOCALEDIR}")
+
+add_subdirectory(po)

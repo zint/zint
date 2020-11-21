@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: libzint 2.9\n"
 "Report-Msgid-Bugs-To: rstuart114@gmail.com\n"
-"POT-Creation-Date: 2020-11-20 19:19+0000\n"
+"POT-Creation-Date: 2020-11-21 19:34+0000\n"
 "PO-Revision-Date: 2020-11-20 19:23+0000\n"
 "Last-Translator: Василий Павлов <halmet94@gmail.com>\n"
 "Language-Team: Russian\n"
@@ -15,8 +15,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
-"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
 #: main.c:47
 #, c-format
@@ -44,10 +43,8 @@ msgid ""
 "30: GS1 DataBar Ltd   79: GS1 DataBar Stack       135: Comp UPC-A\n"
 "31: GS1 DataBar Exp   80: GS1 DataBar Stack Omni  136: Comp UPC-E\n"
 "32: Telepen Alpha     81: GS1 DataBar Exp Stack   137: Comp DataBar Stack\n"
-"34: UPC-A             82: PLANET                  138: Comp DataBar Stack "
-"Omni\n"
-"35: UPC-A + Check     84: MicroPDF                139: Comp DataBar Exp "
-"Stack\n"
+"34: UPC-A             82: PLANET                  138: Comp DataBar Stack Omni\n"
+"35: UPC-A + Check     84: MicroPDF                139: Comp DataBar Exp Stack\n"
 "37: UPC-E             85: USPS Intelligent Mail   140: Channel Code\n"
 "38: UPC-E + Check     86: UK Plessey              141: Code One\n"
 "40: POSTNET           87: Telepen Numeric         142: Grid Matrix\n"
@@ -87,7 +84,8 @@ msgid ""
 "29: ** GB (PRC) Chinese Character Set\n"
 "30: ** Korean Character Set (KSX1001:1998)\n"
 "** See note in section 4.10 of the manual\n"
-msgstr " 3: ISO-8859-1 - Латинский алфавит №. 1 (по умолчанию)\n"
+msgstr ""
+" 3: ISO-8859-1 - Латинский алфавит №. 1 (по умолчанию)\n"
 " 4: ISO-8859-2 - Латинский алфавит №. 2\n"
 " 5: ISO-8859-3 - Латинский алфавит №. 3\n"
 " 6: ISO-8859-4 - Латинский алфавит №. 4\n"
@@ -115,37 +113,34 @@ msgstr " 3: ISO-8859-1 - Латинский алфавит №. 1 (по умол
 "30: ** Корейский набор символов (KSX1001:1998)\n"
 "** См. Примечание в разделе 4.10 руководства\n"
 
-#: main.c:674
+#: main.c:678
 msgid "Border width out of range"
 msgstr ""
 
-#: main.c:893
+#: main.c:897
 msgid "Can only define one input file in batch mode, ignoring"
 msgstr ""
 
-#: main.c:882
+#: main.c:886
 msgid "Can't define data in batch mode, ignoring"
 msgstr "Невозможно определить данные в пакетном режиме"
 
-#: main.c:782
+#: main.c:786
 msgid "Can't use batch mode if data given, ignoring"
 msgstr ""
 
-#: main.c:734
+#: main.c:738
 msgid "ECC level out of range"
 msgstr ""
 
 #: main.c:89
 #, c-format
 msgid ""
-"Encode input data in a barcode and save as BMP/EMF/EPS/GIF/PCX/PNG/SVG/TIF/"
-"TXT\n"
+"Encode input data in a barcode and save as BMP/EMF/EPS/GIF/PCX/PNG/SVG/TIF/TXT\n"
 "\n"
 "  -b, --barcode=NUMBER  Number of barcode type. Default is 20 (Code 128)\n"
-"  --addongap=NUMBER     Set add-on gap in multiples of X-dimension for UPC/"
-"EAN\n"
-"  --batch               Treat each line of input file as a separate data "
-"set\n"
+"  --addongap=NUMBER     Set add-on gap in multiples of X-dimension for UPC/EAN\n"
+"  --batch               Treat each line of input file as a separate data set\n"
 "  --bg=COLOUR           Specify a background colour (in hex)\n"
 "  --binary              Treat input as raw binary data\n"
 "  --bind                Add boundary bars\n"
@@ -164,10 +159,8 @@ msgid ""
 "  --eci=NUMBER          Set the ECI (Extended Channel Interpretation) code\n"
 "  --esc                 Process escape characters in input data\n"
 "  --fg=COLOUR           Specify a foreground colour (in hex)\n"
-"  --filetype=TYPE       Set output file type BMP/EMF/EPS/GIF/PCX/PNG/SVG/TIF/"
-"TXT\n"
-"  --fullmultibyte       Use multibyte for binary/Latin (QR/Han Xin/Grid "
-"Matrix)\n"
+"  --filetype=TYPE       Set output file type BMP/EMF/EPS/GIF/PCX/PNG/SVG/TIF/TXT\n"
+"  --fullmultibyte       Use multibyte for binary/Latin (QR/Han Xin/Grid Matrix)\n"
 "  --gs1                 Treat input as GS1 compatible data\n"
 "  --gssep               Use separator GS for GS1 (Data Matrix)\n"
 "  -h, --help            Display help message\n"
@@ -185,18 +178,16 @@ msgid ""
 "  --rows=NUMBER         Set number of rows (Codablock-F)\n"
 "  --scale=NUMBER        Adjust size of X-dimension\n"
 "  --secure=NUMBER       Set error correction level (ECC)\n"
-"  --separator=NUMBER    Set height of row separator bars (stacked "
-"symbologies)\n"
+"  --separator=NUMBER    Set height of row separator bars (stacked symbologies)\n"
 "  --small               Use small text\n"
 "  --square              Force Data Matrix symbols to be square\n"
 "  -t, --types           Display table of barcode types\n"
-"  --vers=NUMBER         Set symbol version (size, check digits, other "
-"options)\n"
+"  --vers=NUMBER         Set symbol version (size, check digits, other options)\n"
 "  -w, --whitesp=NUMBER  Set width of whitespace in multiples of X-dimension\n"
 "  --werror              Convert all warnings into errors\n"
-"  --wzpl                ZPL compatibility mode (allows non-standard "
-"symbols)\n"
-msgstr "Кодирование входных данных в штрих-коды с возможностью сохранения в BMP/EMF/EPS/GIF/PCX/PNG/SVG/TIF\n"
+"  --wzpl                ZPL compatibility mode (allows non-standard symbols)\n"
+msgstr ""
+"Кодирование входных данных в штрих-коды с возможностью сохранения в BMP/EMF/EPS/GIF/PCX/PNG/SVG/TIF\n"
 "  -b, --barcode=NUMBER  Количество типов штрих-кодов (default is 20 (=Code128))\n"
 "  --batch               Обрабатывать каждую строку входного файла как отдельный набор данных\n"
 "  --bg=COLOUR           Укажите цвет фона (в шестнадцатеричном формате)\n"
@@ -244,7 +235,7 @@ msgstr "Кодирование входных данных в штрих-код�
 msgid "Error %d: %s"
 msgstr "Ошибка %d: %s"
 
-#: main.c:792
+#: main.c:796
 msgid "File type not supported, ignoring"
 msgstr ""
 
@@ -252,91 +243,91 @@ msgstr ""
 msgid "Input too long"
 msgstr ""
 
-#: main.c:728
+#: main.c:732
 msgid "Invalid ECC value"
 msgstr ""
 
-#: main.c:806
+#: main.c:810
 msgid "Invalid ECI code"
 msgstr ""
 
-#: main.c:800
+#: main.c:804
 msgid "Invalid ECI value"
 msgstr ""
 
-#: main.c:648 main.c:653
+#: main.c:652 main.c:657
 msgid "Invalid add-on gap value"
 msgstr ""
 
-#: main.c:856
+#: main.c:860
 msgid "Invalid barcode type"
 msgstr ""
 
-#: main.c:668
+#: main.c:672
 msgid "Invalid border width value"
 msgstr ""
 
-#: main.c:692
+#: main.c:696
 msgid "Invalid columns value"
 msgstr ""
 
-#: main.c:661
+#: main.c:665
 msgid "Invalid dot radius value"
 msgstr ""
 
-#: main.c:818 main.c:824
+#: main.c:822 main.c:828
 msgid "Invalid font size"
 msgstr ""
 
-#: main.c:753
+#: main.c:757
 msgid "Invalid mode"
 msgstr ""
 
-#: main.c:747
+#: main.c:751
 msgid "Invalid mode value"
 msgstr ""
 
-#: main.c:916
+#: main.c:920
 msgid "Invalid option"
 msgstr ""
 
-#: main.c:760 main.c:773
+#: main.c:764 main.c:777
 msgid "Invalid rotation value"
 msgstr ""
 
-#: main.c:704
+#: main.c:708
 msgid "Invalid rows value"
 msgstr ""
 
-#: main.c:628
+#: main.c:632
 msgid "Invalid scale value"
 msgstr ""
 
-#: main.c:635
+#: main.c:639
 msgid "Invalid separator value"
 msgstr ""
 
-#: main.c:641
+#: main.c:645
 msgid "Invalid seperator value"
 msgstr ""
 
-#: main.c:680
+#: main.c:684
 msgid "Invalid symbol height value"
 msgstr ""
 
-#: main.c:722
+#: main.c:726
 msgid "Invalid version"
 msgstr ""
 
-#: main.c:716
+#: main.c:720
 msgid "Invalid version value"
 msgstr ""
 
-#: main.c:865
+#: main.c:869
 msgid "Invalid whitespace value"
 msgstr ""
 
-#: main.c:983
+#: main.c:987
 msgid "No data received, no symbol generated"
 msgstr "Данне не получены, символы не сгенерированы"
 
@@ -344,11 +335,11 @@ msgstr "Данне не получены, символы не сгенериро
 msgid "No newline at end of file"
 msgstr ""
 
-#: main.c:698
+#: main.c:702
 msgid "Number of columns out of range"
 msgstr ""
 
-#: main.c:710
+#: main.c:714
 msgid "Number of rows out of range"
 msgstr ""
 
@@ -362,19 +353,19 @@ msgstr ""
 msgid "On line %d: %s\n"
 msgstr ""
 
-#: main.c:741
+#: main.c:745
 msgid "Primary data string too long"
 msgstr ""
 
-#: main.c:937
+#: main.c:941
 msgid "Processing first input file only"
 msgstr ""
 
-#: main.c:945 main.c:957
+#: main.c:949 main.c:961
 msgid "Scaling less than 0.5 will be set to 0.5"
 msgstr ""
 
-#: main.c:686
+#: main.c:690
 msgid "Symbol height out of range"
 msgstr ""
 
@@ -382,7 +373,7 @@ msgstr ""
 msgid "Unable to read input file"
 msgstr ""
 
-#: main.c:910
+#: main.c:914
 msgid "Unknown getopt error"
 msgstr ""
 
@@ -391,7 +382,7 @@ msgstr ""
 msgid "Warning %d: %s"
 msgstr "Предупреждение %d: %s"
 
-#: main.c:871
+#: main.c:875
 msgid "Whitespace value out of range"
 msgstr ""
 
