@@ -47,6 +47,7 @@
 #define NEON   "0123456789"
 
 #include "zint.h"
+#include "zintconfig.h"
 #include <stdlib.h>
 #include <string.h>
 

@@ -76,12 +76,24 @@ static void types(void) {
 }
 
 /* Output usage information */
+
 static void usage(void) {
-    if (ZINT_VERSION_BUILD) {
-        printf( "Zint version %d.%d.%d.%d\n", ZINT_VERSION_MAJOR, ZINT_VERSION_MINOR, ZINT_VERSION_RELEASE, ZINT_VERSION_BUILD);
+    int zint_version = ZBarcode_Version();
+    int version_major = zint_version / 10000;
+    int version_minor = (zint_version % 10000) / 100;
+    int version_release = zint_version % 100;
+    int version_build;
+    
+    if (version_release > 10) {
+        /* This is a test release */
+        version_release = version_release / 10;
+        version_build = zint_version % 10;
+        printf( "Zint version %d.%d.%d.%d\n", version_major, version_minor, version_release, version_build);
     } else {
-        printf( "Zint version %d.%d.%d\n", ZINT_VERSION_MAJOR, ZINT_VERSION_MINOR, ZINT_VERSION_RELEASE);
+        /* This is a stable release */
+        printf( "Zint version %d.%d.%d\n", version_major, version_minor, version_release);
     }
+    
     printf( "Encode input data in a barcode and save as BMP/EMF/EPS/GIF/PCX/PNG/SVG/TIF/TXT\n\n"
             "  -b, --barcode=NUMBER  Number of barcode type. Default is 20 (Code 128)\n"
             "  --addongap=NUMBER     Set add-on gap in multiples of X-dimension for UPC/EAN\n"

@@ -2,6 +2,8 @@
 
 project(zint)
 
+configure_file(zintconfig.h.in zintconfig.h)
+
 find_package(PNG)
 
 set(zint_COMMON_SRCS common.c library.c large.c reedsol.c gs1.c eci.c general_field.c sjis.c gb2312.c gb18030.c)

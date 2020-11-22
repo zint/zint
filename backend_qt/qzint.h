@@ -119,6 +119,8 @@ public:
     bool save_to_file(QString filename);
 
     void render(QPainter & painter, const QRectF & paintRect, AspectRatioMode mode=IgnoreAspectRatio);
+    
+    int getVersion() const;
 
 signals:
     void encoded();

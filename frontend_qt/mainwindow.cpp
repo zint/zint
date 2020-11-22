@@ -344,10 +344,21 @@ bool MainWindow::save()
 void MainWindow::about()
 {
     QString zint_version;
-    if (ZINT_VERSION_BUILD) {
-        QTextStream(&zint_version) << ZINT_VERSION_MAJOR << "." << ZINT_VERSION_MINOR << "." << ZINT_VERSION_RELEASE << "." << ZINT_VERSION_BUILD;
+    
+    int lib_version = ZBarcode_Version();
+    int version_major = lib_version / 10000;
+    int version_minor = (lib_version % 10000) / 100;
+    int version_release = lib_version % 100;
+    int version_build;
+    
+    if (version_release > 10) {
+        /* This is a test release */
+        version_release = version_release / 10;
+        version_build = lib_version % 10;
+        QTextStream(&zint_version) << version_major << "." << version_minor << "." << version_release << "." << version_build;
     } else {
-        QTextStream(&zint_version) << ZINT_VERSION_MAJOR << "." << ZINT_VERSION_MINOR << "." << ZINT_VERSION_RELEASE;
+        /* This is a stable release */
+        QTextStream(&zint_version) << version_major << "." << version_minor << "." << version_release;
     }
 
     QMessageBox::about(this, tr("About Zint"),

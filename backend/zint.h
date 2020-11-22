@@ -110,11 +110,6 @@ extern "C" {
         int warn_level;
     };
 
-#define ZINT_VERSION_MAJOR      2
-#define ZINT_VERSION_MINOR      9
-#define ZINT_VERSION_RELEASE    1
-#define ZINT_VERSION_BUILD      9 /* Set to 0 before release, set to 9 after release */
-
     /* Tbarcode 7 codes */
 #define BARCODE_CODE11          1
 #define BARCODE_C25STANDARD     2

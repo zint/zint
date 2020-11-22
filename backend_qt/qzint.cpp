@@ -363,6 +363,10 @@ namespace Zint {
     bool QZint::hasErrors() const {
         return m_lastError.length();
     }
+    
+    int QZint::getVersion() const {
+        return ZBarcode_Version();
+    }
 
     bool QZint::save_to_file(QString filename) {
         resetSymbol();
