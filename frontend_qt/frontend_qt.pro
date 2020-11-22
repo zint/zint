@@ -12,7 +12,8 @@ HEADERS += barcodeitem.h \
          datawindow.h \
          exportwindow.h \
          mainwindow.h \
-         sequencewindow.h
+         sequencewindow.h \
+         qzint.h
 
 FORMS += extData.ui \
          extExport.ui \
@@ -50,7 +51,8 @@ SOURCES += barcodeitem.cpp \
         exportwindow.cpp \
         main.cpp \
         mainwindow.cpp \
-        sequencewindow.cpp
+        sequencewindow.cpp \
+        qzint.cpp
         
 TRANSLATIONS = frontend_de.ts
 
@@ -63,10 +65,9 @@ CONFIG += static
 
 CONFIG += warn_on thread qt
 
-INCLUDEPATH += ../backend_qt ../backend
+INCLUDEPATH += ../backend
 
-LIBS += -lQtZint -lQt5Core
-QMAKE_LIBDIR += ../backend_qt/release
+LIBS += -lQt5Core
 
 !contains(DEFINES, NO_PNG) {
 # Win

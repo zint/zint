@@ -14,7 +14,8 @@ HEADERS = 	mainwindow.h \
 			barcodeitem.h \
 			datawindow.h \
 			exportwindow.h \
-			sequencewindow.h
+			sequencewindow.h \
+			qzint.h
 
 SOURCES = 	main.cpp \ 
 			mainwindow.cpp \
@@ -22,18 +23,11 @@ SOURCES = 	main.cpp \
 			datawindow.cpp \
 			exportwindow.cpp \
 			sequencewindow.cpp
+			qzint.cpp
 
 RESOURCES = resources.qrc
 
-INCLUDEPATH += ../backend_qt4 ../backend
-
-CONFIG(debug, debug|release) {
-LIBPATH +=	../backend_qt4/debug
-}
-
-CONFIG(release, debug|release) {
-LIBPATH +=	../backend_qt4/release
-}
+INCLUDEPATH += ../backend
 
 RC_FILE = ./res/qtZint.rc
          

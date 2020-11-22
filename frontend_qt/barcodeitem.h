@@ -18,7 +18,7 @@
 #define BARCODEITEM_H
 
 #include <QGraphicsItem>
-#include <qzint.h>
+#include "qzint.h"
 
 /**
  @author BogDan Vatra <taipan@licentia.eu>

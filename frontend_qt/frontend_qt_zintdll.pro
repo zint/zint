@@ -8,7 +8,8 @@ HEADERS += barcodeitem.h \
          datawindow.h \
          exportwindow.h \
          mainwindow.h \
-         sequencewindow.h
+         sequencewindow.h \
+         qzint.h
 
 FORMS += extData.ui \
          extExport.ui \
@@ -46,14 +47,14 @@ SOURCES += barcodeitem.cpp \
         exportwindow.cpp \
         main.cpp \
         mainwindow.cpp \
-        sequencewindow.cpp
+        sequencewindow.cpp \
+        qzint.cpp
         
 RESOURCES += resources.qrc
 
 RC_FILE += res/qtZint.rc
 
-INCLUDEPATH += ../backend_qt ../backend
+INCLUDEPATH += ../backend
 
-LIBS += -lQtZintDLL -lzint
-QMAKE_LIBDIR += ../backend_qt/release
+LIBS += -lzint
 QMAKE_LIBDIR += ../win32/Release

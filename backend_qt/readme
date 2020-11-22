@@ -1,9 +1,0 @@
-Edit zint-1.6.pro and edit the 'DEFINES'  section
-    NO_PNG -> compile zint without png support
-    NO_QR -> compile zint without QR support
-    QR_SYSTEM -> if you have QT installed in your system, zint will be compiled with QT support
-    QR -> compile zint with QR support static (you must have qrencode in the current folder)
-
-Edit compile_n_config and set the paths.
-
-Exec compile_n_config

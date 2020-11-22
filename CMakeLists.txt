@@ -120,7 +120,6 @@ if($ENV{CMAKE_PREFIX_PATH} MATCHES "6[.][0-9][.][0-9]")
             ${Qt6UiTools_INCLUDES}
             ${CMAKE_CURRENT_BINARY_DIR}
             )
-        add_subdirectory(backend_qt)
         add_subdirectory(frontend_qt)
     else()
         message(STATUS "Could NOT find Qt6")
@@ -142,7 +141,6 @@ else()
             ${Qt5UiTools_INCLUDES}
             ${CMAKE_CURRENT_BINARY_DIR}
             )
-        add_subdirectory(backend_qt)
         add_subdirectory(frontend_qt)
     else()
         message(STATUS "Could NOT find Qt5")
