@@ -2,7 +2,7 @@
 
 project(zint)
 
-configure_file(zintconfig.h.in zintconfig.h)
+configure_file(zintconfig.h.in ../../backend/zintconfig.h)
 
 find_package(PNG)
 
