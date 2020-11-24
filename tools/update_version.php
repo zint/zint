@@ -108,44 +108,6 @@ function rc_replace($file, $rc_str) {
     }
 }
 
-// CMakeLists.txt
-
-$file = $data_dirname . 'CMakeLists.txt';
-
-if (($get = file_get_contents($file)) === false) {
-    exit("$basename: ERROR: Could not read file \"$file\"" . PHP_EOL);
-}
-
-$lines = explode("\n", $get);
-$done = 0;
-foreach ($lines as $li => $line) {
-    if (preg_match('/\(ZINT_VERSION_(MAJOR|MINOR|RELEASE)/', $line, $matches)) {
-        $cnt = 0;
-        $mmr = $matches[1] === "MAJOR" ? $major : ($matches[1] === "MINOR" ? $minor : $release);
-        $lines[$li] = preg_replace('/[0-9]+\)/', $mmr . ')', $line, 1, $cnt);
-        if ($cnt === 0 || $lines[$li] === NULL) {
-            exit("$basename: ERROR: Could not replace ZINT_VERSION_{$matches[1]} in file \"$file\"" . PHP_EOL);
-        }
-        $done++;
-    } elseif (preg_match('/\(ZINT_VERSION_BUILD/', $line)) {
-        $cnt = 0;
-        $lines[$li] = preg_replace('/"\.?[0-9]*"\)/', '"' . ($build ? ".$build" : '') . '")', $line, 1, $cnt);
-        if ($cnt === 0 || $lines[$li] === NULL) {
-            exit("$basename: ERROR: Could not replace ZINT_VERSION_BUILD in file \"$file\"" . PHP_EOL);
-        }
-        $done++;
-    }
-    if ($done === 4) {
-        break;
-    }
-}
-if ($done !== 4) {
-    exit("$basename: ERROR: Only did $done replacements of 4 in file \"$file\"" . PHP_EOL);
-}
-if (!file_put_contents($file, implode("\n", $lines))) {
-    exit("$basename: ERROR: Could not write file \"$file\"" . PHP_EOL);
-}
-
 // zint.spec
 
 version_replace(1, $data_dirname . 'zint.spec', '/^Version:/', '/[0-9.]+/', $v_base_str);
@@ -158,9 +120,9 @@ version_replace(1, $data_dirname . 'zint.nsi', '/^!define +PRODUCT_VERSION/', '/
 
 rc_replace($data_dirname . 'backend/libzint.rc', $rc_str);
 
-// backend/zint.h
+// backend/zintconfig.h
 
-$file = $data_dirname . 'backend/zint.h';
+$file = $data_dirname . 'backend/zintconfig.h';
 
 if (($get = file_get_contents($file)) === false) {
     exit("$basename: ERROR: Could not read file \"$file\"" . PHP_EOL);
@@ -199,15 +161,6 @@ if (!file_put_contents($file, implode("\n", $lines))) {
 // backend/Makefile.mingw
 
 version_replace(1, $data_dirname . 'backend/Makefile.mingw', '/^ZINT_VERSION:=-DZINT_VERSION=/', '/[0-9.]+/', $v_str);
-
-// backend_qt/backend_vc8.pro
-
-version_replace(1, $data_dirname . 'backend_qt/backend_vc8.pro', '/^VERSION[ \t]*=/', '/[0-9.]+/', $v_str);
-
-// backend_qt/backend_qt.pro
-
-version_replace(1, $data_dirname . 'backend_qt/backend_qt.pro', '/ZINT_VERSION="/', '/[0-9.]+/', $v_str);
-version_replace(1, $data_dirname . 'backend_qt/backend_qt.pro', '/^VERSION[ \t]*=/', '/[0-9.]+/', $v_str);
 
 // backend_tcl/zint.c
 
