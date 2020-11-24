@@ -589,6 +589,10 @@
 				RelativePath="..\backend\zint.h"
 				>
 			</File>
+			<File
+				RelativePath="..\backend\zintconfig.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"

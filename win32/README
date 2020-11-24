@@ -71,17 +71,7 @@ may differ):
 
   set "PATH=C:\Qt\5.14.2\msvc2017\bin;%PATH%"
 
-Next build the Zint backend Qt library:
-
-  cd zint\backend_qt
-
-  qmake backend_qt_zintdll.pro
-  nmake clean
-  nmake release
-
-  cd ..\..
-
-Then "qtZint.exe":
+Then build Zint Studio "qtZint.exe":
 
   cd zint\frontend_qt
 
@@ -204,19 +194,17 @@ This creates:
 
 zint/build/backend/libzint.dll
 zint/build/frontend/zint.exe
-zint/build/backend_qt/libQZint.dll
 zint/build/frontend_qt/zint-qt.exe
 
-The Zint command line tool "zint.exe" needs "libzint.dll" to run so add its
-location to your PATH:
+The Zint command line tool "zint.exe" and Zint Studio "zint-qt.exe" need
+"libzint.dll" to run so add its location to your PATH:
 
   export PATH="${PROJECT_DIR}/zint/build/backend":${PATH}
 
+You should now be able to run the command line tool:
+
   zint/build/frontend/zint
 
-Zint Studio "zint-qt.exe" needs "libQZint.dll" to run so add its location to
-your PATH:
-
-  export PATH="${PROJECT_DIR}/zint/build/backend_qt":${PATH}
+And Zint Studio:
 
   zint/build/frontend_qt/zint-qt

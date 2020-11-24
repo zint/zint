@@ -2,7 +2,7 @@
 #if defined (_WIN32) && (defined(_USRDLL) || defined(DLL_EXPORT) || defined(PIC))
 #include <windows.h>
 #include <shlwapi.h>
-#include "zint.h"
+#include "zintconfig.h"
 
 #ifdef __cplusplus
 extern "C"

@@ -204,6 +204,7 @@
     <ClInclude Include="..\backend\stdint_msvc.h" />
     <ClInclude Include="..\backend\tif.h" />
     <ClInclude Include="..\backend\zint.h" />
+    <ClInclude Include="..\backend\zintconfig.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\backend\libzint.rc" />

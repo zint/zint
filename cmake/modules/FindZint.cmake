@@ -1,5 +1,5 @@
-# - Find Zint and QZint
-# Find the native Zint and QZint includes and library
+# - Find Zint
+# Find the native Zint includes and library
 #
 #  ZINT_INCLUDE_DIR - where to find zint.h, etc.
 #  ZINT_LIBRARIES   - List of libraries when using zint.
@@ -31,28 +31,3 @@ ELSE(ZINT_FOUND)
 ENDIF(ZINT_FOUND)
 
 MARK_AS_ADVANCED( ZINT_LIBRARY ZINT_INCLUDE_DIR )
-
-################### FIND QZINT ######################
-
-IF (QZINT_INCLUDE_DIR)
-  # Already in cache, be silent
-  SET(QZINT_FIND_QUIETLY TRUE)
-ENDIF (QZINT_INCLUDE_DIR)
-
-FIND_PATH(QZINT_INCLUDE_DIR qzint.h)
-
-FIND_LIBRARY(QZINT_LIBRARY NAMES QZint )
-
-# handle the QUIETLY and REQUIRED arguments and set QZINT_FOUND to TRUE if 
-# all listed variables are TRUE
-INCLUDE(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(QZint DEFAULT_MSG QZINT_LIBRARY QZINT_INCLUDE_DIR)
-
-IF(QZINT_FOUND)
-  SET( QZINT_LIBRARIES ${QZINT_LIBRARY} )
-ELSE(QZINT_FOUND)
-  SET( QZINT_LIBRARIES )
-ENDIF(QZINT_FOUND)
-
-MARK_AS_ADVANCED( QZINT_LIBRARY QZINT_INCLUDE_DIR )
-
