@@ -108,6 +108,37 @@ function rc_replace($file, $rc_str) {
     }
 }
 
+// CMakeLists.txt
+
+$file = $data_dirname . 'CMakeLists.txt';
+
+if (($get = file_get_contents($file)) === false) {
+    exit("$basename: ERROR: Could not read file \"$file\"" . PHP_EOL);
+}
+
+$lines = explode("\n", $get);
+$done = 0;
+foreach ($lines as $li => $line) {
+    if (preg_match('/\(ZINT_VERSION_(MAJOR|MINOR|RELEASE|BUILD)/', $line, $matches)) {
+        $cnt = 0;
+        $mmr = $matches[1] === "MAJOR" ? $major : ($matches[1] === "MINOR" ? $minor : ($matches[1] === "RELEASE" ? $release : $build));
+        $lines[$li] = preg_replace('/[0-9]+\)/', $mmr . ')', $line, 1, $cnt);
+        if ($cnt === 0 || $lines[$li] === NULL) {
+            exit("$basename: ERROR: Could not replace ZINT_VERSION_{$matches[1]} in file \"$file\"" . PHP_EOL);
+        }
+        $done++;
+    }
+    if ($done === 4) {
+        break;
+    }
+}
+if ($done !== 4) {
+    exit("$basename: ERROR: Only did $done replacements of 4 in file \"$file\"" . PHP_EOL);
+}
+if (!file_put_contents($file, implode("\n", $lines))) {
+    exit("$basename: ERROR: Could not write file \"$file\"" . PHP_EOL);
+}
+
 // zint.spec
 
 version_replace(1, $data_dirname . 'zint.spec', '/^Version:/', '/[0-9.]+/', $v_base_str);
