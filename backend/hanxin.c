@@ -396,10 +396,12 @@ static void hx_define_mode(char *mode, const unsigned int gbdata[], const int le
         if (in_numeric(gbdata, length, i, &numeric_end, &numeric_cost)) {
             cur_costs[HX_N] = prev_costs[HX_N] + numeric_cost;
             char_modes[cm_i + HX_N] = 'n';
+            text1 = 1;
+            text2 = 0;
+        } else {
+            text1 = lookup_text1(gbdata[i]) != -1;
+            text2 = lookup_text2(gbdata[i]) != -1;
         }
-
-        text1 = lookup_text1(gbdata[i]) != -1;
-        text2 = lookup_text2(gbdata[i]) != -1;
 
         if (text1 || text2) {
             if ((text_submode == 1 && text2) || (text_submode == 2 && text1)) {
@@ -417,21 +419,21 @@ static void hx_define_mode(char *mode, const unsigned int gbdata[], const int le
         cur_costs[HX_B] = prev_costs[HX_B] + (gbdata[i] > 0xFF ? 96 : 48); /* (16 : 8) * HX_MULT */
         char_modes[cm_i + HX_B] = 'b';
 
-        if (isRegion1(gbdata[i])) {
-            cur_costs[HX_1] = prev_costs[HX_1] + 72; /* 12 * HX_MULT */
-            char_modes[cm_i + HX_1] = '1';
-        }
-        if (isRegion2(gbdata[i])) {
-            cur_costs[HX_2] = prev_costs[HX_2] + 72; /* 12 * HX_MULT */
-            char_modes[cm_i + HX_2] = '2';
-        }
-        if (isDoubleByte(gbdata[i])) {
-            cur_costs[HX_D] = prev_costs[HX_D] + 90; /* 15 * HX_MULT */
-            char_modes[cm_i + HX_D] = 'd';
-        }
         if (in_fourbyte(gbdata, length, i, &fourbyte_end, &fourbyte_cost)) {
             cur_costs[HX_F] = prev_costs[HX_F] + fourbyte_cost;
             char_modes[cm_i + HX_F] = 'f';
+        } else {
+            if (isDoubleByte(gbdata[i])) {
+                cur_costs[HX_D] = prev_costs[HX_D] + 90; /* 15 * HX_MULT */
+                char_modes[cm_i + HX_D] = 'd';
+                if (isRegion1(gbdata[i])) { /* Subset */
+                    cur_costs[HX_1] = prev_costs[HX_1] + 72; /* 12 * HX_MULT */
+                    char_modes[cm_i + HX_1] = '1';
+                } else if (isRegion2(gbdata[i])) { /* Subset */
+                    cur_costs[HX_2] = prev_costs[HX_2] + 72; /* 12 * HX_MULT */
+                    char_modes[cm_i + HX_2] = '2';
+                }
+            }
         }
 
         if (i == length - 1) { /* Add end of data costs if last character */

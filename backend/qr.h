@@ -29,20 +29,21 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* vim: set ts=4 sw=4 et : */
 
 #define LEVEL_L    1
 #define LEVEL_M    2
 #define LEVEL_Q    3
 #define LEVEL_H    4
 
-#define QR_PERCENT	38 /* Alphanumeric mode % */
+#define QR_PERCENT  38 /* Alphanumeric mode % */
 
 /* From ISO/IEC 18004:2015 Table 5 Encoding/decoding table for Alphanumeric mode */
 static const char qr_alphanumeric[59] = {
-	36, -1, -1, -1, 37, 38, -1, -1, -1, -1, 39, 40, -1, 41, 42, 43, /* SP-/ */
-	 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 44, -1, -1, -1, -1, -1, /* 0-? */
-	-1, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, /* @-O */
-	25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35 						/* P-Z */
+    36, -1, -1, -1, 37, 38, -1, -1, -1, -1, 39, 40, -1, 41, 42, 43, /* SP-/ */
+     0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 44, -1, -1, -1, -1, -1, /* 0-? */
+    -1, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, /* @-O */
+    25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35                      /* P-Z */
 };
 
 #define RMQR_VERSION    100
