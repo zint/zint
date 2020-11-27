@@ -178,11 +178,12 @@ static void test_encode(int index, int generate, int debug) {
 
         int expected_rows;
         int expected_width;
+        int bwipp_cmp;
         char *comment;
         char *expected;
     };
     struct item data[] = {
-        /*  0*/ { -1, "123456789012", -1, 0, 16, 18, "",
+        /*  0*/ { -1, "123456789012", -1, 0, 16, 18, 1, "",
                     "100011101010111101"
                     "111010010010100000"
                     "110110100010001000"
@@ -199,6 +200,54 @@ static void test_encode(int index, int generate, int debug) {
                     "011010010010101111"
                     "010111110100100111"
                     "100010001101111100"
+                },
+        /*  1*/ { -1, "Code One", -1, 0, 16, 18, 1, "BWIPP example",
+                    "010011011101100110"
+                    "010010000001010110"
+                    "001010010101100110"
+                    "000110000011110110"
+                    "100010100000111001"
+                    "000010000000100000"
+                    "111111111111111111"
+                    "000000000000000000"
+                    "011111111111111110"
+                    "010000000000000010"
+                    "011111111111111110"
+                    "000100011110101101"
+                    "101101000111101011"
+                    "010100001110101100"
+                    "100001100111100100"
+                    "100000111000111000"
+                },
+        /*  2*/ { 3, "1234567890ABCDEF", -1, 0, 28, 32, 0, "https://fr.wikipedia.org/wiki/Liste_des_symbologies, same; BWIPP **NOT SAME**, has unlatch to ASCII at end, no doc so don't know if necessary",
+                    "10001110101011110111011110110101"
+                    "11101001001010000011000110101001"
+                    "11101001100010100010001000101000"
+                    "10011011010100000100010001100001"
+                    "10001010001000100010001000101000"
+                    "00011000010001000100010001100001"
+                    "10001010001000100010001000101000"
+                    "00011000010001000100010001100001"
+                    "10001010001000100010001000101000"
+                    "00011000010001000100010001100001"
+                    "00001000000000000000000000100000"
+                    "11111111111111111111111111111111"
+                    "00000000000000000000000000100000"
+                    "11111111111111111111111111111111"
+                    "00000000000000000000000000000000"
+                    "01111111111111111111111111111110"
+                    "01000000000000000000000000000010"
+                    "01111111111111111111111111111110"
+                    "10001010001000100010001000101000"
+                    "00011000010001000100010001100001"
+                    "10001010000101011110001101100110"
+                    "00011000010010101010111011100100"
+                    "11101011011100101001000110101100"
+                    "01111000000000010001000111101111"
+                    "00001010100010111100100100101100"
+                    "10001000101110100001010011100110"
+                    "00001011001001010100010001101111"
+                    "00101101111001111011011001111010"
                 },
     };
     int data_size = ARRAY_SIZE(data);
@@ -220,9 +269,9 @@ static void test_encode(int index, int generate, int debug) {
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (generate) {
-            printf("        /*%3d*/ { %d, \"%s\", %d, %s, %d, %d, \"%s\",\n",
+            printf("        /*%3d*/ { %d, \"%s\", %d, %s, %d, %d, %d, \"%s\",\n",
                     i, data[i].option_2, testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), data[i].length,
-                    testUtilErrorName(data[i].ret), symbol->rows, symbol->width, data[i].comment);
+                    testUtilErrorName(data[i].ret), symbol->rows, symbol->width, data[i].bwipp_cmp, data[i].comment);
             testUtilModulesDump(symbol, "                    ", "\n");
             printf("                },\n");
         } else {
@@ -235,12 +284,16 @@ static void test_encode(int index, int generate, int debug) {
                 assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, ret, width, row, data[i].data);
 
                 if (do_bwipp && testUtilCanBwipp(i, symbol, -1, data[i].option_2, -1, debug)) {
-                    ret = testUtilBwipp(i, symbol, -1, data[i].option_2, -1, data[i].data, length, NULL, bwipp_buf, sizeof(bwipp_buf));
-                    assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+                    if (!data[i].bwipp_cmp) {
+                        if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not BWIPP compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                    } else {
+                        ret = testUtilBwipp(i, symbol, -1, data[i].option_2, -1, data[i].data, length, NULL, bwipp_buf, sizeof(bwipp_buf));
+                        assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
 
-                    ret = testUtilBwippCmp(symbol, bwipp_msg, bwipp_buf, data[i].expected);
-                    assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
-                                   i, testUtilBarcodeName(symbol->symbology), ret, bwipp_msg, bwipp_buf, data[i].expected);
+                        ret = testUtilBwippCmp(symbol, bwipp_msg, bwipp_buf, data[i].expected);
+                        assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
+                                       i, testUtilBarcodeName(symbol->symbology), ret, bwipp_msg, bwipp_buf, data[i].expected);
+                    }
                 }
             }
         }

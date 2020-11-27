@@ -41,7 +41,7 @@ static void test_utf8_to_unicode(int index, int debug) {
         int length;
         int disallow_4byte;
         int ret;
-        size_t ret_length;
+        int ret_length;
         unsigned int expected_vals[20];
         char *comment;
     };
@@ -64,14 +64,14 @@ static void test_utf8_to_unicode(int index, int debug) {
         if (index != -1 && i != index) continue;
 
         int length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
-        size_t ret_length = length;
+        int ret_length = length;
 
         ret = utf8_to_unicode(&symbol, (unsigned char *) data[i].data, vals, &ret_length, data[i].disallow_4byte);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d\n", i, ret, data[i].ret);
         if (ret == 0) {
-            assert_equal(ret_length, data[i].ret_length, "i:%d ret_length %ld != %ld\n", i, ret_length, data[i].ret_length);
-            for (size_t j = 0; j < ret_length; j++) {
-                assert_equal(vals[j], data[i].expected_vals[j], "i:%d vals[%zu] %04X != %04X\n", i, j, vals[j], data[i].expected_vals[j]);
+            assert_equal(ret_length, data[i].ret_length, "i:%d ret_length %d != %d\n", i, ret_length, data[i].ret_length);
+            for (int j = 0; j < ret_length; j++) {
+                assert_equal(vals[j], data[i].expected_vals[j], "i:%d vals[%d] %04X != %04X\n", i, j, vals[j], data[i].expected_vals[j]);
             }
         }
     }
@@ -103,8 +103,8 @@ static void test_debug_test_codeword_dump_int(int index, int debug) {
         if (index != -1 && i != index) continue;
 
         debug_test_codeword_dump_int(&symbol, data[i].codewords, data[i].length);
-        assert_nonzero(strlen(symbol.errtxt) < 92, "i:%d strlen(%s) >= 92 (%zu)\n", i, symbol.errtxt, strlen(symbol.errtxt));
-        assert_zero(strcmp(symbol.errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0 (%zu, %zu)\n", i, symbol.errtxt, data[i].expected, strlen(symbol.errtxt), strlen(data[i].expected));
+        assert_nonzero(strlen(symbol.errtxt) < 92, "i:%d strlen(%s) >= 92 (%d)\n", i, symbol.errtxt, (int) strlen(symbol.errtxt));
+        assert_zero(strcmp(symbol.errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0 (%d, %d)\n", i, symbol.errtxt, data[i].expected, (int) strlen(symbol.errtxt), (int) strlen(data[i].expected));
     }
 
     testFinish();

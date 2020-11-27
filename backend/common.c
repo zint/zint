@@ -303,11 +303,12 @@ INTERNAL unsigned int decode_utf8(unsigned int *state, unsigned int *codep, cons
     return *state;
 }
 
-/* Convert UTF-8 to Unicode. If `disallow_4byte` unset, allow all values (UTF-32).
- * If `disallow_4byte` set, only allow codepoints <= U+FFFF (ie four-byte sequences not allowed) (UTF-16, no surrogates) */
-INTERNAL int utf8_to_unicode(struct zint_symbol *symbol, const unsigned char source[], unsigned int vals[], size_t *length, int disallow_4byte) {
-    size_t bpos;
-    int    jpos;
+/* Convert UTF-8 to Unicode. If `disallow_4byte` unset, allow all values (UTF-32). If `disallow_4byte` set,
+ * only allow codepoints <= U+FFFF (ie four-byte sequences not allowed) (UTF-16, no surrogates) */
+INTERNAL int utf8_to_unicode(struct zint_symbol *symbol, const unsigned char source[], unsigned int vals[],
+            int *length, int disallow_4byte) {
+    int bpos;
+    int jpos;
     unsigned int codepoint, state = 0;
 
     bpos = 0;
@@ -358,99 +359,6 @@ INTERNAL void set_minimum_height(struct zint_symbol *symbol, const int min_heigh
                 }
             }
         }
-    }
-}
-
-/* Calculate optimized encoding modes. Adapted from Project Nayuki */
-INTERNAL void pn_define_mode(char *mode, const unsigned int data[], const size_t length, const int debug,
-        unsigned int state[], const char mode_types[], const int num_modes,
-        pn_head_costs head_costs, pn_switch_cost switch_cost, pn_eod_cost eod_cost, pn_cur_cost cur_cost) {
-    /*
-     * Copyright (c) Project Nayuki. (MIT License)
-     * https://www.nayuki.io/page/qr-code-generator-library
-     *
-     * Permission is hereby granted, free of charge, to any person obtaining a copy of
-     * this software and associated documentation files (the "Software"), to deal in
-     * the Software without restriction, including without limitation the rights to
-     * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
-     * the Software, and to permit persons to whom the Software is furnished to do so,
-     * subject to the following conditions:
-     * - The above copyright notice and this permission notice shall be included in
-     *   all copies or substantial portions of the Software.
-     */
-    int i, j, k, cm_i;
-    unsigned int min_cost;
-    char cur_mode;
-#ifndef _MSC_VER
-    unsigned int prev_costs[num_modes];
-    char char_modes[length * num_modes];
-    unsigned int cur_costs[num_modes];
-#else
-    unsigned int *prev_costs;
-    char *char_modes;
-    unsigned int *cur_costs;
-    prev_costs = (unsigned int *) _alloca(num_modes * sizeof(unsigned int));
-    char_modes = (char *) _alloca(length * num_modes);
-    cur_costs = (unsigned int *) _alloca(num_modes * sizeof(unsigned int));
-#endif
-
-    /* char_modes[i * num_modes + j] represents the mode to encode the code point at index i such that the final
-     * segment ends in mode_types[j] and the total number of bits is minimized over all possible choices */
-    memset(char_modes, 0, length * num_modes);
-
-    /* At the beginning of each iteration of the loop below, prev_costs[j] is the minimum number of 1/6 (1/XX_MULT)
-     * bits needed to encode the entire string prefix of length i, and end in mode_types[j] */
-    memcpy(prev_costs, (*head_costs)(state), num_modes * sizeof(unsigned int));
-
-    /* Calculate costs using dynamic programming */
-    for (i = 0, cm_i = 0; i < (int) length; i++, cm_i += num_modes) {
-        memset(cur_costs, 0, num_modes * sizeof(unsigned int));
-
-        (*cur_cost)(state, data, length, i, char_modes, prev_costs, cur_costs);
-
-        if (eod_cost && i == (int) length - 1) { /* Add end of data costs if last character */
-            for (j = 0; j < num_modes; j++) {
-                if (char_modes[cm_i + j]) {
-                    cur_costs[j] += (*eod_cost)(state, j);
-                }
-            }
-        }
-
-        /* Start new segment at the end to switch modes */
-        for (j = 0; j < num_modes; j++) { /* To mode */
-            for (k = 0; k < num_modes; k++) { /* From mode */
-                if (j != k && char_modes[cm_i + k]) {
-                    unsigned int new_cost = cur_costs[k] + (*switch_cost)(state, k, j);
-                    if (!char_modes[cm_i + j] || new_cost < cur_costs[j]) {
-                        cur_costs[j] = new_cost;
-                        char_modes[cm_i + j] = mode_types[k];
-                    }
-                }
-            }
-        }
-
-        memcpy(prev_costs, cur_costs, num_modes * sizeof(unsigned int));
-    }
-
-    /* Find optimal ending mode */
-    min_cost = prev_costs[0];
-    cur_mode = mode_types[0];
-    for (i = 1; i < num_modes; i++) {
-        if (prev_costs[i] < min_cost) {
-            min_cost = prev_costs[i];
-            cur_mode = mode_types[i];
-        }
-    }
-
-    /* Get optimal mode for each code point by tracing backwards */
-    for (i = length - 1, cm_i = i * num_modes; i >= 0; i--, cm_i -= num_modes) {
-        j = strchr(mode_types, cur_mode) - mode_types;
-        cur_mode = char_modes[cm_i + j];
-        mode[i] = cur_mode;
-    }
-
-    if (debug & ZINT_DEBUG_PRINT) {
-        printf("  Mode: %.*s\n", (int) length, mode);
     }
 }
 

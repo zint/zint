@@ -124,6 +124,7 @@ static void usage(void) {
             "  --height=NUMBER       Set height of symbol in multiples of X-dimension\n"
             "  -i, --input=FILE      Read input data from FILE\n"
             "  --init                Create reader initialisation/programming symbol\n"
+            "  --mask=NUMBER         Set masking pattern to use (QR/Han Xin)\n"
             "  --mirror              Use batch data to determine filename\n"
             "  --mode=NUMBER         Set encoding mode (Maxicode/Composite)\n"
             "  --nobackground        Remove background (PNG/SVG/EPS only)\n"
@@ -484,6 +485,7 @@ int main(int argc, char **argv) {
     int batch_mode = 0;
     int mirror_mode = 0;
     int fullmultibyte = 0;
+    int mask = 0;
     int separator = 0;
     int addon_gap = 0;
     char filetype[4] = {0};
@@ -539,6 +541,7 @@ int main(int argc, char **argv) {
             {"init", 0, 0, 0},
             {"input", 1, 0, 'i'},
             {"mirror", 0, 0, 0},
+            {"mask", 1, 0, 0},
             {"mode", 1, 0, 0},
             {"nobackground", 0, 0, 0},
             {"notext", 0, 0, 0},
@@ -608,6 +611,20 @@ int main(int argc, char **argv) {
                 }
                 if (!strcmp(long_options[option_index].name, "fullmultibyte")) {
                     fullmultibyte = 1;
+                }
+                if (!strcmp(long_options[option_index].name, "mask")) {
+                    error_number = validator(NESET, optarg);
+                    if (error_number == ZINT_ERROR_INVALID_DATA) {
+                        fprintf(stderr, "Error 148: Invalid mask value\n");
+                        exit(1);
+                    }
+                    mask = atoi(optarg) + 1;
+                    if (mask <= 0 || mask > 8) {
+                        /* Values >= 1 and <= 8 (i.e. mask pattern >= 0 and <= 7) only permitted */
+                        fprintf(stderr, "Warning 147: Invalid mask value\n");
+                        fflush(stderr);
+                        mask = 0;
+                    }
                 }
                 if (!strcmp(long_options[option_index].name, "notext")) {
                     my_symbol->show_hrt = 0;
@@ -941,10 +958,15 @@ int main(int argc, char **argv) {
     }
 
     if (data_arg_num) {
-        unsigned int cap = ZBarcode_Cap(my_symbol->symbology, ZINT_CAP_FULL_MULTIBYTE | ZINT_CAP_STACKABLE | ZINT_CAP_EXTENDABLE);
+        unsigned int cap = ZBarcode_Cap(my_symbol->symbology, ZINT_CAP_STACKABLE | ZINT_CAP_EXTENDABLE |
+                            ZINT_CAP_FULL_MULTIBYTE | ZINT_CAP_MASK);
         if (fullmultibyte && (cap & ZINT_CAP_FULL_MULTIBYTE)) {
             my_symbol->option_3 = ZINT_FULL_MULTIBYTE;
-        } else if (separator && (cap & ZINT_CAP_STACKABLE)) {
+        }
+        if (mask && (cap & ZINT_CAP_MASK)) {
+            my_symbol->option_3 |= mask << 8;
+        }
+        if (separator && (cap & ZINT_CAP_STACKABLE)) {
             my_symbol->option_3 = separator;
         }
         if (addon_gap && (cap & ZINT_CAP_EXTENDABLE)) {

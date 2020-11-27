@@ -65,7 +65,7 @@ void testStartReal(const char *func, const char *name) {
 }
 
 void testEnd(int result) {
-    if (testName[0]) {
+    if (testName && testName[0]) {
         printf(".....%d: %s: %s ", tests, testFunc, testName);
     } else {
         printf(".....%d: %s: ", tests, testFunc);
@@ -79,7 +79,7 @@ void testEnd(int result) {
 }
 
 void testFinish(void) {
-    if (testName[0]) {
+    if (testName && testName[0]) {
         printf(".....%d: %s: %s ", tests, testFunc, testName);
     } else {
         printf(".....%d: %s: ", tests, testFunc);
@@ -94,7 +94,7 @@ void testFinish(void) {
 
 void testSkip(const char *msg) {
     skipped++;
-    if (testName[0]) {
+    if (testName && testName[0]) {
         printf(".....%d: %s: %s ", tests, testFunc, testName);
     } else {
         printf(".....%d: %s: ", tests, testFunc);
@@ -486,17 +486,43 @@ const char *testUtilInputModeName(int input_mode) {
 }
 
 const char *testUtilOption3Name(int option_3) {
-    switch (option_3) {
-        case DM_SQUARE: return "DM_SQUARE";
-        case DM_DMRE: return "DM_DMRE";
-        case ZINT_FULL_MULTIBYTE: return "ZINT_FULL_MULTIBYTE";
-        case ULTRA_COMPRESSION: return "ULTRA_COMPRESSION";
+    static char buffer[64];
+
+    const char *name = NULL;
+    unsigned int high_byte = option_3 == -1 ? 0 : (option_3 >> 8) & 0xFF;
+
+    switch (option_3 & 0xFF) {
+        case DM_SQUARE:
+            name = "DM_SQUARE";
+            break;
+        case DM_DMRE:
+            name = "DM_DMRE";
+            break;
+        case ZINT_FULL_MULTIBYTE:
+            name = "ZINT_FULL_MULTIBYTE";
+            break;
+        case ULTRA_COMPRESSION:
+            name = "ULTRA_COMPRESSION";
+            break;
+        default:
+            if (option_3 != -1 && (option_3 & 0xFF) != 0) {
+                fprintf(stderr, "testUtilOption3Name: unknown value (%d)\n", option_3);
+                abort();
+            }
+            name = (option_3 & 0xFF) ? "-1" : "0";
+            break;
     }
-    if (option_3 != -1 && option_3 != 0) {
-        fprintf(stderr, "testUtilOption3Name: unknown value (%d)\n", option_3);
-        abort();
+
+    if (high_byte) {
+        if (option_3 & 0xFF) {
+            sprintf(buffer, "%s | (%d << 8)", name, high_byte);
+        } else {
+            sprintf(buffer, "%d << 8", high_byte);
+        }
+        return buffer;
     }
-    return option_3 ? "-1" : "0";
+
+    return name;
 }
 
 const char *testUtilOutputOptionsName(int output_options) {
@@ -1805,7 +1831,7 @@ static const char *testUtilBwippName(int index, const struct zint_symbol *symbol
         { "databarstackedomnicomposite", BARCODE_DBAR_OMNSTK_CC, 138, 1, 0, 0, 33 /*linear_row_height*/, 1, },
         { "databarexpandedstackedcomposite", BARCODE_DBAR_EXPSTK_CC, 139, 1, 1, 0, 34 /*linear_row_height*/, 1, },
         { "channelcode", BARCODE_CHANNEL, 140, 0, 0, 0, 0, 0, },
-        { "codeone", BARCODE_CODEONE, 141, 0, 0, 0, 0, 0, },
+        { "codeone", BARCODE_CODEONE, 141, 0, 1, 0, 0, 0, },
         { "", BARCODE_GRIDMATRIX, 142, 0, 0, 0, 0, 0, },
         { "", BARCODE_UPNQR, 143, 0, 0, 0, 0, 0, },
         { "ultracode", BARCODE_ULTRA, 144, 0, 0, 0, 0, 0, },
@@ -2235,6 +2261,12 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                 }
                 if (compact) {
                     sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%sformat=compact", strlen(bwipp_opts_buf) ? " " : "");
+                    bwipp_opts = bwipp_opts_buf;
+                }
+            } else if (symbology == BARCODE_CODEONE) {
+                if (option_2 >= 1 && option_2 <= 10) {
+                    static char codeone_versions[] = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'S', 'T' };
+                    sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%sversion=%c", strlen(bwipp_opts_buf) ? " " : "", codeone_versions[option_2 - 1]);
                     bwipp_opts = bwipp_opts_buf;
                 }
             }

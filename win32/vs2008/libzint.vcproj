@@ -570,6 +570,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\backend\reedsol_logs.h"
+				>
+			</File>
+			<File
 				RelativePath="..\backend\rss.h"
 				>
 			</File>

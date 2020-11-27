@@ -37,10 +37,12 @@
 extern "C" {
 #endif /* __cplusplus */
 
-INTERNAL int gb2312_wctomb_zint(unsigned int* r, unsigned int wc);
-INTERNAL int gb2312_utf8tomb(struct zint_symbol *symbol, const unsigned char source[], size_t* p_length, unsigned int* gbdata);
-INTERNAL int gb2312_utf8tosb(int eci, const unsigned char source[], size_t* p_length, unsigned int* gbdata, int full_multibyte);
-INTERNAL void gb2312_cpy(const unsigned char source[], size_t* p_length, unsigned int* gbdata, int full_multibyte);
+INTERNAL int gb2312_wctomb_zint(unsigned int *r, unsigned int wc);
+INTERNAL int gb2312_utf8tomb(struct zint_symbol *symbol, const unsigned char source[], int *p_length,
+            unsigned int *gbdata);
+INTERNAL int gb2312_utf8tosb(int eci, const unsigned char source[], int *p_length, unsigned int *gbdata,
+            int full_multibyte);
+INTERNAL void gb2312_cpy(const unsigned char source[], int *p_length, unsigned int *gbdata, int full_multibyte);
 
 #ifdef __cplusplus
 }

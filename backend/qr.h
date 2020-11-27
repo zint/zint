@@ -1,7 +1,7 @@
 /* qr.h Data for QR Code, Micro QR Code and rMQR
 
     libzint - the open source barcode library
-    Copyright (C) 2008-2019 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008 - 2020 Robin Stuart <rstuart114@gmail.com>
     Copyright (C) 2006 Kentaro Fukuchi <fukuchi@megaui.net>
 
     Redistribution and use in source and binary forms, with or without
@@ -35,12 +35,20 @@
 #define LEVEL_Q    3
 #define LEVEL_H    4
 
-#define RHODIUM "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:"
+#define QR_PERCENT	38 /* Alphanumeric mode % */
+
+/* From ISO/IEC 18004:2015 Table 5 Encoding/decoding table for Alphanumeric mode */
+static const char qr_alphanumeric[59] = {
+	36, -1, -1, -1, 37, 38, -1, -1, -1, -1, 39, 40, -1, 41, 42, 43, /* SP-/ */
+	 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 44, -1, -1, -1, -1, -1, /* 0-? */
+	-1, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, /* @-O */
+	25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35 						/* P-Z */
+};
 
 #define RMQR_VERSION    100
 #define MICROQR_VERSION 200
 
-/* From ISO/IEC 18004:2006 Table 7 */
+/* From ISO/IEC 18004:2015 Table 7 */
 static const unsigned short int qr_data_codewords_L[] = {
     19, 34, 55, 80, 108, 136, 156, 194, 232, 274, 324, 370, 428, 461, 523, 589, 647,
     721, 795, 861, 932, 1006, 1094, 1174, 1276, 1370, 1468, 1531, 1631,

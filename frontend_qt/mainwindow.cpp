@@ -811,6 +811,7 @@ void MainWindow::change_options()
         tabMain->insertTab(1,m_optionWidget,tr("QR Cod&e"));
         connect(m_optionWidget->findChild<QObject*>("cmbQRSize"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("cmbQRECC"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(m_optionWidget->findChild<QObject*>("cmbQRMask"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radQRStand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radQRGS1"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radQRHIBC"), SIGNAL(clicked( bool )), SLOT(update_preview()));
@@ -842,6 +843,7 @@ void MainWindow::change_options()
         tabMain->insertTab(1,m_optionWidget,tr("Han Xin Cod&e"));
         connect(m_optionWidget->findChild<QObject*>("cmbHXSize"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("cmbHXECC"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(m_optionWidget->findChild<QObject*>("cmbHXMask"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("chkHXFullMultibyte"), SIGNAL(stateChanged( int )), SLOT(update_preview()));
     }
 
@@ -855,6 +857,7 @@ void MainWindow::change_options()
         tabMain->insertTab(1,m_optionWidget,tr("Micro QR Cod&e"));
         connect(m_optionWidget->findChild<QObject*>("cmbMQRSize"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("cmbMQRECC"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(m_optionWidget->findChild<QObject*>("cmbMQRMask"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("chkMQRFullMultibyte"), SIGNAL(stateChanged( int )), SLOT(update_preview()));
     }
 
@@ -1424,8 +1427,12 @@ void MainWindow::update_preview()
             if (item_val) {
                 m_bc.bc.setSecurityLevel(item_val);
             }
+            item_val = m_optionWidget->findChild<QComboBox*>("cmbQRMask")->currentIndex();
+            if (item_val) {
+                m_bc.bc.setOption3((item_val << 8) | m_bc.bc.option3());
+            }
             if (m_optionWidget->findChild<QCheckBox*>("chkQRFullMultibyte")->isChecked()) {
-                m_bc.bc.setOption3(ZINT_FULL_MULTIBYTE);
+                m_bc.bc.setOption3(ZINT_FULL_MULTIBYTE | m_bc.bc.option3());
             }
             break;
 
@@ -1439,8 +1446,12 @@ void MainWindow::update_preview()
             if (item_val) {
                 m_bc.bc.setSecurityLevel(item_val);
             }
+            item_val = m_optionWidget->findChild<QComboBox*>("cmbMQRMask")->currentIndex();
+            if (item_val) {
+                m_bc.bc.setOption3((item_val << 8) | m_bc.bc.option3());
+            }
             if (m_optionWidget->findChild<QCheckBox*>("chkMQRFullMultibyte")->isChecked()) {
-                m_bc.bc.setOption3(ZINT_FULL_MULTIBYTE);
+                m_bc.bc.setOption3(ZINT_FULL_MULTIBYTE | m_bc.bc.option3());
             }
             break;
 
@@ -1522,8 +1533,12 @@ void MainWindow::update_preview()
             if (item_val) {
                 m_bc.bc.setSecurityLevel(item_val);
             }
+            item_val = m_optionWidget->findChild<QComboBox*>("cmbHXMask")->currentIndex();
+            if (item_val) {
+                m_bc.bc.setOption3((item_val << 8) | m_bc.bc.option3());
+            }
             if (m_optionWidget->findChild<QCheckBox*>("chkHXFullMultibyte")->isChecked()) {
-                m_bc.bc.setOption3(ZINT_FULL_MULTIBYTE);
+                m_bc.bc.setOption3(ZINT_FULL_MULTIBYTE | m_bc.bc.option3());
             }
             break;
 
@@ -1951,6 +1966,7 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology) {
         case BARCODE_HIBC_QR:
             settings.setValue("studio/bc/qrcode/size", get_combobox_index("cmbQRSize"));
             settings.setValue("studio/bc/qrcode/ecc", get_combobox_index("cmbQRECC"));
+            settings.setValue("studio/bc/qrcode/mask", get_combobox_index("cmbQRMask"));
             settings.setValue("studio/bc/qrcode/encoding_mode", get_button_group_index(QStringList() << "radDM200Stand" << "radQRGS1" << "radQRHIBC"));
             settings.setValue("studio/bc/qrcode/chk_full_multibyte", get_checkbox_val("chkQRFullMultibyte"));
             break;
@@ -1965,12 +1981,14 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology) {
         case BARCODE_HANXIN:
             settings.setValue("studio/bc/hanxin/size", get_combobox_index("cmbHXSize"));
             settings.setValue("studio/bc/hanxin/ecc", get_combobox_index("cmbHXECC"));
+            settings.setValue("studio/bc/hanxin/mask", get_combobox_index("cmbHXMask"));
             settings.setValue("studio/bc/hanxin/chk_full_multibyte", get_checkbox_val("chkHXFullMultibyte"));
             break;
 
         case BARCODE_MICROQR:
             settings.setValue("studio/bc/microqr/size", get_combobox_index("cmbMQRSize"));
             settings.setValue("studio/bc/microqr/ecc", get_combobox_index("cmbMQRECC"));
+            settings.setValue("studio/bc/microqr/mask", get_combobox_index("cmbMQRMask"));
             settings.setValue("studio/bc/microqr/chk_full_multibyte", get_checkbox_val("chkMQRFullMultibyte"));
             break;
 
@@ -2174,6 +2192,7 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology) {
         case BARCODE_HIBC_QR:
             set_combobox_from_setting(settings, "studio/bc/qrcode/size", "cmbQRSize");
             set_combobox_from_setting(settings, "studio/bc/qrcode/ecc", "cmbQRECC");
+            set_combobox_from_setting(settings, "studio/bc/qrcode/mask", "cmbQRMask");
             set_radiobutton_from_setting(settings, "studio/bc/qrcode/encoding_mode", QStringList() << "radDM200Stand" << "radQRGS1" << "radQRHIBC");
             set_checkbox_from_setting(settings, "studio/bc/qrcode/chk_full_multibyte", "chkQRFullMultibyte");
             break;
@@ -2188,12 +2207,14 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology) {
         case BARCODE_HANXIN:
             set_combobox_from_setting(settings, "studio/bc/hanxin/size", "cmbHXSize");
             set_combobox_from_setting(settings, "studio/bc/hanxin/ecc", "cmbHXECC");
+            set_combobox_from_setting(settings, "studio/bc/hanxin/mask", "cmbHXMask");
             set_checkbox_from_setting(settings, "studio/bc/hanxin/chk_full_multibyte", "chkHXFullMultibyte");
             break;
 
         case BARCODE_MICROQR:
             set_combobox_from_setting(settings, "studio/bc/microqr/size", "cmbMQRSize");
             set_combobox_from_setting(settings, "studio/bc/microqr/ecc", "cmbMQRECC");
+            set_combobox_from_setting(settings, "studio/bc/microqr/mask", "cmbMQRMask");
             set_checkbox_from_setting(settings, "studio/bc/microqr/chk_full_multibyte", "chkMQRFullMultibyte");
             break;
 

@@ -430,6 +430,7 @@ static char help_message[] = "zint tcl(stub,obj) dll\n"
     "   -rows integer: Codablock F: number of rows\n"
     "   -vers integer: Symbology option\n"
     "   -dmre bool: Allow Data Matrix Rectangular Extended\n"
+    "   -mask integer: Mask pattern to use for QR (0..7), MicroQR (0..3) or HanXin (0..3)\n"
     "   -separator 0..4 (default: 1) : Stacked symbologies: separator width\n"
     "   -rotate angle: Image rotation by 0,90 or 270 degrees\n"
     "   -secure integer: EC Level (PDF417, QR)\n"
@@ -602,6 +603,7 @@ static int Encode(Tcl_Interp *interp, int objc,
     int fFullMultiByte = 0;
     int addon_gap = 0;
     int Separator = 1;
+    int Mask = 0;
     /*------------------------------------------------------------------------*/
     /* >> Check if at least data and object is given and a pair number of */
     /* >> options */
@@ -632,13 +634,13 @@ static int Encode(Tcl_Interp *interp, int objc,
             "-gssep", "-height", "-init", "-mode", "-nobackground", "-notext",
             "-primary", "-rotate", "-rows", "-scale", "-secure", "-smalltext",
             "-square", "-to", "-vers", "-whitesp", "-fullmultibyte",
-            "-separator", NULL};
+            "-separator", "-mask", NULL};
         enum iOption {
             iAddonGap, iBarcode, iBG, iBind, iBold, iBorder, iBox, iCols,
             iDMRE, iDotSize, iDotty, iECI, iFG, iFormat, iGSSep, iHeight,
             iInit, iMode, iNoBackground, iNoText, iPrimary, iRotate, iRows,
             iScale, iSecure, iSmallText, iSquare, iTo, iVers,
-            iWhiteSp, iFullMultiByte, iSeparator
+            iWhiteSp, iFullMultiByte, iSeparator, iMask
             };
         int optionIndex;
         int intValue;
@@ -704,6 +706,14 @@ static int Encode(Tcl_Interp *interp, int objc,
         case iVers:
         case iWhiteSp:
         case iSeparator:
+            /* >> Int */
+            if (TCL_OK != Tcl_GetIntFromObj(interp, objv[optionPos+1],
+                    &intValue))
+            {
+                fError = 1;
+            }
+            break;
+        case iMask:
             /* >> Int */
             if (TCL_OK != Tcl_GetIntFromObj(interp, objv[optionPos+1],
                     &intValue))
@@ -871,6 +881,15 @@ static int Encode(Tcl_Interp *interp, int objc,
                 Separator = intValue;
             }
             break;
+        case iMask:
+            if (intValue < 0 || intValue > 7) {
+                Tcl_SetObjResult(interp,
+                    Tcl_NewStringObj("Mask out of range", -1));
+                fError = 1;
+            } else {
+                Mask = intValue + 1;
+            }
+            break;
         case iCols:
         case iVers:
             /* >> Int in Option 2 */
@@ -999,13 +1018,17 @@ static int Encode(Tcl_Interp *interp, int objc,
         }
     }
     /*------------------------------------------------------------------------*/
-    /* >>> option_3 is set by two values depending on the symbology */
+    /* >>> option_3 is set by three values depending on the symbology */
     /* On wrong symbology, the option is ignored(as does the zint program)*/
-    if (fFullMultiByte && ZBarcode_Cap(hSymbol->symbology, ZINT_CAP_FULL_MULTIBYTE)) {
-        hSymbol->option_3 = ZINT_FULL_MULTIBYTE;
-    } else if (Separator && ZBarcode_Cap(hSymbol->symbology, ZINT_CAP_STACKABLE)) {
-        hSymbol->option_3 = Separator;
-    }
+	if (fFullMultiByte && ZBarcode_Cap(hSymbol->symbology, ZINT_CAP_FULL_MULTIBYTE)) {
+		hSymbol->option_3 = ZINT_FULL_MULTIBYTE;
+	}
+	if (Mask && ZBarcode_Cap(hSymbol->symbology, ZINT_CAP_MASK)) {
+		hSymbol->option_3 |= Mask << 8;
+	}
+    if (Separator && ZBarcode_Cap(hSymbol->symbology, ZINT_CAP_STACKABLE)) {
+		hSymbol->option_3 = Separator;
+	}
     /*------------------------------------------------------------------------*/
     /* >>> option_2 is set by two values depending on the symbology */
     /* On wrong symbology, the option is ignored(as does the zint program)*/

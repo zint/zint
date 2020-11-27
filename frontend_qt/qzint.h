@@ -53,6 +53,7 @@ public:
     int option2() const;
     void setOption2(int option);
 
+    int option3() const;
     void setOption3(int option);
 
     float scale() const;

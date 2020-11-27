@@ -199,6 +199,7 @@
     <ClInclude Include="..\backend\pdf417.h" />
     <ClInclude Include="..\backend\qr.h" />
     <ClInclude Include="..\backend\reedsol.h" />
+    <ClInclude Include="..\backend\reedsol_logs.h" />
     <ClInclude Include="..\backend\rss.h" />
     <ClInclude Include="..\backend\sjis.h" />
     <ClInclude Include="..\backend\stdint_msvc.h" />

@@ -115,8 +115,8 @@ void ZBarcode_Delete(struct zint_symbol *symbol) {
     free(symbol);
 }
 
-INTERNAL int get_best_eci(unsigned char source[], size_t length); /* Calculate suitable ECI mode */
-INTERNAL int utf_to_eci(const int eci, const unsigned char source[], unsigned char dest[], size_t *length); /* Convert Unicode to other encodings */
+INTERNAL int get_best_eci(unsigned char source[], int length); /* Calculate suitable ECI mode */
+INTERNAL int utf_to_eci(const int eci, const unsigned char source[], unsigned char dest[], int *length); /* Convert Unicode to other encodings */
 
 INTERNAL int eanx(struct zint_symbol *symbol, unsigned char source[], int length); /* EAN system barcodes */
 INTERNAL int c39(struct zint_symbol *symbol, unsigned char source[], const size_t length); /* Code 3 from 9 (or Code 39) */
@@ -157,29 +157,29 @@ INTERNAL int rsslimited(struct zint_symbol *symbol, unsigned char source[], int 
 INTERNAL int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int length); /* RSS Expanded */
 INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int length); /* Composite Symbology */
 INTERNAL int kix_code(struct zint_symbol *symbol, unsigned char source[], int length); /* TNT KIX Code */
-INTERNAL int aztec(struct zint_symbol *symbol, unsigned char source[], const size_t length); /* Aztec Code */
+INTERNAL int aztec(struct zint_symbol *symbol, unsigned char source[], int length); /* Aztec Code */
 INTERNAL int code32(struct zint_symbol *symbol, unsigned char source[], int length); /* Italian Pharmacode */
 INTERNAL int daft_code(struct zint_symbol *symbol, unsigned char source[], int length); /* DAFT Code */
 INTERNAL int ean_14(struct zint_symbol *symbol, unsigned char source[], int length); /* EAN-14 */
 INTERNAL int nve_18(struct zint_symbol *symbol, unsigned char source[], int length); /* NVE-18 */
-INTERNAL int microqr(struct zint_symbol *symbol, const unsigned char source[], size_t length); /* Micro QR Code */
+INTERNAL int microqr(struct zint_symbol *symbol, unsigned char source[], int length); /* Micro QR Code */
 INTERNAL int aztec_runes(struct zint_symbol *symbol, unsigned char source[], int length); /* Aztec Runes */
 INTERNAL int korea_post(struct zint_symbol *symbol, unsigned char source[], int length); /* Korea Post */
 INTERNAL int japan_post(struct zint_symbol *symbol, unsigned char source[], int length); /* Japanese Post */
 INTERNAL int code_49(struct zint_symbol *symbol, unsigned char source[], const int length); /* Code 49 */
 INTERNAL int channel_code(struct zint_symbol *symbol, unsigned char source[], int length); /* Channel Code */
 INTERNAL int code_one(struct zint_symbol *symbol, unsigned char source[], int length); /* Code One */
-INTERNAL int grid_matrix(struct zint_symbol *symbol, const unsigned char source[], size_t length); /* Grid Matrix */
-INTERNAL int han_xin(struct zint_symbol * symbol, const unsigned char source[], size_t length); /* Han Xin */
+INTERNAL int grid_matrix(struct zint_symbol *symbol, unsigned char source[], int length); /* Grid Matrix */
+INTERNAL int han_xin(struct zint_symbol * symbol, unsigned char source[], int length); /* Han Xin */
 INTERNAL int dotcode(struct zint_symbol * symbol, const unsigned char source[], int length); /* DotCode */
 INTERNAL int codablock(struct zint_symbol * symbol, const unsigned char source[], const size_t length); /* Codablock */
-INTERNAL int upnqr(struct zint_symbol *symbol, const unsigned char source[], size_t length); /* UPNQR */
-INTERNAL int qr_code(struct zint_symbol *symbol, const unsigned char source[], size_t length); /* QR Code */
+INTERNAL int upnqr(struct zint_symbol *symbol, unsigned char source[], int length); /* UPNQR */
+INTERNAL int qr_code(struct zint_symbol *symbol, unsigned char source[], int length); /* QR Code */
 INTERNAL int dmatrix(struct zint_symbol *symbol, const unsigned char source[], const size_t in_length); /* Data Matrix (IEC16022) */
 INTERNAL int vin(struct zint_symbol *symbol, const unsigned char source[], const size_t in_length); /* VIN Code (Vehicle Identification Number) */
 INTERNAL int mailmark(struct zint_symbol *symbol, const unsigned char source[], const size_t in_length); /* Royal Mail 4-state Mailmark */
 INTERNAL int ultracode(struct zint_symbol *symbol, const unsigned char source[], const size_t in_length); /* Ultracode */
-INTERNAL int rmqr(struct zint_symbol *symbol, const unsigned char source[], const size_t in_length); /* rMQR */
+INTERNAL int rmqr(struct zint_symbol *symbol, unsigned char source[], int in_length); /* rMQR */
 INTERNAL int dpd_parcel(struct zint_symbol *symbol, unsigned char source[], int length); /* DPD Code */
 
 INTERNAL int plot_raster(struct zint_symbol *symbol, int rotate_angle, int file_type); /* Plot to PNG/BMP/PCX */
@@ -261,8 +261,8 @@ static int dump_plot(struct zint_symbol *symbol) {
 }
 
 /* Process health industry bar code data */
-static int hibc(struct zint_symbol *symbol, unsigned char source[], size_t length) {
-    size_t i;
+static int hibc(struct zint_symbol *symbol, unsigned char source[], int length) {
+    int i;
     int    counter, error_number;
     char to_process[113], check_digit;
 
@@ -669,6 +669,15 @@ unsigned int ZBarcode_Cap(int symbol_id, unsigned int cap_flag) {
                 break;
         }
     }
+    if (cap_flag & ZINT_CAP_MASK) {
+        switch (symbol_id) {
+            case BARCODE_QRCODE:
+            case BARCODE_MICROQR:
+            case BARCODE_HANXIN:
+                result |= ZINT_CAP_MASK;
+                break;
+        }
+    }
 
     return result;
 }
@@ -700,7 +709,7 @@ int ZBarcode_ValidID(int symbol_id) {
     return ids[symbol_id] != 0;
 }
 
-static int reduced_charset(struct zint_symbol *symbol, unsigned char *source, size_t in_length);
+static int reduced_charset(struct zint_symbol *symbol, unsigned char *source, int in_length);
 
 static int extended_or_reduced_charset(struct zint_symbol *symbol, unsigned char *source, const int length) {
     int error_number = 0;
@@ -726,7 +735,7 @@ static int extended_or_reduced_charset(struct zint_symbol *symbol, unsigned char
     return error_number;
 }
 
-static int reduced_charset(struct zint_symbol *symbol, unsigned char *source, size_t in_length) {
+static int reduced_charset(struct zint_symbol *symbol, unsigned char *source, int in_length) {
     /* These are the "norm" standards which only support Latin-1 at most, though a few support ECI */
     int error_number = 0;
     unsigned char *preprocessed = source;

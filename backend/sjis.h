@@ -37,10 +37,12 @@
 extern "C" {
 #endif /* __cplusplus */
 
-INTERNAL int sjis_wctomb_zint(unsigned int* r, unsigned int wc);
-INTERNAL int sjis_utf8tomb(struct zint_symbol *symbol, const unsigned char source[], size_t* p_length, unsigned int* jisdata);
-INTERNAL int sjis_utf8tosb(int eci, const unsigned char source[], size_t* p_length, unsigned int* jisdata, int full_multibyte);
-INTERNAL void sjis_cpy(const unsigned char source[], size_t* p_length, unsigned int* jisdata, int full_multibyte);
+INTERNAL int sjis_wctomb_zint(unsigned int *r, unsigned int wc);
+INTERNAL int sjis_utf8tomb(struct zint_symbol *symbol, const unsigned char source[], int *p_length,
+            unsigned int *jisdata);
+INTERNAL int sjis_utf8tosb(int eci, const unsigned char source[], int *p_length, unsigned int *jisdata,
+            int full_multibyte);
+INTERNAL void sjis_cpy(const unsigned char source[], int *p_length, unsigned int *jisdata, int full_multibyte);
 
 #ifdef __cplusplus
 }

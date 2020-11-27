@@ -39,7 +39,7 @@
 #endif
 
 /* Convert Unicode to other character encodings */
-INTERNAL int utf_to_eci(const int eci, const unsigned char source[], unsigned char dest[], size_t *length) {
+INTERNAL int utf_to_eci(const int eci, const unsigned char source[], unsigned char dest[], int *length) {
     int in_posn;
     int out_posn;
     int ext;
@@ -69,7 +69,7 @@ INTERNAL int utf_to_eci(const int eci, const unsigned char source[], unsigned ch
             bytelen = 2;
             glyph = (source[in_posn] & 0x1f) << 6;
 
-            if ((int) *length < (in_posn + 2)) {
+            if (*length < (in_posn + 2)) {
                 return ZINT_ERROR_INVALID_DATA;
             }
 
@@ -85,11 +85,11 @@ INTERNAL int utf_to_eci(const int eci, const unsigned char source[], unsigned ch
             bytelen = 3;
             glyph = (source[in_posn] & 0x0f) << 12;
 
-            if ((int) *length < (in_posn + 2)) {
+            if (*length < (in_posn + 2)) {
                 return ZINT_ERROR_INVALID_DATA;
             }
 
-            if ((int) *length < (in_posn + 3)) {
+            if (*length < (in_posn + 3)) {
                 return ZINT_ERROR_INVALID_DATA;
             }
 
@@ -245,7 +245,7 @@ INTERNAL int utf_to_eci(const int eci, const unsigned char source[], unsigned ch
 
         in_posn += bytelen;
         out_posn++;
-    } while (in_posn < (int) *length);
+    } while (in_posn < *length);
     dest[out_posn] = '\0';
     *length = out_posn;
 
@@ -253,7 +253,7 @@ INTERNAL int utf_to_eci(const int eci, const unsigned char source[], unsigned ch
 }
 
 /* Find the lowest ECI mode which will encode a given set of Unicode text */
-INTERNAL int get_best_eci(unsigned char source[], size_t length) {
+INTERNAL int get_best_eci(unsigned char source[], int length) {
     int eci = 3;
 
 #ifndef _MSC_VER

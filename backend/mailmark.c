@@ -144,6 +144,7 @@ INTERNAL int mailmark(struct zint_symbol *symbol, const unsigned char source[], 
     int check_count;
     int i, j, len;
     int length = (int) in_length;
+    rs_t rs;
     
     if (length > 26) {
         strcpy(symbol->errtxt, "580: Input too long");
@@ -402,10 +403,9 @@ INTERNAL int mailmark(struct zint_symbol *symbol, const unsigned char source[], 
     }
     
     // Generation of Reed-Solomon Check Numbers
-    rs_init_gf(0x25);
-    rs_init_code(check_count, 1);
-    rs_encode((data_top + 1), data, check);
-    rs_free();
+    rs_init_gf(&rs, 0x25);
+    rs_init_code(&rs, check_count, 1);
+    rs_encode(&rs, (data_top + 1), data, check);
     
     // Append check digits to data
     for (i = 1; i <= check_count; i++) {

@@ -110,18 +110,9 @@ extern "C" {
     INTERNAL int istwodigits(const unsigned char source[], const int length, const int position);
     INTERNAL unsigned int decode_utf8(unsigned int *state, unsigned int *codep, const unsigned char byte);
     INTERNAL int utf8_to_unicode(struct zint_symbol *symbol, const unsigned char source[], unsigned int vals[],
-                    size_t *length, int disallow_4byte);
+                    int *length, int disallow_4byte);
     INTERNAL void set_minimum_height(struct zint_symbol *symbol, const int min_height);
 
-    typedef unsigned int *(*pn_head_costs)(unsigned int state[]);
-    typedef unsigned int (*pn_switch_cost)(unsigned int state[], const int k, const int j);
-    typedef unsigned int (*pn_eod_cost)(unsigned int state[], const int k);
-    typedef void (*pn_cur_cost)(unsigned int state[], const unsigned int data[], const size_t length, const int i,
-                                char *char_modes, unsigned int prev_costs[], unsigned int cur_costs[]);
-    INTERNAL void pn_define_mode(char *mode, const unsigned int data[], const size_t length, const int debug,
-                    unsigned int state[], const char mode_types[], const int num_modes,
-                    pn_head_costs head_costs, pn_switch_cost switch_cost, pn_eod_cost eod_cost, pn_cur_cost cur_cost);
-    
     INTERNAL int colour_to_red(int colour);
     INTERNAL int colour_to_green(int colour);
     INTERNAL int colour_to_blue(int colour);

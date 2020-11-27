@@ -49,11 +49,13 @@
 
 static const char numeral_nondigits[] = " +-.,"; /* Non-digit numeral set, excluding EOL (carriage return/linefeed) */
 
-/* Whether in numeral or not. If in numeral, *p_numeral_end is set to position after numeral, and *p_numeral_cost is set to per-numeral cost */
-static int in_numeral(const unsigned int gbdata[], const size_t length, const unsigned int posn, unsigned int* p_numeral_end, unsigned int* p_numeral_cost) {
-    unsigned int i, digit_cnt, nondigit, nondigit_posn;
+/* Whether in numeral or not. If in numeral, *p_numeral_end is set to position after numeral,
+ * and *p_numeral_cost is set to per-numeral cost */
+static int in_numeral(const unsigned int gbdata[], const int length, const int in_posn,
+            unsigned int *p_numeral_end, unsigned int *p_numeral_cost) {
+    int i, digit_cnt, nondigit, nondigit_posn;
 
-    if (posn < *p_numeral_end) {
+    if (in_posn < (int) *p_numeral_end) {
         return 1;
     }
 
@@ -61,7 +63,7 @@ static int in_numeral(const unsigned int gbdata[], const size_t length, const un
     /* Also ensures that numeric mode is not selected when it cannot be used: for example in
        a string which has "2.2.0" (cannot have more than one non-numeric character for each
        block of three numeric characters) */
-    for (i = posn, digit_cnt = 0, nondigit = 0, nondigit_posn = 0; i < length && i < posn + 4 && digit_cnt < 3; i++) {
+    for (i = in_posn, digit_cnt = 0, nondigit = 0, nondigit_posn = 0; i < length && i < in_posn + 4 && digit_cnt < 3; i++) {
         if (gbdata[i] >= '0' && gbdata[i] <= '9') {
             digit_cnt++;
         } else if (strchr(numeral_nondigits, gbdata[i])) {
@@ -88,7 +90,7 @@ static int in_numeral(const unsigned int gbdata[], const size_t length, const un
     if (nondigit && nondigit_posn == i - 1) { /* Non-digit can't be at end */
         nondigit = 0;
     }
-    *p_numeral_end = posn + digit_cnt + nondigit;
+    *p_numeral_end = in_posn + digit_cnt + nondigit;
     /* Calculate per-numeral cost where 120 == (10 + 10) * GM_MULT, 60 == 10 * GM_MULT */
     if (digit_cnt == 3) {
         *p_numeral_cost = nondigit == 2 ? 24 /* (120 / 5) */ : nondigit == 1 ? 30 /* (120 / 4) */ : 20 /* (60 / 3) */;
@@ -119,19 +121,19 @@ static int in_numeral(const unsigned int gbdata[], const size_t length, const un
 
 #define GM_NUM_MODES 6
 
-/* Initial mode costs */
-static unsigned int head_costs[GM_NUM_MODES] = {
-/*  H            N (+pad prefix)    L            U            M            B (+byte count) */
-    4 * GM_MULT, (4 + 2) * GM_MULT, 4 * GM_MULT, 4 * GM_MULT, 4 * GM_MULT, (4 + 9) * GM_MULT
-};
+/* Calculate optimized encoding modes. Adapted from Project Nayuki */
+/* Copyright (c) Project Nayuki. (MIT License) See qr.c for detailed notice */
+static void define_mode(char* mode, const unsigned int gbdata[], const int length, const int debug) {
+    /* Must be in same order as GM_H etc */
+    static const char mode_types[] = { GM_CHINESE, GM_NUMBER, GM_LOWER, GM_UPPER, GM_MIXED, GM_BYTE, '\0' };
 
-static unsigned int* gm_head_costs(unsigned int state[]) {
-    (void)state; /* Unused */
-    return head_costs;
-}
+    /* Initial mode costs */
+    static unsigned int head_costs[GM_NUM_MODES] = {
+    /*  H            N (+pad prefix)    L            U            M            B (+byte count) */
+        4 * GM_MULT, (4 + 2) * GM_MULT, 4 * GM_MULT, 4 * GM_MULT, 4 * GM_MULT, (4 + 9) * GM_MULT
+    };
 
-/* Cost of switching modes from k to j - see AIMD014 Rev. 1.63 Table 9 – Type conversion codes */
-static unsigned int gm_switch_cost(unsigned int state[], const int k, const int j) {
+    /* Cost of switching modes from k to j - see AIMD014 Rev. 1.63 Table 9 – Type conversion codes */
     static const unsigned int switch_costs[GM_NUM_MODES][GM_NUM_MODES] = {
         /*      H             N                   L             U             M             B  */
         /*H*/ {            0, (13 + 2) * GM_MULT, 13 * GM_MULT, 13 * GM_MULT, 13 * GM_MULT, (13 + 9) * GM_MULT },
@@ -142,107 +144,172 @@ static unsigned int gm_switch_cost(unsigned int state[], const int k, const int 
         /*B*/ {  4 * GM_MULT,  (4 + 2) * GM_MULT,  4 * GM_MULT,  4 * GM_MULT,  4 * GM_MULT,                  0 },
     };
 
-    (void)state; /* Unused */
-    return switch_costs[k][j];
-}
-
-/* Final end-of-data cost - see AIMD014 Rev. 1.63 Table 9 – Type conversion codes */
-static unsigned int gm_eod_cost(unsigned int state[], const int k) {
+    /* Final end-of-data cost - see AIMD014 Rev. 1.63 Table 9 – Type conversion codes */
     static const unsigned int eod_costs[GM_NUM_MODES] = {
     /*  H             N             L            U            M             B  */
         13 * GM_MULT, 10 * GM_MULT, 5 * GM_MULT, 5 * GM_MULT, 10 * GM_MULT, 4 * GM_MULT
     };
 
-    (void)state; /* Unused */
-    return eod_costs[k];
-}
-
-/* Calculate cost of encoding current character */
-static void gm_cur_cost(unsigned int state[], const unsigned int gbdata[], const size_t length, const int i, char* char_modes, unsigned int prev_costs[], unsigned int cur_costs[]) {
-    int cm_i = i * GM_NUM_MODES;
+    unsigned int numeral_end = 0, numeral_cost = 0, byte_count = 0; /* State */
     int double_byte, space, numeric, lower, upper, control, double_digit, eol;
-    unsigned int* p_numeral_end = &state[0];
-    unsigned int* p_numeral_cost = &state[1];
-    unsigned int* p_byte_count = &state[2];
 
-    double_byte = gbdata[i] > 0xFF;
-    space = gbdata[i] == ' ';
-    numeric = gbdata[i] >= '0' && gbdata[i] <= '9';
-    lower = gbdata[i] >= 'a' && gbdata[i] <= 'z';
-    upper = gbdata[i] >= 'A' && gbdata[i] <= 'Z';
-    control = !space && !numeric && !lower && !upper && gbdata[i] < 0x7F; /* Exclude DEL */
-    double_digit = i < (int) length - 1 && numeric && gbdata[i + 1] >= '0' && gbdata[i + 1] <= '9';
-    eol = i < (int) length - 1 && gbdata[i] == 13 && gbdata[i + 1] == 10;
+    int i, j, k, cm_i;
+    unsigned int min_cost;
+    char cur_mode;
+    unsigned int prev_costs[GM_NUM_MODES];
+    unsigned int cur_costs[GM_NUM_MODES];
+#ifndef _MSC_VER
+    char char_modes[length * GM_NUM_MODES];
+#else
+    char *char_modes = (char *) _alloca(length * GM_NUM_MODES);
+#endif
 
-    /* Hanzi mode can encode anything */
-    cur_costs[GM_H] = prev_costs[GM_H] + (double_digit || eol ? 39 : 78); /* (6.5 : 13) * GM_MULT */
-    char_modes[cm_i + GM_H] = GM_CHINESE;
+    /* char_modes[i * GM_NUM_MODES + j] represents the mode to encode the code point at index i such that the final
+     * segment ends in mode_types[j] and the total number of bits is minimized over all possible choices */
+    memset(char_modes, 0, length * GM_NUM_MODES);
 
-    /* Byte mode can encode anything */
-    if (*p_byte_count == 512 || (double_byte && *p_byte_count == 511)) {
-        cur_costs[GM_B] = head_costs[GM_B];
-        if (double_byte && *p_byte_count == 511) {
-            cur_costs[GM_B] += 48; /* 8 * GM_MULT */
-            double_byte = 0; /* Splitting double-byte so mark as single */
+    /* At the beginning of each iteration of the loop below, prev_costs[j] is the minimum number of 1/6 (1/XX_MULT)
+     * bits needed to encode the entire string prefix of length i, and end in mode_types[j] */
+    memcpy(prev_costs, head_costs, GM_NUM_MODES * sizeof(unsigned int));
+
+    /* Calculate costs using dynamic programming */
+    for (i = 0, cm_i = 0; i < length; i++, cm_i += GM_NUM_MODES) {
+        memset(cur_costs, 0, GM_NUM_MODES * sizeof(unsigned int));
+
+        space = numeric = lower = upper = control = double_digit = eol = 0;
+
+        double_byte = gbdata[i] > 0xFF;
+        if (!double_byte) {
+            space = gbdata[i] == ' ';
+            if (!space) {
+                numeric = gbdata[i] >= '0' && gbdata[i] <= '9';
+                if (!numeric) {
+                    lower = gbdata[i] >= 'a' && gbdata[i] <= 'z';
+                    if (!lower) {
+                        upper = gbdata[i] >= 'A' && gbdata[i] <= 'Z';
+                        if (!upper) {
+                            control = gbdata[i] < 0x7F; /* Exclude DEL */
+                            if (control && i + 1 < length) {
+                                eol = gbdata[i] == 13 && gbdata[i + 1] == 10;
+                            }
+                        }
+                    }
+                } else if (i + 1 < length) {
+                    double_digit = gbdata[i + 1] >= '0' && gbdata[i + 1] <= '9';
+                }
+            }
         }
-        *p_byte_count = 0;
-    }
-    cur_costs[GM_B] += prev_costs[GM_B] + (double_byte ? 96 : 48); /* (16 : 8) * GM_MULT */
-    char_modes[cm_i + GM_B] = GM_BYTE;
-    *p_byte_count += double_byte ? 2 : 1;
 
-    if (in_numeral(gbdata, length, i, p_numeral_end, p_numeral_cost)) {
-        cur_costs[GM_N] = prev_costs[GM_N] + *p_numeral_cost;
-        char_modes[cm_i + GM_N] = GM_NUMBER;
-    }
+        /* Hanzi mode can encode anything */
+        cur_costs[GM_H] = prev_costs[GM_H] + (double_digit || eol ? 39 : 78); /* (6.5 : 13) * GM_MULT */
+        char_modes[cm_i + GM_H] = GM_CHINESE;
 
-    if (control) {
-        cur_costs[GM_L] = prev_costs[GM_L] + 78; /* (7 + 6) * GM_MULT */
-        char_modes[cm_i + GM_L] = GM_LOWER;
-        cur_costs[GM_U] = prev_costs[GM_U] + 78; /* (7 + 6) * GM_MULT */
-        char_modes[cm_i + GM_U] = GM_UPPER;
-        cur_costs[GM_M] = prev_costs[GM_M] + 96; /* (10 + 6) * GM_MULT */
-        char_modes[cm_i + GM_M] = GM_MIXED;
-    } else {
-        if (lower || space) {
-            cur_costs[GM_L] = prev_costs[GM_L] + 30; /* 5 * GM_MULT */
+        /* Byte mode can encode anything */
+        if (byte_count == 512 || (double_byte && byte_count == 511)) {
+            cur_costs[GM_B] = head_costs[GM_B];
+            if (double_byte && byte_count == 511) {
+                cur_costs[GM_B] += 48; /* 8 * GM_MULT */
+                double_byte = 0; /* Splitting double-byte so mark as single */
+            }
+            byte_count = 0;
+        }
+        cur_costs[GM_B] += prev_costs[GM_B] + (double_byte ? 96 : 48); /* (16 : 8) * GM_MULT */
+        char_modes[cm_i + GM_B] = GM_BYTE;
+        byte_count += double_byte ? 2 : 1;
+
+        if (in_numeral(gbdata, length, i, &numeral_end, &numeral_cost)) {
+            cur_costs[GM_N] = prev_costs[GM_N] + numeral_cost;
+            char_modes[cm_i + GM_N] = GM_NUMBER;
+        }
+
+        if (control) {
+            cur_costs[GM_L] = prev_costs[GM_L] + 78; /* (7 + 6) * GM_MULT */
             char_modes[cm_i + GM_L] = GM_LOWER;
-        }
-        if (upper || space) {
-            cur_costs[GM_U] = prev_costs[GM_U] + 30; /* 5 * GM_MULT */
+            cur_costs[GM_U] = prev_costs[GM_U] + 78; /* (7 + 6) * GM_MULT */
             char_modes[cm_i + GM_U] = GM_UPPER;
-        }
-        if (numeric || lower || upper || space) {
-            cur_costs[GM_M] = prev_costs[GM_M] + 36; /* 6 * GM_MULT */
+            cur_costs[GM_M] = prev_costs[GM_M] + 96; /* (10 + 6) * GM_MULT */
             char_modes[cm_i + GM_M] = GM_MIXED;
+        } else {
+            if (lower || space) {
+                cur_costs[GM_L] = prev_costs[GM_L] + 30; /* 5 * GM_MULT */
+                char_modes[cm_i + GM_L] = GM_LOWER;
+            }
+            if (upper || space) {
+                cur_costs[GM_U] = prev_costs[GM_U] + 30; /* 5 * GM_MULT */
+                char_modes[cm_i + GM_U] = GM_UPPER;
+            }
+            if (numeric || lower || upper || space) {
+                cur_costs[GM_M] = prev_costs[GM_M] + 36; /* 6 * GM_MULT */
+                char_modes[cm_i + GM_M] = GM_MIXED;
+            }
+        }
+
+        if (i == length - 1) { /* Add end of data costs if last character */
+            for (j = 0; j < GM_NUM_MODES; j++) {
+                if (char_modes[cm_i + j]) {
+                    cur_costs[j] += eod_costs[j];
+                }
+            }
+        }
+
+        /* Start new segment at the end to switch modes */
+        for (j = 0; j < GM_NUM_MODES; j++) { /* To mode */
+            for (k = 0; k < GM_NUM_MODES; k++) { /* From mode */
+                if (j != k && char_modes[cm_i + k]) {
+                    unsigned int new_cost = cur_costs[k] + switch_costs[k][j];
+                    if (!char_modes[cm_i + j] || new_cost < cur_costs[j]) {
+                        cur_costs[j] = new_cost;
+                        char_modes[cm_i + j] = mode_types[k];
+                    }
+                }
+            }
+        }
+
+        memcpy(prev_costs, cur_costs, GM_NUM_MODES * sizeof(unsigned int));
+    }
+
+    /* Find optimal ending mode */
+    min_cost = prev_costs[0];
+    cur_mode = mode_types[0];
+    for (i = 1; i < GM_NUM_MODES; i++) {
+        if (prev_costs[i] < min_cost) {
+            min_cost = prev_costs[i];
+            cur_mode = mode_types[i];
         }
     }
-}
 
-/* Calculate optimized encoding modes */
-static void define_mode(char* mode, const unsigned int gbdata[], const size_t length, const int debug) {
-    static const char mode_types[] = { GM_CHINESE, GM_NUMBER, GM_LOWER, GM_UPPER, GM_MIXED, GM_BYTE, '\0' }; /* Must be in same order as GM_H etc */
-    unsigned int state[3] = { 0 /*numeral_end*/, 0 /*numeral_cost*/, 0 /*byte_count*/ };
+    /* Get optimal mode for each code point by tracing backwards */
+    for (i = length - 1, cm_i = i * GM_NUM_MODES; i >= 0; i--, cm_i -= GM_NUM_MODES) {
+        j = strchr(mode_types, cur_mode) - mode_types;
+        cur_mode = char_modes[cm_i + j];
+        mode[i] = cur_mode;
+    }
 
-    pn_define_mode(mode, gbdata, length, debug, state, mode_types, GM_NUM_MODES, gm_head_costs, gm_switch_cost, gm_eod_cost, gm_cur_cost);
+    if (debug & ZINT_DEBUG_PRINT) {
+        printf("  Mode: %.*s\n", length, mode);
+    }
 }
 
 /* Add the length indicator for byte encoded blocks */
-static void add_byte_count(char binary[], const size_t byte_count_posn, const int byte_count) {
+static void add_byte_count(char binary[], const int byte_count_posn, const int byte_count) {
     /* AIMD014 6.3.7: "Let L be the number of bytes of input data to be encoded in the 8-bit binary data set.
      * First output (L-1) as a 9-bit binary prefix to record the number of bytes..." */
     bin_append_posn(byte_count - 1, 9, binary, byte_count_posn);
 }
 
 /* Add a control character to the data stream */
-static void add_shift_char(char binary[], int shifty, int debug) {
+static int add_shift_char(char binary[], int bp, int shifty, int debug) {
     int i;
     int glyph = 0;
 
-    for (i = 0; i < 64; i++) {
-        if (shift_set[i] == shifty) {
-            glyph = i;
-            break;
+    if (shifty < 32) {
+        glyph = shifty;
+    } else {
+        for (i = 32; i < 64; i++) {
+            if (shift_set[i] == shifty) {
+                glyph = i;
+                break;
+            }
         }
     }
 
@@ -250,51 +317,54 @@ static void add_shift_char(char binary[], int shifty, int debug) {
         printf("SHIFT [%d] ", glyph);
     }
 
-    bin_append(glyph, 6, binary);
+    bp = bin_append_posn(glyph, 6, binary, bp);
+
+    return bp;
 }
 
-static int gm_encode(unsigned int gbdata[], const size_t length, char binary[], const int reader, const int eci, int debug) {
+static int gm_encode(unsigned int gbdata[], const int length, char binary[], const int reader, const int eci,
+            int *bin_len, int debug) {
     /* Create a binary stream representation of the input data.
        7 sets are defined - Chinese characters, Numerals, Lower case letters, Upper case letters,
        Mixed numerals and latters, Control characters and 8-bit binary data */
-    unsigned int sp;
+    int sp;
     int current_mode, last_mode;
     unsigned int glyph = 0;
     int c1, c2, done;
     int p = 0, ppos;
     int numbuf[3], punt = 0;
-    size_t number_pad_posn, byte_count_posn = 0;
+    int number_pad_posn, byte_count_posn = 0;
     int byte_count = 0;
     int shift;
+    int bp;
 #ifndef _MSC_VER
     char mode[length];
 #else
     char* mode = (char*) _alloca(length);
 #endif
 
-    strcpy(binary, "");
+    *binary = '\0';
+    bp = 0;
 
     sp = 0;
     current_mode = 0;
     number_pad_posn = 0;
 
     if (reader) {
-        bin_append(10, 4, binary); /* FNC3 - Reader Initialisation */
+        bp = bin_append_posn(10, 4, binary, bp); /* FNC3 - Reader Initialisation */
     }
 
     if (eci != 0) {
         /* ECI assignment according to Table 8 */
-        bin_append(12, 4, binary); /* ECI */
+        bp = bin_append_posn(12, 4, binary, bp); /* ECI */
         if (eci <= 1023) {
-            bin_append(eci, 11, binary);
-        }
-        if ((eci >= 1024) && (eci <= 32767)) {
-            strcat(binary, "10");
-            bin_append(eci, 15, binary);
-        }
-        if (eci >= 32768) {
-            strcat(binary, "11");
-            bin_append(eci, 20, binary);
+            bp = bin_append_posn(eci, 11, binary, bp);
+        } else if (eci <= 32767) {
+            bp = bin_append_posn(2, 2, binary, bp);
+            bp = bin_append_posn(eci, 15, binary, bp);
+        } else {
+            bp = bin_append_posn(3, 2, binary, bp);
+            bp = bin_append_posn(eci, 20, binary, bp);
         }
     }
 
@@ -307,31 +377,31 @@ static int gm_encode(unsigned int gbdata[], const size_t length, char binary[], 
             switch (current_mode) {
                 case 0:
                     switch (next_mode) {
-                        case GM_CHINESE: bin_append(1, 4, binary);
+                        case GM_CHINESE: bp = bin_append_posn(1, 4, binary, bp);
                             break;
-                        case GM_NUMBER: bin_append(2, 4, binary);
+                        case GM_NUMBER: bp = bin_append_posn(2, 4, binary, bp);
                             break;
-                        case GM_LOWER: bin_append(3, 4, binary);
+                        case GM_LOWER: bp = bin_append_posn(3, 4, binary, bp);
                             break;
-                        case GM_UPPER: bin_append(4, 4, binary);
+                        case GM_UPPER: bp = bin_append_posn(4, 4, binary, bp);
                             break;
-                        case GM_MIXED: bin_append(5, 4, binary);
+                        case GM_MIXED: bp = bin_append_posn(5, 4, binary, bp);
                             break;
-                        case GM_BYTE: bin_append(6, 4, binary);
+                        case GM_BYTE: bp = bin_append_posn(6, 4, binary, bp);
                             break;
                     }
                     break;
                 case GM_CHINESE:
                     switch (next_mode) {
-                        case GM_NUMBER: bin_append(8161, 13, binary);
+                        case GM_NUMBER: bp = bin_append_posn(8161, 13, binary, bp);
                             break;
-                        case GM_LOWER: bin_append(8162, 13, binary);
+                        case GM_LOWER: bp = bin_append_posn(8162, 13, binary, bp);
                             break;
-                        case GM_UPPER: bin_append(8163, 13, binary);
+                        case GM_UPPER: bp = bin_append_posn(8163, 13, binary, bp);
                             break;
-                        case GM_MIXED: bin_append(8164, 13, binary);
+                        case GM_MIXED: bp = bin_append_posn(8164, 13, binary, bp);
                             break;
-                        case GM_BYTE: bin_append(8165, 13, binary);
+                        case GM_BYTE: bp = bin_append_posn(8165, 13, binary, bp);
                             break;
                     }
                     break;
@@ -349,45 +419,45 @@ static int gm_encode(unsigned int gbdata[], const size_t length, char binary[], 
                             break; // 0 pad digits
                     }
                     switch (next_mode) {
-                        case GM_CHINESE: bin_append(1019, 10, binary);
+                        case GM_CHINESE: bp = bin_append_posn(1019, 10, binary, bp);
                             break;
-                        case GM_LOWER: bin_append(1020, 10, binary);
+                        case GM_LOWER: bp = bin_append_posn(1020, 10, binary, bp);
                             break;
-                        case GM_UPPER: bin_append(1021, 10, binary);
+                        case GM_UPPER: bp = bin_append_posn(1021, 10, binary, bp);
                             break;
-                        case GM_MIXED: bin_append(1022, 10, binary);
+                        case GM_MIXED: bp = bin_append_posn(1022, 10, binary, bp);
                             break;
-                        case GM_BYTE: bin_append(1023, 10, binary);
+                        case GM_BYTE: bp = bin_append_posn(1023, 10, binary, bp);
                             break;
                     }
                     break;
                 case GM_LOWER:
                 case GM_UPPER:
                     switch (next_mode) {
-                        case GM_CHINESE: bin_append(28, 5, binary);
+                        case GM_CHINESE: bp = bin_append_posn(28, 5, binary, bp);
                             break;
-                        case GM_NUMBER: bin_append(29, 5, binary);
+                        case GM_NUMBER: bp = bin_append_posn(29, 5, binary, bp);
                             break;
                         case GM_LOWER:
-                        case GM_UPPER: bin_append(30, 5, binary);
+                        case GM_UPPER: bp = bin_append_posn(30, 5, binary, bp);
                             break;
-                        case GM_MIXED: bin_append(124, 7, binary);
+                        case GM_MIXED: bp = bin_append_posn(124, 7, binary, bp);
                             break;
-                        case GM_BYTE: bin_append(126, 7, binary);
+                        case GM_BYTE: bp = bin_append_posn(126, 7, binary, bp);
                             break;
                     }
                     break;
                 case GM_MIXED:
                     switch (next_mode) {
-                        case GM_CHINESE: bin_append(1009, 10, binary);
+                        case GM_CHINESE: bp = bin_append_posn(1009, 10, binary, bp);
                             break;
-                        case GM_NUMBER: bin_append(1010, 10, binary);
+                        case GM_NUMBER: bp = bin_append_posn(1010, 10, binary, bp);
                             break;
-                        case GM_LOWER: bin_append(1011, 10, binary);
+                        case GM_LOWER: bp = bin_append_posn(1011, 10, binary, bp);
                             break;
-                        case GM_UPPER: bin_append(1012, 10, binary);
+                        case GM_UPPER: bp = bin_append_posn(1012, 10, binary, bp);
                             break;
-                        case GM_BYTE: bin_append(1015, 10, binary);
+                        case GM_BYTE: bp = bin_append_posn(1015, 10, binary, bp);
                             break;
                     }
                     break;
@@ -396,15 +466,15 @@ static int gm_encode(unsigned int gbdata[], const size_t length, char binary[], 
                     add_byte_count(binary, byte_count_posn, byte_count);
                     byte_count = 0;
                     switch (next_mode) {
-                        case GM_CHINESE: bin_append(1, 4, binary);
+                        case GM_CHINESE: bp = bin_append_posn(1, 4, binary, bp);
                             break;
-                        case GM_NUMBER: bin_append(2, 4, binary);
+                        case GM_NUMBER: bp = bin_append_posn(2, 4, binary, bp);
                             break;
-                        case GM_LOWER: bin_append(3, 4, binary);
+                        case GM_LOWER: bp = bin_append_posn(3, 4, binary, bp);
                             break;
-                        case GM_UPPER: bin_append(4, 4, binary);
+                        case GM_UPPER: bp = bin_append_posn(4, 4, binary, bp);
                             break;
-                        case GM_MIXED: bin_append(5, 4, binary);
+                        case GM_MIXED: bp = bin_append_posn(5, 4, binary, bp);
                             break;
                     }
                     break;
@@ -474,15 +544,15 @@ static int gm_encode(unsigned int gbdata[], const size_t length, char binary[], 
                     printf("[%d] ", glyph);
                 }
 
-                bin_append(glyph, 13, binary);
+                bp = bin_append_posn(glyph, 13, binary, bp);
                 sp++;
                 break;
 
             case GM_NUMBER:
                 if (last_mode != current_mode) {
                     /* Reserve a space for numeric digit padding value (2 bits) */
-                    number_pad_posn = strlen(binary);
-                    strcat(binary, "XX");
+                    number_pad_posn = bp;
+                    bp = bin_append_posn(0, 2, binary, bp);
                 }
                 p = 0;
                 ppos = -1;
@@ -539,7 +609,7 @@ static int gm_encode(unsigned int gbdata[], const size_t length, char binary[], 
                         printf("[%d] ", glyph);
                     }
 
-                    bin_append(glyph, 10, binary);
+                    bp = bin_append_posn(glyph, 10, binary, bp);
                 }
 
                 glyph = (100 * (numbuf[0] - '0')) + (10 * (numbuf[1] - '0')) + (numbuf[2] - '0');
@@ -547,34 +617,34 @@ static int gm_encode(unsigned int gbdata[], const size_t length, char binary[], 
                     printf("[%d] ", glyph);
                 }
 
-                bin_append(glyph, 10, binary);
+                bp = bin_append_posn(glyph, 10, binary, bp);
                 break;
 
             case GM_BYTE:
                 if (last_mode != current_mode) {
                     /* Reserve space for byte block length indicator (9 bits) */
-                    byte_count_posn = strlen(binary);
-                    strcat(binary, "LLLLLLLLL");
+                    byte_count_posn = bp;
+                    bp = bin_append_posn(0, 9, binary, bp);
                 }
                 glyph = gbdata[sp];
                 if (byte_count == 512 || (glyph > 0xFF && byte_count == 511)) {
                     /* Maximum byte block size is 512 bytes. If longer is needed then start a new block */
                     if (glyph > 0xFF && byte_count == 511) { /* Split double-byte */
-                        bin_append(glyph >> 8, 8, binary);
+                        bp = bin_append_posn(glyph >> 8, 8, binary, bp);
                         glyph &= 0xFF;
                         byte_count++;
                     }
                     add_byte_count(binary, byte_count_posn, byte_count);
-                    bin_append(7, 4, binary);
-                    byte_count_posn = strlen(binary);
-                    strcat(binary, "LLLLLLLLL");
+                    bp = bin_append_posn(7, 4, binary, bp);
+                    byte_count_posn = bp;
+                    bp = bin_append_posn(0, 9, binary, bp);
                     byte_count = 0;
                 }
 
                 if (debug & ZINT_DEBUG_PRINT) {
                     printf("[%d] ", glyph);
                 }
-                bin_append(glyph, glyph > 0xFF ? 16 : 8, binary);
+                bp = bin_append_posn(glyph, glyph > 0xFF ? 16 : 8, binary, bp);
                 sp++;
                 byte_count++;
                 if (glyph > 0xFF) {
@@ -586,14 +656,11 @@ static int gm_encode(unsigned int gbdata[], const size_t length, char binary[], 
                 shift = 1;
                 if ((gbdata[sp] >= '0') && (gbdata[sp] <= '9')) {
                     shift = 0;
-                }
-                if ((gbdata[sp] >= 'A') && (gbdata[sp] <= 'Z')) {
+                } else if ((gbdata[sp] >= 'A') && (gbdata[sp] <= 'Z')) {
                     shift = 0;
-                }
-                if ((gbdata[sp] >= 'a') && (gbdata[sp] <= 'z')) {
+                } else if ((gbdata[sp] >= 'a') && (gbdata[sp] <= 'z')) {
                     shift = 0;
-                }
-                if (gbdata[sp] == ' ') {
+                } else if (gbdata[sp] == ' ') {
                     shift = 0;
                 }
 
@@ -604,11 +671,11 @@ static int gm_encode(unsigned int gbdata[], const size_t length, char binary[], 
                         printf("[%d] ", glyph);
                     }
 
-                    bin_append(glyph, 6, binary);
+                    bp = bin_append_posn(glyph, 6, binary, bp);
                 } else {
                     /* Shift Mode character */
-                    bin_append(1014, 10, binary); /* shift indicator */
-                    add_shift_char(binary, gbdata[sp], debug);
+                    bp = bin_append_posn(1014, 10, binary, bp); /* shift indicator */
+                    bp = add_shift_char(binary, bp, gbdata[sp], debug);
                 }
 
                 sp++;
@@ -618,8 +685,7 @@ static int gm_encode(unsigned int gbdata[], const size_t length, char binary[], 
                 shift = 1;
                 if ((gbdata[sp] >= 'A') && (gbdata[sp] <= 'Z')) {
                     shift = 0;
-                }
-                if (gbdata[sp] == ' ') {
+                } else if (gbdata[sp] == ' ') {
                     shift = 0;
                 }
 
@@ -630,11 +696,11 @@ static int gm_encode(unsigned int gbdata[], const size_t length, char binary[], 
                         printf("[%d] ", glyph);
                     }
 
-                    bin_append(glyph, 5, binary);
+                    bp = bin_append_posn(glyph, 5, binary, bp);
                 } else {
                     /* Shift Mode character */
-                    bin_append(125, 7, binary); /* shift indicator */
-                    add_shift_char(binary, gbdata[sp], debug);
+                    bp = bin_append_posn(125, 7, binary, bp); /* shift indicator */
+                    bp = add_shift_char(binary, bp, gbdata[sp], debug);
                 }
 
                 sp++;
@@ -644,8 +710,7 @@ static int gm_encode(unsigned int gbdata[], const size_t length, char binary[], 
                 shift = 1;
                 if ((gbdata[sp] >= 'a') && (gbdata[sp] <= 'z')) {
                     shift = 0;
-                }
-                if (gbdata[sp] == ' ') {
+                } else if (gbdata[sp] == ' ') {
                     shift = 0;
                 }
 
@@ -656,17 +721,17 @@ static int gm_encode(unsigned int gbdata[], const size_t length, char binary[], 
                         printf("[%d] ", glyph);
                     }
 
-                    bin_append(glyph, 5, binary);
+                    bp = bin_append_posn(glyph, 5, binary, bp);
                 } else {
                     /* Shift Mode character */
-                    bin_append(125, 7, binary); /* shift indicator */
-                    add_shift_char(binary, gbdata[sp], debug);
+                    bp = bin_append_posn(125, 7, binary, bp); /* shift indicator */
+                    bp = add_shift_char(binary, bp, gbdata[sp], debug);
                 }
 
                 sp++;
                 break;
         }
-        if (strlen(binary) > 9191) {
+        if (bp > 9191) {
             return ZINT_ERROR_TOO_LONG;
         }
 
@@ -694,37 +759,46 @@ static int gm_encode(unsigned int gbdata[], const size_t length, char binary[], 
 
     /* Add "end of data" character */
     switch (current_mode) {
-        case GM_CHINESE: bin_append(8160, 13, binary);
+        case GM_CHINESE: bp = bin_append_posn(8160, 13, binary, bp);
             break;
-        case GM_NUMBER: bin_append(1018, 10, binary);
+        case GM_NUMBER: bp = bin_append_posn(1018, 10, binary, bp);
             break;
         case GM_LOWER:
-        case GM_UPPER: bin_append(27, 5, binary);
+        case GM_UPPER: bp = bin_append_posn(27, 5, binary, bp);
             break;
-        case GM_MIXED: bin_append(1008, 10, binary);
+        case GM_MIXED: bp = bin_append_posn(1008, 10, binary, bp);
             break;
-        case GM_BYTE: bin_append(0, 4, binary);
+        case GM_BYTE: bp = bin_append_posn(0, 4, binary, bp);
             break;
     }
 
     /* Add padding bits if required */
-    p = 7 - (strlen(binary) % 7);
+    p = 7 - (bp % 7);
     if (p % 7) {
-        bin_append(0, p, binary);
+        bp = bin_append_posn(0, p, binary, bp);
     }
 
-    if (strlen(binary) > 9191) {
+    if (bp > 9191) {
         return ZINT_ERROR_TOO_LONG;
     }
+    binary[bp] = '\0';
+    *bin_len = bp;
+
+    if (debug & ZINT_DEBUG_PRINT) {
+        printf("\nBinary (%d): %s\n", bp, binary);
+    }
+
     return 0;
 }
 
-static void gm_add_ecc(const char binary[], const size_t data_posn, const int layers, const int ecc_level, unsigned char word[]) {
+static void gm_add_ecc(const char binary[], const int data_posn, const int layers, const int ecc_level,
+            unsigned char word[]) {
     int data_cw, i, j, wp, p;
     int n1, b1, n2, b2, e1, b3, e2;
     int block_size, ecc_size;
     unsigned char data[1320], block[130];
     unsigned char data_block[115], ecc_block[70];
+    rs_t rs;
 
     data_cw = gm_data_codewords[((layers - 1) * 5) + (ecc_level - 1)];
 
@@ -733,7 +807,7 @@ static void gm_add_ecc(const char binary[], const size_t data_posn, const int la
     }
 
     /* Convert from binary stream to 7-bit codewords */
-    for (i = 0; i < (int) data_posn; i++) {
+    for (i = 0; i < data_posn; i++) {
         for (p = 0; p < 7; p++) {
             if (binary[i * 7 + p] == '1') {
                 data[i] += (0x40 >> p);
@@ -743,7 +817,7 @@ static void gm_add_ecc(const char binary[], const size_t data_posn, const int la
 
     /* Add padding codewords */
     data[data_posn] = 0x00;
-    for (i = (int) (data_posn + 1); i < data_cw; i++) {
+    for (i = (data_posn + 1); i < data_cw; i++) {
         if (i & 1) {
             data[i] = 0x7e;
         } else {
@@ -759,6 +833,8 @@ static void gm_add_ecc(const char binary[], const size_t data_posn, const int la
     e1 = gm_ebeb[((layers - 1) * 20) + ((ecc_level - 1) * 4)];
     b3 = gm_ebeb[((layers - 1) * 20) + ((ecc_level - 1) * 4) + 1];
     e2 = gm_ebeb[((layers - 1) * 20) + ((ecc_level - 1) * 4) + 2];
+
+    rs_init_gf(&rs, 0x89);
 
     /* Split the data into blocks */
     wp = 0;
@@ -784,10 +860,8 @@ static void gm_add_ecc(const char binary[], const size_t data_posn, const int la
         }
 
         /* Calculate ECC data for this block */
-        rs_init_gf(0x89);
-        rs_init_code(ecc_size, 1);
-        rs_encode(data_size, data_block, ecc_block);
-        rs_free();
+        rs_init_code(&rs, ecc_size, 1);
+        rs_encode(&rs, data_size, data_block, ecc_block);
 
         /* Correct error correction data but in reverse order */
         for (j = 0; j < data_size; j++) {
@@ -922,15 +996,17 @@ static void place_layer_id(char* grid, int size, int layers, int modules, int ec
     }
 }
 
-INTERNAL int grid_matrix(struct zint_symbol *symbol, const unsigned char source[], size_t length) {
+INTERNAL int grid_matrix(struct zint_symbol *symbol, unsigned char source[], int length) {
     int size, modules, error_number;
     int auto_layers, min_layers, layers, auto_ecc_level, min_ecc_level, ecc_level;
     int x, y, i;
     int full_multibyte;
     char binary[9300];
     int data_cw, input_latch = 0;
-    unsigned char word[1460];
+    unsigned char word[1460] = {0};
     int data_max, reader = 0;
+    int size_squared;
+    int bin_len;
 
 #ifndef _MSC_VER
     unsigned int gbdata[length + 1];
@@ -939,11 +1015,8 @@ INTERNAL int grid_matrix(struct zint_symbol *symbol, const unsigned char source[
     unsigned int* gbdata = (unsigned int *) _alloca((length + 1) * sizeof (unsigned int));
 #endif
 
-    for (i = 0; i < 1460; i++) {
-        word[i] = 0;
-    }
-
-    full_multibyte = symbol->option_3 == ZINT_FULL_MULTIBYTE; /* If set use Hanzi mode in DATA_MODE or for single-byte Latin */
+    /* If ZINT_FULL_MULTIBYTE set use Hanzi mode in DATA_MODE or for single-byte Latin */
+    full_multibyte = (symbol->option_3 & 0xFF) == ZINT_FULL_MULTIBYTE;
 
     if ((symbol->input_mode & 0x07) == DATA_MODE) {
         gb2312_cpy(source, &length, gbdata, full_multibyte);
@@ -951,7 +1024,8 @@ INTERNAL int grid_matrix(struct zint_symbol *symbol, const unsigned char source[
         int done = 0;
         if (symbol->eci != 29) { /* Unless ECI 29 (GB) */
             /* Try single byte (Latin) conversion first */
-            int error_number = gb2312_utf8tosb(symbol->eci && symbol->eci <= 899 ? symbol->eci : 3, source, &length, gbdata, full_multibyte);
+            error_number = gb2312_utf8tosb(symbol->eci && symbol->eci <= 899 ? symbol->eci : 3, source, &length,
+                                gbdata, full_multibyte);
             if (error_number == 0) {
                 done = 1;
             } else if (symbol->eci && symbol->eci <= 899) {
@@ -961,7 +1035,7 @@ INTERNAL int grid_matrix(struct zint_symbol *symbol, const unsigned char source[
         }
         if (!done) {
             /* Try GB 2312 (EUC-CN) */
-            int error_number = gb2312_utf8tomb(symbol, source, &length, gbdata);
+            error_number = gb2312_utf8tomb(symbol, source, &length, gbdata);
             if (error_number != 0) {
                 return error_number;
             }
@@ -975,14 +1049,14 @@ INTERNAL int grid_matrix(struct zint_symbol *symbol, const unsigned char source[
         return ZINT_ERROR_INVALID_OPTION;
     }
 
-    error_number = gm_encode(gbdata, length, binary, reader, symbol->eci, symbol->debug);
+    error_number = gm_encode(gbdata, length, binary, reader, symbol->eci, &bin_len, symbol->debug);
     if (error_number != 0) {
         strcpy(symbol->errtxt, "531: Input data too long");
         return error_number;
     }
 
     /* Determine the size of the symbol */
-    data_cw = (int)strlen(binary) / 7;
+    data_cw = bin_len / 7; /* Binary length always a multiple of 7 */
 
     auto_layers = 13;
     for (i = 12; i > 0; i--) {
@@ -1011,8 +1085,7 @@ INTERNAL int grid_matrix(struct zint_symbol *symbol, const unsigned char source[
     auto_ecc_level = 3;
     if (layers == 1) {
         auto_ecc_level = 5;
-    }
-    if ((layers == 2) || (layers == 3)) {
+    } else if ((layers == 2) || (layers == 3)) {
         auto_ecc_level = 4;
     }
     ecc_level = auto_ecc_level;
@@ -1020,8 +1093,7 @@ INTERNAL int grid_matrix(struct zint_symbol *symbol, const unsigned char source[
     min_ecc_level = 1;
     if (layers == 1) {
         min_ecc_level = 4;
-    }
-    if (layers == 2) {
+    } else if (layers == 2) {
         min_ecc_level = 2;
     }
 
@@ -1033,7 +1105,8 @@ INTERNAL int grid_matrix(struct zint_symbol *symbol, const unsigned char source[
         }
     }
     if (data_cw > gm_data_codewords[(5 * (layers - 1)) + (ecc_level - 1)]) {
-        if (input_latch && ecc_level > min_ecc_level) { /* If layers user-specified (option_2), try reducing ECC level first */
+        /* If layers user-specified (option_2), try reducing ECC level first */
+        if (input_latch && ecc_level > min_ecc_level) {
             do {
                 ecc_level--;
             } while ((data_cw > gm_data_codewords[(5 * (layers - 1)) + (ecc_level - 1)]) && (ecc_level > min_ecc_level));
@@ -1041,7 +1114,8 @@ INTERNAL int grid_matrix(struct zint_symbol *symbol, const unsigned char source[
         while (data_cw > gm_data_codewords[(5 * (layers - 1)) + (ecc_level - 1)] && (layers < 13)) {
             layers++;
         }
-        while (data_cw > gm_data_codewords[(5 * (layers - 1)) + (ecc_level - 1)] && ecc_level > 1) { /* ECC min level 1 for layers > 2 */
+        /* ECC min level 1 for layers > 2 */
+        while (data_cw > gm_data_codewords[(5 * (layers - 1)) + (ecc_level - 1)] && ecc_level > 1) {
             ecc_level--;
         }
     }
@@ -1069,18 +1143,15 @@ INTERNAL int grid_matrix(struct zint_symbol *symbol, const unsigned char source[
 #endif
     size = 6 + (layers * 12);
     modules = 1 + (layers * 2);
+    size_squared = size * size;
 
 #ifndef _MSC_VER
-    char grid[size * size];
+    char grid[size_squared];
 #else
-    grid = (char *) _alloca((size * size) * sizeof (char));
+    grid = (char *) _alloca(size_squared * sizeof(char));
 #endif
 
-    for (x = 0; x < size; x++) {
-        for (y = 0; y < size; y++) {
-            grid[(y * size) + x] = '0';
-        }
-    }
+    memset(grid, '0', size_squared);
 
     place_data_in_grid(word, grid, modules, size);
     place_layer_id(grid, size, layers, modules, ecc_level);

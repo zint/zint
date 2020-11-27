@@ -304,6 +304,7 @@ extern "C" {
 #define ZINT_CAP_FIXED_RATIO    0x0100 /* Aspect ratio */
 #define ZINT_CAP_READER_INIT    0x0200
 #define ZINT_CAP_FULL_MULTIBYTE 0x0400
+#define ZINT_CAP_MASK           0x0800
 
 // Debug flags
 #define ZINT_DEBUG_PRINT        1

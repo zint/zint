@@ -193,14 +193,16 @@ static void ecc200placement(int *array, const int NR, const int NC) {
 static void ecc200(unsigned char *binary, const int bytes, const int datablock, const int rsblock, const int skew) {
     int blocks = (bytes + 2) / datablock, b;
     int n;
-    rs_init_gf(0x12d);
-    rs_init_code(rsblock, 1);
+    rs_t rs;
+
+    rs_init_gf(&rs, 0x12d);
+    rs_init_code(&rs, rsblock, 1);
     for (b = 0; b < blocks; b++) {
         unsigned char buf[256], ecc[256];
         int p = 0;
         for (n = b; n < bytes; n += blocks)
             buf[p++] = binary[n];
-        rs_encode(p, buf, ecc);
+        rs_encode(&rs, p, buf, ecc);
         p = rsblock - 1; // comes back reversed
         for (n = b; n < rsblock * blocks; n += blocks) {
             if (skew) {
@@ -216,7 +218,6 @@ static void ecc200(unsigned char *binary, const int bytes, const int datablock, 
             }
         }
     }
-    rs_free();
 }
 
 /* Return true (1) if a character is valid in X12 set */
@@ -1289,9 +1290,9 @@ static int data_matrix_200(struct zint_symbol *symbol,const unsigned char source
         unsigned char *grid;
         NC = W - 2 * (W / FW);
         NR = H - 2 * (H / FH);
-        places = (int*) malloc(NC * NR * sizeof (int));
+        places = (int *) malloc(sizeof(int) * NC * NR);
         ecc200placement(places, NR, NC);
-        grid = (unsigned char*) malloc(W * H);
+        grid = (unsigned char *) malloc((size_t) W * H);
         memset(grid, 0, W * H);
         for (y = 0; y < H; y += FH) {
             for (x = 0; x < W; x++)
@@ -1328,7 +1329,6 @@ static int data_matrix_200(struct zint_symbol *symbol,const unsigned char source
             //fprintf (stderr, "\n");
         }
         for (y = H - 1; y >= 0; y--) {
-            int x;
             for (x = 0; x < W; x++) {
                 if (grid[W * y + x]) {
                     set_module(symbol, (H - y) - 1, x);

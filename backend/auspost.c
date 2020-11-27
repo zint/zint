@@ -70,24 +70,24 @@ static inline char convert_pattern(char data, int shift) {
 
 /* Adds Reed-Solomon error correction to auspost */
 static void rs_error(char data_pattern[]) {
-    size_t reader, triple_writer = 0;
-    char triple[31];
+    int reader, len, triple_writer = 0;
+    unsigned char triple[31];
     unsigned char result[5];
+    rs_t rs;
 
-    for (reader = 2; reader < strlen(data_pattern); reader += 3, triple_writer++) {
+    for (reader = 2, len = (int) strlen(data_pattern); reader < len; reader += 3, triple_writer++) {
         triple[triple_writer] = convert_pattern(data_pattern[reader], 4)
                 + convert_pattern(data_pattern[reader + 1], 2)
                 + convert_pattern(data_pattern[reader + 2], 0);
     }
 
-    rs_init_gf(0x43);
-    rs_init_code(4, 1);
-    rs_encode(triple_writer, (unsigned char*) triple, result);
+    rs_init_gf(&rs, 0x43);
+    rs_init_code(&rs, 4, 1);
+    rs_encode(&rs, triple_writer, triple, result);
 
     for (reader = 4; reader > 0; reader--) {
         strcat(data_pattern, AusBarTable[(int) result[reader - 1]]);
     }
-    rs_free();
 }
 
 /* Handles Australia Posts's 4 State Codes */
@@ -168,7 +168,7 @@ INTERNAL int australia_post(struct zint_symbol *symbol, unsigned char source[], 
         localstr[zeroes] = '\0';
     }
 
-    strcat(localstr, (char*) source);
+    strncat(localstr, (char *) source, length);
     h = strlen(localstr);
     /* Verifiy that the first 8 characters are numbers */
     memcpy(dpid, localstr, 8);

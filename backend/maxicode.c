@@ -43,18 +43,18 @@ static void maxi_do_primary_check(int maxi_codeword[144]) {
     int j;
     int datalen = 10;
     int ecclen = 10;
+    rs_t rs;
 
-    rs_init_gf(0x43);
-    rs_init_code(ecclen, 1);
+    rs_init_gf(&rs, 0x43);
+    rs_init_code(&rs, ecclen, 1);
 
     for (j = 0; j < datalen; j += 1)
         data[j] = maxi_codeword[j];
 
-    rs_encode(datalen, data, results);
+    rs_encode(&rs, datalen, data, results);
 
     for (j = 0; j < ecclen; j += 1)
         maxi_codeword[ datalen + j] = results[ecclen - 1 - j];
-    rs_free();
 }
 
 /* Handles error correction of odd characters in secondary */
@@ -63,9 +63,10 @@ static void maxi_do_secondary_chk_odd(int maxi_codeword[144], int ecclen) {
     unsigned char results[30];
     int j;
     int datalen = 68;
+    rs_t rs;
 
-    rs_init_gf(0x43);
-    rs_init_code(ecclen, 1);
+    rs_init_gf(&rs, 0x43);
+    rs_init_code(&rs, ecclen, 1);
 
     if (ecclen == 20)
         datalen = 84;
@@ -74,11 +75,10 @@ static void maxi_do_secondary_chk_odd(int maxi_codeword[144], int ecclen) {
         if (j & 1) // odd
             data[(j - 1) / 2] = maxi_codeword[j + 20];
 
-    rs_encode(datalen / 2, data, results);
+    rs_encode(&rs, datalen / 2, data, results);
 
     for (j = 0; j < (ecclen); j += 1)
         maxi_codeword[ datalen + (2 * j) + 1 + 20 ] = results[ecclen - 1 - j];
-    rs_free();
 }
 
 /* Handles error correction of even characters in secondary */
@@ -87,22 +87,22 @@ static void maxi_do_secondary_chk_even(int maxi_codeword[144], int ecclen) {
     unsigned char results[30];
     int j;
     int datalen = 68;
+    rs_t rs;
 
     if (ecclen == 20)
         datalen = 84;
 
-    rs_init_gf(0x43);
-    rs_init_code(ecclen, 1);
+    rs_init_gf(&rs, 0x43);
+    rs_init_code(&rs, ecclen, 1);
 
     for (j = 0; j < datalen + 1; j += 1)
         if (!(j & 1)) // even
             data[j / 2] = maxi_codeword[j + 20];
 
-    rs_encode(datalen / 2, data, results);
+    rs_encode(&rs, datalen / 2, data, results);
 
     for (j = 0; j < (ecclen); j += 1)
         maxi_codeword[ datalen + (2 * j) + 20] = results[ecclen - 1 - j];
-    rs_free();
 }
 
 /* Moves everything up so that a shift or latch can be inserted */

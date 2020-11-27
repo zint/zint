@@ -82,7 +82,7 @@ static int buffer_plot(struct zint_symbol *symbol, unsigned char *pixelbuf) {
         NULL, blue, cyan, NULL, NULL, NULL, green, NULL, NULL, NULL, black, NULL, magenta, /* A-M */
         NULL, NULL, NULL, NULL, red, NULL, NULL, NULL, NULL, white, NULL, yellow, NULL /* N-Z */
     };
-    int row, column, p;
+    int row, column;
     int plot_alpha = 0;
     unsigned char *bitmap;
 
@@ -130,7 +130,7 @@ static int buffer_plot(struct zint_symbol *symbol, unsigned char *pixelbuf) {
             return ZINT_ERROR_MEMORY;
         }
         for (row = 0; row < symbol->bitmap_height; row++) {
-            p = row * symbol->bitmap_width;
+            int p = row * symbol->bitmap_width;
             bitmap = symbol->bitmap + p * 3;
             for (column = 0; column < symbol->bitmap_width; column++, p++, bitmap += 3) {
                 memcpy(bitmap, map[pixelbuf[p]], 3);
@@ -139,10 +139,11 @@ static int buffer_plot(struct zint_symbol *symbol, unsigned char *pixelbuf) {
         }
     } else {
         for (row = 0; row < symbol->bitmap_height; row++) {
-            p = row * symbol->bitmap_width;
-            bitmap = symbol->bitmap + p * 3;
-            for (column = 0; column < symbol->bitmap_width; column++, p++, bitmap += 3) {
-                memcpy(bitmap, map[pixelbuf[p]], 3);
+            int r = row * symbol->bitmap_width;
+            unsigned char *pb = pixelbuf + r;
+            bitmap = symbol->bitmap + r * 3;
+            for (column = 0; column < symbol->bitmap_width; column++, pb++, bitmap += 3) {
+                memcpy(bitmap, map[*pb], 3);
             }
         }
     }
@@ -470,7 +471,6 @@ static void draw_string(unsigned char *pixbuf, unsigned char input_string[], int
         if (odd_si) {
             x_incr += i * letter_width / 2;
         }
-        // NOLINTNEXTLINE(clang-analyzer-core.CallAndMessage) suppress (probable) false positive about 2nd arg input_string[i] being uninitialized
         draw_letter(pixbuf, input_string[i], string_left_hand + x_incr, yposn, textflags, image_width, image_height, si);
     }
 }
@@ -1063,7 +1063,7 @@ static int plot_raster_default(struct zint_symbol *symbol, int rotate_angle, int
         }
 
         if (!textdone) {
-            unsigned char local_text[sizeof(symbol->text)];
+            unsigned char local_text[sizeof(symbol->text)] = {0}; /* Suppress clang-analyzer-core.CallAndMessage warning */
             to_iso8859_1(symbol->text, local_text);
             /* Put the human readable text at the bottom */
             textpos = (main_width / 2 + xoffset) * si;

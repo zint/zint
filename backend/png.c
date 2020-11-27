@@ -196,10 +196,10 @@ INTERNAL int png_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     /* Pixel Plotting */
     incr = use_alpha ? 4 : 3;
     for (row = 0; row < symbol->bitmap_height; row++) {
-        int p = symbol->bitmap_width * row;
+        unsigned char *pb = pixelbuf + symbol->bitmap_width * row;
         image_data = outdata;
-        for (column = 0; column < symbol->bitmap_width; column++, p++, image_data += incr) {
-            memcpy(image_data, map[pixelbuf[p]], incr);
+        for (column = 0; column < symbol->bitmap_width; column++, pb++, image_data += incr) {
+            memcpy(image_data, map[*pb], incr);
         }
         /* write row contents to file */
         png_write_row(png_ptr, outdata);

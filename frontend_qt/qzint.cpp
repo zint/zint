@@ -173,6 +173,10 @@ namespace Zint {
         m_option_2 = option;
     }
 
+    int QZint::option3() const {
+        return m_option_3;
+    }
+
     void QZint::setOption3(int option) {
         m_option_3 = option;
     }

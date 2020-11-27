@@ -1259,6 +1259,7 @@ ZINT_CAP_FIXED_RATIO     |  Does the symbology have a fixed width-to-height
                          |     (aspect) ratio?
 ZINT_CAP_READER_INIT     |  Does the symbology support Reader Initialisation?
 ZINT_CAP_FULL_MULTIBYTE  |  Is the ZINT_FULL_MULTIBYTE option applicable?
+ZINT_CAP_MASK            |  Is mask selection applicable?
 -------------------------------------------------------------------------------
 
 For example:
@@ -2172,6 +2173,12 @@ Non-ASCII data density may be maximized by using the --fullmultibyte switch or
 by setting option_3 to ZINT_FULL_MULTIBYTE, but check that your barcode reader
 supports this before using.
 
+QR Code has eight different masks designed to minimize unwanted patterns. The
+best mask to use is selected automatically by Zint but may be manually specified
+by using the --mask= switch with values 0-7, or by setting option_3 to
+(N + 1) << 8 where N is 0-7. To use with ZINT_FULL_MULTIBYTE set option_3 =
+ZINT_FULL_MULTIBYTE | (N + 1) << 8.
+
 6.6.3 Micro QR Code (ISO 18004)
 -------------------------------
 A miniature version of the QR Code symbol for short messages. ECC levels can be
@@ -2194,6 +2201,12 @@ Input  |  Version  |  Symbol Size
 
 For barcode readers that support it, non-ASCII data density may be maximized by
 using the --fullmultibyte switch or by setting option_3 to ZINT_FULL_MULTIBYTE.
+
+Micro QR Code has four different masks designed to minimize unwanted patterns.
+The best mask to use is selected automatically by Zint but may be manually
+specified by using the --mask= switch with values 0-3, or by setting option_3
+to (N + 1) << 8 where N is 0-3. To use with ZINT_FULL_MULTIBYTE set option_3 =
+ZINT_FULL_MULTIBYTE | (N + 1) << 8.
 
 6.6.4 Rectangular Micro QR Code (rMQR)
 --------------------------------------
@@ -2426,7 +2439,7 @@ Annex A.
 A matrix symbology developed by Ted Williams in 1992 which encodes data in a
 way similar to Data Matrix. Code One is able to encode the Latin-1
 character set or GS1 data. There are two types of Code One symbol - variable
-height symbols which are roughly square (versions A thought to H) and
+height symbols which are roughly square (versions A through to H) and
 fixed-height versions (version S and T). These can be selected by using --vers=
 or setting option_2 as shown in the table below:
 
@@ -2622,6 +2635,12 @@ Mode  |  Recovery Capacity
 Non-ASCII data density may be maximized by using the --fullmultibyte switch or
 by setting option_3 to ZINT_FULL_MULTIBYTE, but check that your barcode reader
 supports this before using.
+
+Han Xin has four different masks designed to minimize unwanted patterns. The
+best mask to use is selected automatically by Zint but may be manually specified
+by using the --mask= switch with values 0-3, or by setting option_3 to
+(N + 1) << 8 where N is 0-3. To use with ZINT_FULL_MULTIBYTE set option_3 =
+ZINT_FULL_MULTIBYTE | (N + 1) << 8.
 
 6.6.13 Ultracode
 ----------------

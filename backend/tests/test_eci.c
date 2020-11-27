@@ -42,6 +42,7 @@ static void test_bom(int debug) {
     symbol->input_mode = UNICODE_MODE;
     symbol->option_1 = 4;
     symbol->option_2 = 1;
+    symbol->option_3 = 5 << 8; // Mask 100 (instead of automatic 010)
     symbol->debug |= debug;
 
     char data[] = "\xEF\xBB\xBF‹"; // U+FEFF BOM, with U+2039 (only in Windows pages)

@@ -168,8 +168,8 @@ static void test_print(int index, int generate, int debug) {
     };
     int data_size = ARRAY_SIZE(data);
 
-    char* data_dir = "../data/png";
-    char* png = "out.png";
+    char *data_dir = "../data/png";
+    char *png = "out.png";
     char escaped[1024];
     int escaped_size = 1024;
     char *text;

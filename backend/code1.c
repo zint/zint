@@ -560,7 +560,6 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigne
                 }
 
                 if ((length - sp) >= 8) {
-                    int latch = 0;
                     j = 0;
 
                     for (i = 0; i < 8; i++) {
@@ -663,7 +662,6 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigne
                 }
 
                 if ((length - sp) >= 8) {
-                    int latch = 0;
                     j = 0;
 
                     for (i = 0; i < 8; i++) {
@@ -764,7 +762,6 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigne
                 }
 
                 if ((length - sp) >= 8) {
-                    int latch = 0;
                     j = 0;
 
                     for (i = 0; i < 8; i++) {
@@ -1163,13 +1160,15 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigne
         strcpy(symbol->errtxt, "512: Input data too long");
         return 0;
     }
-    /*
-    printf("targets:\n");
-    for(i = 0; i < tp; i++) {
-            printf("[%d]", target[i]);
+
+    if (symbol->debug & ZINT_DEBUG_PRINT) {
+        printf("Target:");
+        for (i = 0; i < tp; i++) {
+            printf(" [%d]", target[i]);
+        }
+        printf("\n");
     }
-    printf("\n");
-     */
+
     return tp;
 }
 
@@ -1191,6 +1190,7 @@ INTERNAL int code_one(struct zint_symbol *symbol, unsigned char source[], int le
     char datagrid[136][120];
     int row, col;
     int sub_version = 0;
+    rs_t rs;
 
     if ((symbol->option_2 < 0) || (symbol->option_2 > 10)) {
         strcpy(symbol->errtxt, "513: Invalid symbol size");
@@ -1239,10 +1239,9 @@ INTERNAL int code_one(struct zint_symbol *symbol, unsigned char source[], int le
 
         large_uint_array(&elreg, data, codewords, 5 /*bits*/);
 
-        rs_init_gf(0x25);
-        rs_init_code(codewords, 1);
-        rs_encode_long(codewords, data, ecc);
-        rs_free();
+        rs_init_gf(&rs, 0x25);
+        rs_init_code(&rs, codewords, 1);
+        rs_encode_uint(&rs, codewords, data, ecc);
 
         for (i = 0; i < codewords; i++) {
             stream[i] = data[i];
@@ -1344,10 +1343,9 @@ INTERNAL int code_one(struct zint_symbol *symbol, unsigned char source[], int le
         }
 
         /* Calculate error correction data */
-        rs_init_gf(0x12d);
-        rs_init_code(ecc_cw, 1);
-        rs_encode_long(data_cw, data, ecc);
-        rs_free();
+        rs_init_gf(&rs, 0x12d);
+        rs_init_code(&rs, ecc_cw, 1);
+        rs_encode_uint(&rs, data_cw, data, ecc);
 
         /* "Stream" combines data and error correction data */
         for (i = 0; i < data_cw; i++) {
@@ -1446,19 +1444,18 @@ INTERNAL int code_one(struct zint_symbol *symbol, unsigned char source[], int le
 
         data_blocks = c1_blocks[size - 1];
 
-        rs_init_gf(0x12d);
-        rs_init_code(c1_ecc_blocks[size - 1], 0);
+        rs_init_gf(&rs, 0x12d);
+        rs_init_code(&rs, c1_ecc_blocks[size - 1], 0);
         for (i = 0; i < data_blocks; i++) {
             for (j = 0; j < c1_data_blocks[size - 1]; j++) {
 
                 sub_data[j] = data[j * data_blocks + i];
             }
-            rs_encode_long(c1_data_blocks[size - 1], sub_data, sub_ecc);
+            rs_encode_uint(&rs, c1_data_blocks[size - 1], sub_data, sub_ecc);
             for (j = 0; j < c1_ecc_blocks[size - 1]; j++) {
                 ecc[c1_ecc_length[size - 1] - (j * data_blocks + i) - 1] = sub_ecc[j];
             }
         }
-        rs_free();
 
         /* "Stream" combines data and error correction data */
         for (i = 0; i < data_length; i++) {
