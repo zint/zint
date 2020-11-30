@@ -1,7 +1,7 @@
 # (c) 2008 by BogDan Vatra < bogdan@licentia.eu >
 # vim: set ts=4 sw=4 et :
 
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.5)
 project(zint-package)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
