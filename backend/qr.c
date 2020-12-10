@@ -1069,6 +1069,7 @@ static int evaluate(unsigned char *local, const int size) {
     }
 
     /* Horizontal */
+    dark_mods = 0; /* Count dark mods simultaneously (see Test 4 below) */
     for (y = 0; y < size; y++) {
         r = y * size;
         block = 0;
@@ -1082,6 +1083,9 @@ static int evaluate(unsigned char *local, const int size) {
                 }
                 block = 1;
                 state = local[r + x];
+            }
+            if (state) {
+                dark_mods++;
             }
         }
         if (block >= 5) {
@@ -1097,7 +1101,6 @@ static int evaluate(unsigned char *local, const int size) {
 #endif
 
     /* Test 2: Block of modules in same color */
-    dark_mods = 0; /* Count dark mods simultaneously (see Test 4 below) */
     for (x = 0; x < size - 1; x++) {
         for (y = 0; y < size - 1; y++) {
             k = local[(y * size) + x];
@@ -1105,9 +1108,6 @@ static int evaluate(unsigned char *local, const int size) {
                     (k == local[(y * size) + (x + 1)])) &&
                     (k == local[((y + 1) * size) + (x + 1)])) {
                 result += 3;
-            }
-            if (k) {
-                dark_mods++;
             }
         }
     }
@@ -1215,11 +1215,7 @@ static int evaluate(unsigned char *local, const int size) {
 
     /* Test 4: Proportion of dark modules in entire symbol */
     percentage = (100.0 * dark_mods) / (size * size);
-    if (percentage < 50.0) {
-        k = (int) ceil(((100.0 - percentage) - 50.0) / 5.0);
-    } else {
-        k = (int) ceil((percentage - 50.0) / 5.0);
-    }
+    k = (int) (fabs(percentage - 50.0) / 5.0);
 
     result += 10 * k;
 

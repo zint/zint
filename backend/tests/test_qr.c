@@ -87,6 +87,7 @@ static void test_qr_options(int index, int debug) {
     for (int i = 0; i < data_size; i++) {
 
         if (index != -1 && i != index) continue;
+        if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d\n", i);
 
         struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -242,6 +243,7 @@ static void test_qr_input(int index, int generate, int debug) {
     for (int i = 0; i < data_size; i++) {
 
         if (index != -1 && i != index) continue;
+        if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d\n", i);
 
         struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -302,6 +304,7 @@ static void test_qr_gs1(int index, int generate, int debug) {
     for (int i = 0; i < data_size; i++) {
 
         if (index != -1 && i != index) continue;
+        if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d\n", i);
 
         struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -380,6 +383,7 @@ static void test_qr_optimize(int index, int generate, int debug) {
     for (int i = 0; i < data_size; i++) {
 
         if (index != -1 && i != index) continue;
+        if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d\n", i);
 
         struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -1195,12 +1199,36 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000100100111010000"
                     "111111100011001000110"
                 },
+        /* 19*/ { BARCODE_QRCODE, UNICODE_MODE, 2, 1, -1, "1234567890", 0, 21, 21, "test_print example, automatic mask 001 (same score as mask 010)",
+                    "111111101001101111111"
+                    "100000100100101000001"
+                    "101110101001001011101"
+                    "101110100101101011101"
+                    "101110100001101011101"
+                    "100000101101101000001"
+                    "111111101010101111111"
+                    "000000000000100000000"
+                    "101000110010000100101"
+                    "101010001111011101011"
+                    "111010101101110110010"
+                    "110111010101011100011"
+                    "110111110101111111001"
+                    "000000001010000000000"
+                    "111111101110001000010"
+                    "100000100000100010001"
+                    "101110100110001000111"
+                    "101110100111011001000"
+                    "101110101101110110111"
+                    "100000100001011000010"
+                    "111111101011111111111"
+                },
     };
     int data_size = ARRAY_SIZE(data);
 
     for (int i = 0; i < data_size; i++) {
 
         if (index != -1 && i != index) continue;
+        if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d\n", i);
 
         struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
