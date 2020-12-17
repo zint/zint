@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>461</width>
-    <height>237</height>
+    <height>256</height>
    </rect>
   </property>
   <property name="maximumSize">
@@ -30,6 +30,9 @@
        <property name="checked">
         <bool>true</bool>
        </property>
+       <attribute name="buttonGroup">
+        <string notr="true">buttonGroupAztecSizeECC</string>
+       </attribute>
       </widget>
      </item>
      <item row="1" column="0">
@@ -37,6 +40,9 @@
        <property name="text">
         <string>Adjust Si&amp;ze To:</string>
        </property>
+       <attribute name="buttonGroup">
+        <string notr="true">buttonGroupAztecSizeECC</string>
+       </attribute>
       </widget>
      </item>
      <item row="1" column="1">
@@ -66,162 +72,162 @@
        </item>
        <item>
         <property name="text">
-         <string>19 x 19</string>
+         <string>19 x 19 (1 Layer)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>23 x 23</string>
+         <string>23 x 23 (2 Layers)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>27 x 27</string>
+         <string>27 x 27 (3 Layers)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>31 x 31</string>
+         <string>31 x 31 (4 Layers)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>37 x 37</string>
+         <string>37 x 37 (5 Layers)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>41 x 41</string>
+         <string>41 x 41 (6 Layers)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>45 x 45</string>
+         <string>45 x 45 (7 Layers)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>49 x 49</string>
+         <string>49 x 49 (8 Layers)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>53 x 53</string>
+         <string>53 x 53 (9 Layers)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>57 x 57</string>
+         <string>57 x 57 (10 Layers)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>61 x 61</string>
+         <string>61 x 61 (11 Layers)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>67 x 67</string>
+         <string>67 x 67 (12 Layers)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>71 x 71</string>
+         <string>71 x 71 (13 Layers)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>75 x 75</string>
+         <string>75 x 75 (14 Layers)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>79 x 79</string>
+         <string>79 x 79 (15 Layers)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>83 x 83</string>
+         <string>83 x 83 (16 Layers)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>87 x 87</string>
+         <string>87 x 87 (17 Layers)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>91 x 91</string>
+         <string>91 x 91 (18 Layers)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>95 x 95</string>
+         <string>95 x 95 (19 Layers)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>101 x 101</string>
+         <string>101 x 101 (20 Layers)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>105 x 105</string>
+         <string>105 x 105 (21 Layers)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>109 x 109</string>
+         <string>109 x 109 (22 Layers)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>113 x 113</string>
+         <string>113 x 113 (23 Layers)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>117 x 117</string>
+         <string>117 x 117 (24 Layers)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>121 x 121</string>
+         <string>121 x 121 (25 Layers)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>125 x 125</string>
+         <string>125 x 125 (26 Layers)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>131 x 131</string>
+         <string>131 x 131 (27 Layers)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>135 x 135</string>
+         <string>135 x 135 (28 Layers)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>139 x 139</string>
+         <string>139 x 139 (29 Layers)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>143 x 143</string>
+         <string>143 x 143 (30 Layers)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>147 x 147</string>
+         <string>147 x 147 (31 Layers)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>151 x 151</string>
+         <string>151 x 151 (32 Layers)</string>
         </property>
        </item>
       </widget>
@@ -231,6 +237,9 @@
        <property name="text">
         <string>Add Minimum E&amp;rror Correction:</string>
        </property>
+       <attribute name="buttonGroup">
+        <string notr="true">buttonGroupAztecSizeECC</string>
+       </attribute>
       </widget>
      </item>
      <item row="2" column="1">
@@ -351,4 +360,7 @@
    </hints>
   </connection>
  </connections>
+ <buttongroups>
+  <buttongroup name="buttonGroupAztecSizeECC"/>
+ </buttongroups>
 </ui>
