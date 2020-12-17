@@ -754,11 +754,11 @@ static int avoidReferenceGrid(int output) {
 }
 
 /* Calculate the position of the bits in the grid */
-static void populate_map(int AztecMap[]) {
+static void populate_map(short AztecMap[]) {
     int layer, n, i;
     int x, y;
 
-    memset(AztecMap, 0, sizeof(int) * AZTEC_MAP_SIZE);
+    memset(AztecMap, 0, sizeof(short) * AZTEC_MAP_SIZE);
 
     for (layer = 1; layer < 33; layer++) {
         const int start = (112 * (layer - 1)) + (16 * (layer - 1) * (layer - 1)) + 2;
@@ -872,7 +872,7 @@ INTERNAL int aztec(struct zint_symbol *symbol, unsigned char source[], int lengt
     int x, y, i, j, p, data_blocks, ecc_blocks, layers, total_bits;
     char binary_string[AZTEC_BIN_CAPACITY + 1], bit_pattern[20045], descriptor[42];
     char adjusted_string[AZTEC_MAX_CAPACITY + 1];
-    int AztecMap[AZTEC_MAP_SIZE];
+    short AztecMap[AZTEC_MAP_SIZE];
     unsigned char desc_data[4], desc_ecc[6];
     int error_number, ecc_level, compact, data_length, data_maxsize, codeword_size, adjusted_length;
     int remainder, padbits, count, gs1, adjustment_size;
