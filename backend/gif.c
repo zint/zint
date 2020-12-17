@@ -310,22 +310,6 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     lzwoutbuf = (char *) _alloca(lzoutbufSize);
 #endif /* _MSC_VER */
 
-    /* Open output file in binary mode */
-    if ((symbol->output_options & BARCODE_STDOUT) != 0) {
-#ifdef _MSC_VER
-        if (-1 == _setmode(_fileno(stdout), _O_BINARY)) {
-            strcpy(symbol->errtxt, "610: Can't open output file");
-            return ZINT_ERROR_FILE_ACCESS;
-        }
-#endif
-        gif_file = stdout;
-    } else {
-        if (!(gif_file = fopen(symbol->outfile, "wb"))) {
-            strcpy(symbol->errtxt, "611: Can't open output file");
-            return ZINT_ERROR_FILE_ACCESS;
-        }
-    }
-
     /*
      * Build a table of the used palette items.
      * Currently, there are the following 10 colour codes:
@@ -480,6 +464,22 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
 
     /* palette size 2 ^ bit size */
     paletteSize = 1<<paletteBitSize;
+
+    /* Open output file in binary mode */
+    if ((symbol->output_options & BARCODE_STDOUT) != 0) {
+#ifdef _MSC_VER
+        if (-1 == _setmode(_fileno(stdout), _O_BINARY)) {
+            strcpy(symbol->errtxt, "610: Can't open output file");
+            return ZINT_ERROR_FILE_ACCESS;
+        }
+#endif
+        gif_file = stdout;
+    } else {
+        if (!(gif_file = fopen(symbol->outfile, "wb"))) {
+            strcpy(symbol->errtxt, "611: Can't open output file");
+            return ZINT_ERROR_FILE_ACCESS;
+        }
+    }
 
     /* GIF signature (6) */
     memcpy(outbuf, "GIF87a", 6);
