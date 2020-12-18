@@ -56,7 +56,7 @@ static char *exec(const char *cmd, char *buf, int buf_size, int debug, int index
     if (cnt) {
         if (buf[cnt - 1] == '\r' || buf[cnt - 1] == '\n') {
             buf[cnt - 1] = '\0';
-            if (buf[cnt - 2] == '\r' || buf[cnt - 2] == '\n') {
+            if (cnt > 1 && (buf[cnt - 2] == '\r' || buf[cnt - 2] == '\n')) {
                 buf[cnt - 2] = '\0';
             }
         }
@@ -93,18 +93,20 @@ static int arg_input(char *cmd, const char *filename, const char *input) {
     FILE *fp;
     int cnt;
     if (input != NULL) {
-        fp = fopen(filename, "wb");
-        if (!fp) {
-            fprintf(stderr, "arg_input: failed to open '%s' for writing\n", filename);
-            return 0;
-        }
-        cnt = fwrite(input, 1, strlen(input), fp);
-        if (cnt != (int) strlen(input)) {
-            fprintf(stderr, "arg_input: failed to write %d bytes, cnt %d written (%s)\n", (int) strlen(input), cnt, filename);
+        if (strcmp(input, "-") != 0) {
+            fp = fopen(filename, "wb");
+            if (!fp) {
+                fprintf(stderr, "arg_input: failed to open '%s' for writing\n", filename);
+                return 0;
+            }
+            cnt = fwrite(input, 1, strlen(input), fp);
+            if (cnt != (int) strlen(input)) {
+                fprintf(stderr, "arg_input: failed to write %d bytes, cnt %d written (%s)\n", (int) strlen(input), cnt, filename);
+                fclose(fp);
+                return 0;
+            }
             fclose(fp);
-            return 0;
         }
-        fclose(fp);
         sprintf(cmd + (int) strlen(cmd), "%s-i '%s'", strlen(cmd) ? " " : "", filename);
         return 1;
     }
@@ -279,7 +281,7 @@ static void test_dump_args(int index, int debug) {
     }
 
     testFinish();
-} 
+}
 
 static void test_input(int index, int debug) {
 
@@ -348,7 +350,50 @@ static void test_input(int index, int debug) {
     }
 
     testFinish();
-} 
+}
+
+static void test_stdin_input(int index, int debug) {
+
+    testStart("");
+
+    struct item {
+        int b;
+        char *data;
+        char *input;
+        char *outfile;
+    };
+    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    struct item data[] = {
+        /*  0*/ { BARCODE_CODE128, "123", "-", "test_stdin_input.png" },
+    };
+    int data_size = ARRAY_SIZE(data);
+
+    char cmd[4096];
+    char buf[4096];
+
+    char *input_filename = "-";
+
+    for (int i = 0; i < data_size; i++) {
+
+        if (index != -1 && i != index) continue;
+
+        sprintf(cmd, "echo '%s' | zint", data[i].data);
+        if (debug & ZINT_DEBUG_PRINT) {
+            strcat(cmd, " --verbose");
+        }
+
+        arg_int(cmd, "-b ", data[i].b);
+        arg_input(cmd, input_filename, data[i].input);
+        arg_data(cmd, "-o ", data[i].outfile);
+
+        assert_nonnull(exec(cmd, buf, sizeof(buf) - 1, debug, i), "i:%d exec(%s) NULL\n", i, cmd);
+
+        assert_nonzero(testUtilExists(data[i].outfile), "i:%d testUtilExists(%s) != 1\n", i, data[i].outfile);
+        //assert_zero(remove(data[i].outfile), "i:%d remove(%s) != 0 (%d)\n", i, data[i].outfile, errno);
+    }
+
+    testFinish();
+}
 
 // Note ordering of `--batch` before/after data/input args affects error messages
 static void test_batch_input(int index, int debug) {
@@ -407,7 +452,7 @@ static void test_batch_input(int index, int debug) {
     }
 
     testFinish();
-} 
+}
 
 static void test_batch_large(int index, int debug) {
 
@@ -465,7 +510,7 @@ static void test_batch_large(int index, int debug) {
     }
 
     testFinish();
-} 
+}
 
 static void test_checks(int index, int debug) {
 
@@ -566,13 +611,14 @@ static void test_checks(int index, int debug) {
     }
 
     testFinish();
-} 
+}
 
 int main(int argc, char *argv[]) {
 
     testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
         { "test_dump_args", test_dump_args, 1, 0, 1 },
         { "test_input", test_input, 1, 0, 1 },
+        { "test_stdin_input", test_stdin_input, 1, 0, 1 },
         { "test_batch_input", test_batch_input, 1, 0, 1 },
         { "test_batch_large", test_batch_large, 1, 0, 1 },
         { "test_checks", test_checks, 1, 0, 1 },

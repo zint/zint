@@ -1536,6 +1536,7 @@ int ZBarcode_Encode_and_Buffer_Vector(struct zint_symbol *symbol, unsigned char 
 
 int ZBarcode_Encode_File(struct zint_symbol *symbol, char *filename) {
     FILE *file;
+    int file_opened = 0;
     unsigned char *buffer;
     long fileLen;
     size_t n;
@@ -1552,7 +1553,7 @@ int ZBarcode_Encode_File(struct zint_symbol *symbol, char *filename) {
 
     if (!strcmp(filename, "-")) {
         file = stdin;
-        fileLen = 7900;
+        fileLen = ZINT_MAX_FILE_LEN;
     } else {
         file = fopen(filename, "rb");
         if (!file) {
@@ -1560,21 +1561,21 @@ int ZBarcode_Encode_File(struct zint_symbol *symbol, char *filename) {
             error_tag(symbol->errtxt, ZINT_ERROR_INVALID_DATA);
             return ZINT_ERROR_INVALID_DATA;
         }
+        file_opened = 1;
 
         /* Get file length */
         fseek(file, 0, SEEK_END);
         fileLen = ftell(file);
         fseek(file, 0, SEEK_SET);
 
-        if (fileLen > 7900 && fileLen != LONG_MAX) { /* On many Linux distros ftell() returns LONG_MAX not -1 on error */
-            /* The largest amount of data that can be encoded is 7827 numeric digits in Han Xin Code */
-            strcpy(symbol->errtxt, "230: Input file too long");
+        if (fileLen <= 0 || fileLen == LONG_MAX) { /* On many Linux distros ftell() returns LONG_MAX not -1 on error */
+            strcpy(symbol->errtxt, "235: Input file empty or unseekable");
             error_tag(symbol->errtxt, ZINT_ERROR_INVALID_DATA);
             fclose(file);
             return ZINT_ERROR_INVALID_DATA;
         }
-        if (fileLen <= 0 || fileLen == LONG_MAX) {
-            strcpy(symbol->errtxt, "235: Input file empty or unseekable");
+        if (fileLen > ZINT_MAX_FILE_LEN) {
+            strcpy(symbol->errtxt, "230: Input file too long");
             error_tag(symbol->errtxt, ZINT_ERROR_INVALID_DATA);
             fclose(file);
             return ZINT_ERROR_INVALID_DATA;
@@ -1586,7 +1587,7 @@ int ZBarcode_Encode_File(struct zint_symbol *symbol, char *filename) {
     if (!buffer) {
         strcpy(symbol->errtxt, "231: Internal memory error");
         error_tag(symbol->errtxt, ZINT_ERROR_MEMORY);
-        if (strcmp(filename, "-")) {
+        if (file_opened) {
             fclose(file);
         }
         return ZINT_ERROR_MEMORY;
@@ -1599,7 +1600,7 @@ int ZBarcode_Encode_File(struct zint_symbol *symbol, char *filename) {
         if (ferror(file)) {
             sprintf(symbol->errtxt, "241: Input file read error (%.30s)", strerror(errno));
             error_tag(symbol->errtxt, ZINT_ERROR_INVALID_DATA);
-            if (strcmp(filename, "-")) {
+            if (file_opened) {
                 fclose(file);
             }
             free(buffer);
@@ -1608,7 +1609,7 @@ int ZBarcode_Encode_File(struct zint_symbol *symbol, char *filename) {
         nRead += n;
     } while (!feof(file) && (0 < n) && (nRead < fileLen));
 
-    if (strcmp(filename, "-")) {
+    if (file_opened) {
         fclose(file);
     }
     ret = ZBarcode_Encode(symbol, buffer, nRead);
