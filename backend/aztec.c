@@ -870,7 +870,10 @@ static void populate_map(short AztecMap[]) {
 
 INTERNAL int aztec(struct zint_symbol *symbol, unsigned char source[], int length) {
     int x, y, i, j, p, data_blocks, ecc_blocks, layers, total_bits;
-    char binary_string[AZTEC_BIN_CAPACITY + 1], bit_pattern[20045], descriptor[42];
+    char bit_pattern[20045]; /* Note 20045 > AZTEC_BIN_CAPACITY + 1 */
+    /* To lessen stack usage, share binary_string buffer with bit_pattern, as accessed separately */
+    char *binary_string = bit_pattern;
+    char descriptor[42];
     char adjusted_string[AZTEC_MAX_CAPACITY + 1];
     short AztecMap[AZTEC_MAP_SIZE];
     unsigned char desc_data[4], desc_ecc[6];
