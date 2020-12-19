@@ -63,6 +63,7 @@ static void test_print(int index, int generate, int debug) {
         /*  1*/ { BARCODE_QRCODE, 2, 1, -1, "1234567890", "qr_v1_m" },
         /*  2*/ { BARCODE_DOTCODE, -1, -1, 5, "2741", "dotcode_aim_fig7" },
         /*  3*/ { BARCODE_ULTRA, -1, -1, -1, "A", "ultracode_a" },
+        /*  4*/ { BARCODE_MAXICODE, -1, -1, -1, "THIS IS A 93 CHARACTER CODE SET A MESSAGE THAT FILLS A MODE 4, UNAPPENDED, MAXICODE SYMBOL...", "maxicode_fig_2" },
     };
     int data_size = sizeof(data) / sizeof(struct item);
 

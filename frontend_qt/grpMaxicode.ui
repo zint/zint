@@ -35,22 +35,6 @@
        </property>
       </widget>
      </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="lblMaxiPrimary">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="text">
-        <string>P&amp;rimary Message:</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-       </property>
-       <property name="buddy">
-        <cstring>txtMaxiPrimary</cstring>
-       </property>
-      </widget>
-     </item>
      <item row="0" column="1">
       <widget class="QComboBox" name="cmbMaxiMode">
        <property name="sizePolicy">
@@ -84,6 +68,30 @@
        </item>
       </widget>
      </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="lblMaxiPrimary">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>P&amp;rimary Message:</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+       </property>
+       <property name="buddy">
+        <cstring>txtMaxiPrimary</cstring>
+       </property>
+       <property name="toolTip">
+        <string>Format &quot;PPPPPPPPPCCCSSS&quot; where
+P is postcode of up to 9 digits for Mode 2 or
+6 alphanumerics for Mode 3 (will truncate) and
+C is 3-digit country code
+S is 3-digit service class
+(ignored if disabled)</string>
+       </property>
+      </widget>
+     </item>
      <item row="1" column="1">
       <widget class="QLineEdit" name="txtMaxiPrimary">
        <property name="enabled">
@@ -97,6 +105,63 @@
        </property>
        <property name="text">
         <string>Primary Message Here!</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QCheckBox" name="chkMaxiSCMVV">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>Enable S&amp;CM Prefix</string>
+       </property>
+       <property name="toolTip">
+        <string>Prefix Secondary Carrier Message with &quot;[)&gt;\R01\Gvv&quot;
+where &quot;vv&quot; is version given below
+(ignored if disabled)</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="lblMaxiSCMVV">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>SCM Pre&amp;fix Version:</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+       </property>
+       <property name="buddy">
+        <cstring>spnMaxiSCMVV</cstring>
+       </property>
+       <property name="toolTip">
+        <string>Version &quot;vv&quot; to place at end of SCM prefix (default 96)
+(ignored if disabled)</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QSpinBox" name="spnMaxiSCMVV">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="suffix">
+        <string/>
+       </property>
+       <property name="prefix">
+        <string/>
+       </property>
+       <property name="minimum">
+        <number>0</number>
+       </property>
+       <property name="maximum">
+        <number>99</number>
+       </property>
+       <property name="value">
+        <number>96</number>
        </property>
       </widget>
      </item>

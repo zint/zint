@@ -44,7 +44,7 @@ static void types(void) {
             " 2: Standard 2of5     53: Pharma Two-Track         97: Micro QR Code\n"
             " 3: Interleaved 2of5  55: PDF417                   98: HIBC Code 128\n"
             " 4: IATA 2of5         56: Compact PDF417           99: HIBC Code 39\n"
-            " 6: Data Logic        57: Maxicode                102: HIBC Data Matrix\n"
+            " 6: Data Logic        57: MaxiCode                102: HIBC Data Matrix\n"
             " 7: Industrial 2of5   58: QR Code                 104: HIBC QR Code\n"
             " 8: Code 39           60: Code 128-B              106: HIBC PDF417\n"
             " 9: Extended Code 39  63: AP Standard Customer    108: HIBC MicroPDF417\n"
@@ -126,15 +126,16 @@ static void usage(void) {
             "  --init                Create reader initialisation/programming symbol\n"
             "  --mask=NUMBER         Set masking pattern to use (QR/Han Xin)\n"
             "  --mirror              Use batch data to determine filename\n"
-            "  --mode=NUMBER         Set encoding mode (Maxicode/Composite)\n"
+            "  --mode=NUMBER         Set encoding mode (MaxiCode/Composite)\n"
             "  --nobackground        Remove background (PNG/SVG/EPS only)\n"
             "  --notext              Remove human readable text\n"
             "  -o, --output=FILE     Send output to FILE. Default is out.png\n"
-            "  --primary=STRING      Set structured primary message (Maxicode/Composite)\n"
+            "  --primary=STRING      Set structured primary message (MaxiCode/Composite)\n"
             "  -r, --reverse         Reverse colours (white on black)\n"
             "  --rotate=NUMBER       Rotate symbol by NUMBER degrees\n"
             "  --rows=NUMBER         Set number of rows (Codablock-F)\n"
             "  --scale=NUMBER        Adjust size of X-dimension\n"
+            "  --scmvv=NUMBER        Prefix SCM with [)>\\R01\\Gvv (vv is NUMBER) (MaxiCode)\n"
             "  --secure=NUMBER       Set error correction level (ECC)\n"
             "  --separator=NUMBER    Set height of row separator bars (stacked symbologies)\n"
             "  --small               Use small text\n"
@@ -272,7 +273,7 @@ static void set_extension(char *file, char *filetype) {
         file[251] = '\0';
     }
     strcat(file, ".");
-    strcat(file, filetype);
+    strncat(file, filetype, 3);
 }
 
 static char *raster_filetypes[] = {
@@ -308,7 +309,7 @@ static int batch_process(struct zint_symbol *symbol, char *filename, int mirror_
 
     if (symbol->outfile[0] == '\0') {
         strcpy(format_string, "~~~~~.");
-        strcat(format_string, filetype);
+        strncat(format_string, filetype, 3);
     } else {
         strcpy(format_string, symbol->outfile);
         set_extension(format_string, filetype);
@@ -438,7 +439,7 @@ static int batch_process(struct zint_symbol *symbol, char *filename, int mirror_
                 output_file[o] = '.';
                 output_file[o + 1] = '\0';
 
-                strcat(output_file, filetype);
+                strncat(output_file, filetype, 3);
             }
 
             strcpy(symbol->outfile, output_file);
@@ -487,6 +488,7 @@ int main(int argc, char **argv) {
     int fullmultibyte = 0;
     int mask = 0;
     int separator = 0;
+    int scmvv = -1;
     int addon_gap = 0;
     char filetype[4] = {0};
     int i;
@@ -551,6 +553,7 @@ int main(int argc, char **argv) {
             {"rotate", 1, 0, 0},
             {"rows", 1, 0, 0},
             {"scale", 1, 0, 0},
+            {"scmvv", 1, 0, 0},
             {"secure", 1, 0, 0},
             {"separator", 1, 0, 0},
             {"small", 0, 0, 0},
@@ -644,6 +647,22 @@ int main(int argc, char **argv) {
                         fprintf(stderr, "Warning 105: Invalid scale value\n");
                         fflush(stderr);
                         my_symbol->scale = 1.0f;
+                    }
+                }
+                if (!strcmp(long_options[option_index].name, "scmvv")) {
+                    error_number = validator(NESET, optarg);
+                    if (error_number == ZINT_ERROR_INVALID_DATA) {
+                        fprintf(stderr, "Error 149: Invalid Structured Carrier Message version value\n");
+                        exit(1);
+                    }
+                    scmvv = atoi(optarg);
+                    if (scmvv < 0 || scmvv > 99) {
+                        /* Version 00-99 only */
+                        fprintf(stderr, "Warning 150: Invalid version (vv) for Structured Carrier Message, ignoring\n");
+                        fflush(stderr);
+                        scmvv = -1;
+                    } else {
+                        my_symbol->option_2 = scmvv + 1;
                     }
                 }
                 if (!strcmp(long_options[option_index].name, "separator")) {

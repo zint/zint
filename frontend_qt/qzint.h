@@ -78,11 +78,8 @@ public:
     int borderWidth() const;
     void setBorderWidth(int boderWidth);
 
-    int securityLevel() const;
-    void setSecurityLevel(int securityLevel);
-
-    int mode() const;
-    void setMode(int securityLevel);
+    int option1() const;
+    void setOption1(int option_1);
 
     void setWhitespace(int whitespace);
 
@@ -140,7 +137,7 @@ private:
     int m_borderWidth;
     int m_fontSetting;
     int m_option_2;
-    int m_securityLevel;
+    int m_option_1;
     int m_input_mode;
     QColor m_fgColor;
     QColor m_bgColor;

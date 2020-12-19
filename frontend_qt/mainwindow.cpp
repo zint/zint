@@ -96,7 +96,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags fl)
         "Japanese Postal Barcode",
         "Korean Postal Barcode",
         "LOGMARS",
-        "Maxicode (ISO 16023)",
+        "MaxiCode (ISO 16023)",
         "MicroPDF417 (ISO 24728) (and HIBC)",
         "Micro QR Code",
         "MSI Plessey",
@@ -881,10 +881,13 @@ void MainWindow::change_options()
             return;
         m_optionWidget=uiload.load(&file);
         file.close();
-        tabMain->insertTab(1,m_optionWidget,tr("Maxicod&e"));
+        tabMain->insertTab(1,m_optionWidget,tr("MaxiCod&e"));
         connect(m_optionWidget->findChild<QObject*>("cmbMaxiMode"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("cmbMaxiMode"), SIGNAL(currentIndexChanged( int )), SLOT(maxi_primary()));
         connect(m_optionWidget->findChild<QObject*>("txtMaxiPrimary"), SIGNAL(textChanged( const QString& )), SLOT(update_preview()));
+        connect(m_optionWidget->findChild<QObject*>("chkMaxiSCMVV"), SIGNAL(stateChanged( int )), SLOT(update_preview()));
+        connect(m_optionWidget->findChild<QObject*>("chkMaxiSCMVV"), SIGNAL(stateChanged( int )), SLOT(maxi_primary()));
+        connect(m_optionWidget->findChild<QObject*>("spnMaxiSCMVV"), SIGNAL(valueChanged( int )), SLOT(update_preview()));
     }
 
     if (symbology == BARCODE_CHANNEL)
@@ -1078,12 +1081,19 @@ void MainWindow::maxi_primary()
 {
     if (metaObject()->enumerator(0).value(bstyle->currentIndex())!=BARCODE_MAXICODE)
         return;
+    QCheckBox *chkMaxiSCMVV = m_optionWidget->findChild<QCheckBox*>("chkMaxiSCMVV");
     if(m_optionWidget->findChild<QComboBox*>("cmbMaxiMode")->currentIndex() == 0) {
         m_optionWidget->findChild<QLabel*>("lblMaxiPrimary")->setEnabled(true);
         m_optionWidget->findChild<QLineEdit*>("txtMaxiPrimary")->setEnabled(true);
+        chkMaxiSCMVV->setEnabled(true);
+        m_optionWidget->findChild<QLabel*>("lblMaxiSCMVV")->setEnabled(chkMaxiSCMVV->isChecked());
+        m_optionWidget->findChild<QSpinBox*>("spnMaxiSCMVV")->setEnabled(chkMaxiSCMVV->isChecked());
     } else {
         m_optionWidget->findChild<QLabel*>("lblMaxiPrimary")->setEnabled(false);
         m_optionWidget->findChild<QLineEdit*>("txtMaxiPrimary")->setEnabled(false);
+        chkMaxiSCMVV->setEnabled(false);
+        m_optionWidget->findChild<QLabel*>("lblMaxiSCMVV")->setEnabled(false);
+        m_optionWidget->findChild<QSpinBox*>("spnMaxiSCMVV")->setEnabled(false);
     }
 }
 
@@ -1142,7 +1152,7 @@ void MainWindow::update_preview()
     } else {
         m_bc.bc.setText(txtData->text());
     }
-    m_bc.bc.setSecurityLevel(0);
+    m_bc.bc.setOption1(-1);
     m_bc.bc.setOption2(0);
     m_bc.bc.setOption3(0);
     chkData->setEnabled(true);
@@ -1254,7 +1264,7 @@ void MainWindow::update_preview()
 
         case BARCODE_PDF417:
             m_bc.bc.setOption2(m_optionWidget->findChild<QComboBox*>("cmbPDFCols")->currentIndex());
-            m_bc.bc.setSecurityLevel(m_optionWidget->findChild<QComboBox*>("cmbPDFECC")->currentIndex()-1);
+            m_bc.bc.setOption1(m_optionWidget->findChild<QComboBox*>("cmbPDFECC")->currentIndex() - 1);
             if(m_optionWidget->findChild<QRadioButton*>("radPDFStand")->isChecked())
                 m_bc.bc.setSymbol(BARCODE_PDF417);
 
@@ -1286,7 +1296,7 @@ void MainWindow::update_preview()
                 m_bc.bc.setOption2(m_optionWidget->findChild<QComboBox*>("cmbAztecSize")->currentIndex() + 1);
 
             if(m_optionWidget->findChild<QRadioButton*>("radAztecECC")->isChecked())
-                m_bc.bc.setSecurityLevel(m_optionWidget->findChild<QComboBox*>("cmbAztecECC")->currentIndex() + 1);
+                m_bc.bc.setOption1(m_optionWidget->findChild<QComboBox*>("cmbAztecECC")->currentIndex() + 1);
 
             set_gs1_mode(m_optionWidget->findChild<QRadioButton*>("radAztecGS1")->isChecked());
             if(m_optionWidget->findChild<QRadioButton*>("radAztecHIBC")->isChecked())
@@ -1362,7 +1372,7 @@ void MainWindow::update_preview()
             // Height selection uses option 1 in zint_symbol
             item_val = m_optionWidget->findChild<QComboBox*>("cmbCbfHeight")->currentIndex();
             if (item_val) {
-                m_bc.bc.setSecurityLevel(item_val);
+                m_bc.bc.setOption1(item_val);
             }
             // Row separator height selection uses option 3 in zint_symbol
             item_val = m_optionWidget->findChild<QComboBox*>("cmbCbfRowSepHeight")->currentIndex();
@@ -1372,7 +1382,6 @@ void MainWindow::update_preview()
             break;
 
         case BARCODE_DATAMATRIX:
-            m_bc.bc.setSecurityLevel(1);
             if(m_optionWidget->findChild<QRadioButton*>("radDM200HIBC")->isChecked())
                 m_bc.bc.setSymbol(BARCODE_HIBC_DM);
             else
@@ -1425,7 +1434,7 @@ void MainWindow::update_preview()
             }
             item_val = m_optionWidget->findChild<QComboBox*>("cmbQRECC")->currentIndex();
             if (item_val) {
-                m_bc.bc.setSecurityLevel(item_val);
+                m_bc.bc.setOption1(item_val);
             }
             item_val = m_optionWidget->findChild<QComboBox*>("cmbQRMask")->currentIndex();
             if (item_val) {
@@ -1444,7 +1453,7 @@ void MainWindow::update_preview()
             }
             item_val = m_optionWidget->findChild<QComboBox*>("cmbMQRECC")->currentIndex();
             if (item_val) {
-                m_bc.bc.setSecurityLevel(item_val);
+                m_bc.bc.setOption1(item_val);
             }
             item_val = m_optionWidget->findChild<QComboBox*>("cmbMQRMask")->currentIndex();
             if (item_val) {
@@ -1466,7 +1475,7 @@ void MainWindow::update_preview()
             }
             item_val = m_optionWidget->findChild<QComboBox*>("cmbRMQRECC")->currentIndex();
             if (item_val) {
-                m_bc.bc.setSecurityLevel(item_val * 2); // Levels 2 (M) and 4 (H) only
+                m_bc.bc.setOption1(item_val * 2); // Levels 2 (M) and 4 (H) only
             }
             if (m_optionWidget->findChild<QCheckBox*>("chkRMQRFullMultibyte")->isChecked()) {
                 m_bc.bc.setOption3(ZINT_FULL_MULTIBYTE);
@@ -1481,7 +1490,7 @@ void MainWindow::update_preview()
             }
             item_val = m_optionWidget->findChild<QComboBox*>("cmbGridECC")->currentIndex();
             if (item_val) {
-                m_bc.bc.setSecurityLevel(item_val);
+                m_bc.bc.setOption1(item_val);
             }
             if (m_optionWidget->findChild<QCheckBox*>("chkGridFullMultibyte")->isChecked()) {
                 m_bc.bc.setOption3(ZINT_FULL_MULTIBYTE);
@@ -1492,11 +1501,15 @@ void MainWindow::update_preview()
             m_bc.bc.setSymbol(BARCODE_MAXICODE);
             if(m_optionWidget->findChild<QComboBox*>("cmbMaxiMode")->currentIndex() == 0)
             {
-                m_bc.bc.setSecurityLevel(2);
+                m_bc.bc.setOption1(0); /* Auto-determine mode 2 or 3 from primary message (checks that it isn't empty) */
                 m_bc.bc.setPrimaryMessage(m_optionWidget->findChild<QLineEdit*>("txtMaxiPrimary")->text());
+                QCheckBox *chkMaxiSCMVV = m_optionWidget->findChild<QCheckBox*>("chkMaxiSCMVV");
+                if (chkMaxiSCMVV->isEnabled() && chkMaxiSCMVV->isChecked()) {
+                    m_bc.bc.setOption2(m_optionWidget->findChild<QSpinBox*>("spnMaxiSCMVV")->value() + 1);
+                }
             }
             else
-                m_bc.bc.setSecurityLevel(m_optionWidget->findChild<QComboBox*>("cmbMaxiMode")->currentIndex() + 3);
+                m_bc.bc.setOption1(m_optionWidget->findChild<QComboBox*>("cmbMaxiMode")->currentIndex() + 3);
             break;
 
         case BARCODE_CHANNEL:
@@ -1531,7 +1544,7 @@ void MainWindow::update_preview()
             }
             item_val = m_optionWidget->findChild<QComboBox*>("cmbHXECC")->currentIndex();
             if (item_val) {
-                m_bc.bc.setSecurityLevel(item_val);
+                m_bc.bc.setOption1(item_val);
             }
             item_val = m_optionWidget->findChild<QComboBox*>("cmbHXMask")->currentIndex();
             if (item_val) {
@@ -1545,7 +1558,7 @@ void MainWindow::update_preview()
         case BARCODE_ULTRA:
             m_bc.bc.setSymbol(BARCODE_ULTRA);
             if(m_optionWidget->findChild<QRadioButton*>("radUltraEcc")->isChecked())
-                m_bc.bc.setSecurityLevel(m_optionWidget->findChild<QComboBox*>("cmbUltraEcc")->currentIndex() + 1);
+                m_bc.bc.setOption1(m_optionWidget->findChild<QComboBox*>("cmbUltraEcc")->currentIndex() + 1);
             set_gs1_mode(m_optionWidget->findChild<QRadioButton*>("radUltraGS1")->isChecked());
             break;
 
@@ -1568,7 +1581,7 @@ void MainWindow::update_preview()
     chkRInit->setEnabled(m_bc.bc.supportsReaderInit() && (m_bc.bc.inputMode() & 0x07) != GS1_MODE);
 
     if (!grpComposite->isHidden() && chkComposite->isChecked())
-        m_bc.bc.setSecurityLevel(cmbCompType->currentIndex());
+        m_bc.bc.setOption1(cmbCompType->currentIndex());
 
     if (!chkAutoHeight->isEnabled() || chkAutoHeight->isChecked()) {
         m_bc.bc.setHeight(0);
@@ -1832,6 +1845,20 @@ void MainWindow::set_lineedit_from_setting(QSettings &settings, const QString &s
     }
 }
 
+/* Helper to return value of spin box, checking for NULL */
+int MainWindow::get_spinbox_val(const QString &child) {
+    QSpinBox *spinBox = m_optionWidget->findChild<QSpinBox*>(child);
+    return spinBox ? spinBox->value() : 0;
+}
+
+/* Helper to set spin box from settings, checking for NULL */
+void MainWindow::set_spinbox_from_setting(QSettings &settings, const QString &setting, const QString &child, int default_val) {
+    QSpinBox *spinBox = m_optionWidget->findChild<QSpinBox*>(child);
+    if (spinBox) {
+        spinBox->setValue(settings.value(setting, default_val).toInt());
+    }
+}
+
 /* Save settings for an individual symbol */
 void MainWindow::save_sub_settings(QSettings &settings, int symbology) {
 
@@ -2001,6 +2028,8 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology) {
         case BARCODE_MAXICODE:
             settings.setValue("studio/bc/maxicode/mode", get_combobox_index("cmbMaxiMode"));
             settings.setValue("studio/bc/maxicode/primary_message", get_lineedit_val("txtMaxiPrimary"));
+            settings.setValue("studio/bc/maxicode/chk_scm_vv", get_checkbox_val("chkMaxiSCMVV"));
+            settings.setValue("studio/bc/maxicode/spn_scm_vv", get_spinbox_val("spnMaxiSCMVV"));
             break;
 
         case BARCODE_CODEONE:
@@ -2227,6 +2256,8 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology) {
         case BARCODE_MAXICODE:
             set_combobox_from_setting(settings, "studio/bc/maxicode/mode", "cmbMaxiMode", 1);
             set_lineedit_from_setting(settings, "studio/bc/maxicode/primary_message", "txtMaxiPrimary", "Primary Message Here!");
+            set_checkbox_from_setting(settings, "studio/bc/maxicode/chk_scm_vv", "chkMaxiSCMVV");
+            set_spinbox_from_setting(settings, "studio/bc/maxicode/spn_scm_vv", "spnMaxiSCMVV", 96); /* 96 is ASC MH10/SC 8 */
             break;
 
         case BARCODE_CODEONE:

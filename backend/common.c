@@ -36,7 +36,7 @@
 #endif
 #include "common.h"
 
-/* Converts a character 0-9 to its equivalent integer value */
+/* Converts a character 0-9, A-F to its equivalent integer value */
 INTERNAL int ctoi(const char source) {
     if ((source >= '0') && (source <= '9'))
         return (source - '0');
@@ -45,32 +45,6 @@ INTERNAL int ctoi(const char source) {
     if ((source >= 'a') && (source <= 'f'))
         return (source - 'a' + 10);
     return -1;
-}
-
-/* Convert an integer value to a string representing its binary equivalent */
-INTERNAL void bin_append(const int arg, const int length, char *binary) {
-    int posn = (int) strlen(binary);
-
-    bin_append_posn(arg, length, binary, posn);
-
-    binary[posn + length] = '\0';
-}
-
-/* Convert an integer value to a string representing its binary equivalent at a set position */
-INTERNAL int bin_append_posn(const int arg, const int length, char *binary, int posn) {
-    int i;
-    int start;
-
-    start = 0x01 << (length - 1);
-
-    for (i = 0; i < length; i++) {
-        if (arg & (start >> i)) {
-            binary[posn + i] = '1';
-        } else {
-            binary[posn + i] = '0';
-        }
-    }
-    return posn + length;
 }
 
 /* Converts an integer value to its hexadecimal character */
@@ -82,9 +56,25 @@ INTERNAL char itoc(const int source) {
     }
 }
 
+/* Converts decimal string of length <= 9 to integer value. Returns -1 if not numeric */
+INTERNAL int to_int(const unsigned char source[], const int length) {
+    int val = 0;
+    int i;
+
+    for (i = 0; i < length; i++) {
+        if (source[i] < '0' || source[i] > '9') {
+            return -1;
+        }
+        val *= 10;
+        val += source[i] - '0';
+    }
+
+    return val;
+}
+
 /* Converts lower case characters to upper case in a string source[] */
 INTERNAL void to_upper(unsigned char source[]) {
-    size_t i, src_len = ustrlen(source);
+    int i, src_len = (int) ustrlen(source);
 
     for (i = 0; i < src_len; i++) {
         if ((source[i] >= 'a') && (source[i] <= 'z')) {
@@ -94,9 +84,8 @@ INTERNAL void to_upper(unsigned char source[]) {
 }
 
 /* Verifies that a string only uses valid characters */
-INTERNAL int is_sane(const char test_string[], const unsigned char source[], const size_t length) {
-    unsigned int j;
-    size_t i, lt = strlen(test_string);
+INTERNAL int is_sane(const char test_string[], const unsigned char source[], const int length) {
+    int i, j, lt = (int) strlen(test_string);
 
     for (i = 0; i < length; i++) {
         unsigned int latch = FALSE;
@@ -124,6 +113,32 @@ INTERNAL void lookup(const char set_string[], const char *table[], const char da
             break;
         }
     }
+}
+
+/* Convert an integer value to a string representing its binary equivalent */
+INTERNAL void bin_append(const int arg, const int length, char *binary) {
+    int bin_posn = (int) strlen(binary);
+
+    bin_append_posn(arg, length, binary, bin_posn);
+
+    binary[bin_posn + length] = '\0';
+}
+
+/* Convert an integer value to a string representing its binary equivalent at a set position */
+INTERNAL int bin_append_posn(const int arg, const int length, char *binary, const int bin_posn) {
+    int i;
+    int start;
+
+    start = 0x01 << (length - 1);
+
+    for (i = 0; i < length; i++) {
+        if (arg & (start >> i)) {
+            binary[bin_posn + i] = '1';
+        } else {
+            binary[bin_posn + i] = '0';
+        }
+    }
+    return bin_posn + length;
 }
 
 /* Returns the position of data in set_string */
@@ -219,6 +234,7 @@ INTERNAL int is_stackable(const int symbology) {
         case BARCODE_CODABLOCKF:
         case BARCODE_HIBC_BLOCKF:
             return 1;
+            break;
     }
 
     return 0;
@@ -239,6 +255,7 @@ INTERNAL int is_extendable(const int symbology) {
         case BARCODE_UPCA_CC:
         case BARCODE_UPCE_CC:
             return 1;
+            break;
     }
 
     return 0;
@@ -249,6 +266,7 @@ INTERNAL int is_composite(const int symbology) {
     return symbology >= BARCODE_EANX_CC && symbology <= BARCODE_DBAR_EXPSTK_CC;
 }
 
+/* Whether next two characters are digits */
 INTERNAL int istwodigits(const unsigned char source[], const int length, const int position) {
     if ((position + 1 < length) && (source[position] >= '0') && (source[position] <= '9')
             && (source[position + 1] >= '0') && (source[position + 1] <= '9')) {
@@ -306,7 +324,7 @@ INTERNAL unsigned int decode_utf8(unsigned int *state, unsigned int *codep, cons
 /* Convert UTF-8 to Unicode. If `disallow_4byte` unset, allow all values (UTF-32). If `disallow_4byte` set,
  * only allow codepoints <= U+FFFF (ie four-byte sequences not allowed) (UTF-16, no surrogates) */
 INTERNAL int utf8_to_unicode(struct zint_symbol *symbol, const unsigned char source[], unsigned int vals[],
-            int *length, int disallow_4byte) {
+            int *length, const int disallow_4byte) {
     int bpos;
     int jpos;
     unsigned int codepoint, state = 0;
@@ -362,7 +380,8 @@ INTERNAL void set_minimum_height(struct zint_symbol *symbol, const int min_heigh
     }
 }
 
-INTERNAL int colour_to_red(int colour) {
+/* Returns red component if any of ultra colour indexing "0CBMRYGKW" */
+INTERNAL int colour_to_red(const int colour) {
     int return_val = 0;
 
     switch(colour) {
@@ -377,7 +396,8 @@ INTERNAL int colour_to_red(int colour) {
     return return_val;
 }
 
-INTERNAL int colour_to_green(int colour) {
+/* Returns green component if any of ultra colour indexing "0CBMRYGKW" */
+INTERNAL int colour_to_green(const int colour) {
     int return_val = 0;
 
     switch(colour) {
@@ -392,7 +412,8 @@ INTERNAL int colour_to_green(int colour) {
     return return_val;
 }
 
-INTERNAL int colour_to_blue(int colour) {
+/* Returns blue component if any of ultra colour indexing "0CBMRYGKW" */
+INTERNAL int colour_to_blue(const int colour) {
     int return_val = 0;
 
     switch(colour) {
@@ -409,7 +430,7 @@ INTERNAL int colour_to_blue(int colour) {
 
 #ifdef ZINT_TEST
 /* Dumps hex-formatted codewords in symbol->errtxt (for use in testing) */
-void debug_test_codeword_dump(struct zint_symbol *symbol, unsigned char *codewords, int length) {
+void debug_test_codeword_dump(struct zint_symbol *symbol, const unsigned char *codewords, const int length) {
     int i, max = length, cnt_len = 0;
     if (length > 30) { /* 30*3 < errtxt 92 (100 - "Warning ") chars */
         sprintf(symbol->errtxt, "(%d) ", length); /* Place the number of codewords at the front */
@@ -422,7 +443,8 @@ void debug_test_codeword_dump(struct zint_symbol *symbol, unsigned char *codewor
     symbol->errtxt[strlen(symbol->errtxt) - 1] = '\0'; /* Zap last space */
 }
 
-void debug_test_codeword_dump_int(struct zint_symbol *symbol, int *codewords, int length) {
+/* Dumps decimal-formatted codewords in symbol->errtxt (for use in testing) */
+void debug_test_codeword_dump_int(struct zint_symbol *symbol, const int *codewords, const int length) {
     int i, max = 0, cnt_len, errtxt_len;
     char temp[20];
     errtxt_len = sprintf(symbol->errtxt, "(%d) ", length); /* Place the number of codewords at the front */

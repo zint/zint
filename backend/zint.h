@@ -55,7 +55,7 @@ extern "C" {
 
     struct zint_vector_circle {
         float x, y, diameter;
-        int colour;
+        int colour; /* Non-zero for draw with background colour */
         struct zint_vector_circle *next; /* Pointer to next circle */
     };
 

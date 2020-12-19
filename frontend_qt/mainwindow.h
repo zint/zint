@@ -146,6 +146,8 @@ protected:
 	void set_doublespinbox_from_setting(QSettings &settings, const QString &setting, const QString &child, float default_val = 0);
 	QString get_lineedit_val(const QString &child);
 	void set_lineedit_from_setting(QSettings &settings, const QString &setting, const QString &child, const char *default_val = "");
+	int get_spinbox_val(const QString &child);
+	void set_spinbox_from_setting(QSettings &settings, const QString &setting, const QString &child, int default_val = 0);
 	void save_sub_settings(QSettings &settings, int symbology);
 	void load_sub_settings(QSettings &settings, int symbology);
 

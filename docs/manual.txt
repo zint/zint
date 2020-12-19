@@ -47,7 +47,7 @@ stacked: A stacked symbol consists of multiple linear symbols placed one above
         error correction data. Examples include PDF417.
 
 matrix: A matrix symbol is one based on a (usually square) grid of elements.
-        Examples include Data Matrix, but Maxicode and DotCode are also
+        Examples include Data Matrix, but MaxiCode and DotCode are also
         considered matrix symbologies.
 
 X-dimension: The X-dimension of a symbol is the size (usually the width) of the
@@ -216,8 +216,8 @@ Escape Character  |  ASCII Equivalent  |  Interpretation
 \f                |  0x0C              |  Form Feed
 \r                |  0x0D              |  Carriage Return
 \e                |  0x1B              |  Escape
-\G                |  0x1D              |  Group Selector
-\R                |  0x1E              |  Record Selector
+\G                |  0x1D              |  Group Separator
+\R                |  0x1E              |  Record Separator
 \\                |  0x5C              |  Backslash
 \xNN              |  0xNN              |  Any other 8-bit character
                   |                    |     where NN is hexadecimal
@@ -293,7 +293,7 @@ Numeric Value  |  Barcode Name
 53             |  Pharmacode Two-Track
 55             |  PDF417
 56             |  Compact PDF417
-57             |  Maxicode
+57             |  MaxiCode
 58             |  QR Code
 60             |  Code 128 (Subset B)
 63             |  Australia Post Standard Customer
@@ -425,7 +425,7 @@ vector files so that...
 zint --bg=ff0000 --fg=ffffff00 ...
 
 will give different results for PNG and SVG. Experimentation is advised!
-Also note that these options don't work properly with Maxicode yet.
+Also note that these options don't work properly with MaxiCode yet.
 
 In addition the --nobackground option will simply remove the background from
 PNG, GIF, SVG, EMF and EPS files.
@@ -1090,7 +1090,7 @@ Value   |
 53      | BARCODE_PHARMA_TWO      | Pharmacode Two-Track
 55      | BARCODE_PDF417          | PDF417
 56*     | BARCODE_PDF417COMP      | Compact PDF417 (Truncated PDF417)
-57      | BARCODE_MAXICODE        | Maxicode
+57      | BARCODE_MAXICODE        | MaxiCode
 58      | BARCODE_QRCODE          | QR Code
 60      | BARCODE_CODE128B        | Code 128 (Subset B)
 63      | BARCODE_AUSPOST         | Australia Post Standard Customer
@@ -1286,7 +1286,7 @@ The version parts are separated by hundreds. For instance, version "2.9.1" is
 returned as "20901".
 
 [1] This value is ignored for Australia Post 4-State Barcodes, POSTNET, PLANET,
-USPS Intelligent Mail, RM4SCC, PDF417, Data Matrix, Maxicode, QR Code, GS1
+USPS Intelligent Mail, RM4SCC, PDF417, Data Matrix, MaxiCode, QR Code, GS1
 DataBar Stacked, PDF417 and MicroPDF417 - all of which have a fixed height.
 
 [2] This value is ignored for Code 16k and Codablock-F. Special considerations
@@ -2288,12 +2288,12 @@ The following example creates a symbol from data saved as an ISO-8859-2 file:
 
 zint -o upnqr.png -b 143 --border=5 --scale=3 --binary -i ./upn.txt
 
-6.6.6 Maxicode (ISO 16023)
+6.6.6 MaxiCode (ISO 16023)
 --------------------------
-Developed by UPS the Maxicode symbology employs a grid of hexagons surrounding
+Developed by UPS the MaxiCode symbology employs a grid of hexagons surrounding
 a 'bulls-eye' finder pattern. This symbology is designed for the identification
-of parcels. Maxicode symbols can be encoded in one of five modes. In modes 2
-and 3 Maxicode symbols are composed of two parts named the primary and
+of parcels. MaxiCode symbols can be encoded in one of five modes. In modes 2
+and 3 MaxiCode symbols are composed of two parts named the primary and
 secondary messages. The primary message consists of a structured data field
 which includes various data about the package being sent and the secondary
 message usually consists of address data in a data structure. The format of the
@@ -2304,8 +2304,9 @@ Characters | Meaning
 ----------------------------------------------------------------------------
 1 - 9      | Postcode data which can consist of up to 9 digits (for mode 2)
            |    or up to 6 alphanumeric characters (for mode 3). Remaining
-           |    unused characters should be filled with the SPACE character
-           |    (ASCII 32).
+           |    unused characters can be filled with the SPACE character
+           |    (ASCII 32) or omitted (if omitted adjust the following
+           |    character positions).
 10 - 12    | Three digit country code according to ISO 3166.
 13 - 15    | Three digit service code. This depends on your parcel courier.
 ----------------------------------------------------------------------------
@@ -2313,36 +2314,48 @@ Characters | Meaning
 The primary message can be set at the command prompt using the --primary=
 switch. The secondary message uses the normal data entry method. For example:
 
-zint -o test.eps -b 57 --primary='999999999840012' -d 'Secondary Message Here'
+zint -o test.eps -b 57 --primary="999999999840012" -d "Secondary Message Here"
 
 When using the API the primary message must be placed in the symbol->primary
 string. The secondary is entered in the same way as described in section 5.2.
 When either of these modes is selected Zint will analyse the primary message
 and select either mode 2 or mode 3 as appropriate.
 
-Modes 4 to 6 can be accessed using the --mode= switch or by setting option_1.
-Modes 4 to 6 do not require a primary message. For example:
+As a convenience the secondary message for modes 2 and 3 can be set to be
+prefixed by the ISO 15434 Format "01" (transportation) sequence "[)>\R01\Gvv",
+where "vv" is a 2-digit version, by using the --scmvv= switch or by setting
+option_2 = vv + 1. For example to use the common version "96" (ASC MH10/SC 8):
 
-zint -o test.eps -b 57 --mode=4 -d 'A MaxiCode Message in Mode 4'
+zint -b 57 --primary="152382802840001" --scmvv=96 --esc \
+ -d "1Z00004951\GUPSN\G06X610\G159\G1234567\G1/1\G\GY\G1 MAIN ST\GTOWN\GNY\R\E"
+
+will prefix "[)>\R01\G96" to the secondary message. ("\R", "\G" and "\E" are the
+escape sequences for Record Separator, Group Separator and End of Transmission
+respectively - see section 4.1.)
+
+Modes 4 to 6 can be accessed using the --mode= switch or by setting option_1.
+Modes 4 to 6 do not have a primary message. For example:
+
+zint -o test.eps -b 57 --mode=4 -d "A MaxiCode Message in Mode 4"
 
 Mode 6 is reserved for the maintenance of scanner hardware and should not be
 used to encode user data.
 
 This symbology uses Latin-1 character encoding by default but also supports the
 ECI encoding mechanism. The maximum length of text which can be placed in a
-Maxicode symbol depends on the type of characters used in the text.
+MaxiCode symbol depends on the type of characters used in the text.
 
 Example maximum data lengths are given in the table below:
 
 -----------------------------------------------------------------------------
-Mode  |  Maximum Data Lenth   |  Maximum Data Length  |  Number of Error
+Mode  |  Maximum Data Length  |  Maximum Data Length  |  Number of Error
       |  for Capital Letters  |  for Numeric Digits   |  Correction Codewords
 -----------------------------------------------------------------------------
 2*    |  84                   |  126                  |  50
 3*    |  84                   |  126                  |  50
-4     |  93                   |  135                  |  50
-5     |  77                   |  110                  |  66
-6     |  93                   |  135                  |  50
+4     |  93                   |  138                  |  50
+5     |  77                   |  113                  |  66
+6     |  93                   |  138                  |  50
 -----------------------------------------------------------------------------
 * - secondary only
 
@@ -2999,7 +3012,7 @@ international standards:
 > ISO/IEC 16022:2006 Information technology - Automatic identification and data
      capture techniques - Data Matrix ECC200 bar code symbology specification
 > ISO/IEC 16023:2000 Information technology - International symbology
-     specification – Maxicode
+     specification – MaxiCode
 > ISO/IEC 16388:2007 Information technology - Automatic identification and data
      capture techniques - Code 39 bar code symbology specification
 > ISO/IEC 18004:2015 Information technology - Automatic identification and data

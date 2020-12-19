@@ -32,13 +32,16 @@
 /* vim: set ts=4 sw=4 et : */
 
 /* Includes corrections thanks to Monica Swanson @ Source Technologies */
+#include <stdio.h>
+#ifdef _MSC_VER
+#include <malloc.h>
+#endif
 #include "common.h"
 #include "maxicode.h"
 #include "reedsol.h"
 
 /* Handles error correction of primary message */
-static void maxi_do_primary_check(int maxi_codeword[144]) {
-    unsigned char data[15];
+static void maxi_do_primary_check(unsigned char maxi_codeword[144]) {
     unsigned char results[15];
     int j;
     int datalen = 10;
@@ -48,17 +51,14 @@ static void maxi_do_primary_check(int maxi_codeword[144]) {
     rs_init_gf(&rs, 0x43);
     rs_init_code(&rs, ecclen, 1);
 
-    for (j = 0; j < datalen; j += 1)
-        data[j] = maxi_codeword[j];
-
-    rs_encode(&rs, datalen, data, results);
+    rs_encode(&rs, datalen, maxi_codeword, results);
 
     for (j = 0; j < ecclen; j += 1)
         maxi_codeword[ datalen + j] = results[ecclen - 1 - j];
 }
 
 /* Handles error correction of odd characters in secondary */
-static void maxi_do_secondary_chk_odd(int maxi_codeword[144], int ecclen) {
+static void maxi_do_secondary_chk_odd(unsigned char maxi_codeword[144], const int ecclen) {
     unsigned char data[100];
     unsigned char results[30];
     int j;
@@ -71,9 +71,8 @@ static void maxi_do_secondary_chk_odd(int maxi_codeword[144], int ecclen) {
     if (ecclen == 20)
         datalen = 84;
 
-    for (j = 0; j < datalen; j += 1)
-        if (j & 1) // odd
-            data[(j - 1) / 2] = maxi_codeword[j + 20];
+    for (j = 1; j < datalen; j += 2)
+        data[(j - 1) / 2] = maxi_codeword[j + 20];
 
     rs_encode(&rs, datalen / 2, data, results);
 
@@ -82,7 +81,7 @@ static void maxi_do_secondary_chk_odd(int maxi_codeword[144], int ecclen) {
 }
 
 /* Handles error correction of even characters in secondary */
-static void maxi_do_secondary_chk_even(int maxi_codeword[144], int ecclen) {
+static void maxi_do_secondary_chk_even(unsigned char maxi_codeword[144], const int ecclen) {
     unsigned char data[100];
     unsigned char results[30];
     int j;
@@ -95,9 +94,8 @@ static void maxi_do_secondary_chk_even(int maxi_codeword[144], int ecclen) {
     rs_init_gf(&rs, 0x43);
     rs_init_code(&rs, ecclen, 1);
 
-    for (j = 0; j < datalen + 1; j += 1)
-        if (!(j & 1)) // even
-            data[j / 2] = maxi_codeword[j + 20];
+    for (j = 0; j < datalen + 1; j += 2)
+        data[j / 2] = maxi_codeword[j + 20];
 
     rs_encode(&rs, datalen / 2, data, results);
 
@@ -106,62 +104,74 @@ static void maxi_do_secondary_chk_even(int maxi_codeword[144], int ecclen) {
 }
 
 /* Moves everything up so that a shift or latch can be inserted */
-static void maxi_bump(int set[], int character[], int bump_posn) {
-    int i;
+static void maxi_bump(unsigned char set[], unsigned char character[], const int bump_posn) {
 
-    for (i = 143; i > bump_posn; i--) {
-        set[i] = set[i - 1];
-        character[i] = character[i - 1];
-    }
+    memmove(set + bump_posn + 1, set + bump_posn, 143 - bump_posn);
+    memmove(character + bump_posn + 1, character + bump_posn, 143 - bump_posn);
 }
 
 /* If the value is present in  array, return the value, else return badvalue */
-static int value_in_array(int val, int arr[], int badvalue, int arrLength) {
+static int value_in_array(const unsigned char val, const unsigned char arr[], const int badvalue, const int arrLength) {
     int i;
-    for(i = 0; i < arrLength; i++){
-        if(arr[i] == val) return val;
+    for (i = 0; i < arrLength; i++) {
+        if (arr[i] == val) return val;
     }
     return badvalue;
 }
 
-/* Choose the best set from previous and next set in the range of the setval array, if no value can be found we return setval[0] */
-static int bestSurroundingSet(int index, int length, int set[], int setval[], int setLength) {
+/* Choose the best set from previous and next set in the range of the setval array, if no value can be found we
+ * return setval[0] */
+static int bestSurroundingSet(const int index, const int length, const unsigned char set[], const unsigned char setval[],
+            const int setLength) {
     int badValue = -1;
     int option1 = value_in_array(set[index - 1], setval, badValue, setLength);
     if (index + 1 < length) {
         // we have two options to check (previous & next)
         int option2 = value_in_array(set[index + 1], setval, badValue, setLength);
         if (option2 != badValue && option1 > option2) {
-          return option2;
+            return option2;
         }
     }
-    //
+
     if (option1 != badValue) {
-      return option1;
+        return option1;
     }
     return setval[0];
 }
 
 /* Format text according to Appendix A */
-static int maxi_text_process(int maxi_codeword[144], int mode, unsigned char source[], int length, int eci) {
-    /* This code doesn't make use of [Lock in C], [Lock in D]
-    and [Lock in E] and so is not always the most efficient at
-    compressing data, but should suffice for most applications */
+static int maxi_text_process(unsigned char maxi_codeword[144], const int mode, const unsigned char in_source[], int length,
+            const int eci, const int scm_vv) {
 
-    int set[144], character[144], i, j, done, count, current_set;
+    unsigned char set[144], character[144] = {0};
+    int i, count, current_set, padding_set;
 
-    int set15[2] = { 1, 5 };
-    int set12[2] = { 1, 2 };
-    int set12345[5] = { 1, 2, 3, 4, 5 };
+    static const unsigned char set15[2] = { 1, 5 };
+    static const unsigned char set12[2] = { 1, 2 };
+    static const unsigned char set12345[5] = { 1, 2, 3, 4, 5 };
 
-    if (length > 138) {
+    const unsigned char *source = in_source;
+#ifndef _MSC_VER
+    unsigned char source_buf[length + 9]; /* For prefixing 9-character SCM sequence */
+#else
+    unsigned char *source_buf = (unsigned char *) _alloca(length + 9);
+#endif
+
+    if (length > 144) {
         return ZINT_ERROR_TOO_LONG;
     }
 
-    for (i = 0; i < 144; i++) {
-        set[i] = -1;
-        character[i] = 0;
+    if (scm_vv != -1) { /* Add SCM prefix */
+        if (length > 135) {
+            return ZINT_ERROR_TOO_LONG;
+        }
+        sprintf((char *) source_buf, "[)>\03601\035%02d", scm_vv); /* [)>\R01\Gvv */
+        memcpy(source_buf + 9, in_source, length);
+        source = source_buf;
+        length += 9;
     }
+
+    memset(set, 255, 144);
 
     for (i = 0; i < length; i++) {
         /* Look up characters in table from Appendix A - this gives
@@ -181,7 +191,6 @@ static int maxi_text_process(int maxi_codeword[144], int mode, unsigned char sou
 
     for (i = 1; i < length; i++) {
         if (set[i] == 0) {
-            done = 0;
             /* Special character */
             if (character[i] == 13) {
                 /* Carriage Return */
@@ -191,37 +200,29 @@ static int maxi_text_process(int maxi_codeword[144], int mode, unsigned char sou
                 } else {
                     character[i] = 0;
                 }
-                done = 1;
-            }
 
-            if ((done == 0) && (character[i] == 28)) {
+            } else if (character[i] == 28) {
                 /* FS */
                 set[i] = bestSurroundingSet(i, length, set, set12345, 5);
                 if (set[i] == 5) {
                     character[i] = 32;                   
                 }
-                done = 1;
-            }
 
-            if ((done == 0) && (character[i] == 29)) {
+            } else if (character[i] == 29) {
                 /* GS */
                 set[i] = bestSurroundingSet(i, length, set, set12345, 5);
                 if (set[i] == 5) {
                     character[i] = 33;
                 }       
-                done = 1;
-            }
 
-            if ((done == 0) && (character[i] == 30)) {
+            } else if (character[i] == 30) {
                 /* RS */
                 set[i] = bestSurroundingSet(i, length, set, set12345, 5);         
                 if (set[i] == 5) {
                     character[i] = 34;
                 }
-                done = 1;
-            }
 
-            if ((done == 0) && (character[i] == 32)) {
+            } else if (character[i] == 32) {
                 /* Space */
                 set[i] = bestSurroundingSet(i, length, set, set12345, 5);
                 if (set[i] == 1) {
@@ -231,83 +232,59 @@ static int maxi_text_process(int maxi_codeword[144], int mode, unsigned char sou
                 } else {
                     character[i] = 59;
                 }
-                done = 1;
-            }
 
-            if ((done == 0) && (character[i] == 44)) {
+            } else if (character[i] == 44) {
                 /* Comma */
                 set[i] = bestSurroundingSet(i, length, set, set12, 2);
                 if (set[i] == 2) {
                     character[i] = 48;
                 }
-                done = 1;
-            }
 
-            if ((done == 0) && (character[i] == 46)) {
+            } else if (character[i] == 46) {
                 /* Full Stop */
                 set[i] = bestSurroundingSet(i, length, set, set12, 2);
                 if (set[i] == 2) {
                     character[i] = 49;
                 } 
-                done = 1;
-            }
 
-            if ((done == 0) && (character[i] == 47)) {
+            } else if (character[i] == 47) {
                 /* Slash */
                 set[i] = bestSurroundingSet(i, length, set, set12, 2);
                 if (set[i] == 2) {
                     character[i] = 50;
                 }
-               done = 1;
-            }
 
-            if ((done == 0) && (character[i] == 58)) {
+            } else if (character[i] == 58) {
                 /* Colon */
                 set[i] = bestSurroundingSet(i, length, set, set12, 2);
                 if (set[i] == 2) {
                     character[i] = 51;
                 }
-                // done = 1 // As long as last branch not needed
             }
         }
     }
 
+    padding_set = set[length - 1] == 2 ? 2 : 1;
     for (i = length; i < 144; i++) {
         /* Add the padding */
-        if (set[length - 1] == 2) {
-            set[i] = 2;
-        } else {
-            set[i] = 1;
-        }
+        set[i] = padding_set;
         character[i] = 33;
     }
 
     /* Find candidates for number compression */
-    if ((mode == 2) || (mode == 3)) {
-        j = 0;
-    } else {
-        j = 9;
-    }
-    /* Number compression not allowed in primary message */
+    /* Note the prohibition on number compression in the primary message in ISO/IEC 16023:2000 B.1 (1)
+       applies to modes 2 & 3 only */
     count = 0;
-    for (i = j; i < 144; i++) {
+    for (i = 0; i < 144; i++) {
         if ((set[i] == 1) && ((character[i] >= 48) && (character[i] <= 57))) {
             /* Character is a number */
             count++;
+            if (count == 9) {
+                /* Nine digits in a row can be compressed */
+                memset(set + i - 8, 6, 9);
+                count = 0;
+            }
         } else {
-            count = 0;
-        }
-        if (count == 9) {
-            /* Nine digits in a row can be compressed */
-            set[i] = 6;
-            set[i - 1] = 6;
-            set[i - 2] = 6;
-            set[i - 3] = 6;
-            set[i - 4] = 6;
-            set[i - 5] = 6;
-            set[i - 6] = 6;
-            set[i - 7] = 6;
-            set[i - 8] = 6;
             count = 0;
         }
     }
@@ -320,9 +297,9 @@ static int maxi_text_process(int maxi_codeword[144], int mode, unsigned char sou
         if ((set[i] != current_set) && (set[i] != 6)) {
             switch (set[i]) {
                 case 1:
-                    if (i+1 < 144 &&  set[i + 1] == 1) {
-                        if (i+2 < 144 && set[i + 2] == 1) {
-                            if (i+3 < 144 && set[i + 3] == 1) {
+                    if (i + 1 < 144 && set[i + 1] == 1) {
+                        if (i + 2 < 144 && set[i + 2] == 1) {
+                            if (i + 3 < 144 && set[i + 3] == 1) {
                                 /* Latch A */
                                 maxi_bump(set, character, i);
                                 character[i] = 63;
@@ -350,7 +327,7 @@ static int maxi_text_process(int maxi_codeword[144], int mode, unsigned char sou
                     }
                     break;
                 case 2:
-                    if (i+1 < 144 &&  set[i + 1] == 2) {
+                    if (i + 1 < 144 && set[i + 1] == 2) {
                         /* Latch B */
                         maxi_bump(set, character, i);
                         character[i] = 63;
@@ -365,6 +342,7 @@ static int maxi_text_process(int maxi_codeword[144], int mode, unsigned char sou
                     break;
                 case 3:
                     if (i + 3 < 144 && set[i + 1] == 3 && set[i + 2] == 3 && set[i + 3] == 3) {
+                        /* Lock in C */
                         maxi_bump(set, character, i);
                         character[i] = 60;
                         maxi_bump(set, character, i);
@@ -380,8 +358,8 @@ static int maxi_text_process(int maxi_codeword[144], int mode, unsigned char sou
                     }
                     break;
                 case 4:
-                    /* Shift D */
                     if (i + 3 < 144 && set[i + 1] == 4 && set[i + 2] == 4 && set[i + 3] == 4) {
+                        /* Lock in D */
                         maxi_bump(set, character, i);
                         character[i] = 61;
                         maxi_bump(set, character, i);
@@ -390,14 +368,15 @@ static int maxi_text_process(int maxi_codeword[144], int mode, unsigned char sou
                         length++;
                         i += 3;
                     } else {
+                        /* Shift D */
                         maxi_bump(set, character, i);
                         character[i] = 61;
                         length++;
                     }
                     break;
                 case 5:
-                    /* Shift E */
                     if (i + 3 < 144 && set[i + 1] == 5 && set[i + 2] == 5 && set[i + 3] == 5) {
+                        /* Lock in E */
                         maxi_bump(set, character, i);
                         character[i] = 62;
                         maxi_bump(set, character, i);
@@ -406,10 +385,11 @@ static int maxi_text_process(int maxi_codeword[144], int mode, unsigned char sou
                         length++;
                         i += 3;
                     } else {
+                        /* Shift E */
                         maxi_bump(set, character, i);
                         character[i] = 62;
                         length++;
-            }
+                    }
                     break;
             }
             i++;
@@ -422,14 +402,7 @@ static int maxi_text_process(int maxi_codeword[144], int mode, unsigned char sou
     do {
         if (set[i] == 6) {
             /* Number compression */
-            char substring[10];
-            int value;
-
-            for (j = 0; j < 9; j++) {
-                substring[j] = character[i + j];
-            }
-            substring[9] = '\0';
-            value = atoi(substring);
+            int value = to_int(character + i, 9);
 
             character[i] = 31; /* NS */
             character[i + 1] = (value & 0x3f000000) >> 24;
@@ -439,10 +412,8 @@ static int maxi_text_process(int maxi_codeword[144], int mode, unsigned char sou
             character[i + 5] = (value & 0x3f);
 
             i += 6;
-            for (j = i; j < 141; j++) {
-                set[j] = set[j + 3];
-                character[j] = character[j + 3];
-            }
+            memmove(set + i, set + i + 3, 141 - i);
+            memmove(character + i, character + i + 3, 141 - i);
             length -= 3;
         } else {
             i++;
@@ -458,15 +429,13 @@ static int maxi_text_process(int maxi_codeword[144], int mode, unsigned char sou
             maxi_bump(set, character, 1);
             character[1] = eci;
             length += 2;
-        }
-        if ((eci >= 32) && (eci <= 1023)) {
+        } else if (eci <= 1023) {
             maxi_bump(set, character, 1);
             maxi_bump(set, character, 1);
             character[1] = 0x20 + ((eci >> 6) & 0x0F);
             character[2] = eci & 0x3F;
             length += 3;
-        }
-        if ((eci >= 1024) && (eci <= 32767)) {
+        } else if (eci <= 32767) {
             maxi_bump(set, character, 1);
             maxi_bump(set, character, 1);
             maxi_bump(set, character, 1);
@@ -474,8 +443,7 @@ static int maxi_text_process(int maxi_codeword[144], int mode, unsigned char sou
             character[2] = (eci >> 6) & 0x3F;
             character[3] = eci & 0x3F;
             length += 4;
-        }
-        if (eci >= 32768) {
+        } else {
             maxi_bump(set, character, 1);
             maxi_bump(set, character, 1);
             maxi_bump(set, character, 1);
@@ -490,34 +458,29 @@ static int maxi_text_process(int maxi_codeword[144], int mode, unsigned char sou
 
     if (((mode == 2) || (mode == 3)) && (length > 84)) {
         return ZINT_ERROR_TOO_LONG;
-    }
 
-    if (((mode == 4) || (mode == 6)) && (length > 93)) {
+    } else if (((mode == 4) || (mode == 6)) && (length > 93)) {
+        return ZINT_ERROR_TOO_LONG;
+
+    } else if ((mode == 5) && (length > 77)) {
         return ZINT_ERROR_TOO_LONG;
     }
-
-    if ((mode == 5) && (length > 77)) {
-        return ZINT_ERROR_TOO_LONG;
-    }
-
 
     /* Copy the encoded text into the codeword array */
     if ((mode == 2) || (mode == 3)) {
         for (i = 0; i < 84; i++) { /* secondary only */
             maxi_codeword[i + 20] = character[i];
         }
-    }
 
-    if ((mode == 4) || (mode == 6)) {
+    } else if ((mode == 4) || (mode == 6)) {
         for (i = 0; i < 9; i++) { /* primary */
             maxi_codeword[i + 1] = character[i];
         }
         for (i = 0; i < 84; i++) { /* secondary */
             maxi_codeword[i + 20] = character[i + 9];
         }
-    }
 
-    if (mode == 5) {
+    } else { /* Mode 5 */
         for (i = 0; i < 9; i++) { /* primary */
             maxi_codeword[i + 1] = character[i];
         }
@@ -530,18 +493,11 @@ static int maxi_text_process(int maxi_codeword[144], int mode, unsigned char sou
 }
 
 /* Format structured primary for Mode 2 */
-static void maxi_do_primary_2(int maxi_codeword[144], char postcode[], int country, int service) {
-    size_t postcode_length;
-   int    postcode_num, i;
+static void maxi_do_primary_2(unsigned char maxi_codeword[144], const unsigned char postcode[], const int postcode_length,
+            const int country, const int service) {
+    int postcode_num;
 
-    for (i = 0; i < 10; i++) {
-        if ((postcode[i] < '0') || (postcode[i] > '9')) {
-            postcode[i] = '\0';
-        }
-    }
-
-    postcode_length = strlen(postcode);
-    postcode_num = atoi(postcode);
+    postcode_num = atoi((const char *) postcode);
 
     maxi_codeword[0] = ((postcode_num & 0x03) << 4) | 2;
     maxi_codeword[1] = ((postcode_num & 0xfc) >> 2);
@@ -556,22 +512,13 @@ static void maxi_do_primary_2(int maxi_codeword[144], char postcode[], int count
 }
 
 /* Format structured primary for Mode 3 */
-static void maxi_do_primary_3(int maxi_codeword[144], char postcode[], int country, int service) {
-    int i, h;
+static void maxi_do_primary_3(unsigned char maxi_codeword[144], unsigned char postcode[], const int country,
+            const int service) {
+    int i;
 
-    h = strlen(postcode);
-    to_upper((unsigned char*) postcode);
-    for (i = 0; i < h; i++) {
-        if ((postcode[i] >= 'A') && (postcode[i] <= 'Z')) {
-            /* (Capital) letters shifted to Code Set A values */
-            postcode[i] -= 64;
-        }
-        if (((postcode[i] == 27) || (postcode[i] == 31)) || ((postcode[i] == 33) || (postcode[i] >= 59))) {
-            /* Not a valid postcode character */
-            postcode[i] = ' ';
-        }
-        /* Input characters lower than 27 (NUL - SUB) in postcode are
-        interpreted as capital letters in Code Set A (e.g. LF becomes 'J') */
+    /* Convert to Code Set A */
+    for (i = 0; i < 6; i++) {
+        postcode[i] = maxiSymbolChar[postcode[i]];
     }
 
     maxi_codeword[0] = ((postcode[5] & 0x03) << 4) | 3;
@@ -586,25 +533,26 @@ static void maxi_do_primary_3(int maxi_codeword[144], char postcode[], int count
     maxi_codeword[9] = ((service & 0x3f0) >> 4);
 }
 
-INTERNAL int maxicode(struct zint_symbol *symbol, unsigned char local_source[], const int length) {
-    int i, j, block, bit, mode, lp = 0;
-    int bit_pattern[7], error_number = 0, eclen;
-    int maxi_codeword[144] = {0};
-    char postcode[12], countrystr[4], servicestr[4];
+INTERNAL int maxicode(struct zint_symbol *symbol, unsigned char source[], int length) {
+    int i, j, block, shift, mode, lp = 0;
+    int error_number = 0, eclen;
+    unsigned char maxi_codeword[144] = {0};
+    int scm_vv = -1;
 
     mode = symbol->option_1;
-    strcpy(postcode, "");
-    strcpy(countrystr, "");
-    strcpy(servicestr, "");
 
-    if (mode == -1) { /* If mode is unspecified */
-        lp = strlen(symbol->primary);
+    if (mode <= 0) { /* If mode is unspecified (-1) or to be auto-determined (0) between 2 and 3 */
+        lp = (int) strlen(symbol->primary);
         if (lp == 0) {
+            if (mode == 0) { /* Require primary message to auto-determine between 2 and 3 */
+                strcpy(symbol->errtxt, "554: Primary Message empty");
+                return ZINT_ERROR_INVALID_DATA;
+            }
             mode = 4;
         } else {
             mode = 2;
-            for (i = 0; i < 10 && i < lp; i++) {
-                if ((symbol->primary[i] < 48) || (symbol->primary[i] > 57)) {
+            for (i = 0; i < lp - 6; i++) {
+                if (((symbol->primary[i] < '0') || (symbol->primary[i] > '9')) && (symbol->primary[i] != ' ')) {
                     mode = 3;
                     break;
                 }
@@ -613,65 +561,85 @@ INTERNAL int maxicode(struct zint_symbol *symbol, unsigned char local_source[], 
     }
 
     if ((mode < 2) || (mode > 6)) { /* Only codes 2 to 6 supported */
-        strcpy(symbol->errtxt, "550: Invalid Maxicode Mode");
+        strcpy(symbol->errtxt, "550: Invalid MaxiCode Mode");
         return ZINT_ERROR_INVALID_OPTION;
     }
 
     if ((mode == 2) || (mode == 3)) { /* Modes 2 and 3 need data in symbol->primary */
+        unsigned char postcode[10];
         int countrycode;
         int service;
+        int postcode_len;
         if (lp == 0) { /* Mode set manually means lp doesn't get set */
-            lp = strlen(symbol->primary);
+            lp = (int) strlen(symbol->primary);
         }
-        if (lp != 15) {
-            strcpy(symbol->errtxt, "551: Invalid Primary Message");
+        if (lp < 7 || lp > 15) { /* 1 to 9 character postcode + 3 digit country code + 3 digit service class */
+            strcpy(symbol->errtxt, "551: Invalid length for Primary Message");
+            return ZINT_ERROR_INVALID_DATA;
+        }
+        postcode_len = lp - 6;
+
+        countrycode = to_int((const unsigned char *) (symbol->primary + postcode_len), 3);
+        service = to_int((const unsigned char *) (symbol->primary + postcode_len + 3), 3);
+
+        if (countrycode == -1 || service == -1) { /* check that country code and service are numeric */
+            strcpy(symbol->errtxt, "552: Non-numeric country code or service class in Primary Message");
             return ZINT_ERROR_INVALID_DATA;
         }
 
-        for (i = 9; i < 15; i++) { /* check that country code and service are numeric */
-            if ((symbol->primary[i] < '0') || (symbol->primary[i] > '9')) {
-                strcpy(symbol->errtxt, "552: Invalid Primary Message");
-                return ZINT_ERROR_INVALID_DATA;
-            }
-        }
-
-        memcpy(postcode, symbol->primary, 9);
-        postcode[9] = '\0';
+        memcpy(postcode, symbol->primary, postcode_len);
+        postcode[postcode_len] = '\0';
 
         if (mode == 2) {
-            for (i = 0; i < 10; i++) {
+            for (i = 0; i < postcode_len; i++) {
                 if (postcode[i] == ' ') {
                     postcode[i] = '\0';
+                    postcode_len = i;
+                    break;
+                } else if (postcode[i] < '0' || postcode[i] > '9') {
+                    strcpy(symbol->errtxt, "555: Non-numeric postcode in Primary Message");
+                    return ZINT_ERROR_INVALID_DATA;
                 }
             }
-        } else if (mode == 3) {
+            maxi_do_primary_2(maxi_codeword, postcode, postcode_len, countrycode, service);
+        } else {
+            /* Just truncate and space-pad */
             postcode[6] = '\0';
-        }
-
-        countrystr[0] = symbol->primary[9];
-        countrystr[1] = symbol->primary[10];
-        countrystr[2] = symbol->primary[11];
-        countrystr[3] = '\0';
-
-        servicestr[0] = symbol->primary[12];
-        servicestr[1] = symbol->primary[13];
-        servicestr[2] = symbol->primary[14];
-        servicestr[3] = '\0';
-
-        countrycode = atoi(countrystr);
-        service = atoi(servicestr);
-
-        if (mode == 2) {
-            maxi_do_primary_2(maxi_codeword, postcode, countrycode, service);
-        }
-        if (mode == 3) {
+            for (i = postcode_len; i < 6; i++) {
+                postcode[i] = ' ';
+            }
+            /* Upper-case and check for Code Set A characters only */
+            to_upper(postcode);
+            for (i = 0; i < 6; i++) {
+                /* Don't allow Code Set A control characters CR, RS, GS and RS */
+                if (postcode[i] < ' ' || maxiCodeSet[postcode[i]] > 1) {
+                    strcpy(symbol->errtxt, "556: Invalid characters in postcode in Primary Message");
+                    return ZINT_ERROR_INVALID_DATA;
+                }
+            }
             maxi_do_primary_3(maxi_codeword, postcode, countrycode, service);
+        }
+
+        if (symbol->option_2) { /* Check for option_2 = vv + 1, where vv is version of SCM prefix "[)>\R01\Gvv" */
+            if (symbol->option_2 < 0 || symbol->option_2 > 100) {
+                strcpy(symbol->errtxt, "557: Invalid SCM prefix version");
+                return ZINT_ERROR_INVALID_OPTION;
+            }
+            scm_vv = symbol->option_2 - 1;
+        }
+
+        if (symbol->debug & ZINT_DEBUG_PRINT) {
+            printf("Postcode: %s, Country Code: %d, Service Class: %d\n", postcode, countrycode, service);
         }
     } else {
         maxi_codeword[0] = mode;
     }
 
-    i = maxi_text_process(maxi_codeword, mode, local_source, length, symbol->eci);
+    if (symbol->debug & ZINT_DEBUG_PRINT) {
+        printf("Mode: %d\n", mode);
+    }
+
+    i = maxi_text_process(maxi_codeword, mode, source, length, symbol->eci, scm_vv);
     if (i == ZINT_ERROR_TOO_LONG) {
         strcpy(symbol->errtxt, "553: Input data too long");
         return i;
@@ -688,22 +656,26 @@ INTERNAL int maxicode(struct zint_symbol *symbol, unsigned char local_source[], 
     maxi_do_secondary_chk_even(maxi_codeword, eclen / 2); // do error correction of even
     maxi_do_secondary_chk_odd(maxi_codeword, eclen / 2); // do error correction of odd
 
+    if (symbol->debug & ZINT_DEBUG_PRINT) {
+        printf("Codewords:");
+        for (i = 0; i < 144; i++) printf(" %d", maxi_codeword[i]);
+        printf("\n");
+    }
+#ifdef ZINT_TEST
+    if (symbol->debug & ZINT_DEBUG_TEST) {
+        debug_test_codeword_dump(symbol, maxi_codeword, 144);
+    }
+#endif
+
     /* Copy data into symbol grid */
     for (i = 0; i < 33; i++) {
         for (j = 0; j < 30; j++) {
             block = (MaxiGrid[(i * 30) + j] + 5) / 6;
-            bit = (MaxiGrid[(i * 30) + j] + 5) % 6;
 
             if (block != 0) {
+                shift = 5 - ((MaxiGrid[(i * 30) + j] + 5) % 6);
 
-                bit_pattern[0] = (maxi_codeword[block - 1] & 0x20) >> 5;
-                bit_pattern[1] = (maxi_codeword[block - 1] & 0x10) >> 4;
-                bit_pattern[2] = (maxi_codeword[block - 1] & 0x8) >> 3;
-                bit_pattern[3] = (maxi_codeword[block - 1] & 0x4) >> 2;
-                bit_pattern[4] = (maxi_codeword[block - 1] & 0x2) >> 1;
-                bit_pattern[5] = (maxi_codeword[block - 1] & 0x1);
-
-                if (bit_pattern[bit] != 0) {
+                if ((maxi_codeword[block - 1] >> shift) & 0x1) {
                     set_module(symbol, i, j);
                 }
             }

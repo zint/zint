@@ -436,6 +436,7 @@ static char help_message[] = "zint tcl(stub,obj) dll\n"
     "   -secure integer: EC Level (PDF417, QR)\n"
     "   -mode: Structured primary data mode (Maxicode, Composite)\n"
     "   -primary text: Structured primary data (Maxicode, Composite)\n"
+    "   -scmvv: Prefix secondary message with [)>\\R01\\Gvv (vv 00..99) (MaxiCode)\n"
     "   -dotty bool: use dots instead of boxes for matrix codes\n"
     "   -dotsize number: radius ratio of dots from 0.01 to 1.0\n" 
     "   -scale double: Scale the image to this factor\n"
@@ -634,13 +635,13 @@ static int Encode(Tcl_Interp *interp, int objc,
             "-gssep", "-height", "-init", "-mode", "-nobackground", "-notext",
             "-primary", "-rotate", "-rows", "-scale", "-secure", "-smalltext",
             "-square", "-to", "-vers", "-whitesp", "-fullmultibyte",
-            "-separator", "-mask", NULL};
+            "-separator", "-mask", "-scmvv", NULL};
         enum iOption {
             iAddonGap, iBarcode, iBG, iBind, iBold, iBorder, iBox, iCols,
             iDMRE, iDotSize, iDotty, iECI, iFG, iFormat, iGSSep, iHeight,
             iInit, iMode, iNoBackground, iNoText, iPrimary, iRotate, iRows,
             iScale, iSecure, iSmallText, iSquare, iTo, iVers,
-            iWhiteSp, iFullMultiByte, iSeparator, iMask
+            iWhiteSp, iFullMultiByte, iSeparator, iMask, iSCMvv
             };
         int optionIndex;
         int intValue;
@@ -706,14 +707,8 @@ static int Encode(Tcl_Interp *interp, int objc,
         case iVers:
         case iWhiteSp:
         case iSeparator:
-            /* >> Int */
-            if (TCL_OK != Tcl_GetIntFromObj(interp, objv[optionPos+1],
-                    &intValue))
-            {
-                fError = 1;
-            }
-            break;
         case iMask:
+        case iSCMvv:
             /* >> Int */
             if (TCL_OK != Tcl_GetIntFromObj(interp, objv[optionPos+1],
                     &intValue))
@@ -888,6 +883,15 @@ static int Encode(Tcl_Interp *interp, int objc,
                 fError = 1;
             } else {
                 Mask = intValue + 1;
+            }
+            break;
+        case iSCMvv:
+            if (intValue < 0 || intValue > 99) {
+                Tcl_SetObjResult(interp,
+                    Tcl_NewStringObj("SCM version out of range", -1));
+                fError = 1;
+            } else {
+                hSymbol->option_2 = intValue + 1;
             }
             break;
         case iCols:

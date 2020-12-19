@@ -36,7 +36,7 @@ namespace Zint {
         m_borderType = 0;
         m_borderWidth = 0;
         m_fontSetting = 0;
-        m_securityLevel = -1;
+        m_option_1 = -1;
         m_fgColor = Qt::black;
         m_bgColor = Qt::white;
         m_cmyk = false;
@@ -75,7 +75,7 @@ namespace Zint {
         m_zintSymbol->height = m_height;
         m_zintSymbol->whitespace_width = m_whitespace;
         m_zintSymbol->border_width = m_borderWidth;
-        m_zintSymbol->option_1 = m_securityLevel;
+        m_zintSymbol->option_1 = m_option_1;
         m_zintSymbol->input_mode = m_input_mode;
         m_zintSymbol->option_2 = m_option_2;
         if (m_dotty) {
@@ -249,20 +249,12 @@ namespace Zint {
         m_whitespace = whitespace;
     }
 
-    int QZint::securityLevel() const {
-        return m_securityLevel;
+    int QZint::option1() const {
+        return m_option_1;
     }
 
-    void QZint::setSecurityLevel(int securityLevel) {
-        m_securityLevel = securityLevel;
-    }
-
-    int QZint::mode() const {
-        return m_securityLevel;
-    }
-
-    void QZint::setMode(int securityLevel) {
-        m_securityLevel = securityLevel;
+    void QZint::setOption1(int option_1) {
+        m_option_1 = option_1;
     }
 
     void QZint::setFontSetting(int fontSettingIndex) {
