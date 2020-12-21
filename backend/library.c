@@ -41,6 +41,10 @@
 
 #define TECHNETIUM  "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%"
 
+/* It's assumed that int is at least 32 bits, the following will compile-time fail if not
+ * https://stackoverflow.com/a/1980056/664741 */
+typedef int static_assert_int_at_least_32bits[CHAR_BIT != 8 || sizeof(int) < 4 ? -1 : 1];
+
 struct zint_symbol *ZBarcode_Create() {
     struct zint_symbol *symbol;
 
@@ -54,7 +58,11 @@ struct zint_symbol *ZBarcode_Create() {
     symbol->fgcolor = &symbol->fgcolour[0];
     strcpy(symbol->bgcolour, "ffffff");
     symbol->bgcolor = &symbol->bgcolour[0];
+#ifdef NO_PNG
+    strcpy(symbol->outfile, "out.gif");
+#else
     strcpy(symbol->outfile, "out.png");
+#endif
     symbol->scale = 1.0f;
     symbol->option_1 = -1;
     symbol->show_hrt = 1; // Show human readable text
@@ -132,8 +140,8 @@ INTERNAL int itf14(struct zint_symbol *symbol, unsigned char source[], int lengt
 INTERNAL int dpleit(struct zint_symbol *symbol, unsigned char source[], int length); /* Deutsche Post Leitcode */
 INTERNAL int dpident(struct zint_symbol *symbol, unsigned char source[], int length); /* Deutsche Post Identcode */
 INTERNAL int c93(struct zint_symbol *symbol, unsigned char source[], int length); /* Code 93 - a re-working of Code 39+, generates 2 check digits */
-INTERNAL int code_128(struct zint_symbol *symbol, const unsigned char source[], const size_t length); /* Code 128 and NVE-18 */
-INTERNAL int ean_128(struct zint_symbol *symbol, unsigned char source[], const size_t length); /* EAN-128 (GS1-128) */
+INTERNAL int code_128(struct zint_symbol *symbol, unsigned char source[], int length); /* Code 128 and NVE-18 */
+INTERNAL int ean_128(struct zint_symbol *symbol, unsigned char source[], int length); /* EAN-128 (GS1-128) */
 INTERNAL int code_11(struct zint_symbol *symbol, unsigned char source[], int length); /* Code 11 */
 INTERNAL int msi_handle(struct zint_symbol *symbol, unsigned char source[], int length); /* MSI Plessey */
 INTERNAL int telepen(struct zint_symbol *symbol, unsigned char source[], const size_t length); /* Telepen ASCII */
@@ -172,7 +180,7 @@ INTERNAL int code_one(struct zint_symbol *symbol, unsigned char source[], int le
 INTERNAL int grid_matrix(struct zint_symbol *symbol, unsigned char source[], int length); /* Grid Matrix */
 INTERNAL int han_xin(struct zint_symbol * symbol, unsigned char source[], int length); /* Han Xin */
 INTERNAL int dotcode(struct zint_symbol * symbol, const unsigned char source[], int length); /* DotCode */
-INTERNAL int codablock(struct zint_symbol * symbol, const unsigned char source[], const size_t length); /* Codablock */
+INTERNAL int codablock(struct zint_symbol *symbol, unsigned char source[], int length); /* Codablock */
 INTERNAL int upnqr(struct zint_symbol *symbol, unsigned char source[], int length); /* UPNQR */
 INTERNAL int qr_code(struct zint_symbol *symbol, unsigned char source[], int length); /* QR Code */
 INTERNAL int dmatrix(struct zint_symbol *symbol, const unsigned char source[], const size_t in_length); /* Data Matrix (IEC16022) */
@@ -749,7 +757,8 @@ static int reduced_charset(struct zint_symbol *symbol, unsigned char *source, in
     if ((symbol->input_mode & 0x07) == UNICODE_MODE) {
         /* Prior check ensures ECI only set for those that support it */
         preprocessed = preprocessed_buf;
-        error_number = utf_to_eci(symbol->eci && symbol->eci <= 899 ? symbol->eci : 3, source, preprocessed, &in_length);
+        error_number = utf_to_eci(symbol->eci && symbol->eci <= 899 ? symbol->eci : 3, source, preprocessed,
+                        &in_length);
         if (error_number != 0) {
             strcpy(symbol->errtxt, "204: Invalid characters in input data");
             return error_number;
@@ -1077,6 +1086,15 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
 
     if (!symbol) return ZINT_ERROR_INVALID_DATA;
 
+    if (symbol->debug & ZINT_DEBUG_PRINT) {
+        printf("ZBarcode_Encode: symbology: %d, input_mode: 0x%X, ECI: %d, option_1: %d, option_2: %d,"
+                " option_3: %d, scale: %g\n    output_options: 0x%X, in_length: %d,"
+                " First 10 source: \"%.10s\", First 10 primary: \"%.10s\"\n",
+                symbol->symbology, symbol->input_mode, symbol->eci, symbol->option_1, symbol->option_2,
+                symbol->option_3, symbol->scale, symbol->output_options, in_length,
+                source, symbol->primary);
+    }
+
     error_number = 0;
 
     if (source == NULL) {
@@ -1092,8 +1110,13 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
         error_tag(symbol->errtxt, ZINT_ERROR_INVALID_DATA);
         return ZINT_ERROR_INVALID_DATA;
     }
+    if (in_length > ZINT_MAX_DATA_LEN) {
+        strcpy(symbol->errtxt, "243: Input data too long");
+        error_tag(symbol->errtxt, ZINT_ERROR_INVALID_DATA);
+        return ZINT_ERROR_TOO_LONG;
+    }
 
-    if (strcmp(symbol->outfile, "") == 0) {
+    if (*symbol->outfile == '\0') {
 #ifdef NO_PNG
         strcpy(symbol->outfile, "out.gif");
 #else
@@ -1280,9 +1303,9 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
             // Reduce input for composite and non-forced symbologies, others (EAN128 and RSS_EXP based) will handle it themselves
             if (is_composite(symbol->symbology) || !check_force_gs1(symbol->symbology)) {
 #ifndef _MSC_VER
-                char reduced[in_length + 1];
+                unsigned char reduced[in_length + 1];
 #else
-                char* reduced = (char*) _alloca(in_length + 1);
+                unsigned char *reduced = (unsigned char *) _alloca(in_length + 1);
 #endif
                 error_number = gs1_verify(symbol, local_source, in_length, reduced);
                 if (error_number != 0) {
@@ -1553,7 +1576,7 @@ int ZBarcode_Encode_File(struct zint_symbol *symbol, char *filename) {
 
     if (!strcmp(filename, "-")) {
         file = stdin;
-        fileLen = ZINT_MAX_FILE_LEN;
+        fileLen = ZINT_MAX_DATA_LEN;
     } else {
         file = fopen(filename, "rb");
         if (!file) {
@@ -1574,7 +1597,7 @@ int ZBarcode_Encode_File(struct zint_symbol *symbol, char *filename) {
             fclose(file);
             return ZINT_ERROR_INVALID_DATA;
         }
-        if (fileLen > ZINT_MAX_FILE_LEN) {
+        if (fileLen > ZINT_MAX_DATA_LEN) {
             strcpy(symbol->errtxt, "230: Input file too long");
             error_tag(symbol->errtxt, ZINT_ERROR_INVALID_DATA);
             fclose(file);
@@ -1673,7 +1696,8 @@ int ZBarcode_Encode_File_and_Buffer_Vector(struct zint_symbol *symbol, char *fil
 
 int ZBarcode_Version() {
     if (ZINT_VERSION_BUILD) {
-        return (ZINT_VERSION_MAJOR * 10000) + (ZINT_VERSION_MINOR * 100) + ZINT_VERSION_RELEASE * 10 + ZINT_VERSION_BUILD;
+        return (ZINT_VERSION_MAJOR * 10000) + (ZINT_VERSION_MINOR * 100) + ZINT_VERSION_RELEASE * 10
+                + ZINT_VERSION_BUILD;
     }
     return (ZINT_VERSION_MAJOR * 10000) + (ZINT_VERSION_MINOR * 100) + ZINT_VERSION_RELEASE;
 }

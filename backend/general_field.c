@@ -38,7 +38,7 @@ static char alphanum_puncs[] = "*,-./";
 static char isoiec_puncs[] = "!\"%&'()*+,-./:;<=>?_ ";
 
 /* Returns type of char at `i`. FNC1 counted as NUMERIC. Returns 0 if invalid char */
-static int general_field_type(char *general_field, int i) {
+static int general_field_type(const char *general_field, const int i) {
     if (general_field[i] == '[' || (general_field[i] >= '0' && general_field[i] <= '9')) {
         return NUMERIC;
     }
@@ -52,7 +52,8 @@ static int general_field_type(char *general_field, int i) {
 }
 
 /* Returns true if next (including `i`) `num` chars of type `type`, or if given (non-zero), `type2` */
-static int general_field_next(char *general_field, int i, int general_field_len, int num, int type, int type2) {
+static int general_field_next(const char *general_field, int i, const int general_field_len, int num, const int type,
+            const int type2) {
     if (i + num > general_field_len) {
         return 0;
     }
@@ -66,7 +67,8 @@ static int general_field_next(char *general_field, int i, int general_field_len,
 }
 
 /* Returns true if next (including `i`) `num` up to `max_num` chars of type `type` and occur at end */
-static int general_field_next_terminate(char *general_field, int i, int general_field_len, int num, int max_num, int type) {
+static int general_field_next_terminate(const char *general_field, int i, const int general_field_len, int num,
+            const int max_num, const int type) {
     if (i + max_num < general_field_len) {
         return 0;
     }
@@ -79,7 +81,8 @@ static int general_field_next_terminate(char *general_field, int i, int general_
 }
 
 /* Returns true if none of the next (including `i`) `num` chars (or end occurs) of type `type` */
-static int general_field_next_none(char *general_field, int i, int general_field_len, int num, int type) {
+static int general_field_next_none(const char *general_field, int i, const int general_field_len, int num,
+            const int type) {
     for (; i < general_field_len && num; i++, num--) {
         if (general_field_type(general_field, i) == type) {
             return 0;
@@ -90,11 +93,12 @@ static int general_field_next_none(char *general_field, int i, int general_field
 
 /* Attempts to apply encoding rules from sections 7.2.5.5.1 to 7.2.5.5.3
  * of ISO/IEC 24724:2011 (same as sections 5.4.1 to 5.4.3 of ISO/IEC 24723:2010) */
-INTERNAL int general_field_encode(char *general_field, int *p_mode, int *p_last_digit, char binary_string[]) {
+INTERNAL int general_field_encode(const char *general_field, const int general_field_len, int *p_mode,
+                char *p_last_digit, char binary_string[], int *p_bp) {
     int i, d1, d2;
     int mode = *p_mode;
-    int last_digit = 0; /* Set to odd remaining digit at end if any */
-    int general_field_len = strlen(general_field);
+    char last_digit = '\0'; /* Set to odd remaining digit at end if any */
+    int bp = *p_bp;
 
     for (i = 0; i < general_field_len; ) {
         int type = general_field_type(general_field, i);
@@ -104,75 +108,89 @@ INTERNAL int general_field_encode(char *general_field, int *p_mode, int *p_last_
         switch (mode) {
             case NUMERIC:
                 if (i < general_field_len - 1) { /* If at least 2 characters remain */
-                    if (type != NUMERIC || general_field_type(general_field, i + 1) != NUMERIC) { /* 7.2.5.5.1/5.4.1 a) */
-                        strcat(binary_string, "0000"); /* Alphanumeric latch */
+                    if (type != NUMERIC || general_field_type(general_field, i + 1) != NUMERIC) {
+                        /* 7.2.5.5.1/5.4.1 a) */
+                        bp = bin_append_posn(0, 4, binary_string, bp); /* Alphanumeric latch "0000" */
                         mode = ALPHANUMERIC;
                     } else {
                         d1 = general_field[i] == '[' ? 10 : ctoi(general_field[i]);
                         d2 = general_field[i + 1] == '[' ? 10 : ctoi(general_field[i + 1]);
-                        bin_append((11 * d1) + d2 + 8, 7, binary_string);
+                        bp = bin_append_posn((11 * d1) + d2 + 8, 7, binary_string, bp);
                         i += 2;
                     }
                 } else { /* If 1 character remains */
-                    if (type != NUMERIC) { /* 7.2.5.5.1/5.4.1 b) */
-                        strcat(binary_string, "0000"); /* Alphanumeric latch */
+                    if (type != NUMERIC) {
+                        /* 7.2.5.5.1/5.4.1 b) */
+                        bp = bin_append_posn(0, 4, binary_string, bp); /* Alphanumeric latch "0000" */
                         mode = ALPHANUMERIC;
                     } else {
-                        last_digit = general_field[i]; /* Ending with single digit. 7.2.5.5.1 c) and 5.4.1 c) dealt with separately outside this procedure */
+                        /* Ending with single digit.
+                         * 7.2.5.5.1 c) and 5.4.1 c) dealt with separately outside this procedure */
+                        last_digit = general_field[i];
                         i++;
                     }
                 }
                 break;
             case ALPHANUMERIC:
-                if (general_field[i] == '[') { /* 7.2.5.5.2/5.4.2 a) */
-                    strcat(binary_string, "01111");
+                if (general_field[i] == '[') {
+                    /* 7.2.5.5.2/5.4.2 a) */
+                    bp = bin_append_posn(15, 5, binary_string, bp); /* "01111" */
                     mode = NUMERIC;
                     i++;
-                } else if (type == ISOIEC) { /* 7.2.5.5.2/5.4.2 b) */
-                    strcat(binary_string, "00100"); /* ISO/IEC 646 latch */
+                } else if (type == ISOIEC) {
+                    /* 7.2.5.5.2/5.4.2 b) */
+                    bp = bin_append_posn(4, 5, binary_string, bp); /* ISO/IEC 646 latch "00100" */
                     mode = ISOIEC;
-               } else if (general_field_next(general_field, i, general_field_len, 6, NUMERIC, 0)) { /* 7.2.5.5.2/5.4.2 c) */
-                    strcat(binary_string, "000"); /* Numeric latch */
+                } else if (general_field_next(general_field, i, general_field_len, 6, NUMERIC, 0)) {
+                    /* 7.2.5.5.2/5.4.2 c) */
+                    bp = bin_append_posn(0, 3, binary_string, bp); /* Numeric latch "000" */
                     mode = NUMERIC;
-                } else if (general_field_next_terminate(general_field, i, general_field_len, 4, 5 /*Can limit to 5 max due to above*/, NUMERIC)) { /* 7.2.5.5.2/5.4.2 d) */
-                    strcat(binary_string, "000"); /* Numeric latch */
+                } else if (general_field_next_terminate(general_field, i, general_field_len, 4,
+                            5 /*Can limit to 5 max due to above*/, NUMERIC)) {
+                    /* 7.2.5.5.2/5.4.2 d) */
+                    bp = bin_append_posn(0, 3, binary_string, bp); /* Numeric latch "000" */
                     mode = NUMERIC;
                 } else if ((general_field[i] >= '0') && (general_field[i] <= '9')) {
-                    bin_append(general_field[i] - 43, 5, binary_string);
+                    bp = bin_append_posn(general_field[i] - 43, 5, binary_string, bp);
                     i++;
                 } else if ((general_field[i] >= 'A') && (general_field[i] <= 'Z')) {
-                    bin_append(general_field[i] - 33, 6, binary_string);
+                    bp = bin_append_posn(general_field[i] - 33, 6, binary_string, bp);
                     i++;
                 } else {
-                    bin_append(posn(alphanum_puncs, general_field[i]) + 58, 6, binary_string);
+                    bp = bin_append_posn(posn(alphanum_puncs, general_field[i]) + 58, 6, binary_string, bp);
                     i++;
                 }
                 break;
             case ISOIEC:
-                if (general_field[i] == '[') { /* 7.2.5.5.3/5.4.3 a) */
-                    strcat(binary_string, "01111");
+                if (general_field[i] == '[') {
+                    /* 7.2.5.5.3/5.4.3 a) */
+                    bp = bin_append_posn(15, 5, binary_string, bp); /* "01111" */
                     mode = NUMERIC;
                     i++;
                 } else {
                     int next_10_not_isoiec = general_field_next_none(general_field, i, general_field_len, 10, ISOIEC);
-                    if (next_10_not_isoiec && general_field_next(general_field, i, general_field_len, 4, NUMERIC, 0)) { /* 7.2.5.5.3/5.4.3 b) */
-                        strcat(binary_string, "000"); /* Numeric latch */
+                    if (next_10_not_isoiec && general_field_next(general_field, i, general_field_len, 4,
+                                                NUMERIC, 0)) {
+                        /* 7.2.5.5.3/5.4.3 b) */
+                        bp = bin_append_posn(0, 3, binary_string, bp); /* Numeric latch "000" */
                         mode = NUMERIC;
-                    } else if (next_10_not_isoiec && general_field_next(general_field, i, general_field_len, 5, ALPHANUMERIC, NUMERIC)) { /* 7.2.5.5.3/5.4.3 c) */
+                    } else if (next_10_not_isoiec && general_field_next(general_field, i, general_field_len, 5,
+                                                        ALPHANUMERIC, NUMERIC)) {
+                        /* 7.2.5.5.3/5.4.3 c) */
                         /* Note this rule can produce longer bitstreams if most of the alphanumerics are numeric */
-                        strcat(binary_string, "00100"); /* Alphanumeric latch */
+                        bp = bin_append_posn(4, 5, binary_string, bp); /* Alphanumeric latch "00100" */
                         mode = ALPHANUMERIC;
                     } else if ((general_field[i] >= '0') && (general_field[i] <= '9')) {
-                        bin_append(general_field[i] - 43, 5, binary_string);
+                        bp = bin_append_posn(general_field[i] - 43, 5, binary_string, bp);
                         i++;
                     } else if ((general_field[i] >= 'A') && (general_field[i] <= 'Z')) {
-                        bin_append(general_field[i] - 1, 7, binary_string);
+                        bp = bin_append_posn(general_field[i] - 1, 7, binary_string, bp);
                         i++;
                     } else if ((general_field[i] >= 'a') && (general_field[i] <= 'z')) {
-                        bin_append(general_field[i] - 7, 7, binary_string);
+                        bp = bin_append_posn(general_field[i] - 7, 7, binary_string, bp);
                         i++;
                     } else {
-                        bin_append(posn(isoiec_puncs, general_field[i]) + 232, 8, binary_string);
+                        bp = bin_append_posn(posn(isoiec_puncs, general_field[i]) + 232, 8, binary_string, bp);
                         i++;
                     }
                 }
@@ -182,5 +200,7 @@ INTERNAL int general_field_encode(char *general_field, int *p_mode, int *p_last_
 
     *p_mode = mode;
     *p_last_digit = last_digit;
+    *p_bp = bp;
+
     return 1;
 }

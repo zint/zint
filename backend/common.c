@@ -30,7 +30,9 @@
     SUCH DAMAGE.
  */
 /* vim: set ts=4 sw=4 et : */
+#ifdef ZINT_TEST
 #include <stdio.h>
+#endif
 #ifdef _MSC_VER
 #include <malloc.h>
 #endif

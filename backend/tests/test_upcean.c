@@ -405,52 +405,65 @@ static void test_isbn_input(int index, int debug) {
         /*  0*/ { "0", 0, 0 }, // Left zero-padded if < 10 chars
         /*  1*/ { "12345678", ZINT_ERROR_INVALID_CHECK, -1 },
         /*  2*/ { "12345679", 0, 0 }, // 9 is correct check digit
-        /*  3*/ { "123456789", 0, 0 },
-        /*  4*/ { "0123456789", 0, 0 },
-        /*  5*/ { "1234567890", ZINT_ERROR_INVALID_CHECK, -1 },
-        /*  6*/ { "123456789X", 0, 0 }, // X is correct check digit
-        /*  7*/ { "123456789x", 0, 0 }, // x is correct check digit
-        /*  8*/ { "8175257660", 0, 0 }, // 0 is correct check digit
-        /*  9*/ { "0590764845", 0, 0 }, // 5 is correct check digit
-        /* 10*/ { "0906495741", 0, 0 }, // 1 is correct check digit
-        /* 11*/ { "0140430016", 0, 0 }, // 6 is correct check digit
-        /* 12*/ { "0571086187", 0, 0 }, // 7 is correct check digit
-        /* 13*/ { "0486600882", 0, 0 }, // 2 is correct check digit
-        /* 14*/ { "12345678901", ZINT_ERROR_TOO_LONG, -1 },
-        /* 15*/ { "123456789012", ZINT_ERROR_TOO_LONG, -1 },
-        /* 16*/ { "1234567890123", ZINT_ERROR_INVALID_DATA, -1 },
-        /* 17*/ { "9784567890120", 0, 0 }, // 0 is correct check digit
-        /* 18*/ { "9783161484100", 0, 0 }, // 0 is correct check digit
-        /* 19*/ { "9781846688225", 0, 0 }, // 5 is correct check digit
-        /* 20*/ { "9781847657954", 0, 0 }, // 4 is correct check digit
-        /* 21*/ { "9781846688188", 0, 0 }, // 8 is correct check digit
-        /* 22*/ { "9781847659293", 0, 0 }, // 3 is correct check digit
-        /* 23*/ { "97845678901201", ZINT_ERROR_TOO_LONG, -1 },
-        /* 24*/ { "3954994+12", 0, 0 },
-        /* 25*/ { "3954994+12345", 0, 0 },
-        /* 26*/ { "3954994+123456", ZINT_ERROR_TOO_LONG, -1 },
-        /* 27*/ { "3954994+", 0, 0 },
-        /* 28*/ { "61954993+1", 0, 0 },
-        /* 29*/ { "61954993+123", 0, 0 },
-        /* 30*/ { "361954999+12", 0, 0 },
-        /* 31*/ { "361954999+1234", 0, 0 },
-        /* 32*/ { "361954999+12", 0, 0 },
-        /* 33*/ { "199900003X+12", 0, 0 },
-        /* 34*/ { "199900003x+12", 0, 0 },
-        /* 35*/ { "199900003X+12345", 0, 0 },
-        /* 36*/ { "199900003x+12345", 0, 0 },
-        /* 37*/ { "9791234567896+12", 0, 0 },
-        /* 38*/ { "9791234567896+12345", 0, 0 },
-        /* 39*/ { "9791234567896+", 0, 0 },
-        /* 40*/ { "97912345678961+", ZINT_ERROR_TOO_LONG, -1 },
-        /* 41*/ { "97912345678961+12345", ZINT_ERROR_TOO_LONG, -1 },
-        /* 42*/ { "9791234567896+123456", ZINT_ERROR_TOO_LONG, -1 },
+        /*  3*/ { "98765434", 0, 0 }, // 4 is correct check digit
+        /*  4*/ { "123456789", 0, 0 },
+        /*  5*/ { "340013817", ZINT_ERROR_INVALID_CHECK, -1 },
+        /*  6*/ { "340013818", 0, 0 }, // 8 is correct check digit
+        /*  7*/ { "902888455", 0, 0 }, // 5 is correct check digit
+        /*  8*/ { "0123456789", 0, 0 },
+        /*  9*/ { "1234567890", ZINT_ERROR_INVALID_CHECK, -1 },
+        /* 10*/ { "123456789X", 0, 0 }, // X is correct check digit
+        /* 11*/ { "123456789x", 0, 0 }, // x is correct check digit
+        /* 12*/ { "8175257660", 0, 0 }, // 0 is correct check digit
+        /* 13*/ { "0590764845", 0, 0 }, // 5 is correct check digit
+        /* 14*/ { "0906495741", 0, 0 }, // 1 is correct check digit
+        /* 15*/ { "0140430016", 0, 0 }, // 6 is correct check digit
+        /* 16*/ { "0571086187", 0, 0 }, // 7 is correct check digit
+        /* 17*/ { "0486600882", 0, 0 }, // 2 is correct check digit
+        /* 18*/ { "12345678901", ZINT_ERROR_TOO_LONG, -1 },
+        /* 19*/ { "123456789012", ZINT_ERROR_TOO_LONG, -1 },
+        /* 20*/ { "1234567890123", ZINT_ERROR_INVALID_DATA, -1 },
+        /* 21*/ { "9784567890123", ZINT_ERROR_INVALID_CHECK, -1 },
+        /* 22*/ { "9784567890120", 0, 0 }, // 0 is correct check digit
+        /* 23*/ { "9783161484100", 0, 0 }, // 0 is correct check digit
+        /* 24*/ { "9781846688225", 0, 0 }, // 5 is correct check digit
+        /* 25*/ { "9781847657954", 0, 0 }, // 4 is correct check digit
+        /* 26*/ { "9781846688188", 0, 0 }, // 8 is correct check digit
+        /* 27*/ { "9781847659293", 0, 0 }, // 3 is correct check digit
+        /* 28*/ { "97845678901201", ZINT_ERROR_TOO_LONG, -1 },
+        /* 29*/ { "3954994+12", 0, 0 },
+        /* 30*/ { "3954994+12345", 0, 0 },
+        /* 31*/ { "3954994+123456", ZINT_ERROR_TOO_LONG, -1 },
+        /* 32*/ { "3954994+", 0, 0 },
+        /* 33*/ { "61954993+1", 0, 0 },
+        /* 34*/ { "61954992+123", ZINT_ERROR_INVALID_CHECK, -1 },
+        /* 35*/ { "61954993+123", 0, 0 },
+        /* 36*/ { "361954990+12", ZINT_ERROR_INVALID_CHECK, -1 },
+        /* 37*/ { "361954999+12", 0, 0 },
+        /* 38*/ { "361954999+1234", 0, 0 },
+        /* 39*/ { "361954999+12", 0, 0 },
+        /* 40*/ { "1999000030+12", ZINT_ERROR_INVALID_CHECK, -1 },
+        /* 41*/ { "199900003X+12", 0, 0 },
+        /* 42*/ { "199900003x+12", 0, 0 },
+        /* 43*/ { "1999000031+12345", ZINT_ERROR_INVALID_CHECK, -1 },
+        /* 44*/ { "199900003X+12345", 0, 0 },
+        /* 45*/ { "199900003x+12345", 0, 0 },
+        /* 46*/ { "9791234567895+12", ZINT_ERROR_INVALID_CHECK, -1 },
+        /* 47*/ { "9791234567896+12", 0, 0 },
+        /* 48*/ { "9791234567897+12345", ZINT_ERROR_INVALID_CHECK, -1 },
+        /* 49*/ { "9791234567896+12345", 0, 0 },
+        /* 50*/ { "9791234567892+", ZINT_ERROR_INVALID_CHECK, -1 },
+        /* 51*/ { "9791234567896+", 0, 0 },
+        /* 52*/ { "97912345678961+", ZINT_ERROR_TOO_LONG, -1 },
+        /* 53*/ { "97912345678961+12345", ZINT_ERROR_TOO_LONG, -1 },
+        /* 54*/ { "9791234567896+123456", ZINT_ERROR_TOO_LONG, -1 },
     };
     int data_size = sizeof(data) / sizeof(struct item);
 
     for (int i = 0; i < data_size; i++) {
 
         if (index != -1 && i != index) continue;
+        if ((debug & ZINT_DEBUG_TEST_PRINT) && !(debug & ZINT_DEBUG_TEST_LESS_NOISY)) printf("i:%d\n", i);
 
         struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");

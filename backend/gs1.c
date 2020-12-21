@@ -69,9 +69,9 @@ static void itostr(char ai_string[], int ai_value) {
 }
 
 /* Returns the number of times a character occurs in a string */
-static int ustrchr_cnt(const unsigned char string[], const size_t length, const unsigned char c) {
+static int ustrchr_cnt(const unsigned char string[], const int length, const unsigned char c) {
     int count = 0;
-    unsigned int i;
+    int i;
     for (i = 0; i < length; i++) {
         if (string[i] == c) {
             count++;
@@ -80,13 +80,14 @@ static int ustrchr_cnt(const unsigned char string[], const size_t length, const 
     return count;
 }
 
-INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[], const size_t src_len, char reduced[]) {
+INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[], const int src_len,
+                unsigned char reduced[]) {
     int i, j, last_ai, ai_latch;
     char ai_string[7]; /* 6 char max "(NNNN)" */
     int bracket_level, max_bracket_level, ai_length, max_ai_length, min_ai_length;
     int ai_count;
     int error_latch;
-    int error_value;
+    int error_value = 0;
 #ifdef _MSC_VER
     int *ai_value;
     int *ai_location;
@@ -104,7 +105,7 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
 #endif
 
     /* Detect extended ASCII characters */
-    for (i = 0; i < (int) src_len; i++) {
+    for (i = 0; i < src_len; i++) {
         if (source[i] >= 128) {
             strcpy(symbol->errtxt, "250: Extended ASCII characters are not supported by GS1");
             return ZINT_ERROR_INVALID_DATA;
@@ -140,8 +141,7 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
     min_ai_length = 5;
     j = 0;
     ai_latch = 0;
-    error_value = 0;
-    for (i = 0; i < (int) src_len; i++) {
+    for (i = 0; i < src_len; i++) {
         ai_length += j;
         if (((j == 1) && (source[i] != ']')) && ((source[i] < '0') || (source[i] > '9'))) {
             ai_latch = 1;
@@ -198,7 +198,7 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
     }
 
     ai_count = 0;
-    for (i = 1; i < (int) src_len; i++) {
+    for (i = 1; i < src_len; i++) {
         if (source[i - 1] == '[') {
             ai_location[ai_count] = i;
             j = 0;
@@ -223,7 +223,8 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
         data_length[i] = 0;
         do {
             data_length[i]++;
-        } while ((source[data_location[i] + data_length[i] - 1] != '[') && (data_location[i] + data_length[i] <= (int) src_len));
+        } while ((source[data_location[i] + data_length[i] - 1] != '[')
+                    && (data_location[i] + data_length[i] <= src_len));
         data_length[i]--;
     }
 
@@ -689,7 +690,7 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
     /* Resolve AI data - put resulting string in 'reduced' */
     j = 0;
     ai_latch = 1;
-    for (i = 0; i < (int) src_len; i++) {
+    for (i = 0; i < src_len; i++) {
         if ((source[i] != '[') && (source[i] != ']')) {
             reduced[j++] = source[i];
         }

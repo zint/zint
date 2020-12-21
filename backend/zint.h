@@ -307,7 +307,7 @@ extern "C" {
 #define ZINT_CAP_MASK           0x0800
 
 // The largest amount of data that can be encoded is 4350 4-byte UTF-8 chars in Han Xin Code
-#define ZINT_MAX_FILE_LEN       17400
+#define ZINT_MAX_DATA_LEN       17400
 
 // Debug flags
 #define ZINT_DEBUG_PRINT        1

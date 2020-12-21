@@ -286,7 +286,7 @@ static void test_hrt(int index, int debug) {
     testFinish();
 }
 
-extern int gs1_verify(struct zint_symbol *symbol, const unsigned char source[], const size_t src_len, char reduced[]);
+#include "../gs1.h"
 
 static void test_gs1_verify(int index) {
 
@@ -801,7 +801,7 @@ static void test_gs1_verify(int index) {
 
         int length = strlen(data[i].data);
 
-        ret = gs1_verify(symbol, (unsigned char *) data[i].data, length, reduced);
+        ret = gs1_verify(symbol, (unsigned char *) data[i].data, length, (unsigned char *) reduced);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d (length %d \"%s\") %s\n", i, ret, data[i].ret, length, data[i].data, symbol->errtxt);
 
         if (ret == 0) {

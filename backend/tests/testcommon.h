@@ -39,6 +39,10 @@
 #include <stdio.h>
 #include "../common.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifndef ARRAY_SIZE
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 #endif
@@ -75,7 +79,7 @@ void testRun(int argc, char *argv[], testFunction funcs[], int funcs_size);
 #define ZINT_DEBUG_TEST_BWIPP           128
 #define ZINT_DEBUG_TEST_PERFORMANCE     256
 
-extern void vector_free(struct zint_symbol *symbol); /* Free vector structures */
+INTERNAL void vector_free(struct zint_symbol *symbol); /* Free vector structures */
 
 int testUtilSetSymbol(struct zint_symbol *symbol, int symbology, int input_mode, int eci, int option_1, int option_2, int option_3, int output_options, char *data, int length, int debug);
 const char *testUtilBarcodeName(int symbology);
@@ -118,5 +122,9 @@ int testUtilCanBwipp(int index, const struct zint_symbol *symbol, int option_1, 
 int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int option_2, int option_3, const char *data, int length, const char *primary, char *buffer, int buffer_size);
 int testUtilBwippCmp(const struct zint_symbol *symbol, char *msg, const char *bwipp_buf, const char *expected);
 int testUtilBwippCmpRow(const struct zint_symbol *symbol, int row, char *msg, const char *bwipp_buf, const char *expected);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* TESTCOMMON_H */

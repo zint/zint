@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2017 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009 - 2020 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -37,7 +37,8 @@
 extern "C" {
 #endif /* __cplusplus */
 
-    extern int gs1_verify(struct zint_symbol *symbol, const unsigned char source[], const size_t src_len, char reduced[]);
+INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[], const int src_len,
+                unsigned char reduced[]);
 
 #ifdef __cplusplus
 }

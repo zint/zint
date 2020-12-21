@@ -297,7 +297,7 @@ static int is_raster(char *filetype) {
 
 static int batch_process(struct zint_symbol *symbol, char *filename, int mirror_mode, char *filetype, int rotate_angle) {
     FILE *file;
-    unsigned char buffer[ZINT_MAX_FILE_LEN] = {0}; // Maximum HanXin input
+    unsigned char buffer[ZINT_MAX_DATA_LEN] = {0}; // Maximum HanXin input
     unsigned char character = 0;
     int posn = 0, error_number = 0, line_count = 1;
     char output_file[256];

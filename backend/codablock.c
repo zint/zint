@@ -40,7 +40,7 @@
 #include <assert.h>
 #include "common.h"
 
-INTERNAL int code_128(struct zint_symbol *symbol, const unsigned char source[], const size_t length);
+INTERNAL int code_128(struct zint_symbol *symbol, unsigned char source[], int length);
 
 #define uchar unsigned char
 
@@ -627,7 +627,7 @@ static void SumASCII(uchar **ppOutPos, int Sum, int CharacterSet)
 
 /* Main function called by zint framework
  */
-INTERNAL int codablock(struct zint_symbol *symbol,const unsigned char source[], const size_t length) {
+INTERNAL int codablock(struct zint_symbol *symbol, unsigned char source[], int length) {
     int charCur, dataLength;
     int error_number;
     int rows, columns, useColumns;
@@ -685,7 +685,7 @@ INTERNAL int codablock(struct zint_symbol *symbol,const unsigned char source[], 
         dataLength++;
     }
     /* Replace all Codes>127 with <fnc4>Code-128 */
-    for (charCur = 0; charCur < (int) length; charCur++) {
+    for (charCur = 0; charCur < length; charCur++) {
         if (source[charCur]>127)
         {
             data[dataLength] = aFNC4;
@@ -710,7 +710,7 @@ INTERNAL int codablock(struct zint_symbol *symbol,const unsigned char source[], 
     /* nor row nor column count given */
     if (rows <= 0 && columns <= 0) {
         /* use 1/1 aspect/ratio Codablock */
-        columns = floor(sqrt(dataLength)) + 5;
+        columns = (int) floor(sqrt(dataLength)) + 5;
         if (columns > 67) {
             columns = 67;
         } else if (columns < 9) {
@@ -738,7 +738,7 @@ INTERNAL int codablock(struct zint_symbol *symbol,const unsigned char source[], 
 
     /* Data Check Characters K1 and K2, Annex F */
     Sum1 = Sum2 = 0;
-    for (charCur = 0; charCur < (int) length; charCur++) {
+    for (charCur = 0; charCur < length; charCur++) {
         Sum1 = (Sum1 + (charCur + 1) * source[charCur]) % 86; /* Mod as we go along to avoid overflow */
         Sum2 = (Sum2 + charCur * source[charCur]) % 86;
     }
@@ -885,7 +885,8 @@ INTERNAL int codablock(struct zint_symbol *symbol,const unsigned char source[], 
                             A2C128_C(&pOutPos,aFNC1,'\0');
                         else
                         {
-                            A2C128_C(&pOutPos, data[charCur], charCur + 1 < dataLength ? data[charCur + 1] : 0);
+                            A2C128_C(&pOutPos, data[charCur],
+                                (uchar) (charCur + 1 < dataLength ? data[charCur + 1] : 0));
                             ++charCur;
                             /* We need this here to get the good index */
                             /* for the termination flags in Set. */

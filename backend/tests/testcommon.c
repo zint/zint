@@ -42,11 +42,6 @@
 #include <unistd.h>
 #include <errno.h>
 
-#ifndef COMMON_INLINE
-extern int module_is_set(const struct zint_symbol *symbol, const int y_coord, const int x_coord);
-extern int module_colour_is_set(const struct zint_symbol *symbol, const int y_coord, const int x_coord);
-#endif
-
 static int tests = 0;
 static int failed = 0;
 static int skipped = 0;
@@ -1737,7 +1732,7 @@ static const char *testUtilBwippName(int index, const struct zint_symbol *symbol
         { "", -1, 44, 0, 0, 0, 0, 0, },
         { "", -1, 45, 0, 0, 0, 0, 0, },
         { "", -1, 46, 0, 0, 0, 0, 0, },
-        { "msi", BARCODE_MSI_PLESSEY, 47, 0, 0, 0, 0, 0, },
+        { "msi", BARCODE_MSI_PLESSEY, 47, 0, 1, 0, 0, 0, },
         { "", -1, 48, 0, 0, 0, 0, 0, },
         { "symbol", BARCODE_FIM, 49, 0, 0, 0, 0, 0, },
         { "code39", BARCODE_LOGMARS, 50, 0, 1, 0, 0, 0, },
@@ -2177,6 +2172,26 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                     }
                     bwipp_opts = bwipp_opts_buf; /* Set always as option_2 == 2 is bwipp default */
                 }
+            } else if (symbology == BARCODE_PLESSEY) {
+                sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%sincludecheck", strlen(bwipp_opts_buf) ? " " : "");
+                bwipp_opts = bwipp_opts_buf;
+            } else if (symbology == BARCODE_MSI_PLESSEY) {
+                if (option_2 > 0) {
+                    sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%sincludecheck", strlen(bwipp_opts_buf) ? " " : "");
+
+                    const char *checktype = NULL;
+                    if (option_2 == 2) {
+                        checktype = "mod1010";
+                    } else if (option_2 == 3) {
+                        checktype = "mod11 badmod11";
+                    } else if (option_2 == 4) {
+                        checktype = "mod1110 badmod11";
+                    }
+                    if (checktype) {
+                        sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%schecktype=%s", strlen(bwipp_opts_buf) ? " " : "", checktype);
+                    }
+                    bwipp_opts = bwipp_opts_buf;
+                }
             } else if (symbology == BARCODE_PDF417 || symbology == BARCODE_PDF417COMP || symbology == BARCODE_HIBC_PDF
                     || symbology == BARCODE_MICROPDF417 || symbology == BARCODE_HIBC_MICPDF) {
                 for (r = 0; r < symbol->rows; r++) bwipp_row_height[r] = 1; /* Change from 3 */
@@ -2265,8 +2280,16 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                 }
             } else if (symbology == BARCODE_CODEONE) {
                 if (option_2 >= 1 && option_2 <= 10) {
-                    static char codeone_versions[] = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'S', 'T' };
-                    sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%sversion=%c", strlen(bwipp_opts_buf) ? " " : "", codeone_versions[option_2 - 1]);
+                    static const char *codeone_versions[] = { "A", "B", "C", "D", "E", "F", "G", "H" };
+                    const char *codeone_version;
+                    if (option_2 == 9) {
+                        codeone_version = length <= 6 ? "S-10" : length <= 12 ? "S-20" : "S-30";
+                    } else if (option_2 == 10) {
+                        codeone_version = "T-16"; // TODO: Allow for different T sizes
+                    } else {
+                        codeone_version = codeone_versions[option_2 - 1];
+                    }
+                    sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%sversion=%s", strlen(bwipp_opts_buf) ? " " : "", codeone_version);
                     bwipp_opts = bwipp_opts_buf;
                 }
             }
@@ -2334,6 +2357,12 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
     if (symbology == BARCODE_FIM) {
         /* Ratio 2 width bar/space -> 1 width */
         char adj[8] = " -sr=0.5";
+        memmove(cmd + GS_INITIAL_LEN + sizeof(adj), cmd + GS_INITIAL_LEN, strlen(cmd) + 1 - GS_INITIAL_LEN);
+        memcpy(cmd + GS_INITIAL_LEN, adj, sizeof(adj));
+    }
+    if (symbology == BARCODE_PLESSEY) {
+        /* Ceiling ratio 3/4/5 width bar/space -> 2 width then round ratio 2 width bar/space -> 3 width */
+        char adj[16] = " -sc=0.4 -sr=1.3";
         memmove(cmd + GS_INITIAL_LEN + sizeof(adj), cmd + GS_INITIAL_LEN, strlen(cmd) + 1 - GS_INITIAL_LEN);
         memcpy(cmd + GS_INITIAL_LEN, adj, sizeof(adj));
     }

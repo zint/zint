@@ -389,7 +389,7 @@ static void test_stdin_input(int index, int debug) {
         assert_nonnull(exec(cmd, buf, sizeof(buf) - 1, debug, i), "i:%d exec(%s) NULL\n", i, cmd);
 
         assert_nonzero(testUtilExists(data[i].outfile), "i:%d testUtilExists(%s) != 1\n", i, data[i].outfile);
-        //assert_zero(remove(data[i].outfile), "i:%d remove(%s) != 0 (%d)\n", i, data[i].outfile, errno);
+        assert_zero(remove(data[i].outfile), "i:%d remove(%s) != 0 (%d)\n", i, data[i].outfile, errno);
     }
 
     testFinish();

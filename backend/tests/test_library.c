@@ -390,6 +390,11 @@ static void test_bad_args(void) {
     assert_equal(ZBarcode_Encode_File_and_Buffer(symbol, empty, 0), ZINT_ERROR_INVALID_DATA, "ZBarcode_Encode_File_and_Buffer(symbol, empty, 0) != ZINT_ERROR_INVALID_DATA\n");
     assert_nonzero(strlen(symbol->errtxt), "ZBarcode_Encode_File_and_Buffer(symbol, empty, 0) no errtxt\n");
 
+    // Data too big
+    symbol->errtxt[0] = '\0';
+    assert_equal(ZBarcode_Encode(symbol, (unsigned char *) empty, 17401), ZINT_ERROR_TOO_LONG, "ZBarcode_Encode(symbol, empty, 17401) != ZINT_ERROR_TOO_LONG\n");
+    assert_nonzero(strlen(symbol->errtxt), "ZBarcode_Encode(symbol, empty, 17401) no errtxt\n");
+
     ZBarcode_Delete(symbol);
 
     testFinish();
