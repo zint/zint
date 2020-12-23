@@ -251,7 +251,7 @@ INTERNAL int imail(struct zint_symbol *symbol, unsigned char source[], int lengt
     large_int byte_array_reg;
     unsigned char byte_array[13];
     unsigned short usps_crc;
-    int codeword[10];
+    unsigned int codeword[10];
     unsigned short characters[10];
     short int bar_map[130];
     int zip_len, len;
@@ -362,15 +362,15 @@ INTERNAL int imail(struct zint_symbol *symbol, unsigned char source[], int lengt
     /* *** Step 3 - Conversion from Binary Data to Codewords *** */
 
     /* start with codeword J which is base 636 */
-    codeword[9] = large_div_u64(&accum, 636);
+    codeword[9] = (unsigned int) large_div_u64(&accum, 636);
 
     /* then codewords I to B with base 1365 */
 
     for (j = 8; j > 0; j--) {
-        codeword[j] = large_div_u64(&accum, 1365);
+        codeword[j] = (unsigned int) large_div_u64(&accum, 1365);
     }
 
-    codeword[0] = large_lo(&accum);
+    codeword[0] = (unsigned int) large_lo(&accum);
 
     /* *** Step 4 - Inserting Additional Information into Codewords *** */
 

@@ -39,7 +39,6 @@
  * 
  */
 
-#include <string.h>
 #include <stdio.h>
 #ifdef _MSC_VER
 #include <malloc.h>
@@ -61,13 +60,13 @@ static const char *postcode_format[6] = {
 };
 
 // Data/Check Symbols from Table 5
-static const unsigned short data_symbol_odd[32] = {
+static const unsigned char data_symbol_odd[32] = {
     0x01, 0x02, 0x04, 0x07, 0x08, 0x0B, 0x0D, 0x0E, 0x10, 0x13, 0x15, 0x16,
     0x19, 0x1A, 0x1C, 0x1F, 0x20, 0x23, 0x25, 0x26, 0x29, 0x2A, 0x2C, 0x2F,
     0x31, 0x32, 0x34, 0x37, 0x38, 0x3B, 0x3D, 0x3E
 };
 
-static const unsigned short data_symbol_even[30] = {
+static const unsigned char data_symbol_even[30] = {
     0x03, 0x05, 0x06, 0x09, 0x0A, 0x0C, 0x0F, 0x11, 0x12, 0x14, 0x17, 0x18,
     0x1B, 0x1D, 0x1E, 0x21, 0x22, 0x24, 0x27, 0x28, 0x2B, 0x2D, 0x2E, 0x30,
     0x33, 0x35, 0x36, 0x39, 0x3A, 0x3C
@@ -122,7 +121,7 @@ static int verify_postcode(char* postcode, int type) {
 }
 
 /* Royal Mail Mailmark */
-INTERNAL int mailmark(struct zint_symbol *symbol, const unsigned char source[], const size_t in_length) {
+INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int length) {
     
     char local_source[28];
     int format;
@@ -143,7 +142,6 @@ INTERNAL int mailmark(struct zint_symbol *symbol, const unsigned char source[], 
     char bar[80];
     int check_count;
     int i, j, len;
-    int length = (int) in_length;
     rs_t rs;
     
     if (length > 26) {
@@ -395,11 +393,11 @@ INTERNAL int mailmark(struct zint_symbol *symbol, const unsigned char source[], 
     // Conversion from Consolidated Data Value to Data Numbers
 
     for (j = data_top; j >= (data_step + 1); j--) {
-        data[j] = large_div_u64(&cdv, 32);
+        data[j] = (unsigned char) large_div_u64(&cdv, 32);
     }
     
     for (j = data_step; j >= 0; j--) {
-        data[j] = large_div_u64(&cdv, 30);
+        data[j] = (unsigned char) large_div_u64(&cdv, 30);
     }
     
     // Generation of Reed-Solomon Check Numbers
@@ -476,7 +474,7 @@ INTERNAL int mailmark(struct zint_symbol *symbol, const unsigned char source[], 
     
     /* Translate 4-state data pattern to symbol */
     j = 0;
-    for (i = 0, len = strlen(bar); i < len; i++) {
+    for (i = 0, len = (int) strlen(bar); i < len; i++) {
         if ((bar[i] == 'F') || (bar[i] == 'A')) {
             set_module(symbol, 0, j);
         }

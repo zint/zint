@@ -48,8 +48,8 @@ static void test_large(int index, int debug) {
     struct item data[] = {
         /*  0*/ { BARCODE_C25STANDARD, "1", 80, 0, 1, 817 },
         /*  1*/ { BARCODE_C25STANDARD, "1", 81, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  2*/ { BARCODE_C25INTER, "1", 89, 0, 1, 819 },
-        /*  3*/ { BARCODE_C25INTER, "1", 90, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  2*/ { BARCODE_C25INTER, "1", 90, 0, 1, 819 },
+        /*  3*/ { BARCODE_C25INTER, "1", 91, ZINT_ERROR_TOO_LONG, -1, -1 },
         /*  4*/ { BARCODE_C25IATA, "1", 45, 0, 1, 639 },
         /*  5*/ { BARCODE_C25IATA, "1", 46, ZINT_ERROR_TOO_LONG, -1, -1 },
         /*  6*/ { BARCODE_C25LOGIC, "1", 80, 0, 1, 809 },

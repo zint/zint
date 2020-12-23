@@ -213,7 +213,7 @@ INTERNAL int code_11(struct zint_symbol *symbol, unsigned char source[], int len
 }
 
 /* Code 39 */
-INTERNAL int c39(struct zint_symbol *symbol, unsigned char source[], const size_t length) {
+INTERNAL int c39(struct zint_symbol *symbol, unsigned char source[], int length) {
     int i;
     int counter;
     int error_number;
@@ -246,7 +246,7 @@ INTERNAL int c39(struct zint_symbol *symbol, unsigned char source[], const size_
     /* Start character */
     strcpy(dest, "1211212111");
 
-    for (i = 0; i < (int) length; i++) {
+    for (i = 0; i < length; i++) {
         lookup(SILVER, C39Table, source[i], dest);
         counter += posn(SILVER, source[i]);
     }
@@ -297,7 +297,7 @@ INTERNAL int c39(struct zint_symbol *symbol, unsigned char source[], const size_
 
     if ((symbol->symbology == BARCODE_LOGMARS) || (symbol->symbology == BARCODE_HIBC_39)) {
         /* LOGMARS uses wider 'wide' bars than normal Code 39 */
-        counter = strlen(dest);
+        counter = (int) strlen(dest);
         for (i = 0; i < counter; i++) {
             if (dest[i] == '2') {
                 dest[i] = '3';
@@ -309,7 +309,7 @@ INTERNAL int c39(struct zint_symbol *symbol, unsigned char source[], const size_
 
     if (symbol->symbology == BARCODE_CODE39) {
         ustrcpy(symbol->text, "*");
-        ustrcat(symbol->text, source);
+        ustrncat(symbol->text, source, length);
         ustrcat(symbol->text, localstr);
         ustrcat(symbol->text, "*");
     } else {
@@ -359,7 +359,7 @@ INTERNAL int pharmazentral(struct zint_symbol *symbol, unsigned char source[], i
     }
     localstr[8] = itoc(check_digit);
     localstr[9] = '\0';
-    error_number = c39(symbol, (unsigned char *) localstr, strlen(localstr));
+    error_number = c39(symbol, (unsigned char *) localstr, 9);
     ustrcpy(symbol->text, "PZN ");
     ustrcat(symbol->text, localstr);
     return error_number;
@@ -388,7 +388,7 @@ INTERNAL int ec39(struct zint_symbol *symbol, unsigned char source[], int length
     }
 
     /* Then sends the buffer to the C39 function */
-    error_number = c39(symbol, buffer, ustrlen(buffer));
+    error_number = c39(symbol, buffer, (int) ustrlen(buffer));
 
     for (i = 0; i < length; i++)
         symbol->text[i] = source[i] >= ' ' && source[i] != 0x7F ? source[i] : ' ';
@@ -711,19 +711,18 @@ INTERNAL int channel_code(struct zint_symbol *symbol, unsigned char source[], in
 }
 
 /* Vehicle Identification Number (VIN) */
-INTERNAL int vin(struct zint_symbol *symbol, const unsigned char source[], const size_t in_length) {
+INTERNAL int vin(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     /* This code verifies the check digit present in North American VIN codes */
 
     char local_source[18];
-    char dest[200];
+    char dest[200]; /* 10 + 10 + 17 * 10 + 9 + 1 = 200 */
     char input_check;
     char output_check;
     int value[17];
     int weight[17] = {8, 7, 6, 5, 4, 3, 2, 10, 0, 9, 8, 7, 6, 5, 4, 3, 2};
     int sum;
     int i;
-    int length = (int) in_length;
 
     // Check length
     if (length != 17) {
@@ -740,7 +739,6 @@ INTERNAL int vin(struct zint_symbol *symbol, const unsigned char source[], const
     ustrcpy(local_source, source);
 
     to_upper((unsigned char *) local_source);
-
 
     // Check digit only valid for North America
     if (local_source[0] >= '1' && local_source[0] <= '5') {

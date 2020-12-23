@@ -351,8 +351,9 @@ static float look_ahead_ascii(unsigned char source[], int in_length, int in_locn
 }
 
 /* Returns true if should latch to subset other than given `subset` */
-static int c43_should_latch_other(const unsigned char data[], const size_t length, const unsigned int locn, int subset, int gs1) {
-    unsigned int i, fraglen, predict_window;
+static int c43_should_latch_other(const unsigned char data[], const int length, const int locn, const int subset,
+            const int gs1) {
+    int i, fraglen, predict_window;
     int cnt, alt_cnt, fragno;
     const char* set = subset == 1 ? ultra_c43_set1 : ultra_c43_set2;
     const char* alt_set = subset == 2 ? ultra_c43_set1 : ultra_c43_set2;
@@ -612,7 +613,8 @@ static float look_ahead_c43(unsigned char source[], int in_length, int in_locn, 
 }
 
 /* Produces a set of codewords which are "somewhat" optimised - this could be improved on */
-static int ultra_generate_codewords(struct zint_symbol *symbol, const unsigned char source[], const size_t in_length, int codewords[]) {
+static int ultra_generate_codewords(struct zint_symbol *symbol, const unsigned char source[], const int in_length,
+            int codewords[]) {
     int i;
     int crop_length;
     int codeword_count = 0;
@@ -646,7 +648,7 @@ static int ultra_generate_codewords(struct zint_symbol *symbol, const unsigned c
 
     // Decide start character codeword (from Table 5)
     symbol_mode = ASCII_MODE;
-    for (i = 0; i < (int) in_length; i++) {
+    for (i = 0; i < in_length; i++) {
         if (source[i] >= 0x80) {
             symbol_mode = EIGHTBIT_MODE;
             break;
@@ -747,14 +749,14 @@ static int ultra_generate_codewords(struct zint_symbol *symbol, const unsigned c
             }
             codeword_count++;
 
-            for (i = 7; i < ((int) in_length - 2); i++) {
+            for (i = 7; i < (in_length - 2); i++) {
                 crop_source[i - 7] = source[i];
             }
             crop_length = in_length - 9;
             crop_source[crop_length] = '\0';
    } else {
         /* Make a cropped version of input data - removes http:// and https:// if needed */
-        for (i = input_locn; i < (int) in_length; i++) {
+        for (i = input_locn; i < in_length; i++) {
             crop_source[i - input_locn] = source[i];
         }
         crop_length = in_length - input_locn;
@@ -860,7 +862,7 @@ static int ultra_generate_codewords(struct zint_symbol *symbol, const unsigned c
     return codeword_count;
 }
 
-INTERNAL int ultracode(struct zint_symbol *symbol, const unsigned char source[], const size_t in_length) {
+INTERNAL int ultracode(struct zint_symbol *symbol, unsigned char source[], int length) {
     int data_cw_count = 0;
     int acc, qcc;
     int ecc_level;
@@ -879,7 +881,7 @@ INTERNAL int ultracode(struct zint_symbol *symbol, const unsigned char source[],
     char* pattern;
 #endif /* _MSC_VER */
 
-    cw_memalloc = in_length * 2;
+    cw_memalloc = length * 2;
     if (cw_memalloc < 283) {
         cw_memalloc = 283;
     }
@@ -895,7 +897,7 @@ INTERNAL int ultracode(struct zint_symbol *symbol, const unsigned char source[],
     data_codewords = (int *) _alloca(cw_memalloc * sizeof (int));
 #endif /* _MSC_VER */
 
-    data_cw_count = ultra_generate_codewords(symbol, source, in_length, data_codewords);
+    data_cw_count = ultra_generate_codewords(symbol, source, length, data_codewords);
 
     if (symbol->debug & ZINT_DEBUG_PRINT) {
         printf("Codewords returned = %d\n", data_cw_count);

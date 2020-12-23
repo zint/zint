@@ -211,7 +211,8 @@ INTERNAL uint64_t large_div_u64(large_int *t, uint64_t v) {
     /* Note qhat1 will be exact as have fully divided by 2-digit divisor
      * (can only be too high by 1 (and require "add back" step) if divisor at least 3 digits) */
 
-    rnhilo1 = (tnhi << 32) + tnlo1 - (qhat1 * v); /* Note high digit (if any) of both tnhi and (qhat1 * v) shifted out */
+    /* Note high digit (if any) of both tnhi and (qhat1 * v) shifted out */
+    rnhilo1 = (tnhi << 32) + tnlo1 - (qhat1 * v);
 
     /* Compute qhat0 estimate */
 
@@ -255,21 +256,22 @@ INTERNAL void large_uint_array(const large_int *t, unsigned int *uint_array, int
     }
     mask = ~(((uint64_t) -1) << bits);
     for (i = 0, j = 0; i < size && j < 64; i++, j += bits) {
-        uint_array[size - 1 - i] = (t->lo >> j) & mask; /* Little-endian order */
+        uint_array[size - 1 - i] = (unsigned int) ((t->lo >> j) & mask); /* Little-endian order */
     }
     if (i < size) {
         if (j != 64) {
             j -= 64;
             /* (first j bits of t->hi) << (bits - j) | (last (bits - j) bits of t->lo) */
-            uint_array[size - i] = ((t->hi & ~((((uint64_t) -1) << j))) << (bits - j)) | (t->lo >> (64 - (bits - j)) & mask);
+            uint_array[size - i] = (unsigned int) (((t->hi & ~((((uint64_t) -1) << j))) << (bits - j))
+                                                    | (t->lo >> (64 - (bits - j)) & mask));
         } else {
             j = 0;
         }
         for (; i < size && j < 64; i++, j += bits) {
-            uint_array[size - 1 - i] = (t->hi >> j) & mask;
+            uint_array[size - 1 - i] = (unsigned int) ((t->hi >> j) & mask);
         }
         if (i < size && j != 128) {
-            uint_array[size - 1 - i] = t->hi >> (j - bits) & mask;
+            uint_array[size - 1 - i] = (unsigned int) (t->hi >> (j - bits) & mask);
         }
     }
 }
@@ -299,10 +301,10 @@ INTERNAL void large_print(large_int *t) {
 
 /* Format large_int into buffer, which should be at least 35 chars in size */
 INTERNAL char *large_dump(large_int *t, char *buf) {
-    unsigned int tlo1 = large_lo(t) >> 32;
-    unsigned int tlo0 = large_lo(t) & MASK32;
-    unsigned int thi1 = large_hi(t) >> 32;
-    unsigned int thi0 = large_hi(t) & MASK32;
+    unsigned int tlo1 = (unsigned int) (large_lo(t) >> 32);
+    unsigned int tlo0 = (unsigned int) (large_lo(t) & MASK32);
+    unsigned int thi1 = (unsigned int) (large_hi(t) >> 32);
+    unsigned int thi0 = (unsigned int) (large_hi(t) & MASK32);
 
     if (thi1) {
         sprintf(buf, "0x%X%08X%08X%08X", thi1, thi0, tlo1, tlo0);

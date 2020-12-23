@@ -31,7 +31,7 @@
 
 #include "testcommon.h"
 
-extern int tif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf);
+INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf);
 
 // For overview when debugging: ./test_tiff -f pixel_plot -d 5
 static void test_pixel_plot(int index, int debug) {

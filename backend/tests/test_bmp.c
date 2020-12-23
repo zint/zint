@@ -32,7 +32,7 @@
 #include "testcommon.h"
 #include <sys/stat.h>
 
-extern int bmp_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf);
+INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf);
 
 static void test_pixel_plot(int index, int debug) {
 

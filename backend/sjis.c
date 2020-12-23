@@ -65,7 +65,7 @@ INTERNAL int utf_to_eci(const int eci, const unsigned char source[], unsigned ch
  * JISX0201.1976-0 (libiconv-1.16/lib/jisx0201.h)
  */
 
-static int jisx0201_wctomb(unsigned int *r, unsigned int wc) {
+static int jisx0201_wctomb(unsigned int *r, const unsigned int wc) {
     if (wc < 0x0080 && !(wc == 0x005c || wc == 0x007e)) {
         *r = wc;
         return 1;
@@ -1444,7 +1444,7 @@ static const Summary16 jisx0208_uni2indx_pageff[15] = {
   { 6877, 0x0000 }, { 6877, 0x0000 }, { 6877, 0x0028 },
 };
 
-static int jisx0208_wctomb(unsigned int *r, unsigned int wc) {
+static int jisx0208_wctomb(unsigned int *r, const unsigned int wc) {
     const Summary16 *summary = NULL;
     if (wc < 0x0100) {
         summary = &jisx0208_uni2indx_page00[(wc>>4)];
@@ -1484,7 +1484,7 @@ static int jisx0208_wctomb(unsigned int *r, unsigned int wc) {
  */
 
 /* Returns 1 or 2 on success, 0 if no mapping */
-INTERNAL int sjis_wctomb_zint(unsigned int *r, unsigned int wc) {
+INTERNAL int sjis_wctomb_zint(unsigned int *r, const unsigned int wc) {
     int ret;
 
     /* Try JIS X 0201-1976. */
@@ -1494,8 +1494,8 @@ INTERNAL int sjis_wctomb_zint(unsigned int *r, unsigned int wc) {
     }
 
     /* Try JIS X 0208-1990. */
-    /* ZINT: Note leaving mapping of full-width reverse solidus U+FF3C to 0x815F (duplicate of patched U+005C) to avoid
-     * having to regen tables */
+    /* ZINT: Note leaving mapping of full-width reverse solidus U+FF3C to 0x815F (duplicate of patched U+005C) to
+     * avoid having to regen tables */
     ret = jisx0208_wctomb(r, wc);
     if (ret) {
         return ret;
@@ -1503,7 +1503,7 @@ INTERNAL int sjis_wctomb_zint(unsigned int *r, unsigned int wc) {
 
     /* User-defined range. See
     * Ken Lunde's "CJKV Information Processing", table 4-66, p. 206. */
-    /* ZINT: https://file.allitebooks.com/20160708/CJKV%20Information%20Processing.pdf (table 4-86, p. 286, 2nd ed.) */
+    /* ZINT: https://file.allitebooks.com/20160708/CJKV%20Information%20Processing.pdf (table 4-86, p.286, 2nd ed.) */
     if (wc >= 0xe000 && wc < 0xe758) {
         unsigned char c1, c2;
         c1 = (unsigned int) (wc - 0xe000) / 188;
@@ -1517,7 +1517,7 @@ INTERNAL int sjis_wctomb_zint(unsigned int *r, unsigned int wc) {
 
 /* Convert UTF-8 string to Shift JIS and place in array of ints */
 INTERNAL int sjis_utf8tomb(struct zint_symbol *symbol, const unsigned char source[], int *p_length,
-            unsigned int *jisdata) {
+                unsigned int *jisdata) {
     int error_number;
     unsigned int i, length;
 #ifndef _MSC_VER
@@ -1542,8 +1542,8 @@ INTERNAL int sjis_utf8tomb(struct zint_symbol *symbol, const unsigned char sourc
 }
 
 /* Convert UTF-8 string to single byte ECI and place in array of ints */
-INTERNAL int sjis_utf8tosb(int eci, const unsigned char source[], int *p_length, unsigned int *jisdata,
-            int full_multibyte) {
+INTERNAL int sjis_utf8tosb(const int eci, const unsigned char source[], int *p_length, unsigned int *jisdata,
+                const int full_multibyte) {
     int error_number;
 #ifndef _MSC_VER
     unsigned char single_byte[*p_length + 1];
@@ -1562,9 +1562,9 @@ INTERNAL int sjis_utf8tosb(int eci, const unsigned char source[], int *p_length,
     return 0;
 }
 
-/* If `full_multibyte` set, copy byte input stream to array of ints, putting double-bytes that match QR Kanji mode in a
- * single entry. If `full_multibyte` not set, do a straight copy */
-INTERNAL void sjis_cpy(const unsigned char source[], int *p_length, unsigned int *jisdata, int full_multibyte) {
+/* If `full_multibyte` set, copy byte input stream to array of ints, putting double-bytes that match QR Kanji mode in
+ * a single entry. If `full_multibyte` not set, do a straight copy */
+INTERNAL void sjis_cpy(const unsigned char source[], int *p_length, unsigned int *jisdata, const int full_multibyte) {
     unsigned int i, j, jis, length;
     unsigned char c;
 

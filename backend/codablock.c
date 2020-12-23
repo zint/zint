@@ -33,7 +33,6 @@
 
 #include <stdio.h>
 #include <math.h>
-#include <string.h>
 #ifdef _MSC_VER
 #include <malloc.h>
 #endif

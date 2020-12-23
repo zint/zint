@@ -189,6 +189,8 @@ static void test_encode(int index, int generate, int debug) {
 
     testStart("");
 
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); // Only do BWIPP test if asked, too slow otherwise
+
     int ret;
     struct item {
         int symbology;
@@ -202,34 +204,39 @@ static void test_encode(int index, int generate, int debug) {
         char *expected;
     };
     struct item data[] = {
-        /*  0*/ { BARCODE_MSI_PLESSEY, -1, "1234567890", 0, 1, 127, "Verified manually against bwipp and tec-it",
+        /*  0*/ { BARCODE_MSI_PLESSEY, -1, "1234567890", 0, 1, 127, "Verified manually against tec-it",
                     "1101001001001101001001101001001001101101001101001001001101001101001101101001001101101101101001001001101001001101001001001001001"
                 },
-        /*  1*/ { BARCODE_MSI_PLESSEY, 1, "1234567890", 0, 1, 139, "Verified manually against bwipp and tec-it",
+        /*  1*/ { BARCODE_MSI_PLESSEY, 1, "1234567890", 0, 1, 139, "Verified manually against tec-it",
                     "1101001001001101001001101001001001101101001101001001001101001101001101101001001101101101101001001001101001001101001001001001001001101101001"
                 },
-        /*  2*/ { BARCODE_MSI_PLESSEY, 2, "1234567890", 0, 1, 151, "Verified manually against bwipp and tec-it",
+        /*  2*/ { BARCODE_MSI_PLESSEY, 2, "1234567890", 0, 1, 151, "Verified manually against tec-it",
                     "1101001001001101001001101001001001101101001101001001001101001101001101101001001101101101101001001001101001001101001001001001001001101101001001001101001"
                 },
-        /*  3*/ { BARCODE_MSI_PLESSEY, 3, "1234567890", 0, 1, 139, "Verified manually against bwipp",
+        /*  3*/ { BARCODE_MSI_PLESSEY, 3, "1234567890", 0, 1, 139, "",
                     "1101001001001101001001101001001001101101001101001001001101001101001101101001001101101101101001001001101001001101001001001001001001101101001"
                 },
-        /*  4*/ { BARCODE_MSI_PLESSEY, 4, "1234567890", 0, 1, 151, "Verified manually against bwipp",
+        /*  4*/ { BARCODE_MSI_PLESSEY, 4, "1234567890", 0, 1, 151, "",
                     "1101001001001101001001101001001001101101001101001001001101001101001101101001001101101101101001001001101001001101001001001001001001101101001001001101001"
                 },
-        /*  5*/ { BARCODE_MSI_PLESSEY, 3, "2211", 0, 1, 79, "Produces mod-11 '10' check digit; verified manually against bwipp (badmod11)",
+        /*  5*/ { BARCODE_MSI_PLESSEY, 3, "2211", 0, 1, 79, "Produces mod-11 '10' check digit; BWIPP (badmod11)",
                     "1101001001101001001001101001001001001101001001001101001001001101001001001001001"
                 },
-        /*  6*/ { BARCODE_MSI_PLESSEY, 4, "2211", 0, 1, 91, "Verified manually against bwipp (badmod11)",
+        /*  6*/ { BARCODE_MSI_PLESSEY, 4, "2211", 0, 1, 91, "BWIPP (badmod11)",
                     "1101001001101001001001101001001001001101001001001101001001001101001001001001001001001001001"
                 },
-        /*  7*/ { BARCODE_PLESSEY, -1, "0123456789ABCDEF", 0, 1, 323, "Verified manually against bwipp",
+        /*  7*/ { BARCODE_PLESSEY, -1, "0123456789ABCDEF", 0, 1, 323, "",
                     "11101110100011101000100010001000111010001000100010001110100010001110111010001000100010001110100011101000111010001000111011101000111011101110100010001000100011101110100010001110100011101000111011101110100011101000100011101110111010001110111010001110111011101110111011101110111010001000111010001000100010001110001000101110111"
+                },
+        /*  8*/ { BARCODE_MSI_PLESSEY, 4, "999999999999999999", 0, 1, 247, "Max value; #209 check buffer not overrun",
+                    "1101101001001101101001001101101001001101101001001101101001001101101001001101101001001101101001001101101001001101101001001101101001001101101001001101101001001101101001001101101001001101101001001101101001001101101001001101101001001001001001001101001"
                 },
     };
     int data_size = ARRAY_SIZE(data);
 
     char escaped[1024];
+    char bwipp_buf[4096];
+    char bwipp_msg[1024];
 
     for (int i = 0; i < data_size; i++) {
 
@@ -254,10 +261,17 @@ static void test_encode(int index, int generate, int debug) {
                 assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);
                 assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
 
-                if (ret == 0) {
-                    int width, row;
-                    ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
-                    assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, ret, width, row, data[i].data);
+                int width, row;
+                ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
+                assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, ret, width, row, data[i].data);
+
+                if (do_bwipp && testUtilCanBwipp(i, symbol, -1, data[i].option_2, -1, debug)) {
+                    ret = testUtilBwipp(i, symbol, -1, data[i].option_2, -1, data[i].data, length, NULL, bwipp_buf, sizeof(bwipp_buf));
+                    assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+
+                    ret = testUtilBwippCmp(symbol, bwipp_msg, bwipp_buf, data[i].expected);
+                    assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
+                                   i, testUtilBarcodeName(symbol->symbology), ret, bwipp_msg, bwipp_buf, data[i].expected);
                 }
             }
         }

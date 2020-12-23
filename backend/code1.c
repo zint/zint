@@ -151,27 +151,27 @@ static int c1_look_ahead_test(unsigned char source[], int sourcelen, int positio
 
     /* Step J */
     if (current_mode == C1_ASCII) {
-        ascii_count = 0.0;
-        c40_count = 1.0;
-        text_count = 1.0;
-        edi_count = 1.0;
-        byte_count = 2.0;
+        ascii_count = 0.0f;
+        c40_count = 1.0f;
+        text_count = 1.0f;
+        edi_count = 1.0f;
+        byte_count = 2.0f;
     } else {
-        ascii_count = 1.0;
-        c40_count = 2.0;
-        text_count = 2.0;
-        edi_count = 2.0;
-        byte_count = 3.0;
+        ascii_count = 1.0f;
+        c40_count = 2.0f;
+        text_count = 2.0f;
+        edi_count = 2.0f;
+        byte_count = 3.0f;
     }
 
     switch (current_mode) {
-        case C1_C40: c40_count = 0.0;
+        case C1_C40: c40_count = 0.0f;
             break;
-        case C1_TEXT: text_count = 0.0;
+        case C1_TEXT: text_count = 0.0f;
             break;
-        case C1_BYTE: byte_count = 0.0;
+        case C1_BYTE: byte_count = 0.0f;
             break;
-        case C1_EDI: edi_count = 0.0;
+        case C1_EDI: edi_count = 0.0f;
             break;
     }
 
@@ -185,106 +185,106 @@ static int c1_look_ahead_test(unsigned char source[], int sourcelen, int positio
 
         /* Step L */
         if ((source[sp] >= '0') && (source[sp] <= '9')) {
-            ascii_count += 0.5;
+            ascii_count += 0.5f;
         } else {
-            ascii_count = ceil(ascii_count);
+            ascii_count = (float) ceil(ascii_count);
             if (source[sp] > 127) {
-                ascii_count += 2.0;
+                ascii_count += 2.0f;
             } else {
-                ascii_count += 1.0;
+                ascii_count += 1.0f;
             }
         }
 
         /* Step M */
         done = 0;
         if (reduced_char == ' ') {
-            c40_count += (2.0 / 3.0);
+            c40_count += (2.0f / 3.0f);
             done = 1;
         }
         if ((reduced_char >= '0') && (reduced_char <= '9')) {
-            c40_count += (2.0 / 3.0);
+            c40_count += (2.0f / 3.0f);
             done = 1;
         }
         if ((reduced_char >= 'A') && (reduced_char <= 'Z')) {
-            c40_count += (2.0 / 3.0);
+            c40_count += (2.0f / 3.0f);
             done = 1;
         }
         if (source[sp] > 127) {
-            c40_count += (4.0 / 3.0);
+            c40_count += (4.0f / 3.0f);
         }
         if (done == 0) {
-            c40_count += (4.0 / 3.0);
+            c40_count += (4.0f / 3.0f);
         }
 
         /* Step N */
         done = 0;
         if (reduced_char == ' ') {
-            text_count += (2.0 / 3.0);
+            text_count += (2.0f / 3.0f);
             done = 1;
         }
         if ((reduced_char >= '0') && (reduced_char <= '9')) {
-            text_count += (2.0 / 3.0);
+            text_count += (2.0f / 3.0f);
             done = 1;
         }
         if ((reduced_char >= 'a') && (reduced_char <= 'z')) {
-            text_count += (2.0 / 3.0);
+            text_count += (2.0f / 3.0f);
             done = 1;
         }
         if (source[sp] > 127) {
-            text_count += (4.0 / 3.0);
+            text_count += (4.0f / 3.0f);
         }
         if (done == 0) {
-            text_count += (4.0 / 3.0);
+            text_count += (4.0f / 3.0f);
         }
 
         /* Step O */
         done = 0;
         if (source[sp] == 13) {
-            edi_count += (2.0 / 3.0);
+            edi_count += (2.0f / 3.0f);
             done = 1;
         }
         if (source[sp] == '*') {
-            edi_count += (2.0 / 3.0);
+            edi_count += (2.0f / 3.0f);
             done = 1;
         }
         if (source[sp] == '>') {
-            edi_count += (2.0 / 3.0);
+            edi_count += (2.0f / 3.0f);
             done = 1;
         }
         if (source[sp] == ' ') {
-            edi_count += (2.0 / 3.0);
+            edi_count += (2.0f / 3.0f);
             done = 1;
         }
         if ((source[sp] >= '0') && (source[sp] <= '9')) {
-            edi_count += (2.0 / 3.0);
+            edi_count += (2.0f / 3.0f);
             done = 1;
         }
         if ((source[sp] >= 'A') && (source[sp] <= 'Z')) {
-            edi_count += (2.0 / 3.0);
+            edi_count += (2.0f / 3.0f);
             done = 1;
         }
         if (source[sp] > 127) {
-            edi_count += (13.0 / 3.0);
+            edi_count += (13.0f / 3.0f);
         } else {
             if (done == 0) {
-                edi_count += (10.0 / 3.0);
+                edi_count += (10.0f / 3.0f);
             }
         }
 
         /* Step P */
         if (gs1 && (source[sp] == '[')) {
-            byte_count += 3.0;
+            byte_count += 3.0f;
         } else {
-            byte_count += 1.0;
+            byte_count += 1.0f;
         }
 
     }
 
-    ascii_count = ceil(ascii_count);
-    c40_count = ceil(c40_count);
-    text_count = ceil(text_count);
-    edi_count = ceil(edi_count);
-    byte_count = ceil(byte_count);
+    ascii_count = (float) ceil(ascii_count);
+    c40_count = (float) ceil(c40_count);
+    text_count = (float) ceil(text_count);
+    edi_count = (float) ceil(edi_count);
+    byte_count = (float) ceil(byte_count);
     best_scheme = C1_ASCII;
 
     if (sp == sourcelen) {
@@ -313,12 +313,12 @@ static int c1_look_ahead_test(unsigned char source[], int sourcelen, int positio
     } else {
         /* Step Q */
 
-        if (((edi_count + 1.0 <= ascii_count) && (edi_count + 1.0 <= c40_count)) &&
-                ((edi_count + 1.0 <= byte_count) && (edi_count + 1.0 <= text_count))) {
+        if (((edi_count + 1.0f <= ascii_count) && (edi_count + 1.0f <= c40_count)) &&
+                ((edi_count + 1.0f <= byte_count) && (edi_count + 1.0f <= text_count))) {
             best_scheme = C1_EDI;
         }
 
-        if ((c40_count + 1.0 <= ascii_count) && (c40_count + 1.0 <= text_count)) {
+        if ((c40_count + 1.0f <= ascii_count) && (c40_count + 1.0f <= text_count)) {
 
             if (c40_count < edi_count) {
                 best_scheme = C1_C40;
@@ -333,18 +333,18 @@ static int c1_look_ahead_test(unsigned char source[], int sourcelen, int positio
             }
         }
 
-        if (((text_count + 1.0 <= ascii_count) && (text_count + 1.0 <= c40_count)) &&
-                ((text_count + 1.0 <= byte_count) && (text_count + 1.0 <= edi_count))) {
+        if (((text_count + 1.0f <= ascii_count) && (text_count + 1.0f <= c40_count)) &&
+                ((text_count + 1.0f <= byte_count) && (text_count + 1.0f <= edi_count))) {
             best_scheme = C1_TEXT;
         }
 
-        if (((ascii_count + 1.0 <= byte_count) && (ascii_count + 1.0 <= c40_count)) &&
-                ((ascii_count + 1.0 <= text_count) && (ascii_count + 1.0 <= edi_count))) {
+        if (((ascii_count + 1.0f <= byte_count) && (ascii_count + 1.0f <= c40_count)) &&
+                ((ascii_count + 1.0f <= text_count) && (ascii_count + 1.0f <= edi_count))) {
             best_scheme = C1_ASCII;
         }
 
-        if (((byte_count + 1.0 <= ascii_count) && (byte_count + 1.0 <= c40_count)) &&
-                ((byte_count + 1.0 <= text_count) && (byte_count + 1.0 <= edi_count))) {
+        if (((byte_count + 1.0f <= ascii_count) && (byte_count + 1.0f <= c40_count)) &&
+                ((byte_count + 1.0f <= text_count) && (byte_count + 1.0f <= edi_count))) {
             best_scheme = C1_BYTE;
         }
     }

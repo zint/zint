@@ -35,7 +35,6 @@
 
 /* Code 16k can hold up to 77 characters or 154 numbers */
 
-#include <string.h>
 #include <stdio.h>
 #include <assert.h>
 #include "common.h"
@@ -107,7 +106,7 @@ static void c16k_set_c(const unsigned char source_a, unsigned char source_b, int
     (*bar_chars)++;
 }
 
-INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], const size_t length) {
+INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int length) {
     char width_pattern[100];
     int current_row, rows, looper, first_check, second_check;
     int indexchaine;
@@ -242,35 +241,35 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], const s
 
     /* Make sure the data will fit in the symbol */
     last_set = set[0];
-    glyph_count = 0.0;
+    glyph_count = 0.0f;
     for (i = 0; i < input_length; i++) {
         if ((set[i] == 'a') || (set[i] == 'b')) {
-            glyph_count = glyph_count + 1.0;
+            glyph_count = glyph_count + 1.0f;
         }
         if (fset[i] == 'f') {
-            glyph_count = glyph_count + 1.0;
+            glyph_count = glyph_count + 1.0f;
         }
         if (((set[i] == 'A') || (set[i] == 'B')) || (set[i] == 'C')) {
             if (set[i] != last_set) {
                 last_set = set[i];
-                glyph_count = glyph_count + 1.0;
+                glyph_count = glyph_count + 1.0f;
             }
         }
         if (i == 0) {
             if ((set[i] == 'B') && (set[1] == 'C')) {
-                glyph_count = glyph_count - 1.0;
+                glyph_count = glyph_count - 1.0f;
             }
             if ((set[i] == 'B') && (set[1] == 'B')) {
                 if (set[2] == 'C') {
-                    glyph_count = glyph_count - 1.0;
+                    glyph_count = glyph_count - 1.0f;
                 }
             }
         }
 
         if ((set[i] == 'C') && (!((gs1) && (source[i] == '[')))) {
-            glyph_count = glyph_count + 0.5;
+            glyph_count = glyph_count + 0.5f;
         } else {
-            glyph_count = glyph_count + 1.0;
+            glyph_count = glyph_count + 1.0f;
         }
     }
 
@@ -279,13 +278,13 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], const s
         glyph_count--;
     }
 
-    if (glyph_count > 77.0) {
+    if (glyph_count > 77.0f) {
         strcpy(symbol->errtxt, "421: Input too long");
         return ZINT_ERROR_TOO_LONG;
     }
 
     /* Calculate how tall the symbol will be */
-    glyph_count = glyph_count + 2.0;
+    glyph_count = glyph_count + 2.0f;
     i = (int)glyph_count;
     rows = (i / 5);
     if (i % 5 > 0) {
@@ -473,7 +472,7 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], const s
         /* Write the information into the symbol */
         writer = 0;
         flip_flop = 1;
-        for (mx_reader = 0, len = strlen(width_pattern); mx_reader < len; mx_reader++) {
+        for (mx_reader = 0, len = (int) strlen(width_pattern); mx_reader < len; mx_reader++) {
             for (looper = 0; looper < ctoi(width_pattern[mx_reader]); looper++) {
                 if (flip_flop == 1) {
                     set_module(symbol, current_row, writer);

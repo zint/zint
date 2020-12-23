@@ -1502,7 +1502,7 @@ static const Summary16 gb2312_uni2indx_pageff[15] = {
   { 7441, 0x0000 }, { 7441, 0x0000 }, { 7441, 0x002b },
 };
 
-INTERNAL int gb2312_wctomb_zint(unsigned int *r, unsigned int wc) {
+INTERNAL int gb2312_wctomb_zint(unsigned int *r, const unsigned int wc) {
     const Summary16 *summary = NULL;
     if (wc < 0x0460) {
         if (wc == 0x00b7) { /* ZINT: Patched to duplicate map to 0xA1A4 */
@@ -1545,7 +1545,7 @@ INTERNAL int gb2312_wctomb_zint(unsigned int *r, unsigned int wc) {
 
 /* Convert UTF-8 string to GB 2312 (EUC-CN) and place in array of ints */
 INTERNAL int gb2312_utf8tomb(struct zint_symbol *symbol, const unsigned char source[], int *p_length,
-            unsigned int *gbdata) {
+                unsigned int *gbdata) {
     int error_number;
     unsigned int i, length;
 #ifndef _MSC_VER
@@ -1574,8 +1574,8 @@ INTERNAL int gb2312_utf8tomb(struct zint_symbol *symbol, const unsigned char sou
 }
 
 /* Convert UTF-8 string to single byte ECI and place in array of ints */
-INTERNAL int gb2312_utf8tosb(int eci, const unsigned char source[], int *p_length, unsigned int *gbdata,
-            int full_multibyte) {
+INTERNAL int gb2312_utf8tosb(const int eci, const unsigned char source[], int *p_length, unsigned int *gbdata,
+                const int full_multibyte) {
     int error_number;
 #ifndef _MSC_VER
     unsigned char single_byte[*p_length + 1];
@@ -1594,9 +1594,10 @@ INTERNAL int gb2312_utf8tosb(int eci, const unsigned char source[], int *p_lengt
     return 0;
 }
 
-/* If `full_multibyte` set, copy byte input stream to array of ints, putting double-bytes that match GRIDMATRIX Chinese
- * mode in a single entry. If `full_multibyte` not set, do a straight copy */
-INTERNAL void gb2312_cpy(const unsigned char source[], int *p_length, unsigned int *gbdata, int full_multibyte) {
+/* If `full_multibyte` set, copy byte input stream to array of ints, putting double-bytes that match GRIDMATRIX
+ * Chinese mode in a single entry. If `full_multibyte` not set, do a straight copy */
+INTERNAL void gb2312_cpy(const unsigned char source[], int *p_length, unsigned int *gbdata,
+                const int full_multibyte) {
     unsigned int i, j, length;
     unsigned char c1, c2;
 

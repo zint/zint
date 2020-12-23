@@ -127,14 +127,14 @@ INTERNAL int get_best_eci(unsigned char source[], int length); /* Calculate suit
 INTERNAL int utf_to_eci(const int eci, const unsigned char source[], unsigned char dest[], int *length); /* Convert Unicode to other encodings */
 
 INTERNAL int eanx(struct zint_symbol *symbol, unsigned char source[], int length); /* EAN system barcodes */
-INTERNAL int c39(struct zint_symbol *symbol, unsigned char source[], const size_t length); /* Code 3 from 9 (or Code 39) */
+INTERNAL int c39(struct zint_symbol *symbol, unsigned char source[], int length); /* Code 3 from 9 (or Code 39) */
 INTERNAL int pharmazentral(struct zint_symbol *symbol, unsigned char source[], int length); /* Pharmazentral Nummer (PZN) */
 INTERNAL int ec39(struct zint_symbol *symbol, unsigned char source[], int length); /* Extended Code 3 from 9 (or Code 39+) */
 INTERNAL int codabar(struct zint_symbol *symbol, unsigned char source[], int length); /* Codabar - a simple substitution cipher */
 INTERNAL int matrix_two_of_five(struct zint_symbol *symbol, unsigned char source[], int length); /* Code 2 of 5 Standard (& Matrix) */
 INTERNAL int industrial_two_of_five(struct zint_symbol *symbol, unsigned char source[], int length); /* Code 2 of 5 Industrial */
 INTERNAL int iata_two_of_five(struct zint_symbol *symbol, unsigned char source[], int length); /* Code 2 of 5 IATA */
-INTERNAL int interleaved_two_of_five(struct zint_symbol *symbol, const unsigned char source[], size_t length); /* Code 2 of 5 Interleaved */
+INTERNAL int interleaved_two_of_five(struct zint_symbol *symbol, unsigned char source[], int length); /* Code 2 of 5 Interleaved */
 INTERNAL int logic_two_of_five(struct zint_symbol *symbol, unsigned char source[], int length); /* Code 2 of 5 Data Logic */
 INTERNAL int itf14(struct zint_symbol *symbol, unsigned char source[], int length); /* ITF-14 */
 INTERNAL int dpleit(struct zint_symbol *symbol, unsigned char source[], int length); /* Deutsche Post Leitcode */
@@ -144,9 +144,9 @@ INTERNAL int code_128(struct zint_symbol *symbol, unsigned char source[], int le
 INTERNAL int ean_128(struct zint_symbol *symbol, unsigned char source[], int length); /* EAN-128 (GS1-128) */
 INTERNAL int code_11(struct zint_symbol *symbol, unsigned char source[], int length); /* Code 11 */
 INTERNAL int msi_handle(struct zint_symbol *symbol, unsigned char source[], int length); /* MSI Plessey */
-INTERNAL int telepen(struct zint_symbol *symbol, unsigned char source[], const size_t length); /* Telepen ASCII */
-INTERNAL int telepen_num(struct zint_symbol *symbol, unsigned char source[], const size_t length); /* Telepen Numeric */
-INTERNAL int plessey(struct zint_symbol *symbol, unsigned char source[], const size_t length); /* Plessey Code */
+INTERNAL int telepen(struct zint_symbol *symbol, unsigned char source[], int length); /* Telepen ASCII */
+INTERNAL int telepen_num(struct zint_symbol *symbol, unsigned char source[], int length); /* Telepen Numeric */
+INTERNAL int plessey(struct zint_symbol *symbol, unsigned char source[], int length); /* Plessey Code */
 INTERNAL int pharma_one(struct zint_symbol *symbol, unsigned char source[], int length); /* Pharmacode One Track */
 INTERNAL int flattermarken(struct zint_symbol *symbol, unsigned char source[], int length); /* Flattermarken */
 INTERNAL int fim(struct zint_symbol *symbol, unsigned char source[], int length); /* Facing Identification Mark */
@@ -156,7 +156,7 @@ INTERNAL int planet_plot(struct zint_symbol *symbol, unsigned char source[], int
 INTERNAL int imail(struct zint_symbol *symbol, unsigned char source[], int length); /* Intelligent Mail (aka USPS OneCode) */
 INTERNAL int royal_plot(struct zint_symbol *symbol, unsigned char source[], int length); /* RM4SCC */
 INTERNAL int australia_post(struct zint_symbol *symbol, unsigned char source[], int length); /* Australia Post 4-state */
-INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[],const size_t length); /* Code 16k */
+INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int length); /* Code 16k */
 INTERNAL int pdf417enc(struct zint_symbol *symbol, unsigned char source[], int length); /* PDF417 */
 INTERNAL int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], int length); /* Micro PDF417 */
 INTERNAL int maxicode(struct zint_symbol *symbol, unsigned char source[], int length); /* Maxicode */
@@ -174,20 +174,20 @@ INTERNAL int microqr(struct zint_symbol *symbol, unsigned char source[], int len
 INTERNAL int aztec_runes(struct zint_symbol *symbol, unsigned char source[], int length); /* Aztec Runes */
 INTERNAL int korea_post(struct zint_symbol *symbol, unsigned char source[], int length); /* Korea Post */
 INTERNAL int japan_post(struct zint_symbol *symbol, unsigned char source[], int length); /* Japanese Post */
-INTERNAL int code_49(struct zint_symbol *symbol, unsigned char source[], const int length); /* Code 49 */
+INTERNAL int code_49(struct zint_symbol *symbol, unsigned char source[], int length); /* Code 49 */
 INTERNAL int channel_code(struct zint_symbol *symbol, unsigned char source[], int length); /* Channel Code */
 INTERNAL int code_one(struct zint_symbol *symbol, unsigned char source[], int length); /* Code One */
 INTERNAL int grid_matrix(struct zint_symbol *symbol, unsigned char source[], int length); /* Grid Matrix */
-INTERNAL int han_xin(struct zint_symbol * symbol, unsigned char source[], int length); /* Han Xin */
-INTERNAL int dotcode(struct zint_symbol * symbol, const unsigned char source[], int length); /* DotCode */
+INTERNAL int han_xin(struct zint_symbol *symbol, unsigned char source[], int length); /* Han Xin */
+INTERNAL int dotcode(struct zint_symbol *symbol, unsigned char source[], int length); /* DotCode */
 INTERNAL int codablock(struct zint_symbol *symbol, unsigned char source[], int length); /* Codablock */
 INTERNAL int upnqr(struct zint_symbol *symbol, unsigned char source[], int length); /* UPNQR */
 INTERNAL int qr_code(struct zint_symbol *symbol, unsigned char source[], int length); /* QR Code */
-INTERNAL int dmatrix(struct zint_symbol *symbol, const unsigned char source[], const size_t in_length); /* Data Matrix (IEC16022) */
-INTERNAL int vin(struct zint_symbol *symbol, const unsigned char source[], const size_t in_length); /* VIN Code (Vehicle Identification Number) */
-INTERNAL int mailmark(struct zint_symbol *symbol, const unsigned char source[], const size_t in_length); /* Royal Mail 4-state Mailmark */
-INTERNAL int ultracode(struct zint_symbol *symbol, const unsigned char source[], const size_t in_length); /* Ultracode */
-INTERNAL int rmqr(struct zint_symbol *symbol, unsigned char source[], int in_length); /* rMQR */
+INTERNAL int dmatrix(struct zint_symbol *symbol, unsigned char source[], int length); /* Data Matrix (IEC16022) */
+INTERNAL int vin(struct zint_symbol *symbol, unsigned char source[], int length); /* VIN Code (Vehicle Identification Number) */
+INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int length); /* Royal Mail 4-state Mailmark */
+INTERNAL int ultracode(struct zint_symbol *symbol, unsigned char source[], int length); /* Ultracode */
+INTERNAL int rmqr(struct zint_symbol *symbol, unsigned char source[], int length); /* rMQR */
 INTERNAL int dpd_parcel(struct zint_symbol *symbol, unsigned char source[], int length); /* DPD Code */
 
 INTERNAL int plot_raster(struct zint_symbol *symbol, int rotate_angle, int file_type); /* Plot to PNG/BMP/PCX */
@@ -1300,7 +1300,8 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
 
     if (((symbol->input_mode & 0x07) == GS1_MODE) || (check_force_gs1(symbol->symbology))) {
         if (gs1_compliant(symbol->symbology) == 1) {
-            // Reduce input for composite and non-forced symbologies, others (EAN128 and RSS_EXP based) will handle it themselves
+            // Reduce input for composite and non-forced symbologies, others (EAN128 and RSS_EXP based) will
+            // handle it themselves
             if (is_composite(symbol->symbology) || !check_force_gs1(symbol->symbology)) {
 #ifndef _MSC_VER
                 unsigned char reduced[in_length + 1];
@@ -1591,7 +1592,8 @@ int ZBarcode_Encode_File(struct zint_symbol *symbol, char *filename) {
         fileLen = ftell(file);
         fseek(file, 0, SEEK_SET);
 
-        if (fileLen <= 0 || fileLen == LONG_MAX) { /* On many Linux distros ftell() returns LONG_MAX not -1 on error */
+        /* On many Linux distros ftell() returns LONG_MAX not -1 on error */
+        if (fileLen <= 0 || fileLen == LONG_MAX) {
             strcpy(symbol->errtxt, "235: Input file empty or unseekable");
             error_tag(symbol->errtxt, ZINT_ERROR_INVALID_DATA);
             fclose(file);

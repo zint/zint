@@ -2025,6 +2025,74 @@ static void test_microqr_encode(int index, int generate, int debug) {
     testFinish();
 }
 
+// Not a real test, just performance indicator
+static void test_microqr_perf(int index, int debug) {
+
+    if (!(debug & ZINT_DEBUG_TEST_PERFORMANCE)) { /* -d 256 */
+        return;
+    }
+
+    int ret;
+    struct item {
+        int symbology;
+        int input_mode;
+        int option_1;
+        int option_2;
+        char *data;
+        int ret;
+
+        int expected_rows;
+        int expected_width;
+        char *comment;
+    };
+    struct item data[] = {
+        /*  0*/ { BARCODE_MICROQR, UNICODE_MODE, 1, 1, "12345", 0, 11, 11, "Max 5 numbers, M1" },
+        /*  1*/ { BARCODE_MICROQR, UNICODE_MODE, 1, 2, "1234567890", 0, 13, 13, "Max 10 numbers, M2-L" },
+        /*  2*/ { BARCODE_MICROQR, UNICODE_MODE, 1, 3, "123456789012345", 0, 15, 15, "Max 15 numbers, M3-L" },
+        /*  3*/ { BARCODE_MICROQR, UNICODE_MODE, 1, 4, "12345678901234567890123456789012345", 0, 17, 17, "Max 35 numbers, M4-L" },
+    };
+    int data_size = ARRAY_SIZE(data);
+
+    clock_t start, total_encode = 0, total_buffer = 0, diff_encode, diff_buffer;
+
+    for (int i = 0; i < data_size; i++) {
+
+        if (index != -1 && i != index) continue;
+
+        diff_encode = diff_buffer = 0;
+
+        for (int j = 0; j < TEST_PERF_ITERATIONS; j++) {
+            struct zint_symbol *symbol = ZBarcode_Create();
+            assert_nonnull(symbol, "Symbol not created\n");
+
+            int length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, data[i].option_1, data[i].option_2, -1, -1 /*output_options*/, data[i].data, -1, debug);
+
+            start = clock();
+            ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
+            diff_encode += clock() - start;
+            assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+
+            assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);
+            assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
+
+            start = clock();
+            ret = ZBarcode_Buffer(symbol, 0 /*rotate_angle*/);
+            diff_buffer += clock() - start;
+            assert_zero(ret, "i:%d ZBarcode_Buffer ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
+
+            ZBarcode_Delete(symbol);
+        }
+
+        printf("%s: diff_encode %gms, diff_buffer %gms\n", data[i].comment, diff_encode * 1000.0 / CLOCKS_PER_SEC, diff_buffer * 1000.0 / CLOCKS_PER_SEC);
+
+        total_encode += diff_encode;
+        total_buffer += diff_buffer;
+    }
+    if (index != -1) {
+        printf("totals: encode %gms, buffer %gms\n", total_encode * 1000.0 / CLOCKS_PER_SEC, total_buffer * 1000.0 / CLOCKS_PER_SEC);
+    }
+}
+
 static void test_upnqr_input(int index, int generate, int debug) {
 
     testStart("");
@@ -2674,6 +2742,7 @@ int main(int argc, char *argv[]) {
         { "test_microqr_padding", test_microqr_padding, 1, 1, 1 },
         { "test_microqr_optimize", test_microqr_optimize, 1, 1, 1 },
         { "test_microqr_encode", test_microqr_encode, 1, 1, 1 },
+        { "test_microqr_perf", test_microqr_perf, 1, 0, 1 },
 
         { "test_upnqr_input", test_upnqr_input, 1, 1, 1 },
         { "test_upnqr_encode", test_upnqr_encode, 1, 1, 1 },

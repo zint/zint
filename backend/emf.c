@@ -81,19 +81,21 @@ static int count_hexagons(struct zint_symbol *symbol) {
     return hexagons;
 }
 
-static int count_strings(struct zint_symbol *symbol, int *fsize, int *fsize2, int *halign, int *halign1, int *halign2) {
+static int count_strings(struct zint_symbol *symbol, float *fsize, float *fsize2, int *halign, int *halign1,
+            int *halign2) {
     int strings = 0;
     struct zint_vector_string *str;
 
-    *fsize = *fsize2 = *halign = *halign1 = *halign2 = 0;
+    *fsize = *fsize2 = 0.0f;
+    *halign = *halign1 = *halign2 = 0;
 
     str = symbol->vector->strings;
     while (str) {
         /* Allow 2 font sizes */
-        if (*fsize == 0) {
-            *fsize = (int) str->fsize;
-        } else if (str->fsize != *fsize && *fsize2 == 0) {
-            *fsize2 = (int) str->fsize;
+        if (*fsize == 0.0f) {
+            *fsize = str->fsize;
+        } else if (str->fsize != *fsize && *fsize2 == 0.0f) {
+            *fsize2 = str->fsize;
         }
         /* Only 3 haligns possible */
         if (str->halign) {
@@ -136,7 +138,7 @@ static void utfle_copy(unsigned char *output, unsigned char *input, int length) 
 
 static int bump_up(int input) {
     /* Strings length must be a multiple of 4 bytes */
-    if ((input % 2) == 1) {
+    if ((input & 1) == 1) {
         input++;
     }
     return input;
@@ -199,10 +201,10 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
     emr_rectangle_t background;
     emr_settextcolor_t emr_settextcolor;
 
-    int fsize;
+    float fsize;
     emr_extcreatefontindirectw_t emr_extcreatefontindirectw;
     emr_selectobject_t emr_selectobject_font;
-    int fsize2;
+    float fsize2;
     emr_extcreatefontindirectw_t emr_extcreatefontindirectw2;
     emr_selectobject_t emr_selectobject_font2;
     int halign;
@@ -212,7 +214,7 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
     int halign2;
     emr_settextalign_t emr_settextalign2;
 
-    int current_fsize;
+    float current_fsize;
     int current_halign;
 
 #ifdef _MSC_VER
@@ -220,7 +222,7 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
     emr_ellipse_t *circle;
     emr_polygon_t *hexagon;
     emr_exttextoutw_t *text;
-    int *text_fsizes;
+    float *text_fsizes;
     int *text_haligns;
 #endif
 
@@ -243,18 +245,19 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
     string_count = count_strings(symbol, &fsize, &fsize2, &halign, &halign1, &halign2);
 
 #ifndef _MSC_VER
-    emr_rectangle_t rectangle[rectangle_count ? rectangle_count : 1]; // Avoid sanitize runtime error by making always non-zero
+    // Avoid sanitize runtime error by making always non-zero
+    emr_rectangle_t rectangle[rectangle_count ? rectangle_count : 1];
     emr_ellipse_t circle[circle_count ? circle_count : 1];
     emr_polygon_t hexagon[hexagon_count ? hexagon_count : 1];
     emr_exttextoutw_t text[string_count ? string_count: 1];
-    int text_fsizes[string_count ? string_count: 1];
+    float text_fsizes[string_count ? string_count: 1];
     int text_haligns[string_count ? string_count: 1];
 #else
     rectangle = (emr_rectangle_t*) _alloca(rectangle_count * sizeof (emr_rectangle_t));
     circle = (emr_ellipse_t*) _alloca(circle_count * sizeof (emr_ellipse_t));
     hexagon = (emr_polygon_t*) _alloca(hexagon_count * sizeof (emr_polygon_t));
     text = (emr_exttextoutw_t*) _alloca(string_count * sizeof (emr_exttextoutw_t));
-    text_fsizes = (int *) _alloca(string_count * sizeof (int));
+    text_fsizes = (float *) _alloca(string_count * sizeof (float));
     text_haligns = (int *) _alloca(string_count * sizeof (int));
 #endif
 
@@ -274,8 +277,8 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
         }
     }
 
-    width = ceil(symbol->vector->width);
-    height = ceil(symbol->vector->height);
+    width = (int) ceil(symbol->vector->width);
+    height = (int) ceil(symbol->vector->height);
 
     /* Header */
     emr_header.type = 0x00000001; // EMR_HEADER
@@ -293,7 +296,7 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
     if (symbol->symbology == BARCODE_ULTRA) {
         emr_header.emf_header.handles = 11; // Number of graphics objects
     } else {
-        emr_header.emf_header.handles = fsize2 ? 5 : 4;
+        emr_header.emf_header.handles = fsize2 != 0.0f ? 5 : 4;
     }
     emr_header.emf_header.reserved = 0x0000;
     emr_header.emf_header.n_description = 0;
@@ -417,7 +420,7 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
 
     if (draw_background) {
         /* Make background from a rectangle */
-        background.type = 0x0000002b; // EMR_RECTANGLE;
+        background.type = 0x0000002b; // EMR_RECTANGLE
         background.size = 24;
         background.box.top = 0;
         background.box.left = 0;
@@ -431,12 +434,12 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
     rect = symbol->vector->rectangles;
     this_rectangle = 0;
     while (rect) {
-        rectangle[this_rectangle].type = 0x0000002b; // EMR_RECTANGLE;
+        rectangle[this_rectangle].type = 0x0000002b; // EMR_RECTANGLE
         rectangle[this_rectangle].size = 24;
-        rectangle[this_rectangle].box.top = rect->y;
-        rectangle[this_rectangle].box.bottom = rect->y + rect->height;
-        rectangle[this_rectangle].box.left = rect->x;
-        rectangle[this_rectangle].box.right = rect->x + rect->width;
+        rectangle[this_rectangle].box.top = (int32_t) rect->y;
+        rectangle[this_rectangle].box.bottom = (int32_t) (rect->y + rect->height);
+        rectangle[this_rectangle].box.left = (int32_t) rect->x;
+        rectangle[this_rectangle].box.right = (int32_t) (rect->x + rect->width);
         this_rectangle++;
         bytecount += 24;
         recordcount++;
@@ -454,10 +457,10 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
         }
         circle[this_circle].type = 0x0000002a; // EMR_ELLIPSE
         circle[this_circle].size = 24;
-        circle[this_circle].box.top = circ->y - radius;
-        circle[this_circle].box.bottom = circ->y + radius;
-        circle[this_circle].box.left = circ->x - radius;
-        circle[this_circle].box.right = circ->x + radius;
+        circle[this_circle].box.top = (int32_t) (circ->y - radius);
+        circle[this_circle].box.bottom = (int32_t) (circ->y + radius);
+        circle[this_circle].box.left = (int32_t) (circ->x - radius);
+        circle[this_circle].box.right = (int32_t) (circ->x + radius);
         this_circle++;
         bytecount += 24;
         recordcount++;
@@ -507,18 +510,18 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
             fx = hex->x - half_radius;
         }
 
-        hexagon[this_hexagon].a_points_a.x = ax;
-        hexagon[this_hexagon].a_points_a.y = ay;
-        hexagon[this_hexagon].a_points_b.x = bx;
-        hexagon[this_hexagon].a_points_b.y = by;
-        hexagon[this_hexagon].a_points_c.x = cx;
-        hexagon[this_hexagon].a_points_c.y = cy;
-        hexagon[this_hexagon].a_points_d.x = dx;
-        hexagon[this_hexagon].a_points_d.y = dy;
-        hexagon[this_hexagon].a_points_e.x = ex;
-        hexagon[this_hexagon].a_points_e.y = ey;
-        hexagon[this_hexagon].a_points_f.x = fx;
-        hexagon[this_hexagon].a_points_f.y = fy;
+        hexagon[this_hexagon].a_points_a.x = (int32_t) ax;
+        hexagon[this_hexagon].a_points_a.y = (int32_t) ay;
+        hexagon[this_hexagon].a_points_b.x = (int32_t) bx;
+        hexagon[this_hexagon].a_points_b.y = (int32_t) by;
+        hexagon[this_hexagon].a_points_c.x = (int32_t) cx;
+        hexagon[this_hexagon].a_points_c.y = (int32_t) cy;
+        hexagon[this_hexagon].a_points_d.x = (int32_t) dx;
+        hexagon[this_hexagon].a_points_d.y = (int32_t) dy;
+        hexagon[this_hexagon].a_points_e.x = (int32_t) ex;
+        hexagon[this_hexagon].a_points_e.y = (int32_t) ey;
+        hexagon[this_hexagon].a_points_f.x = (int32_t) fx;
+        hexagon[this_hexagon].a_points_f.y = (int32_t) fy;
 
         hexagon[this_hexagon].bounds.top = hexagon[this_hexagon].a_points_d.y;
         hexagon[this_hexagon].bounds.bottom = hexagon[this_hexagon].a_points_a.y;
@@ -532,12 +535,13 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
 
     /* Create font records, alignment records and text color */
     if (symbol->vector->strings) {
-        bold = (symbol->output_options & BOLD_TEXT) && (!is_extendable(symbol->symbology) || (symbol->output_options & SMALL_TEXT));
+        bold = (symbol->output_options & BOLD_TEXT) &&
+                (!is_extendable(symbol->symbology) || (symbol->output_options & SMALL_TEXT));
         memset(&emr_extcreatefontindirectw, 0, sizeof(emr_extcreatefontindirectw));
         emr_extcreatefontindirectw.type = 0x00000052; // EMR_EXTCREATEFONTINDIRECTW
         emr_extcreatefontindirectw.size = 104;
         emr_extcreatefontindirectw.ih_fonts = 11;
-        emr_extcreatefontindirectw.elw.height = fsize;
+        emr_extcreatefontindirectw.elw.height = (int32_t) fsize;
         emr_extcreatefontindirectw.elw.width = 0; // automatic
         emr_extcreatefontindirectw.elw.weight = bold ? 700 : 400;
         emr_extcreatefontindirectw.elw.char_set = 0x00; // ANSI_CHARSET
@@ -557,7 +561,7 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
         if (fsize2) {
             memcpy(&emr_extcreatefontindirectw2, &emr_extcreatefontindirectw, sizeof(emr_extcreatefontindirectw));
             emr_extcreatefontindirectw2.ih_fonts = 12;
-            emr_extcreatefontindirectw2.elw.height = fsize2;
+            emr_extcreatefontindirectw2.elw.height = (int32_t) fsize2;
             bytecount += 104;
             recordcount++;
 
@@ -626,8 +630,8 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
             text[this_text].i_graphics_mode = 0x00000002; // GM_ADVANCED
             text[this_text].ex_scale = 1.0f;
             text[this_text].ey_scale = 1.0f;
-            text[this_text].w_emr_text.reference.x = str->x;
-            text[this_text].w_emr_text.reference.y = str->y;
+            text[this_text].w_emr_text.reference.x = (int32_t) str->x;
+            text[this_text].w_emr_text.reference.y = (int32_t) str->y;
             text[this_text].w_emr_text.chars = utfle_len;
             text[this_text].w_emr_text.off_string = 76;
             text[this_text].w_emr_text.options = 0;
@@ -770,7 +774,7 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
     current_fsize = fsize;
     current_halign = -1;
     for (i = 0; i < string_count; i++) {
-        if (text_fsizes[i] != current_fsize) { // NOLINT(clang-analyzer-core.UndefinedBinaryOperatorResult) suppress clang-tidy warning: text_fsizes fully set
+        if (text_fsizes[i] != current_fsize) {
             current_fsize = text_fsizes[i];
             fwrite(&emr_selectobject_font2, sizeof (emr_selectobject_t), 1, emf_file);
         }

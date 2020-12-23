@@ -88,8 +88,12 @@ static const char MicroAutosize[56] = {
     1, 14, 2, 7, 3, 25, 8, 16, 5, 17, 9, 6, 10, 11, 28, 12, 19, 13, 29, 20, 30, 21, 22, 31, 23, 32, 33, 34
 };
 
-#define PDF417_MAX_LEN          2710    /* ISO/IEC 15438:2015 5.1.1 c) 3) Max possible number of characters at error correction level 0 (Numeric Compaction mode) */
-#define MICRO_PDF417_MAX_LEN    366     /* ISO/IEC 24728:2006 5.1.1 c) 3) Max possible number of characters (Numeric Compaction mode) */
+/* ISO/IEC 15438:2015 5.1.1 c) 3) Max possible number of characters at error correction level 0
+   (Numeric Compaction mode) */
+#define PDF417_MAX_LEN          2710
+
+/* ISO/IEC 24728:2006 5.1.1 c) 3) Max possible number of characters (Numeric Compaction mode) */
+#define MICRO_PDF417_MAX_LEN    366
 
 /* 866 */
 
@@ -377,8 +381,8 @@ static void textprocess(int *chainemc, int *mclength, char chaine[], int start, 
     }
     /* Now translate the string chainet into codewords */
 
-    /* Default mode for PDF417 is Text Compaction Alpha (ISO/IEC 1543:2015 5.4.2.1), and for MICROPDF417 is Byte Compaction
-     * (ISO/IEC 24728:2006 5.4.3), so only add flag if not first codeword or is MICROPDF417 */
+    /* Default mode for PDF417 is Text Compaction Alpha (ISO/IEC 1543:2015 5.4.2.1), and for MICROPDF417 is Byte
+     * Compaction (ISO/IEC 24728:2006 5.4.3), so only add flag if not first codeword or is MICROPDF417 */
     if (*mclength || is_micro) {
         chainemc[(*mclength)++] = 900;
     }
@@ -409,8 +413,9 @@ INTERNAL void byteprocess(int *chainemc, int *mclength, unsigned char chaine[], 
             chainemc[(*mclength)++] = 924;
             if (debug) printf("924 ");
         } else {
-            /* Default mode for MICROPDF417 is Byte Compaction (ISO/IEC 24728:2006 5.4.3), but not emitting it depends on whether
-             * an ECI has been emitted previously (or not) it appears, so simpler and safer to always emit it. */
+            /* Default mode for MICROPDF417 is Byte Compaction (ISO/IEC 24728:2006 5.4.3), but not emitting it
+             * depends on whether an ECI has been emitted previously (or not) it appears, so simpler and safer
+             * to always emit it. */
             chainemc[(*mclength)++] = 901;
             if (debug) printf("901 ");
         }
@@ -507,6 +512,7 @@ static int pdf417(struct zint_symbol *symbol, unsigned char chaine[], const int 
     int total, chainemc[PDF417_MAX_LEN], mclength, c1, c2, c3, dummy[35], calcheight;
     int liste[2][PDF417_MAX_LEN] = {{0}};
     char pattern[580];
+    int bp = 0;
     int error_number = 0;
     int debug = symbol->debug & ZINT_DEBUG_PRINT;
 
@@ -733,7 +739,7 @@ static int pdf417(struct zint_symbol *symbol, unsigned char chaine[], const int 
 
     /* we now encode each row */
     for (i = 0; i < symbol->rows; i++) {
-        int p;
+        bp = 0;
         for (j = 0; j < symbol->option_2; j++) {
             dummy[j + 1] = chainemc[i * symbol->option_2 + j];
         }
@@ -755,28 +761,28 @@ static int pdf417(struct zint_symbol *symbol, unsigned char chaine[], const int 
                 offset = 1858; /* cluster(6) */
                 break;
         }
-        p = bin_append_posn(0x1FEA8, 17, pattern, 0); /* Row start */
+        bp = bin_append_posn(0x1FEA8, 17, pattern, bp); /* Row start */
 
         for (j = 0; j <= symbol->option_2; j++) {
-            p = bin_append_posn(pdf_bitpattern[offset + dummy[j]], 16, pattern, p);
-            pattern[p++] = '0';
+            bp = bin_append_posn(pdf_bitpattern[offset + dummy[j]], 16, pattern, bp);
+            pattern[bp++] = '0';
         }
 
         if (symbol->symbology != BARCODE_PDF417COMP) {
-            p = bin_append_posn(pdf_bitpattern[offset + dummy[j]], 16, pattern, p);
-            pattern[p++] = '0';
-            p = bin_append_posn(0x3FA29, 18, pattern, p); /* Row Stop */
+            bp = bin_append_posn(pdf_bitpattern[offset + dummy[j]], 16, pattern, bp);
+            pattern[bp++] = '0';
+            bp = bin_append_posn(0x3FA29, 18, pattern, bp); /* Row Stop */
         } else {
-            pattern[p++] = '1'; /* Compact PDF417 Stop pattern */
+            pattern[bp++] = '1'; /* Compact PDF417 Stop pattern */
         }
-        pattern[p] = '\0';
 
-        for (loop = 0; loop < p; loop++) {
+        for (loop = 0; loop < bp; loop++) {
             if (pattern[loop] == '1') {
                 set_module(symbol, i, loop);
             }
         }
     }
+    symbol->width = bp;
     
     /* Allow user to adjust height of symbol, but enforce minimum row height of 3X */
     calcheight = (int)(symbol->height / i);
@@ -787,8 +793,6 @@ static int pdf417(struct zint_symbol *symbol, unsigned char chaine[], const int 
     for (j = 0; j < i; j++) {
         symbol->row_height[j] = calcheight;
     }
-    
-    symbol->width = (int) strlen(pattern);
 
     /* 843 */
     return error_number;
@@ -834,9 +838,10 @@ INTERNAL int pdf417enc(struct zint_symbol *symbol, unsigned char source[], int l
 /* like PDF417 only much smaller! */
 INTERNAL int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], int length) {
     int i, k, j, indexchaine, indexliste, mode, longueur, mccorrection[50] = {0}, offset;
-    int total, chainemc[PDF417_MAX_LEN], mclength, dummy[5], codeerr;
+    int total, chainemc[PDF417_MAX_LEN], mclength, codeerr;
     int liste[2][PDF417_MAX_LEN] = {{0}};
     char pattern[580];
+    int bp = 0;
     int variant, LeftRAPStart, CentreRAPStart, RightRAPStart, StartCluster;
     int LeftRAP, CentreRAP, RightRAP, Cluster, loop, calcheight;
     int debug = symbol->debug & ZINT_DEBUG_PRINT;
@@ -895,28 +900,26 @@ INTERNAL int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], in
         mclength++;
     }
 
-    if (symbol->eci > 811799) {
-        strcpy(symbol->errtxt, "473: Invalid ECI");
-        return ZINT_ERROR_INVALID_OPTION;
-    }
-
     if (symbol->eci != 0) {
+
         /* Encoding ECI assignment number, according to Table 8 */
         if (symbol->eci <= 899) {
             chainemc[mclength] = 927; /* ECI */
             mclength++;
             chainemc[mclength] = symbol->eci;
             mclength++;
-        }
-        if ((symbol->eci >= 900) && (symbol->eci <= 810899)) {
+        } else if (symbol->eci <= 810899) {
             chainemc[mclength] = 926; /* ECI */
             mclength++;
             chainemc[mclength] = (symbol->eci / 900) - 1;
             mclength++;
             chainemc[mclength] = symbol->eci % 900;
             mclength++;
-        }
-        if (symbol->eci >= 810900) {
+        } else {
+            if (symbol->eci > 811799) {
+                strcpy(symbol->errtxt, "473: Invalid ECI");
+                return ZINT_ERROR_INVALID_OPTION;
+            }
             chainemc[mclength] = 925; /* ECI */
             mclength++;
             chainemc[mclength] = symbol->eci - 810900;
@@ -1002,120 +1005,92 @@ INTERNAL int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], in
 
     if (symbol->option_2 == 1) {
         /* the user specified 1 column and the data does fit */
-        variant = 6;
-        if (mclength <= 16) {
-            variant = 5;
-        }
-        if (mclength <= 12) {
-            variant = 4;
-        }
-        if (mclength <= 10) {
-            variant = 3;
-        }
-        if (mclength <= 7) {
-            variant = 2;
-        }
         if (mclength <= 4) {
             variant = 1;
+        } else if (mclength <= 7) {
+            variant = 2;
+        } else if (mclength <= 10) {
+            variant = 3;
+        } else if (mclength <= 12) {
+            variant = 4;
+        } else if (mclength <= 16) {
+            variant = 5;
+        } else {
+            variant = 6;
         }
-    }
-
-    if (symbol->option_2 == 2) {
+    } else if (symbol->option_2 == 2) {
         /* the user specified 2 columns and the data does fit */
-        variant = 13;
-        if (mclength <= 33) {
-            variant = 12;
-        }
-        if (mclength <= 29) {
-            variant = 11;
-        }
-        if (mclength <= 24) {
-            variant = 10;
-        }
-        if (mclength <= 19) {
-            variant = 9;
-        }
-        if (mclength <= 13) {
-            variant = 8;
-        }
         if (mclength <= 8) {
             variant = 7;
+        } else if (mclength <= 13) {
+            variant = 8;
+        } else if (mclength <= 19) {
+            variant = 9;
+        } else if (mclength <= 24) {
+            variant = 10;
+        } else if (mclength <= 29) {
+            variant = 11;
+        } else if (mclength <= 33) {
+            variant = 12;
+        } else {
+            variant = 13;
         }
-    }
-
-    if (symbol->option_2 == 3) {
+    } else if (symbol->option_2 == 3) {
         /* the user specified 3 columns and the data does fit */
-        variant = 23;
-        if (mclength <= 70) {
-            variant = 22;
-        }
-        if (mclength <= 58) {
-            variant = 21;
-        }
-        if (mclength <= 46) {
-            variant = 20;
-        }
-        if (mclength <= 34) {
-            variant = 19;
-        }
-        if (mclength <= 24) {
-            variant = 18;
-        }
-        if (mclength <= 18) {
-            variant = 17;
-        }
-        if (mclength <= 14) {
-            variant = 16;
-        }
-        if (mclength <= 10) {
-            variant = 15;
-        }
         if (mclength <= 6) {
             variant = 14;
+        } else if (mclength <= 10) {
+            variant = 15;
+        } else if (mclength <= 14) {
+            variant = 16;
+        } else if (mclength <= 18) {
+            variant = 17;
+        } else if (mclength <= 24) {
+            variant = 18;
+        } else if (mclength <= 34) {
+            variant = 19;
+        } else if (mclength <= 46) {
+            variant = 20;
+        } else if (mclength <= 58) {
+            variant = 21;
+        } else if (mclength <= 70) {
+            variant = 22;
+        } else {
+            variant = 23;
         }
-    }
-
-    if (symbol->option_2 == 4) {
+    } else if (symbol->option_2 == 4) {
         /* the user specified 4 columns and the data does fit */
-        variant = 34;
-        if (mclength <= 108) {
-            variant = 33;
-        }
-        if (mclength <= 90) {
-            variant = 32;
-        }
-        if (mclength <= 72) {
-            variant = 31;
-        }
-        if (mclength <= 54) {
-            variant = 30;
-        }
-        if (mclength <= 39) {
-            variant = 29;
-        }
-        if (mclength <= 30) {
-            variant = 28;
-        }
-        if (mclength <= 24) {
-            variant = 27;
-        }
-        if (mclength <= 18) {
-            variant = 26;
-        }
-        if (mclength <= 12) {
-            variant = 25;
-        }
         if (mclength <= 8) {
             variant = 24;
+        } else if (mclength <= 12) {
+            variant = 25;
+        } else if (mclength <= 18) {
+            variant = 26;
+        } else if (mclength <= 24) {
+            variant = 27;
+        } else if (mclength <= 30) {
+            variant = 28;
+        } else if (mclength <= 39) {
+            variant = 29;
+        } else if (mclength <= 54) {
+            variant = 30;
+        } else if (mclength <= 72) {
+            variant = 31;
+        } else if (mclength <= 90) {
+            variant = 32;
+        } else if (mclength <= 108) {
+            variant = 33;
+        } else {
+            variant = 34;
         }
-    }
-
-    if (variant == 0) {
+    } else {
         /* Zint can choose automatically from all available variations */
         for (i = 27; i >= 0; i--) {
 
             if (MicroAutosize[i] >= mclength) {
                 variant = MicroAutosize[i + 28];
+            } else {
+                break;
             }
         }
     }
@@ -1197,50 +1172,43 @@ INTERNAL int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], in
     if (debug) printf("\nInternal row representation:\n");
     for (i = 0; i < symbol->rows; i++) {
         if (debug) printf("row %d: ", i);
-        strcpy(pattern, "");
+        bp = 0;
         offset = 929 * Cluster;
-        for (j = 0; j < 5; j++) {
-            dummy[j] = 0;
-        }
-        for (j = 0; j < symbol->option_2; j++) {
-            dummy[j + 1] = chainemc[i * symbol->option_2 + j];
-            if (debug) printf("[%d] ", dummy[j + 1]);
-        }
+        k = i * symbol->option_2;
 
         /* Copy the data into codebarre */
-        bin_append(rap_side[LeftRAP - 1], 10, pattern);
-        bin_append(pdf_bitpattern[offset + dummy[1]], 16, pattern);
-        strcat(pattern, "0");
-        if (symbol->option_2 == 3) {
-            bin_append(rap_centre[CentreRAP - 1], 10, pattern);
-        }
+        bp = bin_append_posn(rap_side[LeftRAP - 1], 10, pattern, bp);
+        bp = bin_append_posn(pdf_bitpattern[offset + chainemc[k]], 16, pattern, bp);
+        pattern[bp++] = '0';
         if (symbol->option_2 >= 2) {
-            bin_append(pdf_bitpattern[offset + dummy[2]], 16, pattern);
-            strcat(pattern, "0");
+            if (symbol->option_2 == 3) {
+                bp = bin_append_posn(rap_centre[CentreRAP - 1], 10, pattern, bp);
+            }
+            bp = bin_append_posn(pdf_bitpattern[offset + chainemc[k + 1]], 16, pattern, bp);
+            pattern[bp++] = '0';
+            if (symbol->option_2 >= 3) {
+                if (symbol->option_2 == 4) {
+                    bp = bin_append_posn(rap_centre[CentreRAP - 1], 10, pattern, bp);
+                }
+                bp = bin_append_posn(pdf_bitpattern[offset + chainemc[k + 2]], 16, pattern, bp);
+                pattern[bp++] = '0';
+                if (symbol->option_2 == 4) {
+                    bp = bin_append_posn(pdf_bitpattern[offset + chainemc[k + 3]], 16, pattern, bp);
+                    pattern[bp++] = '0';
+                }
+            }
         }
-        if (symbol->option_2 == 4) {
-            bin_append(rap_centre[CentreRAP - 1], 10, pattern);
-        }
-        if (symbol->option_2 >= 3) {
-            bin_append(pdf_bitpattern[offset + dummy[3]], 16, pattern);
-            strcat(pattern, "0");
-        }
-        if (symbol->option_2 == 4) {
-            bin_append(pdf_bitpattern[offset + dummy[4]], 16, pattern);
-            strcat(pattern, "0");
-        }
-        bin_append(rap_side[RightRAP - 1], 10, pattern);
-        strcat(pattern, "1"); /* stop */
-        if (debug) printf("%s\n", pattern);
+        bp = bin_append_posn(rap_side[RightRAP - 1], 10, pattern, bp);
+        pattern[bp++] = '1'; /* stop */
+        if (debug) printf("%.*s\n", bp, pattern);
 
         /* so now pattern[] holds the string of '1's and '0's. - copy this to the symbol */
-        for (loop = 0; loop < (int)strlen(pattern); loop++) {
+        for (loop = 0; loop < bp; loop++) {
             if (pattern[loop] == '1') {
                 set_module(symbol, i, loop);
             }
         }
         symbol->row_height[i] = 2;
-        symbol->width = strlen(pattern);
 
         /* Set up RAPs and Cluster for next row */
         LeftRAP++;
@@ -1261,6 +1229,7 @@ INTERNAL int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], in
             Cluster = 0;
         }
     }
+    symbol->width = bp;
     
     /* Allow user to adjust height of symbol, but enforce minimum row height of 2X */
     calcheight = (int)(symbol->height / i);

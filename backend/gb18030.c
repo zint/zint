@@ -81,7 +81,7 @@ static const unsigned short cp936ext_pagefe[24] = {
   0xa6e5, 0xa6e8, 0xa6e9, 0xa6ea, 0xa6eb, 0x0000, 0x0000, 0x0000, /*0x40-0x47*/
 };
 
-static int cp936ext_wctomb(unsigned int *r, unsigned int wc) {
+static int cp936ext_wctomb(unsigned int *r, const unsigned int wc) {
     unsigned short c = 0;
     if (wc >= 0x0140 && wc < 0x0150) {
         c = cp936ext_page01[wc-0x0140];
@@ -2383,7 +2383,7 @@ static const Summary16 gbkext_inv_uni2indx_pagefe[31] = {
   { 14311, 0x0000 }, { 14311, 0x0000 }, { 14311, 0x0014 },
 };
 
-static int gbkext_inv_wctomb(unsigned int *r, unsigned int wc) {
+static int gbkext_inv_wctomb(unsigned int *r, const unsigned int wc) {
     const Summary16 *summary = NULL;
     if (wc >= 0x0200 && wc < 0x02e0) {
         summary = &gbkext_inv_uni2indx_page02[(wc>>4)-0x020];
@@ -2424,7 +2424,7 @@ static int gbkext_inv_wctomb(unsigned int *r, unsigned int wc) {
  * GBK (libiconv-1.16/lib/gbk.h)
  */
 
-static int gbk_wctomb(unsigned int *r, unsigned int wc) {
+static int gbk_wctomb(unsigned int *r, const unsigned int wc) {
     int ret;
 
     /* ZINT: Note these mappings U+30FB and U+2015 different from GB 2312 */
@@ -2553,7 +2553,7 @@ static const unsigned short gb18030ext_pagefe[16] = {
   0xa6ed, 0xa6f3, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, /*0x18-0x1f*/
 };
 
-static int gb18030ext_wctomb(unsigned int *r, unsigned int wc) {
+static int gb18030ext_wctomb(unsigned int *r, const unsigned int wc) {
     unsigned short c = 0;
     if (wc == 0x01f9) {
         c = 0xa8bf;
@@ -2727,7 +2727,7 @@ static const unsigned short gb18030uni_ranges[206] = {
   25994, 25998, 26012, 26016, 26110, 26116
 };
 
-static int gb18030uni_wctomb(unsigned int *r1, unsigned int *r2, unsigned int wc) {
+static int gb18030uni_wctomb(unsigned int *r1, unsigned int *r2, const unsigned int wc) {
     unsigned int i = wc;
     if (i >= 0x0080 && i <= 0xffff) {
         if (i == 0xe7c7) {
@@ -2798,7 +2798,7 @@ static const unsigned short gb18030_pua2charset[31*3] = {
   0xe864, 0xe864,  0xfea0,
 };
 
-INTERNAL int gb18030_wctomb_zint(unsigned int *r1, unsigned int *r2, unsigned int wc) {
+INTERNAL int gb18030_wctomb_zint(unsigned int *r1, unsigned int *r2, const unsigned int wc) {
     int ret;
 
     /* Code set 0 (ASCII) */
@@ -2871,7 +2871,7 @@ INTERNAL int gb18030_wctomb_zint(unsigned int *r1, unsigned int *r2, unsigned in
 
 /* Convert UTF-8 string to GB 18030 and place in array of ints */
 INTERNAL int gb18030_utf8tomb(struct zint_symbol *symbol, const unsigned char source[], int *p_length,
-            unsigned int *gbdata) {
+                unsigned int *gbdata) {
     int error_number, ret;
     unsigned int i, j, length;
 #ifndef _MSC_VER
@@ -2906,8 +2906,8 @@ INTERNAL int gb18030_utf8tomb(struct zint_symbol *symbol, const unsigned char so
 }
 
 /* Convert UTF-8 string to single byte ECI and place in array of ints */
-INTERNAL int gb18030_utf8tosb(int eci, const unsigned char source[], int *p_length, unsigned int *gbdata,
-            int full_multibyte) {
+INTERNAL int gb18030_utf8tosb(const int eci, const unsigned char source[], int *p_length, unsigned int *gbdata,
+                const int full_multibyte) {
     int error_number;
 #ifndef _MSC_VER
     unsigned char single_byte[*p_length + 1];
@@ -2926,9 +2926,10 @@ INTERNAL int gb18030_utf8tosb(int eci, const unsigned char source[], int *p_leng
     return 0;
 }
 
-/* If `full_multibyte` set, copy byte input stream to array of ints, putting double-bytes that match HANXIN Chinese
- * mode in single entry, and quad-bytes in 2 entries. If `full_multibyte` not set, do a straight copy */
-INTERNAL void gb18030_cpy(const unsigned char source[], int *p_length, unsigned int *gbdata, int full_multibyte) {
+/* If `full_multibyte` set, copy byte input stream to array of ints, putting double-bytes that match HANXIN
+ * Chinese mode in single entry, and quad-bytes in 2 entries. If `full_multibyte` not set, do a straight copy */
+INTERNAL void gb18030_cpy(const unsigned char source[], int *p_length, unsigned int *gbdata,
+                const int full_multibyte) {
     unsigned int i, j, length;
     int done;
     unsigned char c1, c2, c3, c4;

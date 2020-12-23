@@ -31,7 +31,8 @@
  */
 /* vim: set ts=4 sw=4 et : */
 
-/* Telepen Barcode Symbology information and History (BSiH) https://telepen.co.uk/wp-content/uploads/2018/10/Barcode-Symbology-information-and-History.pdf */
+/* Telepen Barcode Symbology information and History (BSiH)
+   https://telepen.co.uk/wp-content/uploads/2018/10/Barcode-Symbology-information-and-History.pdf */
 
 #define SODIUM  "0123456789X"
 
@@ -57,8 +58,8 @@ static char *TeleTable[] = {
     "3113111113", "11311111111111", "331111111111", "111113111113", "31111111111111", "111311111113", "131111111113", "1111111111111111",
 };
 
-INTERNAL int telepen(struct zint_symbol *symbol, unsigned char source[], const size_t src_len) {
-    unsigned int i, count, check_digit;
+INTERNAL int telepen(struct zint_symbol *symbol, unsigned char source[], int src_len) {
+    int i, count, check_digit;
     int error_number;
     char dest[521]; /* 12 (start) + 30 * 16 (max for DELs) + 16 (check digit) + 12 (stop) + 1 = 521 */
 
@@ -104,39 +105,39 @@ INTERNAL int telepen(struct zint_symbol *symbol, unsigned char source[], const s
     return error_number;
 }
 
-INTERNAL int telepen_num(struct zint_symbol *symbol, unsigned char source[], const size_t src_len) {
-    unsigned int count, check_digit, glyph;
+INTERNAL int telepen_num(struct zint_symbol *symbol, unsigned char source[], int src_len) {
+    int count, check_digit, glyph;
     int error_number;
-    size_t i, temp_length = src_len;
+    int i;
     char dest[521]; /* 12 (start) + 30 * 16 (max for DELs) + 16 (check digit) + 12 (stop) + 1 = 521 */
     unsigned char temp[64];
 
     count = 0;
 
-    if (temp_length > 60) {
+    if (src_len > 60) {
         strcpy(symbol->errtxt, "392: Input too long");
         return ZINT_ERROR_TOO_LONG;
     }
     ustrcpy(temp, source);
     to_upper(temp);
-    error_number = is_sane(SODIUM, temp, temp_length);
+    error_number = is_sane(SODIUM, temp, src_len);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
         strcpy(symbol->errtxt, "393: Invalid characters in data");
         return error_number;
     }
 
     /* Add a leading zero if required */
-    if (temp_length & 1) {
-        memmove(temp + 1, temp, temp_length);
+    if (src_len & 1) {
+        memmove(temp + 1, temp, src_len);
         temp[0] = '0';
 
-        temp[++temp_length] = '\0';
+        temp[++src_len] = '\0';
     }
 
     /* Start character */
     strcpy(dest, TeleTable['_']);
 
-    for (i = 0; i < temp_length; i += 2) {
+    for (i = 0; i < src_len; i += 2) {
         if (temp[i] == 'X') {
             strcpy(symbol->errtxt, "394: Invalid position of X in Telepen data");
             return ZINT_ERROR_INVALID_DATA;

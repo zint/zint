@@ -37,9 +37,10 @@
 #define SSET    "0123456789ABCDEF"
 
 static const char *PlessTable[16] = {
-    "13131313", "31131313", "13311313", "31311313", "13133113", "31133113",
-    "13313113", "31313113", "13131331", "31131331", "13311331", "31311331", "13133131",
-    "31133131", "13313131", "31313131"
+    "13131313", "31131313", "13311313", "31311313",
+    "13133113", "31133113", "13313113", "31313113",
+    "13131331", "31131331", "13311331", "31311331",
+    "13133131", "31133131", "13313131", "31313131"
 };
 
 static const char *MSITable[10] = {
@@ -48,9 +49,9 @@ static const char *MSITable[10] = {
 };
 
 /* Not MSI/Plessey but the older Plessey standard */
-INTERNAL int plessey(struct zint_symbol *symbol, unsigned char source[], const size_t length) {
+INTERNAL int plessey(struct zint_symbol *symbol, unsigned char source[], int length) {
 
-    unsigned int i;
+    int i;
     unsigned char *checkptr;
     static const char grid[9] = {1, 1, 1, 1, 0, 1, 0, 0, 1};
     char dest[1024]; /* 8 + 65 * 8 + 8 * 2 + 9 + 1 ~ 1024 */
@@ -141,7 +142,7 @@ static int msi_plessey_mod10(struct zint_symbol *symbol, unsigned char source[],
 
     int i, wright, pump, n;
     unsigned long dau, pedwar;
-    char un[200], tri[32];
+    char un[32], tri[32];
     int error_number, h;
     char dest[1000];
 
@@ -174,7 +175,7 @@ static int msi_plessey_mod10(struct zint_symbol *symbol, unsigned char source[],
     sprintf(tri, "%lu", dau);
 
     pedwar = 0;
-    h = strlen(tri);
+    h = (int) strlen(tri);
     for (i = 0; i < h; i++) {
         pedwar += ctoi(tri[i]);
     }
@@ -208,7 +209,7 @@ static int msi_plessey_mod1010(struct zint_symbol *symbol, unsigned char source[
 
     int i, n, wright, pump;
     unsigned long dau, pedwar, chwech;
-    char un[16], tri[32];
+    char un[32], tri[32];
     int error_number, h;
     char dest[1000];
 
@@ -243,7 +244,7 @@ static int msi_plessey_mod1010(struct zint_symbol *symbol, unsigned char source[
     sprintf(tri, "%lu", dau);
 
     pedwar = 0;
-    h = strlen(tri);
+    h = (int) strlen(tri);
     for (i = 0; i < h; i++) {
         pedwar += ctoi(tri[i]);
     }
@@ -273,7 +274,7 @@ static int msi_plessey_mod1010(struct zint_symbol *symbol, unsigned char source[
     sprintf(tri, "%lu", dau);
 
     pedwar = 0;
-    h = strlen(tri);
+    h = (int) strlen(tri);
     for (i = 0; i < h; i++) {
         pedwar += ctoi(tri[i]);
     }
@@ -334,7 +335,7 @@ static int msi_plessey_mod11(struct zint_symbol *symbol, unsigned char source[],
     x = 0;
     weight = 2;
     for (i = src_len - 1; i >= 0; i--) {
-        x += weight * ctoi(source[i]);
+        x += (long) (weight * ctoi(source[i]));
         weight++;
         if (weight > 7) {
             weight = 2;
@@ -373,7 +374,7 @@ static int msi_plessey_mod1110(struct zint_symbol *symbol, unsigned char source[
     unsigned long x, dau, pedwar;
     int h;
     int si;
-    char un[16], tri[16];
+    char un[32], tri[32];
     int error_number;
     char dest[1000];
     unsigned char temp[32];
@@ -398,7 +399,7 @@ static int msi_plessey_mod1110(struct zint_symbol *symbol, unsigned char source[
     x = 0;
     weight = 2;
     for (si = src_len - 1; si >= 0; si--) {
-        x += weight * ctoi(source[si]);
+        x += (long) (weight * ctoi(source[si]));
         weight++;
         if (weight > 7) {
             weight = 2;
@@ -433,7 +434,7 @@ static int msi_plessey_mod1110(struct zint_symbol *symbol, unsigned char source[
     sprintf(tri, "%lu", dau);
 
     pedwar = 0;
-    h = strlen(tri);
+    h = (int) strlen(tri);
     for (i = 0; i < h; i++) {
         pedwar += ctoi(tri[i]);
     }

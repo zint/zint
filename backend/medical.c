@@ -34,7 +34,7 @@
 #include <stdio.h>
 #include "common.h"
 
-INTERNAL int c39(struct zint_symbol *symbol, unsigned char source[], const size_t length);
+INTERNAL int c39(struct zint_symbol *symbol, unsigned char source[], int length);
 
 /* Codabar table checked against EN 798:1995 */
 
@@ -93,7 +93,7 @@ INTERNAL int pharma_one(struct zint_symbol *symbol, unsigned char source[], int 
         }
     } while (tester != 0);
 
-    h = strlen(inter) - 1;
+    h = (int) strlen(inter) - 1;
     *dest = '\0';
     for (counter = h; counter >= 0; counter--) {
         if (inter[counter] == 'W') {
@@ -144,7 +144,7 @@ static int pharma_two_calc(struct zint_symbol *symbol, unsigned char source[], c
         }
     } while (tester != 0);
 
-    h = strlen(inter) - 1;
+    h = (int) strlen(inter) - 1;
     for (counter = h; counter >= 0; counter--) {
         dest[h - counter] = inter[counter];
     }
@@ -176,7 +176,7 @@ INTERNAL int pharma_two(struct zint_symbol *symbol, unsigned char source[], int 
     }
 
     writer = 0;
-    h = strlen(height_pattern);
+    h = (int) strlen(height_pattern);
     for (loopey = 0; loopey < h; loopey++) {
         if ((height_pattern[loopey] == '2') || (height_pattern[loopey] == '3')) {
             set_module(symbol, 0, writer);
@@ -198,7 +198,7 @@ INTERNAL int codabar(struct zint_symbol *symbol, unsigned char source[], int len
 
     int i, error_number;
     char dest[512];
-    int add_checksum, count, checksum;
+    int add_checksum, count = 0, checksum;
 
     strcpy(dest, "");
 
@@ -234,9 +234,6 @@ INTERNAL int codabar(struct zint_symbol *symbol, unsigned char source[], int len
     }
 
     add_checksum = symbol->option_2 == 1;
-    if (add_checksum) {
-        count = 0;
-    }
 
     for (i = 0; i < length; i++) {
         if (add_checksum) {
@@ -322,7 +319,7 @@ INTERNAL int code32(struct zint_symbol *symbol, unsigned char source[], int leng
     }
     risultante[6] = '\0';
     /* Plot the barcode using Code 39 */
-    error_number = c39(symbol, (unsigned char*) risultante, strlen(risultante));
+    error_number = c39(symbol, (unsigned char*) risultante, (int) strlen(risultante));
     if (error_number != 0) {
         return error_number;
     }

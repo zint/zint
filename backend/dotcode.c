@@ -996,7 +996,7 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
             if (n >= 2) {
                 /* Empty binary buffer */
                 for (i = 0; i < (binary_buffer_size + 1); i++) {
-                    lawrencium[i] = binary_buffer % 103;
+                    lawrencium[i] = (int) (binary_buffer % 103);
                     binary_buffer /= 103;
                 }
 
@@ -1043,7 +1043,7 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
 
                 if (binary_buffer_size == 5) {
                     for (i = 0; i < 6; i++) {
-                        lawrencium[i] = binary_buffer % 103;
+                        lawrencium[i] = (int) (binary_buffer % 103);
                         binary_buffer /= 103;
                     }
 
@@ -1066,7 +1066,7 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
         if ((!done) && (encoding_mode == 'X')) {
             /* Empty binary buffer */
             for (i = 0; i < (binary_buffer_size + 1); i++) {
-                lawrencium[i] = binary_buffer % 103;
+                lawrencium[i] = (int) (binary_buffer % 103);
                 binary_buffer /= 103;
             }
 
@@ -1096,7 +1096,7 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
         if (binary_buffer_size != 0) {
             /* Empty binary buffer */
             for (i = 0; i < (binary_buffer_size + 1); i++) {
-                lawrencium[i] = binary_buffer % 103;
+                lawrencium[i] = (int) (binary_buffer % 103);
                 binary_buffer /= 103;
             }
 
@@ -1116,20 +1116,21 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
 }
 
 /* Convert codewords to binary data stream */
-static size_t make_dotstream(unsigned char masked_array[], int array_length, char dot_stream[]) {
+static int make_dotstream(const unsigned char masked_array[], const int array_length, char dot_stream[]) {
     int i;
-
-    dot_stream[0] = '\0';
+    int bp = 0;
 
     /* Mask value is encoded as two dots */
-    bin_append(masked_array[0], 2, dot_stream);
+    bp = bin_append_posn(masked_array[0], 2, dot_stream, bp);
 
     /* The rest of the data uses 9-bit dot patterns from Annex C */
     for (i = 1; i < array_length; i++) {
-        bin_append(dot_patterns[masked_array[i]], 9, dot_stream);
+        bp = bin_append_posn(dot_patterns[masked_array[i]], 9, dot_stream, bp);
     }
 
-    return strlen(dot_stream);
+    dot_stream[bp] = '\0';
+
+    return bp;
 }
 
 /* Determines if a given dot is a reserved corner dot
@@ -1299,14 +1300,14 @@ static void force_corners(int width, int height, char *dot_array) {
     }
 }
 
-INTERNAL int dotcode(struct zint_symbol *symbol, const unsigned char source[], int length) {
+INTERNAL int dotcode(struct zint_symbol *symbol, unsigned char source[], int length) {
     int i, j, k;
-    size_t jc, n_dots;
+    int jc, n_dots;
     int data_length, ecc_length;
     int min_dots, min_area;
     int height, width;
     int mask_score[8];
-    size_t dot_stream_length;
+    int dot_stream_length;
     int high_score, best_mask;
     int binary_finish = 0;
     int debug = symbol->debug;
@@ -1364,7 +1365,7 @@ INTERNAL int dotcode(struct zint_symbol *symbol, const unsigned char source[], i
         height = (int) h;
         width = (int) w;
 
-        if ((width + height) % 2 == 1) {
+        if (((width + height) & 1) == 1) {
             if ((width * height) < min_area) {
                 width++;
                 height++;

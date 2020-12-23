@@ -2022,6 +2022,9 @@ static void test_perf(int index, int debug) {
                     "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz ~~~~~~~~~~~~~~~~~~~~~~~~~ ?????????????????????????? 12345678901234567890123456 \377\377\377\377\377\377"
                     "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz ~~~~~~~~~~~~~~~~~~~~~~~~~ ?????????????????????????? 12345678901234567890123456 \377\377\377\377\377\377",
                     0, 113, 113, "1540 chars, 12-bit words, mixed" },
+        /*  4*/ { BARCODE_AZRUNE, -1, -1, -1,
+                    "255",
+                    0, 11, 11, "3 chars, AZRUNE" },
     };
     int data_size = ARRAY_SIZE(data);
 

@@ -299,7 +299,7 @@ static int batch_process(struct zint_symbol *symbol, char *filename, int mirror_
     FILE *file;
     unsigned char buffer[ZINT_MAX_DATA_LEN] = {0}; // Maximum HanXin input
     unsigned char character = 0;
-    int posn = 0, error_number = 0, line_count = 1;
+    int buf_posn = 0, error_number = 0, line_count = 1;
     char output_file[256];
     char number[12], reverse_number[12];
     int inpos, local_line_count;
@@ -333,10 +333,10 @@ static int batch_process(struct zint_symbol *symbol, char *filename, int mirror_
         }
         character = (unsigned char) intChar;
         if (character == '\n') {
-            if (posn > 0 && buffer[posn - 1] == '\r') {
+            if (buf_posn > 0 && buffer[buf_posn - 1] == '\r') {
                 /* CR+LF - assume Windows formatting and remove CR */
-                posn--;
-                buffer[posn] = '\0';
+                buf_posn--;
+                buffer[buf_posn] = '\0';
             }
 
             if (mirror_mode == 0) {
@@ -433,7 +433,7 @@ static int batch_process(struct zint_symbol *symbol, char *filename, int mirror_
                     }
                     i++;
                     o++;
-                } while (i < posn && o < 251);
+                } while (i < buf_posn && o < 251);
 
                 /* Add file extension */
                 output_file[o] = '.';
@@ -443,20 +443,20 @@ static int batch_process(struct zint_symbol *symbol, char *filename, int mirror_
             }
 
             strcpy(symbol->outfile, output_file);
-            error_number = ZBarcode_Encode_and_Print(symbol, buffer, posn, rotate_angle);
+            error_number = ZBarcode_Encode_and_Print(symbol, buffer, buf_posn, rotate_angle);
             if (error_number != 0) {
                 fprintf(stderr, "On line %d: %s\n", line_count, symbol->errtxt);
                 fflush(stderr);
             }
             ZBarcode_Clear(symbol);
             memset(buffer, 0, sizeof(buffer));
-            posn = 0;
+            buf_posn = 0;
             line_count++;
         } else {
-            buffer[posn] = character;
-            posn++;
+            buffer[buf_posn] = character;
+            buf_posn++;
         }
-        if (posn >= (int) sizeof(buffer)) {
+        if (buf_posn >= (int) sizeof(buffer)) {
             fprintf(stderr, "On line %d: Error 103: Input data too long\n", line_count);
             fflush(stderr);
             do {

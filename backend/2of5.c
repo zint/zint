@@ -61,7 +61,7 @@ static inline char check_digit(unsigned int count) {
 INTERNAL int matrix_two_of_five(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     int i, error_number;
-    char dest[512]; /* 6 + 80 * 6 + 6 + 1 ~ 512*/
+    char dest[512]; /* 6 + 80 * 6 + 5 + 1 = 492 */
 
     if (length > 80) {
         strcpy(symbol->errtxt, "301: Input too long");
@@ -92,7 +92,7 @@ INTERNAL int matrix_two_of_five(struct zint_symbol *symbol, unsigned char source
 INTERNAL int industrial_two_of_five(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     int i, error_number;
-    char dest[512]; /* 6 + 40 * 10 + 6 + 1 */
+    char dest[512]; /* 6 + 45 * 10 + 5 + 1 = 462 */
 
     if (length > 45) {
         strcpy(symbol->errtxt, "303: Input too long");
@@ -122,7 +122,7 @@ INTERNAL int industrial_two_of_five(struct zint_symbol *symbol, unsigned char so
 /* Code 2 of 5 IATA */
 INTERNAL int iata_two_of_five(struct zint_symbol *symbol, unsigned char source[], int length) {
     int i, error_number;
-    char dest[512]; /* 4 + 45 * 10 + 3 + 1 */
+    char dest[512]; /* 4 + 45 * 10 + 3 + 1 = 458 */
 
     if (length > 45) {
         strcpy(symbol->errtxt, "305: Input too long");
@@ -153,7 +153,7 @@ INTERNAL int iata_two_of_five(struct zint_symbol *symbol, unsigned char source[]
 INTERNAL int logic_two_of_five(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     int i, error_number;
-    char dest[512]; /* 4 + 80 * 6 + 3 + 1 */
+    char dest[512]; /* 4 + 80 * 6 + 3 + 1 = 488 */
 
     if (length > 80) {
         strcpy(symbol->errtxt, "307: Input too long");
@@ -181,17 +181,17 @@ INTERNAL int logic_two_of_five(struct zint_symbol *symbol, unsigned char source[
 }
 
 /* Code 2 of 5 Interleaved */
-INTERNAL int interleaved_two_of_five(struct zint_symbol *symbol, const unsigned char source[], size_t length) {
+INTERNAL int interleaved_two_of_five(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     int i, j, error_number;
-    char bars[7], spaces[7], mixed[14], dest[1000];
+    char bars[7], spaces[7], mixed[14], dest[512]; /* 4 + 90 * 5 + 3 + 1 = 458 */
 #ifndef _MSC_VER
     unsigned char temp[length + 2];
 #else
     unsigned char* temp = (unsigned char *) _alloca((length + 2) * sizeof (unsigned char));
 #endif
 
-    if (length > 89) {
+    if (length > 90) {
         strcpy(symbol->errtxt, "309: Input too long");
         return ZINT_ERROR_TOO_LONG;
     }
@@ -201,24 +201,24 @@ INTERNAL int interleaved_two_of_five(struct zint_symbol *symbol, const unsigned 
         return error_number;
     }
 
-    ustrcpy(temp, "");
+    temp[0] = '\0';
     /* Input must be an even number of characters for Interlaced 2 of 5 to work:
        if an odd number of characters has been entered then add a leading zero */
     if (length & 1) {
         ustrcpy(temp, "0");
         length++;
     }
-    ustrcat(temp, source);
+    ustrncat(temp, source, length);
 
     /* start character */
     strcpy(dest, "1111");
 
-    for (i = 0; i < (int) length; i += 2) {
+    for (i = 0; i < length; i += 2) {
         int k = 0;
         /* look up the bars and the spaces and put them in two strings */
-        strcpy(bars, "");
+        bars[0] = '\0';
         lookup(NEON, C25InterTable, temp[i], bars);
-        strcpy(spaces, "");
+        spaces[0] = '\0';
         lookup(NEON, C25InterTable, temp[i + 1], spaces);
 
         /* then merge (interlace) the strings together */
@@ -238,7 +238,6 @@ INTERNAL int interleaved_two_of_five(struct zint_symbol *symbol, const unsigned 
     expand(symbol, dest);
     ustrcpy(symbol->text, temp);
     return error_number;
-
 }
 
 /* Interleaved 2-of-5 (ITF) */
@@ -277,7 +276,7 @@ INTERNAL int itf14(struct zint_symbol *symbol, unsigned char source[], int lengt
     }
     localstr[13] = check_digit(count);
     localstr[14] = '\0';
-    error_number = interleaved_two_of_five(symbol, (unsigned char *) localstr, strlen(localstr));
+    error_number = interleaved_two_of_five(symbol, (unsigned char *) localstr, 14);
     ustrcpy(symbol->text, localstr);
 
     if (!((symbol->output_options & BARCODE_BOX) || (symbol->output_options & BARCODE_BIND))) {
@@ -324,7 +323,7 @@ INTERNAL int dpleit(struct zint_symbol *symbol, unsigned char source[], int leng
     }
     localstr[13] = check_digit(count);
     localstr[14] = '\0';
-    error_number = interleaved_two_of_five(symbol, (unsigned char *) localstr, strlen(localstr));
+    error_number = interleaved_two_of_five(symbol, (unsigned char *) localstr, 14);
     ustrcpy(symbol->text, localstr);
     return error_number;
 }
@@ -360,7 +359,7 @@ INTERNAL int dpident(struct zint_symbol *symbol, unsigned char source[], int len
     }
     localstr[11] = check_digit(count);
     localstr[12] = '\0';
-    error_number = interleaved_two_of_five(symbol, (unsigned char *) localstr, strlen(localstr));
+    error_number = interleaved_two_of_five(symbol, (unsigned char *) localstr, 12);
     ustrcpy(symbol->text, localstr);
     return error_number;
 }

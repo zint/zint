@@ -46,7 +46,7 @@
 #include <malloc.h>
 /* ceilf (C99) not before MSVC++2013 (C++ 12.0) */
 #if _MSC_VER < 1800
-#define ceilf ceil
+#define ceilf (float) ceil
 #endif
 #endif
 #include "common.h"
@@ -241,35 +241,35 @@ static int isX12(const int source) {
     return 0;
 }
 
-/* Insert a character into the middle of a string at position posn */
-static void dminsert(char binary_string[], const int posn, const char newbit) {
+/* Insert a character into the middle of a string at position bin_posn */
+static void dminsert(char binary_string[], const int bin_posn, const char newbit) {
     int i, end;
 
     end = (int) strlen(binary_string);
-    for (i = end + 1; i > posn; i--) {
+    for (i = end + 1; i > bin_posn; i--) {
         binary_string[i] = binary_string[i - 1];
     }
-    binary_string[posn] = newbit;
+    binary_string[bin_posn] = newbit;
 }
 
-static void insert_value(unsigned char binary_stream[], const int posn, const int streamlen, const int newbit) {
+static void insert_value(unsigned char binary_stream[], const int bin_posn, const int streamlen, const int newbit) {
     int i;
 
-    for(i = (int)streamlen; i > posn; i--) {
+    for (i = streamlen; i > bin_posn; i--) {
         binary_stream[i] = binary_stream[i - 1];
     }
-    binary_stream[posn] = (unsigned char) newbit;
+    binary_stream[bin_posn] = (unsigned char) newbit;
 }
 
-static int p_r_6_2_1(const unsigned char inputData[], const size_t position, const size_t sourcelen) {
+static int p_r_6_2_1(const unsigned char inputData[], const int position, const int sourcelen) {
     /* Annex P section (r)(6)(ii)(I)
        "If one of the three X12 terminator/separator characters first
         occurs in the yet to be processed data before a non-X12 character..."
      */
 
-    size_t i;
-    size_t nonX12Position = 0;
-    size_t specialX12Position = 0;
+    int i;
+    int nonX12Position = 0;
+    int specialX12Position = 0;
     int retval = 0;
 
     for (i = position; i < sourcelen; i++) {
@@ -298,11 +298,12 @@ static int p_r_6_2_1(const unsigned char inputData[], const size_t position, con
 }
 
 /* 'look ahead test' from Annex P */
-static int look_ahead_test(const unsigned char inputData[], const size_t sourcelen, const size_t position, const int current_mode, const int gs1) {
+static int look_ahead_test(const unsigned char inputData[], const int sourcelen, const int position,
+            const int current_mode, const int gs1) {
     float ascii_count, c40_count, text_count, x12_count, edf_count, b256_count, best_count;
     const float stiction = (1.0F / 24.0F); // smallest change to act on, to get around floating point inaccuracies
     int    best_scheme;
-    size_t sp;
+    int sp;
 
     best_scheme = DM_NULL;
 
@@ -528,12 +529,12 @@ static int look_ahead_test(const unsigned char inputData[], const size_t sourcel
 /* Encodes data using ASCII, C40, Text, X12, EDIFACT or Base 256 modes as appropriate
    Supports encoding FNC1 in supporting systems */
 static int dm200encode(struct zint_symbol *symbol, const unsigned char source[], unsigned char target[],
-        int *last_mode, int *last_shift, size_t *length_p, int process_buffer[], int *process_p, int *binlen_p) {
+        int *last_mode, int *last_shift, int *length_p, int process_buffer[], int *process_p, int *binlen_p) {
 
-    size_t sp;
+    int sp;
     int tp, i, gs1;
     int current_mode, next_mode;
-    size_t inputlen = *length_p;
+    int inputlen = *length_p;
     int debug = symbol->debug & ZINT_DEBUG_PRINT;
 #ifndef _MSC_VER
     char binary[2 * inputlen + 1 + 4 + 1]; /* Allow for GS1/READER_INIT, ECI and nul chars overhead */
@@ -589,15 +590,13 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
             target[tp] = (unsigned char) symbol->eci + 1;
             tp++;
             strcat(binary, "  ");
-        }
-        if ((symbol->eci >= 127) && (symbol->eci <= 16382)) {
+        } else if (symbol->eci <= 16382) {
             target[tp] = (unsigned char) ((symbol->eci - 127) / 254) + 128;
             tp++;
             target[tp] = (unsigned char) ((symbol->eci - 127) % 254) + 1;
             tp++;
             strcat(binary, "   ");
-        }
-        if (symbol->eci >= 16383) {
+        } else {
             target[tp] = (unsigned char) ((symbol->eci - 16383) / 64516) + 192;
             tp++;
             target[tp] = (unsigned char) (((symbol->eci - 16383) / 254) % 254) + 1;
@@ -760,12 +759,12 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
                 (*process_p)++;
 
                 while (*process_p >= 3) {
-                    int iv;
+                    unsigned int iv;
 
                     iv = (1600 * process_buffer[0]) + (40 * process_buffer[1]) + (process_buffer[2]) + 1;
-                    target[tp] = (unsigned char) (iv / 256);
+                    target[tp] = (unsigned char) (iv >> 8);
                     tp++;
-                    target[tp] = iv % 256;
+                    target[tp] = (unsigned char) (iv & 0xFF);
                     tp++;
                     strcat(binary, "  ");
                     if (debug) printf("[%d %d %d] ", process_buffer[0], process_buffer[1], process_buffer[2]);
@@ -831,12 +830,12 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
                 (*process_p)++;
 
                 while (*process_p >= 3) {
-                    int iv;
+                    unsigned int iv;
 
                     iv = (1600 * process_buffer[0]) + (40 * process_buffer[1]) + (process_buffer[2]) + 1;
-                    target[tp] = (unsigned char) (iv / 256);
+                    target[tp] = (unsigned char) (iv >> 8);
                     tp++;
-                    target[tp] = iv % 256;
+                    target[tp] = (unsigned char) (iv & 0xFF);
                     tp++;
                     strcat(binary, "  ");
                     if (debug) printf("[%d %d %d] ", process_buffer[0], process_buffer[1], process_buffer[2]);
@@ -887,12 +886,12 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
                 (*process_p)++;
 
                 while (*process_p >= 3) {
-                    int iv;
+                    unsigned int iv;
 
                     iv = (1600 * process_buffer[0]) + (40 * process_buffer[1]) + (process_buffer[2]) + 1;
-                    target[tp] = (unsigned char) (iv / 256);
+                    target[tp] = (unsigned char) (iv >> 8);
                     tp++;
-                    target[tp] = iv % 256;
+                    target[tp] = (unsigned char) (iv & 0xFF);
                     tp++;
                     strcat(binary, "  ");
                     if (debug) printf("[%d %d %d] ", process_buffer[0], process_buffer[1], process_buffer[2]);
@@ -941,7 +940,10 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
                 target[tp] = (unsigned char) (((process_buffer[2] & 0x03) << 6) + process_buffer[3]);
                 tp++;
                 strcat(binary, "   ");
-                if (debug) printf("[%d %d %d %d] ", process_buffer[0], process_buffer[1], process_buffer[2], process_buffer[3]);
+                if (debug) {
+                    printf("[%d %d %d %d] ", process_buffer[0], process_buffer[1], process_buffer[2],
+                        process_buffer[3]);
+                }
 
                 process_buffer[0] = process_buffer[4];
                 process_buffer[1] = process_buffer[5];
@@ -1026,21 +1028,27 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
     return 0;
 }
 
-static int dm200encode_remainder(unsigned char target[], int target_length, const unsigned char source[], const size_t inputlen,
-        const int last_mode, const int last_shift, const int process_buffer[], const int process_p, const int symbols_left, int debug) {
+static int dm200encode_remainder(unsigned char target[], int target_length, const unsigned char source[],
+            const int inputlen, const int last_mode, const int last_shift, const int process_buffer[],
+            const int process_p, const int symbols_left, int debug) {
 
     switch (last_mode) {
         case DM_C40:
         case DM_TEXT:
-            /* NOTE: the use of a 0-padded doublet is only mentioned in ISO/IEC 16022:2006 for case 5.2.5.2 (b) when 2 symbols and
-             * 2 C40/Text characters are left, but using it here also for other cases. This matches the behaviour of tec-it (but
-             * not BWIPP) and is used for figures 4.15-1-1 and 4.15-1-1 in GS1 General Specifications. */
-
-            if (debug) printf("%s last_shift %d, symbols_left %d, process_p %d ", last_mode == DM_C40 ? "C40" : "TEX", last_shift, symbols_left, process_p);
+            /* NOTE: the use of a 0-padded doublet is only mentioned in ISO/IEC 16022:2006 for case 5.2.5.2 (b)
+             * when 2 symbols and 2 C40/Text characters are left, but using it here also for other cases. This
+             * matches the behaviour of tec-it (but not BWIPP) and is used for figures 4.15-1-1 and 4.15-1-1 in
+             * GS1 General Specifications.
+             */
+            if (debug) {
+                printf("%s last_shift %d, symbols_left %d, process_p %d ", last_mode == DM_C40 ? "C40" : "TEX",
+                    last_shift, symbols_left, process_p);
+            }
             if (process_p == 1) // 1 data character left to encode.
             {
                 if (last_shift) {
-                    target[target_length - 1] -= last_shift - 1; // Remove shift from second half of previous doublet leaving pad value (0)
+                    // Remove shift from second half of previous doublet leaving pad value (0)
+                    target[target_length - 1] -= last_shift - 1;
                 }
                 if (symbols_left > 1) {
                     target[target_length] = 254;
@@ -1053,10 +1061,10 @@ static int dm200encode_remainder(unsigned char target[], int target_length, cons
             } else if (process_p == 2) // 2 data characters left to encode.
             {
                 // Pad with shift 1 value (0) and encode as double.
-                int intValue = (1600 * process_buffer[0]) + (40 * process_buffer[1]) + 1; // ie (0 + 1).
-                target[target_length] = (unsigned char) (intValue / 256);
+                unsigned int intValue = (1600 * process_buffer[0]) + (40 * process_buffer[1]) + 1; // ie (0 + 1).
+                target[target_length] = (unsigned char) (intValue >> 8);
                 target_length++;
-                target[target_length] = (unsigned char) (intValue % 256);
+                target[target_length] = (unsigned char) (intValue & 0xFF);
                 target_length++;
                 if (debug) printf("[%d %d %d] ", process_buffer[0], process_buffer[1], 0);
                 if (symbols_left > 2) {
@@ -1129,7 +1137,8 @@ static int dm200encode_remainder(unsigned char target[], int target_length, cons
                     target_length++;
                     if (debug) printf("[%d 31 0 0] ", process_buffer[0]);
                 } else if (process_p == 2) {
-                    target[target_length] = (unsigned char) ((process_buffer[0] << 2) + ((process_buffer[1] & 0x30) >> 4));
+                    target[target_length] = (unsigned char) ((process_buffer[0] << 2)
+                                            + ((process_buffer[1] & 0x30) >> 4));
                     target_length++;
                     target[target_length] = (unsigned char) (((process_buffer[1] & 0x0f) << 4) + ((31 & 0x3c) >> 2));
                     target_length++;
@@ -1137,9 +1146,11 @@ static int dm200encode_remainder(unsigned char target[], int target_length, cons
                     target_length++;
                     if (debug) printf("[%d %d 31 0] ", process_buffer[0], process_buffer[1]);
                 } else if (process_p == 3) {
-                    target[target_length] = (unsigned char) ((process_buffer[0] << 2) + ((process_buffer[1] & 0x30) >> 4));
+                    target[target_length] = (unsigned char) ((process_buffer[0] << 2)
+                                            + ((process_buffer[1] & 0x30) >> 4));
                     target_length++;
-                    target[target_length] = (unsigned char) (((process_buffer[1] & 0x0f) << 4) + ((process_buffer[2] & 0x3c) >> 2));
+                    target[target_length] = (unsigned char) (((process_buffer[1] & 0x0f) << 4)
+                                            + ((process_buffer[2] & 0x3c) >> 2));
                     target_length++;
                     target[target_length] = (unsigned char) (((process_buffer[2] & 0x03) << 6) + 31);
                     target_length++;
@@ -1183,9 +1194,8 @@ static void add_tail(unsigned char target[], int tp, const int tail_length) {
     }
 }
 
-static int data_matrix_200(struct zint_symbol *symbol,const unsigned char source[], const size_t in_length) {
+static int data_matrix_200(struct zint_symbol *symbol, const unsigned char source[], int inputlen) {
     int i, skew = 0;
-    size_t inputlen = in_length;
     unsigned char binary[2200];
     int binlen;
     int process_buffer[8]; /* holds remaining data to finalised */
@@ -1199,7 +1209,8 @@ static int data_matrix_200(struct zint_symbol *symbol,const unsigned char source
     int debug = symbol->debug & ZINT_DEBUG_PRINT;
 
     /* inputlen may be decremented by 2 if macro character is used */
-    error_number = dm200encode(symbol, source, binary, &last_mode, &last_shift, &inputlen, process_buffer, &process_p, &binlen);
+    error_number = dm200encode(symbol, source, binary, &last_mode, &last_shift, &inputlen, process_buffer,
+                    &process_p, &binlen);
     if (error_number != 0) {
         return error_number;
     }
@@ -1245,7 +1256,8 @@ static int data_matrix_200(struct zint_symbol *symbol,const unsigned char source
 
     // Now we know the symbol size we can handle the remaining data in the process buffer.
     symbols_left = matrixbytes[symbolsize] - binlen;
-    binlen = dm200encode_remainder(binary, binlen, source, inputlen, last_mode, last_shift, process_buffer, process_p, symbols_left, debug);
+    binlen = dm200encode_remainder(binary, binlen, source, inputlen, last_mode, last_shift, process_buffer,
+                process_p, symbols_left, debug);
 
     if (binlen > matrixbytes[symbolsize]) {
         strcpy(symbol->errtxt, "523: Data too long to fit in symbol");
@@ -1283,7 +1295,9 @@ static int data_matrix_200(struct zint_symbol *symbol,const unsigned char source
     }
 
 #ifdef ZINT_TEST
-    if (symbol->debug & ZINT_DEBUG_TEST) debug_test_codeword_dump(symbol, binary, skew ? 1558 + 620 : bytes + rsblock * (bytes / datablock));
+    if (symbol->debug & ZINT_DEBUG_TEST) {
+        debug_test_codeword_dump(symbol, binary, skew ? 1558 + 620 : bytes + rsblock * (bytes / datablock));
+    }
 #endif
     { // placement
         int x, y, NC, NR, *places;
@@ -1322,11 +1336,9 @@ static int data_matrix_200(struct zint_symbol *symbol,const unsigned char source
         for (y = 0; y < NR; y++) {
             for (x = 0; x < NC; x++) {
                 int v = places[(NR - y - 1) * NC + x];
-                //fprintf (stderr, "%4d", v);
                 if (v == 1 || (v > 7 && (binary[(v >> 3) - 1] & (1 << (v & 7)))))
                     grid[(1 + y + 2 * (y / (FH - 2))) * W + 1 + x + 2 * (x / (FW - 2))] = 1;
             }
-            //fprintf (stderr, "\n");
         }
         for (y = H - 1; y >= 0; y--) {
             for (x = 0; x < W; x++) {
@@ -1346,12 +1358,12 @@ static int data_matrix_200(struct zint_symbol *symbol,const unsigned char source
     return error_number;
 }
 
-INTERNAL int dmatrix(struct zint_symbol *symbol, const unsigned char source[], const size_t in_length) {
+INTERNAL int dmatrix(struct zint_symbol *symbol, unsigned char source[], int length) {
     int error_number;
 
     if (symbol->option_1 <= 1) {
         /* ECC 200 */
-        error_number = data_matrix_200(symbol, source, in_length);
+        error_number = data_matrix_200(symbol, source, length);
     } else {
         /* ECC 000 - 140 */
         strcpy(symbol->errtxt, "524: Older Data Matrix standards are no longer supported");

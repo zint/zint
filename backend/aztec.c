@@ -100,12 +100,12 @@ static char get_next_mode(char encode_mode[], const int src_len, int i) {
     }
 }
 
-static int az_bin_append_posn(const int arg, const int length, char *binary, int posn) {
+static int az_bin_append_posn(const int arg, const int length, char *binary, int bin_posn) {
 
-    if (posn + length > AZTEC_BIN_CAPACITY) {
+    if (bin_posn + length > AZTEC_BIN_CAPACITY) {
         return 0; /* Fail */
     }
-    return bin_append_posn(arg, length, binary, posn);
+    return bin_append_posn(arg, length, binary, bin_posn);
 }
 
 static int aztec_text_process(const unsigned char source[], int src_len, char binary_string[], const int gs1,
@@ -1470,9 +1470,11 @@ INTERNAL int aztec(struct zint_symbol *symbol, unsigned char source[], int lengt
 
 /* Encodes Aztec runes as specified in ISO/IEC 24778:2008 Annex A */
 INTERNAL int aztec_runes(struct zint_symbol *symbol, unsigned char source[], int length) {
-    int input_value, error_number, i, y, x;
+    unsigned int input_value;
+    int error_number, i, y, x, r;
     char binary_string[28];
     unsigned char data_codewords[3], ecc_codewords[6];
+    int bp = 0;
     int debug = symbol->debug & ZINT_DEBUG_PRINT;
     rs_t rs;
 
@@ -1503,52 +1505,17 @@ INTERNAL int aztec_runes(struct zint_symbol *symbol, unsigned char source[], int
         return ZINT_ERROR_INVALID_DATA;
     }
 
-    *binary_string = '\0';
-    bin_append(input_value, 8, binary_string);
+    bp = bin_append_posn(input_value, 8, binary_string, bp);
 
-    data_codewords[0] = 0;
-    data_codewords[1] = 0;
-
-    for (i = 0; i < 2; i++) {
-        if (binary_string[i * 4] == '1') {
-            data_codewords[i] += 8;
-        }
-        if (binary_string[(i * 4) + 1] == '1') {
-            data_codewords[i] += 4;
-        }
-        if (binary_string[(i * 4) + 2] == '1') {
-            data_codewords[i] += 2;
-        }
-        if (binary_string[(i * 4) + 3] == '1') {
-            data_codewords[i] += 1;
-        }
-    }
+    data_codewords[0] = input_value >> 4;
+    data_codewords[1] = input_value & 0xF;
 
     rs_init_gf(&rs, 0x13);
     rs_init_code(&rs, 5, 1);
     rs_encode(&rs, 2, data_codewords, ecc_codewords);
 
     for (i = 0; i < 5; i++) {
-        if (ecc_codewords[4 - i] & 0x08) {
-            binary_string[(i * 4) + 8] = '1';
-        } else {
-            binary_string[(i * 4) + 8] = '0';
-        }
-        if (ecc_codewords[4 - i] & 0x04) {
-            binary_string[(i * 4) + 9] = '1';
-        } else {
-            binary_string[(i * 4) + 9] = '0';
-        }
-        if (ecc_codewords[4 - i] & 0x02) {
-            binary_string[(i * 4) + 10] = '1';
-        } else {
-            binary_string[(i * 4) + 10] = '0';
-        }
-        if (ecc_codewords[4 - i] & 0x01) {
-            binary_string[(i * 4) + 11] = '1';
-        } else {
-            binary_string[(i * 4) + 11] = '0';
-        }
+        bp = bin_append_posn(ecc_codewords[4 - i], 4, binary_string, bp);
     }
 
     for (i = 0; i < 28; i += 2) {
@@ -1564,12 +1531,13 @@ INTERNAL int aztec_runes(struct zint_symbol *symbol, unsigned char source[], int
     }
 
     for (y = 8; y < 19; y++) {
+        r = y * 27;
         for (x = 8; x < 19; x++) {
-            if (CompactAztecMap[(y * 27) + x] == 1) {
+            if (CompactAztecMap[r + x] == 1) {
                 set_module(symbol, y - 8, x - 8);
             }
-            if (CompactAztecMap[(y * 27) + x] >= 2) {
-                if (binary_string[CompactAztecMap[(y * 27) + x] - 2000] == '1') {
+            if (CompactAztecMap[r + x] >= 2) {
+                if (binary_string[CompactAztecMap[r + x] - 2000] == '1') {
                     set_module(symbol, y - 8, x - 8);
                 }
             }
