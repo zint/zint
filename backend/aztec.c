@@ -100,7 +100,7 @@ static char get_next_mode(char encode_mode[], const int src_len, int i) {
     }
 }
 
-static int az_bin_append_posn(const int arg, const int length, char *binary, int bin_posn) {
+static int az_bin_append_posn(const int arg, const int length, char *binary, const int bin_posn) {
 
     if (bin_posn + length > AZTEC_BIN_CAPACITY) {
         return 0; /* Fail */
@@ -1507,8 +1507,8 @@ INTERNAL int aztec_runes(struct zint_symbol *symbol, unsigned char source[], int
 
     bp = bin_append_posn(input_value, 8, binary_string, bp);
 
-    data_codewords[0] = input_value >> 4;
-    data_codewords[1] = input_value & 0xF;
+    data_codewords[0] = (unsigned char) (input_value >> 4);
+    data_codewords[1] = (unsigned char) (input_value & 0xF);
 
     rs_init_gf(&rs, 0x13);
     rs_init_code(&rs, 5, 1);
