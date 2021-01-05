@@ -1,5 +1,5 @@
 Harald Oehlmann
-2017-03-29
+2020-01-05
 
 How to build qzint.exe using:
 - QT 5.15.0 source package
@@ -49,12 +49,7 @@ Build zint:
 - set PATH=C:\Qt\5.15.0static\bin;%PATH%
 - set QMAKESPEC=win32-msvc
 - cd $ZH
-- cd backend_qt
-- qmake backend_qt.pro
-- nmake clean
-- nmake release
-
-- cd ..\frontend_qt
+- cd frontend_qt
 - qmake frontend_qt.pro
 - nmake clean
 - nmake release

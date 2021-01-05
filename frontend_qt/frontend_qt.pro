@@ -2,6 +2,11 @@ TEMPLATE = app
 TARGET = qtZint
 DEPENDPATH += . debug release
 INCLUDEPATH += .
+INCLUDEPATH += ../backend
+!contains(DEFINES, NO_PNG) {
+    INCLUDEPATH += ../../lpng
+    INCLUDEPATH += ../../zlib
+}
 QT += gui
 QT += uitools
 QT += widgets
@@ -13,7 +18,40 @@ HEADERS += barcodeitem.h \
          exportwindow.h \
          mainwindow.h \
          sequencewindow.h \
-         qzint.h
+         qzint.h \
+        ..\backend\aztec.h \
+        ..\backend\bmp.h \
+        ..\backend\channel_precalcs.h \
+        ..\backend\code1.h \
+        ..\backend\code128.h \
+        ..\backend\code49.h \
+        ..\backend\common.h \
+        ..\backend\composite.h \
+        ..\backend\dmatrix.h \
+        ..\backend\eci.h \
+        ..\backend\emf.h \
+        ..\backend\font.h \
+        ..\backend\gb18030.h \
+        ..\backend\gb2312.h \
+        ..\backend\general_field.h \
+        ..\backend\gridmtx.h \
+        ..\backend\gs1.h \
+        ..\backend\hanxin.h \
+        ..\backend\large.h \
+        ..\backend\maxicode.h \
+        ..\backend\ms_stdint.h \
+        ..\backend\output.h \
+        ..\backend\pcx.h \
+        ..\backend\pdf417.h \
+        ..\backend\qr.h \
+        ..\backend\reedsol.h \
+        ..\backend\reedsol_logs.h \
+        ..\backend\rss.h \
+        ..\backend\sjis.h \
+        ..\backend\stdint_msvc.h \
+        ..\backend\tif.h \
+        ..\backend\zint.h \
+        ..\backend\zintconfig.h \
 
 FORMS += extData.ui \
          extExport.ui \
@@ -30,6 +68,7 @@ FORMS += extData.ui \
          grpCodablockF.ui \
          grpDBExtend.ui \
          grpDM.ui \
+         grpDotCode.ui \
          grpGrid.ui \
          grpHX.ui \
          grpLOGMARS.ui \
@@ -43,8 +82,7 @@ FORMS += extData.ui \
          grpUPCA.ui \
          grpUPCEAN.ui \
          grpVIN.ui \
-         mainWindow.ui \
-         grpDotCode.ui
+         mainWindow.ui
 
 SOURCES += barcodeitem.cpp \
         datawindow.cpp \
@@ -52,7 +90,55 @@ SOURCES += barcodeitem.cpp \
         main.cpp \
         mainwindow.cpp \
         sequencewindow.cpp \
-        qzint.cpp
+        qzint.cpp \
+        ..\backend\2of5.c \
+        ..\backend\auspost.c \
+        ..\backend\aztec.c \
+        ..\backend\bmp.c \
+        ..\backend\codablock.c \
+        ..\backend\code.c \
+        ..\backend\code1.c \
+        ..\backend\code128.c \
+        ..\backend\code16k.c \
+        ..\backend\code49.c \
+        ..\backend\common.c \
+        ..\backend\composite.c \
+        ..\backend\dllversion.c \
+        ..\backend\dmatrix.c \
+        ..\backend\dotcode.c \
+        ..\backend\eci.c \
+        ..\backend\emf.c \
+        ..\backend\gb18030.c \
+        ..\backend\gb2312.c \
+        ..\backend\general_field.c \
+        ..\backend\gif.c \
+        ..\backend\gridmtx.c \
+        ..\backend\gs1.c \
+        ..\backend\hanxin.c \
+        ..\backend\imail.c \
+        ..\backend\large.c \
+        ..\backend\library.c \
+        ..\backend\mailmark.c \
+        ..\backend\maxicode.c \
+        ..\backend\medical.c \
+        ..\backend\output.c \
+        ..\backend\pcx.c \
+        ..\backend\pdf417.c \
+        ..\backend\plessey.c \
+        ..\backend\png.c \
+        ..\backend\postal.c \
+        ..\backend\ps.c \
+        ..\backend\qr.c \
+        ..\backend\raster.c \
+        ..\backend\reedsol.c \
+        ..\backend\rss.c \
+        ..\backend\sjis.c \
+        ..\backend\svg.c \
+        ..\backend\telepen.c \
+        ..\backend\tif.c \
+        ..\backend\ultra.c \
+        ..\backend\upcean.c \
+        ..\backend\vector.c
         
 TRANSLATIONS = frontend_de.ts
 
@@ -68,6 +154,7 @@ CONFIG += warn_on thread qt
 INCLUDEPATH += ../backend
 
 LIBS += -lQt5Core
+QMAKE_LIBDIR += C:/qt/5.15.1static/lib
 
 !contains(DEFINES, NO_PNG) {
 # Win
