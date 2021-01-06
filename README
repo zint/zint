@@ -274,22 +274,40 @@ Bugs:
 - EMF text colour does not change
 - Fix QPainterPath dependency for Visual Studio
 
-Version 2.9.2 not released jet:
+Version 2.9.2 not released yet:
 Changes:
 - Command line switches -d or -i for code data may now be at any position.
-- Add rotation for vector formats (excluding emf)
+- Add rotation for vector formats
 - Change double to float for performance in many internal places
 - Ticket 197: Allow scaling in substeps.
   Warn if scaling < 0.5 as pixels are lost.
 - Ticket 197: add output option to bypass time-intensive buffer_plot()
   (OUT_BUFFER_INTERMEDIATE)
 - Reduce BMP size by using 1 bit per pixel (except Ultracode)
+- Remove backend Qt interface and incorporate into frontend GUI
+- Add ZPL compatibility mode (preliminary)
+- Remove version info from zint.h and put in zintconfig.h via zintconfig.h.in
+- Add halign to struct zint_vector_string NOTE: backward incompatible UPC/EAN
+- Add ZBarcode_Cap()
+- Require cmake 3.5, use PNG::PNG and add Qt6 build option
+- Make library fully stack-based so reentrant apart from file operations
+- Performance improvements (large data) for Aztec, Han Xin, Grid Matrix, PDF417
+  and QR
+- Option scmvv for MaxiCode #212; postcode needn't be space-filled
 
 Bugs:
 - Code16k selects GS1 mode by default in GUI
 - Ultracode: use white pixels instead background for white modules.
 - EMF: fix Ultracode colours.
 - Ultracode: fix count of codewords when using reader init mode
+- Databar Limited: add 5 right guard spaces (ISO/IEC 24723:2010 6.2 (e))
+- Data Matrix: avoid unnecessary latch in X12 mode at end of data, #208
+- Data Matrix: fix eod shift -> 0 pad
+- POSTNET/PLANET: remove extra 1 module space
+- Aztec: fix bit-stuffing (again!) and Aztec Rune: fix for data >= 128
+- EAN composite: allow for check digit + buffer overflow for too long add-on
+- Han Xin fix 0xFFE terminator
+- GUI: Use UTF-8 for QSettings (non-ASCII was getting garbled on restore)
 
 CONTACT US
 ----------
