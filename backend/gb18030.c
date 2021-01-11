@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -58,9 +58,7 @@
 #include "common.h"
 #include "gb2312.h"
 #include "gb18030.h"
-
-/* Convert Unicode to other encodings */
-INTERNAL int utf_to_eci(const int eci, const unsigned char source[], unsigned char dest[], int *length);
+#include "eci.h"
 
 /*
  * CP936 extensions (libiconv-1.16/lib/cp936ext.h)
@@ -2870,7 +2868,7 @@ INTERNAL int gb18030_wctomb_zint(unsigned int *r1, unsigned int *r2, const unsig
 }
 
 /* Convert UTF-8 string to GB 18030 and place in array of ints */
-INTERNAL int gb18030_utf8tomb(struct zint_symbol *symbol, const unsigned char source[], int *p_length,
+INTERNAL int gb18030_utf8(struct zint_symbol *symbol, const unsigned char source[], int *p_length,
                 unsigned int *gbdata) {
     int error_number, ret;
     unsigned int i, j, length;
@@ -2905,23 +2903,29 @@ INTERNAL int gb18030_utf8tomb(struct zint_symbol *symbol, const unsigned char so
     return 0;
 }
 
-/* Convert UTF-8 string to single byte ECI and place in array of ints */
-INTERNAL int gb18030_utf8tosb(const int eci, const unsigned char source[], int *p_length, unsigned int *gbdata,
+/* Convert UTF-8 string to ECI and place in array of ints */
+INTERNAL int gb18030_utf8_to_eci(const int eci, const unsigned char source[], int *p_length, unsigned int *gbdata,
                 const int full_multibyte) {
-    int error_number;
+
+    if (is_eci_convertible(eci)) {
+        int error_number;
+        int eci_length = get_eci_length(eci, source, *p_length);
 #ifndef _MSC_VER
-    unsigned char single_byte[*p_length + 1];
+        unsigned char converted[eci_length + 1];
 #else
-    unsigned char *single_byte = (unsigned char *) _alloca(*p_length + 1);
+        unsigned char *converted = (unsigned char *) _alloca(eci_length + 1);
 #endif
 
-    error_number = utf_to_eci(eci, source, single_byte, p_length);
-    if (error_number != 0) {
-        /* Note not setting `symbol->errtxt`, up to caller */
-        return error_number;
-    }
+        error_number = utf8_to_eci(eci, source, converted, p_length);
+        if (error_number != 0) {
+            /* Note not setting `symbol->errtxt`, up to caller */
+            return error_number;
+        }
 
-    gb18030_cpy(single_byte, p_length, gbdata, full_multibyte);
+        gb18030_cpy(converted, p_length, gbdata, full_multibyte);
+    } else {
+        gb18030_cpy(source, p_length, gbdata, full_multibyte);
+    }
 
     return 0;
 }

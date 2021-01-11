@@ -2,7 +2,7 @@
 /* Generate lookup table from unicode.org mapping file (SHIFTJIS.TXT by default). */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2019 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2021 Robin Stuart <rstuart114@gmail.com>
 */
 /* To create backend/tests/test_sjis_tab.h (from backend/tests/build directory):
  *
@@ -17,6 +17,15 @@
  * using the version libiconv-1.11/GB18030.TXT):
  *
  *   php ../tools/gen_test_tab.php -f GB18030.TXT -s gb18030_tab
+ *
+ * To create backend/tests/test_big5_tab.h;
+ *
+ *   php ../tools/gen_test_tab.php -f BIG5.TXT -s big5_tab
+ *
+ * To create backend/tests/test_ksx1001_tab.h;
+ *
+ *   php ../tools/gen_test_tab.php -f KSX1001.TXT -s ksx1001_tab
+ *
  */
 /* vim: set ts=4 sw=4 et : */
 
@@ -46,7 +55,7 @@ $tab_lines = array();
 $sort = array();
 foreach ($lines as $line) {
     $line = trim($line);
-    if ($line === '' || strncmp($line, '0x', 2) !== 0) {
+    if ($line === '' || strncmp($line, '0x', 2) !== 0 || strpos($line, "*** NO MAPPING ***") !== false) {
         continue;
     }
     if (preg_match('/^0x([0-9A-F]{2,8})[ \t]+0x([0-9A-F]{5})/', $line)) { // Exclude U+10000..10FFFF to save space
@@ -75,9 +84,9 @@ $out[] = '';
 $out[] = 'static const unsigned int test_' . $suffix_name . '_ind[] = {';
 $first = 0;
 foreach ($sort as $ind => $unicode) {
-    $div = (int)($unicode / 0x1000);
+    $div = (int)($unicode / 0x400);
     while ($div >= $first) {
-        $out[] = ($ind * 2) . ',';
+        $out[] = '    ' . ($ind * 2) . ',';
         $first++;
     }
 }

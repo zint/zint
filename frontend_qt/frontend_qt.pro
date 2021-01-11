@@ -20,6 +20,7 @@ HEADERS += barcodeitem.h \
          sequencewindow.h \
          qzint.h \
         ..\backend\aztec.h \
+        ..\backend\big5.h \
         ..\backend\bmp.h \
         ..\backend\channel_precalcs.h \
         ..\backend\code1.h \
@@ -29,6 +30,7 @@ HEADERS += barcodeitem.h \
         ..\backend\composite.h \
         ..\backend\dmatrix.h \
         ..\backend\eci.h \
+        ..\backend\eci_sb.h \
         ..\backend\emf.h \
         ..\backend\font.h \
         ..\backend\gb18030.h \
@@ -37,6 +39,7 @@ HEADERS += barcodeitem.h \
         ..\backend\gridmtx.h \
         ..\backend\gs1.h \
         ..\backend\hanxin.h \
+        ..\backend\ksx1001.h \
         ..\backend\large.h \
         ..\backend\maxicode.h \
         ..\backend\ms_stdint.h \

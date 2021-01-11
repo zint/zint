@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -57,9 +57,7 @@
 #endif
 #include "common.h"
 #include "sjis.h"
-
-/* Convert Unicode to other encodings */
-INTERNAL int utf_to_eci(const int eci, const unsigned char source[], unsigned char dest[], int *length);
+#include "eci.h"
 
 /*
  * JISX0201.1976-0 (libiconv-1.16/lib/jisx0201.h)
@@ -1516,7 +1514,7 @@ INTERNAL int sjis_wctomb_zint(unsigned int *r, const unsigned int wc) {
 }
 
 /* Convert UTF-8 string to Shift JIS and place in array of ints */
-INTERNAL int sjis_utf8tomb(struct zint_symbol *symbol, const unsigned char source[], int *p_length,
+INTERNAL int sjis_utf8(struct zint_symbol *symbol, const unsigned char source[], int *p_length,
                 unsigned int *jisdata) {
     int error_number;
     unsigned int i, length;
@@ -1541,23 +1539,29 @@ INTERNAL int sjis_utf8tomb(struct zint_symbol *symbol, const unsigned char sourc
     return 0;
 }
 
-/* Convert UTF-8 string to single byte ECI and place in array of ints */
-INTERNAL int sjis_utf8tosb(const int eci, const unsigned char source[], int *p_length, unsigned int *jisdata,
+/* Convert UTF-8 string to ECI and place in array of ints */
+INTERNAL int sjis_utf8_to_eci(const int eci, const unsigned char source[], int *p_length, unsigned int *jisdata,
                 const int full_multibyte) {
-    int error_number;
+
+    if (is_eci_convertible(eci)) {
+        int error_number;
+        int eci_length = get_eci_length(eci, source, *p_length);
 #ifndef _MSC_VER
-    unsigned char single_byte[*p_length + 1];
+        unsigned char converted[eci_length + 1];
 #else
-    unsigned char *single_byte = (unsigned char *) _alloca(*p_length + 1);
+        unsigned char *converted = (unsigned char *) _alloca(eci_length + 1);
 #endif
 
-    error_number = utf_to_eci(eci, source, single_byte, p_length);
-    if (error_number != 0) {
-        // Note not setting `symbol->errtxt`, up to caller
-        return error_number;
-    }
+        error_number = utf8_to_eci(eci, source, converted, p_length);
+        if (error_number != 0) {
+            // Note not setting `symbol->errtxt`, up to caller
+            return error_number;
+        }
 
-    sjis_cpy(single_byte, p_length, jisdata, full_multibyte);
+        sjis_cpy(converted, p_length, jisdata, full_multibyte);
+    } else {
+        sjis_cpy(source, p_length, jisdata, full_multibyte);
+    }
 
     return 0;
 }

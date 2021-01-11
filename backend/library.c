@@ -1,7 +1,7 @@
 /*  library.c - external functions of libzint
 
     libzint - the open source barcode library
-    Copyright (C) 2009 - 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009 - 2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -37,6 +37,7 @@
 #include <malloc.h>
 #endif
 #include "common.h"
+#include "eci.h"
 #include "gs1.h"
 
 #define TECHNETIUM  "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%"
@@ -122,9 +123,6 @@ void ZBarcode_Delete(struct zint_symbol *symbol) {
 
     free(symbol);
 }
-
-INTERNAL int get_best_eci(unsigned char source[], int length); /* Calculate suitable ECI mode */
-INTERNAL int utf_to_eci(const int eci, const unsigned char source[], unsigned char dest[], int *length); /* Convert Unicode to other encodings */
 
 INTERNAL int eanx(struct zint_symbol *symbol, unsigned char source[], int length); /* EAN system barcodes */
 INTERNAL int c39(struct zint_symbol *symbol, unsigned char source[], int length); /* Code 3 from 9 (or Code 39) */
@@ -748,17 +746,17 @@ static int reduced_charset(struct zint_symbol *symbol, unsigned char *source, in
     int error_number = 0;
     unsigned char *preprocessed = source;
 
+    int eci_length = get_eci_length(symbol->eci, source, in_length);
 #ifndef _MSC_VER
-    unsigned char preprocessed_buf[in_length + 1];
+    unsigned char preprocessed_buf[eci_length + 1];
 #else
-    unsigned char *preprocessed_buf = (unsigned char *) _alloca(in_length + 1);
+    unsigned char *preprocessed_buf = (unsigned char *) _alloca(eci_length + 1);
 #endif
 
-    if ((symbol->input_mode & 0x07) == UNICODE_MODE) {
+    if ((symbol->input_mode & 0x07) == UNICODE_MODE && is_eci_convertible(symbol->eci)) {
         /* Prior check ensures ECI only set for those that support it */
         preprocessed = preprocessed_buf;
-        error_number = utf_to_eci(symbol->eci && symbol->eci <= 899 ? symbol->eci : 3, source, preprocessed,
-                        &in_length);
+        error_number = utf8_to_eci(symbol->eci, source, preprocessed, &in_length);
         if (error_number != 0) {
             strcpy(symbol->errtxt, "204: Invalid characters in input data");
             return error_number;
@@ -1078,10 +1076,24 @@ static int escape_char_process(struct zint_symbol *symbol, unsigned char *input_
     return error_number;
 }
 
+/* Is string valid UTF-8? */
+static int is_valid_utf8(const unsigned char source[], const int length) {
+    int i;
+    unsigned int codepoint, state = 0;
+
+    for (i = 0; i < length; i++) {
+        if (decode_utf8(&state, &codepoint, source[i]) == 12) {
+            return 0;
+        }
+    }
+
+    return state == 0;
+}
+
 int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int in_length) {
     int error_number, error_buffer;
 #ifdef _MSC_VER
-    unsigned char* local_source;
+    unsigned char *local_source;
 #endif
 
     if (!symbol) return ZINT_ERROR_INVALID_DATA;
@@ -1112,7 +1124,7 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
     }
     if (in_length > ZINT_MAX_DATA_LEN) {
         strcpy(symbol->errtxt, "243: Input data too long");
-        error_tag(symbol->errtxt, ZINT_ERROR_INVALID_DATA);
+        error_tag(symbol->errtxt, ZINT_ERROR_TOO_LONG);
         return ZINT_ERROR_TOO_LONG;
     }
 
@@ -1123,11 +1135,6 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
         strcpy(symbol->outfile, "out.png");
 #endif
     }
-#ifndef _MSC_VER
-    unsigned char local_source[in_length + 1];
-#else
-    local_source = (unsigned char*) _alloca(in_length + 1);
-#endif
 
     /* First check the symbology field */
     if (!ZBarcode_ValidID(symbol->symbology)) {
@@ -1272,6 +1279,11 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
         error_number = ZINT_ERROR_INVALID_OPTION;
     }
 
+    if ((symbol->input_mode & 0x07) == UNICODE_MODE && !is_valid_utf8(source, in_length)) {
+        strcpy(symbol->errtxt, "245: Invalid UTF-8");
+        error_number = ZINT_ERROR_INVALID_DATA;
+    }
+
     if ((symbol->input_mode & 0x07) > 2) {
         symbol->input_mode = DATA_MODE; /* Reset completely */
     }
@@ -1281,6 +1293,12 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
         return error_number;
     }
     error_buffer = error_number;
+
+#ifndef _MSC_VER
+    unsigned char local_source[in_length + 1];
+#else
+    local_source = (unsigned char *) _alloca(in_length + 1);
+#endif
 
     memcpy(local_source, source, in_length);
     local_source[in_length] = '\0';
@@ -1601,14 +1619,14 @@ int ZBarcode_Encode_File(struct zint_symbol *symbol, char *filename) {
         }
         if (fileLen > ZINT_MAX_DATA_LEN) {
             strcpy(symbol->errtxt, "230: Input file too long");
-            error_tag(symbol->errtxt, ZINT_ERROR_INVALID_DATA);
+            error_tag(symbol->errtxt, ZINT_ERROR_TOO_LONG);
             fclose(file);
-            return ZINT_ERROR_INVALID_DATA;
+            return ZINT_ERROR_TOO_LONG;
         }
     }
 
     /* Allocate memory */
-    buffer = (unsigned char *) malloc(fileLen * sizeof (unsigned char));
+    buffer = (unsigned char *) malloc(fileLen);
     if (!buffer) {
         strcpy(symbol->errtxt, "231: Internal memory error");
         error_tag(symbol->errtxt, ZINT_ERROR_MEMORY);

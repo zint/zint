@@ -121,6 +121,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\backend\aztec.h" />
+    <ClInclude Include="..\..\backend\big5.h" />
     <ClInclude Include="..\..\backend\bmp.h" />
     <ClInclude Include="..\..\backend\channel_precalcs.h" />
     <ClInclude Include="..\..\backend\code1.h" />
@@ -130,6 +131,7 @@
     <ClInclude Include="..\..\backend\composite.h" />
     <ClInclude Include="..\..\backend\dmatrix.h" />
     <ClInclude Include="..\..\backend\eci.h" />
+    <ClInclude Include="..\..\backend\eci_sb.h" />
     <ClInclude Include="..\..\backend\emf.h" />
     <ClInclude Include="..\..\backend\font.h" />
     <ClInclude Include="..\..\backend\gb18030.h" />
@@ -138,6 +140,7 @@
     <ClInclude Include="..\..\backend\gridmtx.h" />
     <ClInclude Include="..\..\backend\gs1.h" />
     <ClInclude Include="..\..\backend\hanxin.h" />
+    <ClInclude Include="..\..\backend\ksx1001.h" />
     <ClInclude Include="..\..\backend\large.h" />
     <ClInclude Include="..\..\backend\maxicode.h" />
     <ClInclude Include="..\..\backend\ms_stdint.h" />

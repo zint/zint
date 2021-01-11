@@ -1,7 +1,7 @@
 /*  eci.c - Extended Channel Interpretations
 
     libzint - the open source barcode library
-    Copyright (C) 2009 - 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009 - 2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -30,240 +30,241 @@
  */
 /* vim: set ts=4 sw=4 et : */
 
-#include <string.h>
-#include <stdio.h>
-#include "eci.h"
-#include "common.h"
 #ifdef _MSC_VER
 #include <malloc.h>
 #endif
+#include "common.h"
+#include "eci.h"
+#include "eci_sb.h"
+#include "sjis.h"
+#include "big5.h"
+#include "gb2312.h"
+#include "ksx1001.h"
 
-/* Convert Unicode to other character encodings */
-INTERNAL int utf_to_eci(const int eci, const unsigned char source[], unsigned char dest[], int *length) {
-    int in_posn;
-    int out_posn;
-    int ext;
-    int done;
-    
-    if (eci == 26 || eci == 899) {
-        /* Unicode or 8-bit binary data, do not process - just copy data across */
-        memcpy(dest, source, *length);
-        dest[*length] = '\0';
+/* ECI 20 Shift JIS */
+static int sjis_wctomb(unsigned char *r, const unsigned int wc) {
+    int ret;
+    unsigned int c;
+
+    ret = sjis_wctomb_zint(&c, wc);
+    if (ret == 0) {
         return 0;
     }
+    if (ret == 2) {
+        r[0] = (unsigned char) (c >> 8);
+        r[1] = (unsigned char) (c & 0xff);
+    } else {
+        *r = (unsigned char) c;
+    }
+    return ret;
+}
+
+/* ECI 27 ASCII (ISO/IEC 646:1991 IRV (US)) */
+static int ascii_wctosb(unsigned char *r, const unsigned int wc) {
+    if (wc < 0x80) {
+        *r = (unsigned char) wc;
+        return 1;
+    }
+    return 0;
+}
+
+/* ECI 170 ASCII subset (ISO/IEC 646:1991 Invariant, excludes chars that historically had national variants) */
+static int ascii_invariant_wctosb(unsigned char *r, const unsigned int wc) {
+    if (wc == 0x7f || (wc <= 'z' && wc != '#' && wc != '$' && wc != '@' && (wc <= 'Z' || wc == '_' || wc >= 'a'))) {
+        *r = (unsigned char) wc;
+        return 1;
+    }
+    return 0;
+}
+
+/* ECI 28 Big5 Chinese (Taiwan) */
+static int big5_wctomb(unsigned char *r, const unsigned int wc) {
+    unsigned int c;
+
+    if (wc < 0x80) {
+        *r = (unsigned char) wc;
+        return 1;
+    }
+    if (big5_wctomb_zint(&c, wc)) {
+        r[0] = (unsigned char) (c >> 8);
+        r[1] = (unsigned char) (c & 0xff);
+        return 2;
+    }
+    return 0;
+}
+
+/* ECI 29 GB 2312 Chinese (PRC) */
+static int gb2312_wctomb(unsigned char *r, const unsigned int wc) {
+    unsigned int c;
+
+    if (wc < 0x80) {
+        *r = (unsigned char) wc;
+        return 1;
+    }
+    if (gb2312_wctomb_zint(&c, wc)) {
+        r[0] = (unsigned char) (c >> 8);
+        r[1] = (unsigned char) (c & 0xff);
+        return 2;
+    }
+    return 0;
+}
+
+/* ECI 30 KS X 1001 (KS C 5601) Korean */
+static int ksx1001_wctomb(unsigned char *r, const unsigned int wc) {
+    unsigned int c;
+
+    if (wc < 0x80) {
+        *r = (unsigned char) wc;
+        return 1;
+    }
+    if (ksx1001_wctomb_zint(&c, wc)) {
+        r[0] = (unsigned char) (c >> 8);
+        r[1] = (unsigned char) (c & 0xff);
+        return 2;
+    }
+    return 0;
+}
+
+/* Helper to count the number of chars in a string within a range */
+static int chr_range_cnt(const unsigned char string[], const int length, const unsigned char c1,
+            const unsigned char c2) {
+    int count = 0;
+    int i;
+    if (c1) {
+        for (i = 0; i < length; i++) {
+            if (string[i] >= c1 && string[i] <= c2) {
+                count++;
+            }
+        }
+    } else {
+        for (i = 0; i < length; i++) {
+            if (string[i] <= c2) {
+                count++;
+            }
+        }
+    }
+    return count;
+}
+
+/* Is ECI convertible from UTF-8? */
+INTERNAL int is_eci_convertible(const int eci) {
+    if (eci == 26 || (eci > 30 && eci != 170)) { /* Exclude ECI 170 - ASCII Invariant */
+        /* UTF-8 (26) or 8-bit binary data (899) or undefined (> 30 and < 899) or not character set (> 899) */
+        return 0;
+    }
+    return 1;
+}
+
+/* Calculate length required to convert UTF-8 to (double-byte) encoding */
+INTERNAL int get_eci_length(const int eci, const unsigned char source[], int length) {
+    if (eci == 20) { /* Shift JIS */
+        /* Only ASCII backslash (reverse solidus) exceeds UTF-8 length */
+        length += chr_cnt(source, length, '\\');
+
+    } else if (eci == 25) { /* UCS-2BE */
+        /* All ASCII chars take 2 bytes */
+        length += chr_range_cnt(source, length, 0, 0x7F);
+
+    } else if (eci == 29) { /* GB 2312 (and GB 18030 if Han Xin) */
+        /* Not needed for GB 2312 but allow for GB 18030 4 byters */
+        length *= 2;
+    }
+
+    /* Big5 and KS X 1001 fit in UTF-8 length */
+
+    return length;
+}
+
+/* Convert UTF-8 Unicode to other character encodings */
+INTERNAL int utf8_to_eci(const int eci, const unsigned char source[], unsigned char dest[], int *p_length) {
+
+    typedef int (*eci_func_t)(unsigned char *r, const unsigned int wc);
+    static const eci_func_t eci_funcs[31] = {
+                     NULL,              NULL,              NULL,              NULL,  iso8859_2_wctosb,
+         iso8859_3_wctosb,  iso8859_4_wctosb,  iso8859_5_wctosb,  iso8859_6_wctosb,  iso8859_7_wctosb,
+         iso8859_8_wctosb,  iso8859_9_wctosb, iso8859_10_wctosb, iso8859_11_wctosb,              NULL,
+        iso8859_13_wctosb, iso8859_14_wctosb, iso8859_15_wctosb, iso8859_16_wctosb,              NULL,
+              sjis_wctomb,     cp1250_wctosb,     cp1251_wctosb,     cp1252_wctosb,     cp1256_wctosb,
+            ucs2be_wctomb,              NULL,      ascii_wctosb,       big5_wctomb,     gb2312_wctomb,
+           ksx1001_wctomb,
+    };
+    eci_func_t eci_func;
+    unsigned int codepoint, state;
+    int in_posn;
+    int out_posn;
+    int length = *p_length;
 
     in_posn = 0;
     out_posn = 0;
-    do {
-        /* Single byte (ASCII) character */
-        int bytelen = 1;
-        int glyph = (int) source[in_posn];
 
-        if ((source[in_posn] >= 0x80) && (source[in_posn] < 0xc0)) {
-            /* Something has gone wrong, abort */
+    /* Special case ISO/IEC 8859-1 */
+    if (eci == 0 || eci == 3) { /* Default ECI 0 to ISO/IEC 8859-1 */
+        state = 0;
+        while (in_posn < length) {
+            do {
+                decode_utf8(&state, &codepoint, source[in_posn++]);
+            } while (in_posn < length && state != 0 && state != 12);
+            if (state != 0) {
+                return ZINT_ERROR_INVALID_DATA;
+            }
+            if (codepoint >= 0x80 && (codepoint < 0x00a0 || codepoint >= 0x0100)) {
+                return ZINT_ERROR_INVALID_DATA;
+            }
+            dest[out_posn++] = (unsigned char) codepoint;
+        }
+        dest[out_posn] = '\0';
+        *p_length = out_posn;
+        return 0;
+    }
+
+    if (eci == 170) { /* ASCII Invariant (archaic subset) */
+        eci_func = ascii_invariant_wctosb;
+    } else {
+        eci_func = eci_funcs[eci];
+        if (eci_func == NULL) {
             return ZINT_ERROR_INVALID_DATA;
         }
+    }
 
-        if ((source[in_posn] >= 0xc0) && (source[in_posn] < 0xe0)) {
-            /* Two-byte character */
-            bytelen = 2;
-            glyph = (source[in_posn] & 0x1f) << 6;
-
-            if (*length < (in_posn + 2)) {
-                return ZINT_ERROR_INVALID_DATA;
-            }
-
-            if (source[in_posn + 1] > 0xc0) {
-                return ZINT_ERROR_INVALID_DATA;
-            }
-
-            glyph += (source[in_posn + 1] & 0x3f);
-        }
-
-        if ((source[in_posn] >= 0xe0) && (source[in_posn] < 0xf0)) {
-            /* Three-byte character */
-            bytelen = 3;
-            glyph = (source[in_posn] & 0x0f) << 12;
-
-            if (*length < (in_posn + 2)) {
-                return ZINT_ERROR_INVALID_DATA;
-            }
-
-            if (*length < (in_posn + 3)) {
-                return ZINT_ERROR_INVALID_DATA;
-            }
-
-            if (source[in_posn + 1] > 0xc0) {
-                return ZINT_ERROR_INVALID_DATA;
-            }
-
-            if (source[in_posn + 2] > 0xc0) {
-                return ZINT_ERROR_INVALID_DATA;
-            }
-
-            glyph += (source[in_posn + 1] & 0x3f) << 6;
-            glyph += (source[in_posn + 2] & 0x3f);
-        }
-
-        if (source[in_posn] >= 0xf0 || glyph > 0x2122) {
-            /* Not in any ISO 8859 or Windows page */
+    state = 0;
+    while (in_posn < length) {
+        int incr;
+        do {
+            decode_utf8(&state, &codepoint, source[in_posn++]);
+        } while (in_posn < length && state != 0 && state != 12);
+        if (state != 0) {
             return ZINT_ERROR_INVALID_DATA;
         }
-
-        if (glyph < 128) {
-            dest[out_posn] = glyph;
-        } else {
-            done = 0;
-            for (ext = 0; ext < 128; ext++) {
-                switch (eci) {
-                    case 3: // Latin-1
-                        if (glyph == iso_8859_1[ext]) {
-                            dest[out_posn] = ext + 128;
-                            done = 1;
-                        }
-                        break;
-                    case 4: // Latin-2
-                        if (glyph == iso_8859_2[ext]) {
-                            dest[out_posn] = ext + 128;
-                            done = 1;
-                        }
-                        break;
-                    case 5: // Latin-3
-                        if (glyph == iso_8859_3[ext]) {
-                            dest[out_posn] = ext + 128;
-                            done = 1;
-                        }
-                        break;
-                    case 6: // Latin-4
-                        if (glyph == iso_8859_4[ext]) {
-                            dest[out_posn] = ext + 128;
-                            done = 1;
-                        }
-                        break;
-                    case 7: // Latin/Cyrillic
-                        if (glyph == iso_8859_5[ext]) {
-                            dest[out_posn] = ext + 128;
-                            done = 1;
-                        }
-                        break;
-                    case 8: // Latin/Arabic
-                        if (glyph == iso_8859_6[ext]) {
-                            dest[out_posn] = ext + 128;
-                            done = 1;
-                        }
-                        break;
-                    case 9: // Latin/Greek
-                        if (glyph == iso_8859_7[ext]) {
-                            dest[out_posn] = ext + 128;
-                            done = 1;
-                        }
-                        break;
-                    case 10: // Latin/Hebrew
-                        if (glyph == iso_8859_8[ext]) {
-                            dest[out_posn] = ext + 128;
-                            done = 1;
-                        }
-                        break;
-                    case 11: // Latin-5
-                        if (glyph == iso_8859_9[ext]) {
-                            dest[out_posn] = ext + 128;
-                            done = 1;
-                        }
-                        break;
-                    case 12: // Latin-6
-                        if (glyph == iso_8859_10[ext]) {
-                            dest[out_posn] = ext + 128;
-                            done = 1;
-                        }
-                        break;
-                    case 13: // Latin/Thai
-                        if (glyph == iso_8859_11[ext]) {
-                            dest[out_posn] = ext + 128;
-                            done = 1;
-                        }
-                        break;
-                    case 15: // Latin-7
-                        if (glyph == iso_8859_13[ext]) {
-                            dest[out_posn] = ext + 128;
-                            done = 1;
-                        }
-                        break;
-                    case 16: // Latin-8
-                        if (glyph == iso_8859_14[ext]) {
-                            dest[out_posn] = ext + 128;
-                            done = 1;
-                        }
-                        break;
-                    case 17: // Latin-9
-                        if (glyph == iso_8859_15[ext]) {
-                            dest[out_posn] = ext + 128;
-                            done = 1;
-                        }
-                        break;
-                    case 18: // Latin-10
-                        if (glyph == iso_8859_16[ext]) {
-                            dest[out_posn] = ext + 128;
-                            done = 1;
-                        }
-                        break;
-                    case 21: // Windows-1250
-                        if (glyph == windows_1250[ext]) {
-                            dest[out_posn] = ext + 128;
-                            done = 1;
-                        }
-                        break;
-                    case 22: // Windows-1251
-                        if (glyph == windows_1251[ext]) {
-                            dest[out_posn] = ext + 128;
-                            done = 1;
-                        }
-                        break;
-                    case 23: // Windows-1252
-                        if (glyph == windows_1252[ext]) {
-                            dest[out_posn] = ext + 128;
-                            done = 1;
-                        }
-                        break;
-                    case 24: // Windows-1256
-                        if (glyph == windows_1256[ext]) {
-                            dest[out_posn] = ext + 128;
-                            done = 1;
-                        }
-                        break;
-                    default:
-                        break;
-                }
-                if (done) {
-                    break;
-                }
-            }
-
-            if (!(done)) {
-                return ZINT_ERROR_INVALID_DATA;
-            }
+        incr = (*eci_func)(dest + out_posn, codepoint);
+        if (incr == 0) {
+            return ZINT_ERROR_INVALID_DATA;
         }
-
-        in_posn += bytelen;
-        out_posn++;
-    } while (in_posn < *length);
+        out_posn += incr;
+    }
     dest[out_posn] = '\0';
-    *length = out_posn;
+    *p_length = out_posn;
 
     return 0;
 }
 
-/* Find the lowest ECI mode which will encode a given set of Unicode text */
-INTERNAL int get_best_eci(unsigned char source[], int length) {
+/* Find the lowest single-byte ECI mode which will encode a given set of Unicode text */
+INTERNAL int get_best_eci(const unsigned char source[], int length) {
     int eci = 3;
 
+    /* Note: attempting single-byte conversions only, so get_eci_length() unnecessary */
 #ifndef _MSC_VER
     unsigned char local_source[length + 1];
 #else
-    unsigned char *local_source = (unsigned char*) _alloca(length + 1);
+    unsigned char *local_source = (unsigned char *) _alloca(length + 1);
 #endif
 
     do {
-        if (utf_to_eci(eci, source, local_source, &length) == 0) {
+        if (eci == 14) { /* Reserved */
+            eci = 15;
+        } else if (eci == 19) { /* Reserved */
+            eci = 21; /* Skip 20 Shift JIS */
+        }
+        if (utf8_to_eci(eci, source, local_source, &length) == 0) {
             return eci;
         }
         eci++;

@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009 - 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009 - 2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -68,18 +68,6 @@ static void itostr(char ai_string[], int ai_value) {
     strcat(ai_string, ")");
 }
 
-/* Returns the number of times a character occurs in a string */
-static int ustrchr_cnt(const unsigned char string[], const int length, const unsigned char c) {
-    int count = 0;
-    int i;
-    for (i = 0; i < length; i++) {
-        if (string[i] == c) {
-            count++;
-        }
-    }
-    return count;
-}
-
 INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[], const int src_len,
                 unsigned char reduced[]) {
     int i, j, last_ai, ai_latch;
@@ -94,7 +82,7 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
     int *data_location;
     int *data_length;
 #endif
-    int ai_max = ustrchr_cnt(source, src_len, '[') + 1; /* Plus 1 so non-zero */
+    int ai_max = chr_cnt(source, src_len, '[') + 1; /* Plus 1 so non-zero */
 #ifndef _MSC_VER
     int ai_value[ai_max], ai_location[ai_max], data_location[ai_max], data_length[ai_max];
 #else

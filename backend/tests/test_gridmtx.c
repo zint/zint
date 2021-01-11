@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -27,7 +27,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
+/* vim: set ts=4 sw=4 et norl : */
 
 #include "testcommon.h"
 
@@ -110,7 +110,7 @@ static void test_options(int index, int debug) {
         /* 10*/ { "123456789012345678", 5, 0, 0, 0, 30 }, // Version not specified so increased to allow for ECC level
         /* 11*/ { "123456789012345678", 6, 0, 0, 0, 30 }, // ECC > max ECC 5 so ignored and auto-settings version 2, ECC 4 used
     };
-    int data_size = sizeof(data) / sizeof(struct item);
+    int data_size = ARRAY_SIZE(data);
 
     for (int i = 0; i < data_size; i++) {
 
@@ -119,12 +119,7 @@ static void test_options(int index, int debug) {
         struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        symbol->symbology = BARCODE_GRIDMATRIX;
-        symbol->option_1 = data[i].option_1;
-        symbol->option_2 = data[i].option_2;
-        symbol->debug |= debug;
-
-        int length = strlen(data[i].data);
+        int length = testUtilSetSymbol(symbol, BARCODE_GRIDMATRIX, -1 /*input_mode*/, -1 /*eci*/, data[i].option_1, data[i].option_2, -1, -1 /*output_options*/, data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret_encode, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret_encode, symbol->errtxt);
@@ -167,17 +162,17 @@ static void test_input(int index, int generate, int debug) {
         /*  1*/ { UNICODE_MODE, 3, -1, "é", 0, 3, "60 01 58 00 74 40", "ECI-3 B1 (ISO 8859-1)" },
         /*  2*/ { UNICODE_MODE, 29, -1, "é", 0, 29, "60 0E 44 2A 37 7C 00", "ECI-29 H1 (GB 2312)" },
         /*  3*/ { UNICODE_MODE, 26, -1, "é", 0, 26, "60 0D 18 01 61 6A 20", "ECI-26 B2 (UTF-8)" },
-        /*  4*/ { UNICODE_MODE, 26, 200, "é", 0, 26, "60 0D 05 28 4F 7C 00", "ECI-26 H1 (UTF-8) (full multibyte)" },
+        /*  4*/ { UNICODE_MODE, 26, ZINT_FULL_MULTIBYTE, "é", 0, 26, "60 0D 05 28 4F 7C 00", "ECI-26 H1 (UTF-8) (full multibyte)" },
         /*  5*/ { DATA_MODE, 0, -1, "é", 0, 0, "30 03 43 54 40", "B2 (UTF-8)" },
-        /*  6*/ { DATA_MODE, 0, 200, "é", 0, 0, "0A 51 1F 78 00", "H1 (UTF-8) (full multibyte)" },
+        /*  6*/ { DATA_MODE, 0, ZINT_FULL_MULTIBYTE, "é", 0, 0, "0A 51 1F 78 00", "H1 (UTF-8) (full multibyte)" },
         /*  7*/ { DATA_MODE, 0, -1, "\351", 0, 0, "30 01 69 00", "B1 (ISO 8859-1) (0xE9)" },
         /*  8*/ { UNICODE_MODE, 0, -1, "β", 0, 0, "08 40 2F 78 00", "H1 (GB 2312)" },
         /*  9*/ { UNICODE_MODE, 9, -1, "β", 0, 9, "60 04 58 00 71 00", "ECI-9 B1 (ISO 8859-7)" },
         /* 10*/ { UNICODE_MODE, 29, -1, "β", 0, 29, "60 0E 44 20 17 7C 00", "ECI-29 H1 (GB 2312)" },
         /* 11*/ { UNICODE_MODE, 26, -1, "β", 0, 26, "60 0D 18 01 67 2C 40", "ECI-26 H1 (UTF-8)" },
-        /* 12*/ { UNICODE_MODE, 26, 200, "β", 0, 26, "60 0D 05 6B 17 7C 00", "ECI-26 H1 (UTF-8) (full multibyte)" },
+        /* 12*/ { UNICODE_MODE, 26, ZINT_FULL_MULTIBYTE, "β", 0, 26, "60 0D 05 6B 17 7C 00", "ECI-26 H1 (UTF-8) (full multibyte)" },
         /* 13*/ { DATA_MODE, 0, -1, "β", 0, 0, "30 03 4E 59 00", "B2 (UTF-8)" },
-        /* 14*/ { DATA_MODE, 0, 200, "β", 0, 0, "0B 56 2F 78 00", "H1 (UTF-8) (full multibyte)" },
+        /* 14*/ { DATA_MODE, 0, ZINT_FULL_MULTIBYTE, "β", 0, 0, "0B 56 2F 78 00", "H1 (UTF-8) (full multibyte)" },
         /* 15*/ { UNICODE_MODE, 0, -1, "ÿ", 0, 0, "30 01 7F 00", "B1 (ISO 8859-1)" },
         /* 16*/ { UNICODE_MODE, 0, -1, "ÿÿÿ", 0, 0, "30 05 7F 7F 7F 60", "B3 (ISO 8859-1)" },
         /* 17*/ { UNICODE_MODE, 0, -1, "㈩一", 0, 0, "08 15 68 0E 7F 70 00", "H2 (GB 2312)" },
@@ -215,8 +210,44 @@ static void test_input(int index, int generate, int debug) {
         /* 49*/ { UNICODE_MODE, 0, -1, "::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::\177", 0, 0, "(591) 37 68 68 68 68 68 74 7E 74 74 74 74 74 3A 3A 3A 3A 3A 3A 3A 1D 1D 1D 1D 1D 1D 1D 0E", "B513 (ASCII)" },
         /* 50*/ { UNICODE_MODE, 0, -1, ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::至", 0, 0, "(591) 37 68 68 68 68 68 74 7C 74 74 74 74 74 3A 3A 3A 3A 3A 3A 3A 1D 1D 1D 1D 1D 1D 1D 0E", "B511 H1 (GB 2312)" },
         /* 51*/ { UNICODE_MODE, 0, -1, ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::至:", 0, 0, "(592) 37 68 68 68 68 68 74 7E 74 74 74 74 74 3A 3A 3A 3A 3A 3A 3A 1D 1D 1D 1D 1D 1D 1D 0E", "B513 (GB 2312)" },
+        /* 52*/ { UNICODE_MODE, 0, -1, "˘", ZINT_WARN_USES_ECI, 4, "Warning 60 02 18 00 51 00", "ECI-4 B1 (ISO 8859-2)" },
+        /* 53*/ { UNICODE_MODE, 4, -1, "˘", 0, 4, "60 02 18 00 51 00", "ECI-4 B1 (ISO 8859-2)" },
+        /* 54*/ { UNICODE_MODE, 0, -1, "Ħ", ZINT_WARN_USES_ECI, 5, "Warning 60 02 58 00 50 40", "ECI-5 B1 (ISO 8859-3)" },
+        /* 55*/ { UNICODE_MODE, 5, -1, "Ħ", 0, 5, "60 02 58 00 50 40", "ECI-5 B1 (ISO 8859-3)" },
+        /* 56*/ { UNICODE_MODE, 6, -1, "ĸ", 0, 6, "60 03 18 00 51 00", "ECI-6 B1 (ISO 8859-4)" },
+        /* 57*/ { UNICODE_MODE, 7, -1, "Ж", 0, 7, "60 03 58 00 5B 00", "ECI-7 B1 (ISO 8859-5)" },
+        /* 58*/ { UNICODE_MODE, 0, -1, "Ș", ZINT_WARN_USES_ECI, 18, "Warning 60 09 18 00 55 00", "ECI-18 B1 (ISO 8859-16)" },
+        /* 59*/ { UNICODE_MODE, 18, -1, "Ș", 0, 18, "60 09 18 00 55 00", "ECI-18 B1 (ISO 8859-16)" },
+        /* 60*/ { UNICODE_MODE, 0, -1, "テ", 0, 0, "08 34 6F 78 00", "H1 (GB 2312)" },
+        /* 61*/ { UNICODE_MODE, 20, -1, "テ", 0, 20, "60 0A 18 01 41 59 20", "ECI-20 B2 (SHIFT JIS)" },
+        /* 62*/ { UNICODE_MODE, 20, -1, "テテ", 0, 20, "60 0A 18 03 41 59 30 36 28 00", "ECI-20 B4 (SHIFT JIS)" },
+        /* 63*/ { UNICODE_MODE, 20, -1, "\\\\", 0, 20, "60 0A 18 03 40 57 70 15 78 00", "ECI-20 B4 (SHIFT JIS)" },
+        /* 64*/ { UNICODE_MODE, 0, -1, "…", 0, 0, "08 01 5F 78 00", "H1 (GB 2312)" },
+        /* 65*/ { UNICODE_MODE, 21, -1, "…", 0, 21, "60 0A 58 00 42 40", "ECI-21 B1 (Win 1250)" },
+        /* 66*/ { UNICODE_MODE, 0, -1, "Ґ", ZINT_WARN_USES_ECI, 22, "Warning 60 0B 18 00 52 40", "ECI-22 B1 (Win 1251)" },
+        /* 67*/ { UNICODE_MODE, 22, -1, "Ґ", 0, 22, "60 0B 18 00 52 40", "ECI-22 B1 (Win 1251)" },
+        /* 68*/ { UNICODE_MODE, 0, -1, "˜", ZINT_WARN_USES_ECI, 23, "Warning 60 0B 58 00 4C 00", "ECI-23 B1 (Win 1252)" },
+        /* 69*/ { UNICODE_MODE, 23, -1, "˜", 0, 23, "60 0B 58 00 4C 00", "ECI-23 B1 (Win 1252)" },
+        /* 70*/ { UNICODE_MODE, 24, -1, "پ", 0, 24, "60 0C 18 00 40 40", "ECI-24 B1 (Win 1256)" },
+        /* 71*/ { UNICODE_MODE, 0, -1, "က", ZINT_WARN_USES_ECI, 26, "Warning 60 0D 18 02 70 60 10 00", "ECI-26 B3 (UTF-8)" },
+        /* 72*/ { UNICODE_MODE, 25, -1, "က", 0, 25, "60 0C 58 01 08 00 00", "ECI-25 B2 (UCS-2BE)" },
+        /* 73*/ { UNICODE_MODE, 25, -1, "ကက", 0, 25, "60 0C 58 03 08 00 02 00 00 00", "ECI-25 B4 (UCS-2BE)" },
+        /* 74*/ { UNICODE_MODE, 25, -1, "12", 0, 25, "60 0C 58 03 00 0C 20 03 10 00", "ECI-25 B4 (UCS-2BE ASCII)" },
+        /* 75*/ { UNICODE_MODE, 27, -1, "@", 0, 27, "60 0D 4F 77 2E 60", "ECI-27 L1 (ASCII)" },
+        /* 76*/ { UNICODE_MODE, 0, -1, "龘", ZINT_WARN_USES_ECI, 26, "Warning 60 0D 18 02 74 6F 53 00", "ECI-26 B3 (UTF-8)" },
+        /* 77*/ { UNICODE_MODE, 28, -1, "龘", 0, 28, "60 0E 18 01 7C 75 20", "ECI-28 B2 (Big5)" },
+        /* 78*/ { UNICODE_MODE, 28, -1, "龘龘", 0, 28, "60 0E 18 03 7C 75 3F 1D 28 00", "ECI-28 B4 (Big5)" },
+        /* 79*/ { UNICODE_MODE, 0, -1, "齄", 0, 0, "0F 4B 6F 78 00", "H1 (GB 2312)" },
+        /* 80*/ { UNICODE_MODE, 29, -1, "齄", 0, 29, "60 0E 47 65 77 7C 00", "ECI-29 H1 (GB 2312)" },
+        /* 81*/ { UNICODE_MODE, 29, -1, "齄齄", 0, 29, "60 0E 47 65 77 4B 6F 78 00", "ECI-29 H2 (GB 2312)" },
+        /* 82*/ { UNICODE_MODE, 0, -1, "가", ZINT_WARN_USES_ECI, 26, "Warning 60 0D 18 02 75 2C 10 00", "ECI-26 B3 (UTF-8)" },
+        /* 83*/ { UNICODE_MODE, 30, -1, "가", 0, 30, "60 0F 18 01 18 08 20", "ECI-30 B2 (KS X 1001)" },
+        /* 84*/ { UNICODE_MODE, 30, -1, "가가", 0, 30, "60 0F 18 03 18 08 26 02 08 00", "ECI-30 B4 (KS X 1001)" },
+        /* 85*/ { UNICODE_MODE, 170, -1, "?", 0, 170, "60 55 0F 77 26 60", "ECI-170 L1 (ASCII invariant)" },
+        /* 86*/ { DATA_MODE, 899, -1, "\200", 0, 899, "63 41 58 00 40 00", "ECI-899 B1 (8-bit binary)" },
+        /* 87*/ { UNICODE_MODE, 900, -1, "é", 0, 900, "63 42 18 01 61 6A 20", "ECI-900 B2 (no conversion)" },
     };
-    int data_size = sizeof(data) / sizeof(struct item);
+    int data_size = ARRAY_SIZE(data);
 
     char escaped[1024];
 
@@ -227,23 +258,17 @@ static void test_input(int index, int generate, int debug) {
         struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        symbol->symbology = BARCODE_GRIDMATRIX;
-        symbol->input_mode = data[i].input_mode;
-        symbol->eci = data[i].eci;
-        if (data[i].option_3 != -1) {
-            symbol->option_3 = data[i].option_3;
-        }
-        symbol->debug = ZINT_DEBUG_TEST; // Needed to get codeword dump in errtxt
-        symbol->debug |= debug;
+        debug |= ZINT_DEBUG_TEST; // Needed to get codeword dump in errtxt
 
-        int length = strlen(data[i].data);
+        int length = testUtilSetSymbol(symbol, BARCODE_GRIDMATRIX, data[i].input_mode, data[i].eci, -1 /*option_1*/, -1, data[i].option_3, -1 /*output_options*/, data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d\n", i, ret, data[i].ret);
 
         if (generate) {
-            printf("        /*%3d*/ { %s, %d, %d, \"%s\", %s, %d, \"%s\", \"%s\" },\n",
-                    i, testUtilInputModeName(data[i].input_mode), data[i].eci, data[i].option_3, testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
+            printf("        /*%3d*/ { %s, %d, %s, \"%s\", %s, %d, \"%s\", \"%s\" },\n",
+                    i, testUtilInputModeName(data[i].input_mode), data[i].eci, testUtilOption3Name(data[i].option_3),
+                    testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
                     testUtilErrorName(data[i].ret), ret < 5 ? symbol->eci : -1, symbol->errtxt, data[i].comment);
         } else {
             if (ret < 5) {
@@ -374,7 +399,7 @@ static void test_encode(int index, int generate, int debug) {
                     "111111000000111111000000111111000000111111"
                },
     };
-    int data_size = sizeof(data) / sizeof(struct item);
+    int data_size = ARRAY_SIZE(data);
 
     for (int i = 0; i < data_size; i++) {
 
@@ -383,17 +408,7 @@ static void test_encode(int index, int generate, int debug) {
         struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        symbol->symbology = BARCODE_GRIDMATRIX;
-        symbol->input_mode = data[i].input_mode;
-        if (data[i].option_1 != -1) {
-            symbol->option_1 = data[i].option_1;
-        }
-        if (data[i].option_2 != -1) {
-            symbol->option_2 = data[i].option_2;
-        }
-        symbol->debug |= debug;
-
-        int length = strlen(data[i].data);
+        int length = testUtilSetSymbol(symbol, BARCODE_GRIDMATRIX, data[i].input_mode, -1 /*eci*/, data[i].option_1, data[i].option_2, -1, -1 /*output_options*/, data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);

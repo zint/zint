@@ -474,6 +474,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\backend\big5.h"
+				>
+			</File>
+			<File
+				RelativePath="..\backend\bmp.h"
+				>
+			</File>
+			<File
 				RelativePath="..\backend\channel_precalcs.h"
 				>
 			</File>
@@ -506,6 +514,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\backend\eci_sb.h"
+				>
+			</File>
+			<File
 				RelativePath="..\backend\emf.h"
 				>
 			</File>
@@ -535,6 +547,10 @@
 			</File>
 			<File
 				RelativePath="..\backend\hanxin.h"
+				>
+			</File>
+			<File
+				RelativePath="..\backend\ksx1001.h"
 				>
 			</File>
 			<File

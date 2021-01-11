@@ -1,7 +1,7 @@
 /* qr.c Handles QR Code, Micro QR Code, UPNQR and rMQR
 
     libzint - the open source barcode library
-    Copyright (C) 2009 - 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009 - 2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -36,13 +36,11 @@
 #endif
 #include "common.h"
 #include <stdio.h>
+#include "eci.h"
 #include "sjis.h"
 #include "qr.h"
 #include "reedsol.h"
 #include <assert.h>
-
-/* Convert Unicode to other encodings */
-INTERNAL int utf_to_eci(const int eci, const unsigned char source[], unsigned char dest[], int *length);
 
 /* Returns true if input glyph is in the Alphanumeric set */
 static int is_alpha(const unsigned int glyph, const int gs1) {
@@ -1515,22 +1513,23 @@ INTERNAL int qr_code(struct zint_symbol *symbol, unsigned char source[], int len
     int canShrink;
     int size_squared;
     int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
+    int eci_length = get_eci_length(symbol->eci, source, length);
 
 #ifndef _MSC_VER
-    unsigned int jisdata[length + 1];
-    char mode[length];
-    char prev_mode[length];
+    unsigned int jisdata[eci_length + 1];
+    char mode[eci_length];
+    char prev_mode[eci_length];
 #else
-    unsigned char* datastream;
-    unsigned char* fullstream;
-    unsigned char* grid;
-    unsigned int* jisdata = (unsigned int *) _alloca((length + 1) * sizeof (unsigned int));
-    char *mode = (char *) _alloca(length);
-    char *prev_mode = (char *) _alloca(length);
+    unsigned char *datastream;
+    unsigned char *fullstream;
+    unsigned char *grid;
+    unsigned int *jisdata = (unsigned int *) _alloca((eci_length + 1) * sizeof(unsigned int));
+    char *mode = (char *) _alloca(eci_length);
+    char *prev_mode = (char *) _alloca(eci_length);
 #endif
 
     gs1 = ((symbol->input_mode & 0x07) == GS1_MODE);
-    /* If ZINT_FULL_MULTIBYTE use Kanji mode in DATA_MODE or for single-byte Latin */
+    /* If ZINT_FULL_MULTIBYTE use Kanji mode in DATA_MODE or for non-Shift JIS in UNICODE_MODE */
     full_multibyte = (symbol->option_3 & 0xFF) == ZINT_FULL_MULTIBYTE;
     user_mask = (symbol->option_3 >> 8) & 0x0F; /* User mask is pattern + 1, so >= 1 and <= 8 */
     if (user_mask > 8) {
@@ -1542,19 +1541,18 @@ INTERNAL int qr_code(struct zint_symbol *symbol, unsigned char source[], int len
     } else {
         int done = 0;
         if (symbol->eci != 20) { /* Unless ECI 20 (Shift JIS) */
-            /* Try single byte (Latin) conversion first */
-            int error_number = sjis_utf8tosb(symbol->eci && symbol->eci <= 899 ? symbol->eci : 3, source, &length,
-                                    jisdata, full_multibyte);
+            /* Try other encodings (ECI 0 defaults to ISO/IEC 8859-1) */
+            int error_number = sjis_utf8_to_eci(symbol->eci, source, &length, jisdata, full_multibyte);
             if (error_number == 0) {
                 done = 1;
-            } else if (symbol->eci && symbol->eci <= 899) {
+            } else if (symbol->eci) {
                 strcpy(symbol->errtxt, "575: Invalid characters in input data");
                 return error_number;
             }
         }
         if (!done) {
             /* Try Shift-JIS */
-            int error_number = sjis_utf8tomb(symbol, source, &length, jisdata);
+            int error_number = sjis_utf8(symbol, source, &length, jisdata);
             if (error_number != 0) {
                 return error_number;
             }
@@ -2388,7 +2386,7 @@ INTERNAL int microqr(struct zint_symbol *symbol, unsigned char source[], int len
         ecc_level = symbol->option_1;
     }
 
-    /* If ZINT_FULL_MULTIBYTE use Kanji mode in DATA_MODE or for single-byte Latin */
+    /* If ZINT_FULL_MULTIBYTE use Kanji mode in DATA_MODE or for non-Shift JIS in UNICODE_MODE */
     full_multibyte = (symbol->option_3 & 0xFF) == ZINT_FULL_MULTIBYTE;
     user_mask = (symbol->option_3 >> 8) & 0x0F; /* User mask is pattern + 1, so >= 1 and <= 4 */
     if (user_mask > 4) {
@@ -2399,10 +2397,10 @@ INTERNAL int microqr(struct zint_symbol *symbol, unsigned char source[], int len
         sjis_cpy(source, &length, jisdata, full_multibyte);
     } else {
         /* Try ISO 8859-1 conversion first */
-        int error_number = sjis_utf8tosb(3, source, &length, jisdata, full_multibyte);
+        int error_number = sjis_utf8_to_eci(3, source, &length, jisdata, full_multibyte);
         if (error_number != 0) {
             /* Try Shift-JIS */
-            error_number = sjis_utf8tomb(symbol, source, &length, jisdata);
+            error_number = sjis_utf8(symbol, source, &length, jisdata);
             if (error_number != 0) {
                 return error_number;
             }
@@ -2687,7 +2685,7 @@ INTERNAL int upnqr(struct zint_symbol *symbol, unsigned char source[], int lengt
             return ZINT_ERROR_INVALID_OPTION;
             break;
         case UNICODE_MODE:
-            error_number = utf_to_eci(4, source, preprocessed, &length);
+            error_number = utf8_to_eci(4, source, preprocessed, &length);
             if (error_number != 0) {
                 strcpy(symbol->errtxt, "572: Invalid characters in input data");
                 return error_number;
@@ -2897,17 +2895,17 @@ INTERNAL int rmqr(struct zint_symbol *symbol, unsigned char source[], int length
 #endif
 
     gs1 = ((symbol->input_mode & 0x07) == GS1_MODE);
-    /* If ZINT_FULL_MULTIBYTE use Kanji mode in DATA_MODE or for single-byte Latin */
+    /* If ZINT_FULL_MULTIBYTE use Kanji mode in DATA_MODE or for non-Shift JIS in UNICODE_MODE */
     full_multibyte = (symbol->option_3 & 0xFF) == ZINT_FULL_MULTIBYTE;
 
     if ((symbol->input_mode & 0x07) == DATA_MODE) {
         sjis_cpy(source, &length, jisdata, full_multibyte);
     } else {
         /* Try ISO 8859-1 conversion first */
-        int error_number = sjis_utf8tosb(3, source, &length, jisdata, full_multibyte);
+        int error_number = sjis_utf8_to_eci(3, source, &length, jisdata, full_multibyte);
         if (error_number != 0) {
             /* Try Shift-JIS */
-            error_number = sjis_utf8tomb(symbol, source, &length, jisdata);
+            error_number = sjis_utf8(symbol, source, &length, jisdata);
             if (error_number != 0) {
                 return error_number;
             }

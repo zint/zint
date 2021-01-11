@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019 - 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019 - 2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -107,7 +107,9 @@ static int gb18030_wctomb_zint2(unsigned int *r1, unsigned int *r2, unsigned int
         return 4;
     }
     int tab_length = sizeof(test_gb18030_tab) / sizeof(unsigned int);
-    for (int i = test_gb18030_tab_ind[wc >> 12]; i < tab_length; i += 2) {
+    int start_i = test_gb18030_tab_ind[wc >> 10];
+    int end_i = start_i + 0x800 > tab_length ? tab_length : start_i + 0x800;
+    for (int i = start_i; i < end_i; i += 2) {
         if (test_gb18030_tab[i + 1] == wc) {
             c = test_gb18030_tab[i];
             if (c <= 0xFFFF) {
@@ -146,7 +148,7 @@ static void test_gb18030_wctomb_zint(void) {
     testFinish();
 }
 
-static void test_gb18030_utf8tomb(int index) {
+static void test_gb18030_utf8(int index) {
 
     testStart("");
 
@@ -192,7 +194,7 @@ static void test_gb18030_utf8tomb(int index) {
         int length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
         int ret_length = length;
 
-        ret = gb18030_utf8tomb(&symbol, (unsigned char *) data[i].data, &ret_length, gbdata);
+        ret = gb18030_utf8(&symbol, (unsigned char *) data[i].data, &ret_length, gbdata);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d (%s)\n", i, ret, data[i].ret, symbol.errtxt);
         if (ret == 0) {
             assert_equal(ret_length, data[i].ret_length, "i:%d ret_length %d != %d\n", i, ret_length, data[i].ret_length);
@@ -205,7 +207,7 @@ static void test_gb18030_utf8tomb(int index) {
     testFinish();
 }
 
-static void test_gb18030_utf8tosb(int index) {
+static void test_gb18030_utf8_to_eci(int index) {
 
     testStart("");
 
@@ -228,32 +230,58 @@ static void test_gb18030_utf8tosb(int index) {
     // 9 U+0039 in ASCII 0x39, outside first byte range, outside double-byte second byte range and quad-byte third byte range, in quad-byte second/fourth byte ranges
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /*  1*/ { 3, 0, "é", -1, 0, 1, { 0xE9 }, "Not full multibyte" },
-        /*  2*/ { 3, 1, "é", -1, 0, 1, { 0xE9 }, "First byte in range but only one byte" },
-        /*  3*/ { 3, 0, "β", -1, ZINT_ERROR_INVALID_DATA, -1, {}, "Not full multibyte" },
-        /*  4*/ { 3, 1, "β", -1, ZINT_ERROR_INVALID_DATA, -1, {}, "Not in ECI 3 (ISO 8859-1)" },
-        /*  5*/ { 9, 0, "β", -1, 0, 1, { 0xE2 }, "Not full multibyte" },
-        /*  6*/ { 9, 1, "β", -1, 0, 1, { 0xE2 }, "In ECI 9 (ISO 8859-7)" },
-        /*  7*/ { 3, 0, "¥", -1, 0, 1, { 0xA5 }, "Not full multibyte" },
-        /*  8*/ { 3, 1, "¥", -1, 0, 1, { 0xA5 }, "First byte in range but only one byte" },
-        /*  9*/ { 3, 0, "¥é", -1, 0, 2, { 0xA5, 0xE9 }, "Not full multibyte" },
-        /* 10*/ { 3, 1, "¥é", -1, 0, 1, { 0xA5E9 }, "In double-byte range" },
-        /* 11*/ { 3, 0, "¥ÿ", -1, 0, 2, { 0xA5, 0xFF }, "Not full multibyte" },
-        /* 12*/ { 3, 1, "¥ÿ", -1, 0, 2, { 0xA5, 0xFF }, "First byte in range but not second" },
-        /* 13*/ { 3, 0, "¥9é9", -1, 0, 4, { 0xA5, 0x39, 0xE9, 0x39 }, "Not full multibyte" },
-        /* 14*/ { 3, 1, "¥9é9", -1, 0, 2, { 0xA539, 0xE939 }, "In quad-byte range" },
-        /* 15*/ { 3, 0, "¥9", -1, 0, 2, { 0xA5, 0x39 }, "Not full multibyte" },
-        /* 16*/ { 3, 1, "¥9", -1, 0, 2, { 0xA5, 0x39 }, "In quad-byte first/second range but only 2 bytes, not in double-byte range" },
-        /* 17*/ { 3, 0, "¥9é", -1, 0, 3, { 0xA5, 0x39, 0xE9 }, "Not full multibyte" },
-        /* 18*/ { 3, 1, "¥9é", -1, 0, 3, { 0xA5, 0x39, 0xE9 }, "In quad-byte first/second/third range but only 3 bytes, no bytes in double-byte range" },
-        /* 19*/ { 3, 0, "¥9é@", -1, 0, 4, { 0xA5, 0x39, 0xE9, 0x40 }, "Not full multibyte" },
-        /* 20*/ { 3, 1, "¥9é@", -1, 0, 3, { 0xA5, 0x39, 0xE940 }, "In quad-byte first/second/third range but not fourth, second 2 bytes in double-byte range" },
-        /* 21*/ { 3, 0, "¥@é9", -1, 0, 4, { 0xA5, 0x40, 0xE9, 0x39 }, "Not full multibyte" },
-        /* 22*/ { 3, 1, "¥@é9", -1, 0, 3, { 0xA540, 0xE9, 0x39 }, "In quad-byte first/third/fourth range but not second, first 2 bytes in double-byte range" },
-        /* 23*/ { 3, 0, "¥9@9", -1, 0, 4, { 0xA5, 0x39, 0x40, 0x39 }, "Not full multibyte" },
-        /* 24*/ { 3, 1, "¥9@9", -1, 0, 4, { 0xA5, 0x39, 0x40, 0x39 }, "In quad-byte first/second/fourth range but not third, no bytes in double-byte range" },
-        /* 25*/ { 3, 0, "é9éé¥9é@¥9é9¥9é0é@@¥¥é0é1", -1, 0, 25, { 0xE9, 0x39, 0xE9, 0xE9, 0xA5, 0x39, 0xE9, 0x40, 0xA5, 0x39, 0xE9, 0x39, 0xA5, 0x39, 0xE9, 0x30, 0xE9, 0x40, 0x40, 0xA5, 0xA5, 0xE9, 0x30, 0xE9, 0x31 }, "" },
-        /* 26*/ { 3, 1, "é9éé¥9é@¥9é9¥9é0é@@¥¥é0é1", -1, 0, 15, { 0xE9, 0x39, 0xE9E9, 0xA5, 0x39, 0xE940, 0xA539, 0xE939, 0xA539, 0xE930, 0xE940, 0x40, 0xA5A5, 0xE930, 0xE931 }, "" },
+        /*  0*/ { 3, 0, "é", -1, 0, 1, { 0xE9 }, "Not full multibyte" },
+        /*  1*/ { 3, 1, "é", -1, 0, 1, { 0xE9 }, "First byte in range but only one byte" },
+        /*  2*/ { 3, 0, "β", -1, ZINT_ERROR_INVALID_DATA, -1, {}, "Not full multibyte" },
+        /*  3*/ { 3, 1, "β", -1, ZINT_ERROR_INVALID_DATA, -1, {}, "Not in ECI 3 (ISO 8859-1)" },
+        /*  4*/ { 9, 0, "β", -1, 0, 1, { 0xE2 }, "Not full multibyte" },
+        /*  5*/ { 9, 1, "β", -1, 0, 1, { 0xE2 }, "In ECI 9 (ISO 8859-7)" },
+        /*  6*/ { 3, 0, "¥", -1, 0, 1, { 0xA5 }, "Not full multibyte" },
+        /*  7*/ { 3, 1, "¥", -1, 0, 1, { 0xA5 }, "First byte in range but only one byte" },
+        /*  8*/ { 3, 0, "¥é", -1, 0, 2, { 0xA5, 0xE9 }, "Not full multibyte" },
+        /*  9*/ { 3, 1, "¥é", -1, 0, 1, { 0xA5E9 }, "In double-byte range" },
+        /* 10*/ { 3, 0, "¥ÿ", -1, 0, 2, { 0xA5, 0xFF }, "Not full multibyte" },
+        /* 11*/ { 3, 1, "¥ÿ", -1, 0, 2, { 0xA5, 0xFF }, "First byte in range but not second" },
+        /* 12*/ { 3, 0, "¥9é9", -1, 0, 4, { 0xA5, 0x39, 0xE9, 0x39 }, "Not full multibyte" },
+        /* 13*/ { 3, 1, "¥9é9", -1, 0, 2, { 0xA539, 0xE939 }, "In quad-byte range" },
+        /* 14*/ { 3, 0, "¥9", -1, 0, 2, { 0xA5, 0x39 }, "Not full multibyte" },
+        /* 15*/ { 3, 1, "¥9", -1, 0, 2, { 0xA5, 0x39 }, "In quad-byte first/second range but only 2 bytes, not in double-byte range" },
+        /* 16*/ { 3, 0, "¥9é", -1, 0, 3, { 0xA5, 0x39, 0xE9 }, "Not full multibyte" },
+        /* 17*/ { 3, 1, "¥9é", -1, 0, 3, { 0xA5, 0x39, 0xE9 }, "In quad-byte first/second/third range but only 3 bytes, no bytes in double-byte range" },
+        /* 18*/ { 3, 0, "¥9é@", -1, 0, 4, { 0xA5, 0x39, 0xE9, 0x40 }, "Not full multibyte" },
+        /* 19*/ { 3, 1, "¥9é@", -1, 0, 3, { 0xA5, 0x39, 0xE940 }, "In quad-byte first/second/third range but not fourth, second 2 bytes in double-byte range" },
+        /* 20*/ { 3, 0, "¥@é9", -1, 0, 4, { 0xA5, 0x40, 0xE9, 0x39 }, "Not full multibyte" },
+        /* 21*/ { 3, 1, "¥@é9", -1, 0, 3, { 0xA540, 0xE9, 0x39 }, "In quad-byte first/third/fourth range but not second, first 2 bytes in double-byte range" },
+        /* 22*/ { 3, 0, "¥9@9", -1, 0, 4, { 0xA5, 0x39, 0x40, 0x39 }, "Not full multibyte" },
+        /* 23*/ { 3, 1, "¥9@9", -1, 0, 4, { 0xA5, 0x39, 0x40, 0x39 }, "In quad-byte first/second/fourth range but not third, no bytes in double-byte range" },
+        /* 24*/ { 3, 0, "é9éé¥9é@¥9é9¥9é0é@@¥¥é0é1", -1, 0, 25, { 0xE9, 0x39, 0xE9, 0xE9, 0xA5, 0x39, 0xE9, 0x40, 0xA5, 0x39, 0xE9, 0x39, 0xA5, 0x39, 0xE9, 0x30, 0xE9, 0x40, 0x40, 0xA5, 0xA5, 0xE9, 0x30, 0xE9, 0x31 }, "" },
+        /* 25*/ { 3, 1, "é9éé¥9é@¥9é9¥9é0é@@¥¥é0é1", -1, 0, 15, { 0xE9, 0x39, 0xE9E9, 0xA5, 0x39, 0xE940, 0xA539, 0xE939, 0xA539, 0xE930, 0xE940, 0x40, 0xA5A5, 0xE930, 0xE931 }, "" },
+        /* 26*/ { 20, 0, "\\\\", -1, 0, 4, { 0x81, 0x5F, 0x81, 0x5F }, "Shift JIS reverse solidus (backslash) mapping from ASCII to double byte" },
+        /* 27*/ { 20, 1, "\\\\", -1, 0, 2, { 0x815F, 0x815F }, "Shift JIS in GB 18030 Hanzi mode range" },
+        /* 28*/ { 20, 0, "爍", -1, 0, 2, { 0xE0, 0xA1 }, "Shift JIS U+720D" },
+        /* 29*/ { 20, 1, "爍", -1, 0, 1, { 0xE0A1 }, "Shift JIS in GB 18030 Hanzi mode range" },
+        /* 30*/ { 25, 0, "12", -1, 0, 4, { 0x00, 0x31, 0x00, 0x32 }, "UCS-2BE ASCII" },
+        /* 31*/ { 25, 0, "", -1, 0, 4, { 0x00, 0x81, 0x00, 0x81 }, "UCS-2BE U+0081" },
+        /* 32*/ { 25, 1, "", -1, 0, 4, { 0x00, 0x81, 0x00, 0x81 }, "UCS-2BE outside GB 18030 Hanzi mode range" },
+        /* 33*/ { 25, 0, "ꆩꆩ", -1, 0, 4, { 0xA1, 0xA9, 0xA1, 0xA9 }, "UCS-2BE U+A1A9" },
+        /* 34*/ { 25, 1, "ꆩꆩ", -1, 0, 2, { 0xA1A9, 0xA1A9 }, "UCS-2BE in GB 18030 Hanzi mode range" },
+        /* 35*/ { 25, 0, "膀膀", -1, 0, 4, { 0x81, 0x80, 0x81, 0x80 }, "UCS-2BE U+8180" },
+        /* 36*/ { 25, 1, "膀膀", -1, 0, 2, { 0x8180, 0x8180 }, "UCS-2BE in GB 18030 Hanzi mode range (but outside GB 2312 range)" },
+        /* 37*/ { 28, 0, "¢¢", -1, 0, 4, { 0xA2, 0x46, 0xA2, 0x46 }, "Big5 U+00A2" },
+        /* 38*/ { 28, 1, "¢¢", -1, 0, 2, { 0xA246, 0xA246 }, "Big5 in GB 18030 Hanzi mode range (but outside GB 2312 range)" },
+        /* 39*/ { 28, 0, "陛", -1, 0, 2, { 0xB0, 0xA1 }, "Big5 U+965B" },
+        /* 40*/ { 28, 1, "陛", -1, 0, 1, { 0xB0A1 }, "Big5 in GB 18030 Hanzi mode range" },
+        /* 41*/ { 29, 0, "¨¨", -1, 0, 4, { 0xA1, 0xA7, 0xA1, 0xA7 }, "GB 2312 U+00A8" },
+        /* 42*/ { 29, 1, "¨¨", -1, 0, 2, { 0xA1A7, 0xA1A7 }, "GB 2312" },
+        /* 43*/ { 29, 0, "崂", -1, 0, 2, { 0xE1, 0xC0 }, "GB 2312 U+5D02" },
+        /* 44*/ { 29, 1, "崂", -1, 0, 1, { 0xE1C0 }, "GB 2312" },
+        /* 45*/ { 29, 0, "・", -1, 0, 2, { 0xA1, 0xA4 }, "GB 2312 U+30FB" },
+        /* 46*/ { 29, 1, "・", -1, 0, 1, { 0xA1A4 }, "GB 2312" },
+        /* 47*/ { 29, 0, "釦", -1, ZINT_ERROR_INVALID_DATA, -1, {}, "GB 18030 U+91E6 not in GB 2312" },
+        /* 48*/ { 30, 0, "¡¡", -1, 0, 4, { 0x22, 0x2E, 0x22, 0x2E }, "KS X 1001 U+00A1" },
+        /* 49*/ { 30, 1, "¡¡", -1, 0, 4, { 0x22, 0x2E, 0x22, 0x2E }, "KS X 1001 outside GB 18030 Hanzi mode range" },
+        /* 50*/ { 30, 0, "詰", -1, 0, 2, { 0x7D, 0x7E }, "KS X 1001 U+8A70" },
+        /* 51*/ { 30, 1, "詰", -1, 0, 2, { 0x7D, 0x7E }, "KS X 1001 <= 0x7D7E so none in GB 18030 Hanzi mode range" },
     };
 
     int data_size = sizeof(data) / sizeof(struct item);
@@ -267,7 +295,7 @@ static void test_gb18030_utf8tosb(int index) {
         int length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
         int ret_length = length;
 
-        ret = gb18030_utf8tosb(data[i].eci, (unsigned char *) data[i].data, &ret_length, gbdata, data[i].full_multibyte);
+        ret = gb18030_utf8_to_eci(data[i].eci, (unsigned char *) data[i].data, &ret_length, gbdata, data[i].full_multibyte);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d\n", i, ret, data[i].ret);
         if (ret == 0) {
             assert_equal(ret_length, data[i].ret_length, "i:%d ret_length %d != %d\n", i, ret_length, data[i].ret_length);
@@ -332,8 +360,8 @@ int main(int argc, char *argv[]) {
 
     testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
         { "test_gb18030_wctomb_zint", test_gb18030_wctomb_zint, 0, 0, 0 },
-        { "test_gb18030_utf8tomb", test_gb18030_utf8tomb, 1, 0, 0 },
-        { "test_gb18030_utf8tosb", test_gb18030_utf8tosb, 1, 0, 0 },
+        { "test_gb18030_utf8", test_gb18030_utf8, 1, 0, 0 },
+        { "test_gb18030_utf8_to_eci", test_gb18030_utf8_to_eci, 1, 0, 0 },
         { "test_gb18030_cpy", test_gb18030_cpy, 1, 0, 0 },
     };
 

@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019 - 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019 - 2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -68,7 +68,9 @@ static int sjis_wctomb_zint2(unsigned int *r, unsigned int wc) {
         return 2;
     }
     int tab_length = sizeof(test_sjis_tab) / sizeof(unsigned int);
-    for (int i = test_sjis_tab_ind[wc >> 12]; i < tab_length; i += 2) {
+    int start_i = test_sjis_tab_ind[wc >> 10];
+    int end_i = start_i + 0x800 > tab_length ? tab_length : start_i + 0x800;
+    for (int i = start_i; i < end_i; i += 2) {
         if (test_sjis_tab[i + 1] == wc) {
             *r = test_sjis_tab[i];
             return *r > 0xFF ? 2 : 1;
@@ -106,7 +108,7 @@ static void test_sjis_wctomb_zint(void) {
     testFinish();
 }
 
-static void test_sjis_utf8tomb(int index) {
+static void test_sjis_utf8(int index) {
 
     testStart("");
 
@@ -151,7 +153,7 @@ static void test_sjis_utf8tomb(int index) {
         int length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
         int ret_length = length;
 
-        ret = sjis_utf8tomb(&symbol, (unsigned char *) data[i].data, &ret_length, jisdata);
+        ret = sjis_utf8(&symbol, (unsigned char *) data[i].data, &ret_length, jisdata);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d (%s)\n", i, ret, data[i].ret, symbol.errtxt);
         if (ret == 0) {
             assert_equal(ret_length, data[i].ret_length, "i:%d ret_length %d != %d\n", i, ret_length, data[i].ret_length);
@@ -164,7 +166,7 @@ static void test_sjis_utf8tomb(int index) {
     testFinish();
 }
 
-static void test_sjis_utf8tosb(int index) {
+static void test_sjis_utf8_to_eci(int index) {
 
     testStart("");
 
@@ -204,6 +206,29 @@ static void test_sjis_utf8tosb(int index) {
         /* 11*/ { 3, 1, "éaúbàcëdìeµ", -1, 0, 8, { 0xE961, 0xFA, 0x62, 0xE063, 0xEB64, 0xEC, 0x65, 0xB5 }, "" },
         /* 12*/ { 3, 0, "ëÀ", -1, 0, 2, { 0xEB, 0xC0 }, "Not full multibyte" },
         /* 13*/ { 3, 1, "ëÀ", -1, 0, 2, { 0xEB, 0xC0 }, "Outside QR Kanji mode range" },
+        /* 14*/ { 20, 0, "\\\\", -1, 0, 4, { 0x81, 0x5F, 0x81, 0x5F }, "Shift JIS reverse solidus (backslash) mapping from ASCII to double byte" },
+        /* 15*/ { 20, 1, "\\\\", -1, 0, 2, { 0x815F, 0x815F }, "Shift JIS reverse solidus (backslash) mapping from ASCII to double byte" },
+        /* 16*/ { 20, 0, "爍", -1, 0, 2, { 0xE0, 0xA1 }, "Shift JIS U+720D" },
+        /* 17*/ { 20, 1, "爍", -1, 0, 1, { 0xE0A1 }, "Shift JIS" },
+        /* 18*/ { 20, 0, "~", -1, ZINT_ERROR_INVALID_DATA, -1, {}, "ASCII tilde not in Shift JIS" },
+        /* 19*/ { 25, 0, "12", -1, 0, 4, { 0x00, 0x31, 0x00, 0x32 }, "UCS-2BE ASCII" },
+        /* 20*/ { 25, 0, "", -1, 0, 4, { 0x00, 0x81, 0x00, 0x81 }, "UCS-2BE U+0081" },
+        /* 21*/ { 25, 1, "", -1, 0, 4, { 0x00, 0x81, 0x00, 0x81 }, "UCS-2BE outside QR Kanji mode range" },
+        /* 22*/ { 25, 0, "腀", -1, 0, 2, { 0x81, 0x40 }, "UCS-2BE U+8140" },
+        /* 23*/ { 25, 1, "腀", -1, 0, 1, { 0x8140 }, "UCS-2BE in QR Kanji mode range" },
+        /* 24*/ { 28, 0, "¢¢", -1, 0, 4, { 0xA2, 0x46, 0xA2, 0x46 }, "Big5 U+00A2" },
+        /* 25*/ { 28, 1, "¢¢", -1, 0, 4, { 0xA2, 0x46, 0xA2, 0x46 }, "Big5 outside QR Kanji mode range" },
+        /* 26*/ { 28, 0, "觡", -1, 0, 2, { 0xE0, 0x40 }, "Big5 U+89E1" },
+        /* 27*/ { 28, 1, "觡", -1, 0, 1, { 0xE040 }, "Big5 in QR Kanji mode range" },
+        /* 28*/ { 29, 0, "¨¨", -1, 0, 4, { 0xA1, 0xA7, 0xA1, 0xA7 }, "GB 2312 U+00A8" },
+        /* 29*/ { 29, 1, "¨¨", -1, 0, 4, { 0xA1, 0xA7, 0xA1, 0xA7 }, "GB 2312 outside QR Kanji mode range" },
+        /* 30*/ { 29, 0, "崂", -1, 0, 2, { 0xE1, 0xC0 }, "GB 2312 U+5D02" },
+        /* 31*/ { 29, 0, "釦", -1, ZINT_ERROR_INVALID_DATA, -1, {}, "GB 18030 U+91E6 not in GB 2312" },
+        /* 32*/ { 29, 1, "崂", -1, 0, 1, { 0xE1C0 }, "GB 2312 in QR Kanji mode range" },
+        /* 33*/ { 30, 0, "¡¡", -1, 0, 4, { 0x22, 0x2E, 0x22, 0x2E }, "KS X 1001 U+00A1" },
+        /* 34*/ { 30, 1, "¡¡", -1, 0, 4, { 0x22, 0x2E, 0x22, 0x2E }, "KS X 1001 outside QR Kanji mode range" },
+        /* 35*/ { 30, 0, "詰", -1, 0, 2, { 0x7D, 0x7E }, "KS X 1001 U+8A70" },
+        /* 36*/ { 30, 1, "詰", -1, 0, 2, { 0x7D, 0x7E }, "KS X 1001 <= 0x7D7E so none in QR Kanji mode range" },
     };
 
     int data_size = sizeof(data) / sizeof(struct item);
@@ -217,7 +242,7 @@ static void test_sjis_utf8tosb(int index) {
         int length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
         int ret_length = length;
 
-        ret = sjis_utf8tosb(data[i].eci, (unsigned char *) data[i].data, &ret_length, jisdata, data[i].full_multibyte);
+        ret = sjis_utf8_to_eci(data[i].eci, (unsigned char *) data[i].data, &ret_length, jisdata, data[i].full_multibyte);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d\n", i, ret, data[i].ret);
         if (ret == 0) {
             assert_equal(ret_length, data[i].ret_length, "i:%d ret_length %d != %d\n", i, ret_length, data[i].ret_length);
@@ -281,8 +306,8 @@ int main(int argc, char *argv[]) {
 
     testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
         { "test_sjis_wctomb_zint", test_sjis_wctomb_zint, 0, 0, 0 },
-        { "test_sjis_utf8tomb", test_sjis_utf8tomb, 1, 0, 0 },
-        { "test_sjis_utf8tosb", test_sjis_utf8tosb, 1, 0, 0 },
+        { "test_sjis_utf8", test_sjis_utf8, 1, 0, 0 },
+        { "test_sjis_utf8_to_eci", test_sjis_utf8_to_eci, 1, 0, 0 },
         { "test_sjis_cpy", test_sjis_cpy, 1, 0, 0 },
     };
 

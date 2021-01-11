@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008 - 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008 - 2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -83,6 +83,18 @@ INTERNAL void to_upper(unsigned char source[]) {
             source[i] = (source[i] - 'a') + 'A';
         }
     }
+}
+
+/* Returns the number of times a character occurs in a string */
+INTERNAL int chr_cnt(const unsigned char string[], const int length, const unsigned char c) {
+    int count = 0;
+    int i;
+    for (i = 0; i < length; i++) {
+        if (string[i] == c) {
+            count++;
+        }
+    }
+    return count;
 }
 
 /* Verifies that a string only uses valid characters */

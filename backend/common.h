@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009 - 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009 - 2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -93,6 +93,7 @@ extern "C" {
     INTERNAL char itoc(const int source);
     INTERNAL int to_int(const unsigned char source[], const int length);
     INTERNAL void to_upper(unsigned char source[]);
+    INTERNAL int chr_cnt(const unsigned char string[], const int length, const unsigned char c);
     INTERNAL int is_sane(const char test_string[], const unsigned char source[], const int length);
     INTERNAL void lookup(const char set_string[], const char *table[], const char data, char dest[]);
     INTERNAL void bin_append(const int arg, const int length, char *binary);

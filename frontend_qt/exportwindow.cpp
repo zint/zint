@@ -1,6 +1,6 @@
 /*
     Zint Barcode Generator - the open source barcode generator
-    Copyright (C) 2009 - 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009 - 2021 Robin Stuart <rstuart114@gmail.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -29,7 +29,9 @@
 ExportWindow::ExportWindow()
 {
     QSettings settings;
+#if QT_VERSION < 0x60000
     settings.setIniCodec("UTF-8");
+#endif
     setupUi(this);
 
     linDestPath->setText(settings.value("studio/export/destination", QDir::toNativeSeparators(QDir::homePath())).toString());
@@ -45,7 +47,9 @@ ExportWindow::ExportWindow()
 ExportWindow::~ExportWindow()
 {
     QSettings settings;
+#if QT_VERSION < 0x60000
     settings.setIniCodec("UTF-8");
+#endif
 
     settings.setValue("studio/export/destination", linDestPath->text());
     settings.setValue("studio/export/file_prefix", linPrefix->text());
@@ -61,7 +65,9 @@ void ExportWindow::quit_now()
 void ExportWindow::get_directory()
 {
     QSettings settings;
+#if QT_VERSION < 0x60000
     settings.setIniCodec("UTF-8");
+#endif
     QString directory;
     QFileDialog fdialog;
 

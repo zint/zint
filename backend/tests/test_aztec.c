@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020 - 2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -1612,7 +1612,7 @@ static void test_fuzz(int index, int debug) {
                     "\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377"
                     "\377\377\377\377\377\377\261\261\261\261\261\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\135\135\135\135\135\135"
                     "\135\335\135\060\060\010\010\010\010\010\060",
-                    2251, UNICODE_MODE, -1, ZINT_ERROR_TOO_LONG }, // Original OSS-Fuzz triggering data for malloc leak
+                    2251, DATA_MODE, -1, ZINT_ERROR_TOO_LONG }, // Original OSS-Fuzz triggering data for malloc leak
         /* 1*/ { BARCODE_AZTEC,
                     "\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060"
                     "\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\000\060\060\060\060\000\060\060\000\060\060\060\060"
@@ -1702,7 +1702,7 @@ static void test_fuzz(int index, int debug) {
                     "\060\060\060\363\060\060\060\060\060\060\060\060\060\060\060\060\362\060\060\060\060\060\000\060\060\377\060\060\060\175\175\175"
                     "\175\060\060\060\175\175\175\175\060\060\005\060\005\060\005\060\060\060\060\000\000\060\060\060\060\060\060\377\060\060\060\060"
                     "\377\060\377\377\060\060\057\060\060\057\060\060\060\000\000\060\060",
-                    2801, UNICODE_MODE, -1, ZINT_ERROR_TOO_LONG }, // Original OSS-Fuzz triggering data for binary_string buffer overrun
+                    2801, DATA_MODE, -1, ZINT_ERROR_TOO_LONG }, // Original OSS-Fuzz triggering data for binary_string buffer overrun
         /* 2*/ { BARCODE_AZTEC,
                     "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"
                     "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"

@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019 - 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019 - 2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -27,7 +27,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
+/* vim: set ts=4 sw=4 et norl : */
 
 #include "testcommon.h"
 
@@ -235,6 +235,42 @@ static void test_qr_input(int index, int generate, int debug) {
         /* 87*/ { UNICODE_MODE, 0, -1, "áA", 0, 0, "40 2E 14 10 EC 11 EC 11 EC", "B2 (ISO 8859-1)" },
         /* 88*/ { UNICODE_MODE, 0, ZINT_FULL_MULTIBYTE, "áA", 0, 0, "80 1C 00 80 EC 11 EC 11 EC", "K1 (ISO 8859-1) (full multibyte)" },
         /* 89*/ { UNICODE_MODE, 0, -1, "A0B1C2D3E4F5G6H7I8J9KLMNOPQRSTUVWXYZ $%*+-./:", 0, 0, "(34) 21 69 C2 3E 08 79 26 27 A5 50 B5 98 23 32 6C 0E 65 FA C5 19 5B 42 6B 2D C1 C3 B9 E7", "A45" },
+        /* 90*/ { UNICODE_MODE, 0, -1, "˘", ZINT_WARN_USES_ECI, 4, "Warning 70 44 01 A2 00 EC 11 EC 11", "ECI-4 B1 (ISO 8859-2)" },
+        /* 91*/ { UNICODE_MODE, 4, -1, "˘", 0, 4, "70 44 01 A2 00 EC 11 EC 11", "ECI-4 B1 (ISO 8859-2)" },
+        /* 92*/ { UNICODE_MODE, 0, -1, "Ħ", ZINT_WARN_USES_ECI, 5, "Warning 70 54 01 A1 00 EC 11 EC 11", "ECI-5 B1 (ISO 8859-3)" },
+        /* 93*/ { UNICODE_MODE, 5, -1, "Ħ", 0, 5, "70 54 01 A1 00 EC 11 EC 11", "ECI-5 B1 (ISO 8859-3)" },
+        /* 94*/ { UNICODE_MODE, 0, -1, "ĸ", ZINT_WARN_USES_ECI, 6, "Warning 70 64 01 A2 00 EC 11 EC 11", "ECI-6 B1 (ISO 8859-4)" },
+        /* 95*/ { UNICODE_MODE, 6, -1, "ĸ", 0, 6, "70 64 01 A2 00 EC 11 EC 11", "ECI-6 B1 (ISO 8859-4)" },
+        /* 96*/ { UNICODE_MODE, 0, -1, "Ș", ZINT_WARN_USES_ECI, 18, "Warning 71 24 01 AA 00 EC 11 EC 11", "ECI-18 B1 (ISO 8859-16)" },
+        /* 97*/ { UNICODE_MODE, 18, -1, "Ș", 0, 18, "71 24 01 AA 00 EC 11 EC 11", "ECI-18 B1 (ISO 8859-16)" },
+        /* 98*/ { UNICODE_MODE, 0, -1, "テ", 0, 0, "80 10 D2 80 EC 11 EC 11 EC", "K1 (SHIFT JIS)" },
+        /* 99*/ { UNICODE_MODE, 20, -1, "テ", 0, 20, "71 48 01 0D 28 00 EC 11 EC", "ECI-20 K1 (SHIFT JIS)" },
+        /*100*/ { UNICODE_MODE, 20, -1, "テテ", 0, 20, "71 48 02 0D 28 69 40 EC 11", "ECI-20 K2 (SHIFT JIS)" },
+        /*101*/ { UNICODE_MODE, 20, -1, "\\\\", 0, 20, "71 48 02 00 F8 07 C0 EC 11", "ECI-20 K2 (SHIFT JIS)" },
+        /*102*/ { UNICODE_MODE, 0, -1, "…", 0, 0, "80 10 11 80 EC 11 EC 11 EC", "K1 (SHIFT JIS)" },
+        /*103*/ { UNICODE_MODE, 21, -1, "…", 0, 21, "71 54 01 85 00 EC 11 EC 11", "ECI-21 B1 (Win 1250)" },
+        /*104*/ { UNICODE_MODE, 0, -1, "Ґ", ZINT_WARN_USES_ECI, 22, "Warning 71 64 01 A5 00 EC 11 EC 11", "ECI-22 B1 (Win 1251)" },
+        /*105*/ { UNICODE_MODE, 22, -1, "Ґ", 0, 22, "71 64 01 A5 00 EC 11 EC 11", "ECI-22 B1 (Win 1251)" },
+        /*106*/ { UNICODE_MODE, 0, -1, "˜", ZINT_WARN_USES_ECI, 23, "Warning 71 74 01 98 00 EC 11 EC 11", "ECI-23 B1 (Win 1252)" },
+        /*107*/ { UNICODE_MODE, 23, -1, "˜", 0, 23, "71 74 01 98 00 EC 11 EC 11", "ECI-23 B1 (Win 1252)" },
+        /*108*/ { UNICODE_MODE, 24, -1, "پ", 0, 24, "71 84 01 81 00 EC 11 EC 11", "ECI-24 B1 (Win 1256)" },
+        /*109*/ { UNICODE_MODE, 0, -1, "က", ZINT_WARN_USES_ECI, 26, "Warning 71 A4 03 E1 80 80 00 EC 11", "ECI-26 B3 (UTF-8)" },
+        /*110*/ { UNICODE_MODE, 25, -1, "က", 0, 25, "71 94 02 10 00 00 EC 11 EC", "ECI-25 B2 (UCS-2BE)" },
+        /*111*/ { UNICODE_MODE, 25, -1, "ကက", 0, 25, "71 94 04 10 00 10 00 00 EC", "ECI-25 B4 (UCS-2BE)" },
+        /*112*/ { UNICODE_MODE, 25, -1, "12", 0, 25, "71 94 04 00 31 00 32 00 EC", "ECI-25 B4 (UCS-2BE ASCII)" },
+        /*113*/ { UNICODE_MODE, 27, -1, "@", 0, 27, "71 B4 01 40 00 EC 11 EC 11", "ECI-27 B1 (ASCII)" },
+        /*114*/ { UNICODE_MODE, 0, -1, "龘", ZINT_WARN_USES_ECI, 26, "Warning 71 A4 03 E9 BE 98 00 EC 11", "ECI-26 B3 (UTF-8)" },
+        /*115*/ { UNICODE_MODE, 28, -1, "龘", 0, 28, "71 C4 02 F9 D5 00 EC 11 EC", "ECI-28 B2 (Big5)" },
+        /*116*/ { UNICODE_MODE, 28, -1, "龘龘", 0, 28, "71 C4 04 F9 D5 F9 D5 00 EC", "ECI-28 B4 (Big5)" },
+        /*117*/ { UNICODE_MODE, 0, -1, "齄", ZINT_WARN_USES_ECI, 26, "Warning 71 A4 03 E9 BD 84 00 EC 11", "ECI-26 B3 (UTF-8)" },
+        /*118*/ { UNICODE_MODE, 29, -1, "齄", 0, 29, "71 D4 02 F7 FE 00 EC 11 EC", "ECI-29 B2 (GB 2312)" },
+        /*119*/ { UNICODE_MODE, 29, -1, "齄齄", 0, 29, "71 D4 04 F7 FE F7 FE 00 EC", "ECI-29 B4 (GB 2312)" },
+        /*120*/ { UNICODE_MODE, 0, -1, "가", ZINT_WARN_USES_ECI, 26, "Warning 71 A4 03 EA B0 80 00 EC 11", "ECI-26 B3 (UTF-8)" },
+        /*121*/ { UNICODE_MODE, 30, -1, "가", 0, 30, "71 E4 02 30 21 00 EC 11 EC", "ECI-30 B2 (KS X 1001)" },
+        /*122*/ { UNICODE_MODE, 30, -1, "가가", 0, 30, "71 E4 04 30 21 30 21 00 EC", "ECI-30 B4 (KS X 1001)" },
+        /*123*/ { UNICODE_MODE, 170, -1, "?", 0, 170, "78 0A A4 01 3F 00 EC 11 EC", "ECI-170 B1 (ASCII invariant)" },
+        /*124*/ { DATA_MODE, 899, -1, "\200", 0, 899, "78 38 34 01 80 00 EC 11 EC", "ECI-899 B1 (8-bit binary)" },
+        /*125*/ { UNICODE_MODE, 900, -1, "é", 0, 900, "78 38 44 02 C3 A9 00 EC 11", "ECI-900 B2 (no conversion)" },
     };
     int data_size = ARRAY_SIZE(data);
 
@@ -1412,7 +1448,7 @@ static void test_microqr_options(int index, int debug) {
         /* 47*/ { "ABCDEFGHIJABCDEFGH", 3, 4, ZINT_ERROR_TOO_LONG, -1, 0, -1 },
         /* 48*/ { "ABCDEFGHIJABC", 3, 4, 0, 0, 17, -1 }, // 13 alphanumerics, ECC 3 (Q), version 4
     };
-    int data_size = sizeof(data) / sizeof(struct item);
+    int data_size = ARRAY_SIZE(data);
 
     struct zint_symbol previous_symbol;
 
@@ -1423,16 +1459,7 @@ static void test_microqr_options(int index, int debug) {
         struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        symbol->symbology = BARCODE_MICROQR;
-        if (data[i].option_1 != -1) {
-            symbol->option_1 = data[i].option_1;
-        }
-        if (data[i].option_2 != -1) {
-            symbol->option_2 = data[i].option_2;
-        }
-        symbol->debug |= debug;
-
-        int length = strlen(data[i].data);
+        int length = testUtilSetSymbol(symbol, BARCODE_MICROQR, -1 /*input_mode*/, -1 /*eci*/, data[i].option_1, data[i].option_2, -1, -1 /*output_options*/, data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret_encode, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret_encode, symbol->errtxt);
@@ -1524,7 +1551,7 @@ static void test_microqr_input(int index, int generate, int debug) {
         /* 39*/ { UNICODE_MODE, -1, "áA", 0, "8B 85 04 00 EC 11 EC 11 00", "B2 (ISO 8859-1)" },
         /* 40*/ { UNICODE_MODE, 200, "áA", 0, "CE 00 40 00 EC 11 EC 11 00", "K1 (ISO 8859-1) (full multibyte)" },
     };
-    int data_size = sizeof(data) / sizeof(struct item);
+    int data_size = ARRAY_SIZE(data);
 
     char escaped[1024];
 
@@ -1535,15 +1562,9 @@ static void test_microqr_input(int index, int generate, int debug) {
         struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        symbol->symbology = BARCODE_MICROQR;
-        symbol->input_mode = data[i].input_mode;
-        if (data[i].option_3 != -1) {
-            symbol->option_3 = data[i].option_3;
-        }
-        symbol->debug = ZINT_DEBUG_TEST; // Needed to get codeword dump in errtxt
-        symbol->debug |= debug;
+        debug |= ZINT_DEBUG_TEST; // Needed to get codeword dump in errtxt
 
-        int length = strlen(data[i].data);
+        int length = testUtilSetSymbol(symbol, BARCODE_MICROQR, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1, data[i].option_3, -1 /*output_options*/, data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d\n", i, ret, data[i].ret);

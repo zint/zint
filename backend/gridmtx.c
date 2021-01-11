@@ -1,7 +1,7 @@
 /*  gridmtx.c - Grid Matrix
 
     libzint - the open source barcode library
-    Copyright (C) 2009-2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -41,6 +41,7 @@
 #include "reedsol.h"
 #include "gridmtx.h"
 #include "gb2312.h"
+#include "eci.h"
 
 /* define_mode() stuff */
 
@@ -123,7 +124,7 @@ static int in_numeral(const unsigned int gbdata[], const int length, const int i
 
 /* Calculate optimized encoding modes. Adapted from Project Nayuki */
 /* Copyright (c) Project Nayuki. (MIT License) See qr.c for detailed notice */
-static void define_mode(char* mode, const unsigned int gbdata[], const int length, const int debug) {
+static void define_mode(char *mode, const unsigned int gbdata[], const int length, const int debug) {
     /* Must be in same order as GM_H etc */
     static const char mode_types[] = { GM_CHINESE, GM_NUMBER, GM_LOWER, GM_UPPER, GM_MIXED, GM_BYTE, '\0' };
 
@@ -340,7 +341,7 @@ static int gm_encode(unsigned int gbdata[], const int length, char binary[], con
 #ifndef _MSC_VER
     char mode[length];
 #else
-    char* mode = (char*) _alloca(length);
+    char *mode = (char *) _alloca(length);
 #endif
 
     *binary = '\0';
@@ -1007,15 +1008,16 @@ INTERNAL int grid_matrix(struct zint_symbol *symbol, unsigned char source[], int
     int data_max, reader = 0;
     int size_squared;
     int bin_len;
+    int eci_length = get_eci_length(symbol->eci, source, length);
 
 #ifndef _MSC_VER
-    unsigned int gbdata[length + 1];
+    unsigned int gbdata[eci_length + 1];
 #else
-    char* grid;
-    unsigned int* gbdata = (unsigned int *) _alloca((length + 1) * sizeof (unsigned int));
+    char *grid;
+    unsigned int *gbdata = (unsigned int *) _alloca((eci_length + 1) * sizeof(unsigned int));
 #endif
 
-    /* If ZINT_FULL_MULTIBYTE set use Hanzi mode in DATA_MODE or for single-byte Latin */
+    /* If ZINT_FULL_MULTIBYTE set use Hanzi mode in DATA_MODE or for non-GB 2312 in UNICODE_MODE */
     full_multibyte = (symbol->option_3 & 0xFF) == ZINT_FULL_MULTIBYTE;
 
     if ((symbol->input_mode & 0x07) == DATA_MODE) {
@@ -1023,19 +1025,18 @@ INTERNAL int grid_matrix(struct zint_symbol *symbol, unsigned char source[], int
     } else {
         int done = 0;
         if (symbol->eci != 29) { /* Unless ECI 29 (GB) */
-            /* Try single byte (Latin) conversion first */
-            error_number = gb2312_utf8tosb(symbol->eci && symbol->eci <= 899 ? symbol->eci : 3, source, &length,
-                                gbdata, full_multibyte);
+            /* Try other conversions (ECI 0 defaults to ISO/IEC 8859-1) */
+            error_number = gb2312_utf8_to_eci(symbol->eci, source, &length, gbdata, full_multibyte);
             if (error_number == 0) {
                 done = 1;
-            } else if (symbol->eci && symbol->eci <= 899) {
+            } else if (symbol->eci) {
                 strcpy(symbol->errtxt, "575: Invalid characters in input data");
                 return error_number;
             }
         }
         if (!done) {
             /* Try GB 2312 (EUC-CN) */
-            error_number = gb2312_utf8tomb(symbol, source, &length, gbdata);
+            error_number = gb2312_utf8(symbol, source, &length, gbdata);
             if (error_number != 0) {
                 return error_number;
             }
@@ -1148,7 +1149,7 @@ INTERNAL int grid_matrix(struct zint_symbol *symbol, unsigned char source[], int
 #ifndef _MSC_VER
     char grid[size_squared];
 #else
-    grid = (char *) _alloca(size_squared * sizeof(char));
+    grid = (char *) _alloca(size_squared);
 #endif
 
     memset(grid, '0', size_squared);

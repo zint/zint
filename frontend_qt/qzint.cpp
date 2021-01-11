@@ -306,7 +306,7 @@ namespace Zint {
         } else if (ECIIndex >= 16 && ECIIndex <= 26) {
             m_eci = ECIIndex + 4;
         } else if (ECIIndex == 27) {
-            m_eci = 899; /* 8-bit binary data TODO: support */
+            m_eci = 899; /* 8-bit binary data */
         } else {
             m_eci = 0;
         }

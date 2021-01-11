@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019 - 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019 - 2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -41,7 +41,9 @@ static int gb2312_wctomb_zint2(unsigned int *r, unsigned int wc) {
         return 0;
     }
     int tab_length = sizeof(test_gb2312_tab) / sizeof(unsigned int);
-    for (int i = test_gb2312_tab_ind[wc >> 12]; i < tab_length; i += 2) {
+    int start_i = test_gb2312_tab_ind[wc >> 10];
+    int end_i = start_i + 0x800 > tab_length ? tab_length : start_i + 0x800;
+    for (int i = start_i; i < end_i; i += 2) {
         if (test_gb2312_tab[i + 1] == wc) {
             *r = test_gb2312_tab[i] + 0x8080; // Table in GB 2312 not EUC-CN
             return 2;
@@ -86,7 +88,7 @@ static void test_gb2312_wctomb_zint(void) {
     testFinish();
 }
 
-static void test_gb2312_utf8tomb(int index) {
+static void test_gb2312_utf8(int index) {
 
     testStart("");
 
@@ -132,7 +134,7 @@ static void test_gb2312_utf8tomb(int index) {
         int length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
         int ret_length = length;
 
-        ret = gb2312_utf8tomb(&symbol, (unsigned char *) data[i].data, &ret_length, gbdata);
+        ret = gb2312_utf8(&symbol, (unsigned char *) data[i].data, &ret_length, gbdata);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d (%s)\n", i, ret, data[i].ret, symbol.errtxt);
         if (ret == 0) {
             assert_equal(ret_length, data[i].ret_length, "i:%d ret_length %d != %d\n", i, ret_length, data[i].ret_length);
@@ -145,7 +147,7 @@ static void test_gb2312_utf8tomb(int index) {
     testFinish();
 }
 
-static void test_gb2312_utf8tosb(int index) {
+static void test_gb2312_utf8_to_eci(int index) {
 
     testStart("");
 
@@ -192,6 +194,32 @@ static void test_gb2312_utf8tosb(int index) {
         /* 15*/ { 3, 1, "©ÿ", -1, 0, 2, { 0xA9, 0xFF }, "First byte in range but not second" },
         /* 16*/ { 3, 0, "éaéé©ªª©¯é°°é÷éø", -1, 0, 16, { 0xE9, 0x61, 0xE9, 0xE9, 0xA9, 0xAA, 0xAA, 0xA9, 0xAF, 0xE9, 0xB0, 0xB0, 0xE9, 0xF7, 0xE9, 0xF8 }, "" },
         /* 17*/ { 3, 1, "éaéé©ªª©¯é°°é÷éø", -1, 0, 10, { 0xE9, 0x61, 0xE9E9, 0xA9AA, 0xAA, 0xA9AF, 0xE9B0, 0xB0E9, 0xF7E9, 0xF8 }, "" },
+        /* 18*/ { 20, 0, "\\\\", -1, 0, 4, { 0x81, 0x5F, 0x81, 0x5F }, "Shift JIS reverse solidus (backslash) mapping from ASCII to double byte" },
+        /* 19*/ { 20, 1, "\\\\", -1, 0, 4, { 0x81, 0x5F, 0x81, 0x5F }, "Shift JIS outside GB 2312 Hanzi mode range" },
+        /* 20*/ { 20, 0, "爍", -1, 0, 2, { 0xE0, 0xA1 }, "Shift JIS U+720D" },
+        /* 21*/ { 20, 1, "爍", -1, 0, 1, { 0xE0A1 }, "Shift JIS in GB 2312 Hanzi mode range" },
+        /* 22*/ { 25, 0, "12", -1, 0, 4, { 0x00, 0x31, 0x00, 0x32 }, "UCS-2BE ASCII" },
+        /* 23*/ { 25, 0, "", -1, 0, 4, { 0x00, 0x81, 0x00, 0x81 }, "UCS-2BE U+0081" },
+        /* 24*/ { 25, 1, "", -1, 0, 4, { 0x00, 0x81, 0x00, 0x81 }, "UCS-2BE outside GB 2312 Hanzi mode range" },
+        /* 25*/ { 25, 0, "ꆩꆩ", -1, 0, 4, { 0xA1, 0xA9, 0xA1, 0xA9 }, "UCS-2BE U+A1A9" },
+        /* 26*/ { 25, 1, "ꆩꆩ", -1, 0, 2, { 0xA1A9, 0xA1A9 }, "UCS-2BE in GB 2312 Hanzi mode range" },
+        /* 27*/ { 25, 0, "膀膀", -1, 0, 4, { 0x81, 0x80, 0x81, 0x80 }, "UCS-2BE U+8180" },
+        /* 28*/ { 25, 1, "膀膀", -1, 0, 4, { 0x81, 0x80, 0x81, 0x80 }, "UCS-2BE outside GB 2312 Hanzi mode range (but in GB 18030 range)" },
+        /* 29*/ { 28, 0, "¢¢", -1, 0, 4, { 0xA2, 0x46, 0xA2, 0x46 }, "Big5 U+00A2" },
+        /* 30*/ { 28, 1, "¢¢", -1, 0, 4, { 0xA2, 0x46, 0xA2, 0x46 }, "Big5 outside GB 2312 Hanzi mode range (but in GB 18030 range)" },
+        /* 31*/ { 28, 0, "陛", -1, 0, 2, { 0xB0, 0xA1 }, "Big5 U+965B" },
+        /* 32*/ { 28, 1, "陛", -1, 0, 1, { 0xB0A1 }, "Big5 in GB 2312 Hanzi mode range" },
+        /* 33*/ { 29, 0, "¨¨", -1, 0, 4, { 0xA1, 0xA7, 0xA1, 0xA7 }, "GB 2312 U+00A8" },
+        /* 34*/ { 29, 1, "¨¨", -1, 0, 2, { 0xA1A7, 0xA1A7 }, "GB 2312" },
+        /* 35*/ { 29, 0, "崂", -1, 0, 2, { 0xE1, 0xC0 }, "GB 2312 U+5D02" },
+        /* 36*/ { 29, 1, "崂", -1, 0, 1, { 0xE1C0 }, "GB 2312" },
+        /* 37*/ { 29, 0, "・", -1, 0, 2, { 0xA1, 0xA4 }, "GB 2312 U+30FB" },
+        /* 38*/ { 29, 1, "・", -1, 0, 1, { 0xA1A4 }, "GB 2312" },
+        /* 39*/ { 29, 0, "釦", -1, ZINT_ERROR_INVALID_DATA, -1, {}, "GB 18030 U+91E6 not in GB 2312" },
+        /* 40*/ { 30, 0, "¡¡", -1, 0, 4, { 0x22, 0x2E, 0x22, 0x2E }, "KS X 1001 U+00A1" },
+        /* 41*/ { 30, 1, "¡¡", -1, 0, 4, { 0x22, 0x2E, 0x22, 0x2E }, "KS X 1001 outside GB 2312 Hanzi mode range" },
+        /* 42*/ { 30, 0, "詰", -1, 0, 2, { 0x7D, 0x7E }, "KS X 1001 U+8A70" },
+        /* 43*/ { 30, 1, "詰", -1, 0, 2, { 0x7D, 0x7E }, "KS X 1001 <= 0x7D7E so none in GB 2312 Hanzi mode range" },
     };
 
     int data_size = sizeof(data) / sizeof(struct item);
@@ -205,7 +233,7 @@ static void test_gb2312_utf8tosb(int index) {
         int length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
         int ret_length = length;
 
-        ret = gb2312_utf8tosb(data[i].eci, (unsigned char *) data[i].data, &ret_length, gbdata, data[i].full_multibyte);
+        ret = gb2312_utf8_to_eci(data[i].eci, (unsigned char *) data[i].data, &ret_length, gbdata, data[i].full_multibyte);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d\n", i, ret, data[i].ret);
         if (ret == 0) {
             assert_equal(ret_length, data[i].ret_length, "i:%d ret_length %d != %d\n", i, ret_length, data[i].ret_length);
@@ -270,8 +298,8 @@ int main(int argc, char *argv[]) {
 
     testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
         { "test_gb2312_wctomb_zint", test_gb2312_wctomb_zint, 0, 0, 0 },
-        { "test_gb2312_utf8tomb", test_gb2312_utf8tomb, 1, 0, 0 },
-        { "test_gb2312_utf8tosb", test_gb2312_utf8tosb, 1, 0, 0 },
+        { "test_gb2312_utf8", test_gb2312_utf8, 1, 0, 0 },
+        { "test_gb2312_utf8_to_eci", test_gb2312_utf8_to_eci, 1, 0, 0 },
         { "test_gb2312_cpy", test_gb2312_cpy, 1, 0, 0 },
     };
 

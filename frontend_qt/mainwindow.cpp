@@ -1,6 +1,6 @@
 /***************************************************************************
  *   Copyright (C) 2008 by BogDan Vatra <bogdan@licentia.eu>               *
- *   Copyright (C) 2009-2020 by Robin Stuart <rstuart114@gmail.com>        *
+ *   Copyright (C) 2009-2021 by Robin Stuart <rstuart114@gmail.com>        *
  *                                                                         *
  *   This program is free software: you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -46,7 +46,9 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags fl)
     QCoreApplication::setApplicationName("Barcode Studio");
 
     QSettings settings;
+#if QT_VERSION < 0x60000
     settings.setIniCodec("UTF-8");
+#endif
 
     char bstyle_text[][50] = {
         "Australia Post Redirect Code",
@@ -146,7 +148,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags fl)
 #ifdef _WIN32
     bstyle->setMaxVisibleItems(cnt); /* Apart from increasing combo size, seems to be needed for filter to work */
 #endif
-#if QT_VERSION <  0x50A00
+#if QT_VERSION < 0x50A00
     /* Prior to Qt 5.10 comboboxes have display issues when filtered (scrollers not accounted for), so disable */
     filter_bstyle->hide();
 #endif
@@ -225,7 +227,9 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags fl)
 MainWindow::~MainWindow()
 {
     QSettings settings;
+#if QT_VERSION < 0x60000
     settings.setIniCodec("UTF-8");
+#endif
 
     settings.setValue("studio/window_geometry", saveGeometry());
     settings.setValue("studio/tab_index", tabMain->currentIndex());
@@ -278,7 +282,9 @@ void MainWindow::reset_view()
 bool MainWindow::save()
 {
     QSettings settings;
+#if QT_VERSION < 0x60000
     settings.setIniCodec("UTF-8");
+#endif
     QFileDialog save_dialog;
     QString filename;
     QString suffix;
@@ -367,7 +373,7 @@ void MainWindow::about()
            "<p>A free barcode generator"
            "<p>Instruction manual is available at the project homepage:<br>"
            "<a href=\"http://www.zint.org.uk\">http://www.zint.org.uk</a>"
-           "<p>Copyright &copy; 2006-2020 Robin Stuart and others.<br>"
+           "<p>Copyright &copy; 2006-2021 Robin Stuart and others.<br>"
            "Qt back end by BogDan Vatra<br>"
            "Windows port by Harald Oehlmann</p>"
            "<p>Qt version %2"
@@ -583,7 +589,9 @@ void MainWindow::change_options()
 {
     QUiLoader uiload;
     QSettings settings;
+#if QT_VERSION < 0x60000
     settings.setIniCodec("UTF-8");
+#endif
 
     bool initial_load = m_symbology == 0;
     int original_tab_count = tabMain->count();
@@ -598,6 +606,7 @@ void MainWindow::change_options()
         tabMain->removeTab(1);
 
     chkComposite->setText(tr("Add &2D Component"));
+    cmbECI->setItemText(25, tr("29: GB 2312 (PRC)"));
     btype->setItemText(0, tr("No border"));
     combobox_item_enabled(cmbFontSetting, 1, true);
     cmbFontSetting->setItemText(2, tr("Small"));
@@ -841,6 +850,7 @@ void MainWindow::change_options()
         m_optionWidget=uiload.load(&file);
         file.close();
         tabMain->insertTab(1,m_optionWidget,tr("Han Xin Cod&e"));
+        cmbECI->setItemText(25, tr("29: GB 18030 (PRC)"));
         connect(m_optionWidget->findChild<QObject*>("cmbHXSize"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("cmbHXECC"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("cmbHXMask"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));

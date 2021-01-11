@@ -1,7 +1,7 @@
 /*  hanxin.c - Han Xin Code
 
     libzint - the open source barcode library
-    Copyright (C) 2009-2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -42,7 +42,8 @@
 #include "hanxin.h"
 #include "gb2312.h"
 #include "gb18030.h"
-#include "assert.h"
+#include "eci.h"
+#include <assert.h>
 
 /* Find which submode to use for a text character */
 static int getsubmode(const unsigned int input) {
@@ -1450,21 +1451,22 @@ INTERNAL int han_xin(struct zint_symbol *symbol, unsigned char source[], int len
     int size_squared;
     int codewords;
     int bin_len;
+    int eci_length = get_eci_length(symbol->eci, source, length);
 
 #ifndef _MSC_VER
-    unsigned int gbdata[(length + 1) * 2];
-    char mode[length];
+    unsigned int gbdata[eci_length + 1];
+    char mode[eci_length];
 #else
-    unsigned int* gbdata = (unsigned int *) _alloca(((length + 1) * 2) * sizeof (unsigned int));
-    char *mode = (char *) _alloca(length);
-    char* binary;
+    unsigned int *gbdata = (unsigned int *) _alloca((eci_length + 1) * sizeof(unsigned int));
+    char *mode = (char *) _alloca(eci_length);
+    char *binary;
     unsigned char *datastream;
     unsigned char *fullstream;
     unsigned char *picket_fence;
     unsigned char *grid;
 #endif
 
-    /* If ZINT_FULL_MULTIBYTE set use Hanzi mode in DATA_MODE or for single-byte Latin */
+    /* If ZINT_FULL_MULTIBYTE set use Hanzi mode in DATA_MODE or for non-GB 18030 in UNICODE_MODE */
     full_multibyte = (symbol->option_3 & 0xFF) == ZINT_FULL_MULTIBYTE;
     user_mask = (symbol->option_3 >> 8) & 0x0F; /* User mask is pattern + 1, so >= 1 and <= 4 */
     if (user_mask > 4) {
@@ -1476,19 +1478,18 @@ INTERNAL int han_xin(struct zint_symbol *symbol, unsigned char source[], int len
     } else {
         int done = 0;
         if (symbol->eci != 29) { /* Unless ECI 29 (GB) */
-            /* Try single byte (Latin) conversion first */
-            int error_number = gb18030_utf8tosb(symbol->eci && symbol->eci <= 899 ? symbol->eci : 3, source, &length,
-                                    gbdata, full_multibyte);
+            /* Try other conversions (ECI 0 defaults to ISO/IEC 8859-1) */
+            int error_number = gb18030_utf8_to_eci(symbol->eci, source, &length, gbdata, full_multibyte);
             if (error_number == 0) {
                 done = 1;
-            } else if (symbol->eci && symbol->eci <= 899) {
+            } else if (symbol->eci) {
                 strcpy(symbol->errtxt, "575: Invalid characters in input data");
                 return error_number;
             }
         }
         if (!done) {
             /* Try GB 18030 */
-            int error_number = gb18030_utf8tomb(symbol, source, &length, gbdata);
+            int error_number = gb18030_utf8(symbol, source, &length, gbdata);
             if (error_number != 0) {
                 return error_number;
             }
@@ -1502,7 +1503,7 @@ INTERNAL int han_xin(struct zint_symbol *symbol, unsigned char source[], int len
 #ifndef _MSC_VER
     char binary[est_binlen + 1];
 #else
-    binary = (char *) _alloca((est_binlen + 1) * sizeof (char));
+    binary = (char *) _alloca((est_binlen + 1));
 #endif
 
     if ((ecc_level <= 0) || (ecc_level >= 5)) {

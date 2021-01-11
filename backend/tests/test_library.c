@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019 - 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019 - 2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -262,24 +262,51 @@ static void test_cap(int index) {
 }
 
 // #181 Nico Gunkel OSS-Fuzz
-static void test_encode_file_zero_length(void) {
+static void test_encode_file_length(void) {
 
     testStart("");
 
     int ret;
     char filename[] = "in.bin";
+    char buf[ZINT_MAX_DATA_LEN + 1] = {0};
     int fd;
 
     struct zint_symbol *symbol = ZBarcode_Create();
     assert_nonnull(symbol, "Symbol not created\n");
 
     (void)remove(filename); // In case junk hanging around
+
+    // Empty file
     fd = creat(filename, S_IRUSR);
-    assert_nonzero(fd, "Input file not created\n");
-    assert_zero(close(fd), "close(%s) != 0\n", filename);
+    assert_nonzero(fd, "Empty input file not created\n");
+    assert_zero(close(fd), "Empty close(%s) != 0\n", filename);
 
     ret = ZBarcode_Encode_File(symbol, filename);
-    assert_equal(ret, ZINT_ERROR_INVALID_DATA, "ret %d != ZINT_ERROR_INVALID_DATA\n", ret);
+    assert_equal(ret, ZINT_ERROR_INVALID_DATA, "ZBarcode_Encode_File empty ret %d != ZINT_ERROR_INVALID_DATA (%s)\n", ret, symbol->errtxt);
+
+    assert_zero(remove(filename), "remove(%s) != 0\n", filename);
+
+    // Too large file
+    fd = creat(filename, S_IRUSR | S_IWUSR);
+    assert_nonzero(fd, "Too large input file not created\n");
+    ret = write(fd, buf, sizeof(buf));
+    assert_equal(ret, sizeof(buf), "Too large write ret %d != %d\n", ret, (int) sizeof(buf));
+    assert_zero(close(fd), "Too large close(%s) != 0\n", filename);
+
+    ret = ZBarcode_Encode_File(symbol, filename);
+    assert_equal(ret, ZINT_ERROR_TOO_LONG, "ZBarcode_Encode_File too large ret %d != ZINT_ERROR_TOO_LONG (%s)\n", ret, symbol->errtxt);
+
+    assert_zero(remove(filename), "remove(%s) != 0\n", filename);
+
+    // Unreadable file
+    fd = creat(filename, S_IWUSR);
+    assert_nonzero(fd, "Unreadable input file not created\n");
+    ret = write(fd, buf, 1);
+    assert_equal(ret, 1, "Unreadable write ret %d != 1\n", ret);
+    assert_zero(close(fd), "Unreadable close(%s) != 0\n", filename);
+
+    ret = ZBarcode_Encode_File(symbol, filename);
+    assert_equal(ret, ZINT_ERROR_INVALID_DATA, "ZBarcode_Encode_File unreadable ret %d != ZINT_ERROR_INVALID_DATA (%s)\n", ret, symbol->errtxt);
 
     assert_zero(remove(filename), "remove(%s) != 0\n", filename);
 
@@ -430,7 +457,7 @@ int main(int argc, char *argv[]) {
         { "test_input_mode", test_input_mode, 1, 0, 1 },
         { "test_escape_char_process", test_escape_char_process, 1, 1, 1 },
         { "test_cap", test_cap, 1, 0, 0 },
-        { "test_encode_file_zero_length", test_encode_file_zero_length, 0, 0, 0 },
+        { "test_encode_file_length", test_encode_file_length, 0, 0, 0 },
         { "test_encode_file_directory", test_encode_file_directory, 0, 0, 0 },
         { "test_bad_args", test_bad_args, 0, 0, 0 },
         { "test_valid_id", test_valid_id, 0, 0, 0 },

@@ -59,7 +59,7 @@
 
 // rs_init_gf(&rs, prime_poly) initialises the parameters for the Galois Field.
 // The symbol size is determined from the highest bit set in poly
-// This implementation will support sizes up to 8 bits (see rs_unit_init_gf()
+// This implementation will support sizes up to 8 bits (see rs_uint_init_gf()
 // for sizes > 8 bits and <= 30 bits) - bit sizes of 8 or 4 are typical
 //
 // The poly is the bit pattern representing the GF characteristic
@@ -104,7 +104,6 @@ INTERNAL void rs_init_gf(rs_t *rs, const unsigned int prime_poly) {
 // (x + 2**i)*(x + 2**(i+1))*...   [nsym terms]
 // For ECC200, index is 1.
 
-#include <stdio.h>
 INTERNAL void rs_init_code(rs_t *rs, const int nsym, int index) {
     int i, k;
     const unsigned char *logt = rs->logt;

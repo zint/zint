@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019 - 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019 - 2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -27,7 +27,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
+/* vim: set ts=4 sw=4 et norl : */
 
 #include "testcommon.h"
 
@@ -196,7 +196,7 @@ static void test_input(int index, int generate, int debug) {
         /* 30*/ { DATA_MODE, 0, -1, "Summer Palace Ticket for 6 June 2015 13:00;2015年6月6日夜01時00分PM頤和園のチケット;2015년6월6일13시오후여름궁전티켓.2015年6月6号下午13:00的颐和园门票;", -1, 0, 0, "(209) 27 38 C3 0A 35 F9 CF 99 92 F9 26 A3 E7 3E 76 C9 AE A3 7F CC 15 04 0C CD EE 44 06 C4", "T20 B117 (UTF-8)" },
         /* 31*/ { UNICODE_MODE, 0, -1, "\000\014\033 #/059:<@AMZ", 15, 0, 0, "2F 80 31 B7 1F AF E0 05 27 EB 2E CB E2 96 8F F0 00", "T15 (ASCII)" },
         /* 32*/ { UNICODE_MODE, 0, -1, "Z[\\`alz{~\177", -1, 0, 0, "28 FE CF 4E 3E 92 FF 7E E7 CF 7F 00 00", "T10 (ASCII)" },
-        /* 33*/ { UNICODE_MODE, 26, ZINT_FULL_MULTIBYTE, "\202\061\203\063", -1, 0, 26, "81 A7 01 B1 D8 00 00 00 00", "ECI-26 H(f)1 (GB 18030) (Invalid UTF-8, forces GB 2312/18030 utf8tosb() difference)" },
+        /* 33*/ { DATA_MODE, 26, ZINT_FULL_MULTIBYTE, "\202\061\203\063", -1, 0, 26, "81 A7 01 B1 D8 00 00 00 00", "ECI-26 H(f)1 (GB 18030) (Invalid UTF-8, forces GB 2312/18030 utf8tosb() difference) NOTE: 2021-01-10 now UTF-8 is checked and mode -> DATA_MODE this test no longer shows difference" },
         /* 34*/ { UNICODE_MODE, 128, 0, "A", -1, 0, 128, "88 08 02 2B F0 00 00 00 00", "ECI > 127" },
         /* 35*/ { UNICODE_MODE, 16364, 0, "A", -1, 0, 16364, "8B FE C2 2B F0 00 00 00 00", "ECI > 16363" },
         /* 36*/ { UNICODE_MODE, 0, -1, "啊啊啊亍", -1, 0, 0, "40 00 00 00 00 FF E0 00 FF F0 00 00 00", "Region 1 (FFE terminator) -> Region 2 (no indicator)" },
@@ -204,6 +204,44 @@ static void test_input(int index, int generate, int debug) {
         /* 38*/ { UNICODE_MODE, 0, -1, "啊啊啊啊亍亍啊", -1, 0, 0, "40 00 00 00 00 00 0F FE 00 00 00 FF E0 00 FF F0 00", "Region 1 (FFE) -> Region 2 (FFE) -> Region 1" },
         /* 39*/ { UNICODE_MODE, 0, -1, "亍亍亍亍啊啊亍", -1, 0, 0, "50 00 00 00 00 00 0F FE 00 00 00 FF E0 00 FF F0 00", "Region 2 (FFE) -> Region 1 (FFE) -> Region 2" },
         /* 40*/ { DATA_MODE, 0, ZINT_FULL_MULTIBYTE | (2 << 8), "é", -1, 0, 0, "47 02 FF F0 00 00 00 00 00", "H(1)1 (UTF-8) (Region One) (full multibyte with mask)" },
+        /* 41*/ { UNICODE_MODE, 0, -1, "˘", -1, 0, 0, "70 01 16 80 00 00 00 00 00", "H(f)1 (GB 18030)" },
+        /* 42*/ { UNICODE_MODE, 4, -1, "˘", -1, 0, 4, "80 43 00 0D 10 00 00 00 00", "ECI-4 B1 (ISO 8859-2)" },
+        /* 43*/ { UNICODE_MODE, 0, -1, "Ħ", -1, 0, 0, "70 00 47 80 00 00 00 00 00", "H(f)1 (GB 18030)" },
+        /* 44*/ { UNICODE_MODE, 5, -1, "Ħ", -1, 0, 5, "80 53 00 0D 08 00 00 00 00", "ECI-5 B1 (ISO 8859-3)" },
+        /* 45*/ { UNICODE_MODE, 0, -1, "ĸ", -1, 0, 0, "70 00 50 00 00 00 00 00 00", "H(f)1 (GB 18030)" },
+        /* 46*/ { UNICODE_MODE, 6, -1, "ĸ", -1, 0, 6, "80 63 00 0D 10 00 00 00 00", "ECI-6 B1 (ISO 8859-4)" },
+        /* 47*/ { UNICODE_MODE, 0, -1, "Ж", -1, 0, 0, "30 01 53 D4 00 00 00 00 00", "B2 (GB 18030)" },
+        /* 48*/ { UNICODE_MODE, 7, -1, "Ж", -1, 0, 7, "80 73 00 0D B0 00 00 00 00", "ECI-7 B1 (ISO 8859-5)" },
+        /* 49*/ { UNICODE_MODE, 0, -1, "Ș", -1, 0, 0, "70 00 B9 80 00 00 00 00 00", "H(f)1 (GB 18030)" },
+        /* 50*/ { UNICODE_MODE, 18, -1, "Ș", -1, 0, 18, "81 23 00 0D 50 00 00 00 00", "ECI-18 B1 (ISO 8859-16)" },
+        /* 51*/ { UNICODE_MODE, 0, -1, "テ", -1, 0, 0, "30 01 52 E3 00 00 00 00 00", "B2 (GB 18030)" },
+        /* 52*/ { UNICODE_MODE, 20, -1, "テ", -1, 0, 20, "81 43 00 14 1B 28 00 00 00", "ECI-20 B2 (SHIFT JIS)" },
+        /* 53*/ { UNICODE_MODE, 20, -1, "テテ", -1, 0, 20, "81 43 00 24 1B 2C 1B 28 00", "ECI-20 B4 (SHIFT JIS)" },
+        /* 54*/ { UNICODE_MODE, 20, -1, "\\\\", -1, 0, 20, "81 43 00 24 0A FC 0A F8 00", "ECI-20 B4 (SHIFT JIS)" },
+        /* 55*/ { UNICODE_MODE, 0, -1, "…", -1, 0, 0, "4E BC FF F0 00 00 00 00 00", "H(1)1 (GB 18030)" },
+        /* 56*/ { UNICODE_MODE, 21, -1, "…", -1, 0, 21, "81 53 00 0C 28 00 00 00 00", "ECI-21 B1 (Win 1250)" },
+        /* 57*/ { UNICODE_MODE, 0, -1, "Ґ", -1, 0, 0, "70 01 B9 00 00 00 00 00 00", "H(f)1 (GB 18030)" },
+        /* 58*/ { UNICODE_MODE, 22, -1, "Ґ", -1, 0, 22, "81 63 00 0D 28 00 00 00 00", "ECI-22 B1 (Win 1251)" },
+        /* 59*/ { UNICODE_MODE, 0, -1, "˜", -1, 0, 0, "70 01 18 00 00 00 00 00 00", "H(f)1 (GB 18030)" },
+        /* 60*/ { UNICODE_MODE, 23, -1, "˜", -1, 0, 23, "81 73 00 0C C0 00 00 00 00", "ECI-23 B1 (Win 1252)" },
+        /* 61*/ { UNICODE_MODE, 24, -1, "پ", -1, 0, 24, "81 83 00 0C 08 00 00 00 00", "ECI-24 B1 (Win 1256)" },
+        /* 62*/ { UNICODE_MODE, 0, -1, "က", -1, 0, 0, "70 07 71 00 00 00 00 00 00", "H(f)1 (GB 18030)" },
+        /* 63*/ { UNICODE_MODE, 25, -1, "က", -1, 0, 25, "81 92 F9 00 3F 00 00 00 00", "ECI-25 T2 (UCS-2BE)" },
+        /* 64*/ { UNICODE_MODE, 25, -1, "ကက", -1, 0, 25, "81 92 F9 00 10 03 F0 00 00", "ECI-25 T4 (UCS-2BE)" },
+        /* 65*/ { UNICODE_MODE, 25, -1, "12", -1, 0, 25, "81 93 00 20 01 88 01 90 00", "ECI-25 B4 (UCS-2BE ASCII)" },
+        /* 66*/ { UNICODE_MODE, 27, -1, "@", -1, 0, 27, "81 B2 FB 2F C0 00 00 00 00", "ECI-27 T1 (ASCII)" },
+        /* 67*/ { UNICODE_MODE, 0, -1, "龘", -1, 0, 0, "30 01 7E C9 80 00 00 00 00", "B2 (GB 18030)" },
+        /* 68*/ { UNICODE_MODE, 28, -1, "龘", -1, 0, 28, "81 C3 00 17 CE A8 00 00 00", "ECI-28 B2 (Big5)" },
+        /* 69*/ { UNICODE_MODE, 28, -1, "龘龘", -1, 0, 28, "81 C3 00 27 CE AF CE A8 00", "ECI-28 B4 (Big5)" },
+        /* 70*/ { UNICODE_MODE, 0, -1, "齄", -1, 0, 0, "5B BF FF F0 00 00 00 00 00", "H(2)1 (GB 18030)" },
+        /* 71*/ { UNICODE_MODE, 29, -1, "齄", -1, 0, 29, "81 D5 BB FF FF 00 00 00 00", "ECI-29 H(2)1 (GB 2312)" },
+        /* 72*/ { UNICODE_MODE, 29, -1, "齄齄", -1, 0, 29, "81 D5 BB FB BF FF F0 00 00", "ECI-29 H(2)2 (GB 2312)" },
+        /* 73*/ { UNICODE_MODE, 0, -1, "가", -1, 0, 0, "70 2B 5E 80 00 00 00 00 00", "H(f)1 (GB 18030)" },
+        /* 74*/ { UNICODE_MODE, 30, -1, "가", -1, 0, 30, "81 E2 03 E7 7F 00 00 00 00", "ECI-30 T2 (KS X 1001)" },
+        /* 75*/ { UNICODE_MODE, 30, -1, "가가", -1, 0, 30, "81 E3 00 21 81 09 81 08 00", "ECI-30 B4 (KS X 1001)" },
+        /* 76*/ { UNICODE_MODE, 170, -1, "?", -1, 0, 170, "88 0A A2 FB 1F C0 00 00 00", "ECI-170 L1 (ASCII invariant)" },
+        /* 77*/ { DATA_MODE, 899, -1, "\200", -1, 0, 899, "88 38 33 00 0C 00 00 00 00", "ECI-899 B1 (8-bit binary)" },
+        /* 78*/ { UNICODE_MODE, 900, -1, "é", -1, 0, 900, "88 38 43 00 16 1D 48 00 00", "ECI-900 B2 (no conversion)" },
     };
     int data_size = ARRAY_SIZE(data);
 

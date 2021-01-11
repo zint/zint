@@ -196,7 +196,7 @@ output file will be out.gif.
 
 The data input to Zint is assumed to be encoded in Unicode (UTF-8) format. If
 you are encoding characters beyond the 7-bit ASCII set using a scheme other than
-Unicode then you will need to set the appropriate input options as shown in
+UTF-8 then you will need to set the appropriate input options as shown in
 section 4.11 below.
 
 Non-printing characters can be entered on the command line using the backslash
@@ -449,11 +449,11 @@ example for PNG images a scale of 5 will increase the X-dimension to 10 pixels.
 4.10 Input modes
 ----------------
 By default all input data is assumed to be encoded in Unicode (UTF-8) format.
-Many barcode symbologies encode data using Latin-1 (ISO-8859-1) character
-encoding, so input is converted from Unicode to Latin-1 before being put in the
+Many barcode symbologies encode data using Latin-1 (ISO/IEC 8859-1) character
+encoding, so input is converted from UTF-8 to Latin-1 before being put in the
 symbol. In addition QR Code, Micro QR Code, Rectangular Micro QR Code, Han Xin
 Code and Grid Matrix can encode Japanese or Chinese characters which are also
-converted from Unicode. If Zint encounters characters which can not be encoded
+converted from UTF-8. If Zint encounters characters which can not be encoded
 using the default character encoding then it will take advantage of the ECI
 (Extended Channel Interpretations) mechanism to encode the data. Be aware that
 not all barcode readers support ECI mode, so this can sometimes lead to
@@ -476,8 +476,8 @@ Identification Code (HIBC LIC). For HIBC Provider Applications Standard
 (HIBC PAS), preface the data with a slash "/".
 
 The --binary option encodes the input data as given. Automatic code page
-translations to ECI pages is disabled. This may be used for raw binary or binary
-encrypted data.
+translations to ECI pages is disabled, and no validation of the data's encoding
+takes place. This may be used for raw binary or binary encrypted data.
 This switch plays together with the built-in ECI logic and examples may
 be found in that section.
 
@@ -497,7 +497,7 @@ The ECI information is added to your code symbol as prefix data.
 The ECI value may be specified with the --eci switch, followed by the value in
 the column "ECI Code".
 The ECI value of 0 does not encode any ECI information in the code symbol. In
-this case, the default encoding applies for the data which is "ISO-8859-1 -
+this case, the default encoding applies for the data which is "ISO/IEC 8859-1 -
 Latin alphabet No. 1".
 
 The first row of the table (ECI code 3) is the default value and does not lead
@@ -505,65 +505,59 @@ to any ECI information being included in the symbol.
 
 The input data should be UTF-8 formatted. Zint automatically translates the
 data into the target encoding.
-The rows marked with a star (*) do not do this transformation. The data must be
-specified as binary data (--binary switch) with the data in the encoding given
-by the "Character Encoding Scheme" column.
-The row marked with a double star (**) only does this transformation for QR
-Code, Micro QR Code and Rectangular Micro QR Code.
-The row marked with a triple star (***) only does this transformation for Han
-Xin Code and Grid Matrix. Han Xin Code can encode GB 18030. Grid Matrix can
-encode the subset GB 2312.
+
+The row marked with a star (*) translates GB 2312 codepoints, except when using
+Han Xin Code, which translates GB 18030 codepoints, a superset of GB 2312.
 
 Note: the "--eci 3" specification should only be used for special purposes.
 Using this parameter, the ECI information is explicitly added to the code
 symbol. Nevertheless, for ECI Code 3, this is not required, as this is the
 default encoding, which is also active without any ECI information.
 
---------------------------------------------------------
+------------------------------------------------------------
 ECI Code  |  Character Encoding Scheme
---------------------------------------------------------
-3         |  ISO-8859-1 - Latin alphabet No. 1
-4         |  ISO-8859-2 - Latin alphabet No. 2
-5         |  ISO-8859-3 - Latin alphabet No. 3
-6         |  ISO-8859-4 - Latin alphabet No. 4
-7         |  ISO-8859-5 - Latin/Cyrillic alphabet
-8         |  ISO-8859-6 - Latin/Arabic alphabet
-9         |  ISO-8859-7 - Latin/Greek alphabet
-10        |  ISO-8859-8 - Latin/Hebrew alphabet
-11        |  ISO-8859-9 - Latin alphabet No. 5
-12        |  ISO-8859-10 - Latin alphabet No. 6
-13        |  ISO-8859-11 - Latin/Thai alphabet
-15        |  ISO-8859-13 - Latin alphabet No. 7
-16        |  ISO-8859-14 - Latin alphabet No. 8 (Celtic)
-17        |  ISO-8859-15 - Latin alphabet No. 9
-18        |  ISO-8859-16 - Latin alphabet No. 10
-20 **     |  Shift-JIS (JISX 0208 amd JISX 0201)
+------------------------------------------------------------
+3         |  ISO/IEC 8859-1 - Latin alphabet No. 1
+4         |  ISO/IEC 8859-2 - Latin alphabet No. 2
+5         |  ISO/IEC 8859-3 - Latin alphabet No. 3
+6         |  ISO/IEC 8859-4 - Latin alphabet No. 4
+7         |  ISO/IEC 8859-5 - Latin/Cyrillic alphabet
+8         |  ISO/IEC 8859-6 - Latin/Arabic alphabet
+9         |  ISO/IEC 8859-7 - Latin/Greek alphabet
+10        |  ISO/IEC 8859-8 - Latin/Hebrew alphabet
+11        |  ISO/IEC 8859-9 - Latin alphabet No. 5 (Turkish)
+12        |  ISO/IEC 8859-10 - Latin alphabet No. 6 (Nordic)
+13        |  ISO/IEC 8859-11 - Latin/Thai alphabet
+15        |  ISO/IEC 8859-13 - Latin alphabet No. 7 (Baltic)
+16        |  ISO/IEC 8859-14 - Latin alphabet No. 8 (Celtic)
+17        |  ISO/IEC 8859-15 - Latin alphabet No. 9
+18        |  ISO/IEC 8859-16 - Latin alphabet No. 10
+20        |  Shift JIS (JIS X 0208 amd JIS X 0201)
 21        |  Windows-1250 - Latin 2 (Central Europe)
 22        |  Windows-1251 - Cyrillic
 23        |  Windows-1252 - Latin 1
 24        |  Windows-1256 - Arabic
-25 *      |  UCS-2 Unicode (High order byte first)
-26        |  Unicode (UTF-8)
-27        |  ISO-646:1991 7-bit character set
-28 *      |  Big5 (Taiwan) Chinese Character Set
-29 ***    |  GB (PRC) Chinese Character Set
-30 *      |  Korean Character Set (KSX1001:1998)
---------------------------------------------------------
+25        |  UCS-2BE (High order byte first) (Unicode BMP)
+26        |  UTF-8 (Unicode)
+27        |  ISO/IEC 646:1991 7-bit character set (ASCII)
+28        |  Big5 (Taiwan) Chinese Character Set
+29 *      |  GB (PRC) Chinese Character Set
+30        |  Korean Character Set (KS X 1001:2002)
+899       |  8-bit binary data
+------------------------------------------------------------
 
 Three examples:
-Ex1: The Euro sign can be encoded in ISO-8859-15.
-The Euro sign has the ISO-8859-15 codepoint hex A4.
+Ex1: The Euro sign U+20AC can be encoded in ISO/IEC 8859-15.
+The Euro sign has the ISO/IEC 8859-15 codepoint hex A4.
 It is encoded in UTF-8 as the hex sequence: e2 82 ac
 Those 3 bytes are contained in the file "utf8euro.txt"
 This command will generate the corresponding code:
 
 zint.exe -b 71 --square --scale 10 --eci 17 -i utf8euro.txt
 
-Ex2: The Chinese character with Unicode codepoint hex 5E38 can be encoded in
-Big5 encoding. The Big5 ECI is marked in the upper table to require input data
-in Big5 instead of UTF-8. The Big5 representation of this character is the two
-hex bytes: 9C 75 (contained in the file big5char.txt).
-The generation command for Data Matrix is:
+Ex2: The Chinese character with Unicode codepoint U+5E38 can be encoded in Big5
+encoding. The Big5 representation of this character is the two hex bytes: 9C 75
+(contained in the file big5char.txt). The generation command for Data Matrix is:
 
 zint -b 71 --square --scale 10 --eci 28 --binary -i big5char.txt
 
@@ -2062,8 +2056,8 @@ When using automatic symbol sizes you can force Zint to use square symbols
 (versions 1-24) at the command line by using the option --square and when
 using the API by setting the value option_3 = DM_SQUARE.
 
-Data Matrix Rectangular Extension (ISO/IEC21471) codes may be generated with the
-following values as before:
+Data Matrix Rectangular Extension (ISO/IEC 21471) codes may be generated with
+the following values as before:
 
 ---------------------
 Input  |  Symbol Size
@@ -2162,10 +2156,10 @@ Input  |  Symbol Size
 The maximum capacity of a (version 40) QR Code symbol is 7089 numeric digits,
 4296 alphanumeric characters or 2953 bytes of data. QR Code symbols can also be
 used to encode GS1 data. QR Code symbols can by default encode characters in
-the Latin-1 set and Kanji characters which are members of the Shift-JIS
+the Latin-1 set and Kanji characters which are members of the Shift JIS
 encoding scheme. In addition QR Code supports using other character sets using
 the ECI mechanism. Input should usually be entered as Unicode (UTF-8) with
-conversion to Shift-JIS being carried out by Zint. A separate symbology ID can
+conversion to Shift JIS being carried out by Zint. A separate symbology ID can
 be used to encode Health Industry Barcode (HIBC) data which adds a leading '+'
 character and a modulo-49 check digit to the encoded data.
 
@@ -2183,8 +2177,8 @@ ZINT_FULL_MULTIBYTE | (N + 1) << 8.
 -------------------------------
 A miniature version of the QR Code symbol for short messages. ECC levels can be
 selected as for QR Code (above). QR Code symbols can encode characters in the
-Latin-1 set and Kanji characters which are members of the Shift-JIS encoding
-scheme. Input should be entered as a UTF-8 stream with conversion to Shift-JIS
+Latin-1 set and Kanji characters which are members of the Shift JIS encoding
+scheme. Input should be entered as a UTF-8 stream with conversion to Shift JIS
 being carried out automatically by Zint. A preferred symbol size can be
 selected by using the --vers= option or by setting option_2 although the actual
 version used by Zint may be different if required by the input data. The table
@@ -2211,11 +2205,12 @@ ZINT_FULL_MULTIBYTE | (N + 1) << 8.
 6.6.4 Rectangular Micro QR Code (rMQR)
 --------------------------------------
 A rectangular version of QR Code. Like QR code rMQR supports encoding of GS1
-data, Latin-1 and Kanji characters in the Shift-JIS encoding scheme.
-It does not support other ISO 8859 character sets or Unicode. As with other
-symbologies data should be entered as UTF-8 with the conversion to Shift-JIS
-being handled by Zint. The amount of ECC codewords can be adjusted using
---secure=, however only ECC levels M and H are valid for this type of symbol.
+data, Latin-1 and Kanji characters in the Shift JIS encoding scheme. It does not
+support other ISO/IEC 8859 character sets or encodings. As with other
+symbologies data should be entered as UTF-8 with the conversion to Shift JIS
+being handled by Zint. The amount of ECC codewords can be adjusted using the
+--secure= option (API option_1), however only ECC levels M and H are valid for
+this type of symbol.
 
 -------------------------------------------------------------------------
 Input  |  ECC Level    |  Error Correction Capacity  |  Recovery Capacity
@@ -2224,9 +2219,9 @@ Input  |  ECC Level    |  Error Correction Capacity  |  Recovery Capacity
 4      |  H            |  Approx 65% of symbol       |  Approx 30%
 -------------------------------------------------------------------------
 
-The preferred symbol sizes can be selected using the --vers= option as shown
-in the table below. Input values between 33 and 38 fix the height of the
-symbol while allowing Zint to determine the minimum symbol width.
+The preferred symbol sizes can be selected using the --vers= option (API
+option_2) as shown in the table below. Input values between 33 and 38 fix the
+height of the symbol while allowing Zint to determine the minimum symbol width.
 
 ---------------------------------
 Input  |  Version  |  Symbol Size
@@ -2279,12 +2274,13 @@ using the --fullmultibyte switch or by setting option_3 to ZINT_FULL_MULTIBYTE.
 ------------------------------------------------
 A variation of QR Code used by Združenje Bank Slovenije (Bank Association of
 Slovenia). The size, error correction level and ECI are set by Zint and do not
-need to be specified. UPNQR is unusual in that it uses ISO-8859-2 formatted
-data. Zint will accept UTF-8 data and convert it to ISO-8859-2, or if your data
-is already ISO-8859-2 formatted use the --binary switch or if using the API set
-symbol->input_mode = DATA MODE;
+need to be specified. UPNQR is unusual in that it uses ISO/IEC 8859-2 formatted
+data. Zint will accept UTF-8 data and convert it to ISO/IEC 8859-2, or if your
+data is already ISO/IEC 8859-2 formatted use the --binary switch or if using the
+API set symbol->input_mode = DATA MODE;
 
-The following example creates a symbol from data saved as an ISO-8859-2 file:
+The following example creates a symbol from data saved as an ISO/IEC 8859-2
+file:
 
 zint -o upnqr.png -b 143 --border=5 --scale=3 --binary -i ./upn.txt
 
@@ -2719,7 +2715,7 @@ are ignored.
 ================================
 7.1 License
 -----------
-Zint, libzint and Zint Barcode Studio are Copyright © 2020 Robin Stuart. All
+Zint, libzint and Zint Barcode Studio are Copyright © 2021 Robin Stuart. All
 historical versions are distributed under the GNU General Public License
 version 3 or later. Version 2.5 is released under a dual license: the encoding
 library is released under the BSD license whereas the GUI, Zint Barcode Studio,
@@ -3085,11 +3081,11 @@ E   |  SO    |  RS   |  .      |  >  |  N  |  ^  |  n  |  ~
 F   |  SI    |  US   |  /      |  ?  |  O  |  _  |  o  |  DEL
 -------------------------------------------------------------
 
-A.2 Latin Alphabet No 1 (ISO 8859-1)
-------------------------------------
+A.2 Latin Alphabet No 1 (ISO/IEC 8859-1)
+----------------------------------------
 A common extension to the ASCII standard, Latin-1 is used to expand the range
 of Code 128, PDF417 and other symbols. Input strings should be in Unicode
-format
+(UTF-8) format
 
 ------------------------------------------------------
 Hex |  8  |  9  |  A      |  B  |  C  |  D  |  E  |  F
@@ -3109,6 +3105,6 @@ B   |     |     |  «      |  »  |  Ë  |  Û  |  ë  |  û
 C   |     |     |  ¬      |  ¼  |  Ì  |  Ü  |  ì  |  ü
 D   |     |     |  SHY    |  ½  |  Í  |  Ý  |  í  |  ý
 E   |     |     |  ®      |  ¾  |  Î  |  Þ  |  î  |  þ
-F   |     |     |  ¯      |  ¿  |  Ï  |  ß  |  î  |  ÿ
+F   |     |     |  ¯      |  ¿  |  Ï  |  ß  |  ï  |  ÿ
 ------------------------------------------------------
 

@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019 - 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019 - 2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -433,12 +433,12 @@ static void test_fuzz(int index, int debug) {
                     "\071\071\071\071\071\072\071\071\277\071\071\077\071\071\071\071\071\071\071\071\154\071\071\071\071\071\071\071\071\071\071\071"
                     "\071\071\071\011\071\071\071\071\071\071\071\071\071\071\071\071\071\071\105\105\105\105\105\105\105\105\105\105\105\105\105\071"
                     "\071\071\071\071\071", // Original OSS-Fuzz triggering data for index out of bounds (encoding of HT/FS/GS/RS when shifting to code set B)
-                    421, UNICODE_MODE, ZINT_WARN_USES_ECI },
-        /*  2*/ { "\233:", -1, UNICODE_MODE, ZINT_WARN_USES_ECI }, // Original OSS-Fuzz triggering data for codeword_array buffer overflow, L777
-        /*  3*/ { "\241\034", -1, UNICODE_MODE, ZINT_WARN_USES_ECI }, // As above L793
-        /*  4*/ { "\270\036", -1, UNICODE_MODE, ZINT_WARN_USES_ECI }, // As above L799
-        /*  5*/ { "\237\032", -1, UNICODE_MODE, ZINT_WARN_USES_ECI }, // As above L904
-        /*  6*/ { "\237", -1, UNICODE_MODE, ZINT_WARN_USES_ECI }, // As above L1090
+                    421, DATA_MODE, 0 },
+        /*  2*/ { "\233:", -1, DATA_MODE, 0 }, // Original OSS-Fuzz triggering data for codeword_array buffer overflow, L777
+        /*  3*/ { "\241\034", -1, DATA_MODE, 0 }, // As above L793
+        /*  4*/ { "\270\036", -1, DATA_MODE, 0 }, // As above L799
+        /*  5*/ { "\237\032", -1, DATA_MODE, 0 }, // As above L904
+        /*  6*/ { "\237", -1, DATA_MODE, 0 }, // As above L1090
     };
     int data_size = sizeof(data) / sizeof(struct item);
 
