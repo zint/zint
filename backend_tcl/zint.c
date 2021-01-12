@@ -384,32 +384,23 @@ static char *s_eci_list[] = {
     "iso8859-14",   /*16: ISO-8859-14 - Latin alphabet No. 8 (Celtic)*/
     "iso8859-15",   /*17: ISO-8859-15 - Latin alphabet No. 9*/
     "iso8859-16",   /*18: ISO-8859-16 - Latin alphabet No. 10*/
-    "jis0208",      /*20: ** Shift-JIS (JISX 0208 amd JISX 0201)*/
+    "jis0208",      /*20: Shift JIS (JIS X 0208 and JIS X 0201)*/
     "cp1250",       /*21: Windows-1250*/
     "cp1251",       /*22: Windows-1251*/
     "cp1252",       /*23: Windows-1252*/
     "cp1256",       /*24: Windows-1256*/
-    "unicode",      /*25: ** UCS-2 Unicode (High order byte first)*/
+    "unicode",      /*25: UCS-2BE (High order byte first) Unicode BMP*/
     "utf-8",        /*26: Unicode (UTF-8)*/
     "ascii",        /*27: ISO-646:1991 7-bit character set*/
-    "big5",         /*28: ** Big-5 (Taiwan) Chinese Character Set*/
-    "euc-cn",       /*29: ** GB (PRC) Chinese Character Set*/
-    "iso2022-kr",   /*30: ** Korean Character Set (KSX1001:1998)*/
+    "big5",         /*28: Big5 (Taiwan) Chinese Character Set*/
+    "euc-cn",       /*29: GB (PRC) Chinese Character Set*/
+    "iso2022-kr",   /*30: Korean Character Set (KS X 1001:2002)*/
     NULL
 };
 
 /* The ECI numerical number to pass to ZINT */
 static int s_eci_number[] = {
     3,4,5,6,7,8,9,10,11,12,13,15,16,17,18,20,21,22,23,24,25,26,27,28,29,30
-};
-
-/* Flag if an encoding is delivered as unicode. If not, native encoding is
- * required.
- * Those encodings are marked with "**" in the upper comments.
- */
-static int s_eci_unicode_input[] = {
-    /* 3,4,5,6,7,8,9,10,11,12,13,15,16,17,18,20,21,22,23,24,25,26,27,28,29,30 */
-       1,1,1,1,1,1,1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0
 };
 
 
@@ -1100,24 +1091,11 @@ static int Encode(Tcl_Interp *interp, int objc,
             /* Binary data */
             pStr = (char *) Tcl_GetByteArrayFromObj(objv[2], &lStr);
         } else {
-            /* UTF8 Data (or ECI encoding) */
-            if ( ! s_eci_unicode_input[ECIIndex]) {
-                /* For this ECI, the Data must be encoded in the ECI encoding */
-                Tcl_FreeEncoding(hZINTEncoding);
-                hZINTEncoding = Tcl_GetEncoding(interp, s_eci_list[ECIIndex]);
-                if (NULL == hZINTEncoding) {
-                    /* Interpreter has error message */
-                    fError = 1;
-                }
-                /* we must indicate binary data */
-                my_symbol->input_mode = DATA_MODE;
-            }
-            if (! fError ) {
-                pStr = Tcl_GetStringFromObj(objv[2], &lStr);
-                Tcl_UtfToExternalDString( hZINTEncoding, pStr, lStr, &dsInput);
-                pStr = Tcl_DStringValue( &dsInput );
-                lStr = Tcl_DStringLength( &dsInput );
-            }
+            /* UTF8 Data */
+			pStr = Tcl_GetStringFromObj(objv[2], &lStr);
+			Tcl_UtfToExternalDString( hZINTEncoding, pStr, lStr, &dsInput);
+			pStr = Tcl_DStringValue( &dsInput );
+			lStr = Tcl_DStringLength( &dsInput );
         }
     }
     /*------------------------------------------------------------------------*/

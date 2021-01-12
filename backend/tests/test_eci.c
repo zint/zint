@@ -662,13 +662,29 @@ static void test_utf8_to_eci_sb(int index) {
         if (index != -1 && i != index) continue;
 
         for (int j = 0; j < 128; j++) {
+            int k = j + 128;
             if (data[i].tab[j]) {
-                int k = j + 128;
                 int length = to_utf8(data[i].tab[j], source);
                 assert_nonzero(length, "i:%d to_utf8 length %d == 0\n", i, length);
                 ret = utf8_to_eci(data[i].eci, source, dest, &length);
                 assert_zero(ret, "i:%d utf8_to_eci ret %d != 0\n", i, ret);
                 assert_equal(*dest, k, "i:%d j:%d eci:%d codepoint:0x%x *dest 0x%X (%d) != 0x%X (%d)\n", i, j, data[i].eci, data[i].tab[j], *dest, *dest, k, k);
+            } else {
+                int length = to_utf8(k, source);
+                assert_nonzero(length, "i:%d to_utf8 length %d == 0\n", i, length);
+                ret = utf8_to_eci(data[i].eci, source, dest, &length);
+                if (ret == 0) { // Should be mapping for this codepoint in another entry
+                    int found = 0;
+                    for (int m = 0; m < 128; m++) {
+                        if (data[i].tab[m] == k) {
+                            found = 1;
+                            break;
+                        }
+                    }
+                    assert_nonzero(found, "i:%d j:%d eci:%d codepoint:0x%x source:%s not found utf8_to_eci ret %d == 0\n", i, j, data[i].eci, k, source, ret);
+                } else {
+                    assert_equal(ret, ZINT_ERROR_INVALID_DATA, "i:%d j:%d eci:%d codepoint:0x%x source:%s utf8_to_eci ret %d != ZINT_ERROR_INVALID_DATA\n", i, j, data[i].eci, k, source, ret);
+                }
             }
         }
     }

@@ -532,11 +532,11 @@ ECI Code  |  Character Encoding Scheme
 16        |  ISO/IEC 8859-14 - Latin alphabet No. 8 (Celtic)
 17        |  ISO/IEC 8859-15 - Latin alphabet No. 9
 18        |  ISO/IEC 8859-16 - Latin alphabet No. 10
-20        |  Shift JIS (JIS X 0208 amd JIS X 0201)
-21        |  Windows-1250 - Latin 2 (Central Europe)
-22        |  Windows-1251 - Cyrillic
-23        |  Windows-1252 - Latin 1
-24        |  Windows-1256 - Arabic
+20        |  Shift JIS (JIS X 0208 and JIS X 0201)
+21        |  Windows 1250 - Latin 2 (Central Europe)
+22        |  Windows 1251 - Cyrillic
+23        |  Windows 1252 - Latin 1
+24        |  Windows 1256 - Arabic
 25        |  UCS-2BE (High order byte first) (Unicode BMP)
 26        |  UTF-8 (Unicode)
 27        |  ISO/IEC 646:1991 7-bit character set (ASCII)
@@ -858,7 +858,7 @@ Variable Name     | Type         | Meaning                     | Default Value
 symbology         | integer      | Symbol to use (see section  | BARCODE_CODE128
                   |              |    5.7).                    |
 height            | integer      | Symbol height. [1]          | 50
-whitespace_width  | integer      | Whtespace width.            | 0
+whitespace_width  | integer      | Whitespace width.           | 0
 border_width      | integer      | Border width.               | 0
 output_options    | integer      | Set various output file     | 0 (none)
                   |              |    parameters (see section  |
@@ -1525,7 +1525,7 @@ PZN encodes a 7 digit number to which Zint will add a modulo-11 check digit.
 6.1.8.5 LOGMARS
 ---------------
 LOGMARS (Logistics Applications of Automated Marking and Reading Symbols) is a
-variation of the Code 39 symbology used by the US Department of Defence.
+variation of the Code 39 symbology used by the US Department of Defense.
 LOGMARS encodes the same character set as Standard Code 39. It does not require
 a check digit but a modulo-43 check digit can be added by setting option_2 = 1
 or using --vers=1.
@@ -1863,7 +1863,7 @@ symbol as described in section 6.1.3 and 5.1.4.
 
 The 2D component of a composite symbol can use one of three systems: CC-A, CC-B
 and CC-C as described below. The 2D component type can be selected
-automatically by Zint dependant on the length of the input string.
+automatically by Zint dependent on the length of the input string.
 Alternatively the three methods can be accessed using the --mode= prompt
 followed by 1, 2 or 3 for CC-A, CC-B or CC-C respectively, or by using the
 option_1 variable as shown above.
@@ -2979,7 +2979,7 @@ Bar Code 1 Specification Source Page
 SB Electronic Systems Telepen website
 Pharmacode specifications from Laetus
 Morovia RM4SCC specification
-Austalia Post's 'A Guide to Printing the 4-State Barcode' and bcsample source
+Australia Post's 'A Guide to Printing the 4-State Barcode' and bcsample source
    code
 Plessey algorithm from GNU-Barcode v0.98 by Leonid A. Broukhis
 GS1 General Specifications v 8.0 Issue 2
@@ -3033,7 +3033,7 @@ international standards:
 > ANSI/HIBC 2.6-2016 - The Health Industry Bar Code (HIBC) Supplier Labeling
      Standard
 > AIM ISS-X-24 - Uniform Symbology Specification Codablock F
-> AIMD013 (v 1.34a) – Information technology – Automaic identification and data
+> AIMD013 (v 1.34a) – Information technology – Automatic identification and data
      capture techniques – Bar code symbology specification – DotCode (Revised
      19th Feb 2009)
 > AIMD014 (v 1.63) - Information technology, Automatic identification and data
