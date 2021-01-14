@@ -106,6 +106,9 @@
 2021-01-14 GL
 - Removed TCL native encoding of ECI's and replace by zint buildin mechanism.
   The input is now UTF-8 for any ECI and zint cares about the encoding.
+2021-01-14 HaO
+- Added detection of presence of the Tk package and late initialization.
+  This is a preparation to add a TCL only mode to the DLL.
 */
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
@@ -162,6 +165,8 @@ EXPORT int Zint_Init (Tcl_Interp *interp);
 EXPORT int Zint_Unload (Tcl_Interp *Interp, int Flags);
 /*----------------------------------------------------------------------------*/
 /* >>>> local prototypes */
+static void InterpCleanupProc(ClientData clientData, Tcl_Interp *interp);
+static int CheckForTk(Tcl_Interp *interp, int *tkFlagPtr);
 static int Zint(ClientData unused, Tcl_Interp *interp, int objc,
     Tcl_Obj *CONST objv[]);
 static int Encode(Tcl_Interp *interp, int objc,
@@ -413,7 +418,7 @@ static char version_string[] = VERSION;
 static char help_message[] = "zint tcl(stub,obj) dll\n"
     " Generate barcode in tk images\n"
     "Usage:\n"
-    " zint encode data photo option value...\n"
+    " zint encode data photo ?option value? ...\n"
     "  data: data to encode in the symbol\n"
     "  photo: a tcl photo image handle ('p' after 'image create photo p')\n"
     "  Available options:\n"
@@ -488,34 +493,42 @@ EXPORT BOOL WINAPI DllEntryPoint (HINSTANCE hInstance,
 /* Initialisation Procedures */
 EXPORT int Zint_Init (Tcl_Interp *interp)
 {
+    int * tkFlagPtr;
     /*------------------------------------------------------------------------*/
 #ifdef USE_TCL_STUBS
-    if (Tcl_InitStubs(interp, "8.1", 0) == NULL)
+    if (Tcl_InitStubs(interp, "8.5", 0) == NULL)
 #else
-    if (Tcl_PkgRequire(interp, "Tcl", "8.1", 0) == NULL)
+    if (Tcl_PkgRequire(interp, "Tcl", "8.5", 0) == NULL)
 #endif
     {
         return TCL_ERROR;
     }
     /*------------------------------------------------------------------------*/
-#ifdef USE_TK_STUBS
-    if (Tk_InitStubs(interp, "8.1", 0) == NULL)
-#else
-    if (Tcl_PkgRequire(interp, "Tk", "8.1", 0) == NULL)
-#endif
-    {
-        return TCL_ERROR;
-    }
+    /* This procedure is called once per thread and any thread local data     */
+    /* should be allocated and initialized here (and not in static variables) */
+    
+    /* Create a flag if Tk is loaded */
+    tkFlagPtr = (int *)ckalloc(sizeof(int));
+    *tkFlagPtr = 0;
+    Tcl_CallWhenDeleted(interp, InterpCleanupProc, (ClientData)tkFlagPtr);
     /*------------------------------------------------------------------------*/
-    Tcl_CreateObjCommand(interp, "zint", Zint, (ClientData)NULL,
-        (Tcl_CmdDeleteProc *)NULL);
+    Tcl_CreateObjCommand(interp, "zint", Zint, (ClientData)tkFlagPtr,
+            (Tcl_CmdDeleteProc *)NULL);
     Tcl_PkgProvide (interp, "zint", version_string);
     /*------------------------------------------------------------------------*/
     return TCL_OK;
 }
-//------------------------------------------------------------------------------
-// >>>> Unload Procedures
-//------------------------------------------------------------------------------
+/*----------------------------------------------------------------------------*/
+/* >>>> Cleanup procedure */
+/*----------------------------------------------------------------------------*/
+/* This routine is called, if a thread is terminated */
+static void InterpCleanupProc(ClientData clientData, Tcl_Interp *interp)
+{
+    ckfree( (char *)clientData );
+}
+/*----------------------------------------------------------------------------*/
+/* >>>> Unload Procedures */
+/*----------------------------------------------------------------------------*/
 EXPORT int Zint_Unload (Tcl_Interp *Interp, int Flags)
 {
     // Allow unload
@@ -525,7 +538,7 @@ EXPORT int Zint_Unload (Tcl_Interp *Interp, int Flags)
 /* >>>>> Called routine */
 /*----------------------------------------------------------------------------*/
 /* Decode tcl commands */
-static int Zint(ClientData unused, Tcl_Interp *interp, int objc,
+static int Zint(ClientData tkFlagPtr, Tcl_Interp *interp, int objc,
     Tcl_Obj *CONST objv[])
 {
     /* Option list and indexes */
@@ -553,6 +566,9 @@ static int Zint(ClientData unused, Tcl_Interp *interp, int objc,
     switch (Index)
     {
     case iEncode:
+        if (CheckForTk(interp, (int *)tkFlagPtr) != TCL_OK) {
+            return TCL_ERROR;
+        }
         return Encode(interp, objc, objv);
     case iSymbologies:
         {
@@ -597,7 +613,31 @@ static int Zint(ClientData unused, Tcl_Interp *interp, int objc,
         return TCL_OK;
     }
 }
-/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------
+ * Check availability of Tk.
+ *----------------------------------------------------------------------
+ */
+static int CheckForTk(Tcl_Interp *interp, int *tkFlagPtr)
+{
+    if (*tkFlagPtr > 0) {
+        return TCL_OK;
+    }
+    if (*tkFlagPtr == 0) {
+        if ( ! Tcl_PkgPresent(interp, "Tk", "8.5", 0) ) {
+            Tcl_SetResult(interp, "package Tk not loaded", TCL_STATIC);
+            return TCL_ERROR;
+        }
+    }
+#ifdef USE_TK_STUBS
+    if (*tkFlagPtr < 0 || Tk_InitStubs(interp, "8.5", 0) == NULL) {
+        *tkFlagPtr = -1;
+        Tcl_SetResult(interp, "error initializing Tk", TCL_STATIC);
+        return TCL_ERROR;
+    }
+#endif
+    *tkFlagPtr = 1;
+    return TCL_OK;
+}/*----------------------------------------------------------------------------*/
 /* >>>>> Encode */
 /*----------------------------------------------------------------------------*/
 /* Encode image */
