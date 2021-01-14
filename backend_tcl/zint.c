@@ -103,6 +103,9 @@
 2021-01-05 2.9.1 HaO
 - Added options -reverse, -werror, -wzpl
 - Use version number from zint.h (first 3 digits). Do not use an own one.
+2021-01-14 GL
+- Removed TCL native encoding of ECI's and replace by zint buildin mechanism.
+  The input is now UTF-8 for any ECI and zint cares about the encoding.
 */
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
