@@ -1006,14 +1006,7 @@ static int escape_char_process(struct zint_symbol *symbol, unsigned char *input_
                     hex1 = ctoi(input_string[in_posn + 2]);
                     hex2 = ctoi(input_string[in_posn + 3]);
                     if ((hex1 >= 0) && (hex2 >= 0)) {
-                        if (hex1 > 7 && (symbol->input_mode & 0x07) == UNICODE_MODE) {
-                            // Convert to UTF-8
-                            escaped_string[out_posn] = 0xc0 + (hex1 >> 2);
-                            out_posn++;
-                            escaped_string[out_posn] = 0x80 + ((hex1 & 0x03) << 4) + hex2;
-                        } else {
-                            escaped_string[out_posn] = (hex1 << 4) + hex2;
-                        }
+                        escaped_string[out_posn] = (hex1 << 4) + hex2;
                         in_posn += 4;
                     } else {
                         strcpy(symbol->errtxt, "233: Corrupt escape character in input data");
@@ -1025,17 +1018,22 @@ static int escape_char_process(struct zint_symbol *symbol, unsigned char *input_
                     break;
                 case 'u':
                     if (in_posn + 6 > *length) {
-                        strcpy(symbol->errtxt, "209: Incomplete unicode escape character in input data");
+                        strcpy(symbol->errtxt, "209: Incomplete Unicode escape character in input data");
                         return ZINT_ERROR_INVALID_DATA;
                     }
                     unicode = 0;
                     for (i = 0; i < 4; i++) {
                         if (ctoi(input_string[in_posn + i + 2]) == -1) {
-                            strcpy(symbol->errtxt, "211: Corrupt unicode escape character in input data");
+                            strcpy(symbol->errtxt, "211: Corrupt Unicode escape character in input data");
                             return ZINT_ERROR_INVALID_DATA;
                         }
                         unicode = unicode << 4;
                         unicode += ctoi(input_string[in_posn + i + 2]);
+                    }
+                    /* Exclude reversed BOM and surrogates */
+                    if (unicode == 0xfffe || (unicode >= 0xd800 && unicode < 0xe000)) {
+                        strcpy(symbol->errtxt, "246: Invalid Unicode BMP escape character in input data");
+                        return ZINT_ERROR_INVALID_DATA;
                     }
                     if (unicode >= 0x800) {
                         escaped_string[out_posn] = 0xe0 + ((unicode & 0xf000) >> 12);

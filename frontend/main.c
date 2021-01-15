@@ -430,6 +430,8 @@ static int batch_process(struct zint_symbol *symbol, char *filename, int mirror_
                         i++;
                         if (buffer[i] == 'x') {
                             i += 2;
+                        } else if (buffer[i] == 'u') {
+                            i += 4;
                         }
                     }
                     i++;

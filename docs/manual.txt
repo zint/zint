@@ -23,7 +23,7 @@ of which it is possible to translate that data from either Unicode (UTF-8) or a
 raw 8-bit data stream. The image can be rendered as either a Portable Network
 Graphic (PNG) image, Windows Bitmap (BMP), Graphics Interchange Format (GIF),
 ZSoft Paintbrush image (PCX), Tagged Image File Format (TIF), Enhanced Metafile
-Format (EMF), as Encapsulated Post Script (EPS), or as a Scalable Vector Graphic
+Format (EMF), as Encapsulated PostScript (EPS), or as a Scalable Vector Graphic
 (SVG). Many options are available for setting the characteristics of the output
 image including the size and colour of the image, the amount of error correction
 used in the symbol and the orientation of the image.
@@ -197,40 +197,45 @@ output file will be out.gif.
 The data input to Zint is assumed to be encoded in Unicode (UTF-8) format. If
 you are encoding characters beyond the 7-bit ASCII set using a scheme other than
 UTF-8 then you will need to set the appropriate input options as shown in
-section 4.11 below.
+section 4.10 below.
 
 Non-printing characters can be entered on the command line using the backslash
 (\) as an escape character in combination with the --esc switch. Permissible
-characters are shown in the table below.
+sequences are shown in the table below.
 
---------------------------------------------------------------------
-Escape Character  |  ASCII Equivalent  |  Interpretation
---------------------------------------------------------------------
-\0                |  0x00              |  NUL character
-\E                |  0x04              |  End of Transmission
-\a                |  0x07              |  Bell
-\b                |  0x08              |  Backspace
-\t                |  0x09              |  Horizontal Tab
-\n                |  0x0A              |  Line Feed
-\v                |  0x0B              |  Vertical Tab
-\f                |  0x0C              |  Form Feed
-\r                |  0x0D              |  Carriage Return
-\e                |  0x1B              |  Escape
-\G                |  0x1D              |  Group Separator
-\R                |  0x1E              |  Record Separator
-\\                |  0x5C              |  Backslash
-\xNN              |  0xNN              |  Any other 8-bit character
-                  |                    |     where NN is hexadecimal
-\uNNNN            |                    |  Any 16-bit Unicode
-                  |                    |     character where NNNN
-                  |                    |     is hexadecimal
---------------------------------------------------------------------
+------------------------------------------------------------------------------
+Escape Sequence  |  ASCII Equivalent  |  Name  |  Interpretation
+------------------------------------------------------------------------------
+\0               |  0x00              |  NUL   |  Null character
+\E               |  0x04              |  EOT   |  End of Transmission
+\a               |  0x07              |  BEL   |  Bell
+\b               |  0x08              |  BS    |  Backspace
+\t               |  0x09              |  HT    |  Horizontal Tab
+\n               |  0x0A              |  LF    |  Line Feed
+\v               |  0x0B              |  VT    |  Vertical Tab
+\f               |  0x0C              |  FF    |  Form Feed
+\r               |  0x0D              |  CR    |  Carriage Return
+\e               |  0x1B              |  ESC   |  Escape
+\G               |  0x1D              |  GS    |  Group Separator
+\R               |  0x1E              |  RS    |  Record Separator
+\\               |  0x5C              |  \     |  Backslash
+\xNN             |  0xNN              |        |  Any 8-bit character where NN
+                 |                    |        |     is hexadecimal
+\uNNNN           |                    |        |  Any 16-bit Unicode Basic
+                 |                    |        |     Multilingual Plane (BMP)
+                 |                    |        |     character where NNNN is
+                 |                    |        |     hexadecimal
+------------------------------------------------------------------------------
 
 Input data can be read directly from file using the -i switch as shown below.
 The input file is assumed to be Unicode (UTF-8) formatted unless an alternative
 mode is selected. This command replaces the use of the -d switch.
 
 zint -i ./somefile.txt
+
+Note that except when batch processing (section 4.11 below), the file should not
+end with a newline (LF on Unix, CR+LF on Windows) unless you want the newline to
+be encoded in the symbol.
 
 4.2 Directing Output
 --------------------
@@ -239,9 +244,9 @@ For example:
 
 zint -o here.png -d "This Text"
 
-This draws a Code 128 barcode in the file here.png. If an encapsulated Post
-Script file is needed simply append the file name with .eps, and so on for the
-other supported file types:
+This draws a Code 128 barcode in the file here.png. If an encapsulated
+PostScript file is needed simply append the file name with .eps, and so on for
+the other supported file types:
 
 zint -o there.eps -d "This Text"
 
@@ -265,7 +270,7 @@ Numeric Value  |  Barcode Name
 7              |  Code 2 of 5 Industrial
 8              |  Code 3 of 9 (Code 39)
 9              |  Extended Code 3 of 9 (Code 39+)
-13             |  EAN (Including EAN-8 and EAN-13)
+13             |  EAN (including EAN-8 and EAN-13)
 14             |  EAN + Check Digit
 16             |  GS1-128 (UCC.EAN-128)
 18             |  Codabar
@@ -292,7 +297,7 @@ Numeric Value  |  Barcode Name
 52             |  PZN
 53             |  Pharmacode Two-Track
 55             |  PDF417
-56             |  Compact PDF417
+56             |  Compact PDF417 (Truncated PDF417)
 57             |  MaxiCode
 58             |  QR Code
 60             |  Code 128 (Subset B)
@@ -325,10 +330,11 @@ Numeric Value  |  Barcode Name
 97             |  Micro QR Code
 98             |  HIBC Code 128
 99             |  HIBC Code 39
-102            |  HIBC Data Matrix
+102            |  HIBC Data Matrix ECC200
 104            |  HIBC QR Code
 106            |  HIBC PDF417
 108            |  HIBC MicroPDF417
+110            |  HIBC Codablock-F
 112            |  HIBC Aztec Code
 115            |  DotCode
 116            |  Han Xin (Chinese Sensible) Code
@@ -375,11 +381,11 @@ This specifies a whitespace width of 10 times the X-dimension of the symbol.
 
 4.6 Adding boundary bars and boxes
 ----------------------------------
-Zint allows the symbol to be bound with 'boundary bars' using the option
---bind. These bars help to prevent misreading of the symbol by corrupting a
-scan if the scanning beam strays off the top or bottom of the symbol. Zint can
-also put a border right around the symbol and its whitespace with the --box
-option.
+Zint allows the symbol to be bound with 'boundary bars' (also known as 'bearer
+bars') using the option --bind. These bars help to prevent misreading of the
+symbol by corrupting a scan if the scanning beam strays off the top or bottom of
+the symbol. Zint can also put a border right around the symbol and its
+whitespace with the --box option.
 
 The width of the boundary or box can be specified using the --border switch.
 For example:
@@ -469,17 +475,17 @@ doesn't need to be set) for GS1-128, EAN-14, DataBar and Composite symbologies
 but is also available for Aztec Code, Code 16k, Code 49, Code One, Data Matrix,
 DotCode, QR Code and Ultracode.
 
-HIBC data may also be encoded in the symbologies Code 39, Code128, Codablock-F,
-Data Matrix, QR Code, PDF417 and Aztec Code. Within this mode, the leading '+'
-and the check character are automatically added, conforming to HIBC Labeler
-Identification Code (HIBC LIC). For HIBC Provider Applications Standard
+HIBC data may also be encoded in the symbologies Code 39, Code 128, Codablock-F,
+Data Matrix, QR Code, PDF417, MicroPDF417 and Aztec Code. Within this mode, the
+leading '+' and the check character are automatically added, conforming to HIBC
+Labeler Identification Code (HIBC LIC). For HIBC Provider Applications Standard
 (HIBC PAS), preface the data with a slash "/".
 
 The --binary option encodes the input data as given. Automatic code page
 translations to ECI pages is disabled, and no validation of the data's encoding
 takes place. This may be used for raw binary or binary encrypted data.
 This switch plays together with the built-in ECI logic and examples may
-be found in that section.
+be found below.
 
 The --fullmultibyte option uses the multibyte modes of QR Code, Micro QR Code,
 Rectangular Micro QR Code, Han Xin Code and Grid Matrix for binary and Latin
@@ -547,23 +553,37 @@ ECI Code  |  Character Encoding Scheme
 ------------------------------------------------------------
 
 Three examples:
-Ex1: The Euro sign U+20AC can be encoded in ISO/IEC 8859-15.
-The Euro sign has the ISO/IEC 8859-15 codepoint hex A4.
-It is encoded in UTF-8 as the hex sequence: e2 82 ac
-Those 3 bytes are contained in the file "utf8euro.txt"
-This command will generate the corresponding code:
+Ex1: The Euro sign U+20AC can be encoded in ISO/IEC 8859-15. The Euro sign has
+the ISO/IEC 8859-15 codepoint hex A4. It is encoded in UTF-8 as the hex
+sequence: E2 82 AC. Those 3 bytes are contained in the file "utf8euro.txt". This
+command will generate the corresponding code:
 
-zint.exe -b 71 --square --scale 10 --eci 17 -i utf8euro.txt
+zint -b 71 --square --scale 10 --eci 17 -i utf8euro.txt
+
+This is equivalent to the commands (using the --esc switch):
+
+zint -b 71 --square --scale 10 --eci 17 --esc -d "\xE2\x82\xAC"
+
+zint -b 71 --square --scale 10 --eci 17 --esc -d "\u20AC"
 
 Ex2: The Chinese character with Unicode codepoint U+5E38 can be encoded in Big5
-encoding. The Big5 representation of this character is the two hex bytes: 9C 75
+encoding. The Big5 representation of this character is the two hex bytes: B1 60
 (contained in the file big5char.txt). The generation command for Data Matrix is:
 
 zint -b 71 --square --scale 10 --eci 28 --binary -i big5char.txt
 
+This is equivalent to the command (using the --esc switch):
+
+zint -b 71 --square --scale 10 --eci 28 --binary --esc -d "\xB1\x60"
+
+and to the command (no --binary switch so conversion occurs):
+
+zint -b 71 --square --scale 10 --eci 28 --esc -d "\u5E38"
+
 Ex3: Some decoders (in particular mobile app ones) for QR Code assume UTF-8
 encoding by default and do not support ECI. In this case supply UTF-8 data and
-use the --binary switch:
+use the --binary switch so that the data will be encoded as UTF-8 without
+conversion:
 
 zint -b 58 --binary -d "UTF-8 data"
 
@@ -574,7 +594,7 @@ separate barcode image for each line of text in that file. To do this use the
 --batch switch. To select the input file from which to read data use the –i
 option. Zint will automatically detect the end of a line of text (in either
 Unix or Windows formatted text files) and produce a symbol each time it finds
-this. Input files should end with a return character – if this is not present
+this. Input files should end with a line feed character – if this is not present
 then Zint will not encode the last line of text, and will warn you that there
 is a problem.
 
@@ -1056,7 +1076,7 @@ Value   |
 7       | BARCODE_C25IND          | Code 2 of 5 Industrial
 8       | BARCODE_CODE39          | Code 3 of 9 (Code 39)
 9       | BARCODE_EXCODE39        | Extended Code 3 of 9 (Code 39+)
-13      | BARCODE_EANX            | EAN
+13      | BARCODE_EANX            | EAN (including EAN-8 and EAN-13)
 14      | BARCODE_EANX_CHK        | EAN + Check Digit
 16*     | BARCODE_GS1_128         | GS1-128 (UCC.EAN-128)
 18      | BARCODE_CODABAR         | Codabar
@@ -1067,7 +1087,8 @@ Value   |
 24      | BARCODE_CODE49          | Code 49
 25      | BARCODE_CODE93          | Code 93
 28      | BARCODE_FLAT            | Flattermarken
-29*     | BARCODE_DBAR_OMN        | GS1 DataBar Omnidirectional
+29*     | BARCODE_DBAR_OMN        | GS1 DataBar Omnidirectional (including
+        |                         |    GS1 DataBar Truncated)
 30*     | BARCODE_DBAR_LTD        | GS1 DataBar Limited
 31*     | BARCODE_DBAR_EXP        | GS1 DataBar Expanded
 32      | BARCODE_TELEPEN         | Telepen Alpha
@@ -1120,7 +1141,7 @@ Value   |
 104     | BARCODE_HIBC_QR         | HIBC QR Code
 106     | BARCODE_HIBC_PDF        | HIBC PDF417
 108     | BARCODE_HIBC_MICPDF     | HIBC MicroPDF417
-110     | BARCODE_HIBC_BLOCKF     | HIBC Codablock F
+110     | BARCODE_HIBC_BLOCKF     | HIBC Codablock-F
 112     | BARCODE_HIBC_AZTEC      | HIBC Aztec Code
 115     | BARCODE_DOTCODE         | DotCode
 116     | BARCODE_HANXIN          | Han Xin (Chinese Sensible) Code
@@ -1154,8 +1175,8 @@ Value   |
 
 Note: Symbologies marked with an asterisk (*) in the above table used different
 names in Zint before version 2.9.0. For example, symbology 29 used the name
-"BARCODE_RSS14". These names are now depreciated but are still recognised by
-Zint and will continue to be supported in future versions.
+"BARCODE_RSS14". These names are now deprecated but are still recognised by Zint
+and will continue to be supported in future versions.
 
 5.8 Adjusting other output options
 ----------------------------------
@@ -2962,7 +2983,7 @@ v2.7.0 - new features:
 - New GS1 AIs 7240, 235, 417, 7040, 8026, updated checks for 7007, 8008
 - New Symbology rMQR
 - QR and Gridmatrix optimisation for GB2312
-- removed depreciated interface for gLabels program. Please use current
+- removed deprecated interface for gLabels program. Please use current
   interface.
   
 v2.8.0
@@ -3032,7 +3053,7 @@ international standards:
 > ANSI/AIM BC6-2000 - Uniform Symbology Specification Code 49
 > ANSI/HIBC 2.6-2016 - The Health Industry Bar Code (HIBC) Supplier Labeling
      Standard
-> AIM ISS-X-24 - Uniform Symbology Specification Codablock F
+> AIM ISS-X-24 - Uniform Symbology Specification Codablock-F
 > AIMD013 (v 1.34a) – Information technology – Automatic identification and data
      capture techniques – Bar code symbology specification – DotCode (Revised
      19th Feb 2009)

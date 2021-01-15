@@ -32,6 +32,7 @@
 #include "testcommon.h"
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <errno.h>
 #include <unistd.h>
 
 static void test_checks(int index, int debug) {
@@ -159,7 +160,7 @@ static void test_input_mode(int index, int debug) {
         /*  9*/ { "1234", UNICODE_MODE | 0x10, 0, UNICODE_MODE | 0x10 },
         /* 10*/ { "[01]12345678901234", GS1_MODE | 0x20, 0, GS1_MODE | 0x20 },
     };
-    int data_size = sizeof(data) / sizeof(struct item);
+    int data_size = ARRAY_SIZE(data);
 
     for (int i = 0; i < data_size; i++) {
 
@@ -168,11 +169,7 @@ static void test_input_mode(int index, int debug) {
         struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        symbol->symbology = BARCODE_CODE49; // Supports GS1
-        symbol->input_mode = data[i].input_mode;
-        symbol->debug |= debug;
-
-        int length = strlen(data[i].data);
+        int length = testUtilSetSymbol(symbol, BARCODE_CODE49 /*Supports GS1*/, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
@@ -191,33 +188,47 @@ static void test_escape_char_process(int index, int generate, int debug) {
     int ret;
     struct item {
         int input_mode;
+        int eci;
         char *data;
         int ret;
         int expected_width;
         char *expected;
+        int compare_previous;
         char *comment;
     };
     struct item data[] = {
-        /*  0*/ { DATA_MODE, "\\0\\E\\a\\b\\t\\n\\v\\f\\r\\e\\G\\R\\x81\\\\", 0, 200, "(18) 103 64 68 71 72 73 74 75 76 77 91 93 94 101 65 60 44 106", "" },
-        /*  1*/ { DATA_MODE, "\\c", ZINT_ERROR_INVALID_DATA, 0, "Error 234: Unrecognised escape character in input data", "" },
-        /*  2*/ { DATA_MODE, "\\", ZINT_ERROR_INVALID_DATA, 0, "Error 236: Incomplete escape character in input data", "" },
-        /*  3*/ { DATA_MODE, "\\x", ZINT_ERROR_INVALID_DATA, 0, "Error 232: Incomplete escape character in input data", "" },
-        /*  4*/ { DATA_MODE, "\\x1", ZINT_ERROR_INVALID_DATA, 0, "Error 232: Incomplete escape character in input data", "" },
-        /*  5*/ { DATA_MODE, "\\x1g", ZINT_ERROR_INVALID_DATA, 0, "Error 233: Corrupt escape character in input data", "" },
-        /*  6*/ { UNICODE_MODE, "\\xA01\\xFF", 0, 90, "(8) 104 100 0 17 100 95 100 106", "" },
-        /*  7*/ { UNICODE_MODE, "\\u00A01\\u00FF", 0, 90, "(8) 104 100 0 17 100 95 100 106", "" },
-        /*  8*/ { DATA_MODE, "\\xc3\\xbF", 0, 79, "(7) 104 100 35 100 31 80 106", "" },
-        /*  9*/ { DATA_MODE, "\\u00fF", 0, 79, "(7) 104 100 35 100 31 80 106", "" },
-        /* 10*/ { DATA_MODE, "\\u", ZINT_ERROR_INVALID_DATA, 0, "Error 235: Incomplete unicode escape character in input data", "" },
-        /* 11*/ { DATA_MODE, "\\uF", ZINT_ERROR_INVALID_DATA, 0, "Error 235: Incomplete unicode escape character in input data", "" },
-        /* 12*/ { DATA_MODE, "\\u0F", ZINT_ERROR_INVALID_DATA, 0, "Error 235: Incomplete unicode escape character in input data", "" },
-        /* 13*/ { DATA_MODE, "\\uFG", ZINT_ERROR_INVALID_DATA, 0, "Error 235: Incomplete unicode escape character in input data", "" },
-        /* 14*/ { DATA_MODE, "\\u00F", ZINT_ERROR_INVALID_DATA, 0, "Error 235: Incomplete unicode escape character in input data", "" },
-        /* 15*/ { DATA_MODE, "\\u00FG", ZINT_ERROR_INVALID_DATA, 0, "Error 236: Corrupt unicode escape character in input data", "" },
+        /*  0*/ { DATA_MODE, -1, "\\0\\E\\a\\b\\t\\n\\v\\f\\r\\e\\G\\R\\x81\\\\", 0, 26, "01 05 08 09 0A 0B 0C 0D E7 DE 7B 1F B6 4D 45 B6 E6 78 98 0D 54 2E 58 21 AE 22 2B 3E 8B 22", 0, "" },
+        /*  1*/ { DATA_MODE, -1, "\\c", ZINT_ERROR_INVALID_DATA, 0, "Error 234: Unrecognised escape character in input data", 0, "" },
+        /*  2*/ { DATA_MODE, -1, "\\", ZINT_ERROR_INVALID_DATA, 0, "Error 236: Incomplete escape character in input data", 0, "" },
+        /*  3*/ { DATA_MODE, -1, "\\x", ZINT_ERROR_INVALID_DATA, 0, "Error 232: Incomplete escape character in input data", 0, "" },
+        /*  4*/ { DATA_MODE, -1, "\\x1", ZINT_ERROR_INVALID_DATA, 0, "Error 232: Incomplete escape character in input data", 0, "" },
+        /*  5*/ { DATA_MODE, -1, "\\x1g", ZINT_ERROR_INVALID_DATA, 0, "Error 233: Corrupt escape character in input data", 0, "" },
+        /*  6*/ { DATA_MODE, -1, "\\xA01\\xFF", 0, 12, "EB 21 32 EB 80 D8 49 44 DC 7D 9E 3B", 0, "" },
+        /*  7*/ { UNICODE_MODE, -1, "\\u00A01\\u00FF", 0, 12, "EB 21 32 EB 80 D8 49 44 DC 7D 9E 3B", 1, "" },
+        /*  8*/ { DATA_MODE, -1, "\\xc3\\xbF", 0, 12, "EB 44 EB 40 81 30 87 17 C5 68 5C 91", 0, "" },
+        /*  9*/ { DATA_MODE, -1, "\\u00fF", 0, 12, "EB 44 EB 40 81 30 87 17 C5 68 5C 91", 1, "" },
+        /* 10*/ { UNICODE_MODE, -1, "\\xc3\\xbF", 0, 10, "EB 80 81 47 1E 45 FC 93", 0, "" },
+        /* 11*/ { UNICODE_MODE, -1, "\\u00fF", 0, 10, "EB 80 81 47 1E 45 FC 93", 1, "" },
+        /* 12*/ { DATA_MODE, -1, "\\u", ZINT_ERROR_INVALID_DATA, 0, "Error 209: Incomplete Unicode escape character in input data", 0, "" },
+        /* 13*/ { DATA_MODE, -1, "\\uF", ZINT_ERROR_INVALID_DATA, 0, "Error 209: Incomplete Unicode escape character in input data", 0, "" },
+        /* 14*/ { DATA_MODE, -1, "\\u0F", ZINT_ERROR_INVALID_DATA, 0, "Error 209: Incomplete Unicode escape character in input data", 0, "" },
+        /* 15*/ { DATA_MODE, -1, "\\uFG", ZINT_ERROR_INVALID_DATA, 0, "Error 209: Incomplete Unicode escape character in input data", 0, "" },
+        /* 16*/ { DATA_MODE, -1, "\\u00F", ZINT_ERROR_INVALID_DATA, 0, "Error 209: Incomplete Unicode escape character in input data", 0, "" },
+        /* 17*/ { DATA_MODE, -1, "\\u00FG", ZINT_ERROR_INVALID_DATA, 0, "Error 211: Corrupt Unicode escape character in input data", 0, "" },
+        /* 18*/ { DATA_MODE, -1, "\\ufffe", ZINT_ERROR_INVALID_DATA, 0, "Error 246: Invalid Unicode BMP escape character in input data", 0, "Reversed BOM" },
+        /* 19*/ { DATA_MODE, -1, "\\ud800", ZINT_ERROR_INVALID_DATA, 0, "Error 246: Invalid Unicode BMP escape character in input data", 0, "Surrogate" },
+        /* 20*/ { DATA_MODE, -1, "\\udfff", ZINT_ERROR_INVALID_DATA, 0, "Error 246: Invalid Unicode BMP escape character in input data", 0, "Surrogate" },
+        /* 21*/ { UNICODE_MODE, 17, "\\xE2\\x82\\xAC", 0, 12, "F1 12 EB 25 81 4A 0A 8C 31 AC E3 2E", 0, "Zint manual 4.10 Ex1" },
+        /* 22*/ { UNICODE_MODE, 17, "\\u20AC", 0, 12, "F1 12 EB 25 81 4A 0A 8C 31 AC E3 2E", 1, "" },
+        /* 23*/ { DATA_MODE, 17, "\\xA4", 0, 12, "F1 12 EB 25 81 4A 0A 8C 31 AC E3 2E", 1, "" },
+        /* 24*/ { DATA_MODE, 28, "\\xB1\\x60", 0, 12, "F1 1D EB 32 61 D9 1C 0C C2 46 C3 B2", 0, "Zint manual 4.10 Ex2" },
+        /* 25*/ { UNICODE_MODE, 28, "\\u5E38", 0, 12, "F1 1D EB 32 61 D9 1C 0C C2 46 C3 B2", 1, "" },
     };
     int data_size = ARRAY_SIZE(data);
 
     char escaped[1024];
+    struct zint_symbol previous_symbol;
+    char *input_filename = "test_escape.txt";
 
     for (int i = 0; i < data_size; i++) {
 
@@ -228,19 +239,53 @@ static void test_escape_char_process(int index, int generate, int debug) {
 
         symbol->debug = ZINT_DEBUG_TEST; // Needed to get codeword dump in errtxt
 
-        int length = testUtilSetSymbol(symbol, BARCODE_CODE128, data[i].input_mode | ESCAPE_MODE, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        int length = testUtilSetSymbol(symbol, BARCODE_DATAMATRIX, data[i].input_mode | ESCAPE_MODE, data[i].eci, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (generate) {
-            printf("        /*%3d*/ { %s, \"%s\", %s, %d, \"%s\", \"%s\" },\n",
-                    i, testUtilInputModeName(data[i].input_mode), testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
-                    testUtilErrorName(data[i].ret), symbol->width, symbol->errtxt, data[i].comment);
+            printf("        /*%3d*/ { %s, %d, \"%s\", %s, %d, \"%s\", %d, \"%s\" },\n",
+                    i, testUtilInputModeName(data[i].input_mode), data[i].eci, testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
+                    testUtilErrorName(data[i].ret), symbol->width, symbol->errtxt, data[i].compare_previous, data[i].comment);
         } else {
-            if (ret < 5) {
+            assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
+
+            if (ret < ZINT_ERROR) {
                 assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
-                assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
+                if (index == -1 && data[i].compare_previous) {
+                    ret = testUtilSymbolCmp(symbol, &previous_symbol);
+                    assert_zero(ret, "i:%d testUtilSymbolCmp ret %d != 0\n", i, ret);
+                }
+            }
+            memcpy(&previous_symbol, symbol, sizeof(previous_symbol));
+
+            if (ret < 5) {
+                // Test from input file
+
+                FILE *fp;
+                fp = fopen(input_filename, "wb");
+                assert_nonnull(fp, "i:%d fopen(%s) failed\n", i, input_filename);
+                assert_nonzero(fputs(data[i].data, fp), "i%d fputs(%s) failed\n", i, data[i].data);
+                assert_zero(fclose(fp), "i%d fclose() failed\n", i);
+
+                struct zint_symbol *symbol2 = ZBarcode_Create();
+                assert_nonnull(symbol, "Symbol2 not created\n");
+
+                symbol2->debug = ZINT_DEBUG_TEST; // Needed to get codeword dump in errtxt
+
+                (void)testUtilSetSymbol(symbol2, BARCODE_DATAMATRIX, data[i].input_mode | ESCAPE_MODE, data[i].eci, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
+
+                ret = ZBarcode_Encode_File(symbol2, input_filename);
+                assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode_File ret %d != %d (%s)\n", i, ret, data[i].ret, symbol2->errtxt);
+                assert_zero(strcmp(symbol2->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol2->errtxt, data[i].expected);
+
+                ret = testUtilSymbolCmp(symbol2, symbol);
+                assert_zero(ret, "i:%d testUtilSymbolCmp symbol2 ret %d != 0\n", i, ret);
+
+                assert_zero(remove(input_filename), "i:%d remove(%s) != 0 (%d)\n", i, input_filename, errno);
+
+                ZBarcode_Delete(symbol2);
             }
         }
 
@@ -474,6 +519,8 @@ static void test_valid_id(void) {
     testFinish();
 }
 
+STATIC_UNLESS_ZINT_TEST int error_tag(char error_string[100], int error_number);
+
 static void test_error_tag(int index) {
 
     testStart("");
@@ -582,8 +629,6 @@ static void test_is_valid_utf8(int index) {
 
     testFinish();
 }
-
-STATIC_UNLESS_ZINT_TEST int error_tag(char error_string[100], int error_number);
 
 int main(int argc, char *argv[]) {
 
