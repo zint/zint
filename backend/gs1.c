@@ -38,58 +38,1105 @@
 #include "common.h"
 #include "gs1.h"
 
-/* This code does some checks on the integrity of GS1 data. It is not intended
-   to be bulletproof, nor does it report very accurately what problem was found
-   or where, but should prevent some of the more common encoding errors */
+/* gs1_lint() validators and checkers */
 
-static void itostr(char ai_string[], int ai_value) {
-    int thou, hund, ten, unit;
-    char temp[2];
+/* Validate numeric */
+static int numeric(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+            int *p_err_posn, char err_msg[50]) {
 
-    strcpy(ai_string, "(");
-    thou = ai_value / 1000;
-    hund = (ai_value - (1000 * thou)) / 100;
-    ten = (ai_value - ((1000 * thou) + (100 * hund))) / 10;
-    unit = ai_value - ((1000 * thou) + (100 * hund) + (10 * ten));
+    data_len -= offset;
 
-    temp[1] = '\0';
-    if (ai_value >= 1000) {
-        temp[0] = itoc(thou);
-        strcat(ai_string, temp);
+    if (data_len < min) {
+        return 0;
     }
-    if (ai_value >= 100) {
-        temp[0] = itoc(hund);
-        strcat(ai_string, temp);
+
+    if (data_len) {
+        const unsigned char *d = data + offset;
+        const unsigned char *de = d + (data_len > max ? max : data_len);
+
+        for (; d < de; d++) {
+            if (*d < '0' || *d > '9') {
+                *p_err_no = 3;
+                *p_err_posn = d - data + 1;
+                sprintf(err_msg, "Non-numeric character '%c'", *d);
+                return 0;
+            }
+        }
     }
-    temp[0] = itoc(ten);
-    strcat(ai_string, temp);
-    temp[0] = itoc(unit);
-    strcat(ai_string, temp);
-    strcat(ai_string, ")");
+
+    return 1;
 }
 
+/* Validate of character set 82 (GS1 General Spec Figure 7.11-1) */
+static int cset82(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+            int *p_err_posn, char err_msg[50]) {
+
+    /* These 13 characters plus all <= ' ' = 13 + 33 = 46 + 82 = 128 */
+    static const char not_in_set82[] = "#$@[\\]^`{|}~\177";
+
+    data_len -= offset;
+
+    if (data_len < min) {
+        return 0;
+    }
+
+    if (data_len) {
+        const unsigned char *d = data + offset;
+        const unsigned char *de = d + (data_len > max ? max : data_len);
+
+        for (; d < de; d++) {
+            if (*d <= ' ' || strchr(not_in_set82, *d) != NULL) {
+                *p_err_no = 3;
+                *p_err_posn = d - data + 1;
+                sprintf(err_msg, "Invalid CSET 82 character '%c'", *d);
+                return 0;
+            }
+        }
+    }
+
+    return 1;
+}
+
+/* Validate of character set 39 (GS1 General Spec Figure 7.11-2) */
+static int cset39(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+            int *p_err_posn, char err_msg[50]) {
+
+    data_len -= offset;
+
+    if (data_len < min) {
+        return 0;
+    }
+
+    if (data_len) {
+        const unsigned char *d = data + offset;
+        const unsigned char *de = d + (data_len > max ? max : data_len);
+
+        for (; d < de; d++) {
+            /* 0-9, A-Z and "#", "-", "/" */
+            if ((*d < '0' && *d != '#' && *d != '-' && *d != '/') || (*d > '9' && *d < 'A') || *d > 'Z') {
+                *p_err_no = 3;
+                *p_err_posn = d - data + 1;
+                sprintf(err_msg, "Invalid CSET 39 character '%c'", *d);
+                return 0;
+            }
+        }
+    }
+
+    return 1;
+}
+
+/* Check a check digit (GS1 General Spec 7.9.1) */
+static int csum(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+            int *p_err_posn, char err_msg[50], const int length_only) {
+
+    data_len -= offset;
+
+    if (data_len < min) {
+        return 0;
+    }
+
+    if (!length_only && data_len) {
+        const unsigned char *d = data + offset;
+        const unsigned char *de = d + (data_len > max ? max : data_len) - 1; /* Note less last character */
+        int checksum = 0;
+        int factor = (min & 1) ? 1 : 3;
+
+        for (; d < de; d++) {
+            checksum += (*d - '0') * factor;
+            factor = factor == 3 ? 1 : 3;
+        }
+        checksum = 10 - checksum % 10;
+        if (checksum == 10) {
+            checksum = 0;
+        }
+        if (checksum != *d - '0') {
+            *p_err_no = 3;
+            *p_err_posn = d - data + 1;
+            sprintf(err_msg, "Bad checksum '%c', expected '%c'", *d, checksum + '0');
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+/* Check for a GS1 Prefix (GS1 General Spec GS1 1.4.2) */
+static int key(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+            int *p_err_posn, char err_msg[50], const int length_only) {
+    (void)max;
+
+    data_len -= offset;
+
+    if (data_len < min) {
+        return 0;
+    }
+    if (data_len && data_len < 2) { /* Do this check separately for backward compatibility */
+        *p_err_no = 4;
+        return 0;
+    }
+
+    if (!length_only && data_len) {
+        data += offset;
+
+        if (data[0] < '0' || data[0] > '9' || data[1] < '0' || data[1] > '9') {
+            *p_err_no = 3;
+            *p_err_posn = offset + (data[0] < '0' || data[0] > '9' ? 0 : 1) + 1;
+            sprintf(err_msg, "Non-numeric company prefix '%c'", data[0] < '0' || data[0] > '9' ? data[0] : data[1]);
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+/* Check for a date YYMMDD with zero day allowed */
+static int yymmd0(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+            int *p_err_posn, char err_msg[50], const int length_only) {
+
+    static char days_in_month[] = { 0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+
+    (void)max;
+
+    data_len -= offset;
+
+    if (data_len < min || (data_len && data_len < 6)) {
+        return 0;
+    }
+
+    if (!length_only && data_len) {
+        int month, day;
+
+        month = to_int(data + offset + 2, 2);
+        if (month == 0 || month > 12) {
+            *p_err_no = 3;
+            *p_err_posn = offset + 2 + 1;
+            sprintf(err_msg, "Invalid month '%.2s'", data + offset + 2);
+            return 0;
+        }
+
+        day = to_int(data + offset + 4, 2);
+        if (day && day > days_in_month[month]) {
+            *p_err_no = 3;
+            *p_err_posn = offset + 4 + 1;
+            sprintf(err_msg, "Invalid day '%.2s'", data + offset + 4);
+            return 0;
+        }
+        if (month == 2 && day == 29) { /* Leap year check */
+            int year = to_int(data + offset, 2);
+            if (year & 3) { /* Good until 2050 when 00 will mean 2100 (GS1 General Spec 7.12) */
+                *p_err_no = 3;
+                *p_err_posn = offset + 4 + 1;
+                sprintf(err_msg, "Invalid day '%.2s'", data + offset + 4);
+                return 0;
+            }
+        }
+    }
+
+    return 1;
+}
+
+/* Check for a date YYMMDD. Zero day NOT allowed */
+static int yymmdd(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+            int *p_err_posn, char err_msg[50], const int length_only) {
+
+    if (!yymmd0(data, data_len, offset, min, max, p_err_no, p_err_posn, err_msg, length_only)) {
+        return 0;
+    }
+
+    data_len -= offset;
+
+    if (!length_only && data_len) {
+        int day = to_int(data + offset + 4, 2);
+        if (day == 0) {
+            *p_err_no = 3;
+            *p_err_posn = offset + 4 + 1;
+            sprintf(err_msg, "Invalid day '%.2s'", data + offset + 4);
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+/* Check for a date and hours YYMMDDHH */
+static int yymmddhh(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+            int *p_err_posn, char err_msg[50], const int length_only) {
+
+    if (data_len < min || (data_len && data_len < 8)) {
+        return 0;
+    }
+
+    if (!yymmdd(data, data_len, offset, min, max, p_err_no, p_err_posn, err_msg, length_only)) {
+        return 0;
+    }
+
+    data_len -= offset;
+
+    if (!length_only && data_len) {
+        int hour = to_int(data + offset + 6, 2);
+        if (hour > 23) {
+            *p_err_no = 3;
+            *p_err_posn = offset + 6 + 1;
+            sprintf(err_msg, "Invalid hour of day '%.2s'", data + offset + 6);
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+/* Check for a time HHMM */
+static int hhmm(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+            int *p_err_posn, char err_msg[50], const int length_only) {
+    (void)max;
+
+    data_len -= offset;
+
+    if (data_len < min || (data_len && data_len < 4)) {
+        return 0;
+    }
+
+    if (!length_only && data_len) {
+        int hour, mins;
+
+        hour = to_int(data + offset, 2);
+        if (hour > 23) {
+            *p_err_no = 3;
+            *p_err_posn = offset + 1;
+            sprintf(err_msg, "Invalid hour of day '%.2s'", data + offset);
+            return 0;
+        }
+        mins = to_int(data + offset + 2, 2);
+        if (mins > 59) {
+            *p_err_no = 3;
+            *p_err_posn = offset + 2 + 1;
+            sprintf(err_msg, "Invalid minutes in the hour '%.2s'", data + offset + 2);
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+/* Check for a time MMSS with seconds optional */
+static int mmoptss(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+            int *p_err_posn, char err_msg[50], const int length_only) {
+    (void)max;
+
+    data_len -= offset;
+
+    if (data_len < min || (data_len && data_len < 2)
+            || (data_len > 2 && data_len < 4)) {
+        return 0;
+    }
+
+    if (!length_only && data_len) {
+		int mins = to_int(data + offset, 2);
+		if (mins > 59) {
+			*p_err_no = 3;
+			*p_err_posn = offset + 1;
+			sprintf(err_msg, "Invalid minutes in the hour '%.2s'", data + offset);
+			return 0;
+		}
+		if (data_len > 2) {
+			int secs = to_int(data + offset + 2, 2);
+			if (secs > 59) {
+				*p_err_no = 3;
+				*p_err_posn = offset + 2 + 1;
+				sprintf(err_msg, "Invalid seconds in the minute '%.2s'", data + offset + 2);
+				return 0;
+			}
+		}
+    }
+
+    return 1;
+}
+
+/* Generated by "php backend/tools/gen_iso3166_h.php > backend/iso3166.h" */
+#include "iso3166.h"
+
+/* Check for an ISO 3166-1 numeric country code */
+static int iso3166(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+            int *p_err_posn, char err_msg[50], const int length_only) {
+    (void)max;
+
+    data_len -= offset;
+
+    if (data_len < min || (data_len && data_len < 3)) {
+        return 0;
+    }
+
+    if (!length_only && data_len) {
+        if (!iso3166_numeric(to_int(data + offset, 3))) {
+            *p_err_no = 3;
+            *p_err_posn = offset + 1;
+            sprintf(err_msg, "Unknown country code '%.3s'", data + offset);
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+/* Check for a list of ISO 3166-1 numeric country codes */
+static int iso3166list(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+            int *p_err_posn, char err_msg[50], const int length_only) {
+
+    int data_len_max;
+
+    data_len -= offset;
+    data_len_max = data_len > max ? max : data_len;
+
+    if (data_len < min || (data_len && data_len < 3)) {
+        return 0;
+    }
+    if (data_len && data_len_max % 3) { /* Do this check separately for backward compatibility */
+        *p_err_no = 4;
+        return 0;
+    }
+
+    if (!length_only && data_len) {
+        int i;
+        for (i = 0; i < data_len_max; i += 3) {
+            if (!iso3166(data, offset + data_len, offset + i, 3, 3, p_err_no, p_err_posn, err_msg, length_only)) {
+                return 0;
+            }
+        }
+    }
+
+    return 1;
+}
+
+/* Check for an ISO 3166-1 numeric country code allowing "999" */
+static int iso3166999(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+            int *p_err_posn, char err_msg[50], const int length_only) {
+    (void)max;
+
+    data_len -= offset;
+
+    if (data_len < min || (data_len && data_len < 3)) {
+        return 0;
+    }
+
+    if (!length_only && data_len) {
+        int cc = to_int(data + offset, 3);
+        if (cc != 999 && !iso3166_numeric(cc)) {
+            *p_err_no = 3;
+            *p_err_posn = offset + 1;
+            sprintf(err_msg, "Unknown country code '%.3s'", data + offset);
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+/* Check for an ISO 3166-1 alpha2 country code */
+static int iso3166alpha2(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+            int *p_err_posn, char err_msg[50], const int length_only) {
+    (void)max;
+
+    data_len -= offset;
+
+    if (data_len < min || (data_len && data_len < 2)) {
+        return 0;
+    }
+
+    if (!length_only && data_len) {
+        if (!iso3166_alpha2((const char *) (data + offset))) {
+            *p_err_no = 3;
+            *p_err_posn = offset + 1;
+            sprintf(err_msg, "Unknown country code '%.2s'", data + offset);
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+/* Generated by "php backend/tools/gen_iso4217_h.php > backend/iso4217.h" */
+#include "iso4217.h"
+
+/* Check for an ISO 4217 currency code */
+static int iso4217(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+            int *p_err_posn, char err_msg[50], const int length_only) {
+    (void)max;
+
+    data_len -= offset;
+
+    if (data_len < min || (data_len && data_len < 3)) {
+        return 0;
+    }
+
+    if (!length_only && data_len) {
+        if (!iso4217_numeric(to_int(data + offset, 3))) {
+            *p_err_no = 3;
+            *p_err_posn = offset + 1;
+            sprintf(err_msg, "Unknown currency code '%.3s'", data + offset);
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+/* Check for percent encoded */
+static int pcenc(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+            int *p_err_posn, char err_msg[50], const int length_only) {
+
+    static const char hex_chars[] = "0123456789ABCDEFabcdef";
+
+    data_len -= offset;
+
+    if (data_len < min) {
+        return 0;
+    }
+
+    if (!length_only && data_len) {
+        const unsigned char *d = data + offset;
+        const unsigned char *de = d + (data_len > max ? max : data_len);
+
+        for (; d < de; d++) {
+            if (*d == '%') {
+                if (de - d < 3) {
+                    *p_err_no = 3;
+                    *p_err_posn = d - data + 1;
+                    strcpy(err_msg, "Invalid % escape");
+                    return 0;
+                }
+                if (strchr(hex_chars, *(++d)) == NULL || strchr(hex_chars, *(++d)) == NULL) {
+                    *p_err_no = 3;
+                    *p_err_posn = d - data + 1;
+                    strcpy(err_msg, "Invalid characters for percent encoding");
+                    return 0;
+                }
+            }
+        }
+    }
+
+    return 1;
+}
+
+/* Check for yes/no (1/0) indicator */
+static int yesno(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+            int *p_err_posn, char err_msg[50], const int length_only) {
+    (void)max;
+
+    data_len -= offset;
+
+    if (data_len < min) {
+        return 0;
+    }
+
+    if (!length_only && data_len) {
+        if (data[offset] != '0' && data[offset] != '1') {
+            *p_err_no = 3;
+            *p_err_posn = offset + 1;
+            strcpy(err_msg, "Neither 0 nor 1 for yes or no");
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+/* Check for importer index (GS1 General Spec 3.8.17) */
+static int importeridx(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+            int *p_err_posn, char err_msg[50], const int length_only) {
+    (void)max;
+
+    data_len -= offset;
+
+    if (data_len < min) {
+        return 0;
+    }
+
+    if (!length_only && data_len) {
+        const unsigned char *d = data + offset;
+
+        /* 0-9, A-Z, a-z and "-", "_" */
+        if ((*d < '0' && *d != '-') || (*d > '9' && *d < 'A') || (*d > 'Z' && *d < 'a' && *d != '_') || *d > 'z') {
+            *p_err_no = 3;
+            *p_err_posn = offset + 1;
+            sprintf(err_msg, "Invalid importer index '%c'", *d);
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+/* Check non-zero */
+static int nonzero(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+            int *p_err_posn, char err_msg[50], const int length_only) {
+
+    data_len -= offset;
+
+    if (data_len < min) {
+        return 0;
+    }
+
+    if (!length_only && data_len) {
+        int val = to_int(data + offset, data_len > max ? max : data_len);
+
+        if (val == 0) {
+            *p_err_no = 3;
+            *p_err_posn = offset + 1;
+            strcpy(err_msg, "Zero not permitted");
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+/* Check winding direction (0/1/9) (GS1 General Spec 3.9.1) */
+static int winding(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+            int *p_err_posn, char err_msg[50], const int length_only) {
+    (void)max;
+
+    data_len -= offset;
+
+    if (data_len < min) {
+        return 0;
+    }
+
+    if (!length_only && data_len) {
+        if (data[offset] != '0' && data[offset] != '1' && data[offset] != '9') {
+            *p_err_no = 3;
+            *p_err_posn = offset + 1;
+            sprintf(err_msg, "Invalid winding direction '%c'", data[offset]);
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+/* Check zero */
+static int zero(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+            int *p_err_posn, char err_msg[50], const int length_only) {
+    (void)max;
+
+    data_len -= offset;
+
+    if (data_len < min) {
+        return 0;
+    }
+
+    if (!length_only && data_len) {
+        if (data[offset] != '0') {
+            *p_err_no = 3;
+            *p_err_posn = offset + 1;
+            strcpy(err_msg, "Zero is required");
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+/* Check piece of a trade item (GS1 General Spec 3.9.6 and 3.9.17) */
+static int pieceoftotal(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+            int *p_err_posn, char err_msg[50], const int length_only) {
+    (void)max;
+
+    data_len -= offset;
+
+    if (data_len < min || (data_len && data_len < 4)) {
+        return 0;
+    }
+
+    if (!length_only && data_len) {
+        int pieces, total;
+
+        pieces = to_int(data + offset, 2);
+        if (pieces == 0) {
+            *p_err_no = 3;
+            *p_err_posn = offset + 1;
+            strcpy(err_msg, "Piece number cannot be zero");
+            return 0;
+        }
+        total = to_int(data + offset + 2, 2);
+        if (total == 0) {
+            *p_err_no = 3;
+            *p_err_posn = offset + 1;
+            strcpy(err_msg, "Total number cannot be zero");
+            return 0;
+        }
+        if (pieces > total) {
+            *p_err_no = 3;
+            *p_err_posn = offset + 1;
+            sprintf(err_msg, "Piece number '%.2s' exceeds total '%.2s'", data + offset, data + offset + 2);
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+/* Check IBAN (ISO 13616) */
+static int iban(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+            int *p_err_posn, char err_msg[50], const int length_only) {
+
+    data_len -= offset;
+
+    if (data_len < min) {
+        return 0;
+    }
+    if (data_len && data_len < 5) { /* Do this check separately for backward compatibility */
+        *p_err_no = 4;
+        return 0;
+    }
+
+    if (!length_only && data_len) {
+        const unsigned char *d = data + offset;
+        const unsigned char *de = d + (data_len > max ? max : data_len);
+        int checksum = 0;
+        int given_checksum;
+
+        if (d[0] < 'A' || d[0] > 'Z' || d[1] < 'A' || d[1] > 'Z') { /* 1st 2 chars alphabetic country code */
+            *p_err_no = 3;
+            *p_err_posn = d - data + 1;
+            sprintf(err_msg, "Non-alphabetic IBAN country code '%.2s'", d);
+            return 0;
+        }
+        if (!iso3166_alpha2((const char *) d)) {
+            *p_err_no = 3;
+            *p_err_posn = d - data + 1;
+            sprintf(err_msg, "Invalid IBAN country code '%.2s'", d);
+            return 0;
+        }
+        d += 2;
+        if (d[0] < '0' || d[0] > '9' || d[1] < '0' || d[1] > '9') { /* 2nd 2 chars numeric checksum */
+            *p_err_no = 3;
+            *p_err_posn = d - data + 1;
+            sprintf(err_msg, "Non-numeric IBAN checksum '%.2s'", d);
+            return 0;
+        }
+        given_checksum = to_int(d, 2);
+        d += 2;
+        for (; d < de; d++) {
+            /* 0-9, A-Z */
+            if (*d < '0' || (*d > '9' && *d < 'A') || *d > 'Z') {
+                *p_err_no = 3;
+                *p_err_posn = d - data + 1;
+                sprintf(err_msg, "Invalid IBAN character '%c'", *d);
+                return 0;
+            }
+            if (*d >= 'A') {
+                checksum = checksum * 100 + *d - 'A' + 10;
+            } else {
+                checksum = checksum * 10 + *d - '0';
+            }
+            checksum %= 97;
+        }
+
+        /* Add in country code */
+        checksum = (((checksum * 100) % 97) + (data[offset] - 'A' + 10)) * 100 + data[offset + 1] - 'A' + 10;
+        checksum %= 97;
+
+        checksum *= 100; /* Allow for checksum "00" */
+        checksum %= 97;
+
+        checksum = 98 - checksum;
+
+        if (checksum != given_checksum) {
+            *p_err_no = 3;
+            *p_err_posn = offset + 2 + 1;
+            sprintf(err_msg, "Bad IBAN checksum '%.2s', expected '%02d'", data + offset + 2, checksum);
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+/* Check CPID does not begin with zero */
+static int nozeroprefix(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+            int *p_err_posn, char err_msg[50], const int length_only) {
+    (void)max;
+
+    data_len -= offset;
+
+    if (data_len < min) {
+        return 0;
+    }
+
+    if (!length_only && data_len) {
+        /* GS1 General Specifications 3.9.11 "The C/P serial number SHALL NOT begin with a "0" digit, unless the
+           entire serial number consists of the single digit '0'." */
+        if (data[0] == '0' && data_len != 1) {
+            *p_err_no = 3;
+            *p_err_posn = offset + 1;
+            strcpy(err_msg, "Zero prefix is not permitted");
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+/* Helper to parse coupon Variable Length Indicator (VLI) and associated field. If `vli_nine` set
+ * then a VLI of '9' means no field present */
+static const unsigned char *coupon_vli(const unsigned char *data, const int data_len, const unsigned char *d,
+            const char *name, const int vli_offset, const int vli_min, const int vli_max, const int vli_nine,
+            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+    const unsigned char *de;
+    int vli;
+
+    if (d - data + 1 > data_len) {
+        *p_err_no = 3;
+        *p_err_posn = d - data + 1;
+        sprintf(err_msg, "%s VLI missing", name);
+        return NULL;
+    }
+    vli = to_int(d, 1);
+    if ((vli < vli_min || vli > vli_max) && (vli != 9 || !vli_nine)) {
+        *p_err_no = 3;
+        *p_err_posn = d - data + 1;
+        sprintf(err_msg, vli < 0 ? "Non-numeric %s VLI '%c'" : "Invalid %s VLI '%c'", name, *d);
+        return NULL;
+    }
+    d++;
+    if (vli != 9 || !vli_nine) {
+        if (d - data + vli + vli_offset > data_len) {
+            *p_err_no = 3;
+            *p_err_posn = d - data + 1;
+            sprintf(err_msg, "%s incomplete", name);
+            return NULL;
+        }
+        de = d + vli + vli_offset;
+        for (; d < de; d++) {
+            if (*d < '0' || *d > '9') {
+                *p_err_no = 3;
+                *p_err_posn = d - data + 1;
+                sprintf(err_msg, "Non-numeric %s '%c'", name, *d);
+                return NULL;
+            }
+        }
+    }
+
+    return d;
+}
+
+/* Helper to parse coupon value field (numeric) */
+static const unsigned char *coupon_val(const unsigned char *data, const int data_len, const unsigned char *d,
+            const char *name, const int val_len, int *p_val, int *p_err_no, int *p_err_posn, char err_msg[50]) {
+    int val;
+
+    if (d - data + val_len > data_len) {
+        *p_err_no = 3;
+        *p_err_posn = d - data + 1;
+        sprintf(err_msg, "%s incomplete", name);
+        return NULL;
+    }
+    val = to_int(d, val_len);
+    if (val < 0) {
+        *p_err_no = 3;
+        *p_err_posn = d - data + 1;
+        sprintf(err_msg, "Non-numeric %s", name);
+        return NULL;
+    }
+    d += val_len;
+
+    if (p_val) {
+        *p_val = val;
+    }
+    return d;
+}
+
+/* Check North American Coupon Code */
+/* Note all fields including optional must be numeric so type could be N..70 */
+static int couponcode(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+            int *p_err_posn, char err_msg[50], const int length_only) {
+
+    /* Minimum possible required fields length = 21
+     * (from "North American Coupon Application Guideline Using GS1 DataBar Expanded Symbols R2.0 (Feb 13 2015)")
+     * VLI - Variable Length Indicator; GCP - GS1 Company Prefix; OC - Offer Code; SV - Save Value;
+     * PPR - Primary Purchase Requirement; PPFC - Primary Purchase Family Code */
+    const int min_req_len = 1 /*GCP VLI*/ + 6 /*GCP*/ + 6 /*OC*/ + 1 /*SV VLI*/ + 1 /*SV*/
+                            + 1 /*PPR VLI*/ + 1 /*PPR*/ + 1 /*PPR Code*/ + 3 /*PPFC*/;
+
+    (void)max;
+
+    data_len -= offset;
+
+    if (data_len < min) {
+        return 0;
+    }
+    if (data_len && data_len < min_req_len) { /* Do separately for backward compatibility */
+        *p_err_no = 4;
+        return 0;
+    }
+
+    if (!length_only && data_len) {
+        const unsigned char *d = data + offset;
+        int val;
+
+        data_len += offset;
+
+        /* Required fields */
+        d = coupon_vli(data, data_len, d, "Primary GS1 Co. Prefix", 6, 0, 6, 0, p_err_no, p_err_posn, err_msg);
+        if (d == NULL) {
+            return 0;
+        }
+        d = coupon_val(data, data_len, d, "Offer Code", 6, NULL, p_err_no, p_err_posn, err_msg);
+        if (d == NULL) {
+            return 0;
+        }
+        d = coupon_vli(data, data_len, d, "Save Value", 0, 1, 5, 0, p_err_no, p_err_posn, err_msg);
+        if (d == NULL) {
+            return 0;
+        }
+        d = coupon_vli(data, data_len, d, "Primary Purch. Req.", 0, 1, 5, 0, p_err_no, p_err_posn, err_msg);
+        if (d == NULL) {
+            return 0;
+        }
+        d = coupon_val(data, data_len, d, "Primary Purch. Req. Code", 1, &val, p_err_no, p_err_posn, err_msg);
+        if (d == NULL) {
+            return 0;
+        }
+        if (val > 5 && val < 9) {
+            *p_err_no = 3;
+            *p_err_posn = d - 1 - data + 1;
+            sprintf(err_msg, "Invalid Primary Purch. Req. Code '%c'", *(d - 1));
+            return 0;
+        }
+        d = coupon_val(data, data_len, d, "Primary Purch. Family Code", 3, NULL, p_err_no, p_err_posn, err_msg);
+        if (d == NULL) {
+            return 0;
+        }
+
+        /* Optional fields */
+        while (d - data < data_len) {
+            int data_field = to_int(d, 1);
+            d++;
+
+            if (data_field == 1) {
+
+                d = coupon_val(data, data_len, d, "Add. Purch. Rules Code", 1, &val, p_err_no, p_err_posn, err_msg);
+                if (d == NULL) {
+                    return 0;
+                }
+                if (val > 3) {
+                    *p_err_no = 3;
+                    *p_err_posn = d - 1 - data + 1;
+                    sprintf(err_msg, "Invalid Add. Purch. Rules Code '%c'", *(d - 1));
+                    return 0;
+                }
+                d = coupon_vli(data, data_len, d, "2nd Purch. Req.", 0, 1, 5, 0, p_err_no, p_err_posn, err_msg);
+                if (d == NULL) {
+                    return 0;
+                }
+                d = coupon_val(data, data_len, d, "2nd Purch. Req. Code", 1, &val, p_err_no, p_err_posn, err_msg);
+                if (d == NULL) {
+                    return 0;
+                }
+                if (val > 4 && val < 9) {
+                    *p_err_no = 3;
+                    *p_err_posn = d - 1 - data + 1;
+                    sprintf(err_msg, "Invalid 2nd Purch. Req. Code '%c'", *(d - 1));
+                    return 0;
+                }
+                d = coupon_val(data, data_len, d, "2nd Purch. Family Code", 3, NULL, p_err_no, p_err_posn, err_msg);
+                if (d == NULL) {
+                    return 0;
+                }
+                d = coupon_vli(data, data_len, d, "2nd Purch. GS1 Co. Prefix", 6, 0, 6, 1, p_err_no, p_err_posn, err_msg);
+                if (d == NULL) {
+                    return 0;
+                }
+
+            } else if (data_field == 2) {
+
+                d = coupon_vli(data, data_len, d, "3rd Purch. Req.", 0, 1, 5, 0, p_err_no, p_err_posn, err_msg);
+                if (d == NULL) {
+                    return 0;
+                }
+                d = coupon_val(data, data_len, d, "3rd Purch. Req. Code", 1, &val, p_err_no, p_err_posn, err_msg);
+                if (d == NULL) {
+                    return 0;
+                }
+                if (val > 4 && val < 9) {
+                    *p_err_no = 3;
+                    *p_err_posn = d - 1 - data + 1;
+                    sprintf(err_msg, "Invalid 3rd Purch. Req. Code '%c'", *(d - 1));
+                    return 0;
+                }
+                d = coupon_val(data, data_len, d, "3rd Purch. Family Code", 3, NULL, p_err_no, p_err_posn, err_msg);
+                if (d == NULL) {
+                    return 0;
+                }
+                d = coupon_vli(data, data_len, d, "3rd Purch. GS1 Co. Prefix", 6, 0, 6, 1, p_err_no, p_err_posn, err_msg);
+                if (d == NULL) {
+                    return 0;
+                }
+
+            } else if (data_field == 3) {
+
+                d = coupon_val(data, data_len, d, "Expiration Date", 6, NULL, p_err_no, p_err_posn, err_msg);
+                if (d == NULL) {
+                    return 0;
+                }
+                if (!yymmd0(data, data_len, d - 6 - data, 6, 6, p_err_no, p_err_posn, err_msg, 0)) {
+                    return 0;
+                }
+
+            } else if (data_field == 4) {
+
+                d = coupon_val(data, data_len, d, "Start Date", 6, NULL, p_err_no, p_err_posn, err_msg);
+                if (d == NULL) {
+                    return 0;
+                }
+                if (!yymmd0(data, data_len, d - 6 - data, 6, 6, p_err_no, p_err_posn, err_msg, 0)) {
+                    return 0;
+                }
+
+            } else if (data_field == 5) {
+
+                d = coupon_vli(data, data_len, d, "Serial Number", 6, 0, 9, 0, p_err_no, p_err_posn, err_msg);
+                if (d == NULL) {
+                    return 0;
+                }
+
+            } else if (data_field == 6) {
+
+                d = coupon_vli(data, data_len, d, "Retailer ID", 6, 1, 7, 0, p_err_no, p_err_posn, err_msg);
+                if (d == NULL) {
+                    return 0;
+                }
+
+            } else if (data_field == 9) {
+
+                d = coupon_val(data, data_len, d, "Save Value Code", 1, &val, p_err_no, p_err_posn, err_msg);
+                if (d == NULL) {
+                    return 0;
+                }
+                if ((val > 2 && val < 5) || val > 6) {
+                    *p_err_no = 3;
+                    *p_err_posn = d - 1 - data + 1;
+                    sprintf(err_msg, "Invalid Save Value Code '%c'", *(d - 1));
+                    return 0;
+                }
+                d = coupon_val(data, data_len, d, "Save Value Applies To", 1, &val, p_err_no, p_err_posn, err_msg);
+                if (d == NULL) {
+                    return 0;
+                }
+                if (val > 2) {
+                    *p_err_no = 3;
+                    *p_err_posn = d - 1 - data + 1;
+                    sprintf(err_msg, "Invalid Save Value Applies To '%c'", *(d - 1));
+                    return 0;
+                }
+                d = coupon_val(data, data_len, d, "Store Coupon Flag", 1, NULL, p_err_no, p_err_posn, err_msg);
+                if (d == NULL) {
+                    return 0;
+                }
+                d = coupon_val(data, data_len, d, "Don't Multiply Flag", 1, &val, p_err_no, p_err_posn, err_msg);
+                if (d == NULL) {
+                    return 0;
+                }
+                if (val > 1) {
+                    *p_err_no = 3;
+                    *p_err_posn = d - 1 - data + 1;
+                    sprintf(err_msg, "Invalid Don't Multiply Flag '%c'", *(d - 1));
+                    return 0;
+                }
+
+            } else {
+
+                *p_err_no = 3;
+                *p_err_posn = d - 1 - data + 1;
+                sprintf(err_msg, data_field < 0 ? "Non-numeric Data Field '%c'" : "Invalid Data Field '%c'", *(d - 1));
+                return 0;
+            }
+        }
+    }
+
+    return 1;
+}
+
+/* Check North American Positive Offer File */
+/* Note max is currently set at 36 numeric digits with remaining 34 characters reserved */
+static int couponposoffer(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+            int *p_err_posn, char err_msg[50], const int length_only) {
+
+    /* Minimum possible length = 21
+     * (from "GS1 AI (8112) Coupon Data Specifications Release 1.0 (March 2020)")
+     * CFMT - Coupon Format; CFID - Coupon Funder ID; VLI - Variable Length Indicator;
+     * OC - Offer Code; SN - Serial Number */
+    const int min_len = 1 /*CFMT*/ + 1 /*CFID VLI*/ + 6 /*CFID*/ + 6 /*OC*/ + 1 /*SN VLI*/ + 6 /*SN*/;
+    const int max_len = 36;
+
+    (void)max;
+
+    data_len -= offset;
+
+    if (data_len < min) {
+        return 0;
+    }
+    if (data_len && (data_len < min_len || data_len > max_len)) { /* Do separately for backward compatibility */
+        *p_err_no = 4;
+        return 0;
+    }
+
+    if (!length_only && data_len) {
+        const unsigned char *d = data + offset;
+        int val;
+
+        d = coupon_val(data, data_len, d, "Coupon Format", 1, &val, p_err_no, p_err_posn, err_msg);
+        if (d == NULL) {
+            return 0;
+        }
+        if (val != 0 && val != 1) {
+            *p_err_no = 3;
+            *p_err_posn = d - 1 - data + 1;
+            strcpy(err_msg, "Coupon Format must be 0 or 1");
+            return 0;
+        }
+        d = coupon_vli(data, data_len, d, "Coupon Funder ID", 6, 0, 6, 0, p_err_no, p_err_posn, err_msg);
+        if (d == NULL) {
+            return 0;
+        }
+        d = coupon_val(data, data_len, d, "Offer Code", 6, NULL, p_err_no, p_err_posn, err_msg);
+        if (d == NULL) {
+            return 0;
+        }
+        d = coupon_vli(data, data_len, d, "Serial Number", 6, 0, 9, 0, p_err_no, p_err_posn, err_msg);
+        if (d == NULL) {
+            return 0;
+        }
+        if (d - data != data_len) {
+            *p_err_no = 3;
+            *p_err_posn = d - data + 1;
+            strcpy(err_msg, "Reserved trailing characters");
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+/* Generated by "php backend/tools/gen_gs1_linter.php > backend/gs1_lint.h" */
+#include "gs1_lint.h"
+
+/* Verify a GS1 input string */
 INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[], const int src_len,
                 unsigned char reduced[]) {
     int i, j, last_ai, ai_latch;
-    char ai_string[7]; /* 6 char max "(NNNN)" */
+    char ai_string[5]; /* 4 char max "NNNN" */
     int bracket_level, max_bracket_level, ai_length, max_ai_length, min_ai_length;
     int ai_count;
-    int error_latch;
     int error_value = 0;
-#ifdef _MSC_VER
-    int *ai_value;
-    int *ai_location;
-    int *data_location;
-    int *data_length;
-#endif
     int ai_max = chr_cnt(source, src_len, '[') + 1; /* Plus 1 so non-zero */
 #ifndef _MSC_VER
     int ai_value[ai_max], ai_location[ai_max], data_location[ai_max], data_length[ai_max];
 #else
-    ai_value = (int*) _alloca(ai_max * sizeof(int));
-    ai_location = (int*) _alloca(ai_max * sizeof(int));
-    data_location = (int*) _alloca(ai_max * sizeof(int));
-    data_length = (int*) _alloca(ai_max * sizeof(int));
+    int *ai_value = (int *) _alloca(ai_max * sizeof(int));
+    int *ai_location = (int *) _alloca(ai_max * sizeof(int));
+    int *data_location = (int *) _alloca(ai_max * sizeof(int));
+    int *data_length = (int *) _alloca(ai_max * sizeof(int));
 #endif
 
     /* Detect extended ASCII characters */
@@ -204,474 +1251,42 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
         data_location[i] = ai_location[i] + 3;
         if (ai_value[i] >= 100) {
             data_location[i]++;
-        }
-        if (ai_value[i] >= 1000) {
-            data_location[i]++;
+            if (ai_value[i] >= 1000) {
+                data_location[i]++;
+            }
         }
         data_length[i] = 0;
-        do {
+        while ((data_location[i] + data_length[i] < src_len)
+                    && (source[data_location[i] + data_length[i]] != '[')) {
             data_length[i]++;
-        } while ((source[data_location[i] + data_length[i] - 1] != '[')
-                    && (data_location[i] + data_length[i] <= src_len));
-        data_length[i]--;
-    }
-
-    for (i = 0; i < ai_count; i++) {
+        }
         if (data_length[i] == 0) {
             /* No data for given AI */
             strcpy(symbol->errtxt, "258: Empty data field in input data");
             return ZINT_ERROR_INVALID_DATA;
         }
     }
-    
+
     strcpy(ai_string, "");
-    
+
     // Check for valid AI values and data lengths according to GS1 General
-    // Specification Release 19, January 2019
+    // Specifications Release 20.0, January 2020
     for (i = 0; i < ai_count; i++) {
-        
-        error_latch = 2;
-        switch (ai_value[i]) {
-            // Length 2 Fixed
-            case 20: // VARIANT
-                if (data_length[i] != 2) {
-                    error_latch = 1;
-                } else {
-                    error_latch = 0;
-                }
-                break;
-                
-            // Length 3 Fixed
-            case 422: // ORIGIN
-            case 424: // COUNTRY PROCESS
-            case 426: // COUNTRY FULL PROCESS
-                if (data_length[i] != 3) {
-                    error_latch = 1;
-                } else {
-                    error_latch = 0;
-                }
-                break;
-                
-            // Length 4 Fixed
-            case 7040: // UIC+EXT
-            case 8111: // POINTS
-                if (data_length[i] != 4) {
-                    error_latch = 1;
-                } else {
-                    error_latch = 0;
-                }
-                break;
-                
-            // Length 6 Fixed
-            case 11: // PROD DATE
-            case 12: // DUE DATE
-            case 13: // PACK DATE
-            case 15: // BEST BY
-            case 16: // SELL BY
-            case 17: // USE BY
-            case 7006: // FIRST FREEZE DATE
-            case 8005: // PRICE PER UNIT
-                if (data_length[i] != 6) {
-                    error_latch = 1;
-                } else {
-                    error_latch = 0;
-                }
-                break;
-                
-            // Length 10 Fixed
-            case 7003: // EXPIRY TIME
-                if (data_length[i] != 10) {
-                    error_latch = 1;
-                } else {
-                    error_latch = 0;
-                }
-                break;
-                
-            // Length 13 Fixed
-            case 410: // SHIP TO LOC
-            case 411: // BILL TO
-            case 412: // PURCHASE FROM
-            case 413: // SHIP FOR LOC
-            case 414: // LOC NO
-            case 415: // PAY TO
-            case 416: // PROD/SERV LOC
-            case 417: // PARTY GLN
-            case 7001: // NSN
-                if (data_length[i] != 13) {
-                    error_latch = 1;
-                } else {
-                    error_latch = 0;
-                }
-                break;
-                
-            // Length 14 Fixed
-            case 1: // GTIN
-            case 2: // CONTENT
-            case 8001: // DIMENSIONS
-                if (data_length[i] != 14) {
-                    error_latch = 1;
-                } else {
-                    error_latch = 0;
-                }
-                break;
-                
-            // Length 17 Fixed
-            case 402: // GSIN
-                if (data_length[i] != 17) {
-                    error_latch = 1;
-                } else {
-                    error_latch = 0;
-                }
-                break;
-                
-            // Length 18 Fixed
-            case 0: // SSCC
-            case 8006: // ITIP
-            case 8017: // GSRN PROVIDER
-            case 8018: // GSRN RECIPIENT
-            case 8026: // ITIP CONTENT
-                if (data_length[i] != 18) {
-                    error_latch = 1;
-                } else {
-                    error_latch = 0;
-                }
-                break;
-                
-            // Length 2 Max
-            case 7010: // PROD METHOD
-                if (data_length[i] > 2) {
-                    error_latch = 1;
-                } else {
-                    error_latch = 0;
-                }
-                break;
-                
-            // Length 3 Max
-            case 427: // ORIGIN SUBDIVISION
-            case 7008: // AQUATIC SPECIES
-                if (data_length[i] > 3) {
-                    error_latch = 1;
-                } else {
-                    error_latch = 0;
-                }
-                break;
-                
-            // Length 4 Max
-            case 7004: // ACTIVE POTENCY
-                if (data_length[i] > 4) {
-                    error_latch = 1;
-                } else {
-                    error_latch = 0;
-                }
-                break;
-                
-            // Length 6 Max
-            case 242: // MTO VARIANT
-                if (data_length[i] > 6) {
-                    error_latch = 1;
-                } else {
-                    error_latch = 0;
-                }
-                break;
-                
-            // Length 8 Max
-            case 30: // VAR COUNT
-            case 37: // COUNT
-                if (data_length[i] > 8) {
-                    error_latch = 1;
-                } else {
-                    error_latch = 0;
-                }
-                break;
-                
-            // Length 10 Max
-            case 7009: // FISHING GEAR TYPE
-            case 8019: // SRIN
-                if (data_length[i] > 10) {
-                    error_latch = 1;
-                } else {
-                    error_latch = 0;
-                }
-                break;
-                
-            // Length 12 Max
-            case 7005: // CATCH AREA
-            case 8011: // CPID SERIAL
-                if (data_length[i] > 12) {
-                    error_latch = 1;
-                } else {
-                    error_latch = 0;
-                }
-                break;
-                
-            // Length 20 Max
-            case 10: // BATCH/LOT
-            case 21: // SERIAL
-            case 22: // CPV
-            case 243: // PCN
-            case 254: // GLN EXTENSION COMPONENT
-            case 420: // SHIP TO POST
-            case 7020: // REFURB LOT
-            case 7021: // FUNC STAT
-            case 7022: // REV STAT
-            case 710: // NHRN PZN
-            case 711: // NHRN CIP
-            case 712: // NHRN CN
-            case 713: // NHRN DRN
-            case 714: // NHRN AIM
-            case 7240: // PROTOCOL
-            case 8002: // CMT NO
-            case 8012: // VERSION
-                if (data_length[i] > 20) {
-                    error_latch = 1;
-                } else {
-                    error_latch = 0;
-                }
-                break;
-                
-            // Length 25 Max
-            case 8020: // REF NO
-                if (data_length[i] > 25) {
-                    error_latch = 1;
-                } else {
-                    error_latch = 0;
-                }
-                break;
-                
-            // Length 28 Max
-            case 235: // TPX
-                if (data_length[i] > 28) {
-                    error_latch = 1;
-                } else {
-                    error_latch = 0;
-                }
-                break;
-
-            // Length 30 Max
-            case 240: // ADDITIONAL ID
-            case 241: // CUST PART NO
-            case 250: // SECONDARY SERIAL
-            case 251: // REF TO SOURCE
-            case 400: // ORDER NUMBER
-            case 401: // GINC
-            case 403: // ROUTE
-            case 7002: // MEAT CUT
-            case 7023: // GIAI ASSEMBLY
-            case 8004: // GIAI
-            case 8010: // CPID
-            case 8013: // BUDI-DI
-            case 90: // INTERNAL
-                if (data_length[i] > 30) {
-                    error_latch = 1;
-                } else {
-                    error_latch = 0;
-                }
-                break;
-                
-            // Length 34 Max
-            case 8007: // IBAN
-                if (data_length[i] > 34) {
-                    error_latch = 1;
-                } else {
-                    error_latch = 0;
-                }
-                break;
-                
-            // Length 50 Max
-            case 8009: // OPTSEN
-                if (data_length[i] > 50) {
-                    error_latch = 1;
-                } else {
-                    error_latch = 0;
-                }
-                break;
-                
-            // Length 70 Max
-            case 8110: // Coupon code
-            case 8112: // Paperless coupon code
-            case 8200: // PRODUCT URL
-                if (data_length[i] > 70) {
-                    error_latch = 1;
-                } else {
-                    error_latch = 0;
-                }
-                break;
-                
-        }
-        
-        if (ai_value[i] == 253) { // GDTI
-            if ((data_length[i] < 13) || (data_length[i] > 30)) {
-                error_latch = 1;
+        int err_no, err_posn;
+        char err_msg[50];
+        if (!gs1_lint(ai_value[i], source + data_location[i], data_length[i], &err_no, &err_posn, err_msg)) {
+            if (err_no == 1) {
+                sprintf(symbol->errtxt, "260: Invalid AI (%02d)", ai_value[i]);
+            } else if (err_no == 2 || err_no == 4) { /* 4 is backward-incompatible bad length */
+                sprintf(symbol->errtxt, "259: Invalid data length for AI (%02d)", ai_value[i]);
             } else {
-                error_latch = 0;
+                sprintf(symbol->errtxt, "261: AI (%02d) position %d: %s", ai_value[i], err_posn, err_msg);
             }
-        }
-        
-        if (ai_value[i] == 255) { // GCN
-            if ((data_length[i] < 13) || (data_length[i] > 25)) {
-                error_latch = 1;
-            } else {
-                error_latch = 0;
-            }
-        }
-        
-        if ((ai_value[i] >= 3100) && (ai_value[i] <= 3169)) {
-            if (data_length[i] != 6) {
-                error_latch = 1;
-            } else {
-                error_latch = 0;
-            }
-        }
-        
-        if ((ai_value[i] >= 3200) && (ai_value[i] <= 3379)) {
-            if (data_length[i] != 6) {
-                error_latch = 1;
-            } else {
-                error_latch = 0;
-            }
-        }
-        
-        if ((ai_value[i] >= 3400) && (ai_value[i] <= 3579)) {
-            if (data_length[i] != 6) {
-                error_latch = 1;
-            } else {
-                error_latch = 0;
-            }
-        }
-        
-        if ((ai_value[i] >= 3600) && (ai_value[i] <= 3699)) {
-            if (data_length[i] != 6) {
-                error_latch = 1;
-            } else {
-                error_latch = 0;
-            }
-        }
-        
-        if ((ai_value[i] >= 3900) && (ai_value[i] <= 3909)) { // AMOUNT
-            if (data_length[i] > 15) {
-                error_latch = 1;
-            } else {
-                error_latch = 0;
-            }
-        }
-        
-        if ((ai_value[i] >= 3910) && (ai_value[i] <= 3919)) { // AMOUNT
-            if ((data_length[i] < 4) || (data_length[i] > 18)) {
-                error_latch = 1;
-            } else {
-                error_latch = 0;
-            }
-        }
-        
-        if ((ai_value[i] >= 3920) && (ai_value[i] <= 3929)) { // PRICE
-            if (data_length[i] > 15) {
-                error_latch = 1;
-            } else {
-                error_latch = 0;
-            }
-        }
-        
-        if ((ai_value[i] >= 3930) && (ai_value[i] <= 3939)) { // PRICE
-            if ((data_length[i] < 4) || (data_length[i] > 18)) {
-                error_latch = 1;
-            } else {
-                error_latch = 0;
-            }
-        }
-        
-        if ((ai_value[i] >= 3940) && (ai_value[i] <= 3949)) { // PRCNT OFF
-            if (data_length[i] != 4) {
-                error_latch = 1;
-            } else {
-                error_latch = 0;
-            }
-        }
-        
-        if (ai_value[i] == 421) { // SHIP TO POST
-            if ((data_length[i] < 4) || (data_length[i] > 12)) {
-                error_latch = 1;
-            } else {
-                error_latch = 0;
-            }
-        }
-        
-        if ((ai_value[i] == 423) || (ai_value[i] == 425)) {
-            // COUNTRY INITIAL PROCESS || COUNTRY DISASSEMBLY
-            if ((data_length[i] < 4) || (data_length[i] > 15)) {
-                error_latch = 1;
-            } else {
-                error_latch = 0;
-            }
-        }
-        
-        if (ai_value[i] == 7007) { // HARVEST DATE
-            if ((data_length[i] != 6) && (data_length[i] != 12)) {
-                error_latch = 1;
-            } else {
-                error_latch = 0;
-            }
-        }
-        
-        if ((ai_value[i] >= 7030) && (ai_value[i] <= 7039)) { // PROCESSOR #
-            if ((data_length[i] < 4) || (data_length[i] > 30)) {
-                error_latch = 1;
-            } else {
-                error_latch = 0;
-            }
-        }
-        
-        if ((ai_value[i] >= 7230) && (ai_value[i] <= 7239)) { // CERT #
-            if ((data_length[i] < 3) || (data_length[i] > 30)) {
-                error_latch = 1;
-            } else {
-                error_latch = 0;
-            }
-        }
-        
-        if (ai_value[i] == 8003) { // GRAI
-            if ((data_length[i] < 15) || (data_length[i] > 30)) {
-                error_latch = 1;
-            } else {
-                error_latch = 0;
-            }
-        }
-        
-        if (ai_value[i] == 8008) { // PROD TIME
-            if ((data_length[i] != 8) && (data_length[i] != 10) && (data_length[i] != 12)) {
-                error_latch = 1;
-            } else {
-                error_latch = 0;
-            }
-        }
-        
-        if ((ai_value[i] >= 91) && (ai_value[i] <= 99)) { // INTERNAL
-            if (data_length[i] > 90) {
-                error_latch = 1;
-            } else {
-                error_latch = 0;
-            }
-        }
-
-        if (error_latch == 1) {
-            itostr(ai_string, ai_value[i]);
-            strcpy(symbol->errtxt, "259: Invalid data length for AI ");
-            strcat(symbol->errtxt, ai_string);
-            if (symbol->warn_level != WARN_ZPL_COMPAT) {
+            /* For backward compatibility only error on unknown AI or bad length */
+            if ((err_no == 1 || err_no == 2) && symbol->warn_level != WARN_ZPL_COMPAT) {
                 return ZINT_ERROR_INVALID_DATA;
-            } else {
-                error_value = ZINT_WARN_NONCOMPLIANT;
             }
-        }
-
-        if (error_latch == 2) {
-            itostr(ai_string, ai_value[i]);
-            strcpy(symbol->errtxt, "260: Invalid AI value ");
-            strcat(symbol->errtxt, ai_string);
-            if (symbol->warn_level != WARN_ZPL_COMPAT) {
-                return ZINT_ERROR_INVALID_DATA;
-            } else {
-                error_value = ZINT_WARN_NONCOMPLIANT;
-            }
+            error_value = ZINT_WARN_NONCOMPLIANT;
         }
     }
 
@@ -692,8 +1307,8 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
             ai_string[2] = '\0';
             last_ai = atoi(ai_string);
             ai_latch = 0;
-            /* The following values from "GS-1 General Specification Release 20.0"
-            figure 7.8.4-2 "Element Strings with Predefined Length Using Application Identifiers" */
+            /* The following values from "GS1 General Specifications Release 20.0"
+               Figure 7.8.4-2 "Element strings with predefined length using GS1 Application Identifiers" */
             if (
                     ((last_ai >= 0) && (last_ai <= 4))
                     || ((last_ai >= 11) && (last_ai <= 20))

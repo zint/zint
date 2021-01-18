@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -1191,6 +1191,7 @@ static void rssexp_separator(struct zint_symbol *symbol, int width, const int co
 
 /* GS1 DataBar Expanded */
 INTERNAL int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int src_len) {
+    int error_number;
     int i, j, k, p, codeblocks, data_chars, vs, group, v_odd, v_even;
     int latch;
     int char_widths[21][8], checksum, check_widths[8], c_group;
@@ -1210,9 +1211,9 @@ INTERNAL int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int
 
     separator_row = 0;
 
-    i = gs1_verify(symbol, source, src_len, reduced);
-    if (i != 0) {
-        return i;
+    error_number = gs1_verify(symbol, source, src_len, reduced);
+    if (error_number >= ZINT_ERROR) {
+        return error_number;
     }
 
     if (symbol->debug & ZINT_DEBUG_PRINT) {
@@ -1527,5 +1528,5 @@ INTERNAL int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int
         }
     }
 
-    return 0;
+    return error_number;
 }

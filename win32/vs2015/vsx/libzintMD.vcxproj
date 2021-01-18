@@ -139,7 +139,10 @@
     <ClInclude Include="..\..\backend\general_field.h" />
     <ClInclude Include="..\..\backend\gridmtx.h" />
     <ClInclude Include="..\..\backend\gs1.h" />
+    <ClInclude Include="..\..\backend\gs1_lint.h" />
     <ClInclude Include="..\..\backend\hanxin.h" />
+    <ClInclude Include="..\..\backend\iso3166.h" />
+    <ClInclude Include="..\..\backend\iso4217.h" />
     <ClInclude Include="..\..\backend\ksx1001.h" />
     <ClInclude Include="..\..\backend\large.h" />
     <ClInclude Include="..\..\backend\maxicode.h" />

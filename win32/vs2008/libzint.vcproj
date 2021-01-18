@@ -546,7 +546,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\backend\gs1_lint.h"
+				>
+			</File>
+			<File
 				RelativePath="..\backend\hanxin.h"
+				>
+			</File>
+			<File
+				RelativePath="..\backend\iso3166.h"
+				>
+			</File>
+			<File
+				RelativePath="..\backend\iso4217.h"
 				>
 			</File>
 			<File

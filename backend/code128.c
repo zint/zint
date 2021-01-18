@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2021 Robin Stuart <rstuart114@gmail.com>
     Bugfixes thanks to Christian Sakowski and BogDan Vatra
 
     Redistribution and use in source and binary forms, with or without
@@ -734,7 +734,7 @@ INTERNAL int ean_128(struct zint_symbol *symbol, unsigned char source[], int len
     }
 
     error_number = gs1_verify(symbol, source, length, reduced);
-    if (error_number != 0) {
+    if (error_number >= ZINT_ERROR) {
         return error_number;
     }
     reduced_length = (int) ustrlen(reduced);

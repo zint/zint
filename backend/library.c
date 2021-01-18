@@ -1300,7 +1300,7 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
                 unsigned char *reduced = (unsigned char *) _alloca(in_length + 1);
 #endif
                 error_number = gs1_verify(symbol, local_source, in_length, reduced);
-                if (error_number != 0) {
+                if (error_number >= ZINT_ERROR) {
                     const char in_2d_comp[] = " in 2D component";
                     if (is_composite(symbol->symbology) && strlen(symbol->errtxt) < 100 - strlen(in_2d_comp)) {
                         strcat(symbol->errtxt, in_2d_comp);

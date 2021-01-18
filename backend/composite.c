@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008 - 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008 - 2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -1257,16 +1257,15 @@ static int linear_dummy_run(unsigned char *source, const int length, char *errtx
     dummy->option_1 = 3;
     error_number = ean_128(dummy, source, length);
     linear_width = dummy->width;
-    if (error_number != 0) {
+    if (error_number >= ZINT_ERROR) {
         strcpy(errtxt, dummy->errtxt);
     }
     ZBarcode_Delete(dummy);
 
-    if (error_number == 0) {
-        return linear_width;
-    } else {
+    if (error_number >= ZINT_ERROR) {
         return 0;
     }
+    return linear_width;
 }
 
 INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int length) {
@@ -1456,7 +1455,7 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
             break;
     }
 
-    if (error_number != 0) {
+    if (error_number >= ZINT_ERROR) {
         strcpy(symbol->errtxt, linear->errtxt);
         strcat(symbol->errtxt, " in linear component");
         ZBarcode_Delete(linear);

@@ -158,7 +158,7 @@ static void test_input_mode(int index, int debug) {
         /*  7*/ { "1234", -1, 0, DATA_MODE },
         /*  8*/ { "1234", DATA_MODE | 0x10, 0, DATA_MODE | 0x10 }, // Unknown flags kept (but ignored)
         /*  9*/ { "1234", UNICODE_MODE | 0x10, 0, UNICODE_MODE | 0x10 },
-        /* 10*/ { "[01]12345678901234", GS1_MODE | 0x20, 0, GS1_MODE | 0x20 },
+        /* 10*/ { "[01]12345678901231", GS1_MODE | 0x20, 0, GS1_MODE | 0x20 },
     };
     int data_size = ARRAY_SIZE(data);
 

@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020 - 2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -228,8 +228,8 @@ static void test_reader_init(int index, int generate, int debug) {
         /*  1*/ { BARCODE_CODE128, UNICODE_MODE, READER_INIT, "12", 0, 1, 68, "(6) 104 96 99 12 22 106", "StartB FNC3 CodeC 12" },
         /*  2*/ { BARCODE_CODE128B, UNICODE_MODE, READER_INIT, "\0371234", 0, 1, 101, "(9) 103 96 95 17 18 19 20 6 106", "StartA FNC3 US 1 2 3 4" },
         /*  3*/ { BARCODE_GS1_128, GS1_MODE, READER_INIT, "[90]12", 0, 1, 68, "(6) 105 102 90 12 11 106", "StartC FNC1 90 12 (Reader Initialise not supported by GS1 barcodes (use CODE128))" },
-        /*  4*/ { BARCODE_EAN14, GS1_MODE, READER_INIT, "12", 0, 1, 134, "(12) 105 102 1 0 0 0 0 0 1 25 30 106", "StartC FNC1 01 00 (5) 01 (Reader Initialise not supported by GS1 barcodes (use CODE128))" },
-        /*  5*/ { BARCODE_NVE18, GS1_MODE, READER_INIT, "12", 0, 1, 156, "(14) 105 102 0 0 0 0 0 0 0 0 1 25 80 106", "StartC FNC1 00 (8) 01 (Reader Initialise not supported by GS1 barcodes (use CODE128))" },
+        /*  4*/ { BARCODE_EAN14, GS1_MODE, READER_INIT, "12", ZINT_WARN_NONCOMPLIANT, 1, 134, "Warning (12) 105 102 1 0 0 0 0 0 1 25 30 106", "StartC FNC1 01 00 (5) 01 (Reader Initialise not supported by GS1 barcodes (use CODE128))" },
+        /*  5*/ { BARCODE_NVE18, GS1_MODE, READER_INIT, "12", ZINT_WARN_NONCOMPLIANT, 1, 156, "Warning (14) 105 102 0 0 0 0 0 0 0 0 1 25 80 106", "StartC FNC1 00 (8) 01 (Reader Initialise not supported by GS1 barcodes (use CODE128))" },
         /*  6*/ { BARCODE_HIBC_128, UNICODE_MODE, READER_INIT, "A", 0, 1, 79, "(7) 104 96 11 33 24 5 106", "StartA FNC3 + A 8 (check) (Not sensible, use CODE128)" },
     };
     int data_size = ARRAY_SIZE(data);

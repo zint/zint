@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019 - 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019 - 2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -162,7 +162,7 @@ static void test_buffer_vector(int index, int generate, int debug) {
         /* 21*/ { BARCODE_EANX_CHK, "1234", "", 50, 1, 47, 118, 116.4 },
         /* 22*/ { BARCODE_EANX, "12", "", 50, 1, 20, 64, 116.4 },
         /* 23*/ { BARCODE_EANX_CHK, "12", "", 50, 1, 20, 64, 116.4 },
-        /* 24*/ { BARCODE_GS1_128, "[01]12345678901234", "", 50, 1, 134, 268, 118.9 },
+        /* 24*/ { BARCODE_GS1_128, "[01]12345678901231", "", 50, 1, 134, 268, 118.9 },
         /* 25*/ { BARCODE_CODABAR, "A00000000B", "", 50, 1, 102, 204, 118.9 },
         /* 26*/ { BARCODE_CODE128, "1234567890", "", 50, 1, 90, 180, 118.9 },
         /* 27*/ { BARCODE_DPLEIT, "1234567890123", "", 50, 1, 135, 270, 118.9 },
@@ -173,7 +173,7 @@ static void test_buffer_vector(int index, int generate, int debug) {
         /* 32*/ { BARCODE_FLAT, "1234567890", "", 50, 1, 90, 180, 100 },
         /* 33*/ { BARCODE_DBAR_OMN, "1234567890123", "", 50, 1, 96, 192, 118.9 },
         /* 34*/ { BARCODE_DBAR_LTD, "1234567890123", "", 50, 1, 79, 158, 118.9 },
-        /* 35*/ { BARCODE_DBAR_EXP, "[01]12345678901234", "", 34, 1, 134, 268, 86.900002 },
+        /* 35*/ { BARCODE_DBAR_EXP, "[01]12345678901231", "", 34, 1, 134, 268, 86.900002 },
         /* 36*/ { BARCODE_TELEPEN, "1234567890", "", 50, 1, 208, 416, 118.9 },
         /* 37*/ { BARCODE_UPCA, "12345678901", "", 50, 1, 95, 226, 116.4 },
         /* 38*/ { BARCODE_UPCA_CHK, "123456789012", "", 50, 1, 95, 226, 116.4 },
@@ -216,7 +216,7 @@ static void test_buffer_vector(int index, int generate, int debug) {
         /* 75*/ { BARCODE_KOREAPOST, "123456", "", 50, 1, 167, 334, 118.9 },
         /* 76*/ { BARCODE_DBAR_STK, "1234567890123", "", 13, 3, 50, 100, 26 },
         /* 77*/ { BARCODE_DBAR_OMNSTK, "1234567890123", "", 69, 5, 50, 100, 138 },
-        /* 78*/ { BARCODE_DBAR_EXPSTK, "[01]12345678901234", "", 71, 5, 102, 204, 142 },
+        /* 78*/ { BARCODE_DBAR_EXPSTK, "[01]12345678901231", "", 71, 5, 102, 204, 142 },
         /* 79*/ { BARCODE_PLANET, "12345678901", "", 12, 2, 123, 246, 24 },
         /* 80*/ { BARCODE_MICROPDF417, "1234567890", "", 12, 6, 82, 164, 24 },
         /* 81*/ { BARCODE_USPS_IMAIL, "12345678901234567890", "", 8, 3, 129, 258, 16 },
@@ -246,10 +246,10 @@ static void test_buffer_vector(int index, int generate, int debug) {
         /*105*/ { BARCODE_EANX_CC, "1234567", "[20]01", 50, 8, 72, 172, 116.4 },
         /*106*/ { BARCODE_EANX_CC, "1234567+12", "[20]01", 50, 8, 99, 226, 116.4 },
         /*107*/ { BARCODE_EANX_CC, "1234567+12345", "[20]01", 50, 8, 126, 280, 116.4 },
-        /*108*/ { BARCODE_GS1_128_CC, "[01]12345678901234", "[20]01", 50, 5, 145, 290, 118.9 },
+        /*108*/ { BARCODE_GS1_128_CC, "[01]12345678901231", "[20]01", 50, 5, 145, 290, 118.9 },
         /*109*/ { BARCODE_DBAR_OMN_CC, "1234567890123", "[20]01", 21, 5, 100, 200, 60.900002 },
         /*110*/ { BARCODE_DBAR_LTD_CC, "1234567890123", "[20]01", 19, 6, 79, 158, 56.900002 },
-        /*111*/ { BARCODE_DBAR_EXP_CC, "[01]12345678901234", "[20]01", 41, 5, 134, 268, 100.9 },
+        /*111*/ { BARCODE_DBAR_EXP_CC, "[01]12345678901231", "[20]01", 41, 5, 134, 268, 100.9 },
         /*112*/ { BARCODE_UPCA_CC, "12345678901", "[20]01", 50, 7, 99, 234, 116.4 },
         /*113*/ { BARCODE_UPCA_CC, "12345678901+12", "[20]01", 50, 7, 128, 284, 116.4 },
         /*114*/ { BARCODE_UPCA_CC, "12345678901+12345", "[20]01", 50, 7, 155, 338, 116.4 },
@@ -258,7 +258,7 @@ static void test_buffer_vector(int index, int generate, int debug) {
         /*117*/ { BARCODE_UPCE_CC, "1234567+12345", "[20]01", 50, 9, 109, 246, 116.4 },
         /*118*/ { BARCODE_DBAR_STK_CC, "1234567890123", "[20]01", 24, 9, 56, 112, 48 },
         /*119*/ { BARCODE_DBAR_OMNSTK_CC, "1234567890123", "[20]01", 80, 11, 56, 112, 160 },
-        /*120*/ { BARCODE_DBAR_EXPSTK_CC, "[01]12345678901234", "[20]01", 78, 9, 102, 204, 156 },
+        /*120*/ { BARCODE_DBAR_EXPSTK_CC, "[01]12345678901231", "[20]01", 78, 9, 102, 204, 156 },
         /*121*/ { BARCODE_CHANNEL, "01", "", 50, 1, 19, 38, 118.9 },
         /*122*/ { BARCODE_CODEONE, "12345678901234567890", "", 22, 22, 22, 44, 44 },
         /*123*/ { BARCODE_GRIDMATRIX, "ABC", "", 18, 18, 18, 36, 36 },
@@ -722,7 +722,7 @@ static void test_noncomposite_string_x(int index, int debug) {
     struct item data[] = {
         /* 0*/ { BARCODE_DBAR_OMN, "1234567890123", 96, 96 },
         /* 1*/ { BARCODE_DBAR_LTD, "1234567890123", 79, 79 },
-        /* 2*/ { BARCODE_DBAR_EXP, "[01]12345678901234", 134, 134 },
+        /* 2*/ { BARCODE_DBAR_EXP, "[01]12345678901231", 134, 134 },
     };
     int data_size = sizeof(data) / sizeof(struct item);
 
