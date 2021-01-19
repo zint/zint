@@ -1,5 +1,5 @@
---- ../../../../postscriptbarcode/build/monolithic/barcode.ps	2021-01-16 23:24:06.598867470 +0000
-+++ ../tools/bwipp_dump.ps	2021-01-16 23:39:53.854722084 +0000
+--- ../../../../postscriptbarcode/build/monolithic/barcode.ps	2021-01-19 17:56:26.533015039 +0000
++++ ../tools/bwipp_dump.ps	2021-01-19 17:57:10.292482537 +0000
 @@ -26135,34 +26135,80 @@
          pop
      } ifelse
