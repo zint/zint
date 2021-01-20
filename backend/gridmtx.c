@@ -667,7 +667,7 @@ static int gm_encode(unsigned int gbdata[], const int length, char binary[], con
 
                 if (shift == 0) {
                     /* Mixed Mode character */
-                    glyph = posn(EUROPIUM, gbdata[sp]);
+                    glyph = posn(EUROPIUM, (const char) gbdata[sp]);
                     if (debug & ZINT_DEBUG_PRINT) {
                         printf("[%d] ", glyph);
                     }
@@ -692,7 +692,7 @@ static int gm_encode(unsigned int gbdata[], const int length, char binary[], con
 
                 if (shift == 0) {
                     /* Upper Case character */
-                    glyph = posn("ABCDEFGHIJKLMNOPQRSTUVWXYZ ", gbdata[sp]);
+                    glyph = posn("ABCDEFGHIJKLMNOPQRSTUVWXYZ ", (const char) gbdata[sp]);
                     if (debug & ZINT_DEBUG_PRINT) {
                         printf("[%d] ", glyph);
                     }
@@ -717,7 +717,7 @@ static int gm_encode(unsigned int gbdata[], const int length, char binary[], con
 
                 if (shift == 0) {
                     /* Lower Case character */
-                    glyph = posn("abcdefghijklmnopqrstuvwxyz ", gbdata[sp]);
+                    glyph = posn("abcdefghijklmnopqrstuvwxyz ", (const char) gbdata[sp]);
                     if (debug & ZINT_DEBUG_PRINT) {
                         printf("[%d] ", glyph);
                     }

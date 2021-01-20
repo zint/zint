@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009 - 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009 - 2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -36,6 +36,10 @@
 #include <malloc.h>
 #include <fcntl.h>
 #include <io.h>
+/* For Visual C++ 6 suppress conversion from int to float warning */
+#if _MSC_VER == 1200
+#pragma warning(disable: 4244)
+#endif
 #endif
 #include <math.h>
 #include <assert.h>

@@ -99,7 +99,7 @@ static void test_checks(int index, int debug) {
         /* 41*/ { 146, "1", -1, -1, -1, -1, WARN_FAIL_ALL, ZINT_ERROR_INVALID_OPTION, "Error 216: Symbology out of range", -1 },
         /* 42*/ { BARCODE_CODE128, "\200", -1, UNICODE_MODE, -1, -1, -1, ZINT_ERROR_INVALID_DATA, "Error 245: Invalid UTF-8", -1 },
     };
-    int data_size = sizeof(data) / sizeof(struct item);
+    int data_size = ARRAY_SIZE(data);
 
     for (int i = 0; i < data_size; i++) {
 
@@ -152,8 +152,8 @@ static void test_input_mode(int index, int debug) {
         /*  1*/ { "1234", DATA_MODE | ESCAPE_MODE, 0, DATA_MODE | ESCAPE_MODE },
         /*  2*/ { "1234", UNICODE_MODE, 0, UNICODE_MODE },
         /*  3*/ { "1234", UNICODE_MODE | ESCAPE_MODE, 0, UNICODE_MODE | ESCAPE_MODE },
-        /*  4*/ { "[01]12345678901234", GS1_MODE, 0, GS1_MODE },
-        /*  5*/ { "[01]12345678901234", GS1_MODE | ESCAPE_MODE, 0, GS1_MODE | ESCAPE_MODE },
+        /*  4*/ { "[01]12345678901231", GS1_MODE, 0, GS1_MODE },
+        /*  5*/ { "[01]12345678901231", GS1_MODE | ESCAPE_MODE, 0, GS1_MODE | ESCAPE_MODE },
         /*  6*/ { "1234", 4 | ESCAPE_MODE, 0, DATA_MODE }, // Unknown mode reset to bare DATA_MODE
         /*  7*/ { "1234", -1, 0, DATA_MODE },
         /*  8*/ { "1234", DATA_MODE | 0x10, 0, DATA_MODE | 0x10 }, // Unknown flags kept (but ignored)

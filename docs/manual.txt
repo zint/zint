@@ -194,10 +194,10 @@ Code 128, and output to the default file out.png in the current directory.
 Alternatively, if libpng was not present when Zint was built, the default
 output file will be out.gif.
 
-The data input to Zint is assumed to be encoded in Unicode (UTF-8) format. If
-you are encoding characters beyond the 7-bit ASCII set using a scheme other than
-UTF-8 then you will need to set the appropriate input options as shown in
-section 4.10 below.
+The data input to Zint is assumed to be encoded in Unicode (UTF-8) format (Zint
+will correctly handle UTF-8 data on Windows). If you are encoding characters
+beyond the 7-bit ASCII set using a scheme other than UTF-8 then you will need to
+set the appropriate input options as shown in section 4.10 below.
 
 Non-printing characters can be entered on the command line using the backslash
 (\) as an escape character in combination with the --esc switch. Permissible
@@ -255,110 +255,122 @@ zint -o there.eps -d "This Text"
 Selecting which type of barcode you wish to produce (i.e. which symbology to
 use) can be done at the command line using the -b or --barcode= switch followed
 by the appropriate integer value in the following table. For example to create
-a Data Matrix symbol you could use:
+by the appropriate integer value or name in the following table. For example to
+create a Data Matrix symbol you could use:
 
-zint -o datamatrix.png -b 71 -d "Data to encode"
+zint -b 71 -o datamatrix.png -d "Data to encode"
+
+or
+
+zint -b DATAMATRIX -o datamatrix.png -d "Data to encode"
 
 --------------------------------------------------------------------------------
-Numeric Value  |  Barcode Name
+Numeric  |  Name (case-     |  Barcode Name
+Value    |    insensitive)  |
 --------------------------------------------------------------------------------
-1              |  Code 11
-2              |  Standard Code 2 of 5
-3              |  Interleaved 2 of 5
-4              |  Code 2 of 5 IATA
-6              |  Code 2 of 5 Data Logic
-7              |  Code 2 of 5 Industrial
-8              |  Code 3 of 9 (Code 39)
-9              |  Extended Code 3 of 9 (Code 39+)
-13             |  EAN (including EAN-8 and EAN-13)
-14             |  EAN + Check Digit
-16             |  GS1-128 (UCC.EAN-128)
-18             |  Codabar
-20             |  Code 128 (automatic subset switching)
-21             |  Deutshe Post Leitcode
-22             |  Deutshe Post Identcode
-23             |  Code 16K
-24             |  Code 49
-25             |  Code 93
-28             |  Flattermarken
-29             |  GS1 DataBar Omnidirectional (including GS1 DataBar Truncated)
-30             |  GS1 DataBar Limited
-31             |  GS1 DataBar Expanded
-32             |  Telepen Alpha
-34             |  UPC-A
-35             |  UPC-A + Check Digit
-37             |  UPC-E
-38             |  UPC-E + Check Digit
-40             |  POSTNET
-47             |  MSI Plessey
-49             |  FIM
-50             |  LOGMARS
-51             |  Pharmacode One-Track
-52             |  PZN
-53             |  Pharmacode Two-Track
-55             |  PDF417
-56             |  Compact PDF417 (Truncated PDF417)
-57             |  MaxiCode
-58             |  QR Code
-60             |  Code 128 (Subset B)
-63             |  Australia Post Standard Customer
-66             |  Australia Post Reply Paid
-67             |  Australia Post Routing
-68             |  Australia Post Redirection
-69             |  ISBN (EAN-13 with verification stage)
-70             |  Royal Mail 4 State (RM4SCC)
-71             |  Data Matrix (ECC200)
-72             |  EAN-14
-73             |  Vehicle Identification Number
-74             |  Codablock-F
-75             |  NVE-18 (SSCC-18)
-76             |  Japanese Postal Code
-77             |  Korea Post
-79             |  GS1 DataBar Stacked (stacked version of GS1 DataBar Truncated)
-80             |  GS1 DataBar Stacked Omnidirectional
-81             |  GS1 DataBar Expanded Stacked
-82             |  PLANET
-84             |  MicroPDF417
-85             |  USPS Intelligent Mail (OneCode)
-86             |  Plessey Code
-87             |  Telepen Numeric
-89             |  ITF-14
-90             |  Dutch Post KIX Code
-92             |  Aztec Code
-93             |  DAFT Code
-96             |  DPD Code
-97             |  Micro QR Code
-98             |  HIBC Code 128
-99             |  HIBC Code 39
-102            |  HIBC Data Matrix ECC200
-104            |  HIBC QR Code
-106            |  HIBC PDF417
-108            |  HIBC MicroPDF417
-110            |  HIBC Codablock-F
-112            |  HIBC Aztec Code
-115            |  DotCode
-116            |  Han Xin (Chinese Sensible) Code
-121            |  Royal Mail 4-state Mailmark
-128            |  Aztec Runes
-129            |  Code 32
-130            |  Composite Symbol with EAN linear component
-131            |  Composite Symbol with GS1-128 linear component
-132            |  Composite Symbol with GS1 DataBar Omnidirectional linear
-               |     component
-133            |  Composite Symbol with GS1 DataBar Limited linear component
-134            |  Composite Symbol with GS1 DataBar Expanded linear component
-135            |  Composite Symbol with UPC-A linear component
-136            |  Composite Symbol with UPC-E linear component
-137            |  Composite Symbol with GS1 DataBar Stacked component
-138            |  Composite Symbol with GS1 DataBar Stacked Omnidirectional
-               |     component
-139            |  Composite Symbol with GS1 DataBar Expanded Stacked component
-140            |  Channel Code
-141            |  Code One
-142            |  Grid Matrix
-143            |  UPNQR (Univerzalnega Plačilnega Naloga QR)
-144            |  Ultracode
-145            |  Rectangular Micro QR Code (rMQR)
+1        |  CODE11          |  Code 11
+2        |  C25STANDARD     |  Standard Code 2 of 5
+3        |  C25INTER        |  Interleaved 2 of 5
+4        |  C25IATA         |  Code 2 of 5 IATA
+6        |  C25LOGIC        |  Code 2 of 5 Data Logic
+7        |  C25IND          |  Code 2 of 5 Industrial
+8        |  CODE39          |  Code 3 of 9 (Code 39)
+9        |  EXCODE39        |  Extended Code 3 of 9 (Code 39+)
+13       |  EANX            |  EAN (including EAN-8 and EAN-13)
+14       |  EANX_CHK        |  EAN + Check Digit
+16       |  GS1_128         |  GS1-128 (UCC.EAN-128)
+18       |  CODABAR         |  Codabar
+20       |  CODE128         |  Code 128 (automatic subset switching)
+21       |  DPLEIT          |  Deutshe Post Leitcode
+22       |  DPIDENT         |  Deutshe Post Identcode
+23       |  CODE16K         |  Code 16K
+24       |  CODE49          |  Code 49
+25       |  CODE93          |  Code 93
+28       |  FLAT            |  Flattermarken
+29       |  DBAR_OMN        |  GS1 DataBar Omnidirectional (including GS1
+         |                  |     DataBar Truncated)
+30       |  DBAR_LTD        |  GS1 DataBar Limited
+31       |  DBAR_EXP        |  GS1 DataBar Expanded
+32       |  TELEPEN         |  Telepen Alpha
+34       |  UPCA            |  UPC-A
+35       |  UPCA_CHK        |  UPC-A + Check Digit
+37       |  UPCE            |  UPC-E
+38       |  UPCE_CHK        |  UPC-E + Check Digit
+40       |  POSTNET         |  POSTNET
+47       |  MSI_PLESSEY     |  MSI Plessey
+49       |  FIM             |  FIM
+50       |  LOGMARS         |  LOGMARS
+51       |  PHARMA          |  Pharmacode One-Track
+52       |  PZN             |  PZN
+53       |  PHARMA_TWO      |  Pharmacode Two-Track
+55       |  PDF417          |  PDF417
+56       |  PDF417COMP      |  Compact PDF417 (Truncated PDF417)
+57       |  MAXICODE        |  MaxiCode
+58       |  QRCODE          |  QR Code
+60       |  CODE128B        |  Code 128 (Subset B)
+63       |  AUSPOST         |  Australia Post Standard Customer
+66       |  AUSREPLY        |  Australia Post Reply Paid
+67       |  AUSROUTE        |  Australia Post Routing
+68       |  AUSREDIRECT     |  Australia Post Redirection
+69       |  ISBNX           |  ISBN (EAN-13 with verification stage)
+70       |  RM4SCC          |  Royal Mail 4 State (RM4SCC)
+71       |  DATAMATRIX      |  Data Matrix (ECC200)
+72       |  EAN14           |  EAN-14
+73       |  VIN             |  Vehicle Identification Number
+74       |  CODABLOCKF      |  Codablock-F
+75       |  NVE18           |  NVE-18 (SSCC-18)
+76       |  JAPANPOST       |  Japanese Postal Code
+77       |  KOREAPOST       |  Korea Post
+79       |  DBAR_STK        |  GS1 DataBar Stacked (stacked version of GS1
+         |                  |     DataBar Truncated)
+80       |  DBAR_OMNSTK     |  GS1 DataBar Stacked Omnidirectional
+81       |  DBAR_EXPSTK     |  GS1 DataBar Expanded Stacked
+82       |  PLANET          |  PLANET
+84       |  MICROPDF417     |  MicroPDF417
+85       |  USPS_IMAIL      |  USPS Intelligent Mail (OneCode)
+86       |  PLESSEY         |  Plessey Code
+87       |  TELEPEN_NUM     |  Telepen Numeric
+89       |  ITF14           |  ITF-14
+90       |  KIX             |  Dutch Post KIX Code
+92       |  AZTEC           |  Aztec Code
+93       |  DAFT            |  DAFT Code
+96       |  DPD             |  DPD Code
+97       |  MICROQR         |  Micro QR Code
+98       |  HIBC_128        |  HIBC Code 128
+99       |  HIBC_39         |  HIBC Code 39
+102      |  HIBC_DM         |  HIBC Data Matrix ECC200
+104      |  HIBC_QR         |  HIBC QR Code
+106      |  HIBC_PDF        |  HIBC PDF417
+108      |  HIBC_MICPDF     |  HIBC MicroPDF417
+110      |  HIBC_BLOCKF     |  HIBC Codablock-F
+112      |  HIBC_AZTEC      |  HIBC Aztec Code
+115      |  DOTCODE         |  DotCode
+116      |  HANXIN          |  Han Xin (Chinese Sensible) Code
+121      |  MAILMARK        |  Royal Mail 4-state Mailmark
+128      |  AZRUNE          |  Aztec Runes
+129      |  CODE32          |  Code 32
+130      |  EANX_CC         |  Composite Symbol with EAN linear component
+131      |  GS1_128_CC      |  Composite Symbol with GS1-128 linear component
+132      |  DBAR_OMN_CC     |  Composite Symbol with GS1 DataBar Omnidirectional
+         |                  |     linear component
+133      |  DBAR_LTD_CC     |  Composite Symbol with GS1 DataBar Limited linear
+         |                  |     component
+134      |  DBAR_EXP_CC     |  Composite Symbol with GS1 DataBar Expanded linear
+         |                  |     component
+135      |  UPCA_CC         |  Composite Symbol with UPC-A linear component
+136      |  UPCE_CC         |  Composite Symbol with UPC-E linear component
+137      |  DBAR_STK_CC     |  Composite Symbol with GS1 DataBar Stacked
+         |                  |     component
+138      |  DBAR_OMNSTK_CC  |  Composite Symbol with GS1 DataBar Stacked
+         |                  |     Omnidirectional component
+139      |  DBAR_EXPSTK_CC  |  Composite Symbol with GS1 DataBar Expanded
+         |                  |     Stacked component
+140      |  CHANNEL         |  Channel Code
+141      |  CODEONE         |  Code One
+142      |  GRIDMATRIX      |  Grid Matrix
+143      |  UPNQR           |  UPNQR (Univerzalnega Plačilnega Naloga QR)
+144      |  ULTRA           |  Ultracode
+145      |  RMQR            |  Rectangular Micro QR Code (rMQR)
 --------------------------------------------------------------------------------
 
 4.4 Adjusting height
@@ -566,6 +578,10 @@ zint -b 71 --square --scale 10 --eci 17 --esc -d "\xE2\x82\xAC"
 
 zint -b 71 --square --scale 10 --eci 17 --esc -d "\u20AC"
 
+and to the command:
+
+zint -b 71 --square --scale 10 --eci 17 -d "€"
+
 Ex2: The Chinese character with Unicode codepoint U+5E38 can be encoded in Big5
 encoding. The Big5 representation of this character is the two hex bytes: B1 60
 (contained in the file big5char.txt). The generation command for Data Matrix is:
@@ -576,9 +592,11 @@ This is equivalent to the command (using the --esc switch):
 
 zint -b 71 --square --scale 10 --eci 28 --binary --esc -d "\xB1\x60"
 
-and to the command (no --binary switch so conversion occurs):
+and to the commands (no --binary switch so conversion occurs):
 
 zint -b 71 --square --scale 10 --eci 28 --esc -d "\u5E38"
+
+zint -b 71 --square --scale 10 --eci 28 -d "常"
 
 Ex3: Some decoders (in particular mobile app ones) for QR Code assume UTF-8
 encoding by default and do not support ECI. In this case supply UTF-8 data and
@@ -685,7 +703,7 @@ command line. The -h or --help option will display a list of all of the valid
 options available, and also gives the exact version of the software.
 
 The -t or --types option gives the table of symbologies along with the symbol
-ID numbers.
+ID numbers and names.
 
 The -e or --ecinos option gives a list of the ECI codes.
 
@@ -1393,7 +1411,7 @@ EAN-2 and EAN-5 add-on symbols can be added using the + character. For example,
 to draw a UPC-A symbol with the data 72527270270 with an EAN-5 add-on showing
 the data 12345 use the command:
 
-zint --barcode=34 -d 72527270270+12345
+zint --barcode=UPCA -d 72527270270+12345
 
 or encode a data string with the + character included:
 
@@ -1418,7 +1436,7 @@ character as with UPC-A. In addition Zint also supports Number System 1
 encoding by entering a 7-digit article number stating with the digit 1. For
 example:
 
-zint --barcode=37 -d 1123456
+zint --barcode=UPCE -d 1123456
 
 or
 
@@ -1444,11 +1462,11 @@ numbers respectively. Zint will decide which symbology to use depending on the
 length of the input data. In addition EAN-2 and EAN-5 add-on symbols can be
 added using the + symbol as with UPC symbols. For example:
 
-zint --barcode=13 -d 54321
+zint --barcode=EANX -d 54321
 
 will encode a stand-alone EAN-5, whereas
 
-zint --barcode=13 -d 7432365+54321
+zint --barcode=EANX -d 7432365+54321
 
 will encode an EAN-8 symbol with an EAN-5 add-on. As before these results can
 be achieved using the API:
@@ -1865,7 +1883,7 @@ entered into a primary string with the data for the 2D component being entered
 in the normal way. To do this at the command prompt use the --primary= command.
 For example:
 
-zint -b 130 --mode=1 --primary=331234567890 -d "[99]1234-abcd"
+zint -b EANX_CC --mode=1 --primary=331234567890 -d "[99]1234-abcd"
 
 This creates an EAN-13 linear component with the data "331234567890" and a 2D
 CC-A (see below) component with the data "(99)1234-abcd". The same results can

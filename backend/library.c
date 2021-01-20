@@ -1307,6 +1307,9 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
                     }
                     return error_tag(symbol->errtxt, error_number);
                 }
+                if (error_number && warn_number == 0) {
+                    warn_number = error_number;
+                }
                 ustrcpy(local_source, reduced); // Cannot contain nul char
                 in_length = (int) ustrlen(local_source);
             }

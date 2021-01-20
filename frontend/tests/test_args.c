@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020 - 2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -329,6 +329,7 @@ static void test_input(int index, int debug) {
     for (int i = 0; i < data_size; i++) {
 
         if (index != -1 && i != index) continue;
+        if ((debug & ZINT_DEBUG_TEST_PRINT) && !(debug & ZINT_DEBUG_TEST_LESS_NOISY)) printf("i:%d\n", i);
 
         strcpy(cmd, "zint");
         if (debug & ZINT_DEBUG_PRINT) {
@@ -490,6 +491,7 @@ static void test_batch_large(int index, int debug) {
     for (int i = 0; i < data_size; i++) {
 
         if (index != -1 && i != index) continue;
+        if ((debug & ZINT_DEBUG_TEST_PRINT) && !(debug & ZINT_DEBUG_TEST_LESS_NOISY)) printf("i:%d\n", i);
 
         strcpy(cmd, "zint --batch");
         if (debug & ZINT_DEBUG_PRINT) {
@@ -535,6 +537,7 @@ static void test_checks(int index, int debug) {
         int rotate;
         int rows;
         double scale;
+        int scmvv;
         int secure;
         int separator;
         int vers;
@@ -544,35 +547,38 @@ static void test_checks(int index, int debug) {
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /*  0*/ { -2, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   "Error 139: Invalid add-on gap value" },
-        /*  1*/ {  6, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   "Warning 140: Invalid add-on gap value" },
-        /*  2*/ { -1, -2,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   "Error 107: Invalid border width value" },
-        /*  3*/ { -1, 1001, -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   "Warning 108: Border width out of range" },
-        /*  4*/ { -1, -1,   -1, 0.009, -1,      NULL,  -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   "Warning 106: Invalid dot radius value" },
-        /*  5*/ { -1, -1,   -2, -1,    -1,      NULL,  -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   "Error 131: Invalid columns value" },
-        /*  6*/ { -1, -1,   68, -1,    -1,      NULL,  -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   "Warning 111: Number of columns out of range" },
-        /*  7*/ { -1, -1,   -1, -1,    -2,      NULL,  -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   "Error 138: Invalid ECI value" },
-        /*  8*/ { -1, -1,   -1, -1,    1000000, NULL,  -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   "Warning 118: Invalid ECI code" },
-        /*  9*/ { -1, -1,   -1, -1,    -1,      "jpg", -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   "Warning 142: File type 'jpg' not supported, ignoring" },
-        /* 10*/ { -1, -1,   -1, -1,    -1,      NULL,  -2, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   "Error 109: Invalid symbol height value" },
-        /* 11*/ { -1, -1,   -1, -1,    -1,      NULL,   0, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   "Warning 110: Symbol height out of range" },
-        /* 12*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -2, -1, -1, -1, -1,   -1, -1, -1, -1,   "Error 148: Invalid mask value" },
-        /* 13*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,  8, -1, -1, -1, -1,   -1, -1, -1, -1,   "Warning 147: Invalid mask value" },
-        /* 14*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1,  7, -1, -1, -1,   -1, -1, -1, -1,   "Warning 116: Invalid mode" },
-        /* 15*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -2, -1, -1,   -1, -1, -1, -1,   "Error 117: Invalid rotation value" },
-        /* 16*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, 45, -1, -1,   -1, -1, -1, -1,   "Warning 137: Invalid rotation parameter" },
-        /* 17*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -2, -1,   -1, -1, -1, -1,   "Error 132: Invalid rows value" },
-        /* 18*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, 45, -1,   -1, -1, -1, -1,   "Warning 112: Number of rows out of range" },
-        /* 19*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1, -2,   -1, -1, -1, -1,   "Warning 105: Invalid scale value" },
-        /* 20*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1, 0.49, -1, -1, -1, -1,   "Warning 146: Scaling less than 0.5 will be set to 0.5 for 'png' output" },
-        /* 21*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1, -1,   -2, -1, -1, -1,   "Error 134: Invalid ECC value" },
-        /* 22*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1, -1,    9, -1, -1, -1,   "Warning 114: ECC level out of range" },
-        /* 23*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1, -1,   -1, -2, -1, -1,   "Error 128: Invalid separator value" },
-        /* 24*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1, -1,   -1,  5, -1, -1,   "Warning 127: Invalid separator value" },
-        /* 25*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1, -1,   -1, -1, -2, -1,   "Error 133: Invalid version value" },
-        /* 26*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1, -1,   -1, -1, 85, -1,   "Warning 113: Invalid version" },
-        /* 27*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1, -1,   -1, -1, -1, -2,   "Error 120: Invalid whitespace value '-2'" },
-        /* 28*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1, -1,   -1, -1, -1, 1001, "Warning 121: Whitespace value out of range" },
+        /*  0*/ { -2, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1, -1,   "Error 139: Invalid add-on gap value" },
+        /*  1*/ {  6, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1, -1,   "Warning 140: Invalid add-on gap value" },
+        /*  2*/ { 13, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1, -1,   "Warning 140: Invalid add-on gap value" },
+        /*  3*/ { -1, -2,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1, -1,   "Error 107: Invalid border width value" },
+        /*  4*/ { -1, 1001, -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1, -1,   "Warning 108: Border width out of range" },
+        /*  5*/ { -1, -1,   -1, 0.009, -1,      NULL,  -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1, -1,   "Warning 106: Invalid dot radius value" },
+        /*  6*/ { -1, -1,   -2, -1,    -1,      NULL,  -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1, -1,   "Error 131: Invalid columns value" },
+        /*  7*/ { -1, -1,   68, -1,    -1,      NULL,  -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1, -1,   "Warning 111: Number of columns out of range" },
+        /*  8*/ { -1, -1,   -1, -1,    -2,      NULL,  -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1, -1,   "Error 138: Invalid ECI value" },
+        /*  9*/ { -1, -1,   -1, -1,    1000000, NULL,  -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1, -1,   "Warning 118: Invalid ECI code" },
+        /* 10*/ { -1, -1,   -1, -1,    -1,      "jpg", -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1, -1,   "Warning 142: File type 'jpg' not supported, ignoring" },
+        /* 11*/ { -1, -1,   -1, -1,    -1,      NULL,  -2, -1, -1, -1, -1, -1,   -1, -1, -1, -1, -1,   "Error 109: Invalid symbol height value" },
+        /* 12*/ { -1, -1,   -1, -1,    -1,      NULL,   0, -1, -1, -1, -1, -1,   -1, -1, -1, -1, -1,   "Warning 110: Symbol height out of range" },
+        /* 13*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -2, -1, -1, -1, -1,   -1, -1, -1, -1, -1,   "Error 148: Invalid mask value" },
+        /* 14*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,  8, -1, -1, -1, -1,   -1, -1, -1, -1, -1,   "Warning 147: Invalid mask value" },
+        /* 15*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1,  7, -1, -1, -1,   -1, -1, -1, -1, -1,   "Warning 116: Invalid mode" },
+        /* 16*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -2, -1, -1,   -1, -1, -1, -1, -1,   "Error 117: Invalid rotation value" },
+        /* 17*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, 45, -1, -1,   -1, -1, -1, -1, -1,   "Warning 137: Invalid rotation parameter" },
+        /* 18*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -2, -1,   -1, -1, -1, -1, -1,   "Error 132: Invalid rows value" },
+        /* 19*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, 45, -1,   -1, -1, -1, -1, -1,   "Warning 112: Number of rows out of range" },
+        /* 20*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1, -2,   -1, -1, -1, -1, -1,   "Warning 105: Invalid scale value" },
+        /* 21*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1, 0.49, -1, -1, -1, -1, -1,   "Warning 146: Scaling less than 0.5 will be set to 0.5 for 'png' output" },
+        /* 22*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1, -1,   -2, -1, -1, -1, -1,   "Error 149: Invalid Structured Carrier Message version value" },
+        /* 22*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1, -1,  100, -1, -1, -1, -1,   "Warning 150: Invalid version (vv) for Structured Carrier Message, ignoring" },
+        /* 22*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1, -1,   -1, -2, -1, -1, -1,   "Error 134: Invalid ECC value" },
+        /* 23*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1, -1,   -1,  9, -1, -1, -1,   "Warning 114: ECC level out of range" },
+        /* 24*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1, -1,   -1, -1, -2, -1, -1,   "Error 128: Invalid separator value" },
+        /* 25*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1, -1,   -1, -1,  5, -1, -1,   "Warning 127: Invalid separator value" },
+        /* 26*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1, -1,   -1, -1, -1, -2, -1,   "Error 133: Invalid version value" },
+        /* 27*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1, -1,   -1, -1, -1, 85, -1,   "Warning 113: Invalid version" },
+        /* 28*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1, -2,   "Error 120: Invalid whitespace value '-2'" },
+        /* 29*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1, 1001, "Warning 121: Whitespace value out of range" },
     };
     int data_size = ARRAY_SIZE(data);
 
@@ -601,6 +607,7 @@ static void test_checks(int index, int debug) {
         arg_int(cmd, "--rotate=", data[i].rotate);
         arg_int(cmd, "--rows=", data[i].rows);
         arg_double(cmd, "--scale=", data[i].scale);
+        arg_int(cmd, "--scmvv=", data[i].scmvv);
         arg_int(cmd, "--secure=", data[i].secure);
         arg_int(cmd, "--separator=", data[i].separator);
         arg_int(cmd, "--vers=", data[i].vers);
@@ -619,6 +626,231 @@ static void test_checks(int index, int debug) {
     testFinish();
 }
 
+static void test_barcode_symbology(int index, int debug) {
+
+    testStart("");
+
+    struct item {
+        const char *bname;
+        const char *data;
+        const char *primary;
+        int fail;
+        const char *expected;
+    };
+    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    static const struct item data[] = {
+        /*  0*/ { "_", "1", NULL, 1, "Error 119: Invalid barcode type '_'" },
+        /*  1*/ { "a", "1", NULL, 1, "Error 119: Invalid barcode type 'a'" },
+        /*  2*/ { "code128", "1", NULL, 0, "symbology: 20," },
+        /*  3*/ { "code218", "1", NULL, 1, "Error 119: Invalid barcode type 'code218'" },
+        /*  4*/ { "code12", "1", NULL, 1, "Error 119: Invalid barcode type 'code12'" },
+        /*  5*/ { "BARCODE_CODE11", "1", NULL, 0, "symbology: 1," },
+        /*  6*/ { "C25 Standard", "1", NULL, 0, "symbology: 2," },
+        /*  7*/ { "c25matrix", "1", NULL, 1, "Error 119: Invalid barcode type 'c25matrix'" }, // Legacy not supported
+        /*  8*/ { "C25INTER", "1", NULL, 0, "symbology: 3," },
+        /*  9*/ { "c25IATA", "1", NULL, 0, "symbology: 4," },
+        /* 10*/ { "c25 Logic", "1", NULL, 0, "symbology: 6," },
+        /* 11*/ { "c25 Ind", "1", NULL, 0, "symbology: 7," },
+        /* 12*/ { "code39", "1", NULL, 0, "symbology: 8," },
+        /* 13*/ { "excode 39", "1", NULL, 0, "symbology: 9," },
+        /* 14*/ { "eanx", "1", NULL, 0, "symbology: 13," },
+        /* 15*/ { "eanx chk", "1", NULL, 0, "symbology: 14," },
+        /* 16*/ { "eanxchk", "1", NULL, 0, "symbology: 14," },
+        /* 17*/ { "GS1128", "[01]12345678901231", NULL, 0, "symbology: 16," },
+        /* 18*/ { "coda bar", "A1B", NULL, 0, "symbology: 18," },
+        /* 19*/ { "DPLEIT", "1", NULL, 0, "symbology: 21," },
+        /* 20*/ { "DPIDENT", "1", NULL, 0, "symbology: 22," },
+        /* 21*/ { "code16k", "1", NULL, 0, "symbology: 23," },
+        /* 22*/ { "CODE49", "1", NULL, 0, "symbology: 24," },
+        /* 23*/ { "CODE93", "1", NULL, 0, "symbology: 25," },
+        /* 24*/ { "flat", "1", NULL, 0, "symbology: 28," },
+        /* 25*/ { "dbar omn", "1", NULL, 0, "symbology: 29," },
+        /* 26*/ { "dbar ltd", "1", NULL, 0, "symbology: 30," },
+        /* 27*/ { "dbarexp", "[10]12", NULL, 0, "symbology: 31," },
+        /* 28*/ { "telepen", "1", NULL, 0, "symbology: 32," },
+        /* 29*/ { "upc", "1", NULL, 1, "Error 119: Invalid barcode type 'upc'" },
+        /* 30*/ { "upca", "1", NULL, 0, "symbology: 34," },
+        /* 31*/ { "upca_chk", "123456789012", NULL, 0, "symbology: 35," },
+        /* 33*/ { "upce", "1", NULL, 0, "symbology: 37," },
+        /* 34*/ { "upce chk", "12345670", NULL, 0, "symbology: 38," },
+        /* 36*/ { "POSTNET ", "12345678901", NULL, 0, "symbology: 40," },
+        /* 37*/ { "MSI Plessey ", "1", NULL, 0, "symbology: 47," },
+        /* 38*/ { "fim ", "A", NULL, 0, "symbology: 49," },
+        /* 39*/ { "LOGMARS", "123456", NULL, 0, "symbology: 50," },
+        /* 40*/ { " pharma", "123456", NULL, 0, "symbology: 51," },
+        /* 41*/ { " pzn ", "1", NULL, 0, "symbology: 52," },
+        /* 42*/ { "pharma two", "4", NULL, 0, "symbology: 53," },
+        /* 43*/ { "BARCODE_PDF417", "1", NULL, 0, "symbology: 55," },
+        /* 44*/ { "barcodepdf417comp", "1", NULL, 0, "symbology: 56," },
+        /* 45*/ { "MaxiCode", "1", NULL, 0, "symbology: 57," },
+        /* 46*/ { "QR CODE", "1", NULL, 0, "symbology: 58," },
+        /* 47*/ { "qr", "1", NULL, 0, "symbology: 58," }, // Synonym
+        /* 48*/ { "Code 128 B", "1", NULL, 0, "symbology: 60," },
+        /* 49*/ { "AUS POST", "12345678901234567890123", NULL, 0, "symbology: 63," },
+        /* 50*/ { "AusReply", "12345678", NULL, 0, "symbology: 66," },
+        /* 51*/ { "AUSROUTE", "12345678", NULL, 0, "symbology: 67," },
+        /* 52*/ { "AUS REDIRECT", "12345678", NULL, 0, "symbology: 68," },
+        /* 53*/ { "isbnx", "123456789", NULL, 0, "symbology: 69," },
+        /* 54*/ { "rm4scc", "1", NULL, 0, "symbology: 70," },
+        /* 55*/ { "DataMatrix", "1", NULL, 0, "symbology: 71," },
+        /* 56*/ { "EAN14", "1", NULL, 0, "symbology: 72," },
+        /* 57*/ { "vin", "12345678701234567", NULL, 0, "symbology: 73," },
+        /* 58*/ { "CodaBlock-F", "1", NULL, 0, "symbology: 74," },
+        /* 59*/ { "NVE18", "1", NULL, 0, "symbology: 75," },
+        /* 60*/ { "Japan Post", "1", NULL, 0, "symbology: 76," },
+        /* 61*/ { "Korea Post", "1", NULL, 0, "symbology: 77," },
+        /* 62*/ { "DBar Stk", "1", NULL, 0, "symbology: 79," },
+        /* 63*/ { "DBar Omn Stk", "1", NULL, 0, "symbology: 80," },
+        /* 64*/ { "DBar Exp Stk", "[20]01", NULL, 0, "symbology: 81," },
+        /* 65*/ { "planet", "12345678901", NULL, 0, "symbology: 82," },
+        /* 66*/ { "MicroPDF417", "1", NULL, 0, "symbology: 84," },
+        /* 67*/ { "USPS IMail", "12345678901234567890", NULL, 0, "symbology: 85," },
+        /* 68*/ { "plessey", "1", NULL, 0, "symbology: 86," },
+        /* 69*/ { "telepen num", "1", NULL, 0, "symbology: 87," },
+        /* 70*/ { "ITF14", "1", NULL, 0, "symbology: 89," },
+        /* 71*/ { "KIX", "1", NULL, 0, "symbology: 90," },
+        /* 72*/ { "Aztec", "1", NULL, 0, "symbology: 92," },
+        /* 73*/ { "daft", "D", NULL, 0, "symbology: 93," },
+        /* 74*/ { "DPD", "0123456789012345678901234567", NULL, 0, "symbology: 96," },
+        /* 75*/ { "Micro QR", "1", NULL, 0, "symbology: 97," },
+        /* 76*/ { "hibc128", "1", NULL, 0, "symbology: 98," },
+        /* 76*/ { "hibccode128", "1", NULL, 0, "symbology: 98," }, // Synonym
+        /* 77*/ { "hibc39", "1", NULL, 0, "symbology: 99," },
+        /* 77*/ { "hibccode39", "1", NULL, 0, "symbology: 99," }, // Synonym
+        /* 78*/ { "hibcdatamatrix", "1", NULL, 0, "symbology: 102," }, // Synonym
+        /* 78*/ { "hibcdm", "1", NULL, 0, "symbology: 102," },
+        /* 79*/ { "HIBC qr", "1", NULL, 0, "symbology: 104," },
+        /* 79*/ { "HIBC QR Code", "1", NULL, 0, "symbology: 104," }, // Synonym
+        /* 80*/ { "HIBCPDF", "1", NULL, 0, "symbology: 106," },
+        /* 80*/ { "HIBCPDF417", "1", NULL, 0, "symbology: 106," }, // Synonym
+        /* 81*/ { "HIBCMICPDF", "1", NULL, 0, "symbology: 108," },
+        /* 81*/ { "HIBC Micro PDF", "1", NULL, 0, "symbology: 108," }, // Synonym
+        /* 81*/ { "HIBC Micro PDF417", "1", NULL, 0, "symbology: 108," }, // Synonym
+        /* 81*/ { "HIBC BlockF", "1", NULL, 0, "symbology: 110," },
+        /* 81*/ { "HIBC CodaBlock-F", "1", NULL, 0, "symbology: 110," }, // Synonym
+        /* 82*/ { "HIBC Aztec", "1", NULL, 0, "symbology: 112," },
+        /* 83*/ { "DotCode", "1", NULL, 0, "symbology: 115," },
+        /* 84*/ { "Han Xin", "1", NULL, 0, "symbology: 116," },
+        /* 85*/ { "Mailmark", "01000000000000000AA00AA0A", NULL, 0, "symbology: 121," },
+        /* 86*/ { "azrune", "1", NULL, 0, "symbology: 128," },
+        /* 86*/ { "aztecrune", "1", NULL, 0, "symbology: 128," }, // Synonym
+        /* 86*/ { "aztecrunes", "1", NULL, 0, "symbology: 128," }, // Synonym
+        /* 87*/ { "code32", "1", NULL, 0, "symbology: 129," },
+        /* 88*/ { "eanx cc", "[20]01", "1234567890128", 0, "symbology: 130," },
+        /* 89*/ { "GS1 128 CC", "[01]12345678901231", "[20]01", 0, "symbology: 131," },
+        /* 90*/ { "dbaromncc", "[20]01", "1234567890123", 0, "symbology: 132," },
+        /* 91*/ { "dbarltdcc", "[20]01", "1234567890123", 0, "symbology: 133," },
+        /* 92*/ { "dbarexpcc", "[20]01", "[01]12345678901231", 0, "symbology: 134," },
+        /* 93*/ { "upcacc", "[20]01", "12345678901", 0, "symbology: 135," },
+        /* 94*/ { "upcecc", "[20]01", "1234567", 0, "symbology: 136," },
+        /* 95*/ { "dbar stk cc", "[20]01", "1234567890123", 0, "symbology: 137," },
+        /* 96*/ { "dbaromnstkcc", "[20]01", "1234567890123", 0, "symbology: 138," },
+        /* 97*/ { "dbarexpstkcc", "[20]01", "[01]12345678901231", 0, "symbology: 139," },
+        /* 98*/ { "Channel", "1", NULL, 0, "symbology: 140," },
+        /* 99*/ { "CodeOne", "1", NULL, 0, "symbology: 141," },
+        /*100*/ { "Grid Matrix", "1", NULL, 0, "symbology: 142," },
+        /*101*/ { "UPN QR", "1", NULL, 0, "symbology: 143," },
+        /*102*/ { "UPN QR Code", "1", NULL, 0, "symbology: 143," }, // Synonym
+        /*103*/ { "ultra", "1", NULL, 0, "symbology: 144," },
+        /*104*/ { "ultracode", "1", NULL, 0, "symbology: 144," }, // Synonym
+        /*105*/ { "rMQR", "1", NULL, 0, "symbology: 145," },
+        /*106*/ { "x", "1", NULL, 1, "Error 119: Invalid barcode type 'x'" },
+        /*107*/ { "\177", "1", NULL, 1, "Error 119: Invalid barcode type '\177'" },
+    };
+    int data_size = ARRAY_SIZE(data);
+
+    char cmd[4096];
+    char buf[8192];
+    char *outfilename = "out.png";
+
+    for (int i = 0; i < data_size; i++) {
+
+        if (index != -1 && i != index) continue;
+
+        strcpy(cmd, "zint ");
+        strcat(cmd, " --verbose");
+
+        arg_data(cmd, "-b ", data[i].bname);
+        arg_data(cmd, "-d ", data[i].data);
+        arg_data(cmd, "--primary=", data[i].primary);
+
+        strcat(cmd, " 2>&1");
+
+        assert_nonnull(exec(cmd, buf, sizeof(buf) - 1, debug, i), "i:%d exec(%s) NULL\n", i, cmd);
+        assert_nonnull(strstr(buf, data[i].expected), "i:%d strstr(%s, %s) == NULL\n", i, buf, data[i].expected);
+        if (!data[i].fail) {
+            assert_zero(remove(outfilename), "i:%d remove(%s) != 0 (%d)\n", i, outfilename, errno);
+        }
+    }
+
+    testFinish();
+}
+
+static void test_other_opts(int index, int debug) {
+
+    testStart("");
+
+    struct item {
+        int b;
+        char *data;
+        int input_mode;
+        char *opt;
+        char *opt_data;
+
+        char *expected;
+    };
+    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    struct item data[] = {
+        /*  0*/ { BARCODE_CODE128, "1", -1, " --bg=", "EF9900", "" },
+        /*  1*/ { BARCODE_CODE128, "1", -1, " --bg=", "EF9900AA", "" },
+        /*  2*/ { BARCODE_CODE128, "1", -1, " --bg=", "GF9900", "Error 654: Malformed background colour target" },
+        /*  3*/ { BARCODE_CODE128, "1", -1, " --fg=", "000000", "" },
+        /*  4*/ { BARCODE_CODE128, "1", -1, " --fg=", "00000000", "" },
+        /*  5*/ { BARCODE_CODE128, "1", -1, " --fg=", "000000F", "Error 651: Malformed foreground colour target" },
+        /*  6*/ { BARCODE_CODE128, "1", -1, " --fg=", "000000FG", "Error 653: Malformed foreground colour target" },
+        /*  7*/ { BARCODE_CODE128, "1", -1, " --fontsize=", "10", "" },
+        /*  8*/ { BARCODE_CODE128, "1", -1, " --fontsize=", "101", "Warning 126: Invalid font size" },
+        /*  9*/ { BARCODE_CODE128, "1", -1, " --nobackground", "", "" },
+        /* 10*/ { BARCODE_CODE128, "1", -1, " --notext", "", "" },
+        /* 11*/ { BARCODE_CODE128, "1", -1, " --reverse", "", "" },
+        /* 12*/ { BARCODE_CODE128, "1", -1, " --werror", NULL, "" },
+        /* 13*/ { 19, "1", -1, " --werror", NULL, "Error 207: Codabar 18 not supported" },
+        /* 14*/ { BARCODE_GS1_128, "[01]12345678901231", -1, "", NULL, "" },
+        /* 15*/ { BARCODE_GS1_128, "0112345678901231", -1, "", NULL, "Error 252: Data does not start with an AI" },
+        /* 16*/ { BARCODE_GS1_128, "0112345678901231", -1, " --wzpl", NULL, "Warning 252: Data does not start with an AI" },
+        /* 17*/ { BARCODE_GS1_128, "[00]376104250021234569", -1, "", NULL, "" },
+        /* 18*/ { BARCODE_GS1_128, "[00]376104250021234568", -1, "", NULL, "Warning 261: AI (00) position 18: Bad checksum '8', expected '9'" },
+        /* 19*/ { BARCODE_GS1_128, "[00]376104250021234568", -1, " --wzpl", NULL, "Warning 261: AI (00) position 18: Bad checksum '8', expected '9'" },
+        /* 20*/ { BARCODE_GS1_128, "[00]376104250021234568", -1, " --werror", NULL, "Warning 261: AI (00) position 18: Bad checksum '8', expected '9'" },
+    };
+    int data_size = ARRAY_SIZE(data);
+    char cmd[4096];
+    char buf[8192];
+
+    for (int i = 0; i < data_size; i++) {
+
+        if (index != -1 && i != index) continue;
+
+        strcpy(cmd, "zint");
+
+        arg_int(cmd, "-b ", data[i].b);
+        arg_input_mode(cmd, data[i].input_mode);
+        arg_data(cmd, "-d ", data[i].data);
+        if (data[i].opt_data != NULL) {
+            arg_data(cmd, data[i].opt, data[i].opt_data);
+        } else {
+            strcat(cmd, data[i].opt);
+        }
+
+        strcat(cmd, " 2>&1");
+
+        assert_nonnull(exec(cmd, buf, sizeof(buf) - 1, debug, i), "i:%d exec(%s) NULL\n", i, cmd);
+        assert_zero(strcmp(buf, data[i].expected), "i:%d buf (%s) != expected (%s) (%s)\n", i, buf, data[i].expected, cmd);
+    }
+
+    testFinish();
+}
+
 int main(int argc, char *argv[]) {
 
     testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
@@ -628,6 +860,8 @@ int main(int argc, char *argv[]) {
         { "test_batch_input", test_batch_input, 1, 0, 1 },
         { "test_batch_large", test_batch_large, 1, 0, 1 },
         { "test_checks", test_checks, 1, 0, 1 },
+        { "test_barcode_symbology", test_barcode_symbology, 1, 0, 1 },
+        { "test_other_opts", test_other_opts, 1, 0, 1 },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

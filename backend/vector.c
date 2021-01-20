@@ -1,7 +1,7 @@
 /*  vector.c - Creates vector image objects
 
     libzint - the open source barcode library
-    Copyright (C) 2018 - 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2018 - 2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -35,6 +35,10 @@
 
 #ifdef _MSC_VER
 #include <malloc.h>
+/* For Visual C++ 6 suppress conversion from int to float warning */
+#if _MSC_VER == 1200
+#pragma warning(disable: 4244)
+#endif
 #endif
 
 #include "common.h"
@@ -252,7 +256,7 @@ static void vector_rotate(struct zint_symbol *symbol, int rotate_angle) {
     struct zint_vector_hexagon *hex;
     struct zint_vector_circle *circle;
     struct zint_vector_string *string;
-    int temp;
+    float temp;
     
     if (rotate_angle == 0) {
         // No rotation needed
