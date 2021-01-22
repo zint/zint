@@ -2561,11 +2561,17 @@ DotCode uses a grid of dots in a rectangular formation to encode characters up
 to a maximum of approximately 450 characters (or 900 numeric digits). The
 symbology supports ECI encoding and GS1 data encoding. By default Zint will
 produce a symbol which is approximately square, however the width of the symbol
-can be adjusted by using the --cols= option or by setting option_2. Outputting
-DotCode to raster images (PNG, GIF, BMP, PCX) will require setting the scale of
-the image to a larger value than the default (e.g. approx 10) for the dots to
-be plotted correctly. Approximately 33% of the resulting symbol is comprised of
-error correction codewords.
+can be adjusted by using the --cols= option or by setting option_2 (maximum
+108). Outputting DotCode to raster images (PNG, GIF, BMP, PCX) will require
+setting the scale of the image to a larger value than the default (e.g. approx
+10) for the dots to be plotted correctly. Approximately 33% of the resulting
+symbol is comprised of error correction codewords.
+
+DotCode has two sets of 4 masks, designated 0-3 and 0'-3', the second "prime"
+set being the same as the first with corners lit. The best mask to use is
+selected automatically by Zint but may be manually specified by using the
+--mask= switch with values 0-7, where 4-7 denote 0'-3', or by setting option_3
+to (N + 1) << 8 where N is 0-7.
 
 6.6.12 Han Xin Code
 -------------------

@@ -109,6 +109,8 @@
 2021-01-14 HaO
 - Added detection of presence of the Tk package and late initialization.
   This is a preparation to add a TCL only mode to the DLL.
+2021-01-22 GL
+- -cols maximum changed from 67 to 108 (DotCode)
 */
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
@@ -431,7 +433,7 @@ static char help_message[] = "zint tcl(stub,obj) dll\n"
     "   -border integer: width of a border around the symbol. Use with -bind/-box 1\n"
     "   -box bool: box around bar code, size set be -border\n"
     /* cli option --cmyk not supported as no corresponding output */
-    "   -cols integer: PDF417, Codablock F: number of columns\n"
+    "   -cols integer: PDF417, Codablock F, DotCode: number of columns\n"
     /* cli option --data is standard parameter */
     "   -dmre bool: Allow Data Matrix Rectangular Extended\n"
     "   -dotsize number: radius ratio of dots from 0.01 to 1.0\n" 
@@ -449,9 +451,9 @@ static char help_message[] = "zint tcl(stub,obj) dll\n"
     "   -height integer: Symbol height in modules\n"
     /* cli option --input not supported */
     "   -init bool: Create reader initialisation symbol (Code 128, Data Matrix)\n"
-    "    number: Set encoding mode (MaxiCode/Composite)\n"
+    "   -mask number: set masking pattern to use (QR/MicroQR/HanXin/DotCode)\n"
     /* cli option --mirror not supported */
-    "   -mode: Structured primary data mode (MaxiCode, Composite)\n"
+    "   -mode number: set encoding mode (MaxiCode, Composite)\n"
     "   -nobackground bool: set background transparent\n"
     "   -notext bool: no interpretation line\n"
     /* cli option --output not supported */
@@ -977,7 +979,7 @@ static int Encode(Tcl_Interp *interp, int objc,
         case iVers:
             /* >> Int in Option 2 */
             if (intValue < 1
-                || (optionIndex==iCols && intValue > 67)
+                || (optionIndex==iCols && intValue > 108)
                 || (optionIndex==iVers && intValue > 47))
             {
                 Tcl_SetObjResult(interp,

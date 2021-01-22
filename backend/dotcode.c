@@ -32,7 +32,8 @@
 /* vim: set ts=4 sw=4 et : */
 
 /*
- * Attempts to encode DotCode according to (AIMD013) ISS DotCode Rev. 4.0, DRAFT 0.15, TSC Pre-PR #5, dated May 28, 2019
+ * Attempts to encode DotCode according to (AIMD013) ISS DotCode Rev. 4.0, DRAFT 0.15, TSC Pre-PR #5,
+ * dated May 28, 2019
  * Incorporating suggestions from Terry Burton at BWIPP
  */
 
@@ -69,7 +70,7 @@ static const unsigned short int dot_patterns[113] = {
 };
 
 // Printed() routine from Annex A adapted to char array of ASCII 1's and 0's
-static int get_dot(char Dots[], const int Hgt, const int Wid, const int x, const int y) {
+static int get_dot(const char Dots[], const int Hgt, const int Wid, const int x, const int y) {
     int retval = 0;
 
     if ((x >= 0) && (x < Wid) && (y >= 0) && (y < Hgt)) {
@@ -81,7 +82,7 @@ static int get_dot(char Dots[], const int Hgt, const int Wid, const int x, const
     return retval;
 }
 
-static int clr_col(char *Dots, const int Hgt, const int Wid, const int x) {
+static int clr_col(const char *Dots, const int Hgt, const int Wid, const int x) {
     int y;
     for (y = x & 1; y < Hgt; y += 2) {
         if (get_dot(Dots, Hgt, Wid, x, y)) {
@@ -92,7 +93,7 @@ static int clr_col(char *Dots, const int Hgt, const int Wid, const int x) {
     return 1;
 }
 
-static int clr_row(char *Dots, const int Hgt, const int Wid, const int y) {
+static int clr_row(const char *Dots, const int Hgt, const int Wid, const int y) {
     int x;
     for (x = y & 1; x < Wid; x += 2) {
         if (get_dot(Dots, Hgt, Wid, x, y)) {
@@ -104,7 +105,7 @@ static int clr_row(char *Dots, const int Hgt, const int Wid, const int y) {
 }
 
 // calc penalty for empty interior columns
-static int col_penalty(char *Dots, int Hgt, int Wid) {
+static int col_penalty(const char *Dots, const int Hgt, const int Wid) {
     int x, penalty = 0, penalty_local = 0;
 
     for (x = 1; x < Wid - 1; x++) {
@@ -126,7 +127,7 @@ static int col_penalty(char *Dots, int Hgt, int Wid) {
 }
 
 // calc penalty for empty interior rows
-static int row_penalty(char *Dots, int Hgt, int Wid) {
+static int row_penalty(const char *Dots, const int Hgt, const int Wid) {
     int y, penalty = 0, penalty_local = 0;
 
     for (y = 1; y < Hgt - 1; y++) {
@@ -148,7 +149,7 @@ static int row_penalty(char *Dots, int Hgt, int Wid) {
 }
 
 /* Dot pattern scoring routine from Annex A */
-static int score_array(char Dots[], int Hgt, int Wid) {
+static int score_array(const char Dots[], const int Hgt, const int Wid) {
     int x, y, worstedge, first, last, sum;
     int penalty = 0;
 
@@ -278,7 +279,7 @@ static int score_array(char Dots[], int Hgt, int Wid) {
 // employing Galois Field GF, where GF is prime, with a prime modulus of PM
 //-------------------------------------------------------------------------
 
-static void rsencode(int nd, int nc, unsigned char *wd) {
+static void rsencode(const int nd, const int nc, unsigned char *wd) {
     // roots (antilogs): root[0] = 1; for (i = 1; i < GF - 1; i++) root[i] = (PM * root[i - 1]) % GF;
     static int root[GF - 1] = {
           1,   3,   9,  27,  81,  17,  51,  40,   7,  21,
@@ -307,7 +308,9 @@ static void rsencode(int nd, int nc, unsigned char *wd) {
         int NC = NW - ND;
 
         // first compute the generator polynomial "c" of order "NC":
-        memset(c, 0, GF * sizeof(int)); // Keep clang-tidy happy (as far as UndefinedBinaryOperatorResult warning below at least)
+
+        // Keep clang-tidy happy (as far as UndefinedBinaryOperatorResult warning below at least)
+        memset(c, 0, GF * sizeof(int));
 
         c[0] = 1;
         for (i = 1; i <= NC; i++) {
@@ -335,7 +338,7 @@ static void rsencode(int nd, int nc, unsigned char *wd) {
 }
 
 /* Check if the next character is directly encodable in code set A (Annex F.II.D) */
-static int datum_a(const unsigned char source[], int position, int length) {
+static int datum_a(const unsigned char source[], const int position, const int length) {
     int retval = 0;
 
     if (position < length) {
@@ -347,8 +350,9 @@ static int datum_a(const unsigned char source[], int position, int length) {
     return retval;
 }
 
-/* Check if the next character is directly encodable in code set B (Annex F.II.D). Note changed to return 2 if CR/LF */
-static int datum_b(const unsigned char source[], int position, int length) {
+/* Check if the next character is directly encodable in code set B (Annex F.II.D).
+ * Note changed to return 2 if CR/LF */
+static int datum_b(const unsigned char source[], const int position, const int length) {
     int retval = 0;
 
     if (position < length) {
@@ -375,10 +379,10 @@ static int datum_b(const unsigned char source[], int position, int length) {
 }
 
 /* Check if the next characters are directly encodable in code set C (Annex F.II.D) */
-static int datum_c(const unsigned char source[], int position, int length) {
+static int datum_c(const unsigned char source[], const int position, const int length) {
     int retval = 0;
 
-    if (position <= length - 2) {
+    if (position + 1 < length) {
         if (((source[position] >= '0') && (source[position] <= '9'))
                 && ((source[position + 1] >= '0') && (source[position + 1] <= '9')))
             retval = 1;
@@ -388,7 +392,7 @@ static int datum_c(const unsigned char source[], int position, int length) {
 }
 
 /* Returns how many consecutive digits lie immediately ahead (Annex F.II.A) */
-static int n_digits(const unsigned char source[], int position, int length) {
+static int n_digits(const unsigned char source[], const int position, const int length) {
     int i;
 
     for (i = position; (i < length) && ((source[i] >= '0') && (source[i] <= '9')); i++);
@@ -397,7 +401,7 @@ static int n_digits(const unsigned char source[], int position, int length) {
 }
 
 /* checks ahead for 10 or more digits starting "17xxxxxx10..." (Annex F.II.B) */
-static int seventeen_ten(const unsigned char source[], int position, int length) {
+static int seventeen_ten(const unsigned char source[], const int position, const int length) {
     int found = 0;
 
     if (n_digits(source, position, length) >= 10) {
@@ -413,7 +417,7 @@ static int seventeen_ten(const unsigned char source[], int position, int length)
 /*  checks how many characters ahead can be reached while datum_c is true,
  *  returning the resulting number of codewords (Annex F.II.E)
  */
-static int ahead_c(const unsigned char source[], int position, int length) {
+static int ahead_c(const unsigned char source[], const int position, const int length) {
     int count = 0;
     int i;
 
@@ -425,7 +429,7 @@ static int ahead_c(const unsigned char source[], int position, int length) {
 }
 
 /* Annex F.II.F */
-static int try_c(const unsigned char source[], int position, int length) {
+static int try_c(const unsigned char source[], const int position, const int length) {
     int retval = 0;
 
     if (n_digits(source, position, length) > 0) {
@@ -438,7 +442,7 @@ static int try_c(const unsigned char source[], int position, int length) {
 }
 
 /* Annex F.II.G */
-static int ahead_a(const unsigned char source[], int position, int length) {
+static int ahead_a(const unsigned char source[], const int position, const int length) {
     int count = 0;
     int i;
 
@@ -451,7 +455,7 @@ static int ahead_a(const unsigned char source[], int position, int length) {
 }
 
 /* Annex F.II.H Note: changed to return number of chars encodable. Number of codewords returned in *p_nx. */
-static int ahead_b(const unsigned char source[], int position, int length, int *p_nx) {
+static int ahead_b(const unsigned char source[], const int position, const int length, int *p_nx) {
     int count = 0;
     int i, incr;
 
@@ -468,7 +472,7 @@ static int ahead_b(const unsigned char source[], int position, int length, int *
 }
 
 /* checks if the next character is in the range 128 to 255  (Annex F.II.I) */
-static int binary(const unsigned char source[], int length, int position) {
+static int binary(const unsigned char source[], const int length, const int position) {
     int retval = 0;
 
     if (position < length && source[position] >= 128) {
@@ -479,7 +483,8 @@ static int binary(const unsigned char source[], int length, int position) {
 }
 
 /* Analyse input data stream and encode using algorithm from Annex F */
-static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned char source[], int length, unsigned char *codeword_array, int *binary_finish) {
+static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned char source[], const int length,
+            unsigned char *codeword_array, int *binary_finish) {
     static char lead_specials[] = "\x09\x1C\x1D\x1E"; // HT, FS, GS, RS
 
     int input_position, array_length, i;
@@ -644,11 +649,11 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
             if (seventeen_ten(source, input_position, length)) {
                 codeword_array[array_length] = 100; // (17)...(10)
                 array_length++;
-                codeword_array[array_length] = ((source[input_position + 2] - '0') * 10) + (source[input_position + 3] - '0');
+                codeword_array[array_length] = to_int(source + input_position + 2, 2);
                 array_length++;
-                codeword_array[array_length] = ((source[input_position + 4] - '0') * 10) + (source[input_position + 5] - '0');
+                codeword_array[array_length] = to_int(source + input_position + 4, 2);
                 array_length++;
-                codeword_array[array_length] = ((source[input_position + 6] - '0') * 10) + (source[input_position + 7] - '0');
+                codeword_array[array_length] = to_int(source + input_position + 6, 2);
                 array_length++;
                 input_position += 10;
                 done = 1;
@@ -659,12 +664,13 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
         }
 
         if ((!done) && (encoding_mode == 'C')) {
-            if (datum_c(source, input_position, length) || ((source[input_position] == '[') && ((symbol->input_mode & 0x07) == GS1_MODE))) {
+            if (datum_c(source, input_position, length)
+                    || ((source[input_position] == '[') && ((symbol->input_mode & 0x07) == GS1_MODE))) {
                 if (source[input_position] == '[') {
                     codeword_array[array_length] = 107; // FNC1
                     input_position++;
                 } else {
-                    codeword_array[array_length] = ((source[input_position] - '0') * 10) + (source[input_position + 1] - '0');
+                    codeword_array[array_length] = to_int(source + input_position, 2);
                     input_position += 2;
                 }
                 array_length++;
@@ -754,7 +760,7 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
                     codeword_array[array_length] = 103 + (n - 2); // nx Shift C
                     array_length++;
                     for (i = 0; i < n; i++) {
-                        codeword_array[array_length] = ((source[input_position] - '0') * 10) + (source[input_position + 1] - '0');
+                        codeword_array[array_length] = to_int(source + input_position, 2);
                         array_length++;
                         input_position += 2;
                     }
@@ -794,7 +800,8 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
                         done = 1;
 
                     } else if (input_position != 0) {
-                        /* HT, FS, GS and RS in the first data position would be interpreted as a macro (see table 2) */
+                        /* HT, FS, GS and RS in the first data position would be interpreted as a macro
+                         * (see table 2) */
                         switch(source[input_position]) {
                             case 9: // HT
                                 codeword_array[array_length] = 97;
@@ -882,7 +889,7 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
                     codeword_array[array_length] = 103 + (n - 2); // nx Shift C
                     array_length++;
                     for (i = 0; i < n; i++) {
-                        codeword_array[array_length] = ((source[input_position] - '0') * 10) + (source[input_position + 1] - '0');
+                        codeword_array[array_length] = to_int(source + input_position, 2);
                         array_length++;
                         input_position += 2;
                     }
@@ -1011,7 +1018,7 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
                     codeword_array[array_length] = 101 + n; // Interrupt for nx Shift C
                     array_length++;
                     for (i = 0; i < n; i++) {
-                        codeword_array[array_length] = ((source[input_position] - '0') * 10) + (source[input_position + 1] - '0');
+                        codeword_array[array_length] = to_int(source + input_position, 2);
                         array_length++;
                         input_position += 2;
                     }
@@ -1136,7 +1143,7 @@ static int make_dotstream(const unsigned char masked_array[], const int array_le
 /* Determines if a given dot is a reserved corner dot
  * to be used by one of the last six bits
  */
-static int is_corner(int column, int row, int width, int height) {
+static int is_corner(const int column, const int row, const int width, const int height) {
     int corner = 0;
 
     /* Top Left */
@@ -1178,7 +1185,7 @@ static int is_corner(int column, int row, int width, int height) {
 }
 
 /* Place the dots in the symbol*/
-static void fold_dotstream(char dot_stream[], int width, int height, char dot_array[]) {
+static void fold_dotstream(const char dot_stream[], const int width, const int height, char dot_array[]) {
     int column, row;
     int input_position = 0;
 
@@ -1243,10 +1250,12 @@ static void fold_dotstream(char dot_stream[], int width, int height, char dot_ar
     }
 }
 
-static void apply_mask(int mask, int data_length, unsigned char *masked_codeword_array, unsigned char *codeword_array, int ecc_length) {
+static void apply_mask(const int mask, const int data_length, unsigned char *masked_codeword_array,
+            const unsigned char *codeword_array, const int ecc_length) {
     int weight = 0;
     int j;
 
+    assert(mask >= 0 && mask <= 3); /* Suppress clang-analyzer taking default branch */
     switch (mask) {
         case 0:
             masked_codeword_array[0] = 0;
@@ -1280,7 +1289,7 @@ static void apply_mask(int mask, int data_length, unsigned char *masked_codeword
     rsencode(data_length + 1, ecc_length, masked_codeword_array);
 }
 
-static void force_corners(int width, int height, char *dot_array) {
+static void force_corners(const int width, const int height, char *dot_array) {
     if (width % 2) {
         // "Vertical" symbol
         dot_array[0] = '1';
@@ -1307,22 +1316,22 @@ INTERNAL int dotcode(struct zint_symbol *symbol, unsigned char source[], int len
     int min_dots, min_area;
     int height, width;
     int mask_score[8];
+    int user_mask;
     int dot_stream_length;
     int high_score, best_mask;
     int binary_finish = 0;
     int debug = symbol->debug;
     int padding_dots, is_first;
-    int codeword_array_len = length * 4 + 8; /* Allow up to 4 codewords per input + 2 (FNC) + 4 (ECI) + 2 (special char 1st position) */
-#ifdef _MSC_VER
-    unsigned char* masked_codeword_array;
-#endif
+    /* Allow up to 4 codewords per input + 2 (FNC) + 4 (ECI) + 2 (special char 1st position) */
+    int codeword_array_len = length * 4 + 8;
 
 #ifndef _MSC_VER
     unsigned char codeword_array[codeword_array_len];
 #else
-    char* dot_stream;
-    char* dot_array;
-    unsigned char* codeword_array = (unsigned char *) _alloca(codeword_array_len);
+    unsigned char *codeword_array = (unsigned char *) _alloca(codeword_array_len);
+    char *dot_stream;
+    char *dot_array;
+    unsigned char *masked_codeword_array;
 #endif /* _MSC_VER */
 
     if (symbol->eci > 811799) {
@@ -1330,9 +1339,15 @@ INTERNAL int dotcode(struct zint_symbol *symbol, unsigned char source[], int len
         return ZINT_ERROR_INVALID_OPTION;
     }
 
+    user_mask = (symbol->option_3 >> 8) & 0x0F; /* User mask is mask + 1, so >= 1 and <= 8 */
+    if (user_mask > 8) {
+        user_mask = 0; /* Ignore */
+    }
+
     data_length = dotcode_encode_message(symbol, source, length, codeword_array, &binary_finish);
 
-    /* Suppresses clang-tidy clang-analyzer-core.UndefinedBinaryOperatorResult/uninitialized.ArraySubscript warnings */
+    /* Suppresses clang-tidy clang-analyzer-core.UndefinedBinaryOperatorResult/uninitialized.ArraySubscript
+     * warnings */
     assert(data_length > 0);
 
     ecc_length = 3 + (data_length / 2);
@@ -1422,13 +1437,10 @@ INTERNAL int dotcode(struct zint_symbol *symbol, unsigned char source[], int len
 
 #ifndef _MSC_VER
     char dot_stream[height * width * 3];
-    char dot_array[width * height * sizeof (char) ];
+    char dot_array[width * height];
 #else
     dot_stream = (char *) _alloca(height * width * 3);
-    if (!dot_stream) return ZINT_ERROR_MEMORY;
-
-    dot_array = (char *) _alloca(width * height * sizeof (char));
-    if (!dot_array) return ZINT_ERROR_MEMORY;
+    dot_array = (char *) _alloca(width * height);
 #endif
 
     /* Add pad characters */
@@ -1458,46 +1470,19 @@ INTERNAL int dotcode(struct zint_symbol *symbol, unsigned char source[], int len
 
     ecc_length = 3 + (data_length / 2);
 
-
 #ifndef _MSC_VER
     unsigned char masked_codeword_array[data_length + 1 + ecc_length];
 #else
-    masked_codeword_array = (unsigned char *) _alloca((data_length + 1 + ecc_length) * sizeof (unsigned char));
+    masked_codeword_array = (unsigned char *) _alloca(data_length + 1 + ecc_length);
 #endif /* _MSC_VER */
 
-    /* Evaluate data mask options */
-    for (i = 0; i < 4; i++) {
-
-        apply_mask(i, data_length, masked_codeword_array, codeword_array, ecc_length);
-
-        dot_stream_length = make_dotstream(masked_codeword_array, (data_length + ecc_length + 1), dot_stream);
-
-        /* Add pad bits */
-        for (jc = dot_stream_length; jc < n_dots; jc++) {
-            strcat(dot_stream, "1");
-        }
-
-        fold_dotstream(dot_stream, width, height, dot_array);
-
-        mask_score[i] = score_array(dot_array, height, width);
-
+    if (user_mask) {
+        best_mask = user_mask - 1;
         if (debug & ZINT_DEBUG_PRINT) {
-            printf("Mask %d score is %d\n", i, mask_score[i]);
+            printf("Applying mask %d (specified)\n", best_mask);
         }
-    }
-
-    high_score = mask_score[0];
-    best_mask = 0;
-
-    for (i = 1; i < 4; i++) {
-        if (mask_score[i] >= high_score) {
-            high_score = mask_score[i];
-            best_mask = i;
-        }
-    }
-
-    /* Re-evaluate using forced corners if needed */
-    if (best_mask <= (height * width) / 2) {
+    } else {
+        /* Evaluate data mask options */
         for (i = 0; i < 4; i++) {
 
             apply_mask(i, data_length, masked_codeword_array, codeword_array, ecc_length);
@@ -1511,25 +1496,62 @@ INTERNAL int dotcode(struct zint_symbol *symbol, unsigned char source[], int len
 
             fold_dotstream(dot_stream, width, height, dot_array);
 
-            force_corners(width, height, dot_array);
-
-            mask_score[i + 4] = score_array(dot_array, height, width);
+            mask_score[i] = score_array(dot_array, height, width);
 
             if (debug & ZINT_DEBUG_PRINT) {
-                printf("Mask %d score is %d\n", i + 4, mask_score[i + 4]);
+                printf("Mask %d score is %d\n", i, mask_score[i]);
             }
         }
 
-        for (i = 4; i < 8; i++) {
+        high_score = mask_score[0];
+        best_mask = 0;
+
+        for (i = 1; i < 4; i++) {
             if (mask_score[i] >= high_score) {
                 high_score = mask_score[i];
                 best_mask = i;
             }
         }
-    }
 
-    if (debug & ZINT_DEBUG_PRINT) {
-        printf("Applying mask %d, high_score %d\n", best_mask, high_score);
+        /* Re-evaluate using forced corners if needed */
+        if (high_score <= (height * width) / 2) {
+            if (debug & ZINT_DEBUG_PRINT) {
+                printf("High score %d <= %d (height * width) / 2\n", high_score, (height * width) / 2);
+            }
+
+            for (i = 0; i < 4; i++) {
+
+                apply_mask(i, data_length, masked_codeword_array, codeword_array, ecc_length);
+
+                dot_stream_length = make_dotstream(masked_codeword_array, (data_length + ecc_length + 1), dot_stream);
+
+                /* Add pad bits */
+                for (jc = dot_stream_length; jc < n_dots; jc++) {
+                    strcat(dot_stream, "1");
+                }
+
+                fold_dotstream(dot_stream, width, height, dot_array);
+
+                force_corners(width, height, dot_array);
+
+                mask_score[i + 4] = score_array(dot_array, height, width);
+
+                if (debug & ZINT_DEBUG_PRINT) {
+                    printf("Mask %d score is %d\n", i + 4, mask_score[i + 4]);
+                }
+            }
+
+            for (i = 4; i < 8; i++) {
+                if (mask_score[i] >= high_score) {
+                    high_score = mask_score[i];
+                    best_mask = i;
+                }
+            }
+        }
+
+        if (debug & ZINT_DEBUG_PRINT) {
+            printf("Applying mask %d, high_score %d\n", best_mask, high_score);
+        }
     }
 
     /* Apply best mask */

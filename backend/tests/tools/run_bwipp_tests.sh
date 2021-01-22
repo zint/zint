@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright (C) 2020 Robin Stuart <rstuart114@gmail.com>
+# Copyright (C) 2020 - 2021 Robin Stuart <rstuart114@gmail.com>
 # vim: set ts=4 sw=4 et :
 set -e
 
@@ -25,6 +25,7 @@ run_bwipp_test "test_code16k" "encode"
 run_bwipp_test "test_code49" "encode"
 run_bwipp_test "test_composite"
 run_bwipp_test "test_dmatrix" "encode"
+run_bwipp_test "test_dotcode" "encode"
 run_bwipp_test "test_gs1" "gs1_reduce"
 run_bwipp_test "test_imail" "encode"
 run_bwipp_test "test_medical" "encode"

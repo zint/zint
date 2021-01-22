@@ -664,6 +664,7 @@ void MainWindow::change_options()
         file.close();
         tabMain->insertTab(1,m_optionWidget,tr("DotCod&e"));
         connect(m_optionWidget->findChild<QObject*>("cmbDotCols"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(m_optionWidget->findChild<QObject*>("cmbDotMask"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radDotStand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radDotGS1"), SIGNAL(clicked( bool )), SLOT(update_preview()));
     }
@@ -1297,6 +1298,10 @@ void MainWindow::update_preview()
         case BARCODE_DOTCODE:
             m_bc.bc.setSymbol(BARCODE_DOTCODE);
             m_bc.bc.setOption2(m_optionWidget->findChild<QComboBox*>("cmbDotCols")->currentIndex());
+            item_val = m_optionWidget->findChild<QComboBox*>("cmbDotMask")->currentIndex();
+            if (item_val) {
+                m_bc.bc.setOption3((item_val << 8) | m_bc.bc.option3());
+            }
             set_gs1_mode(m_optionWidget->findChild<QRadioButton*>("radDotGS1")->isChecked());
             break;
 
@@ -1941,6 +1946,7 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology) {
 
         case BARCODE_DOTCODE:
             settings.setValue("studio/bc/dotcode/cols", get_combobox_index("cmbDotCols"));
+            settings.setValue("studio/bc/dotcode/mask", get_combobox_index("cmbDotMask"));
             settings.setValue("studio/bc/dotcode/encoding_mode", get_button_group_index(QStringList() << "radDotStand" << "radDotGS1"));
             break;
 
@@ -2169,6 +2175,7 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology) {
 
         case BARCODE_DOTCODE:
             set_combobox_from_setting(settings, "studio/bc/dotcode/cols", "cmbDotCols");
+            set_combobox_from_setting(settings, "studio/bc/dotcode/mask", "cmbDotMask");
             set_radiobutton_from_setting(settings, "studio/bc/dotcode/encoding_mode", QStringList() << "radDotStand" << "radDotGS1");
             break;
 

@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019 - 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019 - 2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -1800,7 +1800,7 @@ static const char *testUtilBwippName(int index, const struct zint_symbol *symbol
         { "hibcazteccode", BARCODE_HIBC_AZTEC, 112, 1, 0, 1, 0, 0, },
         { "", -1, 113, 0, 0, 0, 0, 0, },
         { "", -1, 114, 0, 0, 0, 0, 0, },
-        { "dotcode", BARCODE_DOTCODE, 115, 0, 0, 0, 0, 0, },
+        { "dotcode", BARCODE_DOTCODE, 115, 0, 1, 1, 0, 0, },
         { "hanxin", BARCODE_HANXIN, 116, 0, 0, 0, 0, 0, },
         { "", -1, 117, 0, 0, 0, 0, 0, },
         { "", -1, 118, 0, 0, 0, 0, 0, },
@@ -1898,6 +1898,11 @@ static const char *testUtilBwippName(int index, const struct zint_symbol *symbol
                 printf("i:%d %s not BWIPP compatible, GS1_MODE not supported\n", index, testUtilBarcodeName(symbology));
             }
             return NULL;
+        } else if (symbology == BARCODE_DOTCODE) {
+            if (gs1_cvt) {
+                *gs1_cvt = 1;
+            }
+            return "gs1dotcode";
         }
     }
 
@@ -2034,6 +2039,7 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
     int bwipp_row_height[symbol->rows];
     int linear_row_height;
     int gs1_cvt;
+    int user_mask;
 
     FILE *fp = NULL;
     int cnt;
@@ -2311,6 +2317,18 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
             }
             if (option_3 != -1) {
                 bwipp_opts = bwipp_opts_buf;
+            }
+        } else if (symbology == BARCODE_DOTCODE) {
+            if (option_2 > 0) {
+                sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%scolumns=%d", strlen(bwipp_opts_buf) ? " " : "", symbol->option_2);
+                bwipp_opts = bwipp_opts_buf;
+            }
+            if (option_3 != -1) {
+                user_mask = (option_3 >> 8) & 0x0F; /* User mask is pattern + 1, so >= 1 and <= 8 */
+                if (user_mask >= 1 && user_mask <= 8) {
+                    sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%smask=%d", strlen(bwipp_opts_buf) ? " " : "", (user_mask - 1) % 4);
+                    bwipp_opts = bwipp_opts_buf;
+                }
             }
         }
     }
