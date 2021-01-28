@@ -3086,7 +3086,7 @@ international standards:
      (Released 9th Dec 2008)
 > AIMD/TSC15032-43 (v 0.99c) - International Technical Specification –
      Ultracode Symbology (Draft) (Released 4th Nov 2015)
-> GS1 General Specifications Release 20.0 (Jan 2020)
+> GS1 General Specifications Release 21.0.1 (Jan 2021)
 > AIM ITS/04-001 International Technical Standard – Extended Channel
      Interpretations Part 1: Identification Schemes and Protocol (Released 24th
      May 2004)

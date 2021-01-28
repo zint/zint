@@ -283,7 +283,7 @@ INTERNAL int itf14(struct zint_symbol *symbol, unsigned char source[], int lengt
         // If no option has been selected then uses default box option
         symbol->output_options |= BARCODE_BOX;
         if (symbol->border_width == 0) { /* Allow override if non-zero */
-            /* GS1 General Specifications 20.0 Sections 5.3.2.4 & 5.3.6 (4.83 / 1.016 ~ 4.75) */
+            /* GS1 General Specifications 21.0.1 Sections 5.3.2.4 & 5.3.6 (4.83 / 1.016 ~ 4.75) */
             symbol->border_width = 5; /* Note change from previous value 8 */
         }
     }

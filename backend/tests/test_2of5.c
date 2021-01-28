@@ -204,7 +204,7 @@ static void test_encode(int index, int generate, int debug) {
         char *comment;
         char *expected;
     };
-    // BARCODE_ITF14 examples verified manually against GS1 General Specifications 20.0
+    // BARCODE_ITF14 examples verified manually against GS1 General Specifications 21.0.1
     struct item data[] = {
         /*  0*/ { BARCODE_C25STANDARD, "87654321", 0, 1, 97, "Standard Code 2 of 5; note zint uses 4X start/end wides while BWIPP uses 3X",
                     "1111010101110100010101000111010001110101110111010101110111011100010101000101110111010111011110101"

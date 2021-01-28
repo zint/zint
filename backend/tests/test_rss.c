@@ -180,7 +180,7 @@ static void test_binary_div_modulo_divisor(int index, int generate, int debug) {
     testFinish();
 }
 
-// Replicate examples from GS1 General Specifications 20.0 and ISO/IEC 24724:2011
+// Replicate examples from GS1 General Specifications 21.0.1 and ISO/IEC 24724:2011
 static void test_examples(int index, int generate, int debug) {
 
     testStart("");
@@ -200,7 +200,7 @@ static void test_examples(int index, int generate, int debug) {
         char *comment;
         char *expected;
     };
-    // Verified manually against GS1 General Specifications 20.0 (GGS) and ISO/IEC 24724:2011, and verified via bwipp_dump.ps against BWIPP
+    // Verified manually against GS1 General Specifications 21.0.1 (GGS) and ISO/IEC 24724:2011, and verified via bwipp_dump.ps against BWIPP
     struct item data[] = {
         /*  0*/ { BARCODE_DBAR_OMN, -1, "0950110153001", 0, 1, 96, 1, "GGS Figure 5.5.2.1.1-1. GS1 DataBar Omnidirectional",
                      "010000010100000101000111110000010111101101011100100011011101000101100000000111001110110111001101"

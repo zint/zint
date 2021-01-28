@@ -256,15 +256,6 @@ static int x2_iso3166alpha2(const unsigned char *data, const int data_len,
             && iso3166alpha2(data, data_len, 0, 2, 2, p_err_no, p_err_posn, err_msg, 0);
 }
 
-/* X..30,pcenc */
-static int x__30_pcenc(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
-    return data_len >= 1 && data_len <= 30
-            && pcenc(data, data_len, 0, 1, 30, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
-            && cset82(data, data_len, 0, 1, 30, p_err_no, p_err_posn, err_msg)
-            && pcenc(data, data_len, 0, 1, 30, p_err_no, p_err_posn, err_msg, 0);
-}
-
 /* N1,yesno */
 static int n1_yesno(const unsigned char *data, const int data_len,
             int *p_err_no, int *p_err_posn, char err_msg[50]) {
@@ -696,14 +687,11 @@ static int gs1_lint(const int ai, const unsigned char *data, const int data_len,
         if (ai == 4307 || ai == 4317) {
             return x2_iso3166alpha2(data, data_len, p_err_no, p_err_posn, err_msg);
         }
-        if (ai == 4308) {
-            return x__30_pcenc(data, data_len, p_err_no, p_err_posn, err_msg);
+        if (ai == 4308 || ai == 4319) {
+            return x__30(data, data_len, p_err_no, p_err_posn, err_msg);
         }
         if (ai == 4318) {
             return x__20(data, data_len, p_err_no, p_err_posn, err_msg);
-        }
-        if (ai == 4319) {
-            return x__30(data, data_len, p_err_no, p_err_posn, err_msg);
         }
         if (ai >= 4321 && ai <= 4323) {
             return n1_yesno(data, data_len, p_err_no, p_err_posn, err_msg);

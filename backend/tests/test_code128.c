@@ -502,7 +502,7 @@ static void test_encode(int index, int generate, int debug) {
         char *comment;
         char *expected;
     };
-    // BARCODE_GS1_128 examples verified manually against GS1 General Specifications 20.0 (GGS)
+    // BARCODE_GS1_128 examples verified manually against GS1 General Specifications 21.0.1 (GGS)
     // BARCODE_DPD examples Specification DPD and primetime Parcel Despatch (DPDAPPD) Version 4.0.2
     struct item data[] = {
         /*  0*/ { BARCODE_CODE128, UNICODE_MODE, "AIM", 0, 1, 68, 1, "ISO/IEC 15417:2007 Figure 1",

@@ -94,7 +94,7 @@ static int quiet_zones(struct zint_symbol *symbol, int *left, int *right, int *t
             done = 1;
             break;
         case BARCODE_ITF14:
-            /* GS1 General Specifications 20.0 Section 5.3.2.2 */
+            /* GS1 General Specifications 21.0.1 Section 5.3.2.2 */
             *left = 10;
             *right = 10;
             done = 1;
@@ -103,7 +103,7 @@ static int quiet_zones(struct zint_symbol *symbol, int *left, int *right, int *t
         case BARCODE_EANX_CHK:
         case BARCODE_EANX_CC:
         case BARCODE_ISBNX:
-            /* GS1 General Specifications 20.0 Section 5.2.3.4 */
+            /* GS1 General Specifications 21.0.1 Section 5.2.3.4 */
             switch (ustrlen(symbol->text)) {
                 case 13: /* EAN-13 */
                     *left = 11;
@@ -129,7 +129,7 @@ static int quiet_zones(struct zint_symbol *symbol, int *left, int *right, int *t
         case BARCODE_UPCA:
         case BARCODE_UPCA_CHK:
         case BARCODE_UPCA_CC:
-            /* GS1 General Specifications 20.0 Section 5.2.3.4 */
+            /* GS1 General Specifications 21.0.1 Section 5.2.3.4 */
             *left = 9;
             if (ustrlen(symbol->text) > 12) { /* UPC-A + addon */
                 *right = 5;
@@ -141,7 +141,7 @@ static int quiet_zones(struct zint_symbol *symbol, int *left, int *right, int *t
         case BARCODE_UPCE:
         case BARCODE_UPCE_CHK:
         case BARCODE_UPCE_CC:
-            /* GS1 General Specifications 20.0 Section 5.2.3.4 */
+            /* GS1 General Specifications 21.0.1 Section 5.2.3.4 */
             *left = 9;
             if (ustrlen(symbol->text) > 8) { /* UPC-E + addon */
                 *right = 5;
@@ -193,7 +193,7 @@ static int quiet_zones(struct zint_symbol *symbol, int *left, int *right, int *t
         case BARCODE_GS1_128: /* GS1-128 */
         case BARCODE_GS1_128_CC:
         case BARCODE_EAN14:
-            /* GS1 General Specifications 20.0 Section 5.4.4.2 */
+            /* GS1 General Specifications 21.0.1 Section 5.4.4.2 */
             *left = *right = 10;
             done = 1;
             break;
@@ -230,7 +230,7 @@ static int quiet_zones(struct zint_symbol *symbol, int *left, int *right, int *t
         case BARCODE_DBAR_STK: /* GS1 DataBar Stacked */
         case BARCODE_DBAR_OMNSTK: /* GS1 DataBar Stacked Omnidirectional */
         case BARCODE_DBAR_EXPSTK: /* GS1 Databar Expanded Stacked */
-            /* GS1 General Specifications 20.0 Section 5.5.1.1 - Quiet Zones: None required */
+            /* GS1 General Specifications 21.0.1 Section 5.5.1.1 - Quiet Zones: None required */
             *left = *right = 0;
             done = 1;
             break;
@@ -240,7 +240,7 @@ static int quiet_zones(struct zint_symbol *symbol, int *left, int *right, int *t
         case BARCODE_DBAR_STK_CC:
         case BARCODE_DBAR_OMNSTK_CC:
         case BARCODE_DBAR_EXPSTK_CC:
-            /* GS1 General Specifications 20.0 Sections 5.9.2.1 (CC-A) & 5.9.2.2 (CC-B) */
+            /* GS1 General Specifications 21.0.1 Sections 5.11.2.1 (CC-A) & 5.11.2.2 (CC-B) */
             *left = *right = 1;
             done = 1;
             break;

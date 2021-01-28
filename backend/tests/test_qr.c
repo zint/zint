@@ -569,7 +569,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000100000000110110"
                     "111111101111010010100"
                 },
-        /*  4*/ { BARCODE_QRCODE, GS1_MODE, 1, -1, -1, "[01]09501101530003[8200]http://example.com", 0, 25, 25, "GS1 General Specifications 20.0 Figure 5.1-7 **NOT SAME** figure uses Byte encodation only",
+        /*  4*/ { BARCODE_QRCODE, GS1_MODE, 1, -1, -1, "[01]09501101530003[8200]http://example.com", 0, 25, 25, "GS1 General Specifications 21.0.1 Figure 5.1-7 **NOT SAME** figure uses Byte encodation only",
                     "1111111001101101001111111"
                     "1000001010010101001000001"
                     "1011101011111010101011101"
@@ -596,7 +596,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "1000001010110101100111010"
                     "1111111011101100010010111"
                 },
-        /*  5*/ { BARCODE_QRCODE, GS1_MODE, 2, -1, -1, "[01]00857674002010[8200]http://www.gs1.org/", 0, 29, 29, "GS1 General Specifications 20.0 Figure 5.1-7, same (mask 011)",
+        /*  5*/ { BARCODE_QRCODE, GS1_MODE, 2, -1, -1, "[01]00857674002010[8200]http://www.gs1.org/", 0, 29, 29, "GS1 General Specifications 21.0.1 Figure 5.1-7, same (mask 011)",
                     "11111110100101110101001111111"
                     "10000010111101001000001000001"
                     "10111010010000001110001011101"

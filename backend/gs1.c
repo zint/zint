@@ -331,22 +331,22 @@ static int mmoptss(const unsigned char *data, int data_len, int offset, int min,
     }
 
     if (!length_only && data_len) {
-		int mins = to_int(data + offset, 2);
-		if (mins > 59) {
-			*p_err_no = 3;
-			*p_err_posn = offset + 1;
-			sprintf(err_msg, "Invalid minutes in the hour '%.2s'", data + offset);
-			return 0;
-		}
-		if (data_len > 2) {
-			int secs = to_int(data + offset + 2, 2);
-			if (secs > 59) {
-				*p_err_no = 3;
-				*p_err_posn = offset + 2 + 1;
-				sprintf(err_msg, "Invalid seconds in the minute '%.2s'", data + offset + 2);
-				return 0;
-			}
-		}
+        int mins = to_int(data + offset, 2);
+        if (mins > 59) {
+            *p_err_no = 3;
+            *p_err_posn = offset + 1;
+            sprintf(err_msg, "Invalid minutes in the hour '%.2s'", data + offset);
+            return 0;
+        }
+        if (data_len > 2) {
+            int secs = to_int(data + offset + 2, 2);
+            if (secs > 59) {
+                *p_err_no = 3;
+                *p_err_posn = offset + 2 + 1;
+                sprintf(err_msg, "Invalid seconds in the minute '%.2s'", data + offset + 2);
+                return 0;
+            }
+        }
     }
 
     return 1;
@@ -1270,7 +1270,7 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
     strcpy(ai_string, "");
 
     // Check for valid AI values and data lengths according to GS1 General
-    // Specifications Release 20.0, January 2020
+    // Specifications Release 21.0.1, January 2021
     for (i = 0; i < ai_count; i++) {
         int err_no, err_posn;
         char err_msg[50];
@@ -1307,7 +1307,7 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
             ai_string[2] = '\0';
             last_ai = atoi(ai_string);
             ai_latch = 0;
-            /* The following values from "GS1 General Specifications Release 20.0"
+            /* The following values from "GS1 General Specifications Release 21.0.1"
                Figure 7.8.4-2 "Element strings with predefined length using GS1 Application Identifiers" */
             if (
                     ((last_ai >= 0) && (last_ai <= 4))

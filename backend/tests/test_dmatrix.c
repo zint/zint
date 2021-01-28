@@ -389,7 +389,7 @@ static void test_encode(int index, int generate, int debug) {
         char *comment;
         char *expected;
     };
-    // Verified manually against ISO/IEC 16022:2006, GS1 General Specifications 20.0 (GGS), ANSI/HIBC LIC 2.6-2016 (HIBC/LIC) and ANSI/HIBC PAS 1.3-2010 (HIBC/PAS), with noted exceptions
+    // Verified manually against ISO/IEC 16022:2006, GS1 General Specifications 21.0.1 (GGS), ANSI/HIBC LIC 2.6-2016 (HIBC/LIC) and ANSI/HIBC PAS 1.3-2010 (HIBC/PAS), with noted exceptions
     struct item data[] = {
         /*  0*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, "1234abcd", 0, 14, 14, 1, "",
                     "10101010101010"
@@ -557,7 +557,7 @@ static void test_encode(int index, int generate, int debug) {
                     "10111100011001001010011100011000"
                     "11111111111111111111111111111111"
                 },
-        /*  8*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, -1, -1, "[01]09504000059101[21]12345678p901[10]1234567p[17]141120[8200]http://www.gs1.org/demo/", 0, 32, 32, 0, "GGS Figure 4.15.1-2; BWIPP different encodation (does not use 0 padded Text)",
+        /*  8*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, -1, -1, "[01]09504000059101[21]12345678p901[10]1234567p[17]141120[8200]http://www.gs1.org/demo/", 0, 32, 32, 0, "GGS Figure 4.15.1-2 (and 4.15.1-3); BWIPP different encodation (does not use 0 padded Text)",
                     "10101010101010101010101010101010"
                     "11001111010000111101100000101001"
                     "10001010011111001011011001000010"
@@ -613,7 +613,7 @@ static void test_encode(int index, int generate, int debug) {
                     "10011010101001110010"
                     "11111111111111111111"
                 },
-        /* 10*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, -1, -1, "[01]00012345678905[17]040115", 0, 12, 26, 1, "GGS Figure 5.6.2-1 (left)",
+        /* 10*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, -1, -1, "[01]00012345678905[17]040115", 0, 12, 26, 1, "GGS Figure 5.6.3.1-1 (left)",
                     "10101010101010101010101010"
                     "11001000010011010100111111"
                     "10001001100010001111001010"
@@ -627,7 +627,7 @@ static void test_encode(int index, int generate, int debug) {
                     "10001001100010100010100000"
                     "11111111111111111111111111"
                 },
-        /* 11*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, -1, DM_SQUARE, "[01]00012345678905[17]040115", 0, 18, 18, 1, "GGS Figure 5.6.2-1 (right)",
+        /* 11*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, -1, DM_SQUARE, "[01]00012345678905[17]040115", 0, 18, 18, 1, "GGS Figure 5.6.3.1-1 (right)",
                     "101010101010101010"
                     "110010000100010101"
                     "100010011010111110"
