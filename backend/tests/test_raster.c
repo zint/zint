@@ -244,7 +244,7 @@ static void test_buffer(int index, int generate, int debug) {
         /*120*/ { BARCODE_DBAR_OMNSTK_CC, "1234567890123", "[20]01", 80, 11, 56, 112, 160 },
         /*121*/ { BARCODE_DBAR_EXPSTK_CC, "[01]12345678901231", "[20]01", 78, 9, 102, 204, 156 },
         /*122*/ { BARCODE_CHANNEL, "01", "", 50, 1, 19, 38, 116 },
-        /*123*/ { BARCODE_CODEONE, "12345678901234567890", "", 22, 22, 22, 44, 44 },
+        /*123*/ { BARCODE_CODEONE, "12345678901234567890", "", 16, 16, 18, 36, 32 },
         /*124*/ { BARCODE_GRIDMATRIX, "ABC", "", 18, 18, 18, 36, 36 },
         /*125*/ { BARCODE_UPNQR, "1234567890AB", "", 77, 77, 77, 154, 154 },
         /*126*/ { BARCODE_ULTRA, "1234567890", "", 13, 13, 18, 36, 26 },

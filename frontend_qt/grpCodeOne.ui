@@ -120,6 +120,10 @@
         <property name="text">
          <string>GS&amp;1 Data Mode</string>
         </property>
+        <property name="toolTip">
+         <string>GS1 system (Application Identifiers)
+(ignored if disabled)</string>
+         </property>
        </widget>
       </item>
      </layout>

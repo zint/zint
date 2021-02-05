@@ -1151,6 +1151,7 @@ void MainWindow::set_gs1_mode(bool gs1_mode)
 void MainWindow::update_preview()
 {
     int symbology = metaObject()->enumerator(0).value(bstyle->currentIndex());
+    int recheck_eci = true;
     int width = view->geometry().width();
     int height = view->geometry().height();
     int item_val;
@@ -1537,8 +1538,16 @@ void MainWindow::update_preview()
 
         case BARCODE_CODEONE:
             m_bc.bc.setSymbol(BARCODE_CODEONE);
-            set_gs1_mode(m_optionWidget->findChild<QRadioButton*>("radC1GS1")->isChecked());
             m_bc.bc.setOption2(m_optionWidget->findChild<QComboBox*>("cmbC1Size")->currentIndex());
+            if (m_bc.bc.option2() == 9) { // Version S
+                recheck_eci = false;
+                cmbECI->setEnabled(false);
+                lblECI->setEnabled(false);
+                m_optionWidget->findChild<QRadioButton*>("radC1GS1")->setEnabled(false);
+            } else {
+                m_optionWidget->findChild<QRadioButton*>("radC1GS1")->setEnabled(true);
+                set_gs1_mode(m_optionWidget->findChild<QRadioButton*>("radC1GS1")->isChecked());
+            }
             break;
 
         case BARCODE_CODE49:
@@ -1591,8 +1600,10 @@ void MainWindow::update_preview()
     m_symbology = m_bc.bc.symbol();
 
     /* Recheck ECI and Reader Init */
-    cmbECI->setEnabled(m_bc.bc.supportsECI());
-    lblECI->setEnabled(cmbECI->isEnabled());
+    if (recheck_eci) {
+        cmbECI->setEnabled(m_bc.bc.supportsECI());
+        lblECI->setEnabled(cmbECI->isEnabled());
+    }
     chkRInit->setEnabled(m_bc.bc.supportsReaderInit() && (m_bc.bc.inputMode() & 0x07) != GS1_MODE);
 
     if (!grpComposite->isHidden() && chkComposite->isChecked())

@@ -2285,13 +2285,40 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                     bwipp_opts = bwipp_opts_buf;
                 }
             } else if (symbology == BARCODE_CODEONE) {
+                if ((symbol->input_mode & 0x07) == GS1_MODE) { /* Hack pseudo-GS1 support */
+                    int last_ai, ai_latch = 0;
+                    for (int i = 0, j = 0, len = (int) strlen(bwipp_data); i <= len; i++) { /* Reduce square brackets (include NUL) */
+                        if (bwipp_data[i] == '[') {
+                            if (ai_latch == 0) {
+                                bwipp_data[j++] = '[';
+                            }
+                            last_ai = atoi(bwipp_data + i + 1);
+                            if ((last_ai >= 0 && last_ai <= 4) || (last_ai >= 11 && last_ai <= 20) || last_ai == 23 || (last_ai >= 31 && last_ai <= 36) || last_ai == 41) {
+                                ai_latch = 1;
+                            }
+                        } else if (bwipp_data[i] != ']') {
+                            bwipp_data[j++] = bwipp_data[i];
+                        }
+                    }
+                    for (int len = (int) strlen(bwipp_data), i = len - 1; i >= 0; i--) { /* Replace square brackets with ^FNC1 */
+                        if (bwipp_data[i] == '[') {
+                            memmove(bwipp_data + i + 5, bwipp_data + i + 1, len - i);
+                            memcpy(bwipp_data + i, "^FNC1", 5);
+                            len += 4;
+                        }
+                    }
+                    if (symbol->eci == 0) { /* If not already done for ECI */
+                        sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%sparsefnc", strlen(bwipp_opts_buf) ? " " : "");
+                        bwipp_opts = bwipp_opts_buf;
+                    }
+                }
                 if (option_2 >= 1 && option_2 <= 10) {
                     static const char *codeone_versions[] = { "A", "B", "C", "D", "E", "F", "G", "H" };
                     const char *codeone_version;
                     if (option_2 == 9) {
                         codeone_version = length <= 6 ? "S-10" : length <= 12 ? "S-20" : "S-30";
                     } else if (option_2 == 10) {
-                        codeone_version = "T-16"; // TODO: Allow for different T sizes
+                        codeone_version = length <= 22 ? "T-16" : length <= 34 ? "T-32" : "T-48"; // TODO: Properly allow for different T sizes
                     } else {
                         codeone_version = codeone_versions[option_2 - 1];
                     }
@@ -2339,13 +2366,13 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
     }
 
     if (bwipp_opts) {
-        if (data_len >= 2043) { /* Ghostscript's `arg_str_max` 2048 less "-sd=" */
+        if (strlen(bwipp_data) >= 2043) { /* Ghostscript's `arg_str_max` 2048 less "-sd=" */
             sprintf(cmd, cmd_opts_fmt2, bwipp_barcode, bwipp_data, bwipp_data + 2043, bwipp_opts);
         } else {
             sprintf(cmd, cmd_opts_fmt, bwipp_barcode, bwipp_data, bwipp_opts);
         }
     } else {
-        if (data_len >= 2043) {
+        if (strlen(bwipp_data) >= 2043) {
             sprintf(cmd, cmd_fmt2, bwipp_barcode, bwipp_data, bwipp_data + 2043);
         } else {
             sprintf(cmd, cmd_fmt, bwipp_barcode, bwipp_data);

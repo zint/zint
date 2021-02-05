@@ -553,6 +553,7 @@ static int supports_eci(const int symbology) {
         case BARCODE_PDF417COMP:
         case BARCODE_QRCODE:
         case BARCODE_DOTCODE:
+        case BARCODE_CODEONE:
         case BARCODE_GRIDMATRIX:
         case BARCODE_HANXIN:
         case BARCODE_ULTRA:

@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 #ifndef _MSC_VER
 #include <getopt.h>
 #include <zint.h>
@@ -31,6 +32,10 @@
 #include "getopt.h"
 #include "zint.h"
 #endif
+
+/* It's assumed that int is at least 32 bits, the following will compile-time fail if not
+ * https://stackoverflow.com/a/1980056/664741 */
+typedef int static_assert_int_at_least_32bits[CHAR_BIT != 8 || sizeof(int) < 4 ? -1 : 1];
 
 #ifndef ARRAY_SIZE
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
@@ -201,8 +206,11 @@ static int validate_int(const char source[], int *p_val) {
     int i;
     int length = (int) strlen(source);
 
+    if (length > 9) { /* Prevent overflow */
+        length = 9;
+    }
     for (i = 0; i < length; i++) {
-        if (source[i] < '0' || source[i] > '9' || val < 0) { /* Neg test checks for overflow */
+        if (source[i] < '0' || source[i] > '9') {
             return 0;
         }
         val *= 10;
