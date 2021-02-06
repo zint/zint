@@ -207,7 +207,7 @@ static int validate_int(const char source[], int *p_val) {
     int length = (int) strlen(source);
 
     if (length > 9) { /* Prevent overflow */
-        length = 9;
+        return 0;
     }
     for (i = 0; i < length; i++) {
         if (source[i] < '0' || source[i] > '9') {
