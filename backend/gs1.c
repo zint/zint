@@ -160,6 +160,61 @@ static int csum(const unsigned char *data, int data_len, int offset, int min, in
     return 1;
 }
 
+/* Check alphanumeric check characters (GS1 General Spec 7.9.5) */
+static int csumalpha(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+            int *p_err_posn, char err_msg[50], const int length_only) {
+    (void)max;
+
+    data_len -= offset;
+
+    if (data_len < min) {
+        return 0;
+    }
+    if (data_len && data_len < 2) { /* Do this check separately for backward compatibility */
+        *p_err_no = 4;
+        return 0;
+    }
+
+    if (!length_only && data_len) {
+        static const char c82[] = {
+             0,  1, -1, -1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, /*!-0*/
+            14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, -1, /*1-@*/
+            29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, /*A-P*/
+            45, 46, 47, 48, 49, 50, 51, 52, 53, 54, -1, -1, -1, -1, 55, -1, /*Q-`*/
+            56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, /*a-p*/
+            72, 73, 74, 75, 76, 77, 78, 79, 80, 81, /*q-z*/
+        };
+        static const char c32[] = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
+        static const char weights[] = {
+            2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83
+        };
+        const unsigned char *d = data + offset;
+        const unsigned char *de = d + (data_len > max ? max : data_len) - 2; /* Note less last 2 characters */
+        int checksum = 0, c1, c2;
+
+        for (; d < de; d++) {
+            checksum += c82[*d - '!'] * weights[de - 1 - d];
+        }
+        checksum %= 1021;
+        c1 = c32[checksum >> 5];
+        c2 = c32[checksum & 0x1F];
+
+        if (de[0] != c1 || de[1] != c2) {
+            *p_err_no = 3;
+            if (de[0] != c1) {
+                *p_err_posn = (de - data) + 1;
+                sprintf(err_msg, "Bad checksum '%c', expected '%c'", de[0], c1);
+            } else {
+                *p_err_posn = (de + 1 - data) + 1;
+                sprintf(err_msg, "Bad checksum '%c', expected '%c'", de[1], c2);
+            }
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
 /* Check for a GS1 Prefix (GS1 General Spec GS1 1.4.2) */
 static int key(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
@@ -943,7 +998,8 @@ static int couponcode(const unsigned char *data, int data_len, int offset, int m
                 if (d == NULL) {
                     return 0;
                 }
-                d = coupon_vli(data, data_len, d, "2nd Purch. GS1 Co. Prefix", 6, 0, 6, 1, p_err_no, p_err_posn, err_msg);
+                d = coupon_vli(data, data_len, d, "2nd Purch. GS1 Co. Prefix", 6, 0, 6, 1, p_err_no, p_err_posn,
+                        err_msg);
                 if (d == NULL) {
                     return 0;
                 }
@@ -968,7 +1024,8 @@ static int couponcode(const unsigned char *data, int data_len, int offset, int m
                 if (d == NULL) {
                     return 0;
                 }
-                d = coupon_vli(data, data_len, d, "3rd Purch. GS1 Co. Prefix", 6, 0, 6, 1, p_err_no, p_err_posn, err_msg);
+                d = coupon_vli(data, data_len, d, "3rd Purch. GS1 Co. Prefix", 6, 0, 6, 1, p_err_no, p_err_posn,
+                        err_msg);
                 if (d == NULL) {
                     return 0;
                 }
@@ -1048,7 +1105,8 @@ static int couponcode(const unsigned char *data, int data_len, int offset, int m
 
                 *p_err_no = 3;
                 *p_err_posn = d - 1 - data + 1;
-                sprintf(err_msg, data_field < 0 ? "Non-numeric Data Field '%c'" : "Invalid Data Field '%c'", *(d - 1));
+                sprintf(err_msg, data_field < 0 ? "Non-numeric Data Field '%c'" : "Invalid Data Field '%c'",
+                    *(d - 1));
                 return 0;
             }
         }

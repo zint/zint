@@ -467,6 +467,17 @@ static int n__12_nozeroprefix(const unsigned char *data, const int data_len,
             && nozeroprefix(data, data_len, 0, 1, 12, p_err_no, p_err_posn, err_msg, 0);
 }
 
+/* X..25,csumalpha,key */
+static int x__25_csumalpha_key(const unsigned char *data, const int data_len,
+            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+    return data_len >= 1 && data_len <= 25
+            && csumalpha(data, data_len, 0, 1, 25, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
+            && key(data, data_len, 0, 1, 25, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
+            && cset82(data, data_len, 0, 1, 25, p_err_no, p_err_posn, err_msg)
+            && csumalpha(data, data_len, 0, 1, 25, p_err_no, p_err_posn, err_msg, 0)
+            && key(data, data_len, 0, 1, 25, p_err_no, p_err_posn, err_msg, 0);
+}
+
 /* N18,csum */
 static int n18_csum(const unsigned char *data, const int data_len,
             int *p_err_no, int *p_err_posn, char err_msg[50]) {
@@ -768,7 +779,7 @@ static int gs1_lint(const int ai, const unsigned char *data, const int data_len,
         if (ai == 8003) {
             return n1_zero_n13_csum_key_x0__16(data, data_len, p_err_no, p_err_posn, err_msg);
         }
-        if (ai == 8004 || ai == 8013) {
+        if (ai == 8004) {
             return x__30_key(data, data_len, p_err_no, p_err_posn, err_msg);
         }
         if (ai == 8005) {
@@ -791,6 +802,9 @@ static int gs1_lint(const int ai, const unsigned char *data, const int data_len,
         }
         if (ai == 8011) {
             return n__12_nozeroprefix(data, data_len, p_err_no, p_err_posn, err_msg);
+        }
+        if (ai == 8013) {
+            return x__25_csumalpha_key(data, data_len, p_err_no, p_err_posn, err_msg);
         }
         if (ai == 8017 || ai == 8018) {
             return n18_csum(data, data_len, p_err_no, p_err_posn, err_msg);
