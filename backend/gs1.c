@@ -67,12 +67,20 @@ static int numeric(const unsigned char *data, int data_len, int offset, int min,
     return 1;
 }
 
-/* Validate of character set 82 (GS1 General Spec Figure 7.11-1) */
+/* GS1 General Specifications 21.0.1 Figure 7.9.5-1. GS1 AI encodable character reference values.
+   Also used to determine if character in set 82 */
+static const char c82[] = {
+     0,  1, -1, -1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, /*!-0*/
+    14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, -1, /*1-@*/
+    29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, /*A-P*/
+    45, 46, 47, 48, 49, 50, 51, 52, 53, 54, -1, -1, -1, -1, 55, -1, /*Q-`*/
+    56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, /*a-p*/
+    72, 73, 74, 75, 76, 77, 78, 79, 80, 81, /*q-z*/
+};
+
+/* Validate of character set 82 (GS1 General Specifications Figure 7.11-1) */
 static int cset82(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50]) {
-
-    /* These 13 characters plus all <= ' ' = 13 + 33 = 46 + 82 = 128 */
-    static const char not_in_set82[] = "#$@[\\]^`{|}~\177";
 
     data_len -= offset;
 
@@ -85,7 +93,7 @@ static int cset82(const unsigned char *data, int data_len, int offset, int min, 
         const unsigned char *de = d + (data_len > max ? max : data_len);
 
         for (; d < de; d++) {
-            if (*d <= ' ' || strchr(not_in_set82, *d) != NULL) {
+            if (*d < '!' || *d > 'z' || c82[*d - '!'] == -1) {
                 *p_err_no = 3;
                 *p_err_posn = d - data + 1;
                 sprintf(err_msg, "Invalid CSET 82 character '%c'", *d);
@@ -97,7 +105,7 @@ static int cset82(const unsigned char *data, int data_len, int offset, int min, 
     return 1;
 }
 
-/* Validate of character set 39 (GS1 General Spec Figure 7.11-2) */
+/* Validate of character set 39 (GS1 General Specifications Figure 7.11-2) */
 static int cset39(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50]) {
 
@@ -125,7 +133,7 @@ static int cset39(const unsigned char *data, int data_len, int offset, int min, 
     return 1;
 }
 
-/* Check a check digit (GS1 General Spec 7.9.1) */
+/* Check a check digit (GS1 General Specifications 7.9.1) */
 static int csum(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
 
@@ -160,7 +168,7 @@ static int csum(const unsigned char *data, int data_len, int offset, int min, in
     return 1;
 }
 
-/* Check alphanumeric check characters (GS1 General Spec 7.9.5) */
+/* Check alphanumeric check characters (GS1 General Specifications 7.9.5) */
 static int csumalpha(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
     (void)max;
@@ -176,14 +184,6 @@ static int csumalpha(const unsigned char *data, int data_len, int offset, int mi
     }
 
     if (!length_only && data_len) {
-        static const char c82[] = {
-             0,  1, -1, -1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, /*!-0*/
-            14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, -1, /*1-@*/
-            29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, /*A-P*/
-            45, 46, 47, 48, 49, 50, 51, 52, 53, 54, -1, -1, -1, -1, 55, -1, /*Q-`*/
-            56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, /*a-p*/
-            72, 73, 74, 75, 76, 77, 78, 79, 80, 81, /*q-z*/
-        };
         static const char c32[] = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
         static const char weights[] = {
             2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83
@@ -215,7 +215,7 @@ static int csumalpha(const unsigned char *data, int data_len, int offset, int mi
     return 1;
 }
 
-/* Check for a GS1 Prefix (GS1 General Spec GS1 1.4.2) */
+/* Check for a GS1 Prefix (GS1 General Specifications GS1 1.4.2) */
 static int key(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
     (void)max;
@@ -278,7 +278,7 @@ static int yymmd0(const unsigned char *data, int data_len, int offset, int min, 
         }
         if (month == 2 && day == 29) { /* Leap year check */
             int year = to_int(data + offset, 2);
-            if (year & 3) { /* Good until 2050 when 00 will mean 2100 (GS1 General Spec 7.12) */
+            if (year & 3) { /* Good until 2050 when 00 will mean 2100 (GS1 General Specifications 7.12) */
                 *p_err_no = 3;
                 *p_err_posn = offset + 4 + 1;
                 sprintf(err_msg, "Invalid day '%.2s'", data + offset + 4);
@@ -595,7 +595,7 @@ static int yesno(const unsigned char *data, int data_len, int offset, int min, i
     return 1;
 }
 
-/* Check for importer index (GS1 General Spec 3.8.17) */
+/* Check for importer index (GS1 General Specifications 3.8.17) */
 static int importeridx(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
     (void)max;
@@ -645,7 +645,7 @@ static int nonzero(const unsigned char *data, int data_len, int offset, int min,
     return 1;
 }
 
-/* Check winding direction (0/1/9) (GS1 General Spec 3.9.1) */
+/* Check winding direction (0/1/9) (GS1 General Specifications 3.9.1) */
 static int winding(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
     (void)max;
@@ -691,7 +691,7 @@ static int zero(const unsigned char *data, int data_len, int offset, int min, in
     return 1;
 }
 
-/* Check piece of a trade item (GS1 General Spec 3.9.6 and 3.9.17) */
+/* Check piece of a trade item (GS1 General Specifications 3.9.6 and 3.9.17) */
 static int pieceoftotal(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
     (void)max;

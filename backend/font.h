@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008 - 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008 - 2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -30,6 +30,9 @@
     SUCH DAMAGE.
  */
 /* vim: set ts=4 sw=4 et : */
+
+#ifndef FONT_H
+#define FONT_H
 
 typedef const unsigned short font_item;
 
@@ -482,3 +485,5 @@ static font_item upcean_small_font[] = {
     /*38*/ 0x3C, 0x7E, 0x66, 0x42, 0x66, 0x3C, 0x3C, 0x66, 0xC3, 0xC3, 0xC3, 0x7E, 0x3C, /* 8 */
     /*39*/ 0x3C, 0x7E, 0xE7, 0xC3, 0xC3, 0xC3, 0xE3, 0x7E, 0x1E, 0x0C, 0x18, 0x30, 0x60, /* 9 */
 };
+
+#endif /* FONT_H */

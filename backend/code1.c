@@ -311,20 +311,14 @@ static int is_last_single_ascii(const unsigned char string[], const int length, 
     return 0;
 }
 
-/* Return length of numeric sequence from position `sp`, stopping after `max` if given (non-zero) */
-static int digits_ahead(const unsigned char string[], const int length, const int sp, const int max) {
-    int i, end;
-    if (max && sp + max < length) {
-        end = sp + max;
-    } else {
-        end = length;
-    }
-    for (i = sp; i < end; i++) {
-        if (string[i] < '0' || string[i] > '9') {
-            break;
+/* Initialize number of digits array (taken from BWIPP) */
+static void set_num_digits(const unsigned char source[], const int length, int *num_digits) {
+    int i;
+    for (i = length - 1; i >= 0; i--) {
+        if (source[i] >= '0' && source[i] <= '9') {
+            num_digits[i] = num_digits[i + 1] + 1;
         }
     }
-    return i - sp;
 }
 
 /* Copy C40/TEXT/EDI triplets from buffer to target. Returns elements left in buffer (< 3) */
@@ -414,7 +408,7 @@ static int decimal_unlatch(char decimal_binary[24], int db_p, unsigned int targe
 }
 
 /* Number of codewords remaining in a particular version (may be negative) */
-static int codewords_remaining(struct zint_symbol *symbol, int tp) {
+static int codewords_remaining(struct zint_symbol *symbol, const int tp) {
     int i;
 
     if (symbol->option_2 == 10) { /* Version T */
@@ -455,7 +449,8 @@ static int c40text_cnt(const int current_mode, const int gs1, unsigned char inpu
 }
 
 /* Copy `source` to `eci_buf` with "\NNNNNN" ECI indicator at start and backslashes escaped */
-static void eci_escape(const int eci, unsigned char *source, const int length, unsigned char *eci_buf, const int eci_length) {
+static void eci_escape(const int eci, unsigned char *source, const int length, unsigned char *eci_buf,
+            const int eci_length) {
     int i, j;
 
     j = sprintf((char *) eci_buf, "\\%06d", eci);
@@ -482,12 +477,15 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigne
     int eci_length = length + 7 + chr_cnt(source, length, '\\');
 #ifndef _MSC_VER
     unsigned char eci_buf[eci_length + 1];
+    int num_digits[eci_length + 1];
 #else
     unsigned char *eci_buf = (unsigned char *) _alloca(eci_length + 1);
+    int *num_digits = (int *) _alloca(sizeof(int) * (eci_length + 1));
 #endif
 
     sp = 0;
     tp = 0;
+    memset(num_digits, 0, sizeof(int) * (eci_length + 1));
 
     /* Step A */
     current_mode = C1_ASCII;
@@ -499,22 +497,26 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigne
         gs1 = 0;
     }
     if (gs1) {
-        if (length >= 15 && digits_ahead(source, length, 0, 15) == 15) {
+        set_num_digits(source, length, num_digits);
+        if (length >= 15 && num_digits[0] >= 15) {
             target[tp++] = 236; /* FNC1 and change to Decimal */
             next_mode = C1_DECIMAL;
-        } else if (length >= 7 && digits_ahead(source, length, 0, 0) == length) {
+        } else if (length >= 7 && num_digits[0] == length) {
             target[tp++] = 236; /* FNC1 and change to Decimal */
             next_mode = C1_DECIMAL;
         } else {
             target[tp++] = 232; /* FNC1 */
         }
         /* Note ignoring ECI if GS1 mode (up to caller to warn) */
-    } else if (symbol->eci) {
-        target[tp++] = 129; /* Pad */
-        target[tp++] = '\\' + 1; /* Escape char */
-        eci_escape(symbol->eci, source, length, eci_buf, eci_length);
-        source = eci_buf;
-        length = eci_length;
+    } else {
+        if (symbol->eci) {
+            target[tp++] = 129; /* Pad */
+            target[tp++] = '\\' + 1; /* Escape char */
+            eci_escape(symbol->eci, source, length, eci_buf, eci_length);
+            source = eci_buf;
+            length = eci_length;
+        }
+        set_num_digits(source, length, num_digits);
     }
 
     do {
@@ -539,11 +541,11 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigne
             /* Step B - ASCII encodation */
             next_mode = C1_ASCII;
 
-            if ((length - sp) >= 21 && digits_ahead(source, length, sp, 21) == 21) {
+            if ((length - sp) >= 21 && num_digits[sp] >= 21) {
                 /* Step B1 */
                 next_mode = C1_DECIMAL;
                 db_p = bin_append_posn(15, 4, decimal_binary, db_p);
-            } else if ((length - sp) >= 13 && digits_ahead(source, length, sp, 0) == (length - sp)) {
+            } else if ((length - sp) >= 13 && num_digits[sp] == (length - sp)) {
                 /* Step B2 */
                 next_mode = C1_DECIMAL;
                 db_p = bin_append_posn(15, 4, decimal_binary, db_p);
@@ -558,12 +560,12 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigne
                     sp += 2;
                 } else {
                     if ((gs1) && (source[sp] == '[')) {
-                        if (length - (sp + 1) >= 15 && digits_ahead(source, length, sp + 1, 15) == 15) {
+                        if (length - (sp + 1) >= 15 && num_digits[sp + 1] >= 15) {
                             /* Step B4 */
                             target[tp++] = 236; /* FNC1 and change to Decimal */
                             sp++;
                             next_mode = C1_DECIMAL;
-                        } else if (length - (sp + 1) >= 7 && digits_ahead(source, length, sp + 1, 0) == length - (sp + 1)) {
+                        } else if (length - (sp + 1) >= 7 && num_digits[sp + 1] == length - (sp + 1)) {
                             /* Step B5 */
                             target[tp++] = 236; /* FNC1 and change to Decimal */
                             sp++;
@@ -602,10 +604,10 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigne
             next_mode = current_mode;
             if (cte_p == 0) {
                 /* Step C/D1 */
-                if ((length - sp) >= 12 && digits_ahead(source, length, sp, 12) == 12) {
+                if ((length - sp) >= 12 && num_digits[sp] >= 12) {
                     /* Step C/D1a */
                     next_mode = C1_ASCII;
-                } else if ((length - sp) >= 8 && digits_ahead(source, length, sp, 0) == (length - sp)) {
+                } else if ((length - sp) >= 8 && num_digits[sp] == (length - sp)) {
                     /* Step C/D1b */
                     next_mode = C1_ASCII;
                 } else {
@@ -658,10 +660,10 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigne
             next_mode = C1_EDI;
             if (cte_p == 0) {
                 /* Step E1 */
-                if ((length - sp) >= 12 && digits_ahead(source, length, sp, 12) == 12) {
+                if ((length - sp) >= 12 && num_digits[sp] >= 12) {
                     /* Step E1a */
                     next_mode = C1_ASCII;
-                } else if ((length - sp) >= 8 && digits_ahead(source, length, sp, 0) == (length - sp)) {
+                } else if ((length - sp) >= 8 && num_digits[sp] == (length - sp)) {
                     /* Step E1b */
                     next_mode = C1_ASCII;
                 } else if ((length - sp) < 3 || !isedi(source[sp]) || !isedi(source[sp + 1])
@@ -700,20 +702,17 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigne
 
         } else if (current_mode == C1_DECIMAL) {
             /* Step F - Decimal encodation */
-            int decimal_count;
 
             if (debug_print) printf("DECIMAL ");
 
             next_mode = C1_DECIMAL;
 
-            decimal_count = digits_ahead(source, length, sp, 3);
-
             if (length - sp < 3) {
                 /* Step F1 */
                 int bits_left = 8 - db_p;
-                int single_ascii = bits_left == 8 && is_last_single_ascii(source, length, sp);
-                if (codewords_remaining(symbol, tp) == 1 && (single_ascii || (decimal_count == 1 && bits_left >= 4))) {
-                    if (single_ascii) {
+                int can_ascii = bits_left == 8 && is_last_single_ascii(source, length, sp);
+                if (codewords_remaining(symbol, tp) == 1 && (can_ascii || (num_digits[sp] == 1 && bits_left >= 4))) {
+                    if (can_ascii) {
                         /* Encode last character or last 2 digits as ASCII */
                         if (istwodigits(source, length, sp)) {
                             target[tp++] = (10 * ctoi(source[sp])) + ctoi(source[sp + 1]) + 130;
@@ -732,15 +731,15 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigne
                         db_p = decimal_binary_transfer(decimal_binary, db_p, target, &tp);
                     }
                 } else {
-                    db_p = decimal_unlatch(decimal_binary, db_p, target, &tp, decimal_count, source, &sp);
+                    db_p = decimal_unlatch(decimal_binary, db_p, target, &tp, num_digits[sp], source, &sp);
                     current_mode = C1_ASCII; /* Note need to set current_mode also in case exit loop */
                 }
                 next_mode = C1_ASCII;
 
             } else {
-                if (decimal_count != 3) {
+                if (num_digits[sp] < 3) {
                     /* Step F2 */
-                    db_p = decimal_unlatch(decimal_binary, db_p, target, &tp, decimal_count, source, &sp);
+                    db_p = decimal_unlatch(decimal_binary, db_p, target, &tp, num_digits[sp], source, &sp);
                     current_mode = next_mode = C1_ASCII; /* Note need to set current_mode also in case exit loop */
                 } else {
                     /* Step F3 */
