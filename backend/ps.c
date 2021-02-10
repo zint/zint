@@ -420,30 +420,30 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
             fprintf(feps, "/Helvetica-ISOLatin1 exch definefont pop\n");
             font = "Helvetica-ISOLatin1";
         }
-    }
-    while (string) {
-        ps_convert(string->text, ps_string);
-        fprintf(feps, "matrix currentmatrix\n");
-        fprintf(feps, "/%s findfont\n", font);
-        fprintf(feps, "%.2f scalefont setfont\n", string->fsize);
-        fprintf(feps, " 0 0 moveto %.2f %.2f translate 0.00 rotate 0 0 moveto\n", string->x, (symbol->vector->height - string->y));
-        if (string->halign == 0 || string->halign == 2) { /* Need width for middle or right align */
-            fprintf(feps, " (%s) stringwidth\n", ps_string);
-        }
-        if (string->rotation != 0) {
-            fprintf(feps, "gsave\n");
-            fprintf(feps, "%d rotate\n", 360 - string->rotation);
-        }
-        if (string->halign == 0 || string->halign == 2) {
-            fprintf(feps, "pop\n");
-            fprintf(feps, "%s 0 rmoveto\n", string->halign == 2 ? "neg" : "-2 div");
-        }
-        fprintf(feps, " (%s) show\n", ps_string);
-        if (string->rotation != 0) {
-            fprintf(feps, "grestore\n");
-        }
-        fprintf(feps, "setmatrix\n");
-        string = string->next;
+        do {
+            ps_convert(string->text, ps_string);
+            fprintf(feps, "matrix currentmatrix\n");
+            fprintf(feps, "/%s findfont\n", font);
+            fprintf(feps, "%.2f scalefont setfont\n", string->fsize);
+            fprintf(feps, " 0 0 moveto %.2f %.2f translate 0.00 rotate 0 0 moveto\n", string->x, (symbol->vector->height - string->y));
+            if (string->halign == 0 || string->halign == 2) { /* Need width for middle or right align */
+                fprintf(feps, " (%s) stringwidth\n", ps_string);
+            }
+            if (string->rotation != 0) {
+                fprintf(feps, "gsave\n");
+                fprintf(feps, "%d rotate\n", 360 - string->rotation);
+            }
+            if (string->halign == 0 || string->halign == 2) {
+                fprintf(feps, "pop\n");
+                fprintf(feps, "%s 0 rmoveto\n", string->halign == 2 ? "neg" : "-2 div");
+            }
+            fprintf(feps, " (%s) show\n", ps_string);
+            if (string->rotation != 0) {
+                fprintf(feps, "grestore\n");
+            }
+            fprintf(feps, "setmatrix\n");
+            string = string->next;
+        } while (string);
     }
 
     //fprintf(feps, "\nshowpage\n");
