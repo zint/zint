@@ -1052,7 +1052,7 @@ char *testUtilUIntArrayDump(unsigned int *array, int size, char *dump, int dump_
 
     for (i = 0; i < size; i++) {
         cnt_len += sprintf(dump + cnt_len, "%X ", array[i]);
-        if (cnt_len + 19 > dump_size) {
+        if (cnt_len + 17 >= dump_size) {
             break;
         }
     }
@@ -1065,7 +1065,7 @@ char *testUtilUCharArrayDump(unsigned char *array, int size, char *dump, int dum
 
     for (i = 0; i < size; i++) {
         cnt_len += sprintf(dump + cnt_len, "%X ", array[i]);
-        if (cnt_len + 3 > dump_size) {
+        if (cnt_len + 3 >= dump_size) {
             break;
         }
     }

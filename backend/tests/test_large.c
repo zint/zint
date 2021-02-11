@@ -701,7 +701,7 @@ static void test_uint_array(int index) {
         large_int t;
         int size;
         int bits;
-        unsigned int expected[128];
+        unsigned int expected[130];
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
@@ -735,18 +735,21 @@ static void test_uint_array(int index) {
         /* 27*/ { LI(1, 1), 5, 31, { 0, 0, 4, 0, 1 } },
         /* 28*/ { LI(1, 1), 4, 32, { 0, 1, 0, 1 } },
         /* 29*/ { LI(1, 1), 4, 33, { 0, 1, 0, 1 } }, // Bits > 32 ignored and treated as 32
+        /* 30*/ { LI(0xF0F0F0F0F0F0F0F0, 0xE0F0F0F0F0F0F0F0), 129, 1, { 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0 } }, // Leading zeroes
+        /* 31*/ { LI(0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF), 130, 1, { 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 } }, // Leading zeroes
+        /* 32*/ { LI(0xFFFFFFFFFFFFFFFF, 0xEFFFFFFFFFFFFFFF), 127, 1, { 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 } }, // Truncated
     };
     int data_size = ARRAY_SIZE(data);
 
     char t_dump[35];
-    char uint_dump[128 * 3];
-    char uint_expected_dump[128 * 3];
-    char uchar_dump[128 * 3];
-    char uchar_expected_dump[128 * 3];
+    char uint_dump[130 * 17 + 1];
+    char uint_expected_dump[130 * 17 + 1];
+    char uchar_dump[130 * 3 + 1];
+    char uchar_expected_dump[130 * 3 + 1];
 
-    unsigned int uint_array[128];
-    unsigned char uchar_array[128];
-    unsigned char uchar_expected_array[128];
+    unsigned int uint_array[130];
+    unsigned char uchar_array[130];
+    unsigned char uchar_expected_array[130];
 
     for (int i = 0; i < data_size; i++) {
 
