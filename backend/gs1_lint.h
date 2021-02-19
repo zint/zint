@@ -35,8 +35,8 @@
 #ifndef GS1_LINT_H
 #define GS1_LINT_H
 
-/* N18,csum,key */
-static int n18_csum_key(const unsigned char *data, const int data_len,
+/* N18*,csum,key */
+static int n18__csum_key(const unsigned char *data, const int data_len,
             int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len == 18
             && csum(data, data_len, 0, 18, 18, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
@@ -46,8 +46,8 @@ static int n18_csum_key(const unsigned char *data, const int data_len,
             && key(data, data_len, 0, 18, 18, p_err_no, p_err_posn, err_msg, 0);
 }
 
-/* N14,csum,key */
-static int n14_csum_key(const unsigned char *data, const int data_len,
+/* N14*,csum,key */
+static int n14__csum_key(const unsigned char *data, const int data_len,
             int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len == 14
             && csum(data, data_len, 0, 14, 14, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
@@ -64,8 +64,8 @@ static int x__20(const unsigned char *data, const int data_len,
             && cset82(data, data_len, 0, 1, 20, p_err_no, p_err_posn, err_msg);
 }
 
-/* N6,yymmd0 */
-static int n6_yymmd0(const unsigned char *data, const int data_len,
+/* N6*,yymmd0 */
+static int n6__yymmd0(const unsigned char *data, const int data_len,
             int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len == 6
             && yymmd0(data, data_len, 0, 6, 6, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
@@ -73,8 +73,8 @@ static int n6_yymmd0(const unsigned char *data, const int data_len,
             && yymmd0(data, data_len, 0, 6, 6, p_err_no, p_err_posn, err_msg, 0);
 }
 
-/* N2 */
-static int n2(const unsigned char *data, const int data_len,
+/* N2* */
+static int n2_(const unsigned char *data, const int data_len,
             int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len == 2
             && numeric(data, data_len, 0, 2, 2, p_err_no, p_err_posn, err_msg);
@@ -132,8 +132,8 @@ static int n__8(const unsigned char *data, const int data_len,
             && numeric(data, data_len, 0, 1, 8, p_err_no, p_err_posn, err_msg);
 }
 
-/* N6 */
-static int n6(const unsigned char *data, const int data_len,
+/* N6* */
+static int n6_(const unsigned char *data, const int data_len,
             int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len == 6
             && numeric(data, data_len, 0, 6, 6, p_err_no, p_err_posn, err_msg);
@@ -163,6 +163,13 @@ static int n4(const unsigned char *data, const int data_len,
             && numeric(data, data_len, 0, 4, 4, p_err_no, p_err_posn, err_msg);
 }
 
+/* N6 */
+static int n6(const unsigned char *data, const int data_len,
+            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+    return data_len == 6
+            && numeric(data, data_len, 0, 6, 6, p_err_no, p_err_posn, err_msg);
+}
+
 /* X..30,key */
 static int x__30_key(const unsigned char *data, const int data_len,
             int *p_err_no, int *p_err_posn, char err_msg[50]) {
@@ -183,8 +190,8 @@ static int n17_csum_key(const unsigned char *data, const int data_len,
             && key(data, data_len, 0, 17, 17, p_err_no, p_err_posn, err_msg, 0);
 }
 
-/* N13,csum,key */
-static int n13_csum_key(const unsigned char *data, const int data_len,
+/* N13*,csum,key */
+static int n13__csum_key(const unsigned char *data, const int data_len,
             int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len == 13
             && csum(data, data_len, 0, 13, 13, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
@@ -543,19 +550,19 @@ static int gs1_lint(const int ai, const unsigned char *data, const int data_len,
     if (ai < 100) {
 
         if (ai == 0) {
-            return n18_csum_key(data, data_len, p_err_no, p_err_posn, err_msg);
+            return n18__csum_key(data, data_len, p_err_no, p_err_posn, err_msg);
         }
         if (ai == 1 || ai == 2) {
-            return n14_csum_key(data, data_len, p_err_no, p_err_posn, err_msg);
+            return n14__csum_key(data, data_len, p_err_no, p_err_posn, err_msg);
         }
         if (ai == 10 || ai == 21 || ai == 22) {
             return x__20(data, data_len, p_err_no, p_err_posn, err_msg);
         }
         if (ai >= 11 && ai <= 17) {
-            return n6_yymmd0(data, data_len, p_err_no, p_err_posn, err_msg);
+            return n6__yymmd0(data, data_len, p_err_no, p_err_posn, err_msg);
         }
         if (ai == 20) {
-            return n2(data, data_len, p_err_no, p_err_posn, err_msg);
+            return n2_(data, data_len, p_err_no, p_err_posn, err_msg);
         }
         if (ai == 30 || ai == 37) {
             return n__8(data, data_len, p_err_no, p_err_posn, err_msg);
@@ -600,7 +607,7 @@ static int gs1_lint(const int ai, const unsigned char *data, const int data_len,
             return n17_csum_key(data, data_len, p_err_no, p_err_posn, err_msg);
         }
         if (ai >= 410 && ai <= 417) {
-            return n13_csum_key(data, data_len, p_err_no, p_err_posn, err_msg);
+            return n13__csum_key(data, data_len, p_err_no, p_err_posn, err_msg);
         }
         if (ai == 420) {
             return x__20(data, data_len, p_err_no, p_err_posn, err_msg);
@@ -629,7 +636,7 @@ static int gs1_lint(const int ai, const unsigned char *data, const int data_len,
         if ((ai >= 3100 && ai <= 3105) || (ai >= 3110 && ai <= 3115) || (ai >= 3120 && ai <= 3125)
                 || (ai >= 3130 && ai <= 3135) || (ai >= 3140 && ai <= 3145) || (ai >= 3150 && ai <= 3155)
                 || (ai >= 3160 && ai <= 3165)) {
-            return n6(data, data_len, p_err_no, p_err_posn, err_msg);
+            return n6_(data, data_len, p_err_no, p_err_posn, err_msg);
         }
 
     } else if (ai < 3300) {
@@ -637,7 +644,7 @@ static int gs1_lint(const int ai, const unsigned char *data, const int data_len,
         if (ai <= 3205 || (ai >= 3210 && ai <= 3215) || (ai >= 3220 && ai <= 3225) || (ai >= 3230 && ai <= 3235)
                 || (ai >= 3240 && ai <= 3245) || (ai >= 3250 && ai <= 3255) || (ai >= 3260 && ai <= 3265)
                 || (ai >= 3270 && ai <= 3275) || (ai >= 3280 && ai <= 3285) || (ai >= 3290 && ai <= 3295)) {
-            return n6(data, data_len, p_err_no, p_err_posn, err_msg);
+            return n6_(data, data_len, p_err_no, p_err_posn, err_msg);
         }
 
     } else if (ai < 3400) {
@@ -645,7 +652,7 @@ static int gs1_lint(const int ai, const unsigned char *data, const int data_len,
         if (ai <= 3305 || (ai >= 3310 && ai <= 3315) || (ai >= 3320 && ai <= 3325) || (ai >= 3330 && ai <= 3335)
                 || (ai >= 3340 && ai <= 3345) || (ai >= 3350 && ai <= 3355) || (ai >= 3360 && ai <= 3365)
                 || (ai >= 3370 && ai <= 3375)) {
-            return n6(data, data_len, p_err_no, p_err_posn, err_msg);
+            return n6_(data, data_len, p_err_no, p_err_posn, err_msg);
         }
 
     } else if (ai < 3500) {
@@ -653,7 +660,7 @@ static int gs1_lint(const int ai, const unsigned char *data, const int data_len,
         if (ai <= 3405 || (ai >= 3410 && ai <= 3415) || (ai >= 3420 && ai <= 3425) || (ai >= 3430 && ai <= 3435)
                 || (ai >= 3440 && ai <= 3445) || (ai >= 3450 && ai <= 3455) || (ai >= 3460 && ai <= 3465)
                 || (ai >= 3470 && ai <= 3475) || (ai >= 3480 && ai <= 3485) || (ai >= 3490 && ai <= 3495)) {
-            return n6(data, data_len, p_err_no, p_err_posn, err_msg);
+            return n6_(data, data_len, p_err_no, p_err_posn, err_msg);
         }
 
     } else if (ai < 3600) {
@@ -661,7 +668,7 @@ static int gs1_lint(const int ai, const unsigned char *data, const int data_len,
         if (ai <= 3505 || (ai >= 3510 && ai <= 3515) || (ai >= 3520 && ai <= 3525) || (ai >= 3530 && ai <= 3535)
                 || (ai >= 3540 && ai <= 3545) || (ai >= 3550 && ai <= 3555) || (ai >= 3560 && ai <= 3565)
                 || (ai >= 3570 && ai <= 3575)) {
-            return n6(data, data_len, p_err_no, p_err_posn, err_msg);
+            return n6_(data, data_len, p_err_no, p_err_posn, err_msg);
         }
 
     } else if (ai < 3700) {
@@ -669,7 +676,7 @@ static int gs1_lint(const int ai, const unsigned char *data, const int data_len,
         if (ai <= 3605 || (ai >= 3610 && ai <= 3615) || (ai >= 3620 && ai <= 3625) || (ai >= 3630 && ai <= 3635)
                 || (ai >= 3640 && ai <= 3645) || (ai >= 3650 && ai <= 3655) || (ai >= 3660 && ai <= 3665)
                 || (ai >= 3670 && ai <= 3675) || (ai >= 3680 && ai <= 3685) || (ai >= 3690 && ai <= 3695)) {
-            return n6(data, data_len, p_err_no, p_err_posn, err_msg);
+            return n6_(data, data_len, p_err_no, p_err_posn, err_msg);
         }
 
     } else if (ai < 4000) {

@@ -44,7 +44,7 @@ foreach ($lines as $line) {
     if ($line === '' || $line[0] === '#') {
         continue;
     }
-    if (!preg_match('/^([0-9]+(?:-[0-9]+)?) +([NXC][0-9.][ NXC0-9.,a-z]*)$/', $line, $matches)) {
+    if (!preg_match('/^([0-9]+(?:-[0-9]+)?) +([NXC][0-9.][ NXC0-9.*,a-z]*)$/', $line, $matches)) {
         exit("$basename: ERROR: Could not parse line $line_no" . PHP_EOL);
     }
     $ai = $matches[1];
@@ -91,7 +91,7 @@ foreach ($lines as $line) {
     foreach ($parts as $part) {
         $checkers = explode(',', $part);
         $validator = array_shift($checkers);
-        if (!preg_match('/^([NXC])([0-9]+)?(\.\.[0-9|]+)?$/', $validator, $matches)) {
+        if (!preg_match('/^([NXC])([0-9]+\*?)?(\.\.[0-9|]+)?$/', $validator, $matches)) {
             exit("$basename: ERROR: Could not parse validator \"$validator\" line $line_no" . PHP_EOL);
         }
         if (count($matches) === 3) {
@@ -232,7 +232,7 @@ EOD;
 // Print the spec validator/checkers functions
 
 foreach ($spec_parts as $spec => $spec_part) {
-    $spec_funcs[$spec] = $spec_func = str_replace(array(' ', '.', ','), '_', strtolower($spec));
+    $spec_funcs[$spec] = $spec_func = str_replace(array(' ', '.', ',', '*'), '_', strtolower($spec));
     print <<<EOD
 /* $spec */
 static int $spec_func(const unsigned char *data, const int data_len,
