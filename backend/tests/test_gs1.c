@@ -351,7 +351,7 @@ static void test_gs1_verify(int index, int debug) {
         /* 41*/ { "[13]9913011", ZINT_ERROR_INVALID_DATA, "" },
         /* 42*/ { "[130]991301", ZINT_ERROR_INVALID_DATA, "" },
         /* 43*/ { "[1300]991301", ZINT_ERROR_INVALID_DATA, "" },
-        /* 44*/ { "[14]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /* 44*/ { "[14]991201", ZINT_ERROR_INVALID_DATA, "" },
         /* 45*/ { "[140]1234", ZINT_ERROR_INVALID_DATA, "" },
         /* 46*/ { "[1400]1234", ZINT_ERROR_INVALID_DATA, "" },
         /* 47*/ { "[15]021231", 0, "15021231" },

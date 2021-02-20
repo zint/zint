@@ -29,12 +29,12 @@ $use_length_only = isset($opts['l']) ? (bool) $opts['l'] : true;
 $tab = isset($opts['t']) ? $opts['t'] : '    ';
 
 if (($get = file_get_contents($file)) === false) {
-    exit("$basename: ERROR: Could not read file \"$file\"" . PHP_EOL);
+    exit("$basename:" . __LINE__ . " ERROR: Could not read file \"$file\"" . PHP_EOL);
 }
 
 $lines = explode("\n", $get);
 
-$spec_ais = $spec_parts = $spec_funcs = array();
+$spec_ais = $spec_parts = $spec_funcs = $spec_comments = array();
 $batches = array_fill(0, 100, array());
 
 // Parse the lines into AIs and specs
@@ -44,11 +44,12 @@ foreach ($lines as $line) {
     if ($line === '' || $line[0] === '#') {
         continue;
     }
-    if (!preg_match('/^([0-9]+(?:-[0-9]+)?) +([NXC][0-9.][ NXC0-9.*,a-z]*)$/', $line, $matches)) {
-        exit("$basename: ERROR: Could not parse line $line_no" . PHP_EOL);
+    if (!preg_match('/^([0-9]+(?:-[0-9]+)?) +([NXC][0-9.][ NXC0-9.*,a-z]*)(?:# (.+))?$/', $line, $matches)) {
+        exit("$basename:" . __LINE__ . " ERROR: Could not parse line $line_no" . PHP_EOL);
     }
     $ai = $matches[1];
     $spec = trim($matches[2]);
+    $comment = isset($matches[3]) ? trim($matches[3]) : '';
 
     if (isset($spec_ais[$spec])) {
         $ais = $spec_ais[$spec];
@@ -85,6 +86,15 @@ foreach ($lines as $line) {
     }
 
     $spec_ais[$spec] = $ais;
+    if ($comment !== '') {
+        if (isset($spec_comments[$spec])) {
+            if (!in_array($comment, $spec_comments[$spec])) {
+                $spec_comments[$spec][] = $comment;
+            }
+        } else {
+            $spec_comments[$spec] = array($comment);
+        }
+    }
 
     $spec_parts[$spec] = array();
     $parts = explode(' ', $spec);
@@ -92,7 +102,7 @@ foreach ($lines as $line) {
         $checkers = explode(',', $part);
         $validator = array_shift($checkers);
         if (!preg_match('/^([NXC])([0-9]+\*?)?(\.\.[0-9|]+)?$/', $validator, $matches)) {
-            exit("$basename: ERROR: Could not parse validator \"$validator\" line $line_no" . PHP_EOL);
+            exit("$basename:" . __LINE__ . " ERROR: Could not parse validator \"$validator\" line $line_no" . PHP_EOL);
         }
         if (count($matches) === 3) {
             $min = $max = (int) $matches[2];
@@ -233,8 +243,25 @@ EOD;
 
 foreach ($spec_parts as $spec => $spec_part) {
     $spec_funcs[$spec] = $spec_func = str_replace(array(' ', '.', ',', '*'), '_', strtolower($spec));
+    $comment = '';
+    if (isset($spec_comments[$spec])) {
+        $comment = ' (Used by';
+        foreach ($spec_comments[$spec] as $i => $spec_comment) {
+            if ($i) {
+                if ($i > 3) {
+                    $comment .= '...';
+                    break;
+                }
+                $comment .= ', ';
+            } else {
+                $comment .= ' ';
+            }
+            $comment .= $spec_comment;
+        }
+        $comment .= ')';
+    }
     print <<<EOD
-/* $spec */
+/* $spec$comment */
 static int $spec_func(const unsigned char *data, const int data_len,
 $tab$tab{$tab}int *p_err_no, int *p_err_posn, char err_msg[50]) {
 {$tab}return 
