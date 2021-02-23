@@ -47,5 +47,3 @@ INTERNAL int get_best_eci(const unsigned char source[], int length);
 #endif
 
 #endif /* ECI_H */
-
-

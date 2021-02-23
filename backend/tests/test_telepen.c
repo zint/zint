@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020 - 2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -247,7 +247,7 @@ static void test_encode(int index, int generate, int debug) {
             printf("        /*%3d*/ { %s, \"%s\", %d, %s, %d, %d, \"%s\",\n",
                     i, testUtilBarcodeName(data[i].symbology), testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), data[i].length,
                     testUtilErrorName(data[i].ret), symbol->rows, symbol->width, data[i].comment);
-            testUtilModulesDump(symbol, "                    ", "\n");
+            testUtilModulesPrint(symbol, "                    ", "\n");
             printf("                },\n");
         } else {
             if (ret < 5) {

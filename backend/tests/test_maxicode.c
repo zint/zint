@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019 - 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019 - 2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -101,7 +101,7 @@ static void test_large(int index, int debug) {
         ret = ZBarcode_Encode(symbol, (unsigned char *) data_buf, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
-        if (ret < 5) {
+        if (ret < ZINT_ERROR) {
             assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
             assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n", i, symbol->width, data[i].expected_width);
         }
@@ -166,7 +166,7 @@ static void test_input(int index, int generate, int debug) {
         /* 32*/ { UNICODE_MODE, 32768, -1, -1, "A", -1, "", 0, 30, "(144) 04 1B 38 08 00 00 01 21 21 21 10 30 3A 04 26 23 0E 21 3D 0F 21 21 21 21 21 21 21 21", "" },
         /* 33*/ { UNICODE_MODE, -1, 1, -1, "A", -1, "", ZINT_ERROR_INVALID_OPTION, 0, "Error 550: Invalid MaxiCode Mode", "" },
     };
-    int data_size = sizeof(data) / sizeof(struct item);
+    int data_size = ARRAY_SIZE(data);
 
     char escaped[1024];
 
@@ -191,7 +191,7 @@ static void test_input(int index, int generate, int debug) {
                     testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), data[i].length, data[i].primary,
                     testUtilErrorName(data[i].ret), symbol->width, symbol->errtxt, data[i].comment);
         } else {
-            if (ret < 5) {
+            if (ret < ZINT_ERROR) {
                 assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
             }
             assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
@@ -560,10 +560,10 @@ static void test_encode(int index, int generate, int debug) {
             printf("        /*%3d*/ { %s, %d, %d, \"%s\", %d, \"%s\", %s, %d, %d, \"%s\",\n",
                     i, testUtilInputModeName(data[i].input_mode), data[i].option_1, data[i].option_2, testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), data[i].length,
                     data[i].primary, testUtilErrorName(data[i].ret), symbol->rows, symbol->width, data[i].comment);
-            testUtilModulesDump(symbol, "                    ", "\n");
+            testUtilModulesPrint(symbol, "                    ", "\n");
             printf("                },\n");
         } else {
-            if (ret < 5) {
+            if (ret < ZINT_ERROR) {
                 assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);
                 assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
 
@@ -633,7 +633,7 @@ static void test_best_supported_set(int index, int generate, int debug) {
                     "010100101001110111101010110010"
                 },
     };
-    int data_size = sizeof(data) / sizeof(struct item);
+    int data_size = ARRAY_SIZE(data);
 
     char escaped_data[1024];
 
@@ -644,10 +644,7 @@ static void test_best_supported_set(int index, int generate, int debug) {
         struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        symbol->symbology = BARCODE_MAXICODE;
-        symbol->debug |= debug;
-
-        int length = strlen(data[i].data);
+        int length = testUtilSetSymbol(symbol, BARCODE_MAXICODE, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d\n", i, ret, data[i].ret);
@@ -656,7 +653,7 @@ static void test_best_supported_set(int index, int generate, int debug) {
             printf("        /*%2d*/ { \"%s\", %d, %.0f, %.0f, %d, %d, %d, \"%s\",\n",
                     i, testUtilEscape(data[i].data, length, escaped_data, sizeof(escaped_data)), ret,
                     data[i].w, data[i].h, data[i].ret_vector, symbol->rows, symbol->width, data[i].comment);
-            testUtilModulesDump(symbol, "                    ",  "\n");
+            testUtilModulesPrint(symbol, "                    ",  "\n");
             printf("                },\n");
         } else {
             assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
@@ -696,7 +693,7 @@ static void test_fuzz(int index, int debug) {
         /* 3*/ { -1, "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789", -1, ZINT_ERROR_TOO_LONG },
         /* 4*/ { 32768, "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678", -1, ZINT_ERROR_TOO_LONG },
     };
-    int data_size = sizeof(data) / sizeof(struct item);
+    int data_size = ARRAY_SIZE(data);
 
     for (int i = 0; i < data_size; i++) {
 

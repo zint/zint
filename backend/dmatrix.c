@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009 - 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009 - 2021 Robin Stuart <rstuart114@gmail.com>
 
     developed from and including some functions from:
         IEC16022 bar code generation
@@ -192,6 +192,7 @@ static void ecc200placement(int *array, const int NR, const int NC) {
 /* calculate and append ecc code, and if necessary interleave */
 static void ecc200(unsigned char *binary, const int bytes, const int datablock, const int rsblock, const int skew) {
     int blocks = (bytes + 2) / datablock, b;
+    int rsblocks = rsblock * blocks;
     int n;
     rs_t rs;
 
@@ -204,7 +205,7 @@ static void ecc200(unsigned char *binary, const int bytes, const int datablock, 
             buf[p++] = binary[n];
         rs_encode(&rs, p, buf, ecc);
         p = rsblock - 1; // comes back reversed
-        for (n = b; n < rsblock * blocks; n += blocks) {
+        for (n = b; n < rsblocks; n += blocks) {
             if (skew) {
                 /* Rotate ecc data to make 144x144 size symbols acceptable */
                 /* See http://groups.google.com/group/postscriptbarcode/msg/5ae8fda7757477da */
@@ -220,45 +221,38 @@ static void ecc200(unsigned char *binary, const int bytes, const int datablock, 
     }
 }
 
-/* Return true (1) if a character is valid in X12 set */
-static int isX12(const int source) {
-
-    switch(source) {
-        case 13: // CR
-        case 42: // *
-        case 62: // >
-        case 32: // space
-            return 1;
-    }
-
-    if ((source >= '0') && (source <= '9')) {
+/* Is basic (non-shifted) C40? */
+static int isc40(const unsigned char input) {
+    if ((input >= '0' && input <= '9') || (input >= 'A' && input <= 'Z') || input == ' ') {
         return 1;
     }
-    if ((source >= 'A') && (source <= 'Z')) {
+    return 0;
+}
+
+/* Is basic (non-shifted) TEXT? */
+static int istext(const unsigned char input) {
+    if ((input >= '0' && input <= '9') || (input >= 'a' && input <= 'z') || input == ' ') {
+        return 1;
+    }
+    return 0;
+}
+
+/* Is basic (non-shifted) C40/TEXT? */
+static int isc40text(const int current_mode, const unsigned char input) {
+    return current_mode == DM_C40 ? isc40(input) : istext(input);
+}
+
+/* Return true (1) if a character is valid in X12 set */
+static int isX12(const int input) {
+
+    if (isc40(input)) {
+        return 1;
+    }
+    if (input == 13 || input == '*' || input == '>') {
         return 1;
     }
 
     return 0;
-}
-
-/* Insert a character into the middle of a string at position bin_posn */
-static void dminsert(char binary_string[], const int bin_posn, const char newbit) {
-    int i, end;
-
-    end = (int) strlen(binary_string);
-    for (i = end + 1; i > bin_posn; i--) {
-        binary_string[i] = binary_string[i - 1];
-    }
-    binary_string[bin_posn] = newbit;
-}
-
-static void insert_value(unsigned char binary_stream[], const int bin_posn, const int streamlen, const int newbit) {
-    int i;
-
-    for (i = streamlen; i > bin_posn; i--) {
-        binary_stream[i] = binary_stream[i - 1];
-    }
-    binary_stream[bin_posn] = (unsigned char) newbit;
 }
 
 static int p_r_6_2_1(const unsigned char inputData[], const int position, const int sourcelen) {
@@ -266,46 +260,24 @@ static int p_r_6_2_1(const unsigned char inputData[], const int position, const 
        "If one of the three X12 terminator/separator characters first
         occurs in the yet to be processed data before a non-X12 character..."
      */
-
     int i;
-    int nonX12Position = 0;
-    int specialX12Position = 0;
-    int retval = 0;
 
-    for (i = position; i < sourcelen; i++) {
-        if (nonX12Position == 0) {
-            if (isX12(inputData[i]) != 1) {
-                nonX12Position = i;
-            }
-        }
-
-        if (specialX12Position == 0) {
-            if ((inputData[i] == (char) 13) ||
-                    (inputData[i] == '*') ||
-                    (inputData[i] == '>')) {
-                specialX12Position = i;
-            }
+    for (i = position; i < sourcelen && isX12(inputData[i]); i++) {
+        if (inputData[i] == 13 || inputData[i] == '*' || inputData[i] == '>') {
+            return 1;
         }
     }
 
-    if ((nonX12Position != 0) && (specialX12Position != 0)) {
-        if (specialX12Position < nonX12Position) {
-            retval = 1;
-        }
-    }
-
-    return retval;
+    return 0;
 }
 
 /* 'look ahead test' from Annex P */
 static int look_ahead_test(const unsigned char inputData[], const int sourcelen, const int position,
             const int current_mode, const int gs1) {
-    float ascii_count, c40_count, text_count, x12_count, edf_count, b256_count, best_count;
-    const float stiction = (1.0F / 24.0F); // smallest change to act on, to get around floating point inaccuracies
-    int    best_scheme;
+    float ascii_count, c40_count, text_count, x12_count, edf_count, b256_count;
+    int ascii_rnded, c40_rnded, text_rnded, x12_rnded, edf_rnded, b256_rnded;
+    float cnt_1;
     int sp;
-
-    best_scheme = DM_NULL;
 
     /* step (j) */
     if (current_mode == DM_ASCII) {
@@ -337,216 +309,295 @@ static int look_ahead_test(const unsigned char inputData[], const int sourcelen,
             break;
     }
 
-    sp = position;
-
-    do {
-        if (sp == sourcelen) {
-            /* At the end of data ... step (k) */
-            ascii_count = ceilf(ascii_count);
-            b256_count = ceilf(b256_count);
-            edf_count = ceilf(edf_count);
-            text_count = ceilf(text_count);
-            x12_count = ceilf(x12_count);
-            c40_count = ceilf(c40_count);
-
-            best_count = c40_count;
-            best_scheme = DM_C40; // (k)(7)
-
-            if (x12_count < (best_count - stiction)) {
-                best_count = x12_count;
-                best_scheme = DM_X12; // (k)(6)
-            }
-
-            if (text_count < (best_count - stiction)) {
-                best_count = text_count;
-                best_scheme = DM_TEXT; // (k)(5)
-            }
-
-            if (edf_count < (best_count - stiction)) {
-                best_count = edf_count;
-                best_scheme = DM_EDIFACT; // (k)(4)
-            }
-
-            if (b256_count < (best_count - stiction)) {
-                best_count = b256_count;
-                best_scheme = DM_BASE256; // (k)(3)
-            }
-
-            if (ascii_count <= (best_count + stiction)) {
-                best_scheme = DM_ASCII; // (k)(2)
-            }
+    for (sp = position; sp < sourcelen; sp++) {
+        /* ascii ... step (l) */
+        if ((inputData[sp] >= '0') && (inputData[sp] <= '9')) {
+            ascii_count += 0.5F; // (l)(1)
         } else {
-
-            /* ascii ... step (l) */
-            if ((inputData[sp] >= '0') && (inputData[sp] <= '9')) {
-                ascii_count += 0.5F; // (l)(1)
+            if (inputData[sp] > 127) {
+                ascii_count = ceilf(ascii_count) + 2.0F; // (l)(2)
             } else {
-                if (inputData[sp] > 127) {
-                    ascii_count = ceilf(ascii_count) + 2.0F; // (l)(2)
-                } else {
-                    ascii_count = ceilf(ascii_count) + 1.0F; // (l)(3)
-                }
-            }
-
-            /* c40 ... step (m) */
-            if ((inputData[sp] == ' ') ||
-                    (((inputData[sp] >= '0') && (inputData[sp] <= '9')) ||
-                    ((inputData[sp] >= 'A') && (inputData[sp] <= 'Z')))) {
-                c40_count += (2.0F / 3.0F); // (m)(1)
-            } else {
-                if (inputData[sp] > 127) {
-                    c40_count += (8.0F / 3.0F); // (m)(2)
-                } else {
-                    c40_count += (4.0F / 3.0F); // (m)(3)
-                }
-            }
-
-            /* text ... step (n) */
-            if ((inputData[sp] == ' ') ||
-                    (((inputData[sp] >= '0') && (inputData[sp] <= '9')) ||
-                    ((inputData[sp] >= 'a') && (inputData[sp] <= 'z')))) {
-                text_count += (2.0F / 3.0F); // (n)(1)
-            } else {
-                if (inputData[sp] > 127) {
-                    text_count += (8.0F / 3.0F); // (n)(2)
-                } else {
-                    text_count += (4.0F / 3.0F); // (n)(3)
-                }
-            }
-
-            /* x12 ... step (o) */
-            if (isX12(inputData[sp])) {
-                x12_count += (2.0F / 3.0F); // (o)(1)
-            } else {
-                if (inputData[sp] > 127) {
-                    x12_count += (13.0F / 3.0F); // (o)(2)
-                } else {
-                    x12_count += (10.0F / 3.0F); // (o)(3)
-                }
-            }
-
-            /* edifact ... step (p) */
-            if ((inputData[sp] >= ' ') && (inputData[sp] <= '^')) {
-                edf_count += (3.0F / 4.0F); // (p)(1)
-            } else {
-                if (inputData[sp] > 127) {
-                    edf_count += 17.0F; // (p)(2) > Value changed from ISO
-                } else {
-                    edf_count += 13.0F; // (p)(3) > Value changed from ISO
-                }
-            }
-            if (gs1 && (inputData[sp] == '[')) {
-                /* fnc1 and gs have the same weight of 13.0f */
-                edf_count += 13.0F; //  > Value changed from ISO
-            }
-
-            /* base 256 ... step (q) */
-            if ((gs1 == 1) && (inputData[sp] == '[')) {
-                /* FNC1 separator */
-                b256_count += 4.0F; // (q)(1)
-            } else {
-                b256_count += 1.0F; // (q)(2)
+                ascii_count = ceilf(ascii_count) + 1.0F; // (l)(3)
             }
         }
 
+        /* c40 ... step (m) */
+        if (isc40(inputData[sp])) {
+            c40_count += (2.0F / 3.0F); // (m)(1)
+        } else {
+            if (inputData[sp] > 127) {
+                c40_count += (8.0F / 3.0F); // (m)(2)
+            } else {
+                c40_count += (4.0F / 3.0F); // (m)(3)
+            }
+        }
 
-        if (sp > (position + 3)) {
-            /* 4 data characters processed ... step (r) */
+        /* text ... step (n) */
+        if (istext(inputData[sp])) {
+            text_count += (2.0F / 3.0F); // (n)(1)
+        } else {
+            if (inputData[sp] > 127) {
+                text_count += (8.0F / 3.0F); // (n)(2)
+            } else {
+                text_count += (4.0F / 3.0F); // (n)(3)
+            }
+        }
 
-            /* step (r)(6) */
-            if (((c40_count + 1.0F) < (ascii_count - stiction)) &&
-                    ((c40_count + 1.0F) < (b256_count - stiction)) &&
-                    ((c40_count + 1.0F) < (edf_count - stiction)) &&
-                    ((c40_count + 1.0F) < (text_count - stiction))) {
+        /* x12 ... step (o) */
+        if (isX12(inputData[sp])) {
+            x12_count += (2.0F / 3.0F); // (o)(1)
+        } else {
+            if (inputData[sp] > 127) {
+                x12_count += (13.0F / 3.0F); // (o)(2)
+            } else {
+                x12_count += (10.0F / 3.0F); // (o)(3)
+            }
+        }
 
-                if (c40_count < (x12_count - stiction)) {
-                    best_scheme = DM_C40;
+        /* edifact ... step (p) */
+        if ((inputData[sp] >= ' ') && (inputData[sp] <= '^')) {
+            edf_count += (3.0F / 4.0F); // (p)(1)
+        } else {
+            if (inputData[sp] > 127) {
+                edf_count += 17.0F / 4.0f; // (p)(2)
+            } else {
+                edf_count += 13.0F / 4.0f; // (p)(3)
+            }
+        }
+
+        /* base 256 ... step (q) */
+        if ((gs1 == 1) && (inputData[sp] == '[')) {
+            /* FNC1 separator */
+            b256_count += 4.0F; // (q)(1)
+        } else {
+            b256_count += 1.0F; // (q)(2)
+        }
+
+        if (sp >= position + 4) {
+            /* At least 5 data characters processed ... step (r) */
+            /* NOTE: different than spec, where it's at least 4. Following previous behaviour here (and BWIPP) */
+
+            cnt_1 = ascii_count + 1.0f;
+            if (cnt_1 <= b256_count && cnt_1 <= edf_count && cnt_1 <= text_count && cnt_1 <= x12_count
+                    && cnt_1 <= c40_count) {
+                return DM_ASCII; /* step (r)(1) */
+            }
+            cnt_1 = b256_count + 1.0f;
+            if (cnt_1 <= ascii_count || (cnt_1 < edf_count && cnt_1 < text_count && cnt_1 < x12_count
+                    && cnt_1 < c40_count)) {
+                return DM_BASE256; /* step (r)(2) */
+            }
+            cnt_1 = edf_count + 1.0f;
+            if (cnt_1 < ascii_count && cnt_1 < b256_count && cnt_1 < text_count && cnt_1 < x12_count
+                    && cnt_1 < c40_count) {
+                return DM_EDIFACT; /* step (r)(3) */
+            }
+            cnt_1 = text_count + 1.0f;
+            if (cnt_1 < ascii_count && cnt_1 < b256_count && cnt_1 < edf_count && cnt_1 < x12_count
+                    && cnt_1 < c40_count) {
+                return DM_TEXT; /* step (r)(4) */
+            }
+            cnt_1 = x12_count + 1.0f;
+            if (cnt_1 < ascii_count && cnt_1 < b256_count && cnt_1 < edf_count && cnt_1 < text_count
+                    && cnt_1 < c40_count) {
+                return DM_X12; /* step (r)(5) */
+            }
+            cnt_1 = c40_count + 1.0f;
+            if (cnt_1 < ascii_count && cnt_1 < b256_count && cnt_1 < edf_count && cnt_1 < text_count) {
+                if (c40_count < x12_count) {
+                    return DM_C40; /* step (r)(6)(i) */
                 }
-
-                if ((c40_count >= (x12_count - stiction))
-                        && (c40_count <= (x12_count + stiction))) {
+                if (c40_count == x12_count) {
                     if (p_r_6_2_1(inputData, sp, sourcelen) == 1) {
-                        // Test (r)(6)(ii)(i)
-                        best_scheme = DM_X12;
-                    } else {
-                        best_scheme = DM_C40;
+                        return DM_X12; /* step (r)(6)(ii)(I) */
                     }
+                    return DM_C40; /* step (r)(6)(ii)(II) */
                 }
             }
-
-            /* step (r)(5) */
-            if (((x12_count + 1.0F) < (ascii_count - stiction)) &&
-                    ((x12_count + 1.0F) < (b256_count - stiction)) &&
-                    ((x12_count + 1.0F) < (edf_count - stiction)) &&
-                    ((x12_count + 1.0F) < (text_count - stiction)) &&
-                    ((x12_count + 1.0F) < (c40_count - stiction))) {
-                best_scheme = DM_X12;
-            }
-
-            /* step (r)(4) */
-            if (((text_count + 1.0F) < (ascii_count - stiction)) &&
-                    ((text_count + 1.0F) < (b256_count - stiction)) &&
-                    ((text_count + 1.0F) < (edf_count - stiction)) &&
-                    ((text_count + 1.0F) < (x12_count - stiction)) &&
-                    ((text_count + 1.0F) < (c40_count - stiction))) {
-                best_scheme = DM_TEXT;
-            }
-
-            /* step (r)(3) */
-            if (((edf_count + 1.0F) < (ascii_count - stiction)) &&
-                    ((edf_count + 1.0F) < (b256_count - stiction)) &&
-                    ((edf_count + 1.0F) < (text_count - stiction)) &&
-                    ((edf_count + 1.0F) < (x12_count - stiction)) &&
-                    ((edf_count + 1.0F) < (c40_count - stiction))) {
-                best_scheme = DM_EDIFACT;
-            }
-
-            /* step (r)(2) */
-            if (((b256_count + 1.0F) <= (ascii_count + stiction)) ||
-                    (((b256_count + 1.0F) < (edf_count - stiction)) &&
-                    ((b256_count + 1.0F) < (text_count - stiction)) &&
-                    ((b256_count + 1.0F) < (x12_count - stiction)) &&
-                    ((b256_count + 1.0F) < (c40_count - stiction)))) {
-                best_scheme = DM_BASE256;
-            }
-
-            /* step (r)(1) */
-            if (((ascii_count + 1.0F) <= (b256_count + stiction)) &&
-                    ((ascii_count + 1.0F) <= (edf_count + stiction)) &&
-                    ((ascii_count + 1.0F) <= (text_count + stiction)) &&
-                    ((ascii_count + 1.0F) <= (x12_count + stiction)) &&
-                    ((ascii_count + 1.0F) <= (c40_count + stiction))) {
-                best_scheme = DM_ASCII;
-            }
         }
+    }
 
-        sp++;
-    } while (best_scheme == DM_NULL); // step (s)
+    /* At the end of data ... step (k) */
+    /* step (k)(1) */
+    ascii_rnded = (int) ceilf(ascii_count);
+    b256_rnded = (int) ceilf(b256_count);
+    edf_rnded = (int) ceilf(edf_count);
+    text_rnded = (int) ceilf(text_count);
+    x12_rnded = (int) ceilf(x12_count);
+    c40_rnded = (int) ceilf(c40_count);
 
-    return best_scheme;
+    if (ascii_rnded <= b256_rnded && ascii_rnded <= edf_rnded && ascii_rnded <= text_rnded && ascii_rnded <= x12_rnded
+            && ascii_rnded <= c40_rnded) {
+        return DM_ASCII; /* step (k)(2) */
+    }
+    if (b256_rnded < ascii_rnded && b256_rnded < edf_rnded && b256_rnded < text_rnded && b256_rnded < x12_rnded
+            && b256_rnded < c40_rnded) {
+        return DM_BASE256; /* step (k)(3) */
+    }
+    if (edf_rnded < ascii_rnded && edf_rnded < b256_rnded && edf_rnded < text_rnded && edf_rnded < x12_rnded
+            && edf_rnded < c40_rnded) {
+        return DM_EDIFACT; /* step (k)(4) */
+    }
+    if (text_rnded < ascii_rnded && text_rnded < b256_rnded && text_rnded < edf_rnded && text_rnded < x12_rnded
+            && text_rnded < c40_rnded) {
+        return DM_TEXT; /* step (k)(5) */
+    }
+    if (x12_rnded < ascii_rnded && x12_rnded < b256_rnded && x12_rnded < edf_rnded && x12_rnded < text_rnded
+            && x12_rnded < c40_rnded) {
+        return DM_X12; /* step (k)(6) */
+    }
+    /* Note the algorithm is particularly sub-optimal here, returning C40 even if X12/EDIFACT (much) better, due to
+       the < comparisons of rounded X12/EDIFACT values to each other above - comparisons would need to be <= or
+       unrounded (cf. very similar Code One algorithm). Not changed to maintain compatibility with spec and BWIPP */
+    return DM_C40; /* step (k)(7) */
+}
+
+/* Copy C40/TEXT/X12 triplets from buffer to target. Returns elements left in buffer (< 3) */
+static int ctx_process_buffer_transfer(int process_buffer[8], int process_p, unsigned char target[], int *p_tp,
+            int debug) {
+    int i, process_e;
+    int tp = *p_tp;
+
+    process_e = (process_p / 3) * 3;
+
+    for (i = 0; i < process_e; i += 3) {
+        int iv = (1600 * process_buffer[i]) + (40 * process_buffer[i + 1]) + (process_buffer[i + 2]) + 1;
+        target[tp++] = (unsigned char) (iv >> 8);
+        target[tp++] = (unsigned char) (iv & 0xFF);
+        if (debug) {
+            printf("[%d %d %d (%d %d)] ", process_buffer[i], process_buffer[i + 1], process_buffer[i + 2],
+                target[tp - 2], target[tp - 1]);
+        }
+    }
+
+    process_p -= process_e;
+
+    if (process_p) {
+        memmove(process_buffer, process_buffer + process_e, sizeof(int) * process_p);
+    }
+
+    *p_tp = tp;
+
+    return process_p;
+}
+
+/* Copy EDIFACT quadruplets from buffer to target. Returns elements left in buffer (< 4) */
+static int edi_process_buffer_transfer(int process_buffer[8], int process_p, unsigned char target[], int *p_tp,
+            int debug) {
+    int i, process_e;
+    int tp = *p_tp;
+
+    process_e = (process_p / 4) * 4;
+
+    for (i = 0; i < process_e; i += 4) {
+        target[tp++] = (unsigned char) (process_buffer[i] << 2 | (process_buffer[i + 1] & 0x30) >> 4);
+        target[tp++] = (unsigned char) ((process_buffer[i + 1] & 0x0f) << 4 | (process_buffer[i + 2] & 0x3c) >> 2);
+        target[tp++] = (unsigned char) ((process_buffer[i + 2] & 0x03) << 6 | process_buffer[i + 3]);
+        if (debug) {
+            printf("[%d %d %d %d (%d %d %d)] ", process_buffer[i], process_buffer[i + 1], process_buffer[i + 2],
+                process_buffer[i + 3], target[tp - 3], target[tp - 2], target[tp - 1]);
+        }
+    }
+
+    process_p -= process_e;
+
+    if (process_p) {
+        memmove(process_buffer, process_buffer + process_e, sizeof(int) * process_p);
+    }
+
+    *p_tp = tp;
+
+    return process_p;
+}
+
+/* Get symbol size, as specified or else smallest containing `minimum` codewords */
+static int get_symbolsize(struct zint_symbol *symbol, const int minimum) {
+    int i;
+
+    if ((symbol->option_2 >= 1) && (symbol->option_2 <= DMSIZESCOUNT)) {
+        return intsymbol[symbol->option_2 - 1];
+    }
+    for (i = DMSIZESCOUNT - 2; i >= 0; i--) {
+        if (minimum > matrixbytes[i]) {
+            if (symbol->option_3 == DM_DMRE) {
+                return i + 1;
+            }
+            if (symbol->option_3 == DM_SQUARE) {
+                /* Skip rectangular symbols in square only mode */
+                while (i + 1 < DMSIZESCOUNT && matrixH[i + 1] != matrixW[i + 1]) {
+                    i++;
+                }
+                return i + 1 < DMSIZESCOUNT ? i + 1 : 0;
+            }
+            /* Skip DMRE symbols in no dmre mode */
+            while (i + 1 < DMSIZESCOUNT && isDMRE[i + 1]) {
+                i++;
+            }
+            return i + 1 < DMSIZESCOUNT ? i + 1 : 0;
+        }
+    }
+    return 0;
+}
+
+/* Number of codewords remaining in a particular version (may be negative) */
+static int codewords_remaining(struct zint_symbol *symbol, const int tp, const int process_p) {
+    int symbolsize = get_symbolsize(symbol, tp + process_p); /* Allow for the remaining data characters */
+
+    return matrixbytes[symbolsize] - tp;
+}
+
+/* Number of C40/TEXT elements needed to encode `input` */
+static int c40text_cnt(const int current_mode, const int gs1, unsigned char input) {
+    int cnt;
+
+    if (gs1 && input == '[') {
+        return 2;
+    }
+    cnt = 1;
+    if (input > 127) {
+        cnt += 2;
+        input = input - 128;
+    }
+    if ((current_mode == DM_C40 && c40_shift[input]) || (current_mode == DM_TEXT && text_shift[input])) {
+        cnt += 1;
+    }
+
+    return cnt;
+}
+
+/* Update Base 256 field length */
+static int update_b256_field_length(unsigned char target[], int tp, int b256_start) {
+    int b256_count = tp - (b256_start + 1);
+    if (b256_count <= 249) {
+        target[b256_start] = b256_count;
+    } else {
+        /* Insert extra codeword */
+        memmove(target + b256_start + 2, target + b256_start + 1, b256_count);
+        target[b256_start] = (unsigned char) (249 + (b256_count / 250));
+        target[b256_start + 1] = (unsigned char) (b256_count % 250);
+        tp++;
+    }
+
+    return tp;
 }
 
 /* Encodes data using ASCII, C40, Text, X12, EDIFACT or Base 256 modes as appropriate
    Supports encoding FNC1 in supporting systems */
 static int dm200encode(struct zint_symbol *symbol, const unsigned char source[], unsigned char target[],
-        int *last_mode, int *last_shift, int *length_p, int process_buffer[], int *process_p, int *binlen_p) {
+        int *p_length, int *p_binlen) {
 
     int sp;
     int tp, i, gs1;
     int current_mode, next_mode;
-    int inputlen = *length_p;
+    int inputlen = *p_length;
+    int process_buffer[8]; /* holds remaining data to finalised */
+    int process_p = 0; /* number of characters left to finalise */
+    int b256_start = 0;
+    int symbols_left;
     int debug = symbol->debug & ZINT_DEBUG_PRINT;
-#ifndef _MSC_VER
-    char binary[2 * inputlen + 1 + 4 + 1]; /* Allow for GS1/READER_INIT, ECI and nul chars overhead */
-#else
-    char* binary = (char*) _alloca(2 * inputlen + 1 + 4 + 1);
-#endif
 
     sp = 0;
     tp = 0;
-    memset(process_buffer, 0, 8 * sizeof(int));
-    *process_p = 0;
-    strcpy(binary, "");
 
     /* step (a) */
     current_mode = DM_ASCII;
@@ -566,7 +617,6 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
     if (gs1) {
         target[tp] = 232;
         tp++;
-        strcat(binary, " ");
         if (debug) printf("FN1 ");
     } /* FNC1 */
 
@@ -577,7 +627,6 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
         } else {
             target[tp] = 234;
             tp++; /* Reader Programming */
-            strcat(binary, " ");
             if (debug) printf("RP ");
         }
     }
@@ -587,23 +636,20 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
         target[tp] = 241; /* ECI Character */
         tp++;
         if (symbol->eci <= 126) {
-            target[tp] = (unsigned char) symbol->eci + 1;
+            target[tp] = (unsigned char) (symbol->eci + 1);
             tp++;
-            strcat(binary, "  ");
         } else if (symbol->eci <= 16382) {
-            target[tp] = (unsigned char) ((symbol->eci - 127) / 254) + 128;
+            target[tp] = (unsigned char) ((symbol->eci - 127) / 254 + 128);
             tp++;
-            target[tp] = (unsigned char) ((symbol->eci - 127) % 254) + 1;
+            target[tp] = (unsigned char) ((symbol->eci - 127) % 254 + 1);
             tp++;
-            strcat(binary, "   ");
         } else {
-            target[tp] = (unsigned char) ((symbol->eci - 16383) / 64516) + 192;
+            target[tp] = (unsigned char) ((symbol->eci - 16383) / 64516 + 192);
             tp++;
-            target[tp] = (unsigned char) (((symbol->eci - 16383) / 254) % 254) + 1;
+            target[tp] = (unsigned char) (((symbol->eci - 16383) / 254) % 254 + 1);
             tp++;
-            target[tp] = (unsigned char) ((symbol->eci - 16383) % 254) + 1;
+            target[tp] = (unsigned char) ((symbol->eci - 16383) % 254 + 1);
             tp++;
-            strcat(binary, "    ");
         }
         if (debug) printf("ECI %d ", symbol->eci + 1);
     }
@@ -626,13 +672,11 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
             if (debug) printf("Macro06 ");
         }
         tp++;
-        strcat(binary, " ");
         /* Remove macro characters from input string */
         sp = 7;
         inputlen -= 2;
-        *length_p -= 2;
+        *p_length -= 2;
     }
-
 
     while (sp < inputlen) {
 
@@ -646,7 +690,6 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
                 target[tp] = (unsigned char) ((10 * ctoi(source[sp])) + ctoi(source[sp + 1]) + 130);
                 if (debug) printf("N%02d ", target[tp] - 130);
                 tp++;
-                strcat(binary, " ");
                 sp += 2;
             } else {
                 next_mode = look_ahead_test(source, inputlen, sp, current_mode, gs1);
@@ -655,43 +698,38 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
                     switch (next_mode) {
                         case DM_C40: target[tp] = 230;
                             tp++;
-                            strcat(binary, " ");
                             if (debug) printf("C40 ");
                             break;
                         case DM_TEXT: target[tp] = 239;
                             tp++;
-                            strcat(binary, " ");
                             if (debug) printf("TEX ");
                             break;
                         case DM_X12: target[tp] = 238;
                             tp++;
-                            strcat(binary, " ");
                             if (debug) printf("X12 ");
                             break;
                         case DM_EDIFACT: target[tp] = 240;
                             tp++;
-                            strcat(binary, " ");
                             if (debug) printf("EDI ");
                             break;
                         case DM_BASE256: target[tp] = 231;
                             tp++;
-                            strcat(binary, " ");
+                            b256_start = tp;
+                            target[tp++] = 0; /* Byte count holder (may be expanded to 2 codewords) */
                             if (debug) printf("BAS ");
                             break;
                     }
                 } else {
                     if (source[sp] > 127) {
                         target[tp] = 235; /* FNC4 */
-                        if (debug) printf("FN4 ");
                         tp++;
                         target[tp] = (source[sp] - 128) + 1;
-                        if (debug) printf("A%02X ", target[tp] - 1);
                         tp++;
-                        strcat(binary, "  ");
+                        if (debug) printf("FN4 A%02X ", target[tp - 1] - 1);
                     } else {
                         if (gs1 && (source[sp] == '[')) {
-                            if (gs1==2) {
-                                target[tp] = 29+1; /* GS */
+                            if (gs1 == 2) {
+                                target[tp] = 29 + 1; /* GS */
                                 if (debug) printf("GS ");
                             } else {
                                 target[tp] = 232; /* FNC1 */
@@ -702,272 +740,145 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
                             if (debug) printf("A%02X ", target[tp] - 1);
                         }
                         tp++;
-                        strcat(binary, " ");
                     }
                     sp++;
                 }
             }
 
-        }
+        /* step (c)/(d) C40/TEXT encodation */
+        } else if (current_mode == DM_C40 || current_mode == DM_TEXT) {
 
-        /* step (c) C40 encodation */
-        if (current_mode == DM_C40) {
-
-            next_mode = DM_C40;
-            if (*process_p == 0) {
+            next_mode = current_mode;
+            if (process_p == 0) {
                 next_mode = look_ahead_test(source, inputlen, sp, current_mode, gs1);
             }
 
-            if (next_mode != DM_C40) {
-                target[tp] = 254;
+            if (next_mode != current_mode) {
+                target[tp] = 254; /* Unlatch */
                 tp++;
-                strcat(binary, " "); /* Unlatch */
                 next_mode = DM_ASCII;
                 if (debug) printf("ASC ");
             } else {
                 int shift_set, value;
+                const char *ct_shift, *ct_value;
+
+                if (current_mode == DM_C40) {
+                    ct_shift = c40_shift;
+                    ct_value = c40_value;
+                } else {
+                    ct_shift = text_shift;
+                    ct_value = text_value;
+                }
+
                 if (source[sp] > 127) {
-                    process_buffer[*process_p] = 1;
-                    (*process_p)++;
-                    process_buffer[*process_p] = 30;
-                    (*process_p)++; /* Upper Shift */
-                    shift_set = c40_shift[source[sp] - 128];
-                    value = c40_value[source[sp] - 128];
+                    process_buffer[process_p++] = 1;
+                    process_buffer[process_p++] = 30; /* Upper Shift */
+                    shift_set = ct_shift[source[sp] - 128];
+                    value = ct_value[source[sp] - 128];
                 } else {
                     if (gs1 && (source[sp] == '[')) {
                         if (gs1 == 2) {
-                            shift_set = c40_shift[29];
-                            value = c40_value[29]; /* GS */
+                            shift_set = ct_shift[29];
+                            value = ct_value[29]; /* GS */
                         } else {
                             shift_set = 2;
                             value = 27; /* FNC1 */
                         }
                     } else {
-                        shift_set = c40_shift[source[sp]];
-                        value = c40_value[source[sp]];
-                    }
-                    if (*process_p % 3 == 2) {
-                        *last_shift = shift_set;
+                        shift_set = ct_shift[source[sp]];
+                        value = ct_value[source[sp]];
                     }
                 }
 
                 if (shift_set != 0) {
-                    process_buffer[*process_p] = shift_set - 1;
-                    (*process_p)++;
+                    process_buffer[process_p++] = shift_set - 1;
                 }
-                process_buffer[*process_p] = value;
-                (*process_p)++;
+                process_buffer[process_p++] = value;
 
-                while (*process_p >= 3) {
-                    unsigned int iv;
-
-                    iv = (1600 * process_buffer[0]) + (40 * process_buffer[1]) + (process_buffer[2]) + 1;
-                    target[tp] = (unsigned char) (iv >> 8);
-                    tp++;
-                    target[tp] = (unsigned char) (iv & 0xFF);
-                    tp++;
-                    strcat(binary, "  ");
-                    if (debug) printf("[%d %d %d] ", process_buffer[0], process_buffer[1], process_buffer[2]);
-
-                    process_buffer[0] = process_buffer[3];
-                    process_buffer[1] = process_buffer[4];
-                    process_buffer[2] = process_buffer[5];
-                    process_buffer[3] = 0;
-                    process_buffer[4] = 0;
-                    process_buffer[5] = 0;
-                    *process_p -= 3;
+                if (process_p >= 3) {
+                    process_p = ctx_process_buffer_transfer(process_buffer, process_p, target, &tp, debug);
                 }
                 sp++;
             }
-        }
-
-        /* step (d) Text encodation */
-        if (current_mode == DM_TEXT) {
-
-            next_mode = DM_TEXT;
-            if (*process_p == 0) {
-                next_mode = look_ahead_test(source, inputlen, sp, current_mode, gs1);
-            }
-
-            if (next_mode != DM_TEXT) {
-                target[tp] = 254;
-                tp++;
-                strcat(binary, " "); /* Unlatch */
-                next_mode = DM_ASCII;
-                if (debug) printf("ASC ");
-            } else {
-                int shift_set, value;
-                if (source[sp] > 127) {
-                    process_buffer[*process_p] = 1;
-                    (*process_p)++;
-                    process_buffer[*process_p] = 30;
-                    (*process_p)++; /* Upper Shift */
-                    shift_set = text_shift[source[sp] - 128];
-                    value = text_value[source[sp] - 128];
-                } else {
-                    if (gs1 && (source[sp] == '[')) {
-                        if (gs1 == 2) {
-                            shift_set = text_shift[29];
-                            value = text_value[29]; /* GS */
-                        } else {
-                            shift_set = 2;
-                            value = 27; /* FNC1 */
-                        }
-                    } else {
-                        shift_set = text_shift[source[sp]];
-                        value = text_value[source[sp]];
-                    }
-                    if (*process_p % 3 == 2) {
-                        *last_shift = shift_set;
-                    }
-                }
-
-                if (shift_set != 0) {
-                    process_buffer[*process_p] = shift_set - 1;
-                    (*process_p)++;
-                }
-                process_buffer[*process_p] = value;
-                (*process_p)++;
-
-                while (*process_p >= 3) {
-                    unsigned int iv;
-
-                    iv = (1600 * process_buffer[0]) + (40 * process_buffer[1]) + (process_buffer[2]) + 1;
-                    target[tp] = (unsigned char) (iv >> 8);
-                    tp++;
-                    target[tp] = (unsigned char) (iv & 0xFF);
-                    tp++;
-                    strcat(binary, "  ");
-                    if (debug) printf("[%d %d %d] ", process_buffer[0], process_buffer[1], process_buffer[2]);
-
-                    process_buffer[0] = process_buffer[3];
-                    process_buffer[1] = process_buffer[4];
-                    process_buffer[2] = process_buffer[5];
-                    process_buffer[3] = 0;
-                    process_buffer[4] = 0;
-                    process_buffer[5] = 0;
-                    *process_p -= 3;
-                }
-                sp++;
-            }
-        }
 
         /* step (e) X12 encodation */
-        if (current_mode == DM_X12) {
+        } else if (current_mode == DM_X12) {
 
             next_mode = DM_X12;
-            if (*process_p == 0) {
+            if (process_p == 0) {
                 next_mode = look_ahead_test(source, inputlen, sp, current_mode, gs1);
             }
 
             if (next_mode != DM_X12) {
-                target[tp] = 254;
+                target[tp] = 254; /* Unlatch */
                 tp++;
-                strcat(binary, " "); /* Unlatch */
                 next_mode = DM_ASCII;
                 if (debug) printf("ASC ");
             } else {
+                static const char x12_nonalphanum_chars[] = "\015*> ";
                 int value = 0;
-                if (source[sp] == 13) {
-                    value = 0;
-                } else if (source[sp] == '*') {
-                    value = 1;
-                } else if (source[sp] == '>') {
-                    value = 2;
-                } else if (source[sp] == ' ') {
-                    value = 3;
-                } else if ((source[sp] >= '0') && (source[sp] <= '9')) {
+
+                if ((source[sp] >= '0') && (source[sp] <= '9')) {
                     value = (source[sp] - '0') + 4;
                 } else if ((source[sp] >= 'A') && (source[sp] <= 'Z')) {
                     value = (source[sp] - 'A') + 14;
+                } else {
+                    value = posn(x12_nonalphanum_chars, source[sp]);
                 }
 
-                process_buffer[*process_p] = value;
-                (*process_p)++;
+                process_buffer[process_p++] = value;
 
-                while (*process_p >= 3) {
-                    unsigned int iv;
-
-                    iv = (1600 * process_buffer[0]) + (40 * process_buffer[1]) + (process_buffer[2]) + 1;
-                    target[tp] = (unsigned char) (iv >> 8);
-                    tp++;
-                    target[tp] = (unsigned char) (iv & 0xFF);
-                    tp++;
-                    strcat(binary, "  ");
-                    if (debug) printf("[%d %d %d] ", process_buffer[0], process_buffer[1], process_buffer[2]);
-
-                    process_buffer[0] = process_buffer[3];
-                    process_buffer[1] = process_buffer[4];
-                    process_buffer[2] = process_buffer[5];
-                    process_buffer[3] = 0;
-                    process_buffer[4] = 0;
-                    process_buffer[5] = 0;
-                    *process_p -= 3;
+                if (process_p >= 3) {
+                    process_p = ctx_process_buffer_transfer(process_buffer, process_p, target, &tp, debug);
                 }
                 sp++;
             }
-        }
 
         /* step (f) EDIFACT encodation */
-        if (current_mode == DM_EDIFACT) {
+        } else if (current_mode == DM_EDIFACT) {
 
             next_mode = DM_EDIFACT;
-            if (*process_p == 3) {
+            if (process_p == 3) {
+                /* Note different then spec Step (f)(1), which suggests checking when 0, but this seems to work
+                   better in many cases. */
                 next_mode = look_ahead_test(source, inputlen, sp, current_mode, gs1);
             }
 
             if (next_mode != DM_EDIFACT) {
-                process_buffer[*process_p] = 31;
-                (*process_p)++;
+                process_buffer[process_p++] = 31;
                 next_mode = DM_ASCII;
             } else {
                 int value = source[sp];
 
-                if (source[sp] >= 64) {  // '@'
+                if (value >= 64) { // '@'
                     value -= 64;
                 }
 
-                process_buffer[*process_p] = value;
-                (*process_p)++;
+                process_buffer[process_p++] = value;
                 sp++;
             }
 
-            while (*process_p >= 4) {
-                target[tp] = (unsigned char) ((process_buffer[0] << 2) + ((process_buffer[1] & 0x30) >> 4));
-                tp++;
-                target[tp] = ((process_buffer[1] & 0x0f) << 4) + ((process_buffer[2] & 0x3c) >> 2);
-                tp++;
-                target[tp] = (unsigned char) (((process_buffer[2] & 0x03) << 6) + process_buffer[3]);
-                tp++;
-                strcat(binary, "   ");
-                if (debug) {
-                    printf("[%d %d %d %d] ", process_buffer[0], process_buffer[1], process_buffer[2],
-                        process_buffer[3]);
-                }
-
-                process_buffer[0] = process_buffer[4];
-                process_buffer[1] = process_buffer[5];
-                process_buffer[2] = process_buffer[6];
-                process_buffer[3] = process_buffer[7];
-                process_buffer[4] = 0;
-                process_buffer[5] = 0;
-                process_buffer[6] = 0;
-                process_buffer[7] = 0;
-                *process_p -= 4;
+            if (process_p >= 4) {
+                process_p = edi_process_buffer_transfer(process_buffer, process_p, target, &tp, debug);
             }
-        }
+            if (debug && next_mode == DM_ASCII) printf("ASC ");
 
         /* step (g) Base 256 encodation */
-        if (current_mode == DM_BASE256) {
+        } else if (current_mode == DM_BASE256) {
             next_mode = look_ahead_test(source, inputlen, sp, current_mode, gs1);
 
             if (next_mode == DM_BASE256) {
                 target[tp] = source[sp];
-                if (debug) printf("B%02X ", target[tp]);
                 tp++;
                 sp++;
-                strcat(binary, "b");
+                if (debug) printf("B%02X ", target[tp - 1]);
             } else {
+                tp = update_b256_field_length(target, tp, b256_start);
+                /* B.2.1 255-state randomising algorithm */
+                for (i = b256_start; i < tp; i++) {
+                    int prn = ((149 * (i + 1)) % 255) + 1;
+                    target[i] = (unsigned char) ((target[i] + prn) & 0xFF);
+                }
                 next_mode = DM_ASCII;
                 if (debug) printf("ASC ");
             }
@@ -980,196 +891,141 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
 
     } /* while */
 
-    if (debug) printf("\n");
+    symbols_left = codewords_remaining(symbol, tp, process_p);
 
-    /* Add length and randomising algorithm to b256 */
-    i = 0;
-    while (i < tp) {
-        if (binary[i] == 'b') {
-            if ((i == 0) || (binary[i - 1] != 'b')) {
-                /* start of binary data */
-                int binary_count; /* length of b256 data */
+    if (debug) printf("\nsymbols_left %d, process_p %d ", symbols_left, process_p);
 
-                for (binary_count = 0; binary_count + i < tp && binary[binary_count + i] == 'b'; binary_count++);
-
-                if (binary_count <= 249) {
-                    dminsert(binary, i, 'b');
-                    insert_value(target, i, tp, binary_count);
-                    tp++;
-                } else {
-                    dminsert(binary, i, 'b');
-                    dminsert(binary, i + 1, 'b');
-                    insert_value(target, i, tp, (binary_count / 250) + 249);
-                    tp++;
-                    insert_value(target, i + 1, tp, binary_count % 250);
-                    tp++;
-                }
-            }
-        }
-        i++;
-    }
-
-    for (i = 0; i < tp; i++) {
-        if (binary[i] == 'b') {
-            int prn, temp;
-
-            prn = ((149 * (i + 1)) % 255) + 1;
-            temp = target[i] + prn;
-            if (temp <= 255) {
-                target[i] = (unsigned char) (temp);
-            } else {
-                target[i] = (unsigned char) (temp - 256);
-            }
-        }
-    }
-
-    *(last_mode) = current_mode;
-    *binlen_p = tp;
-    return 0;
-}
-
-static int dm200encode_remainder(unsigned char target[], int target_length, const unsigned char source[],
-            const int inputlen, const int last_mode, const int last_shift, const int process_buffer[],
-            const int process_p, const int symbols_left, int debug) {
-
-    switch (last_mode) {
-        case DM_C40:
-        case DM_TEXT:
-            /* NOTE: the use of a 0-padded doublet is only mentioned in ISO/IEC 16022:2006 for case 5.2.5.2 (b)
-             * when 2 symbols and 2 C40/Text characters are left, but using it here also for other cases. This
-             * matches the behaviour of tec-it (but not BWIPP) and is used for figures 4.15-1-1 and 4.15-1-1 in
-             * GS1 General Specifications.
-             */
-            if (debug) {
-                printf("%s last_shift %d, symbols_left %d, process_p %d ", last_mode == DM_C40 ? "C40" : "TEX",
-                    last_shift, symbols_left, process_p);
-            }
-            if (process_p == 1) // 1 data character left to encode.
-            {
-                if (last_shift) {
-                    // Remove shift from second half of previous doublet leaving pad value (0)
-                    target[target_length - 1] -= last_shift - 1;
-                }
-                if (symbols_left > 1) {
-                    target[target_length] = 254;
-                    target_length++; // Unlatch and encode remaining data in ascii.
-                    if (debug) printf("ASC ");
-                }
-                target[target_length] = source[inputlen - 1] + 1;
-                if (debug) printf("A%02X ", target[target_length] - 1);
-                target_length++;
-            } else if (process_p == 2) // 2 data characters left to encode.
-            {
-                // Pad with shift 1 value (0) and encode as double.
-                unsigned int intValue = (1600 * process_buffer[0]) + (40 * process_buffer[1]) + 1; // ie (0 + 1).
-                target[target_length] = (unsigned char) (intValue >> 8);
-                target_length++;
-                target[target_length] = (unsigned char) (intValue & 0xFF);
-                target_length++;
-                if (debug) printf("[%d %d %d] ", process_buffer[0], process_buffer[1], 0);
-                if (symbols_left > 2) {
-                    target[target_length] = 254; // Unlatch
-                    target_length++;
-                    if (debug) printf("ASC ");
-                }
-            } else {
-                if (symbols_left > 0) {
-                    target[target_length] = 254; // Unlatch
-                    target_length++;
-                    if (debug) printf("ASC ");
-                }
-            }
-            break;
-
-        case DM_X12:
-            if (debug) printf("X12 symbols_left %d, process_p %d ", symbols_left, process_p);
-            if ((symbols_left == process_p) && (process_p == 1)) {
-                // Unlatch not required!
-                target[target_length] = source[inputlen - 1] + 1;
-                if (debug) printf("A%02X ", target[target_length] - 1);
-                target_length++;
-            } else if (symbols_left) {
-                target[target_length] = (254);
-                target_length++; // Unlatch.
+    if (current_mode == DM_C40 || current_mode == DM_TEXT) {
+        /* NOTE: changed to follow spec exactly here, only using Shift 1 padded triplets when 2 symbol chars remain.
+           This matches the behaviour of BWIPP but not tec-it, nor figures 4.15.1-1 and 4.15-1-2 in GS1 General
+           Specifications 21.0.1.
+         */
+        if (debug) printf("%s ", current_mode == DM_C40 ? "C40" : "TEX");
+        if (process_p == 0) {
+            if (symbols_left > 0) {
+                target[tp++] = 254; // Unlatch
                 if (debug) printf("ASC ");
-
-                if (process_p == 1) {
-                    target[target_length] = source[inputlen - 1] + 1;
-                    if (debug) printf("A%02X ", target[target_length] - 1);
-                    target_length++;
-                } else if (process_p == 2) {
-                    target[target_length] = source[inputlen - 2] + 1;
-                    if (debug) printf("A%02X ", target[target_length] - 1);
-                    target_length++;
-                    target[target_length] = source[inputlen - 1] + 1;
-                    if (debug) printf("A%02X ", target[target_length] - 1);
-                    target_length++;
-                }
             }
-            break;
+        } else {
+            if (process_p == 2 && symbols_left == 2) {
+                /* 5.2.5.2 (b) */
+                process_buffer[process_p++] = 0; // Shift 1
+                (void)ctx_process_buffer_transfer(process_buffer, process_p, target, &tp, debug);
 
-        case DM_EDIFACT:
-            if (debug) printf("EDI symbols_left %d, process_p %d ", symbols_left, process_p);
-            if (symbols_left <= 2) // Unlatch not required!
-            {
-                if (process_p == 1) {
-                    target[target_length] = source[inputlen - 1] + 1;
-                    if (debug) printf("A%02X ", target[target_length] - 1);
-                    target_length++;
-                } else if (process_p == 2) {
-                    target[target_length] = source[inputlen - 2] + 1;
-                    if (debug) printf("A%02X ", target[target_length] - 1);
-                    target_length++;
-                    target[target_length] = source[inputlen - 1] + 1;
-                    if (debug) printf("A%02X ", target[target_length] - 1);
-                    target_length++;
+            } else if (process_p == 1 && symbols_left <= 2 && isc40text(current_mode, source[inputlen - 1])) {
+                /* 5.2.5.2 (c)/(d) */
+                if (symbols_left > 1) {
+                    /* 5.2.5.2 (c) */
+                    target[tp++] = 254; // Unlatch and encode remaining data in ascii.
+                    if (debug) printf("ASC ");
                 }
+                target[tp++] = source[inputlen - 1] + 1;
+                if (debug) printf("A%02X ", target[tp - 1] - 1);
+
             } else {
-                // Append edifact unlatch value (31) and empty buffer
-                if (process_p == 0) {
-                    target[target_length] = (unsigned char) (31 << 2);
-                    target_length++;
-                    if (debug) printf("[31 0 0 0] ");
-                } else if (process_p == 1) {
-                    target[target_length] = (unsigned char) ((process_buffer[0] << 2) + ((31 & 0x30) >> 4));
-                    target_length++;
-                    target[target_length] = (unsigned char) ((31 & 0x0f) << 4);
-                    target_length++;
-                    if (debug) printf("[%d 31 0 0] ", process_buffer[0]);
-                } else if (process_p == 2) {
-                    target[target_length] = (unsigned char) ((process_buffer[0] << 2)
-                                            + ((process_buffer[1] & 0x30) >> 4));
-                    target_length++;
-                    target[target_length] = (unsigned char) (((process_buffer[1] & 0x0f) << 4) + ((31 & 0x3c) >> 2));
-                    target_length++;
-                    target[target_length] = (unsigned char) (((31 & 0x03) << 6));
-                    target_length++;
-                    if (debug) printf("[%d %d 31 0] ", process_buffer[0], process_buffer[1]);
-                } else if (process_p == 3) {
-                    target[target_length] = (unsigned char) ((process_buffer[0] << 2)
-                                            + ((process_buffer[1] & 0x30) >> 4));
-                    target_length++;
-                    target[target_length] = (unsigned char) (((process_buffer[1] & 0x0f) << 4)
-                                            + ((process_buffer[2] & 0x3c) >> 2));
-                    target_length++;
-                    target[target_length] = (unsigned char) (((process_buffer[2] & 0x03) << 6) + 31);
-                    target_length++;
-                    if (debug) printf("[%d %d %d 31] ", process_buffer[0], process_buffer[1], process_buffer[2]);
+                int cnt, total_cnt = 0;
+                /* Backtrack to last complete triplet (same technique as BWIPP) */
+                while (sp > 0 && process_p % 3) {
+                    sp--;
+                    cnt = c40text_cnt(current_mode, gs1, source[sp]);
+                    total_cnt += cnt;
+                    process_p -= cnt;
+                }
+                tp -= (total_cnt / 3) * 2;
+
+                target[tp++] = 254; // Unlatch
+                if (debug) printf("ASC ");
+                for (; sp < inputlen; sp++) {
+                    if (istwodigits(source, inputlen, sp)) {
+                        target[tp++] = (unsigned char) ((10 * ctoi(source[sp])) + ctoi(source[sp + 1]) + 130);
+                        if (debug) printf("N%02d ", target[tp - 1] - 130);
+                        sp++;
+                    } else if (source[sp] > 127) {
+                        target[tp++] = 235; /* FNC4 */
+                        target[tp++] = (source[sp] - 128) + 1;
+                        if (debug) printf("FN4 A%02X ", target[tp - 1] - 1);
+                    } else if (gs1 && source[sp] == '[') {
+                        if (gs1 == 2) {
+                            target[tp] = 29 + 1; /* GS */
+                            if (debug) printf("GS ");
+                        } else {
+                            target[tp] = 232; /* FNC1 */
+                            if (debug) printf("FN1 ");
+                        }
+                    } else {
+                        target[tp++] = source[sp] + 1;
+                        if (debug) printf("A%02X ", target[tp - 1] - 1);
+                    }
                 }
             }
-            break;
+        }
+
+    } else if (current_mode == DM_X12) {
+        if (debug) printf("X12 ");
+        if ((symbols_left == 1) && (process_p == 1)) {
+            // Unlatch not required!
+            target[tp++] = source[inputlen - 1] + 1;
+            if (debug) printf("A%02X ", target[tp - 1] - 1);
+        } else {
+            if (symbols_left > 0) {
+                target[tp++] = (254); // Unlatch.
+                if (debug) printf("ASC ");
+            }
+
+            if (process_p == 1) {
+                target[tp++] = source[inputlen - 1] + 1;
+                if (debug) printf("A%02X ", target[tp - 1] - 1);
+            } else if (process_p == 2) {
+                target[tp++] = source[inputlen - 2] + 1;
+                target[tp++] = source[inputlen - 1] + 1;
+                if (debug) printf("A%02X A%02X ", target[tp - 2] - 1, target[tp - 1] - 1);
+            }
+        }
+
+    } else if (current_mode == DM_EDIFACT) {
+        if (debug) printf("EDI ");
+        if (symbols_left <= 2 && process_p <= symbols_left) { // Unlatch not required!
+            if (process_p == 1) {
+                target[tp++] = source[inputlen - 1] + 1;
+                if (debug) printf("A%02X ", target[tp - 1] - 1);
+            } else if (process_p == 2) {
+                target[tp++] = source[inputlen - 2] + 1;
+                target[tp++] = source[inputlen - 1] + 1;
+                if (debug) printf("A%02X A%02X ", target[tp - 2] - 1, target[tp - 1] - 1);
+            }
+        } else {
+            // Append edifact unlatch value (31) and empty buffer
+            if (process_p <= 3) {
+                process_buffer[process_p++] = 31;
+                if (process_p < 4) {
+                    memset(process_buffer + process_p, 0, sizeof(int) * (4 - process_p));
+                }
+            }
+            (void)edi_process_buffer_transfer(process_buffer, 4, target, &tp, debug);
+        }
+
+    } else if (current_mode == DM_BASE256) {
+        if (symbols_left > 0) {
+            tp = update_b256_field_length(target, tp, b256_start);
+        }
+        /* B.2.1 255-state randomising algorithm */
+        for (i = b256_start; i < tp; i++) {
+            int prn = ((149 * (i + 1)) % 255) + 1;
+            target[i] = (unsigned char) ((target[i] + prn) & 0xFF);
+        }
     }
 
     if (debug) {
-        int i;
-        printf("\nData (%d): ", target_length);
-        for (i = 0; i < target_length; i++)
+        printf("\nData (%d): ", tp);
+        for (i = 0; i < tp; i++)
             printf("%d ", target[i]);
 
         printf("\n");
     }
 
-    return target_length;
+    *p_binlen = tp;
+
+    return 0;
 }
 
 /* add pad bits */
@@ -1181,6 +1037,7 @@ static void add_tail(unsigned char target[], int tp, const int tail_length) {
             target[tp] = 129;
             tp++; /* Pad */
         } else {
+            /* B.1.1 253-state randomising algorithm */
             prn = ((149 * (tp + 1)) % 253) + 1;
             temp = 129 + prn;
             if (temp <= 254) {
@@ -1198,69 +1055,26 @@ static int data_matrix_200(struct zint_symbol *symbol, const unsigned char sourc
     int i, skew = 0;
     unsigned char binary[2200];
     int binlen;
-    int process_buffer[8]; /* holds remaining data to finalised */
-    int process_p; /* number of characters left to finalise */
-    int symbolsize, optionsize, calcsize;
+    int symbolsize;
     int taillength, error_number = 0;
     int H, W, FH, FW, datablock, bytes, rsblock;
-    int last_mode = DM_ASCII;
-    int last_shift = 0;
-    int symbols_left;
     int debug = symbol->debug & ZINT_DEBUG_PRINT;
 
     /* inputlen may be decremented by 2 if macro character is used */
-    error_number = dm200encode(symbol, source, binary, &last_mode, &last_shift, &inputlen, process_buffer,
-                    &process_p, &binlen);
+    error_number = dm200encode(symbol, source, binary, &inputlen, &binlen);
     if (error_number != 0) {
         return error_number;
     }
 
-    if ((symbol->option_2 >= 1) && (symbol->option_2 <= DMSIZESCOUNT)) {
-        optionsize = intsymbol[symbol->option_2 - 1];
-    } else {
-        optionsize = -1;
-    }
-
-    calcsize = DMSIZESCOUNT - 1;
-    for (i = DMSIZESCOUNT - 1; i > -1; i--) {
-        if (matrixbytes[i] >= (binlen + process_p)) {
-            // Allow for the remaining data characters
-            calcsize = i;
-        }
-    }
-
-    if (optionsize == -1) {
-        // We are in automatic size mode as the exact symbol size was not given
-        // Now check the detailed search options square only or no dmre
-        if (symbol->option_3 == DM_SQUARE) {
-            /* Skip rectangular symbols in square only mode */
-            while (matrixH[calcsize] != matrixW[calcsize]) {
-                calcsize++;
-            }
-        } else if (symbol->option_3 != DM_DMRE) {
-            /* Skip DMRE symbols in no dmre mode */
-            while (isDMRE[calcsize]) {
-                calcsize++;
-            }
-        }
-        symbolsize = calcsize;
-    } else {
-        // The symbol size was given by --ver (option_2)
-        // Thus check if the data fits into this symbol size and use this size
-        if (calcsize > optionsize) {
-            strcpy(symbol->errtxt, "522: Input too long for selected symbol size");
-            return ZINT_ERROR_TOO_LONG;
-        }
-        symbolsize = optionsize;
-    }
-
-    // Now we know the symbol size we can handle the remaining data in the process buffer.
-    symbols_left = matrixbytes[symbolsize] - binlen;
-    binlen = dm200encode_remainder(binary, binlen, source, inputlen, last_mode, last_shift, process_buffer,
-                process_p, symbols_left, debug);
+    symbolsize = get_symbolsize(symbol, binlen);
 
     if (binlen > matrixbytes[symbolsize]) {
-        strcpy(symbol->errtxt, "523: Data too long to fit in symbol");
+        if ((symbol->option_2 >= 1) && (symbol->option_2 <= DMSIZESCOUNT)) {
+            // The symbol size was given by --ver (option_2)
+            strcpy(symbol->errtxt, "522: Input too long for selected symbol size");
+        } else {
+            strcpy(symbol->errtxt, "523: Data too long to fit in symbol");
+        }
         return ZINT_ERROR_TOO_LONG;
     }
 

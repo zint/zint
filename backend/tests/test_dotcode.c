@@ -650,7 +650,7 @@ static void test_encode(int index, int generate, int debug) {
                     i, testUtilInputModeName(data[i].input_mode), data[i].option_2, testUtilOption3Name(data[i].option_3),
                     testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), data[i].length,
                     testUtilErrorName(data[i].ret), symbol->rows, symbol->width, data[i].bwipp_cmp, data[i].comment);
-            testUtilModulesDump(symbol, "                    ", "\n");
+            testUtilModulesPrint(symbol, "                    ", "\n");
             printf("                },\n");
         } else {
             if (ret < ZINT_ERROR) {

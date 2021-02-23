@@ -197,7 +197,7 @@ static void test_escape_char_process(int index, int generate, int debug) {
         char *comment;
     };
     struct item data[] = {
-        /*  0*/ { DATA_MODE, -1, "\\0\\E\\a\\b\\t\\n\\v\\f\\r\\e\\G\\R\\x81\\\\", 0, 26, "01 05 08 09 0A 0B 0C 0D E7 DE 7B 1F B6 4D 45 B6 E6 78 98 0D 54 2E 58 21 AE 22 2B 3E 8B 22", 0, "" },
+        /*  0*/ { DATA_MODE, -1, "\\0\\E\\a\\b\\t\\n\\v\\f\\r\\e\\G\\R\\x81\\\\", 0, 26, "01 05 08 09 0A 0B 0C 0D E7 D8 7B 1F B6 4D 45 B6 45 7C EF DD 8C 4C 8D 1E D0 55 AD FE A8 52", 0, "" },
         /*  1*/ { DATA_MODE, -1, "\\c", ZINT_ERROR_INVALID_DATA, 0, "Error 234: Unrecognised escape character in input data", 0, "" },
         /*  2*/ { DATA_MODE, -1, "\\", ZINT_ERROR_INVALID_DATA, 0, "Error 236: Incomplete escape character in input data", 0, "" },
         /*  3*/ { DATA_MODE, -1, "\\x", ZINT_ERROR_INVALID_DATA, 0, "Error 232: Incomplete escape character in input data", 0, "" },

@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019 - 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019 - 2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -67,7 +67,7 @@ static void test_options(int index, int debug) {
         /* 11*/ { BARCODE_MICROPDF417, -1, 5, -1, "12345", ZINT_WARN_INVALID_OPTION, 0, -1, 1, 11, 38, -1 }, // Invalid cols, auto-set to 1
         /* 12*/ { BARCODE_MICROPDF417, -1, 1, -1, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLM", ZINT_WARN_INVALID_OPTION, 0, -1, 2, 17, 55, -1 }, // Cols 1 too small, auto-upped to 2 with warning
     };
-    int data_size = sizeof(data) / sizeof(struct item);
+    int data_size = ARRAY_SIZE(data);
 
     struct zint_symbol previous_symbol;
 
@@ -83,16 +83,16 @@ static void test_options(int index, int debug) {
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret_encode, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret_encode, symbol->errtxt);
 
-		assert_equal(symbol->option_1, data[i].expected_option_1, "i:%d symbol->option_1 %d != %d (%d) (%s)\n", i, symbol->option_1, data[i].expected_option_1, data[i].option_1, symbol->errtxt);
-		assert_equal(symbol->option_2, data[i].expected_option_2, "i:%d symbol->option_2 %d != %d (%d) (%s)\n", i, symbol->option_2, data[i].expected_option_2, data[i].option_2, symbol->errtxt);
-		if (data[i].option_3 != -1) {
-			assert_equal(symbol->option_3, data[i].option_3, "i:%d symbol->option_3 %d != %d\n", i, symbol->option_3, data[i].option_3); // Unchanged
-		} else {
-			assert_zero(symbol->option_3, "i:%d symbol->option_3 %d != 0\n", i, symbol->option_3);
-		}
+        assert_equal(symbol->option_1, data[i].expected_option_1, "i:%d symbol->option_1 %d != %d (%d) (%s)\n", i, symbol->option_1, data[i].expected_option_1, data[i].option_1, symbol->errtxt);
+        assert_equal(symbol->option_2, data[i].expected_option_2, "i:%d symbol->option_2 %d != %d (%d) (%s)\n", i, symbol->option_2, data[i].expected_option_2, data[i].option_2, symbol->errtxt);
+        if (data[i].option_3 != -1) {
+            assert_equal(symbol->option_3, data[i].option_3, "i:%d symbol->option_3 %d != %d\n", i, symbol->option_3, data[i].option_3); // Unchanged
+        } else {
+            assert_zero(symbol->option_3, "i:%d symbol->option_3 %d != 0\n", i, symbol->option_3);
+        }
 
-		assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, symbol->errtxt);
-		assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, symbol->errtxt);
+        assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, symbol->errtxt);
+        assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, symbol->errtxt);
 
         if (index == -1 && data[i].compare_previous != -1) {
             ret = testUtilSymbolCmp(symbol, &previous_symbol);
@@ -155,7 +155,7 @@ static void test_reader_init(int index, int generate, int debug) {
                     testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
                     testUtilErrorName(data[i].ret), symbol->rows, symbol->width, symbol->errtxt, data[i].comment);
         } else {
-            if (ret < 5) {
+            if (ret < ZINT_ERROR) {
                 assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);
                 assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
                 assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
@@ -240,7 +240,7 @@ static void test_input(int index, int generate, int debug) {
                     testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), testUtilErrorName(data[i].ret),
                     symbol->eci, symbol->rows, symbol->width, symbol->errtxt, data[i].comment);
         } else {
-            if (ret < 5) {
+            if (ret < ZINT_ERROR) {
                 assert_equal(symbol->eci, data[i].expected_eci, "i:%d symbol->eci %d != %d (%s)\n", i, symbol->eci, data[i].expected_eci, data[i].data);
                 assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);
                 assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
@@ -718,7 +718,7 @@ static void test_encode(int index, int generate, int debug) {
                     "11101101001101001001111100011101101001"
                 },
     };
-    int data_size = sizeof(data) / sizeof(struct item);
+    int data_size = ARRAY_SIZE(data);
 
     char escaped[1024];
     char bwipp_buf[8192];
@@ -741,10 +741,10 @@ static void test_encode(int index, int generate, int debug) {
                     i, testUtilBarcodeName(data[i].symbology), data[i].eci, testUtilInputModeName(data[i].input_mode), data[i].option_1, data[i].option_2,
                     testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), testUtilErrorName(data[i].ret),
                     symbol->rows, symbol->width, data[i].bwipp_cmp, data[i].comment);
-            testUtilModulesDump(symbol, "                    ", "\n");
+            testUtilModulesPrint(symbol, "                    ", "\n");
             printf("                },\n");
         } else {
-            if (ret < 5) {
+            if (ret < ZINT_ERROR) {
                 assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);
                 assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
 
@@ -1042,7 +1042,7 @@ static void test_fuzz(int index, int debug) {
                     "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQ",
                     251, -1, ZINT_ERROR_TOO_LONG },
     };
-    int data_size = sizeof(data) / sizeof(struct item);
+    int data_size = ARRAY_SIZE(data);
 
     for (int i = 0; i < data_size; i++) {
 
@@ -1072,6 +1072,8 @@ static void test_fuzz(int index, int debug) {
 }
 
 #include <time.h>
+
+#define TEST_PERF_ITERATIONS    1000
 
 // Not a real test, just performance indicator
 static void test_perf(int index, int debug) {
@@ -1139,7 +1141,7 @@ static void test_perf(int index, int debug) {
 
         diff_encode = diff_buffer = 0;
 
-        for (int j = 0; j < 1000; j++) {
+        for (int j = 0; j < TEST_PERF_ITERATIONS; j++) {
             struct zint_symbol *symbol = ZBarcode_Create();
             assert_nonnull(symbol, "Symbol not created\n");
 

@@ -179,19 +179,13 @@ static void test_gs1_reduce(int index, int generate, int debug) {
         struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        symbol->symbology = data[i].symbology;
-        if (data[i].input_mode != -1) {
-            symbol->input_mode = data[i].input_mode;
-        }
-        symbol->debug |= debug;
-
         if (strlen(data[i].composite)) {
             text = data[i].composite;
             strcpy(symbol->primary, data[i].data);
         } else {
             text = data[i].data;
         }
-        int length = strlen(text);
+        int length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, text, -1, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) text, length);
 
@@ -199,7 +193,7 @@ static void test_gs1_reduce(int index, int generate, int debug) {
             if (data[i].ret == 0) {
                 printf("        /*%2d*/ { %s, %s, \"%s\", \"%s\", %d, \"%s\",\n",
                         i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode), data[i].data, data[i].composite, data[i].ret, data[i].comment);
-                testUtilModulesDump(symbol, "                    ", "\n");
+                testUtilModulesPrint(symbol, "                    ", "\n");
                 printf("               },\n");
             } else {
                 printf("        /*%2d*/ { %s, %s, \"%s\", \"%s\", %s, \"%s\", \"\" },\n",
@@ -208,7 +202,7 @@ static void test_gs1_reduce(int index, int generate, int debug) {
         } else {
             assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d %s\n", i, ret, data[i].ret, symbol->errtxt);
 
-            if (ret < 5) {
+            if (ret < ZINT_ERROR) {
                 int width, row;
                 ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
                 assert_zero(ret, "i:%d %s testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), ret, width, row, data[i].data);
@@ -271,16 +265,13 @@ static void test_hrt(int index, int debug) {
         struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        symbol->symbology = data[i].symbology;
-        symbol->debug |= debug;
-
         if (strlen(data[i].composite)) {
             text = data[i].composite;
             strcpy(symbol->primary, data[i].data);
         } else {
             text = data[i].data;
         }
-        int length = strlen(text);
+        int length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, text, -1, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) text, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, data[i].ret, ret, symbol->errtxt);
@@ -1781,20 +1772,13 @@ static void test_input_mode(int index, int debug) {
         struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        symbol->symbology = data[i].symbology;
-        symbol->input_mode = data[i].input_mode;
-        if (data[i].output_options != -1) {
-            symbol->output_options = data[i].output_options;
-        }
-        symbol->debug |= debug;
-
         if (strlen(data[i].composite)) {
             text = data[i].composite;
             strcpy(symbol->primary, data[i].data);
         } else {
             text = data[i].data;
         }
-        int length = strlen(text);
+        int length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1, -1, data[i].output_options, text, -1, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) text, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d %s\n", i, ret, data[i].ret, symbol->errtxt);

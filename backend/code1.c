@@ -231,10 +231,10 @@ static int c1_look_ahead_test(const unsigned char source[], const int sourcelen,
             byte_count += 1.0f; /* Step P2 */
         }
 
-        /* If not end of data and at least 4 characters processed */
+        /* If at least 4 characters processed */
         /* NOTE: different than spec, where it's at least 3, but that ends up suppressing C40/TEXT/EDI.
-           BWIPP uses 4, as does very similar Data Matrix ISO/IEC 16022:2006 Annex P algorithm */
-        if (sp + 1 != sourcelen && sp >= position + 3) {
+           BWIPP also uses 4 (cf very similar Data Matrix ISO/IEC 16022:2006 Annex P algorithm) */
+        if (sp >= position + 3) {
             /* Step Q */
             float cnt;
             ascii_rnded = (int) ceilf(ascii_count);

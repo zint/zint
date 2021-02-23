@@ -75,7 +75,7 @@ static void test_eanx_leading_zeroes(int index, int debug) {
         /*25*/ { BARCODE_EANX_CC, "1234567890128+12", "[21]A12345678", 0, 7, 126 }, // EAN-13 + CHK + EAN-2
         /*26*/ { BARCODE_EANX_CC, "1234567890128+12345", "[21]A12345678", 0, 7, 153 }, // EAN-13 + CHK + EAN-5
     };
-    int data_size = sizeof(data) / sizeof(struct item);
+    int data_size = ARRAY_SIZE(data);
 
     for (int i = 0; i < data_size; i++) {
 
@@ -84,10 +84,7 @@ static void test_eanx_leading_zeroes(int index, int debug) {
         struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        symbol->symbology = data[i].symbology;
-        symbol->debug |= debug;
-
-        int length = strlen(data[i].data);
+        int length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
         assert_zero(length >= 128, "i:%d length %d >= 128\n", i, length);
         strcpy(symbol->primary, data[i].data);
 
@@ -96,7 +93,7 @@ static void test_eanx_leading_zeroes(int index, int debug) {
         ret = ZBarcode_Encode(symbol, (const unsigned char *) data[i].composite, composite_length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
-        if (ret < 5) {
+        if (ret < ZINT_ERROR) {
             assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
             assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n", i, symbol->width, data[i].expected_width);
         }
@@ -122,7 +119,7 @@ static void test_helper_generate(const struct zint_symbol *symbol, int ret, int 
             printf("        /*%2d*/ { %s, %d, \"%s\", \"%s\", %d, %d, %d, %d, \"%s\",\n",
                     i, testUtilBarcodeName(symbol->symbology), option_1, esc_data, esc_composite, ret, symbol->rows, symbol->width, bwipp_cmp, comment);
         }
-        testUtilModulesDump(symbol, "                    ", "\n");
+        testUtilModulesPrint(symbol, "                    ", "\n");
         printf("               },\n");
     } else {
         if (bwipp_cmp == -1) {
@@ -1229,7 +1226,7 @@ static void test_examples(int index, int generate, int debug) {
                     "000101001001101111010011101011000100001010010001010101001000111010011100101100110110110010010001010000000101101011110101110010"
                },
     };
-    int data_size = sizeof(data) / sizeof(struct item);
+    int data_size = ARRAY_SIZE(data);
 
     char bwipp_buf[32768];
     char bwipp_msg[1024];
@@ -1242,11 +1239,7 @@ static void test_examples(int index, int generate, int debug) {
         struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        symbol->symbology = data[i].symbology;
-        symbol->option_1 = data[i].option_1;
-        symbol->debug |= debug;
-
-        int length = strlen(data[i].data);
+        int length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, data[i].option_1, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
         assert_zero(length >= 128, "i:%d length %d >= 128\n", i, length);
         strcpy(symbol->primary, data[i].data);
 
@@ -1395,7 +1388,7 @@ static void test_odd_numbered_numeric(int index, int generate, int debug) {
                     "0001010010011011110101000110111001000010100100010101010"
                },
     };
-    int data_size = sizeof(data) / sizeof(struct item);
+    int data_size = ARRAY_SIZE(data);
 
     char bwipp_buf[8192];
     char bwipp_msg[1024];
@@ -1408,11 +1401,7 @@ static void test_odd_numbered_numeric(int index, int generate, int debug) {
         struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        symbol->symbology = data[i].symbology;
-        symbol->option_1 = data[i].option_1;
-        symbol->debug |= debug;
-
-        int length = strlen(data[i].data);
+        int length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, data[i].option_1, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
         assert_zero(length >= 128, "i:%d length %d >= 128\n", i, length);
         strcpy(symbol->primary, data[i].data);
 
@@ -1526,7 +1515,7 @@ static void test_ean128_cc_shift(int index, int generate, int debug) {
                     "1101001110011110101110111101101101011001110010001011000111000101101100001010011011110110101111011101001110011010111011110100110100001100011101011"
                },
     };
-    int data_size = sizeof(data) / sizeof(struct item);
+    int data_size = ARRAY_SIZE(data);
 
     char bwipp_buf[8192];
     char bwipp_msg[1024];
@@ -1538,11 +1527,7 @@ static void test_ean128_cc_shift(int index, int generate, int debug) {
         struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        symbol->symbology = data[i].symbology;
-        symbol->option_1 = data[i].option_1;
-        symbol->debug |= debug;
-
-        int length = strlen(data[i].data);
+        int length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, data[i].option_1, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
         assert_zero(length >= 128, "i:%d length %d >= 128\n", i, length);
         strcpy(symbol->primary, data[i].data);
 
@@ -1611,7 +1596,7 @@ static void test_ean128_cc_width(int index, int generate, int debug) {
         /*11*/ { "[00]123456789012345675", "[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[91]1234567890", 0, 32, 579, "With composite 2372 digits == max" },
         /*12*/ { "[00]123456789012345675", "[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[00]123456789012345675[91]12345678901", ZINT_ERROR_TOO_LONG, 0, 0, "With composite 2373 digits > max" },
     };
-    int data_size = sizeof(data) / sizeof(struct item);
+    int data_size = ARRAY_SIZE(data);
 
     for (int i = 0; i < data_size; i++) {
 
@@ -1620,11 +1605,7 @@ static void test_ean128_cc_width(int index, int generate, int debug) {
         struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        symbol->symbology = BARCODE_GS1_128_CC;
-        symbol->option_1 = 3;
-        symbol->debug |= debug;
-
-        int length = strlen(data[i].data);
+        int length = testUtilSetSymbol(symbol, BARCODE_GS1_128_CC, -1 /*input_mode*/, -1 /*eci*/, 3, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
         assert_zero(length >= 128, "i:%d length %d >= 128\n", i, length);
         strcpy(symbol->primary, data[i].data);
 
@@ -2077,7 +2058,7 @@ static void test_encodation_0(int index, int generate, int debug) {
                     "0001010010011011110101000110111001000010100100010101010"
                },
     };
-    int data_size = sizeof(data) / sizeof(struct item);
+    int data_size = ARRAY_SIZE(data);
 
     char bwipp_buf[8192];
     char bwipp_msg[1024];
@@ -2089,11 +2070,7 @@ static void test_encodation_0(int index, int generate, int debug) {
         struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        symbol->symbology = data[i].symbology;
-        symbol->option_1 = data[i].option_1;
-        symbol->debug |= debug;
-
-        int length = strlen(data[i].data);
+        int length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, data[i].option_1, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
         assert_zero(length >= 128, "i:%d length %d >= 128\n", i, length);
         strcpy(symbol->primary, data[i].data);
 
@@ -2216,7 +2193,7 @@ static void test_encodation_10(int index, int generate, int debug) {
                     "0001010010011011110101000110111001000010100100010101010"
                },
     };
-    int data_size = sizeof(data) / sizeof(struct item);
+    int data_size = ARRAY_SIZE(data);
 
     char bwipp_buf[8192];
     char bwipp_msg[1024];
@@ -2228,11 +2205,7 @@ static void test_encodation_10(int index, int generate, int debug) {
         struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        symbol->symbology = data[i].symbology;
-        symbol->option_1 = data[i].option_1;
-        symbol->debug |= debug;
-
-        int length = strlen(data[i].data);
+        int length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, data[i].option_1, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
         assert_zero(length >= 128, "i:%d length %d >= 128\n", i, length);
         strcpy(symbol->primary, data[i].data);
 
@@ -2598,7 +2571,7 @@ static void test_encodation_11(int index, int generate, int debug) {
                     "0001010010011011110101000110111001000010100100010101010"
                },
     };
-    int data_size = sizeof(data) / sizeof(struct item);
+    int data_size = ARRAY_SIZE(data);
 
     char bwipp_buf[8192];
     char bwipp_msg[1024];
@@ -2610,11 +2583,7 @@ static void test_encodation_11(int index, int generate, int debug) {
         struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        symbol->symbology = data[i].symbology;
-        symbol->option_1 = data[i].option_1;
-        symbol->debug |= debug;
-
-        int length = strlen(data[i].data);
+        int length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, data[i].option_1, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
         assert_zero(length >= 128, "i:%d length %d >= 128\n", i, length);
         strcpy(symbol->primary, data[i].data);
 
@@ -2629,7 +2598,7 @@ static void test_encodation_11(int index, int generate, int debug) {
             assert_equal(symbol->rows, data[i].expected_rows, "i:%d %s symbol->rows %d != %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), symbol->rows, data[i].expected_rows, data[i].data);
             assert_equal(symbol->width, data[i].expected_width, "i:%d %s symbol->width %d != %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), symbol->width, data[i].expected_width, data[i].data);
 
-            if (ret < 5) {
+            if (ret < ZINT_ERROR) {
                 int width, row;
                 ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
                 assert_zero(ret, "i:%d %s testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), ret, width, row, data[i].data);
@@ -2777,7 +2746,7 @@ static void test_addongap(int index, int generate, int debug) {
             printf("        /*%3d*/ { %s, %d, %d, \"%s\", %s, %d, %d, \"%s\",\n",
                                 i, testUtilBarcodeName(data[i].symbology), data[i].option_1, data[i].option_2, data[i].data,
                                 testUtilErrorName(data[i].ret), symbol->rows, symbol->width, data[i].comment);
-            testUtilModulesDump(symbol, "                    ", "\n");
+            testUtilModulesPrint(symbol, "                    ", "\n");
             printf("                },\n");
         } else {
             assert_equal(symbol->rows, data[i].expected_rows, "i:%d %s symbol->rows %d != %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), symbol->rows, data[i].expected_rows, data[i].data);
@@ -2823,7 +2792,7 @@ static void test_fuzz(int index, int debug) {
         /* 3*/ { BARCODE_EANX_CC, "+12345", -1, "[21]A12345678", 0 },
         /* 4*/ { BARCODE_EANX_CC, "+123456", -1, "[21]A12345678", ZINT_ERROR_TOO_LONG },
     };
-    int data_size = sizeof(data) / sizeof(struct item);
+    int data_size = ARRAY_SIZE(data);
 
     for (int i = 0; i < data_size; i++) {
 
@@ -2832,13 +2801,7 @@ static void test_fuzz(int index, int debug) {
         struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        symbol->symbology = data[i].symbology;
-        symbol->debug |= debug;
-
-        int length = data[i].length;
-        if (length == -1) {
-            length = strlen(data[i].data);
-        }
+        int length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
         assert_zero(length >= 128, "i:%d length %d >= 128\n", i, length);
         strcpy(symbol->primary, data[i].data);
 

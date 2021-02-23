@@ -2525,7 +2525,7 @@ static void test_encode(int index, int generate, int debug) {
                     testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), data[i].length,
                     testUtilErrorName(data[i].ret), symbol->rows, symbol->width, data[i].bwipp_cmp, data[i].comment);
             if (ret < ZINT_ERROR) {
-                testUtilModulesDump(symbol, "                    ", "\n");
+                testUtilModulesPrint(symbol, "                    ", "\n");
             } else {
                 printf("                    \"\"\n");
             }

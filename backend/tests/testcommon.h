@@ -88,15 +88,16 @@ const char *testUtilInputModeName(int input_mode);
 const char *testUtilOption3Name(int option_3);
 const char *testUtilOutputOptionsName(int output_options);
 int testUtilDAFTConvert(const struct zint_symbol *symbol, char *buffer, int buffer_size);
-int testUtilIsValidUTF8(const unsigned char str[], const size_t length);
+int testUtilIsValidUTF8(const unsigned char str[], const int length);
 char *testUtilEscape(char *buffer, int length, char *escaped, int escaped_size);
 char *testUtilReadCSVField(char *buffer, char *field, int field_size);
 void testUtilStrCpyRepeat(char *buffer, char *repeat, int size);
 int testUtilSymbolCmp(const struct zint_symbol *a, const struct zint_symbol *b);
 struct zint_vector *testUtilVectorCpy(const struct zint_vector *in);
 int testUtilVectorCmp(const struct zint_vector *a, const struct zint_vector *b);
-void testUtilModulesDump(const struct zint_symbol *symbol, const char *prefix, const char *postfix); // TODO: should be called Print not Dump
-void testUtilModulesDumpRow(const struct zint_symbol *symbol, int row, const char *prefix, const char *postfix); // TODO: should be called Print not Dump
+int testUtilModulesDump(const struct zint_symbol *symbol, char dump[], int dump_size);
+void testUtilModulesPrint(const struct zint_symbol *symbol, const char *prefix, const char *postfix);
+void testUtilModulesPrintRow(const struct zint_symbol *symbol, int row, const char *prefix, const char *postfix);
 int testUtilModulesCmp(const struct zint_symbol *symbol, const char *expected, int *width, int *row);
 int testUtilModulesCmpRow(const struct zint_symbol *symbol, int row, const char *expected, int *width);
 int testUtilModulesDumpHex(const struct zint_symbol *symbol, char dump[], int dump_size);

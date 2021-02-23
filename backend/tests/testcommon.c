@@ -34,6 +34,7 @@
  */
 
 #include "testcommon.h"
+#include "../eci.h"
 #ifndef NO_PNG
 #include <png.h>
 #include <zlib.h>
@@ -594,8 +595,8 @@ int testUtilDAFTConvert(const struct zint_symbol *symbol, char *buffer, int buff
 }
 
 /* Is string valid UTF-8? */
-int testUtilIsValidUTF8(const unsigned char str[], const size_t length) {
-    size_t i;
+int testUtilIsValidUTF8(const unsigned char str[], const int length) {
+    int i;
     unsigned int codepoint, state = 0;
 
     for (i = 0; i < length; i++) {
@@ -918,14 +919,37 @@ int testUtilVectorCmp(const struct zint_vector *a, const struct zint_vector *b) 
     return 0;
 }
 
-void testUtilModulesDump(const struct zint_symbol *symbol, const char *prefix, const char *postfix) {
+int testUtilModulesDump(const struct zint_symbol *symbol, char dump[], int dump_size) {
+    int r, w;
+    char *d = dump;
+    char *de = dump + dump_size;
+
+    for (r = 0; r < symbol->rows && d < de; r++) {
+        if (symbol->symbology == BARCODE_ULTRA) {
+            for (w = 0; w < symbol->width && d < de; w++) {
+                *d++ = module_colour_is_set(symbol, r, w) + '0';
+            }
+        } else {
+            for (w = 0; w < symbol->width && d < de; w++) {
+                *d++ = module_is_set(symbol, r, w) + '0';
+            }
+        }
+    }
+    if (d == de) {
+        return -1;
+    }
+    *d = '\0';
+    return d - dump;
+}
+
+void testUtilModulesPrint(const struct zint_symbol *symbol, const char *prefix, const char *postfix) {
     int r;
     for (r = 0; r < symbol->rows; r++) {
-        testUtilModulesDumpRow(symbol, r, prefix, postfix);
+        testUtilModulesPrintRow(symbol, r, prefix, postfix);
     }
 }
 
-void testUtilModulesDumpRow(const struct zint_symbol *symbol, int row, const char *prefix, const char *postfix) {
+void testUtilModulesPrintRow(const struct zint_symbol *symbol, int row, const char *prefix, const char *postfix) {
     int w;
     if (*prefix) {
         fputs(prefix, stdout);
@@ -1756,7 +1780,7 @@ static const char *testUtilBwippName(int index, const struct zint_symbol *symbol
         { "", BARCODE_AUSREDIRECT, 68, 0, 0, 0, 0, 0, },
         { "isbn", BARCODE_ISBNX, 69, 0, 1, 0, 0, 1 /*gs1_cvt*/, },
         { "royalmail", BARCODE_RM4SCC, 70, 0, 0, 0, 0, 0, },
-        { "datamatrix", BARCODE_DATAMATRIX, 71, 0, 1, 1, 0, 0, },
+        { "datamatrix", BARCODE_DATAMATRIX, 71, 0, 1, 1, 1, 0, },
         { "ean14", BARCODE_EAN14, 72, 0, 0, 0, 0, 1 /*gs1_cvt*/, },
         { "code39", BARCODE_VIN, 73, 0, 0, 0, 0, 0, },
         { "codablockf", BARCODE_CODABLOCKF, 74, 1, 1, 0, 10 /*linear_row_height*/, 0, },
@@ -1883,12 +1907,6 @@ static const char *testUtilBwippName(int index, const struct zint_symbol *symbol
     }
     if (gs1) {
         if (symbology == BARCODE_DATAMATRIX) {
-            if (symbol->output_options & GS1_GS_SEPARATOR) { /* Not supported */
-                if (debug & ZINT_DEBUG_TEST_PRINT) {
-                    printf("i:%d %s not BWIPP compatible, GS1_GS_SEPARATOR not supported\n", index, testUtilBarcodeName(symbology));
-                }
-                return NULL;
-            }
             if (gs1_cvt) {
                 *gs1_cvt = 1;
             }
@@ -2031,6 +2049,8 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
     int primary_len = primary ? (int) strlen(primary) : 0;
     int max_data_len = 4 + primary_len + 1 + 1 + data_len * 4 + 32; /* 4 AI prefix + primary + '|' + leading zero + escaped data + fudge */
 
+    int eci_length = get_eci_length(symbol->eci, (const unsigned char *) data, data_len);
+    char converted[eci_length + 1];
     char cmd[max_data_len + 1024];
     const char *bwipp_barcode = NULL;
     char *bwipp_opts = NULL;
@@ -2052,6 +2072,7 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
     int upcean = is_extendable(symbology);
     int upca = symbology == BARCODE_UPCA || symbology == BARCODE_UPCA_CHK || symbology == BARCODE_UPCA_CC;
     int addon_posn;
+    int eci;
 
     bwipp_data[0] = bwipp_opts_buf[0] = '\0';
 
@@ -2071,6 +2092,26 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
         bwipp_row_height[symbol->rows - 1] = 33;
     } else if (symbology == BARCODE_GS1_128_CC) {
         bwipp_row_height[symbol->rows - 1] = 36;
+    }
+
+    if ((symbol->input_mode & 0x07) == UNICODE_MODE && ZBarcode_Cap(symbology, ZINT_CAP_ECI) && is_eci_convertible(symbol->eci)) {
+        if (utf8_to_eci(symbol->eci, (const unsigned char *) data, (unsigned char *) converted, &data_len) == 0) {
+            eci = symbol->eci;
+        } else {
+            if (symbol->eci != 0) {
+                eci = get_best_eci((const unsigned char *) data, data_len);
+                if (utf8_to_eci(eci, (const unsigned char *) data, (unsigned char *) converted, &data_len) != 0) {
+                    fprintf(stderr, "i:%d testUtilBwipp: failed to convert Unicode data for %s\n", index, testUtilBarcodeName(symbology));
+                    return -1;
+                }
+            } else {
+                fprintf(stderr, "i:%d testUtilBwipp: failed to convert Unicode data for %s\n", index, testUtilBarcodeName(symbology));
+                return -1;
+            }
+        }
+        data = converted;
+    } else {
+        eci = symbol->eci >= 3 && ZBarcode_Cap(symbology, ZINT_CAP_ECI) ? symbol->eci : 0;
     }
 
     if (is_composite(symbology)) {
@@ -2133,7 +2174,6 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                 }
             }
         } else {
-            int eci = symbol->eci >= 3 && ZBarcode_Cap(symbology, ZINT_CAP_ECI) ? symbol->eci : 0;
             if (testUtilBwippEscape(bwipp_data, sizeof(bwipp_data), data, data_len, symbol->input_mode & ESCAPE_MODE, eci, &parse, &parsefnc) == NULL) {
                 return -1;
             }
@@ -2329,16 +2369,29 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
         }
 
         if (symbology == BARCODE_DATAMATRIX || symbology == BARCODE_HIBC_DM) {
+            int added_dmre = 0;
             #include "../dmatrix.h"
             (void)matrixrsblock; (void)matrixdatablock; (void)matrixbytes; (void)matrixFW; (void)matrixFH;
             (void)isDMRE; (void)text_value; (void)text_shift; (void)c40_value; (void)c40_shift;
 
+            if (symbol->output_options & GS1_GS_SEPARATOR) {
+                sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%sgssep", strlen(bwipp_opts_buf) ? " " : "");
+                bwipp_opts = bwipp_opts_buf;
+            }
             if (option_2 >= 1 && option_2 <= (int) sizeof(intsymbol)) {
                 int idx = intsymbol[option_2 - 1];
                 sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%srows=%d columns=%d", strlen(bwipp_opts_buf) ? " " : "", matrixH[idx], matrixW[idx]);
                 bwipp_opts = bwipp_opts_buf;
+                if (option_2 >= 31) {
+                    sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%sdmre", strlen(bwipp_opts_buf) ? " " : "");
+                    added_dmre = 1;
+                }
             }
             if (option_3 != DM_SQUARE && symbol->width != symbol->height) {
+                if (option_3 == DM_DMRE && !added_dmre) {
+                    sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%sdmre", strlen(bwipp_opts_buf) ? " " : "");
+                    added_dmre = 1;
+                }
                 sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%sformat=rectangle", strlen(bwipp_opts_buf) ? " " : "");
                 bwipp_opts = bwipp_opts_buf;
             }
@@ -2365,7 +2418,7 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
         return -1;
     }
 
-    if (bwipp_opts) {
+    if (bwipp_opts && strlen(bwipp_opts)) {
         if (strlen(bwipp_data) >= 2043) { /* Ghostscript's `arg_str_max` 2048 less "-sd=" */
             sprintf(cmd, cmd_opts_fmt2, bwipp_barcode, bwipp_data, bwipp_data + 2043, bwipp_opts);
         } else {
