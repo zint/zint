@@ -65,7 +65,7 @@
 
 INTERNAL int eanx(struct zint_symbol *symbol, unsigned char source[], int length);
 INTERNAL int ean_128(struct zint_symbol *symbol, unsigned char source[], int length);
-INTERNAL void ean_leading_zeroes(struct zint_symbol *symbol, const unsigned char source[],
+INTERNAL int ean_leading_zeroes(struct zint_symbol *symbol, const unsigned char source[],
                 unsigned char local_source[], int *p_with_addon);
 INTERNAL int rss14(struct zint_symbol *symbol, unsigned char source[], int length);
 INTERNAL int rsslimited(struct zint_symbol *symbol, unsigned char source[], int length);
@@ -1322,7 +1322,10 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
                 int with_addon;
                 unsigned char padded_pri[21];
                 padded_pri[0] = '\0';
-                ean_leading_zeroes(symbol, (unsigned char *) symbol->primary, padded_pri, &with_addon);
+                if (!ean_leading_zeroes(symbol, (unsigned char *) symbol->primary, padded_pri, &with_addon)) {
+                    strcpy(symbol->errtxt, "448: Input wrong length in linear component");
+                    return ZINT_ERROR_TOO_LONG;
+                }
                 padded_pri_len = (int) ustrlen(padded_pri);
                 if (padded_pri_len <= 7) { /* EAN-8 */
                     cc_width = 3;

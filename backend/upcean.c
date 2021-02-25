@@ -120,7 +120,7 @@ static void upca_draw(const char source[], const int length, unsigned char dest[
 
 /* Make a UPC A barcode when we haven't been given the check digit */
 static int upca(struct zint_symbol *symbol, const unsigned char source[], int length, unsigned char dest[]) {
-    char gtin[15];
+    char gtin[13];
     int error_number = 0;
 
     ustrcpy(gtin, source);
@@ -370,7 +370,7 @@ static char ean_check(const char source[], const int length) {
 static int ean13(struct zint_symbol *symbol, const unsigned char source[], int length, unsigned char dest[]) {
     int i, half_way;
     char parity[6];
-    char gtin[15];
+    char gtin[14];
     int error_number = 0;
 
     parity[0] = '\0';
@@ -543,9 +543,9 @@ static int isbn(struct zint_symbol *symbol, unsigned char source[], const int sr
 }
 
 /* Add leading zeroes to EAN and UPC strings */
-INTERNAL void ean_leading_zeroes(struct zint_symbol *symbol, const unsigned char source[],
+INTERNAL int ean_leading_zeroes(struct zint_symbol *symbol, const unsigned char source[],
                 unsigned char local_source[], int *p_with_addon) {
-    unsigned char first_part[20], second_part[7], zfirst_part[20], zsecond_part[7];
+    unsigned char first_part[14], second_part[6], zfirst_part[14], zsecond_part[6];
     int with_addon = 0;
     int first_len = 0, second_len = 0, zfirst_len = 0, zsecond_len = 0, i, h;
 
@@ -561,6 +561,9 @@ INTERNAL void ean_leading_zeroes(struct zint_symbol *symbol, const unsigned char
             }
         }
     }
+    if (first_len > 13 || second_len > 5) {
+        return 0;
+    }
 
     /* Split input into two strings */
     for (i = 0; i < first_len; i++) {
@@ -568,9 +571,6 @@ INTERNAL void ean_leading_zeroes(struct zint_symbol *symbol, const unsigned char
     }
     first_part[first_len] = '\0';
 
-    if (second_len >= 6) { /* Allow 6 (actual max 5) so as to trigger too long error */
-        second_len = 6;
-    }
     for (i = 0; i < second_len; i++) {
         second_part[i] = source[i + first_len + 1];
     }
@@ -679,12 +679,13 @@ INTERNAL void ean_leading_zeroes(struct zint_symbol *symbol, const unsigned char
     if (p_with_addon) {
         *p_with_addon = with_addon;
     }
+
+    return 1; /* Success */
 }
 
-/* splits string to parts before and after '+' parts */
 INTERNAL int eanx(struct zint_symbol *symbol, unsigned char source[], int src_len) {
-    unsigned char first_part[20] = {0}, second_part[7] = {0}, dest[1000] = {0};
-    unsigned char local_source[21] = {0}; /* Allow 13 + "+" + 6 (too long add-on) + 1 */
+    unsigned char first_part[14] = {0}, second_part[6] = {0}, dest[1000] = {0};
+    unsigned char local_source[20] = {0}; /* Allow 13 + "+" + 5 + 1 */
     int latch, reader, writer;
     int with_addon;
     int error_number, i, plus_count;
@@ -725,8 +726,11 @@ INTERNAL int eanx(struct zint_symbol *symbol, unsigned char source[], int src_le
         return ZINT_ERROR_INVALID_DATA;
     }
 
-    /* Add leading zeroes */
-    ean_leading_zeroes(symbol, source, local_source, &with_addon);
+    /* Add leading zeroes, checking max lengths of parts */
+    if (!ean_leading_zeroes(symbol, source, local_source, &with_addon)) {
+        strcpy(symbol->errtxt, "294: Input too long");
+        return ZINT_ERROR_TOO_LONG;
+    }
 
     reader = 0;
     if (with_addon) {
