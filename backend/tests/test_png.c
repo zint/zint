@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020 - 2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -164,7 +164,11 @@ static void test_print(int index, int generate, int debug) {
         /* 29*/ { BARCODE_POSTNET, -1, -1, -1, -1, -1, -1, 0, 3.5, "", "", "12345", "", "../data/png/postnet_zip.png", "300 dpi, using 1/43in X, 300 / 43 / 2 = ~3.5 scale" },
         /* 30*/ { BARCODE_PDF417, -1, -1, -1, -1, -1, -1, 0, 0, "", "CFCECDCC", "12345", "", "../data/png/pdf417_bgalpha.png", "" },
         /* 31*/ { BARCODE_PDF417, -1, -1, -1, -1, -1, -1, 0, 0, "30313233", "", "12345", "", "../data/png/pdf417_fgalpha.png", "" },
-        /* 32*/ { BARCODE_ULTRA, -1, -1, 2, -1, -1, -1, 0, 0, "0000007F", "FF000033", "12345", "", "../data/png/ultra_alpha.png", "" },
+        /* 32*/ { BARCODE_PDF417, -1, -1, -1, -1, -1, -1, 0, 0, "20212244", "CFCECDCC", "12345", "", "../data/png/pdf417_bgfgalpha.png", "" },
+        /* 33*/ { BARCODE_ULTRA, -1, -1, 2, -1, -1, -1, 0, 0, "0000007F", "FF000033", "12345", "", "../data/png/ultra_bgfgalpha.png", "" },
+        /* 34*/ { BARCODE_ULTRA, -1, -1, 2, -1, -1, -1, 0, 0, "", "FF000033", "12345", "", "../data/png/ultra_bgalpha.png", "" },
+        /* 35*/ { BARCODE_ULTRA, -1, -1, 2, -1, -1, -1, 0, 0, "0000007F", "FF0000", "12345", "", "../data/png/ultra_fgalpha.png", "" },
+        /* 36*/ { BARCODE_ULTRA, -1, -1, -1, -1, -1, -1, 0, 0, "0000007F", "", "12345", "", "../data/png/ultra_fgalpha_nobg.png", "" },
     };
     int data_size = ARRAY_SIZE(data);
 
@@ -242,6 +246,8 @@ static void test_print(int index, int generate, int debug) {
 
             ret = testUtilCmpPngs(symbol->outfile, data[i].expected_file);
             assert_zero(ret, "i:%d %s testUtilCmpPngs(%s, %s) %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, data[i].expected_file, ret);
+            ret = testUtilCmpBins(symbol->outfile, data[i].expected_file);
+            assert_zero(ret, "i:%d %s testUtilCmpBins(%s, %s) %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, data[i].expected_file, ret);
             assert_zero(remove(symbol->outfile), "i:%d remove(%s) != 0\n", i, symbol->outfile);
         }
 

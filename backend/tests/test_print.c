@@ -166,6 +166,8 @@ static void test_print(int index, int generate, int debug) {
                 } else if (strcmp(exts[j], "png") == 0) {
                     ret = testUtilCmpPngs(symbol->outfile, expected_file);
                     assert_zero(ret, "i:%d %s testUtilCmpPngs(%s, %s) %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, expected_file, ret);
+                    ret = testUtilCmpBins(symbol->outfile, expected_file);
+                    assert_zero(ret, "i:%d %s testUtilCmpBins(%s, %s) %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, expected_file, ret);
                 } else if (strcmp(exts[j], "svg") == 0) {
                     ret = testUtilCmpSvgs(symbol->outfile, expected_file);
                     assert_zero(ret, "i:%d %s testUtilCmpSvgs(%s, %s) %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, expected_file, ret);
