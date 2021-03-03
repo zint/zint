@@ -2,7 +2,15 @@
 
 project(zint_frontend)
 
-set(zint_frontend_SRCS main.c )
+include(CheckFunctionExists)
+
+check_function_exists(getopt HAVE_GETOPT)
+
+set(zint_frontend_SRCS main.c)
+
+if(NOT HAVE_GETOPT)
+    set(zint_frontend_SRCS ${zint_frontend_SRCS} getopt.c getopt1.c)
+endif(NOT HAVE_GETOPT)
 
 include_directories(BEFORE "${CMAKE_SOURCE_DIR}/backend")
 
