@@ -106,6 +106,7 @@ INTERNAL int png_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     int num_trans = 0;
     int bit_depth;
     int compression_strategy;
+    unsigned char *pb;
 
 #ifndef _MSC_VER
     unsigned char outdata[symbol->bitmap_width];
@@ -278,9 +279,9 @@ INTERNAL int png_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     png_write_info(png_ptr, info_ptr);
 
     /* Pixel Plotting */
+    pb = pixelbuf;
     if (bit_depth == 1) {
         for (row = 0; row < symbol->bitmap_height; row++) {
-            unsigned char *pb = pixelbuf + symbol->bitmap_width * row;
             unsigned char *image_data = outdata;
             for (column = 0; column < symbol->bitmap_width; column += 8, image_data++) {
                 unsigned char byte = 0;
@@ -294,12 +295,11 @@ INTERNAL int png_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
         }
     } else if (bit_depth == 4) {
         for (row = 0; row < symbol->bitmap_height; row++) {
-            unsigned char *pb = pixelbuf + symbol->bitmap_width * row;
             unsigned char *image_data = outdata;
             for (column = 0; column < symbol->bitmap_width; column += 2, image_data++) {
-                unsigned char byte = 0;
-                for (i = 0; i < 2 && column + i < symbol->bitmap_width; i++, pb++) {
-                    byte |= map[*pb] << (i * 4);
+                unsigned char byte = map[*pb++] << 4;
+                if (column + 1 < symbol->bitmap_width) {
+                    byte |= map[*pb++];
                 }
                 *image_data = byte;
             }
@@ -308,7 +308,6 @@ INTERNAL int png_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
         }
     } else { /* Bit depth 8 */
         for (row = 0; row < symbol->bitmap_height; row++) {
-            unsigned char *pb = pixelbuf + symbol->bitmap_width * row;
             unsigned char *image_data = outdata;
             for (column = 0; column < symbol->bitmap_width; column++, pb++, image_data++) {
                 *image_data = map[*pb];

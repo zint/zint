@@ -169,6 +169,7 @@ static void test_print(int index, int generate, int debug) {
         /* 34*/ { BARCODE_ULTRA, -1, -1, 2, -1, -1, -1, 0, 0, "", "FF000033", "12345", "", "../data/png/ultra_bgalpha.png", "" },
         /* 35*/ { BARCODE_ULTRA, -1, -1, 2, -1, -1, -1, 0, 0, "0000007F", "FF0000", "12345", "", "../data/png/ultra_fgalpha.png", "" },
         /* 36*/ { BARCODE_ULTRA, -1, -1, -1, -1, -1, -1, 0, 0, "0000007F", "", "12345", "", "../data/png/ultra_fgalpha_nobg.png", "" },
+        /* 37*/ { BARCODE_ULTRA, -1, -1, -1, -1, -1, -1, 0, 0.5f, "", "", "1", "", "../data/png/ultra_odd.png", "" },
     };
     int data_size = ARRAY_SIZE(data);
 
