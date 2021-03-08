@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020 - 2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -90,6 +90,9 @@ static void test_print(int index, int generate, int debug) {
     }
 
     for (int j = 0; j < exts_len; j++) {
+#ifdef NO_PNG
+        if (strcmp(exts[j], "png") == 0) continue;
+#endif
         strcpy(data_dir, "../data/print/");
         strcat(data_dir, exts[j]);
 

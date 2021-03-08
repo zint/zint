@@ -40,6 +40,7 @@
 #include <zlib.h>
 #include <setjmp.h>
 #endif
+#include <limits.h>
 #include <unistd.h>
 #include <errno.h>
 

@@ -1,4 +1,4 @@
-# Copyright (C) 2019 - 2020 Robin Stuart <rstuart114@gmail.com>
+# Copyright (C) 2019 - 2021 Robin Stuart <rstuart114@gmail.com>
 # Adapted from qrencode/tests/CMakeLists.txt
 # Copyright (C) 2006-2017 Kentaro Fukuchi <kentaro@fukuchi.org>
 # vim: set ts=4 sw=4 et :
@@ -17,9 +17,7 @@ set(ZINT_TEST FALSE CACHE BOOL "Set test compile flag")
 find_package(LibZint REQUIRED)
 find_package(PNG)
 
-if(PNG_FOUND)
-    include_directories(${PNG_INCLUDES})
-else()
+if(NOT PNG_FOUND)
     add_definitions(-DNO_PNG)
 endif()
 
@@ -65,7 +63,7 @@ endif()
 
 add_library(testcommon testcommon.c testcommon.h)
 if(PNG_FOUND)
-    target_link_libraries(testcommon ZINT::ZINT ${PNG_LIBRARIES})
+    target_link_libraries(testcommon ZINT::ZINT PNG::PNG)
 else()
     target_link_libraries(testcommon ZINT::ZINT)
 endif()
@@ -113,7 +111,9 @@ zint_add_test(medical, test_medical)
 zint_add_test(pcx, test_pcx)
 zint_add_test(pdf417, test_pdf417)
 zint_add_test(plessey, test_plessey)
+if(PNG_FOUND)
 zint_add_test(png, test_png)
+endif()
 zint_add_test(postal, test_postal)
 zint_add_test(print, test_print)
 zint_add_test(ps, test_ps)
