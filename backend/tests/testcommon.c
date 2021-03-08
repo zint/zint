@@ -1208,7 +1208,9 @@ int testUtilExists(char *filename) {
 
 int testUtilCmpPngs(char *png1, char *png2) {
     int ret = -1;
-#ifndef NO_PNG
+#ifdef NO_PNG
+    (void)png1; (void)png2;
+#else
     FILE *fp1;
     FILE *fp2;
     png_structp png_ptr1, png_ptr2;
