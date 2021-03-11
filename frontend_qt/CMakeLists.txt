@@ -28,9 +28,9 @@ add_dependencies(zint-qt zint)
 link_directories( "${CMAKE_BINARY_DIR}/backend" )
 
 if(USE_QT6)
-    target_link_libraries(zint-qt zint Qt6::UiTools ${QT_QTXML_LIBRARY} Qt6::Gui Qt6::Core)
+    target_link_libraries(zint-qt zint Qt6::UiTools Qt6::Xml Qt6::Gui Qt6::Core)
 else()
-    target_link_libraries(zint-qt zint Qt5::UiTools ${QT_QTXML_LIBRARY} Qt5::Gui Qt5::Core)
+    target_link_libraries(zint-qt zint Qt5::UiTools Qt5::Xml Qt5::Gui Qt5::Core)
 endif()
 
 install(TARGETS zint-qt DESTINATION "${BIN_INSTALL_DIR}" RUNTIME)

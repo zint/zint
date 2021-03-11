@@ -9,22 +9,22 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 #set(CMAKE_VERBOSE_MAKEFILE ON)
 #comment or remove the above line before release
 
-set (ZINT_VERSION_MAJOR 2)
-set (ZINT_VERSION_MINOR 9)
-set (ZINT_VERSION_RELEASE 1)
-set (ZINT_VERSION_BUILD 9) # Set to 0 before release, set to 9 after release
-set (ZINT_VERSION "${ZINT_VERSION_MAJOR}.${ZINT_VERSION_MINOR}.${ZINT_VERSION_RELEASE}.${ZINT_VERSION_BUILD}" )
+set(ZINT_VERSION_MAJOR 2)
+set(ZINT_VERSION_MINOR 9)
+set(ZINT_VERSION_RELEASE 1)
+set(ZINT_VERSION_BUILD 9) # Set to 0 before release, set to 9 after release
+set(ZINT_VERSION "${ZINT_VERSION_MAJOR}.${ZINT_VERSION_MINOR}.${ZINT_VERSION_RELEASE}.${ZINT_VERSION_BUILD}")
 
 add_definitions(-DZINT_VERSION=\"${ZINT_VERSION}\")
 
-set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules" )
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 
 set(ZINT_DEBUG FALSE CACHE BOOL "Set debug compile flag")
 set(ZINT_SANITIZE FALSE CACHE BOOL "Set sanitize compile/link flags")
 set(ZINT_TEST FALSE CACHE BOOL "Set test compile flag")
 set(ZINT_STATIC FALSE CACHE BOOL "Build static library")
 
-include (SetPaths.cmake)
+include(SetPaths.cmake)
 
 include(CheckCXXCompilerFlag)
 
@@ -108,18 +108,9 @@ if($ENV{CMAKE_PREFIX_PATH} MATCHES "6[.][0-9][.][0-9]")
     find_package(Qt6Widgets)
     find_package(Qt6Gui)
     find_package(Qt6UiTools)
+    find_package(Qt6Xml)
 
-    if(Qt6Widgets_FOUND AND Qt6Gui_FOUND AND Qt6UiTools_FOUND)
-        set(QT_USE_QTGUI TRUE)
-        set(QT_USE_QTUITOOLS TRUE)
-        set(QT_USE_QTXML TRUE)
-        include_directories(
-            ${CMAKE_CURRENT_SOURCE_DIR}
-            ${Qt6Widgets_INCLUDES}
-            ${Qt6Gui_INCLUDES}
-            ${Qt6UiTools_INCLUDES}
-            ${CMAKE_CURRENT_BINARY_DIR}
-            )
+    if(Qt6Widgets_FOUND AND Qt6Gui_FOUND AND Qt6UiTools_FOUND AND Qt6Xml_FOUND)
         add_subdirectory(frontend_qt)
     else()
         message(STATUS "Could NOT find Qt6")
@@ -129,18 +120,9 @@ else()
     find_package(Qt5Widgets)
     find_package(Qt5Gui)
     find_package(Qt5UiTools)
+    find_package(Qt5Xml)
 
-    if(Qt5Widgets_FOUND AND Qt5Gui_FOUND AND Qt5UiTools_FOUND)
-        set(QT_USE_QTGUI TRUE)
-        set(QT_USE_QTUITOOLS TRUE)
-        set(QT_USE_QTXML TRUE)
-        include_directories(
-            ${CMAKE_CURRENT_SOURCE_DIR}
-            ${Qt5Widgets_INCLUDES}
-            ${Qt5Gui_INCLUDES}
-            ${Qt5UiTools_INCLUDES}
-            ${CMAKE_CURRENT_BINARY_DIR}
-            )
+    if(Qt5Widgets_FOUND AND Qt5Gui_FOUND AND Qt5UiTools_FOUND AND Qt5Xml_FOUND)
         add_subdirectory(frontend_qt)
     else()
         message(STATUS "Could NOT find Qt5")
@@ -156,16 +138,17 @@ add_custom_target(uninstall
   "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake")
 
 # staniek: don't install 
-if (DATA_INSTALL_DIR)
+if(DATA_INSTALL_DIR)
     set(CMAKE_MODULES_INSTALL_PATH ${DATA_INSTALL_DIR}/cmake/modules)
-else (DATA_INSTALL_DIR)
+else()
     set(CMAKE_MODULES_INSTALL_PATH ${CMAKE_ROOT}/Modules)
-endif(DATA_INSTALL_DIR)
+endif()
 
 install(FILES cmake/modules/FindZint.cmake DESTINATION ${CMAKE_MODULES_INSTALL_PATH} COMPONENT Devel)
 
 # This needs to be run very last so other parts of the scripts can take
 # advantage of this.
-IF(NOT ZINT_HAS_BEEN_RUN_BEFORE)
-    SET(ZINT_HAS_BEEN_RUN_BEFORE 1 CACHE INTERNAL "Flag to track whether this is the first time running CMake or if CMake has been configured before")
-ENDIF(NOT ZINT_HAS_BEEN_RUN_BEFORE)
+if(NOT ZINT_HAS_BEEN_RUN_BEFORE)
+    set(ZINT_HAS_BEEN_RUN_BEFORE 1 CACHE INTERNAL
+        "Flag to track whether this is the first time running CMake or if CMake has been configured before")
+endif()
