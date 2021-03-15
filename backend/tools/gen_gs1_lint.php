@@ -44,12 +44,12 @@ foreach ($lines as $line) {
     if ($line === '' || $line[0] === '#') {
         continue;
     }
-    if (!preg_match('/^([0-9]+(?:-[0-9]+)?) +([ *] )([NXC][0-9.][ NXC0-9.,a-z]*)(?:# (.+))?$/', $line, $matches)) {
+    if (!preg_match('/^([0-9]+(?:-[0-9]+)?) +([ *] )([NXC][0-9.][ NXC0-9.,a-z=|]*)(?:# (.+))?$/', $line, $matches)) {
         exit("$basename:" . __LINE__ . " ERROR: Could not parse line $line_no" . PHP_EOL);
     }
     $ai = $matches[1];
     $fixed = trim($matches[2]);
-    $spec = trim($matches[3]);
+    $spec = preg_replace('/ +dlpkey[=0-9,|]*/', '', trim($matches[3])); // Strip Digital Link primary key info
     $comment = isset($matches[4]) ? trim($matches[4]) : '';
 
     if (isset($spec_ais[$spec])) {
