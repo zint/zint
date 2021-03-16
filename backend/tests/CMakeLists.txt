@@ -10,9 +10,9 @@ enable_testing()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
-set(ZINT_DEBUG FALSE CACHE BOOL "Set debug compile flag")
-set(ZINT_SANITIZE FALSE CACHE BOOL "Set sanitize compile/link flags")
-set(ZINT_TEST FALSE CACHE BOOL "Set test compile flag")
+option(ZINT_DEBUG    "Set debug compile flag"          OFF)
+option(ZINT_SANITIZE "Set sanitize compile/link flags" OFF)
+option(ZINT_TEST     "Set test compile flag"           OFF)
 
 find_package(LibZint REQUIRED)
 find_package(PNG)

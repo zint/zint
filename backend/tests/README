@@ -6,7 +6,7 @@ To make, first make libzint with ZINT_TEST defined:
   cd <project-dir>
   mkdir build
   cd build
-  cmake -DZINT_TEST:BOOL=1 ..
+  cmake -DZINT_TEST=ON ..
   make
 
 Then make the tests:
@@ -15,7 +15,7 @@ Then make the tests:
   cd backend/tests
   mkdir build
   cd build
-  cmake -DZINT_TEST:BOOL=1 ..
+  cmake -DZINT_TEST=ON ..
   make
 
 (ZINT_TEST is needed to export INTERNAL functions for use and testing.)
@@ -62,35 +62,35 @@ To make with gcc sanitize, first set for libzint and make:
 
   cd <project-dir>
   cd build
-  cmake -DZINT_SANITIZE:BOOL=1 ..
+  cmake -DZINT_SANITIZE=ON ..
   make && sudo make install
 
 Then set for tests and make:
 
   cd <project-dir>
   cd backend/tests/build
-  cmake -DZINT_SANITIZE:BOOL=1 ..
+  cmake -DZINT_SANITIZE=ON ..
   make
 
 Similarly to make with gcc debug:
 
   cd <project-dir>
   cd build
-  cmake -DZINT_DEBUG:BOOL=1 ..
+  cmake -DZINT_DEBUG=ON ..
   make && sudo make install
 
   cd <project-dir>
   cd backend/tests/build
-  cmake -DZINT_DEBUG:BOOL=1 ..
+  cmake -DZINT_DEBUG=ON ..
   make
 
 To undo sanitize/debug, remake each after setting:
 
-  cmake -DZINT_SANITIZE:BOOL=0 ..
-  cmake -DZINT_DEBUG:BOOL=0 ..
+  cmake -DZINT_SANITIZE=OFF ..
+  cmake -DZINT_DEBUG=OFF ..
 
 To get a clean libzint, set the above and also:
 
-  cmake -DZINT_TEST:BOOL=0 ..
+  cmake -DZINT_TEST=OFF ..
 
 (The tests will now fail to link.)

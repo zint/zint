@@ -19,10 +19,10 @@ add_definitions(-DZINT_VERSION=\"${ZINT_VERSION}\")
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 
-set(ZINT_DEBUG FALSE CACHE BOOL "Set debug compile flag")
-set(ZINT_SANITIZE FALSE CACHE BOOL "Set sanitize compile/link flags")
-set(ZINT_TEST FALSE CACHE BOOL "Set test compile flag")
-set(ZINT_STATIC FALSE CACHE BOOL "Build static library")
+option(ZINT_DEBUG    "Set debug compile flag"          OFF)
+option(ZINT_SANITIZE "Set sanitize compile/link flags" OFF)
+option(ZINT_TEST     "Set test compile flag"           OFF)
+option(ZINT_STATIC   "Build static library"            OFF)
 
 include(SetPaths.cmake)
 

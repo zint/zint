@@ -138,7 +138,7 @@ INTERNAL int png_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
         bg_alpha = 0xff;
     }
 
-    num_palette = num_trans = 0;
+    num_trans = 0;
     if (symbol->symbology == BARCODE_ULTRA) {
         static const int ultra_chars[8] = { 'W', 'C', 'B', 'M', 'R', 'Y', 'G', 'K' };
         static png_color ultra_colours[8] = {
