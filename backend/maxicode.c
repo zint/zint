@@ -432,14 +432,14 @@ static int maxi_text_process(unsigned char maxi_codeword[144], const int mode, c
         } else if (eci <= 1023) {
             maxi_bump(set, character, 1);
             maxi_bump(set, character, 1);
-            character[1] = 0x20 + ((eci >> 6) & 0x0F);
+            character[1] = 0x20 | ((eci >> 6) & 0x0F);
             character[2] = eci & 0x3F;
             length += 3;
         } else if (eci <= 32767) {
             maxi_bump(set, character, 1);
             maxi_bump(set, character, 1);
             maxi_bump(set, character, 1);
-            character[1] = 0x30 + ((eci >> 12) & 0x03);
+            character[1] = 0x30 | ((eci >> 12) & 0x07);
             character[2] = (eci >> 6) & 0x3F;
             character[3] = eci & 0x3F;
             length += 4;
@@ -448,7 +448,7 @@ static int maxi_text_process(unsigned char maxi_codeword[144], const int mode, c
             maxi_bump(set, character, 1);
             maxi_bump(set, character, 1);
             maxi_bump(set, character, 1);
-            character[1] = 0x38 + ((eci >> 18) & 0x02);
+            character[1] = 0x38 | ((eci >> 18) & 0x03);
             character[2] = (eci >> 12) & 0x3F;
             character[3] = (eci >> 6) & 0x3F;
             character[4] = eci & 0x3F;
