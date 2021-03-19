@@ -66,8 +66,8 @@ will be converted to spaces</string>
 &lt;tr&gt;&lt;td&gt;Form Feed (0x0C)&lt;/td&gt;&lt;td&gt;&amp;nbsp;\f&lt;/td&gt;&lt;/tr&gt;
 &lt;tr&gt;&lt;td&gt;Carriage Return (0x0D)&lt;/td&gt;&lt;td&gt;&amp;nbsp;\r&lt;/td&gt;&lt;/tr&gt;
 &lt;tr&gt;&lt;td&gt;Escape (0x1B)&lt;/td&gt;&lt;td&gt;&amp;nbsp;\e&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Group Selector (0x1D)&lt;/td&gt;&lt;td&gt;&amp;nbsp;\G&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;Record Selector (0x1E)&lt;/td&gt;&lt;td&gt;&amp;nbsp;\R&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;Group Separator (0x1D)&lt;/td&gt;&lt;td&gt;&amp;nbsp;\G&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;Record Separator (0x1E)&lt;/td&gt;&lt;td&gt;&amp;nbsp;\R&lt;/td&gt;&lt;/tr&gt;
 &lt;tr&gt;&lt;td&gt;Backslash (0x5C)&lt;/td&gt;&lt;td&gt;&amp;nbsp;\\&lt;/td&gt;&lt;/tr&gt;
 &lt;/table&gt;
 Note that newlines (Line Feeds (0x0A)) are &lt;br/&gt;not included</string>

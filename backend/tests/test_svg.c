@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020 - 2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -77,18 +77,19 @@ static void test_print(int index, int generate, int debug) {
         /* 17*/ { BARCODE_UPCA_CC, -1, 3, BARCODE_BIND, -1, 2, -1, "12345678901+12121", "[91]1234567890123", "../data/svg/upca_cc_5addon_ccb_4x4_bind3.svg" },
         /* 18*/ { BARCODE_UPCE, -1, -1, -1, -1, -1, -1, "1234567+12", "", "../data/svg/upce_2addon.svg" },
         /* 19*/ { BARCODE_UPCE, -1, -1, -1, -1, -1, -1, "1234567+12345", "", "../data/svg/upce_5addon.svg" },
-        /* 20*/ { BARCODE_UPCE, -1, -1, -1, 0, -1, -1, "1234567+12345", "", "../data/svg/upce_5addon_notext.svg" },
-        /* 21*/ { BARCODE_UPCE_CC, -1, -1, -1, -1, 1, -1, "0654321+89", "[91]1", "../data/svg/upce_cc_2addon_cca_5x2.svg" },
-        /* 22*/ { BARCODE_UPCE_CC, -1, -1, -1, -1, 2, -1, "1876543+56789", "[91]12345", "../data/svg/upce_cc_5addon_ccb_8x2.svg" },
-        /* 23*/ { BARCODE_UPCE_CC, -1, -1, -1, 0, 2, -1, "1876543+56789", "[91]12345", "../data/svg/upce_cc_5addon_ccb_8x2_notext.svg" },
-        /* 24*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, "1234567+12", "", "../data/svg/ean8_2addon.svg" },
-        /* 25*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, "1234567+12345", "", "../data/svg/ean8_5addon.svg" },
-        /* 26*/ { BARCODE_EANX_CC, -1, -1, -1, -1, 1, -1, "9876543+65", "[91]1234567", "../data/svg/ean8_cc_2addon_cca_4x3.svg" },
-        /* 27*/ { BARCODE_EANX_CC, -1, -1, -1, -1, 2, -1, "9876543+74083", "[91]123456789012345678", "../data/svg/ean8_cc_5addon_ccb_8x3.svg" },
-        /* 28*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, "12345", "", "../data/svg/ean5.svg" },
-        /* 29*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, "12", "", "../data/svg/ean2.svg" },
-        /* 30*/ { BARCODE_CODE39, -1, -1, SMALL_TEXT, -1, -1, -1, "123", "", "../data/svg/code39_small.svg" },
-        /* 31*/ { BARCODE_POSTNET, -1, -1, -1, -1, -1, -1, "12345", "", "../data/svg/postnet_zip.svg" },
+        /* 20*/ { BARCODE_UPCE, -1, -1, SMALL_TEXT, -1, -1, -1, "1234567+12345", "", "../data/svg/upce_5addon_small.svg" },
+        /* 21*/ { BARCODE_UPCE, -1, -1, -1, 0, -1, -1, "1234567+12345", "", "../data/svg/upce_5addon_notext.svg" },
+        /* 22*/ { BARCODE_UPCE_CC, -1, -1, -1, -1, 1, -1, "0654321+89", "[91]1", "../data/svg/upce_cc_2addon_cca_5x2.svg" },
+        /* 23*/ { BARCODE_UPCE_CC, -1, -1, -1, -1, 2, -1, "1876543+56789", "[91]12345", "../data/svg/upce_cc_5addon_ccb_8x2.svg" },
+        /* 24*/ { BARCODE_UPCE_CC, -1, -1, -1, 0, 2, -1, "1876543+56789", "[91]12345", "../data/svg/upce_cc_5addon_ccb_8x2_notext.svg" },
+        /* 25*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, "1234567+12", "", "../data/svg/ean8_2addon.svg" },
+        /* 26*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, "1234567+12345", "", "../data/svg/ean8_5addon.svg" },
+        /* 27*/ { BARCODE_EANX_CC, -1, -1, -1, -1, 1, -1, "9876543+65", "[91]1234567", "../data/svg/ean8_cc_2addon_cca_4x3.svg" },
+        /* 28*/ { BARCODE_EANX_CC, -1, -1, -1, -1, 2, -1, "9876543+74083", "[91]123456789012345678", "../data/svg/ean8_cc_5addon_ccb_8x3.svg" },
+        /* 29*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, "12345", "", "../data/svg/ean5.svg" },
+        /* 30*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, "12", "", "../data/svg/ean2.svg" },
+        /* 31*/ { BARCODE_CODE39, -1, -1, SMALL_TEXT, -1, -1, -1, "123", "", "../data/svg/code39_small.svg" },
+        /* 32*/ { BARCODE_POSTNET, -1, -1, -1, -1, -1, -1, "12345", "", "../data/svg/postnet_zip.svg" },
     };
     int data_size = ARRAY_SIZE(data);
 

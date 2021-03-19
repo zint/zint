@@ -802,7 +802,7 @@ static int plot_raster_default(struct zint_symbol *symbol, int rotate_angle, int
 
     /* Note font sizes halved as in pixels */
     if (upceanflag) {
-        textflags = UPCEAN_TEXT; /* Small and bold not available for UPC/EAN */
+        textflags = UPCEAN_TEXT | (symbol->output_options & SMALL_TEXT); /* Bold not available for UPC/EAN */
         text_height = (UPCEAN_FONT_HEIGHT + 1) / 2;
         text_gap = 1;
     } else {

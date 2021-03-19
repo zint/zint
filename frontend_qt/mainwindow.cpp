@@ -609,7 +609,6 @@ void MainWindow::change_options()
     cmbECI->setItemText(25, tr("29: GB 2312 (PRC)"));
     btype->setItemText(0, tr("No border"));
     combobox_item_enabled(cmbFontSetting, 1, true);
-    cmbFontSetting->setItemText(2, tr("Small"));
 
     if (symbology == BARCODE_CODE128)
     {
@@ -974,7 +973,6 @@ void MainWindow::change_options()
         if (cmbFontSetting->currentIndex() == 1) {
             cmbFontSetting->setCurrentIndex(0);
         }
-        cmbFontSetting->setItemText(2, tr("Small (vector only)"));
         connect(m_optionWidget->findChild<QObject*>("cmbUPCAAddonGap"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
     }
 
@@ -998,7 +996,6 @@ void MainWindow::change_options()
         if (cmbFontSetting->currentIndex() == 1) {
             cmbFontSetting->setCurrentIndex(0);
         }
-        cmbFontSetting->setItemText(2, tr("Small (vector only)"));
         connect(m_optionWidget->findChild<QObject*>("cmbUPCEANAddonGap"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
     }
 

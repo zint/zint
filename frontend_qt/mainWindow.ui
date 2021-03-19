@@ -556,8 +556,8 @@ p, li { white-space: pre-wrap; }
 &lt;tr&gt;&lt;td&gt;\f&amp;nbsp;&lt;/td&gt;&lt;td&gt;Form Feed (0x0C)&lt;/td&gt;&lt;/tr&gt;
 &lt;tr&gt;&lt;td&gt;\r&amp;nbsp;&lt;/td&gt;&lt;td&gt;Carriage Return (0x0D)&lt;/td&gt;&lt;/tr&gt;
 &lt;tr&gt;&lt;td&gt;\e&amp;nbsp;&lt;/td&gt;&lt;td&gt;Escape (0x1B)&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;\G&amp;nbsp;&lt;/td&gt;&lt;td&gt;Group Selector (0x1D)&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;\R&amp;nbsp;&lt;/td&gt;&lt;td&gt;Record Selector (0x1E)&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;\G&amp;nbsp;&lt;/td&gt;&lt;td&gt;Group Separator (0x1D)&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;\R&amp;nbsp;&lt;/td&gt;&lt;td&gt;Record Separator (0x1E)&lt;/td&gt;&lt;/tr&gt;
 &lt;tr&gt;&lt;td&gt;\\&amp;nbsp;&lt;/td&gt;&lt;td&gt;Backslash (0x5C)&lt;/td&gt;&lt;/tr&gt;
 &lt;tr&gt;&lt;td&gt;\xNN&amp;nbsp;&lt;/td&gt;&lt;td&gt;8-bit character (N hex)&lt;/td&gt;&lt;/tr&gt;
 &lt;tr&gt;&lt;td&gt;\uNNNN&amp;nbsp;&lt;/td&gt;&lt;td&gt;16-bit Unicode (N hex)&lt;/td&gt;&lt;/tr&gt;
