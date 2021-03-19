@@ -936,10 +936,10 @@ p, li { white-space: pre-wrap; }
              <item row="3" column="3">
               <widget class="QCheckBox" name="chkCMYK">
                <property name="toolTip">
-                <string>Use CMYK colour space in EPS output</string>
+                <string>Use CMYK colour space in EPS/TIF output</string>
                </property>
                <property name="text">
-                <string>CMY&amp;K (EPS)</string>
+                <string>CMY&amp;K (EPS/TIF)</string>
                </property>
                <property name="checked">
                 <bool>false</bool>

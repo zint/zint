@@ -618,6 +618,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\backend\tif_lzw.h"
+				>
+			</File>
+			<File
 				RelativePath="..\backend\zint.h"
 				>
 			</File>

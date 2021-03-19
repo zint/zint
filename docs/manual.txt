@@ -1037,6 +1037,9 @@ ZINT_ERROR_FILE_ACCESS       |  Zint was unable to open the requested output
                              |     problem.
 ZINT_ERROR_MEMORY            |  Zint ran out of memory. This should only be a
                              |     problem with legacy systems.
+ZINT_ERROR_FILE_WRITE        |  Zint failed to write all contents to the
+                             |     requested output file. This should only occur
+                             |     if the output disk becomes full.
 --------------------------------------------------------------------------------
 
 To catch errors use an integer variable as shown in the code below:

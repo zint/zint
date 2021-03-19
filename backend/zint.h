@@ -275,6 +275,7 @@ extern "C" {
 #define ZINT_ERROR_ENCODING_PROBLEM     9
 #define ZINT_ERROR_FILE_ACCESS          10
 #define ZINT_ERROR_MEMORY               11
+#define ZINT_ERROR_FILE_WRITE           12
 
 // File types
 #define OUT_BUFFER              0
