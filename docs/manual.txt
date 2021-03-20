@@ -560,7 +560,7 @@ ECI Code  |  Character Encoding Scheme
 27        |  ISO/IEC 646:1991 7-bit character set (ASCII)
 28        |  Big5 (Taiwan) Chinese Character Set
 29 *      |  GB (PRC) Chinese Character Set
-30        |  Korean Character Set (KS X 1001:2002)
+30        |  Korean Character Set EUC-KR (KS X 1001:2002)
 899       |  8-bit binary data
 ------------------------------------------------------------
 

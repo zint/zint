@@ -109,8 +109,9 @@ static int gb2312_wctomb(unsigned char *r, const unsigned int wc) {
     return 0;
 }
 
-/* ECI 30 KS X 1001 (KS C 5601) Korean */
-static int ksx1001_wctomb(unsigned char *r, const unsigned int wc) {
+/* ECI 30 EUC-KR (KS X 1001, formerly KS C 5601) Korean
+ * See euc_kr_wctomb() in libiconv-1.16/lib/euc_kr.h */
+static int euc_kr_wctomb(unsigned char *r, const unsigned int wc) {
     unsigned int c;
 
     if (wc < 0x80) {
@@ -118,8 +119,8 @@ static int ksx1001_wctomb(unsigned char *r, const unsigned int wc) {
         return 1;
     }
     if (ksx1001_wctomb_zint(&c, wc)) {
-        r[0] = (unsigned char) (c >> 8);
-        r[1] = (unsigned char) (c & 0xff);
+        r[0] = (unsigned char) ((c >> 8) + 0x80);
+        r[1] = (unsigned char) ((c & 0xff) + 0x80);
         return 2;
     }
     return 0;
@@ -170,7 +171,7 @@ INTERNAL int get_eci_length(const int eci, const unsigned char source[], int len
         length *= 2;
     }
 
-    /* Big5 and KS X 1001 fit in UTF-8 length */
+    /* Big5 and EUC-KR fit in UTF-8 length */
 
     return length;
 }
@@ -186,7 +187,7 @@ INTERNAL int utf8_to_eci(const int eci, const unsigned char source[], unsigned c
         iso8859_13_wctosb, iso8859_14_wctosb, iso8859_15_wctosb, iso8859_16_wctosb,              NULL,
               sjis_wctomb,     cp1250_wctosb,     cp1251_wctosb,     cp1252_wctosb,     cp1256_wctosb,
             ucs2be_wctomb,              NULL,      ascii_wctosb,       big5_wctomb,     gb2312_wctomb,
-           ksx1001_wctomb,
+            euc_kr_wctomb,
     };
     eci_func_t eci_func;
     unsigned int codepoint, state;

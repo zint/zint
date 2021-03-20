@@ -225,10 +225,10 @@ static void test_sjis_utf8_to_eci(int index) {
         /* 30*/ { 29, 0, "崂", -1, 0, 2, { 0xE1, 0xC0 }, "GB 2312 U+5D02" },
         /* 31*/ { 29, 0, "釦", -1, ZINT_ERROR_INVALID_DATA, -1, {}, "GB 18030 U+91E6 not in GB 2312" },
         /* 32*/ { 29, 1, "崂", -1, 0, 1, { 0xE1C0 }, "GB 2312 in QR Kanji mode range" },
-        /* 33*/ { 30, 0, "¡¡", -1, 0, 4, { 0x22, 0x2E, 0x22, 0x2E }, "KS X 1001 U+00A1" },
-        /* 34*/ { 30, 1, "¡¡", -1, 0, 4, { 0x22, 0x2E, 0x22, 0x2E }, "KS X 1001 outside QR Kanji mode range" },
-        /* 35*/ { 30, 0, "詰", -1, 0, 2, { 0x7D, 0x7E }, "KS X 1001 U+8A70" },
-        /* 36*/ { 30, 1, "詰", -1, 0, 2, { 0x7D, 0x7E }, "KS X 1001 <= 0x7D7E so none in QR Kanji mode range" },
+        /* 33*/ { 30, 0, "¡¡", -1, 0, 4, { 0x22 + 0x80, 0x2E + 0x80, 0x22 + 0x80, 0x2E + 0x80 }, "EUC-KR U+00A1 (0xA2AE)" },
+        /* 34*/ { 30, 1, "¡¡", -1, 0, 4, { 0x22 + 0x80, 0x2E + 0x80, 0x22 + 0x80, 0x2E + 0x80 }, "EUC-KR 0xA2AE outside QR Kanji mode range" },
+        /* 35*/ { 30, 0, "詰", -1, 0, 2, { 0x7D + 0x80, 0x7E + 0x80 }, "EUC-KR U+8A70 (0xFDFE)" },
+        /* 36*/ { 30, 1, "詰", -1, 0, 2, { 0x7D + 0x80, 0x7E + 0x80 }, "EUC-KR > 0xEBBF so not in QR Kanji mode range" },
     };
 
     int data_size = sizeof(data) / sizeof(struct item);
@@ -247,7 +247,7 @@ static void test_sjis_utf8_to_eci(int index) {
         if (ret == 0) {
             assert_equal(ret_length, data[i].ret_length, "i:%d ret_length %d != %d\n", i, ret_length, data[i].ret_length);
             for (int j = 0; j < (int) ret_length; j++) {
-                assert_equal(jisdata[j], data[i].expected_jisdata[j], "i:%d jisdata[%d] %04X != %04X\n", i, j, jisdata[j], data[i].expected_jisdata[j]);
+                assert_equal(jisdata[j], data[i].expected_jisdata[j], "i:%d jisdata[%d] 0x%04X != 0x%04X\n", i, j, jisdata[j], data[i].expected_jisdata[j]);
             }
         }
     }

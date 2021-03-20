@@ -404,7 +404,7 @@ static char *s_eci_list[] = {
     "ascii",        /*27: ISO-646:1991 7-bit character set*/
     "big5",         /*28: Big5 (Taiwan) Chinese Character Set*/
     "euc-cn",       /*29: GB (PRC) Chinese Character Set*/
-    "iso2022-kr",   /*30: Korean Character Set (KS X 1001:2002)*/
+    "iso2022-kr",   /*30: Korean Character Set EUC-KR (KS X 1001:2002)*/
     NULL
 };
 

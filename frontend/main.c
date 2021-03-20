@@ -194,7 +194,7 @@ static void show_eci(void) {
             " 27: ISO/IEC 646:1991 7-bit character set (ASCII)\n"
             " 28: Big5 (Taiwan) Chinese Character Set\n"
             " 29: ** GB (PRC) Chinese Character Set\n"
-            " 30: Korean Character Set (KS X 1001:2002)\n"
+            " 30: Korean Character Set EUC-KR (KS X 1001:2002)\n"
             "899: 8-bit binary data\n"
             "** ECI 29 is GB 2312 except for Han Xin, when it is GB 18030\n"
     );

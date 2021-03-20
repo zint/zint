@@ -216,10 +216,10 @@ static void test_gb2312_utf8_to_eci(int index) {
         /* 37*/ { 29, 0, "・", -1, 0, 2, { 0xA1, 0xA4 }, "GB 2312 U+30FB" },
         /* 38*/ { 29, 1, "・", -1, 0, 1, { 0xA1A4 }, "GB 2312" },
         /* 39*/ { 29, 0, "釦", -1, ZINT_ERROR_INVALID_DATA, -1, {}, "GB 18030 U+91E6 not in GB 2312" },
-        /* 40*/ { 30, 0, "¡¡", -1, 0, 4, { 0x22, 0x2E, 0x22, 0x2E }, "KS X 1001 U+00A1" },
-        /* 41*/ { 30, 1, "¡¡", -1, 0, 4, { 0x22, 0x2E, 0x22, 0x2E }, "KS X 1001 outside GB 2312 Hanzi mode range" },
-        /* 42*/ { 30, 0, "詰", -1, 0, 2, { 0x7D, 0x7E }, "KS X 1001 U+8A70" },
-        /* 43*/ { 30, 1, "詰", -1, 0, 2, { 0x7D, 0x7E }, "KS X 1001 <= 0x7D7E so none in GB 2312 Hanzi mode range" },
+        /* 40*/ { 30, 0, "¡¡", -1, 0, 4, { 0x22 + 0x80, 0x2E + 0x80, 0x22 + 0x80, 0x2E + 0x80 }, "EUC-KR U+00A1 (0xA2AE)" },
+        /* 41*/ { 30, 1, "¡¡", -1, 0, 2, { 0x222E + 0x8080, 0x222E + 0x8080 }, "EUC-KR 0xA2AE in GB 2312 Hanzi mode range" },
+        /* 42*/ { 30, 0, "詰", -1, 0, 2, { 0x7D + 0x80, 0x7E + 0x80 }, "EUC-KR U+8A70 (0xFDFE)" },
+        /* 43*/ { 30, 1, "詰", -1, 0, 2, { 0x7D + 0x80, 0x7E + 0x80 }, "EUC-KR 0xFDFE > 0xF7FE so not in GB 2312 Hanzi mode range" },
     };
 
     int data_size = sizeof(data) / sizeof(struct item);
@@ -238,7 +238,7 @@ static void test_gb2312_utf8_to_eci(int index) {
         if (ret == 0) {
             assert_equal(ret_length, data[i].ret_length, "i:%d ret_length %d != %d\n", i, ret_length, data[i].ret_length);
             for (int j = 0; j < (int) ret_length; j++) {
-                assert_equal(gbdata[j], data[i].expected_gbdata[j], "i:%d gbdata[%d] %04X != %04X\n", i, j, gbdata[j], data[i].expected_gbdata[j]);
+                assert_equal(gbdata[j], data[i].expected_gbdata[j], "i:%d gbdata[%d] 0x%04X != 0x%04X\n", i, j, gbdata[j], data[i].expected_gbdata[j]);
             }
         }
     }

@@ -519,7 +519,7 @@ p, li { white-space: pre-wrap; }
                </item>
                <item>
                 <property name="text">
-                 <string>30: Korean KS X 1001</string>
+                 <string>30: Korean EUC-KR</string>
                 </property>
                </item>
                <item>
