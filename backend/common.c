@@ -335,6 +335,20 @@ INTERNAL unsigned int decode_utf8(unsigned int *state, unsigned int *codep, cons
     return *state;
 }
 
+/* Is string valid UTF-8? */
+INTERNAL int is_valid_utf8(const unsigned char source[], const int length) {
+    int i;
+    unsigned int codepoint, state = 0;
+
+    for (i = 0; i < length; i++) {
+        if (decode_utf8(&state, &codepoint, source[i]) == 12) {
+            return 0;
+        }
+    }
+
+    return state == 0;
+}
+
 /* Convert UTF-8 to Unicode. If `disallow_4byte` unset, allow all values (UTF-32). If `disallow_4byte` set,
  * only allow codepoints <= U+FFFF (ie four-byte sequences not allowed) (UTF-16, no surrogates) */
 INTERNAL int utf8_to_unicode(struct zint_symbol *symbol, const unsigned char source[], unsigned int vals[],

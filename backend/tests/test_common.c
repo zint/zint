@@ -79,6 +79,45 @@ static void test_utf8_to_unicode(int index, int debug) {
     testFinish();
 }
 
+static void test_is_valid_utf8(int index) {
+
+    testStart("");
+
+    int ret;
+    struct item {
+        char* data;
+        int length;
+        int ret;
+        char* comment;
+    };
+    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    struct item data[] = {
+        /*  0*/ { "", -1, 1, "" },
+        /*  1*/ { "abcdefghijklmnopqrstuvwxyz", -1, 1, "" },
+        /*  2*/ { "éa", -1, 1, "" },
+        /*  3*/ { "a\000b", 3, 1, "Embedded nul" },
+        /*  4*/ { "\357\273\277a", -1, 1, "Bom" },
+
+        /*  5*/ { "a\xC2", -1, 0, "Missing 2nd byte" },
+        /*  6*/ { "a\200b", -1, 0, "Orphan continuation 0x80" },
+        /*  7*/ { "\300\201", -1, 0, "Overlong 0xC081" },
+        /*  8*/ { "\355\240\200", -1, 0, "Surrogate 0xEDA080" },
+    };
+    int data_size = ARRAY_SIZE(data);
+
+    for (int i = 0; i < data_size; i++) {
+
+        if (index != -1 && i != index) continue;
+
+        int length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
+
+        ret = is_valid_utf8((const unsigned char *) data[i].data, length);
+        assert_equal(ret, data[i].ret, "i:%d ret %d != %d\n", i, ret, data[i].ret);
+    }
+
+    testFinish();
+}
+
 static void test_debug_test_codeword_dump_int(int index, int debug) {
 
     testStart("");
@@ -115,6 +154,7 @@ int main(int argc, char *argv[]) {
     testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
         { "test_utf8_to_unicode", test_utf8_to_unicode, 1, 0, 1 },
         { "test_debug_test_codeword_dump_int", test_debug_test_codeword_dump_int, 1, 0, 1 },
+        { "test_is_valid_utf8", test_is_valid_utf8, 1, 0, 0 },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

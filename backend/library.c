@@ -1072,20 +1072,6 @@ static int escape_char_process(struct zint_symbol *symbol, unsigned char *input_
     return error_number;
 }
 
-/* Is string valid UTF-8? */
-STATIC_UNLESS_ZINT_TEST int is_valid_utf8(const unsigned char source[], const int length) {
-    int i;
-    unsigned int codepoint, state = 0;
-
-    for (i = 0; i < length; i++) {
-        if (decode_utf8(&state, &codepoint, source[i]) == 12) {
-            return 0;
-        }
-    }
-
-    return state == 0;
-}
-
 int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int in_length) {
     int error_number, warn_number;
 #ifdef _MSC_VER
@@ -1327,15 +1313,15 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
             && (symbol->input_mode & 0x07) == UNICODE_MODE) {
         /* Try another ECI mode */
         symbol->eci = get_best_eci(local_source, in_length);
-
-        error_number = extended_or_reduced_charset(symbol, local_source, in_length);
-
-        if (error_number == 0) {
-            error_number = ZINT_WARN_USES_ECI;
-            if (!(symbol->debug & ZINT_DEBUG_TEST)) {
-                strcpy(symbol->errtxt, "222: Encoded data includes ECI");
+        if (symbol->eci != 0) {
+            error_number = extended_or_reduced_charset(symbol, local_source, in_length);
+            if (error_number == 0) {
+                error_number = ZINT_WARN_USES_ECI;
+                if (!(symbol->debug & ZINT_DEBUG_TEST)) {
+                    strcpy(symbol->errtxt, "222: Encoded data includes ECI");
+                }
+                if (symbol->debug & ZINT_DEBUG_PRINT) printf("Added ECI %d\n", symbol->eci);
             }
-            if (symbol->debug & ZINT_DEBUG_PRINT) printf("Added ECI %d\n", symbol->eci);
         }
     }
 

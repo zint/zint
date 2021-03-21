@@ -791,6 +791,42 @@ static void test_utf8_to_eci_ucs2be(void) {
     }
 };
 
+static void test_get_best_eci(int index) {
+
+    testStart("");
+
+    int ret;
+    struct item {
+        const char *data;
+        int length;
+        int ret;
+    };
+    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    struct item data[] = {
+        /*  0*/ { "\300\301", -1, 0 },
+        /*  1*/ { "ÀÁ", -1, 3 },
+        /*  2*/ { "Ђ", -1, 7 },
+        /*  3*/ { "Ѐ", -1, 26 }, // Cyrillic U+0400 not in single-byte code pages
+        /*  4*/ { "β", -1, 9 },
+        /*  5*/ { "˜", -1, 23 },
+        /*  6*/ { "βЂ", -1, 26 },
+        /*  7*/ { "AB\200", -1, 0 },
+    };
+    int data_size = ARRAY_SIZE(data);
+
+    for (int i = 0; i < data_size; i++) {
+
+        if (index != -1 && i != index) continue;
+
+        int length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
+
+        ret = get_best_eci((const unsigned char *) data[i].data, length);
+        assert_equal(ret, data[i].ret, "i:%d get_best_eci ret %d != %d\n", i, ret, data[i].ret);
+    }
+
+    testFinish();
+}
+
 int main(int argc, char *argv[]) {
 
     testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
@@ -800,6 +836,7 @@ int main(int argc, char *argv[]) {
         { "test_utf8_to_eci_sb", test_utf8_to_eci_sb, 1, 0, 0 },
         { "test_utf8_to_eci_ascii", test_utf8_to_eci_ascii, 0, 0, 0 },
         { "test_utf8_to_eci_ucs2be", test_utf8_to_eci_ucs2be, 0, 0, 0 },
+        { "test_get_best_eci", test_get_best_eci, 1, 0, 0 },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

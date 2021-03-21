@@ -271,5 +271,9 @@ INTERNAL int get_best_eci(const unsigned char source[], int length) {
         eci++;
     } while (eci < 25);
 
+    if (!is_valid_utf8(source, length)) {
+        return 0;
+    }
+
     return 26; // If all of these fail, use Unicode!
 }
