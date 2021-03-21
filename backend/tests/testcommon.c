@@ -1681,7 +1681,7 @@ int testUtilVerifyGhostscript(char *filename, int debug) {
 /* v.Nu https://github.com/validator/validator
  * Needs "$INSTALL_DIR/vnu-runtime-image/bin" in PATH */
 int testUtilHaveVnu() {
-    return system("vnu --version > /dev/null") == 0;
+    return system("vnu --version > /dev/null 2>&1") == 0;
 }
 
 int testUtilVerifyVnu(char *filename, int debug) {
@@ -1698,6 +1698,26 @@ int testUtilVerifyVnu(char *filename, int debug) {
     }
 
     return system(buf);
+}
+
+/* Requires libtiff 4.2.0 http://www.libtiff.org to be installed */
+int testUtilHaveTiffInfo() {
+    return system("tiffinfo -h > /dev/null") == 0;
+}
+
+int testUtilVerifyTiffInfo(char *filename, int debug) {
+    char cmd[512 + 128];
+
+    if (strlen(filename) > 512) {
+        return -1;
+    }
+    if (debug & ZINT_DEBUG_TEST_PRINT) {
+        sprintf(cmd, "tiffinfo -D %s", filename);
+    } else {
+        sprintf(cmd, "tiffinfo -D %s > /dev/null 2>&1", filename);
+    }
+
+    return system(cmd);
 }
 
 static const char *testUtilBwippName(int index, const struct zint_symbol *symbol, int option_1, int option_2, int option_3, int debug, int *linear_row_height, int *gs1_cvt) {

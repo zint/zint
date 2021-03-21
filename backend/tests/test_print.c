@@ -42,11 +42,13 @@ static void test_print(int index, int generate, int debug) {
     int have_libreoffice = 0;
     int have_ghostscript = 0;
     int have_vnu = 0;
+    int have_tiffinfo = 0;
     if (generate) {
         have_identify = testUtilHaveIdentify();
         have_libreoffice = testUtilHaveLibreOffice();
         have_ghostscript = testUtilHaveGhostscript();
         have_vnu = testUtilHaveVnu();
+        have_tiffinfo = testUtilHaveTiffInfo();
     }
 
     int ret;
@@ -153,6 +155,9 @@ static void test_print(int index, int generate, int debug) {
                             ret = testUtilVerifyVnu(expected_file, debug); // Very slow
                             assert_zero(ret, "i:%d %s vnu %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), expected_file, ret);
                         }
+                    } else if (strcmp(exts[j], "tif") == 0 && have_tiffinfo) { // Much faster (and better) than identify
+                        ret = testUtilVerifyTiffInfo(expected_file, debug);
+                        assert_zero(ret, "i:%d %s tiffinfo %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), expected_file, ret);
                     } else if (strcmp(exts[j], "txt") != 0) { // I.e. rasters
                         if (have_identify) {
                             ret = testUtilVerifyIdentify(expected_file, debug);

@@ -290,8 +290,9 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     assert(strip_count > 0); /* Suppress clang-analyzer-core.UndefinedBinaryOperatorResult */
 
     if (symbol->debug & ZINT_DEBUG_PRINT) {
-        printf("TIFF (%dx%d) Strip Count %d, Rows Per Strip %d\n", symbol->bitmap_width, symbol->bitmap_height,
-            strip_count, rows_per_strip);
+        printf("TIFF (%dx%d) Strip Count %d, Rows Per Strip %d, Pixels Per Sample %d, Samples Per Pixel %d, PMI %d\n",
+            symbol->bitmap_width, symbol->bitmap_height, strip_count, rows_per_strip, pixels_per_sample,
+            samples_per_pixel, pmi);
     }
 
     bytes_per_strip = rows_per_strip * ((symbol->bitmap_width + pixels_per_sample - 1) / pixels_per_sample)

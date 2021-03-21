@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020 - 2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -39,10 +39,8 @@ static void test_pixel_plot(int index, int debug) {
 
     testStart("");
 
-    if (!testUtilHaveIdentify()) {
-        testSkip("ImageMagick identify not available");
-        return;
-    }
+    int have_tiffinfo = testUtilHaveTiffInfo();
+    int have_identify = testUtilHaveIdentify();
 
     int ret;
     struct item {
@@ -50,37 +48,38 @@ static void test_pixel_plot(int index, int debug) {
         int height;
         char *pattern;
         int repeat;
+        int no_identify; // identify fails for some valid TIFFs (eg. RGB with LZW and large rows)
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /*  0*/ { 1, 1, "1", 0 },
-        /*  1*/ { 2, 1, "11", 0 },
-        /*  2*/ { 1, 2, "11", 0 },
-        /*  3*/ { 2, 2, "10", 1 },
-        /*  4*/ { 3, 1, "101", 0 },
-        /*  5*/ { 1, 3, "101", 0 },
-        /*  6*/ { 4, 1, "1010", 0 },
-        /*  7*/ { 1, 4, "1010", 0 },
-        /*  8*/ { 5, 1, "10101", 0 },
-        /*  9*/ { 1, 5, "10101", 0 },
-        /* 10*/ { 3, 2, "101", 1 },
-        /* 11*/ { 100, 2, "10", 1 },
-        /* 12*/ { 2, 100, "10", 1 },
-        /* 13*/ { 3, 3, "101010101", 0 },
-        /* 14*/ { 4, 3, "10", 1 },
-        /* 15*/ { 3, 4, "10", 1 },
-        /* 16*/ { 45, 44, "10", 1 }, // Strip Count 1, Rows Per Strip 44 (45 * 44 * 4 == 7920)
-        /* 17*/ { 45, 45, "10", 1 }, // Strip Count 1, Rows Per Strip 45 (45 * 45 * 4 == 8100)
-        /* 18*/ { 46, 45, "10", 1 }, // Strip Count 2, Rows Per Strip 44 (46 * 45 * 4 == 8280)
-        /* 19*/ { 46, 46, "10", 1 }, // Strip Count 2, Rows Per Strip 44
-        /* 20*/ { 2048, 1, "10", 1 }, // Strip Count 1, Rows Per Strip 1 (2048 * 4 == 8192)
-        /* 21*/ { 1, 2048, "10", 1 }, // Strip Count 1, Rows Per Strip 2048
-        /* 22*/ { 2048, 2, "10", 1 }, // Strip Count 2, Rows Per Strip 1
-        /* 23*/ { 2, 2048, "10", 1 }, // Strip Count 2, Rows Per Strip 1024 (2 * 1024 * 4 == 8192)
-        /* 24*/ { 2048, 3, "10", 1 }, // Strip Count 3, Rows Per Strip 1
-        /* 25*/ { 3, 2048, "10", 1 }, // Strip Count 4, Rows Per Strip 682 ((3 * 682 + 2) * 4 == 8192)
-        /* 26*/ { 2049, 4, "10", 1 }, // Strip Count 4, Rows Per Strip 1 (2049 * 1 * 4 == 8196) - large rows in 1 strip, even if > 8192
-        /* 27*/ { 4, 2049, "10", 1 }, // Strip Count 5, Rows Per Strip 512 ((4 * 512 + 1) * 4 == 8196)
+        /*  0*/ { 1, 1, "1", 0, 0 },
+        /*  1*/ { 2, 1, "11", 0, 0 },
+        /*  2*/ { 1, 2, "11", 0, 0 },
+        /*  3*/ { 2, 2, "10", 1, 0 },
+        /*  4*/ { 3, 1, "101", 0, 0 },
+        /*  5*/ { 1, 3, "101", 0, 0 },
+        /*  6*/ { 4, 1, "1010", 0, 0 },
+        /*  7*/ { 1, 4, "1010", 0, 0 },
+        /*  8*/ { 5, 1, "10101", 0, 0 },
+        /*  9*/ { 1, 5, "10101", 0, 0 },
+        /* 10*/ { 3, 2, "101", 1, 0 },
+        /* 11*/ { 100, 2, "10", 1, 0 },
+        /* 12*/ { 2, 100, "10", 1, 0 },
+        /* 13*/ { 3, 3, "101010101", 0, 0 },
+        /* 14*/ { 4, 3, "10", 1, 0 },
+        /* 15*/ { 3, 4, "10", 1, 0 },
+        /* 16*/ { 45, 44, "10", 1, 0 }, // Strip Count 1, Rows Per Strip 44 (45 * 44 * 4 == 7920)
+        /* 17*/ { 45, 45, "10", 1, 0 }, // Strip Count 1, Rows Per Strip 45 (45 * 45 * 4 == 8100)
+        /* 18*/ { 46, 45, "10", 1, 0 }, // Strip Count 2, Rows Per Strip 44 (46 * 45 * 4 == 8280)
+        /* 19*/ { 46, 46, "10", 1, 0 }, // Strip Count 2, Rows Per Strip 44
+        /* 20*/ { 2048, 1, "10", 1, 1 }, // Strip Count 1, Rows Per Strip 1 (2048 * 4 == 8192)
+        /* 21*/ { 1, 2048, "10", 1, 0 }, // Strip Count 1, Rows Per Strip 2048
+        /* 22*/ { 2048, 2, "10", 1, 1 }, // Strip Count 2, Rows Per Strip 1
+        /* 23*/ { 2, 2048, "10", 1, 0 }, // Strip Count 2, Rows Per Strip 1024 (2 * 1024 * 4 == 8192)
+        /* 24*/ { 2048, 3, "10", 1, 1 }, // Strip Count 3, Rows Per Strip 1
+        /* 25*/ { 3, 2048, "10", 1, 0 }, // Strip Count 4, Rows Per Strip 682 ((3 * 682 + 2) * 4 == 8192)
+        /* 26*/ { 2049, 4, "10", 1, 1 }, // Strip Count 4, Rows Per Strip 1 (2049 * 1 * 4 == 8196) - large rows in 1 strip, even if > 8192
+        /* 27*/ { 4, 2049, "10", 1, 0 }, // Strip Count 5, Rows Per Strip 512 ((4 * 512 + 1) * 4 == 8196)
     };
     int data_size = ARRAY_SIZE(data);
 
@@ -88,18 +87,19 @@ static void test_pixel_plot(int index, int debug) {
 
     char data_buf[65536];
 
+    struct zint_symbol *symbol = ZBarcode_Create();
+    assert_nonnull(symbol, "Symbol not created\n");
+
     for (int i = 0; i < data_size; i++) {
 
         if (index != -1 && i != index) continue;
-
-        struct zint_symbol *symbol = ZBarcode_Create();
-        assert_nonnull(symbol, "Symbol not created\n");
 
         strcpy(symbol->outfile, tif);
 
         symbol->bitmap_width = data[i].width;
         symbol->bitmap_height = data[i].height;
-        strcpy(symbol->bgcolour, "FFFFFFEE"); // Use alpha background to force RGB
+        symbol->symbology = BARCODE_ULTRA; // Use ULTRA with alpha background to force RGB
+        strcpy(symbol->bgcolour, "FFFFFFEE");
         symbol->debug |= debug;
 
         int size = data[i].width * data[i].height;
@@ -117,17 +117,22 @@ static void test_pixel_plot(int index, int debug) {
         ret = tif_pixel_plot(symbol, (unsigned char *) data_buf);
         assert_zero(ret, "i:%d tif_pixel_plot ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
 
-        ret = testUtilVerifyIdentify(symbol->outfile, debug);
-        assert_zero(ret, "i:%d identify %s ret %d != 0\n", i, symbol->outfile, ret);
+        if (have_tiffinfo) {
+            ret = testUtilVerifyTiffInfo(symbol->outfile, debug);
+            assert_zero(ret, "i:%d tiffinfo %s ret %d != 0\n", i, symbol->outfile, ret);
+        } else if (have_identify && !data[i].no_identify) {
+            ret = testUtilVerifyIdentify(symbol->outfile, debug);
+            assert_zero(ret, "i:%d identify %s ret %d != 0\n", i, symbol->outfile, ret);
+        }
 
         if (!(debug & ZINT_DEBUG_TEST_KEEP_OUTFILE)) {
             assert_zero(remove(symbol->outfile), "i:%d remove(%s) != 0\n", i, symbol->outfile);
         }
 
         symbol->bitmap = NULL;
-
-        ZBarcode_Delete(symbol);
     }
+
+    ZBarcode_Delete(symbol);
 
     testFinish();
 }
@@ -136,6 +141,7 @@ static void test_print(int index, int generate, int debug) {
 
     testStart("");
 
+    int have_tiffinfo = testUtilHaveTiffInfo();
     int have_identify = testUtilHaveIdentify();
 
     int ret;
@@ -240,7 +246,10 @@ static void test_print(int index, int generate, int debug) {
                     testUtilEscape(data[i].data, length, escaped, escaped_size), data[i].composite, data[i].expected_file, data[i].comment);
             ret = rename(symbol->outfile, data[i].expected_file);
             assert_zero(ret, "i:%d rename(%s, %s) ret %d != 0\n", i, symbol->outfile, data[i].expected_file, ret);
-            if (have_identify) {
+            if (have_tiffinfo) {
+                ret = testUtilVerifyTiffInfo(data[i].expected_file, debug);
+                assert_zero(ret, "i:%d %s tiffinfo %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), data[i].expected_file, ret);
+            } else if (have_identify) {
                 ret = testUtilVerifyIdentify(data[i].expected_file, debug);
                 assert_zero(ret, "i:%d %s identify %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), data[i].expected_file, ret);
             }
