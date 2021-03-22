@@ -14,10 +14,6 @@ set(zint_TWODIM_SRCS code16k.c codablock.c dmatrix.c pdf417.c qr.c maxicode.c co
 set(zint_OUTPUT_SRCS vector.c ps.c svg.c emf.c bmp.c pcx.c gif.c png.c tif.c raster.c output.c)
 set(zint_SRCS ${zint_OUTPUT_SRCS} ${zint_COMMON_SRCS} ${zint_ONEDIM_SRCS} ${zint_POSTAL_SRCS} ${zint_TWODIM_SRCS})
 
-if(NOT PNG_FOUND)
-    add_definitions(-DNO_PNG)
-endif()
-
 add_library(zint SHARED ${zint_SRCS})
 
 if(ZINT_STATIC)
@@ -29,6 +25,12 @@ set_target_properties(zint PROPERTIES   SOVERSION "${ZINT_VERSION_MAJOR}.${ZINT_
 
 if(PNG_FOUND)
     target_link_libraries(zint PNG::PNG)
+else()
+    target_compile_definitions(zint PUBLIC NO_PNG)
+endif()
+
+if(ZINT_TEST)
+    target_compile_definitions(zint PUBLIC ZINT_TEST)
 endif()
 
 if(NOT MSVC)
@@ -39,7 +41,7 @@ endif()
 if(MSVC)
     # "BUILD_SHARED_LIBS" is a CMake defined variable, see documentation.
     if(BUILD_SHARED_LIBS)
-        add_definitions("-DDLL_EXPORT")
+        target_compile_definitions(zint PRIVATE DLL_EXPORT)
     endif()
 endif()
 

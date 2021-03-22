@@ -63,10 +63,6 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_GNUCC)
     endif()
 endif()
 
-if(ZINT_TEST)
-    add_definitions("-DZINT_TEST")
-endif()
-
 IF(APPLE)
     IF (UNIVERSAL) # TODO: make universal binary
         IF(NOT ZINT_HAS_BEEN_RUN_BEFORE)
