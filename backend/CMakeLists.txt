@@ -47,3 +47,7 @@ endif()
 
 install(TARGETS zint  ${INSTALL_TARGETS_DEFAULT_ARGS})
 install(FILES zint.h DESTINATION ${INCLUDE_INSTALL_DIR} COMPONENT Devel)
+
+if(ZINT_TEST)
+    add_subdirectory(tests)
+endif(ZINT_TEST)

@@ -8,19 +8,6 @@ project(zint_backend_tests)
 
 enable_testing()
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
-
-option(ZINT_DEBUG    "Set debug compile flag"          OFF)
-option(ZINT_SANITIZE "Set sanitize compile/link flags" OFF)
-option(ZINT_TEST     "Set test compile flag"           OFF)
-
-find_package(LibZint REQUIRED)
-find_package(PNG)
-
-if(NOT PNG_FOUND)
-    add_definitions(-DNO_PNG)
-endif()
-
 set(BWIPP_TAR ${CMAKE_CURRENT_SOURCE_DIR}/tools/bwipp_dump.ps.tar.xz)
 set(BWIPP_PS ${CMAKE_CURRENT_SOURCE_DIR}/tools/bwipp_dump.ps)
 
@@ -29,44 +16,8 @@ if(NOT EXISTS ${BWIPP_PS})
                     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tools)
 endif()
 
-include(CheckCCompilerFlag)
-
-check_c_compiler_flag(-Wall C_COMPILER_FLAG_WALL)
-if(C_COMPILER_FLAG_WALL)
-    add_compile_options("-Wall")
-endif()
-
-check_c_compiler_flag(-Wextra C_COMPILER_FLAG_WEXTRA)
-if(C_COMPILER_FLAG_WEXTRA)
-    add_compile_options("-Wextra")
-endif()
-
-if(ZINT_DEBUG)
-    check_c_compiler_flag(-g C_COMPILER_FLAG_G)
-    if(C_COMPILER_FLAG_G)
-        add_compile_options("-g")
-    endif()
-endif()
-
-if(ZINT_SANITIZE)
-    # check_c_compiler_flag fails for -fsanitize
-    if(${CMAKE_C_COMPILER_ID} STREQUAL "GNU")
-        add_compile_options("-fsanitize=undefined")
-        add_compile_options("-fsanitize=address")
-        link_libraries("-fsanitize=undefined -fsanitize=address")
-    endif()
-endif()
-
-if(ZINT_TEST)
-    add_definitions("-DZINT_TEST")
-endif()
-
 add_library(testcommon testcommon.c testcommon.h)
-if(PNG_FOUND)
-    target_link_libraries(testcommon ZINT::ZINT PNG::PNG)
-else()
-    target_link_libraries(testcommon ZINT::ZINT)
-endif()
+target_link_libraries(testcommon zint)
 
 macro(zint_add_test test_name test_command)
     set(ADDITIONAL_LIBS "${ARGN}" ${LIBRARY_FLAGS})
