@@ -17,7 +17,11 @@ if(NOT EXISTS ${BWIPP_PS})
 endif()
 
 add_library(testcommon testcommon.c testcommon.h)
-target_link_libraries(testcommon zint)
+if(ZINT_STATIC)
+    target_link_libraries(testcommon zint-static)
+else()
+    target_link_libraries(testcommon zint)
+endif()
 
 macro(zint_add_test test_name test_command)
     set(ADDITIONAL_LIBS "${ARGN}" ${LIBRARY_FLAGS})
