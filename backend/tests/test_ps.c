@@ -52,19 +52,19 @@ static void test_print(int index, int generate, int debug) {
         char *expected_file;
     };
     struct item data[] = {
-        /*  0*/ { BARCODE_CODE128, UNICODE_MODE, BOLD_TEXT, -1, -1, -1, "", "", "Égjpqy", "../data/eps/code128_egrave_bold.eps" },
-        /*  1*/ { BARCODE_CODE39, -1, -1, -1, -1, -1, "147AD0", "FC9630", "123", "../data/eps/code39_fg_bg.eps" },
-        /*  2*/ { BARCODE_ULTRA, -1, 1, -1, -1, -1, "147AD0", "FC9630", "123", "../data/eps/ultra_fg_bg.eps" },
-        /*  3*/ { BARCODE_EANX, -1, -1, -1, -1, -1, "", "", "9771384524017+12", "../data/eps/ean13_2addon_ggs_5.2.2.5.1-2.eps" },
-        /*  4*/ { BARCODE_UPCA, -1, -1, -1, -1, -1, "", "", "012345678905+24", "../data/eps/upca_2addon_ggs_5.2.6.6-5.eps" },
-        /*  5*/ { BARCODE_UPCE, -1, -1, -1, -1, -1, "", "", "0123456+12345", "../data/eps/upce_5addon.eps" },
-        /*  6*/ { BARCODE_UPCE, -1, SMALL_TEXT | BOLD_TEXT, -1, -1, -1, "", "", "0123456+12345", "../data/eps/upce_5addon_small_bold.eps" },
-        /*  7*/ { BARCODE_CODE128, UNICODE_MODE, -1, -1, -1, -1, "", "", "A\\B)ç(D", "../data/eps/code128_escape_latin1.eps" },
-        /*  8*/ { BARCODE_DBAR_LTD, -1, BOLD_TEXT, -1, -1, -1, "", "", "1501234567890", "../data/eps/dbar_ltd_24724_fig7_bold.eps" },
+        /*  0*/ { BARCODE_CODE128, UNICODE_MODE, BOLD_TEXT, -1, -1, -1, "", "", "Égjpqy", "data/eps/code128_egrave_bold.eps" },
+        /*  1*/ { BARCODE_CODE39, -1, -1, -1, -1, -1, "147AD0", "FC9630", "123", "data/eps/code39_fg_bg.eps" },
+        /*  2*/ { BARCODE_ULTRA, -1, 1, -1, -1, -1, "147AD0", "FC9630", "123", "data/eps/ultra_fg_bg.eps" },
+        /*  3*/ { BARCODE_EANX, -1, -1, -1, -1, -1, "", "", "9771384524017+12", "data/eps/ean13_2addon_ggs_5.2.2.5.1-2.eps" },
+        /*  4*/ { BARCODE_UPCA, -1, -1, -1, -1, -1, "", "", "012345678905+24", "data/eps/upca_2addon_ggs_5.2.6.6-5.eps" },
+        /*  5*/ { BARCODE_UPCE, -1, -1, -1, -1, -1, "", "", "0123456+12345", "data/eps/upce_5addon.eps" },
+        /*  6*/ { BARCODE_UPCE, -1, SMALL_TEXT | BOLD_TEXT, -1, -1, -1, "", "", "0123456+12345", "data/eps/upce_5addon_small_bold.eps" },
+        /*  7*/ { BARCODE_CODE128, UNICODE_MODE, -1, -1, -1, -1, "", "", "A\\B)ç(D", "data/eps/code128_escape_latin1.eps" },
+        /*  8*/ { BARCODE_DBAR_LTD, -1, BOLD_TEXT, -1, -1, -1, "", "", "1501234567890", "data/eps/dbar_ltd_24724_fig7_bold.eps" },
     };
     int data_size = ARRAY_SIZE(data);
 
-    char *data_dir = "../data/eps";
+    char *data_dir = "data/eps";
     char *eps = "out.eps";
     char escaped[1024];
     int escaped_size = 1024;

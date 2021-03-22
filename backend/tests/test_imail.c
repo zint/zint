@@ -41,8 +41,8 @@ static void test_csv(int index, int debug) {
 
     testStart("");
 
-    FILE *fd = fopen("../data/imail/usps/uspsIMbEncoderTestCases.csv", "r");
-    assert_nonnull(fd, "open ../data/imail/usps/uspsIMbEncoderTestCases.csv");
+    FILE *fd = fopen("data/imail/usps/uspsIMbEncoderTestCases.csv", "r");
+    assert_nonnull(fd, "open data/imail/usps/uspsIMbEncoderTestCases.csv");
 
     char buffer[1024];
     char id[10];

@@ -79,7 +79,7 @@ static void test_print(int index, int generate, int debug) {
     int escaped_size = 1024;
 
     if (generate) {
-        strcpy(data_dir, "../data");
+        strcpy(data_dir, "data");
         if (!testUtilExists(data_dir)) {
             ret = mkdir(data_dir, 0755);
             assert_zero(ret, "mkdir(%s) ret %d != 0\n", data_dir, ret);
@@ -95,7 +95,7 @@ static void test_print(int index, int generate, int debug) {
 #ifdef NO_PNG
         if (strcmp(exts[j], "png") == 0) continue;
 #endif
-        strcpy(data_dir, "../data/print/");
+        strcpy(data_dir, "data/print/");
         strcat(data_dir, exts[j]);
 
         if (generate) {

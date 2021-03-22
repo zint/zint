@@ -57,23 +57,23 @@ static void test_print(int index, int generate, int debug) {
         char *comment;
     };
     struct item data[] = {
-        /*  0*/ { BARCODE_CODE128, UNICODE_MODE, BOLD_TEXT, -1, -1, -1, "", "", 0, "Égjpqy", "../data/emf/code128_egrave_bold.emf", "" },
-        /*  1*/ { BARCODE_TELEPEN, -1, -1, -1, -1, -1, "147AD0", "FC9630", 0, "123", "../data/emf/telenum_fg_bg.emf", "" },
-        /*  2*/ { BARCODE_ULTRA, -1, -1, 5, -1, -1, "147AD0", "FC9630", 0, "123", "../data/emf/ultracode_fg_bg.emf", "" },
-        /*  3*/ { BARCODE_EANX, -1, -1, -1, -1, -1, "", "", 0, "9780877799306+54321", "../data/emf/ean13_5addon_ggs_5.2.2.5.2-2.emf", "" },
-        /*  4*/ { BARCODE_EANX, -1, -1, -1, -1, -1, "", "", 0, "210987654321+54321", "../data/emf/ean13_5addon_#185.emf", "#185 Byte count, font data, HeaderExtension1/2" },
-        /*  5*/ { BARCODE_UPCA, -1, -1, -1, -1, -1, "", "", 0, "012345678905+24", "../data/emf/upca_2addon_ggs_5.2.6.6-5.emf", "" },
-        /*  6*/ { BARCODE_UPCE, -1, -1, -1, -1, -1, "", "", 0, "0123456+12", "../data/emf/upce_2addon.emf", "" },
-        /*  7*/ { BARCODE_UPCE, -1, SMALL_TEXT | BOLD_TEXT, -1, -1, -1, "", "", 0, "0123456+12", "../data/emf/upce_2addon_small_bold.emf", "" },
-        /*  8*/ { BARCODE_ITF14, -1, BOLD_TEXT, -1, -1, -1, "", "", 0, "123", "../data/emf/itf14_bold.emf", "" },
-        /*  9*/ { BARCODE_CODE39, -1, -1, -1, -1, -1, "", "", 90, "123", "../data/emf/code39_rotate_90.emf", "" },
-        /* 10*/ { BARCODE_CODE39, -1, -1, -1, -1, -1, "", "", 180, "123", "../data/emf/code39_rotate_180.emf", "" },
-        /* 11*/ { BARCODE_CODE39, -1, -1, -1, -1, -1, "", "", 270, "123", "../data/emf/code39_rotate_270.emf", "" },
-        /* 12*/ { BARCODE_MAXICODE, -1, -1, -1, -1, -1, "E0E0E0", "700070", 0, "THIS IS A 93 CHARACTER CODE SET A MESSAGE THAT FILLS A MODE 4, UNAPPENDED, MAXICODE SYMBOL...", "../data/emf/maxicode_#185.emf", "#185 Maxicode scaling" },
+        /*  0*/ { BARCODE_CODE128, UNICODE_MODE, BOLD_TEXT, -1, -1, -1, "", "", 0, "Égjpqy", "data/emf/code128_egrave_bold.emf", "" },
+        /*  1*/ { BARCODE_TELEPEN, -1, -1, -1, -1, -1, "147AD0", "FC9630", 0, "123", "data/emf/telenum_fg_bg.emf", "" },
+        /*  2*/ { BARCODE_ULTRA, -1, -1, 5, -1, -1, "147AD0", "FC9630", 0, "123", "data/emf/ultracode_fg_bg.emf", "" },
+        /*  3*/ { BARCODE_EANX, -1, -1, -1, -1, -1, "", "", 0, "9780877799306+54321", "data/emf/ean13_5addon_ggs_5.2.2.5.2-2.emf", "" },
+        /*  4*/ { BARCODE_EANX, -1, -1, -1, -1, -1, "", "", 0, "210987654321+54321", "data/emf/ean13_5addon_#185.emf", "#185 Byte count, font data, HeaderExtension1/2" },
+        /*  5*/ { BARCODE_UPCA, -1, -1, -1, -1, -1, "", "", 0, "012345678905+24", "data/emf/upca_2addon_ggs_5.2.6.6-5.emf", "" },
+        /*  6*/ { BARCODE_UPCE, -1, -1, -1, -1, -1, "", "", 0, "0123456+12", "data/emf/upce_2addon.emf", "" },
+        /*  7*/ { BARCODE_UPCE, -1, SMALL_TEXT | BOLD_TEXT, -1, -1, -1, "", "", 0, "0123456+12", "data/emf/upce_2addon_small_bold.emf", "" },
+        /*  8*/ { BARCODE_ITF14, -1, BOLD_TEXT, -1, -1, -1, "", "", 0, "123", "data/emf/itf14_bold.emf", "" },
+        /*  9*/ { BARCODE_CODE39, -1, -1, -1, -1, -1, "", "", 90, "123", "data/emf/code39_rotate_90.emf", "" },
+        /* 10*/ { BARCODE_CODE39, -1, -1, -1, -1, -1, "", "", 180, "123", "data/emf/code39_rotate_180.emf", "" },
+        /* 11*/ { BARCODE_CODE39, -1, -1, -1, -1, -1, "", "", 270, "123", "data/emf/code39_rotate_270.emf", "" },
+        /* 12*/ { BARCODE_MAXICODE, -1, -1, -1, -1, -1, "E0E0E0", "700070", 0, "THIS IS A 93 CHARACTER CODE SET A MESSAGE THAT FILLS A MODE 4, UNAPPENDED, MAXICODE SYMBOL...", "data/emf/maxicode_#185.emf", "#185 Maxicode scaling" },
     };
     int data_size = ARRAY_SIZE(data);
 
-    char *data_dir = "../data/emf";
+    char *data_dir = "data/emf";
     char *emf = "out.emf";
     char escaped[1024];
     int escaped_size = 1024;

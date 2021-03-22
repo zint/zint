@@ -129,13 +129,13 @@ static void test_print(int index, int generate, int debug) {
         char* expected_file;
     };
     struct item data[] = {
-        /*  0*/ { BARCODE_PDF417, 5, -1, -1, -1, "147AD0", "FC9630", "123", "../data/bmp/pdf417_fg_bg.bmp" },
-        /*  1*/ { BARCODE_ULTRA, 5, -1, -1, -1, "147AD0", "FC9630", "123", "../data/bmp/ultracode_fg_bg.bmp" },
-        /*  2*/ { BARCODE_PDF417COMP, 2, 2, -1, -1, "", "", "123", "../data/bmp/pdf417comp_hvwsp2.bmp" },
+        /*  0*/ { BARCODE_PDF417, 5, -1, -1, -1, "147AD0", "FC9630", "123", "data/bmp/pdf417_fg_bg.bmp" },
+        /*  1*/ { BARCODE_ULTRA, 5, -1, -1, -1, "147AD0", "FC9630", "123", "data/bmp/ultracode_fg_bg.bmp" },
+        /*  2*/ { BARCODE_PDF417COMP, 2, 2, -1, -1, "", "", "123", "data/bmp/pdf417comp_hvwsp2.bmp" },
     };
     int data_size = ARRAY_SIZE(data);
 
-    char* data_dir = "../data/bmp";
+    char* data_dir = "data/bmp";
     char* bmp = "out.bmp";
     char escaped[1024];
     int escaped_size = 1024;

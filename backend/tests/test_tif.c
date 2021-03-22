@@ -164,25 +164,25 @@ static void test_print(int index, int generate, int debug) {
         char *comment;
     };
     struct item data[] = {
-        /*  0*/ { BARCODE_CODE128, -1, -1, -1, 1, -1, -1, -1, 0, 0, "112233", "EEDDCC", "A", "", "../data/tif/code128_fgbg.tif", "" },
-        /*  1*/ { BARCODE_CODE128, -1, -1, -1, 1, -1, -1, -1, 0, 0, "C00000", "FEDCBACC", "A", "", "../data/tif/code128_bgalpha.tif", "" },
-        /*  2*/ { BARCODE_CODE128, -1, -1, -1, 1, -1, -1, -1, 0, 0, "00000099", "FEDCBA", "A", "", "../data/tif/code128_fgalpha.tif", "" },
-        /*  3*/ { BARCODE_CODE128, -1, -1, -1, 1, -1, -1, -1, 0, 0, "00000099", "FEDCBACC", "A", "", "../data/tif/code128_fgbgalpha.tif", "" },
-        /*  4*/ { BARCODE_CODE128, -1, -1, CMYK_COLOUR, 1, -1, -1, -1, 0, 0, "C00000", "FEDCBA", "A", "", "../data/tif/code128_cmyk.tif", "" },
-        /*  5*/ { BARCODE_CODE128, -1, -1, CMYK_COLOUR, 1, -1, -1, -1, 0, 0, "C0000099", "FEDCBACC", "A", "", "../data/tif/code128_cmyk_fgbgalpha.tif", "" },
-        /*  6*/ { BARCODE_ULTRA, -1, -1, -1, 1, -1, -1, -1, 0, 0, "C00000", "FEDCBACC", "1234", "", "../data/tif/ultra_bgalpha.tif", "" },
-        /*  7*/ { BARCODE_ULTRA, -1, -1, -1, 1, -1, -1, -1, 0, 0, "000000BB", "FEDCBA", "1234", "", "../data/tif/ultra_fgalpha.tif", "" },
-        /*  8*/ { BARCODE_ULTRA, -1, -1, -1, 1, -1, -1, -1, 0, 0, "000000BB", "FEDCBACC", "1234", "", "../data/tif/ultra_fgbgalpha.tif", "" },
-        /*  9*/ { BARCODE_ULTRA, -1, -1, -1, 1, -1, -1, -1, 0, 0, "000000BB", "", "1234", "", "../data/tif/ultra_fgalpha_nobg.tif", "" },
-        /* 10*/ { BARCODE_ULTRA, -1, -1, -1, 1, -1, -1, -1, 0, 0, "", "FEDCBACC", "1234", "", "../data/tif/ultra_bgalpha_nofg.tif", "" },
-        /* 11*/ { BARCODE_ULTRA, -1, -1, -1, -1, -1, -1, -1, 0, 0.5f, "", "", "1", "", "../data/tif/ultra_odd.tif", "" },
-        /* 12*/ { BARCODE_HANXIN, UNICODE_MODE, -1, -1, -1, -1, 4, 84, 0, 2, "", "", "1", "", "../data/tif/hanxin_v84_l4_scale2.tif", "" },
-        /* 13*/ { BARCODE_AZTEC, -1, -1, -1, -1, -1, -1, 32, 0, 0, "4BE055", "", "1", "", "../data/tif/aztec_v32_fg.tif", "" },
-        /* 14*/ { BARCODE_DAFT, -1, -1, -1, -1, -1, -1, -1, 1, 0.5f, "", "", "F", "", "../data/tif/daft_scale0.5.tif", "" },
+        /*  0*/ { BARCODE_CODE128, -1, -1, -1, 1, -1, -1, -1, 0, 0, "112233", "EEDDCC", "A", "", "data/tif/code128_fgbg.tif", "" },
+        /*  1*/ { BARCODE_CODE128, -1, -1, -1, 1, -1, -1, -1, 0, 0, "C00000", "FEDCBACC", "A", "", "data/tif/code128_bgalpha.tif", "" },
+        /*  2*/ { BARCODE_CODE128, -1, -1, -1, 1, -1, -1, -1, 0, 0, "00000099", "FEDCBA", "A", "", "data/tif/code128_fgalpha.tif", "" },
+        /*  3*/ { BARCODE_CODE128, -1, -1, -1, 1, -1, -1, -1, 0, 0, "00000099", "FEDCBACC", "A", "", "data/tif/code128_fgbgalpha.tif", "" },
+        /*  4*/ { BARCODE_CODE128, -1, -1, CMYK_COLOUR, 1, -1, -1, -1, 0, 0, "C00000", "FEDCBA", "A", "", "data/tif/code128_cmyk.tif", "" },
+        /*  5*/ { BARCODE_CODE128, -1, -1, CMYK_COLOUR, 1, -1, -1, -1, 0, 0, "C0000099", "FEDCBACC", "A", "", "data/tif/code128_cmyk_fgbgalpha.tif", "" },
+        /*  6*/ { BARCODE_ULTRA, -1, -1, -1, 1, -1, -1, -1, 0, 0, "C00000", "FEDCBACC", "1234", "", "data/tif/ultra_bgalpha.tif", "" },
+        /*  7*/ { BARCODE_ULTRA, -1, -1, -1, 1, -1, -1, -1, 0, 0, "000000BB", "FEDCBA", "1234", "", "data/tif/ultra_fgalpha.tif", "" },
+        /*  8*/ { BARCODE_ULTRA, -1, -1, -1, 1, -1, -1, -1, 0, 0, "000000BB", "FEDCBACC", "1234", "", "data/tif/ultra_fgbgalpha.tif", "" },
+        /*  9*/ { BARCODE_ULTRA, -1, -1, -1, 1, -1, -1, -1, 0, 0, "000000BB", "", "1234", "", "data/tif/ultra_fgalpha_nobg.tif", "" },
+        /* 10*/ { BARCODE_ULTRA, -1, -1, -1, 1, -1, -1, -1, 0, 0, "", "FEDCBACC", "1234", "", "data/tif/ultra_bgalpha_nofg.tif", "" },
+        /* 11*/ { BARCODE_ULTRA, -1, -1, -1, -1, -1, -1, -1, 0, 0.5f, "", "", "1", "", "data/tif/ultra_odd.tif", "" },
+        /* 12*/ { BARCODE_HANXIN, UNICODE_MODE, -1, -1, -1, -1, 4, 84, 0, 2, "", "", "1", "", "data/tif/hanxin_v84_l4_scale2.tif", "" },
+        /* 13*/ { BARCODE_AZTEC, -1, -1, -1, -1, -1, -1, 32, 0, 0, "4BE055", "", "1", "", "data/tif/aztec_v32_fg.tif", "" },
+        /* 14*/ { BARCODE_DAFT, -1, -1, -1, -1, -1, -1, -1, 1, 0.5f, "", "", "F", "", "data/tif/daft_scale0.5.tif", "" },
     };
     int data_size = ARRAY_SIZE(data);
 
-    char *data_dir = "../data/tif";
+    char *data_dir = "data/tif";
     char *tif = "out.tif";
     char escaped[1024];
     int escaped_size = 1024;
