@@ -20,28 +20,42 @@ if(ZINT_STATIC)
     add_library(zint-static STATIC ${zint_SRCS})
 endif()
 
+function(zint_target_link_libraries library)
+    target_link_libraries(zint ${library})
+    if(ZINT_STATIC)
+        target_link_libraries(zint-static ${library})
+    endif()
+endfunction()
+
+function(zint_target_compile_definitions scope definition)
+    target_compile_definitions(zint ${scope} ${definition})
+    if(ZINT_STATIC)
+        target_compile_definitions(zint-static ${scope} ${definition})
+    endif()
+endfunction()
+
 set_target_properties(zint PROPERTIES   SOVERSION "${ZINT_VERSION_MAJOR}.${ZINT_VERSION_MINOR}"
                                         VERSION ${ZINT_VERSION})
 
 if(PNG_FOUND)
-    target_link_libraries(zint PNG::PNG)
+    zint_target_link_libraries(PNG::PNG)
 else()
-    target_compile_definitions(zint PUBLIC NO_PNG)
+    zint_target_compile_definitions(PUBLIC NO_PNG)
 endif()
 
 if(ZINT_TEST)
-    target_compile_definitions(zint PUBLIC ZINT_TEST)
+    zint_target_compile_definitions(PUBLIC ZINT_TEST)
 endif()
 
 if(NOT MSVC)
     # Link with standard C math library.
-    target_link_libraries(zint m)
+    zint_target_link_libraries(m)
 endif()
 
 if(MSVC)
     # "BUILD_SHARED_LIBS" is a CMake defined variable, see documentation.
     if(BUILD_SHARED_LIBS)
-        target_compile_definitions(zint PRIVATE DLL_EXPORT)
+        zint_target_compile_definitions(zint PRIVATE DLL_EXPORT)
     endif()
 endif()
 
