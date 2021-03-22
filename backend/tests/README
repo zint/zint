@@ -1,28 +1,31 @@
 Zint backend test suite
 -----------------------
 
-To make, first make libzint with ZINT_TEST defined:
+In order to build the zint testsuite, zint has to be compiled with the
+ZINT_TEST option enabled:
 
   cd <project-dir>
   mkdir build
   cd build
   cmake -DZINT_TEST=ON ..
   make
-
-Then make the tests:
-
-  cd <project-dir>
-  cd backend/tests
-  mkdir build
-  cd build
-  cmake -DZINT_TEST=ON ..
-  make
-
-(ZINT_TEST is needed to export INTERNAL functions for use and testing.)
 
 ------------------------------------------------------------------------------
 
-To run all tests (within <project-dir>/backend/tests/build):
+In order to run the testsuite, the path of the zint library needs to be
+communicated to the runtime linker. On UNIX like systems, this is done
+by exporting LD_LIBRARY_PATH to the path containing the zint library,
+which is <build-dir>/backend:
+
+  cd <project-dir>
+  cd build
+  export LD_LIBRARY_PATH=$(pwd)/backend
+  
+Setting LD_LIBRARY_PATH is not required if the zint library to be tested is
+installed into a system library path ( /usr/lib for example ) prior to running
+the tests.
+  
+To run all tests (within <build-dir>/backend/tests):
 
   ctest
 
@@ -58,6 +61,21 @@ To run a test against BWIPP (if any), use '-d 128':
 
 ------------------------------------------------------------------------------
 
+If the zint library was built with static linkage support, i.e. ZINT_STATIC
+is ON, an additional test executable, which uses the zint-static library, will
+be built. The static variant of each test shares the test name, but has a
+"-static" suffix. For example, 
+
+  ./test_dotcode
+
+would run the dotcode test that uses the shared zint library, while
+
+  ./test_dotcode-static
+
+runs the same test built against the zint-static library.
+
+------------------------------------------------------------------------------
+
 To make with gcc sanitize, first set for libzint and make:
 
   cd <project-dir>
@@ -65,24 +83,12 @@ To make with gcc sanitize, first set for libzint and make:
   cmake -DZINT_SANITIZE=ON ..
   make && sudo make install
 
-Then set for tests and make:
-
-  cd <project-dir>
-  cd backend/tests/build
-  cmake -DZINT_SANITIZE=ON ..
-  make
-
 Similarly to make with gcc debug:
 
   cd <project-dir>
   cd build
   cmake -DZINT_DEBUG=ON ..
   make && sudo make install
-
-  cd <project-dir>
-  cd backend/tests/build
-  cmake -DZINT_DEBUG=ON ..
-  make
 
 To undo sanitize/debug, remake each after setting:
 
@@ -94,3 +100,4 @@ To get a clean libzint, set the above and also:
   cmake -DZINT_TEST=OFF ..
 
 (The tests will now fail to link.)
+
