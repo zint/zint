@@ -54,6 +54,10 @@ if(ZINT_DEBUG)
     endif()
 endif()
 
+if(ZINT_TEST)
+    enable_testing()
+endif()
+
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_GNUCC)
     if(ZINT_SANITIZE)
         add_compile_options(-fsanitize=undefined -fsanitize=address)
