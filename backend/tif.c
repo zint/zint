@@ -45,13 +45,6 @@
 #include <malloc.h>
 #endif
 
-#if !defined(_WIN32) && !defined(__APPLE__)
-#include <endian.h>
-# if __BYTE_ORDER == __BIG_ENDIAN
-#define TIF_BIG_ENDIAN
-#endif
-#endif
-
 /* PhotometricInterpretation */
 #define TIF_PMI_WHITEISZERO     0
 #define TIF_PMI_BLACKISZERO     1
@@ -83,6 +76,10 @@ static void to_cmyk(unsigned char rgb[3], unsigned char alpha, unsigned char *cm
     cmyk[3] = 0xff - max;
     cmyk[4] = alpha;
 
+}
+
+static int is_big_endian() {
+    return (*((const uint16_t *)"\x11\x22") == 0x1122);
 }
 
 INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf) {
@@ -351,11 +348,11 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     }
 
     /* Header */
-#ifdef TIF_BIG_ENDIAN
-    header.byte_order = 0x4D4D; // "MM" big-endian
-#else
-    header.byte_order = 0x4949; // "II" little-endian
-#endif
+    if (is_big_endian()) {
+        header.byte_order = 0x4D4D; // "MM" big-endian
+    } else {
+        header.byte_order = 0x4949; // "II" little-endian
+    }
     header.identity = 42;
     header.offset = free_memory;
 
