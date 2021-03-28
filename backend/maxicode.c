@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2010-2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2010-2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -104,10 +104,13 @@ static void maxi_do_secondary_chk_even(unsigned char maxi_codeword[144], const i
 }
 
 /* Moves everything up so that a shift or latch can be inserted */
-static void maxi_bump(unsigned char set[], unsigned char character[], const int bump_posn) {
+static void maxi_bump(unsigned char set[], unsigned char character[], const int bump_posn, int *p_length) {
 
-    memmove(set + bump_posn + 1, set + bump_posn, 143 - bump_posn);
-    memmove(character + bump_posn + 1, character + bump_posn, 143 - bump_posn);
+    if (bump_posn < 143) {
+        memmove(set + bump_posn + 1, set + bump_posn, 143 - bump_posn);
+        memmove(character + bump_posn + 1, character + bump_posn, 143 - bump_posn);
+    }
+    (*p_length)++; /* Increment length regardless to make sure too long always triggered */
 }
 
 /* If the value is present in  array, return the value, else return badvalue */
@@ -141,7 +144,7 @@ static int bestSurroundingSet(const int index, const int length, const unsigned 
 
 /* Format text according to Appendix A */
 static int maxi_text_process(unsigned char maxi_codeword[144], const int mode, const unsigned char in_source[], int length,
-            const int eci, const int scm_vv) {
+            const int eci, const int scm_vv, const int debug_print) {
 
     unsigned char set[144], character[144] = {0};
     int i, count, current_set, padding_set;
@@ -205,7 +208,7 @@ static int maxi_text_process(unsigned char maxi_codeword[144], const int mode, c
                 /* FS */
                 set[i] = bestSurroundingSet(i, length, set, set12345, 5);
                 if (set[i] == 5) {
-                    character[i] = 32;                   
+                    character[i] = 32;
                 }
 
             } else if (character[i] == 29) {
@@ -213,11 +216,11 @@ static int maxi_text_process(unsigned char maxi_codeword[144], const int mode, c
                 set[i] = bestSurroundingSet(i, length, set, set12345, 5);
                 if (set[i] == 5) {
                     character[i] = 33;
-                }       
+                }
 
             } else if (character[i] == 30) {
                 /* RS */
-                set[i] = bestSurroundingSet(i, length, set, set12345, 5);         
+                set[i] = bestSurroundingSet(i, length, set, set12345, 5);
                 if (set[i] == 5) {
                     character[i] = 34;
                 }
@@ -245,7 +248,7 @@ static int maxi_text_process(unsigned char maxi_codeword[144], const int mode, c
                 set[i] = bestSurroundingSet(i, length, set, set12, 2);
                 if (set[i] == 2) {
                     character[i] = 49;
-                } 
+                }
 
             } else if (character[i] == 47) {
                 /* Slash */
@@ -281,7 +284,7 @@ static int maxi_text_process(unsigned char maxi_codeword[144], const int mode, c
             count++;
             if (count == 9) {
                 /* Nine digits in a row can be compressed */
-                memset(set + i - 8, 6, 9);
+                memset(set + i - 8, 6, 9); /* Set set of nine digits to 6 */
                 count = 0;
             }
         } else {
@@ -297,105 +300,96 @@ static int maxi_text_process(unsigned char maxi_codeword[144], const int mode, c
         if ((set[i] != current_set) && (set[i] != 6)) {
             switch (set[i]) {
                 case 1:
-                    if (i + 1 < 144 && set[i + 1] == 1) {
-                        if (i + 2 < 144 && set[i + 2] == 1) {
-                            if (i + 3 < 144 && set[i + 3] == 1) {
-                                /* Latch A */
-                                maxi_bump(set, character, i);
-                                character[i] = 63;
-                                current_set = 1;
-                                length++;
+                    if (current_set == 2) { /* Set B */
+                        if (i + 1 < 144 && set[i + 1] == 1) {
+                            if (i + 2 < 144 && set[i + 2] == 1) {
+                                if (i + 3 < 144 && set[i + 3] == 1) {
+                                    /* Latch A */
+                                    maxi_bump(set, character, i, &length);
+                                    character[i] = 63; /* Set B Latch A */
+                                    current_set = 1;
+                                    i += 3; /* Next 3 Set A so skip over */
+                                    if (debug_print) printf("LCHA ");
+                                } else {
+                                    /* 3 Shift A */
+                                    maxi_bump(set, character, i, &length);
+                                    character[i] = 57; /* Set B triple shift A */
+                                    i += 2; /* Next 2 Set A so skip over */
+                                    if (debug_print) printf("3SHA ");
+                                }
                             } else {
-                                /* 3 Shift A */
-                                maxi_bump(set, character, i);
-                                character[i] = 57;
-                                length++;
-                                i += 2;
+                                /* 2 Shift A */
+                                maxi_bump(set, character, i, &length);
+                                character[i] = 56; /* Set B double shift A */
+                                i++; /* Next Set A so skip over */
+                                if (debug_print) printf("2SHA ");
                             }
                         } else {
-                            /* 2 Shift A */
-                            maxi_bump(set, character, i);
-                            character[i] = 56;
-                            length++;
-                            i++;
+                            /* Shift A */
+                            maxi_bump(set, character, i, &length);
+                            character[i] = 59; /* Set A Shift B */
+                            if (debug_print) printf("SHA ");
                         }
-                    } else {
-                        /* Shift A */
-                        maxi_bump(set, character, i);
-                        character[i] = 59;
-                        length++;
+                    } else { /* All sets other than B only have latch */
+                        /* Latch A */
+                        maxi_bump(set, character, i, &length);
+                        character[i] = 58; /* Sets C,D,E Latch A */
+                        current_set = 1;
+                        if (debug_print) printf("LCHA ");
                     }
                     break;
-                case 2:
-                    if (i + 1 < 144 && set[i + 1] == 2) {
+                case 2: /* Set B */
+                    if (current_set != 1 || (i + 1 < 144 && set[i + 1] == 2)) { /* If not Set A or next Set B */
                         /* Latch B */
-                        maxi_bump(set, character, i);
-                        character[i] = 63;
+                        maxi_bump(set, character, i, &length);
+                        character[i] = 63; /* Sets A,C,D,E Latch B */
                         current_set = 2;
-                        length++;
-                    } else {
+                        if (debug_print) printf("LCHB ");
+                    } else { /* Only available from Set A */
                         /* Shift B */
-                        maxi_bump(set, character, i);
-                        character[i] = 59;
-                        length++;
+                        maxi_bump(set, character, i, &length);
+                        character[i] = 59; /* Set B Shift A */
+                        if (debug_print) printf("SHB ");
                     }
                     break;
-                case 3:
-                    if (i + 3 < 144 && set[i + 1] == 3 && set[i + 2] == 3 && set[i + 3] == 3) {
-                        /* Lock in C */
-                        maxi_bump(set, character, i);
-                        character[i] = 60;
-                        maxi_bump(set, character, i);
-                        character[i] = 60;    
-                        current_set = 3;
-                        length++;
-                        i += 3;
+                case 3: /* Set C */
+                case 4: /* Set D */
+                case 5: /* Set E */
+                    /* If first and next 3 same set, or not first and previous and next 2 same set */
+                    if ((i == 0 && i + 3 < 144 && set[i + 1] == set[i] && set[i + 2] == set[i]
+                                && set[i + 3] == set[i])
+                            || (i > 0 && set[i - 1] == set[i] && i + 2 < 144 && set[i + 1] == set[i]
+                                && set[i + 2] == set[i])) {
+                        /* Lock in C/D/E */
+                        if (i == 0) {
+                            maxi_bump(set, character, i, &length);
+                            character[i] = 60 + set[i] - 3;
+                            i++; /* Extra bump */
+                            maxi_bump(set, character, i, &length);
+                            character[i] = 60 + set[i] - 3;
+                            i += 3; /* Next 3 same set so skip over */
+                        } else {
+                            /* Add single Shift to previous Shift */
+                            maxi_bump(set, character, i - 1, &length);
+                            character[i - 1] = 60 + set[i] - 3;
+                            i += 2; /* Next 2 same set so skip over */
+                        }
+                        current_set = set[i];
+                        if (debug_print) printf("LCK%c ", 'C' + set[i] - 3);
                     } else {
-                       /* Shift C */
-                       maxi_bump(set, character, i);
-                       character[i] = 60;
-                       length++;
-                    }
-                    break;
-                case 4:
-                    if (i + 3 < 144 && set[i + 1] == 4 && set[i + 2] == 4 && set[i + 3] == 4) {
-                        /* Lock in D */
-                        maxi_bump(set, character, i);
-                        character[i] = 61;
-                        maxi_bump(set, character, i);
-                        character[i] = 61;
-                        current_set = 4;
-                        length++;
-                        i += 3;
-                    } else {
-                        /* Shift D */
-                        maxi_bump(set, character, i);
-                        character[i] = 61;
-                        length++;
-                    }
-                    break;
-                case 5:
-                    if (i + 3 < 144 && set[i + 1] == 5 && set[i + 2] == 5 && set[i + 3] == 5) {
-                        /* Lock in E */
-                        maxi_bump(set, character, i);
-                        character[i] = 62;
-                        maxi_bump(set, character, i);
-                        character[i] = 62;
-                        current_set = 5;
-                        length++;
-                        i += 3;
-                    } else {
-                        /* Shift E */
-                        maxi_bump(set, character, i);
-                        character[i] = 62;
-                        length++;
+                        /* Shift C/D/E */
+                        maxi_bump(set, character, i, &length);
+                        character[i] = 60 + set[i] - 3;
+                        if (debug_print) printf("SH%c ", 'C' + set[i] - 3);
                     }
                     break;
             }
-            i++;
+            i++; /* Allow for bump */
         }
         i++;
     } while (i < 144);
+
+    if (debug_print) printf("\n");
 
     /* Number compression has not been forgotten! - It's handled below */
     i = 0;
@@ -423,38 +417,36 @@ static int maxi_text_process(unsigned char maxi_codeword[144], const int mode, c
     /* Insert ECI at the beginning of message if needed */
     /* Encode ECI assignment numbers according to table 3 */
     if (eci != 0) {
-        maxi_bump(set, character, 0);
+        maxi_bump(set, character, 0, &length);
         character[0] = 27; // ECI
         if (eci <= 31) {
-            maxi_bump(set, character, 1);
+            maxi_bump(set, character, 1, &length);
             character[1] = eci;
-            length += 2;
         } else if (eci <= 1023) {
-            maxi_bump(set, character, 1);
-            maxi_bump(set, character, 1);
+            maxi_bump(set, character, 1, &length);
+            maxi_bump(set, character, 1, &length);
             character[1] = 0x20 | ((eci >> 6) & 0x0F);
             character[2] = eci & 0x3F;
-            length += 3;
         } else if (eci <= 32767) {
-            maxi_bump(set, character, 1);
-            maxi_bump(set, character, 1);
-            maxi_bump(set, character, 1);
+            maxi_bump(set, character, 1, &length);
+            maxi_bump(set, character, 1, &length);
+            maxi_bump(set, character, 1, &length);
             character[1] = 0x30 | ((eci >> 12) & 0x07);
             character[2] = (eci >> 6) & 0x3F;
             character[3] = eci & 0x3F;
-            length += 4;
         } else {
-            maxi_bump(set, character, 1);
-            maxi_bump(set, character, 1);
-            maxi_bump(set, character, 1);
-            maxi_bump(set, character, 1);
+            maxi_bump(set, character, 1, &length);
+            maxi_bump(set, character, 1, &length);
+            maxi_bump(set, character, 1, &length);
+            maxi_bump(set, character, 1, &length);
             character[1] = 0x38 | ((eci >> 18) & 0x03);
             character[2] = (eci >> 12) & 0x3F;
             character[3] = (eci >> 6) & 0x3F;
             character[4] = eci & 0x3F;
-            length += 5;
         }
     }
+
+    if (debug_print) printf("Length: %d\n", length);
 
     if (((mode == 2) || (mode == 3)) && (length > 84)) {
         return ZINT_ERROR_TOO_LONG;
@@ -639,7 +631,7 @@ INTERNAL int maxicode(struct zint_symbol *symbol, unsigned char source[], int le
         printf("Mode: %d\n", mode);
     }
 
-    i = maxi_text_process(maxi_codeword, mode, source, length, symbol->eci, scm_vv);
+    i = maxi_text_process(maxi_codeword, mode, source, length, symbol->eci, scm_vv, symbol->debug & ZINT_DEBUG_PRINT);
     if (i == ZINT_ERROR_TOO_LONG) {
         strcpy(symbol->errtxt, "553: Input data too long");
         return i;

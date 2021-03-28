@@ -1789,7 +1789,7 @@ static const char *testUtilBwippName(int index, const struct zint_symbol *symbol
         { "", -1, 54, 0, 0, 0, 0, 0, },
         { "pdf417", BARCODE_PDF417, 55, 1, 1, 0, 0, 0, },
         { "pdf417compact", BARCODE_PDF417COMP, 56, 1, 1, 0, 0, 0, },
-        { "maxicode", BARCODE_MAXICODE, 57, 0, 0, 0, 0, 0, },
+        { "maxicode", BARCODE_MAXICODE, 57, 1, 1, 0, 0, 0, },
         { "qrcode", BARCODE_QRCODE, 58, 0, 0, 0, 0, 0, },
         { "", -1, 59, 0, 0, 0, 0, 0, },
         { "", BARCODE_CODE128B, 60, 0, 0, 0, 0, 0, },
@@ -2070,7 +2070,7 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
     int symbology = symbol->symbology;
     int data_len = length == -1 ? (int) strlen(data) : length;
     int primary_len = primary ? (int) strlen(primary) : 0;
-    int max_data_len = 4 + primary_len + 1 + 1 + data_len * 4 + 32; /* 4 AI prefix + primary + '|' + leading zero + escaped data + fudge */
+    int max_data_len = 4 + primary_len + 1 + 1 + data_len * 4 + 64; /* 4 AI prefix + primary + '|' + leading zero + escaped data + fudge */
 
     int eci_length = get_eci_length(symbol->eci, (const unsigned char *) data, data_len);
     char converted[eci_length + 1];
@@ -2106,7 +2106,11 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
     }
 
     for (r = 0; r < symbol->rows; r++) {
-        bwipp_row_height[r] = symbol->row_height[r] ? symbol->row_height[r] : linear_row_height;
+        if (symbology == BARCODE_MAXICODE) {
+            bwipp_row_height[r] = 1;
+        } else {
+            bwipp_row_height[r] = symbol->row_height[r] ? symbol->row_height[r] : linear_row_height;
+        }
         //fprintf(stderr, "bwipp_row_height[%d] %d, symbol->row_height[%d] %d\n", r, bwipp_row_height[r], r, symbol->row_height[r]);
     }
     if (symbology == BARCODE_DBAR_EXP) {
@@ -2387,6 +2391,71 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                     }
                     sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%sversion=%s", strlen(bwipp_opts_buf) ? " " : "", codeone_version);
                     bwipp_opts = bwipp_opts_buf;
+                }
+            } else if (symbology == BARCODE_MAXICODE) {
+                int have_scm = memcmp(bwipp_data, "[)>^03001^02996", 15) == 0;
+                int mode = option_1;
+                if (mode <= 0) {
+                    if (primary_len == 0) {
+                        mode = 4;
+                    } else {
+                        for (int i = 0; i < primary_len - 6; i++) {
+                            if (((symbol->primary[i] < '0') || (symbol->primary[i] > '9')) && (symbol->primary[i] != ' ')) {
+                                mode = 3;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (mode > 0) {
+                    sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%smode=%d", strlen(bwipp_opts_buf) ? " " : "", mode);
+                    bwipp_opts = bwipp_opts_buf;
+                }
+                if (primary_len) {
+                    char prefix_buf[30];
+                    int prefix_len;
+                    int postcode_len = primary_len - 6;
+                    char postcode[10];
+                    if (postcode_len >= 10) postcode_len = 9;
+                    memcpy(postcode, primary, postcode_len);
+                    postcode[postcode_len] = '\0';
+                    if (mode == 2) {
+                        for (int i = 0; i < postcode_len; i++) {
+                            if (postcode[i] == ' ') {
+                                postcode[i] = '\0';
+                            }
+                        }
+                    } else {
+                        postcode[6] = '\0';
+                        for (int i = postcode_len; i < 6; i++) {
+                            postcode[i] = ' ';
+                        }
+                    }
+                    sprintf(prefix_buf, "%s^029%.3s^029%.3s^029", postcode, primary + primary_len - 6, primary + primary_len - 3);
+                    prefix_len = (int) strlen(prefix_buf);
+                    if (have_scm) {
+                        memmove(bwipp_data + 15 + prefix_len, bwipp_data, strlen(bwipp_data) - 15 + 1);
+                        memcpy(bwipp_data + 15, prefix_buf, prefix_len);
+                    } else {
+                        memmove(bwipp_data + prefix_len, bwipp_data, strlen(bwipp_data) + 1);
+                        memcpy(bwipp_data, prefix_buf, prefix_len);
+                    }
+                    if (!parse) {
+                        sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%sparse", strlen(bwipp_opts_buf) ? " " : "");
+                        bwipp_opts = bwipp_opts_buf;
+                        parse = 1;
+                    }
+                }
+                if (option_2 > 0) {
+                    char scm_vv_buf[16];
+                    sprintf(scm_vv_buf, "[)>^03001^029%02d", option_2); /* [)>\R01\Gvv */
+                    memmove(bwipp_data + 15, bwipp_data, strlen(bwipp_data) + 1);
+                    memcpy(bwipp_data, scm_vv_buf, 15);
+                    if (!parse) {
+                        sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%sparse", strlen(bwipp_opts_buf) ? " " : "");
+                        bwipp_opts = bwipp_opts_buf;
+                        parse = 1;
+                    }
                 }
             }
         }

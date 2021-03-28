@@ -296,10 +296,6 @@ static void draw_bullseye(unsigned char *pixelbuf, int image_width, int image_he
     /* Central bullseye in Maxicode symbols */
     float x = 14.5f * scaler;
     float y = 15.0f * scaler;
-    if (scaler < 10) {
-        x = 16.0f * scaler;
-        y = 16.5f * scaler;
-    }
 
     draw_circle(pixelbuf, image_width, image_height, x + xoffset, y + yoffset, (4.571f * scaler) + 1.0f, DEFAULT_INK);
     draw_circle(pixelbuf, image_width, image_height, x + xoffset, y + yoffset, (3.779f * scaler) + 1.0f, DEFAULT_PAPER);

@@ -1,5 +1,5 @@
---- ../../../../postscriptbarcode/build/monolithic/barcode.ps	2021-02-22 18:33:57.673232608 +0000
-+++ ../tools/bwipp_dump.ps	2021-02-22 19:03:00.083067838 +0000
+--- ../../../../postscriptbarcode/build/monolithic/barcode.ps	2021-03-22 15:06:47.498155878 +0000
++++ ../tools/bwipp_dump.ps	2021-03-27 03:44:50.998203506 +0000
 @@ -26198,34 +26198,80 @@
          pop
      } ifelse
@@ -1052,7 +1052,7 @@
  
      end
  
-@@ -28810,3 +29270,183 @@
+@@ -28810,3 +29270,189 @@
  % --END ENCODER hibcazteccode--
  
  % --END TEMPLATE--
@@ -1113,7 +1113,13 @@
 +
 +% pixs is renmatrix input
 +ret /pixs known {
-+    /pixs ret /pixs get def
++    b (maxicode) eq {
++        /pixs 990 array def
++        0 1 989 { pixs exch 0 put } for
++        ret /pixs get { pixs exch 1 put } forall
++    } {
++        /pixs ret /pixs get def
++    } ifelse
 +
 +    /xs systemdict /xs known { systemdict /xs get cvi } { 0 } ifelse def
 +    /xe systemdict /xe known { systemdict /xe get cvi } { 0 } ifelse def
