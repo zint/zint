@@ -5,8 +5,6 @@ project(zint)
 
 configure_file(zintconfig.h.in ../../backend/zintconfig.h)
 
-find_package(PNG)
-
 set(zint_COMMON_SRCS common.c library.c large.c reedsol.c gs1.c eci.c general_field.c sjis.c gb2312.c gb18030.c)
 set(zint_ONEDIM_SRCS code.c code128.c 2of5.c upcean.c telepen.c medical.c plessey.c rss.c)
 set(zint_POSTAL_SRCS postal.c auspost.c imail.c mailmark.c)
@@ -37,7 +35,11 @@ endfunction()
 set_target_properties(zint PROPERTIES   SOVERSION "${ZINT_VERSION_MAJOR}.${ZINT_VERSION_MINOR}"
                                         VERSION ${ZINT_VERSION})
 
-if(PNG_FOUND)
+if(ZINT_USE_PNG)
+    find_package(PNG)
+endif()
+
+if(ZINT_USE_PNG AND PNG_FOUND)
     zint_target_link_libraries(PNG::PNG)
 else()
     zint_target_compile_definitions(PUBLIC NO_PNG)
