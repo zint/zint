@@ -25,10 +25,12 @@ set(testcommon_SRCS testcommon.c testcommon.h)
 
 add_library(testcommon ${testcommon_SRCS})
 target_link_libraries(testcommon zint)
+target_include_directories(testcommon PUBLIC ${zint_backend_tests_SOURCE_DIR})
 
 if(ZINT_STATIC)
     add_library(testcommon-static ${testcommon_SRCS})
     target_link_libraries(testcommon-static zint-static)
+    target_include_directories(testcommon-static PUBLIC ${zint_backend_tests_SOURCE_DIR})
 endif()
 
 macro(zint_add_test test_name test_command)
