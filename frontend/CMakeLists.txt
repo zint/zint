@@ -21,3 +21,7 @@ set_target_properties(zint_frontend PROPERTIES   OUTPUT_NAME "zint")
 target_link_libraries(zint_frontend zint)
 
 install(TARGETS zint_frontend DESTINATION "${BIN_INSTALL_DIR}" RUNTIME)
+
+if(ZINT_TEST)
+    add_subdirectory(tests)
+endif(ZINT_TEST)

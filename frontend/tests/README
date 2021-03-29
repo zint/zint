@@ -1,26 +1,7 @@
 Zint frontend test suite
 ------------------------
 
-See <project-dir>/backend/tests/README first to build the backend test suite, as
-its library <project-dir>/backend/tests/build/libtestcommon.a is used here. Then
-
-  cd <project-dir>
-  cd frontend/tests
-  mkdir build
-  cd build
-  cmake ..
-  make
-
-If the backend test suite was made with -DZINT_SANITIZE:BOOL=1 then instead
-
-  cd <project-dir>
-  cd frontend/tests
-  mkdir build
-  cd build
-  cmake -DZINT_SANITIZE:BOOL=1 ..
-  make
-
--DZINT_DEBUG:BOOL=1 can also be used.
+See <project-dir>/backend/tests/README to see how to build the test suite.
 
 ------------------------------------------------------------------------------
 
