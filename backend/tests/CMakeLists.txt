@@ -8,6 +8,8 @@ project(zint_backend_tests)
 
 enable_testing()
 
+include(${zint-package_SOURCE_DIR}/cmake/zint_add_test.cmake)
+
 file(GLOB_RECURSE zint_backend_tests_data LIST_DIRECTORIES false RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "data/*")
 foreach(data_file IN LISTS zint_backend_tests_data)
     configure_file(${data_file} ${data_file} COPYONLY)
@@ -32,18 +34,6 @@ if(ZINT_STATIC)
     target_link_libraries(testcommon-static zint-static)
     target_include_directories(testcommon-static PUBLIC ${zint_backend_tests_SOURCE_DIR})
 endif()
-
-macro(zint_add_test test_name test_command)
-    set(ADDITIONAL_LIBS "${ARGN}" ${LIBRARY_FLAGS})
-    add_executable(${test_command} ${test_command}.c)
-    target_link_libraries(${test_command} testcommon ${ADDITIONAL_LIBS})
-    add_test(${test_name} ${test_command})
-    if(ZINT_STATIC)
-        add_executable(${test_command}-static ${test_command}.c)
-        target_link_libraries(${test_command}-static testcommon-static ${ADDITIONAL_LIBS})
-        add_test(${test_name}-static ${test_command}-static)
-    endif()
-endmacro()
 
 zint_add_test(2of5 test_2of5)
 zint_add_test(auspost test_auspost)

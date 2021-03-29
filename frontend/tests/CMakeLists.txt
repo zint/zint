@@ -8,16 +8,6 @@ project(zint_frontend_tests)
 
 enable_testing()
 
-macro(zint_add_test test_name test_command)
-    set(ADDITIONAL_LIBS "${ARGN}" ${LIBRARY_FLAGS})
-    add_executable(${test_command} ${test_command}.c)
-    target_link_libraries(${test_command} testcommon ${ADDITIONAL_LIBS})
-    add_test(${test_name} ${test_command})
-    if(ZINT_STATIC)
-        add_executable(${test_command}-static ${test_command}.c)
-        target_link_libraries(${test_command}-static testcommon-static ${ADDITIONAL_LIBS})
-        add_test(${test_name}-static ${test_command}-static)
-    endif()
-endmacro()
+include(${zint-package_SOURCE_DIR}/cmake/zint_add_test.cmake)
 
 zint_add_test(args test_args)
