@@ -2,11 +2,20 @@ Zint frontend test suite
 ------------------------
 
 See <project-dir>/backend/tests/README to see how to build the test suite.
+In Addition to the setup for the backend tests, the environment needs to be
+able to find the `zint` application using that name. In UNIX like systems
+this can be configured by prepending the PATH variable with the frontend's
+directory inside the build directory:
+
+cd <build-dir>
+export PATH=$(pwd)/frontend:${PATH}
+
 
 ------------------------------------------------------------------------------
+the frontend test will be automatically run by cmake's ctest, however manual
+invocation is also possible:
 
-Only a single test is defined:
-
+cd <build-dir>/frontend/test
 ./test_args
 
 As with the backend tests, individual test functions and single dataset items
