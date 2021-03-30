@@ -33,7 +33,6 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <errno.h>
-#include <unistd.h>
 
 static void test_checks(int index, int debug) {
 

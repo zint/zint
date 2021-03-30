@@ -42,6 +42,14 @@
 #define ZINT_DEBUG_TEST_BWIPP           128
 #define ZINT_DEBUG_TEST_PERFORMANCE     256
 
+#ifdef _WIN32
+#include <malloc.h>
+#define alloca(nmemb) _malloca(nmemb)
+#define popen(command, mode) _popen(command, mode)
+#define pclose(stream) _pclose(stream)
+#else
+#include <unistd.h>
+#endif
 #include <stdio.h>
 #include "../common.h"
 

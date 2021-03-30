@@ -780,7 +780,7 @@ static void test_utf8_to_eci_ucs2be(void) {
         int length = data[i].length != -1 ? data[i].length : (int) strlen(data[i].data);
         int out_length = length;
         int eci_length = get_eci_length(data[i].eci, (const unsigned char *) data[i].data, length);
-        char dest[eci_length + 1];
+        char *dest = alloca(eci_length + 1);
 
         ret = utf8_to_eci(data[i].eci, (const unsigned char *) data[i].data, (unsigned char *) dest, &out_length);
         assert_equal(ret, data[i].ret, "i:%d utf8_to_eci ret %d != %d\n", i, ret, data[i].ret);

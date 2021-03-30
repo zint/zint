@@ -43,7 +43,6 @@
 #include <assert.h>
 #include <getopt.h>
 #include <limits.h>
-#include <unistd.h>
 #include <errno.h>
 
 static int tests = 0;
@@ -2098,13 +2097,13 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
     int max_data_len = 4 + primary_len + 1 + 1 + data_len * 4 + 64; /* 4 AI prefix + primary + '|' + leading zero + escaped data + fudge */
 
     int eci_length = get_eci_length(symbol->eci, (const unsigned char *) data, data_len);
-    char converted[eci_length + 1];
-    char cmd[max_data_len + 1024];
+    char *converted = alloca(eci_length + 1);
+    char *cmd = alloca(max_data_len + 1024);
     const char *bwipp_barcode = NULL;
     char *bwipp_opts = NULL;
-    char bwipp_data[max_data_len + 1];
+    char *bwipp_data = alloca(max_data_len + 1);
     char bwipp_opts_buf[512];
-    int bwipp_row_height[symbol->rows];
+    int *bwipp_row_height = alloca(sizeof(int) * symbol->rows);
     int linear_row_height;
     int gs1_cvt;
     int user_mask;

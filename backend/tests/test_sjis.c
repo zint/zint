@@ -134,8 +134,8 @@ static void test_sjis_utf8(int index) {
     // テ U+30C6 katakana, in Shift JIS 0x8365 (\203\145), UTF-8 E38386
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /*  0*/ { "é", -1, ZINT_ERROR_INVALID_DATA, -1, {}, "" },
-        /*  1*/ { "~", -1, ZINT_ERROR_INVALID_DATA, -1, {}, "" },
+        /*  0*/ { "é", -1, ZINT_ERROR_INVALID_DATA, -1, {0}, "" },
+        /*  1*/ { "~", -1, ZINT_ERROR_INVALID_DATA, -1, {0}, "" },
         /*  2*/ { "β", -1, 0, 1, { 0x83C0 }, "" },
         /*  3*/ { "¥", -1, 0, 1, { 0x5C }, "" },
         /*  4*/ { "aβcЖ¥･ｿ‾\\＼点茗テ", -1, 0, 13, { 'a', 0x83C0, 'c', 0x8447, 0x5C, 0xA5, 0xBF, 0x7E, 0x815F, 0x815F, 0x935F, 0xE4AA, 0x8365 }, "" },
@@ -194,8 +194,8 @@ static void test_sjis_utf8_to_eci(int index) {
     struct item data[] = {
         /*  0*/ { 3, 0, "é", -1, 0, 1, { 0xE9 }, "" },
         /*  1*/ { 3, 1, "é", -1, 0, 1, { 0xE9 }, "" },
-        /*  2*/ { 3, 0, "β", -1, ZINT_ERROR_INVALID_DATA, -1, {}, "" },
-        /*  3*/ { 3, 1, "β", -1, ZINT_ERROR_INVALID_DATA, -1, {}, "" },
+        /*  2*/ { 3, 0, "β", -1, ZINT_ERROR_INVALID_DATA, -1, {0}, "" },
+        /*  3*/ { 3, 1, "β", -1, ZINT_ERROR_INVALID_DATA, -1, {0}, "" },
         /*  4*/ { 9, 0, "β", -1, 0, 1, { 0xE2 }, "" },
         /*  5*/ { 9, 1, "β", -1, 0, 1, { 0xE2 }, "" },
         /*  6*/ { 3, 0, "¥", -1, 0, 1, { 0xA5 }, "" },
@@ -210,7 +210,7 @@ static void test_sjis_utf8_to_eci(int index) {
         /* 15*/ { 20, 1, "\\\\", -1, 0, 2, { 0x815F, 0x815F }, "Shift JIS reverse solidus (backslash) mapping from ASCII to double byte" },
         /* 16*/ { 20, 0, "爍", -1, 0, 2, { 0xE0, 0xA1 }, "Shift JIS U+720D" },
         /* 17*/ { 20, 1, "爍", -1, 0, 1, { 0xE0A1 }, "Shift JIS" },
-        /* 18*/ { 20, 0, "~", -1, ZINT_ERROR_INVALID_DATA, -1, {}, "ASCII tilde not in Shift JIS" },
+        /* 18*/ { 20, 0, "~", -1, ZINT_ERROR_INVALID_DATA, -1, {0}, "ASCII tilde not in Shift JIS" },
         /* 19*/ { 25, 0, "12", -1, 0, 4, { 0x00, 0x31, 0x00, 0x32 }, "UCS-2BE ASCII" },
         /* 20*/ { 25, 0, "", -1, 0, 4, { 0x00, 0x81, 0x00, 0x81 }, "UCS-2BE U+0081" },
         /* 21*/ { 25, 1, "", -1, 0, 4, { 0x00, 0x81, 0x00, 0x81 }, "UCS-2BE outside QR Kanji mode range" },
@@ -223,7 +223,7 @@ static void test_sjis_utf8_to_eci(int index) {
         /* 28*/ { 29, 0, "¨¨", -1, 0, 4, { 0xA1, 0xA7, 0xA1, 0xA7 }, "GB 2312 U+00A8" },
         /* 29*/ { 29, 1, "¨¨", -1, 0, 4, { 0xA1, 0xA7, 0xA1, 0xA7 }, "GB 2312 outside QR Kanji mode range" },
         /* 30*/ { 29, 0, "崂", -1, 0, 2, { 0xE1, 0xC0 }, "GB 2312 U+5D02" },
-        /* 31*/ { 29, 0, "釦", -1, ZINT_ERROR_INVALID_DATA, -1, {}, "GB 18030 U+91E6 not in GB 2312" },
+        /* 31*/ { 29, 0, "釦", -1, ZINT_ERROR_INVALID_DATA, -1, {0}, "GB 18030 U+91E6 not in GB 2312" },
         /* 32*/ { 29, 1, "崂", -1, 0, 1, { 0xE1C0 }, "GB 2312 in QR Kanji mode range" },
         /* 33*/ { 30, 0, "¡¡", -1, 0, 4, { 0x22 + 0x80, 0x2E + 0x80, 0x22 + 0x80, 0x2E + 0x80 }, "EUC-KR U+00A1 (0xA2AE)" },
         /* 34*/ { 30, 1, "¡¡", -1, 0, 4, { 0x22 + 0x80, 0x2E + 0x80, 0x22 + 0x80, 0x2E + 0x80 }, "EUC-KR 0xA2AE outside QR Kanji mode range" },

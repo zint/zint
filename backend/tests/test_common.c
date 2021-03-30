@@ -47,11 +47,11 @@ static void test_utf8_to_unicode(int index, int debug) {
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /*  0*/ { "", -1, 1, 0, 0, {}, "" },
+        /*  0*/ { "", -1, 1, 0, 0, {0}, "" },
         /*  1*/ { "\000a\302\200\340\240\200", 7, 1, 0, 4, { 0, 'a', 0x80, 0x800 }, "NUL a C280 E0A080" },
         /*  2*/ { "\357\277\277", -1, 1, 0, 1, { 0xFFFF }, "EFBFBF" },
-        /*  3*/ { "\360\220\200\200", -1, 1, ZINT_ERROR_INVALID_DATA, -1, {}, "Four-byte F0908080" },
-        /*  4*/ { "a\200b", -1, 1, ZINT_ERROR_INVALID_DATA, -1, {}, "Orphan continuation 0x80" },
+        /*  3*/ { "\360\220\200\200", -1, 1, ZINT_ERROR_INVALID_DATA, -1, {0}, "Four-byte F0908080" },
+        /*  4*/ { "a\200b", -1, 1, ZINT_ERROR_INVALID_DATA, -1, {0}, "Orphan continuation 0x80" },
     };
     int data_size = sizeof(data) / sizeof(struct item);
 
