@@ -41,6 +41,7 @@
 #include <setjmp.h>
 #endif
 #include <assert.h>
+#include <getopt.h>
 #include <limits.h>
 #include <unistd.h>
 #include <errno.h>
