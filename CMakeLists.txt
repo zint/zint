@@ -29,6 +29,7 @@ option(ZINT_USE_QT   "Build with QT support"           ON)
 include(SetPaths.cmake)
 
 include(CheckCXXCompilerFlag)
+include(CheckFunctionExists)
 
 check_cxx_compiler_flag("-Wall" CXX_COMPILER_FLAG_WALL)
 if(CXX_COMPILER_FLAG_WALL)
@@ -88,6 +89,11 @@ IF(APPLE)
         SET(CMAKE_OSX_SYSROOT "/")
     ENDIF (UNIVERSAL)
 ENDIF(APPLE)
+
+check_function_exists(getopt HAVE_GETOPT)
+if(NOT HAVE_GETOPT)
+    add_subdirectory(getopt)
+endif(NOT HAVE_GETOPT)
 
 add_subdirectory(backend)
 add_subdirectory(frontend)
