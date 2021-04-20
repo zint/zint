@@ -56,6 +56,10 @@ static void test_options(int index, int debug) {
         /*  3*/ { BARCODE_AZTEC, -1, -1, -1, 36, "1234567890", 0, 151, 151 },
         /*  4*/ { BARCODE_AZTEC, -1, -1, -1, 37, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1 },
         /*  5*/ { BARCODE_AZTEC, GS1_MODE, READER_INIT, -1, -1, "[91]A", ZINT_ERROR_INVALID_OPTION, -1, -1 },
+        /*  6*/ { BARCODE_AZTEC, -1, READER_INIT, -1, 26, "A", 0, 109, 109 }, // 22 layers
+        /*  7*/ { BARCODE_AZTEC, -1, READER_INIT, -1, 27, "A", ZINT_ERROR_TOO_LONG, -1, -1 }, // 23 layers
+        /*  8*/ { BARCODE_AZTEC, -1, READER_INIT, -1, 1, "A", 0, 15, 15 }, // Compact 1 layer
+        /*  9*/ { BARCODE_AZTEC, -1, READER_INIT, -1, 2, "A", 0, 19, 19 }, // Compact 2 layers gets set to full 1 layer if READER_INIT set
     };
     int data_size = ARRAY_SIZE(data);
 

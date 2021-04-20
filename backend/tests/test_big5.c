@@ -73,10 +73,82 @@ static void test_big5_wctomb_zint(void) {
     testFinish();
 }
 
+/* Convert UTF-8 string to Big5 and place in array of ints */
+static int big5_utf8(struct zint_symbol *symbol, const unsigned char source[], int *p_length,
+                unsigned int *b5data) {
+    int error_number;
+    unsigned int i, length;
+#ifndef _MSC_VER
+    unsigned int utfdata[*p_length + 1];
+#else
+    unsigned int *utfdata = (unsigned int *) _alloca((*p_length + 1) * sizeof(unsigned int));
+#endif
+
+    error_number = utf8_to_unicode(symbol, source, utfdata, p_length, 0 /*disallow_4byte*/);
+    if (error_number != 0) {
+        return error_number;
+    }
+
+    for (i = 0, length = *p_length; i < length; i++) {
+        if (!big5_wctomb_zint(b5data + i, utfdata[i])) {
+            strcpy(symbol->errtxt, "800: Invalid character in input data");
+            return ZINT_ERROR_INVALID_DATA;
+        }
+    }
+
+    return 0;
+}
+static void test_big5_utf8(int index) {
+
+    testStart("");
+
+    int ret;
+    struct item {
+        char *data;
+        int length;
+        int ret;
+        int ret_length;
+        unsigned int expected_b5data[20];
+        char *comment;
+    };
+    // ＿ U+FF3F fullwidth low line, not in ISO/Win, in Big5 0xA1C4, UTF-8 EFBCBF
+    // ╴ U+2574 drawings box light left, not in ISO/Win, not in original Big5 but in "Big5-2003" as 0xA15A, UTF-8 E295B4
+    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    struct item data[] = {
+        /*  0*/ { "＿", -1, 0, 1, { 0xA1C4 }, "" },
+        /*  1*/ { "╴", -1, ZINT_ERROR_INVALID_DATA, -1, {}, "" },
+    };
+
+    int data_size = sizeof(data) / sizeof(struct item);
+
+    struct zint_symbol symbol;
+    unsigned int b5data[20];
+
+    for (int i = 0; i < data_size; i++) {
+
+        if (index != -1 && i != index) continue;
+
+        int length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
+        int ret_length = length;
+
+        ret = big5_utf8(&symbol, (unsigned char *) data[i].data, &ret_length, b5data);
+        assert_equal(ret, data[i].ret, "i:%d ret %d != %d (%s)\n", i, ret, data[i].ret, symbol.errtxt);
+        if (ret == 0) {
+            assert_equal(ret_length, data[i].ret_length, "i:%d ret_length %d != %d\n", i, ret_length, data[i].ret_length);
+            for (int j = 0; j < (int) ret_length; j++) {
+                assert_equal(b5data[j], data[i].expected_b5data[j], "i:%d b5data[%d] %04X != %04X\n", i, j, b5data[j], data[i].expected_b5data[j]);
+            }
+        }
+    }
+
+    testFinish();
+}
+
 int main(int argc, char *argv[]) {
 
     testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
         { "test_big5_wctomb_zint", test_big5_wctomb_zint, 0, 0, 0 },
+        { "test_big5_utf8", test_big5_utf8, 1, 0, 0 },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));
