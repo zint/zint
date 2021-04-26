@@ -55,10 +55,7 @@ if(NOT MSVC)
 endif()
 
 if(MSVC)
-    # "BUILD_SHARED_LIBS" is a CMake defined variable, see documentation.
-    if(BUILD_SHARED_LIBS)
-        zint_target_compile_definitions(zint PRIVATE DLL_EXPORT)
-    endif()
+    target_compile_definitions(zint PRIVATE DLL_EXPORT)
 endif()
 
 install(TARGETS zint  ${INSTALL_TARGETS_DEFAULT_ARGS})
