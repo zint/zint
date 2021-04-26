@@ -58,9 +58,18 @@
 #define ustrncat(target, source, count) strncat((char *) (target), (const char *) (source), (count))
 
 #if defined(__GNUC__) && !defined(_WIN32) && !defined(ZINT_TEST)
-#define INTERNAL __attribute__ ((visibility ("hidden")))
-#else
-#define INTERNAL
+#  define INTERNAL __attribute__ ((visibility ("hidden")))
+#else /* despite the name, the test cases are referencing the INTERNAL functions, so they need to be exported */
+#  if defined(ZINT_TEST)
+#    if defined(DLL_EXPORT) || defined(PIC) || defined(_USRDLL)
+#      define INTERNAL __declspec(dllexport)
+#    elif defined(ZINT_DLL)
+#      define INTERNAL __declspec(dllimport)
+#    endif
+#  endif
+#  if !defined(INTERNAL)
+#    define INTERNAL
+#  endif
 #endif
 
 #if defined(ZINT_TEST)
