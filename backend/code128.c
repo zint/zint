@@ -1025,13 +1025,11 @@ INTERNAL int ean_128(struct zint_symbol *symbol, unsigned char source[], int len
 
 /* Add check digit if encoding an NVE18 symbol */
 INTERNAL int nve_18(struct zint_symbol *symbol, unsigned char source[], int length) {
-    int error_number, zeroes, i, nve_check, total_sum, sourcelen;
-    unsigned char ean128_equiv[25];
+    int i, count, check_digit;
+    int error_number, zeroes;
+    unsigned char ean128_equiv[23];
 
-    memset(ean128_equiv, 0, 25);
-    sourcelen = length;
-
-    if (sourcelen > 17) {
+    if (length > 17) {
         strcpy(symbol->errtxt, "345: Input too long");
         return ZINT_ERROR_TOO_LONG;
     }
@@ -1041,27 +1039,24 @@ INTERNAL int nve_18(struct zint_symbol *symbol, unsigned char source[], int leng
         strcpy(symbol->errtxt, "346: Invalid characters in data");
         return error_number;
     }
-    zeroes = 17 - sourcelen;
-    strcpy((char *) ean128_equiv, "[00]");
+
+    zeroes = 17 - length;
+    ustrcpy(ean128_equiv, "[00]");
     memset(ean128_equiv + 4, '0', zeroes);
-    strcpy((char*) ean128_equiv + 4 + zeroes, (char*) source);
+    ustrcpy(ean128_equiv + 4 + zeroes, source);
 
-    total_sum = 0;
-    for (i = sourcelen - 1; i >= 0; i--) {
-        total_sum += ctoi(source[i]);
-
-        if (!(i & 1)) {
-            total_sum += 2 * ctoi(source[i]);
-        }
+    count = 0;
+    for (i = 20; i >= 4; i--) {
+        count += i & 1 ? ctoi(ean128_equiv[i]) : 3 * ctoi(ean128_equiv[i]);
     }
-    nve_check = 10 - total_sum % 10;
-    if (nve_check == 10) {
-        nve_check = 0;
+    check_digit = 10 - count % 10;
+    if (check_digit == 10) {
+        check_digit = 0;
     }
-    ean128_equiv[21] = itoc(nve_check);
+    ean128_equiv[21] = itoc(check_digit);
     ean128_equiv[22] = '\0';
 
-    error_number = ean_128(symbol, ean128_equiv, (int) ustrlen(ean128_equiv));
+    error_number = ean_128(symbol, ean128_equiv, 22);
 
     return error_number;
 }
@@ -1070,7 +1065,7 @@ INTERNAL int nve_18(struct zint_symbol *symbol, unsigned char source[], int leng
 INTERNAL int ean_14(struct zint_symbol *symbol, unsigned char source[], int length) {
     int i, count, check_digit;
     int error_number, zeroes;
-    unsigned char ean128_equiv[20];
+    unsigned char ean128_equiv[19];
 
     if (length > 13) {
         strcpy(symbol->errtxt, "347: Input wrong length");
@@ -1084,17 +1079,13 @@ INTERNAL int ean_14(struct zint_symbol *symbol, unsigned char source[], int leng
     }
 
     zeroes = 13 - length;
-    strcpy((char*) ean128_equiv, "[01]");
+    ustrcpy(ean128_equiv, "[01]");
     memset(ean128_equiv + 4, '0', zeroes);
     ustrcpy(ean128_equiv + 4 + zeroes, source);
 
     count = 0;
-    for (i = length - 1; i >= 0; i--) {
-        count += ctoi(source[i]);
-
-        if (!(i & 1)) {
-            count += 2 * ctoi(source[i]);
-        }
+    for (i = 16; i >= 4; i--) {
+        count += i & 1 ? ctoi(ean128_equiv[i]) : 3 * ctoi(ean128_equiv[i]);
     }
     check_digit = 10 - (count % 10);
     if (check_digit == 10) {
@@ -1103,7 +1094,7 @@ INTERNAL int ean_14(struct zint_symbol *symbol, unsigned char source[], int leng
     ean128_equiv[17] = itoc(check_digit);
     ean128_equiv[18] = '\0';
 
-    error_number = ean_128(symbol, ean128_equiv, (int) ustrlen(ean128_equiv));
+    error_number = ean_128(symbol, ean128_equiv, 18);
 
     return error_number;
 }
