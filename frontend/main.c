@@ -138,6 +138,7 @@ static void usage(void) {
             "  --filetype=TYPE       Set output file type BMP/EMF/EPS/GIF/PCX/PNG/SVG/TIF/TXT\n"
             "  --fullmultibyte       Use multibyte for binary/Latin (QR/Han Xin/Grid Matrix)\n"
             "  --gs1                 Treat input as GS1 compatible data\n"
+            "  --gs1parens           GS1 AIs in parentheses instead of square brackets\n"
             "  --gssep               Use separator GS for GS1 (Data Matrix)\n"
             "  -h, --help            Display help message\n"
             "  --height=NUMBER       Set height of symbol in multiples of X-dimension\n"
@@ -288,7 +289,10 @@ static int get_barcode_name(const char *barcode_name) {
         { BARCODE_DPD, "dpd" },
         { BARCODE_DPIDENT, "dpident" },
         { BARCODE_DPLEIT, "dpleit" },
+        { BARCODE_EANX, "ean" }, /* Synonym */
         { BARCODE_EAN14, "ean14" },
+        { BARCODE_EANX_CC, "eancc" }, /* Synonym */
+        { BARCODE_EANX_CHK, "eanchk" }, /* Synonym */
         { BARCODE_EANX, "eanx" },
         { BARCODE_EANX_CC, "eanxcc" },
         { BARCODE_EANX_CHK, "eanxchk" },
@@ -791,7 +795,7 @@ int main(int argc, char **argv) {
             OPT_ADDONGAP = 128, OPT_BATCH, OPT_BINARY, OPT_BG, OPT_BIND, OPT_BOLD, OPT_BORDER,
             OPT_BOX, OPT_CMYK, OPT_COLS, OPT_DIRECT, OPT_DMRE, OPT_DOTSIZE, OPT_DOTTY, OPT_DUMP,
             OPT_ECI, OPT_ESC, OPT_FG, OPT_FILETYPE, OPT_FONTSIZE, OPT_FULLMULTIBYTE,
-            OPT_GS1, OPT_GSSEP, OPT_HEIGHT, OPT_INIT, OPT_MIRROR, OPT_MASK, OPT_MODE,
+            OPT_GS1, OPT_GS1PARENS, OPT_GSSEP, OPT_HEIGHT, OPT_INIT, OPT_MIRROR, OPT_MASK, OPT_MODE,
             OPT_NOBACKGROUND, OPT_NOTEXT, OPT_PRIMARY, OPT_ROTATE, OPT_ROWS, OPT_SCALE,
             OPT_SCMVV, OPT_SECURE, OPT_SEPARATOR, OPT_SMALL, OPT_SQUARE, OPT_VERBOSE, OPT_VERS,
             OPT_WERROR, OPT_WZPL,
@@ -823,6 +827,7 @@ int main(int argc, char **argv) {
             {"fontsize", 1, NULL, OPT_FONTSIZE},
             {"fullmultibyte", 0, NULL, OPT_FULLMULTIBYTE},
             {"gs1", 0, 0, OPT_GS1},
+            {"gs1parens", 0, NULL, OPT_GS1PARENS},
             {"gssep", 0, NULL, OPT_GSSEP},
             {"height", 1, NULL, OPT_HEIGHT},
             {"help", 0, NULL, 'h'},
@@ -992,6 +997,9 @@ int main(int argc, char **argv) {
                 break;
             case OPT_GS1:
                 my_symbol->input_mode = (my_symbol->input_mode & ~0x07) | GS1_MODE;
+                break;
+            case OPT_GS1PARENS:
+                my_symbol->input_mode |= GS1PARENS_MODE;
                 break;
             case OPT_GSSEP:
                 my_symbol->output_options |= GS1_GS_SEPARATOR;

@@ -96,6 +96,8 @@ public:
 
     void setECI(int ECIIndex);
 
+    void setGS1Parens(bool gs1parens);
+
     void setReaderInit(bool reader_init);
 
     void setDebug(bool debug);
@@ -103,6 +105,7 @@ public:
     bool hasHRT(int symbology = 0) const;
     bool isExtendable(int symbology = 0) const;
     bool supportsECI(int symbology = 0) const;
+    bool supportsGS1(int symbology = 0) const;
     bool isFixedRatio(int symbology = 0) const;
     bool isDotty(int symbology = 0) const;
     bool supportsReaderInit(int symbology = 0) const;
@@ -155,6 +158,7 @@ private:
     float m_dot_size;
     int target_size_horiz;
     int target_size_vert;
+    bool m_gs1parens;
     bool m_gssep;
     bool m_reader_init;
     bool m_debug;

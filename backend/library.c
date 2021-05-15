@@ -39,6 +39,7 @@
 #include "common.h"
 #include "eci.h"
 #include "gs1.h"
+#include "zfiletypes.h"
 
 #define TECHNETIUM  "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%"
 
@@ -49,10 +50,10 @@ typedef int static_assert_int_at_least_32bits[CHAR_BIT != 8 || sizeof(int) < 4 ?
 struct zint_symbol *ZBarcode_Create() {
     struct zint_symbol *symbol;
 
-    symbol = (struct zint_symbol*) malloc(sizeof (*symbol));
+    symbol = (struct zint_symbol *) malloc(sizeof(*symbol));
     if (!symbol) return NULL;
 
-    memset(symbol, 0, sizeof (*symbol));
+    memset(symbol, 0, sizeof(*symbol));
 
     symbol->symbology = BARCODE_CODE128;
     strcpy(symbol->fgcolour, "000000");
@@ -952,7 +953,7 @@ static int escape_char_process(struct zint_symbol *symbol, unsigned char *input_
 #ifndef _MSC_VER
     unsigned char escaped_string[*length + 1];
 #else
-    unsigned char* escaped_string = (unsigned char*) _alloca(*length + 1);
+    unsigned char *escaped_string = (unsigned char *) _alloca(*length + 1);
 #endif
 
     in_posn = 0;

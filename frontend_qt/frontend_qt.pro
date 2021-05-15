@@ -54,6 +54,7 @@ HEADERS += barcodeitem.h \
         ..\backend\stdint_msvc.h \
         ..\backend\tif.h \
         ..\backend\tif_lzw.h \
+        ..\backend\zfiletypes.h \
         ..\backend\zint.h \
         ..\backend\zintconfig.h \
 

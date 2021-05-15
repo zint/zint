@@ -305,6 +305,10 @@ INTERNAL int c39(struct zint_symbol *symbol, unsigned char source[], int length)
         }
     }
 
+	if (symbol->debug) {
+		printf("Barspaces: %s\n", dest);
+	}
+
     expand(symbol, dest);
 
     if (symbol->symbology == BARCODE_CODE39) {

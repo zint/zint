@@ -163,6 +163,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags fl)
     chkEscape->setChecked(settings.value("studio/chk_escape").toInt() ? true : false);
     chkData->setChecked(settings.value("studio/chk_data").toInt() ? true : false);
     chkRInit->setChecked(settings.value("studio/chk_rinit").toInt() ? true : false);
+    chkGS1Parens->setChecked(settings.value("studio/chk_gs1parens").toInt() ? true : false);
     chkAutoHeight->setChecked(settings.value("studio/appearance/autoheight", 1).toInt() ? true : false);
     heightb->setValue(settings.value("studio/appearance/height", 50).toInt());
     bwidth->setValue(settings.value("studio/appearance/border", 0).toInt());
@@ -198,6 +199,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags fl)
     connect(chkEscape, SIGNAL(stateChanged( int )), SLOT(update_preview()));
     connect(chkData, SIGNAL(stateChanged( int )), SLOT(update_preview()));
     connect(chkRInit, SIGNAL(stateChanged( int )), SLOT(update_preview()));
+    connect(chkGS1Parens, SIGNAL(stateChanged( int )), SLOT(update_preview()));
     connect(spnWhitespace, SIGNAL(valueChanged( int )), SLOT(update_preview()));
     connect(btnAbout, SIGNAL(clicked( bool )), SLOT(about()));
     connect(btnSave, SIGNAL(clicked( bool )), SLOT(save()));
@@ -250,6 +252,7 @@ MainWindow::~MainWindow()
     settings.setValue("studio/chk_escape", chkEscape->isChecked() ? 1 : 0);
     settings.setValue("studio/chk_data", chkData->isChecked() ? 1 : 0);
     settings.setValue("studio/chk_rinit", chkRInit->isChecked() ? 1 : 0);
+    settings.setValue("studio/chk_gs1parens", chkGS1Parens->isChecked() ? 1 : 0);
     settings.setValue("studio/appearance/autoheight", chkAutoHeight->isChecked() ? 1 : 0);
     settings.setValue("studio/appearance/height", heightb->value());
     settings.setValue("studio/appearance/border", bwidth->value());
@@ -1029,6 +1032,7 @@ void MainWindow::change_options()
             break;
     }
     cmbECI->setEnabled(m_bc.bc.supportsECI(symbology)); /* Will need checking again in update_preview() as encoding mode dependent (HIBC) */
+    chkGS1Parens->setEnabled(m_bc.bc.supportsGS1(symbology)); /* Ditto (GS1) */
     chkRInit->setEnabled(m_bc.bc.supportsReaderInit(symbology)); /* Ditto (HIBC and GS1) */
     chkAutoHeight->setEnabled(!m_bc.bc.isFixedRatio(symbology));
     chkHRTShow->setEnabled(m_bc.bc.hasHRT(symbology));
@@ -1601,6 +1605,7 @@ void MainWindow::update_preview()
         cmbECI->setEnabled(m_bc.bc.supportsECI());
         lblECI->setEnabled(cmbECI->isEnabled());
     }
+    chkGS1Parens->setEnabled(m_bc.bc.supportsGS1());
     chkRInit->setEnabled(m_bc.bc.supportsReaderInit() && (m_bc.bc.inputMode() & 0x07) != GS1_MODE);
 
     if (!grpComposite->isHidden() && chkComposite->isChecked())
@@ -1612,6 +1617,8 @@ void MainWindow::update_preview()
         m_bc.bc.setHeight(heightb->value());
     }
     m_bc.bc.setECI(cmbECI->isEnabled() ? cmbECI->currentIndex() : 0);
+    m_bc.bc.setGS1Parens(chkGS1Parens->isEnabled() && chkGS1Parens->isChecked());
+    m_bc.bc.setReaderInit(chkRInit->isEnabled() && chkRInit->isChecked());
     m_bc.bc.setReaderInit(chkRInit->isEnabled() && chkRInit->isChecked());
     m_bc.bc.setShowText(chkHRTShow->isEnabled() && chkHRTShow->isChecked());
     m_bc.bc.setBorderType(btype->currentIndex());
@@ -1901,6 +1908,7 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology) {
         if (chkRInit->isEnabled()) {
             settings.setValue(QString("studio/bc/%1/chk_rinit").arg(name), chkRInit->isChecked() ? 1 : 0);
         }
+        settings.setValue(QString("studio/bc/%1/chk_gs1parens").arg(name), chkGS1Parens->isChecked() ? 1 : 0);
         if (chkAutoHeight->isEnabled()) {
             settings.setValue(QString("studio/bc/%1/appearance/autoheight").arg(name), chkAutoHeight->isChecked() ? 1 : 0);
             settings.setValue(QString("studio/bc/%1/appearance/height").arg(name), heightb->value());
@@ -2130,6 +2138,7 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology) {
         if (chkRInit->isEnabled()) {
             chkRInit->setChecked(settings.value(QString("studio/bc/%1/chk_rinit").arg(name)).toInt() ? true : false);
         }
+        chkGS1Parens->setChecked(settings.value(QString("studio/bc/%1/chk_gs1parens").arg(name)).toInt() ? true : false);
         if (chkAutoHeight->isEnabled()) {
             chkAutoHeight->setChecked(settings.value(QString("studio/bc/%1/appearance/autoheight").arg(name), 1).toInt() ? true : false);
             heightb->setValue(settings.value(QString("studio/bc/%1/appearance/height").arg(name), 50).toInt());

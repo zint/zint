@@ -368,6 +368,7 @@ static void test_ean128_input(int index, int generate, int debug) {
 
     int ret;
     struct item {
+        int input_mode;
         char *data;
         int ret;
         int expected_width;
@@ -375,28 +376,29 @@ static void test_ean128_input(int index, int generate, int debug) {
         char *comment;
     };
     struct item data[] = {
-        /*  0*/ { "[90]1[90]1", 0, 123, "(11) 105 102 90 100 17 102 25 99 1 56 106", "StartC FNC1 90 CodeB 1 FNC1 9" },
-        /*  1*/ { "[90]1[90]12", 0, 123, "(11) 105 102 90 100 17 99 102 90 12 13 106", "StartC FNC1 90 CodeB 1 CodeC FNC1 90 12" },
-        /*  2*/ { "[90]1[90]123", 0, 134, "(12) 105 102 90 100 17 102 25 99 1 23 57 106", "StartC FNC1 90 CodeB 1 FNC1 9 CodeC 01 23" },
-        /*  3*/ { "[90]12[90]1", 0, 123, "(11) 105 102 90 12 102 100 25 99 1 19 106", "StartC FNC1 90 12 FNC1 CodeB 9 CodeC 01" },
-        /*  4*/ { "[90]12[90]12", 0, 101, "(9) 105 102 90 12 102 90 12 14 106", "StartC FNC1 90 12 FNC1 90 12" },
-        /*  5*/ { "[90]12[90]123", 0, 134, "(12) 105 102 90 12 102 100 25 99 1 23 20 106", "StartC FNC1 90 12 FNC1 CodeB 9 CodeC 01 23" },
-        /*  6*/ { "[90]123[90]1", 0, 134, "(12) 105 102 90 12 100 19 102 25 99 1 34 106", "StartC FNC1 90 12 CodeB 3 FNC1 9 CodeC 01" },
-        /*  7*/ { "[90]123[90]1234", 0, 145, "(13) 105 102 90 12 100 19 99 102 90 12 34 98 106", "StartC FNC1 90 12 CodeB 3 CodeC FNC1 90 12 34" },
-        /*  8*/ { "[90]1[90]1[90]1", 0, 178, "(16) 105 102 90 100 17 102 25 99 1 102 100 25 99 1 51 106", "StartC FNC1 90 CodeB 1 FNC1 9 CodeC 01 FNC1 CodeB 9 CodeC 01" },
-        /*  9*/ { "[90]1[90]12[90]1", 0, 178, "(16) 105 102 90 100 17 99 102 90 12 102 100 25 99 1 8 106", "StartC FNC1 90 CodeB 1 CodeC FNC1 90 12 FNC1 CodeB 9 CodeC 01" },
-        /* 10*/ { "[90]1[90]123[90]1", 0, 189, "(17) 105 102 90 100 17 102 25 99 1 23 102 100 25 99 1 70 106", "StartC FNC1 90 CodeB 1 FNC1 9 CodeC 01 23 FNC1 CodeB 9 CodeC 01" },
-        /* 11*/ { "[90]12[90]123[90]1", 0, 189, "(17) 105 102 90 12 102 100 25 99 1 23 102 100 25 99 1 33 106", "StartC FNC1 90 12 FNC1 CodeB 9 CodeC 01 23 FNC1 CodeB 9 CodeC 01" },
-        /* 12*/ { "[90]12[90]123[90]12", 0, 167, "(15) 105 102 90 12 102 100 25 99 1 23 102 90 12 11 106", "StartC FNC1 90 12 FNC1 CodeB 9 CodeC 01 23 FNC1 90 12" },
-        /* 13*/ { "[90]123[90]1[90]1", 0, 189, "(17) 105 102 90 12 100 19 102 25 99 1 102 100 25 99 1 47 106", "StartC FNC1 90 12 CodeB 3 FNC1 9 CodeC 01 FNC1 CodeB 9 CodeC 01" },
-        /* 14*/ { "[90]123[90]12[90]1", 0, 189, "(17) 105 102 90 12 100 19 99 102 90 12 102 100 25 99 1 80 106", "StartC FNC1 90 12 CodeB 3 CodeC FNC1 90 12 FNC1 CodeB 9 CodeC 01" },
-        /* 15*/ { "[90]123[90]123[90]12", 0, 178, "(16) 105 102 90 12 100 19 102 25 99 1 23 102 90 12 47 106", "StartC FNC1 90 12 CodeB 3 FNC1 9 CodeC 01 23 FNC1 90 12" },
-        /* 16*/ { "[90]123[90]1234[90]1", 0, 200, "(18) 105 102 90 12 100 19 99 102 90 12 34 102 100 25 99 1 26 106", "StartC FNC1 90 12 CodeB 3 CodeC FNC1 90 12 34 FNC1 CodeB 9 CodeC 01" },
-        /* 17*/ { "[90]123[90]1234[90]123", 0, 211, "(19) 105 102 90 12 100 19 99 102 90 12 34 102 100 25 99 1 23 85 106", "StartC FNC1 90 12 CodeB 3 CodeC FNC1 90 12 34 FNC1 CodeB 9 CodeC 01 23" },
-        /* 18*/ { "[90]12345[90]1234[90]1", 0, 211, "(19) 105 102 90 12 34 100 21 99 102 90 12 34 102 100 25 99 1 30 106", "StartC FNC1 90 12 34 CodeB 5 CodeC FNC1 90 12 34 FNC1 CodeB 9 CodeC 01" },
-        /* 19*/ { "[90]1A[90]1", 0, 134, "(12) 104 102 25 16 17 33 102 25 99 1 65 106", "StartB FNC1 9 0 1 A FNC1 9 CodeC 01" },
-        /* 20*/ { "[90]12A[90]123", 0, 145, "(13) 105 102 90 12 100 33 102 25 99 1 23 25 106", "StartC FNC1 90 12 CodeB A FNC1 9 CodeC 01 23" },
-        /* 21*/ { "[90]123[90]A234[90]123", 0, 244, "(22) 105 102 90 12 100 19 99 102 90 100 33 18 99 34 102 100 25 99 1 23 37 106", "StartC FNC1 90 12 CodeB 3 CodeC FNC1 90 CodeB A 2 CodeC 34 FNC1 CodeB 9 CodeC 01 23" }    };
+        /*  0*/ { GS1_MODE, "[90]1[90]1", 0, 123, "(11) 105 102 90 100 17 102 25 99 1 56 106", "StartC FNC1 90 CodeB 1 FNC1 9" },
+        /*  1*/ { GS1_MODE | GS1PARENS_MODE, "(90)1(90)1", 0, 123, "(11) 105 102 90 100 17 102 25 99 1 56 106", "StartC FNC1 90 CodeB 1 FNC1 9" },
+        /*  2*/ { GS1_MODE, "[90]1[90]12", 0, 123, "(11) 105 102 90 100 17 99 102 90 12 13 106", "StartC FNC1 90 CodeB 1 CodeC FNC1 90 12" },
+        /*  3*/ { GS1_MODE, "[90]1[90]123", 0, 134, "(12) 105 102 90 100 17 102 25 99 1 23 57 106", "StartC FNC1 90 CodeB 1 FNC1 9 CodeC 01 23" },
+        /*  4*/ { GS1_MODE, "[90]12[90]1", 0, 123, "(11) 105 102 90 12 102 100 25 99 1 19 106", "StartC FNC1 90 12 FNC1 CodeB 9 CodeC 01" },
+        /*  5*/ { GS1_MODE, "[90]12[90]12", 0, 101, "(9) 105 102 90 12 102 90 12 14 106", "StartC FNC1 90 12 FNC1 90 12" },
+        /*  6*/ { GS1_MODE, "[90]12[90]123", 0, 134, "(12) 105 102 90 12 102 100 25 99 1 23 20 106", "StartC FNC1 90 12 FNC1 CodeB 9 CodeC 01 23" },
+        /*  7*/ { GS1_MODE, "[90]123[90]1", 0, 134, "(12) 105 102 90 12 100 19 102 25 99 1 34 106", "StartC FNC1 90 12 CodeB 3 FNC1 9 CodeC 01" },
+        /*  8*/ { GS1_MODE, "[90]123[90]1234", 0, 145, "(13) 105 102 90 12 100 19 99 102 90 12 34 98 106", "StartC FNC1 90 12 CodeB 3 CodeC FNC1 90 12 34" },
+        /*  9*/ { GS1_MODE, "[90]1[90]1[90]1", 0, 178, "(16) 105 102 90 100 17 102 25 99 1 102 100 25 99 1 51 106", "StartC FNC1 90 CodeB 1 FNC1 9 CodeC 01 FNC1 CodeB 9 CodeC 01" },
+        /* 10*/ { GS1_MODE, "[90]1[90]12[90]1", 0, 178, "(16) 105 102 90 100 17 99 102 90 12 102 100 25 99 1 8 106", "StartC FNC1 90 CodeB 1 CodeC FNC1 90 12 FNC1 CodeB 9 CodeC 01" },
+        /* 11*/ { GS1_MODE, "[90]1[90]123[90]1", 0, 189, "(17) 105 102 90 100 17 102 25 99 1 23 102 100 25 99 1 70 106", "StartC FNC1 90 CodeB 1 FNC1 9 CodeC 01 23 FNC1 CodeB 9 CodeC 01" },
+        /* 12*/ { GS1_MODE, "[90]12[90]123[90]1", 0, 189, "(17) 105 102 90 12 102 100 25 99 1 23 102 100 25 99 1 33 106", "StartC FNC1 90 12 FNC1 CodeB 9 CodeC 01 23 FNC1 CodeB 9 CodeC 01" },
+        /* 13*/ { GS1_MODE, "[90]12[90]123[90]12", 0, 167, "(15) 105 102 90 12 102 100 25 99 1 23 102 90 12 11 106", "StartC FNC1 90 12 FNC1 CodeB 9 CodeC 01 23 FNC1 90 12" },
+        /* 14*/ { GS1_MODE, "[90]123[90]1[90]1", 0, 189, "(17) 105 102 90 12 100 19 102 25 99 1 102 100 25 99 1 47 106", "StartC FNC1 90 12 CodeB 3 FNC1 9 CodeC 01 FNC1 CodeB 9 CodeC 01" },
+        /* 15*/ { GS1_MODE, "[90]123[90]12[90]1", 0, 189, "(17) 105 102 90 12 100 19 99 102 90 12 102 100 25 99 1 80 106", "StartC FNC1 90 12 CodeB 3 CodeC FNC1 90 12 FNC1 CodeB 9 CodeC 01" },
+        /* 16*/ { GS1_MODE, "[90]123[90]123[90]12", 0, 178, "(16) 105 102 90 12 100 19 102 25 99 1 23 102 90 12 47 106", "StartC FNC1 90 12 CodeB 3 FNC1 9 CodeC 01 23 FNC1 90 12" },
+        /* 17*/ { GS1_MODE, "[90]123[90]1234[90]1", 0, 200, "(18) 105 102 90 12 100 19 99 102 90 12 34 102 100 25 99 1 26 106", "StartC FNC1 90 12 CodeB 3 CodeC FNC1 90 12 34 FNC1 CodeB 9 CodeC 01" },
+        /* 18*/ { GS1_MODE, "[90]123[90]1234[90]123", 0, 211, "(19) 105 102 90 12 100 19 99 102 90 12 34 102 100 25 99 1 23 85 106", "StartC FNC1 90 12 CodeB 3 CodeC FNC1 90 12 34 FNC1 CodeB 9 CodeC 01 23" },
+        /* 19*/ { GS1_MODE, "[90]12345[90]1234[90]1", 0, 211, "(19) 105 102 90 12 34 100 21 99 102 90 12 34 102 100 25 99 1 30 106", "StartC FNC1 90 12 34 CodeB 5 CodeC FNC1 90 12 34 FNC1 CodeB 9 CodeC 01" },
+        /* 20*/ { GS1_MODE, "[90]1A[90]1", 0, 134, "(12) 104 102 25 16 17 33 102 25 99 1 65 106", "StartB FNC1 9 0 1 A FNC1 9 CodeC 01" },
+        /* 21*/ { GS1_MODE, "[90]12A[90]123", 0, 145, "(13) 105 102 90 12 100 33 102 25 99 1 23 25 106", "StartC FNC1 90 12 CodeB A FNC1 9 CodeC 01 23" },
+        /* 22*/ { GS1_MODE, "[90]123[90]A234[90]123", 0, 244, "(22) 105 102 90 12 100 19 99 102 90 100 33 18 99 34 102 100 25 99 1 23 37 106", "StartC FNC1 90 12 CodeB 3 CodeC FNC1 90 CodeB A 2 CodeC 34 FNC1 CodeB 9 CodeC 01 23" }    };
     int data_size = ARRAY_SIZE(data);
 
     char escaped[1024];
@@ -410,14 +412,14 @@ static void test_ean128_input(int index, int generate, int debug) {
 
         symbol->debug = ZINT_DEBUG_TEST; // Needed to get codeword dump in errtxt
 
-        int length = testUtilSetSymbol(symbol, BARCODE_GS1_128, GS1_MODE, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        int length = testUtilSetSymbol(symbol, BARCODE_GS1_128, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (generate) {
-            printf("        /*%3d*/ { \"%s\", %s, %d, \"%s\", \"%s\" },\n",
-                    i, testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
+            printf("        /*%3d*/ { %s, \"%s\", %s, %d, \"%s\", \"%s\" },\n",
+                    i, testUtilInputModeName(data[i].input_mode), testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
                     testUtilErrorName(data[i].ret), symbol->width, symbol->errtxt, data[i].comment);
         } else {
             if (ret < ZINT_ERROR) {

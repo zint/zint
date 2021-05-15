@@ -2772,6 +2772,75 @@ static void test_addongap(int index, int generate, int debug) {
     testFinish();
 }
 
+static void test_gs1parens(int index, int debug) {
+
+    testStart("");
+
+    int ret;
+    struct item {
+        int symbology;
+        int input_mode;
+        char *data;
+        char *composite;
+        int ret;
+
+        int expected_rows;
+        int expected_width;
+    };
+    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    struct item data[] = {
+        /*  0*/ { BARCODE_EANX_CC, -1, "1234567", "[21]A12345678", 0, 8, 72 }, // EAN-8
+        /*  1*/ { BARCODE_EANX_CC, GS1PARENS_MODE, "1234567", "(21)A12345678", 0, 8, 72 }, // EAN-8
+        /*  2*/ { BARCODE_EANX_CC, -1, "123456789012", "[21]A12345678", 0, 7, 99 }, // EAN-13
+        /*  3*/ { BARCODE_EANX_CC, GS1PARENS_MODE, "123456789012", "(21)A12345678", 0, 7, 99 }, // EAN-13
+        /*  4*/ { BARCODE_GS1_128_CC, -1, "[01]12345678901231", "[21]A12345678", 0, 5, 145 },
+        /*  5*/ { BARCODE_GS1_128_CC, GS1PARENS_MODE, "(01)12345678901231", "(21)A12345678", 0, 5, 145 },
+        /*  6*/ { BARCODE_DBAR_OMN_CC, -1, "12345678901231", "[21]A12345678", 0, 5, 100 },
+        /*  7*/ { BARCODE_DBAR_OMN_CC, GS1PARENS_MODE, "12345678901231", "(21)A12345678", 0, 5, 100 },
+        /*  8*/ { BARCODE_DBAR_LTD_CC, -1, "12345678901231", "[21]A12345678", 0, 6, 79 },
+        /*  9*/ { BARCODE_DBAR_LTD_CC, GS1PARENS_MODE, "12345678901231", "(21)A12345678", 0, 6, 79 },
+        /* 10*/ { BARCODE_DBAR_EXP_CC, -1, "[01]12345678901231[3103]001234", "[21]A12345678", 0, 5, 200 },
+        /* 11*/ { BARCODE_DBAR_EXP_CC, GS1PARENS_MODE, "(01)12345678901231(3103)001234", "(21)A12345678", 0, 5, 200 },
+        /* 12*/ { BARCODE_UPCA_CC, -1, "12345678901", "[21]A12345678", 0, 7, 99 },
+        /* 13*/ { BARCODE_UPCA_CC, GS1PARENS_MODE, "12345678901", "(21)A12345678", 0, 7, 99 },
+        /* 14*/ { BARCODE_UPCE_CC, -1, "1234567", "[21]A12345678", 0, 9, 55 },
+        /* 15*/ { BARCODE_UPCE_CC, GS1PARENS_MODE, "1234567", "(21)A12345678", 0, 9, 55 },
+        /* 16*/ { BARCODE_DBAR_STK_CC, -1, "12345678901231", "[21]A12345678", 0, 9, 56 },
+        /* 17*/ { BARCODE_DBAR_STK_CC, GS1PARENS_MODE, "12345678901231", "(21)A12345678", 0, 9, 56 },
+        /* 18*/ { BARCODE_DBAR_OMNSTK_CC, -1, "12345678901231", "[21]A12345678", 0, 11, 56 },
+        /* 19*/ { BARCODE_DBAR_OMNSTK_CC, GS1PARENS_MODE, "12345678901231", "(21)A12345678", 0, 11, 56 },
+        /* 20*/ { BARCODE_DBAR_EXPSTK_CC, -1, "[01]12345678901231[3103]001234", "[21]A12345678", 0, 9, 102 },
+        /* 21*/ { BARCODE_DBAR_EXPSTK_CC, GS1PARENS_MODE, "(01)12345678901231(3103)001234", "(21)A12345678", 0, 9, 102 },
+    };
+    int data_size = ARRAY_SIZE(data);
+
+    for (int i = 0; i < data_size; i++) {
+
+        if (index != -1 && i != index) continue;
+
+        struct zint_symbol *symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        int length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        assert_zero(length >= 128, "i:%d length %d >= 128\n", i, length);
+        strcpy(symbol->primary, data[i].data);
+
+        int composite_length = strlen(data[i].composite);
+
+        ret = ZBarcode_Encode(symbol, (const unsigned char *) data[i].composite, composite_length);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+
+        if (ret < ZINT_ERROR) {
+            assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
+            assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n", i, symbol->width, data[i].expected_width);
+        }
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
 // #181 Christian Hartlage OSS-Fuzz
 static void test_fuzz(int index, int debug) {
     testStart("");
@@ -2916,6 +2985,7 @@ int main(int argc, char *argv[]) {
         { "test_encodation_10", test_encodation_10, 1, 1, 1 },
         { "test_encodation_11", test_encodation_11, 1, 1, 1 },
         { "test_addongap", test_addongap, 1, 1, 1 },
+        { "test_gs1parens", test_gs1parens, 1, 0, 1 },
         { "test_fuzz", test_fuzz, 1, 0, 1 },
         { "test_perf", test_perf, 1, 0, 1 },
     };

@@ -111,6 +111,8 @@
   This is a preparation to add a TCL only mode to the DLL.
 2021-01-22 GL
 - -cols maximum changed from 67 to 108 (DotCode)
+2021-05-10 GL
+- Added -gs1parens option
 */
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
@@ -447,6 +449,7 @@ static char help_message[] = "zint tcl(stub,obj) dll\n"
     "   -format binary|unicode|gs1: input data format. Default:unicode\n"
     "   -fullmultibyte bool: allow multibyte compaction for xQR, HanXin, Gridmatrix\n"
     /* cli option --gs1 replaced by -format */
+    "   -gs1parens bool: for gs1, AIs enclosed in parentheses instead of square brackets\n"
     "   -gssep bool: for gs1, use gs as separator instead fnc1 (Datamatrix only)\n"
     "   -height integer: Symbol height in modules\n"
     /* cli option --input not supported */
@@ -692,7 +695,7 @@ static int Encode(Tcl_Interp *interp, int objc,
         char *optionList[] = {
             "-addongap", "-barcode", "-bg", "-bind", "-bold", "-border", "-box",
             "-cols", "-dmre", "-dotsize", "-dotty", "-eci", "-fg", "-format",
-            "-fullmultibyte", "-gssep", "-height", "-init", "-mask", "-mode",
+            "-fullmultibyte", "-gs1parens", "-gssep", "-height", "-init", "-mask", "-mode",
             "-nobackground", "-notext", "-primary", "-reverse", "-rotate",
             "-rows", "-scale", "-scmvv", "-secure", "-separator", "-smalltext",
             "-square", "-to", "-vers", "-werror", "-whitesp", "-wzpl",
@@ -700,7 +703,7 @@ static int Encode(Tcl_Interp *interp, int objc,
         enum iOption {
             iAddonGap, iBarcode, iBG, iBind, iBold, iBorder, iBox,
             iCols, iDMRE, iDotSize, iDotty, iECI, iFG, iFormat,
-            iFullMultiByte, iGSSep, iHeight, iInit, iMask, iMode,
+            iFullMultiByte, iGS1Parens, iGSSep, iHeight, iInit, iMask, iMode,
             iNoBackground, iNoText, iPrimary, iReverse, iRotate,
             iRows, iScale, iSCMvv, iSecure, iSeparator, iSmallText,
             iSquare, iTo, iVers, iWError, iWhiteSp, iWZPL
@@ -725,6 +728,7 @@ static int Encode(Tcl_Interp *interp, int objc,
         case iBox:
         case iDMRE:
         case iDotty:
+        case iGS1Parens:
         case iGSSep:
         case iInit:
         case iNoBackground:
@@ -843,6 +847,13 @@ static int Encode(Tcl_Interp *interp, int objc,
                 my_symbol->output_options |= BARCODE_DOTTY_MODE;
             } else {
                 my_symbol->output_options &= ~BARCODE_DOTTY_MODE;
+            }
+            break;
+        case iGS1Parens:
+            if (intValue) {
+                my_symbol->input_mode |= GS1PARENS_MODE;
+            } else {
+                my_symbol->input_mode &= ~GS1PARENS_MODE;
             }
             break;
         case iGSSep:

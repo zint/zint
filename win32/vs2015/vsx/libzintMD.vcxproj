@@ -158,6 +158,7 @@
     <ClInclude Include="..\..\backend\stdint_msvc.h" />
     <ClInclude Include="..\..\backend\tif.h" />
     <ClInclude Include="..\..\backend\tif_lzw.h" />
+    <ClInclude Include="..\..\backend\zfiletypes.h" />
     <ClInclude Include="..\..\backend\zint.h" />
     <ClInclude Include="..\..\backend\zintconfig.h" />
   </ItemGroup>

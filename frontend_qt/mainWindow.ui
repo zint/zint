@@ -379,7 +379,7 @@ p, li { white-space: pre-wrap; }
               <widget class="QComboBox" name="cmbECI">
                <property name="minimumSize">
                 <size>
-                 <width>80</width>
+                 <width>66</width>
                  <height>16777215</height>
                 </size>
                </property>
@@ -579,6 +579,21 @@ p, li { white-space: pre-wrap; }
                </property>
                <property name="text">
                 <string>Binary &amp;Mode</string>
+               </property>
+               <property name="checked">
+                <bool>false</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="chkGS1Parens">
+               <property name="toolTip">
+                <string>Use parentheses "()" instead of square brackets "[]"
+to delimit GS1 application identifiers
+(ignored if disabled)</string>
+               </property>
+               <property name="text">
+                <string>GS1 &amp;()</string>
                </property>
                <property name="checked">
                 <bool>false</bool>

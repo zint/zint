@@ -1187,7 +1187,9 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
     int bracket_level, max_bracket_level, ai_length, max_ai_length, min_ai_length;
     int ai_count;
     int error_value = 0;
-    int ai_max = chr_cnt(source, src_len, '[') + 1; /* Plus 1 so non-zero */
+    char obracket = symbol->input_mode & GS1PARENS_MODE ? '(' : '[';
+    char cbracket = symbol->input_mode & GS1PARENS_MODE ? ')' : ']';
+    int ai_max = chr_cnt(source, src_len, obracket) + 1; /* Plus 1 so non-zero */
 #ifndef _MSC_VER
     int ai_value[ai_max], ai_location[ai_max], data_location[ai_max], data_length[ai_max];
 #else
@@ -1217,7 +1219,7 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
         }
     }
 
-    if (source[0] != '[') {
+    if (source[0] != obracket) {
         strcpy(symbol->errtxt, "252: Data does not start with an AI");
         if (symbol->warn_level != WARN_ZPL_COMPAT) {
             return ZINT_ERROR_INVALID_DATA;
@@ -1236,14 +1238,14 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
     ai_latch = 0;
     for (i = 0; i < src_len; i++) {
         ai_length += j;
-        if (((j == 1) && (source[i] != ']')) && ((source[i] < '0') || (source[i] > '9'))) {
+        if (((j == 1) && (source[i] != cbracket)) && ((source[i] < '0') || (source[i] > '9'))) {
             ai_latch = 1;
         }
-        if (source[i] == '[') {
+        if (source[i] == obracket) {
             bracket_level++;
             j = 1;
         }
-        if (source[i] == ']') {
+        if (source[i] == cbracket) {
             bracket_level--;
             if (ai_length < min_ai_length) {
                 min_ai_length = ai_length;
@@ -1292,13 +1294,13 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
 
     ai_count = 0;
     for (i = 1; i < src_len; i++) {
-        if (source[i - 1] == '[') {
+        if (source[i - 1] == obracket) {
             ai_location[ai_count] = i;
             j = 0;
             do {
                 ai_string[j] = source[i + j];
                 j++;
-            } while (ai_string[j - 1] != ']');
+            } while (ai_string[j - 1] != cbracket);
             ai_string[j - 1] = '\0';
             ai_value[ai_count] = atoi(ai_string);
             ai_count++;
@@ -1315,7 +1317,7 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
         }
         data_length[i] = 0;
         while ((data_location[i] + data_length[i] < src_len)
-                    && (source[data_location[i] + data_length[i]] != '[')) {
+                    && (source[data_location[i] + data_length[i]] != obracket)) {
             data_length[i]++;
         }
         if (data_length[i] == 0) {
@@ -1352,10 +1354,10 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
     j = 0;
     ai_latch = 1;
     for (i = 0; i < src_len; i++) {
-        if ((source[i] != '[') && (source[i] != ']')) {
+        if ((source[i] != obracket) && (source[i] != cbracket)) {
             reduced[j++] = source[i];
         }
-        if (source[i] == '[') {
+        if (source[i] == obracket) {
             /* Start of an AI string */
             if (ai_latch == 0) {
                 reduced[j++] = '[';

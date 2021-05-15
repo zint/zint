@@ -294,6 +294,12 @@ Changes:
 - Performance improvements (large data) for Aztec, Han Xin, Grid Matrix, PDF417
   and QR
 - Option scmvv for MaxiCode #212; postcode needn't be space-filled
+- eci: Add support for all ECIs (Big5, Korean, UCS-2BE)
+- CLI: Handle UTF-8 args on Windows; -b <barcode name>
+- DATAMATRIX: make EOD encodation strictly ISO 16022 compliant
+- png.c: Use palette for file size savings
+- tif.c: Use palette/bilevel/LZW to reduce file size, alpha/CMYK support
+- Option gs1parens (GS1PARENS_MODE)
 
 Bugs:
 - Code16k selects GS1 mode by default in GUI
@@ -308,6 +314,14 @@ Bugs:
 - EAN composite: allow for check digit + buffer overflow for too long add-on
 - Han Xin fix 0xFFE terminator
 - GUI: Use UTF-8 for QSettings (non-ASCII was getting garbled on restore)
+- DOTCODE: Fix best_mask -> high_score prime test
+- CODEONE: various fixes, ECI support
+- #218 Prevent buffer overflow in ean_leading_zeroes by checking max lengths
+- MAXICODE: fix mask typos for ECI 3/4 bytes
+- Fix UPCEAN small font ignored/disabled (introduced [1adba1])
+- get_best_eci: check UTF-8 before returning 26
+- MAXICODE: fix shifting from sets C/D/E to A/B (only latch available)
+- EAN14, NVE18: fix checksum calc for zero-filled input
 
 CONTACT US
 ----------

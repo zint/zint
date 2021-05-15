@@ -1247,13 +1247,14 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
     return 0;
 }
 
-static int linear_dummy_run(unsigned char *source, const int length, char *errtxt) {
+static int linear_dummy_run(int input_mode, unsigned char *source, const int length, char *errtxt) {
     struct zint_symbol *dummy;
     int error_number;
     int linear_width;
 
     dummy = ZBarcode_Create();
     dummy->symbology = BARCODE_GS1_128_CC;
+    dummy->input_mode = input_mode;
     dummy->option_1 = 3;
     error_number = ean_128(dummy, source, length);
     linear_width = dummy->width;
@@ -1304,7 +1305,7 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
 
     if (symbol->symbology == BARCODE_GS1_128_CC) {
         /* Do a test run of encoding the linear component to establish its width */
-        linear_width = linear_dummy_run((unsigned char *) symbol->primary, pri_len, symbol->errtxt);
+        linear_width = linear_dummy_run(symbol->input_mode, (unsigned char *) symbol->primary, pri_len, symbol->errtxt);
         if (linear_width == 0) {
             strcat(symbol->errtxt, " in linear component");
             return ZINT_ERROR_INVALID_DATA;
@@ -1424,6 +1425,7 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
     linear = ZBarcode_Create(); /* Symbol contains the 2D component and Linear contains the rest */
 
     linear->symbology = symbol->symbology;
+    linear->input_mode = symbol->input_mode;
     linear->option_2 = symbol->option_2;
     linear->debug = symbol->debug;
 

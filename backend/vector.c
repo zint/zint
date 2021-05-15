@@ -43,6 +43,7 @@
 
 #include "common.h"
 #include "output.h"
+#include "zfiletypes.h"
 
 INTERNAL int ps_plot(struct zint_symbol *symbol);
 INTERNAL int svg_plot(struct zint_symbol *symbol);

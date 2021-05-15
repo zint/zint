@@ -622,6 +622,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\backend\zfiletypes.h"
+				>
+			</File>
+			<File
 				RelativePath="..\backend\zint.h"
 				>
 			</File>

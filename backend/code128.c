@@ -1041,7 +1041,7 @@ INTERNAL int nve_18(struct zint_symbol *symbol, unsigned char source[], int leng
     }
 
     zeroes = 17 - length;
-    ustrcpy(ean128_equiv, "[00]");
+    ustrcpy(ean128_equiv, symbol->input_mode & GS1PARENS_MODE ? "(00)" : "[00]");
     memset(ean128_equiv + 4, '0', zeroes);
     ustrcpy(ean128_equiv + 4 + zeroes, source);
 
@@ -1079,7 +1079,7 @@ INTERNAL int ean_14(struct zint_symbol *symbol, unsigned char source[], int leng
     }
 
     zeroes = 13 - length;
-    ustrcpy(ean128_equiv, "[01]");
+    ustrcpy(ean128_equiv, symbol->input_mode & GS1PARENS_MODE ? "(01)" : "[01]");
     memset(ean128_equiv + 4, '0', zeroes);
     ustrcpy(ean128_equiv + 4 + zeroes, source);
 

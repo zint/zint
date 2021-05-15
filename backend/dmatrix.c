@@ -243,7 +243,7 @@ static int isc40text(const int current_mode, const unsigned char input) {
 }
 
 /* Return true (1) if a character is valid in X12 set */
-static int isX12(const int input) {
+static int isX12(const unsigned char input) {
 
     if (isc40(input)) {
         return 1;

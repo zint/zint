@@ -53,6 +53,7 @@ namespace Zint {
         target_size_vert = 0;
         m_option_2 = 0;
         m_whitespace = 0;
+        m_gs1parens = false;
         m_gssep = false;
         m_reader_init = false;
         m_rotate_angle = 0;
@@ -86,6 +87,9 @@ namespace Zint {
         m_zintSymbol->eci = m_eci;
         m_zintSymbol->option_3 = m_option_3;
         m_zintSymbol->scale = m_scale;
+        if (m_gs1parens) {
+            m_zintSymbol->input_mode |= GS1PARENS_MODE;
+        }
         if (m_gssep) {
             m_zintSymbol->output_options |= GS1_GS_SEPARATOR;
         }
@@ -312,6 +316,10 @@ namespace Zint {
         }
     }
 
+    void QZint::setGS1Parens(bool gs1parens) {
+        m_gs1parens = gs1parens;
+    }
+
     void QZint::setReaderInit(bool reader_init) {
         m_reader_init = reader_init;
     }
@@ -330,6 +338,10 @@ namespace Zint {
 
     bool QZint::supportsECI(int symbology) const {
         return ZBarcode_Cap(symbology ? symbology : m_symbol, ZINT_CAP_ECI);
+    }
+
+    bool QZint::supportsGS1(int symbology) const {
+        return ZBarcode_Cap(symbology ? symbology : m_symbol, ZINT_CAP_GS1);
     }
 
     bool QZint::isFixedRatio(int symbology) const {

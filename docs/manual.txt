@@ -482,7 +482,7 @@ code that has not been explicitly requested has been inserted into a symbol.
 
 GS1 data can be encoded in a number of symbologies. Application identifiers
 should be enclosed in [square brackets] followed by the data to be encoded (see
-5.1.12.3). To encode GS1 data use the --gs1 option. GS1 mode is assumed (and
+6.1.12.3). To encode GS1 data use the --gs1 option. GS1 mode is assumed (and
 doesn't need to be set) for GS1-128, EAN-14, DataBar and Composite symbologies
 but is also available for Aztec Code, Code 16k, Code 49, Code One, Data Matrix,
 DotCode, QR Code and Ultracode.
@@ -779,6 +779,7 @@ int main(int argc, char **argv)
 {
     struct zint_symbol *my_symbol;
     my_symbol = ZBarcode_Create();
+	my_symbol->input_mode = UNICODE_MODE;
     ZBarcode_Encode(my_symbol, argv[1], 0);
     ZBarcode_Print(my_symbol, 0);
     ZBarcode_Delete(my_symbol);
@@ -793,6 +794,7 @@ int main(int argc, char **argv)
 {
     struct zint_symbol *my_symbol;
     my_symbol = ZBarcode_Create();
+	my_symbol->input_mode = UNICODE_MODE;
     ZBarcode_Encode_and_Print(my_symbol, argv[1], 0, 0);
     ZBarcode_Delete(my_symbol);
     return 0;
@@ -819,7 +821,7 @@ int ZBarcode_Encode_File_and_Print(struct zint_symbol *symbol, char *filename,
 
 In these definitions "length" can be used to set the length of the input
 string. This allows the encoding of NUL (ASCII 0) characters in those
-symbologies which allow this. A value of 0 will disable this function and Zint
+symbologies which allow this. A value of 0 will disable this usage and Zint
 will encode data up to the first NUL character in the input string.
 
 The "rotate_angle" value can be used to rotate the image when outputting. Valid
@@ -906,13 +908,13 @@ fgcolour          | character    | Foreground (ink) colour as  | "000000"
                   |              |    string. Must be 6 or 8   |
                   |              |    characters followed by   |
                   |              |    terminating \0.          |
-fgcolor           | pointer      | Points to fgcolour allowing |
-                  |              |    alternate spelling.      |
 bgcolour          | character    | Background (paper) colour   | "ffffff"
                   |    string    |    as RGB/RGBA hexadecimal  |
                   |              |    string. Must be 6 or 8   |
                   |              |    characters followed by   |
                   |              |    terminating \0.          |
+fgcolor           | pointer      | Points to fgcolour allowing |
+                  |              |    alternate spelling.      |
 bgcolor           | pointer      | Points to bgcolour allowing |
                   |              |    alternate spelling.      |
 outfile           | character    | Contains the name of the    | "out.png"
@@ -968,6 +970,10 @@ vector            | pointer to   | Pointer to vector header    | (output only)
                   |    vector    |    containing pointers to   |
                   |    structure |    vector elements.         |
 --------------------------------------------------------------------------------
+
+[1] This value is ignored for Australia Post 4-State Barcodes, POSTNET, PLANET,
+USPS Intelligent Mail, RM4SCC, PDF417, Data Matrix, MaxiCode, QR Code, GS1
+DataBar Stacked, PDF417 and MicroPDF417 - all of which have a fixed height.
 
 To alter these values use the syntax shown in the example below. This code has
 the same result as the previous example except the output is now taller and
@@ -1227,30 +1233,42 @@ OUT_BUFFER_INTERMEDIATE |  Return the bitmap buffer as ASCII values instead of
                         |     separate colour channels (OUT_BUFFER only).
 --------------------------------------------------------------------------------
 
+[2] This value is ignored for Code 16k and Codablock-F. Special considerations
+apply to ITF-14 - see the specific section 6.1.2.6 for that symbology.
+
 5.9 Setting the Input Mode
 --------------------------
 The way in which the input data is encoded can be set using the input_mode
 property. Valid values are shown in the table below.
 
------------------------------------------------------------------------------
-Value         |  Effect
------------------------------------------------------------------------------
-DATA_MODE     |  Uses full ASCII range interpreted as Latin-1 or binary data.
-UNICODE_MODE  |  Uses pre-formatted UTF-8 input.
-GS1_MODE      |  Encodes GS1 data using FNC1 characters.
-ESCAPE_MODE   |  Process input data for escape sequences.
------------------------------------------------------------------------------
+------------------------------------------------------------------------------
+Value          |  Effect
+------------------------------------------------------------------------------
+DATA_MODE      |  Uses full ASCII range interpreted as Latin-1 or binary data.
+UNICODE_MODE   |  Uses pre-formatted UTF-8 input.
+GS1_MODE       |  Encodes GS1 data using FNC1 characters.
+               |
+ESCAPE_MODE    |  Process input data for escape sequences.
+GS1PARENS_MODE |  Parentheses (rounded brackets) used in input data instead of
+               |     square brackets to delimit GS1 application identifiers
+               |     (parentheses must not otherwise occur in the data).
+------------------------------------------------------------------------------
 
 DATA_MODE, UNICODE_MODE and GS1_MODE are mutually exclusive, whereas ESCAPE_MODE
-is optional. So, for example, you can set
+and GS1PARENS_MODE are optional. So, for example, you can set
 
 my_symbol->input_mode = UNICODE_MODE | ESCAPE_MODE;
+
+or
+
+my_symbol->input_mode = GS1_MODE | GS1PARENS_MODE;
 
 whereas
 
 my_symbol->input_mode = DATA_MODE | GS1_MODE;
 
-is not valid. Permissible escape sequences are listed in section 4.1.
+is not valid. Permissible escape sequences are listed in section 4.1. An
+example of GS1PARENS_MODE usage is given in section 6.1.12.3.
 
 5.10 Verifying Symbology Availability
 -------------------------------------
@@ -1320,13 +1338,6 @@ int ZBarcode_Version();
 
 The version parts are separated by hundreds. For instance, version "2.9.1" is
 returned as "20901".
-
-[1] This value is ignored for Australia Post 4-State Barcodes, POSTNET, PLANET,
-USPS Intelligent Mail, RM4SCC, PDF417, Data Matrix, MaxiCode, QR Code, GS1
-DataBar Stacked, PDF417 and MicroPDF417 - all of which have a fixed height.
-
-[2] This value is ignored for Code 16k and Codablock-F. Special considerations
-apply to ITF-14 - see the specific section for that symbology.
 
 
 6. Types of Symbology
@@ -1618,7 +1629,7 @@ developed in 1981 by Computer Identics. This symbology supports full ASCII text
 and uses a three-mode system to compress the data into a smaller symbol. Zint
 automatically switches between modes and adds a modulo-103 check digit. Code
 128 is the default barcode symbology used by Zint. In addition Zint supports
-the encoding of Latin-1 (non-English) characters in Code 128 symbols [1]. The
+the encoding of Latin-1 (non-English) characters in Code 128 symbols. The
 Latin-1 character set is shown in Appendix A.
 
 6.1.11.2 Code 128 Subset B
@@ -1696,15 +1707,25 @@ case the check digit will be verified.
 -------------------------
 Previously known as RSS Expanded this is a variable length symbology capable of
 encoding data from a number of AIs in a single symbol. AIs should be encased in
-[square brackets] in the input data. This will be converted to (rounded
-brackets) before it is included in the human readable text attached to the
-symbol. This method allows the inclusion of rounded brackets in the data to be
-encoded. GTIN data (AI 01) should also include the check digit data as this is
-not calculated by Zint when this symbology is encoded. Fixed length data should
-be entered at the appropriate length for correct encoding. The following is an
+[square brackets] in the input data. This will be converted to parentheses
+(rounded brackets) before it is included in the human readable text attached to
+the symbol. This method allows the inclusion of parentheses in the data to be
+encoded.
+
+For compatibility with data entry in other systems, if the data does not include
+parentheses, the option --gs1parens (API input_mode |= GS1PARENS_MODE;) may be
+used to signal that AIs are encased in rounded brackets instead of square ones.
+
+GTIN data (AI 01) should also include the check digit data as this is not
+calculated by Zint when this symbology is encoded. Fixed length data should be
+entered at the appropriate length for correct encoding. The following is an
 example of a valid DataBar Expanded input:
 
 zint --barcode=31 -d "[01]98898765432106[3202]012345[15]991231"
+
+or using the --gs1parens option:
+
+zint --barcode=31 --gs1parens -d "(01)98898765432106(3202)012345(15)991231"
 
 6.1.13 Korea Post Barcode
 -------------------------
@@ -1901,7 +1922,7 @@ strcpy(my_symbol->primary, "331234567890");
 ZBarcode_Encode_and_Print(my_symbol, "[99]1234-abcd", 0, 0);
 
 EAN-2 and EAN-5 add-on data can be used with EAN and UPC symbols using the +
-symbol as described in section 6.1.3 and 5.1.4.
+symbol as described in sections 6.1.3 and 6.1.4.
 
 The 2D component of a composite symbol can use one of three systems: CC-A, CC-B
 and CC-C as described below. The 2D component type can be selected

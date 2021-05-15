@@ -421,6 +421,7 @@ static void test_options(int index, int debug) {
     int ret;
     struct item {
         int symbology;
+        int input_mode;
         int option_1;
         int option_2;
         int option_3;
@@ -432,17 +433,19 @@ static void test_options(int index, int debug) {
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /*  0*/ { BARCODE_DATAMATRIX, -1, -1, -1, "1", 0, 10, 10 },
-        /*  1*/ { BARCODE_DATAMATRIX, 2, -1, -1, "1", ZINT_ERROR_INVALID_OPTION, -1, -1 },
-        /*  2*/ { BARCODE_DATAMATRIX, -1, 1, -1, "1", 0, 10, 10 },
-        /*  3*/ { BARCODE_DATAMATRIX, -1, 2, -1, "1", 0, 12, 12 },
-        /*  4*/ { BARCODE_DATAMATRIX, -1, 48, -1, "1", 0, 26, 64 },
-        /*  5*/ { BARCODE_DATAMATRIX, -1, 49, -1, "1", 0, 10, 10 }, // Ignored
-        /*  6*/ { BARCODE_DATAMATRIX, -1, -1, -1, "ABCDEFGHIJK", 0, 8, 32 },
-        /*  7*/ { BARCODE_DATAMATRIX, -1, -1, DM_SQUARE, "ABCDEFGHIJK", 0, 16, 16 },
-        /*  8*/ { BARCODE_DATAMATRIX, -1, -1, -1, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTU", 0, 32, 32 },
-        /*  9*/ { BARCODE_DATAMATRIX, -1, -1, DM_DMRE, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTU", 0, 20, 44 },
-        /* 10*/ { BARCODE_DATAMATRIX, -1, -1, 9999, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTU", 0, 32, 32 }, // Ignored
+        /*  0*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, "1", 0, 10, 10 },
+        /*  1*/ { BARCODE_DATAMATRIX, -1, 2, -1, -1, "1", ZINT_ERROR_INVALID_OPTION, -1, -1 },
+        /*  2*/ { BARCODE_DATAMATRIX, -1, -1, 1, -1, "1", 0, 10, 10 },
+        /*  3*/ { BARCODE_DATAMATRIX, -1, -1, 2, -1, "1", 0, 12, 12 },
+        /*  4*/ { BARCODE_DATAMATRIX, -1, -1, 48, -1, "1", 0, 26, 64 },
+        /*  5*/ { BARCODE_DATAMATRIX, -1, -1, 49, -1, "1", 0, 10, 10 }, // Ignored
+        /*  6*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, "ABCDEFGHIJK", 0, 8, 32 },
+        /*  7*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, "ABCDEFGHIJK", 0, 16, 16 },
+        /*  8*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTU", 0, 32, 32 },
+        /*  9*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTU", 0, 20, 44 },
+        /* 10*/ { BARCODE_DATAMATRIX, -1, -1, -1, 9999, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTU", 0, 32, 32 }, // Ignored
+        /* 11*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, -1, "[90]12", 0, 10, 10 },
+        /* 12*/ { BARCODE_DATAMATRIX, GS1_MODE | GS1PARENS_MODE, -1, -1, -1, "(90)12", 0, 10, 10 },
     };
     int data_size = ARRAY_SIZE(data);
 
@@ -453,7 +456,7 @@ static void test_options(int index, int debug) {
         struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        int length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, data[i].option_1, data[i].option_2, data[i].option_3, -1 /*output_options*/, data[i].data, -1, debug);
+        int length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, data[i].option_1, data[i].option_2, data[i].option_3, -1 /*output_options*/, data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);

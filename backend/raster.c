@@ -45,6 +45,7 @@
 #include <assert.h>
 #include "common.h"
 #include "output.h"
+#include "zfiletypes.h"
 
 #include "font.h" /* Font for human readable text */
 

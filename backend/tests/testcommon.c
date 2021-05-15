@@ -40,6 +40,7 @@
 #include <zlib.h>
 #include <setjmp.h>
 #endif
+#include <assert.h>
 #include <limits.h>
 #include <unistd.h>
 #include <errno.h>
@@ -452,34 +453,51 @@ const char *testUtilErrorName(int error_number) {
 }
 
 const char *testUtilInputModeName(int input_mode) {
+    static char buf[512];
+
     struct item {
         const char *name;
         int define;
         int val;
     };
     static const struct item data[] = {
-        { "DATA_MODE", DATA_MODE, 0 },
-        { "UNICODE_MODE", UNICODE_MODE, 1 },
-        { "GS1_MODE", GS1_MODE, 2 },
-        { "", -1, 3 },
-        { "", -1, 4 },
-        { "", -1, 5 },
-        { "", -1, 6 },
-        { "", -1, 7 },
-        { "DATA_MODE | ESCAPE_MODE", DATA_MODE | ESCAPE_MODE, 8 },
-        { "UNICODE_MODE | ESCAPE_MODE", UNICODE_MODE | ESCAPE_MODE, 9 },
-        { "GS1_MODE | ESCAPE_MODE", GS1_MODE | ESCAPE_MODE, 10 },
+        { "ESCAPE_MODE", ESCAPE_MODE, 8 },
+        { "GS1PARENS_MODE", GS1PARENS_MODE, 16 },
     };
-    static const int data_size = sizeof(data) / sizeof(struct item);
+    static const int data_size = ARRAY_SIZE(data);
+    int set, i;
 
-    if (input_mode < 0 || input_mode >= data_size) {
-        return input_mode == -1 ? "-1" : "";
+    if (input_mode < 0) {
+        return "-1";
     }
-    if (data[input_mode].val != input_mode || (data[input_mode].define != -1 && data[input_mode].define != input_mode)) { // Self-check
-        fprintf(stderr, "testUtilInputModeName: data table out of sync (%d)\n", input_mode);
+    buf[0] = '\0';
+    if ((input_mode & 0x7) & UNICODE_MODE) {
+        strcpy(buf, "UNICODE_MODE");
+        set = UNICODE_MODE;
+    } else if ((input_mode & 0x7) & GS1_MODE) {
+        strcpy(buf, "GS1_MODE");
+        set = GS1_MODE;
+    } else {
+        set = DATA_MODE;
+    }
+    for (i = 0; i < data_size; i++) {
+        if (data[i].define != data[i].val) { // Self-check
+            fprintf(stderr, "testUtilInputModeName: data table out of sync (%d)\n", i);
+            abort();
+        }
+        if (input_mode & data[i].define) {
+            if (*buf) {
+                strcat(buf, " | ");
+            }
+            strcat(buf, data[i].name);
+            set |= data[i].define;
+        }
+    }
+    if (set != input_mode) {
+        fprintf(stderr, "testUtilInputModeName: unknown input mode %d (%d)\n", input_mode & set, input_mode);
         abort();
     }
-    return data[input_mode].name;
+    return buf;
 }
 
 const char *testUtilOption3Name(int option_3) {
@@ -720,6 +738,7 @@ int testUtilSymbolCmp(const struct zint_symbol *a, const struct zint_symbol *b) 
 
 struct zint_vector *testUtilVectorCpy(const struct zint_vector *in) {
     struct zint_vector *out = malloc(sizeof(struct zint_vector));
+    assert(out != NULL);
     out->width = in->width;
     out->height = in->height;
     out->rectangles = NULL;
@@ -742,6 +761,7 @@ struct zint_vector *testUtilVectorCpy(const struct zint_vector *in) {
     outrect = &(out->rectangles);
     while (rect) {
         *outrect = malloc(sizeof(struct zint_vector_rect));
+        assert(*outrect != NULL);
         memcpy(*outrect, rect, sizeof(struct zint_vector_rect));
         outrect = &((*outrect)->next);
         rect = rect->next;
@@ -753,8 +773,10 @@ struct zint_vector *testUtilVectorCpy(const struct zint_vector *in) {
     outstring = &(out->strings);
     while (string) {
         *outstring = malloc(sizeof(struct zint_vector_string));
+        assert(*outstring != NULL);
         memcpy(*outstring, string, sizeof(struct zint_vector_string));
         (*outstring)->text = malloc(sizeof(unsigned char) * (ustrlen(string->text) + 1));
+        assert((*outstring)->text != NULL);
         ustrcpy((*outstring)->text, string->text);
         outstring = &((*outstring)->next);
         string = string->next;
@@ -766,6 +788,7 @@ struct zint_vector *testUtilVectorCpy(const struct zint_vector *in) {
     outcircle = &(out->circles);
     while (circle) {
         *outcircle = malloc(sizeof(struct zint_vector_circle));
+        assert(*outcircle != NULL);
         memcpy(*outcircle, circle, sizeof(struct zint_vector_circle));
         outcircle = &((*outcircle)->next);
         circle = circle->next;
@@ -777,6 +800,7 @@ struct zint_vector *testUtilVectorCpy(const struct zint_vector *in) {
     outhexagon = &(out->hexagons);
     while (hexagon) {
         *outhexagon = malloc(sizeof(struct zint_vector_hexagon));
+        assert(*outhexagon != NULL);
         memcpy(*outhexagon, hexagon, sizeof(struct zint_vector_hexagon));
         outhexagon = &((*outhexagon)->next);
         hexagon = hexagon->next;
@@ -2094,6 +2118,8 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
 
     int upcean = is_extendable(symbology);
     int upca = symbology == BARCODE_UPCA || symbology == BARCODE_UPCA_CHK || symbology == BARCODE_UPCA_CC;
+    char obracket = symbol->input_mode & GS1PARENS_MODE ? '(' : '[';
+    char cbracket = symbol->input_mode & GS1PARENS_MODE ? ')' : ']';
     int addon_posn;
     int eci;
 
@@ -2146,7 +2172,7 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
             fprintf(stderr, "i:%d testUtilBwipp: no primary data given %s\n", index, testUtilBarcodeName(symbology));
             return -1;
         }
-        if (*primary != '[' && !upcean) {
+        if (*primary != obracket && !upcean) {
             strcat(bwipp_data, "(01)");
         }
         strcat(bwipp_data, primary);
@@ -2175,7 +2201,7 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
         }
     } else {
         if (gs1_cvt) {
-            if (*data != '[' && !upcean) {
+            if (*data != obracket && !upcean) {
                 strcat(bwipp_data, symbology == BARCODE_NVE18 ? "(00)" : "(01)");
             }
             strcat(bwipp_data, data);
@@ -2355,7 +2381,7 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                 if ((symbol->input_mode & 0x07) == GS1_MODE) { /* Hack pseudo-GS1 support */
                     int last_ai, ai_latch = 0;
                     for (int i = 0, j = 0, len = (int) strlen(bwipp_data); i <= len; i++) { /* Reduce square brackets (include NUL) */
-                        if (bwipp_data[i] == '[') {
+                        if (bwipp_data[i] == obracket) {
                             if (ai_latch == 0) {
                                 bwipp_data[j++] = '[';
                             }
@@ -2363,7 +2389,7 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                             if ((last_ai >= 0 && last_ai <= 4) || (last_ai >= 11 && last_ai <= 20) || last_ai == 23 || (last_ai >= 31 && last_ai <= 36) || last_ai == 41) {
                                 ai_latch = 1;
                             }
-                        } else if (bwipp_data[i] != ']') {
+                        } else if (bwipp_data[i] != cbracket) {
                             bwipp_data[j++] = bwipp_data[i];
                         }
                     }
