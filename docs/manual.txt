@@ -461,8 +461,74 @@ followed by the angle of rotation as shown below.
 4.9 Adjusting image size
 ------------------------
 The scale of the image can be altered using the --scale= option followed by a
-multiple of the default X-dimension. The default X-dimension is 2 pixels. For
-example for PNG images a scale of 5 will increase the X-dimension to 10 pixels.
+multiple of the default X-dimension. The scale is multiplied by 2 before being
+applied. The default scale is 1.
+
+For raster output, the default X-dimension is 2 pixels (except for MaxiCode, see
+4.9.2 below, and dotty mode, see 4.14). For example for PNG images a scale of 5
+will increase the X-dimension to 10 pixels. Scales should be given in increments
+of 0.5, i.e.  0.5, 1, 1.5, 2, 2.5, 3, 3.5, etc., to avoid the X-dimension
+varying across the symbol due to interpolation. 0.5 increments are also faster
+to render.
+
+The minimum scale for non-dotty raster output is 0.5, giving a minimum
+X-dimension of 1 pixel, and text will not be printed for scales less than 1.
+
+The minimum scale for vector output is 0.1, giving a minimum X-dimension of 0.2.
+
+4.9.1 Scaling example
+---------------------
+The GS1 General Specifications Section 5.2.6.6 "Symbol dimensions at nominal
+size" gives an example of an EAN-13 barcode using the X-dimension of 0.33mm.
+To print that example as a PNG at 12 dots per mm (dpmm), the equivalent of 300
+dots per inch (dpi = dpmm * 25.4), specify a scale of 2, since 0.33 * 12 = 3.96
+pixels, or 4 pixels rounding to the nearest pixel:
+
+zint -b EANX -d "501234567890" --height 69 --scale 2
+
+This will result in output of 38.27mm x 26.08mm (WxH) at 300 dpi. The following
+table shows the scale to use (in 0.5 increments) depending on the dpmm desired,
+for a target X-dimension of 0.33mm:
+
+-------------------
+dpmm | dpi  | scale
+-------------------
+  6  |  150 |  1
+  8  |  200 |  1.5
+ 12  |  300 |  2
+ 16  |  400 |  3
+ 24  |  600 |  4
+ 47  | 1200 |  8
+ 95  | 2400 | 15.5
+189  | 4800 | 31
+-------------------
+
+4.9.2 MaxiCode raster scaling
+-----------------------------
+For MaxiCode symbols, which use hexagons, the scale for raster output is
+multiplied by 10 before being applied. The minimum scale is 0.2, so the minimum
+X-dimension is 2 pixels.
+
+MaxiCode symbols have fixed size ranges of 24.82mm to 27.93mm in width, and
+23.71mm to 26.69mm in height, excluding quiet zones. The following table shows
+the scale to use depending on the dpmm desired, with dpi equivalents:
+
+-------------------
+dpmm | dpi  | scale
+-------------------
+  6  |  150 |  0.5
+  8  |  200 |  0.7
+ 12  |  300 |  1
+ 16  |  400 |  1.4
+ 24  |  600 |  2.1
+ 47  | 1200 |  4.1
+ 95  | 2400 |  8.2
+189  | 4800 | 16.4
+-------------------
+
+Note that the 0.5 increment recommended for normal raster output does not apply.
+Scales below 0.5 are not recommended and may produce symbols that are not within
+the minimum/maximum size ranges.
 
 4.10 Input modes
 ----------------
@@ -694,7 +760,9 @@ Matrix codes can be rendered as a series of dots or circles rather than the
 normal squares by using the --dotty option. This option is only available for
 matrix symbologies, and is automatically selected for DotCode. The size of
 the dots can be adjusted using the --dotsize= option followed by the radius
-of the dot, where that radius is given as a multiple of the X-dimension.
+of the dot, where that radius is given as a multiple of the X-dimension. The
+minimum dot size is 0.01, the maximum is 20. The default and minimum scale for
+raster output in dotty mode is 2.
 
 4.15 Help options
 -----------------
@@ -2417,6 +2485,9 @@ Mode  |  Maximum Data Length  |  Maximum Data Length  |  Number of Error
 6     |  93                   |  138                  |  50
 -----------------------------------------------------------------------------
 * - secondary only
+
+MaxiCode uses a different scaling than other symbols for raster output, see
+4.9.2.
 
 6.6.7 Aztec Code (ISO 24778)
 ----------------------------

@@ -1288,8 +1288,11 @@ int main(int argc, char **argv) {
                     strcpy(filetype, no_png ? "gif" : "png");
                 }
             }
-            if (my_symbol->scale < 0.5f && is_raster(filetype, no_png)) {
-                fprintf(stderr, "Warning 145: Scaling less than 0.5 will be set to 0.5 for '%s' output\n", filetype);
+            if (((my_symbol->symbology != BARCODE_MAXICODE && my_symbol->scale < 0.5f) || my_symbol->scale < 0.2f)
+                    && is_raster(filetype, no_png)) {
+                const int min = my_symbol->symbology != BARCODE_MAXICODE ? 5 : 2;
+                fprintf(stderr, "Warning 145: Scaling less than 0.%d will be set to 0.%d for '%s' output\n", min, min,
+                    filetype);
                 fflush(stderr);
             }
             error_number = batch_process(my_symbol, arg_opts[0].arg, mirror_mode, filetype, rotate_angle);
@@ -1301,8 +1304,10 @@ int main(int argc, char **argv) {
             if (filetype[0] != '\0') {
                 set_extension(my_symbol->outfile, filetype);
             }
-            if (my_symbol->scale < 0.5f && is_raster(get_extension(my_symbol->outfile), no_png)) {
-                fprintf(stderr, "Warning 146: Scaling less than 0.5 will be set to 0.5 for '%s' output\n",
+            if (((my_symbol->symbology != BARCODE_MAXICODE && my_symbol->scale < 0.5f) || my_symbol->scale < 0.2f)
+                    && is_raster(get_extension(my_symbol->outfile), no_png)) {
+                const int min = my_symbol->symbology != BARCODE_MAXICODE ? 5 : 2;
+                fprintf(stderr, "Warning 146: Scaling less than 0.%d will be set to 0.%d for '%s' output\n", min, min,
                     get_extension(my_symbol->outfile));
                 fflush(stderr);
             }

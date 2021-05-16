@@ -31,7 +31,7 @@
 
 #include "testcommon.h"
 
-static struct zint_vector_rect *find_rect(struct zint_symbol *symbol, int x, int y, int height, int width) {
+static struct zint_vector_rect *find_rect(struct zint_symbol *symbol, float x, float y, float height, float width) {
     struct zint_vector_rect *rect;
 
     if (symbol->vector == NULL) {
@@ -196,7 +196,7 @@ static void test_buffer_vector(int index, int generate, int debug) {
         /* 55*/ { BARCODE_PHARMA_TWO, "12345678", "", 10, 2, 29, 58, 20 },
         /* 56*/ { BARCODE_PDF417, "1234567890", "", 21, 7, 103, 206, 42 },
         /* 57*/ { BARCODE_PDF417COMP, "1234567890", "", 21, 7, 69, 138, 42 },
-        /* 58*/ { BARCODE_MAXICODE, "1234567890", "", 165, 33, 30, 74, 72 },
+        /* 58*/ { BARCODE_MAXICODE, "1234567890", "", 165, 33, 30, 60, 57.733398 },
         /* 59*/ { BARCODE_QRCODE, "1234567890AB", "", 21, 21, 21, 42, 42 },
         /* 60*/ { BARCODE_CODE128B, "1234567890", "", 50, 1, 145, 290, 118.9 },
         /* 61*/ { BARCODE_AUSPOST, "12345678901234567890123", "", 8, 3, 133, 266, 16 },
@@ -603,8 +603,8 @@ static void test_output_options(int index, int debug) {
         float expected_vector_width;
         float expected_vector_height;
         int expected_set;
-        int expected_set_row;
-        int expected_set_col;
+        float expected_set_row;
+        float expected_set_col;
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
@@ -634,15 +634,15 @@ static void test_output_options(int index, int debug) {
         /* 23*/ { BARCODE_QRCODE, -1, 4, BARCODE_BIND | BARCODE_DOTTY_MODE, "A123", 0, 21, 21, 21, 42, 58, 1, 0, 50 },
         /* 24*/ { BARCODE_QRCODE, -1, 4, BARCODE_BIND | BARCODE_DOTTY_MODE, "A123", 0, 21, 21, 21, 42, 58, 0, 54, 0 },
         /* 25*/ { BARCODE_QRCODE, 1, 4, BARCODE_BOX | BARCODE_DOTTY_MODE, "A123", 0, 21, 21, 21, 62, 58, 1, 54, 0 },
-        /* 26*/ { BARCODE_MAXICODE, -1, -1, -1, "A123", 0, 165, 33, 30, 74, 72, 0, 0, 82 },
-        /* 27*/ { BARCODE_MAXICODE, -1, 5, -1, "A123", 0, 165, 33, 30, 74, 72, 0, 0, 82 },
-        /* 28*/ { BARCODE_MAXICODE, -1, 5, BARCODE_BIND, "A123", 0, 165, 33, 30, 74, 92, 1, 0, 82 },
-        /* 29*/ { BARCODE_MAXICODE, -1, 5, BARCODE_BIND, "A123", 0, 165, 33, 30, 74, 92, 0, 84, 0 },
-        /* 30*/ { BARCODE_MAXICODE, -1, 5, BARCODE_BOX, "A123", 0, 165, 33, 30, 94, 92, 1, 84, 0 },
-        /* 31*/ { BARCODE_MAXICODE, -1, -1, -1, "A123", 0, 165, 33, 30, 74, 72, 0, 0, 82 },
-        /* 32*/ { BARCODE_MAXICODE, 6, 5, BARCODE_BIND, "A123", 0, 165, 33, 30, 98, 92, 1, 0, 82 },
-        /* 33*/ { BARCODE_MAXICODE, 6, 5, BARCODE_BIND, "A123", 0, 165, 33, 30, 98, 92, 0, 108, 0 },
-        /* 34*/ { BARCODE_MAXICODE, 6, 5, BARCODE_BOX, "A123", 0, 165, 33, 30, 118, 92, 1, 108, 0 },
+        /* 26*/ { BARCODE_MAXICODE, -1, -1, -1, "A123", 0, 165, 33, 30, 60, 57.733398, 0, 0, 67.7334 },
+        /* 27*/ { BARCODE_MAXICODE, -1, 5, -1, "A123", 0, 165, 33, 30, 60, 57.733398, 0, 0, 67.7334 },
+        /* 28*/ { BARCODE_MAXICODE, -1, 5, BARCODE_BIND, "A123", 0, 165, 33, 30, 60, 77.733398, 1, 0, 67.7334 },
+        /* 29*/ { BARCODE_MAXICODE, -1, 5, BARCODE_BIND, "A123", 0, 165, 33, 30, 60, 77.733398, 0, 70, 0 },
+        /* 30*/ { BARCODE_MAXICODE, -1, 5, BARCODE_BOX, "A123", 0, 165, 33, 30, 80, 77.733398, 1, 70, 0 },
+        /* 31*/ { BARCODE_MAXICODE, -1, -1, -1, "A123", 0, 165, 33, 30, 60, 57.733398, 0, 0, 67.7334 },
+        /* 32*/ { BARCODE_MAXICODE, 6, 5, BARCODE_BIND, "A123", 0, 165, 33, 30, 84, 77.733398, 1, 0, 67.7334 },
+        /* 33*/ { BARCODE_MAXICODE, 6, 5, BARCODE_BIND, "A123", 0, 165, 33, 30, 84, 77.733398, 0, 94, 0 },
+        /* 34*/ { BARCODE_MAXICODE, 6, 5, BARCODE_BOX, "A123", 0, 165, 33, 30, 104, 77.733398, 1, 94, 0 },
         /* 35*/ { BARCODE_MAXICODE, -1, -1, BARCODE_DOTTY_MODE, "A123", ZINT_ERROR_INVALID_OPTION, -1, -1, -1, -1, -1, -1, -1, -1 },
         /* 36*/ { BARCODE_ITF14, -1, -1, -1, "123", 0, 50, 1, 135, 330, 138.89999, 1, 320, 0 },
         /* 37*/ { BARCODE_ITF14, -1, 0, -1, "123", 0, 50, 1, 135, 330, 138.89999, 1, 320, 0 },
@@ -693,9 +693,9 @@ static void test_output_options(int index, int debug) {
             if (data[i].expected_set != -1) {
                 rect = find_rect(symbol, data[i].expected_set_row, data[i].expected_set_col, 0, 0);
                 if (data[i].expected_set) {
-                    assert_nonnull(rect, "i:%d (%d) find_rect(%d, %d, 0, 0) NULL\n", i, data[i].symbology, data[i].expected_set_row, data[i].expected_set_col);
+                    assert_nonnull(rect, "i:%d (%d) find_rect(%g, %g, 0, 0) NULL\n", i, data[i].symbology, data[i].expected_set_row, data[i].expected_set_col);
                 } else {
-                    assert_null(rect, "i:%d (%d) find_rect(%d, %d, 0, 0) not NULL\n", i, data[i].symbology, data[i].expected_set_row, data[i].expected_set_col);
+                    assert_null(rect, "i:%d (%d) find_rect(%g, %g, 0, 0) not NULL\n", i, data[i].symbology, data[i].expected_set_row, data[i].expected_set_col);
                 }
             }
         }

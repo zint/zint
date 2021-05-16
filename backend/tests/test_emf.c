@@ -69,7 +69,7 @@ static void test_print(int index, int generate, int debug) {
         /*  9*/ { BARCODE_CODE39, -1, -1, -1, -1, -1, "", "", 90, "123", "../data/emf/code39_rotate_90.emf", "" },
         /* 10*/ { BARCODE_CODE39, -1, -1, -1, -1, -1, "", "", 180, "123", "../data/emf/code39_rotate_180.emf", "" },
         /* 11*/ { BARCODE_CODE39, -1, -1, -1, -1, -1, "", "", 270, "123", "../data/emf/code39_rotate_270.emf", "" },
-        /* 12*/ { BARCODE_MAXICODE, -1, -1, -1, -1, 20, "E0E0E0", "700070", 0, "THIS IS A 93 CHARACTER CODE SET A MESSAGE THAT FILLS A MODE 4, UNAPPENDED, MAXICODE SYMBOL...", "../data/emf/maxicode_#185.emf", "#185 Maxicode scaling" },
+        /* 12*/ { BARCODE_MAXICODE, -1, -1, -1, -1, -1, "E0E0E0", "700070", 0, "THIS IS A 93 CHARACTER CODE SET A MESSAGE THAT FILLS A MODE 4, UNAPPENDED, MAXICODE SYMBOL...", "../data/emf/maxicode_#185.emf", "#185 Maxicode scaling" },
     };
     int data_size = ARRAY_SIZE(data);
 

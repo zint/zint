@@ -90,6 +90,7 @@ static void test_print(int index, int generate, int debug) {
         /* 30*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, "12", "", "../data/svg/ean2.svg" },
         /* 31*/ { BARCODE_CODE39, -1, -1, SMALL_TEXT, -1, -1, -1, "123", "", "../data/svg/code39_small.svg" },
         /* 32*/ { BARCODE_POSTNET, -1, -1, -1, -1, -1, -1, "12345", "", "../data/svg/postnet_zip.svg" },
+        /* 33*/ { BARCODE_MAXICODE, -1, 2, BARCODE_BOX, -1, -1, -1, "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "", "../data/svg/maxicode_box2.svg" },
     };
     int data_size = ARRAY_SIZE(data);
 

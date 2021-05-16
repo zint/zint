@@ -172,7 +172,10 @@ static void test_print(int index, int generate, int debug) {
         /* 36*/ { BARCODE_ULTRA, -1, -1, -1, 2, -1, -1, -1, 0, 0, "0000007F", "FF0000", "12345", "", "../data/png/ultra_fgalpha.png", "" },
         /* 37*/ { BARCODE_ULTRA, -1, -1, -1, -1, -1, -1, -1, 0, 0, "0000007F", "", "12345", "", "../data/png/ultra_fgalpha_nobg.png", "" },
         /* 38*/ { BARCODE_ULTRA, -1, -1, -1, -1, -1, -1, -1, 0, 0.5f, "", "", "1", "", "../data/png/ultra_odd.png", "" },
-        /* 39*/ { BARCODE_MAXICODE, -1, -1, -1, -1, -1, -1, -1, 0, 0.5f, "", "", "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "", "../data/png/maxicode_0.5.png", "" },
+        /* 39*/ { BARCODE_MAXICODE, -1, -1, -1, -1, -1, -1, -1, 0, 0.5f, "", "", "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "", "../data/png/maxicode_0.5.png", "6 dpmm, 150 dpi" },
+        /* 40*/ { BARCODE_MAXICODE, -1, 1, BARCODE_BOX, 3, -1, -1, -1, 0, 0.7f, "", "", "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "", "../data/png/maxicode_0.7_wsp3_box1.png", "8 dpmm, 200 dpi" },
+        /* 41*/ { BARCODE_MAXICODE, -1, -1, -1, -1, -1, -1, -1, 0, 1.4f, "1111117F", "EEEEEEEE", "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "", "../data/png/maxicode_1.4_bgfgalpha.png", "16 dpmm, 400 dpi" },
+        /* 42*/ { BARCODE_MAXICODE, -1, -1, -1, -1, -1, -1, -1, 0, 2.1f, "", "", "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "", "../data/png/maxicode_2.1.png", "24 dpmm, 600 dpi" },
     };
     int data_size = ARRAY_SIZE(data);
 

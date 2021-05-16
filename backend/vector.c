@@ -496,31 +496,50 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
     // Plot Maxicode symbols
     if (symbol->symbology == BARCODE_MAXICODE) {
         struct zint_vector_circle *circle;
-        float hex_diameter = (float) (symbol->dot_size * 5.0 / 4.0); // Ugly kludge for legacy support
-        vector->width = 37.0f + (xoffset + roffset);
-        vector->height = 36.0f + (yoffset + boffset);
+        float bull_x, bull_y, bull_d_incr;
+        const float two_div_sqrt3 = 1.1547f; /* 2 / √3 */
+        const float sqrt3_div_two = 0.866f; /* √3 / 2 == 1.5 / √3 */
 
-        // Bullseye
-        circle = vector_plot_create_circle(17.88f + xoffset, 17.8f + yoffset, 10.85f, 0);
+        /* `hex_diameter` is short diameter, X in ISO/IEC 16023:2000 Figure 8 (same as W) */
+        const float hex_diameter = 1.0f;
+        const float hex_radius = hex_diameter / 2.0f;
+        const float hex_ydiameter = two_div_sqrt3 * hex_diameter; /* Long diameter, V in Figure 8 */
+        const float hex_yradius = hex_ydiameter / 2.0f;
+        const float yposn_offset = sqrt3_div_two * hex_diameter; /* Vertical distance between rows, Y in Figure 8 */
+
+        vector->width = 30 * hex_diameter + (xoffset + roffset);
+        /* 32 rows drawn yposn_offset apart + final hexagon */
+        vector->height = 32 * yposn_offset + hex_ydiameter + (yoffset + boffset);
+
+        // Bullseye (ISO/IEC 16023:2000 4.2.1.1 and 4.11.4)
+        bull_x = 14.5f * hex_diameter + xoffset; /* 14W right from leftmost centre = 14.5X */
+        bull_y = vector->height / 2.0f; /* 16Y above bottom-most centre = halfway */
+        /* Total finder diameter is 9X, so diametric increment for 5 diameters d2 to d6 is (9X - d1) / 5 */
+        bull_d_incr = (hex_diameter * 9 - hex_ydiameter) / 5.0f;
+
+        // TODO: Add width to circle so can draw rings instead of overlaying circles
+        circle = vector_plot_create_circle(bull_x, bull_y, hex_ydiameter + bull_d_incr * 5, 0);
         vector_plot_add_circle(symbol, circle, &last_circle);
-        circle = vector_plot_create_circle(17.88f + xoffset, 17.8f + yoffset, 8.97f, 1);
+        circle = vector_plot_create_circle(bull_x, bull_y, hex_ydiameter + bull_d_incr * 4, 1);
         vector_plot_add_circle(symbol, circle, &last_circle);
-        circle = vector_plot_create_circle(17.88f + xoffset, 17.8f + yoffset, 7.10f, 0);
+        circle = vector_plot_create_circle(bull_x, bull_y, hex_ydiameter + bull_d_incr * 3, 0);
         vector_plot_add_circle(symbol, circle, &last_circle);
-        circle = vector_plot_create_circle(17.88f + xoffset, 17.8f + yoffset, 5.22f, 1);
+        circle = vector_plot_create_circle(bull_x, bull_y, hex_ydiameter + bull_d_incr * 2, 1);
         vector_plot_add_circle(symbol, circle, &last_circle);
-        circle = vector_plot_create_circle(17.88f + xoffset, 17.8f + yoffset, 3.31f, 0);
+        circle = vector_plot_create_circle(bull_x, bull_y, hex_ydiameter + bull_d_incr, 0);
         vector_plot_add_circle(symbol, circle, &last_circle);
-        circle = vector_plot_create_circle(17.88f + xoffset, 17.8f + yoffset, 1.43f, 1);
+        circle = vector_plot_create_circle(bull_x, bull_y, hex_ydiameter, 1);
         vector_plot_add_circle(symbol, circle, &last_circle);
 
         /* Hexagons */
         for (r = 0; r < symbol->rows; r++) {
-            for (i = 0; i < symbol->width; i++) {
+            const int odd_row = r & 1; /* Odd (reduced) row, even (full) row */
+            const float yposn = r * yposn_offset + hex_yradius + yoffset;
+            const float xposn_offset = (odd_row ? hex_diameter : hex_radius) + xoffset;
+            for (i = 0; i < symbol->width - odd_row; i++) {
                 if (module_is_set(symbol, r, i)) {
-                    //struct zint_vector_hexagon *hexagon = vector_plot_create_hexagon(((i * 0.88) + ((r & 1) ? 1.76 : 1.32)), ((r * 0.76) + 0.76), hex_diameter);
-                    struct zint_vector_hexagon *hexagon = vector_plot_create_hexagon(((i * 1.23f) + 0.615f + ((r & 1) ? 0.615f : 0.0f)) + xoffset,
-                                                                                     ((r * 1.067f) + 0.715f) + yoffset, hex_diameter);
+                    const float xposn = i * hex_diameter + xposn_offset;
+                    struct zint_vector_hexagon *hexagon = vector_plot_create_hexagon(xposn, yposn, hex_diameter);
                     vector_plot_add_hexagon(symbol, hexagon, &last_hexagon);
                 }
             }
