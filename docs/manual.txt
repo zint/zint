@@ -1434,29 +1434,39 @@ before using these standards.
 ----------------------------
 Also known as Code 2 of 5 Matrix this is a self-checking code used in industrial
 applications and photo development. Standard Code 2 of 5 will encode any length
-numeric input (digits 0-9).
+numeric input (digits 0-9). No check digit is added by default. To add a check
+digit, set option_2 = 1 or --vers=1. To add a check digit but not show it in
+the human readable text, set option_2 = 2 or --vers=2.
 
 6.1.2.2 IATA Code 2 of 5
 ------------------------
 Used for baggage handling in the air-transport industry by the International
 Air Transport Agency, this self-checking code will encode any length numeric
-input (digits 0-9) and does not include a check digit.
+input (digits 0-9). No check digit is added by default. To add a check digit,
+set option_2 = 1 or --vers=1. To add a check digit but not show it in the human
+readable text, set option_2 = 2 or --vers=2.
 
 6.1.2.3 Industrial Code 2 of 5
 ------------------------------
-Industrial Code 2 of 5 can encode any length numeric input (digits 0-9) and
-does not include a check digit.
+Industrial Code 2 of 5 can encode any length numeric input (digits 0-9). No
+check digit is added by default. To add a check digit, set option_2 = 1 or
+--vers=1. To add a check digit but not show it in the human readable text, set
+option_2 = 2 or --vers=2.
 
 6.1.2.4 Interleaved Code 2 of 5
 -------------------------------
 This self-checking symbology encodes pairs of numbers, and so can only encode
 an even number of digits (0-9). If an odd number of digits is entered a leading
-zero is added by Zint. No check digit is added.
+zero is added by Zint. No check digit is added by default. To add a check digit,
+set option_2 = 1 or --vers=1. To add a check digit but not show it in the human
+readable text, set option_2 = 2 or --vers=2.
 
 6.1.2.5 Code 2 of 5 Data Logic
 ------------------------------
-Data Logic does not include a check digit and can encode any length numeric
-input (digits 0-9).
+Data Logic does not include a check digit by default and can encode any length
+numeric input (digits 0-9). To add a check digit, set option_2 = 1 or --vers=1.
+To add a check digit but not show it in the human readable text, set option_2 =
+2 or --vers=2.
 
 6.1.2.6 ITF-14
 --------------

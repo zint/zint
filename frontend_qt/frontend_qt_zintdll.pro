@@ -18,6 +18,7 @@ FORMS += extData.ui \
          grpC11.ui \
          grpC128.ui \
          grpC16k.ui \
+         grpC25.ui \
          grpC39.ui \
          grpC49.ui \
          grpChannel.ui \

@@ -1758,12 +1758,12 @@ static const char *testUtilBwippName(int index, const struct zint_symbol *symbol
     static const struct item data[] = {
         { "", -1, 0, 0, 0, 0, 0, 0, },
         { "code11", BARCODE_CODE11, 1, 0, 1, 0, 0, 0, },
-        { "matrix2of5", BARCODE_C25STANDARD, 2, 0, 0, 0, 0, 0, },
-        { "interleaved2of5", BARCODE_C25INTER, 3, 0, 0, 0, 0, 0, },
-        { "iata2of5", BARCODE_C25IATA, 4, 0, 0, 0, 0, 0, },
+        { "matrix2of5", BARCODE_C25STANDARD, 2, 0, 1, 0, 0, 0, },
+        { "interleaved2of5", BARCODE_C25INTER, 3, 0, 1, 0, 0, 0, },
+        { "iata2of5", BARCODE_C25IATA, 4, 0, 1, 0, 0, 0, },
         { "", -1, 5, 0, 0, 0, 0, 0, },
-        { "datalogic2of5", BARCODE_C25LOGIC, 6, 0, 0, 0, 0, 0, },
-        { "industrial2of5", BARCODE_C25IND, 7, 0, 0, 0, 0, 0, },
+        { "datalogic2of5", BARCODE_C25LOGIC, 6, 0, 1, 0, 0, 0, },
+        { "industrial2of5", BARCODE_C25IND, 7, 0, 1, 0, 0, 0, },
         { "code39", BARCODE_CODE39, 8, 0, 1, 0, 0, 0, },
         { "code39ext", BARCODE_EXCODE39, 9, 0, 1, 0, 0, 0, },
         { "", -1, 10, 0, 0, 0, 0, 0, },
@@ -2239,7 +2239,13 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                 bwipp_opts = bwipp_opts_buf;
             }
 
-            if (symbology == BARCODE_CODE93) {
+            if (symbology == BARCODE_C25STANDARD || symbology == BARCODE_C25INTER || symbology == BARCODE_C25IATA
+                    || symbology == BARCODE_C25LOGIC || symbology == BARCODE_C25IND) {
+                if (option_2 == 1 || option_2 == 2) { // Add check digit without or with HRT suppression
+                    sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%sincludecheck", strlen(bwipp_opts_buf) ? " " : "");
+                    bwipp_opts = bwipp_opts_buf;
+                }
+            } else if (symbology == BARCODE_CODE93) {
                 sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%sincludecheck", strlen(bwipp_opts_buf) ? " " : "");
                 if (parse) {
                     bwipp_barcode = "code93ext";

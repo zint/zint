@@ -37,7 +37,7 @@
 #include <stdio.h>
 
 MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags fl)
-        : QWidget(parent, fl), m_optionWidget(NULL), m_symbology(0)
+        : QWidget(parent, fl), m_optionWidget(nullptr), m_symbology(0)
 {
     m_bc.bc.setDebug(QCoreApplication::arguments().contains("--verbose")); // Undocumented command line debug flag
 
@@ -713,6 +713,21 @@ void MainWindow::change_options()
         connect(m_optionWidget->findChild<QObject*>("radC11NoCheckDigits"), SIGNAL(clicked( bool )), SLOT(update_preview()));
     }
 
+    if (symbology == BARCODE_C25STANDARD || symbology == BARCODE_C25INTER || symbology == BARCODE_C25IATA
+             || symbology == BARCODE_C25LOGIC || symbology == BARCODE_C25IND)
+    {
+        QFile file(":/grpC25.ui");
+        if (file.open(QIODevice::ReadOnly)) {
+            m_optionWidget = uiload.load(&file);
+            file.close();
+            static const char *names[] = { "Standard (Matrix)", "Interleaved", "IATA", "", "Data Logic", "Industrial" };
+            tabMain->insertTab(1, m_optionWidget, tr("Cod&e 2 of 5 %1").arg(names[symbology - BARCODE_C25STANDARD]));
+            connect(m_optionWidget->findChild<QObject*>("radC25Stand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+            connect(m_optionWidget->findChild<QObject*>("radC25Check"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+            connect(m_optionWidget->findChild<QObject*>("radC25CheckHide"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        }
+    }
+
     if ((symbology == BARCODE_CODE39) || (symbology == BARCODE_EXCODE39))
     {
         QFile file(":/grpC39.ui");
@@ -1334,6 +1349,15 @@ void MainWindow::update_preview()
             }
             break;
 
+        case BARCODE_C25STANDARD:
+        case BARCODE_C25INTER:
+        case BARCODE_C25IATA:
+        case BARCODE_C25LOGIC:
+        case BARCODE_C25IND:
+            m_bc.bc.setSymbol(symbology);
+            m_bc.bc.setOption2(get_button_group_index(QStringList() << "radC25Stand" << "radC25Check" << "radC25CheckHide"));
+            break;
+
         case BARCODE_CODE39:
             if(m_optionWidget->findChild<QRadioButton*>("radC39HIBC")->isChecked())
                 m_bc.bc.setSymbol(BARCODE_HIBC_39);
@@ -1809,11 +1833,13 @@ const char *MainWindow::get_setting_name(int symbology) {
 
 /* Helper to return index of selected radio button in group, checking for NULL */
 int MainWindow::get_button_group_index(const QStringList &children) {
-    QRadioButton *radioButton;
-    for (int index = 0; index < children.size(); index++) {
-        radioButton = m_optionWidget->findChild<QRadioButton*>(children[index]);
-        if (radioButton && radioButton->isChecked()) {
-            return index;
+    if (m_optionWidget) {
+        QRadioButton *radioButton;
+        for (int index = 0; index < children.size(); index++) {
+            radioButton = m_optionWidget->findChild<QRadioButton*>(children[index]);
+            if (radioButton && radioButton->isChecked()) {
+                return index;
+            }
         }
     }
     return 0;
@@ -1821,27 +1847,29 @@ int MainWindow::get_button_group_index(const QStringList &children) {
 
 /* Helper to set radio button in group from index in settings, checking for NULL */
 void MainWindow::set_radiobutton_from_setting(QSettings &settings, const QString &setting, const QStringList &children, int default_val) {
-    int index = settings.value(setting, default_val).toInt();
-    QRadioButton *radioButton;
-    if (index >= 0 && index < children.size()) {
-        radioButton = m_optionWidget->findChild<QRadioButton*>(children[index]);
-    } else {
-        radioButton = m_optionWidget->findChild<QRadioButton*>(children[0]);
-    }
-    if (radioButton) {
-        radioButton->setChecked(true);
+    if (m_optionWidget) {
+        int index = settings.value(setting, default_val).toInt();
+        QRadioButton *radioButton;
+        if (index >= 0 && index < children.size()) {
+            radioButton = m_optionWidget->findChild<QRadioButton*>(children[index]);
+        } else {
+            radioButton = m_optionWidget->findChild<QRadioButton*>(children[0]);
+        }
+        if (radioButton) {
+            radioButton->setChecked(true);
+        }
     }
 }
 
 /* Helper to return index of selected item in combobox, checking for NULL */
 int MainWindow::get_combobox_index(const QString &child) {
-    QComboBox *comboBox = m_optionWidget->findChild<QComboBox*>(child);
+    QComboBox *comboBox = m_optionWidget ? m_optionWidget->findChild<QComboBox*>(child) : nullptr;
     return comboBox ? comboBox->currentIndex() : 0;
 }
 
 /* Helper to set item in combobox from index in settings, checking for NULL */
 void MainWindow::set_combobox_from_setting(QSettings &settings, const QString &setting, const QString &child, int default_val) {
-    QComboBox *comboBox = m_optionWidget->findChild<QComboBox*>(child);
+    QComboBox *comboBox = m_optionWidget ? m_optionWidget->findChild<QComboBox*>(child) : nullptr;
     if (comboBox) {
         comboBox->setCurrentIndex(settings.value(setting, default_val).toInt());
     }
@@ -1849,13 +1877,13 @@ void MainWindow::set_combobox_from_setting(QSettings &settings, const QString &s
 
 /* Helper to return if checkbox checked, checking for NULL */
 int MainWindow::get_checkbox_val(const QString &child) {
-    QCheckBox *checkBox = m_optionWidget->findChild<QCheckBox*>(child);
+    QCheckBox *checkBox = m_optionWidget ? m_optionWidget->findChild<QCheckBox*>(child) : nullptr;
     return checkBox && checkBox->isChecked() ? 1 : 0;
 }
 
 /* Helper to set checkbox from settings, checking for NULL */
 void MainWindow::set_checkbox_from_setting(QSettings &settings, const QString &setting, const QString &child, int default_val) {
-    QCheckBox *checkBox = m_optionWidget->findChild<QCheckBox*>(child);
+    QCheckBox *checkBox = m_optionWidget ? m_optionWidget->findChild<QCheckBox*>(child) : nullptr;
     if (checkBox) {
         checkBox->setChecked(settings.value(setting, default_val).toInt() ? true : false);
     }
@@ -1863,13 +1891,13 @@ void MainWindow::set_checkbox_from_setting(QSettings &settings, const QString &s
 
 /* Helper to return text of line edit, checking for NULL */
 QString MainWindow::get_lineedit_val(const QString &child) {
-    QLineEdit *lineEdit = m_optionWidget->findChild<QLineEdit*>(child);
+    QLineEdit *lineEdit = m_optionWidget ? m_optionWidget->findChild<QLineEdit*>(child) : nullptr;
     return lineEdit ? lineEdit->text() : "";
 }
 
 /* Helper to set line edit from settings, checking for NULL */
 void MainWindow::set_lineedit_from_setting(QSettings &settings, const QString &setting, const QString &child, const char *default_val) {
-    QLineEdit *lineEdit = m_optionWidget->findChild<QLineEdit*>(child);
+    QLineEdit *lineEdit = m_optionWidget ? m_optionWidget->findChild<QLineEdit*>(child) : nullptr;
     if (lineEdit) {
         lineEdit->setText(settings.value(setting, default_val).toString());
     }
@@ -1877,13 +1905,13 @@ void MainWindow::set_lineedit_from_setting(QSettings &settings, const QString &s
 
 /* Helper to return value of spin box, checking for NULL */
 int MainWindow::get_spinbox_val(const QString &child) {
-    QSpinBox *spinBox = m_optionWidget->findChild<QSpinBox*>(child);
+    QSpinBox *spinBox = m_optionWidget ? m_optionWidget->findChild<QSpinBox*>(child) : nullptr;
     return spinBox ? spinBox->value() : 0;
 }
 
 /* Helper to set spin box from settings, checking for NULL */
 void MainWindow::set_spinbox_from_setting(QSettings &settings, const QString &setting, const QString &child, int default_val) {
-    QSpinBox *spinBox = m_optionWidget->findChild<QSpinBox*>(child);
+    QSpinBox *spinBox = m_optionWidget ? m_optionWidget->findChild<QSpinBox*>(child) : nullptr;
     if (spinBox) {
         spinBox->setValue(settings.value(setting, default_val).toInt());
     }
@@ -1980,6 +2008,22 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology) {
 
         case BARCODE_CODE11:
             settings.setValue("studio/bc/code11/check_digit", get_button_group_index(QStringList() << "radC11TwoCheckDigits" << "radC11OneCheckDigit" << "radC11NoCheckDigits"));
+            break;
+
+        case BARCODE_C25STANDARD:
+            settings.setValue("studio/bc/c25standard/check_digit", get_button_group_index(QStringList() << "radC25Stand" << "radC25Check" << "radC25CheckHide"));
+            break;
+        case BARCODE_C25INTER:
+            settings.setValue("studio/bc/c25inter/check_digit", get_button_group_index(QStringList() << "radC25Stand" << "radC25Check" << "radC25CheckHide"));
+            break;
+        case BARCODE_C25IATA:
+            settings.setValue("studio/bc/c25iata/check_digit", get_button_group_index(QStringList() << "radC25Stand" << "radC25Check" << "radC25CheckHide"));
+            break;
+        case BARCODE_C25LOGIC:
+            settings.setValue("studio/bc/c25logic/check_digit", get_button_group_index(QStringList() << "radC25Stand" << "radC25Check" << "radC25CheckHide"));
+            break;
+        case BARCODE_C25IND:
+            settings.setValue("studio/bc/c25ind/check_digit", get_button_group_index(QStringList() << "radC25Stand" << "radC25Check" << "radC25CheckHide"));
             break;
 
         case BARCODE_CODE39:
@@ -2210,6 +2254,22 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology) {
 
         case BARCODE_CODE11:
             set_radiobutton_from_setting(settings, "studio/bc/code11/check_digit", QStringList() << "radC11TwoCheckDigits" << "radC11OneCheckDigit" << "radC11NoCheckDigits");
+            break;
+
+        case BARCODE_C25STANDARD:
+            set_radiobutton_from_setting(settings, "studio/bc/c25standard/check_digit", QStringList() << "radC25Stand" << "radC25Check" << "radC25CheckHide");
+            break;
+        case BARCODE_C25INTER:
+            set_radiobutton_from_setting(settings, "studio/bc/c25inter/check_digit", QStringList() << "radC25Stand" << "radC25Check" << "radC25CheckHide");
+            break;
+        case BARCODE_C25IATA:
+            set_radiobutton_from_setting(settings, "studio/bc/c25iata/check_digit", QStringList() << "radC25Stand" << "radC25Check" << "radC25CheckHide");
+            break;
+        case BARCODE_C25LOGIC:
+            set_radiobutton_from_setting(settings, "studio/bc/c25logic/check_digit", QStringList() << "radC25Stand" << "radC25Check" << "radC25CheckHide");
+            break;
+        case BARCODE_C25IND:
+            set_radiobutton_from_setting(settings, "studio/bc/c25ind/check_digit", QStringList() << "radC25Stand" << "radC25Check" << "radC25CheckHide");
             break;
 
         case BARCODE_CODE39:

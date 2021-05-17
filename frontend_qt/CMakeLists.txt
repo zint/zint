@@ -16,11 +16,11 @@ else()
     qt5_wrap_ui(zint-qt_SRCS mainWindow.ui extData.ui extSequence.ui extExport.ui)
     qt5_add_resources(zint-qt_SRCS resources.qrc)
 endif()
-#               grpAztec.ui  grpC49.ui         grpDBExtend.ui  grpLOGMARS.ui   grpPDF417.ui  grpUPCEAN.ui
-#               grpC11.ui    grpChannel.ui     grpDM.ui        grpMaxicode.ui  grpQR.ui      grpVIN.ui
-#               grpC128.ui   grpCodabar.ui     grpDotCode.ui   grpMicroPDF.ui  grpRMQR.ui
-#               grpC16k.ui   grpCodablockF.ui  grpGrid.ui      grpMQR.ui       grpUltra.ui
-#               grpC39.ui    grpCodeOne.ui     grpHX.ui        grpMSICheck.ui  grpUPCA.ui
+#               grpAztec.ui  grpC39.ui         grpCodeOne.ui   grpHX.ui        grpMSICheck.ui  grpUPCA.ui
+#               grpC11.ui    grpC49.ui         grpDBExtend.ui  grpLOGMARS.ui   grpPDF417.ui    grpUPCEAN.ui
+#               grpC128.ui   grpChannel.ui     grpDM.ui        grpMaxicode.ui  grpQR.ui        grpVIN.ui
+#               grpC16k.ui   grpCodabar.ui     grpDotCode.ui   grpMicroPDF.ui  grpRMQR.ui
+#               grpC25.ui    grpCodablockF.ui  grpGrid.ui      grpMQR.ui       grpUltra.ui
 
 add_executable(zint-qt ${zint-qt_SRCS})
 add_dependencies(zint-qt zint)
