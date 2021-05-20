@@ -30,7 +30,7 @@
   </property>
   <property name="windowIcon">
    <iconset resource="resources.qrc">
-    <normaloff>:/images/zint.png</normaloff>:/images/zint.png</iconset>
+    <normaloff>:/res/zint-qt.ico</normaloff>:/res/zint-qt.ico</iconset>
   </property>
   <property name="autoFillBackground">
    <bool>false</bool>
@@ -878,11 +878,11 @@ to delimit GS1 application identifiers
              <item row="7" column="0" colspan="2">
               <widget class="QCheckBox" name="chkHRTShow">
                <property name="toolTip">
-                <string>Show text in image
+                <string>Show Human Readable Text in image
 (ignored if disabled)</string>
                </property>
                <property name="text">
-                <string>Show H&amp;uman Readable Text</string>
+                <string>Show Te&amp;xt</string>
                </property>
                <property name="checked">
                 <bool>true</bool>
@@ -1083,7 +1083,7 @@ to delimit GS1 application identifiers
         <string>About Zint</string>
        </property>
        <property name="text">
-        <string>&amp;About</string>
+        <string>Abo&amp;ut</string>
        </property>
       </widget>
      </item>
@@ -1133,10 +1133,10 @@ to delimit GS1 application identifiers
      <item row="0" column="5">
       <widget class="QPushButton" name="btnExit">
        <property name="toolTip">
-        <string>Quit Zint Barcode Studio</string>
+        <string>Exit Zint Barcode Studio</string>
        </property>
        <property name="text">
-        <string>E&amp;xit</string>
+        <string>&amp;Quit</string>
        </property>
       </widget>
      </item>

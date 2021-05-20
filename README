@@ -20,7 +20,7 @@ HIBC PDF417, HIBC MicroPDF417, HIBC QR Code, HIBC Aztec Code, Japanese Postal
 Code, Code 49, Channel Code, Code One, Grid Matrix, FIM and Flattermarken,
 Codablock-F, DotCode, Han Xin Code, rMQR and Ultracode.
 
-Output can be saved as BMP, EPS, GIF, PCX, TIF, EMF, PNG or SVG. 
+Output can be saved as BMP, EPS, GIF, PCX, TIF, EMF, PNG or SVG.
 
 PROJECT HISTORY
 ---------------
@@ -275,6 +275,9 @@ Bugs:
 - Fix QPainterPath dependency for Visual Studio
 
 Version 2.9.2 not released yet:
+***Incompatible change**
+- Add halign to struct zint_vector_string NOTE: backward incompatible UPC/EAN
+
 Changes:
 - Command line switches -d or -i for code data may now be at any position.
 - Add rotation for vector formats
@@ -287,8 +290,8 @@ Changes:
 - Remove backend Qt interface and incorporate into frontend GUI
 - Add ZPL compatibility mode (preliminary)
 - Remove version info from zint.h and put in zintconfig.h via zintconfig.h.in
-- Add halign to struct zint_vector_string NOTE: backward incompatible UPC/EAN
 - Add ZBarcode_Cap()
+- Add GUI symbology filter, separate settings for each symbology
 - Require cmake 3.5, use PNG::PNG and add Qt6 build option
 - Make library fully stack-based so reentrant apart from file operations
 - Performance improvements (large data) for Aztec, Han Xin, Grid Matrix, PDF417
@@ -300,6 +303,8 @@ Changes:
 - png.c: Use palette for file size savings
 - tif.c: Use palette/bilevel/LZW to reduce file size, alpha/CMYK support
 - Option gs1parens (GS1PARENS_MODE)
+- MAXICODE: Rejig raster output to more closely match ISO 16023:2000
+- C25STANDARD/C25INTER/C25IATA/C25LOGIC/C25IND: add check digit option (#216)
 
 Bugs:
 - Code16k selects GS1 mode by default in GUI

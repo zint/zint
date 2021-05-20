@@ -143,7 +143,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags fl)
     int cnt = metaObject()->enumerator(0).keyCount();
     for (int i = 0; i < cnt; i++) {
         bstyle->addItem(metaObject()->enumerator(0).key(i));
-        bstyle->setItemText(i, bstyle_text[i]);
+        bstyle->setItemText(i, tr(bstyle_text[i]));
     }
 #ifdef _WIN32
     bstyle->setMaxVisibleItems(cnt); /* Apart from increasing combo size, seems to be needed for filter to work */
@@ -155,8 +155,8 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags fl)
 
     bstyle->setCurrentIndex(settings.value("studio/symbology", 10).toInt());
 
-    txtData->setText(settings.value("studio/data", "Your Data Here!").toString());
-    txtComposite->setText(settings.value("studio/composite_text", "Your Data Here!").toString());
+    txtData->setText(settings.value("studio/data", tr("Your Data Here!")).toString());
+    txtComposite->setText(settings.value("studio/composite_text", tr("Your Data Here!")).toString());
     chkComposite->setChecked(settings.value("studio/chk_composite").toInt() ? true : false);
     cmbCompType->setCurrentIndex(settings.value("studio/comp_type", 0).toInt());
     cmbECI->setCurrentIndex(settings.value("studio/appearance/eci", 0).toInt());
@@ -293,7 +293,7 @@ bool MainWindow::save()
     QString suffix;
 
     save_dialog.setAcceptMode(QFileDialog::AcceptSave);
-    save_dialog.setWindowTitle("Save Barcode Image");
+    save_dialog.setWindowTitle(tr("Save Barcode Image"));
     save_dialog.setDirectory(settings.value("studio/default_dir", QDir::toNativeSeparators(QDir::homePath())).toString());
 
 #ifdef NO_PNG
@@ -305,21 +305,21 @@ bool MainWindow::save()
 #endif
 
     if (QString::compare(suffix, "png", Qt::CaseInsensitive) == 0)
-        save_dialog.selectNameFilter("Portable Network Graphic (*.png)");
+        save_dialog.selectNameFilter(tr("Portable Network Graphic (*.png)"));
     if (QString::compare(suffix, "eps", Qt::CaseInsensitive) == 0)
-        save_dialog.selectNameFilter("Encapsulated PostScript (*.eps)");
+        save_dialog.selectNameFilter(tr("Encapsulated PostScript (*.eps)"));
     if (QString::compare(suffix, "gif", Qt::CaseInsensitive) == 0)
-        save_dialog.selectNameFilter("Graphics Interchange Format (*.gif)");
+        save_dialog.selectNameFilter(tr("Graphics Interchange Format (*.gif)"));
     if (QString::compare(suffix, "svg", Qt::CaseInsensitive) == 0)
-        save_dialog.selectNameFilter("Scalable Vector Graphic (*.svg)");
+        save_dialog.selectNameFilter(tr("Scalable Vector Graphic (*.svg)"));
     if (QString::compare(suffix, "bmp", Qt::CaseInsensitive) == 0)
-        save_dialog.selectNameFilter("Windows Bitmap (*.bmp)");
+        save_dialog.selectNameFilter(tr("Windows Bitmap (*.bmp)"));
     if (QString::compare(suffix, "pcx", Qt::CaseInsensitive) == 0)
-        save_dialog.selectNameFilter("ZSoft PC Painter Image (*.pcx)");
+        save_dialog.selectNameFilter(tr("ZSoft PC Painter Image (*.pcx)"));
     if (QString::compare(suffix, "emf", Qt::CaseInsensitive) == 0)
-        save_dialog.selectNameFilter("Enhanced Metafile (*.emf)");
+        save_dialog.selectNameFilter(tr("Enhanced Metafile (*.emf)"));
     if (QString::compare(suffix, "tif", Qt::CaseInsensitive) == 0)
-        save_dialog.selectNameFilter("Tagged Image File Format (*.tif)");
+        save_dialog.selectNameFilter(tr("Tagged Image File Format (*.tif)"));
 
     if (save_dialog.exec()) {
         filename = save_dialog.selectedFiles().at(0);
@@ -335,7 +335,7 @@ bool MainWindow::save()
         return false;
     }
 
-    if(m_bc.bc.save_to_file(filename) == false) {
+    if (m_bc.bc.save_to_file(filename) == false) {
         if (m_bc.bc.getError() >= ZINT_ERROR) {
             QMessageBox::critical(this, tr("Save Error"), m_bc.bc.error_message());
             return false;
@@ -353,13 +353,13 @@ bool MainWindow::save()
 void MainWindow::about()
 {
     QString zint_version;
-    
+
     int lib_version = ZBarcode_Version();
     int version_major = lib_version / 10000;
     int version_minor = (lib_version % 10000) / 100;
     int version_release = lib_version % 100;
     int version_build;
-    
+
     if (version_release > 10) {
         /* This is a test release */
         version_release = version_release / 10;
@@ -415,7 +415,7 @@ int MainWindow::open_sequence_dialog()
 void MainWindow::on_fgcolor_clicked()
 {
     QColor temp = m_fgcolor;
-    m_fgcolor=QColorDialog::getColor(m_fgcolor,this,"Set foreground colour",QColorDialog::ShowAlphaChannel);
+    m_fgcolor = QColorDialog::getColor(m_fgcolor, this, tr("Set foreground colour"), QColorDialog::ShowAlphaChannel);
     if (m_fgcolor.isValid()) {
         update_preview();
     } else {
@@ -426,7 +426,7 @@ void MainWindow::on_fgcolor_clicked()
 void MainWindow::on_bgcolor_clicked()
 {
     QColor temp = m_bgcolor;
-    m_bgcolor=QColorDialog::getColor(m_bgcolor,this,"Set background colour",QColorDialog::ShowAlphaChannel);
+    m_bgcolor = QColorDialog::getColor(m_bgcolor, this, tr("Set background colour"), QColorDialog::ShowAlphaChannel);
     if (m_bgcolor.isValid()) {
         update_preview();
     } else {
@@ -605,7 +605,7 @@ void MainWindow::change_options()
         save_sub_settings(settings, m_symbology);
     }
 
-    if (tabMain->count()==3)
+    if (tabMain->count() == 3)
         tabMain->removeTab(1);
 
     chkComposite->setText(tr("Add &2D Component"));
@@ -613,72 +613,62 @@ void MainWindow::change_options()
     btype->setItemText(0, tr("No border"));
     combobox_item_enabled(cmbFontSetting, 1, true);
 
-    if (symbology == BARCODE_CODE128)
-    {
+    if (symbology == BARCODE_CODE128) {
         QFile file(":/grpC128.ui");
         if (!file.open(QIODevice::ReadOnly))
             return;
-        m_optionWidget=uiload.load(&file);
+        m_optionWidget = uiload.load(&file);
         file.close();
-        tabMain->insertTab(1,m_optionWidget,tr("Cod&e 128"));
+        tabMain->insertTab(1, m_optionWidget, tr("Cod&e 128"));
         chkComposite->setText(tr("Add &2D Component (GS1-128 only)"));
         connect(m_optionWidget->findChild<QObject*>("radC128EAN"), SIGNAL(toggled( bool )), SLOT(composite_ean_check()));
         connect(m_optionWidget->findChild<QObject*>("radC128Stand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radC128CSup"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radC128EAN"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radC128HIBC"), SIGNAL(clicked( bool )), SLOT(update_preview()));
-    }
 
-    if (symbology == BARCODE_PDF417)
-    {
+    } else if (symbology == BARCODE_PDF417) {
         QFile file(":/grpPDF417.ui");
         if (!file.open(QIODevice::ReadOnly))
             return;
-        m_optionWidget=uiload.load(&file);
+        m_optionWidget = uiload.load(&file);
         file.close();
-        tabMain->insertTab(1,m_optionWidget,tr("PDF41&7"));
+        tabMain->insertTab(1, m_optionWidget, tr("PDF41&7"));
         connect(m_optionWidget->findChild<QObject*>("cmbPDFECC"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("cmbPDFCols"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radPDFTruncated"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radPDFStand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radPDFHIBC"), SIGNAL(clicked( bool )), SLOT(update_preview()));
 
-    }
-
-    if (symbology == BARCODE_MICROPDF417)
-    {
+    } else if (symbology == BARCODE_MICROPDF417) {
         QFile file(":/grpMicroPDF.ui");
         if (!file.open(QIODevice::ReadOnly))
             return;
-        m_optionWidget=uiload.load(&file);
+        m_optionWidget = uiload.load(&file);
         file.close();
-        tabMain->insertTab(1,m_optionWidget,tr("Micro PDF41&7"));
+        tabMain->insertTab(1, m_optionWidget, tr("Micro PDF41&7"));
         connect(m_optionWidget->findChild<QObject*>("cmbMPDFCols"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radMPDFStand"), SIGNAL(toggled( bool )), SLOT(update_preview()));
-    }
 
-    if (symbology == BARCODE_DOTCODE)
-    {
+    } else if (symbology == BARCODE_DOTCODE) {
         QFile file(":/grpDotCode.ui");
         if (!file.open(QIODevice::ReadOnly))
             return;
-        m_optionWidget=uiload.load(&file);
+        m_optionWidget = uiload.load(&file);
         file.close();
-        tabMain->insertTab(1,m_optionWidget,tr("DotCod&e"));
+        tabMain->insertTab(1, m_optionWidget, tr("DotCod&e"));
         connect(m_optionWidget->findChild<QObject*>("cmbDotCols"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("cmbDotMask"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radDotStand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radDotGS1"), SIGNAL(clicked( bool )), SLOT(update_preview()));
-    }
 
-    if (symbology == BARCODE_AZTEC)
-    {
+    } else if (symbology == BARCODE_AZTEC) {
         QFile file(":/grpAztec.ui");
         if (!file.open(QIODevice::ReadOnly))
             return;
-        m_optionWidget=uiload.load(&file);
+        m_optionWidget = uiload.load(&file);
         file.close();
-        tabMain->insertTab(1,m_optionWidget,tr("Aztec Cod&e"));
+        tabMain->insertTab(1, m_optionWidget, tr("Aztec Cod&e"));
         connect(m_optionWidget->findChild<QObject*>("radAztecAuto"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radAztecSize"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radAztecECC"), SIGNAL(clicked( bool )), SLOT(update_preview()));
@@ -687,35 +677,29 @@ void MainWindow::change_options()
         connect(m_optionWidget->findChild<QObject*>("radAztecStand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radAztecGS1"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radAztecHIBC"), SIGNAL(clicked( bool )), SLOT(update_preview()));
-    }
 
-    if (symbology == BARCODE_MSI_PLESSEY)
-    {
+    } else if (symbology == BARCODE_MSI_PLESSEY) {
         QFile file(":/grpMSICheck.ui");
         if (!file.open(QIODevice::ReadOnly))
             return;
-        m_optionWidget=uiload.load(&file);
+        m_optionWidget = uiload.load(&file);
         file.close();
-        tabMain->insertTab(1,m_optionWidget,tr("MSI Pless&ey"));
+        tabMain->insertTab(1, m_optionWidget, tr("MSI Pless&ey"));
         connect(m_optionWidget->findChild<QObject*>("cmbMSICheck"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
-    }
 
-    if (symbology == BARCODE_CODE11)
-    {
+    } else if (symbology == BARCODE_CODE11) {
         QFile file(":/grpC11.ui");
         if (!file.open(QIODevice::ReadOnly))
             return;
-        m_optionWidget=uiload.load(&file);
+        m_optionWidget = uiload.load(&file);
         file.close();
-        tabMain->insertTab(1,m_optionWidget,tr("Cod&e 11"));
+        tabMain->insertTab(1, m_optionWidget, tr("Cod&e 11"));
         connect(m_optionWidget->findChild<QObject*>("radC11TwoCheckDigits"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radC11OneCheckDigit"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radC11NoCheckDigits"), SIGNAL(clicked( bool )), SLOT(update_preview()));
-    }
 
-    if (symbology == BARCODE_C25STANDARD || symbology == BARCODE_C25INTER || symbology == BARCODE_C25IATA
-             || symbology == BARCODE_C25LOGIC || symbology == BARCODE_C25IND)
-    {
+    } else if (symbology == BARCODE_C25STANDARD || symbology == BARCODE_C25INTER || symbology == BARCODE_C25IATA
+            || symbology == BARCODE_C25LOGIC || symbology == BARCODE_C25IND) {
         QFile file(":/grpC25.ui");
         if (file.open(QIODevice::ReadOnly)) {
             m_optionWidget = uiload.load(&file);
@@ -726,94 +710,79 @@ void MainWindow::change_options()
             connect(m_optionWidget->findChild<QObject*>("radC25Check"), SIGNAL(clicked( bool )), SLOT(update_preview()));
             connect(m_optionWidget->findChild<QObject*>("radC25CheckHide"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         }
-    }
 
-    if ((symbology == BARCODE_CODE39) || (symbology == BARCODE_EXCODE39))
-    {
+    } else if (symbology == BARCODE_CODE39 || symbology == BARCODE_EXCODE39) {
         QFile file(":/grpC39.ui");
         if (!file.open(QIODevice::ReadOnly))
             return;
-        m_optionWidget=uiload.load(&file);
+        m_optionWidget = uiload.load(&file);
         file.close();
         connect(m_optionWidget->findChild<QObject*>("radC39Stand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radC39Check"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radC39HIBC"), SIGNAL(clicked( bool )), SLOT(update_preview()));
-        if (symbology == BARCODE_EXCODE39)
-        {
-            tabMain->insertTab(1,m_optionWidget,tr("Cod&e 39 Extended"));
-            if(m_optionWidget->findChild<QRadioButton*>("radC39HIBC")->isChecked() == true)
-            {
+        if (symbology == BARCODE_EXCODE39) {
+            tabMain->insertTab(1, m_optionWidget, tr("Cod&e 39 Extended"));
+            if (m_optionWidget->findChild<QRadioButton*>("radC39HIBC")->isChecked()) {
                 m_optionWidget->findChild<QRadioButton*>("radC39HIBC")->setChecked(false);
                 m_optionWidget->findChild<QRadioButton*>("radC39Stand")->setChecked(true);
             }
             m_optionWidget->findChild<QRadioButton*>("radC39HIBC")->setEnabled(false);
-        }
-        else {
-            tabMain->insertTab(1,m_optionWidget,tr("Cod&e 39"));
+        } else {
+            tabMain->insertTab(1, m_optionWidget, tr("Cod&e 39"));
             m_optionWidget->findChild<QRadioButton*>("radC39HIBC")->setEnabled(true);
         }
-    }
 
-    if (symbology == BARCODE_LOGMARS)
-    {
+    } else if (symbology == BARCODE_LOGMARS) {
         QFile file(":/grpLOGMARS.ui");
         if (!file.open(QIODevice::ReadOnly))
             return;
-        m_optionWidget=uiload.load(&file);
+        m_optionWidget = uiload.load(&file);
         file.close();
-        tabMain->insertTab(1,m_optionWidget,tr("LOGMARS"));
+        tabMain->insertTab(1, m_optionWidget, tr("LOGM&ARS"));
         connect(m_optionWidget->findChild<QObject*>("radLOGMARSStand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radLOGMARSCheck"), SIGNAL(clicked( bool )), SLOT(update_preview()));
-    }
 
-    if (symbology == BARCODE_CODE16K)
-    {
+    } else if (symbology == BARCODE_CODE16K) {
         QFile file(":/grpC16k.ui");
         if (!file.open(QIODevice::ReadOnly))
             return;
-        m_optionWidget=uiload.load(&file);
+        m_optionWidget = uiload.load(&file);
         file.close();
-        tabMain->insertTab(1,m_optionWidget,tr("Cod&e 16K"));
+        tabMain->insertTab(1, m_optionWidget, tr("Cod&e 16K"));
         btype->setItemText(0, tr("Default (bind)"));
         connect(m_optionWidget->findChild<QObject*>("cmbC16kRowSepHeight"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radC16kStand"), SIGNAL(toggled( bool )), SLOT(update_preview()));
-    }
 
-    if (symbology == BARCODE_CODABAR)
-    {
+    } else if (symbology == BARCODE_CODABAR) {
         QFile file(":/grpCodabar.ui");
         if (!file.open(QIODevice::ReadOnly))
             return;
-        m_optionWidget=uiload.load(&file);
+        m_optionWidget = uiload.load(&file);
         file.close();
-        tabMain->insertTab(1,m_optionWidget,tr("Codabar"));
+        tabMain->insertTab(1, m_optionWidget, tr("Cod&abar"));
         connect(m_optionWidget->findChild<QObject*>("chkCodabarCheck"), SIGNAL(clicked( bool )), SLOT(update_preview()));
-    }
 
-    if (symbology == BARCODE_CODABLOCKF)
-    {
+    } else if (symbology == BARCODE_CODABLOCKF) {
         QFile file (":/grpCodablockF.ui");
         if (!file.open(QIODevice::ReadOnly))
             return;
-        m_optionWidget=uiload.load(&file);
+        m_optionWidget = uiload.load(&file);
         file.close();
-        tabMain->insertTab(1,m_optionWidget,tr("Codablock&-F"));
+        tabMain->insertTab(1, m_optionWidget, tr("Codablock&-F"));
         btype->setItemText(0, tr("Default (bind)"));
         connect(m_optionWidget->findChild<QObject*>("cmbCbfWidth"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("cmbCbfHeight"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("cmbCbfRowSepHeight"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radCbfStand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radCbfHIBC"), SIGNAL(clicked( bool )), SLOT(update_preview()));
-    }
 
-    if (symbology == BARCODE_DATAMATRIX)
-    {
+    } else if (symbology == BARCODE_DATAMATRIX) {
         QFile file(":/grpDM.ui");
         if (!file.open(QIODevice::ReadOnly))
             return;
-        m_optionWidget=uiload.load(&file);
+        m_optionWidget = uiload.load(&file);
         file.close();
-        tabMain->insertTab(1,m_optionWidget,tr("Data Matrix"));
+        tabMain->insertTab(1, m_optionWidget, tr("D&ata Matrix"));
         connect(m_optionWidget->findChild<QObject*>("radDM200Stand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radDM200GS1"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radDM200HIBC"), SIGNAL(clicked( bool )), SLOT(update_preview()));
@@ -821,21 +790,17 @@ void MainWindow::change_options()
         connect(m_optionWidget->findChild<QObject*>("chkDMRectangle"), SIGNAL(stateChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("chkDMRE"), SIGNAL(stateChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("chkDMGSSep"), SIGNAL(stateChanged( int )), SLOT(update_preview()));
-    }
 
-    if (symbology == BARCODE_ITF14)
-    {
+    } else if (symbology == BARCODE_ITF14) {
         btype->setItemText(0, tr("Default (box, non-zero width)"));
-    }
 
-    if (symbology == BARCODE_QRCODE)
-    {
+    } else if (symbology == BARCODE_QRCODE) {
         QFile file(":/grpQR.ui");
         if (!file.open(QIODevice::ReadOnly))
             return;
-        m_optionWidget=uiload.load(&file);
+        m_optionWidget = uiload.load(&file);
         file.close();
-        tabMain->insertTab(1,m_optionWidget,tr("QR Cod&e"));
+        tabMain->insertTab(1, m_optionWidget, tr("QR Cod&e"));
         connect(m_optionWidget->findChild<QObject*>("cmbQRSize"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("cmbQRECC"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("cmbQRMask"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
@@ -843,165 +808,140 @@ void MainWindow::change_options()
         connect(m_optionWidget->findChild<QObject*>("radQRGS1"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radQRHIBC"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("chkQRFullMultibyte"), SIGNAL(stateChanged( int )), SLOT(update_preview()));
-    }
 
-    if (symbology == BARCODE_RMQR)
-    {
+    } else if (symbology == BARCODE_RMQR) {
         QFile file(":/grpRMQR.ui");
         if (!file.open(QIODevice::ReadOnly))
             return;
-        m_optionWidget=uiload.load(&file);
+        m_optionWidget = uiload.load(&file);
         file.close();
-        tabMain->insertTab(1,m_optionWidget,tr("rMQR Cod&e"));
+        tabMain->insertTab(1, m_optionWidget, tr("rMQR Cod&e"));
         connect(m_optionWidget->findChild<QObject*>("cmbRMQRSize"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("cmbRMQRECC"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radRMQRStand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radRMQRGS1"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("chkRMQRFullMultibyte"), SIGNAL(stateChanged( int )), SLOT(update_preview()));
-    }
 
-    if (symbology == BARCODE_HANXIN)
-    {
-        QFile file (":/grpHX.ui");
+    } else if (symbology == BARCODE_HANXIN) {
+        QFile file(":/grpHX.ui");
         if (!file.open(QIODevice::ReadOnly))
             return;
-        m_optionWidget=uiload.load(&file);
+        m_optionWidget = uiload.load(&file);
         file.close();
-        tabMain->insertTab(1,m_optionWidget,tr("Han Xin Cod&e"));
+        tabMain->insertTab(1, m_optionWidget, tr("Han Xin Cod&e"));
         cmbECI->setItemText(25, tr("29: GB 18030 (PRC)"));
         connect(m_optionWidget->findChild<QObject*>("cmbHXSize"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("cmbHXECC"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("cmbHXMask"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("chkHXFullMultibyte"), SIGNAL(stateChanged( int )), SLOT(update_preview()));
-    }
 
-    if (symbology == BARCODE_MICROQR)
-    {
+    } else if (symbology == BARCODE_MICROQR) {
         QFile file(":/grpMQR.ui");
         if (!file.open(QIODevice::ReadOnly))
             return;
-        m_optionWidget=uiload.load(&file);
+        m_optionWidget = uiload.load(&file);
         file.close();
-        tabMain->insertTab(1,m_optionWidget,tr("Micro QR Cod&e"));
+        tabMain->insertTab(1, m_optionWidget, tr("Micro QR Cod&e"));
         connect(m_optionWidget->findChild<QObject*>("cmbMQRSize"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("cmbMQRECC"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("cmbMQRMask"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("chkMQRFullMultibyte"), SIGNAL(stateChanged( int )), SLOT(update_preview()));
-    }
 
-    if (symbology == BARCODE_GRIDMATRIX)
-    {
+    } else if (symbology == BARCODE_GRIDMATRIX) {
         QFile file(":/grpGrid.ui");
         if (!file.open(QIODevice::ReadOnly))
             return;
-        m_optionWidget=uiload.load(&file);
+        m_optionWidget = uiload.load(&file);
         file.close();
-        tabMain->insertTab(1,m_optionWidget,tr("Grid Matrix"));
+        tabMain->insertTab(1, m_optionWidget, tr("Grid M&atrix"));
         connect(m_optionWidget->findChild<QObject*>("cmbGridSize"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("cmbGridECC"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("chkGridFullMultibyte"), SIGNAL(stateChanged( int )), SLOT(update_preview()));
-    }
 
-    if (symbology == BARCODE_MAXICODE)
-    {
+    } else if (symbology == BARCODE_MAXICODE) {
         QFile file(":/grpMaxicode.ui");
         if (!file.open(QIODevice::ReadOnly))
             return;
-        m_optionWidget=uiload.load(&file);
+        m_optionWidget = uiload.load(&file);
         file.close();
-        tabMain->insertTab(1,m_optionWidget,tr("MaxiCod&e"));
+        tabMain->insertTab(1, m_optionWidget, tr("MaxiCod&e"));
         connect(m_optionWidget->findChild<QObject*>("cmbMaxiMode"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("cmbMaxiMode"), SIGNAL(currentIndexChanged( int )), SLOT(maxi_primary()));
         connect(m_optionWidget->findChild<QObject*>("txtMaxiPrimary"), SIGNAL(textChanged( const QString& )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("chkMaxiSCMVV"), SIGNAL(stateChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("chkMaxiSCMVV"), SIGNAL(stateChanged( int )), SLOT(maxi_primary()));
         connect(m_optionWidget->findChild<QObject*>("spnMaxiSCMVV"), SIGNAL(valueChanged( int )), SLOT(update_preview()));
-    }
 
-    if (symbology == BARCODE_CHANNEL)
-    {
+    } else if (symbology == BARCODE_CHANNEL) {
         QFile file(":/grpChannel.ui");
         if (!file.open(QIODevice::ReadOnly))
             return;
-        m_optionWidget=uiload.load(&file);
+        m_optionWidget = uiload.load(&file);
         file.close();
-        tabMain->insertTab(1,m_optionWidget,tr("Channel Cod&e"));
+        tabMain->insertTab(1, m_optionWidget, tr("Channel Cod&e"));
         connect(m_optionWidget->findChild<QObject*>("cmbChannel"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
-    }
 
-    if (symbology == BARCODE_CODEONE)
-    {
+    } else if (symbology == BARCODE_CODEONE) {
         QFile file(":/grpCodeOne.ui");
         if (!file.open(QIODevice::ReadOnly))
             return;
-        m_optionWidget=uiload.load(&file);
+        m_optionWidget = uiload.load(&file);
         file.close();
-        tabMain->insertTab(1,m_optionWidget,tr("Code On&e"));
+        tabMain->insertTab(1, m_optionWidget, tr("Code On&e"));
         connect(m_optionWidget->findChild<QObject*>("cmbC1Size"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radC1GS1"), SIGNAL(toggled( bool )), SLOT(update_preview()));
-    }
 
-    if (symbology == BARCODE_CODE49)
-    {
+    } else if (symbology == BARCODE_CODE49) {
         QFile file(":/grpC49.ui");
         if (!file.open(QIODevice::ReadOnly))
             return;
-        m_optionWidget=uiload.load(&file);
+        m_optionWidget = uiload.load(&file);
         file.close();
-        tabMain->insertTab(1,m_optionWidget,tr("Cod&e 49"));
+        tabMain->insertTab(1, m_optionWidget, tr("Cod&e 49"));
         connect(m_optionWidget->findChild<QObject*>("cmbC49RowSepHeight"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radC49GS1"), SIGNAL(toggled( bool )), SLOT(update_preview()));
-    }
-
-    if (symbology == BARCODE_DBAR_EXPSTK)
-    {
+    } else if (symbology == BARCODE_DBAR_EXPSTK) {
         QFile file(":/grpDBExtend.ui");
         if (!file.open(QIODevice::ReadOnly))
             return;
-        m_optionWidget=uiload.load(&file);
+        m_optionWidget = uiload.load(&file);
         file.close();
-        tabMain->insertTab(1,m_optionWidget,tr("GS1 DataBar Stack&ed"));
+        tabMain->insertTab(1, m_optionWidget, tr("GS1 DataBar Stack&ed"));
         connect(m_optionWidget->findChild<QObject*>("cmbCols"), SIGNAL(currentIndexChanged ( int )), SLOT(update_preview()));
-    }
 
-    if (symbology == BARCODE_ULTRA)
-    {
+    } else if (symbology == BARCODE_ULTRA) {
         QFile file(":/grpUltra.ui");
         if (!file.open(QIODevice::ReadOnly))
             return;
-        m_optionWidget=uiload.load(&file);
+        m_optionWidget = uiload.load(&file);
         file.close();
-        tabMain->insertTab(1,m_optionWidget,tr("Ultracod&e"));
+        tabMain->insertTab(1, m_optionWidget, tr("Ultracod&e"));
         connect(m_optionWidget->findChild<QObject*>("radUltraAuto"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radUltraEcc"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("cmbUltraEcc"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radUltraStand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radUltraGS1"), SIGNAL(clicked( bool )), SLOT(update_preview()));
-    }
 
-    if (symbology == BARCODE_UPCA || symbology == BARCODE_UPCA_CHK || symbology == BARCODE_UPCA_CC)
-    {
+    } else if (symbology == BARCODE_UPCA || symbology == BARCODE_UPCA_CHK || symbology == BARCODE_UPCA_CC) {
         QFile file(":/grpUPCA.ui");
         if (!file.open(QIODevice::ReadOnly))
             return;
-        m_optionWidget=uiload.load(&file);
+        m_optionWidget = uiload.load(&file);
         file.close();
-        tabMain->insertTab(1, m_optionWidget, tr("UPC-A"));
+        tabMain->insertTab(1, m_optionWidget, tr("UPC-&A"));
         combobox_item_enabled(cmbFontSetting, 1, false);
         if (cmbFontSetting->currentIndex() == 1) {
             cmbFontSetting->setCurrentIndex(0);
         }
         connect(m_optionWidget->findChild<QObject*>("cmbUPCAAddonGap"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
-    }
 
-    if (symbology == BARCODE_EANX || symbology == BARCODE_EANX_CHK || symbology == BARCODE_EANX_CC
+    } else if (symbology == BARCODE_EANX || symbology == BARCODE_EANX_CHK || symbology == BARCODE_EANX_CC
             || symbology == BARCODE_UPCE || symbology == BARCODE_UPCE_CHK || symbology == BARCODE_UPCE_CC
-            || symbology == BARCODE_ISBNX)
-    {
+            || symbology == BARCODE_ISBNX) {
         QFile file(":/grpUPCEAN.ui");
         if (!file.open(QIODevice::ReadOnly))
             return;
-        m_optionWidget=uiload.load(&file);
+        m_optionWidget = uiload.load(&file);
         file.close();
         if (symbology == BARCODE_UPCE || symbology == BARCODE_UPCE_CHK || symbology == BARCODE_UPCE_CC) {
             tabMain->insertTab(1, m_optionWidget, tr("UPC-&E"));
@@ -1015,21 +955,18 @@ void MainWindow::change_options()
             cmbFontSetting->setCurrentIndex(0);
         }
         connect(m_optionWidget->findChild<QObject*>("cmbUPCEANAddonGap"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
-    }
 
-    if (symbology == BARCODE_VIN)
-    {
+    } else if (symbology == BARCODE_VIN) {
         QFile file(":/grpVIN.ui");
         if (!file.open(QIODevice::ReadOnly))
             return;
-        m_optionWidget=uiload.load(&file);
+        m_optionWidget = uiload.load(&file);
         file.close();
-        tabMain->insertTab(1,m_optionWidget,tr("&VIN"));
+        tabMain->insertTab(1, m_optionWidget, tr("&VIN"));
         connect(m_optionWidget->findChild<QObject*>("chkVINImportChar"), SIGNAL(clicked( bool )), SLOT(update_preview()));
     }
 
-    switch (symbology)
-    {
+    switch (symbology) {
         case BARCODE_CODE128:
         case BARCODE_EANX:
         case BARCODE_UPCA:
@@ -1046,6 +983,7 @@ void MainWindow::change_options()
             grpComposite->hide();
             break;
     }
+
     cmbECI->setEnabled(m_bc.bc.supportsECI(symbology)); /* Will need checking again in update_preview() as encoding mode dependent (HIBC) */
     chkGS1Parens->setEnabled(m_bc.bc.supportsGS1(symbology)); /* Ditto (GS1) */
     chkRInit->setEnabled(m_bc.bc.supportsReaderInit(symbology)); /* Ditto (HIBC and GS1) */
@@ -1073,8 +1011,7 @@ void MainWindow::change_options()
 
 void MainWindow::composite_ui_set()
 {
-    if (!grpComposite->isHidden() && chkComposite->isChecked())
-    {
+    if (!grpComposite->isHidden() && chkComposite->isChecked()) {
         lblCompType->setEnabled(true);
         cmbCompType->setEnabled(true);
         lblComposite->setEnabled(true);
@@ -1085,9 +1022,7 @@ void MainWindow::composite_ui_set()
                 radioButton->setChecked(true);
             }
         }
-    }
-    else
-    {
+    } else {
         lblCompType->setEnabled(false);
         cmbCompType->setEnabled(false);
         lblComposite->setEnabled(false);
@@ -1097,7 +1032,7 @@ void MainWindow::composite_ui_set()
 
 void MainWindow::composite_ean_check()
 {
-    if (metaObject()->enumerator(0).value(bstyle->currentIndex())!=BARCODE_CODE128)
+    if (metaObject()->enumerator(0).value(bstyle->currentIndex()) != BARCODE_CODE128)
         return;
     QRadioButton *radioButton = m_optionWidget->findChild<QRadioButton*>("radC128EAN");
     if (radioButton && !radioButton->isChecked())
@@ -1106,10 +1041,10 @@ void MainWindow::composite_ean_check()
 
 void MainWindow::maxi_primary()
 {
-    if (metaObject()->enumerator(0).value(bstyle->currentIndex())!=BARCODE_MAXICODE)
+    if (metaObject()->enumerator(0).value(bstyle->currentIndex()) != BARCODE_MAXICODE)
         return;
     QCheckBox *chkMaxiSCMVV = m_optionWidget->findChild<QCheckBox*>("chkMaxiSCMVV");
-    if(m_optionWidget->findChild<QComboBox*>("cmbMaxiMode")->currentIndex() == 0) {
+    if (m_optionWidget->findChild<QComboBox*>("cmbMaxiMode")->currentIndex() == 0) {
         m_optionWidget->findChild<QLabel*>("lblMaxiPrimary")->setEnabled(true);
         m_optionWidget->findChild<QLineEdit*>("txtMaxiPrimary")->setEnabled(true);
         chkMaxiSCMVV->setEnabled(true);

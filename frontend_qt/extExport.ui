@@ -32,8 +32,8 @@
    <string>Export Barcodes</string>
   </property>
   <property name="windowIcon">
-   <iconset>
-    <normaloff>images/zint.png</normaloff>images/zint.png</iconset>
+   <iconset resource="resources.qrc">
+    <normaloff>:res/zint-qt.ico</normaloff>:res/zint-qt.ico</iconset>
   </property>
   <widget class="QLineEdit" name="linDestPath">
    <property name="geometry">

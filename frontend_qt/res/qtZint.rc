@@ -58,7 +58,7 @@ BEGIN
 
             VALUE "InternalName", "qtZint"
 
-            VALUE "LegalCopyright", "Copyright © 2020 Robin Stuart & BogDan Vatra"
+            VALUE "LegalCopyright", "Copyright © 2021 Robin Stuart & BogDan Vatra"
 
             VALUE "License", "GNU General Public License version 3"
 
@@ -84,4 +84,4 @@ BEGIN
 
 END
 
-100 ICON MOVEABLE PURE LOADONCALL DISCARDABLE "zint.ico"
+100 ICON MOVEABLE PURE LOADONCALL DISCARDABLE "zint-qt.ico"

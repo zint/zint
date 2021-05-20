@@ -1,8 +1,12 @@
 [Desktop Entry]
+Version=1.0
+Encoding=UTF-8
 Name=Zint Barcode Studio
-GenericName=Zint Barcode Studio
+GenericName=Barcode Generator
+Comment=GUI for the creation of barcodes
 Exec=zint-qt
-Icon=zint
+Icon=zint-qt
 Terminal=false
 Type=Application
 Categories=Utility;
+Keywords=barcode;studio;
