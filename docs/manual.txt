@@ -384,12 +384,24 @@ This specifies a symbol height of 100 times the X-dimension of the symbol.
 
 4.5 Adjusting whitespace
 ------------------------
-The amount of whitespace to the left and right of the generated barcode can be
-altered using the –w switch. For example:
+The amount of horizontal whitespace to the left and right of the generated
+barcode can be altered using the –w or --whitesp switch. For example:
 
 zint -w 10 -d "This Text"
 
-This specifies a whitespace width of 10 times the X-dimension of the symbol.
+This specifies a whitespace width of 10 times the X-dimension of the symbol
+both to the left and to the right of the barcode.
+
+The amount of vertical whitespace above and below the barcode can be altered
+using the --vwhitesp switch. For example for 3 times the X-dimension:
+
+zint --vwhitesp 3 -d "This Text"
+
+Note that the whitespace at the bottom appears below the text, if any.
+
+Horizontal and vertical whitespace can of course be used together:
+
+zint -b DATAMATRIX --whitesp 1 --vwhitesp 1 -d "This Text"
 
 4.6 Adding boundary bars and boxes
 ----------------------------------
@@ -397,17 +409,20 @@ Zint allows the symbol to be bound with 'boundary bars' (also known as 'bearer
 bars') using the option --bind. These bars help to prevent misreading of the
 symbol by corrupting a scan if the scanning beam strays off the top or bottom of
 the symbol. Zint can also put a border right around the symbol and its
-whitespace with the --box option.
+horizontal whitespace with the --box option.
 
 The width of the boundary or box can be specified using the --border switch.
 For example:
 
-zint --box --border=10 -d "This"
+zint --box --border=10 -w 10 -d "This"
 
-gives a box with a width 10 times the X-dimension of the symbol.
+gives a box with a width 10 times the X-dimension of the symbol. Note that when
+specifying a box, horizontal whitespace is usually required in order to create a
+quiet zone between the barcode and the sides of the box.
 
-These options are ignored for Code 16k, Code 49 and Codablock-F. Special
-considerations apply to ITF-14 - see the specific section for that symbology.
+Code 16k, Code 49 and Codablock-F always have boundary bars, and default to
+particular horizontal whitespace values. Special considerations apply to ITF-14
+- see the specific section 6.1.2.6 for that symbology.
 
 4.7 Using colour
 ----------------
@@ -465,14 +480,14 @@ multiple of the default X-dimension. The scale is multiplied by 2 before being
 applied. The default scale is 1.
 
 For raster output, the default X-dimension is 2 pixels (except for MaxiCode, see
-4.9.2 below, and dotty mode, see 4.14). For example for PNG images a scale of 5
-will increase the X-dimension to 10 pixels. Scales should be given in increments
-of 0.5, i.e.  0.5, 1, 1.5, 2, 2.5, 3, 3.5, etc., to avoid the X-dimension
-varying across the symbol due to interpolation. 0.5 increments are also faster
-to render.
+4.9.2 below). For example for PNG images a scale of 5 will increase the
+X-dimension to 10 pixels. Scales should be given in increments of 0.5, i.e. 0.5,
+1, 1.5, 2, 2.5, 3, 3.5, etc., to avoid the X-dimension varying across the symbol
+due to interpolation. 0.5 increments are also faster to render.
 
 The minimum scale for non-dotty raster output is 0.5, giving a minimum
 X-dimension of 1 pixel, and text will not be printed for scales less than 1.
+The minimum scale for raster output in dotty mode is 1 (see 4.14).
 
 The minimum scale for vector output is 0.1, giving a minimum X-dimension of 0.2.
 
@@ -762,7 +777,7 @@ matrix symbologies, and is automatically selected for DotCode. The size of
 the dots can be adjusted using the --dotsize= option followed by the radius
 of the dot, where that radius is given as a multiple of the X-dimension. The
 minimum dot size is 0.01, the maximum is 20. The default and minimum scale for
-raster output in dotty mode is 2.
+raster output in dotty mode is 1.
 
 4.15 Help options
 -----------------
@@ -966,7 +981,8 @@ Variable Name     | Type         | Meaning                     | Default Value
 symbology         | integer      | Symbol to use (see section  | BARCODE_CODE128
                   |              |    5.7).                    |
 height            | integer      | Symbol height. [1]          | 50
-whitespace_width  | integer      | Whitespace width.           | 0
+whitespace_width  | integer      | Horizontal whitespace width.| 0
+whitespace_height | integer      | Vertical whitespace height. | 0
 border_width      | integer      | Border width.               | 0
 output_options    | integer      | Set various output file     | 0 (none)
                   |              |    parameters (see section  |

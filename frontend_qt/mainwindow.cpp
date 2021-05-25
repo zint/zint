@@ -168,6 +168,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags fl)
     heightb->setValue(settings.value("studio/appearance/height", 50).toInt());
     bwidth->setValue(settings.value("studio/appearance/border", 0).toInt());
     spnWhitespace->setValue(settings.value("studio/appearance/whitespace", 0).toInt());
+    spnVWhitespace->setValue(settings.value("studio/appearance/vwhitespace", 0).toInt());
     spnScale->setValue(settings.value("studio/appearance/scale", 1.0).toFloat());
     btype->setCurrentIndex(settings.value("studio/appearance/border_type", 0).toInt());
     cmbFontSetting->setCurrentIndex(settings.value("studio/appearance/font_setting", 0).toInt());
@@ -201,6 +202,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags fl)
     connect(chkRInit, SIGNAL(stateChanged( int )), SLOT(update_preview()));
     connect(chkGS1Parens, SIGNAL(stateChanged( int )), SLOT(update_preview()));
     connect(spnWhitespace, SIGNAL(valueChanged( int )), SLOT(update_preview()));
+    connect(spnVWhitespace, SIGNAL(valueChanged( int )), SLOT(update_preview()));
     connect(btnAbout, SIGNAL(clicked( bool )), SLOT(about()));
     connect(btnSave, SIGNAL(clicked( bool )), SLOT(save()));
     connect(spnScale, SIGNAL(valueChanged( double )), SLOT(change_print_scale()));
@@ -257,6 +259,7 @@ MainWindow::~MainWindow()
     settings.setValue("studio/appearance/height", heightb->value());
     settings.setValue("studio/appearance/border", bwidth->value());
     settings.setValue("studio/appearance/whitespace", spnWhitespace->value());
+    settings.setValue("studio/appearance/vwhitespace", spnVWhitespace->value());
     settings.setValue("studio/appearance/scale", spnScale->value());
     settings.setValue("studio/appearance/border_type", btype->currentIndex());
     settings.setValue("studio/appearance/font_setting", cmbFontSetting->currentIndex());
@@ -705,6 +708,7 @@ void MainWindow::change_options()
             m_optionWidget = uiload.load(&file);
             file.close();
             static const char *names[] = { "Standard (Matrix)", "Interleaved", "IATA", "", "Data Logic", "Industrial" };
+            /*: %1 is name of variant (Standard, Interleaved, IATA, Data Logic, Industrial) */
             tabMain->insertTab(1, m_optionWidget, tr("Cod&e 2 of 5 %1").arg(names[symbology - BARCODE_C25STANDARD]));
             connect(m_optionWidget->findChild<QObject*>("radC25Stand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
             connect(m_optionWidget->findChild<QObject*>("radC25Check"), SIGNAL(clicked( bool )), SLOT(update_preview()));
@@ -898,6 +902,7 @@ void MainWindow::change_options()
         m_optionWidget = uiload.load(&file);
         file.close();
         tabMain->insertTab(1, m_optionWidget, tr("Cod&e 49"));
+        btype->setItemText(0, tr("Default (bind)"));
         connect(m_optionWidget->findChild<QObject*>("cmbC49RowSepHeight"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radC49GS1"), SIGNAL(toggled( bool )), SLOT(update_preview()));
     } else if (symbology == BARCODE_DBAR_EXPSTK) {
@@ -1578,11 +1583,11 @@ void MainWindow::update_preview()
     m_bc.bc.setECI(cmbECI->isEnabled() ? cmbECI->currentIndex() : 0);
     m_bc.bc.setGS1Parens(chkGS1Parens->isEnabled() && chkGS1Parens->isChecked());
     m_bc.bc.setReaderInit(chkRInit->isEnabled() && chkRInit->isChecked());
-    m_bc.bc.setReaderInit(chkRInit->isEnabled() && chkRInit->isChecked());
     m_bc.bc.setShowText(chkHRTShow->isEnabled() && chkHRTShow->isChecked());
     m_bc.bc.setBorderType(btype->currentIndex());
     m_bc.bc.setBorderWidth(bwidth->value());
     m_bc.bc.setWhitespace(spnWhitespace->value());
+    m_bc.bc.setVWhitespace(spnVWhitespace->value());
     m_bc.bc.setFontSetting(cmbFontSetting->currentIndex());
     m_bc.bc.setRotateAngle(cmbRotate->currentIndex());
     m_bc.bc.setDotty(chkDotty->isEnabled() && chkDotty->isChecked());
@@ -1878,6 +1883,7 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology) {
         }
         settings.setValue(QString("studio/bc/%1/appearance/border").arg(name), bwidth->value());
         settings.setValue(QString("studio/bc/%1/appearance/whitespace").arg(name), spnWhitespace->value());
+        settings.setValue(QString("studio/bc/%1/appearance/vwhitespace").arg(name), spnVWhitespace->value());
         settings.setValue(QString("studio/bc/%1/appearance/scale").arg(name), spnScale->value());
         settings.setValue(QString("studio/bc/%1/appearance/border_type").arg(name), btype->currentIndex());
         if (chkHRTShow->isEnabled()) {
@@ -2124,6 +2130,7 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology) {
         }
         bwidth->setValue(settings.value(QString("studio/bc/%1/appearance/border").arg(name), 0).toInt());
         spnWhitespace->setValue(settings.value(QString("studio/bc/%1/appearance/whitespace").arg(name), 0).toInt());
+        spnVWhitespace->setValue(settings.value(QString("studio/bc/%1/appearance/vwhitespace").arg(name), 0).toInt());
         spnScale->setValue(settings.value(QString("studio/bc/%1/appearance/scale").arg(name), 1.0).toFloat());
         btype->setCurrentIndex(settings.value(QString("studio/bc/%1/appearance/border_type").arg(name), 0).toInt());
         if (chkHRTShow->isEnabled()) {

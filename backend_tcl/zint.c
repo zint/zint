@@ -113,6 +113,8 @@
 - -cols maximum changed from 67 to 108 (DotCode)
 2021-05-10 GL
 - Added -gs1parens option
+2021-05-22 GL
+- Added -vwhitesp option
 */
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
@@ -473,6 +475,7 @@ static char help_message[] = "zint tcl(stub,obj) dll\n"
     "   -square bool: force Data Matrix symbols to be square\n"
     /* cli option --types not supported */
     "   -vers integer: Symbology option\n"
+    "   -vwhitesp integer: vertical quiet zone in modules\n"
     "   -whitesp integer: horizontal quiet zone in modules\n"
     "   -werror bool: Convert all warnings into errors\n"
     "   -wzpl bool: ZPL compatibility mode (allows non-standard symbols)\n"
@@ -685,6 +688,7 @@ static int Encode(Tcl_Interp *interp, int objc,
     /*------------------------------------------------------------------------*/
     /* >>> Prepare zint object */
     my_symbol = ZBarcode_Create();
+    my_symbol->debug = ZINT_DEBUG_PRINT;
     my_symbol->input_mode = UNICODE_MODE;
     my_symbol->option_3 = 0;
     /*------------------------------------------------------------------------*/
@@ -698,7 +702,7 @@ static int Encode(Tcl_Interp *interp, int objc,
             "-fullmultibyte", "-gs1parens", "-gssep", "-height", "-init", "-mask", "-mode",
             "-nobackground", "-notext", "-primary", "-reverse", "-rotate",
             "-rows", "-scale", "-scmvv", "-secure", "-separator", "-smalltext",
-            "-square", "-to", "-vers", "-werror", "-whitesp", "-wzpl",
+            "-square", "-to", "-vers", "-vwhitesp", "-werror", "-whitesp", "-wzpl",
             NULL};
         enum iOption {
             iAddonGap, iBarcode, iBG, iBind, iBold, iBorder, iBox,
@@ -706,7 +710,7 @@ static int Encode(Tcl_Interp *interp, int objc,
             iFullMultiByte, iGS1Parens, iGSSep, iHeight, iInit, iMask, iMode,
             iNoBackground, iNoText, iPrimary, iReverse, iRotate,
             iRows, iScale, iSCMvv, iSecure, iSeparator, iSmallText,
-            iSquare, iTo, iVers, iWError, iWhiteSp, iWZPL
+            iSquare, iTo, iVers, iVWhiteSp, iWError, iWhiteSp, iWZPL
             };
         int optionIndex;
         int intValue;
@@ -769,15 +773,16 @@ static int Encode(Tcl_Interp *interp, int objc,
         case iBorder:
         case iCols:
         case iHeight:
+        case iMask:
         case iMode:
         case iRotate:
         case iRows:
         case iSecure:
-        case iVers:
-        case iWhiteSp:
         case iSeparator:
-        case iMask:
         case iSCMvv:
+        case iVers:
+        case iVWhiteSp:
+        case iWhiteSp:
             /* >> Int */
             if (TCL_OK != Tcl_GetIntFromObj(interp, objv[optionPos+1],
                     &intValue))
@@ -1051,6 +1056,9 @@ static int Encode(Tcl_Interp *interp, int objc,
             } else {
                 my_symbol->symbology = s_code_number[intValue];
             }
+            break;
+        case iVWhiteSp:
+            my_symbol->whitespace_height = intValue;
             break;
         case iWhiteSp:
             my_symbol->whitespace_width = intValue;

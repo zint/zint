@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020 - 2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -120,6 +120,7 @@ static void test_print(int index, int generate, int debug) {
     struct item {
         int symbology;
         int whitespace_width;
+        int whitespace_height;
         int option_1;
         int option_2;
         char *fgcolour;
@@ -128,8 +129,9 @@ static void test_print(int index, int generate, int debug) {
         char* expected_file;
     };
     struct item data[] = {
-        /*  0*/ { BARCODE_PDF417, 5, -1, -1, "147AD0", "FC9630", "123", "../data/bmp/pdf417_fg_bg.bmp" },
-        /*  1*/ { BARCODE_ULTRA, 5, -1, -1, "147AD0", "FC9630", "123", "../data/bmp/ultracode_fg_bg.bmp" },
+        /*  0*/ { BARCODE_PDF417, 5, -1, -1, -1, "147AD0", "FC9630", "123", "../data/bmp/pdf417_fg_bg.bmp" },
+        /*  1*/ { BARCODE_ULTRA, 5, -1, -1, -1, "147AD0", "FC9630", "123", "../data/bmp/ultracode_fg_bg.bmp" },
+        /*  2*/ { BARCODE_PDF417COMP, 2, 2, -1, -1, "", "", "123", "../data/bmp/pdf417comp_hvwsp2.bmp" },
     };
     int data_size = ARRAY_SIZE(data);
 
@@ -156,6 +158,9 @@ static void test_print(int index, int generate, int debug) {
         if (data[i].whitespace_width != -1) {
             symbol->whitespace_width = data[i].whitespace_width;
         }
+        if (data[i].whitespace_height != -1) {
+            symbol->whitespace_height = data[i].whitespace_height;
+        }
         if (*data[i].fgcolour) {
             strcpy(symbol->fgcolour, data[i].fgcolour);
         }
@@ -171,8 +176,9 @@ static void test_print(int index, int generate, int debug) {
         assert_zero(ret, "i:%d %s ZBarcode_Print %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, ret);
 
         if (generate) {
-            printf("        /*%3d*/ { %s, %d, %d, %d, \"%s\", \"%s\", \"%s\", \"%s\"},\n",
-                    i, testUtilBarcodeName(data[i].symbology), data[i].whitespace_width, data[i].option_1, data[i].option_2, data[i].fgcolour, data[i].bgcolour,
+            printf("        /*%3d*/ { %s, %d, %d, %d, %d, \"%s\", \"%s\", \"%s\", \"%s\"},\n",
+                    i, testUtilBarcodeName(data[i].symbology), data[i].whitespace_width, data[i].whitespace_height,
+                    data[i].option_1, data[i].option_2, data[i].fgcolour, data[i].bgcolour,
                     testUtilEscape(data[i].data, length, escaped, escaped_size), data[i].expected_file);
             ret = rename(symbol->outfile, data[i].expected_file);
             assert_zero(ret, "i:%d rename(%s, %s) ret %d != 0\n", i, symbol->outfile, data[i].expected_file, ret);

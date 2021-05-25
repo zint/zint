@@ -36,6 +36,12 @@
 #ifndef TESTCOMMON_H
 #define TESTCOMMON_H
 
+#define ZINT_DEBUG_TEST_PRINT           16
+#define ZINT_DEBUG_TEST_LESS_NOISY      32
+#define ZINT_DEBUG_TEST_KEEP_OUTFILE    64
+#define ZINT_DEBUG_TEST_BWIPP           128
+#define ZINT_DEBUG_TEST_PERFORMANCE     256
+
 #include <stdio.h>
 #include "../common.h"
 
@@ -72,12 +78,6 @@ void testRun(int argc, char *argv[], testFunction funcs[], int funcs_size);
 #define assert_notequal(__e1__, __e2__, ...) assert_exp((__e1__) != (__e2__), __VA_ARGS__)
 #define assert_fail(...) assert_exp(0, __VA_ARGS__)
 #define assert_nothing(__exp__, ...) {printf(__VA_ARGS__); __exp__;}
-
-#define ZINT_DEBUG_TEST_PRINT           16
-#define ZINT_DEBUG_TEST_LESS_NOISY      32
-#define ZINT_DEBUG_TEST_KEEP_OUTFILE    64
-#define ZINT_DEBUG_TEST_BWIPP           128
-#define ZINT_DEBUG_TEST_PERFORMANCE     256
 
 INTERNAL void vector_free(struct zint_symbol *symbol); /* Free vector structures */
 

@@ -117,13 +117,13 @@ static void usage(void) {
             "  -b, --barcode=TYPE    Number or name of barcode type. Default is 20 (CODE128)\n"
             "  --addongap=NUMBER     Set add-on gap in multiples of X-dimension for UPC/EAN\n"
             "  --batch               Treat each line of input file as a separate data set\n"
-            "  --bg=COLOUR           Specify a background colour (in hex)\n"
+            "  --bg=COLOUR           Specify a background colour (in hex RGB/RGBA)\n"
             "  --binary              Treat input as raw binary data\n"
             "  --bind                Add boundary bars\n"
             "  --bold                Use bold text\n"
             "  --border=NUMBER       Set width of border in multiples of X-dimension\n"
             "  --box                 Add a box around the symbol\n"
-            "  --cmyk                Use CMYK colour space in EPS symbols\n"
+            "  --cmyk                Use CMYK colour space in EPS/TIF symbols\n"
             "  --cols=NUMBER         Set the number of data columns in symbol\n"
             "  -d, --data=DATA       Set the symbol content\n"
             "  --direct              Send output to stdout\n"
@@ -134,7 +134,7 @@ static void usage(void) {
             "  -e, --ecinos          Display table of ECI character encodings\n"
             "  --eci=NUMBER          Set the ECI (Extended Channel Interpretation) code\n"
             "  --esc                 Process escape characters in input data\n"
-            "  --fg=COLOUR           Specify a foreground colour (in hex)\n"
+            "  --fg=COLOUR           Specify a foreground colour (in hex RGB/RGBA)\n"
             "  --filetype=TYPE       Set output file type BMP/EMF/EPS/GIF/PCX/PNG/SVG/TIF/TXT\n"
             "  --fullmultibyte       Use multibyte for binary/Latin (QR/Han Xin/Grid Matrix)\n"
             "  --gs1                 Treat input as GS1 compatible data\n"
@@ -147,7 +147,7 @@ static void usage(void) {
             "  --mask=NUMBER         Set masking pattern to use (QR/Han Xin/DotCode)\n"
             "  --mirror              Use batch data to determine filename\n"
             "  --mode=NUMBER         Set encoding mode (MaxiCode/Composite)\n"
-            "  --nobackground        Remove background (PNG/SVG/EPS only)\n"
+            "  --nobackground        Remove background (EMF/EPS/GIF/PNG/SVG/TIF only)\n"
             "  --notext              Remove human readable text\n"
             "  -o, --output=FILE     Send output to FILE. Default is out.png\n"
             "  --primary=STRING      Set structured primary message (MaxiCode/Composite)\n"
@@ -162,7 +162,8 @@ static void usage(void) {
             "  --square              Force Data Matrix symbols to be square\n"
             "  -t, --types           Display table of barcode types\n"
             "  --vers=NUMBER         Set symbol version (size, check digits, other options)\n"
-            "  -w, --whitesp=NUMBER  Set width of whitespace in multiples of X-dimension\n"
+            "  --vwhitesp=NUMBER     Set height of vertical whitespace in multiples of X-dim\n"
+            "  -w, --whitesp=NUMBER  Set width of horizontal whitespace in multiples of X-dim\n"
             "  --werror              Convert all warnings into errors\n"
             "  --wzpl                ZPL compatibility mode (allows non-standard symbols)\n"
             );
@@ -798,7 +799,7 @@ int main(int argc, char **argv) {
             OPT_GS1, OPT_GS1PARENS, OPT_GSSEP, OPT_HEIGHT, OPT_INIT, OPT_MIRROR, OPT_MASK, OPT_MODE,
             OPT_NOBACKGROUND, OPT_NOTEXT, OPT_PRIMARY, OPT_ROTATE, OPT_ROWS, OPT_SCALE,
             OPT_SCMVV, OPT_SECURE, OPT_SEPARATOR, OPT_SMALL, OPT_SQUARE, OPT_VERBOSE, OPT_VERS,
-            OPT_WERROR, OPT_WZPL,
+            OPT_VWHITESP, OPT_WERROR, OPT_WZPL,
         };
         int option_index = 0;
         static struct option long_options[] = {
@@ -852,6 +853,7 @@ int main(int argc, char **argv) {
             {"types", 0, NULL, 't'},
             {"verbose", 0, NULL, OPT_VERBOSE}, // Currently undocumented, output some debug info
             {"vers", 1, NULL, OPT_VERS},
+            {"vwhitesp", 1, NULL, OPT_VWHITESP},
             {"werror", 0, NULL, OPT_WERROR},
             {"whitesp", 1, NULL, 'w'},
             {"wzpl", 0, NULL, OPT_WZPL},
@@ -1163,6 +1165,18 @@ int main(int argc, char **argv) {
                     fflush(stderr);
                 }
                 break;
+            case OPT_VWHITESP:
+                if (!validate_int(optarg, &val)) {
+                    fprintf(stderr, "Error 153: Invalid vertical whitespace value '%s'\n", optarg);
+                    return do_exit(1);
+                }
+                if (val <= 1000) { /* `val` >= 0 always */
+                    my_symbol->whitespace_height = val;
+                } else {
+                    fprintf(stderr, "Warning 154: Vertical whitespace value out of range\n");
+                    fflush(stderr);
+                }
+                break;
             case OPT_WERROR:
                 my_symbol->warn_level = WARN_FAIL_ALL;
                 break;
@@ -1195,13 +1209,13 @@ int main(int argc, char **argv) {
 
             case 'w':
                 if (!validate_int(optarg, &val)) {
-                    fprintf(stderr, "Error 120: Invalid whitespace value '%s'\n", optarg);
+                    fprintf(stderr, "Error 120: Invalid horizontal whitespace value '%s'\n", optarg);
                     return do_exit(1);
                 }
                 if (val <= 1000) { /* `val` >= 0 always */
                     my_symbol->whitespace_width = val;
                 } else {
-                    fprintf(stderr, "Warning 121: Whitespace value out of range\n");
+                    fprintf(stderr, "Warning 121: Horizontal whitespace value out of range\n");
                     fflush(stderr);
                 }
                 break;

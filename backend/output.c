@@ -1,7 +1,7 @@
 /*  output.c - Common routines for raster/vector
 
     libzint - the open source barcode library
-    Copyright (C) 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020 - 2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -418,8 +418,8 @@ INTERNAL void output_set_whitespace_offsets(struct zint_symbol *symbol, int *xof
         *roffset += symbol->border_width;
     }
 
-    *yoffset = qz_top;
-    *boffset = qz_bottom;
+    *yoffset = symbol->whitespace_height + qz_top;
+    *boffset = symbol->whitespace_height + qz_bottom;
     if (symbol->output_options & (BARCODE_BOX | BARCODE_BIND)) {
         *yoffset += symbol->border_width;
         *boffset += symbol->border_width;

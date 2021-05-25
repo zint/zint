@@ -1,0 +1,65 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+   "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="258" height="76" version="1.1"
+   xmlns="http://www.w3.org/2000/svg">
+   <desc>Zint Generated Symbol
+   </desc>
+
+   <g id="barcode" fill="#000000">
+      <rect x="0" y="0" width="258" height="76" fill="#FFFFFF" />
+      <rect x="28.00" y="8.00" width="4.00" height="60.00" />
+      <rect x="34.00" y="8.00" width="2.00" height="60.00" />
+      <rect x="44.00" y="8.00" width="2.00" height="60.00" />
+      <rect x="50.00" y="8.00" width="2.00" height="60.00" />
+      <rect x="54.00" y="8.00" width="8.00" height="60.00" />
+      <rect x="64.00" y="8.00" width="6.00" height="60.00" />
+      <rect x="72.00" y="8.00" width="2.00" height="20.00" />
+      <rect x="78.00" y="8.00" width="2.00" height="20.00" />
+      <rect x="82.00" y="8.00" width="4.00" height="20.00" />
+      <rect x="94.00" y="8.00" width="2.00" height="60.00" />
+      <rect x="98.00" y="8.00" width="2.00" height="60.00" />
+      <rect x="106.00" y="8.00" width="4.00" height="60.00" />
+      <rect x="116.00" y="8.00" width="2.00" height="60.00" />
+      <rect x="120.00" y="8.00" width="2.00" height="40.00" />
+      <rect x="128.00" y="8.00" width="4.00" height="40.00" />
+      <rect x="138.00" y="8.00" width="2.00" height="40.00" />
+      <rect x="142.00" y="8.00" width="2.00" height="40.00" />
+      <rect x="150.00" y="8.00" width="4.00" height="40.00" />
+      <rect x="160.00" y="8.00" width="2.00" height="40.00" />
+      <rect x="164.00" y="8.00" width="2.00" height="40.00" />
+      <rect x="172.00" y="8.00" width="4.00" height="40.00" />
+      <rect x="182.00" y="8.00" width="4.00" height="20.00" />
+      <rect x="188.00" y="8.00" width="4.00" height="20.00" />
+      <rect x="196.00" y="8.00" width="4.00" height="20.00" />
+      <rect x="204.00" y="8.00" width="4.00" height="60.00" />
+      <rect x="214.00" y="8.00" width="6.00" height="60.00" />
+      <rect x="222.00" y="8.00" width="2.00" height="60.00" />
+      <rect x="226.00" y="8.00" width="4.00" height="60.00" />
+      <rect x="72.00" y="28.00" width="4.00" height="20.00" />
+      <rect x="82.00" y="28.00" width="2.00" height="20.00" />
+      <rect x="88.00" y="28.00" width="2.00" height="20.00" />
+      <rect x="182.00" y="28.00" width="8.00" height="20.00" />
+      <rect x="192.00" y="28.00" width="2.00" height="40.00" />
+      <rect x="200.00" y="28.00" width="2.00" height="20.00" />
+      <rect x="72.00" y="48.00" width="2.00" height="20.00" />
+      <rect x="76.00" y="48.00" width="4.00" height="20.00" />
+      <rect x="84.00" y="48.00" width="6.00" height="20.00" />
+      <rect x="120.00" y="48.00" width="6.00" height="20.00" />
+      <rect x="128.00" y="48.00" width="8.00" height="20.00" />
+      <rect x="138.00" y="48.00" width="4.00" height="20.00" />
+      <rect x="146.00" y="48.00" width="4.00" height="20.00" />
+      <rect x="152.00" y="48.00" width="4.00" height="20.00" />
+      <rect x="160.00" y="48.00" width="4.00" height="20.00" />
+      <rect x="168.00" y="48.00" width="6.00" height="20.00" />
+      <rect x="178.00" y="48.00" width="2.00" height="20.00" />
+      <rect x="182.00" y="48.00" width="4.00" height="20.00" />
+      <rect x="198.00" y="48.00" width="2.00" height="20.00" />
+      <rect x="50.00" y="27.00" width="154.00" height="2.00" />
+      <rect x="50.00" y="47.00" width="154.00" height="2.00" />
+      <rect x="0.00" y="4.00" width="258.00" height="4.00" />
+      <rect x="0.00" y="68.00" width="258.00" height="4.00" />
+      <rect x="0.00" y="8.00" width="4.00" height="60.00" />
+      <rect x="254.00" y="8.00" width="4.00" height="60.00" />
+   </g>
+</svg>

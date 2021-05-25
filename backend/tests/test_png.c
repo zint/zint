@@ -120,6 +120,7 @@ static void test_print(int index, int generate, int debug) {
         int border_width;
         int output_options;
         int whitespace_width;
+        int whitespace_height;
         int show_hrt;
         int option_1;
         int option_2;
@@ -133,49 +134,56 @@ static void test_print(int index, int generate, int debug) {
         char *comment;
     };
     struct item data[] = {
-        /*  0*/ { BARCODE_CODE128, UNICODE_MODE, -1, BOLD_TEXT, -1, -1, -1, -1, 0, 0, "", "", "Égjpqy", "", "../data/png/code128_egrave_bold.png", "" },
-        /*  1*/ { BARCODE_CODE128, UNICODE_MODE, 3, BOLD_TEXT | BARCODE_BOX, -1, -1, -1, -1, 0, 0, "", "", "Égjpqy", "", "../data/png/code128_egrave_bold_box3.png", "" },
-        /*  2*/ { BARCODE_GS1_128_CC, -1, -1, -1, -1, -1, 3, -1, 0, 0, "", "", "[00]030123456789012340", "[02]13012345678909[37]24[10]1234567ABCDEFG", "../data/png/gs1_128_cc_fig12.png", "" },
-        /*  3*/ { BARCODE_CODABLOCKF, -1, 3, -1, -1, -1, 3, -1, 0, 0, "", "", "AAAAAAAAA", "", "../data/png/codablockf_3rows.png", "" },
-        /*  4*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, -1, 0, 0, "", "", "9771384524017+12", "", "../data/png/ean13_2addon_ggs_5.2.2.5.1-2.png", "" },
-        /*  5*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, -1, 0, 0, "", "", "9780877799306+54321", "", "../data/png/ean13_5addon_ggs_5.2.2.5.2-2.png", "" },
-        /*  6*/ { BARCODE_EANX_CC, -1, -1, -1, -1, -1, 1, -1, 0, 0, "", "", "123456789012+12", "[91]123456789012345678901", "../data/png/ean13_cc_2addon_cca_4x4.png", "" },
-        /*  7*/ { BARCODE_EANX_CC, -1, -1, -1, -1, -1, 2, -1, 0, 0, "", "", "123456789012+54321", "[91]1234567890", "../data/png/ean13_cc_5addon_ccb_3x4.png", "" },
-        /*  8*/ { BARCODE_EANX_CC, -1, -1, -1, -1, 0, 2, -1, 0, 0, "", "", "123456789012+54321", "[91]1234567890", "../data/png/ean13_cc_5addon_ccb_3x4_notext.png", "" },
-        /*  9*/ { BARCODE_UPCA, -1, -1, -1, -1, -1, -1, -1, 0, 0, "", "", "012345678905+24", "", "../data/png/upca_2addon_ggs_5.2.6.6-5.png", "" },
-        /* 10*/ { BARCODE_UPCA, -1, -1, -1, -1, -1, -1, -1, 0, 0, "", "", "614141234417+12345", "", "../data/png/upca_5addon.png", "" },
-        /* 11*/ { BARCODE_UPCA, -1, -1, -1, -1, 0, -1, -1, 0, 0, "", "", "614141234417+12345", "", "../data/png/upca_5addon_notext.png", "" },
-        /* 12*/ { BARCODE_UPCA, -1, 3, BARCODE_BIND, -1, -1, -1, -1, 0, 0, "", "", "614141234417+12345", "", "../data/png/upca_5addon_bind3.png", "" },
-        /* 13*/ { BARCODE_UPCA_CC, -1, -1, -1, -1, -1, 1, -1, 0, 0, "", "", "12345678901+12", "[91]123456789", "../data/png/upca_cc_2addon_cca_3x4.png", "" },
-        /* 14*/ { BARCODE_UPCA_CC, -1, -1, -1, -1, -1, 2, -1, 0, 0, "", "", "12345678901+12121", "[91]1234567890123", "../data/png/upca_cc_5addon_ccb_4x4.png", "" },
-        /* 15*/ { BARCODE_UPCA_CC, -1, -1, -1, -1, 0, 2, -1, 0, 0, "", "", "12345678901+12121", "[91]1234567890123", "../data/png/upca_cc_5addon_ccb_4x4_notext.png", "" },
-        /* 16*/ { BARCODE_UPCA_CC, -1, 3, BARCODE_BIND, -1, -1, 2, -1, 0, 0, "", "", "12345678901+12121", "[91]1234567890123", "../data/png/upca_cc_5addon_ccb_4x4_bind3.png", "" },
-        /* 17*/ { BARCODE_UPCE, -1, -1, -1, -1, -1, -1, -1, 0, 0, "", "", "1234567+12", "", "../data/png/upce_2addon.png", "" },
-        /* 18*/ { BARCODE_UPCE, -1, -1, -1, -1, -1, -1, -1, 0, 0, "", "", "1234567+12345", "", "../data/png/upce_5addon.png", "" },
-        /* 19*/ { BARCODE_UPCE, -1, -1, SMALL_TEXT, -1, -1, -1, -1, 0, 0, "", "", "1234567+12345", "", "../data/png/upce_5addon_small.png", "" },
-        /* 20*/ { BARCODE_UPCE_CC, -1, -1, -1, -1, -1, 1, -1, 0, 0, "", "", "0654321+89", "[91]1", "../data/png/upce_cc_2addon_cca_5x2.png", "" },
-        /* 21*/ { BARCODE_UPCE_CC, -1, -1, -1, -1, -1, 2, -1, 0, 0, "", "", "1876543+56789", "[91]12345", "../data/png/upce_cc_5addon_ccb_8x2.png", "" },
-        /* 22*/ { BARCODE_UPCE_CC, -1, -1, -1, -1, 0, 2, -1, 0, 0, "", "", "1876543+56789", "[91]12345", "../data/png/upce_cc_5addon_ccb_8x2_notext.png", "" },
-        /* 23*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, -1, 0, 0, "", "", "1234567+12", "", "../data/png/ean8_2addon.png", "" },
-        /* 24*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, -1, 0, 0, "", "", "1234567+12345", "", "../data/png/ean8_5addon.png", "" },
-        /* 25*/ { BARCODE_EANX_CC, -1, -1, -1, -1, -1, -1, -1, 0, 0, "", "", "9876543+65", "[91]1234567", "../data/png/ean8_cc_2addon_cca_4x3.png", "" },
-        /* 26*/ { BARCODE_EANX_CC, -1, -1, -1, -1, -1, -1, -1, 0, 0, "", "", "9876543+74083", "[91]123456789012345678", "../data/png/ean8_cc_5addon_ccb_8x3.png", "" },
-        /* 27*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, -1, 0, 0, "", "", "12345", "", "../data/png/ean5.png", "" },
-        /* 28*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, -1, 0, 0, "", "", "12", "", "../data/png/ean2.png", "" },
-        /* 29*/ { BARCODE_CODE39, -1, -1, SMALL_TEXT, -1, -1, -1, -1, 0, 0, "", "", "123", "", "../data/png/code39_small.png", "" },
-        /* 30*/ { BARCODE_POSTNET, -1, -1, -1, -1, -1, -1, -1, 0, 3.5, "", "", "12345", "", "../data/png/postnet_zip.png", "300 dpi, using 1/43in X, 300 / 43 / 2 = ~3.5 scale" },
-        /* 31*/ { BARCODE_PDF417, -1, -1, -1, -1, -1, -1, -1, 0, 0, "", "CFCECDCC", "12345", "", "../data/png/pdf417_bgalpha.png", "" },
-        /* 32*/ { BARCODE_PDF417, -1, -1, -1, -1, -1, -1, -1, 0, 0, "30313233", "", "12345", "", "../data/png/pdf417_fgalpha.png", "" },
-        /* 33*/ { BARCODE_PDF417, -1, -1, -1, -1, -1, -1, -1, 0, 0, "20212244", "CFCECDCC", "12345", "", "../data/png/pdf417_bgfgalpha.png", "" },
-        /* 34*/ { BARCODE_ULTRA, -1, -1, -1, 2, -1, -1, -1, 0, 0, "0000007F", "FF000033", "12345", "", "../data/png/ultra_bgfgalpha.png", "" },
-        /* 35*/ { BARCODE_ULTRA, -1, -1, -1, 2, -1, -1, -1, 0, 0, "", "FF000033", "12345", "", "../data/png/ultra_bgalpha.png", "" },
-        /* 36*/ { BARCODE_ULTRA, -1, -1, -1, 2, -1, -1, -1, 0, 0, "0000007F", "FF0000", "12345", "", "../data/png/ultra_fgalpha.png", "" },
-        /* 37*/ { BARCODE_ULTRA, -1, -1, -1, -1, -1, -1, -1, 0, 0, "0000007F", "", "12345", "", "../data/png/ultra_fgalpha_nobg.png", "" },
-        /* 38*/ { BARCODE_ULTRA, -1, -1, -1, -1, -1, -1, -1, 0, 0.5f, "", "", "1", "", "../data/png/ultra_odd.png", "" },
-        /* 39*/ { BARCODE_MAXICODE, -1, -1, -1, -1, -1, -1, -1, 0, 0.5f, "", "", "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "", "../data/png/maxicode_0.5.png", "6 dpmm, 150 dpi" },
-        /* 40*/ { BARCODE_MAXICODE, -1, 1, BARCODE_BOX, 3, -1, -1, -1, 0, 0.7f, "", "", "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "", "../data/png/maxicode_0.7_wsp3_box1.png", "8 dpmm, 200 dpi" },
-        /* 41*/ { BARCODE_MAXICODE, -1, -1, -1, -1, -1, -1, -1, 0, 1.4f, "1111117F", "EEEEEEEE", "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "", "../data/png/maxicode_1.4_bgfgalpha.png", "16 dpmm, 400 dpi" },
-        /* 42*/ { BARCODE_MAXICODE, -1, -1, -1, -1, -1, -1, -1, 0, 2.1f, "", "", "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "", "../data/png/maxicode_2.1.png", "24 dpmm, 600 dpi" },
+        /*  0*/ { BARCODE_CODE128, UNICODE_MODE, -1, BOLD_TEXT, -1, -1, -1, -1, -1, 0, 0, "", "", "Égjpqy", "", "../data/png/code128_egrave_bold.png", "" },
+        /*  1*/ { BARCODE_CODE128, UNICODE_MODE, 3, BOLD_TEXT | BARCODE_BOX, -1, -1, -1, -1, -1, 0, 0, "", "", "Égjpqy", "", "../data/png/code128_egrave_bold_box3.png", "" },
+        /*  2*/ { BARCODE_CODE128, UNICODE_MODE, 2, BOLD_TEXT | BARCODE_BOX, 2, 2, -1, -1, -1, 0, 0, "", "", "Égjpqy", "", "../data/png/code128_egrave_bold_hvwsp2_box2.png", "" },
+        /*  3*/ { BARCODE_GS1_128_CC, -1, -1, -1, -1, -1, -1, 3, -1, 0, 0, "", "", "[00]030123456789012340", "[02]13012345678909[37]24[10]1234567ABCDEFG", "../data/png/gs1_128_cc_fig12.png", "" },
+        /*  4*/ { BARCODE_CODABLOCKF, -1, 3, -1, -1, -1, -1, 3, -1, 0, 0, "", "", "AAAAAAAAA", "", "../data/png/codablockf_3rows.png", "" },
+        /*  5*/ { BARCODE_CODABLOCKF, -1, -1, -1, 2, 2, -1, -1, -1, 0, 0, "", "", "AAAAAAAAA", "", "../data/png/codablockf_hvwsp2.png", "" },
+        /*  6*/ { BARCODE_CODABLOCKF, -1, 2, BARCODE_BOX, 2, 2, -1, -1, -1, 0, 0, "", "", "AAAAAAAAA", "", "../data/png/codablockf_hvwsp2_box2.png", "" },
+        /*  7*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0, "", "", "9771384524017+12", "", "../data/png/ean13_2addon_ggs_5.2.2.5.1-2.png", "" },
+        /*  8*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0, "", "", "9780877799306+54321", "", "../data/png/ean13_5addon_ggs_5.2.2.5.2-2.png", "" },
+        /*  9*/ { BARCODE_EANX_CC, -1, -1, -1, -1, -1, -1, 1, -1, 0, 0, "", "", "123456789012+12", "[91]123456789012345678901", "../data/png/ean13_cc_2addon_cca_4x4.png", "" },
+        /* 10*/ { BARCODE_EANX_CC, -1, -1, -1, -1, -1, -1, 2, -1, 0, 0, "", "", "123456789012+54321", "[91]1234567890", "../data/png/ean13_cc_5addon_ccb_3x4.png", "" },
+        /* 11*/ { BARCODE_EANX_CC, -1, -1, -1, -1, -1, 0, 2, -1, 0, 0, "", "", "123456789012+54321", "[91]1234567890", "../data/png/ean13_cc_5addon_ccb_3x4_notext.png", "" },
+        /* 12*/ { BARCODE_UPCA, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0, "", "", "012345678905+24", "", "../data/png/upca_2addon_ggs_5.2.6.6-5.png", "" },
+        /* 13*/ { BARCODE_UPCA, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0, "", "", "614141234417+12345", "", "../data/png/upca_5addon.png", "" },
+        /* 14*/ { BARCODE_UPCA, -1, -1, -1, -1, -1, 0, -1, -1, 0, 0, "", "", "614141234417+12345", "", "../data/png/upca_5addon_notext.png", "" },
+        /* 15*/ { BARCODE_UPCA, -1, 3, BARCODE_BIND, -1, -1, -1, -1, -1, 0, 0, "", "", "614141234417+12345", "", "../data/png/upca_5addon_bind3.png", "" },
+        /* 16*/ { BARCODE_UPCA_CC, -1, -1, -1, -1, -1, -1, 1, -1, 0, 0, "", "", "12345678901+12", "[91]123456789", "../data/png/upca_cc_2addon_cca_3x4.png", "" },
+        /* 17*/ { BARCODE_UPCA_CC, -1, -1, -1, -1, -1, -1, 2, -1, 0, 0, "", "", "12345678901+12121", "[91]1234567890123", "../data/png/upca_cc_5addon_ccb_4x4.png", "" },
+        /* 18*/ { BARCODE_UPCA_CC, -1, -1, -1, -1, -1, 0, 2, -1, 0, 0, "", "", "12345678901+12121", "[91]1234567890123", "../data/png/upca_cc_5addon_ccb_4x4_notext.png", "" },
+        /* 19*/ { BARCODE_UPCA_CC, -1, 3, BARCODE_BIND, -1, -1, -1, 2, -1, 0, 0, "", "", "12345678901+12121", "[91]1234567890123", "../data/png/upca_cc_5addon_ccb_4x4_bind3.png", "" },
+        /* 20*/ { BARCODE_UPCE, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0, "", "", "1234567+12", "", "../data/png/upce_2addon.png", "" },
+        /* 21*/ { BARCODE_UPCE, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0, "", "", "1234567+12345", "", "../data/png/upce_5addon.png", "" },
+        /* 22*/ { BARCODE_UPCE, -1, -1, SMALL_TEXT, -1, -1, -1, -1, -1, 0, 0, "", "", "1234567+12345", "", "../data/png/upce_5addon_small.png", "" },
+        /* 23*/ { BARCODE_UPCE_CC, -1, -1, -1, -1, -1, -1, 1, -1, 0, 0, "", "", "0654321+89", "[91]1", "../data/png/upce_cc_2addon_cca_5x2.png", "" },
+        /* 24*/ { BARCODE_UPCE_CC, -1, -1, -1, -1, -1, -1, 2, -1, 0, 0, "", "", "1876543+56789", "[91]12345", "../data/png/upce_cc_5addon_ccb_8x2.png", "" },
+        /* 25*/ { BARCODE_UPCE_CC, -1, -1, -1, -1, -1, 0, 2, -1, 0, 0, "", "", "1876543+56789", "[91]12345", "../data/png/upce_cc_5addon_ccb_8x2_notext.png", "" },
+        /* 26*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0, "", "", "1234567+12", "", "../data/png/ean8_2addon.png", "" },
+        /* 27*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0, "", "", "1234567+12345", "", "../data/png/ean8_5addon.png", "" },
+        /* 28*/ { BARCODE_EANX_CC, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0, "", "", "9876543+65", "[91]1234567", "../data/png/ean8_cc_2addon_cca_4x3.png", "" },
+        /* 29*/ { BARCODE_EANX_CC, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0, "", "", "9876543+74083", "[91]123456789012345678", "../data/png/ean8_cc_5addon_ccb_8x3.png", "" },
+        /* 30*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0, "", "", "12345", "", "../data/png/ean5.png", "" },
+        /* 31*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0, "", "", "12", "", "../data/png/ean2.png", "" },
+        /* 32*/ { BARCODE_CODE39, -1, -1, SMALL_TEXT, -1, -1, -1, -1, -1, 0, 0, "", "", "123", "", "../data/png/code39_small.png", "" },
+        /* 33*/ { BARCODE_POSTNET, -1, -1, -1, -1, -1, -1, -1, -1, 0, 3.5, "", "", "12345", "", "../data/png/postnet_zip.png", "300 dpi, using 1/43in X, 300 / 43 / 2 = ~3.5 scale" },
+        /* 34*/ { BARCODE_PDF417, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0, "", "CFCECDCC", "12345", "", "../data/png/pdf417_bgalpha.png", "" },
+        /* 35*/ { BARCODE_PDF417, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0, "30313233", "", "12345", "", "../data/png/pdf417_fgalpha.png", "" },
+        /* 36*/ { BARCODE_PDF417, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0, "20212244", "CFCECDCC", "12345", "", "../data/png/pdf417_bgfgalpha.png", "" },
+        /* 37*/ { BARCODE_ULTRA, -1, -1, -1, 2, -1, -1, -1, -1, 0, 0, "0000007F", "FF000033", "12345", "", "../data/png/ultra_bgfgalpha.png", "" },
+        /* 38*/ { BARCODE_ULTRA, -1, -1, -1, 2, -1, -1, -1, -1, 0, 0, "", "FF000033", "12345", "", "../data/png/ultra_bgalpha.png", "" },
+        /* 39*/ { BARCODE_ULTRA, -1, -1, -1, 2, -1, -1, -1, -1, 0, 0, "0000007F", "FF0000", "12345", "", "../data/png/ultra_fgalpha.png", "" },
+        /* 40*/ { BARCODE_ULTRA, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0, "0000007F", "", "12345", "", "../data/png/ultra_fgalpha_nobg.png", "" },
+        /* 41*/ { BARCODE_ULTRA, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0.5f, "", "", "1", "", "../data/png/ultra_odd.png", "" },
+        /* 42*/ { BARCODE_MAXICODE, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0.5f, "", "", "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "", "../data/png/maxicode_0.5.png", "6 dpmm, 150 dpi" },
+        /* 43*/ { BARCODE_MAXICODE, -1, 1, BARCODE_BOX, 3, -1, -1, -1, -1, 0, 0.7f, "", "", "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "", "../data/png/maxicode_0.7_wsp3_box1.png", "8 dpmm, 200 dpi" },
+        /* 44*/ { BARCODE_MAXICODE, -1, -1, -1, -1, -1, -1, -1, -1, 0, 1.4f, "1111117F", "EEEEEEEE", "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "", "../data/png/maxicode_1.4_bgfgalpha.png", "16 dpmm, 400 dpi" },
+        /* 45*/ { BARCODE_MAXICODE, -1, -1, -1, -1, -1, -1, -1, -1, 0, 2.1f, "", "", "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "", "../data/png/maxicode_2.1.png", "24 dpmm, 600 dpi" },
+        /* 46*/ { BARCODE_MAXICODE, -1, 2, BARCODE_BOX, 1, 1, -1, -1, -1, 0, 0, "", "", "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "", "../data/png/maxicode_hvwsp1_box2.png", "" },
+        /* 47*/ { BARCODE_MAXICODE, -1, 1, BARCODE_BIND, -1, 1, -1, -1, -1, 0, 0, "", "", "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "", "../data/png/maxicode_vwsp1_bind1.png", "" },
+        /* 48*/ { BARCODE_DATAMATRIX, -1, 1, BARCODE_BIND | BARCODE_DOTTY_MODE, -1, -1, -1, -1, -1, 0, 2.0f, "", "", "1234", "", "../data/png/datamatrix_2.0_bind1_dotty.png", "" },
+        /* 49*/ { BARCODE_DATAMATRIX, -1, 1, BARCODE_BIND | BARCODE_DOTTY_MODE, 1, 1, -1, -1, -1, 0, 2.0f, "", "", "1234", "", "../data/png/datamatrix_2.0_hvwsp1_bind1_dotty.png", "" },
     };
     int data_size = ARRAY_SIZE(data);
 
@@ -215,6 +223,9 @@ static void test_print(int index, int generate, int debug) {
         if (data[i].whitespace_width != -1) {
             symbol->whitespace_width = data[i].whitespace_width;
         }
+        if (data[i].whitespace_height != -1) {
+            symbol->whitespace_height = data[i].whitespace_height;
+        }
         if (*data[i].fgcolour) {
             strcpy(symbol->fgcolour, data[i].fgcolour);
         }
@@ -237,9 +248,9 @@ static void test_print(int index, int generate, int debug) {
         assert_zero(ret, "i:%d %s ZBarcode_Print %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, ret);
 
         if (generate) {
-            printf("        /*%3d*/ { %s, %s, %d, %s, %d, %d, %d, %d, %d, %.5g, \"%s\",\"%s\",  \"%s\", \"%s\", \"%s\", \"%s\" },\n",
+            printf("        /*%3d*/ { %s, %s, %d, %s, %d, %d, %d, %d, %d, %d, %.5g, \"%s\",\"%s\",  \"%s\", \"%s\", \"%s\", \"%s\" },\n",
                     i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode), data[i].border_width, testUtilOutputOptionsName(data[i].output_options),
-                    data[i].whitespace_width, data[i].show_hrt, data[i].option_1, data[i].option_2, data[i].height, data[i].scale, data[i].fgcolour, data[i].bgcolour,
+                    data[i].whitespace_width, data[i].whitespace_height, data[i].show_hrt, data[i].option_1, data[i].option_2, data[i].height, data[i].scale, data[i].fgcolour, data[i].bgcolour,
                     testUtilEscape(data[i].data, length, escaped, escaped_size), data[i].composite, data[i].expected_file, data[i].comment);
             ret = rename(symbol->outfile, data[i].expected_file);
             assert_zero(ret, "i:%d rename(%s, %s) ret %d != 0\n", i, symbol->outfile, data[i].expected_file, ret);

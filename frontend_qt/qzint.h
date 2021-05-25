@@ -1,6 +1,7 @@
 /***************************************************************************
  *   Copyright (C) 2008 by BogDan Vatra                                    *
  *   bogdan@licentia.eu                                                    *
+ *   Copyright (C) 2010-2021 Robin Stuart                                  *
  *                                                                         *
  *   This program is free software: you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -83,6 +84,8 @@ public:
 
     void setWhitespace(int whitespace);
 
+    void setVWhitespace(int vwhitespace);
+
     void setFontSetting(int fontSettingIndex);
 
     void setShowText(bool show);
@@ -148,6 +151,7 @@ private:
     QString m_lastError;
     int m_error;
     int m_whitespace;
+    int m_vwhitespace;
     zint_symbol * m_zintSymbol;
     float m_scale;
     int m_option_3;

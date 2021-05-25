@@ -77,6 +77,7 @@ extern "C" {
         int symbology;
         int height; /* Height in X-dims (ignored for fixed-width barcodes) */
         int whitespace_width; /* Width in X-dims of whitespace to left/right of barcode */
+        int whitespace_height; /* Height in X-dims of whitespace above and below the barcode */
         int border_width; /* Size of border in X-dims */
         int output_options;
         char fgcolour[10]; /* Foreground as RGB/RGBA hexadecimal string */

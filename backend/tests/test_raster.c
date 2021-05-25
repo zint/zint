@@ -257,7 +257,7 @@ static void test_buffer(int index, int generate, int debug) {
     for (int i = 0; i < data_size; i++) {
 
         if (index != -1 && i != index) continue;
-        if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d\n", i);
+        if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d\n", i); // ZINT_DEBUG_TEST_PRINT 16
 
         struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -281,7 +281,7 @@ static void test_buffer(int index, int generate, int debug) {
         assert_zero(ret, "i:%d ZBarcode_Buffer(%s) ret %d != 0 (%s)\n", i, testUtilBarcodeName(data[i].symbology), ret, symbol->errtxt);
         assert_nonnull(symbol->bitmap, "i:%d ZBarcode_Buffer(%s) bitmap NULL\n", i, testUtilBarcodeName(data[i].symbology));
 
-        if (index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) testUtilBitmapPrint(symbol, NULL, NULL);
+        if (index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) testUtilBitmapPrint(symbol, NULL, NULL); // ZINT_DEBUG_TEST_PRINT 16
 
         if (generate) {
             printf("        /*%3d*/ { %s, \"%s\", \"%s\", %d, %d, %d, %d, %d },\n",
@@ -366,7 +366,7 @@ static void test_upcean_hrt(int index, int debug) {
     for (int i = 0; i < data_size; i++) {
 
         if (index != -1 && i != index) continue;
-        if ((debug & ZINT_DEBUG_TEST_PRINT) && !(debug & ZINT_DEBUG_TEST_LESS_NOISY)) printf("i:%d\n", i);
+        if ((debug & ZINT_DEBUG_TEST_PRINT) && !(debug & ZINT_DEBUG_TEST_LESS_NOISY)) printf("i:%d\n", i); // ZINT_DEBUG_TEST_PRINT 16
 
         struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -383,7 +383,7 @@ static void test_upcean_hrt(int index, int debug) {
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d\n", i, ret, data[i].ret);
         assert_nonnull(symbol->bitmap, "i:%d (%d) symbol->bitmap NULL\n", i, data[i].symbology);
 
-        if (index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) testUtilBitmapPrint(symbol, NULL, NULL);
+        if (index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) testUtilBitmapPrint(symbol, NULL, NULL); // ZINT_DEBUG_TEST_PRINT 16
 
         assert_equal(symbol->height, data[i].expected_height, "i:%d (%s) symbol->height %d != %d\n", i, testUtilBarcodeName(data[i].symbology), symbol->height, data[i].expected_height);
         assert_equal(symbol->rows, data[i].expected_rows, "i:%d (%s) symbol->rows %d != %d\n", i, testUtilBarcodeName(data[i].symbology), symbol->rows, data[i].expected_rows);
@@ -500,7 +500,7 @@ static void test_row_separator(int index, int debug) {
 
         int j, separator_bits_set;
 
-        if (index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) testUtilBitmapPrint(symbol, NULL, NULL);
+        if (index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) testUtilBitmapPrint(symbol, NULL, NULL); // ZINT_DEBUG_TEST_PRINT 16
 
         for (j = data[i].expected_separator_row; j < data[i].expected_separator_row + data[i].expected_separator_height; j++) {
             separator_bits_set = is_row_column_black(symbol, j, data[i].expected_separator_col);
@@ -580,7 +580,7 @@ static void test_stacking(int index, int debug) {
 
         int j, separator_bits_set;
 
-        if (index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) testUtilBitmapPrint(symbol, NULL, NULL);
+        if (index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) testUtilBitmapPrint(symbol, NULL, NULL); // ZINT_DEBUG_TEST_PRINT 16
 
         if (data[i].expected_separator_row != -1) {
             for (j = data[i].expected_separator_row; j < data[i].expected_separator_row + data[i].expected_separator_height; j++) {
@@ -613,6 +613,7 @@ static void test_output_options(int index, int debug) {
     struct item {
         int symbology;
         int whitespace_width;
+        int whitespace_height;
         int border_width;
         int output_options;
         int rotate_angle;
@@ -630,78 +631,84 @@ static void test_output_options(int index, int debug) {
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /*  0*/ { BARCODE_CODE128, -1, -1, -1, 0, "A123", 0, 50, 1, 79, 158, 116, 0, 0, 4 },
-        /*  1*/ { BARCODE_CODE128, -1, -1, -1, 180, "A123", 0, 50, 1, 79, 158, 116, 0, 115, 4 },
-        /*  2*/ { BARCODE_CODE128, -1, 2, -1, 0, "A123", 0, 50, 1, 79, 158, 116, 0, 0, 4 },
-        /*  3*/ { BARCODE_CODE128, -1, 2, BARCODE_BIND, 0, "A123", 0, 50, 1, 79, 158, 124, 1, 0, 4 },
-        /*  4*/ { BARCODE_CODE128, -1, 2, BARCODE_BIND, 0, "A123", 0, 50, 1, 79, 158, 124, 0, 4, 4 },
-        /*  5*/ { BARCODE_CODE128, -1, 2, BARCODE_BOX, 0, "A123", 0, 50, 1, 79, 166, 124, 1, 4, 4 },
-        /*  6*/ { BARCODE_CODE128, -1, 0, BARCODE_BIND, 0, "A123", 0, 50, 1, 79, 158, 116, 0, 0, 4 },
-        /*  7*/ { BARCODE_CODE128, -1, 0, BARCODE_BOX, 0, "A123", 0, 50, 1, 79, 158, 116, 0, 4, 4 },
-        /*  8*/ { BARCODE_CODE128, -1, -1, -1, 0, "A123", 0, 50, 1, 79, 158, 116, 0, 0, 8 },
-        /*  9*/ { BARCODE_CODE128, 3, -1, -1, 0, "A123", 0, 50, 1, 79, 170, 116, 1, 0, 8 },
-        /* 10*/ { BARCODE_CODE128, 3, 4, -1, 0, "A123", 0, 50, 1, 79, 170, 116, 1, 0, 8 },
-        /* 11*/ { BARCODE_CODE128, 3, 4, BARCODE_BIND, 0, "A123", 0, 50, 1, 79, 170, 132, 1, 0, 0 },
-        /* 12*/ { BARCODE_CODE128, 3, 4, BARCODE_BIND, 0, "A123", 0, 50, 1, 79, 170, 132, 0, 8, 0 },
-        /* 13*/ { BARCODE_CODE128, 3, 4, BARCODE_BOX, 0, "A123", 0, 50, 1, 79, 186, 132, 1, 8, 0 },
-        /* 14*/ { BARCODE_CODE128, -1, -1, BARCODE_DOTTY_MODE, 0, "A123", ZINT_ERROR_INVALID_OPTION, -1, -1, -1, -1, -1, -1, -1, -1 },
-        /* 15*/ { BARCODE_CODE128, -1, -1, OUT_BUFFER_INTERMEDIATE, 0, "A123", 0, 50, 1, 79, 158, 116, 0, 0, 4 },
-        /* 16*/ { BARCODE_CODE128, -1, -1, OUT_BUFFER_INTERMEDIATE, 180, "A123", 0, 50, 1, 79, 158, 116, 0, 115, 4 },
-        /* 17*/ { BARCODE_CODE128, 3, 4, BARCODE_BOX | OUT_BUFFER_INTERMEDIATE, 0, "A123", 0, 50, 1, 79, 186, 132, 1, 8, 0 },
-        /* 18*/ { BARCODE_QRCODE, -1, -1, -1, 0, "A123", 0, 21, 21, 21, 42, 42, 0, 2, 2 },
-        /* 19*/ { BARCODE_QRCODE, -1, -1, -1, 180, "A123", 0, 21, 21, 21, 42, 42, 0, 39, 2 },
-        /* 20*/ { BARCODE_QRCODE, -1, 3, -1, 0, "A123", 0, 21, 21, 21, 42, 42, 0, 2, 2 },
-        /* 21*/ { BARCODE_QRCODE, -1, 3, BARCODE_BIND, 0, "A123", 0, 21, 21, 21, 42, 54, 1, 2, 2 },
-        /* 22*/ { BARCODE_QRCODE, -1, 3, BARCODE_BIND, 0, "A123", 0, 21, 21, 21, 42, 54, 0, 20, 0 },
-        /* 23*/ { BARCODE_QRCODE, -1, 3, BARCODE_BOX, 0, "A123", 0, 21, 21, 21, 54, 54, 1, 20, 0 },
-        /* 24*/ { BARCODE_QRCODE, -1, -1, -1, 0, "A123", 0, 21, 21, 21, 42, 42, 1, 0, 0 },
-        /* 25*/ { BARCODE_QRCODE, 5, -1, -1, 0, "A123", 0, 21, 21, 21, 62, 42, 0, 0, 0 },
-        /* 26*/ { BARCODE_QRCODE, 5, 6, -1, 0, "A123", 0, 21, 21, 21, 62, 42, 0, 0, 0 },
-        /* 27*/ { BARCODE_QRCODE, 5, 6, BARCODE_BIND, 0, "A123", 0, 21, 21, 21, 62, 66, 1, 0, 0 },
-        /* 28*/ { BARCODE_QRCODE, 5, 6, BARCODE_BIND, 0, "A123", 0, 21, 21, 21, 62, 66, 0, 12, 0 },
-        /* 29*/ { BARCODE_QRCODE, 5, 6, BARCODE_BOX, 0, "A123", 0, 21, 21, 21, 86, 66, 1, 12, 0 },
-        /* 30*/ { BARCODE_QRCODE, -1, -1, BARCODE_DOTTY_MODE, 0, "A123", 0, 21, 21, 21, 43, 43, 1, 1, 1 },
-        /* 31*/ { BARCODE_QRCODE, -1, -1, BARCODE_DOTTY_MODE, 0, "A123", 0, 21, 21, 21, 43, 43, 0, 2, 2 },
-        /* 32*/ { BARCODE_QRCODE, -1, -1, BARCODE_DOTTY_MODE, 0, "A123", 0, 21, 21, 21, 43, 43, 1, 41, 1 },
-        /* 33*/ { BARCODE_QRCODE, -1, -1, BARCODE_DOTTY_MODE, 0, "A123", 0, 21, 21, 21, 43, 43, 0, 40, 2 },
-        /* 34*/ { BARCODE_QRCODE, -1, 4, BARCODE_DOTTY_MODE, 0, "A123", 0, 21, 21, 21, 43, 43, 1, 1, 1 },
-        /* 35*/ { BARCODE_QRCODE, -1, 4, BARCODE_DOTTY_MODE, 0, "A123", 0, 21, 21, 21, 43, 43, 0, 2, 2 },
-        /* 36*/ { BARCODE_QRCODE, -1, 4, BARCODE_BIND | BARCODE_DOTTY_MODE, 0, "A123", 0, 21, 21, 21, 43, 59, -1, -1, -1 }, // TODO: fix (bind/box in dotty mode)
-        /* 37*/ { BARCODE_QRCODE, 1, 4, BARCODE_BOX | BARCODE_DOTTY_MODE, 0, "A123", 0, 21, 21, 21, 63, 59, -1, -1, -1 }, // TODO: fix (bind/box in dotty mode)
-        /* 38*/ { BARCODE_QRCODE, -1, -1, OUT_BUFFER_INTERMEDIATE, 0, "A123", 0, 21, 21, 21, 42, 42, 1, 1, 1 },
-        /* 39*/ { BARCODE_QRCODE, -1, -1, OUT_BUFFER_INTERMEDIATE, 0, "A123", 0, 21, 21, 21, 42, 42, 0, 2, 2 },
-        /* 40*/ { BARCODE_QRCODE, -1, -1, BARCODE_DOTTY_MODE | OUT_BUFFER_INTERMEDIATE, 0, "A123", 0, 21, 21, 21, 43, 43, 1, 1, 1 },
-        /* 41*/ { BARCODE_QRCODE, -1, -1, BARCODE_DOTTY_MODE | OUT_BUFFER_INTERMEDIATE, 0, "A123", 0, 21, 21, 21, 43, 43, 0, 2, 2 },
-        /* 42*/ { BARCODE_QRCODE, -1, -1, BARCODE_DOTTY_MODE | OUT_BUFFER_INTERMEDIATE, 180, "A123", 0, 21, 21, 21, 43, 43, 1, 41, 1 },
-        /* 43*/ { BARCODE_QRCODE, -1, -1, BARCODE_DOTTY_MODE | OUT_BUFFER_INTERMEDIATE, 180, "A123", 0, 21, 21, 21, 43, 43, 0, 40, 2 },
-        /* 44*/ { BARCODE_MAXICODE, -1, -1, -1, 0, "A123", 0, 165, 33, 30, 299, 298, 0, 4, 4 },
-        /* 45*/ { BARCODE_MAXICODE, -1, -1, -1, 0, "A123", 0, 165, 33, 30, 299, 298, 1, 4, 14 },
-        /* 46*/ { BARCODE_MAXICODE, -1, -1, -1, 270, "A123", 0, 165, 33, 30, 298, 299, 1, 4, 4 },
-        /* 47*/ { BARCODE_MAXICODE, -1, -1, -1, 270, "A123", 0, 165, 33, 30, 298, 299, 0, 4, 14 },
-        /* 48*/ { BARCODE_MAXICODE, -1, 5, -1, 0, "A123", 0, 165, 33, 30, 299, 298, 0, 0, 0 },
-        /* 49*/ { BARCODE_MAXICODE, -1, 5, BARCODE_BIND, 0, "A123", 0, 165, 33, 30, 299, 298 + 50 * 2, 1, 0, 0 },
-        /* 50*/ { BARCODE_MAXICODE, -1, 5, BARCODE_BIND, 0, "A123", 0, 165, 33, 30, 299, 298 + 50 * 2, 0, 50, 0 },
-        /* 51*/ { BARCODE_MAXICODE, -1, 5, BARCODE_BIND, 0, "A123", 0, 165, 33, 30, 299, 298 + 50 * 2, 0, 347, 50 },
-        /* 52*/ { BARCODE_MAXICODE, -1, 5, BARCODE_BIND, 0, "A123", 0, 165, 33, 30, 299, 298 + 50 * 2, 1, 348, 50 },
-        /* 53*/ { BARCODE_MAXICODE, -1, 5, BARCODE_BOX, 0, "A123", 0, 165, 33, 30, 299 + 50 * 2, 298 + 50 * 2, 1, 50, 0 },
-        /* 54*/ { BARCODE_MAXICODE, -1, 5, BARCODE_BOX, 0, "A123", 0, 165, 33, 30, 299 + 50 * 2, 298 + 50 * 2, 0, 347, 50 },
-        /* 55*/ { BARCODE_MAXICODE, -1, -1, -1, 0, "A123", 0, 165, 33, 30, 299, 298, 1, 0, 14 },
-        /* 56*/ { BARCODE_MAXICODE, 6, -1, -1, 0, "A123", 0, 165, 33, 30, 299 + 60 * 2, 298, 0, 0, 14 },
-        /* 57*/ { BARCODE_MAXICODE, 6, -1, -1, 0, "A123", 0, 165, 33, 30, 299 + 60 * 2, 298, 0, 0, 47 },
-        /* 58*/ { BARCODE_MAXICODE, 6, 5, BARCODE_BIND, 0, "A123", 0, 165, 33, 30, 299 + 60 * 2, 298 + 50 * 2, 1, 0, 47 },
-        /* 59*/ { BARCODE_MAXICODE, 6, 5, BARCODE_BIND, 0, "A123", 0, 165, 33, 30, 299 + 60 * 2, 298 + 50 * 2, 0, 50, 0 },
-        /* 60*/ { BARCODE_MAXICODE, 6, 5, BARCODE_BOX, 0, "A123", 0, 165, 33, 30, 299 + (60 + 50) * 2, 298 + 50 * 2, 1, 50, 0 },
-        /* 61*/ { BARCODE_MAXICODE, -1, -1, BARCODE_DOTTY_MODE, 0, "A123", ZINT_ERROR_INVALID_OPTION, -1, -1, -1, -1, -1, -1, -1, -1 },
-        /* 62*/ { BARCODE_MAXICODE, -1, -1, OUT_BUFFER_INTERMEDIATE, 0, "A123", 0, 165, 33, 30, 299, 298, 0, 4, 4 },
-        /* 63*/ { BARCODE_MAXICODE, -1, -1, OUT_BUFFER_INTERMEDIATE, 0, "A123", 0, 165, 33, 30, 299, 298, 1, 4, 14 },
-        /* 64*/ { BARCODE_MAXICODE, -1, -1, OUT_BUFFER_INTERMEDIATE, 270, "A123", 0, 165, 33, 30, 298, 299, 1, 4, 4 },
-        /* 65*/ { BARCODE_MAXICODE, -1, -1, OUT_BUFFER_INTERMEDIATE, 270, "A123", 0, 165, 33, 30, 298, 299, 0, 4, 14 },
-        /* 66*/ { BARCODE_ITF14, -1, -1, -1, 0, "123", 0, 50, 1, 135, 330, 136, 1, 110, 0 },
-        /* 67*/ { BARCODE_ITF14, -1, -1, -1, 90, "123", 0, 50, 1, 135, 136, 330, 1, 0, 110 },
-        /* 68*/ { BARCODE_ITF14, -1, 0, -1, 0, "123", 0, 50, 1, 135, 330, 136, 1, 110, 0 },
-        /* 69*/ { BARCODE_ITF14, -1, 0, BARCODE_BOX, 0, "123", 0, 50, 1, 135, 310, 116, 0, 100, 0 },
-        /* 70*/ { BARCODE_ITF14, -1, -1, OUT_BUFFER_INTERMEDIATE, 0, "123", 0, 50, 1, 135, 330, 136, 1, 110, 0 },
-        /* 71*/ { BARCODE_ITF14, -1, -1, OUT_BUFFER_INTERMEDIATE, 90, "123", 0, 50, 1, 135, 136, 330, 1, 0, 110 },
+        /*  0*/ { BARCODE_CODE128, -1, -1, -1, -1, 0, "A123", 0, 50, 1, 79, 158, 116, 0, 0, 4 },
+        /*  1*/ { BARCODE_CODE128, -1, -1, -1, -1, 180, "A123", 0, 50, 1, 79, 158, 116, 0, 115, 4 },
+        /*  2*/ { BARCODE_CODE128, -1, -1, 2, -1, 0, "A123", 0, 50, 1, 79, 158, 116, 0, 0, 4 },
+        /*  3*/ { BARCODE_CODE128, -1, -1, 2, BARCODE_BIND, 0, "A123", 0, 50, 1, 79, 158, 124, 1, 0, 4 },
+        /*  4*/ { BARCODE_CODE128, -1, -1, 2, BARCODE_BIND, 0, "A123", 0, 50, 1, 79, 158, 124, 0, 4, 4 },
+        /*  5*/ { BARCODE_CODE128, -1, -1, 2, BARCODE_BOX, 0, "A123", 0, 50, 1, 79, 166, 124, 1, 4, 4 },
+        /*  6*/ { BARCODE_CODE128, -1, -1, 0, BARCODE_BIND, 0, "A123", 0, 50, 1, 79, 158, 116, 0, 0, 4 },
+        /*  7*/ { BARCODE_CODE128, -1, -1, 0, BARCODE_BOX, 0, "A123", 0, 50, 1, 79, 158, 116, 0, 4, 4 },
+        /*  8*/ { BARCODE_CODE128, -1, -1, -1, -1, 0, "A123", 0, 50, 1, 79, 158, 116, 0, 0, 8 },
+        /*  9*/ { BARCODE_CODE128, 3, -1, -1, -1, 0, "A123", 0, 50, 1, 79, 170, 116, 1, 0, 8 },
+        /* 10*/ { BARCODE_CODE128, 3, 1, -1, -1, 0, "A123", 0, 50, 1, 79, 170, 120, 0, 0, 8 },
+        /* 11*/ { BARCODE_CODE128, 3, -1, 4, -1, 0, "A123", 0, 50, 1, 79, 170, 116, 1, 0, 8 },
+        /* 12*/ { BARCODE_CODE128, 3, -1, 4, BARCODE_BIND, 0, "A123", 0, 50, 1, 79, 170, 132, 1, 0, 0 },
+        /* 13*/ { BARCODE_CODE128, 3, -1, 4, BARCODE_BIND, 0, "A123", 0, 50, 1, 79, 170, 132, 0, 8, 0 },
+        /* 14*/ { BARCODE_CODE128, 3, -1, 4, BARCODE_BOX, 0, "A123", 0, 50, 1, 79, 186, 132, 1, 8, 0 },
+        /* 15*/ { BARCODE_CODE128, -1, -1, -1, BARCODE_DOTTY_MODE, 0, "A123", ZINT_ERROR_INVALID_OPTION, -1, -1, -1, -1, -1, -1, -1, -1 },
+        /* 16*/ { BARCODE_CODE128, -1, -1, -1, OUT_BUFFER_INTERMEDIATE, 0, "A123", 0, 50, 1, 79, 158, 116, 0, 0, 4 },
+        /* 17*/ { BARCODE_CODE128, -1, -1, -1, OUT_BUFFER_INTERMEDIATE, 180, "A123", 0, 50, 1, 79, 158, 116, 0, 115, 4 },
+        /* 18*/ { BARCODE_CODE128, 3, -1, 4, BARCODE_BOX | OUT_BUFFER_INTERMEDIATE, 0, "A123", 0, 50, 1, 79, 186, 132, 1, 8, 0 },
+        /* 19*/ { BARCODE_QRCODE, -1, -1, -1, -1, 0, "A123", 0, 21, 21, 21, 42, 42, 0, 2, 2 },
+        /* 20*/ { BARCODE_QRCODE, -1, -1, -1, -1, 180, "A123", 0, 21, 21, 21, 42, 42, 0, 39, 2 },
+        /* 21*/ { BARCODE_QRCODE, -1, -1, 3, -1, 0, "A123", 0, 21, 21, 21, 42, 42, 0, 2, 2 },
+        /* 22*/ { BARCODE_QRCODE, -1, -1, 3, BARCODE_BIND, 0, "A123", 0, 21, 21, 21, 42, 54, 1, 2, 2 },
+        /* 23*/ { BARCODE_QRCODE, -1, -1, 3, BARCODE_BIND, 0, "A123", 0, 21, 21, 21, 42, 54, 0, 20, 0 },
+        /* 24*/ { BARCODE_QRCODE, -1, -1, 3, BARCODE_BOX, 0, "A123", 0, 21, 21, 21, 54, 54, 1, 20, 0 },
+        /* 25*/ { BARCODE_QRCODE, -1, -1, -1, -1, 0, "A123", 0, 21, 21, 21, 42, 42, 1, 0, 0 },
+        /* 26*/ { BARCODE_QRCODE, 5, -1, -1, -1, 0, "A123", 0, 21, 21, 21, 62, 42, 0, 0, 0 },
+        /* 27*/ { BARCODE_QRCODE, 5, -1, 6, -1, 0, "A123", 0, 21, 21, 21, 62, 42, 0, 0, 0 },
+        /* 28*/ { BARCODE_QRCODE, 5, -1, 6, BARCODE_BIND, 0, "A123", 0, 21, 21, 21, 62, 66, 1, 0, 0 },
+        /* 29*/ { BARCODE_QRCODE, 5, -1, 6, BARCODE_BIND, 0, "A123", 0, 21, 21, 21, 62, 66, 0, 12, 0 },
+        /* 30*/ { BARCODE_QRCODE, 5, -1, 6, BARCODE_BOX, 0, "A123", 0, 21, 21, 21, 86, 66, 1, 12, 0 },
+        /* 31*/ { BARCODE_QRCODE, -1, -1, -1, BARCODE_DOTTY_MODE, 0, "A123", 0, 21, 21, 21, 43, 43, 1, 1, 1 },
+        /* 32*/ { BARCODE_QRCODE, -1, -1, -1, BARCODE_DOTTY_MODE, 0, "A123", 0, 21, 21, 21, 43, 43, 0, 2, 2 },
+        /* 33*/ { BARCODE_QRCODE, -1, -1, -1, BARCODE_DOTTY_MODE, 0, "A123", 0, 21, 21, 21, 43, 43, 1, 41, 1 },
+        /* 34*/ { BARCODE_QRCODE, -1, -1, -1, BARCODE_DOTTY_MODE, 0, "A123", 0, 21, 21, 21, 43, 43, 0, 40, 2 },
+        /* 35*/ { BARCODE_QRCODE, -1, -1, 4, BARCODE_DOTTY_MODE, 0, "A123", 0, 21, 21, 21, 43, 43, 1, 1, 1 },
+        /* 36*/ { BARCODE_QRCODE, -1, -1, 4, BARCODE_DOTTY_MODE, 0, "A123", 0, 21, 21, 21, 43, 43, 0, 2, 2 },
+        /* 37*/ { BARCODE_QRCODE, -1, -1, 4, BARCODE_BIND | BARCODE_DOTTY_MODE, 0, "A123", 0, 21, 21, 21, 43, 59, 1, 2, 2 },
+        /* 38*/ { BARCODE_QRCODE, -1, -1, 4, BARCODE_BOX | BARCODE_DOTTY_MODE, 0, "A123", 0, 21, 21, 21, 59, 59, 1, 9, 9 },
+        /* 39*/ { BARCODE_QRCODE, 1, -1, 4, BARCODE_BOX | BARCODE_DOTTY_MODE, 0, "A123", 0, 21, 21, 21, 63, 59, 0, 9, 9 },
+        /* 40*/ { BARCODE_QRCODE, 1, -1, 4, BARCODE_BOX | BARCODE_DOTTY_MODE, 0, "A123", 0, 21, 21, 21, 63, 59, 1, 0, 0 },
+        /* 41*/ { BARCODE_QRCODE, 1, -1, 4, BARCODE_BOX | BARCODE_DOTTY_MODE, 0, "A123", 0, 21, 21, 21, 63, 59, 1, 9, 11 },
+        /* 42*/ { BARCODE_QRCODE, 1, 1, 4, BARCODE_BOX | BARCODE_DOTTY_MODE, 0, "A123", 0, 21, 21, 21, 63, 63, 0, 0, 0 },
+        /* 43*/ { BARCODE_QRCODE, 1, 1, 4, BARCODE_BOX | BARCODE_DOTTY_MODE, 0, "A123", 0, 21, 21, 21, 63, 63, 1, 9, 13 },
+        /* 44*/ { BARCODE_QRCODE, -1, -1, -1, OUT_BUFFER_INTERMEDIATE, 0, "A123", 0, 21, 21, 21, 42, 42, 1, 1, 1 },
+        /* 45*/ { BARCODE_QRCODE, -1, -1, -1, OUT_BUFFER_INTERMEDIATE, 0, "A123", 0, 21, 21, 21, 42, 42, 0, 2, 2 },
+        /* 46*/ { BARCODE_QRCODE, -1, -1, -1, BARCODE_DOTTY_MODE | OUT_BUFFER_INTERMEDIATE, 0, "A123", 0, 21, 21, 21, 43, 43, 1, 1, 1 },
+        /* 47*/ { BARCODE_QRCODE, -1, -1, -1, BARCODE_DOTTY_MODE | OUT_BUFFER_INTERMEDIATE, 0, "A123", 0, 21, 21, 21, 43, 43, 0, 2, 2 },
+        /* 48*/ { BARCODE_QRCODE, -1, -1, -1, BARCODE_DOTTY_MODE | OUT_BUFFER_INTERMEDIATE, 180, "A123", 0, 21, 21, 21, 43, 43, 1, 41, 1 },
+        /* 49*/ { BARCODE_QRCODE, -1, -1, -1, BARCODE_DOTTY_MODE | OUT_BUFFER_INTERMEDIATE, 180, "A123", 0, 21, 21, 21, 43, 43, 0, 40, 2 },
+        /* 50*/ { BARCODE_MAXICODE, -1, -1, -1, -1, 0, "A123", 0, 165, 33, 30, 299, 298, 0, 4, 4 },
+        /* 51*/ { BARCODE_MAXICODE, -1, -1, -1, -1, 0, "A123", 0, 165, 33, 30, 299, 298, 1, 4, 14 },
+        /* 52*/ { BARCODE_MAXICODE, -1, -1, -1, -1, 270, "A123", 0, 165, 33, 30, 298, 299, 1, 4, 4 },
+        /* 53*/ { BARCODE_MAXICODE, -1, -1, -1, -1, 270, "A123", 0, 165, 33, 30, 298, 299, 0, 4, 14 },
+        /* 54*/ { BARCODE_MAXICODE, -1, -1, 5, -1, 0, "A123", 0, 165, 33, 30, 299, 298, 0, 0, 0 },
+        /* 55*/ { BARCODE_MAXICODE, -1, -1, 5, BARCODE_BIND, 0, "A123", 0, 165, 33, 30, 299, 298 + 50 * 2, 1, 0, 0 },
+        /* 56*/ { BARCODE_MAXICODE, -1, -1, 5, BARCODE_BIND, 0, "A123", 0, 165, 33, 30, 299, 298 + 50 * 2, 0, 50, 0 },
+        /* 57*/ { BARCODE_MAXICODE, -1, -1, 5, BARCODE_BIND, 0, "A123", 0, 165, 33, 30, 299, 298 + 50 * 2, 0, 347, 50 },
+        /* 58*/ { BARCODE_MAXICODE, -1, -1, 5, BARCODE_BIND, 0, "A123", 0, 165, 33, 30, 299, 298 + 50 * 2, 1, 348, 50 },
+        /* 59*/ { BARCODE_MAXICODE, -1, -1, 5, BARCODE_BOX, 0, "A123", 0, 165, 33, 30, 299 + 50 * 2, 298 + 50 * 2, 1, 50, 0 },
+        /* 60*/ { BARCODE_MAXICODE, -1, -1, 5, BARCODE_BOX, 0, "A123", 0, 165, 33, 30, 299 + 50 * 2, 298 + 50 * 2, 0, 347, 50 },
+        /* 61*/ { BARCODE_MAXICODE, -1, -1, -1, -1, 0, "A123", 0, 165, 33, 30, 299, 298, 1, 0, 14 },
+        /* 62*/ { BARCODE_MAXICODE, 6, -1, -1, -1, 0, "A123", 0, 165, 33, 30, 299 + 60 * 2, 298, 0, 0, 14 },
+        /* 63*/ { BARCODE_MAXICODE, 6, -1, -1, -1, 0, "A123", 0, 165, 33, 30, 299 + 60 * 2, 298, 0, 0, 47 },
+        /* 64*/ { BARCODE_MAXICODE, 6, -1, 5, BARCODE_BIND, 0, "A123", 0, 165, 33, 30, 299 + 60 * 2, 298 + 50 * 2, 1, 0, 47 },
+        /* 65*/ { BARCODE_MAXICODE, 6, -1, 5, BARCODE_BIND, 0, "A123", 0, 165, 33, 30, 299 + 60 * 2, 298 + 50 * 2, 0, 50, 0 },
+        /* 66*/ { BARCODE_MAXICODE, 6, -1, 5, BARCODE_BOX, 0, "A123", 0, 165, 33, 30, 299 + (60 + 50) * 2, 298 + 50 * 2, 1, 50, 0 },
+        /* 67*/ { BARCODE_MAXICODE, -1, -1, -1, BARCODE_DOTTY_MODE, 0, "A123", ZINT_ERROR_INVALID_OPTION, -1, -1, -1, -1, -1, -1, -1, -1 },
+        /* 68*/ { BARCODE_MAXICODE, -1, -1, -1, OUT_BUFFER_INTERMEDIATE, 0, "A123", 0, 165, 33, 30, 299, 298, 0, 4, 4 },
+        /* 69*/ { BARCODE_MAXICODE, -1, -1, -1, OUT_BUFFER_INTERMEDIATE, 0, "A123", 0, 165, 33, 30, 299, 298, 1, 4, 14 },
+        /* 70*/ { BARCODE_MAXICODE, -1, -1, -1, OUT_BUFFER_INTERMEDIATE, 270, "A123", 0, 165, 33, 30, 298, 299, 1, 4, 4 },
+        /* 71*/ { BARCODE_MAXICODE, -1, -1, -1, OUT_BUFFER_INTERMEDIATE, 270, "A123", 0, 165, 33, 30, 298, 299, 0, 4, 14 },
+        /* 72*/ { BARCODE_ITF14, -1, -1, -1, -1, 0, "123", 0, 50, 1, 135, 330, 136, 1, 110, 0 },
+        /* 73*/ { BARCODE_ITF14, -1, -1, -1, -1, 90, "123", 0, 50, 1, 135, 136, 330, 1, 0, 110 },
+        /* 74*/ { BARCODE_ITF14, -1, -1, 0, -1, 0, "123", 0, 50, 1, 135, 330, 136, 1, 110, 0 },
+        /* 75*/ { BARCODE_ITF14, -1, -1, 0, BARCODE_BOX, 0, "123", 0, 50, 1, 135, 310, 116, 0, 100, 0 },
+        /* 76*/ { BARCODE_ITF14, -1, -1, -1, OUT_BUFFER_INTERMEDIATE, 0, "123", 0, 50, 1, 135, 330, 136, 1, 110, 0 },
+        /* 77*/ { BARCODE_ITF14, -1, -1, -1, OUT_BUFFER_INTERMEDIATE, 90, "123", 0, 50, 1, 135, 136, 330, 1, 0, 110 },
     };
     int data_size = ARRAY_SIZE(data);
 
@@ -716,6 +723,9 @@ static void test_output_options(int index, int debug) {
         if (data[i].whitespace_width != -1) {
             symbol->whitespace_width = data[i].whitespace_width;
         }
+        if (data[i].whitespace_height != -1) {
+            symbol->whitespace_height = data[i].whitespace_height;
+        }
         if (data[i].border_width != -1) {
             symbol->border_width = data[i].border_width;
         }
@@ -729,7 +739,7 @@ static void test_output_options(int index, int debug) {
         if (ret < 5) {
             assert_nonnull(symbol->bitmap, "i:%d (%s) symbol->bitmap NULL\n", i, testUtilBarcodeName(data[i].symbology));
 
-            if (index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) testUtilBitmapPrint(symbol, NULL, NULL);
+            if (index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) testUtilBitmapPrint(symbol, NULL, NULL); // ZINT_DEBUG_TEST_PRINT 16
 
             assert_equal(symbol->height, data[i].expected_height, "i:%d (%s) symbol->height %d != %d\n", i, testUtilBarcodeName(data[i].symbology), symbol->height, data[i].expected_height);
             assert_equal(symbol->rows, data[i].expected_rows, "i:%d (%s) symbol->rows %d != %d\n", i, testUtilBarcodeName(data[i].symbology), symbol->rows, data[i].expected_rows);
@@ -809,7 +819,7 @@ static void test_draw_string_wrap(int index, int debug) {
         assert_equal(symbol->bitmap_width, data[i].expected_bitmap_width, "i:%d (%d) symbol->bitmap_width %d != %d\n", i, data[i].symbology, symbol->bitmap_width, data[i].expected_bitmap_width);
         assert_equal(symbol->bitmap_height, data[i].expected_bitmap_height, "i:%d (%d) symbol->bitmap_height %d != %d\n", i, data[i].symbology, symbol->bitmap_height, data[i].expected_bitmap_height);
 
-        if (index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) testUtilBitmapPrint(symbol, NULL, NULL);
+        if (index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) testUtilBitmapPrint(symbol, NULL, NULL); // ZINT_DEBUG_TEST_PRINT 16
 
         ret = ZBarcode_Print(symbol, 0);
         assert_zero(ret, "i:%d ZBarcode_Print(%d) ret %d != 0\n", i, data[i].symbology, ret);
@@ -875,7 +885,7 @@ static void test_code128_utf8(int index, int debug) {
         assert_equal(symbol->bitmap_width, data[i].expected_bitmap_width, "i:%d (%d) symbol->bitmap_width %d != %d\n", i, BARCODE_CODE128, symbol->bitmap_width, data[i].expected_bitmap_width);
         assert_equal(symbol->bitmap_height, data[i].expected_bitmap_height, "i:%d (%d) symbol->bitmap_height %d != %d\n", i, BARCODE_CODE128, symbol->bitmap_height, data[i].expected_bitmap_height);
 
-        if (index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) testUtilBitmapPrint(symbol, NULL, NULL);
+        if (index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) testUtilBitmapPrint(symbol, NULL, NULL); // ZINT_DEBUG_TEST_PRINT 16
 
         ret = ZBarcode_Print(symbol, 0);
         assert_zero(ret, "i:%d ZBarcode_Print(%d) ret %d != 0\n", i, BARCODE_CODE128, ret);
@@ -979,7 +989,7 @@ static void test_scale(int index, int debug) {
         assert_zero(ret, "i:%d ZBarcode_Buffer(%d) ret %d != 0\n", i, data[i].symbology, ret);
         assert_nonnull(symbol->bitmap, "i:%d (%d) symbol->bitmap NULL\n", i, data[i].symbology);
 
-        if (index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) testUtilBitmapPrint(symbol, NULL, NULL);
+        if (index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) testUtilBitmapPrint(symbol, NULL, NULL); // ZINT_DEBUG_TEST_PRINT 16
 
         assert_equal(symbol->height, data[i].expected_height, "i:%d (%d) symbol->height %d != %d\n", i, data[i].symbology, symbol->height, data[i].expected_height);
         assert_equal(symbol->rows, data[i].expected_rows, "i:%d (%d) symbol->rows %d != %d\n", i, data[i].symbology, symbol->rows, data[i].expected_rows);
@@ -1129,7 +1139,7 @@ static void test_buffer_plot(int index, int generate, int debug) {
     for (int i = 0; i < data_size; i++) {
 
         if (index != -1 && i != index) continue;
-        if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d\n", i);
+        if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d\n", i); // ZINT_DEBUG_TEST_PRINT 16
 
         struct zint_symbol *symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -1156,7 +1166,7 @@ static void test_buffer_plot(int index, int generate, int debug) {
         assert_zero(ret, "i:%d ZBarcode_Buffer(%s) ret %d != 0 (%s)\n", i, testUtilBarcodeName(data[i].symbology), ret, symbol->errtxt);
         assert_nonnull(symbol->bitmap, "i:%d ZBarcode_Buffer(%s) bitmap NULL\n", i, testUtilBarcodeName(data[i].symbology));
 
-        if (index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) testUtilBitmapPrint(symbol, NULL, NULL);
+        if (index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) testUtilBitmapPrint(symbol, NULL, NULL); // ZINT_DEBUG_TEST_PRINT 16
 
         if (generate) {
             printf("        /*%3d*/ { %s, %d, %d, %d, %s, \"%s\", \"%s\", \"%s\", %d, %d, %d, %d, %d,\n",

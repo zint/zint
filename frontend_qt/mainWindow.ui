@@ -21,7 +21,7 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>420</width>
+    <width>400</width>
     <height>460</height>
    </size>
   </property>
@@ -248,7 +248,7 @@ or import from file</string>
                    <bool>false</bool>
                   </property>
                   <property name="text">
-                   <string>Component &amp;Type:</string>
+                   <string>&amp;Type:</string>
                   </property>
                   <property name="buddy">
                    <cstring>cmbCompType</cstring>
@@ -260,6 +260,12 @@ or import from file</string>
                 </item>
                 <item>
                  <widget class="QComboBox" name="cmbCompType">
+                  <property name="minimumSize">
+                   <size>
+                    <width>60</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
                   <property name="enabled">
                    <bool>false</bool>
                   </property>
@@ -379,7 +385,7 @@ p, li { white-space: pre-wrap; }
               <widget class="QComboBox" name="cmbECI">
                <property name="minimumSize">
                 <size>
-                 <width>66</width>
+                 <width>64</width>
                  <height>16777215</height>
                 </size>
                </property>
@@ -660,7 +666,8 @@ to delimit GS1 application identifiers
                 <cstring>heightb</cstring>
                </property>
                <property name="toolTip">
-                <string>Overall symbol height</string>
+                <string>Overall symbol height
+(ignored if disabled)</string>
                </property>
               </widget>
              </item>
@@ -670,7 +677,8 @@ to delimit GS1 application identifiers
                 <bool>false</bool>
                </property>
                <property name="toolTip">
-                <string>Overall symbol height</string>
+                <string>Overall symbol height
+(ignored if disabled)</string>
                </property>
                <property name="suffix">
                 <string> X</string>
@@ -768,7 +776,7 @@ to delimit GS1 application identifiers
              <item row="4" column="0">
               <widget class="QLabel" name="lblWhitespace">
                <property name="text">
-                <string>Hori&amp;zontal Whitespace:</string>
+                <string>&amp;Whitespace:</string>
                </property>
                <property name="alignment">
                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -777,19 +785,33 @@ to delimit GS1 application identifiers
                 <cstring>spnWhitespace</cstring>
                </property>
                <property name="toolTip">
-                <string>Width of whitespace on either side of barcode</string>
+                <string>Horizontal whitespace, Vertical whitespace</string>
                </property>
               </widget>
              </item>
              <item row="4" column="1">
-              <widget class="QSpinBox" name="spnWhitespace">
-               <property name="toolTip">
-                <string>Width of whitespace on either side of barcode</string>
-               </property>
-               <property name="suffix">
-                <string> X</string>
-               </property>
-              </widget>
+              <layout class="QGridLayout" name="gridLayoutWhitespace">
+               <item row="0" column="0">
+                <widget class="QSpinBox" name="spnWhitespace">
+                 <property name="toolTip">
+                  <string>Width of horizontal whitespace on either side of barcode</string>
+                 </property>
+                 <property name="suffix">
+                  <string> X</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QSpinBox" name="spnVWhitespace">
+                 <property name="toolTip">
+                  <string>Height of vertical whitespace above and below the barcode</string>
+                 </property>
+                 <property name="suffix">
+                  <string> X</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
              </item>
              <item row="5" column="0">
               <widget class="QLabel" name="lblScale">
@@ -844,14 +866,16 @@ to delimit GS1 application identifiers
                 <cstring>cmbFontSetting</cstring>
                </property>
                <property name="toolTip">
-                <string>Set font characteristics</string>
+                <string>Set font characteristics
+(ignored if disabled)</string>
                </property>
               </widget>
              </item>
              <item row="6" column="1">
               <widget class="QComboBox" name="cmbFontSetting">
                <property name="toolTip">
-                <string>Set font characteristics</string>
+                <string>Set font characteristics
+(ignored if disabled)</string>
                </property>
                <item>
                 <property name="text">
@@ -1033,14 +1057,16 @@ to delimit GS1 application identifiers
                 <cstring>spnDotSize</cstring>
                </property>
                <property name="toolTip">
-                <string>Size of dots</string>
+                <string>Size of dots
+(ignored if disabled)</string>
                </property>
               </widget>
              </item>
              <item row="6" column="3">
               <widget class="QDoubleSpinBox" name="spnDotSize">
                <property name="toolTip">
-                <string>Size of dots</string>
+                <string>Size of dots
+(ignored if disabled)</string>
                </property>
                <property name="enabled">
                 <bool>false</bool>

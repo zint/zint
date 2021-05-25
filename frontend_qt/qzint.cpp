@@ -1,7 +1,7 @@
 /***************************************************************************
  *   Copyright (C) 2008 by BogDan Vatra                                    *
  *   bogdan@licentia.eu                                                    *
- *   Copyright (C) 2010-2020 Robin Stuart                                  *
+ *   Copyright (C) 2010-2021 Robin Stuart                                  *
  *                                                                         *
  *   This program is free software: you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -53,6 +53,7 @@ namespace Zint {
         target_size_vert = 0;
         m_option_2 = 0;
         m_whitespace = 0;
+        m_vwhitespace = 0;
         m_gs1parens = false;
         m_gssep = false;
         m_reader_init = false;
@@ -75,6 +76,7 @@ namespace Zint {
         m_zintSymbol->symbology = m_symbol;
         m_zintSymbol->height = m_height;
         m_zintSymbol->whitespace_width = m_whitespace;
+        m_zintSymbol->whitespace_height = m_vwhitespace;
         m_zintSymbol->border_width = m_borderWidth;
         m_zintSymbol->option_1 = m_option_1;
         m_zintSymbol->input_mode = m_input_mode;
@@ -125,6 +127,7 @@ namespace Zint {
             m_height = m_zintSymbol->height;
             m_borderWidth = m_zintSymbol->border_width;
             m_whitespace = m_zintSymbol->whitespace_width;
+            m_vwhitespace = m_zintSymbol->whitespace_height;
             emit encoded();
         }
     }
@@ -251,6 +254,10 @@ namespace Zint {
 
     void QZint::setWhitespace(int whitespace) {
         m_whitespace = whitespace;
+    }
+
+    void QZint::setVWhitespace(int vwhitespace) {
+        m_vwhitespace = vwhitespace;
     }
 
     int QZint::option1() const {
