@@ -688,7 +688,6 @@ static int Encode(Tcl_Interp *interp, int objc,
     /*------------------------------------------------------------------------*/
     /* >>> Prepare zint object */
     my_symbol = ZBarcode_Create();
-    my_symbol->debug = ZINT_DEBUG_PRINT;
     my_symbol->input_mode = UNICODE_MODE;
     my_symbol->option_3 = 0;
     /*------------------------------------------------------------------------*/

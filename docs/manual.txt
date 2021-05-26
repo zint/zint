@@ -776,8 +776,9 @@ normal squares by using the --dotty option. This option is only available for
 matrix symbologies, and is automatically selected for DotCode. The size of
 the dots can be adjusted using the --dotsize= option followed by the radius
 of the dot, where that radius is given as a multiple of the X-dimension. The
-minimum dot size is 0.01, the maximum is 20. The default and minimum scale for
-raster output in dotty mode is 1.
+minimum dot size is 0.01, the maximum is 20.
+
+The default and minimum scale for raster output in dotty mode is 1.
 
 4.15 Help options
 -----------------
@@ -862,7 +863,6 @@ int main(int argc, char **argv)
 {
     struct zint_symbol *my_symbol;
     my_symbol = ZBarcode_Create();
-	my_symbol->input_mode = UNICODE_MODE;
     ZBarcode_Encode(my_symbol, argv[1], 0);
     ZBarcode_Print(my_symbol, 0);
     ZBarcode_Delete(my_symbol);
@@ -877,13 +877,13 @@ int main(int argc, char **argv)
 {
     struct zint_symbol *my_symbol;
     my_symbol = ZBarcode_Create();
-	my_symbol->input_mode = UNICODE_MODE;
     ZBarcode_Encode_and_Print(my_symbol, argv[1], 0, 0);
     ZBarcode_Delete(my_symbol);
     return 0;
 }
 
-Input data should be Unicode (UTF-8) formatted.
+Note that when using the API, the input data is assumed to be Latin-1 or binary
+unless the input_mode field is set - see section 5.9 for details.
 
 5.3 Encoding and Printing Functions in Depth
 --------------------------------------------
@@ -1337,6 +1337,8 @@ GS1PARENS_MODE |  Parentheses (rounded brackets) used in input data instead of
                |     square brackets to delimit GS1 application identifiers
                |     (parentheses must not otherwise occur in the data).
 ------------------------------------------------------------------------------
+
+The default mode is DATA_MODE.
 
 DATA_MODE, UNICODE_MODE and GS1_MODE are mutually exclusive, whereas ESCAPE_MODE
 and GS1PARENS_MODE are optional. So, for example, you can set
