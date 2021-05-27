@@ -2346,7 +2346,7 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                 sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%ssepheight=0", strlen(bwipp_opts_buf) ? " " : "");
                 bwipp_opts = bwipp_opts_buf;
             } else if (symbology == BARCODE_AZTEC || symbology == BARCODE_HIBC_AZTEC) {
-                int compact = 0;
+                int compact = 0, full = 0;
                 if (option_1 >= 1 && option_1 <= 4) {
                     int eclevel;
                     if (option_1 == 1) {
@@ -2368,6 +2368,7 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                         layers = option_2;
                     } else {
                         layers = option_2 - 4;
+                        full = layers <= 4;
                     }
                     sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%slayers=%d", strlen(bwipp_opts_buf) ? " " : "", layers);
                     bwipp_opts = bwipp_opts_buf;
@@ -2379,8 +2380,8 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                 if (symbology == BARCODE_HIBC_AZTEC) {
                     compact = 1;
                 }
-                if (compact) {
-                    sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%sformat=compact", strlen(bwipp_opts_buf) ? " " : "");
+                if (compact || full) {
+                    sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%sformat=%s", strlen(bwipp_opts_buf) ? " " : "", compact ? "compact" : "full");
                     bwipp_opts = bwipp_opts_buf;
                 }
             } else if (symbology == BARCODE_CODEONE) {

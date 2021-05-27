@@ -1,8 +1,8 @@
-/* aztec.c - Handles Aztec Mesa 2D Symbols */
+/* aztec.h - Handles Aztec 2D Symbols */
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2017 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -29,15 +29,11 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* vim: set ts=4 sw=4 et : */
+#ifndef __AZTEC_H
+#define __AZTEC_H
 
-#define UPPER	1
-#define LOWER	2
-#define MIXED	4
-#define PUNC	8
-#define DIGIT	16
-#define BINARY	32
-
-static const unsigned short int CompactAztecMap[] = {
+static const short CompactAztecMap[] = {
     /* 27 x 27 data grid */
     609, 608, 411, 413, 415, 417, 419, 421, 423, 425, 427, 429, 431, 433, 435, 437, 439, 441, 443, 445, 447, 449, 451, 453, 455, 457, 459,
     607, 606, 410, 412, 414, 416, 418, 420, 422, 424, 426, 428, 430, 432, 434, 436, 438, 440, 442, 444, 446, 448, 450, 452, 454, 456, 458,
@@ -68,6 +64,25 @@ static const unsigned short int CompactAztecMap[] = {
     559, 557, 555, 553, 551, 549, 547, 545, 543, 541, 539, 537, 535, 533, 531, 529, 527, 525, 523, 521, 519, 517, 515, 513, 511, 508, 509
 };
 
+/* Pre-calculated finder, descriptor, orientation mappings for full-range symbol */
+static const short AztecMapCore[15][15] = {
+    {     1,     1, 20000, 20001, 20002, 20003, 20004,     0, 20005, 20006, 20007, 20008, 20009,     0,     1, },
+    {     1,     1,     1,     1,     1,     1,     1,     1,     1,     1,     1,     1,     1,     1,     1, },
+    { 20039,     1,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     1, 20010, },
+    { 20038,     1,     0,     1,     1,     1,     1,     1,     1,     1,     1,     1,     0,     1, 20011, },
+    { 20037,     1,     0,     1,     0,     0,     0,     0,     0,     0,     0,     1,     0,     1, 20012, },
+    { 20036,     1,     0,     1,     0,     1,     1,     1,     1,     1,     0,     1,     0,     1, 20013, },
+    { 20035,     1,     0,     1,     0,     1,     0,     0,     0,     1,     0,     1,     0,     1, 20014, },
+    {     0,     1,     0,     1,     0,     1,     0,     1,     0,     1,     0,     1,     0,     1,     0, },
+    { 20034,     1,     0,     1,     0,     1,     0,     0,     0,     1,     0,     1,     0,     1, 20015, },
+    { 20033,     1,     0,     1,     0,     1,     1,     1,     1,     1,     0,     1,     0,     1, 20016, },
+    { 20032,     1,     0,     1,     0,     0,     0,     0,     0,     0,     0,     1,     0,     1, 20017, },
+    { 20031,     1,     0,     1,     1,     1,     1,     1,     1,     1,     1,     1,     0,     1, 20018, },
+    { 20030,     1,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     0,     1, 20019, },
+    {     0,     1,     1,     1,     1,     1,     1,     1,     1,     1,     1,     1,     1,     1,     1, },
+    {     0,     0, 20029, 20028, 20027, 20026, 20025,     0, 20024, 20023, 20022, 20021, 20020,     0,     0, },
+};
+
 static const char AztecSymbolChar[128] = {
     /* From Table 2 */
     0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 0, 14, 15, 16, 17, 18, 19,
@@ -81,57 +96,57 @@ static const char AztecSymbolChar[128] = {
 
 static const char AztecModes[129] = "BMMMMMMMMMMMMXBBBBBBBBBBBBBMMMMMXPPPPPPPPPPPXPXPDDDDDDDDDDPPPPPPMUUUUUUUUUUUUUUUUUUUUUUUUUUPMPMMMLLLLLLLLLLLLLLLLLLLLLLLLLLPMPMM";
 
-static const unsigned short int AztecSizes[32] = {
+static const short AztecSizes[32] = {
     /* Codewords per symbol */
     21, 48, 60, 88, 120, 156, 196, 240, 230, 272, 316, 364, 416, 470, 528, 588, 652, 720, 790,
     864, 940, 1020, 920, 992, 1066, 1144, 1224, 1306, 1392, 1480, 1570, 1664
 };
 
-static const int AztecCompactSizes[4] = {
+static const short AztecCompactSizes[4] = {
     17, 40, 51, 76
 };
 
-static const unsigned short int Aztec10DataSizes[32] = {
+static const short Aztec10DataSizes[32] = {
     /* Data bits per symbol maximum with 10% error correction */
     96, 246, 408, 616, 840, 1104, 1392, 1704, 2040, 2420, 2820, 3250, 3720, 4200, 4730,
     5270, 5840, 6450, 7080, 7750, 8430, 9150, 9900, 10680, 11484, 12324, 13188, 14076,
     15000, 15948, 16920, 17940
 };
 
-static const unsigned short int Aztec23DataSizes[32] = {
+static const short Aztec23DataSizes[32] = {
     /* Data bits per symbol maximum with 23% error correction */
     84, 204, 352, 520, 720, 944, 1184, 1456, 1750, 2070, 2410, 2780, 3180, 3590, 4040,
     4500, 5000, 5520, 6060, 6630, 7210, 7830, 8472, 9132, 9816, 10536, 11280, 12036,
     12828, 13644, 14472, 15348
 };
 
-static const unsigned short int Aztec36DataSizes[32] = {
+static const short Aztec36DataSizes[32] = {
     /* Data bits per symbol maximum with 36% error correction */
     66, 168, 288, 432, 592, 776, 984, 1208, 1450, 1720, 2000, 2300, 2640, 2980, 3350,
     3740, 4150, 4580, 5030, 5500, 5990, 6500, 7032, 7584, 8160, 8760, 9372, 9996, 10656,
     11340, 12024, 12744
 };
 
-static const unsigned short int Aztec50DataSizes[32] = {
+static const short Aztec50DataSizes[32] = {
     /* Data bits per symbol maximum with 50% error correction */
     48, 126, 216, 328, 456, 600, 760, 936, 1120, 1330, 1550, 1790, 2050, 2320, 2610,
     2910, 3230, 3570, 3920, 4290, 4670, 5070, 5484, 5916, 6360, 6828, 7308, 7800, 8316,
     8844, 9384, 9948
 };
 
-static const unsigned short int AztecCompact10DataSizes [4] = {
+static const short AztecCompact10DataSizes[4] = {
     78, 198, 336, 520
 };
 
-static const unsigned short int AztecCompact23DataSizes [4] = {
+static const short AztecCompact23DataSizes[4] = {
     66, 168, 288, 440
 };
 
-static const unsigned short int AztecCompact36DataSizes [4] = {
+static const short AztecCompact36DataSizes[4] = {
     48, 138, 232, 360
 };
 
-static const unsigned short int AztecCompact50DataSizes [4] = {
+static const short AztecCompact50DataSizes[4] = {
     36, 102, 176, 280
 };
 
@@ -144,3 +159,8 @@ static const char AztecCompactOffset[4] = {
     6, 4, 2, 0
 };
 
+static const short AztecMapGridYOffsets[] = {
+    27, 43, 59, 75, 91, 107, 123, 139
+};
+
+#endif /* __AZTEC_H */
