@@ -2685,7 +2685,7 @@ to a maximum of approximately 450 characters (or 900 numeric digits). The
 symbology supports ECI encoding and GS1 data encoding. By default Zint will
 produce a symbol which is approximately square, however the width of the symbol
 can be adjusted by using the --cols= option or by setting option_2 (maximum
-108). Outputting DotCode to raster images (PNG, GIF, BMP, PCX) will require
+200). Outputting DotCode to raster images (PNG, GIF, BMP, PCX) will require
 setting the scale of the image to a larger value than the default (e.g. approx
 10) for the dots to be plotted correctly. Approximately 33% of the resulting
 symbol is comprised of error correction codewords.
