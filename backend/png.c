@@ -163,10 +163,22 @@ INTERNAL int png_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
             num_trans = 8;
         }
 
+        /* For Ultracode, have foreground only if have bind/box */
+        if (symbol->border_width > 0 && (symbol->output_options & (BARCODE_BIND | BARCODE_BOX))) {
+            /* Check whether can re-use black */
+            if (fg.red == 0 && fg.green == 0 && fg.blue == 0) {
+                map['1'] = 7; /* Re-use black */
+            } else {
+                map['1'] = num_palette;
+                palette[num_palette++] = fg;
+                if (fg_alpha != 0xff) {
+                    trans_alpha[num_trans++] = fg_alpha;
+                }
+            }
+        }
+
         /* For Ultracode, have background only if have whitespace/quiet zones */
-        if (pixelbuf[0] == '0' || pixelbuf[symbol->bitmap_width - 1] == '0'
-                || pixelbuf[symbol->bitmap_height * (symbol->bitmap_width - 1)] == '0'
-                || pixelbuf[symbol->bitmap_height * symbol->bitmap_width - 1] == '0') {
+        if (symbol->whitespace_width > 0 || symbol->whitespace_height > 0) { /* TODO: BARCODE_QUIET_ZONES also */
             /* Check whether can re-use white */
             if (bg.red == 0xff && bg.green == 0xff && bg.blue == 0xff && bg_alpha == fg_alpha) {
                 map['0'] = 0; /* Re-use white */
