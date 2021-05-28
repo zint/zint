@@ -1424,12 +1424,22 @@ INTERNAL int dotcode(struct zint_symbol *symbol, unsigned char source[], int len
     }
 
     if ((height > 200) || (width > 200)) {
-        strcpy(symbol->errtxt, "526: Specified symbol size is too large");
+        if (height > 200 && width > 200) {
+            sprintf(symbol->errtxt, "526: Symbol size %dx%d (WxH) is too large", width, height);
+        } else {
+            sprintf(symbol->errtxt, "528: Symbol %s %d is too large",
+                    width > 200 ? "width" : "height", width > 200 ? width : height);
+        }
         return ZINT_ERROR_INVALID_OPTION;
     }
 
     if ((height < 5) || (width < 5)) {
-        strcpy(symbol->errtxt, "527: Specified symbol size has a dimension which is too small");
+        if (height < 5 && width < 5) {
+            sprintf(symbol->errtxt, "527: Symbol size %dx%d (WxH) is too small", width, height);
+        } else {
+            sprintf(symbol->errtxt, "529: Symbol %s %d is too small",
+                    width < 5 ? "width" : "height", width < 5 ? width : height);
+        }
         return ZINT_ERROR_INVALID_OPTION;
     }
 

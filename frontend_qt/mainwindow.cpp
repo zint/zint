@@ -1254,7 +1254,10 @@ void MainWindow::update_preview()
 
         case BARCODE_DOTCODE:
             m_bc.bc.setSymbol(BARCODE_DOTCODE);
-            m_bc.bc.setOption2(m_optionWidget->findChild<QComboBox*>("cmbDotCols")->currentIndex());
+            item_val = m_optionWidget->findChild<QComboBox*>("cmbDotCols")->currentIndex();
+            if (item_val) {
+                m_bc.bc.setOption2(item_val + 4); // Cols 1-4 not listed
+            }
             item_val = m_optionWidget->findChild<QComboBox*>("cmbDotMask")->currentIndex();
             if (item_val) {
                 m_bc.bc.setOption3((item_val << 8) | m_bc.bc.option3());

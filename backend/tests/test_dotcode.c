@@ -31,6 +31,102 @@
 
 #include "testcommon.h"
 
+static void test_large(int index, int debug) {
+
+    testStart("");
+
+    int ret;
+    struct item {
+        int option_2;
+        char datum;
+        int length;
+        int ret;
+    };
+    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    struct item data[] = {
+        /*  0*/ { 200, '0', 2940, 0 }, // 2940 largest Code Set C data that fits in 200x199 HxW
+        /*  1*/ { 200, '0', 2941, ZINT_ERROR_INVALID_OPTION },
+        /*  2*/ { 200, '9', 200, 0 }, // Changes a number of mask scores re pre-Rev. 4 version, but best score still the same (7)
+        /*  3*/ { 201, '0', 2940, ZINT_ERROR_INVALID_OPTION },
+        /*  4*/ { 30, '\001', 71, 0 }, // Codeword length 72, ECC length 39, for ND + 1 == 112
+    };
+    int data_size = ARRAY_SIZE(data);
+
+    char data_buf[4096];
+
+    for (int i = 0; i < data_size; i++) {
+
+        if (index != -1 && i != index) continue;
+
+        struct zint_symbol *symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        memset(data_buf, data[i].datum, data[i].length);
+
+        int length = testUtilSetSymbol(symbol, BARCODE_DOTCODE, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, data[i].option_2, -1, -1 /*output_options*/, data_buf, data[i].length, debug);
+
+        ret = ZBarcode_Encode(symbol, (unsigned char *) data_buf, length);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
+static void test_options(int index, int debug) {
+
+    testStart("");
+
+    int ret;
+    struct item {
+        int input_mode;
+        int output_options;
+        int option_2;
+        char *data;
+        int ret;
+
+        int expected_rows;
+        int expected_width;
+    };
+    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    struct item data[] = {
+        /*  0*/ { -1, -1, -1, "1", 0, 9, 14 },
+        /*  1*/ { -1, -1, -1, "1234567890", 0, 12, 19 },
+        /*  2*/ { -1, -1, 19, "1234567890", 0, 12, 19 },
+        /*  3*/ { -1, -1, 12, "1234567890", 0, 19, 12 },
+        /*  4*/ { -1, -1, 5, "1234567890", 0, 44, 5 },
+        /*  5*/ { -1, -1, 4, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1 }, // Cols < 5
+        /*  6*/ { -1, -1, 200, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1 }, // Not enough data - height 3 too small
+        /*  7*/ { -1, -1, 200, "1234567890123456789012345678901234567890", 0, 5, 200 }, // Cols 200 max
+        /*  8*/ { -1, -1, 200, "12345678901234567890123456789012345678901234567890123456789012345678901234567890", 0, 7, 200 },
+        /*  9*/ { -1, -1, 201, "12345678901234567890123456789012345678901234567890123456789012345678901234567890", ZINT_ERROR_INVALID_OPTION, -1, -1 },
+    };
+    int data_size = ARRAY_SIZE(data);
+
+    for (int i = 0; i < data_size; i++) {
+
+        if (index != -1 && i != index) continue;
+
+        struct zint_symbol *symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        int length = testUtilSetSymbol(symbol, BARCODE_DOTCODE, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, data[i].option_2, -1, data[i].output_options, data[i].data, -1, debug);
+
+        ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+
+        if (ret < ZINT_ERROR) {
+            assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, symbol->errtxt);
+            assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, symbol->errtxt);
+        }
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
 static void test_input(int index, int generate, int debug) {
 
     testStart("");
@@ -627,6 +723,13 @@ static void test_encode(int index, int generate, int debug) {
                     "00010001010000000100010101000100010001010001000101"
                     "10001000001010101000001000100010100010100000101010"
                 },
+        /* 33*/ { UNICODE_MODE, 200, -1, "123456789012345678901234567890123456789012345678901234567890", -1, 0, 5, 200, 1, "Max cols",
+                    "10101000100010101010000010101000000010001000100000101010100010100000101000100010000000101000101010001010100000100000101010100000001000101000001010100010001010000010001010001010100000100010101000000010"
+                    "00010101010000000101000100010001000101000101000100010001000001010001000001010100000001000101010000000101010100010101010000010001000101010001000001000001010000010100010001010101000001000001010100000001"
+                    "10100010000000100010101000101010100000001010001000100000101000101000001000101010001000000010101010100010101000000010100010001000001010100000101000100000101010100010000000001000001010101000101010100000"
+                    "00010001010001010000000101000100010001010000010000010100010100000100010101010001000101000000010100010001010100010000010100000101000100010100000101010000000101000001010100010100010001000101000001010001"
+                    "10100010001010101000000010001000001010001010001000001010100010000000101010001010000010101010000000101000100010100010100000100010100010001010100000001010101000001010000000001000101000101010000010101010"
+                },
     };
     int data_size = ARRAY_SIZE(data);
 
@@ -740,55 +843,14 @@ static void test_fuzz(int index, int debug) {
     testFinish();
 }
 
-static void test_large(int index, int debug) {
-
-    testStart("");
-
-    int ret;
-    struct item {
-        int option_2;
-        char datum;
-        int length;
-        int ret;
-    };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
-    struct item data[] = {
-        /*  0*/ { 200, '0', 2940, 0 }, // 2940 largest Code Set C data that fits in 200x199 HxW
-        /*  1*/ { 200, '0', 2941, ZINT_ERROR_INVALID_OPTION },
-        /*  2*/ { 200, '9', 200, 0 }, // Changes a number of mask scores re pre-Rev. 4 version, but best score still the same (7)
-        /*  3*/ { 30, '\001', 71, 0 }, // Codeword length 72, ECC length 39, for ND + 1 == 112
-    };
-    int data_size = ARRAY_SIZE(data);
-
-    char data_buf[4096];
-
-    for (int i = 0; i < data_size; i++) {
-
-        if (index != -1 && i != index) continue;
-
-        struct zint_symbol *symbol = ZBarcode_Create();
-        assert_nonnull(symbol, "Symbol not created\n");
-
-        memset(data_buf, data[i].datum, data[i].length);
-
-        int length = testUtilSetSymbol(symbol, BARCODE_DOTCODE, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, data[i].option_2, -1, -1 /*output_options*/, data_buf, data[i].length, debug);
-
-        ret = ZBarcode_Encode(symbol, (unsigned char *) data_buf, length);
-        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
-
-        ZBarcode_Delete(symbol);
-    }
-
-    testFinish();
-}
-
 int main(int argc, char *argv[]) {
 
     testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
+        { "test_large", test_large, 1, 0, 1 },
+        { "test_options", test_options, 1, 0, 1 },
         { "test_input", test_input, 1, 1, 1 },
         { "test_encode", test_encode, 1, 1, 1 },
         { "test_fuzz", test_fuzz, 1, 0, 1 },
-        { "test_large", test_large, 1, 0, 1 },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

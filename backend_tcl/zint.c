@@ -115,6 +115,8 @@
 - Added -gs1parens option
 2021-05-22 GL
 - Added -vwhitesp option
+2021-05-28 GL
+- -cols maximum changed from 108 to 200 (DotCode)
 */
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
@@ -994,7 +996,7 @@ static int Encode(Tcl_Interp *interp, int objc,
         case iVers:
             /* >> Int in Option 2 */
             if (intValue < 1
-                || (optionIndex==iCols && intValue > 108)
+                || (optionIndex==iCols && intValue > 200)
                 || (optionIndex==iVers && intValue > 47))
             {
                 Tcl_SetObjResult(interp,

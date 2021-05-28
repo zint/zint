@@ -919,7 +919,7 @@ int main(int argc, char **argv) {
                     fprintf(stderr, "Error 131: Invalid columns value\n");
                     return do_exit(1);
                 }
-                if ((val >= 1) && (val <= 108)) {
+                if ((val >= 1) && (val <= 200)) {
                     my_symbol->option_2 = val;
                 } else {
                     fprintf(stderr, "Warning 111: Number of columns out of range\n");
