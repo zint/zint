@@ -97,7 +97,7 @@ mkdir build
 cd build
 cmake ..
 make
-make install
+sudo make install
 
 The command line program can be accessed by typing
 
@@ -167,7 +167,7 @@ removed from this text-only version)
 
 4. Using the Command Line
 =========================
-This section describes how to encode data using the command line front end
+This section describes how to encode data using the command line frontend
 program. The examples given are for the Linux platform, but the same options
 are available for Windows - just remember to include the executable file
 extension if ".EXE" is not in your PATHEXT environment variable, i.e.:
@@ -254,7 +254,6 @@ zint -o there.eps -d "This Text"
 --------------------------
 Selecting which type of barcode you wish to produce (i.e. which symbology to
 use) can be done at the command line using the -b or --barcode= switch followed
-by the appropriate integer value in the following table. For example to create
 by the appropriate integer value or name in the following table. For example to
 create a Data Matrix symbol you could use:
 
@@ -563,7 +562,7 @@ code that has not been explicitly requested has been inserted into a symbol.
 
 GS1 data can be encoded in a number of symbologies. Application identifiers
 should be enclosed in [square brackets] followed by the data to be encoded (see
-6.1.12.3). To encode GS1 data use the --gs1 option. GS1 mode is assumed (and
+6.1.11.3). To encode GS1 data use the --gs1 option. GS1 mode is assumed (and
 doesn't need to be set) for GS1-128, EAN-14, DataBar and Composite symbologies
 but is also available for Aztec Code, Code 16k, Code 49, Code One, Data Matrix,
 DotCode, QR Code and Ultracode.
@@ -1333,7 +1332,7 @@ UNICODE_MODE   |  Uses pre-formatted UTF-8 input.
 GS1_MODE       |  Encodes GS1 data using FNC1 characters.
                |
 ESCAPE_MODE    |  Process input data for escape sequences.
-GS1PARENS_MODE |  Parentheses (rounded brackets) used in input data instead of
+GS1PARENS_MODE |  Parentheses (round brackets) used in input data instead of
                |     square brackets to delimit GS1 application identifiers
                |     (parentheses must not otherwise occur in the data).
 ------------------------------------------------------------------------------
@@ -1354,7 +1353,7 @@ whereas
 my_symbol->input_mode = DATA_MODE | GS1_MODE;
 
 is not valid. Permissible escape sequences are listed in section 4.1. An
-example of GS1PARENS_MODE usage is given in section 6.1.12.3.
+example of GS1PARENS_MODE usage is given in section 6.1.11.3.
 
 5.10 Verifying Symbology Availability
 -------------------------------------
@@ -1738,15 +1737,24 @@ mode C in favour of mode B.
 ----------------
 A variation of Code 128 previously known as UCC/EAN-128, this symbology is
 defined by the GS1 General Specifications. Application Identifiers (AIs) should
-be entered using [square bracket] notation. These will be converted to (round
-brackets) for the human readable text. This will allow round brackets to be used
-in the data strings to be encoded. Fixed length data should be entered at the
-appropriate length for correct encoding. GS1-128 does not support extended ASCII
-characters. Check digits for GTIN data (AI 01) are not generated and need to be
-included in the input data. The following is an example of a valid GS1-128
-input:
+be entered using [square bracket] notation. These will be converted to
+parentheses (round brackets) for the human readable text. This will allow round
+brackets to be used in the data strings to be encoded.
+
+For compatibility with data entry in other systems, if the data does not include
+round brackets, the option --gs1parens (API input_mode |= GS1PARENS_MODE;) may
+be used to signal that AIs are encased in round brackets instead of square ones.
+
+Fixed length data should be entered at the appropriate length for correct
+encoding. GS1-128 does not support extended ASCII characters. Check digits for
+GTIN data (AI 01) are not generated and need to be included in the input data.
+The following is an example of a valid GS1-128 input:
 
 zint --barcode=16 -d "[01]98898765432106[3202]012345[15]991231"
+
+or using the --gs1parens option:
+
+zint --barcode=16 --gs1parens -d "(01)98898765432106(3202)012345(15)991231"
 
 6.1.11.4 EAN-14
 ---------------
@@ -1804,13 +1812,10 @@ case the check digit will be verified.
 Previously known as RSS Expanded this is a variable length symbology capable of
 encoding data from a number of AIs in a single symbol. AIs should be encased in
 [square brackets] in the input data. This will be converted to parentheses
-(rounded brackets) before it is included in the human readable text attached to
+(round brackets) before it is included in the human readable text attached to
 the symbol. This method allows the inclusion of parentheses in the data to be
-encoded.
-
-For compatibility with data entry in other systems, if the data does not include
-parentheses, the option --gs1parens (API input_mode |= GS1PARENS_MODE;) may be
-used to signal that AIs are encased in rounded brackets instead of square ones.
+encoded. If the data does not include parentheses, the AIs may alternatively
+be encased in parentheses using the --gs1parens switch. See section 6.1.11.3.
 
 GTIN data (AI 01) should also include the check digit data as this is not
 calculated by Zint when this symbology is encoded. Fixed length data should be
@@ -1818,10 +1823,6 @@ entered at the appropriate length for correct encoding. The following is an
 example of a valid DataBar Expanded input:
 
 zint --barcode=31 -d "[01]98898765432106[3202]012345[15]991231"
-
-or using the --gs1parens option:
-
-zint --barcode=31 --gs1parens -d "(01)98898765432106(3202)012345(15)991231"
 
 6.1.13 Korea Post Barcode
 -------------------------
