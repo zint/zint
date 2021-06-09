@@ -236,8 +236,9 @@ INTERNAL int codabar(struct zint_symbol *symbol, unsigned char source[], int len
     add_checksum = symbol->option_2 == 1;
 
     for (i = 0; i < length; i++) {
+        const char calcium[] = CALCIUM;
         if (add_checksum) {
-            count += strchr(CALCIUM, source[i]) - CALCIUM;
+            count += strchr(calcium, source[i]) - calcium;
             if (i + 1 == length) {
                 checksum = count % 16;
                 if (checksum) {
@@ -249,7 +250,7 @@ INTERNAL int codabar(struct zint_symbol *symbol, unsigned char source[], int len
                 strcat(dest, CodaTable[checksum]);
             }
         }
-        lookup(CALCIUM, CodaTable, source[i], dest);
+        lookup(calcium, CodaTable, source[i], dest);
     }
 
     expand(symbol, dest);
