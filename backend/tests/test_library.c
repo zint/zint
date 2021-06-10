@@ -338,7 +338,7 @@ static void test_encode_file_empty(void) {
     FILE *fstream;
     int ret;
     char filename[] = "in.bin";
-    
+
     struct zint_symbol *symbol = ZBarcode_Create();
     assert_nonnull(symbol, "Symbol not created\n");
 
@@ -346,26 +346,26 @@ static void test_encode_file_empty(void) {
 
     fstream = fopen(filename, "w+");
     fclose(fstream);
-    
+
     ret = ZBarcode_Encode_File(symbol, filename);
     assert_equal(ret, ZINT_ERROR_INVALID_DATA, "ZBarcode_Encode_File empty ret %d != ZINT_ERROR_INVALID_DATA (%s)\n", ret, symbol->errtxt);
 
     ret = remove(filename);
     assert_zero(ret, "remove(%s) != 0 (%d: %s)\n", filename, errno, strerror(errno));
-    
+
     ZBarcode_Delete(symbol);
-    
+
     testFinish();
 }
 
 static void test_encode_file_too_large(void) {
     testStart("");
-    
+
     FILE *fstream;
     int ret;
     char filename[] = "in.bin";
     char buf[ZINT_MAX_DATA_LEN + 1] = {0};
-    
+
     struct zint_symbol *symbol = ZBarcode_Create();
     assert_nonnull(symbol, "Symbol not created\n");
 
@@ -375,15 +375,15 @@ static void test_encode_file_too_large(void) {
     ret = fwrite(buf, 1, sizeof(buf), fstream);
     assert_equal(ret, sizeof(buf), "fwrite retun value: %d != %d\n", ret, (int)sizeof(buf));
     fclose(fstream);
-    
+
     ret = ZBarcode_Encode_File(symbol, filename);
     assert_equal(ret, ZINT_ERROR_TOO_LONG, "ZBarcode_Encode_File too large ret %d != ZINT_ERROR_TOO_LONG (%s)\n", ret, symbol->errtxt);
 
     ret = remove(filename);
     assert_zero(ret, "remove(%s) != 0 (%d: %s)\n", filename, errno, strerror(errno));
-    
+
     ZBarcode_Delete(symbol);
-    
+
     testFinish();
 }
 
@@ -391,7 +391,7 @@ static void test_encode_file_too_large(void) {
 static void test_encode_file_unreadable(void) {
 
     testStart("");
-    
+
 #ifdef _WIN32
     testSkip("Test not implemented on Windows");
 #else
@@ -569,7 +569,7 @@ static void test_valid_id(void) {
     testFinish();
 }
 
-int error_tag(char error_string[100], int error_number);
+STATIC_UNLESS_ZINT_TEST int error_tag(char error_string[100], int error_number);
 
 static void test_error_tag(int index) {
 
@@ -608,7 +608,7 @@ static void test_error_tag(int index) {
     testFinish();
 }
 
-void strip_bom(unsigned char *source, int *input_length);
+STATIC_UNLESS_ZINT_TEST void strip_bom(unsigned char *source, int *input_length);
 
 static void test_strip_bom(void) {
 
