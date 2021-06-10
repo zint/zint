@@ -158,7 +158,7 @@ Administration privileges) is to create two sub-directories in
 
   "zlib\zlib.lib" and "lpng\build\Release\libpng16_static.lib" into "lib".
 
-This example uses Qt 5.15.2 and component "MSVC 2017 32-bit" so install them and
+This example uses Qt 5.15.2 and component "MSVC 2019 32-bit" so install them and
 add to path (your path may differ):
 
   set "PATH=C:\Qt\5.15.2\msvc2019\bin;%PATH%"

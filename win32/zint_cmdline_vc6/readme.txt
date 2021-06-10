@@ -25,4 +25,4 @@ cd $ZR\..\lpng
 nmake -f scripts\makefile.vcwin32
 -> generates $ZR\..\lpng\libpng.lib
 
-c) open zint_cmdline_vc6.dsp in this folder with the msvc6 gui and compile
+c) open zint_cmdline_vc6.dsw in this folder with the msvc6 gui and compile

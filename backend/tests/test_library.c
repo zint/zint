@@ -79,7 +79,7 @@ static void test_checks(int index, int debug) {
         /* 19*/ { 5, "1", -1, -1, -1, -1, WARN_FAIL_ALL, 0, "", BARCODE_C25STANDARD },
         /* 20*/ { 12, "1", -1, -1, -1, -1, -1, 0, "", BARCODE_EANX },
         /* 21*/ { 12, "1", -1, -1, -1, -1, WARN_FAIL_ALL, 0, "", BARCODE_EANX },
-        /* 22*/ { 19, "1", -1, -1, -1, -1, -1, ZINT_ERROR_TOO_LONG, "Error 362: Input too short", BARCODE_CODABAR },
+        /* 22*/ { 19, "1", -1, -1, -1, -1, -1, ZINT_ERROR_TOO_LONG, "Error 362: Input too short (3 character minimum)", BARCODE_CODABAR },
         /* 23*/ { 19, "A1B", -1, -1, -1, -1, -1, ZINT_WARN_INVALID_OPTION, "Warning 207: Codabar 18 not supported", BARCODE_CODABAR },
         /* 24*/ { 19, "A1B", -1, -1, -1, -1, WARN_FAIL_ALL, ZINT_ERROR_INVALID_OPTION, "Error 207: Codabar 18 not supported", -1 },
         /* 25*/ { 26, "1", -1, -1, -1, -1, -1, 0, "", BARCODE_UPCA },
