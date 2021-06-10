@@ -192,7 +192,7 @@ INTERNAL int dpd_parcel(struct zint_symbol *symbol, unsigned char source[], int 
 INTERNAL int plot_raster(struct zint_symbol *symbol, int rotate_angle, int file_type); /* Plot to PNG/BMP/PCX */
 INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_type); /* Plot to EPS/EMF/SVG */
 
-STATIC_UNLESS_ZINT_TEST int error_tag(char error_string[100], int error_number) {
+INTERNAL int error_tag(char error_string[100], int error_number) {
 
     if (error_number != 0) {
         const char *fmt = error_number >= ZINT_ERROR ? "Error %.93s" : "Warning %.91s"; /* Truncate if too long */
@@ -931,7 +931,7 @@ static int reduced_charset(struct zint_symbol *symbol, unsigned char *source, in
     return error_number;
 }
 
-STATIC_UNLESS_ZINT_TEST void strip_bom(unsigned char *source, int *input_length) {
+INTERNAL void strip_bom(unsigned char *source, int *input_length) {
     int i;
 
     /* Note if BOM is only data then not stripped */
