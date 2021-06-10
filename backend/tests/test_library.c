@@ -338,7 +338,6 @@ static void test_encode_file_empty(void) {
     FILE *fstream;
     int ret;
     char filename[] = "in.bin";
-    char buf[ZINT_MAX_DATA_LEN + 1] = {0};
     
     struct zint_symbol *symbol = ZBarcode_Create();
     assert_nonnull(symbol, "Symbol not created\n");
