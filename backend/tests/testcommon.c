@@ -34,6 +34,14 @@
  */
 
 #include "testcommon.h"
+
+#ifdef _MSC_VER
+#include <malloc.h>
+#define testutil_alloca(nmemb) _alloca(nmemb)
+#else
+#define testutil_alloca(nmemb) alloca(nmemb)
+#endif
+
 #include "../eci.h"
 #ifndef NO_PNG
 #include <png.h>
@@ -1178,7 +1186,7 @@ void testUtilBitmapPrint(const struct zint_symbol *symbol, const char *prefix, c
 
 int testUtilBitmapCmp(const struct zint_symbol *symbol, const char *expected, int *row, int *column) {
     static char colour[] = { '0', 'C', 'M', 'B', 'Y', 'G', 'R', '1' };
-    int r, c, i, j;
+    int r, c = -1, i, j;
     const char *e = expected;
     const char *ep = expected + strlen(expected);
     char buf[7];
@@ -2017,7 +2025,7 @@ static char *testUtilBwippEscape(char *bwipp_data, int bwipp_data_size, const ch
         /* Escape single quote also to avoid having to do proper shell escaping TODO: proper shell escaping */
         if (*d < 0x20 || *d >= 0x7F || *d == '^' || *d == '"' || *d == '\'') {
             if (b + 4 >= be) {
-                fprintf(stderr, "testUtilBwippEscape: bwipp_data buffer full\n");
+                fprintf(stderr, "testUtilBwippEscape: double quote bwipp_data buffer full (%d)\n", bwipp_data_size);
                 return NULL;
             }
             sprintf(b, "^%03u", *d++);
@@ -2044,7 +2052,7 @@ static char *testUtilBwippEscape(char *bwipp_data, int bwipp_data_size, const ch
                 default: fprintf(stderr, "testUtilBwippEscape: unknown escape %c\n", *d); return NULL; break;
             }
             if (b + 4 >= be) {
-                fprintf(stderr, "testUtilBwippEscape: bwipp_data buffer full\n");
+                fprintf(stderr, "testUtilBwippEscape: loop bwipp_data buffer full (%d)\n", bwipp_data_size);
                 return NULL;
             }
             sprintf(b, "^%03d", val);
@@ -2057,7 +2065,7 @@ static char *testUtilBwippEscape(char *bwipp_data, int bwipp_data_size, const ch
     }
 
     if (b == be && d < de) {
-        fprintf(stderr, "testUtilBwippEscape: bwipp_data buffer full\n");
+        fprintf(stderr, "testUtilBwippEscape: end bwipp_data buffer full (%d)\n", bwipp_data_size);
         return NULL;
     }
     *b = '\0';
@@ -2086,10 +2094,10 @@ static void testUtilISBNHyphenate(char *bwipp_data, int addon_posn) {
 #define GS_INITIAL_LEN  35 /* Length of cmd up to -q */
 
 int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int option_2, int option_3, const char *data, int length, const char *primary, char *buffer, int buffer_size) {
-    const char *cmd_fmt = "gs -dNOPAUSE -dBATCH -dNODISPLAY -q -sb=%s -sd='%s' ../tools/bwipp_dump.ps";
-    const char *cmd_opts_fmt = "gs -dNOPAUSE -dBATCH -dNODISPLAY -q -sb=%s -sd='%s' -so='%s' ../tools/bwipp_dump.ps";
-    const char *cmd_fmt2 = "gs -dNOPAUSE -dBATCH -dNODISPLAY -q -sb=%s -sd='%.2043s' -sd2='%s' ../tools/bwipp_dump.ps"; // If data > 2K
-    const char *cmd_opts_fmt2 = "gs -dNOPAUSE -dBATCH -dNODISPLAY -q -sb=%s -sd='%.2043s' -sd2='%s' -so='%s' ../tools/bwipp_dump.ps";
+    const char *cmd_fmt = "gs -dNOPAUSE -dBATCH -dNODISPLAY -q -sb=%s -sd='%s' backend/tests/tools/bwipp_dump.ps";
+    const char *cmd_opts_fmt = "gs -dNOPAUSE -dBATCH -dNODISPLAY -q -sb=%s -sd='%s' -so='%s' backend/tests/tools/bwipp_dump.ps";
+    const char *cmd_fmt2 = "gs -dNOPAUSE -dBATCH -dNODISPLAY -q -sb=%s -sd='%.2043s' -sd2='%s' backend/tests/tools/bwipp_dump.ps"; // If data > 2K
+    const char *cmd_opts_fmt2 = "gs -dNOPAUSE -dBATCH -dNODISPLAY -q -sb=%s -sd='%.2043s' -sd2='%s' -so='%s' backend/tests/tools/bwipp_dump.ps";
 
     int symbology = symbol->symbology;
     int data_len = length == -1 ? (int) strlen(data) : length;
@@ -2097,13 +2105,14 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
     int max_data_len = 4 + primary_len + 1 + 1 + data_len * 4 + 64; /* 4 AI prefix + primary + '|' + leading zero + escaped data + fudge */
 
     int eci_length = get_eci_length(symbol->eci, (const unsigned char *) data, data_len);
-    char *converted = alloca(eci_length + 1);
-    char *cmd = alloca(max_data_len + 1024);
+    char *converted = (char *) testutil_alloca(eci_length + 1);
+    char *cmd = (char *) testutil_alloca(max_data_len + 1024);
     const char *bwipp_barcode = NULL;
     char *bwipp_opts = NULL;
-    char *bwipp_data = alloca(max_data_len + 1);
+    int bwipp_data_size = max_data_len + 1;
+    char *bwipp_data = (char *) testutil_alloca(bwipp_data_size);
     char bwipp_opts_buf[512];
-    int *bwipp_row_height = alloca(sizeof(int) * symbol->rows);
+    int *bwipp_row_height = (int *) testutil_alloca(sizeof(int) * symbol->rows);
     int linear_row_height;
     int gs1_cvt;
     int user_mask;
@@ -2227,7 +2236,7 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                 }
             }
         } else {
-            if (testUtilBwippEscape(bwipp_data, sizeof(bwipp_data), data, data_len, symbol->input_mode & ESCAPE_MODE, eci, &parse, &parsefnc) == NULL) {
+            if (testUtilBwippEscape(bwipp_data, bwipp_data_size, data, data_len, symbol->input_mode & ESCAPE_MODE, eci, &parse, &parsefnc) == NULL) {
                 return -1;
             }
             if (parse) {
@@ -2285,12 +2294,19 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                     sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%sincludecheck", strlen(bwipp_opts_buf) ? " " : "");
 
                     const char *checktype = NULL;
+                    if (option_2 >= 11 && option_2 <= 16) {
+                        option_2 -= 10; /* Remove no-check indicator */
+                    }
                     if (option_2 == 2) {
                         checktype = "mod1010";
                     } else if (option_2 == 3) {
                         checktype = "mod11 badmod11";
                     } else if (option_2 == 4) {
                         checktype = "mod1110 badmod11";
+                    } else if (option_2 == 5) {
+                        checktype = "ncrmod11 badmod11";
+                    } else if (option_2 == 6) {
+                        checktype = "ncrmod1110 badmod11";
                     }
                     if (checktype) {
                         sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%schecktype=%s", strlen(bwipp_opts_buf) ? " " : "", checktype);
@@ -2480,7 +2496,7 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                     }
                 }
                 if (option_2 > 0) {
-                    char scm_vv_buf[16];
+                    char scm_vv_buf[32];
                     sprintf(scm_vv_buf, "[)>^03001^029%02d", option_2); /* [)>\R01\Gvv */
                     memmove(bwipp_data + 15, bwipp_data, strlen(bwipp_data) + 1);
                     memcpy(bwipp_data, scm_vv_buf, 15);
@@ -2621,7 +2637,7 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
         printf("i:%d testUtilBwipp: cmd %s\n", index, cmd);
     }
 
-    fp = popen(cmd, "r");
+    fp = testutil_popen(cmd, "r");
     if (!fp) {
         fprintf(stderr, "i:%d testUtilBwipp: failed to run '%s'\n", index, cmd);
         return -1;
@@ -2630,13 +2646,13 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
     for (r = 0; r < symbol->rows; r++) {
         if (b + symbol->width > be) {
             fprintf(stderr, "i:%d testUtilBwipp: row %d, width %d, row width iteration overrun (%s)\n", index, r, symbol->width, cmd);
-            pclose(fp);
+            testutil_pclose(fp);
             return -1;
         }
         cnt = fread(b, 1, symbol->width, fp);
         if (cnt != symbol->width) {
             fprintf(stderr, "i:%d testUtilBwipp: failed to read symbol->width %d bytes, cnt %d (%s)\n", index, symbol->width, cnt, cmd);
-            pclose(fp);
+            testutil_pclose(fp);
             return -1;
         }
         b += cnt;
@@ -2645,7 +2661,7 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
             if (cnt != symbol->width) {
                 fprintf(stderr, "i:%d testUtilBwipp: failed to read/ignore symbol->width %d bytes, cnt %d, h %d, bwipp_row_height[%d] %d, symbol->row_height[%d] %d (%s)\n",
                         index, symbol->width, cnt, h, r, bwipp_row_height[r], r, symbol->row_height[r], cmd);
-                pclose(fp);
+                testutil_pclose(fp);
                 return -1;
             }
         }
@@ -2654,11 +2670,11 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
 
     if (fgetc(fp) != EOF) {
         fprintf(stderr, "i:%d testUtilBwipp: failed to read full stream (%s)\n", index, cmd);
-        pclose(fp);
+        testutil_pclose(fp);
         return -1;
     }
 
-    pclose(fp);
+    testutil_pclose(fp);
 
     return 0;
 }

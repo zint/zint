@@ -3,7 +3,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009 - 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009 - 2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -32,8 +32,8 @@
  */
 /* vim: set ts=4 sw=4 et : */
 
+#include <errno.h>
 #include <stdio.h>
-#include <string.h>
 #include "common.h"
 #include "pcx.h"        /* PCX header structure */
 #include <math.h>
@@ -52,7 +52,7 @@ INTERNAL int pcx_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     int bytes_per_line = symbol->bitmap_width + (symbol->bitmap_width & 1); // Must be even
     unsigned char previous;
 #ifdef _MSC_VER
-    unsigned char* rle_row;
+    unsigned char *rle_row;
 #endif
 
 #ifndef _MSC_VER
@@ -69,7 +69,6 @@ INTERNAL int pcx_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     bgred = (16 * ctoi(symbol->bgcolour[0])) + ctoi(symbol->bgcolour[1]);
     bggrn = (16 * ctoi(symbol->bgcolour[2])) + ctoi(symbol->bgcolour[3]);
     bgblu = (16 * ctoi(symbol->bgcolour[4])) + ctoi(symbol->bgcolour[5]);
-
 
     header.manufacturer = 10; // ZSoft
     header.version = 5; // Version 3.0
@@ -103,26 +102,26 @@ INTERNAL int pcx_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     if (symbol->output_options & BARCODE_STDOUT) {
 #ifdef _MSC_VER
         if (-1 == _setmode(_fileno(stdout), _O_BINARY)) {
-            strcpy(symbol->errtxt, "620: Can't open output file");
+            sprintf(symbol->errtxt, "620: Can't open output file (%d: %.30s)", errno, strerror(errno));
             return ZINT_ERROR_FILE_ACCESS;
         }
 #endif
         pcx_file = stdout;
     } else {
         if (!(pcx_file = fopen(symbol->outfile, "wb"))) {
-            strcpy(symbol->errtxt, "621: Can't open output file");
+            sprintf(symbol->errtxt, "621: Can't open output file (%d: %.30s)", errno, strerror(errno));
             return ZINT_ERROR_FILE_ACCESS;
         }
     }
 
-    fwrite(&header, sizeof (pcx_header_t), 1, pcx_file);
+    fwrite(&header, sizeof(pcx_header_t), 1, pcx_file);
 
     for (row = 0; row < symbol->bitmap_height; row++) {
         for (colour = 0; colour < 3; colour++) {
             for (column = 0; column < symbol->bitmap_width; column++) {
                 switch (colour) {
                     case 0:
-                        switch(pixelbuf[(row * symbol->bitmap_width) + column]) {
+                        switch (pixelbuf[(row * symbol->bitmap_width) + column]) {
                             case 'W': // White
                             case 'M': // Magenta
                             case 'R': // Red
@@ -144,7 +143,7 @@ INTERNAL int pcx_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
                         }
                         break;
                     case 1:
-                        switch(pixelbuf[(row * symbol->bitmap_width) + column]) {
+                        switch (pixelbuf[(row * symbol->bitmap_width) + column]) {
                             case 'W': // White
                             case 'C': // Cyan
                             case 'Y': // Yellow
@@ -166,7 +165,7 @@ INTERNAL int pcx_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
                         }
                         break;
                     case 2:
-                        switch(pixelbuf[(row * symbol->bitmap_width) + column]) {
+                        switch (pixelbuf[(row * symbol->bitmap_width) + column]) {
                             case 'W': // White
                             case 'C': // Cyan
                             case 'B': // Blue

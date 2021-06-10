@@ -1539,7 +1539,7 @@ int ZBarcode_Encode_File(struct zint_symbol *symbol, char *filename) {
     unsigned char *buffer;
     long fileLen;
     size_t n;
-    int nRead = 0;
+    size_t nRead = 0;
     int ret;
 
     if (!symbol) return ZINT_ERROR_INVALID_DATA;
@@ -1555,7 +1555,7 @@ int ZBarcode_Encode_File(struct zint_symbol *symbol, char *filename) {
     } else {
         file = fopen(filename, "rb");
         if (!file) {
-            sprintf(symbol->errtxt, "229: Unable to read input file (%.30s)", strerror(errno));
+            sprintf(symbol->errtxt, "229: Unable to read input file (%d: %.30s)", errno, strerror(errno));
             return error_tag(symbol->errtxt, ZINT_ERROR_INVALID_DATA);
         }
         file_opened = 1;
@@ -1593,7 +1593,7 @@ int ZBarcode_Encode_File(struct zint_symbol *symbol, char *filename) {
     do {
         n = fread(buffer + nRead, 1, fileLen - nRead, file);
         if (ferror(file)) {
-            sprintf(symbol->errtxt, "241: Input file read error (%.30s)", strerror(errno));
+            sprintf(symbol->errtxt, "241: Input file read error (%d: %.30s)", errno, strerror(errno));
             if (file_opened) {
                 fclose(file);
             }
@@ -1601,7 +1601,7 @@ int ZBarcode_Encode_File(struct zint_symbol *symbol, char *filename) {
             return error_tag(symbol->errtxt, ZINT_ERROR_INVALID_DATA);
         }
         nRead += n;
-    } while (!feof(file) && (0 < n) && (nRead < fileLen));
+    } while (!feof(file) && (0 < n) && ((long) nRead < fileLen));
 
     if (file_opened) {
         fclose(file);

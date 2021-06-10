@@ -6,10 +6,10 @@ set -e
 function run_bwipp_test() {
     if [ -z "$2" ]; then
         echo -e "\n$1"
-        ./$1 -d $(expr 128 + 16 + 32) || exit 1
+        backend/tests/$1 -d $(expr 128 + 16 + 32) || exit 1
     else
         echo -e "\n$1 -f $2"
-        ./$1 -f "$2" -d $(expr 128 + 16 + 32) || exit 1
+        backend/tests/$1 -f "$2" -d $(expr 128 + 16 + 32) || exit 1
     fi
 }
 

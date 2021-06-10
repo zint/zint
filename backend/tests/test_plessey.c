@@ -47,18 +47,26 @@ static void test_large(int index, int debug) {
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /*  0*/ { BARCODE_MSI_PLESSEY, -1, "9", 55, 0, 1, 667 },
-        /*  1*/ { BARCODE_MSI_PLESSEY, -1, "9", 56, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  2*/ { BARCODE_MSI_PLESSEY, 1, "9", 18, 0, 1, 235 }, // 1 mod-10 check digit
-        /*  3*/ { BARCODE_MSI_PLESSEY, 1, "9", 19, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  4*/ { BARCODE_MSI_PLESSEY, 2, "9", 18, 0, 1, 247 }, // 2 mod-10 check digits
-        /*  5*/ { BARCODE_MSI_PLESSEY, 2, "9", 19, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  6*/ { BARCODE_MSI_PLESSEY, 3, "9", 55, 0, 1, 679 }, // 1 mod-11 check digit
-        /*  7*/ { BARCODE_MSI_PLESSEY, 3, "9", 56, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  8*/ { BARCODE_MSI_PLESSEY, 4, "9", 18, 0, 1, 247 }, // 1 mod-11 and 1 mod-10 check digit
-        /*  9*/ { BARCODE_MSI_PLESSEY, 4, "9", 19, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 10*/ { BARCODE_PLESSEY, -1, "A", 65, 0, 1, 1107 },
-        /* 11*/ { BARCODE_PLESSEY, -1, "A", 66, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  0*/ { BARCODE_MSI_PLESSEY, -1, "9", 65, 0, 1, 787 },
+        /*  1*/ { BARCODE_MSI_PLESSEY, -1, "9", 66, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  2*/ { BARCODE_MSI_PLESSEY, 1, "9", 65, 0, 1, 799 }, // 1 mod-10 check digit
+        /*  3*/ { BARCODE_MSI_PLESSEY, 1, "9", 66, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  4*/ { BARCODE_MSI_PLESSEY, 2, "9", 65, 0, 1, 811 }, // 2 mod-10 check digits
+        /*  5*/ { BARCODE_MSI_PLESSEY, 2, "9", 66, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  6*/ { BARCODE_MSI_PLESSEY, 3, "9", 65, 0, 1, 799 }, // 1 mod-11 check digit
+        /*  7*/ { BARCODE_MSI_PLESSEY, 3, "9", 66, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  8*/ { BARCODE_MSI_PLESSEY, 3, "3", 65, 0, 1, 811 }, // 1 mod-11 double check digit "10"
+        /*  9*/ { BARCODE_MSI_PLESSEY, 3, "3", 66, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 10*/ { BARCODE_MSI_PLESSEY, 4, "9", 65, 0, 1, 811 }, // 1 mod-11 and 1 mod-10 check digit
+        /* 11*/ { BARCODE_MSI_PLESSEY, 4, "9", 66, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 12*/ { BARCODE_MSI_PLESSEY, 4, "3", 65, 0, 1, 823 }, // 1 mod-11 double check digit "10" and 1 mod-10 check digit
+        /* 13*/ { BARCODE_MSI_PLESSEY, 4, "3", 66, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 14*/ { BARCODE_MSI_PLESSEY, 5, "9", 65, 0, 1, 799 }, // 1 NCR mod-11 check digit
+        /* 15*/ { BARCODE_MSI_PLESSEY, 5, "9", 66, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 16*/ { BARCODE_MSI_PLESSEY, 6, "9", 65, 0, 1, 811 }, // 1 NCR mod-11 and 1 mod-10 check digit
+        /* 17*/ { BARCODE_MSI_PLESSEY, 6, "9", 66, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 18*/ { BARCODE_PLESSEY, -1, "A", 65, 0, 1, 1107 },
+        /* 19*/ { BARCODE_PLESSEY, -1, "A", 66, ZINT_ERROR_TOO_LONG, -1, -1 },
     };
     int data_size = ARRAY_SIZE(data);
 
@@ -107,16 +115,32 @@ static void test_hrt(int index, int debug) {
         /*  0*/ { BARCODE_MSI_PLESSEY, -1, "1234567", "1234567" },
         /*  1*/ { BARCODE_MSI_PLESSEY, 0, "1234567", "1234567" },
         /*  2*/ { BARCODE_MSI_PLESSEY, 1, "1234567", "12345674" },
-        /*  3*/ { BARCODE_MSI_PLESSEY, 2, "1234567", "123456741" },
-        /*  4*/ { BARCODE_MSI_PLESSEY, 3, "1234567", "12345674" },
-        /*  5*/ { BARCODE_MSI_PLESSEY, 4, "1234567", "123456741" },
-        /*  6*/ { BARCODE_MSI_PLESSEY, 1, "123456", "1234566" },
-        /*  7*/ { BARCODE_MSI_PLESSEY, 2, "123456", "12345666" },
-        /*  8*/ { BARCODE_MSI_PLESSEY, 3, "123456", "1234560" },
-        /*  9*/ { BARCODE_MSI_PLESSEY, 4, "123456", "12345609" },
-        /* 10*/ { BARCODE_MSI_PLESSEY, 3, "2211", "221110" }, // Mod-11 check digit '10'
-        /* 11*/ { BARCODE_MSI_PLESSEY, 4, "2211", "2211100" },
-        /* 12*/ { BARCODE_PLESSEY, -1, "0123456789ABCDEF", "0123456789ABCDEF" },
+        /*  3*/ { BARCODE_MSI_PLESSEY, 1 + 10, "1234567", "1234567" },
+        /*  4*/ { BARCODE_MSI_PLESSEY, 1, "9999999999", "99999999990" },
+        /*  5*/ { BARCODE_MSI_PLESSEY, 2, "1234567", "123456741" },
+        /*  6*/ { BARCODE_MSI_PLESSEY, 2 + 10, "1234567", "1234567" },
+        /*  7*/ { BARCODE_MSI_PLESSEY, 2, "9999999999", "999999999900" },
+        /*  8*/ { BARCODE_MSI_PLESSEY, 3, "1234567", "12345674" },
+        /*  9*/ { BARCODE_MSI_PLESSEY, 3 + 10, "1234567", "1234567" },
+        /* 10*/ { BARCODE_MSI_PLESSEY, 3, "9999999999", "99999999995" },
+        /* 11*/ { BARCODE_MSI_PLESSEY, 4, "1234567", "123456741" },
+        /* 12*/ { BARCODE_MSI_PLESSEY, 4 + 10, "1234567", "1234567" },
+        /* 13*/ { BARCODE_MSI_PLESSEY, 4, "9999999999", "999999999959" },
+        /* 14*/ { BARCODE_MSI_PLESSEY, 5, "1234567", "12345679" },
+        /* 15*/ { BARCODE_MSI_PLESSEY, 5 + 10, "1234567", "1234567" },
+        /* 16*/ { BARCODE_MSI_PLESSEY, 5, "9999999999", "999999999910" },
+        /* 17*/ { BARCODE_MSI_PLESSEY, 6, "1234567", "123456790" },
+        /* 18*/ { BARCODE_MSI_PLESSEY, 6 + 10, "1234567", "1234567" },
+        /* 19*/ { BARCODE_MSI_PLESSEY, 6, "9999999999", "9999999999109" },
+        /* 20*/ { BARCODE_MSI_PLESSEY, 1, "123456", "1234566" },
+        /* 21*/ { BARCODE_MSI_PLESSEY, 2, "123456", "12345666" },
+        /* 22*/ { BARCODE_MSI_PLESSEY, 3, "123456", "1234560" },
+        /* 23*/ { BARCODE_MSI_PLESSEY, 4, "123456", "12345609" },
+        /* 24*/ { BARCODE_MSI_PLESSEY, 3, "2211", "221110" }, // Mod-11 check digit '10'
+        /* 25*/ { BARCODE_MSI_PLESSEY, 3 + 10, "2211", "2211" }, // Mod-11 check digit '10'
+        /* 26*/ { BARCODE_MSI_PLESSEY, 4, "2211", "2211100" },
+        /* 27*/ { BARCODE_MSI_PLESSEY, 4 + 10, "2211", "2211" },
+        /* 28*/ { BARCODE_PLESSEY, -1, "0123456789ABCDEF", "0123456789ABCDEF" },
     };
     int data_size = ARRAY_SIZE(data);
 
@@ -219,16 +243,22 @@ static void test_encode(int index, int generate, int debug) {
         /*  4*/ { BARCODE_MSI_PLESSEY, 4, "1234567890", 0, 1, 151, "",
                     "1101001001001101001001101001001001101101001101001001001101001101001101101001001101101101101001001001101001001101001001001001001001101101001001001101001"
                 },
-        /*  5*/ { BARCODE_MSI_PLESSEY, 3, "2211", 0, 1, 79, "Produces mod-11 '10' check digit; BWIPP (badmod11)",
+        /*  5*/ { BARCODE_MSI_PLESSEY, 5, "1234567890", 0, 1, 139, "",
+                    "1101001001001101001001101001001001101101001101001001001101001101001101101001001101101101101001001001101001001101001001001001001001001001001"
+                },
+        /*  6*/ { BARCODE_MSI_PLESSEY, 6, "1234567890", 0, 1, 151, "",
+                   "1101001001001101001001101001001001101101001101001001001101001101001101101001001101101101101001001001101001001101001001001001001001001001001101101101001"
+                },
+        /*  7*/ { BARCODE_MSI_PLESSEY, 3, "2211", 0, 1, 79, "Produces mod-11 '10' check digit; BWIPP (badmod11)",
                     "1101001001101001001001101001001001001101001001001101001001001101001001001001001"
                 },
-        /*  6*/ { BARCODE_MSI_PLESSEY, 4, "2211", 0, 1, 91, "BWIPP (badmod11)",
+        /*  8*/ { BARCODE_MSI_PLESSEY, 4, "2211", 0, 1, 91, "BWIPP (badmod11)",
                     "1101001001101001001001101001001001001101001001001101001001001101001001001001001001001001001"
                 },
-        /*  7*/ { BARCODE_PLESSEY, -1, "0123456789ABCDEF", 0, 1, 323, "",
+        /*  9*/ { BARCODE_PLESSEY, -1, "0123456789ABCDEF", 0, 1, 323, "",
                     "11101110100011101000100010001000111010001000100010001110100010001110111010001000100010001110100011101000111010001000111011101000111011101110100010001000100011101110100010001110100011101000111011101110100011101000100011101110111010001110111010001110111011101110111011101110111010001000111010001000100010001110001000101110111"
                 },
-        /*  8*/ { BARCODE_MSI_PLESSEY, 4, "999999999999999999", 0, 1, 247, "Max value; #209 check buffer not overrun",
+        /* 10*/ { BARCODE_MSI_PLESSEY, 4, "999999999999999999", 0, 1, 247, "Max value (previously); #209 check buffer not overrun",
                     "1101101001001101101001001101101001001101101001001101101001001101101001001101101001001101101001001101101001001101101001001101101001001101101001001101101001001101101001001101101001001101101001001101101001001101101001001101101001001001001001001101001"
                 },
     };

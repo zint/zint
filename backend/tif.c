@@ -32,6 +32,7 @@
  */
 /* vim: set ts=4 sw=4 et : */
 
+#include <errno.h>
 #include <stdio.h>
 #include <math.h>
 #include <assert.h>
@@ -333,14 +334,14 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     if (symbol->output_options & BARCODE_STDOUT) {
 #ifdef _MSC_VER
         if (-1 == _setmode(_fileno(stdout), _O_BINARY)) {
-            strcpy(symbol->errtxt, "671: Can't open output file");
+            sprintf(symbol->errtxt, "671: Can't open output file (%d: %.30s)", errno, strerror(errno));
             return ZINT_ERROR_FILE_ACCESS;
         }
 #endif
         tif_file = stdout;
     } else {
         if (!(tif_file = fopen(symbol->outfile, "wb+"))) {
-            strcpy(symbol->errtxt, "672: Can't open output file");
+            sprintf(symbol->errtxt, "672: Can't open output file (%d: %.30s)", errno, strerror(errno));
             return ZINT_ERROR_FILE_ACCESS;
         }
         compression = TIF_LZW;

@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009 - 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009 - 2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -74,7 +74,7 @@ INTERNAL int code_49(struct zint_symbol *symbol, unsigned char source[], int len
 
     codeword_count = 0;
     i = 0;
-    h = strlen(intermediate);
+    h = (int) strlen(intermediate);
     do {
         if ((intermediate[i] >= '0') && (intermediate[i] <= '9')) {
             /* Numeric data */
@@ -340,7 +340,7 @@ INTERNAL int code_49(struct zint_symbol *symbol, unsigned char source[], int len
         /* Expand into symbol */
         symbol->row_height[i] = 10;
 
-        for (j = 0, len = strlen(pattern); j < len; j++) {
+        for (j = 0, len = (int) strlen(pattern); j < len; j++) {
             if (pattern[j] == '1') {
                 set_module(symbol, i, j);
             }
@@ -348,7 +348,7 @@ INTERNAL int code_49(struct zint_symbol *symbol, unsigned char source[], int len
     }
 
     symbol->rows = rows;
-    symbol->width = strlen(pattern);
+    symbol->width = (int) strlen(pattern);
 
     symbol->output_options |= BARCODE_BIND;
 

@@ -62,11 +62,11 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags fl)
         "Codablock-F (and HIBC)",
         "Code 11",
         "Code 128 (ISO 15417) (and GS1-128 and HIBC)",
-        "Code 16k",
+        "Code 16k (ISO 12323)",
         "Code 2 of 5 Data Logic",
         "Code 2 of 5 IATA",
         "Code 2 of 5 Industrial",
-        "Code 2 of 5 Interleaved",
+        "Code 2 of 5 Interleaved (ISO 16390)",
         "Code 2 of 5 Standard (Matrix)",
         "Code 32 (Italian Pharmacode)",
         "Code 39 (ISO 16388) (and HIBC)",
@@ -488,11 +488,11 @@ void MainWindow::on_encoded()
 void MainWindow::filter_symbologies()
 {
     QString filter = filter_bstyle->text().simplified(); /* `simplified()` trims and reduces inner whitespace to a single space - nice! */
-    QListView *view = qobject_cast<QListView *>(bstyle->view());
+    QListView *lview = qobject_cast<QListView *>(bstyle->view());
     QStandardItemModel *model = qobject_cast<QStandardItemModel*>(bstyle->model());
     QStandardItem *item;
 
-    if (!view || !model) {
+    if (!lview || !model) {
         return;
     }
 
@@ -510,7 +510,7 @@ void MainWindow::filter_symbologies()
 
     if (filter_cnt) {
         for (int i = 0; i < cnt; i++) {
-            bool hidden = view->isRowHidden(i);
+            bool hidden = lview->isRowHidden(i);
             bool hide = true;
             for (int j = 0; j < filter_cnt; j++) {
                 if (bstyle->itemText(i).contains(filter_list[j], Qt::CaseInsensitive)) {
@@ -522,15 +522,15 @@ void MainWindow::filter_symbologies()
                 // https://stackoverflow.com/questions/25172220/how-to-hide-qcombobox-items-instead-of-clearing-them-out
                 item = model->item(i);
                 item->setFlags(hide ? item->flags() & ~Qt::ItemIsEnabled : item->flags() | Qt::ItemIsEnabled);
-                view->setRowHidden(i, hide);
+                lview->setRowHidden(i, hide);
             }
         }
     } else {
         for (int i = 0; i < cnt; i++) {
-            if (view->isRowHidden(i)) {
+            if (lview->isRowHidden(i)) {
                 item = model->item(i);
                 item->setFlags(item->flags() | Qt::ItemIsEnabled);
-                view->setRowHidden(i, false);
+                lview->setRowHidden(i, false);
             }
         }
     }
@@ -566,9 +566,9 @@ void MainWindow::copy_to_clipboard_svg()
         return;
     }
 
-    QMimeData *data = new QMimeData;
-    data->setImageData(QImage(filename));
-    clipboard->setMimeData(data, QClipboard::Clipboard);
+    QMimeData *mdata = new QMimeData;
+    mdata->setImageData(QImage(filename));
+    clipboard->setMimeData(mdata, QClipboard::Clipboard);
 
     QFile::remove(filename);
 
@@ -584,9 +584,9 @@ void MainWindow::copy_to_clipboard_bmp()
         return;
     }
 
-    QMimeData *data = new QMimeData;
-    data->setImageData(QImage(filename));
-    clipboard->setMimeData(data, QClipboard::Clipboard);
+    QMimeData *mdata = new QMimeData;
+    mdata->setImageData(QImage(filename));
+    clipboard->setMimeData(mdata, QClipboard::Clipboard);
 
     QFile::remove(filename);
 }
@@ -689,6 +689,8 @@ void MainWindow::change_options()
         file.close();
         tabMain->insertTab(1, m_optionWidget, tr("MSI Pless&ey"));
         connect(m_optionWidget->findChild<QObject*>("cmbMSICheck"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(m_optionWidget->findChild<QObject*>("cmbMSICheck"), SIGNAL(currentIndexChanged( int )), SLOT(msi_plessey_ui_set()));
+        connect(m_optionWidget->findChild<QObject*>("chkMSICheckText"), SIGNAL(clicked( bool )), SLOT(update_preview()));
 
     } else if (symbology == BARCODE_CODE11) {
         QFile file(":/grpC11.ui");
@@ -1064,6 +1066,16 @@ void MainWindow::maxi_primary()
     }
 }
 
+void MainWindow::msi_plessey_ui_set()
+{
+    if (metaObject()->enumerator(0).value(bstyle->currentIndex()) != BARCODE_MSI_PLESSEY)
+        return;
+    QCheckBox *checkBox = m_optionWidget ? m_optionWidget->findChild<QCheckBox*>("chkMSICheckText") : nullptr;
+    if (checkBox) {
+        checkBox->setEnabled(get_combobox_index("cmbMSICheck") > 0);
+    }
+}
+
 // Taken from https://stackoverflow.com/questions/38915001/disable-specific-items-in-qcombobox
 void MainWindow::combobox_item_enabled(QComboBox *comboBox, int index, bool enabled)
 {
@@ -1280,7 +1292,11 @@ void MainWindow::update_preview()
 
         case BARCODE_MSI_PLESSEY:
             m_bc.bc.setSymbol(BARCODE_MSI_PLESSEY);
-            m_bc.bc.setOption2(m_optionWidget->findChild<QComboBox*>("cmbMSICheck")->currentIndex());
+            item_val = get_combobox_index("cmbMSICheck");
+            if (item_val && m_optionWidget->findChild<QCheckBox*>("chkMSICheckText")->isChecked()) {
+                item_val += 10;
+            }
+            m_bc.bc.setOption2(item_val);
             break;
 
         case BARCODE_CODE11:
@@ -1614,7 +1630,7 @@ const char *MainWindow::get_setting_name(int symbology) {
         int define;
         int val;
     };
-    static const struct item data[] = {
+    static const struct item ndata[] = {
         { "", -1, 0 },
         { "code11", BARCODE_CODE11, 1 },
         { "c25standard", BARCODE_C25STANDARD, 2 },
@@ -1762,16 +1778,16 @@ const char *MainWindow::get_setting_name(int symbology) {
         { "ultra", BARCODE_ULTRA, 144 },
         { "rmqr", BARCODE_RMQR, 145 },
     };
-    static const int data_size = sizeof(data) / sizeof(struct item);
+    static const int data_size = sizeof(ndata) / sizeof(struct item);
 
     if (symbology < 0 || symbology >= data_size) {
         return "";
     }
-    if (data[symbology].val != symbology || (data[symbology].define != -1 && data[symbology].define != symbology)) { // Self-check
-        fprintf(stderr, "MainWindow::get_setting_name: data table out of sync (%d)\n", symbology);
+    if (ndata[symbology].val != symbology || (ndata[symbology].define != -1 && ndata[symbology].define != symbology)) { // Self-check
+        fprintf(stderr, "MainWindow::get_setting_name: ndata table out of sync (%d)\n", symbology);
         return "";
     }
-    return data[symbology].name;
+    return ndata[symbology].name;
 }
 
 /* Helper to return index of selected radio button in group, checking for NULL */
@@ -1948,6 +1964,7 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology) {
 
         case BARCODE_MSI_PLESSEY:
             settings.setValue("studio/bc/msi_plessey/check_digit", get_combobox_index("cmbMSICheck"));
+            settings.setValue("studio/bc/msi_plessey/check_text", get_checkbox_val("chkMSICheckText"));
             break;
 
         case BARCODE_CODE11:
@@ -2106,9 +2123,9 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology) {
 
     const char *name = get_setting_name(symbology);
     if (*name) {
-        const QString &data = settings.value(QString("studio/bc/%1/data").arg(name), "").toString();
-        if (!data.isEmpty()) {
-            txtData->setText(data);
+        const QString &tdata = settings.value(QString("studio/bc/%1/data").arg(name), "").toString();
+        if (!tdata.isEmpty()) {
+            txtData->setText(tdata);
         }
         if (!grpComposite->isHidden()) {
             const QString &composite_text = settings.value(QString("studio/bc/%1/composite_text").arg(name), "").toString();
@@ -2195,6 +2212,8 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology) {
 
         case BARCODE_MSI_PLESSEY:
             set_combobox_from_setting(settings, "studio/bc/msi_plessey/check_digit", "cmbMSICheck");
+            set_checkbox_from_setting(settings, "studio/bc/msi_plessey/check_text", "chkMSICheckText");
+            msi_plessey_ui_set();
             break;
 
         case BARCODE_CODE11:

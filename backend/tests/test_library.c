@@ -32,7 +32,6 @@
 #include "testcommon.h"
 #include <fcntl.h>
 #include <sys/stat.h>
-#include <errno.h>
 
 static void test_checks(int index, int debug) {
 
@@ -265,7 +264,7 @@ static void test_escape_char_process(int index, int generate, int debug) {
                 FILE *fp;
                 fp = fopen(input_filename, "wb");
                 assert_nonnull(fp, "i:%d fopen(%s) failed\n", i, input_filename);
-                assert_nonzero(fputs(data[i].data, fp), "i%d fputs(%s) failed\n", i, data[i].data);
+                assert_notequal(fputs(data[i].data, fp), EOF, "i%d fputs(%s) failed == EOF (%d)\n", i, data[i].data, ferror(fp));
                 assert_zero(fclose(fp), "i%d fclose() failed\n", i);
 
                 struct zint_symbol *symbol2 = ZBarcode_Create();
@@ -282,7 +281,7 @@ static void test_escape_char_process(int index, int generate, int debug) {
                 ret = testUtilSymbolCmp(symbol2, symbol);
                 assert_zero(ret, "i:%d testUtilSymbolCmp symbol2 ret %d != 0\n", i, ret);
 
-                assert_zero(remove(input_filename), "i:%d remove(%s) != 0 (%d)\n", i, input_filename, errno);
+                assert_zero(remove(input_filename), "i:%d remove(%s) != 0 (%d: %s)\n", i, input_filename, errno, strerror(errno));
 
                 ZBarcode_Delete(symbol2);
             }
@@ -334,6 +333,10 @@ static void test_encode_file_length(void) {
 
     testStart("");
 
+#ifdef _WIN32
+    testSkip("Test not compatible with Windows");
+    return;
+#else
     int ret;
     char filename[] = "in.bin";
     char buf[ZINT_MAX_DATA_LEN + 1] = {0};
@@ -346,41 +349,42 @@ static void test_encode_file_length(void) {
 
     // Empty file
     fd = creat(filename, S_IRUSR);
-    assert_nonzero(fd, "Empty input file not created\n");
-    assert_zero(close(fd), "Empty close(%s) != 0\n", filename);
+    assert_notequal(fd, -1, "Empty input file (%s) not created == -1 (%d: %s)\n", filename, errno, strerror(errno));
+    assert_zero(close(fd), "Empty close(%s) != 0 (%d: %s)\n", filename, errno, strerror(errno));
 
     ret = ZBarcode_Encode_File(symbol, filename);
     assert_equal(ret, ZINT_ERROR_INVALID_DATA, "ZBarcode_Encode_File empty ret %d != ZINT_ERROR_INVALID_DATA (%s)\n", ret, symbol->errtxt);
 
-    assert_zero(remove(filename), "remove(%s) != 0\n", filename);
+    assert_zero(remove(filename), "remove(%s) != 0 (%d: %s)\n", filename, errno, strerror(errno));
 
     // Too large file
     fd = creat(filename, S_IRUSR | S_IWUSR);
-    assert_nonzero(fd, "Too large input file not created\n");
+    assert_notequal(fd, -1, "Too large input file (%s) not created == -1 (%d: %s)\n", filename, errno, strerror(errno));
     ret = write(fd, buf, sizeof(buf));
     assert_equal(ret, sizeof(buf), "Too large write ret %d != %d\n", ret, (int) sizeof(buf));
-    assert_zero(close(fd), "Too large close(%s) != 0\n", filename);
+    assert_zero(close(fd), "Too large close(%s) != 0 (%d: %s)\n", filename, errno, strerror(errno));
 
     ret = ZBarcode_Encode_File(symbol, filename);
     assert_equal(ret, ZINT_ERROR_TOO_LONG, "ZBarcode_Encode_File too large ret %d != ZINT_ERROR_TOO_LONG (%s)\n", ret, symbol->errtxt);
 
-    assert_zero(remove(filename), "remove(%s) != 0\n", filename);
+    assert_zero(remove(filename), "remove(%s) != 0 (%d: %s)\n", filename, errno, strerror(errno));
 
     // Unreadable file
     fd = creat(filename, S_IWUSR);
-    assert_nonzero(fd, "Unreadable input file not created\n");
+    assert_notequal(fd, -1, "Unreadable input file (%s) not created == -1 (%d: %s)\n", filename, errno, strerror(errno));
     ret = write(fd, buf, 1);
     assert_equal(ret, 1, "Unreadable write ret %d != 1\n", ret);
-    assert_zero(close(fd), "Unreadable close(%s) != 0\n", filename);
+    assert_zero(close(fd), "Unreadable close(%s) != 0 (%d: %s)\n", filename, errno, strerror(errno));
 
     ret = ZBarcode_Encode_File(symbol, filename);
     assert_equal(ret, ZINT_ERROR_INVALID_DATA, "ZBarcode_Encode_File unreadable ret %d != ZINT_ERROR_INVALID_DATA (%s)\n", ret, symbol->errtxt);
 
-    assert_zero(remove(filename), "remove(%s) != 0\n", filename);
+    assert_zero(remove(filename), "remove(%s) != 0 (%d: %s)\n", filename, errno, strerror(errno));
 
     ZBarcode_Delete(symbol);
 
     testFinish();
+#endif /* _WIN32 */
 }
 
 // #181 Nico Gunkel OSS-Fuzz (buffer not freed on fread() error) Note: unable to reproduce fread() error using this method
@@ -394,13 +398,13 @@ static void test_encode_file_directory(void) {
     struct zint_symbol *symbol = ZBarcode_Create();
     assert_nonnull(symbol, "Symbol not created\n");
 
-    (void)rmdir(dirname); // In case junk hanging around
-    assert_zero(mkdir(dirname, 0700), "mkdir(%s, 0700) != 0\n", dirname);
+    (void)testutil_rmdir(dirname); // In case junk hanging around
+    assert_zero(testutil_mkdir(dirname, 0700), "testutil_mkdir(%s, 0700) != 0 (%d: %s)\n", dirname, errno, strerror(errno));
 
     ret = ZBarcode_Encode_File(symbol, dirname);
     assert_equal(ret, ZINT_ERROR_INVALID_DATA, "ret %d != ZINT_ERROR_INVALID_DATA (%s)\n", ret, symbol->errtxt);
 
-    assert_zero(rmdir(dirname), "rmdir(%s) != 0\n", dirname);
+    assert_zero(testutil_rmdir(dirname), "testutil_rmdir(%s) != 0 (%d: %s)\n", dirname, errno, strerror(errno));
 
     ZBarcode_Delete(symbol);
 

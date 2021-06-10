@@ -52,7 +52,7 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle);
 static struct zint_vector_rect *vector_plot_create_rect(float x, float y, float width, float height) {
     struct zint_vector_rect *rect;
 
-    rect = (struct zint_vector_rect*) malloc(sizeof (struct zint_vector_rect));
+    rect = (struct zint_vector_rect *) malloc(sizeof(struct zint_vector_rect));
     if (!rect) return NULL;
 
     rect->next = NULL;
@@ -79,7 +79,7 @@ static int vector_plot_add_rect(struct zint_symbol *symbol, struct zint_vector_r
 static struct zint_vector_hexagon *vector_plot_create_hexagon(float x, float y, float diameter) {
     struct zint_vector_hexagon *hexagon;
 
-    hexagon = (struct zint_vector_hexagon*) malloc(sizeof (struct zint_vector_hexagon));
+    hexagon = (struct zint_vector_hexagon *) malloc(sizeof(struct zint_vector_hexagon));
     if (!hexagon) return NULL;
     hexagon->next = NULL;
     hexagon->x = x;
@@ -104,7 +104,7 @@ static int vector_plot_add_hexagon(struct zint_symbol *symbol, struct zint_vecto
 static struct zint_vector_circle *vector_plot_create_circle(float x, float y, float diameter, int colour) {
     struct zint_vector_circle *circle;
 
-    circle = (struct zint_vector_circle *) malloc(sizeof (struct zint_vector_circle));
+    circle = (struct zint_vector_circle *) malloc(sizeof(struct zint_vector_circle));
     if (!circle) return NULL;
     circle->next = NULL;
     circle->x = x;
@@ -131,17 +131,17 @@ static int vector_plot_add_string(struct zint_symbol *symbol,
         struct zint_vector_string **last_string) {
     struct zint_vector_string *string;
 
-    string = (struct zint_vector_string*) malloc(sizeof (struct zint_vector_string));
+    string = (struct zint_vector_string *) malloc(sizeof(struct zint_vector_string));
     if (!string) return 0;
     string->next = NULL;
     string->x = x;
     string->y = y;
     string->width = width;
     string->fsize = fsize;
-    string->length = ustrlen(text);
+    string->length = (int) ustrlen(text);
     string->rotation = 0;
     string->halign = halign;
-    string->text = (unsigned char*) malloc(sizeof (unsigned char) * (ustrlen(text) + 1));
+    string->text = (unsigned char *) malloc(ustrlen(text) + 1);
     if (!string->text) { free(string); return 0; }
     ustrcpy(string->text, text);
 
@@ -433,7 +433,7 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
     }
 
     // Allocate memory
-    vector = symbol->vector = (struct zint_vector *) malloc(sizeof (struct zint_vector));
+    vector = symbol->vector = (struct zint_vector *) malloc(sizeof(struct zint_vector));
     if (!vector) return ZINT_ERROR_MEMORY;
     vector->rectangles = NULL;
     vector->hexagons = NULL;

@@ -29,9 +29,12 @@
 #include <zint.h>
 #else
 #include <malloc.h>
-#include "getopt.h"
+#include "../getopt/getopt.h"
 #include "zint.h"
+#if _MSC_VER >= 1900 /* MSVC 2015 */
+#pragma warning(disable: 4996) /* function or variable may be unsafe */
 #endif
+#endif /* _MSC_VER */
 
 /* It's assumed that int is at least 32 bits, the following will compile-time fail if not
  * https://stackoverflow.com/a/1980056/664741 */
@@ -330,6 +333,7 @@ static int get_barcode_name(const char *barcode_name) {
         { BARCODE_MAXICODE, "maxicode" },
         { BARCODE_MICROPDF417, "micropdf417" },
         { BARCODE_MICROQR, "microqr" },
+        { BARCODE_MSI_PLESSEY, "msi" }, /* Synonym */
         { BARCODE_MSI_PLESSEY, "msiplessey" },
         { BARCODE_NVE18, "nve18" },
         { BARCODE_PDF417, "pdf417" },

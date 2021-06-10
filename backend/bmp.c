@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009 - 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009 - 2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -31,6 +31,7 @@
  */
 /* vim: set ts=4 sw=4 et : */
 
+#include <errno.h>
 #include <stdio.h>
 #include "common.h"
 #include "bmp.h"        /* Bitmap header structure */
@@ -63,8 +64,8 @@ INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     }
     row_size = 4 * ((bits_per_pixel * symbol->bitmap_width + 31) / 32);
     data_size = symbol->bitmap_height * row_size;
-    data_offset = sizeof (bitmap_file_header_t) + sizeof (bitmap_info_header_t);
-    data_offset += (colour_count * (sizeof(color_ref_t)));
+    data_offset = sizeof(bitmap_file_header_t) + sizeof(bitmap_info_header_t);
+    data_offset += colour_count * sizeof(color_ref_t);
     file_size = data_offset + data_size;
 
     bitmap_file_start = (unsigned char *) malloc(file_size);
@@ -84,7 +85,7 @@ INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     bg_color_ref.green = (16 * ctoi(symbol->bgcolour[2])) + ctoi(symbol->bgcolour[3]);
     bg_color_ref.blue = (16 * ctoi(symbol->bgcolour[4])) + ctoi(symbol->bgcolour[5]);
     bg_color_ref.reserved = 0x00;
-    
+
     for (i = 0; i < 8; i++) {
         ultra_color_ref[i].red = colour_to_red(i + 1);
         ultra_color_ref[i].green = colour_to_green(i + 1);
@@ -143,7 +144,7 @@ INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     file_header.reserved = 0;
     file_header.data_offset = data_offset;
 
-    info_header.header_size = sizeof (bitmap_info_header_t);
+    info_header.header_size = sizeof(bitmap_info_header_t);
     info_header.width = symbol->bitmap_width;
     info_header.height = symbol->bitmap_height;
     info_header.colour_planes = 1;
@@ -154,12 +155,12 @@ INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     info_header.vert_res = 0;
     info_header.colours = colour_count;
     info_header.important_colours = colour_count;
-    
+
     bmp_posn = bitmap_file_start;
-    memcpy(bitmap_file_start, &file_header, sizeof (bitmap_file_header_t));
-    bmp_posn += sizeof (bitmap_file_header_t);
-    memcpy(bmp_posn, &info_header, sizeof (bitmap_info_header_t));
-    
+    memcpy(bitmap_file_start, &file_header, sizeof(bitmap_file_header_t));
+    bmp_posn += sizeof(bitmap_file_header_t);
+    memcpy(bmp_posn, &info_header, sizeof(bitmap_info_header_t));
+
     bmp_posn += sizeof(bitmap_info_header_t);
     memcpy(bmp_posn, &bg_color_ref, sizeof(color_ref_t));
     if (symbol->symbology == BARCODE_ULTRA) {
@@ -167,7 +168,7 @@ INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
             bmp_posn += sizeof(color_ref_t);
             memcpy(bmp_posn, &ultra_color_ref[i], sizeof(color_ref_t));
         }
-    } else {       
+    } else {
         bmp_posn += sizeof(color_ref_t);
         memcpy(bmp_posn, &fg_color_ref, sizeof(color_ref_t));
     }
@@ -176,7 +177,7 @@ INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     if ((symbol->output_options & BARCODE_STDOUT) != 0) {
 #ifdef _MSC_VER
         if (-1 == _setmode(_fileno(stdout), _O_BINARY)) {
-            strcpy(symbol->errtxt, "600: Can't open output file");
+            sprintf(symbol->errtxt, "600: Can't open output file (%d: %.30s)", errno, strerror(errno));
             free(bitmap_file_start);
             return ZINT_ERROR_FILE_ACCESS;
         }
@@ -185,7 +186,7 @@ INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     } else {
         if (!(bmp_file = fopen(symbol->outfile, "wb"))) {
             free(bitmap_file_start);
-            strcpy(symbol->errtxt, "601: Can't open output file");
+            sprintf(symbol->errtxt, "601: Can't open output file (%d: %.30s)", errno, strerror(errno));
             return ZINT_ERROR_FILE_ACCESS;
         }
     }

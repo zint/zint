@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -31,6 +31,7 @@
  */
 /* vim: set ts=4 sw=4 et : */
 
+#include <errno.h>
 #include <locale.h>
 #include <stdio.h>
 #include <math.h>
@@ -43,7 +44,7 @@ static void colour_to_pscolor(int option, int colour, char* output) {
     strcpy(output, "");
     if ((option & CMYK_COLOUR) == 0) {
         // Use RGB colour space
-        switch(colour) {
+        switch (colour) {
             case 1: // Cyan
                 strcat(output, "0.00 1.00 1.00");
                 break;
@@ -72,7 +73,7 @@ static void colour_to_pscolor(int option, int colour, char* output) {
         strcat(output, " setrgbcolor");
     } else {
         // Use CMYK colour space
-        switch(colour) {
+        switch (colour) {
             case 1: // Cyan
                 strcat(output, "1.00 0.00 0.00 0.00");
                 break;
@@ -169,7 +170,7 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
         feps = fopen(symbol->outfile, "w");
     }
     if (feps == NULL) {
-        strcpy(symbol->errtxt, "645: Could not open output file");
+        sprintf(symbol->errtxt, "645: Could not open output file (%d: %.30s)", errno, strerror(errno));
         return ZINT_ERROR_FILE_ACCESS;
     }
 
@@ -260,13 +261,15 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
     /* Start writing the header */
     fprintf(feps, "%%!PS-Adobe-3.0 EPSF-3.0\n");
     if (ZINT_VERSION_BUILD) {
-        fprintf(feps, "%%%%Creator: Zint %d.%d.%d.%d\n", ZINT_VERSION_MAJOR, ZINT_VERSION_MINOR, ZINT_VERSION_RELEASE, ZINT_VERSION_BUILD);
+        fprintf(feps, "%%%%Creator: Zint %d.%d.%d.%d\n",
+                ZINT_VERSION_MAJOR, ZINT_VERSION_MINOR, ZINT_VERSION_RELEASE, ZINT_VERSION_BUILD);
     } else {
         fprintf(feps, "%%%%Creator: Zint %d.%d.%d\n", ZINT_VERSION_MAJOR, ZINT_VERSION_MINOR, ZINT_VERSION_RELEASE);
     }
     fprintf(feps, "%%%%Title: Zint Generated Symbol\n");
     fprintf(feps, "%%%%Pages: 0\n");
-    fprintf(feps, "%%%%BoundingBox: 0 0 %d %d\n", (int) ceil(symbol->vector->width), (int) ceil(symbol->vector->height));
+    fprintf(feps, "%%%%BoundingBox: 0 0 %d %d\n",
+            (int) ceil(symbol->vector->width), (int) ceil(symbol->vector->height));
     fprintf(feps, "%%%%EndComments\n");
 
     /* Definitions */
@@ -314,7 +317,8 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
                         fprintf(feps, "%s\n", ps_color);
                     }
                     colour_rect_counter++;
-                    fprintf(feps, "%.2f %.2f TB %.2f %.2f TR\n", rect->height, (symbol->vector->height - rect->y) - rect->height, rect->x, rect->width);
+                    fprintf(feps, "%.2f %.2f TB %.2f %.2f TR\n",
+                            rect->height, (symbol->vector->height - rect->y) - rect->height, rect->x, rect->width);
                     fprintf(feps, "TE\n");
                 }
                 rect = rect->next;
@@ -323,7 +327,8 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
     } else {
         rect = symbol->vector->rectangles;
         while (rect) {
-            fprintf(feps, "%.2f %.2f TB %.2f %.2f TR\n", rect->height, (symbol->vector->height - rect->y) - rect->height, rect->x, rect->width);
+            fprintf(feps, "%.2f %.2f TB %.2f %.2f TR\n",
+                    rect->height, (symbol->vector->height - rect->y) - rect->height, rect->x, rect->width);
             fprintf(feps, "TE\n");
             rect = rect->next;
         }
@@ -366,7 +371,8 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
             ex = hex->x + half_radius;
             fx = hex->x - half_radius;
         }
-        fprintf(feps, "%.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f TH\n", ax, ay, bx, by, cx, cy, dx, dy, ex, ey, fx, fy);
+        fprintf(feps, "%.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f TH\n",
+                ax, ay, bx, by, cx, cy, dx, dy, ex, ey, fx, fy);
         hex = hex->next;
     }
 
@@ -383,7 +389,8 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
             if ((symbol->output_options & CMYK_COLOUR) == 0) {
                 fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_paper, green_paper, blue_paper);
             } else {
-                fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n", cyan_paper, magenta_paper, yellow_paper, black_paper);
+                fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n",
+                        cyan_paper, magenta_paper, yellow_paper, black_paper);
             }
             fprintf(feps, "%.2f %.2f %.2f TD\n", circle->x, (symbol->vector->height - circle->y), radius);
             if (circle->next) {
@@ -405,12 +412,14 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
     string = symbol->vector->strings;
 
     if (string) {
-        if ((symbol->output_options & BOLD_TEXT) && (!is_extendable(symbol->symbology) || (symbol->output_options & SMALL_TEXT))) {
+        if ((symbol->output_options & BOLD_TEXT)
+                && (!is_extendable(symbol->symbology) || (symbol->output_options & SMALL_TEXT))) {
             font = "Helvetica-Bold";
         } else {
             font = "Helvetica";
         }
-        if (iso_latin1) { /* Change encoding to ISO 8859-1, see Postscript Language Reference Manual 2nd Edition Example 5.6 */
+        if (iso_latin1) {
+            /* Change encoding to ISO 8859-1, see Postscript Language Reference Manual 2nd Edition Example 5.6 */
             fprintf(feps, "/%s findfont\n", font);
             fprintf(feps, "dup length dict begin\n");
             fprintf(feps, "{1 index /FID ne {def} {pop pop} ifelse} forall\n");
@@ -425,7 +434,8 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
             fprintf(feps, "matrix currentmatrix\n");
             fprintf(feps, "/%s findfont\n", font);
             fprintf(feps, "%.2f scalefont setfont\n", string->fsize);
-            fprintf(feps, " 0 0 moveto %.2f %.2f translate 0.00 rotate 0 0 moveto\n", string->x, (symbol->vector->height - string->y));
+            fprintf(feps, " 0 0 moveto %.2f %.2f translate 0.00 rotate 0 0 moveto\n",
+                    string->x, (symbol->vector->height - string->y));
             if (string->halign == 0 || string->halign == 2) { /* Need width for middle or right align */
                 fprintf(feps, " (%s) stringwidth\n", ps_string);
             }

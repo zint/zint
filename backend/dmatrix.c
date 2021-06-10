@@ -44,10 +44,6 @@
 #include <math.h>
 #ifdef _MSC_VER
 #include <malloc.h>
-/* ceilf (C99) not before MSVC++2013 (C++ 12.0) */
-#if _MSC_VER < 1800
-#define ceilf (float) ceil
-#endif
 #endif
 #include "common.h"
 #include "reedsol.h"
@@ -419,12 +415,12 @@ static int look_ahead_test(const unsigned char inputData[], const int sourcelen,
 
     /* At the end of data ... step (k) */
     /* step (k)(1) */
-    ascii_rnded = (int) ceilf(ascii_count);
-    b256_rnded = (int) ceilf(b256_count);
-    edf_rnded = (int) ceilf(edf_count);
-    text_rnded = (int) ceilf(text_count);
-    x12_rnded = (int) ceilf(x12_count);
-    c40_rnded = (int) ceilf(c40_count);
+    ascii_rnded = (int) ceilf(stripf(ascii_count));
+    b256_rnded = (int) ceilf(stripf(b256_count));
+    edf_rnded = (int) ceilf(stripf(edf_count));
+    text_rnded = (int) ceilf(stripf(text_count));
+    x12_rnded = (int) ceilf(stripf(x12_count));
+    c40_rnded = (int) ceilf(stripf(c40_count));
 
     if (ascii_rnded <= b256_rnded && ascii_rnded <= edf_rnded && ascii_rnded <= text_rnded && ascii_rnded <= x12_rnded
             && ascii_rnded <= c40_rnded) {

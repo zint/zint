@@ -29,18 +29,80 @@
  */
 /* vim: set ts=4 sw=4 et : */
 
-#include <errno.h>
 #include "testcommon.h"
+
+#ifdef _WIN32
+/* Hacks to stop popen() mangling input on Windows */
+static int utf8_to_wchar(const char *str, wchar_t *out) {
+    unsigned int codepoint, state = 0;
+
+    while (*str) {
+        do {
+            decode_utf8(&state, &codepoint, *str++);
+        } while (*str && state != 0 && state != 12);
+        if (state != 0) {
+            fprintf(stderr, "utf8_to_wchar: warning: invalid UTF-8\n");
+            return 0;
+        }
+        *out++ = codepoint;
+    }
+    *out = L'\0';
+
+    return 1;
+}
+
+static int escape_cmd(const char *str, char *buf) {
+    int ret = 0;
+    char *out = buf;
+    const unsigned char *ustr;
+
+    for (ustr = (const unsigned char *) str; *ustr; ustr++) {
+        if (*ustr >= 0x80 || *ustr < 0x20 || *ustr == '\\') {
+            sprintf(out, "\\x%02X", *ustr);
+            out += 4;
+            ret = 1;
+        } else {
+            *out++ = *ustr;
+        }
+    }
+    *out = '\0';
+    if (ret) {
+        if (out - buf > 5 && strcmp(out - 5, " 2>&1") == 0) {
+            strcpy(out - 5, " --esc 2>&1");
+        } else {
+            strcpy(out, " --esc");
+        }
+    }
+
+    return ret;
+}
+#endif
 
 static char *exec(const char *cmd, char *buf, int buf_size, int debug, int index) {
     FILE *fp;
     int cnt;
+#ifdef _WIN32
+    wchar_t wchar_cmd[8192];
+    char esc_cmd[16384];
+    int is_binary = strstr(cmd, " --binary") != NULL;
+    int is_escaped = strstr(cmd, " --esc") != NULL;
+#endif
 
     if (debug & ZINT_DEBUG_TEST_PRINT) printf("%d: %s\n", index, cmd);
 
     *buf = '\0';
 
-    fp = popen(cmd, "r");
+#ifdef _WIN32
+    if (!is_binary && utf8_to_wchar(cmd, wchar_cmd)) {
+        fp = _wpopen(wchar_cmd, L"r");
+    } else if (!is_escaped && is_binary && escape_cmd(cmd, esc_cmd)) {
+        fp = testutil_popen(esc_cmd, "r");
+    } else {
+        fp = testutil_popen(cmd, "r");
+    }
+#else
+    fp = testutil_popen(cmd, "r");
+#endif
     if (!fp) {
         fprintf(stderr, "exec: failed to run '%s'\n", cmd);
         return NULL;
@@ -48,10 +110,10 @@ static char *exec(const char *cmd, char *buf, int buf_size, int debug, int index
     cnt = fread(buf, 1, buf_size, fp);
     if (fgetc(fp) != EOF) {
         fprintf(stderr, "exec: failed to read full stream (%s)\n", cmd);
-        pclose(fp);
+        testutil_pclose(fp);
         return NULL;
     }
-    pclose(fp);
+    testutil_pclose(fp);
 
     if (cnt) {
         if (buf[cnt - 1] == '\r' || buf[cnt - 1] == '\n') {
@@ -85,7 +147,7 @@ static void arg_double(char *cmd, const char *opt, double val) {
 
 static void arg_data(char *cmd, const char *opt, const char *data) {
     if (data != NULL) {
-        sprintf(cmd + (int) strlen(cmd), "%s%s'%s'", strlen(cmd) ? " " : "", opt, data);
+        sprintf(cmd + (int) strlen(cmd), "%s%s\"%s\"", strlen(cmd) ? " " : "", opt, data);
     }
 }
 
@@ -107,7 +169,7 @@ static int arg_input(char *cmd, const char *filename, const char *input) {
             }
             fclose(fp);
         }
-        sprintf(cmd + (int) strlen(cmd), "%s-i '%s'", strlen(cmd) ? " " : "", filename);
+        sprintf(cmd + (int) strlen(cmd), "%s-i \"%s\"", strlen(cmd) ? " " : "", filename);
         return 1;
     }
     return 0;
@@ -277,10 +339,10 @@ static void test_dump_args(int index, int debug) {
         assert_zero(strcmp(buf, data[i].expected), "i:%d buf (%s) != expected (%s) (%s)\n", i, buf, data[i].expected, cmd);
 
         if (have_input1) {
-            assert_zero(remove(input1_filename), "i:%d remove(%s) != 0 (%d)\n", i, input1_filename, errno);
+            assert_zero(remove(input1_filename), "i:%d remove(%s) != 0 (%d: %s)\n", i, input1_filename, errno, strerror(errno));
         }
         if (have_input2) {
-            assert_zero(remove(input2_filename), "i:%d remove(%s) != 0\n", i, input2_filename);
+            assert_zero(remove(input2_filename), "i:%d remove(%s) != 0 (%d: %s)\n", i, input2_filename, errno, strerror(errno));
         }
     }
 
@@ -290,6 +352,12 @@ static void test_dump_args(int index, int debug) {
 static void test_input(int index, int debug) {
 
     testStart("");
+
+#ifdef _WIN32
+#define TEST_INPUT_LONG "test_678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234"
+#else
+#define TEST_INPUT_LONG "test_67890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"
+#endif
 
     struct item {
         int b;
@@ -305,19 +373,19 @@ static void test_input(int index, int debug) {
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /*  0*/ { BARCODE_CODE128, 1, -1, 0, NULL, "123\n456\n", "test_batch~.png", 2, "test_batch1.png\000test_batch2.png" },
-        /*  1*/ { BARCODE_CODE128, 1, -1, 1, NULL, "123\n456\n7890123456789\n", NULL, 3, "123.png\000456.png\0007890123456789.png" },
+        /*  0*/ { BARCODE_CODE128, 1, -1, 0, "gif", "123\n456\n", "test_batch~.gif", 2, "test_batch1.gif\000test_batch2.gif" },
+        /*  1*/ { BARCODE_CODE128, 1, -1, 1, "gif", "123\n456\n7890123456789\n", NULL, 3, "123.gif\000456.gif\0007890123456789.gif" },
         /*  2*/ { BARCODE_CODE128, 1, -1, 1, "svg", "123\n456\n7890123456789\n", NULL, 3, "123.svg\000456.svg\0007890123456789.svg" },
-        /*  3*/ { BARCODE_CODE128, 1, -1, 1, NULL, "123\n456\n7890123456789\nA\\xA0B\n", NULL, 4, "123.png\000456.png\0007890123456789.png\000A_xA0B.png" },
-        /*  4*/ { BARCODE_CODE128, 1, ESCAPE_MODE, 1, NULL, "123\n456\n7890123456789\nA\\xA0B\n", NULL, 4, "123.png\000456.png\0007890123456789.png\000A_B.png" },
-        /*  5*/ { BARCODE_CODE128, 1, -1, 1, NULL, "123\n456\n7890123456789\nA\\u00A0B\n", NULL, 4, "123.png\000456.png\0007890123456789.png\000A_u00A0B.png" },
-        /*  6*/ { BARCODE_CODE128, 1, ESCAPE_MODE, 1, NULL, "123\n456\n7890123456789\nA\\u00A0B\n", NULL, 4, "123.png\000456.png\0007890123456789.png\000A_B.png" },
-        /*  7*/ { BARCODE_CODE128, 1, -1, 0, NULL, "\n", "test_batch.png", 0, NULL },
-        /*  8*/ { BARCODE_CODE128, 1, -1, 0, NULL, "123\n456\n", "test_67890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890~.png", 2, "test_678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901.png\000test_678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678902.png" },
-        /*  9*/ { BARCODE_CODE128, 0, -1, 0, "svg", "123", "test_678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901.png", 1, "test_678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901.svg" },
-        /* 10*/ { BARCODE_CODE128, 1, -1, 0, "svg", "123\n", "test_678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901.png", 1, "test_678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901.svg" },
-        /* 11*/ { BARCODE_CODE128, 1, -1, 0, NULL, "123\n", "test_batch.jpeg", 1, "test_batch.jpeg.png" },
-        /* 12*/ { BARCODE_CODE128, 1, -1, 0, NULL, "123\n", "test_batch.jpg", 1, "test_batch.png" },
+        /*  3*/ { BARCODE_CODE128, 1, -1, 1, "gif", "123\n456\n7890123456789\nA\\xA0B\n", NULL, 4, "123.gif\000456.gif\0007890123456789.gif\000A_xA0B.gif" },
+        /*  4*/ { BARCODE_CODE128, 1, ESCAPE_MODE, 1, "gif", "123\n456\n7890123456789\nA\\xA0B\n", NULL, 4, "123.gif\000456.gif\0007890123456789.gif\000A_B.gif" },
+        /*  5*/ { BARCODE_CODE128, 1, -1, 1, "gif", "123\n456\n7890123456789\nA\\u00A0B\n", NULL, 4, "123.gif\000456.gif\0007890123456789.gif\000A_u00A0B.gif" },
+        /*  6*/ { BARCODE_CODE128, 1, ESCAPE_MODE, 1, "gif", "123\n456\n7890123456789\nA\\u00A0B\n", NULL, 4, "123.gif\000456.gif\0007890123456789.gif\000A_B.gif" },
+        /*  7*/ { BARCODE_CODE128, 1, -1, 0, "gif", "\n", "test_batch.gif", 0, NULL },
+        /*  8*/ { BARCODE_CODE128, 1, -1, 0, "gif", "123\n456\n", TEST_INPUT_LONG "~.gif", 2, TEST_INPUT_LONG "1.gif\000" TEST_INPUT_LONG "2.gif" },
+        /*  9*/ { BARCODE_CODE128, 0, -1, 0, "svg", "123", TEST_INPUT_LONG "1.gif", 1, TEST_INPUT_LONG "1.svg" },
+        /* 10*/ { BARCODE_CODE128, 1, -1, 0, "svg", "123\n", TEST_INPUT_LONG "1.gif", 1, TEST_INPUT_LONG "1.svg" },
+        /* 11*/ { BARCODE_CODE128, 1, -1, 0, "gif", "123\n", "test_batch.jpeg", 1, "test_batch.jpeg.gif" },
+        /* 12*/ { BARCODE_CODE128, 1, -1, 0, "gif", "123\n", "test_batch.jpg", 1, "test_batch.gif" },
         /* 13*/ { BARCODE_CODE128, 1, -1, 0, "emf", "123\n", "test_batch.jpeg", 1, "test_batch.jpeg.emf" },
         /* 14*/ { BARCODE_CODE128, 1, -1, 0, "emf", "123\n", "test_batch.jpg", 1, "test_batch.emf" },
         /* 15*/ { BARCODE_CODE128, 1, -1, 0, "eps", "123\n", "test_batch.ps", 1, "test_batch.eps" },
@@ -353,11 +421,11 @@ static void test_input(int index, int debug) {
         outfile = data[i].expected;
         for (int j = 0; j < data[i].num_expected; j++) {
             assert_nonzero(testUtilExists(outfile), "i:%d j:%d testUtilExists(%s) != 1\n", i, j, outfile);
-            assert_zero(remove(outfile), "i:%d j:%d remove(%s) != 0 (%d)\n", i, j, outfile, errno);
+            assert_zero(remove(outfile), "i:%d j:%d remove(%s) != 0 (%d: %s)\n", i, j, outfile, errno, strerror(errno));
             outfile += strlen(outfile) + 1;
         }
 
-        assert_zero(remove(input_filename), "i:%d remove(%s) != 0 (%d)\n", i, input_filename, errno);
+        assert_zero(remove(input_filename), "i:%d remove(%s) != 0 (%d: %s)\n", i, input_filename, errno, strerror(errno));
     }
 
     testFinish();
@@ -375,7 +443,7 @@ static void test_stdin_input(int index, int debug) {
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /*  0*/ { BARCODE_CODE128, "123", "-", "test_stdin_input.png" },
+        /*  0*/ { BARCODE_CODE128, "123", "-", "test_stdin_input.gif" },
     };
     int data_size = ARRAY_SIZE(data);
 
@@ -400,7 +468,7 @@ static void test_stdin_input(int index, int debug) {
         assert_nonnull(exec(cmd, buf, sizeof(buf) - 1, debug, i), "i:%d exec(%s) NULL\n", i, cmd);
 
         assert_nonzero(testUtilExists(data[i].outfile), "i:%d testUtilExists(%s) != 1\n", i, data[i].outfile);
-        assert_zero(remove(data[i].outfile), "i:%d remove(%s) != 0 (%d)\n", i, data[i].outfile, errno);
+        assert_zero(remove(data[i].outfile), "i:%d remove(%s) != 0 (%d: %s)\n", i, data[i].outfile, errno, strerror(errno));
     }
 
     testFinish();
@@ -455,10 +523,10 @@ static void test_batch_input(int index, int debug) {
         assert_zero(strcmp(buf, data[i].expected), "i:%d buf (%s) != expected (%s)\n", i, buf, data[i].expected);
 
         if (have_input1) {
-            assert_zero(remove(input1_filename), "i:%d remove(%s) != 0 (%d)\n", i, input1_filename, errno);
+            assert_zero(remove(input1_filename), "i:%d remove(%s) != 0 (%d: %s)\n", i, input1_filename, errno, strerror(errno));
         }
         if (have_input2) {
-            assert_zero(remove(input2_filename), "i:%d remove(%s) != 0\n", i, input2_filename);
+            assert_zero(remove(input2_filename), "i:%d remove(%s) != 0 (%d: %s)\n", i, input2_filename, errno, strerror(errno));
         }
     }
 
@@ -468,6 +536,11 @@ static void test_batch_input(int index, int debug) {
 static void test_batch_large(int index, int debug) {
 
     testStart("");
+
+#ifdef _WIN32
+    testSkip("Test not compatible with Windows");
+    return;
+#endif
 
     struct item {
         int b;
@@ -479,8 +552,8 @@ static void test_batch_large(int index, int debug) {
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /*  0*/ { BARCODE_HANXIN, 0, "1", 7827, "out.png" },
-        /*  1*/ { BARCODE_HANXIN, 1, "1", 7827, "11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111.png" },
+        /*  0*/ { BARCODE_HANXIN, 0, "1", 7827, "out.gif" },
+        /*  1*/ { BARCODE_HANXIN, 1, "1", 7827, "11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111.gif" },
         /*  2*/ { BARCODE_HANXIN, 0, "1", 7828, NULL },
     };
     int data_size = ARRAY_SIZE(data);
@@ -497,7 +570,7 @@ static void test_batch_large(int index, int debug) {
         if (index != -1 && i != index) continue;
         if ((debug & ZINT_DEBUG_TEST_PRINT) && !(debug & ZINT_DEBUG_TEST_LESS_NOISY)) printf("i:%d\n", i);
 
-        strcpy(cmd, "zint --batch");
+        strcpy(cmd, "zint --batch --filetype=gif");
         if (debug & ZINT_DEBUG_PRINT) {
             strcat(cmd, " --verbose");
         }
@@ -511,13 +584,13 @@ static void test_batch_large(int index, int debug) {
 
         assert_nonnull(exec(cmd, buf, sizeof(buf) - 1, debug, i), "i:%d exec(%s) NULL\n", i, cmd);
         if (data[i].expected) {
-            assert_zero(remove(data[i].expected), "i:%d remove(%s) != 0 (%d)\n", i, data[i].expected, errno);
+            assert_zero(remove(data[i].expected), "i:%d remove(%s) != 0 (%d: %s)\n", i, data[i].expected, errno, strerror(errno));
         } else {
-            assert_zero(testUtilExists("out.png"), "i:%d testUtilExists(out.png) != 0 (%d)\n", i, errno);
+            assert_zero(testUtilExists("out.gif"), "i:%d testUtilExists(out.gif) != 0 (%d: %s) (%s)\n", i, errno, strerror(errno), cmd);
         }
 
         if (have_input) {
-            assert_zero(remove(input_filename), "i:%d remove(%s) != 0 (%d)\n", i, input_filename, errno);
+            assert_zero(remove(input_filename), "i:%d remove(%s) != 0 (%d: %s)\n", i, input_filename, errno, strerror(errno));
         }
     }
 
@@ -573,7 +646,7 @@ static void test_checks(int index, int debug) {
         /* 18*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -2, -1,   -1, -1, -1, -1,   -1,   -1, "Error 132: Invalid rows value" },
         /* 19*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, 45, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 112: Number of rows out of range" },
         /* 20*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1, -2,   -1, -1, -1, -1,   -1,   -1, "Warning 105: Invalid scale value" },
-        /* 21*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1, 0.49, -1, -1, -1, -1,   -1,   -1, "Warning 146: Scaling less than 0.5 will be set to 0.5 for 'png' output" },
+        /* 21*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1, 0.49, -1, -1, -1, -1,   -1,   -1, "Warning 146: Scaling less than 0.5 will be set to 0.5 for 'gif' output" },
         /* 22*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1, -1,   -2, -1, -1, -1,   -1,   -1, "Error 149: Invalid Structured Carrier Message version value" },
         /* 23*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1, -1,  100, -1, -1, -1,   -1,   -1, "Warning 150: Invalid version (vv) for Structured Carrier Message, ignoring" },
         /* 24*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1, -1,   -1, -2, -1, -1,   -1,   -1, "Error 134: Invalid ECC value" },
@@ -591,13 +664,13 @@ static void test_checks(int index, int debug) {
 
     char cmd[4096];
     char buf[4096];
-    char *outfilename = "out.png";
+    char *outfilename = "out.gif";
 
     for (int i = 0; i < data_size; i++) {
 
         if (index != -1 && i != index) continue;
 
-        strcpy(cmd, "zint -d '1'");
+        strcpy(cmd, "zint -d 1 --filetype=gif");
         if (debug & ZINT_DEBUG_PRINT) {
             strcat(cmd, " --verbose");
         }
@@ -627,7 +700,7 @@ static void test_checks(int index, int debug) {
         assert_zero(strcmp(buf, data[i].expected), "i:%d buf (%s) != expected (%s)\n", i, buf, data[i].expected);
 
         if (strncmp(data[i].expected, "Warning", 7) == 0) {
-            assert_zero(remove(outfilename), "i:%d remove(%s) != 0 (%d)\n", i, outfilename, errno);
+            assert_zero(remove(outfilename), "i:%d remove(%s) != 0 (%d: %s)\n", i, outfilename, errno, strerror(errno));
         }
     }
 
@@ -684,101 +757,102 @@ static void test_barcode_symbology(int index, int debug) {
         /* 34*/ { "upce", "1", NULL, 0, "symbology: 37," },
         /* 35*/ { "upce chk", "12345670", NULL, 0, "symbology: 38," },
         /* 36*/ { "POSTNET ", "12345678901", NULL, 0, "symbology: 40," },
-        /* 37*/ { "MSI Plessey ", "1", NULL, 0, "symbology: 47," },
-        /* 38*/ { "fim ", "A", NULL, 0, "symbology: 49," },
-        /* 39*/ { "LOGMARS", "123456", NULL, 0, "symbology: 50," },
-        /* 40*/ { " pharma", "123456", NULL, 0, "symbology: 51," },
-        /* 41*/ { " pzn ", "1", NULL, 0, "symbology: 52," },
-        /* 42*/ { "pharma two", "4", NULL, 0, "symbology: 53," },
-        /* 43*/ { "BARCODE_PDF417", "1", NULL, 0, "symbology: 55," },
-        /* 44*/ { "barcodepdf417comp", "1", NULL, 0, "symbology: 56," },
-        /* 45*/ { "MaxiCode", "1", NULL, 0, "symbology: 57," },
-        /* 46*/ { "QR CODE", "1", NULL, 0, "symbology: 58," },
-        /* 47*/ { "qr", "1", NULL, 0, "symbology: 58," }, // Synonym
-        /* 48*/ { "Code 128 B", "1", NULL, 0, "symbology: 60," },
-        /* 49*/ { "AUS POST", "12345678901234567890123", NULL, 0, "symbology: 63," },
-        /* 50*/ { "AusReply", "12345678", NULL, 0, "symbology: 66," },
-        /* 51*/ { "AUSROUTE", "12345678", NULL, 0, "symbology: 67," },
-        /* 52*/ { "AUS REDIRECT", "12345678", NULL, 0, "symbology: 68," },
-        /* 53*/ { "isbnx", "123456789", NULL, 0, "symbology: 69," },
-        /* 54*/ { "rm4scc", "1", NULL, 0, "symbology: 70," },
-        /* 55*/ { "DataMatrix", "1", NULL, 0, "symbology: 71," },
-        /* 56*/ { "EAN14", "1", NULL, 0, "symbology: 72," },
-        /* 57*/ { "vin", "12345678701234567", NULL, 0, "symbology: 73," },
-        /* 58*/ { "CodaBlock-F", "1", NULL, 0, "symbology: 74," },
-        /* 59*/ { "NVE18", "1", NULL, 0, "symbology: 75," },
-        /* 60*/ { "Japan Post", "1", NULL, 0, "symbology: 76," },
-        /* 61*/ { "Korea Post", "1", NULL, 0, "symbology: 77," },
-        /* 62*/ { "DBar Stk", "1", NULL, 0, "symbology: 79," },
-        /* 63*/ { "DBar Omn Stk", "1", NULL, 0, "symbology: 80," },
-        /* 64*/ { "DBar Exp Stk", "[20]01", NULL, 0, "symbology: 81," },
-        /* 65*/ { "planet", "12345678901", NULL, 0, "symbology: 82," },
-        /* 66*/ { "MicroPDF417", "1", NULL, 0, "symbology: 84," },
-        /* 67*/ { "USPS IMail", "12345678901234567890", NULL, 0, "symbology: 85," },
-        /* 68*/ { "plessey", "1", NULL, 0, "symbology: 86," },
-        /* 69*/ { "telepen num", "1", NULL, 0, "symbology: 87," },
-        /* 70*/ { "ITF14", "1", NULL, 0, "symbology: 89," },
-        /* 71*/ { "KIX", "1", NULL, 0, "symbology: 90," },
-        /* 72*/ { "Aztec", "1", NULL, 0, "symbology: 92," },
-        /* 73*/ { "daft", "D", NULL, 0, "symbology: 93," },
-        /* 74*/ { "DPD", "0123456789012345678901234567", NULL, 0, "symbology: 96," },
-        /* 75*/ { "Micro QR", "1", NULL, 0, "symbology: 97," },
-        /* 76*/ { "hibc128", "1", NULL, 0, "symbology: 98," },
-        /* 77*/ { "hibccode128", "1", NULL, 0, "symbology: 98," }, // Synonym
-        /* 78*/ { "hibc39", "1", NULL, 0, "symbology: 99," },
-        /* 79*/ { "hibccode39", "1", NULL, 0, "symbology: 99," }, // Synonym
-        /* 80*/ { "hibcdatamatrix", "1", NULL, 0, "symbology: 102," }, // Synonym
-        /* 81*/ { "hibcdm", "1", NULL, 0, "symbology: 102," },
-        /* 82*/ { "HIBC qr", "1", NULL, 0, "symbology: 104," },
-        /* 83*/ { "HIBC QR Code", "1", NULL, 0, "symbology: 104," }, // Synonym
-        /* 84*/ { "HIBCPDF", "1", NULL, 0, "symbology: 106," },
-        /* 85*/ { "HIBCPDF417", "1", NULL, 0, "symbology: 106," }, // Synonym
-        /* 86*/ { "HIBCMICPDF", "1", NULL, 0, "symbology: 108," },
-        /* 87*/ { "HIBC Micro PDF", "1", NULL, 0, "symbology: 108," }, // Synonym
-        /* 88*/ { "HIBC Micro PDF417", "1", NULL, 0, "symbology: 108," }, // Synonym
-        /* 89*/ { "HIBC BlockF", "1", NULL, 0, "symbology: 110," },
-        /* 90*/ { "HIBC CodaBlock-F", "1", NULL, 0, "symbology: 110," }, // Synonym
-        /* 91*/ { "HIBC Aztec", "1", NULL, 0, "symbology: 112," },
-        /* 92*/ { "DotCode", "1", NULL, 0, "symbology: 115," },
-        /* 93*/ { "Han Xin", "1", NULL, 0, "symbology: 116," },
-        /* 94*/ { "Mailmark", "01000000000000000AA00AA0A", NULL, 0, "symbology: 121," },
-        /* 95*/ { "azrune", "1", NULL, 0, "symbology: 128," },
-        /* 96*/ { "aztecrune", "1", NULL, 0, "symbology: 128," }, // Synonym
-        /* 97*/ { "aztecrunes", "1", NULL, 0, "symbology: 128," }, // Synonym
-        /* 98*/ { "code32", "1", NULL, 0, "symbology: 129," },
-        /* 99*/ { "eanx cc", "[20]01", "1234567890128", 0, "symbology: 130," },
-        /*100*/ { "eancc", "[20]01", "1234567890128", 0, "symbology: 130," },
-        /*101*/ { "GS1 128 CC", "[01]12345678901231", "[20]01", 0, "symbology: 131," },
-        /*102*/ { "dbaromncc", "[20]01", "1234567890123", 0, "symbology: 132," },
-        /*103*/ { "dbarltdcc", "[20]01", "1234567890123", 0, "symbology: 133," },
-        /*104*/ { "dbarexpcc", "[20]01", "[01]12345678901231", 0, "symbology: 134," },
-        /*105*/ { "upcacc", "[20]01", "12345678901", 0, "symbology: 135," },
-        /*106*/ { "upcecc", "[20]01", "1234567", 0, "symbology: 136," },
-        /*107*/ { "dbar stk cc", "[20]01", "1234567890123", 0, "symbology: 137," },
-        /*108*/ { "dbaromnstkcc", "[20]01", "1234567890123", 0, "symbology: 138," },
-        /*109*/ { "dbarexpstkcc", "[20]01", "[01]12345678901231", 0, "symbology: 139," },
-        /*110*/ { "Channel", "1", NULL, 0, "symbology: 140," },
-        /*111*/ { "CodeOne", "1", NULL, 0, "symbology: 141," },
-        /*112*/ { "Grid Matrix", "1", NULL, 0, "symbology: 142," },
-        /*113*/ { "UPN QR", "1", NULL, 0, "symbology: 143," },
-        /*114*/ { "UPN QR Code", "1", NULL, 0, "symbology: 143," }, // Synonym
-        /*115*/ { "ultra", "1", NULL, 0, "symbology: 144," },
-        /*116*/ { "ultracode", "1", NULL, 0, "symbology: 144," }, // Synonym
-        /*117*/ { "rMQR", "1", NULL, 0, "symbology: 145," },
-        /*118*/ { "x", "1", NULL, 1, "Error 119: Invalid barcode type 'x'" },
-        /*119*/ { "\177", "1", NULL, 1, "Error 119: Invalid barcode type '\177'" },
+        /* 37*/ { "msi", "1", NULL, 0, "symbology: 47," },
+        /* 38*/ { "MSI Plessey ", "1", NULL, 0, "symbology: 47," },
+        /* 39*/ { "fim ", "A", NULL, 0, "symbology: 49," },
+        /* 40*/ { "LOGMARS", "123456", NULL, 0, "symbology: 50," },
+        /* 41*/ { " pharma", "123456", NULL, 0, "symbology: 51," },
+        /* 42*/ { " pzn ", "1", NULL, 0, "symbology: 52," },
+        /* 43*/ { "pharma two", "4", NULL, 0, "symbology: 53," },
+        /* 44*/ { "BARCODE_PDF417", "1", NULL, 0, "symbology: 55," },
+        /* 45*/ { "barcodepdf417comp", "1", NULL, 0, "symbology: 56," },
+        /* 46*/ { "MaxiCode", "1", NULL, 0, "symbology: 57," },
+        /* 47*/ { "QR CODE", "1", NULL, 0, "symbology: 58," },
+        /* 48*/ { "qr", "1", NULL, 0, "symbology: 58," }, // Synonym
+        /* 49*/ { "Code 128 B", "1", NULL, 0, "symbology: 60," },
+        /* 50*/ { "AUS POST", "12345678901234567890123", NULL, 0, "symbology: 63," },
+        /* 51*/ { "AusReply", "12345678", NULL, 0, "symbology: 66," },
+        /* 52*/ { "AUSROUTE", "12345678", NULL, 0, "symbology: 67," },
+        /* 53*/ { "AUS REDIRECT", "12345678", NULL, 0, "symbology: 68," },
+        /* 54*/ { "isbnx", "123456789", NULL, 0, "symbology: 69," },
+        /* 55*/ { "rm4scc", "1", NULL, 0, "symbology: 70," },
+        /* 56*/ { "DataMatrix", "1", NULL, 0, "symbology: 71," },
+        /* 57*/ { "EAN14", "1", NULL, 0, "symbology: 72," },
+        /* 58*/ { "vin", "12345678701234567", NULL, 0, "symbology: 73," },
+        /* 59*/ { "CodaBlock-F", "1", NULL, 0, "symbology: 74," },
+        /* 60*/ { "NVE18", "1", NULL, 0, "symbology: 75," },
+        /* 61*/ { "Japan Post", "1", NULL, 0, "symbology: 76," },
+        /* 62*/ { "Korea Post", "1", NULL, 0, "symbology: 77," },
+        /* 63*/ { "DBar Stk", "1", NULL, 0, "symbology: 79," },
+        /* 64*/ { "DBar Omn Stk", "1", NULL, 0, "symbology: 80," },
+        /* 65*/ { "DBar Exp Stk", "[20]01", NULL, 0, "symbology: 81," },
+        /* 66*/ { "planet", "12345678901", NULL, 0, "symbology: 82," },
+        /* 67*/ { "MicroPDF417", "1", NULL, 0, "symbology: 84," },
+        /* 68*/ { "USPS IMail", "12345678901234567890", NULL, 0, "symbology: 85," },
+        /* 69*/ { "plessey", "1", NULL, 0, "symbology: 86," },
+        /* 70*/ { "telepen num", "1", NULL, 0, "symbology: 87," },
+        /* 71*/ { "ITF14", "1", NULL, 0, "symbology: 89," },
+        /* 72*/ { "KIX", "1", NULL, 0, "symbology: 90," },
+        /* 73*/ { "Aztec", "1", NULL, 0, "symbology: 92," },
+        /* 74*/ { "daft", "D", NULL, 0, "symbology: 93," },
+        /* 75*/ { "DPD", "0123456789012345678901234567", NULL, 0, "symbology: 96," },
+        /* 76*/ { "Micro QR", "1", NULL, 0, "symbology: 97," },
+        /* 77*/ { "hibc128", "1", NULL, 0, "symbology: 98," },
+        /* 78*/ { "hibccode128", "1", NULL, 0, "symbology: 98," }, // Synonym
+        /* 79*/ { "hibc39", "1", NULL, 0, "symbology: 99," },
+        /* 80*/ { "hibccode39", "1", NULL, 0, "symbology: 99," }, // Synonym
+        /* 81*/ { "hibcdatamatrix", "1", NULL, 0, "symbology: 102," }, // Synonym
+        /* 82*/ { "hibcdm", "1", NULL, 0, "symbology: 102," },
+        /* 83*/ { "HIBC qr", "1", NULL, 0, "symbology: 104," },
+        /* 84*/ { "HIBC QR Code", "1", NULL, 0, "symbology: 104," }, // Synonym
+        /* 85*/ { "HIBCPDF", "1", NULL, 0, "symbology: 106," },
+        /* 86*/ { "HIBCPDF417", "1", NULL, 0, "symbology: 106," }, // Synonym
+        /* 87*/ { "HIBCMICPDF", "1", NULL, 0, "symbology: 108," },
+        /* 88*/ { "HIBC Micro PDF", "1", NULL, 0, "symbology: 108," }, // Synonym
+        /* 89*/ { "HIBC Micro PDF417", "1", NULL, 0, "symbology: 108," }, // Synonym
+        /* 90*/ { "HIBC BlockF", "1", NULL, 0, "symbology: 110," },
+        /* 91*/ { "HIBC CodaBlock-F", "1", NULL, 0, "symbology: 110," }, // Synonym
+        /* 92*/ { "HIBC Aztec", "1", NULL, 0, "symbology: 112," },
+        /* 93*/ { "DotCode", "1", NULL, 0, "symbology: 115," },
+        /* 94*/ { "Han Xin", "1", NULL, 0, "symbology: 116," },
+        /* 95*/ { "Mailmark", "01000000000000000AA00AA0A", NULL, 0, "symbology: 121," },
+        /* 96*/ { "azrune", "1", NULL, 0, "symbology: 128," },
+        /* 97*/ { "aztecrune", "1", NULL, 0, "symbology: 128," }, // Synonym
+        /* 98*/ { "aztecrunes", "1", NULL, 0, "symbology: 128," }, // Synonym
+        /* 99*/ { "code32", "1", NULL, 0, "symbology: 129," },
+        /*100*/ { "eanx cc", "[20]01", "1234567890128", 0, "symbology: 130," },
+        /*101*/ { "eancc", "[20]01", "1234567890128", 0, "symbology: 130," },
+        /*102*/ { "GS1 128 CC", "[01]12345678901231", "[20]01", 0, "symbology: 131," },
+        /*103*/ { "dbaromncc", "[20]01", "1234567890123", 0, "symbology: 132," },
+        /*104*/ { "dbarltdcc", "[20]01", "1234567890123", 0, "symbology: 133," },
+        /*105*/ { "dbarexpcc", "[20]01", "[01]12345678901231", 0, "symbology: 134," },
+        /*106*/ { "upcacc", "[20]01", "12345678901", 0, "symbology: 135," },
+        /*107*/ { "upcecc", "[20]01", "1234567", 0, "symbology: 136," },
+        /*108*/ { "dbar stk cc", "[20]01", "1234567890123", 0, "symbology: 137," },
+        /*109*/ { "dbaromnstkcc", "[20]01", "1234567890123", 0, "symbology: 138," },
+        /*110*/ { "dbarexpstkcc", "[20]01", "[01]12345678901231", 0, "symbology: 139," },
+        /*111*/ { "Channel", "1", NULL, 0, "symbology: 140," },
+        /*112*/ { "CodeOne", "1", NULL, 0, "symbology: 141," },
+        /*113*/ { "Grid Matrix", "1", NULL, 0, "symbology: 142," },
+        /*114*/ { "UPN QR", "1", NULL, 0, "symbology: 143," },
+        /*115*/ { "UPN QR Code", "1", NULL, 0, "symbology: 143," }, // Synonym
+        /*116*/ { "ultra", "1", NULL, 0, "symbology: 144," },
+        /*117*/ { "ultracode", "1", NULL, 0, "symbology: 144," }, // Synonym
+        /*118*/ { "rMQR", "1", NULL, 0, "symbology: 145," },
+        /*119*/ { "x", "1", NULL, 1, "Error 119: Invalid barcode type 'x'" },
+        /*120*/ { "\177", "1", NULL, 1, "Error 119: Invalid barcode type '\177'" },
     };
     int data_size = ARRAY_SIZE(data);
 
     char cmd[4096];
     char buf[8192];
-    char *outfilename = "out.png";
+    char *outfilename = "out.gif";
 
     for (int i = 0; i < data_size; i++) {
 
         if (index != -1 && i != index) continue;
 
-        strcpy(cmd, "zint ");
+        strcpy(cmd, "zint --filetype=gif");
         strcat(cmd, " --verbose");
 
         arg_data(cmd, "-b ", data[i].bname);
@@ -790,7 +864,7 @@ static void test_barcode_symbology(int index, int debug) {
         assert_nonnull(exec(cmd, buf, sizeof(buf) - 1, debug, i), "i:%d exec(%s) NULL\n", i, cmd);
         assert_nonnull(strstr(buf, data[i].expected), "i:%d strstr(%s, %s) == NULL (%s)\n", i, buf, data[i].expected, cmd);
         if (!data[i].fail) {
-            assert_zero(remove(outfilename), "i:%d remove(%s) != 0 (%d) (%s)\n", i, outfilename, errno, cmd);
+            assert_zero(remove(outfilename), "i:%d remove(%s) != 0 (%d: %s) (%s)\n", i, outfilename, errno, strerror(errno), cmd);
         }
     }
 

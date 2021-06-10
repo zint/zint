@@ -2,8 +2,8 @@ Zint frontend test suite
 ------------------------
 
 See <project-dir>/backend/tests/README to see how to build the test suite.
-In Addition to the setup for the backend tests, the environment needs to be
-able to find the `zint` application using that name. In UNIX like systems
+In addition to the setup for the backend tests, the environment needs to be
+able to find the `zint` application using that name. In UNIX-like systems
 this can be configured by prepending the PATH variable with the frontend's
 directory inside the build directory:
 

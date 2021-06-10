@@ -164,11 +164,11 @@ SOURCE=..\..\backend\general_field.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\frontend\getopt.c
+SOURCE=..\..\getopt\getopt.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\frontend\getopt1.c
+SOURCE=..\..\getopt\getopt1.c
 # End Source File
 # Begin Source File
 

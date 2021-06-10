@@ -51,13 +51,13 @@ INTERNAL int output_check_colour_options(struct zint_symbol *symbol) {
     to_upper((unsigned char *) symbol->fgcolour);
     to_upper((unsigned char *) symbol->bgcolour);
 
-    error_number = is_sane(SSET, (unsigned char *) symbol->fgcolour, strlen(symbol->fgcolour));
+    error_number = is_sane(SSET, (unsigned char *) symbol->fgcolour, (int) strlen(symbol->fgcolour));
     if (error_number == ZINT_ERROR_INVALID_DATA) {
         strcpy(symbol->errtxt, "653: Malformed foreground colour target");
         return ZINT_ERROR_INVALID_OPTION;
     }
 
-    error_number = is_sane(SSET, (unsigned char *) symbol->bgcolour, strlen(symbol->bgcolour));
+    error_number = is_sane(SSET, (unsigned char *) symbol->bgcolour, (int) strlen(symbol->bgcolour));
     if (error_number == ZINT_ERROR_INVALID_DATA) {
         strcpy(symbol->errtxt, "654: Malformed background colour target");
         return ZINT_ERROR_INVALID_OPTION;
@@ -432,7 +432,7 @@ INTERNAL int output_process_upcean(struct zint_symbol *symbol, int *p_main_width
     int comp_offset; /* Whitespace offset (if any) of main linear symbol due to having composite */
     int upceanflag; /* UPC/EAN type flag */
     int i, j, latch;
-    int text_length = ustrlen(symbol->text);
+    int text_length = (int) ustrlen(symbol->text);
 
     latch = 0;
     j = 0;

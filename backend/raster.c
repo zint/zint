@@ -39,16 +39,6 @@
 #include <malloc.h>
 #include <fcntl.h>
 #include <io.h>
-/* ceilf, floorf, roundf not before MSVC++2013 (C++ 12.0) */
-#if _MSC_VER < 1800
-#define ceilf (float) ceil
-#define floorf (float) floor
-#define roundf(arg) (float) floor((arg) + 0.5f)
-#endif
-/* For Visual C++ 6 suppress conversion from int to float warning */
-#if _MSC_VER == 1200
-#pragma warning(disable: 4244)
-#endif
 #endif /* _MSC_VER */
 
 #include "common.h"
@@ -438,7 +428,7 @@ static void draw_string(unsigned char *pixbuf, const unsigned char input_string[
     }
     letter_width += letter_gap;
 
-    string_length = ustrlen(input_string);
+    string_length = (int) ustrlen(input_string);
 
     string_left_hand = xposn - ((letter_width * string_length - letter_gap) * half_si) / 2;
     if (odd_si) {
@@ -872,7 +862,7 @@ static int plot_raster_dotty(struct zint_symbol *symbol, const int rotate_angle,
 static void to_iso8859_1(const unsigned char source[], unsigned char preprocessed[]) {
     int j, i, input_length;
 
-    input_length = ustrlen(source);
+    input_length = (int) ustrlen(source);
 
     j = 0;
     i = 0;

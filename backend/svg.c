@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009 - 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009 - 2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -31,8 +31,8 @@
  */
 /* vim: set ts=4 sw=4 et : */
 
+#include <errno.h>
 #include <locale.h>
-#include <string.h>
 #include <stdio.h>
 #include <math.h>
 #ifdef _MSC_VER
@@ -42,7 +42,7 @@
 #include "common.h"
 
 static void pick_colour(int colour, char colour_code[]) {
-    switch(colour) {
+    switch (colour) {
         case 1: // Cyan
             strcpy(colour_code, "00ffff");
             break;
@@ -70,16 +70,17 @@ static void pick_colour(int colour, char colour_code[]) {
     }
 }
 
-static void make_html_friendly(unsigned char * string, char * html_version) {
+static void make_html_friendly(unsigned char *string, char *html_version) {
     /* Converts text to use HTML entity codes */
 
-    int i, html_pos;
+    int i, len, html_pos;
 
     html_pos = 0;
     html_version[html_pos] = '\0';
+    len = (int) ustrlen(string);
 
-    for (i = 0; i < (int) ustrlen(string); i++) {
-        switch(string[i]) {
+    for (i = 0; i < len; i++) {
+        switch (string[i]) {
             case '>':
                 strcat(html_version, "&gt;");
                 html_pos += 4;
@@ -136,10 +137,10 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
     struct zint_vector_string *string;
 
     char colour_code[7];
-    int html_len;
+    int len, html_len;
 
 #ifdef _MSC_VER
-    char* html_string;
+    char *html_string;
 #endif
 
     for (i = 0; i < 6; i++) {
@@ -148,7 +149,7 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
     }
     fgcolour_string[6] = '\0';
     bgcolour_string[6] = '\0';
-    
+
     if (strlen(symbol->fgcolour) > 6) {
         fg_alpha = (16 * ctoi(symbol->fgcolour[6])) + ctoi(symbol->fgcolour[7]);
         if (fg_alpha != 0xff) {
@@ -161,11 +162,12 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
             bg_alpha_opacity = (float) (bg_alpha / 255.0);
         }
     }
-    
-    html_len = strlen((char *)symbol->text) + 1;
 
-    for (i = 0; i < (int) strlen((char *)symbol->text); i++) {
-        switch(symbol->text[i]) {
+    len = (int) ustrlen(symbol->text);
+    html_len = len + 1;
+
+    for (i = 0; i < len; i++) {
+        switch (symbol->text[i]) {
             case '>':
             case '<':
             case '"':
@@ -179,7 +181,7 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
 #ifndef _MSC_VER
     char html_string[html_len];
 #else
-    html_string = (char*) _alloca(html_len);
+    html_string = (char *) _alloca(html_len);
 #endif
 
     /* Check for no created vector set */
@@ -193,7 +195,7 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
         fsvg = fopen(symbol->outfile, "w");
     }
     if (fsvg == NULL) {
-        strcpy(symbol->errtxt, "680: Could not open output file");
+        sprintf(symbol->errtxt, "680: Could not open output file (%d: %.30s)", errno, strerror(errno));
         return ZINT_ERROR_FILE_ACCESS;
     }
 
@@ -203,14 +205,16 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
     fprintf(fsvg, "<?xml version=\"1.0\" standalone=\"no\"?>\n");
     fprintf(fsvg, "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\"\n");
     fprintf(fsvg, "   \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n");
-    fprintf(fsvg, "<svg width=\"%d\" height=\"%d\" version=\"1.1\"\n", (int) ceil(symbol->vector->width), (int) ceil(symbol->vector->height));
+    fprintf(fsvg, "<svg width=\"%d\" height=\"%d\" version=\"1.1\"\n",
+            (int) ceil(symbol->vector->width), (int) ceil(symbol->vector->height));
     fprintf(fsvg, "   xmlns=\"http://www.w3.org/2000/svg\">\n");
     fprintf(fsvg, "   <desc>Zint Generated Symbol\n");
     fprintf(fsvg, "   </desc>\n");
     fprintf(fsvg, "\n   <g id=\"barcode\" fill=\"#%s\">\n", fgcolour_string);
 
     if (bg_alpha != 0) {
-        fprintf(fsvg, "      <rect x=\"0\" y=\"0\" width=\"%d\" height=\"%d\" fill=\"#%s\"", (int) ceil(symbol->vector->width), (int) ceil(symbol->vector->height), bgcolour_string);
+        fprintf(fsvg, "      <rect x=\"0\" y=\"0\" width=\"%d\" height=\"%d\" fill=\"#%s\"",
+                (int) ceil(symbol->vector->width), (int) ceil(symbol->vector->height), bgcolour_string);
         if (bg_alpha != 0xff) {
             fprintf(fsvg, " opacity=\"%.3f\"", bg_alpha_opacity);
         }
@@ -219,7 +223,8 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
 
     rect = symbol->vector->rectangles;
     while (rect) {
-        fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\"", rect->x, rect->y, rect->width, rect->height);
+        fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\"",
+                rect->x, rect->y, rect->width, rect->height);
         if (rect->colour != -1) {
             pick_colour(rect->colour, colour_code);
             fprintf(fsvg, " fill=\"#%s\"", colour_code);
@@ -267,7 +272,8 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
             ex = hex->x + half_radius;
             fx = hex->x - half_radius;
         }
-        fprintf(fsvg, "      <path d=\"M %.2f %.2f L %.2f %.2f L %.2f %.2f L %.2f %.2f L %.2f %.2f L %.2f %.2f Z\"", ax, ay, bx, by, cx, cy, dx, dy, ex, ey, fx, fy);
+        fprintf(fsvg, "      <path d=\"M %.2f %.2f L %.2f %.2f L %.2f %.2f L %.2f %.2f L %.2f %.2f L %.2f %.2f Z\"",
+                ax, ay, bx, by, cx, cy, dx, dy, ex, ey, fx, fy);
         if (fg_alpha != 0xff) {
             fprintf(fsvg, " opacity=\"%.3f\"", fg_alpha_opacity);
         }
@@ -283,7 +289,7 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
             radius = (float) (0.5 * previous_diameter);
         }
         fprintf(fsvg, "      <circle cx=\"%.2f\" cy=\"%.2f\" r=\"%.2f\"", circle->x, circle->y, radius);
-        
+
         if (circle->colour) {
             fprintf(fsvg, " fill=\"#%s\"", bgcolour_string);
             if (bg_alpha != 0xff) {
@@ -299,7 +305,8 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
         circle = circle->next;
     }
 
-    bold = (symbol->output_options & BOLD_TEXT) && (!is_extendable(symbol->symbology) || (symbol->output_options & SMALL_TEXT));
+    bold = (symbol->output_options & BOLD_TEXT)
+            && (!is_extendable(symbol->symbology) || (symbol->output_options & SMALL_TEXT));
     string = symbol->vector->strings;
     while (string) {
         const char *halign = string->halign == 2 ? "end" : string->halign == 1 ? "start" : "middle";

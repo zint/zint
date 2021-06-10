@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020 - 2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -71,8 +71,8 @@ static void test_print(int index, int generate, int debug) {
 
     if (generate) {
         if (!testUtilExists(data_dir)) {
-            ret = mkdir(data_dir, 0755);
-            assert_zero(ret, "mkdir(%s) ret %d != 0\n", data_dir, ret);
+            ret = testutil_mkdir(data_dir, 0755);
+            assert_zero(ret, "testutil_mkdir(%s) ret %d != 0 (%d: %s)\n", data_dir, ret, errno, strerror(errno));
         }
     }
 

@@ -16,6 +16,12 @@
  ***************************************************************************/
 /* vim: set ts=4 sw=4 et : */
 
+#ifdef _MSC_VER
+#if _MSC_VER >= 1900 /* MSVC 2015 */
+#pragma warning(disable: 4996) /* function or variable may be unsafe */
+#endif
+#endif
+
 //#include <QDebug>
 #include "qzint.h"
 #include <stdio.h>

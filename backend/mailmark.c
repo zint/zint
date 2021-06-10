@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008 - 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008 - 2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -31,12 +31,12 @@
  */
 /* vim: set ts=4 sw=4 et : */
 
-/* 
+/*
  * Developed in accordance with "Royal Mail Mailmark barcode C encoding and deconding instructions"
  * (https://www.royalmail.com/sites/default/files/Mailmark-4-state-barcode-C-encoding-and-decoding-instructions-Sept-2015.pdf)
  * and "Royal Mail Mailmark barcode L encoding and decoding"
  * (https://www.royalmail.com/sites/default/files/Mailmark-4-state-barcode-L-encoding-and-decoding-instructions-Sept-2015.pdf)
- * 
+ *
  */
 
 #include <stdio.h>
@@ -82,7 +82,7 @@ static const unsigned short extender_group_l[26] = {
 
 static int verify_character(char input, char type) {
     int val = 0;
-    
+
     switch (type) {
         case 'F':
             val = posn(SET_F, input);
@@ -97,7 +97,7 @@ static int verify_character(char input, char type) {
             val = posn(SET_S, input);
             break;
     }
-    
+
     if (val == -1) {
         return 0;
     } else {
@@ -108,7 +108,7 @@ static int verify_character(char input, char type) {
 static int verify_postcode(char* postcode, int type) {
     int i;
     char pattern[11];
-    
+
     strcpy(pattern, postcode_format[type - 1]);
 
     for (i = 0; i < 9; i++) {
@@ -122,13 +122,13 @@ static int verify_postcode(char* postcode, int type) {
 
 /* Royal Mail Mailmark */
 INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int length) {
-    
+
     char local_source[28];
     int format;
     int version_id;
     int mail_class;
     int supply_chain_id;
-    long item_id;
+    unsigned int item_id;
     char postcode[10];
     int postcode_type;
     char pattern[10];
@@ -138,39 +138,39 @@ INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int le
     unsigned char data[26];
     int data_top, data_step;
     unsigned char check[7];
-    short int extender[27];
+    unsigned int extender[27];
     char bar[80];
     int check_count;
     int i, j, len;
     rs_t rs;
-    
+
     if (length > 26) {
         strcpy(symbol->errtxt, "580: Input too long");
         return ZINT_ERROR_TOO_LONG;
     }
-    
+
     strcpy(local_source, (char*) source);
-    
+
     if (length < 22) {
         for (i = length; i <= 22; i++) {
             strcat(local_source, " ");
         }
         length = 22;
     }
-    
+
     if ((length > 22) && (length < 26)) {
         for (i = length; i <= 26; i++) {
             strcat(local_source, " ");
         }
         length = 26;
-    } 
-    
+    }
+
     to_upper((unsigned char*) local_source);
-    
+
     if (symbol->debug & ZINT_DEBUG_PRINT) {
         printf("Producing Mailmark %s\n", local_source);
     }
-    
+
     if (is_sane(RUBIDIUM, (unsigned char *) local_source, length) != 0) {
         strcpy(symbol->errtxt, "581: Invalid characters in input data");
         return ZINT_ERROR_INVALID_DATA;
@@ -182,21 +182,21 @@ INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int le
         strcpy(symbol->errtxt, "582: Invalid format");
         return ZINT_ERROR_INVALID_DATA;
     }
-    
+
     // Version ID is in the range 1-4
     version_id = ctoi(local_source[1]) - 1;
     if ((version_id < 0) || (version_id > 3)) {
         strcpy(symbol->errtxt, "583: Invalid Version ID");
         return ZINT_ERROR_INVALID_DATA;
     }
-    
+
     // Class is in the range 0-9,A-E
     mail_class = ctoi(local_source[2]);
     if ((mail_class < 0) || (mail_class > 14)) {
         strcpy(symbol->errtxt, "584: Invalid Class");
         return ZINT_ERROR_INVALID_DATA;
     }
-    
+
     // Supply Chain ID is 2 digits for barcode C and 6 digits for barcode L
     supply_chain_id = 0;
     for (i = 3; i < (length - 17); i++) {
@@ -208,28 +208,28 @@ INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int le
             return ZINT_ERROR_INVALID_DATA;
         }
     }
-    
+
     // Item ID is 8 digits
     item_id = 0;
     for (i = length - 17; i < (length - 9); i++) {
         if ((local_source[i] >= '0') && (local_source[i] <= '9')) {
             item_id *= 10;
-            item_id += (long) ctoi(local_source[i]);
+            item_id += ctoi(local_source[i]);
         } else {
             strcpy(symbol->errtxt, "586: Invalid Item ID");
             return ZINT_ERROR_INVALID_DATA;
         }
     }
-    
+
     // Separate Destination Post Code plus DPS field
     for (i = 0; i < 9; i++) {
         postcode[i] = local_source[(length - 9) + i];
     }
     postcode[9] = '\0';
-    
+
     // Detect postcode type
-    /* postcode_type is used to select which format of postcode 
-     * 
+    /* postcode_type is used to select which format of postcode
+     *
      * 1 = FNFNLLNLS
      * 2 = FFNNLLNLS
      * 3 = FFNNNLLNL
@@ -238,7 +238,7 @@ INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int le
      * 6 = FNNNLLNLS
      * 7 = International designation
      */
-    
+
     if (strcmp(postcode, "XY11     ") == 0) {
         postcode_type = 7;
     } else {
@@ -266,7 +266,7 @@ INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int le
             }
         }
     }
-    
+
     // Verify postcode type
     if (postcode_type != 7) {
         if (verify_postcode(postcode, postcode_type) != 0) {
@@ -274,7 +274,7 @@ INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int le
             return ZINT_ERROR_INVALID_DATA;
         }
     }
-    
+
     // Convert postcode to internal user field
 
     large_load_u64(&destination_postcode, 0);
@@ -330,7 +330,7 @@ INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int le
             large_add(&destination_postcode, &b);
         }
     }
-    
+
     // Conversion from Internal User Fields to Consolidated Data Value
     // Set CDV to 0
     large_load_u64(&cdv, 0);
@@ -344,7 +344,7 @@ INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int le
     // Add Item ID
     large_add_u64(&cdv, item_id);
 
-    if (length == 22) {  
+    if (length == 22) {
         // Barcode C - Multiply by 100
         large_mul_u64(&cdv, 100);
     } else {
@@ -378,8 +378,7 @@ INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int le
         printf("CDV: ");
         large_print(&cdv);
     }
-    
-    
+
     if (length == 22) {
         data_top = 15;
         data_step = 8;
@@ -389,27 +388,27 @@ INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int le
         data_step = 10;
         check_count = 7;
     }
-    
+
     // Conversion from Consolidated Data Value to Data Numbers
 
     for (j = data_top; j >= (data_step + 1); j--) {
         data[j] = (unsigned char) large_div_u64(&cdv, 32);
     }
-    
+
     for (j = data_step; j >= 0; j--) {
         data[j] = (unsigned char) large_div_u64(&cdv, 30);
     }
-    
+
     // Generation of Reed-Solomon Check Numbers
     rs_init_gf(&rs, 0x25);
     rs_init_code(&rs, check_count, 1);
     rs_encode(&rs, (data_top + 1), data, check);
-    
+
     // Append check digits to data
     for (i = 1; i <= check_count; i++) {
         data[data_top + i] = check[check_count - i];
     }
-    
+
     if (symbol->debug & ZINT_DEBUG_PRINT) {
         printf("Codewords:  ");
         for (i = 0; i <= data_top + check_count; i++) {
@@ -417,7 +416,7 @@ INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int le
         }
         printf("\n");
     }
-    
+
     // Conversion from Data Numbers and Check Numbers to Data Symbols and Check Symbols
     for (i = 0; i <= data_step; i++) {
         data[i] = data_symbol_even[data[i]];
@@ -425,7 +424,7 @@ INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int le
     for (i = data_step + 1; i <= (data_top + check_count); i++) {
         data[i] = data_symbol_odd[data[i]];
     }
-    
+
     // Conversion from Data Symbols and Check Symbols to Extender Groups
     for (i = 0; i < length; i++) {
         if (length == 22) {
@@ -434,13 +433,13 @@ INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int le
             extender[extender_group_l[i]] = data[i];
         }
     }
-    
+
     // Conversion from Extender Groups to Bar Identifiers
     strcpy(bar, "");
-    
+
     for (i = 0; i < length; i++) {
         for (j = 0; j < 3; j++) {
-            switch(extender[i] & 0x24) {
+            switch (extender[i] & 0x24) {
                 case 0x24:
                     strcat(bar, "F");
                     break;
@@ -465,13 +464,13 @@ INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int le
             extender[i] = extender[i] << 1;
         }
     }
-    
+
     bar[(length * 3)] = '\0';
-    
+
     if (symbol->debug & ZINT_DEBUG_PRINT) {
         printf("Bar pattern: %s\n", bar);
     }
-    
+
     /* Translate 4-state data pattern to symbol */
     j = 0;
     for (i = 0, len = (int) strlen(bar); i < len; i++) {
@@ -491,6 +490,6 @@ INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int le
 
     symbol->rows = 3;
     symbol->width = j - 1;
-    
+
     return 0;
 }

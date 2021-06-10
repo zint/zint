@@ -1470,8 +1470,8 @@ check digit is added by default. To add a check digit, set option_2 = 1 or
 --vers=1. To add a check digit but not show it in the human readable text, set
 option_2 = 2 or --vers=2.
 
-6.1.2.4 Interleaved Code 2 of 5
--------------------------------
+6.1.2.4 Interleaved Code 2 of 5 (ISO 16390)
+-------------------------------------------
 This self-checking symbology encodes pairs of numbers, and so can only encode
 an even number of digits (0-9). If an odd number of digits is entered a leading
 zero is added by Zint. No check digit is added by default. To add a check digit,
@@ -1622,11 +1622,16 @@ encoded. The table below shows the options available:
 Value of option_2  |  Check Digits
 -------------------------------------------
 0                  |  None
-1                  |  Modulo-10
+1                  |  Modulo-10 (Luhn)
 2                  |  Modulo-10 & Modulo-10
-3                  |  Modulo-11
-4                  |  Modulo-11 & Modulo-10
+3                  |  Modulo-11 (IBM)
+4                  |  Modulo-11 (IBM) & Modulo-10
+5                  |  Modulo-11 (NCR)
+6                  |  Modulo-11 (NCR) & Modulo-10
 -------------------------------------------
+
+To not show the check digit or digits in the human readable text, add 10 to the
+option_2 value.
 
 6.1.7 Telepen
 -------------
@@ -3196,6 +3201,8 @@ international standards:
 > ISO/IEC JTC1/SC31N000 (Draft 2018-6-8) Information technology - Automatic
      identification and data capture techniques - Rectangular Micro QR Code
      (rMQR) bar code symbology specification
+> ISO/IEC 16390:2007 Information technology - Automatic identification and data
+     capture techniques - Interleaved 2 of 5 bar code symbology specification
 > Uniform Symbology Specification Code One (AIM Inc., 1994)
 > ANSI/AIM BC12-1998 - Uniform Symbology Specification Channel Code
 > ANSI/AIM BC6-2000 - Uniform Symbology Specification Code 49

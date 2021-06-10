@@ -116,7 +116,7 @@ static void test_big5_utf8(int index) {
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
         /*  0*/ { "＿", -1, 0, 1, { 0xA1C4 }, "" },
-        /*  1*/ { "╴", -1, ZINT_ERROR_INVALID_DATA, -1, {}, "" },
+        /*  1*/ { "╴", -1, ZINT_ERROR_INVALID_DATA, -1, {0}, "" },
     };
 
     int data_size = sizeof(data) / sizeof(struct item);
@@ -135,7 +135,7 @@ static void test_big5_utf8(int index) {
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d (%s)\n", i, ret, data[i].ret, symbol.errtxt);
         if (ret == 0) {
             assert_equal(ret_length, data[i].ret_length, "i:%d ret_length %d != %d\n", i, ret_length, data[i].ret_length);
-            for (int j = 0; j < (int) ret_length; j++) {
+            for (int j = 0; j < ret_length; j++) {
                 assert_equal(b5data[j], data[i].expected_b5data[j], "i:%d b5data[%d] %04X != %04X\n", i, j, b5data[j], data[i].expected_b5data[j]);
             }
         }

@@ -39,10 +39,6 @@
 #include <math.h>
 #ifdef _MSC_VER
 #include <malloc.h>
-/* ceilf (C99) not before MSVC++2013 (C++ 12.0) */
-#if _MSC_VER < 1800
-#define ceilf (float) ceil
-#endif
 #endif
 
 /* Add solid bar */
@@ -237,11 +233,11 @@ static int c1_look_ahead_test(const unsigned char source[], const int sourcelen,
         if (sp >= position + 3) {
             /* Step Q */
             float cnt;
-            ascii_rnded = (int) ceilf(ascii_count);
-            c40_rnded = (int) ceilf(c40_count);
-            text_rnded = (int) ceilf(text_count);
-            edi_rnded = (int) ceilf(edi_count);
-            byte_rnded = (int) ceilf(byte_count);
+            ascii_rnded = (int) ceilf(stripf(ascii_count));
+            c40_rnded = (int) ceilf(stripf(c40_count));
+            text_rnded = (int) ceilf(stripf(text_count));
+            edi_rnded = (int) ceilf(stripf(edi_count));
+            byte_rnded = (int) ceilf(stripf(byte_count));
 
             cnt = byte_count + 1.0f;
             if (cnt <= ascii_rnded && cnt <= c40_rnded && cnt <= text_rnded && cnt <= edi_rnded) {
@@ -277,11 +273,11 @@ static int c1_look_ahead_test(const unsigned char source[], const int sourcelen,
     }
 
     /* Step K */
-    ascii_rnded = (int) ceilf(ascii_count);
-    c40_rnded = (int) ceilf(c40_count);
-    text_rnded = (int) ceilf(text_count);
-    edi_rnded = (int) ceilf(edi_count);
-    byte_rnded = (int) ceilf(byte_count);
+    ascii_rnded = (int) ceilf(stripf(ascii_count));
+    c40_rnded = (int) ceilf(stripf(c40_count));
+    text_rnded = (int) ceilf(stripf(text_count));
+    edi_rnded = (int) ceilf(stripf(edi_count));
+    byte_rnded = (int) ceilf(stripf(byte_count));
 
     if (byte_count <= ascii_rnded && byte_count <= c40_rnded && byte_count <= text_rnded && byte_count <= edi_rnded) {
         return C1_BYTE; /* Step K1 */
@@ -1121,7 +1117,7 @@ INTERNAL int code_one(struct zint_symbol *symbol, unsigned char source[], int le
             size = symbol->option_2;
         }
 
-        if ((symbol-> option_2 != 0) && (symbol->option_2 < size)) {
+        if ((symbol->option_2 != 0) && (symbol->option_2 < size)) {
             strcpy(symbol->errtxt, "518: Input too long for selected symbol size");
             return ZINT_ERROR_TOO_LONG;
         }

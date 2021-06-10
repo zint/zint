@@ -122,6 +122,7 @@ public slots:
     void composite_ui_set();
     void composite_ean_check();
     void maxi_primary();
+    void msi_plessey_ui_set();
     void change_print_scale();
     void change_cmyk();
     void autoheight_ui_set();

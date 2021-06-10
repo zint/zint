@@ -31,6 +31,9 @@
  */
 /* vim: set ts=4 sw=4 et : */
 
+#ifndef NO_PNG
+
+#include <errno.h>
 #include <stdio.h>
 #ifdef _MSC_VER
 #include <fcntl.h>
@@ -39,7 +42,6 @@
 #endif
 #include "common.h"
 
-#ifndef NO_PNG
 #include <png.h>
 #include <zlib.h>
 #include <setjmp.h>
@@ -233,14 +235,14 @@ INTERNAL int png_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     if (symbol->output_options & BARCODE_STDOUT) {
 #ifdef _MSC_VER
         if (-1 == _setmode(_fileno(stdout), _O_BINARY)) {
-            strcpy(symbol->errtxt, "631: Can't open output file");
+            sprintf(symbol->errtxt, "631: Can't open output file (%d: %.30s)", errno, strerror(errno));
             return ZINT_ERROR_FILE_ACCESS;
         }
 #endif
         graphic->outfile = stdout;
     } else {
         if (!(graphic->outfile = fopen(symbol->outfile, "wb"))) {
-            strcpy(symbol->errtxt, "632: Can't open output file");
+            sprintf(symbol->errtxt, "632: Can't open output file (%d: %.30s)", errno, strerror(errno));
             return ZINT_ERROR_FILE_ACCESS;
         }
     }
@@ -343,4 +345,7 @@ INTERNAL int png_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
 
     return 0;
 }
+#else
+/* https://stackoverflow.com/a/26541331/664741 Suppresses gcc warning ISO C forbids an empty translation unit */
+typedef int make_iso_compilers_happy;
 #endif /* NO_PNG */

@@ -462,7 +462,7 @@ void debug_test_codeword_dump(struct zint_symbol *symbol, const unsigned char *c
     int i, max = length, cnt_len = 0;
     if (length > 30) { /* 30*3 < errtxt 92 (100 - "Warning ") chars */
         sprintf(symbol->errtxt, "(%d) ", length); /* Place the number of codewords at the front */
-        cnt_len = strlen(symbol->errtxt);
+        cnt_len = (int) strlen(symbol->errtxt);
         max = 30 - (cnt_len + 2) / 3;
     }
     for (i = 0; i < max; i++) {

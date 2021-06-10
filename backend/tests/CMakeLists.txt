@@ -1,4 +1,4 @@
-# Copyright (C) 2019 - 2021 Robin Stuart <rstuart114@gmail.com>
+# Copyright (C) 2009-2021 Robin Stuart <rstuart114@gmail.com>
 # Adapted from qrencode/tests/CMakeLists.txt
 # Copyright (C) 2006-2017 Kentaro Fukuchi <kentaro@fukuchi.org>
 # vim: set ts=4 sw=4 et :
@@ -22,6 +22,7 @@ if(NOT EXISTS ${BWIPP_PS})
     execute_process(COMMAND ${CMAKE_COMMAND} -E tar -xf ${BWIPP_TAR}
                     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tools)
 endif()
+configure_file(${BWIPP_PS} ${CMAKE_CURRENT_BINARY_DIR}/tools/bwipp_dump.ps COPYONLY)
 
 set(testcommon_SRCS testcommon.c testcommon.h)
 

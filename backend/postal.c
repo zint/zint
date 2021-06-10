@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008 - 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008 - 2021 Robin Stuart <rstuart114@gmail.com>
     Including bug fixes by Bryan Hatton
 
     Redistribution and use in source and binary forms, with or without
@@ -129,7 +129,7 @@ INTERNAL int post_plot(struct zint_symbol *symbol, unsigned char source[], int l
     }
 
     writer = 0;
-    h = strlen(height_pattern);
+    h = (int) strlen(height_pattern);
     for (loopey = 0; loopey < h; loopey++) {
         if (height_pattern[loopey] == 'L') {
             set_module(symbol, 0, writer);
@@ -191,7 +191,7 @@ INTERNAL int planet_plot(struct zint_symbol *symbol, unsigned char source[], int
     }
 
     writer = 0;
-    h = strlen(height_pattern);
+    h = (int) strlen(height_pattern);
     for (loopey = 0; loopey < h; loopey++) {
         if (height_pattern[loopey] == 'L') {
             set_module(symbol, 0, writer);
@@ -342,7 +342,7 @@ INTERNAL int royal_plot(struct zint_symbol *symbol, unsigned char source[], int 
     /*check = */rm4scc(source, height_pattern, length);
 
     writer = 0;
-    h = strlen(height_pattern);
+    h = (int) strlen(height_pattern);
     for (loopey = 0; loopey < h; loopey++) {
         if ((height_pattern[loopey] == '1') || (height_pattern[loopey] == '0')) {
             set_module(symbol, 0, writer);
@@ -392,7 +392,7 @@ INTERNAL int kix_code(struct zint_symbol *symbol, unsigned char source[], int le
     }
 
     writer = 0;
-    h = strlen(height_pattern);
+    h = (int) strlen(height_pattern);
     for (loopey = 0; loopey < h; loopey++) {
         if ((height_pattern[loopey] == '1') || (height_pattern[loopey] == '0')) {
             set_module(symbol, 0, writer);
@@ -448,7 +448,7 @@ INTERNAL int daft_code(struct zint_symbol *symbol, unsigned char source[], int l
     }
 
     writer = 0;
-    h = strlen(height_pattern);
+    h = (int) strlen(height_pattern);
     for (loopey = 0; loopey < h; loopey++) {
         if ((height_pattern[loopey] == '1') || (height_pattern[loopey] == '0')) {
             set_module(symbol, 0, writer);
@@ -577,7 +577,7 @@ INTERNAL int japan_post(struct zint_symbol *symbol, unsigned char source[], int 
 
     /* Resolve pattern to 4-state symbols */
     writer = 0;
-    h = strlen(pattern);
+    h = (int) strlen(pattern);
     for (loopey = 0; loopey < h; loopey++) {
         if ((pattern[loopey] == '2') || (pattern[loopey] == '1')) {
             set_module(symbol, 0, writer);

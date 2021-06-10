@@ -31,7 +31,6 @@
  */
 /* vim: set ts=4 sw=4 et : */
 
-/* Used in some logic */
 #ifndef __COMMON_H
 #define __COMMON_H
 
@@ -57,23 +56,31 @@
 #define ustrcat(target, source) strcat((char *) (target), (const char *) (source))
 #define ustrncat(target, source, count) strncat((char *) (target), (const char *) (source), (count))
 
-#if defined(__GNUC__) && !defined(_WIN32) && !defined(ZINT_TEST)
-#  define INTERNAL __attribute__ ((visibility ("hidden")))
-#else /* despite the name, the test cases are referencing the INTERNAL functions, so they need to be exported */
-#  if defined(ZINT_TEST)
-#    if defined(DLL_EXPORT) || defined(PIC) || defined(_USRDLL)
-#      define INTERNAL __declspec(dllexport)
-#    elif defined(ZINT_DLL)
-#      define INTERNAL __declspec(dllimport)
-#    endif
+/* Removes excess precision from floats - see https://stackoverflow.com/q/503436/664741 */
+#define stripf(arg) (*((volatile float *) &(arg)))
+
+#ifdef _MSC_VER
+#  if _MSC_VER < 1800 /* ceilf, floorf, roundf (C99) not before MSVC 2013 (C++ 12.0) */
+#    define ceilf (float) ceil
+#    define floorf (float) floor
+#    define roundf(arg) ((float) floor((arg) + 0.5f))
 #  endif
-#  if !defined(INTERNAL)
-#    define INTERNAL
+#  pragma warning(disable: 4244) /* conversion from int to float */
+#  if _MSC_VER >= 1900 /* MSVC 2015 */
+#    pragma warning(disable: 4996) /* function or variable may be unsafe */
 #  endif
 #endif
 
-#if defined(ZINT_TEST)
-#define STATIC_UNLESS_ZINT_TEST
+#if (defined(__GNUC__) || defined(__clang__)) && !defined(ZINT_TEST) && !defined(__MINGW32__)
+#  define INTERNAL __attribute__ ((visibility ("hidden")))
+#elif defined(ZINT_TEST)
+#  define INTERNAL ZINT_EXTERN /* The test suite references INTERNAL functions, so they need to be exported */
+#else
+#  define INTERNAL
+#endif
+
+#ifdef ZINT_TEST
+#define STATIC_UNLESS_ZINT_TEST INTERNAL
 #else
 #define STATIC_UNLESS_ZINT_TEST static
 #endif
@@ -82,16 +89,16 @@
 
 #ifdef COMMON_INLINE
 /* Return true (1) if a module is dark/black, otherwise false (0) */
-#define module_is_set(s, y, x) (((s)->encoded_data[(y)][(x) >> 3] >> ((x) & 0x07)) & 1)
+#  define module_is_set(s, y, x) (((s)->encoded_data[(y)][(x) >> 3] >> ((x) & 0x07)) & 1)
 
 /* Set a module to dark/black */
-#define set_module(s, y, x) do { (s)->encoded_data[(y)][(x) >> 3] |= 1 << ((x) & 0x07); } while (0)
+#  define set_module(s, y, x) do { (s)->encoded_data[(y)][(x) >> 3] |= 1 << ((x) & 0x07); } while (0)
 
 /* Return true (1-8) if a module is colour, otherwise false (0) */
-#define module_colour_is_set(s, y, x) ((s)->encoded_data[(y)][(x)])
+#  define module_colour_is_set(s, y, x) ((s)->encoded_data[(y)][(x)])
 
 /* Set a module to a colour */
-#define set_module_colour(s, y, x, c) do { (s)->encoded_data[(y)][(x)] = (c); } while (0)
+#  define set_module_colour(s, y, x, c) do { (s)->encoded_data[(y)][(x)] = (c); } while (0)
 #endif
 
 #ifdef __cplusplus
@@ -131,8 +138,8 @@ extern "C" {
     INTERNAL int colour_to_blue(const int colour);
 
     #ifdef ZINT_TEST
-    void debug_test_codeword_dump(struct zint_symbol *symbol, const unsigned char *codewords, const int length);
-    void debug_test_codeword_dump_int(struct zint_symbol *symbol, const int *codewords, const int length);
+    INTERNAL void debug_test_codeword_dump(struct zint_symbol *symbol, const unsigned char *codewords, const int length);
+    INTERNAL void debug_test_codeword_dump_int(struct zint_symbol *symbol, const int *codewords, const int length);
     #endif
 
 #ifdef __cplusplus

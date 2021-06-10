@@ -42,16 +42,37 @@
 #define ZINT_DEBUG_TEST_BWIPP           128
 #define ZINT_DEBUG_TEST_PERFORMANCE     256
 
-#ifdef _WIN32
-#include <malloc.h>
-#define alloca(nmemb) _malloca(nmemb)
-#define popen(command, mode) _popen(command, mode)
-#define pclose(stream) _pclose(stream)
+#ifdef _MSC_VER
+#define testutil_popen(command, mode) _popen(command, mode)
+#define testutil_pclose(stream) _pclose(stream)
 #else
 #include <unistd.h>
+#define testutil_popen(command, mode) popen(command, mode)
+#define testutil_pclose(stream) pclose(stream)
 #endif
+
+#ifdef _WIN32
+#include <direct.h>
+#define testutil_mkdir(path, mode) _mkdir(path)
+#define testutil_rmdir(path) _rmdir(path)
+#else
+#define testutil_mkdir(path, mode) mkdir(path, mode)
+#define testutil_rmdir(path) rmdir(path)
+#endif
+
 #include <stdio.h>
+#include <errno.h>
 #include "../common.h"
+
+#if defined(__clang__)
+#  pragma clang diagnostic ignored "-Wpedantic"
+#  pragma clang diagnostic ignored "-Woverlength-strings"
+#elif defined(__GNUC__)
+#  pragma GCC diagnostic ignored "-Wpedantic"
+#  pragma GCC diagnostic ignored "-Woverlength-strings"
+#elif defined(_MSC_VER)
+#  pragma warning(disable: 4305) /* truncation from 'double' to 'float' */
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -72,7 +93,9 @@ void testFinish(void);
 void testSkip(const char *msg);
 void testReport();
 
-typedef struct s_testFunction { const char *name; void *func; int has_index; int has_generate; int has_debug; } testFunction;
+typedef struct s_testFunction {
+    const char *name; void *func; int has_index; int has_generate; int has_debug;
+} testFunction;
 void testRun(int argc, char *argv[], testFunction funcs[], int funcs_size);
 
 #define assert_exp(__exp__, ...) \
@@ -89,7 +112,8 @@ void testRun(int argc, char *argv[], testFunction funcs[], int funcs_size);
 
 INTERNAL void vector_free(struct zint_symbol *symbol); /* Free vector structures */
 
-int testUtilSetSymbol(struct zint_symbol *symbol, int symbology, int input_mode, int eci, int option_1, int option_2, int option_3, int output_options, char *data, int length, int debug);
+int testUtilSetSymbol(struct zint_symbol *symbol, int symbology, int input_mode, int eci,
+            int option_1, int option_2, int option_3, int output_options, char *data, int length, int debug);
 const char *testUtilBarcodeName(int symbology);
 const char *testUtilErrorName(int error_number);
 const char *testUtilInputModeName(int input_mode);
@@ -129,10 +153,13 @@ int testUtilHaveVnu();
 int testUtilVerifyVnu(char *filename, int debug);
 int testUtilHaveTiffInfo();
 int testUtilVerifyTiffInfo(char *filename, int debug);
-int testUtilCanBwipp(int index, const struct zint_symbol *symbol, int option_1, int option_2, int option_3, int debug);
-int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int option_2, int option_3, const char *data, int length, const char *primary, char *buffer, int buffer_size);
+int testUtilCanBwipp(int index, const struct zint_symbol *symbol, int option_1, int option_2, int option_3,
+            int debug);
+int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int option_2, int option_3,
+            const char *data, int length, const char *primary, char *buffer, int buffer_size);
 int testUtilBwippCmp(const struct zint_symbol *symbol, char *msg, const char *bwipp_buf, const char *expected);
-int testUtilBwippCmpRow(const struct zint_symbol *symbol, int row, char *msg, const char *bwipp_buf, const char *expected);
+int testUtilBwippCmpRow(const struct zint_symbol *symbol, int row, char *msg, const char *bwipp_buf,
+            const char *expected);
 
 #ifdef __cplusplus
 }

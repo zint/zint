@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020 - 2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -31,6 +31,19 @@
 
 #include "testcommon.h"
 #include "../large.h"
+
+#if defined(__MINGW32__)
+#  define LX_FMT "I64"
+#  if defined(__clang__)
+#    pragma GCC diagnostic ignored "-Wformat-non-iso"
+#  elif defined(__GNUC__)
+#    pragma GCC diagnostic ignored "-Wformat" /* Unfortunately doesn't seem to be way to only avoid non-ISO warnings */
+#  endif
+#elif defined(_MSC_VER)
+#  define LX_FMT "ll"
+#else
+#  define LX_FMT "l"
+#endif
 
 #define LI(l, h) { l, h }
 
@@ -181,7 +194,7 @@ static void test_clz_u64(int index) {
         if (index != -1 && i != index) continue;
 
         ret = clz_u64(data[i].s);
-        assert_equal(ret, data[i].ret, "i:%d 0x%lX ret %d != %d\n", i, data[i].s, ret, data[i].ret);
+        assert_equal(ret, data[i].ret, "i:%d 0x%" LX_FMT "X ret %d != %d\n", i, data[i].s, ret, data[i].ret);
     }
 
     testFinish();
@@ -214,9 +227,9 @@ static void test_load(int index) {
 
         large_load(&data[i].t, &data[i].s);
 
-        assert_equal(data[i].t.lo, data[i].expected.lo, "i:%d lo 0x%lX (%s) != expected lo 0x%lX (%s)\n",
+        assert_equal(data[i].t.lo, data[i].expected.lo, "i:%d lo 0x%" LX_FMT "X (%s) != expected lo 0x%" LX_FMT "X (%s)\n",
                         i, data[i].t.lo, large_dump(&data[i].t, t_dump), data[i].expected.lo, large_dump(&data[i].expected, expected_dump));
-        assert_equal(data[i].t.hi, data[i].expected.hi, "i:%d hi 0x%lX (%s) != expected hi 0x%lX (%s)\n",
+        assert_equal(data[i].t.hi, data[i].expected.hi, "i:%d hi 0x%" LX_FMT "X (%s) != expected hi 0x%" LX_FMT "X (%s)\n",
                         i, data[i].t.hi, large_dump(&data[i].t, t_dump), data[i].expected.hi, large_dump(&data[i].expected, expected_dump));
     }
 
@@ -254,9 +267,9 @@ static void test_load_str_u64(int index) {
 
         large_load_str_u64(&data[i].t, (unsigned char *) data[i].s, data[i].length == -1 ? (int) strlen(data[i].s) : data[i].length);
 
-        assert_equal(data[i].t.lo, data[i].expected.lo, "i:%d lo 0x%lX (%s) != expected lo 0x%lX (%s)\n",
+        assert_equal(data[i].t.lo, data[i].expected.lo, "i:%d lo 0x%" LX_FMT "X (%s) != expected lo 0x%" LX_FMT "X (%s)\n",
                         i, data[i].t.lo, large_dump(&data[i].t, t_dump), data[i].expected.lo, large_dump(&data[i].expected, expected_dump));
-        assert_equal(data[i].t.hi, data[i].expected.hi, "i:%d hi 0x%lX (%s) != expected hi 0x%lX (%s)\n",
+        assert_equal(data[i].t.hi, data[i].expected.hi, "i:%d hi 0x%" LX_FMT "X (%s) != expected hi 0x%" LX_FMT "X (%s)\n",
                         i, data[i].t.hi, large_dump(&data[i].t, t_dump), data[i].expected.hi, large_dump(&data[i].expected, expected_dump));
     }
 
@@ -297,9 +310,9 @@ static void test_add_u64(int index) {
 
         large_add_u64(&data[i].t, data[i].s);
 
-        assert_equal(data[i].t.lo, data[i].expected.lo, "i:%d lo 0x%lX (%s) != expected lo 0x%lX (%s)\n",
+        assert_equal(data[i].t.lo, data[i].expected.lo, "i:%d lo 0x%" LX_FMT "X (%s) != expected lo 0x%" LX_FMT "X (%s)\n",
                         i, data[i].t.lo, large_dump(&data[i].t, t_dump), data[i].expected.lo, large_dump(&data[i].expected, expected_dump));
-        assert_equal(data[i].t.hi, data[i].expected.hi, "i:%d hi 0x%lX (%s) != expected hi 0x%lX (%s)\n",
+        assert_equal(data[i].t.hi, data[i].expected.hi, "i:%d hi 0x%" LX_FMT "X (%s) != expected hi 0x%" LX_FMT "X (%s)\n",
                         i, data[i].t.hi, large_dump(&data[i].t, t_dump), data[i].expected.hi, large_dump(&data[i].expected, expected_dump));
     }
 
@@ -340,9 +353,9 @@ static void test_sub_u64(int index) {
 
         large_sub_u64(&data[i].t, data[i].s);
 
-        assert_equal(data[i].t.lo, data[i].expected.lo, "i:%d lo 0x%lX (%s) != expected lo 0x%lX (%s)\n",
+        assert_equal(data[i].t.lo, data[i].expected.lo, "i:%d lo 0x%" LX_FMT "X (%s) != expected lo 0x%" LX_FMT "X (%s)\n",
                         i, data[i].t.lo, large_dump(&data[i].t, t_dump), data[i].expected.lo, large_dump(&data[i].expected, expected_dump));
-        assert_equal(data[i].t.hi, data[i].expected.hi, "i:%d hi 0x%lX (%s) != expected hi 0x%lX (%s)\n",
+        assert_equal(data[i].t.hi, data[i].expected.hi, "i:%d hi 0x%" LX_FMT "X (%s) != expected hi 0x%" LX_FMT "X (%s)\n",
                         i, data[i].t.hi, large_dump(&data[i].t, t_dump), data[i].expected.hi, large_dump(&data[i].expected, expected_dump));
     }
 
@@ -396,9 +409,9 @@ static void test_mul_u64(int index) {
 
         large_mul_u64(&data[i].t, data[i].s);
 
-        assert_equal(data[i].t.lo, data[i].expected.lo, "i:%d lo 0x%lX (%s) != expected lo 0x%lX (%s)\n",
+        assert_equal(data[i].t.lo, data[i].expected.lo, "i:%d lo 0x%" LX_FMT "X (%s) != expected lo 0x%" LX_FMT "X (%s)\n",
                         i, data[i].t.lo, large_dump(&data[i].t, t_dump), data[i].expected.lo, large_dump(&data[i].expected, expected_dump));
-        assert_equal(data[i].t.hi, data[i].expected.hi, "i:%d hi 0x%lX (%s) != expected hi 0x%lX (%s)\n",
+        assert_equal(data[i].t.hi, data[i].expected.hi, "i:%d hi 0x%" LX_FMT "X (%s) != expected hi 0x%" LX_FMT "X (%s)\n",
                         i, data[i].t.hi, large_dump(&data[i].t, t_dump), data[i].expected.hi, large_dump(&data[i].expected, expected_dump));
     }
 
@@ -520,10 +533,11 @@ static void test_div_u64(int index) {
 
         r = large_div_u64(&data[i].t, data[i].s);
 
-        assert_equal(r, data[i].expected_r, "i:%d r %lu (0x%lX) != expected_r %lu (0x%lX)\n", i, r, r, data[i].expected_r, data[i].expected_r);
-        assert_equal(data[i].t.lo, data[i].expected.lo, "i:%d lo 0x%lX (%s) != expected lo 0x%lX (%s)\n",
+        assert_equal(r, data[i].expected_r, "i:%d r %" LX_FMT "u (0x%" LX_FMT "X) != expected_r %" LX_FMT "u (0x%" LX_FMT "X)\n",
+                        i, r, r, data[i].expected_r, data[i].expected_r);
+        assert_equal(data[i].t.lo, data[i].expected.lo, "i:%d lo 0x%" LX_FMT "X (%s) != expected lo 0x%" LX_FMT "X (%s)\n",
                         i, data[i].t.lo, large_dump(&data[i].t, t_dump), data[i].expected.lo, large_dump(&data[i].expected, expected_dump));
-        assert_equal(data[i].t.hi, data[i].expected.hi, "i:%d hi 0x%lX (%s) != expected hi 0x%lX (%s)\n",
+        assert_equal(data[i].t.hi, data[i].expected.hi, "i:%d hi 0x%" LX_FMT "X (%s) != expected hi 0x%" LX_FMT "X (%s)\n",
                         i, data[i].t.hi, large_dump(&data[i].t, t_dump), data[i].expected.hi, large_dump(&data[i].expected, expected_dump));
     }
 
@@ -684,9 +698,9 @@ static void test_unset_bit(int index) {
 
         large_unset_bit(&data[i].t, data[i].s);
 
-        assert_equal(data[i].t.lo, data[i].expected.lo, "i:%d lo 0x%lX (%s) != expected lo 0x%lX (%s)\n",
+        assert_equal(data[i].t.lo, data[i].expected.lo, "i:%d lo 0x%" LX_FMT "X (%s) != expected lo 0x%" LX_FMT "X (%s)\n",
                         i, data[i].t.lo, large_dump(&data[i].t, t_dump), data[i].expected.lo, large_dump(&data[i].expected, expected_dump));
-        assert_equal(data[i].t.hi, data[i].expected.hi, "i:%d hi 0x%lX (%s) != expected hi 0x%lX (%s)\n",
+        assert_equal(data[i].t.hi, data[i].expected.hi, "i:%d hi 0x%" LX_FMT "X (%s) != expected hi 0x%" LX_FMT "X (%s)\n",
                         i, data[i].t.hi, large_dump(&data[i].t, t_dump), data[i].expected.hi, large_dump(&data[i].expected, expected_dump));
     }
 
@@ -848,8 +862,8 @@ static void test_dump(int index) {
 
         large_dump(&data[i].t, dump);
 
-        assert_zero(strcmp(dump, data[i].expected), "i:%d { %lX, %lX } strcmp(%s, %s) != 0\n",
-                        i, (unsigned long) data[i].t.lo, (unsigned long) data[i].t.hi, dump, data[i].expected);
+        assert_zero(strcmp(dump, data[i].expected), "i:%d { %" LX_FMT "X, %" LX_FMT "X } strcmp(%s, %s) != 0\n",
+                        i, data[i].t.lo, data[i].t.hi, dump, data[i].expected);
     }
 
     testFinish();

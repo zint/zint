@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008 - 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008 - 2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -305,7 +305,7 @@ INTERNAL int imail(struct zint_symbol *symbol, unsigned char source[], int lengt
         return ZINT_ERROR_INVALID_DATA;
     }
 
-    zip_len = strlen(zip);
+    zip_len = (int) strlen(zip);
     if (zip_len != 0 && zip_len != 5 && zip_len != 9 && zip_len != 11) {
         strcpy(symbol->errtxt, "453: Invalid ZIP code");
         return ZINT_ERROR_INVALID_DATA;
@@ -342,7 +342,7 @@ INTERNAL int imail(struct zint_symbol *symbol, unsigned char source[], int lengt
 
     /* and then the rest */
 
-    for (read = 2, len = strlen(tracker); read < len; read++) {
+    for (read = 2, len = (int) strlen(tracker); read < len; read++) {
 
         large_mul_u64(&accum, 10);
         large_add_u64(&accum, ctoi(tracker[read]));
@@ -421,7 +421,7 @@ INTERNAL int imail(struct zint_symbol *symbol, unsigned char source[], int lengt
 
     /* Translate 4-state data pattern to symbol */
     read = 0;
-    for (i = 0, len = strlen(data_pattern); i < len; i++) {
+    for (i = 0, len = (int) strlen(data_pattern); i < len; i++) {
         if ((data_pattern[i] == '1') || (data_pattern[i] == '0')) {
             set_module(symbol, 0, read);
         }

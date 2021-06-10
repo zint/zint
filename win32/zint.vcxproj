@@ -84,13 +84,13 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\frontend\getopt.c" />
-    <ClCompile Include="..\frontend\getopt1.c" />
+    <ClCompile Include="..\getopt\getopt.c" />
+    <ClCompile Include="..\getopt\getopt1.c" />
     <ClCompile Include="..\frontend\main.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\frontend\resource.h" />
-    <ClInclude Include="frontend\getopt.h" />
+    <ClInclude Include="..\getopt\getopt.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\frontend\zint.rc" />

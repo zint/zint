@@ -32,10 +32,20 @@
        <property name="buddy" >
         <cstring>cmbMSICheck</cstring>
        </property>
+       <property name="toolTip">
+        <string>Mod-10 uses Luhn algorithm
+Mod-11 (IBM) uses IBM weightings
+Mod-11 (NCR) uses NCR weightings</string>
+       </property>
       </widget>
      </item>
      <item>
       <widget class="QComboBox" name="cmbMSICheck" >
+       <property name="toolTip">
+        <string>Mod-10 uses Luhn algorithm
+Mod-11 (IBM) uses IBM weightings
+Mod-11 (NCR) uses NCR weightings</string>
+       </property>
        <item>
         <property name="text" >
          <string>None</string>
@@ -53,17 +63,40 @@
        </item>
        <item>
         <property name="text" >
-         <string>Mod-11</string>
+         <string>Mod-11 (IBM)</string>
         </property>
        </item>
        <item>
         <property name="text" >
-         <string>Mod-11 &amp; Mod-10</string>
+         <string>Mod-11 (IBM) &amp; Mod-10</string>
+        </property>
+       </item>
+       <item>
+        <property name="text" >
+         <string>Mod-11 (NCR)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text" >
+         <string>Mod-11 (NCR) &amp; Mod-10</string>
         </property>
        </item>
       </widget>
      </item>
     </layout>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="chkMSICheckText">
+     <property name="text">
+      <string>Do not show check digit(s) in &amp;Text</string>
+     </property>
+     <property name="toolTip">
+      <string>Add check digit(s) but do not display in Human Readable Text</string>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
+    </widget>
    </item>
    <item>
     <spacer name="verticalSpacer" >

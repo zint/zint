@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009 - 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009 - 2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -31,8 +31,8 @@
  */
 /* vim: set ts=4 sw=4 et : */
 
+#include <errno.h>
 #include <stdio.h>
-#include <string.h>
 #include "common.h"
 #include <math.h>
 #ifdef _MSC_VER
@@ -398,7 +398,7 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
                 RGBCur[0] = 0; RGBCur[1] = 0; RGBCur[2] = 0;
                 break;
             default: /* error case - return  */
-                strcpy(symbol->errtxt, "611: unknown pixel colour");
+                strcpy(symbol->errtxt, "612: unknown pixel colour");
                 return ZINT_ERROR_INVALID_DATA;
         }
         /* Search, if RGB value is already present */
@@ -469,14 +469,14 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     if ((symbol->output_options & BARCODE_STDOUT) != 0) {
 #ifdef _MSC_VER
         if (-1 == _setmode(_fileno(stdout), _O_BINARY)) {
-            strcpy(symbol->errtxt, "610: Can't open output file");
+            sprintf(symbol->errtxt, "610: Can't open output file (%d: %.30s)", errno, strerror(errno));
             return ZINT_ERROR_FILE_ACCESS;
         }
 #endif
         gif_file = stdout;
     } else {
         if (!(gif_file = fopen(symbol->outfile, "wb"))) {
-            strcpy(symbol->errtxt, "611: Can't open output file");
+            sprintf(symbol->errtxt, "611: Can't open output file (%d: %.30s)", errno, strerror(errno));
             return ZINT_ERROR_FILE_ACCESS;
         }
     }

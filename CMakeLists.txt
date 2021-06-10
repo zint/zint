@@ -1,4 +1,5 @@
-# (c) 2008 by BogDan Vatra < bogdan@licentia.eu >
+# Copyright (C) 2008 by BogDan Vatra < bogdan@licentia.eu >
+# Copyright (C) 2009-2021 Robin Stuart <rstuart114@gmail.com>
 # vim: set ts=4 sw=4 et :
 
 cmake_minimum_required(VERSION 3.5)
@@ -31,19 +32,21 @@ include(SetPaths.cmake)
 include(CheckCXXCompilerFlag)
 include(CheckFunctionExists)
 
-check_cxx_compiler_flag("-Wall" CXX_COMPILER_FLAG_WALL)
-if(CXX_COMPILER_FLAG_WALL)
-    add_compile_options("-Wall")
-endif()
+if(NOT MSVC) # Use default warnings if MSVC otherwise inundated
+    check_cxx_compiler_flag("-Wall" CXX_COMPILER_FLAG_WALL)
+    if(CXX_COMPILER_FLAG_WALL)
+        add_compile_options("-Wall")
+    endif()
 
-check_cxx_compiler_flag("-Wextra" CXX_COMPILER_FLAG_WEXTRA)
-if(CXX_COMPILER_FLAG_WEXTRA)
-    add_compile_options("-Wextra")
-endif()
+    check_cxx_compiler_flag("-Wextra" CXX_COMPILER_FLAG_WEXTRA)
+    if(CXX_COMPILER_FLAG_WEXTRA)
+        add_compile_options("-Wextra")
+    endif()
 
-check_cxx_compiler_flag("-Wpedantic" CXX_COMPILER_FLAG_WPEDANTIC)
-if(CXX_COMPILER_FLAG_WPEDANTIC)
-    add_compile_options("-Wpedantic")
+    check_cxx_compiler_flag("-Wpedantic" CXX_COMPILER_FLAG_WPEDANTIC)
+    if(CXX_COMPILER_FLAG_WPEDANTIC)
+        add_compile_options("-Wpedantic")
+    endif()
 endif()
 
 if(ZINT_DEBUG)
@@ -61,39 +64,40 @@ if(ZINT_TEST)
     enable_testing()
 endif()
 
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_GNUCC)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     if(ZINT_SANITIZE)
         add_compile_options(-fsanitize=undefined -fsanitize=address)
         link_libraries(-fsanitize=undefined -fsanitize=address)
-        # Gives warning on MainWindow::setupUI() and retries (and takes forever) if var-tracking-assignments enabled
-        add_compile_options(-fno-var-tracking-assignments)
+        if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+            # Gives warning on MainWindow::setupUI() and retries (& takes forever) if var-tracking-assignments enabled
+            add_compile_options(-fno-var-tracking-assignments)
+        endif()
     endif()
 endif()
 
-IF(APPLE)
-    IF (UNIVERSAL) # TODO: make universal binary
-        IF(NOT ZINT_HAS_BEEN_RUN_BEFORE)
-            IF(EXISTS /Developer/SDKs/MacOSX10.5.sdk OR EXISTS /SDKs/MacOSX10.5.sdk)
-                SET(CMAKE_OSX_ARCHITECTURES "ppc;i386;ppc64;x86_64" CACHE STRING "Build architectures for OSX" FORCE)
-                SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility-inlines-hidden -Wl -single_module " CACHE STRING "Flags used by the compiler during all build types." FORCE)
-            ELSE(EXISTS /Developer/SDKs/MacOSX10.5.sdk OR EXISTS /SDKs/MacOSX10.5.sdk)
-                IF(EXISTS /Developer/SDKs/MacOSX10.4u.sdk OR EXISTS /SDKs/MacOSX10.4u.sdk)
-                    SET(CMAKE_OSX_ARCHITECTURES "ppc;i386" CACHE STRING "Build architectures for OSX" FORCE)
-                    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility-inlines-hidden -Wl -single_module " CACHE STRING "Flags used by the compiler during all build types." FORCE)
-               ENDIF(EXISTS /Developer/SDKs/MacOSX10.4u.sdk OR EXISTS /SDKs/MacOSX10.4u.sdk)
-            ENDIF(EXISTS /Developer/SDKs/MacOSX10.5.sdk OR EXISTS /SDKs/MacOSX10.5.sdk)
+if(APPLE)
+    if(UNIVERSAL) # TODO: make universal binary
+        if(NOT ZINT_HAS_BEEN_RUN_BEFORE)
+            if(EXISTS /Developer/SDKs/MacOSX10.5.sdk OR EXISTS /SDKs/MacOSX10.5.sdk)
+                set(CMAKE_OSX_ARCHITECTURES "ppc;i386;ppc64;x86_64" CACHE STRING "Build architectures for OSX" FORCE)
+                set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility-inlines-hidden -Wl -single_module " CACHE STRING
+                    "Flags used by the compiler during all build types." FORCE)
+            elseif(EXISTS /Developer/SDKs/MacOSX10.4u.sdk OR EXISTS /SDKs/MacOSX10.4u.sdk)
+                set(CMAKE_OSX_ARCHITECTURES "ppc;i386" CACHE STRING "Build architectures for OSX" FORCE)
+                set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility-inlines-hidden -Wl -single_module " CACHE STRING
+                    "Flags used by the compiler during all build types." FORCE)
+            endif()
             message("Build architectures for OSX:${CMAKE_OSX_ARCHITECTURES}")
-        ENDIF(NOT ZINT_HAS_BEEN_RUN_BEFORE)
-
-    ELSE (UNIVERSAL)
-        SET(CMAKE_OSX_SYSROOT "/")
-    ENDIF (UNIVERSAL)
-ENDIF(APPLE)
+        endif()
+    else()
+        set(CMAKE_OSX_SYSROOT "/")
+    endif()
+endif()
 
 check_function_exists(getopt HAVE_GETOPT)
 if(NOT HAVE_GETOPT)
     add_subdirectory(getopt)
-endif(NOT HAVE_GETOPT)
+endif()
 
 add_subdirectory(backend)
 add_subdirectory(frontend)
@@ -137,7 +141,7 @@ configure_file(
 add_custom_target(uninstall
   "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake")
 
-# staniek: don't install 
+# staniek: don't install
 if(DATA_INSTALL_DIR)
     set(CMAKE_MODULES_INSTALL_PATH ${DATA_INSTALL_DIR}/cmake/modules)
 else()

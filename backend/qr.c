@@ -2175,7 +2175,7 @@ static void micro_populate_grid(unsigned char *grid, const int size, const char 
     int n, i;
     int y;
 
-    n = strlen(full_stream);
+    n = (int) strlen(full_stream);
     y = size - 1;
     i = 0;
     do {

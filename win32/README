@@ -31,6 +31,7 @@ First build zlib:
 
   cd zlib
 
+  nmake -f win32\Makefile.msc clean
   nmake -f win32\Makefile.msc LOC="-DASMV -DASMINF=" OBJA="inffas32.obj match686.obj"
 
   cd ..
@@ -39,14 +40,9 @@ and then lpng:
 
   cd lpng
 
-  cmake -G"Visual Studio 15 2017"^
-        -DCMAKE_BUILD_TYPE=Release^
-        -DPNG_BUILD_ZLIB=ON^
-        -DZLIB_INCLUDE_DIRS=..\zlib^
-        -DPNG_STATIC=ON^
-        -DPNG_SHARED=OFF^
-        -H.^
-        -Bbuild
+  cmake -G "Visual Studio 15 2017" -DCMAKE_BUILD_TYPE=Release^
+        -DPNG_BUILD_ZLIB=ON -DZLIB_INCLUDE_DIRS=..\zlib^
+        -DPNG_STATIC=ON -DPNG_SHARED=OFF -B build
 
   cmake --build build --config Release
 
@@ -91,20 +87,103 @@ You should now be able to run Zint Studio:
   zint\frontend_qt\release\qtZint
 
 
+Visual Studio 2019
+------------------
+
+A solution for Visual Studio 2019 is in sub-directory vs2019. The steps are the
+same as for Visual Studio 2017. To build lpng use
+
+  cmake -G "Visual Studio 16 2019" -A Win32 -DCMAKE_BUILD_TYPE=Release^
+        -DPNG_BUILD_ZLIB=ON -DZLIB_INCLUDE_DIRS=..\zlib^
+        -DPNG_STATIC=ON -DPNG_SHARED=OFF -B build
+
+(note the extra argument "-A Win32"). For Qt, the latest Qt5 version as of
+writing to support Visual Studio 2019 is 15.5.2. Install this and the
+"MSVC 2019 32-bit" component. Zint Studio can also be built using Qt6.
+
+
 Visual Studio 2015
 ------------------
 
 The solution and project files for Visual Studio 2015 have been moved to the
-sub-directory vs2015 and are no longer maintained. However by copying the steps
-above and adapting the settings from the Visual Studio 2017 project files (and
-adding any sources missing), they should be pretty serviceable.
+sub-directory vs2015. The steps are almost the same as for Visual Studio 2017,
+except that "rc.exe" may not be available. If so, you need to install a Windows
+Kit and then update your PATH, e.g. (adjust for version):
+
+  set "PATH=C:\Program Files (x86)\Windows Kits\10\bin\10.0.19041.0\x86;%PATH%"
+
+To build lpng use
+
+  cmake -G "Visual Studio 14 2015" -DCMAKE_BUILD_TYPE=Release^
+        -DPNG_BUILD_ZLIB=ON -DZLIB_INCLUDE_DIRS=..\zlib^
+        -DPNG_STATIC=ON -DPNG_SHARED=OFF -B build
+
+Recent versions of Qt no longer supply a specific component for Visual Studio
+2015, but you can use "MSVC 2017 32-bit" instead as it's compatible.
 
 For information on building a standalone version of Zint Studio using Visual
 Studio 2015, see "frontend_qt/howto_build_qzint_using_msvs2015.txt"
 
 
+CMake and Visual Studio
+-----------------------
+
+Zint can also be built using CMake with Visual Studio 2019, 2017 or 2015. The
+following example uses Visual Studio 2019 to build for x86/Win32:
+
+As above, set %PROJECT_DIR% and clone lpng, zlib and zint into it. Then
+
+  cd zlib
+  ml /safeseh /coff /c contrib/masmx86/match686.asm
+  ml /safeseh /coff /c contrib/masmx86/inffas32.asm
+  nmake -f win32\Makefile.msc LOC="-DASMV -DASMINF=" OBJA="inffas32.obj match686.obj"
+  cd ..
+
+(compiling the zlib assembler with "SAFESEH" seems to be required when building
+zint using CMake)
+
+  cd lpng
+  cmake -G "Visual Studio 16 2019" -A Win32 -DCMAKE_BUILD_TYPE=Release^
+        -DPNG_BUILD_ZLIB=ON -DZLIB_INCLUDE_DIRS=..\zlib^
+        -DPNG_STATIC=ON -DPNG_SHARED=OFF -B build
+  cmake --build build --config Release
+  cd ..
+
+CMake needs to be able to find zlib and lpng. One way to do this (requires
+Administration privileges) is to create two sub-directories in
+"C:\Program Files (x86)" called "include" and "lib", and then copy
+
+  "zlib\zlib.h", "zlib\zconf.h", "lpng\png.h", "lpng\pngconf.h" and
+  "lpng\pnglibconf.h" into "include", and
+
+  "zlib\zlib.lib" and "lpng\build\Release\libpng16_static.lib" into "lib".
+
+This example uses Qt 5.15.2 and component "MSVC 2017 32-bit" so install them and
+add to path (your path may differ):
+
+  set "PATH=C:\Qt\5.15.2\msvc2019\bin;%PATH%"
+
+Now build zint:
+
+  cd zint
+  cmake -G "Visual Studio 16 2019" -A Win32 -DCMAKE_BUILD_TYPE=Release -B build
+  cmake --build build --config Release
+  cd ..
+
+You should be able to run zint CLI and Zint Studio:
+
+  set "PATH=%PROJECT_DIR%\zint\build\backend\Release;%PATH%"
+  zint\build\frontend\Release\zint.exe
+  zint\build\frontend_qt\Release\zint-qt.exe
+
+Note that the program name for Zint Studio when built using CMake is not
+"qtZint.exe" but "zint-qt.exe".
+
+
 Visual C++ 6
 ------------
+
+The zint library and command line tool can be built using VC6.
 
 See "win32\zint_cmdline_vc6\readme.txt"
 
@@ -127,8 +206,8 @@ Any reasonably modern version of Qt can be used. The following uses Qt 5.14.2.
 Using the Qt Maintenance Tool (see the Visual Studio 2017 instructions above)
 install the "MinGW 7.3.0 32-bit" component.
 
-(Note the Qt MinGW version does not necessarily have to match the version of
-MinGW installed, but the closer the better).
+(Note the Qt MinGW versions actually refer to Mingw-w64, the 64-bit fork of
+MinGW, but versions up to 8.1 seem to be compatible.)
 
 Open a MinGW/MSYS shell by clicking/running e.g. (your path may differ)
 
@@ -143,8 +222,8 @@ differ):
 
 Go into the directory you want to use and clone zint and libpng:
 
-  PROJECT_DIR="<project-directory>"
-  cd ${PROJECT_DIR}
+  cd <project-directory>
+  PROJECT_DIR="$(pwd)"
 
   git clone https://git.code.sf.net/p/zint/code zint
   git clone https://git.code.sf.net/p/libpng/code lpng
@@ -165,6 +244,8 @@ Attempt to do the usual GNU make:
 This will fail with a syntax error. To fix:
 
   sed -i 's/\r//' pnglibconf.h
+
+(ignore "preserving permissions" warning if any)
 
 And then do the make again:
 
