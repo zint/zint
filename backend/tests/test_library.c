@@ -440,8 +440,8 @@ static void test_encode_file_directory(void) {
     assert_zero(!ret, "CreateDirectory(%s) == 0\n", dirname);
 #else
     (void)rmdir(dirname); // In case junk hanging around
-    ret = mkdir(dirname, 0700);
-    assert_zero(ret, "mkdir(%s, 0700) != 0 (%d: %s)\n", dirname, errno, strerror(errno));
+    ret = mkdir(dirname, S_IRWXU);
+    assert_zero(ret, "mkdir(%s, S_IRWXU) != 0 (%d: %s)\n", dirname, errno, strerror(errno));
 #endif
 
     ret = ZBarcode_Encode_File(symbol, dirname);
