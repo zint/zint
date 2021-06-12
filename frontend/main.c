@@ -98,7 +98,6 @@ static void types(void) {
 }
 
 /* Output usage information */
-
 static void usage(void) {
     int zint_version = ZBarcode_Version();
     int version_major = zint_version / 10000;
@@ -391,13 +390,12 @@ static int get_barcode_name(const char *barcode_name) {
     while (s <= e) {
         int m = (s + e) / 2;
         int cmp = strcmp(names[m].n, n);
-        if (cmp == 0) {
-            return names[m].symbology;
-        }
         if (cmp < 0) {
             s = m + 1;
-        } else {
+        } else if (cmp > 0) {
             e = m - 1;
+        } else {
+            return names[m].symbology;
         }
     }
 
@@ -680,10 +678,10 @@ static int batch_process(struct zint_symbol *symbol, const char *filename, const
 }
 
 /* Stuff to convert args on Windows command line to UTF-8 */
-#if defined(__WIN32__) || defined(_WIN32) || defined(WIN32) || defined(_WIN64) || defined(_MSC_VER)
-#define ZINT_WIN
+#ifdef _WIN32
 #include <windows.h>
 #include <shellapi.h>
+
 #ifndef WC_ERR_INVALID_CHARS
 #define WC_ERR_INVALID_CHARS    0x00000080
 #endif
@@ -738,11 +736,11 @@ static void win_args(int *p_argc, char ***p_argv) {
         }
     }
 }
-#endif
+#endif /* _WIN32 */
 
 /* Helper to free Windows args on exit */
 static int do_exit(int error_number) {
-#ifdef ZINT_WIN
+#ifdef _WIN32
     win_free_args();
 #endif
     exit(error_number);
@@ -791,7 +789,7 @@ int main(int argc, char **argv) {
     no_png = strcmp(my_symbol->outfile, "out.gif") == 0;
     my_symbol->input_mode = UNICODE_MODE;
 
-#ifdef ZINT_WIN
+#ifdef _WIN32
     win_args(&argc, &argv);
 #endif
 
@@ -869,13 +867,13 @@ int main(int argc, char **argv) {
         switch (c) {
             case OPT_ADDONGAP:
                 if (!validate_int(optarg, &val)) {
-                    fprintf(stderr, "Error 139: Invalid add-on gap value\n");
+                    fprintf(stderr, "Error 139: Invalid add-on gap value (digits only)\n");
                     return do_exit(1);
                 }
                 if (val >= 7 && val <= 12) {
                     addon_gap = val;
                 } else {
-                    fprintf(stderr, "Warning 140: Invalid add-on gap value\n");
+                    fprintf(stderr, "Warning 140: Add-on gap out of range (7 to 12), ignoring\n");
                     fflush(stderr);
                 }
                 break;
@@ -902,13 +900,13 @@ int main(int argc, char **argv) {
                 break;
             case OPT_BORDER:
                 if (!validate_int(optarg, &val)) {
-                    fprintf(stderr, "Error 107: Invalid border width value\n");
+                    fprintf(stderr, "Error 107: Invalid border width value (digits only)\n");
                     return do_exit(1);
                 }
                 if (val <= 1000) { /* `val` >= 0 always */
                     my_symbol->border_width = val;
                 } else {
-                    fprintf(stderr, "Warning 108: Border width out of range\n");
+                    fprintf(stderr, "Warning 108: Border width out of range (0 to 1000), ignoring\n");
                     fflush(stderr);
                 }
                 break;
@@ -920,13 +918,13 @@ int main(int argc, char **argv) {
                 break;
             case OPT_COLS:
                 if (!validate_int(optarg, &val)) {
-                    fprintf(stderr, "Error 131: Invalid columns value\n");
+                    fprintf(stderr, "Error 131: Invalid columns value (digits only)\n");
                     return do_exit(1);
                 }
                 if ((val >= 1) && (val <= 200)) {
                     my_symbol->option_2 = val;
                 } else {
-                    fprintf(stderr, "Warning 111: Number of columns out of range\n");
+                    fprintf(stderr, "Warning 111: Number of columns out of range (1 to 200), ignoring\n");
                     fflush(stderr);
                 }
                 break;
@@ -943,7 +941,7 @@ int main(int argc, char **argv) {
                 my_symbol->dot_size = (float) (atof(optarg));
                 if (my_symbol->dot_size < 0.01f) {
                     /* Zero and negative values are not permitted */
-                    fprintf(stderr, "Warning 106: Invalid dot radius value\n");
+                    fprintf(stderr, "Warning 106: Invalid dot radius value (less than 0.01), ignoring\n");
                     fflush(stderr);
                     my_symbol->dot_size = 4.0f / 5.0f;
                 }
@@ -957,13 +955,13 @@ int main(int argc, char **argv) {
                 break;
             case OPT_ECI:
                 if (!validate_int(optarg, &val)) {
-                    fprintf(stderr, "Error 138: Invalid ECI value\n");
+                    fprintf(stderr, "Error 138: Invalid ECI value (digits only)\n");
                     return do_exit(1);
                 }
                 if (val <= 999999) { /* `val` >= 0 always */
                     my_symbol->eci = val;
                 } else {
-                    fprintf(stderr, "Warning 118: Invalid ECI code\n");
+                    fprintf(stderr, "Warning 118: ECI code out of range (0 to 999999), ignoring\n");
                     fflush(stderr);
                 }
                 break;
@@ -988,13 +986,13 @@ int main(int argc, char **argv) {
                 break;
             case OPT_FONTSIZE:
                 if (!validate_int(optarg, &val)) {
-                    fprintf(stderr, "Error 130: Invalid font size value\n");
+                    fprintf(stderr, "Error 130: Invalid font size value (digits only)\n");
                     return do_exit(1);
                 }
                 if (val <= 100) { /* `val` >= 0 always */
                     my_symbol->fontsize = val;
                 } else {
-                    fprintf(stderr, "Warning 126: Invalid font size\n");
+                    fprintf(stderr, "Warning 126: Font size out of range (0 to 100), ignoring\n");
                     fflush(stderr);
                 }
                 break;
@@ -1012,13 +1010,13 @@ int main(int argc, char **argv) {
                 break;
             case OPT_HEIGHT:
                 if (!validate_int(optarg, &val)) {
-                    fprintf(stderr, "Error 109: Invalid symbol height value\n");
+                    fprintf(stderr, "Error 109: Invalid symbol height value (digits only)\n");
                     return do_exit(1);
                 }
                 if ((val >= 1) && (val <= 1000)) {
                     my_symbol->height = val;
                 } else {
-                    fprintf(stderr, "Warning 110: Symbol height out of range\n");
+                    fprintf(stderr, "Warning 110: Symbol height out of range (1 to 1000), ignoring\n");
                     fflush(stderr);
                 }
                 break;
@@ -1031,12 +1029,12 @@ int main(int argc, char **argv) {
                 break;
             case OPT_MASK:
                 if (!validate_int(optarg, &val)) {
-                    fprintf(stderr, "Error 148: Invalid mask value\n");
+                    fprintf(stderr, "Error 148: Invalid mask value (digits only)\n");
                     return do_exit(1);
                 }
                 if (val > 7) { /* `val` >= 0 always */
                     /* mask pattern >= 0 and <= 7 (i.e. values >= 1 and <= 8) only permitted */
-                    fprintf(stderr, "Warning 147: Invalid mask value\n");
+                    fprintf(stderr, "Warning 147: Mask value out of range (0 to 7), ignoring\n");
                     fflush(stderr);
                 } else {
                     mask = val + 1;
@@ -1044,13 +1042,13 @@ int main(int argc, char **argv) {
                 break;
             case OPT_MODE:
                 if (!validate_int(optarg, &val)) {
-                    fprintf(stderr, "Error 136: Invalid mode value\n");
+                    fprintf(stderr, "Error 136: Invalid mode value (digits only)\n");
                     return do_exit(1);
                 }
                 if (val <= 6) { /* `val` >= 0 always */
                     my_symbol->option_1 = val;
                 } else {
-                    fprintf(stderr, "Warning 116: Invalid mode\n");
+                    fprintf(stderr, "Warning 116: Mode value out of range (0 to 6), ignoring\n");
                     fflush(stderr);
                 }
                 break;
@@ -1064,14 +1062,14 @@ int main(int argc, char **argv) {
                 if (strlen(optarg) <= 127) {
                     strcpy(my_symbol->primary, optarg);
                 } else {
-                    fprintf(stderr, "Warning 115: Primary data string too long, ignoring\n");
+                    fprintf(stderr, "Warning 115: Primary data string too long (127 character maximum), ignoring\n");
                     fflush(stderr);
                 }
                 break;
             case OPT_ROTATE:
                 /* Only certain inputs allowed */
                 if (!validate_int(optarg, &val)) {
-                    fprintf(stderr, "Error 117: Invalid rotation value\n");
+                    fprintf(stderr, "Error 117: Invalid rotation value (digits only)\n");
                     return do_exit(1);
                 }
                 switch (val) {
@@ -1084,20 +1082,21 @@ int main(int argc, char **argv) {
                     case 0: rotate_angle = 0;
                         break;
                     default:
-                        fprintf(stderr, "Warning 137: Invalid rotation parameter\n");
+                        fprintf(stderr,
+                                "Warning 137: Invalid rotation parameter (0, 90, 180 or 270 only), ignoring\n");
                         fflush(stderr);
                         break;
                 }
                 break;
             case OPT_ROWS:
                 if (!validate_int(optarg, &val)) {
-                    fprintf(stderr, "Error 132: Invalid rows value\n");
+                    fprintf(stderr, "Error 132: Invalid rows value (digits only)\n");
                     return do_exit(1);
                 }
                 if ((val >= 1) && (val <= 44)) {
                     my_symbol->option_1 = val;
                 } else {
-                    fprintf(stderr, "Warning 112: Number of rows out of range\n");
+                    fprintf(stderr, "Warning 112: Number of rows out of range (1 to 44), ignoring\n");
                     fflush(stderr);
                 }
                 break;
@@ -1105,46 +1104,47 @@ int main(int argc, char **argv) {
                 my_symbol->scale = (float) (atof(optarg));
                 if (my_symbol->scale < 0.01f) {
                     /* Zero and negative values are not permitted */
-                    fprintf(stderr, "Warning 105: Invalid scale value\n");
+                    fprintf(stderr, "Warning 105: Invalid scale value (less than 0.01), ignoring\n");
                     fflush(stderr);
                     my_symbol->scale = 1.0f;
                 }
                 break;
             case OPT_SCMVV:
                 if (!validate_int(optarg, &val)) {
-                    fprintf(stderr, "Error 149: Invalid Structured Carrier Message version value\n");
+                    fprintf(stderr, "Error 149: Invalid Structured Carrier Message version value (digits only)\n");
                     return do_exit(1);
                 }
                 if (val <= 99) { /* `val` >= 0 always */
                     my_symbol->option_2 = val + 1;
                 } else {
                     /* Version 00-99 only */
-                    fprintf(stderr, "Warning 150: Invalid version (vv) for Structured Carrier Message, ignoring\n");
+                    fprintf(stderr,
+                            "Warning 150: Structured Carrier Message version out of range (0 to 99), ignoring\n");
                     fflush(stderr);
                 }
                 break;
             case OPT_SECURE:
                 if (!validate_int(optarg, &val)) {
-                    fprintf(stderr, "Error 134: Invalid ECC value\n");
+                    fprintf(stderr, "Error 134: Invalid ECC value (digits only)\n");
                     return do_exit(1);
                 }
                 if (val <= 8) { /* `val` >= 0 always */
                     my_symbol->option_1 = val;
                 } else {
-                    fprintf(stderr, "Warning 114: ECC level out of range\n");
+                    fprintf(stderr, "Warning 114: ECC level out of range (0 to 8), ignoring\n");
                     fflush(stderr);
                 }
                 break;
             case OPT_SEPARATOR:
                 if (!validate_int(optarg, &val)) {
-                    fprintf(stderr, "Error 128: Invalid separator value\n");
+                    fprintf(stderr, "Error 128: Invalid separator value (digits only)\n");
                     return do_exit(1);
                 }
                 if (val <= 4) { /* `val` >= 0 always */
                     separator = val;
                 } else {
                     /* Greater than 4 values are not permitted */
-                    fprintf(stderr, "Warning 127: Invalid separator value\n");
+                    fprintf(stderr, "Warning 127: Separator value out of range (0 to 4), ignoring\n");
                     fflush(stderr);
                 }
                 break;
@@ -1159,25 +1159,25 @@ int main(int argc, char **argv) {
                 break;
             case OPT_VERS:
                 if (!validate_int(optarg, &val)) {
-                    fprintf(stderr, "Error 133: Invalid version value\n");
+                    fprintf(stderr, "Error 133: Invalid version value (digits only)\n");
                     return do_exit(1);
                 }
                 if ((val >= 1) && (val <= 84)) {
                     my_symbol->option_2 = val;
                 } else {
-                    fprintf(stderr, "Warning 113: Invalid version\n");
+                    fprintf(stderr, "Warning 113: Version value out of range (1 to 84), ignoring\n");
                     fflush(stderr);
                 }
                 break;
             case OPT_VWHITESP:
                 if (!validate_int(optarg, &val)) {
-                    fprintf(stderr, "Error 153: Invalid vertical whitespace value '%s'\n", optarg);
+                    fprintf(stderr, "Error 153: Invalid vertical whitespace value '%s' (digits only)\n", optarg);
                     return do_exit(1);
                 }
                 if (val <= 1000) { /* `val` >= 0 always */
                     my_symbol->whitespace_height = val;
                 } else {
-                    fprintf(stderr, "Warning 154: Vertical whitespace value out of range\n");
+                    fprintf(stderr, "Warning 154: Vertical whitespace value out of range (0 to 1000), ignoring\n");
                     fflush(stderr);
                 }
                 break;
@@ -1213,13 +1213,13 @@ int main(int argc, char **argv) {
 
             case 'w':
                 if (!validate_int(optarg, &val)) {
-                    fprintf(stderr, "Error 120: Invalid horizontal whitespace value '%s'\n", optarg);
+                    fprintf(stderr, "Error 120: Invalid horizontal whitespace value '%s' (digits only)\n", optarg);
                     return do_exit(1);
                 }
                 if (val <= 1000) { /* `val` >= 0 always */
                     my_symbol->whitespace_width = val;
                 } else {
-                    fprintf(stderr, "Warning 121: Horizontal whitespace value out of range\n");
+                    fprintf(stderr, "Warning 121: Horizontal whitespace value out of range (0 to 1000), ignoring\n");
                     fflush(stderr);
                 }
                 break;

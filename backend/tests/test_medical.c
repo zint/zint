@@ -143,35 +143,36 @@ static void test_input(int index, int debug) {
         int ret;
         int expected_rows;
         int expected_width;
+        const char *expected_errtxt;
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /*  0*/ { BARCODE_CODABAR, "A1234B", 0, 1, 62 },
-        /*  1*/ { BARCODE_CODABAR, "1234B", ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /*  2*/ { BARCODE_CODABAR, "A1234", ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /*  3*/ { BARCODE_CODABAR, "A1234E", ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /*  4*/ { BARCODE_CODABAR, "C123.D", 0, 1, 63 },
-        /*  5*/ { BARCODE_CODABAR, "C123,D", ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /*  6*/ { BARCODE_CODABAR, "D:C", 0, 1, 33 },
-        /*  7*/ { BARCODE_CODABAR, "DCC", ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /*  8*/ { BARCODE_CODABAR, "AB", ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  9*/ { BARCODE_PHARMA, "131070", 0, 1, 78 },
-        /* 10*/ { BARCODE_PHARMA, "131071", ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 11*/ { BARCODE_PHARMA, "3", 0, 1, 4 },
-        /* 12*/ { BARCODE_PHARMA, "2", ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 13*/ { BARCODE_PHARMA, "1", ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 14*/ { BARCODE_PHARMA, "12A", ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 15*/ { BARCODE_PHARMA_TWO, "64570080", 0, 2, 31 },
-        /* 16*/ { BARCODE_PHARMA_TWO, "64570081", ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 17*/ { BARCODE_PHARMA_TWO, "4", 0, 2, 3 },
-        /* 18*/ { BARCODE_PHARMA_TWO, "3", ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 19*/ { BARCODE_PHARMA_TWO, "2", ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 20*/ { BARCODE_PHARMA_TWO, "1", ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 21*/ { BARCODE_PHARMA_TWO, "123A", ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 22*/ { BARCODE_CODE32, "12345678", 0, 1, 103 },
-        /* 22*/ { BARCODE_CODE32, "9", 0, 1, 103 },
-        /* 22*/ { BARCODE_CODE32, "0", 0, 1, 103 },
-        /* 22*/ { BARCODE_CODE32, "A", ZINT_ERROR_INVALID_DATA, -1, -1 },
+        /*  0*/ { BARCODE_CODABAR, "A1234B", 0, 1, 62, "" },
+        /*  1*/ { BARCODE_CODABAR, "1234B", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 358: Does not begin with \"A\", \"B\", \"C\" or \"D\"" },
+        /*  2*/ { BARCODE_CODABAR, "A1234", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 359: Does not end with \"A\", \"B\", \"C\" or \"D\"" },
+        /*  3*/ { BARCODE_CODABAR, "A1234E", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 359: Does not end with \"A\", \"B\", \"C\" or \"D\"" },
+        /*  4*/ { BARCODE_CODABAR, "C123.D", 0, 1, 63, "" },
+        /*  5*/ { BARCODE_CODABAR, "C123,D", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 357: Invalid characters in data" },
+        /*  6*/ { BARCODE_CODABAR, "D:C", 0, 1, 33, "" },
+        /*  7*/ { BARCODE_CODABAR, "DCC", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 363: Cannot contain \"A\", \"B\", \"C\" or \"D\"" },
+        /*  8*/ { BARCODE_CODABAR, "AB", ZINT_ERROR_TOO_LONG, -1, -1, "Error 362: Input too short (3 character minimum)" },
+        /*  9*/ { BARCODE_PHARMA, "131070", 0, 1, 78, "" },
+        /* 10*/ { BARCODE_PHARMA, "131071", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 352: Data out of range (3 to 131070)" },
+        /* 11*/ { BARCODE_PHARMA, "3", 0, 1, 4, "" },
+        /* 12*/ { BARCODE_PHARMA, "2", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 352: Data out of range (3 to 131070)" },
+        /* 13*/ { BARCODE_PHARMA, "1", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 352: Data out of range (3 to 131070)" },
+        /* 14*/ { BARCODE_PHARMA, "12A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 351: Invalid characters in data (digits only)" },
+        /* 15*/ { BARCODE_PHARMA_TWO, "64570080", 0, 2, 31, "" },
+        /* 16*/ { BARCODE_PHARMA_TWO, "64570081", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 353: Data out of range (4 to 64570080)" },
+        /* 17*/ { BARCODE_PHARMA_TWO, "4", 0, 2, 3, "" },
+        /* 18*/ { BARCODE_PHARMA_TWO, "3", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 353: Data out of range (4 to 64570080)" },
+        /* 19*/ { BARCODE_PHARMA_TWO, "2", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 353: Data out of range (4 to 64570080)" },
+        /* 20*/ { BARCODE_PHARMA_TWO, "1", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 353: Data out of range (4 to 64570080)" },
+        /* 21*/ { BARCODE_PHARMA_TWO, "123A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 355: Invalid characters in data (digits only)" },
+        /* 22*/ { BARCODE_CODE32, "12345678", 0, 1, 103, "" },
+        /* 23*/ { BARCODE_CODE32, "9", 0, 1, 103, "" },
+        /* 24*/ { BARCODE_CODE32, "0", 0, 1, 103, "" },
+        /* 25*/ { BARCODE_CODE32, "A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 361: Invalid characters in data (digits only)" },
     };
     int data_size = ARRAY_SIZE(data);
 
@@ -191,6 +192,7 @@ static void test_input(int index, int debug) {
             assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
             assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n", i, symbol->width, data[i].expected_width);
         }
+        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d symbol->errtxt %s != %s\n", i, symbol->errtxt, data[i].expected_errtxt);
 
         ZBarcode_Delete(symbol);
     }

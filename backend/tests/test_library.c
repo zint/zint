@@ -345,7 +345,9 @@ static void test_encode_file_empty(void) {
     (void)remove(filename); // In case junk hanging around
 
     fstream = fopen(filename, "w+");
-    fclose(fstream);
+    assert_nonnull(fstream, "fopen(%s) failed (%d)\n", filename, ferror(fstream));
+    ret = fclose(fstream);
+    assert_zero(ret, "fclose(%s) %d != 0\n", filename, ret);
 
     ret = ZBarcode_Encode_File(symbol, filename);
     assert_equal(ret, ZINT_ERROR_INVALID_DATA, "ZBarcode_Encode_File empty ret %d != ZINT_ERROR_INVALID_DATA (%s)\n", ret, symbol->errtxt);
@@ -372,9 +374,11 @@ static void test_encode_file_too_large(void) {
     (void)remove(filename); // In case junk hanging around
 
     fstream = fopen(filename, "w+");
+    assert_nonnull(fstream, "fopen(%s) failed (%d)\n", filename, ferror(fstream));
     ret = fwrite(buf, 1, sizeof(buf), fstream);
-    assert_equal(ret, sizeof(buf), "fwrite retun value: %d != %d\n", ret, (int)sizeof(buf));
-    fclose(fstream);
+    assert_equal(ret, sizeof(buf), "fwrite return value: %d != %d\n", ret, (int)sizeof(buf));
+    ret = fclose(fstream);
+    assert_zero(ret, "fclose(%s) %d != 0\n", filename, ret);
 
     ret = ZBarcode_Encode_File(symbol, filename);
     assert_equal(ret, ZINT_ERROR_TOO_LONG, "ZBarcode_Encode_File too large ret %d != ZINT_ERROR_TOO_LONG (%s)\n", ret, symbol->errtxt);

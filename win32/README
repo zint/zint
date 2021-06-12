@@ -150,7 +150,7 @@ zint using CMake)
   cd ..
 
 CMake needs to be able to find zlib and lpng. One way to do this (requires
-Administration privileges) is to create two sub-directories in
+Administrator privileges) is to create two sub-directories in
 "C:\Program Files (x86)" called "include" and "lib", and then copy
 
   "zlib\zlib.h", "zlib\zconf.h", "lpng\png.h", "lpng\pngconf.h" and

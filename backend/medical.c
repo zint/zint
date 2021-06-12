@@ -67,12 +67,12 @@ INTERNAL int pharma_one(struct zint_symbol *symbol, unsigned char source[], int 
     char dest[64]; /* 17 * 2 + 1 */
 
     if (length > 6) {
-        strcpy(symbol->errtxt, "350: Input too long (6 character maximum");
+        strcpy(symbol->errtxt, "350: Input too long (6 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
     error_number = is_sane(NEON, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "351: Invalid characters in data");
+        strcpy(symbol->errtxt, "351: Invalid characters in data (digits only)");
         return error_number;
     }
 
@@ -167,7 +167,7 @@ INTERNAL int pharma_two(struct zint_symbol *symbol, unsigned char source[], int 
     }
     error_number = is_sane(NEON, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "355: Invalid characters in data");
+        strcpy(symbol->errtxt, "355: Invalid characters in data (digits only)");
         return error_number;
     }
     error_number = pharma_two_calc(symbol, source, height_pattern);
@@ -277,7 +277,7 @@ INTERNAL int code32(struct zint_symbol *symbol, unsigned char source[], int leng
     }
     error_number = is_sane(NEON, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "361: Invalid characters in data");
+        strcpy(symbol->errtxt, "361: Invalid characters in data (digits only)");
         return error_number;
     }
 
