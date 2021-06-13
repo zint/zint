@@ -135,24 +135,25 @@ int testUtilModulesCmpRow(const struct zint_symbol *symbol, int row, const char 
 int testUtilModulesDumpHex(const struct zint_symbol *symbol, char dump[], int dump_size);
 char *testUtilUIntArrayDump(unsigned int *array, int size, char *dump, int dump_size);
 char *testUtilUCharArrayDump(unsigned char *array, int size, char *dump, int dump_size);
+int testUtilDataPath(char *buffer, int buffer_size, const char *subdir, const char *filename);
 void testUtilBitmapPrint(const struct zint_symbol *symbol, const char *prefix, const char *postfix);
 int testUtilBitmapCmp(const struct zint_symbol *symbol, const char *expected, int *row, int *column);
-int testUtilExists(char *filename);
-int testUtilCmpPngs(char *file1, char *file2);
-int testUtilCmpTxts(char *txt1, char *txt2);
-int testUtilCmpBins(char *bin1, char *bin2);
-int testUtilCmpSvgs(char *svg1, char *svg2);
-int testUtilCmpEpss(char *eps1, char *eps2);
+int testUtilExists(const char *filename);
+int testUtilCmpPngs(const char *file1, const char *file2);
+int testUtilCmpTxts(const char *txt1, const char *txt2);
+int testUtilCmpBins(const char *bin1, const char *bin2);
+int testUtilCmpSvgs(const char *svg1, const char *svg2);
+int testUtilCmpEpss(const char *eps1, const char *eps2);
 int testUtilHaveIdentify();
-int testUtilVerifyIdentify(char *filename, int debug);
+int testUtilVerifyIdentify(const char *filename, int debug);
 int testUtilHaveLibreOffice();
-int testUtilVerifyLibreOffice(char *filename, int debug);
+int testUtilVerifyLibreOffice(const char *filename, int debug);
 int testUtilHaveGhostscript();
-int testUtilVerifyGhostscript(char *filename, int debug);
+int testUtilVerifyGhostscript(const char *filename, int debug);
 int testUtilHaveVnu();
-int testUtilVerifyVnu(char *filename, int debug);
+int testUtilVerifyVnu(const char *filename, int debug);
 int testUtilHaveTiffInfo();
-int testUtilVerifyTiffInfo(char *filename, int debug);
+int testUtilVerifyTiffInfo(const char *filename, int debug);
 int testUtilCanBwipp(int index, const struct zint_symbol *symbol, int option_1, int option_2, int option_3,
             int debug);
 int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int option_2, int option_3,

@@ -57,24 +57,25 @@ static void test_print(int index, int generate, int debug) {
         char *comment;
     };
     struct item data[] = {
-        /*  0*/ { BARCODE_CODE128, UNICODE_MODE, BOLD_TEXT, -1, -1, -1, "", "", 0, "Égjpqy", "data/emf/code128_egrave_bold.emf", "" },
-        /*  1*/ { BARCODE_TELEPEN, -1, -1, -1, -1, -1, "147AD0", "FC9630", 0, "123", "data/emf/telenum_fg_bg.emf", "" },
-        /*  2*/ { BARCODE_ULTRA, -1, -1, 5, -1, -1, "147AD0", "FC9630", 0, "123", "data/emf/ultracode_fg_bg.emf", "" },
-        /*  3*/ { BARCODE_EANX, -1, -1, -1, -1, -1, "", "", 0, "9780877799306+54321", "data/emf/ean13_5addon_ggs_5.2.2.5.2-2.emf", "" },
-        /*  4*/ { BARCODE_EANX, -1, -1, -1, -1, -1, "", "", 0, "210987654321+54321", "data/emf/ean13_5addon_#185.emf", "#185 Byte count, font data, HeaderExtension1/2" },
-        /*  5*/ { BARCODE_UPCA, -1, -1, -1, -1, -1, "", "", 0, "012345678905+24", "data/emf/upca_2addon_ggs_5.2.6.6-5.emf", "" },
-        /*  6*/ { BARCODE_UPCE, -1, -1, -1, -1, -1, "", "", 0, "0123456+12", "data/emf/upce_2addon.emf", "" },
-        /*  7*/ { BARCODE_UPCE, -1, SMALL_TEXT | BOLD_TEXT, -1, -1, -1, "", "", 0, "0123456+12", "data/emf/upce_2addon_small_bold.emf", "" },
-        /*  8*/ { BARCODE_ITF14, -1, BOLD_TEXT, -1, -1, -1, "", "", 0, "123", "data/emf/itf14_bold.emf", "" },
-        /*  9*/ { BARCODE_CODE39, -1, -1, -1, -1, -1, "", "", 90, "123", "data/emf/code39_rotate_90.emf", "" },
-        /* 10*/ { BARCODE_CODE39, -1, -1, -1, -1, -1, "", "", 180, "123", "data/emf/code39_rotate_180.emf", "" },
-        /* 11*/ { BARCODE_CODE39, -1, -1, -1, -1, -1, "", "", 270, "123", "data/emf/code39_rotate_270.emf", "" },
-        /* 12*/ { BARCODE_MAXICODE, -1, -1, -1, -1, -1, "E0E0E0", "700070", 0, "THIS IS A 93 CHARACTER CODE SET A MESSAGE THAT FILLS A MODE 4, UNAPPENDED, MAXICODE SYMBOL...", "data/emf/maxicode_#185.emf", "#185 Maxicode scaling" },
+        /*  0*/ { BARCODE_CODE128, UNICODE_MODE, BOLD_TEXT, -1, -1, -1, "", "", 0, "Égjpqy", "code128_egrave_bold.emf", "" },
+        /*  1*/ { BARCODE_TELEPEN, -1, -1, -1, -1, -1, "147AD0", "FC9630", 0, "123", "telenum_fg_bg.emf", "" },
+        /*  2*/ { BARCODE_ULTRA, -1, -1, 5, -1, -1, "147AD0", "FC9630", 0, "123", "ultracode_fg_bg.emf", "" },
+        /*  3*/ { BARCODE_EANX, -1, -1, -1, -1, -1, "", "", 0, "9780877799306+54321", "ean13_5addon_ggs_5.2.2.5.2-2.emf", "" },
+        /*  4*/ { BARCODE_EANX, -1, -1, -1, -1, -1, "", "", 0, "210987654321+54321", "ean13_5addon_#185.emf", "#185 Byte count, font data, HeaderExtension1/2" },
+        /*  5*/ { BARCODE_UPCA, -1, -1, -1, -1, -1, "", "", 0, "012345678905+24", "upca_2addon_ggs_5.2.6.6-5.emf", "" },
+        /*  6*/ { BARCODE_UPCE, -1, -1, -1, -1, -1, "", "", 0, "0123456+12", "upce_2addon.emf", "" },
+        /*  7*/ { BARCODE_UPCE, -1, SMALL_TEXT | BOLD_TEXT, -1, -1, -1, "", "", 0, "0123456+12", "upce_2addon_small_bold.emf", "" },
+        /*  8*/ { BARCODE_ITF14, -1, BOLD_TEXT, -1, -1, -1, "", "", 0, "123", "itf14_bold.emf", "" },
+        /*  9*/ { BARCODE_CODE39, -1, -1, -1, -1, -1, "", "", 90, "123", "code39_rotate_90.emf", "" },
+        /* 10*/ { BARCODE_CODE39, -1, -1, -1, -1, -1, "", "", 180, "123", "code39_rotate_180.emf", "" },
+        /* 11*/ { BARCODE_CODE39, -1, -1, -1, -1, -1, "", "", 270, "123", "code39_rotate_270.emf", "" },
+        /* 12*/ { BARCODE_MAXICODE, -1, -1, -1, -1, -1, "E0E0E0", "700070", 0, "THIS IS A 93 CHARACTER CODE SET A MESSAGE THAT FILLS A MODE 4, UNAPPENDED, MAXICODE SYMBOL...", "maxicode_#185.emf", "#185 Maxicode scaling" },
     };
     int data_size = ARRAY_SIZE(data);
 
-    char *data_dir = "data/emf";
-    char *emf = "out.emf";
+    const char *data_dir = "/backend/tests/data/emf";
+    const char *emf = "out.emf";
+    char expected_file[1024];
     char escaped[1024];
     int escaped_size = 1024;
 
@@ -110,26 +111,28 @@ static void test_print(int index, int generate, int debug) {
         ret = ZBarcode_Print(symbol, data[i].rotate_angle);
         assert_zero(ret, "i:%d %s ZBarcode_Print %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, ret);
 
+        assert_nonzero(testUtilDataPath(expected_file, sizeof(expected_file), data_dir, data[i].expected_file), "i:%d testUtilDataPath == 0\n", i);
+
         if (generate) {
             printf("        /*%3d*/ { %s, %s, %s, %d, %d, %d, \"%s\", \"%s\", %d, \"%s\", \"%s\" \"%s\" },\n",
                     i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode),
                     testUtilOutputOptionsName(data[i].output_options), data[i].whitespace_width,
                     data[i].option_1, data[i].option_2, data[i].fgcolour, data[i].bgcolour, data[i].rotate_angle,
                     testUtilEscape(data[i].data, length, escaped, escaped_size), data[i].expected_file, data[i].comment);
-            ret = rename(symbol->outfile, data[i].expected_file);
-            assert_zero(ret, "i:%d rename(%s, %s) ret %d != 0\n", i, symbol->outfile, data[i].expected_file, ret);
+            ret = rename(symbol->outfile, expected_file);
+            assert_zero(ret, "i:%d rename(%s, %s) ret %d != 0\n", i, symbol->outfile, expected_file, ret);
             if (have_libreoffice) {
                 // Note this will fail (on Ubuntu anyway) if LibreOffice Base/Calc/Impress/Writer running (i.e. anything but LibreOffice Draw)
                 // Doesn't seem to be a way to force Draw invocation through the command line
-                ret = testUtilVerifyLibreOffice(data[i].expected_file, debug);
-                assert_zero(ret, "i:%d %s libreoffice %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), data[i].expected_file, ret);
+                ret = testUtilVerifyLibreOffice(expected_file, debug);
+                assert_zero(ret, "i:%d %s libreoffice %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), expected_file, ret);
             }
         } else {
             assert_nonzero(testUtilExists(symbol->outfile), "i:%d testUtilExists(%s) == 0\n", i, symbol->outfile);
-            assert_nonzero(testUtilExists(data[i].expected_file), "i:%d testUtilExists(%s) == 0\n", i, data[i].expected_file);
+            assert_nonzero(testUtilExists(expected_file), "i:%d testUtilExists(%s) == 0\n", i, expected_file);
 
-            ret = testUtilCmpBins(symbol->outfile, data[i].expected_file);
-            assert_zero(ret, "i:%d %s testUtilCmpBins(%s, %s) %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, data[i].expected_file, ret);
+            ret = testUtilCmpBins(symbol->outfile, expected_file);
+            assert_zero(ret, "i:%d %s testUtilCmpBins(%s, %s) %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, expected_file, ret);
             assert_zero(remove(symbol->outfile), "i:%d remove(%s) != 0\n", i, symbol->outfile);
         }
 

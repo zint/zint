@@ -52,20 +52,21 @@ static void test_print(int index, int generate, int debug) {
         char *expected_file;
     };
     struct item data[] = {
-        /*  0*/ { BARCODE_CODE128, UNICODE_MODE, BOLD_TEXT, -1, -1, -1, "", "", "Égjpqy", "data/eps/code128_egrave_bold.eps" },
-        /*  1*/ { BARCODE_CODE39, -1, -1, -1, -1, -1, "147AD0", "FC9630", "123", "data/eps/code39_fg_bg.eps" },
-        /*  2*/ { BARCODE_ULTRA, -1, 1, -1, -1, -1, "147AD0", "FC9630", "123", "data/eps/ultra_fg_bg.eps" },
-        /*  3*/ { BARCODE_EANX, -1, -1, -1, -1, -1, "", "", "9771384524017+12", "data/eps/ean13_2addon_ggs_5.2.2.5.1-2.eps" },
-        /*  4*/ { BARCODE_UPCA, -1, -1, -1, -1, -1, "", "", "012345678905+24", "data/eps/upca_2addon_ggs_5.2.6.6-5.eps" },
-        /*  5*/ { BARCODE_UPCE, -1, -1, -1, -1, -1, "", "", "0123456+12345", "data/eps/upce_5addon.eps" },
-        /*  6*/ { BARCODE_UPCE, -1, SMALL_TEXT | BOLD_TEXT, -1, -1, -1, "", "", "0123456+12345", "data/eps/upce_5addon_small_bold.eps" },
-        /*  7*/ { BARCODE_CODE128, UNICODE_MODE, -1, -1, -1, -1, "", "", "A\\B)ç(D", "data/eps/code128_escape_latin1.eps" },
-        /*  8*/ { BARCODE_DBAR_LTD, -1, BOLD_TEXT, -1, -1, -1, "", "", "1501234567890", "data/eps/dbar_ltd_24724_fig7_bold.eps" },
+        /*  0*/ { BARCODE_CODE128, UNICODE_MODE, BOLD_TEXT, -1, -1, -1, "", "", "Égjpqy", "code128_egrave_bold.eps" },
+        /*  1*/ { BARCODE_CODE39, -1, -1, -1, -1, -1, "147AD0", "FC9630", "123", "code39_fg_bg.eps" },
+        /*  2*/ { BARCODE_ULTRA, -1, 1, -1, -1, -1, "147AD0", "FC9630", "123", "ultra_fg_bg.eps" },
+        /*  3*/ { BARCODE_EANX, -1, -1, -1, -1, -1, "", "", "9771384524017+12", "ean13_2addon_ggs_5.2.2.5.1-2.eps" },
+        /*  4*/ { BARCODE_UPCA, -1, -1, -1, -1, -1, "", "", "012345678905+24", "upca_2addon_ggs_5.2.6.6-5.eps" },
+        /*  5*/ { BARCODE_UPCE, -1, -1, -1, -1, -1, "", "", "0123456+12345", "upce_5addon.eps" },
+        /*  6*/ { BARCODE_UPCE, -1, SMALL_TEXT | BOLD_TEXT, -1, -1, -1, "", "", "0123456+12345", "upce_5addon_small_bold.eps" },
+        /*  7*/ { BARCODE_CODE128, UNICODE_MODE, -1, -1, -1, -1, "", "", "A\\B)ç(D", "code128_escape_latin1.eps" },
+        /*  8*/ { BARCODE_DBAR_LTD, -1, BOLD_TEXT, -1, -1, -1, "", "", "1501234567890", "dbar_ltd_24724_fig7_bold.eps" },
     };
     int data_size = ARRAY_SIZE(data);
 
-    char *data_dir = "data/eps";
-    char *eps = "out.eps";
+    const char *data_dir = "/backend/tests/data/eps";
+    const char *eps = "out.eps";
+    char expected_file[1024];
     char escaped[1024];
     int escaped_size = 1024;
 
@@ -101,22 +102,24 @@ static void test_print(int index, int generate, int debug) {
         ret = ZBarcode_Print(symbol, 0);
         assert_zero(ret, "i:%d %s ZBarcode_Print %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, ret);
 
+        assert_nonzero(testUtilDataPath(expected_file, sizeof(expected_file), data_dir, data[i].expected_file), "i:%d testUtilDataPath == 0\n", i);
+
         if (generate) {
             printf("        /*%3d*/ { %s, %s, %s, %d, %d, %d, \"%s\", \"%s\", \"%s\", \"%s\"},\n",
                     i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode), testUtilOutputOptionsName(data[i].output_options), data[i].whitespace_width,
                     data[i].option_1, data[i].option_2, data[i].fgcolour, data[i].bgcolour, testUtilEscape(data[i].data, length, escaped, escaped_size), data[i].expected_file);
-            ret = rename(symbol->outfile, data[i].expected_file);
-            assert_zero(ret, "i:%d rename(%s, %s) ret %d != 0\n", i, symbol->outfile, data[i].expected_file, ret);
+            ret = rename(symbol->outfile, expected_file);
+            assert_zero(ret, "i:%d rename(%s, %s) ret %d != 0\n", i, symbol->outfile, expected_file, ret);
             if (have_ghostscript) {
-                ret = testUtilVerifyGhostscript(data[i].expected_file, debug);
-                assert_zero(ret, "i:%d %s ghostscript %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), data[i].expected_file, ret);
+                ret = testUtilVerifyGhostscript(expected_file, debug);
+                assert_zero(ret, "i:%d %s ghostscript %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), expected_file, ret);
             }
         } else {
             assert_nonzero(testUtilExists(symbol->outfile), "i:%d testUtilExists(%s) == 0\n", i, symbol->outfile);
-            assert_nonzero(testUtilExists(data[i].expected_file), "i:%d testUtilExists(%s) == 0\n", i, data[i].expected_file);
+            assert_nonzero(testUtilExists(expected_file), "i:%d testUtilExists(%s) == 0\n", i, expected_file);
 
-            ret = testUtilCmpEpss(symbol->outfile, data[i].expected_file);
-            assert_zero(ret, "i:%d %s testUtilCmpEpss(%s, %s) %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, data[i].expected_file, ret);
+            ret = testUtilCmpEpss(symbol->outfile, expected_file);
+            assert_zero(ret, "i:%d %s testUtilCmpEpss(%s, %s) %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, expected_file, ret);
             assert_zero(remove(symbol->outfile), "i:%d remove(%s) != 0\n", i, symbol->outfile);
         }
 

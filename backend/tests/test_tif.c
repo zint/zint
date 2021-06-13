@@ -164,26 +164,27 @@ static void test_print(int index, int generate, int debug) {
         char *comment;
     };
     struct item data[] = {
-        /*  0*/ { BARCODE_CODE128, -1, -1, -1, 1, -1, -1, -1, 0, 0, "112233", "EEDDCC", "A", "", "data/tif/code128_fgbg.tif", "" },
-        /*  1*/ { BARCODE_CODE128, -1, -1, -1, 1, -1, -1, -1, 0, 0, "C00000", "FEDCBACC", "A", "", "data/tif/code128_bgalpha.tif", "" },
-        /*  2*/ { BARCODE_CODE128, -1, -1, -1, 1, -1, -1, -1, 0, 0, "00000099", "FEDCBA", "A", "", "data/tif/code128_fgalpha.tif", "" },
-        /*  3*/ { BARCODE_CODE128, -1, -1, -1, 1, -1, -1, -1, 0, 0, "00000099", "FEDCBACC", "A", "", "data/tif/code128_fgbgalpha.tif", "" },
-        /*  4*/ { BARCODE_CODE128, -1, -1, CMYK_COLOUR, 1, -1, -1, -1, 0, 0, "C00000", "FEDCBA", "A", "", "data/tif/code128_cmyk.tif", "" },
-        /*  5*/ { BARCODE_CODE128, -1, -1, CMYK_COLOUR, 1, -1, -1, -1, 0, 0, "C0000099", "FEDCBACC", "A", "", "data/tif/code128_cmyk_fgbgalpha.tif", "" },
-        /*  6*/ { BARCODE_ULTRA, -1, -1, -1, 1, -1, -1, -1, 0, 0, "C00000", "FEDCBACC", "1234", "", "data/tif/ultra_bgalpha.tif", "" },
-        /*  7*/ { BARCODE_ULTRA, -1, -1, -1, 1, -1, -1, -1, 0, 0, "000000BB", "FEDCBA", "1234", "", "data/tif/ultra_fgalpha.tif", "" },
-        /*  8*/ { BARCODE_ULTRA, -1, -1, -1, 1, -1, -1, -1, 0, 0, "000000BB", "FEDCBACC", "1234", "", "data/tif/ultra_fgbgalpha.tif", "" },
-        /*  9*/ { BARCODE_ULTRA, -1, -1, -1, 1, -1, -1, -1, 0, 0, "000000BB", "", "1234", "", "data/tif/ultra_fgalpha_nobg.tif", "" },
-        /* 10*/ { BARCODE_ULTRA, -1, -1, -1, 1, -1, -1, -1, 0, 0, "", "FEDCBACC", "1234", "", "data/tif/ultra_bgalpha_nofg.tif", "" },
-        /* 11*/ { BARCODE_ULTRA, -1, -1, -1, -1, -1, -1, -1, 0, 0.5f, "", "", "1", "", "data/tif/ultra_odd.tif", "" },
-        /* 12*/ { BARCODE_HANXIN, UNICODE_MODE, -1, -1, -1, -1, 4, 84, 0, 2, "", "", "1", "", "data/tif/hanxin_v84_l4_scale2.tif", "" },
-        /* 13*/ { BARCODE_AZTEC, -1, -1, -1, -1, -1, -1, 32, 0, 0, "4BE055", "", "1", "", "data/tif/aztec_v32_fg.tif", "" },
-        /* 14*/ { BARCODE_DAFT, -1, -1, -1, -1, -1, -1, -1, 1, 0.5f, "", "", "F", "", "data/tif/daft_scale0.5.tif", "" },
+        /*  0*/ { BARCODE_CODE128, -1, -1, -1, 1, -1, -1, -1, 0, 0, "112233", "EEDDCC", "A", "", "code128_fgbg.tif", "" },
+        /*  1*/ { BARCODE_CODE128, -1, -1, -1, 1, -1, -1, -1, 0, 0, "C00000", "FEDCBACC", "A", "", "code128_bgalpha.tif", "" },
+        /*  2*/ { BARCODE_CODE128, -1, -1, -1, 1, -1, -1, -1, 0, 0, "00000099", "FEDCBA", "A", "", "code128_fgalpha.tif", "" },
+        /*  3*/ { BARCODE_CODE128, -1, -1, -1, 1, -1, -1, -1, 0, 0, "00000099", "FEDCBACC", "A", "", "code128_fgbgalpha.tif", "" },
+        /*  4*/ { BARCODE_CODE128, -1, -1, CMYK_COLOUR, 1, -1, -1, -1, 0, 0, "C00000", "FEDCBA", "A", "", "code128_cmyk.tif", "" },
+        /*  5*/ { BARCODE_CODE128, -1, -1, CMYK_COLOUR, 1, -1, -1, -1, 0, 0, "C0000099", "FEDCBACC", "A", "", "code128_cmyk_fgbgalpha.tif", "" },
+        /*  6*/ { BARCODE_ULTRA, -1, -1, -1, 1, -1, -1, -1, 0, 0, "C00000", "FEDCBACC", "1234", "", "ultra_bgalpha.tif", "" },
+        /*  7*/ { BARCODE_ULTRA, -1, -1, -1, 1, -1, -1, -1, 0, 0, "000000BB", "FEDCBA", "1234", "", "ultra_fgalpha.tif", "" },
+        /*  8*/ { BARCODE_ULTRA, -1, -1, -1, 1, -1, -1, -1, 0, 0, "000000BB", "FEDCBACC", "1234", "", "ultra_fgbgalpha.tif", "" },
+        /*  9*/ { BARCODE_ULTRA, -1, -1, -1, 1, -1, -1, -1, 0, 0, "000000BB", "", "1234", "", "ultra_fgalpha_nobg.tif", "" },
+        /* 10*/ { BARCODE_ULTRA, -1, -1, -1, 1, -1, -1, -1, 0, 0, "", "FEDCBACC", "1234", "", "ultra_bgalpha_nofg.tif", "" },
+        /* 11*/ { BARCODE_ULTRA, -1, -1, -1, -1, -1, -1, -1, 0, 0.5f, "", "", "1", "", "ultra_odd.tif", "" },
+        /* 12*/ { BARCODE_HANXIN, UNICODE_MODE, -1, -1, -1, -1, 4, 84, 0, 2, "", "", "1", "", "hanxin_v84_l4_scale2.tif", "" },
+        /* 13*/ { BARCODE_AZTEC, -1, -1, -1, -1, -1, -1, 32, 0, 0, "4BE055", "", "1", "", "aztec_v32_fg.tif", "" },
+        /* 14*/ { BARCODE_DAFT, -1, -1, -1, -1, -1, -1, -1, 1, 0.5f, "", "", "F", "", "daft_scale0.5.tif", "" },
     };
     int data_size = ARRAY_SIZE(data);
 
-    char *data_dir = "data/tif";
-    char *tif = "out.tif";
+    const char *data_dir = "/backend/tests/data/tif";
+    const char *tif = "out.tif";
+    char expected_file[1024];
     char escaped[1024];
     int escaped_size = 1024;
     char *text;
@@ -239,26 +240,28 @@ static void test_print(int index, int generate, int debug) {
         ret = ZBarcode_Print(symbol, 0);
         assert_zero(ret, "i:%d %s ZBarcode_Print %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, ret);
 
+        assert_nonzero(testUtilDataPath(expected_file, sizeof(expected_file), data_dir, data[i].expected_file), "i:%d testUtilDataPath == 0\n", i);
+
         if (generate) {
             printf("        /*%3d*/ { %s, %s, %d, %s, %d, %d, %d, %d, %d, %.5g, \"%s\",\"%s\",  \"%s\", \"%s\", \"%s\", \"%s\" },\n",
                     i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode), data[i].border_width, testUtilOutputOptionsName(data[i].output_options),
                     data[i].whitespace_width, data[i].show_hrt, data[i].option_1, data[i].option_2, data[i].height, data[i].scale, data[i].fgcolour, data[i].bgcolour,
                     testUtilEscape(data[i].data, length, escaped, escaped_size), data[i].composite, data[i].expected_file, data[i].comment);
-            ret = rename(symbol->outfile, data[i].expected_file);
-            assert_zero(ret, "i:%d rename(%s, %s) ret %d != 0\n", i, symbol->outfile, data[i].expected_file, ret);
+            ret = rename(symbol->outfile, expected_file);
+            assert_zero(ret, "i:%d rename(%s, %s) ret %d != 0\n", i, symbol->outfile, expected_file, ret);
             if (have_tiffinfo) {
-                ret = testUtilVerifyTiffInfo(data[i].expected_file, debug);
-                assert_zero(ret, "i:%d %s tiffinfo %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), data[i].expected_file, ret);
+                ret = testUtilVerifyTiffInfo(expected_file, debug);
+                assert_zero(ret, "i:%d %s tiffinfo %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), expected_file, ret);
             } else if (have_identify) {
-                ret = testUtilVerifyIdentify(data[i].expected_file, debug);
-                assert_zero(ret, "i:%d %s identify %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), data[i].expected_file, ret);
+                ret = testUtilVerifyIdentify(expected_file, debug);
+                assert_zero(ret, "i:%d %s identify %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), expected_file, ret);
             }
         } else {
             assert_nonzero(testUtilExists(symbol->outfile), "i:%d testUtilExists(%s) == 0\n", i, symbol->outfile);
-            assert_nonzero(testUtilExists(data[i].expected_file), "i:%d testUtilExists(%s) == 0\n", i, data[i].expected_file);
+            assert_nonzero(testUtilExists(expected_file), "i:%d testUtilExists(%s) == 0\n", i, expected_file);
 
-            ret = testUtilCmpBins(symbol->outfile, data[i].expected_file);
-            assert_zero(ret, "i:%d %s testUtilCmpBins(%s, %s) %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, data[i].expected_file, ret);
+            ret = testUtilCmpBins(symbol->outfile, expected_file);
+            assert_zero(ret, "i:%d %s testUtilCmpBins(%s, %s) %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, expected_file, ret);
             assert_zero(remove(symbol->outfile), "i:%d remove(%s) != 0\n", i, symbol->outfile);
         }
 

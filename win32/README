@@ -18,8 +18,8 @@ Make sure git and cmake are in your PATH, e.g. (your paths may differ)
 Download zint, zlib and libpng by going to the directory you want to clone them
 into:
 
-  set "PROJECT_DIR=<project-directory>"
-  cd %PROJECT_DIR%
+  cd <project-directory>
+  set "PROJECT_DIR=%cd%"
 
 and cloning each:
 

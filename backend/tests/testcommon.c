@@ -890,7 +890,7 @@ int testUtilVectorCmp(const struct zint_vector *a, const struct zint_vector *b) 
         if (ustrlen(astring->text) != ustrlen(bstring->text)) {
             return 27;
         }
-        if (strcmp((const char*)astring->text, (const char*)bstring->text) != 0) {
+        if (strcmp((const char *) astring->text, (const char *) bstring->text) != 0) {
             return 28;
         }
         astring = astring->next;
@@ -1130,8 +1130,92 @@ char *testUtilUCharArrayDump(unsigned char *array, int size, char *dump, int dum
     return dump;
 }
 
+int testUtilDataPath(char *buffer, int buffer_size, const char *subdir, const char *filename) {
+    int subdir_len = subdir ? (int) strlen(subdir) : 0;
+    int filename_len = filename ? (int) strlen(filename) : 0;
+    int len;
+#ifdef _WIN32
+    int i;
+#endif
+
+    if (getcwd(buffer, buffer_size) == NULL) {
+        fprintf(stderr, "testUtilDataPath: getcwd NULL buffer_size %d\n", buffer_size);
+        return 0;
+    }
+    len = (int) strlen(buffer);
+    if (len <= 0) {
+        fprintf(stderr, "testUtilDataPath: strlen <= 0\n");
+        return 0;
+    }
+#ifdef _WIN32
+    for (i = 0; i < len; i++) {
+        if (buffer[i] == '\\') {
+            buffer[i] = '/';
+        }
+    }
+#endif
+    if (buffer[len - 1] == '/') {
+        buffer[len--] = '\0';
+    }
+    if (len == 0) {
+        fprintf(stderr, "testUtilDataPath: len == 0\n");
+        return 0;
+    }
+
+    if (len > 6 && strcmp(buffer + len - 6, "/build") == 0) {
+        buffer[len - 6] = '\0';
+        len -= 6;
+    } else if (len > 14 && strcmp(buffer + len - 14, "/build/backend") == 0) {
+        buffer[len - 14] = '\0';
+        len -= 14;
+    } else if (len > 20 && strcmp(buffer + len - 20, "/build/backend/tests") == 0) {
+        buffer[len - 20] = '\0';
+        len -= 20;
+    } else {
+        fprintf(stderr, "testUtilDataPath: unrecognized dir '%s'\n", buffer);
+        return 0;
+    }
+
+    if (subdir_len) {
+        if (*subdir != '/' && buffer[len - 1] != '/') {
+            if (len + 1 >= buffer_size) {
+                fprintf(stderr, "testUtilDataPath: subdir len (%d) + 1 >= buffer_size (%d)\n", len, buffer_size);
+                return 0;
+            }
+            buffer[len++] = '/';
+            buffer[len] = '\0';
+        }
+        if (len + subdir_len >= buffer_size) {
+            fprintf(stderr, "testUtilDataPath: len (%d) + subdir_len (%d) >= buffer_size (%d)\n",
+                    len, subdir_len, buffer_size);
+            return 0;
+        }
+        strcpy(buffer + len, subdir);
+        len += subdir_len;
+    }
+
+    if (filename_len) {
+        if (*filename != '/' && buffer[len - 1] != '/') {
+            if (len + 1 >= buffer_size) {
+                fprintf(stderr, "testUtilDataPath: filename len (%d) + 1 >= buffer_size (%d)\n", len, buffer_size);
+                return 0;
+            }
+            buffer[len++] = '/';
+            buffer[len] = '\0';
+        }
+        if (len + filename_len >= buffer_size) {
+            fprintf(stderr, "testUtilDataPath: len (%d) + filename_len (%d) >= buffer_size (%d)\n",
+                    len, filename_len, buffer_size);
+            return 0;
+        }
+        strcpy(buffer + len, filename);
+    }
+
+    return 1;
+}
+
 void testUtilBitmapPrint(const struct zint_symbol *symbol, const char *prefix, const char *postfix) {
-    static char colour[] = { '0', 'C', 'M', 'B', 'Y', 'G', 'R', '1' };
+    static const char colour[] = { '0', 'C', 'M', 'B', 'Y', 'G', 'R', '1' };
     int row, column, i, j;
 
     if (!prefix) {
@@ -1185,7 +1269,7 @@ void testUtilBitmapPrint(const struct zint_symbol *symbol, const char *prefix, c
 }
 
 int testUtilBitmapCmp(const struct zint_symbol *symbol, const char *expected, int *row, int *column) {
-    static char colour[] = { '0', 'C', 'M', 'B', 'Y', 'G', 'R', '1' };
+    static const char colour[] = { '0', 'C', 'M', 'B', 'Y', 'G', 'R', '1' };
     int r, c = -1, i, j;
     const char *e = expected;
     const char *ep = expected + strlen(expected);
@@ -1229,7 +1313,7 @@ int testUtilBitmapCmp(const struct zint_symbol *symbol, const char *expected, in
     return e != ep || r != symbol->bitmap_height || c != symbol->bitmap_width ? 1 /*fail*/ : 0 /*success*/;
 }
 
-int testUtilExists(char *filename) {
+int testUtilExists(const char *filename) {
     FILE *fp = fopen(filename, "r");
     if (fp == NULL) {
         return 0;
@@ -1238,7 +1322,7 @@ int testUtilExists(char *filename) {
     return 1;
 }
 
-int testUtilCmpPngs(char *png1, char *png2) {
+int testUtilCmpPngs(const char *png1, const char *png2) {
     int ret = -1;
 #ifdef NO_PNG
     (void)png1; (void)png2;
@@ -1433,7 +1517,7 @@ int testUtilCmpPngs(char *png1, char *png2) {
     return ret;
 }
 
-int testUtilCmpTxts(char *txt1, char *txt2) {
+int testUtilCmpTxts(const char *txt1, const char *txt2) {
     int ret = -1;
     FILE *fp1;
     FILE *fp2;
@@ -1483,7 +1567,7 @@ int testUtilCmpTxts(char *txt1, char *txt2) {
     return ret;
 }
 
-int testUtilCmpBins(char *bin1, char *bin2) {
+int testUtilCmpBins(const char *bin1, const char *bin2) {
     int ret = -1;
     FILE *fp1;
     FILE *fp2;
@@ -1523,11 +1607,11 @@ int testUtilCmpBins(char *bin1, char *bin2) {
     return ret;
 }
 
-int testUtilCmpSvgs(char *svg1, char *svg2) {
+int testUtilCmpSvgs(const char *svg1, const char *svg2) {
     return testUtilCmpTxts(svg1, svg2);
 }
 
-int testUtilCmpEpss(char *eps1, char *eps2) {
+int testUtilCmpEpss(const char *eps1, const char *eps2) {
     int ret = -1;
     FILE *fp1;
     FILE *fp2;
@@ -1594,7 +1678,7 @@ int testUtilHaveIdentify() {
     return system("identify --version > /dev/null") == 0;
 }
 
-int testUtilVerifyIdentify(char *filename, int debug) {
+int testUtilVerifyIdentify(const char *filename, int debug) {
     char cmd[512 + 128];
 
     if (strlen(filename) > 512) {
@@ -1619,7 +1703,7 @@ int testUtilHaveLibreOffice() {
     return system("libreoffice --version > /dev/null") == 0;
 }
 
-int testUtilVerifyLibreOffice(char *filename, int debug) {
+int testUtilVerifyLibreOffice(const char *filename, int debug) {
     char cmd[512 + 128];
     char svg[512];
     char *slash, *dot;
@@ -1694,7 +1778,7 @@ int testUtilHaveGhostscript() {
     return system("gs -v > /dev/null") == 0;
 }
 
-int testUtilVerifyGhostscript(char *filename, int debug) {
+int testUtilVerifyGhostscript(const char *filename, int debug) {
     char cmd[512 + 128];
 
     if (strlen(filename) > 512) {
@@ -1716,7 +1800,7 @@ int testUtilHaveVnu() {
     return system("vnu --version > /dev/null 2>&1") == 0;
 }
 
-int testUtilVerifyVnu(char *filename, int debug) {
+int testUtilVerifyVnu(const char *filename, int debug) {
     char buf[512 + 128];
 
     if (strlen(filename) > 512) {
@@ -1737,7 +1821,7 @@ int testUtilHaveTiffInfo() {
     return system("tiffinfo -h > /dev/null") == 0;
 }
 
-int testUtilVerifyTiffInfo(char *filename, int debug) {
+int testUtilVerifyTiffInfo(const char *filename, int debug) {
     char cmd[512 + 128];
 
     if (strlen(filename) > 512) {

@@ -67,41 +67,51 @@ static void test_print(int index, int generate, int debug) {
         /*  3*/ { BARCODE_ULTRA, -1, -1, -1, "A", "ultracode_a" },
         /*  4*/ { BARCODE_MAXICODE, -1, -1, -1, "THIS IS A 93 CHARACTER CODE SET A MESSAGE THAT FILLS A MODE 4, UNAPPENDED, MAXICODE SYMBOL...", "maxicode_fig_2" },
     };
-    int data_size = sizeof(data) / sizeof(struct item);
+    int data_size = ARRAY_SIZE(data);
 
     char *exts[] = { "bmp", "emf", "eps", "gif", "pcx", "png", "svg", "tif", "txt" };
-    int exts_len = sizeof(exts) / sizeof(char*);
+    int exts_size = ARRAY_SIZE(exts);
 
     char data_dir[1024];
+    char data_subdir[1024];
     char expected_file[1024];
 
     char escaped[1024];
     int escaped_size = 1024;
 
+    assert_nonzero(testUtilDataPath(data_dir, sizeof(data_dir), "/backend/tests/data", NULL), "testUtilDataPath == 0\n");
+
     if (generate) {
-        strcpy(data_dir, "data");
         if (!testUtilExists(data_dir)) {
             ret = testutil_mkdir(data_dir, 0755);
             assert_zero(ret, "testutil_mkdir(%s) ret %d != 0 (%d: %s)\n", data_dir, ret, errno, strerror(errno));
         }
+        assert_nonzero(sizeof(data_dir) > strlen(data_dir) + 6, "sizeof(data_dir) %d <= strlen (%d) + 6\n", (int) sizeof(data_dir), (int) strlen(data_dir));
         strcat(data_dir, "/print");
         if (!testUtilExists(data_dir)) {
             ret = testutil_mkdir(data_dir, 0755);
             assert_zero(ret, "testutil_mkdir(%s) ret %d != 0 (%d: %s)\n", data_dir, ret, errno, strerror(errno));
         }
+    } else {
+        assert_nonzero(sizeof(data_dir) > strlen(data_dir) + 6, "sizeof(data_dir) %d <= strlen (%d) + 6\n", (int) sizeof(data_dir), (int) strlen(data_dir));
+        strcat(data_dir, "/print");
     }
 
-    for (int j = 0; j < exts_len; j++) {
+    for (int j = 0; j < exts_size; j++) {
 #ifdef NO_PNG
         if (strcmp(exts[j], "png") == 0) continue;
 #endif
-        strcpy(data_dir, "data/print/");
-        strcat(data_dir, exts[j]);
+        assert_nonzero(sizeof(data_subdir) > strlen(data_dir) + 1 + strlen(exts[j]),
+            "sizeof(data_subdir) (%d) <= strlen(data_dir) (%d) + 1 + strlen(%s) (%d)\n",
+            (int) sizeof(data_subdir), (int) strlen(data_dir), exts[j], (int) strlen(exts[j]));
+        strcpy(data_subdir, data_dir);
+        strcat(data_subdir, "/");
+        strcat(data_subdir, exts[j]);
 
         if (generate) {
-            if (!testUtilExists(data_dir)) {
-                ret = testutil_mkdir(data_dir, 0755);
-                assert_zero(ret, "testutil_mkdir(%s) ret %d != 0 (%d: %s)\n", data_dir, ret, errno, strerror(errno));
+            if (!testUtilExists(data_subdir)) {
+                ret = testutil_mkdir(data_subdir, 0755);
+                assert_zero(ret, "testutil_mkdir(%s) ret %d != 0 (%d: %s)\n", data_subdir, ret, errno, strerror(errno));
             }
         }
 
@@ -123,7 +133,10 @@ static void test_print(int index, int generate, int debug) {
             strcpy(symbol->outfile, "out.");
             strcat(symbol->outfile, exts[j]);
 
-            strcpy(expected_file, data_dir);
+            assert_nonzero(sizeof(expected_file) > strlen(data_subdir) + 1 + strlen(data[i].expected_file) + 1 + strlen(exts[j]),
+                "i:%d sizeof(expected_file) (%d) > strlen(data_subdir) (%d) + 1 + strlen(%s) (%d) + 1 + strlen(%s) (%d),\n",
+                i, (int) sizeof(expected_file), (int) strlen(data_subdir), data[i].expected_file, (int) strlen(data[i].expected_file), exts[j], (int) strlen(exts[j]));
+            strcpy(expected_file, data_subdir);
             strcat(expected_file, "/");
             strcat(expected_file, data[i].expected_file);
             strcat(expected_file, ".");

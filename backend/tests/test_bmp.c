@@ -125,18 +125,19 @@ static void test_print(int index, int generate, int debug) {
         int option_2;
         char *fgcolour;
         char *bgcolour;
-        char* data;
-        char* expected_file;
+        char *data;
+        char *expected_file;
     };
     struct item data[] = {
-        /*  0*/ { BARCODE_PDF417, 5, -1, -1, -1, "147AD0", "FC9630", "123", "data/bmp/pdf417_fg_bg.bmp" },
-        /*  1*/ { BARCODE_ULTRA, 5, -1, -1, -1, "147AD0", "FC9630", "123", "data/bmp/ultracode_fg_bg.bmp" },
-        /*  2*/ { BARCODE_PDF417COMP, 2, 2, -1, -1, "", "", "123", "data/bmp/pdf417comp_hvwsp2.bmp" },
+        /*  0*/ { BARCODE_PDF417, 5, -1, -1, -1, "147AD0", "FC9630", "123", "pdf417_fg_bg.bmp" },
+        /*  1*/ { BARCODE_ULTRA, 5, -1, -1, -1, "147AD0", "FC9630", "123", "ultracode_fg_bg.bmp" },
+        /*  2*/ { BARCODE_PDF417COMP, 2, 2, -1, -1, "", "", "123", "pdf417comp_hvwsp2.bmp" },
     };
     int data_size = ARRAY_SIZE(data);
 
-    char* data_dir = "data/bmp";
-    char* bmp = "out.bmp";
+    const char *data_dir = "/backend/tests/data/bmp";
+    const char *bmp = "out.bmp";
+    char expected_file[4096];
     char escaped[1024];
     int escaped_size = 1024;
 
@@ -175,23 +176,25 @@ static void test_print(int index, int generate, int debug) {
         ret = ZBarcode_Print(symbol, 0);
         assert_zero(ret, "i:%d %s ZBarcode_Print %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, ret);
 
+        assert_nonzero(testUtilDataPath(expected_file, sizeof(expected_file), data_dir, data[i].expected_file), "i:%d testUtilDataPath == 0\n", i);
+
         if (generate) {
             printf("        /*%3d*/ { %s, %d, %d, %d, %d, \"%s\", \"%s\", \"%s\", \"%s\"},\n",
                     i, testUtilBarcodeName(data[i].symbology), data[i].whitespace_width, data[i].whitespace_height,
                     data[i].option_1, data[i].option_2, data[i].fgcolour, data[i].bgcolour,
                     testUtilEscape(data[i].data, length, escaped, escaped_size), data[i].expected_file);
-            ret = rename(symbol->outfile, data[i].expected_file);
-            assert_zero(ret, "i:%d rename(%s, %s) ret %d != 0\n", i, symbol->outfile, data[i].expected_file, ret);
+            ret = rename(symbol->outfile, expected_file);
+            assert_zero(ret, "i:%d rename(%s, %s) ret %d != 0\n", i, symbol->outfile, expected_file, ret);
             if (have_identify) {
-                ret = testUtilVerifyIdentify(data[i].expected_file, debug);
-                assert_zero(ret, "i:%d %s identify %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), data[i].expected_file, ret);
+                ret = testUtilVerifyIdentify(expected_file, debug);
+                assert_zero(ret, "i:%d %s identify %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), expected_file, ret);
             }
         } else {
             assert_nonzero(testUtilExists(symbol->outfile), "i:%d testUtilExists(%s) == 0\n", i, symbol->outfile);
-            assert_nonzero(testUtilExists(data[i].expected_file), "i:%d testUtilExists(%s) == 0\n", i, data[i].expected_file);
+            assert_nonzero(testUtilExists(expected_file), "i:%d testUtilExists(%s) == 0\n", i, expected_file);
 
-            ret = testUtilCmpBins(symbol->outfile, data[i].expected_file);
-            assert_zero(ret, "i:%d %s testUtilCmpBins(%s, %s) %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, data[i].expected_file, ret);
+            ret = testUtilCmpBins(symbol->outfile, expected_file);
+            assert_zero(ret, "i:%d %s testUtilCmpBins(%s, %s) %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, expected_file, ret);
             assert_zero(remove(symbol->outfile), "i:%d remove(%s) != 0\n", i, symbol->outfile);
         }
 

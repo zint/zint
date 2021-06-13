@@ -10,11 +10,6 @@ enable_testing()
 
 include(${zint-package_SOURCE_DIR}/cmake/zint_add_test.cmake)
 
-file(GLOB_RECURSE zint_backend_tests_data LIST_DIRECTORIES false RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "data/*")
-foreach(data_file IN LISTS zint_backend_tests_data)
-    configure_file(${data_file} ${data_file} COPYONLY)
-endforeach()
-
 set(BWIPP_TAR ${CMAKE_CURRENT_SOURCE_DIR}/tools/bwipp_dump.ps.tar.xz)
 set(BWIPP_PS ${CMAKE_CURRENT_SOURCE_DIR}/tools/bwipp_dump.ps)
 

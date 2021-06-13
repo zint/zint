@@ -39,11 +39,8 @@
 
 static void test_csv(int index, int debug) {
 
-    testStart("");
-
-    FILE *fd = fopen("data/imail/usps/uspsIMbEncoderTestCases.csv", "r");
-    assert_nonnull(fd, "open data/imail/usps/uspsIMbEncoderTestCases.csv");
-
+    char csvfile[1024];
+    FILE *fd;
     char buffer[1024];
     char id[10];
     char tracking_code[50];
@@ -55,6 +52,15 @@ static void test_csv(int index, int debug) {
 
     int ret;
     int lc = 0;
+
+    testStart("");
+
+    assert_nonzero(testUtilDataPath(csvfile, sizeof(csvfile),
+        "/backend/tests/data/imail/usps/", "uspsIMbEncoderTestCases.csv"), "testUtilDataPath == 0\n");
+
+    fd = fopen(csvfile, "r");
+    assert_nonnull(fd, "fopen(%s) == NULL", csvfile);
+
     while (fgets(buffer, sizeof(buffer), fd) != NULL) {
 
         lc++;
@@ -119,7 +125,7 @@ static void test_csv(int index, int debug) {
         ZBarcode_Delete(symbol);
     }
 
-    fclose(fd);
+    assert_zero(fclose(fd), "fclose != 0\n");
 
     testFinish();
 }
