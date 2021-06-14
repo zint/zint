@@ -852,6 +852,7 @@ INTERNAL int aztec(struct zint_symbol *symbol, unsigned char source[], int lengt
 #endif
 
     memset(adjusted_string, 0, AZTEC_MAX_CAPACITY);
+    memset(bit_pattern, 0, AZTEC_MAP_POSN_MAX + 1);
 
     if ((symbol->input_mode & 0x07) == GS1_MODE) {
         gs1 = 1;
