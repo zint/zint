@@ -196,9 +196,11 @@ static void test_print(int index, int generate, int debug) {
     char *text;
 
     if (generate) {
-        if (!testUtilExists(data_dir)) {
-            ret = testutil_mkdir(data_dir, 0755);
-            assert_zero(ret, "testutil_mkdir(%s) ret %d != 0 (%d: %s)\n", data_dir, ret, errno, strerror(errno));
+        char data_dir_path[1024];
+        assert_nonzero(testUtilDataPath(data_dir_path, sizeof(data_dir_path), data_dir, NULL), "testUtilDataPath(%s) == 0\n", data_dir);
+        if (!testUtilExists(data_dir_path)) {
+            ret = testutil_mkdir(data_dir_path, 0755);
+            assert_zero(ret, "testutil_mkdir(%s) ret %d != 0 (%d: %s)\n", data_dir_path, ret, errno, strerror(errno));
         }
     }
 
