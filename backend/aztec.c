@@ -468,7 +468,6 @@ static int aztec_text_process(const unsigned char source[], int src_len, char bi
         printf("\n");
     }
 
-    *binary_string = '\0';
     bp = 0;
 
     if (gs1) {
@@ -737,7 +736,7 @@ static int aztec_text_process(const unsigned char source[], int src_len, char bi
 
     if (debug) {
         printf("Binary String:\n");
-        printf("%s\n", binary_string);
+        printf("%.*s\n", bp, binary_string);
     }
 
     *data_length = bp;
@@ -850,9 +849,6 @@ INTERNAL int aztec(struct zint_symbol *symbol, unsigned char source[], int lengt
     unsigned int* data_part;
     unsigned int* ecc_part;
 #endif
-
-    memset(adjusted_string, 0, AZTEC_MAX_CAPACITY);
-    memset(bit_pattern, 0, AZTEC_MAP_POSN_MAX + 1);
 
     if ((symbol->input_mode & 0x07) == GS1_MODE) {
         gs1 = 1;
