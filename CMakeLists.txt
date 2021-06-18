@@ -64,15 +64,26 @@ if(ZINT_TEST)
     enable_testing()
 endif()
 
-if(CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    if(ZINT_SANITIZE)
-        add_compile_options(-fsanitize=undefined -fsanitize=address)
-        link_libraries(-fsanitize=undefined -fsanitize=address)
-        if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-            # Gives warning on MainWindow::setupUI() and retries (& takes forever) if var-tracking-assignments enabled
-            add_compile_options(-fno-var-tracking-assignments)
+set(SANITIZER_FLAGS "")
+if(ZINT_SANITIZE)
+    file(WRITE ${CMAKE_BINARY_DIR}/dummy.c "int main() { return 0; }")
+    set(SANITIZERS address leak undefined) #address hwaddress leak memory thread undefined
+    foreach(sanitizer IN ITEMS ${SANITIZERS})
+        if(MSVC)
+            set(sanitizer_flag "/fsanitize=${sanitizer}")
+        else()
+            set(sanitizer_flag "-fsanitize=${sanitizer}")
         endif()
-    endif()
+        try_compile(HAVE_SANITIZE_${sanitizer} ${CMAKE_BINARY_DIR} ${CMAKE_BINARY_DIR}/dummy.c
+            COMPILE_DEFINITIONS ${sanitizer_flag}
+            LINK_OPTIONS ${sanitizer_flag}
+        )
+        message (STATUS "Support for ${sanitizer_flag} available ... ${HAVE_SANITIZE_${sanitizer}}")
+        if(HAVE_SANITIZE_${sanitizer})
+            set(SANITIZER_FLAGS ${SANITIZER_FLAGS} ${sanitizer_flag})
+        endif()
+    endforeach()
+    message(STATUS "Sanitizer flags: ${SANITIZER_FLAGS}")
 endif()
 
 if(APPLE)
