@@ -295,12 +295,14 @@ INTERNAL unsigned int decode_utf8(unsigned int *state, unsigned int *codep, cons
     /*
         Copyright (c) 2008-2009 Bjoern Hoehrmann <bjoern@hoehrmann.de>
 
-        Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation
-        files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy,
-        modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
-        Software is furnished to do so, subject to the following conditions:
+        Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+        documentation files (the "Software"), to deal in the Software without restriction, including without
+        limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the
+        Software, and to permit persons to whom the Software is furnished to do so, subject to the following
+        conditions:
 
-        The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+        The above copyright notice and this permission notice shall be included in all copies or substantial portions
+        of the Software.
 
         See https://bjoern.hoehrmann.de/utf-8/decoder/dfa/ for details.
      */
@@ -383,29 +385,54 @@ INTERNAL int utf8_to_unicode(struct zint_symbol *symbol, const unsigned char sou
     return 0;
 }
 
-/* Enforce minimum permissable height of rows */
-INTERNAL void set_minimum_height(struct zint_symbol *symbol, const int min_height) {
-    int fixed_height = 0;
+/* Set symbol height, returning a warning if not within minimum and/or maximum if given.
+   `default_height` does not include height of fixed-height rows (i.e. separators/composite data) */
+INTERNAL int set_height(struct zint_symbol *symbol, const float min_row_height, const float default_height,
+            const float max_height, const int no_errtxt) {
+    int error_number = 0;
+    float fixed_height = 0.0f;
     int zero_count = 0;
+    float row_height;
     int i;
+    int rows = symbol->rows ? symbol->rows : 1; /* Sometimes called before expand() */
 
-    for (i = 0; i < symbol->rows; i++) {
-        fixed_height += symbol->row_height[i];
-
-        if (symbol->row_height[i] == 0) {
+    for (i = 0; i < rows; i++) {
+        if (symbol->row_height[i]) {
+            fixed_height += symbol->row_height[i];
+        } else {
             zero_count++;
         }
     }
 
-    if (zero_count > 0) {
-        if (((symbol->height - fixed_height) / zero_count) < min_height) {
-            for (i = 0; i < symbol->rows; i++) {
-                if (symbol->row_height[i] == 0) {
-                    symbol->row_height[i] = min_height;
-                }
+    if (zero_count) {
+        if (symbol->height) {
+            row_height = (symbol->height - fixed_height) / zero_count;
+        } else if (default_height) {
+            row_height = default_height / zero_count;
+        } else {
+            row_height = min_row_height;
+        }
+        if (row_height < 0.5f) { /* Absolute minimum */
+            row_height = 0.5f;
+        }
+        if (min_row_height && row_height < min_row_height) {
+            error_number = ZINT_WARN_NONCOMPLIANT;
+            if (!no_errtxt) {
+                strcpy(symbol->errtxt, "247: Height not compliant with standards");
             }
         }
+        symbol->height = row_height * zero_count + fixed_height;
+    } else {
+        symbol->height = fixed_height; /* Ignore any given height */
     }
+    if (max_height && symbol->height > max_height) {
+        error_number = ZINT_WARN_NONCOMPLIANT;
+        if (!no_errtxt) {
+            strcpy(symbol->errtxt, "248: Height not compliant with standards");
+        }
+    }
+
+    return error_number;
 }
 
 /* Returns red component if any of ultra colour indexing "0CBMRYGKW" */

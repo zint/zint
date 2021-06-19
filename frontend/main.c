@@ -770,6 +770,7 @@ int main(int argc, char **argv) {
     int ret;
     char *outfile_extension;
     int data_arg_num = 0;
+    float float_opt;
 #ifndef _MSC_VER
     arg_opt arg_opts[argc];
 #else
@@ -1009,14 +1010,11 @@ int main(int argc, char **argv) {
                 my_symbol->output_options |= GS1_GS_SEPARATOR;
                 break;
             case OPT_HEIGHT:
-                if (!validate_int(optarg, &val)) {
-                    fprintf(stderr, "Error 109: Invalid symbol height value (digits only)\n");
-                    return do_exit(1);
-                }
-                if ((val >= 1) && (val <= 1000)) {
-                    my_symbol->height = val;
+                float_opt = (float) atof(optarg);
+                if (float_opt >= 0.5f && float_opt <= 1000.0f) {
+                    my_symbol->height = float_opt;
                 } else {
-                    fprintf(stderr, "Warning 110: Symbol height out of range (1 to 1000), ignoring\n");
+                    fprintf(stderr, "Warning 110: Symbol height '%g' out of range (0.5 to 1000), ignoring\n", float_opt);
                     fflush(stderr);
                 }
                 break;

@@ -242,6 +242,8 @@ static unsigned short USPS_MSB_Math_CRC11GenerateFrameCheckSequence(unsigned cha
     return FrameCheckSequence;
 }
 
+INTERNAL int daft_set_height(struct zint_symbol *symbol, float min_height, float max_height);
+
 INTERNAL int imail(struct zint_symbol *symbol, unsigned char source[], int length) {
     char data_pattern[200];
     int error_number;
@@ -432,10 +434,22 @@ INTERNAL int imail(struct zint_symbol *symbol, unsigned char source[], int lengt
         read += 2;
     }
 
-    symbol->row_height[0] = 3;
-    symbol->row_height[1] = 2;
-    symbol->row_height[2] = 3;
-
+#ifdef COMPLIANT_HEIGHTS
+    /* USPS-B-3200 Section 2.3.1
+       Using bar pitch as X (1" / 43) ~ 0.023" based on 22 bars + 21 spaces per inch (bar width 0.015" - 0.025"),
+       height 0.125" - 0.165"
+       Tracker 0.048" (average of 0.039" - 0.057")
+       Ascender/descender 0.0965" (average of 0.082" - 0.111") less T = 0.0485"
+     */
+    symbol->row_height[0] = 0.0485f * 43; /* 2.0855 */
+    symbol->row_height[1] = 0.048f * 43; /* 2.064 */
+    /* Note using max X for minimum and min X for maximum */
+    error_number = daft_set_height(symbol, 0.125f * 39 /*4.875*/, 0.165f * 47 /*7.755*/);
+#else
+    symbol->row_height[0] = 3.0f;
+    symbol->row_height[1] = 2.0f;
+    daft_set_height(symbol, 0.0f, 0.0f);
+#endif
     symbol->rows = 3;
     symbol->width = read - 1;
     return error_number;

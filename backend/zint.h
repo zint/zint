@@ -75,7 +75,7 @@ extern "C" {
 
     struct zint_symbol {
         int symbology;
-        int height; /* Height in X-dims (ignored for fixed-width barcodes) */
+        float height; /* Height in X-dims (ignored for fixed-width barcodes) */
         int whitespace_width; /* Width in X-dims of whitespace to left/right of barcode */
         int whitespace_height; /* Height in X-dims of whitespace above and below the barcode */
         int border_width; /* Size of border in X-dims */
@@ -98,7 +98,7 @@ extern "C" {
         int width;
         char primary[128];
         unsigned char encoded_data[200][143];
-        int row_height[200]; /* Largest symbol is 189 x 189 Han Xin */
+        float row_height[200]; /* Allow for 200 row DotCode */
         char errtxt[100];
         unsigned char *bitmap;
         int bitmap_width;

@@ -109,7 +109,7 @@ static void test_koreapost(int index, int debug) {
         int ret_encode;
         int ret_vector;
 
-        int expected_height;
+        float expected_height;
         int expected_rows;
         int expected_width;
     };
@@ -131,7 +131,7 @@ static void test_koreapost(int index, int debug) {
         assert_equal(ret, data[i].ret_encode, "i:%d ZBarcode_Encode ret %d != %d\n", i, ret, data[i].ret_encode);
 
         if (ret < ZINT_ERROR) {
-            assert_equal(symbol->height, data[i].expected_height, "i:%d symbol->height %d != %d\n", i, symbol->height, data[i].expected_height);
+            assert_equal(symbol->height, data[i].expected_height, "i:%d symbol->height %.8g != %.8g\n", i, symbol->height, data[i].expected_height);
             assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
             assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n", i, symbol->width, data[i].expected_width);
 
@@ -155,7 +155,7 @@ static void test_japanpost(int index, int debug) {
         int ret_encode;
         int ret_vector;
 
-        int expected_height;
+        float expected_height;
         int expected_rows;
         int expected_width;
         char *comment;
@@ -180,7 +180,7 @@ static void test_japanpost(int index, int debug) {
         assert_equal(ret, data[i].ret_encode, "i:%d ZBarcode_Encode ret %d != %d\n", i, ret, data[i].ret_encode);
 
         if (ret < ZINT_ERROR) {
-            assert_equal(symbol->height, data[i].expected_height, "i:%d symbol->height %d != %d\n", i, symbol->height, data[i].expected_height);
+            assert_equal(symbol->height, data[i].expected_height, "i:%d symbol->height %.8g != %.8g\n", i, symbol->height, data[i].expected_height);
             assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
             assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n", i, symbol->width, data[i].expected_width);
 

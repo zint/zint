@@ -25,6 +25,7 @@ FORMS += extData.ui \
          grpCodabar.ui \
          grpCodablockF.ui \
          grpCodeOne.ui \
+         grpDAFT.ui \
          grpDBExtend.ui \
          grpDM.ui \
          grpDotCode.ui \

@@ -119,7 +119,8 @@ extern "C" {
     INTERNAL int module_is_set(const struct zint_symbol *symbol, const int y_coord, const int x_coord);
     INTERNAL void set_module(struct zint_symbol *symbol, const int y_coord, const int x_coord);
     INTERNAL int module_colour_is_set(const struct zint_symbol *symbol, const int y_coord, const int x_coord);
-    INTERNAL void set_module_colour(struct zint_symbol *symbol, const int y_coord, const int x_coord, const int colour);
+    INTERNAL void set_module_colour(struct zint_symbol *symbol, const int y_coord, const int x_coord,
+                    const int colour);
     #endif
     INTERNAL void unset_module(struct zint_symbol *symbol, const int y_coord, const int x_coord);
     INTERNAL void expand(struct zint_symbol *symbol, const char data[]);
@@ -131,14 +132,16 @@ extern "C" {
     INTERNAL int is_valid_utf8(const unsigned char source[], const int length);
     INTERNAL int utf8_to_unicode(struct zint_symbol *symbol, const unsigned char source[], unsigned int vals[],
                     int *length, const int disallow_4byte);
-    INTERNAL void set_minimum_height(struct zint_symbol *symbol, const int min_height);
+    INTERNAL int set_height(struct zint_symbol *symbol, const float min_row_height, const float default_height,
+                    const float max_height, const int set_errtxt);
 
     INTERNAL int colour_to_red(const int colour);
     INTERNAL int colour_to_green(const int colour);
     INTERNAL int colour_to_blue(const int colour);
 
     #ifdef ZINT_TEST
-    INTERNAL void debug_test_codeword_dump(struct zint_symbol *symbol, const unsigned char *codewords, const int length);
+    INTERNAL void debug_test_codeword_dump(struct zint_symbol *symbol, const unsigned char *codewords,
+                    const int length);
     INTERNAL void debug_test_codeword_dump_int(struct zint_symbol *symbol, const int *codewords, const int length);
     #endif
 

@@ -1,7 +1,7 @@
 /*  upcean.c - Handles UPC, EAN and ISBN
 
     libzint - the open source barcode library
-    Copyright (C) 2008 - 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008 - 2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -118,9 +118,11 @@ static void upca_draw(const char source[], const int length, unsigned char dest[
     ustrcat(dest, "111");
 }
 
-/* Make a UPC A barcode when we haven't been given the check digit */
-static int upca(struct zint_symbol *symbol, const unsigned char source[], int length, unsigned char dest[]) {
+/* Make a UPC-A barcode, allowing for composite if `cc_rows` set */
+static int upca_cc(struct zint_symbol *symbol, const unsigned char source[], int length, unsigned char dest[],
+            int cc_rows) {
     char gtin[13];
+    float height;
     int error_number = 0;
 
     ustrcpy(gtin, source);
@@ -146,14 +148,39 @@ static int upca(struct zint_symbol *symbol, const unsigned char source[], int le
     upca_draw(gtin, length, dest);
     ustrcpy(symbol->text, gtin);
 
+#ifdef COMPLIANT_HEIGHTS
+    /* BS EN 797:1996 4.5.1 Nominal dimensions 22.85mm / 0.33mm (X) ~ 69.24,
+       same as minimum GS1 General Specifications 21.0.1 5.12.3.1 */
+    height = (float) (22.85 / 0.33);
+    if (symbol->symbology == BARCODE_UPCA_CC) {
+        symbol->height = height; /* Pass back min row == default height */
+    } else {
+        error_number = set_height(symbol, height, height, 0.0f, 0 /*no_errtxt*/);
+    }
+#else
+    height = 50.0f;
+    if (symbol->symbology == BARCODE_UPCA_CC) {
+        symbol->height = height - cc_rows * 2 - 6.0f;
+    } else {
+        (void) set_height(symbol, 0.0f, height, 0.0f, 1 /*no_errtxt*/);
+    }
+#endif
+
     return error_number;
 }
 
-/* UPC E is a zero-compressed version of UPC A */
-static int upce(struct zint_symbol *symbol, unsigned char source[], int length, unsigned char dest[]) {
+/* UPC-A */
+static int upca(struct zint_symbol *symbol, const unsigned char source[], int length, unsigned char dest[]) {
+    return upca_cc(symbol, source, length, dest, 0 /*cc_rows*/);
+}
+
+/* UPC-E, allowing for composite if `cc_rows` set */
+static int upce_cc(struct zint_symbol *symbol, unsigned char source[], int length, unsigned char dest[],
+            int cc_rows) {
     int i, num_system;
     char emode, equivalent[12], check_digit, parity[8];
     char hrt[9];
+    float height;
     int error_number = 0;
 
     /* Two number systems can be used - system 0 and system 1 */
@@ -285,7 +312,30 @@ static int upce(struct zint_symbol *symbol, unsigned char source[], int length, 
 
     ustrcpy(symbol->text, hrt);
 
+#ifdef COMPLIANT_HEIGHTS
+    /* BS EN 797:1996 4.5.1 Nominal dimensions 22.85mm / 0.33mm (X) ~ 69.24,
+       same as minimum GS1 General Specifications 21.0.1 5.12.3.1 */
+    height = (float) (22.85 / 0.33);
+    if (symbol->symbology == BARCODE_UPCE_CC) {
+        symbol->height = height; /* Pass back min row == default height */
+    } else {
+        error_number = set_height(symbol, height, height, 0.0f, 0 /*no_errtxt*/);
+    }
+#else
+    height = 50.0f;
+    if (symbol->symbology == BARCODE_UPCE_CC) {
+        symbol->height = height - cc_rows * 2 - 6.0f;
+    } else {
+        (void) set_height(symbol, 0.0f, height, 0.0f, 1 /*no_errtxt*/);
+    }
+#endif
+
     return error_number;
+}
+
+/* UPC-E is a zero-compressed version of UPC-A */
+static int upce(struct zint_symbol *symbol, unsigned char source[], int length, unsigned char dest[]) {
+    return upce_cc(symbol, source, length, dest, 0 /*cc_rows*/);
 }
 
 /* EAN-2 and EAN-5 add-on codes */
@@ -367,10 +417,12 @@ static char ean_check(const char source[], const int length) {
     return itoc(check_digit);
 }
 
-static int ean13(struct zint_symbol *symbol, const unsigned char source[], int length, unsigned char dest[]) {
+static int ean13_cc(struct zint_symbol *symbol, const unsigned char source[], int length, unsigned char dest[],
+            int cc_rows) {
     int i, half_way;
     char parity[6];
     char gtin[14];
+    float height;
     int error_number = 0;
 
     parity[0] = '\0';
@@ -421,13 +473,36 @@ static int ean13(struct zint_symbol *symbol, const unsigned char source[], int l
     ustrcat(dest, "111");
     ustrcpy(symbol->text, gtin);
 
+#ifdef COMPLIANT_HEIGHTS
+    /* BS EN 797:1996 4.5.1 Nominal dimensions 22.85mm / 0.33mm (X) ~ 69.24,
+       same as minimum GS1 General Specifications 21.0.1 5.12.3.1 */
+    height = (float) (22.85 / 0.33);
+    if (symbol->symbology == BARCODE_EANX_CC) {
+        symbol->height = height; /* Pass back min row == default height */
+    } else {
+        error_number = set_height(symbol, height, height, 0.0f, 0 /*no_errtxt*/);
+    }
+#else
+    height = 50.0f;
+    if (symbol->symbology == BARCODE_EANX_CC) {
+        symbol->height = height - cc_rows * 2 - 6.0f;
+    } else {
+        (void) set_height(symbol, 0.0f, height, 0.0f, 1 /*no_errtxt*/);
+    }
+#endif
+
     return error_number;
 }
 
-/* Make an EAN-8 barcode when we haven't been given the check digit */
-static int ean8(struct zint_symbol *symbol, const unsigned char source[], int length, unsigned char dest[]) {
+static int ean13(struct zint_symbol *symbol, const unsigned char source[], int length, unsigned char dest[]) {
+    return ean13_cc(symbol, source, length, dest, 0 /*cc_rows*/);
+}
+
+static int ean8_cc(struct zint_symbol *symbol, const unsigned char source[], int length, unsigned char dest[],
+            int cc_rows) {
     /* EAN-8 is basically the same as UPC-A but with fewer digits */
     char gtin[10];
+    float height;
     int error_number = 0;
 
     ustrcpy(gtin, source);
@@ -453,7 +528,30 @@ static int ean8(struct zint_symbol *symbol, const unsigned char source[], int le
     upca_draw(gtin, length, dest);
     ustrcpy(symbol->text, gtin);
 
+#ifdef COMPLIANT_HEIGHTS
+    /* BS EN 797:1996 4.5.1 Nominal dimensions 18.23mm / 0.33mm (X) ~ 55.24,
+       same as minimum GS1 General Specifications 21.0.1 5.12.3.1 */
+    height = (float) (18.23 / 0.33);
+    if (symbol->symbology == BARCODE_EANX_CC) {
+        symbol->height = height; /* Pass back min row == default height */
+    } else {
+        error_number = set_height(symbol, height, height, 0.0f, 0 /*no_errtxt*/);
+    }
+#else
+    height = 50.0f;
+    if (symbol->symbology == BARCODE_EANX_CC) {
+        symbol->height = height - cc_rows * 2 - 6.0f;
+    } else {
+        (void) set_height(symbol, 0.0f, height, 0.0f, 1 /*no_errtxt*/);
+    }
+#endif
+
     return error_number;
+}
+
+/* Make an EAN-8 barcode when we haven't been given the check digit */
+static int ean8(struct zint_symbol *symbol, const unsigned char source[], int length, unsigned char dest[]) {
+    return ean8_cc(symbol, source, length, dest, 0 /*cc_rows*/);
 }
 
 /* For ISBN(10) and SBN only */
@@ -683,7 +781,7 @@ INTERNAL int ean_leading_zeroes(struct zint_symbol *symbol, const unsigned char 
     return 1; /* Success */
 }
 
-INTERNAL int eanx(struct zint_symbol *symbol, unsigned char source[], int src_len) {
+INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int src_len, int cc_rows) {
     unsigned char first_part[14] = {0}, second_part[6] = {0}, dest[1000] = {0};
     unsigned char local_source[20] = {0}; /* Allow 13 + "+" + 5 + 1 */
     int latch, reader, writer;
@@ -691,6 +789,7 @@ INTERNAL int eanx(struct zint_symbol *symbol, unsigned char source[], int src_le
     int error_number, i, plus_count;
     int addon_gap = 0;
     int first_part_len, second_part_len;
+    float height;
 
     latch = FALSE;
     writer = 0;
@@ -713,7 +812,7 @@ INTERNAL int eanx(struct zint_symbol *symbol, unsigned char source[], int src_le
             return error_number;
         }
     }
-    
+
     /* Check for multiple '+' characters */
     plus_count = 0;
     for (i = 0; i < src_len; i++) {
@@ -772,9 +871,25 @@ INTERNAL int eanx(struct zint_symbol *symbol, unsigned char source[], int src_le
             switch (first_part_len) {
                 case 2: add_on(first_part, first_part_len, dest, 0);
                     ustrcpy(symbol->text, first_part);
+#ifdef COMPLIANT_HEIGHTS
+                    /* 21.9mm from GS1 General Specifications 5.2.6.6, Figure 5.2.6.6-5 */
+                    height = (float) (21.9 / 0.33); /* 21.9mm / 0.33mm ~ 66.36 */
+                    error_number = set_height(symbol, height, height, 0.0f, 0 /*no_errtxt*/);
+#else
+                    height = 50.0f;
+                    (void) set_height(symbol, 0.0f, height, 0.0f, 1 /*no_errtxt*/);
+#endif
                     break;
                 case 5: add_on(first_part, first_part_len, dest, 0);
                     ustrcpy(symbol->text, first_part);
+#ifdef COMPLIANT_HEIGHTS
+                    /* 21.9mm from GS1 General Specifications 5.2.6.6, Figure 5.2.6.6-6 */
+                    height = (float) (21.9 / 0.33); /* 21.9mm / 0.33mm ~ 66.36 */
+                    error_number = set_height(symbol, height, height, 0.0f, 0 /*no_errtxt*/);
+#else
+                    height = 50.0f;
+                    (void) set_height(symbol, 0.0f, height, 0.0f, 1 /*no_errtxt*/);
+#endif
                     break;
                 case 7:
                 case 8: error_number = ean8(symbol, first_part, first_part_len, dest);
@@ -798,7 +913,7 @@ INTERNAL int eanx(struct zint_symbol *symbol, unsigned char source[], int src_le
                     symbol->row_height[symbol->rows + 1] = 2;
                     symbol->row_height[symbol->rows + 2] = 2;
                     symbol->rows += 3;
-                    error_number = ean8(symbol, first_part, first_part_len, dest);
+                    error_number = ean8_cc(symbol, first_part, first_part_len, dest, cc_rows);
                     break;
                 case 12:
                 case 13:set_module(symbol, symbol->rows, 1);
@@ -811,7 +926,7 @@ INTERNAL int eanx(struct zint_symbol *symbol, unsigned char source[], int src_le
                     symbol->row_height[symbol->rows + 1] = 2;
                     symbol->row_height[symbol->rows + 2] = 2;
                     symbol->rows += 3;
-                    error_number = ean13(symbol, first_part, first_part_len, dest);
+                    error_number = ean13_cc(symbol, first_part, first_part_len, dest, cc_rows);
                     break;
                 default: strcpy(symbol->errtxt, "287: Input wrong length");
                     return ZINT_ERROR_TOO_LONG;
@@ -838,7 +953,7 @@ INTERNAL int eanx(struct zint_symbol *symbol, unsigned char source[], int src_le
                 symbol->row_height[symbol->rows + 1] = 2;
                 symbol->row_height[symbol->rows + 2] = 2;
                 symbol->rows += 3;
-                error_number = upca(symbol, first_part, first_part_len, dest);
+                error_number = upca_cc(symbol, first_part, first_part_len, dest, cc_rows);
             } else {
                 strcpy(symbol->errtxt, "289: Input wrong length");
                 return ZINT_ERROR_TOO_LONG;
@@ -865,7 +980,7 @@ INTERNAL int eanx(struct zint_symbol *symbol, unsigned char source[], int src_le
                 symbol->row_height[symbol->rows + 1] = 2;
                 symbol->row_height[symbol->rows + 2] = 2;
                 symbol->rows += 3;
-                error_number = upce(symbol, first_part, first_part_len, dest);
+                error_number = upce_cc(symbol, first_part, first_part_len, dest, cc_rows);
             } else {
                 strcpy(symbol->errtxt, "291: Input wrong length");
                 return ZINT_ERROR_TOO_LONG;
@@ -919,4 +1034,9 @@ INTERNAL int eanx(struct zint_symbol *symbol, unsigned char source[], int src_le
     }
 
     return error_number;
+}
+
+/* Handle UPC, EAN, ISBN */
+INTERNAL int eanx(struct zint_symbol *symbol, unsigned char source[], int src_len) {
+    return eanx_cc(symbol, source, src_len, 0 /*cc_rows*/);
 }

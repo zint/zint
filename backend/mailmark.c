@@ -120,6 +120,8 @@ static int verify_postcode(char* postcode, int type) {
     return 0;
 }
 
+INTERNAL int daft_set_height(struct zint_symbol *symbol, float min_height, float max_height);
+
 /* Royal Mail Mailmark */
 INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int length) {
 
@@ -143,6 +145,7 @@ INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int le
     int check_count;
     int i, j, len;
     rs_t rs;
+    int error_number = 0;
 
     if (length > 26) {
         strcpy(symbol->errtxt, "580: Input too long");
@@ -484,12 +487,24 @@ INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int le
         j += 2;
     }
 
-    symbol->row_height[0] = 4;
-    symbol->row_height[1] = 2;
-    symbol->row_height[2] = 4;
-
+#ifdef COMPLIANT_HEIGHTS
+    /* Royal Mail Mailmark Barcode Definition Document (15 Sept 2015) Section 3.5.1
+       https://www.royalmail.com/sites/default/files/Royal-Mail-Mailmark-barcode-definition-document-September-2015.pdf
+       Using bar pitch as X (25.4mm / 42.3) ~ 0.6mm based on 21.2 bars + 21.1 spaces per 25.4mm (bar width 0.38-63mm)
+       Using recommended 1.9mm and 1.3mm heights for Ascender/Descenders and Trackers resp. as defaults
+       Min height 4.22mm * 39 (max pitch) / 25.4mm ~ 6.47, max height 5.84mm * 47 (min pitch) / 25.4mm ~ 10.8
+     */
+    symbol->row_height[0] = (float) ((1.9 * 42.3) / 25.4); /* ~3.16 */
+    symbol->row_height[1] = (float) ((1.3 * 42.3) / 25.4); /* ~2.16 */
+    /* Note using max X for minimum and min X for maximum */
+    error_number = daft_set_height(symbol, (float) ((4.22 * 39) / 25.4), (float) ((5.84 * 47) / 25.4));
+#else
+    symbol->row_height[0] = 4.0f;
+    symbol->row_height[1] = 2.0f;
+    daft_set_height(symbol, 0.0f, 0.0f);
+#endif
     symbol->rows = 3;
     symbol->width = j - 1;
 
-    return 0;
+    return error_number;
 }

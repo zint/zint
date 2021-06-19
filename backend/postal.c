@@ -83,6 +83,47 @@ static const char *JapanTable[19] = {
     "414", "324", "342", "234", "432", "243", "423", "441", "111"
 };
 
+/* Set height for POSTNET/PLANET codes, maintaining ratio */
+static int usps_set_height(struct zint_symbol *symbol) {
+    /* USPS Domestic Mail Manual (USPS DMM 300) Jan 8, 2006 (updated 2011) 708.4.2.5 POSTNET Barcode Dimensions and
+       Spacing
+       http://web.archive.org/web/20061113174253/http://pe.usps.com/cpim/ftp/manuals/dmm300/full/mailingStandards.pdf
+       Using bar pitch as X (1" / 43) ~ 0.023" based on 22 bars + 21 spaces per inch (bar width 0.015" - 0.025")
+       Half bar height 0.05" +- 0.01;  0.040" (min) / 0.025" (X max) = 1.6 min, 0.060" (max) / 0.015" (X min) = 4 max
+       Full bar height 0.125" +- 0.01; 0.115" (min) / 0.025" (X max) = 4.6 min, 0.135" (max) / 0.015" (X min) = 9 max
+     */
+    int error_number = 0;
+    float h_ratio; /* Half ratio */
+
+#ifdef COMPLIANT_HEIGHTS
+    symbol->row_height[0] = 0.075f * 43; /* 3.225 */
+    symbol->row_height[1] = 0.05f * 43; /* 2.15 */
+#else
+    symbol->row_height[0] = 6.0f;
+    symbol->row_height[1] = 6.0f;
+#endif
+    if (symbol->height) {
+        h_ratio = symbol->row_height[1] / (symbol->row_height[0] + symbol->row_height[1]); /* 0.4 */
+        symbol->row_height[1] = symbol->height * h_ratio;
+        if (symbol->row_height[1] < 0.5f) { /* Absolute minimum */
+            symbol->row_height[1] = 0.5f;
+            symbol->row_height[0] = 0.5f / h_ratio - 0.5f; /* 0.75 */
+        } else {
+            symbol->row_height[0] = symbol->height - symbol->row_height[1];
+        }
+    }
+    symbol->height = symbol->row_height[0] + symbol->row_height[1];
+
+#ifdef COMPLIANT_HEIGHTS
+    if (symbol->height < 4.6f || symbol->height > 9.0f) {
+        error_number = ZINT_WARN_NONCOMPLIANT;
+        strcpy(symbol->errtxt, "498: Height not compliant with standards");
+    }
+#endif
+
+    return error_number;
+}
+
 /* Handles the PostNet system used for Zip codes in the US */
 static int postnet(struct zint_symbol *symbol, unsigned char source[], char dest[], int length) {
     int i, sum, check_digit;
@@ -137,8 +178,7 @@ INTERNAL int post_plot(struct zint_symbol *symbol, unsigned char source[], int l
         set_module(symbol, 1, writer);
         writer += 2;
     }
-    symbol->row_height[0] = 6;
-    symbol->row_height[1] = 6;
+    error_number = usps_set_height(symbol);
     symbol->rows = 2;
     symbol->width = writer - 1;
 
@@ -199,8 +239,7 @@ INTERNAL int planet_plot(struct zint_symbol *symbol, unsigned char source[], int
         set_module(symbol, 1, writer);
         writer += 2;
     }
-    symbol->row_height[0] = 6;
-    symbol->row_height[1] = 6;
+    error_number = usps_set_height(symbol);
     symbol->rows = 2;
     symbol->width = writer - 1;
 
@@ -243,12 +282,15 @@ INTERNAL int korea_post(struct zint_symbol *symbol, unsigned char source[], int 
     expand(symbol, dest);
     ustrcpy(symbol->text, (unsigned char*) localstr);
 
+    // TODO: Find documentation on BARCODE_KOREAPOST dimensions/height
+
     return error_number;
 }
 
 /* The simplest barcode symbology ever! Supported by MS Word, so here it is!
     glyphs from http://en.wikipedia.org/wiki/Facing_Identification_Mark */
 INTERNAL int fim(struct zint_symbol *symbol, unsigned char source[], int length) {
+    int error_number = 0;
     char dest[16] = {0};
 
     if (length > 1) {
@@ -281,7 +323,51 @@ INTERNAL int fim(struct zint_symbol *symbol, unsigned char source[], int length)
 
     expand(symbol, dest);
 
-    return 0;
+#ifdef COMPLIANT_HEIGHTS
+    /* USPS Domestic Mail Manual (USPS DMM 300) Jan 8, 2006 (updated 2011) 708.9.3
+       X 0.03125" (1/32) +- 0.008" so X max 0.03925", height 0.625" (5/8) +- 0.125" (1/8) */
+    error_number = set_height(symbol, (float) (0.5 / 0.03925), 20.0f /*0.625 / 0.03125*/, (float) (0.75 / 0.02415),
+                    0 /*no_errtxt*/);
+#else
+    (void) set_height(symbol, 0.0f, 50.0f, 0.0f, 1 /*no_errtxt*/);
+#endif
+
+    return error_number;
+}
+
+/* Set height for DAFT-type codes, maintaining ratio. Expects row_height[0] & row_height[1] to be set */
+/* Used by auspost.c also */
+INTERNAL int daft_set_height(struct zint_symbol *symbol, float min_height, float max_height) {
+    int error_number = 0;
+    float t_ratio; /* Tracker ratio */
+
+    if (symbol->height) {
+        t_ratio = symbol->row_height[1] / (symbol->row_height[0] * 2 + symbol->row_height[1]);
+        symbol->row_height[1] = symbol->height * t_ratio;
+        if (symbol->row_height[1] < 0.5f) { /* Absolute minimum */
+            symbol->row_height[1] = 0.5f;
+            symbol->row_height[0] = 0.25f / t_ratio - 0.25f;
+        } else {
+            symbol->row_height[0] = (symbol->height - symbol->row_height[1]) / 2.0f;
+        }
+        if (symbol->row_height[0] < 0.5f) {
+            symbol->row_height[0] = 0.5f;
+            symbol->row_height[1] = t_ratio / (1.0f - t_ratio);
+        }
+    }
+    symbol->row_height[2] = symbol->row_height[0];
+    symbol->height = symbol->row_height[0] + symbol->row_height[1] + symbol->row_height[2];
+
+#ifdef COMPLIANT_HEIGHTS
+    if ((min_height && symbol->height < min_height) || (max_height && symbol->height > max_height)) {
+        error_number = ZINT_WARN_NONCOMPLIANT;
+        strcpy(symbol->errtxt, "499: Height not compliant with standards");
+    }
+#else
+    (void)min_height; (void)max_height;
+#endif
+
+    return error_number;
 }
 
 /* Handles the 4 State barcodes used in the UK by Royal Mail */
@@ -354,9 +440,21 @@ INTERNAL int royal_plot(struct zint_symbol *symbol, unsigned char source[], int 
         writer += 2;
     }
 
-    symbol->row_height[0] = 3;
-    symbol->row_height[1] = 2;
-    symbol->row_height[2] = 3;
+#ifdef COMPLIANT_HEIGHTS
+    /* Royal Mail Know How User's Manual Appendix C: using CBC
+       https://web.archive.org/web/20120120060743/http://www.royalmail.com/sites/default/files/docs/pdf/Know How 2006 PIP vs 1.6a Accepted Changes.pdf
+       Bar pitch and min/maxes same as Mailmark, so using recommendations from Royal Mail Mailmark Barcode Definition
+       Document (15 Sept 2015) Section 3.5.1
+     */
+    symbol->row_height[0] = (float) ((1.9 * 42.3) / 25.4); /* ~3.16 */
+    symbol->row_height[1] = (float) ((1.3 * 42.3) / 25.4); /* ~2.16 */
+    /* Note using max X for minimum and min X for maximum */
+    error_number = daft_set_height(symbol, (float) ((4.22 * 39) / 25.4), (float) ((5.84 * 47) / 25.4));
+#else
+    symbol->row_height[0] = 3.0f;
+    symbol->row_height[1] = 2.0f;
+    error_number = daft_set_height(symbol, 0.0f, 0.0f);
+#endif
     symbol->rows = 3;
     symbol->width = writer - 1;
 
@@ -404,9 +502,17 @@ INTERNAL int kix_code(struct zint_symbol *symbol, unsigned char source[], int le
         writer += 2;
     }
 
-    symbol->row_height[0] = 3;
-    symbol->row_height[1] = 2;
-    symbol->row_height[2] = 3;
+#ifdef COMPLIANT_HEIGHTS
+    /* Dimensions same as RM4SCC */
+    symbol->row_height[0] = (float) ((1.9 * 42.3) / 25.4); /* ~3.16 */
+    symbol->row_height[1] = (float) ((1.3 * 42.3) / 25.4); /* ~2.16 */
+    /* Note using max X for minimum and min X for maximum */
+    error_number = daft_set_height(symbol, (float) ((4.22 * 39) / 25.4), (float) ((5.84 * 47) / 25.4));
+#else
+    symbol->row_height[0] = 3.0f;
+    symbol->row_height[1] = 2.0f;
+    error_number = daft_set_height(symbol, 0.0f, 0.0f);
+#endif
     symbol->rows = 3;
     symbol->width = writer - 1;
 
@@ -460,9 +566,21 @@ INTERNAL int daft_code(struct zint_symbol *symbol, unsigned char source[], int l
         writer += 2;
     }
 
-    symbol->row_height[0] = 3;
-    symbol->row_height[1] = 2;
-    symbol->row_height[2] = 3;
+    /* Allow ratio of tracker to be specified in thousandths */
+    if (symbol->option_2 >= 50 && symbol->option_2 <= 900) {
+        float t_ratio = symbol->option_2 / 1000.0f;
+        if (symbol->height < 0.5f) {
+            symbol->height = 8.0f;
+        }
+        symbol->row_height[1] = symbol->height * t_ratio;
+        symbol->row_height[0] = (float) ((symbol->height - symbol->row_height[1]) / 2.0);
+    } else {
+        symbol->row_height[0] = 3.0f;
+        symbol->row_height[1] = 2.0f;
+    }
+
+    /* DAFT generic barcode so no dimensions/height specification */
+    (void) daft_set_height(symbol, 0.0f, 0.0f);
     symbol->rows = 3;
     symbol->width = writer - 1;
 
@@ -490,6 +608,8 @@ INTERNAL int flattermarken(struct zint_symbol *symbol, unsigned char source[], i
 
     expand(symbol, dest);
 
+    // TODO: Find documentation on BARCODE_FLAT dimensions/height
+
     return error_number;
 }
 
@@ -511,8 +631,6 @@ INTERNAL int japan_post(struct zint_symbol *symbol, unsigned char source[], int 
         strcpy(symbol->errtxt, "496: Input too long");
         return ZINT_ERROR_TOO_LONG;
     }
-
-    error_number = 0;
 
     strcpy(local_source, (char*) source);
     to_upper((unsigned char*) local_source);
@@ -589,11 +707,22 @@ INTERNAL int japan_post(struct zint_symbol *symbol, unsigned char source[], int 
         writer += 2;
     }
 
-    symbol->row_height[0] = 3;
-    symbol->row_height[1] = 2;
-    symbol->row_height[2] = 3;
     symbol->rows = 3;
     symbol->width = writer - 1;
+
+#ifdef COMPLIANT_HEIGHTS
+    /* Japan Post Zip/Barcode Manual pp.11-12 https://www.post.japanpost.jp/zipcode/zipmanual/p11.html
+       X 0.6mm (0.5mm - 0.7mm)
+       Tracker height 1.2mm (1.05mm - 1.35mm) / 0.6mm = 2,
+       Ascender/descender = 1.2mm (Full 3.6mm (3.4mm - 3.6mm, max preferred) less T divided by 2) / 0.6mm = 2 */
+    symbol->row_height[0] = 2.0f;
+    symbol->row_height[1] = 2.0f;
+    error_number = daft_set_height(symbol, (float) (3.4 / 0.7) /*~4.857*/, 3.6f / 0.5f /*7.2*/);
+#else
+    symbol->row_height[0] = 3.0f;
+    symbol->row_height[1] = 2.0f;
+    error_number = daft_set_height(symbol, 0.0f, 0.0f);
+#endif
 
     return error_number;
 }

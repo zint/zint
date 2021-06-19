@@ -1,0 +1,39 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+   "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="158" height="119" version="1.1"
+   xmlns="http://www.w3.org/2000/svg">
+   <desc>Zint Generated Symbol
+   </desc>
+
+   <g id="barcode" fill="#000000">
+      <rect x="0" y="0" width="158" height="119" fill="#FFFFFF" />
+      <rect x="2.00" y="0.00" width="2.00" height="100.00" />
+      <rect x="6.00" y="0.00" width="6.00" height="100.00" />
+      <rect x="14.00" y="0.00" width="2.00" height="100.00" />
+      <rect x="20.00" y="0.00" width="2.00" height="100.00" />
+      <rect x="28.00" y="0.00" width="2.00" height="100.00" />
+      <rect x="40.00" y="0.00" width="2.00" height="100.00" />
+      <rect x="44.00" y="0.00" width="2.00" height="100.00" />
+      <rect x="54.00" y="0.00" width="2.00" height="100.00" />
+      <rect x="58.00" y="0.00" width="2.00" height="100.00" />
+      <rect x="62.00" y="0.00" width="2.00" height="100.00" />
+      <rect x="66.00" y="0.00" width="2.00" height="100.00" />
+      <rect x="72.00" y="0.00" width="2.00" height="100.00" />
+      <rect x="76.00" y="0.00" width="6.00" height="100.00" />
+      <rect x="86.00" y="0.00" width="2.00" height="100.00" />
+      <rect x="90.00" y="0.00" width="2.00" height="100.00" />
+      <rect x="94.00" y="0.00" width="2.00" height="100.00" />
+      <rect x="104.00" y="0.00" width="2.00" height="100.00" />
+      <rect x="110.00" y="0.00" width="8.00" height="100.00" />
+      <rect x="120.00" y="0.00" width="2.00" height="100.00" />
+      <rect x="128.00" y="0.00" width="2.00" height="100.00" />
+      <rect x="132.00" y="0.00" width="4.00" height="100.00" />
+      <rect x="138.00" y="0.00" width="6.00" height="100.00" />
+      <rect x="146.00" y="0.00" width="2.00" height="100.00" />
+      <text x="79.00" y="115.40" text-anchor="middle"
+         font-family="Helvetica, sans-serif" font-size="14.0" >
+         (01)00123456789098
+      </text>
+   </g>
+</svg>

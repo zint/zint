@@ -5,7 +5,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008 - 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008 - 2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -205,6 +205,8 @@ INTERNAL int code_11(struct zint_symbol *symbol, unsigned char source[], int len
 
     expand(symbol, dest);
 
+    // TODO: Find documentation on BARCODE_CODE11 dimensions/height
+
     ustrcpy(symbol->text, source);
     if (num_check_digits) {
         ustrcat(symbol->text, checkstr);
@@ -219,6 +221,7 @@ INTERNAL int c39(struct zint_symbol *symbol, unsigned char source[], int length)
     int error_number;
     char dest[880]; /* 10 (Start) + 85 * 10 + 10 (Check) + 9 (Stop) + 1 = 880 */
     char localstr[2] = {0};
+    float height;
 
     counter = 0;
 
@@ -229,7 +232,8 @@ INTERNAL int c39(struct zint_symbol *symbol, unsigned char source[], int length)
     if ((symbol->symbology == BARCODE_LOGMARS) && (length > 30)) { /* MIL-STD-1189 Rev. B Section 5.2.6.2 */
         strcpy(symbol->errtxt, "322: Input too long");
         return ZINT_ERROR_TOO_LONG;
-    } else if ((symbol->symbology == BARCODE_HIBC_39) && (length > 68)) { /* Prevent encoded_data out-of-bounds >= 143 due to wider 'wide' bars */
+    /* Prevent encoded_data out-of-bounds >= 143 for BARCODE_HIBC_39 due to wider 'wide' bars */
+    } else if ((symbol->symbology == BARCODE_HIBC_39) && (length > 68)) {
         strcpy(symbol->errtxt, "319: Input too long"); /* Note use 319 (2of5 range) as 340 taken by CODE128 */
         return ZINT_ERROR_TOO_LONG;
     } else if (length > 85) {
@@ -311,6 +315,27 @@ INTERNAL int c39(struct zint_symbol *symbol, unsigned char source[], int length)
 
     expand(symbol, dest);
 
+#ifdef COMPLIANT_HEIGHTS
+    if (symbol->symbology == BARCODE_LOGMARS) {
+        /* MIL-STD-1189 Rev. B Section 5.2
+           Min height 0.25" / 0.04" (X max) = 6.25
+           Default height 0.625" (average of 0.375" - 0.875") / 0.01375" (average of 0.0075" - 0.02") ~ 45.45 */
+        height = (float) (0.625 / 0.01375);
+        error_number = set_height(symbol, 6.25f, height, (float) (0.875 / 0.0075), 0 /*no_errtxt*/);
+    } else if (symbol->symbology == BARCODE_CODE39 || symbol->symbology == BARCODE_EXCODE39
+                || symbol->symbology == BARCODE_HIBC_39) {
+        /* ISO/IEC 16388:2007 4.4 (e) recommended min height 5.0mm or 15% of width excluding quiet zones;
+           as X left to application specification use
+           width = (C + 2) * (3 * N + 6) * X + (C + 1) * I = (C + 2) * 9 + C + 1) * X = (10 * C + 19) */
+        height = (float) ((10.0 * (symbol->option_2 == 1 ? length + 1 : length) + 19.0) * 0.15);
+        /* Using 50 as default as none recommended */
+        error_number = set_height(symbol, height , height > 50.0f ? height : 50.0f, 0.0f, 0 /*no_errtxt*/);
+    }
+#else
+    height = 50.0f;
+    (void) set_height(symbol, 0.0f, height, 0.0f, 1 /*no_errtxt*/);
+#endif
+
     if (symbol->symbology == BARCODE_CODE39) {
         ustrcpy(symbol->text, "*");
         ustrncat(symbol->text, source, length);
@@ -366,6 +391,21 @@ INTERNAL int pharmazentral(struct zint_symbol *symbol, unsigned char source[], i
     error_number = c39(symbol, (unsigned char *) localstr, 9);
     ustrcpy(symbol->text, "PZN ");
     ustrcat(symbol->text, localstr);
+
+#ifdef COMPLIANT_HEIGHTS
+    /* Technical Information regarding PZN Coding V 2.1 (25 Feb 2019) Code size
+       https://www.ifaffm.de/mandanten/1/documents/04_ifa_coding_system/IFA_Info_Code_39_EN.pdf
+       "normal" X 0.25mm (0.187mm - 0.45mm), height 8mm - 20mm for 0.25mm X, 10mm mentioned so use that as default,
+       10mm / 0.25mm = 40 */
+    if (error_number < ZINT_ERROR) {
+        error_number = set_height(symbol, (float) (8.0 / 0.45), 40.0f, (float) (20.0 / 0.187), 0 /*no_errtxt*/);
+    }
+#else
+    if (error_number < ZINT_ERROR) {
+        (void) set_height(symbol, 0.0f, 50.0f, 0.0f, 1 /*no_errtxt*/);
+    }
+#endif
+
     return error_number;
 }
 
@@ -409,12 +449,12 @@ INTERNAL int c93(struct zint_symbol *symbol, unsigned char source[], int length)
        c39() and ec39() */
 
     int i;
-    int h, weight, c, k, values[128], error_number;
+    int h, weight, c, k, values[128], error_number = 0;
     char buffer[220];
     char dest[670];
     char set_copy[] = SILVER;
+    float height;
 
-    error_number = 0;
     strcpy(buffer, "");
 
     if (length > 107) {
@@ -483,6 +523,20 @@ INTERNAL int c93(struct zint_symbol *symbol, unsigned char source[], int length)
     strcat(dest, "1111411");
     expand(symbol, dest);
 
+#ifdef COMPLIANT_HEIGHTS
+    /* ANSI/AIM BC5-1995 Section 2.6 minimum height 0.2" or 15% of symbol length, whichever is greater
+       0.2" / 0.0075" (min X) = ~26.66; symbol length = (9 * (C + 4) + 1) * X + 2 * Q = symbol->width + 20 */
+    height = (float) ((symbol->width + 20) * 0.15);
+    if (height < 0.2f / 0.0075f) {
+        height = 0.2f / 0.0075f;
+    }
+    /* Using 50 as default for back-compatibility */
+    error_number = set_height(symbol, height, height > 50.0f ? height : 50.0f, 0.0f, 0 /*no_errtxt*/);
+#else
+    height = 50.0f;
+    (void) set_height(symbol, 0.0f, height, 0.0f, 1 /*no_errtxt*/);
+#endif
+
     symbol->text[length] = set_copy[c];
     symbol->text[length + 1] = set_copy[k];
     symbol->text[length + 2] = '\0';
@@ -497,8 +551,10 @@ typedef const struct s_channel_precalc {
 //#define CHANNEL_GENERATE_PRECALCS
 
 #ifdef CHANNEL_GENERATE_PRECALCS
-/* To generate precalc tables uncomment define and run "./test_channel -f generate -g" and place result in "channel_precalcs.h" */
-static void channel_generate_precalc(int channels, long value, int mod, int last, int B[8], int S[8], int bmax[7], int smax[7]) {
+/* To generate precalc tables uncomment CHANNEL_GENERATE_PRECALCS define and run "./test_channel -f generate -g" and
+   place result in "channel_precalcs.h" */
+static void channel_generate_precalc(int channels, long value, int mod, int last, int B[8], int S[8], int bmax[7],
+            int smax[7]) {
     int i;
     if (value == mod) printf("static channel_precalc channel_precalcs%d[] = {\n", channels);
     printf("    { %7ld, {", value); for (i = 0; i < 8; i++) printf(" %d,", B[i]); printf(" },");
@@ -536,9 +592,8 @@ static long channel_copy_precalc(channel_precalc precalc, int B[8], int S[8], in
    specification is entirely in the public domain and free of all use restrictions,
    licenses and fees. AIM USA, its member companies, or individual officers
    assume no liability for the use of this document." */
-
 static void CHNCHR(int channels, long target_value, int B[8], int S[8]) {
-    /* Use of initial pre-calculations taken from Barcode Writer in Pure PostScript (bwipp)
+    /* Use of initial pre-calculations taken from Barcode Writer in Pure PostScript (BWIPP)
      * Copyright (c) 2004-2020 Terry Burton (MIT/X-Consortium license) */
     static channel_precalc initial_precalcs[6] = {
         { 0, { 1, 1, 1, 1, 1, 2, 1, 2, }, { 1, 1, 1, 1, 1, 1, 1, 3, }, { 1, 1, 1, 1, 1, 3, 2, }, { 1, 1, 1, 1, 1, 3, 3, }, },
@@ -555,9 +610,11 @@ static void CHNCHR(int channels, long target_value, int B[8], int S[8]) {
 
 #ifndef CHANNEL_GENERATE_PRECALCS
     if (channels == 7 && target_value >= channel_precalcs7[0].value) {
-        value = channel_copy_precalc(channel_precalcs7[(target_value / channel_precalcs7[0].value) - 1], B, S, bmax, smax);
+        value = channel_copy_precalc(channel_precalcs7[(target_value / channel_precalcs7[0].value) - 1], B, S, bmax,
+                                    smax);
     } else if (channels == 8 && target_value >= channel_precalcs8[0].value) {
-        value = channel_copy_precalc(channel_precalcs8[(target_value / channel_precalcs8[0].value) - 1], B, S, bmax, smax);
+        value = channel_copy_precalc(channel_precalcs8[(target_value / channel_precalcs8[0].value) - 1], B, S, bmax,
+                                    smax);
     }
 #endif
 
@@ -587,10 +644,14 @@ lb6:                                                    B[7] = bmax[6] + 1 - B[6
                                                         if (B[5] + S[6] + B[6] + S[7] + B[7] == 5) goto nb6;
 chkchr:
 #ifdef CHANNEL_GENERATE_PRECALCS
-                                                        if (channels == 7 && value && value % 115338 == 0) { /* 115338 == (576688 + 2) / 5 */
-                                                            channel_generate_precalc(channels, value, 115338, 115338 * (5 - 1), B, S, bmax, smax);
-                                                        } else if (channels == 8 && value && value % 119121 == 0) { /* 119121 == (7742862 + 3) / 65 */
-                                                            channel_generate_precalc(channels, value, 119121, 119121 * (65 - 1), B, S, bmax, smax);
+                                                        /* 115338 == (576688 + 2) / 5 */
+                                                        if (channels == 7 && value && value % 115338 == 0) {
+                                                            channel_generate_precalc(channels, value, 115338,
+                                                                                115338 * (5 - 1), B, S, bmax, smax);
+                                                        /* 119121 == (7742862 + 3) / 65 */
+                                                        } else if (channels == 8 && value && value % 119121 == 0) {
+                                                            channel_generate_precalc(channels, value, 119121,
+                                                                                119121 * (65 - 1), B, S, bmax, smax);
                                                         }
 #endif
                                                         if (value == target_value) return;
@@ -619,6 +680,7 @@ INTERNAL int channel_code(struct zint_symbol *symbol, unsigned char source[], in
     int channels, i;
     int error_number, range = 0, zeroes;
     char hrt[9];
+    float height;
 
     if (length > 7) {
         strcpy(symbol->errtxt, "333: Input too long");
@@ -711,6 +773,18 @@ INTERNAL int channel_code(struct zint_symbol *symbol, unsigned char source[], in
 
     expand(symbol, pattern);
 
+#ifdef COMPLIANT_HEIGHTS
+    /* ANSI/AIM BC12-1998 gives min height as 5mm or 15% of length but X left as application specification so use
+       15% of length where
+       length = (3 (quiet zones) + 9 (finder) + 4 * channels - 2) * X */
+    height = (float) ((10 + 4 * channels) * 0.15);
+    /* Using 50 as default for back-compatibility */
+    error_number = set_height(symbol, height > 50.0f ? height : 50.0f, height, 0.0f, 0 /*no_errtxt*/);
+#else
+    height = 50.0f;
+    (void) set_height(symbol, 0.0f, height, 0.0f, 1 /*no_errtxt*/);
+#endif
+
     return error_number;
 }
 
@@ -800,6 +874,8 @@ INTERNAL int vin(struct zint_symbol *symbol, unsigned char source[], int length)
 
     ustrcpy(symbol->text, local_source);
     expand(symbol, dest);
+
+    /* Specification of dimensions/height for BARCODE_VIN unlikely */
 
     return 0;
 }

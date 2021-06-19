@@ -906,7 +906,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
             if (process_p == 2 && symbols_left == 2) {
                 /* 5.2.5.2 (b) */
                 process_buffer[process_p++] = 0; // Shift 1
-                (void)ctx_process_buffer_transfer(process_buffer, process_p, target, &tp, debug);
+                (void) ctx_process_buffer_transfer(process_buffer, process_p, target, &tp, debug);
 
             } else if (process_p == 1 && symbols_left <= 2 && isc40text(current_mode, source[inputlen - 1])) {
                 /* 5.2.5.2 (c)/(d) */
@@ -997,7 +997,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
                     memset(process_buffer + process_p, 0, sizeof(int) * (4 - process_p));
                 }
             }
-            (void)edi_process_buffer_transfer(process_buffer, 4, target, &tp, debug);
+            (void) edi_process_buffer_transfer(process_buffer, 4, target, &tp, debug);
         }
 
     } else if (current_mode == DM_BASE256) {
@@ -1162,6 +1162,7 @@ static int data_matrix_200(struct zint_symbol *symbol, const unsigned char sourc
         free(places);
     }
 
+    symbol->height = H;
     symbol->rows = H;
     symbol->width = W;
 

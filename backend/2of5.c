@@ -142,13 +142,14 @@ INTERNAL int logic_two_of_five(struct zint_symbol *symbol, unsigned char source[
     return c25_common(symbol, source, length, 80, C25MatrixTable, C25IataLogicStartStop, 307);
 }
 
-/* Code 2 of 5 Interleaved */
-INTERNAL int interleaved_two_of_five(struct zint_symbol *symbol, unsigned char source[], int length) {
-
+/* Common to Interleaved, ITF-14, DP Leitcode, DP Identcode */
+static int c25inter_common(struct zint_symbol *symbol, unsigned char source[], int length,
+            const int dont_set_height) {
     int i, j, error_number;
     char bars[7], spaces[7], mixed[14], dest[512]; /* 4 + (90 + 2) * 5 + 3 + 1 = 468 */
     unsigned char temp[90 + 2 + 1];
     int have_checkdigit = symbol->option_2 == 1 || symbol->option_2 == 2;
+    float height;
 
     if (length > 90) {
         strcpy(symbol->errtxt, "309: Input too long");
@@ -209,12 +210,33 @@ INTERNAL int interleaved_two_of_five(struct zint_symbol *symbol, unsigned char s
         symbol->text[length - 1] = '\0';
     }
 
+    if (!dont_set_height) {
+#ifdef COMPLIANT_HEIGHTS
+        /* ISO/IEC 16390:2007 Section 4.4 min height 5mm or 15% of symbol width whichever greater where
+           (P = character pairs, N = wide/narrow ratio = 3) width = (P(4N + 6) + N + 6)X = (length / 2) * 18 + 9 */
+        height = (float) ((18.0 * (length / 2) + 9.0) * 0.15);
+        if (height < (float) (5.0 / 0.33)) { /* Taking X = 0.330mm from Annex D.3.1 (application specification) */
+            height = (float) (5.0 / 0.33);
+        }
+        /* Using 50 as default as none recommended */
+        error_number = set_height(symbol, height, height > 50.0f ? height : 50.0f, 0.0f, 0 /*no_errtxt*/);
+#else
+        height = 50.0f;
+        (void) set_height(symbol, 0.0f, height, 0.0f, 1 /*no_errtxt*/);
+#endif
+    }
+
     return error_number;
 }
 
-/* Interleaved 2-of-5 (ITF) */
+/* Code 2 of 5 Interleaved ISO/IEC 16390:2007 */
+INTERNAL int interleaved_two_of_five(struct zint_symbol *symbol, unsigned char source[], int length) {
+    return c25inter_common(symbol, source, length, 0 /*dont_set_height*/);
+}
+
+/* Interleaved 2-of-5 (ITF-14) */
 INTERNAL int itf14(struct zint_symbol *symbol, unsigned char source[], int length) {
-    int i, error_number, zeroes;
+    int i, error_number, warn_number = 0, zeroes;
     unsigned char localstr[16] = {0};
 
     if (length > 13) {
@@ -238,7 +260,7 @@ INTERNAL int itf14(struct zint_symbol *symbol, unsigned char source[], int lengt
     /* Calculate the check digit - the same method used for EAN-13 */
     localstr[13] = check_digit(gs1_checksum(localstr, 13));
     localstr[14] = '\0';
-    error_number = interleaved_two_of_five(symbol, (unsigned char *) localstr, 14);
+    error_number = c25inter_common(symbol, localstr, 14, 1 /*dont_set_height*/);
     ustrcpy(symbol->text, localstr);
 
     if (!((symbol->output_options & BARCODE_BOX) || (symbol->output_options & BARCODE_BIND))) {
@@ -250,7 +272,18 @@ INTERNAL int itf14(struct zint_symbol *symbol, unsigned char source[], int lengt
         }
     }
 
-    return error_number;
+    if (error_number < ZINT_ERROR) {
+#ifdef COMPLIANT_HEIGHTS
+        /* GS1 General Specifications 21.0.1 5.12.3.2 table 2, including footnote (**): (note bind/box additional to
+           symbol->height), same as GS1-128: "in case of further space constraints"
+           height 5.8mm / 1.016mm (X max) ~ 5.7; default 31.75mm / 0.495mm ~ 64.14 */
+        warn_number = set_height(symbol, (float) (5.8 / 1.016), (float) (31.75 / 0.495), 0.0f, 0 /*no_errtxt*/);
+#else
+        (void) set_height(symbol, 0.0f, 50.0f, 0.0f, 1 /*no_errtxt*/);
+#endif
+    }
+
+    return error_number ? error_number : warn_number;
 }
 
 /* Deutshe Post Leitcode */
@@ -285,8 +318,11 @@ INTERNAL int dpleit(struct zint_symbol *symbol, unsigned char source[], int leng
     }
     localstr[13] = check_digit(count);
     localstr[14] = '\0';
-    error_number = interleaved_two_of_five(symbol, localstr, 14);
+    error_number = c25inter_common(symbol, localstr, 14, 1 /*dont_set_height*/);
     ustrcpy(symbol->text, localstr);
+
+    // TODO: Find documentation on BARCODE_DPLEIT dimensions/height
+
     return error_number;
 }
 
@@ -321,7 +357,10 @@ INTERNAL int dpident(struct zint_symbol *symbol, unsigned char source[], int len
     }
     localstr[11] = check_digit(count);
     localstr[12] = '\0';
-    error_number = interleaved_two_of_five(symbol, localstr, 12);
+    error_number = c25inter_common(symbol, localstr, 12, 1 /*dont_set_height*/);
     ustrcpy(symbol->text, localstr);
+
+    // TODO: Find documentation on BARCODE_DPIDENT dimensions/height
+
     return error_number;
 }

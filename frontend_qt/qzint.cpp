@@ -38,7 +38,7 @@ namespace Zint {
 
     QZint::QZint() {
         m_symbol = BARCODE_CODE128;
-        m_height = 0;
+        m_height = 0.0f;
         m_borderType = 0;
         m_borderWidth = 0;
         m_fontSetting = 0;
@@ -170,11 +170,11 @@ namespace Zint {
         m_primaryMessage = primaryMessage;
     }
 
-    int QZint::height() const {
+    float QZint::height() const {
         return m_height;
     }
 
-    void QZint::setHeight(int height) {
+    void QZint::setHeight(float height) {
         m_height = height;
     }
 

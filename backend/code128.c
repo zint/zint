@@ -692,15 +692,18 @@ INTERNAL int code_128(struct zint_symbol *symbol, unsigned char source[], int le
 
     expand(symbol, dest);
 
+    /* ISO/IEC 15417:2007 leaves dimensions/height as application specification */
+
     hrt_cpy_iso8859_1(symbol, source, length);
 
     return error_number;
 }
 
-/* Handle EAN-128 (Now known as GS1-128) */
-INTERNAL int ean_128(struct zint_symbol *symbol, unsigned char source[], int length) {
+/* Handle EAN-128 (Now known as GS1-128), and composite version if `cc_mode` set */
+INTERNAL int ean_128_cc(struct zint_symbol *symbol, unsigned char source[], int length, const int cc_mode,
+                const int cc_rows) {
     int i, j, values[C128_MAX] = {0}, bar_characters, read, total_sum;
-    int error_number, indexchaine, indexliste;
+    int error_number, warn_number = 0, indexchaine, indexliste;
     int list[2][C128_MAX] = {{0}};
     char set[C128_MAX] = {0}, mode, last_set;
     float glyph_count;
@@ -737,6 +740,7 @@ INTERNAL int ean_128(struct zint_symbol *symbol, unsigned char source[], int len
     if (error_number >= ZINT_ERROR) {
         return error_number;
     }
+
     reduced_length = (int) ustrlen(reduced);
 
     /* Decide on mode using same system as PDF417 and rules of ISO 15417 Annex E */
@@ -936,7 +940,7 @@ INTERNAL int ean_128(struct zint_symbol *symbol, unsigned char source[], int len
 
     /* Linkage flags in GS1-128 are determined by ISO/IEC 24723 section 7.4 */
 
-    switch (symbol->option_1) {
+    switch (cc_mode) {
         case 1:
         case 2:
             /* CC-A or CC-B 2D component */
@@ -1008,6 +1012,24 @@ INTERNAL int ean_128(struct zint_symbol *symbol, unsigned char source[], int len
         }
     }
 
+#ifdef COMPLIANT_HEIGHTS
+    /* GS1 General Specifications 21.0.1 5.12.3.2 table 2, including footnote (**):
+       same as ITF-14: "in case of further space constraints" height 5.8mm / 1.016mm (X max) ~ 5.7;
+       default 31.75mm / 0.495mm ~ 64.14 */
+    if (symbol->symbology == BARCODE_GS1_128_CC) {
+        /* Pass back via temporary linear structure */
+        symbol->height = symbol->height ? (float) (5.8 / 1.016) : (float) (31.75 / 0.495);
+    } else {
+        warn_number = set_height(symbol, (float) (5.8 / 1.016), (float) (31.75 / 0.495), 0.0f, 0 /*no_errtxt*/);
+    }
+#else
+    if (symbol->symbology == BARCODE_GS1_128_CC) {
+        symbol->height = 50.0f - cc_rows * (cc_mode == 3 ? 3 : 2) - 1.0f;
+    } else {
+        (void) set_height(symbol, 0.0f, 50.0f, 0.0f, 1 /*no_errtxt*/);
+    }
+#endif
+
     for (i = 0; i < length; i++) {
         if ((source[i] != '[') && (source[i] != ']')) {
             symbol->text[i] = source[i];
@@ -1020,7 +1042,12 @@ INTERNAL int ean_128(struct zint_symbol *symbol, unsigned char source[], int len
         }
     }
 
-    return error_number;
+    return error_number ? error_number : warn_number;
+}
+
+/* Handle EAN-128 (Now known as GS1-128) */
+INTERNAL int ean_128(struct zint_symbol *symbol, unsigned char source[], int length) {
+    return ean_128_cc(symbol, source, length, 0 /*cc_mode*/, 0 /*cc_rows*/);
 }
 
 /* Add check digit if encoding an NVE18 symbol */
@@ -1130,46 +1157,56 @@ INTERNAL int dpd_parcel(struct zint_symbol *symbol, unsigned char source[], int 
     }
     
     source[0] = identifier;
-    error_number = code_128(symbol, source, length);
-    
-    cd = mod;
-    
-    p = 0;
-    for (i = 1; i < length; i++) {
-        symbol->text[p] = source[i];
-        p++;
-        
-        cd += posn(KRSET, source[i]);
-        if (cd > mod) cd -= mod;
-        cd *= 2;
-        if (cd >= (mod + 1)) cd -= mod + 1;
-        
-        switch (i) {
-            case 4:
-            case 7:
-            case 11:
-            case 15:
-            case 19:
-            case 21:
-            case 24:
-            case 27:
-                symbol->text[p] = ' ';
-                p++;
-                break;
+    error_number = code_128(symbol, source, length); /* Only returns errors, not warnings */
+
+    if (error_number < ZINT_ERROR) {
+#ifdef COMPLIANT_HEIGHTS
+        /* Specification DPD and primetime Parcel Despatch 4.0.2 Section 5.5.1
+           25mm / 0.4mm (X max) = 62.5 min, 25mm / 0.375 (X) ~ 66.66 default */
+        error_number = set_height(symbol, 62.5f, (float) (25.0 / 0.375), 0.0f, 0 /*no_errtxt*/);
+#else
+        (void) set_height(symbol, 0.0f, 50.0f, 0.0f, 1 /*no_errtxt*/);
+#endif
+
+        cd = mod;
+
+        p = 0;
+        for (i = 1; i < length; i++) {
+            symbol->text[p] = source[i];
+            p++;
+
+            cd += posn(KRSET, source[i]);
+            if (cd > mod) cd -= mod;
+            cd *= 2;
+            if (cd >= (mod + 1)) cd -= mod + 1;
+
+            switch (i) {
+                case 4:
+                case 7:
+                case 11:
+                case 15:
+                case 19:
+                case 21:
+                case 24:
+                case 27:
+                    symbol->text[p] = ' ';
+                    p++;
+                    break;
+            }
         }
+
+        cd = mod + 1 - cd;
+        if (cd == mod) cd = 0;
+
+        if (cd < 10) {
+            symbol->text[p] = cd + '0';
+        } else {
+            symbol->text[p] = (cd - 10) + 'A';
+        }
+        p++;
+
+        symbol->text[p] = '\0';
     }
-    
-    cd = mod + 1 - cd;
-    if (cd == mod) cd = 0;
-    
-    if (cd < 10) {
-        symbol->text[p] = cd + '0';
-    } else {
-        symbol->text[p] = (cd - 10) + 'A';
-    }
-    p++;
-    
-    symbol->text[p] = '\0';
-    
+
     return error_number;
 }

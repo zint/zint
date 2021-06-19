@@ -49,6 +49,9 @@ INTERNAL int code_49(struct zint_symbol *symbol, unsigned char source[], int len
     char pattern[80];
     int gs1;
     int h, len;
+    int separator;
+    float min_row_height;
+    int error_number = 0;
 
     if (length > 81) {
         strcpy(symbol->errtxt, "430: Input too long");
@@ -338,8 +341,6 @@ INTERNAL int code_49(struct zint_symbol *symbol, unsigned char source[], int len
         strcat(pattern, "1111"); /* Stop character */
 
         /* Expand into symbol */
-        symbol->row_height[i] = 10;
-
         for (j = 0, len = (int) strlen(pattern); j < len; j++) {
             if (pattern[j] == '1') {
                 set_module(symbol, i, j);
@@ -350,11 +351,22 @@ INTERNAL int code_49(struct zint_symbol *symbol, unsigned char source[], int len
     symbol->rows = rows;
     symbol->width = (int) strlen(pattern);
 
+#ifdef COMPLIANT_HEIGHTS
+    separator = symbol->option_3 >= 1 && symbol->option_3 <= 4 ? symbol->option_3 : 1;
+    /* ANSI/AIM BC6-2000 Section 2.6 minimum 8X; use 10 * rows as default for back-compatibility */
+    min_row_height = 8.0f + separator;
+    error_number = set_height(symbol, min_row_height, (min_row_height > 10.0f ? min_row_height : 10.0f) * rows, 0.0f,
+                                0 /*no_errtxt*/);
+#else
+    (void)min_row_height; (void)separator;
+    (void) set_height(symbol, 0.0f, 10.0f * rows, 0.0f, 1 /*no_errtxt*/);
+#endif
+
     symbol->output_options |= BARCODE_BIND;
 
     if (symbol->border_width == 0) { /* Allow override if non-zero */
         symbol->border_width = 1; /* ANSI/AIM BC6-2000 Section 2.1 (note change from previous default 2) */
     }
 
-    return 0;
+    return error_number;
 }

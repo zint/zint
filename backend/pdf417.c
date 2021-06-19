@@ -509,11 +509,11 @@ static void numbprocess(int *chainemc, int *mclength, char chaine[], int start, 
 /* 366 */
 static int pdf417(struct zint_symbol *symbol, unsigned char chaine[], const int length) {
     int i, k, j, indexchaine, indexliste, mode, longueur, loop, mccorrection[520] = {0}, offset;
-    int total, chainemc[PDF417_MAX_LEN], mclength, c1, c2, c3, dummy[35], calcheight;
+    int total, chainemc[PDF417_MAX_LEN], mclength, c1, c2, c3, dummy[35];
     int liste[2][PDF417_MAX_LEN] = {{0}};
     char pattern[580];
     int bp = 0;
-    int error_number = 0;
+    int error_number;
     int debug = symbol->debug & ZINT_DEBUG_PRINT;
 
     if (length > PDF417_MAX_LEN) {
@@ -784,15 +784,8 @@ static int pdf417(struct zint_symbol *symbol, unsigned char chaine[], const int 
     }
     symbol->width = bp;
     
-    /* Allow user to adjust height of symbol, but enforce minimum row height of 3X */
-    calcheight = (int)(symbol->height / i);
-    if (calcheight < 3) {
-        calcheight = 3;
-    }
-    
-    for (j = 0; j < i; j++) {
-        symbol->row_height[j] = calcheight;
-    }
+    /* ISO/IEC 15438:2015 Section 5.8.2 3X minimum row height */
+    error_number = set_height(symbol, 3.0f, 0.0f, 0.0f, 0 /*no_errtxt*/);
 
     /* 843 */
     return error_number;
@@ -838,12 +831,12 @@ INTERNAL int pdf417enc(struct zint_symbol *symbol, unsigned char source[], int l
 /* like PDF417 only much smaller! */
 INTERNAL int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], int length) {
     int i, k, j, indexchaine, indexliste, mode, longueur, mccorrection[50] = {0}, offset;
-    int total, chainemc[PDF417_MAX_LEN], mclength, codeerr;
+    int total, chainemc[PDF417_MAX_LEN], mclength, error_number = 0;
     int liste[2][PDF417_MAX_LEN] = {{0}};
     char pattern[580];
     int bp = 0;
     int variant, LeftRAPStart, CentreRAPStart, RightRAPStart, StartCluster;
-    int LeftRAP, CentreRAP, RightRAP, Cluster, loop, calcheight;
+    int LeftRAP, CentreRAP, RightRAP, Cluster, loop;
     int debug = symbol->debug & ZINT_DEBUG_PRINT;
 
     if (length > MICRO_PDF417_MAX_LEN) {
@@ -852,7 +845,6 @@ INTERNAL int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], in
     }
 
     /* Encoding starts out the same as PDF417, so use the same code */
-    codeerr = 0;
 
     /* 456 */
     indexliste = 0;
@@ -954,7 +946,7 @@ INTERNAL int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], in
             return ZINT_ERROR_INVALID_OPTION;
         } else {
             symbol->option_2 = 0;
-            codeerr = ZINT_WARN_INVALID_OPTION;
+            error_number = ZINT_WARN_INVALID_OPTION;
         }
     }
 
@@ -977,7 +969,7 @@ INTERNAL int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], in
             return ZINT_ERROR_INVALID_OPTION;
         } else {
             symbol->option_2 = 0;
-            codeerr = ZINT_WARN_INVALID_OPTION;
+            error_number = ZINT_WARN_INVALID_OPTION;
         }
     }
 
@@ -988,7 +980,7 @@ INTERNAL int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], in
             return ZINT_ERROR_INVALID_OPTION;
         } else {
             symbol->option_2 = 0;
-            codeerr = ZINT_WARN_INVALID_OPTION;
+            error_number = ZINT_WARN_INVALID_OPTION;
         }
     }
 
@@ -999,7 +991,7 @@ INTERNAL int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], in
             return ZINT_ERROR_INVALID_OPTION;
         } else {
             symbol->option_2 = 0;
-            codeerr = ZINT_WARN_INVALID_OPTION;
+            error_number = ZINT_WARN_INVALID_OPTION;
         }
     }
 
@@ -1208,7 +1200,6 @@ INTERNAL int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], in
                 set_module(symbol, i, loop);
             }
         }
-        symbol->row_height[i] = 2;
 
         /* Set up RAPs and Cluster for next row */
         LeftRAP++;
@@ -1231,15 +1222,12 @@ INTERNAL int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], in
     }
     symbol->width = bp;
     
-    /* Allow user to adjust height of symbol, but enforce minimum row height of 2X */
-    calcheight = (int)(symbol->height / i);
-    if (calcheight < 2) {
-        calcheight = 2;
-    }
-    
-    for (j = 0; j < i; j++) {
-        symbol->row_height[j] = calcheight;
+    /* ISO/IEC 24728:2006 Section 5.8.2 2X minimum row height */
+    if (error_number) {
+        (void) set_height(symbol, 2.0f, 0.0f, 0.0f, 1 /*no_errtxt*/);
+    } else {
+        error_number = set_height(symbol, 2.0f, 0.0f, 0.0f, 0 /*no_errtxt*/);
     }
 
-    return codeerr;
+    return error_number;
 }

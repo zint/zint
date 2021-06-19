@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2017 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -94,6 +94,15 @@ INTERNAL int telepen(struct zint_symbol *symbol, unsigned char source[], int src
     strcat(dest, TeleTable['z']);
 
     expand(symbol, dest);
+
+#ifdef COMPLIANT_HEIGHTS
+    /* Default height from various Telepen docs is based on default 26pt at X 0.01125" (average of 0.01" - 0.0125")
+       = (26 / 72) / 0.01125 ~ 32; no min height specified */
+    (void) set_height(symbol, 0.0f, 32.0f, 0, 1 /*no_errtxt*/);
+#else
+    (void) set_height(symbol, 0.0f, 50.0f, 0, 1 /*no_errtxt*/);
+#endif
+
     for (i = 0; i < src_len; i++) {
         if (source[i] == '\0') {
             symbol->text[i] = ' ';
@@ -164,6 +173,13 @@ INTERNAL int telepen_num(struct zint_symbol *symbol, unsigned char source[], int
     strcat(dest, TeleTable['z']);
 
     expand(symbol, dest);
+
+#ifdef COMPLIANT_HEIGHTS
+    (void) set_height(symbol, 0.0f, 32.0f, 0, 1 /*no_errtxt*/); /* Same as alphanumeric Telepen */
+#else
+    (void) set_height(symbol, 0.0f, 50.0f, 0, 1 /*no_errtxt*/);
+#endif
+
     ustrcpy(symbol->text, temp);
     return error_number;
 }

@@ -1126,6 +1126,7 @@ INTERNAL int ultracode(struct zint_symbol *symbol, unsigned char source[], int l
             set_module_colour(symbol, i, j, posn(ultra_colour, pattern[(i * total_width) + j]));
         }
     }
+    symbol->height = total_height;
 
     return 0;
 }

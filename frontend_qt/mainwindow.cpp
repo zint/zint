@@ -165,7 +165,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags fl)
     chkRInit->setChecked(settings.value("studio/chk_rinit").toInt() ? true : false);
     chkGS1Parens->setChecked(settings.value("studio/chk_gs1parens").toInt() ? true : false);
     chkAutoHeight->setChecked(settings.value("studio/appearance/autoheight", 1).toInt() ? true : false);
-    heightb->setValue(settings.value("studio/appearance/height", 50).toInt());
+    heightb->setValue(settings.value("studio/appearance/height", 50.0f).toFloat());
     bwidth->setValue(settings.value("studio/appearance/border", 0).toInt());
     spnWhitespace->setValue(settings.value("studio/appearance/whitespace", 0).toInt());
     spnVWhitespace->setValue(settings.value("studio/appearance/vwhitespace", 0).toInt());
@@ -187,7 +187,7 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags fl)
     connect(bstyle, SIGNAL(currentIndexChanged( int )), SLOT(change_options()));
     connect(bstyle, SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
     connect(filter_bstyle, SIGNAL(textChanged( const QString& )), SLOT(filter_symbologies()));
-    connect(heightb, SIGNAL(valueChanged( int )), SLOT(update_preview()));
+    connect(heightb, SIGNAL(valueChanged( double )), SLOT(update_preview()));
     connect(bwidth,  SIGNAL(valueChanged( int )), SLOT(update_preview()));
     connect(btype, SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
     connect(cmbFontSetting, SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
@@ -481,7 +481,9 @@ void MainWindow::dotty_ui_set()
 void MainWindow::on_encoded()
 {
     if (!chkAutoHeight->isEnabled() || chkAutoHeight->isChecked()) {
-        heightb->setValue(m_bc.bc.height());
+        /* setValue() rounds up/down to precision (decimals 3), we want round up only */
+        float height = (float) (ceil(m_bc.bc.height() * 1000.0f) / 1000.0f);
+        heightb->setValue(height);
     }
 }
 
@@ -782,6 +784,15 @@ void MainWindow::change_options()
         connect(m_optionWidget->findChild<QObject*>("radCbfStand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radCbfHIBC"), SIGNAL(clicked( bool )), SLOT(update_preview()));
 
+    } else if (symbology == BARCODE_DAFT) {
+        QFile file(":/grpDAFT.ui");
+        if (file.open(QIODevice::ReadOnly)) {
+            m_optionWidget = uiload.load(&file);
+            file.close();
+            tabMain->insertTab(1, m_optionWidget, tr("DAFT"));
+            connect(m_optionWidget->findChild<QObject*>("spnDAFTTrackerRatio"), SIGNAL(valueChanged( double )), SLOT(update_preview()));
+        }
+
     } else if (symbology == BARCODE_DATAMATRIX) {
         QFile file(":/grpDM.ui");
         if (!file.open(QIODevice::ReadOnly))
@@ -907,6 +918,7 @@ void MainWindow::change_options()
         btype->setItemText(0, tr("Default (bind)"));
         connect(m_optionWidget->findChild<QObject*>("cmbC49RowSepHeight"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radC49GS1"), SIGNAL(toggled( bool )), SLOT(update_preview()));
+
     } else if (symbology == BARCODE_DBAR_EXPSTK) {
         QFile file(":/grpDBExtend.ui");
         if (!file.open(QIODevice::ReadOnly))
@@ -1381,6 +1393,11 @@ void MainWindow::update_preview()
             }
             break;
 
+        case BARCODE_DAFT:
+            m_bc.bc.setSymbol(BARCODE_DAFT);
+            m_bc.bc.setOption2((int) (get_doublespinbox_val("spnDAFTTrackerRatio") * 10)); // Kept as percentage, convert to thousandths
+            break;
+
         case BARCODE_DATAMATRIX:
             if(m_optionWidget->findChild<QRadioButton*>("radDM200HIBC")->isChecked())
                 m_bc.bc.setSymbol(BARCODE_HIBC_DM);
@@ -1848,6 +1865,20 @@ void MainWindow::set_checkbox_from_setting(QSettings &settings, const QString &s
     }
 }
 
+/* Helper to return value of double spinner, checking for NULL */
+double MainWindow::get_doublespinbox_val(const QString &child) {
+    QDoubleSpinBox *spinBox = m_optionWidget->findChild<QDoubleSpinBox*>(child);
+    return spinBox ? spinBox->value() : 0.0;
+}
+
+/* Helper to set double spinner from settings, checking for NULL */
+void MainWindow::set_doublespinbox_from_setting(QSettings &settings, const QString &setting, const QString &child, float default_val) {
+    QDoubleSpinBox *spinBox = m_optionWidget->findChild<QDoubleSpinBox*>(child);
+    if (spinBox) {
+        spinBox->setValue(settings.value(setting, default_val).toFloat());
+    }
+}
+
 /* Helper to return text of line edit, checking for NULL */
 QString MainWindow::get_lineedit_val(const QString &child) {
     QLineEdit *lineEdit = m_optionWidget ? m_optionWidget->findChild<QLineEdit*>(child) : nullptr;
@@ -2017,6 +2048,10 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology) {
             settings.setValue("studio/bc/codablockf/encoding_mode", get_button_group_index(QStringList() << "radCbfStand" << "radCbfHIBC"));
             break;
 
+        case BARCODE_DAFT:
+            settings.setValue("studio/bc/daft/tracker_ratio", QString::number(get_doublespinbox_val("spnDAFTTrackerRatio"), 'f', 1 /*precision*/));
+            break;
+
         case BARCODE_DATAMATRIX:
         case BARCODE_HIBC_DM:
             settings.setValue("studio/bc/datamatrix/size", get_combobox_index("cmbDM200Size"));
@@ -2146,7 +2181,7 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology) {
         chkGS1Parens->setChecked(settings.value(QString("studio/bc/%1/chk_gs1parens").arg(name)).toInt() ? true : false);
         if (chkAutoHeight->isEnabled()) {
             chkAutoHeight->setChecked(settings.value(QString("studio/bc/%1/appearance/autoheight").arg(name), 1).toInt() ? true : false);
-            heightb->setValue(settings.value(QString("studio/bc/%1/appearance/height").arg(name), 50).toInt());
+            heightb->setValue(settings.value(QString("studio/bc/%1/appearance/height").arg(name), 50.0f).toFloat());
         }
         bwidth->setValue(settings.value(QString("studio/bc/%1/appearance/border").arg(name), 0).toInt());
         spnWhitespace->setValue(settings.value(QString("studio/bc/%1/appearance/whitespace").arg(name), 0).toInt());
@@ -2264,6 +2299,10 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology) {
             set_combobox_from_setting(settings, "studio/bc/codablockf/height", "cmbCbfHeight");
             set_combobox_from_setting(settings, "studio/bc/codablockf/row_sep_height", "cmbCbfRowSepHeight");
             set_radiobutton_from_setting(settings, "studio/bc/codablockf/encoding_mode", QStringList() << "radCbfStand" << "radCbfHIBC");
+            break;
+
+        case BARCODE_DAFT:
+            set_doublespinbox_from_setting(settings, "studio/bc/daft/tracker_ratio", "spnDAFTTrackerRatio", 25.0f);
             break;
 
         case BARCODE_DATAMATRIX:

@@ -178,7 +178,8 @@ static void test_print(int index, int generate, int debug) {
         /* 11*/ { BARCODE_ULTRA, -1, -1, -1, -1, -1, -1, -1, 0, 0.5f, "", "", "1", "", "ultra_odd.tif", "" },
         /* 12*/ { BARCODE_HANXIN, UNICODE_MODE, -1, -1, -1, -1, 4, 84, 0, 2, "", "", "1", "", "hanxin_v84_l4_scale2.tif", "" },
         /* 13*/ { BARCODE_AZTEC, -1, -1, -1, -1, -1, -1, 32, 0, 0, "4BE055", "", "1", "", "aztec_v32_fg.tif", "" },
-        /* 14*/ { BARCODE_DAFT, -1, -1, -1, -1, -1, -1, -1, 1, 0.5f, "", "", "F", "", "daft_scale0.5.tif", "" },
+        /* 14*/ { BARCODE_DAFT, -1, -1, -1, -1, -1, -1, -1, 8, 0.5f, "", "", "F", "", "daft_height8_scale0.5.tif", "" },
+        /* 15*/ { BARCODE_DAFT, -1, -1, -1, -1, -1, -1, -1, 1, 0.5f, "", "", "DAFT", "", "daft_height1_scale0.5.tif", "" },
     };
     int data_size = ARRAY_SIZE(data);
 

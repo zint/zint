@@ -106,6 +106,8 @@ INTERNAL int plessey(struct zint_symbol *symbol, unsigned char source[], int len
 
     expand(symbol, dest);
 
+    // TODO: Find documentation on BARCODE_PLESSEY dimensions/height
+
     symbol->text[0] = '\0';
     ustrncat(symbol->text, source, length);
 
@@ -337,6 +339,8 @@ INTERNAL int msi_handle(struct zint_symbol *symbol, unsigned char source[], int 
     strcat(dest, "121");
 
     expand(symbol, dest);
+
+    // TODO: Find documentation on BARCODE_MSI_PLESSEY dimensions/height
 
     return error_number;
 }

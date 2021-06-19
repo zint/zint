@@ -94,7 +94,8 @@ static int in_numeric(const unsigned int jisdata[], const int length, const int 
         return 0;
     }
     *p_end = i;
-    *p_cost = digit_cnt == 1 ? 24 /* 4 * QR_MULT */ : digit_cnt == 2 ? 21 /* (7 / 2) * QR_MULT */ : 20 /* (10 / 3) * QR_MULT) */;
+    *p_cost = digit_cnt == 1
+                ? 24 /* 4 * QR_MULT */ : digit_cnt == 2 ? 21 /* (7 / 2) * QR_MULT */ : 20 /* (10 / 3) * QR_MULT) */;
     return 1;
 }
 
@@ -393,7 +394,7 @@ static void qr_binary(unsigned char datastream[], const int version, const int t
 #ifndef _MSC_VER
     char binary[est_binlen + 12];
 #else
-    char* binary = (char *) _alloca(est_binlen + 12);
+    char *binary = (char *) _alloca(est_binlen + 12);
 #endif
     *binary = '\0';
     bp = 0;
@@ -478,7 +479,8 @@ static void qr_binary(unsigned char datastream[], const int version, const int t
                 /* Byte mode */
 
                 /* Character count indicator */
-                bp = bin_append_posn(short_data_block_length + double_byte, cci_bits(version, data_block), binary, bp);
+                bp = bin_append_posn(short_data_block_length + double_byte, cci_bits(version, data_block), binary,
+                                    bp);
 
                 if (debug_print) {
                     printf("Byte block (length %d)\n\t", short_data_block_length + double_byte);
@@ -517,7 +519,8 @@ static void qr_binary(unsigned char datastream[], const int version, const int t
                 }
 
                 /* Character count indicator */
-                bp = bin_append_posn(short_data_block_length + percent_count, cci_bits(version, data_block), binary, bp);
+                bp = bin_append_posn(short_data_block_length + percent_count, cci_bits(version, data_block), binary,
+                                    bp);
 
                 if (debug_print) {
                     printf("Alpha block (length %d)\n\t", short_data_block_length + percent_count);
@@ -656,7 +659,7 @@ static void qr_binary(unsigned char datastream[], const int version, const int t
     if (version >= MICROQR_VERSION && version < MICROQR_VERSION + 4) {
         /* MICROQR does its own terminating/padding */
         binary[bp] = '\0';
-        strcpy((char*)datastream, binary);
+        ustrcpy(datastream, binary);
         return;
     }
 
@@ -716,8 +719,8 @@ static void qr_binary(unsigned char datastream[], const int version, const int t
 }
 
 /* Split data into blocks, add error correction and then interleave the blocks and error correction data */
-static void add_ecc(unsigned char fullstream[], const unsigned char datastream[], const int version, const int data_cw,
-            const int blocks, int debug_print) {
+static void add_ecc(unsigned char fullstream[], const unsigned char datastream[], const int version,
+            const int data_cw, const int blocks, const int debug_print) {
     int ecc_cw;
     int short_data_block_length;
     int qty_long_blocks;
@@ -726,10 +729,10 @@ static void add_ecc(unsigned char fullstream[], const unsigned char datastream[]
     int i, j, length_this_block, in_posn;
     rs_t rs;
 #ifdef _MSC_VER
-    unsigned char* data_block;
-    unsigned char* ecc_block;
-    unsigned char* interleaved_data;
-    unsigned char* interleaved_ecc;
+    unsigned char *data_block;
+    unsigned char *ecc_block;
+    unsigned char *interleaved_data;
+    unsigned char *interleaved_ecc;
 #endif
 
     if (version < RMQR_VERSION) {
@@ -801,7 +804,8 @@ static void add_ecc(unsigned char fullstream[], const unsigned char datastream[]
         }
 
         if (i >= qty_short_blocks) {
-            interleaved_data[(short_data_block_length * blocks) + (i - qty_short_blocks)] = data_block[short_data_block_length];
+            interleaved_data[(short_data_block_length * blocks) + (i - qty_short_blocks)]
+                            = data_block[short_data_block_length];
         }
 
         for (j = 0; j < ecc_block_length; j++) {
@@ -812,10 +816,12 @@ static void add_ecc(unsigned char fullstream[], const unsigned char datastream[]
     }
 
     for (j = 0; j < data_cw; j++) {
-        fullstream[j] = interleaved_data[j]; // NOLINT suppress clang-tidy warning: interleaved_data[data_cw] fully set
+        // NOLINTNEXTLINE suppress clang-tidy warning: interleaved_data[data_cw] fully set
+        fullstream[j] = interleaved_data[j];
     }
     for (j = 0; j < ecc_cw; j++) {
-        fullstream[j + data_cw] = interleaved_ecc[j]; // NOLINT suppress clang-tidy warning: interleaved_ecc[ecc_cw] fully set
+        // NOLINTNEXTLINE suppress clang-tidy warning: interleaved_ecc[ecc_cw] fully set
+        fullstream[j + data_cw] = interleaved_ecc[j];
     }
 
     if (debug_print) {
@@ -935,7 +941,7 @@ static void setup_grid(unsigned char *grid, const int size, const int version) {
     }
 }
 
-static int cwbit(const unsigned char* fullstream, const int i) {
+static int cwbit(const unsigned char *fullstream, const int i) {
 
     if (fullstream[(i >> 3)] & (0x80 >> (i & 0x07))) {
         return 1;
@@ -1280,8 +1286,8 @@ static int apply_bitmask(unsigned char *grid, const int size, const int ecc_leve
     unsigned char mask[size_squared];
     unsigned char local[size_squared];
 #else
-    unsigned char *mask = (unsigned char *) _alloca(size_squared * sizeof (unsigned char));
-    unsigned char *local = (unsigned char *) _alloca(size_squared * sizeof (unsigned char));
+    unsigned char *mask = (unsigned char *) _alloca(size_squared);
+    unsigned char *local = (unsigned char *) _alloca(size_squared);
 #endif
 
     /* Perform data masking */
@@ -1711,7 +1717,8 @@ INTERNAL int qr_code(struct zint_symbol *symbol, unsigned char source[], int len
     fullstream = (unsigned char *) _alloca(qr_total_codewords[version - 1] + 1);
 #endif
 
-    qr_binary(datastream, version, target_codewords, mode, jisdata, length, gs1, symbol->eci, est_binlen, debug_print);
+    qr_binary(datastream, version, target_codewords, mode, jisdata, length, gs1, symbol->eci, est_binlen,
+                debug_print);
 #ifdef ZINT_TEST
     if (symbol->debug & ZINT_DEBUG_TEST) debug_test_codeword_dump(symbol, datastream, target_codewords);
 #endif
@@ -1722,7 +1729,7 @@ INTERNAL int qr_code(struct zint_symbol *symbol, unsigned char source[], int len
 #ifndef _MSC_VER
     unsigned char grid[size_squared];
 #else
-    grid = (unsigned char *) _alloca(size_squared * sizeof (unsigned char));
+    grid = (unsigned char *) _alloca(size_squared);
 #endif
 
     memset(grid, 0, size_squared);
@@ -1750,6 +1757,7 @@ INTERNAL int qr_code(struct zint_symbol *symbol, unsigned char source[], int len
         }
         symbol->row_height[i] = 1;
     }
+    symbol->height = size;
 
     return 0;
 }
@@ -2267,8 +2275,8 @@ static int micro_apply_bitmask(unsigned char *grid, const int size, const int us
     unsigned char mask[size_squared];
     unsigned char eval[size_squared];
 #else
-    unsigned char *mask = (unsigned char *) _alloca(size_squared * sizeof (unsigned char));
-    unsigned char *eval = (unsigned char *) _alloca(size_squared * sizeof (unsigned char));
+    unsigned char *mask = (unsigned char *) _alloca(size_squared);
+    unsigned char *eval = (unsigned char *) _alloca(size_squared);
 #endif
 
     /* Perform data masking */
@@ -2358,7 +2366,7 @@ INTERNAL int microqr(struct zint_symbol *symbol, unsigned char source[], int len
     int size_squared;
     int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
 #ifdef _MSC_VER
-    unsigned char* grid;
+    unsigned char *grid;
 #endif
 
     if (length > 35) {
@@ -2442,7 +2450,8 @@ INTERNAL int microqr(struct zint_symbol *symbol, unsigned char source[], int len
     /* Determine length of binary data */
     for (i = 0; i < 4; i++) {
         if (version_valid[i]) {
-            binary_count[i] = getBinaryLength(MICROQR_VERSION + i, mode, jisdata, length, 0 /*gs1*/, 0 /*eci*/, debug_print);
+            binary_count[i] = getBinaryLength(MICROQR_VERSION + i, mode, jisdata, length, 0 /*gs1*/, 0 /*eci*/,
+                                                debug_print);
         } else {
             binary_count[i] = 128 + 1;
         }
@@ -2545,7 +2554,7 @@ INTERNAL int microqr(struct zint_symbol *symbol, unsigned char source[], int len
 #ifndef _MSC_VER
     unsigned char grid[size_squared];
 #else
-    grid = (unsigned char *) _alloca(size_squared * sizeof (unsigned char));
+    grid = (unsigned char *) _alloca(size_squared);
 #endif
 
     memset(grid, 0, size_squared);
@@ -2641,6 +2650,7 @@ INTERNAL int microqr(struct zint_symbol *symbol, unsigned char source[], int len
         }
         symbol->row_height[i] = 1;
     }
+    symbol->height = size;
 
     return 0;
 }
@@ -2657,17 +2667,17 @@ INTERNAL int upnqr(struct zint_symbol *symbol, unsigned char source[], int lengt
     unsigned int jisdata[length + 1];
     char mode[length + 1];
 #else
-    unsigned char* datastream;
-    unsigned char* fullstream;
-    unsigned char* grid;
-    unsigned int* jisdata = (unsigned int *) _alloca((length + 1) * sizeof (unsigned int));
-    char* mode = (char *) _alloca(length + 1);
+    unsigned char *datastream;
+    unsigned char *fullstream;
+    unsigned char *grid;
+    unsigned int *jisdata = (unsigned int *) _alloca((length + 1) * sizeof(unsigned int));
+    char *mode = (char *) _alloca(length + 1);
 #endif
 
 #ifndef _MSC_VER
     unsigned char preprocessed[length + 1];
 #else
-    unsigned char* preprocessed = (unsigned char*) _alloca(length + 1);
+    unsigned char *preprocessed = (unsigned char *) _alloca(length + 1);
 #endif
 
     symbol->eci = 4; /* Set before any processing */
@@ -2729,7 +2739,7 @@ INTERNAL int upnqr(struct zint_symbol *symbol, unsigned char source[], int lengt
 #ifndef _MSC_VER
     unsigned char grid[size_squared];
 #else
-    grid = (unsigned char *) _alloca(size_squared * sizeof (unsigned char));
+    grid = (unsigned char *) _alloca(size_squared);
 #endif
 
     memset(grid, 0, size_squared);
@@ -2755,11 +2765,12 @@ INTERNAL int upnqr(struct zint_symbol *symbol, unsigned char source[], int lengt
         }
         symbol->row_height[i] = 1;
     }
+    symbol->height = size;
 
     return 0;
 }
 
-static void setup_rmqr_grid(unsigned char* grid, const int h_size, const int v_size) {
+static void setup_rmqr_grid(unsigned char *grid, const int h_size, const int v_size) {
     int i, j;
     char alignment[] = {0x1F, 0x11, 0x15, 0x11, 0x1F};
     int h_version, finder_position;
@@ -2887,11 +2898,11 @@ INTERNAL int rmqr(struct zint_symbol *symbol, unsigned char source[], int length
     unsigned int jisdata[length + 1];
     char mode[length + 1];
 #else
-    unsigned char* datastream;
-    unsigned char* fullstream;
-    unsigned char* grid;
-    unsigned int* jisdata = (unsigned int *) _alloca((length + 1) * sizeof (unsigned int));
-    char* mode = (char *) _alloca(length + 1);
+    unsigned char *datastream;
+    unsigned char *fullstream;
+    unsigned char *grid;
+    unsigned int *jisdata = (unsigned int *) _alloca((length + 1) * sizeof(unsigned int));
+    char *mode = (char *) _alloca(length + 1);
 #endif
 
     gs1 = ((symbol->input_mode & 0x07) == GS1_MODE);
@@ -3031,11 +3042,12 @@ INTERNAL int rmqr(struct zint_symbol *symbol, unsigned char source[], int length
     unsigned char datastream[target_codewords + 1];
     unsigned char fullstream[rmqr_total_codewords[version] + 1];
 #else
-    datastream = (unsigned char *) _alloca((target_codewords + 1) * sizeof (unsigned char));
-    fullstream = (unsigned char *) _alloca((rmqr_total_codewords[version] + 1) * sizeof (unsigned char));
+    datastream = (unsigned char *) _alloca(target_codewords + 1);
+    fullstream = (unsigned char *) _alloca(rmqr_total_codewords[version] + 1);
 #endif
 
-    qr_binary(datastream, RMQR_VERSION + version, target_codewords, mode, jisdata, length, gs1, 0 /*eci*/, est_binlen, debug_print);
+    qr_binary(datastream, RMQR_VERSION + version, target_codewords, mode, jisdata, length, gs1, 0 /*eci*/, est_binlen,
+                debug_print);
 #ifdef ZINT_TEST
     if (symbol->debug & ZINT_DEBUG_TEST) debug_test_codeword_dump(symbol, datastream, target_codewords);
 #endif
@@ -3047,7 +3059,7 @@ INTERNAL int rmqr(struct zint_symbol *symbol, unsigned char source[], int length
 #ifndef _MSC_VER
     unsigned char grid[h_size * v_size];
 #else
-    grid = (unsigned char *) _alloca((h_size * v_size) * sizeof (unsigned char));
+    grid = (unsigned char *) _alloca(h_size * v_size);
 #endif
 
     memset(grid, 0, h_size * v_size);
@@ -3084,7 +3096,8 @@ INTERNAL int rmqr(struct zint_symbol *symbol, unsigned char source[], int length
     for (i = 0; i < 5; i++) {
         for (j = 0; j < 3; j++) {
             grid[(h_size * (i + 1)) + j + 8] = (left_format_info >> ((j * 5) + i)) & 0x01;
-            grid[(h_size * (v_size - 6)) + (h_size * i) + j + (h_size - 8)] = (right_format_info >> ((j * 5) + i)) & 0x01;
+            grid[(h_size * (v_size - 6)) + (h_size * i) + j + (h_size - 8)]
+                = (right_format_info >> ((j * 5) + i)) & 0x01;
         }
     }
     grid[(h_size * 1) + 11] = (left_format_info >> 15) & 0x01;
@@ -3107,6 +3120,7 @@ INTERNAL int rmqr(struct zint_symbol *symbol, unsigned char source[], int length
         }
         symbol->row_height[i] = 1;
     }
+    symbol->height = v_size;
 
     return 0;
 }

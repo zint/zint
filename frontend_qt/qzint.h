@@ -48,8 +48,8 @@ public:
     QString primaryMessage() const;
     void setPrimaryMessage(const QString & primaryMessage);
 
-    int height() const;
-    void setHeight(int height);
+    float height() const;
+    void setHeight(float height);
 
     int option2() const;
     void setOption2(int option);
@@ -138,7 +138,7 @@ private:
     int m_symbol;
     QString m_text;
     QString m_primaryMessage;
-    int m_height;
+    float m_height;
     int m_borderType;
     int m_borderWidth;
     int m_fontSetting;

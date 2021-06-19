@@ -669,7 +669,8 @@ static int aztec_text_process(const unsigned char source[], int src_len, char bi
                 byte_mode = 1;
             }
 
-            if ((reduced_encode_mode[i] != 'B') && (reduced_encode_mode[i] != 'u') && (reduced_encode_mode[i] != 'p')) {
+            if ((reduced_encode_mode[i] != 'B') && (reduced_encode_mode[i] != 'u')
+                    && (reduced_encode_mode[i] != 'p')) {
                 current_mode = reduced_encode_mode[i];
             }
         }
@@ -1383,6 +1384,7 @@ INTERNAL int aztec(struct zint_symbol *symbol, unsigned char source[], int lengt
             }
             symbol->row_height[y - offset] = 1;
         }
+        symbol->height = 27 - (2 * offset);
         symbol->rows = 27 - (2 * offset);
         symbol->width = 27 - (2 * offset);
     } else {
@@ -1401,6 +1403,7 @@ INTERNAL int aztec(struct zint_symbol *symbol, unsigned char source[], int lengt
             }
             symbol->row_height[y - offset] = 1;
         }
+        symbol->height = 151 - (2 * offset);
         symbol->rows = 151 - (2 * offset);
         symbol->width = 151 - (2 * offset);
     }
@@ -1481,6 +1484,7 @@ INTERNAL int aztec_runes(struct zint_symbol *symbol, unsigned char source[], int
         }
         symbol->row_height[y - 8] = 1;
     }
+    symbol->height = 11;
     symbol->rows = 11;
     symbol->width = 11;
 

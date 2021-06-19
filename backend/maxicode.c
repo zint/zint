@@ -114,7 +114,8 @@ static void maxi_bump(unsigned char set[], unsigned char character[], const int 
 }
 
 /* If the value is present in  array, return the value, else return badvalue */
-static int value_in_array(const unsigned char val, const unsigned char arr[], const int badvalue, const int arrLength) {
+static int value_in_array(const unsigned char val, const unsigned char arr[], const int badvalue,
+            const int arrLength) {
     int i;
     for (i = 0; i < arrLength; i++) {
         if (arr[i] == val) return val;
@@ -124,8 +125,8 @@ static int value_in_array(const unsigned char val, const unsigned char arr[], co
 
 /* Choose the best set from previous and next set in the range of the setval array, if no value can be found we
  * return setval[0] */
-static int bestSurroundingSet(const int index, const int length, const unsigned char set[], const unsigned char setval[],
-            const int setLength) {
+static int bestSurroundingSet(const int index, const int length, const unsigned char set[],
+            const unsigned char setval[], const int setLength) {
     int badValue = -1;
     int option1 = value_in_array(set[index - 1], setval, badValue, setLength);
     if (index + 1 < length) {
@@ -143,8 +144,8 @@ static int bestSurroundingSet(const int index, const int length, const unsigned 
 }
 
 /* Format text according to Appendix A */
-static int maxi_text_process(unsigned char maxi_codeword[144], const int mode, const unsigned char in_source[], int length,
-            const int eci, const int scm_vv, const int debug_print) {
+static int maxi_text_process(unsigned char maxi_codeword[144], const int mode, const unsigned char in_source[],
+            int length, const int eci, const int scm_vv, const int debug_print) {
 
     unsigned char set[144], character[144] = {0};
     int i, count, current_set, padding_set;
@@ -485,8 +486,8 @@ static int maxi_text_process(unsigned char maxi_codeword[144], const int mode, c
 }
 
 /* Format structured primary for Mode 2 */
-static void maxi_do_primary_2(unsigned char maxi_codeword[144], const unsigned char postcode[], const int postcode_length,
-            const int country, const int service) {
+static void maxi_do_primary_2(unsigned char maxi_codeword[144], const unsigned char postcode[],
+            const int postcode_length, const int country, const int service) {
     int postcode_num;
 
     postcode_num = atoi((const char *) postcode);
@@ -691,6 +692,9 @@ INTERNAL int maxicode(struct zint_symbol *symbol, unsigned char source[], int le
 
     symbol->width = 30;
     symbol->rows = 33;
+
+    /* Note MaxiCode fixed size so symbol height ignored but set anyway */
+    (void) set_height(symbol, 5.0f, 0.0f, 0.0f, 1 /*no_errtxt*/);
 
     return error_number;
 }

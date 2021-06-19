@@ -455,7 +455,7 @@ static char help_message[] = "zint tcl(stub,obj) dll\n"
     /* cli option --gs1 replaced by -format */
     "   -gs1parens bool: for gs1, AIs enclosed in parentheses instead of square brackets\n"
     "   -gssep bool: for gs1, use gs as separator instead fnc1 (Datamatrix only)\n"
-    "   -height integer: Symbol height in modules\n"
+    "   -height double: Symbol height in modules\n"
     /* cli option --input not supported */
     "   -init bool: Create reader initialisation symbol (Code 128, Data Matrix)\n"
     "   -mask number: set masking pattern to use (QR/MicroQR/HanXin/DotCode)\n"
@@ -957,12 +957,12 @@ static int Encode(Tcl_Interp *interp, int objc,
             }
             break;
         case iHeight:
-            if (intValue < 1 || intValue > 1000) {
+            if ((float)doubleValue < 0.5f || (float)doubleValue > 1000.0f) {
                 Tcl_SetObjResult(interp,
                     Tcl_NewStringObj("Height out of range", -1));
                 fError = 1;
             } else {
-                my_symbol->height = intValue;
+                my_symbol->height = (float)doubleValue;
             }
             break;
         case iSeparator:

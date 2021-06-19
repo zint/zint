@@ -783,7 +783,7 @@ struct zint_vector *testUtilVectorCpy(const struct zint_vector *in) {
         *outstring = malloc(sizeof(struct zint_vector_string));
         assert(*outstring != NULL);
         memcpy(*outstring, string, sizeof(struct zint_vector_string));
-        (*outstring)->text = malloc(sizeof(unsigned char) * (ustrlen(string->text) + 1));
+        (*outstring)->text = malloc(ustrlen(string->text) + 1);
         assert((*outstring)->text != NULL);
         ustrcpy((*outstring)->text, string->text);
         outstring = &((*outstring)->next);
@@ -1133,6 +1133,7 @@ char *testUtilUCharArrayDump(unsigned char *array, int size, char *dump, int dum
 int testUtilDataPath(char *buffer, int buffer_size, const char *subdir, const char *filename) {
     int subdir_len = subdir ? (int) strlen(subdir) : 0;
     int filename_len = filename ? (int) strlen(filename) : 0;
+    char *s, *s2;
     int len;
 #ifdef _WIN32
     int i;
@@ -1162,18 +1163,22 @@ int testUtilDataPath(char *buffer, int buffer_size, const char *subdir, const ch
         return 0;
     }
 
-    if (len > 6 && strcmp(buffer + len - 6, "/build") == 0) {
-        buffer[len - 6] = '\0';
-        len -= 6;
-    } else if (len > 14 && strcmp(buffer + len - 14, "/build/backend") == 0) {
-        buffer[len - 14] = '\0';
-        len -= 14;
-    } else if (len > 20 && strcmp(buffer + len - 20, "/build/backend/tests") == 0) {
-        buffer[len - 20] = '\0';
-        len -= 20;
-    } else {
-        fprintf(stderr, "testUtilDataPath: unrecognized dir '%s'\n", buffer);
-        return 0;
+    if ((s = strstr(buffer, "/backend/tests")) != NULL) {
+        while ((s2 = strstr(s + 1, "/backend/tests")) != NULL) { // Find rightmost
+            s = s2;
+        }
+        *s = '\0';
+        len = s - buffer;
+    } else if ((s = strstr(buffer, "/frontend/tests")) != NULL) {
+        while ((s2 = strstr(s + 1, "/frontend/tests")) != NULL) { // Find rightmost
+            s = s2;
+        }
+        *s = '\0';
+        len = s - buffer;
+    }
+    if ((s = strrchr(buffer, '/')) != NULL) { // Remove "build" dir
+        *s = '\0';
+        len = s - buffer;
     }
 
     if (subdir_len) {
@@ -1674,8 +1679,16 @@ int testUtilCmpEpss(const char *eps1, const char *eps2) {
     return ret;
 }
 
+#ifdef _WIN32
+#define DEV_NULL "> NUL"
+#define DEV_NULL_STDERR "> NUL 2>&1"
+#else
+#define DEV_NULL "> /dev/null"
+#define DEV_NULL_STDERR "> /dev/null 2>&1"
+#endif
+
 int testUtilHaveIdentify() {
-    return system("identify --version > /dev/null") == 0;
+    return system("magick -version " DEV_NULL) == 0;
 }
 
 int testUtilVerifyIdentify(const char *filename, int debug) {
@@ -1688,19 +1701,19 @@ int testUtilVerifyIdentify(const char *filename, int debug) {
     if (debug & ZINT_DEBUG_TEST_PRINT) {
         // Verbose very noisy though so for quick check just return default output
         if (debug & ZINT_DEBUG_TEST_LESS_NOISY) {
-            sprintf(cmd, "identify %s", filename);
+            sprintf(cmd, "magick identify %s", filename);
         } else {
-            sprintf(cmd, "identify -verbose %s", filename);
+            sprintf(cmd, "magick identify -verbose %s", filename);
         }
     } else {
-        sprintf(cmd, "identify -verbose %s > /dev/null", filename);
+        sprintf(cmd, "magick identify -verbose %s " DEV_NULL, filename);
     }
 
     return system(cmd);
 }
 
 int testUtilHaveLibreOffice() {
-    return system("libreoffice --version > /dev/null") == 0;
+    return system("libreoffice --version " DEV_NULL) == 0;
 }
 
 int testUtilVerifyLibreOffice(const char *filename, int debug) {
@@ -1733,7 +1746,7 @@ int testUtilVerifyLibreOffice(const char *filename, int debug) {
         return -1;
     }
 
-    sprintf(cmd, "libreoffice --convert-to svg %s > /dev/null 2>&1", filename);
+    sprintf(cmd, "libreoffice --convert-to svg %s " DEV_NULL_STDERR, filename);
     if (debug & ZINT_DEBUG_TEST_PRINT) {
         printf("%s\n", cmd);
     }
@@ -1774,8 +1787,14 @@ int testUtilVerifyLibreOffice(const char *filename, int debug) {
     return 0;
 }
 
+#ifdef _WIN32
+#define GS_FILENAME "gswin64c"
+#else
+#define GS_FILENAME "gs"
+#endif
+
 int testUtilHaveGhostscript() {
-    return system("gs -v > /dev/null") == 0;
+    return system(GS_FILENAME " -v " DEV_NULL) == 0;
 }
 
 int testUtilVerifyGhostscript(const char *filename, int debug) {
@@ -1785,10 +1804,10 @@ int testUtilVerifyGhostscript(const char *filename, int debug) {
         return -1;
     }
     if (debug & ZINT_DEBUG_TEST_PRINT) {
-        sprintf(cmd, "gs -dNOPAUSE -dBATCH -dNODISPLAY -q %s", filename); // Prints nothing of interest with or without -q unless bad
+        sprintf(cmd, GS_FILENAME " -dNOPAUSE -dBATCH -dNODISPLAY -q %s", filename); // Prints nothing of interest with or without -q unless bad
         printf("%s\n", cmd);
     } else {
-        sprintf(cmd, "gs -dNOPAUSE -dBATCH -dNODISPLAY -q %s", filename);
+        sprintf(cmd, GS_FILENAME " -dNOPAUSE -dBATCH -dNODISPLAY -q %s", filename);
     }
 
     return system(cmd);
@@ -1797,7 +1816,7 @@ int testUtilVerifyGhostscript(const char *filename, int debug) {
 /* v.Nu https://github.com/validator/validator
  * Needs "$INSTALL_DIR/vnu-runtime-image/bin" in PATH */
 int testUtilHaveVnu() {
-    return system("vnu --version > /dev/null 2>&1") == 0;
+    return system("vnu --version " DEV_NULL_STDERR) == 0;
 }
 
 int testUtilVerifyVnu(const char *filename, int debug) {
@@ -1818,7 +1837,7 @@ int testUtilVerifyVnu(const char *filename, int debug) {
 
 /* Requires libtiff 4.2.0 http://www.libtiff.org to be installed */
 int testUtilHaveTiffInfo() {
-    return system("tiffinfo -h > /dev/null") == 0;
+    return system("tiffinfo -h " DEV_NULL) == 0;
 }
 
 int testUtilVerifyTiffInfo(const char *filename, int debug) {
@@ -1830,7 +1849,7 @@ int testUtilVerifyTiffInfo(const char *filename, int debug) {
     if (debug & ZINT_DEBUG_TEST_PRINT) {
         sprintf(cmd, "tiffinfo -D %s", filename);
     } else {
-        sprintf(cmd, "tiffinfo -D %s > /dev/null 2>&1", filename);
+        sprintf(cmd, "tiffinfo -D %s " DEV_NULL_STDERR, filename);
     }
 
     return system(cmd);
@@ -2232,13 +2251,6 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
         }
         //fprintf(stderr, "bwipp_row_height[%d] %d, symbol->row_height[%d] %d\n", r, bwipp_row_height[r], r, symbol->row_height[r]);
     }
-    if (symbology == BARCODE_DBAR_EXP) {
-        bwipp_row_height[symbol->rows - 1] = 1;
-    } else if (symbology == BARCODE_DBAR_OMN_CC) {
-        bwipp_row_height[symbol->rows - 1] = 33;
-    } else if (symbology == BARCODE_GS1_128_CC) {
-        bwipp_row_height[symbol->rows - 1] = 36;
-    }
 
     if ((symbol->input_mode & 0x07) == UNICODE_MODE && ZBarcode_Cap(symbology, ZINT_CAP_ECI) && is_eci_convertible(symbol->eci)) {
         if (utf8_to_eci(symbol->eci, (const unsigned char *) data, (unsigned char *) converted, &data_len) == 0) {
@@ -2442,7 +2454,6 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                 strcpy(bwipp_data, "fima");
                 bwipp_data[3] = data[0] - 'A' + 'a';
             } else if (symbology == BARCODE_CODE16K || symbology == BARCODE_CODE49) {
-                for (r = 0; r < symbol->rows; r++) bwipp_row_height[r] = 8; /* Change from 10 */
                 sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%ssepheight=0", strlen(bwipp_opts_buf) ? " " : "");
                 bwipp_opts = bwipp_opts_buf;
             } else if (symbology == BARCODE_AZTEC || symbology == BARCODE_HIBC_AZTEC) {
@@ -2743,7 +2754,7 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
         for (h = bwipp_row_height[r]; h > 1; h--) { /* Ignore row copies if any */
             cnt = fread(b, 1, symbol->width, fp);
             if (cnt != symbol->width) {
-                fprintf(stderr, "i:%d testUtilBwipp: failed to read/ignore symbol->width %d bytes, cnt %d, h %d, bwipp_row_height[%d] %d, symbol->row_height[%d] %d (%s)\n",
+                fprintf(stderr, "i:%d testUtilBwipp: failed to read/ignore symbol->width %d bytes, cnt %d, h %d, bwipp_row_height[%d] %d, symbol->row_height[%d] %g (%s)\n",
                         index, symbol->width, cnt, h, r, bwipp_row_height[r], r, symbol->row_height[r], cmd);
                 testutil_pclose(fp);
                 return -1;

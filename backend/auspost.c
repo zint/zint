@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008 - 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008 - 2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -31,7 +31,7 @@
  */
 /* vim: set ts=4 sw=4 et : */
 
-#define GDSET 	"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz #"
+#define GDSET   "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz #"
 
 static const char *AusNTable[10] = {
     "00", "01", "02", "10", "11", "12", "20", "21", "22", "30"
@@ -87,6 +87,8 @@ static void rs_error(char data_pattern[]) {
         strcat(data_pattern, AusBarTable[(int) result[reader - 1]]);
     }
 }
+
+INTERNAL int daft_set_height(struct zint_symbol *symbol, float min_height, float max_height);
 
 /* Handles Australia Posts's 4 State Codes */
 INTERNAL int australia_post(struct zint_symbol *symbol, unsigned char source[], int length) {
@@ -239,10 +241,21 @@ INTERNAL int australia_post(struct zint_symbol *symbol, unsigned char source[], 
         writer += 2;
     }
 
-    symbol->row_height[0] = 3;
-    symbol->row_height[1] = 2;
-    symbol->row_height[2] = 3;
-
+#ifdef COMPLIANT_HEIGHTS
+    /* Australia Post Customer Barcoding Technical Specifications (Revised Aug 2012) Dimensions, placement and
+       printing p.12
+       https://auspost.com.au/content/dam/auspost_corp/media/documents/customer-barcode-technical-specifications-aug2012.pdf
+       X 0.5mm (average of 0.4mm - 0.6mm), min height 4.2mm / 0.6mm (X max) = 7, max 5.6mm / 0.4mm (X min) = 14
+       Tracker 1.3mm (average of 1mm - 1.6mm), Ascender/Descender 3.15mm (average of 2.6mm - 3.7mm) less T = 1.85mm
+     */
+    symbol->row_height[0] = 1.85f / 0.5f; /* 3.7 */
+    symbol->row_height[1] = 1.3f / 0.5f; /* 2.6 */
+    error_number = daft_set_height(symbol, 7.0f, 14.0f); /* Note using max X for minimum and min X for maximum */
+#else
+    symbol->row_height[0] = 3.0f;
+    symbol->row_height[1] = 2.0f;
+    error_number = daft_set_height(symbol, 0.0f, 0.0f);
+#endif
     symbol->rows = 3;
     symbol->width = writer - 1;
 

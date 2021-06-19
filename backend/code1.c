@@ -386,7 +386,7 @@ static int decimal_unlatch(char decimal_binary[24], int db_p, unsigned int targe
         if (bits_left == 6) {
             db_p = bin_append_posn(1, 2, decimal_binary, db_p);
         }
-        (void)decimal_binary_transfer(decimal_binary, db_p, target, p_tp);
+        (void) decimal_binary_transfer(decimal_binary, db_p, target, p_tp);
 
     } else if (bits_left) {
         if (bits_left >= 4) {
@@ -395,7 +395,7 @@ static int decimal_unlatch(char decimal_binary[24], int db_p, unsigned int targe
         if (bits_left == 2 || bits_left == 6) {
             db_p = bin_append_posn(1, 2, decimal_binary, db_p);
         }
-        (void)decimal_binary_transfer(decimal_binary, db_p, target, p_tp);
+        (void) decimal_binary_transfer(decimal_binary, db_p, target, p_tp);
     }
 
     *p_sp = sp;
@@ -1442,6 +1442,7 @@ INTERNAL int code_one(struct zint_symbol *symbol, unsigned char source[], int le
     for (i = 0; i < symbol->rows; i++) {
         symbol->row_height[i] = 1;
     }
+    symbol->height = symbol->rows;
 
     if (symbol->option_2 == 9) { /* Version S */
         if (symbol->eci || (symbol->input_mode & 0x07) == GS1_MODE) {

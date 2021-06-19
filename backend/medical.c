@@ -105,6 +105,13 @@ INTERNAL int pharma_one(struct zint_symbol *symbol, unsigned char source[], int 
 
     expand(symbol, dest);
 
+#ifdef COMPLIANT_HEIGHTS
+    /* Laetus Pharmacode Guide 1.2 Standard one-track height 8mm / 0.5mm (X) */
+    error_number = set_height(symbol, 16.0f, 0.0f, 0.0f, 0 /*no_errtxt*/);
+#else
+    (void) set_height(symbol, 0.0f, 50.0f, 0.0f, 1 /*no_errtxt*/);
+#endif
+
     return error_number;
 }
 
@@ -158,7 +165,8 @@ INTERNAL int pharma_two(struct zint_symbol *symbol, unsigned char source[], int 
     char height_pattern[200];
     unsigned int loopey, h;
     int writer;
-    int error_number = 0;
+    int error_number;
+
     strcpy(height_pattern, "");
 
     if (length > 8) {
@@ -189,6 +197,13 @@ INTERNAL int pharma_two(struct zint_symbol *symbol, unsigned char source[], int 
     symbol->rows = 2;
     symbol->width = writer - 1;
 
+#ifdef COMPLIANT_HEIGHTS
+    /* Laetus Pharmacode Guide 1.4
+       Two-track height min 8mm / 2mm (X max) = 4, standard 8mm / 1mm = 8, max 12mm / 0.8mm (X min) = 15 */
+    error_number = set_height(symbol, 2.0f, 8.0f, 15.0f, 0 /*no_errtxt*/);
+#else
+    (void) set_height(symbol, 0.0f, 10.0f, 0.0f, 1 /*no_errtxt*/);
+#endif
 
     return error_number;
 }
@@ -199,6 +214,8 @@ INTERNAL int codabar(struct zint_symbol *symbol, unsigned char source[], int len
     int i, error_number;
     char dest[512];
     int add_checksum, count = 0, checksum;
+    int d_chars = 0;
+    float height;
 
     strcpy(dest, "");
 
@@ -207,7 +224,7 @@ INTERNAL int codabar(struct zint_symbol *symbol, unsigned char source[], int len
         return ZINT_ERROR_TOO_LONG;
     }
     /* BS EN 798:1995 4.2 "'Codabar' symbols shall consist of ... b) start character;
-     * c) one or more symbol characters representing data ... d) stop character ..." */
+       c) one or more symbol characters representing data ... d) stop character ..." */
     if (length < 3) {
         strcpy(symbol->errtxt, "362: Input too short (3 character minimum)");
         return ZINT_ERROR_TOO_LONG;
@@ -255,16 +272,36 @@ INTERNAL int codabar(struct zint_symbol *symbol, unsigned char source[], int len
             }
         }
         lookup(calcium, CodaTable, source[i], dest);
+        if (source[i] == '/' || source[i] == ':' || source[i] == '.' || source[i] == '+') { /* Wide data characters */
+            d_chars++;
+        }
     }
 
     expand(symbol, dest);
+
+#ifdef COMPLIANT_HEIGHTS
+    /* BS EN 798:1995 4.4.1 (d) max of 5mm / 0.191mm (X) ~ 26.178 or 15% of width where (taking N = narrow/wide ratio
+       as 2 and I = X) width = ((2 * N + 5) * C + (N – 1) * (D + 2)) * X + I * (C – 1) + 2Q
+       = ((4 + 5) * C + (D + 2) + C - 1 + 2 * 10) * X = (10 * C + D + 21) * X
+       Length (C) includes start/stop chars */
+    height = (float) ((10.0 * ((add_checksum ? length + 1 : length) + 2.0) + d_chars + 21.0) * 0.15);
+    if (height < (float) (5.0 / 0.191)) {
+        height = (float) (5.0 / 0.191);
+    }
+    /* Using 50 as default as none recommended */
+    error_number = set_height(symbol, height, height > 50.0f ? height : 50.0f, 0.0f, 0 /*no_errtxt*/);
+#else
+    height = 50.0f;
+    (void) set_height(symbol, 0.0f, height, 0.0f, 1 /*no_errtxt*/);
+#endif
+
     ustrcpy(symbol->text, source);
     return error_number;
 }
 
 /* Italian Pharmacode */
 INTERNAL int code32(struct zint_symbol *symbol, unsigned char source[], int length) {
-    int i, zeroes, error_number, checksum, checkpart, checkdigit;
+    int i, zeroes, error_number = 0, checksum, checkpart, checkdigit;
     char localstr[10], risultante[7];
     long int pharmacode, devisor;
     int codeword[6];
@@ -328,6 +365,16 @@ INTERNAL int code32(struct zint_symbol *symbol, unsigned char source[], int leng
     if (error_number != 0) {
         return error_number;
     }
+
+#ifdef COMPLIANT_HEIGHTS
+    /* Allegato A Caratteristiche tecniche del bollino farmaceutico
+       https://www.gazzettaufficiale.it/do/atto/serie_generale/caricaPdf?cdimg=14A0566800100010110001&dgu=2014-07-18&art.dataPubblicazioneGazzetta=2014-07-18&art.codiceRedazionale=14A05668&art.num=1&art.tiposerie=SG
+       X given as 0.250mm; height (and quiet zones) left to ISO/IEC 16388:2007 (Code 39)
+       So min height 5mm = 5mm / 0.25mm = 20 > 15% of width, i.e. (10 * 8 + 19) * 0.15 = 14.85 */
+    error_number = set_height(symbol, 20.0f, 20.0f, 0.0f, 0 /*no_errtxt*/); /* Use as default also */
+#else
+    (void) set_height(symbol, 0.0f, 50.0f, 0.0f, 1 /*no_errtxt*/);
+#endif
 
     /* Override the normal text output with the Pharmacode number */
     ustrcpy(symbol->text, "A");

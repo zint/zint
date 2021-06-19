@@ -63,13 +63,17 @@
 #define UINT unsigned short
 #include "composite.h"
 
-INTERNAL int eanx(struct zint_symbol *symbol, unsigned char source[], int length);
-INTERNAL int ean_128(struct zint_symbol *symbol, unsigned char source[], int length);
+INTERNAL int ean_128_cc(struct zint_symbol *symbol, unsigned char source[], int length, const int cc_mode,
+                const int cc_rows);
+
+INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int length, const int cc_rows);
 INTERNAL int ean_leading_zeroes(struct zint_symbol *symbol, const unsigned char source[],
                 unsigned char local_source[], int *p_with_addon);
-INTERNAL int rss14(struct zint_symbol *symbol, unsigned char source[], int length);
-INTERNAL int rsslimited(struct zint_symbol *symbol, unsigned char source[], int length);
-INTERNAL int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int length);
+
+INTERNAL int rss14_stk_set_height(struct zint_symbol *symbol, const int first_row);
+INTERNAL int rss14_cc(struct zint_symbol *symbol, unsigned char source[], int length, const int cc_rows);
+INTERNAL int rsslimited_cc(struct zint_symbol *symbol, unsigned char source[], int length, const int cc_rows);
+INTERNAL int rssexpanded_cc(struct zint_symbol *symbol, unsigned char source[], int length, const int cc_rows);
 INTERNAL int rss_date(const unsigned char source[], const int src_posn);
 
 static int _min(const int first, const int second) {
@@ -1255,8 +1259,7 @@ static int linear_dummy_run(int input_mode, unsigned char *source, const int len
     dummy = ZBarcode_Create();
     dummy->symbology = BARCODE_GS1_128_CC;
     dummy->input_mode = input_mode;
-    dummy->option_1 = 3;
-    error_number = ean_128(dummy, source, length);
+    error_number = ean_128_cc(dummy, source, length, 3 /*cc_mode*/, 0 /*cc_rows*/);
     linear_width = dummy->width;
     if (error_number >= ZINT_ERROR) {
         strcpy(errtxt, dummy->errtxt);
@@ -1270,7 +1273,7 @@ static int linear_dummy_run(int input_mode, unsigned char *source, const int len
 }
 
 INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int length) {
-    int error_number, cc_mode, cc_width = 0, ecc_level = 0;
+    int error_number, warn_number = 0, cc_mode, cc_width = 0, ecc_level = 0;
     int j, i, k;
     unsigned int bs = 13 * length + 500 + 1; /* Allow for 8 bits + 5-bit latch per char + 500 bits overhead/padding */
 #ifndef _MSC_VER
@@ -1305,7 +1308,8 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
 
     if (symbol->symbology == BARCODE_GS1_128_CC) {
         /* Do a test run of encoding the linear component to establish its width */
-        linear_width = linear_dummy_run(symbol->input_mode, (unsigned char *) symbol->primary, pri_len, symbol->errtxt);
+        linear_width = linear_dummy_run(symbol->input_mode, (unsigned char *) symbol->primary, pri_len,
+                                        symbol->errtxt);
         if (linear_width == 0) {
             strcat(symbol->errtxt, " in linear component");
             return ZINT_ERROR_INVALID_DATA;
@@ -1427,36 +1431,46 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
     linear->symbology = symbol->symbology;
     linear->input_mode = symbol->input_mode;
     linear->option_2 = symbol->option_2;
+    /* If symbol->height given minimum row height will be returned, else default height */
+    linear->height = symbol->height;
     linear->debug = symbol->debug;
 
     if (linear->symbology != BARCODE_GS1_128_CC) {
         /* Set the "component linkage" flag in the linear component */
         linear->option_1 = 2;
-    } else {
-        /* GS1-128 needs to know which type of 2D component is used */
-        linear->option_1 = cc_mode;
     }
 
     switch (symbol->symbology) {
-        case BARCODE_EANX_CC: error_number = eanx(linear, (unsigned char *) symbol->primary, pri_len);
+        case BARCODE_EANX_CC:
+            error_number = eanx_cc(linear, (unsigned char *) symbol->primary, pri_len, symbol->rows);
             break;
-        case BARCODE_GS1_128_CC: error_number = ean_128(linear, (unsigned char *) symbol->primary, pri_len);
+        case BARCODE_GS1_128_CC:
+            /* GS1-128 needs to know which type of 2D component is used */
+            error_number = ean_128_cc(linear, (unsigned char *) symbol->primary, pri_len, cc_mode, symbol->rows);
             break;
-        case BARCODE_DBAR_OMN_CC: error_number = rss14(linear, (unsigned char *) symbol->primary, pri_len);
+        case BARCODE_DBAR_OMN_CC:
+            error_number = rss14_cc(linear, (unsigned char *) symbol->primary, pri_len, symbol->rows);
             break;
-        case BARCODE_DBAR_LTD_CC: error_number = rsslimited(linear, (unsigned char *) symbol->primary, pri_len);
+        case BARCODE_DBAR_LTD_CC:
+            error_number = rsslimited_cc(linear, (unsigned char *) symbol->primary, pri_len, symbol->rows);
             break;
-        case BARCODE_DBAR_EXP_CC: error_number = rssexpanded(linear, (unsigned char *) symbol->primary, pri_len);
+        case BARCODE_DBAR_EXP_CC:
+            error_number = rssexpanded_cc(linear, (unsigned char *) symbol->primary, pri_len, symbol->rows);
             break;
-        case BARCODE_UPCA_CC: error_number = eanx(linear, (unsigned char *) symbol->primary, pri_len);
+        case BARCODE_UPCA_CC:
+            error_number = eanx_cc(linear, (unsigned char *) symbol->primary, pri_len, symbol->rows);
             break;
-        case BARCODE_UPCE_CC: error_number = eanx(linear, (unsigned char *) symbol->primary, pri_len);
+        case BARCODE_UPCE_CC:
+            error_number = eanx_cc(linear, (unsigned char *) symbol->primary, pri_len, symbol->rows);
             break;
-        case BARCODE_DBAR_STK_CC: error_number = rss14(linear, (unsigned char *) symbol->primary, pri_len);
+        case BARCODE_DBAR_STK_CC:
+            error_number = rss14_cc(linear, (unsigned char *) symbol->primary, pri_len, symbol->rows);
             break;
-        case BARCODE_DBAR_OMNSTK_CC: error_number = rss14(linear, (unsigned char *) symbol->primary, pri_len);
+        case BARCODE_DBAR_OMNSTK_CC:
+            error_number = rss14_cc(linear, (unsigned char *) symbol->primary, pri_len, symbol->rows);
             break;
-        case BARCODE_DBAR_EXPSTK_CC: error_number = rssexpanded(linear, (unsigned char *) symbol->primary, pri_len);
+        case BARCODE_DBAR_EXPSTK_CC:
+            error_number = rssexpanded_cc(linear, (unsigned char *) symbol->primary, pri_len, symbol->rows);
             break;
     }
 
@@ -1583,10 +1597,27 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
         symbol->width += top_shift;
     }
     symbol->rows += linear->rows;
+#ifdef COMPLIANT_HEIGHTS
+    if (symbol->symbology == BARCODE_DBAR_STK_CC) {
+        /* Databar Stacked needs special treatment due to asymmetric rows */
+        warn_number = rss14_stk_set_height(symbol, symbol->rows - linear->rows + 1 /*first_row*/);
+    } else {
+        /* If symbol->height given then min row height was returned, else default height */
+        warn_number = set_height(symbol, symbol->height ? linear->height : 0.0f,
+                                symbol->height ? 0.0f : linear->height, 0.0f, 0 /*no_errtxt*/);
+    }
+#else
+    if (symbol->symbology == BARCODE_DBAR_STK_CC) {
+        (void) rss14_stk_set_height(symbol, symbol->rows - linear->rows + 1 /*first_row*/);
+    } else {
+        (void) set_height(symbol, symbol->height ? linear->height : 0.0f, symbol->height ? 0.0f : linear->height,
+                            0.0f, 1 /*no_errtxt*/);
+    }
+#endif
 
     ustrcpy(symbol->text, linear->text);
 
     ZBarcode_Delete(linear);
 
-    return error_number;
+    return error_number ? error_number : warn_number;
 }

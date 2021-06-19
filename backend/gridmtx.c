@@ -64,7 +64,8 @@ static int in_numeral(const unsigned int gbdata[], const int length, const int i
     /* Also ensures that numeric mode is not selected when it cannot be used: for example in
        a string which has "2.2.0" (cannot have more than one non-numeric character for each
        block of three numeric characters) */
-    for (i = in_posn, digit_cnt = 0, nondigit = 0, nondigit_posn = 0; i < length && i < in_posn + 4 && digit_cnt < 3; i++) {
+    for (i = in_posn, digit_cnt = 0, nondigit = 0, nondigit_posn = 0; i < length && i < in_posn + 4 && digit_cnt < 3;
+            i++) {
         if (gbdata[i] >= '0' && gbdata[i] <= '9') {
             digit_cnt++;
         } else if (strchr(numeral_nondigits, gbdata[i])) {
@@ -944,15 +945,15 @@ static void place_data_in_grid(unsigned char word[], char grid[], int modules, i
 }
 
 /* Place the layer ID into each macromodule */
-static void place_layer_id(char* grid, int size, int layers, int modules, int ecc_level) {
+static void place_layer_id(char *grid, int size, int layers, int modules, int ecc_level) {
     int i, j, layer, start, stop;
 
 #ifndef _MSC_VER
     int layerid[layers + 1];
     int id[modules * modules];
 #else
-    int* layerid = (int *) _alloca((layers + 1) * sizeof (int));
-    int* id = (int *) _alloca((modules * modules) * sizeof (int));
+    int *layerid = (int *) _alloca((layers + 1) * sizeof(int));
+    int *id = (int *) _alloca((modules * modules) * sizeof(int));
 #endif
 
     /* Calculate Layer IDs */
@@ -1110,7 +1111,8 @@ INTERNAL int grid_matrix(struct zint_symbol *symbol, unsigned char source[], int
         if (input_latch && ecc_level > min_ecc_level) {
             do {
                 ecc_level--;
-            } while ((data_cw > gm_data_codewords[(5 * (layers - 1)) + (ecc_level - 1)]) && (ecc_level > min_ecc_level));
+            } while ((data_cw > gm_data_codewords[(5 * (layers - 1)) + (ecc_level - 1)])
+                        && (ecc_level > min_ecc_level));
         }
         while (data_cw > gm_data_codewords[(5 * (layers - 1)) + (ecc_level - 1)] && (layers < 13)) {
             layers++;
@@ -1188,6 +1190,7 @@ INTERNAL int grid_matrix(struct zint_symbol *symbol, unsigned char source[], int
         }
         symbol->row_height[x] = 1;
     }
+    symbol->height = size;
 
     return 0;
 }

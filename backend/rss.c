@@ -249,7 +249,7 @@ static void rss14_separator(struct zint_symbol *symbol, int width, const int sep
     }
     if (bottom_finder_value_3) {
         /* ISO/IEC 24724:2011 5.3.2.2 "The single dark module that occurs in the 13 modules over finder value 3 is
-         * shifted one module to the right so that it is over the start of the three module-wide finder bar." */
+           shifted one module to the right so that it is over the start of the three module-wide finder bar." */
         finder_value_3_set = finder_start + 10;
         for (i = finder_start, finder_end = finder_start + 13; i < finder_end; i++) {
             if (i == finder_value_3_set) {
@@ -268,9 +268,46 @@ static void rss14_separator(struct zint_symbol *symbol, int width, const int sep
     }
 }
 
-/* GS1 DataBar Omnidirectional/Truncated/Stacked */
-INTERNAL int rss14(struct zint_symbol *symbol, unsigned char source[], int src_len) {
-    int error_number = 0, i;
+/* Set Databar Stacked height, maintaining 5:7 ratio of the 2 main row heights */
+INTERNAL int rss14_stk_set_height(struct zint_symbol *symbol, const int first_row) {
+    int error_number = 0;
+    float fixed_height = 0.0f;
+    int second_row = first_row + 2; /* 2 row separator */
+    int i;
+
+    for (i = 0; i < symbol->rows; i++) {
+        if (i != first_row && i != second_row) {
+            fixed_height += symbol->row_height[i];
+        }
+    }
+    if (symbol->height) {
+        symbol->row_height[first_row] = (symbol->height - fixed_height) * symbol->row_height[first_row] /
+                                        (symbol->row_height[first_row] + symbol->row_height[second_row]);
+        if (symbol->row_height[first_row] < 0.5f) { /* Absolute minimum */
+            symbol->row_height[first_row] = 0.5f;
+            symbol->row_height[second_row] = 0.7f;
+        } else {
+            symbol->row_height[second_row] = symbol->height - fixed_height - symbol->row_height[first_row];
+            if (symbol->row_height[second_row] < 0.7f) {
+                symbol->row_height[second_row] = 0.7f;
+            }
+        }
+    }
+    symbol->height = symbol->row_height[first_row] + symbol->row_height[second_row] + fixed_height;
+
+#ifdef COMPLIANT_HEIGHTS
+    if (symbol->row_height[first_row] < 5.0f || symbol->row_height[second_row] < 7.0f) {
+        error_number = ZINT_WARN_NONCOMPLIANT;
+        strcpy(symbol->errtxt, "379: Height not compliant with standards");
+    }
+#endif
+
+    return error_number;
+}
+
+/* GS1 DataBar Omnidirectional/Truncated/Stacked, allowing for composite if `cc_rows` set */
+INTERNAL int rss14_cc(struct zint_symbol *symbol, unsigned char source[], int src_len, const int cc_rows) {
+    int error_number, i;
     large_int accum;
     uint64_t left_pair, right_pair;
     int data_character[4] = {0}, data_group[4] = {0}, v_odd[4], v_even[4];
@@ -312,7 +349,7 @@ INTERNAL int rss14(struct zint_symbol *symbol, unsigned char source[], int src_l
 
     large_load_str_u64(&accum, source, src_len);
 
-    if (symbol->option_1 == 2) {
+    if (cc_rows) {
         /* Add symbol linkage flag */
         large_add_u64(&accum, 10000000000000);
     }
@@ -473,10 +510,23 @@ INTERNAL int rss14(struct zint_symbol *symbol, unsigned char source[], int src_l
         /* Set human readable text */
         set_gtin14_hrt(symbol, source, src_len);
 
-        set_minimum_height(symbol, 14); // Minimum height is 14X for truncated symbol
-    }
+#ifdef COMPLIANT_HEIGHTS
+        /* Minimum height is 13X for truncated symbol ISO/IEC 24724:2011 5.3.1
+           Default height is 33X for DataBar Omnidirectional ISO/IEC 24724:2011 5.2 */
+        if (symbol->symbology == BARCODE_DBAR_OMN_CC) {
+            symbol->height = symbol->height ? 13.0f : 33.0f; /* Pass back min row or default height */
+        } else {
+            error_number = set_height(symbol, 13.0f, 33.0f, 0.0f, 0 /*no_errtxt*/);
+        }
+#else
+        if (symbol->symbology == BARCODE_DBAR_OMN_CC) {
+            symbol->height = 14.0f; /* 14X truncated min row height used (should be 13X) */
+        } else {
+            (void) set_height(symbol, 0.0f, 50.0f, 0.0f, 1 /*no_errtxt*/);
+        }
+#endif
 
-    if ((symbol->symbology == BARCODE_DBAR_STK) || (symbol->symbology == BARCODE_DBAR_STK_CC)) {
+    } else if ((symbol->symbology == BARCODE_DBAR_STK) || (symbol->symbology == BARCODE_DBAR_STK_CC)) {
         /* top row */
         writer = 0;
         latch = 0;
@@ -485,7 +535,7 @@ INTERNAL int rss14(struct zint_symbol *symbol, unsigned char source[], int src_l
         }
         set_module(symbol, symbol->rows, writer);
         unset_module(symbol, symbol->rows, writer + 1);
-        symbol->row_height[symbol->rows] = 5;
+        symbol->row_height[symbol->rows] = 5.0f; /* ISO/IEC 24724:2011 5.3.2.1 set to 5X */
 
         /* bottom row */
         symbol->rows = symbol->rows + 2;
@@ -496,7 +546,7 @@ INTERNAL int rss14(struct zint_symbol *symbol, unsigned char source[], int src_l
         for (i = 23; i < 46; i++) {
             writer = rss_expand(symbol, writer, &latch, total_widths[i]);
         }
-        symbol->row_height[symbol->rows] = 7;
+        symbol->row_height[symbol->rows] = 7.0f; /* ISO/IEC 24724:2011 5.3.2.1 set to 7X */
 
         /* separator pattern */
         /* See #183 for this interpretation of ISO/IEC 24724:2011 5.3.2.1 */
@@ -524,9 +574,12 @@ INTERNAL int rss14(struct zint_symbol *symbol, unsigned char source[], int src_l
         if (symbol->width < 50) {
             symbol->width = 50;
         }
-    }
 
-    if ((symbol->symbology == BARCODE_DBAR_OMNSTK) || (symbol->symbology == BARCODE_DBAR_OMNSTK_CC)) {
+        if (symbol->symbology != BARCODE_DBAR_STK_CC) { /* Composite calls rss14_stk_set_height() itself */
+            error_number = rss14_stk_set_height(symbol, 0 /*first_row*/);
+        }
+
+    } else if ((symbol->symbology == BARCODE_DBAR_OMNSTK) || (symbol->symbology == BARCODE_DBAR_OMNSTK_CC)) {
         /* top row */
         writer = 0;
         latch = 0;
@@ -570,15 +623,29 @@ INTERNAL int rss14(struct zint_symbol *symbol, unsigned char source[], int src_l
         }
         symbol->rows = symbol->rows + 1;
 
-        set_minimum_height(symbol, 33);
+        /* ISO/IEC 24724:2011 5.3.2.2 minimum 33X height per row */
+        if (symbol->symbology == BARCODE_DBAR_OMNSTK_CC) {
+            symbol->height = symbol->height ? 33.0f : 66.0f; /* Pass back min row or default height */
+        } else {
+#ifdef COMPLIANT_HEIGHTS
+            error_number = set_height(symbol, 33.0f, 66.0f, 0.0f, 0 /*no_errtxt*/);
+#else
+            (void) set_height(symbol, 0.0f, 66.0f, 0.0f, 1 /*no_errtxt*/);
+#endif
+        }
     }
 
     return error_number;
 }
 
-/* GS1 DataBar Limited */
-INTERNAL int rsslimited(struct zint_symbol *symbol, unsigned char source[], int src_len) {
-    int error_number = 0, i;
+/* GS1 DataBar Omnidirectional/Truncated/Stacked */
+INTERNAL int rss14(struct zint_symbol *symbol, unsigned char source[], int src_len) {
+    return rss14_cc(symbol, source, src_len, 0 /*cc_rows*/);
+}
+
+/* GS1 DataBar Limited, allowing for composite if `cc_rows` set  */
+INTERNAL int rsslimited_cc(struct zint_symbol *symbol, unsigned char source[], int src_len, const int cc_rows) {
+    int error_number, i;
     large_int accum;
     uint64_t left_character, right_character;
     int left_group, right_group, left_odd, left_even, right_odd, right_even;
@@ -624,7 +691,7 @@ INTERNAL int rsslimited(struct zint_symbol *symbol, unsigned char source[], int 
 
     large_load_str_u64(&accum, source, src_len);
 
-    if (symbol->option_1 == 2) {
+    if (cc_rows) {
         /* Add symbol linkage flag */
         large_add_u64(&accum, 2015133531096);
     }
@@ -745,9 +812,23 @@ INTERNAL int rsslimited(struct zint_symbol *symbol, unsigned char source[], int 
     /* Set human readable text */
     set_gtin14_hrt(symbol, source, src_len);
 
-    set_minimum_height(symbol, 10);
+    /* ISO/IEC 24724:2011 6.2 10X minimum height, use as default also */
+    if (symbol->symbology == BARCODE_DBAR_LTD_CC) {
+        symbol->height = 10.0f; /* Pass back min row == default height */
+    } else {
+#ifdef COMPLIANT_HEIGHTS
+        error_number = set_height(symbol, 10.0f, 10.0f, 0.0f, 0 /*no_errtxt*/);
+#else
+        (void) set_height(symbol, 0.0f, 50.0f, 0.0f, 1 /*no_errtxt*/);
+#endif
+    }
 
     return error_number;
+}
+
+/* GS1 DataBar Limited */
+INTERNAL int rsslimited(struct zint_symbol *symbol, unsigned char source[], int src_len) {
+    return rsslimited_cc(symbol, source, src_len, 0 /*cc_rows*/);
 }
 
 /* Check and convert date to RSS date value */
@@ -757,7 +838,7 @@ INTERNAL int rss_date(const unsigned char source[], const int src_posn) {
     int dd = to_int(source + src_posn + 4, 2);
 
     /* Month can't be zero but day can (means last day of month,
-     * GS1 General Specifications Sections 3.4.2 to 3.4.7) */
+       GS1 General Specifications Sections 3.4.2 to 3.4.7) */
     if (yy < 0 || mm <= 0 || mm > 12 || dd < 0 || dd > 31) {
         return -1;
     }
@@ -1189,9 +1270,9 @@ static void rssexp_separator(struct zint_symbol *symbol, int width, const int co
     }
 }
 
-/* GS1 DataBar Expanded */
-INTERNAL int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int src_len) {
-    int error_number;
+/* GS1 DataBar Expanded, setting linkage for composite if `cc_rows` set */
+INTERNAL int rssexpanded_cc(struct zint_symbol *symbol, unsigned char source[], int src_len, const int cc_rows) {
+    int error_number, warn_number = 0;
     int i, j, k, p, codeblocks, data_chars, vs, group, v_odd, v_even;
     int latch;
     int char_widths[21][8], checksum, check_widths[8], c_group;
@@ -1201,6 +1282,7 @@ INTERNAL int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int
     unsigned int bin_len = 13 * src_len + 200 + 1;
     int widths[4];
     int bp = 0;
+    int stack_rows = 1;
 #ifndef _MSC_VER
     unsigned char reduced[src_len + 1];
     char binary_string[bin_len];
@@ -1227,7 +1309,7 @@ INTERNAL int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int
         symbol->rows += 1;
     }
 
-    if (symbol->option_1 == 2) { /* The "component linkage" flag */
+    if (cc_rows) { /* The "component linkage" flag */
         binary_string[bp++] = '1';
     } else {
         binary_string[bp++] = '0';
@@ -1388,7 +1470,6 @@ INTERNAL int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int
         }
 
     } else {
-        int stack_rows;
         int current_row, current_block, left_to_right;
         int v2_latch = 0;
         /* RSS Expanded Stacked */
@@ -1401,7 +1482,7 @@ INTERNAL int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int
         if ((symbol->option_2 < 1) || (symbol->option_2 > 11)) {
             symbol->option_2 = 2;
         }
-        if ((symbol->option_1 == 2) && (symbol->option_2 == 1)) {
+        if (cc_rows && (symbol->option_2 == 1)) {
             /* "There shall be a minimum of four symbol characters in the
             first row of an RSS Expanded Stacked symbol when it is the linear
             component of an EAN.UCC Composite symbol." */
@@ -1522,11 +1603,22 @@ INTERNAL int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int
             1 /*left_to_right*/, 0 /*odd_last_row*/, NULL);
     }
 
-    for (i = 0; i < symbol->rows; i++) {
-        if (symbol->row_height[i] == 0) {
-            symbol->row_height[i] = 34;
-        }
+    /* DataBar Expanded ISO/IEC 24724:2011 7.2.1 and DataBar Expanded Stacked ISO/IEC 24724:2011 7.2.8
+       34X min per row */
+    if (symbol->symbology == BARCODE_DBAR_EXP_CC || symbol->symbology == BARCODE_DBAR_EXPSTK_CC) {
+        symbol->height = symbol->height ? 34.0f : 34.0f * stack_rows; /* Pass back min row or default height */
+    } else {
+#ifdef COMPLIANT_HEIGHTS
+        warn_number = set_height(symbol, 34.0f, 34.0f * stack_rows, 0.0f, 0 /*no_errtxt*/);
+#else
+        (void) set_height(symbol, 0.0f, 34.0f * stack_rows, 0.0f, 1 /*no_errtxt*/);
+#endif
     }
 
-    return error_number;
+    return error_number ? error_number : warn_number;
+}
+
+/* GS1 DataBar Expanded */
+INTERNAL int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int src_len) {
+    return rssexpanded_cc(symbol, source, src_len, 0 /*cc_rows*/);
 }

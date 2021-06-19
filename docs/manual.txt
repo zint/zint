@@ -419,7 +419,7 @@ gives a box with a width 10 times the X-dimension of the symbol. Note that when
 specifying a box, horizontal whitespace is usually required in order to create a
 quiet zone between the barcode and the sides of the box.
 
-Code 16k, Code 49 and Codablock-F always have boundary bars, and default to
+Codablock-F, Code 16k and Code 49 always have boundary bars, and default to
 particular horizontal whitespace values. Special considerations apply to ITF-14
 - see the specific section 6.1.2.6 for that symbology.
 
@@ -979,7 +979,9 @@ Variable Name     | Type         | Meaning                     | Default Value
 --------------------------------------------------------------------------------
 symbology         | integer      | Symbol to use (see section  | BARCODE_CODE128
                   |              |    5.7).                    |
-height            | integer      | Symbol height. [1]          | 50
+height            | float        | Symbol height, excluding    | Symbol
+                  |              |    fixed width-to-height    |    dependent
+                  |              |    symbols. [1]             |
 whitespace_width  | integer      | Horizontal whitespace width.| 0
 whitespace_height | integer      | Vertical whitespace height. | 0
 border_width      | integer      | Border width.               | 0
@@ -1033,7 +1035,7 @@ encoding_data     | array of     | Representation of the       | (output only)
                   |    character |    encoded data.            |
                   |    strings   |                             |
 row_height        | array of     | Representation of the       | (output only)
-                  |    integers  |    height of a row.         |
+                  |    floats    |    height of a row.         |
 errtxt            | character    | Error message in the event  | (output only)
                   |    string    |    that an error occurred.  |
 bitmap            | pointer to   | Pointer to stored bitmap    | (output only)
@@ -1054,9 +1056,10 @@ vector            | pointer to   | Pointer to vector header    | (output only)
                   |    structure |    vector elements.         |
 --------------------------------------------------------------------------------
 
-[1] This value is ignored for Australia Post 4-State Barcodes, POSTNET, PLANET,
-USPS Intelligent Mail, RM4SCC, PDF417, Data Matrix, MaxiCode, QR Code, GS1
-DataBar Stacked, PDF417 and MicroPDF417 - all of which have a fixed height.
+[1] This value is ignored for Aztec (including HIBC and Aztec Rune), Code One,
+Data Matrix (including HIBC), DotCode, Grid Matrix, Han Xin, MaxiCode, QR Code
+(including HIBC, Micro QR, rMQR and UPNQR), and Ultracode - all of which have a
+fixed width-to-height ratio (or, in the case of Code One, a fixed height).
 
 To alter these values use the syntax shown in the example below. This code has
 the same result as the previous example except the output is now taller and
@@ -1069,7 +1072,7 @@ int main(int argc, char **argv)
     struct zint_symbol *my_symbol;
     my_symbol = ZBarcode_Create();
     strcpy(my_symbol->fgcolour, "00ff00");
-    my_symbol->height = 400;
+    my_symbol->height = 400.0f;
     ZBarcode_Encode_and_Print(my_symbol, argv[1], 0, 0);
     ZBarcode_Delete(my_symbol);
     return 0;
@@ -1302,7 +1305,7 @@ Value                   |  Effect
 0                       |  No options selected.
 BARCODE_BIND            |  Boundary bars above and below the symbol and between
                         |     rows if stacking multiple symbols. [2]
-BARCODE_BOX             |  Add a box surrounding the symbol and whitespace. [2]
+BARCODE_BOX             |  Add a box surrounding the symbol and whitespace.
 BARCODE_STDOUT          |  Output the file to stdout.
 READER_INIT             |  Add a reader initialisation symbol to the data before
                         |     encoding.
@@ -1316,8 +1319,9 @@ OUT_BUFFER_INTERMEDIATE |  Return the bitmap buffer as ASCII values instead of
                         |     separate colour channels (OUT_BUFFER only).
 --------------------------------------------------------------------------------
 
-[2] This value is ignored for Code 16k and Codablock-F. Special considerations
-apply to ITF-14 - see the specific section 6.1.2.6 for that symbology.
+[2] This flag is always set for Codablock-F, Code 16k and Code 49. Special
+considerations apply to ITF-14 - see the specific section 6.1.2.6 for that
+symbology.
 
 5.9 Setting the Input Mode
 --------------------------
@@ -2614,15 +2618,15 @@ Annex A.
 6.6.9 Code One
 --------------
 A matrix symbology developed by Ted Williams in 1992 which encodes data in a
-way similar to Data Matrix. Code One is able to encode the Latin-1
-character set or GS1 data. There are two types of Code One symbol - variable
-height symbols which are roughly square (versions A through to H) and
-fixed-height versions (version S and T). These can be selected by using --vers=
-or setting option_2 as shown in the table below:
+way similar to Data Matrix. Code One is able to encode the Latin-1 character
+set or GS1 data. There are two types of Code One symbol - fixed-ratio symbols
+which are roughly square (versions A through to H) and variable-width versions
+(version S and T). These can be selected by using --vers= or setting option_2
+as shown in the table below:
 
 --------------------------------------------------------------------
 Input  |  Version  |  Size        |  Numeric        |  Alphanumeric
-       |           |              |  Data Capacity  |  Data Capacity
+       |           |  (W x H)     |  Data Capacity  |  Data Capacity
 --------------------------------------------------------------------
 1      |  A        |  16 x 18     |  22             |  13
 2      |  B        |  22 x 22     |  44             |  27
@@ -2632,8 +2636,8 @@ Input  |  Version  |  Size        |  Numeric        |  Alphanumeric
 6      |  F        |  70 x 76     |  886            |  553
 7      |  G        |  104 x 98    |  1755           |  1096
 8      |  H        |  148 x 134   |  3550           |  2218
-9      |  S        |  8X height   |  18             |  N/A
-10     |  T        |  16X height  |  90             |  55
+9      |  S        |  width x 8   |  18             |  N/A
+10     |  T        |  width x 16  |  90             |  55
 --------------------------------------------------------------------
 
 Version S symbols can only encode numeric data. The width of version S and
@@ -2882,7 +2886,9 @@ This is a method for creating 4-state codes where the data encoding is provided
 by an external program. Input data should consist of the letters 'D', 'A', 'F'
 and 'T' where these refer to descender, ascender, full (ascender and descender)
 and tracker (neither ascender nor descender) respectively. All other characters
-are ignored.
+are invalid. The ratio of the tracker size to full height can be given in
+thousandths (permille) using the --vers= option or by setting option_2. The
+default value is 250 (25%).
 
 
 7. Legal and Version Information
@@ -3206,6 +3212,7 @@ international standards:
 > Uniform Symbology Specification Code One (AIM Inc., 1994)
 > ANSI/AIM BC12-1998 - Uniform Symbology Specification Channel Code
 > ANSI/AIM BC6-2000 - Uniform Symbology Specification Code 49
+> ANSI/AIM BC5-1995 - Uniform Symbology Specification Code 93
 > ANSI/HIBC 2.6-2016 - The Health Industry Bar Code (HIBC) Supplier Labeling
      Standard
 > AIM ISS-X-24 - Uniform Symbology Specification Codablock-F

@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2016 - 2020 Harald Oehlmann
+    Copyright (C) 2016 - 2021 Harald Oehlmann
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -304,7 +304,8 @@ static int Columns2Rows(struct zint_symbol *symbol, CharacterSetTable *T, const 
                                 /* <Shift> or <switchB>? */
                                 if (T[charCur].BFollowing == 1 || (isFNC4 && T[charCur].BFollowing == 2))
                                 {
-                                    /* Note using order "FNC4 shift char" (same as CODE128) not "shift FNC4 char" as given in Table B.1 and Table B.2 */
+                                    /* Note using order "FNC4 shift char" (same as CODE128) not "shift FNC4 char" as
+                                       given in Table B.1 and Table B.2 */
                                     if (isFNC4) { /* So skip FNC4 and shift value instead */
                                         --emptyColumns;
                                         ++charCur;
@@ -338,7 +339,8 @@ static int Columns2Rows(struct zint_symbol *symbol, CharacterSetTable *T, const 
                                 /* <Shift> or <switchA>? */
                                 if (T[charCur].AFollowing == 1 || (isFNC4 && T[charCur].AFollowing == 2))
                                 {
-                                    /* Note using order "FNC4 shift char" (same as CODE128) not "shift FNC4 char" as given in Table B.1 and Table B.2 */
+                                    /* Note using order "FNC4 shift char" (same as CODE128) not "shift FNC4 char" as
+                                       given in Table B.1 and Table B.2 */
                                     if (isFNC4) { /* So skip FNC4 and shift value instead */
                                         --emptyColumns;
                                         ++charCur;
@@ -638,6 +640,7 @@ INTERNAL int codablock(struct zint_symbol *symbol, unsigned char source[], int l
     int emptyColumns;
     char dest[1000];
     int r, c;
+    float min_row_height;
 #ifdef _MSC_VER
     CharacterSetTable *T;
     unsigned char *data;
@@ -658,6 +661,13 @@ INTERNAL int codablock(struct zint_symbol *symbol, unsigned char source[], int l
                 symbol->border_width = 1; /* AIM ISS-X-24 Section 4.6.1 b) (note change from previous default 2) */
             }
             symbol->text[0] = '\0'; /* Disable HRT for compatibility with CODABLOCKF */
+#ifdef COMPLIANT_HEIGHTS
+            /* AIM ISS-X-24 Section 4.5.1 minimum row height 8 (for compatibility with CODABLOCKF, not specced for
+               CODE128) */
+            error_number = set_height(symbol, 8.0f, 10.0f, 0.0f, 0 /*no_errtxt*/);
+#else
+            (void) set_height(symbol, 0.0f, 5.0f, 0.0f, 1 /*no_errtxt*/);
+#endif
         }
         return error_number;
     }
@@ -779,7 +789,7 @@ INTERNAL int codablock(struct zint_symbol *symbol, unsigned char source[], int l
 #ifndef _MSC_VER
     uchar pOutput[columns * rows];
 #else
-    pOutput = (unsigned char *)_alloca(columns * rows * sizeof(char));
+    pOutput = (unsigned char *) _alloca(columns * rows);
 #endif
     pOutPos = pOutput;
     charCur=0;
@@ -976,8 +986,20 @@ INTERNAL int codablock(struct zint_symbol *symbol, unsigned char source[], int l
             strcat(dest, C128Table[pOutput[r * columns + c]]);
         }
         expand(symbol, dest);
-        symbol->row_height[r] = 10;
     }
+
+#ifdef COMPLIANT_HEIGHTS
+    /* AIM ISS-X-24 Section 4.6.1 minimum row height; use 10 * rows as default for back-compatibility */
+    min_row_height = (float) (0.55 * useColumns + 3.0);
+    if (min_row_height < 8.0f) {
+        min_row_height = 8.0f;
+    }
+    error_number = set_height(symbol, min_row_height, (min_row_height > 10.0f ? min_row_height : 10.0f) * rows, 0.0f,
+                                0 /*no_errtxt*/);
+#else
+    (void)min_row_height;
+    (void) set_height(symbol, 0.0f, 10.0f * rows, 0.0f, 1 /*no_errtxt*/);
+#endif
 
     symbol->output_options |= BARCODE_BIND;
 
