@@ -640,7 +640,7 @@ INTERNAL int codablock(struct zint_symbol *symbol, unsigned char source[], int l
     int emptyColumns;
     char dest[1000];
     int r, c;
-    float min_row_height;
+    float min_row_height = 0.0f;
 #ifdef _MSC_VER
     CharacterSetTable *T;
     unsigned char *data;
@@ -997,8 +997,7 @@ INTERNAL int codablock(struct zint_symbol *symbol, unsigned char source[], int l
     error_number = set_height(symbol, min_row_height, (min_row_height > 10.0f ? min_row_height : 10.0f) * rows, 0.0f,
                                 0 /*no_errtxt*/);
 #else
-    (void)min_row_height;
-    (void) set_height(symbol, 0.0f, 10.0f * rows, 0.0f, 1 /*no_errtxt*/);
+    (void) set_height(symbol, min_row_height, 10.0f * rows, 0.0f, 1 /*no_errtxt*/);
 #endif
 
     symbol->output_options |= BARCODE_BIND;

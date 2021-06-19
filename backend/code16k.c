@@ -120,7 +120,7 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int len
     int input_length;
     int gs1, c_count;
     int separator;
-    float min_row_height;
+    float min_row_height = 0.0f;
 
     /* Suppresses clang-analyzer-core.UndefinedBinaryOperatorResult warning on fset which is fully set */
     assert(length > 0);
@@ -500,8 +500,8 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int len
     error_number = set_height(symbol, min_row_height, (min_row_height > 10.0f ? min_row_height : 10.0f) * rows, 0.0f,
                                 0 /*no_errtxt*/);
 #else
-    (void)min_row_height; (void)separator;
-    (void) set_height(symbol, 0.0f, 10.0f * rows, 0.0f, 1 /*no_errtxt*/);
+    (void)&separator;
+    (void) set_height(symbol, min_row_height, 10.0f * rows, 0.0f, 1 /*no_errtxt*/);
 #endif
 
     symbol->output_options |= BARCODE_BIND;

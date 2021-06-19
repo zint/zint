@@ -861,7 +861,7 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigne
                 db_p = bin_append_posn(1, 2, decimal_binary, db_p);
             }
 
-            (void)decimal_binary_transfer(decimal_binary, db_p, target, &tp);
+            (void) decimal_binary_transfer(decimal_binary, db_p, target, &tp);
         }
         current_mode = C1_ASCII;
 

@@ -1243,7 +1243,7 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
     if (error_number == 0) {
         error_number = warn_number;
     }
-    (void)error_tag(symbol->errtxt, error_number);
+    (void) error_tag(symbol->errtxt, error_number);
 
     if (error_number < ZINT_ERROR) {
         if (symbol->height < 0.5f) { /* Absolute minimum */

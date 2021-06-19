@@ -50,7 +50,7 @@ INTERNAL int code_49(struct zint_symbol *symbol, unsigned char source[], int len
     int gs1;
     int h, len;
     int separator;
-    float min_row_height;
+    float min_row_height = 0.0f;
     int error_number = 0;
 
     if (length > 81) {
@@ -358,8 +358,8 @@ INTERNAL int code_49(struct zint_symbol *symbol, unsigned char source[], int len
     error_number = set_height(symbol, min_row_height, (min_row_height > 10.0f ? min_row_height : 10.0f) * rows, 0.0f,
                                 0 /*no_errtxt*/);
 #else
-    (void)min_row_height; (void)separator;
-    (void) set_height(symbol, 0.0f, 10.0f * rows, 0.0f, 1 /*no_errtxt*/);
+    (void)&separator;
+    (void) set_height(symbol, min_row_height, 10.0f * rows, 0.0f, 1 /*no_errtxt*/);
 #endif
 
     symbol->output_options |= BARCODE_BIND;

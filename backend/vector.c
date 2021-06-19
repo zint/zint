@@ -35,10 +35,6 @@
 
 #ifdef _MSC_VER
 #include <malloc.h>
-/* For Visual C++ 6 suppress conversion from int to float warning */
-#if _MSC_VER == 1200
-#pragma warning(disable: 4244)
-#endif
 #endif
 
 #include "common.h"

@@ -64,6 +64,9 @@
 #    define ceilf (float) ceil
 #    define floorf (float) floor
 #    define roundf(arg) ((float) floor((arg) + 0.5f))
+#    if _MSC_VER == 1200 /* VC6 */
+#      define round(arg) floor((arg) + 0.5f)
+#    endif
 #  endif
 #  pragma warning(disable: 4244) /* conversion from int to float */
 #  if _MSC_VER >= 1900 /* MSVC 2015 */
