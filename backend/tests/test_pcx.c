@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020 - 2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -33,14 +33,6 @@
 
 static void test_pcx(int index, int debug) {
 
-    testStart("");
-
-    if (!testUtilHaveIdentify()) {
-        testSkip("ImageMagick identify not available");
-        return;
-    }
-
-    int ret;
     struct item {
         int symbology;
         int option_1;
@@ -64,12 +56,23 @@ static void test_pcx(int index, int debug) {
         /*  9*/ { BARCODE_ULTRA, -1, -1, "", "", 0, "ULTRACODE_123456789!" },
     };
     int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
+    struct zint_symbol *symbol;
 
-    for (int i = 0; i < data_size; i++) {
+    char *filename = "out.pcx";
+
+    testStart("test_pcx");
+
+    if (!testUtilHaveIdentify()) {
+        testSkip("ImageMagick identify not available");
+        return;
+    }
+
+    for (i = 0; i < data_size; i++) {
 
         if (index != -1 && i != index) continue;
 
-        struct zint_symbol *symbol = ZBarcode_Create();
+        symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
         symbol->symbology = data[i].symbology;
@@ -90,12 +93,11 @@ static void test_pcx(int index, int debug) {
         }
         symbol->debug |= debug;
 
-        int length = strlen(data[i].data);
+        length = strlen(data[i].data);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_zero(ret, "i:%d %s ZBarcode_Encode ret %d != 0 %s\n", i, testUtilBarcodeName(data[i].symbology), ret, symbol->errtxt);
 
-        char *filename = "out.pcx";
         strcpy(symbol->outfile, filename);
         ret = ZBarcode_Print(symbol, 0);
         assert_zero(ret, "i:%d %s ZBarcode_Print %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, ret);

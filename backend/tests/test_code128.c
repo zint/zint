@@ -35,9 +35,6 @@
 
 static void test_large(int index, int debug) {
 
-    testStart("");
-
-    int ret;
     struct item {
         int symbology;
         char *pattern;
@@ -68,14 +65,18 @@ static void test_large(int index, int debug) {
         /* 17*/ { BARCODE_HIBC_128, "1", 111, ZINT_ERROR_TOO_LONG, -1 },
     };
     int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
+    struct zint_symbol *symbol;
 
     char data_buf[4096];
 
-    for (int i = 0; i < data_size; i++) {
+    testStart("test_large");
+
+    for (i = 0; i < data_size; i++) {
 
         if (index != -1 && i != index) continue;
 
-        struct zint_symbol *symbol = ZBarcode_Create();
+        symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
         if (data[i].length != -1) {
@@ -85,7 +86,7 @@ static void test_large(int index, int debug) {
             strcpy(data_buf, data[i].pattern);
         }
 
-        int length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data_buf, data[i].length, debug);
+        length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data_buf, data[i].length, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data_buf, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
@@ -104,9 +105,6 @@ int hrt_cpy_iso8859_1(struct zint_symbol *symbol, const unsigned char *source, i
 
 static void test_hrt_cpy_iso8859_1(int index, int debug) {
 
-    testStart("");
-
-    int ret;
     struct item {
         char *data;
         int length;
@@ -134,18 +132,23 @@ static void test_hrt_cpy_iso8859_1(int index, int debug) {
         /* 13*/ { "\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351", -1, 126, "ééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé", "128 \351 (truncated)" },
     };
     int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
 
     struct zint_symbol symbol;
+
+    testStart("test_hrt_cpy_iso8859_1");
+
     symbol.debug |= debug;
 
-    for (int i = 0; i < data_size; i++) {
+    for (i = 0; i < data_size; i++) {
+        int j;
 
         if (index != -1 && i != index) continue;
 
-        int length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
+        length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
 
         ret = hrt_cpy_iso8859_1(&symbol, (unsigned char *) data[i].data, length);
-        for (int j = 0; j < ret; j++) {
+        for (j = 0; j < ret; j++) {
             //fprintf(stderr, "symbol.text[%d] %2X\n", j, symbol.text[j]);
         }
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d\n", i, ret, data[i].ret);
@@ -159,9 +162,6 @@ static void test_hrt_cpy_iso8859_1(int index, int debug) {
 
 static void test_hrt(int index, int debug) {
 
-    testStart("");
-
-    int ret;
     struct item {
         int symbology;
         int input_mode;
@@ -186,15 +186,19 @@ static void test_hrt(int index, int debug) {
         // BARCODE_GS1_128, BARCODE_EAN14, BARCODE_NVE18 hrt tested in test_gs1.c
     };
     int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
+    struct zint_symbol *symbol;
 
-    for (int i = 0; i < data_size; i++) {
+    testStart("test_hrt");
+
+    for (i = 0; i < data_size; i++) {
 
         if (index != -1 && i != index) continue;
 
-        struct zint_symbol *symbol = ZBarcode_Create();
+        symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        int length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, data[i].length, debug);
+        length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, data[i].length, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_zero(ret, "i:%d ZBarcode_Encode ret %d != 0 %s\n", i, ret, symbol->errtxt);
@@ -209,9 +213,6 @@ static void test_hrt(int index, int debug) {
 
 static void test_reader_init(int index, int generate, int debug) {
 
-    testStart("");
-
-    int ret;
     struct item {
         int symbology;
         int input_mode;
@@ -233,19 +234,23 @@ static void test_reader_init(int index, int generate, int debug) {
         /*  6*/ { BARCODE_HIBC_128, UNICODE_MODE, READER_INIT, "A", 0, 1, 79, "(7) 104 96 11 33 24 5 106", "StartA FNC3 + A 8 (check) (Not sensible, use CODE128)" },
     };
     int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
+    struct zint_symbol *symbol;
 
     char escaped[1024];
 
-    for (int i = 0; i < data_size; i++) {
+    testStart("test_reader_init");
+
+    for (i = 0; i < data_size; i++) {
 
         if (index != -1 && i != index) continue;
 
-        struct zint_symbol *symbol = ZBarcode_Create();
+        symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
         symbol->debug = ZINT_DEBUG_TEST; // Needed to get codeword dump in errtxt
 
-        int length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1 /*option_2*/, -1, data[i].output_options, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1 /*option_2*/, -1, data[i].output_options, data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
@@ -271,9 +276,6 @@ static void test_reader_init(int index, int generate, int debug) {
 
 static void test_input(int index, int generate, int debug) {
 
-    testStart("");
-
-    int ret;
     struct item {
         int input_mode;
         char *data;
@@ -328,19 +330,23 @@ static void test_input(int index, int generate, int debug) {
         /* 33*/ { UNICODE_MODE, "aééééébcdefééé", -1, 0, 255, "(23) 104 65 100 100 73 73 73 73 73 100 100 66 67 68 69 70 100 100 73 73 73 67 106", "StartB a Latch é (5) Unlatch b c d e f Latch é (3)" },
     };
     int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
+    struct zint_symbol *symbol;
 
     char escaped[1024];
 
-    for (int i = 0; i < data_size; i++) {
+    testStart("test_input");
+
+    for (i = 0; i < data_size; i++) {
 
         if (index != -1 && i != index) continue;
 
-        struct zint_symbol *symbol = ZBarcode_Create();
+        symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
         symbol->debug = ZINT_DEBUG_TEST; // Needed to get codeword dump in errtxt
 
-        int length = testUtilSetSymbol(symbol, BARCODE_CODE128, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, data[i].length, debug);
+        length = testUtilSetSymbol(symbol, BARCODE_CODE128, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, data[i].length, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
@@ -364,9 +370,6 @@ static void test_input(int index, int generate, int debug) {
 
 static void test_ean128_input(int index, int generate, int debug) {
 
-    testStart("");
-
-    int ret;
     struct item {
         int input_mode;
         char *data;
@@ -398,21 +401,26 @@ static void test_ean128_input(int index, int generate, int debug) {
         /* 19*/ { GS1_MODE, "[90]12345[90]1234[90]1", 0, 211, "(19) 105 102 90 12 34 100 21 99 102 90 12 34 102 100 25 99 1 30 106", "StartC FNC1 90 12 34 CodeB 5 CodeC FNC1 90 12 34 FNC1 CodeB 9 CodeC 01" },
         /* 20*/ { GS1_MODE, "[90]1A[90]1", 0, 134, "(12) 104 102 25 16 17 33 102 25 99 1 65 106", "StartB FNC1 9 0 1 A FNC1 9 CodeC 01" },
         /* 21*/ { GS1_MODE, "[90]12A[90]123", 0, 145, "(13) 105 102 90 12 100 33 102 25 99 1 23 25 106", "StartC FNC1 90 12 CodeB A FNC1 9 CodeC 01 23" },
-        /* 22*/ { GS1_MODE, "[90]123[90]A234[90]123", 0, 244, "(22) 105 102 90 12 100 19 99 102 90 100 33 18 99 34 102 100 25 99 1 23 37 106", "StartC FNC1 90 12 CodeB 3 CodeC FNC1 90 CodeB A 2 CodeC 34 FNC1 CodeB 9 CodeC 01 23" }    };
+        /* 22*/ { GS1_MODE, "[90]123[90]A234[90]123", 0, 244, "(22) 105 102 90 12 100 19 99 102 90 100 33 18 99 34 102 100 25 99 1 23 37 106", "StartC FNC1 90 12 CodeB 3 CodeC FNC1 90 CodeB A 2 CodeC 34 FNC1 CodeB 9 CodeC 01 23" },
+    };
     int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
+    struct zint_symbol *symbol;
 
     char escaped[1024];
 
-    for (int i = 0; i < data_size; i++) {
+    testStart("test_ean128_input");
+
+    for (i = 0; i < data_size; i++) {
 
         if (index != -1 && i != index) continue;
 
-        struct zint_symbol *symbol = ZBarcode_Create();
+        symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
         symbol->debug = ZINT_DEBUG_TEST; // Needed to get codeword dump in errtxt
 
-        int length = testUtilSetSymbol(symbol, BARCODE_GS1_128, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, BARCODE_GS1_128, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
@@ -436,9 +444,6 @@ static void test_ean128_input(int index, int generate, int debug) {
 
 static void test_hibc_input(int index, int generate, int debug) {
 
-    testStart("");
-
-    int ret;
     struct item {
         char *data;
         int ret;
@@ -451,19 +456,23 @@ static void test_hibc_input(int index, int generate, int debug) {
         /*  1*/ { "A99912345/$$52001510X3", 0, 255, "(23) 104 11 33 99 99 91 23 45 100 15 4 4 99 52 0 15 10 100 56 19 19 53 106", "Check digit 3" },
     };
     int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
+    struct zint_symbol *symbol;
 
     char escaped[1024];
 
-    for (int i = 0; i < data_size; i++) {
+    testStart("test_hibc_input");
+
+    for (i = 0; i < data_size; i++) {
 
         if (index != -1 && i != index) continue;
 
-        struct zint_symbol *symbol = ZBarcode_Create();
+        symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
         symbol->debug = ZINT_DEBUG_TEST; // Needed to get codeword dump in errtxt
 
-        int length = testUtilSetSymbol(symbol, BARCODE_HIBC_128, UNICODE_MODE, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, BARCODE_HIBC_128, UNICODE_MODE, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
@@ -487,11 +496,6 @@ static void test_hibc_input(int index, int generate, int debug) {
 
 static void test_encode(int index, int generate, int debug) {
 
-    testStart("");
-
-    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); // Only do BWIPP test if asked, too slow otherwise
-
-    int ret;
     struct item {
         int symbology;
         int input_mode;
@@ -635,19 +639,25 @@ static void test_encode(int index, int generate, int debug) {
                 },
     };
     int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
+    struct zint_symbol *symbol;
 
     char escaped[1024];
     char bwipp_buf[8192];
     char bwipp_msg[1024];
 
-    for (int i = 0; i < data_size; i++) {
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); // Only do BWIPP test if asked, too slow otherwise
+
+    testStart("test_encode");
+
+    for (i = 0; i < data_size; i++) {
 
         if (index != -1 && i != index) continue;
 
-        struct zint_symbol *symbol = ZBarcode_Create();
+        symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        int length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
@@ -660,10 +670,11 @@ static void test_encode(int index, int generate, int debug) {
             printf("                },\n");
         } else {
             if (ret < ZINT_ERROR) {
+                int width, row;
+
                 assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);
                 assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
 
-                int width, row;
                 ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
                 assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, ret, width, row, data[i].data);
 

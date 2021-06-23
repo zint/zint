@@ -42,6 +42,11 @@
 #define testutil_alloca(nmemb) alloca(nmemb)
 #endif
 
+#ifdef _WIN32
+#include <windows.h>
+#include <direct.h>
+#endif
+
 #include "../eci.h"
 #ifndef NO_PNG
 #include <png.h>
@@ -49,9 +54,10 @@
 #include <setjmp.h>
 #endif
 #include <assert.h>
+#include <errno.h>
 #include <getopt.h>
 #include <limits.h>
-#include <errno.h>
+#include <sys/stat.h>
 
 static int tests = 0;
 static int failed = 0;
@@ -61,13 +67,63 @@ int assertionNum = 0;
 static const char *testName = NULL;
 static const char *testFunc = NULL;
 
+#if _MSC_VER == 1200
+#include <stdarg.h>
+void assert_zero(int exp, const char *fmt, ...) {
+    assertionNum++;
+    if (exp != 0) {
+        va_list args; assertionFailed++; va_start(args, fmt); vprintf(fmt, args); va_end(args); testFinish();
+    }
+}
+void assert_nonzero(int exp, const char *fmt, ...) {
+    assertionNum++;
+    if (exp == 0) {
+        va_list args; assertionFailed++; va_start(args, fmt); vprintf(fmt, args); va_end(args); testFinish();
+    }
+}
+void assert_null(void *exp, const char *fmt, ...) {
+    assertionNum++;
+    if (exp != NULL) {
+        va_list args; assertionFailed++; va_start(args, fmt); vprintf(fmt, args); va_end(args); testFinish();
+    }
+}
+void assert_nonnull(void *exp, const char *fmt, ...) {
+    assertionNum++;
+    if (exp == NULL) {
+        va_list args; assertionFailed++; va_start(args, fmt); vprintf(fmt, args); va_end(args); testFinish();
+    }
+}
+void assert_equal(int e1, int e2, const char *fmt, ...) {
+    assertionNum++;
+    if (e1 != e2) {
+        va_list args; assertionFailed++; va_start(args, fmt); vprintf(fmt, args); va_end(args); testFinish();
+    }
+}
+void assert_equalu64(uint64_t e1, uint64_t e2, const char *fmt, ...) {
+    assertionNum++;
+    if (e1 != e2) {
+        va_list args; assertionFailed++; va_start(args, fmt); vprintf(fmt, args); va_end(args); testFinish();
+    }
+}
+void assert_notequal(int e1, int e2, const char *fmt, ...) {
+    assertionNum++;
+    if (e1 == e2) {
+        va_list args; assertionFailed++; va_start(args, fmt); vprintf(fmt, args); va_end(args); testFinish();
+    }
+}
+#endif
+
 void testStartReal(const char *func, const char *name) {
     tests++;
-    testName = name;
-    testFunc = func;
+    if (*func && name && *name && strcmp(func, name) == 0) {
+        testName = "";
+    } else {
+        testName = name;
+    }
+    testFunc = func ? func : "";
     assertionFailed = 0;
     assertionNum = 0;
-    printf("_____%d: %s: %s...\n", tests, func, name);
+    printf("_____%d: %s: %s...\n", tests, testFunc, testName ? testName : "");
 }
 
 void testEnd(int result) {
@@ -388,7 +444,7 @@ const char *testUtilBarcodeName(int symbology) {
         { "BARCODE_ULTRA", BARCODE_ULTRA, 144 },
         { "BARCODE_RMQR", BARCODE_RMQR, 145 },
     };
-    static const int data_size = sizeof(data) / sizeof(struct item);
+    static const int data_size = ARRAY_SIZE(data);
 
     if (symbology < 0 || symbology >= data_size) {
         return "";
@@ -448,7 +504,7 @@ const char *testUtilErrorName(int error_number) {
         { "ZINT_ERROR_FILE_ACCESS", ZINT_ERROR_FILE_ACCESS, 10 },
         { "ZINT_ERROR_MEMORY", ZINT_ERROR_MEMORY, 11 },
     };
-    static const int data_size = sizeof(data) / sizeof(struct item);
+    static const int data_size = ARRAY_SIZE(data);
 
     if (error_number < 0 || error_number >= data_size) {
         return "";
@@ -601,9 +657,10 @@ const char *testUtilOutputOptionsName(int output_options) {
 }
 
 int testUtilDAFTConvert(const struct zint_symbol *symbol, char *buffer, int buffer_size) {
-    buffer[0] = '\0';
+    int i;
     char *b = buffer;
-    for (int i = 0; i < symbol->width && b < buffer + buffer_size; i += 2) {
+    *b = '\0';
+    for (i = 0; i < symbol->width && b < buffer + buffer_size; i += 2) {
         if (module_is_set(symbol, 0, i) && module_is_set(symbol, 2, i)) {
             *b++ = 'F';
         } else if (module_is_set(symbol, 0, i)) {
@@ -699,6 +756,7 @@ void testUtilStrCpyRepeat(char *buffer, char *repeat, int size) {
 }
 
 int testUtilSymbolCmp(const struct zint_symbol *a, const struct zint_symbol *b) {
+    int i, j;
     if (a->symbology != b->symbology) {
         return 1;
     }
@@ -709,16 +767,16 @@ int testUtilSymbolCmp(const struct zint_symbol *a, const struct zint_symbol *b) 
         return 3;
     }
     if (a->symbology == BARCODE_ULTRA) {
-        for (int i = 0; i < a->rows; i++) {
-            for (int j = 0; j < a->width; j++) {
+        for (i = 0; i < a->rows; i++) {
+            for (j = 0; j < a->width; j++) {
                 if (module_colour_is_set(a, i, j) != module_colour_is_set(b, i, j)) {
                     return 4;
                 }
             }
         }
     } else {
-        for (int i = 0; i < a->rows; i++) {
-            for (int j = 0; j < a->width; j++) {
+        for (i = 0; i < a->rows; i++) {
+            for (j = 0; j < a->width; j++) {
                 if (module_is_set(a, i, j) != module_is_set(b, i, j)) {
                     return 4;
                 }
@@ -745,15 +803,6 @@ int testUtilSymbolCmp(const struct zint_symbol *a, const struct zint_symbol *b) 
 }
 
 struct zint_vector *testUtilVectorCpy(const struct zint_vector *in) {
-    struct zint_vector *out = malloc(sizeof(struct zint_vector));
-    assert(out != NULL);
-    out->width = in->width;
-    out->height = in->height;
-    out->rectangles = NULL;
-    out->strings = NULL;
-    out->circles = NULL;
-    out->hexagons = NULL;
-
     struct zint_vector_rect *rect;
     struct zint_vector_string *string;
     struct zint_vector_circle *circle;
@@ -763,6 +812,15 @@ struct zint_vector *testUtilVectorCpy(const struct zint_vector *in) {
     struct zint_vector_string **outstring;
     struct zint_vector_circle **outcircle;
     struct zint_vector_hexagon **outhexagon;
+
+    struct zint_vector *out = malloc(sizeof(struct zint_vector));
+    assert(out != NULL);
+    out->width = in->width;
+    out->height = in->height;
+    out->rectangles = NULL;
+    out->strings = NULL;
+    out->circles = NULL;
+    out->hexagons = NULL;
 
     // Copy rectangles
     rect = in->rectangles;
@@ -1325,6 +1383,41 @@ int testUtilExists(const char *filename) {
     }
     fclose(fp);
     return 1;
+}
+
+int testUtilDirExists(const char *dirname) {
+#ifdef _WIN32
+    DWORD dwAttrib = GetFileAttributes(dirname);
+    return dwAttrib != (DWORD) -1 && (dwAttrib & FILE_ATTRIBUTE_DIRECTORY);
+#else
+    return testUtilExists(dirname);
+#endif
+}
+
+// Returns 0 if successful, non-zero if not
+int testUtilMkDir(const char *dirname) {
+#ifdef _WIN32
+    return CreateDirectory(dirname, NULL) == 0;
+#else
+    return mkdir(dirname, S_IRWXU);
+#endif
+}
+
+// Returns 0 if successful, non-zero if not
+int testUtilRmDir(const char *dirname) {
+#ifdef _WIN32
+    return RemoveDirectory(dirname) == 0;
+#else
+    return rmdir(dirname);
+#endif
+}
+
+int testUtilRename(const char *oldpath, const char *newpath) {
+#ifdef _MSVC
+    int ret = remove(newpath);
+    if (ret != 0) return ret;
+#endif
+    return rename(oldpath, newpath);
 }
 
 int testUtilCmpPngs(const char *png1, const char *png2) {
@@ -2234,6 +2327,7 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
     char cbracket = symbol->input_mode & GS1PARENS_MODE ? ')' : ']';
     int addon_posn;
     int eci;
+    int i, j, len;
 
     bwipp_data[0] = bwipp_opts_buf[0] = '\0';
 
@@ -2387,9 +2481,9 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                 bwipp_opts = bwipp_opts_buf;
             } else if (symbology == BARCODE_MSI_PLESSEY) {
                 if (option_2 > 0) {
+                    const char *checktype = NULL;
                     sprintf(bwipp_opts_buf + (int) strlen(bwipp_opts_buf), "%sincludecheck", strlen(bwipp_opts_buf) ? " " : "");
 
-                    const char *checktype = NULL;
                     if (option_2 >= 11 && option_2 <= 16) {
                         option_2 -= 10; /* Remove no-check indicator */
                     }
@@ -2498,7 +2592,7 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
             } else if (symbology == BARCODE_CODEONE) {
                 if ((symbol->input_mode & 0x07) == GS1_MODE) { /* Hack pseudo-GS1 support */
                     int last_ai, ai_latch = 0;
-                    for (int i = 0, j = 0, len = (int) strlen(bwipp_data); i <= len; i++) { /* Reduce square brackets (include NUL) */
+                    for (i = 0, j = 0, len = (int) strlen(bwipp_data); i <= len; i++) { /* Reduce square brackets (include NUL) */
                         if (bwipp_data[i] == obracket) {
                             if (ai_latch == 0) {
                                 bwipp_data[j++] = '[';
@@ -2511,7 +2605,7 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                             bwipp_data[j++] = bwipp_data[i];
                         }
                     }
-                    for (int len = (int) strlen(bwipp_data), i = len - 1; i >= 0; i--) { /* Replace square brackets with ^FNC1 */
+                    for (len = (int) strlen(bwipp_data), i = len - 1; i >= 0; i--) { /* Replace square brackets with ^FNC1 */
                         if (bwipp_data[i] == '[') {
                             memmove(bwipp_data + i + 5, bwipp_data + i + 1, len - i);
                             memcpy(bwipp_data + i, "^FNC1", 5);
@@ -2543,7 +2637,7 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                     if (primary_len == 0) {
                         mode = 4;
                     } else {
-                        for (int i = 0; i < primary_len - 6; i++) {
+                        for (i = 0; i < primary_len - 6; i++) {
                             if (((symbol->primary[i] < '0') || (symbol->primary[i] > '9')) && (symbol->primary[i] != ' ')) {
                                 mode = 3;
                                 break;
@@ -2564,14 +2658,14 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                     memcpy(postcode, primary, postcode_len);
                     postcode[postcode_len] = '\0';
                     if (mode == 2) {
-                        for (int i = 0; i < postcode_len; i++) {
+                        for (i = 0; i < postcode_len; i++) {
                             if (postcode[i] == ' ') {
                                 postcode[i] = '\0';
                             }
                         }
                     } else {
                         postcode[6] = '\0';
-                        for (int i = postcode_len; i < 6; i++) {
+                        for (i = postcode_len; i < 6; i++) {
                             postcode[i] = ' ';
                         }
                     }

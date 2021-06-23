@@ -226,8 +226,6 @@ static void arg_output_options(char *cmd, int output_options) {
 // Tests args that can be detected with `--dump`
 static void test_dump_args(int index, int debug) {
 
-    testStart("");
-
     struct item {
         int b;
         char *data;
@@ -295,6 +293,7 @@ static void test_dump_args(int index, int debug) {
         /* 39*/ { BARCODE_HANXIN, "é", NULL, NULL, NULL,  DATA_MODE, -1, 0, -1, 0, -1, 1, 4, -1, NULL, -1, -1, 0, -1, "FE 8A FE\n80 28 02\nBE E8 FA\nA0 94 0A\nAE 3E EA\nAE D2 EA\nAE 74 EA\n00 AA 00\n15 B4 AA\n0B 48 74\nA2 4A A4\nB5 56 2C\nA8 5A A8\n9F 18 50\nAA 07 50\n00 A6 00\nFE 20 EA\n02 C2 EA\nFA C4 EA\n0A 42 0A\nEA 52 FA\nEA 24 02\nEA AA FE" },
     };
     int data_size = ARRAY_SIZE(data);
+    int i;
 
     char cmd[4096];
     char buf[4096];
@@ -304,7 +303,9 @@ static void test_dump_args(int index, int debug) {
     int have_input1;
     int have_input2;
 
-    for (int i = 0; i < data_size; i++) {
+    testStart("test_dump_args");
+
+    for (i = 0; i < data_size; i++) {
 
         if (index != -1 && i != index) continue;
 
@@ -351,8 +352,6 @@ static void test_dump_args(int index, int debug) {
 
 static void test_input(int index, int debug) {
 
-    testStart("");
-
 #ifdef _WIN32
 #define TEST_INPUT_LONG "test_678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234"
 #else
@@ -391,6 +390,7 @@ static void test_input(int index, int debug) {
         /* 15*/ { BARCODE_CODE128, 1, -1, 0, "eps", "123\n", "test_batch.ps", 1, "test_batch.eps" },
     };
     int data_size = ARRAY_SIZE(data);
+    int i;
 
     char cmd[4096];
     char buf[4096];
@@ -398,7 +398,10 @@ static void test_input(int index, int debug) {
     char *input_filename = "test_input.txt";
     char *outfile;
 
-    for (int i = 0; i < data_size; i++) {
+    testStart("test_input");
+
+    for (i = 0; i < data_size; i++) {
+        int j;
 
         if (index != -1 && i != index) continue;
         if ((debug & ZINT_DEBUG_TEST_PRINT) && !(debug & ZINT_DEBUG_TEST_LESS_NOISY)) printf("i:%d\n", i);
@@ -419,7 +422,7 @@ static void test_input(int index, int debug) {
         assert_nonnull(exec(cmd, buf, sizeof(buf) - 1, debug, i), "i:%d exec(%s) NULL\n", i, cmd);
 
         outfile = data[i].expected;
-        for (int j = 0; j < data[i].num_expected; j++) {
+        for (j = 0; j < data[i].num_expected; j++) {
             assert_nonzero(testUtilExists(outfile), "i:%d j:%d testUtilExists(%s) != 1\n", i, j, outfile);
             assert_zero(remove(outfile), "i:%d j:%d remove(%s) != 0 (%d: %s)\n", i, j, outfile, errno, strerror(errno));
             outfile += strlen(outfile) + 1;
@@ -433,8 +436,6 @@ static void test_input(int index, int debug) {
 
 static void test_stdin_input(int index, int debug) {
 
-    testStart("");
-
     struct item {
         int b;
         char *data;
@@ -446,13 +447,16 @@ static void test_stdin_input(int index, int debug) {
         /*  0*/ { BARCODE_CODE128, "123", "-", "test_stdin_input.gif" },
     };
     int data_size = ARRAY_SIZE(data);
+    int i;
 
     char cmd[4096];
     char buf[4096];
 
     char *input_filename = "-";
 
-    for (int i = 0; i < data_size; i++) {
+    testStart("test_stdin_input");
+
+    for (i = 0; i < data_size; i++) {
 
         if (index != -1 && i != index) continue;
 
@@ -477,8 +481,6 @@ static void test_stdin_input(int index, int debug) {
 // Note ordering of `--batch` before/after data/input args affects error messages
 static void test_batch_input(int index, int debug) {
 
-    testStart("");
-
     struct item {
         int b;
         char *data;
@@ -494,6 +496,7 @@ static void test_batch_input(int index, int debug) {
         /*  3*/ { BARCODE_CODE128, NULL, "123\n456\n", "789\n", "Warning 143: Can only define one input file in batch mode, ignoring 'test_batch_input2.txt'\nD2 13 9B 39 65 C8 C9 8E B\nD2 19 3B 72 67 4E 4D 8E B" },
     };
     int data_size = ARRAY_SIZE(data);
+    int i;
 
     char cmd[4096];
     char buf[4096];
@@ -503,7 +506,9 @@ static void test_batch_input(int index, int debug) {
     int have_input1;
     int have_input2;
 
-    for (int i = 0; i < data_size; i++) {
+    testStart("test_batch_input");
+
+    for (i = 0; i < data_size; i++) {
 
         if (index != -1 && i != index) continue;
 
@@ -535,13 +540,6 @@ static void test_batch_input(int index, int debug) {
 
 static void test_batch_large(int index, int debug) {
 
-    testStart("");
-
-#ifdef _WIN32
-    testSkip("Test not compatible with Windows");
-    return;
-#endif
-
     struct item {
         int b;
         int mirror;
@@ -557,6 +555,7 @@ static void test_batch_large(int index, int debug) {
         /*  2*/ { BARCODE_HANXIN, 0, "1", 7828, NULL },
     };
     int data_size = ARRAY_SIZE(data);
+    int i;
 
     char cmd[16384];
     char data_buf[8192];
@@ -565,7 +564,14 @@ static void test_batch_large(int index, int debug) {
     char *input_filename = "test_batch_large.txt";
     int have_input;
 
-    for (int i = 0; i < data_size; i++) {
+    testStart("test_batch_large");
+
+#ifdef _WIN32
+    testSkip("Test not compatible with Windows");
+    return;
+#endif
+
+    for (i = 0; i < data_size; i++) {
 
         if (index != -1 && i != index) continue;
         if ((debug & ZINT_DEBUG_TEST_PRINT) && !(debug & ZINT_DEBUG_TEST_LESS_NOISY)) printf("i:%d\n", i);
@@ -598,8 +604,6 @@ static void test_batch_large(int index, int debug) {
 }
 
 static void test_checks(int index, int debug) {
-
-    testStart("");
 
     struct item {
         int addongap;
@@ -661,12 +665,15 @@ static void test_checks(int index, int debug) {
         /* 33*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1, 1001, "Warning 121: Horizontal whitespace value out of range (0 to 1000), ignoring" },
     };
     int data_size = ARRAY_SIZE(data);
+    int i;
 
     char cmd[4096];
     char buf[4096];
     char *outfilename = "out.gif";
 
-    for (int i = 0; i < data_size; i++) {
+    testStart("test_checks");
+
+    for (i = 0; i < data_size; i++) {
 
         if (index != -1 && i != index) continue;
 
@@ -708,8 +715,6 @@ static void test_checks(int index, int debug) {
 }
 
 static void test_barcode_symbology(int index, int debug) {
-
-    testStart("");
 
     struct item {
         const char *bname;
@@ -843,12 +848,15 @@ static void test_barcode_symbology(int index, int debug) {
         /*120*/ { "\177", "1", NULL, 1, "Error 119: Invalid barcode type '\177'" },
     };
     int data_size = ARRAY_SIZE(data);
+    int i;
 
     char cmd[4096];
     char buf[8192];
     char *outfilename = "out.gif";
 
-    for (int i = 0; i < data_size; i++) {
+    testStart("test_barcode_symbology");
+
+    for (i = 0; i < data_size; i++) {
 
         if (index != -1 && i != index) continue;
 
@@ -872,8 +880,6 @@ static void test_barcode_symbology(int index, int debug) {
 }
 
 static void test_other_opts(int index, int debug) {
-
-    testStart("");
 
     struct item {
         int b;
@@ -909,10 +915,14 @@ static void test_other_opts(int index, int debug) {
         /* 20*/ { BARCODE_GS1_128, "[00]376104250021234568", -1, " --werror", NULL, "Warning 261: AI (00) position 18: Bad checksum '8', expected '9'" },
     };
     int data_size = ARRAY_SIZE(data);
+    int i;
+
     char cmd[4096];
     char buf[8192];
 
-    for (int i = 0; i < data_size; i++) {
+    testStart("test_other_opts");
+
+    for (i = 0; i < data_size; i++) {
 
         if (index != -1 && i != index) continue;
 

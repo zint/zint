@@ -34,14 +34,6 @@
 
 static void test_print(int index, int generate, int debug) {
 
-    testStart("");
-
-    int have_libreoffice = 0;
-    if (generate) {
-        have_libreoffice = testUtilHaveLibreOffice();
-    }
-
-    int ret;
     struct item {
         int symbology;
         int input_mode;
@@ -72,6 +64,8 @@ static void test_print(int index, int generate, int debug) {
         /* 12*/ { BARCODE_MAXICODE, -1, -1, -1, -1, -1, "E0E0E0", "700070", 0, "THIS IS A 93 CHARACTER CODE SET A MESSAGE THAT FILLS A MODE 4, UNAPPENDED, MAXICODE SYMBOL...", "maxicode_#185.emf", "#185 Maxicode scaling" },
     };
     int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
+    struct zint_symbol *symbol;
 
     const char *data_dir = "/backend/tests/data/emf";
     const char *emf = "out.emf";
@@ -79,23 +73,30 @@ static void test_print(int index, int generate, int debug) {
     char escaped[1024];
     int escaped_size = 1024;
 
+    int have_libreoffice = 0;
+    if (generate) {
+        have_libreoffice = testUtilHaveLibreOffice();
+    }
+
+    testStart("test_print");
+
     if (generate) {
         char data_dir_path[1024];
         assert_nonzero(testUtilDataPath(data_dir_path, sizeof(data_dir_path), data_dir, NULL), "testUtilDataPath(%s) == 0\n", data_dir);
-        if (!testUtilExists(data_dir_path)) {
-            ret = testutil_mkdir(data_dir_path, 0755);
-            assert_zero(ret, "testutil_mkdir(%s) ret %d != 0 (%d: %s)\n", data_dir_path, ret, errno, strerror(errno));
+        if (!testUtilDirExists(data_dir_path)) {
+            ret = testUtilMkDir(data_dir_path);
+            assert_zero(ret, "testUtilMkDir(%s) ret %d != 0 (%d: %s)\n", data_dir_path, ret, errno, strerror(errno));
         }
     }
 
-    for (int i = 0; i < data_size; i++) {
+    for (i = 0; i < data_size; i++) {
 
         if (index != -1 && i != index) continue;
 
-        struct zint_symbol* symbol = ZBarcode_Create();
+        symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        int length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, data[i].option_1, data[i].option_2, -1, data[i].output_options, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, data[i].option_1, data[i].option_2, -1, data[i].output_options, data[i].data, -1, debug);
         if (data[i].whitespace_width != -1) {
             symbol->whitespace_width = data[i].whitespace_width;
         }
@@ -121,8 +122,8 @@ static void test_print(int index, int generate, int debug) {
                     testUtilOutputOptionsName(data[i].output_options), data[i].whitespace_width,
                     data[i].option_1, data[i].option_2, data[i].fgcolour, data[i].bgcolour, data[i].rotate_angle,
                     testUtilEscape(data[i].data, length, escaped, escaped_size), data[i].expected_file, data[i].comment);
-            ret = rename(symbol->outfile, expected_file);
-            assert_zero(ret, "i:%d rename(%s, %s) ret %d != 0\n", i, symbol->outfile, expected_file, ret);
+            ret = testUtilRename(symbol->outfile, expected_file);
+            assert_zero(ret, "i:%d testUtilRename(%s, %s) ret %d != 0\n", i, symbol->outfile, expected_file, ret);
             if (have_libreoffice) {
                 // Note this will fail (on Ubuntu anyway) if LibreOffice Base/Calc/Impress/Writer running (i.e. anything but LibreOffice Draw)
                 // Doesn't seem to be a way to force Draw invocation through the command line

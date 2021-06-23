@@ -32,16 +32,10 @@
 #include "testcommon.h"
 #include <fcntl.h>
 #include <sys/stat.h>
-#ifdef _WIN32
-#include <windows.h>
-#endif
 #include <errno.h>
 
 static void test_checks(int index, int debug) {
 
-    testStart("");
-
-    int ret;
     struct item {
         int symbology;
         char *data;
@@ -102,15 +96,19 @@ static void test_checks(int index, int debug) {
         /* 42*/ { BARCODE_CODE128, "\200", -1, UNICODE_MODE, -1, -1, -1, ZINT_ERROR_INVALID_DATA, "Error 245: Invalid UTF-8", -1 },
     };
     int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
+    struct zint_symbol *symbol;
 
-    for (int i = 0; i < data_size; i++) {
+    testStart("test_checks");
+
+    for (i = 0; i < data_size; i++) {
 
         if (index != -1 && i != index) continue;
 
-        struct zint_symbol *symbol = ZBarcode_Create();
+        symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        int length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, data[i].eci, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, data[i].length, debug);
+        length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, data[i].eci, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, data[i].length, debug);
         if (data[i].dot_size != -1) {
             symbol->dot_size = data[i].dot_size;
         }
@@ -138,9 +136,6 @@ static void test_checks(int index, int debug) {
 
 static void test_input_mode(int index, int debug) {
 
-    testStart("");
-
-    int ret;
     struct item {
         char *data;
         int input_mode;
@@ -163,15 +158,19 @@ static void test_input_mode(int index, int debug) {
         /* 10*/ { "[01]12345678901231", GS1_MODE | 0x20, 0, GS1_MODE | 0x20 },
     };
     int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
+    struct zint_symbol *symbol;
 
-    for (int i = 0; i < data_size; i++) {
+    testStart("test_input_mode");
+
+    for (i = 0; i < data_size; i++) {
 
         if (index != -1 && i != index) continue;
 
-        struct zint_symbol *symbol = ZBarcode_Create();
+        symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        int length = testUtilSetSymbol(symbol, BARCODE_CODE49 /*Supports GS1*/, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, BARCODE_CODE49 /*Supports GS1*/, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
@@ -185,9 +184,6 @@ static void test_input_mode(int index, int debug) {
 
 static void test_escape_char_process(int index, int generate, int debug) {
 
-    testStart("");
-
-    int ret;
     struct item {
         int input_mode;
         int eci;
@@ -227,21 +223,25 @@ static void test_escape_char_process(int index, int generate, int debug) {
         /* 25*/ { UNICODE_MODE, 28, "\\u5E38", 0, 12, "F1 1D EB 32 61 D9 1C 0C C2 46 C3 B2", 1, "" },
     };
     int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
+    struct zint_symbol *symbol;
 
     char escaped[1024];
     struct zint_symbol previous_symbol;
     char *input_filename = "test_escape.txt";
 
-    for (int i = 0; i < data_size; i++) {
+    testStart("test_escape_char_process");
+
+    for (i = 0; i < data_size; i++) {
 
         if (index != -1 && i != index) continue;
 
-        struct zint_symbol *symbol = ZBarcode_Create();
+        symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
         symbol->debug = ZINT_DEBUG_TEST; // Needed to get codeword dump in errtxt
 
-        int length = testUtilSetSymbol(symbol, BARCODE_DATAMATRIX, data[i].input_mode | ESCAPE_MODE, data[i].eci, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, BARCODE_DATAMATRIX, data[i].input_mode | ESCAPE_MODE, data[i].eci, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
@@ -264,19 +264,20 @@ static void test_escape_char_process(int index, int generate, int debug) {
 
             if (ret < 5) {
                 // Test from input file
-
                 FILE *fp;
+                struct zint_symbol *symbol2;
+
                 fp = fopen(input_filename, "wb");
                 assert_nonnull(fp, "i:%d fopen(%s) failed\n", i, input_filename);
                 assert_notequal(fputs(data[i].data, fp), EOF, "i%d fputs(%s) failed == EOF (%d)\n", i, data[i].data, ferror(fp));
                 assert_zero(fclose(fp), "i%d fclose() failed\n", i);
 
-                struct zint_symbol *symbol2 = ZBarcode_Create();
+                symbol2 = ZBarcode_Create();
                 assert_nonnull(symbol, "Symbol2 not created\n");
 
                 symbol2->debug = ZINT_DEBUG_TEST; // Needed to get codeword dump in errtxt
 
-                (void)testUtilSetSymbol(symbol2, BARCODE_DATAMATRIX, data[i].input_mode | ESCAPE_MODE, data[i].eci, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
+                (void) testUtilSetSymbol(symbol2, BARCODE_DATAMATRIX, data[i].input_mode | ESCAPE_MODE, data[i].eci, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
 
                 ret = ZBarcode_Encode_File(symbol2, input_filename);
                 assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode_File ret %d != %d (%s)\n", i, ret, data[i].ret, symbol2->errtxt);
@@ -299,9 +300,6 @@ static void test_escape_char_process(int index, int generate, int debug) {
 
 static void test_cap(int index) {
 
-    testStart("");
-
-    unsigned int ret;
     struct item {
         int symbology;
         unsigned cap_flag;
@@ -320,8 +318,12 @@ static void test_cap(int index) {
         /* 8*/ { 0, 0, 0 },
     };
     int data_size = ARRAY_SIZE(data);
+    int i;
+    unsigned int ret;
 
-    for (int i = 0; i < data_size; i++) {
+    testStart("test_cap");
+
+    for (i = 0; i < data_size; i++) {
 
         if (index != -1 && i != index) continue;
 
@@ -333,16 +335,17 @@ static void test_cap(int index) {
 }
 
 static void test_encode_file_empty(void) {
-    testStart("");
-
-    FILE *fstream;
     int ret;
+    struct zint_symbol *symbol;
     char filename[] = "in.bin";
+    FILE *fstream;
 
-    struct zint_symbol *symbol = ZBarcode_Create();
+    testStart("test_encode_file_empty");
+
+    symbol = ZBarcode_Create();
     assert_nonnull(symbol, "Symbol not created\n");
 
-    (void)remove(filename); // In case junk hanging around
+    (void) remove(filename); // In case junk hanging around
 
     fstream = fopen(filename, "w+");
     assert_nonnull(fstream, "fopen(%s) failed (%d)\n", filename, ferror(fstream));
@@ -361,17 +364,18 @@ static void test_encode_file_empty(void) {
 }
 
 static void test_encode_file_too_large(void) {
-    testStart("");
-
+    char filename[] = "in.bin";
     FILE *fstream;
     int ret;
-    char filename[] = "in.bin";
+    struct zint_symbol *symbol;
     char buf[ZINT_MAX_DATA_LEN + 1] = {0};
 
-    struct zint_symbol *symbol = ZBarcode_Create();
+    testStart("test_encode_file_too_large");
+
+    symbol = ZBarcode_Create();
     assert_nonnull(symbol, "Symbol not created\n");
 
-    (void)remove(filename); // In case junk hanging around
+    (void) remove(filename); // In case junk hanging around
 
     fstream = fopen(filename, "w+");
     assert_nonnull(fstream, "fopen(%s) failed (%d)\n", filename, ferror(fstream));
@@ -393,18 +397,22 @@ static void test_encode_file_too_large(void) {
 
 // #181 Nico Gunkel OSS-Fuzz
 static void test_encode_file_unreadable(void) {
+#ifndef _WIN32
+    int ret;
+    struct zint_symbol *symbol;
+    char filename[] = "in.bin";
 
-    testStart("");
+    char buf[ZINT_MAX_DATA_LEN + 1] = {0};
+    int fd;
+#endif
+
+    testStart("test_encode_file_unreadable");
 
 #ifdef _WIN32
     testSkip("Test not implemented on Windows");
 #else
-    int ret;
-    char filename[] = "in.bin";
-    char buf[ZINT_MAX_DATA_LEN + 1] = {0};
-    int fd;
 
-    struct zint_symbol *symbol = ZBarcode_Create();
+    symbol = ZBarcode_Create();
     assert_nonnull(symbol, "Symbol not created\n");
 
     // Unreadable file
@@ -429,47 +437,38 @@ static void test_encode_file_unreadable(void) {
 
 // #181 Nico Gunkel OSS-Fuzz (buffer not freed on fread() error) Note: unable to reproduce fread() error using this method
 static void test_encode_file_directory(void) {
-
-    testStart("");
-
     int ret;
+    struct zint_symbol *symbol;
     char dirname[] = "in_dir";
 
-    struct zint_symbol *symbol = ZBarcode_Create();
+    testStart("test_encode_file_directory");
+
+    symbol = ZBarcode_Create();
     assert_nonnull(symbol, "Symbol not created\n");
 
-#ifdef _WIN32
-    ret = CreateDirectory(dirname, NULL);
-    assert_zero(!ret, "CreateDirectory(%s) == 0\n", dirname);
-#else
-    (void)rmdir(dirname); // In case junk hanging around
-    ret = mkdir(dirname, S_IRWXU);
-    assert_zero(ret, "mkdir(%s, S_IRWXU) != 0 (%d: %s)\n", dirname, errno, strerror(errno));
-#endif
+    (void) testUtilRmDir(dirname); // In case junk hanging around
+    ret = testUtilMkDir(dirname);
+    assert_zero(ret, "testUtilMkDir(%s) %d != 0 (%d: %s)\n", dirname, ret, errno, strerror(errno));
 
     ret = ZBarcode_Encode_File(symbol, dirname);
     assert_equal(ret, ZINT_ERROR_INVALID_DATA, "ret %d != ZINT_ERROR_INVALID_DATA (%s)\n", ret, symbol->errtxt);
 
-#ifdef _WIN32
-    ret = RemoveDirectory(dirname);
-    assert_zero(!ret, "RemoveDirectory(%s) == 0\n", dirname);
-#else
-    ret = rmdir(dirname);
-    assert_zero(ret, "rmdir(%s) != 0 (%d: %s)\n", dirname, errno, strerror(errno));
-#endif
+    ret = testUtilRmDir(dirname);
+    assert_zero(ret, "testUtilRmDir(%s) %d != 0 (%d: %s)\n", dirname, ret, errno, strerror(errno));
+
     ZBarcode_Delete(symbol);
 
     testFinish();
 }
 
 static void test_bad_args(void) {
-
-    testStart("");
-
     int ret;
+    struct zint_symbol *symbol;
     char *data = "1";
     char *filename = "1.png";
     char *empty = "";
+
+    testStart("test_bad_args");
 
     // These just return, no error
     ZBarcode_Clear(NULL);
@@ -497,7 +496,7 @@ static void test_bad_args(void) {
     assert_equal(ZBarcode_Encode_File_and_Print(NULL, filename, 0), ZINT_ERROR_INVALID_DATA, "ZBarcode_Encode_File_and_Print(NULL, filename, 0) != ZINT_ERROR_INVALID_DATA\n");
     assert_equal(ZBarcode_Encode_File_and_Buffer(NULL, filename, 0), ZINT_ERROR_INVALID_DATA, "ZBarcode_Encode_File_and_Buffer(NULL, filename, 0) != ZINT_ERROR_INVALID_DATA\n");
 
-    struct zint_symbol *symbol = ZBarcode_Create();
+    symbol = ZBarcode_Create();
     assert_nonnull(symbol, "Symbol not created\n");
 
     // NULL data/filename
@@ -543,7 +542,7 @@ static void test_bad_args(void) {
     // Data too big
     symbol->errtxt[0] = '\0';
     assert_equal(ZBarcode_Encode(symbol, (unsigned char *) empty, 17401), ZINT_ERROR_TOO_LONG, "ZBarcode_Encode(symbol, empty, 17401) != ZINT_ERROR_TOO_LONG\n");
-    assert_nonzero(strlen(symbol->errtxt), "ZBarcode_Encode(symbol, empty, 17401) no errtxt\n");
+    assert_nonzero((int) strlen(symbol->errtxt), "ZBarcode_Encode(symbol, empty, 17401) no errtxt\n");
 
     ZBarcode_Delete(symbol);
 
@@ -552,15 +551,16 @@ static void test_bad_args(void) {
 
 static void test_valid_id(void) {
 
-    testStart("");
-
     int ret;
     const char *name;
+    int symbol_id;
 
-    for (int symbol_id = -1; symbol_id < 160; symbol_id++) {
+    testStart("test_valid_id");
+
+    for (symbol_id = -1; symbol_id < 160; symbol_id++) {
         ret = ZBarcode_ValidID(symbol_id);
         name = testUtilBarcodeName(symbol_id);
-        assert_nonnull(name, "testUtilBarcodeName(%d) NULL\n", symbol_id);
+        assert_nonnull((char *) name, "testUtilBarcodeName(%d) NULL\n", symbol_id);
         if (ret) {
             assert_equal(ret, 1, "ZBarcode_Valid(%d) != 1\n", symbol_id);
             assert_nonzero(*name != '\0', "testUtilBarcodeName(%d) empty when ZBarcode_Valid() true\n", symbol_id);
@@ -577,9 +577,6 @@ STATIC_UNLESS_ZINT_TEST int error_tag(char error_string[100], int error_number);
 
 static void test_error_tag(int index) {
 
-    testStart("");
-
-    int ret;
     struct item {
         int error_number;
         char* data;
@@ -594,14 +591,17 @@ static void test_error_tag(int index) {
         /*  3*/ { ZINT_ERROR_INVALID_DATA, "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789", ZINT_ERROR_INVALID_DATA, "Error 123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123" },
     };
     int data_size = ARRAY_SIZE(data);
+    int i, ret;
 
     char errtxt[100];
 
-    for (int i = 0; i < data_size; i++) {
+    testStart("test_error_tag");
+
+    for (i = 0; i < data_size; i++) {
 
         if (index != -1 && i != index) continue;
 
-        assert_nonzero(strlen(data[i].data) < 100, "i:%d strlen(data) %d >= 100\n", i, (int) strlen(data[i].data));
+        assert_nonzero((int) strlen(data[i].data) < 100, "i:%d strlen(data) %d >= 100\n", i, (int) strlen(data[i].data));
         strcpy(errtxt, data[i].data);
         ret = error_tag(errtxt, data[i].error_number);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d\n", i, ret, data[i].ret);
@@ -616,12 +616,12 @@ STATIC_UNLESS_ZINT_TEST void strip_bom(unsigned char *source, int *input_length)
 
 static void test_strip_bom(void) {
 
-    testStart("");
-
-    int ret;
+    int length, ret;
     char data[] = "\357\273\277A"; // U+FEFF BOM, with "A"
-    int length;
+    char bom_only[] = "\357\273\277"; // U+FEFF BOM only
     char buf[6];
+
+    testStart("test_strip_bom");
 
     strcpy(buf, data);
     length = (int) strlen(buf);
@@ -630,8 +630,6 @@ static void test_strip_bom(void) {
     assert_zero(buf[1], "buf[1] %d != 0\n", buf[1]);
 
     // BOM not stripped if only data
-
-    char bom_only[] = "\357\273\277"; // U+FEFF BOM only
 
     strcpy(buf, bom_only);
     length = (int) strlen(buf);

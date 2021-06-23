@@ -51,15 +51,6 @@
 #define testutil_pclose(stream) pclose(stream)
 #endif
 
-#ifdef _WIN32
-#include <direct.h>
-#define testutil_mkdir(path, mode) _mkdir(path)
-#define testutil_rmdir(path) _rmdir(path)
-#else
-#define testutil_mkdir(path, mode) mkdir(path, mode)
-#define testutil_rmdir(path) rmdir(path)
-#endif
-
 #include <stdio.h>
 #include <errno.h>
 #include "../common.h"
@@ -85,7 +76,11 @@ extern "C" {
 extern int assertionFailed;
 extern int assertionNum;
 
+#if _MSC_VER == 1200 /* VC6 */
+#define testStart(__arg__) (testStartReal("", __arg__))
+#else
 #define testStart(__arg__) (testStartReal(__func__, __arg__))
+#endif
 #define testEndExp(__arg__) (testEnd(!(__arg__)))
 void testStartReal(const char *func, const char *name);
 void testEnd(int result);
@@ -98,6 +93,16 @@ typedef struct s_testFunction {
 } testFunction;
 void testRun(int argc, char *argv[], testFunction funcs[], int funcs_size);
 
+#if _MSC_VER == 1200 /* VC6 */
+#include "../ms_stdint.h"
+void assert_zero(int exp, const char *fmt, ...);
+void assert_nonzero(int exp, const char *fmt, ...);
+void assert_null(void *exp, const char *fmt, ...);
+void assert_nonnull(void *exp, const char *fmt, ...);
+void assert_equal(int e1, int e2, const char *fmt, ...);
+void assert_equalu64(uint64_t e1, uint64_t e2, const char *fmt, ...);
+void assert_notequal(int e1, int e2, ...);
+#else
 #define assert_exp(__exp__, ...) \
 {assertionNum++; if (!(__exp__)) {assertionFailed++; printf(__VA_ARGS__); testFinish(); return;}}
 
@@ -106,9 +111,9 @@ void testRun(int argc, char *argv[], testFunction funcs[], int funcs_size);
 #define assert_null(__ptr__, ...) assert_exp((__ptr__) == NULL, __VA_ARGS__)
 #define assert_nonnull(__ptr__, ...) assert_exp((__ptr__) != NULL, __VA_ARGS__)
 #define assert_equal(__e1__, __e2__, ...) assert_exp((__e1__) == (__e2__), __VA_ARGS__)
+#define assert_equalu64 assert_equal
 #define assert_notequal(__e1__, __e2__, ...) assert_exp((__e1__) != (__e2__), __VA_ARGS__)
-#define assert_fail(...) assert_exp(0, __VA_ARGS__)
-#define assert_nothing(__exp__, ...) {printf(__VA_ARGS__); __exp__;}
+#endif
 
 INTERNAL void vector_free(struct zint_symbol *symbol); /* Free vector structures */
 
@@ -139,6 +144,10 @@ int testUtilDataPath(char *buffer, int buffer_size, const char *subdir, const ch
 void testUtilBitmapPrint(const struct zint_symbol *symbol, const char *prefix, const char *postfix);
 int testUtilBitmapCmp(const struct zint_symbol *symbol, const char *expected, int *row, int *column);
 int testUtilExists(const char *filename);
+int testUtilDirExists(const char *dirname);
+int testUtilMkDir(const char *dirname);
+int testUtilRmDir(const char *dirname);
+int testUtilRename(const char *oldpath, const char *newpath);
 int testUtilCmpPngs(const char *file1, const char *file2);
 int testUtilCmpTxts(const char *txt1, const char *txt2);
 int testUtilCmpBins(const char *bin1, const char *bin2);

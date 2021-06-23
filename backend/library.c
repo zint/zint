@@ -210,9 +210,8 @@ STATIC_UNLESS_ZINT_TEST int error_tag(char error_string[100], int error_number) 
     if (error_number != 0) {
         const char *fmt = error_number >= ZINT_ERROR ? "Error %.93s" : "Warning %.91s"; /* Truncate if too long */
         char error_buffer[100];
-        strcpy(error_buffer, error_string);
-
-        sprintf(error_string, fmt, error_buffer);
+        sprintf(error_buffer, fmt, error_string);
+        strcpy(error_string, error_buffer);
     }
 
     return error_number;

@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020 - 2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -79,10 +79,6 @@ static void gen_logs(const unsigned int prime_poly, int logmod, unsigned int *lo
 // Dummy to generate static log/antilog tables for "backend/reedsol_logs.h"
 static void test_generate(int generate) {
 
-    if (!generate) {
-        return;
-    }
-    
     struct item {
         const char *name;
         int logmod;
@@ -99,19 +95,22 @@ static void test_generate(int generate) {
         { "0x163", 255, 0x163, 0 },
     };
     int data_size = ARRAY_SIZE(data);
+    int i;
 
     unsigned int logt[4096];
     unsigned int alog[8192];
 
-    for (int i = 0; i < data_size; i++) {
+    if (!generate) {
+        return;
+    }
+
+    for (i = 0; i < data_size; i++) {
         gen_logs(data[i].prime_poly, data[i].logmod, logt, alog);
         print_logs(data[i].name, data[i].logmod, logt, alog, data[i].u16, i + 1 == data_size);
     }
 }
 
 static void test_encoding(int index) {
-
-    testStart("");
 
     struct item {
         unsigned int prime_poly;
@@ -144,9 +143,12 @@ static void test_encoding(int index) {
         /* 17*/ { 0x11d, 5, 0, 5, { 0x40, 0x18, 0xAC, 0xC3, 0x00 }, { 0x86, 0x0D, 0x22, 0xAE, 0x30 } }, // QRCODE Annex I.3
     };
     int data_size = ARRAY_SIZE(data);
+    int i;
 
-    for (int i = 0; i < data_size; i++) {
+    testStart("test_encoding");
 
+    for (i = 0; i < data_size; i++) {
+        int j;
         rs_t rs;
         unsigned char res[1024];
 
@@ -156,9 +158,9 @@ static void test_encoding(int index) {
         rs_init_code(&rs, data[i].nsym, data[i].index);
         rs_encode(&rs, data[i].datalen, data[i].data, res);
 
-        //fprintf(stderr, "res "); for (int j = data[i].nsym - 1; j >= 0; j--) fprintf(stderr, "%d ", res[j]); fprintf(stderr, "\n");
-        //fprintf(stderr, "exp "); for (int j = 0; j < data[i].nsym; j++) fprintf(stderr, "%d ", data[i].expected[j]); fprintf(stderr, "\n");
-        for (int j = 0; j < data[i].nsym; j++) {
+        //fprintf(stderr, "res "); for (j = data[i].nsym - 1; j >= 0; j--) fprintf(stderr, "%d ", res[j]); fprintf(stderr, "\n");
+        //fprintf(stderr, "exp "); for (j = 0; j < data[i].nsym; j++) fprintf(stderr, "%d ", data[i].expected[j]); fprintf(stderr, "\n");
+        for (j = 0; j < data[i].nsym; j++) {
             int k = data[i].nsym - 1 - j;
             assert_equal(res[k], data[i].expected[j], "i:%d res[%d] %d != expected[%d] %d\n", i, k, res[k], j, data[i].expected[j]);
         }
@@ -168,8 +170,6 @@ static void test_encoding(int index) {
 }
 
 static void test_encoding_uint(int index) {
-
-    testStart("");
 
     struct item {
         unsigned int prime_poly;
@@ -187,9 +187,12 @@ static void test_encoding_uint(int index) {
         /*  1*/ { 0x1069, 4095, 4, 1, 7, { 0xFFF, 0x000, 0x700, 0x7FF, 0xFFF, 0x000, 0x123 }, { 3472, 2350, 3494, 575 } },
     };
     int data_size = ARRAY_SIZE(data);
+    int i;
 
-    for (int i = 0; i < data_size; i++) {
+    testStart("test_encoding_uint");
 
+    for (i = 0; i < data_size; i++) {
+        int j;
         rs_uint_t rs_uint;
         unsigned int res[1024];
 
@@ -200,9 +203,9 @@ static void test_encoding_uint(int index) {
         rs_uint_encode(&rs_uint, data[i].datalen, data[i].data, res);
         rs_uint_free(&rs_uint);
 
-        //fprintf(stderr, "res "); for (int j = data[i].nsym - 1; j >= 0; j--) fprintf(stderr, "%d ", res[j]); fprintf(stderr, "\n");
-        //fprintf(stderr, "exp "); for (int j = 0; j < data[i].nsym; j++) fprintf(stderr, "%d ", data[i].expected[j]); fprintf(stderr, "\n");
-        for (int j = 0; j < data[i].nsym; j++) {
+        //fprintf(stderr, "res "); for (j = data[i].nsym - 1; j >= 0; j--) fprintf(stderr, "%d ", res[j]); fprintf(stderr, "\n");
+        //fprintf(stderr, "exp "); for (j = 0; j < data[i].nsym; j++) fprintf(stderr, "%d ", data[i].expected[j]); fprintf(stderr, "\n");
+        for (j = 0; j < data[i].nsym; j++) {
             int k = data[i].nsym - 1 - j;
             assert_equal(res[k], data[i].expected[j], "i:%d res[%d] %d != expected[%d] %d\n", i, k, res[k], j, data[i].expected[j]);
         }

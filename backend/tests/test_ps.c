@@ -34,11 +34,6 @@
 
 static void test_print(int index, int generate, int debug) {
 
-    testStart("");
-
-    int have_ghostscript = testUtilHaveGhostscript();
-
-    int ret;
     struct item {
         int symbology;
         int input_mode;
@@ -46,23 +41,47 @@ static void test_print(int index, int generate, int debug) {
         int whitespace_width;
         int option_1;
         int option_2;
+        float scale;
+        float dot_size;
         char *fgcolour;
         char *bgcolour;
         char *data;
         char *expected_file;
     };
     struct item data[] = {
-        /*  0*/ { BARCODE_CODE128, UNICODE_MODE, BOLD_TEXT, -1, -1, -1, "", "", "Égjpqy", "code128_egrave_bold.eps" },
-        /*  1*/ { BARCODE_CODE39, -1, -1, -1, -1, -1, "147AD0", "FC9630", "123", "code39_fg_bg.eps" },
-        /*  2*/ { BARCODE_ULTRA, -1, 1, -1, -1, -1, "147AD0", "FC9630", "123", "ultra_fg_bg.eps" },
-        /*  3*/ { BARCODE_EANX, -1, -1, -1, -1, -1, "", "", "9771384524017+12", "ean13_2addon_ggs_5.2.2.5.1-2.eps" },
-        /*  4*/ { BARCODE_UPCA, -1, -1, -1, -1, -1, "", "", "012345678905+24", "upca_2addon_ggs_5.2.6.6-5.eps" },
-        /*  5*/ { BARCODE_UPCE, -1, -1, -1, -1, -1, "", "", "0123456+12345", "upce_5addon.eps" },
-        /*  6*/ { BARCODE_UPCE, -1, SMALL_TEXT | BOLD_TEXT, -1, -1, -1, "", "", "0123456+12345", "upce_5addon_small_bold.eps" },
-        /*  7*/ { BARCODE_CODE128, UNICODE_MODE, -1, -1, -1, -1, "", "", "A\\B)ç(D", "code128_escape_latin1.eps" },
-        /*  8*/ { BARCODE_DBAR_LTD, -1, BOLD_TEXT, -1, -1, -1, "", "", "1501234567890", "dbar_ltd_24724_fig7_bold.eps" },
+        /*  0*/ { BARCODE_CODE128, UNICODE_MODE, BOLD_TEXT, -1, -1, -1, 0, 0, "", "", "Égjpqy", "code128_egrave_bold.eps" },
+        /*  1*/ { BARCODE_CODE39, -1, -1, -1, -1, -1, 0, 0, "147AD0", "FC9630", "123", "code39_fg_bg.eps" },
+        /*  2*/ { BARCODE_ULTRA, -1, 1, -1, -1, -1, 0, 0, "147AD0", "FC9630", "123", "ultra_fg_bg.eps" },
+        /*  3*/ { BARCODE_EANX, -1, -1, -1, -1, -1, 0, 0, "", "", "9771384524017+12", "ean13_2addon_ggs_5.2.2.5.1-2.eps" },
+        /*  4*/ { BARCODE_UPCA, -1, -1, -1, -1, -1, 0, 0, "", "", "012345678905+24", "upca_2addon_ggs_5.2.6.6-5.eps" },
+        /*  5*/ { BARCODE_UPCE, -1, -1, -1, -1, -1, 0, 0, "", "", "0123456+12345", "upce_5addon.eps" },
+        /*  6*/ { BARCODE_UPCE, -1, SMALL_TEXT | BOLD_TEXT, -1, -1, -1, 0, 0, "", "", "0123456+12345", "upce_5addon_small_bold.eps" },
+        /*  7*/ { BARCODE_CODE128, UNICODE_MODE, -1, -1, -1, -1, 0, 0, "", "", "A\\B)ç(D", "code128_escape_latin1.eps" },
+        /*  8*/ { BARCODE_DBAR_LTD, -1, BOLD_TEXT, -1, -1, -1, 0, 0, "", "", "1501234567890", "dbar_ltd_24724_fig7_bold.eps" },
+        /*  9*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, 0, 0, "", "", "12", "dotcode_1.0.eps" },
+        /* 10*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, 0, 0.1, "", "", "12", "dotcode_1.0_ds0.1.eps" },
+        /* 11*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, 0, 1.1, "", "", "12", "dotcode_1.0_ds1.1.eps" },
+        /* 12*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, 1.5, 0, "", "", "12", "dotcode_1.5.eps" },
+        /* 13*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, 1.5, 0.4, "", "", "12", "dotcode_1.5_ds0.4.eps" },
+        /* 14*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, 1.5, 1.1, "", "", "12", "dotcode_1.5_ds1.1.eps" },
+        /* 15*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, 1.5, 2.1, "", "", "12", "dotcode_1.5_ds2.1.eps" },
+        /* 16*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, 2, 0, "", "", "12", "dotcode_2.0.eps" },
+        /* 17*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, 2, 0.9, "", "", "12", "dotcode_2.0_ds0.9.eps" },
+        /* 18*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, 2, 1.1, "", "", "12", "dotcode_2.0_ds1.1.eps" },
+        /* 19*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, 3, 0, "", "", "12", "dotcode_3.0.eps" },
+        /* 20*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, 3, 0.4, "", "", "12", "dotcode_3.0_ds0.4.eps" },
+        /* 21*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, 3, 1.1, "", "", "12", "dotcode_3.0_ds1.1.eps" },
+        /* 22*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, 3.5, 0, "", "", "12", "dotcode_3.5.eps" },
+        /* 23*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, 3.5, 0.4, "", "", "12", "dotcode_3.5_ds0.4.eps" },
+        /* 24*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, 3.5, 1.1, "", "", "12", "dotcode_3.5_ds1.1.eps" },
+        /* 25*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, 5, 0, "", "", "12", "dotcode_5.0.eps" },
+        /* 26*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, 5, 0.2, "", "", "12", "dotcode_5.0_ds0.2.eps" },
+        /* 27*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, 5, 1.1, "", "", "12", "dotcode_5.0_ds1.1.eps" },
+        /* 28*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, 5, 1.7, "", "", "12", "dotcode_5.0_ds1.7.eps" },
     };
     int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
+    struct zint_symbol *symbol;
 
     const char *data_dir = "/backend/tests/data/eps";
     const char *eps = "out.eps";
@@ -70,25 +89,35 @@ static void test_print(int index, int generate, int debug) {
     char escaped[1024];
     int escaped_size = 1024;
 
+    int have_ghostscript = testUtilHaveGhostscript();
+
+    testStart("test_print");
+
     if (generate) {
         char data_dir_path[1024];
         assert_nonzero(testUtilDataPath(data_dir_path, sizeof(data_dir_path), data_dir, NULL), "testUtilDataPath(%s) == 0\n", data_dir);
-        if (!testUtilExists(data_dir_path)) {
-            ret = testutil_mkdir(data_dir_path, 0755);
-            assert_zero(ret, "testutil_mkdir(%s) ret %d != 0 (%d: %s)\n", data_dir_path, ret, errno, strerror(errno));
+        if (!testUtilDirExists(data_dir_path)) {
+            ret = testUtilMkDir(data_dir_path);
+            assert_zero(ret, "testUtilMkDir(%s) ret %d != 0 (%d: %s)\n", data_dir_path, ret, errno, strerror(errno));
         }
     }
 
-    for (int i = 0; i < data_size; i++) {
+    for (i = 0; i < data_size; i++) {
 
         if (index != -1 && i != index) continue;
 
-        struct zint_symbol *symbol = ZBarcode_Create();
+        symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        int length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, data[i].option_1, data[i].option_2, -1, data[i].output_options, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, data[i].option_1, data[i].option_2, -1, data[i].output_options, data[i].data, -1, debug);
         if (data[i].whitespace_width != -1) {
             symbol->whitespace_width = data[i].whitespace_width;
+        }
+        if (data[i].scale) {
+            symbol->scale = data[i].scale;
+        }
+        if (data[i].dot_size) {
+            symbol->dot_size = data[i].dot_size;
         }
         if (*data[i].fgcolour) {
             strcpy(symbol->fgcolour, data[i].fgcolour);
@@ -107,11 +136,12 @@ static void test_print(int index, int generate, int debug) {
         assert_nonzero(testUtilDataPath(expected_file, sizeof(expected_file), data_dir, data[i].expected_file), "i:%d testUtilDataPath == 0\n", i);
 
         if (generate) {
-            printf("        /*%3d*/ { %s, %s, %s, %d, %d, %d, \"%s\", \"%s\", \"%s\", \"%s\"},\n",
+            printf("        /*%3d*/ { %s, %s, %s, %d, %d, %d, %.5g, %.5g, \"%s\", \"%s\", \"%s\", \"%s\"},\n",
                     i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode), testUtilOutputOptionsName(data[i].output_options), data[i].whitespace_width,
-                    data[i].option_1, data[i].option_2, data[i].fgcolour, data[i].bgcolour, testUtilEscape(data[i].data, length, escaped, escaped_size), data[i].expected_file);
-            ret = rename(symbol->outfile, expected_file);
-            assert_zero(ret, "i:%d rename(%s, %s) ret %d != 0\n", i, symbol->outfile, expected_file, ret);
+                    data[i].option_1, data[i].option_2, data[i].scale, data[i].dot_size, data[i].fgcolour, data[i].bgcolour,
+                    testUtilEscape(data[i].data, length, escaped, escaped_size), data[i].expected_file);
+            ret = testUtilRename(symbol->outfile, expected_file);
+            assert_zero(ret, "i:%d testUtilRename(%s, %s) ret %d != 0\n", i, symbol->outfile, expected_file, ret);
             if (have_ghostscript) {
                 ret = testUtilVerifyGhostscript(expected_file, debug);
                 assert_zero(ret, "i:%d %s ghostscript %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), expected_file, ret);
@@ -135,8 +165,6 @@ void ps_convert(const unsigned char *string, unsigned char *ps_string);
 
 static void test_ps_convert(int index) {
 
-    testStart("");
-
     struct item {
         char *data;
         char *expected;
@@ -145,10 +173,13 @@ static void test_ps_convert(int index) {
         /*  0*/ { "1\\(é)2€3", "1\\\\\\(\351\\)23" },
     };
     int data_size = ARRAY_SIZE(data);
+    int i;
 
     unsigned char converted[256];
 
-    for (int i = 0; i < data_size; i++) {
+    testStart("test_ps_convert");
+
+    for (i = 0; i < data_size; i++) {
 
         if (index != -1 && i != index) continue;
 

@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019 - 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019 - 2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -33,9 +33,6 @@
 
 static void test_utf8_to_unicode(int index, int debug) {
 
-    testStart("");
-
-    int ret;
     struct item {
         char *data;
         int length;
@@ -53,24 +50,30 @@ static void test_utf8_to_unicode(int index, int debug) {
         /*  3*/ { "\360\220\200\200", -1, 1, ZINT_ERROR_INVALID_DATA, -1, {0}, "Four-byte F0908080" },
         /*  4*/ { "a\200b", -1, 1, ZINT_ERROR_INVALID_DATA, -1, {0}, "Orphan continuation 0x80" },
     };
-    int data_size = sizeof(data) / sizeof(struct item);
+    int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
 
     unsigned int vals[20];
     struct zint_symbol symbol;
+
+    testStart("test_utf8_to_unicode");
+
     symbol.debug |= debug;
 
-    for (int i = 0; i < data_size; i++) {
+    for (i = 0; i < data_size; i++) {
+        int ret_length;
 
         if (index != -1 && i != index) continue;
 
-        int length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
-        int ret_length = length;
+        length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
+        ret_length = length;
 
         ret = utf8_to_unicode(&symbol, (unsigned char *) data[i].data, vals, &ret_length, data[i].disallow_4byte);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d\n", i, ret, data[i].ret);
         if (ret == 0) {
+            int j;
             assert_equal(ret_length, data[i].ret_length, "i:%d ret_length %d != %d\n", i, ret_length, data[i].ret_length);
-            for (int j = 0; j < ret_length; j++) {
+            for (j = 0; j < ret_length; j++) {
                 assert_equal(vals[j], data[i].expected_vals[j], "i:%d vals[%d] %04X != %04X\n", i, j, vals[j], data[i].expected_vals[j]);
             }
         }
@@ -81,9 +84,6 @@ static void test_utf8_to_unicode(int index, int debug) {
 
 static void test_is_valid_utf8(int index) {
 
-    testStart("");
-
-    int ret;
     struct item {
         char* data;
         int length;
@@ -104,12 +104,15 @@ static void test_is_valid_utf8(int index) {
         /*  8*/ { "\355\240\200", -1, 0, "Surrogate 0xEDA080" },
     };
     int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
 
-    for (int i = 0; i < data_size; i++) {
+    testStart("test_is_valid_utf8");
+
+    for (i = 0; i < data_size; i++) {
 
         if (index != -1 && i != index) continue;
 
-        int length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
+        length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
 
         ret = is_valid_utf8((const unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d\n", i, ret, data[i].ret);
@@ -119,8 +122,6 @@ static void test_is_valid_utf8(int index) {
 }
 
 static void test_debug_test_codeword_dump_int(int index, int debug) {
-
-    testStart("");
 
     struct item {
         int codewords[50];
@@ -132,12 +133,16 @@ static void test_debug_test_codeword_dump_int(int index, int debug) {
         /*  0*/ { { 2147483647, -2147483646, 2147483647, 0, 2147483647, 2147483647, 2147483647, 2147483647, 123456 }, 10, "(10) 2147483647 -2147483646 2147483647 0 2147483647 2147483647 2147483647 2147483647 123456" },
         /*  1*/ { { 2147483647, -2147483646, 2147483647, 0, 2147483647, 2147483647, 2147483647, 2147483647, 1234567 }, 10, "(10) 2147483647 -2147483646 2147483647 0 2147483647 2147483647 2147483647 2147483647" },
     };
-    int data_size = sizeof(data) / sizeof(struct item);
+    int data_size = ARRAY_SIZE(data);
+    int i;
 
     struct zint_symbol symbol;
+
+    testStart("test_debug_test_codeword_dump_int");
+
     symbol.debug |= debug;
 
-    for (int i = 0; i < data_size; i++) {
+    for (i = 0; i < data_size; i++) {
 
         if (index != -1 && i != index) continue;
 

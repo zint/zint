@@ -35,6 +35,9 @@
 
 // As control convert to KS X 1001 using simple table generated from https://www.unicode.org/Public/MAPPINGS/OBSOLETE/EASTASIA/KSC/KSX1001.TXT plus simple processing
 static int ksx1001_wctomb_zint2(unsigned int *r, unsigned int wc) {
+    int tab_length, start_i, end_i;
+    int i;
+
     if (wc < 0x80) {
         return 0;
     }
@@ -50,10 +53,10 @@ static int ksx1001_wctomb_zint2(unsigned int *r, unsigned int wc) {
         *r = 0x2268;
         return 2;
     }
-    int tab_length = ARRAY_SIZE(test_ksx1001_tab);
-    int start_i = test_ksx1001_tab_ind[wc >> 10];
-    int end_i = start_i + 0x800 > tab_length ? tab_length : start_i + 0x800;
-    for (int i = start_i; i < end_i; i += 2) {
+    tab_length = ARRAY_SIZE(test_ksx1001_tab);
+    start_i = test_ksx1001_tab_ind[wc >> 10];
+    end_i = start_i + 0x800 > tab_length ? tab_length : start_i + 0x800;
+    for (i = start_i; i < end_i; i += 2) {
         if (test_ksx1001_tab[i + 1] == wc) {
             *r = test_ksx1001_tab[i];
             return *r > 0xFF ? 2 : 1;
@@ -64,12 +67,13 @@ static int ksx1001_wctomb_zint2(unsigned int *r, unsigned int wc) {
 
 static void test_ksx1001_wctomb_zint(void) {
 
-    testStart("");
-
     int ret, ret2;
     unsigned int val, val2;
+    unsigned i;
 
-    for (unsigned int i = 0; i < 0xFFFE; i++) {
+    testStart("test_ksx1001_wctomb_zint");
+
+    for (i = 0; i < 0xFFFE; i++) {
         if (i >= 0xD800 && i <= 0xDFFF) { // UTF-16 surrogates
             continue;
         }

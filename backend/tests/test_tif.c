@@ -37,12 +37,6 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
 // For overview when debugging: ./test_tiff -f pixel_plot -d 5
 static void test_pixel_plot(int index, int debug) {
 
-    testStart("");
-
-    int have_tiffinfo = testUtilHaveTiffInfo();
-    int have_identify = testUtilHaveIdentify();
-
-    int ret;
     struct item {
         int width;
         int height;
@@ -82,15 +76,23 @@ static void test_pixel_plot(int index, int debug) {
         /* 27*/ { 4, 2049, "10", 1, 0 }, // Strip Count 5, Rows Per Strip 512 ((4 * 512 + 1) * 4 == 8196)
     };
     int data_size = ARRAY_SIZE(data);
+    int i, ret;
+    struct zint_symbol *symbol;
 
     char *tif = "out.tif";
 
     char data_buf[65536];
 
-    struct zint_symbol *symbol = ZBarcode_Create();
+    int have_tiffinfo = testUtilHaveTiffInfo();
+    int have_identify = testUtilHaveIdentify();
+
+    testStart("test_pixel_plot");
+
+    symbol = ZBarcode_Create();
     assert_nonnull(symbol, "Symbol not created\n");
 
-    for (int i = 0; i < data_size; i++) {
+    for (i = 0; i < data_size; i++) {
+        int size;
 
         if (index != -1 && i != index) continue;
 
@@ -102,7 +104,7 @@ static void test_pixel_plot(int index, int debug) {
         strcpy(symbol->bgcolour, "FFFFFFEE");
         symbol->debug |= debug;
 
-        int size = data[i].width * data[i].height;
+        size = data[i].width * data[i].height;
         assert_nonzero(size < (int) sizeof(data_buf), "i:%d tif_pixel_plot size %d >= sizeof(data_buf) %d\n", i, size, (int) sizeof(data_buf));
 
         if (data[i].repeat) {
@@ -139,12 +141,6 @@ static void test_pixel_plot(int index, int debug) {
 
 static void test_print(int index, int generate, int debug) {
 
-    testStart("");
-
-    int have_tiffinfo = testUtilHaveTiffInfo();
-    int have_identify = testUtilHaveIdentify();
-
-    int ret;
     struct item {
         int symbology;
         int input_mode;
@@ -182,6 +178,8 @@ static void test_print(int index, int generate, int debug) {
         /* 15*/ { BARCODE_DAFT, -1, -1, -1, -1, -1, -1, -1, 1, 0.5f, "", "", "DAFT", "", "daft_height1_scale0.5.tif", "" },
     };
     int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
+    struct zint_symbol *symbol;
 
     const char *data_dir = "/backend/tests/data/tif";
     const char *tif = "out.tif";
@@ -190,23 +188,29 @@ static void test_print(int index, int generate, int debug) {
     int escaped_size = 1024;
     char *text;
 
+    int have_tiffinfo = testUtilHaveTiffInfo();
+    int have_identify = testUtilHaveIdentify();
+
+    testStart("test_print");
+
     if (generate) {
         char data_dir_path[1024];
         assert_nonzero(testUtilDataPath(data_dir_path, sizeof(data_dir_path), data_dir, NULL), "testUtilDataPath(%s) == 0\n", data_dir);
-        if (!testUtilExists(data_dir_path)) {
-            ret = testutil_mkdir(data_dir_path, 0755);
-            assert_zero(ret, "testutil_mkdir(%s) ret %d != 0 (%d: %s)\n", data_dir_path, ret, errno, strerror(errno));
+        if (!testUtilDirExists(data_dir_path)) {
+            ret = testUtilMkDir(data_dir_path);
+            assert_zero(ret, "testUtilMkDir(%s) ret %d != 0 (%d: %s)\n", data_dir_path, ret, errno, strerror(errno));
         }
     }
 
-    for (int i = 0; i < data_size; i++) {
+    for (i = 0; i < data_size; i++) {
+        int text_length;
 
         if (index != -1 && i != index) continue;
 
-        struct zint_symbol* symbol = ZBarcode_Create();
+        symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        int length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, data[i].option_1, data[i].option_2, -1, data[i].output_options, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, data[i].option_1, data[i].option_2, -1, data[i].output_options, data[i].data, -1, debug);
         if (data[i].show_hrt != -1) {
             symbol->show_hrt = data[i].show_hrt;
         }
@@ -234,7 +238,7 @@ static void test_print(int index, int generate, int debug) {
         } else {
             text = data[i].data;
         }
-        int text_length = strlen(text);
+        text_length = strlen(text);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) text, text_length);
         assert_zero(ret, "i:%d %s ZBarcode_Encode ret %d != 0 %s\n", i, testUtilBarcodeName(data[i].symbology), ret, symbol->errtxt);
@@ -250,8 +254,8 @@ static void test_print(int index, int generate, int debug) {
                     i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode), data[i].border_width, testUtilOutputOptionsName(data[i].output_options),
                     data[i].whitespace_width, data[i].show_hrt, data[i].option_1, data[i].option_2, data[i].height, data[i].scale, data[i].fgcolour, data[i].bgcolour,
                     testUtilEscape(data[i].data, length, escaped, escaped_size), data[i].composite, data[i].expected_file, data[i].comment);
-            ret = rename(symbol->outfile, expected_file);
-            assert_zero(ret, "i:%d rename(%s, %s) ret %d != 0\n", i, symbol->outfile, expected_file, ret);
+            ret = testUtilRename(symbol->outfile, expected_file);
+            assert_zero(ret, "i:%d testUtilRename(%s, %s) ret %d != 0\n", i, symbol->outfile, expected_file, ret);
             if (have_tiffinfo) {
                 ret = testUtilVerifyTiffInfo(expected_file, debug);
                 assert_zero(ret, "i:%d %s tiffinfo %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), expected_file, ret);

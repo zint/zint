@@ -36,14 +36,6 @@ INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
 
 static void test_pixel_plot(int index, int debug) {
 
-    testStart("");
-
-    if (!testUtilHaveIdentify()) {
-        testSkip("ImageMagick identify not available");
-        return;
-    }
-
-    int ret;
     struct item {
         int width;
         int height;
@@ -64,16 +56,26 @@ static void test_pixel_plot(int index, int debug) {
         /*  9*/ { 8, 2, "CBMWKRYGGYRKWMBC", 0 },
     };
     int data_size = ARRAY_SIZE(data);
+    int i, ret;
+    struct zint_symbol *symbol;
 
     char *bmp = "out.bmp";
 
     char data_buf[8 * 2 + 1];
 
-    for (int i = 0; i < data_size; i++) {
+    testStart("test_pixel_plot");
+
+    if (!testUtilHaveIdentify()) {
+        testSkip("ImageMagick identify not available");
+        return;
+    }
+
+    for (i = 0; i < data_size; i++) {
+        int size;
 
         if (index != -1 && i != index) continue;
 
-        struct zint_symbol *symbol = ZBarcode_Create();
+        symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
         strcpy(symbol->outfile, bmp);
@@ -82,7 +84,7 @@ static void test_pixel_plot(int index, int debug) {
         symbol->bitmap_height = data[i].height;
         symbol->debug |= debug;
 
-        int size = data[i].width * data[i].height;
+        size = data[i].width * data[i].height;
         assert_nonzero(size < (int) sizeof(data_buf), "i:%d bmp_pixel_plot size %d < sizeof(data_buf) %d\n", i, size, (int) sizeof(data_buf));
 
         if (data[i].repeat) {
@@ -112,11 +114,6 @@ static void test_pixel_plot(int index, int debug) {
 
 static void test_print(int index, int generate, int debug) {
 
-    testStart("");
-
-    int have_identify = testUtilHaveIdentify();
-
-    int ret;
     struct item {
         int symbology;
         int whitespace_width;
@@ -134,6 +131,8 @@ static void test_print(int index, int generate, int debug) {
         /*  2*/ { BARCODE_PDF417COMP, 2, 2, -1, -1, "", "", "123", "pdf417comp_hvwsp2.bmp" },
     };
     int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
+    struct zint_symbol *symbol;
 
     const char *data_dir = "/backend/tests/data/bmp";
     const char *bmp = "out.bmp";
@@ -141,23 +140,27 @@ static void test_print(int index, int generate, int debug) {
     char escaped[1024];
     int escaped_size = 1024;
 
+    int have_identify = testUtilHaveIdentify();
+
+    testStart("test_print");
+
     if (generate) {
         char data_dir_path[1024];
         assert_nonzero(testUtilDataPath(data_dir_path, sizeof(data_dir_path), data_dir, NULL), "testUtilDataPath(%s) == 0\n", data_dir);
-        if (!testUtilExists(data_dir_path)) {
-            ret = testutil_mkdir(data_dir_path, 0755);
-            assert_zero(ret, "testutil_mkdir(%s) ret %d != 0 (%d: %s)\n", data_dir_path, ret, errno, strerror(errno));
+        if (!testUtilDirExists(data_dir_path)) {
+            ret = testUtilMkDir(data_dir_path);
+            assert_zero(ret, "testUtilMkDir(%s) ret %d != 0 (%d: %s)\n", data_dir_path, ret, errno, strerror(errno));
         }
     }
 
-    for (int i = 0; i < data_size; i++) {
+    for (i = 0; i < data_size; i++) {
 
         if (index != -1 && i != index) continue;
 
-        struct zint_symbol* symbol = ZBarcode_Create();
+        symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        int length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, data[i].option_1, data[i].option_2, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, data[i].option_1, data[i].option_2, -1, -1 /*output_options*/, data[i].data, -1, debug);
         if (data[i].whitespace_width != -1) {
             symbol->whitespace_width = data[i].whitespace_width;
         }
@@ -185,8 +188,8 @@ static void test_print(int index, int generate, int debug) {
                     i, testUtilBarcodeName(data[i].symbology), data[i].whitespace_width, data[i].whitespace_height,
                     data[i].option_1, data[i].option_2, data[i].fgcolour, data[i].bgcolour,
                     testUtilEscape(data[i].data, length, escaped, escaped_size), data[i].expected_file);
-            ret = rename(symbol->outfile, expected_file);
-            assert_zero(ret, "i:%d rename(%s, %s) ret %d != 0\n", i, symbol->outfile, expected_file, ret);
+            ret = testUtilRename(symbol->outfile, expected_file);
+            assert_zero(ret, "i:%d testUtilRename(%s, %s) ret %d != 0 (%d: %s)\n", i, symbol->outfile, expected_file, ret, errno, strerror(errno));
             if (have_identify) {
                 ret = testUtilVerifyIdentify(expected_file, debug);
                 assert_zero(ret, "i:%d %s identify %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), expected_file, ret);

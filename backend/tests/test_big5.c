@@ -35,13 +35,14 @@
 
 // As control convert to Big5 using simple table generated from https://www.unicode.org/Public/MAPPINGS/OBSOLETE/EASTASIA/OTHER/BIG5.TXT plus simple processing
 static int big5_wctomb_zint2(unsigned int *r, unsigned int wc) {
-    if (wc < 0x80) {
-        return 0;
-    }
     int tab_length = ARRAY_SIZE(test_big5_tab);
     int start_i = test_big5_tab_ind[wc >> 10];
     int end_i = start_i + 0x800 > tab_length ? tab_length : start_i + 0x800;
-    for (int i = start_i; i < end_i; i += 2) {
+    int i;
+    if (wc < 0x80) {
+        return 0;
+    }
+    for (i = start_i; i < end_i; i += 2) {
         if (test_big5_tab[i + 1] == wc) {
             *r = test_big5_tab[i];
             return *r > 0xFF ? 2 : 1;
@@ -52,12 +53,13 @@ static int big5_wctomb_zint2(unsigned int *r, unsigned int wc) {
 
 static void test_big5_wctomb_zint(void) {
 
-    testStart("");
-
+    unsigned int i;
     int ret, ret2;
     unsigned int val, val2;
 
-    for (unsigned int i = 0; i < 0xFFFE; i++) {
+    testStart("test_big5_wctomb_zint");
+
+    for (i = 0; i < 0xFFFE; i++) {
         if (i >= 0xD800 && i < 0xE000) { // UTF-16 surrogates
             continue;
         }
@@ -100,9 +102,6 @@ static int big5_utf8(struct zint_symbol *symbol, const unsigned char source[], i
 }
 static void test_big5_utf8(int index) {
 
-    testStart("");
-
-    int ret;
     struct item {
         char *data;
         int length;
@@ -118,24 +117,28 @@ static void test_big5_utf8(int index) {
         /*  0*/ { "＿", -1, 0, 1, { 0xA1C4 }, "" },
         /*  1*/ { "╴", -1, ZINT_ERROR_INVALID_DATA, -1, {0}, "" },
     };
-
-    int data_size = sizeof(data) / sizeof(struct item);
+    int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
 
     struct zint_symbol symbol;
     unsigned int b5data[20];
 
-    for (int i = 0; i < data_size; i++) {
+    testStart("test_big5_utf8");
+
+    for (i = 0; i < data_size; i++) {
+        int ret_length;
 
         if (index != -1 && i != index) continue;
 
-        int length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
-        int ret_length = length;
+        length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
+        ret_length = length;
 
         ret = big5_utf8(&symbol, (unsigned char *) data[i].data, &ret_length, b5data);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d (%s)\n", i, ret, data[i].ret, symbol.errtxt);
         if (ret == 0) {
+            int j;
             assert_equal(ret_length, data[i].ret_length, "i:%d ret_length %d != %d\n", i, ret_length, data[i].ret_length);
-            for (int j = 0; j < ret_length; j++) {
+            for (j = 0; j < ret_length; j++) {
                 assert_equal(b5data[j], data[i].expected_b5data[j], "i:%d b5data[%d] %04X != %04X\n", i, j, b5data[j], data[i].expected_b5data[j]);
             }
         }

@@ -34,9 +34,6 @@
 
 static void test_numeric(int index) {
 
-    testStart("");
-
-    int ret;
     struct item {
         int data;
         int ret;
@@ -431,8 +428,11 @@ static void test_numeric(int index) {
         /*385*/ { 2000, 0 },
     };
     int data_size = ARRAY_SIZE(data);
+    int i, ret;
 
-    for (int i = 0; i < data_size; i++) {
+    testStart("test_numeric");
+
+    for (i = 0; i < data_size; i++) {
 
         if (index != -1 && i != index) continue;
 
@@ -466,17 +466,16 @@ static int bc_iso4217_numeric(int cc) {
         /*UAH*/ 980, /*GEL*/ 981, /*BOV*/ 984, /*PLN*/ 985, /*BRL*/ 986, /*CLF*/ 990, /*XSU*/ 994, /*USN*/ 997, /*XXX*/ 999,
     };
 
-    int s = 0, e = sizeof(codes) / sizeof(codes[0]) - 1;
+    int s = 0, e = ARRAY_SIZE(codes) - 1;
 
     while (s <= e) {
         int m = (s + e) / 2;
-        if (codes[m] == cc) {
-            return 1;
-        }
         if (codes[m] < cc) {
             s = m + 1;
-        } else {
+        } else if (codes[m] > cc) {
             e = m - 1;
+        } else {
+            return 1;
         }
     }
 
@@ -485,11 +484,11 @@ static int bc_iso4217_numeric(int cc) {
 
 static void test_numeric_bc(void) {
 
-    testStart("");
+    int i, ret, bc_ret;
 
-    int ret, bc_ret;
+    testStart("test_numeric_bc");
 
-    for (int i = 0; i < 1001; i++) {
+    for (i = 0; i < 1001; i++) {
         ret = iso4217_numeric(i);
         bc_ret = bc_iso4217_numeric(i);
         assert_equal(ret, bc_ret, "i:%d ret %d != bc_ret %d\n", i, ret, bc_ret);

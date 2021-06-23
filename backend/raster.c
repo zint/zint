@@ -455,10 +455,7 @@ static void draw_circle(unsigned char *pixelbuf, const int image_width, const in
         const int y_squared = y * y;
         for (x = -radius_i; x <= radius_i; x++) {
             if ((x * x) + y_squared <= radius_squared) {
-                if ((y + y0 >= 0) && (y + y0 < image_height)
-                        && (x + x0 >= 0) && (x + x0 < image_width)) {
-                    *(pixelbuf + ((y + y0) * image_width) + (x + x0)) = fill;
-                }
+                draw_pt(pixelbuf, image_width, image_height, x0 + x, y0 + y, fill);
             }
         }
     }
@@ -800,33 +797,34 @@ static int plot_raster_dotty(struct zint_symbol *symbol, const int rotate_angle,
     int scale_width, scale_height;
     int error_number = 0;
     float xoffset, yoffset, roffset, boffset;
-    float dot_overspill;
-    float dotoffset;
-    float dotradius_scaled;
-    int dot_overspill_scaled;
+    float dot_offset_scaled;
+    float dot_radius_scaled;
+    int dot_radius_scaled_i;
+    int dot_overspill_scaled_i;
 
     if (scaler < 2.0f) {
         scaler = 2.0f;
     }
-
-    symbol->height = symbol->rows; // This is true because only 2d matrix symbols are processed here
+    dot_radius_scaled = (symbol->dot_size * scaler) / 2.0f;
+    dot_radius_scaled_i = (int) floorf(dot_radius_scaled);
 
     output_set_whitespace_offsets(symbol, &xoffset, &yoffset, &roffset, &boffset);
 
-    dot_overspill = symbol->dot_size - 1.0f; /* Allow for exceeding 1X */
-    if (dot_overspill < 0.0f) {
-        dotoffset = -dot_overspill / 2.0f;
-        dot_overspill_scaled = 0;
-    } else {
-        dotoffset = 0.0f;
-        dot_overspill_scaled = dot_overspill * scaler;
+    /* TODO: Revisit this overspill stuff, it's hacky */
+    if (symbol->dot_size < 1.0f) {
+        dot_overspill_scaled_i = 0;
+        /* Offset (1 - dot_size) / 2 + dot_radius == (1 - dot_size + dot_size) / 2 == 1 / 2 */
+        dot_offset_scaled = scaler / 2.0f;
+    } else { /* Allow for exceeding 1X */
+        dot_overspill_scaled_i = (int) ceilf((symbol->dot_size - 1.0f) * scaler);
+        dot_offset_scaled = dot_radius_scaled;
     }
-    if (dot_overspill_scaled == 0) {
-        dot_overspill_scaled = 1;
+    if (dot_overspill_scaled_i == 0) {
+        dot_overspill_scaled_i = 1;
     }
 
-    scale_width = (symbol->width + xoffset + roffset) * scaler + dot_overspill_scaled;
-    scale_height = (symbol->height + yoffset + boffset) * scaler + dot_overspill_scaled;
+    scale_width = (int) floorf((symbol->width + xoffset + roffset) * scaler + dot_overspill_scaled_i);
+    scale_height = (int) floorf((symbol->height + yoffset + boffset) * scaler + dot_overspill_scaled_i);
 
     /* Apply scale options by creating another pixel buffer */
     if (!(scaled_pixelbuf = (unsigned char *) malloc((size_t) scale_width * scale_height))) {
@@ -836,21 +834,18 @@ static int plot_raster_dotty(struct zint_symbol *symbol, const int rotate_angle,
     memset(scaled_pixelbuf, DEFAULT_PAPER, (size_t) scale_width * scale_height);
 
     /* Plot the body of the symbol to the pixel buffer */
-    dotradius_scaled = (symbol->dot_size * scaler) / 2.0f;
     for (r = 0; r < symbol->rows; r++) {
-        float row_scaled = (r + dotoffset + yoffset) * scaler + dotradius_scaled;
+        int row_scaled = (int) floorf((r + yoffset) * scaler + dot_offset_scaled);
         for (i = 0; i < symbol->width; i++) {
             if (module_is_set(symbol, r, i)) {
                 draw_circle(scaled_pixelbuf, scale_width, scale_height,
-                        (int) floorf((i + dotoffset + xoffset) * scaler + dotradius_scaled),
-                        (int) floorf(row_scaled),
-                        (int) floorf(dotradius_scaled),
-                        DEFAULT_INK);
+                            (int) floorf((i + xoffset) * scaler + dot_offset_scaled),
+                            row_scaled, dot_radius_scaled_i, DEFAULT_INK);
             }
         }
     }
 
-    draw_bind_box(symbol, scaled_pixelbuf, xoffset, roffset, 0 /*textoffset*/, dot_overspill_scaled,
+    draw_bind_box(symbol, scaled_pixelbuf, xoffset, roffset, 0 /*textoffset*/, dot_overspill_scaled_i,
                     scale_width, scale_height, (int) floorf(scaler));
 
     error_number = save_raster_image_to_file(symbol, scale_height, scale_width, scaled_pixelbuf, rotate_angle,

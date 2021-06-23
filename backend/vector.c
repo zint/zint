@@ -413,7 +413,7 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
     float digit_ascent_factor = 0.25f; /* Assuming digit ascent roughly 25% less than font size */
     float text_gap; /* Gap between barcode and text */
     float dot_overspill = 0.0f;
-    float dotoffset = 0.0f;
+    float dot_offset = 0.0f;
     int rect_count, last_row_start = 0;
     int this_row;
 
@@ -475,13 +475,13 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
     }
 
     if ((symbol->symbology != BARCODE_MAXICODE) && (symbol->output_options & BARCODE_DOTTY_MODE)) {
-        dot_overspill = symbol->dot_size - 1.0f; /* Allow for exceeding 1X */
-        if (dot_overspill < 0.0f) {
-            dotoffset = -dot_overspill / 2.0f;
+        if (symbol->dot_size < 1.0f) {
             dot_overspill = 0.0f;
-        } else {
-            dot_overspill += 0.1f; /* Fudge for anti-aliasing */
-            dotoffset = 0.05f;
+            /* Offset (1 - dot_size) / 2 + dot_radius == (1 - dot_size + dot_size) / 2 == 1 / 2 */
+            dot_offset = 0.5f;
+        } else { /* Allow for exceeding 1X */
+            dot_overspill = symbol->dot_size - 1.0f + 0.1f; /* Fudge for anti-aliasing */
+            dot_offset = symbol->dot_size / 2.0f + 0.05f; /* Fudge for anti-aliasing */
         }
     }
 
@@ -548,12 +548,13 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
         }
     // Dotty mode
     } else if (symbol->output_options & BARCODE_DOTTY_MODE) {
-        float dotradius = symbol->dot_size / 2.0f;
         for (r = 0; r < symbol->rows; r++) {
             for (i = 0; i < symbol->width; i++) {
                 if (module_is_set(symbol, r, i)) {
-                    struct zint_vector_circle *circle = vector_plot_create_circle(i + dotradius + dotoffset + xoffset,
-                                                            r + dotradius + dotoffset + yoffset, symbol->dot_size, 0);
+                    struct zint_vector_circle *circle = vector_plot_create_circle(
+                                                            i + dot_offset + xoffset,
+                                                            r + dot_offset + yoffset,
+                                                            symbol->dot_size, 0);
                     vector_plot_add_circle(symbol, circle, &last_circle);
                 }
             }
