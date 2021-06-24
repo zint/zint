@@ -205,6 +205,15 @@ rc_replace($data_dirname . 'frontend/zint.rc', $rc_str);
 
 version_replace(1, $data_dirname . 'frontend/Makefile.mingw', '/^ZINT_VERSION:=-DZINT_VERSION=/', '/[0-9.]+/', $v_str);
 
+// backend_qt/backend_vc8.pro
+
+version_replace(1, $data_dirname . 'backend_qt/backend_vc8.pro', '/^VERSION[ \t]*=/', '/[0-9.]+/', $v_str);
+-
+// backend_qt/backend_qt.pro
+
+version_replace(1, $data_dirname . 'backend_qt/backend_qt.pro', '/ZINT_VERSION="/', '/[0-9.]+/', $v_str);
+version_replace(1, $data_dirname . 'backend_qt/backend_qt.pro', '/^VERSION[ \t]*=/', '/[0-9.]+/', $v_str);
+
 // frontend_qt/res/qtZint.rc
 
 rc_replace($data_dirname . 'frontend_qt/res/qtZint.rc', $rc_str);
@@ -220,6 +229,10 @@ version_replace(2, $data_dirname . 'win32/zint.vcxproj', '/ZINT_VERSION="/', '/Z
 // win32/zint_cmdline_vc6/zint.rc
 
 rc_replace($data_dirname . 'win32/zint_cmdline_vc6/zint.rc', $rc_str);
+
+// win32/zint_cmdline_vc6/zint_cmdline_vc6.dsp
+
+version_replace(2, $data_dirname . 'win32/zint_cmdline_vc6/zint_cmdline_vc6.dsp', '/ZINT_VERSION="/', '/ZINT_VERSION="\\\\"[0-9.]+\\\\""/', 'ZINT_VERSION="\\"' . $v_str . '\\""');
 
 // win32/vs2008/libzint.vcproj
 

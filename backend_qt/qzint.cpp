@@ -341,6 +341,15 @@ namespace Zint {
         m_debug = debug;
     }
 
+    /* Legacy */
+    void QZint::setWidth(int width) { setOption1(width); }
+    int QZint::width() const { return m_option_1; }
+    void QZint::setSecurityLevel(int securityLevel) { setOption2(securityLevel); }
+    int QZint::securityLevel() const { return m_option_2; }
+    void QZint::setPdf417CodeWords(int /*pdf417CodeWords*/) {}
+    int QZint::pdf417CodeWords() const { return 0; }
+    void QZint::setHideText(bool hide) { setShowText(!hide); }
+
     bool QZint::hasHRT(int symbology) const {
         return ZBarcode_Cap(symbology ? symbology : m_symbol, ZINT_CAP_HRT);
     }

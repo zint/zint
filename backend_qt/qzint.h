@@ -105,6 +105,15 @@ public:
 
     void setDebug(bool debug);
 
+    /* Legacy */
+    void setWidth(int width); /* option_1 */
+    int width() const;
+    void setSecurityLevel(int securityLevel); /* option_2 */
+    int securityLevel() const;
+    void setPdf417CodeWords(int pdf417CodeWords); /* no op */
+    int pdf417CodeWords() const;
+    void setHideText(bool hide); /* setShowText(!hide) */
+
     bool hasHRT(int symbology = 0) const;
     bool isExtendable(int symbology = 0) const;
     bool supportsECI(int symbology = 0) const;

@@ -13,12 +13,13 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
+/* vim: set ts=4 sw=4 et : */
 
 #ifndef BARCODEITEM_H
 #define BARCODEITEM_H
 
 #include <QGraphicsItem>
-#include "qzint.h"
+#include <qzint.h>
 
 /**
  @author BogDan Vatra <taipan@licentia.eu>
@@ -27,18 +28,18 @@
 class BarcodeItem : public QGraphicsItem
 {
 public:
-	BarcodeItem();
-	~BarcodeItem();
-        void setSize(int width, int height);
-	QRectF boundingRect() const;
-	void paint(QPainter * painter, const QStyleOptionGraphicsItem * option, QWidget * widget = 0);
+    BarcodeItem();
+    ~BarcodeItem();
+    void setSize(int width, int height);
+    QRectF boundingRect() const;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0);
 
 private:
-        int w, h;
+    int w, h;
 
 public:
-	mutable Zint::QZint bc;
-	Zint::QZint::AspectRatioMode ar;
+    mutable Zint::QZint bc;
+    Zint::QZint::AspectRatioMode ar;
 };
 
 #endif

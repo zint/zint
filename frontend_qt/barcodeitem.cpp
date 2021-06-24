@@ -13,16 +13,17 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
+/* vim: set ts=4 sw=4 et : */
 
 #include <QDebug>
 #include "barcodeitem.h"
 
 BarcodeItem::BarcodeItem()
-		: QGraphicsItem()
+        : QGraphicsItem()
 {
-	w=693;
-	h=378; // Default widget size when created
-	ar = Zint::QZint::AspectRatioMode::IgnoreAspectRatio;
+    w = 693;
+    h = 378; // Default widget size when created
+    ar = Zint::QZint::AspectRatioMode::IgnoreAspectRatio;
 }
 
 BarcodeItem::~BarcodeItem()
@@ -36,12 +37,12 @@ void BarcodeItem::setSize(int width, int height) {
 
 QRectF BarcodeItem::boundingRect() const
 {
-	return QRectF(0, 0, w, h);
+    return QRectF(0, 0, w, h);
 }
 
-void BarcodeItem::paint(QPainter * painter, const QStyleOptionGraphicsItem * /*option*/, QWidget * /*widget*/)
+void BarcodeItem::paint(QPainter *painter, const QStyleOptionGraphicsItem * /*option*/, QWidget * /*widget*/)
 {
-	bc.render(*painter,boundingRect(),ar);
+    bc.render(*painter, boundingRect(), ar);
 }
 
 

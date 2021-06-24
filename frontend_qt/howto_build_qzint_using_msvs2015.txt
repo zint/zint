@@ -1,23 +1,24 @@
 Harald Oehlmann
-2020-01-05
+2021-06-24
 
 How to build qzint.exe using:
-- QT 5.15.0 source package
-- MS Visual Studio 2015 (VC12)
+- QT 5.15.2 source package
+- MS Visual Studio 2015 (VC14)
 
 Build static Qt:
 ---------------
 - Go to: https://www.qt.io/offline-installers
 - Download the zip "Qt 5.15.x source packages" (nearly 1 GB):
-  http://download.qt.io/official_releases/qt/5.15/5.15.0/single/qt-everywhere-src-5.15.0.zip
-- Unzip to C:\qt resulting in having the source in c:\qt\qt-everywhere-src-5.15.0
-- Install Python (ActivePython-3.7.4.0000-win64-x64-e0b99d60.msi) and make it available within the path.
+  http://download.qt.io/official_releases/qt/5.15/5.15.2/single/qt-everywhere-src-5.15.2.zip
+- Unzip to C:\qt resulting in having the source in c:\qt\qt-everywhere-src-5.15.2
+- Install Python (https://www.python.org/downloads/windows/) and make it available within the path.
 
 - Start the VS2015 x86 native console by the start menu entry:
 Visual Studio 2015\Visual Studio Tools\Windows Desktop Command Prompts\VS2015 x86 Native Tools-Eingabeaufforderung
+  ("Eingabeaufforderung" = "Command Prompt")
 
-- cd C:\qt\qt-everywhere-src-5.15.0
-- configure.bat -static -release -prefix c:\qt\5.15.0static -qt-zlib -qt-pcre -qt-libpng -qt-libjpeg -qt-freetype -opengl desktop -no-openssl -opensource -confirm-license -make libs -nomake tools -nomake examples -nomake tests -mp
+- cd C:\qt\qt-everywhere-src-5.15.2
+- configure.bat -static -release -prefix c:\qt\5.15.2static -qt-zlib -qt-pcre -qt-libpng -qt-libjpeg -qt-freetype -opengl desktop -no-openssl -opensource -confirm-license -make libs -nomake tools -nomake examples -nomake tests -mp
   One may set another destination folder after the -prefix option.
   Attention, the upper command is one long line.
 - nmake
@@ -45,21 +46,30 @@ Build targets "Release Library" for zlib and libpng.
 Build zint:
 -----------
 - Start in the start menu: "VS2015 x86 Native Tools-Eingabeaufforderung"
-- set QTDIR=C:\Qt\5.15.0static
-- set PATH=C:\Qt\5.15.0static\bin;%PATH%
+- set QTDIR=C:\Qt\5.15.2static
+- set PATH=C:\Qt\5.15.2static\bin;%PATH%
 - set QMAKESPEC=win32-msvc
 - cd $ZH
-- cd frontend_qt
+
+Note: if "rc.exe" not available, install a Windows Kit and update PATH (e.g.):
+- set "PATH=C:\Program Files (x86)\Windows Kits\10\bin\10.0.19041.0\x86;%PATH%"
+
+- cd backend_qt
+- qmake backend_qt.pro
+- nmake clean
+- nmake release
+
+- cd ..\frontend_qt
 - qmake frontend_qt.pro
 - nmake clean
 - nmake release
-  -> qzint.exe is in the release folder
+  -> qtZint.exe is in the release folder
 
 Note:
 For me, qt5core.lib was not found in the last step.
 I only found the solution to add:
 
-QMAKE_LIBDIR += C:/qt/5.15.0static/lib
+QMAKE_LIBDIR += C:/qt/5.15.2static/lib
 
 into frontend_qt.pro
 
