@@ -65,21 +65,17 @@ if(ZINT_TEST)
 endif()
 
 set(SANITIZER_FLAGS "")
-if(ZINT_SANITIZE)
+if(ZINT_SANITIZE AND NOT MSVC)
     file(WRITE ${CMAKE_BINARY_DIR}/dummy.c "int main() { return 0; }")
     set(SANITIZERS address leak undefined) #address hwaddress leak memory thread undefined
     foreach(sanitizer IN ITEMS ${SANITIZERS})
-        if(MSVC)
-            set(sanitizer_flag "/fsanitize=${sanitizer}")
-        else()
-            set(sanitizer_flag "-fsanitize=${sanitizer}")
-        endif()
-        try_compile(HAVE_SANITIZE_${sanitizer} ${CMAKE_BINARY_DIR} ${CMAKE_BINARY_DIR}/dummy.c
+        set(sanitizer_flag "-fsanitize=${sanitizer}")
+        try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${CMAKE_BINARY_DIR}/dummy.c
             COMPILE_DEFINITIONS ${sanitizer_flag}
             LINK_OPTIONS ${sanitizer_flag}
         )
-        message (STATUS "Support for ${sanitizer_flag} available ... ${HAVE_SANITIZE_${sanitizer}}")
-        if(HAVE_SANITIZE_${sanitizer})
+        message (STATUS "Support for ${sanitizer_flag} available ... ${RESULT_VAR}")
+        if(RESULT_VAR)
             set(SANITIZER_FLAGS ${SANITIZER_FLAGS} ${sanitizer_flag})
         endif()
     endforeach()
