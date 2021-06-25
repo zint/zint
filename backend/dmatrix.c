@@ -373,6 +373,13 @@ static int look_ahead_test(const unsigned char inputData[], const int sourcelen,
             /* At least 5 data characters processed ... step (r) */
             /* NOTE: different than spec, where it's at least 4. Following previous behaviour here (and BWIPP) */
 
+            ascii_count = stripf(ascii_count);
+            b256_count = stripf(b256_count);
+            edf_count = stripf(edf_count);
+            text_count = stripf(text_count);
+            x12_count = stripf(x12_count);
+            c40_count = stripf(c40_count);
+
             cnt_1 = ascii_count + 1.0f;
             if (cnt_1 <= b256_count && cnt_1 <= edf_count && cnt_1 <= text_count && cnt_1 <= x12_count
                     && cnt_1 <= c40_count) {

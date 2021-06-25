@@ -867,12 +867,12 @@ INTERNAL int aztec(struct zint_symbol *symbol, unsigned char source[], int lengt
     }
 
     error_number = aztec_text_process(source, length, binary_string, gs1, symbol->eci, &data_length, debug);
-    assert(data_length > 0); /* Suppress clang-tidy warning: clang-analyzer-core.UndefinedBinaryOperatorResult */
 
     if (error_number != 0) {
         strcpy(symbol->errtxt, "502: Input too long or too many extended ASCII characters");
         return error_number;
     }
+    assert(data_length > 0); /* Suppress clang-tidy warning: clang-analyzer-core.UndefinedBinaryOperatorResult */
 
     if (!((symbol->option_1 >= -1) && (symbol->option_1 <= 4))) {
         strcpy(symbol->errtxt, "503: Invalid error correction level - using default instead");
