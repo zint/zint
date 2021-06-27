@@ -1286,33 +1286,18 @@ int ZBarcode_Print(struct zint_symbol *symbol, int rotate_angle) {
         to_upper((unsigned char *) output);
 
         if (!(strcmp(output, "PNG"))) {
-            if (symbol->scale < 1.0f) {
-                symbol->text[0] = '\0';
-            }
             error_number = plot_raster(symbol, rotate_angle, OUT_PNG_FILE);
 
         } else if (!(strcmp(output, "BMP"))) {
-            if (symbol->scale < 1.0f) {
-                symbol->text[0] = '\0';
-            }
             error_number = plot_raster(symbol, rotate_angle, OUT_BMP_FILE);
 
         } else if (!(strcmp(output, "PCX"))) {
-            if (symbol->scale < 1.0f) {
-                symbol->text[0] = '\0';
-            }
             error_number = plot_raster(symbol, rotate_angle, OUT_PCX_FILE);
 
         } else if (!(strcmp(output, "GIF"))) {
-            if (symbol->scale < 1.0f) {
-                symbol->text[0] = '\0';
-            }
             error_number = plot_raster(symbol, rotate_angle, OUT_GIF_FILE);
 
         } else if (!(strcmp(output, "TIF"))) {
-            if (symbol->scale < 1.0f) {
-                symbol->text[0] = '\0';
-            }
             error_number = plot_raster(symbol, rotate_angle, OUT_TIF_FILE);
 
         } else if (!(strcmp(output, "TXT"))) {
@@ -1522,7 +1507,7 @@ int ZBarcode_Encode_File(struct zint_symbol *symbol, char *filename) {
     if (file_opened) {
         fclose(file);
     }
-    ret = ZBarcode_Encode(symbol, buffer, nRead);
+    ret = ZBarcode_Encode(symbol, buffer, (int) nRead);
     free(buffer);
     return ret;
 }

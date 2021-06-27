@@ -33,13 +33,17 @@
 #include "../large.h"
 
 #if defined(__MINGW32__)
-#  define LX_FMT "I64"
+#  if __WORDSIZE == 32
+#    define LX_FMT "I32"
+#  else
+#    define LX_FMT "I64"
+#  endif
 #  if defined(__clang__)
 #    pragma GCC diagnostic ignored "-Wformat-non-iso"
 #  elif defined(__GNUC__)
 #    pragma GCC diagnostic ignored "-Wformat" /* Unfortunately doesn't seem to be way to only avoid non-ISO warnings */
 #  endif
-#elif defined(_MSC_VER)
+#elif defined(_MSC_VER) || __WORDSIZE == 32
 #  define LX_FMT "ll"
 #else
 #  define LX_FMT "l"

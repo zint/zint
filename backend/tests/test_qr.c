@@ -1656,7 +1656,7 @@ static void test_microqr_padding(int index, int generate, int debug) {
         symbol->debug = ZINT_DEBUG_TEST; // Needed to get codeword dump in errtxt
         symbol->debug |= debug;
 
-        length = strlen(data[i].data);
+        length = (int) strlen(data[i].data);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);

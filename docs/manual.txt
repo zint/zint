@@ -1114,7 +1114,7 @@ ZINT_ERROR_INVALID_DATA      |  The data to be encoded includes characters which
                              |     are not permitted by the selected symbology
                              |     (e.g. alphabetic characters in an EAN
                              |     symbol). No symbol has been generated.
-ZINT_ERROR_INVALID_CHECK     |  An ISBN with an incorrect check digit has been
+ZINT_ERROR_INVALID_CHECK     |  Data with an incorrect check digit has been
                              |     entered. No symbol has been generated.
 ZINT_ERROR_INVALID_OPTION    |  One of the values in zint_struct was set
                              |     incorrectly and Zint was unable to guess what
@@ -1131,7 +1131,7 @@ ZINT_ERROR_MEMORY            |  Zint ran out of memory. This should only be a
                              |     problem with legacy systems.
 ZINT_ERROR_FILE_WRITE        |  Zint failed to write all contents to the
                              |     requested output file. This should only occur
-                             |     if the output disk becomes full.
+                             |     if the output device becomes full.
 --------------------------------------------------------------------------------
 
 To catch errors use an integer variable as shown in the code below:

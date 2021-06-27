@@ -379,7 +379,7 @@ static void test_encode_file_too_large(void) {
 
     fstream = fopen(filename, "w+");
     assert_nonnull(fstream, "fopen(%s) failed (%d)\n", filename, ferror(fstream));
-    ret = fwrite(buf, 1, sizeof(buf), fstream);
+    ret = (int) fwrite(buf, 1, sizeof(buf), fstream);
     assert_equal(ret, sizeof(buf), "fwrite return value: %d != %d\n", ret, (int)sizeof(buf));
     ret = fclose(fstream);
     assert_zero(ret, "fclose(%s) %d != 0\n", filename, ret);

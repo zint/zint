@@ -109,7 +109,7 @@ static void test_csv(int index, int debug) {
         symbol->symbology = BARCODE_USPS_IMAIL;
         symbol->debug |= debug;
 
-        ret = ZBarcode_Encode(symbol, (unsigned char *) data, strlen(data));
+        ret = ZBarcode_Encode(symbol, (unsigned char *) data, (int) strlen(data));
 
         if (strcmp(return_code, "00") == 0) {
 

@@ -89,7 +89,7 @@ static void test_eanx_leading_zeroes(int index, int debug) {
         assert_zero(length >= 128, "i:%d length %d >= 128\n", i, length);
         strcpy(symbol->primary, data[i].data);
 
-        composite_length = strlen(data[i].composite);
+        composite_length = (int) strlen(data[i].composite);
 
         ret = ZBarcode_Encode(symbol, (const unsigned char *) data[i].composite, composite_length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
@@ -109,8 +109,8 @@ static void test_helper_generate(const struct zint_symbol *symbol, int ret, int 
     char esc_data[1024];
     char esc_composite[4096];
 
-    testUtilEscape(data, strlen(data), esc_data, sizeof(esc_data));
-    testUtilEscape(composite, strlen(composite), esc_composite, sizeof(esc_composite));
+    testUtilEscape(data, (int) strlen(data), esc_data, sizeof(esc_data));
+    testUtilEscape(composite, (int) strlen(composite), esc_composite, sizeof(esc_composite));
 
     if (ret == 0) {
         if (bwipp_cmp == -1) {
@@ -1245,7 +1245,7 @@ static void test_examples(int index, int generate, int debug) {
         assert_zero(length >= 128, "i:%d length %d >= 128\n", i, length);
         strcpy(symbol->primary, data[i].data);
 
-        composite_length = strlen(data[i].composite);
+        composite_length = (int) strlen(data[i].composite);
 
         ret = ZBarcode_Encode(symbol, (const unsigned char *) data[i].composite, composite_length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
@@ -1409,7 +1409,7 @@ static void test_odd_numbered_numeric(int index, int generate, int debug) {
         assert_zero(length >= 128, "i:%d length %d >= 128\n", i, length);
         strcpy(symbol->primary, data[i].data);
 
-        composite_length = strlen(data[i].composite);
+        composite_length = (int) strlen(data[i].composite);
 
         ret = ZBarcode_Encode(symbol, (const unsigned char *) data[i].composite, composite_length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
@@ -1537,7 +1537,7 @@ static void test_ean128_cc_shift(int index, int generate, int debug) {
         assert_zero(length >= 128, "i:%d length %d >= 128\n", i, length);
         strcpy(symbol->primary, data[i].data);
 
-        composite_length = strlen(data[i].composite);
+        composite_length = (int) strlen(data[i].composite);
 
         ret = ZBarcode_Encode(symbol, (const unsigned char *) data[i].composite, composite_length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
@@ -1617,7 +1617,7 @@ static void test_ean128_cc_width(int index, int generate, int debug) {
         assert_zero(length >= 128, "i:%d length %d >= 128\n", i, length);
         strcpy(symbol->primary, data[i].data);
 
-        composite_length = strlen(data[i].composite);
+        composite_length = (int) strlen(data[i].composite);
 
         ret = ZBarcode_Encode(symbol, (const unsigned char *) data[i].composite, composite_length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
@@ -2083,7 +2083,7 @@ static void test_encodation_0(int index, int generate, int debug) {
         assert_zero(length >= 128, "i:%d length %d >= 128\n", i, length);
         strcpy(symbol->primary, data[i].data);
 
-        composite_length = strlen(data[i].composite);
+        composite_length = (int) strlen(data[i].composite);
 
         ret = ZBarcode_Encode(symbol, (const unsigned char *) data[i].composite, composite_length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
@@ -2220,7 +2220,7 @@ static void test_encodation_10(int index, int generate, int debug) {
         assert_zero(length >= 128, "i:%d length %d >= 128\n", i, length);
         strcpy(symbol->primary, data[i].data);
 
-        composite_length = strlen(data[i].composite);
+        composite_length = (int) strlen(data[i].composite);
 
         ret = ZBarcode_Encode(symbol, (const unsigned char *) data[i].composite, composite_length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
@@ -2601,7 +2601,7 @@ static void test_encodation_11(int index, int generate, int debug) {
         assert_zero(length >= 128, "i:%d length %d >= 128\n", i, length);
         strcpy(symbol->primary, data[i].data);
 
-        composite_length = strlen(data[i].composite);
+        composite_length = (int) strlen(data[i].composite);
 
         ret = ZBarcode_Encode(symbol, (const unsigned char *) data[i].composite, composite_length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
@@ -2753,7 +2753,7 @@ static void test_addongap(int index, int generate, int debug) {
         assert_zero(length >= 128, "i:%d length %d >= 128\n", i, length);
         strcpy(symbol->primary, data[i].data);
 
-        composite_length = strlen(composite);
+        composite_length = (int) strlen(composite);
 
         ret = ZBarcode_Encode(symbol, (const unsigned char *) composite, composite_length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
@@ -2843,7 +2843,7 @@ static void test_gs1parens(int index, int debug) {
         assert_zero(length >= 128, "i:%d length %d >= 128\n", i, length);
         strcpy(symbol->primary, data[i].data);
 
-        composite_length = strlen(data[i].composite);
+        composite_length = (int) strlen(data[i].composite);
 
         ret = ZBarcode_Encode(symbol, (const unsigned char *) data[i].composite, composite_length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
@@ -2894,7 +2894,7 @@ static void test_fuzz(int index, int debug) {
         assert_zero(length >= 128, "i:%d length %d >= 128\n", i, length);
         strcpy(symbol->primary, data[i].data);
 
-        composite_length = strlen(data[i].composite);
+        composite_length = (int) strlen(data[i].composite);
 
         ret = ZBarcode_Encode(symbol, (const unsigned char *) data[i].composite, composite_length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
@@ -2966,7 +2966,7 @@ static void test_perf(int index, int debug) {
             assert_zero(length >= 128, "i:%d length %d >= 128\n", i, length);
             strcpy(symbol->primary, data[i].data);
 
-            composite_length = strlen(data[i].composite);
+            composite_length = (int) strlen(data[i].composite);
 
             start = clock();
             ret = ZBarcode_Encode(symbol, (const unsigned char *) data[i].composite, composite_length);

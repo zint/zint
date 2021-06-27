@@ -238,7 +238,7 @@ static void test_print(int index, int generate, int debug) {
         } else {
             text = data[i].data;
         }
-        text_length = strlen(text);
+        text_length = (int) strlen(text);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) text, text_length);
         assert_zero(ret, "i:%d %s ZBarcode_Encode ret %d != 0 %s\n", i, testUtilBarcodeName(data[i].symbology), ret, symbol->errtxt);

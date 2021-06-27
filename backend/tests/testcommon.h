@@ -70,20 +70,19 @@ extern "C" {
 #endif
 
 #ifndef ARRAY_SIZE
-#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
+#define ARRAY_SIZE(x) ((int) (sizeof(x) / sizeof((x)[0])))
 #endif
 
 extern int assertionFailed;
 extern int assertionNum;
+extern const char *assertionFilename;
 
 #if _MSC_VER == 1200 /* VC6 */
 #define testStart(__arg__) (testStartReal("", __arg__))
 #else
 #define testStart(__arg__) (testStartReal(__func__, __arg__))
 #endif
-#define testEndExp(__arg__) (testEnd(!(__arg__)))
 void testStartReal(const char *func, const char *name);
-void testEnd(int result);
 void testFinish(void);
 void testSkip(const char *msg);
 void testReport();
@@ -104,7 +103,8 @@ void assert_equalu64(uint64_t e1, uint64_t e2, const char *fmt, ...);
 void assert_notequal(int e1, int e2, ...);
 #else
 #define assert_exp(__exp__, ...) \
-{assertionNum++; if (!(__exp__)) {assertionFailed++; printf(__VA_ARGS__); testFinish(); return;}}
+    { assertionNum++; if (!(__exp__)) { assertionFailed++; printf("%s:%d ", assertionFilename, __LINE__); \
+      printf(__VA_ARGS__); testFinish(); return; } }
 
 #define assert_zero(__exp__, ...) assert_exp((__exp__) == 0, __VA_ARGS__)
 #define assert_nonzero(__exp__, ...) assert_exp((__exp__) != 0, __VA_ARGS__)
@@ -119,40 +119,47 @@ INTERNAL void vector_free(struct zint_symbol *symbol); /* Free vector structures
 
 int testUtilSetSymbol(struct zint_symbol *symbol, int symbology, int input_mode, int eci,
             int option_1, int option_2, int option_3, int output_options, char *data, int length, int debug);
+
 const char *testUtilBarcodeName(int symbology);
 const char *testUtilErrorName(int error_number);
 const char *testUtilInputModeName(int input_mode);
 const char *testUtilOption3Name(int option_3);
 const char *testUtilOutputOptionsName(int output_options);
+
 int testUtilDAFTConvert(const struct zint_symbol *symbol, char *buffer, int buffer_size);
 int testUtilIsValidUTF8(const unsigned char str[], const int length);
 char *testUtilEscape(char *buffer, int length, char *escaped, int escaped_size);
 char *testUtilReadCSVField(char *buffer, char *field, int field_size);
 void testUtilStrCpyRepeat(char *buffer, char *repeat, int size);
+
 int testUtilSymbolCmp(const struct zint_symbol *a, const struct zint_symbol *b);
 struct zint_vector *testUtilVectorCpy(const struct zint_vector *in);
 int testUtilVectorCmp(const struct zint_vector *a, const struct zint_vector *b);
+
 int testUtilModulesDump(const struct zint_symbol *symbol, char dump[], int dump_size);
 void testUtilModulesPrint(const struct zint_symbol *symbol, const char *prefix, const char *postfix);
 void testUtilModulesPrintRow(const struct zint_symbol *symbol, int row, const char *prefix, const char *postfix);
 int testUtilModulesCmp(const struct zint_symbol *symbol, const char *expected, int *width, int *row);
 int testUtilModulesCmpRow(const struct zint_symbol *symbol, int row, const char *expected, int *width);
-int testUtilModulesDumpHex(const struct zint_symbol *symbol, char dump[], int dump_size);
 char *testUtilUIntArrayDump(unsigned int *array, int size, char *dump, int dump_size);
 char *testUtilUCharArrayDump(unsigned char *array, int size, char *dump, int dump_size);
-int testUtilDataPath(char *buffer, int buffer_size, const char *subdir, const char *filename);
+
 void testUtilBitmapPrint(const struct zint_symbol *symbol, const char *prefix, const char *postfix);
 int testUtilBitmapCmp(const struct zint_symbol *symbol, const char *expected, int *row, int *column);
+
+int testUtilDataPath(char *buffer, int buffer_size, const char *subdir, const char *filename);
 int testUtilExists(const char *filename);
 int testUtilDirExists(const char *dirname);
 int testUtilMkDir(const char *dirname);
 int testUtilRmDir(const char *dirname);
 int testUtilRename(const char *oldpath, const char *newpath);
+
 int testUtilCmpPngs(const char *file1, const char *file2);
 int testUtilCmpTxts(const char *txt1, const char *txt2);
 int testUtilCmpBins(const char *bin1, const char *bin2);
 int testUtilCmpSvgs(const char *svg1, const char *svg2);
 int testUtilCmpEpss(const char *eps1, const char *eps2);
+
 int testUtilHaveIdentify();
 int testUtilVerifyIdentify(const char *filename, int debug);
 int testUtilHaveLibreOffice();
@@ -163,6 +170,7 @@ int testUtilHaveVnu();
 int testUtilVerifyVnu(const char *filename, int debug);
 int testUtilHaveTiffInfo();
 int testUtilVerifyTiffInfo(const char *filename, int debug);
+
 int testUtilCanBwipp(int index, const struct zint_symbol *symbol, int option_1, int option_2, int option_3,
             int debug);
 int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int option_2, int option_3,

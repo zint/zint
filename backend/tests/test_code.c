@@ -205,11 +205,12 @@ static void test_input(int index, int debug) {
         /* 20*/ { BARCODE_PZN, -1, "A", -1, ZINT_ERROR_INVALID_DATA, -1, -1 },
         /* 21*/ { BARCODE_PZN, -1, "1000006", -1, ZINT_ERROR_INVALID_DATA, -1, -1 }, // Check digit == 10 so can't be used
         /* 22*/ { BARCODE_VIN, -1, "5GZCZ43D13S812715", -1, 0, 1, 246 },
-        /* 23*/ { BARCODE_VIN, -1, "5GZCZ43D23S812715", -1, ZINT_ERROR_INVALID_DATA, -1, -1 }, // North American with invalid check character
+        /* 23*/ { BARCODE_VIN, -1, "5GZCZ43D23S812715", -1, ZINT_ERROR_INVALID_CHECK, -1, -1 }, // North American with invalid check character
         /* 24*/ { BARCODE_VIN, -1, "WP0ZZZ99ZTS392124", -1, 0, 1, 246 }, // Not North American so no check
-        /* 25*/ { BARCODE_HIBC_39, -1, "a", -1, 0, 1, 79 }, // Converts to upper
-        /* 26*/ { BARCODE_HIBC_39, -1, ",", -1, ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 27*/ { BARCODE_HIBC_39, -1, "\000", 1, ZINT_ERROR_INVALID_DATA, -1, -1 },
+        /* 25*/ { BARCODE_VIN, -1, "WPOZZZ99ZTS392124", -1, ZINT_ERROR_INVALID_DATA, -1, -1 }, // O not allowed
+        /* 26*/ { BARCODE_HIBC_39, -1, "a", -1, 0, 1, 79 }, // Converts to upper
+        /* 27*/ { BARCODE_HIBC_39, -1, ",", -1, ZINT_ERROR_INVALID_DATA, -1, -1 },
+        /* 28*/ { BARCODE_HIBC_39, -1, "\000", 1, ZINT_ERROR_INVALID_DATA, -1, -1 },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;

@@ -1325,7 +1325,7 @@ static void test_gs1_verify(int index, int debug) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = strlen(data[i].data);
+        length = (int) strlen(data[i].data);
 
         ret = gs1_verify(symbol, (unsigned char *) data[i].data, length, (unsigned char *) reduced);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d (length %d \"%s\") %s\n", i, ret, data[i].ret, length, data[i].data, symbol->errtxt);
@@ -1730,7 +1730,7 @@ static void test_gs1_lint(int index, int debug) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = strlen(data[i].data);
+        length = (int) strlen(data[i].data);
 
         ret = gs1_verify(symbol, (unsigned char *) data[i].data, length, (unsigned char *) reduced);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d (length %d \"%s\") %s\n", i, ret, data[i].ret, length, data[i].data, symbol->errtxt);

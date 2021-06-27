@@ -107,7 +107,7 @@ static char *exec(const char *cmd, char *buf, int buf_size, int debug, int index
         fprintf(stderr, "exec: failed to run '%s'\n", cmd);
         return NULL;
     }
-    cnt = fread(buf, 1, buf_size, fp);
+    cnt = (int) fread(buf, 1, buf_size, fp);
     if (fgetc(fp) != EOF) {
         fprintf(stderr, "exec: failed to read full stream (%s)\n", cmd);
         testutil_pclose(fp);
@@ -161,7 +161,7 @@ static int arg_input(char *cmd, const char *filename, const char *input) {
                 fprintf(stderr, "arg_input: failed to open '%s' for writing\n", filename);
                 return 0;
             }
-            cnt = fwrite(input, 1, strlen(input), fp);
+            cnt = (int) fwrite(input, 1, strlen(input), fp);
             if (cnt != (int) strlen(input)) {
                 fprintf(stderr, "arg_input: failed to write %d bytes, cnt %d written (%s)\n", (int) strlen(input), cnt, filename);
                 fclose(fp);

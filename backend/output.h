@@ -44,8 +44,8 @@ INTERNAL int output_process_upcean(struct zint_symbol *symbol, int *p_main_width
                 unsigned char addon[6], int *p_addon_gap);
 INTERNAL float output_large_bar_height(struct zint_symbol *symbol, int si);
 INTERNAL void output_upcean_split_text(int upceanflag, unsigned char text[],
-                unsigned char textpart1[], unsigned char textpart2[], unsigned char textpart3[],
-                unsigned char textpart4[]);
+                unsigned char textpart1[5], unsigned char textpart2[7], unsigned char textpart3[7],
+                unsigned char textpart4[2]);
 
 #ifdef __cplusplus
 }

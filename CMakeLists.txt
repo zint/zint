@@ -74,12 +74,16 @@ if(ZINT_SANITIZE AND NOT MSVC)
             COMPILE_DEFINITIONS ${sanitizer_flag}
             LINK_OPTIONS ${sanitizer_flag}
         )
-        message (STATUS "Support for ${sanitizer_flag} available ... ${RESULT_VAR}")
+        message(STATUS "Support for ${sanitizer_flag} available ... ${RESULT_VAR}")
         if(RESULT_VAR)
             set(SANITIZER_FLAGS ${SANITIZER_FLAGS} ${sanitizer_flag})
         endif()
     endforeach()
     message(STATUS "Sanitizer flags: ${SANITIZER_FLAGS}")
+    if(NOT ZINT_DEBUG AND CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+        # Gives warning on MainWindow::setupUI() and retries (& takes forever) if var-tracking-assignments enabled
+        add_compile_options(-fno-var-tracking-assignments)
+    endif()
 endif()
 
 if(APPLE)

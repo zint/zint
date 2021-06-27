@@ -41,7 +41,7 @@
 typedef int static_assert_int_at_least_32bits[CHAR_BIT != 8 || sizeof(int) < 4 ? -1 : 1];
 
 #ifndef ARRAY_SIZE
-#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
+#define ARRAY_SIZE(x) ((int) (sizeof(x) / sizeof((x)[0])))
 #endif
 
 /* Print list of supported symbologies */
@@ -140,7 +140,7 @@ static void usage(void) {
             "  --filetype=TYPE       Set output file type BMP/EMF/EPS/GIF/PCX/PNG/SVG/TIF/TXT\n"
             "  --fullmultibyte       Use multibyte for binary/Latin (QR/Han Xin/Grid Matrix)\n"
             "  --gs1                 Treat input as GS1 compatible data\n"
-            "  --gs1parens           GS1 AIs in parentheses instead of square brackets\n"
+            "  --gs1parens           Process parentheses \"()\" as GS1 AI delimiters, not \"[]\"\n"
             "  --gssep               Use separator GS for GS1 (Data Matrix)\n"
             "  -h, --help            Display help message\n"
             "  --height=NUMBER       Set height of symbol in multiples of X-dimension\n"
@@ -157,7 +157,7 @@ static void usage(void) {
             "  --rotate=NUMBER       Rotate symbol by NUMBER degrees\n"
             "  --rows=NUMBER         Set number of rows (Codablock-F)\n"
             "  --scale=NUMBER        Adjust size of X-dimension\n"
-            "  --scmvv=NUMBER        Prefix SCM with [)>\\R01\\Gvv (vv is NUMBER) (MaxiCode)\n"
+            "  --scmvv=NUMBER        Prefix SCM with \"[)>\\R01\\Gvv\" (vv is NUMBER) (MaxiCode)\n"
             "  --secure=NUMBER       Set error correction level (ECC)\n"
             "  --separator=NUMBER    Set height of row separator bars (stacked symbologies)\n"
             "  --small               Use small text\n"
@@ -423,7 +423,7 @@ static int supported_filetype(const char *filetype, const int no_png, int *png_r
         return 0;
     }
 
-    for (i = 0; i < (int) ARRAY_SIZE(filetypes); i++) {
+    for (i = 0; i < ARRAY_SIZE(filetypes); i++) {
         if (strcmp(lc_filetype, filetypes[i]) == 0) {
             return 1;
         }
@@ -486,7 +486,7 @@ static int is_raster(const char *filetype, const int no_png) {
         return 0;
     }
 
-    for (i = 0; i < (int) ARRAY_SIZE(raster_filetypes); i++) {
+    for (i = 0; i < ARRAY_SIZE(raster_filetypes); i++) {
         if (strcmp(lc_filetype, raster_filetypes[i]) == 0) {
             return 1;
         }

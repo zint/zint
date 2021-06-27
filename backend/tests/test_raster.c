@@ -274,7 +274,7 @@ static void test_buffer(int index, int generate, int debug) {
         } else {
             text = data[i].data;
         }
-        length = strlen(text);
+        length = (int) strlen(text);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) text, length);
         assert_zero(ret, "i:%d ZBarcode_Encode(%s) ret %d != 0 (%s)\n", i, testUtilBarcodeName(data[i].symbology), ret, symbol->errtxt);
@@ -380,7 +380,7 @@ static void test_upcean_hrt(int index, int debug) {
         }
         symbol->debug |= debug;
 
-        length = strlen(data[i].data);
+        length = (int) strlen(data[i].data);
 
         ret = ZBarcode_Encode_and_Buffer(symbol, (unsigned char *) data[i].data, length, 0);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d\n", i, ret, data[i].ret);
@@ -574,7 +574,7 @@ static void test_stacking(int index, int debug) {
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_zero(ret, "i:%d ret %d != zero\n", i, ret);
 
-        length2 = strlen(data[i].data2);
+        length2 = (int) strlen(data[i].data2);
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data2, length2);
         assert_zero(ret, "i:%d ret %d != zero\n", i, ret);
 
@@ -995,7 +995,7 @@ static void test_scale(int index, int debug) {
         } else {
             text = data[i].data;
         }
-        length = strlen(text);
+        length = (int) strlen(text);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) text, length);
         assert_zero(ret, "i:%d ZBarcode_Encode(%d) ret %d != 0 %s\n", i, data[i].symbology, ret, symbol->errtxt);
@@ -1207,8 +1207,8 @@ static void test_buffer_plot(int index, int generate, int debug) {
             ret = testUtilBitmapCmp(symbol, data[i].expected_bitmap, &row, &column);
             assert_zero(ret, "i:%d (%s) testUtilBitmapCmp ret %d != 0 column %d row %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), ret, column, row, data[i].data);
 
-            fg_len = strlen(data[i].fgcolour);
-            bg_len = strlen(data[i].bgcolour);
+            fg_len = (int) strlen(data[i].fgcolour);
+            bg_len = (int) strlen(data[i].bgcolour);
             if (fg_len > 6 || bg_len > 6) {
                 assert_nonnull(symbol->alphamap, "i:%d ZBarcode_Buffer(%s) alphamap NULL\n", i, testUtilBarcodeName(data[i].symbology));
                 // TODO: check alphamap
@@ -1674,7 +1674,7 @@ static void test_height(int index, int generate, int debug) {
         } else {
             text = data[i].data;
         }
-        length = strlen(text);
+        length = (int) strlen(text);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) text, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode(%s) ret %d != %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), ret, data[i].ret, symbol->errtxt);

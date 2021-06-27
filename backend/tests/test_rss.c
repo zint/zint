@@ -794,7 +794,8 @@ static void test_examples(int index, int generate, int debug) {
 
         if (generate) {
             printf("        /*%3d*/ { %s, %d, \"%s\", %d, %d, %d, %d, \"%s\",\n",
-                    i, testUtilBarcodeName(symbol->symbology), data[i].option_2, data[i].data, data[i].ret, symbol->rows, symbol->width, data[i].bwipp_cmp, data[i].comment);
+                    i, testUtilBarcodeName(symbol->symbology), data[i].option_2,
+                    data[i].data, data[i].ret, symbol->rows, symbol->width, data[i].bwipp_cmp, data[i].comment);
             testUtilModulesPrint(symbol, "                     ", "\n");
             printf("                },\n");
         } else {
@@ -1228,6 +1229,7 @@ static void test_input(int index, int debug) {
 
     struct item {
         int symbology;
+        int option_2;
         char *data;
         int ret;
         int expected_rows;
@@ -1235,32 +1237,33 @@ static void test_input(int index, int debug) {
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /*  0*/ { BARCODE_DBAR_OMN, "1234567890123", 0, 1, 96 },
-        /*  1*/ { BARCODE_DBAR_OMN, "123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /*  2*/ { BARCODE_DBAR_OMN, "12345678901234", ZINT_ERROR_INVALID_CHECK, -1, -1 },
-        /*  3*/ { BARCODE_DBAR_OMN, "123456789012315", ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  4*/ { BARCODE_DBAR_LTD, "1234567890123", 0, 1, 79 },
-        /*  5*/ { BARCODE_DBAR_LTD, "123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /*  6*/ { BARCODE_DBAR_LTD, "12345678901235", ZINT_ERROR_INVALID_CHECK, -1, -1 },
-        /*  7*/ { BARCODE_DBAR_LTD, "123456789012315", ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  8*/ { BARCODE_DBAR_LTD, "2234567890123", ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /*  9*/ { BARCODE_DBAR_LTD, "22345678901238", ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 10*/ { BARCODE_DBAR_EXP, "[01]12345678901234", ZINT_WARN_NONCOMPLIANT, 1, 134 },
-        /* 11*/ { BARCODE_DBAR_EXP, "[01]12345678901231", 0, 1, 134 },
-        /* 12*/ { BARCODE_DBAR_EXP, "[01]1234567890123A", ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 13*/ { BARCODE_DBAR_EXP, "[01]123456789012315", ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 14*/ { BARCODE_DBAR_STK, "1234567890123", 0, 3, 50 },
-        /* 15*/ { BARCODE_DBAR_STK, "123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 16*/ { BARCODE_DBAR_STK, "12345678901235", ZINT_ERROR_INVALID_CHECK, -1, -1 },
-        /* 17*/ { BARCODE_DBAR_STK, "123456789012315", ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 18*/ { BARCODE_DBAR_OMNSTK, "1234567890123", 0, 5, 50 },
-        /* 19*/ { BARCODE_DBAR_OMNSTK, "123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 20*/ { BARCODE_DBAR_OMNSTK, "12345678901236", ZINT_ERROR_INVALID_CHECK, -1, -1 },
-        /* 21*/ { BARCODE_DBAR_OMNSTK, "123456789012315", ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 22*/ { BARCODE_DBAR_EXPSTK, "[01]12345678901234", ZINT_WARN_NONCOMPLIANT, 5, 102 },
-        /* 22*/ { BARCODE_DBAR_EXPSTK, "[01]12345678901231", 0, 5, 102 },
-        /* 23*/ { BARCODE_DBAR_EXPSTK, "[01]123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 24*/ { BARCODE_DBAR_EXPSTK, "[01]123456789012315", ZINT_ERROR_INVALID_DATA, -1, -1 },
+        /*  0*/ { BARCODE_DBAR_OMN, -1, "1234567890123", 0, 1, 96 },
+        /*  1*/ { BARCODE_DBAR_OMN, -1, "123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1 },
+        /*  2*/ { BARCODE_DBAR_OMN, -1, "12345678901234", ZINT_ERROR_INVALID_CHECK, -1, -1 },
+        /*  3*/ { BARCODE_DBAR_OMN, -1, "123456789012315", ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  4*/ { BARCODE_DBAR_LTD, -1, "1234567890123", 0, 1, 79 },
+        /*  5*/ { BARCODE_DBAR_LTD, -1, "123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1 },
+        /*  6*/ { BARCODE_DBAR_LTD, -1, "12345678901235", ZINT_ERROR_INVALID_CHECK, -1, -1 },
+        /*  7*/ { BARCODE_DBAR_LTD, -1, "123456789012315", ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  8*/ { BARCODE_DBAR_LTD, -1, "2234567890123", ZINT_ERROR_INVALID_DATA, -1, -1 },
+        /*  9*/ { BARCODE_DBAR_LTD, -1, "22345678901238", ZINT_ERROR_INVALID_DATA, -1, -1 },
+        /* 10*/ { BARCODE_DBAR_EXP, -1, "[01]12345678901234", ZINT_WARN_NONCOMPLIANT, 1, 134 },
+        /* 11*/ { BARCODE_DBAR_EXP, -1, "[01]12345678901231", 0, 1, 134 },
+        /* 12*/ { BARCODE_DBAR_EXP, -1, "[01]1234567890123A", ZINT_ERROR_INVALID_DATA, -1, -1 },
+        /* 13*/ { BARCODE_DBAR_EXP, -1, "[01]123456789012315", ZINT_ERROR_INVALID_DATA, -1, -1 },
+        /* 14*/ { BARCODE_DBAR_STK, -1, "1234567890123", 0, 3, 50 },
+        /* 15*/ { BARCODE_DBAR_STK, -1, "123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1 },
+        /* 16*/ { BARCODE_DBAR_STK, -1, "12345678901235", ZINT_ERROR_INVALID_CHECK, -1, -1 },
+        /* 17*/ { BARCODE_DBAR_STK, -1, "123456789012315", ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 18*/ { BARCODE_DBAR_OMNSTK, -1, "1234567890123", 0, 5, 50 },
+        /* 19*/ { BARCODE_DBAR_OMNSTK, -1, "123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1 },
+        /* 20*/ { BARCODE_DBAR_OMNSTK, -1, "12345678901236", ZINT_ERROR_INVALID_CHECK, -1, -1 },
+        /* 21*/ { BARCODE_DBAR_OMNSTK, -1, "123456789012315", ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 22*/ { BARCODE_DBAR_EXPSTK, -1, "[01]12345678901234", ZINT_WARN_NONCOMPLIANT, 5, 102 },
+        /* 23*/ { BARCODE_DBAR_EXPSTK, -1, "[01]12345678901231", 0, 5, 102 },
+        /* 24*/ { BARCODE_DBAR_EXPSTK, -1, "[01]123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1 },
+        /* 25*/ { BARCODE_DBAR_EXPSTK, -1, "[01]123456789012315", ZINT_ERROR_INVALID_DATA, -1, -1 },
+        /* 26*/ { BARCODE_DBAR_EXPSTK, 1, "[01]12345678901231", 0, 9, 53 },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -1275,7 +1278,7 @@ static void test_input(int index, int debug) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, data[i].option_2, -1, -1 /*output_options*/, data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, (const unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);

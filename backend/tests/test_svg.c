@@ -155,7 +155,7 @@ static void test_print(int index, int generate, int debug) {
         } else {
             text = data[i].data;
         }
-        text_length = strlen(text);
+        text_length = (int) strlen(text);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) text, text_length);
         assert_equal(ret, data[i].ret, "i:%d %s ZBarcode_Encode ret %d != %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), ret, data[i].ret, symbol->errtxt);

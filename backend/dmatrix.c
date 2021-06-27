@@ -269,7 +269,7 @@ static int p_r_6_2_1(const unsigned char inputData[], const int position, const 
 
 /* 'look ahead test' from Annex P */
 static int look_ahead_test(const unsigned char inputData[], const int sourcelen, const int position,
-            const int current_mode, const int gs1) {
+            const int current_mode, const int gs1, const int debug) {
     float ascii_count, c40_count, text_count, x12_count, edf_count, b256_count;
     int ascii_rnded, c40_rnded, text_rnded, x12_rnded, edf_rnded, b256_rnded;
     float cnt_1;
@@ -379,6 +379,12 @@ static int look_ahead_test(const unsigned char inputData[], const int sourcelen,
             text_count = stripf(text_count);
             x12_count = stripf(x12_count);
             c40_count = stripf(c40_count);
+            if (debug) {
+                printf("\n(%d, %d, %d): ascii_count %.8g, b256_count %.8g, edf_count %.8g, text_count %.8g"
+                        ", x12_count %.8g, c40_count %.8g",
+                        current_mode, position, sp, ascii_count, b256_count, edf_count, text_count,
+                        x12_count, c40_count);
+            }
 
             cnt_1 = ascii_count + 1.0f;
             if (cnt_1 <= b256_count && cnt_1 <= edf_count && cnt_1 <= text_count && cnt_1 <= x12_count
@@ -428,6 +434,12 @@ static int look_ahead_test(const unsigned char inputData[], const int sourcelen,
     text_rnded = (int) ceilf(stripf(text_count));
     x12_rnded = (int) ceilf(stripf(x12_count));
     c40_rnded = (int) ceilf(stripf(c40_count));
+    if (debug) {
+        printf("\nEOD(%d, %d): ascii_rnded %d, b256_rnded %d, edf_rnded %d, text_rnded %d, x12_rnded %d (%g)"
+                ", c40_rnded %d (%g)\n",
+                current_mode, position, ascii_rnded, b256_rnded, edf_rnded, text_rnded, x12_rnded, x12_count,
+                c40_rnded, c40_count);
+    }
 
     if (ascii_rnded <= b256_rnded && ascii_rnded <= edf_rnded && ascii_rnded <= text_rnded && ascii_rnded <= x12_rnded
             && ascii_rnded <= c40_rnded) {
@@ -695,7 +707,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
                 tp++;
                 sp += 2;
             } else {
-                next_mode = look_ahead_test(source, inputlen, sp, current_mode, gs1);
+                next_mode = look_ahead_test(source, inputlen, sp, current_mode, gs1, debug);
 
                 if (next_mode != DM_ASCII) {
                     switch (next_mode) {
@@ -753,7 +765,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
 
             next_mode = current_mode;
             if (process_p == 0) {
-                next_mode = look_ahead_test(source, inputlen, sp, current_mode, gs1);
+                next_mode = look_ahead_test(source, inputlen, sp, current_mode, gs1, debug);
             }
 
             if (next_mode != current_mode) {
@@ -809,7 +821,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
 
             next_mode = DM_X12;
             if (process_p == 0) {
-                next_mode = look_ahead_test(source, inputlen, sp, current_mode, gs1);
+                next_mode = look_ahead_test(source, inputlen, sp, current_mode, gs1, debug);
             }
 
             if (next_mode != DM_X12) {
@@ -844,7 +856,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
             if (process_p == 3) {
                 /* Note different then spec Step (f)(1), which suggests checking when 0, but this seems to work
                    better in many cases. */
-                next_mode = look_ahead_test(source, inputlen, sp, current_mode, gs1);
+                next_mode = look_ahead_test(source, inputlen, sp, current_mode, gs1, debug);
             }
 
             if (next_mode != DM_EDIFACT) {
@@ -868,7 +880,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
 
         /* step (g) Base 256 encodation */
         } else if (current_mode == DM_BASE256) {
-            next_mode = look_ahead_test(source, inputlen, sp, current_mode, gs1);
+            next_mode = look_ahead_test(source, inputlen, sp, current_mode, gs1, debug);
 
             if (next_mode == DM_BASE256) {
                 target[tp] = source[sp];

@@ -153,7 +153,7 @@ static void test_hrt_cpy_iso8859_1(int index, int debug) {
         }
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d\n", i, ret, data[i].ret);
         assert_equal(ret, (int) ustrlen(symbol.text), "i:%d ret %d != strlen %d\n", i, ret, (int) ustrlen(symbol.text));
-        assert_nonzero(testUtilIsValidUTF8(symbol.text, ustrlen(symbol.text)), "i:%d testUtilIsValidUTF8(%s) != 1\n", i, symbol.text);
+        assert_nonzero(testUtilIsValidUTF8(symbol.text, (int) ustrlen(symbol.text)), "i:%d testUtilIsValidUTF8(%s) != 1\n", i, symbol.text);
         assert_zero(strcmp((char *) symbol.text, data[i].expected), "i:%d symbol.text (%s) != expected (%s)\n", i, symbol.text, data[i].expected);
     }
 

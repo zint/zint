@@ -33,6 +33,8 @@
 
 #include <stdio.h>
 #include "common.h"
+#include "gs1.h"
+
 #ifdef _MSC_VER
 #define inline _inline
 #endif
@@ -62,18 +64,6 @@ static inline char check_digit(const unsigned int count) {
     return itoc((10 - (count % 10)) % 10);
 }
 
-/* Calculate the check digit - the same method used for EAN-13 (GS1 General Specifications 7.9.1) */
-static unsigned int gs1_checksum(const unsigned char source[], const int length) {
-    int i;
-    unsigned int count = 0;
-    int factor = length & 1 ? 3 : 1;
-    for (i = 0; i < length; i++) {
-        count += factor * ctoi(source[i]);
-        factor = factor == 1 ? 3 : 1;
-    }
-    return count;
-}
-
 /* Common to Standard (Matrix), Industrial, IATA, and Data Logic */
 static int c25_common(struct zint_symbol *symbol, const unsigned char source[], int length, const int max,
             const char *table[10], const char *start_stop[2], const int error_base) {
@@ -97,7 +87,7 @@ static int c25_common(struct zint_symbol *symbol, const unsigned char source[], 
 
     if (have_checkdigit) {
         /* Add standard GS1 check digit */
-        temp[length] = check_digit(gs1_checksum(source, length));
+        temp[length] = gs1_check_digit(source, length);
         temp[++length] = '\0';
     }
 
@@ -173,7 +163,7 @@ static int c25inter_common(struct zint_symbol *symbol, unsigned char source[], i
 
     if (have_checkdigit) {
         /* Add standard GS1 check digit */
-        temp[length] = check_digit(gs1_checksum(temp, length));
+        temp[length] = gs1_check_digit(temp, length);
         temp[++length] = '\0';
     }
 
@@ -258,7 +248,7 @@ INTERNAL int itf14(struct zint_symbol *symbol, unsigned char source[], int lengt
     ustrcpy(localstr + zeroes, source);
 
     /* Calculate the check digit - the same method used for EAN-13 */
-    localstr[13] = check_digit(gs1_checksum(localstr, 13));
+    localstr[13] = gs1_check_digit(localstr, 13);
     localstr[14] = '\0';
     error_number = c25inter_common(symbol, localstr, 14, 1 /*dont_set_height*/);
     ustrcpy(symbol->text, localstr);

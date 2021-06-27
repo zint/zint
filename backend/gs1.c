@@ -1386,3 +1386,17 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
     /* the character '[' in the reduced string refers to the FNC1 character */
     return error_value;
 }
+
+/* Helper to return standard GS1 check digit (GS1 General Specifications 7.9.1) */
+INTERNAL char gs1_check_digit(const unsigned char source[], const int length) {
+    int i;
+    int count = 0;
+    int factor = length & 1 ? 3 : 1;
+
+    for (i = 0; i < length; i++) {
+        count += factor * ctoi(source[i]);
+        factor = factor == 1 ? 3 : 1;
+    }
+
+    return itoc((10 - (count % 10)) % 10);
+}

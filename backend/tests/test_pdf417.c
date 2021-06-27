@@ -1074,7 +1074,7 @@ static void test_fuzz(int index, int debug) {
 
         length = data[i].length;
         if (length == -1) {
-            length = strlen(data[i].data);
+            length = (int) strlen(data[i].data);
         }
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);

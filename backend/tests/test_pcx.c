@@ -93,7 +93,7 @@ static void test_pcx(int index, int debug) {
         }
         symbol->debug |= debug;
 
-        length = strlen(data[i].data);
+        length = (int) strlen(data[i].data);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_zero(ret, "i:%d %s ZBarcode_Encode ret %d != 0 %s\n", i, testUtilBarcodeName(data[i].symbology), ret, symbol->errtxt);

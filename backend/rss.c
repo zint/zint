@@ -31,7 +31,7 @@
  */
 /* vim: set ts=4 sw=4 et : */
 
-/* The functions "combins" and "getRSSwidths" are copyright BSI and are
+/* The functions "rss_combins" and "getRSSwidths" are copyright BSI and are
    released with permission under the following terms:
 
    "Copyright subsists in all BSI publications. BSI also holds the copyright, in the
@@ -73,11 +73,11 @@
 #include "gs1.h"
 #include "general_field.h"
 
-/**********************************************************************
- * combins(n,r): returns the number of Combinations of r selected from n:
+/****************************************************************************
+ * rss_combins(n,r): returns the number of Combinations of r selected from n:
  *   Combinations = n! / ((n - r)! * r!)
- **********************************************************************/
-static int combins(const int n, const int r) {
+ ****************************************************************************/
+static int rss_combins(const int n, const int r) {
     int i, j;
     int maxDenom, minDenom;
     int val;
@@ -128,11 +128,11 @@ static void getRSSwidths(int widths[], int val, int n, const int elements, const
                 ;
                 elmWidth++, narrowMask &= ~(1 << bar)) {
             /* get all combinations */
-            subVal = combins(n - elmWidth - 1, elements - bar - 2);
+            subVal = rss_combins(n - elmWidth - 1, elements - bar - 2);
             /* less combinations with no single-module element */
-            if ((!noNarrow) && (!narrowMask) &&
-                    (n - elmWidth - (elements - bar - 1) >= elements - bar - 1)) {
-                subVal -= combins(n - elmWidth - (elements - bar), elements - bar - 2);
+            if ((!noNarrow) && (!narrowMask)
+                    && (n - elmWidth - (elements - bar - 1) >= elements - bar - 1)) {
+                subVal -= rss_combins(n - elmWidth - (elements - bar), elements - bar - 2);
             }
             /* less combinations with elements > maxVal */
             if (elements - bar - 1 > 1) {
@@ -140,7 +140,7 @@ static void getRSSwidths(int widths[], int val, int n, const int elements, const
                 for (mxwElement = n - elmWidth - (elements - bar - 2);
                         mxwElement > maxWidth;
                         mxwElement--) {
-                    lessVal += combins(n - elmWidth - mxwElement - 1, elements - bar - 3);
+                    lessVal += rss_combins(n - elmWidth - mxwElement - 1, elements - bar - 3);
                 }
                 subVal -= lessVal * (elements - 1 - bar);
             } else if (n - elmWidth > maxWidth) {
@@ -157,24 +157,8 @@ static void getRSSwidths(int widths[], int val, int n, const int elements, const
     return;
 }
 
-/* Calculate check digit from Annex A */
-static int calc_check_digit(const unsigned char *src) {
-    int i, check_digit;
-    int count = 0;
-
-    for (i = 0; i < 13; i++) {
-        count += (i & 1) ? ctoi(src[i]) : 3 * ctoi(src[i]);
-    }
-    check_digit = 10 - (count % 10);
-    if (check_digit == 10) {
-        check_digit = 0;
-    }
-
-    return check_digit;
-}
-
 /* Set GTIN-14 human readable text */
-static void set_gtin14_hrt(struct zint_symbol *symbol, const unsigned char *source, const int src_len) {
+static void rss_set_gtin14_hrt(struct zint_symbol *symbol, const unsigned char *source, const int src_len) {
     int i;
     unsigned char hrt[15];
 
@@ -186,7 +170,7 @@ static void set_gtin14_hrt(struct zint_symbol *symbol, const unsigned char *sour
         hrt[12 - i] = source[src_len - i - 1];
     }
 
-    hrt[13] = itoc(calc_check_digit(hrt));
+    hrt[13] = gs1_check_digit(hrt, 13);
     hrt[14] = '\0';
 
     ustrcat(symbol->text, hrt);
@@ -319,18 +303,19 @@ INTERNAL int rss14_cc(struct zint_symbol *symbol, unsigned char source[], int sr
     separator_row = 0;
 
     if (src_len > 14) { /* Allow check digit to be specified (will be verified and ignored) */
-        strcpy(symbol->errtxt, "380: Input too long");
+        strcpy(symbol->errtxt, "380: Input too long (14 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
     error_number = is_sane(NEON, source, src_len);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "381: Invalid characters in data");
+        strcpy(symbol->errtxt, "381: Invalid characters in data (digits only)");
         return error_number;
     }
 
     if (src_len == 14) { /* Verify check digit */
-        if (calc_check_digit(source) != ctoi(source[13])) {
-            strcpy(symbol->errtxt, "388: Invalid check digit");
+        if (gs1_check_digit(source, 13) != source[13]) {
+            sprintf(symbol->errtxt, "388: Invalid check digit '%c', expecting '%c'",
+                    source[13], gs1_check_digit(source, 13));
             return ZINT_ERROR_INVALID_CHECK;
         }
         src_len--; /* Ignore */
@@ -422,7 +407,6 @@ INTERNAL int rss14_cc(struct zint_symbol *symbol, unsigned char source[], int sr
     v_odd[2] = (data_character[2] - g_sum_table[data_group[2]]) / t_table[data_group[2]];
     v_even[2] = (data_character[2] - g_sum_table[data_group[2]]) % t_table[data_group[2]];
 
-
     /* Use RSS subset width algorithm */
     for (i = 0; i < 4; i++) {
         if ((i == 0) || (i == 2)) {
@@ -449,7 +433,6 @@ INTERNAL int rss14_cc(struct zint_symbol *symbol, unsigned char source[], int sr
             data_widths[7][i] = widths[3];
         }
     }
-
 
     checksum = 0;
     /* Calculate the checksum */
@@ -508,7 +491,7 @@ INTERNAL int rss14_cc(struct zint_symbol *symbol, unsigned char source[], int sr
         symbol->rows = symbol->rows + 1;
 
         /* Set human readable text */
-        set_gtin14_hrt(symbol, source, src_len);
+        rss_set_gtin14_hrt(symbol, source, src_len);
 
 #ifdef COMPLIANT_HEIGHTS
         /* Minimum height is 13X for truncated symbol ISO/IEC 24724:2011 5.3.1
@@ -658,18 +641,19 @@ INTERNAL int rsslimited_cc(struct zint_symbol *symbol, unsigned char source[], i
     separator_row = 0;
 
     if (src_len > 14) { /* Allow check digit to be specified (will be verified and ignored) */
-        strcpy(symbol->errtxt, "382: Input too long");
+        strcpy(symbol->errtxt, "382: Input too long (14 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
     error_number = is_sane(NEON, source, src_len);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "383: Invalid characters in data");
+        strcpy(symbol->errtxt, "383: Invalid characters in data (digits only)");
         return error_number;
     }
 
     if (src_len == 14) { /* Verify check digit */
-        if (calc_check_digit(source) != ctoi(source[13])) {
-            strcpy(symbol->errtxt, "389: Invalid check digit");
+        if (gs1_check_digit(source, 13) != source[13]) {
+            sprintf(symbol->errtxt, "389: Invalid check digit '%c', expecting '%c'",
+                    source[13], gs1_check_digit(source, 13));
             return ZINT_ERROR_INVALID_CHECK;
         }
         src_len--; /* Ignore */
@@ -677,7 +661,7 @@ INTERNAL int rsslimited_cc(struct zint_symbol *symbol, unsigned char source[], i
 
     if (src_len == 13) {
         if ((source[0] != '0') && (source[0] != '1')) {
-            strcpy(symbol->errtxt, "384: Input out of range");
+            strcpy(symbol->errtxt, "384: Input out of range (0 to 1999999999999)");
             return ZINT_ERROR_INVALID_DATA;
         }
     }
@@ -810,7 +794,7 @@ INTERNAL int rsslimited_cc(struct zint_symbol *symbol, unsigned char source[], i
     }
 
     /* Set human readable text */
-    set_gtin14_hrt(symbol, source, src_len);
+    rss_set_gtin14_hrt(symbol, source, src_len);
 
     /* ISO/IEC 24724:2011 6.2 10X minimum height, use as default also */
     if (symbol->symbology == BARCODE_DBAR_LTD_CC) {
@@ -846,11 +830,11 @@ INTERNAL int rss_date(const unsigned char source[], const int src_posn) {
 }
 
 /* Handles all data encodation from section 7.2.5 of ISO/IEC 24724 */
-static int rss_binary_string(struct zint_symbol *symbol, const unsigned char source[], char binary_string[],
-            int *p_bp) {
+static int rssexp_binary_string(struct zint_symbol *symbol, const unsigned char source[], char binary_string[],
+            int cols_per_row, int *p_bp) {
     int encoding_method, i, j, read_posn, debug = (symbol->debug & ZINT_DEBUG_PRINT), mode = NUMERIC;
     char last_digit = '\0';
-    int symbol_characters, characters_per_row;
+    int symbol_characters, characters_per_row = cols_per_row * 2;
     int length = (int) ustrlen(source);
 #ifndef _MSC_VER
     char general_field[length + 1];
@@ -897,9 +881,9 @@ static int rss_binary_string(struct zint_symbol *symbol, const unsigned char sou
                         encoding_method = 7;
                     }
 
-                } else if ((length == 34) && (source[26] == '1') &&
-                        (source[27] == '1' || source[27] == '3' || source[27] == '5' || source[27] == '7') &&
-                        rss_date(source, 28) >= 0) {
+                } else if ((length == 34) && (source[26] == '1')
+                            && (source[27] == '1' || source[27] == '3' || source[27] == '5' || source[27] == '7')
+                            && rss_date(source, 28) >= 0) {
 
                     /* (01), (310x) and (11) - metric weight and production date */
                     /* (01), (310x) and (13) - metric weight and packaging date */
@@ -928,9 +912,9 @@ static int rss_binary_string(struct zint_symbol *symbol, const unsigned char sou
                         encoding_method = 8;
                     }
 
-                } else if ((length == 34) && (source[26] == '1') &&
-                        (source[27] == '1' || source[27] == '3' || source[27] == '5' || source[27] == '7') &&
-                        rss_date(source, 28) >= 0) {
+                } else if ((length == 34) && (source[26] == '1')
+                            && (source[27] == '1' || source[27] == '3' || source[27] == '5' || source[27] == '7')
+                            && rss_date(source, 28) >= 0) {
 
                     /* (01), (320x) and (11) - English weight and production date */
                     /* (01), (320x) and (13) - English weight and packaging date */
@@ -988,7 +972,7 @@ static int rss_binary_string(struct zint_symbol *symbol, const unsigned char sou
         if ((source[i] < '0') || (source[i] > '9')) {
             if (source[i] != '[') {
                 /* Something is wrong */
-                strcpy(symbol->errtxt, "385: Invalid characters in input data");
+                strcpy(symbol->errtxt, "385: Invalid characters in input data"); // TODO: Better error message
                 return ZINT_ERROR_INVALID_DATA;
             }
         }
@@ -1089,7 +1073,7 @@ static int rss_binary_string(struct zint_symbol *symbol, const unsigned char sou
 
         if (!general_field_encode(general_field, j, &mode, &last_digit, binary_string, &bp)) {
             /* Invalid characters in input data */
-            strcpy(symbol->errtxt, "386: Invalid characters in input data");
+            strcpy(symbol->errtxt, "386: Invalid characters in input data"); // TODO: Better error message
             return ZINT_ERROR_INVALID_DATA;
         }
     }
@@ -1102,16 +1086,8 @@ static int rss_binary_string(struct zint_symbol *symbol, const unsigned char sou
     }
     symbol_characters = ((bp + remainder) / 12) + 1;
 
-    if ((symbol->symbology == BARCODE_DBAR_EXPSTK) || (symbol->symbology == BARCODE_DBAR_EXPSTK_CC)) {
-        characters_per_row = symbol->option_2 * 2;
-
-        if ((characters_per_row < 2) || (characters_per_row > 20)) {
-            characters_per_row = 4;
-        }
-
-        if ((symbol_characters % characters_per_row) == 1) {
-            symbol_characters++;
-        }
+    if (characters_per_row && (symbol_characters % characters_per_row) == 1) { // DBAR_EXPSTK
+        symbol_characters++;
     }
 
     if (symbol_characters < 4) {
@@ -1139,16 +1115,8 @@ static int rss_binary_string(struct zint_symbol *symbol, const unsigned char sou
         }
         symbol_characters = ((bp + remainder) / 12) + 1;
 
-        if ((symbol->symbology == BARCODE_DBAR_EXPSTK) || (symbol->symbology == BARCODE_DBAR_EXPSTK_CC)) {
-            characters_per_row = symbol->option_2 * 2;
-
-            if ((characters_per_row < 2) || (characters_per_row > 20)) {
-                characters_per_row = 4;
-            }
-
-            if ((symbol_characters % characters_per_row) == 1) {
-                symbol_characters++;
-            }
+        if (characters_per_row && (symbol_characters % characters_per_row) == 1) { // DBAR_EXPSTK
+            symbol_characters++;
         }
 
         if (symbol_characters < 4) {
@@ -1161,7 +1129,7 @@ static int rss_binary_string(struct zint_symbol *symbol, const unsigned char sou
     }
 
     if (bp > 252) { /* 252 = (21 * 12) */
-        strcpy(symbol->errtxt, "387: Input too long");
+        strcpy(symbol->errtxt, "387: Input too long"); // TODO: Better error message
         return ZINT_ERROR_TOO_LONG;
     }
 
@@ -1282,6 +1250,7 @@ INTERNAL int rssexpanded_cc(struct zint_symbol *symbol, unsigned char source[], 
     unsigned int bin_len = 13 * src_len + 200 + 1;
     int widths[4];
     int bp = 0;
+    int cols_per_row = 0;
     int stack_rows = 1;
 #ifndef _MSC_VER
     unsigned char reduced[src_len + 1];
@@ -1297,6 +1266,7 @@ INTERNAL int rssexpanded_cc(struct zint_symbol *symbol, unsigned char source[], 
     if (error_number >= ZINT_ERROR) {
         return error_number;
     }
+    warn_number = error_number;
 
     if (symbol->debug & ZINT_DEBUG_PRINT) {
         printf("Reduced (%d): %s\n", (int) ustrlen(reduced), reduced);
@@ -1315,9 +1285,22 @@ INTERNAL int rssexpanded_cc(struct zint_symbol *symbol, unsigned char source[], 
         binary_string[bp++] = '0';
     }
 
-    i = rss_binary_string(symbol, reduced, binary_string, &bp);
-    if (i != 0) {
-        return i;
+    if ((symbol->symbology == BARCODE_DBAR_EXPSTK) || (symbol->symbology == BARCODE_DBAR_EXPSTK_CC)) {
+        cols_per_row = 2; /* Default */
+        if (symbol->option_2 >= 1 && symbol->option_2 <= 11) {
+            cols_per_row = symbol->option_2;
+            if (cc_rows && (cols_per_row == 1)) {
+                /* "There shall be a minimum of four symbol characters in the
+                   first row of an RSS Expanded Stacked symbol when it is the linear
+                   component of an EAN.UCC Composite symbol." */
+                cols_per_row = 2;
+            }
+        }
+    }
+
+    error_number = rssexp_binary_string(symbol, reduced, binary_string, cols_per_row, &bp);
+    if (error_number != 0) {
+        return error_number;
     }
 
     data_chars = bp / 12;
@@ -1479,18 +1462,8 @@ INTERNAL int rssexpanded_cc(struct zint_symbol *symbol, unsigned char source[], 
          * Patch by Daniel Frede
          */
 
-        if ((symbol->option_2 < 1) || (symbol->option_2 > 11)) {
-            symbol->option_2 = 2;
-        }
-        if (cc_rows && (symbol->option_2 == 1)) {
-            /* "There shall be a minimum of four symbol characters in the
-            first row of an RSS Expanded Stacked symbol when it is the linear
-            component of an EAN.UCC Composite symbol." */
-            symbol->option_2 = 2;
-        }
-
-        stack_rows = codeblocks / symbol->option_2;
-        if (codeblocks % symbol->option_2 > 0) {
+        stack_rows = codeblocks / cols_per_row;
+        if (codeblocks % cols_per_row > 0) {
             stack_rows++;
         }
 
@@ -1502,10 +1475,10 @@ INTERNAL int rssexpanded_cc(struct zint_symbol *symbol, unsigned char source[], 
             int num_columns;
 
             /* Number of columns in current row */
-            if (current_row * symbol->option_2 > codeblocks) {
+            if (current_row * cols_per_row > codeblocks) {
                 num_columns = codeblocks - current_block;
             } else {
-                num_columns = symbol->option_2;
+                num_columns = cols_per_row;
             }
 
             /* Row Start */
@@ -1515,8 +1488,8 @@ INTERNAL int rssexpanded_cc(struct zint_symbol *symbol, unsigned char source[], 
 
             /* If last row and is partial and even-numbered, and have even columns (segment pairs),
              * and odd number of finders (== odd number of columns) */
-            if ((current_row == stack_rows) && (num_columns != symbol->option_2) &&
-                    !(current_row & 1) && !(symbol->option_2 & 1) && (num_columns & 1)) {
+            if ((current_row == stack_rows) && (num_columns != cols_per_row) && !(current_row & 1)
+                    && !(cols_per_row & 1) && (num_columns & 1)) {
                 /* Special case bottom row */
                 special_case_row = 1;
                 sub_elements[0] = 2; /* Extra space (latch set below) */
@@ -1524,7 +1497,7 @@ INTERNAL int rssexpanded_cc(struct zint_symbol *symbol, unsigned char source[], 
 
             /* If odd number of columns or current row odd-numbered or special case last row then left-to-right,
              * else right-to-left */
-            if ((symbol->option_2 & 1) || (current_row & 1) || special_case_row) {
+            if ((cols_per_row & 1) || (current_row & 1) || special_case_row) {
                 left_to_right = 1;
             } else {
                 left_to_right = 0;
@@ -1533,7 +1506,7 @@ INTERNAL int rssexpanded_cc(struct zint_symbol *symbol, unsigned char source[], 
             if (symbol->debug & ZINT_DEBUG_PRINT) {
                 if (current_row == stack_rows) {
                     printf("Last row: number of columns: %d / %d, left to right: %d, special case: %d\n",
-                        num_columns, symbol->option_2, left_to_right, special_case_row);
+                        num_columns, cols_per_row, left_to_right, special_case_row);
                 }
             }
 
@@ -1553,7 +1526,7 @@ INTERNAL int rssexpanded_cc(struct zint_symbol *symbol, unsigned char source[], 
                 }
                 reader++;
                 current_block++;
-            } while ((reader < symbol->option_2) && (current_block < codeblocks));
+            } while ((reader < cols_per_row) && (current_block < codeblocks));
 
             /* Row Stop */
             sub_elements[elements_in_sub] = 1; // right guard
@@ -1574,7 +1547,7 @@ INTERNAL int rssexpanded_cc(struct zint_symbol *symbol, unsigned char source[], 
                 int odd_last_row = (current_row == stack_rows) && (data_chars % 2 == 0);
 
                 /* middle separator pattern (above current row) */
-                for (j = 5; j < (49 * symbol->option_2); j += 2) {
+                for (j = 5; j < (49 * cols_per_row); j += 2) {
                     set_module(symbol, symbol->rows - 2, j);
                 }
                 symbol->row_height[symbol->rows - 2] = 1;
@@ -1609,7 +1582,11 @@ INTERNAL int rssexpanded_cc(struct zint_symbol *symbol, unsigned char source[], 
         symbol->height = symbol->height ? 34.0f : 34.0f * stack_rows; /* Pass back min row or default height */
     } else {
 #ifdef COMPLIANT_HEIGHTS
-        warn_number = set_height(symbol, 34.0f, 34.0f * stack_rows, 0.0f, 0 /*no_errtxt*/);
+        if (warn_number) {
+            (void) set_height(symbol, 34.0f, 34.0f * stack_rows, 0.0f, 0 /*no_errtxt*/);
+        } else {
+            warn_number = set_height(symbol, 34.0f, 34.0f * stack_rows, 0.0f, 0 /*no_errtxt*/);
+        }
 #else
         (void) set_height(symbol, 0.0f, 34.0f * stack_rows, 0.0f, 1 /*no_errtxt*/);
 #endif
