@@ -306,11 +306,14 @@ static int look_ahead_test(const unsigned char inputData[], const int sourcelen,
     }
 
     for (sp = position; sp < sourcelen; sp++) {
+        unsigned char c = inputData[sp];
+        int is_extended = c & 0x80;
+
         /* ascii ... step (l) */
-        if ((inputData[sp] >= '0') && (inputData[sp] <= '9')) {
+        if ((c >= '0') && (c <= '9')) {
             ascii_count += 0.5F; // (l)(1)
         } else {
-            if (inputData[sp] > 127) {
+            if (is_extended) {
                 ascii_count = ceilf(ascii_count) + 2.0F; // (l)(2)
             } else {
                 ascii_count = ceilf(ascii_count) + 1.0F; // (l)(3)
@@ -318,10 +321,10 @@ static int look_ahead_test(const unsigned char inputData[], const int sourcelen,
         }
 
         /* c40 ... step (m) */
-        if (isc40(inputData[sp])) {
+        if (isc40(c)) {
             c40_count += (2.0F / 3.0F); // (m)(1)
         } else {
-            if (inputData[sp] > 127) {
+            if (is_extended) {
                 c40_count += (8.0F / 3.0F); // (m)(2)
             } else {
                 c40_count += (4.0F / 3.0F); // (m)(3)
@@ -329,10 +332,10 @@ static int look_ahead_test(const unsigned char inputData[], const int sourcelen,
         }
 
         /* text ... step (n) */
-        if (istext(inputData[sp])) {
+        if (istext(c)) {
             text_count += (2.0F / 3.0F); // (n)(1)
         } else {
-            if (inputData[sp] > 127) {
+            if (is_extended) {
                 text_count += (8.0F / 3.0F); // (n)(2)
             } else {
                 text_count += (4.0F / 3.0F); // (n)(3)
@@ -340,10 +343,10 @@ static int look_ahead_test(const unsigned char inputData[], const int sourcelen,
         }
 
         /* x12 ... step (o) */
-        if (isX12(inputData[sp])) {
+        if (isX12(c)) {
             x12_count += (2.0F / 3.0F); // (o)(1)
         } else {
-            if (inputData[sp] > 127) {
+            if (is_extended) {
                 x12_count += (13.0F / 3.0F); // (o)(2)
             } else {
                 x12_count += (10.0F / 3.0F); // (o)(3)
@@ -351,10 +354,10 @@ static int look_ahead_test(const unsigned char inputData[], const int sourcelen,
         }
 
         /* edifact ... step (p) */
-        if ((inputData[sp] >= ' ') && (inputData[sp] <= '^')) {
+        if ((c >= ' ') && (c <= '^')) {
             edf_count += (3.0F / 4.0F); // (p)(1)
         } else {
-            if (inputData[sp] > 127) {
+            if (is_extended) {
                 edf_count += 17.0F / 4.0f; // (p)(2)
             } else {
                 edf_count += 13.0F / 4.0f; // (p)(3)
@@ -362,7 +365,7 @@ static int look_ahead_test(const unsigned char inputData[], const int sourcelen,
         }
 
         /* base 256 ... step (q) */
-        if ((gs1 == 1) && (inputData[sp] == '[')) {
+        if ((gs1 == 1) && (c == '[')) {
             /* FNC1 separator */
             b256_count += 4.0F; // (q)(1)
         } else {
@@ -381,7 +384,7 @@ static int look_ahead_test(const unsigned char inputData[], const int sourcelen,
             c40_count = stripf(c40_count);
             if (debug) {
                 printf("\n(%d, %d, %d): ascii_count %.8g, b256_count %.8g, edf_count %.8g, text_count %.8g"
-                        ", x12_count %.8g, c40_count %.8g",
+                        ", x12_count %.8g, c40_count %.8g ",
                         current_mode, position, sp, ascii_count, b256_count, edf_count, text_count,
                         x12_count, c40_count);
             }
@@ -436,7 +439,7 @@ static int look_ahead_test(const unsigned char inputData[], const int sourcelen,
     c40_rnded = (int) ceilf(stripf(c40_count));
     if (debug) {
         printf("\nEOD(%d, %d): ascii_rnded %d, b256_rnded %d, edf_rnded %d, text_rnded %d, x12_rnded %d (%g)"
-                ", c40_rnded %d (%g)\n",
+                ", c40_rnded %d (%g) ",
                 current_mode, position, ascii_rnded, b256_rnded, edf_rnded, text_rnded, x12_rnded, x12_count,
                 c40_rnded, c40_count);
     }
@@ -569,7 +572,7 @@ static int c40text_cnt(const int current_mode, const int gs1, unsigned char inpu
         return 2;
     }
     cnt = 1;
-    if (input > 127) {
+    if (input & 0x80) {
         cnt += 2;
         input = input - 128;
     }
@@ -735,7 +738,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
                             break;
                     }
                 } else {
-                    if (source[sp] > 127) {
+                    if (source[sp] & 0x80) {
                         target[tp] = 235; /* FNC4 */
                         tp++;
                         target[tp] = (source[sp] - 128) + 1;
@@ -785,7 +788,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
                     ct_value = text_value;
                 }
 
-                if (source[sp] > 127) {
+                if (source[sp] & 0x80) {
                     process_buffer[process_p++] = 1;
                     process_buffer[process_p++] = 30; /* Upper Shift */
                     shift_set = ct_shift[source[sp] - 128];
@@ -955,7 +958,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
                         target[tp++] = (unsigned char) ((10 * ctoi(source[sp])) + ctoi(source[sp + 1]) + 130);
                         if (debug) printf("N%02d ", target[tp - 1] - 130);
                         sp++;
-                    } else if (source[sp] > 127) {
+                    } else if (source[sp] & 0x80) {
                         target[tp++] = 235; /* FNC4 */
                         target[tp++] = (source[sp] - 128) + 1;
                         if (debug) printf("FN4 A%02X ", target[tp - 1] - 1);

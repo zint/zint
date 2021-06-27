@@ -152,6 +152,7 @@ static int c1_look_ahead_test(const unsigned char source[], const int sourcelen,
             const int current_mode, const int gs1) {
     float ascii_count, c40_count, text_count, edi_count, byte_count;
     int ascii_rnded, c40_rnded, text_rnded, edi_rnded, byte_rnded;
+    float cnt_1;
     int sp;
 
     /* Step J1 */
@@ -181,12 +182,14 @@ static int c1_look_ahead_test(const unsigned char source[], const int sourcelen,
     }
 
     for (sp = position; sp < sourcelen; sp++) {
+        unsigned char c = source[sp];
+        int is_extended = c & 0x80;
 
         /* Step L */
-        if ((source[sp] >= '0') && (source[sp] <= '9')) {
+        if ((c >= '0') && (c <= '9')) {
             ascii_count += 0.5f; /* Step L1 */
         } else {
-            if (source[sp] > 127) {
+            if (is_extended) {
                 ascii_count = ceilf(ascii_count) + 2.0f; /* Step L2 */
             } else {
                 ascii_count = ceilf(ascii_count) + 1.0f; /* Step L3 */
@@ -194,34 +197,34 @@ static int c1_look_ahead_test(const unsigned char source[], const int sourcelen,
         }
 
         /* Step M */
-        if (isc40(source[sp])) {
+        if (isc40(c)) {
             c40_count += (2.0f / 3.0f); /* Step M1 */
-        } else if (source[sp] > 127) {
+        } else if (is_extended) {
             c40_count += (8.0f / 3.0f); /* Step M2 */
         } else {
             c40_count += (4.0f / 3.0f); /* Step M3 */
         }
 
         /* Step N */
-        if (istext(source[sp])) {
+        if (istext(c)) {
             text_count += (2.0f / 3.0f); /* Step N1 */
-        } else if (source[sp] > 127) {
+        } else if (is_extended) {
             text_count += (8.0f / 3.0f); /* Step N2 */
         } else {
             text_count += (4.0f / 3.0f); /* Step N3 */
         }
 
         /* Step O */
-        if (isedi(source[sp])) {
+        if (isedi(c)) {
             edi_count += (2.0f / 3.0f); /* Step O1 */
-        } else if (source[sp] > 127) {
+        } else if (is_extended) {
             edi_count += (13.0f / 3.0f); /* Step O2 */
         } else {
             edi_count += (10.0f / 3.0f); /* Step O3 */
         }
 
         /* Step P */
-        if (gs1 && (source[sp] == '[')) {
+        if (gs1 && (c == '[')) {
             byte_count += 3.0f; /* Step P1 */
         } else {
             byte_count += 1.0f; /* Step P2 */
@@ -232,27 +235,26 @@ static int c1_look_ahead_test(const unsigned char source[], const int sourcelen,
            BWIPP also uses 4 (cf very similar Data Matrix ISO/IEC 16022:2006 Annex P algorithm) */
         if (sp >= position + 3) {
             /* Step Q */
-            float cnt;
             ascii_rnded = (int) ceilf(stripf(ascii_count));
             c40_rnded = (int) ceilf(stripf(c40_count));
             text_rnded = (int) ceilf(stripf(text_count));
             edi_rnded = (int) ceilf(stripf(edi_count));
             byte_rnded = (int) ceilf(stripf(byte_count));
 
-            cnt = byte_count + 1.0f;
-            if (cnt <= ascii_rnded && cnt <= c40_rnded && cnt <= text_rnded && cnt <= edi_rnded) {
+            cnt_1 = byte_count + 1.0f;
+            if (cnt_1 <= ascii_rnded && cnt_1 <= c40_rnded && cnt_1 <= text_rnded && cnt_1 <= edi_rnded) {
                 return C1_BYTE; /* Step Q1 */
             }
-            cnt = ascii_count + 1.0f;
-            if (cnt <= c40_rnded && cnt <= text_rnded && cnt <= edi_rnded && cnt <= byte_rnded) {
+            cnt_1 = ascii_count + 1.0f;
+            if (cnt_1 <= c40_rnded && cnt_1 <= text_rnded && cnt_1 <= edi_rnded && cnt_1 <= byte_rnded) {
                 return C1_ASCII; /* Step Q2 */
             }
-            cnt = text_rnded + 1.0f;
-            if (cnt <= ascii_rnded && cnt <= c40_rnded && cnt <= edi_rnded && cnt <= byte_rnded) {
+            cnt_1 = text_rnded + 1.0f;
+            if (cnt_1 <= ascii_rnded && cnt_1 <= c40_rnded && cnt_1 <= edi_rnded && cnt_1 <= byte_rnded) {
                 return C1_TEXT; /* Step Q3 */
             }
-            cnt = c40_rnded + 1.0f;
-            if (cnt <= ascii_rnded && cnt <= text_rnded) {
+            cnt_1 = c40_rnded + 1.0f;
+            if (cnt_1 <= ascii_rnded && cnt_1 <= text_rnded) {
                 /* Step Q4 */
                 if (c40_rnded < edi_rnded) {
                     return C1_C40; /* Step Q4a */
@@ -265,8 +267,8 @@ static int c1_look_ahead_test(const unsigned char source[], const int sourcelen,
                     return C1_C40; /* Step Q4bii */
                 }
             }
-            cnt = edi_rnded + 1.0f;
-            if (cnt <= ascii_rnded && cnt <= c40_rnded && cnt <= text_rnded && cnt <= byte_rnded) {
+            cnt_1 = edi_rnded + 1.0f;
+            if (cnt_1 <= ascii_rnded && cnt_1 <= c40_rnded && cnt_1 <= text_rnded && cnt_1 <= byte_rnded) {
                 return C1_EDI; /* Step Q5 */
             }
         }
@@ -433,7 +435,7 @@ static int c40text_cnt(const int current_mode, const int gs1, unsigned char inpu
         return 2;
     }
     cnt = 1;
-    if (input > 127) {
+    if (input & 0x80) {
         cnt += 2;
         input = input - 128;
     }
@@ -577,7 +579,7 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigne
                         if (next_mode == C1_ASCII) {
                             if (debug_print) printf("ASCII ");
 
-                            if (source[sp] > 127) {
+                            if (source[sp] & 0x80) {
                                 /* Step B7 */
                                 target[tp++] = 235; /* FNC4 (Upper Shift) */
                                 target[tp++] = (source[sp] - 128) + 1;
@@ -627,7 +629,7 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigne
                 }
                 if (debug_print) printf(current_mode == C1_C40 ? "C40 " : "TEXT ");
 
-                if (source[sp] > 127) {
+                if (source[sp] & 0x80) {
                     cte_buffer[cte_p++] = 1; /* Shift 2 */
                     cte_buffer[cte_p++] = 30; /* FNC4 (Upper Shift) */
                     if (ct_shift[source[sp] - 128]) {
@@ -824,7 +826,7 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigne
                     if (istwodigits(source, length, sp)) {
                         target[tp++] = (10 * ctoi(source[sp])) + ctoi(source[sp + 1]) + 130;
                         sp++;
-                    } else if (source[sp] > 127) {
+                    } else if (source[sp] & 0x80) {
                         target[tp++] = 235; /* FNC4 (Upper Shift) */
                         target[tp++] = (source[sp] - 128) + 1;
                     } else if ((gs1) && (source[sp] == '[')) {
