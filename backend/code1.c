@@ -147,37 +147,53 @@ static int is_step_Q4bi_applicable(const unsigned char source[], const int sourc
     return 0;
 }
 
+/* Character counts are multiplied by this, so as to be whole integer divisible by 2 and 3 */
+#define C1_MULT             6
+
+#define C1_MULT_1_DIV_2     3
+#define C1_MULT_2_DIV_3     4
+#define C1_MULT_1           6
+#define C1_MULT_4_DIV_3     8
+#define C1_MULT_2           12
+#define C1_MULT_8_DIV_3     16
+#define C1_MULT_3           18
+#define C1_MULT_10_DIV_3    20
+#define C1_MULT_13_DIV_3    26
+
+#define C1_MULT_MINUS_1     5
+#define C1_MULT_CEIL(n)     ((((n) + C1_MULT_MINUS_1) / C1_MULT) * C1_MULT)
+
 /* AIM USS Code One Annex D Steps J-R */
 static int c1_look_ahead_test(const unsigned char source[], const int sourcelen, const int position,
             const int current_mode, const int gs1) {
-    float ascii_count, c40_count, text_count, edi_count, byte_count;
+    int ascii_count, c40_count, text_count, edi_count, byte_count;
     int ascii_rnded, c40_rnded, text_rnded, edi_rnded, byte_rnded;
-    float cnt_1;
+    int cnt_1;
     int sp;
 
     /* Step J1 */
     if (current_mode == C1_ASCII) {
-        ascii_count = 0.0f;
-        c40_count = 1.0f;
-        text_count = 1.0f;
-        edi_count = 1.0f;
-        byte_count = 2.0f;
+        ascii_count = 0;
+        c40_count = C1_MULT_1;
+        text_count = C1_MULT_1;
+        edi_count = C1_MULT_1;
+        byte_count = C1_MULT_2;
     } else {
-        ascii_count = 1.0f;
-        c40_count = 2.0f;
-        text_count = 2.0f;
-        edi_count = 2.0f;
-        byte_count = 3.0f;
+        ascii_count = C1_MULT_1;
+        c40_count = C1_MULT_2;
+        text_count = C1_MULT_2;
+        edi_count = C1_MULT_2;
+        byte_count = C1_MULT_3;
     }
 
     switch (current_mode) {
-        case C1_C40: c40_count = 0.0f; /* Step J2 */
+        case C1_C40: c40_count = 0; /* Step J2 */
             break;
-        case C1_TEXT: text_count = 0.0f; /* Step J3 */
+        case C1_TEXT: text_count = 0; /* Step J3 */
             break;
-        case C1_EDI: edi_count = 0.0f; /* Missing in spec */
+        case C1_EDI: edi_count = 0; /* Missing in spec */
             break;
-        case C1_BYTE: byte_count = 0.0f; /* Step J4 */
+        case C1_BYTE: byte_count = 0; /* Step J4 */
             break;
     }
 
@@ -187,47 +203,47 @@ static int c1_look_ahead_test(const unsigned char source[], const int sourcelen,
 
         /* Step L */
         if ((c >= '0') && (c <= '9')) {
-            ascii_count += 0.5f; /* Step L1 */
+            ascii_count += C1_MULT_1_DIV_2; /* Step L1 */
         } else {
             if (is_extended) {
-                ascii_count = ceilf(ascii_count) + 2.0f; /* Step L2 */
+                ascii_count = ceilf(ascii_count) + C1_MULT_2; /* Step L2 */
             } else {
-                ascii_count = ceilf(ascii_count) + 1.0f; /* Step L3 */
+                ascii_count = ceilf(ascii_count) + C1_MULT_1; /* Step L3 */
             }
         }
 
         /* Step M */
         if (isc40(c)) {
-            c40_count += (2.0f / 3.0f); /* Step M1 */
+            c40_count += C1_MULT_2_DIV_3; /* Step M1 */
         } else if (is_extended) {
-            c40_count += (8.0f / 3.0f); /* Step M2 */
+            c40_count += C1_MULT_8_DIV_3; /* Step M2 */
         } else {
-            c40_count += (4.0f / 3.0f); /* Step M3 */
+            c40_count += C1_MULT_4_DIV_3; /* Step M3 */
         }
 
         /* Step N */
         if (istext(c)) {
-            text_count += (2.0f / 3.0f); /* Step N1 */
+            text_count += C1_MULT_2_DIV_3; /* Step N1 */
         } else if (is_extended) {
-            text_count += (8.0f / 3.0f); /* Step N2 */
+            text_count += C1_MULT_8_DIV_3; /* Step N2 */
         } else {
-            text_count += (4.0f / 3.0f); /* Step N3 */
+            text_count += C1_MULT_4_DIV_3; /* Step N3 */
         }
 
         /* Step O */
         if (isedi(c)) {
-            edi_count += (2.0f / 3.0f); /* Step O1 */
+            edi_count += C1_MULT_2_DIV_3; /* Step O1 */
         } else if (is_extended) {
-            edi_count += (13.0f / 3.0f); /* Step O2 */
+            edi_count += C1_MULT_13_DIV_3; /* Step O2 */
         } else {
-            edi_count += (10.0f / 3.0f); /* Step O3 */
+            edi_count += C1_MULT_10_DIV_3; /* Step O3 */
         }
 
         /* Step P */
         if (gs1 && (c == '[')) {
-            byte_count += 3.0f; /* Step P1 */
+            byte_count += C1_MULT_3; /* Step P1 */
         } else {
-            byte_count += 1.0f; /* Step P2 */
+            byte_count += C1_MULT_1; /* Step P2 */
         }
 
         /* If at least 4 characters processed */
@@ -235,25 +251,25 @@ static int c1_look_ahead_test(const unsigned char source[], const int sourcelen,
            BWIPP also uses 4 (cf very similar Data Matrix ISO/IEC 16022:2006 Annex P algorithm) */
         if (sp >= position + 3) {
             /* Step Q */
-            ascii_rnded = (int) ceilf(stripf(ascii_count));
-            c40_rnded = (int) ceilf(stripf(c40_count));
-            text_rnded = (int) ceilf(stripf(text_count));
-            edi_rnded = (int) ceilf(stripf(edi_count));
-            byte_rnded = (int) ceilf(stripf(byte_count));
+            ascii_rnded = C1_MULT_CEIL(ascii_count);
+            c40_rnded = C1_MULT_CEIL(c40_count);
+            text_rnded = C1_MULT_CEIL(text_count);
+            edi_rnded = C1_MULT_CEIL(edi_count);
+            byte_rnded = C1_MULT_CEIL(byte_count);
 
-            cnt_1 = byte_count + 1.0f;
+            cnt_1 = byte_count + C1_MULT_1;
             if (cnt_1 <= ascii_rnded && cnt_1 <= c40_rnded && cnt_1 <= text_rnded && cnt_1 <= edi_rnded) {
                 return C1_BYTE; /* Step Q1 */
             }
-            cnt_1 = ascii_count + 1.0f;
+            cnt_1 = ascii_count + C1_MULT_1;
             if (cnt_1 <= c40_rnded && cnt_1 <= text_rnded && cnt_1 <= edi_rnded && cnt_1 <= byte_rnded) {
                 return C1_ASCII; /* Step Q2 */
             }
-            cnt_1 = text_rnded + 1.0f;
+            cnt_1 = text_rnded + C1_MULT_1;
             if (cnt_1 <= ascii_rnded && cnt_1 <= c40_rnded && cnt_1 <= edi_rnded && cnt_1 <= byte_rnded) {
                 return C1_TEXT; /* Step Q3 */
             }
-            cnt_1 = c40_rnded + 1.0f;
+            cnt_1 = c40_rnded + C1_MULT_1;
             if (cnt_1 <= ascii_rnded && cnt_1 <= text_rnded) {
                 /* Step Q4 */
                 if (c40_rnded < edi_rnded) {
@@ -267,7 +283,7 @@ static int c1_look_ahead_test(const unsigned char source[], const int sourcelen,
                     return C1_C40; /* Step Q4bii */
                 }
             }
-            cnt_1 = edi_rnded + 1.0f;
+            cnt_1 = edi_rnded + C1_MULT_1;
             if (cnt_1 <= ascii_rnded && cnt_1 <= c40_rnded && cnt_1 <= text_rnded && cnt_1 <= byte_rnded) {
                 return C1_EDI; /* Step Q5 */
             }
@@ -275,11 +291,11 @@ static int c1_look_ahead_test(const unsigned char source[], const int sourcelen,
     }
 
     /* Step K */
-    ascii_rnded = (int) ceilf(stripf(ascii_count));
-    c40_rnded = (int) ceilf(stripf(c40_count));
-    text_rnded = (int) ceilf(stripf(text_count));
-    edi_rnded = (int) ceilf(stripf(edi_count));
-    byte_rnded = (int) ceilf(stripf(byte_count));
+    ascii_rnded = C1_MULT_CEIL(ascii_count);
+    c40_rnded = C1_MULT_CEIL(c40_count);
+    text_rnded = C1_MULT_CEIL(text_count);
+    edi_rnded = C1_MULT_CEIL(edi_count);
+    byte_rnded = C1_MULT_CEIL(byte_count);
 
     if (byte_count <= ascii_rnded && byte_count <= c40_rnded && byte_count <= text_rnded && byte_count <= edi_rnded) {
         return C1_BYTE; /* Step K1 */

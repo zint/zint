@@ -267,41 +267,62 @@ static int p_r_6_2_1(const unsigned char inputData[], const int position, const 
     return 0;
 }
 
+/* Character counts are multiplied by this, so as to be whole integer divisible by 2, 3 and 4 */
+#define DM_MULT             12
+
+#define DM_MULT_1_DIV_2     6
+#define DM_MULT_2_DIV_3     8
+#define DM_MULT_3_DIV_4     9
+#define DM_MULT_1           12
+#define DM_MULT_5_DIV_4     15
+#define DM_MULT_4_DIV_3     16
+#define DM_MULT_2           24
+#define DM_MULT_9_DIV_4     27
+#define DM_MULT_8_DIV_3     32
+#define DM_MULT_13_DIV_4    39
+#define DM_MULT_10_DIV_3    40
+#define DM_MULT_4           48
+#define DM_MULT_17_DIV_4    51
+#define DM_MULT_13_DIV_3    52
+
+#define DM_MULT_MINUS_1     11
+#define DM_MULT_CEIL(n)     ((((n) + DM_MULT_MINUS_1) / DM_MULT) * DM_MULT)
+
 /* 'look ahead test' from Annex P */
 static int look_ahead_test(const unsigned char inputData[], const int sourcelen, const int position,
             const int current_mode, const int gs1, const int debug) {
-    float ascii_count, c40_count, text_count, x12_count, edf_count, b256_count;
+    int ascii_count, c40_count, text_count, x12_count, edf_count, b256_count;
     int ascii_rnded, c40_rnded, text_rnded, x12_rnded, edf_rnded, b256_rnded;
-    float cnt_1;
+    int cnt_1;
     int sp;
 
     /* step (j) */
     if (current_mode == DM_ASCII) {
-        ascii_count = 0.0F;
-        c40_count = 1.0F;
-        text_count = 1.0F;
-        x12_count = 1.0F;
-        edf_count = 1.0F;
-        b256_count = 1.25F;
+        ascii_count = 0;
+        c40_count = DM_MULT_1;
+        text_count = DM_MULT_1;
+        x12_count = DM_MULT_1;
+        edf_count = DM_MULT_1;
+        b256_count = DM_MULT_5_DIV_4; // 1.25
     } else {
-        ascii_count = 1.0F;
-        c40_count = 2.0F;
-        text_count = 2.0F;
-        x12_count = 2.0F;
-        edf_count = 2.0F;
-        b256_count = 2.25F;
+        ascii_count = DM_MULT_1;
+        c40_count = DM_MULT_2;
+        text_count = DM_MULT_2;
+        x12_count = DM_MULT_2;
+        edf_count = DM_MULT_2;
+        b256_count = DM_MULT_9_DIV_4; // 2.25
     }
 
     switch (current_mode) {
-        case DM_C40: c40_count = 0.0F;
+        case DM_C40: c40_count = 0;
             break;
-        case DM_TEXT: text_count = 0.0F;
+        case DM_TEXT: text_count = 0;
             break;
-        case DM_X12: x12_count = 0.0F;
+        case DM_X12: x12_count = 0;
             break;
-        case DM_EDIFACT: edf_count = 0.0F;
+        case DM_EDIFACT: edf_count = 0;
             break;
-        case DM_BASE256: b256_count = 0.0F;
+        case DM_BASE256: b256_count = 0;
             break;
     }
 
@@ -311,110 +332,104 @@ static int look_ahead_test(const unsigned char inputData[], const int sourcelen,
 
         /* ascii ... step (l) */
         if ((c >= '0') && (c <= '9')) {
-            ascii_count += 0.5F; // (l)(1)
+            ascii_count += DM_MULT_1_DIV_2; // (l)(1)
         } else {
             if (is_extended) {
-                ascii_count = ceilf(ascii_count) + 2.0F; // (l)(2)
+                ascii_count = DM_MULT_CEIL(ascii_count) + DM_MULT_2; // (l)(2)
             } else {
-                ascii_count = ceilf(ascii_count) + 1.0F; // (l)(3)
+                ascii_count = DM_MULT_CEIL(ascii_count) + DM_MULT_1; // (l)(3)
             }
         }
 
         /* c40 ... step (m) */
         if (isc40(c)) {
-            c40_count += (2.0F / 3.0F); // (m)(1)
+            c40_count += DM_MULT_2_DIV_3; // (m)(1)
         } else {
             if (is_extended) {
-                c40_count += (8.0F / 3.0F); // (m)(2)
+                c40_count += DM_MULT_8_DIV_3; // (m)(2)
             } else {
-                c40_count += (4.0F / 3.0F); // (m)(3)
+                c40_count += DM_MULT_4_DIV_3; // (m)(3)
             }
         }
 
         /* text ... step (n) */
         if (istext(c)) {
-            text_count += (2.0F / 3.0F); // (n)(1)
+            text_count += DM_MULT_2_DIV_3; // (n)(1)
         } else {
             if (is_extended) {
-                text_count += (8.0F / 3.0F); // (n)(2)
+                text_count += DM_MULT_8_DIV_3; // (n)(2)
             } else {
-                text_count += (4.0F / 3.0F); // (n)(3)
+                text_count += DM_MULT_4_DIV_3; // (n)(3)
             }
         }
 
         /* x12 ... step (o) */
         if (isX12(c)) {
-            x12_count += (2.0F / 3.0F); // (o)(1)
+            x12_count += DM_MULT_2_DIV_3; // (o)(1)
         } else {
             if (is_extended) {
-                x12_count += (13.0F / 3.0F); // (o)(2)
+                x12_count += DM_MULT_13_DIV_3; // (o)(2)
             } else {
-                x12_count += (10.0F / 3.0F); // (o)(3)
+                x12_count += DM_MULT_10_DIV_3; // (o)(3)
             }
         }
 
         /* edifact ... step (p) */
         if ((c >= ' ') && (c <= '^')) {
-            edf_count += (3.0F / 4.0F); // (p)(1)
+            edf_count += DM_MULT_3_DIV_4; // (p)(1)
         } else {
             if (is_extended) {
-                edf_count += 17.0F / 4.0f; // (p)(2)
+                edf_count += DM_MULT_17_DIV_4; // (p)(2)
             } else {
-                edf_count += 13.0F / 4.0f; // (p)(3)
+                edf_count += DM_MULT_13_DIV_4; // (p)(3)
             }
         }
 
         /* base 256 ... step (q) */
         if ((gs1 == 1) && (c == '[')) {
             /* FNC1 separator */
-            b256_count += 4.0F; // (q)(1)
+            b256_count += DM_MULT_4; // (q)(1)
         } else {
-            b256_count += 1.0F; // (q)(2)
+            b256_count += DM_MULT_1; // (q)(2)
         }
 
         if (sp >= position + 4) {
             /* At least 5 data characters processed ... step (r) */
             /* NOTE: different than spec, where it's at least 4. Following previous behaviour here (and BWIPP) */
 
-            ascii_count = stripf(ascii_count);
-            b256_count = stripf(b256_count);
-            edf_count = stripf(edf_count);
-            text_count = stripf(text_count);
-            x12_count = stripf(x12_count);
-            c40_count = stripf(c40_count);
             if (debug) {
-                printf("\n(%d, %d, %d): ascii_count %.8g, b256_count %.8g, edf_count %.8g, text_count %.8g"
-                        ", x12_count %.8g, c40_count %.8g ",
+                printf("\n(%d, %d, %d): ascii_count %d, b256_count %d, edf_count %d, text_count %d"
+                        ", x12_count %d, c40_count %d ",
                         current_mode, position, sp, ascii_count, b256_count, edf_count, text_count,
                         x12_count, c40_count);
             }
 
-            cnt_1 = ascii_count + 1.0f;
+            cnt_1 = ascii_count + DM_MULT_1;
             if (cnt_1 <= b256_count && cnt_1 <= edf_count && cnt_1 <= text_count && cnt_1 <= x12_count
                     && cnt_1 <= c40_count) {
                 return DM_ASCII; /* step (r)(1) */
             }
-            cnt_1 = b256_count + 1.0f;
+            cnt_1 = b256_count + DM_MULT_1;
             if (cnt_1 <= ascii_count || (cnt_1 < edf_count && cnt_1 < text_count && cnt_1 < x12_count
                     && cnt_1 < c40_count)) {
                 return DM_BASE256; /* step (r)(2) */
             }
-            cnt_1 = edf_count + 1.0f;
+            cnt_1 = edf_count + DM_MULT_1;
             if (cnt_1 < ascii_count && cnt_1 < b256_count && cnt_1 < text_count && cnt_1 < x12_count
                     && cnt_1 < c40_count) {
                 return DM_EDIFACT; /* step (r)(3) */
             }
-            cnt_1 = text_count + 1.0f;
+            cnt_1 = text_count + DM_MULT_1;
             if (cnt_1 < ascii_count && cnt_1 < b256_count && cnt_1 < edf_count && cnt_1 < x12_count
                     && cnt_1 < c40_count) {
                 return DM_TEXT; /* step (r)(4) */
             }
-            cnt_1 = x12_count + 1.0f;
+            cnt_1 = x12_count + DM_MULT_1;
             if (cnt_1 < ascii_count && cnt_1 < b256_count && cnt_1 < edf_count && cnt_1 < text_count
                     && cnt_1 < c40_count) {
                 return DM_X12; /* step (r)(5) */
             }
-            cnt_1 = c40_count + 1.0f;
+            cnt_1 = c40_count + DM_MULT_1;
             if (cnt_1 < ascii_count && cnt_1 < b256_count && cnt_1 < edf_count && cnt_1 < text_count) {
                 if (c40_count < x12_count) {
                     return DM_C40; /* step (r)(6)(i) */
@@ -431,15 +446,15 @@ static int look_ahead_test(const unsigned char inputData[], const int sourcelen,
 
     /* At the end of data ... step (k) */
     /* step (k)(1) */
-    ascii_rnded = (int) ceilf(stripf(ascii_count));
-    b256_rnded = (int) ceilf(stripf(b256_count));
-    edf_rnded = (int) ceilf(stripf(edf_count));
-    text_rnded = (int) ceilf(stripf(text_count));
-    x12_rnded = (int) ceilf(stripf(x12_count));
-    c40_rnded = (int) ceilf(stripf(c40_count));
+    ascii_rnded = DM_MULT_CEIL(ascii_count);
+    b256_rnded = DM_MULT_CEIL(b256_count);
+    edf_rnded = DM_MULT_CEIL(edf_count);
+    text_rnded = DM_MULT_CEIL(text_count);
+    x12_rnded = DM_MULT_CEIL(x12_count);
+    c40_rnded = DM_MULT_CEIL(c40_count);
     if (debug) {
-        printf("\nEOD(%d, %d): ascii_rnded %d, b256_rnded %d, edf_rnded %d, text_rnded %d, x12_rnded %d (%g)"
-                ", c40_rnded %d (%g) ",
+        printf("\nEOD(%d, %d): ascii_rnded %d, b256_rnded %d, edf_rnded %d, text_rnded %d, x12_rnded %d (%d)"
+                ", c40_rnded %d (%d) ",
                 current_mode, position, ascii_rnded, b256_rnded, edf_rnded, text_rnded, x12_rnded, x12_count,
                 c40_rnded, c40_count);
     }

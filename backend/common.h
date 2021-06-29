@@ -56,9 +56,6 @@
 #define ustrcat(target, source) strcat((char *) (target), (const char *) (source))
 #define ustrncat(target, source, count) strncat((char *) (target), (const char *) (source), (count))
 
-/* Removes excess precision from floats - see https://stackoverflow.com/q/503436/664741 */
-#define stripf(arg) (*((volatile float *) &(arg)))
-
 #ifdef _MSC_VER
 #  if _MSC_VER < 1800 /* ceilf, floorf, roundf (C99) not before MSVC 2013 (C++ 12.0) */
 #    define ceilf (float) ceil
