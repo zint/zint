@@ -58,9 +58,10 @@ INTERNAL void rs_encode(const rs_t *rs, const int datalen, const unsigned char *
 INTERNAL void rs_encode_uint(const rs_t *rs, const int datalen, const unsigned int *data, unsigned int *res);
 /* No free needed as log tables static */
 
-INTERNAL void rs_uint_init_gf(rs_uint_t *rs_uint, const unsigned int prime_poly, const int logmod);
+INTERNAL int rs_uint_init_gf(rs_uint_t *rs_uint, const unsigned int prime_poly, const int logmod);
 INTERNAL void rs_uint_init_code(rs_uint_t *rs_uint, const int nsym, int index);
-INTERNAL void rs_uint_encode(const rs_uint_t *rs_uint, const int datalen, const unsigned int *data, unsigned int *res);
+INTERNAL void rs_uint_encode(const rs_uint_t *rs_uint, const int datalen, const unsigned int *data,
+                unsigned int *res);
 INTERNAL void rs_uint_free(rs_uint_t *rs_uint);
 
 #ifdef __cplusplus

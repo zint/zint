@@ -1198,13 +1198,20 @@ INTERNAL int aztec(struct zint_symbol *symbol, unsigned char source[], int lengt
             rs_encode_uint(&rs, data_blocks, data_part, ecc_part);
             break;
         case 10:
-            rs_uint_init_gf(&rs_uint, 0x409, 1023);
+            if (!rs_uint_init_gf(&rs_uint, 0x409, 1023)) { /* Can fail on malloc() */
+                strcpy(symbol->errtxt, "500: Insufficient memory for Reed-Solomon log tables");
+                return ZINT_ERROR_MEMORY;
+            }
             rs_uint_init_code(&rs_uint, ecc_blocks, 1);
             rs_uint_encode(&rs_uint, data_blocks, data_part, ecc_part);
             rs_uint_free(&rs_uint);
             break;
         case 12:
-            rs_uint_init_gf(&rs_uint, 0x1069, 4095);
+            if (!rs_uint_init_gf(&rs_uint, 0x1069, 4095)) { /* Can fail on malloc() */
+                /* Note using AUSPOST error nos range as out of 50x ones & 51x taken by CODEONE */
+                strcpy(symbol->errtxt, "400: Insufficient memory for Reed-Solomon log tables");
+                return ZINT_ERROR_MEMORY;
+            }
             rs_uint_init_code(&rs_uint, ecc_blocks, 1);
             rs_uint_encode(&rs_uint, data_blocks, data_part, ecc_part);
             rs_uint_free(&rs_uint);

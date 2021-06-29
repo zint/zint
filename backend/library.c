@@ -1000,7 +1000,7 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
                 " in_length: %d, First 10 source: \"%.10s\", First 10 primary: \"%.10s\"\n",
                 symbol->symbology, symbol->input_mode, symbol->eci, symbol->option_1, symbol->option_2,
                 symbol->option_3, symbol->scale, symbol->output_options, symbol->fgcolour, symbol->bgcolour,
-                in_length, source, symbol->primary);
+                in_length, source ? (const char *) source : "<NULL>", symbol->primary);
     }
 
     warn_number = 0;
@@ -1019,14 +1019,6 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
     if (in_length > ZINT_MAX_DATA_LEN) {
         strcpy(symbol->errtxt, "243: Input data too long");
         return error_tag(symbol->errtxt, ZINT_ERROR_TOO_LONG);
-    }
-
-    if (*symbol->outfile == '\0') {
-#ifdef NO_PNG
-        strcpy(symbol->outfile, "out.gif");
-#else
-        strcpy(symbol->outfile, "out.png");
-#endif
     }
 
     /* First check the symbology field */

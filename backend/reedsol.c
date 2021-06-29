@@ -191,14 +191,22 @@ INTERNAL void rs_encode_uint(const rs_t *rs, const int datalen, const unsigned i
 // Then  call rs_uint_free(&rs_uint) to free the log tables.
 
 /* `logmod` (field characteristic) will be 2**bitlength - 1, eg 1023 for bitlength 10, 4095 for bitlength 12 */
-INTERNAL void rs_uint_init_gf(rs_uint_t *rs_uint, const unsigned int prime_poly, const int logmod) {
+INTERNAL int rs_uint_init_gf(rs_uint_t *rs_uint, const unsigned int prime_poly, const int logmod) {
     int b, p, v;
     unsigned int *logt, *alog;
 
     b = logmod + 1;
 
-    logt = (unsigned int *) malloc(sizeof(unsigned int) * b);
-    alog = (unsigned int *) malloc(sizeof(unsigned int) * b * 2);
+    rs_uint->logt = NULL;
+    rs_uint->alog = NULL;
+
+    if (!(logt = (unsigned int *) malloc(sizeof(unsigned int) * b))) {
+        return 0;
+    }
+    if (!(alog = (unsigned int *) malloc(sizeof(unsigned int) * b * 2))) {
+        free(logt);
+        return 0;
+    }
 
     // Calculate the log/alog tables
     for (p = 1, v = 0; v < logmod; v++) {
@@ -211,6 +219,7 @@ INTERNAL void rs_uint_init_gf(rs_uint_t *rs_uint, const unsigned int prime_poly,
     }
     rs_uint->logt = logt;
     rs_uint->alog = alog;
+    return 1;
 }
 
 INTERNAL void rs_uint_init_code(rs_uint_t *rs_uint, const int nsym, int index) {
@@ -219,6 +228,9 @@ INTERNAL void rs_uint_init_code(rs_uint_t *rs_uint, const int nsym, int index) {
     const unsigned int *alog = rs_uint->alog;
     unsigned short *rspoly = rs_uint->rspoly;
 
+    if (logt == NULL || alog == NULL) {
+        return;
+    }
     rs_uint->nsym = nsym;
 
     rspoly[0] = 1;
@@ -234,7 +246,8 @@ INTERNAL void rs_uint_init_code(rs_uint_t *rs_uint, const int nsym, int index) {
     }
 }
 
-INTERNAL void rs_uint_encode(const rs_uint_t *rs_uint, const int datalen, const unsigned int *data, unsigned int *res) {
+INTERNAL void rs_uint_encode(const rs_uint_t *rs_uint, const int datalen, const unsigned int *data,
+                unsigned int *res) {
     int i, k;
     const unsigned int *logt = rs_uint->logt;
     const unsigned int *alog = rs_uint->alog;
@@ -242,6 +255,9 @@ INTERNAL void rs_uint_encode(const rs_uint_t *rs_uint, const int datalen, const 
     const int nsym = rs_uint->nsym;
 
     memset(res, 0, sizeof(unsigned int) * nsym);
+    if (logt == NULL || alog == NULL) {
+        return;
+    }
     for (i = 0; i < datalen; i++) {
         unsigned int m = res[nsym - 1] ^ data[i];
         if (m) {
@@ -261,6 +277,12 @@ INTERNAL void rs_uint_encode(const rs_uint_t *rs_uint, const int datalen, const 
 }
 
 INTERNAL void rs_uint_free(rs_uint_t *rs_uint) {
-    free(rs_uint->logt);
-    free(rs_uint->alog);
+    if (rs_uint->logt) {
+        free(rs_uint->logt);
+        rs_uint->logt = NULL;
+    }
+    if (rs_uint->alog) {
+        free(rs_uint->alog);
+        rs_uint->alog = NULL;
+    }
 }

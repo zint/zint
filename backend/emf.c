@@ -620,7 +620,13 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
             assert(str->length > 0);
             utfle_len = utfle_length(str->text, str->length);
             bumped_len = bump_up(utfle_len) * 2;
-            this_string[this_text] = (unsigned char *) malloc(bumped_len);
+            if (!(this_string[this_text] = (unsigned char *) malloc(bumped_len))) {
+                for (i = 0; i < this_text; i++) {
+                    free(this_string[i]);
+                }
+                strcpy(symbol->errtxt, "641: Insufficient memory for EMF string buffer");
+                return ZINT_ERROR_MEMORY;
+            }
             memset(this_string[this_text], 0, bumped_len);
             text[this_text].type = 0x00000054; // EMR_EXTTEXTOUTW
             text[this_text].size = 76 + bumped_len;

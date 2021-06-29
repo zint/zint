@@ -352,11 +352,7 @@ static void test_dump_args(int index, int debug) {
 
 static void test_input(int index, int debug) {
 
-#ifdef _WIN32
-#define TEST_INPUT_LONG "test_678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234"
-#else
 #define TEST_INPUT_LONG "test_67890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"
-#endif
 
     struct item {
         int b;
@@ -405,6 +401,12 @@ static void test_input(int index, int debug) {
 
         if (index != -1 && i != index) continue;
         if ((debug & ZINT_DEBUG_TEST_PRINT) && !(debug & ZINT_DEBUG_TEST_LESS_NOISY)) printf("i:%d\n", i);
+#ifdef _WIN32
+        if (data[i].outfile && (int) strlen(data[i].outfile) > 50) {
+            if (debug & ZINT_DEBUG_TEST_PRINT) printf("%d not Windows compatible (outfile length %d > 50)\n", i, (int) strlen(data[i].outfile));
+            continue;
+        }
+#endif
 
         strcpy(cmd, "zint");
         if (debug & ZINT_DEBUG_PRINT) {

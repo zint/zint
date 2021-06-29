@@ -558,6 +558,7 @@ const char *testUtilInputModeName(int input_mode) {
         strcpy(buf, "GS1_MODE");
         set = GS1_MODE;
     } else {
+        strcpy(buf, "DATA_MODE");
         set = DATA_MODE;
     }
     for (i = 0; i < data_size; i++) {

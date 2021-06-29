@@ -66,7 +66,10 @@ INTERNAL int plessey(struct zint_symbol *symbol, unsigned char source[], int len
         strcpy(symbol->errtxt, "371: Invalid characters in data");
         return error_number;
     }
-    checkptr = (unsigned char *) calloc(1, length * 4 + 8);
+    if (!(checkptr = (unsigned char *) calloc(1, length * 4 + 8))) {
+        strcpy(symbol->errtxt, "373: Insufficient memory for check digit CRC buffer");
+        return ZINT_ERROR_MEMORY;
+    }
 
     /* Start character */
     strcpy(dest, "31311331");
