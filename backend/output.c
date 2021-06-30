@@ -540,7 +540,7 @@ INTERNAL float output_large_bar_height(struct zint_symbol *symbol, int si) {
     for (i = 0; i < symbol->rows; i++) {
         if (symbol->row_height[i]) {
             fixed_height += symbol->row_height[i];
-            if (!round_rows && si && symbol->row_height[i] * si != (int) (symbol->row_height[i] * si)) {
+            if (!round_rows && si && !isfintf(symbol->row_height[i] * si)) {
                 round_rows = 1;
             }
         } else {
@@ -554,7 +554,7 @@ INTERNAL float output_large_bar_height(struct zint_symbol *symbol, int si) {
             large_bar_height = 0.01f; /* Token positive value */
             symbol->height = large_bar_height * zero_count + fixed_height;
         }
-        if (si && large_bar_height * si != (int) (large_bar_height * si)) {
+        if (si && !isfintf(large_bar_height * si)) {
             large_bar_height = roundf(large_bar_height * si) / si;
             symbol->height = large_bar_height * zero_count + fixed_height;
         }
@@ -564,7 +564,7 @@ INTERNAL float output_large_bar_height(struct zint_symbol *symbol, int si) {
         if (round_rows) {
             fixed_height = 0.0f;
             for (i = 0; i < symbol->rows; i++) {
-                if (symbol->row_height[i] * si != (int) (symbol->row_height[i] * si)) {
+                if (!isfintf(symbol->row_height[i] * si)) {
                     symbol->row_height[i] = roundf(symbol->row_height[i] * si) / si;
                 }
                 fixed_height += symbol->row_height[i];

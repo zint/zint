@@ -938,7 +938,7 @@ static int plot_raster_default(struct zint_symbol *symbol, const int rotate_angl
         scaler = 0.5f;
     }
     /* If half-integer scaling, then set integer scaler `si` to avoid scaling at end */
-    half_int_scaling = scaler * 2.0f == (int) (scaler * 2.0f);
+    half_int_scaling = isfintf(scaler * 2.0f);
     if (half_int_scaling) {
         si = (int) (scaler * 2.0f);
     } else {

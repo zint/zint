@@ -60,16 +60,20 @@
 #  if _MSC_VER < 1800 /* ceilf, floorf, roundf (C99) not before MSVC 2013 (C++ 12.0) */
 #    define ceilf (float) ceil
 #    define floorf (float) floor
-#    define roundf(arg) ((float) floor((arg) + 0.5f))
+#    define roundf (float) round
+#    define fmodf (float) fmod
 #    if _MSC_VER == 1200 /* VC6 */
 #      define round(arg) floor((arg) + 0.5f)
 #    endif
 #  endif
 #  pragma warning(disable: 4244) /* conversion from int to float */
-#  if _MSC_VER >= 1900 /* MSVC 2015 */
+#  if _MSC_VER >= 1800 /* MSVC 2013 */
 #    pragma warning(disable: 4996) /* function or variable may be unsafe */
 #  endif
 #endif
+
+/* Is float integral value? (https://stackoverflow.com/a/40404149/664741) */
+#define isfintf(arg) (fmodf(arg, 1.0f) == 0.0f)
 
 #if (defined(__GNUC__) || defined(__clang__)) && !defined(ZINT_TEST) && !defined(__MINGW32__)
 #  define INTERNAL __attribute__ ((visibility ("hidden")))

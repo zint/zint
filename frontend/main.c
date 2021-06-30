@@ -31,7 +31,7 @@
 #include <malloc.h>
 #include "../getopt/getopt.h"
 #include "zint.h"
-#if _MSC_VER >= 1900 /* MSVC 2015 */
+#if _MSC_VER >= 1800 /* MSVC 2013 */
 #pragma warning(disable: 4996) /* function or variable may be unsafe */
 #endif
 #endif /* _MSC_VER */

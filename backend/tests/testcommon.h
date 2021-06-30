@@ -77,7 +77,7 @@ extern int assertionFailed;
 extern int assertionNum;
 extern const char *assertionFilename;
 
-#if _MSC_VER == 1200 /* VC6 */
+#if _MSC_VER < 1900 /* MSVC 2015 */
 #define testStart(__arg__) (testStartReal("", __arg__))
 #else
 #define testStart(__arg__) (testStartReal(__func__, __arg__))
