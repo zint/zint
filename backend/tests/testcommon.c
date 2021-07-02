@@ -1316,14 +1316,21 @@ int testUtilDataPath(char *buffer, int buffer_size, const char *subdir, const ch
         return 0;
     }
 
-    if ((s = strstr(buffer, "/backend/tests")) != NULL) {
-        while ((s2 = strstr(s + 1, "/backend/tests")) != NULL) { // Find rightmost
+    if ((s = strstr(buffer, "/tests")) != NULL) {
+        while ((s2 = strstr(s + 1, "/tests")) != NULL) { // Find rightmost
             s = s2;
         }
         *s = '\0';
         len = s - buffer;
-    } else if ((s = strstr(buffer, "/frontend/tests")) != NULL) {
-        while ((s2 = strstr(s + 1, "/frontend/tests")) != NULL) { // Find rightmost
+    }
+    if ((s = strstr(buffer, "/backend")) != NULL) {
+        while ((s2 = strstr(s + 1, "/backend")) != NULL) { // Find rightmost
+            s = s2;
+        }
+        *s = '\0';
+        len = s - buffer;
+    } else if ((s = strstr(buffer, "/frontend")) != NULL) {
+        while ((s2 = strstr(s + 1, "/frontend")) != NULL) { // Find rightmost
             s = s2;
         }
         *s = '\0';
@@ -2076,7 +2083,7 @@ static const char *testUtilBwippName(int index, const struct zint_symbol *symbol
         { "daft", BARCODE_DAFT, 93, 0, 0, 0, 0, 0, },
         { "", -1, 94, 0, 0, 0, 0, 0, },
         { "", -1, 95, 0, 0, 0, 0, 0, },
-        { "", -1, 96, 0, 0, 0, 0, 0, },
+        { "", BARCODE_DPD, 96, 0, 0, 0, 0, 0, },
         { "microqrcode", BARCODE_MICROQR, 97, 0, 0, 0, 0, 0, },
         { "hibccode128", BARCODE_HIBC_128, 98, 0, 0, 0, 0, 0, },
         { "hibccode39", BARCODE_HIBC_39, 99, 0, 0, 0, 0, 0, },
@@ -2802,7 +2809,7 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
             if (option_3 != DM_SQUARE && symbol->width != symbol->height) {
                 if (option_3 == DM_DMRE && !added_dmre) {
                     sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%sdmre", strlen(bwipp_opts_buf) ? " " : "");
-                    added_dmre = 1;
+                    //added_dmre = 1;
                 }
                 sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%sformat=rectangle",
                         strlen(bwipp_opts_buf) ? " " : "");
