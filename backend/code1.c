@@ -316,7 +316,7 @@ static int c1_look_ahead_test(const unsigned char source[], const int sourcelen,
 
 /* Whether can fit last character or characters in a single ASCII codeword */
 static int is_last_single_ascii(const unsigned char string[], const int length, const int sp) {
-    if (length - sp == 1 && string[sp + 1] <= 127) {
+    if (length - sp == 1 && string[sp] <= 127) {
         return 1;
     }
     if (length - sp == 2 && istwodigits(string, length, sp)) {

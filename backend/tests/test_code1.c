@@ -2568,7 +2568,6 @@ static void test_encode(int index, int generate, int debug) {
     testFinish();
 }
 
-// #181 Nico Gunkel OSS-Fuzz
 static void test_fuzz(int index, int debug) {
 
     struct item {
@@ -2578,7 +2577,8 @@ static void test_fuzz(int index, int debug) {
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%2d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /* 0*/ { "3333P33B\035333V3333333333333\0363", -1, 0 },
+        /* 0*/ { "3333P33B\035333V3333333333333\0363", -1, 0 }, // #181 Nico Gunkel, OSS-Fuzz
+        /* 1*/ { "{{-06\024755712162106130000000829203983\377", -1, 0 }, // #232 Jan Schrewe, CI-Fuzz, out-of-bounds in is_last_single_ascii() sp + 1
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
