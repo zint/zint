@@ -415,60 +415,107 @@ static void test_isbn_input(int index, int debug) {
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
         /*  0*/ { "0", 0, 0 }, // Left zero-padded if < 10 chars
-        /*  1*/ { "12345678", ZINT_ERROR_INVALID_CHECK, -1 },
-        /*  2*/ { "12345679", 0, 0 }, // 9 is correct check digit
-        /*  3*/ { "98765434", 0, 0 }, // 4 is correct check digit
-        /*  4*/ { "123456789", 0, 0 },
-        /*  5*/ { "340013817", ZINT_ERROR_INVALID_CHECK, -1 },
-        /*  6*/ { "340013818", 0, 0 }, // 8 is correct check digit
-        /*  7*/ { "902888455", 0, 0 }, // 5 is correct check digit
-        /*  8*/ { "0123456789", 0, 0 },
-        /*  9*/ { "1234567890", ZINT_ERROR_INVALID_CHECK, -1 },
-        /* 10*/ { "123456789X", 0, 0 }, // X is correct check digit
-        /* 11*/ { "123456789x", 0, 0 }, // x is correct check digit
-        /* 12*/ { "8175257660", 0, 0 }, // 0 is correct check digit
-        /* 13*/ { "0590764845", 0, 0 }, // 5 is correct check digit
-        /* 14*/ { "0906495741", 0, 0 }, // 1 is correct check digit
-        /* 15*/ { "0140430016", 0, 0 }, // 6 is correct check digit
-        /* 16*/ { "0571086187", 0, 0 }, // 7 is correct check digit
-        /* 17*/ { "0486600882", 0, 0 }, // 2 is correct check digit
-        /* 18*/ { "12345678901", ZINT_ERROR_TOO_LONG, -1 },
-        /* 19*/ { "123456789012", ZINT_ERROR_TOO_LONG, -1 },
-        /* 20*/ { "1234567890123", ZINT_ERROR_INVALID_DATA, -1 },
-        /* 21*/ { "9784567890123", ZINT_ERROR_INVALID_CHECK, -1 },
-        /* 22*/ { "9784567890120", 0, 0 }, // 0 is correct check digit
-        /* 23*/ { "9783161484100", 0, 0 }, // 0 is correct check digit
-        /* 24*/ { "9781846688225", 0, 0 }, // 5 is correct check digit
-        /* 25*/ { "9781847657954", 0, 0 }, // 4 is correct check digit
-        /* 26*/ { "9781846688188", 0, 0 }, // 8 is correct check digit
-        /* 27*/ { "9781847659293", 0, 0 }, // 3 is correct check digit
-        /* 28*/ { "97845678901201", ZINT_ERROR_TOO_LONG, -1 },
-        /* 29*/ { "3954994+12", 0, 0 },
-        /* 30*/ { "3954994+12345", 0, 0 },
-        /* 31*/ { "3954994+123456", ZINT_ERROR_TOO_LONG, -1 },
-        /* 32*/ { "3954994+", 0, 0 },
-        /* 33*/ { "61954993+1", 0, 0 },
-        /* 34*/ { "61954992+123", ZINT_ERROR_INVALID_CHECK, -1 },
-        /* 35*/ { "61954993+123", 0, 0 },
-        /* 36*/ { "361954990+12", ZINT_ERROR_INVALID_CHECK, -1 },
-        /* 37*/ { "361954999+12", 0, 0 },
-        /* 38*/ { "361954999+1234", 0, 0 },
-        /* 39*/ { "361954999+12", 0, 0 },
-        /* 40*/ { "1999000030+12", ZINT_ERROR_INVALID_CHECK, -1 },
-        /* 41*/ { "199900003X+12", 0, 0 },
-        /* 42*/ { "199900003x+12", 0, 0 },
-        /* 43*/ { "1999000031+12345", ZINT_ERROR_INVALID_CHECK, -1 },
-        /* 44*/ { "199900003X+12345", 0, 0 },
-        /* 45*/ { "199900003x+12345", 0, 0 },
-        /* 46*/ { "9791234567895+12", ZINT_ERROR_INVALID_CHECK, -1 },
-        /* 47*/ { "9791234567896+12", 0, 0 },
-        /* 48*/ { "9791234567897+12345", ZINT_ERROR_INVALID_CHECK, -1 },
-        /* 49*/ { "9791234567896+12345", 0, 0 },
-        /* 50*/ { "9791234567892+", ZINT_ERROR_INVALID_CHECK, -1 },
-        /* 51*/ { "9791234567896+", 0, 0 },
-        /* 52*/ { "97912345678961+", ZINT_ERROR_TOO_LONG, -1 },
-        /* 53*/ { "97912345678961+12345", ZINT_ERROR_TOO_LONG, -1 },
-        /* 54*/ { "9791234567896+123456", ZINT_ERROR_TOO_LONG, -1 },
+        /*  1*/ { "1", ZINT_ERROR_INVALID_CHECK, -1 },
+        /*  2*/ { "X", ZINT_ERROR_INVALID_CHECK, -1 },
+        /*  3*/ { "12", ZINT_ERROR_INVALID_CHECK, -1 },
+        /*  4*/ { "19", 0, 0, },
+        /*  5*/ { "X9", ZINT_ERROR_INVALID_DATA, -1 },
+        /*  6*/ { "123", ZINT_ERROR_INVALID_CHECK, -1 },
+        /*  7*/ { "124", 0, 0, },
+        /*  8*/ { "1X4", ZINT_ERROR_INVALID_DATA, -1 },
+        /*  9*/ { "1234", ZINT_ERROR_INVALID_CHECK, -1 },
+        /* 10*/ { "1236", 0, 0, },
+        /* 11*/ { "12X6", ZINT_ERROR_INVALID_DATA, -1 },
+        /* 12*/ { "12345", ZINT_ERROR_INVALID_CHECK, -1 },
+        /* 13*/ { "12343", 0, 0, },
+        /* 14*/ { "123X3", ZINT_ERROR_INVALID_DATA, -1 },
+        /* 15*/ { "123456", ZINT_ERROR_INVALID_CHECK, -1 },
+        /* 16*/ { "123455", 0, 0, },
+        /* 17*/ { "1234X5", ZINT_ERROR_INVALID_DATA, -1 },
+        /* 18*/ { "1234567", ZINT_ERROR_INVALID_CHECK, -1 },
+        /* 19*/ { "1234560", 0, 0, },
+        /* 20*/ { "12345X0", ZINT_ERROR_INVALID_DATA, -1 },
+        /* 21*/ { "12345678", ZINT_ERROR_INVALID_CHECK, -1 },
+        /* 22*/ { "12345679", 0, 0 }, // 9 is correct check digit
+        /* 23*/ { "98765434", 0, 0 }, // 4 is correct check digit
+        /* 24*/ { "123456X9", ZINT_ERROR_INVALID_DATA, -1 },
+        /* 25*/ { "123456789", 0, 0 },
+        /* 26*/ { "340013817", ZINT_ERROR_INVALID_CHECK, -1 },
+        /* 27*/ { "340013818", 0, 0 }, // 8 is correct check digit
+        /* 28*/ { "902888455", 0, 0 }, // 5 is correct check digit
+        /* 29*/ { "9028884X5", ZINT_ERROR_INVALID_DATA, -1 },
+        /* 30*/ { "0123456789", 0, 0 },
+        /* 31*/ { "1234567890", ZINT_ERROR_INVALID_CHECK, -1 },
+        /* 32*/ { "123456789X", 0, 0 }, // X is correct check digit
+        /* 33*/ { "123456789x", 0, 0 }, // x is correct check digit
+        /* 34*/ { "8175257660", 0, 0 }, // 0 is correct check digit
+        /* 35*/ { "0590764845", 0, 0 }, // 5 is correct check digit
+        /* 36*/ { "0906495741", 0, 0 }, // 1 is correct check digit
+        /* 37*/ { "0140430016", 0, 0 }, // 6 is correct check digit
+        /* 38*/ { "0571086187", 0, 0 }, // 7 is correct check digit
+        /* 39*/ { "0486600882", 0, 0 }, // 2 is correct check digit
+        /* 40*/ { "04866008X2", ZINT_ERROR_INVALID_DATA, -1 },
+        /* 41*/ { "12345678901", ZINT_ERROR_TOO_LONG, -1 },
+        /* 42*/ { "123456789012", ZINT_ERROR_TOO_LONG, -1 },
+        /* 43*/ { "12345678901", ZINT_ERROR_TOO_LONG, -1 },
+        /* 44*/ { "123456789012", ZINT_ERROR_TOO_LONG, -1 },
+        /* 45*/ { "1234567890123", ZINT_ERROR_INVALID_DATA, -1 },
+        /* 46*/ { "9784567890123", ZINT_ERROR_INVALID_CHECK, -1 },
+        /* 47*/ { "9784567890120", 0, 0 }, // 0 is correct check digit
+        /* 48*/ { "9783161484100", 0, 0 }, // 0 is correct check digit
+        /* 49*/ { "9781846688225", 0, 0 }, // 5 is correct check digit
+        /* 50*/ { "9781847657954", 0, 0 }, // 4 is correct check digit
+        /* 51*/ { "9781846688188", 0, 0 }, // 8 is correct check digit
+        /* 52*/ { "9781847659293", 0, 0 }, // 3 is correct check digit
+        /* 53*/ { "97845678901201", ZINT_ERROR_TOO_LONG, -1 },
+        /* 54*/ { "978456789012012", ZINT_ERROR_TOO_LONG, -1 },
+        /* 55*/ { "3954994+12", 0, 0 },
+        /* 56*/ { "3954994+1X", ZINT_ERROR_INVALID_DATA, -1 },
+        /* 57*/ { "39549X4+12", ZINT_ERROR_INVALID_DATA, -1 },
+        /* 58*/ { "3954994+12345", 0, 0 },
+        /* 59*/ { "3954994+1234X", ZINT_ERROR_INVALID_DATA, -1 },
+        /* 60*/ { "39549X4+12345", ZINT_ERROR_INVALID_DATA, -1 },
+        /* 61*/ { "3954994+123456", ZINT_ERROR_TOO_LONG, -1 },
+        /* 62*/ { "3954994+", 0, 0 },
+        /* 63*/ { "3954X94+", ZINT_ERROR_INVALID_DATA, -1 },
+        /* 64*/ { "61954993+1", 0, 0 },
+        /* 65*/ { "61954993+X", ZINT_ERROR_INVALID_DATA, -1 },
+        /* 66*/ { "619549X3+1", ZINT_ERROR_INVALID_DATA, -1 },
+        /* 67*/ { "61954992+123", ZINT_ERROR_INVALID_CHECK, -1 },
+        /* 68*/ { "61954993+123", 0, 0 },
+        /* 69*/ { "61954993+12X", ZINT_ERROR_INVALID_DATA, -1 },
+        /* 70*/ { "619549X3+123", ZINT_ERROR_INVALID_DATA, -1 },
+        /* 71*/ { "361954990+12", ZINT_ERROR_INVALID_CHECK, -1 },
+        /* 72*/ { "361954999+12", 0, 0 },
+        /* 73*/ { "361954999+1X", ZINT_ERROR_INVALID_DATA, -1 },
+        /* 74*/ { "3619549X9+12", ZINT_ERROR_INVALID_DATA, -1 },
+        /* 75*/ { "361954999+1234", 0, 0 },
+        /* 76*/ { "361954999+123X", ZINT_ERROR_INVALID_DATA, -1 },
+        /* 77*/ { "3619549X9+1234", ZINT_ERROR_INVALID_DATA, -1 },
+        /* 78*/ { "1999000030+12", ZINT_ERROR_INVALID_CHECK, -1 },
+        /* 79*/ { "199900003X+12", 0, 0 },
+        /* 80*/ { "199900003x+12", 0, 0 },
+        /* 81*/ { "19990000XX+12", ZINT_ERROR_INVALID_DATA, -1 },
+        /* 82*/ { "199900003X+1X", ZINT_ERROR_INVALID_DATA, -1 },
+        /* 83*/ { "1999000031+12345", ZINT_ERROR_INVALID_CHECK, -1 },
+        /* 84*/ { "199900003X+12345", 0, 0 },
+        /* 85*/ { "199900003x+12345", 0, 0 },
+        /* 86*/ { "199900003X+1234X", ZINT_ERROR_INVALID_DATA, -1 },
+        /* 87*/ { "19990000XX+12345", ZINT_ERROR_INVALID_DATA, -1 },
+        /* 88*/ { "9791234567895+12", ZINT_ERROR_INVALID_CHECK, -1 },
+        /* 89*/ { "9791234567896+12", 0, 0 },
+        /* 90*/ { "9791234567896+1X", ZINT_ERROR_INVALID_DATA, -1 },
+        /* 91*/ { "97912345678X6+12", ZINT_ERROR_INVALID_DATA, -1 },
+        /* 92*/ { "9791234567897+12345", ZINT_ERROR_INVALID_CHECK, -1 },
+        /* 93*/ { "9791234567896+12345", 0, 0 },
+        /* 94*/ { "9791234567896+1234X", ZINT_ERROR_INVALID_DATA, -1 },
+        /* 95*/ { "979123456X896+12345", ZINT_ERROR_INVALID_DATA, -1 },
+        /* 96*/ { "9791234567892+", ZINT_ERROR_INVALID_CHECK, -1 },
+        /* 97*/ { "9791234567896+", 0, 0 },
+        /* 98*/ { "97912345678X6+", ZINT_ERROR_INVALID_DATA, -1 },
+        /* 99*/ { "97912345678961+", ZINT_ERROR_TOO_LONG, -1 },
+        /*100*/ { "97912345678961+12345", ZINT_ERROR_TOO_LONG, -1 },
+        /*101*/ { "9791234567896+123456", ZINT_ERROR_TOO_LONG, -1 },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;

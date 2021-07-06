@@ -96,7 +96,7 @@ static void test_input(int index, int generate, int debug) {
     // NUL U+0000, S1 SP (39)
     // US U+001F (\037, 31), S1 5
     struct item data[] = {
-        /*  0*/ { UNICODE_MODE, "é", -1, ZINT_ERROR_INVALID_DATA, 0, 0, "Error 431: Invalid characters in input data", "ASCII only" },
+        /*  0*/ { UNICODE_MODE, "é", -1, ZINT_ERROR_INVALID_DATA, 0, 0, "Error 431: Invalid character in input data", "ASCII only" },
         /*  1*/ { UNICODE_MODE, "EXAMPLE 2", -1, 0, 2, 70, "(16) 14 33 10 22 25 21 14 41 38 2 35 14 18 13 0 22", "2.3.7 Symbol Example" },
         /*  2*/ { UNICODE_MODE, "12345", -1, 0, 2, 70, "(16) 5 17 9 48 48 48 48 27 48 48 13 23 0 13 2 0", "2.3 Example 1: Numeric Encodation (Start 2, Numeric)" },
         /*  3*/ { UNICODE_MODE, "123456", -1, 0, 2, 70, "(16) 5 17 9 6 48 48 48 34 48 48 36 9 23 41 2 11", "2.3 Example 1: Numeric Encodation" },

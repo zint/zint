@@ -1527,7 +1527,7 @@ static void test_gs1_lint(int index, int debug) {
         /*174*/ { "[4300]%1", ZINT_WARN_NONCOMPLIANT, "4300%1", "261: AI (4300) position 1: Invalid % escape" }, // pcenc
         /*175*/ { "[4300]%", ZINT_WARN_NONCOMPLIANT, "4300%", "261: AI (4300) position 1: Invalid % escape" }, // pcenc
         /*176*/ { "[4300]12%1212", 0, "430012%1212", "" }, // pcenc
-        /*177*/ { "[4300]12%1G12", ZINT_WARN_NONCOMPLIANT, "430012%1G12", "261: AI (4300) position 5: Invalid characters for percent encoding" }, // pcenc
+        /*177*/ { "[4300]12%1G12", ZINT_WARN_NONCOMPLIANT, "430012%1G12", "261: AI (4300) position 5: Invalid character for percent encoding" }, // pcenc
         /*178*/ { "[4308]ABCDEFGHIJKLMNOPQRSTUVWXYZ%+12", 0, "4308ABCDEFGHIJKLMNOPQRSTUVWXYZ%+12", "" }, // no pcenc
         /*179*/ { "[4308]ABCDEFGHIJKLMNOPQRSTUVWXYZ%+123", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (4308)" }, // no pcenc
         /*180*/ { "[4321]1", 0, "43211", "" }, // yesno

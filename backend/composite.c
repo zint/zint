@@ -114,7 +114,7 @@ static int encode928(const UINT bitString[], UINT codeWords[], const int bitLng)
 }
 
 /* CC-A 2D component */
-static int cc_a(struct zint_symbol *symbol, const char source[], const int cc_width) {
+static void cc_a(struct zint_symbol *symbol, const char source[], const int cc_width) {
     int i, segment, bitlen, cwCnt, variant, rows;
     int k, offset, j, total, rsCodeWords[8] = {0};
     int LeftRAPStart, RightRAPStart, CentreRAPStart, StartCluster;
@@ -127,7 +127,7 @@ static int cc_a(struct zint_symbol *symbol, const char source[], const int cc_wi
 
     variant = 0;
 
-    bitlen = (int)strlen(source);
+    bitlen = (int) strlen(source);
 
     for (segment = 0; segment < 13; segment++) {
         int strpos = segment * 16;
@@ -296,12 +296,10 @@ static int cc_a(struct zint_symbol *symbol, const char source[], const int cc_wi
     if (symbol->debug & ZINT_DEBUG_PRINT) {
         printf("CC-A Columns: %d, Rows: %d\n", cc_width, symbol->rows);
     }
-
-    return 0;
 }
 
 /* CC-B 2D component */
-static int cc_b(struct zint_symbol *symbol, const char source[], const int cc_width) {
+static void cc_b(struct zint_symbol *symbol, const char source[], const int cc_width) {
     int length = (int) strlen(source) / 8;
     int i;
 #ifndef _MSC_VER
@@ -521,12 +519,10 @@ static int cc_b(struct zint_symbol *symbol, const char source[], const int cc_wi
     if (symbol->debug & ZINT_DEBUG_PRINT) {
         printf("CC-B Columns: %d, Rows: %d\n", cc_width, symbol->rows);
     }
-
-    return 0;
 }
 
 /* CC-C 2D component - byte compressed PDF417 */
-static int cc_c(struct zint_symbol *symbol, const char source[], const int cc_width, const int ecc_level) {
+static void cc_c(struct zint_symbol *symbol, const char source[], const int cc_width, const int ecc_level) {
     int length = (int) strlen(source) / 8;
     int i, p;
 #ifndef _MSC_VER
@@ -662,8 +658,6 @@ static int cc_c(struct zint_symbol *symbol, const char source[], const int cc_wi
     if (symbol->debug & ZINT_DEBUG_PRINT) {
         printf("CC-C Columns: %d, Rows: %d\n", cc_width, symbol->rows);
     }
-
-    return 0;
 }
 
 static int calc_padding_cca(const int binary_length, const int cc_width) {
@@ -1161,8 +1155,8 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
         alpha_pad = 0;
 
         if (!general_field_encode(general_field, j, &mode, &last_digit, binary_string, &bp)) {
-            /* Invalid characters in input data */
-            strcpy(symbol->errtxt, "441: Invalid characters in input data");
+            /* Invalid character in input data */
+            strcpy(symbol->errtxt, "441: Invalid character in input data");
             return ZINT_ERROR_INVALID_DATA;
         }
     }
@@ -1288,7 +1282,7 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
 
     /* Perform sanity checks on input options first */
     error_number = 0;
-    pri_len = (int)strlen(symbol->primary);
+    pri_len = (int) strlen(symbol->primary);
     if (pri_len == 0) {
         strcpy(symbol->errtxt, "445: No primary (linear) message in 2D composite");
         return ZINT_ERROR_INVALID_OPTION;
@@ -1413,16 +1407,12 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
 
     switch (cc_mode) {
             /* Note that ecc_level is only relevant to CC-C */
-        case 1: error_number = cc_a(symbol, binary_string, cc_width);
+        case 1: cc_a(symbol, binary_string, cc_width);
             break;
-        case 2: error_number = cc_b(symbol, binary_string, cc_width);
+        case 2: cc_b(symbol, binary_string, cc_width);
             break;
-        case 3: error_number = cc_c(symbol, binary_string, cc_width, ecc_level);
+        case 3: cc_c(symbol, binary_string, cc_width, ecc_level);
             break;
-    }
-
-    if (error_number != 0) {
-        return ZINT_ERROR_ENCODING_PROBLEM;
     }
 
     /* 2D component done, now calculate linear component */

@@ -1,4 +1,4 @@
-// the configured options and settings for libzint
+/* The configured options and settings for libzint */
 #define ZINT_VERSION_MAJOR @ZINT_VERSION_MAJOR@
 #define ZINT_VERSION_MINOR @ZINT_VERSION_MINOR@
 #define ZINT_VERSION_RELEASE @ZINT_VERSION_RELEASE@

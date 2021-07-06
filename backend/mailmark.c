@@ -47,7 +47,7 @@
 #include "large.h"
 #include "reedsol.h"
 
-#define RUBIDIUM "01234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ "
+#define RUBIDIUM "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ "
 
 // Allowed character values from Table 3
 #define SET_F "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -148,7 +148,7 @@ INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int le
     int error_number = 0;
 
     if (length > 26) {
-        strcpy(symbol->errtxt, "580: Input too long");
+        strcpy(symbol->errtxt, "580: Input too long (26 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
 
@@ -175,28 +175,28 @@ INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int le
     }
 
     if (is_sane(RUBIDIUM, (unsigned char *) local_source, length) != 0) {
-        strcpy(symbol->errtxt, "581: Invalid characters in input data");
+        strcpy(symbol->errtxt, "581: Invalid character in data (alphanumerics and space only)");
         return ZINT_ERROR_INVALID_DATA;
     }
 
     // Format is in the range 0-4
     format = ctoi(local_source[0]);
     if ((format < 0) || (format > 4)) {
-        strcpy(symbol->errtxt, "582: Invalid format");
+        strcpy(symbol->errtxt, "582: Format out of range (0 to 4)");
         return ZINT_ERROR_INVALID_DATA;
     }
 
     // Version ID is in the range 1-4
     version_id = ctoi(local_source[1]) - 1;
     if ((version_id < 0) || (version_id > 3)) {
-        strcpy(symbol->errtxt, "583: Invalid Version ID");
+        strcpy(symbol->errtxt, "583: Version ID out of range (1 to 4)");
         return ZINT_ERROR_INVALID_DATA;
     }
 
     // Class is in the range 0-9,A-E
     mail_class = ctoi(local_source[2]);
     if ((mail_class < 0) || (mail_class > 14)) {
-        strcpy(symbol->errtxt, "584: Invalid Class");
+        strcpy(symbol->errtxt, "584: Class out of range (0 to 9 and A to E)");
         return ZINT_ERROR_INVALID_DATA;
     }
 
@@ -207,7 +207,7 @@ INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int le
             supply_chain_id *= 10;
             supply_chain_id += ctoi(local_source[i]);
         } else {
-            strcpy(symbol->errtxt, "585: Invalid Supply Chain ID");
+            strcpy(symbol->errtxt, "585: Invalid Supply Chain ID (digits only)");
             return ZINT_ERROR_INVALID_DATA;
         }
     }
@@ -219,7 +219,7 @@ INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int le
             item_id *= 10;
             item_id += ctoi(local_source[i]);
         } else {
-            strcpy(symbol->errtxt, "586: Invalid Item ID");
+            strcpy(symbol->errtxt, "586: Invalid Item ID (digits only)");
             return ZINT_ERROR_INVALID_DATA;
         }
     }

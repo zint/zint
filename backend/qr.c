@@ -1562,7 +1562,7 @@ INTERNAL int qr_code(struct zint_symbol *symbol, unsigned char source[], int len
             if (error_number == 0) {
                 done = 1;
             } else if (symbol->eci) {
-                strcpy(symbol->errtxt, "575: Invalid characters in input data");
+                sprintf(symbol->errtxt, "575: Invalid character in input data for ECI %d", symbol->eci);
                 return error_number;
             }
         }
@@ -2707,7 +2707,7 @@ INTERNAL int upnqr(struct zint_symbol *symbol, unsigned char source[], int lengt
         case UNICODE_MODE:
             error_number = utf8_to_eci(4, source, preprocessed, &length);
             if (error_number != 0) {
-                strcpy(symbol->errtxt, "572: Invalid characters in input data");
+                strcpy(symbol->errtxt, "572: Invalid character in input data for ECI 4");
                 return error_number;
             }
             for (i = 0; i < length; i++) {

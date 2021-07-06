@@ -34,6 +34,7 @@
 static void test_large(int index, int debug) {
 
     struct item {
+        int option_2;
         char *pattern;
         int length;
         int ret;
@@ -42,12 +43,18 @@ static void test_large(int index, int debug) {
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /*  0*/ { "1", 2751, 0, 162, 162 },
-        /*  1*/ { "1", 2752, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  1*/ { "A", 1836, 0, 162, 162 },
-        /*  2*/ { "A", 1837, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  3*/ { "\200", 1143, 0, 162, 162 },
-        /*  4*/ { "\200", 1144, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  0*/ { -1, "1", 2751, 0, 162, 162 },
+        /*  1*/ { -1, "1", 2752, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  2*/ { -1, "A", 1836, 0, 162, 162 },
+        /*  3*/ { -1, "A", 1837, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  4*/ { -1, "\200", 1143, 0, 162, 162 },
+        /*  5*/ { -1, "\200", 1144, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  6*/ { 1, "1", 18, 0, 18, 18 },
+        /*  7*/ { 1, "1", 19, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  8*/ { 1, "A", 13, 0, 18, 18 },
+        /*  9*/ { 1, "A", 14, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 10*/ { 1, "\200", 7, 0, 18, 18 },
+        /* 11*/ { 1, "\200", 8, ZINT_ERROR_TOO_LONG, -1, -1 },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -67,7 +74,7 @@ static void test_large(int index, int debug) {
         testUtilStrCpyRepeat(data_buf, data[i].pattern, data[i].length);
         assert_equal(data[i].length, (int) strlen(data_buf), "i:%d length %d != strlen(data_buf) %d\n", i, data[i].length, (int) strlen(data_buf));
 
-        length = testUtilSetSymbol(symbol, BARCODE_GRIDMATRIX, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data_buf, data[i].length, debug);
+        length = testUtilSetSymbol(symbol, BARCODE_GRIDMATRIX, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, data[i].option_2, -1, -1 /*output_options*/, data_buf, data[i].length, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data_buf, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
@@ -245,6 +252,7 @@ static void test_input(int index, int generate, int debug) {
         /* 85*/ { UNICODE_MODE, 170, -1, "?", 0, 170, "60 55 0F 77 26 60", "ECI-170 L1 (ASCII invariant)" },
         /* 86*/ { DATA_MODE, 899, -1, "\200", 0, 899, "63 41 58 00 40 00", "ECI-899 B1 (8-bit binary)" },
         /* 87*/ { UNICODE_MODE, 900, -1, "é", 0, 900, "63 42 18 01 61 6A 20", "ECI-900 B2 (no conversion)" },
+        /* 88*/ { UNICODE_MODE, 3, -1, "β", ZINT_ERROR_INVALID_DATA, 3, "Error 535: Invalid character in input data for ECI 3", "" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -275,10 +283,9 @@ static void test_input(int index, int generate, int debug) {
                     testUtilErrorName(data[i].ret), ret < ZINT_ERROR ? symbol->eci : -1, symbol->errtxt, data[i].comment);
         } else {
             if (ret < ZINT_ERROR) {
-
                 assert_equal(symbol->eci, data[i].expected_eci, "i:%d eci %d != %d\n", i, symbol->eci, data[i].expected_eci);
-                assert_zero(strcmp((char *) symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
             }
+            assert_zero(strcmp((char *) symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
         }
 
         ZBarcode_Delete(symbol);

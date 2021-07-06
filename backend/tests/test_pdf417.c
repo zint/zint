@@ -160,8 +160,8 @@ static void test_reader_init(int index, int generate, int debug) {
             if (ret < ZINT_ERROR) {
                 assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);
                 assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
-                assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
             }
+            assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
         }
 
         ZBarcode_Delete(symbol);
@@ -192,7 +192,7 @@ static void test_input(int index, int generate, int debug) {
         /*  2*/ { BARCODE_PDF417, UNICODE_MODE, 26, "é", 0, 26, 7, 103, "(14) 6 927 26 901 195 169 574 701 519 908 84 241 360 642", "" },
         /*  3*/ { BARCODE_PDF417, UNICODE_MODE, 9, "β", 0, 9, 7, 103, "(14) 6 927 9 913 226 900 487 92 418 278 838 500 576 84", "" },
         /*  4*/ { BARCODE_PDF417, UNICODE_MODE, -1, "β", ZINT_WARN_USES_ECI, 9, 7, 103, "Warning (14) 6 927 9 913 226 900 487 92 418 278 838 500 576 84", "" },
-        /*  5*/ { BARCODE_PDF417, UNICODE_MODE, 3, "β", ZINT_ERROR_INVALID_DATA, 3, 0, 0, "Error 204: Invalid characters in input data", "" },
+        /*  5*/ { BARCODE_PDF417, UNICODE_MODE, 3, "β", ZINT_ERROR_INVALID_DATA, 3, 0, 0, "Error 244: Invalid character in input data for ECI 3", "" },
         /*  6*/ { BARCODE_PDF417, UNICODE_MODE, 899, "A", 0, 899, 7, 103, "(14) 6 927 899 900 29 900 727 69 915 482 371 771 641 35", "" },
         /*  7*/ { BARCODE_PDF417, UNICODE_MODE, 900, "A", 0, 900, 7, 103, "(14) 6 926 0 0 900 29 56 795 921 763 468 267 410 129", "" },
         /*  8*/ { BARCODE_PDF417, UNICODE_MODE, 810899, "A", 0, 810899, 7, 103, "(14) 6 926 899 899 900 29 847 901 749 718 89 792 660 273", "" },
@@ -204,14 +204,14 @@ static void test_input(int index, int generate, int debug) {
         /* 14*/ { BARCODE_MICROPDF417, UNICODE_MODE, 26, "é", 0, 26, 6, 82, "(18) 927 26 901 195 169 900 288 96 509 365 709 784 713 403 219 81 851 866", "" },
         /* 15*/ { BARCODE_MICROPDF417, UNICODE_MODE, 9, "β", 0, 9, 11, 38, "(11) 927 9 913 226 23 103 74 194 394 667 324", "" },
         /* 16*/ { BARCODE_MICROPDF417, UNICODE_MODE, -1, "β", ZINT_WARN_USES_ECI, 9, 11, 38, "Warning (11) 927 9 913 226 23 103 74 194 394 667 324", "" },
-        /* 17*/ { BARCODE_MICROPDF417, UNICODE_MODE, 3, "β", ZINT_ERROR_INVALID_DATA, 3, 0, 0, "Error 204: Invalid characters in input data", "" },
+        /* 17*/ { BARCODE_MICROPDF417, UNICODE_MODE, 3, "β", ZINT_ERROR_INVALID_DATA, 3, 0, 0, "Error 244: Invalid character in input data for ECI 3", "" },
         /* 18*/ { BARCODE_MICROPDF417, UNICODE_MODE, 899, "A", 0, 899, 11, 38, "(11) 927 899 900 29 533 437 884 3 617 241 747", "" },
         /* 19*/ { BARCODE_MICROPDF417, UNICODE_MODE, 900, "A", 0, 900, 6, 82, "(18) 926 0 0 900 29 900 913 543 414 141 214 886 461 1 419 422 54 495", "" },
         /* 20*/ { BARCODE_MICROPDF417, UNICODE_MODE, 810899, "A", 0, 810899, 6, 82, "(18) 926 899 899 900 29 900 351 555 241 509 787 583 3 326 41 628 534 151", "" },
         /* 21*/ { BARCODE_MICROPDF417, UNICODE_MODE, 810900, "A", 0, 810900, 11, 38, "(11) 925 0 900 29 233 533 43 483 708 659 704", "" },
         /* 22*/ { BARCODE_MICROPDF417, UNICODE_MODE, 811800, "A", ZINT_ERROR_INVALID_OPTION, 811800, 0, 0, "Error 473: Invalid ECI", "" },
-        /* 23*/ { BARCODE_HIBC_PDF, UNICODE_MODE, -1, ",", ZINT_ERROR_INVALID_DATA, 0, 0, 0, "Error 203: Invalid characters in data", "" },
-        /* 24*/ { BARCODE_HIBC_MICPDF, UNICODE_MODE, -1, ",", ZINT_ERROR_INVALID_DATA, 0, 0, 0, "Error 203: Invalid characters in data", "" },
+        /* 23*/ { BARCODE_HIBC_PDF, UNICODE_MODE, -1, ",", ZINT_ERROR_INVALID_DATA, 0, 0, 0, "Error 203: Invalid character in data (alphanumerics, space and \"-.$/+%\" only)", "" },
+        /* 24*/ { BARCODE_HIBC_MICPDF, UNICODE_MODE, -1, ",", ZINT_ERROR_INVALID_DATA, 0, 0, 0, "Error 203: Invalid character in data (alphanumerics, space and \"-.$/+%\" only)", "" },
         /* 25*/ { BARCODE_PDF417, UNICODE_MODE, -1, "AB{}  C#+  de{}  {}F  12{}  G{}  H", 0, 0, 12, 120, "(36) 28 1 865 807 896 782 855 626 807 94 865 807 896 808 776 839 176 808 32 776 839 806 208", "" },
         /* 26*/ { BARCODE_PDF417, UNICODE_MODE, -1, "{}  #+ de{}  12{}  {}  H", 0, 0, 10, 120, "(30) 22 865 807 896 808 470 807 94 865 807 896 808 32 776 839 806 865 807 896 787 900 900", "" },
     };
@@ -247,8 +247,8 @@ static void test_input(int index, int generate, int debug) {
                 assert_equal(symbol->eci, data[i].expected_eci, "i:%d symbol->eci %d != %d (%s)\n", i, symbol->eci, data[i].expected_eci, data[i].data);
                 assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);
                 assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
-                assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
             }
+            assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
         }
 
         ZBarcode_Delete(symbol);

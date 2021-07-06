@@ -116,7 +116,7 @@ INTERNAL int code_11(struct zint_symbol *symbol, unsigned char source[], int len
     }
     error_number = is_sane(SODIUM, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        sprintf(symbol->errtxt, "321: Invalid characters in data (\"%s\" only)", SODIUM);
+        strcpy(symbol->errtxt, "321: Invalid character in data (digits and \"-\" only)");
         return error_number;
     }
 
@@ -233,9 +233,9 @@ INTERNAL int c39(struct zint_symbol *symbol, unsigned char source[], int length)
         strcpy(symbol->errtxt, "322: Input too long (30 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     /* Prevent encoded_data out-of-bounds >= 143 for BARCODE_HIBC_39 due to wider 'wide' bars */
-    } else if ((symbol->symbology == BARCODE_HIBC_39) && (length > 68)) {
+    } else if ((symbol->symbology == BARCODE_HIBC_39) && (length > 69)) {
         /* Note use 319 (2of5 range) as 340 taken by CODE128 */
-        strcpy(symbol->errtxt, "319: Input too long (68 character maximum)");
+        strcpy(symbol->errtxt, "319: Input too long (67 character maximum)"); /* 69 less '+' and check */
         return ZINT_ERROR_TOO_LONG;
     } else if (length > 85) {
         strcpy(symbol->errtxt, "323: Input too long (85 character maximum)");
@@ -244,7 +244,7 @@ INTERNAL int c39(struct zint_symbol *symbol, unsigned char source[], int length)
     to_upper(source);
     error_number = is_sane(SILVER, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "324: Invalid characters in data (alphanumerics and \"-. $/+%\" only)");
+        strcpy(symbol->errtxt, "324: Invalid character in data (alphanumerics, space and \"-.$/+%\" only)");
         return error_number;
     }
 
@@ -362,7 +362,7 @@ INTERNAL int pharmazentral(struct zint_symbol *symbol, unsigned char source[], i
     }
     error_number = is_sane(NEON, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "326: Invalid characters in data (digits only)");
+        strcpy(symbol->errtxt, "326: Invalid character in data (digits only)");
         return error_number;
     }
 
@@ -426,7 +426,7 @@ INTERNAL int ec39(struct zint_symbol *symbol, unsigned char source[], int length
     for (i = 0; i < length; i++) {
         if (source[i] > 127) {
             /* Cannot encode extended ASCII */
-            strcpy(symbol->errtxt, "329: Invalid characters in data, extended ASCII not allowed");
+            strcpy(symbol->errtxt, "329: Invalid character in data, extended ASCII not allowed");
             return ZINT_ERROR_INVALID_DATA;
         }
         ustrcat(buffer, EC39Ctrl[source[i]]);
@@ -467,7 +467,7 @@ INTERNAL int c93(struct zint_symbol *symbol, unsigned char source[], int length)
     for (i = 0; i < length; i++) {
         if (source[i] > 127) {
             /* Cannot encode extended ASCII */
-            strcpy(symbol->errtxt, "331: Invalid characters in data, extended ASCII not allowed");
+            strcpy(symbol->errtxt, "331: Invalid character in data, extended ASCII not allowed");
             return ZINT_ERROR_INVALID_DATA;
         }
         strcat(buffer, C93Ctrl[source[i]]);
@@ -690,7 +690,7 @@ INTERNAL int channel_code(struct zint_symbol *symbol, unsigned char source[], in
     }
     error_number = is_sane(NEON, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "334: Invalid characters in data (digits only)");
+        strcpy(symbol->errtxt, "334: Invalid character in data (digits only)");
         return error_number;
     }
 
@@ -724,7 +724,11 @@ INTERNAL int channel_code(struct zint_symbol *symbol, unsigned char source[], in
     }
 
     if (target_value > max_ranges[channels]) {
-        sprintf(symbol->errtxt, "335: Value out of range (0 to %d) for %d channels", max_ranges[channels], channels);
+        if (channels == 8) {
+            sprintf(symbol->errtxt, "305: Value out of range (0 to %d)", max_ranges[channels]);
+        } else {
+            sprintf(symbol->errtxt, "335: Value out of range (0 to %d) for %d channels", max_ranges[channels], channels);
+        }
         return ZINT_ERROR_INVALID_DATA;
     }
 
@@ -786,7 +790,7 @@ INTERNAL int vin(struct zint_symbol *symbol, unsigned char source[], int length)
 
     // Check input characters, I, O and Q are not allowed
     if (is_sane(ARSENIC, source, length) == ZINT_ERROR_INVALID_DATA) {
-        sprintf(symbol->errtxt, "337: Invalid characters in data (\"%s\" only)", ARSENIC);
+        sprintf(symbol->errtxt, "337: Invalid character in data (\"%s\" only)", ARSENIC);
         return ZINT_ERROR_INVALID_DATA;
     }
 

@@ -562,7 +562,7 @@ static int pcenc(const unsigned char *data, int data_len, int offset, int min, i
                 if (strchr(hex_chars, *(++d)) == NULL || strchr(hex_chars, *(++d)) == NULL) {
                     *p_err_no = 3;
                     *p_err_posn = d - data + 1;
-                    strcpy(err_msg, "Invalid characters for percent encoding");
+                    strcpy(err_msg, "Invalid character for percent encoding");
                     return 0;
                 }
             }

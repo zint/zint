@@ -140,27 +140,31 @@ static void test_input(int index, int debug) {
         int ret;
         int expected_rows;
         int expected_width;
+        char *expected_errtxt;
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /*  0*/ { BARCODE_AUSPOST, "12345678", 0, 3, 73 },
-        /*  1*/ { BARCODE_AUSPOST, "1234567A", ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /*  2*/ { BARCODE_AUSPOST, "12345678ABcd#", 0, 3, 103 },
-        /*  3*/ { BARCODE_AUSPOST, "12345678ABcd!", ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /*  4*/ { BARCODE_AUSPOST, "12345678ABcd#", 0, 3, 103 },
-        /*  5*/ { BARCODE_AUSPOST, "1234567890123456", 0, 3, 103 },
-        /*  6*/ { BARCODE_AUSPOST, "123456789012345A", ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /*  7*/ { BARCODE_AUSPOST, "12345678ABCDefgh #", 0, 3, 133 }, // Length 18
-        /*  8*/ { BARCODE_AUSPOST, "12345678901234567890123", 0, 3, 133 },
-        /*  9*/ { BARCODE_AUSPOST, "1234567890123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 10*/ { BARCODE_AUSREPLY, "12345678", 0, 3, 73 },
-        /* 11*/ { BARCODE_AUSREPLY, "1234567", 0, 3, 73 }, // Leading zeroes added
-        /* 12*/ { BARCODE_AUSROUTE, "123456", 0, 3, 73 },
-        /* 13*/ { BARCODE_AUSROUTE, "12345", 0, 3, 73 },
-        /* 14*/ { BARCODE_AUSREDIRECT, "1234", 0, 3, 73 },
-        /* 15*/ { BARCODE_AUSREDIRECT, "123", 0, 3, 73 },
-        /* 16*/ { BARCODE_AUSREDIRECT, "0", 0, 3, 73 },
-        /* 17*/ { BARCODE_AUSPOST, "1234567", ZINT_ERROR_TOO_LONG, -1, -1 }, // No leading zeroes added
+        /*  0*/ { BARCODE_AUSPOST, "12345678", 0, 3, 73, "" },
+        /*  1*/ { BARCODE_AUSPOST, "1234567A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 405: Invalid character in DPID (first 8 characters) (digits only)" },
+        /*  2*/ { BARCODE_AUSPOST, "12345678ABcd#", 0, 3, 103, "" },
+        /*  3*/ { BARCODE_AUSPOST, "12345678ABcd!", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 404: Invalid character in data (alphanumerics, space and \"#\" only)" },
+        /*  4*/ { BARCODE_AUSPOST, "12345678ABcd#", 0, 3, 103, "" },
+        /*  5*/ { BARCODE_AUSPOST, "1234567890123456", 0, 3, 103, "" },
+        /*  6*/ { BARCODE_AUSPOST, "123456789012345A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 402: Invalid character in data (digits only for lengths 16 and 23)" },
+        /*  7*/ { BARCODE_AUSPOST, "12345678ABCDefgh #", 0, 3, 133, "" }, // Length 18
+        /*  8*/ { BARCODE_AUSPOST, "12345678901234567890123", 0, 3, 133, "" },
+        /*  9*/ { BARCODE_AUSPOST, "1234567890123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 402: Invalid character in data (digits only for lengths 16 and 23)" },
+        /* 10*/ { BARCODE_AUSPOST, "1234567", ZINT_ERROR_TOO_LONG, -1, -1, "Error 401: Auspost input is wrong length (8, 13, 16, 18 or 23 characters only)" }, // No leading zeroes added
+        /* 11*/ { BARCODE_AUSREPLY, "12345678", 0, 3, 73, "" },
+        /* 12*/ { BARCODE_AUSREPLY, "1234567", 0, 3, 73, "" }, // Leading zeroes added
+        /* 13*/ { BARCODE_AUSREPLY, "123456789", ZINT_ERROR_TOO_LONG, -1, -1, "Error 403: Auspost input is too long (8 character maximum)" },
+        /* 14*/ { BARCODE_AUSROUTE, "123456", 0, 3, 73, "" },
+        /* 15*/ { BARCODE_AUSROUTE, "12345", 0, 3, 73, "" },
+        /* 16*/ { BARCODE_AUSROUTE, "123456789", ZINT_ERROR_TOO_LONG, -1, -1, "Error 403: Auspost input is too long (8 character maximum)" },
+        /* 17*/ { BARCODE_AUSREDIRECT, "1234", 0, 3, 73, "" },
+        /* 18*/ { BARCODE_AUSREDIRECT, "123", 0, 3, 73, "" },
+        /* 19*/ { BARCODE_AUSREDIRECT, "0", 0, 3, 73, "" },
+        /* 20*/ { BARCODE_AUSREDIRECT, "123456789", ZINT_ERROR_TOO_LONG, -1, -1, "Error 403: Auspost input is too long (8 character maximum)" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -184,6 +188,7 @@ static void test_input(int index, int debug) {
             assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
             assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n", i, symbol->width, data[i].expected_width);
         }
+        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected_errtxt);
 
         ZBarcode_Delete(symbol);
     }

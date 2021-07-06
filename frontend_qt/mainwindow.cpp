@@ -36,7 +36,86 @@
 #include "sequencewindow.h"
 #include <stdio.h>
 
-MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags fl)
+struct bstyle_item {
+    const char *text;
+    int symbology;
+};
+
+static const struct bstyle_item bstyle_items[] = {
+    { "Australia Post Redirect Code", BARCODE_AUSREDIRECT },
+    { "Australia Post Reply-Paid", BARCODE_AUSREPLY },
+    { "Australia Post Routing Code", BARCODE_AUSROUTE },
+    { "Australia Post Standard Customer", BARCODE_AUSPOST },
+    { "Aztec Code (ISO 24778) (and HIBC)", BARCODE_AZTEC },
+    { "Aztec Runes", BARCODE_AZRUNE },
+    { "Channel Code", BARCODE_CHANNEL },
+    { "Codabar", BARCODE_CODABAR },
+    { "Codablock-F (and HIBC)", BARCODE_CODABLOCKF },
+    { "Code 11", BARCODE_CODE11 },
+    { "Code 128 (ISO 15417) (and GS1-128 and HIBC)", BARCODE_CODE128 },
+    { "Code 16k (ISO 12323)", BARCODE_CODE16K },
+    { "Code 2 of 5 Data Logic", BARCODE_C25LOGIC },
+    { "Code 2 of 5 IATA", BARCODE_C25IATA },
+    { "Code 2 of 5 Industrial", BARCODE_C25IND },
+    { "Code 2 of 5 Interleaved (ISO 16390)", BARCODE_C25INTER },
+    { "Code 2 of 5 Standard (Matrix)", BARCODE_C25STANDARD },
+    { "Code 32 (Italian Pharmacode)", BARCODE_CODE32 },
+    { "Code 39 (ISO 16388) (and HIBC)", BARCODE_CODE39 },
+    { "Code 39 Extended", BARCODE_EXCODE39 },
+    { "Code 49", BARCODE_CODE49 },
+    { "Code 93", BARCODE_CODE93 },
+    { "Code One", BARCODE_CODEONE },
+    { "DAFT Code", BARCODE_DAFT },
+    { "Data Matrix (ISO 16022) (and HIBC)", BARCODE_DATAMATRIX },
+    { "Deutsche Post Identcode", BARCODE_DPIDENT },
+    { "Deutsche Post Leitcode", BARCODE_DPLEIT },
+    { "DotCode", BARCODE_DOTCODE },
+    { "DPD Code", BARCODE_DPD },
+    { "Dutch Post KIX", BARCODE_KIX },
+    { "EAN-14", BARCODE_EAN14 },
+    { "European Article Number (EAN)", BARCODE_EANX },
+    { "Facing Identification Mark (FIM)", BARCODE_FIM },
+    { "Flattermarken", BARCODE_FLAT },
+    { "Grid Matrix", BARCODE_GRIDMATRIX },
+    { "GS1 DataBar Expanded", BARCODE_DBAR_EXP },
+    { "GS1 DataBar Expanded Stacked", BARCODE_DBAR_EXPSTK },
+    { "GS1 DataBar Limited", BARCODE_DBAR_LTD },
+    { "GS1 DataBar Omnidirectional (and Truncated)", BARCODE_DBAR_OMN },
+    { "GS1 DataBar Stacked", BARCODE_DBAR_STK },
+    { "GS1 DataBar Stacked Omnidirectional", BARCODE_DBAR_OMNSTK },
+    { "Han Xin (Chinese Sensible) Code", BARCODE_HANXIN },
+    { "International Standard Book Number (ISBN)", BARCODE_ISBNX },
+    { "ITF-14", BARCODE_ITF14 },
+    { "Japanese Postal Barcode", BARCODE_JAPANPOST },
+    { "Korean Postal Barcode", BARCODE_KOREAPOST },
+    { "LOGMARS", BARCODE_LOGMARS },
+    { "MaxiCode (ISO 16023)", BARCODE_MAXICODE },
+    { "MicroPDF417 (ISO 24728) (and HIBC)", BARCODE_MICROPDF417 },
+    { "Micro QR Code", BARCODE_MICROQR },
+    { "MSI Plessey", BARCODE_MSI_PLESSEY },
+    { "NVE-18 (SSCC-18)", BARCODE_NVE18 },
+    { "PDF417 (ISO 15438) (and Compact and HIBC)", BARCODE_PDF417 },
+    { "Pharmacode", BARCODE_PHARMA },
+    { "Pharmacode 2-track", BARCODE_PHARMA_TWO },
+    { "Pharma Zentralnummer (PZN)", BARCODE_PZN },
+    { "PLANET", BARCODE_PLANET },
+    { "POSTNET", BARCODE_POSTNET },
+    { "QR Code (ISO 18004) (and HIBC)", BARCODE_QRCODE },
+    { "Rectangular Micro QR (rMQR)", BARCODE_RMQR },
+    { "Royal Mail 4-state Barcode", BARCODE_RM4SCC },
+    { "Royal Mail 4-state Mailmark", BARCODE_MAILMARK },
+    { "Telepen", BARCODE_TELEPEN },
+    { "Telepen Numeric", BARCODE_TELEPEN_NUM },
+    { "UK Plessey", BARCODE_PLESSEY },
+    { "Ultracode", BARCODE_ULTRA },
+    { "Universal Product Code (UPC-A)", BARCODE_UPCA },
+    { "Universal Product Code (UPC-E)", BARCODE_UPCE },
+    { "UPNQR", BARCODE_UPNQR },
+    { "USPS Intelligent Mail (OneCode)", BARCODE_USPS_IMAIL },
+    { "VIN (Vehicle Identification Number)", BARCODE_VIN },
+};
+
+MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags fl)
         : QWidget(parent, fl), m_optionWidget(nullptr), m_symbology(0)
 {
     m_bc.bc.setDebug(QCoreApplication::arguments().contains("--verbose")); // Undocumented command line debug flag
@@ -49,80 +128,6 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags fl)
 #if QT_VERSION < 0x60000
     settings.setIniCodec("UTF-8");
 #endif
-
-    char bstyle_text[][50] = {
-        "Australia Post Redirect Code",
-        "Australia Post Reply-Paid",
-        "Australia Post Routing Code",
-        "Australia Post Standard Customer",
-        "Aztec Code (ISO 24778) (and HIBC)",
-        "Aztec Runes",
-        "Channel Code",
-        "Codabar",
-        "Codablock-F (and HIBC)",
-        "Code 11",
-        "Code 128 (ISO 15417) (and GS1-128 and HIBC)",
-        "Code 16k (ISO 12323)",
-        "Code 2 of 5 Data Logic",
-        "Code 2 of 5 IATA",
-        "Code 2 of 5 Industrial",
-        "Code 2 of 5 Interleaved (ISO 16390)",
-        "Code 2 of 5 Standard (Matrix)",
-        "Code 32 (Italian Pharmacode)",
-        "Code 39 (ISO 16388) (and HIBC)",
-        "Code 39 Extended",
-        "Code 49",
-        "Code 93",
-        "Code One",
-        "DAFT Code",
-        "Data Matrix (ISO 16022) (and HIBC)",
-        "Deutsche Post Identcode",
-        "Deutsche Post Leitcode",
-        "DotCode",
-        "DPD Code",
-        "Dutch Post KIX",
-        "EAN-14",
-        "European Article Number (EAN)",
-        "Facing Identification Mark (FIM)",
-        "Flattermarken",
-        "Grid Matrix",
-        "GS1 DataBar Expanded",
-        "GS1 DataBar Expanded Stacked",
-        "GS1 DataBar Limited",
-        "GS1 DataBar Omnidirectional (and Truncated)",
-        "GS1 DataBar Stacked",
-        "GS1 DataBar Stacked Omnidirectional",
-        "Han Xin (Chinese Sensible) Code",
-        "International Standard Book Number (ISBN)",
-        "ITF-14",
-        "Japanese Postal Barcode",
-        "Korean Postal Barcode",
-        "LOGMARS",
-        "MaxiCode (ISO 16023)",
-        "MicroPDF417 (ISO 24728) (and HIBC)",
-        "Micro QR Code",
-        "MSI Plessey",
-        "NVE-18 (SSCC-18)",
-        "PDF417 (ISO 15438) (and Compact and HIBC)",
-        "Pharmacode",
-        "Pharmacode 2-track",
-        "Pharma Zentralnummer (PZN)",
-        "PLANET",
-        "POSTNET",
-        "QR Code (ISO 18004) (and HIBC)",
-        "Rectangular Micro QR (rMQR)",
-        "Royal Mail 4-state Barcode",
-        "Royal Mail 4-state Mailmark",
-        "Telepen",
-        "Telepen Numeric",
-        "UK Plessey",
-        "Ultracode",
-        "Universal Product Code (UPC-A)",
-        "Universal Product Code (UPC-E)",
-        "UPNQR",
-        "USPS Intelligent Mail (OneCode)",
-        "VIN (Vehicle Identification Number)"
-    };
 
     scene = new QGraphicsScene(this);
 
@@ -140,10 +145,9 @@ MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags fl)
                     settings.value("studio/paper/blue", 0xff).toInt(),
                     settings.value("studio/paper/alpha", 0xff).toInt());
 
-    int cnt = metaObject()->enumerator(0).keyCount();
+    int cnt = (int) (sizeof(bstyle_items) / sizeof(bstyle_items[0]));
     for (int i = 0; i < cnt; i++) {
-        bstyle->addItem(metaObject()->enumerator(0).key(i));
-        bstyle->setItemText(i, tr(bstyle_text[i]));
+        bstyle->addItem(bstyle_items[i].text);
     }
 #ifdef _WIN32
     bstyle->setMaxVisibleItems(cnt); /* Apart from increasing combo size, seems to be needed for filter to work */
@@ -461,7 +465,7 @@ void MainWindow::HRTShow_ui_set()
 
 void MainWindow::dotty_ui_set()
 {
-    int symbology = metaObject()->enumerator(0).value(bstyle->currentIndex());
+    int symbology = bstyle_items[bstyle->currentIndex()].symbology;
 
     if (symbology == BARCODE_DOTCODE) {
         chkDotty->setEnabled(false);
@@ -508,7 +512,7 @@ void MainWindow::filter_symbologies()
         filter_list << filter.mid(i);
     }
     int filter_cnt = filter_list.size();
-    int cnt = metaObject()->enumerator(0).keyCount();
+    int cnt = (int) (sizeof(bstyle_items) / sizeof(bstyle_items[0]));
 
     if (filter_cnt) {
         for (int i = 0; i < cnt; i++) {
@@ -604,7 +608,7 @@ void MainWindow::change_options()
     bool initial_load = m_symbology == 0;
     int original_tab_count = tabMain->count();
     int original_tab_index = tabMain->currentIndex();
-    int symbology = metaObject()->enumerator(0).value(bstyle->currentIndex());
+    int symbology = bstyle_items[bstyle->currentIndex()].symbology;
 
     if (m_symbology) {
         save_sub_settings(settings, m_symbology);
@@ -614,6 +618,7 @@ void MainWindow::change_options()
         tabMain->removeTab(1);
 
     chkComposite->setText(tr("Add &2D Component"));
+    combobox_item_enabled(cmbCompType, 3, false); // CC-C
     cmbECI->setItemText(25, tr("29: GB 2312 (PRC)"));
     btype->setItemText(0, tr("No border"));
     combobox_item_enabled(cmbFontSetting, 1, true);
@@ -626,6 +631,7 @@ void MainWindow::change_options()
         file.close();
         tabMain->insertTab(1, m_optionWidget, tr("Cod&e 128"));
         chkComposite->setText(tr("Add &2D Component (GS1-128 only)"));
+        combobox_item_enabled(cmbCompType, 3, true); // CC-C
         connect(m_optionWidget->findChild<QObject*>("radC128EAN"), SIGNAL(toggled( bool )), SLOT(composite_ean_check()));
         connect(m_optionWidget->findChild<QObject*>("radC128Stand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radC128CSup"), SIGNAL(clicked( bool )), SLOT(update_preview()));
@@ -1035,7 +1041,7 @@ void MainWindow::composite_ui_set()
         cmbCompType->setEnabled(true);
         lblComposite->setEnabled(true);
         txtComposite->setEnabled(true);
-        if (metaObject()->enumerator(0).value(bstyle->currentIndex()) == BARCODE_CODE128) {
+        if (bstyle_items[bstyle->currentIndex()].symbology == BARCODE_CODE128) {
             QRadioButton *radioButton = m_optionWidget->findChild<QRadioButton*>("radC128EAN");
             if (radioButton) {
                 radioButton->setChecked(true);
@@ -1051,7 +1057,7 @@ void MainWindow::composite_ui_set()
 
 void MainWindow::composite_ean_check()
 {
-    if (metaObject()->enumerator(0).value(bstyle->currentIndex()) != BARCODE_CODE128)
+    if (bstyle_items[bstyle->currentIndex()].symbology != BARCODE_CODE128)
         return;
     QRadioButton *radioButton = m_optionWidget->findChild<QRadioButton*>("radC128EAN");
     if (radioButton && !radioButton->isChecked())
@@ -1060,7 +1066,7 @@ void MainWindow::composite_ean_check()
 
 void MainWindow::maxi_primary()
 {
-    if (metaObject()->enumerator(0).value(bstyle->currentIndex()) != BARCODE_MAXICODE)
+    if (bstyle_items[bstyle->currentIndex()].symbology != BARCODE_MAXICODE)
         return;
     QCheckBox *chkMaxiSCMVV = m_optionWidget->findChild<QCheckBox*>("chkMaxiSCMVV");
     if (m_optionWidget->findChild<QComboBox*>("cmbMaxiMode")->currentIndex() == 0) {
@@ -1080,7 +1086,7 @@ void MainWindow::maxi_primary()
 
 void MainWindow::msi_plessey_ui_set()
 {
-    if (metaObject()->enumerator(0).value(bstyle->currentIndex()) != BARCODE_MSI_PLESSEY)
+    if (bstyle_items[bstyle->currentIndex()].symbology != BARCODE_MSI_PLESSEY)
         return;
     QCheckBox *checkBox = m_optionWidget ? m_optionWidget->findChild<QCheckBox*>("chkMSICheckText") : nullptr;
     if (checkBox) {
@@ -1130,7 +1136,7 @@ void MainWindow::set_gs1_mode(bool gs1_mode)
 
 void MainWindow::update_preview()
 {
-    int symbology = metaObject()->enumerator(0).value(bstyle->currentIndex());
+    int symbology = bstyle_items[bstyle->currentIndex()].symbology;
     int recheck_eci = true;
     int width = view->geometry().width();
     int height = view->geometry().height();

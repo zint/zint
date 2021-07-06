@@ -149,7 +149,7 @@ static void test_input(int index, int generate, int debug) {
         /* 17*/ { UNICODE_MODE, -1, -1, -1, "A", -1, "ABCDE123456", 0, 30, "(144) 03 18 01 31 20 10 30 1E 20 1C 0F 38 38 1A 39 10 2F 37 22 12 01 21 21 21 21 21 21 21", "5-alphanumeric postcode" },
         /* 18*/ { UNICODE_MODE, -1, -1, -1, "A", -1, "AAAAAA   840001", 0, 30, "(144) 13 10 10 10 10 10 00 12 07 00 17 36 2E 38 04 29 16 0D 27 16 01 21 21 21 21 21 21 21", "6-alphanumeric postcode with padding" },
         /* 19*/ { UNICODE_MODE, -1, -1, -1, "A", -1, "AAAAA A840001", 0, 30, "(144) 03 18 10 10 10 10 00 12 07 00 19 07 29 31 26 01 23 2C 2E 07 01 21 21 21 21 21 21 21", "7-alphanumeric with embedded padding truncated" },
-        /* 20*/ { UNICODE_MODE, -1, -1, -1, "A", -1, "AA\015AAA840001", ZINT_ERROR_INVALID_DATA, 0, "Error 556: Invalid characters in postcode in Primary Message", "Alphanumeric postcode with CR" },
+        /* 20*/ { UNICODE_MODE, -1, -1, -1, "A", -1, "AA\015AAA840001", ZINT_ERROR_INVALID_DATA, 0, "Error 556: Invalid character in postcode in Primary Message", "Alphanumeric postcode with CR" },
         /* 21*/ { UNICODE_MODE, -1, -1, -1, "A", -1, "A#%-/A840001", 0, 30, "(144) 13 30 1B 1B 39 18 00 12 07 00 3F 1E 25 07 2A 1E 14 3C 28 2D 01 21 21 21 21 21 21 21", "Alphanumeric postcode with non-control Code A chars" },
         /* 22*/ { UNICODE_MODE, -1, -1, -1, "A", -1, "1A23456", ZINT_ERROR_INVALID_DATA, 0, "Error 552: Non-numeric country code or service class in Primary Message", "Non-numeric country code" },
         /* 23*/ { UNICODE_MODE, -1, -1, -1, "A", -1, "12345678912345A", ZINT_ERROR_INVALID_DATA, 0, "Error 552: Non-numeric country code or service class in Primary Message", "Non-numeric service class" },

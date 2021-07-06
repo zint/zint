@@ -68,7 +68,10 @@ if(MSVC)
     target_compile_definitions(zint PRIVATE DLL_EXPORT)
 endif()
 
-install(TARGETS zint  ${INSTALL_TARGETS_DEFAULT_ARGS})
+install(TARGETS zint ${INSTALL_TARGETS_DEFAULT_ARGS})
+if(ZINT_STATIC)
+    install(TARGETS zint-static ${INSTALL_TARGETS_DEFAULT_ARGS})
+endif()
 install(FILES zint.h DESTINATION ${INCLUDE_INSTALL_DIR} COMPONENT Devel)
 
 if(ZINT_TEST)

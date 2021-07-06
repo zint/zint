@@ -834,6 +834,7 @@ static void test_draw_string_wrap(int index, int debug) {
 
         ret = ZBarcode_Print(symbol, 0);
         assert_zero(ret, "i:%d ZBarcode_Print(%d) ret %d != 0\n", i, data[i].symbology, ret);
+        assert_zero(remove(symbol->outfile), "i:%d remove(%s) != 0\n", i, symbol->outfile);
 
         text_bits_set = 0;
         row = data[i].expected_no_text_row;
@@ -902,6 +903,7 @@ static void test_code128_utf8(int index, int debug) {
 
         ret = ZBarcode_Print(symbol, 0);
         assert_zero(ret, "i:%d ZBarcode_Print(%d) ret %d != 0\n", i, BARCODE_CODE128, ret);
+        assert_zero(remove(symbol->outfile), "i:%d remove(%s) != 0\n", i, symbol->outfile);
 
         text_bits_set = 0;
         row = data[i].expected_text_row;
@@ -1014,6 +1016,7 @@ static void test_scale(int index, int debug) {
 
         ret = ZBarcode_Print(symbol, 0);
         assert_zero(ret, "i:%d ZBarcode_Print(%d) ret %d != 0\n", i, data[i].symbology, ret);
+        assert_zero(remove(symbol->outfile), "i:%d remove(%s) != 0\n", i, symbol->outfile);
 
         assert_nonzero(symbol->bitmap_height >= data[i].expected_set_rows, "i:%d (%d) symbol->bitmap_height %d < expected_set_rows %d\n",
                 i, data[i].symbology, symbol->bitmap_height, data[i].expected_set_rows);

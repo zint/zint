@@ -58,7 +58,7 @@ static void test_utf8_to_unicode(int index, int debug) {
 
     testStart("test_utf8_to_unicode");
 
-    symbol.debug |= debug;
+    symbol.debug = debug;
 
     for (i = 0; i < data_size; i++) {
         int ret_length;
@@ -136,11 +136,11 @@ static void test_debug_test_codeword_dump_int(int index, int debug) {
     int data_size = ARRAY_SIZE(data);
     int i;
 
-    struct zint_symbol symbol;
+    struct zint_symbol symbol = {0};
 
     testStart("test_debug_test_codeword_dump_int");
 
-    symbol.debug |= debug;
+    symbol.debug = debug;
 
     for (i = 0; i < data_size; i++) {
 

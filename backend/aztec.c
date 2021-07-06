@@ -1430,12 +1430,12 @@ INTERNAL int aztec_runes(struct zint_symbol *symbol, unsigned char source[], int
 
     input_value = 0;
     if (length > 3) {
-        strcpy(symbol->errtxt, "507: Input too large");
+        strcpy(symbol->errtxt, "507: Input too large (3 character maximum)");
         return ZINT_ERROR_INVALID_DATA;
     }
     error_number = is_sane(NEON, source, length);
     if (error_number != 0) {
-        strcpy(symbol->errtxt, "508: Invalid characters in input");
+        strcpy(symbol->errtxt, "508: Invalid character in data (digits only)");
         return ZINT_ERROR_INVALID_DATA;
     }
     switch (length) {
@@ -1451,7 +1451,7 @@ INTERNAL int aztec_runes(struct zint_symbol *symbol, unsigned char source[], int
     }
 
     if (input_value > 255) {
-        strcpy(symbol->errtxt, "509: Input too large");
+        strcpy(symbol->errtxt, "509: Input out of range (0 to 255)");
         return ZINT_ERROR_INVALID_DATA;
     }
 

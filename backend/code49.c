@@ -54,7 +54,7 @@ INTERNAL int code_49(struct zint_symbol *symbol, unsigned char source[], int len
     int error_number = 0;
 
     if (length > 81) {
-        strcpy(symbol->errtxt, "430: Input too long");
+        strcpy(symbol->errtxt, "430: Input too long (81 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
     if ((symbol->input_mode & 0x07) == GS1_MODE) {
@@ -66,7 +66,7 @@ INTERNAL int code_49(struct zint_symbol *symbol, unsigned char source[], int len
 
     for (i = 0; i < length; i++) {
         if (source[i] > 127) {
-            strcpy(symbol->errtxt, "431: Invalid characters in input data");
+            strcpy(symbol->errtxt, "431: Invalid character in input data, extended ASCII not allowed");
             return ZINT_ERROR_INVALID_DATA;
         }
         if (gs1 && (source[i] == '['))

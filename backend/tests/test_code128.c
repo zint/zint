@@ -138,7 +138,7 @@ static void test_hrt_cpy_iso8859_1(int index, int debug) {
 
     testStart("test_hrt_cpy_iso8859_1");
 
-    symbol.debug |= debug;
+    symbol.debug = debug;
 
     for (i = 0; i < data_size; i++) {
         int j;
@@ -264,8 +264,8 @@ static void test_reader_init(int index, int generate, int debug) {
             if (ret < ZINT_ERROR) {
                 assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);
                 assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
-                assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
             }
+            assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
         }
 
         ZBarcode_Delete(symbol);
@@ -294,7 +294,7 @@ static void test_input(int index, int generate, int debug) {
     // ß U+00DF (\337, 223), UTF-8 C39F, CodeA and CodeB extended ASCII
     // é U+00E9 (\351, 233), UTF-8 C3A9, CodeB-only extended ASCII
     struct item data[] = {
-        /*  0*/ { UNICODE_MODE, "\302\200", -1, ZINT_ERROR_INVALID_DATA, 0, "Error 204: Invalid characters in input data", "PAD not in ISO 8859-1" },
+        /*  0*/ { UNICODE_MODE, "\302\200", -1, ZINT_ERROR_INVALID_DATA, 0, "Error 204: Invalid character in input data (ISO/IEC 8859-1 only)", "PAD not in ISO 8859-1" },
         /*  1*/ { DATA_MODE, "\200", -1, 0, 57, "(5) 103 101 64 23 106", "PAD ok using binary" },
         /*  2*/ { UNICODE_MODE, "AIM1234", -1, 0, 101, "(9) 104 33 41 45 99 12 34 87 106", "Example from Annex A.1, check char value 87" },
         /*  3*/ { GS1_MODE, "[90]12", -1, ZINT_ERROR_INVALID_OPTION, 0, "Error 220: Selected symbology does not support GS1 mode", "" },
@@ -358,8 +358,8 @@ static void test_input(int index, int generate, int debug) {
         } else {
             if (ret < ZINT_ERROR) {
                 assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
-                assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
             }
+            assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
         }
 
         ZBarcode_Delete(symbol);
@@ -432,8 +432,8 @@ static void test_ean128_input(int index, int generate, int debug) {
         } else {
             if (ret < ZINT_ERROR) {
                 assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
-                assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
             }
+            assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
         }
 
         ZBarcode_Delete(symbol);
@@ -452,7 +452,7 @@ static void test_hibc_input(int index, int generate, int debug) {
         char *comment;
     };
     struct item data[] = {
-        /*  0*/ { ",", ZINT_ERROR_INVALID_DATA, -1, "", "" },
+        /*  0*/ { ",", ZINT_ERROR_INVALID_DATA, -1, "Error 203: Invalid character in data (alphanumerics, space and \"-.$/+%\" only)", "" },
         /*  1*/ { "A99912345/$$52001510X3", 0, 255, "(23) 104 11 33 99 99 91 23 45 100 15 4 4 99 52 0 15 10 100 56 19 19 53 106", "Check digit 3" },
     };
     int data_size = ARRAY_SIZE(data);
@@ -484,8 +484,64 @@ static void test_hibc_input(int index, int generate, int debug) {
         } else {
             if (ret < ZINT_ERROR) {
                 assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
-                assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
             }
+            assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
+        }
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
+static void test_dpd_input(int index, int generate, int debug) {
+
+    struct item {
+        char *data;
+        int ret;
+        int expected_width;
+        char *expected;
+        char *comment;
+    };
+    struct item data[] = {
+        /*  0*/ { "123456789012345678901234567", ZINT_ERROR_TOO_LONG, -1, "Error 349: DPD input wrong length (28 characters required)", "" },
+        /*  1*/ { "12345678901234567890123456789", ZINT_ERROR_TOO_LONG, -1, "Error 349: DPD input wrong length (28 characters required)", "" },
+        /*  2*/ { "123456789012345678901234567,", ZINT_ERROR_INVALID_DATA, -1, "Error 300: Invalid character in DPD data (alphanumerics only)", "Alphanumerics only in body" },
+        /*  3*/ { ",234567890123456789012345678", 0, 211, "(19) 104 12 18 99 34 56 78 90 12 34 56 78 90 12 34 56 78 64 106", "Non-alphanumeric DPD Identifier (Barcode ID) allowed" },
+        /*  4*/ { "\037234567890123456789012345678", ZINT_ERROR_INVALID_DATA, -1, "Error 301: Invalid DPD identifier (first character), ASCII values 32 to 127 only", "Control char <US> as DPD Identifier" },
+        /*  5*/ { "é234567890123456789012345678", ZINT_ERROR_INVALID_DATA, -1, "Error 301: Invalid DPD identifier (first character), ASCII values 32 to 127 only", "Extended ASCII as DPD Identifier" },
+    };
+    int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
+    struct zint_symbol *symbol;
+
+    char escaped[1024];
+
+    testStart("test_dpd_input");
+
+    for (i = 0; i < data_size; i++) {
+
+        if (index != -1 && i != index) continue;
+
+        symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        symbol->debug = ZINT_DEBUG_TEST; // Needed to get codeword dump in errtxt
+
+        length = testUtilSetSymbol(symbol, BARCODE_DPD, UNICODE_MODE, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
+
+        ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+
+        if (generate) {
+            printf("        /*%3d*/ { \"%s\", %s, %d, \"%s\", \"%s\" },\n",
+                    i, testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
+                    testUtilErrorName(data[i].ret), symbol->width, symbol->errtxt, data[i].comment);
+        } else {
+            if (ret < ZINT_ERROR) {
+                assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
+            }
+            assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
         }
 
         ZBarcode_Delete(symbol);
@@ -631,8 +687,8 @@ static void test_encode(int index, int generate, int debug) {
         /* 39*/ { BARCODE_DPD, UNICODE_MODE, "%000393206219912345678101040", 0, 1, 211, 1, "DPDAPPD 4.0.2 - Illustrations 2, 7, 8, same; NOTE: correct HRT given by Illustration 7 only",
                     "1101001000010001001100100111011001011101111011011001100110100010001100011011010011001000110111001001011101111010110011100100010110001110001011011000010100110010001001100100010011000101000101011110001100011101011"
                 },
-        /* 40*/ { BARCODE_DPD, UNICODE_MODE, "%000393206219912345678101040", 0, 1, 211, 1, "DPDAPPD 4.0.2 - Illustration 6 **NOT SAME** HRT incorrect, also uses CodeA and inefficient encoding; verified against tec-it",
-                    "1101001000010001001100100111011001011101111011011001100110100010001100011011010011001000110111001001011101111010110011100100010110001110001011011000010100110010001001100100010011000101000101011110001100011101011"
+        /* 40*/ { BARCODE_DPD, UNICODE_MODE, "%007110601782532948375101276", 0, 1, 211, 1, "DPDAPPD 4.0.2 - Illustration 6 **NOT SAME** HRT incorrect, also uses CodeA and inefficient encoding; verified against tec-it",
+                    "1101001000010001001100100111011001011101111010011000100110001001001001100100011001101100110000101001110010110011000110110100010111101011110010011000010010110010001001011001110011001010000100010111101100011101011"
                 },
         /* 41*/ { BARCODE_DPD, UNICODE_MODE, "0123456789012345678901234567", 0, 1, 189, 1, "DPDAPPD 4.0.2 - Illustration 9, same (allowing for literal HRT)",
                     "110100111001100110110011101101110101110110001000010110011011011110110011011001110110111010111011000100001011001101101111011001101100111011011101011101100010000101100101011110001100011101011"
@@ -709,6 +765,7 @@ int main(int argc, char *argv[]) {
         { "test_input", test_input, 1, 1, 1 },
         { "test_ean128_input", test_ean128_input, 1, 1, 1 },
         { "test_hibc_input", test_hibc_input, 1, 1, 1 },
+        { "test_dpd_input", test_dpd_input, 1, 1, 1 },
         { "test_encode", test_encode, 1, 1, 1 },
     };
 

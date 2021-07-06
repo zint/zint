@@ -32,7 +32,7 @@
 
 #define SODIUM          "0123456789+"
 #define ISBN_SANE       "0123456789X"
-#define ISBN_CC_SANE    "0123456789Xx+"
+#define ISBN_ADDON_SANE "0123456789Xx+"
 
 #define EAN2    102
 #define EAN5    105
@@ -538,7 +538,7 @@ static int isbn(struct zint_symbol *symbol, unsigned char source[], const int sr
     to_upper(source);
     error_number = is_sane(ISBN_SANE, source, src_len);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        sprintf(symbol->errtxt, "277: Invalid characters in data (\"%s\" only)", ISBN_SANE);
+        strcpy(symbol->errtxt, "277: Invalid character in data (digits and \"X\" only)");
         return error_number;
     }
 
@@ -555,27 +555,40 @@ static int isbn(struct zint_symbol *symbol, unsigned char source[], const int sr
             return ZINT_ERROR_INVALID_DATA;
         }
 
+        /* "X" can only occur in last position */
+        error_number = is_sane(NEON, source, 12);
+        if (error_number == ZINT_ERROR_INVALID_DATA) {
+            strcpy(symbol->errtxt, "277: Invalid character in data, \"X\" allowed in last position only");
+            return error_number;
+        }
+
         check_digit = gs1_check_digit(source, 12);
         if (source[src_len - 1] != check_digit) {
-            sprintf(symbol->errtxt, "280: Incorrect ISBN check '%c', expecting '%c'",
+            sprintf(symbol->errtxt, "280: Invalid ISBN check digit '%c', expecting '%c'",
                     source[src_len - 1], check_digit);
             return ZINT_ERROR_INVALID_CHECK;
         }
         source[12] = '\0';
-    }
 
-    if (src_len == 9) /* Using 9 digit SBN */ {
-        /* Add leading zero */
-        for (i = 10; i > 0; i--) {
-            source[i] = source[i - 1];
+    } else { /* Using 10 digit ISBN or 9 digit SBN padded with leading zero */
+        if (src_len == 9) /* Using 9 digit SBN */ {
+            /* Add leading zero */
+            for (i = 10; i > 0; i--) {
+                source[i] = source[i - 1];
+            }
+            source[0] = '0';
         }
-        source[0] = '0';
-    }
 
-    if (src_len == 9 || src_len == 10) /* Using 10 digit ISBN or 9 digit SBN padded with leading zero */ {
+        /* "X" can only occur in last position */
+        error_number = is_sane(NEON, source, 9);
+        if (error_number == ZINT_ERROR_INVALID_DATA) {
+            strcpy(symbol->errtxt, "277: Invalid character in data, \"X\" allowed in last position only");
+            return error_number;
+        }
+
         check_digit = isbn_check(source, 9);
         if (check_digit != source[9]) {
-            sprintf(symbol->errtxt, "281: Incorrect %s check '%c', expecting '%c'", src_len == 9 ? "SBN" : "ISBN",
+            sprintf(symbol->errtxt, "281: Invalid %s check digit '%c', expecting '%c'", src_len == 9 ? "SBN" : "ISBN",
                     source[9], check_digit);
             return ZINT_ERROR_INVALID_CHECK;
         }
@@ -611,6 +624,9 @@ INTERNAL int ean_leading_zeroes(struct zint_symbol *symbol, const unsigned char 
         }
     }
     if (first_len > 13 || second_len > 5) {
+        if (p_with_addon) {
+            *p_with_addon = second_len > 5 ? with_addon : 0;
+        }
         return 0;
     }
 
@@ -747,22 +763,23 @@ INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int src
     writer = 0;
 
     if (src_len > 19) {
-        strcpy(symbol->errtxt, "283: Input too long"); // TODO: Better error message
+        strcpy(symbol->errtxt, "283: Input too long (19 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
     if (symbol->symbology != BARCODE_ISBNX) {
-        /* ISBN has its own checking routine */
+        /* ISBN has its own sanity routine */
         error_number = is_sane(SODIUM, source, src_len);
         if (error_number == ZINT_ERROR_INVALID_DATA) {
-            sprintf(symbol->errtxt, "284: Invalid characters in data (\"%s\" only)", SODIUM);
+            strcpy(symbol->errtxt, "284: Invalid character in data (digits and \"+\" only)");
             return error_number;
         }
     } else {
-        error_number = is_sane(ISBN_CC_SANE, source, src_len);
+        error_number = is_sane(ISBN_ADDON_SANE, source, src_len);
         if (error_number == ZINT_ERROR_INVALID_DATA) {
-            sprintf(symbol->errtxt, "285: Invalid characters in data (\"%s\" only)", ISBN_CC_SANE);
+            strcpy(symbol->errtxt, "285: Invalid character in data (digits, \"X\" and \"+\" only)");
             return error_number;
         }
+        /* Add-on will be checked separately to be numeric only below */
     }
 
     /* Check for multiple '+' characters */
@@ -779,7 +796,8 @@ INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int src
 
     /* Add leading zeroes, checking max lengths of parts */
     if (!ean_leading_zeroes(symbol, source, local_source, &with_addon)) {
-        strcpy(symbol->errtxt, "294: Input too long"); // TODO: Better error message
+        sprintf(symbol->errtxt, "294: Input too long (%s)",
+                with_addon ? "5 character maximum for add-on" : "13 character maximum");
         return ZINT_ERROR_TOO_LONG;
     }
 
@@ -849,7 +867,7 @@ INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int src
                 case 12:
                 case 13: error_number = ean13(symbol, first_part, first_part_len, dest);
                     break;
-                default: strcpy(symbol->errtxt, "286: Input wrong length"); // TODO: Better error message
+                default: strcpy(symbol->errtxt, "286: Input wrong length (2, 5, 7, 8, 12 or 13 characters only)");
                     return ZINT_ERROR_TOO_LONG;
             }
             break;
@@ -880,7 +898,7 @@ INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int src
                     symbol->rows += 3;
                     error_number = ean13_cc(symbol, first_part, first_part_len, dest, cc_rows);
                     break;
-                default: strcpy(symbol->errtxt, "287: Input wrong length"); // TODO: Better error message
+                default: strcpy(symbol->errtxt, "287: Input wrong length (6, 12 or 13 characters only)");
                     return ZINT_ERROR_TOO_LONG;
             }
             break;
@@ -889,7 +907,7 @@ INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int src
             if ((first_part_len == 11) || (first_part_len == 12)) {
                 error_number = upca(symbol, first_part, first_part_len, dest);
             } else {
-                strcpy(symbol->errtxt, "288: Input wrong length"); // TODO: Better error message
+                strcpy(symbol->errtxt, "288: Input wrong length (11 or 12 characters only)");
                 return ZINT_ERROR_TOO_LONG;
             }
             break;
@@ -907,7 +925,7 @@ INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int src
                 symbol->rows += 3;
                 error_number = upca_cc(symbol, first_part, first_part_len, dest, cc_rows);
             } else {
-                strcpy(symbol->errtxt, "289: Input wrong length"); // TODO: Better error message
+                strcpy(symbol->errtxt, "289: Input wrong length (11 or 12 characters only)");
                 return ZINT_ERROR_TOO_LONG;
             }
             break;
@@ -916,7 +934,7 @@ INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int src
             if ((first_part_len >= 6) && (first_part_len <= (symbol->symbology == BARCODE_UPCE ? 7 : 8))) {
                 error_number = upce(symbol, first_part, first_part_len, dest);
             } else {
-                strcpy(symbol->errtxt, "290: Input wrong length"); // TODO: Better error message
+                strcpy(symbol->errtxt, "290: Input wrong length (7 or 8 characters only)");
                 return ZINT_ERROR_TOO_LONG;
             }
             break;
@@ -934,7 +952,7 @@ INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int src
                 symbol->rows += 3;
                 error_number = upce_cc(symbol, first_part, first_part_len, dest, cc_rows);
             } else {
-                strcpy(symbol->errtxt, "291: Input wrong length"); // TODO: Better error message
+                strcpy(symbol->errtxt, "291: Input wrong length (7 or 8 characters only)");
                 return ZINT_ERROR_TOO_LONG;
             }
             break;
@@ -949,6 +967,14 @@ INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int src
 
     second_part_len = (int) ustrlen(second_part);
 
+    if (symbol->symbology == BARCODE_ISBNX) { /* Need to further check that add-on numeric only */
+        error_number = is_sane(NEON, second_part, second_part_len);
+        if (error_number == ZINT_ERROR_INVALID_DATA) {
+            strcpy(symbol->errtxt, "295: Invalid add-on data (digits only)");
+            return error_number;
+        }
+    }
+
     switch (second_part_len) {
         case 0: break;
         case 2:
@@ -962,7 +988,7 @@ INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int src
             ustrcat(symbol->text, second_part);
             break;
         default:
-            strcpy(symbol->errtxt, "292: Add-on input wrong length"); // TODO: Better error message
+            strcpy(symbol->errtxt, "292: Add-on data wrong length (2 or 5 characters only)");
             return ZINT_ERROR_TOO_LONG;
     }
 

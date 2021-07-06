@@ -57,17 +57,17 @@
 #define ustrncat(target, source, count) strncat((char *) (target), (const char *) (source), (count))
 
 #ifdef _MSC_VER
-#  if _MSC_VER < 1800 /* ceilf, floorf, roundf (C99) not before MSVC 2013 (C++ 12.0) */
+#  if _MSC_VER == 1200 /* VC6 */
 #    define ceilf (float) ceil
 #    define floorf (float) floor
-#    define roundf (float) round
 #    define fmodf (float) fmod
-#    if _MSC_VER == 1200 /* VC6 */
-#      define round(arg) floor((arg) + 0.5f)
-#    endif
+#  endif
+#  if _MSC_VER < 1800 /* round (C99) not before MSVC 2013 (C++ 12.0) */
+#    define round(arg) floor((arg) + 0.5)
+#    define roundf(arg) floorf((arg) + 0.5f)
 #  endif
 #  pragma warning(disable: 4244) /* conversion from int to float */
-#  if _MSC_VER >= 1800 /* MSVC 2013 */
+#  if _MSC_VER != 1200 /* VC6 */
 #    pragma warning(disable: 4996) /* function or variable may be unsafe */
 #  endif
 #endif

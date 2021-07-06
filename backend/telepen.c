@@ -68,7 +68,7 @@ INTERNAL int telepen(struct zint_symbol *symbol, unsigned char source[], int src
     count = 0;
 
     if (src_len > 30) {
-        strcpy(symbol->errtxt, "390: Input too long");
+        strcpy(symbol->errtxt, "390: Input too long (30 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
     /* Start character */
@@ -77,7 +77,7 @@ INTERNAL int telepen(struct zint_symbol *symbol, unsigned char source[], int src
     for (i = 0; i < src_len; i++) {
         if (source[i] > 127) {
             /* Cannot encode extended ASCII */
-            strcpy(symbol->errtxt, "391: Invalid characters in input data");
+            strcpy(symbol->errtxt, "391: Invalid character in input data, extended ASCII not allowed");
             return ZINT_ERROR_INVALID_DATA;
         }
         strcat(dest, TeleTable[source[i]]);
@@ -124,14 +124,14 @@ INTERNAL int telepen_num(struct zint_symbol *symbol, unsigned char source[], int
     count = 0;
 
     if (src_len > 60) {
-        strcpy(symbol->errtxt, "392: Input too long");
+        strcpy(symbol->errtxt, "392: Input too long (60 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
     ustrcpy(temp, source);
     to_upper(temp);
     error_number = is_sane(SODIUM, temp, src_len);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "393: Invalid characters in data");
+        strcpy(symbol->errtxt, "393: Invalid character in data (digits and \"X\" only)");
         return error_number;
     }
 

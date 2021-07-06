@@ -1491,7 +1491,7 @@ INTERNAL int han_xin(struct zint_symbol *symbol, unsigned char source[], int len
             if (error_number == 0) {
                 done = 1;
             } else if (symbol->eci) {
-                strcpy(symbol->errtxt, "575: Invalid characters in input data");
+                sprintf(symbol->errtxt, "545: Invalid character in input data for ECI %d", symbol->eci);
                 return error_number;
             }
         }

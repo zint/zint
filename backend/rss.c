@@ -308,7 +308,7 @@ INTERNAL int rss14_cc(struct zint_symbol *symbol, unsigned char source[], int sr
     }
     error_number = is_sane(NEON, source, src_len);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "381: Invalid characters in data (digits only)");
+        strcpy(symbol->errtxt, "381: Invalid character in data (digits only)");
         return error_number;
     }
 
@@ -646,7 +646,7 @@ INTERNAL int rsslimited_cc(struct zint_symbol *symbol, unsigned char source[], i
     }
     error_number = is_sane(NEON, source, src_len);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "383: Invalid characters in data (digits only)");
+        strcpy(symbol->errtxt, "383: Invalid character in data (digits only)");
         return error_number;
     }
 
@@ -975,7 +975,7 @@ static int rssexp_binary_string(struct zint_symbol *symbol, const unsigned char 
         if ((source[i] < '0') || (source[i] > '9')) {
             if (source[i] != '[') {
                 /* Something is wrong */
-                strcpy(symbol->errtxt, "385: Invalid characters in input data"); // TODO: Better error message
+                strcpy(symbol->errtxt, "385: Invalid character in input data"); // TODO: Better error message
                 return ZINT_ERROR_INVALID_DATA;
             }
         }
@@ -1075,8 +1075,8 @@ static int rssexp_binary_string(struct zint_symbol *symbol, const unsigned char 
     if (j != 0) { /* If general field not empty */
 
         if (!general_field_encode(general_field, j, &mode, &last_digit, binary_string, &bp)) {
-            /* Invalid characters in input data */
-            strcpy(symbol->errtxt, "386: Invalid characters in input data"); // TODO: Better error message
+            /* Invalid character in input data */
+            strcpy(symbol->errtxt, "386: Invalid character in input data"); // TODO: Better error message
             return ZINT_ERROR_INVALID_DATA;
         }
     }

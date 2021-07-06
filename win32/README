@@ -19,7 +19,6 @@ Download zint, zlib and libpng by going to the directory you want to clone them
 into:
 
   cd <project-directory>
-  set "PROJECT_DIR=%cd%"
 
 and cloning each:
 
@@ -48,7 +47,7 @@ and then lpng:
 
   cd ..
 
-If you now open "%PROJECT_DIR%\zint\win32\zint.sln" with Visual Studio 2017, you
+If you now open "%cd%\zint\win32\zint.sln" with Visual Studio 2017, you
 should be able to build the Release configuration for Win32.
 
 "zint.dll" and "zint.exe" will be in "zint\win32\Release".
@@ -90,7 +89,7 @@ Then Zint Studio "qtZint.exe":
 This creates "zint\frontend_qt\release\qtZint.exe". It requires the Zint DLL to
 run, so add its location to your PATH:
 
-  set "PATH=%PROJECT_DIR%\zint\win32\Release;%PATH%"
+  set "PATH=%cd%\zint\win32\Release;%PATH%"
 
 You should now be able to run Zint Studio:
 
@@ -141,7 +140,7 @@ CMake and Visual Studio
 Zint can also be built using CMake with Visual Studio 2019, 2017 or 2015. The
 following example uses Visual Studio 2019 to build for x86/Win32:
 
-As above, set %PROJECT_DIR% and clone lpng, zlib and zint into it. Then
+As above, cd <project-directory> and clone lpng, zlib and zint into it. Then
 
   cd zlib
   ml /safeseh /coff /c contrib/masmx86/match686.asm
@@ -182,12 +181,17 @@ Now build zint:
 
 You should be able to run zint CLI and Zint Studio:
 
-  set "PATH=%PROJECT_DIR%\zint\build\backend\Release;%PATH%"
+  set "PATH=%cd%\zint\build\backend\Release;%PATH%"
   zint\build\frontend\Release\zint.exe
   zint\build\frontend_qt\Release\zint-qt.exe
 
 Note that the program name for Zint Studio when built using CMake is not
 "qtZint.exe" but "zint-qt.exe".
+
+For MSVC 2015 32 bit and MSVC 2017 32 bit, the zint cmake equivalents are:
+
+  cmake -G "Visual Studio 14 2015" -DCMAKE_BUILD_TYPE=Release -B build
+  cmake -G "Visual Studio 15 2017" -DCMAKE_BUILD_TYPE=Release -B build
 
 
 Visual C++ 6
@@ -233,7 +237,6 @@ differ):
 Go into the directory you want to use and clone zint and libpng:
 
   cd <project-directory>
-  PROJECT_DIR="$(pwd)"
 
   git clone https://git.code.sf.net/p/zint/code zint
   git clone https://git.code.sf.net/p/libpng/code lpng
@@ -291,7 +294,7 @@ zint/build/frontend_qt/zint-qt.exe
 The Zint command line tool "zint.exe" and Zint Studio "zint-qt.exe" need
 "libzint.dll" to run so add its location to your PATH:
 
-  export PATH="${PROJECT_DIR}/zint/build/backend":${PATH}
+  export PATH="$(pwd)/zint/build/backend":${PATH}
 
 You should now be able to run the command line tool:
 

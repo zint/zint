@@ -58,11 +58,8 @@ static const char *AusBarTable[64] = {
 #include <stdio.h>
 #include "common.h"
 #include "reedsol.h"
-#ifdef _MSC_VER
-#define inline _inline
-#endif
 
-static inline char convert_pattern(char data, int shift) {
+static char convert_pattern(char data, int shift) {
     return (data - '0') << shift;
 }
 
@@ -113,7 +110,7 @@ INTERNAL int australia_post(struct zint_symbol *symbol, unsigned char source[], 
     /* Check input immediately to catch nuls */
     error_number = is_sane(GDSET, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "404: Invalid characters in data");
+        strcpy(symbol->errtxt, "404: Invalid character in data (alphanumerics, space and \"#\" only)");
         return error_number;
     }
     strcpy(localstr, "");
@@ -140,17 +137,17 @@ INTERNAL int australia_post(struct zint_symbol *symbol, unsigned char source[], 
                 error_number = is_sane(NEON, source, length);
                 break;
             default:
-                strcpy(symbol->errtxt, "401: Auspost input is wrong length");
+                strcpy(symbol->errtxt, "401: Auspost input is wrong length (8, 13, 16, 18 or 23 characters only)");
                 return ZINT_ERROR_TOO_LONG;
         }
         if (error_number == ZINT_ERROR_INVALID_DATA) {
-            strcpy(symbol->errtxt, "402: Invalid characters in data");
+            strcpy(symbol->errtxt, "402: Invalid character in data (digits only for lengths 16 and 23)");
             return error_number;
         }
     } else {
         int zeroes;
         if (length > 8) {
-            strcpy(symbol->errtxt, "403: Auspost input is too long");
+            strcpy(symbol->errtxt, "403: Auspost input is too long (8 character maximum)");
             return ZINT_ERROR_TOO_LONG;
         }
         switch (symbol->symbology) {
@@ -174,12 +171,12 @@ INTERNAL int australia_post(struct zint_symbol *symbol, unsigned char source[], 
 
     ustrncat(localstr, source, length);
     h = (int) strlen(localstr);
-    /* Verifiy that the first 8 characters are numbers */
+    /* Verify that the first 8 characters are numbers */
     memcpy(dpid, localstr, 8);
     dpid[8] = '\0';
     error_number = is_sane(NEON, (unsigned char *) dpid, 8);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "405: Invalid characters in DPID");
+        strcpy(symbol->errtxt, "405: Invalid character in DPID (first 8 characters) (digits only)");
         return error_number;
     }
 

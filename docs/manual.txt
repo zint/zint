@@ -10,7 +10,7 @@ Zint Barcode Generator and Zint Barcode Studio User Manual
 1. Introduction
 ===============
 The Zint project aims to provide a complete cross-platform open source barcode
-generating solution. The package currently consists of a Qt based GUI, a
+generating solution. The package currently consists of a Qt based GUI, a CLI
 command line executable and a library with an API to allow developers access to
 the capabilities of Zint. It is hoped that Zint provides a solution which is
 flexible enough for professional users while at the same time takes care of as
@@ -80,6 +80,11 @@ ECI:    The ECI mechanism allows for multi-language data to be encoded in
 		Cyrillic characters, but should be used with caution as not all scanners
 		support this method.
 
+Two other concepts that are important are raster and vector. Raster is a low
+level bitmap representation of an image. BMP, GIF, PCX, PNG and TIF are raster
+file formats. Vector is a high level command- or data-based representation of an
+image. EMF, EPS and SVG are vector file formats. They require renderers to turn
+them into bitmaps.
 
 2. Installing Zint
 ==================
@@ -195,10 +200,10 @@ Code 128, and output to the default file out.png in the current directory.
 Alternatively, if libpng was not present when Zint was built, the default
 output file will be out.gif.
 
-The data input to Zint is assumed to be encoded in Unicode (UTF-8) format (Zint
-will correctly handle UTF-8 data on Windows). If you are encoding characters
-beyond the 7-bit ASCII set using a scheme other than UTF-8 then you will need to
-set the appropriate input options as shown in section 4.10 below.
+The data input to the Zint CLI is assumed to be encoded in Unicode (UTF-8)
+format (Zint will correctly handle UTF-8 data on Windows). If you are encoding
+characters beyond the 7-bit ASCII set using a scheme other than UTF-8 then you
+will need to set the appropriate input options as shown in section 4.10 below.
 
 Non-printing characters can be entered on the command line using the backslash
 (\) as an escape character in combination with the --esc switch. Permissible
@@ -804,9 +809,9 @@ Zint can output a representation of the symbol data as a set of hexadecimal
 values if asked to output to a text file (*.txt) or if given the option
 --filetype=txt. This can be used for test and diagnostic purposes.
 
-The --cmyk option is specific to output in encapsulated PostScript, and
-converts the RGB colours used to the CMYK colour space. Setting custom
-colours at the command line will still need to be done in RRGGBB format.
+The --cmyk option is specific to output in encapsulated PostScript and TIF, and
+converts the RGB colours used to the CMYK colour space. Setting custom colours
+at the command line will still need to be done in RRGGBB format.
 
 Additional options are available which are specific to certain symbologies.
 These may, for example, control the amount of error correction data or the
@@ -883,20 +888,20 @@ int main(int argc, char **argv)
 }
 
 Note that when using the API, the input data is assumed to be Latin-1 or binary
-unless the input_mode field is set - see section 5.9 for details.
+unless the input_mode field is set - see section 5.10 for details.
 
 5.3 Encoding and Printing Functions in Depth
 --------------------------------------------
 The functions for encoding and printing barcodes are defined as:
 
 int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source,
-      int in_length);
+      int length);
 
 int ZBarcode_Encode_File(struct zint_symbol *symbol, char *filename);
 
 int ZBarcode_Print(struct zint_symbol *symbol, int rotate_angle);
 
-int ZBarcode_Encode_and_Print(struct zint_symbol *symbol, unsigned char *input,
+int ZBarcode_Encode_and_Print(struct zint_symbol *symbol, unsigned char *source,
       int length, int rotate_angle);
 
 int ZBarcode_Encode_File_and_Print(struct zint_symbol *symbol, char *filename,
@@ -914,15 +919,19 @@ The ZBarcode_Encode_File() and ZBarcode_Encode_File_and_Print() functions can
 be used to encode data read directly from a text file where the filename is
 given in the "filename" string.
 
-5.4 Buffering Symbols in Memory
--------------------------------
+If printing more than one barcode, the zint_symbol structure may be re-used by
+calling the ZBarcode_Clear() function after each barcode to free any output
+buffers allocated. The symbol structure input fields must be reset.
+
+5.4 Buffering Symbols in Memory (raster)
+----------------------------------------
 In addition to saving barcode images to file Zint allows you to access a
 representation of the resulting bitmap image in memory. The following functions
 allow you to do this:
 
 int ZBarcode_Buffer(struct zint_symbol *symbol, int rotate_angle);
 
-int ZBarcode_Encode_and_Buffer(struct zint_symbol *symbol, unsigned char *input,
+int ZBarcode_Encode_and_Buffer(struct zint_symbol *symbol, unsigned char *source,
       int length, int rotate_angle);
 
 int ZBarcode_Encode_File_and_Buffer(struct zint_symbol *symbol, char *filename,
@@ -967,19 +976,74 @@ for (row = 0; row < my_symbol->bitmap_height; row++) {
      }
 }
 
-5.5 Setting Options
+5.5 Buffering Symbols in Memory (vector)
+----------------------------------------
+Symbols can also be saved to memory in a vector representation as well as a
+bitmap one. The following functions, exactly analogous to the ones above, allow
+you to do this:
+
+int ZBarcode_Buffer_Vector(struct zint_symbol *symbol, int rotate_angle);
+
+int ZBarcode_Encode_and_Buffer_Vector(struct zint_symbol *symbol,
+		unsigned char *source, int length, int rotate_angle);
+
+int ZBarcode_Encode_File_and_Buffer_Vector(struct zint_symbol *symbol,
+		char *filename, int rotate_angle);
+
+Here the "vector" pointer is set to a header which contains pointers to lists
+of structures representing the various elements of the barcode: rectangles,
+hexagons, strings and circles. To draw the barcode, each of the element types is
+iterated in turn, and using the information stored is drawn by a rendering
+system. For instance, to draw a barcode using a rendering system with
+"prepare_canvas()", "draw_rect()", "draw_hexagon()", "draw_string()", and
+"draw_circle()" routines available:
+
+struct zint_vector_rect *rect;
+struct zint_vector_hexagon *hexagon;
+struct zint_vector_string *string;
+struct zint_vector_circle *circle;
+
+prepare_canvas(symbol->vector->width, symbol->vector->height, symbol->scale,
+				symbol->fgcolour, symbol->bgcolor, rotate_angle);
+
+rect = symbol->vector->rectangles;
+while (rect) {
+	draw_rect(rect->x, rect->y, rect->width, rect->height, rect->colour);
+	rect = rect->next;
+}
+
+hexagon = symbol->vector->hexagons;
+while (hexagon) {
+	draw_hexagon(hexagon->x, hexagon->y, hexagon->diameter, hexagon->rotation):
+	hexagon = hexagon->next;
+}
+
+string = symbol->vector->strings;
+while (string) {
+	draw_string(string->x, string->y, string->fsize, string->rotation,
+				string->halign, string->text, string->length):
+	string = string->next;
+}
+
+circle = symbol->vector->circles;
+while (circle) {
+	draw_circle(circle->x, circle->y, circle->diameter, circle->colour):
+	circle = circle->next;
+}
+
+5.6 Setting Options
 -------------------
 So far our application is not very useful unless we plan to only make Code 128
 symbols and we don't mind that they only save to out.png. As with the CLI
-program, of course, these options can be altered. The way this is done is
-by altering the contents of the zint_symbol structure between the creation and
+program, of course, these options can be altered. The way this is done is by
+altering the contents of the zint_symbol structure between the creation and
 encoding stages. The zint_symbol structure consists of the following variables:
 
 --------------------------------------------------------------------------------
 Variable Name     | Type         | Meaning                     | Default Value
 --------------------------------------------------------------------------------
 symbology         | integer      | Symbol to use (see section  | BARCODE_CODE128
-                  |              |    5.7).                    |
+                  |              |    5.8).                    |
 height            | float        | Symbol height, excluding    | Symbol
                   |              |    fixed width-to-height    |    dependent
                   |              |    symbols. [1]             |
@@ -988,7 +1052,7 @@ whitespace_height | integer      | Vertical whitespace height. | 0
 border_width      | integer      | Border width.               | 0
 output_options    | integer      | Set various output file     | 0 (none)
                   |              |    parameters (see section  |
-                  |              |    5.8).                    |
+                  |              |    5.9).                    |
 fgcolour          | character    | Foreground (ink) colour as  | "000000"
                   |    string    |    RGB/RGBA hexadecimal     |
                   |              |    string. Must be 6 or 8   |
@@ -1016,10 +1080,10 @@ option_2          | integer      | Symbol specific options.    | 0
 option_3          | integer      | Symbol specific options.    | 0
 show_hrt          | integer      | Set to 0 to hide text.      | 1
 input_mode        | integer      | Set encoding of input data  | DATA_MODE
-                  |              |    (see section 5.9)        |
+                  |              |    (see section 5.10)       |
 eci               | integer      | Extended Channel Interpre-  | 0 (none)
                   |              |    tation code.             |
-text              | unsigned     | Human readable text, which  | "" (empty)
+text              | unsigned     | Human Readable Text, which  | "" (empty)
                   |    character |    usually consists of in-  |
                   |    string    |    put data plus one more   |
                   |              |    check digit. Uses UTF-8  |
@@ -1055,6 +1119,8 @@ bitmap_byte_length| integer      | Size of BMP bitmap data.    | (output only)
 vector            | pointer to   | Pointer to vector header    | (output only)
                   |    vector    |    containing pointers to   |
                   |    structure |    vector elements.         |
+warn_level        | integer      | Affects error/warning value | WARN_DEFAULT
+                  |              |    returned by Zint API.    |
 --------------------------------------------------------------------------------
 
 [1] This value is ignored for Aztec (including HIBC and Aztec Rune), Code One,
@@ -1107,7 +1173,8 @@ ZINT_WARN_NONCOMPLIANT       |  The symbol was created but is not compliant with
                              |     (e.g. height, GS1 AI data lengths).
 ZINT_ERROR                   |  Marks the divide between warnings and errors.
                              |     For return values greater than or equal to
-                             |     this no symbol is generated.
+                             |     this no symbol (or only an incomplete symbol)
+                             |     is generated.
 ZINT_ERROR_TOO_LONG          |  The input data is too long or too short for the
                              |     selected symbology. No symbol has been
                              |     generated.
@@ -1133,6 +1200,10 @@ ZINT_ERROR_MEMORY            |  Zint ran out of memory. This should only be a
 ZINT_ERROR_FILE_WRITE        |  Zint failed to write all contents to the
                              |     requested output file. This should only occur
                              |     if the output device becomes full.
+ZINT_ERROR_USES_ECI          |  Returned if warn level set to WARN_FAIL_ALL and
+                             |     ZINT_WARN_USES_ECI occurs.
+ZINT_ERROR_NONCOMPLIANT      |  Returned if warn level set to WARN_FAIL_ALL and
+                             |     ZINT_WARN_NONCOMPLIANT occurs.
 --------------------------------------------------------------------------------
 
 To catch errors use an integer variable as shown in the code below:
@@ -1167,7 +1238,9 @@ This code will exit with the appropriate message:
 
 Error 653: Malformed foreground colour target
 
-5.7 Specifying a Symbology
+To treat all warnings as errors, set symbol->warn_level to WARN_FAIL_ALL.
+
+5.8 Specifying a Symbology
 --------------------------
 Symbologies can be specified by number or by name as shown in the following
 table. For example
@@ -1292,7 +1365,7 @@ names in Zint before version 2.9.0. For example, symbology 29 used the name
 "BARCODE_RSS14". These names are now deprecated but are still recognised by Zint
 and will continue to be supported in future versions.
 
-5.8 Adjusting other output options
+5.9 Adjusting other output options
 ----------------------------------
 The output_options variable can be used to adjust various aspects of the output
 file. To select more than one option from the table below simply or them
@@ -1310,10 +1383,10 @@ BARCODE_BOX             |  Add a box surrounding the symbol and whitespace.
 BARCODE_STDOUT          |  Output the file to stdout.
 READER_INIT             |  Add a reader initialisation symbol to the data before
                         |     encoding.
-SMALL_TEXT              |  Use a smaller font for the human readable text.
-BOLD_TEXT               |  Embolden the human readable text.
+SMALL_TEXT              |  Use a smaller font for the Human Readable Text.
+BOLD_TEXT               |  Embolden the Human Readable Text.
 CMYK_COLOUR             |  Select the CMYK colour space option for encapsulated
-                        |     PostScript files.
+                        |     PostScript and TIF files.
 BARCODE_DOTTY_MODE      |  Plot a matrix symbol using dots rather than squares.
 GS1_GS_SEPARATOR        |  Use GS instead of FNC1 as GS1 separator (Data Matrix)
 OUT_BUFFER_INTERMEDIATE |  Return the bitmap buffer as ASCII values instead of
@@ -1324,8 +1397,8 @@ OUT_BUFFER_INTERMEDIATE |  Return the bitmap buffer as ASCII values instead of
 considerations apply to ITF-14 - see the specific section 6.1.2.6 for that
 symbology.
 
-5.9 Setting the Input Mode
---------------------------
+5.10 Setting the Input Mode
+---------------------------
 The way in which the input data is encoded can be set using the input_mode
 property. Valid values are shown in the table below.
 
@@ -1360,7 +1433,7 @@ my_symbol->input_mode = DATA_MODE | GS1_MODE;
 is not valid. Permissible escape sequences are listed in section 4.1. An
 example of GS1PARENS_MODE usage is given in section 6.1.11.3.
 
-5.10 Verifying Symbology Availability
+5.11 Verifying Symbology Availability
 -------------------------------------
 An additional function available in the API is defined as:
 
@@ -1376,7 +1449,7 @@ if (ZBarcode_ValidID(BARCODE_PDF417) != 0) {
     printf("PDF417 not available\n");
 }
 
-5.11 Checking Symbology Capabilities
+5.12 Checking Symbology Capabilities
 ------------------------------------
 It can be useful for frontend programs to know the capabilities of a symbology.
 This can be determined using another additional function:
@@ -1420,7 +1493,7 @@ if (cap & ZINT_CAP_ECI) {
     printf("PDF417 does not support ECI\n");
 }
 
-5.12 Zint Version
+5.13 Zint Version
 -----------------
 Lastly, the version of the Zint library linked to is returned by:
 
@@ -1458,7 +1531,7 @@ Also known as Code 2 of 5 Matrix this is a self-checking code used in industrial
 applications and photo development. Standard Code 2 of 5 will encode any length
 numeric input (digits 0-9). No check digit is added by default. To add a check
 digit, set option_2 = 1 or --vers=1. To add a check digit but not show it in
-the human readable text, set option_2 = 2 or --vers=2.
+the Human Readable Text, set option_2 = 2 or --vers=2.
 
 6.1.2.2 IATA Code 2 of 5
 ------------------------
@@ -1472,7 +1545,7 @@ readable text, set option_2 = 2 or --vers=2.
 ------------------------------
 Industrial Code 2 of 5 can encode any length numeric input (digits 0-9). No
 check digit is added by default. To add a check digit, set option_2 = 1 or
---vers=1. To add a check digit but not show it in the human readable text, set
+--vers=1. To add a check digit but not show it in the Human Readable Text, set
 option_2 = 2 or --vers=2.
 
 6.1.2.4 Interleaved Code 2 of 5 (ISO 16390)
@@ -1487,7 +1560,7 @@ readable text, set option_2 = 2 or --vers=2.
 ------------------------------
 Data Logic does not include a check digit by default and can encode any length
 numeric input (digits 0-9). To add a check digit, set option_2 = 1 or --vers=1.
-To add a check digit but not show it in the human readable text, set option_2 =
+To add a check digit but not show it in the Human Readable Text, set option_2 =
 2 or --vers=2.
 
 6.1.2.6 ITF-14
@@ -1635,7 +1708,7 @@ Value of option_2  |  Check Digits
 6                  |  Modulo-11 (NCR) & Modulo-10
 -------------------------------------------
 
-To not show the check digit or digits in the human readable text, add 10 to the
+To not show the check digit or digits in the Human Readable Text, add 10 to the
 option_2 value.
 
 6.1.7 Telepen
@@ -1748,7 +1821,7 @@ mode C in favour of mode B.
 A variation of Code 128 previously known as UCC/EAN-128, this symbology is
 defined by the GS1 General Specifications. Application Identifiers (AIs) should
 be entered using [square bracket] notation. These will be converted to
-parentheses (round brackets) for the human readable text. This will allow round
+parentheses (round brackets) for the Human Readable Text. This will allow round
 brackets to be used in the data strings to be encoded.
 
 For compatibility with data entry in other systems, if the data does not include
@@ -1787,7 +1860,7 @@ standards.
 6.1.11.7 DPD Code
 -----------------
 Another variation of Code 128 as used by DPD (Deutsher Paket Dienst). Requires
-a 28 character alphanumeric input. Zint formats human readable text as
+a 28 character alphanumeric input. Zint formats Human Readable Text as
 specified by DPD and adds a modulo-36 check character.
 
 6.1.12 GS1 DataBar (ISO 24724)
@@ -1822,7 +1895,7 @@ case the check digit will be verified.
 Previously known as RSS Expanded this is a variable length symbology capable of
 encoding data from a number of AIs in a single symbol. AIs should be encased in
 [square brackets] in the input data. This will be converted to parentheses
-(round brackets) before it is included in the human readable text attached to
+(round brackets) before it is included in the Human Readable Text attached to
 the symbol. This method allows the inclusion of parentheses in the data to be
 encoded. If the data does not include parentheses, the AIs may alternatively
 be encased in parentheses using the --gs1parens switch. See section 6.1.11.3.

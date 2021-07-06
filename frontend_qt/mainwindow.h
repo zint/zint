@@ -31,88 +31,9 @@ class MainWindow : public QWidget, private Ui::mainWindow
 {
     Q_OBJECT
 
-    Q_ENUMS(BarcodeTypes)
-
 public:
-    enum BarcodeTypes
-    {
-        AUSREDIRECT      = 68,
-        AUSREPLY         = 66,
-        AUSROUTE         = 67,
-        AUSPOST          = 63,
-        AZTEC            = 92,
-        AZRUNE           = 128,
-        CHANNEL          = 140,
-        CODABAR          = 18,
-        CODABLOCK        = 74,
-        CODE11           = 1,
-        CODE128          = 20,
-        CODE16K          = 23,
-        C25LOGIC         = 6,
-        C25IATA          = 4,
-        C25IND           = 7,
-        C25INTER         = 3,
-        C25MATRIX        = 2,
-        CODE32           = 129,
-        CODE39           = 8,
-        EXCODE39         = 9,
-        CODE49           = 24,
-        CODE93           = 25,
-        CODE_ONE         = 141,
-        DAFT             = 93,
-        DATAMATRIX       = 71,
-        DPIDENT          = 22,
-        DPLEIT           = 21,
-        DOTCODE          = 115,
-        DPD              = 96,
-        KIX              = 90,
-        EAN14            = 72,
-        EANX             = 13,
-        FIM              = 49,
-        FLAT             = 28,
-        GRIDMATRIX       = 142,
-        RSS_EXP          = 31,
-        RSS_EXPSTACK     = 81,
-        RSS_LTD          = 30,
-        RSS14            = 29,
-        RSS14STACK       = 79,
-        RSS14STACK_OMNI  = 80,
-        HANXIN           = 116,
-        ISBNX            = 69,
-        ITF14            = 89,
-        JAPANPOST        = 76,
-        KOREAPOST        = 77,
-        LOGMARS          = 50,
-        MAXICODE         = 57,
-        MICROPDF417      = 84,
-        MICROQR          = 97,
-        MSI_PLESSEY      = 47,
-        NVE18            = 75,
-        PDF417           = 55,
-        PHARMA           = 51,
-        PHARMA_TWO       = 53,
-        PZN              = 52,
-        PLANET           = 82,
-        POSTNET          = 40,
-        QRCODE           = 58,
-        RMQR             = 145,
-        RM4SCC           = 70,
-        MAILMARK         = 121,
-        TELEPEN          = 32,
-        TELEPEN_NUM      = 87,
-        PLESSEY          = 86,
-        ULTRA            = 144,
-        UPCA             = 34,
-        UPCE             = 37,
-        UPNQR            = 143,
-        ONECODE          = 85,
-        VIN              = 73
-    };
-
-public:
-    MainWindow(QWidget* parent = 0, Qt::WindowFlags fl = Qt::WindowFlags());
+    MainWindow(QWidget *parent = 0, Qt::WindowFlags fl = Qt::WindowFlags());
     ~MainWindow();
-
 
 public slots:
     void update_preview();

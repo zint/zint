@@ -34,6 +34,8 @@
 static void test_large(int index, int debug) {
 
     struct item {
+        int option_1;
+        int option_2;
         char *pattern;
         int length;
         int ret;
@@ -42,12 +44,24 @@ static void test_large(int index, int debug) {
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /*  0*/ { "1", 7827, 0, 189, 189 },
-        /*  1*/ { "1", 7828, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  1*/ { "A", 4349, 0, 189, 189 }, // TODO: should be 4350 according to spec, investigate
-        /*  2*/ { "A", 4351, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  3*/ { "\200", 3260, 0, 189, 189 }, // TODO: should be 3261 according to spec, investigate
-        /*  4*/ { "\200", 3262, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  0*/ { -1, -1, "1", 7827, 0, 189, 189 },
+        /*  1*/ { -1, -1, "1", 7828, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  2*/ { -1, -1, "A", 4349, 0, 189, 189 }, // TODO: should be 4350 according to spec, investigate
+        /*  3*/ { -1, -1, "A", 4350, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  4*/ { -1, -1, "\200", 3260, 0, 189, 189 }, // TODO: should be 3261 according to spec, investigate
+        /*  5*/ { -1, -1, "\200", 3261, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  6*/ { -1, 1, "1", 42, 0, 23, 23 },
+        /*  7*/ { -1, 1, "1", 43, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  8*/ { -1, 1, "A", 25, 0, 23, 23 },
+        /*  9*/ { -1, 1, "A", 26, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 10*/ { -1, 1, "\200", 17, 0, 23, 23 },
+        /* 11*/ { -1, 1, "\200", 18, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 12*/ { 2, 1, "A", 19, 0, 23, 23 },
+        /* 13*/ { 2, 1, "A", 20, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 14*/ { 3, 1, "A", 14, 0, 23, 23 },
+        /* 15*/ { 3, 1, "A", 15, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 16*/ { 4, 1, "A", 9, 0, 23, 23 },
+        /* 17*/ { 4, 1, "A", 10, ZINT_ERROR_TOO_LONG, -1, -1 },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -67,7 +81,7 @@ static void test_large(int index, int debug) {
         testUtilStrCpyRepeat(data_buf, data[i].pattern, data[i].length);
         assert_equal(data[i].length, (int) strlen(data_buf), "i:%d length %d != strlen(data_buf) %d\n", i, data[i].length, (int) strlen(data_buf));
 
-        length = testUtilSetSymbol(symbol, BARCODE_HANXIN, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data_buf, data[i].length, debug);
+        length = testUtilSetSymbol(symbol, BARCODE_HANXIN, -1 /*input_mode*/, -1 /*eci*/, data[i].option_1, data[i].option_2, -1, -1 /*output_options*/, data_buf, data[i].length, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data_buf, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
@@ -241,6 +255,7 @@ static void test_input(int index, int generate, int debug) {
         /* 76*/ { UNICODE_MODE, 170, -1, "?", -1, 0, 170, "88 0A A2 FB 1F C0 00 00 00", "ECI-170 L1 (ASCII invariant)" },
         /* 77*/ { DATA_MODE, 899, -1, "\200", -1, 0, 899, "88 38 33 00 0C 00 00 00 00", "ECI-899 B1 (8-bit binary)" },
         /* 78*/ { UNICODE_MODE, 900, -1, "é", -1, 0, 900, "88 38 43 00 16 1D 48 00 00", "ECI-900 B2 (no conversion)" },
+        /* 79*/ { UNICODE_MODE, 3, -1, "β", -1, ZINT_ERROR_INVALID_DATA, 3, "Error 545: Invalid character in input data for ECI 3", "" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -272,8 +287,8 @@ static void test_input(int index, int generate, int debug) {
         } else {
             if (ret < ZINT_ERROR) {
                 assert_equal(symbol->eci, data[i].expected_eci, "i:%d eci %d != %d\n", i, symbol->eci, data[i].expected_eci);
-                assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
             }
+            assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
         }
 
         ZBarcode_Delete(symbol);

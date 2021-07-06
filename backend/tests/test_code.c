@@ -66,8 +66,8 @@ static void test_large(int index, int debug) {
         /* 19*/ { BARCODE_VIN, -1, "1", 18, ZINT_ERROR_TOO_LONG, -1, -1 },
         /* 20*/ { BARCODE_VIN, -1, "1", 16, ZINT_ERROR_TOO_LONG, -1, -1 },
         /* 21*/ { BARCODE_VIN, 1, "1", 17, 0, 1, 259 },
-        /* 22*/ { BARCODE_HIBC_39, -1, "1", 66, 0, 1, 1119 }, // 68 - 2 ('+' and check digit)
-        /* 23*/ { BARCODE_HIBC_39, -1, "1", 67, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 22*/ { BARCODE_HIBC_39, -1, "1", 67, 0, 1, 1135 }, // 69 - 2 ('+' and check digit)
+        /* 23*/ { BARCODE_HIBC_39, -1, "1", 68, ZINT_ERROR_TOO_LONG, -1, -1 },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;

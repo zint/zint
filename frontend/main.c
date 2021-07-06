@@ -31,7 +31,7 @@
 #include <malloc.h>
 #include "../getopt/getopt.h"
 #include "zint.h"
-#if _MSC_VER >= 1800 /* MSVC 2013 */
+#if _MSC_VER != 1200 /* VC6 */
 #pragma warning(disable: 4996) /* function or variable may be unsafe */
 #endif
 #endif /* _MSC_VER */
@@ -47,11 +47,11 @@ typedef int static_assert_int_at_least_32bits[CHAR_BIT != 8 || sizeof(int) < 4 ?
 /* Print list of supported symbologies */
 static void types(void) {
     printf( " 1 CODE11      Code 11                  74 CODABLOCKF     Codablock-F\n"
-            " 2 C25STANDARD Standard 2of5            75 NVE18          NVE-18\n"
-            " 3 C25INTER    Interleaved 2of5         76 JAPANPOST      Japanese Post\n"
-            " 4 C25IATA     IATA 2of5                77 KOREAPOST      Korea Post\n"
-            " 6 C25LOGIC    Data Logic 2of5          79 DBAR_STK       GS1 DataBar Stacked\n"
-            " 7 C25IND      Industrial 2of5          80 DBAR_OMNSTK    GS1 DataBar Stack Omni\n"
+            " 2 C25STANDARD Standard 2 of 5          75 NVE18          NVE-18\n"
+            " 3 C25INTER    Interleaved 2 of 5       76 JAPANPOST      Japanese Post\n"
+            " 4 C25IATA     IATA 2 of 5              77 KOREAPOST      Korea Post\n"
+            " 6 C25LOGIC    Data Logic 2 of 5        79 DBAR_STK       GS1 DataBar Stacked\n"
+            " 7 C25IND      Industrial 2 of 5        80 DBAR_OMNSTK    GS1 DataBar Stack Omni\n"
             " 8 CODE39      Code 39                  81 DBAR_EXPSTK    GS1 DataBar Exp Stack\n"
             " 9 EXCODE39    Extended Code 39         82 PLANET         USPS PLANET\n"
             "13 EANX        EAN                      84 MICROPDF417    MicroPDF417\n"

@@ -318,7 +318,7 @@ INTERNAL int code_128(struct zint_symbol *symbol, unsigned char source[], int le
     if (sourcelen > C128_MAX) {
         /* This only blocks ridiculously long input - the actual length of the
            resulting barcode depends on the type of data, so this is trapped later */
-        strcpy(symbol->errtxt, "340: Input too long");
+        sprintf(symbol->errtxt, "340: Input too long (%d character maximum)", C128_MAX);
         return ZINT_ERROR_TOO_LONG;
     }
 
@@ -481,7 +481,7 @@ INTERNAL int code_128(struct zint_symbol *symbol, unsigned char source[], int le
         }
     }
     if (glyph_count > 60.0f) {
-        strcpy(symbol->errtxt, "341: Input too long");
+        strcpy(symbol->errtxt, "341: Input too long (60 symbol character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
 
@@ -725,7 +725,7 @@ INTERNAL int ean_128_cc(struct zint_symbol *symbol, unsigned char source[], int 
     if (length > C128_MAX) {
         /* This only blocks ridiculously long input - the actual length of the
         resulting barcode depends on the type of data, so this is trapped later */
-        strcpy(symbol->errtxt, "342: Input too long");
+        sprintf(symbol->errtxt, "342: Input too long (%d character maximum)", C128_MAX);
         return ZINT_ERROR_TOO_LONG;
     }
 
@@ -857,7 +857,7 @@ INTERNAL int ean_128_cc(struct zint_symbol *symbol, unsigned char source[], int 
         }
     }
     if (glyph_count > 60.0f) {
-        strcpy(symbol->errtxt, "344: Input too long");
+        strcpy(symbol->errtxt, "344: Input too long (60 symbol character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
 
@@ -1057,13 +1057,13 @@ INTERNAL int nve_18(struct zint_symbol *symbol, unsigned char source[], int leng
     unsigned char ean128_equiv[23];
 
     if (length > 17) {
-        strcpy(symbol->errtxt, "345: Input too long");
+        strcpy(symbol->errtxt, "345: Input too long (17 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
 
     error_number = is_sane(NEON, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "346: Invalid characters in data");
+        strcpy(symbol->errtxt, "346: Invalid character in data (digits only)");
         return error_number;
     }
 
@@ -1095,13 +1095,13 @@ INTERNAL int ean_14(struct zint_symbol *symbol, unsigned char source[], int leng
     unsigned char ean128_equiv[19];
 
     if (length > 13) {
-        strcpy(symbol->errtxt, "347: Input wrong length");
+        strcpy(symbol->errtxt, "347: Input too long (13 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
 
     error_number = is_sane(NEON, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "348: Invalid character in data");
+        strcpy(symbol->errtxt, "348: Invalid character in data (digits only)");
         return error_number;
     }
 
@@ -1137,26 +1137,24 @@ INTERNAL int dpd_parcel(struct zint_symbol *symbol, unsigned char source[], int 
     int cd; // Check digit
     
     if (length != 28) {
-        strcpy(symbol->errtxt, "349: DPD input wrong length");
+        strcpy(symbol->errtxt, "349: DPD input wrong length (28 characters required)");
         return ZINT_ERROR_TOO_LONG;
     }
 
     identifier = source[0];
-    source[0] = 'A';
     
-    to_upper(source);
-    error_number = is_sane(KRSET, source, length);
+    to_upper(source + 1);
+    error_number = is_sane(KRSET, source + 1, length - 1);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "350: Invalid character in DPD data");
+        strcpy(symbol->errtxt, "300: Invalid character in DPD data (alphanumerics only)");
         return error_number;
     }
     
     if ((identifier < 32) || (identifier > 127)) {
-        strcpy(symbol->errtxt, "351: Invalid DPD identifier");
+        strcpy(symbol->errtxt, "301: Invalid DPD identifier (first character), ASCII values 32 to 127 only");
         return ZINT_ERROR_INVALID_DATA;
     }
     
-    source[0] = identifier;
     error_number = code_128(symbol, source, length); /* Only returns errors, not warnings */
 
     if (error_number < ZINT_ERROR) {

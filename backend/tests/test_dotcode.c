@@ -164,7 +164,7 @@ static void test_input(int index, int generate, int debug) {
         /* 20*/ { UNICODE_MODE, -1, "[)>\03606A\004", -1, 0, "6A 64 10 16 21", "[)>RS 06 A EOT; LatchB (0x6A) Macro100 (0x64) 0 6 A" },
         /* 21*/ { UNICODE_MODE, -1, "[)>\036991\036\004", -1, 0, "6A 64 19 19 11 64", "[)>RS 99 1 RS EOT; LatchB (0x6A) Macro100 (0x64) 9 9 1 RS" },
         /* 22*/ { UNICODE_MODE, -1, "1712345610", -1, 0, "6B 64 0C 22 38", "FNC1 (0x6B) 17..10 12 34 56" },
-        /* 23*/ { GS1_MODE, -1, "[17]123456[10]123", -1, ZINT_WARN_NONCOMPLIANT, "Warning 64 0C 22 38 0C 66 13", "17..10 12 34 56 12 ShiftB (0x66) 3" },
+        /* 23*/ { GS1_MODE, -1, "[17]123456[10]123", -1, ZINT_WARN_NONCOMPLIANT, "64 0C 22 38 0C 66 13", "17..10 12 34 56 12 ShiftB (0x66) 3" },
         /* 24*/ { GS1_MODE, -1, "[90]ABC[90]abc[90]123", -1, 0, "5A 6A 21 22 23 6B 19 10 41 42 43 6B 19 67 01 17", "90 LatchB (0x6A) A B C FNC1 (0x6B) 9 0 a b c FNC1 (0x6B) 9 2xShitfC (0x67) 01 23" },
         /* 25*/ { GS1_MODE | GS1PARENS_MODE, -1, "(90)ABC(90)abc(90)123", -1, 0, "5A 6A 21 22 23 6B 19 10 41 42 43 6B 19 67 01 17", "90 LatchB (0x6A) A B C FNC1 (0x6B) 9 0 a b c FNC1 (0x6B) 9 2xShitfC (0x67) 01 23" },
         /* 26*/ { UNICODE_MODE, -1, "99aA[{00\000", 9, 0, "6B 63 6A 41 21 3B 5B 10 10 65 40", "FNC1 (0x6B) 99 LatchB (0x6A) a A [ { 0 0 ShiftA (0x65) NUL" },

@@ -72,7 +72,7 @@ INTERNAL int pharma_one(struct zint_symbol *symbol, unsigned char source[], int 
     }
     error_number = is_sane(NEON, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "351: Invalid characters in data (digits only)");
+        strcpy(symbol->errtxt, "351: Invalid character in data (digits only)");
         return error_number;
     }
 
@@ -175,7 +175,7 @@ INTERNAL int pharma_two(struct zint_symbol *symbol, unsigned char source[], int 
     }
     error_number = is_sane(NEON, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "355: Invalid characters in data (digits only)");
+        strcpy(symbol->errtxt, "355: Invalid character in data (digits only)");
         return error_number;
     }
     error_number = pharma_two_calc(symbol, source, height_pattern);
@@ -249,7 +249,7 @@ INTERNAL int codabar(struct zint_symbol *symbol, unsigned char source[], int len
         if (is_sane(CALCIUM, source + 1, length - 2) == 0) {
             strcpy(symbol->errtxt, "363: Cannot contain \"A\", \"B\", \"C\" or \"D\"");
         } else {
-            strcpy(symbol->errtxt, "357: Invalid characters in data");
+            sprintf(symbol->errtxt, "357: Invalid character in data (\"%s\" only)", CALCIUM);
         }
         return error_number;
     }
@@ -314,7 +314,7 @@ INTERNAL int code32(struct zint_symbol *symbol, unsigned char source[], int leng
     }
     error_number = is_sane(NEON, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "361: Invalid characters in data (digits only)");
+        strcpy(symbol->errtxt, "361: Invalid character in data (digits only)");
         return error_number;
     }
 

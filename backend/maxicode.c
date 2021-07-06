@@ -606,7 +606,7 @@ INTERNAL int maxicode(struct zint_symbol *symbol, unsigned char source[], int le
             for (i = 0; i < 6; i++) {
                 /* Don't allow Code Set A control characters CR, RS, GS and RS */
                 if (postcode[i] < ' ' || maxiCodeSet[postcode[i]] > 1) {
-                    strcpy(symbol->errtxt, "556: Invalid characters in postcode in Primary Message");
+                    strcpy(symbol->errtxt, "556: Invalid character in postcode in Primary Message");
                     return ZINT_ERROR_INVALID_DATA;
                 }
             }

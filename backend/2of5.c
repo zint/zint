@@ -35,10 +35,6 @@
 #include "common.h"
 #include "gs1.h"
 
-#ifdef _MSC_VER
-#define inline _inline
-#endif
-
 static const char *C25MatrixTable[10] = {
     "113311", "311131", "131131", "331111", "113131",
     "313111", "133111", "111331", "311311", "131311"
@@ -60,7 +56,7 @@ static const char *C25InterTable[10] = {
     "31311", "13311", "11133", "31131", "13131"
 };
 
-static inline char check_digit(const unsigned int count) {
+static char check_digit(const unsigned int count) {
     return itoc((10 - (count % 10)) % 10);
 }
 
@@ -74,12 +70,12 @@ static int c25_common(struct zint_symbol *symbol, const unsigned char source[], 
     int have_checkdigit = symbol->option_2 == 1 || symbol->option_2 == 2;
 
     if (length > max) {
-        sprintf(symbol->errtxt, "%d: Input too long (maximum %d)", error_base, max);
+        sprintf(symbol->errtxt, "%d: Input too long (%d character maximum)", error_base, max);
         return ZINT_ERROR_TOO_LONG;
     }
     error_number = is_sane(NEON, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        sprintf(symbol->errtxt, "%d: Invalid characters in data", error_base + 1);
+        sprintf(symbol->errtxt, "%d: Invalid character in data (digits only)", error_base + 1);
         return error_number;
     }
 
@@ -142,12 +138,12 @@ static int c25inter_common(struct zint_symbol *symbol, unsigned char source[], i
     float height;
 
     if (length > 90) {
-        strcpy(symbol->errtxt, "309: Input too long");
+        strcpy(symbol->errtxt, "309: Input too long (90 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
     error_number = is_sane(NEON, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "310: Invalid characters in data");
+        strcpy(symbol->errtxt, "310: Invalid character in data (digits only)");
         return error_number;
     }
 
@@ -230,13 +226,13 @@ INTERNAL int itf14(struct zint_symbol *symbol, unsigned char source[], int lengt
     unsigned char localstr[16] = {0};
 
     if (length > 13) {
-        strcpy(symbol->errtxt, "311: Input too long");
+        strcpy(symbol->errtxt, "311: Input too long (13 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
 
     error_number = is_sane(NEON, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "312: Invalid character in data");
+        strcpy(symbol->errtxt, "312: Invalid character in data (digits only)");
         return error_number;
     }
 
@@ -285,12 +281,12 @@ INTERNAL int dpleit(struct zint_symbol *symbol, unsigned char source[], int leng
 
     count = 0;
     if (length > 13) {
-        strcpy(symbol->errtxt, "313: Input wrong length");
+        strcpy(symbol->errtxt, "313: Input wrong length (13 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
     error_number = is_sane(NEON, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "314: Invalid characters in data");
+        strcpy(symbol->errtxt, "314: Invalid character in data (digits only)");
         return error_number;
     }
 
@@ -324,12 +320,12 @@ INTERNAL int dpident(struct zint_symbol *symbol, unsigned char source[], int len
 
     count = 0;
     if (length > 11) {
-        strcpy(symbol->errtxt, "315: Input wrong length");
+        strcpy(symbol->errtxt, "315: Input wrong length (11 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
     error_number = is_sane(NEON, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "316: Invalid characters in data");
+        strcpy(symbol->errtxt, "316: Invalid character in data (digits only)");
         return error_number;
     }
 

@@ -595,7 +595,7 @@ p, li { white-space: pre-wrap; }
               <widget class="QCheckBox" name="chkGS1Parens">
                <property name="toolTip">
                 <string>Process parentheses "()" instead of square brackets "[]"
-as GS1 application identifiers delimiters
+as delimiters for GS1 Application Identifiers
 (ignored if disabled)</string>
                </property>
                <property name="text">
@@ -666,7 +666,7 @@ as GS1 application identifiers delimiters
                 <cstring>heightb</cstring>
                </property>
                <property name="toolTip">
-                <string>Overall symbol height
+                <string>Overall symbol height in X-dimensions
 (ignored if disabled)</string>
                </property>
               </widget>
@@ -677,7 +677,7 @@ as GS1 application identifiers delimiters
                 <bool>false</bool>
                </property>
                <property name="toolTip">
-                <string>Overall symbol height
+                <string>Overall symbol height in X-dimensions
 (ignored if disabled)</string>
                </property>
                <property name="prefix">
@@ -715,14 +715,14 @@ as GS1 application identifiers delimiters
                 <cstring>bwidth</cstring>
                </property>
                <property name="toolTip">
-                <string>Width of boundary bars or border</string>
+                <string>Width of boundary bars or border in X-dimensions</string>
                </property>
               </widget>
              </item>
              <item row="2" column="1">
               <widget class="QSpinBox" name="bwidth">
                <property name="toolTip">
-                <string>Width of boundary bars or border</string>
+                <string>Width of boundary bars or border in X-dimensions</string>
                </property>
                <property name="suffix">
                 <string> X</string>
@@ -791,7 +791,7 @@ as GS1 application identifiers delimiters
                 <cstring>spnWhitespace</cstring>
                </property>
                <property name="toolTip">
-                <string>Horizontal whitespace, Vertical whitespace</string>
+                <string>Horizontal whitespace, Vertical whitespace, in X-dimensions</string>
                </property>
               </widget>
              </item>
@@ -800,7 +800,8 @@ as GS1 application identifiers delimiters
                <item row="0" column="0">
                 <widget class="QSpinBox" name="spnWhitespace">
                  <property name="toolTip">
-                  <string>Width of horizontal whitespace on either side of barcode</string>
+                  <string>Width of horizontal whitespace on either side of barcode
+in X-dimensions</string>
                  </property>
                  <property name="suffix">
                   <string> X</string>
@@ -810,7 +811,8 @@ as GS1 application identifiers delimiters
                <item row="0" column="1">
                 <widget class="QSpinBox" name="spnVWhitespace">
                  <property name="toolTip">
-                  <string>Height of vertical whitespace above and below the barcode</string>
+                  <string>Height of vertical whitespace above and below the barcode
+in X-dimensions</string>
                  </property>
                  <property name="suffix">
                   <string> X</string>

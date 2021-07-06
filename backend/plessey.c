@@ -58,12 +58,12 @@ INTERNAL int plessey(struct zint_symbol *symbol, unsigned char source[], int len
     int error_number;
 
     if (length > 65) {
-        strcpy(symbol->errtxt, "370: Input too long");
+        strcpy(symbol->errtxt, "370: Input too long (65 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
     error_number = is_sane(SSET, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
-        strcpy(symbol->errtxt, "371: Invalid characters in data");
+        strcpy(symbol->errtxt, "371: Invalid character in data (digits and \"ABCDEF\" only)");
         return error_number;
     }
     if (!(checkptr = (unsigned char *) calloc(1, length * 4 + 8))) {
@@ -301,12 +301,12 @@ INTERNAL int msi_handle(struct zint_symbol *symbol, unsigned char source[], int 
 
     error_number = is_sane(NEON, source, length);
     if (error_number != 0) {
-        strcpy(symbol->errtxt, "377: Invalid characters in input data");
+        strcpy(symbol->errtxt, "377: Invalid character in data (digits only)");
         return ZINT_ERROR_INVALID_DATA;
     }
 
     if (length > 65) {
-        strcpy(symbol->errtxt, "372: Input too long");
+        strcpy(symbol->errtxt, "372: Input too long (65 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
 
