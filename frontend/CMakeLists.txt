@@ -3,20 +3,20 @@
 
 project(zint_frontend)
 
-set(zint_frontend_SRCS main.c)
+set(${PROJECT_NAME}_SRCS main.c)
 
-include_directories(BEFORE "${CMAKE_SOURCE_DIR}/backend")
+add_executable(${PROJECT_NAME} ${zint_frontend_SRCS})
 
-add_executable(zint_frontend ${zint_frontend_SRCS})
+target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_SOURCE_DIR}/backend")
 
-set_target_properties(zint_frontend PROPERTIES OUTPUT_NAME "zint")
+set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "zint")
 
-target_link_libraries(zint_frontend zint)
+target_link_libraries(${PROJECT_NAME} zint)
 if(NOT HAVE_GETOPT)
-    target_link_libraries(zint_frontend zint_bundled_getopt)
+    target_link_libraries(${PROJECT_NAME} zint_bundled_getopt)
 endif()
 
-install(TARGETS zint_frontend DESTINATION "${BIN_INSTALL_DIR}" RUNTIME)
+install(TARGETS ${PROJECT_NAME} DESTINATION "${BIN_INSTALL_DIR}" RUNTIME)
 
 if(ZINT_TEST)
     add_subdirectory(tests)

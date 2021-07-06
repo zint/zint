@@ -139,6 +139,11 @@ else()
     find_package(Qt5Xml)
 
     if(Qt5Widgets_FOUND AND Qt5Gui_FOUND AND Qt5UiTools_FOUND AND Qt5Xml_FOUND)
+        message(STATUS "Qt version: " ${Qt5Core_VERSION_STRING})
+        # Old Qt does not provide QT_VERSION_MAJOR
+        if (NOT QT_VERSION_MAJOR)
+            string(SUBSTRING ${Qt5Core_VERSION_STRING} 0 1 QT_VERSION_MAJOR)
+        endif()
         add_subdirectory(backend_qt)
         add_subdirectory(frontend_qt)
     else()

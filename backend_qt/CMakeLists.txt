@@ -4,9 +4,7 @@
 
 project(QZint)
 
-include_directories(BEFORE "${CMAKE_SOURCE_DIR}/backend")
-
-set(QZint_SRCS qzint.cpp)
+set(${PROJECT_NAME}_SRCS qzint.cpp)
 
 if(USE_QT6)
     qt6_wrap_cpp(QZint_SRCS qzint.h)
@@ -14,20 +12,15 @@ else()
     qt5_wrap_cpp(QZint_SRCS qzint.h)
 endif()
 
-add_library(QZint STATIC ${QZint_SRCS})
+add_library(${PROJECT_NAME} STATIC ${QZint_SRCS})
 
-set_target_properties(QZint PROPERTIES  SOVERSION "${ZINT_VERSION_MAJOR}.${ZINT_VERSION_MINOR}"
+set_target_properties(${PROJECT_NAME} PROPERTIES  SOVERSION "${ZINT_VERSION_MAJOR}.${ZINT_VERSION_MINOR}"
                                         VERSION ${ZINT_VERSION})
 
-add_dependencies(QZint zint)
+target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_SOURCE_DIR}/backend")
 
-link_directories("${CMAKE_BINARY_DIR}/backend")
+target_link_libraries(${PROJECT_NAME} zint Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Gui)
 
-if(USE_QT6)
-    target_link_libraries(QZint zint Qt6::Widgets Qt6::Gui)
-else()
-    target_link_libraries(QZint zint Qt5::Widgets Qt5::Gui)
-endif()
 
-install(TARGETS QZint ${INSTALL_TARGETS_DEFAULT_ARGS})
+install(TARGETS ${PROJECT_NAME} ${INSTALL_TARGETS_DEFAULT_ARGS})
 install(FILES qzint.h DESTINATION ${INCLUDE_INSTALL_DIR} COMPONENT Devel)
