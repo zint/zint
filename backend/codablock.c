@@ -211,7 +211,7 @@ static int Columns2Rows(struct zint_symbol *symbol, CharacterSetTable *T, const 
         int * pRows, int * pUseColumns, int * pSet, int * pFillings)
 {
     int useColumns;     /* Usable Characters per line */
-    int fillings;       /* Number of filling characters */
+    int fillings = 0;   /* Number of filling characters */
     int rowsCur;
     int runChar;
     int emptyColumns;   /* Number of codes still empty in line. */
