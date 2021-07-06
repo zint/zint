@@ -42,6 +42,16 @@
 #include "reedsol.h"
 #include <assert.h>
 
+#define LEVEL_L     1
+#define LEVEL_M     2
+#define LEVEL_Q     3
+#define LEVEL_H     4
+
+#define QR_PERCENT  38 /* Alphanumeric mode % */
+
+#define RMQR_VERSION    41
+#define MICROQR_VERSION 73
+
 /* Returns true if input glyph is in the Alphanumeric set */
 static int is_alpha(const unsigned int glyph, const int gs1) {
     int retval = 0;
@@ -497,7 +507,7 @@ static void qr_binary(unsigned char datastream[], const int version, const int t
                     bp = bin_append_posn(byte, byte > 0xFF ? 16 : 8, binary, bp);
 
                     if (debug_print) {
-                        printf("0x%02X(%d) ", byte, byte);
+                        printf("0x%02X(%d) ", byte, (int) byte);
                     }
                 }
 

@@ -54,7 +54,7 @@ static void test_utf8_to_unicode(int index, int debug) {
     int i, length, ret;
 
     unsigned int vals[20];
-    struct zint_symbol symbol;
+    struct zint_symbol symbol = {0};
 
     testStart("test_utf8_to_unicode");
 

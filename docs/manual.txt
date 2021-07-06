@@ -75,9 +75,10 @@ Reader Initialisation: Some symbologies allow a special character to be included
         programming codes relevant to your scanner.
 
 ECI:    The ECI mechanism allows for multi-language data to be encoded in
-        symbols which would usually support only Latin-1 characters. This can
-        be useful, for example, if you need to encode Cyrillic characters, but
-        should be used with caution as not all scanners support this method.
+        symbols which would usually support only Latin-1 (ISO/IEC 8859-1)
+		characters. This can be useful, for example, if you need to encode
+		Cyrillic characters, but should be used with caution as not all scanners
+		support this method.
 
 
 2. Installing Zint
@@ -2373,13 +2374,13 @@ ZINT_FULL_MULTIBYTE | (N + 1) << 8.
 
 6.6.4 Rectangular Micro QR Code (rMQR)
 --------------------------------------
-A rectangular version of QR Code. Like QR code rMQR supports encoding of GS1
-data, Latin-1 and Kanji characters in the Shift JIS encoding scheme. It does not
-support other ISO/IEC 8859 character sets or encodings. As with other
-symbologies data should be entered as UTF-8 with the conversion to Shift JIS
-being handled by Zint. The amount of ECC codewords can be adjusted using the
---secure= option (API option_1), however only ECC levels M and H are valid for
-this type of symbol.
+A rectangular version of QR Code. Like QR Code, rMQR supports encoding of GS1
+data, and Latin-1 characters in the ISO/IEC 8859-1 set and Kanji characters in
+the Shift JIS encoding scheme. It does not support other ISO/IEC 8859 character
+sets or encodings. As with other symbologies data should be entered as UTF-8
+with the conversion to Latin-1 or Shift JIS being handled by Zint. The amount of
+ECC codewords can be adjusted using the --secure= option (API option_1), however
+only ECC levels M and H are valid for this type of symbol.
 
 -------------------------------------------------------------------------
 Input  |  ECC Level    |  Error Correction Capacity  |  Recovery Capacity
@@ -2392,9 +2393,9 @@ The preferred symbol sizes can be selected using the --vers= option (API
 option_2) as shown in the table below. Input values between 33 and 38 fix the
 height of the symbol while allowing Zint to determine the minimum symbol width.
 
----------------------------------
-Input  |  Version  |  Symbol Size
----------------------------------
+---------------------------------------
+Input  |  Version  |  Symbol Size (HxW)
+---------------------------------------
 1      |  R7x43    |  7 x 73
 2      |  R7x59    |  7 x 59
 3      |  R7x77    |  7 x 77
@@ -2427,14 +2428,14 @@ Input  |  Version  |  Symbol Size
 30     |  R17x77   |  17 x 77
 31     |  R17x99   |  17 x 99
 32     |  R17x139  |  17 x 139
----------------------------------
-33     |  Fixed height 7
-34     |  Fixed height 9
-35     |  Fixed height 11
-36     |  Fixed height 13
-37     |  Fixed height 15
-38     |  Fixed height 17
----------------------------------
+---------------------------------------
+33     |  R7 x automatic width
+34     |  R9 x automatic width
+35     |  R11 x automatic width
+36     |  R13 x automatic width
+37     |  R15 x automatic width
+38     |  R17 x automatic width
+---------------------------------------
 
 For barcode readers that support it, non-ASCII data density may be maximized by
 using the --fullmultibyte switch or by setting option_3 to ZINT_FULL_MULTIBYTE.

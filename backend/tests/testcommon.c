@@ -2796,7 +2796,7 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                 sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%sgssep", strlen(bwipp_opts_buf) ? " " : "");
                 bwipp_opts = bwipp_opts_buf;
             }
-            if (option_2 >= 1 && option_2 <= (int) sizeof(intsymbol)) {
+            if (option_2 >= 1 && option_2 <= ARRAY_SIZE(intsymbol)) {
                 int idx = intsymbol[option_2 - 1];
                 sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%srows=%d columns=%d",
                         strlen(bwipp_opts_buf) ? " " : "", matrixH[idx], matrixW[idx]);

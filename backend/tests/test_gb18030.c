@@ -103,12 +103,14 @@ static int gb18030_wctomb_zint2(unsigned int *r1, unsigned int *r2, unsigned int
         return 4;
     }
     // GB18030 (libiconv-1.16/lib/gb18030.h)
-    if (wc >= 0x10000 && wc < 0x10400) { // Code set 3 (Unicode U+10000..U+10FFFF)
+    // Code set 3 (Unicode U+10000..U+10FFFF)
+    if (wc >= 0x10000 /*&& wc < 0x10400*/) { // Not being called for U+10400..U+10FFFF
         c = wc - 0x10000;
         *r1 = 0x9030;
         *r2 = 0x8130 + (c % 10) + 0x100 * (c / 10);
         return 4;
     }
+
     tab_length = ARRAY_SIZE(test_gb18030_tab);
     start_i = test_gb18030_tab_ind[wc >> 10];
     end_i = start_i + 0x800 > tab_length ? tab_length : start_i + 0x800;
@@ -142,10 +144,10 @@ static void test_gb18030_wctomb_zint(void) {
         val1_1 = val1_2 = val2_1 = val2_2 = 0;
         ret = gb18030_wctomb_zint(&val1_1, &val1_2, i);
         ret2 = gb18030_wctomb_zint2(&val2_1, &val2_2, i);
-        assert_equal(ret, ret2, "i:%d 0x%04X ret %d != ret2 %d, val1_1 0x%04X, val2_1 0x%04X, val1_2 0x%04X, val2_2 0x%04X\n", i, i, ret, ret2, val1_1, val2_1, val1_2, val2_2);
+        assert_equal(ret, ret2, "i:%d 0x%04X ret %d != ret2 %d, val1_1 0x%04X, val2_1 0x%04X, val1_2 0x%04X, val2_2 0x%04X\n", (int) i, i, ret, ret2, val1_1, val2_1, val1_2, val2_2);
         if (ret2) {
-            assert_equal(val1_1, val2_1, "i:%d 0x%04X val1_1 0x%04X != val2_1 0x%04X\n", i, i, val1_1, val2_1);
-            assert_equal(val1_2, val2_2, "i:%d 0x%04X val1_2 0x%04X != val2_2 0x%04X\n", i, i, val1_2, val2_2);
+            assert_equal(val1_1, val2_1, "i:%d 0x%04X val1_1 0x%04X != val2_1 0x%04X\n", (int) i, i, val1_1, val2_1);
+            assert_equal(val1_2, val2_2, "i:%d 0x%04X val1_2 0x%04X != val2_2 0x%04X\n", (int) i, i, val1_2, val2_2);
         }
     }
 
@@ -185,7 +187,7 @@ static void test_gb18030_utf8(int index) {
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
 
-    struct zint_symbol symbol;
+    struct zint_symbol symbol = {0};
     unsigned int gbdata[30];
 
     testStart("test_gb18030_utf8");

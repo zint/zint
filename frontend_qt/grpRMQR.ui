@@ -44,192 +44,192 @@
        </item>
        <item>
         <property name="text">
-         <string>R7x43</string>
+         <string>R7x43 (Zint 1)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>R7x59</string>
+         <string>R7x59 (Zint 2)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>R7x77</string>
+         <string>R7x77 (Zint 3)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>R7x99</string>
+         <string>R7x99 (Zint 4)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>R7x139</string>
+         <string>R7x139 (Zint 5)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>R9x43</string>
+         <string>R9x43 (Zint 6)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>R9x59</string>
+         <string>R9x59 (Zint 7)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>R9x77</string>
+         <string>R9x77 (Zint 8)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>R9x99</string>
+         <string>R9x99 (Zint 9)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>R9x139</string>
+         <string>R9x139 (Zint 10)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>R11x27</string>
+         <string>R11x27 (Zint 11)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>R11x43</string>
+         <string>R11x43 (Zint 12)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>R11x59</string>
+         <string>R11x59 (Zint 13)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>R11x77</string>
+         <string>R11x77 (Zint 14)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>R11x99</string>
+         <string>R11x99 (Zint 15)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>R11x139</string>
+         <string>R11x139 (Zint 16)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>R13x27</string>
+         <string>R13x27 (Zint 17)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>R13x43</string>
+         <string>R13x43 (Zint 18)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>R13x59</string>
+         <string>R13x59 (Zint 19)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>R13x77</string>
+         <string>R13x77 (Zint 20)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>R13x99</string>
+         <string>R13x99 (Zint 21)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>R13x139</string>
+         <string>R13x139 (Zint 22)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>R15x43</string>
+         <string>R15x43 (Zint 23)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>R15x59</string>
+         <string>R15x59 (Zint 24)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>R15x77</string>
+         <string>R15x77 (Zint 25)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>R15x99</string>
+         <string>R15x99 (Zint 26)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>R15x139</string>
+         <string>R15x139 (Zint 27)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>R17x43</string>
+         <string>R17x43 (Zint 28)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>R17x59</string>
+         <string>R17x59 (Zint 29)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>R17x77</string>
+         <string>R17x77 (Zint 30)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>R17x99</string>
+         <string>R17x99 (Zint 31)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>R17x139</string>
+         <string>R17x139 (Zint 32)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>R7x Automatic Width</string>
+         <string>R7 x Automatic Width (Zint 33)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>R9x Automatic Width</string>
+         <string>R9 x Automatic Width (Zint 34)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>R11x Automatic Width</string>
+         <string>R11 x Automatic Width (Zint 35)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>R13x Automatic Width</string>
+         <string>R13 x Automatic Width (Zint 36)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>R15 x Automatic Width</string>
+         <string>R15 x Automatic Width (Zint 37)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>R17 x Automatic Width</string>
+         <string>R17 x Automatic Width (Zint 38)</string>
         </property>
        </item>
       </widget>

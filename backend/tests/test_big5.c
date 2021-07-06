@@ -120,7 +120,7 @@ static void test_big5_utf8(int index) {
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
 
-    struct zint_symbol symbol;
+    struct zint_symbol symbol = {0};
     unsigned int b5data[20];
 
     testStart("test_big5_utf8");

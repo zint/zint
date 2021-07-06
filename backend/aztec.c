@@ -1485,7 +1485,7 @@ INTERNAL int aztec_runes(struct zint_symbol *symbol, unsigned char source[], int
         for (x = 8; x < 19; x++) {
             if (CompactAztecMap[r + x] == 1) {
                 set_module(symbol, y - 8, x - 8);
-            } else if (CompactAztecMap[r + x] >= 2 && binary_string[CompactAztecMap[r + x] - 2000] == '1') {
+            } else if (CompactAztecMap[r + x] && binary_string[CompactAztecMap[r + x] - 2000] == '1') {
                 set_module(symbol, y - 8, x - 8);
             }
         }

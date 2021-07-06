@@ -134,7 +134,7 @@ static void test_hrt_cpy_iso8859_1(int index, int debug) {
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
 
-    struct zint_symbol symbol;
+    struct zint_symbol symbol = {0};
 
     testStart("test_hrt_cpy_iso8859_1");
 
