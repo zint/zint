@@ -76,9 +76,9 @@ Reader Initialisation: Some symbologies allow a special character to be included
 
 ECI:    The ECI mechanism allows for multi-language data to be encoded in
         symbols which would usually support only Latin-1 (ISO/IEC 8859-1)
-		characters. This can be useful, for example, if you need to encode
-		Cyrillic characters, but should be used with caution as not all scanners
-		support this method.
+        characters. This can be useful, for example, if you need to encode
+        Cyrillic characters, but should be used with caution as not all scanners
+        support this method.
 
 Two other concepts that are important are raster and vector. Raster is a low
 level bitmap representation of an image. BMP, GIF, PCX, PNG and TIF are raster
@@ -105,7 +105,7 @@ cmake ..
 make
 sudo make install
 
-The command line program can be accessed by typing
+The CLI command line program can be accessed by typing
 
 zint {options}
 
@@ -114,7 +114,7 @@ The GUI can be accessed by typing
 zint-qt
 
 To test that the installation has been successful a shell script is included in
-the /frontend folder. To run the test type
+the frontend sub-directory. To run the test type
 
 ./test.sh
 
@@ -151,7 +151,7 @@ brew install zint
 2.4 zint tcl backend
 --------------------
 The tcl backend may be built using the provided TEA build on Linux, Windows,
-Mac-OS and Android. For Windows, a MS-VC6 makefile is also available.
+Mac-OS and Android. For Windows, an MS-VC6 makefile is also available.
 
 
 3. Using Zint Barcode Studio
@@ -566,7 +566,7 @@ Latin-1 then you should check that the resulting barcode can be understood by
 your target barcode reader. Zint will generate a warning message when an ECI
 code that has not been explicitly requested has been inserted into a symbol.
 
-GS1 data can be encoded in a number of symbologies. Application identifiers
+GS1 data can be encoded in a number of symbologies. Application Identifiers
 should be enclosed in [square brackets] followed by the data to be encoded (see
 6.1.11.3). To encode GS1 data use the --gs1 option. GS1 mode is assumed (and
 doesn't need to be set) for GS1-128, EAN-14, DataBar and Composite symbologies
@@ -820,8 +820,9 @@ size of the symbol. These options are discussed in section 6 of this guide.
 
 5. Using the API
 ================
-Zint has been written using the C language and currently only has an API for
-use with C language programs.
+Zint has been written using the C language and has an API for use with C/C++
+language programs. A Qt interface is available in the backend_qt sub-directory,
+and a Tcl interface is available in the backend_tcl sub-directory.
 
 The libzint API has been designed to be very similar to that used by the GNU
 Barcode package. This allows easy migration from GNU Barcode to Zint. Zint,
@@ -931,8 +932,8 @@ allow you to do this:
 
 int ZBarcode_Buffer(struct zint_symbol *symbol, int rotate_angle);
 
-int ZBarcode_Encode_and_Buffer(struct zint_symbol *symbol, unsigned char *source,
-      int length, int rotate_angle);
+int ZBarcode_Encode_and_Buffer(struct zint_symbol *symbol,
+      unsigned char *source, int length, int rotate_angle);
 
 int ZBarcode_Encode_File_and_Buffer(struct zint_symbol *symbol, char *filename,
       int rotate_angle);
@@ -985,18 +986,18 @@ you to do this:
 int ZBarcode_Buffer_Vector(struct zint_symbol *symbol, int rotate_angle);
 
 int ZBarcode_Encode_and_Buffer_Vector(struct zint_symbol *symbol,
-		unsigned char *source, int length, int rotate_angle);
+        unsigned char *source, int length, int rotate_angle);
 
 int ZBarcode_Encode_File_and_Buffer_Vector(struct zint_symbol *symbol,
-		char *filename, int rotate_angle);
+        char *filename, int rotate_angle);
 
 Here the "vector" pointer is set to a header which contains pointers to lists
 of structures representing the various elements of the barcode: rectangles,
 hexagons, strings and circles. To draw the barcode, each of the element types is
 iterated in turn, and using the information stored is drawn by a rendering
 system. For instance, to draw a barcode using a rendering system with
-"prepare_canvas()", "draw_rect()", "draw_hexagon()", "draw_string()", and
-"draw_circle()" routines available:
+prepare_canvas(), draw_rect(), draw_hexagon(), draw_string(), and draw_circle()
+routines available:
 
 struct zint_vector_rect *rect;
 struct zint_vector_hexagon *hexagon;
@@ -1004,31 +1005,31 @@ struct zint_vector_string *string;
 struct zint_vector_circle *circle;
 
 prepare_canvas(symbol->vector->width, symbol->vector->height, symbol->scale,
-				symbol->fgcolour, symbol->bgcolor, rotate_angle);
+                symbol->fgcolour, symbol->bgcolor, rotate_angle);
 
 rect = symbol->vector->rectangles;
 while (rect) {
-	draw_rect(rect->x, rect->y, rect->width, rect->height, rect->colour);
-	rect = rect->next;
+    draw_rect(rect->x, rect->y, rect->width, rect->height, rect->colour);
+    rect = rect->next;
 }
 
 hexagon = symbol->vector->hexagons;
 while (hexagon) {
-	draw_hexagon(hexagon->x, hexagon->y, hexagon->diameter, hexagon->rotation):
-	hexagon = hexagon->next;
+    draw_hexagon(hexagon->x, hexagon->y, hexagon->diameter, hexagon->rotation):
+    hexagon = hexagon->next;
 }
 
 string = symbol->vector->strings;
 while (string) {
-	draw_string(string->x, string->y, string->fsize, string->rotation,
-				string->halign, string->text, string->length):
-	string = string->next;
+    draw_string(string->x, string->y, string->fsize, string->rotation,
+                string->halign, string->text, string->length):
+    string = string->next;
 }
 
 circle = symbol->vector->circles;
 while (circle) {
-	draw_circle(circle->x, circle->y, circle->diameter, circle->colour):
-	circle = circle->next;
+    draw_circle(circle->x, circle->y, circle->diameter, circle->colour):
+    circle = circle->next;
 }
 
 5.6 Setting Options
@@ -1411,7 +1412,7 @@ GS1_MODE       |  Encodes GS1 data using FNC1 characters.
                |
 ESCAPE_MODE    |  Process input data for escape sequences.
 GS1PARENS_MODE |  Parentheses (round brackets) used in input data instead of
-               |     square brackets to delimit GS1 application identifiers
+               |     square brackets to delimit GS1 Application Identifiers
                |     (parentheses must not otherwise occur in the data).
 ------------------------------------------------------------------------------
 
@@ -1875,7 +1876,7 @@ components.
 6.1.12.1 DataBar Omnidirectional and DataBar Truncated
 ------------------------------------------------------
 Previously known as RSS-14 this standard encodes a 13 digit item code. A check
-digit and application identifier of (01) are added by Zint. (A 14 digit code
+digit and Application Identifier of (01) are added by Zint. (A 14 digit code
 that appends the check digit may be given, in which case the check digit will be
 verified.) To produce a truncated symbol set the symbol height to a value
 between 32 and 13. Normal DataBar Omnidirectional symbols should have a height
@@ -3006,223 +3007,7 @@ those owners, companies or organisations.
 
 7.3 Version Information
 -----------------------
-v0.1 - (as Zebar) Draws UPC-A. UPC-E, EAN-8, EAN-13, Interlaced 2 of 5,
-Codabar, Code 39, Extended Code 39 and Code 93 barcodes and Add-on codes EAN-2
-and EAN-5 without parity. 13/11/2006
-
-v0.2 - Added Code 128 (which is now the default), Code 11, Code 2 of 5, Add-on
-codes EAN-2 and EAN-5 parity and MSI/Plessey without check digit. 12/12/2006
-
-v0.3 - Added MSI/Plessey Mod 10 check and 2 x Mod 10 check options, Telepen
-ASCII and Telepen numeric, Postnet, RM4SCC. Code has been tidied up quite a
-bit. Bind option added. 30/12/2006
-
-v0.4 - Added barcode stacking (now stacks up to 16 barcodes) and Code16k
-(stub). 15/1/2007
-
-v0.5 - Added Australia Post 4-State Barcodes and Pharmacode (1 and 2 track).
-4-state codes now draw with correct height/width ratio. 28/2/2007
-
-v0.6 - Added Plessey and some derivative codes (EAN-128, Code 128 subset B,
-Auspost Reply, Auspost Routing, Auspost Redirect, ITF-14). Tidied up code
-again: separated symbologies into more files and put all lookup tables into
-arrays (much reducing the amount of code, especially for Code 39e and Code 93).
-Errors now output to stderr. Added proper input verification. Distribution now
-packs with HTML pages instead of separate README. Outputs to PNG. Outputs
-colour. User variable whitespace and border width. Box option. Fixed EAN add-on
-bug. Added whitespace and height options. Project name changed to Zint to avoid
-conflict with extant trade name. Added escape character input. 1/4/2007
-
-v1.0 - Corrected problem with escape character codes. Supports PDF417. This
-completes the list of features I originally wanted (plus a few more), hence
-skip to version 1.0. 20/4/2007
-
-v1.1 - Added more derivatives (Code 2 of 5 Matrix, IATA and Data Logic,
-Truncated PDF417, Deutsche Post Leitcode and Identcode, Pharmazentralnummer,
-Planet) and Flattermarken. Tidied up 2 of 5 code. 26/4/2007
-
-v1.2 - Supports Data Matrix ECC200 (by absorption of IEC16022 code by Stefan
-Schmidt et al). Added reverse colours, FIM, MSI/Plessey Modulo 11 and Modulo
-11/10. Corrected Code 16k check digit calculation. 28/5/2007
-
-v1.3 - Supports USPS OneCode and LOGMARS. Brought all usage information into
-one User Manual document. 13/6/2007
-
-v1.4 - Added NVE-18 support. Corrected some problems with compilation and input
-verification. Command line option handling now uses getopt(), and all the
-switches have changed. Added –font option. 20/6/2007
-
-v1.5 - Pulled everything together to make an API. Corrected errors with EAN-13,
-PDF417 and LOGMARS. Added EPS output. Added QR Code support using libqrencode.
-Corrected ISBN verification error. Re-compiled documentation in HTML form. Put
-in place proper error handling routines. --font option removed. Encoding is now
-done with a restructured zint_symbol structure. Added make install option and
-optional QR Code support to Makefile. Corrected minor problem with 4-State
-Codes. Restructured code into fewer source code files. Added MicroPDF417
-support. 12/8/2007
-
-v1.5.1 - Added formatting code to EPS output of EAN and UPC symbols according
-to EN 797:1996. Checked against and, where appropriate, altered or corrected to
-comply with ISO 16388 and ISO 15417 including Latin-1 support. Altered default
-image settings, added automatic ITF border. Corrected error with USPS OneCode.
-Tidied up Code 39 quite a bit, added Mod 43 options. 3/9/2007
-
-v1.5.2 - Added extended ASCII support to Code 16k. Corrected Code 128 error.
-Added Maxicode support by integrating code by John Lien. 26/9/2007
-
-v1.5.3 - Made huge corrections to Maxicode support by removing and re-writing
-much of John's code. Maxicode now supports extended ASCII and modes 4, 5 and 6.
-10/10/2007
-
-v1.5.4 - Added GS1 DataBar (Reduced Space Symbology) support. 26/11/2007
-
-v1.5.5 - Added composite symbology support. Corrected errors with GS1-128 and
-
-PDF417/MicroPDF417 byte processing. Transferred licence to GPL version 3.
-9/3/2008
-
-v1.6 - Data Matrix ECC200, Maxicode and Australia Post now use common
-Reed-Solomon functions – this also fixes a bug in Maxicode error correction and
-replaces the last of the Lien code. Added PNG output for Maxicode symbols.
-Removed some useless code. Updated QR support for libqrencode v2.0.0. 22/4/2008
-
-v1.6.1 - Major restructuring of PNG generating code: Now draws UPCA and EAN
-symbols properly and puts human readable text into the image. Also corrected
-some nasty 'never ending loop' bugs in Code 128 and check digit bugs in PostNet
-and Planet. 8/7/2008
-
-v1.6.2 - Added KIX Code support and PNG image rotation. Corrected a bug
-affecting extended ASCII support in Code 128 and Code 16k. 28/7/2008.
-
-v2.0 beta - Added support for Aztec Code, Codablock-F, Code 32, EAN-14 and DAFT
-Code. Rearranged symbology numbers to match Tbarcode v8. Corrected a never
-ending loop bug in EAN-128. 29/9/2008
-
-v2.0 beta r2 - Many corrections and bugfixes. (Code 11, Code 128, EAN-128,
-Aztec Code, Codablock-F, Code 16k, POSTNET, PLANET, NVE-18, PZN, Data Matrix
-ECC200, Maxicode and QR Code)
-
-v2.0 - Made corrections to Aztec Code and tested output with bcTester. Added
-Aztec Runes, Micro QR Code and Data Matrix ECC200 ECC 000-140. Updated e-mail
-information. 18/11/2008
-
-v2.1 - Reinstated Korea Post barcodes, harmonised bind and box options, moved
-Unicode handling into backend and added input_mode option, added size options
-to Data Matrix ECC200, added NULL character handling for Codablock-F, Code 128,
-Code 16k, Extended Code 39, Code 93, Telepen, Maxicode, Data Matrix ECC200 ECC
-200, PDF417 and MicroPDF417. Added GS1 support for Code 16k, Codablock-F and
-Aztec Code. Added scale and direct to stdout options. Rebult Data Matrix ECC200
-ECC 200 encoding algorithms to support NULL encoding and GS1 data encoding.
-31/1/2009
-
-v2.1.1 - Minor Data Matrix ECC200 bugfix and added HIBC options. 10/2/2009
-
-v2.1.2 - Added SVG output option. Improved Japanese character support including
-Unicode > Shift-JIS capability. Bugfixes for Data Matrix ECC200 (missing
-characters at end of string) and Codablock-F (K1/K2 check digit and row
-indicators above row 6). 1/3/2009
-
-v2.1.3 - Many improvements to the QZint GUI which is now renamed "Zint Barcode
-Studio 0.2". Added Japanese Postal Barcode, Code 49 and Channel Code and made
-corrections to Data Matrix ECC200 (Binary mode data compression terminates too
-soon), Aztec Code (Bug when automatically resizing after removing "all 0" and
-"all 1" codewords) and Code 128 (Extended ASCII characters become corrupt).
-19/5/2009
-
-v2.1.4 - Many stability improvements including removal of buffer overruns in
-Code 39, LOGMARS, PZN, Aztec Code and Composite CC-A. Addition of files for
-compiling on MS Windows platform - tested successfully on XP and Vista.
-19/6/2009
-
-v2.2 - Added Code One and GS1 support in Code 49. Changed GUI binary name to
-zint-qt and brought GUI up to version 1.0. Made some minor bugfixes to Code 39,
-ITF-14, Aztec Code, Code 128 and Code 16K. Added 'rest' button to GUI. Included
-.spec file from Radist. 18/7/2009
-
-v2.2.1 - Data encoding bugfixes for Aztec Code, Data Matrix ECC200, USPS One
-Code and PDF417. Symbol plotting bugfixes for MicroPDF417 and 2D components of
-composite symbols. Text formatting bugfix for Qt renderer and a couple of
-compiler fixes for MSVC PNG image output. 6/8/2009
-
-v2.2.2 - A beta release previewing the new API structure. Better NULL character
-support with "nullchar" value removed. Added loading from file and sequence
-dialogs in Barcode Studio. 29/9/2009
-
-v2.3 - Fixed problems with Micro QR Code and rebuilt QR Code support removing
-dependence on libqrencode. Improved Kanji character support for QR Code and
-Micro QR Code which now auto-detects and automatically converts to Shift-JIS.
-Added Grid Matrix symbology with Kanji character support and automatic
-conversion to GB 2312. Removed no_qr compile option. Advanced Barcode Studio
-version number to match library version number. 23/11/2009
-
-v2.3.1 - Removed Codablock-F. Redesigned scale function so that human readable
-text and Maxicode symbols can be scaled consistently. Corrected encoding bugs
-with Code 128/Code 16k and Data Matrix ECC200 ECC 050. Added --notext option to
-CLI. 7/3/2010
-
-v2.3.2 - Corrected many bugs in GS1 DataBar Extended thanks to the careful
-study of the code by Pablo Orduña at the PIRAmIDE project. Similarly corrected
-some bugs in Maxicode thanks to Monica Swanson at Source Technologies. Also
-minor bugfixes for ISBN and Aztec Code, and added some small features like a
---square option in the CLI. 29/5/2010
-
-v2.4 - Built extensions to the API for integrating with glabels with thanks to
-Sam Lown and Jim Evins. Added code optimisation and input from stdin thanks to
-Ismael Luceno. Reinstated escape character input. Simplification of Barcode
-Studio. 13/9/2010
-
-v2.4.1 & 2.4.2 – A whole host of bugfixes including correction of ECC routines
-for Code-1 and addition of batch processing at the command line. 19/4/2011 &
-4/5/2011
-
-v2.4.3 - Includes minor bugfixes 16/5/2011
-
-v2.5 – Support for DotCode and Han Xin code. Restore support for Codablock-F.
-ECI code processing. Output to BMP, GIF and PCX. Added bold text option. Many
-minor bugfixes and improvements.
-13/11/2016
-
-v2.6 - Output to EMF and TIF. Update frontend to Qt5. Copy to clipboard on
-KDE and Windows.
-12/5/2017
-
-v2.6.1 - Various bugfixes to backend, including improved Aztec code processing.
-Many improvements to GUI including resizeable screens and more output while
-batch processing, more consistent use of dialogues.
-27/8/2017
-
-v2.6.2 - Further bugfixes in Aztec and DotCode. Expand escape sequence support
-to API and GUI. Handle UTF BOM. Bugfix raster images of Maxicode.
-22/10/2017
-
-v2.6.3 - New symbology Royal Mail 4-state Mailmark. Added North America VIN
-verification. Bugfixes for TIF and EMF output and escape character handling.
-15/02/2018
-
-v2.6.4 - Datamatrix DMRE updated to the ISO/IEC29158 version. This is
-incompatible in the way, that the old -vers numbers for DMRE are re-assigned.
-The separator of GS1-datamatrix may be switched from FNC1 to GS.
-GS1 field length check AI 8009 and 7230 to 7239 corrected.
-
-v2.6.5 - minor bugfixes
-
-v2.6.6 - minor Bugfixes
-
-v2.6.7 - Allow to code ECI 3 if explicitly given for debug purposes.
-
-v2.7.0 - new features:
-- Automatic height option added to qzint
-- DotCode in line with new specification
-- New GS1 AIs 7240, 235, 417, 7040, 8026, updated checks for 7007, 8008
-- New Symbology rMQR
-- QR and Gridmatrix optimisation for GB2312
-- removed deprecated interface for gLabels program. Please use current
-  interface.
-  
-v2.8.0
-- Add Ultracode implementation
-- Disable full multi byte compression for QR family, Han Xin and Gridmatrix by
-  default. It may be enabled by a new option.
+This has been moved to "ChangeLog" in the project root directory.
 
 7.4 Sources of Information
 --------------------------
