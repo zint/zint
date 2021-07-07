@@ -380,7 +380,7 @@ INTERNAL int pharmazentral(struct zint_symbol *symbol, unsigned char source[], i
     check_digit = count % 11;
 
     if (symbol->debug & ZINT_DEBUG_PRINT) {
-        printf("PZN: %s, check digit %d\n", localstr, check_digit);
+        printf("PZN: %s, check digit %d\n", localstr, (int) check_digit);
     }
 
     if (check_digit == 10) {

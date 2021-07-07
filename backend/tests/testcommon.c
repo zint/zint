@@ -612,9 +612,9 @@ const char *testUtilOption3Name(int option_3) {
 
     if (high_byte) {
         if (option_3 & 0xFF) {
-            sprintf(buffer, "%s | (%d << 8)", name, high_byte);
+            sprintf(buffer, "%s | (%d << 8)", name, (int) high_byte);
         } else {
-            sprintf(buffer, "%d << 8", high_byte);
+            sprintf(buffer, "%d << 8", (int) high_byte);
         }
         return buffer;
     }

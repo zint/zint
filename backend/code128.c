@@ -236,15 +236,18 @@ static void c128_set_a(const unsigned char source, char dest[], int values[], in
  * This set handles all characters which are not part of long numbers and not
  * control characters.
  */
-static void c128_set_b(const unsigned char source, char dest[], int values[], int *bar_chars) {
-    if (source > 127) {
+static int c128_set_b(const unsigned char source, char dest[], int values[], int *bar_chars) {
+    if (source > 127 + 32) { /* Suppress cppcheck out-of-bounds warning with + 32 check */
         strcat(dest, C128Table[source - 32 - 128]);
         values[(*bar_chars)] = source - 32 - 128;
-    } else {
+    } else if (source <= 127) { /* Suppress cppcheck out-of-bounds warning with <= 127 check */
         strcat(dest, C128Table[source - 32]);
         values[(*bar_chars)] = source - 32;
+    } else { /* Should never happen */
+        return 0; /* Not reached */
     }
     (*bar_chars)++;
+    return 1;
 }
 
 /* Translate Code 128 Set C characters into barcodes
@@ -651,7 +654,7 @@ INTERNAL int code_128(struct zint_symbol *symbol, unsigned char source[], int le
                 read++;
                 break;
             case 'b':
-            case 'B': c128_set_b(source[read], dest, values, &bar_characters);
+            case 'B': (void) c128_set_b(source[read], dest, values, &bar_characters);
                 read++;
                 break;
             case 'C': c128_set_c(source[read], source[read + 1], dest, values, &bar_characters);
@@ -919,7 +922,7 @@ INTERNAL int ean_128_cc(struct zint_symbol *symbol, unsigned char source[], int 
                     break;
                 case 'B':
                 case 'b':
-                    c128_set_b(reduced[read], dest, values, &bar_characters);
+                    (void) c128_set_b(reduced[read], dest, values, &bar_characters);
                     read++;
                     break;
                 case 'C':

@@ -910,7 +910,7 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigne
     if (debug_print) {
         printf("Target (%d):", tp);
         for (i = 0; i < tp; i++) {
-            printf(" [%d]", target[i]);
+            printf(" [%d]", (int) target[i]);
         }
         printf("\nLast Mode: %d\n", *p_last_mode);
     }
@@ -999,7 +999,7 @@ INTERNAL int code_one(struct zint_symbol *symbol, unsigned char source[], int le
 
         if (symbol->debug & ZINT_DEBUG_PRINT) {
             printf("Codewords (%d): ", codewords);
-            for (i = 0; i < codewords * 2; i++) printf(" %d", data[i]);
+            for (i = 0; i < codewords * 2; i++) printf(" %d", (int) data[i]);
             printf("\n");
         }
 
@@ -1087,7 +1087,7 @@ INTERNAL int code_one(struct zint_symbol *symbol, unsigned char source[], int le
 
         if (symbol->debug & ZINT_DEBUG_PRINT) {
             printf("Codewords (%d):", data_cw + ecc_cw);
-            for (i = 0; i < data_cw + ecc_cw; i++) printf(" %d", data[i]);
+            for (i = 0; i < data_cw + ecc_cw; i++) printf(" %d", (int) data[i]);
             printf("\n");
         }
 
@@ -1177,7 +1177,7 @@ INTERNAL int code_one(struct zint_symbol *symbol, unsigned char source[], int le
 
         if (symbol->debug & ZINT_DEBUG_PRINT) {
             printf("Codewords (%d):", data_cw + ecc_length);
-            for (i = 0; i < data_cw + ecc_length; i++) printf(" %d", data[i]);
+            for (i = 0; i < data_cw + ecc_length; i++) printf(" %d", (int) data[i]);
             printf("\n");
         }
 

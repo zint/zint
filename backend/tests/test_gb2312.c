@@ -74,18 +74,18 @@ static void test_gb2312_wctomb_zint(void) {
         ret = gb2312_wctomb_zint(&val, i);
         ret2 = gb2312_wctomb_zint2(&val2, i);
         if (i == 0xB7) { // Extra mapping middle dot U+00B7 to 0xA1A4, duplicate of U+30FB (Katakana middle dot)
-            assert_equal(ret, 2, "i:%d 0x%04X ret %d != 2, val 0x%04X\n", i, i, ret, val);
-            assert_equal(val, 0xA1A4, "i:%d 0x%04X val 0x%04X != 0xA1A4\n", i, i, val);
-            assert_zero(ret2, "i:%d 0x%04X ret2 %d != 0, val2 0x%04X\n", i, i, ret2, val2);
+            assert_equal(ret, 2, "i:%d 0x%04X ret %d != 2, val 0x%04X\n", (int) i, i, ret, val);
+            assert_equal(val, 0xA1A4, "i:%d 0x%04X val 0x%04X != 0xA1A4\n", (int) i, i, val);
+            assert_zero(ret2, "i:%d 0x%04X ret2 %d != 0, val2 0x%04X\n", (int) i, i, ret2, val2);
         } else if (i == 0x2014) { // Extra mapping em dash U+2014 to 0xA1AA, duplicate of U+2015 (horizontal bar)
-            assert_equal(ret, 2, "i:%d 0x%04X ret %d != 2, val 0x%04X\n", i, i, ret, val);
-            assert_equal(val, 0xA1AA, "i:%d 0x%04X val 0x%04X != 0xA1AA\n", i, i, val);
-            assert_zero(ret2, "i:%d 0x%04X ret2 %d != 0, val2 0x%04X\n", i, i, ret2, val2);
+            assert_equal(ret, 2, "i:%d 0x%04X ret %d != 2, val 0x%04X\n", (int) i, i, ret, val);
+            assert_equal(val, 0xA1AA, "i:%d 0x%04X val 0x%04X != 0xA1AA\n", (int) i, i, val);
+            assert_zero(ret2, "i:%d 0x%04X ret2 %d != 0, val2 0x%04X\n", (int) i, i, ret2, val2);
         } else {
-            assert_equal(ret, ret2, "i:%d 0x%04X ret %d != ret2 %d, val 0x%04X, val2 0x%04X\n", i, i, ret, ret2, val, val2);
+            assert_equal(ret, ret2, "i:%d 0x%04X ret %d != ret2 %d, val 0x%04X, val2 0x%04X\n", (int) i, i, ret, ret2, val, val2);
         }
         if (ret2) {
-            assert_equal(val, val2, "i:%d 0x%04X val 0x%04X != val2 0x%04X\n", i, i, val, val2);
+            assert_equal(val, val2, "i:%d 0x%04X val 0x%04X != val2 0x%04X\n", (int) i, i, val, val2);
         }
     }
 

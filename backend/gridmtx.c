@@ -543,7 +543,7 @@ static int gm_encode(unsigned int gbdata[], const int length, char binary[], con
                 }
 
                 if (debug & ZINT_DEBUG_PRINT) {
-                    printf("[%d] ", glyph);
+                    printf("[%d] ", (int) glyph);
                 }
 
                 bp = bin_append_posn(glyph, 13, binary, bp);
@@ -608,7 +608,7 @@ static int gm_encode(unsigned int gbdata[], const int length, char binary[], con
                     glyph += 1000;
 
                     if (debug & ZINT_DEBUG_PRINT) {
-                        printf("[%d] ", glyph);
+                        printf("[%d] ", (int) glyph);
                     }
 
                     bp = bin_append_posn(glyph, 10, binary, bp);
@@ -616,7 +616,7 @@ static int gm_encode(unsigned int gbdata[], const int length, char binary[], con
 
                 glyph = (100 * (numbuf[0] - '0')) + (10 * (numbuf[1] - '0')) + (numbuf[2] - '0');
                 if (debug & ZINT_DEBUG_PRINT) {
-                    printf("[%d] ", glyph);
+                    printf("[%d] ", (int) glyph);
                 }
 
                 bp = bin_append_posn(glyph, 10, binary, bp);
@@ -644,7 +644,7 @@ static int gm_encode(unsigned int gbdata[], const int length, char binary[], con
                 }
 
                 if (debug & ZINT_DEBUG_PRINT) {
-                    printf("[%d] ", glyph);
+                    printf("[%d] ", (int) glyph);
                 }
                 bp = bin_append_posn(glyph, glyph > 0xFF ? 16 : 8, binary, bp);
                 sp++;
@@ -670,7 +670,7 @@ static int gm_encode(unsigned int gbdata[], const int length, char binary[], con
                     /* Mixed Mode character */
                     glyph = posn(EUROPIUM, (const char) gbdata[sp]);
                     if (debug & ZINT_DEBUG_PRINT) {
-                        printf("[%d] ", glyph);
+                        printf("[%d] ", (int) glyph);
                     }
 
                     bp = bin_append_posn(glyph, 6, binary, bp);
@@ -695,7 +695,7 @@ static int gm_encode(unsigned int gbdata[], const int length, char binary[], con
                     /* Upper Case character */
                     glyph = posn("ABCDEFGHIJKLMNOPQRSTUVWXYZ ", (const char) gbdata[sp]);
                     if (debug & ZINT_DEBUG_PRINT) {
-                        printf("[%d] ", glyph);
+                        printf("[%d] ", (int) glyph);
                     }
 
                     bp = bin_append_posn(glyph, 5, binary, bp);
@@ -720,7 +720,7 @@ static int gm_encode(unsigned int gbdata[], const int length, char binary[], con
                     /* Lower Case character */
                     glyph = posn("abcdefghijklmnopqrstuvwxyz ", (const char) gbdata[sp]);
                     if (debug & ZINT_DEBUG_PRINT) {
-                        printf("[%d] ", glyph);
+                        printf("[%d] ", (int) glyph);
                     }
 
                     bp = bin_append_posn(glyph, 5, binary, bp);

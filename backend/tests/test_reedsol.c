@@ -207,7 +207,7 @@ static void test_encoding_uint(int index) {
         //fprintf(stderr, "exp "); for (j = 0; j < data[i].nsym; j++) fprintf(stderr, "%d ", data[i].expected[j]); fprintf(stderr, "\n");
         for (j = 0; j < data[i].nsym; j++) {
             int k = data[i].nsym - 1 - j;
-            assert_equal(res[k], data[i].expected[j], "i:%d res[%d] %d != expected[%d] %d\n", i, k, res[k], j, data[i].expected[j]);
+            assert_equal(res[k], data[i].expected[j], "i:%d res[%d] %d != expected[%d] %d\n", i, k, (int) res[k], j, (int) data[i].expected[j]);
         }
     }
 

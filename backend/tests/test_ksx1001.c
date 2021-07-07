@@ -80,9 +80,9 @@ static void test_ksx1001_wctomb_zint(void) {
         val = val2 = 0;
         ret = ksx1001_wctomb_zint(&val, i);
         ret2 = ksx1001_wctomb_zint2(&val2, i);
-        assert_equal(ret, ret2, "i:%d 0x%04X ret %d != ret2 %d, val 0x%04X, val2 0x%04X\n", i, i, ret, ret2, val, val2);
+        assert_equal(ret, ret2, "i:%d 0x%04X ret %d != ret2 %d, val 0x%04X, val2 0x%04X\n", (int) i, i, ret, ret2, val, val2);
         if (ret2) {
-            assert_equal(val, val2, "i:%d 0x%04X val 0x%04X != val2 0x%04X\n", i, i, val, val2);
+            assert_equal(val, val2, "i:%d 0x%04X val 0x%04X != val2 0x%04X\n", (int) i, i, val, val2);
         }
     }
 

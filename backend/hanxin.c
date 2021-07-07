@@ -643,7 +643,7 @@ static void calculate_binary(char binary[], const char mode[], unsigned int sour
                     bp = bin_append_posn(source[i + position], source[i + position] > 0xFF ? 16 : 8, binary, bp);
 
                     if (debug & ZINT_DEBUG_PRINT) {
-                        printf("%d ", source[i + position]);
+                        printf("%d ", (int) source[i + position]);
                     }
 
                     i++;
@@ -862,7 +862,8 @@ static void hx_place_finder(unsigned char *grid, const int size, const int x, co
 /* Finder pattern for bottom right of symbol */
 static void hx_place_finder_bottom_right(unsigned char *grid, const int size) {
     int xp, yp;
-    int x = size - 7, y = size - 7;
+    int x = size - 7;
+    int y = x;
     char finder[] = {0x75, 0x75, 0x75, 0x05, 0x7D, 0x01, 0x7F};
 
     for (xp = 0; xp < 7; xp++) {
@@ -1186,10 +1187,8 @@ static void make_picket_fence(const unsigned char fullstream[], unsigned char pi
 
     for (start = 0; start < 13; start++) {
         for (i = start; i < streamsize; i += 13) {
-            if (i < streamsize) {
-                picket_fence[output_position] = fullstream[i];
-                output_position++;
-            }
+            picket_fence[output_position] = fullstream[i];
+            output_position++;
         }
     }
 }
