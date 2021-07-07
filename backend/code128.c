@@ -237,10 +237,12 @@ static void c128_set_a(const unsigned char source, char dest[], int values[], in
  * control characters.
  */
 static int c128_set_b(const unsigned char source, char dest[], int values[], int *bar_chars) {
-    if (source > 127 + 32) { /* Suppress cppcheck out-of-bounds warning with + 32 check */
+    if (source >= 128 + 32) {
         strcat(dest, C128Table[source - 32 - 128]);
         values[(*bar_chars)] = source - 32 - 128;
-    } else if (source <= 127) { /* Suppress cppcheck out-of-bounds warning with <= 127 check */
+    } else if (source >= 128) { /* Should never happen */
+        return 0; /* Not reached */
+    } else if (source >= 32) {
         strcat(dest, C128Table[source - 32]);
         values[(*bar_chars)] = source - 32;
     } else { /* Should never happen */
