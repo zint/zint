@@ -3,7 +3,7 @@
 # Copyright (C) 2006-2017 Kentaro Fukuchi <kentaro@fukuchi.org>
 # vim: set ts=4 sw=4 et :
 
-cmake_minimum_required(VERSION 3.9)
+cmake_minimum_required(VERSION 3.18)
 project(zint_backend_tests)
 
 enable_testing()
@@ -11,13 +11,11 @@ enable_testing()
 include(${zint-package_SOURCE_DIR}/cmake/zint_add_test.cmake)
 
 set(BWIPP_TAR ${CMAKE_CURRENT_SOURCE_DIR}/tools/bwipp_dump.ps.tar.xz)
-set(BWIPP_PS ${CMAKE_CURRENT_SOURCE_DIR}/tools/bwipp_dump.ps)
+set(BWIPP_PS ${CMAKE_BINARY_SOURCE_DIR}/tools/bwipp_dump.ps)
 
 if(NOT EXISTS ${BWIPP_PS})
-    execute_process(COMMAND ${CMAKE_COMMAND} -E tar -xf ${BWIPP_TAR}
-                    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tools)
+    file(ARCHIVE_EXTRACT INPUT ${BWIPP_TAR} DESTINATION tools)
 endif()
-configure_file(${BWIPP_PS} ${CMAKE_CURRENT_BINARY_DIR}/tools/bwipp_dump.ps COPYONLY)
 
 set(testcommon_SRCS testcommon.c testcommon.h)
 
