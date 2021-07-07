@@ -1288,18 +1288,32 @@ int testUtilDataPath(char *buffer, int buffer_size, const char *subdir, const ch
     int filename_len = filename ? (int) strlen(filename) : 0;
     char *s, *s2;
     int len;
+    char *cmake_src_dir;
 #ifdef _WIN32
     int i;
 #endif
 
-    if (getcwd(buffer, buffer_size) == NULL) {
-        fprintf(stderr, "testUtilDataPath: getcwd NULL buffer_size %d\n", buffer_size);
-        return 0;
+    if ((cmake_src_dir = getenv("CMAKE_CURRENT_SOURCE_DIR")) != NULL) {
+        len = (int) strlen(cmake_src_dir);
+        if (len <= 0 || len >= buffer_size) {
+            fprintf(stderr, "testUtilDataPath: warning CMAKE_CURRENT_SOURCE_DIR len %d, ignoring\n", len);
+            cmake_src_dir = NULL;
+        } else {
+            strcpy(buffer, cmake_src_dir);
+        }
     }
-    len = (int) strlen(buffer);
-    if (len <= 0) {
-        fprintf(stderr, "testUtilDataPath: strlen <= 0\n");
-        return 0;
+
+    if (cmake_src_dir == NULL) {
+        if (getcwd(buffer, buffer_size) == NULL) {
+            fprintf(stderr, "testUtilDataPath: getcwd NULL buffer_size %d\n", buffer_size);
+            return 0;
+        }
+        len = (int) strlen(buffer);
+
+        if (len <= 0) {
+            fprintf(stderr, "testUtilDataPath: strlen <= 0\n");
+            return 0;
+        }
     }
 #ifdef _WIN32
     for (i = 0; i < len; i++) {
@@ -1336,7 +1350,7 @@ int testUtilDataPath(char *buffer, int buffer_size, const char *subdir, const ch
         *s = '\0';
         len = s - buffer;
     }
-    if ((s = strrchr(buffer, '/')) != NULL) { // Remove "build" dir
+    if (cmake_src_dir == NULL && (s = strrchr(buffer, '/')) != NULL) { // Remove "build" dir
         *s = '\0';
         len = s - buffer;
     }
