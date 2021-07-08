@@ -7,9 +7,6 @@ project(zint-package)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-#set(CMAKE_VERBOSE_MAKEFILE ON)
-#comment or remove the above line before release
-
 set(ZINT_VERSION_MAJOR 2)
 set(ZINT_VERSION_MINOR 9)
 set(ZINT_VERSION_RELEASE 1)
@@ -126,6 +123,7 @@ elseif($ENV{CMAKE_PREFIX_PATH} MATCHES "6[.][0-9][.][0-9]")
     find_package(Qt6Xml)
 
     if(Qt6Widgets_FOUND AND Qt6Gui_FOUND AND Qt6UiTools_FOUND AND Qt6Xml_FOUND)
+        message(STATUS "Qt version: " ${Qt6Core_VERSION_MAJOR}.${Qt6Core_VERSION_MINOR}.${Qt6Core_VERSION_PATCH})
         add_subdirectory(backend_qt)
         add_subdirectory(frontend_qt)
     else()
