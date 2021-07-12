@@ -2859,6 +2859,155 @@ static void test_gs1parens(int index, int debug) {
     testFinish();
 }
 
+static void test_hrt(int index, int debug) {
+
+    struct item {
+        int symbology;
+        int input_mode;
+        char *data;
+        char *composite;
+
+        int ret;
+        char *expected;
+    };
+    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    struct item data[] = {
+        /*  0*/ { BARCODE_EANX_CC, -1, "1234567", "[20]12", 0, "12345670" }, // EAN-8
+        /*  1*/ { BARCODE_EANX_CC, -1, "123456789012", "[20]12", 0, "1234567890128" }, // EAN-13
+        /*  2*/ { BARCODE_EANX_CC, -1, "1234567890128", "[20]12", 0, "1234567890128" },
+        /*  3*/ { BARCODE_EANX_CC, -1, "1234567890123", "[20]12", ZINT_ERROR_INVALID_CHECK, "" },
+        /*  4*/ { BARCODE_EANX_CC, -1, "1234567890128", "[20]1A", ZINT_WARN_NONCOMPLIANT, "1234567890128" }, // AI (20) should be 2 nos.
+        /*  5*/ { BARCODE_DBAR_OMN_CC, -1, "1234567890123", "[20]12", 0, "(01)12345678901231" },
+        /*  6*/ { BARCODE_DBAR_OMN_CC, -1, "12345678901231", "[20]12", 0, "(01)12345678901231" },
+        /*  7*/ { BARCODE_DBAR_OMN_CC, -1, "12345678901232", "[20]12", ZINT_ERROR_INVALID_CHECK, "" },
+        /*  8*/ { BARCODE_DBAR_OMN_CC, -1, "12345678901231", "[20]1A", ZINT_WARN_NONCOMPLIANT, "(01)12345678901231" }, // AI (20) should be 2 nos.
+        /*  9*/ { BARCODE_DBAR_LTD_CC, -1, "1234567890123", "[20]12", 0, "(01)12345678901231" },
+        /* 10*/ { BARCODE_DBAR_LTD_CC, -1, "12345678901231", "[20]12", 0, "(01)12345678901231" },
+        /* 11*/ { BARCODE_DBAR_LTD_CC, -1, "12345678901232", "[20]12", ZINT_ERROR_INVALID_CHECK, "" },
+        /* 12*/ { BARCODE_DBAR_LTD_CC, -1, "12345678901231", "[20]1A", ZINT_WARN_NONCOMPLIANT, "(01)12345678901231" }, // AI (20) should be 2 nos.
+        /* 13*/ { BARCODE_UPCA_CC, -1, "12345678901", "[20]12", 0, "123456789012" },
+        /* 14*/ { BARCODE_UPCA_CC, -1, "123456789012", "[20]12", 0, "123456789012" },
+        /* 15*/ { BARCODE_UPCA_CC, -1, "123456789013", "[20]12", ZINT_ERROR_INVALID_CHECK, "" },
+        /* 16*/ { BARCODE_UPCA_CC, -1, "123456789012", "[20]1A", ZINT_WARN_NONCOMPLIANT, "123456789012" }, // AI (20) should be 2 nos.
+        /* 17*/ { BARCODE_UPCE_CC, -1, "123456", "[20]12", 0, "01234565" },
+        /* 18*/ { BARCODE_UPCE_CC, -1, "1234567", "[20]12", 0, "12345670" },
+        /* 19*/ { BARCODE_UPCE_CC, -1, "12345670", "[20]12", 0, "12345670" }, // Check digit can now be given for UPCE_CC, like UPCA_CC
+        /* 20*/ { BARCODE_UPCE_CC, -1, "1234567", "[20]1A", ZINT_WARN_NONCOMPLIANT, "12345670" }, // AI (20) should be 2 nos.
+        /* 21*/ { BARCODE_DBAR_STK_CC, -1, "12345678901231", "[20]12", 0, "" }, // No HRT for stacked symbologies
+        /* 22*/ { BARCODE_DBAR_OMNSTK_CC, -1, "12345678901231", "[20]12", 0, "" },
+    };
+    int data_size = ARRAY_SIZE(data);
+    int i, length, composite_length, ret;
+    struct zint_symbol *symbol;
+
+    testStart("test_hrt");
+
+    for (i = 0; i < data_size; i++) {
+
+        if (index != -1 && i != index) continue;
+
+        symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        assert_zero(length >= 128, "i:%d length %d >= 128\n", i, length);
+        strcpy(symbol->primary, data[i].data);
+
+        composite_length = (int) strlen(data[i].composite);
+
+        ret = ZBarcode_Encode(symbol, (const unsigned char *) data[i].composite, composite_length);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, data[i].ret, ret, symbol->errtxt);
+
+        assert_zero(strcmp((const char *) symbol->text, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->text, data[i].expected);
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
+static void test_input(int index, int debug) {
+
+    struct item {
+        int symbology;
+        int input_mode;
+        char *data;
+        char *composite;
+
+        int ret;
+        char *expected_errtxt;
+    };
+    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    struct item data[] = {
+        /*  0*/ { BARCODE_EANX_CC, -1, "1234567", "[20]12", 0, "" }, // EAN-8
+        /*  1*/ { BARCODE_EANX_CC, -1, "1234567", "[20]1A", ZINT_WARN_NONCOMPLIANT, "Warning 261: AI (20) position 2: Non-numeric character 'A' in 2D component" },
+        /*  2*/ { BARCODE_EANX_CC, -1, "123456789012", "[20]12", 0, "" }, // EAN-13
+        /*  3*/ { BARCODE_EANX_CC, -1, "1234567890128", "[20]12", 0, "" }, // EAN-13
+        /*  4*/ { BARCODE_EANX_CC, -1, "1234567890123", "[20]12", ZINT_ERROR_INVALID_CHECK, "Error 275: Invalid check digit '3', expecting '8' in linear component" },
+        /*  5*/ { BARCODE_EANX_CC, -1, "1234567890128", "[20]1A", ZINT_WARN_NONCOMPLIANT, "Warning 261: AI (20) position 2: Non-numeric character 'A' in 2D component" }, // AI (20) should be 2 nos.
+        /*  6*/ { BARCODE_EANX_CC, -1, "1234567890128", "[02]12345678901234", ZINT_WARN_NONCOMPLIANT, "Warning 261: AI (02) position 14: Bad checksum '4', expected '1' in 2D component" },
+        /*  7*/ { BARCODE_DBAR_OMN_CC, -1, "1234567890123", "[20]12", 0, "" },
+        /*  8*/ { BARCODE_DBAR_OMN_CC, -1, "12345678901231", "[20]12", 0, "" },
+        /*  9*/ { BARCODE_DBAR_OMN_CC, -1, "12345678901232", "[20]12", ZINT_ERROR_INVALID_CHECK, "Error 388: Invalid check digit '2', expecting '1' in linear component" },
+        /* 10*/ { BARCODE_DBAR_OMN_CC, -1, "12345678901231", "[20]1A", ZINT_WARN_NONCOMPLIANT, "Warning 261: AI (20) position 2: Non-numeric character 'A' in 2D component" }, // AI (20) should be 2 nos.
+        /* 11*/ { BARCODE_DBAR_OMN_CC, -1, "12345678901231", "[02]12345678901234", ZINT_WARN_NONCOMPLIANT, "Warning 261: AI (02) position 14: Bad checksum '4', expected '1' in 2D component" },
+        /* 12*/ { BARCODE_DBAR_LTD_CC, -1, "1234567890123", "[20]12", 0, "" },
+        /* 13*/ { BARCODE_DBAR_LTD_CC, -1, "12345678901231", "[20]12", 0, "" },
+        /* 14*/ { BARCODE_DBAR_LTD_CC, -1, "12345678901232", "[20]12", ZINT_ERROR_INVALID_CHECK, "Error 389: Invalid check digit '2', expecting '1' in linear component" },
+        /* 15*/ { BARCODE_DBAR_LTD_CC, -1, "12345678901231", "[20]1A", ZINT_WARN_NONCOMPLIANT, "Warning 261: AI (20) position 2: Non-numeric character 'A' in 2D component" }, // AI (20) should be 2 nos.
+        /* 16*/ { BARCODE_DBAR_LTD_CC, -1, "12345678901231", "[02]12345678901234", ZINT_WARN_NONCOMPLIANT, "Warning 261: AI (02) position 14: Bad checksum '4', expected '1' in 2D component" },
+        /* 17*/ { BARCODE_UPCA_CC, -1, "12345678901", "[20]12", 0, "" },
+        /* 18*/ { BARCODE_UPCA_CC, -1, "123456789012", "[20]12", 0, "" },
+        /* 19*/ { BARCODE_UPCA_CC, -1, "123456789013", "[20]12", ZINT_ERROR_INVALID_CHECK, "Error 270: Invalid check digit '3', expecting '2' in linear component" },
+        /* 20*/ { BARCODE_UPCA_CC, -1, "123456789012", "[20]1A", ZINT_WARN_NONCOMPLIANT, "Warning 261: AI (20) position 2: Non-numeric character 'A' in 2D component" }, // AI (20) should be 2 nos.
+        /* 21*/ { BARCODE_UPCA_CC, -1, "123456789012", "[02]12345678901234", ZINT_WARN_NONCOMPLIANT, "Warning 261: AI (02) position 14: Bad checksum '4', expected '1' in 2D component" },
+        /* 22*/ { BARCODE_UPCE_CC, -1, "123456", "[20]12", 0, "" },
+        /* 23*/ { BARCODE_UPCE_CC, -1, "123456", "[20]1A", ZINT_WARN_NONCOMPLIANT, "Warning 261: AI (20) position 2: Non-numeric character 'A' in 2D component" }, // AI (20) should be 2 nos.
+        /* 24*/ { BARCODE_UPCE_CC, -1, "1234567", "[20]12", 0, "" },
+        /* 25*/ { BARCODE_UPCE_CC, -1, "12345670", "[20]12", 0, "" }, // Check digit can now be given for UPCE_CC, like UPCA_CC
+        /* 26*/ { BARCODE_UPCE_CC, -1, "1234567", "[20]1A", ZINT_WARN_NONCOMPLIANT, "Warning 261: AI (20) position 2: Non-numeric character 'A' in 2D component" }, // AI (20) should be 2 nos.
+        /* 27*/ { BARCODE_UPCE_CC, -1, "1234567", "[02]12345678901234", ZINT_WARN_NONCOMPLIANT, "Warning 261: AI (02) position 14: Bad checksum '4', expected '1' in 2D component" },
+        /* 28*/ { BARCODE_DBAR_STK_CC, -1, "1234567890123", "[20]12", 0, "" },
+        /* 29*/ { BARCODE_DBAR_STK_CC, -1, "12345678901231", "[20]12", 0, "" },
+        /* 30*/ { BARCODE_DBAR_STK_CC, -1, "12345678901232", "[20]12", ZINT_ERROR_INVALID_CHECK, "Error 388: Invalid check digit '2', expecting '1' in linear component" },
+        /* 31*/ { BARCODE_DBAR_STK_CC, -1, "12345678901231", "[20]1A", ZINT_WARN_NONCOMPLIANT, "Warning 261: AI (20) position 2: Non-numeric character 'A' in 2D component" }, // AI (20) should be 2 nos.
+        /* 32*/ { BARCODE_DBAR_STK_CC, -1, "12345678901231", "[02]12345678901234", ZINT_WARN_NONCOMPLIANT, "Warning 261: AI (02) position 14: Bad checksum '4', expected '1' in 2D component" },
+        /* 33*/ { BARCODE_DBAR_OMNSTK_CC, -1, "1234567890123", "[20]12", 0, "" },
+        /* 34*/ { BARCODE_DBAR_OMNSTK_CC, -1, "12345678901231", "[20]12", 0, "" },
+        /* 35*/ { BARCODE_DBAR_OMNSTK_CC, -1, "12345678901232", "[20]12", ZINT_ERROR_INVALID_CHECK, "Error 388: Invalid check digit '2', expecting '1' in linear component" },
+        /* 36*/ { BARCODE_DBAR_OMNSTK_CC, -1, "12345678901231", "[20]1A", ZINT_WARN_NONCOMPLIANT, "Warning 261: AI (20) position 2: Non-numeric character 'A' in 2D component" }, // AI (20) should be 2 nos.
+        /* 37*/ { BARCODE_DBAR_OMNSTK_CC, -1, "12345678901231", "[02]12345678901234", ZINT_WARN_NONCOMPLIANT, "Warning 261: AI (02) position 14: Bad checksum '4', expected '1' in 2D component" },
+    };
+    int data_size = ARRAY_SIZE(data);
+    int i, length, composite_length, ret;
+    struct zint_symbol *symbol;
+
+    testStart("test_input");
+
+    for (i = 0; i < data_size; i++) {
+
+        if (index != -1 && i != index) continue;
+
+        symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        assert_zero(length >= 128, "i:%d length %d >= 128\n", i, length);
+        strcpy(symbol->primary, data[i].data);
+
+        composite_length = (int) strlen(data[i].composite);
+
+        ret = ZBarcode_Encode(symbol, (const unsigned char *) data[i].composite, composite_length);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, data[i].ret, ret, symbol->errtxt);
+
+        assert_zero(strcmp((const char *) symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected_errtxt);
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
 // #181 Christian Hartlage OSS-Fuzz
 static void test_fuzz(int index, int debug) {
 
@@ -3007,6 +3156,8 @@ int main(int argc, char *argv[]) {
         { "test_encodation_11", test_encodation_11, 1, 1, 1 },
         { "test_addongap", test_addongap, 1, 1, 1 },
         { "test_gs1parens", test_gs1parens, 1, 0, 1 },
+        { "test_hrt", test_hrt, 1, 0, 1 },
+        { "test_input", test_input, 1, 0, 1 },
         { "test_fuzz", test_fuzz, 1, 0, 1 },
         { "test_perf", test_perf, 1, 0, 1 },
     };

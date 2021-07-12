@@ -1266,6 +1266,8 @@ static int linear_dummy_run(int input_mode, unsigned char *source, const int len
     return linear_width;
 }
 
+static const char in_linear_comp[] = " in linear component";
+
 INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int length) {
     int error_number, warn_number = 0, cc_mode, cc_width = 0, ecc_level = 0;
     int j, i, k;
@@ -1305,7 +1307,9 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
         linear_width = linear_dummy_run(symbol->input_mode, (unsigned char *) symbol->primary, pri_len,
                                         symbol->errtxt);
         if (linear_width == 0) {
-            strcat(symbol->errtxt, " in linear component");
+            if (strlen(symbol->errtxt) + strlen(in_linear_comp) < sizeof(symbol->errtxt)) {
+                strcat(symbol->errtxt, in_linear_comp);
+            }
             return ZINT_ERROR_INVALID_DATA;
         }
         if (symbol->debug & ZINT_DEBUG_PRINT) {
@@ -1464,11 +1468,15 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
             break;
     }
 
-    if (error_number >= ZINT_ERROR) {
+    if (error_number) {
         strcpy(symbol->errtxt, linear->errtxt);
-        strcat(symbol->errtxt, " in linear component");
-        ZBarcode_Delete(linear);
-        return error_number;
+        if (strlen(symbol->errtxt) + strlen(in_linear_comp) < sizeof(symbol->errtxt)) {
+            strcat(symbol->errtxt, in_linear_comp);
+        }
+        if (error_number >= ZINT_ERROR) {
+            ZBarcode_Delete(linear);
+            return error_number;
+        }
     }
 
     /* Merge the linear component with the 2D component */

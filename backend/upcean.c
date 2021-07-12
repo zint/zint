@@ -161,29 +161,39 @@ static int upca(struct zint_symbol *symbol, const unsigned char source[], int le
 static int upce_cc(struct zint_symbol *symbol, unsigned char source[], int length, char dest[], int cc_rows) {
     int i, num_system;
     char emode, check_digit, parity[8];
+    char src_check_digit = '\0';
     unsigned char equivalent[12];
     char hrt[9];
     float height;
     int error_number = 0;
 
+    if (length == 8 || symbol->symbology == BARCODE_UPCE_CHK) {
+        /* Will validate later */
+        src_check_digit = source[--length];
+    }
+
     /* Two number systems can be used - system 0 and system 1 */
-    if ((symbol->symbology != BARCODE_UPCE_CHK && length == 7) || length == 8) {
+    hrt[0] = '\0';
+    if (length == 7) {
         switch (source[0]) {
             case '0': num_system = 0;
+                ustrncat(hrt, source, length);
                 break;
             case '1': num_system = 1;
+                ustrncat(hrt, source, length);
                 break;
             default: num_system = 0;
                 /* First source char ignored */
+                ustrncat(hrt, source, length);
+                hrt[0] = '0'; /* Overwrite HRT first char with '0' to correct TODO: error/warn in future */
                 break;
         }
-        ustrcpy(hrt, source);
         for (i = 1; i <= length; i++) {
             source[i - 1] = hrt[i];
         }
         length--;
     } else {
-        /* Length 6 with no check digit, or length 7 with check digit, system 0, insert leading zero */
+        /* Length 6, insert leading zero */
         num_system = 0;
         hrt[0] = '0';
         hrt[1] = '\0';
@@ -252,6 +262,11 @@ static int upce_cc(struct zint_symbol *symbol, unsigned char source[], int lengt
 
     check_digit = gs1_check_digit(equivalent, 11);
 
+    if (src_check_digit && src_check_digit != check_digit) {
+        sprintf(symbol->errtxt, "274: Invalid check digit '%c', expecting '%c'", src_check_digit, check_digit);
+        return ZINT_ERROR_INVALID_CHECK;
+    }
+
     /* Use the number system and check digit information to choose a parity scheme */
     if (num_system == 1) {
         strcpy(parity, UPCParity1[ctoi(check_digit)]);
@@ -276,15 +291,9 @@ static int upce_cc(struct zint_symbol *symbol, unsigned char source[], int lengt
     /* stop character */
     strcat(dest, "111111");
 
-    if (symbol->symbology != BARCODE_UPCE_CHK) {
-        hrt[7] = check_digit;
-        hrt[8] = '\0';
-    } else {
-        if (hrt[7] != check_digit) {
-            sprintf(symbol->errtxt, "274: Invalid check digit '%c', expecting '%c'", hrt[7], check_digit);
-            return ZINT_ERROR_INVALID_CHECK;
-        }
-    }
+    hrt[7] = check_digit;
+    hrt[8] = '\0';
+
     if (symbol->debug & ZINT_DEBUG_PRINT) {
         printf("UPC-E: %s, equivalent: %s, hrt: %s, Check digit: %c\n", source, equivalent, hrt, check_digit);
     }
@@ -898,7 +907,7 @@ INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int src
                     symbol->rows += 3;
                     error_number = ean13_cc(symbol, first_part, first_part_len, dest, cc_rows);
                     break;
-                default: strcpy(symbol->errtxt, "287: Input wrong length (6, 12 or 13 characters only)");
+                default: strcpy(symbol->errtxt, "287: Input wrong length (7, 12 or 13 characters only)");
                     return ZINT_ERROR_TOO_LONG;
             }
             break;
@@ -907,7 +916,7 @@ INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int src
             if ((first_part_len == 11) || (first_part_len == 12)) {
                 error_number = upca(symbol, first_part, first_part_len, dest);
             } else {
-                strcpy(symbol->errtxt, "288: Input wrong length (11 or 12 characters only)");
+                strcpy(symbol->errtxt, "288: Input wrong length (12 character maximum)");
                 return ZINT_ERROR_TOO_LONG;
             }
             break;
@@ -925,21 +934,21 @@ INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int src
                 symbol->rows += 3;
                 error_number = upca_cc(symbol, first_part, first_part_len, dest, cc_rows);
             } else {
-                strcpy(symbol->errtxt, "289: Input wrong length (11 or 12 characters only)");
+                strcpy(symbol->errtxt, "289: Input wrong length (12 character maximum)");
                 return ZINT_ERROR_TOO_LONG;
             }
             break;
         case BARCODE_UPCE:
         case BARCODE_UPCE_CHK:
-            if ((first_part_len >= 6) && (first_part_len <= (symbol->symbology == BARCODE_UPCE ? 7 : 8))) {
+            if ((first_part_len >= 6) && (first_part_len <= 8)) {
                 error_number = upce(symbol, first_part, first_part_len, dest);
             } else {
-                strcpy(symbol->errtxt, "290: Input wrong length (7 or 8 characters only)");
+                strcpy(symbol->errtxt, "290: Input wrong length (8 character maximum)");
                 return ZINT_ERROR_TOO_LONG;
             }
             break;
         case BARCODE_UPCE_CC:
-            if ((first_part_len >= 6) && (first_part_len <= 7)) {
+            if ((first_part_len >= 6) && (first_part_len <= 8)) {
                 set_module(symbol, symbol->rows, 1);
                 set_module(symbol, symbol->rows, 51);
                 set_module(symbol, symbol->rows + 1, 0);
@@ -952,7 +961,7 @@ INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int src
                 symbol->rows += 3;
                 error_number = upce_cc(symbol, first_part, first_part_len, dest, cc_rows);
             } else {
-                strcpy(symbol->errtxt, "291: Input wrong length (7 or 8 characters only)");
+                strcpy(symbol->errtxt, "291: Input wrong length (8 character maximum)");
                 return ZINT_ERROR_TOO_LONG;
             }
             break;

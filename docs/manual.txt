@@ -86,6 +86,7 @@ file formats. Vector is a high level command- or data-based representation of an
 image. EMF, EPS and SVG are vector file formats. They require renderers to turn
 them into bitmaps.
 
+
 2. Installing Zint
 ==================
 
@@ -96,8 +97,12 @@ utilities. You will need to install CMake and libpng first. Note that you will
 need both libpng and libpng-devel packages. If you want to take advantage of
 Zint Barcode Studio you will also need the Qt libraries pre-installed.
 
-Once you have fulfilled these requirements unzip the source code tarball and
-follow these steps in the top directory:
+Once you have fulfilled these requirements unzip the source code tarball or
+clone the latest source
+
+git clone https://git.code.sf.net/p/zint/code zint
+
+and follow these steps in the top directory:
 
 mkdir build
 cd build
@@ -135,6 +140,8 @@ SmartScreen that this is an "unrecognised app". This happens because Zint is
 a free and open-source software project with no advertising and hence no
 income, meaning we are not able to afford the $664 per year to have the
 application digitally signed by Microsoft.
+
+To build Zint on Windows from source, see "win32/README".
 
 2.3 Apple macOS
 ---------------

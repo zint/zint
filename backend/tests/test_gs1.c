@@ -32,7 +32,7 @@
 #include "testcommon.h"
 
 /*
- * Check that EAN128 and RSS_EXP based symbologies reduce GS1 data
+ * Check that GS1_128-based and DBAR_EXP-based symbologies reduce GS1 data
  */
 static void test_gs1_reduce(int index, int generate, int debug) {
 
@@ -209,7 +209,7 @@ static void test_gs1_reduce(int index, int generate, int debug) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        if (strlen(data[i].composite)) {
+        if (data[i].composite[0]) {
             text = data[i].composite;
             strcpy(symbol->primary, data[i].data);
         } else {
@@ -230,7 +230,7 @@ static void test_gs1_reduce(int index, int generate, int debug) {
                         i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode), data[i].data, data[i].composite, testUtilErrorName(data[i].ret), data[i].comment);
             }
         } else {
-            assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d %s\n", i, ret, data[i].ret, symbol->errtxt);
+            assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
             if (ret < ZINT_ERROR) {
                 int width, row;
@@ -254,6 +254,10 @@ static void test_gs1_reduce(int index, int generate, int debug) {
     testFinish();
 }
 
+/*
+ * Check GS1_128-based and DBAR_EXP-based symbologies HRT
+ * See test_hrt() in test_rss.c and test_composite.c for DBAR other than DBAR_EXP-based
+ */
 static void test_hrt(int index, int debug) {
 
     struct item {
@@ -266,26 +270,34 @@ static void test_hrt(int index, int debug) {
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /*  0*/ { BARCODE_GS1_128, "[01]12345678901234[20]12", "", ZINT_WARN_NONCOMPLIANT, "(01)12345678901234(20)12" },
+        /*  0*/ { BARCODE_GS1_128, "[01]12345678901234[20]12", "", ZINT_WARN_NONCOMPLIANT, "(01)12345678901234(20)12" }, // Incorrect check digit
         /*  1*/ { BARCODE_GS1_128, "[01]12345678901231[20]12", "", 0, "(01)12345678901231(20)12" },
-        /*  2*/ { BARCODE_GS1_128_CC, "[01]12345678901234[20]12", "[21]12345", ZINT_WARN_NONCOMPLIANT, "(01)12345678901234(20)12" },
-        /*  3*/ { BARCODE_GS1_128_CC, "[01]12345678901231[20]12", "[21]12345", 0, "(01)12345678901231(20)12" },
-        /*  4*/ { BARCODE_EAN14, "1234567890123", "", 0, "(01)12345678901231" },
-        /*  5*/ { BARCODE_EAN14, "1234", "", 0, "(01)00000000012348" },
-        /*  6*/ { BARCODE_EAN14, "12345", "", 0, "(01)00000000123457" },
-        /*  7*/ { BARCODE_EAN14, "12340", "", 0, "(01)00000000123402" },
-        /*  8*/ { BARCODE_NVE18, "12345678901234567", "", 0, "(00)123456789012345675" },
-        /*  9*/ { BARCODE_NVE18, "1234", "", 0, "(00)000000000000012348" },
-        /* 10*/ { BARCODE_NVE18, "12345", "", 0, "(00)000000000000123457" },
-        /* 11*/ { BARCODE_NVE18, "12340", "", 0, "(00)000000000000123402" },
-        /* 12*/ { BARCODE_DBAR_EXP, "[01]12345678901234[20]12", "", ZINT_WARN_NONCOMPLIANT, "(01)12345678901234(20)12" },
-        /* 13*/ { BARCODE_DBAR_EXP, "[01]12345678901231[20]12", "", 0, "(01)12345678901231(20)12" },
-        /* 14*/ { BARCODE_DBAR_EXP_CC, "[01]12345678901234", "[21]12345", ZINT_WARN_NONCOMPLIANT, "(01)12345678901234" },
-        /* 15*/ { BARCODE_DBAR_EXP_CC, "[01]12345678901231", "[21]12345", 0, "(01)12345678901231" },
-        /* 16*/ { BARCODE_DBAR_EXPSTK, "[01]12345678901234[20]12", "", ZINT_WARN_NONCOMPLIANT, "" },
-        /* 17*/ { BARCODE_DBAR_EXPSTK, "[01]12345678901231[20]12", "", 0, "" },
-        /* 18*/ { BARCODE_DBAR_EXPSTK_CC, "[01]12345678901234[20]12", "[21]12345", ZINT_WARN_NONCOMPLIANT, "" },
-        /* 19*/ { BARCODE_DBAR_EXPSTK_CC, "[01]12345678901231[20]12", "[21]12345", 0, "" },
+        /*  2*/ { BARCODE_GS1_128, "[01]12345678901231[10]12[20]AB", "", ZINT_WARN_NONCOMPLIANT, "(01)12345678901231(10)12(20)AB" }, // AI (20) should be 2 nos.
+        /*  3*/ { BARCODE_GS1_128, "[01]12345678901231[10]AB[20]12", "", 0, "(01)12345678901231(10)AB(20)12" },
+        /*  4*/ { BARCODE_GS1_128_CC, "[01]12345678901234[20]12", "[21]12345", ZINT_WARN_NONCOMPLIANT, "(01)12345678901234(20)12" }, // Incorrect check digit
+        /*  5*/ { BARCODE_GS1_128_CC, "[01]12345678901231[20]12", "[21]12345", 0, "(01)12345678901231(20)12" },
+        /*  6*/ { BARCODE_GS1_128_CC, "[01]12345678901231[10]12[20]AB", "[21]12345", ZINT_WARN_NONCOMPLIANT, "(01)12345678901231(10)12(20)AB" }, // AI (20) should be 2 nos.
+        /*  7*/ { BARCODE_GS1_128_CC, "[01]12345678901231[10]AB[20]12", "[21]12345", 0, "(01)12345678901231(10)AB(20)12" },
+        /*  8*/ { BARCODE_GS1_128_CC, "[01]12345678901231[10]AB[20]12", "[30]1234567A", ZINT_WARN_NONCOMPLIANT, "(01)12345678901231(10)AB(20)12" },
+        /*  9*/ { BARCODE_EAN14, "1234567890123", "", 0, "(01)12345678901231" },
+        /* 10*/ { BARCODE_EAN14, "1234", "", 0, "(01)00000000012348" },
+        /* 11*/ { BARCODE_EAN14, "12345", "", 0, "(01)00000000123457" },
+        /* 12*/ { BARCODE_EAN14, "12340", "", 0, "(01)00000000123402" },
+        /* 13*/ { BARCODE_NVE18, "12345678901234567", "", 0, "(00)123456789012345675" },
+        /* 14*/ { BARCODE_NVE18, "1234", "", 0, "(00)000000000000012348" },
+        /* 15*/ { BARCODE_NVE18, "12345", "", 0, "(00)000000000000123457" },
+        /* 16*/ { BARCODE_NVE18, "12340", "", 0, "(00)000000000000123402" },
+        /* 17*/ { BARCODE_DBAR_EXP, "[01]12345678901234[20]12", "", ZINT_WARN_NONCOMPLIANT, "(01)12345678901234(20)12" }, // Incorrect check digit
+        /* 18*/ { BARCODE_DBAR_EXP, "[01]12345678901231[20]12", "", 0, "(01)12345678901231(20)12" },
+        /* 19*/ { BARCODE_DBAR_EXP, "[01]12345678901231[10]12[20]AB", "", ZINT_WARN_NONCOMPLIANT, "(01)12345678901231(10)12(20)AB" }, // AI (20) should be 2 nos.
+        /* 20*/ { BARCODE_DBAR_EXP, "[01]12345678901231[10]AB[20]12", "", 0, "(01)12345678901231(10)AB(20)12" },
+        /* 21*/ { BARCODE_DBAR_EXP_CC, "[01]12345678901234", "[21]12345", ZINT_WARN_NONCOMPLIANT, "(01)12345678901234" },
+        /* 22*/ { BARCODE_DBAR_EXP_CC, "[01]12345678901231", "[21]12345", 0, "(01)12345678901231" },
+        /* 23*/ { BARCODE_DBAR_EXP_CC, "[01]12345678901231[20]12[21]12345", "[21]12345", 0, "(01)12345678901231(20)12(21)12345" },
+        /* 24*/ { BARCODE_DBAR_EXPSTK, "[01]12345678901234[20]12", "", ZINT_WARN_NONCOMPLIANT, "" },
+        /* 25*/ { BARCODE_DBAR_EXPSTK, "[01]12345678901231[20]12", "", 0, "" },
+        /* 26*/ { BARCODE_DBAR_EXPSTK_CC, "[01]12345678901234[20]12", "[21]12345", ZINT_WARN_NONCOMPLIANT, "" },
+        /* 27*/ { BARCODE_DBAR_EXPSTK_CC, "[01]12345678901231[20]12", "[21]12345", 0, "" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -302,7 +314,7 @@ static void test_hrt(int index, int debug) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        if (strlen(data[i].composite)) {
+        if (data[i].composite[0]) {
             text = data[i].composite;
             strcpy(symbol->primary, data[i].data);
         } else {
@@ -344,850 +356,850 @@ static void test_gs1_verify(int index, int debug) {
         /*  9*/ { "[00]123456789012345678", ZINT_WARN_NONCOMPLIANT, "00123456789012345678" },
         /* 10*/ { "[00]123456789012345675", 0, "00123456789012345675" },
         /* 11*/ { "[00]12345678901234567", ZINT_ERROR_INVALID_DATA, "" },
-        /* 12*/ { "[00]376104250021234569", 0, "00376104250021234569" },
-        /* 13*/ { "[00]376104250021234568", ZINT_WARN_NONCOMPLIANT, "00376104250021234568" },
-        /* 14*/ { "[01]12345678901234", ZINT_WARN_NONCOMPLIANT, "0112345678901234" },
-        /* 15*/ { "[01]12345678901231", 0, "0112345678901231" },
-        /* 16*/ { "[01]123456789012345", ZINT_ERROR_INVALID_DATA, "" },
-        /* 17*/ { "[02]12345678901234", ZINT_WARN_NONCOMPLIANT, "0212345678901234" },
-        /* 18*/ { "[02]12345678901231", 0, "0212345678901231" },
-        /* 19*/ { "[02]1234567890123", ZINT_ERROR_INVALID_DATA, "" },
-        /* 20*/ { "[03]12345678901234", ZINT_ERROR_INVALID_DATA, "" },
-        /* 21*/ { "[04]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /* 22*/ { "[05]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /* 23*/ { "[06]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /* 24*/ { "[07]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /* 25*/ { "[08]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /* 26*/ { "[09]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /* 27*/ { "[10]ABCD123456", 0, "10ABCD123456" },
-        /* 28*/ { "[10]123456789012345678901", ZINT_ERROR_INVALID_DATA, "" },
-        /* 29*/ { "[100]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /* 30*/ { "[1000]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /* 31*/ { "[11]990102", 0, "11990102" },
-        /* 32*/ { "[11]9901023", ZINT_ERROR_INVALID_DATA, "" },
-        /* 33*/ { "[110]990102", ZINT_ERROR_INVALID_DATA, "" },
-        /* 34*/ { "[1100]990102", ZINT_ERROR_INVALID_DATA, "" },
-        /* 35*/ { "[12]000100", 0, "12000100" },
-        /* 36*/ { "[12]00010", ZINT_ERROR_INVALID_DATA, "" },
-        /* 37*/ { "[120]000100", ZINT_ERROR_INVALID_DATA, "" },
-        /* 38*/ { "[1200]000100", ZINT_ERROR_INVALID_DATA, "" },
-        /* 39*/ { "[13]991301", ZINT_WARN_NONCOMPLIANT, "13991301" },
-        /* 40*/ { "[13]991201", 0, "13991201" },
-        /* 41*/ { "[13]9913011", ZINT_ERROR_INVALID_DATA, "" },
-        /* 42*/ { "[130]991301", ZINT_ERROR_INVALID_DATA, "" },
-        /* 43*/ { "[1300]991301", ZINT_ERROR_INVALID_DATA, "" },
-        /* 44*/ { "[14]991201", ZINT_ERROR_INVALID_DATA, "" },
-        /* 45*/ { "[140]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /* 46*/ { "[1400]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /* 47*/ { "[15]021231", 0, "15021231" },
-        /* 48*/ { "[15]02123", ZINT_ERROR_INVALID_DATA, "" },
-        /* 49*/ { "[150]021231", ZINT_ERROR_INVALID_DATA, "" },
-        /* 50*/ { "[1500]021231", ZINT_ERROR_INVALID_DATA, "" },
-        /* 51*/ { "[16]000000", ZINT_WARN_NONCOMPLIANT, "16000000" },
-        /* 52*/ { "[16]000100", 0, "16000100" },
-        /* 53*/ { "[16]00000", ZINT_ERROR_INVALID_DATA, "" },
-        /* 54*/ { "[160]000000", ZINT_ERROR_INVALID_DATA, "" },
-        /* 55*/ { "[1600]000000", ZINT_ERROR_INVALID_DATA, "" },
-        /* 56*/ { "[17]010200", 0, "17010200" },
-        /* 57*/ { "[17]0102000", ZINT_ERROR_INVALID_DATA, "" },
-        /* 58*/ { "[170]010200", ZINT_ERROR_INVALID_DATA, "" },
-        /* 59*/ { "[1700]010200", ZINT_ERROR_INVALID_DATA, "" },
-        /* 60*/ { "[18]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /* 61*/ { "[180]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /* 62*/ { "[1800]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /* 63*/ { "[19]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /* 64*/ { "[190]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /* 65*/ { "[1900]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /* 66*/ { "[20]12", 0, "2012" },
-        /* 67*/ { "[20]1", ZINT_ERROR_INVALID_DATA, "" },
-        /* 68*/ { "[200]12", ZINT_ERROR_INVALID_DATA, "" },
-        /* 69*/ { "[2000]12", ZINT_ERROR_INVALID_DATA, "" },
-        /* 70*/ { "[21]A12345678", 0, "21A12345678" },
-        /* 71*/ { "[21]123456789012345678901", ZINT_ERROR_INVALID_DATA, "" },
-        /* 72*/ { "[210]A12345678", ZINT_ERROR_INVALID_DATA, "" },
-        /* 73*/ { "[2100]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /* 74*/ { "[22]abcdefghijklmnopqrst", 0, "22abcdefghijklmnopqrst" },
-        /* 75*/ { "[22]abcdefghijklmnopqrstu", ZINT_ERROR_INVALID_DATA, "" },
-        /* 76*/ { "[220]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /* 77*/ { "[2200]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /* 78*/ { "[23]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /* 79*/ { "[230]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /* 80*/ { "[2300]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /* 81*/ { "[235]1abcdefghijklmnopqrstuvwxyz0", 0, "2351abcdefghijklmnopqrstuvwxyz0" },
-        /* 82*/ { "[235]1abcdefghijklmnopqrstuvwxyz01", ZINT_ERROR_INVALID_DATA, "" },
-        /* 83*/ { "[24]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /* 84*/ { "[240]abcdefghijklmnopqrstuvwxyz1234", 0, "240abcdefghijklmnopqrstuvwxyz1234" },
-        /* 85*/ { "[240]abcdefghijklmnopqrstuvwxyz12345", ZINT_ERROR_INVALID_DATA, "" },
-        /* 86*/ { "[2400]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /* 87*/ { "[241]abcdefghijklmnopqrstuvwxyz1234", 0, "241abcdefghijklmnopqrstuvwxyz1234" },
-        /* 88*/ { "[241]abcdefghijklmnopqrstuvwxyz12345", ZINT_ERROR_INVALID_DATA, "" },
-        /* 89*/ { "[2410]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /* 90*/ { "[242]12345", 0, "24212345" },
-        /* 91*/ { "[242]1234567", ZINT_ERROR_INVALID_DATA, "" },
-        /* 92*/ { "[2420]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /* 93*/ { "[243]abcdefghijklmnopqrst", 0, "243abcdefghijklmnopqrst" },
-        /* 94*/ { "[243]abcdefghijklmnopqrstu", ZINT_ERROR_INVALID_DATA, "" },
-        /* 95*/ { "[2430]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /* 96*/ { "[244]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /* 97*/ { "[2440]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /* 98*/ { "[249]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /* 99*/ { "[2490]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*100*/ { "[25]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*101*/ { "[250]abcdefghijklmnopqrstuvwxyz1234", 0, "250abcdefghijklmnopqrstuvwxyz1234" },
-        /*102*/ { "[250]abcdefghijklmnopqrstuvwxyz12345", ZINT_ERROR_INVALID_DATA, "" },
-        /*103*/ { "[2500]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*104*/ { "[251]abcdefghijklmnopqrstuvwxyz1234", 0, "251abcdefghijklmnopqrstuvwxyz1234" },
-        /*105*/ { "[251]abcdefghijklmnopqrstuvwxyz12345", ZINT_ERROR_INVALID_DATA, "" },
-        /*106*/ { "[2510]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*107*/ { "[252]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*108*/ { "[2520]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*109*/ { "[253]131313131313", ZINT_ERROR_INVALID_DATA, "" },
-        /*110*/ { "[253]1313131313134", ZINT_WARN_NONCOMPLIANT, "2531313131313134" },
-        /*111*/ { "[253]1313131313130", 0, "2531313131313130" },
-        /*112*/ { "[253]131313131313412345678901234567", ZINT_WARN_NONCOMPLIANT, "253131313131313412345678901234567" },
-        /*113*/ { "[253]131313131313012345678901234567", 0, "253131313131313012345678901234567" },
-        /*114*/ { "[253]1313131313134123456789012345678", ZINT_ERROR_INVALID_DATA, "" },
-        /*115*/ { "[2530]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*116*/ { "[254]abcdefghijklmnopqrst", 0, "254abcdefghijklmnopqrst" },
-        /*117*/ { "[254]abcdefghijklmnopqrstu", ZINT_ERROR_INVALID_DATA, "" },
-        /*118*/ { "[2540]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*119*/ { "[255]131313131313", ZINT_ERROR_INVALID_DATA, "" },
-        /*120*/ { "[255]1313131313134", ZINT_WARN_NONCOMPLIANT, "2551313131313134" },
-        /*121*/ { "[255]1313131313130", 0, "2551313131313130" },
-        /*122*/ { "[255]1313131313134123456789012", ZINT_WARN_NONCOMPLIANT, "2551313131313134123456789012" },
-        /*123*/ { "[255]1313131313130123456789012", 0, "2551313131313130123456789012" },
-        /*124*/ { "[255]13131313131341234567890123", ZINT_ERROR_INVALID_DATA, "" },
-        /*125*/ { "[2550]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*126*/ { "[256]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*127*/ { "[2560]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*128*/ { "[259]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*129*/ { "[2590]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*130*/ { "[26]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*131*/ { "[260]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*132*/ { "[2600]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*133*/ { "[27]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*134*/ { "[270]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*135*/ { "[2700]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*136*/ { "[28]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*137*/ { "[280]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*138*/ { "[2800]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*139*/ { "[29]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*140*/ { "[290]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*141*/ { "[2900]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*142*/ { "[30]12345678", 0, "3012345678" },
-        /*143*/ { "[30]123456789", ZINT_ERROR_INVALID_DATA, "" },
-        /*144*/ { "[300]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*145*/ { "[3000]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*146*/ { "[31]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*147*/ { "[310]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*148*/ { "[3100]123456", 0, "3100123456" },
-        /*149*/ { "[3100]12345", ZINT_ERROR_INVALID_DATA, "" },
-        /*150*/ { "[3101]123456", 0, "3101123456" },
-        /*151*/ { "[3101]12345", ZINT_ERROR_INVALID_DATA, "" },
-        /*152*/ { "[3105]123456", 0, "3105123456" },
-        /*153*/ { "[3105]12345", ZINT_ERROR_INVALID_DATA, "" },
-        /*154*/ { "[3106]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*155*/ { "[3109]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*156*/ { "[3110]123456", 0, "3110123456" },
-        /*157*/ { "[3110]12345", ZINT_ERROR_INVALID_DATA, "" },
-        /*158*/ { "[3115]123456", 0, "3115123456" },
-        /*159*/ { "[3115]12345", ZINT_ERROR_INVALID_DATA, "" },
-        /*160*/ { "[3116]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*161*/ { "[3119]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*162*/ { "[3120]123456", 0, "3120123456" },
-        /*163*/ { "[3120]1234567", ZINT_ERROR_INVALID_DATA, "" },
-        /*164*/ { "[3125]123456", 0, "3125123456" },
-        /*165*/ { "[3125]1234567", ZINT_ERROR_INVALID_DATA, "" },
-        /*166*/ { "[3126]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*167*/ { "[3129]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*168*/ { "[3130]123456", 0, "3130123456" },
-        /*169*/ { "[3130]1234567", ZINT_ERROR_INVALID_DATA, "" },
-        /*170*/ { "[3135]123456", 0, "3135123456" },
-        /*171*/ { "[3135]1234567", ZINT_ERROR_INVALID_DATA, "" },
-        /*172*/ { "[3136]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*173*/ { "[3139]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*174*/ { "[3140]123456", 0, "3140123456" },
-        /*175*/ { "[3140]1234567", ZINT_ERROR_INVALID_DATA, "" },
-        /*176*/ { "[3145]123456", 0, "3145123456" },
-        /*177*/ { "[3145]1234567", ZINT_ERROR_INVALID_DATA, "" },
-        /*178*/ { "[3146]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*179*/ { "[3149]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*180*/ { "[3150]123456", 0, "3150123456" },
-        /*181*/ { "[3150]1234567", ZINT_ERROR_INVALID_DATA, "" },
-        /*182*/ { "[3155]123456", 0, "3155123456" },
-        /*183*/ { "[3155]1234567", ZINT_ERROR_INVALID_DATA, "" },
-        /*184*/ { "[3156]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*185*/ { "[3159]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*186*/ { "[3160]123456", 0, "3160123456" },
-        /*187*/ { "[3160]1234567", ZINT_ERROR_INVALID_DATA, "" },
-        /*188*/ { "[3165]123456", 0, "3165123456" },
-        /*189*/ { "[3165]1234567", ZINT_ERROR_INVALID_DATA, "" },
-        /*190*/ { "[3166]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*191*/ { "[3169]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*192*/ { "[3170]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*193*/ { "[3179]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*194*/ { "[3180]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*195*/ { "[3189]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*196*/ { "[3190]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*197*/ { "[3199]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*198*/ { "[32]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*199*/ { "[320]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*200*/ { "[3200]123456", 0, "3200123456" },
-        /*201*/ { "[3200]1234567", ZINT_ERROR_INVALID_DATA, "" },
-        /*202*/ { "[3205]123456", 0, "3205123456" },
-        /*203*/ { "[3205]1234567", ZINT_ERROR_INVALID_DATA, "" },
-        /*204*/ { "[3206]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*205*/ { "[3209]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*206*/ { "[3210]123456", 0, "3210123456" },
-        /*207*/ { "[3210]1234567", ZINT_ERROR_INVALID_DATA, "" },
-        /*208*/ { "[3215]123456", 0, "3215123456" },
-        /*209*/ { "[3215]1234567", ZINT_ERROR_INVALID_DATA, "" },
-        /*210*/ { "[3216]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*211*/ { "[3219]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*212*/ { "[3220]123456", 0, "3220123456" },
-        /*213*/ { "[3220]1234567", ZINT_ERROR_INVALID_DATA, "" },
-        /*214*/ { "[3225]123456", 0, "3225123456" },
-        /*215*/ { "[3225]1234567", ZINT_ERROR_INVALID_DATA, "" },
-        /*216*/ { "[3229]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*217*/ { "[3230]123456", 0, "3230123456" },
-        /*218*/ { "[3230]1234567", ZINT_ERROR_INVALID_DATA, "" },
-        /*219*/ { "[3235]123456", 0, "3235123456" },
-        /*220*/ { "[3235]1234567", ZINT_ERROR_INVALID_DATA, "" },
-        /*221*/ { "[3239]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*222*/ { "[3240]123456", 0, "3240123456" },
-        /*223*/ { "[3240]1234567", ZINT_ERROR_INVALID_DATA, "" },
-        /*224*/ { "[3245]123456", 0, "3245123456" },
-        /*225*/ { "[3245]1234567", ZINT_ERROR_INVALID_DATA, "" },
-        /*226*/ { "[3249]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*227*/ { "[3250]123456", 0, "3250123456" },
-        /*228*/ { "[3250]1234567", ZINT_ERROR_INVALID_DATA, "" },
-        /*229*/ { "[3255]123456", 0, "3255123456" },
-        /*230*/ { "[3255]1234567", ZINT_ERROR_INVALID_DATA, "" },
-        /*231*/ { "[3259]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*232*/ { "[3260]123456", 0, "3260123456" },
-        /*233*/ { "[3260]1234567", ZINT_ERROR_INVALID_DATA, "" },
-        /*234*/ { "[3265]123456", 0, "3265123456" },
-        /*235*/ { "[3265]1234567", ZINT_ERROR_INVALID_DATA, "" },
-        /*236*/ { "[3269]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*237*/ { "[3270]123456", 0, "3270123456" },
-        /*238*/ { "[3270]1234567", ZINT_ERROR_INVALID_DATA, "" },
-        /*239*/ { "[3275]123456", 0, "3275123456" },
-        /*240*/ { "[3275]1234567", ZINT_ERROR_INVALID_DATA, "" },
-        /*241*/ { "[3279]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*242*/ { "[3280]123456", 0, "3280123456" },
-        /*243*/ { "[3280]1234567", ZINT_ERROR_INVALID_DATA, "" },
-        /*244*/ { "[3285]123456", 0, "3285123456" },
-        /*245*/ { "[3285]1234567", ZINT_ERROR_INVALID_DATA, "" },
-        /*246*/ { "[3289]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*247*/ { "[3290]123456", 0, "3290123456" },
-        /*248*/ { "[3290]1234567", ZINT_ERROR_INVALID_DATA, "" },
-        /*249*/ { "[3295]123456", 0, "3295123456" },
-        /*250*/ { "[3295]1234567", ZINT_ERROR_INVALID_DATA, "" },
-        /*251*/ { "[3296]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*252*/ { "[3299]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*253*/ { "[33]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*254*/ { "[330]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*255*/ { "[3300]123456", 0, "3300123456" },
-        /*256*/ { "[3300]1234567", ZINT_ERROR_INVALID_DATA, "" },
-        /*257*/ { "[3305]123456", 0, "3305123456" },
-        /*258*/ { "[3305]1234567", ZINT_ERROR_INVALID_DATA, "" },
-        /*259*/ { "[3306]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*260*/ { "[3309]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*261*/ { "[3310]123456", 0, "3310123456" },
-        /*262*/ { "[3310]1234567", ZINT_ERROR_INVALID_DATA, "" },
-        /*263*/ { "[3319]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*264*/ { "[3320]123456", 0, "3320123456" },
-        /*265*/ { "[3320]1234567", ZINT_ERROR_INVALID_DATA, "" },
-        /*266*/ { "[3329]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*267*/ { "[3330]123456", 0, "3330123456" },
-        /*268*/ { "[3330]1234567", ZINT_ERROR_INVALID_DATA, "" },
-        /*269*/ { "[3339]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*270*/ { "[3340]123456", 0, "3340123456" },
-        /*271*/ { "[3340]1234567", ZINT_ERROR_INVALID_DATA, "" },
-        /*272*/ { "[3349]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*273*/ { "[3350]123456", 0, "3350123456" },
-        /*274*/ { "[3350]1234567", ZINT_ERROR_INVALID_DATA, "" },
-        /*275*/ { "[3359]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*276*/ { "[3360]123456", 0, "3360123456" },
-        /*277*/ { "[3360]1234567", ZINT_ERROR_INVALID_DATA, "" },
-        /*278*/ { "[3369]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*279*/ { "[3370]123456", 0, "3370123456" },
-        /*280*/ { "[3370]1234567", ZINT_ERROR_INVALID_DATA, "" },
-        /*281*/ { "[3375]123456", 0, "3375123456" },
-        /*282*/ { "[3375]1234567", ZINT_ERROR_INVALID_DATA, "" },
-        /*283*/ { "[3376]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*284*/ { "[3379]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*285*/ { "[3380]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*286*/ { "[3390]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*287*/ { "[3399]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*288*/ { "[34]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*289*/ { "[340]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*290*/ { "[3400]123456", 0, "3400123456" },
-        /*291*/ { "[3400]12345", ZINT_ERROR_INVALID_DATA, "" },
-        /*292*/ { "[3405]123456", 0, "3405123456" },
-        /*293*/ { "[3405]12345", ZINT_ERROR_INVALID_DATA, "" },
-        /*294*/ { "[3406]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*295*/ { "[3409]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*296*/ { "[3410]123456", 0, "3410123456" },
-        /*297*/ { "[3410]12345", ZINT_ERROR_INVALID_DATA, "" },
-        /*298*/ { "[3419]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*299*/ { "[3420]123456", 0, "3420123456" },
-        /*300*/ { "[3420]12345", ZINT_ERROR_INVALID_DATA, "" },
-        /*301*/ { "[3429]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*302*/ { "[3430]123456", 0, "3430123456" },
-        /*303*/ { "[3430]12345", ZINT_ERROR_INVALID_DATA, "" },
-        /*304*/ { "[3439]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*305*/ { "[3440]123456", 0, "3440123456" },
-        /*306*/ { "[3440]12345", ZINT_ERROR_INVALID_DATA, "" },
-        /*307*/ { "[3449]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*308*/ { "[3450]123456", 0, "3450123456" },
-        /*309*/ { "[3450]12345", ZINT_ERROR_INVALID_DATA, "" },
-        /*310*/ { "[3459]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*311*/ { "[3460]123456", 0, "3460123456" },
-        /*312*/ { "[3460]12345", ZINT_ERROR_INVALID_DATA, "" },
-        /*313*/ { "[3469]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*314*/ { "[3470]123456", 0, "3470123456" },
-        /*315*/ { "[3470]12345", ZINT_ERROR_INVALID_DATA, "" },
-        /*316*/ { "[3479]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*317*/ { "[3480]123456", 0, "3480123456" },
-        /*318*/ { "[3480]12345", ZINT_ERROR_INVALID_DATA, "" },
-        /*319*/ { "[3489]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*320*/ { "[3490]123456", 0, "3490123456" },
-        /*321*/ { "[3490]12345", ZINT_ERROR_INVALID_DATA, "" },
-        /*322*/ { "[3495]123456", 0, "3495123456" },
-        /*323*/ { "[3495]12345", ZINT_ERROR_INVALID_DATA, "" },
-        /*324*/ { "[3496]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*325*/ { "[3499]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*326*/ { "[35]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*327*/ { "[350]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*328*/ { "[3500]123456", 0, "3500123456" },
-        /*329*/ { "[3500]1234567", ZINT_ERROR_INVALID_DATA, "" },
-        /*330*/ { "[3505]123456", 0, "3505123456" },
-        /*331*/ { "[3505]1234567", ZINT_ERROR_INVALID_DATA, "" },
-        /*332*/ { "[3506]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*333*/ { "[3509]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*334*/ { "[3510]123456", 0, "3510123456", },
-        /*335*/ { "[3510]1234567", ZINT_ERROR_INVALID_DATA, "" },
-        /*336*/ { "[3519]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*337*/ { "[3520]123456", 0, "3520123456", },
-        /*338*/ { "[3520]1234567", ZINT_ERROR_INVALID_DATA, "" },
-        /*339*/ { "[3529]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*340*/ { "[3530]123456", 0, "3530123456", },
-        /*341*/ { "[3530]1234567", ZINT_ERROR_INVALID_DATA, "" },
-        /*342*/ { "[3539]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*343*/ { "[3540]123456", 0, "3540123456", },
-        /*344*/ { "[3540]1234567", ZINT_ERROR_INVALID_DATA, "" },
-        /*345*/ { "[3549]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*346*/ { "[3550]123456", 0, "3550123456", },
-        /*347*/ { "[3550]1234567", ZINT_ERROR_INVALID_DATA, "" },
-        /*348*/ { "[3559]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*349*/ { "[3560]123456", 0, "3560123456", },
-        /*350*/ { "[3560]1234567", ZINT_ERROR_INVALID_DATA, "" },
-        /*351*/ { "[3569]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*352*/ { "[3570]123456", 0, "3570123456", },
-        /*353*/ { "[3570]1234567", ZINT_ERROR_INVALID_DATA, "" },
-        /*354*/ { "[3575]123456", 0, "3575123456" },
-        /*355*/ { "[3376]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*356*/ { "[3579]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*357*/ { "[3580]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*358*/ { "[3590]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*359*/ { "[3599]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*360*/ { "[36]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*361*/ { "[360]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*362*/ { "[3600]123456", 0, "3600123456" },
-        /*363*/ { "[3600]12345", ZINT_ERROR_INVALID_DATA, "" },
-        /*364*/ { "[3605]123456", 0, "3605123456" },
-        /*365*/ { "[3605]12345", ZINT_ERROR_INVALID_DATA, "" },
-        /*366*/ { "[3606]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*367*/ { "[3609]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*368*/ { "[3610]123456", 0, "3610123456" },
-        /*369*/ { "[3610]12345", ZINT_ERROR_INVALID_DATA, "" },
-        /*370*/ { "[3619]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*371*/ { "[3620]123456", 0, "3620123456", },
-        /*372*/ { "[3620]12345", ZINT_ERROR_INVALID_DATA, "" },
-        /*373*/ { "[3629]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*374*/ { "[3630]123456", 0, "3630123456", },
-        /*375*/ { "[3630]12345", ZINT_ERROR_INVALID_DATA, "" },
-        /*376*/ { "[3639]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*377*/ { "[3640]123456", 0, "3640123456", },
-        /*378*/ { "[3640]12345", ZINT_ERROR_INVALID_DATA, "" },
-        /*379*/ { "[3649]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*380*/ { "[3650]123456", 0, "3650123456", },
-        /*381*/ { "[3650]12345", ZINT_ERROR_INVALID_DATA, "" },
-        /*382*/ { "[3659]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*383*/ { "[3660]123456", 0, "3660123456", },
-        /*384*/ { "[3660]12345", ZINT_ERROR_INVALID_DATA, "" },
-        /*385*/ { "[3669]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*386*/ { "[3670]123456", 0, "3670123456", },
-        /*387*/ { "[3670]12345", ZINT_ERROR_INVALID_DATA, "" },
-        /*388*/ { "[3679]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*389*/ { "[3680]123456", 0, "3680123456", },
-        /*390*/ { "[3680]12345", ZINT_ERROR_INVALID_DATA, "" },
-        /*391*/ { "[3689]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*392*/ { "[3690]123456", 0, "3690123456" },
-        /*393*/ { "[3690]12345", ZINT_ERROR_INVALID_DATA, "" },
-        /*394*/ { "[3695]123456", 0, "3695123456" },
-        /*395*/ { "[3695]12345", ZINT_ERROR_INVALID_DATA, "" },
-        /*396*/ { "[3696]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*397*/ { "[3699]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*398*/ { "[37]12345678", 0, "3712345678" },
-        /*399*/ { "[37]123456789", ZINT_ERROR_INVALID_DATA, "" },
-        /*400*/ { "[370]12345678", ZINT_ERROR_INVALID_DATA, "" },
-        /*401*/ { "[3700]12345678", ZINT_ERROR_INVALID_DATA, "" },
-        /*402*/ { "[38]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*403*/ { "[380]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*404*/ { "[3800]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*405*/ { "[39]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*406*/ { "[390]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*407*/ { "[3900]123456789012345", 0, "3900123456789012345" },
-        /*408*/ { "[3900]1234567890123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*409*/ { "[3900]12345678901234", 0, "390012345678901234" },
-        /*410*/ { "[3901]123456789012345", 0, "3901123456789012345" },
-        /*411*/ { "[3901]1234567890123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*412*/ { "[3905]123456789012345", 0, "3905123456789012345" },
-        /*413*/ { "[3909]123456789012345", 0, "3909123456789012345" },
-        /*414*/ { "[3909]1234567890123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*415*/ { "[3910]123123456789012345", ZINT_WARN_NONCOMPLIANT, "3910123123456789012345" },
-        /*416*/ { "[3910]997123456789012345", 0, "3910997123456789012345" },
-        /*417*/ { "[3910]1231234567890123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*418*/ { "[3910]123", ZINT_ERROR_INVALID_DATA, "" },
-        /*419*/ { "[3915]123123456789012345", ZINT_WARN_NONCOMPLIANT, "3915123123456789012345" },
-        /*420*/ { "[3915]997123456789012345", 0, "3915997123456789012345" },
-        /*421*/ { "[3915]1231234567890123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*422*/ { "[3919]123123456789012345", ZINT_WARN_NONCOMPLIANT, "3919123123456789012345" },
-        /*423*/ { "[3919]997123456789012345", 0, "3919997123456789012345" },
-        /*424*/ { "[3919]1231234567890123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*425*/ { "[3920]123456789012345", 0, "3920123456789012345" },
-        /*426*/ { "[3920]1234567890123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*427*/ { "[3925]123456789012345", 0, "3925123456789012345" },
-        /*428*/ { "[3925]1234567890123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*429*/ { "[3929]123456789012345", 0, "3929123456789012345" },
-        /*430*/ { "[3929]1234567890123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*431*/ { "[3930]123123456789012345", ZINT_WARN_NONCOMPLIANT, "3930123123456789012345" },
-        /*432*/ { "[3930]997123456789012345", 0, "3930997123456789012345" },
-        /*433*/ { "[3930]1231234567890123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*434*/ { "[3930]123", ZINT_ERROR_INVALID_DATA, "" },
-        /*435*/ { "[3935]123123456789012345", ZINT_WARN_NONCOMPLIANT, "3935123123456789012345" },
-        /*436*/ { "[3935]997123456789012345", 0, "3935997123456789012345" },
-        /*437*/ { "[3935]1231234567890123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*438*/ { "[3939]123123456789012345", ZINT_WARN_NONCOMPLIANT, "3939123123456789012345" },
-        /*439*/ { "[3939]997123456789012345", 0, "3939997123456789012345" },
-        /*440*/ { "[3939]1231234567890123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*441*/ { "[3940]1234", 0, "39401234" },
-        /*442*/ { "[3940]12345", ZINT_ERROR_INVALID_DATA, "" },
-        /*443*/ { "[3940]123", ZINT_ERROR_INVALID_DATA, "" },
-        /*444*/ { "[3941]1234", 0, "39411234" },
-        /*445*/ { "[3941]12345", ZINT_ERROR_INVALID_DATA, "" },
-        /*446*/ { "[3941]123", ZINT_ERROR_INVALID_DATA, "" },
-        /*447*/ { "[3942]1234", 0, "39421234" },
-        /*448*/ { "[3942]12345", ZINT_ERROR_INVALID_DATA, "" },
-        /*449*/ { "[3943]1234", 0, "39431234" },
-        /*450*/ { "[3943]123", ZINT_ERROR_INVALID_DATA, "" },
-        /*451*/ { "[3944]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*452*/ { "[3945]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*453*/ { "[3949]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*454*/ { "[3950]123456", 0, "3950123456" },
-        /*455*/ { "[3950]1234567", ZINT_ERROR_INVALID_DATA, "" },
-        /*456*/ { "[3950]12345", ZINT_ERROR_INVALID_DATA, "" },
-        /*457*/ { "[3951]123456", 0, "3951123456" },
-        /*458*/ { "[3951]1234567", ZINT_ERROR_INVALID_DATA, "" },
-        /*459*/ { "[3952]123456", 0, "3952123456" },
-        /*460*/ { "[3952]1234567", ZINT_ERROR_INVALID_DATA, "" },
-        /*461*/ { "[3953]123456", 0, "3953123456" },
-        /*462*/ { "[3953]1234567", ZINT_ERROR_INVALID_DATA, "" },
-        /*463*/ { "[3954]123456", 0, "3954123456" },
-        /*464*/ { "[3954]1234567", ZINT_ERROR_INVALID_DATA, "" },
-        /*465*/ { "[3955]123456", 0, "3955123456" },
-        /*466*/ { "[3955]1234567", ZINT_ERROR_INVALID_DATA, "" },
-        /*467*/ { "[3956]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*468*/ { "[3959]123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*469*/ { "[3960]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*470*/ { "[3970]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*471*/ { "[3980]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*472*/ { "[3999]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*473*/ { "[40]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*474*/ { "[400]123456789012345678901234567890", 0, "400123456789012345678901234567890" },
-        /*475*/ { "[400]1234567890123456789012345678901", ZINT_ERROR_INVALID_DATA, "" },
-        /*476*/ { "[4000]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*477*/ { "[401]1234abcdefghijklmnopqrstuvwxyz", 0, "4011234abcdefghijklmnopqrstuvwxyz" },
-        /*478*/ { "[401]1234abcdefghijklmnopqrstuvwxyz1", ZINT_ERROR_INVALID_DATA, "" },
-        /*479*/ { "[4010]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*480*/ { "[402]13131313131313132", ZINT_WARN_NONCOMPLIANT, "40213131313131313132" },
-        /*481*/ { "[402]13131313131313130", 0, "40213131313131313130" },
-        /*482*/ { "[402]1313131313131313", ZINT_ERROR_INVALID_DATA, "" },
-        /*483*/ { "[4020]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*484*/ { "[403]abcdefghijklmnopqrstuvwxyz1234", 0, "403abcdefghijklmnopqrstuvwxyz1234" },
-        /*485*/ { "[403]abcdefghijklmnopqrstuvwxyz12345", ZINT_ERROR_INVALID_DATA, "" },
-        /*486*/ { "[4030]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*487*/ { "[404]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*488*/ { "[4040]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*489*/ { "[409]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*490*/ { "[4090]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*491*/ { "[41]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*492*/ { "[410]3898765432108", 0, "4103898765432108" },
-        /*493*/ { "[410]12345678901234", ZINT_ERROR_INVALID_DATA, "" },
-        /*494*/ { "[4100]12345678901234", ZINT_ERROR_INVALID_DATA, "" },
-        /*495*/ { "[411]1313131313134", ZINT_WARN_NONCOMPLIANT, "4111313131313134" },
-        /*496*/ { "[411]1313131313130", 0, "4111313131313130" },
-        /*497*/ { "[411]13131313131", ZINT_ERROR_INVALID_DATA, "" },
-        /*498*/ { "[4110]1313131313134", ZINT_ERROR_INVALID_DATA, "" },
-        /*499*/ { "[412]1313131313130", 0, "4121313131313130" },
-        /*500*/ { "[412]13131313131", ZINT_ERROR_INVALID_DATA, "" },
-        /*501*/ { "[4120]1313131313134", ZINT_ERROR_INVALID_DATA, "" },
-        /*502*/ { "[413]1313131313130", 0, "4131313131313130" },
-        /*503*/ { "[413]13131313131", ZINT_ERROR_INVALID_DATA, "" },
-        /*504*/ { "[4130]1313131313134", ZINT_ERROR_INVALID_DATA, "" },
-        /*505*/ { "[414]1313131313130", 0, "4141313131313130" },
-        /*506*/ { "[414]13131313131", ZINT_ERROR_INVALID_DATA, "" },
-        /*507*/ { "[4140]1313131313134", ZINT_ERROR_INVALID_DATA, "" },
-        /*508*/ { "[415]1313131313130", 0, "4151313131313130" },
-        /*509*/ { "[415]13131313131", ZINT_ERROR_INVALID_DATA, "" },
-        /*510*/ { "[4150]1313131313134", ZINT_ERROR_INVALID_DATA, "" },
-        /*511*/ { "[416]1313131313130", 0, "4161313131313130" },
-        /*512*/ { "[416]13131313131", ZINT_ERROR_INVALID_DATA, "" },
-        /*513*/ { "[4160]1313131313134", ZINT_ERROR_INVALID_DATA, "" },
-        /*514*/ { "[417]1313131313130", 0, "4171313131313130" },
-        /*515*/ { "[417]13131313131", ZINT_ERROR_INVALID_DATA, "" },
-        /*516*/ { "[4170]1313131313134", ZINT_ERROR_INVALID_DATA, "" },
-        /*517*/ { "[418]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*518*/ { "[4180]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*519*/ { "[419]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*520*/ { "[4190]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*521*/ { "[42]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*522*/ { "[420]abcdefghijklmnopqrst", 0, "420abcdefghijklmnopqrst" },
-        /*523*/ { "[420]abcdefghijklmnopqrstu", ZINT_ERROR_INVALID_DATA, "" },
-        /*524*/ { "[4200]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*525*/ { "[421]123abcdefghi", ZINT_WARN_NONCOMPLIANT, "421123abcdefghi" },
-        /*526*/ { "[421]434abcdefghi", 0, "421434abcdefghi" },
-        /*527*/ { "[421]123abcdefghij", ZINT_ERROR_INVALID_DATA, "" },
-        /*528*/ { "[421]1231", ZINT_WARN_NONCOMPLIANT, "4211231" },
-        /*529*/ { "[421]4341", 0, "4214341" },
-        /*530*/ { "[421]123", ZINT_ERROR_INVALID_DATA, "" },
-        /*531*/ { "[4210]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*532*/ { "[422]123", ZINT_WARN_NONCOMPLIANT, "422123" },
-        /*533*/ { "[422]004", 0, "422004" },
-        /*534*/ { "[422]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*535*/ { "[422]12", ZINT_ERROR_INVALID_DATA, "" },
-        /*536*/ { "[4220]123", ZINT_ERROR_INVALID_DATA, "" },
-        /*537*/ { "[423]123123123123123", ZINT_WARN_NONCOMPLIANT, "423123123123123123" },
-        /*538*/ { "[423]470004012887123", ZINT_WARN_NONCOMPLIANT, "423470004012887123" },
-        /*539*/ { "[423]470004012887438", 0, "423470004012887438" },
-        /*540*/ { "[423]1231231231231231", ZINT_ERROR_INVALID_DATA, "4231231231231231231" },
-        /*541*/ { "[423]12312312312312", ZINT_WARN_NONCOMPLIANT, "42312312312312312" },
-        /*542*/ { "[423]1231231231231", ZINT_WARN_NONCOMPLIANT, "4231231231231231" },
-        /*543*/ { "[423]12312312312", ZINT_WARN_NONCOMPLIANT, "42312312312312" },
-        /*544*/ { "[423]1231231231", ZINT_WARN_NONCOMPLIANT, "4231231231231" },
-        /*545*/ { "[423]123", ZINT_WARN_NONCOMPLIANT, "423123" },
-        /*546*/ { "[423]004", 0, "423004" },
-        /*547*/ { "[423]12", ZINT_ERROR_INVALID_DATA, "" },
-        /*548*/ { "[4230]123123123123123", ZINT_ERROR_INVALID_DATA, "" },
-        /*549*/ { "[424]123", ZINT_WARN_NONCOMPLIANT, "424123" },
-        /*550*/ { "[424]004", 0, "424004" },
-        /*551*/ { "[424]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*552*/ { "[424]12", ZINT_ERROR_INVALID_DATA, "" },
-        /*553*/ { "[4240]123", ZINT_ERROR_INVALID_DATA, "" },
-        /*554*/ { "[425]123123123123123", ZINT_WARN_NONCOMPLIANT, "425123123123123123" },
-        /*555*/ { "[425]010500276634894", 0, "425010500276634894" },
-        /*556*/ { "[425]010500276123894", ZINT_WARN_NONCOMPLIANT, "425010500276123894" },
-        /*557*/ { "[425]1231231231231231", ZINT_ERROR_INVALID_DATA, "" },
-        /*558*/ { "[425]12", ZINT_ERROR_INVALID_DATA, "" },
-        /*559*/ { "[4250]123123123123123", ZINT_ERROR_INVALID_DATA, "" },
-        /*560*/ { "[426]123", ZINT_WARN_NONCOMPLIANT, "426123" },
-        /*561*/ { "[426]426", 0, "426426" },
-        /*562*/ { "[426]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*563*/ { "[426]12", ZINT_ERROR_INVALID_DATA, "" },
-        /*564*/ { "[4260]123", ZINT_ERROR_INVALID_DATA, "" },
-        /*565*/ { "[427]abc", 0, "427abc" },
-        /*566*/ { "[427]abcd", ZINT_ERROR_INVALID_DATA, "" },
-        /*567*/ { "[4270]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*568*/ { "[428]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*569*/ { "[4280]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*570*/ { "[429]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*571*/ { "[4290]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*572*/ { "[43]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*573*/ { "[430]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*574*/ { "[4300]1", 0, "43001" },
-        /*575*/ { "[4300]12345678901234567890123456789012345", 0, "430012345678901234567890123456789012345" },
-        /*576*/ { "[4300]123456789012345678901234567890123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*577*/ { "[4301]1", 0, "43011" },
-        /*578*/ { "[4301]12345678901234567890123456789012345", 0, "430112345678901234567890123456789012345" },
-        /*579*/ { "[4301]123456789012345678901234567890123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*580*/ { "[4302]1", 0, "43021" },
-        /*581*/ { "[4302]1234567890123456789012345678901234567890123456789012345678901234567890", 0, "43021234567890123456789012345678901234567890123456789012345678901234567890" },
-        /*582*/ { "[4302]12345678901234567890123456789012345678901234567890123456789012345678901", ZINT_ERROR_INVALID_DATA, "" },
-        /*583*/ { "[4303]1", 0, "43031" },
-        /*584*/ { "[4303]1234567890123456789012345678901234567890123456789012345678901234567890", 0, "43031234567890123456789012345678901234567890123456789012345678901234567890" },
-        /*585*/ { "[4303]12345678901234567890123456789012345678901234567890123456789012345678901", ZINT_ERROR_INVALID_DATA, "" },
-        /*586*/ { "[4304]1", 0, "43041" },
-        /*587*/ { "[4304]1234567890123456789012345678901234567890123456789012345678901234567890", 0, "43041234567890123456789012345678901234567890123456789012345678901234567890" },
-        /*588*/ { "[4304]12345678901234567890123456789012345678901234567890123456789012345678901", ZINT_ERROR_INVALID_DATA, "" },
-        /*589*/ { "[4305]1", 0, "43051" },
-        /*590*/ { "[4305]1234567890123456789012345678901234567890123456789012345678901234567890", 0, "43051234567890123456789012345678901234567890123456789012345678901234567890" },
-        /*591*/ { "[4305]12345678901234567890123456789012345678901234567890123456789012345678901", ZINT_ERROR_INVALID_DATA, "" },
-        /*592*/ { "[4306]1", 0, "43061" },
-        /*593*/ { "[4306]1234567890123456789012345678901234567890123456789012345678901234567890", 0, "43061234567890123456789012345678901234567890123456789012345678901234567890" },
-        /*594*/ { "[4306]12345678901234567890123456789012345678901234567890123456789012345678901", ZINT_ERROR_INVALID_DATA, "" },
-        /*595*/ { "[4307]FR", 0, "4307FR" },
-        /*596*/ { "[4307]F", ZINT_ERROR_INVALID_DATA, "" },
-        /*597*/ { "[4307]FRR", ZINT_ERROR_INVALID_DATA, "" },
-        /*598*/ { "[4308]1", 0, "43081" },
-        /*599*/ { "[4308]123456789012345678901234567890", 0, "4308123456789012345678901234567890" },
-        /*600*/ { "[4308]1234567890123456789012345678901", ZINT_ERROR_INVALID_DATA, "" },
-        /*601*/ { "[4309]1", ZINT_ERROR_INVALID_DATA, "" },
-        /*602*/ { "[431]1", ZINT_ERROR_INVALID_DATA, "" },
-        /*603*/ { "[4310]1", 0, "43101" },
-        /*604*/ { "[4310]12345678901234567890123456789012345", 0, "431012345678901234567890123456789012345" },
-        /*605*/ { "[4310]123456789012345678901234567890123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*606*/ { "[4311]1", 0, "43111" },
-        /*607*/ { "[4311]12345678901234567890123456789012345", 0, "431112345678901234567890123456789012345" },
-        /*608*/ { "[4311]123456789012345678901234567890123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*609*/ { "[4312]1", 0, "43121" },
-        /*610*/ { "[4312]1234567890123456789012345678901234567890123456789012345678901234567890", 0, "43121234567890123456789012345678901234567890123456789012345678901234567890" },
-        /*611*/ { "[4312]12345678901234567890123456789012345678901234567890123456789012345678901", ZINT_ERROR_INVALID_DATA, "" },
-        /*612*/ { "[4313]1", 0, "43131" },
-        /*613*/ { "[4313]1234567890123456789012345678901234567890123456789012345678901234567890", 0, "43131234567890123456789012345678901234567890123456789012345678901234567890" },
-        /*614*/ { "[4313]12345678901234567890123456789012345678901234567890123456789012345678901", ZINT_ERROR_INVALID_DATA, "" },
-        /*615*/ { "[4314]1", 0, "43141" },
-        /*616*/ { "[4314]1234567890123456789012345678901234567890123456789012345678901234567890", 0, "43141234567890123456789012345678901234567890123456789012345678901234567890" },
-        /*617*/ { "[4314]12345678901234567890123456789012345678901234567890123456789012345678901", ZINT_ERROR_INVALID_DATA, "" },
-        /*618*/ { "[4315]1", 0, "43151" },
-        /*619*/ { "[4315]1234567890123456789012345678901234567890123456789012345678901234567890", 0, "43151234567890123456789012345678901234567890123456789012345678901234567890" },
-        /*620*/ { "[4315]12345678901234567890123456789012345678901234567890123456789012345678901", ZINT_ERROR_INVALID_DATA, "" },
-        /*621*/ { "[4316]1", 0, "43161" },
-        /*622*/ { "[4316]1234567890123456789012345678901234567890123456789012345678901234567890", 0, "43161234567890123456789012345678901234567890123456789012345678901234567890" },
-        /*623*/ { "[4316]12345678901234567890123456789012345678901234567890123456789012345678901", ZINT_ERROR_INVALID_DATA, "" },
-        /*624*/ { "[4317]FR", 0, "4317FR" },
-        /*625*/ { "[4317]F", ZINT_ERROR_INVALID_DATA, "" },
-        /*626*/ { "[4317]FRF", ZINT_ERROR_INVALID_DATA, "" },
-        /*627*/ { "[4318]1", 0, "43181" },
-        /*628*/ { "[4318]12345678901234567890", 0, "431812345678901234567890" },
-        /*629*/ { "[4318]123456789012345678901", ZINT_ERROR_INVALID_DATA, "" },
-        /*630*/ { "[4319]1", 0, "43191" },
-        /*631*/ { "[4319]123456789012345678901234567890", 0, "4319123456789012345678901234567890" },
-        /*632*/ { "[4319]1234567890123456789012345678901", ZINT_ERROR_INVALID_DATA, "" },
-        /*633*/ { "[432]1", ZINT_ERROR_INVALID_DATA, "" },
-        /*634*/ { "[4320]1", 0, "43201" },
-        /*635*/ { "[4320]12345678901234567890123456789012345", 0, "432012345678901234567890123456789012345" },
-        /*636*/ { "[4320]123456789012345678901234567890123456", ZINT_ERROR_INVALID_DATA, "" },
-        /*637*/ { "[4321]1", 0, "43211" },
-        /*638*/ { "[4321]10", ZINT_ERROR_INVALID_DATA, "" },
-        /*639*/ { "[4322]1", 0, "43221" },
-        /*640*/ { "[4322]10", ZINT_ERROR_INVALID_DATA, "" },
-        /*641*/ { "[4323]1", 0, "43231" },
-        /*642*/ { "[4323]10", ZINT_ERROR_INVALID_DATA, "" },
-        /*643*/ { "[4324]1212120000", 0, "43241212120000" },
-        /*644*/ { "[4324]121212000", ZINT_ERROR_INVALID_DATA, "" },
-        /*645*/ { "[4324]12121200000", ZINT_ERROR_INVALID_DATA, "" },
-        /*646*/ { "[4325]1212120000", 0, "43251212120000" },
-        /*647*/ { "[4325]121212000", ZINT_ERROR_INVALID_DATA, "" },
-        /*648*/ { "[4325]12121200000", ZINT_ERROR_INVALID_DATA, "" },
-        /*649*/ { "[4326]121212", 0, "4326121212" },
-        /*650*/ { "[4326]12121", ZINT_ERROR_INVALID_DATA, "" },
-        /*651*/ { "[4326]1212120", ZINT_ERROR_INVALID_DATA, "" },
-        /*652*/ { "[4327]121212", ZINT_ERROR_INVALID_DATA, "" },
-        /*653*/ { "[4328]121212", ZINT_ERROR_INVALID_DATA, "" },
-        /*654*/ { "[4329]121212", ZINT_ERROR_INVALID_DATA, "" },
-        /*655*/ { "[433]121212", ZINT_ERROR_INVALID_DATA, "" },
-        /*656*/ { "[4330]121212", ZINT_ERROR_INVALID_DATA, "" },
-        /*657*/ { "[44]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*658*/ { "[440]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*659*/ { "[4400]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*660*/ { "[49]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*661*/ { "[490]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*662*/ { "[4900]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*663*/ { "[499]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*664*/ { "[4990]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*665*/ { "[50]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*666*/ { "[500]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*667*/ { "[5000]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*668*/ { "[51]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*669*/ { "[510]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*670*/ { "[5100]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*671*/ { "[59]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*672*/ { "[590]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*673*/ { "[5900]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*674*/ { "[60]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*675*/ { "[600]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*676*/ { "[6000]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*677*/ { "[61]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*678*/ { "[610]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*679*/ { "[6100]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*680*/ { "[69]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*681*/ { "[690]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*682*/ { "[6900]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*683*/ { "[70]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*684*/ { "[700]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*685*/ { "[7000]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*686*/ { "[7001]1234567890123", 0, "70011234567890123" },
-        /*687*/ { "[7001]123456789012", ZINT_ERROR_INVALID_DATA, "" },
-        /*688*/ { "[7002]abcdefghijklmnopqrstuvwxyz1234", 0, "7002abcdefghijklmnopqrstuvwxyz1234" },
-        /*689*/ { "[7002]abcdefghijklmnopqrstuvwxyz12345", ZINT_ERROR_INVALID_DATA, "" },
-        /*690*/ { "[7003]1212121212", 0, "70031212121212" },
-        /*691*/ { "[7003]121212121", ZINT_ERROR_INVALID_DATA, "" },
-        /*692*/ { "[7004]1234", 0, "70041234" },
-        /*693*/ { "[7004]12345", ZINT_ERROR_INVALID_DATA, "" },
-        /*694*/ { "[7005]abcdefghijkl", 0, "7005abcdefghijkl" },
-        /*695*/ { "[7005]abcdefghijklm", ZINT_ERROR_INVALID_DATA, "" },
-        /*696*/ { "[7006]200132", ZINT_WARN_NONCOMPLIANT, "7006200132" },
-        /*697*/ { "[7006]200100", ZINT_WARN_NONCOMPLIANT, "7006200100" },
-        /*698*/ { "[7006]200120", 0, "7006200120" },
-        /*699*/ { "[7006]2001320", ZINT_ERROR_INVALID_DATA, "" },
-        /*700*/ { "[7007]010101121212", 0, "7007010101121212" },
-        /*701*/ { "[7007]01010112121", ZINT_ERROR_INVALID_DATA, "" },
-        /*702*/ { "[7007]A1010112121", ZINT_ERROR_INVALID_DATA, "" },
-        /*703*/ { "[7007]121212", 0, "7007121212" },
-        /*704*/ { "[7007]12121", ZINT_ERROR_INVALID_DATA, "" },
-        /*705*/ { "[7007]1212121", ZINT_ERROR_INVALID_DATA, "" },
-        /*706*/ { "[7008]abc", 0, "7008abc" },
-        /*707*/ { "[7008]abcd", ZINT_ERROR_INVALID_DATA, "" },
-        /*708*/ { "[7009]abcdefghij", 0, "7009abcdefghij" },
-        /*709*/ { "[7009]abcdefghijk", ZINT_ERROR_INVALID_DATA, "" },
-        /*710*/ { "[7010]01", 0, "701001" },
-        /*711*/ { "[7010]1", 0, "70101" },
-        /*712*/ { "[7010]012", ZINT_ERROR_INVALID_DATA, "" },
-        /*713*/ { "[7011]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*714*/ { "[7012]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*715*/ { "[7019]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*716*/ { "[7020]abcdefghijklmnopqrst", 0, "7020abcdefghijklmnopqrst" },
-        /*717*/ { "[7020]abcdefghijklmnopqrstu", ZINT_ERROR_INVALID_DATA, "" },
-        /*718*/ { "[7021]abcdefghijklmnopqrst", 0, "7021abcdefghijklmnopqrst" },
-        /*719*/ { "[7021]abcdefghijklmnopqrstu", ZINT_ERROR_INVALID_DATA, "" },
-        /*720*/ { "[7022]abcdefghijklmnopqrst", 0, "7022abcdefghijklmnopqrst" },
-        /*721*/ { "[7022]abcdefghijklmnopqrstu", ZINT_ERROR_INVALID_DATA, "" },
-        /*722*/ { "[7023]1234abcdefghijklmnopqrstuvwxyz", 0, "70231234abcdefghijklmnopqrstuvwxyz" },
-        /*723*/ { "[7023]1234abcdefghijklmnopqrstuvwxyza", ZINT_ERROR_INVALID_DATA, "" },
-        /*724*/ { "[7024]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*725*/ { "[7025]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*726*/ { "[7029]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*727*/ { "[7030]123abcdefghijklmnopqrstuvwxyza", ZINT_WARN_NONCOMPLIANT, "7030123abcdefghijklmnopqrstuvwxyza" },
-        /*728*/ { "[7030]004abcdefghijklmnopqrstuvwxyza", 0, "7030004abcdefghijklmnopqrstuvwxyza" },
-        /*729*/ { "[7030]123abcdefghijklmnopqrstuvwxyzab", ZINT_ERROR_INVALID_DATA, "" },
-        /*730*/ { "[7031]123abcdefghijklmnopqrstuvwxyza", ZINT_WARN_NONCOMPLIANT, "7031123abcdefghijklmnopqrstuvwxyza" },
-        /*731*/ { "[7031]004abcdefghijklmnopqrstuvwxyza", 0, "7031004abcdefghijklmnopqrstuvwxyza" },
-        /*732*/ { "[7031]123abcdefghijklmnopqrstuvwxyzab", ZINT_ERROR_INVALID_DATA, "" },
-        /*733*/ { "[7032]004abcdefghijklmnopqrstuvwxyza", 0, "7032004abcdefghijklmnopqrstuvwxyza" },
-        /*734*/ { "[7032]004abcdefghijklmnopqrstuvwxyzab", ZINT_ERROR_INVALID_DATA, "" },
-        /*735*/ { "[7033]004abcdefghijklmnopqrstuvwxyza", 0, "7033004abcdefghijklmnopqrstuvwxyza" },
-        /*736*/ { "[7033]004abcdefghijklmnopqrstuvwxyzab", ZINT_ERROR_INVALID_DATA, "" },
-        /*737*/ { "[7034]004abcdefghijklmnopqrstuvwxyza", 0, "7034004abcdefghijklmnopqrstuvwxyza" },
-        /*738*/ { "[7034]004abcdefghijklmnopqrstuvwxyzab", ZINT_ERROR_INVALID_DATA, "" },
-        /*739*/ { "[7035]004abcdefghijklmnopqrstuvwxyza", 0, "7035004abcdefghijklmnopqrstuvwxyza" },
-        /*740*/ { "[7035]004abcdefghijklmnopqrstuvwxyzab", ZINT_ERROR_INVALID_DATA, "" },
-        /*741*/ { "[7036]004abcdefghijklmnopqrstuvwxyza", 0, "7036004abcdefghijklmnopqrstuvwxyza" },
-        /*742*/ { "[7036]004abcdefghijklmnopqrstuvwxyzab", ZINT_ERROR_INVALID_DATA, "" },
-        /*743*/ { "[7037]004abcdefghijklmnopqrstuvwxyza", 0, "7037004abcdefghijklmnopqrstuvwxyza" },
-        /*744*/ { "[7037]004abcdefghijklmnopqrstuvwxyzab", ZINT_ERROR_INVALID_DATA, "" },
-        /*745*/ { "[7038]004abcdefghijklmnopqrstuvwxyza", 0, "7038004abcdefghijklmnopqrstuvwxyza" },
-        /*746*/ { "[7038]004abcdefghijklmnopqrstuvwxyzab", ZINT_ERROR_INVALID_DATA, "" },
-        /*747*/ { "[7039]004abcdefghijklmnopqrstuvwxyza", 0, "7039004abcdefghijklmnopqrstuvwxyza" },
-        /*748*/ { "[7039]123abcdefghijklmnopqrstuvwxyzab", ZINT_ERROR_INVALID_DATA, "" },
-        /*749*/ { "[7040]1abc", 0, "70401abc" },
-        /*750*/ { "[7040]1ab", ZINT_ERROR_INVALID_DATA, "" },
-        /*751*/ { "[7040]1abcd", ZINT_ERROR_INVALID_DATA, "" },
-        /*752*/ { "[7041]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*753*/ { "[7042]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*754*/ { "[7050]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*755*/ { "[7090]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*756*/ { "[7099]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*757*/ { "[71]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*758*/ { "[710]abcdefghijklmnopqrst", 0, "710abcdefghijklmnopqrst" },
-        /*759*/ { "[710]abcdefghijklmnopqrstu", ZINT_ERROR_INVALID_DATA, "" },
-        /*760*/ { "[7100]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*761*/ { "[711]abcdefghijklmnopqrst", 0, "711abcdefghijklmnopqrst" },
-        /*762*/ { "[711]abcdefghijklmnopqrstu", ZINT_ERROR_INVALID_DATA, "" },
-        /*763*/ { "[712]abcdefghijklmnopqrst", 0, "712abcdefghijklmnopqrst" },
-        /*764*/ { "[712]abcdefghijklmnopqrstu", ZINT_ERROR_INVALID_DATA, "" },
-        /*765*/ { "[713]abcdefghijklmnopqrst", 0, "713abcdefghijklmnopqrst" },
-        /*766*/ { "[713]abcdefghijklmnopqrstu", ZINT_ERROR_INVALID_DATA, "" },
-        /*767*/ { "[714]abcdefghijklmnopqrst", 0, "714abcdefghijklmnopqrst" },
-        /*768*/ { "[714]abcdefghijklmnopqrstu", ZINT_ERROR_INVALID_DATA, "" },
-        /*769*/ { "[715]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*770*/ { "[716]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*771*/ { "[719]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*772*/ { "[72]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*773*/ { "[720]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*774*/ { "[7200]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*775*/ { "[721]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*776*/ { "[7210]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*777*/ { "[7220]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*778*/ { "[7230]EMabcdefghijklmnopqrstuvwxyzab", 0, "7230EMabcdefghijklmnopqrstuvwxyzab" },
-        /*779*/ { "[7230]EMabcdefghijklmnopqrstuvwxyzabc", ZINT_ERROR_INVALID_DATA, "" },
-        /*780*/ { "[7230]EM", ZINT_ERROR_INVALID_DATA, "" },
-        /*781*/ { "[7231]EMabcdefghijklmnopqrstuvwxyzab", 0, "7231EMabcdefghijklmnopqrstuvwxyzab" },
-        /*782*/ { "[7231]EMabcdefghijklmnopqrstuvwxyzabc", ZINT_ERROR_INVALID_DATA, "" },
-        /*783*/ { "[7232]EMabcdefghijklmnopqrstuvwxyzab", 0, "7232EMabcdefghijklmnopqrstuvwxyzab" },
-        /*784*/ { "[7232]EMabcdefghijklmnopqrstuvwxyzabc", ZINT_ERROR_INVALID_DATA, "" },
-        /*785*/ { "[7233]EMabcdefghijklmnopqrstuvwxyzab", 0, "7233EMabcdefghijklmnopqrstuvwxyzab" },
-        /*786*/ { "[7233]EMabcdefghijklmnopqrstuvwxyzabc", ZINT_ERROR_INVALID_DATA, "" },
-        /*787*/ { "[7234]EMabcdefghijklmnopqrstuvwxyzab", 0, "7234EMabcdefghijklmnopqrstuvwxyzab" },
-        /*788*/ { "[7234]EMabcdefghijklmnopqrstuvwxyzabc", ZINT_ERROR_INVALID_DATA, "" },
-        /*789*/ { "[7235]EMabcdefghijklmnopqrstuvwxyzab", 0, "7235EMabcdefghijklmnopqrstuvwxyzab" },
-        /*790*/ { "[7235]EMabcdefghijklmnopqrstuvwxyzabc", ZINT_ERROR_INVALID_DATA, "" },
-        /*791*/ { "[7236]EMabcdefghijklmnopqrstuvwxyzab", 0, "7236EMabcdefghijklmnopqrstuvwxyzab" },
-        /*792*/ { "[7236]EMabcdefghijklmnopqrstuvwxyzabc", ZINT_ERROR_INVALID_DATA, "" },
-        /*793*/ { "[7237]EMabcdefghijklmnopqrstuvwxyzab", 0, "7237EMabcdefghijklmnopqrstuvwxyzab" },
-        /*794*/ { "[7237]EMabcdefghijklmnopqrstuvwxyzabc", ZINT_ERROR_INVALID_DATA, "" },
-        /*795*/ { "[7238]EMabcdefghijklmnopqrstuvwxyzab", 0, "7238EMabcdefghijklmnopqrstuvwxyzab" },
-        /*796*/ { "[7238]EMabcdefghijklmnopqrstuvwxyzabc", ZINT_ERROR_INVALID_DATA, "" },
-        /*797*/ { "[7239]EMabcdefghijklmnopqrstuvwxyzab", 0, "7239EMabcdefghijklmnopqrstuvwxyzab" },
-        /*798*/ { "[7239]EMabcdefghijklmnopqrstuvwxyzabc", ZINT_ERROR_INVALID_DATA, "" },
-        /*799*/ { "[7239]E", ZINT_ERROR_INVALID_DATA, "" },
-        /*800*/ { "[7240]abcdefghijklmnopqrst", 0, "7240abcdefghijklmnopqrst" },
-        /*801*/ { "[7240]abcdefghijklmnopqrstu", ZINT_ERROR_INVALID_DATA, "" },
-        /*802*/ { "[7241]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*803*/ { "[7249]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*804*/ { "[7250]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*805*/ { "[7299]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*806*/ { "[73]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*807*/ { "[7300]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*808*/ { "[74]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*809*/ { "[7400]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*810*/ { "[79]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*811*/ { "[7900]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*812*/ { "[7999]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*813*/ { "[80]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*814*/ { "[800]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*815*/ { "[8000]1234", ZINT_ERROR_INVALID_DATA, "" },
-        /*816*/ { "[8001]12345678901234", ZINT_WARN_NONCOMPLIANT, "800112345678901234" },
-        /*817*/ { "[8001]12345678901204", 0, "800112345678901204" },
-        /*818*/ { "[8001]1234123456789012345", ZINT_ERROR_INVALID_DATA, "" },
-        /*819*/ { "[8002]abcdefghijklmnopqrst", 0, "8002abcdefghijklmnopqrst" },
-        /*820*/ { "[8002]abcdefghijklmnopqrstu", ZINT_ERROR_INVALID_DATA, "" },
-        /*821*/ { "[8003]01234567890123abcdefghijklmnop", ZINT_WARN_NONCOMPLIANT, "800301234567890123abcdefghijklmnop" },
-        /*822*/ { "[8003]01234567890128abcdefghijklmnop", 0, "800301234567890128abcdefghijklmnop" },
-        /*823*/ { "[8003]01234567890128abcdefghijklmnopq", ZINT_ERROR_INVALID_DATA, "" },
-        /*824*/ { "[8004]abcdefghijklmnopqrstuvwxyz1234", ZINT_WARN_NONCOMPLIANT, "8004abcdefghijklmnopqrstuvwxyz1234" },
-        /*825*/ { "[8004]12cdefghijklmnopqrstuvwxyz1234", 0, "800412cdefghijklmnopqrstuvwxyz1234" },
-        /*826*/ { "[8004]abcdefghijklmnopqrstuvwxyz12345", ZINT_ERROR_INVALID_DATA, "" },
-        /*827*/ { "[8005]123456", 0, "8005123456" },
-        /*828*/ { "[8005]12345", ZINT_ERROR_INVALID_DATA, "" },
-        /*829*/ { "[8005]1234567", ZINT_ERROR_INVALID_DATA, "" },
-        /*830*/ { "[8006]123456789012341212", ZINT_WARN_NONCOMPLIANT, "8006123456789012341212" },
-        /*831*/ { "[8006]123456789012311212", 0, "8006123456789012311212" },
-        /*832*/ { "[8006]12345678901234121", ZINT_ERROR_INVALID_DATA, "" },
-        /*833*/ { "[8006]1234567890123412123", ZINT_ERROR_INVALID_DATA, "" },
-        /*834*/ { "[8007]abcdefghijklmnopqrstuvwxyz12345678", ZINT_WARN_NONCOMPLIANT, "8007abcdefghijklmnopqrstuvwxyz12345678" },
-        /*835*/ { "[8007]AD95EFGHIJKLMNOPQRSTUVWXYZ12345678", 0, "8007AD95EFGHIJKLMNOPQRSTUVWXYZ12345678" },
-        /*836*/ { "[8007]AD95EFGHIJKLMNOPQRSTUVWXYZ123456789", ZINT_ERROR_INVALID_DATA, "" },
-        /*837*/ { "[8008]123456121212", ZINT_WARN_NONCOMPLIANT, "8008123456121212" },
-        /*838*/ { "[8008]121256121212", ZINT_WARN_NONCOMPLIANT, "8008121256121212" },
-        /*839*/ { "[8008]121231121212", 0, "8008121231121212" },
-        /*840*/ { "[8008]1234561212", ZINT_WARN_NONCOMPLIANT, "80081234561212" },
-        /*841*/ { "[8008]1212311212", 0, "80081212311212" },
-        /*842*/ { "[8008]12345612", ZINT_WARN_NONCOMPLIANT, "800812345612" },
-        /*843*/ { "[8008]12010112", 0, "800812010112" },
-        /*844*/ { "[8008]1234561", ZINT_ERROR_INVALID_DATA, "" },
-        /*845*/ { "[8008]123456121", ZINT_ERROR_INVALID_DATA, "" },
-        /*846*/ { "[8008]12345612121", ZINT_ERROR_INVALID_DATA, "" },
-        /*847*/ { "[8008]1234561212123", ZINT_ERROR_INVALID_DATA, "" },
-        /*848*/ { "[8009]12345678901234567890123456789012345678901234567890", 0, "800912345678901234567890123456789012345678901234567890" },
-        /*849*/ { "[8009]123456789012345678901234567890123456789012345678901", ZINT_ERROR_INVALID_DATA, "" },
-        /*850*/ { "[8010]1234abcdefghijklmnopqrstuvwxyz1", ZINT_ERROR_INVALID_DATA, "" },
-        /*851*/ { "[8011]123456789012", 0, "8011123456789012" },
-        /*852*/ { "[8011]1234567890123", ZINT_ERROR_INVALID_DATA, "" },
-        /*853*/ { "[8012]abcdefghijklmnopqrst", 0, "8012abcdefghijklmnopqrst" },
-        /*854*/ { "[8012]abcdefghijklmnopqrstuv", ZINT_ERROR_INVALID_DATA, "" },
-        /*855*/ { "[8013]1234abcdefghijklmnopqrsQP", 0, "80131234abcdefghijklmnopqrsQP" },
+        /* 12*/ { "[00]1234567890123456789", ZINT_ERROR_INVALID_DATA, "" },
+        /* 13*/ { "[00]376104250021234569", 0, "00376104250021234569" },
+        /* 14*/ { "[00]376104250021234568", ZINT_WARN_NONCOMPLIANT, "00376104250021234568" },
+        /* 15*/ { "[01]12345678901234", ZINT_WARN_NONCOMPLIANT, "0112345678901234" },
+        /* 16*/ { "[01]12345678901231", 0, "0112345678901231" },
+        /* 17*/ { "[01]123456789012345", ZINT_ERROR_INVALID_DATA, "" },
+        /* 18*/ { "[02]12345678901234", ZINT_WARN_NONCOMPLIANT, "0212345678901234" },
+        /* 19*/ { "[02]12345678901231", 0, "0212345678901231" },
+        /* 20*/ { "[02]1234567890123", ZINT_ERROR_INVALID_DATA, "" },
+        /* 21*/ { "[03]12345678901234", ZINT_ERROR_INVALID_DATA, "" },
+        /* 22*/ { "[04]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /* 23*/ { "[05]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /* 24*/ { "[06]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /* 25*/ { "[07]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /* 26*/ { "[08]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /* 27*/ { "[09]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /* 28*/ { "[10]ABCD123456", 0, "10ABCD123456" },
+        /* 29*/ { "[10]123456789012345678901", ZINT_ERROR_INVALID_DATA, "" },
+        /* 30*/ { "[100]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /* 31*/ { "[1000]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /* 32*/ { "[11]990102", 0, "11990102" },
+        /* 33*/ { "[11]9901023", ZINT_ERROR_INVALID_DATA, "" },
+        /* 34*/ { "[110]990102", ZINT_ERROR_INVALID_DATA, "" },
+        /* 35*/ { "[1100]990102", ZINT_ERROR_INVALID_DATA, "" },
+        /* 36*/ { "[12]000100", 0, "12000100" },
+        /* 37*/ { "[12]00010", ZINT_ERROR_INVALID_DATA, "" },
+        /* 38*/ { "[120]000100", ZINT_ERROR_INVALID_DATA, "" },
+        /* 39*/ { "[1200]000100", ZINT_ERROR_INVALID_DATA, "" },
+        /* 40*/ { "[13]991301", ZINT_WARN_NONCOMPLIANT, "13991301" },
+        /* 41*/ { "[13]991201", 0, "13991201" },
+        /* 42*/ { "[13]9913011", ZINT_ERROR_INVALID_DATA, "" },
+        /* 43*/ { "[130]991301", ZINT_ERROR_INVALID_DATA, "" },
+        /* 44*/ { "[1300]991301", ZINT_ERROR_INVALID_DATA, "" },
+        /* 45*/ { "[14]991201", ZINT_ERROR_INVALID_DATA, "" },
+        /* 46*/ { "[140]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /* 47*/ { "[1400]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /* 48*/ { "[15]021231", 0, "15021231" },
+        /* 49*/ { "[15]02123", ZINT_ERROR_INVALID_DATA, "" },
+        /* 50*/ { "[150]021231", ZINT_ERROR_INVALID_DATA, "" },
+        /* 51*/ { "[1500]021231", ZINT_ERROR_INVALID_DATA, "" },
+        /* 52*/ { "[16]000000", ZINT_WARN_NONCOMPLIANT, "16000000" },
+        /* 53*/ { "[16]000100", 0, "16000100" },
+        /* 54*/ { "[16]00000", ZINT_ERROR_INVALID_DATA, "" },
+        /* 55*/ { "[160]000000", ZINT_ERROR_INVALID_DATA, "" },
+        /* 56*/ { "[1600]000000", ZINT_ERROR_INVALID_DATA, "" },
+        /* 57*/ { "[17]010200", 0, "17010200" },
+        /* 58*/ { "[17]0102000", ZINT_ERROR_INVALID_DATA, "" },
+        /* 59*/ { "[170]010200", ZINT_ERROR_INVALID_DATA, "" },
+        /* 60*/ { "[1700]010200", ZINT_ERROR_INVALID_DATA, "" },
+        /* 61*/ { "[18]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /* 62*/ { "[180]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /* 63*/ { "[1800]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /* 64*/ { "[19]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /* 65*/ { "[190]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /* 66*/ { "[1900]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /* 67*/ { "[20]12", 0, "2012" },
+        /* 68*/ { "[20]1", ZINT_ERROR_INVALID_DATA, "" },
+        /* 69*/ { "[200]12", ZINT_ERROR_INVALID_DATA, "" },
+        /* 70*/ { "[2000]12", ZINT_ERROR_INVALID_DATA, "" },
+        /* 71*/ { "[21]A12345678", 0, "21A12345678" },
+        /* 72*/ { "[21]123456789012345678901", ZINT_ERROR_INVALID_DATA, "" },
+        /* 73*/ { "[210]A12345678", ZINT_ERROR_INVALID_DATA, "" },
+        /* 74*/ { "[2100]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /* 75*/ { "[22]abcdefghijklmnopqrst", 0, "22abcdefghijklmnopqrst" },
+        /* 76*/ { "[22]abcdefghijklmnopqrstu", ZINT_ERROR_INVALID_DATA, "" },
+        /* 77*/ { "[220]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /* 78*/ { "[2200]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /* 79*/ { "[23]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /* 80*/ { "[230]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /* 81*/ { "[2300]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /* 82*/ { "[235]1abcdefghijklmnopqrstuvwxyz0", 0, "2351abcdefghijklmnopqrstuvwxyz0" },
+        /* 83*/ { "[235]1abcdefghijklmnopqrstuvwxyz01", ZINT_ERROR_INVALID_DATA, "" },
+        /* 84*/ { "[24]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /* 85*/ { "[240]abcdefghijklmnopqrstuvwxyz1234", 0, "240abcdefghijklmnopqrstuvwxyz1234" },
+        /* 86*/ { "[240]abcdefghijklmnopqrstuvwxyz12345", ZINT_ERROR_INVALID_DATA, "" },
+        /* 87*/ { "[2400]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /* 88*/ { "[241]abcdefghijklmnopqrstuvwxyz1234", 0, "241abcdefghijklmnopqrstuvwxyz1234" },
+        /* 89*/ { "[241]abcdefghijklmnopqrstuvwxyz12345", ZINT_ERROR_INVALID_DATA, "" },
+        /* 90*/ { "[2410]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /* 91*/ { "[242]12345", 0, "24212345" },
+        /* 92*/ { "[242]1234567", ZINT_ERROR_INVALID_DATA, "" },
+        /* 93*/ { "[2420]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /* 94*/ { "[243]abcdefghijklmnopqrst", 0, "243abcdefghijklmnopqrst" },
+        /* 95*/ { "[243]abcdefghijklmnopqrstu", ZINT_ERROR_INVALID_DATA, "" },
+        /* 96*/ { "[2430]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /* 97*/ { "[244]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /* 98*/ { "[2440]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /* 99*/ { "[249]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*100*/ { "[2490]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*101*/ { "[25]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*102*/ { "[250]abcdefghijklmnopqrstuvwxyz1234", 0, "250abcdefghijklmnopqrstuvwxyz1234" },
+        /*103*/ { "[250]abcdefghijklmnopqrstuvwxyz12345", ZINT_ERROR_INVALID_DATA, "" },
+        /*104*/ { "[2500]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*105*/ { "[251]abcdefghijklmnopqrstuvwxyz1234", 0, "251abcdefghijklmnopqrstuvwxyz1234" },
+        /*106*/ { "[251]abcdefghijklmnopqrstuvwxyz12345", ZINT_ERROR_INVALID_DATA, "" },
+        /*107*/ { "[2510]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*108*/ { "[252]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*109*/ { "[2520]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*110*/ { "[253]131313131313", ZINT_ERROR_INVALID_DATA, "" },
+        /*111*/ { "[253]1313131313134", ZINT_WARN_NONCOMPLIANT, "2531313131313134" },
+        /*112*/ { "[253]1313131313130", 0, "2531313131313130" },
+        /*113*/ { "[253]131313131313412345678901234567", ZINT_WARN_NONCOMPLIANT, "253131313131313412345678901234567" },
+        /*114*/ { "[253]131313131313012345678901234567", 0, "253131313131313012345678901234567" },
+        /*115*/ { "[253]1313131313134123456789012345678", ZINT_ERROR_INVALID_DATA, "" },
+        /*116*/ { "[2530]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*117*/ { "[254]abcdefghijklmnopqrst", 0, "254abcdefghijklmnopqrst" },
+        /*118*/ { "[254]abcdefghijklmnopqrstu", ZINT_ERROR_INVALID_DATA, "" },
+        /*119*/ { "[2540]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*120*/ { "[255]131313131313", ZINT_ERROR_INVALID_DATA, "" },
+        /*121*/ { "[255]1313131313134", ZINT_WARN_NONCOMPLIANT, "2551313131313134" },
+        /*122*/ { "[255]1313131313130", 0, "2551313131313130" },
+        /*123*/ { "[255]1313131313134123456789012", ZINT_WARN_NONCOMPLIANT, "2551313131313134123456789012" },
+        /*124*/ { "[255]1313131313130123456789012", 0, "2551313131313130123456789012" },
+        /*125*/ { "[255]13131313131341234567890123", ZINT_ERROR_INVALID_DATA, "" },
+        /*126*/ { "[2550]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*127*/ { "[256]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*128*/ { "[2560]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*129*/ { "[259]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*130*/ { "[2590]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*131*/ { "[26]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*132*/ { "[260]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*133*/ { "[2600]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*134*/ { "[27]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*135*/ { "[270]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*136*/ { "[2700]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*137*/ { "[28]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*138*/ { "[280]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*139*/ { "[2800]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*140*/ { "[29]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*141*/ { "[290]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*142*/ { "[2900]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*143*/ { "[30]12345678", 0, "3012345678" },
+        /*144*/ { "[30]123456789", ZINT_ERROR_INVALID_DATA, "" },
+        /*145*/ { "[300]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*146*/ { "[3000]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*147*/ { "[31]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*148*/ { "[310]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*149*/ { "[3100]123456", 0, "3100123456" },
+        /*150*/ { "[3100]12345", ZINT_ERROR_INVALID_DATA, "" },
+        /*151*/ { "[3101]123456", 0, "3101123456" },
+        /*152*/ { "[3101]12345", ZINT_ERROR_INVALID_DATA, "" },
+        /*153*/ { "[3105]123456", 0, "3105123456" },
+        /*154*/ { "[3105]12345", ZINT_ERROR_INVALID_DATA, "" },
+        /*155*/ { "[3106]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*156*/ { "[3109]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*157*/ { "[3110]123456", 0, "3110123456" },
+        /*158*/ { "[3110]12345", ZINT_ERROR_INVALID_DATA, "" },
+        /*159*/ { "[3115]123456", 0, "3115123456" },
+        /*160*/ { "[3115]12345", ZINT_ERROR_INVALID_DATA, "" },
+        /*161*/ { "[3116]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*162*/ { "[3119]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*163*/ { "[3120]123456", 0, "3120123456" },
+        /*164*/ { "[3120]1234567", ZINT_ERROR_INVALID_DATA, "" },
+        /*165*/ { "[3125]123456", 0, "3125123456" },
+        /*166*/ { "[3125]1234567", ZINT_ERROR_INVALID_DATA, "" },
+        /*167*/ { "[3126]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*168*/ { "[3129]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*169*/ { "[3130]123456", 0, "3130123456" },
+        /*170*/ { "[3130]1234567", ZINT_ERROR_INVALID_DATA, "" },
+        /*171*/ { "[3135]123456", 0, "3135123456" },
+        /*172*/ { "[3135]1234567", ZINT_ERROR_INVALID_DATA, "" },
+        /*173*/ { "[3136]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*174*/ { "[3139]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*175*/ { "[3140]123456", 0, "3140123456" },
+        /*176*/ { "[3140]1234567", ZINT_ERROR_INVALID_DATA, "" },
+        /*177*/ { "[3145]123456", 0, "3145123456" },
+        /*178*/ { "[3145]1234567", ZINT_ERROR_INVALID_DATA, "" },
+        /*179*/ { "[3146]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*180*/ { "[3149]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*181*/ { "[3150]123456", 0, "3150123456" },
+        /*182*/ { "[3150]1234567", ZINT_ERROR_INVALID_DATA, "" },
+        /*183*/ { "[3155]123456", 0, "3155123456" },
+        /*184*/ { "[3155]1234567", ZINT_ERROR_INVALID_DATA, "" },
+        /*185*/ { "[3156]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*186*/ { "[3159]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*187*/ { "[3160]123456", 0, "3160123456" },
+        /*188*/ { "[3160]1234567", ZINT_ERROR_INVALID_DATA, "" },
+        /*189*/ { "[3165]123456", 0, "3165123456" },
+        /*190*/ { "[3165]1234567", ZINT_ERROR_INVALID_DATA, "" },
+        /*191*/ { "[3166]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*192*/ { "[3169]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*193*/ { "[3170]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*194*/ { "[3179]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*195*/ { "[3180]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*196*/ { "[3189]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*197*/ { "[3190]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*198*/ { "[3199]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*199*/ { "[32]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*200*/ { "[320]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*201*/ { "[3200]123456", 0, "3200123456" },
+        /*202*/ { "[3200]1234567", ZINT_ERROR_INVALID_DATA, "" },
+        /*203*/ { "[3205]123456", 0, "3205123456" },
+        /*204*/ { "[3205]1234567", ZINT_ERROR_INVALID_DATA, "" },
+        /*205*/ { "[3206]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*206*/ { "[3209]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*207*/ { "[3210]123456", 0, "3210123456" },
+        /*208*/ { "[3210]1234567", ZINT_ERROR_INVALID_DATA, "" },
+        /*209*/ { "[3215]123456", 0, "3215123456" },
+        /*210*/ { "[3215]1234567", ZINT_ERROR_INVALID_DATA, "" },
+        /*211*/ { "[3216]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*212*/ { "[3219]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*213*/ { "[3220]123456", 0, "3220123456" },
+        /*214*/ { "[3220]1234567", ZINT_ERROR_INVALID_DATA, "" },
+        /*215*/ { "[3225]123456", 0, "3225123456" },
+        /*216*/ { "[3225]1234567", ZINT_ERROR_INVALID_DATA, "" },
+        /*217*/ { "[3229]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*218*/ { "[3230]123456", 0, "3230123456" },
+        /*219*/ { "[3230]1234567", ZINT_ERROR_INVALID_DATA, "" },
+        /*220*/ { "[3235]123456", 0, "3235123456" },
+        /*221*/ { "[3235]1234567", ZINT_ERROR_INVALID_DATA, "" },
+        /*222*/ { "[3239]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*223*/ { "[3240]123456", 0, "3240123456" },
+        /*224*/ { "[3240]1234567", ZINT_ERROR_INVALID_DATA, "" },
+        /*225*/ { "[3245]123456", 0, "3245123456" },
+        /*226*/ { "[3245]1234567", ZINT_ERROR_INVALID_DATA, "" },
+        /*227*/ { "[3249]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*228*/ { "[3250]123456", 0, "3250123456" },
+        /*229*/ { "[3250]1234567", ZINT_ERROR_INVALID_DATA, "" },
+        /*230*/ { "[3255]123456", 0, "3255123456" },
+        /*231*/ { "[3255]1234567", ZINT_ERROR_INVALID_DATA, "" },
+        /*232*/ { "[3259]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*233*/ { "[3260]123456", 0, "3260123456" },
+        /*234*/ { "[3260]1234567", ZINT_ERROR_INVALID_DATA, "" },
+        /*235*/ { "[3265]123456", 0, "3265123456" },
+        /*236*/ { "[3265]1234567", ZINT_ERROR_INVALID_DATA, "" },
+        /*237*/ { "[3269]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*238*/ { "[3270]123456", 0, "3270123456" },
+        /*239*/ { "[3270]1234567", ZINT_ERROR_INVALID_DATA, "" },
+        /*240*/ { "[3275]123456", 0, "3275123456" },
+        /*241*/ { "[3275]1234567", ZINT_ERROR_INVALID_DATA, "" },
+        /*242*/ { "[3279]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*243*/ { "[3280]123456", 0, "3280123456" },
+        /*244*/ { "[3280]1234567", ZINT_ERROR_INVALID_DATA, "" },
+        /*245*/ { "[3285]123456", 0, "3285123456" },
+        /*246*/ { "[3285]1234567", ZINT_ERROR_INVALID_DATA, "" },
+        /*247*/ { "[3289]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*248*/ { "[3290]123456", 0, "3290123456" },
+        /*249*/ { "[3290]1234567", ZINT_ERROR_INVALID_DATA, "" },
+        /*250*/ { "[3295]123456", 0, "3295123456" },
+        /*251*/ { "[3295]1234567", ZINT_ERROR_INVALID_DATA, "" },
+        /*252*/ { "[3296]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*253*/ { "[3299]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*254*/ { "[33]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*255*/ { "[330]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*256*/ { "[3300]123456", 0, "3300123456" },
+        /*257*/ { "[3300]1234567", ZINT_ERROR_INVALID_DATA, "" },
+        /*258*/ { "[3305]123456", 0, "3305123456" },
+        /*259*/ { "[3305]1234567", ZINT_ERROR_INVALID_DATA, "" },
+        /*260*/ { "[3306]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*261*/ { "[3309]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*262*/ { "[3310]123456", 0, "3310123456" },
+        /*263*/ { "[3310]1234567", ZINT_ERROR_INVALID_DATA, "" },
+        /*264*/ { "[3319]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*265*/ { "[3320]123456", 0, "3320123456" },
+        /*266*/ { "[3320]1234567", ZINT_ERROR_INVALID_DATA, "" },
+        /*267*/ { "[3329]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*268*/ { "[3330]123456", 0, "3330123456" },
+        /*269*/ { "[3330]1234567", ZINT_ERROR_INVALID_DATA, "" },
+        /*270*/ { "[3339]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*271*/ { "[3340]123456", 0, "3340123456" },
+        /*272*/ { "[3340]1234567", ZINT_ERROR_INVALID_DATA, "" },
+        /*273*/ { "[3349]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*274*/ { "[3350]123456", 0, "3350123456" },
+        /*275*/ { "[3350]1234567", ZINT_ERROR_INVALID_DATA, "" },
+        /*276*/ { "[3359]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*277*/ { "[3360]123456", 0, "3360123456" },
+        /*278*/ { "[3360]1234567", ZINT_ERROR_INVALID_DATA, "" },
+        /*279*/ { "[3369]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*280*/ { "[3370]123456", 0, "3370123456" },
+        /*281*/ { "[3370]1234567", ZINT_ERROR_INVALID_DATA, "" },
+        /*282*/ { "[3375]123456", 0, "3375123456" },
+        /*283*/ { "[3375]1234567", ZINT_ERROR_INVALID_DATA, "" },
+        /*284*/ { "[3376]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*285*/ { "[3379]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*286*/ { "[3380]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*287*/ { "[3390]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*288*/ { "[3399]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*289*/ { "[34]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*290*/ { "[340]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*291*/ { "[3400]123456", 0, "3400123456" },
+        /*292*/ { "[3400]12345", ZINT_ERROR_INVALID_DATA, "" },
+        /*293*/ { "[3405]123456", 0, "3405123456" },
+        /*294*/ { "[3405]12345", ZINT_ERROR_INVALID_DATA, "" },
+        /*295*/ { "[3406]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*296*/ { "[3409]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*297*/ { "[3410]123456", 0, "3410123456" },
+        /*298*/ { "[3410]12345", ZINT_ERROR_INVALID_DATA, "" },
+        /*299*/ { "[3419]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*300*/ { "[3420]123456", 0, "3420123456" },
+        /*301*/ { "[3420]12345", ZINT_ERROR_INVALID_DATA, "" },
+        /*302*/ { "[3429]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*303*/ { "[3430]123456", 0, "3430123456" },
+        /*304*/ { "[3430]12345", ZINT_ERROR_INVALID_DATA, "" },
+        /*305*/ { "[3439]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*306*/ { "[3440]123456", 0, "3440123456" },
+        /*307*/ { "[3440]12345", ZINT_ERROR_INVALID_DATA, "" },
+        /*308*/ { "[3449]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*309*/ { "[3450]123456", 0, "3450123456" },
+        /*310*/ { "[3450]12345", ZINT_ERROR_INVALID_DATA, "" },
+        /*311*/ { "[3459]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*312*/ { "[3460]123456", 0, "3460123456" },
+        /*313*/ { "[3460]12345", ZINT_ERROR_INVALID_DATA, "" },
+        /*314*/ { "[3469]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*315*/ { "[3470]123456", 0, "3470123456" },
+        /*316*/ { "[3470]12345", ZINT_ERROR_INVALID_DATA, "" },
+        /*317*/ { "[3479]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*318*/ { "[3480]123456", 0, "3480123456" },
+        /*319*/ { "[3480]12345", ZINT_ERROR_INVALID_DATA, "" },
+        /*320*/ { "[3489]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*321*/ { "[3490]123456", 0, "3490123456" },
+        /*322*/ { "[3490]12345", ZINT_ERROR_INVALID_DATA, "" },
+        /*323*/ { "[3495]123456", 0, "3495123456" },
+        /*324*/ { "[3495]12345", ZINT_ERROR_INVALID_DATA, "" },
+        /*325*/ { "[3496]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*326*/ { "[3499]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*327*/ { "[35]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*328*/ { "[350]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*329*/ { "[3500]123456", 0, "3500123456" },
+        /*330*/ { "[3500]1234567", ZINT_ERROR_INVALID_DATA, "" },
+        /*331*/ { "[3505]123456", 0, "3505123456" },
+        /*332*/ { "[3505]1234567", ZINT_ERROR_INVALID_DATA, "" },
+        /*333*/ { "[3506]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*334*/ { "[3509]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*335*/ { "[3510]123456", 0, "3510123456", },
+        /*336*/ { "[3510]1234567", ZINT_ERROR_INVALID_DATA, "" },
+        /*337*/ { "[3519]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*338*/ { "[3520]123456", 0, "3520123456", },
+        /*339*/ { "[3520]1234567", ZINT_ERROR_INVALID_DATA, "" },
+        /*340*/ { "[3529]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*341*/ { "[3530]123456", 0, "3530123456", },
+        /*342*/ { "[3530]1234567", ZINT_ERROR_INVALID_DATA, "" },
+        /*343*/ { "[3539]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*344*/ { "[3540]123456", 0, "3540123456", },
+        /*345*/ { "[3540]1234567", ZINT_ERROR_INVALID_DATA, "" },
+        /*346*/ { "[3549]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*347*/ { "[3550]123456", 0, "3550123456", },
+        /*348*/ { "[3550]1234567", ZINT_ERROR_INVALID_DATA, "" },
+        /*349*/ { "[3559]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*350*/ { "[3560]123456", 0, "3560123456", },
+        /*351*/ { "[3560]1234567", ZINT_ERROR_INVALID_DATA, "" },
+        /*352*/ { "[3569]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*353*/ { "[3570]123456", 0, "3570123456", },
+        /*354*/ { "[3570]1234567", ZINT_ERROR_INVALID_DATA, "" },
+        /*355*/ { "[3575]123456", 0, "3575123456" },
+        /*356*/ { "[3376]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*357*/ { "[3579]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*358*/ { "[3580]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*359*/ { "[3590]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*360*/ { "[3599]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*361*/ { "[36]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*362*/ { "[360]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*363*/ { "[3600]123456", 0, "3600123456" },
+        /*364*/ { "[3600]12345", ZINT_ERROR_INVALID_DATA, "" },
+        /*365*/ { "[3605]123456", 0, "3605123456" },
+        /*366*/ { "[3605]12345", ZINT_ERROR_INVALID_DATA, "" },
+        /*367*/ { "[3606]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*368*/ { "[3609]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*369*/ { "[3610]123456", 0, "3610123456" },
+        /*370*/ { "[3610]12345", ZINT_ERROR_INVALID_DATA, "" },
+        /*371*/ { "[3619]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*372*/ { "[3620]123456", 0, "3620123456", },
+        /*373*/ { "[3620]12345", ZINT_ERROR_INVALID_DATA, "" },
+        /*374*/ { "[3629]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*375*/ { "[3630]123456", 0, "3630123456", },
+        /*376*/ { "[3630]12345", ZINT_ERROR_INVALID_DATA, "" },
+        /*377*/ { "[3639]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*378*/ { "[3640]123456", 0, "3640123456", },
+        /*379*/ { "[3640]12345", ZINT_ERROR_INVALID_DATA, "" },
+        /*380*/ { "[3649]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*381*/ { "[3650]123456", 0, "3650123456", },
+        /*382*/ { "[3650]12345", ZINT_ERROR_INVALID_DATA, "" },
+        /*383*/ { "[3659]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*384*/ { "[3660]123456", 0, "3660123456", },
+        /*385*/ { "[3660]12345", ZINT_ERROR_INVALID_DATA, "" },
+        /*386*/ { "[3669]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*387*/ { "[3670]123456", 0, "3670123456", },
+        /*388*/ { "[3670]12345", ZINT_ERROR_INVALID_DATA, "" },
+        /*389*/ { "[3679]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*390*/ { "[3680]123456", 0, "3680123456", },
+        /*391*/ { "[3680]12345", ZINT_ERROR_INVALID_DATA, "" },
+        /*392*/ { "[3689]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*393*/ { "[3690]123456", 0, "3690123456" },
+        /*394*/ { "[3690]12345", ZINT_ERROR_INVALID_DATA, "" },
+        /*395*/ { "[3695]123456", 0, "3695123456" },
+        /*396*/ { "[3695]12345", ZINT_ERROR_INVALID_DATA, "" },
+        /*397*/ { "[3696]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*398*/ { "[3699]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*399*/ { "[37]12345678", 0, "3712345678" },
+        /*400*/ { "[37]123456789", ZINT_ERROR_INVALID_DATA, "" },
+        /*401*/ { "[370]12345678", ZINT_ERROR_INVALID_DATA, "" },
+        /*402*/ { "[3700]12345678", ZINT_ERROR_INVALID_DATA, "" },
+        /*403*/ { "[38]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*404*/ { "[380]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*405*/ { "[3800]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*406*/ { "[39]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*407*/ { "[390]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*408*/ { "[3900]123456789012345", 0, "3900123456789012345" },
+        /*409*/ { "[3900]1234567890123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*410*/ { "[3900]12345678901234", 0, "390012345678901234" },
+        /*411*/ { "[3901]123456789012345", 0, "3901123456789012345" },
+        /*412*/ { "[3901]1234567890123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*413*/ { "[3905]123456789012345", 0, "3905123456789012345" },
+        /*414*/ { "[3909]123456789012345", 0, "3909123456789012345" },
+        /*415*/ { "[3909]1234567890123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*416*/ { "[3910]123123456789012345", ZINT_WARN_NONCOMPLIANT, "3910123123456789012345" },
+        /*417*/ { "[3910]997123456789012345", 0, "3910997123456789012345" },
+        /*418*/ { "[3910]1231234567890123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*419*/ { "[3910]123", ZINT_ERROR_INVALID_DATA, "" },
+        /*420*/ { "[3915]123123456789012345", ZINT_WARN_NONCOMPLIANT, "3915123123456789012345" },
+        /*421*/ { "[3915]997123456789012345", 0, "3915997123456789012345" },
+        /*422*/ { "[3915]1231234567890123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*423*/ { "[3919]123123456789012345", ZINT_WARN_NONCOMPLIANT, "3919123123456789012345" },
+        /*424*/ { "[3919]997123456789012345", 0, "3919997123456789012345" },
+        /*425*/ { "[3919]1231234567890123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*426*/ { "[3920]123456789012345", 0, "3920123456789012345" },
+        /*427*/ { "[3920]1234567890123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*428*/ { "[3925]123456789012345", 0, "3925123456789012345" },
+        /*429*/ { "[3925]1234567890123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*430*/ { "[3929]123456789012345", 0, "3929123456789012345" },
+        /*431*/ { "[3929]1234567890123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*432*/ { "[3930]123123456789012345", ZINT_WARN_NONCOMPLIANT, "3930123123456789012345" },
+        /*433*/ { "[3930]997123456789012345", 0, "3930997123456789012345" },
+        /*434*/ { "[3930]1231234567890123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*435*/ { "[3930]123", ZINT_ERROR_INVALID_DATA, "" },
+        /*436*/ { "[3935]123123456789012345", ZINT_WARN_NONCOMPLIANT, "3935123123456789012345" },
+        /*437*/ { "[3935]997123456789012345", 0, "3935997123456789012345" },
+        /*438*/ { "[3935]1231234567890123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*439*/ { "[3939]123123456789012345", ZINT_WARN_NONCOMPLIANT, "3939123123456789012345" },
+        /*440*/ { "[3939]997123456789012345", 0, "3939997123456789012345" },
+        /*441*/ { "[3939]1231234567890123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*442*/ { "[3940]1234", 0, "39401234" },
+        /*443*/ { "[3940]12345", ZINT_ERROR_INVALID_DATA, "" },
+        /*444*/ { "[3940]123", ZINT_ERROR_INVALID_DATA, "" },
+        /*445*/ { "[3941]1234", 0, "39411234" },
+        /*446*/ { "[3941]12345", ZINT_ERROR_INVALID_DATA, "" },
+        /*447*/ { "[3941]123", ZINT_ERROR_INVALID_DATA, "" },
+        /*448*/ { "[3942]1234", 0, "39421234" },
+        /*449*/ { "[3942]12345", ZINT_ERROR_INVALID_DATA, "" },
+        /*450*/ { "[3943]1234", 0, "39431234" },
+        /*451*/ { "[3943]123", ZINT_ERROR_INVALID_DATA, "" },
+        /*452*/ { "[3944]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*453*/ { "[3945]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*454*/ { "[3949]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*455*/ { "[3950]123456", 0, "3950123456" },
+        /*456*/ { "[3950]1234567", ZINT_ERROR_INVALID_DATA, "" },
+        /*457*/ { "[3950]12345", ZINT_ERROR_INVALID_DATA, "" },
+        /*458*/ { "[3951]123456", 0, "3951123456" },
+        /*459*/ { "[3951]1234567", ZINT_ERROR_INVALID_DATA, "" },
+        /*460*/ { "[3952]123456", 0, "3952123456" },
+        /*461*/ { "[3952]1234567", ZINT_ERROR_INVALID_DATA, "" },
+        /*462*/ { "[3953]123456", 0, "3953123456" },
+        /*463*/ { "[3953]1234567", ZINT_ERROR_INVALID_DATA, "" },
+        /*464*/ { "[3954]123456", 0, "3954123456" },
+        /*465*/ { "[3954]1234567", ZINT_ERROR_INVALID_DATA, "" },
+        /*466*/ { "[3955]123456", 0, "3955123456" },
+        /*467*/ { "[3955]1234567", ZINT_ERROR_INVALID_DATA, "" },
+        /*468*/ { "[3956]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*469*/ { "[3959]123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*470*/ { "[3960]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*471*/ { "[3970]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*472*/ { "[3980]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*473*/ { "[3999]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*474*/ { "[40]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*475*/ { "[400]123456789012345678901234567890", 0, "400123456789012345678901234567890" },
+        /*476*/ { "[400]1234567890123456789012345678901", ZINT_ERROR_INVALID_DATA, "" },
+        /*477*/ { "[4000]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*478*/ { "[401]1234abcdefghijklmnopqrstuvwxyz", 0, "4011234abcdefghijklmnopqrstuvwxyz" },
+        /*479*/ { "[401]1234abcdefghijklmnopqrstuvwxyz1", ZINT_ERROR_INVALID_DATA, "" },
+        /*480*/ { "[4010]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*481*/ { "[402]13131313131313132", ZINT_WARN_NONCOMPLIANT, "40213131313131313132" },
+        /*482*/ { "[402]13131313131313130", 0, "40213131313131313130" },
+        /*483*/ { "[402]1313131313131313", ZINT_ERROR_INVALID_DATA, "" },
+        /*484*/ { "[4020]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*485*/ { "[403]abcdefghijklmnopqrstuvwxyz1234", 0, "403abcdefghijklmnopqrstuvwxyz1234" },
+        /*486*/ { "[403]abcdefghijklmnopqrstuvwxyz12345", ZINT_ERROR_INVALID_DATA, "" },
+        /*487*/ { "[4030]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*488*/ { "[404]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*489*/ { "[4040]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*490*/ { "[409]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*491*/ { "[4090]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*492*/ { "[41]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*493*/ { "[410]3898765432108", 0, "4103898765432108" },
+        /*494*/ { "[410]12345678901234", ZINT_ERROR_INVALID_DATA, "" },
+        /*495*/ { "[4100]12345678901234", ZINT_ERROR_INVALID_DATA, "" },
+        /*496*/ { "[411]1313131313134", ZINT_WARN_NONCOMPLIANT, "4111313131313134" },
+        /*497*/ { "[411]1313131313130", 0, "4111313131313130" },
+        /*498*/ { "[411]13131313131", ZINT_ERROR_INVALID_DATA, "" },
+        /*499*/ { "[4110]1313131313134", ZINT_ERROR_INVALID_DATA, "" },
+        /*500*/ { "[412]1313131313130", 0, "4121313131313130" },
+        /*501*/ { "[412]13131313131", ZINT_ERROR_INVALID_DATA, "" },
+        /*502*/ { "[4120]1313131313134", ZINT_ERROR_INVALID_DATA, "" },
+        /*503*/ { "[413]1313131313130", 0, "4131313131313130" },
+        /*504*/ { "[413]13131313131", ZINT_ERROR_INVALID_DATA, "" },
+        /*505*/ { "[4130]1313131313134", ZINT_ERROR_INVALID_DATA, "" },
+        /*506*/ { "[414]1313131313130", 0, "4141313131313130" },
+        /*507*/ { "[414]13131313131", ZINT_ERROR_INVALID_DATA, "" },
+        /*508*/ { "[4140]1313131313134", ZINT_ERROR_INVALID_DATA, "" },
+        /*509*/ { "[415]1313131313130", 0, "4151313131313130" },
+        /*510*/ { "[415]13131313131", ZINT_ERROR_INVALID_DATA, "" },
+        /*511*/ { "[4150]1313131313134", ZINT_ERROR_INVALID_DATA, "" },
+        /*512*/ { "[416]1313131313130", 0, "4161313131313130" },
+        /*513*/ { "[416]13131313131", ZINT_ERROR_INVALID_DATA, "" },
+        /*514*/ { "[4160]1313131313134", ZINT_ERROR_INVALID_DATA, "" },
+        /*515*/ { "[417]1313131313130", 0, "4171313131313130" },
+        /*516*/ { "[417]13131313131", ZINT_ERROR_INVALID_DATA, "" },
+        /*517*/ { "[4170]1313131313134", ZINT_ERROR_INVALID_DATA, "" },
+        /*518*/ { "[418]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*519*/ { "[4180]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*520*/ { "[419]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*521*/ { "[4190]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*522*/ { "[42]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*523*/ { "[420]abcdefghijklmnopqrst", 0, "420abcdefghijklmnopqrst" },
+        /*524*/ { "[420]abcdefghijklmnopqrstu", ZINT_ERROR_INVALID_DATA, "" },
+        /*525*/ { "[4200]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*526*/ { "[421]123abcdefghi", ZINT_WARN_NONCOMPLIANT, "421123abcdefghi" },
+        /*527*/ { "[421]434abcdefghi", 0, "421434abcdefghi" },
+        /*528*/ { "[421]123abcdefghij", ZINT_ERROR_INVALID_DATA, "" },
+        /*529*/ { "[421]1231", ZINT_WARN_NONCOMPLIANT, "4211231" },
+        /*530*/ { "[421]4341", 0, "4214341" },
+        /*531*/ { "[421]123", ZINT_ERROR_INVALID_DATA, "" },
+        /*532*/ { "[4210]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*533*/ { "[422]123", ZINT_WARN_NONCOMPLIANT, "422123" },
+        /*534*/ { "[422]004", 0, "422004" },
+        /*535*/ { "[422]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*536*/ { "[422]12", ZINT_ERROR_INVALID_DATA, "" },
+        /*537*/ { "[4220]123", ZINT_ERROR_INVALID_DATA, "" },
+        /*538*/ { "[423]123123123123123", ZINT_WARN_NONCOMPLIANT, "423123123123123123" },
+        /*539*/ { "[423]470004012887123", ZINT_WARN_NONCOMPLIANT, "423470004012887123" },
+        /*540*/ { "[423]470004012887438", 0, "423470004012887438" },
+        /*541*/ { "[423]1231231231231231", ZINT_ERROR_INVALID_DATA, "4231231231231231231" },
+        /*542*/ { "[423]12312312312312", ZINT_WARN_NONCOMPLIANT, "42312312312312312" },
+        /*543*/ { "[423]1231231231231", ZINT_WARN_NONCOMPLIANT, "4231231231231231" },
+        /*544*/ { "[423]12312312312", ZINT_WARN_NONCOMPLIANT, "42312312312312" },
+        /*545*/ { "[423]1231231231", ZINT_WARN_NONCOMPLIANT, "4231231231231" },
+        /*546*/ { "[423]123", ZINT_WARN_NONCOMPLIANT, "423123" },
+        /*547*/ { "[423]004", 0, "423004" },
+        /*548*/ { "[423]12", ZINT_ERROR_INVALID_DATA, "" },
+        /*549*/ { "[4230]123123123123123", ZINT_ERROR_INVALID_DATA, "" },
+        /*550*/ { "[424]123", ZINT_WARN_NONCOMPLIANT, "424123" },
+        /*551*/ { "[424]004", 0, "424004" },
+        /*552*/ { "[424]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*553*/ { "[424]12", ZINT_ERROR_INVALID_DATA, "" },
+        /*554*/ { "[4240]123", ZINT_ERROR_INVALID_DATA, "" },
+        /*555*/ { "[425]123123123123123", ZINT_WARN_NONCOMPLIANT, "425123123123123123" },
+        /*556*/ { "[425]010500276634894", 0, "425010500276634894" },
+        /*557*/ { "[425]010500276123894", ZINT_WARN_NONCOMPLIANT, "425010500276123894" },
+        /*558*/ { "[425]1231231231231231", ZINT_ERROR_INVALID_DATA, "" },
+        /*559*/ { "[425]12", ZINT_ERROR_INVALID_DATA, "" },
+        /*560*/ { "[4250]123123123123123", ZINT_ERROR_INVALID_DATA, "" },
+        /*561*/ { "[426]123", ZINT_WARN_NONCOMPLIANT, "426123" },
+        /*562*/ { "[426]426", 0, "426426" },
+        /*563*/ { "[426]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*564*/ { "[426]12", ZINT_ERROR_INVALID_DATA, "" },
+        /*565*/ { "[4260]123", ZINT_ERROR_INVALID_DATA, "" },
+        /*566*/ { "[427]abc", 0, "427abc" },
+        /*567*/ { "[427]abcd", ZINT_ERROR_INVALID_DATA, "" },
+        /*568*/ { "[4270]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*569*/ { "[428]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*570*/ { "[4280]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*571*/ { "[429]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*572*/ { "[4290]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*573*/ { "[43]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*574*/ { "[430]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*575*/ { "[4300]1", 0, "43001" },
+        /*576*/ { "[4300]12345678901234567890123456789012345", 0, "430012345678901234567890123456789012345" },
+        /*577*/ { "[4300]123456789012345678901234567890123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*578*/ { "[4301]1", 0, "43011" },
+        /*579*/ { "[4301]12345678901234567890123456789012345", 0, "430112345678901234567890123456789012345" },
+        /*580*/ { "[4301]123456789012345678901234567890123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*581*/ { "[4302]1", 0, "43021" },
+        /*582*/ { "[4302]1234567890123456789012345678901234567890123456789012345678901234567890", 0, "43021234567890123456789012345678901234567890123456789012345678901234567890" },
+        /*583*/ { "[4302]12345678901234567890123456789012345678901234567890123456789012345678901", ZINT_ERROR_INVALID_DATA, "" },
+        /*584*/ { "[4303]1", 0, "43031" },
+        /*585*/ { "[4303]1234567890123456789012345678901234567890123456789012345678901234567890", 0, "43031234567890123456789012345678901234567890123456789012345678901234567890" },
+        /*586*/ { "[4303]12345678901234567890123456789012345678901234567890123456789012345678901", ZINT_ERROR_INVALID_DATA, "" },
+        /*587*/ { "[4304]1", 0, "43041" },
+        /*588*/ { "[4304]1234567890123456789012345678901234567890123456789012345678901234567890", 0, "43041234567890123456789012345678901234567890123456789012345678901234567890" },
+        /*589*/ { "[4304]12345678901234567890123456789012345678901234567890123456789012345678901", ZINT_ERROR_INVALID_DATA, "" },
+        /*590*/ { "[4305]1", 0, "43051" },
+        /*591*/ { "[4305]1234567890123456789012345678901234567890123456789012345678901234567890", 0, "43051234567890123456789012345678901234567890123456789012345678901234567890" },
+        /*592*/ { "[4305]12345678901234567890123456789012345678901234567890123456789012345678901", ZINT_ERROR_INVALID_DATA, "" },
+        /*593*/ { "[4306]1", 0, "43061" },
+        /*594*/ { "[4306]1234567890123456789012345678901234567890123456789012345678901234567890", 0, "43061234567890123456789012345678901234567890123456789012345678901234567890" },
+        /*595*/ { "[4306]12345678901234567890123456789012345678901234567890123456789012345678901", ZINT_ERROR_INVALID_DATA, "" },
+        /*596*/ { "[4307]FR", 0, "4307FR" },
+        /*597*/ { "[4307]F", ZINT_ERROR_INVALID_DATA, "" },
+        /*598*/ { "[4307]FRR", ZINT_ERROR_INVALID_DATA, "" },
+        /*599*/ { "[4308]1", 0, "43081" },
+        /*600*/ { "[4308]123456789012345678901234567890", 0, "4308123456789012345678901234567890" },
+        /*601*/ { "[4308]1234567890123456789012345678901", ZINT_ERROR_INVALID_DATA, "" },
+        /*602*/ { "[4309]1", ZINT_ERROR_INVALID_DATA, "" },
+        /*603*/ { "[431]1", ZINT_ERROR_INVALID_DATA, "" },
+        /*604*/ { "[4310]1", 0, "43101" },
+        /*605*/ { "[4310]12345678901234567890123456789012345", 0, "431012345678901234567890123456789012345" },
+        /*606*/ { "[4310]123456789012345678901234567890123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*607*/ { "[4311]1", 0, "43111" },
+        /*608*/ { "[4311]12345678901234567890123456789012345", 0, "431112345678901234567890123456789012345" },
+        /*609*/ { "[4311]123456789012345678901234567890123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*610*/ { "[4312]1", 0, "43121" },
+        /*611*/ { "[4312]1234567890123456789012345678901234567890123456789012345678901234567890", 0, "43121234567890123456789012345678901234567890123456789012345678901234567890" },
+        /*612*/ { "[4312]12345678901234567890123456789012345678901234567890123456789012345678901", ZINT_ERROR_INVALID_DATA, "" },
+        /*613*/ { "[4313]1", 0, "43131" },
+        /*614*/ { "[4313]1234567890123456789012345678901234567890123456789012345678901234567890", 0, "43131234567890123456789012345678901234567890123456789012345678901234567890" },
+        /*615*/ { "[4313]12345678901234567890123456789012345678901234567890123456789012345678901", ZINT_ERROR_INVALID_DATA, "" },
+        /*616*/ { "[4314]1", 0, "43141" },
+        /*617*/ { "[4314]1234567890123456789012345678901234567890123456789012345678901234567890", 0, "43141234567890123456789012345678901234567890123456789012345678901234567890" },
+        /*618*/ { "[4314]12345678901234567890123456789012345678901234567890123456789012345678901", ZINT_ERROR_INVALID_DATA, "" },
+        /*619*/ { "[4315]1", 0, "43151" },
+        /*620*/ { "[4315]1234567890123456789012345678901234567890123456789012345678901234567890", 0, "43151234567890123456789012345678901234567890123456789012345678901234567890" },
+        /*621*/ { "[4315]12345678901234567890123456789012345678901234567890123456789012345678901", ZINT_ERROR_INVALID_DATA, "" },
+        /*622*/ { "[4316]1", 0, "43161" },
+        /*623*/ { "[4316]1234567890123456789012345678901234567890123456789012345678901234567890", 0, "43161234567890123456789012345678901234567890123456789012345678901234567890" },
+        /*624*/ { "[4316]12345678901234567890123456789012345678901234567890123456789012345678901", ZINT_ERROR_INVALID_DATA, "" },
+        /*625*/ { "[4317]FR", 0, "4317FR" },
+        /*626*/ { "[4317]F", ZINT_ERROR_INVALID_DATA, "" },
+        /*627*/ { "[4317]FRF", ZINT_ERROR_INVALID_DATA, "" },
+        /*628*/ { "[4318]1", 0, "43181" },
+        /*629*/ { "[4318]12345678901234567890", 0, "431812345678901234567890" },
+        /*630*/ { "[4318]123456789012345678901", ZINT_ERROR_INVALID_DATA, "" },
+        /*631*/ { "[4319]1", 0, "43191" },
+        /*632*/ { "[4319]123456789012345678901234567890", 0, "4319123456789012345678901234567890" },
+        /*633*/ { "[4319]1234567890123456789012345678901", ZINT_ERROR_INVALID_DATA, "" },
+        /*634*/ { "[432]1", ZINT_ERROR_INVALID_DATA, "" },
+        /*635*/ { "[4320]1", 0, "43201" },
+        /*636*/ { "[4320]12345678901234567890123456789012345", 0, "432012345678901234567890123456789012345" },
+        /*637*/ { "[4320]123456789012345678901234567890123456", ZINT_ERROR_INVALID_DATA, "" },
+        /*638*/ { "[4321]1", 0, "43211" },
+        /*639*/ { "[4321]10", ZINT_ERROR_INVALID_DATA, "" },
+        /*640*/ { "[4322]1", 0, "43221" },
+        /*641*/ { "[4322]10", ZINT_ERROR_INVALID_DATA, "" },
+        /*642*/ { "[4323]1", 0, "43231" },
+        /*643*/ { "[4323]10", ZINT_ERROR_INVALID_DATA, "" },
+        /*644*/ { "[4324]1212120000", 0, "43241212120000" },
+        /*645*/ { "[4324]121212000", ZINT_ERROR_INVALID_DATA, "" },
+        /*646*/ { "[4324]12121200000", ZINT_ERROR_INVALID_DATA, "" },
+        /*647*/ { "[4325]1212120000", 0, "43251212120000" },
+        /*648*/ { "[4325]121212000", ZINT_ERROR_INVALID_DATA, "" },
+        /*649*/ { "[4325]12121200000", ZINT_ERROR_INVALID_DATA, "" },
+        /*650*/ { "[4326]121212", 0, "4326121212" },
+        /*651*/ { "[4326]12121", ZINT_ERROR_INVALID_DATA, "" },
+        /*652*/ { "[4326]1212120", ZINT_ERROR_INVALID_DATA, "" },
+        /*653*/ { "[4327]121212", ZINT_ERROR_INVALID_DATA, "" },
+        /*654*/ { "[4328]121212", ZINT_ERROR_INVALID_DATA, "" },
+        /*655*/ { "[4329]121212", ZINT_ERROR_INVALID_DATA, "" },
+        /*656*/ { "[433]121212", ZINT_ERROR_INVALID_DATA, "" },
+        /*657*/ { "[4330]121212", ZINT_ERROR_INVALID_DATA, "" },
+        /*658*/ { "[44]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*659*/ { "[440]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*660*/ { "[4400]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*661*/ { "[49]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*662*/ { "[490]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*663*/ { "[4900]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*664*/ { "[499]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*665*/ { "[4990]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*666*/ { "[50]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*667*/ { "[500]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*668*/ { "[5000]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*669*/ { "[51]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*670*/ { "[510]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*671*/ { "[5100]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*672*/ { "[59]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*673*/ { "[590]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*674*/ { "[5900]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*675*/ { "[60]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*676*/ { "[600]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*677*/ { "[6000]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*678*/ { "[61]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*679*/ { "[610]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*680*/ { "[6100]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*681*/ { "[69]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*682*/ { "[690]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*683*/ { "[6900]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*684*/ { "[70]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*685*/ { "[700]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*686*/ { "[7000]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*687*/ { "[7001]1234567890123", 0, "70011234567890123" },
+        /*688*/ { "[7001]123456789012", ZINT_ERROR_INVALID_DATA, "" },
+        /*689*/ { "[7002]abcdefghijklmnopqrstuvwxyz1234", 0, "7002abcdefghijklmnopqrstuvwxyz1234" },
+        /*690*/ { "[7002]abcdefghijklmnopqrstuvwxyz12345", ZINT_ERROR_INVALID_DATA, "" },
+        /*691*/ { "[7003]1212121212", 0, "70031212121212" },
+        /*692*/ { "[7003]121212121", ZINT_ERROR_INVALID_DATA, "" },
+        /*693*/ { "[7004]1234", 0, "70041234" },
+        /*694*/ { "[7004]12345", ZINT_ERROR_INVALID_DATA, "" },
+        /*695*/ { "[7005]abcdefghijkl", 0, "7005abcdefghijkl" },
+        /*696*/ { "[7005]abcdefghijklm", ZINT_ERROR_INVALID_DATA, "" },
+        /*697*/ { "[7006]200132", ZINT_WARN_NONCOMPLIANT, "7006200132" },
+        /*698*/ { "[7006]200100", ZINT_WARN_NONCOMPLIANT, "7006200100" },
+        /*699*/ { "[7006]200120", 0, "7006200120" },
+        /*700*/ { "[7006]2001320", ZINT_ERROR_INVALID_DATA, "" },
+        /*701*/ { "[7007]010101121212", 0, "7007010101121212" },
+        /*702*/ { "[7007]01010112121", ZINT_ERROR_INVALID_DATA, "" },
+        /*703*/ { "[7007]A1010112121", ZINT_ERROR_INVALID_DATA, "" },
+        /*704*/ { "[7007]121212", 0, "7007121212" },
+        /*705*/ { "[7007]12121", ZINT_ERROR_INVALID_DATA, "" },
+        /*706*/ { "[7007]1212121", ZINT_ERROR_INVALID_DATA, "" },
+        /*707*/ { "[7008]abc", 0, "7008abc" },
+        /*708*/ { "[7008]abcd", ZINT_ERROR_INVALID_DATA, "" },
+        /*709*/ { "[7009]abcdefghij", 0, "7009abcdefghij" },
+        /*710*/ { "[7009]abcdefghijk", ZINT_ERROR_INVALID_DATA, "" },
+        /*711*/ { "[7010]01", 0, "701001" },
+        /*712*/ { "[7010]1", 0, "70101" },
+        /*713*/ { "[7010]012", ZINT_ERROR_INVALID_DATA, "" },
+        /*714*/ { "[7011]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*715*/ { "[7012]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*716*/ { "[7019]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*717*/ { "[7020]abcdefghijklmnopqrst", 0, "7020abcdefghijklmnopqrst" },
+        /*718*/ { "[7020]abcdefghijklmnopqrstu", ZINT_ERROR_INVALID_DATA, "" },
+        /*719*/ { "[7021]abcdefghijklmnopqrst", 0, "7021abcdefghijklmnopqrst" },
+        /*720*/ { "[7021]abcdefghijklmnopqrstu", ZINT_ERROR_INVALID_DATA, "" },
+        /*721*/ { "[7022]abcdefghijklmnopqrst", 0, "7022abcdefghijklmnopqrst" },
+        /*722*/ { "[7022]abcdefghijklmnopqrstu", ZINT_ERROR_INVALID_DATA, "" },
+        /*723*/ { "[7023]1234abcdefghijklmnopqrstuvwxyz", 0, "70231234abcdefghijklmnopqrstuvwxyz" },
+        /*724*/ { "[7023]1234abcdefghijklmnopqrstuvwxyza", ZINT_ERROR_INVALID_DATA, "" },
+        /*725*/ { "[7024]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*726*/ { "[7025]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*727*/ { "[7029]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*728*/ { "[7030]123abcdefghijklmnopqrstuvwxyza", ZINT_WARN_NONCOMPLIANT, "7030123abcdefghijklmnopqrstuvwxyza" },
+        /*729*/ { "[7030]004abcdefghijklmnopqrstuvwxyza", 0, "7030004abcdefghijklmnopqrstuvwxyza" },
+        /*730*/ { "[7030]123abcdefghijklmnopqrstuvwxyzab", ZINT_ERROR_INVALID_DATA, "" },
+        /*731*/ { "[7031]123abcdefghijklmnopqrstuvwxyza", ZINT_WARN_NONCOMPLIANT, "7031123abcdefghijklmnopqrstuvwxyza" },
+        /*732*/ { "[7031]004abcdefghijklmnopqrstuvwxyza", 0, "7031004abcdefghijklmnopqrstuvwxyza" },
+        /*733*/ { "[7031]123abcdefghijklmnopqrstuvwxyzab", ZINT_ERROR_INVALID_DATA, "" },
+        /*734*/ { "[7032]004abcdefghijklmnopqrstuvwxyza", 0, "7032004abcdefghijklmnopqrstuvwxyza" },
+        /*735*/ { "[7032]004abcdefghijklmnopqrstuvwxyzab", ZINT_ERROR_INVALID_DATA, "" },
+        /*736*/ { "[7033]004abcdefghijklmnopqrstuvwxyza", 0, "7033004abcdefghijklmnopqrstuvwxyza" },
+        /*737*/ { "[7033]004abcdefghijklmnopqrstuvwxyzab", ZINT_ERROR_INVALID_DATA, "" },
+        /*738*/ { "[7034]004abcdefghijklmnopqrstuvwxyza", 0, "7034004abcdefghijklmnopqrstuvwxyza" },
+        /*739*/ { "[7034]004abcdefghijklmnopqrstuvwxyzab", ZINT_ERROR_INVALID_DATA, "" },
+        /*740*/ { "[7035]004abcdefghijklmnopqrstuvwxyza", 0, "7035004abcdefghijklmnopqrstuvwxyza" },
+        /*741*/ { "[7035]004abcdefghijklmnopqrstuvwxyzab", ZINT_ERROR_INVALID_DATA, "" },
+        /*742*/ { "[7036]004abcdefghijklmnopqrstuvwxyza", 0, "7036004abcdefghijklmnopqrstuvwxyza" },
+        /*743*/ { "[7036]004abcdefghijklmnopqrstuvwxyzab", ZINT_ERROR_INVALID_DATA, "" },
+        /*744*/ { "[7037]004abcdefghijklmnopqrstuvwxyza", 0, "7037004abcdefghijklmnopqrstuvwxyza" },
+        /*745*/ { "[7037]004abcdefghijklmnopqrstuvwxyzab", ZINT_ERROR_INVALID_DATA, "" },
+        /*746*/ { "[7038]004abcdefghijklmnopqrstuvwxyza", 0, "7038004abcdefghijklmnopqrstuvwxyza" },
+        /*747*/ { "[7038]004abcdefghijklmnopqrstuvwxyzab", ZINT_ERROR_INVALID_DATA, "" },
+        /*748*/ { "[7039]004abcdefghijklmnopqrstuvwxyza", 0, "7039004abcdefghijklmnopqrstuvwxyza" },
+        /*749*/ { "[7039]123abcdefghijklmnopqrstuvwxyzab", ZINT_ERROR_INVALID_DATA, "" },
+        /*750*/ { "[7040]1abc", 0, "70401abc" },
+        /*751*/ { "[7040]1ab", ZINT_ERROR_INVALID_DATA, "" },
+        /*752*/ { "[7040]1abcd", ZINT_ERROR_INVALID_DATA, "" },
+        /*753*/ { "[7041]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*754*/ { "[7042]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*755*/ { "[7050]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*756*/ { "[7090]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*757*/ { "[7099]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*758*/ { "[71]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*759*/ { "[710]abcdefghijklmnopqrst", 0, "710abcdefghijklmnopqrst" },
+        /*760*/ { "[710]abcdefghijklmnopqrstu", ZINT_ERROR_INVALID_DATA, "" },
+        /*761*/ { "[7100]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*762*/ { "[711]abcdefghijklmnopqrst", 0, "711abcdefghijklmnopqrst" },
+        /*763*/ { "[711]abcdefghijklmnopqrstu", ZINT_ERROR_INVALID_DATA, "" },
+        /*764*/ { "[712]abcdefghijklmnopqrst", 0, "712abcdefghijklmnopqrst" },
+        /*765*/ { "[712]abcdefghijklmnopqrstu", ZINT_ERROR_INVALID_DATA, "" },
+        /*766*/ { "[713]abcdefghijklmnopqrst", 0, "713abcdefghijklmnopqrst" },
+        /*767*/ { "[713]abcdefghijklmnopqrstu", ZINT_ERROR_INVALID_DATA, "" },
+        /*768*/ { "[714]abcdefghijklmnopqrst", 0, "714abcdefghijklmnopqrst" },
+        /*769*/ { "[714]abcdefghijklmnopqrstu", ZINT_ERROR_INVALID_DATA, "" },
+        /*770*/ { "[715]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*771*/ { "[716]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*772*/ { "[719]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*773*/ { "[72]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*774*/ { "[720]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*775*/ { "[7200]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*776*/ { "[721]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*777*/ { "[7210]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*778*/ { "[7220]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*779*/ { "[7230]EMabcdefghijklmnopqrstuvwxyzab", 0, "7230EMabcdefghijklmnopqrstuvwxyzab" },
+        /*780*/ { "[7230]EMabcdefghijklmnopqrstuvwxyzabc", ZINT_ERROR_INVALID_DATA, "" },
+        /*781*/ { "[7230]EM", ZINT_ERROR_INVALID_DATA, "" },
+        /*782*/ { "[7231]EMabcdefghijklmnopqrstuvwxyzab", 0, "7231EMabcdefghijklmnopqrstuvwxyzab" },
+        /*783*/ { "[7231]EMabcdefghijklmnopqrstuvwxyzabc", ZINT_ERROR_INVALID_DATA, "" },
+        /*784*/ { "[7232]EMabcdefghijklmnopqrstuvwxyzab", 0, "7232EMabcdefghijklmnopqrstuvwxyzab" },
+        /*785*/ { "[7232]EMabcdefghijklmnopqrstuvwxyzabc", ZINT_ERROR_INVALID_DATA, "" },
+        /*786*/ { "[7233]EMabcdefghijklmnopqrstuvwxyzab", 0, "7233EMabcdefghijklmnopqrstuvwxyzab" },
+        /*787*/ { "[7233]EMabcdefghijklmnopqrstuvwxyzabc", ZINT_ERROR_INVALID_DATA, "" },
+        /*788*/ { "[7234]EMabcdefghijklmnopqrstuvwxyzab", 0, "7234EMabcdefghijklmnopqrstuvwxyzab" },
+        /*789*/ { "[7234]EMabcdefghijklmnopqrstuvwxyzabc", ZINT_ERROR_INVALID_DATA, "" },
+        /*790*/ { "[7235]EMabcdefghijklmnopqrstuvwxyzab", 0, "7235EMabcdefghijklmnopqrstuvwxyzab" },
+        /*791*/ { "[7235]EMabcdefghijklmnopqrstuvwxyzabc", ZINT_ERROR_INVALID_DATA, "" },
+        /*792*/ { "[7236]EMabcdefghijklmnopqrstuvwxyzab", 0, "7236EMabcdefghijklmnopqrstuvwxyzab" },
+        /*793*/ { "[7236]EMabcdefghijklmnopqrstuvwxyzabc", ZINT_ERROR_INVALID_DATA, "" },
+        /*794*/ { "[7237]EMabcdefghijklmnopqrstuvwxyzab", 0, "7237EMabcdefghijklmnopqrstuvwxyzab" },
+        /*795*/ { "[7237]EMabcdefghijklmnopqrstuvwxyzabc", ZINT_ERROR_INVALID_DATA, "" },
+        /*796*/ { "[7238]EMabcdefghijklmnopqrstuvwxyzab", 0, "7238EMabcdefghijklmnopqrstuvwxyzab" },
+        /*797*/ { "[7238]EMabcdefghijklmnopqrstuvwxyzabc", ZINT_ERROR_INVALID_DATA, "" },
+        /*798*/ { "[7239]EMabcdefghijklmnopqrstuvwxyzab", 0, "7239EMabcdefghijklmnopqrstuvwxyzab" },
+        /*799*/ { "[7239]EMabcdefghijklmnopqrstuvwxyzabc", ZINT_ERROR_INVALID_DATA, "" },
+        /*800*/ { "[7239]E", ZINT_ERROR_INVALID_DATA, "" },
+        /*801*/ { "[7240]abcdefghijklmnopqrst", 0, "7240abcdefghijklmnopqrst" },
+        /*802*/ { "[7240]abcdefghijklmnopqrstu", ZINT_ERROR_INVALID_DATA, "" },
+        /*803*/ { "[7241]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*804*/ { "[7249]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*805*/ { "[7250]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*806*/ { "[7299]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*807*/ { "[73]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*808*/ { "[7300]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*809*/ { "[74]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*810*/ { "[7400]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*811*/ { "[79]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*812*/ { "[7900]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*813*/ { "[7999]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*814*/ { "[80]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*815*/ { "[800]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*816*/ { "[8000]1234", ZINT_ERROR_INVALID_DATA, "" },
+        /*817*/ { "[8001]12345678901234", ZINT_WARN_NONCOMPLIANT, "800112345678901234" },
+        /*818*/ { "[8001]12345678901204", 0, "800112345678901204" },
+        /*819*/ { "[8001]1234123456789012345", ZINT_ERROR_INVALID_DATA, "" },
+        /*820*/ { "[8002]abcdefghijklmnopqrst", 0, "8002abcdefghijklmnopqrst" },
+        /*821*/ { "[8002]abcdefghijklmnopqrstu", ZINT_ERROR_INVALID_DATA, "" },
+        /*822*/ { "[8003]01234567890123abcdefghijklmnop", ZINT_WARN_NONCOMPLIANT, "800301234567890123abcdefghijklmnop" },
+        /*823*/ { "[8003]01234567890128abcdefghijklmnop", 0, "800301234567890128abcdefghijklmnop" },
+        /*824*/ { "[8003]01234567890128abcdefghijklmnopq", ZINT_ERROR_INVALID_DATA, "" },
+        /*825*/ { "[8004]abcdefghijklmnopqrstuvwxyz1234", ZINT_WARN_NONCOMPLIANT, "8004abcdefghijklmnopqrstuvwxyz1234" },
+        /*826*/ { "[8004]12cdefghijklmnopqrstuvwxyz1234", 0, "800412cdefghijklmnopqrstuvwxyz1234" },
+        /*827*/ { "[8004]abcdefghijklmnopqrstuvwxyz12345", ZINT_ERROR_INVALID_DATA, "" },
+        /*828*/ { "[8005]123456", 0, "8005123456" },
+        /*829*/ { "[8005]12345", ZINT_ERROR_INVALID_DATA, "" },
+        /*830*/ { "[8005]1234567", ZINT_ERROR_INVALID_DATA, "" },
+        /*831*/ { "[8006]123456789012341212", ZINT_WARN_NONCOMPLIANT, "8006123456789012341212" },
+        /*832*/ { "[8006]123456789012311212", 0, "8006123456789012311212" },
+        /*833*/ { "[8006]12345678901234121", ZINT_ERROR_INVALID_DATA, "" },
+        /*834*/ { "[8006]1234567890123412123", ZINT_ERROR_INVALID_DATA, "" },
+        /*835*/ { "[8007]abcdefghijklmnopqrstuvwxyz12345678", ZINT_WARN_NONCOMPLIANT, "8007abcdefghijklmnopqrstuvwxyz12345678" },
+        /*836*/ { "[8007]AD95EFGHIJKLMNOPQRSTUVWXYZ12345678", 0, "8007AD95EFGHIJKLMNOPQRSTUVWXYZ12345678" },
+        /*837*/ { "[8007]AD95EFGHIJKLMNOPQRSTUVWXYZ123456789", ZINT_ERROR_INVALID_DATA, "" },
+        /*838*/ { "[8008]123456121212", ZINT_WARN_NONCOMPLIANT, "8008123456121212" },
+        /*839*/ { "[8008]121256121212", ZINT_WARN_NONCOMPLIANT, "8008121256121212" },
+        /*840*/ { "[8008]121231121212", 0, "8008121231121212" },
+        /*841*/ { "[8008]1234561212", ZINT_WARN_NONCOMPLIANT, "80081234561212" },
+        /*842*/ { "[8008]1212311212", 0, "80081212311212" },
+        /*843*/ { "[8008]12345612", ZINT_WARN_NONCOMPLIANT, "800812345612" },
+        /*844*/ { "[8008]12010112", 0, "800812010112" },
+        /*845*/ { "[8008]1234561", ZINT_ERROR_INVALID_DATA, "" },
+        /*846*/ { "[8008]123456121", ZINT_ERROR_INVALID_DATA, "" },
+        /*847*/ { "[8008]12345612121", ZINT_ERROR_INVALID_DATA, "" },
+        /*848*/ { "[8008]1234561212123", ZINT_ERROR_INVALID_DATA, "" },
+        /*849*/ { "[8009]12345678901234567890123456789012345678901234567890", 0, "800912345678901234567890123456789012345678901234567890" },
+        /*850*/ { "[8009]123456789012345678901234567890123456789012345678901", ZINT_ERROR_INVALID_DATA, "" },
+        /*851*/ { "[8010]1234abcdefghijklmnopqrstuvwxyz1", ZINT_ERROR_INVALID_DATA, "" },
+        /*852*/ { "[8011]123456789012", 0, "8011123456789012" },
+        /*853*/ { "[8011]1234567890123", ZINT_ERROR_INVALID_DATA, "" },
+        /*854*/ { "[8012]abcdefghijklmnopqrst", 0, "8012abcdefghijklmnopqrst" },
+        /*855*/ { "[8012]abcdefghijklmnopqrstuv", ZINT_ERROR_INVALID_DATA, "" },
         /*856*/ { "[8013]1234abcdefghijklmnopqrsQP", 0, "80131234abcdefghijklmnopqrsQP" },
         /*857*/ { "[8013]1234abcdefghijklmnopqrsQPv", ZINT_ERROR_INVALID_DATA, "" },
         /*858*/ { "[8014]1234", ZINT_ERROR_INVALID_DATA, "" },
@@ -1328,7 +1340,7 @@ static void test_gs1_verify(int index, int debug) {
         length = (int) strlen(data[i].data);
 
         ret = gs1_verify(symbol, (unsigned char *) data[i].data, length, (unsigned char *) reduced);
-        assert_equal(ret, data[i].ret, "i:%d ret %d != %d (length %d \"%s\") %s\n", i, ret, data[i].ret, length, data[i].data, symbol->errtxt);
+        assert_equal(ret, data[i].ret, "i:%d ret %d != %d (length %d \"%s\") (%s)\n", i, ret, data[i].ret, length, data[i].data, symbol->errtxt);
 
         if (ret < ZINT_ERROR) {
             assert_zero(strcmp(reduced, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, reduced, data[i].expected);
@@ -1353,366 +1365,369 @@ static void test_gs1_lint(int index, int debug) {
         /*  0*/ { "[00]123456789012345675", 0, "00123456789012345675", "" }, // numeric
         /*  1*/ { "[00]12345678901234567.", ZINT_WARN_NONCOMPLIANT, "0012345678901234567.", "261: AI (00) position 18: Non-numeric character '.'" }, // numeric
         /*  2*/ { "[00]123456789012345678", ZINT_WARN_NONCOMPLIANT, "00123456789012345678", "261: AI (00) position 18: Bad checksum '8', expected '5'" }, // csum
-        /*  3*/ { "[91]!\"%&'()*+,-./0123456789:;<=>?ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz", 0, "91!\"%&'()*+,-./0123456789:;<=>?ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz", "" }, // cset82
-        /*  4*/ { "[91] ", ZINT_WARN_NONCOMPLIANT, "91 ", "261: AI (91) position 1: Invalid CSET 82 character ' '" }, // cset82
-        /*  5*/ { "[91]#", ZINT_WARN_NONCOMPLIANT, "91#", "261: AI (91) position 1: Invalid CSET 82 character '#'" }, // cset82
-        /*  6*/ { "[91]a^", ZINT_WARN_NONCOMPLIANT, "91a^", "261: AI (91) position 2: Invalid CSET 82 character '^'" }, // cset82
-        /*  7*/ { "[91]!\"%&'()*+,-./0123456789:;<=>?ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxy{", ZINT_WARN_NONCOMPLIANT, "91!\"%&'()*+,-./0123456789:;<=>?ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxy{", "261: AI (91) position 82: Invalid CSET 82 character '{'" }, // cset82
-        /*  8*/ { "[8010]01#-/23456789ABCDEFGHIJKLMNOPQ", 0, "801001#-/23456789ABCDEFGHIJKLMNOPQ", "" }, // cset39
-        /*  9*/ { "[8010]6789ABCDEFGHIJKLMNOPQRSTUVWXYZ", 0, "80106789ABCDEFGHIJKLMNOPQRSTUVWXYZ", "" }, // cset39
-        /* 10*/ { "[8010]01!", ZINT_WARN_NONCOMPLIANT, "801001!", "261: AI (8010) position 3: Invalid CSET 39 character '!'" }, // cset39
-        /* 11*/ { "[8010]01a", ZINT_WARN_NONCOMPLIANT, "801001a", "261: AI (8010) position 3: Invalid CSET 39 character 'a'" }, // cset39
-        /* 12*/ { "[8010]6789ABCDEFGHIJKLMNOPQRSTUVWXY}", ZINT_WARN_NONCOMPLIANT, "80106789ABCDEFGHIJKLMNOPQRSTUVWXY}", "261: AI (8010) position 30: Invalid CSET 39 character '}'" }, // cset39
-        /* 13*/ { "[8010]#-/0123456789ABCDEFGHIJKLMNOPQ", ZINT_WARN_NONCOMPLIANT, "8010#-/0123456789ABCDEFGHIJKLMNOPQ", "261: AI (8010) position 1: Non-numeric company prefix '#'" }, // key
-        /* 14*/ { "[8010]0#-/123456789ABCDEFGHIJKLMNOPQ", ZINT_WARN_NONCOMPLIANT, "80100#-/123456789ABCDEFGHIJKLMNOPQ", "261: AI (8010) position 2: Non-numeric company prefix '#'" }, // key
-        /* 15*/ { "[8013]1987654Ad4X4bL5ttr2310c2K", 0, "80131987654Ad4X4bL5ttr2310c2K", "" }, // csumalpha
-        /* 16*/ { "[8013]12345678901234567890123NT", 0, "801312345678901234567890123NT", "" }, // csumalpha
-        /* 17*/ { "[8013]12345_ABCDEFGHIJKLMCP", 0, "801312345_ABCDEFGHIJKLMCP", "" }, // csumalpha
-        /* 18*/ { "[8013]12345_NOPQRSTUVWXYZDN", 0, "801312345_NOPQRSTUVWXYZDN", "" }, // csumalpha
-        /* 19*/ { "[8013]12345_abcdefghijklmN3", 0, "801312345_abcdefghijklmN3", "" }, // csumalpha
-        /* 20*/ { "[8013]12345_nopqrstuvwxyzP2", 0, "801312345_nopqrstuvwxyzP2", "" }, // csumalpha
-        /* 21*/ { "[8013]12345_!\"%&'()*+,-./LC", 0, "801312345_!\"%&'()*+,-./LC", "" }, // csumalpha
-        /* 22*/ { "[8013]12345_0123456789:;<=>?62", 0, "801312345_0123456789:;<=>?62", "" }, // csumalpha
-        /* 23*/ { "[8013]7907665Bm8v2AB", 0, "80137907665Bm8v2AB", "" }, // csumalpha
-        /* 24*/ { "[8013]97850l6KZm0yCD", 0, "801397850l6KZm0yCD", "" }, // csumalpha
-        /* 25*/ { "[8013]225803106GSpEF", 0, "8013225803106GSpEF", "" }, // csumalpha
-        /* 26*/ { "[8013]149512464PM+GH", 0, "8013149512464PM+GH", "" }, // csumalpha
-        /* 27*/ { "[8013]62577B8fRG7HJK", 0, "801362577B8fRG7HJK", "" }, // csumalpha
-        /* 28*/ { "[8013]515942070CYxLM", 0, "8013515942070CYxLM", "" }, // csumalpha
-        /* 29*/ { "[8013]390800494sP6NP", 0, "8013390800494sP6NP", "" }, // csumalpha
-        /* 30*/ { "[8013]386830132uO+QR", 0, "8013386830132uO+QR", "" }, // csumalpha
-        /* 31*/ { "[8013]53395376X1:nST", 0, "801353395376X1:nST", "" }, // csumalpha
-        /* 32*/ { "[8013]957813138Sb6UV", 0, "8013957813138Sb6UV", "" }, // csumalpha
-        /* 33*/ { "[8013]530790no0qOgWX", 0, "8013530790no0qOgWX", "" }, // csumalpha
-        /* 34*/ { "[8013]62185314IvwmYZ", 0, "801362185314IvwmYZ", "" }, // csumalpha
-        /* 35*/ { "[8013]23956qk1&dB!23", 0, "801323956qk1&dB!23", "" }, // csumalpha
-        /* 36*/ { "[8013]794394895ic045", 0, "8013794394895ic045", "" }, // csumalpha
-        /* 37*/ { "[8013]57453Uq3qA<H67", 0, "801357453Uq3qA<H67", "" }, // csumalpha
-        /* 38*/ { "[8013]62185314IvwmYZ", 0, "801362185314IvwmYZ", "" }, // csumalpha
-        /* 39*/ { "[8013]0881063PhHvY89", 0, "80130881063PhHvY89", "" }, // csumalpha
-        /* 40*/ { "[8013]00000!HV", 0, "801300000!HV", "" }, // csumalpha
-        /* 41*/ { "[8013]99999zzzzzzzzzzzzzzzzzzT2", 0, "801399999zzzzzzzzzzzzzzzzzzT2", "" }, // csumalpha
-        /* 42*/ { "[8013]1987654Ad4X4bL5ttr2310cXK", ZINT_WARN_NONCOMPLIANT, "80131987654Ad4X4bL5ttr2310cXK", "261: AI (8013) position 24: Bad checksum 'X', expected '2'" }, // csumalpha
-        /* 43*/ { "[8013]1987654Ad4X4bL5ttr2310c2X", ZINT_WARN_NONCOMPLIANT, "80131987654Ad4X4bL5ttr2310c2X", "261: AI (8013) position 25: Bad checksum 'X', expected 'K'" }, // csumalpha
-        /* 44*/ { "[8013]198765£Ad4X4bL5ttr2310c2K", ZINT_ERROR_INVALID_DATA, "", "250: Extended ASCII characters are not supported by GS1" }, // csumalpha
-        /* 45*/ { "[8013]1987654Ad4X4bL5ttr2310£2K", ZINT_ERROR_INVALID_DATA, "", "250: Extended ASCII characters are not supported by GS1" }, // csumalpha
-        /* 46*/ { "[8013]1987654Ad4X4bL5ttr2310cxK", ZINT_WARN_NONCOMPLIANT, "80131987654Ad4X4bL5ttr2310cxK", "261: AI (8013) position 24: Bad checksum 'x', expected '2'" }, // csumalpha
-        /* 47*/ { "[8013]1987654Ad4X4bL5ttr2310c2x", ZINT_WARN_NONCOMPLIANT, "80131987654Ad4X4bL5ttr2310c2x", "261: AI (8013) position 25: Bad checksum 'x', expected 'K'" }, // csumalpha
-        /* 48*/ { "[8013]12345678901234567890123NTX", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8013)" }, // csumalpha
-        /* 49*/ { "[8013]1", ZINT_WARN_NONCOMPLIANT, "80131", "259: Invalid data length for AI (8013)" }, // csumalpha
-        /* 50*/ { "[8013]12", ZINT_WARN_NONCOMPLIANT, "801312", "261: AI (8013) position 1: Bad checksum '1', expected '2'" }, // csumalpha
-        /* 51*/ { "[8013]22", 0, "801322", "" }, // csumalpha
-        /* 52*/ { "[8013]123", ZINT_WARN_NONCOMPLIANT, "8013123", "261: AI (8013) position 3: Bad checksum '3', expected 'W'" }, // csumalpha
-        /* 53*/ { "[8013]12W", 0, "801312W", "" }, // csumalpha
-        /* 54*/ { "[8013]00000!HW", ZINT_WARN_NONCOMPLIANT, "801300000!HW", "261: AI (8013) position 8: Bad checksum 'W', expected 'V'" }, // csumalpha
-        /* 55*/ { "[8013]7907665Bm8v2BB", ZINT_WARN_NONCOMPLIANT, "80137907665Bm8v2BB", "261: AI (8013) position 13: Bad checksum 'B', expected 'A'" }, // csumalpha
-        /* 56*/ { "[8013]99zzzzzzzzzzzzzzzzzzzzzZ7", 0, "801399zzzzzzzzzzzzzzzzzzzzzZ7", "" }, // csumalpha
-        /* 57*/ { "[11]120100", 0, "11120100", "" }, // yymmd0
-        /* 58*/ { "[11]120131", 0, "11120131", "" }, // yymmd0
-        /* 59*/ { "[11]120132", ZINT_WARN_NONCOMPLIANT, "11120132", "261: AI (11) position 5: Invalid day '32'" }, // yymmd0
-        /* 60*/ { "[11]120229", 0, "11120229", "" }, // yymmd0
-        /* 61*/ { "[11]110229", ZINT_WARN_NONCOMPLIANT, "11110229", "261: AI (11) position 5: Invalid day '29'" }, // yymmd0
-        /* 62*/ { "[11]000229", 0, "11000229", "" }, // yymmd0 NOTE: will be false in 2050
-        /* 63*/ { "[11]480229", 0, "11480229", "" }, // yymmd0
-        /* 64*/ { "[11]500229", ZINT_WARN_NONCOMPLIANT, "11500229", "261: AI (11) position 5: Invalid day '29'" }, // yymmd0
-        /* 65*/ { "[11]980229", ZINT_WARN_NONCOMPLIANT, "11980229", "261: AI (11) position 5: Invalid day '29'" }, // yymmd0
-        /* 66*/ { "[11]110228", 0, "11110228", "" }, // yymmd0
-        /* 67*/ { "[11]120230", ZINT_WARN_NONCOMPLIANT, "11120230", "261: AI (11) position 5: Invalid day '30'" }, // yymmd0
-        /* 68*/ { "[11]120331", 0, "11120331", "" }, // yymmd0
-        /* 69*/ { "[11]120332", ZINT_WARN_NONCOMPLIANT, "11120332", "261: AI (11) position 5: Invalid day '32'" }, // yymmd0
-        /* 70*/ { "[11]120430", 0, "11120430", "" }, // yymmd0
-        /* 71*/ { "[11]120431", ZINT_WARN_NONCOMPLIANT, "11120431", "261: AI (11) position 5: Invalid day '31'" }, // yymmd0
-        /* 72*/ { "[11]120531", 0, "11120531", "" }, // yymmd0
-        /* 73*/ { "[11]120532", ZINT_WARN_NONCOMPLIANT, "11120532", "261: AI (11) position 5: Invalid day '32'" }, // yymmd0
-        /* 74*/ { "[11]120630", 0, "11120630", "" }, // yymmd0
-        /* 75*/ { "[11]120631", ZINT_WARN_NONCOMPLIANT, "11120631", "261: AI (11) position 5: Invalid day '31'" }, // yymmd0
-        /* 76*/ { "[11]120731", 0, "11120731", "" }, // yymmd0
-        /* 77*/ { "[11]120732", ZINT_WARN_NONCOMPLIANT, "11120732", "261: AI (11) position 5: Invalid day '32'" }, // yymmd0
-        /* 78*/ { "[11]120831", 0, "11120831", "" }, // yymmd0
-        /* 79*/ { "[11]120832", ZINT_WARN_NONCOMPLIANT, "11120832", "261: AI (11) position 5: Invalid day '32'" }, // yymmd0
-        /* 80*/ { "[11]120930", 0, "11120930", "" }, // yymmd0
-        /* 81*/ { "[11]120931", ZINT_WARN_NONCOMPLIANT, "11120931", "261: AI (11) position 5: Invalid day '31'" }, // yymmd0
-        /* 82*/ { "[11]121031", 0, "11121031", "" }, // yymmd0
-        /* 83*/ { "[11]121032", ZINT_WARN_NONCOMPLIANT, "11121032", "261: AI (11) position 5: Invalid day '32'" }, // yymmd0
-        /* 84*/ { "[11]121130", 0, "11121130", "" }, // yymmd0
-        /* 85*/ { "[11]121131", ZINT_WARN_NONCOMPLIANT, "11121131", "261: AI (11) position 5: Invalid day '31'" }, // yymmd0
-        /* 86*/ { "[11]121200", 0, "11121200", "" }, // yymmd0
-        /* 87*/ { "[11]121231", 0, "11121231", "" }, // yymmd0
-        /* 88*/ { "[11]121232", ZINT_WARN_NONCOMPLIANT, "11121232", "261: AI (11) position 5: Invalid day '32'" }, // yymmd0
-        /* 89*/ { "[11]120031", ZINT_WARN_NONCOMPLIANT, "11120031", "261: AI (11) position 3: Invalid month '00'" }, // yymmd0
-        /* 90*/ { "[11]121331", ZINT_WARN_NONCOMPLIANT, "11121331", "261: AI (11) position 3: Invalid month '13'" }, // yymmd0
-        /* 91*/ { "[4326]121231", 0, "4326121231", "" }, // yymmdd
-        /* 92*/ { "[4326]121200", ZINT_WARN_NONCOMPLIANT, "4326121200", "261: AI (4326) position 5: Invalid day '00'" }, // yymmdd
-        /* 93*/ { "[4326]120031", ZINT_WARN_NONCOMPLIANT, "4326120031", "261: AI (4326) position 3: Invalid month '00'" }, // yymmdd
-        /* 94*/ { "[4326]129931", ZINT_WARN_NONCOMPLIANT, "4326129931", "261: AI (4326) position 3: Invalid month '99'" }, // yymmdd
-        /* 95*/ { "[4326]121299", ZINT_WARN_NONCOMPLIANT, "4326121299", "261: AI (4326) position 5: Invalid day '99'" }, // yymmdd
-        /* 96*/ { "[4326]120230", ZINT_WARN_NONCOMPLIANT, "4326120230", "261: AI (4326) position 5: Invalid day '30'" }, // yymmdd
-        /* 97*/ { "[4326]110229", ZINT_WARN_NONCOMPLIANT, "4326110229", "261: AI (4326) position 5: Invalid day '29'" }, // yymmdd
-        /* 98*/ { "[4326]000229", 0, "4326000229", "" }, // yymmdd NOTE: will be false in 2050
-        /* 99*/ { "[4326]940229", ZINT_WARN_NONCOMPLIANT, "4326940229", "261: AI (4326) position 5: Invalid day '29'" }, // yymmdd
-        /*100*/ { "[4324]1212310000", 0, "43241212310000", "" }, // hhmm
-        /*101*/ { "[4324]1212312359", 0, "43241212312359", "" }, // hhmm
-        /*102*/ { "[4324]1212312400", ZINT_WARN_NONCOMPLIANT, "43241212312400", "261: AI (4324) position 7: Invalid hour of day '24'" }, // hhmm
-        /*103*/ { "[4324]1212312360", ZINT_WARN_NONCOMPLIANT, "43241212312360", "261: AI (4324) position 9: Invalid minutes in the hour '60'" }, // hhmm
-        /*104*/ { "[8008]121231000000", 0, "8008121231000000", "" }, // hhoptmmss
-        /*105*/ { "[8008]1212310000", 0, "80081212310000", "" }, // hhoptmmss
-        /*106*/ { "[8008]12123100", 0, "800812123100", "" }, // hhoptmmss
-        /*107*/ { "[8008]12123123", 0, "800812123123", "" }, // hhoptmmss
-        /*108*/ { "[8008]12123124", ZINT_WARN_NONCOMPLIANT, "800812123124", "261: AI (8008) position 7: Invalid hour of day '24'" }, // hhoptmmss
-        /*109*/ { "[8008]1212312359", 0, "80081212312359", "" }, // hhoptmmss
-        /*110*/ { "[8008]1212312360", ZINT_WARN_NONCOMPLIANT, "80081212312360", "261: AI (8008) position 9: Invalid minutes in the hour '60'" }, // hhoptmmss
-        /*111*/ { "[8008]121231235959", 0, "8008121231235959", "" }, // hhoptmmss
-        /*112*/ { "[8008]121231235960", ZINT_WARN_NONCOMPLIANT, "8008121231235960", "261: AI (8008) position 11: Invalid seconds in the minute '60'" }, // hhoptmmss
-        /*113*/ { "[422]004", 0, "422004", "" }, // iso3166
-        /*114*/ { "[422]894", 0, "422894", "" }, // iso3166
-        /*115*/ { "[422]00", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (422)" }, // iso3166
-        /*116*/ { "[422]0A", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (422)" }, // iso3166
-        /*117*/ { "[422]003", ZINT_WARN_NONCOMPLIANT, "422003", "261: AI (422) position 1: Unknown country code '003'" }, // iso3166
-        /*118*/ { "[422]895", ZINT_WARN_NONCOMPLIANT, "422895", "261: AI (422) position 1: Unknown country code '895'" }, // iso3166
-        /*119*/ { "[422]999", ZINT_WARN_NONCOMPLIANT, "422999", "261: AI (422) position 1: Unknown country code '999'" }, // iso3166
-        /*120*/ { "[423]004", 0, "423004", "" }, // iso3166list
-        /*121*/ { "[423]004894", 0, "423004894", "" }, // iso3166list
-        /*122*/ { "[423]004894004", 0, "423004894004", "" }, // iso3166list
-        /*123*/ { "[423]004894004894", 0, "423004894004894", "" }, // iso3166list
-        /*124*/ { "[423]004894004894004", 0, "423004894004894004", "" }, // iso3166list
-        /*125*/ { "[423]004894004894004894", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (423)" }, // iso3166list
-        /*126*/ { "[423]123894004894004894", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (423)" }, // iso3166list
-        /*127*/ { "[423]A04894004894004894", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (423)" }, // iso3166list
-        /*128*/ { "[423]00489400489400489", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (423)" }, // iso3166list
-        /*129*/ { "[423]0048940048940048", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (423)" }, // iso3166list
-        /*130*/ { "[423]00489400489400", ZINT_WARN_NONCOMPLIANT, "42300489400489400", "259: Invalid data length for AI (423)" }, // iso3166list
-        /*131*/ { "[423]0048940048940", ZINT_WARN_NONCOMPLIANT, "4230048940048940", "259: Invalid data length for AI (423)" }, // iso3166list
-        /*132*/ { "[423]00489400489", ZINT_WARN_NONCOMPLIANT, "42300489400489", "259: Invalid data length for AI (423)" }, // iso3166list
-        /*133*/ { "[423]0048940048", ZINT_WARN_NONCOMPLIANT, "4230048940048", "259: Invalid data length for AI (423)" }, // iso3166list
-        /*134*/ { "[423]00489400", ZINT_WARN_NONCOMPLIANT, "42300489400", "259: Invalid data length for AI (423)" }, // iso3166list
-        /*135*/ { "[423]0048940", ZINT_WARN_NONCOMPLIANT, "4230048940", "259: Invalid data length for AI (423)" }, // iso3166list
-        /*136*/ { "[423]00489", ZINT_WARN_NONCOMPLIANT, "42300489", "259: Invalid data length for AI (423)" }, // iso3166list
-        /*137*/ { "[423]0048", ZINT_WARN_NONCOMPLIANT, "4230048", "259: Invalid data length for AI (423)" }, // iso3166list
-        /*138*/ { "[423]00", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (423)" }, // iso3166list
-        /*139*/ { "[423]0", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (423)" }, // iso3166list
-        /*140*/ { "[423]004894004894003", ZINT_WARN_NONCOMPLIANT, "423004894004894003", "261: AI (423) position 13: Unknown country code '003'" }, // iso3166list
-        /*141*/ { "[423]004894004895004", ZINT_WARN_NONCOMPLIANT, "423004894004895004", "261: AI (423) position 10: Unknown country code '895'" }, // iso3166list
-        /*142*/ { "[423]004894004999004", ZINT_WARN_NONCOMPLIANT, "423004894004999004", "261: AI (423) position 10: Unknown country code '999'" }, // iso3166list
-        /*143*/ { "[423]004894005894004", ZINT_WARN_NONCOMPLIANT, "423004894005894004", "261: AI (423) position 7: Unknown country code '005'" }, // iso3166list
-        /*144*/ { "[423]004893004894004", ZINT_WARN_NONCOMPLIANT, "423004893004894004", "261: AI (423) position 4: Unknown country code '893'" }, // iso3166list
-        /*145*/ { "[423]004999004894004", ZINT_WARN_NONCOMPLIANT, "423004999004894004", "261: AI (423) position 4: Unknown country code '999'" }, // iso3166list
-        /*146*/ { "[423]003894004894004", ZINT_WARN_NONCOMPLIANT, "423003894004894004", "261: AI (423) position 1: Unknown country code '003'" }, // iso3166list
-        /*147*/ { "[423]004894004433", ZINT_WARN_NONCOMPLIANT, "423004894004433", "261: AI (423) position 10: Unknown country code '433'" }, // iso3166list
-        /*148*/ { "[423]004894435894", ZINT_WARN_NONCOMPLIANT, "423004894435894", "261: AI (423) position 7: Unknown country code '435'" }, // iso3166list
-        /*149*/ { "[423]004433004894", ZINT_WARN_NONCOMPLIANT, "423004433004894", "261: AI (423) position 4: Unknown country code '433'" }, // iso3166list
-        /*150*/ { "[423]432894004894", ZINT_WARN_NONCOMPLIANT, "423432894004894", "261: AI (423) position 1: Unknown country code '432'" }, // iso3166list
-        /*151*/ { "[423]004894003", ZINT_WARN_NONCOMPLIANT, "423004894003", "261: AI (423) position 7: Unknown country code '003'" }, // iso3166list
-        /*152*/ { "[423]004895004", ZINT_WARN_NONCOMPLIANT, "423004895004", "261: AI (423) position 4: Unknown country code '895'" }, // iso3166list
-        /*153*/ { "[423]004999004", ZINT_WARN_NONCOMPLIANT, "423004999004", "261: AI (423) position 4: Unknown country code '999'" }, // iso3166list
-        /*154*/ { "[423]003894004", ZINT_WARN_NONCOMPLIANT, "423003894004", "261: AI (423) position 1: Unknown country code '003'" }, // iso3166list
-        /*155*/ { "[423]004999", ZINT_WARN_NONCOMPLIANT, "423004999", "261: AI (423) position 4: Unknown country code '999'" }, // iso3166list
-        /*156*/ { "[423]000894", ZINT_WARN_NONCOMPLIANT, "423000894", "261: AI (423) position 1: Unknown country code '000'" }, // iso3166list
-        /*157*/ { "[423]003", ZINT_WARN_NONCOMPLIANT, "423003", "261: AI (423) position 1: Unknown country code '003'" }, // iso3166list
-        /*158*/ { "[7030]999A", 0, "7030999A", "" }, // iso3166999
-        /*159*/ { "[7030]894A", 0, "7030894A", "" }, // iso3166999
-        /*160*/ { "[7030]004A", 0, "7030004A", "" }, // iso3166999
-        /*161*/ { "[7030]004", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7030)" }, // iso3166999
-        /*162*/ { "[7030]04", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7030)" }, // iso3166999
-        /*163*/ { "[7030]001A", ZINT_WARN_NONCOMPLIANT, "7030001A", "261: AI (7030) position 1: Unknown country code '001'" }, // iso3166999
-        /*164*/ { "[7030]998A", ZINT_WARN_NONCOMPLIANT, "7030998A", "261: AI (7030) position 1: Unknown country code '998'" }, // iso3166999
-        /*165*/ { "[3910]0081", 0, "39100081", "" }, // iso4217
-        /*166*/ { "[3910]9991", 0, "39109991", "" }, // iso4217
-        /*167*/ { "[3910]9971", 0, "39109971", "" }, // iso4217
-        /*168*/ { "[3910]01", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (3910)" }, // iso4217
-        /*169*/ { "[3910]001", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (3910)" }, // iso4217
-        /*170*/ { "[3910]9981", ZINT_WARN_NONCOMPLIANT, "39109981", "261: AI (3910) position 1: Unknown currency code '998'" }, // iso4217
-        /*171*/ { "[3910]0041", ZINT_WARN_NONCOMPLIANT, "39100041", "261: AI (3910) position 1: Unknown currency code '004'" }, // iso4217
-        /*172*/ { "[3910]8941", ZINT_WARN_NONCOMPLIANT, "39108941", "261: AI (3910) position 1: Unknown currency code '894'" }, // iso4217
-        /*173*/ { "[4300]%12", 0, "4300%12", "" }, // pcenc
-        /*174*/ { "[4300]%1", ZINT_WARN_NONCOMPLIANT, "4300%1", "261: AI (4300) position 1: Invalid % escape" }, // pcenc
-        /*175*/ { "[4300]%", ZINT_WARN_NONCOMPLIANT, "4300%", "261: AI (4300) position 1: Invalid % escape" }, // pcenc
-        /*176*/ { "[4300]12%1212", 0, "430012%1212", "" }, // pcenc
-        /*177*/ { "[4300]12%1G12", ZINT_WARN_NONCOMPLIANT, "430012%1G12", "261: AI (4300) position 5: Invalid character for percent encoding" }, // pcenc
-        /*178*/ { "[4308]ABCDEFGHIJKLMNOPQRSTUVWXYZ%+12", 0, "4308ABCDEFGHIJKLMNOPQRSTUVWXYZ%+12", "" }, // no pcenc
-        /*179*/ { "[4308]ABCDEFGHIJKLMNOPQRSTUVWXYZ%+123", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (4308)" }, // no pcenc
-        /*180*/ { "[4321]1", 0, "43211", "" }, // yesno
-        /*181*/ { "[4321]0", 0, "43210", "" }, // yesno
-        /*182*/ { "[4321]2", ZINT_WARN_NONCOMPLIANT, "43212", "261: AI (4321) position 1: Neither 0 nor 1 for yes or no" }, // yesno
-        /*183*/ { "[4321]9", ZINT_WARN_NONCOMPLIANT, "43219", "261: AI (4321) position 1: Neither 0 nor 1 for yes or no" }, // yesno
-        /*184*/ { "[7040]1234", 0, "70401234", "" }, // importeridx
-        /*185*/ { "[7040]123A", 0, "7040123A", "" }, // importeridx
-        /*186*/ { "[7040]123Z", 0, "7040123Z", "" }, // importeridx
-        /*187*/ { "[7040]123a", 0, "7040123a", "" }, // importeridx
-        /*188*/ { "[7040]123z", 0, "7040123z", "" }, // importeridx
-        /*189*/ { "[7040]123-", 0, "7040123-", "" }, // importeridx
-        /*190*/ { "[7040]123_", 0, "7040123_", "" }, // importeridx
-        /*191*/ { "[7040]123!", ZINT_WARN_NONCOMPLIANT, "7040123!", "261: AI (7040) position 4: Invalid importer index '!'" }, // importeridx
-        /*192*/ { "[7040]123/", ZINT_WARN_NONCOMPLIANT, "7040123/", "261: AI (7040) position 4: Invalid importer index '/'" }, // importeridx
-        /*193*/ { "[7040]123:", ZINT_WARN_NONCOMPLIANT, "7040123:", "261: AI (7040) position 4: Invalid importer index ':'" }, // importeridx
-        /*194*/ { "[7040]123?", ZINT_WARN_NONCOMPLIANT, "7040123?", "261: AI (7040) position 4: Invalid importer index '?'" }, // importeridx
-        /*195*/ { "[8001]12341234512311", 0, "800112341234512311", "" }, // nonzero
-        /*196*/ { "[8001]00010000100100", 0, "800100010000100100", "" }, // nonzero
-        /*197*/ { "[8001]00001234512311", ZINT_WARN_NONCOMPLIANT, "800100001234512311", "261: AI (8001) position 1: Zero not permitted" }, // nonzero
-        /*198*/ { "[8001]12340000012311", ZINT_WARN_NONCOMPLIANT, "800112340000012311", "261: AI (8001) position 5: Zero not permitted" }, // nonzero
-        /*199*/ { "[8001]00010000100011", ZINT_WARN_NONCOMPLIANT, "800100010000100011", "261: AI (8001) position 10: Zero not permitted" }, // nonzero
-        /*200*/ { "[8001]00010000100101", 0, "800100010000100101", "" }, // winding
-        /*201*/ { "[8001]00010000100111", 0, "800100010000100111", "" }, // winding
-        /*202*/ { "[8001]00010000100191", 0, "800100010000100191", "" }, // winding
-        /*203*/ { "[8001]00010000100121", ZINT_WARN_NONCOMPLIANT, "800100010000100121", "261: AI (8001) position 13: Invalid winding direction '2'" }, // winding
-        /*204*/ { "[8001]00010000100131", ZINT_WARN_NONCOMPLIANT, "800100010000100131", "261: AI (8001) position 13: Invalid winding direction '3'" }, // winding
-        /*205*/ { "[8001]00010000100171", ZINT_WARN_NONCOMPLIANT, "800100010000100171", "261: AI (8001) position 13: Invalid winding direction '7'" }, // winding
-        /*206*/ { "[8001]00010000100181", ZINT_WARN_NONCOMPLIANT, "800100010000100181", "261: AI (8001) position 13: Invalid winding direction '8'" }, // winding
-        /*207*/ { "[8003]01234567890128", 0, "800301234567890128", "" }, // zero
-        /*208*/ { "[8003]11234567890128", ZINT_WARN_NONCOMPLIANT, "800311234567890128", "261: AI (8003) position 1: Zero is required" }, // zero
-        /*209*/ { "[8003]91234567890128", ZINT_WARN_NONCOMPLIANT, "800391234567890128", "261: AI (8003) position 1: Zero is required" }, // zero
-        /*210*/ { "[8006]123456789012310101", 0, "8006123456789012310101", "" }, // pieceoftotal
-        /*211*/ { "[8006]123456789012310199", 0, "8006123456789012310199", "" }, // pieceoftotal
-        /*212*/ { "[8006]123456789012319999", 0, "8006123456789012319999", "" }, // pieceoftotal
-        /*213*/ { "[8006]123456789012310001", ZINT_WARN_NONCOMPLIANT, "8006123456789012310001", "261: AI (8006) position 15: Piece number cannot be zero" }, // pieceoftotal
-        /*214*/ { "[8006]123456789012310100", ZINT_WARN_NONCOMPLIANT, "8006123456789012310100", "261: AI (8006) position 15: Total number cannot be zero" }, // pieceoftotal
-        /*215*/ { "[8006]123456789012310201", ZINT_WARN_NONCOMPLIANT, "8006123456789012310201", "261: AI (8006) position 15: Piece number '02' exceeds total '01'" }, // pieceoftotal
-        /*216*/ { "[8006]123456789012319998", ZINT_WARN_NONCOMPLIANT, "8006123456789012319998", "261: AI (8006) position 15: Piece number '99' exceeds total '98'" }, // pieceoftotal
-        /*217*/ { "[8007]GB82WEST12345698765432", 0, "8007GB82WEST12345698765432", "" }, // iban
-        /*218*/ { "[8007]GB83WEST12345698765432", ZINT_WARN_NONCOMPLIANT, "8007GB83WEST12345698765432", "261: AI (8007) position 3: Bad IBAN checksum '83', expected '82'" }, // iban
-        /*219*/ { "[8007]BE71096123456769", 0, "8007BE71096123456769", "" }, // iban
-        /*220*/ { "[8007]BE71096123456760", ZINT_WARN_NONCOMPLIANT, "8007BE71096123456760", "261: AI (8007) position 3: Bad IBAN checksum '71', expected '23'" }, // iban
-        /*221*/ { "[8007]BE01096123456760", ZINT_WARN_NONCOMPLIANT, "8007BE01096123456760", "261: AI (8007) position 3: Bad IBAN checksum '01', expected '23'" }, // iban
-        /*222*/ { "[8007]BE00096123456760", ZINT_WARN_NONCOMPLIANT, "8007BE00096123456760", "261: AI (8007) position 3: Bad IBAN checksum '00', expected '23'" }, // iban
-        /*223*/ { "[8007]LC14BOSL123456789012345678901234", 0, "8007LC14BOSL123456789012345678901234", "" }, // iban
-        /*224*/ { "[8007]LC14BOSL123456789012345678901230", ZINT_WARN_NONCOMPLIANT, "8007LC14BOSL123456789012345678901230", "261: AI (8007) position 3: Bad IBAN checksum '14', expected '25'" }, // iban
-        /*225*/ { "[8007]A114BOSL123456789012345678901230", ZINT_WARN_NONCOMPLIANT, "8007A114BOSL123456789012345678901230", "261: AI (8007) position 1: Non-alphabetic IBAN country code 'A1'" }, // iban
-        /*226*/ { "[8007]1A14BOSL123456789012345678901230", ZINT_WARN_NONCOMPLIANT, "80071A14BOSL123456789012345678901230", "261: AI (8007) position 1: Non-alphabetic IBAN country code '1A'" }, // iban
-        /*227*/ { "[8007]AA14BOSL123456789012345678901230", ZINT_WARN_NONCOMPLIANT, "8007AA14BOSL123456789012345678901230", "261: AI (8007) position 1: Invalid IBAN country code 'AA'" }, // iban
-        /*228*/ { "[8007]ZZ14BOSL123456789012345678901230", ZINT_WARN_NONCOMPLIANT, "8007ZZ14BOSL123456789012345678901230", "261: AI (8007) position 1: Invalid IBAN country code 'ZZ'" }, // iban
-        /*229*/ { "[8007]ZW33BOSL123456789012345678901230", 0, "8007ZW33BOSL123456789012345678901230", "" }, // iban
-        /*230*/ { "[8007]ZWA3BOSL123456789012345678901230", ZINT_WARN_NONCOMPLIANT, "8007ZWA3BOSL123456789012345678901230", "261: AI (8007) position 3: Non-numeric IBAN checksum 'A3'" }, // iban
-        /*231*/ { "[8007]ZW3ABOSL123456789012345678901230", ZINT_WARN_NONCOMPLIANT, "8007ZW3ABOSL123456789012345678901230", "261: AI (8007) position 3: Non-numeric IBAN checksum '3A'" }, // iban
-        /*232*/ { "[8007]ZW33bOSL123456789012345678901230", ZINT_WARN_NONCOMPLIANT, "8007ZW33bOSL123456789012345678901230", "261: AI (8007) position 5: Invalid IBAN character 'b'" }, // iban
-        /*233*/ { "[8007]FR7630006000011234567890189", 0, "8007FR7630006000011234567890189", "" }, // iban
-        /*234*/ { "[8007]DE91100000000123456789", 0, "8007DE91100000000123456789", "" }, // iban
-        /*235*/ { "[8007]GR9608100010000001234567890", 0, "8007GR9608100010000001234567890", "" }, // iban
-        /*236*/ { "[8007]MU43BOMM0101123456789101000MUR", 0, "8007MU43BOMM0101123456789101000MUR", "" }, // iban
-        /*237*/ { "[8007]PL10105000997603123456789123", 0, "8007PL10105000997603123456789123", "" }, // iban
-        /*238*/ { "[8007]RO09BCYP0000001234567890", 0, "8007RO09BCYP0000001234567890", "" }, // iban
-        /*239*/ { "[8007]SA4420000001234567891234", 0, "8007SA4420000001234567891234", "" }, // iban
-        /*240*/ { "[8007]ES7921000813610123456789", 0, "8007ES7921000813610123456789", "" }, // iban
-        /*241*/ { "[8007]CH5604835012345678009", 0, "8007CH5604835012345678009", "" }, // iban
-        /*242*/ { "[8007]GB98MIDL07009312345678", 0, "8007GB98MIDL07009312345678", "" }, // iban
-        /*243*/ { "[8011]1", 0, "80111", "" }, // nozeroprefix
-        /*244*/ { "[8011]11", 0, "801111", "" }, // nozeroprefix
-        /*245*/ { "[8011]0", 0, "80110", "" }, // nozeroprefix
-        /*246*/ { "[8011]01", ZINT_WARN_NONCOMPLIANT, "801101", "261: AI (8011) position 1: Zero prefix is not permitted" }, // nozeroprefix
-        /*247*/ { "[8110]106141416543213150110120", 0, "8110106141416543213150110120", "" }, // couponcode (first part of NACAG Appendix C: Example 1 - see test_rss.c test_examples)
-        /*248*/ { "[8110]012345612345610104123", 0, "8110012345612345610104123", "" }, // couponcode
-        /*249*/ { "[8110]01234561234561010412", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412", "259: Invalid data length for AI (8110)" }, // couponcode
-        /*250*/ { "[8110]12345678901234567890", ZINT_WARN_NONCOMPLIANT, "811012345678901234567890", "259: Invalid data length for AI (8110)" }, // couponcode
-        /*251*/ { "[8110]712345612345610104123", ZINT_WARN_NONCOMPLIANT, "8110712345612345610104123", "261: AI (8110) position 1: Invalid Primary GS1 Co. Prefix VLI '7'" }, // couponcode
-        /*252*/ { "[8110]A12345612345610104123", ZINT_WARN_NONCOMPLIANT, "8110A12345612345610104123", "261: AI (8110) position 1: Non-numeric Primary GS1 Co. Prefix VLI 'A'" }, // couponcode
-        /*253*/ { "[8110]012345A12345610104123", ZINT_WARN_NONCOMPLIANT, "8110012345A12345610104123", "261: AI (8110) position 7: Non-numeric Primary GS1 Co. Prefix 'A'" }, // couponcode
-        /*254*/ { "[8110]012345612345A10104123", ZINT_WARN_NONCOMPLIANT, "8110012345612345A10104123", "261: AI (8110) position 8: Non-numeric Offer Code" }, // couponcode
-        /*255*/ { "[8110]012345612345600104123", ZINT_WARN_NONCOMPLIANT, "8110012345612345600104123", "261: AI (8110) position 14: Invalid Save Value VLI '0'" }, // couponcode
-        /*256*/ { "[8110]012345612345660104123", ZINT_WARN_NONCOMPLIANT, "8110012345612345660104123", "261: AI (8110) position 14: Invalid Save Value VLI '6'" }, // couponcode
-        /*257*/ { "[8110]01234561234561A104123", ZINT_WARN_NONCOMPLIANT, "811001234561234561A104123", "261: AI (8110) position 15: Non-numeric Save Value 'A'" }, // couponcode
-        /*258*/ { "[8110]012345612345610004123", ZINT_WARN_NONCOMPLIANT, "8110012345612345610004123", "261: AI (8110) position 16: Invalid Primary Purch. Req. VLI '0'" }, // couponcode
-        /*259*/ { "[8110]012345612345610604123", ZINT_WARN_NONCOMPLIANT, "8110012345612345610604123", "261: AI (8110) position 16: Invalid Primary Purch. Req. VLI '6'" }, // couponcode
-        /*260*/ { "[8110]0123456123456101A4123", ZINT_WARN_NONCOMPLIANT, "81100123456123456101A4123", "261: AI (8110) position 17: Non-numeric Primary Purch. Req. 'A'" }, // couponcode
-        /*261*/ { "[8110]012345612345621251234", ZINT_WARN_NONCOMPLIANT, "8110012345612345621251234", "261: AI (8110) position 18: Primary Purch. Req. incomplete" }, // couponcode
-        /*262*/ { "[8110]012345612345610106123", ZINT_WARN_NONCOMPLIANT, "8110012345612345610106123", "261: AI (8110) position 18: Invalid Primary Purch. Req. Code '6'" }, // couponcode
-        /*263*/ { "[8110]012345612345610212412", ZINT_WARN_NONCOMPLIANT, "8110012345612345610212412", "261: AI (8110) position 20: Primary Purch. Family Code incomplete" }, // couponcode
-        /*264*/ { "[8110]0123456123456103123412", ZINT_WARN_NONCOMPLIANT, "81100123456123456103123412", "261: AI (8110) position 21: Primary Purch. Family Code incomplete" }, // couponcode
-        /*265*/ { "[8110]0123456123456103123412A", ZINT_WARN_NONCOMPLIANT, "81100123456123456103123412A", "261: AI (8110) position 21: Non-numeric Primary Purch. Family Code" }, // couponcode
-        /*266*/ { "[8110]01234561234561031234123", 0, "811001234561234561031234123", "" }, // couponcode
-        /*267*/ { "[8110]612345678901212345651", ZINT_WARN_NONCOMPLIANT, "8110612345678901212345651", "261: AI (8110) position 21: Save Value incomplete" }, // couponcode
-        /*268*/ { "[8110]6123456789012123456512345", ZINT_WARN_NONCOMPLIANT, "81106123456789012123456512345", "261: AI (8110) position 26: Primary Purch. Req. VLI missing" }, // couponcode
-        /*269*/ { "[8110]61234567890121234565123455123454123", 0, "811061234567890121234565123455123454123", "" }, // couponcode
-        /*270*/ { "[8110]61234567890121234565123455123454123A", ZINT_WARN_NONCOMPLIANT, "811061234567890121234565123455123454123A", "261: AI (8110) position 36: Non-numeric Data Field 'A'" }, // couponcode
-        /*271*/ { "[8110]612345678901212345651234551234541237", ZINT_WARN_NONCOMPLIANT, "8110612345678901212345651234551234541237", "261: AI (8110) position 36: Invalid Data Field '7'" }, // couponcode
-        /*272*/ { "[8110]612345678901212345651234551234541238", ZINT_WARN_NONCOMPLIANT, "8110612345678901212345651234551234541238", "261: AI (8110) position 36: Invalid Data Field '8'" }, // couponcode
-        /*273*/ { "[8110]0123456123456101041231", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041231", "261: AI (8110) position 23: Add. Purch. Rules Code incomplete" }, // couponcode
-        /*274*/ { "[8110]0123456123456101041231A", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041231A", "261: AI (8110) position 23: Non-numeric Add. Purch. Rules Code" }, // couponcode
-        /*275*/ { "[8110]01234561234561010412314", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412314", "261: AI (8110) position 23: Invalid Add. Purch. Rules Code '4'" }, // couponcode
-        /*276*/ { "[8110]01234561234561010412313", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412313", "261: AI (8110) position 24: 2nd Purch. Req. VLI missing" }, // couponcode
-        /*277*/ { "[8110]01234561234561010412313A", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412313A", "261: AI (8110) position 24: Non-numeric 2nd Purch. Req. VLI 'A'" }, // couponcode
-        /*278*/ { "[8110]012345612345610104123130", ZINT_WARN_NONCOMPLIANT, "8110012345612345610104123130", "261: AI (8110) position 24: Invalid 2nd Purch. Req. VLI '0'" }, // couponcode
-        /*279*/ { "[8110]012345612345610104123131", ZINT_WARN_NONCOMPLIANT, "8110012345612345610104123131", "261: AI (8110) position 25: 2nd Purch. Req. incomplete" }, // couponcode
-        /*280*/ { "[8110]012345612345610104123131A", ZINT_WARN_NONCOMPLIANT, "8110012345612345610104123131A", "261: AI (8110) position 25: Non-numeric 2nd Purch. Req. 'A'" }, // couponcode
-        /*281*/ { "[8110]0123456123456101041231310", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041231310", "261: AI (8110) position 26: 2nd Purch. Req. Code incomplete" }, // couponcode
-        /*282*/ { "[8110]0123456123456101041231310A", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041231310A", "261: AI (8110) position 26: Non-numeric 2nd Purch. Req. Code" }, // couponcode
-        /*283*/ { "[8110]01234561234561010412313108", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412313108", "261: AI (8110) position 26: Invalid 2nd Purch. Req. Code '8'" }, // couponcode
-        /*284*/ { "[8110]01234561234561010412313100", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412313100", "261: AI (8110) position 27: 2nd Purch. Family Code incomplete" }, // couponcode
-        /*285*/ { "[8110]01234561234561010412313100123", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412313100123", "261: AI (8110) position 30: 2nd Purch. GS1 Co. Prefix VLI missing" }, // couponcode
-        /*286*/ { "[8110]01234561234561010412313100123A", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412313100123A", "261: AI (8110) position 30: Non-numeric 2nd Purch. GS1 Co. Prefix VLI 'A'" }, // couponcode
-        /*287*/ { "[8110]012345612345610104123131001239", 0, "8110012345612345610104123131001239", "" }, // couponcode
-        /*288*/ { "[8110]01234561234561010412313100123012345", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412313100123012345", "261: AI (8110) position 31: 2nd Purch. GS1 Co. Prefix incomplete" }, // couponcode
-        /*289*/ { "[8110]0123456123456101041231310012311234567", 0, "81100123456123456101041231310012311234567", "" }, // couponcode
-        /*290*/ { "[8110]0123456123456101041232", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041232", "261: AI (8110) position 23: 3rd Purch. Req. VLI missing" }, // couponcode
-        /*291*/ { "[8110]0123456123456101041232A", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041232A", "261: AI (8110) position 23: Non-numeric 3rd Purch. Req. VLI 'A'" }, // couponcode
-        /*292*/ { "[8110]01234561234561010412326", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412326", "261: AI (8110) position 23: Invalid 3rd Purch. Req. VLI '6'" }, // couponcode
-        /*293*/ { "[8110]01234561234561010412321", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412321", "261: AI (8110) position 24: 3rd Purch. Req. incomplete" }, // couponcode
-        /*294*/ { "[8110]012345612345610104123210", ZINT_WARN_NONCOMPLIANT, "8110012345612345610104123210", "261: AI (8110) position 25: 3rd Purch. Req. Code incomplete" }, // couponcode
-        /*295*/ { "[8110]0123456123456101041232105", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041232105", "261: AI (8110) position 25: Invalid 3rd Purch. Req. Code '5'" }, // couponcode
-        /*296*/ { "[8110]0123456123456101041232104", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041232104", "261: AI (8110) position 26: 3rd Purch. Family Code incomplete" }, // couponcode
-        /*297*/ { "[8110]012345612345610104123210412A", ZINT_WARN_NONCOMPLIANT, "8110012345612345610104123210412A", "261: AI (8110) position 26: Non-numeric 3rd Purch. Family Code" }, // couponcode
-        /*298*/ { "[8110]0123456123456101041232104123", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041232104123", "261: AI (8110) position 29: 3rd Purch. GS1 Co. Prefix VLI missing" }, // couponcode
-        /*299*/ { "[8110]01234561234561010412321041230", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412321041230", "261: AI (8110) position 30: 3rd Purch. GS1 Co. Prefix incomplete" }, // couponcode
-        /*300*/ { "[8110]0123456123456101041232104123A", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041232104123A", "261: AI (8110) position 29: Non-numeric 3rd Purch. GS1 Co. Prefix VLI 'A'" }, // couponcode
-        /*301*/ { "[8110]0123456123456101041232104123012345", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041232104123012345", "261: AI (8110) position 30: 3rd Purch. GS1 Co. Prefix incomplete" }, // couponcode
-        /*302*/ { "[8110]0123456123456101041232104123012345A", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041232104123012345A", "261: AI (8110) position 35: Non-numeric 3rd Purch. GS1 Co. Prefix 'A'" }, // couponcode
-        /*303*/ { "[8110]01234561234561010412321041230123456", 0, "811001234561234561010412321041230123456", "" }, // couponcode
-        /*304*/ { "[8110]0123456123456101041233", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041233", "261: AI (8110) position 23: Expiration Date incomplete" }, // couponcode
-        /*305*/ { "[8110]01234561234561010412332012", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412332012", "261: AI (8110) position 23: Expiration Date incomplete" }, // couponcode
-        /*306*/ { "[8110]012345612345610104123320123A", ZINT_WARN_NONCOMPLIANT, "8110012345612345610104123320123A", "261: AI (8110) position 23: Non-numeric Expiration Date" }, // couponcode
-        /*307*/ { "[8110]0123456123456101041233201232", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041233201232", "261: AI (8110) position 27: Invalid day '32'" }, // couponcode
-        /*308*/ { "[8110]0123456123456101041233200031", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041233200031", "261: AI (8110) position 25: Invalid month '00'" }, // couponcode
-        /*309*/ { "[8110]0123456123456101041233201231", 0, "81100123456123456101041233201231", "" }, // couponcode
-        /*310*/ { "[8110]0123456123456101041234", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041234", "261: AI (8110) position 23: Start Date incomplete" }, // couponcode
-        /*311*/ { "[8110]01234561234561010412342012", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412342012", "261: AI (8110) position 23: Start Date incomplete" }, // couponcode
-        /*312*/ { "[8110]012345612345610104123420123A", ZINT_WARN_NONCOMPLIANT, "8110012345612345610104123420123A", "261: AI (8110) position 23: Non-numeric Start Date" }, // couponcode
-        /*313*/ { "[8110]0123456123456101041234200230", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041234200230", "261: AI (8110) position 27: Invalid day '30'" }, // couponcode
-        /*314*/ { "[8110]0123456123456101041234201329", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041234201329", "261: AI (8110) position 25: Invalid month '13'" }, // couponcode
-        /*315*/ { "[8110]0123456123456101041234200229", 0, "81100123456123456101041234200229", "" }, // couponcode
-        /*316*/ { "[8110]0123456123456101041235", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041235", "261: AI (8110) position 23: Serial Number VLI missing" }, // couponcode
-        /*317*/ { "[8110]0123456123456101041235A", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041235A", "261: AI (8110) position 23: Non-numeric Serial Number VLI 'A'" }, // couponcode
-        /*318*/ { "[8110]01234561234561010412350", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412350", "261: AI (8110) position 24: Serial Number incomplete" }, // couponcode
-        /*319*/ { "[8110]0123456123456101041235012345", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041235012345", "261: AI (8110) position 24: Serial Number incomplete" }, // couponcode
-        /*320*/ { "[8110]0123456123456101041235912345678901234", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041235912345678901234", "261: AI (8110) position 24: Serial Number incomplete" }, // couponcode
-        /*321*/ { "[8110]0123456123456101041235912345678901234A", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041235912345678901234A", "261: AI (8110) position 38: Non-numeric Serial Number 'A'" }, // couponcode
-        /*322*/ { "[8110]01234561234561010412359123456789012345", 0, "811001234561234561010412359123456789012345", "" }, // couponcode
-        /*323*/ { "[8110]0123456123456101041236", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041236", "261: AI (8110) position 23: Retailer ID VLI missing" }, // couponcode
-        /*324*/ { "[8110]0123456123456101041236A", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041236A", "261: AI (8110) position 23: Non-numeric Retailer ID VLI 'A'" }, // couponcode
-        /*325*/ { "[8110]01234561234561010412360", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412360", "261: AI (8110) position 23: Invalid Retailer ID VLI '0'" }, // couponcode
-        /*326*/ { "[8110]01234561234561010412368", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412368", "261: AI (8110) position 23: Invalid Retailer ID VLI '8'" }, // couponcode
-        /*327*/ { "[8110]01234561234561010412361", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412361", "261: AI (8110) position 24: Retailer ID incomplete" }, // couponcode
-        /*328*/ { "[8110]01234561234561010412361123456", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412361123456", "261: AI (8110) position 24: Retailer ID incomplete" }, // couponcode
-        /*329*/ { "[8110]01234561234561010412361123456A", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412361123456A", "261: AI (8110) position 30: Non-numeric Retailer ID 'A'" }, // couponcode
-        /*330*/ { "[8110]012345612345610104123671234567890123", 0, "8110012345612345610104123671234567890123", "" }, // couponcode
-        /*331*/ { "[8110]0123456123456101041239", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041239", "261: AI (8110) position 23: Save Value Code incomplete" }, // couponcode
-        /*332*/ { "[8110]0123456123456101041239A", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041239A", "261: AI (8110) position 23: Non-numeric Save Value Code" }, // couponcode
-        /*333*/ { "[8110]01234561234561010412393", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412393", "261: AI (8110) position 23: Invalid Save Value Code '3'" }, // couponcode
-        /*334*/ { "[8110]01234561234561010412394", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412394", "261: AI (8110) position 23: Invalid Save Value Code '4'" }, // couponcode
-        /*335*/ { "[8110]01234561234561010412397", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412397", "261: AI (8110) position 23: Invalid Save Value Code '7'" }, // couponcode
-        /*336*/ { "[8110]01234561234561010412390", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412390", "261: AI (8110) position 24: Save Value Applies To incomplete" }, // couponcode
-        /*337*/ { "[8110]01234561234561010412390A", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412390A", "261: AI (8110) position 24: Non-numeric Save Value Applies To" }, // couponcode
-        /*338*/ { "[8110]012345612345610104123903", ZINT_WARN_NONCOMPLIANT, "8110012345612345610104123903", "261: AI (8110) position 24: Invalid Save Value Applies To '3'" }, // couponcode
-        /*339*/ { "[8110]012345612345610104123902", ZINT_WARN_NONCOMPLIANT, "8110012345612345610104123902", "261: AI (8110) position 25: Store Coupon Flag incomplete" }, // couponcode
-        /*340*/ { "[8110]012345612345610104123902A", ZINT_WARN_NONCOMPLIANT, "8110012345612345610104123902A", "261: AI (8110) position 25: Non-numeric Store Coupon Flag" }, // couponcode
-        /*341*/ { "[8110]0123456123456101041239029", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041239029", "261: AI (8110) position 26: Don't Multiply Flag incomplete" }, // couponcode
-        /*342*/ { "[8110]0123456123456101041239029A", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041239029A", "261: AI (8110) position 26: Non-numeric Don't Multiply Flag" }, // couponcode
-        /*343*/ { "[8110]01234561234561010412390292", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412390292", "261: AI (8110) position 26: Invalid Don't Multiply Flag '2'" }, // couponcode
-        /*344*/ { "[8110]01234561234561010412390291", 0, "811001234561234561010412390291", "" }, // couponcode
-        /*345*/ { "[8110]177777776666663100120444101105551888888821109991222222232012314200601522345678961345678990000", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8110)" }, // couponcode (example from GS1 AI (8112) Coupon Data Specifications Appendix A: AI (8110) vs AI (8112))
-        /*346*/ { "[8110]177777776666663100120444101105551888888821109991222222232012314200601", 0, "8110177777776666663100120444101105551888888821109991222222232012314200601", "" }, // couponcode
-        /*347*/ { "[8112]017777777666666223456789", 0, "8112017777777666666223456789", "" }, // couponposoffer (example from GS1 AI (8112) Coupon Data Specifications Appendix A: AI (8110) vs AI (8112))
-        /*348*/ { "[8112]001234561234560123456", 0, "8112001234561234560123456", "" }, // couponposoffer
-        /*349*/ { "[8112]00123456123456012345", ZINT_WARN_NONCOMPLIANT, "811200123456123456012345", "259: Invalid data length for AI (8112)" }, // couponposoffer
-        /*350*/ { "[8112]0012345612345601234561", ZINT_WARN_NONCOMPLIANT, "81120012345612345601234561", "261: AI (8112) position 22: Reserved trailing characters" }, // couponposoffer
-        /*351*/ { "[8112]061234567890121234569123456789012345", 0, "8112061234567890121234569123456789012345", "" }, // couponposoffer
-        /*352*/ { "[8112]0612345678901212345691234567890123456", ZINT_WARN_NONCOMPLIANT, "81120612345678901212345691234567890123456", "259: Invalid data length for AI (8112)" }, // couponposoffer
-        /*353*/ { "[8112]06123456789012123456912345678901234A", ZINT_WARN_NONCOMPLIANT, "811206123456789012123456912345678901234A", "261: AI (8112) position 36: Non-numeric Serial Number 'A'" }, // couponposoffer
-        /*354*/ { "[8112]06123456789012123456912345678901234", ZINT_WARN_NONCOMPLIANT, "811206123456789012123456912345678901234", "261: AI (8112) position 22: Serial Number incomplete" }, // couponposoffer
-        /*355*/ { "[8112]06123456789012123456812345678901234", 0, "811206123456789012123456812345678901234", "" }, // couponposoffer
-        /*356*/ { "[8112]0612345678901212345681234567890123", ZINT_WARN_NONCOMPLIANT, "81120612345678901212345681234567890123", "261: AI (8112) position 22: Serial Number incomplete" }, // couponposoffer
-        /*357*/ { "[8112]0612345678901212345A0123456", ZINT_WARN_NONCOMPLIANT, "81120612345678901212345A0123456", "261: AI (8112) position 15: Non-numeric Offer Code" }, // couponposoffer
-        /*358*/ { "[8112]0612345678901A1234560123456", ZINT_WARN_NONCOMPLIANT, "81120612345678901A1234560123456", "261: AI (8112) position 14: Non-numeric Coupon Funder ID 'A'" }, // couponposoffer
-        /*359*/ { "[8112]071234567890121234560123456", ZINT_WARN_NONCOMPLIANT, "8112071234567890121234560123456", "261: AI (8112) position 2: Invalid Coupon Funder ID VLI '7'" }, // couponposoffer
-        /*360*/ { "[8112]0A1234567890121234560123456", ZINT_WARN_NONCOMPLIANT, "81120A1234567890121234560123456", "261: AI (8112) position 2: Non-numeric Coupon Funder ID VLI 'A'" }, // couponposoffer
-        /*361*/ { "[8112]261234567890121234560123456", ZINT_WARN_NONCOMPLIANT, "8112261234567890121234560123456", "261: AI (8112) position 1: Coupon Format must be 0 or 1" }, // couponposoffer
-        /*362*/ { "[8112]A61234567890121234560123456", ZINT_WARN_NONCOMPLIANT, "8112A61234567890121234560123456", "261: AI (8112) position 1: Non-numeric Coupon Format" }, // couponposoffer
+        /*  3*/ { "[00]1234567890123456759", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (00)" }, // length
+        /*  4*/ { "[00]12345678901234567", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (00)" }, // length
+        /*  5*/ { "[00]123456789012345675A", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (00)" }, // length
+        /*  6*/ { "[91]!\"%&'()*+,-./0123456789:;<=>?ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz", 0, "91!\"%&'()*+,-./0123456789:;<=>?ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz", "" }, // cset82
+        /*  7*/ { "[91] ", ZINT_WARN_NONCOMPLIANT, "91 ", "261: AI (91) position 1: Invalid CSET 82 character ' '" }, // cset82
+        /*  8*/ { "[91]#", ZINT_WARN_NONCOMPLIANT, "91#", "261: AI (91) position 1: Invalid CSET 82 character '#'" }, // cset82
+        /*  9*/ { "[91]a^", ZINT_WARN_NONCOMPLIANT, "91a^", "261: AI (91) position 2: Invalid CSET 82 character '^'" }, // cset82
+        /* 10*/ { "[91]!\"%&'()*+,-./0123456789:;<=>?ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxy{", ZINT_WARN_NONCOMPLIANT, "91!\"%&'()*+,-./0123456789:;<=>?ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxy{", "261: AI (91) position 82: Invalid CSET 82 character '{'" }, // cset82
+        /* 11*/ { "[8010]01#-/23456789ABCDEFGHIJKLMNOPQ", 0, "801001#-/23456789ABCDEFGHIJKLMNOPQ", "" }, // cset39
+        /* 12*/ { "[8010]6789ABCDEFGHIJKLMNOPQRSTUVWXYZ", 0, "80106789ABCDEFGHIJKLMNOPQRSTUVWXYZ", "" }, // cset39
+        /* 13*/ { "[8010]01!", ZINT_WARN_NONCOMPLIANT, "801001!", "261: AI (8010) position 3: Invalid CSET 39 character '!'" }, // cset39
+        /* 14*/ { "[8010]01a", ZINT_WARN_NONCOMPLIANT, "801001a", "261: AI (8010) position 3: Invalid CSET 39 character 'a'" }, // cset39
+        /* 15*/ { "[8010]6789ABCDEFGHIJKLMNOPQRSTUVWXY}", ZINT_WARN_NONCOMPLIANT, "80106789ABCDEFGHIJKLMNOPQRSTUVWXY}", "261: AI (8010) position 30: Invalid CSET 39 character '}'" }, // cset39
+        /* 16*/ { "[8010]#-/0123456789ABCDEFGHIJKLMNOPQ", ZINT_WARN_NONCOMPLIANT, "8010#-/0123456789ABCDEFGHIJKLMNOPQ", "261: AI (8010) position 1: Non-numeric company prefix '#'" }, // key
+        /* 17*/ { "[8010]0#-/123456789ABCDEFGHIJKLMNOPQ", ZINT_WARN_NONCOMPLIANT, "80100#-/123456789ABCDEFGHIJKLMNOPQ", "261: AI (8010) position 2: Non-numeric company prefix '#'" }, // key
+        /* 18*/ { "[8013]1987654Ad4X4bL5ttr2310c2K", 0, "80131987654Ad4X4bL5ttr2310c2K", "" }, // csumalpha
+        /* 19*/ { "[8013]12345678901234567890123NT", 0, "801312345678901234567890123NT", "" }, // csumalpha
+        /* 20*/ { "[8013]12345_ABCDEFGHIJKLMCP", 0, "801312345_ABCDEFGHIJKLMCP", "" }, // csumalpha
+        /* 21*/ { "[8013]12345_NOPQRSTUVWXYZDN", 0, "801312345_NOPQRSTUVWXYZDN", "" }, // csumalpha
+        /* 22*/ { "[8013]12345_abcdefghijklmN3", 0, "801312345_abcdefghijklmN3", "" }, // csumalpha
+        /* 23*/ { "[8013]12345_nopqrstuvwxyzP2", 0, "801312345_nopqrstuvwxyzP2", "" }, // csumalpha
+        /* 24*/ { "[8013]12345_!\"%&'()*+,-./LC", 0, "801312345_!\"%&'()*+,-./LC", "" }, // csumalpha
+        /* 25*/ { "[8013]12345_0123456789:;<=>?62", 0, "801312345_0123456789:;<=>?62", "" }, // csumalpha
+        /* 26*/ { "[8013]7907665Bm8v2AB", 0, "80137907665Bm8v2AB", "" }, // csumalpha
+        /* 27*/ { "[8013]97850l6KZm0yCD", 0, "801397850l6KZm0yCD", "" }, // csumalpha
+        /* 28*/ { "[8013]225803106GSpEF", 0, "8013225803106GSpEF", "" }, // csumalpha
+        /* 29*/ { "[8013]149512464PM+GH", 0, "8013149512464PM+GH", "" }, // csumalpha
+        /* 30*/ { "[8013]62577B8fRG7HJK", 0, "801362577B8fRG7HJK", "" }, // csumalpha
+        /* 31*/ { "[8013]515942070CYxLM", 0, "8013515942070CYxLM", "" }, // csumalpha
+        /* 32*/ { "[8013]390800494sP6NP", 0, "8013390800494sP6NP", "" }, // csumalpha
+        /* 33*/ { "[8013]386830132uO+QR", 0, "8013386830132uO+QR", "" }, // csumalpha
+        /* 34*/ { "[8013]53395376X1:nST", 0, "801353395376X1:nST", "" }, // csumalpha
+        /* 35*/ { "[8013]957813138Sb6UV", 0, "8013957813138Sb6UV", "" }, // csumalpha
+        /* 36*/ { "[8013]530790no0qOgWX", 0, "8013530790no0qOgWX", "" }, // csumalpha
+        /* 37*/ { "[8013]62185314IvwmYZ", 0, "801362185314IvwmYZ", "" }, // csumalpha
+        /* 38*/ { "[8013]23956qk1&dB!23", 0, "801323956qk1&dB!23", "" }, // csumalpha
+        /* 39*/ { "[8013]794394895ic045", 0, "8013794394895ic045", "" }, // csumalpha
+        /* 40*/ { "[8013]57453Uq3qA<H67", 0, "801357453Uq3qA<H67", "" }, // csumalpha
+        /* 41*/ { "[8013]62185314IvwmYZ", 0, "801362185314IvwmYZ", "" }, // csumalpha
+        /* 42*/ { "[8013]0881063PhHvY89", 0, "80130881063PhHvY89", "" }, // csumalpha
+        /* 43*/ { "[8013]00000!HV", 0, "801300000!HV", "" }, // csumalpha
+        /* 44*/ { "[8013]99999zzzzzzzzzzzzzzzzzzT2", 0, "801399999zzzzzzzzzzzzzzzzzzT2", "" }, // csumalpha
+        /* 45*/ { "[8013]1987654Ad4X4bL5ttr2310cXK", ZINT_WARN_NONCOMPLIANT, "80131987654Ad4X4bL5ttr2310cXK", "261: AI (8013) position 24: Bad checksum 'X', expected '2'" }, // csumalpha
+        /* 46*/ { "[8013]1987654Ad4X4bL5ttr2310c2X", ZINT_WARN_NONCOMPLIANT, "80131987654Ad4X4bL5ttr2310c2X", "261: AI (8013) position 25: Bad checksum 'X', expected 'K'" }, // csumalpha
+        /* 47*/ { "[8013]198765£Ad4X4bL5ttr2310c2K", ZINT_ERROR_INVALID_DATA, "", "250: Extended ASCII characters are not supported by GS1" }, // csumalpha
+        /* 48*/ { "[8013]1987654Ad4X4bL5ttr2310£2K", ZINT_ERROR_INVALID_DATA, "", "250: Extended ASCII characters are not supported by GS1" }, // csumalpha
+        /* 49*/ { "[8013]1987654Ad4X4bL5ttr2310cxK", ZINT_WARN_NONCOMPLIANT, "80131987654Ad4X4bL5ttr2310cxK", "261: AI (8013) position 24: Bad checksum 'x', expected '2'" }, // csumalpha
+        /* 50*/ { "[8013]1987654Ad4X4bL5ttr2310c2x", ZINT_WARN_NONCOMPLIANT, "80131987654Ad4X4bL5ttr2310c2x", "261: AI (8013) position 25: Bad checksum 'x', expected 'K'" }, // csumalpha
+        /* 51*/ { "[8013]12345678901234567890123NTX", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8013)" }, // csumalpha
+        /* 52*/ { "[8013]1", ZINT_WARN_NONCOMPLIANT, "80131", "259: Invalid data length for AI (8013)" }, // csumalpha
+        /* 53*/ { "[8013]12", ZINT_WARN_NONCOMPLIANT, "801312", "261: AI (8013) position 1: Bad checksum '1', expected '2'" }, // csumalpha
+        /* 54*/ { "[8013]22", 0, "801322", "" }, // csumalpha
+        /* 55*/ { "[8013]123", ZINT_WARN_NONCOMPLIANT, "8013123", "261: AI (8013) position 3: Bad checksum '3', expected 'W'" }, // csumalpha
+        /* 56*/ { "[8013]12W", 0, "801312W", "" }, // csumalpha
+        /* 57*/ { "[8013]00000!HW", ZINT_WARN_NONCOMPLIANT, "801300000!HW", "261: AI (8013) position 8: Bad checksum 'W', expected 'V'" }, // csumalpha
+        /* 58*/ { "[8013]7907665Bm8v2BB", ZINT_WARN_NONCOMPLIANT, "80137907665Bm8v2BB", "261: AI (8013) position 13: Bad checksum 'B', expected 'A'" }, // csumalpha
+        /* 59*/ { "[8013]99zzzzzzzzzzzzzzzzzzzzzZ7", 0, "801399zzzzzzzzzzzzzzzzzzzzzZ7", "" }, // csumalpha
+        /* 60*/ { "[11]120100", 0, "11120100", "" }, // yymmd0
+        /* 61*/ { "[11]120131", 0, "11120131", "" }, // yymmd0
+        /* 62*/ { "[11]120132", ZINT_WARN_NONCOMPLIANT, "11120132", "261: AI (11) position 5: Invalid day '32'" }, // yymmd0
+        /* 63*/ { "[11]120229", 0, "11120229", "" }, // yymmd0
+        /* 64*/ { "[11]110229", ZINT_WARN_NONCOMPLIANT, "11110229", "261: AI (11) position 5: Invalid day '29'" }, // yymmd0
+        /* 65*/ { "[11]000229", 0, "11000229", "" }, // yymmd0 NOTE: will be false in 2050
+        /* 66*/ { "[11]480229", 0, "11480229", "" }, // yymmd0
+        /* 67*/ { "[11]500229", ZINT_WARN_NONCOMPLIANT, "11500229", "261: AI (11) position 5: Invalid day '29'" }, // yymmd0
+        /* 68*/ { "[11]980229", ZINT_WARN_NONCOMPLIANT, "11980229", "261: AI (11) position 5: Invalid day '29'" }, // yymmd0
+        /* 69*/ { "[11]110228", 0, "11110228", "" }, // yymmd0
+        /* 70*/ { "[11]120230", ZINT_WARN_NONCOMPLIANT, "11120230", "261: AI (11) position 5: Invalid day '30'" }, // yymmd0
+        /* 71*/ { "[11]120331", 0, "11120331", "" }, // yymmd0
+        /* 72*/ { "[11]120332", ZINT_WARN_NONCOMPLIANT, "11120332", "261: AI (11) position 5: Invalid day '32'" }, // yymmd0
+        /* 73*/ { "[11]120430", 0, "11120430", "" }, // yymmd0
+        /* 74*/ { "[11]120431", ZINT_WARN_NONCOMPLIANT, "11120431", "261: AI (11) position 5: Invalid day '31'" }, // yymmd0
+        /* 75*/ { "[11]120531", 0, "11120531", "" }, // yymmd0
+        /* 76*/ { "[11]120532", ZINT_WARN_NONCOMPLIANT, "11120532", "261: AI (11) position 5: Invalid day '32'" }, // yymmd0
+        /* 77*/ { "[11]120630", 0, "11120630", "" }, // yymmd0
+        /* 78*/ { "[11]120631", ZINT_WARN_NONCOMPLIANT, "11120631", "261: AI (11) position 5: Invalid day '31'" }, // yymmd0
+        /* 79*/ { "[11]120731", 0, "11120731", "" }, // yymmd0
+        /* 80*/ { "[11]120732", ZINT_WARN_NONCOMPLIANT, "11120732", "261: AI (11) position 5: Invalid day '32'" }, // yymmd0
+        /* 81*/ { "[11]120831", 0, "11120831", "" }, // yymmd0
+        /* 82*/ { "[11]120832", ZINT_WARN_NONCOMPLIANT, "11120832", "261: AI (11) position 5: Invalid day '32'" }, // yymmd0
+        /* 83*/ { "[11]120930", 0, "11120930", "" }, // yymmd0
+        /* 84*/ { "[11]120931", ZINT_WARN_NONCOMPLIANT, "11120931", "261: AI (11) position 5: Invalid day '31'" }, // yymmd0
+        /* 85*/ { "[11]121031", 0, "11121031", "" }, // yymmd0
+        /* 86*/ { "[11]121032", ZINT_WARN_NONCOMPLIANT, "11121032", "261: AI (11) position 5: Invalid day '32'" }, // yymmd0
+        /* 87*/ { "[11]121130", 0, "11121130", "" }, // yymmd0
+        /* 88*/ { "[11]121131", ZINT_WARN_NONCOMPLIANT, "11121131", "261: AI (11) position 5: Invalid day '31'" }, // yymmd0
+        /* 89*/ { "[11]121200", 0, "11121200", "" }, // yymmd0
+        /* 90*/ { "[11]121231", 0, "11121231", "" }, // yymmd0
+        /* 91*/ { "[11]121232", ZINT_WARN_NONCOMPLIANT, "11121232", "261: AI (11) position 5: Invalid day '32'" }, // yymmd0
+        /* 92*/ { "[11]120031", ZINT_WARN_NONCOMPLIANT, "11120031", "261: AI (11) position 3: Invalid month '00'" }, // yymmd0
+        /* 93*/ { "[11]121331", ZINT_WARN_NONCOMPLIANT, "11121331", "261: AI (11) position 3: Invalid month '13'" }, // yymmd0
+        /* 94*/ { "[4326]121231", 0, "4326121231", "" }, // yymmdd
+        /* 95*/ { "[4326]121200", ZINT_WARN_NONCOMPLIANT, "4326121200", "261: AI (4326) position 5: Invalid day '00'" }, // yymmdd
+        /* 96*/ { "[4326]120031", ZINT_WARN_NONCOMPLIANT, "4326120031", "261: AI (4326) position 3: Invalid month '00'" }, // yymmdd
+        /* 97*/ { "[4326]129931", ZINT_WARN_NONCOMPLIANT, "4326129931", "261: AI (4326) position 3: Invalid month '99'" }, // yymmdd
+        /* 98*/ { "[4326]121299", ZINT_WARN_NONCOMPLIANT, "4326121299", "261: AI (4326) position 5: Invalid day '99'" }, // yymmdd
+        /* 99*/ { "[4326]120230", ZINT_WARN_NONCOMPLIANT, "4326120230", "261: AI (4326) position 5: Invalid day '30'" }, // yymmdd
+        /*100*/ { "[4326]110229", ZINT_WARN_NONCOMPLIANT, "4326110229", "261: AI (4326) position 5: Invalid day '29'" }, // yymmdd
+        /*101*/ { "[4326]000229", 0, "4326000229", "" }, // yymmdd NOTE: will be false in 2050
+        /*102*/ { "[4326]940229", ZINT_WARN_NONCOMPLIANT, "4326940229", "261: AI (4326) position 5: Invalid day '29'" }, // yymmdd
+        /*103*/ { "[4324]1212310000", 0, "43241212310000", "" }, // hhmm
+        /*104*/ { "[4324]1212312359", 0, "43241212312359", "" }, // hhmm
+        /*105*/ { "[4324]1212312400", ZINT_WARN_NONCOMPLIANT, "43241212312400", "261: AI (4324) position 7: Invalid hour of day '24'" }, // hhmm
+        /*106*/ { "[4324]1212312360", ZINT_WARN_NONCOMPLIANT, "43241212312360", "261: AI (4324) position 9: Invalid minutes in the hour '60'" }, // hhmm
+        /*107*/ { "[8008]121231000000", 0, "8008121231000000", "" }, // hhoptmmss
+        /*108*/ { "[8008]1212310000", 0, "80081212310000", "" }, // hhoptmmss
+        /*109*/ { "[8008]12123100", 0, "800812123100", "" }, // hhoptmmss
+        /*110*/ { "[8008]12123123", 0, "800812123123", "" }, // hhoptmmss
+        /*111*/ { "[8008]12123124", ZINT_WARN_NONCOMPLIANT, "800812123124", "261: AI (8008) position 7: Invalid hour of day '24'" }, // hhoptmmss
+        /*112*/ { "[8008]1212312359", 0, "80081212312359", "" }, // hhoptmmss
+        /*113*/ { "[8008]1212312360", ZINT_WARN_NONCOMPLIANT, "80081212312360", "261: AI (8008) position 9: Invalid minutes in the hour '60'" }, // hhoptmmss
+        /*114*/ { "[8008]121231235959", 0, "8008121231235959", "" }, // hhoptmmss
+        /*115*/ { "[8008]121231235960", ZINT_WARN_NONCOMPLIANT, "8008121231235960", "261: AI (8008) position 11: Invalid seconds in the minute '60'" }, // hhoptmmss
+        /*116*/ { "[422]004", 0, "422004", "" }, // iso3166
+        /*117*/ { "[422]894", 0, "422894", "" }, // iso3166
+        /*118*/ { "[422]00", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (422)" }, // iso3166
+        /*119*/ { "[422]0A", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (422)" }, // iso3166
+        /*120*/ { "[422]003", ZINT_WARN_NONCOMPLIANT, "422003", "261: AI (422) position 1: Unknown country code '003'" }, // iso3166
+        /*121*/ { "[422]895", ZINT_WARN_NONCOMPLIANT, "422895", "261: AI (422) position 1: Unknown country code '895'" }, // iso3166
+        /*122*/ { "[422]999", ZINT_WARN_NONCOMPLIANT, "422999", "261: AI (422) position 1: Unknown country code '999'" }, // iso3166
+        /*123*/ { "[423]004", 0, "423004", "" }, // iso3166list
+        /*124*/ { "[423]004894", 0, "423004894", "" }, // iso3166list
+        /*125*/ { "[423]004894004", 0, "423004894004", "" }, // iso3166list
+        /*126*/ { "[423]004894004894", 0, "423004894004894", "" }, // iso3166list
+        /*127*/ { "[423]004894004894004", 0, "423004894004894004", "" }, // iso3166list
+        /*128*/ { "[423]004894004894004894", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (423)" }, // iso3166list
+        /*129*/ { "[423]123894004894004894", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (423)" }, // iso3166list
+        /*130*/ { "[423]A04894004894004894", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (423)" }, // iso3166list
+        /*131*/ { "[423]00489400489400489", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (423)" }, // iso3166list
+        /*132*/ { "[423]0048940048940048", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (423)" }, // iso3166list
+        /*133*/ { "[423]00489400489400", ZINT_WARN_NONCOMPLIANT, "42300489400489400", "259: Invalid data length for AI (423)" }, // iso3166list
+        /*134*/ { "[423]0048940048940", ZINT_WARN_NONCOMPLIANT, "4230048940048940", "259: Invalid data length for AI (423)" }, // iso3166list
+        /*135*/ { "[423]00489400489", ZINT_WARN_NONCOMPLIANT, "42300489400489", "259: Invalid data length for AI (423)" }, // iso3166list
+        /*136*/ { "[423]0048940048", ZINT_WARN_NONCOMPLIANT, "4230048940048", "259: Invalid data length for AI (423)" }, // iso3166list
+        /*137*/ { "[423]00489400", ZINT_WARN_NONCOMPLIANT, "42300489400", "259: Invalid data length for AI (423)" }, // iso3166list
+        /*138*/ { "[423]0048940", ZINT_WARN_NONCOMPLIANT, "4230048940", "259: Invalid data length for AI (423)" }, // iso3166list
+        /*139*/ { "[423]00489", ZINT_WARN_NONCOMPLIANT, "42300489", "259: Invalid data length for AI (423)" }, // iso3166list
+        /*140*/ { "[423]0048", ZINT_WARN_NONCOMPLIANT, "4230048", "259: Invalid data length for AI (423)" }, // iso3166list
+        /*141*/ { "[423]00", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (423)" }, // iso3166list
+        /*142*/ { "[423]0", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (423)" }, // iso3166list
+        /*143*/ { "[423]004894004894003", ZINT_WARN_NONCOMPLIANT, "423004894004894003", "261: AI (423) position 13: Unknown country code '003'" }, // iso3166list
+        /*144*/ { "[423]004894004895004", ZINT_WARN_NONCOMPLIANT, "423004894004895004", "261: AI (423) position 10: Unknown country code '895'" }, // iso3166list
+        /*145*/ { "[423]004894004999004", ZINT_WARN_NONCOMPLIANT, "423004894004999004", "261: AI (423) position 10: Unknown country code '999'" }, // iso3166list
+        /*146*/ { "[423]004894005894004", ZINT_WARN_NONCOMPLIANT, "423004894005894004", "261: AI (423) position 7: Unknown country code '005'" }, // iso3166list
+        /*147*/ { "[423]004893004894004", ZINT_WARN_NONCOMPLIANT, "423004893004894004", "261: AI (423) position 4: Unknown country code '893'" }, // iso3166list
+        /*148*/ { "[423]004999004894004", ZINT_WARN_NONCOMPLIANT, "423004999004894004", "261: AI (423) position 4: Unknown country code '999'" }, // iso3166list
+        /*149*/ { "[423]003894004894004", ZINT_WARN_NONCOMPLIANT, "423003894004894004", "261: AI (423) position 1: Unknown country code '003'" }, // iso3166list
+        /*150*/ { "[423]004894004433", ZINT_WARN_NONCOMPLIANT, "423004894004433", "261: AI (423) position 10: Unknown country code '433'" }, // iso3166list
+        /*151*/ { "[423]004894435894", ZINT_WARN_NONCOMPLIANT, "423004894435894", "261: AI (423) position 7: Unknown country code '435'" }, // iso3166list
+        /*152*/ { "[423]004433004894", ZINT_WARN_NONCOMPLIANT, "423004433004894", "261: AI (423) position 4: Unknown country code '433'" }, // iso3166list
+        /*153*/ { "[423]432894004894", ZINT_WARN_NONCOMPLIANT, "423432894004894", "261: AI (423) position 1: Unknown country code '432'" }, // iso3166list
+        /*154*/ { "[423]004894003", ZINT_WARN_NONCOMPLIANT, "423004894003", "261: AI (423) position 7: Unknown country code '003'" }, // iso3166list
+        /*155*/ { "[423]004895004", ZINT_WARN_NONCOMPLIANT, "423004895004", "261: AI (423) position 4: Unknown country code '895'" }, // iso3166list
+        /*156*/ { "[423]004999004", ZINT_WARN_NONCOMPLIANT, "423004999004", "261: AI (423) position 4: Unknown country code '999'" }, // iso3166list
+        /*157*/ { "[423]003894004", ZINT_WARN_NONCOMPLIANT, "423003894004", "261: AI (423) position 1: Unknown country code '003'" }, // iso3166list
+        /*158*/ { "[423]004999", ZINT_WARN_NONCOMPLIANT, "423004999", "261: AI (423) position 4: Unknown country code '999'" }, // iso3166list
+        /*159*/ { "[423]000894", ZINT_WARN_NONCOMPLIANT, "423000894", "261: AI (423) position 1: Unknown country code '000'" }, // iso3166list
+        /*160*/ { "[423]003", ZINT_WARN_NONCOMPLIANT, "423003", "261: AI (423) position 1: Unknown country code '003'" }, // iso3166list
+        /*161*/ { "[7030]999A", 0, "7030999A", "" }, // iso3166999
+        /*162*/ { "[7030]894A", 0, "7030894A", "" }, // iso3166999
+        /*163*/ { "[7030]004A", 0, "7030004A", "" }, // iso3166999
+        /*164*/ { "[7030]004", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7030)" }, // iso3166999
+        /*165*/ { "[7030]04", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7030)" }, // iso3166999
+        /*166*/ { "[7030]001A", ZINT_WARN_NONCOMPLIANT, "7030001A", "261: AI (7030) position 1: Unknown country code '001'" }, // iso3166999
+        /*167*/ { "[7030]998A", ZINT_WARN_NONCOMPLIANT, "7030998A", "261: AI (7030) position 1: Unknown country code '998'" }, // iso3166999
+        /*168*/ { "[3910]0081", 0, "39100081", "" }, // iso4217
+        /*169*/ { "[3910]9991", 0, "39109991", "" }, // iso4217
+        /*170*/ { "[3910]9971", 0, "39109971", "" }, // iso4217
+        /*171*/ { "[3910]01", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (3910)" }, // iso4217
+        /*172*/ { "[3910]001", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (3910)" }, // iso4217
+        /*173*/ { "[3910]9981", ZINT_WARN_NONCOMPLIANT, "39109981", "261: AI (3910) position 1: Unknown currency code '998'" }, // iso4217
+        /*174*/ { "[3910]0041", ZINT_WARN_NONCOMPLIANT, "39100041", "261: AI (3910) position 1: Unknown currency code '004'" }, // iso4217
+        /*175*/ { "[3910]8941", ZINT_WARN_NONCOMPLIANT, "39108941", "261: AI (3910) position 1: Unknown currency code '894'" }, // iso4217
+        /*176*/ { "[4300]%12", 0, "4300%12", "" }, // pcenc
+        /*177*/ { "[4300]%1", ZINT_WARN_NONCOMPLIANT, "4300%1", "261: AI (4300) position 1: Invalid % escape" }, // pcenc
+        /*178*/ { "[4300]%", ZINT_WARN_NONCOMPLIANT, "4300%", "261: AI (4300) position 1: Invalid % escape" }, // pcenc
+        /*179*/ { "[4300]12%1212", 0, "430012%1212", "" }, // pcenc
+        /*180*/ { "[4300]12%1G12", ZINT_WARN_NONCOMPLIANT, "430012%1G12", "261: AI (4300) position 5: Invalid character for percent encoding" }, // pcenc
+        /*181*/ { "[4308]ABCDEFGHIJKLMNOPQRSTUVWXYZ%+12", 0, "4308ABCDEFGHIJKLMNOPQRSTUVWXYZ%+12", "" }, // no pcenc
+        /*182*/ { "[4308]ABCDEFGHIJKLMNOPQRSTUVWXYZ%+123", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (4308)" }, // no pcenc
+        /*183*/ { "[4321]1", 0, "43211", "" }, // yesno
+        /*184*/ { "[4321]0", 0, "43210", "" }, // yesno
+        /*185*/ { "[4321]2", ZINT_WARN_NONCOMPLIANT, "43212", "261: AI (4321) position 1: Neither 0 nor 1 for yes or no" }, // yesno
+        /*186*/ { "[4321]9", ZINT_WARN_NONCOMPLIANT, "43219", "261: AI (4321) position 1: Neither 0 nor 1 for yes or no" }, // yesno
+        /*187*/ { "[7040]1234", 0, "70401234", "" }, // importeridx
+        /*188*/ { "[7040]123A", 0, "7040123A", "" }, // importeridx
+        /*189*/ { "[7040]123Z", 0, "7040123Z", "" }, // importeridx
+        /*190*/ { "[7040]123a", 0, "7040123a", "" }, // importeridx
+        /*191*/ { "[7040]123z", 0, "7040123z", "" }, // importeridx
+        /*192*/ { "[7040]123-", 0, "7040123-", "" }, // importeridx
+        /*193*/ { "[7040]123_", 0, "7040123_", "" }, // importeridx
+        /*194*/ { "[7040]123!", ZINT_WARN_NONCOMPLIANT, "7040123!", "261: AI (7040) position 4: Invalid importer index '!'" }, // importeridx
+        /*195*/ { "[7040]123/", ZINT_WARN_NONCOMPLIANT, "7040123/", "261: AI (7040) position 4: Invalid importer index '/'" }, // importeridx
+        /*196*/ { "[7040]123:", ZINT_WARN_NONCOMPLIANT, "7040123:", "261: AI (7040) position 4: Invalid importer index ':'" }, // importeridx
+        /*197*/ { "[7040]123?", ZINT_WARN_NONCOMPLIANT, "7040123?", "261: AI (7040) position 4: Invalid importer index '?'" }, // importeridx
+        /*198*/ { "[8001]12341234512311", 0, "800112341234512311", "" }, // nonzero
+        /*199*/ { "[8001]00010000100100", 0, "800100010000100100", "" }, // nonzero
+        /*200*/ { "[8001]00001234512311", ZINT_WARN_NONCOMPLIANT, "800100001234512311", "261: AI (8001) position 1: Zero not permitted" }, // nonzero
+        /*201*/ { "[8001]12340000012311", ZINT_WARN_NONCOMPLIANT, "800112340000012311", "261: AI (8001) position 5: Zero not permitted" }, // nonzero
+        /*202*/ { "[8001]00010000100011", ZINT_WARN_NONCOMPLIANT, "800100010000100011", "261: AI (8001) position 10: Zero not permitted" }, // nonzero
+        /*203*/ { "[8001]00010000100101", 0, "800100010000100101", "" }, // winding
+        /*204*/ { "[8001]00010000100111", 0, "800100010000100111", "" }, // winding
+        /*205*/ { "[8001]00010000100191", 0, "800100010000100191", "" }, // winding
+        /*206*/ { "[8001]00010000100121", ZINT_WARN_NONCOMPLIANT, "800100010000100121", "261: AI (8001) position 13: Invalid winding direction '2'" }, // winding
+        /*207*/ { "[8001]00010000100131", ZINT_WARN_NONCOMPLIANT, "800100010000100131", "261: AI (8001) position 13: Invalid winding direction '3'" }, // winding
+        /*208*/ { "[8001]00010000100171", ZINT_WARN_NONCOMPLIANT, "800100010000100171", "261: AI (8001) position 13: Invalid winding direction '7'" }, // winding
+        /*209*/ { "[8001]00010000100181", ZINT_WARN_NONCOMPLIANT, "800100010000100181", "261: AI (8001) position 13: Invalid winding direction '8'" }, // winding
+        /*210*/ { "[8003]01234567890128", 0, "800301234567890128", "" }, // zero
+        /*211*/ { "[8003]11234567890128", ZINT_WARN_NONCOMPLIANT, "800311234567890128", "261: AI (8003) position 1: Zero is required" }, // zero
+        /*212*/ { "[8003]91234567890128", ZINT_WARN_NONCOMPLIANT, "800391234567890128", "261: AI (8003) position 1: Zero is required" }, // zero
+        /*213*/ { "[8006]123456789012310101", 0, "8006123456789012310101", "" }, // pieceoftotal
+        /*214*/ { "[8006]123456789012310199", 0, "8006123456789012310199", "" }, // pieceoftotal
+        /*215*/ { "[8006]123456789012319999", 0, "8006123456789012319999", "" }, // pieceoftotal
+        /*216*/ { "[8006]123456789012310001", ZINT_WARN_NONCOMPLIANT, "8006123456789012310001", "261: AI (8006) position 15: Piece number cannot be zero" }, // pieceoftotal
+        /*217*/ { "[8006]123456789012310100", ZINT_WARN_NONCOMPLIANT, "8006123456789012310100", "261: AI (8006) position 15: Total number cannot be zero" }, // pieceoftotal
+        /*218*/ { "[8006]123456789012310201", ZINT_WARN_NONCOMPLIANT, "8006123456789012310201", "261: AI (8006) position 15: Piece number '02' exceeds total '01'" }, // pieceoftotal
+        /*219*/ { "[8006]123456789012319998", ZINT_WARN_NONCOMPLIANT, "8006123456789012319998", "261: AI (8006) position 15: Piece number '99' exceeds total '98'" }, // pieceoftotal
+        /*220*/ { "[8007]GB82WEST12345698765432", 0, "8007GB82WEST12345698765432", "" }, // iban
+        /*221*/ { "[8007]GB83WEST12345698765432", ZINT_WARN_NONCOMPLIANT, "8007GB83WEST12345698765432", "261: AI (8007) position 3: Bad IBAN checksum '83', expected '82'" }, // iban
+        /*222*/ { "[8007]BE71096123456769", 0, "8007BE71096123456769", "" }, // iban
+        /*223*/ { "[8007]BE71096123456760", ZINT_WARN_NONCOMPLIANT, "8007BE71096123456760", "261: AI (8007) position 3: Bad IBAN checksum '71', expected '23'" }, // iban
+        /*224*/ { "[8007]BE01096123456760", ZINT_WARN_NONCOMPLIANT, "8007BE01096123456760", "261: AI (8007) position 3: Bad IBAN checksum '01', expected '23'" }, // iban
+        /*225*/ { "[8007]BE00096123456760", ZINT_WARN_NONCOMPLIANT, "8007BE00096123456760", "261: AI (8007) position 3: Bad IBAN checksum '00', expected '23'" }, // iban
+        /*226*/ { "[8007]LC14BOSL123456789012345678901234", 0, "8007LC14BOSL123456789012345678901234", "" }, // iban
+        /*227*/ { "[8007]LC14BOSL123456789012345678901230", ZINT_WARN_NONCOMPLIANT, "8007LC14BOSL123456789012345678901230", "261: AI (8007) position 3: Bad IBAN checksum '14', expected '25'" }, // iban
+        /*228*/ { "[8007]A114BOSL123456789012345678901230", ZINT_WARN_NONCOMPLIANT, "8007A114BOSL123456789012345678901230", "261: AI (8007) position 1: Non-alphabetic IBAN country code 'A1'" }, // iban
+        /*229*/ { "[8007]1A14BOSL123456789012345678901230", ZINT_WARN_NONCOMPLIANT, "80071A14BOSL123456789012345678901230", "261: AI (8007) position 1: Non-alphabetic IBAN country code '1A'" }, // iban
+        /*230*/ { "[8007]AA14BOSL123456789012345678901230", ZINT_WARN_NONCOMPLIANT, "8007AA14BOSL123456789012345678901230", "261: AI (8007) position 1: Invalid IBAN country code 'AA'" }, // iban
+        /*231*/ { "[8007]ZZ14BOSL123456789012345678901230", ZINT_WARN_NONCOMPLIANT, "8007ZZ14BOSL123456789012345678901230", "261: AI (8007) position 1: Invalid IBAN country code 'ZZ'" }, // iban
+        /*232*/ { "[8007]ZW33BOSL123456789012345678901230", 0, "8007ZW33BOSL123456789012345678901230", "" }, // iban
+        /*233*/ { "[8007]ZWA3BOSL123456789012345678901230", ZINT_WARN_NONCOMPLIANT, "8007ZWA3BOSL123456789012345678901230", "261: AI (8007) position 3: Non-numeric IBAN checksum 'A3'" }, // iban
+        /*234*/ { "[8007]ZW3ABOSL123456789012345678901230", ZINT_WARN_NONCOMPLIANT, "8007ZW3ABOSL123456789012345678901230", "261: AI (8007) position 3: Non-numeric IBAN checksum '3A'" }, // iban
+        /*235*/ { "[8007]ZW33bOSL123456789012345678901230", ZINT_WARN_NONCOMPLIANT, "8007ZW33bOSL123456789012345678901230", "261: AI (8007) position 5: Invalid IBAN character 'b'" }, // iban
+        /*236*/ { "[8007]FR7630006000011234567890189", 0, "8007FR7630006000011234567890189", "" }, // iban
+        /*237*/ { "[8007]DE91100000000123456789", 0, "8007DE91100000000123456789", "" }, // iban
+        /*238*/ { "[8007]GR9608100010000001234567890", 0, "8007GR9608100010000001234567890", "" }, // iban
+        /*239*/ { "[8007]MU43BOMM0101123456789101000MUR", 0, "8007MU43BOMM0101123456789101000MUR", "" }, // iban
+        /*240*/ { "[8007]PL10105000997603123456789123", 0, "8007PL10105000997603123456789123", "" }, // iban
+        /*241*/ { "[8007]RO09BCYP0000001234567890", 0, "8007RO09BCYP0000001234567890", "" }, // iban
+        /*242*/ { "[8007]SA4420000001234567891234", 0, "8007SA4420000001234567891234", "" }, // iban
+        /*243*/ { "[8007]ES7921000813610123456789", 0, "8007ES7921000813610123456789", "" }, // iban
+        /*244*/ { "[8007]CH5604835012345678009", 0, "8007CH5604835012345678009", "" }, // iban
+        /*245*/ { "[8007]GB98MIDL07009312345678", 0, "8007GB98MIDL07009312345678", "" }, // iban
+        /*246*/ { "[8011]1", 0, "80111", "" }, // nozeroprefix
+        /*247*/ { "[8011]11", 0, "801111", "" }, // nozeroprefix
+        /*248*/ { "[8011]0", 0, "80110", "" }, // nozeroprefix
+        /*249*/ { "[8011]01", ZINT_WARN_NONCOMPLIANT, "801101", "261: AI (8011) position 1: Zero prefix is not permitted" }, // nozeroprefix
+        /*250*/ { "[8110]106141416543213150110120", 0, "8110106141416543213150110120", "" }, // couponcode (first part of NACAG Appendix C: Example 1 - see test_rss.c test_examples)
+        /*251*/ { "[8110]012345612345610104123", 0, "8110012345612345610104123", "" }, // couponcode
+        /*252*/ { "[8110]01234561234561010412", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412", "259: Invalid data length for AI (8110)" }, // couponcode
+        /*253*/ { "[8110]12345678901234567890", ZINT_WARN_NONCOMPLIANT, "811012345678901234567890", "259: Invalid data length for AI (8110)" }, // couponcode
+        /*254*/ { "[8110]712345612345610104123", ZINT_WARN_NONCOMPLIANT, "8110712345612345610104123", "261: AI (8110) position 1: Invalid Primary GS1 Co. Prefix VLI '7'" }, // couponcode
+        /*255*/ { "[8110]A12345612345610104123", ZINT_WARN_NONCOMPLIANT, "8110A12345612345610104123", "261: AI (8110) position 1: Non-numeric Primary GS1 Co. Prefix VLI 'A'" }, // couponcode
+        /*256*/ { "[8110]012345A12345610104123", ZINT_WARN_NONCOMPLIANT, "8110012345A12345610104123", "261: AI (8110) position 7: Non-numeric Primary GS1 Co. Prefix 'A'" }, // couponcode
+        /*257*/ { "[8110]012345612345A10104123", ZINT_WARN_NONCOMPLIANT, "8110012345612345A10104123", "261: AI (8110) position 8: Non-numeric Offer Code" }, // couponcode
+        /*258*/ { "[8110]012345612345600104123", ZINT_WARN_NONCOMPLIANT, "8110012345612345600104123", "261: AI (8110) position 14: Invalid Save Value VLI '0'" }, // couponcode
+        /*259*/ { "[8110]012345612345660104123", ZINT_WARN_NONCOMPLIANT, "8110012345612345660104123", "261: AI (8110) position 14: Invalid Save Value VLI '6'" }, // couponcode
+        /*260*/ { "[8110]01234561234561A104123", ZINT_WARN_NONCOMPLIANT, "811001234561234561A104123", "261: AI (8110) position 15: Non-numeric Save Value 'A'" }, // couponcode
+        /*261*/ { "[8110]012345612345610004123", ZINT_WARN_NONCOMPLIANT, "8110012345612345610004123", "261: AI (8110) position 16: Invalid Primary Purch. Req. VLI '0'" }, // couponcode
+        /*262*/ { "[8110]012345612345610604123", ZINT_WARN_NONCOMPLIANT, "8110012345612345610604123", "261: AI (8110) position 16: Invalid Primary Purch. Req. VLI '6'" }, // couponcode
+        /*263*/ { "[8110]0123456123456101A4123", ZINT_WARN_NONCOMPLIANT, "81100123456123456101A4123", "261: AI (8110) position 17: Non-numeric Primary Purch. Req. 'A'" }, // couponcode
+        /*264*/ { "[8110]012345612345621251234", ZINT_WARN_NONCOMPLIANT, "8110012345612345621251234", "261: AI (8110) position 18: Primary Purch. Req. incomplete" }, // couponcode
+        /*265*/ { "[8110]012345612345610106123", ZINT_WARN_NONCOMPLIANT, "8110012345612345610106123", "261: AI (8110) position 18: Invalid Primary Purch. Req. Code '6'" }, // couponcode
+        /*266*/ { "[8110]012345612345610212412", ZINT_WARN_NONCOMPLIANT, "8110012345612345610212412", "261: AI (8110) position 20: Primary Purch. Family Code incomplete" }, // couponcode
+        /*267*/ { "[8110]0123456123456103123412", ZINT_WARN_NONCOMPLIANT, "81100123456123456103123412", "261: AI (8110) position 21: Primary Purch. Family Code incomplete" }, // couponcode
+        /*268*/ { "[8110]0123456123456103123412A", ZINT_WARN_NONCOMPLIANT, "81100123456123456103123412A", "261: AI (8110) position 21: Non-numeric Primary Purch. Family Code" }, // couponcode
+        /*269*/ { "[8110]01234561234561031234123", 0, "811001234561234561031234123", "" }, // couponcode
+        /*270*/ { "[8110]612345678901212345651", ZINT_WARN_NONCOMPLIANT, "8110612345678901212345651", "261: AI (8110) position 21: Save Value incomplete" }, // couponcode
+        /*271*/ { "[8110]6123456789012123456512345", ZINT_WARN_NONCOMPLIANT, "81106123456789012123456512345", "261: AI (8110) position 26: Primary Purch. Req. VLI missing" }, // couponcode
+        /*272*/ { "[8110]61234567890121234565123455123454123", 0, "811061234567890121234565123455123454123", "" }, // couponcode
+        /*273*/ { "[8110]61234567890121234565123455123454123A", ZINT_WARN_NONCOMPLIANT, "811061234567890121234565123455123454123A", "261: AI (8110) position 36: Non-numeric Data Field 'A'" }, // couponcode
+        /*274*/ { "[8110]612345678901212345651234551234541237", ZINT_WARN_NONCOMPLIANT, "8110612345678901212345651234551234541237", "261: AI (8110) position 36: Invalid Data Field '7'" }, // couponcode
+        /*275*/ { "[8110]612345678901212345651234551234541238", ZINT_WARN_NONCOMPLIANT, "8110612345678901212345651234551234541238", "261: AI (8110) position 36: Invalid Data Field '8'" }, // couponcode
+        /*276*/ { "[8110]0123456123456101041231", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041231", "261: AI (8110) position 23: Add. Purch. Rules Code incomplete" }, // couponcode
+        /*277*/ { "[8110]0123456123456101041231A", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041231A", "261: AI (8110) position 23: Non-numeric Add. Purch. Rules Code" }, // couponcode
+        /*278*/ { "[8110]01234561234561010412314", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412314", "261: AI (8110) position 23: Invalid Add. Purch. Rules Code '4'" }, // couponcode
+        /*279*/ { "[8110]01234561234561010412313", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412313", "261: AI (8110) position 24: 2nd Purch. Req. VLI missing" }, // couponcode
+        /*280*/ { "[8110]01234561234561010412313A", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412313A", "261: AI (8110) position 24: Non-numeric 2nd Purch. Req. VLI 'A'" }, // couponcode
+        /*281*/ { "[8110]012345612345610104123130", ZINT_WARN_NONCOMPLIANT, "8110012345612345610104123130", "261: AI (8110) position 24: Invalid 2nd Purch. Req. VLI '0'" }, // couponcode
+        /*282*/ { "[8110]012345612345610104123131", ZINT_WARN_NONCOMPLIANT, "8110012345612345610104123131", "261: AI (8110) position 25: 2nd Purch. Req. incomplete" }, // couponcode
+        /*283*/ { "[8110]012345612345610104123131A", ZINT_WARN_NONCOMPLIANT, "8110012345612345610104123131A", "261: AI (8110) position 25: Non-numeric 2nd Purch. Req. 'A'" }, // couponcode
+        /*284*/ { "[8110]0123456123456101041231310", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041231310", "261: AI (8110) position 26: 2nd Purch. Req. Code incomplete" }, // couponcode
+        /*285*/ { "[8110]0123456123456101041231310A", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041231310A", "261: AI (8110) position 26: Non-numeric 2nd Purch. Req. Code" }, // couponcode
+        /*286*/ { "[8110]01234561234561010412313108", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412313108", "261: AI (8110) position 26: Invalid 2nd Purch. Req. Code '8'" }, // couponcode
+        /*287*/ { "[8110]01234561234561010412313100", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412313100", "261: AI (8110) position 27: 2nd Purch. Family Code incomplete" }, // couponcode
+        /*288*/ { "[8110]01234561234561010412313100123", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412313100123", "261: AI (8110) position 30: 2nd Purch. GS1 Co. Prefix VLI missing" }, // couponcode
+        /*289*/ { "[8110]01234561234561010412313100123A", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412313100123A", "261: AI (8110) position 30: Non-numeric 2nd Purch. GS1 Co. Prefix VLI 'A'" }, // couponcode
+        /*290*/ { "[8110]012345612345610104123131001239", 0, "8110012345612345610104123131001239", "" }, // couponcode
+        /*291*/ { "[8110]01234561234561010412313100123012345", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412313100123012345", "261: AI (8110) position 31: 2nd Purch. GS1 Co. Prefix incomplete" }, // couponcode
+        /*292*/ { "[8110]0123456123456101041231310012311234567", 0, "81100123456123456101041231310012311234567", "" }, // couponcode
+        /*293*/ { "[8110]0123456123456101041232", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041232", "261: AI (8110) position 23: 3rd Purch. Req. VLI missing" }, // couponcode
+        /*294*/ { "[8110]0123456123456101041232A", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041232A", "261: AI (8110) position 23: Non-numeric 3rd Purch. Req. VLI 'A'" }, // couponcode
+        /*295*/ { "[8110]01234561234561010412326", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412326", "261: AI (8110) position 23: Invalid 3rd Purch. Req. VLI '6'" }, // couponcode
+        /*296*/ { "[8110]01234561234561010412321", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412321", "261: AI (8110) position 24: 3rd Purch. Req. incomplete" }, // couponcode
+        /*297*/ { "[8110]012345612345610104123210", ZINT_WARN_NONCOMPLIANT, "8110012345612345610104123210", "261: AI (8110) position 25: 3rd Purch. Req. Code incomplete" }, // couponcode
+        /*298*/ { "[8110]0123456123456101041232105", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041232105", "261: AI (8110) position 25: Invalid 3rd Purch. Req. Code '5'" }, // couponcode
+        /*299*/ { "[8110]0123456123456101041232104", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041232104", "261: AI (8110) position 26: 3rd Purch. Family Code incomplete" }, // couponcode
+        /*300*/ { "[8110]012345612345610104123210412A", ZINT_WARN_NONCOMPLIANT, "8110012345612345610104123210412A", "261: AI (8110) position 26: Non-numeric 3rd Purch. Family Code" }, // couponcode
+        /*301*/ { "[8110]0123456123456101041232104123", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041232104123", "261: AI (8110) position 29: 3rd Purch. GS1 Co. Prefix VLI missing" }, // couponcode
+        /*302*/ { "[8110]01234561234561010412321041230", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412321041230", "261: AI (8110) position 30: 3rd Purch. GS1 Co. Prefix incomplete" }, // couponcode
+        /*303*/ { "[8110]0123456123456101041232104123A", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041232104123A", "261: AI (8110) position 29: Non-numeric 3rd Purch. GS1 Co. Prefix VLI 'A'" }, // couponcode
+        /*304*/ { "[8110]0123456123456101041232104123012345", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041232104123012345", "261: AI (8110) position 30: 3rd Purch. GS1 Co. Prefix incomplete" }, // couponcode
+        /*305*/ { "[8110]0123456123456101041232104123012345A", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041232104123012345A", "261: AI (8110) position 35: Non-numeric 3rd Purch. GS1 Co. Prefix 'A'" }, // couponcode
+        /*306*/ { "[8110]01234561234561010412321041230123456", 0, "811001234561234561010412321041230123456", "" }, // couponcode
+        /*307*/ { "[8110]0123456123456101041233", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041233", "261: AI (8110) position 23: Expiration Date incomplete" }, // couponcode
+        /*308*/ { "[8110]01234561234561010412332012", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412332012", "261: AI (8110) position 23: Expiration Date incomplete" }, // couponcode
+        /*309*/ { "[8110]012345612345610104123320123A", ZINT_WARN_NONCOMPLIANT, "8110012345612345610104123320123A", "261: AI (8110) position 23: Non-numeric Expiration Date" }, // couponcode
+        /*310*/ { "[8110]0123456123456101041233201232", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041233201232", "261: AI (8110) position 27: Invalid day '32'" }, // couponcode
+        /*311*/ { "[8110]0123456123456101041233200031", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041233200031", "261: AI (8110) position 25: Invalid month '00'" }, // couponcode
+        /*312*/ { "[8110]0123456123456101041233201231", 0, "81100123456123456101041233201231", "" }, // couponcode
+        /*313*/ { "[8110]0123456123456101041234", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041234", "261: AI (8110) position 23: Start Date incomplete" }, // couponcode
+        /*314*/ { "[8110]01234561234561010412342012", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412342012", "261: AI (8110) position 23: Start Date incomplete" }, // couponcode
+        /*315*/ { "[8110]012345612345610104123420123A", ZINT_WARN_NONCOMPLIANT, "8110012345612345610104123420123A", "261: AI (8110) position 23: Non-numeric Start Date" }, // couponcode
+        /*316*/ { "[8110]0123456123456101041234200230", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041234200230", "261: AI (8110) position 27: Invalid day '30'" }, // couponcode
+        /*317*/ { "[8110]0123456123456101041234201329", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041234201329", "261: AI (8110) position 25: Invalid month '13'" }, // couponcode
+        /*318*/ { "[8110]0123456123456101041234200229", 0, "81100123456123456101041234200229", "" }, // couponcode
+        /*319*/ { "[8110]0123456123456101041235", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041235", "261: AI (8110) position 23: Serial Number VLI missing" }, // couponcode
+        /*320*/ { "[8110]0123456123456101041235A", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041235A", "261: AI (8110) position 23: Non-numeric Serial Number VLI 'A'" }, // couponcode
+        /*321*/ { "[8110]01234561234561010412350", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412350", "261: AI (8110) position 24: Serial Number incomplete" }, // couponcode
+        /*322*/ { "[8110]0123456123456101041235012345", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041235012345", "261: AI (8110) position 24: Serial Number incomplete" }, // couponcode
+        /*323*/ { "[8110]0123456123456101041235912345678901234", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041235912345678901234", "261: AI (8110) position 24: Serial Number incomplete" }, // couponcode
+        /*324*/ { "[8110]0123456123456101041235912345678901234A", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041235912345678901234A", "261: AI (8110) position 38: Non-numeric Serial Number 'A'" }, // couponcode
+        /*325*/ { "[8110]01234561234561010412359123456789012345", 0, "811001234561234561010412359123456789012345", "" }, // couponcode
+        /*326*/ { "[8110]0123456123456101041236", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041236", "261: AI (8110) position 23: Retailer ID VLI missing" }, // couponcode
+        /*327*/ { "[8110]0123456123456101041236A", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041236A", "261: AI (8110) position 23: Non-numeric Retailer ID VLI 'A'" }, // couponcode
+        /*328*/ { "[8110]01234561234561010412360", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412360", "261: AI (8110) position 23: Invalid Retailer ID VLI '0'" }, // couponcode
+        /*329*/ { "[8110]01234561234561010412368", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412368", "261: AI (8110) position 23: Invalid Retailer ID VLI '8'" }, // couponcode
+        /*330*/ { "[8110]01234561234561010412361", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412361", "261: AI (8110) position 24: Retailer ID incomplete" }, // couponcode
+        /*331*/ { "[8110]01234561234561010412361123456", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412361123456", "261: AI (8110) position 24: Retailer ID incomplete" }, // couponcode
+        /*332*/ { "[8110]01234561234561010412361123456A", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412361123456A", "261: AI (8110) position 30: Non-numeric Retailer ID 'A'" }, // couponcode
+        /*333*/ { "[8110]012345612345610104123671234567890123", 0, "8110012345612345610104123671234567890123", "" }, // couponcode
+        /*334*/ { "[8110]0123456123456101041239", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041239", "261: AI (8110) position 23: Save Value Code incomplete" }, // couponcode
+        /*335*/ { "[8110]0123456123456101041239A", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041239A", "261: AI (8110) position 23: Non-numeric Save Value Code" }, // couponcode
+        /*336*/ { "[8110]01234561234561010412393", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412393", "261: AI (8110) position 23: Invalid Save Value Code '3'" }, // couponcode
+        /*337*/ { "[8110]01234561234561010412394", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412394", "261: AI (8110) position 23: Invalid Save Value Code '4'" }, // couponcode
+        /*338*/ { "[8110]01234561234561010412397", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412397", "261: AI (8110) position 23: Invalid Save Value Code '7'" }, // couponcode
+        /*339*/ { "[8110]01234561234561010412390", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412390", "261: AI (8110) position 24: Save Value Applies To incomplete" }, // couponcode
+        /*340*/ { "[8110]01234561234561010412390A", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412390A", "261: AI (8110) position 24: Non-numeric Save Value Applies To" }, // couponcode
+        /*341*/ { "[8110]012345612345610104123903", ZINT_WARN_NONCOMPLIANT, "8110012345612345610104123903", "261: AI (8110) position 24: Invalid Save Value Applies To '3'" }, // couponcode
+        /*342*/ { "[8110]012345612345610104123902", ZINT_WARN_NONCOMPLIANT, "8110012345612345610104123902", "261: AI (8110) position 25: Store Coupon Flag incomplete" }, // couponcode
+        /*343*/ { "[8110]012345612345610104123902A", ZINT_WARN_NONCOMPLIANT, "8110012345612345610104123902A", "261: AI (8110) position 25: Non-numeric Store Coupon Flag" }, // couponcode
+        /*344*/ { "[8110]0123456123456101041239029", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041239029", "261: AI (8110) position 26: Don't Multiply Flag incomplete" }, // couponcode
+        /*345*/ { "[8110]0123456123456101041239029A", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041239029A", "261: AI (8110) position 26: Non-numeric Don't Multiply Flag" }, // couponcode
+        /*346*/ { "[8110]01234561234561010412390292", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412390292", "261: AI (8110) position 26: Invalid Don't Multiply Flag '2'" }, // couponcode
+        /*347*/ { "[8110]01234561234561010412390291", 0, "811001234561234561010412390291", "" }, // couponcode
+        /*348*/ { "[8110]177777776666663100120444101105551888888821109991222222232012314200601522345678961345678990000", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8110)" }, // couponcode (example from GS1 AI (8112) Coupon Data Specifications Appendix A: AI (8110) vs AI (8112))
+        /*349*/ { "[8110]177777776666663100120444101105551888888821109991222222232012314200601", 0, "8110177777776666663100120444101105551888888821109991222222232012314200601", "" }, // couponcode
+        /*350*/ { "[8112]017777777666666223456789", 0, "8112017777777666666223456789", "" }, // couponposoffer (example from GS1 AI (8112) Coupon Data Specifications Appendix A: AI (8110) vs AI (8112))
+        /*351*/ { "[8112]001234561234560123456", 0, "8112001234561234560123456", "" }, // couponposoffer
+        /*352*/ { "[8112]00123456123456012345", ZINT_WARN_NONCOMPLIANT, "811200123456123456012345", "259: Invalid data length for AI (8112)" }, // couponposoffer
+        /*353*/ { "[8112]0012345612345601234561", ZINT_WARN_NONCOMPLIANT, "81120012345612345601234561", "261: AI (8112) position 22: Reserved trailing characters" }, // couponposoffer
+        /*354*/ { "[8112]061234567890121234569123456789012345", 0, "8112061234567890121234569123456789012345", "" }, // couponposoffer
+        /*355*/ { "[8112]0612345678901212345691234567890123456", ZINT_WARN_NONCOMPLIANT, "81120612345678901212345691234567890123456", "259: Invalid data length for AI (8112)" }, // couponposoffer
+        /*356*/ { "[8112]06123456789012123456912345678901234A", ZINT_WARN_NONCOMPLIANT, "811206123456789012123456912345678901234A", "261: AI (8112) position 36: Non-numeric Serial Number 'A'" }, // couponposoffer
+        /*357*/ { "[8112]06123456789012123456912345678901234", ZINT_WARN_NONCOMPLIANT, "811206123456789012123456912345678901234", "261: AI (8112) position 22: Serial Number incomplete" }, // couponposoffer
+        /*358*/ { "[8112]06123456789012123456812345678901234", 0, "811206123456789012123456812345678901234", "" }, // couponposoffer
+        /*359*/ { "[8112]0612345678901212345681234567890123", ZINT_WARN_NONCOMPLIANT, "81120612345678901212345681234567890123", "261: AI (8112) position 22: Serial Number incomplete" }, // couponposoffer
+        /*360*/ { "[8112]0612345678901212345A0123456", ZINT_WARN_NONCOMPLIANT, "81120612345678901212345A0123456", "261: AI (8112) position 15: Non-numeric Offer Code" }, // couponposoffer
+        /*361*/ { "[8112]0612345678901A1234560123456", ZINT_WARN_NONCOMPLIANT, "81120612345678901A1234560123456", "261: AI (8112) position 14: Non-numeric Coupon Funder ID 'A'" }, // couponposoffer
+        /*362*/ { "[8112]071234567890121234560123456", ZINT_WARN_NONCOMPLIANT, "8112071234567890121234560123456", "261: AI (8112) position 2: Invalid Coupon Funder ID VLI '7'" }, // couponposoffer
+        /*363*/ { "[8112]0A1234567890121234560123456", ZINT_WARN_NONCOMPLIANT, "81120A1234567890121234560123456", "261: AI (8112) position 2: Non-numeric Coupon Funder ID VLI 'A'" }, // couponposoffer
+        /*364*/ { "[8112]261234567890121234560123456", ZINT_WARN_NONCOMPLIANT, "8112261234567890121234560123456", "261: AI (8112) position 1: Coupon Format must be 0 or 1" }, // couponposoffer
+        /*365*/ { "[8112]A61234567890121234560123456", ZINT_WARN_NONCOMPLIANT, "8112A61234567890121234560123456", "261: AI (8112) position 1: Non-numeric Coupon Format" }, // couponposoffer
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -1733,7 +1748,7 @@ static void test_gs1_lint(int index, int debug) {
         length = (int) strlen(data[i].data);
 
         ret = gs1_verify(symbol, (unsigned char *) data[i].data, length, (unsigned char *) reduced);
-        assert_equal(ret, data[i].ret, "i:%d ret %d != %d (length %d \"%s\") %s\n", i, ret, data[i].ret, length, data[i].data, symbol->errtxt);
+        assert_equal(ret, data[i].ret, "i:%d ret %d != %d (length %d \"%s\") (%s)\n", i, ret, data[i].ret, length, data[i].data, symbol->errtxt);
 
         if (ret < ZINT_ERROR) {
             assert_zero(strcmp(reduced, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, reduced, data[i].expected);
@@ -1746,12 +1761,14 @@ static void test_gs1_lint(int index, int debug) {
     testFinish();
 }
 
+/*
+ * Check GS1_MODE for non-forced GS1 compliant symbologies (see gs1_compliant() in library.c)
+ */
 static void test_input_mode(int index, int debug) {
 
     struct item {
         int symbology;
         char *data;
-        char *composite;
         int input_mode;
         int output_options;
         int ret;
@@ -1759,55 +1776,86 @@ static void test_input_mode(int index, int debug) {
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /*  0*/ { BARCODE_AZTEC, "[01]12345678901231", "", GS1_MODE, -1 , 0, 0 },
-        /*  1*/ { BARCODE_AZTEC, "[01]12345678901231", "", GS1_MODE | ESCAPE_MODE, -1, 0, 1 },
-        /*  2*/ { BARCODE_AZTEC, "(01)12345678901231", "", GS1_MODE | ESCAPE_MODE | GS1PARENS_MODE, -1, 0, 1 },
-        /*  3*/ { BARCODE_AZTEC, "[01]12345678901231", "", GS1_MODE, READER_INIT, ZINT_ERROR_INVALID_OPTION, 0 },
-        /*  4*/ { BARCODE_AZTEC, "[01]12345678901231", "", GS1_MODE | ESCAPE_MODE, READER_INIT, ZINT_ERROR_INVALID_OPTION, 0 },
-        /*  5*/ { BARCODE_AZTEC, "1234", "", GS1_MODE, -1, ZINT_ERROR_INVALID_DATA, 0 },
-        /*  6*/ { BARCODE_AZTEC, "1234", "", GS1_MODE | ESCAPE_MODE, -1, ZINT_ERROR_INVALID_DATA, 0 },
-        /*  7*/ { BARCODE_CODABLOCKF, "[01]12345678901231", "", GS1_MODE, -1, ZINT_ERROR_INVALID_OPTION, 0 },
-        /*  8*/ { BARCODE_CODABLOCKF, "[01]12345678901231", "", GS1_MODE | ESCAPE_MODE, -1, ZINT_ERROR_INVALID_OPTION, 0 },
-        /*  9*/ { BARCODE_CODABLOCKF, "1234", "", GS1_MODE, -1, ZINT_ERROR_INVALID_OPTION, 0 },
-        /* 10*/ { BARCODE_CODABLOCKF, "1234", "", GS1_MODE | ESCAPE_MODE, -1, ZINT_ERROR_INVALID_OPTION, 0 },
-        /* 11*/ { BARCODE_CODEONE, "[01]12345678901231", "", GS1_MODE, -1, 0, 0 },
-        /* 12*/ { BARCODE_CODEONE, "[01]12345678901231", "", GS1_MODE | ESCAPE_MODE, -1, 0, 1 },
-        /* 13*/ { BARCODE_CODEONE, "(01)12345678901231", "", GS1_MODE | ESCAPE_MODE | GS1PARENS_MODE, -1, 0, 1 },
-        /* 14*/ { BARCODE_CODEONE, "1234", "", GS1_MODE, -1, ZINT_ERROR_INVALID_DATA, 0 },
-        /* 15*/ { BARCODE_CODEONE, "1234", "", GS1_MODE | ESCAPE_MODE, -1, ZINT_ERROR_INVALID_DATA, 0 },
-        /* 16*/ { BARCODE_CODE16K, "[01]12345678901231", "", GS1_MODE, -1, 0, 0 },
-        /* 17*/ { BARCODE_CODE16K, "[01]12345678901231", "", GS1_MODE | ESCAPE_MODE, -1, 0, 1 },
-        /* 18*/ { BARCODE_CODE16K, "(01)12345678901231", "", GS1_MODE | ESCAPE_MODE | GS1PARENS_MODE, -1, 0, 1 },
-        /* 19*/ { BARCODE_CODE16K, "1234", "", GS1_MODE, -1, ZINT_ERROR_INVALID_DATA, 0 },
-        /* 20*/ { BARCODE_CODE16K, "1234", "", GS1_MODE | ESCAPE_MODE, -1, ZINT_ERROR_INVALID_DATA, 0 },
-        /* 21*/ { BARCODE_CODE49, "[01]12345678901231", "", GS1_MODE, -1, 0, 0 },
-        /* 22*/ { BARCODE_CODE49, "[01]12345678901231", "", GS1_MODE | ESCAPE_MODE, -1, 0, 1 },
-        /* 23*/ { BARCODE_CODE49, "(01)12345678901231", "", GS1_MODE | ESCAPE_MODE | GS1PARENS_MODE, -1, 0, 1 },
-        /* 24*/ { BARCODE_CODE49, "1234", "", GS1_MODE, -1, ZINT_ERROR_INVALID_DATA, 0 },
-        /* 25*/ { BARCODE_CODE49, "1234", "", GS1_MODE | ESCAPE_MODE, -1, ZINT_ERROR_INVALID_DATA, 0 },
-        /* 26*/ { BARCODE_DATAMATRIX, "[01]12345678901231", "", GS1_MODE, -1, 0, 0 },
-        /* 27*/ { BARCODE_DATAMATRIX, "[01]12345678901231", "", GS1_MODE | ESCAPE_MODE, -1, 0, 1 },
-        /* 28*/ { BARCODE_DATAMATRIX, "(01)12345678901231", "", GS1_MODE | ESCAPE_MODE | GS1PARENS_MODE, -1, 0, 1 },
-        /* 29*/ { BARCODE_DATAMATRIX, "[01]12345678901231", "", GS1_MODE, READER_INIT, ZINT_ERROR_INVALID_OPTION, 0 },
-        /* 30*/ { BARCODE_DATAMATRIX, "[01]12345678901231", "", GS1_MODE | ESCAPE_MODE, READER_INIT, ZINT_ERROR_INVALID_OPTION, 0 },
-        /* 31*/ { BARCODE_DATAMATRIX, "1234", "", GS1_MODE, -1, ZINT_ERROR_INVALID_DATA, 0 },
-        /* 32*/ { BARCODE_DATAMATRIX, "1234", "", GS1_MODE | ESCAPE_MODE, -1, ZINT_ERROR_INVALID_DATA, 0 },
-        /* 33*/ { BARCODE_DOTCODE, "[01]12345678901231", "", GS1_MODE, -1, 0, 0 },
-        /* 34*/ { BARCODE_DOTCODE, "[01]12345678901231", "", GS1_MODE | ESCAPE_MODE, -1, 0, 1 },
-        /* 35*/ { BARCODE_DOTCODE, "(01)12345678901231", "", GS1_MODE | ESCAPE_MODE | GS1PARENS_MODE, -1, 0, 1 },
-        /* 36*/ { BARCODE_DOTCODE, "1234", "", GS1_MODE, -1, ZINT_ERROR_INVALID_DATA, 0 },
-        /* 37*/ { BARCODE_DOTCODE, "1234", "", GS1_MODE | ESCAPE_MODE, -1, ZINT_ERROR_INVALID_DATA, 0 },
-        /* 38*/ { BARCODE_QRCODE, "[01]12345678901231", "", GS1_MODE, -1, 0, 0 },
-        /* 39*/ { BARCODE_QRCODE, "[01]12345678901231", "", GS1_MODE | ESCAPE_MODE, -1, 0, 1 },
-        /* 40*/ { BARCODE_QRCODE, "(01)12345678901231", "", GS1_MODE | ESCAPE_MODE | GS1PARENS_MODE, -1, 0, 1 },
-        /* 41*/ { BARCODE_QRCODE, "1234", "", GS1_MODE, -1, ZINT_ERROR_INVALID_DATA, 0 },
-        /* 42*/ { BARCODE_QRCODE, "1234", "", GS1_MODE | ESCAPE_MODE, -1, ZINT_ERROR_INVALID_DATA, 0 },
+        /*  0*/ { BARCODE_AZTEC, "[01]12345678901231", GS1_MODE, -1 , 0, 0 },
+        /*  1*/ { BARCODE_AZTEC, "[01]12345678901231", GS1_MODE | ESCAPE_MODE, -1, 0, 1 },
+        /*  2*/ { BARCODE_AZTEC, "(01)12345678901231", GS1_MODE | ESCAPE_MODE | GS1PARENS_MODE, -1, 0, 1 },
+        /*  3*/ { BARCODE_AZTEC, "(01)12345678901234", GS1_MODE | ESCAPE_MODE | GS1PARENS_MODE, -1, ZINT_WARN_NONCOMPLIANT, 0 },
+        /*  4*/ { BARCODE_AZTEC, "(01)123456789012345", GS1_MODE | ESCAPE_MODE | GS1PARENS_MODE, -1, ZINT_ERROR_INVALID_DATA, 0 },
+        /*  5*/ { BARCODE_AZTEC, "(01)12345678901234A", GS1_MODE | ESCAPE_MODE | GS1PARENS_MODE, -1, ZINT_ERROR_INVALID_DATA, 0 },
+        /*  6*/ { BARCODE_AZTEC, "(01)1234567890123A", GS1_MODE | ESCAPE_MODE | GS1PARENS_MODE, -1, ZINT_WARN_NONCOMPLIANT, 0 },
+        /*  7*/ { BARCODE_AZTEC, "[01]12345678901231", GS1_MODE, READER_INIT, ZINT_ERROR_INVALID_OPTION, 0 },
+        /*  8*/ { BARCODE_AZTEC, "[01]12345678901231", GS1_MODE | ESCAPE_MODE, READER_INIT, ZINT_ERROR_INVALID_OPTION, 0 },
+        /*  9*/ { BARCODE_AZTEC, "1234", GS1_MODE, -1, ZINT_ERROR_INVALID_DATA, 0 },
+        /* 10*/ { BARCODE_AZTEC, "1234", GS1_MODE | ESCAPE_MODE, -1, ZINT_ERROR_INVALID_DATA, 0 },
+        /* 11*/ { BARCODE_CODABLOCKF, "[01]12345678901231", GS1_MODE, -1, ZINT_ERROR_INVALID_OPTION, 0 }, // Codablock-F does not support GS1
+        /* 12*/ { BARCODE_CODABLOCKF, "[01]12345678901231", GS1_MODE | ESCAPE_MODE, -1, ZINT_ERROR_INVALID_OPTION, 0 },
+        /* 13*/ { BARCODE_CODABLOCKF, "1234", GS1_MODE, -1, ZINT_ERROR_INVALID_OPTION, 0 },
+        /* 14*/ { BARCODE_CODABLOCKF, "1234", GS1_MODE | ESCAPE_MODE, -1, ZINT_ERROR_INVALID_OPTION, 0 },
+        /* 15*/ { BARCODE_CODEONE, "[01]12345678901231", GS1_MODE, -1, 0, 0 },
+        /* 16*/ { BARCODE_CODEONE, "[01]12345678901231", GS1_MODE | ESCAPE_MODE, -1, 0, 1 },
+        /* 17*/ { BARCODE_CODEONE, "(01)12345678901231", GS1_MODE | ESCAPE_MODE | GS1PARENS_MODE, -1, 0, 1 },
+        /* 18*/ { BARCODE_CODEONE, "(01)12345678901234", GS1_MODE | ESCAPE_MODE | GS1PARENS_MODE, -1, ZINT_WARN_NONCOMPLIANT, 0 },
+        /* 19*/ { BARCODE_CODEONE, "(01)123456789012345", GS1_MODE | ESCAPE_MODE | GS1PARENS_MODE, -1, ZINT_ERROR_INVALID_DATA, 0 },
+        /* 20*/ { BARCODE_CODEONE, "(01)12345678901234A", GS1_MODE | ESCAPE_MODE | GS1PARENS_MODE, -1, ZINT_ERROR_INVALID_DATA, 0 },
+        /* 21*/ { BARCODE_CODEONE, "(01)1234567890123A", GS1_MODE | ESCAPE_MODE | GS1PARENS_MODE, -1, ZINT_WARN_NONCOMPLIANT, 0 },
+        /* 22*/ { BARCODE_CODEONE, "1234", GS1_MODE, -1, ZINT_ERROR_INVALID_DATA, 0 },
+        /* 23*/ { BARCODE_CODEONE, "1234", GS1_MODE | ESCAPE_MODE, -1, ZINT_ERROR_INVALID_DATA, 0 },
+        /* 24*/ { BARCODE_CODE16K, "[01]12345678901231", GS1_MODE, -1, 0, 0 },
+        /* 25*/ { BARCODE_CODE16K, "[01]12345678901231", GS1_MODE | ESCAPE_MODE, -1, 0, 1 },
+        /* 26*/ { BARCODE_CODE16K, "(01)12345678901231", GS1_MODE | ESCAPE_MODE | GS1PARENS_MODE, -1, 0, 1 },
+        /* 27*/ { BARCODE_CODE16K, "(01)12345678901234", GS1_MODE | ESCAPE_MODE | GS1PARENS_MODE, -1, ZINT_WARN_NONCOMPLIANT, 0 },
+        /* 28*/ { BARCODE_CODE16K, "(01)123456789012345", GS1_MODE | ESCAPE_MODE | GS1PARENS_MODE, -1, ZINT_ERROR_INVALID_DATA, 0 },
+        /* 29*/ { BARCODE_CODE16K, "(01)12345678901234A", GS1_MODE | ESCAPE_MODE | GS1PARENS_MODE, -1, ZINT_ERROR_INVALID_DATA, 0 },
+        /* 30*/ { BARCODE_CODE16K, "(01)1234567890123A", GS1_MODE | ESCAPE_MODE | GS1PARENS_MODE, -1, ZINT_WARN_NONCOMPLIANT, 0 },
+        /* 31*/ { BARCODE_CODE16K, "[01]12345678901231", GS1_MODE, READER_INIT, ZINT_ERROR_INVALID_OPTION, 0 },
+        /* 32*/ { BARCODE_CODE16K, "[01]12345678901231", GS1_MODE | ESCAPE_MODE, READER_INIT, ZINT_ERROR_INVALID_OPTION, 0 },
+        /* 33*/ { BARCODE_CODE16K, "1234", GS1_MODE, -1, ZINT_ERROR_INVALID_DATA, 0 },
+        /* 34*/ { BARCODE_CODE16K, "1234", GS1_MODE | ESCAPE_MODE, -1, ZINT_ERROR_INVALID_DATA, 0 },
+        /* 35*/ { BARCODE_CODE49, "[01]12345678901231", GS1_MODE, -1, 0, 0 },
+        /* 36*/ { BARCODE_CODE49, "[01]12345678901231", GS1_MODE | ESCAPE_MODE, -1, 0, 1 },
+        /* 37*/ { BARCODE_CODE49, "(01)12345678901231", GS1_MODE | ESCAPE_MODE | GS1PARENS_MODE, -1, 0, 1 },
+        /* 38*/ { BARCODE_CODE49, "(01)12345678901234", GS1_MODE | ESCAPE_MODE | GS1PARENS_MODE, -1, ZINT_WARN_NONCOMPLIANT, 0 },
+        /* 39*/ { BARCODE_CODE49, "(01)123456789012345", GS1_MODE | ESCAPE_MODE | GS1PARENS_MODE, -1, ZINT_ERROR_INVALID_DATA, 0 },
+        /* 40*/ { BARCODE_CODE49, "(01)12345678901234A", GS1_MODE | ESCAPE_MODE | GS1PARENS_MODE, -1, ZINT_ERROR_INVALID_DATA, 0 },
+        /* 41*/ { BARCODE_CODE49, "(01)1234567890123A", GS1_MODE | ESCAPE_MODE | GS1PARENS_MODE, -1, ZINT_WARN_NONCOMPLIANT, 0 },
+        /* 42*/ { BARCODE_CODE49, "1234", GS1_MODE, -1, ZINT_ERROR_INVALID_DATA, 0 },
+        /* 43*/ { BARCODE_CODE49, "1234", GS1_MODE | ESCAPE_MODE, -1, ZINT_ERROR_INVALID_DATA, 0 },
+        /* 44*/ { BARCODE_DATAMATRIX, "[01]12345678901231", GS1_MODE, -1, 0, 0 },
+        /* 45*/ { BARCODE_DATAMATRIX, "[01]12345678901231", GS1_MODE | ESCAPE_MODE, -1, 0, 1 },
+        /* 46*/ { BARCODE_DATAMATRIX, "(01)12345678901231", GS1_MODE | ESCAPE_MODE | GS1PARENS_MODE, -1, 0, 1 },
+        /* 47*/ { BARCODE_DATAMATRIX, "(01)12345678901234", GS1_MODE | ESCAPE_MODE | GS1PARENS_MODE, -1, ZINT_WARN_NONCOMPLIANT, 0 },
+        /* 48*/ { BARCODE_DATAMATRIX, "(01)123456789012345", GS1_MODE | ESCAPE_MODE | GS1PARENS_MODE, -1, ZINT_ERROR_INVALID_DATA, 0 },
+        /* 49*/ { BARCODE_DATAMATRIX, "(01)12345678901234A", GS1_MODE | ESCAPE_MODE | GS1PARENS_MODE, -1, ZINT_ERROR_INVALID_DATA, 0 },
+        /* 50*/ { BARCODE_DATAMATRIX, "(01)1234567890123A", GS1_MODE | ESCAPE_MODE | GS1PARENS_MODE, -1, ZINT_WARN_NONCOMPLIANT, 0 },
+        /* 51*/ { BARCODE_DATAMATRIX, "[01]12345678901231", GS1_MODE, READER_INIT, ZINT_ERROR_INVALID_OPTION, 0 },
+        /* 52*/ { BARCODE_DATAMATRIX, "[01]12345678901231", GS1_MODE | ESCAPE_MODE, READER_INIT, ZINT_ERROR_INVALID_OPTION, 0 },
+        /* 53*/ { BARCODE_DATAMATRIX, "1234", GS1_MODE, -1, ZINT_ERROR_INVALID_DATA, 0 },
+        /* 54*/ { BARCODE_DATAMATRIX, "1234", GS1_MODE | ESCAPE_MODE, -1, ZINT_ERROR_INVALID_DATA, 0 },
+        /* 55*/ { BARCODE_DOTCODE, "[01]12345678901231", GS1_MODE, -1, 0, 0 },
+        /* 56*/ { BARCODE_DOTCODE, "[01]12345678901231", GS1_MODE | ESCAPE_MODE, -1, 0, 1 },
+        /* 57*/ { BARCODE_DOTCODE, "(01)12345678901231", GS1_MODE | ESCAPE_MODE | GS1PARENS_MODE, -1, 0, 1 },
+        /* 58*/ { BARCODE_DOTCODE, "(01)12345678901234", GS1_MODE | ESCAPE_MODE | GS1PARENS_MODE, -1, ZINT_WARN_NONCOMPLIANT, 0 },
+        /* 59*/ { BARCODE_DOTCODE, "(01)123456789012345", GS1_MODE | ESCAPE_MODE | GS1PARENS_MODE, -1, ZINT_ERROR_INVALID_DATA, 0 },
+        /* 60*/ { BARCODE_DOTCODE, "(01)12345678901234A", GS1_MODE | ESCAPE_MODE | GS1PARENS_MODE, -1, ZINT_ERROR_INVALID_DATA, 0 },
+        /* 61*/ { BARCODE_DOTCODE, "(01)1234567890123A", GS1_MODE | ESCAPE_MODE | GS1PARENS_MODE, -1, ZINT_WARN_NONCOMPLIANT, 0 },
+        /* 62*/ { BARCODE_DOTCODE, "[01]12345678901231", GS1_MODE, READER_INIT, 0, 0 }, // Reader Init permissible with default GS1 mode
+        /* 63*/ { BARCODE_DOTCODE, "[01]12345678901231", GS1_MODE | ESCAPE_MODE, READER_INIT, 0, 1 },
+        /* 64*/ { BARCODE_DOTCODE, "1234", GS1_MODE, -1, ZINT_ERROR_INVALID_DATA, 0 },
+        /* 65*/ { BARCODE_DOTCODE, "1234", GS1_MODE | ESCAPE_MODE, -1, ZINT_ERROR_INVALID_DATA, 0 },
+        /* 66*/ { BARCODE_QRCODE, "[01]12345678901231", GS1_MODE, -1, 0, 0 },
+        /* 67*/ { BARCODE_QRCODE, "[01]12345678901231", GS1_MODE | ESCAPE_MODE, -1, 0, 1 },
+        /* 68*/ { BARCODE_QRCODE, "(01)12345678901231", GS1_MODE | ESCAPE_MODE | GS1PARENS_MODE, -1, 0, 1 },
+        /* 69*/ { BARCODE_QRCODE, "(01)12345678901234", GS1_MODE | ESCAPE_MODE | GS1PARENS_MODE, -1, ZINT_WARN_NONCOMPLIANT, 0 },
+        /* 70*/ { BARCODE_QRCODE, "(01)123456789012345", GS1_MODE | ESCAPE_MODE | GS1PARENS_MODE, -1, ZINT_ERROR_INVALID_DATA, 0 },
+        /* 71*/ { BARCODE_QRCODE, "(01)12345678901234A", GS1_MODE | ESCAPE_MODE | GS1PARENS_MODE, -1, ZINT_ERROR_INVALID_DATA, 0 },
+        /* 72*/ { BARCODE_QRCODE, "(01)1234567890123A", GS1_MODE | ESCAPE_MODE | GS1PARENS_MODE, -1, ZINT_WARN_NONCOMPLIANT, 0 },
+        /* 73*/ { BARCODE_QRCODE, "1234", GS1_MODE, -1, ZINT_ERROR_INVALID_DATA, 0 },
+        /* 74*/ { BARCODE_QRCODE, "1234", GS1_MODE | ESCAPE_MODE, -1, ZINT_ERROR_INVALID_DATA, 0 },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol;
 
-    char *text;
     struct zint_symbol previous_symbol;
 
     testStart("test_input_mode");
@@ -1819,16 +1867,10 @@ static void test_input_mode(int index, int debug) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        if (strlen(data[i].composite)) {
-            text = data[i].composite;
-            strcpy(symbol->primary, data[i].data);
-        } else {
-            text = data[i].data;
-        }
-        length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1, -1, data[i].output_options, text, -1, debug);
+        length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1, -1, data[i].output_options, data[i].data, -1, debug);
 
-        ret = ZBarcode_Encode(symbol, (unsigned char *) text, length);
-        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d %s\n", i, ret, data[i].ret, symbol->errtxt);
+        ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
         if (index == -1 && data[i].compare_previous) {
             ret = testUtilSymbolCmp(symbol, &previous_symbol);
             assert_zero(ret, "i:%d testUtilSymbolCmp ret %d != 0\n", i, ret);

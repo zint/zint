@@ -537,111 +537,6 @@ static int has_hrt(const int symbology) {
     return 1;
 }
 
-/* Return the capability flags for symbology `symbol_id` that match `cap_flag` */
-unsigned int ZBarcode_Cap(int symbol_id, unsigned int cap_flag) {
-    unsigned int result = 0;
-
-    if (!ZBarcode_ValidID(symbol_id)) {
-        return 0;
-    }
-
-    if ((cap_flag & ZINT_CAP_HRT) && has_hrt(symbol_id)) {
-        result |= ZINT_CAP_HRT;
-    }
-    if ((cap_flag & ZINT_CAP_STACKABLE) && is_stackable(symbol_id)) {
-        result |= ZINT_CAP_STACKABLE;
-    }
-    if ((cap_flag & ZINT_CAP_EXTENDABLE) && is_extendable(symbol_id)) {
-        result |= ZINT_CAP_EXTENDABLE;
-    }
-    if ((cap_flag & ZINT_CAP_COMPOSITE) && is_composite(symbol_id)) {
-        result |= ZINT_CAP_COMPOSITE;
-    }
-    if ((cap_flag & ZINT_CAP_ECI) && supports_eci(symbol_id)) {
-        result |= ZINT_CAP_ECI;
-    }
-    if ((cap_flag & ZINT_CAP_GS1) && gs1_compliant(symbol_id)) {
-        result |= ZINT_CAP_GS1;
-    }
-    if ((cap_flag & ZINT_CAP_DOTTY) && is_dotty(symbol_id)) {
-        result |= ZINT_CAP_DOTTY;
-    }
-    if ((cap_flag & ZINT_CAP_FIXED_RATIO) && is_fixed_ratio(symbol_id)) {
-        result |= ZINT_CAP_FIXED_RATIO;
-    }
-    if (cap_flag & ZINT_CAP_READER_INIT) {
-        /* Note does not include HIBC versions */
-        switch (symbol_id) {
-            case BARCODE_CODE128: /* Note does not include GS1_128 or NVE18 */
-            case BARCODE_CODE128B:
-            case BARCODE_CODE16K:
-            case BARCODE_CODABLOCKF:
-            case BARCODE_PDF417:
-            case BARCODE_PDF417COMP:
-            case BARCODE_DATAMATRIX:
-            case BARCODE_MICROPDF417:
-            case BARCODE_AZTEC:
-            case BARCODE_DOTCODE:
-            case BARCODE_GRIDMATRIX:
-            case BARCODE_ULTRA:
-                result |= ZINT_CAP_READER_INIT;
-                break;
-        }
-    }
-    if (cap_flag & ZINT_CAP_FULL_MULTIBYTE) {
-        switch (symbol_id) {
-            case BARCODE_QRCODE:
-            case BARCODE_MICROQR:
-            //case BARCODE_HIBC_QR: Note character set restricted to ASCII subset
-            //case BARCODE_UPNQR: Note does not use Kanji mode
-            case BARCODE_RMQR:
-            case BARCODE_HANXIN:
-            case BARCODE_GRIDMATRIX:
-                result |= ZINT_CAP_FULL_MULTIBYTE;
-                break;
-        }
-    }
-    if (cap_flag & ZINT_CAP_MASK) {
-        switch (symbol_id) {
-            case BARCODE_QRCODE:
-            case BARCODE_MICROQR:
-            case BARCODE_HANXIN:
-            case BARCODE_DOTCODE:
-                result |= ZINT_CAP_MASK;
-                break;
-        }
-    }
-
-    return result;
-}
-
-int ZBarcode_ValidID(int symbol_id) {
-    /* Checks whether a symbology is supported */
-    static const unsigned char ids[146] = {
-          0,   1,   2,   3,   4,   0,   6,   7,   8,   9,
-          0,   0,   0,  13,  14,   0,  16,   0,  18,   0,
-         20,  21,  22,  23,  24,  25,   0,   0,  28,  29,
-         30,  31,  32,   0,  34,  35,   0,  37,  38,   0,
-         40,   0,   0,   0,   0,   0,   0,  47,   0,  49,
-         50,  51,  52,  53,   0,  55,  56,  57,  58,   0,
-         60,   0,   0,  63,   0,   0,  66,  67,  68,  69,
-         70,  71,  72,  73,  74,  75,  76,  77,   0,  79,
-         80,  81,  82,   0,  84,  85,  86,  87,   0,  89,
-         90,   0,  92,  93,   0,   0,  96,  97,  98,  99,
-          0,   0, 102,   0, 104,   0, 106,   0, 108,   0,
-        110,   0, 112,   0,   0, 115, 116,   0,   0,   0,
-          0, 121,   0,   0,   0,   0,   0,   0, 128, 129,
-        130, 131, 132, 133, 134, 135, 136, 137, 138, 139,
-        140, 141, 142, 143, 144, 145,
-    };
-
-    if (symbol_id <= 0 || symbol_id > 145) {
-        return 0;
-    }
-
-    return ids[symbol_id] != 0;
-}
-
 static int reduced_charset(struct zint_symbol *symbol, unsigned char *source, int length);
 
 static int extended_or_reduced_charset(struct zint_symbol *symbol, unsigned char *source, const int length) {
@@ -1198,8 +1093,9 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
 #endif
                 error_number = gs1_verify(symbol, local_source, length, reduced);
                 if (error_number) {
-                    const char in_2d_comp[] = " in 2D component";
-                    if (is_composite(symbol->symbology) && strlen(symbol->errtxt) < 100 - strlen(in_2d_comp)) {
+                    static const char in_2d_comp[] = " in 2D component";
+                    if (is_composite(symbol->symbology)
+                            && strlen(symbol->errtxt) + strlen(in_2d_comp) < sizeof(symbol->errtxt)) {
                         strcat(symbol->errtxt, in_2d_comp);
                     }
                     error_number = error_tag(symbol, error_number, NULL);
@@ -1320,6 +1216,7 @@ int ZBarcode_Print(struct zint_symbol *symbol, int rotate_angle) {
     return error_tag(symbol, error_number, NULL);
 }
 
+/* Output a previously encoded symbol to memory as raster (`symbol->bitmap`) */
 int ZBarcode_Buffer(struct zint_symbol *symbol, int rotate_angle) {
     int error_number;
 
@@ -1346,6 +1243,7 @@ int ZBarcode_Buffer(struct zint_symbol *symbol, int rotate_angle) {
     return error_tag(symbol, error_number, NULL);
 }
 
+/* Output a previously encoded symbol to memory as vector (`symbol->vector`) */
 int ZBarcode_Buffer_Vector(struct zint_symbol *symbol, int rotate_angle) {
     int error_number;
 
@@ -1373,7 +1271,7 @@ int ZBarcode_Buffer_Vector(struct zint_symbol *symbol, int rotate_angle) {
 }
 
 /* Encode and output a symbol to file `symbol->outfile` */
-int ZBarcode_Encode_and_Print(struct zint_symbol *symbol, unsigned char *source, int length, int rotate_angle) {
+int ZBarcode_Encode_and_Print(struct zint_symbol *symbol, const unsigned char *source, int length, int rotate_angle) {
     int error_number;
     int first_err;
 
@@ -1390,7 +1288,9 @@ int ZBarcode_Encode_and_Print(struct zint_symbol *symbol, unsigned char *source,
     return error_number;
 }
 
-int ZBarcode_Encode_and_Buffer(struct zint_symbol *symbol, unsigned char *source, int length, int rotate_angle) {
+/* Encode and output a symbol to memory as raster (`symbol->bitmap`) */
+int ZBarcode_Encode_and_Buffer(struct zint_symbol *symbol, const unsigned char *source, int length,
+            int rotate_angle) {
     int error_number;
     int first_err;
 
@@ -1408,7 +1308,8 @@ int ZBarcode_Encode_and_Buffer(struct zint_symbol *symbol, unsigned char *source
     return error_number;
 }
 
-int ZBarcode_Encode_and_Buffer_Vector(struct zint_symbol *symbol, unsigned char *source, int length,
+/* Encode and output a symbol to memory as vector (`symbol->vector`) */
+int ZBarcode_Encode_and_Buffer_Vector(struct zint_symbol *symbol, const unsigned char *source, int length,
             int rotate_angle) {
     int error_number;
     int first_err;
@@ -1428,7 +1329,7 @@ int ZBarcode_Encode_and_Buffer_Vector(struct zint_symbol *symbol, unsigned char 
 }
 
 /* Encode a barcode using input data from file `filename` */
-int ZBarcode_Encode_File(struct zint_symbol *symbol, char *filename) {
+int ZBarcode_Encode_File(struct zint_symbol *symbol, const char *filename) {
     FILE *file;
     int file_opened = 0;
     unsigned char *buffer;
@@ -1503,7 +1404,7 @@ int ZBarcode_Encode_File(struct zint_symbol *symbol, char *filename) {
 }
 
 /* Encode a symbol using input data from file `filename` and output to file `symbol->outfile` */
-int ZBarcode_Encode_File_and_Print(struct zint_symbol *symbol, char *filename, int rotate_angle) {
+int ZBarcode_Encode_File_and_Print(struct zint_symbol *symbol, const char *filename, int rotate_angle) {
     int error_number;
     int first_err;
 
@@ -1522,7 +1423,7 @@ int ZBarcode_Encode_File_and_Print(struct zint_symbol *symbol, char *filename, i
 }
 
 /* Encode a symbol using input data from file `filename` and output to memory as raster (`symbol->bitmap`) */
-int ZBarcode_Encode_File_and_Buffer(struct zint_symbol *symbol, char *filename, int rotate_angle) {
+int ZBarcode_Encode_File_and_Buffer(struct zint_symbol *symbol, char const *filename, int rotate_angle) {
     int error_number;
     int first_err;
 
@@ -1541,7 +1442,7 @@ int ZBarcode_Encode_File_and_Buffer(struct zint_symbol *symbol, char *filename, 
 }
 
 /* Encode a symbol using input data from file `filename` and output to memory as vector (`symbol->vector`) */
-int ZBarcode_Encode_File_and_Buffer_Vector(struct zint_symbol *symbol, char *filename, int rotate_angle) {
+int ZBarcode_Encode_File_and_Buffer_Vector(struct zint_symbol *symbol, const char *filename, int rotate_angle) {
     int error_number;
     int first_err;
 
@@ -1557,6 +1458,111 @@ int ZBarcode_Encode_File_and_Buffer_Vector(struct zint_symbol *symbol, char *fil
     }
 
     return error_number;
+}
+
+int ZBarcode_ValidID(int symbol_id) {
+    /* Checks whether a symbology is supported */
+    static const unsigned char ids[146] = {
+          0,   1,   2,   3,   4,   0,   6,   7,   8,   9,
+          0,   0,   0,  13,  14,   0,  16,   0,  18,   0,
+         20,  21,  22,  23,  24,  25,   0,   0,  28,  29,
+         30,  31,  32,   0,  34,  35,   0,  37,  38,   0,
+         40,   0,   0,   0,   0,   0,   0,  47,   0,  49,
+         50,  51,  52,  53,   0,  55,  56,  57,  58,   0,
+         60,   0,   0,  63,   0,   0,  66,  67,  68,  69,
+         70,  71,  72,  73,  74,  75,  76,  77,   0,  79,
+         80,  81,  82,   0,  84,  85,  86,  87,   0,  89,
+         90,   0,  92,  93,   0,   0,  96,  97,  98,  99,
+          0,   0, 102,   0, 104,   0, 106,   0, 108,   0,
+        110,   0, 112,   0,   0, 115, 116,   0,   0,   0,
+          0, 121,   0,   0,   0,   0,   0,   0, 128, 129,
+        130, 131, 132, 133, 134, 135, 136, 137, 138, 139,
+        140, 141, 142, 143, 144, 145,
+    };
+
+    if (symbol_id <= 0 || symbol_id > 145) {
+        return 0;
+    }
+
+    return ids[symbol_id] != 0;
+}
+
+/* Return the capability flags for symbology `symbol_id` that match `cap_flag` */
+unsigned int ZBarcode_Cap(int symbol_id, unsigned int cap_flag) {
+    unsigned int result = 0;
+
+    if (!ZBarcode_ValidID(symbol_id)) {
+        return 0;
+    }
+
+    if ((cap_flag & ZINT_CAP_HRT) && has_hrt(symbol_id)) {
+        result |= ZINT_CAP_HRT;
+    }
+    if ((cap_flag & ZINT_CAP_STACKABLE) && is_stackable(symbol_id)) {
+        result |= ZINT_CAP_STACKABLE;
+    }
+    if ((cap_flag & ZINT_CAP_EXTENDABLE) && is_extendable(symbol_id)) {
+        result |= ZINT_CAP_EXTENDABLE;
+    }
+    if ((cap_flag & ZINT_CAP_COMPOSITE) && is_composite(symbol_id)) {
+        result |= ZINT_CAP_COMPOSITE;
+    }
+    if ((cap_flag & ZINT_CAP_ECI) && supports_eci(symbol_id)) {
+        result |= ZINT_CAP_ECI;
+    }
+    if ((cap_flag & ZINT_CAP_GS1) && gs1_compliant(symbol_id)) {
+        result |= ZINT_CAP_GS1;
+    }
+    if ((cap_flag & ZINT_CAP_DOTTY) && is_dotty(symbol_id)) {
+        result |= ZINT_CAP_DOTTY;
+    }
+    if ((cap_flag & ZINT_CAP_FIXED_RATIO) && is_fixed_ratio(symbol_id)) {
+        result |= ZINT_CAP_FIXED_RATIO;
+    }
+    if (cap_flag & ZINT_CAP_READER_INIT) {
+        /* Note does not include HIBC versions */
+        switch (symbol_id) {
+            case BARCODE_CODE128: /* Note does not include GS1_128 or NVE18 */
+            case BARCODE_CODE128B:
+            case BARCODE_CODE16K:
+            case BARCODE_CODABLOCKF:
+            case BARCODE_PDF417:
+            case BARCODE_PDF417COMP:
+            case BARCODE_DATAMATRIX:
+            case BARCODE_MICROPDF417:
+            case BARCODE_AZTEC:
+            case BARCODE_DOTCODE:
+            case BARCODE_GRIDMATRIX:
+            case BARCODE_ULTRA:
+                result |= ZINT_CAP_READER_INIT;
+                break;
+        }
+    }
+    if (cap_flag & ZINT_CAP_FULL_MULTIBYTE) {
+        switch (symbol_id) {
+            case BARCODE_QRCODE:
+            case BARCODE_MICROQR:
+            //case BARCODE_HIBC_QR: Note character set restricted to ASCII subset
+            //case BARCODE_UPNQR: Note does not use Kanji mode
+            case BARCODE_RMQR:
+            case BARCODE_HANXIN:
+            case BARCODE_GRIDMATRIX:
+                result |= ZINT_CAP_FULL_MULTIBYTE;
+                break;
+        }
+    }
+    if (cap_flag & ZINT_CAP_MASK) {
+        switch (symbol_id) {
+            case BARCODE_QRCODE:
+            case BARCODE_MICROQR:
+            case BARCODE_HANXIN:
+            case BARCODE_DOTCODE:
+                result |= ZINT_CAP_MASK;
+                break;
+        }
+    }
+
+    return result;
 }
 
 /* Return the version of Zint linked to */
