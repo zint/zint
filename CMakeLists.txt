@@ -62,7 +62,7 @@ if(ZINT_TEST)
 endif()
 
 set(SANITIZER_FLAGS "")
-if(ZINT_SANITIZE AND NOT MSVC)
+if(ZINT_SANITIZE)
     file(WRITE ${CMAKE_BINARY_DIR}/dummy.c "int main() { return 0; }")
     set(SANITIZERS address leak undefined) #address hwaddress leak memory thread undefined
     foreach(sanitizer IN ITEMS ${SANITIZERS})
