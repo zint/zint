@@ -1410,36 +1410,47 @@ symbology.
 The way in which the input data is encoded can be set using the input_mode
 property. Valid values are shown in the table below.
 
-------------------------------------------------------------------------------
-Value          |  Effect
-------------------------------------------------------------------------------
-DATA_MODE      |  Uses full ASCII range interpreted as Latin-1 or binary data.
-UNICODE_MODE   |  Uses pre-formatted UTF-8 input.
-GS1_MODE       |  Encodes GS1 data using FNC1 characters.
-               |
-ESCAPE_MODE    |  Process input data for escape sequences.
-GS1PARENS_MODE |  Parentheses (round brackets) used in input data instead of
-               |     square brackets to delimit GS1 Application Identifiers
-               |     (parentheses must not otherwise occur in the data).
-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+Value           |  Effect
+-------------------------------------------------------------------------------
+DATA_MODE       |  Uses full ASCII range interpreted as Latin-1 or binary data.
+UNICODE_MODE    |  Uses pre-formatted UTF-8 input.
+GS1_MODE        |  Encodes GS1 data using FNC1 characters.
+----------------|--------------------------------------------------------------
+ESCAPE_MODE     |  Process input data for escape sequences.
+GS1PARENS_MODE  |  Parentheses (round brackets) used in input data instead of
+                |     square brackets to delimit GS1 Application Identifiers
+                |     (parentheses must not otherwise occur in the data).
+GS1NOCHECK_MODE |  Do not check GS1 data for validity, i.e. suppress checks for
+                |     valid AIs and data lengths. Invalid characters (e.g.
+                |     control characters, extended ASCII characters) are still
+                |     checked for.
+-------------------------------------------------------------------------------
 
 The default mode is DATA_MODE.
 
-DATA_MODE, UNICODE_MODE and GS1_MODE are mutually exclusive, whereas ESCAPE_MODE
-and GS1PARENS_MODE are optional. So, for example, you can set
+DATA_MODE, UNICODE_MODE and GS1_MODE are mutually exclusive, whereas ESCAPE_MODE,
+GS1PARENS_MODE and GS1NOCHECK_MODE are optional. So, for example, you can set
 
 my_symbol->input_mode = UNICODE_MODE | ESCAPE_MODE;
 
 or
 
-my_symbol->input_mode = GS1_MODE | GS1PARENS_MODE;
+my_symbol->input_mode = GS1_MODE | GS1PARENS_MODE | GS1NOCHECK_MODE;
 
 whereas
 
 my_symbol->input_mode = DATA_MODE | GS1_MODE;
 
-is not valid. Permissible escape sequences are listed in section 4.1. An
-example of GS1PARENS_MODE usage is given in section 6.1.11.3.
+is not valid.
+
+Permissible escape sequences are listed in section 4.1. An example of
+GS1PARENS_MODE usage is given in section 6.1.11.3.
+
+GS1NOCHECK_MODE is for use with legacy systems that have data that does not
+conform to the current GS1 standard. Non-printable ASCII input is still checked
+for, as is the validity of GS1 data specified without AIs (e.g. linear data for
+GS1 DataBar Omnidirectional/Limited/etc.).
 
 5.11 Verifying Symbology Availability
 -------------------------------------

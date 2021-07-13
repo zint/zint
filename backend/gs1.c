@@ -1221,11 +1221,7 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
 
     if (source[0] != obracket) {
         strcpy(symbol->errtxt, "252: Data does not start with an AI");
-        if (symbol->warn_level != WARN_ZPL_COMPAT) {
-            return ZINT_ERROR_INVALID_DATA;
-        } else {
-            error_value = ZINT_WARN_NONCOMPLIANT;
-        }
+        return ZINT_ERROR_INVALID_DATA;
     }
 
     /* Check the position of the brackets */
@@ -1329,24 +1325,26 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
 
     strcpy(ai_string, "");
 
-    // Check for valid AI values and data lengths according to GS1 General
-    // Specifications Release 21.0.1, January 2021
-    for (i = 0; i < ai_count; i++) {
-        int err_no, err_posn;
-        char err_msg[50];
-        if (!gs1_lint(ai_value[i], source + data_location[i], data_length[i], &err_no, &err_posn, err_msg)) {
-            if (err_no == 1) {
-                sprintf(symbol->errtxt, "260: Invalid AI (%02d)", ai_value[i]);
-            } else if (err_no == 2 || err_no == 4) { /* 4 is backward-incompatible bad length */
-                sprintf(symbol->errtxt, "259: Invalid data length for AI (%02d)", ai_value[i]);
-            } else {
-                sprintf(symbol->errtxt, "261: AI (%02d) position %d: %s", ai_value[i], err_posn, err_msg);
+    if (!(symbol->input_mode & GS1NOCHECK_MODE)) {
+        // Check for valid AI values and data lengths according to GS1 General
+        // Specifications Release 21.0.1, January 2021
+        for (i = 0; i < ai_count; i++) {
+            int err_no, err_posn;
+            char err_msg[50];
+            if (!gs1_lint(ai_value[i], source + data_location[i], data_length[i], &err_no, &err_posn, err_msg)) {
+                if (err_no == 1) {
+                    sprintf(symbol->errtxt, "260: Invalid AI (%02d)", ai_value[i]);
+                } else if (err_no == 2 || err_no == 4) { /* 4 is backward-incompatible bad length */
+                    sprintf(symbol->errtxt, "259: Invalid data length for AI (%02d)", ai_value[i]);
+                } else {
+                    sprintf(symbol->errtxt, "261: AI (%02d) position %d: %s", ai_value[i], err_posn, err_msg);
+                }
+                /* For backward compatibility only error on unknown AI or bad length */
+                if (err_no == 1 || err_no == 2) {
+                    return ZINT_ERROR_INVALID_DATA;
+                }
+                error_value = ZINT_WARN_NONCOMPLIANT;
             }
-            /* For backward compatibility only error on unknown AI or bad length */
-            if ((err_no == 1 || err_no == 2) && symbol->warn_level != WARN_ZPL_COMPAT) {
-                return ZINT_ERROR_INVALID_DATA;
-            }
-            error_value = ZINT_WARN_NONCOMPLIANT;
         }
     }
 

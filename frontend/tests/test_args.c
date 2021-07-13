@@ -910,10 +910,10 @@ static void test_other_opts(int index, int debug) {
         /* 13*/ { 19, "1", -1, " --werror", NULL, "Error 207: Codabar 18 not supported" },
         /* 14*/ { BARCODE_GS1_128, "[01]12345678901231", -1, "", NULL, "" },
         /* 15*/ { BARCODE_GS1_128, "0112345678901231", -1, "", NULL, "Error 252: Data does not start with an AI" },
-        /* 16*/ { BARCODE_GS1_128, "0112345678901231", -1, " --wzpl", NULL, "Warning 252: Data does not start with an AI" },
+        /* 16*/ { BARCODE_GS1_128, "0112345678901231", -1, " --gs1nocheck", NULL, "Error 252: Data does not start with an AI" },
         /* 17*/ { BARCODE_GS1_128, "[00]376104250021234569", -1, "", NULL, "" },
         /* 18*/ { BARCODE_GS1_128, "[00]376104250021234568", -1, "", NULL, "Warning 261: AI (00) position 18: Bad checksum '8', expected '9'" },
-        /* 19*/ { BARCODE_GS1_128, "[00]376104250021234568", -1, " --wzpl", NULL, "Warning 261: AI (00) position 18: Bad checksum '8', expected '9'" },
+        /* 19*/ { BARCODE_GS1_128, "[00]376104250021234568", -1, " --gs1nocheck", NULL, "" },
         /* 20*/ { BARCODE_GS1_128, "[00]376104250021234568", -1, " --werror", NULL, "Error 261: AI (00) position 18: Bad checksum '8', expected '9'" },
     };
     int data_size = ARRAY_SIZE(data);

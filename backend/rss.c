@@ -160,7 +160,7 @@ static void getRSSwidths(int widths[], int val, int n, const int elements, const
 /* Set GTIN-14 human readable text */
 static void rss_set_gtin14_hrt(struct zint_symbol *symbol, const unsigned char *source, const int src_len) {
     int i;
-    unsigned char hrt[15];
+    unsigned char *hrt = symbol->text + 4;
 
     ustrcpy(symbol->text, "(01)");
     for (i = 0; i < 12; i++) {
@@ -172,8 +172,6 @@ static void rss_set_gtin14_hrt(struct zint_symbol *symbol, const unsigned char *
 
     hrt[13] = gs1_check_digit(hrt, 13);
     hrt[14] = '\0';
-
-    ustrcat(symbol->text, hrt);
 }
 
 /* Expand from a width pattern to a bit pattern */
@@ -975,7 +973,7 @@ static int rssexp_binary_string(struct zint_symbol *symbol, const unsigned char 
         if ((source[i] < '0') || (source[i] > '9')) {
             if (source[i] != '[') {
                 /* Something is wrong */
-                strcpy(symbol->errtxt, "385: Invalid character in input data"); // TODO: Better error message
+                strcpy(symbol->errtxt, "385: Invalid character in Compressed Field data (digits only)");
                 return ZINT_ERROR_INVALID_DATA;
             }
         }
@@ -1073,10 +1071,9 @@ static int rssexp_binary_string(struct zint_symbol *symbol, const unsigned char 
     if (debug) printf("General field data = %s\n", general_field);
 
     if (j != 0) { /* If general field not empty */
-
-        if (!general_field_encode(general_field, j, &mode, &last_digit, binary_string, &bp)) {
-            /* Invalid character in input data */
-            strcpy(symbol->errtxt, "386: Invalid character in input data"); // TODO: Better error message
+        if (!general_field_encode(general_field, j, &mode, &last_digit, binary_string, &bp)) { /* Failure should never happen */
+            /* Not reachable */
+            strcpy(symbol->errtxt, "386: Invalid character in General Field data");
             return ZINT_ERROR_INVALID_DATA;
         }
     }
@@ -1443,15 +1440,12 @@ INTERNAL int rssexpanded_cc(struct zint_symbol *symbol, unsigned char source[], 
 
         /* Add human readable text */
         for (i = 0; i <= src_len; i++) {
-            if ((source[i] != '[') && (source[i] != ']')) {
-                symbol->text[i] = source[i];
+            if (source[i] == '[') {
+                symbol->text[i] = '(';
+            } else if (source[i] == ']') {
+                symbol->text[i] = ')';
             } else {
-                if (source[i] == '[') {
-                    symbol->text[i] = '(';
-                }
-                if (source[i] == ']') {
-                    symbol->text[i] = ')';
-                }
+                symbol->text[i] = source[i];
             }
         }
 

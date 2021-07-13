@@ -543,6 +543,7 @@ const char *testUtilInputModeName(int input_mode) {
     static const struct item data[] = {
         { "ESCAPE_MODE", ESCAPE_MODE, 8 },
         { "GS1PARENS_MODE", GS1PARENS_MODE, 16 },
+        { "GS1NOCHECK_MODE", GS1NOCHECK_MODE, 32 },
     };
     static const int data_size = ARRAY_SIZE(data);
     int set, i;
@@ -550,7 +551,7 @@ const char *testUtilInputModeName(int input_mode) {
     if (input_mode < 0) {
         return "-1";
     }
-    buf[0] = '\0';
+    *buf = '\0';
     if ((input_mode & 0x7) & UNICODE_MODE) {
         strcpy(buf, "UNICODE_MODE");
         set = UNICODE_MODE;
@@ -558,7 +559,6 @@ const char *testUtilInputModeName(int input_mode) {
         strcpy(buf, "GS1_MODE");
         set = GS1_MODE;
     } else {
-        strcpy(buf, "DATA_MODE");
         set = DATA_MODE;
     }
     for (i = 0; i < data_size; i++) {
@@ -577,6 +577,9 @@ const char *testUtilInputModeName(int input_mode) {
     if (set != input_mode) {
         fprintf(stderr, "testUtilInputModeName: unknown input mode %d (%d)\n", input_mode & set, input_mode);
         abort();
+    }
+    if (set == DATA_MODE && *buf == '\0') {
+        strcpy(buf, "DATA_MODE");
     }
     return buf;
 }
@@ -719,21 +722,32 @@ char *testUtilEscape(char *buffer, int length, char *escaped, int escaped_size) 
     unsigned char *b = (unsigned char *) buffer;
     unsigned char *be = b + length;
     int non_utf8 = !testUtilIsValidUTF8(b, length);
+    int chunk = -1;
 
     for (i = 0; b < be && i < escaped_size; b++) {
-        if (non_utf8 || *b < ' ' || *b == '\177') {
-            if (i < escaped_size - 4) {
+         // For VC6-compatibility need to split literal strings into <= 2K chunks
+         if (i > 2040 && i / 2040 != chunk) {
+            chunk = i / 2040;
+            if (i + 3 < escaped_size) {
+                escaped[i] = '"';
+                escaped[i + 1] = ' ';
+                escaped[i + 2] = '"';
+            }
+            i += 3;
+         }
+         if (non_utf8 || *b < ' ' || *b == '\177') {
+            if (i + 4 < escaped_size) {
                 sprintf(escaped + i, "\\%.3o", *b);
             }
             i += 4;
         } else if (*b == '\\' || *b == '"') {
-            if (i < escaped_size - 2) {
+            if (i + 2 < escaped_size) {
                 escaped[i] = '\\';
                 escaped[i + 1] = *b;
             }
             i += 2;
         } else if (b + 1 < be && *b == 0xC2 && *(b + 1) < 0xA0) {
-            if (i < escaped_size - 8) {
+            if (i + 8 < escaped_size) {
                 sprintf(escaped + i, "\\%.3o\\%.3o", *b, *(b + 1));
             }
             i += 8;
@@ -2465,6 +2479,11 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                     strlen(bwipp_opts_buf) ? " " : "", option_2 * 2);
             bwipp_opts = bwipp_opts_buf;
         }
+
+        if (symbol->input_mode & GS1NOCHECK_MODE) {
+            sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%sdontlint", strlen(bwipp_opts_buf) ? " " : "");
+            bwipp_opts = bwipp_opts_buf;
+        }
     } else {
         if (gs1_cvt) {
             if (*data != obracket && !upcean) {
@@ -2494,6 +2513,11 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                             strlen(bwipp_opts_buf) ? " " : "", option_2 * 2);
                     bwipp_opts = bwipp_opts_buf;
                 }
+            }
+
+            if (symbol->input_mode & GS1NOCHECK_MODE) {
+                sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%sdontlint", strlen(bwipp_opts_buf) ? " " : "");
+                bwipp_opts = bwipp_opts_buf;
             }
         } else {
             if (testUtilBwippEscape(bwipp_data, bwipp_data_size, data, data_len, symbol->input_mode & ESCAPE_MODE,

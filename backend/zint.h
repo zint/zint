@@ -262,6 +262,7 @@ extern "C" {
 /* The following may be OR-ed with above */
 #define ESCAPE_MODE             8   /* Process escape sequences */
 #define GS1PARENS_MODE          16  /* Process parentheses as GS1 AI delimiters (instead of square brackets) */
+#define GS1NOCHECK_MODE         32  /* Do not check validity of GS1 data (except that printable ASCII only) */
 
 /* Data Matrix specific options (`symbol->option_3`) */
 #define DM_SQUARE               100 /* Only consider square versions on automatic symbol size selection */
@@ -291,7 +292,6 @@ extern "C" {
 
 /* Warning warn (`symbol->warn_level`) */
 #define WARN_DEFAULT            0  /* Default behaviour */
-#define WARN_ZPL_COMPAT         1  /* ZPL compatible behaviour */
 #define WARN_FAIL_ALL           2  /* Treat warning as error */
 
 /* Capability flags (ZBarcode_Cap() `cap_flag`) */

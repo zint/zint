@@ -101,6 +101,8 @@ public:
 
     void setGS1Parens(bool gs1parens);
 
+    void setGS1NoCheck(bool gs1nocheck);
+
     void setReaderInit(bool reader_init);
 
     void setDebug(bool debug);
@@ -172,6 +174,7 @@ private:
     int target_size_horiz;
     int target_size_vert;
     bool m_gs1parens;
+    bool m_gs1nocheck;
     bool m_gssep;
     bool m_reader_init;
     bool m_debug;

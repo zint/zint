@@ -61,6 +61,7 @@ namespace Zint {
         m_whitespace = 0;
         m_vwhitespace = 0;
         m_gs1parens = false;
+        m_gs1nocheck = false;
         m_gssep = false;
         m_reader_init = false;
         m_rotate_angle = 0;
@@ -97,6 +98,9 @@ namespace Zint {
         m_zintSymbol->scale = m_scale;
         if (m_gs1parens) {
             m_zintSymbol->input_mode |= GS1PARENS_MODE;
+        }
+        if (m_gs1nocheck) {
+            m_zintSymbol->input_mode |= GS1NOCHECK_MODE;
         }
         if (m_gssep) {
             m_zintSymbol->output_options |= GS1_GS_SEPARATOR;
@@ -331,6 +335,10 @@ namespace Zint {
 
     void QZint::setGS1Parens(bool gs1parens) {
         m_gs1parens = gs1parens;
+    }
+
+    void QZint::setGS1NoCheck(bool gs1nocheck) {
+        m_gs1nocheck = gs1nocheck;
     }
 
     void QZint::setReaderInit(bool reader_init) {
