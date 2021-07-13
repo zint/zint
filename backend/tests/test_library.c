@@ -95,7 +95,7 @@ static void test_checks(int index, int debug) {
         /* 40*/ { 36, -1, "1", -1, -1, -1, -1, WARN_FAIL_ALL, 0, "", BARCODE_UPCA },
         /* 41*/ { 39, -1, "1", -1, -1, -1, -1, -1, 0, "", BARCODE_UPCE },
         /* 42*/ { 39, -1, "1", -1, -1, -1, -1, WARN_FAIL_ALL, 0, "", BARCODE_UPCE },
-        /* 43*/ { 41, -1, "1", -1, -1, -1, -1, -1, ZINT_ERROR_TOO_LONG, "Error 480: Input wrong length (5, 9 or 11 characters only)", BARCODE_POSTNET },
+        /* 43*/ { 41, -1, "1", -1, -1, -1, -1, -1, ZINT_WARN_NONCOMPLIANT, "Warning 479: Input length is not standard (5, 9 or 11 characters)", BARCODE_POSTNET },
         /* 44*/ { 41, -1, "12345", -1, -1, -1, -1, -1, 0, "", BARCODE_POSTNET },
         /* 45*/ { 41, -1, "12345", -1, -1, -1, -1, WARN_FAIL_ALL, 0, "", BARCODE_POSTNET },
         /* 46*/ { 42, -1, "12345", -1, -1, -1, -1, -1, 0, "", BARCODE_POSTNET },

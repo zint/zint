@@ -84,7 +84,7 @@ static const char *JapanTable[19] = {
 };
 
 /* Set height for POSTNET/PLANET codes, maintaining ratio */
-static int usps_set_height(struct zint_symbol *symbol) {
+static int usps_set_height(struct zint_symbol *symbol, const int no_errtxt) {
     /* USPS Domestic Mail Manual (USPS DMM 300) Jan 8, 2006 (updated 2011) 708.4.2.5 POSTNET Barcode Dimensions and
        Spacing
        http://web.archive.org/web/20061113174253/http://pe.usps.com/cpim/ftp/manuals/dmm300/full/mailingStandards.pdf
@@ -117,8 +117,12 @@ static int usps_set_height(struct zint_symbol *symbol) {
 #ifdef COMPLIANT_HEIGHTS
     if (symbol->height < 4.6f || symbol->height > 9.0f) {
         error_number = ZINT_WARN_NONCOMPLIANT;
-        strcpy(symbol->errtxt, "498: Height not compliant with standards");
+        if (!no_errtxt) {
+            strcpy(symbol->errtxt, "498: Height not compliant with standards");
+        }
     }
+#else
+    (void)&no_errtxt;
 #endif
 
     return error_number;
@@ -127,16 +131,19 @@ static int usps_set_height(struct zint_symbol *symbol) {
 /* Handles the PostNet system used for Zip codes in the US */
 static int postnet(struct zint_symbol *symbol, unsigned char source[], char dest[], int length) {
     int i, sum, check_digit;
-    int error_number;
+    int error_number = 0;
 
-    if (length != 5 && length != 9 && length != 11) {
-        strcpy(symbol->errtxt, "480: Input wrong length (5, 9 or 11 characters only)");
+    if (length > 38) {
+        strcpy(symbol->errtxt, "480: Input too long (38 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
-    error_number = is_sane(NEON, source, length);
-    if (error_number == ZINT_ERROR_INVALID_DATA) {
+    if (length != 5 && length != 9 && length != 11) {
+        strcpy(symbol->errtxt, "479: Input length is not standard (5, 9 or 11 characters)");
+        error_number = ZINT_WARN_NONCOMPLIANT;
+    }
+    if (is_sane(NEON, source, length) == ZINT_ERROR_INVALID_DATA) {
         strcpy(symbol->errtxt, "481: Invalid character in data (digits only)");
-        return error_number;
+        return ZINT_ERROR_INVALID_DATA;
     }
     sum = 0;
 
@@ -159,13 +166,13 @@ static int postnet(struct zint_symbol *symbol, unsigned char source[], char dest
 
 /* Puts PostNet barcodes into the pattern matrix */
 INTERNAL int post_plot(struct zint_symbol *symbol, unsigned char source[], int length) {
-    char height_pattern[256]; /* 5 + 38 * 5 + 5 + 5 +  1 ~ 256 */
+    char height_pattern[256]; /* 5 + 38 * 5 + 5 + 5 + 1 = 206 */
     unsigned int loopey, h;
     int writer;
-    int error_number;
+    int error_number, warn_number;
 
     error_number = postnet(symbol, source, height_pattern, length);
-    if (error_number != 0) {
+    if (error_number >= ZINT_ERROR) {
         return error_number;
     }
 
@@ -178,26 +185,29 @@ INTERNAL int post_plot(struct zint_symbol *symbol, unsigned char source[], int l
         set_module(symbol, 1, writer);
         writer += 2;
     }
-    error_number = usps_set_height(symbol);
+    warn_number = usps_set_height(symbol, error_number /*no_errtxt*/);
     symbol->rows = 2;
     symbol->width = writer - 1;
 
-    return error_number;
+    return error_number ? error_number : warn_number;
 }
 
 /* Handles the PLANET system used for item tracking in the US */
 static int planet(struct zint_symbol *symbol, unsigned char source[], char dest[], int length) {
     int i, sum, check_digit;
-    int error_number;
+    int error_number = 0;
 
-    if (length != 11 && length != 13) {
-        strcpy(symbol->errtxt, "482: Input wrong length (11 or 13 characters only)");
+    if (length > 38) {
+        strcpy(symbol->errtxt, "482: Input too long (38 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
-    error_number = is_sane(NEON, source, length);
-    if (error_number == ZINT_ERROR_INVALID_DATA) {
+    if (length != 11 && length != 13) {
+        strcpy(symbol->errtxt, "478: Input length is not standard (11 or 13 characters)");
+        error_number = ZINT_WARN_NONCOMPLIANT;
+    }
+    if (is_sane(NEON, source, length) == ZINT_ERROR_INVALID_DATA) {
         strcpy(symbol->errtxt, "483: Invalid character in data (digits only)");
-        return error_number;
+        return ZINT_ERROR_INVALID_DATA;
     }
     sum = 0;
 
@@ -220,13 +230,13 @@ static int planet(struct zint_symbol *symbol, unsigned char source[], char dest[
 
 /* Puts PLANET barcodes into the pattern matrix */
 INTERNAL int planet_plot(struct zint_symbol *symbol, unsigned char source[], int length) {
-    char height_pattern[256]; /* 5 + 38 * 5 + 5 + 5 +  1 ~ 256 */
+    char height_pattern[256]; /* 5 + 38 * 5 + 5 + 5 + 1 = 206 */
     unsigned int loopey, h;
     int writer;
-    int error_number;
+    int error_number, warn_number;
 
     error_number = planet(symbol, source, height_pattern, length);
-    if (error_number != 0) {
+    if (error_number >= ZINT_ERROR) {
         return error_number;
     }
 
@@ -239,11 +249,11 @@ INTERNAL int planet_plot(struct zint_symbol *symbol, unsigned char source[], int
         set_module(symbol, 1, writer);
         writer += 2;
     }
-    error_number = usps_set_height(symbol);
+    warn_number = usps_set_height(symbol, error_number /*no_errtxt*/);
     symbol->rows = 2;
     symbol->width = writer - 1;
 
-    return error_number;
+    return error_number ? error_number : warn_number;
 }
 
 /* Korean Postal Authority */

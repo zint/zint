@@ -905,15 +905,15 @@ The functions for encoding and printing barcodes are defined as:
 int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source,
       int length);
 
-int ZBarcode_Encode_File(struct zint_symbol *symbol, char *filename);
+int ZBarcode_Encode_File(struct zint_symbol *symbol, const char *filename);
 
 int ZBarcode_Print(struct zint_symbol *symbol, int rotate_angle);
 
-int ZBarcode_Encode_and_Print(struct zint_symbol *symbol, unsigned char *source,
-      int length, int rotate_angle);
+int ZBarcode_Encode_and_Print(struct zint_symbol *symbol,
+      const unsigned char *source, int length, int rotate_angle);
 
-int ZBarcode_Encode_File_and_Print(struct zint_symbol *symbol, char *filename,
-      int rotate_angle);
+int ZBarcode_Encode_File_and_Print(struct zint_symbol *symbol,
+      const char *filename, int rotate_angle);
 
 In these definitions "length" can be used to set the length of the input
 string. This allows the encoding of NUL (ASCII 0) characters in those
@@ -940,10 +940,10 @@ allow you to do this:
 int ZBarcode_Buffer(struct zint_symbol *symbol, int rotate_angle);
 
 int ZBarcode_Encode_and_Buffer(struct zint_symbol *symbol,
-      unsigned char *source, int length, int rotate_angle);
+      const unsigned char *source, int length, int rotate_angle);
 
-int ZBarcode_Encode_File_and_Buffer(struct zint_symbol *symbol, char *filename,
-      int rotate_angle);
+int ZBarcode_Encode_File_and_Buffer(struct zint_symbol *symbol,
+      const char *filename, int rotate_angle);
 
 The arguments here are the same as above. The difference is that instead of
 saving the image to file it is placed in an unsigned character array. The
@@ -993,10 +993,10 @@ you to do this:
 int ZBarcode_Buffer_Vector(struct zint_symbol *symbol, int rotate_angle);
 
 int ZBarcode_Encode_and_Buffer_Vector(struct zint_symbol *symbol,
-        unsigned char *source, int length, int rotate_angle);
+        const unsigned char *source, int length, int rotate_angle);
 
 int ZBarcode_Encode_File_and_Buffer_Vector(struct zint_symbol *symbol,
-        char *filename, int rotate_angle);
+        const char *filename, int rotate_angle);
 
 Here the "vector" pointer is set to a header which contains pointers to lists
 of structures representing the various elements of the barcode: rectangles,
@@ -2154,17 +2154,18 @@ symbology is able to encode whole numbers between 4 and 64570080.
 Used by the United States Postal Service until 2009, the POSTNET barcode was
 used for encoding zip-codes on mail items. POSTNET uses numerical input data
 and includes a modulo-10 check digit. While Zint will encode POSTNET symbols of
-any length, standard lengths as used by USPS were PostNet6 (5 digits ZIP
-input), PostNet10 (5 digit ZIP + 4 digit user data) and PostNet12 (5 digit ZIP
-+ 6 digit user data).
+up to 38 digits in length, standard lengths as used by USPS were PostNet6 (5
+digit ZIP input), PostNet10 (5 digit ZIP + 4 digit user data) and PostNet12 (5
+digit ZIP + 6 digit user data).
 
 6.4.3 PLANET
 ------------
 Used by the United States Postal Service until 2009, the PLANET (Postal Alpha
 Numeric Encoding Technique) barcode was used for encoding routing data on mail
 items. PLANET uses numerical input data and includes a modulo-10 check digit.
-While Zint will encode PLANET symbols of any length, standard lengths used by
-USPS were Planet12 (11 digit input) and Planet14 (13 digit input).
+While Zint will encode PLANET symbols of up to 38 digits in length, standard
+lengths used by USPS were Planet12 (11 digit input) and Planet14 (13 digit
+input).
 
 6.5 4-State Postal Codes
 ------------------------
@@ -2259,14 +2260,14 @@ A-Z and Dash (-). A modulo 19 check digit is added by Zint.
 -----------------------------
 Also known as Semacode this symbology was developed in 1989 by Acuity CiMatrix
 in partnership with the US DoD and NASA. The symbol can encode a large amount
-of data in a small area. Data Matrix can encode characters in the
-Latin-1 set by default but also supports encoding using other character sets
-using the ECI mechanism. It can also encode GS1 data. The size of the
-generated symbol can also be adjusted using the --vers= option or by setting
-option_2 as shown in the table below. A separate symbology ID can be used to
-encode Health Industry Barcode (HIBC) data which adds a leading '+' character
-and a modulo-49 check digit to the encoded data. Note that only ECC200 encoding
-is supported, the older standards have now been removed from Zint.
+of data in a small area. Data Matrix encodes characters in the Latin-1 set by
+default but also supports encoding in other character sets using the ECI
+mechanism. It can also encode GS1 data. The size of the generated symbol can
+also be adjusted using the --vers= option or by setting option_2 as shown in the
+table below. A separate symbology ID can be used to encode Health Industry
+Barcode (HIBC) data which adds a leading '+' character and a modulo-49 check
+digit to the encoded data. Note that only ECC200 encoding is supported, the
+older standards have now been removed from Zint.
 
 ---------------------
 Input  |  Symbol Size
