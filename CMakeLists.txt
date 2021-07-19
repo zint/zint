@@ -2,7 +2,7 @@
 # Copyright (C) 2009-2021 Robin Stuart <rstuart114@gmail.com>
 # vim: set ts=4 sw=4 et :
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.13)
 project(zint-package)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -61,25 +61,32 @@ if(ZINT_TEST)
     enable_testing()
 endif()
 
-set(SANITIZER_FLAGS "")
 if(ZINT_SANITIZE)
-    file(WRITE ${CMAKE_BINARY_DIR}/dummy.c "int main() { return 0; }")
-    set(SANITIZERS address leak undefined) #address hwaddress leak memory thread undefined
-    foreach(sanitizer IN ITEMS ${SANITIZERS})
-        set(sanitizer_flag "-fsanitize=${sanitizer}")
-        try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${CMAKE_BINARY_DIR}/dummy.c
-            COMPILE_DEFINITIONS ${sanitizer_flag}
-            LINK_OPTIONS ${sanitizer_flag}
-        )
-        message(STATUS "Support for ${sanitizer_flag} available ... ${RESULT_VAR}")
-        if(RESULT_VAR)
-            set(SANITIZER_FLAGS ${SANITIZER_FLAGS} ${sanitizer_flag})
+    if(MSVC)
+        if(MSVC_VERSION GREATER_EQUAL 1920)
+            add_compile_options(-fsanitize=address)
+            message(STATUS "ZINT_SANITIZE: setting -fsanitize=address for MSVC 2019")
+        else()
+            message(STATUS "ZINT_SANITIZE: ignoring for MSVC < 2019")
         endif()
-    endforeach()
-    message(STATUS "Sanitizer flags: ${SANITIZER_FLAGS}")
-    if(NOT ZINT_DEBUG AND CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-        # Gives warning on MainWindow::setupUI() and retries (& takes forever) if var-tracking-assignments enabled
-        add_compile_options(-fno-var-tracking-assignments)
+    else()
+        file(WRITE ${CMAKE_BINARY_DIR}/dummy.c "int main() { return 0; }")
+        set(SANITIZERS address undefined)
+        foreach(sanitizer IN ITEMS ${SANITIZERS})
+            set(sanitizer_flag "-fsanitize=${sanitizer}")
+            try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${CMAKE_BINARY_DIR}/dummy.c
+                        COMPILE_DEFINITIONS ${sanitizer_flag}
+                        LINK_LIBRARIES ${sanitizer_flag})
+            message(STATUS "Support for ${sanitizer_flag} available ... ${RESULT_VAR}")
+            if(RESULT_VAR)
+                add_compile_options(${sanitizer_flag})
+                link_libraries(${sanitizer_flag})
+            endif()
+        endforeach()
+        if(NOT ZINT_DEBUG AND CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+            # Gives warning on MainWindow::setupUI() and retries (& takes forever) if var-tracking-assignments enabled
+            add_compile_options(-fno-var-tracking-assignments)
+        endif()
     endif()
 endif()
 
