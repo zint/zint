@@ -1326,7 +1326,8 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
                 unsigned char padded_pri[21];
                 padded_pri[0] = '\0';
                 if (!ean_leading_zeroes(symbol, (unsigned char *) symbol->primary, padded_pri, &with_addon)) {
-                    strcpy(symbol->errtxt, "448: Input wrong length in linear component");
+                    sprintf(symbol->errtxt, "448: Input too long (%s) in linear component",
+                            with_addon ? "5 character maximum for add-on" : "13 character maximum");
                     return ZINT_ERROR_TOO_LONG;
                 }
                 padded_pri_len = (int) ustrlen(padded_pri);

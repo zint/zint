@@ -28,6 +28,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
 */
+/* vim: set ts=4 sw=4 et : */
 /*
  History
 
@@ -117,6 +118,10 @@
 - Added -vwhitesp option
 2021-05-28 GL
 - -cols maximum changed from 108 to 200 (DotCode)
+2021-07-09 GL
+- Removed -wzpl, added -gs1nocheck
+- Made -format position independent
+- Tabs -> spaces
 */
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
@@ -453,6 +458,7 @@ static char help_message[] = "zint tcl(stub,obj) dll\n"
     "   -format binary|unicode|gs1: input data format. Default:unicode\n"
     "   -fullmultibyte bool: allow multibyte compaction for xQR, HanXin, Gridmatrix\n"
     /* cli option --gs1 replaced by -format */
+    "   -gs1nocheck bool: for gs1, do not check validity of data (allows non-standard symbols)\n"
     "   -gs1parens bool: for gs1, AIs enclosed in parentheses instead of square brackets\n"
     "   -gssep bool: for gs1, use gs as separator instead fnc1 (Datamatrix only)\n"
     "   -height double: Symbol height in modules\n"
@@ -480,7 +486,6 @@ static char help_message[] = "zint tcl(stub,obj) dll\n"
     "   -vwhitesp integer: vertical quiet zone in modules\n"
     "   -whitesp integer: horizontal quiet zone in modules\n"
     "   -werror bool: Convert all warnings into errors\n"
-    "   -wzpl bool: ZPL compatibility mode (allows non-standard symbols)\n"
     "   -to {x0 y0 ?width? ?height?}: place to put in photo image\n"
     "\n"
     "zint symbologies: List available symbologies\n"
@@ -559,7 +564,7 @@ static int Zint(ClientData tkFlagPtr, Tcl_Interp *interp, int objc,
     /* > Check if option argument is given and decode it */
     if (objc > 1)
     {
-    char *subCmds[] = {"encode", "symbologies", "eci", "version", "help", NULL};
+        char *subCmds[] = {"encode", "symbologies", "eci", "version", "help", NULL};
         if(Tcl_GetIndexFromObj(interp, objv[1], (const char **) subCmds,
             "option", 0, &Index)
             == TCL_ERROR)
@@ -700,18 +705,20 @@ static int Encode(Tcl_Interp *interp, int objc,
         char *optionList[] = {
             "-addongap", "-barcode", "-bg", "-bind", "-bold", "-border", "-box",
             "-cols", "-dmre", "-dotsize", "-dotty", "-eci", "-fg", "-format",
-            "-fullmultibyte", "-gs1parens", "-gssep", "-height", "-init", "-mask", "-mode",
+            "-fullmultibyte", "-gs1nocheck", "-gs1parens", "-gssep", "-height",
+            "-init", "-mask", "-mode",
             "-nobackground", "-notext", "-primary", "-reverse", "-rotate",
             "-rows", "-scale", "-scmvv", "-secure", "-separator", "-smalltext",
-            "-square", "-to", "-vers", "-vwhitesp", "-werror", "-whitesp", "-wzpl",
+            "-square", "-to", "-vers", "-vwhitesp", "-werror", "-whitesp",
             NULL};
         enum iOption {
             iAddonGap, iBarcode, iBG, iBind, iBold, iBorder, iBox,
             iCols, iDMRE, iDotSize, iDotty, iECI, iFG, iFormat,
-            iFullMultiByte, iGS1Parens, iGSSep, iHeight, iInit, iMask, iMode,
+            iFullMultiByte, iGS1NoCheck, iGS1Parens, iGSSep, iHeight,
+            iInit, iMask, iMode,
             iNoBackground, iNoText, iPrimary, iReverse, iRotate,
             iRows, iScale, iSCMvv, iSecure, iSeparator, iSmallText,
-            iSquare, iTo, iVers, iVWhiteSp, iWError, iWhiteSp, iWZPL
+            iSquare, iTo, iVers, iVWhiteSp, iWError, iWhiteSp
             };
         int optionIndex;
         int intValue;
@@ -733,6 +740,7 @@ static int Encode(Tcl_Interp *interp, int objc,
         case iBox:
         case iDMRE:
         case iDotty:
+        case iGS1NoCheck:
         case iGS1Parens:
         case iGSSep:
         case iInit:
@@ -743,7 +751,6 @@ static int Encode(Tcl_Interp *interp, int objc,
         case iFullMultiByte:
         case iReverse:
         case iWError:
-        case iWZPL:
             /* >> Binary options */
             if (TCL_OK != Tcl_GetBooleanFromObj(interp, objv[optionPos+1],
                     &intValue))
@@ -855,6 +862,13 @@ static int Encode(Tcl_Interp *interp, int objc,
                 my_symbol->output_options &= ~BARCODE_DOTTY_MODE;
             }
             break;
+        case iGS1NoCheck:
+            if (intValue) {
+                my_symbol->input_mode |= GS1NOCHECK_MODE;
+            } else {
+                my_symbol->input_mode &= ~GS1NOCHECK_MODE;
+            }
+            break;
         case iGS1Parens:
             if (intValue) {
                 my_symbol->input_mode |= GS1PARENS_MODE;
@@ -905,11 +919,6 @@ static int Encode(Tcl_Interp *interp, int objc,
         case iWError:
             if (intValue) {
                 my_symbol->warn_level = WARN_FAIL_ALL;
-            }
-            break;
-        case iWZPL:
-            if (intValue) {
-                my_symbol->warn_level = WARN_ZPL_COMPAT;
             }
             break;
         case iFG:
@@ -1115,9 +1124,9 @@ static int Encode(Tcl_Interp *interp, int objc,
                     break;
                 }
                 switch (intValue) {
-                    case iBinary: my_symbol->input_mode = DATA_MODE; break;
-                    case iGS1: my_symbol->input_mode = GS1_MODE; break;
-                    default: my_symbol->input_mode = UNICODE_MODE; break;
+                    case iBinary: my_symbol->input_mode = (my_symbol->input_mode & ~0x07) | DATA_MODE; break;
+                    case iGS1: my_symbol->input_mode = (my_symbol->input_mode & ~0x07) | GS1_MODE; break;
+                    default: my_symbol->input_mode = (my_symbol->input_mode & ~0x07) | UNICODE_MODE; break;
                 }
             }
         }
@@ -1130,15 +1139,15 @@ static int Encode(Tcl_Interp *interp, int objc,
     /*------------------------------------------------------------------------*/
     /* >>> option_3 is set by three values depending on the symbology */
     /* On wrong symbology, the option is ignored(as does the zint program)*/
-	if (fFullMultiByte && (cap & ZINT_CAP_FULL_MULTIBYTE)) {
-		my_symbol->option_3 = ZINT_FULL_MULTIBYTE;
-	}
-	if (Mask && (cap & ZINT_CAP_MASK)) {
-		my_symbol->option_3 |= Mask << 8;
-	}
+    if (fFullMultiByte && (cap & ZINT_CAP_FULL_MULTIBYTE)) {
+        my_symbol->option_3 = ZINT_FULL_MULTIBYTE;
+    }
+    if (Mask && (cap & ZINT_CAP_MASK)) {
+        my_symbol->option_3 |= Mask << 8;
+    }
     if (Separator && (cap & ZINT_CAP_STACKABLE)) {
-		my_symbol->option_3 = Separator;
-	}
+        my_symbol->option_3 = Separator;
+    }
     /*------------------------------------------------------------------------*/
     /* >>> option_2 is set by two values depending on the symbology */
     /* On wrong symbology, the option is ignored(as does the zint program)*/
@@ -1152,15 +1161,15 @@ static int Encode(Tcl_Interp *interp, int objc,
     if (!fError) {
         /*--------------------------------------------------------------------*/
         /* >>> Get input mode */
-        if (my_symbol->input_mode == DATA_MODE) {
+        if ((my_symbol->input_mode & 0x07) == DATA_MODE) {
             /* Binary data */
             pStr = (char *) Tcl_GetByteArrayFromObj(objv[2], &lStr);
         } else {
             /* UTF8 Data */
-			pStr = Tcl_GetStringFromObj(objv[2], &lStr);
-			Tcl_UtfToExternalDString( hZINTEncoding, pStr, lStr, &dsInput);
-			pStr = Tcl_DStringValue( &dsInput );
-			lStr = Tcl_DStringLength( &dsInput );
+            pStr = Tcl_GetStringFromObj(objv[2], &lStr);
+            Tcl_UtfToExternalDString( hZINTEncoding, pStr, lStr, &dsInput);
+            pStr = Tcl_DStringValue( &dsInput );
+            lStr = Tcl_DStringLength( &dsInput );
         }
     }
     /*------------------------------------------------------------------------*/

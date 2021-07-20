@@ -107,7 +107,7 @@ static void upca_draw(const unsigned char source[], const int length, char dest[
 
 /* Make a UPC-A barcode, allowing for composite if `cc_rows` set */
 static int upca_cc(struct zint_symbol *symbol, const unsigned char source[], int length, char dest[], int cc_rows) {
-    unsigned char gtin[13];
+    unsigned char *gtin = symbol->text;
     float height;
     int error_number = 0;
 
@@ -129,7 +129,6 @@ static int upca_cc(struct zint_symbol *symbol, const unsigned char source[], int
     }
 
     upca_draw(gtin, length, dest);
-    ustrcpy(symbol->text, gtin);
 
 #ifdef COMPLIANT_HEIGHTS
     /* BS EN 797:1996 4.5.1 Nominal dimensions 22.85mm / 0.33mm (X) ~ 69.24,
@@ -163,7 +162,7 @@ static int upce_cc(struct zint_symbol *symbol, unsigned char source[], int lengt
     char emode, check_digit, parity[8];
     char src_check_digit = '\0';
     unsigned char equivalent[12];
-    char hrt[9];
+    unsigned char *hrt = symbol->text;
     float height;
     int error_number = 0;
 
@@ -298,8 +297,6 @@ static int upce_cc(struct zint_symbol *symbol, unsigned char source[], int lengt
         printf("UPC-E: %s, equivalent: %s, hrt: %s, Check digit: %c\n", source, equivalent, hrt, check_digit);
     }
 
-    ustrcpy(symbol->text, hrt);
-
 #ifdef COMPLIANT_HEIGHTS
     /* BS EN 797:1996 4.5.1 Nominal dimensions 22.85mm / 0.33mm (X) ~ 69.24,
        same as minimum GS1 General Specifications 21.0.1 5.12.3.1 */
@@ -392,7 +389,7 @@ static int ean13_cc(struct zint_symbol *symbol, const unsigned char source[], in
             int cc_rows) {
     int i, half_way;
     char parity[6];
-    unsigned char gtin[14];
+    unsigned char *gtin = symbol->text;
     float height;
     int error_number = 0;
 
@@ -439,7 +436,6 @@ static int ean13_cc(struct zint_symbol *symbol, const unsigned char source[], in
 
     /* stop character */
     strcat(dest, "111");
-    ustrcpy(symbol->text, gtin);
 
 #ifdef COMPLIANT_HEIGHTS
     /* BS EN 797:1996 4.5.1 Nominal dimensions 22.85mm / 0.33mm (X) ~ 69.24,
@@ -468,7 +464,7 @@ static int ean13(struct zint_symbol *symbol, const unsigned char source[], int l
 
 static int ean8_cc(struct zint_symbol *symbol, const unsigned char source[], int length, char dest[], int cc_rows) {
     /* EAN-8 is basically the same as UPC-A but with fewer digits */
-    unsigned char gtin[10];
+    unsigned char *gtin = symbol->text;
     float height;
     int error_number = 0;
 
@@ -490,7 +486,6 @@ static int ean8_cc(struct zint_symbol *symbol, const unsigned char source[], int
     }
 
     upca_draw(gtin, length, dest);
-    ustrcpy(symbol->text, gtin);
 
 #ifdef COMPLIANT_HEIGHTS
     /* BS EN 797:1996 4.5.1 Nominal dimensions 18.23mm / 0.33mm (X) ~ 55.24,

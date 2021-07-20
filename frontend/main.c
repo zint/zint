@@ -140,6 +140,7 @@ static void usage(void) {
             "  --filetype=TYPE       Set output file type BMP/EMF/EPS/GIF/PCX/PNG/SVG/TIF/TXT\n"
             "  --fullmultibyte       Use multibyte for binary/Latin (QR/Han Xin/Grid Matrix)\n"
             "  --gs1                 Treat input as GS1 compatible data\n"
+            "  --gs1nocheck          Do not check validity of GS1 data\n"
             "  --gs1parens           Process parentheses \"()\" as GS1 AI delimiters, not \"[]\"\n"
             "  --gssep               Use separator GS for GS1 (Data Matrix)\n"
             "  -h, --help            Display help message\n"
@@ -167,7 +168,6 @@ static void usage(void) {
             "  --vwhitesp=NUMBER     Set height of vertical whitespace in multiples of X-dim\n"
             "  -w, --whitesp=NUMBER  Set width of horizontal whitespace in multiples of X-dim\n"
             "  --werror              Convert all warnings into errors\n"
-            "  --wzpl                ZPL compatibility mode (allows non-standard symbols)\n"
             );
 }
 
@@ -799,10 +799,11 @@ int main(int argc, char **argv) {
             OPT_ADDONGAP = 128, OPT_BATCH, OPT_BINARY, OPT_BG, OPT_BIND, OPT_BOLD, OPT_BORDER,
             OPT_BOX, OPT_CMYK, OPT_COLS, OPT_DIRECT, OPT_DMRE, OPT_DOTSIZE, OPT_DOTTY, OPT_DUMP,
             OPT_ECI, OPT_ESC, OPT_FG, OPT_FILETYPE, OPT_FONTSIZE, OPT_FULLMULTIBYTE,
-            OPT_GS1, OPT_GS1PARENS, OPT_GSSEP, OPT_HEIGHT, OPT_INIT, OPT_MIRROR, OPT_MASK, OPT_MODE,
+            OPT_GS1, OPT_GS1NOCHECK, OPT_GS1PARENS, OPT_GSSEP,
+            OPT_HEIGHT, OPT_INIT, OPT_MIRROR, OPT_MASK, OPT_MODE,
             OPT_NOBACKGROUND, OPT_NOTEXT, OPT_PRIMARY, OPT_ROTATE, OPT_ROWS, OPT_SCALE,
             OPT_SCMVV, OPT_SECURE, OPT_SEPARATOR, OPT_SMALL, OPT_SQUARE, OPT_VERBOSE, OPT_VERS,
-            OPT_VWHITESP, OPT_WERROR, OPT_WZPL,
+            OPT_VWHITESP, OPT_WERROR,
         };
         int option_index = 0;
         static struct option long_options[] = {
@@ -831,6 +832,7 @@ int main(int argc, char **argv) {
             {"fontsize", 1, NULL, OPT_FONTSIZE},
             {"fullmultibyte", 0, NULL, OPT_FULLMULTIBYTE},
             {"gs1", 0, 0, OPT_GS1},
+            {"gs1nocheck", 0, NULL, OPT_GS1NOCHECK},
             {"gs1parens", 0, NULL, OPT_GS1PARENS},
             {"gssep", 0, NULL, OPT_GSSEP},
             {"height", 1, NULL, OPT_HEIGHT},
@@ -859,7 +861,6 @@ int main(int argc, char **argv) {
             {"vwhitesp", 1, NULL, OPT_VWHITESP},
             {"werror", 0, NULL, OPT_WERROR},
             {"whitesp", 1, NULL, 'w'},
-            {"wzpl", 0, NULL, OPT_WZPL},
             {NULL, 0, NULL, 0}
         };
         int c = getopt_long(argc, argv, "b:d:ehi:o:rtw:", long_options, &option_index);
@@ -1002,6 +1003,9 @@ int main(int argc, char **argv) {
                 break;
             case OPT_GS1:
                 my_symbol->input_mode = (my_symbol->input_mode & ~0x07) | GS1_MODE;
+                break;
+            case OPT_GS1NOCHECK:
+                my_symbol->input_mode |= GS1NOCHECK_MODE;
                 break;
             case OPT_GS1PARENS:
                 my_symbol->input_mode |= GS1PARENS_MODE;
@@ -1181,9 +1185,6 @@ int main(int argc, char **argv) {
                 break;
             case OPT_WERROR:
                 my_symbol->warn_level = WARN_FAIL_ALL;
-                break;
-            case OPT_WZPL:
-                my_symbol->warn_level = WARN_ZPL_COMPAT;
                 break;
 
             case 'h':

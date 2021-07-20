@@ -1036,14 +1036,12 @@ INTERNAL int ean_128_cc(struct zint_symbol *symbol, unsigned char source[], int 
 #endif
 
     for (i = 0; i < length; i++) {
-        if ((source[i] != '[') && (source[i] != ']')) {
-            symbol->text[i] = source[i];
-        }
         if (source[i] == '[') {
             symbol->text[i] = '(';
-        }
-        if (source[i] == ']') {
+        } else if (source[i] == ']') {
             symbol->text[i] = ')';
+        } else {
+            symbol->text[i] = source[i];
         }
     }
 

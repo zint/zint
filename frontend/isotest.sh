@@ -1,3 +1,5 @@
+mkdir isotest_out
+cd isotest_out
 echo Creating images for Code 49...
 zint -o aimbc6_fig1.gif -b 24 -d "MULTIPLE ROWS IN CODE 49"
 zint -o aimbc6_fig3.gif -b 24 -d "EXAMPLE 2"
@@ -75,7 +77,7 @@ zint -o aimdtsc15032_fig1.gif -b 144 --secure=2 -d "ULTRACODE_123456789!"
 zint -o aimdtsc15032_figg2.gif -b 144 --secure=2 -d "HEIMASÍÐA KENNARAHÁSKÓLA ÍSLANDS"
 zint -o aimdtsc15032_figg3.gif -b 144 --secure=2 -d "אולטרה-קוד1234"
 zint -o aimdtsc15032_figg4a.gif -b 144 --secure=2 -d "https://aimglobal.org/jcrv3tX"
-zint -o aimdtsc15032_figg6.gif -b 144 --gs1 -d "[01]03453120000011[17]20121125[10]ABCD1234"
+zint -o aimdtsc15032_figg6.gif -b 144 --gs1 -d "[01]03453120000011[17]121125[10]ABCD1234"
 echo Creating images of EAN/UPC...
 zint -o en797_fig1.gif -b 13 -d 501234567890
 zint -o en797_fig2.gif -b 13 -d 2012345
@@ -98,7 +100,7 @@ zint -o iso16022_figo2.gif -b 71 -d "123456"
 zint -o iso16022_figr1.gif -b 71 -d "30Q324343430794<OQQ"
 echo Creating images for Maxicode
 zint -o iso16023_fig2.gif -b 57 --mode=4 -d "THIS IS A 93 CHARACTER CODE SET A MESSAGE THAT FILLS A MODE 4, UNAPPENDED, MAXICODE SYMBOL..."
-zint -o iso16023_figb2.gif -b 57 --mode=2 --primary="152382802840001" -d "[)>\R01\G961Z00004951\GUPSN\G06X610\G159\G1234567\G1/1\G\GY\G634 ALPHA DR\GPITTSBURGH\GPA\R\E"
+zint -o iso16023_figb2.gif -b 57 --mode=2 --primary="152382802840001" -d "[)>\R01\G961Z00004951\GUPSN\G06X610\G159\G1234567\G1/1\G\GY\G634 ALPHA DR\GPITTSBURGH\GPA\R\E" --esc
 zint -o iso16023_figh1.gif -b 57 --mode=4 -d "Maxi Code (19 chars)"
 echo Creating images for QR Code...
 zint -o iso18004_fig1.gif -b 58 -d "QR Code Symbol"
@@ -113,7 +115,7 @@ zint -o iso24723_fig3.gif -b 136 --mode=1 --primary=121230 -d "[15]021231"
 zint -o iso24723_fig4.gif -b 130 --mode=1 --primary=1234567 -d "[21]A12345678"
 zint -o iso24723_fig5.gif -b 130 --mode=1 --primary=331234567890 -d "[99]1234-abcd"
 zint -o iso24723_fig6.gif -b 137 --mode=1 --primary=341234567890 -d "[17]010200"
-zint -o iso24723_fig7.gif -b 133 --mode=2 --primary=351234567890 -d "[21]abcdefghijklmnopqrstuv"
+zint -o iso24723_fig7.gif -b 133 --mode=2 --primary=351234567890 -d "[21]abcdefghijklmnopqrstuv" --gs1nocheck
 zint -o iso24723_fig8.gif -b 132 --mode=1 --primary=361234567890 -d "[11]990102"
 zint -o iso24723_fig9.gif -b 134 --mode=1 --primary="[01]93712345678904[3103]001234" -d "[91]1A2B3C4D5E"
 zint -o iso24723_fig10.gif -b 139 --mode=1 --primary="[01]00012345678905[10]ABCDEF" -d "[21]12345678"
