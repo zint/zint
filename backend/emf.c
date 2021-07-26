@@ -642,6 +642,8 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
             str = str->next;
         }
     }
+    /* Suppress clang-tidy clang-analyzer-core.UndefinedBinaryOperatorResult warning */
+    assert(this_text == string_count);
 
     /* Create EOF record */
     emr_eof.type = 0x0000000e; // EMR_EOF
