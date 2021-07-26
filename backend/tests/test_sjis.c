@@ -139,6 +139,7 @@ static void test_sjis_utf8(int index) {
         /*  2*/ { "β", -1, 0, 1, { 0x83C0 }, "" },
         /*  3*/ { "¥", -1, 0, 1, { 0x5C }, "" },
         /*  4*/ { "aβcЖ¥･ｿ‾\\＼点茗テ", -1, 0, 13, { 'a', 0x83C0, 'c', 0x8447, 0x5C, 0xA5, 0xBF, 0x7E, 0x815F, 0x815F, 0x935F, 0xE4AA, 0x8365 }, "" },
+        /*  5*/ { "\200", -1, ZINT_ERROR_INVALID_DATA, -1, {0}, "Invalid UTF-8" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;

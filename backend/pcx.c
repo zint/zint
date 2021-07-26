@@ -51,6 +51,7 @@ INTERNAL int pcx_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     pcx_header_t header;
     int bytes_per_line = symbol->bitmap_width + (symbol->bitmap_width & 1); // Must be even
     unsigned char previous;
+    const int output_to_stdout = symbol->output_options & BARCODE_STDOUT; /* Suppress gcc -fanalyzer warning */
 #ifdef _MSC_VER
     unsigned char *rle_row;
 #endif
@@ -99,17 +100,17 @@ INTERNAL int pcx_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     }
 
     /* Open output file in binary mode */
-    if (symbol->output_options & BARCODE_STDOUT) {
+    if (output_to_stdout) {
 #ifdef _MSC_VER
         if (-1 == _setmode(_fileno(stdout), _O_BINARY)) {
-            sprintf(symbol->errtxt, "620: Can't open output file (%d: %.30s)", errno, strerror(errno));
+            sprintf(symbol->errtxt, "620: Could not set stdout to binary (%d: %.30s)", errno, strerror(errno));
             return ZINT_ERROR_FILE_ACCESS;
         }
 #endif
         pcx_file = stdout;
     } else {
         if (!(pcx_file = fopen(symbol->outfile, "wb"))) {
-            sprintf(symbol->errtxt, "621: Can't open output file (%d: %.30s)", errno, strerror(errno));
+            sprintf(symbol->errtxt, "621: Could not open output file (%d: %.30s)", errno, strerror(errno));
             return ZINT_ERROR_FILE_ACCESS;
         }
     }
@@ -215,7 +216,11 @@ INTERNAL int pcx_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
         }
     }
 
-    fclose(pcx_file);
+    if (output_to_stdout) {
+        fflush(pcx_file);
+    } else {
+        fclose(pcx_file);
+    }
 
     return 0;
 }

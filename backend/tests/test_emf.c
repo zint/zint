@@ -37,8 +37,10 @@ static void test_print(int index, int generate, int debug) {
     struct item {
         int symbology;
         int input_mode;
+        int border_width;
         int output_options;
         int whitespace_width;
+        int whitespace_height;
         int option_1;
         int option_2;
         char *fgcolour;
@@ -49,19 +51,21 @@ static void test_print(int index, int generate, int debug) {
         char *comment;
     };
     struct item data[] = {
-        /*  0*/ { BARCODE_CODE128, UNICODE_MODE, BOLD_TEXT, -1, -1, -1, "", "", 0, "Égjpqy", "code128_egrave_bold.emf", "" },
-        /*  1*/ { BARCODE_TELEPEN, -1, -1, -1, -1, -1, "147AD0", "FC9630", 0, "123", "telenum_fg_bg.emf", "" },
-        /*  2*/ { BARCODE_ULTRA, -1, -1, 5, -1, -1, "147AD0", "FC9630", 0, "123", "ultracode_fg_bg.emf", "" },
-        /*  3*/ { BARCODE_EANX, -1, -1, -1, -1, -1, "", "", 0, "9780877799306+54321", "ean13_5addon_ggs_5.2.2.5.2-2.emf", "" },
-        /*  4*/ { BARCODE_EANX, -1, -1, -1, -1, -1, "", "", 0, "210987654321+54321", "ean13_5addon_#185.emf", "#185 Byte count, font data, HeaderExtension1/2" },
-        /*  5*/ { BARCODE_UPCA, -1, -1, -1, -1, -1, "", "", 0, "012345678905+24", "upca_2addon_ggs_5.2.6.6-5.emf", "" },
-        /*  6*/ { BARCODE_UPCE, -1, -1, -1, -1, -1, "", "", 0, "0123456+12", "upce_2addon.emf", "" },
-        /*  7*/ { BARCODE_UPCE, -1, SMALL_TEXT | BOLD_TEXT, -1, -1, -1, "", "", 0, "0123456+12", "upce_2addon_small_bold.emf", "" },
-        /*  8*/ { BARCODE_ITF14, -1, BOLD_TEXT, -1, -1, -1, "", "", 0, "123", "itf14_bold.emf", "" },
-        /*  9*/ { BARCODE_CODE39, -1, -1, -1, -1, -1, "", "", 90, "123", "code39_rotate_90.emf", "" },
-        /* 10*/ { BARCODE_CODE39, -1, -1, -1, -1, -1, "", "", 180, "123", "code39_rotate_180.emf", "" },
-        /* 11*/ { BARCODE_CODE39, -1, -1, -1, -1, -1, "", "", 270, "123", "code39_rotate_270.emf", "" },
-        /* 12*/ { BARCODE_MAXICODE, -1, -1, -1, -1, -1, "E0E0E0", "700070", 0, "THIS IS A 93 CHARACTER CODE SET A MESSAGE THAT FILLS A MODE 4, UNAPPENDED, MAXICODE SYMBOL...", "maxicode_#185.emf", "#185 Maxicode scaling" },
+        /*  0*/ { BARCODE_CODE128, UNICODE_MODE, -1, BOLD_TEXT, -1, -1, -1, -1, "", "", 0, "Égjpqy", "code128_egrave_bold.emf", "" },
+        /*  1*/ { BARCODE_TELEPEN, -1, -1, -1, -1, -1, -1, -1, "147AD0", "FC9630", 0, "123", "telenum_fg_bg.emf", "" },
+        /*  2*/ { BARCODE_ULTRA, -1, -1, -1, 5, -1, -1, -1, "147AD0", "FC9630", 0, "123", "ultracode_fg_bg.emf", "" },
+        /*  3*/ { BARCODE_ULTRA, -1, 2, BARCODE_BOX, 2, 2, -1, -1, "FF0000", "0000FF", 0, "123", "ultracode_fg_bg_box2.emf", "" },
+        /*  4*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, -1, "", "", 0, "9780877799306+54321", "ean13_5addon_ggs_5.2.2.5.2-2.emf", "" },
+        /*  5*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, -1, "", "", 0, "210987654321+54321", "ean13_5addon_#185.emf", "#185 Byte count, font data, HeaderExtension1/2" },
+        /*  6*/ { BARCODE_UPCA, -1, -1, -1, -1, -1, -1, -1, "", "", 0, "012345678905+24", "upca_2addon_ggs_5.2.6.6-5.emf", "" },
+        /*  7*/ { BARCODE_UPCE, -1, -1, -1, -1, -1, -1, -1, "", "", 0, "0123456+12", "upce_2addon.emf", "" },
+        /*  8*/ { BARCODE_UPCE, -1, -1, SMALL_TEXT | BOLD_TEXT, -1, -1, -1, -1, "", "", 0, "0123456+12", "upce_2addon_small_bold.emf", "" },
+        /*  9*/ { BARCODE_ITF14, -1, -1, BOLD_TEXT, -1, -1, -1, -1, "", "", 0, "123", "itf14_bold.emf", "" },
+        /* 10*/ { BARCODE_CODE39, -1, -1, -1, -1, -1, -1, -1, "", "", 90, "123", "code39_rotate_90.emf", "" },
+        /* 11*/ { BARCODE_CODE39, -1, -1, -1, -1, -1, -1, -1, "", "", 180, "123", "code39_rotate_180.emf", "" },
+        /* 12*/ { BARCODE_CODE39, -1, -1, -1, -1, -1, -1, -1, "", "", 270, "123", "code39_rotate_270.emf", "" },
+        /* 13*/ { BARCODE_MAXICODE, -1, -1, -1, -1, -1, -1, -1, "E0E0E0", "700070", 0, "THIS IS A 93 CHARACTER CODE SET A MESSAGE THAT FILLS A MODE 4, UNAPPENDED, MAXICODE SYMBOL...", "maxicode_#185.emf", "#185 Maxicode scaling" },
+        /* 14*/ { BARCODE_MAXICODE, -1, -1, -1, -1, -1, -1, -1, "", "FFFFFF00", 90, "THIS IS A 93 CHARACTER CODE SET A MESSAGE THAT FILLS A MODE 4, UNAPPENDED, MAXICODE SYMBOL...", "maxicode_rotate_90_nobg.emf", "" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -97,8 +101,14 @@ static void test_print(int index, int generate, int debug) {
         assert_nonnull(symbol, "Symbol not created\n");
 
         length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, data[i].option_1, data[i].option_2, -1, data[i].output_options, data[i].data, -1, debug);
+        if (data[i].border_width != -1) {
+            symbol->border_width = data[i].border_width;
+        }
         if (data[i].whitespace_width != -1) {
             symbol->whitespace_width = data[i].whitespace_width;
+        }
+        if (data[i].whitespace_height != -1) {
+            symbol->whitespace_height = data[i].whitespace_height;
         }
         if (*data[i].fgcolour) {
             strcpy(symbol->fgcolour, data[i].fgcolour);
@@ -117,9 +127,9 @@ static void test_print(int index, int generate, int debug) {
         assert_nonzero(testUtilDataPath(expected_file, sizeof(expected_file), data_dir, data[i].expected_file), "i:%d testUtilDataPath == 0\n", i);
 
         if (generate) {
-            printf("        /*%3d*/ { %s, %s, %s, %d, %d, %d, \"%s\", \"%s\", %d, \"%s\", \"%s\" \"%s\" },\n",
-                    i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode),
-                    testUtilOutputOptionsName(data[i].output_options), data[i].whitespace_width,
+            printf("        /*%3d*/ { %s, %s, %d, %s, %d, %d, %d, %d, \"%s\", \"%s\", %d, \"%s\", \"%s\", \"%s\" },\n",
+                    i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode), data[i].border_width,
+                    testUtilOutputOptionsName(data[i].output_options), data[i].whitespace_width, data[i].whitespace_height,
                     data[i].option_1, data[i].option_2, data[i].fgcolour, data[i].bgcolour, data[i].rotate_angle,
                     testUtilEscape(data[i].data, length, escaped, escaped_size), data[i].expected_file, data[i].comment);
             ret = testUtilRename(symbol->outfile, expected_file);
@@ -145,10 +155,41 @@ static void test_print(int index, int generate, int debug) {
     testFinish();
 }
 
+INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle);
+
+static void test_outfile(void) {
+    int ret;
+    struct zint_symbol symbol = {0};
+    struct zint_vector vector = {0};
+
+    testStart("test_outfile");
+
+    symbol.symbology = BARCODE_CODE128;
+    symbol.vector = &vector;
+
+    strcpy(symbol.outfile, "nosuch_dir/out.emf");
+
+    ret = emf_plot(&symbol, 0);
+    assert_equal(ret, ZINT_ERROR_FILE_ACCESS, "emf_plot ret %d != ZINT_ERROR_FILE_ACCESS (%d) (%s)\n", ret, ZINT_ERROR_FILE_ACCESS, symbol.errtxt);
+
+    symbol.output_options |= BARCODE_STDOUT;
+
+    ret = emf_plot(&symbol, 0);
+    printf(" - ignore (EMF to stdout)\n"); fflush(stdout);
+    assert_zero(ret, "emf_plot ret %d != 0 (%s)\n", ret, symbol.errtxt);
+
+    symbol.vector = NULL;
+    ret = emf_plot(&symbol, 0);
+    assert_equal(ret, ZINT_ERROR_INVALID_DATA, "emf_plot ret %d != ZINT_ERROR_INVALID_DATA (%d) (%s)\n", ret, ZINT_ERROR_INVALID_DATA, symbol.errtxt);
+
+    testFinish();
+}
+
 int main(int argc, char *argv[]) {
 
     testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
         { "test_print", test_print, 1, 1, 1 },
+        { "test_outfile", test_outfile, 0, 0, 0 },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

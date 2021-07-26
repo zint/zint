@@ -2888,8 +2888,8 @@ INTERNAL int gb18030_utf8(struct zint_symbol *symbol, const unsigned char source
             gbdata[j] = utfdata[i];
         } else {
             ret = gb18030_wctomb_zint(gbdata + j, gbdata + j + 1, utfdata[i]);
-            if (ret == 0) {
-                strcpy(symbol->errtxt, "820: Invalid character in input data");
+            if (ret == 0) { /* Should never happen, as GB 18030 is a UTF i.e. maps all Unicode codepoints */
+                strcpy(symbol->errtxt, "820: Invalid character in input data"); /* Not reached */
                 return ZINT_ERROR_INVALID_DATA;
             }
             if (ret == 4) {

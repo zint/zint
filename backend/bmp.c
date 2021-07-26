@@ -54,10 +54,30 @@ INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     color_ref_t bg_color_ref;
     color_ref_t fg_color_ref;
     color_ref_t ultra_color_ref[8];
+    int ultra_fg_index = 9;
+    const int output_to_stdout = symbol->output_options & BARCODE_STDOUT; /* Suppress gcc -fanalyzer warning */
+
+    fg_color_ref.red = (16 * ctoi(symbol->fgcolour[0])) + ctoi(symbol->fgcolour[1]);
+    fg_color_ref.green = (16 * ctoi(symbol->fgcolour[2])) + ctoi(symbol->fgcolour[3]);
+    fg_color_ref.blue = (16 * ctoi(symbol->fgcolour[4])) + ctoi(symbol->fgcolour[5]);
+    fg_color_ref.reserved = 0x00;
+    bg_color_ref.red = (16 * ctoi(symbol->bgcolour[0])) + ctoi(symbol->bgcolour[1]);
+    bg_color_ref.green = (16 * ctoi(symbol->bgcolour[2])) + ctoi(symbol->bgcolour[3]);
+    bg_color_ref.blue = (16 * ctoi(symbol->bgcolour[4])) + ctoi(symbol->bgcolour[5]);
+    bg_color_ref.reserved = 0x00;
 
     if (symbol->symbology == BARCODE_ULTRA) {
+        for (i = 0; i < 8; i++) {
+            ultra_color_ref[i].red = colour_to_red(i + 1);
+            ultra_color_ref[i].green = colour_to_green(i + 1);
+            ultra_color_ref[i].blue = colour_to_blue(i + 1);
+            ultra_color_ref[i].reserved = 0x00;
+            if (memcmp(&ultra_color_ref[i], &fg_color_ref, sizeof(fg_color_ref)) == 0) {
+                ultra_fg_index = i + 1;
+            }
+        }
         bits_per_pixel = 4;
-        colour_count = 9;
+        colour_count = ultra_fg_index == 9 ? 10 : 9;
     } else {
         bits_per_pixel = 1;
         colour_count = 2;
@@ -70,28 +90,12 @@ INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
 
     bitmap_file_start = (unsigned char *) malloc(file_size);
     if (bitmap_file_start == NULL) {
-        strcpy(symbol->errtxt, "602: Out of memory");
+        strcpy(symbol->errtxt, "602: Insufficient memory for BMP file buffer");
         return ZINT_ERROR_MEMORY;
     }
     memset(bitmap_file_start, 0, file_size); /* Not required but keeps padding bytes consistent */
 
     bitmap = bitmap_file_start + data_offset;
-
-    fg_color_ref.red = (16 * ctoi(symbol->fgcolour[0])) + ctoi(symbol->fgcolour[1]);
-    fg_color_ref.green = (16 * ctoi(symbol->fgcolour[2])) + ctoi(symbol->fgcolour[3]);
-    fg_color_ref.blue = (16 * ctoi(symbol->fgcolour[4])) + ctoi(symbol->fgcolour[5]);
-    fg_color_ref.reserved = 0x00;
-    bg_color_ref.red = (16 * ctoi(symbol->bgcolour[0])) + ctoi(symbol->bgcolour[1]);
-    bg_color_ref.green = (16 * ctoi(symbol->bgcolour[2])) + ctoi(symbol->bgcolour[3]);
-    bg_color_ref.blue = (16 * ctoi(symbol->bgcolour[4])) + ctoi(symbol->bgcolour[5]);
-    bg_color_ref.reserved = 0x00;
-
-    for (i = 0; i < 8; i++) {
-        ultra_color_ref[i].red = colour_to_red(i + 1);
-        ultra_color_ref[i].green = colour_to_green(i + 1);
-        ultra_color_ref[i].blue = colour_to_blue(i + 1);
-        ultra_color_ref[i].reserved = 0x00;
-    }
 
     /* Pixel Plotting */
     if (symbol->symbology == BARCODE_ULTRA) {
@@ -122,6 +126,9 @@ INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
                         break;
                     case 'W': // White
                         bitmap[i] += 8 << (4 * (1 - (column % 2)));
+                        break;
+                    case '1': // Foreground
+                        bitmap[i] += ultra_fg_index << (4 * (1 - (column % 2)));
                         break;
                 }
             }
@@ -168,16 +175,20 @@ INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
             bmp_posn += sizeof(color_ref_t);
             memcpy(bmp_posn, &ultra_color_ref[i], sizeof(color_ref_t));
         }
+        if (ultra_fg_index == 9) {
+            bmp_posn += sizeof(color_ref_t);
+            memcpy(bmp_posn, &fg_color_ref, sizeof(color_ref_t));
+        }
     } else {
         bmp_posn += sizeof(color_ref_t);
         memcpy(bmp_posn, &fg_color_ref, sizeof(color_ref_t));
     }
 
     /* Open output file in binary mode */
-    if ((symbol->output_options & BARCODE_STDOUT) != 0) {
+    if (output_to_stdout) {
 #ifdef _MSC_VER
         if (-1 == _setmode(_fileno(stdout), _O_BINARY)) {
-            sprintf(symbol->errtxt, "600: Can't open output file (%d: %.30s)", errno, strerror(errno));
+            sprintf(symbol->errtxt, "600: Could not set stdout to binary (%d: %.30s)", errno, strerror(errno));
             free(bitmap_file_start);
             return ZINT_ERROR_FILE_ACCESS;
         }
@@ -186,13 +197,18 @@ INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     } else {
         if (!(bmp_file = fopen(symbol->outfile, "wb"))) {
             free(bitmap_file_start);
-            sprintf(symbol->errtxt, "601: Can't open output file (%d: %.30s)", errno, strerror(errno));
+            sprintf(symbol->errtxt, "601: Could not open output file (%d: %.30s)", errno, strerror(errno));
             return ZINT_ERROR_FILE_ACCESS;
         }
     }
 
     fwrite(bitmap_file_start, file_header.file_size, 1, bmp_file);
-    fclose(bmp_file);
+
+    if (output_to_stdout) {
+        fflush(bmp_file);
+    } else {
+        fclose(bmp_file);
+    }
 
     free(bitmap_file_start);
     return 0;

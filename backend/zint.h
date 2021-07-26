@@ -44,7 +44,7 @@ extern "C" {
     struct zint_vector_rect {
         float x, y, height, width;
         int colour;         /* -1 for foreground, 1-8 for Cyan, Blue, Magenta, Red, Yellow, Green, Black, White */
-        struct zint_vector_rect *next;
+        struct zint_vector_rect *next; /* Pointer to next rectangle */
     };
 
     struct zint_vector_hexagon {
@@ -86,11 +86,11 @@ extern "C" {
         int whitespace_height; /* Height in X-dimensions of whitespace above & below the barcode */
         int border_width;   /* Size of border in X-dimensions */
         int output_options; /* Various output parameters (bind, box etc, see below) */
-        char fgcolour[10];  /* Foreground as RGB/RGBA hexadecimal string, 6 or 8 characters */
-        char bgcolour[10];  /* Background as RGB/RGBA hexadecimal string, 6 or 8 characters */
+        char fgcolour[10];  /* Foreground as RGB/RGBA hexadecimal string, 6 or 8 characters, NUL-terminated */
+        char bgcolour[10];  /* Background as RGB/RGBA hexadecimal string, 6 or 8 characters, NUL-terminated */
         char *fgcolor;      /* Pointer to fgcolour (alternate spelling) */
         char *bgcolor;      /* Pointer to bgcolour (alternate spelling) */
-        char outfile[256];  /* Name of file to output to. Default "out.png" ("out.gif" if NO_PNG) */
+        char outfile[256];  /* Name of file to output to, NUL-terminated. Default "out.png" ("out.gif" if NO_PNG) */
         float scale;        /* Scale factor when printing barcode */
         int option_1;       /* Symbol-specific options (see "../docs/manual.txt") */
         int option_2;       /* Symbol-specific options */
@@ -99,13 +99,13 @@ extern "C" {
         int fontsize;       /* Unused */
         int input_mode;     /* Encoding of input data (see DATA_MODE etc below). Default DATA_MODE */
         int eci;            /* Extended Channel Interpretation. Default 0 (none) */
-        unsigned char text[128]; /* Human Readable Text (if any), UTF-8 */
+        unsigned char text[128]; /* Human Readable Text (if any), UTF-8, NUL-terminated (output only) */
         int rows;           /* Number of rows used by the symbol (output only) */
         int width;          /* Width of the generated symbol (output only) */
-        char primary[128];  /* Primary message data (MaxiCode, Composite) */
+        char primary[128];  /* Primary message data (MaxiCode, Composite), NUL-terminated */
         unsigned char encoded_data[200][143]; /* Encoded data (output only). Allows for rows of 1144 modules */
         float row_height[200]; /* Heights of rows (output only). Allows for 200 row DotCode */
-        char errtxt[100];   /* Error message if an error or warning occurs (output only) */
+        char errtxt[100];   /* Error message if an error or warning occurs, NUL-terminated (output only) */
         unsigned char *bitmap; /* Stored bitmap image (raster output only) */
         int bitmap_width;   /* Width of bitmap image (raster output only) */
         int bitmap_height;  /* Height of bitmap image (raster output only) */

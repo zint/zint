@@ -134,6 +134,13 @@ static void test_gb18030_wctomb_zint(void) {
     int ret, ret2;
     unsigned int val1_1, val1_2, val2_1, val2_2;
     unsigned int i;
+    /* See: https://file.allitebooks.com/20160708/CJKV%20Information%20Processing.pdf (table 3-37, p.109, 2nd ed.) */
+    static int nonpua_nonbmp[] = {
+        0x20087, 0x20089, 0x200CC, 0x215D7, 0x2298F, 0x241FE
+    };
+    static unsigned int nonpua_nonbmp_vals[] = {
+        0xFE51, 0xFE52, 0xFE53, 0xFE6C, 0xFE76, 0xFE91
+    };
 
     testStart("test_gb18030_wctomb_zint");
 
@@ -149,6 +156,18 @@ static void test_gb18030_wctomb_zint(void) {
             assert_equal(val1_1, val2_1, "i:%d 0x%04X val1_1 0x%04X != val2_1 0x%04X\n", (int) i, i, val1_1, val2_1);
             assert_equal(val1_2, val2_2, "i:%d 0x%04X val1_2 0x%04X != val2_2 0x%04X\n", (int) i, i, val1_2, val2_2);
         }
+    }
+
+    val1_1 = val1_2 = 0;
+    ret = gb18030_wctomb_zint(&val1_1, &val1_2, 0x110000); /* Invalid Unicode codepoint */
+    assert_zero(ret, "0x110000 ret %d != 0, val1_1 0x%04X, val1_2 0x%04X\n", ret, val1_1, val1_2);
+
+    for (i = 0; i < ARRAY_SIZE(nonpua_nonbmp); i++) {
+        val1_1 = val1_2 = 0;
+        ret = gb18030_wctomb_zint(&val1_1, &val1_2, nonpua_nonbmp[i]);
+        assert_equal(ret, 2, "i:%d 0x%04X ret %d != 2, val1_1 0x%04X, val1_2 0x%04X\n", (int) i, nonpua_nonbmp[i], ret, val1_1, val1_2);
+        assert_equal(val1_1, nonpua_nonbmp_vals[i], "i:%d 0x%04X val1_1 0x%04X != 0x%04X\n", (int) i, nonpua_nonbmp[i], val1_1, nonpua_nonbmp_vals[i]);
+        assert_zero(val1_2, "i:%d 0x%04X val1_2 0x%04X != 0\n", (int) i, nonpua_nonbmp[i], val1_2);
     }
 
     testFinish();
@@ -183,6 +202,9 @@ static void test_gb18030_utf8(int index) {
         /*  6*/ { "―", -1, 0, 1, { 0xA844 }, "GB18030.TXT mapping" },
         /*  7*/ { "—", -1, 0, 1, { 0xA1AA }, "GB 18030 subset mapping" },
         /*  8*/ { "aβc・·—é—Z", -1, 0, 10, { 'a', 0xA6C2, 'c', 0x8139, 0xA739, 0xA1A4, 0xA1AA, 0xA8A6, 0xA1AA, 'Z' }, "" },
+        /*  9*/ { "\200", -1, ZINT_ERROR_INVALID_DATA, -1, {0}, "Invalid UTF-8" },
+        /* 10*/ { "\357\277\276", -1, 0, 2, { 0x8431, 0xA438 }, "U+FFFE (reversed BOM)" },
+        /* 11*/ { "\357\277\277", -1, 0, 2, { 0x8431, 0xA439 }, "U+FFFF" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;

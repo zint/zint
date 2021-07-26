@@ -446,8 +446,8 @@ command
 zint -r -d "This"
 
 gives an inverted Code 128 symbol. This is not practical for most symbologies
-but white-on-black is allowed by the Data Matrix and Aztec Code
-symbology specifications.
+but white-on-black is allowed by the Data Matrix and Aztec Code symbology
+specifications.
 
 For more specific needs the foreground (ink) and background (paper) colours can
 be specified using the --fg= and --bg= options followed by a number in RRGGBB
@@ -458,7 +458,7 @@ zint --fg=004700 -d "This"
 alters the symbol to a dark green.
 
 Zint also supports RGBA colour information for some output file formats which
-support alpha channels (currently only PNG and SVG) in a RRGGBBAA format.
+support alpha channels (currently only PNG, TIF and SVG) in a RRGGBBAA format.
 For example:
 
 zint --fg=00ff0055 -d "This"
@@ -473,7 +473,7 @@ will give different results for PNG and SVG. Experimentation is advised!
 Also note that these options don't work properly with MaxiCode yet.
 
 In addition the --nobackground option will simply remove the background from
-PNG, GIF, SVG, EMF and EPS files.
+PNG, GIF, TIF, SVG, EMF and EPS files.
 
 4.8 Rotating the Symbol
 -----------------------
@@ -736,11 +736,11 @@ Input            |  Filenames Generated
 
 4.12 Direct output
 ------------------
-The finished image files can be output directly to stdout for use as part of
-a pipe by using the --direct option. By default --direct will output data
-as a PNG image, but this can be altered by supplementing the --direct option
-with a --filetype= option followed by the suffix of the file type required.
-For example:
+The finished image files can be output directly to stdout for use as part of a
+pipe by using the --direct option. By default --direct will output data as a PNG
+image (or GIF image if libpng is not present), but this can be altered by
+supplementing the --direct option with a --filetype= option followed by the
+suffix of the file type required. For example:
 
 zint -b 84 --direct --filetype=pcx -d "Data to encode"
 
@@ -1081,6 +1081,8 @@ outfile           | character    | Contains the name of the    | "out.png"
                   |              |    Must end in .png, .gif,  |
                   |              |    .bmp, .emf, .eps, .pcx,  |
                   |              |    .svg, .tif or .txt       |
+                  |              |    followed by a terminat-  |
+                  |              |    ing \0.                  |
 scale             | float        | Scale factor for adjusting  | 1.0
                   |              |    size of image.           |
 option_1          | integer      | Symbol specific options.    | -1
@@ -1095,9 +1097,11 @@ text              | unsigned     | Human Readable Text, which  | "" (empty)
                   |    character |    usually consists of in-  |
                   |    string    |    put data plus one more   |
                   |              |    check digit. Uses UTF-8  |
-                  |              |    formatting.              |
+                  |              |    formatting, with a       |
+                  |              |    terminating \0.          |
 primary           | character    | Primary message data for    | "" (empty)
-                  |    string    |    more complex symbols.    |
+                  |    string    |    more complex symbols,    |
+                  |              |    with a terminating \0.   |
 dot_size          | float        | Size of dots used in dotty  | 4.0 / 5.0
                   |              |    mode.                    |
 rows              | integer      | Number of rows used by the  | (output only)
@@ -1105,12 +1109,14 @@ rows              | integer      | Number of rows used by the  | (output only)
 width             | integer      | Width of the generated sym- | (output only)
                   |              |    bol.                     |
 encoding_data     | array of     | Representation of the       | (output only)
-                  |    character |    encoded data.            |
-                  |    strings   |                             |
+                  |    unsigned  |    encoded data.            |
+                  |    character |                             |
+                  |    arrays    |                             |
 row_height        | array of     | Representation of the       | (output only)
                   |    floats    |    height of a row.         |
 errtxt            | character    | Error message in the event  | (output only)
-                  |    string    |    that an error occurred.  |
+                  |    string    |    that an error occurred,  |
+                  |              |    with a terminating \0.   |
 bitmap            | pointer to   | Pointer to stored bitmap    | (output only)
                   |    unsigned  |    image.                   |
                   |    character |                             |
@@ -1153,7 +1159,7 @@ int main(int argc, char **argv)
     return 0;
 }
 
-Background removal for PNG, GIF, SVG, EMF and EPS files can be achieved by
+Background removal for PNG, GIF, TIF, SVG, EMF and EPS files can be achieved by
 setting the background alpha to "00" where the values for R, G and B will be
 ignored:
 
@@ -1376,7 +1382,7 @@ and will continue to be supported in future versions.
 5.9 Adjusting other output options
 ----------------------------------
 The output_options variable can be used to adjust various aspects of the output
-file. To select more than one option from the table below simply or them
+file. To select more than one option from the table below simply OR them
 together when adjusting this value:
 
 my_symbol->output_options |= BARCODE_BIND | READER_INIT;
@@ -1413,7 +1419,7 @@ property. Valid values are shown in the table below.
 -------------------------------------------------------------------------------
 Value           |  Effect
 -------------------------------------------------------------------------------
-DATA_MODE       |  Uses full ASCII range interpreted as Latin-1 or binary data.
+DATA_MODE       |  Uses full 8-bit range interpreted as Latin-1 or binary data.
 UNICODE_MODE    |  Uses pre-formatted UTF-8 input.
 GS1_MODE        |  Encodes GS1 data using FNC1 characters.
 ----------------|--------------------------------------------------------------
@@ -1475,7 +1481,7 @@ This can be determined using another additional function:
 
 unsigned int ZBarcode_Cap(int symbol_id, unsigned int cap_flag);
 
-by oring the flags below in the "cap_flag" argument and checking the return to
+by OR-ing the flags below in the "cap_flag" argument and checking the return to
 see which are set.
 
 -------------------------------------------------------------------------------
@@ -2789,7 +2795,7 @@ to a maximum of approximately 450 characters (or 900 numeric digits). The
 symbology supports ECI encoding and GS1 data encoding. By default Zint will
 produce a symbol which is approximately square, however the width of the symbol
 can be adjusted by using the --cols= option or by setting option_2 (maximum
-200). Outputting DotCode to raster images (PNG, GIF, BMP, PCX) will require
+200). Outputting DotCode to raster images (PNG, GIF, BMP, PCX, TIF) will require
 setting the scale of the image to a larger value than the default (e.g. approx
 10) for the dots to be plotted correctly. Approximately 33% of the resulting
 symbol is comprised of error correction codewords.
@@ -2804,7 +2810,7 @@ to (N + 1) << 8 where N is 0-7.
 -------------------
 Also known as Chinese Sensible Code, Han Xin is a symbology which is still under
 development, so it is recommended it should not yet be used for a production
-environment. The symbology is capable of encoding characters in the GB18030
+environment. The symbology is capable of encoding characters in the GB 18030
 character set (up to 4-byte characters) and is also able to support the ECI
 mechanism. Support for the encoding of GS1 data has not yet been implemented.
 
@@ -3145,8 +3151,8 @@ F   |  SI    |  US   |  /      |  ?  |  O  |  _  |  o  |  DEL
 A.2 Latin Alphabet No 1 (ISO/IEC 8859-1)
 ----------------------------------------
 A common extension to the ASCII standard, Latin-1 is used to expand the range
-of Code 128, PDF417 and other symbols. Input strings should be in Unicode
-(UTF-8) format
+of Code 128, PDF417 and other symbols. Input strings to the CLI should be in
+Unicode (UTF-8) format, unless the --binary switch is given.
 
 ------------------------------------------------------
 Hex |  8  |  9  |  A      |  B  |  C  |  D  |  E  |  F
@@ -3168,4 +3174,3 @@ D   |     |     |  SHY    |  ½  |  Í  |  Ý  |  í  |  ý
 E   |     |     |  ®      |  ¾  |  Î  |  Þ  |  î  |  þ
 F   |     |     |  ¯      |  ¿  |  Ï  |  ß  |  ï  |  ÿ
 ------------------------------------------------------
-

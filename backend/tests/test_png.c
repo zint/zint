@@ -30,6 +30,7 @@
 /* vim: set ts=4 sw=4 et : */
 
 #include "testcommon.h"
+#include <errno.h>
 #include <sys/stat.h>
 
 INTERNAL int png_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf);
@@ -41,16 +42,17 @@ static void test_pixel_plot(int index, int debug) {
         int height;
         char *pattern;
         int repeat;
+        int ret;
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /*  0*/ { 1, 1, "1", 0 },
-        /*  1*/ { 2, 1, "11", 0 },
-        /*  2*/ { 2, 2, "10", 1 },
-        /*  3*/ { 3, 1, "101", 0 },
-        /*  4*/ { 3, 2, "101010", 0 },
-        /*  5*/ { 3, 3, "101010101", 0 },
-        /*  6*/ { 8, 2, "CBMWKRYGGYRKWMBC", 0 },
+        /*  0*/ { 1, 1, "1", 0, 0 },
+        /*  1*/ { 2, 1, "11", 0, 0 },
+        /*  2*/ { 2, 2, "10", 1, 0 },
+        /*  3*/ { 3, 1, "101", 0, 0 },
+        /*  4*/ { 3, 2, "101010", 0, 0 },
+        /*  5*/ { 3, 3, "101010101", 0, 0 },
+        /*  6*/ { 8, 2, "CBMWKRYGGYRKWMBC", 0, 0 },
     };
     int data_size = ARRAY_SIZE(data);
     int i, ret;
@@ -60,12 +62,9 @@ static void test_pixel_plot(int index, int debug) {
 
     char data_buf[8 * 2 + 1];
 
-    testStart("test_pixel_plot");
+    int have_identify = testUtilHaveIdentify();
 
-    if (!testUtilHaveIdentify()) {
-        testSkip("ImageMagick identify not available");
-        return;
-    }
+    testStart("test_pixel_plot");
 
     for (i = 0; i < data_size; i++) {
         int size;
@@ -94,12 +93,21 @@ static void test_pixel_plot(int index, int debug) {
         symbol->bitmap = (unsigned char *) data_buf;
 
         ret = png_pixel_plot(symbol, (unsigned char *) data_buf);
-        assert_zero(ret, "i:%d png_pixel_plot ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
+        assert_equal(ret, data[i].ret, "i:%d png_pixel_plot ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
-        ret = testUtilVerifyIdentify(symbol->outfile, debug);
-        assert_zero(ret, "i:%d identify %s ret %d != 0\n", i, symbol->outfile, ret);
-
-        assert_zero(remove(symbol->outfile), "i:%d remove(%s) != 0\n", i, symbol->outfile);
+        if (ret < ZINT_ERROR) {
+            if (have_identify) {
+                ret = testUtilVerifyIdentify(symbol->outfile, debug);
+                assert_zero(ret, "i:%d identify %s ret %d != 0\n", i, symbol->outfile, ret);
+            }
+            if (!(debug & ZINT_DEBUG_TEST_KEEP_OUTFILE)) {
+                assert_zero(remove(symbol->outfile), "i:%d remove(%s) != 0\n", i, symbol->outfile);
+            }
+        } else {
+            if (!(debug & ZINT_DEBUG_TEST_KEEP_OUTFILE)) {
+                (void) remove(symbol->outfile);
+            }
+        }
 
         symbol->bitmap = NULL;
 
@@ -173,19 +181,21 @@ static void test_print(int index, int generate, int debug) {
         /* 38*/ { BARCODE_ULTRA, -1, -1, -1, 2, -1, -1, -1, -1, 0, 0, "", "FF000033", "12345", "", 0, "ultra_bgalpha.png", "" },
         /* 39*/ { BARCODE_ULTRA, -1, -1, -1, 2, -1, -1, -1, -1, 0, 0, "0000007F", "FF0000", "12345", "", 0, "ultra_fgalpha.png", "" },
         /* 40*/ { BARCODE_ULTRA, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0, "0000007F", "", "12345", "", 0, "ultra_fgalpha_nobg.png", "" },
-        /* 41*/ { BARCODE_ULTRA, -1, 1, BARCODE_BOX, 1, 1, -1, -1, -1, 0, 0, "00FF007F", "BABDB6", "12345", "", 0, "ultra_fgalpha_hvwsp1_box1.png", "" },
-        /* 42*/ { BARCODE_ULTRA, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0.5f, "", "", "1", "", 0, "ultra_odd.png", "" },
-        /* 43*/ { BARCODE_MAXICODE, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0.5f, "", "", "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "", 0, "maxicode_0.5.png", "6 dpmm, 150 dpi" },
-        /* 44*/ { BARCODE_MAXICODE, -1, 1, BARCODE_BOX, 3, -1, -1, -1, -1, 0, 0.7f, "", "", "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "", 0, "maxicode_0.7_wsp3_box1.png", "8 dpmm, 200 dpi" },
-        /* 45*/ { BARCODE_MAXICODE, -1, -1, -1, -1, -1, -1, -1, -1, 0, 1.4f, "1111117F", "EEEEEEEE", "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "", 0, "maxicode_1.4_bgfgalpha.png", "16 dpmm, 400 dpi" },
-        /* 46*/ { BARCODE_MAXICODE, -1, -1, -1, -1, -1, -1, -1, -1, 0, 2.1f, "", "", "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "", 0, "maxicode_2.1.png", "24 dpmm, 600 dpi" },
-        /* 47*/ { BARCODE_MAXICODE, -1, 2, BARCODE_BOX, 1, 1, -1, -1, -1, 0, 0, "", "", "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "", 0, "maxicode_hvwsp1_box2.png", "" },
-        /* 48*/ { BARCODE_MAXICODE, -1, 1, BARCODE_BIND, -1, 1, -1, -1, -1, 0, 0, "", "", "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "", 0, "maxicode_vwsp1_bind1.png", "" },
-        /* 49*/ { BARCODE_DATAMATRIX, -1, 1, BARCODE_BIND | BARCODE_DOTTY_MODE, -1, -1, -1, -1, -1, 0, 2.0f, "", "", "1234", "", 0, "datamatrix_2.0_bind1_dotty.png", "" },
-        /* 50*/ { BARCODE_DATAMATRIX, -1, 1, BARCODE_BIND | BARCODE_DOTTY_MODE, 1, 1, -1, -1, -1, 0, 2.0f, "", "", "1234", "", 0, "datamatrix_2.0_hvwsp1_bind1_dotty.png", "" },
-        /* 51*/ { BARCODE_DBAR_LTD, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0, "", "", "12345678909", "", 0, "dbar_ltd.png", "" },
-        /* 52*/ { BARCODE_PDF417, -1, -1, -1, -1, -1, -1, -1, -1, 5.0f, 0, "", "", "Your Data Here!", "", ZINT_WARN_NONCOMPLIANT, "pdf417_height5.png", "" },
-        /* 53*/ { BARCODE_USPS_IMAIL, -1, -1, -1, -1, -1, -1, -1, -1, 7.75f, 0, "", "", "12345678901234567890", "", 0, "imail_height7.75.png", "" },
+        /* 41*/ { BARCODE_ULTRA, -1, 1, BARCODE_BOX, 1, 1, -1, -1, -1, 0, 0, "", "", "12345", "", 0, "ultra_hvwsp1_box1.png", "" },
+        /* 42*/ { BARCODE_ULTRA, -1, 1, BARCODE_BOX, 1, 1, -1, -1, -1, 0, 0, "00FF007F", "BABDB6", "12345", "", 0, "ultra_fgalpha_hvwsp1_box1.png", "" },
+        /* 43*/ { BARCODE_ULTRA, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0.5, "", "", "1", "", 0, "ultra_odd.png", "" },
+        /* 44*/ { BARCODE_MAXICODE, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0.5, "", "", "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "", 0, "maxicode_0.5.png", "6 dpmm, 150 dpi" },
+        /* 45*/ { BARCODE_MAXICODE, -1, 1, BARCODE_BOX, 3, -1, -1, -1, -1, 0, 0.7, "", "", "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "", 0, "maxicode_0.7_wsp3_box1.png", "8 dpmm, 200 dpi" },
+        /* 46*/ { BARCODE_MAXICODE, -1, -1, -1, -1, -1, -1, -1, -1, 0, 1.4, "1111117F", "EEEEEEEE", "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "", 0, "maxicode_1.4_bgfgalpha.png", "16 dpmm, 400 dpi" },
+        /* 47*/ { BARCODE_MAXICODE, -1, -1, -1, -1, -1, -1, -1, -1, 0, 2.1, "", "", "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "", 0, "maxicode_2.1.png", "24 dpmm, 600 dpi" },
+        /* 48*/ { BARCODE_MAXICODE, -1, 2, BARCODE_BOX, 1, 1, -1, -1, -1, 0, 0, "", "", "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "", 0, "maxicode_hvwsp1_box2.png", "" },
+        /* 49*/ { BARCODE_MAXICODE, -1, 1, BARCODE_BIND, -1, 1, -1, -1, -1, 0, 0, "", "", "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "", 0, "maxicode_vwsp1_bind1.png", "" },
+        /* 50*/ { BARCODE_DATAMATRIX, -1, 1, BARCODE_BIND | BARCODE_DOTTY_MODE, -1, -1, -1, -1, -1, 0, 2.0f, "", "", "1234", "", 0, "datamatrix_2.0_bind1_dotty.png", "" },
+        /* 51*/ { BARCODE_DATAMATRIX, -1, 1, BARCODE_BIND | BARCODE_DOTTY_MODE, 1, 1, -1, -1, -1, 0, 2.0f, "", "", "1234", "", 0, "datamatrix_2.0_hvwsp1_bind1_dotty.png", "" },
+        /* 52*/ { BARCODE_DBAR_LTD, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0, "", "", "12345678909", "", 0, "dbar_ltd.png", "" },
+        /* 53*/ { BARCODE_PDF417, -1, -1, -1, -1, -1, -1, -1, -1, 5.0, 0, "", "", "Your Data Here!", "", ZINT_WARN_NONCOMPLIANT, "pdf417_height5.png", "" },
+        /* 54*/ { BARCODE_USPS_IMAIL, -1, -1, -1, -1, -1, -1, -1, -1, 7.75, 0, "", "", "12345678901234567890", "", 0, "imail_height7.75.png", "" },
+        /* 55*/ { BARCODE_AZTEC, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0, "", "", "1234567890", "", 0, "aztec.png", "" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -262,10 +272,10 @@ static void test_print(int index, int generate, int debug) {
         assert_nonzero(testUtilDataPath(expected_file, sizeof(expected_file), data_dir, data[i].expected_file), "i:%d testUtilDataPath == 0\n", i);
 
         if (generate) {
-            printf("        /*%3d*/ { %s, %s, %d, %s, %d, %d, %d, %d, %d, %.5g, %.5g, \"%s\",\"%s\",  \"%s\", \"%s\", \"%s\", \"%s\" },\n",
+            printf("        /*%3d*/ { %s, %s, %d, %s, %d, %d, %d, %d, %d, %.5g, %.5g, \"%s\", \"%s\", \"%s\", \"%s\", %d, \"%s\", \"%s\" },\n",
                     i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode), data[i].border_width, testUtilOutputOptionsName(data[i].output_options),
                     data[i].whitespace_width, data[i].whitespace_height, data[i].show_hrt, data[i].option_1, data[i].option_2, data[i].height, data[i].scale, data[i].fgcolour, data[i].bgcolour,
-                    testUtilEscape(data[i].data, length, escaped, escaped_size), data[i].composite, data[i].expected_file, data[i].comment);
+                    testUtilEscape(data[i].data, length, escaped, escaped_size), data[i].composite, data[i].ret, data[i].expected_file, data[i].comment);
             ret = testUtilRename(symbol->outfile, expected_file);
             assert_zero(ret, "i:%d testUtilRename(%s, %s) ret %d != 0\n", i, symbol->outfile, expected_file, ret);
             if (have_identify) {
@@ -289,11 +299,95 @@ static void test_print(int index, int generate, int debug) {
     testFinish();
 }
 
+static void test_outfile(void) {
+    int ret;
+    struct zint_symbol symbol = {0};
+    unsigned char data[] = { "1" };
+
+    testStart("test_outfile");
+
+    symbol.symbology = BARCODE_CODE128;
+    symbol.bitmap = data;
+    symbol.bitmap_width = symbol.bitmap_height = 1;
+
+    strcpy(symbol.outfile, "nosuch_dir/out.png");
+
+    ret = png_pixel_plot(&symbol, data);
+    assert_equal(ret, ZINT_ERROR_FILE_ACCESS, "png_pixel_plot ret %d != ZINT_ERROR_FILE_ACCESS (%d) (%s)\n", ret, ZINT_ERROR_FILE_ACCESS, symbol.errtxt);
+
+    symbol.output_options |= BARCODE_STDOUT;
+
+    ret = png_pixel_plot(&symbol, data);
+    printf(" - ignore (PNG to stdout)\n"); fflush(stdout);
+    assert_zero(ret, "png_pixel_plot ret %d != 0 (%s)\n", ret, symbol.errtxt);
+
+    testFinish();
+}
+
+#include <png.h>
+#include <setjmp.h>
+
+struct wpng_error_type {
+    struct zint_symbol *symbol;
+    jmp_buf jmpbuf;
+};
+
+STATIC_UNLESS_ZINT_TEST void wpng_error_handler(png_structp png_ptr, png_const_charp msg);
+
+static void test_wpng_error_handler(void) {
+    int ret;
+    char filename[] = "out.png";
+    FILE *fp;
+    struct wpng_error_type wpng_error;
+    struct zint_symbol symbol = {0};
+    png_structp png_ptr;
+    png_infop info_ptr;
+
+    testStart("test_wpng_error_handler");
+
+    wpng_error.symbol = &symbol;
+
+    // Create empty file
+    (void) remove(filename); // In case junk hanging around
+    fp = fopen(filename, "w+");
+    assert_nonnull(fp, "fopen(%s) failed\n", filename);
+    ret = fclose(fp);
+    assert_zero(ret, "fclose(%s) %d != 0\n", filename, ret);
+
+    // Re-open for read, which will cause libpng to error
+    fp = fopen(filename, "r");
+    assert_nonnull(fp, "fopen(%s) for read failed\n", filename);
+
+    png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, &wpng_error, wpng_error_handler, NULL);
+    assert_nonnull(png_ptr, "png_create_write_struct failed\n");
+
+    info_ptr = png_create_info_struct(png_ptr);
+    assert_nonnull(info_ptr, "png_create_info_struct failed\n");
+
+    if (setjmp(wpng_error.jmpbuf)) {
+        png_destroy_write_struct(&png_ptr, &info_ptr);
+        ret = fclose(fp);
+        assert_zero(ret, "fclose(%s) %d != 0\n", filename, ret);
+        assert_nonnull(strstr(symbol.errtxt, "635: libpng error:"), "strstr(%s) NULL\n", symbol.errtxt);
+        assert_zero(remove(filename), "remove(%s) != 0 (%d: %s)\n", filename, errno, strerror(errno));
+    } else {
+        png_init_io(png_ptr, fp);
+
+        // This should fail and jmp to setjmp
+        png_write_info(png_ptr, info_ptr);
+        assert_zero(1, "libpng error setjmp failed\n");
+    }
+
+    testFinish();
+}
+
 int main(int argc, char *argv[]) {
 
     testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
         { "test_pixel_plot", test_pixel_plot, 1, 0, 1 },
         { "test_print", test_print, 1, 1, 1 },
+        { "test_outfile", test_outfile, 0, 0, 0 },
+        { "test_wpng_error_handler", test_wpng_error_handler, 0, 0, 0 },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

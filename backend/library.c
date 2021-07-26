@@ -907,10 +907,10 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
     if (symbol->debug & ZINT_DEBUG_PRINT) {
         printf("ZBarcode_Encode: symbology: %d, input_mode: 0x%X, ECI: %d, option_1: %d, option_2: %d,"
                 " option_3: %d, scale: %g\n    output_options: 0x%X, fg: %s, bg: %s,"
-                " length: %d, First 10 source: \"%.10s\", First 10 primary: \"%.10s\"\n",
+                " length: %d, First 10 source: \"%.*s\", First 10 primary: \"%.10s\"\n",
                 symbol->symbology, symbol->input_mode, symbol->eci, symbol->option_1, symbol->option_2,
                 symbol->option_3, symbol->scale, symbol->output_options, symbol->fgcolour, symbol->bgcolour,
-                length, source ? (const char *) source : "<NULL>", symbol->primary);
+                length, length < 10 ? length : 10, source ? (const char *) source : "<NULL>", symbol->primary);
     }
 
     warn_number = 0;

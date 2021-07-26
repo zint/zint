@@ -127,7 +127,6 @@ INTERNAL void rs_init_code(rs_t *rs, const int nsym, int index) {
 
 /* rs_encode(&rs, datalen, data, res) generates nsym Reed-Solomon codes (nsym as given in rs_init_code())
  * and places them in reverse order in res */
-
 INTERNAL void rs_encode(const rs_t *rs, const int datalen, const unsigned char *data, unsigned char *res) {
     int i, k;
     const unsigned char *logt = rs->logt;
@@ -200,10 +199,10 @@ INTERNAL int rs_uint_init_gf(rs_uint_t *rs_uint, const unsigned int prime_poly, 
     rs_uint->logt = NULL;
     rs_uint->alog = NULL;
 
-    if (!(logt = (unsigned int *) malloc(sizeof(unsigned int) * b))) {
+    if (!(logt = (unsigned int *) calloc(b, sizeof(unsigned int)))) {
         return 0;
     }
-    if (!(alog = (unsigned int *) malloc(sizeof(unsigned int) * b * 2))) {
+    if (!(alog = (unsigned int *) calloc(b * 2, sizeof(unsigned int)))) {
         free(logt);
         return 0;
     }

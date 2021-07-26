@@ -259,33 +259,8 @@ INTERNAL int c39(struct zint_symbol *symbol, unsigned char source[], int length)
     if (symbol->option_2 == 1) {
 
         char check_digit;
-        counter = counter % 43;
-        if (counter < 10) {
-             check_digit = itoc(counter);
-        } else {
-            if (counter < 36) {
-                check_digit = (counter - 10) + 'A';
-            } else {
-                switch (counter) {
-                    case 36: check_digit = '-';
-                        break;
-                    case 37: check_digit = '.';
-                        break;
-                    case 38: check_digit = ' ';
-                        break;
-                    case 39: check_digit = '$';
-                        break;
-                    case 40: check_digit = '/';
-                        break;
-                    case 41: check_digit = '+';
-                        break;
-                    case 42: check_digit = 37;
-                        break;
-                    default: check_digit = ' ';
-                        break; /* Keep compiler happy */
-                }
-            }
-        }
+        counter %= 43;
+        check_digit = SILVER[counter];
         lookup(SILVER, C39Table, check_digit, dest);
 
         /* Display a space check digit as _, otherwise it looks like an error */
@@ -727,7 +702,8 @@ INTERNAL int channel_code(struct zint_symbol *symbol, unsigned char source[], in
         if (channels == 8) {
             sprintf(symbol->errtxt, "305: Value out of range (0 to %d)", max_ranges[channels]);
         } else {
-            sprintf(symbol->errtxt, "335: Value out of range (0 to %d) for %d channels", max_ranges[channels], channels);
+            sprintf(symbol->errtxt, "335: Value out of range (0 to %d) for %d channels",
+                    max_ranges[channels], channels);
         }
         return ZINT_ERROR_INVALID_DATA;
     }

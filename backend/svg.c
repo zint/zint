@@ -187,16 +187,16 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
     /* Check for no created vector set */
     /* E-Mail Christian Schmitz 2019-09-10: reason unknown  Ticket #164*/
     if (symbol->vector == NULL) {
+        strcpy(symbol->errtxt, "681: Vector header NULL");
         return ZINT_ERROR_INVALID_DATA;
     }
     if (symbol->output_options & BARCODE_STDOUT) {
         fsvg = stdout;
     } else {
-        fsvg = fopen(symbol->outfile, "w");
-    }
-    if (fsvg == NULL) {
-        sprintf(symbol->errtxt, "680: Could not open output file (%d: %.30s)", errno, strerror(errno));
-        return ZINT_ERROR_FILE_ACCESS;
+        if (!(fsvg = fopen(symbol->outfile, "w"))) {
+            sprintf(symbol->errtxt, "680: Could not open output file (%d: %.30s)", errno, strerror(errno));
+            return ZINT_ERROR_FILE_ACCESS;
+        }
     }
 
     locale = setlocale(LC_ALL, "C");
@@ -206,7 +206,7 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
     fprintf(fsvg, "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\"\n");
     fprintf(fsvg, "   \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n");
     fprintf(fsvg, "<svg width=\"%d\" height=\"%d\" version=\"1.1\"\n",
-            (int) ceil(symbol->vector->width), (int) ceil(symbol->vector->height));
+            (int) ceilf(symbol->vector->width), (int) ceilf(symbol->vector->height));
     fprintf(fsvg, "   xmlns=\"http://www.w3.org/2000/svg\">\n");
     fprintf(fsvg, "   <desc>Zint Generated Symbol\n");
     fprintf(fsvg, "   </desc>\n");
@@ -214,7 +214,7 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
 
     if (bg_alpha != 0) {
         fprintf(fsvg, "      <rect x=\"0\" y=\"0\" width=\"%d\" height=\"%d\" fill=\"#%s\"",
-                (int) ceil(symbol->vector->width), (int) ceil(symbol->vector->height), bgcolour_string);
+                (int) ceilf(symbol->vector->width), (int) ceilf(symbol->vector->height), bgcolour_string);
         if (bg_alpha != 0xff) {
             fprintf(fsvg, " opacity=\"%.3f\"", bg_alpha_opacity);
         }

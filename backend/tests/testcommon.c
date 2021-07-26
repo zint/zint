@@ -828,14 +828,17 @@ int testUtilSymbolCmp(const struct zint_symbol *a, const struct zint_symbol *b) 
     if (a->whitespace_width != b->whitespace_width) {
         return 6;
     }
-    if (a->border_width != b->border_width) {
+    if (a->whitespace_height != b->whitespace_height) {
         return 7;
     }
-    if (a->output_options != b->output_options) {
+    if (a->border_width != b->border_width) {
         return 8;
     }
-    if (a->scale != b->scale) {
+    if (a->output_options != b->output_options) {
         return 9;
+    }
+    if (a->scale != b->scale) {
+        return 10;
     }
 
     return 0;
@@ -1051,7 +1054,7 @@ int testUtilVectorCmp(const struct zint_vector *a, const struct zint_vector *b) 
     return 0;
 }
 
-/* Dump modules into buffer as '0'/'1' (or colours 'W', 'C', 'B' etc if Ultra) */
+/* Dump modules into buffer as '0'/'1' (or colours '0', '1', '2' etc if Ultra) */
 int testUtilModulesDump(const struct zint_symbol *symbol, char dump[], int dump_size) {
     int r, w;
     char *d = dump;
@@ -2107,7 +2110,7 @@ static const char *testUtilBwippName(int index, const struct zint_symbol *symbol
         { "itf14", BARCODE_ITF14, 89, 0, 0, 0, 0, 0, },
         { "kix", BARCODE_KIX, 90, 0, 0, 0, 0, 0, },
         { "", -1, 91, 0, 0, 0, 0, 0, },
-        { "azteccode", BARCODE_AZTEC, 92, 0, 1, 0, 0, 0, },
+        { "azteccode", BARCODE_AZTEC, 92, 1, 1, 0, 0, 0, },
         { "daft", BARCODE_DAFT, 93, 0, 0, 0, 0, 0, },
         { "", -1, 94, 0, 0, 0, 0, 0, },
         { "", -1, 95, 0, 0, 0, 0, 0, },
@@ -2204,6 +2207,14 @@ static const char *testUtilBwippName(int index, const struct zint_symbol *symbol
             if (debug & ZINT_DEBUG_TEST_PRINT) {
                 printf("i:%d %s not BWIPP compatible, single row not supported, option_1 %d\n",
                         index, testUtilBarcodeName(symbology), option_1);
+            }
+            return NULL;
+        }
+    } else if (symbology == BARCODE_AZTEC) {
+        if (option_1 > 0 && option_2 > 0) {
+            if (debug & ZINT_DEBUG_TEST_PRINT) {
+                printf("i:%d %s not BWIPP compatible, cannot specify both option_1 %d and option_2 %d\n",
+                        index, testUtilBarcodeName(symbology), option_1, option_2);
             }
             return NULL;
         }

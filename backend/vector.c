@@ -63,7 +63,7 @@ static struct zint_vector_rect *vector_plot_create_rect(float x, float y, float 
 
 static int vector_plot_add_rect(struct zint_symbol *symbol, struct zint_vector_rect *rect,
             struct zint_vector_rect **last_rect) {
-    if (!rect) return ZINT_ERROR_MEMORY;
+    if (!rect) return 0;
     if (*last_rect)
         (*last_rect)->next = rect;
     else
@@ -89,7 +89,7 @@ static struct zint_vector_hexagon *vector_plot_create_hexagon(float x, float y, 
 
 static int vector_plot_add_hexagon(struct zint_symbol *symbol, struct zint_vector_hexagon *hexagon,
             struct zint_vector_hexagon **last_hexagon) {
-    if (!hexagon) return ZINT_ERROR_MEMORY;
+    if (!hexagon) return 0;
     if (*last_hexagon)
         (*last_hexagon)->next = hexagon;
     else
@@ -115,7 +115,7 @@ static struct zint_vector_circle *vector_plot_create_circle(float x, float y, fl
 
 static int vector_plot_add_circle(struct zint_symbol *symbol, struct zint_vector_circle *circle,
             struct zint_vector_circle **last_circle) {
-    if (!circle) return ZINT_ERROR_MEMORY;
+    if (!circle) return 0;
     if (*last_circle)
         (*last_circle)->next = circle;
     else
@@ -272,12 +272,10 @@ static void vector_rotate(struct zint_symbol *symbol, int rotate_angle) {
             temp = rect->width;
             rect->width = rect->height;
             rect->height = temp;
-        }
-        if (rotate_angle == 180) {
+        } else if (rotate_angle == 180) {
             rect->x = symbol->vector->width - (rect->x + rect->width);
             rect->y = symbol->vector->height - (rect->y + rect->height);
-        }
-        if (rotate_angle == 270) {
+        } else if (rotate_angle == 270) {
             temp = rect->x;
             rect->x = rect->y;
             rect->y = symbol->vector->width - (temp + rect->width);
@@ -295,13 +293,11 @@ static void vector_rotate(struct zint_symbol *symbol, int rotate_angle) {
             hex->x = symbol->vector->height - hex->y;
             hex->y = temp;
             hex->rotation = 90;
-        }
-        if (rotate_angle == 180) {
+        } else if (rotate_angle == 180) {
             hex->x = symbol->vector->width - hex->x;
             hex->y = symbol->vector->height - hex->y;
             hex->rotation = 180;
-        }
-        if (rotate_angle == 270) {
+        } else if (rotate_angle == 270) {
             temp = hex->x;
             hex->x = hex->y;
             hex->y = symbol->vector->width - temp;
@@ -316,12 +312,10 @@ static void vector_rotate(struct zint_symbol *symbol, int rotate_angle) {
             temp = circle->x;
             circle->x = symbol->vector->height - circle->y;
             circle->y = temp;
-        }
-        if (rotate_angle == 180) {
+        } else if (rotate_angle == 180) {
             circle->x = symbol->vector->width - circle->x;
             circle->y = symbol->vector->height - circle->y;
-        }
-        if (rotate_angle == 270) {
+        } else if (rotate_angle == 270) {
             temp = circle->x;
             circle->x = circle->y;
             circle->y = symbol->vector->width - temp;
@@ -336,13 +330,11 @@ static void vector_rotate(struct zint_symbol *symbol, int rotate_angle) {
             string->x = symbol->vector->height - string->y;
             string->y = temp;
             string->rotation = 90;
-        }
-        if (rotate_angle == 180) {
+        } else if (rotate_angle == 180) {
             string->x = symbol->vector->width - string->x;
             string->y = symbol->vector->height - string->y;
             string->rotation = 180;
-        }
-        if (rotate_angle == 270) {
+        } else if (rotate_angle == 270) {
             temp = string->x;
             string->x = string->y;
             string->y = symbol->vector->width - temp;

@@ -192,10 +192,7 @@ static int aztec_text_process(const unsigned char source[], int src_len, char bi
 
     if (debug) {
         printf("First Pass:\n");
-        for (i = 0; i < src_len; i++) {
-            printf("%c", encode_mode[i]);
-        }
-        printf("\n");
+        printf("%.*s\n", src_len, encode_mode);
     }
 
     // Reduce two letter combinations to one codeword marked as [abcd] in Punct mode
@@ -459,14 +456,8 @@ static int aztec_text_process(const unsigned char source[], int src_len, char bi
     }
 
     if (debug) {
-        for (i = 0; i < reduced_length; i++) {
-            printf("%c", reduced_source[i]);
-        }
-        printf("\n");
-        for (i = 0; i < reduced_length; i++) {
-            printf("%c", reduced_encode_mode[i]);
-        }
-        printf("\n");
+        printf("%.*s\n", reduced_length, reduced_source);
+        printf("%.*s\n", reduced_length, reduced_encode_mode);
     }
 
     bp = 0;
@@ -840,7 +831,7 @@ INTERNAL int aztec(struct zint_symbol *symbol, unsigned char source[], int lengt
     char adjusted_string[AZTEC_MAX_CAPACITY];
     short AztecMap[AZTEC_MAP_SIZE];
     unsigned char desc_data[4], desc_ecc[6];
-    int error_number, ecc_level, compact, data_length, data_maxsize, codeword_size, adjusted_length;
+    int error_number, compact, data_length, data_maxsize, codeword_size, adjusted_length;
     int remainder, padbits, count, gs1, adjustment_size;
     int debug = (symbol->debug & ZINT_DEBUG_PRINT), reader = 0;
     int comp_loop = 4;
@@ -878,21 +869,20 @@ INTERNAL int aztec(struct zint_symbol *symbol, unsigned char source[], int lengt
         strcpy(symbol->errtxt, "503: Invalid error correction level - using default instead");
         if (symbol->warn_level == WARN_FAIL_ALL) {
             return ZINT_ERROR_INVALID_OPTION;
-        } else {
-            error_number = ZINT_WARN_INVALID_OPTION;
         }
+        error_number = ZINT_WARN_INVALID_OPTION;
         symbol->option_1 = -1;
-    }
-
-    ecc_level = symbol->option_1;
-
-    if ((ecc_level == -1) || (ecc_level == 0)) {
-        ecc_level = 2;
     }
 
     data_maxsize = 0; /* Keep compiler happy! */
     adjustment_size = 0;
     if (symbol->option_2 == 0) { /* The size of the symbol can be determined by Zint */
+        int ecc_level = symbol->option_1;
+
+        if ((ecc_level == -1) || (ecc_level == 0)) {
+            ecc_level = 2;
+        }
+
         do {
             /* Decide what size symbol to use - the smallest that fits the data */
             compact = 0; /* 1 = Aztec Compact, 0 = Normal Aztec */
@@ -1013,6 +1003,7 @@ INTERNAL int aztec(struct zint_symbol *symbol, unsigned char source[], int lengt
             if (padbits == codeword_size) {
                 padbits = 0;
             }
+            if (debug) printf("Remainder: %d  Pad bits: %d\n", remainder, padbits);
 
             for (i = 0; i < padbits; i++) {
                 adjusted_string[adjusted_length++] = '1';
@@ -1102,6 +1093,7 @@ INTERNAL int aztec(struct zint_symbol *symbol, unsigned char source[], int lengt
         if (padbits == codeword_size) {
             padbits = 0;
         }
+        if (debug) printf("Remainder: %d  Pad bits: %d\n", remainder, padbits);
 
         for (i = 0; i < padbits; i++) {
             adjusted_string[adjusted_length++] = '1';
@@ -1132,10 +1124,7 @@ INTERNAL int aztec(struct zint_symbol *symbol, unsigned char source[], int lengt
         if (debug) {
             printf("Codewords:\n");
             for (i = 0; i < (adjusted_length / codeword_size); i++) {
-                for (j = 0; j < codeword_size; j++) {
-                    printf("%c", adjusted_string[(i * codeword_size) + j]);
-                }
-                printf(" ");
+                printf("%.*s ", codeword_size, adjusted_string + i * codeword_size);
             }
             printf("\n");
         }
@@ -1157,12 +1146,7 @@ INTERNAL int aztec(struct zint_symbol *symbol, unsigned char source[], int lengt
 
     if (debug) {
         printf("Generating a %s symbol with %d layers\n", compact ? "compact" : "full-size", layers);
-        printf("Requires ");
-        if (compact) {
-            printf("%d", AztecCompactSizes[layers - 1]);
-        } else {
-            printf("%d", AztecSizes[layers - 1]);
-        }
+        printf("Requires %d", compact ? AztecCompactSizes[layers - 1] : AztecSizes[layers - 1]);
         printf(" codewords of %d-bits\n", codeword_size);
         printf("    (%d data words, %d ecc words)\n", data_blocks, ecc_blocks);
     }
@@ -1431,7 +1415,7 @@ INTERNAL int aztec_runes(struct zint_symbol *symbol, unsigned char source[], int
     input_value = 0;
     if (length > 3) {
         strcpy(symbol->errtxt, "507: Input too large (3 character maximum)");
-        return ZINT_ERROR_INVALID_DATA;
+        return ZINT_ERROR_TOO_LONG;
     }
     error_number = is_sane(NEON, source, length);
     if (error_number != 0) {

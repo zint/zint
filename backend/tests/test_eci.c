@@ -804,6 +804,184 @@ static void test_utf8_to_eci_ucs2be(void) {
     }
 };
 
+static void test_utf8_to_eci_sjis(void) {
+
+    struct item {
+        int eci;
+        char *data;
+        int length;
+        int ret;
+        int expected_length;
+    };
+    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    struct item data[] = {
+        /*  0*/ { 20, "\000\001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020\021\022\023\024\025\026\027\030\031\032\033\034\035\036\037", 32, 0, 32 },
+        /*  1*/ { 20, " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}\177", 95, 0, 95 + 1 }, // Backslash goes to 2 byte
+        /*  2*/ { 20, "~", -1, ZINT_ERROR_INVALID_DATA, -1 }, // No mapping for tilde
+        /*  3*/ { 20, "\302\200", -1, ZINT_ERROR_INVALID_DATA, -1 }, // No mapping for U+0080
+        /*  4*/ { 20, "\302\241", -1, ZINT_ERROR_INVALID_DATA, -1 }, // No mapping for U+00A1 Inverted exclaimation mark
+        /*  5*/ { 20, "\302\245", -1, 0, 1 }, // U+00A5 Yen goes to backslash
+        /*  6*/ { 20, "\302\277", -1, ZINT_ERROR_INVALID_DATA, -1 }, // No mapping for U+00BF Inverted question mark
+        /*  7*/ { 20, "\303\200", -1, ZINT_ERROR_INVALID_DATA, -1 }, // No mapping for U+00C0 À
+        /*  8*/ { 20, "\303\251", -1, ZINT_ERROR_INVALID_DATA, -1 }, // No mapping for U+00E9 é
+        /*  9*/ { 20, "\312\262", -1, ZINT_ERROR_INVALID_DATA, -1 }, // No mapping for U+03B2 β
+        /* 10*/ { 20, "\342\272\200", -1, ZINT_ERROR_INVALID_DATA, -1 }, // No mapping for U+2E80 CJK RADICAL REPEAT
+        /* 11*/ { 20, "\343\200\200", -1, 0, 2 }, // U+3000 IDEOGRAPHIC SPACE
+        /* 12*/ { 20, "\343\200\204", -1, ZINT_ERROR_INVALID_DATA, -1 }, // No mapping for U+3004 JAPANESE INDUSTRIAL STANDARD SYMBOL
+        /* 13*/ { 20, "\343\201\201", -1, 0, 2 }, //U+3041 HIRAGANA LETTER SMALL A
+        /* 14*/ { 20, "\357\277\277", -1, ZINT_ERROR_INVALID_DATA, -1 }, // No mapping for U+FFFF
+        /* 15*/ { 20, "\357\277\276", -1, ZINT_ERROR_INVALID_DATA, -1 }, // U+FFFE (reversed BOM) not allowed
+        /* 16*/ { 20, "\355\240\200", -1, ZINT_ERROR_INVALID_DATA, -1 }, // U+D800 surrogate not allowed
+    };
+    int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
+
+    testStart("test_utf8_to_eci_sjis");
+
+    for (i = 0; i < data_size; i++) {
+        int out_length, eci_length;
+        char dest[1024];
+
+        length = data[i].length != -1 ? data[i].length : (int) strlen(data[i].data);
+        out_length = length;
+        eci_length = get_eci_length(data[i].eci, (const unsigned char *) data[i].data, length);
+
+        assert_nonzero(eci_length + 1 <= 1024, "i:%d eci_length %d + 1 > 1024\n", i, eci_length);
+        ret = utf8_to_eci(data[i].eci, (const unsigned char *) data[i].data, (unsigned char *) dest, &out_length);
+        assert_equal(ret, data[i].ret, "i:%d utf8_to_eci ret %d != %d\n", i, ret, data[i].ret);
+        if (ret == 0) {
+            assert_equal(out_length, data[i].expected_length, "i:%d length %d != %d\n", i, out_length, data[i].expected_length);
+            assert_nonzero(out_length <= eci_length, "i:%d out_length %d > eci_length %d\n", i, out_length, eci_length);
+        }
+    }
+};
+
+static void test_utf8_to_eci_big5(void) {
+
+    struct item {
+        int eci;
+        char *data;
+        int length;
+        int ret;
+        int expected_length;
+    };
+    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    struct item data[] = {
+        /*  0*/ { 28, "\000\001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020\021\022\023\024\025\026\027\030\031\032\033\034\035\036\037", 32, 0, 32 },
+        /*  1*/ { 28, " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\177", 96, 0, 96 },
+        /*  2*/ { 28, "\302\200", -1, ZINT_ERROR_INVALID_DATA, -1 }, // No mapping for U+0080
+        /*  3*/ { 28, "\343\200\200", -1, 0, 2 }, // U+3000 IDEOGRAPHIC SPACE
+        /*  4*/ { 28, "\357\277\277", -1, ZINT_ERROR_INVALID_DATA, -1 }, // No mapping for U+FFFF
+        /*  5*/ { 28, "\357\277\276", -1, ZINT_ERROR_INVALID_DATA, -1 }, // U+FFFE (reversed BOM) not allowed
+        /*  6*/ { 28, "\355\240\200", -1, ZINT_ERROR_INVALID_DATA, -1 }, // U+D800 surrogate not allowed
+    };
+    int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
+
+    testStart("test_utf8_to_eci_big5");
+
+    for (i = 0; i < data_size; i++) {
+        int out_length, eci_length;
+        char dest[1024];
+
+        length = data[i].length != -1 ? data[i].length : (int) strlen(data[i].data);
+        out_length = length;
+        eci_length = get_eci_length(data[i].eci, (const unsigned char *) data[i].data, length);
+
+        assert_nonzero(eci_length + 1 <= 1024, "i:%d eci_length %d + 1 > 1024\n", i, eci_length);
+        ret = utf8_to_eci(data[i].eci, (const unsigned char *) data[i].data, (unsigned char *) dest, &out_length);
+        assert_equal(ret, data[i].ret, "i:%d utf8_to_eci ret %d != %d\n", i, ret, data[i].ret);
+        if (ret == 0) {
+            assert_equal(out_length, data[i].expected_length, "i:%d length %d != %d\n", i, out_length, data[i].expected_length);
+            assert_nonzero(out_length <= eci_length, "i:%d out_length %d > eci_length %d\n", i, out_length, eci_length);
+        }
+    }
+};
+
+static void test_utf8_to_eci_gb2312(void) {
+
+    struct item {
+        int eci;
+        char *data;
+        int length;
+        int ret;
+        int expected_length;
+    };
+    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    struct item data[] = {
+        /*  0*/ { 29, "\000\001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020\021\022\023\024\025\026\027\030\031\032\033\034\035\036\037", 32, 0, 32 },
+        /*  1*/ { 29, " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\177", 96, 0, 96 },
+        /*  2*/ { 29, "\302\200", -1, ZINT_ERROR_INVALID_DATA, -1 }, // No mapping for U+0080
+        /*  3*/ { 29, "\343\200\200", -1, 0, 2 }, // U+3000 IDEOGRAPHIC SPACE
+        /*  4*/ { 29, "\357\277\277", -1, ZINT_ERROR_INVALID_DATA, -1 }, // No mapping for U+FFFF
+        /*  5*/ { 29, "\357\277\276", -1, ZINT_ERROR_INVALID_DATA, -1 }, // U+FFFE (reversed BOM) not allowed
+        /*  6*/ { 29, "\355\240\200", -1, ZINT_ERROR_INVALID_DATA, -1 }, // U+D800 surrogate not allowed
+    };
+    int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
+
+    testStart("test_utf8_to_eci_gb2312");
+
+    for (i = 0; i < data_size; i++) {
+        int out_length, eci_length;
+        char dest[1024];
+
+        length = data[i].length != -1 ? data[i].length : (int) strlen(data[i].data);
+        out_length = length;
+        eci_length = get_eci_length(data[i].eci, (const unsigned char *) data[i].data, length);
+
+        assert_nonzero(eci_length + 1 <= 1024, "i:%d eci_length %d + 1 > 1024\n", i, eci_length);
+        ret = utf8_to_eci(data[i].eci, (const unsigned char *) data[i].data, (unsigned char *) dest, &out_length);
+        assert_equal(ret, data[i].ret, "i:%d utf8_to_eci ret %d != %d\n", i, ret, data[i].ret);
+        if (ret == 0) {
+            assert_equal(out_length, data[i].expected_length, "i:%d length %d != %d\n", i, out_length, data[i].expected_length);
+            assert_nonzero(out_length <= eci_length, "i:%d out_length %d > eci_length %d\n", i, out_length, eci_length);
+        }
+    }
+};
+
+static void test_utf8_to_eci_euc_kr(void) {
+
+    struct item {
+        int eci;
+        char *data;
+        int length;
+        int ret;
+        int expected_length;
+    };
+    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    struct item data[] = {
+        /*  0*/ { 30, "\000\001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020\021\022\023\024\025\026\027\030\031\032\033\034\035\036\037", 32, 0, 32 },
+        /*  1*/ { 30, " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\177", 96, 0, 96 },
+        /*  2*/ { 30, "\302\200", -1, ZINT_ERROR_INVALID_DATA, -1 }, // No mapping for U+0080
+        /*  3*/ { 30, "\343\200\200", -1, 0, 2 }, // U+3000 IDEOGRAPHIC SPACE
+        /*  4*/ { 30, "\357\277\277", -1, ZINT_ERROR_INVALID_DATA, -1 }, // No mapping for U+FFFF
+        /*  5*/ { 30, "\357\277\276", -1, ZINT_ERROR_INVALID_DATA, -1 }, // U+FFFE (reversed BOM) not allowed
+        /*  6*/ { 30, "\355\240\200", -1, ZINT_ERROR_INVALID_DATA, -1 }, // U+D800 surrogate not allowed
+    };
+    int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
+
+    testStart("test_utf8_to_eci_euc_kr");
+
+    for (i = 0; i < data_size; i++) {
+        int out_length, eci_length;
+        char dest[1024];
+
+        length = data[i].length != -1 ? data[i].length : (int) strlen(data[i].data);
+        out_length = length;
+        eci_length = get_eci_length(data[i].eci, (const unsigned char *) data[i].data, length);
+
+        assert_nonzero(eci_length + 1 <= 1024, "i:%d eci_length %d + 1 > 1024\n", i, eci_length);
+        ret = utf8_to_eci(data[i].eci, (const unsigned char *) data[i].data, (unsigned char *) dest, &out_length);
+        assert_equal(ret, data[i].ret, "i:%d utf8_to_eci ret %d != %d\n", i, ret, data[i].ret);
+        if (ret == 0) {
+            assert_equal(out_length, data[i].expected_length, "i:%d length %d != %d\n", i, out_length, data[i].expected_length);
+            assert_nonzero(out_length <= eci_length, "i:%d out_length %d > eci_length %d\n", i, out_length, eci_length);
+        }
+    }
+};
+
 static void test_get_best_eci(int index) {
 
     struct item {
@@ -849,6 +1027,10 @@ int main(int argc, char *argv[]) {
         { "test_utf8_to_eci_sb", test_utf8_to_eci_sb, 1, 0, 0 },
         { "test_utf8_to_eci_ascii", test_utf8_to_eci_ascii, 0, 0, 0 },
         { "test_utf8_to_eci_ucs2be", test_utf8_to_eci_ucs2be, 0, 0, 0 },
+        { "test_utf8_to_eci_sjis", test_utf8_to_eci_sjis, 0, 0, 0 },
+        { "test_utf8_to_eci_big5", test_utf8_to_eci_big5, 0, 0, 0 },
+        { "test_utf8_to_eci_gb2312", test_utf8_to_eci_gb2312, 0, 0, 0 },
+        { "test_utf8_to_eci_euc_kr", test_utf8_to_eci_euc_kr, 0, 0, 0 },
         { "test_get_best_eci", test_get_best_eci, 1, 0, 0 },
     };
 

@@ -1071,7 +1071,7 @@ static int rssexp_binary_string(struct zint_symbol *symbol, const unsigned char 
     if (debug) printf("General field data = %s\n", general_field);
 
     if (j != 0) { /* If general field not empty */
-        if (!general_field_encode(general_field, j, &mode, &last_digit, binary_string, &bp)) { /* Failure should never happen */
+        if (!general_field_encode(general_field, j, &mode, &last_digit, binary_string, &bp)) { /* Should not happen */
             /* Not reachable */
             strcpy(symbol->errtxt, "386: Invalid character in General Field data");
             return ZINT_ERROR_INVALID_DATA;

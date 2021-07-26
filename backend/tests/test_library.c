@@ -357,6 +357,7 @@ static void test_escape_char_process(int index, int generate, int debug) {
     for (i = 0; i < data_size; i++) {
 
         if (index != -1 && i != index) continue;
+        if ((debug & ZINT_DEBUG_TEST_PRINT) && !(debug & ZINT_DEBUG_TEST_LESS_NOISY)) printf("i:%d\n", i);
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");

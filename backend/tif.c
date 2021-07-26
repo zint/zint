@@ -108,6 +108,7 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     int compression = TIF_NO_COMPRESSION;
     tif_lzw_state lzw_state;
     long file_pos;
+    const int output_to_stdout = symbol->output_options & BARCODE_STDOUT;
 #ifdef _MSC_VER
     uint32_t* strip_offset;
     uint32_t* strip_bytes;
@@ -229,8 +230,8 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
             pixels_per_sample = 8;
         } else if (bg[0] == 0 && bg[1] == 0 && bg[2] == 0 && bg[3] == 0xff
                 && fg[0] == 0xff && fg[1] == 0xff && fg[2] == 0xff && fg[3] == 0xff) {
-            map['0'] = 1;
-            map['1'] = 0;
+            map['0'] = 0;
+            map['1'] = 1;
 
             pmi = TIF_PMI_BLACKISZERO;
             bits_per_sample = 1;
@@ -313,7 +314,8 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
             strip_bytes[i] = bytes_per_strip;
         } else {
             if (rows_last_strip) {
-                strip_bytes[i] = rows_last_strip * ((symbol->bitmap_width + pixels_per_sample - 1) / pixels_per_sample)
+                strip_bytes[i] = rows_last_strip
+                                    * ((symbol->bitmap_width + pixels_per_sample - 1) / pixels_per_sample)
                                     * samples_per_pixel;
             } else {
                 strip_bytes[i] = bytes_per_strip;
@@ -331,17 +333,17 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     }
 
     /* Open output file in binary mode */
-    if (symbol->output_options & BARCODE_STDOUT) {
+    if (output_to_stdout) {
 #ifdef _MSC_VER
         if (-1 == _setmode(_fileno(stdout), _O_BINARY)) {
-            sprintf(symbol->errtxt, "671: Can't open output file (%d: %.30s)", errno, strerror(errno));
+            sprintf(symbol->errtxt, "671: Could not set stdout to binary (%d: %.30s)", errno, strerror(errno));
             return ZINT_ERROR_FILE_ACCESS;
         }
 #endif
         tif_file = stdout;
     } else {
-        if (!(tif_file = fopen(symbol->outfile, "wb+"))) {
-            sprintf(symbol->errtxt, "672: Can't open output file (%d: %.30s)", errno, strerror(errno));
+        if (!(tif_file = fopen(symbol->outfile, "wb+"))) { /* '+' as use fseek/ftell() */
+            sprintf(symbol->errtxt, "672: Could not open output file (%d: %.30s)", errno, strerror(errno));
             return ZINT_ERROR_FILE_ACCESS;
         }
         compression = TIF_LZW;
@@ -607,7 +609,7 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
         total_bytes_put += 6 * color_map_size;
     }
 
-    if (symbol->output_options & BARCODE_STDOUT) {
+    if (output_to_stdout) {
         fflush(tif_file);
     } else {
         if (ftell(tif_file) != total_bytes_put) {

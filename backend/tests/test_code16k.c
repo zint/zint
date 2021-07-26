@@ -46,6 +46,7 @@ static void test_large(int index, int debug) {
         /*  1*/ { "A", 78, ZINT_ERROR_TOO_LONG, -1, -1 },
         /*  2*/ { "0", 154, 0, 16, 70 }, // BS EN 12323:2005 4.1 (l)
         /*  3*/ { "0", 155, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  4*/ { "0", 161, ZINT_ERROR_TOO_LONG, -1, -1 },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;

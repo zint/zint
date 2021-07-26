@@ -121,6 +121,7 @@ static void test_gb2312_utf8(int index) {
         /*  6*/ { "―", -1, 0, 1, { 0xA1AA }, "GB2312.TXT mapping" },
         /*  7*/ { "—", -1, 0, 1, { 0xA1AA }, "GB 18030 subset mapping" },
         /*  8*/ { "aβc・·—é—Z", -1, 0, 9, { 'a', 0xA6C2, 'c', 0xA1A4, 0xA1A4, 0xA1AA, 0xA8A6, 0xA1AA, 'Z' }, "" },
+        /*  9*/ { "\200", -1, ZINT_ERROR_INVALID_DATA, -1, {0}, "Invalid UTF-8" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;

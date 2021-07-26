@@ -1,0 +1,107 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+   "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="117" height="192" version="1.1"
+   xmlns="http://www.w3.org/2000/svg">
+   <desc>Zint Generated Symbol
+   </desc>
+
+   <g id="barcode" fill="#000000">
+      <rect x="0" y="0" width="117" height="192" fill="#FFFFFF" />
+      <rect x="0.00" y="170.00" width="20.00" height="4.00" />
+      <rect x="0.00" y="164.00" width="16.00" height="4.00" />
+      <rect x="0.00" y="156.00" width="4.00" height="4.00" />
+      <rect x="0.00" y="146.00" width="4.00" height="8.00" />
+      <rect x="0.00" y="138.00" width="4.00" height="6.00" />
+      <rect x="0.00" y="134.00" width="4.00" height="2.00" />
+      <rect x="0.00" y="122.00" width="4.00" height="10.00" />
+      <rect x="0.00" y="118.00" width="4.00" height="2.00" />
+      <rect x="0.00" y="114.00" width="4.00" height="2.00" />
+      <rect x="0.00" y="106.00" width="4.00" height="2.00" />
+      <rect x="0.00" y="92.00" width="4.00" height="8.00" />
+      <rect x="0.00" y="78.00" width="4.00" height="8.00" />
+      <rect x="0.00" y="74.00" width="8.00" height="2.00" />
+      <rect x="0.00" y="70.00" width="16.00" height="2.00" />
+      <rect x="0.00" y="64.00" width="20.00" height="2.00" />
+      <rect x="4.00" y="156.00" width="4.00" height="6.00" />
+      <rect x="4.00" y="148.00" width="4.00" height="6.00" />
+      <rect x="4.00" y="142.00" width="4.00" height="4.00" />
+      <rect x="4.00" y="132.00" width="4.00" height="2.00" />
+      <rect x="4.00" y="122.00" width="4.00" height="4.00" />
+      <rect x="4.00" y="114.00" width="4.00" height="6.00" />
+      <rect x="4.00" y="108.00" width="8.00" height="2.00" />
+      <rect x="4.00" y="104.00" width="4.00" height="2.00" />
+      <rect x="4.00" y="96.00" width="4.00" height="6.00" />
+      <rect x="4.00" y="80.00" width="16.00" height="6.00" />
+      <rect x="8.00" y="158.00" width="4.00" height="4.00" />
+      <rect x="8.00" y="150.00" width="4.00" height="4.00" />
+      <rect x="8.00" y="142.00" width="4.00" height="2.00" />
+      <rect x="8.00" y="130.00" width="4.00" height="10.00" />
+      <rect x="8.00" y="122.00" width="4.00" height="6.00" />
+      <rect x="8.00" y="112.00" width="4.00" height="8.00" />
+      <rect x="8.00" y="98.00" width="8.00" height="2.00" />
+      <rect x="8.00" y="92.00" width="4.00" height="2.00" />
+      <rect x="8.00" y="74.00" width="4.00" height="4.00" />
+      <rect x="12.00" y="160.00" width="8.00" height="2.00" />
+      <rect x="12.00" y="152.00" width="4.00" height="2.00" />
+      <rect x="12.00" y="142.00" width="4.00" height="6.00" />
+      <rect x="12.00" y="134.00" width="4.00" height="6.00" />
+      <rect x="12.00" y="122.00" width="4.00" height="8.00" />
+      <rect x="12.00" y="114.00" width="8.00" height="6.00" />
+      <rect x="12.00" y="102.00" width="4.00" height="8.00" />
+      <rect x="12.00" y="90.00" width="4.00" height="6.00" />
+      <rect x="12.00" y="76.00" width="8.00" height="2.00" />
+      <rect x="16.00" y="166.00" width="8.00" height="2.00" />
+      <rect x="16.00" y="150.00" width="4.00" height="4.00" />
+      <rect x="16.00" y="142.00" width="4.00" height="4.00" />
+      <rect x="16.00" y="136.00" width="4.00" height="2.00" />
+      <rect x="16.00" y="122.00" width="4.00" height="2.00" />
+      <rect x="16.00" y="110.00" width="4.00" height="2.00" />
+      <rect x="16.00" y="100.00" width="4.00" height="4.00" />
+      <rect x="16.00" y="90.00" width="4.00" height="8.00" />
+      <rect x="16.00" y="68.00" width="4.00" height="4.00" />
+      <rect x="20.00" y="66.00" width="4.00" height="2.00" />
+      <rect x="24.00" y="168.00" width="4.00" height="2.00" />
+      <rect x="24.00" y="64.00" width="4.00" height="2.00" />
+      <rect x="28.00" y="166.00" width="82.00" height="2.00" />
+      <rect x="28.00" y="66.00" width="82.00" height="2.00" />
+      <rect x="32.00" y="162.00" width="78.00" height="2.00" />
+      <rect x="32.00" y="152.00" width="68.00" height="2.00" />
+      <rect x="32.00" y="148.00" width="68.00" height="2.00" />
+      <rect x="32.00" y="142.00" width="68.00" height="4.00" />
+      <rect x="32.00" y="134.00" width="68.00" height="2.00" />
+      <rect x="32.00" y="124.00" width="68.00" height="6.00" />
+      <rect x="32.00" y="120.00" width="68.00" height="2.00" />
+      <rect x="32.00" y="110.00" width="68.00" height="8.00" />
+      <rect x="32.00" y="106.00" width="68.00" height="2.00" />
+      <rect x="32.00" y="98.00" width="68.00" height="4.00" />
+      <rect x="32.00" y="92.00" width="68.00" height="4.00" />
+      <rect x="32.00" y="84.00" width="68.00" height="4.00" />
+      <rect x="32.00" y="78.00" width="68.00" height="2.00" />
+      <rect x="32.00" y="74.00" width="78.00" height="2.00" />
+      <rect x="32.00" y="70.00" width="78.00" height="2.00" />
+      <rect x="51.00" y="50.00" width="49.00" height="2.00" />
+      <rect x="51.00" y="44.00" width="49.00" height="4.00" />
+      <rect x="51.00" y="38.00" width="49.00" height="4.00" />
+      <rect x="51.00" y="30.00" width="49.00" height="6.00" />
+      <rect x="51.00" y="26.00" width="49.00" height="2.00" />
+      <rect x="51.00" y="20.00" width="49.00" height="2.00" />
+      <rect x="51.00" y="12.00" width="49.00" height="6.00" />
+      <text x="116.00" y="178.00" text-anchor="end"
+         font-family="Helvetica, sans-serif" font-size="14.0" transform="rotate(270,116.00,178.00)" >
+         0
+      </text>
+      <text x="116.00" y="120.00" text-anchor="middle"
+         font-family="Helvetica, sans-serif" font-size="20.0" transform="rotate(270,116.00,120.00)" >
+         654321
+      </text>
+      <text x="116.00" y="60.00" text-anchor="start"
+         font-family="Helvetica, sans-serif" font-size="14.0" transform="rotate(270,116.00,60.00)" >
+         7
+      </text>
+      <text x="47.00" y="32.00" text-anchor="middle"
+         font-family="Helvetica, sans-serif" font-size="20.0" transform="rotate(270,47.00,32.00)" >
+         89
+      </text>
+   </g>
+</svg>

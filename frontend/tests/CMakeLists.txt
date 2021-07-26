@@ -3,7 +3,7 @@
 # Copyright (C) 2006-2017 Kentaro Fukuchi <kentaro@fukuchi.org>
 # vim: set ts=4 sw=4 et :
 
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.5)
 project(zint_frontend_tests)
 
 enable_testing()

@@ -2,7 +2,7 @@
 # Copyright (C) 2009-2021 Robin Stuart <rstuart114@gmail.com>
 # vim: set ts=4 sw=4 et :
 
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.5)
 project(zint-package)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -17,9 +17,10 @@ add_definitions(-DZINT_VERSION=\"${ZINT_VERSION}\")
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 
-option(ZINT_DEBUG    "Set debug compile flag"          OFF)
+option(ZINT_DEBUG    "Set debug compile flags"         OFF)
 option(ZINT_SANITIZE "Set sanitize compile/link flags" OFF)
 option(ZINT_TEST     "Set test compile flag"           OFF)
+option(ZINT_COVERAGE "Set code coverage flags"         OFF)
 option(ZINT_STATIC   "Build static library"            OFF)
 option(ZINT_USE_PNG  "Build with PNG support"          ON)
 option(ZINT_USE_QT   "Build with QT support"           ON)
@@ -51,6 +52,7 @@ if(ZINT_DEBUG)
     if(CXX_COMPILER_FLAG_G)
         add_compile_options("-g")
     endif()
+
     check_cxx_compiler_flag("-O0" CXX_COMPILER_FLAG_O0)
     if(CXX_COMPILER_FLAG_O0)
         add_compile_options("-O0")
@@ -59,6 +61,21 @@ endif()
 
 if(ZINT_TEST)
     enable_testing()
+endif()
+
+if(ZINT_COVERAGE)
+    set(CMAKE_REQUIRED_LIBRARIES -fprofile-arcs)
+    check_cxx_compiler_flag(--coverage CXX_COMPILER_FLAG_COVERAGE)
+    unset(CMAKE_REQUIRED_LIBRARIES)
+    if(CXX_COMPILER_FLAG_COVERAGE)
+        add_compile_options(--coverage)
+        link_libraries(-fprofile-arcs)
+
+        check_cxx_compiler_flag(-O0 CXX_COMPILER_FLAG_O0)
+        if(CXX_COMPILER_FLAG_O0)
+            add_compile_options(-O0)
+        endif()
+    endif()
 endif()
 
 if(ZINT_SANITIZE)
@@ -70,19 +87,17 @@ if(ZINT_SANITIZE)
             message(STATUS "ZINT_SANITIZE: ignoring for MSVC < 2019")
         endif()
     else()
-        file(WRITE ${CMAKE_BINARY_DIR}/dummy.c "int main() { return 0; }")
         set(SANITIZERS address undefined)
         foreach(sanitizer IN ITEMS ${SANITIZERS})
-            set(sanitizer_flag "-fsanitize=${sanitizer}")
-            try_compile(RESULT_VAR ${CMAKE_BINARY_DIR} ${CMAKE_BINARY_DIR}/dummy.c
-                        COMPILE_DEFINITIONS ${sanitizer_flag}
-                        LINK_LIBRARIES ${sanitizer_flag})
-            message(STATUS "Support for ${sanitizer_flag} available ... ${RESULT_VAR}")
-            if(RESULT_VAR)
-                add_compile_options(${sanitizer_flag})
-                link_libraries(${sanitizer_flag})
+            set(CMAKE_REQUIRED_LIBRARIES -fsanitize=${sanitizer})
+            check_cxx_compiler_flag(-fsanitize=${sanitizer} CXX_COMPILER_FLAG_FSANITIZE_${sanitizer})
+            if(CXX_COMPILER_FLAG_FSANITIZE_${sanitizer})
+                add_compile_options(-fsanitize=${sanitizer})
+                link_libraries(-fsanitize=${sanitizer})
             endif()
+            unset(CMAKE_REQUIRED_LIBRARIES)
         endforeach()
+
         if(NOT ZINT_DEBUG AND CMAKE_CXX_COMPILER_ID MATCHES "GNU")
             # Gives warning on MainWindow::setupUI() and retries (& takes forever) if var-tracking-assignments enabled
             add_compile_options(-fno-var-tracking-assignments)

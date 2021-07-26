@@ -222,6 +222,9 @@ static void test_encode(int index, int generate, int debug) {
         /*  8*/ { BARCODE_TELEPEN_NUM, "1X3X", -1, 0, 1, 80, "Verified manually against tec-it",
                     "10101010101110001110001110001110111010111000111010111010101110001110001010101010"
                 },
+        /*  9*/ { BARCODE_TELEPEN_NUM, "3637", -1, 0, 1, 80, "Glyph count 127, check 0; verified manually against tec-it",
+                    "10101010101110001010101010101110111011101110101011101110111011101110001010101010"
+                },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
