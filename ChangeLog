@@ -19,7 +19,8 @@ Changes
   (OUT_BUFFER_INTERMEDIATE)
 - Reduce BMP size by using 1 bit per pixel (except Ultracode)
 - New warn_level field, WARN_FAIL_ALL
-- Add ZPL compatibility mode (preliminary)
+- Add GS1NOCHECK_MODE to input_mode (note was ZPL compatibility mode
+  WARN_ZPL_COMPAT to warn_level)
 - Remove version info from zint.h and put in zintconfig.h via zintconfig.h.in
 - Add ZBarcode_Cap()
 - Add GUI symbology filter, separate settings for each symbology
@@ -44,6 +45,7 @@ Changes
   sanitizer flag detection, and many other improvements, props Alonso Schaich
 - PLESSEY: add options NCR weighted mod-10, hide check digit(s) in HRT
 - Fuller error messages; more comments zint.h
+- POSTNET/PLANET: allow up to 38 chars (ZINT_WARN_NONCOMPLIANT) (see [d7ac9c])
 
 Bugs
 ----
@@ -76,6 +78,14 @@ Bugs
 - ZBarcode_Encode: don't reinit symbol->outfile, props Alonso Schaich
 - CODEONE: is_last_single_ascii() out-of-bounds, #232 CI-Fuzz, props Jan Schrewe
 - library: compat symbology 39 fix; ISBN: "X" check
+- backend/CMakeLists.txt: output dir for zintconfig.h, props Andre Maute (#238)
+- UPCE/UPCE_CC: allow check digit (same as UPCA/UPCA_CC) so selecting composite
+  doesn't give error
+- bmp/emf/ps.c: allow for foreground colour in ULTRA
+- bmp/gif/pcx.c: allow for BARCODE_STDOUT (fflush/fclose)
+- ps.c: fix buffer overflow on colour_to_pscolor() CMYK
+- composite: fix buffer overflow for large linear and small composite
+- composite: clear errtxt when bumping from CC-A -> CC-B -> CC-C
 
 
 Version 2.9.1 2020-08-04
