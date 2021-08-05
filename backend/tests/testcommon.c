@@ -2428,8 +2428,10 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
         } else {
             bwipp_row_height[r] = symbol->row_height[r] ? symbol->row_height[r] : linear_row_height;
         }
-        /*fprintf(stderr, "bwipp_row_height[%d] %d, symbol->row_height[%d] %d\n",
-                    r, bwipp_row_height[r], r, symbol->row_height[r]);*/
+        if ((symbol->debug & ZINT_DEBUG_TEST_PRINT) && !(symbol->debug & ZINT_DEBUG_TEST_LESS_NOISY)) {
+            fprintf(stderr, "bwipp_row_height[%d] %d, symbol->row_height[%d] %g\n",
+                        r, bwipp_row_height[r], r, symbol->row_height[r]);
+        }
     }
 
     if ((symbol->input_mode & 0x07) == UNICODE_MODE && ZBarcode_Cap(symbology, ZINT_CAP_ECI)

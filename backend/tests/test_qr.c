@@ -269,6 +269,7 @@ static void test_qr_input(int index, int generate, int debug) {
         /*123*/ { UNICODE_MODE, 170, -1, "?", 0, 170, "78 0A A4 01 3F 00 EC 11 EC", "ECI-170 B1 (ASCII invariant)" },
         /*124*/ { DATA_MODE, 899, -1, "\200", 0, 899, "78 38 34 01 80 00 EC 11 EC", "ECI-899 B1 (8-bit binary)" },
         /*125*/ { UNICODE_MODE, 900, -1, "é", 0, 900, "78 38 44 02 C3 A9 00 EC 11", "ECI-900 B2 (no conversion)" },
+        /*126*/ { UNICODE_MODE, 16384, -1, "é", 0, 16384, "7C 04 00 04 02 C3 A9 00 EC", "ECI-16384 B2 (no conversion)" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -333,6 +334,7 @@ static void test_qr_gs1(int index, int generate, int debug) {
         /*  9*/ { GS1_MODE, "[91]%%%[20]12", 0, "52 06 99 6D A9 B5 36 A6 B0 00 21 00 EC", "A10(13)" },
         /* 10*/ { GS1_MODE, "[91]A%%%%1234567890123AA%", 0, "52 05 99 63 D1 B5 36 A6 D4 98 40 D1 ED C8 C5 40 C3 20 21 CC DA 80", "A7(11) N13 A3(4)" },
         /* 11*/ { GS1_MODE, "[91]%23%%6789%%%34567%%%%234%%%%%", 0, "(34) 52 17 19 6D A8 17 76 A6 D4 22 A5 C7 6A 6D 4D A8 22 C7 39 61 DA 9B 53 6A 6B 01 17 B5", "A31(46)" },
+        /* 12*/ { GS1_MODE, "[91]ABCDEFGHI[92]ABCDEF", 0, "52 0A 19 63 9A 8A 54 2A E1 6A 06 5C E6 A2 95 0A", "A20(23)" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -1450,6 +1452,7 @@ static void test_microqr_options(int index, int debug) {
         /* 46*/ { "ABCDEFGHIJABCDEFGH", 2, 4, 0, 0, 17, -1 }, // 18 alphanumerics, ECC 2, version 4
         /* 47*/ { "ABCDEFGHIJABCDEFGH", 3, 4, ZINT_ERROR_TOO_LONG, -1, 0, -1 },
         /* 48*/ { "ABCDEFGHIJABC", 3, 4, 0, 0, 17, -1 }, // 13 alphanumerics, ECC 3 (Q), version 4
+        /* 49*/ { "123456789012345678901234567890123456", -1, -1, ZINT_ERROR_TOO_LONG, -1, 0, -1 }, // 35 absolute max
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -2139,6 +2142,8 @@ static void test_upnqr_input(int index, int generate, int debug) {
         /*  0*/ { UNICODE_MODE, "ĄŔ", 0, "(415) 70 44 00 02 A1 C0 00 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC", "ECI-4 B2 (ISO 8859-2)" },
         /*  1*/ { UNICODE_MODE, "é", 0, "(415) 70 44 00 01 E9 00 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11", "ECI-4 B1 (ISO 8859-2)" },
         /*  2*/ { UNICODE_MODE, "β", ZINT_ERROR_INVALID_DATA, "Error 572: Invalid character in input data for ECI 4", "β not in ISO 8859-2" },
+        /*  3*/ { DATA_MODE, "\300\241", 0, "(415) 70 44 00 02 C0 A1 00 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC", "ŔĄ" },
+        /*  4*/ { GS1_MODE, "[20]12", ZINT_ERROR_INVALID_OPTION, "Error 220: Selected symbology does not support GS1 mode", "" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -2161,7 +2166,9 @@ static void test_upnqr_input(int index, int generate, int debug) {
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d\n", i, ret, data[i].ret);
-        assert_equal(symbol->eci, 4, "i:%d ZBarcode_Encode symbol->eci %d != 4\n", i, symbol->eci);
+        if (ret < ZINT_ERROR) {
+            assert_equal(symbol->eci, 4, "i:%d ZBarcode_Encode symbol->eci %d != 4\n", i, symbol->eci);
+        }
 
         if (generate) {
             printf("        /*%3d*/ { %s, \"%s\", %s, \"%s\", \"%s\" },\n",

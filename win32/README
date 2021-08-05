@@ -128,7 +128,8 @@ To build lpng use
         -DPNG_STATIC=ON -DPNG_SHARED=OFF -B build
 
 Recent versions of Qt no longer supply a specific component for Visual Studio
-2015, but you can use "MSVC 2017 32-bit" instead as it's compatible.
+2015 32-bit, but you can use "MSVC 2017 32-bit" or "MSVC 2019 32-bit" instead as
+they're compatible.
 
 For information on building a standalone version of Zint Studio using Visual
 Studio 2015, see "frontend_qt\howto_build_qzint_using_msvs2015.txt"

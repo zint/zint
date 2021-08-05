@@ -362,8 +362,8 @@ INTERNAL int code32(struct zint_symbol *symbol, unsigned char source[], int leng
     risultante[6] = '\0';
     /* Plot the barcode using Code 39 */
     error_number = c39(symbol, (unsigned char*) risultante, (int) strlen(risultante));
-    if (error_number != 0) {
-        return error_number;
+    if (error_number != 0) { /* Should never happen */
+        return error_number; /* Not reached */
     }
 
 #ifdef COMPLIANT_HEIGHTS

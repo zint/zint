@@ -305,7 +305,7 @@ INTERNAL int c39(struct zint_symbol *symbol, unsigned char source[], int length)
            width = (C + 2) * (3 * N + 6) * X + (C + 1) * I = (C + 2) * 9 + C + 1) * X = (10 * C + 19) */
         height = (float) ((10.0 * (symbol->option_2 == 1 ? length + 1 : length) + 19.0) * 0.15);
         /* Using 50 as default as none recommended */
-        error_number = set_height(symbol, height , height > 50.0f ? height : 50.0f, 0.0f, 0 /*no_errtxt*/);
+        error_number = set_height(symbol, height, height > 50.0f ? height : 50.0f, 0.0f, 0 /*no_errtxt*/);
     }
 #else
     height = 50.0f;

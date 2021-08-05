@@ -753,9 +753,6 @@ INTERNAL int ean_128_cc(struct zint_symbol *symbol, unsigned char source[], int 
     indexchaine = 0;
 
     mode = parunmodd(reduced[indexchaine]);
-    if (reduced[indexchaine] == '[') {
-        mode = ABORC;
-    }
 
     do {
         list[1][indexliste] = mode;
@@ -776,15 +773,16 @@ INTERNAL int ean_128_cc(struct zint_symbol *symbol, unsigned char source[], int 
     dxsmooth(list, &indexliste);
 
     /* Put set data into set[] */
+    /* Note as control chars not permitted in GS1, no reason to ever be in Set A, but cases left in anyway */
     read = 0;
     for (i = 0; i < indexliste; i++) {
         for (j = 0; j < list[0][i]; j++) {
             switch (list[1][i]) {
-                case SHIFTA: set[read] = 'a';
+                case SHIFTA: set[read] = 'a'; /* Not reached */
                     break;
-                case LATCHA: set[read] = 'A';
+                case LATCHA: set[read] = 'A'; /* Not reached */
                     break;
-                case SHIFTB: set[read] = 'b';
+                case SHIFTB: set[read] = 'b'; /* Not reached */
                     break;
                 case LATCHB: set[read] = 'B';
                     break;
@@ -841,12 +839,12 @@ INTERNAL int ean_128_cc(struct zint_symbol *symbol, unsigned char source[], int 
     }
 
     /* Now we can calculate how long the barcode is going to be - and stop it from
-    being too long */
+       being too long */
     last_set = set[0];
     glyph_count = 0.0f;
     for (i = 0; i < reduced_length; i++) {
         if ((set[i] == 'a') || (set[i] == 'b')) {
-            glyph_count = glyph_count + 1.0f;
+            glyph_count = glyph_count + 1.0f; /* Not reached */
         }
         if (((set[i] == 'A') || (set[i] == 'B')) || (set[i] == 'C')) {
             if (set[i] != last_set) {
@@ -869,7 +867,7 @@ INTERNAL int ean_128_cc(struct zint_symbol *symbol, unsigned char source[], int 
     /* So now we know what start character to use - we can get on with it! */
     switch (set[0]) {
         case 'A': /* Start A */
-            strcat(dest, C128Table[103]);
+            strcat(dest, C128Table[103]); /* Not reached */
             values[0] = 103;
             break;
         case 'B': /* Start B */
@@ -893,7 +891,7 @@ INTERNAL int ean_128_cc(struct zint_symbol *symbol, unsigned char source[], int 
 
         if ((read != 0) && (set[read] != set[read - 1])) { /* Latch different code set */
             switch (set[read]) {
-                case 'A': strcat(dest, C128Table[101]);
+                case 'A': strcat(dest, C128Table[101]); /* Not reached */
                     values[bar_characters] = 101;
                     bar_characters++;
                     break;
@@ -910,7 +908,7 @@ INTERNAL int ean_128_cc(struct zint_symbol *symbol, unsigned char source[], int 
 
         if ((set[read] == 'a') || (set[read] == 'b')) {
             /* Insert shift character */
-            strcat(dest, C128Table[98]);
+            strcat(dest, C128Table[98]); /* Not reached */
             values[bar_characters] = 98;
             bar_characters++;
         }
@@ -919,7 +917,7 @@ INTERNAL int ean_128_cc(struct zint_symbol *symbol, unsigned char source[], int 
             switch (set[read]) { /* Encode data characters */
                 case 'A':
                 case 'a':
-                    c128_set_a(reduced[read], dest, values, &bar_characters);
+                    c128_set_a(reduced[read], dest, values, &bar_characters); /* Not reached */
                     read++;
                     break;
                 case 'B':
@@ -950,7 +948,7 @@ INTERNAL int ean_128_cc(struct zint_symbol *symbol, unsigned char source[], int 
         case 2:
             /* CC-A or CC-B 2D component */
             switch (set[reduced_length - 1]) {
-                case 'A': linkage_flag = 100;
+                case 'A': linkage_flag = 100; /* Not reached */
                     break;
                 case 'B': linkage_flag = 99;
                     break;
@@ -961,7 +959,7 @@ INTERNAL int ean_128_cc(struct zint_symbol *symbol, unsigned char source[], int 
         case 3:
             /* CC-C 2D component */
             switch (set[reduced_length - 1]) {
-                case 'A': linkage_flag = 99;
+                case 'A': linkage_flag = 99; /* Not reached */
                     break;
                 case 'B': linkage_flag = 101;
                     break;

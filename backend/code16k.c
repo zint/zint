@@ -152,9 +152,6 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int len
     indexchaine = 0;
 
     mode = parunmodd(source[indexchaine]);
-    if ((gs1) && (source[indexchaine] == '[')) {
-        mode = ABORC;
-    } /* FNC1 */
 
     do {
         list[1][indexliste] = mode;

@@ -82,6 +82,66 @@ static void test_utf8_to_unicode(int index, int debug) {
     testFinish();
 }
 
+static void test_set_height(int index, int debug) {
+
+    struct item {
+        int rows;
+        int row_height[20];
+        float height;
+
+        float min_row_height;
+        float default_height;
+        float max_height;
+        int no_errtxt;
+
+        int ret;
+        float expected_height;
+        char *expected_errtxt;
+        char *comment;
+    };
+    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    struct item data[] = {
+        /*  0*/ { 0, { 0 }, 0, 0, 0, 0, 0, 0, 0.5, "", "" },
+        /*  1*/ { 2, { 1, 1 }, 2, 0, 0, 0, 0, 0, 2, "", "zero_count == 0, fixed height only" },
+        /*  2*/ { 2, { 1, 1 }, 2, 0, 0, 1, 1, ZINT_WARN_NONCOMPLIANT, 2, "", "zero_count == 0, height < max height" },
+        /*  3*/ { 2, { 1, 1 }, 2, 0, 0, 1, 0, ZINT_WARN_NONCOMPLIANT, 2, "248: Height not compliant with standards", "zero_count == 0, height < max height" },
+        /*  4*/ { 2, { 2, 0 }, 2, 0, 0, 0, 0, 0, 2.5, "", "zero_count != 0, height 2" },
+        /*  5*/ { 2, { 2, 0 }, 2, 1, 0, 0, 1, ZINT_WARN_NONCOMPLIANT, 2.5, "", "zero_count != 0, row_height < min_row_height" },
+        /*  6*/ { 2, { 2, 0 }, 2, 1, 0, 0, 0, ZINT_WARN_NONCOMPLIANT, 2.5, "247: Height not compliant with standards", "zero_count != 0, row_height < min_row_height" },
+        /*  7*/ { 2, { 2, 0 }, 0, 0, 20, 0, 0, 0, 22, "", "zero_count != 0, default_height 20" },
+        /*  8*/ { 2, { 2, 0 }, 20, 0, 20, 0, 0, 0, 20, "", "zero_count != 0, height 20" },
+        /*  9*/ { 2, { 2, 0 }, 0, 2, 0, 0, 0, 0, 4, "", "zero_count != 0, min_row_height 2" },
+    };
+    int data_size = ARRAY_SIZE(data);
+    int i, ret;
+
+    struct zint_symbol symbol;
+
+    testStart("set_height");
+
+    symbol.debug = debug;
+
+    for (i = 0; i < data_size; i++) {
+        int j;
+
+        if (index != -1 && i != index) continue;
+
+        memset(&symbol, 0, sizeof(symbol));
+        symbol.rows = data[i].rows;
+        for (j = 0; j < ARRAY_SIZE(data[i].row_height); j++) {
+            symbol.row_height[j] = data[i].row_height[j];
+        }
+        symbol.height = data[i].height;
+
+        ret = set_height(&symbol, data[i].min_row_height, data[i].default_height, data[i].max_height, data[i].no_errtxt);
+        assert_equal(ret, data[i].ret, "i:%d ret %d != %d\n", i, ret, data[i].ret);
+        assert_equal(symbol.height, data[i].expected_height, "i:%d symbol.height %g != %g\n", i, symbol.height, data[i].expected_height);
+        assert_zero(strcmp(symbol.errtxt, data[i].expected_errtxt), "i:%d errtxt %s != %s\n", i, symbol.errtxt, data[i].expected_errtxt);
+    }
+
+    testFinish();
+}
+
 static void test_is_valid_utf8(int index) {
 
     struct item {
@@ -158,8 +218,9 @@ int main(int argc, char *argv[]) {
 
     testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
         { "test_utf8_to_unicode", test_utf8_to_unicode, 1, 0, 1 },
-        { "test_debug_test_codeword_dump_int", test_debug_test_codeword_dump_int, 1, 0, 1 },
+        { "test_set_height", test_set_height, 1, 0, 1 },
         { "test_is_valid_utf8", test_is_valid_utf8, 1, 0, 0 },
+        { "test_debug_test_codeword_dump_int", test_debug_test_codeword_dump_int, 1, 0, 1 },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

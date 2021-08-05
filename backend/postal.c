@@ -701,6 +701,8 @@ INTERNAL int japan_post(struct zint_symbol *symbol, unsigned char source[], int 
     }
     strcat(pattern, JapanTable[posn(KASUTSET, check_char)]);
 
+    if (symbol->debug & ZINT_DEBUG_PRINT) printf("Check: %d, char: %c\n", check, check_char);
+
     strcat(pattern, "31"); /* Stop */
 
     /* Resolve pattern to 4-state symbols */

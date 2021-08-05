@@ -2700,8 +2700,8 @@ INTERNAL int upnqr(struct zint_symbol *symbol, unsigned char source[], int lengt
                 mode[i] = 'B';
             }
             break;
-        case GS1_MODE:
-            strcpy(symbol->errtxt, "571: UPNQR does not support GS-1 encoding");
+        case GS1_MODE: /* Should never happen as checked before being called */
+            strcpy(symbol->errtxt, "571: UPNQR does not support GS-1 encoding"); /* Not reached */
             return ZINT_ERROR_INVALID_OPTION;
             break;
         case UNICODE_MODE:

@@ -552,7 +552,7 @@ static int pdf417(struct zint_symbol *symbol, unsigned char chaine[], const int 
                     break;
                 case NUM: printf("Number\n");
                     break;
-                default: printf("ERROR\n");
+                default: printf("ERROR\n"); /* Should never happen */ /* Not reached */
                     break;
             }
         }
@@ -610,7 +610,7 @@ static int pdf417(struct zint_symbol *symbol, unsigned char chaine[], const int 
     assert(mclength > 0); /* Suppress clang-analyzer-core.uninitialized.Assign warning */
 
     if (debug) {
-        printf("\nCompressed data stream:\n");
+        printf("\nCompressed data stream (%d):\n", mclength);
         for (i = 0; i < mclength; i++) {
             printf("%d ", chainemc[i]);
         }
@@ -642,9 +642,7 @@ static int pdf417(struct zint_symbol *symbol, unsigned char chaine[], const int 
         return ZINT_ERROR_TOO_LONG;
     }
 
-    if (symbol->option_2 > 30) {
-        symbol->option_2 = 30;
-    } else if (symbol->option_2 < 1) {
+    if (symbol->option_2 < 1) {
         symbol->option_2 = (int) (0.5 + sqrt((longueur + k) / 3.0));
     }
     if (((longueur + k) / symbol->option_2) > 90) {
@@ -717,7 +715,7 @@ static int pdf417(struct zint_symbol *symbol, unsigned char chaine[], const int 
     }
     
     if (debug) {
-        printf("Complete CW string:\n");
+        printf("Complete CW string (%d):\n", mclength);
         for (i = 0; i < mclength; i++) {
             printf("%d ", chainemc[i]);
         }
@@ -731,6 +729,8 @@ static int pdf417(struct zint_symbol *symbol, unsigned char chaine[], const int 
 
     symbol->rows = mclength / symbol->option_2;
     assert(symbol->rows > 0); /* Suppress clang-analyzer-core.DivideZero warning */
+
+    if (debug) printf("\nSymbol size:\n%d columns x %d rows\n", symbol->option_2, symbol->rows);
 
     /* 818 - The CW string is finished */
     c1 = (symbol->rows - 1) / 3;
@@ -801,19 +801,17 @@ INTERNAL int pdf417enc(struct zint_symbol *symbol, unsigned char source[], int l
         strcpy(symbol->errtxt, "460: Security value out of range");
         if (symbol->warn_level == WARN_FAIL_ALL) {
             return ZINT_ERROR_INVALID_OPTION;
-        } else {
-            symbol->option_1 = -1;
-            error_number = ZINT_WARN_INVALID_OPTION;
         }
+        symbol->option_1 = -1;
+        error_number = ZINT_WARN_INVALID_OPTION;
     }
     if ((symbol->option_2 < 0) || (symbol->option_2 > 30)) {
         strcpy(symbol->errtxt, "461: Number of columns out of range");
         if (symbol->warn_level == WARN_FAIL_ALL) {
             return ZINT_ERROR_INVALID_OPTION;
-        } else {
-            symbol->option_2 = 0;
-            error_number = ZINT_WARN_INVALID_OPTION;
         }
+        symbol->option_2 = 0;
+        error_number = ZINT_WARN_INVALID_OPTION;
     }
 
     /* 349 */
@@ -877,7 +875,7 @@ INTERNAL int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], in
                     break;
                 case NUM: printf("NUMBER\n");
                     break;
-                default: printf("*ERROR*\n");
+                default: printf("*ERROR*\n"); /* Should never happen */ /* Not reached */
                     break;
             }
         }
@@ -944,14 +942,13 @@ INTERNAL int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], in
         strcpy(symbol->errtxt, "468: Specified width out of range");
         if (symbol->warn_level == WARN_FAIL_ALL) {
             return ZINT_ERROR_INVALID_OPTION;
-        } else {
-            symbol->option_2 = 0;
-            error_number = ZINT_WARN_INVALID_OPTION;
         }
+        symbol->option_2 = 0;
+        error_number = ZINT_WARN_INVALID_OPTION;
     }
 
     if (debug) {
-        printf("\nEncoded Data Stream:\n");
+        printf("\nEncoded Data Stream (%d):\n", mclength);
         for (i = 0; i < mclength; i++) {
             printf("%3d ", chainemc[i]);
         }
@@ -967,10 +964,9 @@ INTERNAL int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], in
         strcpy(symbol->errtxt, "469: Specified symbol size too small for data");
         if (symbol->warn_level == WARN_FAIL_ALL) {
             return ZINT_ERROR_INVALID_OPTION;
-        } else {
-            symbol->option_2 = 0;
-            error_number = ZINT_WARN_INVALID_OPTION;
         }
+        symbol->option_2 = 0;
+        error_number = ZINT_WARN_INVALID_OPTION;
     }
 
     if ((symbol->option_2 == 2) && (mclength > 37)) {
@@ -978,10 +974,9 @@ INTERNAL int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], in
         strcpy(symbol->errtxt, "470: Specified symbol size too small for data");
         if (symbol->warn_level == WARN_FAIL_ALL) {
             return ZINT_ERROR_INVALID_OPTION;
-        } else {
-            symbol->option_2 = 0;
-            error_number = ZINT_WARN_INVALID_OPTION;
         }
+        symbol->option_2 = 0;
+        error_number = ZINT_WARN_INVALID_OPTION;
     }
 
     if ((symbol->option_2 == 3) && (mclength > 82)) {
@@ -989,10 +984,9 @@ INTERNAL int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], in
         strcpy(symbol->errtxt, "471: Specified symbol size too small for data");
         if (symbol->warn_level == WARN_FAIL_ALL) {
             return ZINT_ERROR_INVALID_OPTION;
-        } else {
-            symbol->option_2 = 0;
-            error_number = ZINT_WARN_INVALID_OPTION;
         }
+        symbol->option_2 = 0;
+        error_number = ZINT_WARN_INVALID_OPTION;
     }
 
     if (symbol->option_2 == 1) {
@@ -1098,7 +1092,7 @@ INTERNAL int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], in
 
     if (debug) {
         printf("\nChoose symbol size:\n");
-        printf("%d columns x %d rows\n", symbol->option_2, symbol->rows);
+        printf("%d columns x %d rows, variant %d\n", symbol->option_2, symbol->rows, variant + 1);
         printf("%d data codewords (including %d pads), %d ecc codewords\n", longueur, i, k);
         printf("\n");
     }
@@ -1135,7 +1129,7 @@ INTERNAL int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], in
     }
 
     if (debug) {
-        printf("Encoded Data Stream with ECC:\n");
+        printf("Encoded Data Stream with ECC (%d):\n", mclength);
         for (i = 0; i < mclength; i++) {
             printf("%3d ", chainemc[i]);
         }

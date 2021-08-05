@@ -1434,8 +1434,8 @@ INTERNAL int dotcode(struct zint_symbol *symbol, unsigned char source[], int len
     }
 
     if ((height < 5) || (width < 5)) {
-        if (height < 5 && width < 5) {
-            sprintf(symbol->errtxt, "527: Symbol size %dx%d (WxH) is too small", width, height);
+        if (height < 5 && width < 5) { /* Won't happen as if width < 5, min height is 19 */
+            sprintf(symbol->errtxt, "527: Symbol size %dx%d (WxH) is too small", width, height); /* Not reached */
         } else {
             sprintf(symbol->errtxt, "529: Symbol %s %d is too small",
                     width < 5 ? "width" : "height", width < 5 ? width : height);

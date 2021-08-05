@@ -397,7 +397,7 @@ This specifies a symbol height of 100 times the X-dimension of the symbol.
 4.5 Adjusting whitespace
 ------------------------
 The amount of horizontal whitespace to the left and right of the generated
-barcode can be altered using the –w or --whitesp switch. For example:
+barcode can be altered using the -w or --whitesp switch. For example:
 
 zint -w 10 -d "This Text"
 
@@ -702,15 +702,15 @@ zint -b 58 --binary -d "UTF-8 data"
 ---------------------
 Data can be batch processed by reading from a text file and producing a
 separate barcode image for each line of text in that file. To do this use the
---batch switch. To select the input file from which to read data use the –i
+--batch switch. To select the input file from which to read data use the -i
 option. Zint will automatically detect the end of a line of text (in either
 Unix or Windows formatted text files) and produce a symbol each time it finds
-this. Input files should end with a line feed character – if this is not present
+this. Input files should end with a line feed character - if this is not present
 then Zint will not encode the last line of text, and will warn you that there
 is a problem.
 
 By default Zint will output numbered filenames starting with 00001.png,
-00002.png etc. To change this behaviour use the –o option in combination with
+00002.png etc. To change this behaviour use the -o option in combination with
 --batch using special characters in the output file name as shown in the table
 below:
 
@@ -861,7 +861,7 @@ int main()
 When compiling this code it will need to be linked with the libzint library
 using the -lzint option:
 
-gcc -o simple simple.c –lzint
+gcc -o simple simple.c -lzint
 
 5.2 Encoding and Saving to File
 -------------------------------
@@ -2015,11 +2015,11 @@ standard maximum symbol size of 925 codewords which (at error correction level
 0) allows a maximum data size of 1850 text characters, or 2710 digits. The
 width of the generated PDF417 symbol can be specified at the command line using
 the --cols switch followed by a number between 1 and 30, and the amount of
-check digit information can be specified by using the --secure switch
+error correction information can be specified by using the --secure switch
 followed by a number between 0 and 8 where the number of codewords used for
-check information is determined by 2^(value + 1). If using the API these values
-are assigned to option_2 and option_1 respectively. The default level of check
-information is determined by the amount of data being encoded. This symbology
+error correction is determined by 2^(value + 1). If using the API these values
+are assigned to option_2 and option_1 respectively. The default level of error
+correction is determined by the amount of data being encoded. This symbology
 uses Latin-1 character encoding by default but also supports the ECI encoding
 mechanism. A separate symbology ID can be used to encode Health Industry
 Barcode (HIBC) data which adds a leading '+' character and a modulo-49 check
@@ -3072,7 +3072,7 @@ international standards:
 > ISO/IEC 16022:2006 Information technology - Automatic identification and data
      capture techniques - Data Matrix ECC200 bar code symbology specification
 > ISO/IEC 16023:2000 Information technology - International symbology
-     specification – MaxiCode
+     specification - MaxiCode
 > ISO/IEC 16388:2007 Information technology - Automatic identification and data
      capture techniques - Code 39 bar code symbology specification
 > ISO/IEC 18004:2015 Information technology - Automatic identification and data
@@ -3093,6 +3093,9 @@ international standards:
      (rMQR) bar code symbology specification
 > ISO/IEC 16390:2007 Information technology - Automatic identification and data
      capture techniques - Interleaved 2 of 5 bar code symbology specification
+> ISO/IEC 21471:2020 Information technology - Automatic identification and data
+     capture techniques - Extended rectangular data matrix (DMRE) bar code
+     symbology specification
 > Uniform Symbology Specification Code One (AIM Inc., 1994)
 > ANSI/AIM BC12-1998 - Uniform Symbology Specification Channel Code
 > ANSI/AIM BC6-2000 - Uniform Symbology Specification Code 49
@@ -3100,19 +3103,19 @@ international standards:
 > ANSI/HIBC 2.6-2016 - The Health Industry Bar Code (HIBC) Supplier Labeling
      Standard
 > AIM ISS-X-24 - Uniform Symbology Specification Codablock-F
-> AIMD013 (v 1.34a) – Information technology – Automatic identification and data
-     capture techniques – Bar code symbology specification – DotCode (Revised
-     19th Feb 2009)
+> AIM TSC1705001 (v 4.0 Draft 0.15) - Information technology - Automatic
+     identification and data capture techniques - Bar code symbology
+     specification - DotCode (Revised 28th May 2019)
 > AIMD014 (v 1.63) - Information technology, Automatic identification and data
      capture techniques - Bar code symbology specification - Grid Matrix
      (Released 9th Dec 2008)
-> AIMD/TSC15032-43 (v 0.99c) - International Technical Specification –
+> AIMD/TSC15032-43 (v 0.99c) - International Technical Specification -
      Ultracode Symbology (Draft) (Released 4th Nov 2015)
 > GS1 General Specifications Release 21.0.1 (Jan 2021)
-> AIM ITS/04-001 International Technical Standard – Extended Channel
+> AIM ITS/04-001 International Technical Standard - Extended Channel
      Interpretations Part 1: Identification Schemes and Protocol (Released 24th
      May 2004)
-> AIM ITS/04-023 International Technical Standard – Extended Channel
+> AIM ITS/04-023 International Technical Standard - Extended Channel
      Interpretations Part 3: Register (Released 15th July 2004)
 
 

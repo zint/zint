@@ -451,10 +451,6 @@ static int c40text_cnt(const int current_mode, const int gs1, unsigned char inpu
         return 2;
     }
     cnt = 1;
-    if (input & 0x80) {
-        cnt += 2;
-        input = input - 128;
-    }
     if ((current_mode == C1_C40 && c40_shift[input]) || (current_mode == C1_TEXT && text_shift[input])) {
         cnt += 1;
     }
@@ -814,7 +810,7 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigne
         if (cte_p >= 1) {
             int cws_remaining = codewords_remaining(symbol, tp);
 
-            /* Note doing strict interpretation of spec here (same as BWIPP), unlike in Data Matrix case */
+            /* Note doing strict interpretation of spec here (same as BWIPP), as now also done in Data Matrix case */
             if (cws_remaining == 1 && cte_p == 1 && isc40text(current_mode, source[sp - 1])) {
                 /* 2.2.2.2 "...except when a single symbol character is left at the end before the first
                    error correction character. This single character is encoded in the ASCII code set." */
