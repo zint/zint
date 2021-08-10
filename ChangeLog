@@ -46,6 +46,8 @@ Changes
 - PLESSEY: add options NCR weighted mod-10, hide check digit(s) in HRT
 - Fuller error messages; more comments zint.h
 - POSTNET/PLANET: allow up to 38 chars (ZINT_WARN_NONCOMPLIANT) (see [d7ac9c])
+- RMQR: update to new draft ISO/IEC JTC1/SC31N000 (Draft 2019-6-24)
+- ULTRA: update max size and min cols based on BWIPP 2021-07-14 update
 
 Bugs
 ----
@@ -86,6 +88,8 @@ Bugs
 - ps.c: fix buffer overflow on colour_to_pscolor() CMYK
 - composite: fix buffer overflow for large linear and small composite
 - composite: clear errtxt when bumping from CC-A -> CC-B -> CC-C
+- CODABLOCKF: prevent cols > 62; fix pTestList buffer overflow
+- RMQR: allow for righthand vertical timing pattern in populate_grid()
 
 
 Version 2.9.1 2020-08-04
