@@ -38,7 +38,7 @@ static void test_large(int index, int debug) {
         int option_2;
         char *pattern;
         int length;
-        char* primary;
+        char *primary;
         int ret;
         int expected_rows;
         int expected_width;
@@ -225,7 +225,7 @@ static void test_encode(int index, int generate, int debug) {
         int option_2;
         char *data;
         int length;
-        char* primary;
+        char *primary;
         int ret;
 
         int expected_rows;

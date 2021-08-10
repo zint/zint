@@ -962,6 +962,8 @@ static int cwbit(const unsigned char *fullstream, const int i) {
 
 static void populate_grid(unsigned char *grid, const int h_size, const int v_size, const unsigned char *fullstream,
             const int cw) {
+    const int not_rmqr = v_size == h_size;
+    const int x_start = h_size - (not_rmqr ? 2 : 3); /* For rMQR allow for righthand vertical timing pattern */
     int direction = 1; /* up */
     int row = 0; /* right hand side */
 
@@ -971,10 +973,10 @@ static void populate_grid(unsigned char *grid, const int h_size, const int v_siz
     y = v_size - 1;
     i = 0;
     while (i < n) {
-        int x = (h_size - 2) - (row * 2);
+        int x = x_start - (row * 2);
         int r = y * h_size;
 
-        if ((x < 6) && (v_size == h_size))
+        if ((x < 6) && (not_rmqr))
             x--; /* skip over vertical timing pattern */
 
         if (!(grid[r + (x + 1)] & 0xf0)) {
@@ -2601,6 +2603,10 @@ INTERNAL int microqr(struct zint_symbol *symbol, unsigned char source[], int len
             break;
     }
 
+    if (debug_print) {
+        printf("Version: M%d, Size: %dx%d, ECC: %d, Format %d\n", version + 1, size, size, ecc_level, format);
+    }
+
     format_full = qr_annex_c1[(format << 2) + bitmask];
 
     if (format_full & 0x4000) {
@@ -2837,7 +2843,7 @@ static void setup_rmqr_grid(unsigned char *grid, const int h_size, const int v_s
     }
     if (v_size > 7) {
         // Note for v_size = 9 this overrides the bottom right corner finder pattern
-        for(i = 0; i < 8; i++) {
+        for (i = 0; i < 8; i++) {
             grid[(7 * h_size) + i] = 0x20;
         }
     }
@@ -2845,14 +2851,14 @@ static void setup_rmqr_grid(unsigned char *grid, const int h_size, const int v_s
     /* Add alignment patterns */
     if (h_size > 27) {
         h_version = 0; // Suppress compiler warning [-Wmaybe-uninitialized]
-        for(i = 0; i < 5; i++) {
+        for (i = 0; i < 5; i++) {
             if (h_size == rmqr_width[i]) {
                 h_version = i;
                 break;
             }
         }
 
-        for(i = 0; i < 4; i++) {
+        for (i = 0; i < 4; i++) {
             finder_position = rmqr_table_d1[(h_version * 4) + i];
 
             if (finder_position != 0) {
@@ -3000,7 +3006,7 @@ INTERNAL int rmqr(struct zint_symbol *symbol, unsigned char source[], int length
     if (symbol->option_2 >= 33) {
         // User has specified symbol height only
         version = rmqr_fixed_height_upper_bound[symbol->option_2 - 32];
-        for(i = version - 1; i > rmqr_fixed_height_upper_bound[symbol->option_2 - 33]; i--) {
+        for (i = version - 1; i > rmqr_fixed_height_upper_bound[symbol->option_2 - 33]; i--) {
             est_binlen = getBinaryLength(RMQR_VERSION + i, mode, jisdata, length, gs1, 0 /*eci*/, debug_print);
             if (ecc_level == LEVEL_M) {
                 if (8 * rmqr_data_codewords_M[i] >= est_binlen) {
@@ -3116,7 +3122,6 @@ INTERNAL int rmqr(struct zint_symbol *symbol, unsigned char source[], int length
     grid[(h_size * (v_size - 6)) + (h_size - 5)] = (right_format_info >> 15) & 0x01;
     grid[(h_size * (v_size - 6)) + (h_size - 4)] = (right_format_info >> 16) & 0x01;
     grid[(h_size * (v_size - 6)) + (h_size - 3)] = (right_format_info >> 17) & 0x01;
-
 
     symbol->width = h_size;
     symbol->rows = v_size;

@@ -782,7 +782,7 @@ static void test_draw_string_wrap(int index, int debug) {
         int symbology;
         int output_options;
         char *data;
-        char* text;
+        char *text;
 
         float expected_height;
         int expected_rows;
@@ -931,6 +931,7 @@ static void test_scale(int index, int debug) {
         char *data;
         char *composite;
 
+        int ret_raster;
         float expected_height;
         int expected_rows;
         int expected_width;
@@ -943,30 +944,32 @@ static void test_scale(int index, int debug) {
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /*  0*/ { BARCODE_PDF417, -1, -1, -1, 0, "1", "", 18, 6, 103, 206, 36, 0, 36, 170, 14 }, // With no scaling
-        /*  1*/ { BARCODE_PDF417, -1, -1, -1, 0.6, "1", "", 18, 6, 103, 206 * 0.6, 36 * 0.6, 0 /*set_row*/, 36 * 0.6, 170 * 0.6 + 1, 14 * 0.6 }, // +1 set_col due to some scaling inversion difference
-        /*  2*/ { BARCODE_PDF417, -1, -1, -1, 1.2, "1", "", 18, 6, 103, 206 * 1.2, 36 * 1.2, 0 /*set_row*/, 36 * 1.2, 170 * 1.2 + 1, 14 * 1.2 }, // +1 set_col due to some scaling inversion difference
-        /*  3*/ { BARCODE_PDF417, -1, -1, -1, 0.5, "1", "", 18, 6, 103, 206 * 0.5, 36 * 0.5, 0 /*set_row*/, 36 * 0.5, 170 * 0.5, 14 * 0.5 },
-        /*  4*/ { BARCODE_PDF417, -1, -1, -1, 1.0, "1", "", 18, 6, 103, 206 * 1.0, 36 * 1.0, 0 /*set_row*/, 36 * 1.0, 170 * 1.0, 14 * 1.0 },
-        /*  5*/ { BARCODE_PDF417, -1, -1, -1, 1.5, "1", "", 18, 6, 103, 206 * 1.5, 36 * 1.5, 0 /*set_row*/, 36 * 1.5, 170 * 1.5, 14 * 1.5 },
-        /*  6*/ { BARCODE_PDF417, -1, -1, -1, 2.0, "1", "", 18, 6, 103, 206 * 2.0, 36 * 2.0, 0 /*set_row*/, 36 * 2.0, 170 * 2.0, 14 * 2.0 },
-        /*  7*/ { BARCODE_PDF417, -1, -1, -1, 2.5, "1", "", 18, 6, 103, 206 * 2.5, 36 * 2.5, 0 /*set_row*/, 36 * 2.5, 170 * 2.5, 14 * 2.5 },
-        /*  8*/ { BARCODE_PDF417, -1, -1, -1, 3.0, "1", "", 18, 6, 103, 206 * 3.0, 36 * 3.0, 0 /*set_row*/, 36 * 3.0, 170 * 3.0, 14 * 3.0 },
-        /*  9*/ { BARCODE_PDF417, -1, 3, BARCODE_BOX, 0, "1", "", 18, 6, 103, 218, 48, 0 /*set_row*/, 48, 176, 14 }, // With no scaling
-        /* 10*/ { BARCODE_PDF417, -1, 3, BARCODE_BOX, 0.6, "1", "", 18, 6, 103, 218 * 0.6, 48 * 0.6, 0 /*set_row*/, 48 * 0.6, 176 * 0.6 + 1, 14 * 0.6 }, // +1 set_col due to some scaling inversion difference
-        /* 11*/ { BARCODE_PDF417, -1, 3, BARCODE_BOX, 1.6, "1", "", 18, 6, 103, 218 * 1.6, 48 * 1.6, 0 /*set_row*/, 48 * 1.6, 176 * 1.6 + 1, 14 * 1.6 }, // +1 set_col due to some scaling inversion difference
-        /* 12*/ { BARCODE_PDF417, -1, 3, BARCODE_BOX, 1.5, "1", "", 18, 6, 103, 218 * 1.5, 48 * 1.5, 0 /*set_row*/, 48 * 1.5, 176 * 1.5, 14 * 1.5 },
-        /* 13*/ { BARCODE_PDF417, -1, 3, BARCODE_BOX, 2.5, "1", "", 18, 6, 103, 218 * 2.5, 48 * 2.5, 0 /*set_row*/, 48 * 2.5, 176 * 2.5, 14 * 2.5 },
-        /* 14*/ { BARCODE_PDF417, -1, 3, OUT_BUFFER_INTERMEDIATE, 1.3, "1", "", 18, 6, 103, 206 * 1.3, 36 * 1.3, 0 /*set_row*/, 36 * 1.3, 170 * 1.3 + 1, 14 * 1.3 }, // +1 set_col due to some scaling inversion difference
-        /* 15*/ { BARCODE_DBAR_LTD, -1, -1, BOLD_TEXT, 0, "123456789012", "", 50, 1, 79, 158, 116, 104 /*set_row*/, 114, 20, 2 }, // With no scaling
-        /* 16*/ { BARCODE_DBAR_LTD, -1, -1, BOLD_TEXT, 1.5, "123456789012", "", 50, 1, 79, 158 * 1.5, 116 * 1.5, 104 * 1.5 /*set_row*/, 114 * 1.5, 20 * 1.5, 1 * 1.5 },
-        /* 17*/ { BARCODE_DBAR_LTD, -1, -1, BOLD_TEXT, 2.0, "123456789012", "", 50, 1, 79, 158 * 2.0, 116 * 2.0, 104 * 2.0 /*set_row*/, 114 * 2.0, 20 * 2.0, 1 * 2.0 },
-        /* 18*/ { BARCODE_DBAR_LTD, -1, -1, BOLD_TEXT, 3.5, "123456789012", "", 50, 1, 79, 158 * 3.5, 116 * 3.5, 104 * 3.5 /*set_row*/, 114 * 3.5, 20 * 3.5, 1 * 3.5 },
-        /* 19*/ { BARCODE_UPCA, -1, -1, -1, 0, "12345678904", "", 50, 1, 95, 226, 116, 104 /*set_row*/, 114, 5, 2 }, // With no scaling
-        /* 20*/ { BARCODE_UPCA, -1, -1, -1, 2.5, "12345678904", "", 50, 1, 95, 226 * 2.5, 116 * 2.5, 104 * 2.5 /*set_row*/, 114 * 2.5, 5 * 2.5, 2 * 2.5 },
-        /* 21*/ { BARCODE_UPCA, -1, -1, -1, 4.5, "12345678904", "", 50, 1, 95, 226 * 4.5, 116 * 4.5, 104 * 4.5 /*set_row*/, 114 * 4.5, 5 * 4.5, 2 * 4.5 },
-        /* 22*/ { BARCODE_UPCE_CC, -1, -1, -1, 0, "1234567", "[17]010615[10]A123456\"", 50, 10, 55, 142, 116, 104 /*set_row*/, 115, 11, 2 }, // With no scaling
-        /* 23*/ { BARCODE_UPCE_CC, -1, -1, -1, 2.0, "1234567", "[17]010615[10]A123456\"", 50, 10, 55, 142 * 2, 116 * 2, 104 * 2 + 1 /*set_row*/, 115 * 2, 11 * 2, 2 * 2 }, // +1 set_row
+        /*  0*/ { BARCODE_PDF417, -1, -1, -1, 0, "1", "", 0, 18, 6, 103, 206, 36, 0, 36, 170, 14 }, // With no scaling
+        /*  1*/ { BARCODE_PDF417, -1, -1, -1, 0.6, "1", "", 0, 18, 6, 103, 206 * 0.6, 36 * 0.6, 0 /*set_row*/, 36 * 0.6, 170 * 0.6 + 1, 14 * 0.6 }, // +1 set_col due to some scaling inversion difference
+        /*  2*/ { BARCODE_PDF417, -1, -1, -1, 1.2, "1", "", 0, 18, 6, 103, 206 * 1.2, 36 * 1.2, 0 /*set_row*/, 36 * 1.2, 170 * 1.2 + 1, 14 * 1.2 }, // +1 set_col due to some scaling inversion difference
+        /*  3*/ { BARCODE_PDF417, -1, -1, -1, 0.5, "1", "", 0, 18, 6, 103, 206 * 0.5, 36 * 0.5, 0 /*set_row*/, 36 * 0.5, 170 * 0.5, 14 * 0.5 },
+        /*  4*/ { BARCODE_PDF417, -1, -1, -1, 1.0, "1", "", 0, 18, 6, 103, 206 * 1.0, 36 * 1.0, 0 /*set_row*/, 36 * 1.0, 170 * 1.0, 14 * 1.0 },
+        /*  5*/ { BARCODE_PDF417, -1, -1, -1, 1.5, "1", "", 0, 18, 6, 103, 206 * 1.5, 36 * 1.5, 0 /*set_row*/, 36 * 1.5, 170 * 1.5, 14 * 1.5 },
+        /*  6*/ { BARCODE_PDF417, -1, -1, -1, 2.0, "1", "", 0, 18, 6, 103, 206 * 2.0, 36 * 2.0, 0 /*set_row*/, 36 * 2.0, 170 * 2.0, 14 * 2.0 },
+        /*  7*/ { BARCODE_PDF417, -1, -1, -1, 2.5, "1", "", 0, 18, 6, 103, 206 * 2.5, 36 * 2.5, 0 /*set_row*/, 36 * 2.5, 170 * 2.5, 14 * 2.5 },
+        /*  8*/ { BARCODE_PDF417, -1, -1, -1, 3.0, "1", "", 0, 18, 6, 103, 206 * 3.0, 36 * 3.0, 0 /*set_row*/, 36 * 3.0, 170 * 3.0, 14 * 3.0 },
+        /*  9*/ { BARCODE_PDF417, -1, 3, BARCODE_BOX, 0, "1", "", 0, 18, 6, 103, 218, 48, 0 /*set_row*/, 48, 176, 14 }, // With no scaling
+        /* 10*/ { BARCODE_PDF417, -1, 3, BARCODE_BOX, 0.6, "1", "", 0, 18, 6, 103, 218 * 0.6, 48 * 0.6, 0 /*set_row*/, 48 * 0.6, 176 * 0.6 + 1, 14 * 0.6 }, // +1 set_col due to some scaling inversion difference
+        /* 11*/ { BARCODE_PDF417, -1, 3, BARCODE_BOX, 1.6, "1", "", 0, 18, 6, 103, 218 * 1.6, 48 * 1.6, 0 /*set_row*/, 48 * 1.6, 176 * 1.6 + 1, 14 * 1.6 }, // +1 set_col due to some scaling inversion difference
+        /* 12*/ { BARCODE_PDF417, -1, 3, BARCODE_BOX, 1.5, "1", "", 0, 18, 6, 103, 218 * 1.5, 48 * 1.5, 0 /*set_row*/, 48 * 1.5, 176 * 1.5, 14 * 1.5 },
+        /* 13*/ { BARCODE_PDF417, -1, 3, BARCODE_BOX, 2.5, "1", "", 0, 18, 6, 103, 218 * 2.5, 48 * 2.5, 0 /*set_row*/, 48 * 2.5, 176 * 2.5, 14 * 2.5 },
+        /* 14*/ { BARCODE_PDF417, -1, 3, OUT_BUFFER_INTERMEDIATE, 1.3, "1", "", 0, 18, 6, 103, 206 * 1.3, 36 * 1.3, 0 /*set_row*/, 36 * 1.3, 170 * 1.3 + 1, 14 * 1.3 }, // +1 set_col due to some scaling inversion difference
+        /* 15*/ { BARCODE_DBAR_LTD, -1, -1, BOLD_TEXT, 0, "123456789012", "", 0, 50, 1, 79, 158, 116, 104 /*set_row*/, 114, 20, 2 }, // With no scaling
+        /* 16*/ { BARCODE_DBAR_LTD, -1, -1, BOLD_TEXT, 1.5, "123456789012", "", 0, 50, 1, 79, 158 * 1.5, 116 * 1.5, 104 * 1.5 /*set_row*/, 114 * 1.5, 20 * 1.5, 1 * 1.5 },
+        /* 17*/ { BARCODE_DBAR_LTD, -1, -1, BOLD_TEXT, 2.0, "123456789012", "", 0, 50, 1, 79, 158 * 2.0, 116 * 2.0, 104 * 2.0 /*set_row*/, 114 * 2.0, 20 * 2.0, 1 * 2.0 },
+        /* 18*/ { BARCODE_DBAR_LTD, -1, -1, BOLD_TEXT, 3.5, "123456789012", "", 0, 50, 1, 79, 158 * 3.5, 116 * 3.5, 104 * 3.5 /*set_row*/, 114 * 3.5, 20 * 3.5, 1 * 3.5 },
+        /* 19*/ { BARCODE_UPCA, -1, -1, -1, 0, "12345678904", "", 0, 50, 1, 95, 226, 116, 104 /*set_row*/, 114, 5, 2 }, // With no scaling
+        /* 20*/ { BARCODE_UPCA, -1, -1, -1, 2.5, "12345678904", "", 0, 50, 1, 95, 226 * 2.5, 116 * 2.5, 104 * 2.5 /*set_row*/, 114 * 2.5, 5 * 2.5, 2 * 2.5 },
+        /* 21*/ { BARCODE_UPCA, -1, -1, -1, 4.5, "12345678904", "", 0, 50, 1, 95, 226 * 4.5, 116 * 4.5, 104 * 4.5 /*set_row*/, 114 * 4.5, 5 * 4.5, 2 * 4.5 },
+        /* 22*/ { BARCODE_UPCE_CC, -1, -1, -1, 0, "1234567", "[17]010615[10]A123456\"", 0, 50, 10, 55, 142, 116, 104 /*set_row*/, 115, 11, 2 }, // With no scaling
+        /* 23*/ { BARCODE_UPCE_CC, -1, -1, -1, 2.0, "1234567", "[17]010615[10]A123456\"", 0, 50, 10, 55, 142 * 2, 116 * 2, 104 * 2 + 1 /*set_row*/, 115 * 2, 11 * 2, 2 * 2 }, // +1 set_row
+        /* 24*/ { BARCODE_MAXICODE, -1, -1, -1, 0, "1234567890", "", 0, 165, 33, 30, 299, 298, 3 /*set_row*/, 7, 10, 9 }, // With no scaling
+        /* 25*/ { BARCODE_MAXICODE, -1, -1, -1, 0.1, "1234567890", "", ZINT_WARN_NONCOMPLIANT, 165, 33, 30, 60, 65, 0 /*set_row*/, 1, 3, 1 },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -1000,10 +1003,10 @@ static void test_scale(int index, int debug) {
         length = (int) strlen(text);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) text, length);
-        assert_zero(ret, "i:%d ZBarcode_Encode(%d) ret %d != 0 %s\n", i, data[i].symbology, ret, symbol->errtxt);
+        assert_zero(ret, "i:%d ZBarcode_Encode(%d) ret %d != 0 (%s)\n", i, data[i].symbology, ret, symbol->errtxt);
 
         ret = ZBarcode_Buffer(symbol, 0);
-        assert_zero(ret, "i:%d ZBarcode_Buffer(%d) ret %d != 0\n", i, data[i].symbology, ret);
+        assert_equal(ret, data[i].ret_raster, "i:%d ZBarcode_Buffer(%d) ret %d != %d (%s)\n", i, data[i].symbology, ret, data[i].ret_raster, symbol->errtxt);
         assert_nonnull(symbol->bitmap, "i:%d (%d) symbol->bitmap NULL\n", i, data[i].symbology);
 
         if (index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) testUtilBitmapPrint(symbol, NULL, NULL); // ZINT_DEBUG_TEST_PRINT 16
@@ -1015,7 +1018,7 @@ static void test_scale(int index, int debug) {
         assert_equal(symbol->bitmap_height, data[i].expected_bitmap_height, "i:%d (%d) symbol->bitmap_height %d != %d\n", i, data[i].symbology, symbol->bitmap_height, data[i].expected_bitmap_height);
 
         ret = ZBarcode_Print(symbol, 0);
-        assert_zero(ret, "i:%d ZBarcode_Print(%d) ret %d != 0\n", i, data[i].symbology, ret);
+        assert_equal(ret, data[i].ret_raster, "i:%d ZBarcode_Print(%d) ret %d != %d (%s)\n", i, data[i].symbology, ret, data[i].ret_raster, symbol->errtxt);
         assert_zero(remove(symbol->outfile), "i:%d remove(%s) != 0\n", i, symbol->outfile);
 
         assert_nonzero(symbol->bitmap_height >= data[i].expected_set_rows, "i:%d (%d) symbol->bitmap_height %d < expected_set_rows %d\n",

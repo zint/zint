@@ -839,8 +839,8 @@ INTERNAL int aztec(struct zint_symbol *symbol, unsigned char source[], int lengt
     rs_uint_t rs_uint;
 
 #ifdef _MSC_VER
-    unsigned int* data_part;
-    unsigned int* ecc_part;
+    unsigned int *data_part;
+    unsigned int *ecc_part;
 #endif
 
     if ((symbol->input_mode & 0x07) == GS1_MODE) {

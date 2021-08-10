@@ -95,6 +95,7 @@ static void test_input(int index, int debug) {
         /* 51*/ { "01000000000000000C12JQ3U A", ZINT_ERROR_INVALID_DATA, -1, -1 }, // F N N L L N L S S bad 2nd S
         /* 52*/ { "01000000000000000C123JQ4U ", 0, 3, 155, }, // F N N N L L N L S
         /* 53*/ { "01000000000000000C 23JQ4U ", ZINT_ERROR_INVALID_DATA, -1, -1 }, // F N N N L L N L S bad 1st N (non-alpha otherwise matches 2nd pattern)
+        /* 54*/ { "41038422416563762XY1", ZINT_ERROR_INVALID_DATA, -1, -1 },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;

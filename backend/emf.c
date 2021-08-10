@@ -534,7 +534,7 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
         emr_extcreatefontindirectw.elw.out_precision = 0x00; // OUT_DEFAULT_PRECIS
         emr_extcreatefontindirectw.elw.clip_precision = 0x00; // CLIP_DEFAULT_PRECIS
         emr_extcreatefontindirectw.elw.pitch_and_family = 0x02 | (0x02 << 6); // FF_SWISS | VARIABLE_PITCH
-        utfle_copy(emr_extcreatefontindirectw.elw.facename, (unsigned char*) "sans-serif", 10);
+        utfle_copy(emr_extcreatefontindirectw.elw.facename, (unsigned char *) "sans-serif", 10);
         bytecount += 104;
         recordcount++;
 

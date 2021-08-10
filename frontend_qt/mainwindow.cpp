@@ -132,6 +132,7 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags fl)
     scene = new QGraphicsScene(this);
 
     setupUi(this);
+    view->setMinimumHeight(20);
     view->setScene(scene);
 
     restoreGeometry(settings.value("studio/window_geometry").toByteArray());
@@ -635,6 +636,7 @@ void MainWindow::change_options()
         tabMain->insertTab(1, m_optionWidget, tr("Cod&e 128"));
         chkComposite->setText(tr("Add &2D Component (GS1-128 only)"));
         combobox_item_enabled(cmbCompType, 3, true); // CC-C
+        set_smaller_font(m_optionWidget->findChild<QLabel*>("noteC128CompositeEAN"));
         connect(m_optionWidget->findChild<QObject*>("radC128EAN"), SIGNAL(toggled( bool )), SLOT(composite_ean_check()));
         connect(m_optionWidget->findChild<QObject*>("radC128Stand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radC128CSup"), SIGNAL(clicked( bool )), SLOT(update_preview()));
@@ -799,6 +801,7 @@ void MainWindow::change_options()
             m_optionWidget = uiload.load(&file);
             file.close();
             tabMain->insertTab(1, m_optionWidget, tr("DAFT"));
+            set_smaller_font(m_optionWidget->findChild<QLabel*>("noteTrackerRatios"));
             connect(m_optionWidget->findChild<QObject*>("spnDAFTTrackerRatio"), SIGNAL(valueChanged( double )), SLOT(update_preview()));
         }
 
@@ -880,6 +883,7 @@ void MainWindow::change_options()
         m_optionWidget = uiload.load(&file);
         file.close();
         tabMain->insertTab(1, m_optionWidget, tr("Grid M&atrix"));
+        set_smaller_font(m_optionWidget->findChild<QLabel*>("noteGridECC"));
         connect(m_optionWidget->findChild<QObject*>("cmbGridSize"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("cmbGridECC"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("chkGridFullMultibyte"), SIGNAL(stateChanged( int )), SLOT(update_preview()));
@@ -1135,6 +1139,27 @@ void MainWindow::set_gs1_mode(bool gs1_mode)
         chkData->setEnabled(false);
     } else {
         chkData->setEnabled(true);
+    }
+}
+
+void MainWindow::set_smaller_font(QLabel *label)
+{
+    if (label) {
+        const QFont &appFont = QApplication::font();
+        qreal pointSize = appFont.pointSizeF();
+        if (pointSize != -1.0) {
+            QFont font = label->font();
+            pointSize *= 0.9;
+            font.setPointSizeF(pointSize);
+            label->setFont(font);
+        } else {
+            int pixelSize = appFont.pixelSize();
+            if (pixelSize > 1) {
+                QFont font = label->font();
+                font.setPixelSize(pixelSize - 1);
+                label->setFont(font);
+            }
+        }
     }
 }
 

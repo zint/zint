@@ -97,7 +97,7 @@ static const char MicroAutosize[56] = {
 
 /* 866 */
 
-static int quelmode(unsigned char codeascii) {
+static int quelmode(const unsigned char codeascii) {
     if ((codeascii <= '9') && (codeascii >= '0')) {
         return NUM;
     }
@@ -234,7 +234,8 @@ static void pdfsmooth(int liste[2][PDF417_MAX_LEN], int *indexliste) {
 }
 
 /* 547 */
-static void textprocess(int *chainemc, int *mclength, char chaine[], int start, int length, int is_micro) {
+static void textprocess(int *chainemc, int *mclength, const unsigned char chaine[], int start, const int length,
+            const int is_micro) {
     int j, indexlistet, curtable, listet[2][PDF417_MAX_LEN] = {{0}}, chainet[PDF417_MAX_LEN], wnet;
 
     wnet = 0;
@@ -396,7 +397,8 @@ static void textprocess(int *chainemc, int *mclength, char chaine[], int start, 
 }
 
 /* 671 */
-INTERNAL void byteprocess(int *chainemc, int *mclength, unsigned char chaine[], int start, int length, int debug) {
+INTERNAL void byteprocess(int *chainemc, int *mclength, const unsigned char chaine[], int start, const int length,
+                const int debug) {
 
     if (debug) printf("\nEntering byte mode at position %d\n", start);
 
@@ -453,7 +455,7 @@ INTERNAL void byteprocess(int *chainemc, int *mclength, unsigned char chaine[], 
 }
 
 /* 712 */
-static void numbprocess(int *chainemc, int *mclength, char chaine[], int start, int length) {
+static void numbprocess(int *chainemc, int *mclength, const unsigned char chaine[], int start, const int length) {
     int j, loop, dummy[50] = {0}, diviseur, nombre;
     char chainemod[46], chainemult[46];
 
@@ -596,13 +598,13 @@ static int pdf417(struct zint_symbol *symbol, unsigned char chaine[], const int 
     for (i = 0; i < indexliste; i++) {
         switch (liste[1][i]) {
             case TEX: /* 547 - text mode */
-                textprocess(chainemc, &mclength, (char*) chaine, indexchaine, liste[0][i], 0 /*is_micro*/);
+                textprocess(chainemc, &mclength, chaine, indexchaine, liste[0][i], 0 /*is_micro*/);
                 break;
             case BYT: /* 670 - octet stream mode */
                 byteprocess(chainemc, &mclength, chaine, indexchaine, liste[0][i], debug);
                 break;
             case NUM: /* 712 - numeric mode */
-                numbprocess(chainemc, &mclength, (char*) chaine, indexchaine, liste[0][i]);
+                numbprocess(chainemc, &mclength, chaine, indexchaine, liste[0][i]);
                 break;
         }
         indexchaine = indexchaine + liste[0][i];
@@ -920,13 +922,13 @@ INTERNAL int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], in
     for (i = 0; i < indexliste; i++) {
         switch (liste[1][i]) {
             case TEX: /* 547 - text mode */
-                textprocess(chainemc, &mclength, (char*) chaine, indexchaine, liste[0][i], 1 /*is_micro*/);
+                textprocess(chainemc, &mclength, chaine, indexchaine, liste[0][i], 1 /*is_micro*/);
                 break;
             case BYT: /* 670 - octet stream mode */
                 byteprocess(chainemc, &mclength, chaine, indexchaine, liste[0][i], debug);
                 break;
             case NUM: /* 712 - numeric mode */
-                numbprocess(chainemc, &mclength, (char*) chaine, indexchaine, liste[0][i]);
+                numbprocess(chainemc, &mclength, chaine, indexchaine, liste[0][i]);
                 break;
         }
         indexchaine = indexchaine + liste[0][i];

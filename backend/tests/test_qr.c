@@ -76,6 +76,8 @@ static void test_qr_options(int index, int debug) {
         /* 29*/ { 4, 34, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁花ほゃ過法ひなご札17能つーびれ投覧マ勝動エヨ額界よみ作皇ナヲニ打題ヌルヲ掲布益フが。入35能ト権話しこを断兆モヘ細情おじ名4減エヘイハ側機はょが意見想ハ業独案ユヲウ患職ヲ平美さ毎放どぽたけ家没べお化富べ町大シ情魚ッでれ一冬すぼめり。社ト可化モマ試音ばじご育青康演ぴぎ権型固スで能麩ぜらもほ河都しちほラ収90作の年要とだむ部動ま者断チ第41一1米索焦茂げむしれ。測フ物使だて目月国スリカハ夏検にいへ児72告物ゆは載核ロアメヱ登輸どべゃ催行アフエハ議歌ワ河倫剖だ。記タケウ因載ヒイホヤ禁3輩彦関トえび肝区勝ワリロ成禁ぼよ界白ウヒキレ中島べせぜい各安うしぽリ覧生テ基一でむしゃ中新トヒキソ声碁スしび起田ア信大未ゅもばち。", 0, 0, 153, 0 },
         /* 30*/ { 4, -1, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", 0, 0, 177, -1 }, // 1852 alphanumerics max for ECC 4 (H)
         /* 31*/ { 1, -1, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", 0, 0, 177, -1 }, // 4296 alphanumerics max for ECC 1 (L)
+        /* 32*/ { 4, -1, "貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫", 0, -1, 0, -1 }, // 424 Kanji, ECC 4 (Q), version 1
+        /* 33*/ { 4, -1, "貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫", ZINT_ERROR_TOO_LONG, -1, 0, -1 }, // 425 Kanji, ECC 4 (Q), version 1
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -88,7 +90,7 @@ static void test_qr_options(int index, int debug) {
     for (i = 0; i < data_size; i++) {
 
         if (index != -1 && i != index) continue;
-        if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d\n", i);
+        if ((debug & ZINT_DEBUG_TEST_PRINT) && !(debug & ZINT_DEBUG_TEST_LESS_NOISY)) printf("i:%d\n", i);
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -282,7 +284,7 @@ static void test_qr_input(int index, int generate, int debug) {
     for (i = 0; i < data_size; i++) {
 
         if (index != -1 && i != index) continue;
-        if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d\n", i);
+        if ((debug & ZINT_DEBUG_TEST_PRINT) && !(debug & ZINT_DEBUG_TEST_LESS_NOISY)) printf("i:%d\n", i);
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -347,7 +349,7 @@ static void test_qr_gs1(int index, int generate, int debug) {
     for (i = 0; i < data_size; i++) {
 
         if (index != -1 && i != index) continue;
-        if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d\n", i);
+        if ((debug & ZINT_DEBUG_TEST_PRINT) && !(debug & ZINT_DEBUG_TEST_LESS_NOISY)) printf("i:%d\n", i);
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -425,7 +427,7 @@ static void test_qr_optimize(int index, int generate, int debug) {
     for (i = 0; i < data_size; i++) {
 
         if (index != -1 && i != index) continue;
-        if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d\n", i);
+        if ((debug & ZINT_DEBUG_TEST_PRINT) && !(debug & ZINT_DEBUG_TEST_LESS_NOISY)) printf("i:%d\n", i);
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -1271,7 +1273,7 @@ static void test_qr_encode(int index, int generate, int debug) {
     for (i = 0; i < data_size; i++) {
 
         if (index != -1 && i != index) continue;
-        if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d\n", i);
+        if ((debug & ZINT_DEBUG_TEST_PRINT) && !(debug & ZINT_DEBUG_TEST_LESS_NOISY)) printf("i:%d\n", i);
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -1290,14 +1292,12 @@ static void test_qr_encode(int index, int generate, int debug) {
             printf("                },\n");
         } else {
             if (ret < ZINT_ERROR) {
+                int width, row;
                 assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);
                 assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
 
-                if (ret == 0) {
-                    int width, row;
-                    ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
-                    assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, ret, width, row, data[i].data);
-                }
+                ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
+                assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, ret, width, row, data[i].data);
             }
         }
 
@@ -1453,6 +1453,8 @@ static void test_microqr_options(int index, int debug) {
         /* 47*/ { "ABCDEFGHIJABCDEFGH", 3, 4, ZINT_ERROR_TOO_LONG, -1, 0, -1 },
         /* 48*/ { "ABCDEFGHIJABC", 3, 4, 0, 0, 17, -1 }, // 13 alphanumerics, ECC 3 (Q), version 4
         /* 49*/ { "123456789012345678901234567890123456", -1, -1, ZINT_ERROR_TOO_LONG, -1, 0, -1 }, // 35 absolute max
+        /* 50*/ { "貫貫貫貫貫", -1, -1, 0, 0, 17, -1 }, // 5 Kanji max
+        /* 51*/ { "貫貫貫貫貫貫", -1, -1, ZINT_ERROR_TOO_LONG, -1, 0, -1 },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -1610,26 +1612,36 @@ static void test_microqr_padding(int index, int generate, int debug) {
         /*  2*/ { "123", -1, 0, "63 D8 00", "M1, bits left 7" },
         /*  3*/ { "1234", -1, 0, "83 DA 00", "M1, bits left 3" },
         /*  4*/ { "12345", -1, 0, "A3 DA D0", "M1, bits left 0" },
-        /*  5*/ { "12345678", 1, 0, "40 F6 E4 4E 00", "M2-L, bits left 8" },
-        /*  6*/ { "123456789", 1, 0, "48 F6 E4 62 A0", "M2-L, bits left 5" },
-        /*  7*/ { "1234567890", 1, 0, "50 F6 E4 62 A0", "M2-L, bits left 1" },
-        /*  8*/ { "12345678", 2, 0, "40 F6 E4 4E", "M2-M, bits left 0" },
-        /*  9*/ { "ABCDEF", 1, 0, "E3 9A 8A 54 28", "M2-L, bits left 3" },
-        /* 10*/ { "ABCDE", 2, 0, "D3 9A 8A 4E", "M2-M, bits left 0" },
-        /* 11*/ { "123456789012345678901", 1, 0, "2A 3D B9 18 A8 18 AC D4 DC 28 00", "M3-L, bits left 7" },
-        /* 12*/ { "1234567890123456789012", 1, 0, "2C 3D B9 18 A8 18 AC D4 DC 29 00", "M3-L, bits left 3" },
-        /* 13*/ { "12345678901234567890123", 1, 0, "2E 3D B9 18 A8 18 AC D4 DC 29 70", "M3-L, bits left 0" },
-        /* 14*/ { "123456789012345678", 2, 0, "24 3D B9 18 A8 18 AC D4 C0", "M3-M, bits left 1" },
-        /* 15*/ { "ABCDEFGHIJKLMN", 1, 0, "78 E6 A2 95 0A B8 59 EB 99 7E A0", "M3-L, bits left 1" },
-        /* 16*/ { "ABCDEFGHIJK", 2, 0, "6C E6 A2 95 0A B8 59 EA 80", "M3-M, bits left 1" },
-        /* 17*/ { "1234567890123456789012345678901234", 1, 0, "11 0F 6E 46 2A 06 2B 35 37 0A 75 46 FB D0 F6 80", "M4-L, bits left 5" },
-        /* 18*/ { "12345678901234567890123456789012345", 1, 0, "11 8F 6E 46 2A 06 2B 35 37 0A 75 46 FB D0 F6 B4", "M4-L, bits left 1" },
-        /* 19*/ { "123456789012345ABCDEFGHIJK", 1, 0, "07 8F 6E 46 2A 06 2B 25 67 35 14 A8 55 C2 CF 54", "M4-L, bits left 0" },
-        /* 20*/ { "123456789012345678901234567890", 2, 0, "0F 0F 6E 46 2A 06 2B 35 37 0A 75 46 FB D0", "M4-M, bits left 3" },
-        /* 21*/ { "123456789012345678901", 3, 0, "0A 8F 6E 46 2A 06 2B 35 37 0A", "M4-Q, bits left 1" },
-        /* 22*/ { "ABCDEFGHIJKLMNOPQRSTU", 1, 0, "35 39 A8 A5 42 AE 16 7A E6 5F AC 51 95 B4 25 E0", "M4-L, bits left 4" },
-        /* 23*/ { "ABCDEFGHIJKLMNOPQR", 2, 0, "32 39 A8 A5 42 AE 16 7A E6 5F AC 51 95 A0", "M4-M, bits left 5" },
-        /* 24*/ { "ABCDEFGHIJKLM", 3, 0, "2D 39 A8 A5 42 AE 16 7A E6 56", "M4-Q, bits left 0" },
+        /*  5*/ { "123456", 1, 0, "30 F6 E4 00 EC", "M2-L, bits left 15" },
+        /*  6*/ { "1234567", 1, 0, "38 F6 E4 38 00", "M2-L, bits left 11" },
+        /*  7*/ { "12345678", 1, 0, "40 F6 E4 4E 00", "M2-L, bits left 8" },
+        /*  8*/ { "123456789", 1, 0, "48 F6 E4 62 A0", "M2-L, bits left 5" },
+        /*  9*/ { "1234567890", 1, 0, "50 F6 E4 62 A0", "M2-L, bits left 1" },
+        /* 10*/ { "1234", 2, 0, "20 F6 80 EC", "M2-M, bits left 13" },
+        /* 11*/ { "123456", 2, 0, "30 F6 E4 00", "M2-M, bits left 7" },
+        /* 12*/ { "1234567", 2, 0, "38 F6 E4 38", "M2-M, bits left 3" },
+        /* 13*/ { "12345678", 2, 0, "40 F6 E4 4E", "M2-M, bits left 0" },
+        /* 14*/ { "ABCDEF", 1, 0, "E3 9A 8A 54 28", "M2-L, bits left 3" },
+        /* 15*/ { "ABCDE", 2, 0, "D3 9A 8A 4E", "M2-M, bits left 0" },
+        /* 16*/ { "1234567890123456789", 1, 0, "26 3D B9 18 A8 18 AC D4 D2 00 00", "M3-L, bits left 13" },
+        /* 17*/ { "12345678901234567890", 1, 0, "28 3D B9 18 A8 18 AC D4 D6 80 00", "M3-L, bits left 10" },
+        /* 18*/ { "123456789012345678901", 1, 0, "2A 3D B9 18 A8 18 AC D4 DC 28 00", "M3-L, bits left 7" },
+        /* 19*/ { "1234567890123456789012", 1, 0, "2C 3D B9 18 A8 18 AC D4 DC 29 00", "M3-L, bits left 3" },
+        /* 20*/ { "12345678901234567890123", 1, 0, "2E 3D B9 18 A8 18 AC D4 DC 29 70", "M3-L, bits left 0" },
+        /* 21*/ { "1234567890", 2, 0, "14 3D B9 18 A8 00 EC 11 00", "M3-M, bits left 27" },
+        /* 22*/ { "123456789012345678", 2, 0, "24 3D B9 18 A8 18 AC D4 C0", "M3-M, bits left 1" },
+        /* 23*/ { "ABCDEFGHIJKLMN", 1, 0, "78 E6 A2 95 0A B8 59 EB 99 7E A0", "M3-L, bits left 1" },
+        /* 24*/ { "ABCDEFGHIJK", 2, 0, "6C E6 A2 95 0A B8 59 EA 80", "M3-M, bits left 1" },
+        /* 25*/ { "1234567890123456789012345678", 1, 0, "0E 0F 6E 46 2A 06 2B 35 37 0A 75 46 F0 00 EC 11", "M4-L, bits left 25" },
+        /* 26*/ { "123456789012345678901234567890", 1, 0, "0F 0F 6E 46 2A 06 2B 35 37 0A 75 46 FB D0 00 EC", "M4-L, bits left 19" },
+        /* 27*/ { "1234567890123456789012345678901234", 1, 0, "11 0F 6E 46 2A 06 2B 35 37 0A 75 46 FB D0 F6 80", "M4-L, bits left 5" },
+        /* 28*/ { "12345678901234567890123456789012345", 1, 0, "11 8F 6E 46 2A 06 2B 35 37 0A 75 46 FB D0 F6 B4", "M4-L, bits left 1" },
+        /* 29*/ { "123456789012345ABCDEFGHIJK", 1, 0, "07 8F 6E 46 2A 06 2B 25 67 35 14 A8 55 C2 CF 54", "M4-L, bits left 0" },
+        /* 30*/ { "123456789012345678901234567890", 2, 0, "0F 0F 6E 46 2A 06 2B 35 37 0A 75 46 FB D0", "M4-M, bits left 3" },
+        /* 31*/ { "123456789012345678901", 3, 0, "0A 8F 6E 46 2A 06 2B 35 37 0A", "M4-Q, bits left 1" },
+        /* 32*/ { "ABCDEFGHIJKLMNOPQRSTU", 1, 0, "35 39 A8 A5 42 AE 16 7A E6 5F AC 51 95 B4 25 E0", "M4-L, bits left 4" },
+        /* 33*/ { "ABCDEFGHIJKLMNOPQR", 2, 0, "32 39 A8 A5 42 AE 16 7A E6 5F AC 51 95 A0", "M4-M, bits left 5" },
+        /* 34*/ { "ABCDEFGHIJKLM", 3, 0, "2D 39 A8 A5 42 AE 16 7A E6 56", "M4-Q, bits left 0" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -1642,6 +1654,7 @@ static void test_microqr_padding(int index, int generate, int debug) {
     for (i = 0; i < data_size; i++) {
 
         if (index != -1 && i != index) continue;
+        if ((debug & ZINT_DEBUG_TEST_PRINT) && !(debug & ZINT_DEBUG_TEST_LESS_NOISY)) printf("i:%d\n", i);
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -1749,11 +1762,12 @@ static void test_microqr_encode(int index, int generate, int debug) {
 
         int expected_rows;
         int expected_width;
+        int bwipp_cmp;
         char *comment;
         char *expected;
     };
     struct item data[] = {
-        /*  0*/ { UNICODE_MODE, 1, -1, -1, "01234567", 0, 13, 13, "ISO 18004 Figure 2 (and I.2) (mask 01)",
+        /*  0*/ { UNICODE_MODE, 1, -1, -1, "01234567", 0, 13, 13, 1, "ISO 18004 Figure 2 (and I.2) (mask 01)",
                     "1111111010101"
                     "1000001011101"
                     "1011101001101"
@@ -1768,7 +1782,7 @@ static void test_microqr_encode(int index, int generate, int debug) {
                     "0001010000110"
                     "1110100110111"
                 },
-        /*  1*/ { UNICODE_MODE, 2, -1, -1, "12345", 0, 13, 13, "ISO 18004 Figure 38 (mask 00)",
+        /*  1*/ { UNICODE_MODE, 2, -1, -1, "12345", 0, 13, 13, 1, "ISO 18004 Figure 38 (mask 00)",
                     "1111111010101"
                     "1000001010000"
                     "1011101011101"
@@ -1783,7 +1797,7 @@ static void test_microqr_encode(int index, int generate, int debug) {
                     "0100100010101"
                     "1111111010011"
                 },
-        /*  2*/ { UNICODE_MODE, 2, -1, 1 << 8, "12345", 0, 13, 13, "ISO 18004 Figure 38, explicit mask 00",
+        /*  2*/ { UNICODE_MODE, 2, -1, 1 << 8, "12345", 0, 13, 13, 1, "ISO 18004 Figure 38, explicit mask 00",
                     "1111111010101"
                     "1000001010000"
                     "1011101011101"
@@ -1798,7 +1812,7 @@ static void test_microqr_encode(int index, int generate, int debug) {
                     "0100100010101"
                     "1111111010011"
                 },
-        /*  3*/ { UNICODE_MODE, 2, -1, ZINT_FULL_MULTIBYTE | 2 << 8, "12345", 0, 13, 13, "Explicit mask 01",
+        /*  3*/ { UNICODE_MODE, 2, -1, ZINT_FULL_MULTIBYTE | 2 << 8, "12345", 0, 13, 13, 1, "Explicit mask 01",
                     "1111111010101"
                     "1000001000001"
                     "1011101001100"
@@ -1813,7 +1827,7 @@ static void test_microqr_encode(int index, int generate, int debug) {
                     "0101010011011"
                     "1110001011101"
                 },
-        /*  4*/ { UNICODE_MODE, 2, -1, 3 << 8, "12345", 0, 13, 13, "Explicit mask 10",
+        /*  4*/ { UNICODE_MODE, 2, -1, 3 << 8, "12345", 0, 13, 13, 1, "Explicit mask 10",
                     "1111111010101"
                     "1000001010001"
                     "1011101001111"
@@ -1828,7 +1842,7 @@ static void test_microqr_encode(int index, int generate, int debug) {
                     "0100011010010"
                     "1111111010011"
                 },
-        /*  5*/ { UNICODE_MODE, 2, -1, ZINT_FULL_MULTIBYTE | 4 << 8, "12345", 0, 13, 13, "Explicit mask 11",
+        /*  5*/ { UNICODE_MODE, 2, -1, ZINT_FULL_MULTIBYTE | 4 << 8, "12345", 0, 13, 13, 1, "Explicit mask 11",
                     "1111111010101"
                     "1000001001110"
                     "1011101010101"
@@ -1843,7 +1857,7 @@ static void test_microqr_encode(int index, int generate, int debug) {
                     "0011100101101"
                     "1010101111001"
                 },
-        /*  6*/ { UNICODE_MODE, 2, -1, 5 << 8, "12345", 0, 13, 13, "Mask > 4 ignored",
+        /*  6*/ { UNICODE_MODE, 2, -1, 5 << 8, "12345", 0, 13, 13, 1, "Mask > 4 ignored",
                     "1111111010101"
                     "1000001010000"
                     "1011101011101"
@@ -1858,7 +1872,7 @@ static void test_microqr_encode(int index, int generate, int debug) {
                     "0100100010101"
                     "1111111010011"
                 },
-        /*  7*/ { UNICODE_MODE, -1, -1, -1, "12345", 0, 11, 11, "Max capacity M1 5 numbers",
+        /*  7*/ { UNICODE_MODE, -1, -1, -1, "12345", 0, 11, 11, 1, "Max capacity M1 5 numbers",
                     "11111110101"
                     "10000010110"
                     "10111010100"
@@ -1871,7 +1885,7 @@ static void test_microqr_encode(int index, int generate, int debug) {
                     "01010001100"
                     "11110000011"
                 },
-        /*  8*/ { UNICODE_MODE, -1, -1, -1, "1234567890", 0, 13, 13, "Max capacity M2-L 10 numbers",
+        /*  8*/ { UNICODE_MODE, -1, -1, -1, "1234567890", 0, 13, 13, 1, "Max capacity M2-L 10 numbers",
                     "1111111010101"
                     "1000001010110"
                     "1011101010001"
@@ -1886,7 +1900,7 @@ static void test_microqr_encode(int index, int generate, int debug) {
                     "0110010100110"
                     "1001101111111"
                 },
-        /*  9*/ { UNICODE_MODE, 2, -1, -1, "12345678", 0, 13, 13, "Max capacity M2-M 8 numbers",
+        /*  9*/ { UNICODE_MODE, 2, -1, -1, "12345678", 0, 13, 13, 1, "Max capacity M2-M 8 numbers",
                     "1111111010101"
                     "1000001011000"
                     "1011101011101"
@@ -1901,7 +1915,7 @@ static void test_microqr_encode(int index, int generate, int debug) {
                     "0101011001100"
                     "1100110101001"
                 },
-        /* 10*/ { UNICODE_MODE, -1, -1, -1, "12345678901234567890123", 0, 15, 15, "Max capacity M3-L 23 numbers",
+        /* 10*/ { UNICODE_MODE, -1, -1, -1, "12345678901234567890123", 0, 15, 15, 1, "Max capacity M3-L 23 numbers",
                     "111111101010101"
                     "100000100110110"
                     "101110100011111"
@@ -1918,7 +1932,7 @@ static void test_microqr_encode(int index, int generate, int debug) {
                     "010011000101101"
                     "100111010001111"
                 },
-        /* 11*/ { UNICODE_MODE, 2, -1, -1, "123456789012345678", 0, 15, 15, "Max capacity M3-L 18 numbers",
+        /* 11*/ { UNICODE_MODE, 2, -1, -1, "123456789012345678", 0, 15, 15, 1, "Max capacity M3-L 18 numbers",
                     "111111101010101"
                     "100000100010110"
                     "101110101101111"
@@ -1935,7 +1949,7 @@ static void test_microqr_encode(int index, int generate, int debug) {
                     "001110000101101"
                     "110011111001111"
                 },
-        /* 12*/ { UNICODE_MODE, -1, -1, -1, "12345678901234567890123456789012345", 0, 17, 17, "Max capacity M4-L 35 numbers",
+        /* 12*/ { UNICODE_MODE, -1, -1, -1, "12345678901234567890123456789012345", 0, 17, 17, 1, "Max capacity M4-L 35 numbers",
                     "11111110101010101"
                     "10000010111010001"
                     "10111010000011001"
@@ -1954,7 +1968,7 @@ static void test_microqr_encode(int index, int generate, int debug) {
                     "01110010010111010"
                     "11001001111110111"
                 },
-        /* 13*/ { UNICODE_MODE, 2, -1, -1, "123456789012345678901234567890", 0, 17, 17, "Max capacity M4-M 30 numbers",
+        /* 13*/ { UNICODE_MODE, 2, -1, -1, "123456789012345678901234567890", 0, 17, 17, 1, "Max capacity M4-M 30 numbers",
                     "11111110101010101"
                     "10000010011010001"
                     "10111010000011001"
@@ -1973,7 +1987,7 @@ static void test_microqr_encode(int index, int generate, int debug) {
                     "00001111000111000"
                     "11100110111110111"
                 },
-        /* 14*/ { UNICODE_MODE, 3, -1, -1, "123456789012345678901", 0, 17, 17, "Max capacity M4-Q 21 numbers",
+        /* 14*/ { UNICODE_MODE, 3, -1, -1, "123456789012345678901", 0, 17, 17, 1, "Max capacity M4-Q 21 numbers",
                     "11111110101010101"
                     "10000010010101101"
                     "10111010010010101"
@@ -1992,7 +2006,7 @@ static void test_microqr_encode(int index, int generate, int debug) {
                     "00000001110011011"
                     "11011110011010100"
                 },
-        /* 15*/ { UNICODE_MODE, -1, -1, -1, "点茗テ点茗テ点茗テ", 0, 17, 17, "Max capacity M4-L 9 Kanji",
+        /* 15*/ { UNICODE_MODE, -1, -1, -1, "点茗テ点茗テ点茗テ", 0, 17, 17, 0, "Max capacity M4-L 9 Kanji; BWIPP doesn't seem to deal with Kanji correctly",
                     "11111110101010101"
                     "10000010111110010"
                     "10111010000011101"
@@ -2016,6 +2030,12 @@ static void test_microqr_encode(int index, int generate, int debug) {
     int i, length, ret;
     struct zint_symbol *symbol;
 
+    char escaped[1024];
+    char bwipp_buf[32768];
+    char bwipp_msg[1024];
+
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); // Only do BWIPP test if asked, too slow otherwise
+
     testStart("test_microqr_encode");
 
     for (i = 0; i < data_size; i++) {
@@ -2031,21 +2051,32 @@ static void test_microqr_encode(int index, int generate, int debug) {
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (generate) {
-            printf("        /*%3d*/ { %s, %d, %d, %s, \"%s\", %s, %d, %d, \"%s\",\n",
+            printf("        /*%3d*/ { %s, %d, %d, %s, \"%s\", %s, %d, %d, %d, \"%s\",\n",
                     i, testUtilInputModeName(data[i].input_mode), data[i].option_1, data[i].option_2, testUtilOption3Name(data[i].option_3),
-                    data[i].data, testUtilErrorName(data[i].ret),
-                    symbol->rows, symbol->width, data[i].comment);
+                    testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), testUtilErrorName(data[i].ret),
+                    symbol->rows, symbol->width, data[i].bwipp_cmp, data[i].comment);
             testUtilModulesPrint(symbol, "                    ", "\n");
             printf("                },\n");
         } else {
             if (ret < ZINT_ERROR) {
+                int width, row;
                 assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);
                 assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
 
-                if (ret == 0) {
-                    int width, row;
-                    ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
-                    assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, ret, width, row, data[i].data);
+                ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
+                assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, ret, width, row, data[i].data);
+
+                if (do_bwipp && testUtilCanBwipp(i, symbol, data[i].option_1, data[i].option_2, data[i].option_3, debug)) {
+                    if (!data[i].bwipp_cmp) {
+                        if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not BWIPP compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                    } else {
+                        ret = testUtilBwipp(i, symbol, data[i].option_1, data[i].option_2, data[i].option_3, data[i].data, length, NULL, bwipp_buf, sizeof(bwipp_buf));
+                        assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+
+                        ret = testUtilBwippCmp(symbol, bwipp_msg, bwipp_buf, data[i].expected);
+                        assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
+                                       i, testUtilBarcodeName(symbol->symbology), ret, bwipp_msg, bwipp_buf, data[i].expected);
+                    }
                 }
             }
         }
@@ -2144,6 +2175,8 @@ static void test_upnqr_input(int index, int generate, int debug) {
         /*  2*/ { UNICODE_MODE, "β", ZINT_ERROR_INVALID_DATA, "Error 572: Invalid character in input data for ECI 4", "β not in ISO 8859-2" },
         /*  3*/ { DATA_MODE, "\300\241", 0, "(415) 70 44 00 02 C0 A1 00 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC", "ŔĄ" },
         /*  4*/ { GS1_MODE, "[20]12", ZINT_ERROR_INVALID_OPTION, "Error 220: Selected symbology does not support GS1 mode", "" },
+        /*  5*/ { UNICODE_MODE, "ĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄ", 0, "(415) 70 44 01 9B A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1", "" },
+        /*  6*/ { UNICODE_MODE, "ĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄ", ZINT_ERROR_TOO_LONG, "Error 573: Input too long for selected symbol", "" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -2306,14 +2339,12 @@ static void test_upnqr_encode(int index, int generate, int debug) {
             printf("               },\n");
         } else {
             if (ret < ZINT_ERROR) {
+                int width, row;
                 assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);
                 assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
 
-                if (ret == 0) {
-                    int width, row;
-                    ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
-                    assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, ret, width, row, data[i].data);
-                }
+                ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
+                assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, ret, width, row, data[i].data);
             }
         }
 
@@ -2382,26 +2413,29 @@ static void test_rmqr_options(int index, int debug) {
         /* 43*/ { "点茗点茗点茗点茗点", 4, 13, ZINT_ERROR_TOO_LONG, -1, 0, 0 },
         /* 44*/ { "点茗点茗点茗点茗点茗点茗点茗点茗点", 4, 20, 0, 0, 13, 77 }, // Max capacity ECC H, version 20 (R13x77), 17 kanji
         /* 45*/ { "点茗点茗点茗点茗点茗点茗点茗点茗点茗", 4, 20, ZINT_ERROR_TOO_LONG, -1, 0, 0 },
-        /* 46*/ { "点茗点茗点茗点茗点茗点茗点茗点茗点点茗点茗点茗点", 4, 26, 0, 0, 15, 99 }, // Max capacity ECC H, version 26 (R15x99), 24 kanji
-        /* 47*/ { "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点点茗", 4, 26, ZINT_ERROR_TOO_LONG, -1, 0, 0 },
+        /* 46*/ { "点茗点茗点茗点茗点茗点茗点茗点茗点点茗点茗点茗点点茗点茗", 4, 26, 0, 0, 15, 99 }, // Max capacity ECC H, version 26 (R15x99), 28 kanji
+        /* 47*/ { "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点", 4, 26, ZINT_ERROR_TOO_LONG, -1, 0, 0 },
         /* 48*/ { "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗", 4, 32, 0, 0, 17, 139 }, // Max capacity ECC H, version 32 (R17x139), 46 kanji
         /* 49*/ { "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点", 4, 32, ZINT_ERROR_TOO_LONG, -1, 0, 0 },
-        /* 50*/ { "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗", -1, 32, 0, 0, 17, 139 }, // ECC auto-set to M, version 32
-        /* 51*/ { "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗", -1, 32, 0, 0, 17, 139 }, // Max capacity ECC M, version 32, 92 kanji
-        /* 52*/ { "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点", 4, 32, ZINT_ERROR_TOO_LONG, -1, 0, 0 },
-        /* 53*/ { "点茗点", -1, 33, 0, 0, 7, 43 }, // ECC auto-set to M, version 33 (R7xAuto-width) auto-sets R7x43
-        /* 54*/ { "点茗点", 4, 33, 0, 0, 7, 59 }, // ECC set to H, version 33 (R7xAuto-width) auto-sets R7x59
-        /* 55*/ { "点茗点", -1, 34, 0, 0, 9, 43 }, // ECC auto-set to H, version 34 (R9xAuto-width) auto-sets R9x43
-        /* 56*/ { "点茗点", -1, 35, 0, 0, 11, 27 }, // ECC auto-set to M, version 35 (R11xAuto-width) auto-sets R11x27
-        /* 57*/ { "点茗点茗点茗点", 4, 35, 0, 0, 11, 59 }, // ECC set to H, version 35 (R11xAuto-width) auto-sets R11x59
-        /* 58*/ { "点茗点茗点茗点", -1, 35, 0, 0, 11, 43 }, // ECC auto-set to M, version 35 (R11xAuto-width) auto-sets R11x43
-        /* 59*/ { "点茗点茗点茗点茗", -1, 36, 0, 0, 13, 43 }, // ECC auto-set to M, version 36 (R13xAuto-width) auto-sets R13x43
-        /* 60*/ { "点茗点茗点茗点茗", 4, 36, 0, 0, 13, 59 }, // ECC set to H, version 36 (R13xAuto-width) auto-sets R13x59
-        /* 61*/ { "点茗点茗点茗点茗点", -1, 37, 0, 0, 15, 43 }, // ECC auto-set to M, version 37 (R15xAuto-width) auto-sets R15x43
-        /* 62*/ { "点茗点茗点茗点茗点", 4, 37, 0, 0, 15, 59 }, // ECC set to H, version 37 (R15xAuto-width) auto-sets R15x59
-        /* 63*/ { "点茗点茗点茗点茗点茗点茗点茗点茗点茗", -1, 38, 0, 0, 17, 43 }, // ECC auto-set to M, version 38 (R17xAuto-width) auto-sets R17x43
-        /* 64*/ { "点茗点茗点茗点茗点茗点茗点茗点茗点茗", 4, 38, 0, 0, 17, 77 }, // ECC set to H, version 38 (R17xAuto-width) auto-sets R17x77
-        /* 65*/ { "点茗点", -1, 39, ZINT_ERROR_INVALID_OPTION, -1, 0, 0 },
+        /* 50*/ { "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗", -1, 32, 0, 0, 17, 139 }, // Max capacity ECC M, version 32, 92 kanji
+        /* 51*/ { "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点", 4, 32, ZINT_ERROR_TOO_LONG, -1, 0, 0 },
+        /* 52*/ { "点茗点", -1, 33, 0, 0, 7, 43 }, // ECC auto-set to M, version 33 (R7xAuto-width) auto-sets R7x43
+        /* 53*/ { "点茗点", 4, 33, 0, 0, 7, 59 }, // ECC set to H, version 33 (R7xAuto-width) auto-sets R7x59
+        /* 54*/ { "点茗点", -1, 34, 0, 0, 9, 43 }, // ECC auto-set to H, version 34 (R9xAuto-width) auto-sets R9x43
+        /* 55*/ { "点茗点", -1, 35, 0, 0, 11, 27 }, // ECC auto-set to M, version 35 (R11xAuto-width) auto-sets R11x27
+        /* 56*/ { "点茗点茗点茗点", 4, 35, 0, 0, 11, 59 }, // ECC set to H, version 35 (R11xAuto-width) auto-sets R11x59
+        /* 57*/ { "点茗点茗点茗点", -1, 35, 0, 0, 11, 43 }, // ECC auto-set to M, version 35 (R11xAuto-width) auto-sets R11x43
+        /* 58*/ { "点茗点茗点茗点茗", -1, 36, 0, 0, 13, 43 }, // ECC auto-set to M, version 36 (R13xAuto-width) auto-sets R13x43
+        /* 59*/ { "点茗点茗点茗点茗", 4, 36, 0, 0, 13, 59 }, // ECC set to H, version 36 (R13xAuto-width) auto-sets R13x59
+        /* 60*/ { "点茗点茗点茗点茗点", -1, 37, 0, 0, 15, 43 }, // ECC auto-set to M, version 37 (R15xAuto-width) auto-sets R15x43
+        /* 61*/ { "点茗点茗点茗点茗点", 4, 37, 0, 0, 15, 59 }, // ECC set to H, version 37 (R15xAuto-width) auto-sets R15x59
+        /* 62*/ { "点茗点茗点茗点茗点茗点茗点茗点茗点茗", -1, 38, 0, 0, 17, 43 }, // ECC auto-set to M, version 38 (R17xAuto-width) auto-sets R17x43
+        /* 63*/ { "点茗点茗点茗点茗点茗点茗点茗点茗点茗", 4, 38, 0, 0, 17, 77 }, // ECC set to H, version 38 (R17xAuto-width) auto-sets R17x77
+        /* 64*/ { "点茗点", -1, 39, ZINT_ERROR_INVALID_OPTION, -1, 0, 0 },
+        /* 65*/ { "点茗点", 4, -1, 0, 0, 13, 27 }, // ECC set to H, auto-sets R13x27
+        /* 66*/ { "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗", 4, -1, 0, 0, 15, 99 }, // ECC set to H, auto-sets R15x99 (max capacity)
+        /* 67*/ { "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点", 4, -1, 0, 0, 17, 99 }, // ECC set to H, auto-sets R17x99
+        /* 68*/ { "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗", 4, -1, 0, 0, 17, 139 }, // ECC set to H, auto-sets R17x139 (max capacity)
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -2573,16 +2607,16 @@ static void test_rmqr_optimize(int index, int generate, int debug) {
         char *comment;
     };
     struct item data[] = {
-        /*  0*/ { UNICODE_MODE, "1", -1, 0, "21 10 EC 11 EC", "N1" },
+        /*  0*/ { UNICODE_MODE, "1", -1, 0, "22 20 EC 11 EC", "N1" },
         /*  1*/ { UNICODE_MODE, "AAA", -1, 0, "46 73 0A 00 EC", "A3" },
-        /*  2*/ { UNICODE_MODE, "0123456789", -1, 0, "2A 03 15 9A 9A 40 EC", " N10 (nayuki.io - pure numeric)" },
+        /*  2*/ { UNICODE_MODE, "0123456789", -1, 0, "34 06 2B 35 34 80 EC", "N10 (nayuki.io - pure numeric)" },
         /*  3*/ { UNICODE_MODE, "ABCDEF", -1, 0, "4C 73 51 4A 85 00 EC", "A6 (nayuki.io - pure alphanumeric)" },
         /*  4*/ { UNICODE_MODE, "wxyz", -1, 0, "71 DD E1 E5 E8", "B4 (nayuki.io - pure byte)" },
         /*  5*/ { UNICODE_MODE, "「魔法少女まどか☆マギカ」って、　ИАИ　ｄｅｓｕ　κα？", -1, 0, "(53) 8E 80 D6 00 4F C0 57 6A B5 C2 B8 14 70 94 81 64 37 A1 8D 0C 50 0D 82 82 14 40 00 80", "K29 (nayuki.io - pure kanji)" },
         /*  6*/ { UNICODE_MODE, "012A", -1, 0, "48 00 43 20 EC", "A4" },
-        /*  7*/ { UNICODE_MODE, "0123A", -1, 0, "24 03 0D 09 40", "N4 A1 (nayuki.io - alpha/numeric)" },
+        /*  7*/ { UNICODE_MODE, "0123A", -1, 0, "28 06 1A 12 80", "N4 A1 (nayuki.io - alpha/numeric)" },
         /*  8*/ { UNICODE_MODE, "0a", -1, 0, "68 C1 84 00 EC", "B2 (nayuki.io - numeric/byte)" },
-        /*  9*/ { UNICODE_MODE, "01a", -1, 0, "22 02 CB 08 EC", "N2 B1 (nayuki.io - numeric/byte)" },
+        /*  9*/ { UNICODE_MODE, "01a", -1, 0, "24 05 96 10 EC", "N2 B1 (nayuki.io - numeric/byte)" },
         /* 10*/ { UNICODE_MODE, "ABCa", -1, 0, "71 05 09 0D 84", "B4 (nayuki.io - alphanumeric/byte)" },
         /* 11*/ { UNICODE_MODE, "ABCDa", -1, 0, "48 73 51 4B 2C 20 EC", "A4 B1 (same bits as B5)" },
         /* 12*/ { UNICODE_MODE, "THE SQUARE ROOT OF 2 IS 1.41421356237309504880168872420969807856967187537694807317667973799", -1, 0, "(48) 46 A9 52 9A A0 D5 42 66 E6 F8 A1 4F 62 3E 56 CC D4 40 2B 98 2C F1 AB 19 2E A2 F8 61", " A26 N65 (nayuki.io - alpha/numeric)" },
@@ -2636,119 +2670,395 @@ static void test_rmqr_encode(int index, int generate, int debug) {
 
     struct item {
         int input_mode;
-        char *data;
         int option_1;
         int option_2;
+        char *data;
         int ret;
 
         int expected_rows;
         int expected_width;
+        int bwipp_cmp;
         char *comment;
         char *expected;
     };
-    // Note very little available to compare these to (BWIPP gives very different results TODO: investigate) so should be considered "unproven"
+    // ISO/IEC JTC1/SC31N000 (Draft 2019-6-24)
     struct item data[] = {
-        /*  0*/ { UNICODE_MODE, "0123456", 4, 11, 0, 11, 27, "Draft ISO 2018-6-8 Annex H I.2, currently no image to compare to",
+        /*  0*/ { UNICODE_MODE, 4, 11, "0123456", 0, 11, 27, 1, "Draft ISO 2019-6-24 Annex I Figure I.2, R11x27-H, same",
                     "111111101010101010101010111"
-                    "100000100110111010101101101"
-                    "101110100001100000010110101"
-                    "101110101111100000001001010"
-                    "101110100100011000101000111"
-                    "100000101110011000111110010"
-                    "111111100110100101001011111"
-                    "000000001101001111010010001"
-                    "111000011011111000011110101"
-                    "100100100010000011111010001"
+                    "100000100110100001110100101"
+                    "101110100001001111010011111"
+                    "101110101111011011110001100"
+                    "101110100101110111111001011"
+                    "100000101110000100111110010"
+                    "111111101111111110001011111"
+                    "000000001111101011010010001"
+                    "111100000010010100111110101"
+                    "101010100110010100111010001"
                     "111010101010101010101011111"
-               },
-        /*  1*/ { UNICODE_MODE, "1234567890123456", 2, 17, 0, 13, 27, "Draft ISO 2018-6-8 6.2 Figure 1 **NOT SAME**",
+                },
+        /*  1*/ { UNICODE_MODE, 2, 17, "12345678901234567890123456", 0, 13, 27, 1, "Draft ISO 2019-6-24 6.2 Figure 1, R13x27-M, same (note data as here not as given in draft)",
                     "111111101010101010101010111"
-                    "100000100001111000111110101"
-                    "101110101100010111110111001"
-                    "101110100110001110010100000"
-                    "101110101111001001101001001"
-                    "100000100010001110011110000"
-                    "111111100000001100000010101"
-                    "000000001111100000010001100"
-                    "111001101110000001110011111"
-                    "011111011101010000100010001"
-                    "100000101000011010101010101"
-                    "101101101100110111000010001"
+                    "100000100001001100010011001"
+                    "101110101100000011001110001"
+                    "101110100110101100000100000"
+                    "101110101110100110110110011"
+                    "100000100011100011001011000"
+                    "111111100100111111000011101"
+                    "000000001010010101010001100"
+                    "110101101011010110010011111"
+                    "011001101010101111100010001"
+                    "100000100111000111101010101"
+                    "100011010010010100000010001"
                     "111010101010101010101011111"
-               },
-        /*  2*/ { UNICODE_MODE, "123456789012", -1, 1, 0, 7, 43, "R7x34 M max numeric 12 digits",
+                },
+        /*  2*/ { UNICODE_MODE, 2, 2, "0123456789012345", 0, 7, 59, 1, "Draft ISO 2019-6-24 7.4.2 Numeric mode Example, R7x59-M, same codewords",
+                    "11111110101010101011101010101010101010111010101010101010111"
+                    "10000010101111011110100001100001100001101100100101100100101"
+                    "10111010100100001011110010110000011110111110111100011011111"
+                    "10111010110001100010010100111010101101101011111000110110001"
+                    "10111010011001000011100111100000110010111011010111011010101"
+                    "10000010101010110110100010111110010010101111101111110010001"
+                    "11111110101010101011101010101010101010111010101010101011111"
+                },
+        /*  3*/ { UNICODE_MODE, 2, 2, "AC-42", 0, 7, 59, 0, "Draft ISO 2019-6-24 7.4.3 Alphanumeric mode Example, R7x59-M, same codewords; BWIPP different encodation",
+                    "11111110101010101011101010101010101010111010101010101010111"
+                    "10000010101111010010110011010101100000101011001111100100101"
+                    "10111010100100100011100100111100011101111100011011111011111"
+                    "10111010110001110110100001101110100111101110000010010110001"
+                    "10111010011000110111111101110000110001111000100110111010101"
+                    "10000010101010111110100011101110011011101101011010110010001"
+                    "11111110101010101011101010101010101010111010101010101011111"
+                },
+        /*  4*/ { UNICODE_MODE, -1, 1, "123456789012", 0, 7, 43, 1, "R7x34-M max numeric 12 digits",
                     "1111111010101010101011101010101010101010111"
-                    "1000001001011011001110111100000000011000101"
-                    "1011101010110010101111101001000111111111111"
-                    "1011101001101000000100111011010101000010001"
-                    "1011101000111001001111110010111101110010101"
-                    "1000001011111101000110100110000000011010001"
+                    "1000001001010111111010100000100011011000101"
+                    "1011101010111000100111101101011010111111111"
+                    "1011101001100110111000000001111111000010001"
+                    "1011101000101100011111100110111110110010101"
+                    "1000001011110111111110101101001010111010001"
                     "1111111010101010101011101010101010101011111"
                 },
-        /*  3*/ { UNICODE_MODE, "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678", 4, 32, 0, 17, 139, "R17x139 H max numeric 178 digits",
+        /*  5*/ { UNICODE_MODE, 4, 32, "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678", 0, 17, 139, 1, "R17x139-H max numeric 178 digits",
                     "1111111010101010101010101011101010101010101010101010101110101010101010101010101010111010101010101010101010101011101010101010101010101010111"
-                    "1000001011001000110010100110111110011010111100010111001010001011000101011111010101101010110111011011111110010110100110010111101000100111001"
-                    "1011101010000000000011101111110000111110100010101011001111101110111000000101100010111111010110100111111010000011100001110011001100010010001"
-                    "1011101010010001001011011110110110001011110111000001111000011010111010001110100001001101110010000101111110100110111111101000000001000010000"
-                    "1011101001001111000111101011001111001111010001011011011110111000111001000100111001110111001001011000101011111111111111001101010011111000111"
-                    "1000001010001010101111010110110110101110111110111100010001000011101011101010001111001001100101001010001001011000111000011111101001010010010"
-                    "1111111010000101010101110011100101000111101010101110100111101111100000110100110101110101010011100011001100010001100000100110111011111110011"
-                    "0000000000011101001101111000100110010011011001110000111000111101011000111111101010000101001011110001000101101110100100100000010010111100100"
-                    "1111010111011011000110010101111110011000010100000011011110010011100001111101000010010101001111111010000111101101111011011000010100010001101"
-                    "0111101110101010001010101110000111000110011011010110100001111100111100101100100001000010101101100010101000010100001111011111101110110001010"
-                    "1111111110011100100100000111000011110101110100011000110100011110000100111000110110111001101100001110111000100011001000110011101101000110011"
-                    "0110110101110001110100000110101010100000011001011000000001001111111001010101001110000111101100000100011110100010110111100101000001001011010"
-                    "1010010110011001000100010001000111111110101001001111001101010001000111010101001101011111111000111111001011001111110111101010010010111011111"
-                    "0011110011110100101011001000001010100011101111100100001000011000111100011011110010001101000111101011100001010100101010001110111001111110001"
-                    "1011101000011100110000101111100101100011010011000110011110101101000101011010001011111010000101000100110100010111110000110111101010111110101"
-                    "1000101001111010100011010110111110101000110110000000101011110010110010010000110110101111110010110100110111101010110000100000011110010110001"
+                    "1000001011001111001111010110101111111110001100100101011011010101100000011101000010101101000110111100000111101010111011011000011100010001001"
+                    "1011101010001001010100111011111010110101010101000101101110001111010001011001101110111001010011010101010100101011100001100100000011101011111"
+                    "1011101010010100010101100110101001110011110111011110111001011000100100110010111101000101000111100010011000100100101000110111100110001010000"
+                    "1011101001010110110010110101011110011101110111001011011100110010101111101110000011010000110001011011001001011001011000011110111101111100111"
+                    "1000001010001101001110011100001111111000001001101011001011011101110100010001111100001111001000011001100011101000001111001000010010101001110"
+                    "1111111011110001000111011111010111111010101011110111110111001111100011001110111101110110110010110100110111100101000111111001011100000010101"
+                    "0000000010010000011010101010101101001101111011101100000001101001101101110100101011101100011111100100101111010100110001110111001000010110000"
+                    "1110101110111001111110100101000010011011111000110111001110001001001101101111011001111000111111001011111010010111111110010111100000111001101"
+                    "0101000110010110111000000000001111011000011111111100101011001010101111111000110100100001101111111011001111101000001110011100010101010000100"
+                    "1001000000100010100001101111110100011001110001011010001111101010010110110101101110010011111100011100011010101001000001101000000111101010011"
+                    "0011010010110011011010100010101010011000100010100101100010111110001110111010100110100101110010000100010000100110101000010001101110001011010"
+                    "1000110001111011101101101101110110011110110110111110111110110001000111110010000110110000000011100010000101010111011010010111101001011011111"
+                    "0010000000111010001110110110011000011010011101100010000011101001011101001011001011001011100010111101010111011000010111001001000010111110001"
+                    "1100101100110100100101000011111110111000010001101001001111001110110100000111101011111001100101001000000011101011110100101001010100111110101"
+                    "1010111110110100011001111010100011101111001101100101111011100101011100011011011000101010010000000100111000011010100000100111101001110110001"
                     "1110101010101010101010101011101010101010101010101010101110101010101010101010101010111010101010101010101010101011101010101010101010101011111"
                 },
-        /*  4*/ { UNICODE_MODE, "123456789012345678901234567890123456789012345678901234", 4, 33, 0, 7, 139, "R7xauto H max numeric 54 digits",
+        /*  6*/ { UNICODE_MODE, 4, 33, "123456789012345678901234567890123456789012345678901234", 0, 7, 139, 1, "R7xauto-H max numeric 54 digits",
                     "1111111010101010101010101011101010101010101010101010101110101010101010101010101010111010101010101010101010101011101010101010101010101010111"
-                    "1000001011011110100001110010100100001111000111011101011011001100000111111010011111101110111011101001010011101110111011000110000001001000001"
-                    "1011101000010001001110011111100000100110110101101011101110101000100001001100001110111010100000110100100001111011101000110111011110101011111"
-                    "1011101001111010110000111110101111100001011110010111010010111110100110011111111111101101010101000111101010011000110111101010001100000010001"
-                    "1011101011110100001010000011101111100111101100000011011110100010111101101100100111111011101000110101101000000111101110111001010100101010101"
-                    "1000001010001000001011100010101001100011000011000010011011011011011111110010010011101000011010011110010110111010101010010011111110010110001"
+                    "1000001011010011001111100110101000111000110001101010101011100001010000000000011001101000110010111100010100100110101000010111100011001000001"
+                    "1011101000011001010110011111111001010000100001011100101110111001110001011101010011111000110100100000100100111011100000000010010010101011111"
+                    "1011101001110011010110011110000111010000111100110001101000100000110000000101101100000011000100100101101000000010100100101000110010000010001"
+                    "1011101011101101111101010011101111111011101110010111101110110111111000111001010000111011011001100000111000001111111111101001100011001010101"
+                    "1000001010001100101101000010110110010110000111100001011011001001011001111000100111101011001110101000010111101110101110000101110011110110001"
                     "1111111010101010101010101011101010101010101010101010101110101010101010101010101010111010101010101010101010101011101010101010101010101011111"
                 },
-        /*  5*/ { UNICODE_MODE, "123456789012345678901234567890123", 4, 35, 0, 11, 59, "R11xauto H with max numeric 33 digits for width 59",
+        /*  7*/ { UNICODE_MODE, 4, 35, "123456789012345678901234567890123", 0, 11, 59, 1, "R11xauto-H with max numeric 33 digits for width 59",
                     "11111110101010101011101010101010101010111010101010101010111"
-                    "10000010101010010010100111111011011110101001100110110011001"
-                    "10111010000110110111101001001010100001111010000100000000011"
-                    "10111010101111011100110000010110100101100001111110110110100"
-                    "10111010001110111011111110110011010100011010101010010000101"
-                    "10000010000110100110000001000110110100100000001100100110000"
-                    "11111110111000101111111010001011010011111111101101101011111"
-                    "00000000010001110000100101111101101110100011001010111010001"
-                    "11010101101011100011100001110011000010111111110000010010101"
-                    "10011110000011110010101110111110000100101110100001000110001"
+                    "10000010101001100110111000100110101100101100010101111110101"
+                    "10111010000110100111101001001111110010111101000100110110011"
+                    "10111010101110011100110101010011111101101001110010001101110"
+                    "10111010001000101111000010010101001010011011101010011010001"
+                    "10000010000110110010111111111010010110001110100010000110000"
+                    "11111110011110011111011101001001101111010001001100001011111"
+                    "00000000001111111110100100110100101111101111111000111010001"
+                    "11011000100010010111110110111001011100111000100100010010101"
+                    "10011101110110100010100011000110110010101001001100100110001"
                     "11101010101010101011101010101010101010111010101010101011111"
                 },
-        /*  6*/ { UNICODE_MODE, "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901", -1, 38, 0, 17, 139, "R17xauto M max numeric 361 digits",
+        /*  8*/ { UNICODE_MODE, -1, 38, "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901", 0, 17, 139, 1, "R17xauto-M max numeric 361 digits",
                     "1111111010101010101010101011101010101010101010101010101110101010101010101010101010111010101010101010101010101011101010101010101010101010111"
-                    "1000001001000101001111000010110100001000101100110001101010100000111110001000100011101011111000001110011001110010100111000101001100000001101"
-                    "1011101011100100000111001011101001110010101001100000001111010010111111101001111110111000101000010010110101111111111101111101101000001011001"
-                    "1011101001000111010101101000100010100110111111000010001010000111000001110010101101101100011111010001000111001110011101000011110011100111010"
-                    "1011101000011011001010110111000101101000011001111111100110101100100010000110011000110010001110111101000010010001000111100010001111110010101"
-                    "1000001000010011010111011100110011101001111000011100111001111010111111001101001001101010001000000100111100000100000000111100001000011110110"
-                    "1111111011000011001100001011100101010100001110100100010101100010100001111000000110011101001100000011111010101111101010011101110001001101101"
-                    "0000000010101010011100011110100011110101111000010000000010110101000000110111010110100101100101111001001000101010011001000010010111110000110"
-                    "1111000101000101010110010101111001011001110001111100101110110101011111010111100011110000110011101111100001010011010011000010011110110010011"
-                    "0111110010111110100111011100100110100111011110110111111000100100111111001000100001001010111010000110011001110110001110100011101010000101010"
-                    "1000110110001000011011011001101111100101110100110000000101010010110110101100011100011111101000011010110100011101100100111101100100001010011"
-                    "0010111001011000101010100000011101100011011000111100001000000111001000110110111111100101010111010001000111001000011101011100100101111011110"
-                    "1000000110001011100000011101011000110101100001100011100110101100100000011011110100110101010110111101000010000011100110100011011011110111111"
-                    "0010111110101011111010111110000101111100111101001010111001111010111111111001011100001111101000100100111100010010000010111111011011000110001"
-                    "1101011001000100011101010111100001001010100010010110011111100011000101100010001111111011100101000011111110101111101000011110100000010110101"
-                    "1001100101010101001010100010100011011100111001110111011010110101000100100111100110101011100101111011001010100110111111000010110110100110001"
+                    "1000001001000101011111010110101000111111101000111100111011110101001110010101100011101100101011101111100000110010101010100000011111110110001"
+                    "1011101011100111011000001111111010110000100000100110001111110101001001010011000110111101110100011101010101001111100001010000010111111111011"
+                    "1011101001001100001001111100010100100011000110010110010001110110110101101000001110000111011000110010111111011010010110011101110100001001010"
+                    "1011101000010101010111011001110010111100100101101001111100011100100111001101000001011010001000000010111001110001001000101111001000010000101"
+                    "1000001000010001001011010010000000011001010001001001111000001000101010010111010101001001010111111101000011100010101111000011001010111001110"
+                    "1111111001101010000100101101010011000001101011110111001111100011000000100110111000110100000111110001001010001011110100000000110111011100001"
+                    "0000000010110010001111111010101001000000110001110110001011100011110111101000111110001101100100000011111100101100011001111000101001000100110"
+                    "1110101100000110000111010011111100101011100100000000101100000010111010011000101011011100111000001100010101010001100011110101001000100000111"
+                    "0111101111100011010010111110111010100101011100100101110001010101001010010101100000001000011011101100000000010010100110100000011111110110010"
+                    "1000000010110100110011010001111100011111010101100000011111011101000101010011000101110101010111011011100001101101011101000000010111110011011"
+                    "0001011000101100111101110000000000001111001110001000000010001010111101101000001110000111011011010011111111111000011010011101110100011011110"
+                    "1110010100011011010101000111110001000000010100011111000100100000110111001101000001111010001000100110111110100001110100101111001000110111111"
+                    "0111111000011110110011110000010100000010011111010011011011111101011010010111010101001001010111100100001011100110101101000011001010000110001"
+                    "1010111000111001011010111011111111010100010000000001111111011111100000100110111000111000000111101001000000001111100111000000110111110110101"
+                    "1010100110101011001011101010100000110111001110010011101011010011100100101000111010101110101100010001011100100010101010111100100001000110001"
+                    "1110101010101010101010101011101010101010101010101010101110101010101010101010101010111010101010101010101010101011101010101010101010101011111"
+                },
+        /*  9*/ { UNICODE_MODE, 2, 1, "\001\002\003\004\005", 0, 7, 43, 1, "R7x43-M with max 5 binary",
+                    "1111111010101010101011101010101010101010111"
+                    "1000001001010001101010101011001111011000101"
+                    "1011101010111101100111100101110001011111111"
+                    "1011101001101111011110011001101001000010001"
+                    "1011101000100000100111110110101110110010101"
+                    "1000001011110000000010101011001111011010001"
+                    "1111111010101010101011101010101010101011111"
+                },
+        /* 10*/ { UNICODE_MODE, 4, 1, "\001\002", 0, 7, 43, 1, "R7x43-H with max 2 binary",
+                    "1111111010101010101011101010101010101010111"
+                    "1000001011010010110010111001001111001000001"
+                    "1011101011010011101011110001000001010011111"
+                    "1011101010111101110110001010001001011010001"
+                    "1011101001111011011011111111001110011010101"
+                    "1000001001111110100010111110110110101010001"
+                    "1111111010101010101011101010101010101011111"
+                },
+        /* 11*/ { UNICODE_MODE, 2, 1, "ABCDEFG", 0, 7, 43, 1, "R7x43-M with max 7 alphanumerics",
+                    "1111111010101010101011101010101010101010111"
+                    "1000001001011100111110111000000101011000101"
+                    "1011101010111010101011110111101001011111111"
+                    "1011101001100001111100011111100010100010001"
+                    "1011101000110011100011111110010100110010101"
+                    "1000001011111011101110111110000111111010001"
+                    "1111111010101010101011101010101010101011111"
+                },
+        /* 12*/ { UNICODE_MODE, 2, 1, "点茗点", 0, 7, 43, 0, "R7x43-M with max 3 Kanji; BWIPP different encodation",
+                    "1111111010101010101011101010101010101010111"
+                    "1000001001011000100010101001010001111000101"
+                    "1011101010110101110111111001011101111111111"
+                    "1011101001100001101010100110100110100010001"
+                    "1011101000100010000011101101011011110010101"
+                    "1000001011111100010110101111011000111010001"
+                    "1111111010101010101011101010101010101011111"
+                },
+        /* 13*/ { UNICODE_MODE, 2, 4, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLM", 0, 7, 99, 1, "R7x99-M with max 39 alphanumerics",
+                    "111111101010101010101011101010101010101010101010111010101010101010101010101110101010101010101010111"
+                    "100000100111110010010010101010100110101001000011101100101101000010101110001011100000010001111100101"
+                    "101110100101000000101011100100010000001000001111111111011111000000110101111111101111100000100011111"
+                    "101110100100011111000100010111001001100101111011100001000001001111101010111010110110100011000110001"
+                    "101110101000101011110111101110010000110011110101111110100111100010101000101111101101101111000110101"
+                    "100000101010111010111010111110101001111001101011101010101010001100101101111011100101101010110010001"
+                    "111111101010101010101011101010101010101010101010111010101010101010101010101110101010101010101011111"
+                },
+        /* 14*/ { UNICODE_MODE, 4, 5, "\001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020\021\022\023\024\025\026", 0, 7, 139, 1, "R7x139-H with max 22 binary",
+                    "1111111010101010101010101011101010101010101010101010101110101010101010101010101010111010101010101010101010101011101010101010101010101010111"
+                    "1000001011010100100110110110100110111000001010100110101010111101000011111010001000101100000100001011011110111110100110011110001101001000001"
+                    "1011101000010011101011000111111011101001111011110101011110111001000010011111001110111001100001010101110110100011110011110001010001001011111"
+                    "1011101001111010000010110010111010001000101110001010101000101110001111011000010111001101000001010101101001110100110011110010000001000010001"
+                    "1011101011110101001101101111100101000110001011010111101111110111111011101010001110111100001101011100001010011111111110111010001101001010101"
+                    "1000001010000100011110111110111000111001100010111001111011001011011111000110010101101111111111001110101110101010101110110010001100110110001"
+                    "1111111010101010101010101011101010101010101010101010101110101010101010101010101010111010101010101010101010101011101010101010101010101011111"
+                },
+        /* 15*/ { UNICODE_MODE, 2, 7, "\001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020\021\022\023\024", 0, 9, 59, 1, "R9x59-M with max 20 binary",
+                    "11111110101010101011101010101010101010111010101010101010111"
+                    "10000010100110111010110111101111000011101110010011100001001"
+                    "10111010101100001011111100111100011111111100011001111100101"
+                    "10111010001011110100100111110100100000000110011110000000110"
+                    "10111010010001101101111101100001011011110011100011111111111"
+                    "10000010000100101110010110010111100000100111010011101010001"
+                    "11111110010100010111110011111110011101111100011000011110101"
+                    "00000000000011111010111011010100000000101110011010000110001"
+                    "11101010101010101011101010101010101010111010101010101011111"
+                },
+        /* 16*/ { UNICODE_MODE, 2, 9, "12345678901234567890123456789012345678901234567", 0, 9, 99, 1, "R9x99-M with max 47 numerics",
+                    "111111101010101010101011101010101010101010101010111010101010101010101010101110101010101010101010111"
+                    "100000100010000101001110111001101000101110111000101110001100111010100000001011110010011100011001101"
+                    "101110101011011101000011110000001000010010010000111011001001111111000001001110101111110010111000101"
+                    "101110101010111000000000001110110110111110001100000001001111011011101101011011011100000001110110100"
+                    "101110101111101010100111111010001100011000000110010100011010001111100010110100000110001000111111111"
+                    "100000100110100000000110100110010010111001000101101000110011010101110000001010000011101010011010001"
+                    "111111100100110111110011110010000010111111100111111100100110000100000111101110010011011110101010101"
+                    "000000000111000111011010100110011010111011010011101110110100100111001011111010110011000000001010001"
+                    "111010101010101010101011101010101010101010101010111010101010101010101010101110101010101010101011111"
+                },
+        /* 17*/ { UNICODE_MODE, 2, 11, "\001\002\003\004\005\006", 0, 11, 27, 1, "R11x27-M with max 6 binary",
+                    "111111101010101010101010111"
+                    "100000101110010000111000101"
+                    "101110100111010000000011001"
+                    "101110100010000111110101110"
+                    "101110100001011100111000001"
+                    "100000100110111001101110110"
+                    "111111100100001110000111111"
+                    "000000000101011011001010001"
+                    "111100001110011000010110101"
+                    "101001111010101000101010001"
+                    "111010101010101010101011111"
+                },
+        /* 18*/ { UNICODE_MODE, 4, 11, "\001\002\003\004", 0, 11, 27, 1, "R11x27-H with max 4 binary",
+                    "111111101010101010101010111"
+                    "100000100110100100111000101"
+                    "101110100001011000000011001"
+                    "101110101111011111110101010"
+                    "101110100100000010111000001"
+                    "100000101110011001111110010"
+                    "111111101101110100001011111"
+                    "000000001011111100010010001"
+                    "111011000110110000011110101"
+                    "101000000010100100111010001"
+                    "111010101010101010101011111"
+                },
+        /* 19*/ { UNICODE_MODE, 2, 13, "12345678901234567890123456789012345678901234567890123456789012345678901", 0, 11, 59, 1, "R11x59-M with max 71 numerics",
+                    "11111110101010101011101010101010101010111010101010101010111"
+                    "10000010001010111110110110010100101111101111001110101100001"
+                    "10111010011100010011110111110001111100111010111101000100011"
+                    "10111010011001001000001110100101110100101001110000010010000"
+                    "10111010011011101111111010100010101001111000011010010100001"
+                    "10000010100111001000111011110110111001101100001001110110100"
+                    "11111110010111010111001000011000101010110001001100000111111"
+                    "00000000011100100100100000100011000100001111000000000010001"
+                    "11111100110000101111110101101001000100111000101010011010101"
+                    "10011100001011001110100101001100110111101001101110110110001"
+                    "11101010101010101011101010101010101010111010101010101011111"
+                },
+        /* 20*/ { UNICODE_MODE, 2, 18, "1234567890123456789012345678901234567890123456789012345678901", 0, 13, 43, 1, "R13x43-M with max 61 numerics",
+                    "1111111010101010101011101010101010101010111"
+                    "1000001011111001100110111000110110011001001"
+                    "1011101011100001110011110110101000100010111"
+                    "1011101011000100101010011001000010110111010"
+                    "1011101010100100111011011011100011000111111"
+                    "1000001001101001000000110110001000101101110"
+                    "1111111010011101101101101010100100101000011"
+                    "0000000011110010100110111001100100101101110"
+                    "1111100101001011000001101100111011010111111"
+                    "0011110001100101000000100000101100110110001"
+                    "1011101111000010101011110011001100100010101"
+                    "1000110000010111110010110001001011001010001"
+                    "1110101010101010101011101010101010101011111"
+                },
+        /* 21*/ { UNICODE_MODE, 4, 20, "\001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020\021\022\023\024\025\026\027\030\031\032\033", 0, 13, 77, 1, "R13x77-H with max 27 binary",
+                    "11111110101010101010101011101010101010101010101010111010101010101010101010111"
+                    "10000010101100000001000010111011001111101101111101101110100010001011100001101"
+                    "10111010010010101011110111100110000111101101101101111110000000011110111011011"
+                    "10111010100101111101110100000000010011011010000000001100100110011010000001100"
+                    "10111010000111001111011101001110010010110101111000110001101001100011101011111"
+                    "10000010111010000011101000001111101111001010101001101100000001000011110011000"
+                    "11111110110111111101110011101010100110011011111111011100001100110110011100101"
+                    "00000000110110101010001000000000010111001011110110001100011000011100000101010"
+                    "11111101010111111111100011100111100011111001111110111001100010010001100011111"
+                    "01000111110100101000101100110111101100000100100001100110100001001011111110001"
+                    "10001110011100111011101011110000110011101000011011111010001000011101010110101"
+                    "10001001000010011011101110100010010001101111111101101000000110010000011010001"
+                    "11101010101010101010101011101010101010101010101010111010101010101010101011111"
+                },
+        /* 22*/ { UNICODE_MODE, 2, 20, "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123", 0, 13, 77, 1, "R13x77-M with max 123 numerics (note 8 bit cci in draft 2019-6-24 when 7 suffices)",
+                    "11111110101010101010101011101010101010101010101010111010101010101010101010111"
+                    "10000010001111011110000010110000001101001111110110101010010010110011111011101"
+                    "10111010001010000001000011100001010010100110011011111001000001111110100011001"
+                    "10111010010011101110100110011001011011110110011101100011001010000010000010000"
+                    "10111010010010111110100011010101011101110000000101110101111110010001000110011"
+                    "10000010011110000011110100011001011101111111110110000100110010110011101011000"
+                    "11111110111010011010000011010010110010010111011011111111010101111110110011111"
+                    "00000000111011110111001110010000001000110001011101100110000110000010110101110"
+                    "11111111010011101000010001110101101101110010000101011101110010000001101111111"
+                    "01101010101001000000100000100000111110111111111011100100110100001011100110001"
+                    "10110000001110100010011011100001011011010111011110111011010101110111111110101"
+                    "10101101110110111100111010111111000100010001001101101110100100010100001010001"
+                    "11101010101010101010101011101010101010101010101010111010101010101010101011111"
+                },
+        /* 23*/ { UNICODE_MODE, 2, 23, "\001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020\021\022\023\024\025\026\027\030\031\032\033\034\035\036\037", 0, 15, 43, 1, "R15x43-M with max 31 binary",
+                    "1111111010101010101011101010101010101010111"
+                    "1000001011010010111010101000000011011011001"
+                    "1011101011000000000011111001010001110001111"
+                    "1011101000101100100010110000110001110001110"
+                    "1011101010001110100001100010100011111100001"
+                    "1000001011000001101010010100001111001010110"
+                    "1111111011100000010101011001110001110001001"
+                    "0000000010010111110000110010110001110001010"
+                    "1100111001111100110001101010100000111000111"
+                    "0100100011111110010000010100000111101001100"
+                    "1010101010110000110001101011000001110011111"
+                    "0110000110000110110010110001000001101010001"
+                    "1100010010011100000011100110000010000110101"
+                    "1001011111001000010010110100001011011110001"
+                    "1110101010101010101011101010101010101011111"
+                },
+        /* 24*/ { UNICODE_MODE, 4, 27, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRST", 0, 15, 139, 1, "R15x139-H with max 98 alphanumerics",
+                    "1111111010101010101010101011101010101010101010101010101110101010101010101010101010111010101010101010101010101011101010101010101010101010111"
+                    "1000001000101010110111000110101110111011110000110111111011010110110101010100010000101101000101101000000110101010110111000011111101010011001"
+                    "1011101001100101001100010011101100000011101101100110011111100111110110101101110101111001000011000100010000110111111101101011100000111011001"
+                    "1011101011111100000110000100011011111010011111100001000000110111001010010001011010000100100101100001011110110010011011101000100100010011100"
+                    "1011101010000010010111110001010010000101111011010110100110011101001100001111010101110001110100100011101010101111100110010011001001000101101"
+                    "1000001000100000010010001000110011100110010001011011101011111000000010111001010010101101011110101111011010110000100111110010111111110100100"
+                    "1111111010100000110011001001111101001101011011110010001100000100000101011011001110110110000000111000011101001011000111111011101000100111101"
+                    "0000000011000010100010110000111000010011101010111100100010001001010011000110010101000000001100101001010001011010100010111011011111101111010"
+                    "1100110111000001101100101011110001111111000010100000110110101001010011100001110100111010001100000100000000011001110111111000111010111101011"
+                    "0100110000100000100100010000001011001010001000111001000001101101100100100011011110100111001111001000110000010100100110011000010010010111000"
+                    "1100011110010111111010011001011101100001001001001111100101111011111011111110011000110100101110000110011010010101100001111001111011100111111"
+                    "0001111000000010100011001000110111101111101111101010001010001000101100101101000001000010100000101111101000011100010010011111100011110010001"
+                    "1100111110100000010000111011110010011100101001110010101110011110110110001100001101111001001110011000111010111011110011001010011001000110101"
+                    "1011010110101111010001000110110100010001001001100010101011001000110010111101000000101111001000110110011001111010100011110110001000100010001"
+                    "1110101010101010101010101011101010101010101010101010101110101010101010101010101010111010101010101010101010101011101010101010101010101011111"
+                },
+        /* 25*/ { UNICODE_MODE, 2, 28, "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", 0, 17, 43, 1, "R17x43-M with max 90 numerics",
+                    "1111111010101010101011101010101010101010111"
+                    "1000001001000101001010111110000001010100101"
+                    "1011101000101110110011110100001001100110011"
+                    "1011101010001111111010101000010101101001000"
+                    "1011101010001001010101011100110000100111111"
+                    "1000001011111110111110000101001001010110000"
+                    "1111111001111100101111110111011010000010111"
+                    "0000000010011101100110011111010000101101010"
+                    "1100111101010110111011011000110101001100111"
+                    "0111000100100100011010000110001001101100010"
+                    "1110110010011101000111101111000000010011011"
+                    "0011001001011100110000101100100111111011110"
+                    "1110111010101010010001111101011010001111111"
+                    "0011110000011011010110001101001000111110001"
+                    "1010000001001101001111101000100011000110101"
+                    "1010110110101010011110101110010011011010001"
+                    "1110101010101010101011101010101010101011111"
+                },
+        /* 26*/ { UNICODE_MODE, 4, 29, "\001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020\021\022\023\024\025\026\027\030\031\032", 0, 17, 59, 1, "R17x59-H with max 26 binary",
+                    "11111110101010101011101010101010101010111010101010101010111"
+                    "10000010111010100010101100011001100000101011110011110011101"
+                    "10111010011000111011101011101011010010111000110100011100011"
+                    "10111010101100010010101010011000101000000100011010000100000"
+                    "10111010111100100101101000101000101000110110010001100011011"
+                    "10000010110011101100010010111000101111100010111011100001100"
+                    "11111110111111001101001001000101011110111100010111001111011"
+                    "00000000100101101110101100000000101101101110010110001101100"
+                    "11111011001011101111100001011101011101110010010011100111111"
+                    "01111100111111000000111000001001010100000001000011110011000"
+                    "11000001111111001011000010001010001011010000111011111010101"
+                    "01100000111110100010100111100111001101101100010100001111010"
+                    "11100011100001100111001001110100011101110000100001100111111"
+                    "00111000001010001100000100010100100101100101111011111010001"
+                    "11001011110100101111111000101000111011111100010100001010101"
+                    "10001000111011111010100011010111101101101010011010011110001"
+                    "11101010101010101011101010101010101010111010101010101011111"
+                },
+        /* 27*/ { UNICODE_MODE, 2, 32, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCD", 0, 17, 139, 1, "R17x139-M with max 108 alphanumerics",
+                    "1111111010101010101010101011101010101010101010101010101110101010101010101010101010111010101010101010101010101011101010101010101010101010111"
+                    "1000001001001010010000011110111001001010110101010100011010100010100111011001101000101010101100000100100110001010101000100111011010000101001"
+                    "1011101011101001000100010111100111100100100101100010111110100010110000000011101010111111111001010011110000010011101011000101000000010001001"
+                    "1011101001001010011011111000100110001100100000001101000001000100101101001100011111001001100011101000011011111100011000101100010110111010010"
+                    "1011101000010011111100010001011011011101010000111000011111011101000101100100100101010000110110001101001010111101111100000110011111111111011"
+                    "1000001000010100010000011000101101000110011001100110110010101011010011010101111010101010010100100110100000110110101111011011011011100101010"
+                    "1111111010110001111001010111010110101110100000000000110100000011111001011111111010110111100111000011110101100001100011111001100001010001101"
+                    "0000000011111011001111110010100100001100101010101101000011010110100100001100000010100111010100101010011111001000010110100100101100100100000"
+                    "1100110101110001011110010111111000100011110010001010011111101100000110101100100011011100011011011000001010001101111100000110000111011110011"
+                    "0101010100000101010000011010101100001001010100000000110001111111010011011010110010000010010111010001010000110110101011010001010110000100100"
+                    "1001011101000001111001110101010101001100110111010001010100010111111001110000110001010101110010110000000001100011010011111000010001011010101"
+                    "0011011000000111000111000100101000100110010001010111110010101110110100110110100110101101110001001110111111001000010110100101000000011011110"
+                    "1110111001100101010110010111110100010000101110101010101110101100101110011111000010011100111000011110001011001101011100010100101100110111111"
+                    "0100010111111011011100011000111100111111001001111000101010111111010010011011010011000000010010111101010000011000110001110010010101100110001"
+                    "1001111110101110110000100111110101011101100010011001101111010111011000010000110101111000000110110100010011000111111100101110011011110110101"
+                    "1011101011001101111111100110101100110110111011010111001011101011000100010101100000101110111100000010011100011010100100011000001100000110001"
                     "1110101010101010101010101011101010101010101010101010101110101010101010101010101010111010101010101010101010101011101010101010101010101011111"
                 },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol;
+
+    char escaped[1024];
+    char bwipp_buf[32768];
+    char bwipp_msg[1024];
+
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); // Only do BWIPP test if asked, too slow otherwise
 
     testStart("test_rmqr_encode");
 
@@ -2759,26 +3069,38 @@ static void test_rmqr_encode(int index, int generate, int debug) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, BARCODE_RMQR, data[i].input_mode, -1 /*eci*/, data[i].option_1, data[i].option_2, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, BARCODE_RMQR, data[i].input_mode, -1 /*eci*/, data[i].option_1, data[i].option_2, ZINT_FULL_MULTIBYTE, -1 /*output_options*/, data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (generate) {
-            printf("        /*%3d*/ { %s, \"%s\", %d, %d, %s, %d, %d, \"%s\",\n",
-                    i, testUtilInputModeName(data[i].input_mode), data[i].data, data[i].option_1, data[i].option_2, testUtilErrorName(data[i].ret),
-                    symbol->rows, symbol->width, data[i].comment);
+            printf("        /*%3d*/ { %s, %d, %d, \"%s\", %s, %d, %d, %d, \"%s\",\n",
+                    i, testUtilInputModeName(data[i].input_mode), data[i].option_1, data[i].option_2,
+                    testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), testUtilErrorName(data[i].ret),
+                    symbol->rows, symbol->width, data[i].bwipp_cmp, data[i].comment);
             testUtilModulesPrint(symbol, "                    ", "\n");
             printf("                },\n");
         } else {
             if (ret < ZINT_ERROR) {
+                int width, row;
                 assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);
                 assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
 
-                if (ret == 0) {
-                    int width, row;
-                    ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
-                    assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, ret, width, row, data[i].data);
+                ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
+                assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, ret, width, row, data[i].data);
+
+                if (do_bwipp && testUtilCanBwipp(i, symbol, data[i].option_1, data[i].option_2, -1, debug)) {
+                    if (!data[i].bwipp_cmp) {
+                        if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not BWIPP compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                    } else {
+                        ret = testUtilBwipp(i, symbol, data[i].option_1, data[i].option_2, -1, data[i].data, length, NULL, bwipp_buf, sizeof(bwipp_buf));
+                        assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+
+                        ret = testUtilBwippCmp(symbol, bwipp_msg, bwipp_buf, data[i].expected);
+                        assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
+                                       i, testUtilBarcodeName(symbol->symbology), ret, bwipp_msg, bwipp_buf, data[i].expected);
+                    }
                 }
             }
         }

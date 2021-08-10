@@ -272,7 +272,7 @@ INTERNAL int korea_post(struct zint_symbol *symbol, unsigned char source[], int 
     }
     zeroes = 6 - length;
     memset(localstr, '0', zeroes);
-    strcpy(localstr + zeroes, (char *) source);
+    ustrcpy(localstr + zeroes, source);
 
     total = 0;
     for (loop = 0; loop < 6; loop++) {
@@ -290,7 +290,7 @@ INTERNAL int korea_post(struct zint_symbol *symbol, unsigned char source[], int 
     }
     lookup(NEON, KoreaTable, localstr[6], dest);
     expand(symbol, dest);
-    ustrcpy(symbol->text, (unsigned char*) localstr);
+    ustrcpy(symbol->text, localstr);
 
     // TODO: Find documentation on BARCODE_KOREAPOST dimensions/height
 
@@ -492,7 +492,7 @@ INTERNAL int kix_code(struct zint_symbol *symbol, unsigned char source[], int le
         return error_number;
     }
 
-    strcpy(localstr, (char *) source);
+    ustrcpy(localstr, source);
 
     /* Encode data */
     for (i = 0; i < length; i++) {
@@ -540,8 +540,8 @@ INTERNAL int daft_code(struct zint_symbol *symbol, unsigned char source[], int l
         strcpy(symbol->errtxt, "492: Input too long (50 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
-    to_upper((unsigned char*) source);
-    error_number = is_sane(DAFTSET, (unsigned char*) source, length);
+    to_upper(source);
+    error_number = is_sane(DAFTSET, source, length);
 
     if (error_number == ZINT_ERROR_INVALID_DATA) {
         strcpy(symbol->errtxt, "493: Invalid character in data (\"D\", \"A\", \"F\" and \"T\" only)");
@@ -632,9 +632,9 @@ INTERNAL int japan_post(struct zint_symbol *symbol, unsigned char source[], int 
     char inter[23];
 
 #ifndef _MSC_VER
-    char local_source[length + 1];
+    unsigned char local_source[length + 1];
 #else
-    char* local_source = (char*) _alloca(length + 1);
+    unsigned char *local_source = (unsigned char *) _alloca(length + 1);
 #endif
 
     if (length > 20) {
@@ -642,10 +642,10 @@ INTERNAL int japan_post(struct zint_symbol *symbol, unsigned char source[], int 
         return ZINT_ERROR_TOO_LONG;
     }
 
-    strcpy(local_source, (char*) source);
-    to_upper((unsigned char*) local_source);
+    ustrcpy(local_source, source);
+    to_upper(local_source);
 
-    if (is_sane(SHKASUTSET, (unsigned char*) local_source, length) == ZINT_ERROR_INVALID_DATA) {
+    if (is_sane(SHKASUTSET, local_source, length) == ZINT_ERROR_INVALID_DATA) {
         strcpy(symbol->errtxt, "497: Invalid character in data (alphanumerics and \"-\" only)");
         return ZINT_ERROR_INVALID_DATA;
     }

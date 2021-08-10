@@ -180,8 +180,10 @@ static void test_input(int index, int debug) {
     struct item data[] = {
         /*  0*/ { BARCODE_MSI_PLESSEY, -1, "1", 0, 1, 19 },
         /*  1*/ { BARCODE_MSI_PLESSEY, -1, "A", ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /*  2*/ { BARCODE_PLESSEY, -1, "A", 0, 1, 83 },
-        /*  3*/ { BARCODE_PLESSEY, -1, "G", ZINT_ERROR_INVALID_DATA, -1, -1 },
+        /*  2*/ { BARCODE_MSI_PLESSEY, -2, "1", 0, 1, 19 }, // < 0 ignored
+        /*  3*/ { BARCODE_MSI_PLESSEY, 7, "1", 0, 1, 19 }, // > 6 ignored
+        /*  4*/ { BARCODE_PLESSEY, -1, "A", 0, 1, 83 },
+        /*  5*/ { BARCODE_PLESSEY, -1, "G", ZINT_ERROR_INVALID_DATA, -1, -1 },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;

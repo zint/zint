@@ -22,7 +22,7 @@
   <property name="minimumSize">
    <size>
     <width>400</width>
-    <height>485</height>
+    <height>435</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -56,6 +56,9 @@
         <layout class="QHBoxLayout" name="horizontalLayout_5">
          <item>
           <widget class="QLabel" name="lblSymbology">
+           <property name="toolTip">
+            <string>Type of barcode</string>
+           </property>
            <property name="text">
             <string>S&amp;ymbology:</string>
            </property>
@@ -64,9 +67,6 @@
            </property>
            <property name="buddy">
             <cstring>bstyle</cstring>
-           </property>
-           <property name="toolTip">
-            <string>Type of barcode</string>
            </property>
           </widget>
          </item>
@@ -247,27 +247,27 @@ or import from file</string>
                   <property name="enabled">
                    <bool>false</bool>
                   </property>
+                  <property name="toolTip">
+                   <string>Type of 2D component</string>
+                  </property>
                   <property name="text">
                    <string>&amp;Type:</string>
                   </property>
                   <property name="buddy">
                    <cstring>cmbCompType</cstring>
                   </property>
-                  <property name="toolTip">
-                   <string>Type of 2D component</string>
-                  </property>
                  </widget>
                 </item>
                 <item>
                  <widget class="QComboBox" name="cmbCompType">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
                   <property name="minimumSize">
                    <size>
                     <width>60</width>
-                    <height>16777215</height>
+                    <height>0</height>
                    </size>
-                  </property>
-                  <property name="enabled">
-                   <bool>false</bool>
                   </property>
                   <property name="toolTip">
                    <string>Type of 2D component</string>
@@ -306,15 +306,15 @@ or import from file</string>
                   <property name="enabled">
                    <bool>false</bool>
                   </property>
+                  <property name="toolTip">
+                   <string>Data to be encoded in 2D component
+Remember to place [square brackets] around AI identifiers</string>
+                  </property>
                   <property name="text">
                    <string>2D C&amp;omponent Data:</string>
                   </property>
                   <property name="buddy">
                    <cstring>txtComposite</cstring>
-                  </property>
-                  <property name="toolTip">
-                   <string>Data to be encoded in 2D component
-Remember to place [square brackets] around AI identifiers</string>
                   </property>
                  </widget>
                 </item>
@@ -339,16 +339,6 @@ Remember to place [square brackets] around AI identifiers</string>
                    <string>Data to be encoded in 2D component
 Remember to place [square brackets] around AI identifiers</string>
                   </property>
-                  <property name="html">
-                   <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Noto Sans'; font-size:10pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Sans Serif'; font-size:9pt;&quot;&gt;Your Data Here!&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                  </property>
-                  <property name="acceptRichText">
-                   <bool>false</bool>
-                  </property>
                  </widget>
                 </item>
                </layout>
@@ -366,6 +356,10 @@ p, li { white-space: pre-wrap; }
                  <height>16777215</height>
                 </size>
                </property>
+               <property name="toolTip">
+                <string>Set the ECI (Extended Channel Interpretation) code
+(ignored if disabled)</string>
+               </property>
                <property name="text">
                 <string>EC&amp;I:</string>
                </property>
@@ -375,10 +369,6 @@ p, li { white-space: pre-wrap; }
                <property name="buddy">
                 <cstring>cmbECI</cstring>
                </property>
-               <property name="toolTip">
-                <string>Set the ECI (Extended Channel Interpretation) code
-(ignored if disabled)</string>
-               </property>
               </widget>
              </item>
              <item>
@@ -386,7 +376,7 @@ p, li { white-space: pre-wrap; }
                <property name="minimumSize">
                 <size>
                  <width>64</width>
-                 <height>16777215</height>
+                 <height>0</height>
                 </size>
                </property>
                <property name="toolTip">
@@ -562,7 +552,7 @@ p, li { white-space: pre-wrap; }
                </property>
               </widget>
              </item>
-			</layout>
+            </layout>
            </item>
            <item>
             <layout class="QHBoxLayout" name="chksLayout">
@@ -625,7 +615,7 @@ p, li { white-space: pre-wrap; }
              <item>
               <widget class="QCheckBox" name="chkGS1Parens">
                <property name="toolTip">
-                <string>Process parentheses "()" instead of square brackets "[]"
+                <string>Process parentheses &quot;()&quot; instead of square brackets &quot;[]&quot;
 as delimiters for GS1 Application Identifiers
 (ignored if disabled)</string>
                </property>
@@ -687,6 +677,10 @@ as delimiters for GS1 Application Identifiers
                <property name="enabled">
                 <bool>false</bool>
                </property>
+               <property name="toolTip">
+                <string>Overall symbol height in X-dimensions
+(ignored if disabled)</string>
+               </property>
                <property name="text">
                 <string>&amp;Height:</string>
                </property>
@@ -695,10 +689,6 @@ as delimiters for GS1 Application Identifiers
                </property>
                <property name="buddy">
                 <cstring>heightb</cstring>
-               </property>
-               <property name="toolTip">
-                <string>Overall symbol height in X-dimensions
-(ignored if disabled)</string>
                </property>
               </widget>
              </item>
@@ -736,6 +726,9 @@ as delimiters for GS1 Application Identifiers
              </item>
              <item row="2" column="0">
               <widget class="QLabel" name="label_8">
+               <property name="toolTip">
+                <string>Width of boundary bars or border in X-dimensions</string>
+               </property>
                <property name="text">
                 <string>Border &amp;Width:</string>
                </property>
@@ -744,9 +737,6 @@ as delimiters for GS1 Application Identifiers
                </property>
                <property name="buddy">
                 <cstring>bwidth</cstring>
-               </property>
-               <property name="toolTip">
-                <string>Width of boundary bars or border in X-dimensions</string>
                </property>
               </widget>
              </item>
@@ -771,6 +761,9 @@ as delimiters for GS1 Application Identifiers
              </item>
              <item row="3" column="0">
               <widget class="QLabel" name="label_9">
+               <property name="toolTip">
+                <string>Add border or box</string>
+               </property>
                <property name="text">
                 <string>Border &amp;Type:</string>
                </property>
@@ -779,9 +772,6 @@ as delimiters for GS1 Application Identifiers
                </property>
                <property name="buddy">
                 <cstring>btype</cstring>
-               </property>
-               <property name="toolTip">
-                <string>Add border or box</string>
                </property>
               </widget>
              </item>
@@ -812,6 +802,9 @@ as delimiters for GS1 Application Identifiers
              </item>
              <item row="4" column="0">
               <widget class="QLabel" name="lblWhitespace">
+               <property name="toolTip">
+                <string>Horizontal whitespace, Vertical whitespace, in X-dimensions</string>
+               </property>
                <property name="text">
                 <string>&amp;Whitespace:</string>
                </property>
@@ -820,9 +813,6 @@ as delimiters for GS1 Application Identifiers
                </property>
                <property name="buddy">
                 <cstring>spnWhitespace</cstring>
-               </property>
-               <property name="toolTip">
-                <string>Horizontal whitespace, Vertical whitespace, in X-dimensions</string>
                </property>
               </widget>
              </item>
@@ -854,6 +844,9 @@ in X-dimensions</string>
              </item>
              <item row="5" column="0">
               <widget class="QLabel" name="lblScale">
+               <property name="toolTip">
+                <string>Image scale when output to file</string>
+               </property>
                <property name="text">
                 <string>Printing Sca&amp;le:</string>
                </property>
@@ -862,9 +855,6 @@ in X-dimensions</string>
                </property>
                <property name="buddy">
                 <cstring>spnScale</cstring>
-               </property>
-               <property name="toolTip">
-                <string>Image scale when output to file</string>
                </property>
               </widget>
              </item>
@@ -895,6 +885,10 @@ in X-dimensions</string>
              </item>
              <item row="6" column="0">
               <widget class="QLabel" name="lblFontSetting">
+               <property name="toolTip">
+                <string>Set font characteristics
+(ignored if disabled)</string>
+               </property>
                <property name="text">
                 <string>Fo&amp;nt Setting:</string>
                </property>
@@ -903,10 +897,6 @@ in X-dimensions</string>
                </property>
                <property name="buddy">
                 <cstring>cmbFontSetting</cstring>
-               </property>
-               <property name="toolTip">
-                <string>Set font characteristics
-(ignored if disabled)</string>
                </property>
               </widget>
              </item>
@@ -957,6 +947,9 @@ in X-dimensions</string>
                <property name="enabled">
                 <bool>true</bool>
                </property>
+               <property name="toolTip">
+                <string>Change colour of ink or paper</string>
+               </property>
                <property name="text">
                 <string>Colour:</string>
                </property>
@@ -965,9 +958,6 @@ in X-dimensions</string>
                </property>
                <property name="buddy">
                 <cstring>fgcolor</cstring>
-               </property>
-               <property name="toolTip">
-                <string>Change colour of ink or paper</string>
                </property>
               </widget>
              </item>
@@ -1026,6 +1016,9 @@ in X-dimensions</string>
              </item>
              <item row="4" column="2">
               <widget class="QLabel" name="lblRotate">
+               <property name="toolTip">
+                <string>Rotate symbol by degrees</string>
+               </property>
                <property name="text">
                 <string>R&amp;otate:</string>
                </property>
@@ -1034,9 +1027,6 @@ in X-dimensions</string>
                </property>
                <property name="buddy">
                 <cstring>cmbRotate</cstring>
-               </property>
-               <property name="toolTip">
-                <string>Rotate symbol by degrees</string>
                </property>
               </widget>
              </item>
@@ -1086,6 +1076,10 @@ in X-dimensions</string>
                <property name="enabled">
                 <bool>false</bool>
                </property>
+               <property name="toolTip">
+                <string>Size of dots
+(ignored if disabled)</string>
+               </property>
                <property name="text">
                 <string>Dot S&amp;ize:</string>
                </property>
@@ -1095,20 +1089,16 @@ in X-dimensions</string>
                <property name="buddy">
                 <cstring>spnDotSize</cstring>
                </property>
-               <property name="toolTip">
-                <string>Size of dots
-(ignored if disabled)</string>
-               </property>
               </widget>
              </item>
              <item row="6" column="3">
               <widget class="QDoubleSpinBox" name="spnDotSize">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
                <property name="toolTip">
                 <string>Size of dots
 (ignored if disabled)</string>
-               </property>
-               <property name="enabled">
-                <bool>false</bool>
                </property>
                <property name="suffix">
                 <string/>
@@ -1191,7 +1181,7 @@ in X-dimensions</string>
         <string>Output image to file (BMP/EMF/EPS/GIF/PCX/PNG/SVG/TIF)</string>
        </property>
        <property name="text">
-        <string>&amp;Save As&#8230;</string>
+        <string>&amp;Save As…</string>
        </property>
       </widget>
      </item>

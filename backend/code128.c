@@ -843,14 +843,13 @@ INTERNAL int ean_128_cc(struct zint_symbol *symbol, unsigned char source[], int 
     last_set = set[0];
     glyph_count = 0.0f;
     for (i = 0; i < reduced_length; i++) {
-        if ((set[i] == 'a') || (set[i] == 'b')) {
-            glyph_count = glyph_count + 1.0f; /* Not reached */
-        }
-        if (((set[i] == 'A') || (set[i] == 'B')) || (set[i] == 'C')) {
+        if ((set[i] == 'A') || (set[i] == 'B') || (set[i] == 'C')) {
             if (set[i] != last_set) {
                 last_set = set[i];
                 glyph_count = glyph_count + 1.0f;
             }
+        } else if ((set[i] == 'a') || (set[i] == 'b')) {
+            glyph_count = glyph_count + 1.0f; /* Not reached */
         }
 
         if ((set[i] == 'C') && (reduced[i] != '[')) {

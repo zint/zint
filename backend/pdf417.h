@@ -508,6 +508,7 @@ static const unsigned short int rap_centre[52] = {
     0x2DC, 0x2DE
 };
 
-INTERNAL void byteprocess(int *chainemc, int *mclength, unsigned char chaine[], int start, int length, int debug);
+INTERNAL void byteprocess(int *chainemc, int *mclength, const unsigned char chaine[], int start, const int length,
+                const int debug);
 
 #endif /* __PDF417_H */

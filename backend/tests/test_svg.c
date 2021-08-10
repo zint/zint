@@ -103,6 +103,7 @@ static void test_print(int index, int generate, int debug) {
         /* 46*/ { BARCODE_PDF417, -1, -1, -1, -1, -1, -1, -1, -1, 5, "", "", 0, "Your Data Here!", "", ZINT_WARN_NONCOMPLIANT, "pdf417_height5.svg" },
         /* 47*/ { BARCODE_USPS_IMAIL, -1, -1, -1, -1, -1, -1, -1, -1, 7.75, "", "", 0, "12345678901234567890", "", 0, "imail_height7.75.svg" },
         /* 48*/ { BARCODE_ULTRA, -1, 3, BARCODE_BOX, 2, 2, -1, -1, -1, 0, "FF0000", "0000FF", 0, "12345678901234567890", "", 0, "ultra_fgbg_hvwsp2_box3.svg" },
+        /* 49*/ { BARCODE_TELEPEN, -1, -1, -1, -1, -1, -1, -1, -1, 0.4, "", "", 180, "A", "", 0, "telepen_height0.4_rotate_180.svg" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;

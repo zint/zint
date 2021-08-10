@@ -66,6 +66,7 @@ INTERNAL int plessey(struct zint_symbol *symbol, unsigned char source[], int len
         strcpy(symbol->errtxt, "371: Invalid character in data (digits and \"ABCDEF\" only)");
         return error_number;
     }
+
     if (!(checkptr = (unsigned char *) calloc(1, length * 4 + 8))) {
         strcpy(symbol->errtxt, "373: Insufficient memory for check digit CRC buffer");
         return ZINT_ERROR_MEMORY;
@@ -128,10 +129,8 @@ static char msi_check_digit_mod10(const unsigned char source[], const int length
     int i, x = 0, undoubled = 0;
 
     for (i = length - 1; i >= 0; i--) {
+        /* Note overflow impossible for max length 65 * max weight 9 * max val 15 == 8775 */
         x += vals[undoubled][ctoi(source[i])];
-        if (x > 32767 - 20) {
-            x %= 10; /* Prevent overflow */
-        }
         undoubled = !undoubled;
     }
 
@@ -144,10 +143,8 @@ static char msi_check_digit_mod11(const unsigned char source[], const int length
     int i, x = 0, weight = 2;
 
     for (i = length - 1; i >= 0; i--) {
+        /* Note overflow impossible for max length 65 * max weight 9 * max val 15 == 8775 */
         x += weight * ctoi(source[i]);
-        if (x > 32767 - 200) {
-            x %= 11; /* Prevent overflow */
-        }
         weight++;
         if (weight > wrap) {
             weight = 2;
@@ -299,15 +296,14 @@ INTERNAL int msi_handle(struct zint_symbol *symbol, unsigned char source[], int 
     int check_option = symbol->option_2;
     int no_checktext = 0;
 
+    if (length > 65) {
+        strcpy(symbol->errtxt, "372: Input too long (65 character maximum)");
+        return ZINT_ERROR_TOO_LONG;
+    }
     error_number = is_sane(NEON, source, length);
     if (error_number != 0) {
         strcpy(symbol->errtxt, "377: Invalid character in data (digits only)");
         return ZINT_ERROR_INVALID_DATA;
-    }
-
-    if (length > 65) {
-        strcpy(symbol->errtxt, "372: Input too long (65 character maximum)");
-        return ZINT_ERROR_TOO_LONG;
     }
 
     if (check_option >= 11 && check_option <= 16) { /* +10 means don't print check digits in HRT */

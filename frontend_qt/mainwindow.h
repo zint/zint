@@ -57,6 +57,7 @@ protected:
 	void combobox_item_enabled(QComboBox *comboBox, int index, bool enabled);
     void upcean_addon_gap(QComboBox *comboBox, QLabel *label, int base);
     void set_gs1_mode(bool gs1_mode);
+    void set_smaller_font(QLabel *note);
 
 	const char *get_setting_name(int symbology);
 

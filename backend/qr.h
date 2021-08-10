@@ -123,14 +123,14 @@ static const unsigned short int rmqr_total_codewords[] = {
 static const unsigned short int rmqr_numeric_cci[] = {
     4, 5, 6, 7, 7,
     5, 6, 7, 7, 8,
-    5, 6, 7, 7, 8, 8,
-    5, 7, 7, 8, 8, 8,
+    4, 6, 7, 7, 8, 8,
+    5, 6, 7, 8, 8, 8, // Note R13x77 (4th) 8 bits but max numerics 124 (7 bits)
     7, 7, 8, 8, 9,
     7, 8, 8, 8, 9
 };
 
 static const unsigned short int rmqr_alphanum_cci[] = {
-    4, 5, 5, 6, 6,
+    3, 5, 5, 6, 6,
     5, 5, 6, 6, 7,
     4, 5, 6, 6, 7, 7,
     5, 6, 6, 7, 7, 8,

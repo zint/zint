@@ -704,9 +704,9 @@ static void test_error_tag(int index) {
     struct item {
         int error_number;
         int warn_level;
-        char* data;
+        char *data;
         int ret;
-        char* expected;
+        char *expected;
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {

@@ -1550,7 +1550,7 @@ INTERNAL int han_xin(struct zint_symbol *symbol, unsigned char source[], int len
                     data_codewords = hx_data_codewords_L4[i - 1];
                 }
                 break;
-            default:
+            default: /* Not reached */
                 assert(0);
                 break;
         }

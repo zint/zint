@@ -145,10 +145,10 @@ static void test_set_height(int index, int debug) {
 static void test_is_valid_utf8(int index) {
 
     struct item {
-        char* data;
+        char *data;
         int length;
         int ret;
-        char* comment;
+        char *comment;
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {

@@ -34,6 +34,8 @@
 static void test_large(int index, int debug) {
 
     struct item {
+        int option_1;
+        int option_2;
         char *pattern;
         int length;
         int ret;
@@ -43,20 +45,46 @@ static void test_large(int index, int debug) {
     // é U+00E9 (\351, 233), UTF-8 C3A9, CodeB-only extended ASCII
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /*  0*/ { "A", 2666, 0, 44, 728 },
-        /*  1*/ { "A", 2725, 0, 44, 739 },
-        /*  2*/ { "A", 2726, 0, 44, 739 }, // 4.2.1 c.3 says max 2725 but actually 44 * 62 - 2 == 2726 as mentioned later in 4.8.1
-        /*  3*/ { "A", 2727, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  4*/ { "12", 2726 * 2, 0, 44, 739 },
-        /*  5*/ { "12", 2726 * 2 + 1, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  6*/ { "\351", 2726 / 2, 0, 44, 739 },
-        /*  7*/ { "\351", 2726 / 2 + 1, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  0*/ { -1, -1, "A", 2666, 0, 44, 728 },
+        /*  1*/ { -1, -1, "A", 2725, 0, 44, 739 },
+        /*  2*/ { -1, -1, "A", 2726, 0, 44, 739 }, // 4.2.1 c.3 says max 2725 but actually 44 * 62 - 2 == 2726 as mentioned later in 4.8.1
+        /*  3*/ { -1, -1, "A", 2727, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  4*/ { -1, -1, "A", ZINT_MAX_DATA_LEN, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  5*/ { -1, -1, "12", 2726 * 2, 0, 44, 739 },
+        /*  6*/ { -1, -1, "12", 2726 * 2 + 1, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  7*/ { -1, -1, "\351", 2726 / 2, 0, 44, 739 },
+        /*  8*/ { -1, -1, "\351", 2726 / 2 + 1, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  9*/ { 1, -1, "A", 60, 0, 1, 695 }, // CODE128 60 max
+        /* 10*/ { 1, -1, "A", 61, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 11*/ { 2, -1, "A", 122, 0, 2, 739 },
+        /* 12*/ { 2, 10, "A", 122, 0, 2, 739 }, // Cols 10 -> 67
+        /* 13*/ { 2, 67, "A", 122, 0, 2, 739 },
+        /* 14*/ { 2, -1, "A", 123, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 15*/ { 2, -1, "A", 63 * 2, ZINT_ERROR_TOO_LONG, -1, -1 }, // Triggers initial testColumns > 62
+        /* 16*/ { 2, -1, "A", 2726 * 2 + 1, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 17*/ { 2, 9, "A", 2726 * 2 + 1, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 18*/ { 3, -1, "A", 184, 0, 3, 739 },
+        /* 19*/ { 3, -1, "A", 185, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 20*/ { 10, -1, "A", 618, 0, 10, 739 },
+        /* 21*/ { 10, -1, "A", 619, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 22*/ { 20, -1, "A", 1238, 0, 20, 739 },
+        /* 23*/ { 20, -1, "A", 1239, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 24*/ { 30, -1, "A", 1858, 0, 30, 739 },
+        /* 25*/ { 30, -1, "A", 1859, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 26*/ { 40, -1, "A", 2478, 0, 40, 739 },
+        /* 27*/ { 40, -1, "A", 2479, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 28*/ { 43, -1, "A", 2664, 0, 43, 739 },
+        /* 29*/ { 43, -1, "A", 2665, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 30*/ { 44, -1, "A", 2726, 0, 44, 739 },
+        /* 31*/ { 44, -1, "A", 2727, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 32*/ { 44, 60, "A", 2726, 0, 44, 739 }, // Cols 60 -> 67
+        /* 33*/ { 44, 67, "A", 2726, 0, 44, 739 },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol;
 
-    char data_buf[2726 * 2 + 2];
+    char data_buf[ZINT_MAX_DATA_LEN + 2];
 
     testStart("test_large");
 
@@ -70,7 +98,7 @@ static void test_large(int index, int debug) {
         testUtilStrCpyRepeat(data_buf, data[i].pattern, data[i].length);
         assert_equal(data[i].length, (int) strlen(data_buf), "i:%d length %d != strlen(data_buf) %d\n", i, data[i].length, (int) strlen(data_buf));
 
-        length = testUtilSetSymbol(symbol, BARCODE_CODABLOCKF, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data_buf, data[i].length, debug);
+        length = testUtilSetSymbol(symbol, BARCODE_CODABLOCKF, -1 /*input_mode*/, -1 /*eci*/, data[i].option_1, data[i].option_2, -1, -1 /*output_options*/, data_buf, data[i].length, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data_buf, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
@@ -169,7 +197,8 @@ static void test_reader_init(int index, int generate, int debug) {
     };
     struct item data[] = {
         /*  0*/ { BARCODE_CODABLOCKF, UNICODE_MODE, READER_INIT, "1234", 0, 2, 101, "67 64 40 60 63 0C 22 2B 6A 67 64 0B 63 64 3A 1C 29 6A", "CodeB FNC3 CodeC 12 34 / CodeB Pads" },
-        /*  1*/ { BARCODE_HIBC_BLOCKF, UNICODE_MODE, READER_INIT, "123456", 0, 3, 101, "67 64 41 60 0B 11 12 22 6A 67 63 2B 22 38 64 2A 1B 6A 67 64 0C 63 64 2B 2F 52 6A", "CodeB FNC3 + 1 2 / CodeC 34 56 CodeB J" },
+        /*  1*/ { BARCODE_CODABLOCKF, UNICODE_MODE, READER_INIT, "\001\002", 0, 2, 101, "67 62 40 60 41 42 63 32 6A 67 64 0B 63 64 45 42 0F 6A", "FNC3 SOH STX / CodeB Pads" },
+        /*  2*/ { BARCODE_HIBC_BLOCKF, UNICODE_MODE, READER_INIT, "123456", 0, 3, 101, "67 64 41 60 0B 11 12 22 6A 67 63 2B 22 38 64 2A 1B 6A 67 64 0C 63 64 2B 2F 52 6A", "CodeB FNC3 + 1 2 / CodeC 34 56 CodeB J" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -277,7 +306,8 @@ static void test_input(int index, int generate, int debug) {
         /* 34*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, "\000a\037\177}12", 7, 0, 3, 101, "67 62 41 40 62 41 5F 3B 6A 67 64 0B 5F 5D 11 12 2D 6A 67 64 0C 63 64 40 05 26 6A", "" },
         /* 35*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, "abcdéf", -1, 0, 3, 101, "67 64 41 41 42 43 44 5D 6A 67 64 0B 64 49 46 63 0A 6A 67 64 0C 63 64 4F 26 02 6A", "" },
         /* 36*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, "a12é\000", 6, 0, 3, 101, "67 64 41 41 11 12 63 2C 6A 67 64 0B 64 49 62 40 2B 6A 67 64 0C 63 64 33 34 31 6A", "" },
-        /* 37*/ { BARCODE_HIBC_BLOCKF, UNICODE_MODE, -1, "A99912345/$$52001510X3", -1, 0, 6, 101, "(54) 67 64 44 0B 21 19 19 3A 6A 67 63 2B 5B 17 2D 64 24 6A 67 64 0C 0F 04 04 15 16 6A 67", "" },
+        /* 37*/ { BARCODE_CODABLOCKF, UNICODE_MODE, 11, "1234\001", -1, 0, 2, 123, "67 63 00 0C 22 65 41 63 64 54 6A 67 64 0B 63 64 63 64 3F 20 24 6A", "" },
+        /* 38*/ { BARCODE_HIBC_BLOCKF, UNICODE_MODE, -1, "A99912345/$$52001510X3", -1, 0, 6, 101, "(54) 67 64 44 0B 21 19 19 3A 6A 67 63 2B 5B 17 2D 64 24 6A 67 64 0C 0F 04 04 15 16 6A 67", "" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;

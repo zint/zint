@@ -299,8 +299,9 @@ static void draw_letter(unsigned char *pixelbuf, const unsigned char letter, int
         skip = 1;
     }
 
+    /* Following should never happen (ISBN check digit "X" not printed) */
     if ((textflags & UPCEAN_TEXT) && (letter < '0' || letter > '9')) {
-        skip = 1;
+        skip = 1; /* Not reached */
     }
 
     if (yposn < 0) { /* Allow xposn < 0, dealt with below */

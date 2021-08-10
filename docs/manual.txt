@@ -2473,13 +2473,15 @@ ZINT_FULL_MULTIBYTE | (N + 1) << 8.
 
 6.6.4 Rectangular Micro QR Code (rMQR)
 --------------------------------------
-A rectangular version of QR Code. Like QR Code, rMQR supports encoding of GS1
-data, and Latin-1 characters in the ISO/IEC 8859-1 set and Kanji characters in
-the Shift JIS encoding scheme. It does not support other ISO/IEC 8859 character
-sets or encodings. As with other symbologies data should be entered as UTF-8
-with the conversion to Latin-1 or Shift JIS being handled by Zint. The amount of
-ECC codewords can be adjusted using the --secure= option (API option_1), however
-only ECC levels M and H are valid for this type of symbol.
+A rectangular version of QR Code, it is still under development, so it is
+recommended it should not yet be used for a production environment. Like QR
+Code, rMQR supports encoding of GS1 data, and Latin-1 characters in the ISO/IEC
+8859-1 set and Kanji characters in the Shift JIS encoding scheme. It does not
+support other ISO/IEC 8859 character sets or encodings. As with other
+symbologies data should be entered as UTF-8 with the conversion to Latin-1 or
+Shift JIS being handled by Zint. The amount of ECC codewords can be adjusted
+using the --secure= option (API option_1), however only ECC levels M and H are
+valid for this type of symbol.
 
 -------------------------------------------------------------------------
 Input  |  ECC Level    |  Error Correction Capacity  |  Recovery Capacity
@@ -3088,7 +3090,7 @@ international standards:
      capture techniques - MicroPDF417 bar code symbology specification
 > ISO/IEC 24778:2008 Information technology - Automatic identification and data
      capture techniques - Aztec Code bar code symbology specification
-> ISO/IEC JTC1/SC31N000 (Draft 2018-6-8) Information technology - Automatic
+> ISO/IEC JTC1/SC31N000 (Draft 2019-6-24) Information technology - Automatic
      identification and data capture techniques - Rectangular Micro QR Code
      (rMQR) bar code symbology specification
 > ISO/IEC 16390:2007 Information technology - Automatic identification and data

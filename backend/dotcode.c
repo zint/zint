@@ -729,7 +729,7 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
                             codeword_array[array_length] = 96;
                             input_position++;
                         } else {
-                            switch(source[input_position]) {
+                            switch (source[input_position]) {
                                 case 9: codeword_array[array_length] = 97; break; // HT
                                 case 28: codeword_array[array_length] = 98; break; // FS
                                 case 29: codeword_array[array_length] = 99; break; // GS
@@ -802,7 +802,7 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
                     } else if (input_position != 0) {
                         /* HT, FS, GS and RS in the first data position would be interpreted as a macro
                          * (see table 2) */
-                        switch(source[input_position]) {
+                        switch (source[input_position]) {
                             case 9: // HT
                                 codeword_array[array_length] = 97;
                                 break;
@@ -975,7 +975,7 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
                         codeword_array[array_length] = 96;
                         input_position++;
                     } else {
-                        switch(source[input_position]) {
+                        switch (source[input_position]) {
                             case 9: codeword_array[array_length] = 97; break; // HT
                             case 28: codeword_array[array_length] = 98; break; // FS
                             case 29: codeword_array[array_length] = 99; break; // GS

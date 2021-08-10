@@ -71,11 +71,6 @@
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
-     <property name="font">
-      <font>
-       <pointsize>9</pointsize>
-      </font>
-     </property>
      <property name="text">
       <string>Note: Composite symbols require a GS1-128 linear component.</string>
      </property>

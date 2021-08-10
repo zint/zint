@@ -75,6 +75,16 @@ static void test_pixel_plot(int index, int debug) {
         /* 25*/ { 3, 2048, "10", 1, 0, 0 }, // Strip Count 4, Rows Per Strip 682 ((3 * 682 + 2) * 4 == 8192)
         /* 26*/ { 2049, 4, "10", 1, 1, 0 }, // Strip Count 4, Rows Per Strip 1 (2049 * 1 * 4 == 8196) - large rows in 1 strip, even if > 8192
         /* 27*/ { 4, 2049, "10", 1, 0, 0 }, // Strip Count 5, Rows Per Strip 512 ((4 * 512 + 1) * 4 == 8196)
+        /* 28*/ { 4096, 1, "10", 1, 1, 0 }, // Strip Count 1, Rows Per Strip 1
+        /* 29*/ { 1, 4096, "10", 1, 0, 0 }, // Strip Count 2, Rows Per Strip 2048
+        /* 30*/ { 4096, 2, "10", 1, 1, 0 }, // Strip Count 2, Rows Per Strip 1
+        /* 31*/ { 2, 4096, "10", 1, 0, 0 }, // Strip Count 4, Rows Per Strip 1024
+        /* 32*/ { 8192, 2, "10", 1, 1, 0 }, // Strip Count 2, Rows Per Strip 1
+        /* 33*/ { 2, 8192, "10", 1, 0, 0 }, // Strip Count 8, Rows Per Strip 1024
+        /* 34*/ { ZINT_MAX_DATA_LEN, 1, "10", 1, 1, 0 }, // Strip Count 1, Rows Per Strip 1
+        /* 35*/ { 1, ZINT_MAX_DATA_LEN, "10", 1, 0, 0 }, // Strip Count 9, Rows Per Strip 2048
+        /* 36*/ { ZINT_MAX_DATA_LEN, 2, "10", 1, 1, 0 }, // Strip Count 2, Rows Per Strip 1
+        /* 37*/ { 2, ZINT_MAX_DATA_LEN, "10", 1, 0, 0 }, // Strip Count 17, Rows Per Strip 1024
     };
     int data_size = ARRAY_SIZE(data);
     int i, ret;

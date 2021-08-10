@@ -101,8 +101,8 @@ static int GetPossibleCharacterSet(unsigned char C)
         return CodeA;
     if (C>='0' && C<='9')
         return ZTNum;   /* ZTNum=CodeA+CodeB+CodeC */
-    if (C==aFNC1)
-        return ZTFNC1;  /* ZTFNC1=CodeA+CodeB+CodeC+CodeFNC1 */
+    if (C==aFNC1) /* FNC1s (GS1) not used */
+        return ZTFNC1;  /* ZTFNC1=CodeA+CodeB+CodeC+CodeFNC1 */ /* Not reached */
     if (C==aFNC4)
         return (CodeA | CodeB | CodeFNC4);
     if (C>='\x60' && C<='\x7f')      /* 60 to 127 */
@@ -152,9 +152,9 @@ static void CreateCharacterSetTable(CharacterSetTable T[], unsigned char *data, 
             do{
                 /* Whether this is FNC1, whether next is */
                 /* numeric */
-                if (T[runChar].CharacterSet==ZTFNC1)
+                if (T[runChar].CharacterSet==ZTFNC1) /* FNC1s (GS1) not used */
                     /* FNC1 */
-                    ++(T[charCur].CFollowing);
+                    ++(T[charCur].CFollowing); /* Not reached */
                 else
                 {
                     ++runChar;
@@ -251,9 +251,9 @@ static int Columns2Rows(struct zint_symbol *symbol, CharacterSetTable *T, const 
                 /* Test if numeric after one isn't better.*/
                 runChar=charCur;
                 emptyColumns2=emptyColumns;
-                while (T[runChar].CharacterSet==ZTFNC1)
+                while (T[runChar].CharacterSet==ZTFNC1) /* FNC1s (GS1) not used */
                 {
-                    ++runChar;
+                    ++runChar; /* Not reached */
                     --emptyColumns2;
                 }
                 if (CPaires>=RemainingDigits(T,runChar+1,emptyColumns2-1))
@@ -437,15 +437,11 @@ static int Rows2Columns(struct zint_symbol *symbol, CharacterSetTable *T, const 
     int rowsCur;
     int rowsRequested;  /* Number of requested rows */
     int columnsRequested; /* Number of requested columns (if any) */
-    int backupRows = 0;
     int fillings;
-    int backupFillings = 0;
     int useColumns;
     int testColumns;    /* To enter into Width2Rows */
-    int backupColumns = 0;
-    int fBackupOk = 0;      /* The memorised set is o.k. */
     int testListSize = 0;
-    int pTestList[62];
+    int pTestList[62 + 1];
 #ifndef _MSC_VER
     int *pBackupSet[dataLength];
 #else
@@ -501,38 +497,15 @@ static int Rows2Columns(struct zint_symbol *symbol, CharacterSetTable *T, const 
                 return 0;
             }
             /* > Test more rows (shorter CDB) */
-            fBackupOk=(rowsCur==rowsRequested);
             memcpy(pBackupSet,pSet,dataLength*sizeof(int));
-            backupFillings=fillings;
-            backupColumns=useColumns;
-            backupRows=rowsCur;
             --testColumns;
         } else {
             /* > Too many rows */
-            int fInTestList = fBackupOk;
-            int posCur;
-            for (posCur = 0; posCur < testListSize && ! fInTestList; posCur++) {
-                if ( pTestList[posCur] == testColumns+1 )
-                    fInTestList = 1;
-            }
-            if (fInTestList) {
-                /* The next less-rows (larger) code was
-                 * already tested. So give the larger
-                 * back.
-                 */
-                memcpy(pSet,pBackupSet,dataLength*sizeof(int));
-                *pFillings=backupFillings;
-                *pRows=backupRows;
-                *pUseColumns=backupColumns;
-                return 0;
-            }
             /* > Test less rows (longer code) */
-            backupRows=rowsCur;
             memcpy(pBackupSet,pSet,dataLength*sizeof(int));
-            backupFillings=fillings;
-            backupColumns=useColumns;
-            fBackupOk=0;
-            ++testColumns;
+            if (++testColumns > 62) {
+                return ZINT_ERROR_TOO_LONG;
+            }
         }
     }
 }
@@ -545,8 +518,8 @@ static void A2C128_A(uchar **ppOutPos,uchar c)
     switch(c){
     case aCodeB: *pOutPos=100; break;
     case aFNC4: *pOutPos=101; break;
-    case aFNC1: *pOutPos=102; break;
-    case aFNC2: *pOutPos=97; break;
+    case aFNC1: *pOutPos=102; break; /* FNC1s (GS1) not used */ /* Not reached */
+    case aFNC2: *pOutPos=97; break; /* FNC2s (Message Append) not used */ /* Not reached */
     case aFNC3: *pOutPos=96; break;
     case aCodeC: *pOutPos=99; break;
     case aShift: *pOutPos=98; break;
@@ -567,8 +540,8 @@ static void A2C128_B(uchar **ppOutPos,uchar c)
 {
     uchar * pOutPos = *ppOutPos;
     switch(c){
-    case aFNC1: *pOutPos=102; break;
-    case aFNC2: *pOutPos=97; break;
+    case aFNC1: *pOutPos=102; break; /* FNC1s (GS1) not used */ /* Not reached */
+    case aFNC2: *pOutPos=97; break; /* FNC2s (Message Append) not used */ /* Not reached */
     case aFNC3: *pOutPos=96; break;
     case aFNC4: *pOutPos=100; break;
     case aCodeA: *pOutPos=101; break;
@@ -585,7 +558,7 @@ static void A2C128_C(uchar **ppOutPos,uchar c1,uchar c2)
 {
     uchar * pOutPos = *ppOutPos;
     switch(c1){
-    case aFNC1: *pOutPos=102; break;
+    case aFNC1: *pOutPos=102; break; /* FNC1s (GS1) not used */ /* Not reached */
     case aCodeB: *pOutPos=100; break;
     case aCodeA: *pOutPos=101; break;
     default: *pOutPos=(char)(10 * (c1- '0') + (c2 - '0'));break;
@@ -890,8 +863,8 @@ INTERNAL int codablock(struct zint_symbol *symbol, unsigned char source[], int l
                     /* Normal Character */
                     if (characterSetCur==CodeC)
                     {
-                        if (data[charCur]==aFNC1)
-                            A2C128_C(&pOutPos,aFNC1,'\0');
+                        if (data[charCur]==aFNC1) /* FNC1s (GS1) not used */
+                            A2C128_C(&pOutPos,aFNC1,'\0'); /* Not reached */
                         else
                         {
                             A2C128_C(&pOutPos, data[charCur],

@@ -76,11 +76,6 @@
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
-     <property name="font">
-      <font>
-       <pointsize>9</pointsize>
-      </font>
-     </property>
      <property name="text">
       <string>Examples of tracker ratios:&lt;table cellspacing=&quot;3&quot;&gt;
 &lt;tr&gt;&lt;td&gt;Australia Post&amp;nbsp;&lt;/td&gt;&lt;td&gt;26%&lt;/td&gt;&lt;/tr&gt;

@@ -111,7 +111,7 @@ INTERNAL int png_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
 #ifndef _MSC_VER
     unsigned char outdata[symbol->bitmap_width];
 #else
-    unsigned char* outdata = (unsigned char*) _alloca(symbol->bitmap_width);
+    unsigned char *outdata = (unsigned char *) _alloca(symbol->bitmap_width);
 #endif
 
     wpng_error.symbol = symbol;

@@ -87,6 +87,7 @@ static void test_print(int index, int generate, int debug) {
         /* 32*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, 5, 1.7, "", "", 0, "12", "dotcode_5.0_ds1.7.eps" },
         /* 33*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, 0, 0, "FF0000", "0000FF00", 0, "12", "dotcode_no_bg.eps" },
         /* 34*/ { BARCODE_MAXICODE, -1, -1, CMYK_COLOUR, -1, -1, -1, -1, 0, 0, "", "", 270, "12", "maxicode_rotate_270_cmyk.eps" },
+        /* 35*/ { BARCODE_MAXICODE, -1, -1, -1, 3, -1, -1, -1, 0, 0, "", "0000FF00", 180, "12", "maxicode_no_bg_hwsp3_rotate_180.eps" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;

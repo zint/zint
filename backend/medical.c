@@ -76,7 +76,7 @@ INTERNAL int pharma_one(struct zint_symbol *symbol, unsigned char source[], int 
         return error_number;
     }
 
-    tester = atoi((char*) source);
+    tester = atoi((char *) source);
 
     if ((tester < 3) || (tester > 131070)) {
         strcpy(symbol->errtxt, "352: Data out of range (3 to 131070)");
@@ -126,7 +126,7 @@ static int pharma_two_calc(struct zint_symbol *symbol, unsigned char source[], c
     char inter[17];
     int error_number;
 
-    tester = atoi((char*) source);
+    tester = atoi((char *) source);
 
     if ((tester < 4) || (tester > 64570080)) {
         strcpy(symbol->errtxt, "353: Data out of range (4 to 64570080)");
@@ -361,7 +361,7 @@ INTERNAL int code32(struct zint_symbol *symbol, unsigned char source[], int leng
     }
     risultante[6] = '\0';
     /* Plot the barcode using Code 39 */
-    error_number = c39(symbol, (unsigned char*) risultante, (int) strlen(risultante));
+    error_number = c39(symbol, (unsigned char *) risultante, (int) strlen(risultante));
     if (error_number != 0) { /* Should never happen */
         return error_number; /* Not reached */
     }

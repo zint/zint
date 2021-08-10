@@ -2115,7 +2115,7 @@ static const char *testUtilBwippName(int index, const struct zint_symbol *symbol
         { "", -1, 94, 0, 0, 0, 0, 0, },
         { "", -1, 95, 0, 0, 0, 0, 0, },
         { "", BARCODE_DPD, 96, 0, 0, 0, 0, 0, },
-        { "microqrcode", BARCODE_MICROQR, 97, 0, 0, 0, 0, 0, },
+        { "microqrcode", BARCODE_MICROQR, 97, 1, 1, 1, 0, 0, },
         { "hibccode128", BARCODE_HIBC_128, 98, 0, 0, 0, 0, 0, },
         { "hibccode39", BARCODE_HIBC_39, 99, 0, 0, 0, 0, 0, },
         { "", -1, 100, 0, 0, 0, 0, 0, },
@@ -2162,8 +2162,8 @@ static const char *testUtilBwippName(int index, const struct zint_symbol *symbol
         { "codeone", BARCODE_CODEONE, 141, 0, 1, 0, 0, 0, },
         { "", BARCODE_GRIDMATRIX, 142, 0, 0, 0, 0, 0, },
         { "", BARCODE_UPNQR, 143, 0, 0, 0, 0, 0, },
-        { "ultracode", BARCODE_ULTRA, 144, 0, 0, 0, 0, 0, },
-        { "rectangularmicroqrcode", BARCODE_RMQR, 145, 0, 0, 0, 0, 0, },
+        { "ultracode", BARCODE_ULTRA, 144, 1, 0, 0, 0, 0, },
+        { "rectangularmicroqrcode", BARCODE_RMQR, 145, 1, 1, 0, 0, 0, },
     };
     static const int data_size = ARRAY_SIZE(data);
 
@@ -2218,6 +2218,21 @@ static const char *testUtilBwippName(int index, const struct zint_symbol *symbol
             }
             return NULL;
         }
+    } else if (symbology == BARCODE_RMQR) {
+        if (option_2 < 1) {
+            if (debug & ZINT_DEBUG_TEST_PRINT) {
+                printf("i:%d %s not BWIPP compatible, version (option_2) must be specified\n",
+                        index, testUtilBarcodeName(symbology));
+            }
+            return NULL;
+        }
+        if (option_2 > 32) {
+            if (debug & ZINT_DEBUG_TEST_PRINT) {
+                printf("i:%d %s not BWIPP compatible, auto width (option_2 > 32) not supported\n",
+                        index, testUtilBarcodeName(symbology));
+            }
+            return NULL;
+        }
     }
 
     if (linear_row_height) {
@@ -2232,7 +2247,7 @@ static const char *testUtilBwippName(int index, const struct zint_symbol *symbol
                 *gs1_cvt = 1;
             }
             return "gs1datamatrix";
-        } else if (symbology == BARCODE_AZTEC) {
+        } else if (symbology == BARCODE_AZTEC || symbology == BARCODE_ULTRA) {
             if (debug & ZINT_DEBUG_TEST_PRINT) {
                 printf("i:%d %s not BWIPP compatible, GS1_MODE not supported\n",
                         index, testUtilBarcodeName(symbology));
@@ -2883,6 +2898,46 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                     bwipp_opts = bwipp_opts_buf;
                 }
             }
+        } else if (symbology == BARCODE_MICROQR || symbology == BARCODE_RMQR) {
+            if (option_1 >= 1 && option_1 <= 4) {
+                static const char eccs[4] = { 'L', 'M', 'Q', 'H' };
+                sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%seclevel=%c",
+                        strlen(bwipp_opts_buf) ? " " : "", eccs[option_1 - 1]);
+                bwipp_opts = bwipp_opts_buf;
+            }
+            if (symbology == BARCODE_MICROQR) {
+                if (option_2 >= 1 && option_2 <= 4) {
+                    sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%sversion=M%d",
+                            strlen(bwipp_opts_buf) ? " " : "", option_2);
+                    bwipp_opts = bwipp_opts_buf;
+                }
+                if (option_3 != -1) {
+                    int mask = (symbol->option_3 >> 8) & 0x0F;
+                    if (mask >= 1 && mask <= 4) {
+                        sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%smask=%d",
+                                strlen(bwipp_opts_buf) ? " " : "", ((symbol->option_3 >> 8) & 0x0F));
+                        bwipp_opts = bwipp_opts_buf;
+                    }
+                }
+            } else if (symbology == BARCODE_RMQR) {
+                if (option_2 >= 1 && option_2 <= 32) {
+                    static const char *vers[] = {
+                        "R7x43", "R7x59", "R7x77", "R7x99", "R7x139", "R9x43", "R9x59", "R9x77", "R9x99", "R9x139",
+                        "R11x27", "R11x43", "R11x59", "R11x77", "R11x99", "R11x139", "R13x27", "R13x43", "R13x59", "R13x77",
+                        "R13x99", "R13x139", "R15x43", "R15x59", "R15x77", "R15x99", "R15x139", "R17x43", "R17x59", "R17x77",
+                        "R17x99", "R17x139",
+                    };
+                    sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%sversion=%s",
+                            strlen(bwipp_opts_buf) ? " " : "", vers[option_2 - 1]);
+                    bwipp_opts = bwipp_opts_buf;
+                }
+            }
+        } else if (symbology == BARCODE_ULTRA) {
+            if (option_1 >= 1 && option_1 <= 6) {
+                sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%seclevel=EC%d",
+                        strlen(bwipp_opts_buf) ? " " : "", option_1 - 1);
+                bwipp_opts = bwipp_opts_buf;
+            }
         }
     }
 
@@ -3022,7 +3077,7 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
 }
 
 /* Compare bwipp_dump.ps output to test suite module dump */
-int testUtilBwippCmp(const struct zint_symbol *symbol, char *msg, const char *bwipp_buf, const char *expected) {
+int testUtilBwippCmp(const struct zint_symbol *symbol, char *msg, char *bwipp_buf, const char *expected) {
     int bwipp_len = (int) strlen(bwipp_buf);
     int expected_len = (int) strlen(expected);
     int ret_memcmp;
@@ -3035,6 +3090,14 @@ int testUtilBwippCmp(const struct zint_symbol *symbol, char *msg, const char *bw
         return 2;
     }
 
+    if (symbol->symbology == BARCODE_ULTRA) {
+        static const char map[] = { '8', '1', '2', '3', '4', '5', '6', '7', '8', '7' };
+        for (i = 0; i < bwipp_len; i++) {
+            if (bwipp_buf[i] >= '0' && bwipp_buf[i] <= '9') {
+                bwipp_buf[i] = map[bwipp_buf[i] - '0'];
+            }
+        }
+    }
     ret_memcmp = memcmp(bwipp_buf, expected, expected_len);
     if (ret_memcmp != 0) {
         for (i = 0; i < expected_len; i++) {

@@ -439,7 +439,7 @@ INTERNAL int set_height(struct zint_symbol *symbol, const float min_row_height, 
 INTERNAL int colour_to_red(const int colour) {
     int return_val = 0;
 
-    switch(colour) {
+    switch (colour) {
         case 8: // White
         case 3: // Magenta
         case 4: // Red
@@ -455,7 +455,7 @@ INTERNAL int colour_to_red(const int colour) {
 INTERNAL int colour_to_green(const int colour) {
     int return_val = 0;
 
-    switch(colour) {
+    switch (colour) {
         case 8: // White
         case 1: // Cyan
         case 5: // Yellow
@@ -471,7 +471,7 @@ INTERNAL int colour_to_green(const int colour) {
 INTERNAL int colour_to_blue(const int colour) {
     int return_val = 0;
 
-    switch(colour) {
+    switch (colour) {
         case 8: // White
         case 1: // Cyan
         case 2: // Blue

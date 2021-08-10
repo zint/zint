@@ -255,7 +255,8 @@ static void test_input(int index, int generate, int debug) {
         /* 76*/ { UNICODE_MODE, 170, -1, "?", -1, 0, 170, "88 0A A2 FB 1F C0 00 00 00", "ECI-170 L1 (ASCII invariant)" },
         /* 77*/ { DATA_MODE, 899, -1, "\200", -1, 0, 899, "88 38 33 00 0C 00 00 00 00", "ECI-899 B1 (8-bit binary)" },
         /* 78*/ { UNICODE_MODE, 900, -1, "é", -1, 0, 900, "88 38 43 00 16 1D 48 00 00", "ECI-900 B2 (no conversion)" },
-        /* 79*/ { UNICODE_MODE, 3, -1, "β", -1, ZINT_ERROR_INVALID_DATA, 3, "Error 545: Invalid character in input data for ECI 3", "" },
+        /* 79*/ { UNICODE_MODE, 16384, -1, "é", -1, 0, 16384, "8C 04 00 03 00 16 1D 48 00", "ECI-16384 B2 (no conversion)" },
+        /* 80*/ { UNICODE_MODE, 3, -1, "β", -1, ZINT_ERROR_INVALID_DATA, 3, "Error 545: Invalid character in input data for ECI 3", "" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -1490,14 +1491,12 @@ static void test_encode(int index, int generate, int debug) {
             printf("                },\n");
         } else {
             if (ret < ZINT_ERROR) {
+                int width, row;
                 assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);
                 assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
 
-                if (ret == 0) {
-                    int width, row;
-                    ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
-                    assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, ret, width, row, data[i].data);
-                }
+                ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
+                assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, ret, width, row, data[i].data);
             }
         }
 

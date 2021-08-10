@@ -105,7 +105,7 @@ static int verify_character(char input, char type) {
     }
 }
 
-static int verify_postcode(char* postcode, int type) {
+static int verify_postcode(char *postcode, int type) {
     int i;
     char pattern[11];
 
@@ -152,7 +152,7 @@ INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int le
         return ZINT_ERROR_TOO_LONG;
     }
 
-    strcpy(local_source, (char*) source);
+    ustrcpy(local_source, source);
 
     if (length < 22) {
         for (i = length; i <= 22; i++) {
@@ -168,7 +168,7 @@ INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int le
         length = 26;
     }
 
-    to_upper((unsigned char*) local_source);
+    to_upper((unsigned char *) local_source);
 
     if (symbol->debug & ZINT_DEBUG_PRINT) {
         printf("Producing Mailmark %s\n", local_source);
