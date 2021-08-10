@@ -14,7 +14,7 @@
 # so you can encode the package version directly into the source files.
 #-----------------------------------------------------------------------
 
-AC_INIT([zint], [2.9.1])
+AC_INIT([zint], [2.10.0])
 
 #--------------------------------------------------------------------
 # Call TEA_INIT as the first TEA_ macro to set up initial vars.

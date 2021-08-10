@@ -4,7 +4,7 @@ win32 {
 }
 
 TARGET = QtZint2
-VERSION = 2.9.1.9
+VERSION = 2.10.0
 
 QMAKE_CFLAGS += /TP /wd4018 /wd4244 /wd4305
 QMAKE_CXXFLAGS += /TP /wd4018 /wd4244 /wd4305

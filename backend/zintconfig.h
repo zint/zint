@@ -34,8 +34,8 @@
 #define ZINTCONFIG_H
 
 #define ZINT_VERSION_MAJOR      2
-#define ZINT_VERSION_MINOR      9
-#define ZINT_VERSION_RELEASE    1
-#define ZINT_VERSION_BUILD      9
+#define ZINT_VERSION_MINOR      10
+#define ZINT_VERSION_RELEASE    0
+#define ZINT_VERSION_BUILD      0
 
 #endif /* ZINTCONFIG_H */
