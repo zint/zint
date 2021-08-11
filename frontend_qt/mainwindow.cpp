@@ -384,18 +384,17 @@ void MainWindow::about()
     QMessageBox::about(this, tr("About Zint"),
         /*: %1 is Zint version, %2 is Qt version */
         tr("<h2>Zint Barcode Studio %1</h2>"
-           "<p>A free barcode generator"
+           "<p>A free barcode generator</p>"
            "<p>Instruction manual is available at the project homepage:<br>"
            "<a href=\"http://www.zint.org.uk\">http://www.zint.org.uk</a>"
            "<p>Copyright &copy; 2006-2021 Robin Stuart and others.<br>"
-           "Qt back end by BogDan Vatra<br>"
-           "Windows port by Harald Oehlmann</p>"
-           "<p>Qt version %2"
-           "<p>With thanks to Norbert Szab&oacute;, Robert Elliott, Milton Neal, "
-               "Git Lost, Alonso Schaich, Andre Maute and many others at Sourceforge."
+           "Qt backend by BogDan Vatra</p>"
+           "<p>Qt version %2</p>"
+           "<p>With thanks to Harald Oehlmann, Norbert Szab&oacute;, Robert Elliott, Milton Neal, "
+               "Git Lost, Alonso Schaich, Andre Maute and many others at Sourceforge.</p>"
            "<p>Released under the GNU General Public License ver. 3 or later.<br>"
            "\"QR Code\" is a Registered Trademark of Denso Corp.<br>"
-           "\"Telepen\" is a Registered Trademark of SB Electronics."
+           "\"Telepen\" is a Registered Trademark of SB Electronics.</p>"
            "<p><table border=1><tr><td><small>Currently supported standards include:<br>"
            "BS 797:1996, BS 798:1996, ISO/IEC 12323:2005, ISO/IEC 15417:2007,<br>"
            "ISO/IEC 15438:2015, ISO/IEC 16022:2006, ISO/IEC 16023:2000,<br>"
@@ -403,7 +402,7 @@ void MainWindow::about()
            "ISO/IEC 24724:2011, ISO/IEC 24728:2006, ISO/IEC 24778:2008,<br>"
            "ISO/IEC 21471:2019, ANSI-HIBC 2.6-2016, ANSI/AIM BC6-2000,<br>"
            "ANSI/AIM BC12-1998, AIMD014 (v 1.63), USPS-B-3200"
-           "</small></td></tr></table>").arg(zint_version).arg(QT_VERSION_STR));
+           "</small></td></tr></table></p>").arg(zint_version).arg(QT_VERSION_STR));
 }
 
 int MainWindow::open_data_dialog()

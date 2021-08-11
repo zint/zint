@@ -1,2 +1,2 @@
-package ifneeded zint 2.9.1\
+package ifneeded zint 2.10.0\
     [list load [file join $dir zint[info sharedlibextension]]]
