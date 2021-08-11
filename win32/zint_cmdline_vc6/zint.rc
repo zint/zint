@@ -55,7 +55,7 @@ BEGIN
             VALUE "FileDescription", "zint barcode generator\0"
             VALUE "FileVersion", VER_FILEVERSION_STR
             VALUE "InternalName", "zint.exe\0"
-            VALUE "LegalCopyright", "Copyright © 2020 Robin Stuart\0"
+            VALUE "LegalCopyright", "Copyright © 2021 Robin Stuart\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "License", "GNU General Public License version 3\0"
             VALUE "OriginalFilename", "zint.exe\0"

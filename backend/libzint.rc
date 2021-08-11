@@ -30,7 +30,7 @@ BEGIN
       VALUE "FileDescription",	"libzint barcode library\0"
       VALUE "FileVersion",	VER_FILEVERSION_STR
       VALUE "InternalName",	"zint.dll\0"
-      VALUE "LegalCopyright",	"Copyright © 2020 Robin Stuart & BogDan Vatra\0"
+      VALUE "LegalCopyright",	"Copyright © 2021 Robin Stuart & BogDan Vatra\0"
       VALUE "OriginalFilename",	"zint.dll\0"
       VALUE "ProductName",	"libzint\0"
       VALUE "ProductVersion",	VER_FILEVERSION_STR
