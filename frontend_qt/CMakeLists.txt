@@ -24,6 +24,10 @@ endif()
 
 add_executable(${PROJECT_NAME} ${zint-qt_SRCS} resources.qrc)
 
+if(WIN32)
+    target_sources(${PROJECT_NAME} PRIVATE res/qtZint.rc)
+endif()
+
 target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_SOURCE_DIR}/backend" "${CMAKE_SOURCE_DIR}/backend_qt")
 
 target_link_libraries(${PROJECT_NAME} zint QZint Qt${QT_VERSION_MAJOR}::UiTools Qt${QT_VERSION_MAJOR}::Xml Qt${QT_VERSION_MAJOR}::Gui Qt${QT_VERSION_MAJOR}::Core)
