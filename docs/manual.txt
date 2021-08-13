@@ -348,7 +348,7 @@ Value    |    insensitive)  |
 93       |  DAFT            |  DAFT Code
 96       |  DPD             |  DPD Code
 97       |  MICROQR         |  Micro QR Code
-98       |  HIBC_128        |  HIBC Code 128
+98       |  HIBC_128        |  HIBC (Health Industry Barcode) Code 128
 99       |  HIBC_39         |  HIBC Code 39
 102      |  HIBC_DM         |  HIBC Data Matrix ECC200
 104      |  HIBC_QR         |  HIBC QR Code
@@ -566,12 +566,13 @@ symbol. In addition QR Code, Micro QR Code, Rectangular Micro QR Code, Han Xin
 Code and Grid Matrix can encode Japanese or Chinese characters which are also
 converted from UTF-8. If Zint encounters characters which can not be encoded
 using the default character encoding then it will take advantage of the ECI
-(Extended Channel Interpretations) mechanism to encode the data. Be aware that
-not all barcode readers support ECI mode, so this can sometimes lead to
-unreadable barcodes. If you are using characters beyond those supported by
-Latin-1 then you should check that the resulting barcode can be understood by
-your target barcode reader. Zint will generate a warning message when an ECI
-code that has not been explicitly requested has been inserted into a symbol.
+(Extended Channel Interpretations) mechanism to encode the data if the symbology
+supports it. Be aware that not all barcode readers support ECI mode, so this can
+sometimes lead to unreadable barcodes. If you are using characters beyond those
+supported by Latin-1 then you should check that the resulting barcode can be
+understood by your target barcode reader. Zint will generate a warning message
+when an ECI code that has not been explicitly requested has been inserted into a
+symbol.
 
 GS1 data can be encoded in a number of symbologies. Application Identifiers
 should be enclosed in [square brackets] followed by the data to be encoded (see
@@ -587,10 +588,10 @@ Labeler Identification Code (HIBC LIC). For HIBC Provider Applications Standard
 (HIBC PAS), preface the data with a slash "/".
 
 The --binary option encodes the input data as given. Automatic code page
-translations to ECI pages is disabled, and no validation of the data's encoding
-takes place. This may be used for raw binary or binary encrypted data.
-This switch plays together with the built-in ECI logic and examples may
-be found below.
+translation to an ECI page is disabled, and no validation of the data's encoding
+takes place. This may be used for raw binary or binary encrypted data. This
+switch plays together with the built-in ECI logic and examples may be found
+below.
 
 The --fullmultibyte option uses the multibyte modes of QR Code, Micro QR Code,
 Rectangular Micro QR Code, Han Xin Code and Grid Matrix for binary and Latin
@@ -598,27 +599,23 @@ data, maximizing density. This is achieved by using compression designed for
 Kanji/Hanzi characters, however some decoders take blocks which are encoded this
 way and interpret them as Kanji/Hanzi characters, typically by applying a
 transformation to UTF-8 and thus causing data corruption. Symbols encoded with
-this option should be checked against decoders before they are used.
-The popular open-source ZXing decoder is known to exhibit this behaviour.
+this option should be checked against decoders before they are used. The popular
+open-source ZXing decoder is known to exhibit this behaviour.
 
-If your data contains non ISO-Latin-1 characters, you may encode it using an
-ECI-aware symbology and an ECI value from the table below.
-The ECI information is added to your code symbol as prefix data.
+If your data contains non-Latin-1 characters, you may encode it using an
+ECI-aware symbology and an ECI value from the table below. The ECI information
+is added to your code symbol as prefix data.
 
 The ECI value may be specified with the --eci switch, followed by the value in
-the column "ECI Code".
+the column "ECI Code". The input data should be UTF-8 formatted. Zint
+automatically translates the data into the target encoding.
+
 The ECI value of 0 does not encode any ECI information in the code symbol. In
 this case, the default encoding applies for the data which is "ISO/IEC 8859-1 -
 Latin alphabet No. 1".
 
-The first row of the table (ECI code 3) is the default value and does not lead
-to any ECI information being included in the symbol.
-
-The input data should be UTF-8 formatted. Zint automatically translates the
-data into the target encoding.
-
-The row marked with a star (*) translates GB 2312 codepoints, except when using
-Han Xin Code, which translates GB 18030 codepoints, a superset of GB 2312.
+The row marked with an asterisk (*) translates GB 2312 codepoints, except when
+using Han Xin Code, which translates GB 18030 codepoints, a superset of GB 2312.
 
 Note: the "--eci 3" specification should only be used for special purposes.
 Using this parameter, the ECI information is explicitly added to the code
@@ -2069,7 +2066,7 @@ component the number of columns must be at least 2.
 6.2.10 Code 49
 -------------
 Developed in 1987 at Intermec, Code 49 is a cross between UPC and Code 39. It
-it one of the earliest stacked symbologies and influenced the design of Code
+is one of the earliest stacked symbologies and influenced the design of Code
 16K a few years later. It supports full 7-bit ASCII input up to a maximum of 49
 characters or 81 numeric digits. GS1 data encoding is also supported.
 
@@ -3034,7 +3031,8 @@ those owners, companies or organisations.
 
 7.3 Version Information
 -----------------------
-This has been moved to "ChangeLog" in the project root directory.
+The current version of Zint is 2.10.0. See "ChangeLog" in the project root
+directory for information on all releases.
 
 7.4 Sources of Information
 --------------------------

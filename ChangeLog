@@ -475,7 +475,7 @@ compiling on MS Windows platform - tested successfully on XP and Vista.
 
 
 Version 2.1.3 2009-05-19
-=============
+========================
 Many improvements to the QZint GUI which is now renamed "Zint Barcode
 Studio 0.2". Added Japanese Postal Barcode, Code 49 and Channel Code and made
 corrections to Data Matrix ECC200 (Binary mode data compression terminates too

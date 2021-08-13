@@ -222,6 +222,10 @@ version_replace(1, $data_dirname . 'backend_qt/backend_vc8.pro', '/^VERSION[ \t]
 version_replace(1, $data_dirname . 'backend_qt/backend_qt.pro', '/ZINT_VERSION="/', '/[0-9.]+/', $v_str);
 version_replace(1, $data_dirname . 'backend_qt/backend_qt.pro', '/^VERSION[ \t]*=/', '/[0-9.]+/', $v_str);
 
+// docs/manual.txt
+
+version_replace(1, $data_dirname . 'docs/manual.txt', '/^The current version of Zint/', '/[0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+)?/', $v_str);
+
 // frontend_qt/res/qtZint.rc
 
 rc_replace($data_dirname . 'frontend_qt/res/qtZint.rc', $rc_str);
