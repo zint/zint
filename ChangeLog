@@ -14,7 +14,8 @@ Changes
 - Command line switches -d or -i for code data may now be at any position.
 - Add rotation for vector formats
 - Change double to float for performance in many internal places
-- Ticket 197: Allow scaling in substeps. Warn if scaling < 0.5 as pixels lost.
+- Ticket 197: optimize raster scaling for 0.5 substeps;
+  ignore raster scaling < 0.5 as pixels lost.
 - Ticket 197: add output option to bypass time-intensive buffer_plot()
   (OUT_BUFFER_INTERMEDIATE)
 - Reduce BMP size by using 1 bit per pixel (except Ultracode)
@@ -38,13 +39,15 @@ Changes
 - C25STANDARD/C25INTER/C25IATA/C25LOGIC/C25IND: add check digit option (#216)
 - Use zint-64.svg for smoother icons, props frhun
 - Add whitespace_height to zint_symbol (vertical whitespace)
-- AZTEC: optimize populate_map (good for small data)
+- AZTEC: optimize populate_map (good for small data) - avoids MSVC bug also
+- Various workarounds for other MSVC bugs
 - CMake: Windows compatible, backend/tests & frontend/tests now subprojects
   using new zint_add_test.cmake file, static build, new ZINT_USE_PNG and
   ZINT_USE_QT options, getopt moved to subproject and getopt detection,
   sanitizer flag detection, and many other improvements, props Alonso Schaich
 - PLESSEY: add options NCR weighted mod-10, hide check digit(s) in HRT
 - Fuller error messages; more comments zint.h
+- CMake: simplication and modernization, Qt5/6 version, props Null Void
 - POSTNET/PLANET: allow up to 38 chars (ZINT_WARN_NONCOMPLIANT) (see [d7ac9c])
 - RMQR: update to new draft ISO/IEC JTC1/SC31N000 (Draft 2019-6-24)
 - ULTRA: update max size and min cols based on BWIPP 2021-07-14 update
