@@ -1,3 +1,9 @@
+Version 2.10.0.9 (dev) not released yet
+=======================================
+
+- Placeholder
+
+
 Version 2.10.0 2021-08-14
 =========================
 
@@ -47,7 +53,7 @@ Changes
   sanitizer flag detection, and many other improvements, props Alonso Schaich
 - PLESSEY: add options NCR weighted mod-10, hide check digit(s) in HRT
 - Fuller error messages; more comments zint.h
-- CMake: simplication and modernization, Qt5/6 version, props Null Void
+- CMake: simplication and modernization, Qt5/6 version, props Null Void (atom)
 - POSTNET/PLANET: allow up to 38 chars (ZINT_WARN_NONCOMPLIANT) (see [d7ac9c])
 - RMQR: update to new draft ISO/IEC JTC1/SC31N000 (Draft 2019-6-24)
 - ULTRA: update max size and min cols based on BWIPP 2021-07-14 update

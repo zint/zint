@@ -3031,7 +3031,7 @@ those owners, companies or organisations.
 
 7.3 Version Information
 -----------------------
-The current version of Zint is 2.10.0. See "ChangeLog" in the project root
+The current version of Zint is 2.10.0.9. See "ChangeLog" in the project root
 directory for information on all releases.
 
 7.4 Sources of Information

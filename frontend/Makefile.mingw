@@ -6,7 +6,7 @@
 # make clean		cleans up a previous compilation and any object or editor files
 #
 
-ZINT_VERSION:=-DZINT_VERSION=\"2.10.0\"
+ZINT_VERSION:=-DZINT_VERSION=\"2.10.0.9\"
 
 CC := gcc
 CFLAGS := -D_WIN32 -O2 -fms-extensions -mms-bitfields -fno-exceptions -fomit-frame-pointer -Wall -I../backend
