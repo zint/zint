@@ -47,6 +47,8 @@
 #define LEVEL_Q     3
 #define LEVEL_H     4
 
+static const char ecc_level_names[] = { 'L', 'M', 'Q', 'H' };
+
 #define QR_PERCENT  38 /* Alphanumeric mode % */
 
 #define RMQR_VERSION    41
@@ -417,7 +419,7 @@ static void qr_binary(unsigned char datastream[], const int version, const int t
         }
     }
 
-    if (eci != 0) { /* Not applicable to RMQR or MICROQR */
+    if (eci != 0) { /* Not applicable to MICROQR */
         bp = bin_append_posn(7, 4, binary, bp); /* ECI (Table 4) */
         if (eci <= 127) {
             bp = bin_append_posn(eci, 8, binary, bp); /* 000000 to 000127 */
@@ -694,6 +696,8 @@ static void qr_binary(unsigned char datastream[], const int version, const int t
         current_bytes = (bp + padbits) / 8;
         (void) bin_append_posn(0, padbits, binary, bp); /* Last use so not setting bp */
     }
+
+    if (debug_print) printf("Terminated binary (%d): %.*s (padbits %d)\n", bp, bp, binary, padbits);
 
     /* Put data into 8-bit codewords */
     for (i = 0; i < current_bytes; i++) {
@@ -1721,6 +1725,14 @@ INTERNAL int qr_code(struct zint_symbol *symbol, unsigned char source[], int len
             break;
     }
 
+    if (debug_print) {
+        printf("Minimum codewords: %d\n", (est_binlen + 7) / 8);
+        printf("Selected version: %d-%c (%dx%d)\n",
+                version, ecc_level_names[ecc_level - 1], qr_sizes[version - 1], qr_sizes[version - 1]);
+        printf("Number of data codewords in symbol: %d\n", target_codewords);
+        printf("Number of ECC blocks: %d\n", blocks);
+    }
+
 #ifndef _MSC_VER
     unsigned char datastream[target_codewords + 1];
     unsigned char fullstream[qr_total_codewords[version - 1] + 1];
@@ -2399,7 +2411,7 @@ INTERNAL int microqr(struct zint_symbol *symbol, unsigned char source[], int len
                 return ZINT_ERROR_INVALID_OPTION;
             }
             if (symbol->option_2 != 4 && symbol->option_1 == 3) {
-                strcpy(symbol->errtxt, "575: Error correction level Q requires Version M4");
+                strcpy(symbol->errtxt, "563: Error correction level Q requires Version M4");
                 return ZINT_ERROR_INVALID_OPTION;
             }
         }
@@ -2604,7 +2616,8 @@ INTERNAL int microqr(struct zint_symbol *symbol, unsigned char source[], int len
     }
 
     if (debug_print) {
-        printf("Version: M%d, Size: %dx%d, ECC: %d, Format %d\n", version + 1, size, size, ecc_level, format);
+        printf("Version: M%d-%c, Size: %dx%d, Format: %d\n",
+                version + 1, ecc_level_names[ecc_level - 1], size, size, format);
     }
 
     format_full = qr_annex_c1[(format << 2) + bitmask];
@@ -2909,16 +2922,17 @@ INTERNAL int rmqr(struct zint_symbol *symbol, unsigned char source[], int length
     int footprint, best_footprint, format_data;
     unsigned int left_format_info, right_format_info;
     int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
+    int eci_length = get_eci_length(symbol->eci, source, length);
 
 #ifndef _MSC_VER
-    unsigned int jisdata[length + 1];
-    char mode[length + 1];
+    unsigned int jisdata[eci_length + 1];
+    char mode[eci_length + 1];
 #else
     unsigned char *datastream;
     unsigned char *fullstream;
     unsigned char *grid;
-    unsigned int *jisdata = (unsigned int *) _alloca((length + 1) * sizeof(unsigned int));
-    char *mode = (char *) _alloca(length + 1);
+    unsigned int *jisdata = (unsigned int *) _alloca((eci_length + 1) * sizeof(unsigned int));
+    char *mode = (char *) _alloca(eci_length + 1);
 #endif
 
     gs1 = ((symbol->input_mode & 0x07) == GS1_MODE);
@@ -2928,18 +2942,27 @@ INTERNAL int rmqr(struct zint_symbol *symbol, unsigned char source[], int length
     if ((symbol->input_mode & 0x07) == DATA_MODE) {
         sjis_cpy(source, &length, jisdata, full_multibyte);
     } else {
-        /* Try ISO 8859-1 conversion first */
-        int error_number = sjis_utf8_to_eci(3, source, &length, jisdata, full_multibyte);
-        if (error_number != 0) {
+        int done = 0;
+        if (symbol->eci != 20) { /* Unless ECI 20 (Shift JIS) */
+            /* Try other encodings (ECI 0 defaults to ISO/IEC 8859-1) */
+            int error_number = sjis_utf8_to_eci(symbol->eci, source, &length, jisdata, full_multibyte);
+            if (error_number == 0) {
+                done = 1;
+            } else if (symbol->eci) {
+                sprintf(symbol->errtxt, "564: Invalid character in input data for ECI %d", symbol->eci);
+                return error_number;
+            }
+        }
+        if (!done) {
             /* Try Shift-JIS */
-            error_number = sjis_utf8(symbol, source, &length, jisdata);
+            int error_number = sjis_utf8(symbol, source, &length, jisdata);
             if (error_number != 0) {
                 return error_number;
             }
         }
     }
 
-    est_binlen = getBinaryLength(RMQR_VERSION + 31, mode, jisdata, length, gs1, 0 /*eci*/, debug_print);
+    est_binlen = getBinaryLength(RMQR_VERSION + 31, mode, jisdata, length, gs1, symbol->eci, debug_print);
 
     ecc_level = LEVEL_M;
     max_cw = 152;
@@ -2975,7 +2998,7 @@ INTERNAL int rmqr(struct zint_symbol *symbol, unsigned char source[], int length
         autosize = 31;
         best_footprint = rmqr_height[31] * rmqr_width[31];
         for (version = 30; version >= 0; version--) {
-            est_binlen = getBinaryLength(RMQR_VERSION + version, mode, jisdata, length, gs1, 0 /*eci*/, debug_print);
+            est_binlen = getBinaryLength(RMQR_VERSION + version, mode, jisdata, length, gs1, symbol->eci, debug_print);
             footprint = rmqr_height[version] * rmqr_width[version];
             if (ecc_level == LEVEL_M) {
                 if (8 * rmqr_data_codewords_M[version] >= est_binlen) {
@@ -2994,20 +3017,20 @@ INTERNAL int rmqr(struct zint_symbol *symbol, unsigned char source[], int length
             }
         }
         version = autosize;
-        est_binlen = getBinaryLength(RMQR_VERSION + version, mode, jisdata, length, gs1, 0 /*eci*/, debug_print);
+        est_binlen = getBinaryLength(RMQR_VERSION + version, mode, jisdata, length, gs1, symbol->eci, debug_print);
     }
 
     if ((symbol->option_2 >= 1) && (symbol->option_2 <= 32)) {
         // User specified symbol size
         version = symbol->option_2 - 1;
-        est_binlen = getBinaryLength(RMQR_VERSION + version, mode, jisdata, length, gs1, 0 /*eci*/, debug_print);
+        est_binlen = getBinaryLength(RMQR_VERSION + version, mode, jisdata, length, gs1, symbol->eci, debug_print);
     }
 
     if (symbol->option_2 >= 33) {
         // User has specified symbol height only
         version = rmqr_fixed_height_upper_bound[symbol->option_2 - 32];
         for (i = version - 1; i > rmqr_fixed_height_upper_bound[symbol->option_2 - 33]; i--) {
-            est_binlen = getBinaryLength(RMQR_VERSION + i, mode, jisdata, length, gs1, 0 /*eci*/, debug_print);
+            est_binlen = getBinaryLength(RMQR_VERSION + i, mode, jisdata, length, gs1, symbol->eci, debug_print);
             if (ecc_level == LEVEL_M) {
                 if (8 * rmqr_data_codewords_M[i] >= est_binlen) {
                     version = i;
@@ -3018,7 +3041,7 @@ INTERNAL int rmqr(struct zint_symbol *symbol, unsigned char source[], int length
                 }
             }
         }
-        est_binlen = getBinaryLength(RMQR_VERSION + version, mode, jisdata, length, gs1, 0 /*eci*/, debug_print);
+        est_binlen = getBinaryLength(RMQR_VERSION + version, mode, jisdata, length, gs1, symbol->eci, debug_print);
     }
 
     if (symbol->option_1 == -1) {
@@ -3043,15 +3066,11 @@ INTERNAL int rmqr(struct zint_symbol *symbol, unsigned char source[], int length
     }
 
     if (debug_print) {
-        printf("Minimum codewords = %d\n", est_binlen / 8);
-        printf("Selected version: %d = R%dx%d-", (version + 1), rmqr_height[version], rmqr_width[version]);
-        if (ecc_level == LEVEL_M) {
-            printf("M\n");
-        } else {
-            printf("H\n");
-        }
-        printf("Number of data codewords in symbol = %d\n", target_codewords);
-        printf("Number of ECC blocks = %d\n", blocks);
+        printf("Minimum codewords: %d\n", (est_binlen + 7) / 8);
+        printf("Selected version: %d = R%dx%d-%c\n",
+                (version + 1), rmqr_height[version], rmqr_width[version], ecc_level_names[ecc_level - 1]);
+        printf("Number of data codewords in symbol: %d\n", target_codewords);
+        printf("Number of ECC blocks: %d\n", blocks);
     }
 
 #ifndef _MSC_VER
@@ -3062,7 +3081,7 @@ INTERNAL int rmqr(struct zint_symbol *symbol, unsigned char source[], int length
     fullstream = (unsigned char *) _alloca(rmqr_total_codewords[version] + 1);
 #endif
 
-    qr_binary(datastream, RMQR_VERSION + version, target_codewords, mode, jisdata, length, gs1, 0 /*eci*/, est_binlen,
+    qr_binary(datastream, RMQR_VERSION + version, target_codewords, mode, jisdata, length, gs1, symbol->eci, est_binlen,
                 debug_print);
 #ifdef ZINT_TEST
     if (symbol->debug & ZINT_DEBUG_TEST) debug_test_codeword_dump(symbol, datastream, target_codewords);

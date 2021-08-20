@@ -484,6 +484,7 @@ static int supports_eci(const int symbology) {
         case BARCODE_GRIDMATRIX:
         case BARCODE_HANXIN:
         case BARCODE_ULTRA:
+        case BARCODE_RMQR:
             return 1;
             break;
     }

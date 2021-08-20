@@ -371,11 +371,11 @@ void MainWindow::about()
     int version_release = lib_version % 100;
     int version_build;
 
-    if (version_release > 10) {
+    if (version_release >= 9) {
         /* This is a test release */
         version_release = version_release / 10;
         version_build = lib_version % 10;
-        QTextStream(&zint_version) << version_major << "." << version_minor << "." << version_release << "." << version_build;
+        QTextStream(&zint_version) << version_major << "." << version_minor << "." << version_release << "." << version_build << " (dev)";
     } else {
         /* This is a stable release */
         QTextStream(&zint_version) << version_major << "." << version_minor << "." << version_release;

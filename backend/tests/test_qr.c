@@ -42,6 +42,7 @@ static void test_qr_options(int index, int debug) {
         int expected_size;
         int compare_previous;
     };
+    // 貫 U+8CAB kanji, in Shift JIS 0x8AD1 (\212\321), UTF-8 E8B2AB
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
         /*  0*/ { -1, -1, "12345", 0, 0, 21, -1 }, // ECC auto-set to 1 (L), version auto-set to 1
@@ -294,7 +295,7 @@ static void test_qr_input(int index, int generate, int debug) {
         length = testUtilSetSymbol(symbol, BARCODE_QRCODE, data[i].input_mode, data[i].eci, -1 /*option_1*/, -1, data[i].option_3, -1 /*output_options*/, data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
-        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d\n", i, ret, data[i].ret);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (generate) {
             printf("        /*%3d*/ { %s, %d, %s, \"%s\", %s, %d, \"%s\", \"%s\" },\n",
@@ -359,7 +360,7 @@ static void test_qr_gs1(int index, int generate, int debug) {
         length = testUtilSetSymbol(symbol, BARCODE_QRCODE, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
-        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d\n", i, ret, data[i].ret);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (generate) {
             printf("        /*%3d*/ { %s, \"%s\", %s, \"%s\", \"%s\" },\n",
@@ -437,7 +438,7 @@ static void test_qr_optimize(int index, int generate, int debug) {
         length = testUtilSetSymbol(symbol, BARCODE_QRCODE, data[i].input_mode, -1 /*eci*/, data[i].option_1, -1, ZINT_FULL_MULTIBYTE, -1 /*output_options*/, data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
-        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d\n", i, ret, data[i].ret);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (generate) {
             printf("        /*%3d*/ { %s, %d, \"%s\", %s, \"%s\", \"%s\" },\n",
@@ -466,11 +467,13 @@ static void test_qr_encode(int index, int generate, int debug) {
 
         int expected_rows;
         int expected_width;
+        int bwipp_cmp;
         char *comment;
         char *expected;
     };
+    // や U+3084 kanji, in Shift JIS 0x82E2 (\202\342), UTF-8 E38284; its 2nd byte 0xE2 + 0x40-FC also form Shift JIS
     struct item data[] = {
-        /*  0*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1, -1, "QR Code Symbol", 0, 21, 21, "ISO 18004 Figure 1 **NOT SAME** uses mask 110 instead of 101",
+        /*  0*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1, -1, "QR Code Symbol", 0, 21, 21, 0, "ISO 18004 Figure 1 **NOT SAME** uses mask 110 instead of 101; BWIPP uses 101",
                     "111111101001101111111"
                     "100000101001101000001"
                     "101110101100101011101"
@@ -493,7 +496,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000100001101111111"
                     "111111101001011000000"
                 },
-        /*  1*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1, 6 << 8, "QR Code Symbol", 0, 21, 21, "ISO 18004 Figure 1, explicit mask 101, same",
+        /*  1*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1, 6 << 8, "QR Code Symbol", 0, 21, 21, 1, "ISO 18004 Figure 1, explicit mask 101, same",
                     "111111100001101111111"
                     "100000101001101000001"
                     "101110101110101011101"
@@ -516,7 +519,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000100001110111100"
                     "111111101011001010010"
                 },
-        /*  2*/ { BARCODE_QRCODE, UNICODE_MODE, 2, -1, -1, "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ", 0, 33, 33, "ISO 18004 Figure 29, same (mask 100)",
+        /*  2*/ { BARCODE_QRCODE, UNICODE_MODE, 2, -1, -1, "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ", 0, 33, 33, 1, "ISO 18004 Figure 29, same (mask 100)",
                     "111111101100110010010010101111111"
                     "100000100010111010111000101000001"
                     "101110100000001101101100001011101"
@@ -551,7 +554,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000100010110111000110101001001"
                     "111111101101101011010000111100011"
                 },
-        /*  3*/ { BARCODE_QRCODE, UNICODE_MODE, 2, 1, -1, "01234567", 0, 21, 21, "ISO 18004 Annex I I.2, same (mask 010)",
+        /*  3*/ { BARCODE_QRCODE, UNICODE_MODE, 2, 1, -1, "01234567", 0, 21, 21, 0, "ISO 18004 Annex I I.2, same (mask 010); BWIPP uses mask 000",
                     "111111100101101111111"
                     "100000100111101000001"
                     "101110101000001011101"
@@ -574,7 +577,30 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000100000000110110"
                     "111111101111010010100"
                 },
-        /*  4*/ { BARCODE_QRCODE, GS1_MODE, 1, -1, -1, "[01]09501101530003[8200]http://example.com", 0, 25, 25, "GS1 General Specifications 21.0.1 Figure 5.1-7 **NOT SAME** figure uses Byte encodation only",
+        /*  4*/ { BARCODE_QRCODE, UNICODE_MODE, 2, 1, 1 << 8, "01234567", 0, 21, 21, 1, "ISO 18004 Annex I Figure I.2, explicit mask 000, same as BWIPP",
+                    "111111100011101111111"
+                    "100000101110001000001"
+                    "101110100110001011101"
+                    "101110100101101011101"
+                    "101110101101101011101"
+                    "100000100001001000001"
+                    "111111101010101111111"
+                    "000000000000000000000"
+                    "101010100010100010010"
+                    "110100001011010100010"
+                    "000110111011011101110"
+                    "110011010101110110010"
+                    "001001110111011100001"
+                    "000000001010001000010"
+                    "111111100000100010001"
+                    "100000100010001001011"
+                    "101110101110101011101"
+                    "101110100101010101110"
+                    "101110101101011100101"
+                    "100000100001110111000"
+                    "111111101001011100101"
+                },
+        /*  5*/ { BARCODE_QRCODE, GS1_MODE, 1, -1, -1, "[01]09501101530003[8200]http://example.com", 0, 25, 25, 0, "GS1 General Specifications 21.0.1 Figure 5.1-7 **NOT SAME** figure uses Byte encodation only; BWIPP uses mask 001",
                     "1111111001101101001111111"
                     "1000001010010101001000001"
                     "1011101011111010101011101"
@@ -601,7 +627,34 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "1000001010110101100111010"
                     "1111111011101100010010111"
                 },
-        /*  5*/ { BARCODE_QRCODE, GS1_MODE, 2, -1, -1, "[01]00857674002010[8200]http://www.gs1.org/", 0, 29, 29, "GS1 General Specifications 21.0.1 Figure 5.1-7, same (mask 011)",
+        /*  6*/ { BARCODE_QRCODE, GS1_MODE, 1, -1, 2 << 8, "[01]09501101530003[8200]http://example.com", 0, 25, 25, 1, "GS1 General Specifications 21.0.1 Figure 5.1-7, explicit mask 001, same as BWIPP",
+                    "1111111010111000001111111"
+                    "1000001011100100101000001"
+                    "1011101000111101101011101"
+                    "1011101000110101101011101"
+                    "1011101011100010001011101"
+                    "1000001010001100101000001"
+                    "1111111010101010101111111"
+                    "0000000010110110000000000"
+                    "1110011011100101011110011"
+                    "0001100101111000101001101"
+                    "0010111000010010011110100"
+                    "0111100001010010000000101"
+                    "1011011101000111110111110"
+                    "0111100100000100010011000"
+                    "1100001011010010011001011"
+                    "0001100110010011011111100"
+                    "1110011101010001111111011"
+                    "0000000011011100100010010"
+                    "1111111001010010101011001"
+                    "1000001011100110100011000"
+                    "1011101000001110111111011"
+                    "1011101001110001110101010"
+                    "1011101011110011111011111"
+                    "1000001011110010100000010"
+                    "1111111010111001000111101"
+                },
+        /*  7*/ { BARCODE_QRCODE, GS1_MODE, 2, -1, -1, "[01]00857674002010[8200]http://www.gs1.org/", 0, 29, 29, 0, "GS1 General Specifications 21.0.1 Figure 5.7.3-1, same (mask 011); BWIPP uses mask 101",
                     "11111110100101110101001111111"
                     "10000010111101001000001000001"
                     "10111010010000001110001011101"
@@ -632,7 +685,38 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "10000010010111010001110010100"
                     "11111110101111111011110100110"
                 },
-        /*  6*/ { BARCODE_HIBC_QR, -1, 2, -1, -1, "H123ABC01234567890", 0, 21, 21, "ANSI/HIBC 2.6 - 2016 Figure C5 same (mask 001)",
+        /*  8*/ { BARCODE_QRCODE, GS1_MODE, 2, -1, 6 << 8, "[01]00857674002010[8200]http://www.gs1.org/", 0, 29, 29, 1, "GS1 General Specifications 21.0.1 Figure 5.7.3-1, explicit mask 101, same as BWIPP",
+                    "11111110001000011000101111111"
+                    "10000010111011101110101000001"
+                    "10111010101011010101001011101"
+                    "10111010110110001010001011101"
+                    "10111010011100011101101011101"
+                    "10000010010100010010101000001"
+                    "11111110101010101010101111111"
+                    "00000000110000111100000000000"
+                    "10000010110010001011111001110"
+                    "00011000010101001111100001000"
+                    "01110010111101111011110101100"
+                    "00011100111101000001011011110"
+                    "10001010110001011000010110001"
+                    "11101100000010001001001111010"
+                    "01010010111100000111110100110"
+                    "01111001100110010001110001100"
+                    "00100110100010001101111110011"
+                    "11001100100011100101000000000"
+                    "11100010011110010010011111111"
+                    "10011000101101000101010011100"
+                    "10010111100010110011111110010"
+                    "00000000111000100001100010011"
+                    "11111110001000000111101011000"
+                    "10000010011100111001100010000"
+                    "10111010011111101011111110111"
+                    "10111010000001100101011001010"
+                    "10111010010011110010100010010"
+                    "10000010001111101001001010011"
+                    "11111110111001001101000010000"
+                },
+        /*  9*/ { BARCODE_HIBC_QR, -1, 2, -1, -1, "H123ABC01234567890", 0, 21, 21, 1, "ANSI/HIBC 2.6 - 2016 Figure C5 same (mask 001)",
                     "111111101010001111111"
                     "100000100100101000001"
                     "101110101011001011101"
@@ -655,7 +739,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000100100101111001"
                     "111111101111011001111"
                 },
-        /*  7*/ { BARCODE_HIBC_QR, -1, 2, -1, -1, "/EU720060FF0/O523201", 0, 25, 25, "HIBC/PAS Section 2.2 2nd Purchase Order **NOT SAME** uses mask 100 instead of 011",
+        /* 10*/ { BARCODE_HIBC_QR, -1, 2, -1, -1, "/EU720060FF0/O523201", 0, 25, 25, 0, "HIBC/PAS Section 2.2 2nd Purchase Order **NOT SAME** uses mask 100 instead of 011; BWIPP uses mask 011",
                     "1111111011011110101111111"
                     "1000001001001111001000001"
                     "1011101001010010001011101"
@@ -682,7 +766,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "1000001000010100100011111"
                     "1111111010101101111000001"
                 },
-        /*  8*/ { BARCODE_HIBC_QR, -1, 2, -1, 4 << 8, "/EU720060FF0/O523201", 0, 25, 25, "HIBC/PAS Section 2.2 2nd Purchase Order same, explicit mask 011",
+        /* 11*/ { BARCODE_HIBC_QR, -1, 2, -1, 4 << 8, "/EU720060FF0/O523201", 0, 25, 25, 1, "HIBC/PAS Section 2.2 2nd Purchase Order same, explicit mask 011",
                     "1111111010011001101111111"
                     "1000001011010011001000001"
                     "1011101000000111001011101"
@@ -709,7 +793,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "1000001001000001110110101"
                     "1111111011101010111111001"
                 },
-        /*  9*/ { BARCODE_HIBC_QR, -1, 2, -1, -1, "/KN12345", 0, 21, 21, "HIBC/PAS Section 2.2 Asset Tag **NOT SAME** uses mask 000 instead of 100",
+        /* 12*/ { BARCODE_HIBC_QR, -1, 2, -1, -1, "/KN12345", 0, 21, 21, 1, "HIBC/PAS Section 2.2 Asset Tag **NOT SAME** uses mask 000 instead of 100",
                     "111111100000101111111"
                     "100000101010101000001"
                     "101110100011001011101"
@@ -732,7 +816,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000100100001100111"
                     "111111101000101110101"
                 },
-        /* 10*/ { BARCODE_HIBC_QR, -1, 2, -1, 5 << 8, "/KN12345", 0, 21, 21, "HIBC/PAS Section 2.2 Asset Tag, same, explicit mask 100",
+        /* 13*/ { BARCODE_HIBC_QR, -1, 2, -1, 5 << 8, "/KN12345", 0, 21, 21, 1, "HIBC/PAS Section 2.2 Asset Tag, same, explicit mask 100",
                     "111111101010101111111"
                     "100000100111001000001"
                     "101110100110101011101"
@@ -755,7 +839,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000100110011110101"
                     "111111101010111100111"
                 },
-        /* 11*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1, -1, "12345678901234567890123456789012345678901", 0, 21, 21, "Max capacity ECC 1 Version 1 41 numbers",
+        /* 14*/ { BARCODE_QRCODE, UNICODE_MODE, 1, -1, -1, "12345678901234567890123456789012345678901", 0, 21, 21, 1, "Max capacity ECC 1 Version 1 41 numbers",
                     "111111101001001111111"
                     "100000101100101000001"
                     "101110101011101011101"
@@ -778,7 +862,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000101000101001010"
                     "111111101010110000111"
                 },
-        /* 12*/ { BARCODE_QRCODE, UNICODE_MODE, 2, -1, -1, "12345678901234567890123456789012345678901", 0, 25, 25, "ECC 2 auto-sets version 2",
+        /* 15*/ { BARCODE_QRCODE, UNICODE_MODE, 2, -1, -1, "12345678901234567890123456789012345678901", 0, 25, 25, 1, "ECC 2 auto-sets version 2",
                     "1111111011001110101111111"
                     "1000001001000000001000001"
                     "1011101011001111101011101"
@@ -805,7 +889,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "1000001000000100111010110"
                     "1111111010011100001100111"
                 },
-        /* 13*/ { BARCODE_QRCODE, UNICODE_MODE, 4, 10, -1, "点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点", 0, 57, 57, "Max capacity ECC 4 Version 10 74 kanji",
+        /* 16*/ { BARCODE_QRCODE, UNICODE_MODE, 4, 10, -1, "点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点", 0, 57, 57, 1, "Max capacity ECC 4 Version 10 74 kanji",
                     "111111100111100000011001000011111100010010011011001111111"
                     "100000100011100101110000101000101001101111000001001000001"
                     "101110101001011100010001111110111100101001100011001011101"
@@ -864,7 +948,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000100110011101110011001101110110101010001101000011011"
                     "111111100010001101010110001001000001001011001001011001011"
                 },
-        /* 14*/ { BARCODE_QRCODE, UNICODE_MODE, 4, 27, -1, "点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点", 0, 125, 125, "Max capacity ECC 4 Version 27 385 kanji",
+        /* 17*/ { BARCODE_QRCODE, UNICODE_MODE, 4, 27, -1, "点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点", 0, 125, 125, 1, "Max capacity ECC 4 Version 27 385 kanji",
                     "11111110101001001100111100100011110001010011110000001100010110100011101010111000011101101001011111001111101101101001101111111"
                     "10000010110001101110011001101111000101001011011001100110101000101010011110000000101000100101101110110000011110100110001000001"
                     "10111010100000000100000101000101111001011001010100100100100000000101100011010001100111101010010101101101101101101101001011101"
@@ -991,7 +1075,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "10000010010111001111010001100001010001010110110001100000111101011100000010010111101001001100101101111011011001000001101001110"
                     "11111110000000010001110110000001010111011111000000111111010101110100101000110111000101101011001100000101101101101001100111111"
                 },
-        /* 15*/ { BARCODE_QRCODE, UNICODE_MODE, 4, 40, -1, "点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点" "点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点", 0, 177, 177, "Max capacity ECC 4 Version 40 784 kanji",
+        /* 18*/ { BARCODE_QRCODE, UNICODE_MODE, 4, 40, -1, "点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点" "点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点", 0, 177, 177, 1, "Max capacity ECC 4 Version 40 784 kanji",
                     "111111101010001111111101101110111010110111001110101000010001011011011101001110110011111011010000010101001010011110010000010110111111001001011111101000010010111111001010001111111"
                     "100000101010110001001000101111011001001100100110110000000111110101111011110001101110000111000100101111010011001111100111111001001011011011110011011111111001000010010010101000001"
                     "101110101001001101111001110010010100000000111001001011111000001001111111101010000111011010011010010001111010111001100011000011110100101110001010110001011110011011011010001011101"
@@ -1171,7 +1255,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "111111100000001110110110101010011010010100111111101001111101110111010110101111000111011001110100010111000100111000011011001011010011010011010101111010000011100001000011111011001"
 
                 },
-        /* 16*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1, ZINT_FULL_MULTIBYTE, "áA", 0, 21, 21, "Mask automatic (001)",
+        /* 19*/ { BARCODE_QRCODE, UNICODE_MODE, 4, -1, ZINT_FULL_MULTIBYTE, "áA", 0, 21, 21, 1, "Mask automatic (001)",
                     "111111100101101111111"
                     "100000101001101000001"
                     "101110101010101011101"
@@ -1194,7 +1278,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000100100111010000"
                     "111111100011001000110"
                 },
-        /* 17*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1, ZINT_FULL_MULTIBYTE | (8 << 8), "áA", 0, 21, 21, "Mask 111",
+        /* 20*/ { BARCODE_QRCODE, UNICODE_MODE, 4, -1, ZINT_FULL_MULTIBYTE | (8 << 8), "áA", 0, 21, 21, 1, "Mask 111",
                     "111111101000101111111"
                     "100000101110101000001"
                     "101110100110101011101"
@@ -1217,7 +1301,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000100011111101000"
                     "111111100111010100101"
                 },
-        /* 18*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1, ZINT_FULL_MULTIBYTE | (9 << 8), "áA", 0, 21, 21, "Mask > 111 ignored",
+        /* 21*/ { BARCODE_QRCODE, UNICODE_MODE, 4, -1, ZINT_FULL_MULTIBYTE | (9 << 8), "áA", 0, 21, 21, 1, "Mask > 111 ignored",
                     "111111100101101111111"
                     "100000101001101000001"
                     "101110101010101011101"
@@ -1240,7 +1324,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000100100111010000"
                     "111111100011001000110"
                 },
-        /* 19*/ { BARCODE_QRCODE, UNICODE_MODE, 2, 1, -1, "1234567890", 0, 21, 21, "test_print example, automatic mask 001 (same score as mask 010)",
+        /* 22*/ { BARCODE_QRCODE, UNICODE_MODE, 2, 1, -1, "1234567890", 0, 21, 21, 0, "test_print example, automatic mask 001 (same score as mask 010); BWIPP uses mask 010",
                     "111111101001101111111"
                     "100000100100101000001"
                     "101110101001001011101"
@@ -1263,10 +1347,66 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000100001011000010"
                     "111111101011111111111"
                 },
+        /* 23*/ { BARCODE_QRCODE, UNICODE_MODE, 2, 1, 3 << 8, "1234567890", 0, 21, 21, 1, "test_print example, explicit mask 010",
+                    "111111100010101111111"
+                    "100000100000001000001"
+                    "101110101010001011101"
+                    "101110101001001011101"
+                    "101110101010101011101"
+                    "100000101001001000001"
+                    "111111101010101111111"
+                    "000000001100000000000"
+                    "101111100001001111100"
+                    "001110001011111001111"
+                    "100001110110101101001"
+                    "010011010001111000111"
+                    "101100101110100100010"
+                    "000000001110100100100"
+                    "111111100101010011001"
+                    "100000101100000110101"
+                    "101110101101010011100"
+                    "101110101011111101100"
+                    "101110101110101101100"
+                    "100000100101111100110"
+                    "111111101000100100100"
+                },
+        /* 24*/ { BARCODE_QRCODE, UNICODE_MODE, 1, 2, 2 << 8, "?ややややwやややや ややややや", 0, 25, 25, 1, "Data with Shift JIS '2nd byte 1st byte' matches; explicit mask 001 (auto 000) to match BWIPP",
+                    "1111111010111110001111111"
+                    "1000001011100101001000001"
+                    "1011101000111110101011101"
+                    "1011101000101100001011101"
+                    "1011101011111111101011101"
+                    "1000001010001001001000001"
+                    "1111111010101010101111111"
+                    "0000000010110101000000000"
+                    "1110011011101111111110011"
+                    "1001010001100001111100001"
+                    "1101101110011110101101000"
+                    "1011110011010001011000101"
+                    "0011101011011101110101111"
+                    "0010100010011010000110000"
+                    "1111111111110110111101010"
+                    "0010010111100101001001111"
+                    "1111011011011011111111000"
+                    "0000000010101010100010011"
+                    "1111111000011110101011011"
+                    "1000001011001011100010111"
+                    "1011101000101110111111111"
+                    "1011101000110000111000010"
+                    "1011101010111101110101011"
+                    "1000001010100110000011100"
+                    "1111111011001111010111001"
+                },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol;
+
+    char escaped[1024];
+    char bwipp_buf[32768];
+    char bwipp_msg[1024];
+
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); // Only do BWIPP test if asked, too slow otherwise
 
     testStart("test_qr_encode");
 
@@ -1284,10 +1424,11 @@ static void test_qr_encode(int index, int generate, int debug) {
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (generate) {
-            printf("        /*%3d*/ { %s, %s, %d, %d, %s, \"%s\", %s, %d, %d, \"%s\",\n",
-                    i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode), data[i].option_1, data[i].option_2, testUtilOption3Name(data[i].option_3),
-                    data[i].data, testUtilErrorName(data[i].ret),
-                    symbol->rows, symbol->width, data[i].comment);
+            printf("        /*%3d*/ { %s, %s, %d, %d, %s, \"%s\", %s, %d, %d, %d, \"%s\",\n",
+                    i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode),
+                    data[i].option_1, data[i].option_2, testUtilOption3Name(data[i].option_3),
+                    testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), testUtilErrorName(data[i].ret),
+                    symbol->rows, symbol->width, data[i].bwipp_cmp, data[i].comment);
             testUtilModulesPrint(symbol, "                    ", "\n");
             printf("                },\n");
         } else {
@@ -1298,6 +1439,19 @@ static void test_qr_encode(int index, int generate, int debug) {
 
                 ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
                 assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, ret, width, row, data[i].data);
+
+                if (do_bwipp && testUtilCanBwipp(i, symbol, data[i].option_1, data[i].option_2, data[i].option_3, debug)) {
+                    if (!data[i].bwipp_cmp) {
+                        if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not BWIPP compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                    } else {
+                        ret = testUtilBwipp(i, symbol, data[i].option_1, data[i].option_2, data[i].option_3, data[i].data, length, NULL, bwipp_buf, sizeof(bwipp_buf));
+                        assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+
+                        ret = testUtilBwippCmp(symbol, bwipp_msg, bwipp_buf, data[i].expected);
+                        assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
+                                       i, testUtilBarcodeName(symbol->symbology), ret, bwipp_msg, bwipp_buf, data[i].expected);
+                    }
+                }
             }
         }
 
@@ -1580,7 +1734,7 @@ static void test_microqr_input(int index, int generate, int debug) {
         length = testUtilSetSymbol(symbol, BARCODE_MICROQR, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1, data[i].option_3, -1 /*output_options*/, data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
-        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d\n", i, ret, data[i].ret);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (generate) {
             printf("        /*%3d*/ { %s, %d, \"%s\", %s, \"%s\", \"%s\" },\n",
@@ -2006,7 +2160,7 @@ static void test_microqr_encode(int index, int generate, int debug) {
                     "00000001110011011"
                     "11011110011010100"
                 },
-        /* 15*/ { UNICODE_MODE, -1, -1, -1, "点茗テ点茗テ点茗テ", 0, 17, 17, 0, "Max capacity M4-L 9 Kanji; BWIPP doesn't seem to deal with Kanji correctly",
+        /* 15*/ { UNICODE_MODE, 1, -1, -1, "点茗テ点茗テ点茗テ", 0, 17, 17, 1, "Max capacity M4-L 9 Kanji",
                     "11111110101010101"
                     "10000010111110010"
                     "10111010000011101"
@@ -2198,7 +2352,7 @@ static void test_upnqr_input(int index, int generate, int debug) {
         length = testUtilSetSymbol(symbol, BARCODE_UPNQR, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
-        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d\n", i, ret, data[i].ret);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
         if (ret < ZINT_ERROR) {
             assert_equal(symbol->eci, 4, "i:%d ZBarcode_Encode symbol->eci %d != 4\n", i, symbol->eci);
         }
@@ -2473,33 +2627,130 @@ static void test_rmqr_input(int index, int generate, int debug) {
 
     struct item {
         int input_mode;
+        int eci;
         int option_3;
         char *data;
         int ret;
+        int expected_eci;
         char *expected;
         char *comment;
     };
-    // é U+00E9 in ISO 8859-1 plus other ISO 8859 (but not in ISO 8859-7 or ISO 8859-11), Win 1250 plus other Win, not in Shift JIS, UTF-8 C3A9
-    // β U+03B2 in ISO 8859-7 Greek (but not other ISO 8859 or Win page), in Shift JIS 0x83C0, UTF-8 CEB2
-    // ก U+0E01 in ISO 8859-11 Thai (but not other ISO 8859 or Win page), not in Shift JIS, UTF-8 E0B881
-    // Ж U+0416 in ISO 8859-5 Cyrillic (but not other ISO 8859), Win 1251, in Shift JIS 0x8447, UTF-8 D096
-    // ກ U+0E81 Lao not in any ISO 8859 (or Win page) or Shift JIS, UTF-8 E0BA81
-    // ¥ U+00A5 in ISO 8859-1 0xA5 (\245), in Shift JIS single-byte 0x5C (\134) (backslash); 0xA5 same codepoint as single-byte half-width katakana ･ (U+FF65) in Shift JIS (below), UTF-8 C2A5
-    // 点 U+70B9 kanji, in Shift JIS 0x935F (\223\137), UTF-8 E782B9
-    // Á U+00C1, UTF-8 C381; ȁ U+0201, UTF-8 C881; Ȃ U+0202, UTF-8 C882; ¢ U+00A2, UTF-8 C2A2
+    // See test_qr_input() for details about test characters
     struct item data[] = {
-        /*  0*/ { UNICODE_MODE, -1, "é", 0, "67 A4 00 EC 11", "B1 (ISO 8859-1)" },
-        /*  1*/ { DATA_MODE, -1, "é", 0, "6B 0E A4 00 EC", "B2 (UTF-8)" },
-        /*  2*/ { DATA_MODE, -1, "\351", 0, "67 A4 00 EC 11", "B1 (ISO 8859-1)" },
-        /*  3*/ { UNICODE_MODE, -1, "β", 0, "88 80 00 EC 11", "K1 (Shift JIS)" },
-        /*  4*/ { UNICODE_MODE, -1, "ก", ZINT_ERROR_INVALID_DATA, "Error 800: Invalid character in input data", "ก not in ISO 8859-1 or Shift JIS" },
-        /*  5*/ { UNICODE_MODE, -1, "Ж", 0, "88 91 C0 EC 11", "K1 (Shift JIS)" },
-        /*  6*/ { UNICODE_MODE, -1, "¥･点", 0, "71 72 96 4D 7C", "B2 K1 (Shift JIS) (optimized to byte mode only)" },
-        /*  7*/ { DATA_MODE, -1, "ÁȁȁȁȂ¢", 0, "6C C3 81 C8 81 C8 81 C8 81 C8 82 C2 A2 00 EC 11 EC 11 EC", "B12 (UTF-8)" },
-        /*  8*/ { DATA_MODE, -1, "ÁȁȁȁȁȂ¢", 0, "6E C3 81 C8 81 C8 81 C8 81 C8 81 C8 82 C2 A2 00 EC 11 EC", "B14 (UTF-8)" },
-        /*  9*/ { DATA_MODE, 200, "ÁȁȁȁȁȂ¢", 0, "61 C3 8C 08 80 44 02 20 11 00 88 0A 13 0D 10 EC 11 EC 11", "B1 K6 B1 (UTF-8) (full multibyte)" },
-        /* 10*/ { UNICODE_MODE, -1, "áA", 0, "6B 85 04 00 EC", "B2 (ISO 8859-1)" },
-        /* 11*/ { UNICODE_MODE, 200, "áA", 0, "8E 00 40 EC 11", "K1 (ISO 8859-1) (full multibyte)" },
+        /*  0*/ { UNICODE_MODE, 0, -1, "é", 0, 0, "67 A4 00 EC 11", "B1 (ISO 8859-1)" },
+        /*  1*/ { UNICODE_MODE, 3, -1, "é", 0, 3, "70 36 7A 40 EC", "ECI-3 B1 (ISO 8859-1)" },
+        /*  2*/ { UNICODE_MODE, 20, -1, "é", ZINT_ERROR_INVALID_DATA, -1, "Error 800: Invalid character in input data", "é not in Shift JIS" },
+        /*  3*/ { UNICODE_MODE, 26, -1, "é", 0, 26, "71 A6 B0 EA 40", "ECI-26 B2 (UTF-8)" },
+        /*  4*/ { DATA_MODE, 0, -1, "é", 0, 0, "6B 0E A4 00 EC", "B2 (UTF-8)" },
+        /*  5*/ { DATA_MODE, 0, -1, "\351", 0, 0, "67 A4 00 EC 11", "B1 (ISO 8859-1)" },
+        /*  6*/ { UNICODE_MODE, 0, -1, "β", 0, 0, "88 80 00 EC 11", "K1 (Shift JIS)" },
+        /*  7*/ { UNICODE_MODE, 9, -1, "β", 0, 9, "70 96 78 80 EC", "ECI-9 B1 (ISO 8859-7)" },
+        /*  8*/ { UNICODE_MODE, 20, -1, "β", 0, 20, "71 48 88 00 00", "ECI-20 K1 (Shift JIS)" },
+        /*  9*/ { UNICODE_MODE, 26, -1, "β", 0, 26, "71 A6 B3 AC 80", "ECI-26 B2 (UTF-8)" },
+        /* 10*/ { DATA_MODE, 0, -1, "β", 0, 0, "6B 3A C8 00 EC", "B2 (UTF-8)" },
+        /* 11*/ { UNICODE_MODE, 0, -1, "ก", ZINT_WARN_USES_ECI, 13, "Warning 70 D6 68 40 EC", "ECI-13 B1 (ISO 8859-11)" },
+        /* 12*/ { UNICODE_MODE, 13, -1, "ก", 0, 13, "70 D6 68 40 EC", "ECI-13 B1 (ISO 8859-11)" },
+        /* 13*/ { UNICODE_MODE, 20, -1, "ก", ZINT_ERROR_INVALID_DATA, -1, "Error 800: Invalid character in input data", "ก not in Shift JIS" },
+        /* 14*/ { UNICODE_MODE, 26, -1, "ก", 0, 26, "71 A6 F8 2E 20 40 EC", "ECI-26 B3 (UTF-8)" },
+        /* 15*/ { DATA_MODE, 0, -1, "ก", 0, 0, "6F 82 E2 04 00", "B3 (UTF-8)" },
+        /* 16*/ { UNICODE_MODE, 0, -1, "Ж", 0, 0, "88 91 C0 EC 11", "K1 (Shift JIS)" },
+        /* 17*/ { UNICODE_MODE, 7, -1, "Ж", 0, 7, "70 76 6D 80 EC", "ECI-7 B1 (ISO 8859-5)" },
+        /* 18*/ { UNICODE_MODE, 20, -1, "Ж", 0, 20, "71 48 89 1C 00", "ECI-20 K1 (Shift JIS)" },
+        /* 19*/ { UNICODE_MODE, 26, -1, "Ж", 0, 26, "71 A6 B4 25 80", "ECI-26 B2 (UTF-8)" },
+        /* 20*/ { DATA_MODE, 0, -1, "Ж", 0, 0, "6B 42 58 00 EC", "B2 (UTF-8)" },
+        /* 21*/ { UNICODE_MODE, 0, -1, "ກ", ZINT_WARN_USES_ECI, 26, "Warning 71 A6 F8 2E A0 40 EC", "ECI-26 B3 (UTF-8)" },
+        /* 22*/ { UNICODE_MODE, 20, -1, "ກ", ZINT_ERROR_INVALID_DATA, -1, "Error 800: Invalid character in input data", "ກ not in Shift JIS" },
+        /* 23*/ { UNICODE_MODE, 26, -1, "ກ", 0, 26, "71 A6 F8 2E A0 40 EC", "ECI-26 B3 (UTF-8)" },
+        /* 24*/ { DATA_MODE, 0, -1, "ກ", 0, 0, "6F 82 EA 04 00", "B3 (UTF-8)" },
+        /* 25*/ { UNICODE_MODE, 0, -1, "\\", 0, 0, "65 70 00 EC 11", "B1 (ASCII)" },
+        /* 26*/ { UNICODE_MODE, 20, -1, "\\", 0, 20, "71 48 80 7C 00", "ECI-20 K1 (Shift JIS)" },
+        /* 27*/ { UNICODE_MODE, 20, -1, "[", 0, 20, "71 46 56 C0 EC", "B1 (ASCII)" },
+        /* 28*/ { UNICODE_MODE, 20, -1, "\177", 0, 20, "71 46 5F C0 EC", "ECI-20 B1 (ASCII)" },
+        /* 29*/ { UNICODE_MODE, 0, -1, "¥", 0, 0, "66 94 00 EC 11", "B1 (ISO 8859-1) (same bytes as ･ Shift JIS below, so ambiguous)" },
+        /* 30*/ { UNICODE_MODE, 3, -1, "¥", 0, 3, "70 36 69 40 EC", "ECI-3 B1 (ISO 8859-1)" },
+        /* 31*/ { UNICODE_MODE, 20, -1, "¥", 0, 20, "71 46 57 00 EC", "ECI-20 B1 (Shift JIS) (to single-byte backslash codepoint 5C, so byte mode)" },
+        /* 32*/ { UNICODE_MODE, 26, -1, "¥", 0, 26, "71 A6 B0 A9 40", "ECI-26 B2 (UTF-8)" },
+        /* 33*/ { DATA_MODE, 0, -1, "¥", 0, 0, "6B 0A 94 00 EC", "B2 (UTF-8)" },
+        /* 34*/ { UNICODE_MODE, 0, -1, "･", 0, 0, "66 94 00 EC 11", "B1 (Shift JIS) single-byte codepoint A5 (same bytes as ¥ ISO 8859-1 above, so ambiguous)" },
+        /* 35*/ { UNICODE_MODE, 3, -1, "･", ZINT_ERROR_INVALID_DATA, -1, "Error 564: Invalid character in input data for ECI 3", "" },
+        /* 36*/ { UNICODE_MODE, 20, -1, "･", 0, 20, "71 46 69 40 EC", "ECI-20 B1 (Shift JIS) single-byte codepoint A5" },
+        /* 37*/ { UNICODE_MODE, 26, -1, "･", 0, 26, "71 A6 FB EF 69 40 EC", "ECI-26 B3 (UTF-8)" },
+        /* 38*/ { DATA_MODE, 0, -1, "･", 0, 0, "6F BE F6 94 00", "B3 (UTF-8)" },
+        /* 39*/ { UNICODE_MODE, 0, -1, "¿", 0, 0, "66 FC 00 EC 11", "B1 (ISO 8859-1) (same bytes as ｿ Shift JIS below, so ambiguous)" },
+        /* 40*/ { UNICODE_MODE, 3, -1, "¿", 0, 3, "70 36 6F C0 EC", "ECI-3 B1 (ISO 8859-1)" },
+        /* 41*/ { UNICODE_MODE, 20, -1, "¿", ZINT_ERROR_INVALID_DATA, -1, "Error 800: Invalid character in input data", "¿ not in Shift JIS" },
+        /* 42*/ { UNICODE_MODE, 26, -1, "¿", 0, 26, "71 A6 B0 AF C0", "ECI-26 B2 (UTF-8)" },
+        /* 43*/ { DATA_MODE, 0, -1, "¿", 0, 0, "6B 0A FC 00 EC", "B2 (UTF-8)" },
+        /* 44*/ { UNICODE_MODE, 0, -1, "ｿ", 0, 0, "66 FC 00 EC 11", "B1 (Shift JIS) single-byte codepoint BF (same bytes as ¿ ISO 8859-1 above, so ambiguous)" },
+        /* 45*/ { UNICODE_MODE, 3, -1, "ｿ", ZINT_ERROR_INVALID_DATA, -1, "Error 564: Invalid character in input data for ECI 3", "" },
+        /* 46*/ { UNICODE_MODE, 20, -1, "ｿ", 0, 20, "71 46 6F C0 EC", "ECI-20 B1 (Shift JIS) single-byte codepoint BF" },
+        /* 47*/ { UNICODE_MODE, 26, -1, "ｿ", 0, 26, "71 A6 FB EF 6F C0 EC", "ECI-26 B3 (UTF-8)" },
+        /* 48*/ { DATA_MODE, 0, -1, "ｿ", 0, 0, "6F BE F6 FC 00", "B3 (UTF-8)" },
+        /* 49*/ { UNICODE_MODE, 0, -1, "~", 0, 0, "65 F8 00 EC 11", "B1 (ASCII) (same bytes as ‾ Shift JIS below, so ambiguous)" },
+        /* 50*/ { UNICODE_MODE, 3, -1, "~", 0, 3, "70 36 5F 80 EC", "ECI-3 B1 (ASCII)" },
+        /* 51*/ { UNICODE_MODE, 20, -1, "~", ZINT_ERROR_INVALID_DATA, -1, "Error 800: Invalid character in input data", "tilde not in Shift JIS (codepoint used for overline)" },
+        /* 52*/ { UNICODE_MODE, 0, -1, "‾", 0, 0, "65 F8 00 EC 11", "B1 (Shift JIS) single-byte codepoint 7E (same bytes as ~ ASCII above, so ambiguous)" },
+        /* 53*/ { UNICODE_MODE, 3, -1, "‾", ZINT_ERROR_INVALID_DATA, -1, "Error 564: Invalid character in input data for ECI 3", "" },
+        /* 54*/ { UNICODE_MODE, 20, -1, "‾", 0, 20, "71 46 5F 80 EC", "ECI-20 B1 (Shift JIS) (to single-byte tilde codepoint 7E, so byte mode)" },
+        /* 55*/ { UNICODE_MODE, 26, -1, "‾", 0, 26, "71 A6 F8 A0 2F 80 EC", "ECI-26 B3 (UTF-8)" },
+        /* 56*/ { DATA_MODE, 0, -1, "‾", 0, 0, "6F 8A 02 F8 00", "B3 (UTF-8)" },
+        /* 57*/ { UNICODE_MODE, 0, -1, "点", 0, 0, "8B 67 C0 EC 11", "K1 (Shift JIS)" },
+        /* 58*/ { UNICODE_MODE, 3, -1, "点", ZINT_ERROR_INVALID_DATA, -1, "Error 564: Invalid character in input data for ECI 3", "" },
+        /* 59*/ { UNICODE_MODE, 20, -1, "点", 0, 20, "71 48 B6 7C 00", "ECI-20 K1 (Shift JIS)" },
+        /* 60*/ { UNICODE_MODE, 26, -1, "点", 0, 26, "71 A6 F9 E0 AE 40 EC", "ECI-26 B3 (UTF-8)" },
+        /* 61*/ { DATA_MODE, 0, -1, "点", 0, 0, "6F 9E 0A E4 00", "B3 (UTF-8)" },
+        /* 62*/ { DATA_MODE, 0, -1, "\223\137", 0, 0, "6A 4D 7C 00 EC", "B2 (Shift JIS) (not full multibyte)" },
+        /* 63*/ { DATA_MODE, 0, ZINT_FULL_MULTIBYTE, "\223\137", 0, 0, "8B 67 C0 EC 11", "K1 (Shift JIS)" },
+        /* 64*/ { UNICODE_MODE, 0, -1, "¥･点", 0, 0, "71 72 96 4D 7C", "B4 (Shift JIS) (optimized to byte mode only)" },
+        /* 65*/ { UNICODE_MODE, 3, -1, "¥･点", ZINT_ERROR_INVALID_DATA, -1, "Error 564: Invalid character in input data for ECI 3", "" },
+        /* 66*/ { UNICODE_MODE, 20, -1, "¥･点", 0, 20, "71 47 17 29 64 D7 C0", "ECI-20 B4 (Shift JIS)" },
+        /* 67*/ { UNICODE_MODE, 26, -1, "¥･点", 0, 26, "71 A7 18 54 BD F7 B4 BC F0 57 20 EC", "ECI-26 B8 (UTF-8)" },
+        /* 68*/ { DATA_MODE, 0, -1, "\134\245\223\137", 0, 0, "71 72 96 4D 7C", "B8 (Shift JIS)" },
+        /* 69*/ { DATA_MODE, 0, -1, "¥･点", 0, 0, "71 85 4B DF 7B 4B CF 05 72 00 EC 11", "B8 (UTF-8)" },
+        /* 70*/ { UNICODE_MODE, 0, -1, "点茗", 0, 0, "93 67 F5 54 00", "K2 (Shift JIS)" },
+        /* 71*/ { UNICODE_MODE, 0, -1, "点茗テ点茗テｿ", 0, 0, "8C D9 FD 55 06 95 B3 FA AA 0D 2B 0D F8 EC 11 EC 11 EC 11", "K6 B1 (Shift JIS)" },
+        /* 72*/ { DATA_MODE, 0, -1, "\223\137\344\252\203\145\223\137\344\252\203\145\277", 0, 0, "6D 93 5F E4 AA 83 65 93 5F E4 AA 83 65 BF 00 EC 11 EC 11", "B13 (Shift JIS)" },
+        /* 73*/ { DATA_MODE, 0, ZINT_FULL_MULTIBYTE, "\223\137\344\252\203\145\223\137\344\252\203\145\277", 0, 0, "8C D9 FD 55 06 95 B3 FA AA 0D 2B 0D F8 EC 11 EC 11 EC 11", "K6 B1 (Shift JIS) (full multibyte)" },
+        /* 74*/ { UNICODE_MODE, 0, -1, "áA", 0, 0, "6B 85 04 00 EC", "B2 (ISO 8859-1)" },
+        /* 75*/ { UNICODE_MODE, 0, ZINT_FULL_MULTIBYTE, "áA", 0, 0, "8E 00 40 EC 11", "K1 (ISO 8859-1) (full multibyte)" },
+        /* 76*/ { UNICODE_MODE, 0, -1, "A0B1C2D3E4F5G6H7I8J9KLMNOPQRSTUVWXYZ $%*+-./:", 0, 0, "(33) 56 9C 23 E0 87 92 62 7A 55 0B 59 82 33 26 C0 E6 5F AC 51 95 B4 26 B2 DC 1C 3B 9E 76", "A45" },
+        /* 77*/ { UNICODE_MODE, 0, -1, "˘", ZINT_WARN_USES_ECI, 4, "Warning 70 46 68 80 EC", "ECI-4 B1 (ISO 8859-2)" },
+        /* 78*/ { UNICODE_MODE, 4, -1, "˘", 0, 4, "70 46 68 80 EC", "ECI-4 B1 (ISO 8859-2)" },
+        /* 79*/ { UNICODE_MODE, 0, -1, "Ħ", ZINT_WARN_USES_ECI, 5, "Warning 70 56 68 40 EC", "ECI-5 B1 (ISO 8859-3)" },
+        /* 80*/ { UNICODE_MODE, 5, -1, "Ħ", 0, 5, "70 56 68 40 EC", "ECI-5 B1 (ISO 8859-3)" },
+        /* 81*/ { UNICODE_MODE, 0, -1, "ĸ", ZINT_WARN_USES_ECI, 6, "Warning 70 66 68 80 EC", "ECI-6 B1 (ISO 8859-4)" },
+        /* 82*/ { UNICODE_MODE, 6, -1, "ĸ", 0, 6, "70 66 68 80 EC", "ECI-6 B1 (ISO 8859-4)" },
+        /* 83*/ { UNICODE_MODE, 0, -1, "Ș", ZINT_WARN_USES_ECI, 18, "Warning 71 26 6A 80 EC", "ECI-18 B1 (ISO 8859-16)" },
+        /* 84*/ { UNICODE_MODE, 18, -1, "Ș", 0, 18, "71 26 6A 80 EC", "ECI-18 B1 (ISO 8859-16)" },
+        /* 85*/ { UNICODE_MODE, 0, -1, "テ", 0, 0, "88 69 40 EC 11", "K1 (SHIFT JIS)" },
+        /* 86*/ { UNICODE_MODE, 20, -1, "テ", 0, 20, "71 48 86 94 00", "ECI-20 K1 (SHIFT JIS)" },
+        /* 87*/ { UNICODE_MODE, 20, -1, "テテ", 0, 20, "71 49 06 94 34 A0 EC", "ECI-20 K2 (SHIFT JIS)" },
+        /* 88*/ { UNICODE_MODE, 20, -1, "\\\\", 0, 20, "71 49 00 7C 03 E0 EC", "ECI-20 K2 (SHIFT JIS)" },
+        /* 89*/ { UNICODE_MODE, 0, -1, "…", 0, 0, "88 08 C0 EC 11", "K1 (SHIFT JIS)" },
+        /* 90*/ { UNICODE_MODE, 21, -1, "…", 0, 21, "71 56 61 40 EC", "ECI-21 B1 (Win 1250)" },
+        /* 91*/ { UNICODE_MODE, 0, -1, "Ґ", ZINT_WARN_USES_ECI, 22, "Warning 71 66 69 40 EC", "ECI-22 B1 (Win 1251)" },
+        /* 92*/ { UNICODE_MODE, 22, -1, "Ґ", 0, 22, "71 66 69 40 EC", "ECI-22 B1 (Win 1251)" },
+        /* 93*/ { UNICODE_MODE, 0, -1, "˜", ZINT_WARN_USES_ECI, 23, "Warning 71 76 66 00 EC", "ECI-23 B1 (Win 1252)" },
+        /* 94*/ { UNICODE_MODE, 23, -1, "˜", 0, 23, "71 76 66 00 EC", "ECI-23 B1 (Win 1252)" },
+        /* 95*/ { UNICODE_MODE, 24, -1, "پ", 0, 24, "71 86 60 40 EC", "ECI-24 B1 (Win 1256)" },
+        /* 96*/ { UNICODE_MODE, 0, -1, "က", ZINT_WARN_USES_ECI, 26, "Warning 71 A6 F8 60 20 00 EC", "ECI-26 B3 (UTF-8)" },
+        /* 97*/ { UNICODE_MODE, 25, -1, "က", 0, 25, "71 96 84 00 00", "ECI-25 B2 (UCS-2BE)" },
+        /* 98*/ { UNICODE_MODE, 25, -1, "ကက", 0, 25, "71 97 04 00 04 00 00", "ECI-25 B4 (UCS-2BE)" },
+        /* 99*/ { UNICODE_MODE, 25, -1, "12", 0, 25, "71 97 00 0C 40 0C 80", "ECI-25 B4 (UCS-2BE ASCII)" },
+        /*100*/ { UNICODE_MODE, 27, -1, "@", 0, 27, "71 B6 50 00 EC", "ECI-27 B1 (ASCII)" },
+        /*101*/ { UNICODE_MODE, 0, -1, "龘", ZINT_WARN_USES_ECI, 26, "Warning 71 A6 FA 6F A6 00 EC", "ECI-26 B3 (UTF-8)" },
+        /*102*/ { UNICODE_MODE, 28, -1, "龘", 0, 28, "71 C6 BE 75 40", "ECI-28 B2 (Big5)" },
+        /*103*/ { UNICODE_MODE, 28, -1, "龘龘", 0, 28, "71 C7 3E 75 7E 75 40", "ECI-28 B4 (Big5)" },
+        /*104*/ { UNICODE_MODE, 0, -1, "齄", ZINT_WARN_USES_ECI, 26, "Warning 71 A6 FA 6F 61 00 EC", "ECI-26 B3 (UTF-8)" },
+        /*105*/ { UNICODE_MODE, 29, -1, "齄", 0, 29, "71 D6 BD FF 80", "ECI-29 B2 (GB 2312)" },
+        /*106*/ { UNICODE_MODE, 29, -1, "齄齄", 0, 29, "71 D7 3D FF BD FF 80", "ECI-29 B4 (GB 2312)" },
+        /*107*/ { UNICODE_MODE, 0, -1, "가", ZINT_WARN_USES_ECI, 26, "Warning 71 A6 FA AC 20 00 EC", "ECI-26 B3 (UTF-8)" },
+        /*108*/ { UNICODE_MODE, 30, -1, "가", 0, 30, "71 E6 AC 28 40", "ECI-30 B2 (EUC-KR)" },
+        /*109*/ { UNICODE_MODE, 30, -1, "가가", 0, 30, "71 E7 2C 28 6C 28 40", "ECI-30 B4 (EUC-KR)" },
+        /*110*/ { UNICODE_MODE, 170, -1, "?", 0, 170, "78 0A A6 4F C0", "ECI-170 B1 (ASCII invariant)" },
+        /*111*/ { DATA_MODE, 899, -1, "\200", 0, 899, "78 38 36 60 00", "ECI-899 B1 (8-bit binary)" },
+        /*112*/ { UNICODE_MODE, 900, -1, "é", 0, 900, "78 38 46 B0 EA 40 EC", "ECI-900 B2 (no conversion)" },
+        /*113*/ { UNICODE_MODE, 16384, -1, "é", 0, 16384, "7C 04 00 06 B0 EA 40", "ECI-16384 B2 (no conversion)" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -2518,16 +2769,20 @@ static void test_rmqr_input(int index, int generate, int debug) {
 
         debug |= ZINT_DEBUG_TEST; // Needed to get codeword dump in errtxt
 
-        length = testUtilSetSymbol(symbol, BARCODE_RMQR, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1, data[i].option_3, -1 /*output_options*/, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, BARCODE_RMQR, data[i].input_mode, data[i].eci, -1 /*option_1*/, -1, data[i].option_3, -1 /*output_options*/, data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
-        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d\n", i, ret, data[i].ret);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (generate) {
-            printf("        /*%3d*/ { %s, %d, \"%s\", %s, \"%s\", \"%s\" },\n",
-                    i, testUtilInputModeName(data[i].input_mode), data[i].option_3, testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
-                    testUtilErrorName(data[i].ret), symbol->errtxt, data[i].comment);
+            printf("        /*%3d*/ { %s, %d, %s, \"%s\", %s, %d, \"%s\", \"%s\" },\n",
+                    i, testUtilInputModeName(data[i].input_mode), data[i].eci, testUtilOption3Name(data[i].option_3),
+                    testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
+                    testUtilErrorName(data[i].ret), ret < ZINT_ERROR ? symbol->eci : -1, symbol->errtxt, data[i].comment);
         } else {
+            if (ret < ZINT_ERROR) {
+                assert_equal(symbol->eci, data[i].expected_eci, "i:%d eci %d != %d\n", i, symbol->eci, data[i].expected_eci);
+            }
             assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
         }
 
@@ -2581,7 +2836,7 @@ static void test_rmqr_gs1(int index, int generate, int debug) {
         length = testUtilSetSymbol(symbol, BARCODE_RMQR, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
-        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d\n", i, ret, data[i].ret);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (generate) {
             printf("        /*%3d*/ { %s, \"%s\", %s, \"%s\", \"%s\" },\n",
@@ -2720,7 +2975,7 @@ static void test_rmqr_encode(int index, int generate, int debug) {
                     "10000010101010110110100010111110010010101111101111110010001"
                     "11111110101010101011101010101010101010111010101010101011111"
                 },
-        /*  3*/ { UNICODE_MODE, 2, 2, "AC-42", 0, 7, 59, 0, "Draft ISO 2019-6-24 7.4.3 Alphanumeric mode Example, R7x59-M, same codewords; BWIPP different encodation",
+        /*  3*/ { UNICODE_MODE, 2, 2, "AC-42", 0, 7, 59, 1, "Draft ISO 2019-6-24 7.4.3 Alphanumeric mode Example, R7x59-M, same codewords",
                     "11111110101010101011101010101010101010111010101010101010111"
                     "10000010101111010010110011010101100000101011001111100100101"
                     "10111010100100100011100100111100011101111100011011111011111"
@@ -2825,7 +3080,7 @@ static void test_rmqr_encode(int index, int generate, int debug) {
                     "1000001011111011101110111110000111111010001"
                     "1111111010101010101011101010101010101011111"
                 },
-        /* 12*/ { UNICODE_MODE, 2, 1, "点茗点", 0, 7, 43, 0, "R7x43-M with max 3 Kanji; BWIPP different encodation",
+        /* 12*/ { UNICODE_MODE, 2, 1, "点茗点", 0, 7, 43, 1, "R7x43-M with max 3 Kanji",
                     "1111111010101010101011101010101010101010111"
                     "1000001001011000100010101001010001111000101"
                     "1011101010110101110111111001011101111111111"

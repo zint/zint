@@ -2076,7 +2076,7 @@ static const char *testUtilBwippName(int index, const struct zint_symbol *symbol
         { "pdf417", BARCODE_PDF417, 55, 1, 1, 0, 0, 0, },
         { "pdf417compact", BARCODE_PDF417COMP, 56, 1, 1, 0, 0, 0, },
         { "maxicode", BARCODE_MAXICODE, 57, 1, 1, 0, 0, 0, },
-        { "qrcode", BARCODE_QRCODE, 58, 0, 0, 0, 0, 0, },
+        { "qrcode", BARCODE_QRCODE, 58, 1, 1, 1, 0, 0, },
         { "", -1, 59, 0, 0, 0, 0, 0, },
         { "", BARCODE_CODE128B, 60, 0, 0, 0, 0, 0, },
         { "", -1, 61, 0, 0, 0, 0, 0, },
@@ -2122,7 +2122,7 @@ static const char *testUtilBwippName(int index, const struct zint_symbol *symbol
         { "", -1, 101, 0, 0, 0, 0, 0, },
         { "hibcdatamatrix", BARCODE_HIBC_DM, 102, 0, 1, 1, 0, 0, },
         { "", -1, 103, 0, 0, 0, 0, 0, },
-        { "hibcqrcode", BARCODE_HIBC_QR, 104, 0, 0, 0, 0, 0, },
+        { "hibcqrcode", BARCODE_HIBC_QR, 104, 1, 1, 1, 0, 0, },
         { "", -1, 105, 0, 0, 0, 0, 0, },
         { "hibcpdf417", BARCODE_HIBC_PDF, 106, 1, 1, 0, 0, 0, },
         { "", -1, 107, 0, 0, 0, 0, 0, },
@@ -2253,6 +2253,11 @@ static const char *testUtilBwippName(int index, const struct zint_symbol *symbol
                         index, testUtilBarcodeName(symbology));
             }
             return NULL;
+        } else if (symbology == BARCODE_QRCODE) {
+            if (gs1_cvt) {
+                *gs1_cvt = 1;
+            }
+            return "gs1qrcode";
         } else if (symbology == BARCODE_DOTCODE) {
             if (gs1_cvt) {
                 *gs1_cvt = 1;
@@ -2449,27 +2454,38 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
         }
     }
 
-    if ((symbol->input_mode & 0x07) == UNICODE_MODE && ZBarcode_Cap(symbology, ZINT_CAP_ECI)
-            && is_eci_convertible(symbol->eci)) {
-        if (utf8_to_eci(symbol->eci, (const unsigned char *) data, (unsigned char *) converted, &data_len) == 0) {
-            eci = symbol->eci;
-        } else {
-            if (symbol->eci != 0) {
-                eci = get_best_eci((const unsigned char *) data, data_len);
-                if (utf8_to_eci(eci, (const unsigned char *) data, (unsigned char *) converted, &data_len) != 0) {
-                    fprintf(stderr, "i:%d testUtilBwipp: failed to convert Unicode data for %s\n",
-                            index, testUtilBarcodeName(symbology));
-                    return -1;
-                }
-            } else {
-                fprintf(stderr, "i:%d testUtilBwipp: failed to convert Unicode data for %s\n",
+    eci = symbol->eci >= 3 && ZBarcode_Cap(symbology, ZINT_CAP_ECI) ? symbol->eci : 0;
+
+    if ((symbol->input_mode & 0x07) == UNICODE_MODE && is_eci_convertible(eci)) {
+        if (eci == 0 && (symbology == BARCODE_QRCODE || symbology == BARCODE_MICROQR || symbology == BARCODE_RMQR)) {
+            if (utf8_to_eci(0, (const unsigned char *) data, (unsigned char *) converted, &data_len) != 0
+                    && utf8_to_eci(20, (const unsigned char *) data, (unsigned char *) converted, &data_len) != 0) {
+                fprintf(stderr, "i:%d testUtilBwipp: failed to convert Unicode data for %s, ECI 0/20\n",
                         index, testUtilBarcodeName(symbology));
                 return -1;
             }
+            data = converted;
+        } else if (ZBarcode_Cap(symbology, ZINT_CAP_ECI)) {
+            if (utf8_to_eci(eci, (const unsigned char *) data, (unsigned char *) converted, &data_len) != 0) {
+                if (eci != 0) {
+                    eci = get_best_eci((const unsigned char *) data, data_len);
+                    if (utf8_to_eci(eci, (const unsigned char *) data, (unsigned char *) converted, &data_len) != 0) {
+                        fprintf(stderr, "i:%d testUtilBwipp: failed to convert Unicode data for %s, ECI %d\n",
+                                index, testUtilBarcodeName(symbology), eci);
+                        return -1;
+                    }
+                } else {
+                    fprintf(stderr, "i:%d testUtilBwipp: failed to convert Unicode data for %s, no ECI specified\n",
+                            index, testUtilBarcodeName(symbology));
+                    return -1;
+                }
+            }
+            data = converted;
+        } else if (eci != 0) {
+            fprintf(stderr, "i:%d testUtilBwipp: ECI %d but not supported for %s\n",
+                    index, eci, testUtilBarcodeName(symbology));
+            return -1;
         }
-        data = converted;
-    } else {
-        eci = symbol->eci >= 3 && ZBarcode_Cap(symbology, ZINT_CAP_ECI) ? symbol->eci : 0;
     }
 
     if (is_composite(symbology)) {
@@ -2898,28 +2914,15 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                     bwipp_opts = bwipp_opts_buf;
                 }
             }
-        } else if (symbology == BARCODE_MICROQR || symbology == BARCODE_RMQR) {
+        } else if (symbology == BARCODE_QRCODE || symbology == BARCODE_HIBC_QR || symbology == BARCODE_MICROQR
+                || symbology == BARCODE_RMQR) {
             if (option_1 >= 1 && option_1 <= 4) {
                 static const char eccs[4] = { 'L', 'M', 'Q', 'H' };
                 sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%seclevel=%c",
                         strlen(bwipp_opts_buf) ? " " : "", eccs[option_1 - 1]);
                 bwipp_opts = bwipp_opts_buf;
             }
-            if (symbology == BARCODE_MICROQR) {
-                if (option_2 >= 1 && option_2 <= 4) {
-                    sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%sversion=M%d",
-                            strlen(bwipp_opts_buf) ? " " : "", option_2);
-                    bwipp_opts = bwipp_opts_buf;
-                }
-                if (option_3 != -1) {
-                    int mask = (symbol->option_3 >> 8) & 0x0F;
-                    if (mask >= 1 && mask <= 4) {
-                        sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%smask=%d",
-                                strlen(bwipp_opts_buf) ? " " : "", ((symbol->option_3 >> 8) & 0x0F));
-                        bwipp_opts = bwipp_opts_buf;
-                    }
-                }
-            } else if (symbology == BARCODE_RMQR) {
+            if (symbology == BARCODE_RMQR) {
                 if (option_2 >= 1 && option_2 <= 32) {
                     static const char *vers[] = {
                         "R7x43", "R7x59", "R7x77", "R7x99", "R7x139", "R9x43", "R9x59", "R9x77", "R9x99", "R9x139",
@@ -2930,6 +2933,21 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                     sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%sversion=%s",
                             strlen(bwipp_opts_buf) ? " " : "", vers[option_2 - 1]);
                     bwipp_opts = bwipp_opts_buf;
+                }
+            } else {
+                if (option_2 >= 1 && option_2 <= 40) {
+                    sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%sversion=%s%d",
+                            strlen(bwipp_opts_buf) ? " " : "", symbology == BARCODE_MICROQR ? "M" : "", option_2);
+                    bwipp_opts = bwipp_opts_buf;
+                }
+                if (option_3 != -1) {
+                    int mask = (symbol->option_3 >> 8) & 0x0F;
+                    if (mask >= 1 && ((symbology != BARCODE_MICROQR && mask <= 8)
+                            || (symbology == BARCODE_MICROQR && mask <= 4))) {
+                        sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%smask=%d",
+                                strlen(bwipp_opts_buf) ? " " : "", ((symbol->option_3 >> 8) & 0x0F));
+                        bwipp_opts = bwipp_opts_buf;
+                    }
                 }
             }
         } else if (symbology == BARCODE_ULTRA) {

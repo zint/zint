@@ -105,11 +105,11 @@ static void usage(void) {
     int version_release = zint_version % 100;
     int version_build;
     
-    if (version_release > 10) {
+    if (version_release >= 9) {
         /* This is a test release */
         version_release = version_release / 10;
         version_build = zint_version % 10;
-        printf( "Zint version %d.%d.%d.%d\n", version_major, version_minor, version_release, version_build);
+        printf( "Zint version %d.%d.%d.%d (dev)\n", version_major, version_minor, version_release, version_build);
     } else {
         /* This is a stable release */
         printf( "Zint version %d.%d.%d\n", version_major, version_minor, version_release);
