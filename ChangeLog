@@ -1,7 +1,13 @@
 Version 2.10.0.9 (dev) not released yet
 =======================================
 
-- Placeholder
+Changes
+-------
+- RMQR: add ECI support
+
+Bugs
+----
+- GUI/CLI: fix dev version test
 
 
 Version 2.10.0 2021-08-14
