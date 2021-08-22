@@ -54,7 +54,8 @@ extern "C" {
     };
     
     struct zint_vector_string {
-        float x, y, fsize;  /* x, y position relative to halign; font size */
+        float x, y;         /* x, y position relative to halign */
+        float fsize;        /* Font size */
         float width;        /* Suggested string width, may be 0 if none recommended */
         int length;         /* Number of characters */
         int rotation;       /* 0, 90, 180, 270 degrees */
@@ -64,7 +65,9 @@ extern "C" {
     };
 
     struct zint_vector_circle {
-        float x, y, diameter;
+        float x, y;
+        float diameter;     /* Circle diameter. Does not include width (if any) */
+        float width;        /* Width of circle perimeter. 0 for fill (disc) */
         int colour;         /* Non-zero for draw with background colour */
         struct zint_vector_circle *next; /* Pointer to next circle */
     };

@@ -356,11 +356,8 @@
       <path d="M 37.00 57.58 L 37.87 57.08 L 37.87 56.08 L 37.00 55.58 L 36.13 56.08 L 36.13 57.08 Z" />
       <path d="M 43.00 57.58 L 43.87 57.08 L 43.87 56.08 L 43.00 55.58 L 42.13 56.08 L 42.13 57.08 Z" />
       <path d="M 53.00 57.58 L 53.87 57.08 L 53.87 56.08 L 53.00 55.58 L 52.13 56.08 L 52.13 57.08 Z" />
-      <circle cx="29.00" cy="28.87" r="9.00" />
-      <circle cx="29.00" cy="28.87" r="7.43" fill="#FFFFFF" />
-      <circle cx="29.00" cy="28.87" r="5.86" />
-      <circle cx="29.00" cy="28.87" r="4.29" fill="#FFFFFF" />
-      <circle cx="29.00" cy="28.87" r="2.72" />
-      <circle cx="29.00" cy="28.87" r="1.15" fill="#FFFFFF" />
+      <circle cx="29.00" cy="28.87" r="8.215" stroke="#000000" stroke-width="1.569" fill="none" />
+      <circle cx="29.00" cy="28.87" r="5.077" stroke="#000000" stroke-width="1.569" fill="none" />
+      <circle cx="29.00" cy="28.87" r="1.939" stroke="#000000" stroke-width="1.569" fill="none" />
    </g>
 </svg>

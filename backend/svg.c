@@ -288,15 +288,23 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
             previous_diameter = circle->diameter;
             radius = (float) (0.5 * previous_diameter);
         }
-        fprintf(fsvg, "      <circle cx=\"%.2f\" cy=\"%.2f\" r=\"%.2f\"", circle->x, circle->y, radius);
+        fprintf(fsvg, "      <circle cx=\"%.2f\" cy=\"%.2f\" r=\"%.*f\"",
+                circle->x, circle->y, circle->width ? 3 : 2, radius);
 
         if (circle->colour) {
-            fprintf(fsvg, " fill=\"#%s\"", bgcolour_string);
+            if (circle->width) {
+                fprintf(fsvg, " stroke=\"#%s\" stroke-width=\"%.3f\" fill=\"none\"", bgcolour_string, circle->width);
+            } else {
+                fprintf(fsvg, " fill=\"#%s\"", bgcolour_string);
+            }
             if (bg_alpha != 0xff) {
                 // This doesn't work how the user is likely to expect - more work needed!
                 fprintf(fsvg, " opacity=\"%.3f\"", bg_alpha_opacity);
             }
         } else {
+            if (circle->width) {
+                fprintf(fsvg, " stroke=\"#%s\" stroke-width=\"%.3f\" fill=\"none\"", fgcolour_string, circle->width);
+            }
             if (fg_alpha != 0xff) {
                 fprintf(fsvg, " opacity=\"%.3f\"", fg_alpha_opacity);
             }

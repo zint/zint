@@ -567,14 +567,14 @@ namespace Zint {
                 }
                 if (circle->colour) { // Set means use background colour
                     p.setColor(m_bgColor);
-                    p.setWidth(0);
+                    p.setWidthF(circle->width);
                     painter.setPen(p);
-                    painter.setBrush(bgBrush);
+                    painter.setBrush(circle->width ? Qt::NoBrush : bgBrush);
                 } else {
                     p.setColor(m_fgColor);
-                    p.setWidth(0);
+                    p.setWidthF(circle->width);
                     painter.setPen(p);
-                    painter.setBrush(fgBrush);
+                    painter.setBrush(circle->width ? Qt::NoBrush : bgBrush);
                 }
                 painter.drawEllipse(QPointF(circle->x, circle->y), radius, radius);
                 circle = circle->next;

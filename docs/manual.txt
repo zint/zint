@@ -1019,20 +1019,21 @@ while (rect) {
 
 hexagon = symbol->vector->hexagons;
 while (hexagon) {
-    draw_hexagon(hexagon->x, hexagon->y, hexagon->diameter, hexagon->rotation):
+    draw_hexagon(hexagon->x, hexagon->y, hexagon->diameter, hexagon->rotation);
     hexagon = hexagon->next;
 }
 
 string = symbol->vector->strings;
 while (string) {
     draw_string(string->x, string->y, string->fsize, string->rotation,
-                string->halign, string->text, string->length):
+                string->halign, string->text, string->length);
     string = string->next;
 }
 
 circle = symbol->vector->circles;
 while (circle) {
-    draw_circle(circle->x, circle->y, circle->diameter, circle->colour):
+    draw_circle(circle->x, circle->y, circle->diameter, circle->width,
+                circle->colour);
     circle = circle->next;
 }
 

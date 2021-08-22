@@ -1,6 +1,11 @@
 Version 2.10.0.9 (dev) not released yet
 =======================================
 
+**Incompatible changes**
+------------------------
+- Add width to struct zint_vector_circle
+  NOTE: backward incompatible drawing of MaxiCode finder (bullseye)
+
 Changes
 -------
 - RMQR: add ECI support

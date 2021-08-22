@@ -370,11 +370,8 @@
       <path d="M 0.15 39.00 L 0.65 39.87 L 1.65 39.87 L 2.15 39.00 L 1.65 38.13 L 0.65 38.13 Z" opacity="0.867" />
       <path d="M 0.15 51.00 L 0.65 51.87 L 1.65 51.87 L 2.15 51.00 L 1.65 50.13 L 0.65 50.13 Z" opacity="0.867" />
       <path d="M 0.15 59.00 L 0.65 59.87 L 1.65 59.87 L 2.15 59.00 L 1.65 58.13 L 0.65 58.13 Z" opacity="0.867" />
-      <circle cx="28.87" cy="29.00" r="9.00" opacity="0.867" />
-      <circle cx="28.87" cy="29.00" r="7.43" fill="#EEEEEE" opacity="0.133" />
-      <circle cx="28.87" cy="29.00" r="5.86" opacity="0.867" />
-      <circle cx="28.87" cy="29.00" r="4.29" fill="#EEEEEE" opacity="0.133" />
-      <circle cx="28.87" cy="29.00" r="2.72" opacity="0.867" />
-      <circle cx="28.87" cy="29.00" r="1.15" fill="#EEEEEE" opacity="0.133" />
+      <circle cx="28.87" cy="29.00" r="8.215" stroke="#121212" stroke-width="1.569" fill="none" opacity="0.867" />
+      <circle cx="28.87" cy="29.00" r="5.077" stroke="#121212" stroke-width="1.569" fill="none" opacity="0.867" />
+      <circle cx="28.87" cy="29.00" r="1.939" stroke="#121212" stroke-width="1.569" fill="none" opacity="0.867" />
    </g>
 </svg>

@@ -99,7 +99,8 @@ static int vector_plot_add_hexagon(struct zint_symbol *symbol, struct zint_vecto
     return 1;
 }
 
-static struct zint_vector_circle *vector_plot_create_circle(float x, float y, float diameter, int colour) {
+static struct zint_vector_circle *vector_plot_create_circle(float x, float y, float diameter, float width,
+                int colour) {
     struct zint_vector_circle *circle;
 
     circle = (struct zint_vector_circle *) malloc(sizeof(struct zint_vector_circle));
@@ -108,6 +109,7 @@ static struct zint_vector_circle *vector_plot_create_circle(float x, float y, fl
     circle->x = x;
     circle->y = y;
     circle->diameter = diameter;
+    circle->width = width;
     circle->colour = colour;
 
     return circle;
@@ -236,6 +238,7 @@ static void vector_scale(struct zint_symbol *symbol, int file_type) {
         circle->x *= scale;
         circle->y *= scale;
         circle->diameter *= scale;
+        circle->width *= scale;
         circle = circle->next;
     }
 
@@ -490,7 +493,7 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
     // Plot Maxicode symbols
     if (symbol->symbology == BARCODE_MAXICODE) {
         struct zint_vector_circle *circle;
-        float bull_x, bull_y, bull_d_incr;
+        float bull_x, bull_y, bull_d_incr, bull_width;
         const float two_div_sqrt3 = 1.1547f; /* 2 / √3 */
         const float sqrt3_div_two = 0.866f; /* √3 / 2 == 1.5 / √3 */
 
@@ -510,19 +513,15 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
         bull_y = vector->height / 2.0f; /* 16Y above bottom-most centre = halfway */
         /* Total finder diameter is 9X, so diametric increment for 5 diameters d2 to d6 is (9X - d1) / 5 */
         bull_d_incr = (hex_diameter * 9 - hex_ydiameter) / 5.0f;
+        bull_width = bull_d_incr / 2.0f;
 
-        // TODO: Add width to circle so can draw rings instead of overlaying circles
-        circle = vector_plot_create_circle(bull_x, bull_y, hex_ydiameter + bull_d_incr * 5, 0);
+        circle = vector_plot_create_circle(bull_x, bull_y, hex_ydiameter + bull_d_incr * 5 - bull_width, bull_width,
+                    0);
         vector_plot_add_circle(symbol, circle, &last_circle);
-        circle = vector_plot_create_circle(bull_x, bull_y, hex_ydiameter + bull_d_incr * 4, 1);
+        circle = vector_plot_create_circle(bull_x, bull_y, hex_ydiameter + bull_d_incr * 3 - bull_width, bull_width,
+                    0);
         vector_plot_add_circle(symbol, circle, &last_circle);
-        circle = vector_plot_create_circle(bull_x, bull_y, hex_ydiameter + bull_d_incr * 3, 0);
-        vector_plot_add_circle(symbol, circle, &last_circle);
-        circle = vector_plot_create_circle(bull_x, bull_y, hex_ydiameter + bull_d_incr * 2, 1);
-        vector_plot_add_circle(symbol, circle, &last_circle);
-        circle = vector_plot_create_circle(bull_x, bull_y, hex_ydiameter + bull_d_incr, 0);
-        vector_plot_add_circle(symbol, circle, &last_circle);
-        circle = vector_plot_create_circle(bull_x, bull_y, hex_ydiameter, 1);
+        circle = vector_plot_create_circle(bull_x, bull_y, hex_ydiameter + bull_d_incr - bull_width, bull_width, 0);
         vector_plot_add_circle(symbol, circle, &last_circle);
 
         /* Hexagons */
@@ -546,7 +545,7 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
                     struct zint_vector_circle *circle = vector_plot_create_circle(
                                                             i + dot_offset + xoffset,
                                                             r + dot_offset + yoffset,
-                                                            symbol->dot_size, 0);
+                                                            symbol->dot_size, 0, 0);
                     vector_plot_add_circle(symbol, circle, &last_circle);
                 }
             }

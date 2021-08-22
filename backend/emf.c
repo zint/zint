@@ -68,7 +68,8 @@ static int count_circles(struct zint_symbol *symbol) {
         circ = circ->next;
     }
 
-    return circles;
+    /* Hack for MaxiCode */
+    return symbol->symbology == BARCODE_MAXICODE ? circles * 2 : circles;
 }
 
 static int count_hexagons(struct zint_symbol *symbol) {
@@ -258,9 +259,9 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
     emr_ellipse_t circle[circle_count ? circle_count : 1];
     emr_polygon_t hexagon[hexagon_count ? hexagon_count : 1];
 #else
-    rectangle = (emr_rectangle_t*) _alloca(rectangle_count * sizeof(emr_rectangle_t));
-    circle = (emr_ellipse_t*) _alloca(circle_count * sizeof(emr_ellipse_t));
-    hexagon = (emr_polygon_t*) _alloca(hexagon_count * sizeof(emr_polygon_t));
+    rectangle = (emr_rectangle_t *) _alloca(rectangle_count * sizeof(emr_rectangle_t));
+    circle = (emr_ellipse_t *) _alloca(circle_count * sizeof(emr_ellipse_t));
+    hexagon = (emr_polygon_t *) _alloca(hexagon_count * sizeof(emr_polygon_t));
 #endif
 
     // Calculate how many coloured rectangles
@@ -463,8 +464,10 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
     circ = symbol->vector->circles;
     this_circle = 0;
     while (circ) {
-        if (previous_diameter != circ->diameter) {
-            previous_diameter = circ->diameter;
+        /* Note using circle width the proper way, with a non-null pen of specified width and a null brush for fill,
+           causes various different rendering issues for LibreOffice Draw and Inkscape, so using following hack */
+        if (previous_diameter != circ->diameter + circ->width) { /* Drawing MaxiCode bullseye using overlayed discs */
+            previous_diameter = circ->diameter + circ->width;
             radius = (float) (0.5 * previous_diameter);
         }
         circle[this_circle].type = 0x0000002a; // EMR_ELLIPSE
@@ -476,6 +479,20 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
         this_circle++;
         bytecount += 24;
         recordcount++;
+
+        if (symbol->symbology == BARCODE_MAXICODE) { /* Drawing MaxiCode bullseye using overlayed discs */
+            float inner_radius = radius - circ->width;
+            circle[this_circle].type = 0x0000002a; // EMR_ELLIPSE
+            circle[this_circle].size = 24;
+            circle[this_circle].box.top = (int32_t) (circ->y - inner_radius);
+            circle[this_circle].box.bottom = (int32_t) (circ->y + inner_radius);
+            circle[this_circle].box.left = (int32_t) (circ->x - inner_radius);
+            circle[this_circle].box.right = (int32_t) (circ->x + inner_radius);
+            this_circle++;
+            bytecount += 24;
+            recordcount++;
+        }
+
         circ = circ->next;
     }
 

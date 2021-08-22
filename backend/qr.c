@@ -2998,7 +2998,8 @@ INTERNAL int rmqr(struct zint_symbol *symbol, unsigned char source[], int length
         autosize = 31;
         best_footprint = rmqr_height[31] * rmqr_width[31];
         for (version = 30; version >= 0; version--) {
-            est_binlen = getBinaryLength(RMQR_VERSION + version, mode, jisdata, length, gs1, symbol->eci, debug_print);
+            est_binlen = getBinaryLength(RMQR_VERSION + version, mode, jisdata, length, gs1, symbol->eci,
+                            debug_print);
             footprint = rmqr_height[version] * rmqr_width[version];
             if (ecc_level == LEVEL_M) {
                 if (8 * rmqr_data_codewords_M[version] >= est_binlen) {
@@ -3081,8 +3082,8 @@ INTERNAL int rmqr(struct zint_symbol *symbol, unsigned char source[], int length
     fullstream = (unsigned char *) _alloca(rmqr_total_codewords[version] + 1);
 #endif
 
-    qr_binary(datastream, RMQR_VERSION + version, target_codewords, mode, jisdata, length, gs1, symbol->eci, est_binlen,
-                debug_print);
+    qr_binary(datastream, RMQR_VERSION + version, target_codewords, mode, jisdata, length, gs1, symbol->eci,
+                est_binlen, debug_print);
 #ifdef ZINT_TEST
     if (symbol->debug & ZINT_DEBUG_TEST) debug_test_codeword_dump(symbol, datastream, target_codewords);
 #endif

@@ -1,4 +1,4 @@
-/* maxicode.c - Handles Maxicode */
+/* maxicode.c - Handles MaxiCode */
 
 /*
     libzint - the open source barcode library

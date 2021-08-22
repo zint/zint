@@ -154,6 +154,7 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
     int i, len;
     int ps_len = 0;
     int iso_latin1 = 0;
+    int have_circles_with_width = 0, have_circles_without_width = 0;
     const int output_to_stdout = symbol->output_options & BARCODE_STDOUT;
 #ifdef _MSC_VER
     unsigned char *ps_string;
@@ -263,6 +264,15 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
     ps_string = (unsigned char *) _alloca(ps_len + 1);
 #endif
 
+    /* Check for circle widths */
+    for (circle = symbol->vector->circles; circle; circle = circle->next) {
+        if (circle->width) {
+            have_circles_with_width = 1;
+        } else {
+            have_circles_without_width = 1;
+        }
+    }
+
     /* Start writing the header */
     fprintf(feps, "%%!PS-Adobe-3.0 EPSF-3.0\n");
     if (ZINT_VERSION_BUILD) {
@@ -278,11 +288,21 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
     fprintf(feps, "%%%%EndComments\n");
 
     /* Definitions */
-    fprintf(feps, "/TL { setlinewidth moveto lineto stroke } bind def\n");
-    fprintf(feps, "/TD { newpath 0 360 arc fill } bind def\n");
-    fprintf(feps, "/TH { 0 setlinewidth moveto lineto lineto lineto lineto lineto closepath fill } bind def\n");
+    if (have_circles_without_width) {
+        /* Disc: x y radius TD */
+        fprintf(feps, "/TD { newpath 0 360 arc fill } bind def\n");
+    }
+    if (have_circles_with_width) {
+        /* Circle (ring): x y radius width TC (adapted from BWIPP renmaxicode.ps) */
+        fprintf(feps, "/TC { newpath 4 1 roll 3 copy 0 360 arc closepath 4 -1 roll add 360 0 arcn closepath fill }"
+                        " bind def\n");
+    }
+    if (symbol->vector->hexagons) {
+        fprintf(feps, "/TH { 0 setlinewidth moveto lineto lineto lineto lineto lineto closepath fill } bind def\n");
+    }
     fprintf(feps, "/TB { 2 copy } bind def\n");
-    fprintf(feps, "/TR { newpath 4 1 roll exch moveto 1 index 0 rlineto 0 exch rlineto neg 0 rlineto closepath fill } bind def\n");
+    fprintf(feps, "/TR { newpath 4 1 roll exch moveto 1 index 0 rlineto 0 exch rlineto neg 0 rlineto closepath fill }"
+                    " bind def\n");
     fprintf(feps, "/TE { pop pop } bind def\n");
 
     fprintf(feps, "newpath\n");
@@ -405,8 +425,8 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
     previous_diameter = radius = 0.0f;
     circle = symbol->vector->circles;
     while (circle) {
-        if (previous_diameter != circle->diameter) {
-            previous_diameter = circle->diameter;
+        if (previous_diameter != circle->diameter - circle->width) {
+            previous_diameter = circle->diameter - circle->width;
             radius = (float) (0.5 * previous_diameter);
         }
         if (circle->colour) {
@@ -417,7 +437,12 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
                 fprintf(feps, "%.2f %.2f %.2f %.2f setcmykcolor\n",
                         cyan_paper, magenta_paper, yellow_paper, black_paper);
             }
-            fprintf(feps, "%.2f %.2f %.2f TD\n", circle->x, (symbol->vector->height - circle->y), radius);
+            if (circle->width) {
+                fprintf(feps, "%.2f %.2f %.3f %.3f TC\n",
+                        circle->x, (symbol->vector->height - circle->y), radius, circle->width);
+            } else {
+                fprintf(feps, "%.2f %.2f %.2f TD\n", circle->x, (symbol->vector->height - circle->y), radius);
+            }
             if (circle->next) {
                 if ((symbol->output_options & CMYK_COLOUR) == 0) {
                     fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
@@ -427,7 +452,12 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
             }
         } else {
             // A 'black' circle
-            fprintf(feps, "%.2f %.2f %.2f TD\n", circle->x, (symbol->vector->height - circle->y), radius);
+            if (circle->width) {
+                fprintf(feps, "%.2f %.2f %.3f %.3f TC\n",
+                        circle->x, (symbol->vector->height - circle->y), radius, circle->width);
+            } else {
+                fprintf(feps, "%.2f %.2f %.2f TD\n", circle->x, (symbol->vector->height - circle->y), radius);
+            }
         }
         circle = circle->next;
     }
