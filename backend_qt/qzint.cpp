@@ -574,7 +574,7 @@ namespace Zint {
                     p.setColor(m_fgColor);
                     p.setWidthF(circle->width);
                     painter.setPen(p);
-                    painter.setBrush(circle->width ? Qt::NoBrush : bgBrush);
+                    painter.setBrush(circle->width ? Qt::NoBrush : fgBrush);
                 }
                 painter.drawEllipse(QPointF(circle->x, circle->y), radius, radius);
                 circle = circle->next;

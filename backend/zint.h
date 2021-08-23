@@ -67,8 +67,8 @@ extern "C" {
     struct zint_vector_circle {
         float x, y;
         float diameter;     /* Circle diameter. Does not include width (if any) */
-        float width;        /* Width of circle perimeter. 0 for fill (disc) */
-        int colour;         /* Non-zero for draw with background colour */
+        float width;        /* Width of circle perimeter (circumference). 0 for fill (disc) */
+        int colour;         /* Non-zero for draw with background colour (else draw with foreground colour) */
         struct zint_vector_circle *next; /* Pointer to next circle */
     };
 
