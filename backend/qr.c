@@ -1797,7 +1797,7 @@ static void micro_qr_m1(struct zint_symbol *symbol, char binary_data[]) {
     latch = 0;
 
     /* Add terminator */
-    bits_left = bits_total - (int)strlen(binary_data);
+    bits_left = bits_total - (int) strlen(binary_data);
     if (bits_left <= 3) {
         for (i = 0; i < bits_left; i++) {
             strcat(binary_data, "0");
@@ -1807,9 +1807,13 @@ static void micro_qr_m1(struct zint_symbol *symbol, char binary_data[]) {
         strcat(binary_data, "000");
     }
 
+    if (symbol->debug & ZINT_DEBUG_PRINT) {
+        printf("M1 Terminated binary (%d): %s (bits_left %d)\n", (int) strlen(binary_data), binary_data, bits_left);
+    }
+
     if (latch == 0) {
         /* Manage last (4-bit) block */
-        bits_left = bits_total - (int)strlen(binary_data);
+        bits_left = bits_total - (int) strlen(binary_data);
         if (bits_left <= 4) {
             for (i = 0; i < bits_left; i++) {
                 strcat(binary_data, "0");
@@ -1829,7 +1833,7 @@ static void micro_qr_m1(struct zint_symbol *symbol, char binary_data[]) {
         }
 
         /* Add padding */
-        bits_left = bits_total - (int)strlen(binary_data);
+        bits_left = bits_total - (int) strlen(binary_data);
         if (bits_left > 4) {
             remainder = (bits_left - 4) / 8;
             for (i = 0; i < remainder; i++) {
@@ -1859,8 +1863,6 @@ static void micro_qr_m1(struct zint_symbol *symbol, char binary_data[]) {
     }
 #ifdef ZINT_TEST
     if (symbol->debug & ZINT_DEBUG_TEST) debug_test_codeword_dump(symbol, data_blocks, data_codewords);
-#else
-    (void)symbol; /* Unused */
 #endif
 
     /* Calculate Reed-Solomon error codewords */
@@ -1892,7 +1894,7 @@ static void micro_qr_m2(struct zint_symbol *symbol, char binary_data[], const in
     else assert(0);
 
     /* Add terminator */
-    bits_left = bits_total - (int)strlen(binary_data);
+    bits_left = bits_total - (int) strlen(binary_data);
     if (bits_left <= 5) {
         for (i = 0; i < bits_left; i++) {
             strcat(binary_data, "0");
@@ -1900,6 +1902,10 @@ static void micro_qr_m2(struct zint_symbol *symbol, char binary_data[], const in
         latch = 1;
     } else {
         bin_append(0, 5, binary_data);
+    }
+
+    if (symbol->debug & ZINT_DEBUG_PRINT) {
+        printf("M2 Terminated binary (%d): %s (bits_left %d)\n", (int) strlen(binary_data), binary_data, bits_left);
     }
 
     if (latch == 0) {
@@ -1913,7 +1919,7 @@ static void micro_qr_m2(struct zint_symbol *symbol, char binary_data[], const in
         }
 
         /* Add padding */
-        bits_left = bits_total - (int)strlen(binary_data);
+        bits_left = bits_total - (int) strlen(binary_data);
         remainder = bits_left / 8;
         for (i = 0; i < remainder; i++) {
             strcat(binary_data, (i & 1) ? "00010001" : "11101100");
@@ -1942,8 +1948,6 @@ static void micro_qr_m2(struct zint_symbol *symbol, char binary_data[], const in
     }
 #ifdef ZINT_TEST
     if (symbol->debug & ZINT_DEBUG_TEST) debug_test_codeword_dump(symbol, data_blocks, data_codewords);
-#else
-    (void)symbol; /* Unused */
 #endif
 
     /* Calculate Reed-Solomon error codewords */
@@ -1977,7 +1981,7 @@ static void micro_qr_m3(struct zint_symbol *symbol, char binary_data[], const in
     else assert(0);
 
     /* Add terminator */
-    bits_left = bits_total - (int)strlen(binary_data);
+    bits_left = bits_total - (int) strlen(binary_data);
     if (bits_left <= 7) {
         for (i = 0; i < bits_left; i++) {
             strcat(binary_data, "0");
@@ -1987,9 +1991,13 @@ static void micro_qr_m3(struct zint_symbol *symbol, char binary_data[], const in
         bin_append(0, 7, binary_data);
     }
 
+    if (symbol->debug & ZINT_DEBUG_PRINT) {
+        printf("M3 Terminated binary (%d): %s (bits_left %d)\n", (int) strlen(binary_data), binary_data, bits_left);
+    }
+
     if (latch == 0) {
         /* Manage last (4-bit) block */
-        bits_left = bits_total - (int)strlen(binary_data);
+        bits_left = bits_total - (int) strlen(binary_data);
         if (bits_left <= 4) {
             for (i = 0; i < bits_left; i++) {
                 strcat(binary_data, "0");
@@ -2009,7 +2017,7 @@ static void micro_qr_m3(struct zint_symbol *symbol, char binary_data[], const in
         }
 
         /* Add padding */
-        bits_left = bits_total - (int)strlen(binary_data);
+        bits_left = bits_total - (int) strlen(binary_data);
         if (bits_left > 4) {
             remainder = (bits_left - 4) / 8;
             for (i = 0; i < remainder; i++) {
@@ -2059,8 +2067,6 @@ static void micro_qr_m3(struct zint_symbol *symbol, char binary_data[], const in
     }
 #ifdef ZINT_TEST
     if (symbol->debug & ZINT_DEBUG_TEST) debug_test_codeword_dump(symbol, data_blocks, data_codewords);
-#else
-    (void)symbol; /* Unused */
 #endif
 
     /* Calculate Reed-Solomon error codewords */
@@ -2097,7 +2103,7 @@ static void micro_qr_m4(struct zint_symbol *symbol, char binary_data[], const in
     else assert(0);
 
     /* Add terminator */
-    bits_left = bits_total - (int)strlen(binary_data);
+    bits_left = bits_total - (int) strlen(binary_data);
     if (bits_left <= 9) {
         for (i = 0; i < bits_left; i++) {
             strcat(binary_data, "0");
@@ -2105,6 +2111,10 @@ static void micro_qr_m4(struct zint_symbol *symbol, char binary_data[], const in
         latch = 1;
     } else {
         bin_append(0, 9, binary_data);
+    }
+
+    if (symbol->debug & ZINT_DEBUG_PRINT) {
+        printf("M4 Terminated binary (%d): %s (bits_left %d)\n", (int) strlen(binary_data), binary_data, bits_left);
     }
 
     if (latch == 0) {
@@ -2118,7 +2128,7 @@ static void micro_qr_m4(struct zint_symbol *symbol, char binary_data[], const in
         }
 
         /* Add padding */
-        bits_left = bits_total - (int)strlen(binary_data);
+        bits_left = bits_total - (int) strlen(binary_data);
         remainder = bits_left / 8;
         for (i = 0; i < remainder; i++) {
             strcat(binary_data, (i & 1) ? "00010001" : "11101100");
@@ -2151,8 +2161,6 @@ static void micro_qr_m4(struct zint_symbol *symbol, char binary_data[], const in
     }
 #ifdef ZINT_TEST
     if (symbol->debug & ZINT_DEBUG_TEST) debug_test_codeword_dump(symbol, data_blocks, data_codewords);
-#else
-    (void)symbol; /* Unused */
 #endif
 
     /* Calculate Reed-Solomon error codewords */
@@ -2561,6 +2569,8 @@ INTERNAL int microqr(struct zint_symbol *symbol, unsigned char source[], int len
 
     qr_binary((unsigned char *) full_stream, MICROQR_VERSION + version, 0 /*target_codewords*/, mode, jisdata, length,
             0 /*gs1*/, 0 /*eci*/, binary_count[version], debug_print);
+
+    if (debug_print) printf("Binary (%d): %s\n", (int) strlen(full_stream), full_stream);
 
     switch (version) {
         case 0: micro_qr_m1(symbol, full_stream);
