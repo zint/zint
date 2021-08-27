@@ -45,6 +45,9 @@
 #include "common.h"
 #include "emf.h"
 
+/* Multiply truncating to 3 decimal places (avoids rounding differences on various platforms) */
+#define mul3dpf(m, arg) (roundf(m * arg * 1000.0) / 1000.0f)
+
 static int count_rectangles(struct zint_symbol *symbol) {
     int rectangles = 0;
     struct zint_vector_rect *rect;
@@ -468,7 +471,7 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
            causes various different rendering issues for LibreOffice Draw and Inkscape, so using following hack */
         if (previous_diameter != circ->diameter + circ->width) { /* Drawing MaxiCode bullseye using overlayed discs */
             previous_diameter = circ->diameter + circ->width;
-            radius = (float) (0.5 * previous_diameter);
+            radius = mul3dpf(0.5, previous_diameter);
         }
         circle[this_circle].type = 0x0000002a; // EMR_ELLIPSE
         circle[this_circle].size = 24;
@@ -507,9 +510,9 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
 
         if (previous_diameter != hex->diameter) {
             previous_diameter = hex->diameter;
-            radius = (float) (0.5 * previous_diameter);
-            half_radius = (float) (0.25 * previous_diameter);
-            half_sqrt3_radius = (float) (0.43301270189221932338 * previous_diameter);
+            radius = mul3dpf(0.5, previous_diameter);
+            half_radius = mul3dpf(0.25, previous_diameter);
+            half_sqrt3_radius = mul3dpf(0.43301270189221932338, previous_diameter);
         }
 
         /* Note rotation done via world transform */
