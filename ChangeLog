@@ -9,6 +9,7 @@ Version 2.10.0.9 (dev) not released yet
 Changes
 -------
 - RMQR: add ECI support
+- CODE93: don't display check characters in HRT (as per standard Figure B1)
 
 Bugs
 ----

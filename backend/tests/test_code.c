@@ -131,9 +131,9 @@ static void test_hrt(int index, int debug) {
         /* 13*/ { BARCODE_LOGMARS, -1, "abc1234", -1, "ABC1234" }, // Converts to upper
         /* 14*/ { BARCODE_LOGMARS, 1, "abc1234", -1, "ABC12340" }, // With check digit
         /* 15*/ { BARCODE_LOGMARS, 1, "12345/ABCDE", -1, "12345/ABCDET" }, // With check digit
-        /* 16*/ { BARCODE_CODE93, -1, "ABC1234", -1, "ABC1234S5" }, // 2 checksums added (note check digits not shown by bwipp or tec-it)
-        /* 17*/ { BARCODE_CODE93, -1, "abc1234", -1, "abc1234ZG" },
-        /* 18*/ { BARCODE_CODE93, -1, "A\001a\000b\177d\037e", 9, "A a b d e1R" }, // NUL, ctrls and DEL replaced with spaces
+        /* 16*/ { BARCODE_CODE93, -1, "ABC1234", -1, "ABC1234" }, // No longer shows 2 check chars added (same as BWIPP and TEC-IT)
+        /* 17*/ { BARCODE_CODE93, -1, "abc1234", -1, "abc1234" },
+        /* 18*/ { BARCODE_CODE93, -1, "A\001a\000b\177d\037e", 9, "A a b d e" }, // NUL, ctrls and DEL replaced with spaces
         /* 19*/ { BARCODE_PZN, -1, "12345", -1, "PZN -00123458" }, // Pads with zeroes if length < 7
         /* 20*/ { BARCODE_PZN, -1, "123456", -1, "PZN -01234562" },
         /* 21*/ { BARCODE_PZN, -1, "1234567", -1, "PZN -12345678" },
@@ -338,31 +338,37 @@ static void test_encode(int index, int generate, int debug) {
         /* 25*/ { BARCODE_LOGMARS, 1, "12345/ABCDE", -1, 0, 1, 223, "MIL-STD-1189 Rev. B Section 6.2.1 check character example; verified manually against tec-it",
                     "1000101110111010111010001010111010111000101011101110111000101010101000111010111011101000111010101000100010100010111010100010111010111010001011101110111010001010101011100010111011101011100010101010111011100010100010111011101"
                 },
-        /* 26*/ { BARCODE_CODE93, -1, "1A", -1, 0, 1, 55, "Verified manually against tec-it",
+        /* 26*/ { BARCODE_CODE93, -1, "C93", -1, 0, 1, 64, "ANSI/AIM BC5-1995 Figure 1; verified manually against tec-it",
+                    "1010111101101000101000010101010000101101010001110110101010111101"
+                },
+        /* 27*/ { BARCODE_CODE93, -1, "CODE\01593", -1, 0, 1, 109, "ANSI/AIM BC5-1995 Figure B1; verified manually against tec-it",
+                    "1010111101101000101001011001100101001100100101001001101010011001000010101010000101100101001000101101010111101"
+                },
+        /* 28*/ { BARCODE_CODE93, -1, "1A", -1, 0, 1, 55, "Verified manually against tec-it",
                     "1010111101010010001101010001101000101001110101010111101"
                 },
-        /* 27*/ { BARCODE_CODE93, -1, "TEST93", -1, 0, 1, 91, "Verified manually against tec-it",
+        /* 29*/ { BARCODE_CODE93, -1, "TEST93", -1, 0, 1, 91, "Verified manually against tec-it",
                     "1010111101101001101100100101101011001101001101000010101010000101011101101001000101010111101"
                 },
-        /* 28*/ { BARCODE_CODE93, -1, "\000a\177", 3, 0, 1, 91, "Verified manually against tec-it",
+        /* 30*/ { BARCODE_CODE93, -1, "\000a\177", 3, 0, 1, 91, "Verified manually against tec-it",
                     "1010111101110110101100101101001100101101010001110110101101001101011011101010010001010111101"
                 },
-        /* 29*/ { BARCODE_PZN, -1, "1234567", -1, 0, 1, 142, "Example from IFA Info Code 39 EN V2.1; verified manually against tec-it",
+        /* 31*/ { BARCODE_PZN, -1, "1234567", -1, 0, 1, 142, "Example from IFA Info Code 39 EN V2.1; verified manually against tec-it",
                     "1001011011010100101011011011010010101101011001010110110110010101010100110101101101001101010101100110101010100101101101101001011010100101101101"
                 },
-        /* 30*/ { BARCODE_PZN, -1, "2758089", -1, 0, 1, 142, "Example from IFA Info Check Digit Calculations EN 15 July 2019; verified manually against tec-it",
+        /* 32*/ { BARCODE_PZN, -1, "2758089", -1, 0, 1, 142, "Example from IFA Info Check Digit Calculations EN 15 July 2019; verified manually against tec-it",
                     "1001011011010100101011011010110010101101010010110110110100110101011010010110101010011011010110100101101010110010110101011001011010100101101101"
                 },
-        /* 31*/ { BARCODE_VIN, -1, "1FTCR10UXTPA78180", -1, 0, 1, 246, "https://www.vinquery.com/img/vinbarcode/vinbarcode4.jpg",
+        /* 33*/ { BARCODE_VIN, -1, "1FTCR10UXTPA78180", -1, 0, 1, 246, "https://www.vinquery.com/img/vinbarcode/vinbarcode4.jpg",
                     "100101101101011010010101101011011001010101011011001011011010010101101010110010110100101011010100110110101100101010110100101101011010101101100101011011010010110101001011010100101101101101001011010110100101011011010010110101010011011010100101101101"
                 },
-        /* 32*/ { BARCODE_VIN, 1, "2FTPX28L0XCA15511", -1, 0, 1, 259, "With Import 'I' prefix; https://www.vinquery.com/img/vinbarcode/vinbarcode1.jpg",
+        /* 34*/ { BARCODE_VIN, 1, "2FTPX28L0XCA15511", -1, 0, 1, 259, "With Import 'I' prefix; https://www.vinquery.com/img/vinbarcode/vinbarcode1.jpg",
                     "1001011011010101101001101010110010101101011011001010101011011001010110110100101001011010110101100101011011010010110101011010100110101001101101010010110101101101101001010110101001011011010010101101101001101010110100110101011010010101101101001010110100101101101"
                 },
-        /* 33*/ { BARCODE_HIBC_39, -1, "A123BJC5D6E71", -1, 0, 1, 271, "ANSI/HIBC 2.6 - 2016 Figure 2, same",
+        /* 35*/ { BARCODE_HIBC_39, -1, "A123BJC5D6E71", -1, 0, 1, 271, "ANSI/HIBC 2.6 - 2016 Figure 2, same",
                     "1000101110111010100010100010001011101010001011101110100010101110101110001010111011101110001010101011101000101110101011100011101011101110100010101110100011101010101011100010111010111000111010101110101110001010101000101110111011101000101011101010100011101110100010111011101"
                 },
-        /* 34*/ { BARCODE_HIBC_39, -1, "$$52001510X3G", -1, 0, 1, 271, "ANSI/HIBC 2.6 - 2016 Figure 6, same",
+        /* 36*/ { BARCODE_HIBC_39, -1, "$$52001510X3G", -1, 0, 1, 271, "ANSI/HIBC 2.6 - 2016 Figure 6, same",
                     "1000101110111010100010100010001010001000100010101000100010001010111010001110101010111000101011101010001110111010101000111011101011101000101011101110100011101010111010001010111010100011101110101000101110101110111011100010101010101000111011101010111000101110100010111011101"
                 },
     };

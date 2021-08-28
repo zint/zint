@@ -425,18 +425,22 @@ INTERNAL int c93(struct zint_symbol *symbol, unsigned char source[], int length)
        c39() and ec39() */
 
     int i;
-    int h, weight, c, k, values[128], error_number = 0;
-    char buffer[220];
-    char dest[670];
+    int h, weight, c, k, error_number = 0;
+    int values[108]; /* 107 + 1 (1st check) */
+    char buffer[216]; /* 107*2 (107 full ASCII) + 1 = 215 */
+    char dest[668]; /* 6 (Start) + 107*6 + 2*6 (Checks) + 7 (Stop) + 1 (NUL) = 668 */
     char set_copy[] = SILVER;
     float height;
 
-    strcpy(buffer, "");
+    /* Suppresses clang-tidy clang-analyzer-core.CallAndMessage warning */
+    assert(length > 0);
 
-    if (length > 107) {
+    if (length > 107) { /* 9 (Start) + 107*9 + 2*9 (Checks) + 10 (Stop) == 1000 */
         strcpy(symbol->errtxt, "330: Input too long (107 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
+
+    *buffer = '\0';
 
     /* Message Content */
     for (i = 0; i < length; i++) {
@@ -452,7 +456,7 @@ INTERNAL int c93(struct zint_symbol *symbol, unsigned char source[], int length)
     /* Now we can check the true length of the barcode */
     h = (int) strlen(buffer);
     if (h > 107) {
-        strcpy(symbol->errtxt, "332: Input too long"); // TODO: Better error message
+        strcpy(symbol->errtxt, "332: Input too long (107 symbol character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
 
@@ -512,10 +516,6 @@ INTERNAL int c93(struct zint_symbol *symbol, unsigned char source[], int length)
     height = 50.0f;
     (void) set_height(symbol, 0.0f, height, 0.0f, 1 /*no_errtxt*/);
 #endif
-
-    symbol->text[length] = set_copy[c];
-    symbol->text[length + 1] = set_copy[k];
-    symbol->text[length + 2] = '\0';
 
     return error_number;
 }
