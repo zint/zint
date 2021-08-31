@@ -14,6 +14,7 @@ Changes
 Bugs
 ----
 - GUI/CLI: fix dev version test
+- library.c: error_tag(): check error_number < ZINT_ERROR on WARN_FAIL_ALL
 
 
 Version 2.10.0 2021-08-14

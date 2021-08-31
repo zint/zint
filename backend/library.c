@@ -218,7 +218,7 @@ STATIC_UNLESS_ZINT_TEST int error_tag(struct zint_symbol *symbol, int error_numb
         const char *fmt = error_number >= ZINT_ERROR ? error_fmt : warn_fmt;
         char error_buffer[100];
 
-        if (symbol->warn_level == WARN_FAIL_ALL) {
+        if (error_number < ZINT_ERROR && symbol->warn_level == WARN_FAIL_ALL) {
             /* Convert to error equivalent */
             if (error_number == ZINT_WARN_NONCOMPLIANT) {
                 error_number = ZINT_ERROR_NONCOMPLIANT;
