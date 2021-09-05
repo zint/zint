@@ -16,8 +16,9 @@
  ***************************************************************************/
 /* vim: set ts=4 sw=4 et : */
 
-#ifndef BARCODERENDER_H
-#define BARCODERENDER_H
+#ifndef QZINT_H
+#define QZINT_H
+
 #include <QColor>
 #include <QPainter>
 #include "zint.h"
@@ -30,23 +31,23 @@ class QZint : public QObject
     Q_OBJECT
 
 public:
-     enum AspectRatioMode{IgnoreAspectRatio=0, KeepAspectRatio=1, CenterBarCode=2};
+     enum AspectRatioMode{ IgnoreAspectRatio = 0, KeepAspectRatio = 1, CenterBarCode = 2 }; /* Legacy - not used */
 
 public:
     QZint();
     ~QZint();
 
-    int  symbol() const;
+    int symbol() const; /* Symbology */
     void setSymbol(int symbol);
 
     int inputMode() const;
     void setInputMode(int input_mode);
 
     QString text() const;
-    void setText(const QString & text);
+    void setText(const QString& text);
 
     QString primaryMessage() const;
-    void setPrimaryMessage(const QString & primaryMessage);
+    void setPrimaryMessage(const QString& primaryMessage);
 
     float height() const;
     void setHeight(float height);
@@ -66,10 +67,10 @@ public:
     void setDotSize(float dot_size);
 
     QColor fgColor() const;
-    void setFgColor(const QColor & fgColor);
+    void setFgColor(const QColor& fgColor);
 
     QColor bgColor() const;
-    void setBgColor(const QColor & bgColor);
+    void setBgColor(const QColor& bgColor);
 
     void setCMYK(bool cmyk);
 
@@ -107,7 +108,7 @@ public:
 
     void setDebug(bool debug);
 
-    /* Legacy */
+    /* Legacy property getters/setters */
     void setWidth(int width); /* option_1 */
     int width() const;
     void setSecurityLevel(int securityLevel); /* option_2 */
@@ -116,6 +117,7 @@ public:
     int pdf417CodeWords() const;
     void setHideText(bool hide); /* setShowText(!hide) */
 
+    /* Test capabilities - ZBarcode_Cap() */
     bool hasHRT(int symbology = 0) const;
     bool isExtendable(int symbology = 0) const;
     bool supportsECI(int symbology = 0) const;
@@ -128,12 +130,13 @@ public:
 
     QString error_message() const;
 
-    const QString & lastError() const;
+    const QString& lastError() const;
     bool hasErrors() const;
 
     bool save_to_file(QString filename);
 
-    void render(QPainter & painter, const QRectF & paintRect, AspectRatioMode mode=IgnoreAspectRatio);
+    /* Note: legacy argument `mode` is not used */
+    void render(QPainter& painter, const QRectF& paintRect, AspectRatioMode mode = IgnoreAspectRatio);
     
     int getVersion() const;
 
@@ -179,6 +182,7 @@ private:
     bool m_reader_init;
     bool m_debug;
 };
-}
-#endif
 
+}
+
+#endif /* QZINT_H */

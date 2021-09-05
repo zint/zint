@@ -1171,7 +1171,6 @@ void MainWindow::update_preview()
     int item_val;
     QCheckBox *checkBox;
 
-    //m_bc.ar=(Zint::QZint::AspectRatioMode)1;
     if (!grpComposite->isHidden() && chkComposite->isChecked()) {
         m_bc.bc.setPrimaryMessage(txtData->text());
         m_bc.bc.setText(txtComposite->toPlainText());

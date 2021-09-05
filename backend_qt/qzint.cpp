@@ -27,8 +27,8 @@
 #include <stdio.h>
 #include <math.h>
 #include <QFontMetrics>
-/* the following include was necessary to compile with QT 5.18 on Windows */
-/* QT 8.7 did not require it. */
+/* the following include was necessary to compile with Qt 5.15 on Windows */
+/* Qt 5.7 did not require it. */
 #include <QPainterPath>
 
 namespace Zint {
@@ -129,7 +129,8 @@ namespace Zint {
     void QZint::encode() {
         resetSymbol();
         QByteArray bstr = m_text.toUtf8();
-        m_error = ZBarcode_Encode_and_Buffer_Vector(m_zintSymbol, (unsigned char *) bstr.data(), bstr.length(), 0); /* Note do our own rotation */
+        /* Note do our own rotation */
+        m_error = ZBarcode_Encode_and_Buffer_Vector(m_zintSymbol, (unsigned char *) bstr.data(), bstr.length(), 0);
         m_lastError = m_zintSymbol->errtxt;
 
         if (m_error < ZINT_ERROR) {
@@ -162,7 +163,7 @@ namespace Zint {
         return m_text;
     }
 
-    void QZint::setText(const QString & text) {
+    void QZint::setText(const QString& text) {
         m_text = text;
     }
 
@@ -170,7 +171,7 @@ namespace Zint {
         return m_primaryMessage;
     }
 
-    void QZint::setPrimaryMessage(const QString & primaryMessage) {
+    void QZint::setPrimaryMessage(const QString& primaryMessage) {
         m_primaryMessage = primaryMessage;
     }
 
@@ -222,7 +223,7 @@ namespace Zint {
         return m_fgColor;
     }
 
-    void QZint::setFgColor(const QColor & fgColor) {
+    void QZint::setFgColor(const QColor& fgColor) {
         m_fgColor = fgColor;
     }
 
@@ -230,7 +231,7 @@ namespace Zint {
         return m_bgColor;
     }
 
-    void QZint::setBgColor(const QColor & bgColor) {
+    void QZint::setBgColor(const QColor& bgColor) {
         m_bgColor = bgColor;
     }
 
@@ -394,14 +395,14 @@ namespace Zint {
         return m_lastError;
     }
 
-    const QString & QZint::lastError() const {
+    const QString& QZint::lastError() const {
         return m_lastError;
     }
 
     bool QZint::hasErrors() const {
         return m_lastError.length();
     }
-    
+
     int QZint::getVersion() const {
         return ZBarcode_Version();
     }
@@ -448,13 +449,11 @@ namespace Zint {
         }
     }
 
-    void QZint::render(QPainter & painter, const QRectF & paintRect, AspectRatioMode mode) {
+    void QZint::render(QPainter& painter, const QRectF& paintRect, AspectRatioMode /*mode*/) {
         struct zint_vector_rect *rect;
         struct zint_vector_hexagon *hex;
         struct zint_vector_circle *circle;
         struct zint_vector_string *string;
-
-        (void)mode; /* Not currently used */
 
         encode();
 
@@ -506,9 +505,6 @@ namespace Zint {
 
         QBrush bgBrush(m_bgColor);
         painter.fillRect(QRectF(0, 0, gwidth, gheight), bgBrush);
-
-        //Red square for diagnostics
-        //painter.fillRect(QRect(0, 0, m_zintSymbol->vector->width, m_zintSymbol->vector->height), QBrush(QColor(255,0,0,255)));
 
         // Plot rectangles
         rect = m_zintSymbol->vector->rectangles;
@@ -588,7 +584,8 @@ namespace Zint {
             QPen p;
             p.setColor(m_fgColor);
             painter.setPen(p);
-            bool bold = (m_zintSymbol->output_options & BOLD_TEXT) && (!isExtendable() || (m_zintSymbol->output_options & SMALL_TEXT));
+            bool bold = (m_zintSymbol->output_options & BOLD_TEXT)
+                            && (!isExtendable() || (m_zintSymbol->output_options & SMALL_TEXT));
             QFont font(fontStyle, -1 /*pointSize*/, bold ? QFont::Bold : -1);
             while (string) {
                 font.setPixelSize(string->fsize);

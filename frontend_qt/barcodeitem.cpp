@@ -1,6 +1,7 @@
 /***************************************************************************
  *   Copyright (C) 2008 by BogDan Vatra                                    *
  *   bogdan@licentia.eu                                                    *
+ *   Copyright (C) 2009-2021 by Robin Stuart <rstuart114@gmail.com>        *
  *                                                                         *
  *   This program is free software: you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -23,7 +24,6 @@ BarcodeItem::BarcodeItem()
 {
     w = 693;
     h = 378; // Default widget size when created
-    ar = Zint::QZint::AspectRatioMode::IgnoreAspectRatio;
 }
 
 BarcodeItem::~BarcodeItem()
@@ -42,7 +42,5 @@ QRectF BarcodeItem::boundingRect() const
 
 void BarcodeItem::paint(QPainter *painter, const QStyleOptionGraphicsItem * /*option*/, QWidget * /*widget*/)
 {
-    bc.render(*painter, boundingRect(), ar);
+    bc.render(*painter, boundingRect());
 }
-
-
