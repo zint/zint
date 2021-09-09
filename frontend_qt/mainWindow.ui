@@ -722,6 +722,9 @@ as delimiters for GS1 Application Identifiers
                <property name="value">
                 <double>50.000000000000000</double>
                </property>
+               <property name="accelerated">
+                <bool>true</bool>
+               </property>
               </widget>
              </item>
              <item row="2" column="0">
@@ -870,7 +873,7 @@ in X-dimensions</string>
                 <number>2</number>
                </property>
                <property name="minimum">
-                <double>0.500000000000000</double>
+                <double>0.100000000000000</double>
                </property>
                <property name="maximum">
                 <double>99.500000000000000</double>

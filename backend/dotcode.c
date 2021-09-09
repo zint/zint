@@ -1594,9 +1594,7 @@ INTERNAL int dotcode(struct zint_symbol *symbol, unsigned char source[], int len
     }
     symbol->height = height;
 
-    if (!(symbol->output_options & BARCODE_DOTTY_MODE)) {
-        symbol->output_options += BARCODE_DOTTY_MODE;
-    }
+    symbol->output_options |= BARCODE_DOTTY_MODE;
 
     return 0;
 }

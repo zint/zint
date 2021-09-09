@@ -895,10 +895,12 @@ void MainWindow::change_options()
         file.close();
         tabMain->insertTab(1, m_optionWidget, tr("MaxiCod&e"));
         connect(m_optionWidget->findChild<QObject*>("cmbMaxiMode"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("cmbMaxiMode"), SIGNAL(currentIndexChanged( int )), SLOT(maxi_primary()));
-        connect(m_optionWidget->findChild<QObject*>("txtMaxiPrimary"), SIGNAL(textChanged( const QString& )), SLOT(update_preview()));
+        connect(m_optionWidget->findChild<QObject*>("cmbMaxiMode"), SIGNAL(currentIndexChanged( int )), SLOT(maxi_scm()));
+        connect(m_optionWidget->findChild<QObject*>("txtMaxiSCMPostcode"), SIGNAL(textChanged( const QString& )), SLOT(update_preview()));
+        connect(m_optionWidget->findChild<QObject*>("spnMaxiSCMCountry"), SIGNAL(valueChanged( int )), SLOT(update_preview()));
+        connect(m_optionWidget->findChild<QObject*>("spnMaxiSCMService"), SIGNAL(valueChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("chkMaxiSCMVV"), SIGNAL(stateChanged( int )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("chkMaxiSCMVV"), SIGNAL(stateChanged( int )), SLOT(maxi_primary()));
+        connect(m_optionWidget->findChild<QObject*>("chkMaxiSCMVV"), SIGNAL(stateChanged( int )), SLOT(maxi_scm()));
         connect(m_optionWidget->findChild<QObject*>("spnMaxiSCMVV"), SIGNAL(valueChanged( int )), SLOT(update_preview()));
 
     } else if (symbology == BARCODE_CHANNEL) {
@@ -1071,24 +1073,24 @@ void MainWindow::composite_ean_check()
         chkComposite->setChecked(false);
 }
 
-void MainWindow::maxi_primary()
+void MainWindow::maxi_scm()
 {
     if (bstyle_items[bstyle->currentIndex()].symbology != BARCODE_MAXICODE)
         return;
+
     QCheckBox *chkMaxiSCMVV = m_optionWidget->findChild<QCheckBox*>("chkMaxiSCMVV");
-    if (m_optionWidget->findChild<QComboBox*>("cmbMaxiMode")->currentIndex() == 0) {
-        m_optionWidget->findChild<QLabel*>("lblMaxiPrimary")->setEnabled(true);
-        m_optionWidget->findChild<QLineEdit*>("txtMaxiPrimary")->setEnabled(true);
-        chkMaxiSCMVV->setEnabled(true);
-        m_optionWidget->findChild<QLabel*>("lblMaxiSCMVV")->setEnabled(chkMaxiSCMVV->isChecked());
-        m_optionWidget->findChild<QSpinBox*>("spnMaxiSCMVV")->setEnabled(chkMaxiSCMVV->isChecked());
-    } else {
-        m_optionWidget->findChild<QLabel*>("lblMaxiPrimary")->setEnabled(false);
-        m_optionWidget->findChild<QLineEdit*>("txtMaxiPrimary")->setEnabled(false);
-        chkMaxiSCMVV->setEnabled(false);
-        m_optionWidget->findChild<QLabel*>("lblMaxiSCMVV")->setEnabled(false);
-        m_optionWidget->findChild<QSpinBox*>("spnMaxiSCMVV")->setEnabled(false);
-    }
+
+    bool isMode2or3 = m_optionWidget->findChild<QComboBox*>("cmbMaxiMode")->currentIndex() == 0;
+
+    m_optionWidget->findChild<QLabel*>("lblMaxiSCMPostcode")->setEnabled(isMode2or3);
+    m_optionWidget->findChild<QLineEdit*>("txtMaxiSCMPostcode")->setEnabled(isMode2or3);
+    m_optionWidget->findChild<QLabel*>("lblMaxiSCMCountry")->setEnabled(isMode2or3);
+    m_optionWidget->findChild<QSpinBox*>("spnMaxiSCMCountry")->setEnabled(isMode2or3);
+    m_optionWidget->findChild<QLabel*>("lblMaxiSCMService")->setEnabled(isMode2or3);
+    m_optionWidget->findChild<QSpinBox*>("spnMaxiSCMService")->setEnabled(isMode2or3);
+    chkMaxiSCMVV->setEnabled(isMode2or3);
+    m_optionWidget->findChild<QLabel*>("lblMaxiSCMVV")->setEnabled(isMode2or3 && chkMaxiSCMVV->isChecked());
+    m_optionWidget->findChild<QSpinBox*>("spnMaxiSCMVV")->setEnabled(isMode2or3 && chkMaxiSCMVV->isChecked());
 }
 
 void MainWindow::msi_plessey_ui_set()
@@ -1290,23 +1292,22 @@ void MainWindow::update_preview()
         case BARCODE_PDF417:
             m_bc.bc.setOption2(m_optionWidget->findChild<QComboBox*>("cmbPDFCols")->currentIndex());
             m_bc.bc.setOption1(m_optionWidget->findChild<QComboBox*>("cmbPDFECC")->currentIndex() - 1);
-            if(m_optionWidget->findChild<QRadioButton*>("radPDFStand")->isChecked())
-                m_bc.bc.setSymbol(BARCODE_PDF417);
 
-            if(m_optionWidget->findChild<QRadioButton*>("radPDFTruncated")->isChecked())
+            if (m_optionWidget->findChild<QRadioButton*>("radPDFTruncated")->isChecked())
                 m_bc.bc.setSymbol(BARCODE_PDF417COMP);
-
-            if(m_optionWidget->findChild<QRadioButton*>("radPDFHIBC")->isChecked())
+            else if (m_optionWidget->findChild<QRadioButton*>("radPDFHIBC")->isChecked())
                 m_bc.bc.setSymbol(BARCODE_HIBC_PDF);
+            else
+                m_bc.bc.setSymbol(BARCODE_PDF417);
             break;
 
         case BARCODE_MICROPDF417:
             m_bc.bc.setOption2(m_optionWidget->findChild<QComboBox*>("cmbMPDFCols")->currentIndex());
-            if(m_optionWidget->findChild<QRadioButton*>("radMPDFStand")->isChecked())
-                m_bc.bc.setSymbol(BARCODE_MICROPDF417);
 
-            if(m_optionWidget->findChild<QRadioButton*>("radMPDFHIBC")->isChecked())
+            if (m_optionWidget->findChild<QRadioButton*>("radMPDFHIBC")->isChecked())
                 m_bc.bc.setSymbol(BARCODE_HIBC_MICPDF);
+            else
+                m_bc.bc.setSymbol(BARCODE_MICROPDF417);
             break;
 
         case BARCODE_DOTCODE:
@@ -1549,17 +1550,18 @@ void MainWindow::update_preview()
 
         case BARCODE_MAXICODE:
             m_bc.bc.setSymbol(BARCODE_MAXICODE);
-            if(m_optionWidget->findChild<QComboBox*>("cmbMaxiMode")->currentIndex() == 0)
-            {
+            if (m_optionWidget->findChild<QComboBox*>("cmbMaxiMode")->currentIndex() == 0) {
                 m_bc.bc.setOption1(0); /* Auto-determine mode 2 or 3 from primary message (checks that it isn't empty) */
-                m_bc.bc.setPrimaryMessage(m_optionWidget->findChild<QLineEdit*>("txtMaxiPrimary")->text());
+                m_bc.bc.setPrimaryMessage(QString::asprintf("%s%03d%03d",
+                                    get_lineedit_val("txtMaxiSCMPostcode").toUtf8().constData(),
+                                    get_spinbox_val("spnMaxiSCMCountry"), get_spinbox_val("spnMaxiSCMService")));
                 QCheckBox *chkMaxiSCMVV = m_optionWidget->findChild<QCheckBox*>("chkMaxiSCMVV");
                 if (chkMaxiSCMVV->isEnabled() && chkMaxiSCMVV->isChecked()) {
                     m_bc.bc.setOption2(m_optionWidget->findChild<QSpinBox*>("spnMaxiSCMVV")->value() + 1);
                 }
-            }
-            else
+            } else {
                 m_bc.bc.setOption1(m_optionWidget->findChild<QComboBox*>("cmbMaxiMode")->currentIndex() + 3);
+            }
             break;
 
         case BARCODE_CHANNEL:
@@ -2135,7 +2137,9 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology) {
 
         case BARCODE_MAXICODE:
             settings.setValue("studio/bc/maxicode/mode", get_combobox_index("cmbMaxiMode"));
-            settings.setValue("studio/bc/maxicode/primary_message", get_lineedit_val("txtMaxiPrimary"));
+            settings.setValue("studio/bc/maxicode/scm_postcode", get_lineedit_val("txtMaxiSCMPostcode"));
+            settings.setValue("studio/bc/maxicode/scm_country", get_spinbox_val("spnMaxiSCMCountry"));
+            settings.setValue("studio/bc/maxicode/scm_service", get_spinbox_val("spnMaxiSCMService"));
             settings.setValue("studio/bc/maxicode/chk_scm_vv", get_checkbox_val("chkMaxiSCMVV"));
             settings.setValue("studio/bc/maxicode/spn_scm_vv", get_spinbox_val("spnMaxiSCMVV"));
             break;
@@ -2389,7 +2393,9 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology) {
 
         case BARCODE_MAXICODE:
             set_combobox_from_setting(settings, "studio/bc/maxicode/mode", "cmbMaxiMode", 1);
-            set_lineedit_from_setting(settings, "studio/bc/maxicode/primary_message", "txtMaxiPrimary", "Primary Message Here!");
+            set_lineedit_from_setting(settings, "studio/bc/maxicode/scm_postcode", "txtMaxiSCMPostcode", "");
+            set_spinbox_from_setting(settings, "studio/bc/maxicode/scm_country", "spnMaxiSCMCountry", 0);
+            set_spinbox_from_setting(settings, "studio/bc/maxicode/scm_service", "spnMaxiSCMService", 0);
             set_checkbox_from_setting(settings, "studio/bc/maxicode/chk_scm_vv", "chkMaxiSCMVV");
             set_spinbox_from_setting(settings, "studio/bc/maxicode/spn_scm_vv", "spnMaxiSCMVV", 96); /* 96 is ASC MH10/SC 8 */
             break;

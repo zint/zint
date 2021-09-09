@@ -42,7 +42,7 @@ public slots:
     void on_bgcolor_clicked();
     void composite_ui_set();
     void composite_ean_check();
-    void maxi_primary();
+    void maxi_scm();
     void msi_plessey_ui_set();
     void change_print_scale();
     void change_cmyk();

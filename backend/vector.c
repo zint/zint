@@ -208,6 +208,10 @@ static void vector_scale(struct zint_symbol *symbol, int file_type) {
     struct zint_vector_string *string;
     float scale = symbol->scale * 2.0f;
 
+    if (scale < 0.2f) { // Minimum vector scale 0.1
+        scale = 0.2f;
+    }
+
     if ((file_type == OUT_EMF_FILE) && (symbol->symbology == BARCODE_MAXICODE)) {
         // Increase size to overcome limitations in EMF file format
         scale *= 20;

@@ -30,6 +30,14 @@
        <property name="alignment">
         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
        </property>
+       <property name="toolTip">
+        <string>Mode 2 (numeric postcode) and Mode 3 (alphanumeric postcode)
+use a Structured Carrier Message (SCM) of 3 fields:
+Postcode, Country Code, Service Class
+Mode 4 uses enhanced ECC for the primary part of the message
+Mode 5 uses enhanced ECC for all of the message
+Mode 6 sets the scanner (Reader Initialisation/Programming)</string>
+       </property>
        <property name="buddy">
         <cstring>cmbMaxiMode</cstring>
        </property>
@@ -42,6 +50,14 @@
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
+       </property>
+       <property name="toolTip">
+        <string>Mode 2 (numeric postcode) and Mode 3 (alphanumeric postcode)
+use a Structured Carrier Message (SCM) of 3 fields:
+Postcode, Country Code, Service Class
+Mode 4 uses enhanced ECC for the primary part of the message
+Mode 5 uses enhanced ECC for all of the message
+Mode 6 sets the scanner (Reader Initialisation/Programming)</string>
        </property>
        <property name="currentIndex">
         <number>1</number>
@@ -68,104 +84,222 @@
        </item>
       </widget>
      </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="lblMaxiPrimary">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="text">
-        <string>P&amp;rimary Message:</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-       </property>
-       <property name="buddy">
-        <cstring>txtMaxiPrimary</cstring>
-       </property>
-       <property name="toolTip">
-        <string>Format &quot;PPPPPPPPPCCCSSS&quot; where
-P is postcode of up to 9 digits for Mode 2 or
-6 alphanumerics for Mode 3 (will truncate) and
-C is 3-digit country code
-S is 3-digit service class
-(ignored if disabled)</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QLineEdit" name="txtMaxiPrimary">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="text">
-        <string>Primary Message Here!</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="0">
-      <widget class="QCheckBox" name="chkMaxiSCMVV">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="text">
-        <string>Enable S&amp;CM Prefix</string>
-       </property>
-       <property name="toolTip">
-        <string>Prefix Secondary Carrier Message with &quot;[)&gt;\R01\Gvv&quot;
-where &quot;vv&quot; is version given below
-(ignored if disabled)</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="0">
-      <widget class="QLabel" name="lblMaxiSCMVV">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="text">
-        <string>SCM Pre&amp;fix Version:</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-       </property>
-       <property name="buddy">
-        <cstring>spnMaxiSCMVV</cstring>
-       </property>
-       <property name="toolTip">
-        <string>Version &quot;vv&quot; to place at end of SCM prefix (default 96)
-(ignored if disabled)</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="1">
-      <widget class="QSpinBox" name="spnMaxiSCMVV">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="suffix">
-        <string/>
-       </property>
-       <property name="prefix">
-        <string/>
-       </property>
-       <property name="minimum">
-        <number>0</number>
-       </property>
-       <property name="maximum">
-        <number>99</number>
-       </property>
-       <property name="value">
-        <number>96</number>
-       </property>
-      </widget>
-     </item>
     </layout>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBoxMaxiSCM">
+     <property name="title">
+      <string>Structured Carrier Message</string>
+     </property>
+     <property name="toolTip">
+      <string>For Modes 2 and 3 only</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayoutMaxiSCM">
+      <item row="0" column="0">
+       <widget class="QLabel" name="lblMaxiSCMPostcode">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="toolTip">
+         <string>Postcode of up to 9 digits for Mode 2 or
+6 alphanumerics for Mode 3 (will truncate)
+Postcodes less than maximum length will
+be padded with spaces
+(ignored if disabled)</string>
+        </property>
+        <property name="text">
+         <string>Pos&amp;tcode:</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+        </property>
+        <property name="buddy">
+         <cstring>txtMaxiSCMPostcode</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="txtMaxiSCMPostcode">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="toolTip">
+         <string>Postcode of up to 9 digits for Mode 2 or
+6 alphanumerics for Mode 3 (will truncate)
+Postcodes less than maximum length will
+be padded with spaces
+(ignored if disabled)</string>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="maxLength">
+         <number>9</number>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="lblMaxiSCMCountry">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="toolTip">
+         <string>ISO 3166 numeric country code
+Value ranges from 000 to 999
+(ignored if disabled)</string>
+        </property>
+        <property name="text">
+         <string>Cou&amp;ntry code:</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+        </property>
+        <property name="buddy">
+         <cstring>spnMaxiSCMCountry</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QSpinBox" name="spnMaxiSCMCountry">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="toolTip">
+         <string>ISO 3166 numeric country code
+Value ranges from 000 to 999
+(ignored if disabled)</string>
+        </property>
+        <property name="suffix">
+         <string/>
+        </property>
+         <property name="prefix">
+         <string/>
+        </property>
+        <property name="minimum">
+         <number>0</number>
+        </property>
+        <property name="maximum">
+         <number>999</number>
+        </property>
+        <property name="value">
+         <number>0</number>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="lblMaxiSCMService">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="toolTip">
+         <string>Class of service, assigned by carrier
+Value ranges from 000 to 999
+(ignored if disabled)</string>
+        </property>
+        <property name="text">
+         <string>Se&amp;rvice Class:</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+        </property>
+        <property name="buddy">
+         <cstring>spnMaxiSCMService</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QSpinBox" name="spnMaxiSCMService">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="toolTip">
+         <string>Class of service, assigned by carrier
+Value ranges from 000 to 999
+(ignored if disabled)</string>
+        </property>
+        <property name="suffix">
+         <string/>
+        </property>
+         <property name="prefix">
+         <string/>
+        </property>
+        <property name="minimum">
+         <number>0</number>
+        </property>
+        <property name="maximum">
+         <number>999</number>
+        </property>
+        <property name="value">
+         <number>0</number>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QCheckBox" name="chkMaxiSCMVV">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="toolTip">
+         <string>Prefix Structured Carrier Message with &quot;[)&gt;\R01\Gvv&quot;
+(ANS MH10.8.2 Format 01) where  &quot;vv&quot; is version given below
+(ignored if disabled)</string>
+        </property>
+        <property name="text">
+         <string>Enable S&amp;CM Prefix</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="lblMaxiSCMVV">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="toolTip">
+         <string>Version &quot;vv&quot; to place at end of SCM prefix (default 96)
+(ignored if disabled)</string>
+        </property>
+        <property name="text">
+         <string>SCM Pre&amp;fix Version:</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+        </property>
+        <property name="buddy">
+         <cstring>spnMaxiSCMVV</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QSpinBox" name="spnMaxiSCMVV">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="toolTip">
+         <string>Version &quot;vv&quot; to place at end of SCM prefix (default 96)
+(ignored if disabled)</string>
+        </property>
+        <property name="suffix">
+         <string/>
+        </property>
+         <property name="prefix">
+         <string/>
+        </property>
+        <property name="minimum">
+         <number>0</number>
+        </property>
+        <property name="maximum">
+         <number>99</number>
+        </property>
+        <property name="value">
+         <number>96</number>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
    </item>
    <item>
     <spacer name="verticalSpacer">
@@ -175,7 +309,7 @@ where &quot;vv&quot; is version given below
      <property name="sizeHint" stdset="0">
       <size>
        <width>20</width>
-       <height>40</height>
+       <height>20</height>
       </size>
      </property>
     </spacer>
