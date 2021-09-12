@@ -94,7 +94,7 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     int samples_per_pixel;
     int pixels_per_sample;
     unsigned char map[128];
-    tiff_color_t color_map[256] = {0};
+    tiff_color_t color_map[256] = {{0}};
     unsigned char palette[32][5];
     int color_map_size = 0;
     int extra_samples = 0;
