@@ -2757,7 +2757,7 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                             if (ai_latch == 0) {
                                 bwipp_data[j++] = '[';
                             }
-                            last_ai = atoi(bwipp_data + i + 1);
+                            last_ai = to_int((unsigned char *) (bwipp_data + i + 1), 2);
                             if ((last_ai >= 0 && last_ai <= 4) || (last_ai >= 11 && last_ai <= 20) || last_ai == 23
                                     || (last_ai >= 31 && last_ai <= 36) || last_ai == 41) {
                                 ai_latch = 1;

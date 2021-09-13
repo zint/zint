@@ -1183,7 +1183,6 @@ static int couponposoffer(const unsigned char *data, int data_len, int offset, i
 INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[], const int src_len,
                 unsigned char reduced[]) {
     int i, j, last_ai, ai_latch;
-    char ai_string[5]; /* 4 char max "NNNN" */
     int bracket_level, max_bracket_level, ai_length, max_ai_length, min_ai_length;
     int ai_count;
     int error_value = 0;
@@ -1288,44 +1287,38 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
         return ZINT_ERROR_INVALID_DATA;
     }
 
-    ai_count = 0;
-    for (i = 1; i < src_len; i++) {
-        if (source[i - 1] == obracket) {
-            ai_location[ai_count] = i;
-            j = 0;
-            do {
-                ai_string[j] = source[i + j];
-                j++;
-            } while (ai_string[j - 1] != cbracket);
-            ai_string[j - 1] = '\0';
-            ai_value[ai_count] = atoi(ai_string);
-            ai_count++;
-        }
-    }
-
-    for (i = 0; i < ai_count; i++) {
-        data_location[i] = ai_location[i] + 3;
-        if (ai_value[i] >= 100) {
-            data_location[i]++;
-            if (ai_value[i] >= 1000) {
-                data_location[i]++;
+    if (!(symbol->input_mode & GS1NOCHECK_MODE)) {
+        ai_count = 0;
+        for (i = 1; i < src_len; i++) {
+            if (source[i - 1] == obracket) {
+                ai_location[ai_count] = i;
+                for (j = 1; source[i + j] != cbracket; j++);
+                ai_value[ai_count] = to_int(source + i, j);
+                ai_count++;
+                i += j;
             }
         }
-        data_length[i] = 0;
-        while ((data_location[i] + data_length[i] < src_len)
-                    && (source[data_location[i] + data_length[i]] != obracket)) {
-            data_length[i]++;
-        }
-        if (data_length[i] == 0) {
-            /* No data for given AI */
-            strcpy(symbol->errtxt, "258: Empty data field in input data");
-            return ZINT_ERROR_INVALID_DATA;
-        }
-    }
 
-    strcpy(ai_string, "");
+        for (i = 0; i < ai_count; i++) {
+            if (ai_value[i] >= 1000) {
+                data_location[i] = ai_location[i] + 5;
+            } else if (ai_value[i] >= 100) {
+                data_location[i] = ai_location[i] + 4;
+            } else {
+                data_location[i] = ai_location[i] + 3;
+            }
+            data_length[i] = 0;
+            while ((data_location[i] + data_length[i] < src_len)
+                        && (source[data_location[i] + data_length[i]] != obracket)) {
+                data_length[i]++;
+            }
+            if (data_length[i] == 0) {
+                /* No data for given AI */
+                strcpy(symbol->errtxt, "258: Empty data field in input data");
+                return ZINT_ERROR_INVALID_DATA;
+            }
+        }
 
-    if (!(symbol->input_mode & GS1NOCHECK_MODE)) {
         // Check for valid AI values and data lengths according to GS1 General
         // Specifications Release 21.0.1, January 2021
         for (i = 0; i < ai_count; i++) {
@@ -1360,10 +1353,7 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
             if (ai_latch == 0) {
                 reduced[j++] = '[';
             }
-            ai_string[0] = source[i + 1];
-            ai_string[1] = source[i + 2];
-            ai_string[2] = '\0';
-            last_ai = atoi(ai_string);
+            last_ai = to_int(source + i + 1, 2);
             ai_latch = 0;
             /* The following values from "GS1 General Specifications Release 21.0.1"
                Figure 7.8.4-2 "Element strings with predefined length using GS1 Application Identifiers" */

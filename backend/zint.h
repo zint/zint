@@ -52,7 +52,7 @@ extern "C" {
         int rotation;       /* 0, 90, 180, 270 degrees */
         struct zint_vector_hexagon *next; /* Pointer to next hexagon */
     };
-    
+
     struct zint_vector_string {
         float x, y;         /* x, y position relative to halign */
         float fsize;        /* Font size */

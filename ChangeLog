@@ -18,6 +18,7 @@ Bugs
 - library.c: error_tag(): check error_number < ZINT_ERROR on WARN_FAIL_ALL
 - vector.c: enforce minimum scale >= 0.1 and allow in GUI
 - Suppress some pedantic warnings, props codemonkey82 (#204)
+- gs1.c: Allow 0-length AI data if GS1NOCHECK_MODE, props codemonkey82 (#204)
 
 
 Version 2.10.0 2021-08-14
