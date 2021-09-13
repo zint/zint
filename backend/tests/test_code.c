@@ -132,16 +132,18 @@ static void test_hrt(int index, int debug) {
         /* 14*/ { BARCODE_LOGMARS, 1, "abc1234", -1, "ABC12340" }, // With check digit
         /* 15*/ { BARCODE_LOGMARS, 1, "12345/ABCDE", -1, "12345/ABCDET" }, // With check digit
         /* 16*/ { BARCODE_CODE93, -1, "ABC1234", -1, "ABC1234" }, // No longer shows 2 check chars added (same as BWIPP and TEC-IT)
-        /* 17*/ { BARCODE_CODE93, -1, "abc1234", -1, "abc1234" },
-        /* 18*/ { BARCODE_CODE93, -1, "A\001a\000b\177d\037e", 9, "A a b d e" }, // NUL, ctrls and DEL replaced with spaces
-        /* 19*/ { BARCODE_PZN, -1, "12345", -1, "PZN -00123458" }, // Pads with zeroes if length < 7
-        /* 20*/ { BARCODE_PZN, -1, "123456", -1, "PZN -01234562" },
-        /* 21*/ { BARCODE_PZN, -1, "1234567", -1, "PZN -12345678" },
-        /* 22*/ { BARCODE_VIN, -1, "1FTCR10UXTPA78180", -1, "1FTCR10UXTPA78180" },
-        /* 23*/ { BARCODE_VIN, 1, "2FTPX28L0XCA15511", -1, "2FTPX28L0XCA15511" }, // Include Import char - no change
-        /* 24*/ { BARCODE_HIBC_39, -1, "ABC1234", -1, "*+ABC1234+*" },
-        /* 25*/ { BARCODE_HIBC_39, -1, "abc1234", -1, "*+ABC1234+*" }, // Converts to upper
-        /* 26*/ { BARCODE_HIBC_39, -1, "123456789", -1, "*+1234567890*" },
+        /* 17*/ { BARCODE_CODE93, 1, "ABC1234", -1, "ABC1234S5" }, // Unless requested
+        /* 18*/ { BARCODE_CODE93, -1, "abc1234", -1, "abc1234" },
+        /* 19*/ { BARCODE_CODE93, 1, "abc1234", -1, "abc1234ZG" },
+        /* 20*/ { BARCODE_CODE93, -1, "A\001a\000b\177d\037e", 9, "A a b d e" }, // NUL, ctrls and DEL replaced with spaces
+        /* 21*/ { BARCODE_PZN, -1, "12345", -1, "PZN -00123458" }, // Pads with zeroes if length < 7
+        /* 22*/ { BARCODE_PZN, -1, "123456", -1, "PZN -01234562" },
+        /* 23*/ { BARCODE_PZN, -1, "1234567", -1, "PZN -12345678" },
+        /* 24*/ { BARCODE_VIN, -1, "1FTCR10UXTPA78180", -1, "1FTCR10UXTPA78180" },
+        /* 25*/ { BARCODE_VIN, 1, "2FTPX28L0XCA15511", -1, "2FTPX28L0XCA15511" }, // Include Import char - no change
+        /* 26*/ { BARCODE_HIBC_39, -1, "ABC1234", -1, "*+ABC1234+*" },
+        /* 27*/ { BARCODE_HIBC_39, -1, "abc1234", -1, "*+ABC1234+*" }, // Converts to upper
+        /* 28*/ { BARCODE_HIBC_39, -1, "123456789", -1, "*+1234567890*" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;

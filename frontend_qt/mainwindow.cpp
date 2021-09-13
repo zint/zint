@@ -933,6 +933,15 @@ void MainWindow::change_options()
         connect(m_optionWidget->findChild<QObject*>("cmbC49RowSepHeight"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radC49GS1"), SIGNAL(toggled( bool )), SLOT(update_preview()));
 
+    } else if (symbology == BARCODE_CODE93) {
+        QFile file(":/grpC93.ui");
+        if (file.open(QIODevice::ReadOnly)) {
+            m_optionWidget = uiload.load(&file);
+            file.close();
+            tabMain->insertTab(1, m_optionWidget, tr("Cod&e 93"));
+            connect(m_optionWidget->findChild<QObject*>("chkC93ShowChecks"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        }
+
     } else if (symbology == BARCODE_DBAR_EXPSTK) {
         QFile file(":/grpDBExtend.ui");
         if (!file.open(QIODevice::ReadOnly))
@@ -1596,6 +1605,13 @@ void MainWindow::update_preview()
             }
             break;
 
+        case BARCODE_CODE93:
+            m_bc.bc.setSymbol(BARCODE_CODE93);
+            if (get_checkbox_val("chkC93ShowChecks")) {
+                m_bc.bc.setOption2(1);
+            }
+            break;
+
         case BARCODE_HANXIN:
             m_bc.bc.setSymbol(BARCODE_HANXIN);
             item_val = m_optionWidget->findChild<QComboBox*>("cmbHXSize")->currentIndex();
@@ -2154,6 +2170,10 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology) {
             settings.setValue("studio/bc/code49/encoding_mode", get_button_group_index(QStringList() << "radC49Stand" << "radC49GS1"));
             break;
 
+        case BARCODE_CODE93:
+            settings.setValue("studio/bc/code93/chk_show_checks", get_checkbox_val("chkC93ShowChecks"));
+            break;
+
         case BARCODE_DBAR_EXPSTK:
         case BARCODE_DBAR_EXPSTK_CC:
             settings.setValue("studio/bc/dbar_expstk/cols", get_combobox_index("cmbCols"));
@@ -2408,6 +2428,10 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology) {
         case BARCODE_CODE49:
             set_combobox_from_setting(settings, "studio/bc/code49/row_sep_height", "cmbC49RowSepHeight");
             set_radiobutton_from_setting(settings, "studio/bc/code49/encoding_mode", QStringList() << "radC49Stand" << "radC49GS1");
+            break;
+
+        case BARCODE_CODE93:
+            set_checkbox_from_setting(settings, "studio/bc/code93/chk_show_checks", "chkC93ShowChecks");
             break;
 
         case BARCODE_DBAR_EXPSTK:

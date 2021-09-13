@@ -517,6 +517,12 @@ INTERNAL int c93(struct zint_symbol *symbol, unsigned char source[], int length)
     (void) set_height(symbol, 0.0f, height, 0.0f, 1 /*no_errtxt*/);
 #endif
 
+    if (symbol->option_2 == 1) {
+        symbol->text[length] = set_copy[c];
+        symbol->text[length + 1] = set_copy[k];
+        symbol->text[length + 2] = '\0';
+    }
+
     return error_number;
 }
 

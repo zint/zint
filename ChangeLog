@@ -10,6 +10,7 @@ Changes
 -------
 - RMQR: add ECI support
 - CODE93: don't display check characters in HRT (as per standard Figure B1)
+  unless option_2 = 1 or vers=1
 - GUI: separate out MAXICODE Structured Carrier Message fields
 
 Bugs

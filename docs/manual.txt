@@ -1561,8 +1561,8 @@ the Human Readable Text, set option_2 = 2 or --vers=2.
 Used for baggage handling in the air-transport industry by the International
 Air Transport Agency, this self-checking code will encode any length numeric
 input (digits 0-9). No check digit is added by default. To add a check digit,
-set option_2 = 1 or --vers=1. To add a check digit but not show it in the human
-readable text, set option_2 = 2 or --vers=2.
+set option_2 = 1 or --vers=1. To add a check digit but not show it in the Human
+Readable Text, set option_2 = 2 or --vers=2.
 
 6.1.2.3 Industrial Code 2 of 5
 ------------------------------
@@ -1576,8 +1576,8 @@ option_2 = 2 or --vers=2.
 This self-checking symbology encodes pairs of numbers, and so can only encode
 an even number of digits (0-9). If an odd number of digits is entered a leading
 zero is added by Zint. No check digit is added by default. To add a check digit,
-set option_2 = 1 or --vers=1. To add a check digit but not show it in the human
-readable text, set option_2 = 2 or --vers=2.
+set option_2 = 1 or --vers=1. To add a check digit but not show it in the Human
+Readable Text, set option_2 = 2 or --vers=2.
 
 6.1.2.5 Code 2 of 5 Data Logic
 ------------------------------
@@ -1769,7 +1769,9 @@ setting option_2 = 1 or using --vers=1.
 6.1.8.3 Code 93
 ---------------
 A variation of Extended Code 39, Code 93 also supports full ASCII text. Two
-check digits are added by Zint.
+check characters are added by Zint. By default these check characters are not
+shown in the Human Readable Text, but may be shown by setting option_2 = 1 or
+using vers=1.
 
 6.1.8.4 PZN (Pharmazentralnummer)
 ---------------------------------
