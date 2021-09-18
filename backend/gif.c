@@ -41,7 +41,8 @@
 #include <malloc.h>
 #endif
 
-#define SSET    "0123456789ABCDEF"
+/* Limit initial ZLW buffer size to this in expectation that compressed data will fit for typical scalings */
+#define GIF_ZLW_PAGE_SIZE   0x100000 /* Megabyte */
 
 typedef struct s_statestruct {
     unsigned char *pOut;
@@ -95,8 +96,15 @@ static int BufferNextByte(statestruct *pState) {
         pState->OutByteCountPos = pState->OutPosCur;
         (pState->OutPosCur)++;
     }
-    if (pState->OutPosCur >= pState->OutLength)
-        return 1;
+    if (pState->OutPosCur >= pState->OutLength) {
+        unsigned char *pOut;
+        pState->OutLength += GIF_ZLW_PAGE_SIZE;
+        /* Note pState->pOut not free()d by realloc() on failure */
+        if (!(pOut = (unsigned char *) realloc(pState->pOut, pState->OutLength))) {
+            return 1;
+        }
+        pState->pOut = pOut;
+    }
 
     (pState->pOut)[pState->OutPosCur] = 0x00;
     return 0;
@@ -301,15 +309,9 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
 
     /* Allow for overhead of 4 == code size + byte count + overflow byte + zero terminator */
     unsigned int lzoutbufSize = bitmapSize + 4;
-#ifdef _MSC_VER
-    char *lzwoutbuf;
-#endif
-
-#ifndef _MSC_VER
-    char lzwoutbuf[lzoutbufSize];
-#else
-    lzwoutbuf = (char *) _alloca(lzoutbufSize);
-#endif /* _MSC_VER */
+    if (lzoutbufSize > GIF_ZLW_PAGE_SIZE) {
+        lzoutbufSize = GIF_ZLW_PAGE_SIZE;
+    }
 
     /*
      * Build a table of the used palette items.
@@ -582,19 +584,27 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     /* prepare state array */
     State.pIn = pixelbuf;
     State.InLen = bitmapSize;
-    State.pOut = (unsigned char *) lzwoutbuf;
+    if (!(State.pOut = (unsigned char *) malloc(lzoutbufSize))) {
+        if (!output_to_stdout) {
+            fclose(gif_file);
+        }
+        strcpy(symbol->errtxt, "614: Insufficient memory for LZW buffer");
+        return ZINT_ERROR_MEMORY;
+    }
     State.OutLength = lzoutbufSize;
 
     /* call lzw encoding */
     byte_out = gif_lzw(&State, paletteBitSize);
     if (byte_out <= 0) {
+        free(State.pOut);
         if (!output_to_stdout) {
             fclose(gif_file);
         }
         strcpy(symbol->errtxt, "613: Insufficient memory for LZW buffer");
         return ZINT_ERROR_MEMORY;
     }
-    fwrite(lzwoutbuf, byte_out, 1, gif_file);
+    fwrite((const char *) State.pOut, byte_out, 1, gif_file);
+    free(State.pOut);
 
     /* GIF terminator */
     fputc('\x3b', gif_file);
