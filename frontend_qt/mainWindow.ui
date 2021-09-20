@@ -830,6 +830,9 @@ in X-dimensions</string>
                  <property name="suffix">
                   <string> X</string>
                  </property>
+                 <property name="maximum">
+                  <number>100</number>
+                 </property>
                 </widget>
                </item>
                <item row="0" column="1">
@@ -840,6 +843,9 @@ in X-dimensions</string>
                  </property>
                  <property name="suffix">
                   <string> X</string>
+                 </property>
+                 <property name="maximum">
+                  <number>100</number>
                  </property>
                 </widget>
                </item>
@@ -876,7 +882,7 @@ in X-dimensions</string>
                 <double>0.100000000000000</double>
                </property>
                <property name="maximum">
-                <double>99.500000000000000</double>
+                <double>100.000000000000000</double>
                </property>
                <property name="singleStep">
                 <double>0.500000000000000</double>

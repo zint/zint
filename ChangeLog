@@ -5,6 +5,10 @@ Version 2.10.0.9 (dev) not released yet
 ------------------------
 - Add width to struct zint_vector_circle
   NOTE: backward incompatible drawing of MaxiCode finder (bullseye)
+- Check that scale/height/whitespace/border are reasonable values
+  NOTE: will return error if values outside ranges
+- raster.c: Bug fix for heap-buffer-overflow (#204 ARM-Cortex)
+  NOTE: may cause single-pixel changes to height depending on height/scale used
 
 Changes
 -------
@@ -12,6 +16,10 @@ Changes
 - CODE93: don't display check characters in HRT (as per standard Figure B1)
   unless option_2 = 1 or vers=1
 - GUI: separate out MAXICODE Structured Carrier Message fields
+- library.c: Check that scale/height/whitespace/border are reasonable values:
+  scale (0.01-100), height (0-500), whitespace_width/height (0-100),
+  border_width (0-100)
+- CLI: allow both e.g. '-height' and '--height' (getopt_long_only())
 
 Bugs
 ----
@@ -20,6 +28,10 @@ Bugs
 - vector.c: enforce minimum scale >= 0.1 and allow in GUI
 - Suppress some pedantic warnings, props codemonkey82 (#204)
 - gs1.c: Allow 0-length AI data if GS1NOCHECK_MODE, props codemonkey82 (#204)
+- raster.c: Need ceilf(symbol->height * si) to avoid heap-buffer-overflow;
+  also avoid distributive multiplication with floats to lessen chances of
+  platform variation (#204 ARM-Cortex crash)
+- raster.c: Don't allow for text if scale < 1.0
 
 
 Version 2.10.0 2021-08-14

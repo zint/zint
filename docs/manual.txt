@@ -503,6 +503,8 @@ The minimum scale for raster output in dotty mode is 1 (see 4.14).
 
 The minimum scale for vector output is 0.1, giving a minimum X-dimension of 0.2.
 
+The maximum scale for both raster and vector is 100.
+
 4.9.1 Scaling example
 ---------------------
 The GS1 General Specifications Section 5.2.6.6 "Symbol dimensions at nominal

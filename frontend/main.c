@@ -521,7 +521,7 @@ static int batch_process(struct zint_symbol *symbol, const char *filename, const
     } else {
         file = fopen(filename, "rb");
         if (!file) {
-            strcpy(symbol->errtxt, "102: Unable to read input file");
+            sprintf(symbol->errtxt, "102: Unable to read input file '%s'", filename);
             return ZINT_ERROR_INVALID_DATA;
         }
     }
@@ -776,6 +776,7 @@ int main(int argc, char **argv) {
 #else
     arg_opt *arg_opts = (arg_opt *) _alloca(argc * sizeof(arg_opt));
 #endif
+    int no_getopt_error = 1;
 
     if (argc == 1) {
         usage();
@@ -794,7 +795,7 @@ int main(int argc, char **argv) {
     win_args(&argc, &argv);
 #endif
 
-    while (1) {
+    while (no_getopt_error) {
         enum options {
             OPT_ADDONGAP = 128, OPT_BATCH, OPT_BINARY, OPT_BG, OPT_BIND, OPT_BOLD, OPT_BORDER,
             OPT_BOX, OPT_CMYK, OPT_COLS, OPT_DIRECT, OPT_DMRE, OPT_DOTSIZE, OPT_DOTTY, OPT_DUMP,
@@ -863,7 +864,7 @@ int main(int argc, char **argv) {
             {"whitesp", 1, NULL, 'w'},
             {NULL, 0, NULL, 0}
         };
-        int c = getopt_long(argc, argv, "b:d:ehi:o:rtw:", long_options, &option_index);
+        int c = getopt_long_only(argc, argv, "b:d:ehi:o:rtw:", long_options, &option_index);
         if (c == -1) break;
 
         switch (c) {
@@ -1258,11 +1259,13 @@ int main(int argc, char **argv) {
                 break;
 
             case '?':
+                no_getopt_error = 0;
                 break;
 
-            default:
-                fprintf(stderr, "Error 123: ?? getopt error 0%o\n", c);
+            default: /* Shouldn't happen */
+                fprintf(stderr, "Error 123: ?? getopt error 0%o\n", c); /* Not reached */
                 fflush(stderr);
+                no_getopt_error = 0;
                 break;
         }
     }

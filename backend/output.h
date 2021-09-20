@@ -1,7 +1,7 @@
 /*  output.h - Common routines for raster/vector
 
     libzint - the open source barcode library
-    Copyright (C) 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020 - 2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -38,9 +38,10 @@ extern "C" {
 #endif /* __cplusplus */
 
 INTERNAL int output_check_colour_options(struct zint_symbol *symbol);
-INTERNAL void output_set_whitespace_offsets(struct zint_symbol *symbol, float *xoffset, float *yoffset,
-                float *roffset, float *boffset);
-INTERNAL int output_process_upcean(struct zint_symbol *symbol, int *p_main_width, int *p_comp_offset,
+INTERNAL void output_set_whitespace_offsets(const struct zint_symbol *symbol,
+                float *xoffset, float *yoffset, float *roffset, float *boffset, const float scaler,
+                int *xoffset_si, int *yoffset_si, int *roffset_si, int *boffset_si);
+INTERNAL int output_process_upcean(const struct zint_symbol *symbol, int *p_main_width, int *p_comp_xoffset,
                 unsigned char addon[6], int *p_addon_gap);
 INTERNAL float output_large_bar_height(struct zint_symbol *symbol, int si);
 INTERNAL void output_upcean_split_text(int upceanflag, unsigned char text[],

@@ -138,6 +138,7 @@ static void test_print(int index, int generate, int debug) {
         int text_length;
 
         if (index != -1 && i != index) continue;
+        if ((debug & ZINT_DEBUG_TEST_PRINT) && !(debug & ZINT_DEBUG_TEST_LESS_NOISY)) printf("i:%d\n", i); // ZINT_DEBUG_TEST_PRINT 16
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");

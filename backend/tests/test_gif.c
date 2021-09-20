@@ -163,6 +163,10 @@ static void test_print(int index, int generate, int debug) {
         /* 21*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 0, 0, "00000000", "FFFFFF00", "12", "dotcode_bgfgtrans.gif", "" },
         /* 22*/ { BARCODE_ULTRA, 1, BARCODE_BOX, 1, 1, -1, -1, 0, 0, 0, "0000FF", "FF0000", "12", "ultra_fgbg_hvwsp1_box1.gif", "" },
         /* 23*/ { BARCODE_ITF14, 4, BARCODE_BIND, 24, -1, -1, -1, 61.8, 3, 0, "", "", "0501054800395", "itf14_height61.8_bind4_wsp24_3.gif", "#204 ARM-Cortex crash" },
+        /* 24*/ { BARCODE_ITF14, 0, BARCODE_BIND, -1, -1, -1, -1, 0.5, 0.5, 0, "", "", "0501054800395", "itf14_height0.5_box0_0.5.gif", "No box, no text" },
+        /* 25*/ { BARCODE_ITF14, -1, -1, -1, -1, -1, -1, 0.5, 1.1, 0, "", "", "0501054800395", "itf14_height0.5_1.1.gif", "" },
+        /* 26*/ { BARCODE_CODE16K, -1, -1, 3, 5, -1, -1, 0.5, 0, 0, "", "", "1234567890", "code16k_height0.5_wsp3_vwsp5.gif", "Separator covers bars" },
+        /* 27*/ { BARCODE_CODE16K, -1, -1, 3, 5, -1, -1, 1.5, 0, 0, "", "", "1234567890", "code16k_height1.5_wsp3_vwsp5.gif", "" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;

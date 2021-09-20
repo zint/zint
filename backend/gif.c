@@ -41,8 +41,8 @@
 #include <malloc.h>
 #endif
 
-/* Limit initial ZLW buffer size to this in expectation that compressed data will fit for typical scalings */
-#define GIF_ZLW_PAGE_SIZE   0x100000 /* Megabyte */
+/* Limit initial LZW buffer size to this in expectation that compressed data will fit for typical scalings */
+#define GIF_LZW_PAGE_SIZE   0x100000 /* Megabyte */
 
 typedef struct s_statestruct {
     unsigned char *pOut;
@@ -98,7 +98,7 @@ static int BufferNextByte(statestruct *pState) {
     }
     if (pState->OutPosCur >= pState->OutLength) {
         unsigned char *pOut;
-        pState->OutLength += GIF_ZLW_PAGE_SIZE;
+        pState->OutLength += GIF_LZW_PAGE_SIZE;
         /* Note pState->pOut not free()d by realloc() on failure */
         if (!(pOut = (unsigned char *) realloc(pState->pOut, pState->OutLength))) {
             return 1;
@@ -309,8 +309,8 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
 
     /* Allow for overhead of 4 == code size + byte count + overflow byte + zero terminator */
     unsigned int lzoutbufSize = bitmapSize + 4;
-    if (lzoutbufSize > GIF_ZLW_PAGE_SIZE) {
-        lzoutbufSize = GIF_ZLW_PAGE_SIZE;
+    if (lzoutbufSize > GIF_LZW_PAGE_SIZE) {
+        lzoutbufSize = GIF_LZW_PAGE_SIZE;
     }
 
     /*

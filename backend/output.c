@@ -69,7 +69,7 @@ INTERNAL int output_check_colour_options(struct zint_symbol *symbol) {
 }
 
 /* Return minimum quiet zones for each symbology */
-static int quiet_zones(struct zint_symbol *symbol, float *left, float *right, float *top, float *bottom) {
+static int quiet_zones(const struct zint_symbol *symbol, float *left, float *right, float *top, float *bottom) {
     int done = 0;
 
     *left = *right = *top = *bottom = 0.0f;
@@ -427,8 +427,9 @@ static int quiet_zones(struct zint_symbol *symbol, float *left, float *right, fl
 }
 
 /* Set left (x), top (y), right and bottom offsets for whitespace */
-INTERNAL void output_set_whitespace_offsets(struct zint_symbol *symbol, float *xoffset, float *yoffset,
-                float *roffset, float *boffset) {
+INTERNAL void output_set_whitespace_offsets(const struct zint_symbol *symbol,
+                float *xoffset, float *yoffset, float *roffset, float *boffset, const float scaler,
+                int *xoffset_si, int *yoffset_si, int *roffset_si, int *boffset_si) {
     float qz_left, qz_right, qz_top, qz_bottom;
 
     quiet_zones(symbol, &qz_left, &qz_right, &qz_top, &qz_bottom);
@@ -446,14 +447,29 @@ INTERNAL void output_set_whitespace_offsets(struct zint_symbol *symbol, float *x
         *yoffset += symbol->border_width;
         *boffset += symbol->border_width;
     }
+
+    if (scaler) {
+        if (xoffset_si) {
+            *xoffset_si = (int) (*xoffset * scaler);
+        }
+        if (yoffset_si) {
+            *yoffset_si = (int) (*yoffset * scaler);
+        }
+        if (roffset_si) {
+            *roffset_si = (int) (*roffset * scaler);
+        }
+        if (boffset_si) {
+            *boffset_si = (int) (*boffset * scaler);
+        }
+    }
 }
 
 /* Set composite offset and main width excluding addon (for start of addon calc) and addon text, returning
    UPC/EAN type */
-INTERNAL int output_process_upcean(struct zint_symbol *symbol, int *p_main_width, int *p_comp_offset,
+INTERNAL int output_process_upcean(const struct zint_symbol *symbol, int *p_main_width, int *p_comp_xoffset,
                 unsigned char addon[6], int *p_addon_gap) {
     int main_width; /* Width of main linear symbol, excluding addon */
-    int comp_offset; /* Whitespace offset (if any) of main linear symbol due to having composite */
+    int comp_xoffset; /* Whitespace offset (if any) of main linear symbol due to having composite */
     int upceanflag; /* UPC/EAN type flag */
     int i, j, latch;
     int text_length = (int) ustrlen(symbol->text);
@@ -480,10 +496,10 @@ INTERNAL int output_process_upcean(struct zint_symbol *symbol, int *p_main_width
     }
 
     /* Calculate composite offset */
-    comp_offset = 0;
+    comp_xoffset = 0;
     if (is_composite(symbol->symbology)) {
-        while (!(module_is_set(symbol, symbol->rows - 1, comp_offset))) {
-            comp_offset++;
+        while (!(module_is_set(symbol, symbol->rows - 1, comp_xoffset))) {
+            comp_xoffset++;
         }
     }
 
@@ -495,7 +511,7 @@ INTERNAL int output_process_upcean(struct zint_symbol *symbol, int *p_main_width
             case 13: /* EAN-13 */
             case 16: /* EAN-13 + EAN-2 */
             case 19: /* EAN-13 + EAN-5 */
-                main_width = 95 + comp_offset; /* EAN-13 main symbol 95 modules wide */
+                main_width = 95 + comp_xoffset; /* EAN-13 main symbol 95 modules wide */
                 upceanflag = 13;
                 break;
             case 2:
@@ -507,21 +523,21 @@ INTERNAL int output_process_upcean(struct zint_symbol *symbol, int *p_main_width
                 upceanflag = 5;
                 break;
             default:
-                main_width = 68 + comp_offset; /* EAN-8 main symbol 68 modules wide */
+                main_width = 68 + comp_xoffset; /* EAN-8 main symbol 68 modules wide */
                 upceanflag = 8;
                 break;
         }
     } else if ((symbol->symbology == BARCODE_UPCA) || (symbol->symbology == BARCODE_UPCA_CHK)
             || (symbol->symbology == BARCODE_UPCA_CC)) {
-        main_width = 95 + comp_offset; /* UPC-A main symbol 95 modules wide */
+        main_width = 95 + comp_xoffset; /* UPC-A main symbol 95 modules wide */
         upceanflag = 12;
     } else if ((symbol->symbology == BARCODE_UPCE) || (symbol->symbology == BARCODE_UPCE_CHK)
             || (symbol->symbology == BARCODE_UPCE_CC)) {
-        main_width = 51 + comp_offset; /* UPC-E main symbol 51 modules wide */
+        main_width = 51 + comp_xoffset; /* UPC-E main symbol 51 modules wide */
         upceanflag = 6;
     }
 
-    *p_comp_offset = comp_offset;
+    *p_comp_xoffset = comp_xoffset;
     *p_main_width = main_width;
 
     return upceanflag;

@@ -1049,8 +1049,24 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
         }
     }
 
+    if ((symbol->scale < 0.01f) || (symbol->scale > 100.0f)) {
+        return error_tag(symbol, ZINT_ERROR_INVALID_OPTION, "227: Scale out of range (0.01-100)");
+    }
     if ((symbol->dot_size < 0.01f) || (symbol->dot_size > 20.0f)) {
-        return error_tag(symbol, ZINT_ERROR_INVALID_OPTION, "221: Invalid dot size");
+        return error_tag(symbol, ZINT_ERROR_INVALID_OPTION, "221: Dot size out of range (0.01-20)");
+    }
+
+    if ((symbol->height < 0.0f) || (symbol->height > 500.0f)) {
+        return error_tag(symbol, ZINT_ERROR_INVALID_OPTION, "765: Height out of range (0-500)");
+    }
+    if ((symbol->whitespace_width < 0) || (symbol->whitespace_width > 100)) {
+        return error_tag(symbol, ZINT_ERROR_INVALID_OPTION, "766: Whitespace width out of range (0-100)");
+    }
+    if ((symbol->whitespace_height < 0) || (symbol->whitespace_height > 100)) {
+        return error_tag(symbol, ZINT_ERROR_INVALID_OPTION, "767: Whitespace height out of range (0-100)");
+    }
+    if ((symbol->border_width < 0) || (symbol->border_width > 100)) {
+        return error_tag(symbol, ZINT_ERROR_INVALID_OPTION, "768: Border width out of range (0-100)");
     }
 
     if ((symbol->input_mode & 0x07) > 2) {
