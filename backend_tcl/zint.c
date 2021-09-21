@@ -122,6 +122,9 @@
 - Removed -wzpl, added -gs1nocheck
 - Made -format position independent
 - Tabs -> spaces
+2021-09-21 GL
+- Added -guarddescent option
+- iHeight check int -> double
 */
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
@@ -461,6 +464,7 @@ static char help_message[] = "zint tcl(stub,obj) dll\n"
     "   -gs1nocheck bool: for gs1, do not check validity of data (allows non-standard symbols)\n"
     "   -gs1parens bool: for gs1, AIs enclosed in parentheses instead of square brackets\n"
     "   -gssep bool: for gs1, use gs as separator instead fnc1 (Datamatrix only)\n"
+    "   -guarddescent double: Height of guard bar descent in modules (UPC/EAN only)\n"
     "   -height double: Symbol height in modules\n"
     /* cli option --input not supported */
     "   -init bool: Create reader initialisation symbol (Code 128, Data Matrix)\n"
@@ -705,8 +709,8 @@ static int Encode(Tcl_Interp *interp, int objc,
         char *optionList[] = {
             "-addongap", "-barcode", "-bg", "-bind", "-bold", "-border", "-box",
             "-cols", "-dmre", "-dotsize", "-dotty", "-eci", "-fg", "-format",
-            "-fullmultibyte", "-gs1nocheck", "-gs1parens", "-gssep", "-height",
-            "-init", "-mask", "-mode",
+            "-fullmultibyte", "-gs1nocheck", "-gs1parens", "-gssep", "-guarddescent",
+            "-height", "-init", "-mask", "-mode",
             "-nobackground", "-notext", "-primary", "-reverse", "-rotate",
             "-rows", "-scale", "-scmvv", "-secure", "-separator", "-smalltext",
             "-square", "-to", "-vers", "-vwhitesp", "-werror", "-whitesp",
@@ -714,8 +718,8 @@ static int Encode(Tcl_Interp *interp, int objc,
         enum iOption {
             iAddonGap, iBarcode, iBG, iBind, iBold, iBorder, iBox,
             iCols, iDMRE, iDotSize, iDotty, iECI, iFG, iFormat,
-            iFullMultiByte, iGS1NoCheck, iGS1Parens, iGSSep, iHeight,
-            iInit, iMask, iMode,
+            iFullMultiByte, iGS1NoCheck, iGS1Parens, iGSSep, iGuardDescent,
+            iHeight, iInit, iMask, iMode,
             iNoBackground, iNoText, iPrimary, iReverse, iRotate,
             iRows, iScale, iSCMvv, iSecure, iSeparator, iSmallText,
             iSquare, iTo, iVers, iVWhiteSp, iWError, iWhiteSp
@@ -768,6 +772,8 @@ static int Encode(Tcl_Interp *interp, int objc,
                 fError = 1;
             }
             break;
+        case iHeight:
+        case iGuardDescent:
         case iDotSize:
         case iScale:
             /* >> Float */
@@ -780,7 +786,6 @@ static int Encode(Tcl_Interp *interp, int objc,
         case iAddonGap:
         case iBorder:
         case iCols:
-        case iHeight:
         case iMask:
         case iMode:
         case iRotate:
@@ -963,6 +968,15 @@ static int Encode(Tcl_Interp *interp, int objc,
                 fError = 1;
             } else {
                 my_symbol->border_width = intValue;
+            }
+            break;
+        case iGuardDescent:
+            if ((float)doubleValue < 0.0f || (float)doubleValue > 50.0f) {
+                Tcl_SetObjResult(interp,
+                    Tcl_NewStringObj("Guard bar descent out of range", -1));
+                fError = 1;
+            } else {
+                my_symbol->guard_descent = (float)doubleValue;
             }
             break;
         case iHeight:

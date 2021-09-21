@@ -84,7 +84,8 @@ extern "C" {
     /* Main symbol structure */
     struct zint_symbol {
         int symbology;      /* Symbol to use (see BARCODE_XXX below) */
-        float height;       /* Height in X-dimensions (ignored for fixed-width barcodes) */
+        float height;       /* Barcode height in X-dimensions (ignored for fixed-width barcodes) */
+        float scale;        /* Scale factor when printing barcode. Default 1 */
         int whitespace_width; /* Width in X-dimensions of whitespace to left & right of barcode */
         int whitespace_height; /* Height in X-dimensions of whitespace above & below the barcode */
         int border_width;   /* Size of border in X-dimensions */
@@ -94,7 +95,7 @@ extern "C" {
         char *fgcolor;      /* Pointer to fgcolour (alternate spelling) */
         char *bgcolor;      /* Pointer to bgcolour (alternate spelling) */
         char outfile[256];  /* Name of file to output to, NUL-terminated. Default "out.png" ("out.gif" if NO_PNG) */
-        float scale;        /* Scale factor when printing barcode */
+        char primary[128];  /* Primary message data (MaxiCode, Composite), NUL-terminated */
         int option_1;       /* Symbol-specific options (see "../docs/manual.txt") */
         int option_2;       /* Symbol-specific options */
         int option_3;       /* Symbol-specific options */
@@ -102,11 +103,14 @@ extern "C" {
         int fontsize;       /* Unused */
         int input_mode;     /* Encoding of input data (see DATA_MODE etc below). Default DATA_MODE */
         int eci;            /* Extended Channel Interpretation. Default 0 (none) */
+        float dot_size;     /* Size of dots used in BARCODE_DOTTY_MODE */
+        float guard_descent; /* Height in X-dimensions that UPC/EAN guard bars descend. Default 5 */
+        int warn_level;     /* Affects error/warning value returned by Zint API (see WARN_XXX below) */
+        int debug;          /* Debugging flags */
         unsigned char text[128]; /* Human Readable Text (if any), UTF-8, NUL-terminated (output only) */
         int rows;           /* Number of rows used by the symbol (output only) */
         int width;          /* Width of the generated symbol (output only) */
-        char primary[128];  /* Primary message data (MaxiCode, Composite), NUL-terminated */
-        unsigned char encoded_data[200][143]; /* Encoded data (output only). Allows for rows of 1144 modules */
+        unsigned char encoded_data[200][144]; /* Encoded data (output only). Allows for rows of 1152 modules */
         float row_height[200]; /* Heights of rows (output only). Allows for 200 row DotCode */
         char errtxt[100];   /* Error message if an error or warning occurs, NUL-terminated (output only) */
         unsigned char *bitmap; /* Stored bitmap image (raster output only) */
@@ -114,10 +118,7 @@ extern "C" {
         int bitmap_height;  /* Height of bitmap image (raster output only) */
         unsigned char *alphamap; /* Array of alpha values used (raster output only) */
         unsigned int bitmap_byte_length; /* Size of BMP bitmap data (raster output only) */
-        float dot_size;     /* Size of dots used in BARCODE_DOTTY_MODE */
         struct zint_vector *vector; /* Pointer to vector header (vector output only) */
-        int debug;          /* Debugging flags */
-        int warn_level;     /* Affects error/warning value returned by Zint API (see WARN_XXX below) */
     };
 
 /* Symbologies (`symbol->symbology`) */

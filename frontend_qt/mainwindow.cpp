@@ -976,6 +976,7 @@ void MainWindow::change_options()
             cmbFontSetting->setCurrentIndex(0);
         }
         connect(m_optionWidget->findChild<QObject*>("cmbUPCAAddonGap"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(m_optionWidget->findChild<QObject*>("spnUPCAGuardDescent"), SIGNAL(valueChanged( double )), SLOT(update_preview()));
 
     } else if (symbology == BARCODE_EANX || symbology == BARCODE_EANX_CHK || symbology == BARCODE_EANX_CC
             || symbology == BARCODE_UPCE || symbology == BARCODE_UPCE_CHK || symbology == BARCODE_UPCE_CC
@@ -997,6 +998,7 @@ void MainWindow::change_options()
             cmbFontSetting->setCurrentIndex(0);
         }
         connect(m_optionWidget->findChild<QObject*>("cmbUPCEANAddonGap"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(m_optionWidget->findChild<QObject*>("spnUPCEANGuardDescent"), SIGNAL(valueChanged( double )), SLOT(update_preview()));
 
     } else if (symbology == BARCODE_VIN) {
         QFile file(":/grpVIN.ui");
@@ -1127,18 +1129,33 @@ void MainWindow::combobox_item_enabled(QComboBox *comboBox, int index, bool enab
 void MainWindow::upcean_addon_gap(QComboBox *comboBox, QLabel *label, int base)
 {
     const QRegularExpression addonRE("^[0-9X]+[+][0-9]+$");
-    int item_val;
 
-    if (txtData->text().contains(addonRE)) {
-        comboBox->setEnabled(true);
-        label->setEnabled(true);
-        item_val = comboBox->currentIndex();
+    bool enabled = txtData->text().contains(addonRE);
+    if (comboBox) {
+        comboBox->setEnabled(enabled);
+    }
+    if (label) {
+        label->setEnabled(enabled);
+    }
+    if (enabled && comboBox) {
+        int item_val = comboBox->currentIndex();
         if (item_val) {
             m_bc.bc.setOption2(item_val + base);
         }
-    } else {
-        comboBox->setEnabled(false);
-        label->setEnabled(false);
+    }
+}
+
+void MainWindow::upcean_guard_descent(QDoubleSpinBox *spnBox, QLabel *label)
+{
+    bool enabled = txtData->text().length() > 5;
+    if (spnBox) {
+        spnBox->setEnabled(enabled);
+    }
+    if (label) {
+        label->setEnabled(enabled);
+    }
+    if (enabled && spnBox) {
+        m_bc.bc.setGuardDescent(get_doublespinbox_val("spnUPCEANGuardDescent"));
     }
 }
 
@@ -1230,11 +1247,13 @@ void MainWindow::update_preview()
             else
                 m_bc.bc.setSymbol(BARCODE_EANX);
             upcean_addon_gap(m_optionWidget->findChild<QComboBox*>("cmbUPCEANAddonGap"), m_optionWidget->findChild<QLabel*>("lblUPCEANAddonGap"), 7 /*base*/);
+            upcean_guard_descent(m_optionWidget->findChild<QDoubleSpinBox*>("spnUPCEANGuardDescent"), m_optionWidget->findChild<QLabel*>("lblUPCEANGuardDescent"));
             break;
 
         case BARCODE_ISBNX:
             m_bc.bc.setSymbol(symbology);
             upcean_addon_gap(m_optionWidget->findChild<QComboBox*>("cmbUPCEANAddonGap"), m_optionWidget->findChild<QLabel*>("lblUPCEANAddonGap"), 7 /*base*/);
+            upcean_guard_descent(m_optionWidget->findChild<QDoubleSpinBox*>("spnUPCEANGuardDescent"), m_optionWidget->findChild<QLabel*>("lblUPCEANGuardDescent"));
             break;
 
         case BARCODE_UPCA:
@@ -1243,6 +1262,7 @@ void MainWindow::update_preview()
             else
                 m_bc.bc.setSymbol(BARCODE_UPCA);
             upcean_addon_gap(m_optionWidget->findChild<QComboBox*>("cmbUPCAAddonGap"), m_optionWidget->findChild<QLabel*>("lblUPCAAddonGap"), 9 /*base*/);
+            upcean_guard_descent(m_optionWidget->findChild<QDoubleSpinBox*>("spnUPCAGuardDescent"), m_optionWidget->findChild<QLabel*>("lblUPCAGuardDescent"));
             break;
 
         case BARCODE_UPCE:
@@ -1251,6 +1271,7 @@ void MainWindow::update_preview()
             else
                 m_bc.bc.setSymbol(BARCODE_UPCE);
             upcean_addon_gap(m_optionWidget->findChild<QComboBox*>("cmbUPCEANAddonGap"), m_optionWidget->findChild<QLabel*>("lblUPCEANAddonGap"), 7 /*base*/);
+            upcean_guard_descent(m_optionWidget->findChild<QDoubleSpinBox*>("spnUPCEANGuardDescent"), m_optionWidget->findChild<QLabel*>("lblUPCEANGuardDescent"));
             break;
 
         case BARCODE_DBAR_OMN:
@@ -2189,22 +2210,26 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology) {
         case BARCODE_UPCA_CHK:
         case BARCODE_UPCA_CC:
             settings.setValue("studio/bc/upca/addongap", get_combobox_index("cmbUPCAAddonGap"));
+            settings.setValue("studio/bc/upca/guard_descent", QString::number(get_doublespinbox_val("spnUPCAGuardDescent"), 'f', 3 /*precision*/));
             break;
 
         case BARCODE_EANX:
         case BARCODE_EANX_CHK:
         case BARCODE_EANX_CC:
             settings.setValue("studio/bc/eanx/addongap", get_combobox_index("cmbUPCEANAddonGap"));
+            settings.setValue("studio/bc/eanx/guard_descent", QString::number(get_doublespinbox_val("spnUPCEANGuardDescent"), 'f', 3 /*precision*/));
             break;
 
         case BARCODE_UPCE:
         case BARCODE_UPCE_CHK:
         case BARCODE_UPCE_CC:
             settings.setValue("studio/bc/upce/addongap", get_combobox_index("cmbUPCEANAddonGap"));
+            settings.setValue("studio/bc/upce/guard_descent", QString::number(get_doublespinbox_val("spnUPCEANGuardDescent"), 'f', 3 /*precision*/));
             break;
 
         case BARCODE_ISBNX:
             settings.setValue("studio/bc/isnbx/addongap", get_combobox_index("cmbUPCEANAddonGap"));
+            settings.setValue("studio/bc/isnbx/guard_descent", QString::number(get_doublespinbox_val("spnUPCEANGuardDescent"), 'f', 3 /*precision*/));
             break;
 
         case BARCODE_VIN:
@@ -2448,22 +2473,26 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology) {
         case BARCODE_UPCA_CHK:
         case BARCODE_UPCA_CC:
             set_combobox_from_setting(settings, "studio/bc/upca/addongap", "cmbUPCAAddonGap");
+            set_doublespinbox_from_setting(settings, "studio/bc/upca/guard_descent", "spnUPCAGuardDescent", 5.0f);
             break;
 
         case BARCODE_EANX:
         case BARCODE_EANX_CHK:
         case BARCODE_EANX_CC:
             set_combobox_from_setting(settings, "studio/bc/eanx/addongap", "cmbUPCEANAddonGap");
+            set_doublespinbox_from_setting(settings, "studio/bc/eanx/guard_descent", "spnUPCEANGuardDescent", 5.0f);
             break;
 
         case BARCODE_UPCE:
         case BARCODE_UPCE_CHK:
         case BARCODE_UPCE_CC:
             set_combobox_from_setting(settings, "studio/bc/upce/addongap", "cmbUPCEANAddonGap");
+            set_doublespinbox_from_setting(settings, "studio/bc/upce/guard_descent", "spnUPCEANGuardDescent", 5.0f);
             break;
 
         case BARCODE_ISBNX:
             set_combobox_from_setting(settings, "studio/bc/isbnx/addongap", "cmbUPCEANAddonGap");
+            set_doublespinbox_from_setting(settings, "studio/bc/isbnx/guard_descent", "spnUPCEANGuardDescent", 5.0f);
             break;
 
         case BARCODE_VIN:

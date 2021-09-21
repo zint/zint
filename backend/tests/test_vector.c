@@ -31,7 +31,7 @@
 
 #include "testcommon.h"
 
-static struct zint_vector_rect *find_rect(struct zint_symbol *symbol, float x, float y, float height, float width) {
+static struct zint_vector_rect *find_rect(struct zint_symbol *symbol, float x, float y, float width, float height) {
     struct zint_vector_rect *rect;
 
     if (symbol->vector == NULL) {
@@ -453,21 +453,21 @@ static void test_row_separator(int index, int debug) {
         float expected_height;
         int expected_rows;
         int expected_width;
-        int expected_separator_row;
-        int expected_separator_col;
+        int expected_separator_x;
+        int expected_separator_y;
         int expected_separator_height;
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /*  0*/ { BARCODE_CODABLOCKF, -1, -1, -1, "A", 0, 20, 2, 101, 21, 42, 2 },
-        /*  1*/ { BARCODE_CODABLOCKF, -1, -1, 0, "A", 0, 20, 2, 101, 21, 42, 2 }, // Same as default
-        /*  2*/ { BARCODE_CODABLOCKF, -1, -1, 1, "A", 0, 20, 2, 101, 21, 42, 2 }, // Same as default
-        /*  3*/ { BARCODE_CODABLOCKF, -1, -1, 2, "A", 0, 20, 2, 101, 20, 42, 4 },
-        /*  4*/ { BARCODE_CODABLOCKF, -1, -1, 3, "A", 0, 20, 2, 101, 19, 42, 6 },
-        /*  5*/ { BARCODE_CODABLOCKF, -1, -1, 4, "A", 0, 20, 2, 101, 18, 42, 8 },
-        /*  6*/ { BARCODE_CODABLOCKF, -1, -1, 5, "A", 0, 20, 2, 101, 21, 42, 2 }, // > 4 ignored, same as default
-        /*  7*/ { BARCODE_CODABLOCKF, -1, 1, -1, "A", 0, 5, 1, 46, 0, 20, 2 }, // CODE128 top separator
-        /*  8*/ { BARCODE_CODABLOCKF, 0, -1, -1, "A", 0, 20, 2, 101, 21, 42, 2 }, // Border width zero, same as default
+        /*  0*/ { BARCODE_CODABLOCKF, -1, -1, -1, "A", 0, 20, 2, 101, 42, 21, 2 },
+        /*  1*/ { BARCODE_CODABLOCKF, -1, -1, 0, "A", 0, 20, 2, 101, 42, 21, 2 }, // Same as default
+        /*  2*/ { BARCODE_CODABLOCKF, -1, -1, 1, "A", 0, 20, 2, 101, 42, 21, 2 }, // Same as default
+        /*  3*/ { BARCODE_CODABLOCKF, -1, -1, 2, "A", 0, 20, 2, 101, 42, 20, 4 },
+        /*  4*/ { BARCODE_CODABLOCKF, -1, -1, 3, "A", 0, 20, 2, 101, 42, 19, 6 },
+        /*  5*/ { BARCODE_CODABLOCKF, -1, -1, 4, "A", 0, 20, 2, 101, 42, 18, 8 },
+        /*  6*/ { BARCODE_CODABLOCKF, -1, -1, 5, "A", 0, 20, 2, 101, 42, 21, 2 }, // > 4 ignored, same as default
+        /*  7*/ { BARCODE_CODABLOCKF, -1, 1, -1, "A", 0, 5, 1, 46, 20, 0, 2 }, // CODE128 top separator
+        /*  8*/ { BARCODE_CODABLOCKF, 0, -1, -1, "A", 0, 20, 2, 101, 42, 21, 2 }, // Border width zero, same as default
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -500,8 +500,8 @@ static void test_row_separator(int index, int debug) {
         assert_equal(symbol->rows, data[i].expected_rows, "i:%d (%d) symbol->rows %d != %d\n", i, data[i].symbology, symbol->rows, data[i].expected_rows);
         assert_equal(symbol->width, data[i].expected_width, "i:%d (%d) symbol->width %d != %d\n", i, data[i].symbology, symbol->width, data[i].expected_width);
 
-        rect = find_rect(symbol, data[i].expected_separator_col, data[i].expected_separator_row, data[i].expected_separator_height, 0);
-        assert_nonnull(rect, "i:%d (%d) find_rect(%d, %d, %d) NULL\n", i, data[i].symbology, data[i].expected_separator_col, data[i].expected_separator_row, data[i].expected_separator_height);
+        rect = find_rect(symbol, data[i].expected_separator_x, data[i].expected_separator_y, 0, data[i].expected_separator_height);
+        assert_nonnull(rect, "i:%d (%d) find_rect(%d, %d, 0, %d) NULL\n", i, data[i].symbology, data[i].expected_separator_x, data[i].expected_separator_y, data[i].expected_separator_height);
 
         ZBarcode_Delete(symbol);
     }
@@ -524,15 +524,15 @@ static void test_stacking(int index, int debug) {
         int expected_width;
         int expected_bitmap_width;
         int expected_bitmap_height;
-        int expected_separator_row;
-        int expected_separator_col;
+        int expected_separator_x;
+        int expected_separator_y;
         int expected_separator_height;
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
         /*  0*/ { BARCODE_CODE128, -1, -1, -1, "A", "B", 50, 2, 46, 92, 116, -1, -1, -1 },
-        /*  1*/ { BARCODE_CODE128, BARCODE_BIND, -1, -1, "A", "B", 50, 2, 46, 92, 116, 49, 0, 2 },
-        /*  2*/ { BARCODE_CODE128, BARCODE_BIND, -1, 2, "A", "B", 50, 2, 46, 92, 116, 48, 0, 4 },
+        /*  1*/ { BARCODE_CODE128, BARCODE_BIND, -1, -1, "A", "B", 50, 2, 46, 92, 116, 0, 49, 2 },
+        /*  2*/ { BARCODE_CODE128, BARCODE_BIND, -1, 2, "A", "B", 50, 2, 46, 92, 116, 0, 48, 4 },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -566,7 +566,7 @@ static void test_stacking(int index, int debug) {
         assert_equal(symbol->rows, data[i].expected_rows, "i:%d (%d) symbol->rows %d != %d\n", i, data[i].symbology, symbol->rows, data[i].expected_rows);
         assert_equal(symbol->width, data[i].expected_width, "i:%d (%d) symbol->width %d != %d\n", i, data[i].symbology, symbol->width, data[i].expected_width);
 
-        if (data[i].expected_separator_row != -1) {
+        if (data[i].expected_separator_y != -1) {
             if (index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) {
                 sprintf(symbol->outfile, "test_stacking_%d.svg", i);
                 ZBarcode_Print(symbol, 0);
@@ -580,8 +580,8 @@ static void test_stacking(int index, int debug) {
             assert_equal(symbol->rows, data[i].expected_rows, "i:%d (%d) symbol->rows %d != %d\n", i, data[i].symbology, symbol->rows, data[i].expected_rows);
             assert_equal(symbol->width, data[i].expected_width, "i:%d (%d) symbol->width %d != %d\n", i, data[i].symbology, symbol->width, data[i].expected_width);
 
-            rect = find_rect(symbol, data[i].expected_separator_col, data[i].expected_separator_row, data[i].expected_separator_height, 0);
-            assert_nonnull(rect, "i:%d (%d) find_rect(%d, %d, %d) NULL\n", i, data[i].symbology, data[i].expected_separator_col, data[i].expected_separator_row, data[i].expected_separator_height);
+            rect = find_rect(symbol, data[i].expected_separator_x, data[i].expected_separator_y, 0, data[i].expected_separator_height);
+            assert_nonnull(rect, "i:%d (%d) find_rect(%d, %d, 0, %d) NULL\n", i, data[i].symbology, data[i].expected_separator_x, data[i].expected_separator_y, data[i].expected_separator_height);
         }
 
         ZBarcode_Delete(symbol);
@@ -607,8 +607,8 @@ static void test_output_options(int index, int debug) {
         float expected_vector_width;
         float expected_vector_height;
         int expected_set;
-        float expected_set_row;
-        float expected_set_col;
+        float expected_set_x;
+        float expected_set_y;
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
@@ -706,11 +706,11 @@ static void test_output_options(int index, int debug) {
                 i, testUtilBarcodeName(data[i].symbology), symbol->vector->height, data[i].expected_vector_height);
 
             if (data[i].expected_set != -1) {
-                rect = find_rect(symbol, data[i].expected_set_row, data[i].expected_set_col, 0, 0);
+                rect = find_rect(symbol, data[i].expected_set_x, data[i].expected_set_y, 0, 0);
                 if (data[i].expected_set) {
-                    assert_nonnull(rect, "i:%d (%d) find_rect(%g, %g, 0, 0) NULL\n", i, data[i].symbology, data[i].expected_set_row, data[i].expected_set_col);
+                    assert_nonnull(rect, "i:%d (%d) find_rect(%g, %g, 0, 0) NULL\n", i, data[i].symbology, data[i].expected_set_x, data[i].expected_set_y);
                 } else {
-                    assert_null(rect, "i:%d (%d) find_rect(%g, %g, 0, 0) not NULL\n", i, data[i].symbology, data[i].expected_set_row, data[i].expected_set_col);
+                    assert_null(rect, "i:%d (%d) find_rect(%g, %g, 0, 0) not NULL\n", i, data[i].symbology, data[i].expected_set_x, data[i].expected_set_y);
                 }
             }
         }
@@ -840,6 +840,115 @@ static void test_upcean_whitespace_width(int index, int debug) {
         }
         assert_equal(string_cnt, data[i].expected_string_cnt, "i:%d (%s) string_cnt %d != %d\n", i, testUtilBarcodeName(data[i].symbology), string_cnt, data[i].expected_string_cnt);
         assert_equal(string->y, data[i].expected_string_y, "i:%d (%s) string->y %.8g != %.8g\n", i, testUtilBarcodeName(data[i].symbology), string->y, data[i].expected_string_y);
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
+static void test_guard_descent(int index, int debug) {
+
+    struct item {
+        int symbology;
+        float guard_descent;
+        char *data;
+        int ret;
+
+        float expected_height;
+        int expected_rows;
+        int expected_width;
+        float expected_vector_width;
+        float expected_vector_height;
+        float expected_set_x;
+        float expected_set_y;
+        float expected_set_width;
+        float expected_set_height;
+    };
+    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    struct item data[] = {
+        /*  0*/ { BARCODE_UPCE, -1, "1234567", 0, 50, 1, 51, 134, 116.4, 18, 0, 2, 110 },
+        /*  1*/ { BARCODE_UPCE, 0, "1234567", 0, 50, 1, 51, 134, 116.4, 18, 0, 2, 100 },
+        /*  2*/ { BARCODE_UPCE, 3, "1234567", 0, 50, 1, 51, 134, 116.4, 18, 0, 2, 106 },
+        /*  3*/ { BARCODE_UPCE, 8, "1234567", 0, 50, 1, 51, 134, 116.4, 18, 0, 2, 116 },
+        /*  4*/ { BARCODE_UPCE, 8.2, "1234567", 0, 50, 1, 51, 134, 116.4, 18, 0, 2, 116.4 },
+        /*  5*/ { BARCODE_UPCE, 8.25, "1234567", 0, 50, 1, 51, 134, 116.5, 18, 0, 2, 116.5 },
+        /*  6*/ { BARCODE_UPCE, 8.3, "1234567", 0, 50, 1, 51, 134, 116.6, 18, 0, 2, 116.6 },
+        /*  7*/ { BARCODE_UPCE, 19.6, "1234567", 0, 50, 1, 51, 134, 139.2, 18, 0, 2, 139.2 },
+        /*  8*/ { BARCODE_UPCE, -1, "1234567+12345", 0, 50, 1, 105, 238, 116.4, 118, 0, 2, 110 },
+        /*  9*/ { BARCODE_UPCE, -1, "1234567+12345", 0, 50, 1, 105, 238, 116.4, 134, 19, 2, 81 },
+        /* 10*/ { BARCODE_UPCE, 0, "1234567+12345", 0, 50, 1, 105, 238, 116.4, 118, 0, 2, 100 },
+        /* 11*/ { BARCODE_UPCE, 0, "1234567+12345", 0, 50, 1, 105, 238, 116.4, 134, 19, 2, 81 },
+        /* 12*/ { BARCODE_UPCE, 4, "1234567+12345", 0, 50, 1, 105, 238, 116.4, 118, 0, 2, 108 },
+        /* 13*/ { BARCODE_UPCE, 4, "1234567+12345", 0, 50, 1, 105, 238, 116.4, 134, 19, 2, 81 },
+        /* 14*/ { BARCODE_UPCA, -1, "12345678901", 0, 50, 1, 95, 226, 116.4, 188, 0, 4, 110 },
+        /* 15*/ { BARCODE_UPCA, 0, "12345678901", 0, 50, 1, 95, 226, 116.4, 188, 0, 4, 100 },
+        /* 16*/ { BARCODE_UPCA, 6, "12345678901", 0, 50, 1, 95, 226, 116.4, 188, 0, 4, 112 },
+        /* 17*/ { BARCODE_UPCA, -1, "12345678901+12", 0, 50, 1, 124, 276, 116.4, 188, 0, 4, 110 },
+        /* 18*/ { BARCODE_UPCA, -1, "12345678901+12", 0, 50, 1, 124, 276, 116.4, 262, 19, 4, 81 },
+        /* 19*/ { BARCODE_UPCA, 0, "12345678901+12", 0, 50, 1, 124, 276, 116.4, 188, 0, 4, 100 },
+        /* 20*/ { BARCODE_UPCA, 0, "12345678901+12", 0, 50, 1, 124, 276, 116.4, 262, 19, 4, 81 },
+        /* 21*/ { BARCODE_UPCA, 9, "12345678901+12", 0, 50, 1, 124, 276, 118, 188, 0, 4, 118 },
+        /* 22*/ { BARCODE_UPCA, 9, "12345678901+12", 0, 50, 1, 124, 276, 118, 262, 19, 4, 81 },
+        /* 23*/ { BARCODE_EANX, -1, "123456789012", 0, 50, 1, 95, 226, 116.4, 22, 0, 2, 110 },
+        /* 24*/ { BARCODE_EANX, 0, "123456789012", 0, 50, 1, 95, 226, 116.4, 22, 0, 2, 100 },
+        /* 25*/ { BARCODE_EANX, 7, "123456789012", 0, 50, 1, 95, 226, 116.4, 22, 0, 2, 114 },
+        /* 26*/ { BARCODE_EANX, -1, "123456789012+12", 0, 50, 1, 122, 276, 116.4, 22, 0, 2, 110 },
+        /* 27*/ { BARCODE_EANX, -1, "123456789012+12", 0, 50, 1, 122, 276, 116.4, 262, 19, 4, 91 },
+        /* 28*/ { BARCODE_EANX, 0, "123456789012+12", 0, 50, 1, 122, 276, 116.4, 22, 0, 2, 100 },
+        /* 29*/ { BARCODE_EANX, 0, "123456789012+12", 0, 50, 1, 122, 276, 116.4, 262, 19, 4, 81 },
+        /* 30*/ { BARCODE_EANX, 8.21, "123456789012+12", 0, 50, 1, 122, 276, 116.42, 22, 0, 2, 116.42 },
+        /* 31*/ { BARCODE_EANX, 8.21, "123456789012+12", 0, 50, 1, 122, 276, 116.42, 262, 19, 4, 97.42 },
+        /* 32*/ { BARCODE_ISBNX, -1, "123456789", 0, 50, 1, 95, 226, 116.4, 22, 0, 2, 110 },
+        /* 33*/ { BARCODE_ISBNX, 0, "123456789", 0, 50, 1, 95, 226, 116.4, 22, 0, 2, 100 },
+    };
+    int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
+    struct zint_symbol *symbol;
+
+    struct zint_vector_rect *rect;
+
+    testStart("test_guard_descent");
+
+    for (i = 0; i < data_size; i++) {
+
+        if (index != -1 && i != index) continue;
+
+        symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        if (data[i].guard_descent != -1.0f) {
+            symbol->guard_descent = data[i].guard_descent;
+        }
+
+        ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
+        assert_zero(ret, "i:%d ZBarcode_Encode(%d) ret %d != 0 %s\n", i, data[i].symbology, ret, symbol->errtxt);
+
+        ret = ZBarcode_Buffer_Vector(symbol, 0);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Buffer_Vector(%d) ret %d != %d\n", i, data[i].symbology, ret, data[i].ret);
+
+        if (ret < 5) {
+            assert_nonnull(symbol->vector, "i:%d ZBarcode_Buffer_Vector(%d) vector NULL\n", i, data[i].symbology);
+
+            if (index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) { // ZINT_DEBUG_TEST_PRINT 16
+                sprintf(symbol->outfile, "test_guard_descent_%d.svg", i);
+                ZBarcode_Print(symbol, 0);
+            }
+
+            assert_equal(symbol->height, data[i].expected_height, "i:%d (%d) symbol->height %.8g != %.8g\n", i, data[i].symbology, symbol->height, data[i].expected_height);
+            assert_equal(symbol->rows, data[i].expected_rows, "i:%d (%d) symbol->rows %d != %d\n", i, data[i].symbology, symbol->rows, data[i].expected_rows);
+            assert_equal(symbol->width, data[i].expected_width, "i:%d (%d) symbol->width %d != %d\n", i, data[i].symbology, symbol->width, data[i].expected_width);
+
+            assert_equal(symbol->vector->width, data[i].expected_vector_width, "i:%d (%s) symbol->vector->width %.8g != %.8g\n",
+                i, testUtilBarcodeName(data[i].symbology), symbol->vector->width, data[i].expected_vector_width);
+            assert_equal(symbol->vector->height, data[i].expected_vector_height, "i:%d (%s) symbol->vector->height %.8g != %.8g\n",
+                i, testUtilBarcodeName(data[i].symbology), symbol->vector->height, data[i].expected_vector_height);
+
+            rect = find_rect(symbol, data[i].expected_set_x, data[i].expected_set_y, data[i].expected_set_width, data[i].expected_set_height);
+            assert_nonnull(rect, "i:%d (%d) find_rect(%g, %g, %g, %g) NULL\n",
+                                    i, data[i].symbology, data[i].expected_set_x, data[i].expected_set_y, data[i].expected_set_width, data[i].expected_set_height);
+        }
 
         ZBarcode_Delete(symbol);
     }
@@ -1338,6 +1447,7 @@ int main(int argc, char *argv[]) {
         { "test_output_options", test_output_options, 1, 0, 1 },
         { "test_noncomposite_string_x", test_noncomposite_string_x, 1, 0, 1 },
         { "test_upcean_whitespace_width", test_upcean_whitespace_width, 1, 0, 1 },
+        { "test_guard_descent", test_guard_descent, 1, 0, 1 },
         { "test_height", test_height, 1, 1, 1 },
     };
 

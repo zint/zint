@@ -37,27 +37,26 @@ namespace Zint {
     static const int fontSizeError = 14; /* Point size */
 
     QZint::QZint() {
+        m_zintSymbol = NULL;
         m_symbol = BARCODE_CODE128;
         m_height = 0.0f;
         m_borderType = 0;
         m_borderWidth = 0;
         m_fontSetting = 0;
         m_option_1 = -1;
+        m_option_2 = 0;
+        m_option_3 = 0;
         m_fgColor = Qt::black;
         m_bgColor = Qt::white;
         m_cmyk = false;
-        m_zintSymbol = NULL;
         m_error = 0;
         m_input_mode = UNICODE_MODE;
         m_scale = 1.0f;
-        m_option_3 = 0;
         m_show_hrt = 1;
         m_eci = 0;
         m_dotty = false;
         m_dot_size = 4.0f / 5.0f;
-        target_size_horiz = 0;
-        target_size_vert = 0;
-        m_option_2 = 0;
+        m_guardDescent = 5.0f;
         m_whitespace = 0;
         m_vwhitespace = 0;
         m_gs1parens = false;
@@ -66,6 +65,9 @@ namespace Zint {
         m_reader_init = false;
         m_rotate_angle = 0;
         m_debug = false;
+
+        target_size_horiz = 0; /* Legacy */
+        target_size_vert = 0; /* Legacy */
     }
 
     QZint::~QZint() {
@@ -86,15 +88,16 @@ namespace Zint {
         m_zintSymbol->whitespace_height = m_vwhitespace;
         m_zintSymbol->border_width = m_borderWidth;
         m_zintSymbol->option_1 = m_option_1;
-        m_zintSymbol->input_mode = m_input_mode;
         m_zintSymbol->option_2 = m_option_2;
+        m_zintSymbol->option_3 = m_option_3;
+        m_zintSymbol->input_mode = m_input_mode;
         if (m_dotty) {
             m_zintSymbol->output_options |= BARCODE_DOTTY_MODE;
         }
         m_zintSymbol->dot_size = m_dot_size;
+        m_zintSymbol->guard_descent = m_guardDescent;
         m_zintSymbol->show_hrt = m_show_hrt ? 1 : 0;
         m_zintSymbol->eci = m_eci;
-        m_zintSymbol->option_3 = m_option_3;
         m_zintSymbol->scale = m_scale;
         if (m_gs1parens) {
             m_zintSymbol->input_mode |= GS1PARENS_MODE;
@@ -183,6 +186,14 @@ namespace Zint {
         m_height = height;
     }
 
+    int QZint::option1() const {
+        return m_option_1;
+    }
+
+    void QZint::setOption1(int option_1) {
+        m_option_1 = option_1;
+    }
+
     int QZint::option2() const {
         return m_option_2;
     }
@@ -217,6 +228,14 @@ namespace Zint {
 
     void QZint::setDotSize(float dot_size) {
         m_dot_size = dot_size;
+    }
+
+    float QZint::guardDescent() const {
+        return m_guardDescent;
+    }
+
+    void QZint::setGuardDescent(float guardDescent) {
+        m_guardDescent = guardDescent;
     }
 
     QColor QZint::fgColor() const {
@@ -271,14 +290,6 @@ namespace Zint {
         m_vwhitespace = vwhitespace;
     }
 
-    int QZint::option1() const {
-        return m_option_1;
-    }
-
-    void QZint::setOption1(int option_1) {
-        m_option_1 = option_1;
-    }
-
     void QZint::setFontSetting(int fontSettingIndex) {
         if (fontSettingIndex == 1) {
             m_fontSetting = BOLD_TEXT;
@@ -293,11 +304,6 @@ namespace Zint {
 
     void QZint::setShowText(bool show) {
         m_show_hrt = show;
-    }
-
-    void QZint::setTargetSize(int width, int height) {
-        target_size_horiz = width;
-        target_size_vert = height;
     }
 
     void QZint::setGSSep(bool gssep) {
@@ -358,6 +364,10 @@ namespace Zint {
     void QZint::setPdf417CodeWords(int /*pdf417CodeWords*/) {}
     int QZint::pdf417CodeWords() const { return 0; }
     void QZint::setHideText(bool hide) { setShowText(!hide); }
+    void QZint::setTargetSize(int width, int height) {
+        target_size_horiz = width;
+        target_size_vert = height;
+    }
 
     bool QZint::hasHRT(int symbology) const {
         return ZBarcode_Cap(symbology ? symbology : m_symbol, ZINT_CAP_HRT);

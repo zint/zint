@@ -20,6 +20,7 @@ Changes
   scale (0.01-100), height (0-500), whitespace_width/height (0-100),
   border_width (0-100)
 - CLI: allow both e.g. '-height' and '--height' (getopt_long_only())
+- UPC/EAN: add guard_descent
 
 Bugs
 ----

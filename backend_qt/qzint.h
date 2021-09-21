@@ -52,6 +52,9 @@ public:
     float height() const;
     void setHeight(float height);
 
+    int option1() const;
+    void setOption1(int option_1);
+
     int option2() const;
     void setOption2(int option);
 
@@ -65,6 +68,9 @@ public:
     void setDotty(bool botty);
 
     void setDotSize(float dot_size);
+
+    float guardDescent() const;
+    void setGuardDescent(float guardDescent);
 
     QColor fgColor() const;
     void setFgColor(const QColor& fgColor);
@@ -80,9 +86,6 @@ public:
     int borderWidth() const;
     void setBorderWidth(int boderWidth);
 
-    int option1() const;
-    void setOption1(int option_1);
-
     void setWhitespace(int whitespace);
 
     void setVWhitespace(int vwhitespace);
@@ -90,8 +93,6 @@ public:
     void setFontSetting(int fontSettingIndex);
 
     void setShowText(bool show);
-
-    void setTargetSize(int width, int height);
 
     void setGSSep(bool gssep);
 
@@ -116,6 +117,7 @@ public:
     void setPdf417CodeWords(int pdf417CodeWords); /* no op */
     int pdf417CodeWords() const;
     void setHideText(bool hide); /* setShowText(!hide) */
+    void setTargetSize(int width, int height);
 
     /* Test capabilities - ZBarcode_Cap() */
     bool hasHRT(int symbology = 0) const;
@@ -156,8 +158,9 @@ private:
     int m_borderType;
     int m_borderWidth;
     int m_fontSetting;
-    int m_option_2;
     int m_option_1;
+    int m_option_2;
+    int m_option_3;
     int m_input_mode;
     QColor m_fgColor;
     QColor m_bgColor;
@@ -168,19 +171,20 @@ private:
     int m_vwhitespace;
     zint_symbol * m_zintSymbol;
     float m_scale;
-    int m_option_3;
     bool m_show_hrt;
     int m_eci;
     int m_rotate_angle;
     bool m_dotty;
     float m_dot_size;
-    int target_size_horiz;
-    int target_size_vert;
+    float m_guardDescent;
     bool m_gs1parens;
     bool m_gs1nocheck;
     bool m_gssep;
     bool m_reader_init;
     bool m_debug;
+
+    int target_size_horiz; /* Legacy */
+    int target_size_vert; /* Legacy */
 };
 
 }

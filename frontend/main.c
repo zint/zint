@@ -143,6 +143,7 @@ static void usage(void) {
             "  --gs1nocheck          Do not check validity of GS1 data\n"
             "  --gs1parens           Process parentheses \"()\" as GS1 AI delimiters, not \"[]\"\n"
             "  --gssep               Use separator GS for GS1 (Data Matrix)\n"
+            "  --guarddescent=NUMBER Set height of guard bar descent in X-dims (UPC/EAN)\n"
             "  -h, --help            Display help message\n"
             "  --height=NUMBER       Set height of symbol in multiples of X-dimension\n"
             "  -i, --input=FILE      Read input data from FILE\n"
@@ -800,7 +801,7 @@ int main(int argc, char **argv) {
             OPT_ADDONGAP = 128, OPT_BATCH, OPT_BINARY, OPT_BG, OPT_BIND, OPT_BOLD, OPT_BORDER,
             OPT_BOX, OPT_CMYK, OPT_COLS, OPT_DIRECT, OPT_DMRE, OPT_DOTSIZE, OPT_DOTTY, OPT_DUMP,
             OPT_ECI, OPT_ESC, OPT_FG, OPT_FILETYPE, OPT_FONTSIZE, OPT_FULLMULTIBYTE,
-            OPT_GS1, OPT_GS1NOCHECK, OPT_GS1PARENS, OPT_GSSEP,
+            OPT_GS1, OPT_GS1NOCHECK, OPT_GS1PARENS, OPT_GSSEP, OPT_GUARDDESCENT,
             OPT_HEIGHT, OPT_INIT, OPT_MIRROR, OPT_MASK, OPT_MODE,
             OPT_NOBACKGROUND, OPT_NOTEXT, OPT_PRIMARY, OPT_ROTATE, OPT_ROWS, OPT_SCALE,
             OPT_SCMVV, OPT_SECURE, OPT_SEPARATOR, OPT_SMALL, OPT_SQUARE, OPT_VERBOSE, OPT_VERS,
@@ -836,6 +837,7 @@ int main(int argc, char **argv) {
             {"gs1nocheck", 0, NULL, OPT_GS1NOCHECK},
             {"gs1parens", 0, NULL, OPT_GS1PARENS},
             {"gssep", 0, NULL, OPT_GSSEP},
+            {"guarddescent", 1, NULL, OPT_GUARDDESCENT},
             {"height", 1, NULL, OPT_HEIGHT},
             {"help", 0, NULL, 'h'},
             {"init", 0, NULL, OPT_INIT},
@@ -1013,6 +1015,15 @@ int main(int argc, char **argv) {
                 break;
             case OPT_GSSEP:
                 my_symbol->output_options |= GS1_GS_SEPARATOR;
+                break;
+            case OPT_GUARDDESCENT:
+                float_opt = (float) atof(optarg);
+                if (float_opt >= 0.0f && float_opt <= 50.0f) {
+                    my_symbol->guard_descent = float_opt;
+                } else {
+                    fprintf(stderr, "Warning 155: Guard bar descent '%g' out of range (0 to 50), ignoring\n", float_opt);
+                    fflush(stderr);
+                }
                 break;
             case OPT_HEIGHT:
                 float_opt = (float) atof(optarg);

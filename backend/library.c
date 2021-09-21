@@ -57,6 +57,7 @@ struct zint_symbol *ZBarcode_Create() {
     memset(symbol, 0, sizeof(*symbol));
 
     symbol->symbology = BARCODE_CODE128;
+    symbol->scale = 1.0f;
     strcpy(symbol->fgcolour, "000000");
     symbol->fgcolor = &symbol->fgcolour[0];
     strcpy(symbol->bgcolour, "ffffff");
@@ -66,17 +67,17 @@ struct zint_symbol *ZBarcode_Create() {
 #else
     strcpy(symbol->outfile, "out.png");
 #endif
-    symbol->scale = 1.0f;
     symbol->option_1 = -1;
     symbol->show_hrt = 1; // Show human readable text
     symbol->fontsize = 8;
     symbol->input_mode = DATA_MODE;
-    symbol->bitmap = NULL;
-    symbol->alphamap = NULL;
     symbol->eci = 0; // Default 0 uses ECI 3
     symbol->dot_size = 4.0f / 5.0f;
-    symbol->vector = NULL;
+    symbol->guard_descent = 5.0f;
     symbol->warn_level = WARN_DEFAULT;
+    symbol->bitmap = NULL;
+    symbol->alphamap = NULL;
+    symbol->vector = NULL;
 
     return symbol;
 }
@@ -1050,23 +1051,26 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
     }
 
     if ((symbol->scale < 0.01f) || (symbol->scale > 100.0f)) {
-        return error_tag(symbol, ZINT_ERROR_INVALID_OPTION, "227: Scale out of range (0.01-100)");
+        return error_tag(symbol, ZINT_ERROR_INVALID_OPTION, "227: Scale out of range (0.01 to 100)");
     }
     if ((symbol->dot_size < 0.01f) || (symbol->dot_size > 20.0f)) {
-        return error_tag(symbol, ZINT_ERROR_INVALID_OPTION, "221: Dot size out of range (0.01-20)");
+        return error_tag(symbol, ZINT_ERROR_INVALID_OPTION, "221: Dot size out of range (0.01 to 20)");
     }
 
     if ((symbol->height < 0.0f) || (symbol->height > 500.0f)) {
-        return error_tag(symbol, ZINT_ERROR_INVALID_OPTION, "765: Height out of range (0-500)");
+        return error_tag(symbol, ZINT_ERROR_INVALID_OPTION, "765: Height out of range (0 to 500)");
+    }
+    if ((symbol->guard_descent < 0.0f) || (symbol->guard_descent > 50.0f)) {
+        return error_tag(symbol, ZINT_ERROR_INVALID_OPTION, "769: Guard bar descent out of range (0 to 50)");
     }
     if ((symbol->whitespace_width < 0) || (symbol->whitespace_width > 100)) {
-        return error_tag(symbol, ZINT_ERROR_INVALID_OPTION, "766: Whitespace width out of range (0-100)");
+        return error_tag(symbol, ZINT_ERROR_INVALID_OPTION, "766: Whitespace width out of range (0 to 100)");
     }
     if ((symbol->whitespace_height < 0) || (symbol->whitespace_height > 100)) {
-        return error_tag(symbol, ZINT_ERROR_INVALID_OPTION, "767: Whitespace height out of range (0-100)");
+        return error_tag(symbol, ZINT_ERROR_INVALID_OPTION, "767: Whitespace height out of range (0 to 100)");
     }
     if ((symbol->border_width < 0) || (symbol->border_width > 100)) {
-        return error_tag(symbol, ZINT_ERROR_INVALID_OPTION, "768: Border width out of range (0-100)");
+        return error_tag(symbol, ZINT_ERROR_INVALID_OPTION, "768: Border width out of range (0 to 100)");
     }
 
     if ((symbol->input_mode & 0x07) > 2) {

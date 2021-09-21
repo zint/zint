@@ -56,6 +56,7 @@ protected:
     void resizeEvent(QResizeEvent *event);
 	void combobox_item_enabled(QComboBox *comboBox, int index, bool enabled);
     void upcean_addon_gap(QComboBox *comboBox, QLabel *label, int base);
+    void upcean_guard_descent(QDoubleSpinBox *spnBox, QLabel *label);
     void set_gs1_mode(bool gs1_mode);
     void set_smaller_font(QLabel *note);
 

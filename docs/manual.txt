@@ -1055,6 +1055,8 @@ symbology         | integer      | Symbol to use (see section  | BARCODE_CODE128
 height            | float        | Symbol height, excluding    | Symbol
                   |              |    fixed width-to-height    |    dependent
                   |              |    symbols. [1]             |
+scale             | float        | Scale factor for adjusting  | 1.0
+                  |              |    size of image.           |
 whitespace_width  | integer      | Horizontal whitespace width.| 0
 whitespace_height | integer      | Vertical whitespace height. | 0
 border_width      | integer      | Border width.               | 0
@@ -1083,8 +1085,9 @@ outfile           | character    | Contains the name of the    | "out.png"
                   |              |    .svg, .tif or .txt       |
                   |              |    followed by a terminat-  |
                   |              |    ing \0.                  |
-scale             | float        | Scale factor for adjusting  | 1.0
-                  |              |    size of image.           |
+primary           | character    | Primary message data for    | "" (empty)
+                  |    string    |    more complex symbols,    |
+                  |              |    with a terminating \0.   |
 option_1          | integer      | Symbol specific options.    | -1
 option_2          | integer      | Symbol specific options.    | 0
 option_3          | integer      | Symbol specific options.    | 0
@@ -1093,17 +1096,18 @@ input_mode        | integer      | Set encoding of input data  | DATA_MODE
                   |              |    (see section 5.10)       |
 eci               | integer      | Extended Channel Interpre-  | 0 (none)
                   |              |    tation code.             |
+dot_size          | float        | Size of dots used in dotty  | 4.0 / 5.0
+                  |              |    mode.                    |
+guard_descent     | float        | Height of guard bar descent | 5.0
+                  |              |    (UPC/EAN only).          |
+warn_level        | integer      | Affects error/warning value | WARN_DEFAULT
+                  |              |    returned by Zint API.    |
 text              | unsigned     | Human Readable Text, which  | "" (empty)
                   |    character |    usually consists of in-  |
                   |    string    |    put data plus one more   |
                   |              |    check digit. Uses UTF-8  |
                   |              |    formatting, with a       |
                   |              |    terminating \0.          |
-primary           | character    | Primary message data for    | "" (empty)
-                  |    string    |    more complex symbols,    |
-                  |              |    with a terminating \0.   |
-dot_size          | float        | Size of dots used in dotty  | 4.0 / 5.0
-                  |              |    mode.                    |
 rows              | integer      | Number of rows used by the  | (output only)
                   |              |    the symbol.              |
 width             | integer      | Width of the generated sym- | (output only)
@@ -1133,8 +1137,6 @@ bitmap_byte_length| integer      | Size of BMP bitmap data.    | (output only)
 vector            | pointer to   | Pointer to vector header    | (output only)
                   |    vector    |    containing pointers to   |
                   |    structure |    vector elements.         |
-warn_level        | integer      | Affects error/warning value | WARN_DEFAULT
-                  |              |    returned by Zint API.    |
 --------------------------------------------------------------------------------
 
 [1] This value is ignored for Aztec (including HIBC and Aztec Rune), Code One,
@@ -1637,7 +1639,9 @@ before encoding.
 
 You can adjust the gap between the main symbol and an add-on in multiples of
 the X-dimension by setting --addongap= (option_2) to a value between 9 (default)
-and 12.
+and 12. The height in X-dimensions that the guard bars descend below the main
+bars can be adjusted by setting --guarddescent= (field guard_descent in the
+symbol structure) to a value between 0 and 20 (default 5).
 
 6.1.3.2 UPC Version E
 ---------------------
@@ -1662,7 +1666,9 @@ before encoding.
 
 You can adjust the gap between the main symbol and an add-on in multiples of
 the X-dimension by setting --addongap= (option_2) to a value between 7 (default)
-and 12.
+and 12. The height in X-dimensions that the guard bars descend below the main
+bars can be adjusted by setting --guarddescent= (field guard_descent in the
+symbol structure) to a value between 0 and 20 (default 5).
 
 6.1.4 European Article Number (EN 797)
 --------------------------------------
@@ -1697,7 +1703,9 @@ the check digit then you can use symbology BARCODE_EANX_CHK (14) which takes an
 
 You can adjust the gap between the main symbol and an add-on in multiples of
 the X-dimension by setting --addongap= (option_2) to a value between 7 (default)
-and 12.
+and 12. The height in X-dimensions that the guard bars descend below the main
+bars can be adjusted by setting --guarddescent= (field guard_descent in the
+symbol structure) to a value between 0 and 20 (default 5).
 
 6.1.4.2 SBN, ISBN and ISBN-13
 -----------------------------
@@ -1706,7 +1714,9 @@ EAN-13 symbols (also known as Bookland EAN-13) can also be produced from
 needs to be present in the input data and will be verified before the symbol is
 generated. In addition EAN-2 and EAN-5 add-on symbols can be added using the +
 symbol as with UPC symbols, and the gap set with --addongap= (option_2) to
-between 7 (default) and 12.
+between 7 (default) and 12. The height that the guard bars descend can be
+adjusted by setting --guarddescent= (field guard_descent in the symbol
+structure) to a value between 0 and 20 (default 5).
 
 6.1.5 Plessey
 -------------

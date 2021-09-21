@@ -411,7 +411,7 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
     int i, r;
     int text_height; /* Font pixel size (so whole integers) */
     float text_gap; /* Gap between barcode and text */
-    float guard_height;
+    float guard_descent;
 
     int upcae_outside_text_height = 0; /* UPC-A/E outside digits font size */
     float digit_ascent_factor = 0.25f; /* Assuming digit ascent roughly 25% less than font size */
@@ -464,21 +464,25 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
         /* Negative to move close to barcode (less digit ascent, then add 0.5X) */
         text_gap = -text_height * digit_ascent_factor + 0.5f;
         /* Guard bar height (none for EAN-2 and EAN-5) */
-        guard_height = upceanflag != 2 && upceanflag != 5 ? 5.0f : 0.0f; /* TODO: use zint_symbol field */
+        guard_descent = upceanflag != 2 && upceanflag != 5 ? symbol->guard_descent : 0.0f;
     } else {
         text_height = symbol->output_options & SMALL_TEXT ? 6 : 7;
         text_gap = text_height * 0.1f;
-        guard_height = 0.0f;
+        guard_descent = 0.0f;
     }
 
     hide_text = ((!symbol->show_hrt) || (ustrlen(symbol->text) == 0));
 
     if (hide_text) {
-        textoffset = guard_height;
+        textoffset = guard_descent;
     } else {
         if (upceanflag) {
             /* Add fudge for anti-aliasing of digits */
-            textoffset = (text_height > guard_height ? text_height : guard_height) + 0.2f + text_gap;
+            if (text_height + 0.2f + text_gap > guard_descent) {
+                textoffset = text_height + 0.2f + text_gap;
+            } else {
+                textoffset = guard_descent;
+            }
         } else {
             textoffset = text_height * 1.25f + text_gap; /* Allow +25% for characters descending below baseline */
         }
@@ -607,7 +611,7 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
                         }
                         addon_row_height = row_height - (addon_text_yposn - yposn) + text_gap;
                         if (upceanflag != 12 && upceanflag != 6) { /* UPC-A/E add-ons don't descend */
-                            addon_row_height += guard_height;
+                            addon_row_height += guard_descent;
                         }
                         if (addon_row_height < 0.5f) {
                             addon_row_height = 0.5f;
@@ -645,7 +649,7 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
                     case 14:
                     case 15:
                     case 16:
-                        rect->height += guard_height;
+                        rect->height += guard_descent;
                         break;
                 }
                 i++;
@@ -660,7 +664,7 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
                     case 11:
                     case 20:
                     case 21:
-                        rect->height += guard_height;
+                        rect->height += guard_descent;
                         break;
                 }
                 i++;
@@ -679,7 +683,7 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
                     case 27:
                     case 28:
                     case 29:
-                        rect->height += guard_height;
+                        rect->height += guard_descent;
                         break;
                 }
                 i++;
@@ -694,7 +698,7 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
                     case 15:
                     case 28:
                     case 29:
-                        rect->height += guard_height;
+                        rect->height += guard_descent;
                         break;
                 }
                 i++;
