@@ -125,6 +125,19 @@ Default 5
     </layout>
    </item>
    <item>
+    <widget class="QCheckBox" name="chkUPCANoQuietZones">
+     <property name="text">
+      <string>No Quiet &amp;Zones</string>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
+     <property name="toolTip">
+      <string>Do not add quiet zones to whitespace</string>
+     </property>
+    </widget>
+   </item>
+   <item>
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>

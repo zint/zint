@@ -1,7 +1,6 @@
-/*  output.h - Common routines for raster/vector
-
+/*
     libzint - the open source barcode library
-    Copyright (C) 2020 - 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -30,26 +29,41 @@
  */
 /* vim: set ts=4 sw=4 et : */
 
-#ifndef OUTPUT_H
-#define OUTPUT_H
+#include "testcommon.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+STATIC_UNLESS_ZINT_TEST int quiet_zones(const struct zint_symbol *symbol, const int hide_text,
+                            float *left, float *right, float *top, float *bottom);
 
-INTERNAL int output_check_colour_options(struct zint_symbol *symbol);
-INTERNAL void output_set_whitespace_offsets(const struct zint_symbol *symbol, const int hide_text,
-                float *xoffset, float *yoffset, float *roffset, float *boffset, const float scaler,
-                int *xoffset_si, int *yoffset_si, int *roffset_si, int *boffset_si);
-INTERNAL int output_process_upcean(const struct zint_symbol *symbol, int *p_main_width, int *p_comp_xoffset,
-                unsigned char addon[6], int *p_addon_gap);
-INTERNAL float output_large_bar_height(struct zint_symbol *symbol, int si);
-INTERNAL void output_upcean_split_text(int upceanflag, unsigned char text[],
-                unsigned char textpart1[5], unsigned char textpart2[7], unsigned char textpart3[7],
-                unsigned char textpart4[2]);
+static void test_quiet_zones(void) {
+    int i, ret;
+    struct zint_symbol symbol = {0};
+	int hide_text = 0;
+	float left, right, top, bottom;
 
-#ifdef __cplusplus
+    testStart("test_quiet_zones");
+
+    for (i = BARCODE_CODE11; i <= BARCODE_RMQR; i++) {
+		if (!ZBarcode_ValidID(i)) continue;
+        symbol.symbology = i;
+		symbol.output_options = BARCODE_QUIET_ZONES;
+        ret = quiet_zones(&symbol, hide_text, &left, &right, &top, &bottom);
+		if (i != BARCODE_FLAT) { // Only one which isn't marked as done
+			assert_nonzero(ret, "i:%d %s not done\n", i, testUtilBarcodeName(i));
+		}
+    }
+
+    testFinish();
 }
-#endif /* __cplusplus */
 
-#endif /* OUTPUT_H */
+int main(int argc, char *argv[]) {
+
+    testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
+        { "test_quiet_zones", test_quiet_zones, 0, 0, 0 },
+    };
+
+    testRun(argc, argv, funcs, ARRAY_SIZE(funcs));
+
+    testReport();
+
+    return 0;
+}

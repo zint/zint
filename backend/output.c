@@ -69,7 +69,8 @@ INTERNAL int output_check_colour_options(struct zint_symbol *symbol) {
 }
 
 /* Return minimum quiet zones for each symbology */
-static int quiet_zones(const struct zint_symbol *symbol, float *left, float *right, float *top, float *bottom) {
+STATIC_UNLESS_ZINT_TEST int quiet_zones(const struct zint_symbol *symbol, const int hide_text,
+                            float *left, float *right, float *top, float *bottom) {
     int done = 0;
 
     *left = *right = *top = *bottom = 0.0f;
@@ -78,25 +79,33 @@ static int quiet_zones(const struct zint_symbol *symbol, float *left, float *rig
     switch (symbol->symbology) {
         case BARCODE_CODE16K:
             /* BS EN 12323:2005 Section 4.5 (c) */
-            *left = 10.0f;
-            *right = 1.0f;
+            if (!(symbol->output_options & BARCODE_NO_QUIET_ZONES)) {
+                *left = 10.0f;
+                *right = 1.0f;
+            }
             done = 1;
             break;
         case BARCODE_CODE49:
             /* ANSI/AIM BC6-2000 Section 2.4 */
-            *left = 10.0f;
-            *right = 1.0f;
+            if (!(symbol->output_options & BARCODE_NO_QUIET_ZONES)) {
+                *left = 10.0f;
+                *right = 1.0f;
+            }
             done = 1;
             break;
         case BARCODE_CODABLOCKF:
         case BARCODE_HIBC_BLOCKF:
             /* AIM ISS-X-24 Section 4.6.1 */
-            *left = *right = 10.0f;
+            if (!(symbol->output_options & BARCODE_NO_QUIET_ZONES)) {
+                *left = *right = 10.0f;
+            }
             done = 1;
             break;
         case BARCODE_ITF14:
             /* GS1 General Specifications 21.0.1 Section 5.3.2.2 */
-            *left = *right = 10.0f;
+            if (!(symbol->output_options & BARCODE_NO_QUIET_ZONES)) {
+                *left = *right = 10.0f;
+            }
             done = 1;
             break;
         case BARCODE_EANX:
@@ -106,21 +115,33 @@ static int quiet_zones(const struct zint_symbol *symbol, float *left, float *rig
             /* GS1 General Specifications 21.0.1 Section 5.2.3.4 */
             switch (ustrlen(symbol->text)) {
                 case 13: /* EAN-13 */
-                    *left = 11.0f;
-                    *right = 7.0f;
+                    if (!(symbol->output_options & BARCODE_NO_QUIET_ZONES)) {
+                        *left = 11.0f;
+                        *right = 7.0f;
+                    } else if (!hide_text) {
+                        *left = 11.0f; /* Need for outside left digit */
+                    }
                     break;
                 case 16: /* EAN-13/ISBN + 2 digit addon */
                 case 19: /* EAN-13/ISBN + 5 digit addon */
-                    *left = 11.0f;
-                    *right = 5.0f;
+                    if (!(symbol->output_options & BARCODE_NO_QUIET_ZONES)) {
+                        *left = 11.0f;
+                        *right = 5.0f;
+                    } else if (!hide_text) {
+                        *left = 11.0f; /* Need for outside left digit */
+                    }
                     break;
                 case 5: /* EAN-5 addon */
                 case 2: /* EAN-2 addon */
-                    *left = 7.0f;
-                    *right = 5.0f;
+                    if (!(symbol->output_options & BARCODE_NO_QUIET_ZONES)) {
+                        *left = 7.0f;
+                        *right = 5.0f;
+                    }
                     break;
                 default: /* EAN-8 (+/- 2/5 digit addon) */
-                    *left = *right = 7.0f;
+                    if (!(symbol->output_options & BARCODE_NO_QUIET_ZONES)) {
+                        *left = *right = 7.0f;
+                    }
                     break;
             }
             done = 1;
@@ -129,11 +150,18 @@ static int quiet_zones(const struct zint_symbol *symbol, float *left, float *rig
         case BARCODE_UPCA_CHK:
         case BARCODE_UPCA_CC:
             /* GS1 General Specifications 21.0.1 Section 5.2.3.4 */
-            *left = 9.0f;
-            if (ustrlen(symbol->text) > 12) { /* UPC-A + addon */
-                *right = 5.0f;
-            } else {
-                *right = 9.0f;
+            if (!(symbol->output_options & BARCODE_NO_QUIET_ZONES)) {
+                *left = 9.0f;
+                if (ustrlen(symbol->text) > 12) { /* UPC-A + addon */
+                    *right = 5.0f;
+                } else {
+                    *right = 9.0f;
+                }
+            } else if (!hide_text) {
+                *left = 9.0f; /* Need for outside left digit */
+                if (ustrlen(symbol->text) <= 12) { /* No addon */
+                    *right = 9.0f; /* Need for outside right digit */
+                }
             }
             done = 1;
             break;
@@ -141,11 +169,18 @@ static int quiet_zones(const struct zint_symbol *symbol, float *left, float *rig
         case BARCODE_UPCE_CHK:
         case BARCODE_UPCE_CC:
             /* GS1 General Specifications 21.0.1 Section 5.2.3.4 */
-            *left = 9.0f;
-            if (ustrlen(symbol->text) > 8) { /* UPC-E + addon */
-                *right = 5.0f;
-            } else {
-                *right = 7.0f;
+            if (!(symbol->output_options & BARCODE_NO_QUIET_ZONES)) {
+                *left = 9.0f;
+                if (ustrlen(symbol->text) > 8) { /* UPC-E + addon */
+                    *right = 5.0f;
+                } else {
+                    *right = 7.0f;
+                }
+            } else if (!hide_text) {
+                *left = 9.0f; /* Need for outside left digit */
+                if (ustrlen(symbol->text) <= 8) { /* No addon */
+                    *right = 7.0f; /* Need for outside right digit */
+                }
             }
             done = 1;
             break;
@@ -155,14 +190,10 @@ static int quiet_zones(const struct zint_symbol *symbol, float *left, float *rig
         return done;
     }
 
-    /* Only do others if flag set TODO: finish */
-#if 0
-    if (!(symbol->output_options & BARCODE_QUIET_ZONES)) {
+    /* Only do others if flag set */
+    if (!(symbol->output_options & BARCODE_QUIET_ZONES) || (symbol->output_options & BARCODE_NO_QUIET_ZONES)) {
         return done;
     }
-#else
-    return done;
-#endif
 
     switch (symbol->symbology) {
         case BARCODE_CODE11:
@@ -230,7 +261,7 @@ static int quiet_zones(const struct zint_symbol *symbol, float *left, float *rig
             break;
 
         case BARCODE_FLAT:
-            /* TODO */
+            /* TODO: Find doc (application defined according to TEC-IT) */
             break;
 
         case BARCODE_DBAR_OMN: /* GS1 Databar Omnidirectional */
@@ -255,7 +286,10 @@ static int quiet_zones(const struct zint_symbol *symbol, float *left, float *rig
 
         case BARCODE_TELEPEN:
         case BARCODE_TELEPEN_NUM:
-            /* TODO */
+            /* Appears to be ~10X from diagram in Telepen Barcode Symbology information and History */
+            /* TODO: Find better doc */
+            *left = *right = 10.0f;
+            done = 1;
             break;
 
         case BARCODE_POSTNET:
@@ -268,7 +302,9 @@ static int quiet_zones(const struct zint_symbol *symbol, float *left, float *rig
             break;
 
         case BARCODE_MSI_PLESSEY:
-            /* TODO */
+            /* TODO Find doc (TEC-IT says 12X so use that for the moment) */
+            *left = *right = 12.0f;
+            done = 1;
             break;
 
         case BARCODE_FIM:
@@ -354,7 +390,9 @@ static int quiet_zones(const struct zint_symbol *symbol, float *left, float *rig
             break;
 
         case BARCODE_KOREAPOST:
-            /* TODO */
+            /* TODO Find doc (TEC-IT uses 10X but says not exactly specified - do the same for the moment) */
+            *left = *right = 10.0f;
+            done = 1;
             break;
 
         case BARCODE_USPS_IMAIL:
@@ -366,7 +404,9 @@ static int quiet_zones(const struct zint_symbol *symbol, float *left, float *rig
             break;
 
         case BARCODE_PLESSEY:
-            /* TODO */
+            /* TODO Find doc (see MSI_PLESSEY) */
+            *left = *right = 12.0f;
+            done = 1;
             break;
 
         case BARCODE_KIX:
@@ -408,7 +448,11 @@ static int quiet_zones(const struct zint_symbol *symbol, float *left, float *rig
             break;
 
         case BARCODE_CODEONE:
-            /* TODO */
+            /* USS Code One AIM 1994 Section 2.2.4 No quiet zone required for Versions A to H */
+            if (symbol->option_2 == 9 || symbol->option_2 == 10) { /* Section 2.3.2 Versions S & T */
+                *left = *right = 1.0f;
+            }
+            done = 1;
             break;
 
         case BARCODE_GRIDMATRIX:
@@ -427,12 +471,12 @@ static int quiet_zones(const struct zint_symbol *symbol, float *left, float *rig
 }
 
 /* Set left (x), top (y), right and bottom offsets for whitespace */
-INTERNAL void output_set_whitespace_offsets(const struct zint_symbol *symbol,
+INTERNAL void output_set_whitespace_offsets(const struct zint_symbol *symbol, const int hide_text,
                 float *xoffset, float *yoffset, float *roffset, float *boffset, const float scaler,
                 int *xoffset_si, int *yoffset_si, int *roffset_si, int *boffset_si) {
     float qz_left, qz_right, qz_top, qz_bottom;
 
-    quiet_zones(symbol, &qz_left, &qz_right, &qz_top, &qz_bottom);
+    quiet_zones(symbol, hide_text, &qz_left, &qz_right, &qz_top, &qz_bottom);
 
     *xoffset = symbol->whitespace_width + qz_left;
     *roffset = symbol->whitespace_width + qz_right;

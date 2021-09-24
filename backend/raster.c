@@ -680,7 +680,7 @@ static int plot_raster_maxicode(struct zint_symbol *symbol, const int rotate_ang
     }
     scaler *= 10.0f;
 
-    output_set_whitespace_offsets(symbol, &xoffset, &yoffset, &roffset, &boffset, scaler,
+    output_set_whitespace_offsets(symbol, 0 /*hide_text*/, &xoffset, &yoffset, &roffset, &boffset, scaler,
         &xoffset_si, &yoffset_si, &roffset_si, &boffset_si);
 
     hex_width = (int) roundf(scaler); /* Short diameter, X in ISO/IEC 16023:2000 Figure 8 (same as W) */
@@ -777,7 +777,7 @@ static int plot_raster_dotty(struct zint_symbol *symbol, const int rotate_angle,
     dot_radius_s = (symbol->dot_size * scaler) / 2.0f;
     dot_radius_si = (int) dot_radius_s;
 
-    output_set_whitespace_offsets(symbol, &xoffset, &yoffset, &roffset, &boffset, scaler,
+    output_set_whitespace_offsets(symbol, 0 /*hide_text*/, &xoffset, &yoffset, &roffset, &boffset, scaler,
         &xoffset_si, &yoffset_si, &roffset_si, &boffset_si);
 
     /* TODO: Revisit this overspill stuff, it's hacky */
@@ -917,7 +917,9 @@ static int plot_raster_default(struct zint_symbol *symbol, const int rotate_angl
         upceanflag = output_process_upcean(symbol, &main_width, &comp_xoffset, addon, &addon_gap);
     }
 
-    output_set_whitespace_offsets(symbol, &xoffset, &yoffset, &roffset, &boffset, si,
+    hide_text = ((!symbol->show_hrt) || (ustrlen(symbol->text) == 0) || scaler < 1.0f);
+
+    output_set_whitespace_offsets(symbol, hide_text, &xoffset, &yoffset, &roffset, &boffset, si,
         &xoffset_si, &yoffset_si, &roffset_si, &boffset_si);
 
     /* Note font sizes halved as in pixels */
@@ -933,8 +935,6 @@ static int plot_raster_default(struct zint_symbol *symbol, const int rotate_angl
         text_gap = 1.0f;
         guard_descent = 0.0f;
     }
-
-    hide_text = ((!symbol->show_hrt) || (ustrlen(symbol->text) == 0) || scaler < 1.0f);
 
     if (hide_text) {
         textoffset = guard_descent;

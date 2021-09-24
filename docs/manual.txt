@@ -415,6 +415,14 @@ Horizontal and vertical whitespace can of course be used together:
 
 zint -b DATAMATRIX --whitesp 1 --vwhitesp 1 -d "This Text"
 
+A --quietzones option is also available which adds quiet zones compliant with
+the symbology's specification. This is in addition to any whitespace specified
+with the --whitesp or --vwhitesp switches.
+
+Note that Codablock-F, Code 16K, Code 49, ITF-14, EAN-13, EAN-8, EAN-5, EAN-2,
+ISBN, UPC-A and UPC-E have compliant quiet zones added by default. This can be
+disabled with the option --noquietzones.
+
 4.6 Adding boundary bars and boxes
 ----------------------------------
 Zint allows the symbol to be bound with 'boundary bars' (also known as 'bearer
@@ -432,7 +440,7 @@ gives a box with a width 10 times the X-dimension of the symbol. Note that when
 specifying a box, horizontal whitespace is usually required in order to create a
 quiet zone between the barcode and the sides of the box.
 
-Codablock-F, Code 16k and Code 49 always have boundary bars, and default to
+Codablock-F, Code 16K and Code 49 always have boundary bars, and default to
 particular horizontal whitespace values. Special considerations apply to ITF-14
 - see the specific section 6.1.2.6 for that symbology.
 
@@ -580,7 +588,7 @@ GS1 data can be encoded in a number of symbologies. Application Identifiers
 should be enclosed in [square brackets] followed by the data to be encoded (see
 6.1.11.3). To encode GS1 data use the --gs1 option. GS1 mode is assumed (and
 doesn't need to be set) for GS1-128, EAN-14, DataBar and Composite symbologies
-but is also available for Aztec Code, Code 16k, Code 49, Code One, Data Matrix,
+but is also available for Aztec Code, Code 16K, Code 49, Code One, Data Matrix,
 DotCode, QR Code and Ultracode.
 
 HIBC data may also be encoded in the symbologies Code 39, Code 128, Codablock-F,
@@ -1407,11 +1415,16 @@ BARCODE_DOTTY_MODE      |  Plot a matrix symbol using dots rather than squares.
 GS1_GS_SEPARATOR        |  Use GS instead of FNC1 as GS1 separator (Data Matrix)
 OUT_BUFFER_INTERMEDIATE |  Return the bitmap buffer as ASCII values instead of
                         |     separate colour channels (OUT_BUFFER only).
+BARCODE_QUIET_ZONES     |  Add compliant quiet zones (additional to any
+                        |     specified whitespace). [3]
+BARCODE_NO_QUIET_ZONES  |  Disable quiet zones, notably those with defaults. [3]
 --------------------------------------------------------------------------------
 
-[2] This flag is always set for Codablock-F, Code 16k and Code 49. Special
+[2] This flag is always set for Codablock-F, Code 16K and Code 49. Special
 considerations apply to ITF-14 - see the specific section 6.1.2.6 for that
 symbology.
+[3] Codablock-F, Code 16K, Code 49, ITF-14, EAN-2 to EAN-13, ISBN,
+UPC-A and UPC-E have compliant quiet zones added by default.
 
 5.10 Setting the Input Mode
 ---------------------------
@@ -2012,11 +2025,11 @@ option_2. The height (number of rows) can be set using the --rows= option at the
 command line or by setting option_1. Zint does not support encoding of GS1 data
 in Codablock-F symbols.
 
-6.2.3 Code 16k (EN 12323)
+6.2.3 Code 16K (EN 12323)
 -------------------------
-Code 16k uses a Code 128 based system which can stack up to 16 rows in a block.
+Code 16K uses a Code 128 based system which can stack up to 16 rows in a block.
 This gives a maximum data capacity of 77 characters or 154 numerical digits and
-includes two modulo-107 check digits. Code 16k also supports extended ASCII
+includes two modulo-107 check digits. Code 16K also supports extended ASCII
 character encoding in the same manner as Code 128.
 
 6.2.4 PDF417 (ISO 15438)
@@ -2079,7 +2092,7 @@ dimensional component to make a composite symbol. For symbols with a 2D
 component the number of columns must be at least 2.
 
 6.2.10 Code 49
--------------
+--------------
 Developed in 1987 at Intermec, Code 49 is a cross between UPC and Code 39. It
 is one of the earliest stacked symbologies and influenced the design of Code
 16K a few years later. It supports full 7-bit ASCII input up to a maximum of 49

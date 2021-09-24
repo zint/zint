@@ -453,7 +453,9 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
         upceanflag = output_process_upcean(symbol, &main_width, &comp_xoffset, addon, &addon_gap);
     }
 
-    output_set_whitespace_offsets(symbol, &xoffset, &yoffset, &roffset, &boffset, 0 /*scaler*/,
+    hide_text = ((!symbol->show_hrt) || (ustrlen(symbol->text) == 0));
+
+    output_set_whitespace_offsets(symbol, hide_text, &xoffset, &yoffset, &roffset, &boffset, 0 /*scaler*/,
         NULL, NULL, NULL, NULL);
 
     /* Note font sizes scaled by 2 so really twice these values */
@@ -470,8 +472,6 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
         text_gap = text_height * 0.1f;
         guard_descent = 0.0f;
     }
-
-    hide_text = ((!symbol->show_hrt) || (ustrlen(symbol->text) == 0));
 
     if (hide_text) {
         textoffset = guard_descent;

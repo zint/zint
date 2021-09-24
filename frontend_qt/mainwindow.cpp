@@ -179,9 +179,10 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags fl)
     btype->setCurrentIndex(settings.value("studio/appearance/border_type", 0).toInt());
     cmbFontSetting->setCurrentIndex(settings.value("studio/appearance/font_setting", 0).toInt());
     chkHRTShow->setChecked(settings.value("studio/appearance/chk_hrt_show", 1).toInt() ? true : false);
-    chkCMYK->setChecked(settings.value("studio/appearance/cmyk", 0).toInt() ? true : false);
+    chkCMYK->setChecked(settings.value("studio/appearance/chk_cmyk", 0).toInt() ? true : false);
+    chkQuietZones->setChecked(settings.value("studio/appearance/chk_quiet_zones", 0).toInt() ? true : false);
     cmbRotate->setCurrentIndex(settings.value("studio/appearance/rotate", 0).toInt());
-    chkDotty->setChecked(settings.value("studio/appearance/dotty", 0).toInt() ? true : false);
+    chkDotty->setChecked(settings.value("studio/appearance/chk_dotty", 0).toInt() ? true : false);
     spnDotSize->setValue(settings.value("studio/appearance/dot_size", 4.0 / 5.0).toFloat());
 
     change_options();
@@ -222,6 +223,7 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags fl)
     connect(chkHRTShow, SIGNAL(stateChanged( int )), SLOT(HRTShow_ui_set()));
     connect(chkHRTShow, SIGNAL(stateChanged( int )), SLOT(update_preview()));
     connect(chkCMYK, SIGNAL(stateChanged( int )), SLOT(change_cmyk()));
+    connect(chkQuietZones, SIGNAL(stateChanged( int )), SLOT(update_preview()));
     connect(cmbRotate, SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
     connect(chkDotty, SIGNAL(stateChanged( int )), SLOT(dotty_ui_set()));
     connect(chkDotty, SIGNAL(stateChanged( int )), SLOT(update_preview()));
@@ -273,6 +275,7 @@ MainWindow::~MainWindow()
     settings.setValue("studio/appearance/font_setting", cmbFontSetting->currentIndex());
     settings.setValue("studio/appearance/chk_hrt_show", chkHRTShow->isChecked() ? 1 : 0);
     settings.setValue("studio/appearance/chk_cmyk", chkCMYK->isChecked() ? 1 : 0);
+    settings.setValue("studio/appearance/chk_quiet_zones", chkQuietZones->isChecked() ? 1 : 0);
     settings.setValue("studio/appearance/rotate", cmbRotate->currentIndex());
     settings.setValue("studio/appearance/chk_dotty", chkDotty->isChecked() ? 1 : 0);
     settings.setValue("studio/appearance/dot_size", spnDotSize->value());
@@ -770,6 +773,7 @@ void MainWindow::change_options()
         btype->setItemText(0, tr("Default (bind)"));
         connect(m_optionWidget->findChild<QObject*>("cmbC16kRowSepHeight"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radC16kStand"), SIGNAL(toggled( bool )), SLOT(update_preview()));
+        connect(m_optionWidget->findChild<QObject*>("chkC16kNoQuietZones"), SIGNAL(clicked( bool )), SLOT(update_preview()));
 
     } else if (symbology == BARCODE_CODABAR) {
         QFile file(":/grpCodabar.ui");
@@ -793,6 +797,7 @@ void MainWindow::change_options()
         connect(m_optionWidget->findChild<QObject*>("cmbCbfRowSepHeight"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radCbfStand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radCbfHIBC"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(m_optionWidget->findChild<QObject*>("chkCbfNoQuietZones"), SIGNAL(clicked( bool )), SLOT(update_preview()));
 
     } else if (symbology == BARCODE_DAFT) {
         QFile file(":/grpDAFT.ui");
@@ -821,6 +826,13 @@ void MainWindow::change_options()
 
     } else if (symbology == BARCODE_ITF14) {
         btype->setItemText(0, tr("Default (box, non-zero width)"));
+        QFile file(":/grpITF14.ui");
+        if (file.open(QIODevice::ReadOnly)) {
+            m_optionWidget = uiload.load(&file);
+            file.close();
+            tabMain->insertTab(1, m_optionWidget, tr("ITF-1&4"));
+            connect(m_optionWidget->findChild<QObject*>("chkITF14NoQuietZones"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        }
 
     } else if (symbology == BARCODE_QRCODE) {
         QFile file(":/grpQR.ui");
@@ -932,6 +944,7 @@ void MainWindow::change_options()
         btype->setItemText(0, tr("Default (bind)"));
         connect(m_optionWidget->findChild<QObject*>("cmbC49RowSepHeight"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("radC49GS1"), SIGNAL(toggled( bool )), SLOT(update_preview()));
+        connect(m_optionWidget->findChild<QObject*>("chkC49NoQuietZones"), SIGNAL(clicked( bool )), SLOT(update_preview()));
 
     } else if (symbology == BARCODE_CODE93) {
         QFile file(":/grpC93.ui");
@@ -977,6 +990,7 @@ void MainWindow::change_options()
         }
         connect(m_optionWidget->findChild<QObject*>("cmbUPCAAddonGap"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("spnUPCAGuardDescent"), SIGNAL(valueChanged( double )), SLOT(update_preview()));
+        connect(m_optionWidget->findChild<QObject*>("chkUPCANoQuietZones"), SIGNAL(clicked( bool )), SLOT(update_preview()));
 
     } else if (symbology == BARCODE_EANX || symbology == BARCODE_EANX_CHK || symbology == BARCODE_EANX_CC
             || symbology == BARCODE_UPCE || symbology == BARCODE_UPCE_CHK || symbology == BARCODE_UPCE_CC
@@ -999,6 +1013,7 @@ void MainWindow::change_options()
         }
         connect(m_optionWidget->findChild<QObject*>("cmbUPCEANAddonGap"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(m_optionWidget->findChild<QObject*>("spnUPCEANGuardDescent"), SIGNAL(valueChanged( double )), SLOT(update_preview()));
+        connect(m_optionWidget->findChild<QObject*>("chkUPCEANNoQuietZones"), SIGNAL(clicked( bool )), SLOT(update_preview()));
 
     } else if (symbology == BARCODE_VIN) {
         QFile file(":/grpVIN.ui");
@@ -1034,6 +1049,7 @@ void MainWindow::change_options()
     chkRInit->setEnabled(m_bc.bc.supportsReaderInit(symbology)); /* Ditto (HIBC and GS1) */
     chkAutoHeight->setEnabled(!m_bc.bc.isFixedRatio(symbology));
     chkHRTShow->setEnabled(m_bc.bc.hasHRT(symbology));
+    chkQuietZones->setEnabled(!m_bc.bc.hasDefaultQuietZones(symbology));
     chkDotty->setEnabled(m_bc.bc.isDotty(symbology));
 
     load_sub_settings(settings, symbology);
@@ -1218,6 +1234,7 @@ void MainWindow::update_preview()
         m_bc.bc.setInputMode(m_bc.bc.inputMode() | ESCAPE_MODE);
     }
     m_bc.bc.setGSSep(false);
+    m_bc.bc.setNoQuietZones(false);
     m_bc.bc.setDotSize(0.4f / 0.5f);
 
     switch (symbology) {
@@ -1242,36 +1259,48 @@ void MainWindow::update_preview()
             break;
 
         case BARCODE_EANX:
-            if(chkComposite->isChecked())
+            if (chkComposite->isChecked())
                 m_bc.bc.setSymbol(BARCODE_EANX_CC);
             else
                 m_bc.bc.setSymbol(BARCODE_EANX);
             upcean_addon_gap(m_optionWidget->findChild<QComboBox*>("cmbUPCEANAddonGap"), m_optionWidget->findChild<QLabel*>("lblUPCEANAddonGap"), 7 /*base*/);
             upcean_guard_descent(m_optionWidget->findChild<QDoubleSpinBox*>("spnUPCEANGuardDescent"), m_optionWidget->findChild<QLabel*>("lblUPCEANGuardDescent"));
+            if (get_checkbox_val("chkUPCEANNoQuietZones")) {
+                m_bc.bc.setNoQuietZones(true);
+            }
             break;
 
         case BARCODE_ISBNX:
             m_bc.bc.setSymbol(symbology);
             upcean_addon_gap(m_optionWidget->findChild<QComboBox*>("cmbUPCEANAddonGap"), m_optionWidget->findChild<QLabel*>("lblUPCEANAddonGap"), 7 /*base*/);
             upcean_guard_descent(m_optionWidget->findChild<QDoubleSpinBox*>("spnUPCEANGuardDescent"), m_optionWidget->findChild<QLabel*>("lblUPCEANGuardDescent"));
+            if (get_checkbox_val("chkUPCEANNoQuietZones")) {
+                m_bc.bc.setNoQuietZones(true);
+            }
             break;
 
         case BARCODE_UPCA:
-            if(chkComposite->isChecked())
+            if (chkComposite->isChecked())
                 m_bc.bc.setSymbol(BARCODE_UPCA_CC);
             else
                 m_bc.bc.setSymbol(BARCODE_UPCA);
             upcean_addon_gap(m_optionWidget->findChild<QComboBox*>("cmbUPCAAddonGap"), m_optionWidget->findChild<QLabel*>("lblUPCAAddonGap"), 9 /*base*/);
             upcean_guard_descent(m_optionWidget->findChild<QDoubleSpinBox*>("spnUPCAGuardDescent"), m_optionWidget->findChild<QLabel*>("lblUPCAGuardDescent"));
+            if (get_checkbox_val("chkUPCANoQuietZones")) {
+                m_bc.bc.setNoQuietZones(true);
+            }
             break;
 
         case BARCODE_UPCE:
-            if(chkComposite->isChecked())
+            if (chkComposite->isChecked())
                 m_bc.bc.setSymbol(BARCODE_UPCE_CC);
             else
                 m_bc.bc.setSymbol(BARCODE_UPCE);
             upcean_addon_gap(m_optionWidget->findChild<QComboBox*>("cmbUPCEANAddonGap"), m_optionWidget->findChild<QLabel*>("lblUPCEANAddonGap"), 7 /*base*/);
             upcean_guard_descent(m_optionWidget->findChild<QDoubleSpinBox*>("spnUPCEANGuardDescent"), m_optionWidget->findChild<QLabel*>("lblUPCEANGuardDescent"));
+            if (get_checkbox_val("chkUPCEANNoQuietZones")) {
+                m_bc.bc.setNoQuietZones(true);
+            }
             break;
 
         case BARCODE_DBAR_OMN:
@@ -1426,11 +1455,14 @@ void MainWindow::update_preview()
             if (item_val) {
                 m_bc.bc.setOption3(item_val + 1); // Zero-based
             }
+            if (get_checkbox_val("chkC16kNoQuietZones")) {
+                m_bc.bc.setNoQuietZones(true);
+            }
             break;
 
         case BARCODE_CODABAR:
             m_bc.bc.setSymbol(BARCODE_CODABAR);
-            if (m_optionWidget->findChild<QCheckBox*>("chkCodabarCheck")->isChecked()) {
+            if (get_checkbox_val("chkCodabarCheck")) {
                 m_bc.bc.setOption2(1);
             }
             break;
@@ -1454,6 +1486,9 @@ void MainWindow::update_preview()
             item_val = m_optionWidget->findChild<QComboBox*>("cmbCbfRowSepHeight")->currentIndex();
             if (item_val) {
                 m_bc.bc.setOption3(item_val + 1); // Zero-based
+            }
+            if (get_checkbox_val("chkCbfNoQuietZones")) {
+                m_bc.bc.setNoQuietZones(true);
             }
             break;
 
@@ -1498,6 +1533,13 @@ void MainWindow::update_preview()
                 findChild<QCheckBox*>("chkDMRectangle")->setEnabled(false);
                 findChild<QCheckBox*>("chkDMRE")->setEnabled(false);
                 m_bc.bc.setOption3(0);
+            }
+            break;
+
+        case BARCODE_ITF14:
+            m_bc.bc.setSymbol(BARCODE_ITF14);
+            if (get_checkbox_val("chkITF14NoQuietZones")) {
+                m_bc.bc.setNoQuietZones(true);
             }
             break;
 
@@ -1624,6 +1666,9 @@ void MainWindow::update_preview()
             if (item_val) {
                 m_bc.bc.setOption3(item_val + 1); // Zero-based
             }
+            if (get_checkbox_val("chkC49NoQuietZones")) {
+                m_bc.bc.setNoQuietZones(true);
+            }
             break;
 
         case BARCODE_CODE93:
@@ -1698,6 +1743,7 @@ void MainWindow::update_preview()
     m_bc.bc.setBorderWidth(bwidth->value());
     m_bc.bc.setWhitespace(spnWhitespace->value());
     m_bc.bc.setVWhitespace(spnVWhitespace->value());
+    m_bc.bc.setQuietZones(chkQuietZones->isEnabled() && chkQuietZones->isChecked());
     m_bc.bc.setFontSetting(cmbFontSetting->currentIndex());
     m_bc.bc.setRotateAngle(cmbRotate->currentIndex());
     m_bc.bc.setDotty(chkDotty->isEnabled() && chkDotty->isChecked());
@@ -2015,7 +2061,8 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology) {
             settings.setValue(QString("studio/bc/%1/appearance/font_setting").arg(name), cmbFontSetting->currentIndex());
             settings.setValue(QString("studio/bc/%1/appearance/chk_hrt_show").arg(name), chkHRTShow->isChecked() ? 1 : 0);
         }
-        settings.setValue(QString("studio/bc/%1/appearance/cmyk").arg(name), chkCMYK->isChecked() ? 1 : 0);
+        settings.setValue(QString("studio/bc/%1/appearance/chk_cmyk").arg(name), chkCMYK->isChecked() ? 1 : 0);
+        settings.setValue(QString("studio/bc/%1/appearance/chk_quietzones").arg(name), chkQuietZones->isChecked() ? 1 : 0);
         settings.setValue(QString("studio/bc/%1/appearance/rotate").arg(name), cmbRotate->currentIndex());
         if (symbology == BARCODE_DOTCODE || chkDotty->isEnabled()) {
             settings.setValue(QString("studio/bc/%1/appearance/chk_dotty").arg(name), chkDotty->isChecked() ? 1 : 0);
@@ -2109,6 +2156,7 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology) {
         case BARCODE_CODE16K:
             settings.setValue("studio/bc/code16k/row_sep_height", get_combobox_index("cmbC16kRowSepHeight"));
             settings.setValue("studio/bc/code16k/encoding_mode", get_button_group_index(QStringList() << "radC16kStand" << "radC16kGS1"));
+            settings.setValue("studio/bc/code16k/chk_no_quiet_zones", get_checkbox_val("chkC16kNoQuietZones"));
             break;
 
         case BARCODE_CODABAR:
@@ -2121,6 +2169,7 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology) {
             settings.setValue("studio/bc/codablockf/height", get_combobox_index("cmbCbfHeight"));
             settings.setValue("studio/bc/codablockf/row_sep_height", get_combobox_index("cmbCbfRowSepHeight"));
             settings.setValue("studio/bc/codablockf/encoding_mode", get_button_group_index(QStringList() << "radCbfStand" << "radCbfHIBC"));
+            settings.setValue("studio/bc/codablockf/chk_no_quiet_zones", get_checkbox_val("chkCbfNoQuietZones"));
             break;
 
         case BARCODE_DAFT:
@@ -2134,6 +2183,10 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology) {
             settings.setValue("studio/bc/datamatrix/chk_suppress_rect", get_checkbox_val("chkDMRectangle"));
             settings.setValue("studio/bc/datamatrix/chk_allow_dmre", get_checkbox_val("chkDMRE"));
             settings.setValue("studio/bc/datamatrix/chk_gs_sep", get_checkbox_val("chkDMGSSep"));
+            break;
+
+        case BARCODE_ITF14:
+            settings.setValue("studio/bc/itf14/chk_no_quiet_zones", get_checkbox_val("chkITF14NoQuietZones"));
             break;
 
         case BARCODE_QRCODE:
@@ -2189,6 +2242,7 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology) {
         case BARCODE_CODE49:
             settings.setValue("studio/bc/code49/row_sep_height", get_combobox_index("cmbC49RowSepHeight"));
             settings.setValue("studio/bc/code49/encoding_mode", get_button_group_index(QStringList() << "radC49Stand" << "radC49GS1"));
+            settings.setValue("studio/bc/code49/chk_no_quiet_zones", get_checkbox_val("chkC49NoQuietZones"));
             break;
 
         case BARCODE_CODE93:
@@ -2211,6 +2265,7 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology) {
         case BARCODE_UPCA_CC:
             settings.setValue("studio/bc/upca/addongap", get_combobox_index("cmbUPCAAddonGap"));
             settings.setValue("studio/bc/upca/guard_descent", QString::number(get_doublespinbox_val("spnUPCAGuardDescent"), 'f', 3 /*precision*/));
+            settings.setValue("studio/bc/upca/chk_no_quiet_zones", get_checkbox_val("chkUPCANoQuietZones"));
             break;
 
         case BARCODE_EANX:
@@ -2218,6 +2273,7 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology) {
         case BARCODE_EANX_CC:
             settings.setValue("studio/bc/eanx/addongap", get_combobox_index("cmbUPCEANAddonGap"));
             settings.setValue("studio/bc/eanx/guard_descent", QString::number(get_doublespinbox_val("spnUPCEANGuardDescent"), 'f', 3 /*precision*/));
+            settings.setValue("studio/bc/eanx/chk_no_quiet_zones", get_checkbox_val("chkUPCEANNoQuietZones"));
             break;
 
         case BARCODE_UPCE:
@@ -2225,11 +2281,13 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology) {
         case BARCODE_UPCE_CC:
             settings.setValue("studio/bc/upce/addongap", get_combobox_index("cmbUPCEANAddonGap"));
             settings.setValue("studio/bc/upce/guard_descent", QString::number(get_doublespinbox_val("spnUPCEANGuardDescent"), 'f', 3 /*precision*/));
+            settings.setValue("studio/bc/upce/chk_no_quiet_zones", get_checkbox_val("chkUPCEANNoQuietZones"));
             break;
 
         case BARCODE_ISBNX:
             settings.setValue("studio/bc/isnbx/addongap", get_combobox_index("cmbUPCEANAddonGap"));
             settings.setValue("studio/bc/isnbx/guard_descent", QString::number(get_doublespinbox_val("spnUPCEANGuardDescent"), 'f', 3 /*precision*/));
+            settings.setValue("studio/bc/isnbx/chk_no_quiet_zones", get_checkbox_val("chkUPCEANNoQuietZones"));
             break;
 
         case BARCODE_VIN:
@@ -2373,6 +2431,7 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology) {
         case BARCODE_CODE16K:
             set_combobox_from_setting(settings, "studio/bc/code16k/row_sep_height", "cmbC16kRowSepHeight");
             set_radiobutton_from_setting(settings, "studio/bc/code16k/encoding_mode", QStringList() << "radC16kStand" << "radC16kGS1");
+            set_checkbox_from_setting(settings, "studio/bc/code16k/chk_no_quiet_zones", "chkC16kNoQuietZones");
             break;
 
         case BARCODE_CODABAR:
@@ -2385,6 +2444,7 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology) {
             set_combobox_from_setting(settings, "studio/bc/codablockf/height", "cmbCbfHeight");
             set_combobox_from_setting(settings, "studio/bc/codablockf/row_sep_height", "cmbCbfRowSepHeight");
             set_radiobutton_from_setting(settings, "studio/bc/codablockf/encoding_mode", QStringList() << "radCbfStand" << "radCbfHIBC");
+            set_checkbox_from_setting(settings, "studio/bc/codablockf/chk_no_quiet_zones", "chkCbfNoQuietZones");
             break;
 
         case BARCODE_DAFT:
@@ -2398,6 +2458,10 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology) {
             set_checkbox_from_setting(settings, "studio/bc/datamatrix/chk_suppress_rect", "chkDMRectangle");
             set_checkbox_from_setting(settings, "studio/bc/datamatrix/chk_allow_dmre", "chkDMRE");
             set_checkbox_from_setting(settings, "studio/bc/datamatrix/chk_gs_sep", "chkDMGSSep");
+            break;
+
+        case BARCODE_ITF14:
+            set_checkbox_from_setting(settings, "studio/bc/itf14/chk_no_quiet_zones", "chkITF14NoQuietZones");
             break;
 
         case BARCODE_QRCODE:
@@ -2453,6 +2517,7 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology) {
         case BARCODE_CODE49:
             set_combobox_from_setting(settings, "studio/bc/code49/row_sep_height", "cmbC49RowSepHeight");
             set_radiobutton_from_setting(settings, "studio/bc/code49/encoding_mode", QStringList() << "radC49Stand" << "radC49GS1");
+            set_checkbox_from_setting(settings, "studio/bc/code49/chk_no_quiet_zones", "chkC49NoQuietZones");
             break;
 
         case BARCODE_CODE93:
@@ -2474,6 +2539,7 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology) {
         case BARCODE_UPCA_CC:
             set_combobox_from_setting(settings, "studio/bc/upca/addongap", "cmbUPCAAddonGap");
             set_doublespinbox_from_setting(settings, "studio/bc/upca/guard_descent", "spnUPCAGuardDescent", 5.0f);
+            set_checkbox_from_setting(settings, "studio/bc/upca/chk_no_quiet_zones", "chkUPCANoQuietZones");
             break;
 
         case BARCODE_EANX:
@@ -2481,6 +2547,7 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology) {
         case BARCODE_EANX_CC:
             set_combobox_from_setting(settings, "studio/bc/eanx/addongap", "cmbUPCEANAddonGap");
             set_doublespinbox_from_setting(settings, "studio/bc/eanx/guard_descent", "spnUPCEANGuardDescent", 5.0f);
+            set_checkbox_from_setting(settings, "studio/bc/eanx/chk_no_quiet_zones", "chkUPCEANNoQuietZones");
             break;
 
         case BARCODE_UPCE:
@@ -2488,11 +2555,13 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology) {
         case BARCODE_UPCE_CC:
             set_combobox_from_setting(settings, "studio/bc/upce/addongap", "cmbUPCEANAddonGap");
             set_doublespinbox_from_setting(settings, "studio/bc/upce/guard_descent", "spnUPCEANGuardDescent", 5.0f);
+            set_checkbox_from_setting(settings, "studio/bc/upce/chk_no_quiet_zones", "chkUPCEANNoQuietZones");
             break;
 
         case BARCODE_ISBNX:
             set_combobox_from_setting(settings, "studio/bc/isbnx/addongap", "cmbUPCEANAddonGap");
             set_doublespinbox_from_setting(settings, "studio/bc/isbnx/guard_descent", "spnUPCEANGuardDescent", 5.0f);
+            set_checkbox_from_setting(settings, "studio/bc/isbnx/chk_no_quiet_zones", "chkUPCEANNoQuietZones");
             break;
 
         case BARCODE_VIN:

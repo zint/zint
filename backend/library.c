@@ -1537,6 +1537,27 @@ unsigned int ZBarcode_Cap(int symbol_id, unsigned int cap_flag) {
     if ((cap_flag & ZINT_CAP_DOTTY) && is_dotty(symbol_id)) {
         result |= ZINT_CAP_DOTTY;
     }
+    if (cap_flag & ZINT_CAP_QUIET_ZONES) {
+        switch (symbol_id) { /* See `quiet_zones()` in "output.c" */
+            case BARCODE_CODE16K:
+            case BARCODE_CODE49:
+            case BARCODE_CODABLOCKF:
+            case BARCODE_HIBC_BLOCKF:
+            case BARCODE_ITF14:
+            case BARCODE_EANX:
+            case BARCODE_EANX_CHK:
+            case BARCODE_EANX_CC:
+            case BARCODE_ISBNX:
+            case BARCODE_UPCA:
+            case BARCODE_UPCA_CHK:
+            case BARCODE_UPCA_CC:
+            case BARCODE_UPCE:
+            case BARCODE_UPCE_CHK:
+            case BARCODE_UPCE_CC:
+                result |= ZINT_CAP_QUIET_ZONES;
+                break;
+        }
+    }
     if ((cap_flag & ZINT_CAP_FIXED_RATIO) && is_fixed_ratio(symbol_id)) {
         result |= ZINT_CAP_FIXED_RATIO;
     }

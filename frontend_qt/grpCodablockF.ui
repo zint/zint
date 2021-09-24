@@ -27,6 +27,9 @@
        <property name="text">
         <string>Symbol &amp;Width (Columns):</string>
        </property>
+       <property name="toolTip">
+        <string>The number of data characters in a row</string>
+       </property>
        <property name="buddy">
         <cstring>cmbCbfWidth</cstring>
        </property>
@@ -36,6 +39,9 @@
       <widget class="QComboBox" name="cmbCbfWidth">
        <property name="maxVisibleItems">
         <number>21</number>
+       </property>
+       <property name="toolTip">
+        <string>The number of data characters in a row</string>
        </property>
        <item>
         <property name="text">
@@ -344,6 +350,9 @@
        <property name="text">
         <string>Symbol &amp;Height (Rows):</string>
        </property>
+       <property name="toolTip">
+        <string>The number of rows</string>
+       </property>
        <property name="buddy">
         <cstring>cmbCbfHeight</cstring>
        </property>
@@ -353,6 +362,9 @@
       <widget class="QComboBox" name="cmbCbfHeight">
        <property name="maxVisibleItems">
         <number>21</number>
+       </property>
+       <property name="toolTip">
+        <string>The number of rows</string>
        </property>
        <item>
         <property name="text">
@@ -586,6 +598,9 @@
        <property name="text">
         <string>&amp;Row Separator Height:</string>
        </property>
+       <property name="toolTip">
+        <string>Height in X-dimensions of horizontal lines separating rows</string>
+       </property>
        <property name="buddy">
         <cstring>cmbCbfRowSepHeight</cstring>
        </property>
@@ -593,6 +608,9 @@
      </item>
      <item row="2" column="1">
       <widget class="QComboBox" name="cmbCbfRowSepHeight">
+       <property name="toolTip">
+        <string>Height in X-dimensions of horizontal lines separating rows</string>
+       </property>
        <item>
         <property name="text">
          <string>1 X (default)</string>
@@ -631,6 +649,9 @@
         <property name="text">
          <string>S&amp;tandard Mode</string>
         </property>
+        <property name="toolTip">
+         <string>Process data as normal</string>
+        </property>
         <property name="checked">
          <bool>true</bool>
         </property>
@@ -641,9 +662,28 @@
         <property name="text">
          <string>H&amp;IBC Codablock-F</string>
         </property>
+        <property name="toolTip">
+         <string>Process data as a Health Industry Barcode (HIBC)
+Labeler Identification Code (LIC)
+For Provider Applications Standard (PAS),
+preface the data with a slash &quot;/&quot;</string>
+        </property>
        </widget>
       </item>
      </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="chkCbfNoQuietZones">
+     <property name="text">
+      <string>No Quiet &amp;Zones</string>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
+     <property name="toolTip">
+      <string>Do not add quiet zones to whitespace</string>
+     </property>
     </widget>
    </item>
    <item>

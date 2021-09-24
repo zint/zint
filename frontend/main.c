@@ -152,9 +152,11 @@ static void usage(void) {
             "  --mirror              Use batch data to determine filename\n"
             "  --mode=NUMBER         Set encoding mode (MaxiCode/Composite)\n"
             "  --nobackground        Remove background (EMF/EPS/GIF/PNG/SVG/TIF only)\n"
+            "  --noquietzones        Disable default quiet zones\n"
             "  --notext              Remove human readable text\n"
             "  -o, --output=FILE     Send output to FILE. Default is out.png\n"
             "  --primary=STRING      Set structured primary message (MaxiCode/Composite)\n"
+            "  --quietzones          Add compliant quiet zones\n"
             "  -r, --reverse         Reverse colours (white on black)\n"
             "  --rotate=NUMBER       Rotate symbol by NUMBER degrees\n"
             "  --rows=NUMBER         Set number of rows (Codablock-F)\n"
@@ -803,8 +805,9 @@ int main(int argc, char **argv) {
             OPT_ECI, OPT_ESC, OPT_FG, OPT_FILETYPE, OPT_FONTSIZE, OPT_FULLMULTIBYTE,
             OPT_GS1, OPT_GS1NOCHECK, OPT_GS1PARENS, OPT_GSSEP, OPT_GUARDDESCENT,
             OPT_HEIGHT, OPT_INIT, OPT_MIRROR, OPT_MASK, OPT_MODE,
-            OPT_NOBACKGROUND, OPT_NOTEXT, OPT_PRIMARY, OPT_ROTATE, OPT_ROWS, OPT_SCALE,
-            OPT_SCMVV, OPT_SECURE, OPT_SEPARATOR, OPT_SMALL, OPT_SQUARE, OPT_VERBOSE, OPT_VERS,
+            OPT_NOBACKGROUND, OPT_NOQUIETZONES, OPT_NOTEXT, OPT_PRIMARY, OPT_QUIETZONES,
+            OPT_ROTATE, OPT_ROWS, OPT_SCALE, OPT_SCMVV,
+            OPT_SECURE, OPT_SEPARATOR, OPT_SMALL, OPT_SQUARE, OPT_VERBOSE, OPT_VERS,
             OPT_VWHITESP, OPT_WERROR,
         };
         int option_index = 0;
@@ -846,9 +849,11 @@ int main(int argc, char **argv) {
             {"mask", 1, NULL, OPT_MASK},
             {"mode", 1, NULL, OPT_MODE},
             {"nobackground", 0, NULL, OPT_NOBACKGROUND},
+            {"noquietzones", 0, NULL, OPT_NOQUIETZONES},
             {"notext", 0, NULL, OPT_NOTEXT},
             {"output", 1, NULL, 'o'},
             {"primary", 1, NULL, OPT_PRIMARY},
+            {"quietzones", 0, NULL, OPT_QUIETZONES},
             {"reverse", 0, NULL, 'r'},
             {"rotate", 1, NULL, OPT_ROTATE},
             {"rows", 1, NULL, OPT_ROWS},
@@ -1069,6 +1074,9 @@ int main(int argc, char **argv) {
             case OPT_NOBACKGROUND:
                 strcpy(my_symbol->bgcolour, "ffffff00");
                 break;
+            case OPT_NOQUIETZONES:
+                my_symbol->output_options |= BARCODE_NO_QUIET_ZONES;
+                break;
             case OPT_NOTEXT:
                 my_symbol->show_hrt = 0;
                 break;
@@ -1079,6 +1087,9 @@ int main(int argc, char **argv) {
                     fprintf(stderr, "Warning 115: Primary data string too long (127 character maximum), ignoring\n");
                     fflush(stderr);
                 }
+                break;
+            case OPT_QUIETZONES:
+                my_symbol->output_options |= BARCODE_QUIET_ZONES;
                 break;
             case OPT_ROTATE:
                 /* Only certain inputs allowed */

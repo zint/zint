@@ -96,6 +96,9 @@ public:
 
     void setGSSep(bool gssep);
 
+    void setQuietZones(bool quietZones);
+    void setNoQuietZones(bool noQuietZones);
+
     int rotateAngle() const;
     void setRotateAngle(int rotateIndex);
 
@@ -124,6 +127,7 @@ public:
     bool isExtendable(int symbology = 0) const;
     bool supportsECI(int symbology = 0) const;
     bool supportsGS1(int symbology = 0) const;
+    bool hasDefaultQuietZones(int symbology = 0) const;
     bool isFixedRatio(int symbology = 0) const;
     bool isDotty(int symbology = 0) const;
     bool supportsReaderInit(int symbology = 0) const;
@@ -180,6 +184,8 @@ private:
     bool m_gs1parens;
     bool m_gs1nocheck;
     bool m_gssep;
+    bool m_quiet_zones;
+    bool m_no_quiet_zones;
     bool m_reader_init;
     bool m_debug;
 

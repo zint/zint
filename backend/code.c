@@ -285,7 +285,7 @@ INTERNAL int c39(struct zint_symbol *symbol, unsigned char source[], int length)
         }
     }
 
-	if (symbol->debug) {
+	if (symbol->debug & ZINT_DEBUG_PRINT) {
 		printf("Barspaces: %s\n", dest);
 	}
 

@@ -1023,7 +1023,21 @@ in X-dimensions</string>
                </property>
               </widget>
              </item>
-             <item row="4" column="2">
+             <item row="4" column="3">
+              <widget class="QCheckBox" name="chkQuietZones">
+               <property name="toolTip">
+                <string>Add compliant quiet zones to whitespace
+(ignored if disabled)</string>
+               </property>
+               <property name="text">
+                <string>Quiet &amp;Zones</string>
+               </property>
+               <property name="checked">
+                <bool>false</bool>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="2">
               <widget class="QLabel" name="lblRotate">
                <property name="toolTip">
                 <string>Rotate symbol by degrees</string>
@@ -1039,7 +1053,7 @@ in X-dimensions</string>
                </property>
               </widget>
              </item>
-             <item row="4" column="3">
+             <item row="5" column="3">
               <widget class="QComboBox" name="cmbRotate">
                <property name="toolTip">
                 <string>Rotate symbol by degrees</string>
@@ -1066,7 +1080,7 @@ in X-dimensions</string>
                </item>
               </widget>
              </item>
-             <item row="5" column="3">
+             <item row="6" column="3">
               <widget class="QCheckBox" name="chkDotty">
                <property name="toolTip">
                 <string>Use dots instead of squares for matrix symbols
@@ -1100,7 +1114,7 @@ in X-dimensions</string>
                </property>
               </widget>
              </item>
-             <item row="6" column="3">
+             <item row="7" column="3">
               <widget class="QDoubleSpinBox" name="spnDotSize">
                <property name="enabled">
                 <bool>false</bool>

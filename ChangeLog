@@ -21,6 +21,7 @@ Changes
   border_width (0-100)
 - CLI: allow both e.g. '-height' and '--height' (getopt_long_only())
 - UPC/EAN: add guard_descent
+- Add output_options BARCODE_QUIET_ZONES and BARCODE_NO_QUIET_ZONES
 
 Bugs
 ----

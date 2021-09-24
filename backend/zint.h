@@ -258,6 +258,9 @@ extern "C" {
 #define BARCODE_DOTTY_MODE      256 /* Plot a matrix symbol using dots rather than squares */
 #define GS1_GS_SEPARATOR        512 /* Use GS instead of FNC1 as GS1 separator (Data Matrix) */
 #define OUT_BUFFER_INTERMEDIATE 1024 /* Return ASCII values in bitmap buffer (OUT_BUFFER only) */
+#define BARCODE_QUIET_ZONES     2048 /* Add compliant quiet zones (additional to any specified whitespace) */
+                                     /* Note: CODE16K, CODE49, CODABLOCKF, ITF14, UPC/EAN have default quiet zones */
+#define BARCODE_NO_QUIET_ZONES  4096 /* Disable quiet zones, notably those with defaults as listed above */
 
 /* Input data types (`symbol->input_mode`) */
 #define DATA_MODE               0   /* Binary */
@@ -306,6 +309,7 @@ extern "C" {
 #define ZINT_CAP_ECI            0x0010  /* Supports Extended Channel Interpretations? */
 #define ZINT_CAP_GS1            0x0020  /* Supports GS1 data? */
 #define ZINT_CAP_DOTTY          0x0040  /* Can be output as dots? */
+#define ZINT_CAP_QUIET_ZONES    0x0080  /* Has default quiet zones? */
 #define ZINT_CAP_FIXED_RATIO    0x0100  /* Has fixed width-to-height (aspect) ratio? */
 #define ZINT_CAP_READER_INIT    0x0200  /* Supports Reader Initialisation? */
 #define ZINT_CAP_FULL_MULTIBYTE 0x0400  /* Supports full-multibyte option? */

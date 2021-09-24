@@ -125,6 +125,8 @@
 2021-09-21 GL
 - Added -guarddescent option
 - iHeight check int -> double
+2021-09-24 GL
+- Added -quietzones and -noquietzones options
 */
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
@@ -472,9 +474,11 @@ static char help_message[] = "zint tcl(stub,obj) dll\n"
     /* cli option --mirror not supported */
     "   -mode number: set encoding mode (MaxiCode, Composite)\n"
     "   -nobackground bool: set background transparent\n"
+    "   -noquietzones bool: disable default quiet zones\n"
     "   -notext bool: no interpretation line\n"
     /* cli option --output not supported */
     "   -primary text: Structured primary data (MaxiCode, Composite)\n"
+    "   -quietzones bool: add compliant quiet zones to whitespace\n"
     "   -reverse bool: Reverse colours (white on black)\n"
     "   -rotate angle: Image rotation by 0,90 or 270 degrees\n"
     "   -rows integer: Codablock F: number of rows\n"
@@ -711,18 +715,20 @@ static int Encode(Tcl_Interp *interp, int objc,
             "-cols", "-dmre", "-dotsize", "-dotty", "-eci", "-fg", "-format",
             "-fullmultibyte", "-gs1nocheck", "-gs1parens", "-gssep", "-guarddescent",
             "-height", "-init", "-mask", "-mode",
-            "-nobackground", "-notext", "-primary", "-reverse", "-rotate",
-            "-rows", "-scale", "-scmvv", "-secure", "-separator", "-smalltext",
-            "-square", "-to", "-vers", "-vwhitesp", "-werror", "-whitesp",
+            "-nobackground", "-noquietzones", "-notext", "-primary", "-quietzones",
+            "-reverse", "-rotate", "-rows", "-scale", "-scmvv",
+            "-secure", "-separator", "-smalltext", "-square",
+            "-to", "-vers", "-vwhitesp", "-werror", "-whitesp",
             NULL};
         enum iOption {
             iAddonGap, iBarcode, iBG, iBind, iBold, iBorder, iBox,
             iCols, iDMRE, iDotSize, iDotty, iECI, iFG, iFormat,
             iFullMultiByte, iGS1NoCheck, iGS1Parens, iGSSep, iGuardDescent,
             iHeight, iInit, iMask, iMode,
-            iNoBackground, iNoText, iPrimary, iReverse, iRotate,
-            iRows, iScale, iSCMvv, iSecure, iSeparator, iSmallText,
-            iSquare, iTo, iVers, iVWhiteSp, iWError, iWhiteSp
+            iNoBackground, iNoQuietZones, iNoText, iPrimary, iQuietZones,
+            iReverse, iRotate, iRows, iScale, iSCMvv,
+            iSecure, iSeparator, iSmallText, iSquare,
+            iTo, iVers, iVWhiteSp, iWError, iWhiteSp
             };
         int optionIndex;
         int intValue;
@@ -749,7 +755,9 @@ static int Encode(Tcl_Interp *interp, int objc,
         case iGSSep:
         case iInit:
         case iNoBackground:
+        case iNoQuietZones:
         case iNoText:
+        case iQuietZones:
         case iSmallText:
         case iSquare:
         case iFullMultiByte:
@@ -939,8 +947,22 @@ static int Encode(Tcl_Interp *interp, int objc,
                 strcpy(my_symbol->bgcolour, "ffffff00");
             }
             break;
+        case iNoQuietZones:
+            if (intValue) {
+                my_symbol->output_options |= BARCODE_NO_QUIET_ZONES;
+            } else {
+                my_symbol->output_options &= ~BARCODE_NO_QUIET_ZONES;
+            }
+            break;
         case iNoText:
             my_symbol->show_hrt = (intValue?0:1);
+            break;
+        case iQuietZones:
+            if (intValue) {
+                my_symbol->output_options |= BARCODE_QUIET_ZONES;
+            } else {
+                my_symbol->output_options &= ~BARCODE_QUIET_ZONES;
+            }
             break;
         case iSquare:
             /* DM_SQUARE overwrites DM_DMRE */

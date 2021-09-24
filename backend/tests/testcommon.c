@@ -646,6 +646,8 @@ const char *testUtilOutputOptionsName(int output_options) {
         { "BARCODE_DOTTY_MODE", BARCODE_DOTTY_MODE, 256 },
         { "GS1_GS_SEPARATOR", GS1_GS_SEPARATOR, 512 },
         { "OUT_BUFFER_INTERMEDIATE", OUT_BUFFER_INTERMEDIATE, 1024 },
+        { "BARCODE_QUIET_ZONES", BARCODE_QUIET_ZONES, 2048 },
+        { "BARCODE_NO_QUIET_ZONES", BARCODE_NO_QUIET_ZONES, 4096 },
     };
     static int const data_size = ARRAY_SIZE(data);
     int set = 0;

@@ -175,7 +175,9 @@ INTERNAL int png_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
         }
 
         /* For Ultracode, have background only if have whitespace/quiet zones */
-        if (symbol->whitespace_width > 0 || symbol->whitespace_height > 0) { /* TODO: BARCODE_QUIET_ZONES also */
+        if (symbol->whitespace_width > 0 || symbol->whitespace_height > 0
+                || ((symbol->output_options & BARCODE_QUIET_ZONES)
+                    && !(symbol->output_options & BARCODE_NO_QUIET_ZONES))) {
             /* Check whether can re-use white */
             if (bg.red == 0xff && bg.green == 0xff && bg.blue == 0xff && bg_alpha == fg_alpha) {
                 map['0'] = 0; /* Re-use white */

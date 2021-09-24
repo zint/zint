@@ -62,6 +62,8 @@ namespace Zint {
         m_gs1parens = false;
         m_gs1nocheck = false;
         m_gssep = false;
+        m_quiet_zones = false;
+        m_no_quiet_zones = false;
         m_reader_init = false;
         m_rotate_angle = 0;
         m_debug = false;
@@ -86,6 +88,12 @@ namespace Zint {
         m_zintSymbol->height = m_height;
         m_zintSymbol->whitespace_width = m_whitespace;
         m_zintSymbol->whitespace_height = m_vwhitespace;
+        if (m_quiet_zones) {
+            m_zintSymbol->output_options |= BARCODE_QUIET_ZONES;
+        }
+        if (m_no_quiet_zones) {
+            m_zintSymbol->output_options |= BARCODE_NO_QUIET_ZONES;
+        }
         m_zintSymbol->border_width = m_borderWidth;
         m_zintSymbol->option_1 = m_option_1;
         m_zintSymbol->option_2 = m_option_2;
@@ -314,6 +322,14 @@ namespace Zint {
         return m_rotate_angle;
     }
 
+    void QZint::setQuietZones(bool quietZones) {
+        m_quiet_zones = quietZones;
+    }
+
+    void QZint::setNoQuietZones(bool noQuietZones) {
+        m_no_quiet_zones = noQuietZones;
+    }
+
     void QZint::setRotateAngle(int rotateIndex) {
         if (rotateIndex == 1) {
             m_rotate_angle = 90;
@@ -383,6 +399,10 @@ namespace Zint {
 
     bool QZint::supportsGS1(int symbology) const {
         return ZBarcode_Cap(symbology ? symbology : m_symbol, ZINT_CAP_GS1);
+    }
+
+    bool QZint::hasDefaultQuietZones(int symbology) const {
+        return ZBarcode_Cap(symbology ? symbology : m_symbol, ZINT_CAP_QUIET_ZONES);
     }
 
     bool QZint::isFixedRatio(int symbology) const {

@@ -192,10 +192,11 @@ static void test_hrt(int index, int debug) {
         /*  3*/ { BARCODE_CODE128, UNICODE_MODE, "12345\01167890\037\177", -1, "12345 67890  " },
         /*  4*/ { BARCODE_CODE128, UNICODE_MODE, "abcdé", -1, "abcdé" },
         /*  5*/ { BARCODE_CODE128, DATA_MODE, "abcd\351", -1, "abcdé" },
-        /*  6*/ { BARCODE_CODE128B, UNICODE_MODE, "abcdé", -1, "abcdé" },
-        /*  7*/ { BARCODE_CODE128B, DATA_MODE, "abcd\351", -1, "abcdé" },
-        /*  8*/ { BARCODE_HIBC_128, UNICODE_MODE, "1234567890", -1, "*+12345678900*" },
-        /*  9*/ { BARCODE_HIBC_128, UNICODE_MODE, "a99912345", -1, "*+A999123457*" }, // Converts to upper
+        /*  6*/ { BARCODE_CODE128, DATA_MODE, "ab\240cd\351", -1, "ab\302\240cdé" }, // NBSP
+        /*  7*/ { BARCODE_CODE128B, UNICODE_MODE, "abcdé", -1, "abcdé" },
+        /*  8*/ { BARCODE_CODE128B, DATA_MODE, "abcd\351", -1, "abcdé" },
+        /*  9*/ { BARCODE_HIBC_128, UNICODE_MODE, "1234567890", -1, "*+12345678900*" },
+        /* 10*/ { BARCODE_HIBC_128, UNICODE_MODE, "a99912345", -1, "*+A999123457*" }, // Converts to upper
         // BARCODE_GS1_128, BARCODE_EAN14, BARCODE_NVE18 hrt tested in test_gs1.c
     };
     int data_size = ARRAY_SIZE(data);
