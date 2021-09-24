@@ -1155,7 +1155,7 @@ void MainWindow::upcean_guard_descent(QDoubleSpinBox *spnBox, QLabel *label)
         label->setEnabled(enabled);
     }
     if (enabled && spnBox) {
-        m_bc.bc.setGuardDescent(get_doublespinbox_val("spnUPCEANGuardDescent"));
+        m_bc.bc.setGuardDescent(spnBox->value());
     }
 }
 
