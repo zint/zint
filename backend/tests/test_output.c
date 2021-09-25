@@ -37,19 +37,19 @@ STATIC_UNLESS_ZINT_TEST int quiet_zones(const struct zint_symbol *symbol, const 
 static void test_quiet_zones(void) {
     int i, ret;
     struct zint_symbol symbol = {0};
-	int hide_text = 0;
-	float left, right, top, bottom;
+    int hide_text = 0;
+    float left, right, top, bottom;
 
     testStart("test_quiet_zones");
 
     for (i = BARCODE_CODE11; i <= BARCODE_RMQR; i++) {
-		if (!ZBarcode_ValidID(i)) continue;
+        if (!ZBarcode_ValidID(i)) continue;
         symbol.symbology = i;
-		symbol.output_options = BARCODE_QUIET_ZONES;
+        symbol.output_options = BARCODE_QUIET_ZONES;
         ret = quiet_zones(&symbol, hide_text, &left, &right, &top, &bottom);
-		if (i != BARCODE_FLAT) { // Only one which isn't marked as done
-			assert_nonzero(ret, "i:%d %s not done\n", i, testUtilBarcodeName(i));
-		}
+        if (i != BARCODE_FLAT) { // Only one which isn't marked as done
+            assert_nonzero(ret, "i:%d %s not done\n", i, testUtilBarcodeName(i));
+        }
     }
 
     testFinish();

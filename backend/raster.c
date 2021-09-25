@@ -627,6 +627,7 @@ static void plot_hexagon(unsigned char *scaled_hexagon, const int hex_width, con
         }
     }
 }
+
 /* Draw binding or box */
 static void draw_bind_box(const struct zint_symbol *symbol, unsigned char *pixelbuf,
             const int xoffset_si, const int yoffset_si, const int symbol_height_si, const int dot_overspill_si,
