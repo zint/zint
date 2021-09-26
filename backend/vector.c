@@ -228,42 +228,42 @@ static void vector_scale(struct zint_symbol *symbol, const int file_type) {
         // Increase size to overcome limitations in EMF file format
         scale *= 20;
     }
-    
-    symbol->vector->width *= scale;
-    symbol->vector->height *= scale;
+
+    symbol->vector->width = stripf(symbol->vector->width * scale);
+    symbol->vector->height = stripf(symbol->vector->height * scale);
 
     rect = symbol->vector->rectangles;
     while (rect) {
-        rect->x *= scale;
-        rect->y *= scale;
-        rect->height *= scale;
-        rect->width *= scale;
+        rect->x = stripf(rect->x * scale);
+        rect->y = stripf(rect->y * scale);
+        rect->height = stripf(rect->height * scale);
+        rect->width = stripf(rect->width * scale);
         rect = rect->next;
     }
 
     hex = symbol->vector->hexagons;
     while (hex) {
-        hex->x *= scale;
-        hex->y *= scale;
-        hex->diameter *= scale;
+        hex->x = stripf(hex->x * scale);
+        hex->y = stripf(hex->y * scale);
+        hex->diameter = stripf(hex->diameter * scale);
         hex = hex->next;
     }
 
     circle = symbol->vector->circles;
     while (circle) {
-        circle->x *= scale;
-        circle->y *= scale;
-        circle->diameter *= scale;
-        circle->width *= scale;
+        circle->x = stripf(circle->x * scale);
+        circle->y = stripf(circle->y * scale);
+        circle->diameter = stripf(circle->diameter * scale);
+        circle->width = stripf(circle->width * scale);
         circle = circle->next;
     }
 
     string = symbol->vector->strings;
     while (string) {
-        string->x *= scale;
-        string->y *= scale;
-        string->width *= scale;
-        string->fsize *= scale;
+        string->x = stripf(string->x * scale);
+        string->y = stripf(string->y * scale);
+        string->width = stripf(string->width * scale);
+        string->fsize = stripf(string->fsize * scale);
         string = string->next;
     }
 }
@@ -275,92 +275,92 @@ static void vector_rotate(struct zint_symbol *symbol, const int rotate_angle) {
     struct zint_vector_circle *circle;
     struct zint_vector_string *string;
     float temp;
-    
+
     if (rotate_angle == 0) {
         // No rotation needed
         return;
     }
-    
+
     rect = symbol->vector->rectangles;
     while (rect) {
         if (rotate_angle == 90) {
             temp = rect->x;
-            rect->x = symbol->vector->height - (rect->y + rect->height);
+            rect->x = stripf(symbol->vector->height - (rect->y + rect->height));
             rect->y = temp;
             temp = rect->width;
             rect->width = rect->height;
             rect->height = temp;
         } else if (rotate_angle == 180) {
-            rect->x = symbol->vector->width - (rect->x + rect->width);
-            rect->y = symbol->vector->height - (rect->y + rect->height);
+            rect->x = stripf(symbol->vector->width - (rect->x + rect->width));
+            rect->y = stripf(symbol->vector->height - (rect->y + rect->height));
         } else if (rotate_angle == 270) {
             temp = rect->x;
             rect->x = rect->y;
-            rect->y = symbol->vector->width - (temp + rect->width);
+            rect->y = stripf(symbol->vector->width - (temp + rect->width));
             temp = rect->width;
             rect->width = rect->height;
             rect->height = temp;
         }
         rect = rect->next;
     }
-    
+
     hex = symbol->vector->hexagons;
     while (hex) {
         if (rotate_angle == 90) {
             temp = hex->x;
-            hex->x = symbol->vector->height - hex->y;
+            hex->x = stripf(symbol->vector->height - hex->y);
             hex->y = temp;
             hex->rotation = 90;
         } else if (rotate_angle == 180) {
-            hex->x = symbol->vector->width - hex->x;
-            hex->y = symbol->vector->height - hex->y;
+            hex->x = stripf(symbol->vector->width - hex->x);
+            hex->y = stripf(symbol->vector->height - hex->y);
             hex->rotation = 180;
         } else if (rotate_angle == 270) {
             temp = hex->x;
             hex->x = hex->y;
-            hex->y = symbol->vector->width - temp;
+            hex->y = stripf(symbol->vector->width - temp);
             hex->rotation = 270;
         }
         hex = hex->next;
     }
-    
+
     circle = symbol->vector->circles;
     while (circle) {
         if (rotate_angle == 90) {
             temp = circle->x;
-            circle->x = symbol->vector->height - circle->y;
+            circle->x = stripf(symbol->vector->height - circle->y);
             circle->y = temp;
         } else if (rotate_angle == 180) {
-            circle->x = symbol->vector->width - circle->x;
-            circle->y = symbol->vector->height - circle->y;
+            circle->x = stripf(symbol->vector->width - circle->x);
+            circle->y = stripf(symbol->vector->height - circle->y);
         } else if (rotate_angle == 270) {
             temp = circle->x;
             circle->x = circle->y;
-            circle->y = symbol->vector->width - temp;
+            circle->y = stripf(symbol->vector->width - temp);
         }
         circle = circle->next;
     }
-    
+
     string = symbol->vector->strings;
     while (string) {
         if (rotate_angle == 90) {
             temp = string->x;
-            string->x = symbol->vector->height - string->y;
+            string->x = stripf(symbol->vector->height - string->y);
             string->y = temp;
             string->rotation = 90;
         } else if (rotate_angle == 180) {
-            string->x = symbol->vector->width - string->x;
-            string->y = symbol->vector->height - string->y;
+            string->x = stripf(symbol->vector->width - string->x);
+            string->y = stripf(symbol->vector->height - string->y);
             string->rotation = 180;
         } else if (rotate_angle == 270) {
             temp = string->x;
             string->x = string->y;
-            string->y = symbol->vector->width - temp;
+            string->y = stripf(symbol->vector->width - temp);
             string->rotation = 270;
         }
         string = string->next;
     }
-    
+
     if ((rotate_angle == 90) || (rotate_angle == 270)) {
         temp = symbol->vector->height;
         symbol->vector->height = symbol->vector->width;
@@ -378,7 +378,7 @@ static void vector_reduce_rectangles(struct zint_symbol *symbol) {
         target = prev->next;
 
         while (target) {
-            if ((rect->x == target->x) && (rect->width == target->width) && ((rect->y + rect->height) == target->y)
+            if ((rect->x == target->x) && (rect->width == target->width) && (stripf(rect->y + rect->height) == target->y)
                     && (rect->colour == target->colour)) {
                 rect->height += target->height;
                 prev->next = target->next;
@@ -919,7 +919,7 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
     vector_reduce_rectangles(symbol);
 
     vector_scale(symbol, file_type);
-    
+
     if (file_type != OUT_EMF_FILE) {
         /* EMF does its own rotation (with mixed results in various apps) */
         vector_rotate(symbol, rotate_angle);

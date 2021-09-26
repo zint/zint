@@ -1127,7 +1127,7 @@ INTERNAL int ean_14(struct zint_symbol *symbol, unsigned char source[], int leng
 }
 
 /* DPD (Deutsher Paket Dienst) Code */
-/* Specification at ftp://dpd.at/Datenspezifikationen/EN/gbs_V4.0.2_hauptdokument.pdf 
+/* Specification at ftp://dpd.at/Datenspezifikationen/EN/gbs_V4.0.2_hauptdokument.pdf
  * or https://docplayer.net/33728877-Dpd-parcel-label-specification.html */
 INTERNAL int dpd_parcel(struct zint_symbol *symbol, unsigned char source[], int length) {
     int error_number = 0;
@@ -1135,26 +1135,26 @@ INTERNAL int dpd_parcel(struct zint_symbol *symbol, unsigned char source[], int 
     unsigned char identifier;
     const int mod = 36;
     int cd; // Check digit
-    
+
     if (length != 28) {
         strcpy(symbol->errtxt, "349: DPD input wrong length (28 characters required)");
         return ZINT_ERROR_TOO_LONG;
     }
 
     identifier = source[0];
-    
+
     to_upper(source + 1);
     error_number = is_sane(KRSET, source + 1, length - 1);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
         strcpy(symbol->errtxt, "300: Invalid character in DPD data (alphanumerics only)");
         return error_number;
     }
-    
+
     if ((identifier < 32) || (identifier > 127)) {
         strcpy(symbol->errtxt, "301: Invalid DPD identifier (first character), ASCII values 32 to 127 only");
         return ZINT_ERROR_INVALID_DATA;
     }
-    
+
     error_number = code_128(symbol, source, length); /* Only returns errors, not warnings */
 
     if (error_number < ZINT_ERROR) {

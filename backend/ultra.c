@@ -117,14 +117,14 @@ static const int tiles[] = {
  * Dated 2001-03-09
  * Corrected thanks to input from Terry Burton */
 
-/* 
+/*
  * NOTE: Included here is an attempt to allow code compression within Ultracode. Unfortunately
  * the copy of the standard this was written from was an early draft which includes self
  * contradictions, so this is a "best guess" implementation. Because it is not guaranteed
  * to be correct this compression is not applied by default. To enable compression set
- * 
+ *
  * symbol->option_3 = ULTRA_COMPRESSION;
- * 
+ *
  * Code compression should be enabled by default when it has been implemented according to
  * a more reliable version of the specification.
  */
@@ -642,7 +642,7 @@ static int ultra_generate_codewords(struct zint_symbol *symbol, const unsigned c
             break;
         }
     }
-    
+
     if (symbol->option_3 != ULTRA_COMPRESSION && !gs1) {
         // Force eight-bit mode by default as other modes are poorly documented
         symbol_mode = EIGHTBIT_MODE;
@@ -969,7 +969,7 @@ INTERNAL int ultracode(struct zint_symbol *symbol, unsigned char source[], int l
 
     locn = 0;
     /* Calculate error correction codewords (RSEC) */
-    
+
     ultra_gf283((short) data_cw_count, (short) qcc, data_codewords);
 
     if (symbol->debug & ZINT_DEBUG_PRINT) {

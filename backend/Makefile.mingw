@@ -52,7 +52,7 @@ all: $(DLL) $(STATLIB)
 %.o:%.c
 	@echo Compiling $< ...
 	$(CC) $(CFLAGS) $(DEFINES) $(ZINT_VERSION) -c -o $@ $<
-	 
+
 $(DLL):$(DLL_OBJ)
 	@echo Linking $@...
 	o2dll.sh -o $@ $(DLL_OBJ) $(LIBS)

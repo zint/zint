@@ -114,11 +114,14 @@ extern "C" {
     INTERNAL int to_int(const unsigned char source[], const int length);
     INTERNAL void to_upper(unsigned char source[]);
     INTERNAL int chr_cnt(const unsigned char string[], const int length, const unsigned char c);
+
     INTERNAL int is_sane(const char test_string[], const unsigned char source[], const int length);
     INTERNAL void lookup(const char set_string[], const char *table[], const char data, char dest[]);
+    INTERNAL int posn(const char set_string[], const char data);
+
     INTERNAL void bin_append(const int arg, const int length, char *binary);
     INTERNAL int bin_append_posn(const int arg, const int length, char *binary, const int bin_posn);
-    INTERNAL int posn(const char set_string[], const char data);
+
     #ifndef COMMON_INLINE
     INTERNAL int module_is_set(const struct zint_symbol *symbol, const int y_coord, const int x_coord);
     INTERNAL void set_module(struct zint_symbol *symbol, const int y_coord, const int x_coord);
@@ -128,16 +131,21 @@ extern "C" {
     #endif
     INTERNAL void unset_module(struct zint_symbol *symbol, const int y_coord, const int x_coord);
     INTERNAL void expand(struct zint_symbol *symbol, const char data[]);
+
     INTERNAL int is_stackable(const int symbology);
     INTERNAL int is_extendable(const int symbology);
     INTERNAL int is_composite(const int symbology);
     INTERNAL int istwodigits(const unsigned char source[], const int length, const int position);
+
     INTERNAL unsigned int decode_utf8(unsigned int *state, unsigned int *codep, const unsigned char byte);
     INTERNAL int is_valid_utf8(const unsigned char source[], const int length);
     INTERNAL int utf8_to_unicode(struct zint_symbol *symbol, const unsigned char source[], unsigned int vals[],
                     int *length, const int disallow_4byte);
+
     INTERNAL int set_height(struct zint_symbol *symbol, const float min_row_height, const float default_height,
                     const float max_height, const int set_errtxt);
+
+    INTERNAL float stripf(const float arg);
 
     INTERNAL int colour_to_red(const int colour);
     INTERNAL int colour_to_green(const int colour);

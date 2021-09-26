@@ -22,6 +22,8 @@ Changes
 - CLI: allow both e.g. '-height' and '--height' (getopt_long_only())
 - UPC/EAN: add guard_descent
 - Add output_options BARCODE_QUIET_ZONES and BARCODE_NO_QUIET_ZONES
+- Allow dummy AI "[]" if GS1NOCHECK_MODE and has data (#204)
+- raster.c: improve non-half-integer interpolation performance
 
 Bugs
 ----
@@ -31,8 +33,11 @@ Bugs
 - Suppress some pedantic warnings, props codemonkey82 (#204)
 - gs1.c: Allow 0-length AI data if GS1NOCHECK_MODE, props codemonkey82 (#204)
 - raster.c: Need ceilf(symbol->height * si) to avoid heap-buffer-overflow;
+  also ceilf(large_bar_height * si);
   also avoid distributive multiplication with floats to lessen chances of
   platform variation (#204 ARM-Cortex crash)
+- raster/vector.c: use new stripf() func to workaround gcc 32-bit
+  float variations
 - raster.c: Don't allow for text if scale < 1.0
 
 

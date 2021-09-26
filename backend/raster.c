@@ -267,6 +267,7 @@ static void draw_bar(unsigned char *pixelbuf, const int xpos, const int xlen, co
             const int image_width, const int image_height, const char fill) {
     int y;
     const int ye = ypos + ylen > image_height ? image_height : ypos + ylen; /* Defensive, should never happen */
+    assert(ypos + ylen <= image_height); // Trigger assert if happens
 
     for (y = ypos; y < ye; y++) {
         memset(pixelbuf + ((size_t) image_width * y) + xpos, fill, xlen);
@@ -962,7 +963,7 @@ static int plot_raster_default(struct zint_symbol *symbol, const int rotate_angl
     for (r = 0; r < symbol->rows; r++) {
         int yposn_si = yposn * si;
         float row_height = symbol->row_height[r] ? symbol->row_height[r] : large_bar_height;
-        int row_height_si = row_height * si;
+        int row_height_si = (int) ceilf(row_height * si);
 
         i = 0;
 
@@ -1264,9 +1265,10 @@ static int plot_raster_default(struct zint_symbol *symbol, const int rotate_angl
                 image_width, image_height, si);
 
     if (!half_int_scaling) {
+        size_t prev_image_row;
         unsigned char *scaled_pixelbuf;
-        int scale_width = (int) (image_width * scaler);
-        int scale_height = (int) (image_height * scaler);
+        int scale_width = (int) stripf(image_width * scaler);
+        int scale_height = (int) stripf(image_height * scaler);
 
         /* Apply scale options by creating another pixel buffer */
         if (!(scaled_pixelbuf = (unsigned char *) malloc((size_t) scale_width * scale_height))) {
@@ -1276,12 +1278,19 @@ static int plot_raster_default(struct zint_symbol *symbol, const int rotate_angl
         }
         memset(scaled_pixelbuf, DEFAULT_PAPER, (size_t) scale_width * scale_height);
 
+        /* Interpolate */
         for (r = 0; r < scale_height; r++) {
-            int scaled_row = r * scale_width;
-            int image_row = ((int) (r / scaler)) * image_width;
-            for (i = 0; i < scale_width; i++) {
-                *(scaled_pixelbuf + scaled_row + i) = *(pixelbuf + image_row + (int) (i / scaler));
+            size_t scaled_row = r * scale_width;
+            size_t image_row = (size_t) stripf(r / scaler) * image_width;
+            if (image_row && (image_row == prev_image_row
+                    || memcmp(pixelbuf + image_row, pixelbuf + prev_image_row, image_width) == 0)) {
+                memcpy(scaled_pixelbuf + scaled_row, scaled_pixelbuf + scaled_row - scale_width, scale_width);
+            } else {
+                for (i = 0; i < scale_width; i++) {
+                    *(scaled_pixelbuf + scaled_row + i) = *(pixelbuf + image_row + (int) stripf(i / scaler));
+                }
             }
+            prev_image_row = image_row;
         }
 
         error_number = save_raster_image_to_file(symbol, scale_height, scale_width, scaled_pixelbuf, rotate_angle,

@@ -39,17 +39,17 @@ static struct zint_vector_rect *find_rect(struct zint_symbol *symbol, float x, f
     }
     for (rect = symbol->vector->rectangles; rect != NULL; rect = rect->next) {
         //printf("x %.8g, y %.8g, width %.8g, height %.8g\n", rect->x, rect->y, rect->width, rect->height);
-        if (rect->x == x && rect->y == y) {
+        if (rect->x == stripf(x) && rect->y == stripf(y)) {
             if (height && width) {
-                if (rect->height == height && rect->width == width) {
+                if (rect->height == stripf(height) && rect->width == stripf(width)) {
                     break;
                 }
             } else if (height) {
-                if (rect->height == height) {
+                if (rect->height == stripf(height)) {
                     break;
                 }
             } else if (width) {
-                if (rect->width == width) {
+                if (rect->width == stripf(width)) {
                     break;
                 }
             } else {
@@ -69,9 +69,9 @@ static struct zint_vector_circle *find_circle(struct zint_symbol *symbol, float 
     }
     for (circle = symbol->vector->circles; circle != NULL; circle = circle->next) {
         //printf("x %.8g, y %.8g, diamter %.8g\n", circle->x, circle->y, circle->diameter);
-        if (circle->x == x && circle->y == y) {
+        if (circle->x == stripf(x) && circle->y == stripf(y)) {
             if (diameter) {
-                if (circle->diameter == diameter) {
+                if (circle->diameter == stripf(diameter)) {
                     break;
                 }
             } else {

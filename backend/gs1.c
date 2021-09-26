@@ -1184,6 +1184,7 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
                 unsigned char reduced[]) {
     int i, j, last_ai, ai_latch;
     int bracket_level, max_bracket_level, ai_length, max_ai_length, min_ai_length;
+    int ai_no_data;
     int ai_count;
     int error_value = 0;
     char obracket = symbol->input_mode & GS1PARENS_MODE ? '(' : '[';
@@ -1231,6 +1232,7 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
     min_ai_length = 5;
     j = 0;
     ai_latch = 0;
+    ai_no_data = 0;
     for (i = 0; i < src_len; i++) {
         ai_length += j;
         if (((j == 1) && (source[i] != cbracket)) && ((source[i] < '0') || (source[i] > '9'))) {
@@ -1247,6 +1249,9 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
             }
             j = 0;
             ai_length = 0;
+            if (i + 1 == src_len || source[i + 1] == obracket) { /* Check if no data */
+                ai_no_data = 1;
+            }
         }
         if (bracket_level > max_bracket_level) {
             max_bracket_level = bracket_level;
@@ -1276,9 +1281,13 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
     }
 
     if (min_ai_length <= 1) {
-        /* AI is too short */
-        strcpy(symbol->errtxt, "256: Invalid AI in input data (AI too short)");
-        return ZINT_ERROR_INVALID_DATA;
+        /* Allow too short AI if GS1NOCHECK_MODE and AI is zero-length and all AIs have some data
+           - permits dummy "[]" workaround for ticket #204 data with no valid AI */
+        if (!(symbol->input_mode & GS1NOCHECK_MODE) || min_ai_length == 1 || ai_no_data) {
+            /* AI is too short */
+            strcpy(symbol->errtxt, "256: Invalid AI in input data (AI too short)");
+            return ZINT_ERROR_INVALID_DATA;
+        }
     }
 
     if (ai_latch == 1) {
@@ -1360,7 +1369,9 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
             if (
                     ((last_ai >= 0) && (last_ai <= 4))
                     || ((last_ai >= 11) && (last_ai <= 20))
-                    || (last_ai == 23) /* legacy support */
+                    /* NOTE: as noted by Terry Burton the following complies with ISO/IEC 24724:2011 Table D.1,
+                       but clashes with TPX AI [235], introduced May 2019; awaiting feedback from GS1 */
+                    || (last_ai == 23) /* legacy support */ /* TODO: probably remove */
                     || ((last_ai >= 31) && (last_ai <= 36))
                     || (last_ai == 41)
                     ) {

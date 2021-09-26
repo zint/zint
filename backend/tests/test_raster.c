@@ -927,6 +927,7 @@ static void test_scale(int index, int debug) {
         int option_2;
         int border_width;
         int output_options;
+        float height;
         float scale;
         char *data;
         char *composite;
@@ -944,32 +945,40 @@ static void test_scale(int index, int debug) {
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /*  0*/ { BARCODE_PDF417, -1, -1, -1, 0, "1", "", 0, 18, 6, 103, 206, 36, 0, 36, 170, 14 }, // With no scaling
-        /*  1*/ { BARCODE_PDF417, -1, -1, -1, 0.6, "1", "", 0, 18, 6, 103, 206 * 0.6, 36 * 0.6, 0 /*set_row*/, 36 * 0.6, 170 * 0.6 + 1, 14 * 0.6 }, // +1 set_col due to some scaling inversion difference
-        /*  2*/ { BARCODE_PDF417, -1, -1, -1, 1.2, "1", "", 0, 18, 6, 103, 206 * 1.2, 36 * 1.2, 0 /*set_row*/, 36 * 1.2, 170 * 1.2 + 1, 14 * 1.2 }, // +1 set_col due to some scaling inversion difference
-        /*  3*/ { BARCODE_PDF417, -1, -1, -1, 0.5, "1", "", 0, 18, 6, 103, 206 * 0.5, 36 * 0.5, 0 /*set_row*/, 36 * 0.5, 170 * 0.5, 14 * 0.5 },
-        /*  4*/ { BARCODE_PDF417, -1, -1, -1, 1.0, "1", "", 0, 18, 6, 103, 206 * 1.0, 36 * 1.0, 0 /*set_row*/, 36 * 1.0, 170 * 1.0, 14 * 1.0 },
-        /*  5*/ { BARCODE_PDF417, -1, -1, -1, 1.5, "1", "", 0, 18, 6, 103, 206 * 1.5, 36 * 1.5, 0 /*set_row*/, 36 * 1.5, 170 * 1.5, 14 * 1.5 },
-        /*  6*/ { BARCODE_PDF417, -1, -1, -1, 2.0, "1", "", 0, 18, 6, 103, 206 * 2.0, 36 * 2.0, 0 /*set_row*/, 36 * 2.0, 170 * 2.0, 14 * 2.0 },
-        /*  7*/ { BARCODE_PDF417, -1, -1, -1, 2.5, "1", "", 0, 18, 6, 103, 206 * 2.5, 36 * 2.5, 0 /*set_row*/, 36 * 2.5, 170 * 2.5, 14 * 2.5 },
-        /*  8*/ { BARCODE_PDF417, -1, -1, -1, 3.0, "1", "", 0, 18, 6, 103, 206 * 3.0, 36 * 3.0, 0 /*set_row*/, 36 * 3.0, 170 * 3.0, 14 * 3.0 },
-        /*  9*/ { BARCODE_PDF417, -1, 3, BARCODE_BOX, 0, "1", "", 0, 18, 6, 103, 218, 48, 0 /*set_row*/, 48, 176, 14 }, // With no scaling
-        /* 10*/ { BARCODE_PDF417, -1, 3, BARCODE_BOX, 0.6, "1", "", 0, 18, 6, 103, 218 * 0.6, 48 * 0.6, 0 /*set_row*/, 48 * 0.6, 176 * 0.6 + 1, 14 * 0.6 }, // +1 set_col due to some scaling inversion difference
-        /* 11*/ { BARCODE_PDF417, -1, 3, BARCODE_BOX, 1.6, "1", "", 0, 18, 6, 103, 218 * 1.6, 48 * 1.6, 0 /*set_row*/, 48 * 1.6, 176 * 1.6 + 1, 14 * 1.6 }, // +1 set_col due to some scaling inversion difference
-        /* 12*/ { BARCODE_PDF417, -1, 3, BARCODE_BOX, 1.5, "1", "", 0, 18, 6, 103, 218 * 1.5, 48 * 1.5, 0 /*set_row*/, 48 * 1.5, 176 * 1.5, 14 * 1.5 },
-        /* 13*/ { BARCODE_PDF417, -1, 3, BARCODE_BOX, 2.5, "1", "", 0, 18, 6, 103, 218 * 2.5, 48 * 2.5, 0 /*set_row*/, 48 * 2.5, 176 * 2.5, 14 * 2.5 },
-        /* 14*/ { BARCODE_PDF417, -1, 3, OUT_BUFFER_INTERMEDIATE, 1.3, "1", "", 0, 18, 6, 103, 206 * 1.3, 36 * 1.3, 0 /*set_row*/, 36 * 1.3, 170 * 1.3 + 1, 14 * 1.3 }, // +1 set_col due to some scaling inversion difference
-        /* 15*/ { BARCODE_DBAR_LTD, -1, -1, BOLD_TEXT, 0, "123456789012", "", 0, 50, 1, 79, 158, 116, 104 /*set_row*/, 114, 20, 2 }, // With no scaling
-        /* 16*/ { BARCODE_DBAR_LTD, -1, -1, BOLD_TEXT, 1.5, "123456789012", "", 0, 50, 1, 79, 158 * 1.5, 116 * 1.5, 104 * 1.5 /*set_row*/, 114 * 1.5, 20 * 1.5, 1 * 1.5 },
-        /* 17*/ { BARCODE_DBAR_LTD, -1, -1, BOLD_TEXT, 2.0, "123456789012", "", 0, 50, 1, 79, 158 * 2.0, 116 * 2.0, 104 * 2.0 /*set_row*/, 114 * 2.0, 20 * 2.0, 1 * 2.0 },
-        /* 18*/ { BARCODE_DBAR_LTD, -1, -1, BOLD_TEXT, 3.5, "123456789012", "", 0, 50, 1, 79, 158 * 3.5, 116 * 3.5, 104 * 3.5 /*set_row*/, 114 * 3.5, 20 * 3.5, 1 * 3.5 },
-        /* 19*/ { BARCODE_UPCA, -1, -1, -1, 0, "12345678904", "", 0, 50, 1, 95, 226, 116, 104 /*set_row*/, 114, 5, 2 }, // With no scaling
-        /* 20*/ { BARCODE_UPCA, -1, -1, -1, 2.5, "12345678904", "", 0, 50, 1, 95, 226 * 2.5, 116 * 2.5, 104 * 2.5 /*set_row*/, 114 * 2.5, 5 * 2.5, 2 * 2.5 },
-        /* 21*/ { BARCODE_UPCA, -1, -1, -1, 4.5, "12345678904", "", 0, 50, 1, 95, 226 * 4.5, 116 * 4.5, 104 * 4.5 /*set_row*/, 114 * 4.5, 5 * 4.5, 2 * 4.5 },
-        /* 22*/ { BARCODE_UPCE_CC, -1, -1, -1, 0, "1234567", "[17]010615[10]A123456\"", 0, 50, 10, 55, 142, 116, 104 /*set_row*/, 115, 11, 2 }, // With no scaling
-        /* 23*/ { BARCODE_UPCE_CC, -1, -1, -1, 2.0, "1234567", "[17]010615[10]A123456\"", 0, 50, 10, 55, 142 * 2, 116 * 2, 104 * 2 + 1 /*set_row*/, 115 * 2, 11 * 2, 2 * 2 }, // +1 set_row
-        /* 24*/ { BARCODE_MAXICODE, -1, -1, -1, 0, "1234567890", "", 0, 165, 33, 30, 299, 298, 3 /*set_row*/, 7, 10, 9 }, // With no scaling
-        /* 25*/ { BARCODE_MAXICODE, -1, -1, -1, 0.1, "1234567890", "", ZINT_WARN_NONCOMPLIANT, 165, 33, 30, 60, 65, 0 /*set_row*/, 1, 3, 1 },
+        /*  0*/ { BARCODE_PDF417, -1, -1, -1, 0, 0, "1", "", 0, 18, 6, 103, 206, 36, 0, 36, 170, 14 }, // With no scaling
+        /*  1*/ { BARCODE_PDF417, -1, -1, -1, 0, 0.6, "1", "", 0, 18, 6, 103, 206 * 0.6, 36 * 0.6, 0 /*set_row*/, 36 * 0.6, 170 * 0.6 + 1, 14 * 0.6 }, // +1 set_col due to some scaling inversion difference
+        /*  2*/ { BARCODE_PDF417, -1, -1, -1, 0, 1.2, "1", "", 0, 18, 6, 103, 206 * 1.2, 36 * 1.2, 0 /*set_row*/, 36 * 1.2, 170 * 1.2 + 1, 14 * 1.2 }, // +1 set_col due to some scaling inversion difference
+        /*  3*/ { BARCODE_PDF417, -1, -1, -1, 0, 0.5, "1", "", 0, 18, 6, 103, 206 * 0.5, 36 * 0.5, 0 /*set_row*/, 36 * 0.5, 170 * 0.5, 14 * 0.5 },
+        /*  4*/ { BARCODE_PDF417, -1, -1, -1, 0, 1.0, "1", "", 0, 18, 6, 103, 206 * 1.0, 36 * 1.0, 0 /*set_row*/, 36 * 1.0, 170 * 1.0, 14 * 1.0 },
+        /*  5*/ { BARCODE_PDF417, -1, -1, -1, 0, 1.5, "1", "", 0, 18, 6, 103, 206 * 1.5, 36 * 1.5, 0 /*set_row*/, 36 * 1.5, 170 * 1.5, 14 * 1.5 },
+        /*  6*/ { BARCODE_PDF417, -1, -1, -1, 0, 2.0, "1", "", 0, 18, 6, 103, 206 * 2.0, 36 * 2.0, 0 /*set_row*/, 36 * 2.0, 170 * 2.0, 14 * 2.0 },
+        /*  7*/ { BARCODE_PDF417, -1, -1, -1, 0, 2.5, "1", "", 0, 18, 6, 103, 206 * 2.5, 36 * 2.5, 0 /*set_row*/, 36 * 2.5, 170 * 2.5, 14 * 2.5 },
+        /*  8*/ { BARCODE_PDF417, -1, -1, -1, 0, 3.0, "1", "", 0, 18, 6, 103, 206 * 3.0, 36 * 3.0, 0 /*set_row*/, 36 * 3.0, 170 * 3.0, 14 * 3.0 },
+        /*  9*/ { BARCODE_PDF417, -1, 3, BARCODE_BOX, 0, 0, "1", "", 0, 18, 6, 103, 218, 48, 0 /*set_row*/, 48, 176, 14 }, // With no scaling
+        /* 10*/ { BARCODE_PDF417, -1, 3, BARCODE_BOX, 0, 0.6, "1", "", 0, 18, 6, 103, 218 * 0.6, 48 * 0.6, 0 /*set_row*/, 48 * 0.6, 176 * 0.6 + 1, 14 * 0.6 }, // +1 set_col due to some scaling inversion difference
+        /* 11*/ { BARCODE_PDF417, -1, 3, BARCODE_BOX, 0, 1.6, "1", "", 0, 18, 6, 103, 218 * 1.6, 48 * 1.6, 0 /*set_row*/, 48 * 1.6, 176 * 1.6 + 1, 14 * 1.6 }, // +1 set_col due to some scaling inversion difference
+        /* 12*/ { BARCODE_PDF417, -1, 3, BARCODE_BOX, 0, 1.5, "1", "", 0, 18, 6, 103, 218 * 1.5, 48 * 1.5, 0 /*set_row*/, 48 * 1.5, 176 * 1.5, 14 * 1.5 },
+        /* 13*/ { BARCODE_PDF417, -1, 3, BARCODE_BOX, 0, 2.5, "1", "", 0, 18, 6, 103, 218 * 2.5, 48 * 2.5, 0 /*set_row*/, 48 * 2.5, 176 * 2.5, 14 * 2.5 },
+        /* 14*/ { BARCODE_PDF417, -1, 3, OUT_BUFFER_INTERMEDIATE, 0, 1.3, "1", "", 0, 18, 6, 103, 206 * 1.3, 36 * 1.3, 0 /*set_row*/, 36 * 1.3, 170 * 1.3, 14 * 1.3 },
+        /* 15*/ { BARCODE_DBAR_LTD, -1, -1, BOLD_TEXT, 0, 0, "123456789012", "", 0, 50, 1, 79, 158, 116, 104 /*set_row*/, 114, 20, 2 }, // With no scaling
+        /* 16*/ { BARCODE_DBAR_LTD, -1, -1, BOLD_TEXT, 0, 1.5, "123456789012", "", 0, 50, 1, 79, 158 * 1.5, 116 * 1.5, 104 * 1.5 /*set_row*/, 114 * 1.5, 20 * 1.5, 1 * 1.5 },
+        /* 17*/ { BARCODE_DBAR_LTD, -1, -1, BOLD_TEXT, 0, 2.0, "123456789012", "", 0, 50, 1, 79, 158 * 2.0, 116 * 2.0, 104 * 2.0 /*set_row*/, 114 * 2.0, 20 * 2.0, 1 * 2.0 },
+        /* 18*/ { BARCODE_DBAR_LTD, -1, -1, BOLD_TEXT, 0, 3.5, "123456789012", "", 0, 50, 1, 79, 158 * 3.5, 116 * 3.5, 104 * 3.5 /*set_row*/, 114 * 3.5, 20 * 3.5, 1 * 3.5 },
+        /* 19*/ { BARCODE_UPCA, -1, -1, -1, 0, 0, "12345678904", "", 0, 50, 1, 95, 226, 116, 104 /*set_row*/, 114, 5, 2 }, // With no scaling
+        /* 20*/ { BARCODE_UPCA, -1, -1, -1, 0, 2.5, "12345678904", "", 0, 50, 1, 95, 226 * 2.5, 116 * 2.5, 104 * 2.5 /*set_row*/, 114 * 2.5, 5 * 2.5, 2 * 2.5 },
+        /* 21*/ { BARCODE_UPCA, -1, -1, -1, 0, 4.5, "12345678904", "", 0, 50, 1, 95, 226 * 4.5, 116 * 4.5, 104 * 4.5 /*set_row*/, 114 * 4.5, 5 * 4.5, 2 * 4.5 },
+        /* 22*/ { BARCODE_UPCE_CC, -1, -1, -1, 0, 0, "1234567", "[17]010615[10]A123456\"", 0, 50, 10, 55, 142, 116, 104 /*set_row*/, 115, 11, 2 }, // With no scaling
+        /* 23*/ { BARCODE_UPCE_CC, -1, -1, -1, 0, 2.0, "1234567", "[17]010615[10]A123456\"", 0, 50, 10, 55, 142 * 2, 116 * 2, 104 * 2 + 1 /*set_row*/, 115 * 2, 11 * 2, 2 * 2 }, // +1 set_row
+        /* 24*/ { BARCODE_MAXICODE, -1, -1, -1, 0, 0, "1234567890", "", 0, 165, 33, 30, 299, 298, 3 /*set_row*/, 7, 10, 9 }, // With no scaling
+        /* 25*/ { BARCODE_MAXICODE, -1, -1, -1, 0, 0.1, "1234567890", "", ZINT_WARN_NONCOMPLIANT, 165, 33, 30, 60, 65, 0 /*set_row*/, 1, 3, 1 },
+        /* 26*/ { BARCODE_POSTNET, -1, -1, BARCODE_QUIET_ZONES, 0, 0, "12345", "", 0, 12, 2, 63, 146, 30, 3 /*set_row*/, 27, 10, 2 }, // With no scaling
+        /* 27*/ { BARCODE_POSTNET, -1, -1, BARCODE_QUIET_ZONES, 0, 0.1, "12345", "", 0, 12, 2, 63, 146 * 0.5, 30 * 0.5 - 1, 3 * 0.5 /*set_row*/, 27 * 0.5, 10 * 0.5, 2 * 0.5 }, // -1 height due to yoffset/boffset flooring
+        /* 28*/ { BARCODE_POSTNET, -1, -1, BARCODE_QUIET_ZONES, 0, 0.9, "12345", "", 0, 12, 2, 63, 146 * 0.9, 30 * 0.9, 3 * 0.9 + 1 /*set_row*/, 27 * 0.9, 10 * 0.9, 2 * 0.9 + 1 }, // +1's due to interpolation
+        /* 29*/ { BARCODE_POSTNET, -1, -1, BARCODE_QUIET_ZONES, 0, 2.3, "12345", "", 0, 12, 2, 63, 146 * 2.3, 30 * 2.3, 3 * 2.3 + 1 /*set_row*/, 27 * 2.3 - 1, 10 * 2.3, 2 * 2.3 + 1 }, // -1/+1's due to interpolation
+        /* 30*/ { BARCODE_POSTNET, -1, -1, BARCODE_QUIET_ZONES, 0, 3.1, "12345", "", 0, 12, 2, 63, 146 * 3.1, 30 * 3.1, 3 * 3.1 + 1 /*set_row*/, 27 * 3.1, 10 * 3.1, 2 * 3.2 + 1 }, // +1's due to interpolation
+        /* 31*/ { BARCODE_ITF14, -1, 4, BARCODE_BIND, 61.8, 0, "12345", "", 0, 62, 1, 135, 310, 156, 8 /*set_row*/, 132, 20, 2 }, // With no scaling
+        /* 32*/ { BARCODE_ITF14, -1, 4, BARCODE_BIND, 61.8, 2, "12345", "", 0, 61.75, 1, 135, 310 * 2, 156 * 2 - 1, 8 * 2 /*set_row*/, 132 * 2 - 1, 20 * 2, 2 * 2 }, // -1's due to height rounding
+        /* 33*/ { BARCODE_ITF14, -1, 4, BARCODE_BIND, 61.8, 2.1, "12345", "", 0, 62, 1, 135, 310 * 2.1, 156 * 2.1, 8 * 2.1 /*set_row*/, 132 * 2.1, 20 * 2.1, 2 * 2.1 },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -990,6 +999,9 @@ static void test_scale(int index, int debug) {
         testUtilSetSymbol(symbol, data[i].symbology, UNICODE_MODE, -1 /*eci*/, -1 /*option_1*/, data[i].option_2, -1, data[i].output_options, data[i].data, -1, debug);
         if (data[i].border_width != -1) {
             symbol->border_width = data[i].border_width;
+        }
+        if (data[i].height) {
+            symbol->height = data[i].height;
         }
         if (data[i].scale) {
             symbol->scale = data[i].scale;
@@ -1023,7 +1035,7 @@ static void test_scale(int index, int debug) {
 
         assert_nonzero(symbol->bitmap_height >= data[i].expected_set_rows, "i:%d (%d) symbol->bitmap_height %d < expected_set_rows %d\n",
                 i, data[i].symbology, symbol->bitmap_height, data[i].expected_set_rows);
-        assert_nonzero(data[i].expected_set_rows > data[i].expected_set_row, "i:%d (%d) expected_set_rows %d < expected_set_row %d\n",
+        assert_nonzero(data[i].expected_set_rows > data[i].expected_set_row, "i:%d (%d) expected_set_rows %d <= expected_set_row %d\n",
                 i, data[i].symbology, data[i].expected_set_rows, data[i].expected_set_row);
         for (row = data[i].expected_set_row; row < data[i].expected_set_rows; row++) {
             int bits_set = 0;
@@ -2196,6 +2208,95 @@ static void test_height(int index, int generate, int debug) {
     testFinish();
 }
 
+#include <time.h>
+
+#define TEST_PERF_ITERATIONS    1000
+
+// Not a real test, just performance indicator for scaling
+static void test_perf_scale(int index, int debug) {
+
+    struct item {
+        int symbology;
+        int input_mode;
+        int border_width;
+        int output_options;
+        int option_1;
+        int option_2;
+        float height;
+        float scale;
+        char *data;
+        int ret;
+
+        int expected_rows;
+        int expected_width;
+        char *comment;
+    };
+    struct item data[] = {
+        /*  0*/ { BARCODE_PDF417, -1, -1, -1, -1, -1, 0, 1.3,
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyz&,:#-.$/+%*=^ABCDEFGHIJKLMNOPQRSTUVWXYZ12345678901234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLM"
+                    "NOPQRSTUVWXYZ;<>@[]_`~!||()?{}'123456789012345678901234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJK"
+                    "LMNOPQRSTUVWXYZ12345678912345678912345678912345678900001234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFG"
+                    "HIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ12345678901234567"
+                    "890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcde"
+                    "fghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNO",
+                    0, 40, 307, "960 chars, text/numeric" },
+        /*  1*/ { BARCODE_POSTNET, -1, -1, BARCODE_QUIET_ZONES, -1, -1, 0, 1.1, "12345", 0, 2, 63, "" },
+        /*  2*/ { BARCODE_ITF14, -1, 4, BARCODE_BIND, -1, -1, 61.8, 3.1, "12345", 0, 1, 135, "" },
+    };
+    int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
+
+    clock_t start, total_encode = 0, total_buffer = 0, diff_encode, diff_buffer;
+
+    if (!(debug & ZINT_DEBUG_TEST_PERFORMANCE)) { /* -d 256 */
+        return;
+    }
+
+    for (i = 0; i < data_size; i++) {
+        int j;
+
+        if (index != -1 && i != index) continue;
+
+        diff_encode = diff_buffer = 0;
+
+        for (j = 0; j < TEST_PERF_ITERATIONS; j++) {
+            struct zint_symbol *symbol = ZBarcode_Create();
+            assert_nonnull(symbol, "Symbol not created\n");
+
+            length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, data[i].option_1, data[i].option_2, -1, data[i].output_options, data[i].data, -1, debug);
+            if (data[i].height) {
+                symbol->height = data[i].height;
+            }
+            if (data[i].scale) {
+                symbol->scale = data[i].scale;
+            }
+
+            start = clock();
+            ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
+            diff_encode += clock() - start;
+            assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+
+            assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);
+            assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
+
+            start = clock();
+            ret = ZBarcode_Buffer(symbol, 0 /*rotate_angle*/);
+            diff_buffer += clock() - start;
+            assert_zero(ret, "i:%d ZBarcode_Buffer ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
+
+            ZBarcode_Delete(symbol);
+        }
+
+        printf("%s: diff_encode %gms, diff_buffer %gms\n", data[i].comment, diff_encode * 1000.0 / CLOCKS_PER_SEC, diff_buffer * 1000.0 / CLOCKS_PER_SEC);
+
+        total_encode += diff_encode;
+        total_buffer += diff_buffer;
+    }
+    if (index != -1) {
+        printf("totals: encode %gms, buffer %gms\n", total_encode * 1000.0 / CLOCKS_PER_SEC, total_buffer * 1000.0 / CLOCKS_PER_SEC);
+    }
+}
+
 int main(int argc, char *argv[]) {
 
     testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
@@ -2212,6 +2313,7 @@ int main(int argc, char *argv[]) {
         { "test_quiet_zones", test_quiet_zones, 1, 0, 1 },
         { "test_buffer_plot", test_buffer_plot, 1, 1, 1 },
         { "test_height", test_height, 1, 1, 1 },
+        { "test_perf_scale", test_perf_scale, 1, 0, 1 },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

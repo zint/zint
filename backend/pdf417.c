@@ -715,7 +715,7 @@ static int pdf417(struct zint_symbol *symbol, unsigned char chaine[], const int 
     for (i = k - 1; i >= 0; i--) {
         chainemc[mclength++] = mccorrection[i] ? 929 - mccorrection[i] : 0;
     }
-    
+
     if (debug) {
         printf("Complete CW string (%d):\n", mclength);
         for (i = 0; i < mclength; i++) {
@@ -785,7 +785,7 @@ static int pdf417(struct zint_symbol *symbol, unsigned char chaine[], const int 
         }
     }
     symbol->width = bp;
-    
+
     /* ISO/IEC 15438:2015 Section 5.8.2 3X minimum row height */
     error_number = set_height(symbol, 3.0f, 0.0f, 0.0f, 0 /*no_errtxt*/);
 
@@ -1217,7 +1217,7 @@ INTERNAL int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], in
         }
     }
     symbol->width = bp;
-    
+
     /* ISO/IEC 24728:2006 Section 5.8.2 2X minimum row height */
     if (error_number) {
         (void) set_height(symbol, 2.0f, 0.0f, 0.0f, 1 /*no_errtxt*/);

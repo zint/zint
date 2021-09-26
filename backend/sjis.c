@@ -88,7 +88,7 @@ static int jisx0201_wctomb(unsigned int *r, const unsigned int wc) {
  */
 
 /* ZINT: Table converted from JIS X 0208 to Shift JIS values using tools/cnv_sjis.php:
- * 
+ *
 while ($line = fgets(STDIN)) {
     echo preg_replace_callback('/0x([0-9a-f]{4})/', function ($matches) {
         $dec = hexdec($matches[1]);
@@ -972,7 +972,8 @@ typedef struct {
 static const Summary16 jisx0208_uni2indx_page00[16] = {
   /* 0x0000 */
   {    0, 0x0000 }, {    0, 0x0000 }, {    0, 0x0000 }, {    0, 0x0000 },
-  {    0, 0x0000 }, { 6843, 0x1000 }, {    0, 0x0000 }, {    0, 0x0000 }, /* ZINT: Patched reverse solidus (backslash) mapping U+005C to 0x815F */
+  /* ZINT: Patched reverse solidus (backslash) mapping U+005C to 0x815F */
+  {    0, 0x0000 }, { 6843, 0x1000 }, {    0, 0x0000 }, {    0, 0x0000 },
   {    0, 0x0000 }, {    0, 0x0000 }, {    0, 0x118c }, {    5, 0x0053 },
   {    9, 0x0000 }, {    9, 0x0080 }, {   10, 0x0000 }, {   10, 0x0080 },
 };

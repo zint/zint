@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020 - 2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -46,7 +46,7 @@ extern "C" {
 #define LATCHC 95
 #define AORB 96
 #define ABORC 97
-    
+
 #define KRSET "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 INTERNAL int parunmodd(const unsigned char llyth);

@@ -129,6 +129,18 @@ INTERNAL void lookup(const char set_string[], const char *table[], const char da
     }
 }
 
+/* Returns the position of data in set_string */
+INTERNAL int posn(const char set_string[], const char data) {
+    int i, n = (int) strlen(set_string);
+
+    for (i = 0; i < n; i++) {
+        if (data == set_string[i]) {
+            return i;
+        }
+    }
+    return -1;
+}
+
 /* Convert an integer value to a string representing its binary equivalent */
 INTERNAL void bin_append(const int arg, const int length, char *binary) {
     int bin_posn = (int) strlen(binary);
@@ -153,18 +165,6 @@ INTERNAL int bin_append_posn(const int arg, const int length, char *binary, cons
         }
     }
     return bin_posn + length;
-}
-
-/* Returns the position of data in set_string */
-INTERNAL int posn(const char set_string[], const char data) {
-    int i, n = (int) strlen(set_string);
-
-    for (i = 0; i < n; i++) {
-        if (data == set_string[i]) {
-            return i;
-        }
-    }
-    return -1;
 }
 
 #ifndef COMMON_INLINE
@@ -433,6 +433,11 @@ INTERNAL int set_height(struct zint_symbol *symbol, const float min_row_height, 
     }
 
     return error_number;
+}
+
+/* Removes excess precision from floats - see https://stackoverflow.com/q/503436/664741 */
+INTERNAL float stripf(const float arg) {
+    return *((volatile const float *) &arg);
 }
 
 /* Returns red component if any of ultra colour indexing "0CBMRYGKW" */

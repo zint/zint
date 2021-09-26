@@ -1,7 +1,7 @@
 /*  bmp.h - header structure for Windows bitmap files
 
     libzint - the open source barcode library
-    Copyright (C) 2009-2017 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -65,7 +65,7 @@ extern "C" {
         uint32_t colours;
         uint32_t important_colours;
     } bitmap_info_header_t;
-    
+
     typedef struct color_ref {
         uint8_t blue;
         uint8_t green;
