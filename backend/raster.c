@@ -1282,7 +1282,7 @@ static int plot_raster_default(struct zint_symbol *symbol, const int rotate_angl
         for (r = 0; r < scale_height; r++) {
             size_t scaled_row = r * scale_width;
             size_t image_row = (size_t) stripf(r / scaler) * image_width;
-            if (image_row && (image_row == prev_image_row
+            if (r && (image_row == prev_image_row
                     || memcmp(pixelbuf + image_row, pixelbuf + prev_image_row, image_width) == 0)) {
                 memcpy(scaled_pixelbuf + scaled_row, scaled_pixelbuf + scaled_row - scale_width, scale_width);
             } else {
