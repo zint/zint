@@ -27,6 +27,9 @@
        <property name="text">
         <string>Si&amp;ze:</string>
        </property>
+       <property name="toolTip">
+        <string>Set size (version) of symbol</string>
+       </property>
        <property name="buddy">
         <cstring>cmbQRSize</cstring>
        </property>
@@ -36,6 +39,9 @@
       <widget class="QComboBox" name="cmbQRSize">
        <property name="maxVisibleItems">
         <number>21</number>
+       </property>
+       <property name="toolTip">
+        <string>Set size (version) of symbol</string>
        </property>
        <item>
         <property name="text">
@@ -249,6 +255,10 @@
        <property name="text">
         <string>E&amp;rror Correction:</string>
        </property>
+       <property name="toolTip">
+        <string>Set percentage of capacity to use for
+error correction codewords</string>
+       </property>
        <property name="buddy">
         <cstring>cmbQRECC</cstring>
        </property>
@@ -256,6 +266,10 @@
      </item>
      <item row="1" column="1">
       <widget class="QComboBox" name="cmbQRECC">
+       <property name="toolTip">
+        <string>Set percentage of capacity to use for
+error correction codewords</string>
+       </property>
        <item>
         <property name="text">
          <string>Automatic</string>
@@ -288,6 +302,9 @@
        <property name="text">
         <string>&amp;Mask:</string>
        </property>
+       <property name="toolTip">
+        <string>Manually specify which mask to use</string>
+       </property>
        <property name="buddy">
         <cstring>cmbQRMask</cstring>
        </property>
@@ -297,6 +314,9 @@
       <widget class="QComboBox" name="cmbQRMask">
        <property name="maxVisibleItems">
         <number>8</number>
+       </property>
+       <property name="toolTip">
+        <string>Manually specify which mask to use</string>
        </property>
        <item>
         <property name="text">
@@ -352,6 +372,9 @@
      <property name="title">
       <string>Encoding Mode</string>
      </property>
+     <property name="toolTip">
+      <string>How to process data</string>
+     </property>
      <layout class="QGridLayout" name="gridLayoutQREncodingMode">
       <property name="sizeConstraint">
        <enum>QLayout::SetMinimumSize</enum>
@@ -359,7 +382,10 @@
       <item row="0" column="0">
        <widget class="QRadioButton" name="radQRStand">
         <property name="text">
-         <string>S&amp;tandard Mode</string>
+         <string>S&amp;tandard</string>
+        </property>
+        <property name="toolTip">
+         <string>Process data as normal</string>
         </property>
         <property name="checked">
          <bool>true</bool>
@@ -369,14 +395,24 @@
       <item row="0" column="1">
        <widget class="QRadioButton" name="radQRGS1">
         <property name="text">
-         <string>GS&amp;1 Data Mode</string>
+         <string>GS&amp;1 Data</string>
+        </property>
+        <property name="toolTip">
+         <string>Process data as GS1 General Specifications data,
+formatted with Application Identifiers (AIs)</string>
         </property>
        </widget>
       </item>
-      <item row="1" column="0">
+      <item row="0" column="2">
        <widget class="QRadioButton" name="radQRHIBC">
         <property name="text">
          <string>H&amp;IBC QR Code</string>
+        </property>
+        <property name="toolTip">
+         <string>Process data as a Health Industry Barcode (HIBC)
+Labeler Identification Code (LIC)
+For Provider Applications Standard (PAS), preface
+the data with a slash &quot;/&quot;</string>
         </property>
        </widget>
       </item>
@@ -397,6 +433,321 @@
     </widget>
    </item>
    <item>
+    <widget class="QGroupBox" name="groupBoxQRStructApp">
+     <property name="title">
+      <string>Structured Append</string>
+     </property>
+     <property name="toolTip">
+      <string>QR Code supports Structured Append of up to
+16 symbols</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayoutQRStructApp">
+      <item row="0" column="0">
+       <widget class="QLabel" name="lblQRStructAppCount">
+        <property name="text">
+         <string>C&amp;ount:</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignLeft|Qt::AlignLeading|Qt::AlignVCenter</set>
+        </property>
+        <property name="buddy">
+         <cstring>cmbQRStructAppCount</cstring>
+        </property>
+        <property name="toolTip">
+         <string>Mark symbol as part of a Structured Append sequence
+containing a total of this number of symbols
+Value ranges from 2 to 16</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="cmbQRStructAppCount">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="toolTip">
+         <string>Mark symbol as part of a Structured Append sequence
+containing a total of this number of symbols
+Value ranges from 2 to 16</string>
+        </property>
+        <item>
+         <property name="text">
+          <string>Disabled</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>2</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>3</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>4</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>5</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>6</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>7</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>8</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>9</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>10</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>11</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>12</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>13</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>14</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>15</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>16</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="0" column="2">
+       <spacer name="spacerQRStructApp2">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint">
+         <size>
+          <width>10</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+	  </item>
+      <item row="0" column="3">
+       <widget class="QLabel" name="lblQRStructAppIndex">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>Inde&amp;x:</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignLeft|Qt::AlignLeading|Qt::AlignVCenter</set>
+        </property>
+        <property name="buddy">
+         <cstring>cmbQRStructAppIndex</cstring>
+        </property>
+        <property name="toolTip">
+         <string>Position of symbol in Structured Append sequence
+Value ranges from 1 to count
+(ignored if disabled)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="4">
+       <widget class="QComboBox" name="cmbQRStructAppIndex">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="toolTip">
+         <string>Position of symbol in Structured Append sequence
+Value ranges from 1 to count
+(ignored if disabled)</string>
+        </property>
+        <item>
+         <property name="text">
+          <string>1</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>2</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>3</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>4</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>5</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>6</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>7</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>8</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>9</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>10</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>11</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>12</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>13</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>14</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>15</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>16</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="0" column="5">
+       <spacer name="spacerQRStructApp5">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint">
+         <size>
+          <width>10</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+	  </item>
+      <item row="0" column="6">
+       <widget class="QLabel" name="lblQRStructAppID">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="toolTip">
+         <string>ID (parity) to indicate that symbols belong
+to the same Structured Append sequence
+Value ranges from 0 to 255
+(ignored if disabled)</string>
+        </property>
+        <property name="text">
+         <string>I&amp;D:</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignLeft|Qt::AlignLeading|Qt::AlignVCenter</set>
+        </property>
+        <property name="buddy">
+         <cstring>spnQRStructAppID</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="7">
+       <widget class="QSpinBox" name="spnQRStructAppID">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="toolTip">
+         <string>ID (parity) to indicate that symbols belong
+to the same Structured Append sequence
+Value ranges from 0 to 255
+(ignored if disabled)</string>
+        </property>
+        <property name="minimum">
+         <number>0</number>
+        </property>
+        <property name="maximum">
+         <number>255</number>
+        </property>
+        <property name="value">
+         <number>0</number>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -407,7 +758,7 @@
      <property name="sizeHint" stdset="0">
       <size>
        <width>20</width>
-       <height>20</height>
+       <height>0</height>
       </size>
      </property>
     </spacer>

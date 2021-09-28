@@ -341,6 +341,6 @@ INTERNAL int png_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     return 0;
 }
 #else
-/* https://stackoverflow.com/a/26541331/664741 Suppresses gcc warning ISO C forbids an empty translation unit */
+/* https://stackoverflow.com/a/26541331 Suppresses gcc warning ISO C forbids an empty translation unit */
 typedef int make_iso_compilers_happy;
 #endif /* NO_PNG */

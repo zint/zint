@@ -583,8 +583,8 @@ static void test_dpd_input(int index, int generate, int debug) {
         /*  1*/ { "12345678901234567890123456789", ZINT_ERROR_TOO_LONG, -1, "Error 349: DPD input wrong length (28 characters required)", "" },
         /*  2*/ { "123456789012345678901234567,", ZINT_ERROR_INVALID_DATA, -1, "Error 300: Invalid character in DPD data (alphanumerics only)", "Alphanumerics only in body" },
         /*  3*/ { ",234567890123456789012345678", 0, 211, "(19) 104 12 18 99 34 56 78 90 12 34 56 78 90 12 34 56 78 64 106", "Non-alphanumeric DPD Identifier (Barcode ID) allowed" },
-        /*  4*/ { "\037234567890123456789012345678", ZINT_ERROR_INVALID_DATA, -1, "Error 301: Invalid DPD identifier (first character), ASCII values 32 to 127 only", "Control char <US> as DPD Identifier" },
-        /*  5*/ { "é234567890123456789012345678", ZINT_ERROR_INVALID_DATA, -1, "Error 301: Invalid DPD identifier (first character), ASCII values 32 to 127 only", "Extended ASCII as DPD Identifier" },
+        /*  4*/ { "\037234567890123456789012345678", ZINT_ERROR_INVALID_DATA, -1, "Error 343: Invalid DPD identifier (first character), ASCII values 32 to 127 only", "Control char <US> as DPD Identifier" },
+        /*  5*/ { "é234567890123456789012345678", ZINT_ERROR_INVALID_DATA, -1, "Error 343: Invalid DPD identifier (first character), ASCII values 32 to 127 only", "Extended ASCII as DPD Identifier" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;

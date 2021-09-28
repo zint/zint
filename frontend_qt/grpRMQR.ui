@@ -27,6 +27,9 @@
        <property name="text">
         <string>Si&amp;ze:</string>
        </property>
+       <property name="toolTip">
+        <string>Set height and width (H x W) of symbol</string>
+       </property>
        <property name="buddy">
         <cstring>cmbRMQRSize</cstring>
        </property>
@@ -34,6 +37,9 @@
      </item>
      <item row="0" column="1">
       <widget class="QComboBox" name="cmbRMQRSize">
+       <property name="toolTip">
+        <string>Set height and width (H x W) of symbol</string>
+       </property>
        <property name="maxVisibleItems">
         <number>21</number>
        </property>
@@ -239,6 +245,10 @@
        <property name="text">
         <string>E&amp;rror Correction:</string>
        </property>
+       <property name="toolTip">
+        <string>Set percentage of capacity to use for
+error correction codewords</string>
+       </property>
        <property name="buddy">
         <cstring>cmbRMQRECC</cstring>
        </property>
@@ -246,6 +256,10 @@
      </item>
      <item row="1" column="1">
       <widget class="QComboBox" name="cmbRMQRECC">
+       <property name="toolTip">
+        <string>Set percentage of capacity to use for
+error correction codewords</string>
+       </property>
        <item>
         <property name="text">
          <string>Automatic</string>
@@ -270,6 +284,9 @@
      <property name="title">
       <string>Encoding Mode</string>
      </property>
+     <property name="toolTip">
+      <string>How to process data</string>
+     </property>
      <layout class="QGridLayout" name="gridLayoutRMQREncodingMode">
       <property name="sizeConstraint">
        <enum>QLayout::SetMinimumSize</enum>
@@ -278,6 +295,9 @@
        <widget class="QRadioButton" name="radRMQRStand">
         <property name="text">
          <string>S&amp;tandard Mode</string>
+        </property>
+        <property name="toolTip">
+         <string>Process data as normal</string>
         </property>
         <property name="checked">
          <bool>true</bool>
@@ -288,6 +308,10 @@
        <widget class="QRadioButton" name="radRMQRGS1">
         <property name="text">
          <string>GS&amp;1 Data Mode</string>
+        </property>
+        <property name="toolTip">
+         <string>Process data as GS1 General Specifications data,
+formatted with Application Identifiers (AIs)</string>
         </property>
        </widget>
       </item>

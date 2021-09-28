@@ -83,7 +83,8 @@ void DataWindow::from_file()
     QString escape_string;
 
     open_dialog.setWindowTitle("Open File");
-    open_dialog.setDirectory(settings.value("studio/default_dir", QDir::toNativeSeparators(QDir::homePath())).toString());
+    open_dialog.setDirectory(settings.value("studio/default_dir",
+                QDir::toNativeSeparators(QDir::homePath())).toString());
 
     if (open_dialog.exec()) {
         filename = open_dialog.selectedFiles().at(0);

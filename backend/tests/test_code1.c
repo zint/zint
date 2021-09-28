@@ -34,7 +34,9 @@
 static void test_large(int index, int debug) {
 
     struct item {
+        int eci;
         int option_2;
+        struct zint_structapp structapp;
         char *pattern;
         int length;
         int ret;
@@ -44,118 +46,140 @@ static void test_large(int index, int debug) {
     // Reference AIM USS Code One Table 2
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /*  0*/ { -1, "1", 3550, 0, 148, 134 }, /* Auto Version H */
-        /*  1*/ { -1, "1", 3551, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  2*/ { -1, "A", 2218, 0, 148, 134 },
-        /*  3*/ { -1, "A", 2219, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  4*/ { -1, "\001", 1480, 0, 148, 134 }, /* Full ASCII */
-        /*  5*/ { -1, "\001", 1481, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  6*/ { -1, "\200", 1478, 0, 148, 134 }, /* BYTE */
-        /*  7*/ { -1, "\200", 1479, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  8*/ { 1, "1", 22, 0, 16, 18 }, /* Version A */
-        /*  9*/ { 1, "1", 23, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 10*/ { 1, "A", 13, 0, 16, 18 },
-        /* 11*/ { 1, "A", 14, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 12*/ { 1, "\001", 10, 0, 16, 18 },
-        /* 13*/ { 1, "\001", 11, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 14*/ { 1, "\200", 8, 0, 16, 18 },
-        /* 15*/ { 1, "\200", 9, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 16*/ { 2, "1", 44, 0, 22, 22 }, /* Version B */
-        /* 17*/ { 2, "1", 45, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 18*/ { 2, "A", 27, 0, 22, 22 },
-        /* 19*/ { 2, "A", 28, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 20*/ { 2, "A", 26, 0, 22, 22 },
-        /* 21*/ { 2, "\001", 19, 0, 22, 22 },
-        /* 22*/ { 2, "\001", 20, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 23*/ { 2, "\200", 17, 0, 22, 22 },
-        /* 24*/ { 2, "\200", 18, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 25*/ { 3, "1", 104, 0, 28, 32 }, /* Version C */
-        /* 26*/ { 3, "1", 105, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 27*/ { 3, "A", 64, 0, 28, 32 },
-        /* 28*/ { 3, "A", 65, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 29*/ { 3, "\001", 44, 0, 28, 32 },
-        /* 30*/ { 3, "\001", 45, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 31*/ { 3, "\200", 42, 0, 28, 32 },
-        /* 32*/ { 3, "\200", 43, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 33*/ { 4, "1", 217, 0, 40, 42 }, /* Version D */
-        /* 34*/ { 4, "1", 218, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 35*/ { 4, "A", 135, 0, 40, 42 },
-        /* 36*/ { 4, "A", 136, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 37*/ { 4, "\001", 91, 0, 40, 42 },
-        /* 38*/ { 4, "\001", 92, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 39*/ { 4, "\200", 89, 0, 40, 42 },
-        /* 40*/ { 4, "\200", 90, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 41*/ { 5, "1", 435, 0, 52, 54 }, /* Version E (note 435 multiple of 3) */
-        /* 42*/ { 5, "1", 436, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 43*/ { 5, "1", 434, ZINT_ERROR_TOO_LONG, -1, -1 }, /* NOTE: a quirk of decimal end-of-data processing is existence of "lower maxs" if digits are not a multiple of 3 */
-        /* 44*/ { 5, "1", 433, 0, 52, 54 },
-        /* 45*/ { 5, "A", 271, 0, 52, 54 },
-        /* 46*/ { 5, "A", 272, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 47*/ { 5, "\001", 182, 0, 52, 54 },
-        /* 48*/ { 5, "\001", 183, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 49*/ { 5, "\200", 180, 0, 52, 54 },
-        /* 50*/ { 5, "\200", 181, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 51*/ { 6, "1", 886, 0, 70, 76 }, /* Version F */
-        /* 52*/ { 6, "1", 887, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 53*/ { 6, "A", 553, 0, 70, 76 },
-        /* 54*/ { 6, "A", 554, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 55*/ { 6, "\001", 370, 0, 70, 76 },
-        /* 56*/ { 6, "\001", 371, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 57*/ { 6, "\200", 368, 0, 70, 76 },
-        /* 58*/ { 6, "\200", 369, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 59*/ { 7, "1", 1755, 0, 104, 98 }, /* Version G (note 1755 multiple of 3) */
-        /* 60*/ { 7, "1", 1756, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 61*/ { 7, "1", 1754, ZINT_ERROR_TOO_LONG, -1, -1 }, /* NOTE: a quirk of decimal end-of-data processing is existence of "lower maxs" if digits are not a multiple of 3 */
-        /* 62*/ { 7, "1", 1753, 0, 104, 98 },
-        /* 63*/ { 7, "A", 1096, 0, 104, 98 },
-        /* 64*/ { 7, "A", 1097, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 65*/ { 7, "\001", 732, 0, 104, 98 },
-        /* 66*/ { 7, "\001", 733, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 67*/ { 7, "\200", 730, 0, 104, 98 },
-        /* 68*/ { 7, "\200", 731, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 69*/ { 8, "1", 3550, 0, 148, 134 }, /* Version H */
-        /* 70*/ { 8, "1", 3551, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 71*/ { 8, "A", 2218, 0, 148, 134 },
-        /* 72*/ { 8, "A", 2219, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 73*/ { 8, "\001", 1480, 0, 148, 134 },
-        /* 74*/ { 8, "\001", 1481, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 75*/ { 8, "\200", 1478, 0, 148, 134 },
-        /* 76*/ { 8, "\200", 1479, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 77*/ { 9, "1", 6, 0, 8, 11 }, /* Version S-10 */
-        /* 78*/ { 9, "1", 7, 0, 8, 21 }, /* -> S-20 */
-        /* 79*/ { 9, "1", 12, 0, 8, 21 }, /* Version S-20 */
-        /* 80*/ { 9, "1", 13, 0, 8, 31 }, /* -> S-30 */
-        /* 81*/ { 9, "1", 18, 0, 8, 31 }, /* Version S-30 */
-        /* 82*/ { 9, "1", 19, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 83*/ { 9, "1", 17, 0, 8, 31 },
-        /* 84*/ { 10, "1", 22, 0, 16, 17 }, /* Version T-16 */
-        /* 85*/ { 10, "1", 23, 0, 16, 33 }, /* -> T-32 */
-        /* 86*/ { 10, "A", 13, 0, 16, 17 },
-        /* 87*/ { 10, "A", 14, 0, 16, 33 }, /* -> T-32 */
-        /* 88*/ { 10, "\001", 10, 0, 16, 17 },
-        /* 89*/ { 10, "\001", 11, 0, 16, 33 }, /* -> T-32 */
-        /* 90*/ { 10, "\200", 8, 0, 16, 17 },
-        /* 91*/ { 10, "\200", 9, 0, 16, 33 }, /* -> T-32 */
-        /* 92*/ { 10, "1", 56, 0, 16, 33 }, /* Version T-32 */
-        /* 93*/ { 10, "1", 57, 0, 16, 49 }, /* -> T-48 */
-        /* 94*/ { 10, "A", 34, 0, 16, 33 },
-        /* 95*/ { 10, "A", 35, 0, 16, 49 }, /* -> T-48 */
-        /* 96*/ { 10, "\001", 24, 0, 16, 33 },
-        /* 97*/ { 10, "\001", 25, 0, 16, 49 }, /* -> T-48 */
-        /* 98*/ { 10, "\200", 22, 0, 16, 33 },
-        /* 99*/ { 10, "\200", 23, 0, 16, 49 }, /* -> T-48 */
-        /*100*/ { 10, "1", 90, 0, 16, 49 }, /* Version T-48 (note 90 multiple of 3) */
-        /*101*/ { 10, "1", 91, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*102*/ { 10, "1", 89, ZINT_ERROR_TOO_LONG, -1, -1 }, /* NOTE: a quirk of decimal end-of-data processing is existence of "lower maxs" if digits are not a multiple of 3 */
-        /*103*/ { 10, "1", 88, 0, 16, 49 },
-        /*104*/ { 10, "A", 55, 0, 16, 49 },
-        /*105*/ { 10, "A", 56, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*106*/ { 10, "A", 90, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*107*/ { 10, "\001", 38, 0, 16, 49 },
-        /*108*/ { 10, "\001", 39, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*109*/ { 10, "\001", 90, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*110*/ { 10, "\200", 36, 0, 16, 49 },
-        /*111*/ { 10, "\200", 37, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  0*/ { -1, -1, { 0, 0, "" }, "1", 3550, 0, 148, 134 }, /* Auto Version H */
+        /*  1*/ { -1, -1, { 0, 0, "" }, "1", 3551, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  2*/ { 3, -1, { 0, 0, "" }, "1", 3535, 0, 148, 134 }, /* With ECI */
+        /*  3*/ { 3, -1, { 0, 0, "" }, "1", 3536, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  4*/ { -1, -1, { 1, 2, "" }, "1", 3546, 0, 148, 134 }, /* With Structured Append (Group mode, count < 2) */
+        /*  5*/ { -1, -1, { 1, 2, "" }, "1", 3547, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  6*/ { -1, -1, { 1, 16, "" }, "1", 3541, 0, 148, 134 }, /* With Structured Append (Extended Group mode, count >= 16) */
+        /*  7*/ { -1, -1, { 1, 16, "" }, "1", 3542, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  8*/ { 3, -1, { 1, 2, "" }, "1", 3532, 0, 148, 134 }, /* With ECI and Structured Append (Group mode) 1st symbol */
+        /*  9*/ { 3, -1, { 1, 2, "" }, "1", 3533, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 10*/ { 3, -1, { 2, 2, "" }, "1", 3537, 0, 148, 134 }, /* With ECI and Structured Append (Group mode) subsequent symbol */
+        /* 11*/ { 3, -1, { 2, 2, "" }, "1", 3538, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 12*/ { 3, -1, { 1, 16, "" }, "1", 3530, 0, 148, 134 }, /* With ECI and Structured Append (Extended Group mode) 1st symbol */
+        /* 13*/ { 3, -1, { 1, 16, "" }, "1", 3531, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 14*/ { 3, -1, { 2, 16, "" }, "1", 3535, 0, 148, 134 }, /* With ECI and Structured Append (Extended Group mode) subsequent symbol */
+        /* 15*/ { 3, -1, { 2, 16, "" }, "1", 3536, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 16*/ { -1, -1, { 0, 0, "" }, "A", 2218, 0, 148, 134 },
+        /* 17*/ { -1, -1, { 0, 0, "" }, "A", 2219, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 18*/ { -1, -1, { 0, 0, "" }, "\001", 1480, 0, 148, 134 }, /* Full ASCII */
+        /* 19*/ { -1, -1, { 0, 0, "" }, "\001", 1481, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 20*/ { -1, -1, { 0, 0, "" }, "\200", 1478, 0, 148, 134 }, /* BYTE */
+        /* 21*/ { -1, -1, { 0, 0, "" }, "\200", 1479, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 22*/ { -1, 1, { 0, 0, "" }, "1", 22, 0, 16, 18 }, /* Version A */
+        /* 23*/ { -1, 1, { 0, 0, "" }, "1", 23, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 24*/ { -1, 1, { 0, 0, "" }, "A", 13, 0, 16, 18 },
+        /* 25*/ { -1, 1, { 0, 0, "" }, "A", 14, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 26*/ { 3, 1, { 0, 0, "" }, "A", 4, 0, 16, 18 }, /* With ECI */
+        /* 27*/ { 3, 1, { 0, 0, "" }, "A", 5, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 26*/ { -1, 1, { 1, 2, "" }, "A", 10, 0, 16, 18 }, /* With Structured Append */
+        /* 27*/ { -1, 1, { 1, 2, "" }, "A", 11, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 28*/ { 3, 1, { 1, 2, "" }, "A", 2, 0, 16, 18 }, /* With ECI and Structured Append 1st symbol */
+        /* 29*/ { 3, 1, { 1, 2, "" }, "A", 3, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 30*/ { 3, 1, { 2, 2, "" }, "A", 4, 0, 16, 18 }, /* With ECI and Structured Append subsequent symbol */
+        /* 31*/ { 3, 1, { 2, 2, "" }, "A", 5, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 32*/ { -1, 1, { 0, 0, "" }, "\001", 10, 0, 16, 18 },
+        /* 33*/ { -1, 1, { 0, 0, "" }, "\001", 11, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 34*/ { -1, 1, { 0, 0, "" }, "\200", 8, 0, 16, 18 },
+        /* 35*/ { -1, 1, { 0, 0, "" }, "\200", 9, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 36*/ { -1, 2, { 0, 0, "" }, "1", 44, 0, 22, 22 }, /* Version B */
+        /* 37*/ { -1, 2, { 0, 0, "" }, "1", 45, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 38*/ { -1, 2, { 0, 0, "" }, "A", 27, 0, 22, 22 },
+        /* 39*/ { -1, 2, { 0, 0, "" }, "A", 28, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 40*/ { -1, 2, { 0, 0, "" }, "A", 26, 0, 22, 22 },
+        /* 41*/ { -1, 2, { 0, 0, "" }, "\001", 19, 0, 22, 22 },
+        /* 42*/ { -1, 2, { 0, 0, "" }, "\001", 20, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 43*/ { -1, 2, { 0, 0, "" }, "\200", 17, 0, 22, 22 },
+        /* 44*/ { -1, 2, { 0, 0, "" }, "\200", 18, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 45*/ { -1, 3, { 0, 0, "" }, "1", 104, 0, 28, 32 }, /* Version C */
+        /* 46*/ { -1, 3, { 0, 0, "" }, "1", 105, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 47*/ { -1, 3, { 0, 0, "" }, "A", 64, 0, 28, 32 },
+        /* 48*/ { -1, 3, { 0, 0, "" }, "A", 65, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 49*/ { -1, 3, { 0, 0, "" }, "\001", 44, 0, 28, 32 },
+        /* 50*/ { -1, 3, { 0, 0, "" }, "\001", 45, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 51*/ { -1, 3, { 0, 0, "" }, "\200", 42, 0, 28, 32 },
+        /* 52*/ { -1, 3, { 0, 0, "" }, "\200", 43, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 53*/ { -1, 4, { 0, 0, "" }, "1", 217, 0, 40, 42 }, /* Version D */
+        /* 54*/ { -1, 4, { 0, 0, "" }, "1", 218, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 55*/ { -1, 4, { 0, 0, "" }, "A", 135, 0, 40, 42 },
+        /* 56*/ { -1, 4, { 0, 0, "" }, "A", 136, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 57*/ { -1, 4, { 0, 0, "" }, "\001", 91, 0, 40, 42 },
+        /* 58*/ { -1, 4, { 0, 0, "" }, "\001", 92, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 59*/ { -1, 4, { 0, 0, "" }, "\200", 89, 0, 40, 42 },
+        /* 60*/ { -1, 4, { 0, 0, "" }, "\200", 90, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 61*/ { -1, 5, { 0, 0, "" }, "1", 435, 0, 52, 54 }, /* Version E (note 435 multiple of 3) */
+        /* 62*/ { -1, 5, { 0, 0, "" }, "1", 436, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 63*/ { -1, 5, { 0, 0, "" }, "1", 434, ZINT_ERROR_TOO_LONG, -1, -1 }, /* NOTE: a quirk of decimal end-of-data processing is existence of "lower maxs" if digits are not a multiple of 3 */
+        /* 64*/ { -1, 5, { 0, 0, "" }, "1", 433, 0, 52, 54 },
+        /* 65*/ { -1, 5, { 0, 0, "" }, "A", 271, 0, 52, 54 },
+        /* 66*/ { -1, 5, { 0, 0, "" }, "A", 272, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 67*/ { -1, 5, { 0, 0, "" }, "\001", 182, 0, 52, 54 },
+        /* 68*/ { -1, 5, { 0, 0, "" }, "\001", 183, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 69*/ { -1, 5, { 0, 0, "" }, "\200", 180, 0, 52, 54 },
+        /* 70*/ { -1, 5, { 0, 0, "" }, "\200", 181, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 71*/ { -1, 6, { 0, 0, "" }, "1", 886, 0, 70, 76 }, /* Version F */
+        /* 72*/ { -1, 6, { 0, 0, "" }, "1", 887, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 73*/ { -1, 6, { 0, 0, "" }, "A", 553, 0, 70, 76 },
+        /* 74*/ { -1, 6, { 0, 0, "" }, "A", 554, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 75*/ { -1, 6, { 0, 0, "" }, "\001", 370, 0, 70, 76 },
+        /* 76*/ { -1, 6, { 0, 0, "" }, "\001", 371, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 77*/ { -1, 6, { 0, 0, "" }, "\200", 368, 0, 70, 76 },
+        /* 78*/ { -1, 6, { 0, 0, "" }, "\200", 369, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 79*/ { -1, 7, { 0, 0, "" }, "1", 1755, 0, 104, 98 }, /* Version G (note 1755 multiple of 3) */
+        /* 80*/ { -1, 7, { 0, 0, "" }, "1", 1756, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 81*/ { -1, 7, { 0, 0, "" }, "1", 1754, ZINT_ERROR_TOO_LONG, -1, -1 }, /* NOTE: a quirk of decimal end-of-data processing is existence of "lower maxs" if digits are not a multiple of 3 */
+        /* 82*/ { -1, 7, { 0, 0, "" }, "1", 1753, 0, 104, 98 },
+        /* 83*/ { -1, 7, { 0, 0, "" }, "A", 1096, 0, 104, 98 },
+        /* 84*/ { -1, 7, { 0, 0, "" }, "A", 1097, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 85*/ { -1, 7, { 0, 0, "" }, "\001", 732, 0, 104, 98 },
+        /* 86*/ { -1, 7, { 0, 0, "" }, "\001", 733, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 87*/ { -1, 7, { 0, 0, "" }, "\200", 730, 0, 104, 98 },
+        /* 88*/ { -1, 7, { 0, 0, "" }, "\200", 731, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 89*/ { -1, 8, { 0, 0, "" }, "1", 3550, 0, 148, 134 }, /* Version H */
+        /* 90*/ { -1, 8, { 0, 0, "" }, "1", 3551, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 91*/ { -1, 8, { 0, 0, "" }, "A", 2218, 0, 148, 134 },
+        /* 92*/ { -1, 8, { 0, 0, "" }, "A", 2219, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 93*/ { -1, 8, { 0, 0, "" }, "\001", 1480, 0, 148, 134 },
+        /* 94*/ { -1, 8, { 0, 0, "" }, "\001", 1481, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 95*/ { -1, 8, { 0, 0, "" }, "\200", 1478, 0, 148, 134 },
+        /* 96*/ { -1, 8, { 0, 0, "" }, "\200", 1479, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 97*/ { -1, 9, { 0, 0, "" }, "1", 6, 0, 8, 11 }, /* Version S-10 */
+        /* 98*/ { -1, 9, { 0, 0, "" }, "1", 7, 0, 8, 21 }, /* -> S-20 */
+        /* 99*/ { -1, 9, { 0, 0, "" }, "1", 12, 0, 8, 21 }, /* Version S-20 */
+        /*100*/ { -1, 9, { 0, 0, "" }, "1", 13, 0, 8, 31 }, /* -> S-30 */
+        /*101*/ { -1, 9, { 0, 0, "" }, "1", 18, 0, 8, 31 }, /* Version S-30 */
+        /*102*/ { -1, 9, { 0, 0, "" }, "1", 19, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*103*/ { -1, 9, { 0, 0, "" }, "1", 17, 0, 8, 31 },
+        /*104*/ { -1, 10, { 0, 0, "" }, "1", 22, 0, 16, 17 }, /* Version T-16 */
+        /*105*/ { -1, 10, { 0, 0, "" }, "1", 23, 0, 16, 33 }, /* -> T-32 */
+        /*106*/ { -1, 10, { 0, 0, "" }, "A", 13, 0, 16, 17 },
+        /*107*/ { -1, 10, { 0, 0, "" }, "A", 14, 0, 16, 33 }, /* -> T-32 */
+        /*108*/ { -1, 10, { 0, 0, "" }, "\001", 10, 0, 16, 17 },
+        /*109*/ { -1, 10, { 0, 0, "" }, "\001", 11, 0, 16, 33 }, /* -> T-32 */
+        /*110*/ { -1, 10, { 0, 0, "" }, "\200", 8, 0, 16, 17 },
+        /*111*/ { -1, 10, { 0, 0, "" }, "\200", 9, 0, 16, 33 }, /* -> T-32 */
+        /*112*/ { -1, 10, { 0, 0, "" }, "1", 56, 0, 16, 33 }, /* Version T-32 */
+        /*113*/ { -1, 10, { 0, 0, "" }, "1", 57, 0, 16, 49 }, /* -> T-48 */
+        /*114*/ { -1, 10, { 0, 0, "" }, "A", 34, 0, 16, 33 },
+        /*115*/ { -1, 10, { 0, 0, "" }, "A", 35, 0, 16, 49 }, /* -> T-48 */
+        /*116*/ { -1, 10, { 0, 0, "" }, "\001", 24, 0, 16, 33 },
+        /*117*/ { -1, 10, { 0, 0, "" }, "\001", 25, 0, 16, 49 }, /* -> T-48 */
+        /*118*/ { -1, 10, { 0, 0, "" }, "\200", 22, 0, 16, 33 },
+        /*119*/ { -1, 10, { 0, 0, "" }, "\200", 23, 0, 16, 49 }, /* -> T-48 */
+        /*120*/ { -1, 10, { 0, 0, "" }, "1", 90, 0, 16, 49 }, /* Version T-48 (note 90 multiple of 3) */
+        /*121*/ { -1, 10, { 0, 0, "" }, "1", 91, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*122*/ { -1, 10, { 0, 0, "" }, "1", 89, ZINT_ERROR_TOO_LONG, -1, -1 }, /* NOTE: a quirk of decimal end-of-data processing is existence of "lower maxs" if digits are not a multiple of 3 */
+        /*123*/ { -1, 10, { 0, 0, "" }, "1", 88, 0, 16, 49 },
+        /*124*/ { -1, 10, { 0, 0, "" }, "A", 55, 0, 16, 49 },
+        /*125*/ { -1, 10, { 0, 0, "" }, "A", 56, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*126*/ { -1, 10, { 0, 0, "" }, "A", 90, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*127*/ { -1, 10, { 0, 0, "" }, "\001", 38, 0, 16, 49 },
+        /*128*/ { -1, 10, { 0, 0, "" }, "\001", 39, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*129*/ { -1, 10, { 0, 0, "" }, "\001", 90, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*130*/ { -1, 10, { 0, 0, "" }, "\200", 36, 0, 16, 49 },
+        /*131*/ { -1, 10, { 0, 0, "" }, "\200", 37, ZINT_ERROR_TOO_LONG, -1, -1 },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -176,7 +200,10 @@ static void test_large(int index, int debug) {
         testUtilStrCpyRepeat(data_buf, data[i].pattern, data[i].length);
         assert_equal(data[i].length, (int) strlen(data_buf), "i:%d length %d != strlen(data_buf) %d\n", i, data[i].length, (int) strlen(data_buf));
 
-        length = testUtilSetSymbol(symbol, BARCODE_CODEONE, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, data[i].option_2, -1, -1 /*output_options*/, data_buf, data[i].length, debug);
+        length = testUtilSetSymbol(symbol, BARCODE_CODEONE, -1 /*input_mode*/, data[i].eci, -1 /*option_1*/, data[i].option_2, -1, -1 /*output_options*/, data_buf, data[i].length, debug);
+        if (data[i].structapp.count) {
+            symbol->structapp = data[i].structapp;
+        }
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data_buf, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
@@ -198,6 +225,7 @@ static void test_input(int index, int debug) {
         int input_mode;
         int eci;
         int option_2;
+        struct zint_structapp structapp;
         char *data;
         int length;
         int ret;
@@ -207,33 +235,42 @@ static void test_input(int index, int debug) {
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /*  0*/ { -1, -1, -1, "123456789012ABCDEFGHI", -1, 0, 22, 22, "", },
-        /*  1*/ { -1, -1, -1, "123456789012ABCDEFGHIJ", -1, 0, 22, 22, "", },
-        /*  2*/ { -1, -1, -1, "1", -1, 0, 16, 18, "", },
-        /*  3*/ { -1, -1, 0, "1", -1, 0, 16, 18, "", },
-        /*  4*/ { -1, -1, 1, "1", -1, 0, 16, 18, "", },
-        /*  5*/ { -1, -1, 1, "ABCDEFGHIJKLMN", -1, ZINT_ERROR_TOO_LONG, -1, -1, "Error 518: Input too long for selected symbol size", },
-        /*  6*/ { GS1_MODE, -1, 1, "[01]12345678901231", -1, 0, 16, 18, "", },
-        /*  7*/ { GS1_MODE | GS1PARENS_MODE, -1, 1, "(01)12345678901231", -1, 0, 16, 18, "", },
-        /*  8*/ { -1, 3, 1, "1", -1, 0, 16, 18, "", },
-        /*  9*/ { UNICODE_MODE, 3, 1, "é", -1, 0, 16, 18, "", },
-        /* 10*/ { GS1_MODE, 3, 1, "[01]12345678901231", -1, ZINT_WARN_INVALID_OPTION, 16, 18, "Warning 512: ECI ignored for GS1 mode", },
-        /* 11*/ { -1, -1, 9, "123456789012345678", -1, 0, 8, 31, "", },
-        /* 12*/ { -1, -1, 9, "12345678901234567A", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 515: Invalid input data (Version S encodes numeric input only)", },
-        /* 13*/ { -1, -1, 9, "1234567890123456789", -1, ZINT_ERROR_TOO_LONG, -1, -1, "Error 514: Input data too long for Version S", },
-        /* 14*/ { GS1_MODE, -1, 9, "[01]12345678901231", -1, ZINT_WARN_INVALID_OPTION, 8, 31, "Warning 511: ECI and GS1 mode ignored for Version S", },
-        /* 15*/ { -1, 3, 9, "1", -1, ZINT_WARN_INVALID_OPTION, 8, 11, "Warning 511: ECI and GS1 mode ignored for Version S", },
-        /* 16*/ { -1, -1, 10, "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", -1, 0, 16, 49, "", },
-        /* 17*/ { -1, -1, 10, "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901", -1, ZINT_ERROR_TOO_LONG, -1, -1, "Error 519: Input data too long for Version T", },
-        /* 18*/ { -1, -1, 10, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", -1, 0, 16, 49, "", },
-        /* 19*/ { -1, -1, 10, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", -1, ZINT_ERROR_TOO_LONG, -1, -1, "Error 516: Input data too long for Version T", },
-        /* 20*/ { -1, -1, 10, "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000", 38, 0, 16, 49, "", },
-        /* 21*/ { -1, 3, 10, "1234567890123456789012345678901234567890123456789012345678901234567890123456", -1, 0, 16, 49, "", },
-        /* 22*/ { -1, 3, 10, "12345678901234567890123456789012345678901234567890123456789012345678901234567", -1, ZINT_ERROR_TOO_LONG, -1, -1, "Error 516: Input data too long for Version T", },
-        /* 23*/ { -1, 3, 10, "123456789012345678901234567890123456789012345678901234567890123456789012345678901234", -1, ZINT_ERROR_TOO_LONG, -1, -1, "Error 519: Input data too long for Version T", },
-        /* 24*/ { GS1_MODE, -1, 10, "[01]12345678901231", -1, 0, 16, 17, "", },
-        /* 25*/ { GS1_MODE, 3, 10, "[01]12345678901231", -1, ZINT_WARN_INVALID_OPTION, 16, 17, "Warning 512: ECI ignored for GS1 mode", },
-        /* 26*/ { -1, -1, 11, "1", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 513: Invalid symbol size", },
+        /*  0*/ { -1, -1, -1, { 0, 0, "" }, "123456789012ABCDEFGHI", -1, 0, 22, 22, "", },
+        /*  1*/ { -1, -1, -1, { 0, 0, "" }, "123456789012ABCDEFGHIJ", -1, 0, 22, 22, "", },
+        /*  2*/ { -1, -1, -1, { 0, 0, "" }, "1", -1, 0, 16, 18, "", },
+        /*  3*/ { -1, -1, 0, { 0, 0, "" }, "1", -1, 0, 16, 18, "", },
+        /*  4*/ { -1, -1, 1, { 0, 0, "" }, "1", -1, 0, 16, 18, "", },
+        /*  5*/ { -1, -1, 1, { 0, 0, "" }, "ABCDEFGHIJKLMN", -1, ZINT_ERROR_TOO_LONG, -1, -1, "Error 518: Input too long for selected symbol size", },
+        /*  6*/ { GS1_MODE, -1, 1, { 0, 0, "" }, "[01]12345678901231", -1, 0, 16, 18, "", },
+        /*  7*/ { GS1_MODE | GS1PARENS_MODE, -1, 1, { 0, 0, "" }, "(01)12345678901231", -1, 0, 16, 18, "", },
+        /*  8*/ { -1, 3, 1, { 0, 0, "" }, "1", -1, 0, 16, 18, "", },
+        /*  9*/ { UNICODE_MODE, 3, 1, { 0, 0, "" }, "é", -1, 0, 16, 18, "", },
+        /* 10*/ { GS1_MODE, 3, 1, { 0, 0, "" }, "[01]12345678901231", -1, ZINT_WARN_INVALID_OPTION, 16, 18, "Warning 512: ECI ignored for GS1 mode", },
+        /* 11*/ { -1, -1, 9, { 0, 0, "" }, "123456789012345678", -1, 0, 8, 31, "", },
+        /* 12*/ { -1, -1, 9, { 0, 0, "" }, "12345678901234567A", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 515: Invalid input data (Version S encodes numeric input only)", },
+        /* 13*/ { -1, -1, 9, { 0, 0, "" }, "1234567890123456789", -1, ZINT_ERROR_TOO_LONG, -1, -1, "Error 514: Input data too long for Version S", },
+        /* 14*/ { GS1_MODE, -1, 9, { 0, 0, "" }, "[01]12345678901231", -1, ZINT_WARN_INVALID_OPTION, 8, 31, "Warning 511: GS1 mode ignored for Version S", },
+        /* 15*/ { -1, 3, 9, { 0, 0, "" }, "1", -1, ZINT_WARN_INVALID_OPTION, 8, 11, "Warning 511: ECI ignored for Version S", },
+        /* 16*/ { GS1_MODE, 3, 9, { 0, 0, "" }, "[01]12345678901231", -1, ZINT_WARN_INVALID_OPTION, 8, 31, "Warning 511: ECI and GS1 mode ignored for Version S", },
+        /* 17*/ { -1, -1, 10, { 0, 0, "" }, "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", -1, 0, 16, 49, "", },
+        /* 18*/ { -1, -1, 10, { 0, 0, "" }, "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901", -1, ZINT_ERROR_TOO_LONG, -1, -1, "Error 519: Input data too long for Version T", },
+        /* 19*/ { -1, -1, 10, { 0, 0, "" }, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", -1, 0, 16, 49, "", },
+        /* 20*/ { -1, -1, 10, { 0, 0, "" }, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", -1, ZINT_ERROR_TOO_LONG, -1, -1, "Error 516: Input data too long for Version T", },
+        /* 21*/ { -1, -1, 10, { 0, 0, "" }, "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000", 38, 0, 16, 49, "", },
+        /* 22*/ { -1, 3, 10, { 0, 0, "" }, "1234567890123456789012345678901234567890123456789012345678901234567890123456", -1, 0, 16, 49, "", },
+        /* 23*/ { -1, 3, 10, { 0, 0, "" }, "12345678901234567890123456789012345678901234567890123456789012345678901234567", -1, ZINT_ERROR_TOO_LONG, -1, -1, "Error 516: Input data too long for Version T", },
+        /* 24*/ { -1, 3, 10, { 0, 0, "" }, "123456789012345678901234567890123456789012345678901234567890123456789012345678901234", -1, ZINT_ERROR_TOO_LONG, -1, -1, "Error 519: Input data too long for Version T", },
+        /* 25*/ { GS1_MODE, -1, 10, { 0, 0, "" }, "[01]12345678901231", -1, 0, 16, 17, "", },
+        /* 26*/ { GS1_MODE, 3, 10, { 0, 0, "" }, "[01]12345678901231", -1, ZINT_WARN_INVALID_OPTION, 16, 17, "Warning 512: ECI ignored for GS1 mode", },
+        /* 27*/ { -1, -1, 11, { 0, 0, "" }, "1", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 513: Invalid symbol size", },
+        /* 28*/ { GS1_MODE, -1, -1, { 1, 2, "" }, "[01]12345678901231", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 710: Cannot have Structured Append and GS1 mode at the same time", },
+        /* 29*/ { -1, -1, -1, { 1, 1, "" }, "123456789012ABCDEFGHI", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 711: Structured Append count out of range (2-128)", },
+        /* 30*/ { -1, -1, -1, { 1, 1, "" }, "123456789012ABCDEFGHI", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 711: Structured Append count out of range (2-128)", },
+        /* 31*/ { -1, -1, -1, { 1, 129, "" }, "123456789012ABCDEFGHI", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 711: Structured Append count out of range (2-128)", },
+        /* 32*/ { -1, -1, -1, { 0, 2, "" }, "123456789012ABCDEFGHI", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 712: Structured Append index out of range (1-2)", },
+        /* 33*/ { -1, -1, -1, { 3, 2, "" }, "123456789012ABCDEFGHI", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 712: Structured Append index out of range (1-2)", },
+        /* 34*/ { -1, -1, -1, { 1, 2, "1" }, "123456789012ABCDEFGHI", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 713: Structured Append ID not available for Code One", },
+        /* 35*/ { -1, -1, 9, { 1, 2, "" }, "123456789012ABCDEFGHI", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 714: Structured Append not supported for Version S", },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -250,6 +287,9 @@ static void test_input(int index, int debug) {
         assert_nonnull(symbol, "Symbol not created\n");
 
         length = testUtilSetSymbol(symbol, BARCODE_CODEONE, data[i].input_mode, data[i].eci, -1 /*option_1*/, data[i].option_2, -1, -1 /*output_options*/, data[i].data, data[i].length, debug);
+        if (data[i].structapp.count) {
+            symbol->structapp = data[i].structapp;
+        }
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
@@ -272,6 +312,7 @@ static void test_encode(int index, int generate, int debug) {
         int input_mode;
         int eci;
         int option_2;
+        struct zint_structapp structapp;
         char *data;
         int length;
         int ret;
@@ -284,7 +325,7 @@ static void test_encode(int index, int generate, int debug) {
     };
     // Figure examples AIM USS Code One (USSCO) Revision March 3, 2000
     struct item data[] = {
-        /*  0*/ { -1, -1, -1, "1234567890123456789012", -1, 0, 16, 18, 1, "USSCO Figure 1 (Version A, no padding), same",
+        /*  0*/ { -1, -1, -1, { 0, 0, "" }, "1234567890123456789012", -1, 0, 16, 18, 1, "USSCO Figure 1 (Version A, no padding), same",
                     "111111111111001100"
                     "000110000110010101"
                     "100010110101101010"
@@ -302,7 +343,7 @@ static void test_encode(int index, int generate, int debug) {
                     "100111000001100000"
                     "101000001010111101"
                 },
-        /*  1*/ { -1, -1, -1, "???????????????????????????????????????????????????????????????????????????????????????????", -1, 0, 40, 42, 1, "USSCO Figure 7 (Version D, no padding), same",
+        /*  1*/ { -1, -1, -1, { 0, 0, "" }, "???????????????????????????????????????????????????????????????????????????????????????????", -1, 0, 40, 42, 1, "USSCO Figure 7 (Version D, no padding), same",
                     "010011010001000100011100010001000100110100"
                     "000010000000000000001000000000000000100000"
                     "010010010001000100011000010001000100100100"
@@ -344,7 +385,7 @@ static void test_encode(int index, int generate, int debug) {
                     "001010001001110101011000110000111010101100"
                     "101111001111111001001101111000011111110010"
                 },
-        /*  2*/ { -1, -1, 9, "1234567890", -1, 0, 8, 21, 1, "USSCO Figure 9 (left) NOTE: S-20 not S-10 as stated, same",
+        /*  2*/ { -1, -1, 9, { 0, 0, "" }, "1234567890", -1, 0, 8, 21, 1, "USSCO Figure 9 (left) NOTE: S-20 not S-10 as stated, same",
                     "000000011110110010110"
                     "000010000100000010011"
                     "101111110100010100100"
@@ -354,7 +395,7 @@ static void test_encode(int index, int generate, int debug) {
                     "100000000000000000001"
                     "101111111111111111101"
                 },
-        /*  3*/ { -1, -1, 10, "12345678901234567890", -1, 0, 16, 17, 1, "USSCO Figure 9 (right) **NOT SAME** different encodation, figure uses ASCII double digits, Zint DECIMAL (same no. of codewords)",
+        /*  3*/ { -1, -1, 10, { 0, 0, "" }, "12345678901234567890", -1, 0, 16, 17, 1, "USSCO Figure 9 (right) **NOT SAME** different encodation, figure uses ASCII double digits, Zint DECIMAL (same no. of codewords)",
                     "11111111111001100"
                     "00010001010010101"
                     "10001101001101010"
@@ -372,7 +413,7 @@ static void test_encode(int index, int generate, int debug) {
                     "10000000000000001"
                     "10111111111111101"
                 },
-        /*  4*/ { GS1_MODE, -1, 2, "[01]00312341234014[15]950915[10]ABC123456", -1, 0, 22, 22, 1, "USSCO Figure B1 **NOT SAME** using (10) not (30) as (30) no longer compliant",
+        /*  4*/ { GS1_MODE, -1, 2, { 0, 0, "" }, "[01]00312341234014[15]950915[10]ABC123456", -1, 0, 22, 22, 1, "USSCO Figure B1 **NOT SAME** using (10) not (30) as (30) no longer compliant",
                     "1110110000110000001010"
                     "1100100010001000111100"
                     "0111100110100100001101"
@@ -396,7 +437,31 @@ static void test_encode(int index, int generate, int debug) {
                     "1111101011001110101010"
                     "1010010111000001110111"
                 },
-        /*  5*/ { -1, -1, -1, "Code One", -1, 0, 16, 18, 1, "BWIPP example",
+        /*  5*/ { GS1_MODE | GS1NOCHECK_MODE, -1, 2, { 0, 0, "" }, "[01]00312341234014[15]950915[30]ABC123456", -1, 0, 22, 22, 1, "USSCO Figure B1 same",
+                    "1110110000110000001010"
+                    "1100100010001000111100"
+                    "0111100110100100001101"
+                    "1100100100101011101111"
+                    "1001101111101001000100"
+                    "0100101101000000100011"
+                    "0100101000101010110111"
+                    "0000100000000000100000"
+                    "1111111111111111111111"
+                    "0000000000000000000000"
+                    "0111111111111111111110"
+                    "0100000000000000000010"
+                    "0111111111111111111110"
+                    "0100000000000000000010"
+                    "0111111111111111111110"
+                    "0100111001001010101110"
+                    "1100100111000101101010"
+                    "1011001110001010100000"
+                    "0110011100010001101001"
+                    "1010101110011010101001"
+                    "1101111110110010101110"
+                    "1010011100101001110101"
+                },
+        /*  6*/ { -1, -1, -1, { 0, 0, "" }, "Code One", -1, 0, 16, 18, 1, "BWIPP example",
                     "010011011101100110"
                     "010010000001010110"
                     "001010010101100110"
@@ -414,7 +479,7 @@ static void test_encode(int index, int generate, int debug) {
                     "100001100111100100"
                     "100000111000111000"
                 },
-        /*  6*/ { -1, -1, 9, "406990", -1, 0, 8, 11, 1, "BWIPP Version S-10 example",
+        /*  7*/ { -1, -1, 9, { 0, 0, "" }, "406990", -1, 0, 8, 11, 1, "BWIPP Version S-10 example",
                     "01101101101"
                     "00101010111"
                     "01101001101"
@@ -424,7 +489,7 @@ static void test_encode(int index, int generate, int debug) {
                     "10000000001"
                     "10111111101"
                 },
-        /*  7*/ { -1, -1, 3, "1234567890ABCDEF", -1, 0, 28, 32, 1, "https://fr.wikipedia.org/wiki/Liste_des_symbologies **NOT SAME** as Zint has unlatch to ASCII at end (before padding)",
+        /*  8*/ { -1, -1, 3, { 0, 0, "" }, "1234567890ABCDEF", -1, 0, 28, 32, 1, "https://fr.wikipedia.org/wiki/Liste_des_symbologies **NOT SAME** as Zint has unlatch to ASCII at end (before padding)",
                     "10001110101011110111011110110101"
                     "11101001001010000011000110101001"
                     "11101001100010111110001000101000"
@@ -454,7 +519,7 @@ static void test_encode(int index, int generate, int debug) {
                     "01101001101100000101111100100000"
                     "00111100100000110101111110111001"
                 },
-        /*  8*/ { -1, -1, 1, "1", -1, 0, 16, 18, 1, "Version A",
+        /*  9*/ { -1, -1, 1, { 0, 0, "" }, "1", -1, 0, 16, 18, 1, "Version A",
                     "001111100010001000"
                     "001010000100010001"
                     "100010100010001000"
@@ -472,7 +537,7 @@ static void test_encode(int index, int generate, int debug) {
                     "101000000101100011"
                     "001110100110110101"
                 },
-        /*  9*/ { -1, -1, 2, "1", -1, 0, 22, 22, 1, "Version B",
+        /* 10*/ { -1, -1, 2, { 0, 0, "" }, "1", -1, 0, 22, 22, 1, "Version B",
                     "0011111000100010001000"
                     "0010100001000100010001"
                     "1000101000100010001000"
@@ -496,7 +561,7 @@ static void test_encode(int index, int generate, int debug) {
                     "0000001101010001100110"
                     "0001001111111101111101"
                 },
-        /* 10*/ { -1, -1, 3, "1", -1, 0, 28, 32, 1, "Version C",
+        /* 11*/ { -1, -1, 3, { 0, 0, "" }, "1", -1, 0, 28, 32, 1, "Version C",
                     "00111110001000100010001000111000"
                     "00101000010001000100010001100001"
                     "10001010001000100010001000101000"
@@ -526,7 +591,7 @@ static void test_encode(int index, int generate, int debug) {
                     "00001000011000110111001001100111"
                     "10001110101100110010000011111001"
                 },
-        /* 11*/ { -1, -1, 4, "1", -1, 0, 40, 42, 1, "Version D",
+        /* 12*/ { -1, -1, 4, { 0, 0, "" }, "1", -1, 0, 40, 42, 1, "Version D",
                     "001111100010001000101100100010001000111000"
                     "001010000100010001001001000100010001100001"
                     "100010100010001000101000100010001000101000"
@@ -568,7 +633,7 @@ static void test_encode(int index, int generate, int debug) {
                     "111110111100011110001010001011010010101010"
                     "001111110100111100111110111101110110111000"
                 },
-        /* 12*/ { -1, -1, 5, "1", -1, 0, 52, 54, 1, "Version E",
+        /* 13*/ { -1, -1, 5, { 0, 0, "" }, "1", -1, 0, 52, 54, 1, "Version E",
                     "001111100010001000100010001110001000100010001000111000"
                     "001010000100010001000100011000010001000100010001100001"
                     "100010100010001000100010001010001000100010001000101000"
@@ -622,7 +687,7 @@ static void test_encode(int index, int generate, int debug) {
                     "111110101100111001100001101011110110001010011110100010"
                     "111111001000100010110011011100010011010001110011110110"
                 },
-        /* 13*/ { -1, -1, 6, "1", -1, 0, 70, 76, 1, "Version F",
+        /* 14*/ { -1, -1, 6, { 0, 0, "" }, "1", -1, 0, 70, 76, 1, "Version F",
                     "0011111000100010001000100011100010001000100010001110001000100010001000111000"
                     "0010100001000100010001000110000100010001000100011000010001000100010001100001"
                     "1000101000100010001000100010100010001000100010001010001000100010001000101000"
@@ -694,7 +759,7 @@ static void test_encode(int index, int generate, int debug) {
                     "0100101101010010100110011010000001101000011011111001011101001000011110100101"
                     "1100111111000110110101110011011001001010010101101111011110000111010100110101"
                 },
-        /* 14*/ { -1, -1, 7, "1", -1, 0, 104, 98, 1, "Version G",
+        /* 15*/ { -1, -1, 7, { 0, 0, "" }, "1", -1, 0, 104, 98, 1, "Version G",
                     "00111011001000100010001000111000100010001000100011100010001000100010011010001000100010001011001000"
                     "00100010010001000100010001010001000100010001000110000100010001000100010100010001000100010010010001"
                     "10001010001000100010001000110000100010001000100010100010001000100010010010001000100010001010001000"
@@ -800,7 +865,7 @@ static void test_encode(int index, int generate, int debug) {
                     "01010110010110111111111111010101011001100110011010000000000000001110010010001000011000100010100010"
                     "01010111011110111111111111111010000100010001111011010001000100000111011011001100100100010011010001"
                 },
-        /* 15*/ { -1, -1, 8, "1", -1, 0, 148, 134, 1, "Version H",
+        /* 16*/ { -1, -1, 8, { 0, 0, "" }, "1", -1, 0, 148, 134, 1, "Version H",
                     "00111011001000100010001000111000100010001000101100100010001000100011100010001000100010110010001000100010001110001000100010001011001000"
                     "00100010010001000100010001100001000100010001001001000100010001000110000100010001000100100100010001000100011000010001000100010010010001"
                     "10001010001000100010001000101000100010001000101000100010001000100010100010001000100010100010001000100010001010001000100010001010001000"
@@ -950,7 +1015,7 @@ static void test_encode(int index, int generate, int debug) {
                     "11111110111111111111111111100101110111011101111001110111011101001010000100010001000100100100010001111001011001010101010101010110010101"
                     "01100111100110011001100110111101111011101110111110111011101110000111110111011101110111110111011101010001011101010101010101010111010101"
                 },
-        /* 16*/ { -1, -1, 9, "123456", -1, 0, 8, 11, 1, "Version S-10",
+        /* 17*/ { -1, -1, 9, { 0, 0, "" }, "123456", -1, 0, 8, 11, 1, "Version S-10",
                     "00011110000"
                     "11000010001"
                     "10100011100"
@@ -960,7 +1025,7 @@ static void test_encode(int index, int generate, int debug) {
                     "10000000001"
                     "10111111101"
                 },
-        /* 17*/ { -1, -1, 9, "123456789012", -1, 0, 8, 21, 1, "Version S-20",
+        /* 18*/ { -1, -1, 9, { 0, 0, "" }, "123456789012", -1, 0, 8, 21, 1, "Version S-20",
                     "000101110111000010010"
                     "110101100101011000101"
                     "100000101001110101100"
@@ -970,7 +1035,7 @@ static void test_encode(int index, int generate, int debug) {
                     "100000000000000000001"
                     "101111111111111111101"
                 },
-        /* 18*/ { -1, -1, 9, "123456789012345678", -1, 0, 8, 31, 1, "Version S-30",
+        /* 19*/ { -1, -1, 9, { 0, 0, "" }, "123456789012345678", -1, 0, 8, 31, 1, "Version S-30",
                     "0000110111010011100000001111001"
                     "1110100011011100110110110010111"
                     "1111100010010100111000011001010"
@@ -980,7 +1045,7 @@ static void test_encode(int index, int generate, int debug) {
                     "1000000000000001000000000000001"
                     "1011111111111111111111111111101"
                 },
-        /* 19*/ { -1, -1, 10, "ABCDEFGHIJKLM", -1, 0, 16, 17, 1, "Version T-16",
+        /* 20*/ { -1, -1, 10, { 0, 0, "" }, "ABCDEFGHIJKLM", -1, 0, 16, 17, 1, "Version T-16",
                     "11100101111100110"
                     "01101001010011101"
                     "00101000001011001"
@@ -998,7 +1063,7 @@ static void test_encode(int index, int generate, int debug) {
                     "10000000000000001"
                     "10111111111111101"
                 },
-        /* 20*/ { -1, -1, 10, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGH", -1, 0, 16, 33, 1, "Version T-32",
+        /* 21*/ { -1, -1, 10, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGH", -1, 0, 16, 33, 1, "Version T-32",
                     "111001011110011010010100001011001"
                     "011010011001110100100000011110011"
                     "100110101101101100001110001001110"
@@ -1016,7 +1081,7 @@ static void test_encode(int index, int generate, int debug) {
                     "100000000000000000000000000000001"
                     "101111111111111111111111111111101"
                 },
-        /* 21*/ { -1, -1, 10, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABC", -1, 0, 16, 49, 1, "Version T-48",
+        /* 22*/ { -1, -1, 10, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABC", -1, 0, 16, 49, 1, "Version T-48",
                     "1110010111100110001010001010110011001101011011011"
                     "0110100110011101010000000111100111010011001011010"
                     "0001110001001110100011110101001100101011110001000"
@@ -1034,7 +1099,7 @@ static void test_encode(int index, int generate, int debug) {
                     "1000000000000000000000001000000000000000000000001"
                     "1011111111111111111111111111111111111111111111101"
                 },
-        /* 22*/ { -1, -1, -1, "123456789012", -1, 0, 16, 18, 1, "ASCII double digits",
+        /* 23*/ { -1, -1, -1, { 0, 0, "" }, "123456789012", -1, 0, 16, 18, 1, "ASCII double digits",
                     "100011101010111101"
                     "111010010010100000"
                     "110110100010001000"
@@ -1052,7 +1117,7 @@ static void test_encode(int index, int generate, int debug) {
                     "010111110100100111"
                     "100010001101111100"
                 },
-        /* 23*/ { -1, -1, -1, "1234567890123", -1, 0, 16, 18, 1, "DECIMAL (numeric ending >= 13)",
+        /* 24*/ { -1, -1, -1, { 0, 0, "" }, "1234567890123", -1, 0, 16, 18, 1, "DECIMAL (numeric ending >= 13)",
                     "111111111111001100"
                     "000110000110010101"
                     "100010110111011000"
@@ -1070,7 +1135,7 @@ static void test_encode(int index, int generate, int debug) {
                     "011011110100101000"
                     "010000100100111111"
                 },
-        /* 24*/ { -1, -1, -1, "1234567890123A", -1, 0, 16, 18, 1, "ASCII (ending not fully numeric)",
+        /* 25*/ { -1, -1, -1, { 0, 0, "" }, "1234567890123A", -1, 0, 16, 18, 1, "ASCII (ending not fully numeric)",
                     "100011101010111101"
                     "111010010010100000"
                     "110110100000110100"
@@ -1088,7 +1153,7 @@ static void test_encode(int index, int generate, int debug) {
                     "001101100111101010"
                     "010000000011110011"
                 },
-        /* 25*/ { -1, -1, -1, "GOSGOS", -1, 0, 16, 18, 1, "2 C40 triplets, C40 at end, buffer empty, switch to ASCII before padding (5)",
+        /* 26*/ { -1, -1, -1, { 0, 0, "" }, "GOSGOS", -1, 0, 16, 18, 1, "2 C40 triplets, C40 at end, buffer empty, switch to ASCII before padding (5)",
                     "111011100010001000"
                     "011010000100010001"
                     "100010111110001000"
@@ -1106,7 +1171,7 @@ static void test_encode(int index, int generate, int debug) {
                     "110101010100101011"
                     "100110001001111001"
                 },
-        /* 26*/ { -1, -1, -1, "GOSGOSG", -1, 0, 16, 18, 1, "2 C40 triplets + C40 singlet, C40 at end, singlet in buffer, switch to ASCII before padding (3)",
+        /* 27*/ { -1, -1, -1, { 0, 0, "" }, "GOSGOSG", -1, 0, 16, 18, 1, "2 C40 triplets + C40 singlet, C40 at end, singlet in buffer, switch to ASCII before padding (3)",
                     "111011100010001000"
                     "011010000100010001"
                     "100010111101001000"
@@ -1124,7 +1189,7 @@ static void test_encode(int index, int generate, int debug) {
                     "001000000101101010"
                     "100101111101110001"
                 },
-        /* 27*/ { -1, -1, -1, "GOSGOSGO", -1, 0, 16, 18, 1, "2 C40 triplets + C40 doublet, C40 at end, doublet in buffer, switch to ASCII for doublet (2 pad)",
+        /* 28*/ { -1, -1, -1, { 0, 0, "" }, "GOSGOSGO", -1, 0, 16, 18, 1, "2 C40 triplets + C40 doublet, C40 at end, doublet in buffer, switch to ASCII for doublet (2 pad)",
                     "111011100010001000"
                     "011010000100010001"
                     "100010111101000101"
@@ -1142,7 +1207,7 @@ static void test_encode(int index, int generate, int debug) {
                     "110011010011101110"
                     "010001011100111100"
                 },
-        /* 28*/ { -1, -1, -1, "GOSGOSGOS", -1, 0, 16, 18, 1, "3 C40 triplets, C40 at end, switch to ASCII before padding (3)",
+        /* 29*/ { -1, -1, -1, { 0, 0, "" }, "GOSGOSGOS", -1, 0, 16, 18, 1, "3 C40 triplets, C40 at end, switch to ASCII before padding (3)",
                     "111011100010001000"
                     "011010000100010001"
                     "100010100010001111"
@@ -1160,7 +1225,7 @@ static void test_encode(int index, int generate, int debug) {
                     "000011011111101011"
                     "000011110110110001"
                 },
-        /* 29*/ { -1, -1, -1, "GOSGOSGOSG", -1, 0, 16, 18, 1, "3 C40 triplets + C40 singlet, C40 at end, singlet in buffer, switch to ASCII for singlet (1 pad)",
+        /* 30*/ { -1, -1, -1, { 0, 0, "" }, "GOSGOSGOSG", -1, 0, 16, 18, 1, "3 C40 triplets + C40 singlet, C40 at end, singlet in buffer, switch to ASCII for singlet (1 pad)",
                     "111011100010001000"
                     "011010000100010001"
                     "100010100010001111"
@@ -1178,7 +1243,7 @@ static void test_encode(int index, int generate, int debug) {
                     "101001010011100111"
                     "101111111001110110"
                 },
-        /* 30*/ { -1, -1, -1, "GOSGOSGOSGO", -1, 0, 16, 18, 1, "3 C40 triplets + C40 doublet, C40 at end, doublet in buffer, switch to ASCII for doublet (0 pad)",
+        /* 31*/ { -1, -1, -1, { 0, 0, "" }, "GOSGOSGOSGO", -1, 0, 16, 18, 1, "3 C40 triplets + C40 doublet, C40 at end, doublet in buffer, switch to ASCII for doublet (0 pad)",
                     "111011100010001000"
                     "011010000100010001"
                     "100010100010001111"
@@ -1196,7 +1261,7 @@ static void test_encode(int index, int generate, int debug) {
                     "110000011111100011"
                     "001001001110111100"
                 },
-        /* 31*/ { -1, -1, -1, "GOSGOSGOSGOS", -1, 0, 16, 18, 1, "4 C40 triplets, C40 at end, empty buffer, switch to ASCII before padding (1)",
+        /* 32*/ { -1, -1, -1, { 0, 0, "" }, "GOSGOSGOSGOS", -1, 0, 16, 18, 1, "4 C40 triplets, C40 at end, empty buffer, switch to ASCII before padding (1)",
                     "111011100010001000"
                     "011010000100010001"
                     "100010100010001000"
@@ -1214,7 +1279,7 @@ static void test_encode(int index, int generate, int debug) {
                     "001010101010101001"
                     "110011100111110100"
                 },
-        /* 32*/ { -1, -1, -1, ".GOSGOSGOSGOS", -1, 0, 16, 18, 1, "ASCII + 4 C40 triplets, C40 at end, empty buffer, no switch to ASCII as no padding",
+        /* 33*/ { -1, -1, -1, { 0, 0, "" }, ".GOSGOSGOSGOS", -1, 0, 16, 18, 1, "ASCII + 4 C40 triplets, C40 at end, empty buffer, no switch to ASCII as no padding",
                     "001011111010001000"
                     "111110011000010001"
                     "100010100010001000"
@@ -1232,7 +1297,7 @@ static void test_encode(int index, int generate, int debug) {
                     "111011101001100000"
                     "010001000011110110"
                 },
-        /* 33*/ { -1, -1, -1, "ABCDEFGHIJ\001K", -1, 0, 16, 18, 1, "4 C40 triplets (last shifted) + singlet, no unlatch, singlet as ASCII, no padding",
+        /* 34*/ { -1, -1, -1, { 0, 0, "" }, "ABCDEFGHIJ\001K", -1, 0, 16, 18, 1, "4 C40 triplets (last shifted) + singlet, no unlatch, singlet as ASCII, no padding",
                     "111011010111100110"
                     "011010100110011101"
                     "001010100001011000"
@@ -1250,7 +1315,7 @@ static void test_encode(int index, int generate, int debug) {
                     "001100001010100011"
                     "001001000000110110"
                 },
-        /* 34*/ { -1, -1, -1, "ABCDEFGHIJK\001", -1, 0, 22, 22, 1, "4 C40 triplets + singlet (shifted), backtrack to 3rd triplet and ASCII encode",
+        /* 35*/ { -1, -1, -1, { 0, 0, "" }, "ABCDEFGHIJK\001", -1, 0, 22, 22, 1, "4 C40 triplets + singlet (shifted), backtrack to 3rd triplet and ASCII encode",
                     "1110110101111001100010"
                     "0110101001100111010100"
                     "1000100101111101000100"
@@ -1274,7 +1339,7 @@ static void test_encode(int index, int generate, int debug) {
                     "0011000011111010101111"
                     "1111110001000011110110"
                 },
-        /* 35*/ { -1, -1, -1, "ABCDEFGH\001I\001", -1, 0, 22, 22, 1, "4 C40 triplets + singlet (shifted), backtrack to 2nd triplet and ASCII encode",
+        /* 36*/ { -1, -1, -1, { 0, 0, "" }, "ABCDEFGH\001I\001", -1, 0, 22, 22, 1, "4 C40 triplets + singlet (shifted), backtrack to 2nd triplet and ASCII encode",
                     "1110110101111001100010"
                     "0110101001100111010100"
                     "1111100100010000000100"
@@ -1298,7 +1363,7 @@ static void test_encode(int index, int generate, int debug) {
                     "1110110010000110101011"
                     "1001100010111000111111"
                 },
-        /* 36*/ { -1, -1, -1, "\101\102\103\104\105\106\107\110\200\101\102", -1, 0, 22, 22, 1, "'ABCDEFGH<80>AB' - cte_buffer_transfer with cte_p > 3",
+        /* 37*/ { -1, -1, -1, { 0, 0, "" }, "\101\102\103\104\105\106\107\110\200\101\102", -1, 0, 22, 22, 1, "'ABCDEFGH<80>AB' - cte_buffer_transfer with cte_p > 3",
                     "1110110101111001100010"
                     "0110101001100111010100"
                     "1000100100101110001111"
@@ -1322,7 +1387,7 @@ static void test_encode(int index, int generate, int debug) {
                     "0111100000001001101001"
                     "0101000100001100110110"
                 },
-        /* 37*/ { -1, -1, -1, "ABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 22, 22, 1, "7 EDI triplets + doublet, doublet encoded as triplet with Shift 0 pad, no switch to ASCII, no padding",
+        /* 38*/ { -1, -1, -1, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 22, 22, 1, "7 EDI triplets + doublet, doublet encoded as triplet with Shift 0 pad, no switch to ASCII, no padding",
                     "1110110101111001100010"
                     "0110101001100111010100"
                     "1000100101100110011010"
@@ -1346,7 +1411,7 @@ static void test_encode(int index, int generate, int debug) {
                     "0101100011001011101100"
                     "0100011100011000110110"
                 },
-        /* 38*/ { -1, -1, -1, "gosgos", -1, 0, 16, 18, 1, "2 TEXT triplets, TEXT at end, buffer empty, switch to ASCII before padding",
+        /* 39*/ { -1, -1, -1, { 0, 0, "" }, "gosgos", -1, 0, 16, 18, 1, "2 TEXT triplets, TEXT at end, buffer empty, switch to ASCII before padding",
                     "111011100010001000"
                     "111110000100010001"
                     "100010111110001000"
@@ -1364,7 +1429,7 @@ static void test_encode(int index, int generate, int debug) {
                     "000011110000100010"
                     "101100010110111010"
                 },
-        /* 39*/ { -1, -1, -1, "gosgosg", -1, 0, 16, 18, 1, "2 TEXT triplets + TEXT singlet, TEXT at end, singlet in buffer, switch to ASCII for singlet (3 pads)",
+        /* 40*/ { -1, -1, -1, { 0, 0, "" }, "gosgosg", -1, 0, 16, 18, 1, "2 TEXT triplets + TEXT singlet, TEXT at end, singlet in buffer, switch to ASCII for singlet (3 pads)",
                     "111011100010001000"
                     "111110000100010001"
                     "100010111101101000"
@@ -1382,7 +1447,7 @@ static void test_encode(int index, int generate, int debug) {
                     "100100000110100110"
                     "010101111001110000"
                 },
-        /* 40*/ { -1, -1, -1, "gosgosgo", -1, 0, 16, 18, 1, "2 TEXT triplets + TEXT doublet, TEXT at end, doublet in buffer, switch to ASCII for doublet, (2 pads)",
+        /* 41*/ { -1, -1, -1, { 0, 0, "" }, "gosgosgo", -1, 0, 16, 18, 1, "2 TEXT triplets + TEXT doublet, TEXT at end, doublet in buffer, switch to ASCII for doublet, (2 pads)",
                     "111011100010001000"
                     "111110000100010001"
                     "100010111101100111"
@@ -1400,7 +1465,7 @@ static void test_encode(int index, int generate, int debug) {
                     "010010000000100110"
                     "101001101001111111"
                 },
-        /* 41*/ { -1, -1, -1, ".gosgosgosgos", -1, 0, 16, 18, 1, "ASCII + 4 TEXT triplets, TEXT at end, empty buffer, no switch to ASCII as no padding",
+        /* 42*/ { -1, -1, -1, { 0, 0, "" }, ".gosgosgosgos", -1, 0, 16, 18, 1, "ASCII + 4 TEXT triplets, TEXT at end, empty buffer, no switch to ASCII as no padding",
                     "001011111010001000"
                     "111110111100010001"
                     "100010100010001000"
@@ -1418,7 +1483,7 @@ static void test_encode(int index, int generate, int debug) {
                     "010110000001101110"
                     "111001010101110110"
                 },
-        /* 42*/ { -1, -1, -1, "\015*>", -1, 0, 16, 18, 1, "1 EDI triplet, ASCII mode",
+        /* 43*/ { -1, -1, -1, { 0, 0, "" }, "\015*>", -1, 0, 16, 18, 1, "1 EDI triplet, ASCII mode",
                     "000011001000111000"
                     "111010101111110001"
                     "100010100010001000"
@@ -1436,7 +1501,7 @@ static void test_encode(int index, int generate, int debug) {
                     "111000011101100111"
                     "101001101110111110"
                 },
-        /* 43*/ { -1, -1, -1, "\015*>\015", -1, 0, 16, 18, 1, "1 EDI triplet + singlet, ASCII mode",
+        /* 44*/ { -1, -1, -1, { 0, 0, "" }, "\015*>\015", -1, 0, 16, 18, 1, "1 EDI triplet + singlet, ASCII mode",
                     "000011001000110000"
                     "111010101111111110"
                     "100010100010001000"
@@ -1454,7 +1519,7 @@ static void test_encode(int index, int generate, int debug) {
                     "000110111010101011"
                     "101001000010111001"
                 },
-        /* 44*/ { -1, -1, -1, "\015*>\015*", -1, 0, 16, 18, 1, "1 EDI triplet + doublet, ASCII mode",
+        /* 45*/ { -1, -1, -1, { 0, 0, "" }, "\015*>\015*", -1, 0, 16, 18, 1, "1 EDI triplet + doublet, ASCII mode",
                     "000011001000110000"
                     "111010101111111110"
                     "001010100010001000"
@@ -1472,7 +1537,7 @@ static void test_encode(int index, int generate, int debug) {
                     "101100010011101101"
                     "000010101011111010"
                 },
-        /* 45*/ { -1, -1, -1, "\015*>\015*>", -1, 0, 16, 18, 1, "2 EDI triplets, EDI mode",
+        /* 46*/ { -1, -1, -1, { 0, 0, "" }, "\015*>\015*>", -1, 0, 16, 18, 1, "2 EDI triplets, EDI mode",
                     "111011000000100000"
                     "111010000010110000"
                     "001010111110001000"
@@ -1490,7 +1555,7 @@ static void test_encode(int index, int generate, int debug) {
                     "111000010111100010"
                     "110010111011111011"
                 },
-        /* 46*/ { -1, -1, -1, "\015*>\015*>\015", -1, 0, 16, 18, 1, "2 EDI triplets + singlet, EDI mode + final ASCII",
+        /* 47*/ { -1, -1, -1, { 0, 0, "" }, "\015*>\015*>\015", -1, 0, 16, 18, 1, "2 EDI triplets + singlet, EDI mode + final ASCII",
                     "111011000000100000"
                     "111010000010110000"
                     "001010111100001000"
@@ -1508,7 +1573,7 @@ static void test_encode(int index, int generate, int debug) {
                     "011111001000100110"
                     "100011100011110000"
                 },
-        /* 47*/ { -1, -1, -1, "\015*>\015*>\015*", -1, 0, 16, 18, 1, "2 EDI triplets + doublet, EDI + final 2 ASCII",
+        /* 48*/ { -1, -1, -1, { 0, 0, "" }, "\015*>\015*>\015*", -1, 0, 16, 18, 1, "2 EDI triplets + doublet, EDI + final 2 ASCII",
                     "111011000000100000"
                     "111010000010110000"
                     "001010111100000010"
@@ -1526,7 +1591,7 @@ static void test_encode(int index, int generate, int debug) {
                     "101001000000100011"
                     "100011000010110110"
                 },
-        /* 48*/ { -1, -1, -1, "\015*>\015*>\015*>", -1, 0, 16, 18, 1, "3 EDI triplets, EDI mode",
+        /* 49*/ { -1, -1, -1, { 0, 0, "" }, "\015*>\015*>\015*>", -1, 0, 16, 18, 1, "3 EDI triplets, EDI mode",
                     "111011000000100000"
                     "111010000010110000"
                     "001010000000101111"
@@ -1544,7 +1609,7 @@ static void test_encode(int index, int generate, int debug) {
                     "110110000011100000"
                     "110111100010110011"
                 },
-        /* 49*/ { -1, -1, -1, "\015*>\015*>\015*>\015", -1, 0, 16, 18, 1, "3 EDI triplets + singlet, EDI mode + final ASCII singlet",
+        /* 50*/ { -1, -1, -1, { 0, 0, "" }, "\015*>\015*>\015*>\015", -1, 0, 16, 18, 1, "3 EDI triplets + singlet, EDI mode + final ASCII singlet",
                     "111011000000100000"
                     "111010000010110000"
                     "001010000000101111"
@@ -1562,7 +1627,7 @@ static void test_encode(int index, int generate, int debug) {
                     "000101100111100111"
                     "011010010010111010"
                 },
-        /* 50*/ { -1, -1, -1, "\015*>\015*>\015*>\015*>", -1, 0, 16, 18, 1, "4 EDI triplets, EDI mode",
+        /* 51*/ { -1, -1, -1, { 0, 0, "" }, "\015*>\015*>\015*>\015*>", -1, 0, 16, 18, 1, "4 EDI triplets, EDI mode",
                     "111011000000100000"
                     "111010000010110000"
                     "001010000000100000"
@@ -1580,7 +1645,7 @@ static void test_encode(int index, int generate, int debug) {
                     "100000101110101011"
                     "110001000001111000"
                 },
-        /* 51*/ { -1, -1, -1, "\015*>\015*>\015*>\015*>\015", -1, 0, 16, 18, 1, "4 EDI triplets + singlet, EDI mode + nolatch final ASCII singlet (last data codeword of symbol)",
+        /* 52*/ { -1, -1, -1, { 0, 0, "" }, "\015*>\015*>\015*>\015*>\015", -1, 0, 16, 18, 1, "4 EDI triplets + singlet, EDI mode + nolatch final ASCII singlet (last data codeword of symbol)",
                     "111011000000100000"
                     "111010000010110000"
                     "001010000000100000"
@@ -1598,7 +1663,7 @@ static void test_encode(int index, int generate, int debug) {
                     "010111001011101001"
                     "101010110001111100"
                 },
-        /* 52*/ { -1, -1, -1, "\015*>\015*>\015*>\015*>\015*", -1, 0, 22, 22, 1, "4 EDI triplets + doublet, EDI mode + final 2 ASCII",
+        /* 53*/ { -1, -1, -1, { 0, 0, "" }, "\015*>\015*>\015*>\015*>\015*", -1, 0, 22, 22, 1, "4 EDI triplets + doublet, EDI mode + final 2 ASCII",
                     "1110110000001000000010"
                     "1110100000101100001011"
                     "0000100010000000101111"
@@ -1622,7 +1687,7 @@ static void test_encode(int index, int generate, int debug) {
                     "0110100100001000101101"
                     "0010111010100110111000"
                 },
-        /* 53*/ { -1, -1, -1, "\015*>\015*>a", -1, 0, 16, 18, 1, "2 EDI triplets + ASCII singlet, EDI mode + final ASCII",
+        /* 54*/ { -1, -1, -1, { 0, 0, "" }, "\015*>\015*>a", -1, 0, 16, 18, 1, "2 EDI triplets + ASCII singlet, EDI mode + final ASCII",
                     "111011000000100000"
                     "111010000010110000"
                     "001010111101101000"
@@ -1640,7 +1705,7 @@ static void test_encode(int index, int generate, int debug) {
                     "100111010011100101"
                     "011111111010110101"
                 },
-        /* 54*/ { -1, -1, -1, "\015*>\015*>\015*>\015*>a", -1, 0, 16, 18, 1, "4 EDI triplets + ASCII singlet, EDI mode + final ASCII",
+        /* 55*/ { -1, -1, -1, { 0, 0, "" }, "\015*>\015*>\015*>\015*>a", -1, 0, 16, 18, 1, "4 EDI triplets + ASCII singlet, EDI mode + final ASCII",
                     "111011000000100000"
                     "111010000010110000"
                     "001010000000100000"
@@ -1658,7 +1723,7 @@ static void test_encode(int index, int generate, int debug) {
                     "001110101010100111"
                     "110100010001110011"
                 },
-        /* 55*/ { -1, -1, -1, "\015*>\015*>\015*>\015*>\015a", -1, 0, 22, 22, 1, "4 EDI triplets + singlet + ASCII, EDI mode + final 2 ASCII",
+        /* 56*/ { -1, -1, -1, { 0, 0, "" }, "\015*>\015*>\015*>\015*>\015a", -1, 0, 22, 22, 1, "4 EDI triplets + singlet + ASCII, EDI mode + final 2 ASCII",
                     "1110110000001000000010"
                     "1110100000101100001011"
                     "0000100010000000101111"
@@ -1682,7 +1747,7 @@ static void test_encode(int index, int generate, int debug) {
                     "0001110010110111101110"
                     "1001011011101101111101"
                 },
-        /* 56*/ { -1, -1, -1, "\015*>\015*>\015*>\015*a", -1, 0, 22, 22, 1, "3 EDI triplets + doublet + ASCII, EDI mode + final 3 ASCII",
+        /* 57*/ { -1, -1, -1, { 0, 0, "" }, "\015*>\015*>\015*>\015*a", -1, 0, 22, 22, 1, "3 EDI triplets + doublet + ASCII, EDI mode + final 3 ASCII",
                     "1110110000001000000010"
                     "1110100000101100001011"
                     "0000100010111100000010"
@@ -1706,7 +1771,7 @@ static void test_encode(int index, int generate, int debug) {
                     "1011110100111010100000"
                     "0001111010001000110010"
                 },
-        /* 57*/ { -1, -1, -1, "\015*>\015*>\015*>ABC", -1, 0, 16, 18, 1, "3 EDI triplets + 3 alphas (EDI)",
+        /* 58*/ { -1, -1, -1, { 0, 0, "" }, "\015*>\015*>\015*>ABC", -1, 0, 16, 18, 1, "3 EDI triplets + 3 alphas (EDI)",
                     "111011000000100000"
                     "111010000010110000"
                     "001010000000100101"
@@ -1724,7 +1789,7 @@ static void test_encode(int index, int generate, int debug) {
                     "010011011100100111"
                     "000001001101111001"
                 },
-        /* 58*/ { -1, -1, -1, "\015*>\015*>\015*>1234567", -1, 0, 22, 22, 1, "3 EDI triplets + 7 digits ending (EDI)",
+        /* 59*/ { -1, -1, -1, { 0, 0, "" }, "\015*>\015*>\015*>1234567", -1, 0, 22, 22, 1, "3 EDI triplets + 7 digits ending (EDI)",
                     "1110110000001000000010"
                     "1110100000101100001011"
                     "0000100010001000110011"
@@ -1748,7 +1813,7 @@ static void test_encode(int index, int generate, int debug) {
                     "0110011101010010101010"
                     "0101111011000100110001"
                 },
-        /* 59*/ { -1, -1, -1, "\015*>\015*>\015*>12345678", -1, 0, 22, 22, 1, "3 EDI triplets + 8 digits ending -> DECIMAL",
+        /* 60*/ { -1, -1, -1, { 0, 0, "" }, "\015*>\015*>\015*>12345678", -1, 0, 22, 22, 1, "3 EDI triplets + 8 digits ending -> DECIMAL",
                     "1110110000001000000010"
                     "1110100000101100001011"
                     "0000100010111110001010"
@@ -1772,7 +1837,7 @@ static void test_encode(int index, int generate, int debug) {
                     "1101100100110011101111"
                     "1001110001001011110010"
                 },
-        /* 60*/ { -1, -1, -1, "\015*>\015*>\015*>123456789012\015*>", -1, 0, 22, 22, 1, "3 EDI triplets + 12 DECIMAL not ending -> DECIMAL",
+        /* 61*/ { -1, -1, -1, { 0, 0, "" }, "\015*>\015*>\015*>123456789012\015*>", -1, 0, 22, 22, 1, "3 EDI triplets + 12 DECIMAL not ending -> DECIMAL",
                     "1110110000001000000010"
                     "1110100000101100001011"
                     "0000100010111110001010"
@@ -1796,7 +1861,7 @@ static void test_encode(int index, int generate, int debug) {
                     "1110010110011011100001"
                     "1100100100000011111100"
                 },
-        /* 61*/ { -1, -1, -1, "123456789012345", -1, 0, 16, 18, 1, "5 DECIMAL triplets, ASCII switch before padding (2)",
+        /* 62*/ { -1, -1, -1, { 0, 0, "" }, "123456789012345", -1, 0, 16, 18, 1, "5 DECIMAL triplets, ASCII switch before padding (2)",
                     "111111111111001100"
                     "000110000110010101"
                     "100010110101101111"
@@ -1814,7 +1879,7 @@ static void test_encode(int index, int generate, int debug) {
                     "100010110110101011"
                     "111111011010110001"
                 },
-        /* 62*/ { -1, -1, -1, "1234567890123456", -1, 0, 16, 18, 1, "5 DECIMAL triplets + singlet, switch to ASCII before padding (2)",
+        /* 63*/ { -1, -1, -1, { 0, 0, "" }, "1234567890123456", -1, 0, 16, 18, 1, "5 DECIMAL triplets + singlet, switch to ASCII before padding (2)",
                     "111111111111001100"
                     "000110000110010101"
                     "100010110101101111"
@@ -1832,7 +1897,7 @@ static void test_encode(int index, int generate, int debug) {
                     "000101110010100011"
                     "010101000001110111"
                 },
-        /* 63*/ { -1, -1, -1, "12345678901234567", -1, 0, 16, 18, 1, "5 DECIMAL triplets + doublet, switch before ASCII encoding of final char, padding (1)",
+        /* 64*/ { -1, -1, -1, { 0, 0, "" }, "12345678901234567", -1, 0, 16, 18, 1, "5 DECIMAL triplets + doublet, switch before ASCII encoding of final char, padding (1)",
                     "111111111111001100"
                     "000110000110010101"
                     "100010110101101111"
@@ -1850,7 +1915,7 @@ static void test_encode(int index, int generate, int debug) {
                     "011100000111101100"
                     "100010110100110100"
                 },
-        /* 64*/ { -1, -1, -1, "123456789012345678", -1, 0, 16, 18, 1, "6 DECIMAL triplets, switch to ASCII, padding (1)",
+        /* 65*/ { -1, -1, -1, { 0, 0, "" }, "123456789012345678", -1, 0, 16, 18, 1, "6 DECIMAL triplets, switch to ASCII, padding (1)",
                     "111111111111001100"
                     "000110000110010101"
                     "100010110101101010"
@@ -1868,7 +1933,7 @@ static void test_encode(int index, int generate, int debug) {
                     "101110000010100101"
                     "011010011110111101"
                 },
-        /* 65*/ { -1, -1, -1, "1234567890123456789", -1, 0, 16, 18, 1, "6 DECIMAL triplets + singlet, switch before ASCII encoding of singlet, no padding",
+        /* 66*/ { -1, -1, -1, { 0, 0, "" }, "1234567890123456789", -1, 0, 16, 18, 1, "6 DECIMAL triplets + singlet, switch before ASCII encoding of singlet, no padding",
                     "111111111111001100"
                     "000110000110010101"
                     "100010110101101010"
@@ -1886,7 +1951,7 @@ static void test_encode(int index, int generate, int debug) {
                     "011001101011100100"
                     "101110111011110000"
                 },
-        /* 66*/ { -1, -1, -1, "12345678901234567890", -1, 0, 16, 18, 1, "6 DECIMAL triplets + doublet, switch before ASCII 2-digit encoding of doublet, no padding",
+        /* 67*/ { -1, -1, -1, { 0, 0, "" }, "12345678901234567890", -1, 0, 16, 18, 1, "6 DECIMAL triplets + doublet, switch before ASCII 2-digit encoding of doublet, no padding",
                     "111111111111001100"
                     "000110000110010101"
                     "100010110101101010"
@@ -1904,7 +1969,7 @@ static void test_encode(int index, int generate, int debug) {
                     "111110100110101101"
                     "001000111011111111"
                 },
-        /* 67*/ { -1, -1, -1, "123456789012345678901", -1, 0, 16, 18, 1, "7 DECIMAL triplets, fills to final codeword, no padding",
+        /* 68*/ { -1, -1, -1, { 0, 0, "" }, "123456789012345678901", -1, 0, 16, 18, 1, "7 DECIMAL triplets, fills to final codeword, no padding",
                     "111111111111001100"
                     "000110000110010101"
                     "100010110101101010"
@@ -1922,7 +1987,7 @@ static void test_encode(int index, int generate, int debug) {
                     "111000110101100101"
                     "110001100000110100"
                 },
-        /* 68*/ { -1, -1, -1, "1234567890123456789012", -1, 0, 16, 18, 1, "7 DECIMAL triplets + singlet, fills to final codeword, no padding",
+        /* 69*/ { -1, -1, -1, { 0, 0, "" }, "1234567890123456789012", -1, 0, 16, 18, 1, "7 DECIMAL triplets + singlet, fills to final codeword, no padding",
                     "111111111111001100"
                     "000110000110010101"
                     "100010110101101010"
@@ -1940,7 +2005,7 @@ static void test_encode(int index, int generate, int debug) {
                     "100111000001100000"
                     "101000001010111101"
                 },
-        /* 69*/ { -1, -1, -1, "123456789012345678901234567890123678901AB", -1, 0, 28, 32, 1, "DECIMAL + 4 bits ASCII switch",
+        /* 70*/ { -1, -1, -1, { 0, 0, "" }, "123456789012345678901234567890123678901AB", -1, 0, 28, 32, 1, "DECIMAL + 4 bits ASCII switch",
                     "11111111111100110010001101110110"
                     "00011000011001010100000101101010"
                     "10101011101000101111100111100001"
@@ -1970,7 +2035,7 @@ static void test_encode(int index, int generate, int debug) {
                     "11011010001110110010110100101110"
                     "01011111010001011011010000110111"
                 },
-        /* 70*/ { -1, -1, -1, "123456789012345678901234567890123678901234A", -1, 0, 22, 22, 0, "DECIMAL + single ASCII in last 8 bits; BWIPP different encodation TODO: investigate",
+        /* 71*/ { -1, -1, -1, { 0, 0, "" }, "123456789012345678901234567890123678901234A", -1, 0, 22, 22, 0, "DECIMAL + single ASCII in last 8 bits; BWIPP different encodation TODO: investigate",
                     "1111111111110011001000"
                     "0001100001100101010000"
                     "1101100110101011101000"
@@ -1994,7 +2059,7 @@ static void test_encode(int index, int generate, int debug) {
                     "1111110100001111101111"
                     "0100010100010000111100"
                 },
-        /* 71*/ { -1, -1, 10, "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", -1, 0, 16, 49, 1, "T-48 90",
+        /* 72*/ { -1, -1, 10, { 0, 0, "" }, "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", -1, 0, 16, 49, 1, "T-48 90",
                     "1111111111001100100011011011010101110100010111110"
                     "0001000110010101000001010101001110001111010000011"
                     "0111000100011001010100000010110100111000111101000"
@@ -2012,10 +2077,10 @@ static void test_encode(int index, int generate, int debug) {
                     "1000000000000000000000001000000000000000000000001"
                     "1011111111111111111111111111111111111111111111101"
                 },
-        /* 72*/ { -1, -1, 10, "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789", -1, ZINT_ERROR_TOO_LONG, 0, 0, 1, "T-48 89",
+        /* 73*/ { -1, -1, 10, { 0, 0, "" }, "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789", -1, ZINT_ERROR_TOO_LONG, 0, 0, 1, "T-48 89",
                     ""
                 },
-        /* 73*/ { -1, -1, -1, "A123456789012345678901A", -1, 0, 22, 22, 1, "ASCII + 7 DECIMAL triplets + ASCII",
+        /* 74*/ { -1, -1, -1, { 0, 0, "" }, "A123456789012345678901A", -1, 0, 22, 22, 1, "ASCII + 7 DECIMAL triplets + ASCII",
                     "0100111111111111001100"
                     "0010100001000110010101"
                     "1000101101011010101110"
@@ -2039,7 +2104,7 @@ static void test_encode(int index, int generate, int debug) {
                     "1010001010001011101101"
                     "1101101001100001110101"
                 },
-        /* 74*/ { -1, -1, -1, "A1234567890123456789012A", -1, 0, 22, 22, 1, "ASCII + 7 DECIMAL triplets + singlet + ASCII",
+        /* 75*/ { -1, -1, -1, { 0, 0, "" }, "A1234567890123456789012A", -1, 0, 22, 22, 1, "ASCII + 7 DECIMAL triplets + singlet + ASCII",
                     "0100111111111111001100"
                     "0010100001000110010101"
                     "1000101101011010101110"
@@ -2063,7 +2128,7 @@ static void test_encode(int index, int generate, int debug) {
                     "0101101010001000100111"
                     "1110011111011111110100"
                 },
-        /* 75*/ { -1, -1, -1, "A12345678901234567890123A", -1, 0, 22, 22, 1, "ASCII + 7 DECIMAL triplets + doublet + ASCII",
+        /* 76*/ { -1, -1, -1, { 0, 0, "" }, "A12345678901234567890123A", -1, 0, 22, 22, 1, "ASCII + 7 DECIMAL triplets + doublet + ASCII",
                     "0100111111111111001100"
                     "0010100001000110010101"
                     "1000101101011010101110"
@@ -2087,7 +2152,7 @@ static void test_encode(int index, int generate, int debug) {
                     "0001111010010111100010"
                     "0001001001000000110100"
                 },
-        /* 76*/ { -1, -1, -1, "ABCDEFGHI123456789012A", -1, 0, 22, 22, 1, "3 C40 triplets + 4 DECIMAL triplets + ASCII 0 padding",
+        /* 77*/ { -1, -1, -1, { 0, 0, "" }, "ABCDEFGHI123456789012A", -1, 0, 22, 22, 1, "3 C40 triplets + 4 DECIMAL triplets + ASCII 0 padding",
                     "1110110101111001100010"
                     "0110101001100111010100"
                     "1000100101111110001010"
@@ -2111,7 +2176,7 @@ static void test_encode(int index, int generate, int debug) {
                     "0011001101000011100011"
                     "0100110101010110111011"
                 },
-        /* 77*/ { -1, -1, -1, "ABCDEFGHI12345678", -1, 0, 22, 22, 1, "3 C40 triplets + ASCII 2-digits end-of-data",
+        /* 78*/ { -1, -1, -1, { 0, 0, "" }, "ABCDEFGHI12345678", -1, 0, 22, 22, 1, "3 C40 triplets + ASCII 2-digits end-of-data",
                     "1110110101111001100010"
                     "0110101001100111010100"
                     "1000100101111110001010"
@@ -2135,7 +2200,7 @@ static void test_encode(int index, int generate, int debug) {
                     "1010111111111110101011"
                     "1101101100101010110101"
                 },
-        /* 78*/ { -1, -1, -1, "ABCDEFGH123456789012345678901A", -1, 0, 22, 22, 1, "2 C40 triplets + doublet + ASCII 2-digits ASCII 0 padding",
+        /* 79*/ { -1, -1, -1, { 0, 0, "" }, "ABCDEFGH123456789012345678901A", -1, 0, 22, 22, 1, "2 C40 triplets + doublet + ASCII 2-digits ASCII 0 padding",
                     "1110110101111001100010"
                     "0110101001100111010100"
                     "1000100100111110011010"
@@ -2159,7 +2224,7 @@ static void test_encode(int index, int generate, int debug) {
                     "0010110111111111101111"
                     "1010010000100000110111"
                 },
-        /* 79*/ { -1, -1, -1, "\101\102\103\104\105\106\107\110\111\112\113\200", -1, 0, 22, 22, 1, "3 C40 triplets + doublet + extended ASCII - note extended ASCII not encodable in C40 mode",
+        /* 80*/ { -1, -1, -1, { 0, 0, "" }, "\101\102\103\104\105\106\107\110\111\112\113\200", -1, 0, 22, 22, 1, "3 C40 triplets + doublet + extended ASCII - note extended ASCII not encodable in C40 mode",
                     "1110110101111001100010"
                     "0110101001100111010100"
                     "1000100101100110001011"
@@ -2183,7 +2248,7 @@ static void test_encode(int index, int generate, int debug) {
                     "1010000101100100100110"
                     "0101111100110010110010"
                 },
-        /* 80*/ { -1, -1, -1, "\200\200", -1, 0, 16, 18, 1, "BYTE",
+        /* 81*/ { -1, -1, -1, { 0, 0, "" }, "\200\200", -1, 0, 16, 18, 1, "BYTE",
                     "111011000010001000"
                     "011110001000000000"
                     "100010100010001000"
@@ -2201,7 +2266,7 @@ static void test_encode(int index, int generate, int debug) {
                     "010011001011100111"
                     "110100011101110111"
                 },
-        /* 81*/ { -1, -1, -1, "\200\200\200\200\200\200\200\200", -1, 0, 16, 18, 1, "BYTE (no padding, byte count 0)",
+        /* 82*/ { -1, -1, -1, { 0, 0, "" }, "\200\200\200\200\200\200\200\200", -1, 0, 16, 18, 1, "BYTE (no padding, byte count 0)",
                     "111011000010001000"
                     "011110000000000000"
                     "100010100010001000"
@@ -2219,7 +2284,7 @@ static void test_encode(int index, int generate, int debug) {
                     "111101011011100111"
                     "101110100100111000"
                 },
-        /* 82*/ { -1, -1, -1, "\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\061\062\063\064\065\066\067\070\071\060\061\062\063", -1, 0, 70, 76, 1, "249 BYTEs + 13 DECIMAL",
+        /* 83*/ { -1, -1, -1, { 0, 0, "" }, "\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\061\062\063\064\065\066\067\070\071\060\061\062\063", -1, 0, 70, 76, 1, "249 BYTEs + 13 DECIMAL",
                     "1110111111100010001000100011100010001000100010001110001000100010001000111000"
                     "0111101001000000000000000010000000000000000000001000000000000000000000100000"
                     "1000101000100010001000100010100010001000100010001010001000100010001000101000"
@@ -2291,7 +2356,7 @@ static void test_encode(int index, int generate, int debug) {
                     "0000101101010101000011010110011110110100100111111011100001010010000111100100"
                     "1101111110001011101100010011101010100111101110111101101000010100111000111001"
                 },
-        /* 83*/ { -1, -1, -1, "\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\061\062\063\064\065\066\067\070\071\060\061\062\063", -1, 0, 70, 76, 1, "250 BYTEs + 13 DECIMAL",
+        /* 84*/ { -1, -1, -1, { 0, 0, "" }, "\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\061\062\063\064\065\066\067\070\071\060\061\062\063", -1, 0, 70, 76, 1, "250 BYTEs + 13 DECIMAL",
                     "1110111111000010001000100011100010001000100010001110001000100010001000111000"
                     "0111101010000000000000000010000000000000000000001000000000000000000000100000"
                     "1000101000100010001000100010100010001000100010001010001000100010001000101000"
@@ -2363,7 +2428,7 @@ static void test_encode(int index, int generate, int debug) {
                     "1111101101101101100101000110010011000011110001101001001011010001000001100100"
                     "1110110001110110001100000011110011001110000101001111000111011001010011111110"
                 },
-        /* 84*/ { -1, -1, -1, "\061\062\063\064\065\066\067\070\071\060\061\062\063\064\065\066\067\070\071\060\061\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\061\062\063\064\065\066\067\070\071\060\061\062\063", -1, 0, 104, 98, 1, "21 DECIMAL + 501 BYTEs + 13 DECIMAL",
+        /* 85*/ { -1, -1, -1, { 0, 0, "" }, "\061\062\063\064\065\066\067\070\071\060\061\062\063\064\065\066\067\070\071\060\061\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\061\062\063\064\065\066\067\070\071\060\061\062\063", -1, 0, 104, 98, 1, "21 DECIMAL + 501 BYTEs + 13 DECIMAL",
                     "11111111111100110010001101011110101011101011111011111100001000100010011010001000100010001011001000"
                     "00010010011001010100000101110010011100011111011110101100010000000000010000000000000000000010000000"
                     "10001010001000100010001000110000100010001000100010100010001000100010010010001000100010001010001000"
@@ -2469,7 +2534,7 @@ static void test_encode(int index, int generate, int debug) {
                     "11001110100000010100001001010010000101101110100110101100011011001110010101111001100100110010001101"
                     "01110011001111110111010101111010111001011100001111011101001011010000011011001100100000101011000101"
                 },
-        /* 85*/ { -1, -1, -1, "\061\062\063\064\065\066\067\070\071\060\061\062\063\064\065\066\067\070\071\060\061\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\061\062\063\064\065\066\067\070\071\060\061\062\063\064\065\066\067\070\071\060\061\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\061\062\063\064\065\066\067\070\071\060\061\062\063", -1, 0, 104, 98, 1, "21 DECIMAL + 251 BYTEs + 21 DECIMAL + 252 BYTEs 13 DECIMAL",
+        /* 86*/ { -1, -1, -1, { 0, 0, "" }, "\061\062\063\064\065\066\067\070\071\060\061\062\063\064\065\066\067\070\071\060\061\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\061\062\063\064\065\066\067\070\071\060\061\062\063\064\065\066\067\070\071\060\061\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\061\062\063\064\065\066\067\070\071\060\061\062\063", -1, 0, 104, 98, 1, "21 DECIMAL + 251 BYTEs + 21 DECIMAL + 252 BYTEs 13 DECIMAL",
                     "11111111111100110010001101011110101011101011111011111100001000100010011010001000100010001011001000"
                     "00010010011001010100000101110010011100011111011110101000010000000000010000000000000000000010000000"
                     "10001010001000100010001000110000100010001000100010100010001000100010010010001000100010001010001000"
@@ -2575,7 +2640,7 @@ static void test_encode(int index, int generate, int debug) {
                     "01101010000000111001110100110111110011111001000110101010111111101011110001100001110101000110111101"
                     "01111111101011000101001010011010111100011101111011110000111111000110111010011101101111001111011011"
                 },
-        /* 86*/ { -1, 3, -1, "\351", -1, 0, 16, 18, 1, "é in ISO 8859-1",
+        /* 87*/ { -1, 3, -1, { 0, 0, "" }, "\351", -1, 0, 16, 18, 1, "é in ISO 8859-1",
                     "100011010101011000"
                     "000110110111010010"
                     "100010100011100110"
@@ -2593,7 +2658,7 @@ static void test_encode(int index, int generate, int debug) {
                     "001010011001100100"
                     "101100110110110101"
                 },
-        /* 87*/ { -1, 899, -1, "\134\134\351\142\154\134\141\150\134", -1, 0, 28, 32, 1, "<bksh>ébl<bksh>ah<bksh>",
+        /* 88*/ { -1, 899, -1, { 0, 0, "" }, "\134\134\351\142\154\134\141\150\134", -1, 0, 28, 32, 1, "<bksh>ébl<bksh>ah<bksh>",
                     "10001101010101100010001110110101"
                     "00011011011101001010100101101101"
                     "01011001010101111001100110100110"
@@ -2623,7 +2688,7 @@ static void test_encode(int index, int generate, int debug) {
                     "11011011010100010100111000101011"
                     "11011110101110100011111110110011"
                 },
-        /* 88*/ { GS1_MODE, -1, -1, "[90]12[91]1234567890123A", -1, 0, 22, 22, 1, "Step B4",
+        /* 89*/ { GS1_MODE, -1, -1, { 0, 0, "" }, "[90]12[91]1234567890123A", -1, 0, 22, 22, 1, "Step B4",
                     "1110111101100011101110"
                     "1000101100111011000100"
                     "0000101011111001110001"
@@ -2647,7 +2712,7 @@ static void test_encode(int index, int generate, int debug) {
                     "0100001001100001101110"
                     "1110110100001101111001"
                 },
-        /* 89*/ { GS1_MODE, -1, -1, "[90]12[91]12345", -1, 0, 16, 18, 1, "Step B5",
+        /* 90*/ { GS1_MODE, -1, -1, { 0, 0, "" }, "[90]12[91]12345", -1, 0, 16, 18, 1, "Step B5",
                     "111011110110001110"
                     "100010110011101100"
                     "111010000010111101"
@@ -2665,7 +2730,7 @@ static void test_encode(int index, int generate, int debug) {
                     "011100010001100101"
                     "101000101000110110"
                 },
-        /* 90*/ { GS1_MODE, -1, -1, "[10]AB[90]ABCDEFGHIJKLMNOP[91]ABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 28, 32, 1, "Step P",
+        /* 91*/ { GS1_MODE, -1, -1, { 0, 0, "" }, "[10]AB[90]ABCDEFGHIJKLMNOP[91]ABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 28, 32, 1, "Step P",
                     "11101110000100010011101101111110"
                     "10001011000010001110001100100110"
                     "01011011100110001010000101101001"
@@ -2695,7 +2760,7 @@ static void test_encode(int index, int generate, int debug) {
                     "01111000010000110101101110100100"
                     "00011110111111111110101011110110"
                 },
-        /* 91*/ { GS1_MODE, -1, -1, "[11]121212", -1, 0, 16, 18, 1, "Start FNC1 and Decimal",
+        /* 92*/ { GS1_MODE, -1, -1, { 0, 0, "" }, "[11]121212", -1, 0, 16, 18, 1, "Start FNC1 and Decimal",
                     "111011000100000101"
                     "110010110011011111"
                     "110010001110001000"
@@ -2712,6 +2777,96 @@ static void test_encode(int index, int generate, int debug) {
                     "110011110100100111"
                     "000111100011101101"
                     "100101110101111101"
+                },
+        /* 93*/ { -1, -1, 1, { 1, 15, "" }, "ABCDEFGHIJ", -1, 0, 16, 18, 1, "Structured Append (Group mode) 1st symbol, no ECI",
+                    "000011111011100101"
+                    "111010100101101001"
+                    "111010011000101000"
+                    "100110110101000000"
+                    "010110010011010000"
+                    "000010000000100000"
+                    "111111111111111111"
+                    "000000000000000000"
+                    "011111111111111110"
+                    "010000000000000010"
+                    "011111111111111110"
+                    "111110111110100100"
+                    "000001000110100000"
+                    "011011101111100000"
+                    "010110110000100111"
+                    "101110110100110101"
+                },
+        /* 94*/ { -1, -1, 1, { 2, 15, "" }, "KLMNOPQRST", -1, 0, 16, 18, 1, "Structured Append (Group mode) subsequent symbol, no ECI",
+                    "000111111011101001"
+                    "110110100101101010"
+                    "000010101000111100"
+                    "001110110111100000"
+                    "011110010101010101"
+                    "000010000000100000"
+                    "111111111111111111"
+                    "000000000000000000"
+                    "011111111111111110"
+                    "010000000000000010"
+                    "011111111111111110"
+                    "100101010000100101"
+                    "100010011111100000"
+                    "001110111110101011"
+                    "010101010000100001"
+                    "110100011010111010"
+                },
+        /* 95*/ { -1, 3, 1, { 1, 15, "" }, "AB", -1, 0, 16, 18, 1, "Structured Append (Group mode) 1st symbol, with ECI",
+                    "100011111000000101"
+                    "000110100111101101"
+                    "010110100010001000"
+                    "110110001000100101"
+                    "010010010010101011"
+                    "000010000000100000"
+                    "111111111111111111"
+                    "000000000000000000"
+                    "011111111111111110"
+                    "010000000000000010"
+                    "011111111111111110"
+                    "001000110101100110"
+                    "110100010011101110"
+                    "010010010011100011"
+                    "100001000010100000"
+                    "000110111011111101"
+                },
+        /* 96*/ { -1, 3, 1, { 2, 15, "" }, "CDEF", -1, 0, 16, 18, 1, "Structured Append (Group mode) subsequent symbol, with ECI",
+                    "000111111001011000"
+                    "110110100111010010"
+                    "100010100001000100"
+                    "001010010101000101"
+                    "010010010000110111"
+                    "000010000000100000"
+                    "111111111111111111"
+                    "000000000000000000"
+                    "011111111111111110"
+                    "010000000000000010"
+                    "011111111111111110"
+                    "011001111110101000"
+                    "101101010111100000"
+                    "111001110100100111"
+                    "010010010100100110"
+                    "000100100101110110"
+                },
+        /* 97*/ { -1, -1, 1, { 128, 128, "" }, "ABCDEFGHI", -1, 0, 16, 18, 1, "Structured Append (Extended Group mode)",
+                    "100011100011101110"
+                    "000010000010010110"
+                    "010110111001100010"
+                    "100110100111010100"
+                    "100010010111101110"
+                    "000010000000100000"
+                    "111111111111111111"
+                    "000000000000000000"
+                    "011111111111111110"
+                    "010000000000000010"
+                    "011111111111111110"
+                    "000011111001100010"
+                    "111110000001101110"
+                    "011011001000101010"
+                    "000001010100101011"
+                    "110100001010111101"
                 },
     };
     int data_size = ARRAY_SIZE(data);
@@ -2735,13 +2890,17 @@ static void test_encode(int index, int generate, int debug) {
         assert_nonnull(symbol, "Symbol not created\n");
 
         length = testUtilSetSymbol(symbol, BARCODE_CODEONE, data[i].input_mode, data[i].eci, -1 /*option_1*/, data[i].option_2, -1, -1 /*output_options*/, data[i].data, data[i].length, debug);
+        if (data[i].structapp.count) {
+            symbol->structapp = data[i].structapp;
+        }
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (generate) {
-            printf("        /*%3d*/ { %s, %d, %d, \"%s\", %d, %s, %d, %d, %d, \"%s\",\n",
+            printf("        /*%3d*/ { %s, %d, %d, { %d, %d, \"%s\" }, \"%s\", %d, %s, %d, %d, %d, \"%s\",\n",
                     i, testUtilInputModeName(data[i].input_mode), data[i].eci, data[i].option_2,
+                    data[i].structapp.index, data[i].structapp.count, data[i].structapp.id,
                     testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), data[i].length,
                     testUtilErrorName(data[i].ret), symbol->rows, symbol->width, data[i].bwipp_cmp, data[i].comment);
             if (ret < ZINT_ERROR) {

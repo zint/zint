@@ -132,6 +132,7 @@ static void test_print(int index, int generate, int debug) {
         float height;
         float scale;
         float dot_size;
+        struct zint_structapp structapp;
         char *fgcolour;
         char *bgcolour;
         char *data;
@@ -139,34 +140,35 @@ static void test_print(int index, int generate, int debug) {
         char *comment;
     };
     struct item data[] = {
-        /*  0*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 0, 0, "", "", "12", "dotcode_1.0.gif", "" },
-        /*  1*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 0, 0.1, "", "", "12", "dotcode_1.0_ds0.1.gif", "" },
-        /*  2*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 0, 1.1, "", "", "12", "dotcode_1.0_ds1.1.gif", "" },
-        /*  3*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 1.5, 0, "", "", "12", "dotcode_1.5.gif", "" },
-        /*  4*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 1.5, 0.4, "", "", "12", "dotcode_1.5_ds0.4.gif", "" },
-        /*  5*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 1.5, 1.1, "", "", "12", "dotcode_1.5_ds1.1.gif", "" },
-        /*  6*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 1.5, 2.1, "", "", "12", "dotcode_1.5_ds2.1.gif", "" },
-        /*  7*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 2, 0, "", "", "12", "dotcode_2.0.gif", "" },
-        /*  8*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 2, 0.9, "", "", "12", "dotcode_2.0_ds0.9.gif", "" },
-        /*  9*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 2, 1.1, "", "", "12", "dotcode_2.0_ds1.1.gif", "" },
-        /* 10*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 3, 0, "", "", "12", "dotcode_3.0.gif", "" },
-        /* 11*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 3, 0.4, "", "", "12", "dotcode_3.0_ds0.4.gif", "" },
-        /* 12*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 3, 1.1, "", "", "12", "dotcode_3.0_ds1.1.gif", "" },
-        /* 13*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 3.5, 0, "", "", "12", "dotcode_3.5.gif", "" },
-        /* 14*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 3.5, 0.4, "", "", "12", "dotcode_3.5_ds0.4.gif", "" },
-        /* 15*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 3.5, 1.1, "", "", "12", "dotcode_3.5_ds1.1.gif", "" },
-        /* 16*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 5, 0, "", "", "12", "dotcode_5.0.gif", "" },
-        /* 17*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 5, 0.2, "", "", "12", "dotcode_5.0_ds0.2.gif", "" },
-        /* 18*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 5, 1.1, "", "", "12", "dotcode_5.0_ds1.1.gif", "" },
-        /* 19*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 5, 1.7, "", "", "12", "dotcode_5.0_ds1.7.gif", "" },
-        /* 20*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 0, 0, "2674C344", "FDFFC2CC", "12", "dotcode_bgfgalpha.gif", "" },
-        /* 21*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 0, 0, "00000000", "FFFFFF00", "12", "dotcode_bgfgtrans.gif", "" },
-        /* 22*/ { BARCODE_ULTRA, 1, BARCODE_BOX, 1, 1, -1, -1, 0, 0, 0, "0000FF", "FF0000", "12", "ultra_fgbg_hvwsp1_box1.gif", "" },
-        /* 23*/ { BARCODE_ITF14, 4, BARCODE_BIND, 24, -1, -1, -1, 61.8, 3, 0, "", "", "0501054800395", "itf14_height61.8_bind4_wsp24_3.gif", "#204 ARM-Cortex crash" },
-        /* 24*/ { BARCODE_ITF14, 0, BARCODE_BIND, -1, -1, -1, -1, 0.5, 0.5, 0, "", "", "0501054800395", "itf14_height0.5_box0_0.5.gif", "No box, no text" },
-        /* 25*/ { BARCODE_ITF14, -1, -1, -1, -1, -1, -1, 0.5, 1.1, 0, "", "", "0501054800395", "itf14_height0.5_1.1.gif", "" },
-        /* 26*/ { BARCODE_CODE16K, -1, -1, 3, 5, -1, -1, 0.5, 0, 0, "", "", "1234567890", "code16k_height0.5_wsp3_vwsp5.gif", "Separator covers bars" },
-        /* 27*/ { BARCODE_CODE16K, -1, -1, 3, 5, -1, -1, 1.5, 0, 0, "", "", "1234567890", "code16k_height1.5_wsp3_vwsp5.gif", "" },
+        /*  0*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 0, 0, { 0, 0, "" }, "", "", "12", "dotcode_1.0.gif", "" },
+        /*  1*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 0, 0.1, { 0, 0, "" }, "", "", "12", "dotcode_1.0_ds0.1.gif", "" },
+        /*  2*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 0, 1.1, { 0, 0, "" }, "", "", "12", "dotcode_1.0_ds1.1.gif", "" },
+        /*  3*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 1.5, 0, { 0, 0, "" }, "", "", "12", "dotcode_1.5.gif", "" },
+        /*  4*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 1.5, 0.4, { 0, 0, "" }, "", "", "12", "dotcode_1.5_ds0.4.gif", "" },
+        /*  5*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 1.5, 1.1, { 0, 0, "" }, "", "", "12", "dotcode_1.5_ds1.1.gif", "" },
+        /*  6*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 1.5, 2.1, { 0, 0, "" }, "", "", "12", "dotcode_1.5_ds2.1.gif", "" },
+        /*  7*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 2, 0, { 0, 0, "" }, "", "", "12", "dotcode_2.0.gif", "" },
+        /*  8*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 2, 0.9, { 0, 0, "" }, "", "", "12", "dotcode_2.0_ds0.9.gif", "" },
+        /*  9*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 2, 1.1, { 0, 0, "" }, "", "", "12", "dotcode_2.0_ds1.1.gif", "" },
+        /* 10*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 3, 0, { 0, 0, "" }, "", "", "12", "dotcode_3.0.gif", "" },
+        /* 11*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 3, 0.4, { 0, 0, "" }, "", "", "12", "dotcode_3.0_ds0.4.gif", "" },
+        /* 12*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 3, 1.1, { 0, 0, "" }, "", "", "12", "dotcode_3.0_ds1.1.gif", "" },
+        /* 13*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 3.5, 0, { 0, 0, "" }, "", "", "12", "dotcode_3.5.gif", "" },
+        /* 14*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 3.5, 0.4, { 0, 0, "" }, "", "", "12", "dotcode_3.5_ds0.4.gif", "" },
+        /* 15*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 3.5, 1.1, { 0, 0, "" }, "", "", "12", "dotcode_3.5_ds1.1.gif", "" },
+        /* 16*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 5, 0, { 0, 0, "" }, "", "", "12", "dotcode_5.0.gif", "" },
+        /* 17*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 5, 0.2, { 0, 0, "" }, "", "", "12", "dotcode_5.0_ds0.2.gif", "" },
+        /* 18*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 5, 1.1, { 0, 0, "" }, "", "", "12", "dotcode_5.0_ds1.1.gif", "" },
+        /* 19*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 5, 1.7, { 0, 0, "" }, "", "", "12", "dotcode_5.0_ds1.7.gif", "" },
+        /* 20*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 0, 0, { 0, 0, "" }, "2674C344", "FDFFC2CC", "12", "dotcode_bgfgalpha.gif", "" },
+        /* 21*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 0, 0, { 0, 0, "" }, "00000000", "FFFFFF00", "12", "dotcode_bgfgtrans.gif", "" },
+        /* 22*/ { BARCODE_ULTRA, 1, BARCODE_BOX, 1, 1, -1, -1, 0, 0, 0, { 0, 0, "" }, "0000FF", "FF0000", "12", "ultra_fgbg_hvwsp1_box1.gif", "" },
+        /* 23*/ { BARCODE_ITF14, 4, BARCODE_BIND, 24, -1, -1, -1, 61.8, 3, 0, { 0, 0, "" }, "", "", "0501054800395", "itf14_height61.8_bind4_wsp24_3.gif", "#204 ARM-Cortex crash" },
+        /* 24*/ { BARCODE_ITF14, 0, BARCODE_BIND, -1, -1, -1, -1, 0.5, 0.5, 0, { 0, 0, "" }, "", "", "0501054800395", "itf14_height0.5_box0_0.5.gif", "No box, no text" },
+        /* 25*/ { BARCODE_ITF14, -1, -1, -1, -1, -1, -1, 0.5, 1.1, 0, { 0, 0, "" }, "", "", "0501054800395", "itf14_height0.5_1.1.gif", "" },
+        /* 26*/ { BARCODE_CODE16K, -1, -1, 3, 5, -1, -1, 0.5, 0, 0, { 0, 0, "" }, "", "", "1234567890", "code16k_height0.5_wsp3_vwsp5.gif", "Separator covers bars" },
+        /* 27*/ { BARCODE_CODE16K, -1, -1, 3, 5, -1, -1, 1.5, 0, 0, { 0, 0, "" }, "", "", "1234567890", "code16k_height1.5_wsp3_vwsp5.gif", "" },
+        /* 28*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, -1, 0, 0, 0, { 2, 9, "001002" }, "", "", "1234567890", "datamatrix_seq2of9.gif", "" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -216,6 +218,9 @@ static void test_print(int index, int generate, int debug) {
         }
         if (data[i].dot_size) {
             symbol->dot_size = data[i].dot_size;
+        }
+        if (data[i].structapp.count) {
+            symbol->structapp = data[i].structapp;
         }
         if (*data[i].fgcolour) {
             strcpy(symbol->fgcolour, data[i].fgcolour);

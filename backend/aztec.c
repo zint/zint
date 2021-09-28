@@ -99,8 +99,8 @@ static int az_bin_append_posn(const int arg, const int length, char *binary, con
     return bin_append_posn(arg, length, binary, bin_posn);
 }
 
-static int aztec_text_process(const unsigned char source[], int src_len, char binary_string[], const int gs1,
-            const int eci, int *data_length, const int debug) {
+static int aztec_text_process(const unsigned char source[], int src_len, int bp, char binary_string[], const int gs1,
+            const int eci, int *data_length, const int debug_print) {
 
     int i, j;
     char current_mode;
@@ -108,7 +108,6 @@ static int aztec_text_process(const unsigned char source[], int src_len, char bi
     char next_mode;
     int reduced_length;
     int byte_mode = 0;
-    int bp;
 
 #ifndef _MSC_VER
     char encode_mode[src_len + 1];
@@ -190,7 +189,7 @@ static int aztec_text_process(const unsigned char source[], int src_len, char bi
         }
     }
 
-    if (debug) {
+    if (debug_print) {
         printf("First Pass:\n");
         printf("%.*s\n", src_len, encode_mode);
     }
@@ -455,12 +454,10 @@ static int aztec_text_process(const unsigned char source[], int src_len, char bi
         }
     }
 
-    if (debug) {
+    if (debug_print) {
         printf("%.*s\n", reduced_length, reduced_source);
         printf("%.*s\n", reduced_length, reduced_encode_mode);
     }
-
-    bp = 0;
 
     if (gs1) {
         bp = bin_append_posn(0, 5, binary_string, bp); // P/S
@@ -727,7 +724,7 @@ static int aztec_text_process(const unsigned char source[], int src_len, char bi
         }
     }
 
-    if (debug) {
+    if (debug_print) {
         printf("Binary String:\n");
         printf("%.*s\n", bp, binary_string);
     }
@@ -833,8 +830,9 @@ INTERNAL int aztec(struct zint_symbol *symbol, unsigned char source[], int lengt
     unsigned char desc_data[4], desc_ecc[6];
     int error_number, compact, data_length, data_maxsize, codeword_size, adjusted_length;
     int remainder, padbits, count, gs1, adjustment_size;
-    int debug = (symbol->debug & ZINT_DEBUG_PRINT), reader = 0;
+    int debug_print = (symbol->debug & ZINT_DEBUG_PRINT), reader = 0;
     int comp_loop = 4;
+    int bp = 0;
     rs_t rs;
     rs_uint_t rs_uint;
 
@@ -857,7 +855,51 @@ INTERNAL int aztec(struct zint_symbol *symbol, unsigned char source[], int lengt
         return ZINT_ERROR_INVALID_OPTION;
     }
 
-    error_number = aztec_text_process(source, length, binary_string, gs1, symbol->eci, &data_length, debug);
+    if (symbol->structapp.count) {
+        /* Structured Append info as string <SP> + ID + <SP> + index + count + NUL */
+        unsigned char sa_src[1 + sizeof(symbol->structapp.id) + 1 + 1 + 1 + 1] = {0};
+        int sa_len;
+        int id_len;
+
+        if (symbol->structapp.count < 2 || symbol->structapp.count > 26) {
+            strcpy(symbol->errtxt, "701: Structured Append count out of range (2-26)");
+            return ZINT_ERROR_INVALID_OPTION;
+        }
+        if (symbol->structapp.index < 1 || symbol->structapp.index > symbol->structapp.count) {
+            sprintf(symbol->errtxt, "702: Structured Append index out of range (1-%d)", symbol->structapp.count);
+            return ZINT_ERROR_INVALID_OPTION;
+        }
+
+        for (id_len = 0; id_len < 32 && symbol->structapp.id[id_len]; id_len++);
+
+        if (id_len && chr_cnt((const unsigned char *) symbol->structapp.id, id_len, ' ')) {
+            strcpy(symbol->errtxt, "703: Structured Append ID cannot contain spaces");
+            return ZINT_ERROR_INVALID_OPTION;
+        }
+
+        bp = bin_append_posn(29, 5, binary_string, bp); // M/L
+        bp = bin_append_posn(29, 5, binary_string, bp); // U/L
+
+        sa_len = 0;
+        if (id_len) { /* ID has a space on either side */
+            sa_src[sa_len++] = ' ';
+            memcpy(sa_src + sa_len, symbol->structapp.id, id_len);
+            sa_len += id_len;
+            sa_src[sa_len++] = ' ';
+        }
+        sa_src[sa_len++] = 'A' + symbol->structapp.index - 1;
+        sa_src[sa_len++] = 'A' + symbol->structapp.count - 1;
+        if (debug_print) {
+            printf("Structured Append Count: %d, Index: %d, ID: %.32s, String: %s\n",
+                    symbol->structapp.count, symbol->structapp.count, symbol->structapp.id, sa_src);
+        }
+
+        (void) aztec_text_process(sa_src, sa_len, bp, binary_string, 0 /*gs1*/, 0 /*eci*/, &bp, debug_print);
+        /* Will be in U/L due to uppercase A-Z index/count indicators at end */
+    }
+
+    error_number = aztec_text_process(source, length, bp, binary_string, gs1, symbol->eci, &data_length,
+                    debug_print);
 
     if (error_number != 0) {
         strcpy(symbol->errtxt, "502: Input too long or too many extended ASCII characters");
@@ -1003,7 +1045,7 @@ INTERNAL int aztec(struct zint_symbol *symbol, unsigned char source[], int lengt
             if (padbits == codeword_size) {
                 padbits = 0;
             }
-            if (debug) printf("Remainder: %d  Pad bits: %d\n", remainder, padbits);
+            if (debug_print) printf("Remainder: %d  Pad bits: %d\n", remainder, padbits);
 
             for (i = 0; i < padbits; i++) {
                 adjusted_string[adjusted_length++] = '1';
@@ -1019,7 +1061,7 @@ INTERNAL int aztec(struct zint_symbol *symbol, unsigned char source[], int lengt
                 adjusted_string[adjusted_length - 1] = '0';
             }
 
-            if (debug) {
+            if (debug_print) {
                 printf("Codewords:\n");
                 for (i = 0; i < (adjusted_length / codeword_size); i++) {
                     for (j = 0; j < codeword_size; j++) {
@@ -1093,7 +1135,7 @@ INTERNAL int aztec(struct zint_symbol *symbol, unsigned char source[], int lengt
         if (padbits == codeword_size) {
             padbits = 0;
         }
-        if (debug) printf("Remainder: %d  Pad bits: %d\n", remainder, padbits);
+        if (debug_print) printf("Remainder: %d  Pad bits: %d\n", remainder, padbits);
 
         for (i = 0; i < padbits; i++) {
             adjusted_string[adjusted_length++] = '1';
@@ -1121,7 +1163,7 @@ INTERNAL int aztec(struct zint_symbol *symbol, unsigned char source[], int lengt
             return ZINT_ERROR_TOO_LONG;
         }
 
-        if (debug) {
+        if (debug_print) {
             printf("Codewords:\n");
             for (i = 0; i < (adjusted_length / codeword_size); i++) {
                 printf("%.*s ", codeword_size, adjusted_string + i * codeword_size);
@@ -1144,7 +1186,7 @@ INTERNAL int aztec(struct zint_symbol *symbol, unsigned char source[], int lengt
         ecc_blocks = AztecSizes[layers - 1] - data_blocks;
     }
 
-    if (debug) {
+    if (debug_print) {
         printf("Generating a %s symbol with %d layers\n", compact ? "compact" : "full-size", layers);
         printf("Requires %d", compact ? AztecCompactSizes[layers - 1] : AztecSizes[layers - 1]);
         printf(" codewords of %d-bits\n", codeword_size);
@@ -1193,7 +1235,7 @@ INTERNAL int aztec(struct zint_symbol *symbol, unsigned char source[], int lengt
         case 12:
             if (!rs_uint_init_gf(&rs_uint, 0x1069, 4095)) { /* Can fail on malloc() */
                 /* Note using AUSPOST error nos range as out of 50x ones & 51x taken by CODEONE */
-                strcpy(symbol->errtxt, "400: Insufficient memory for Reed-Solomon log tables");
+                strcpy(symbol->errtxt, "700: Insufficient memory for Reed-Solomon log tables");
                 return ZINT_ERROR_MEMORY;
             }
             rs_uint_init_code(&rs_uint, ecc_blocks, 1);
@@ -1249,7 +1291,7 @@ INTERNAL int aztec(struct zint_symbol *symbol, unsigned char source[], int lengt
                 descriptor[i] = '0';
             }
         }
-        if (debug) printf("Mode Message = %.8s\n", descriptor);
+        if (debug_print) printf("Mode Message = %.8s\n", descriptor);
     } else {
         /* The first 5 bits represent the number of layers minus 1 */
         for (i = 0; i < 5; i++) {
@@ -1277,7 +1319,7 @@ INTERNAL int aztec(struct zint_symbol *symbol, unsigned char source[], int lengt
                 descriptor[i] = '0';
             }
         }
-        if (debug) printf("Mode Message = %.16s\n", descriptor);
+        if (debug_print) printf("Mode Message = %.16s\n", descriptor);
     }
 
     /* Split into 4-bit codewords */
@@ -1409,7 +1451,7 @@ INTERNAL int aztec_runes(struct zint_symbol *symbol, unsigned char source[], int
     char binary_string[28];
     unsigned char data_codewords[3], ecc_codewords[6];
     int bp = 0;
-    int debug = symbol->debug & ZINT_DEBUG_PRINT;
+    int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
     rs_t rs;
 
     input_value = 0;
@@ -1460,7 +1502,7 @@ INTERNAL int aztec_runes(struct zint_symbol *symbol, unsigned char source[], int
         }
     }
 
-    if (debug) {
+    if (debug_print) {
         printf("Binary String: %.28s\n", binary_string);
     }
 

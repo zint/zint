@@ -36,6 +36,7 @@ static void test_qr_options(int index, int debug) {
     struct item {
         int option_1;
         int option_2;
+        struct zint_structapp structapp;
         char *data;
         int ret_encode;
         int ret_vector;
@@ -45,40 +46,48 @@ static void test_qr_options(int index, int debug) {
     // 貫 U+8CAB kanji, in Shift JIS 0x8AD1 (\212\321), UTF-8 E8B2AB
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /*  0*/ { -1, -1, "12345", 0, 0, 21, -1 }, // ECC auto-set to 1 (L), version auto-set to 1
-        /*  1*/ { 5, -1, "12345", 0, 0, 21, 0 }, // ECC > 4 ignored
-        /*  2*/ { -1, 41, "12345", 0, 0, 21, 0 }, // Version > 40 ignored
-        /*  3*/ { -1, 2, "12345", 0, 0, 25, -1 }, // ECC auto-set to 4 (Q), version 2
-        /*  4*/ { 4, 2, "12345", 0, 0, 25, 0 }, // ECC 4 (Q), version 2
-        /*  5*/ { 1, 2, "12345", 0, 0, 25, 1 }, // ECC 1 (L), version 2
-        /*  6*/ { -1, -1, "貫やぐ識禁", 0, 0, 21, -1 }, // ECC auto-set to 1 (L), version auto-set to 1
-        /*  7*/ { 1, -1, "貫やぐ識禁", 0, 0, 21, 0 }, // Version auto-set to 1
-        /*  8*/ { -1, 1, "貫やぐ識禁", 0, 0, 21, 0 }, // ECC auto-set to 1 (L)
-        /*  9*/ { 1, 1, "貫やぐ識禁", 0, 0, 21, 0 },
-        /* 10*/ { 2, 1, "貫やぐ識禁", ZINT_ERROR_TOO_LONG, -1, 0, -1 }, // ECC 2 (M), version 1
-        /* 11*/ { 2, -1, "貫やぐ識禁", 0, 0, 25, -1 }, // Version auto-set to 2
-        /* 12*/ { 2, 2, "貫やぐ識禁", 0, 0, 25, 0 },
-        /* 13*/ { 1, 2, "貫やぐ識禁", 0, 0, 25, 1 },
-        /* 14*/ { -1, -1, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁", 0, 0, 29, -1 }, // ECC auto-set to 1 (L), version auto-set to 3
-        /* 15*/ { 1, 3, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁", 0, 0, 29, 0 },
-        /* 16*/ { 2, -1, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁", 0, 0, 33, -1 }, // ECC 2 (M), version auto-set to 4
-        /* 17*/ { 2, 4, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁", 0, 0, 33, 0 },
-        /* 18*/ { 3, -1, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁", 0, 0, 37, -1 }, // ECC 3 (Q), version auto-set to 5
-        /* 19*/ { 3, 5, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁", 0, 0, 37, 0 },
-        /* 20*/ { 4, -1, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁", 0, 0, 41, -1 }, // ECC 4 (H), version auto-set to 6
-        /* 21*/ { 4, 6, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁", 0, 0, 41, 0 },
-        /* 22*/ { -1, -1, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁花ほゃ過法ひなご札17能つーびれ投覧マ勝動エヨ額界よみ作皇ナヲニ打題ヌルヲ掲布益フが。入35能ト権話しこを断兆モヘ細情おじ名4減エヘイハ側機はょが意見想ハ業独案ユヲウ患職ヲ平美さ毎放どぽたけ家没べお化富べ町大シ情魚ッでれ一冬すぼめり。", 0, 0, 69, -1 }, // ECC auto-set to 1, version auto-set to 13
-        /* 23*/ { 1, 13, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁花ほゃ過法ひなご札17能つーびれ投覧マ勝動エヨ額界よみ作皇ナヲニ打題ヌルヲ掲布益フが。入35能ト権話しこを断兆モヘ細情おじ名4減エヘイハ側機はょが意見想ハ業独案ユヲウ患職ヲ平美さ毎放どぽたけ家没べお化富べ町大シ情魚ッでれ一冬すぼめり。", 0, 0, 69, 0 },
-        /* 24*/ { 4, -1, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁花ほゃ過法ひなご札17能つーびれ投覧マ勝動エヨ額界よみ作皇ナヲニ打題ヌルヲ掲布益フが。入35能ト権話しこを断兆モヘ細情おじ名4減エヘイハ側機はょが意見想ハ業独案ユヲウ患職ヲ平美さ毎放どぽたけ家没べお化富べ町大シ情魚ッでれ一冬すぼめり。", 0, 0, 101, -1 }, // ECC 4, version auto-set to 21
-        /* 25*/ { 4, 21, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁花ほゃ過法ひなご札17能つーびれ投覧マ勝動エヨ額界よみ作皇ナヲニ打題ヌルヲ掲布益フが。入35能ト権話しこを断兆モヘ細情おじ名4減エヘイハ側機はょが意見想ハ業独案ユヲウ患職ヲ平美さ毎放どぽたけ家没べお化富べ町大シ情魚ッでれ一冬すぼめり。", 0, 0, 101, 0 },
-        /* 26*/ { -1, -1, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁花ほゃ過法ひなご札17能つーびれ投覧マ勝動エヨ額界よみ作皇ナヲニ打題ヌルヲ掲布益フが。入35能ト権話しこを断兆モヘ細情おじ名4減エヘイハ側機はょが意見想ハ業独案ユヲウ患職ヲ平美さ毎放どぽたけ家没べお化富べ町大シ情魚ッでれ一冬すぼめり。社ト可化モマ試音ばじご育青康演ぴぎ権型固スで能麩ぜらもほ河都しちほラ収90作の年要とだむ部動ま者断チ第41一1米索焦茂げむしれ。測フ物使だて目月国スリカハ夏検にいへ児72告物ゆは載核ロアメヱ登輸どべゃ催行アフエハ議歌ワ河倫剖だ。記タケウ因載ヒイホヤ禁3輩彦関トえび肝区勝ワリロ成禁ぼよ界白ウヒキレ中島べせぜい各安うしぽリ覧生テ基一でむしゃ中新トヒキソ声碁スしび起田ア信大未ゅもばち。", 0, 0, 105, -1 }, // ECC auto-set to 1, version auto-set to 22
-        /* 27*/ { 1, 22, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁花ほゃ過法ひなご札17能つーびれ投覧マ勝動エヨ額界よみ作皇ナヲニ打題ヌルヲ掲布益フが。入35能ト権話しこを断兆モヘ細情おじ名4減エヘイハ側機はょが意見想ハ業独案ユヲウ患職ヲ平美さ毎放どぽたけ家没べお化富べ町大シ情魚ッでれ一冬すぼめり。社ト可化モマ試音ばじご育青康演ぴぎ権型固スで能麩ぜらもほ河都しちほラ収90作の年要とだむ部動ま者断チ第41一1米索焦茂げむしれ。測フ物使だて目月国スリカハ夏検にいへ児72告物ゆは載核ロアメヱ登輸どべゃ催行アフエハ議歌ワ河倫剖だ。記タケウ因載ヒイホヤ禁3輩彦関トえび肝区勝ワリロ成禁ぼよ界白ウヒキレ中島べせぜい各安うしぽリ覧生テ基一でむしゃ中新トヒキソ声碁スしび起田ア信大未ゅもばち。", 0, 0, 105, 0 },
-        /* 28*/ { 4, -1, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁花ほゃ過法ひなご札17能つーびれ投覧マ勝動エヨ額界よみ作皇ナヲニ打題ヌルヲ掲布益フが。入35能ト権話しこを断兆モヘ細情おじ名4減エヘイハ側機はょが意見想ハ業独案ユヲウ患職ヲ平美さ毎放どぽたけ家没べお化富べ町大シ情魚ッでれ一冬すぼめり。社ト可化モマ試音ばじご育青康演ぴぎ権型固スで能麩ぜらもほ河都しちほラ収90作の年要とだむ部動ま者断チ第41一1米索焦茂げむしれ。測フ物使だて目月国スリカハ夏検にいへ児72告物ゆは載核ロアメヱ登輸どべゃ催行アフエハ議歌ワ河倫剖だ。記タケウ因載ヒイホヤ禁3輩彦関トえび肝区勝ワリロ成禁ぼよ界白ウヒキレ中島べせぜい各安うしぽリ覧生テ基一でむしゃ中新トヒキソ声碁スしび起田ア信大未ゅもばち。", 0, 0, 153, 1 }, // ECC 4, version auto-set 34
-        /* 29*/ { 4, 34, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁花ほゃ過法ひなご札17能つーびれ投覧マ勝動エヨ額界よみ作皇ナヲニ打題ヌルヲ掲布益フが。入35能ト権話しこを断兆モヘ細情おじ名4減エヘイハ側機はょが意見想ハ業独案ユヲウ患職ヲ平美さ毎放どぽたけ家没べお化富べ町大シ情魚ッでれ一冬すぼめり。社ト可化モマ試音ばじご育青康演ぴぎ権型固スで能麩ぜらもほ河都しちほラ収90作の年要とだむ部動ま者断チ第41一1米索焦茂げむしれ。測フ物使だて目月国スリカハ夏検にいへ児72告物ゆは載核ロアメヱ登輸どべゃ催行アフエハ議歌ワ河倫剖だ。記タケウ因載ヒイホヤ禁3輩彦関トえび肝区勝ワリロ成禁ぼよ界白ウヒキレ中島べせぜい各安うしぽリ覧生テ基一でむしゃ中新トヒキソ声碁スしび起田ア信大未ゅもばち。", 0, 0, 153, 0 },
-        /* 30*/ { 4, -1, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", 0, 0, 177, -1 }, // 1852 alphanumerics max for ECC 4 (H)
-        /* 31*/ { 1, -1, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", 0, 0, 177, -1 }, // 4296 alphanumerics max for ECC 1 (L)
-        /* 32*/ { 4, -1, "貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫", 0, -1, 0, -1 }, // 424 Kanji, ECC 4 (Q), version 1
-        /* 33*/ { 4, -1, "貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫", ZINT_ERROR_TOO_LONG, -1, 0, -1 }, // 425 Kanji, ECC 4 (Q), version 1
+        /*  0*/ { -1, -1, { 0, 0, "" }, "12345", 0, 0, 21, -1 }, // ECC auto-set to 1 (L), version auto-set to 1
+        /*  1*/ { 5, -1, { 0, 0, "" }, "12345", 0, 0, 21, 0 }, // ECC > 4 ignored
+        /*  2*/ { -1, 41, { 0, 0, "" }, "12345", 0, 0, 21, 0 }, // Version > 40 ignored
+        /*  3*/ { -1, 2, { 0, 0, "" }, "12345", 0, 0, 25, -1 }, // ECC auto-set to 4 (Q), version 2
+        /*  4*/ { 4, 2, { 0, 0, "" }, "12345", 0, 0, 25, 0 }, // ECC 4 (Q), version 2
+        /*  5*/ { 1, 2, { 0, 0, "" }, "12345", 0, 0, 25, 1 }, // ECC 1 (L), version 2
+        /*  6*/ { -1, -1, { 0, 0, "" }, "貫やぐ識禁", 0, 0, 21, -1 }, // ECC auto-set to 1 (L), version auto-set to 1
+        /*  7*/ { 1, -1, { 0, 0, "" }, "貫やぐ識禁", 0, 0, 21, 0 }, // Version auto-set to 1
+        /*  8*/ { -1, 1, { 0, 0, "" }, "貫やぐ識禁", 0, 0, 21, 0 }, // ECC auto-set to 1 (L)
+        /*  9*/ { 1, 1, { 0, 0, "" }, "貫やぐ識禁", 0, 0, 21, 0 },
+        /* 10*/ { 2, 1, { 0, 0, "" }, "貫やぐ識禁", ZINT_ERROR_TOO_LONG, -1, 0, -1 }, // ECC 2 (M), version 1
+        /* 11*/ { 2, -1, { 0, 0, "" }, "貫やぐ識禁", 0, 0, 25, -1 }, // Version auto-set to 2
+        /* 12*/ { 2, 2, { 0, 0, "" }, "貫やぐ識禁", 0, 0, 25, 0 },
+        /* 13*/ { 1, 2, { 0, 0, "" }, "貫やぐ識禁", 0, 0, 25, 1 },
+        /* 14*/ { -1, -1, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁", 0, 0, 29, -1 }, // ECC auto-set to 1 (L), version auto-set to 3
+        /* 15*/ { 1, 3, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁", 0, 0, 29, 0 },
+        /* 16*/ { 2, -1, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁", 0, 0, 33, -1 }, // ECC 2 (M), version auto-set to 4
+        /* 17*/ { 2, 4, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁", 0, 0, 33, 0 },
+        /* 18*/ { 3, -1, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁", 0, 0, 37, -1 }, // ECC 3 (Q), version auto-set to 5
+        /* 19*/ { 3, 5, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁", 0, 0, 37, 0 },
+        /* 20*/ { 4, -1, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁", 0, 0, 41, -1 }, // ECC 4 (H), version auto-set to 6
+        /* 21*/ { 4, 6, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁", 0, 0, 41, 0 },
+        /* 22*/ { -1, -1, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁花ほゃ過法ひなご札17能つーびれ投覧マ勝動エヨ額界よみ作皇ナヲニ打題ヌルヲ掲布益フが。入35能ト権話しこを断兆モヘ細情おじ名4減エヘイハ側機はょが意見想ハ業独案ユヲウ患職ヲ平美さ毎放どぽたけ家没べお化富べ町大シ情魚ッでれ一冬すぼめり。", 0, 0, 69, -1 }, // ECC auto-set to 1, version auto-set to 13
+        /* 23*/ { 1, 13, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁花ほゃ過法ひなご札17能つーびれ投覧マ勝動エヨ額界よみ作皇ナヲニ打題ヌルヲ掲布益フが。入35能ト権話しこを断兆モヘ細情おじ名4減エヘイハ側機はょが意見想ハ業独案ユヲウ患職ヲ平美さ毎放どぽたけ家没べお化富べ町大シ情魚ッでれ一冬すぼめり。", 0, 0, 69, 0 },
+        /* 24*/ { 4, -1, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁花ほゃ過法ひなご札17能つーびれ投覧マ勝動エヨ額界よみ作皇ナヲニ打題ヌルヲ掲布益フが。入35能ト権話しこを断兆モヘ細情おじ名4減エヘイハ側機はょが意見想ハ業独案ユヲウ患職ヲ平美さ毎放どぽたけ家没べお化富べ町大シ情魚ッでれ一冬すぼめり。", 0, 0, 101, -1 }, // ECC 4, version auto-set to 21
+        /* 25*/ { 4, 21, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁花ほゃ過法ひなご札17能つーびれ投覧マ勝動エヨ額界よみ作皇ナヲニ打題ヌルヲ掲布益フが。入35能ト権話しこを断兆モヘ細情おじ名4減エヘイハ側機はょが意見想ハ業独案ユヲウ患職ヲ平美さ毎放どぽたけ家没べお化富べ町大シ情魚ッでれ一冬すぼめり。", 0, 0, 101, 0 },
+        /* 26*/ { -1, -1, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁花ほゃ過法ひなご札17能つーびれ投覧マ勝動エヨ額界よみ作皇ナヲニ打題ヌルヲ掲布益フが。入35能ト権話しこを断兆モヘ細情おじ名4減エヘイハ側機はょが意見想ハ業独案ユヲウ患職ヲ平美さ毎放どぽたけ家没べお化富べ町大シ情魚ッでれ一冬すぼめり。社ト可化モマ試音ばじご育青康演ぴぎ権型固スで能麩ぜらもほ河都しちほラ収90作の年要とだむ部動ま者断チ第41一1米索焦茂げむしれ。測フ物使だて目月国スリカハ夏検にいへ児72告物ゆは載核ロアメヱ登輸どべゃ催行アフエハ議歌ワ河倫剖だ。記タケウ因載ヒイホヤ禁3輩彦関トえび肝区勝ワリロ成禁ぼよ界白ウヒキレ中島べせぜい各安うしぽリ覧生テ基一でむしゃ中新トヒキソ声碁スしび起田ア信大未ゅもばち。", 0, 0, 105, -1 }, // ECC auto-set to 1, version auto-set to 22
+        /* 27*/ { 1, 22, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁花ほゃ過法ひなご札17能つーびれ投覧マ勝動エヨ額界よみ作皇ナヲニ打題ヌルヲ掲布益フが。入35能ト権話しこを断兆モヘ細情おじ名4減エヘイハ側機はょが意見想ハ業独案ユヲウ患職ヲ平美さ毎放どぽたけ家没べお化富べ町大シ情魚ッでれ一冬すぼめり。社ト可化モマ試音ばじご育青康演ぴぎ権型固スで能麩ぜらもほ河都しちほラ収90作の年要とだむ部動ま者断チ第41一1米索焦茂げむしれ。測フ物使だて目月国スリカハ夏検にいへ児72告物ゆは載核ロアメヱ登輸どべゃ催行アフエハ議歌ワ河倫剖だ。記タケウ因載ヒイホヤ禁3輩彦関トえび肝区勝ワリロ成禁ぼよ界白ウヒキレ中島べせぜい各安うしぽリ覧生テ基一でむしゃ中新トヒキソ声碁スしび起田ア信大未ゅもばち。", 0, 0, 105, 0 },
+        /* 28*/ { 4, -1, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁花ほゃ過法ひなご札17能つーびれ投覧マ勝動エヨ額界よみ作皇ナヲニ打題ヌルヲ掲布益フが。入35能ト権話しこを断兆モヘ細情おじ名4減エヘイハ側機はょが意見想ハ業独案ユヲウ患職ヲ平美さ毎放どぽたけ家没べお化富べ町大シ情魚ッでれ一冬すぼめり。社ト可化モマ試音ばじご育青康演ぴぎ権型固スで能麩ぜらもほ河都しちほラ収90作の年要とだむ部動ま者断チ第41一1米索焦茂げむしれ。測フ物使だて目月国スリカハ夏検にいへ児72告物ゆは載核ロアメヱ登輸どべゃ催行アフエハ議歌ワ河倫剖だ。記タケウ因載ヒイホヤ禁3輩彦関トえび肝区勝ワリロ成禁ぼよ界白ウヒキレ中島べせぜい各安うしぽリ覧生テ基一でむしゃ中新トヒキソ声碁スしび起田ア信大未ゅもばち。", 0, 0, 153, 1 }, // ECC 4, version auto-set 34
+        /* 29*/ { 4, 34, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁花ほゃ過法ひなご札17能つーびれ投覧マ勝動エヨ額界よみ作皇ナヲニ打題ヌルヲ掲布益フが。入35能ト権話しこを断兆モヘ細情おじ名4減エヘイハ側機はょが意見想ハ業独案ユヲウ患職ヲ平美さ毎放どぽたけ家没べお化富べ町大シ情魚ッでれ一冬すぼめり。社ト可化モマ試音ばじご育青康演ぴぎ権型固スで能麩ぜらもほ河都しちほラ収90作の年要とだむ部動ま者断チ第41一1米索焦茂げむしれ。測フ物使だて目月国スリカハ夏検にいへ児72告物ゆは載核ロアメヱ登輸どべゃ催行アフエハ議歌ワ河倫剖だ。記タケウ因載ヒイホヤ禁3輩彦関トえび肝区勝ワリロ成禁ぼよ界白ウヒキレ中島べせぜい各安うしぽリ覧生テ基一でむしゃ中新トヒキソ声碁スしび起田ア信大未ゅもばち。", 0, 0, 153, 0 },
+        /* 30*/ { 4, -1, { 0, 0, "" }, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", 0, 0, 177, -1 }, // 1852 alphanumerics max for ECC 4 (H)
+        /* 31*/ { 1, -1, { 0, 0, "" }, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", 0, 0, 177, -1 }, // 4296 alphanumerics max for ECC 1 (L)
+        /* 32*/ { 4, -1, { 0, 0, "" }, "貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫", 0, -1, 0, -1 }, // 424 Kanji, ECC 4 (Q), version 1
+        /* 33*/ { 4, -1, { 0, 0, "" }, "貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫", ZINT_ERROR_TOO_LONG, -1, 0, -1 }, // 425 Kanji, ECC 4 (Q), version 1
+        /* 34*/ { 4, 1, { 0, 0, "" }, "12345678901234567", 0, 0, 21, -1 },
+        /* 35*/ { 4, 1, { 1, 2, "" }, "12345678901234567", ZINT_ERROR_TOO_LONG, -1, 0, -1 },
+        /* 36*/ { 4, 1, { 1, 2, "" }, "123456789012", ZINT_ERROR_TOO_LONG, -1, 0, -1 },
+        /* 37*/ { 4, 1, { 1, 2, "" }, "12345678901", 0, 0, 21, -1 },
+        /* 38*/ { 4, 1, { 3, 16, "123" }, "12345678901", 0, 0, 21, -1 },
+        /* 39*/ { 4, 1, { 3, 17, "123" }, "12345678901", ZINT_ERROR_INVALID_OPTION, -1, 0, -1 }, // Bad Structured Append count
+        /* 40*/ { 4, 1, { 3, 2, "123" }, "12345678901", ZINT_ERROR_INVALID_OPTION, -1, 0, -1 }, // Bad Structured Append index
+        /* 41*/ { 4, 1, { 1, 2, "256" }, "12345678901", ZINT_ERROR_INVALID_OPTION, -1, 0, -1 }, // Bad Structured Append ID
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -97,6 +106,9 @@ static void test_qr_options(int index, int debug) {
         assert_nonnull(symbol, "Symbol not created\n");
 
         length = testUtilSetSymbol(symbol, BARCODE_QRCODE, -1 /*input_mode*/, -1 /*eci*/, data[i].option_1, data[i].option_2, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        if (data[i].structapp.count) {
+            symbol->structapp = data[i].structapp;
+        }
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret_encode, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret_encode, symbol->errtxt);
@@ -278,7 +290,7 @@ static void test_qr_input(int index, int generate, int debug) {
     int i, length, ret;
     struct zint_symbol *symbol;
 
-    char escaped[1024];
+    char escaped[4096];
 
     testStart("test_qr_input");
 
@@ -343,7 +355,7 @@ static void test_qr_gs1(int index, int generate, int debug) {
     int i, length, ret;
     struct zint_symbol *symbol;
 
-    char escaped[1024];
+    char escaped[4096];
 
     testStart("test_qr_gs1");
 
@@ -421,7 +433,7 @@ static void test_qr_optimize(int index, int generate, int debug) {
     int i, length, ret;
     struct zint_symbol *symbol;
 
-    char escaped[1024];
+    char escaped[4096];
 
     testStart("test_qr_optimize");
 
@@ -462,6 +474,7 @@ static void test_qr_encode(int index, int generate, int debug) {
         int option_1;
         int option_2;
         int option_3;
+        struct zint_structapp structapp;
         char *data;
         int ret;
 
@@ -473,7 +486,7 @@ static void test_qr_encode(int index, int generate, int debug) {
     };
     // や U+3084 kanji, in Shift JIS 0x82E2 (\202\342), UTF-8 E38284; its 2nd byte 0xE2 + 0x40-FC also form Shift JIS
     struct item data[] = {
-        /*  0*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1, -1, "QR Code Symbol", 0, 21, 21, 0, "ISO 18004 Figure 1 **NOT SAME** uses mask 110 instead of 101; BWIPP uses 101",
+        /*  0*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "QR Code Symbol", 0, 21, 21, 0, "ISO 18004 Figure 1 **NOT SAME** uses mask 110 instead of 101; BWIPP uses 101",
                     "111111101001101111111"
                     "100000101001101000001"
                     "101110101100101011101"
@@ -496,7 +509,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000100001101111111"
                     "111111101001011000000"
                 },
-        /*  1*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1, 6 << 8, "QR Code Symbol", 0, 21, 21, 1, "ISO 18004 Figure 1, explicit mask 101, same",
+        /*  1*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1, 6 << 8, { 0, 0, "" }, "QR Code Symbol", 0, 21, 21, 1, "ISO 18004 Figure 1, explicit mask 101, same",
                     "111111100001101111111"
                     "100000101001101000001"
                     "101110101110101011101"
@@ -519,7 +532,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000100001110111100"
                     "111111101011001010010"
                 },
-        /*  2*/ { BARCODE_QRCODE, UNICODE_MODE, 2, -1, -1, "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ", 0, 33, 33, 1, "ISO 18004 Figure 29, same (mask 100)",
+        /*  2*/ { BARCODE_QRCODE, UNICODE_MODE, 2, -1, -1, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ", 0, 33, 33, 1, "ISO 18004 Figure 29 (top), same (mask 100)",
                     "111111101100110010010010101111111"
                     "100000100010111010111000101000001"
                     "101110100000001101101100001011101"
@@ -554,7 +567,99 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000100010110111000110101001001"
                     "111111101101101011010000111100011"
                 },
-        /*  3*/ { BARCODE_QRCODE, UNICODE_MODE, 2, 1, -1, "01234567", 0, 21, 21, 0, "ISO 18004 Annex I I.2, same (mask 010); BWIPP uses mask 000",
+        /*  3*/ { BARCODE_QRCODE, UNICODE_MODE, 2, -1, -1, { 1, 4, "1" }, "ABCDEFGHIJKLMN", 0, 21, 21, 1, "ISO 18004 Figure 29 (bottom 1st), same",
+                    "111111100110001111111"
+                    "100000101001101000001"
+                    "101110100010001011101"
+                    "101110100110001011101"
+                    "101110101110101011101"
+                    "100000100110101000001"
+                    "111111101010101111111"
+                    "000000000011100000000"
+                    "101010100011000010010"
+                    "100011011111010011011"
+                    "100010111110101110101"
+                    "010110000101011000000"
+                    "110000111110110111001"
+                    "000000001011010001010"
+                    "111111100101110011101"
+                    "100000100100001110101"
+                    "101110101101011000101"
+                    "101110100110100110110"
+                    "101110101011010011101"
+                    "100000100101110000001"
+                    "111111101000110110101"
+                },
+        /*  4*/ { BARCODE_QRCODE, UNICODE_MODE, 2, -1, 8 << 8, { 2, 4, "1" }, "OPQRSTUVWXYZ0123", 0, 21, 21, 1, "ISO 18004 Figure 29 (bottom 2nd), same with explicit mask 111 (auto 011)",
+                    "111111100011101111111"
+                    "100000100001101000001"
+                    "101110100001101011101"
+                    "101110100101101011101"
+                    "101110100100101011101"
+                    "100000101000001000001"
+                    "111111101010101111111"
+                    "000000000111000000000"
+                    "100101101001010100000"
+                    "010111001001110011011"
+                    "011110101011010010111"
+                    "010100011110100110101"
+                    "011100101100111110101"
+                    "000000001011011100000"
+                    "111111100110100011100"
+                    "100000101001010100001"
+                    "101110100100101101111"
+                    "101110101100000010001"
+                    "101110100110101001101"
+                    "100000100111100011111"
+                    "111111101011011110100"
+                },
+        /*  5*/ { BARCODE_QRCODE, UNICODE_MODE, 2, -1, -1, { 3, 4, "1" }, "456789ABCDEFGHIJ", 0, 21, 21, 1, "ISO 18004 Figure 29 (bottom 3rd), same",
+                    "111111100101001111111"
+                    "100000100011101000001"
+                    "101110100010101011101"
+                    "101110100111101011101"
+                    "101110100010101011101"
+                    "100000101110001000001"
+                    "111111101010101111111"
+                    "000000000001000000000"
+                    "100101101101010100000"
+                    "011011000001100111011"
+                    "101010111101010110111"
+                    "011001000101010100101"
+                    "011111100110000110101"
+                    "000000001010000111000"
+                    "111111100100101101100"
+                    "100000101101011001101"
+                    "101110100010001101011"
+                    "101110101101101110110"
+                    "101110100100011001101"
+                    "100000100011100101011"
+                    "111111101011000011000"
+                },
+        /*  6*/ { BARCODE_QRCODE, UNICODE_MODE, 2, -1, -1, { 4, 4, "1" }, "KLMNOPQRSTUVWXYZ", 0, 21, 21, 1, "ISO 18004 Figure 29 (bottom 4th), same",
+                    "111111101011101111111"
+                    "100000101010101000001"
+                    "101110100011001011101"
+                    "101110101100001011101"
+                    "101110100111001011101"
+                    "100000100110001000001"
+                    "111111101010101111111"
+                    "000000001101000000000"
+                    "101101110110101001011"
+                    "010001011000010000101"
+                    "010000111010100101001"
+                    "110101001110001000100"
+                    "001101100000110000100"
+                    "000000001010101001001"
+                    "111111101111010111110"
+                    "100000101000101000011"
+                    "101110100101011000001"
+                    "101110101001111100101"
+                    "101110101001101111100"
+                    "100000100010110010010"
+                    "111111101110110101110"
+                },
+        /*  7*/ { BARCODE_QRCODE, UNICODE_MODE, 2, 1, -1, { 0, 0, "" }, "01234567", 0, 21, 21, 0, "ISO 18004 Annex I I.2, same (mask 010); BWIPP uses mask 000",
                     "111111100101101111111"
                     "100000100111101000001"
                     "101110101000001011101"
@@ -577,7 +682,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000100000000110110"
                     "111111101111010010100"
                 },
-        /*  4*/ { BARCODE_QRCODE, UNICODE_MODE, 2, 1, 1 << 8, "01234567", 0, 21, 21, 1, "ISO 18004 Annex I Figure I.2, explicit mask 000, same as BWIPP",
+        /*  8*/ { BARCODE_QRCODE, UNICODE_MODE, 2, 1, 1 << 8, { 0, 0, "" }, "01234567", 0, 21, 21, 1, "ISO 18004 Annex I Figure I.2, explicit mask 000, same as BWIPP",
                     "111111100011101111111"
                     "100000101110001000001"
                     "101110100110001011101"
@@ -600,7 +705,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000100001110111000"
                     "111111101001011100101"
                 },
-        /*  5*/ { BARCODE_QRCODE, GS1_MODE, 1, -1, -1, "[01]09501101530003[8200]http://example.com", 0, 25, 25, 0, "GS1 General Specifications 21.0.1 Figure 5.1-7 **NOT SAME** figure uses Byte encodation only; BWIPP uses mask 001",
+        /*  9*/ { BARCODE_QRCODE, GS1_MODE, 1, -1, -1, { 0, 0, "" }, "[01]09501101530003[8200]http://example.com", 0, 25, 25, 0, "GS1 General Specifications 21.0.1 Figure 5.1-7 **NOT SAME** figure uses Byte encodation only; BWIPP uses mask 001",
                     "1111111001101101001111111"
                     "1000001010010101001000001"
                     "1011101011111010101011101"
@@ -627,7 +732,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "1000001010110101100111010"
                     "1111111011101100010010111"
                 },
-        /*  6*/ { BARCODE_QRCODE, GS1_MODE, 1, -1, 2 << 8, "[01]09501101530003[8200]http://example.com", 0, 25, 25, 1, "GS1 General Specifications 21.0.1 Figure 5.1-7, explicit mask 001, same as BWIPP",
+        /* 10*/ { BARCODE_QRCODE, GS1_MODE, 1, -1, 2 << 8, { 0, 0, "" }, "[01]09501101530003[8200]http://example.com", 0, 25, 25, 1, "GS1 General Specifications 21.0.1 Figure 5.1-7, explicit mask 001, same as BWIPP",
                     "1111111010111000001111111"
                     "1000001011100100101000001"
                     "1011101000111101101011101"
@@ -654,7 +759,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "1000001011110010100000010"
                     "1111111010111001000111101"
                 },
-        /*  7*/ { BARCODE_QRCODE, GS1_MODE, 2, -1, -1, "[01]00857674002010[8200]http://www.gs1.org/", 0, 29, 29, 0, "GS1 General Specifications 21.0.1 Figure 5.7.3-1, same (mask 011); BWIPP uses mask 101",
+        /* 11*/ { BARCODE_QRCODE, GS1_MODE, 2, -1, -1, { 0, 0, "" }, "[01]00857674002010[8200]http://www.gs1.org/", 0, 29, 29, 0, "GS1 General Specifications 21.0.1 Figure 5.7.3-1, same (mask 011); BWIPP uses mask 101",
                     "11111110100101110101001111111"
                     "10000010111101001000001000001"
                     "10111010010000001110001011101"
@@ -685,7 +790,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "10000010010111010001110010100"
                     "11111110101111111011110100110"
                 },
-        /*  8*/ { BARCODE_QRCODE, GS1_MODE, 2, -1, 6 << 8, "[01]00857674002010[8200]http://www.gs1.org/", 0, 29, 29, 1, "GS1 General Specifications 21.0.1 Figure 5.7.3-1, explicit mask 101, same as BWIPP",
+        /* 12*/ { BARCODE_QRCODE, GS1_MODE, 2, -1, 6 << 8, { 0, 0, "" }, "[01]00857674002010[8200]http://www.gs1.org/", 0, 29, 29, 1, "GS1 General Specifications 21.0.1 Figure 5.7.3-1, explicit mask 101, same as BWIPP",
                     "11111110001000011000101111111"
                     "10000010111011101110101000001"
                     "10111010101011010101001011101"
@@ -716,7 +821,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "10000010001111101001001010011"
                     "11111110111001001101000010000"
                 },
-        /*  9*/ { BARCODE_HIBC_QR, -1, 2, -1, -1, "H123ABC01234567890", 0, 21, 21, 1, "ANSI/HIBC 2.6 - 2016 Figure C5 same (mask 001)",
+        /* 13*/ { BARCODE_HIBC_QR, -1, 2, -1, -1, { 0, 0, "" }, "H123ABC01234567890", 0, 21, 21, 1, "ANSI/HIBC 2.6 - 2016 Figure C5 same (mask 001)",
                     "111111101010001111111"
                     "100000100100101000001"
                     "101110101011001011101"
@@ -739,7 +844,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000100100101111001"
                     "111111101111011001111"
                 },
-        /* 10*/ { BARCODE_HIBC_QR, -1, 2, -1, -1, "/EU720060FF0/O523201", 0, 25, 25, 0, "HIBC/PAS Section 2.2 2nd Purchase Order **NOT SAME** uses mask 100 instead of 011; BWIPP uses mask 011",
+        /* 14*/ { BARCODE_HIBC_QR, -1, 2, -1, -1, { 0, 0, "" }, "/EU720060FF0/O523201", 0, 25, 25, 0, "HIBC/PAS Section 2.2 2nd Purchase Order **NOT SAME** uses mask 100 instead of 011; BWIPP uses mask 011",
                     "1111111011011110101111111"
                     "1000001001001111001000001"
                     "1011101001010010001011101"
@@ -766,7 +871,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "1000001000010100100011111"
                     "1111111010101101111000001"
                 },
-        /* 11*/ { BARCODE_HIBC_QR, -1, 2, -1, 4 << 8, "/EU720060FF0/O523201", 0, 25, 25, 1, "HIBC/PAS Section 2.2 2nd Purchase Order same, explicit mask 011",
+        /* 15*/ { BARCODE_HIBC_QR, -1, 2, -1, 4 << 8, { 0, 0, "" }, "/EU720060FF0/O523201", 0, 25, 25, 1, "HIBC/PAS Section 2.2 2nd Purchase Order same, explicit mask 011",
                     "1111111010011001101111111"
                     "1000001011010011001000001"
                     "1011101000000111001011101"
@@ -793,7 +898,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "1000001001000001110110101"
                     "1111111011101010111111001"
                 },
-        /* 12*/ { BARCODE_HIBC_QR, -1, 2, -1, -1, "/KN12345", 0, 21, 21, 1, "HIBC/PAS Section 2.2 Asset Tag **NOT SAME** uses mask 000 instead of 100",
+        /* 16*/ { BARCODE_HIBC_QR, -1, 2, -1, -1, { 0, 0, "" }, "/KN12345", 0, 21, 21, 1, "HIBC/PAS Section 2.2 Asset Tag **NOT SAME** uses mask 000 instead of 100",
                     "111111100000101111111"
                     "100000101010101000001"
                     "101110100011001011101"
@@ -816,7 +921,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000100100001100111"
                     "111111101000101110101"
                 },
-        /* 13*/ { BARCODE_HIBC_QR, -1, 2, -1, 5 << 8, "/KN12345", 0, 21, 21, 1, "HIBC/PAS Section 2.2 Asset Tag, same, explicit mask 100",
+        /* 17*/ { BARCODE_HIBC_QR, -1, 2, -1, 5 << 8, { 0, 0, "" }, "/KN12345", 0, 21, 21, 1, "HIBC/PAS Section 2.2 Asset Tag, same, explicit mask 100",
                     "111111101010101111111"
                     "100000100111001000001"
                     "101110100110101011101"
@@ -839,7 +944,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000100110011110101"
                     "111111101010111100111"
                 },
-        /* 14*/ { BARCODE_QRCODE, UNICODE_MODE, 1, -1, -1, "12345678901234567890123456789012345678901", 0, 21, 21, 1, "Max capacity ECC 1 Version 1 41 numbers",
+        /* 18*/ { BARCODE_QRCODE, UNICODE_MODE, 1, -1, -1, { 0, 0, "" }, "12345678901234567890123456789012345678901", 0, 21, 21, 1, "Max capacity ECC 1 Version 1 41 numbers",
                     "111111101001001111111"
                     "100000101100101000001"
                     "101110101011101011101"
@@ -862,7 +967,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000101000101001010"
                     "111111101010110000111"
                 },
-        /* 15*/ { BARCODE_QRCODE, UNICODE_MODE, 2, -1, -1, "12345678901234567890123456789012345678901", 0, 25, 25, 1, "ECC 2 auto-sets version 2",
+        /* 19*/ { BARCODE_QRCODE, UNICODE_MODE, 2, -1, -1, { 0, 0, "" }, "12345678901234567890123456789012345678901", 0, 25, 25, 1, "ECC 2 auto-sets version 2",
                     "1111111011001110101111111"
                     "1000001001000000001000001"
                     "1011101011001111101011101"
@@ -889,7 +994,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "1000001000000100111010110"
                     "1111111010011100001100111"
                 },
-        /* 16*/ { BARCODE_QRCODE, UNICODE_MODE, 4, 10, -1, "点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点", 0, 57, 57, 1, "Max capacity ECC 4 Version 10 74 kanji",
+        /* 20*/ { BARCODE_QRCODE, UNICODE_MODE, 4, 10, -1, { 0, 0, "" }, "点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点", 0, 57, 57, 1, "Max capacity ECC 4 Version 10 74 kanji",
                     "111111100111100000011001000011111100010010011011001111111"
                     "100000100011100101110000101000101001101111000001001000001"
                     "101110101001011100010001111110111100101001100011001011101"
@@ -948,7 +1053,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000100110011101110011001101110110101010001101000011011"
                     "111111100010001101010110001001000001001011001001011001011"
                 },
-        /* 17*/ { BARCODE_QRCODE, UNICODE_MODE, 4, 27, -1, "点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点", 0, 125, 125, 1, "Max capacity ECC 4 Version 27 385 kanji",
+        /* 21*/ { BARCODE_QRCODE, UNICODE_MODE, 4, 27, -1, { 0, 0, "" }, "点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点", 0, 125, 125, 1, "Max capacity ECC 4 Version 27 385 kanji",
                     "11111110101001001100111100100011110001010011110000001100010110100011101010111000011101101001011111001111101101101001101111111"
                     "10000010110001101110011001101111000101001011011001100110101000101010011110000000101000100101101110110000011110100110001000001"
                     "10111010100000000100000101000101111001011001010100100100100000000101100011010001100111101010010101101101101101101101001011101"
@@ -1075,7 +1180,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "10000010010111001111010001100001010001010110110001100000111101011100000010010111101001001100101101111011011001000001101001110"
                     "11111110000000010001110110000001010111011111000000111111010101110100101000110111000101101011001100000101101101101001100111111"
                 },
-        /* 18*/ { BARCODE_QRCODE, UNICODE_MODE, 4, 40, -1, "点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点" "点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点", 0, 177, 177, 1, "Max capacity ECC 4 Version 40 784 kanji",
+        /* 22*/ { BARCODE_QRCODE, UNICODE_MODE, 4, 40, -1, { 0, 0, "" }, "点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点" "点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点", 0, 177, 177, 1, "Max capacity ECC 4 Version 40 784 kanji",
                     "111111101010001111111101101110111010110111001110101000010001011011011101001110110011111011010000010101001010011110010000010110111111001001011111101000010010111111001010001111111"
                     "100000101010110001001000101111011001001100100110110000000111110101111011110001101110000111000100101111010011001111100111111001001011011011110011011111111001000010010010101000001"
                     "101110101001001101111001110010010100000000111001001011111000001001111111101010000111011010011010010001111010111001100011000011110100101110001010110001011110011011011010001011101"
@@ -1253,9 +1358,8 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "101110101010001011100101111010101100101000101001100110010011111001110110010100001111001101110110111110001101101110111011011011011011110011010111110001011111101011011011011111100"
                     "100000100000010000101110000100011000011110011100010100000011111110010100001100010010001001110010000000110010100111101101010110111111001000101010011011011000011110111110000000000"
                     "111111100000001110110110101010011010010100111111101001111101110111010110101111000111011001110100010111000100111000011011001011010011010011010101111010000011100001000011111011001"
-
                 },
-        /* 19*/ { BARCODE_QRCODE, UNICODE_MODE, 4, -1, ZINT_FULL_MULTIBYTE, "áA", 0, 21, 21, 1, "Mask automatic (001)",
+        /* 23*/ { BARCODE_QRCODE, UNICODE_MODE, 4, -1, ZINT_FULL_MULTIBYTE, { 0, 0, "" }, "áA", 0, 21, 21, 1, "Mask automatic (001)",
                     "111111100101101111111"
                     "100000101001101000001"
                     "101110101010101011101"
@@ -1278,7 +1382,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000100100111010000"
                     "111111100011001000110"
                 },
-        /* 20*/ { BARCODE_QRCODE, UNICODE_MODE, 4, -1, ZINT_FULL_MULTIBYTE | (8 << 8), "áA", 0, 21, 21, 1, "Mask 111",
+        /* 24*/ { BARCODE_QRCODE, UNICODE_MODE, 4, -1, ZINT_FULL_MULTIBYTE | (8 << 8), { 0, 0, "" }, "áA", 0, 21, 21, 1, "Mask 111",
                     "111111101000101111111"
                     "100000101110101000001"
                     "101110100110101011101"
@@ -1301,7 +1405,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000100011111101000"
                     "111111100111010100101"
                 },
-        /* 21*/ { BARCODE_QRCODE, UNICODE_MODE, 4, -1, ZINT_FULL_MULTIBYTE | (9 << 8), "áA", 0, 21, 21, 1, "Mask > 111 ignored",
+        /* 25*/ { BARCODE_QRCODE, UNICODE_MODE, 4, -1, ZINT_FULL_MULTIBYTE | (9 << 8), { 0, 0, "" }, "áA", 0, 21, 21, 1, "Mask > 111 ignored",
                     "111111100101101111111"
                     "100000101001101000001"
                     "101110101010101011101"
@@ -1324,7 +1428,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000100100111010000"
                     "111111100011001000110"
                 },
-        /* 22*/ { BARCODE_QRCODE, UNICODE_MODE, 2, 1, -1, "1234567890", 0, 21, 21, 0, "test_print example, automatic mask 001 (same score as mask 010); BWIPP uses mask 010",
+        /* 26*/ { BARCODE_QRCODE, UNICODE_MODE, 2, 1, -1, { 0, 0, "" }, "1234567890", 0, 21, 21, 0, "test_print example, automatic mask 001 (same score as mask 010); BWIPP uses mask 010",
                     "111111101001101111111"
                     "100000100100101000001"
                     "101110101001001011101"
@@ -1347,7 +1451,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000100001011000010"
                     "111111101011111111111"
                 },
-        /* 23*/ { BARCODE_QRCODE, UNICODE_MODE, 2, 1, 3 << 8, "1234567890", 0, 21, 21, 1, "test_print example, explicit mask 010",
+        /* 27*/ { BARCODE_QRCODE, UNICODE_MODE, 2, 1, 3 << 8, { 0, 0, "" }, "1234567890", 0, 21, 21, 1, "test_print example, explicit mask 010",
                     "111111100010101111111"
                     "100000100000001000001"
                     "101110101010001011101"
@@ -1370,7 +1474,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000100101111100110"
                     "111111101000100100100"
                 },
-        /* 24*/ { BARCODE_QRCODE, UNICODE_MODE, 1, 2, 2 << 8, "?ややややwやややや ややややや", 0, 25, 25, 1, "Data with Shift JIS '2nd byte 1st byte' matches; explicit mask 001 (auto 000) to match BWIPP",
+        /* 28*/ { BARCODE_QRCODE, UNICODE_MODE, 1, 2, 2 << 8, { 0, 0, "" }, "?ややややwやややや ややややや", 0, 25, 25, 1, "Data with Shift JIS '2nd byte 1st byte' matches; explicit mask 001 (auto 000) to match BWIPP",
                     "1111111010111110001111111"
                     "1000001011100101001000001"
                     "1011101000111110101011101"
@@ -1402,7 +1506,7 @@ static void test_qr_encode(int index, int generate, int debug) {
     int i, length, ret;
     struct zint_symbol *symbol;
 
-    char escaped[1024];
+    char escaped[4096];
     char bwipp_buf[32768];
     char bwipp_msg[1024];
 
@@ -1419,14 +1523,18 @@ static void test_qr_encode(int index, int generate, int debug) {
         assert_nonnull(symbol, "Symbol not created\n");
 
         length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, data[i].option_1, data[i].option_2, data[i].option_3, -1 /*output_options*/, data[i].data, -1, debug);
+        if (data[i].structapp.count) {
+            symbol->structapp = data[i].structapp;
+        }
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (generate) {
-            printf("        /*%3d*/ { %s, %s, %d, %d, %s, \"%s\", %s, %d, %d, %d, \"%s\",\n",
+            printf("        /*%3d*/ { %s, %s, %d, %d, %s, { %d, %d, \"%s\" }, \"%s\", %s, %d, %d, %d, \"%s\",\n",
                     i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode),
                     data[i].option_1, data[i].option_2, testUtilOption3Name(data[i].option_3),
+                    data[i].structapp.index, data[i].structapp.count, data[i].structapp.id,
                     testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), testUtilErrorName(data[i].ret),
                     symbol->rows, symbol->width, data[i].bwipp_cmp, data[i].comment);
             testUtilModulesPrint(symbol, "                    ", "\n");
@@ -1718,7 +1826,7 @@ static void test_microqr_input(int index, int generate, int debug) {
     int i, length, ret;
     struct zint_symbol *symbol;
 
-    char escaped[1024];
+    char escaped[4096];
 
     testStart("test_microqr_input");
 
@@ -1801,7 +1909,7 @@ static void test_microqr_padding(int index, int generate, int debug) {
     int i, length, ret;
     struct zint_symbol *symbol;
 
-    char escaped[1024];
+    char escaped[4096];
 
     testStart("test_microqr_padding");
 
@@ -1871,7 +1979,7 @@ static void test_microqr_optimize(int index, int generate, int debug) {
     int i, length, ret;
     struct zint_symbol *symbol;
 
-    char escaped[1024];
+    char escaped[4096];
 
     testStart("test_microqr_optimize");
 
@@ -2203,7 +2311,7 @@ static void test_microqr_encode(int index, int generate, int debug) {
     int i, length, ret;
     struct zint_symbol *symbol;
 
-    char escaped[1024];
+    char escaped[4096];
     char bwipp_buf[32768];
     char bwipp_msg[1024];
 
@@ -2355,7 +2463,7 @@ static void test_upnqr_input(int index, int generate, int debug) {
     int i, length, ret;
     struct zint_symbol *symbol;
 
-    char escaped[1024];
+    char escaped[4096];
 
     testStart("test_upnqr_input");
 
@@ -2775,7 +2883,7 @@ static void test_rmqr_input(int index, int generate, int debug) {
     int i, length, ret;
     struct zint_symbol *symbol;
 
-    char escaped[1024];
+    char escaped[4096];
 
     testStart("test_rmqr_input");
 
@@ -2839,7 +2947,7 @@ static void test_rmqr_gs1(int index, int generate, int debug) {
     int i, length, ret;
     struct zint_symbol *symbol;
 
-    char escaped[1024];
+    char escaped[4096];
 
     testStart("test_rmqr_gs1");
 
@@ -2908,7 +3016,7 @@ static void test_rmqr_optimize(int index, int generate, int debug) {
     int i, length, ret;
     struct zint_symbol *symbol;
 
-    char escaped[1024];
+    char escaped[4096];
 
     testStart("test_rmqr_optimize");
 
@@ -3328,7 +3436,7 @@ static void test_rmqr_encode(int index, int generate, int debug) {
     int i, length, ret;
     struct zint_symbol *symbol;
 
-    char escaped[1024];
+    char escaped[4096];
     char bwipp_buf[32768];
     char bwipp_msg[1024];
 

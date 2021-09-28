@@ -44,7 +44,7 @@
 #define TECHNETIUM  "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%"
 
 /* It's assumed that int is at least 32 bits, the following will compile-time fail if not
- * https://stackoverflow.com/a/1980056/664741 */
+ * https://stackoverflow.com/a/1980056 */
 typedef int static_assert_int_at_least_32bits[CHAR_BIT != 8 || sizeof(int) < 4 ? -1 : 1];
 
 /* Create and initialize a symbol structure */
@@ -413,12 +413,15 @@ static int gs1_compliant(const int symbology) {
         case BARCODE_CODE16K:
         case BARCODE_AZTEC:
         case BARCODE_DATAMATRIX:
-        case BARCODE_CODEONE:
         case BARCODE_CODE49:
         case BARCODE_QRCODE:
         case BARCODE_DOTCODE:
-        case BARCODE_RMQR:
+        case BARCODE_CODEONE:
         case BARCODE_ULTRA:
+        case BARCODE_RMQR:
+        // TODO: case BARCODE_CODABLOCKF:
+        // TODO: case BARCODE_HANXIN:
+        // TODO: case BARCODE_GRIDMATRIX:
             return 1;
             break;
     }
@@ -970,7 +973,7 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
             symbol->symbology = BARCODE_PLESSEY;
         } else if (symbol->symbology == 48) {
             symbol->symbology = BARCODE_NVE18;
-        } else if (symbol->symbology == 54) { /* General Parcel up to tbarcode 9, Brazelian CEPNet for tbarcode 10+ */
+        } else if (symbol->symbology == 54) { /* General Parcel up to tbarcode 9, Brazilian CEPNet for tbarcode 10+ */
             warn_number = error_tag(symbol, ZINT_WARN_INVALID_OPTION, "210: General Parcel Code not supported");
             if (warn_number >= ZINT_ERROR) {
                 return warn_number;
@@ -1600,6 +1603,28 @@ unsigned int ZBarcode_Cap(int symbol_id, unsigned int cap_flag) {
             case BARCODE_HANXIN:
             case BARCODE_DOTCODE:
                 result |= ZINT_CAP_MASK;
+                break;
+        }
+    }
+    if (cap_flag & ZINT_CAP_STRUCTAPP) {
+        switch (symbol_id) {
+            case BARCODE_PDF417:
+            case BARCODE_PDF417COMP:
+            case BARCODE_MAXICODE:
+            case BARCODE_QRCODE: /* Note does not include MICROQR, UPNQR or rMQR */
+            case BARCODE_DATAMATRIX:
+            case BARCODE_MICROPDF417:
+            case BARCODE_AZTEC:
+            case BARCODE_HIBC_DM:
+            case BARCODE_HIBC_QR:
+            case BARCODE_HIBC_PDF:
+            case BARCODE_HIBC_MICPDF:
+            case BARCODE_HIBC_AZTEC:
+            case BARCODE_DOTCODE:
+            case BARCODE_CODEONE:
+            case BARCODE_GRIDMATRIX:
+            case BARCODE_ULTRA:
+                result |= ZINT_CAP_STRUCTAPP;
                 break;
         }
     }

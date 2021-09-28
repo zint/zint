@@ -34,7 +34,8 @@ ExportWindow::ExportWindow()
 #endif
     setupUi(this);
 
-    linDestPath->setText(settings.value("studio/export/destination", QDir::toNativeSeparators(QDir::homePath())).toString());
+    linDestPath->setText(settings.value("studio/export/destination",
+                        QDir::toNativeSeparators(QDir::homePath())).toString());
     linPrefix->setText(settings.value("studio/export/file_prefix", "bcs_").toString());
     cmbFileName->setCurrentIndex(settings.value("studio/export/name_format", 0).toInt());
     cmbFileFormat->setCurrentIndex(settings.value("studio/export/filetype", 0).toInt());

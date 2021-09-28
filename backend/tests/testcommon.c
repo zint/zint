@@ -728,7 +728,7 @@ char *testUtilEscape(char *buffer, int length, char *escaped, int escaped_size) 
 
     for (i = 0; b < be && i < escaped_size; b++) {
          // For VC6-compatibility need to split literal strings into <= 2K chunks
-         if (i > 2040 && i / 2040 != chunk) {
+         if (i > 2040 && i / 2040 != chunk && (*b & 0xC0) != 0x80) { // Avoid UTF-8 continuations
             chunk = i / 2040;
             if (i + 3 < escaped_size) {
                 escaped[i] = '"';
@@ -2195,6 +2195,13 @@ static const char *testUtilBwippName(int index, const struct zint_symbol *symbol
         }
         return NULL;
     }
+    if (symbol->structapp.count && symbology != BARCODE_MAXICODE) {
+        if (debug & ZINT_DEBUG_TEST_PRINT) {
+            printf("i:%d %s not BWIPP compatible, Structured Append not supported\n",
+                    index, testUtilBarcodeName(symbology));
+        }
+        return NULL;
+    }
 
     if (symbology == BARCODE_CODE11) {
         if (option_2 != 1 && option_2 != 2) { /* 2 check digits (Zint default) not supported */
@@ -2866,6 +2873,11 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                         bwipp_opts = bwipp_opts_buf;
                         parse = 1;
                     }
+                }
+                if (symbol->structapp.count) {
+                    sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%ssam=%c%c",
+                            strlen(bwipp_opts_buf) ? " " : "", itoc(symbol->structapp.index), itoc(symbol->structapp.count));
+                    bwipp_opts = bwipp_opts_buf;
                 }
             }
         }

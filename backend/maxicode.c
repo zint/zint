@@ -145,7 +145,7 @@ static int bestSurroundingSet(const int index, const int length, const unsigned 
 
 /* Format text according to Appendix A */
 static int maxi_text_process(unsigned char maxi_codeword[144], const int mode, const unsigned char in_source[],
-            int length, const int eci, const int scm_vv, const int debug_print) {
+            int length, const int structapp_cw, const int eci, const int scm_vv, const int debug_print) {
 
     unsigned char set[144], character[144] = {0};
     int i, count, current_set, padding_set;
@@ -447,6 +447,14 @@ static int maxi_text_process(unsigned char maxi_codeword[144], const int mode, c
         }
     }
 
+    /* Insert Structured Append at beginning if needed */
+    if (structapp_cw) {
+        maxi_bump(set, character, 0, &length);
+        character[0] = 33; // PAD
+        maxi_bump(set, character, 1, &length);
+        character[1] = structapp_cw;
+    }
+
     if (debug_print) printf("Length: %d\n", length);
 
     if (((mode == 2) || (mode == 3)) && (length > 84)) {
@@ -490,7 +498,7 @@ static void maxi_do_primary_2(unsigned char maxi_codeword[144], const unsigned c
             const int postcode_length, const int country, const int service) {
     int postcode_num;
 
-    postcode_num = atoi((const char *) postcode);
+    postcode_num = to_int(postcode, postcode_length);
 
     maxi_codeword[0] = ((postcode_num & 0x03) << 4) | 2;
     maxi_codeword[1] = ((postcode_num & 0xfc) >> 2);
@@ -531,6 +539,8 @@ INTERNAL int maxicode(struct zint_symbol *symbol, unsigned char source[], int le
     int error_number = 0, eclen;
     unsigned char maxi_codeword[144] = {0};
     int scm_vv = -1;
+    int structapp_cw = 0;
+    int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
 
     mode = symbol->option_1;
 
@@ -621,18 +631,34 @@ INTERNAL int maxicode(struct zint_symbol *symbol, unsigned char source[], int le
             scm_vv = symbol->option_2 - 1;
         }
 
-        if (symbol->debug & ZINT_DEBUG_PRINT) {
+        if (debug_print) {
             printf("Postcode: %s, Country Code: %d, Service Class: %d\n", postcode, countrycode, service);
         }
     } else {
         maxi_codeword[0] = mode;
     }
 
-    if (symbol->debug & ZINT_DEBUG_PRINT) {
+    if (debug_print) {
         printf("Mode: %d\n", mode);
     }
 
-    i = maxi_text_process(maxi_codeword, mode, source, length, symbol->eci, scm_vv, symbol->debug & ZINT_DEBUG_PRINT);
+    if (symbol->structapp.count) {
+        if (symbol->structapp.count < 2 || symbol->structapp.count > 8) {
+            strcpy(symbol->errtxt, "558: Structured Append count out of range (2-8)");
+            return ZINT_ERROR_INVALID_OPTION;
+        }
+        if (symbol->structapp.index < 1 || symbol->structapp.index > symbol->structapp.count) {
+            sprintf(symbol->errtxt, "559: Structured Append index out of range (1-%d)", symbol->structapp.count);
+            return ZINT_ERROR_INVALID_OPTION;
+        }
+        if (symbol->structapp.id[0]) {
+            strcpy(symbol->errtxt, "549: Structured Append ID not available for MaxiCode");
+            return ZINT_ERROR_INVALID_OPTION;
+        }
+        structapp_cw = (symbol->structapp.count - 1) | ((symbol->structapp.index - 1) << 3);
+    }
+
+    i = maxi_text_process(maxi_codeword, mode, source, length, structapp_cw, symbol->eci, scm_vv, debug_print);
     if (i == ZINT_ERROR_TOO_LONG) {
         strcpy(symbol->errtxt, "553: Input data too long");
         return i;
@@ -649,7 +675,7 @@ INTERNAL int maxicode(struct zint_symbol *symbol, unsigned char source[], int le
     maxi_do_secondary_chk_even(maxi_codeword, eclen / 2); // do error correction of even
     maxi_do_secondary_chk_odd(maxi_codeword, eclen / 2); // do error correction of odd
 
-    if (symbol->debug & ZINT_DEBUG_PRINT) {
+    if (debug_print) {
         printf("Codewords:");
         for (i = 0; i < 144; i++) printf(" %d", maxi_codeword[i]);
         printf("\n");

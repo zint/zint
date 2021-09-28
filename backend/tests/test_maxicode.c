@@ -122,6 +122,7 @@ static void test_input(int index, int generate, int debug) {
         int eci;
         int option_1;
         int option_2;
+        struct zint_structapp structapp;
         char *data;
         int length;
         char *primary;
@@ -131,50 +132,56 @@ static void test_input(int index, int generate, int debug) {
         char *comment;
     };
     struct item data[] = {
-        /*  0*/ { UNICODE_MODE, -1, -1, -1, "A", -1, "", 0, 30, "(144) 04 01 21 21 21 21 21 21 21 21 08 0E 19 2B 20 0C 24 06 32 1C 21 21 21 21 21 21 21 21", "" },
-        /*  1*/ { UNICODE_MODE, -1, 2, -1, "A", -1, "", ZINT_ERROR_INVALID_DATA, 0, "Error 551: Invalid length for Primary Message", "" },
-        /*  2*/ { UNICODE_MODE, -1, 2, -1, "A", -1, "A123456", ZINT_ERROR_INVALID_DATA, 0, "Error 555: Non-numeric postcode in Primary Message", "" },
-        /*  3*/ { UNICODE_MODE, -1, 2, -1, "A", -1, "1123456", 0, 30, "(144) 12 00 00 00 00 10 30 1E 20 1C 1A 3D 1C 0D 1B 15 3C 17 3C 08 01 21 21 21 21 21 21 21", "1-digit postcode" },
-        /*  4*/ { UNICODE_MODE, -1, 2, -1, "A", -1, "1 123456", 0, 30, "(144) 12 00 00 00 00 10 30 1E 20 1C 1A 3D 1C 0D 1B 15 3C 17 3C 08 01 21 21 21 21 21 21 21", "1-digit postcode" },
-        /*  5*/ { UNICODE_MODE, -1, 2, -1, "A", -1, "123456789123456", 0, 30, "(144) 12 05 0D 2F 35 11 32 1E 20 1C 0D 1D 3B 12 22 3F 30 14 23 1A 01 21 21 21 21 21 21 21", "9-digit postcode" },
-        /*  6*/ { UNICODE_MODE, -1, 2, -1, "A", -1, "1234567890123456", ZINT_ERROR_INVALID_DATA, 0, "Error 551: Invalid length for Primary Message", "10-digit postcode" },
-        /*  7*/ { UNICODE_MODE, -1, -1, -1, "A", -1, "1123456", 0, 30, "(144) 12 00 00 00 00 10 30 1E 20 1C 1A 3D 1C 0D 1B 15 3C 17 3C 08 01 21 21 21 21 21 21 21", "1-digit postcode" },
-        /*  8*/ { UNICODE_MODE, -1, -1, -1, "A", -1, "123456789123456", 0, 30, "(144) 12 05 0D 2F 35 11 32 1E 20 1C 0D 1D 3B 12 22 3F 30 14 23 1A 01 21 21 21 21 21 21 21", "9-digit postcode" },
-        /*  9*/ { UNICODE_MODE, -1, -1, -1, "A", -1, "1234567890123456", ZINT_ERROR_INVALID_DATA, 0, "Error 551: Invalid length for Primary Message", "10-digit postcode" },
-        /* 10*/ { UNICODE_MODE, -1, -1, -1, "A", -1, "123456", ZINT_ERROR_INVALID_DATA, 0, "Error 551: Invalid length for Primary Message", "0-digit postcode" },
-        /* 11*/ { UNICODE_MODE, -1, -1, -1, "A", -1, "12345678123456", 0, 30, "(144) 22 13 21 31 0B 00 32 1E 20 1C 04 14 07 30 10 07 08 28 1D 09 01 21 21 21 21 21 21 21", "8-digit postcode" },
-        /* 12*/ { UNICODE_MODE, -1, 3, -1, "A", -1, "", ZINT_ERROR_INVALID_DATA, 0, "Error 551: Invalid length for Primary Message", "" },
-        /* 13*/ { UNICODE_MODE, -1, 3, -1, "A", -1, "A123456", 0, 30, "(144) 03 08 08 08 08 18 30 1E 20 1C 22 35 1C 0F 02 1A 26 04 10 31 01 21 21 21 21 21 21 21", "1-alphanumeric postcode" },
-        /* 14*/ { UNICODE_MODE, -1, 3, -1, "A", -1, "1123456", 0, 30, "(144) 03 08 08 08 08 18 3C 1E 20 1C 13 37 07 2C 26 2D 18 29 3F 2C 01 21 21 21 21 21 21 21", "1-digit postcode" },
-        /* 15*/ { UNICODE_MODE, -1, -1, -1, "A", -1, "A123456", 0, 30, "(144) 03 08 08 08 08 18 30 1E 20 1C 22 35 1C 0F 02 1A 26 04 10 31 01 21 21 21 21 21 21 21", "1-alphanumeric postcode" },
-        /* 16*/ { UNICODE_MODE, -1, -1, -1, "A", -1, "ABCDEF123456", 0, 30, "(144) 23 11 01 31 20 10 30 1E 20 1C 3C 1D 22 03 19 15 0F 20 0F 2A 01 21 21 21 21 21 21 21", "6-alphanumeric postcode" },
-        /* 17*/ { UNICODE_MODE, -1, -1, -1, "A", -1, "ABCDEFG123456", 0, 30, "(144) 23 11 01 31 20 10 30 1E 20 1C 3C 1D 22 03 19 15 0F 20 0F 2A 01 21 21 21 21 21 21 21", "7-alphanumeric postcode truncated" },
-        /* 18*/ { UNICODE_MODE, -1, -1, -1, "A", -1, "ABCDE123456", 0, 30, "(144) 03 18 01 31 20 10 30 1E 20 1C 0F 38 38 1A 39 10 2F 37 22 12 01 21 21 21 21 21 21 21", "5-alphanumeric postcode" },
-        /* 19*/ { UNICODE_MODE, -1, -1, -1, "A", -1, "AAAAAA   840001", 0, 30, "(144) 13 10 10 10 10 10 00 12 07 00 17 36 2E 38 04 29 16 0D 27 16 01 21 21 21 21 21 21 21", "6-alphanumeric postcode with padding" },
-        /* 20*/ { UNICODE_MODE, -1, -1, -1, "A", -1, "AAAAA A840001", 0, 30, "(144) 03 18 10 10 10 10 00 12 07 00 19 07 29 31 26 01 23 2C 2E 07 01 21 21 21 21 21 21 21", "7-alphanumeric with embedded padding truncated" },
-        /* 21*/ { UNICODE_MODE, -1, -1, -1, "A", -1, "AA\015AAA840001", ZINT_ERROR_INVALID_DATA, 0, "Error 556: Invalid character in postcode in Primary Message", "Alphanumeric postcode with CR" },
-        /* 22*/ { UNICODE_MODE, -1, -1, -1, "A", -1, "A#%-/A840001", 0, 30, "(144) 13 30 1B 1B 39 18 00 12 07 00 3F 1E 25 07 2A 1E 14 3C 28 2D 01 21 21 21 21 21 21 21", "Alphanumeric postcode with non-control Code A chars" },
-        /* 23*/ { UNICODE_MODE, -1, -1, -1, "A", -1, "1A23456", ZINT_ERROR_INVALID_DATA, 0, "Error 552: Non-numeric country code or service class in Primary Message", "Non-numeric country code" },
-        /* 24*/ { UNICODE_MODE, -1, -1, -1, "A", -1, "12345678912345A", ZINT_ERROR_INVALID_DATA, 0, "Error 552: Non-numeric country code or service class in Primary Message", "Non-numeric service class" },
-        /* 25*/ { UNICODE_MODE, -1, 0, -1, "A", -1, "123456789123456", 0, 30, "(144) 12 05 0D 2F 35 11 32 1E 20 1C 0D 1D 3B 12 22 3F 30 14 23 1A 01 21 21 21 21 21 21 21", "Auto-determine mode 2" },
-        /* 26*/ { UNICODE_MODE, -1, 0, -1, "A", -1, "", ZINT_ERROR_INVALID_DATA, 0, "Error 554: Primary Message empty", "Auto-determine mode 2/3 requires primary message" },
-        /* 27*/ { UNICODE_MODE, -1, 0, -1, "A", -1, "A23456123456", 0, 30, "(144) 23 1D 0D 3D 2C 1C 30 1E 20 1C 24 35 30 31 2A 0D 17 14 16 3D 01 21 21 21 21 21 21 21", "Auto-determine mode 3" },
-        /* 28*/ { UNICODE_MODE, -1, -1, 100, "A", -1, "123456123456", 0, 30, "(144) 02 10 22 07 00 20 31 1E 20 1C 0E 29 13 1B 0D 26 36 25 3B 22 3B 2A 29 3B 28 1E 30 31", "SCM prefix version" },
-        /* 29*/ { UNICODE_MODE, -1, -1, 101, "A", -1, "123456123456", ZINT_ERROR_INVALID_OPTION, 0, "Error 557: Invalid SCM prefix version", "SCM prefix version" },
-        /* 30*/ { UNICODE_MODE, 3, -1, -1, "A", -1, "", 0, 30, "(144) 04 1B 03 01 21 21 21 21 21 21 2F 14 23 21 05 24 27 00 24 0C 21 21 21 21 21 21 21 21", "" },
-        /* 31*/ { UNICODE_MODE, 31, -1, -1, "A", -1, "", 0, 30, "(144) 04 1B 1F 01 21 21 21 21 21 21 00 2F 0E 09 39 3B 24 1A 21 05 21 21 21 21 21 21 21 21", "ECI 0x1F" },
-        /* 32*/ { UNICODE_MODE, 32, -1, -1, "A", -1, "", 0, 30, "(144) 04 1B 20 20 01 21 21 21 21 21 3D 15 0F 30 0D 22 24 35 22 06 21 21 21 21 21 21 21 21", "ECI 0x20" },
-        /* 33*/ { UNICODE_MODE, 1023, -1, -1, "A", -1, "", 0, 30, "(144) 04 1B 2F 3F 01 21 21 21 21 21 2E 27 23 1D 35 19 21 04 3A 26 21 21 21 21 21 21 21 21", "ECI 0x3FF" },
-        /* 34*/ { UNICODE_MODE, 1024, -1, -1, "A", -1, "", 0, 30, "(144) 04 1B 30 10 00 01 21 21 21 21 11 2F 15 10 1D 29 06 35 14 2B 21 21 21 21 21 21 21 21", "ECI 0x400" },
-        /* 35*/ { UNICODE_MODE, 32767, -1, -1, "A", -1, "", 0, 30, "(144) 04 1B 37 3F 3F 01 21 21 21 21 3E 15 12 01 07 30 39 27 04 2B 21 21 21 21 21 21 21 21", "ECI 0x7FFF" },
-        /* 36*/ { UNICODE_MODE, 32768, -1, -1, "A", -1, "", 0, 30, "(144) 04 1B 38 08 00 00 01 21 21 21 10 30 3A 04 26 23 0E 21 3D 0F 21 21 21 21 21 21 21 21", "ECI 0x8000" },
-        /* 37*/ { UNICODE_MODE, 65535, -1, -1, "A", -1, "", 0, 30, "(144) 04 1B 38 0F 3F 3F 01 21 21 21 1C 0E 1D 39 3B 0D 38 25 00 30 21 21 21 21 21 21 21 21", "ECI 0xFFFF" },
-        /* 38*/ { UNICODE_MODE, 65536, -1, -1, "A", -1, "", 0, 30, "(144) 04 1B 38 10 00 00 01 21 21 21 2B 1F 24 06 38 2E 17 1B 10 2F 21 21 21 21 21 21 21 21", "ECI 0x10000" },
-        /* 39*/ { UNICODE_MODE, 131071, -1, -1, "A", -1, "", 0, 30, "(144) 04 1B 38 1F 3F 3F 01 21 21 21 0F 05 09 04 2F 3A 17 09 36 31 21 21 21 21 21 21 21 21", "ECI 0x1FFFF" },
-        /* 40*/ { UNICODE_MODE, 999999, -1, -1, "A", -1, "", 0, 30, "(144) 04 1B 3B 34 08 3F 01 21 21 21 26 3B 2B 23 08 17 32 05 26 35 21 21 21 21 21 21 21 21", "Max ECI" },
-        /* 41*/ { UNICODE_MODE, -1, 1, -1, "A", -1, "", ZINT_ERROR_INVALID_OPTION, 0, "Error 550: Invalid MaxiCode Mode", "" },
-        /* 42*/ { UNICODE_MODE, -1, -1, -1, "\015", -1, "", 0, 30, "(144) 04 00 21 21 21 21 21 21 21 21 37 32 10 01 24 1B 10 11 38 0C 21 21 21 21 21 21 21 21", "" },
-        /* 43*/ { UNICODE_MODE, -1, -1, -1, "\001\034\001\035\001\036\001a:b", -1, "", 0, 30, "(144) 04 3E 3E 01 20 01 21 01 22 01 27 0B 35 01 08 0D 16 02 17 1A 3F 01 33 02 21 21 21 21", "" },
+        /*  0*/ { UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "A", -1, "", 0, 30, "(144) 04 01 21 21 21 21 21 21 21 21 08 0E 19 2B 20 0C 24 06 32 1C 21 21 21 21 21 21 21 21", "" },
+        /*  1*/ { UNICODE_MODE, -1, 2, -1, { 0, 0, "" }, "A", -1, "", ZINT_ERROR_INVALID_DATA, 0, "Error 551: Invalid length for Primary Message", "" },
+        /*  2*/ { UNICODE_MODE, -1, 2, -1, { 0, 0, "" }, "A", -1, "A123456", ZINT_ERROR_INVALID_DATA, 0, "Error 555: Non-numeric postcode in Primary Message", "" },
+        /*  3*/ { UNICODE_MODE, -1, 2, -1, { 0, 0, "" }, "A", -1, "1123456", 0, 30, "(144) 12 00 00 00 00 10 30 1E 20 1C 1A 3D 1C 0D 1B 15 3C 17 3C 08 01 21 21 21 21 21 21 21", "1-digit postcode" },
+        /*  4*/ { UNICODE_MODE, -1, 2, -1, { 0, 0, "" }, "A", -1, "1 123456", 0, 30, "(144) 12 00 00 00 00 10 30 1E 20 1C 1A 3D 1C 0D 1B 15 3C 17 3C 08 01 21 21 21 21 21 21 21", "1-digit postcode" },
+        /*  5*/ { UNICODE_MODE, -1, 2, -1, { 0, 0, "" }, "A", -1, "123456789123456", 0, 30, "(144) 12 05 0D 2F 35 11 32 1E 20 1C 0D 1D 3B 12 22 3F 30 14 23 1A 01 21 21 21 21 21 21 21", "9-digit postcode" },
+        /*  6*/ { UNICODE_MODE, -1, 2, -1, { 0, 0, "" }, "A", -1, "1234567890123456", ZINT_ERROR_INVALID_DATA, 0, "Error 551: Invalid length for Primary Message", "10-digit postcode" },
+        /*  7*/ { UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "A", -1, "1123456", 0, 30, "(144) 12 00 00 00 00 10 30 1E 20 1C 1A 3D 1C 0D 1B 15 3C 17 3C 08 01 21 21 21 21 21 21 21", "1-digit postcode" },
+        /*  8*/ { UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "A", -1, "123456789123456", 0, 30, "(144) 12 05 0D 2F 35 11 32 1E 20 1C 0D 1D 3B 12 22 3F 30 14 23 1A 01 21 21 21 21 21 21 21", "9-digit postcode" },
+        /*  9*/ { UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "A", -1, "1234567890123456", ZINT_ERROR_INVALID_DATA, 0, "Error 551: Invalid length for Primary Message", "10-digit postcode" },
+        /* 10*/ { UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "A", -1, "123456", ZINT_ERROR_INVALID_DATA, 0, "Error 551: Invalid length for Primary Message", "0-digit postcode" },
+        /* 11*/ { UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "A", -1, "12345678123456", 0, 30, "(144) 22 13 21 31 0B 00 32 1E 20 1C 04 14 07 30 10 07 08 28 1D 09 01 21 21 21 21 21 21 21", "8-digit postcode" },
+        /* 12*/ { UNICODE_MODE, -1, 3, -1, { 0, 0, "" }, "A", -1, "", ZINT_ERROR_INVALID_DATA, 0, "Error 551: Invalid length for Primary Message", "" },
+        /* 13*/ { UNICODE_MODE, -1, 3, -1, { 0, 0, "" }, "A", -1, "A123456", 0, 30, "(144) 03 08 08 08 08 18 30 1E 20 1C 22 35 1C 0F 02 1A 26 04 10 31 01 21 21 21 21 21 21 21", "1-alphanumeric postcode" },
+        /* 14*/ { UNICODE_MODE, -1, 3, -1, { 0, 0, "" }, "A", -1, "1123456", 0, 30, "(144) 03 08 08 08 08 18 3C 1E 20 1C 13 37 07 2C 26 2D 18 29 3F 2C 01 21 21 21 21 21 21 21", "1-digit postcode" },
+        /* 15*/ { UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "A", -1, "A123456", 0, 30, "(144) 03 08 08 08 08 18 30 1E 20 1C 22 35 1C 0F 02 1A 26 04 10 31 01 21 21 21 21 21 21 21", "1-alphanumeric postcode" },
+        /* 16*/ { UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "A", -1, "ABCDEF123456", 0, 30, "(144) 23 11 01 31 20 10 30 1E 20 1C 3C 1D 22 03 19 15 0F 20 0F 2A 01 21 21 21 21 21 21 21", "6-alphanumeric postcode" },
+        /* 17*/ { UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "A", -1, "ABCDEFG123456", 0, 30, "(144) 23 11 01 31 20 10 30 1E 20 1C 3C 1D 22 03 19 15 0F 20 0F 2A 01 21 21 21 21 21 21 21", "7-alphanumeric postcode truncated" },
+        /* 18*/ { UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "A", -1, "ABCDE123456", 0, 30, "(144) 03 18 01 31 20 10 30 1E 20 1C 0F 38 38 1A 39 10 2F 37 22 12 01 21 21 21 21 21 21 21", "5-alphanumeric postcode" },
+        /* 19*/ { UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "A", -1, "AAAAAA   840001", 0, 30, "(144) 13 10 10 10 10 10 00 12 07 00 17 36 2E 38 04 29 16 0D 27 16 01 21 21 21 21 21 21 21", "6-alphanumeric postcode with padding" },
+        /* 20*/ { UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "A", -1, "AAAAA A840001", 0, 30, "(144) 03 18 10 10 10 10 00 12 07 00 19 07 29 31 26 01 23 2C 2E 07 01 21 21 21 21 21 21 21", "7-alphanumeric with embedded padding truncated" },
+        /* 21*/ { UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "A", -1, "AA\015AAA840001", ZINT_ERROR_INVALID_DATA, 0, "Error 556: Invalid character in postcode in Primary Message", "Alphanumeric postcode with CR" },
+        /* 22*/ { UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "A", -1, "A#%-/A840001", 0, 30, "(144) 13 30 1B 1B 39 18 00 12 07 00 3F 1E 25 07 2A 1E 14 3C 28 2D 01 21 21 21 21 21 21 21", "Alphanumeric postcode with non-control Code A chars" },
+        /* 23*/ { UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "A", -1, "1A23456", ZINT_ERROR_INVALID_DATA, 0, "Error 552: Non-numeric country code or service class in Primary Message", "Non-numeric country code" },
+        /* 24*/ { UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "A", -1, "12345678912345A", ZINT_ERROR_INVALID_DATA, 0, "Error 552: Non-numeric country code or service class in Primary Message", "Non-numeric service class" },
+        /* 25*/ { UNICODE_MODE, -1, 0, -1, { 0, 0, "" }, "A", -1, "123456789123456", 0, 30, "(144) 12 05 0D 2F 35 11 32 1E 20 1C 0D 1D 3B 12 22 3F 30 14 23 1A 01 21 21 21 21 21 21 21", "Auto-determine mode 2" },
+        /* 26*/ { UNICODE_MODE, -1, 0, -1, { 0, 0, "" }, "A", -1, "", ZINT_ERROR_INVALID_DATA, 0, "Error 554: Primary Message empty", "Auto-determine mode 2/3 requires primary message" },
+        /* 27*/ { UNICODE_MODE, -1, 0, -1, { 0, 0, "" }, "A", -1, "A23456123456", 0, 30, "(144) 23 1D 0D 3D 2C 1C 30 1E 20 1C 24 35 30 31 2A 0D 17 14 16 3D 01 21 21 21 21 21 21 21", "Auto-determine mode 3" },
+        /* 28*/ { UNICODE_MODE, -1, -1, 100, { 0, 0, "" }, "A", -1, "123456123456", 0, 30, "(144) 02 10 22 07 00 20 31 1E 20 1C 0E 29 13 1B 0D 26 36 25 3B 22 3B 2A 29 3B 28 1E 30 31", "SCM prefix version" },
+        /* 29*/ { UNICODE_MODE, -1, -1, 101, { 0, 0, "" }, "A", -1, "123456123456", ZINT_ERROR_INVALID_OPTION, 0, "Error 557: Invalid SCM prefix version", "SCM prefix version" },
+        /* 30*/ { UNICODE_MODE, 3, -1, -1, { 0, 0, "" }, "A", -1, "", 0, 30, "(144) 04 1B 03 01 21 21 21 21 21 21 2F 14 23 21 05 24 27 00 24 0C 21 21 21 21 21 21 21 21", "" },
+        /* 31*/ { UNICODE_MODE, 31, -1, -1, { 0, 0, "" }, "A", -1, "", 0, 30, "(144) 04 1B 1F 01 21 21 21 21 21 21 00 2F 0E 09 39 3B 24 1A 21 05 21 21 21 21 21 21 21 21", "ECI 0x1F" },
+        /* 32*/ { UNICODE_MODE, 32, -1, -1, { 0, 0, "" }, "A", -1, "", 0, 30, "(144) 04 1B 20 20 01 21 21 21 21 21 3D 15 0F 30 0D 22 24 35 22 06 21 21 21 21 21 21 21 21", "ECI 0x20" },
+        /* 33*/ { UNICODE_MODE, 1023, -1, -1, { 0, 0, "" }, "A", -1, "", 0, 30, "(144) 04 1B 2F 3F 01 21 21 21 21 21 2E 27 23 1D 35 19 21 04 3A 26 21 21 21 21 21 21 21 21", "ECI 0x3FF" },
+        /* 34*/ { UNICODE_MODE, 1024, -1, -1, { 0, 0, "" }, "A", -1, "", 0, 30, "(144) 04 1B 30 10 00 01 21 21 21 21 11 2F 15 10 1D 29 06 35 14 2B 21 21 21 21 21 21 21 21", "ECI 0x400" },
+        /* 35*/ { UNICODE_MODE, 32767, -1, -1, { 0, 0, "" }, "A", -1, "", 0, 30, "(144) 04 1B 37 3F 3F 01 21 21 21 21 3E 15 12 01 07 30 39 27 04 2B 21 21 21 21 21 21 21 21", "ECI 0x7FFF" },
+        /* 36*/ { UNICODE_MODE, 32768, -1, -1, { 0, 0, "" }, "A", -1, "", 0, 30, "(144) 04 1B 38 08 00 00 01 21 21 21 10 30 3A 04 26 23 0E 21 3D 0F 21 21 21 21 21 21 21 21", "ECI 0x8000" },
+        /* 37*/ { UNICODE_MODE, 65535, -1, -1, { 0, 0, "" }, "A", -1, "", 0, 30, "(144) 04 1B 38 0F 3F 3F 01 21 21 21 1C 0E 1D 39 3B 0D 38 25 00 30 21 21 21 21 21 21 21 21", "ECI 0xFFFF" },
+        /* 38*/ { UNICODE_MODE, 65536, -1, -1, { 0, 0, "" }, "A", -1, "", 0, 30, "(144) 04 1B 38 10 00 00 01 21 21 21 2B 1F 24 06 38 2E 17 1B 10 2F 21 21 21 21 21 21 21 21", "ECI 0x10000" },
+        /* 39*/ { UNICODE_MODE, 131071, -1, -1, { 0, 0, "" }, "A", -1, "", 0, 30, "(144) 04 1B 38 1F 3F 3F 01 21 21 21 0F 05 09 04 2F 3A 17 09 36 31 21 21 21 21 21 21 21 21", "ECI 0x1FFFF" },
+        /* 40*/ { UNICODE_MODE, 999999, -1, -1, { 0, 0, "" }, "A", -1, "", 0, 30, "(144) 04 1B 3B 34 08 3F 01 21 21 21 26 3B 2B 23 08 17 32 05 26 35 21 21 21 21 21 21 21 21", "Max ECI" },
+        /* 41*/ { UNICODE_MODE, -1, 1, -1, { 0, 0, "" }, "A", -1, "", ZINT_ERROR_INVALID_OPTION, 0, "Error 550: Invalid MaxiCode Mode", "" },
+        /* 42*/ { UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "\015", -1, "", 0, 30, "(144) 04 00 21 21 21 21 21 21 21 21 37 32 10 01 24 1B 10 11 38 0C 21 21 21 21 21 21 21 21", "" },
+        /* 43*/ { UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "\001\034\001\035\001\036\001a:b", -1, "", 0, 30, "(144) 04 3E 3E 01 20 01 21 01 22 01 27 0B 35 01 08 0D 16 02 17 1A 3F 01 33 02 21 21 21 21", "" },
+        /* 44*/ { UNICODE_MODE, -1, -1, -1, { 1, 2, "" }, "A", -1, "", 0, 30, "(144) 04 21 01 01 21 21 21 21 21 21 09 0B 26 03 37 0E 25 27 07 1E 21 21 21 21 21 21 21 21", "" },
+        /* 45*/ { UNICODE_MODE, -1, -1, -1, { 0, 2, "" }, "A", -1, "", ZINT_ERROR_INVALID_OPTION, 0, "Error 559: Structured Append index out of range (1-2)", "" },
+        /* 46*/ { UNICODE_MODE, -1, -1, -1, { 1, 1, "" }, "A", -1, "", ZINT_ERROR_INVALID_OPTION, 0, "Error 558: Structured Append count out of range (2-8)", "" },
+        /* 47*/ { UNICODE_MODE, -1, -1, -1, { 1, 9, "" }, "A", -1, "", ZINT_ERROR_INVALID_OPTION, 0, "Error 558: Structured Append count out of range (2-8)", "" },
+        /* 48*/ { UNICODE_MODE, -1, -1, -1, { 3, 2, "" }, "A", -1, "", ZINT_ERROR_INVALID_OPTION, 0, "Error 559: Structured Append index out of range (1-2)", "" },
+        /* 49*/ { UNICODE_MODE, -1, -1, -1, { 1, 2, "A" }, "A", -1, "", ZINT_ERROR_INVALID_OPTION, 0, "Error 549: Structured Append ID not available for MaxiCode", "" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -194,14 +201,18 @@ static void test_input(int index, int generate, int debug) {
         symbol->debug = ZINT_DEBUG_TEST; // Needed to get codeword dump in errtxt
 
         length = testUtilSetSymbol(symbol, BARCODE_MAXICODE, data[i].input_mode, data[i].eci, data[i].option_1, data[i].option_2, -1, -1 /*output_options*/, data[i].data, data[i].length, debug);
+        if (data[i].structapp.count) {
+            symbol->structapp = data[i].structapp;
+        }
         strcpy(symbol->primary, data[i].primary);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (generate) {
-            printf("        /*%3d*/ { %s, %d, %d, %d, \"%s\", %d, \"%s\", %s, %d, \"%s\", \"%s\" },\n",
+            printf("        /*%3d*/ { %s, %d, %d, %d, { %d, %d, \"%s\" }, \"%s\", %d, \"%s\", %s, %d, \"%s\", \"%s\" },\n",
                     i, testUtilInputModeName(data[i].input_mode), data[i].eci, data[i].option_1, data[i].option_2,
+                    data[i].structapp.index, data[i].structapp.count, data[i].structapp.id,
                     testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), data[i].length, data[i].primary,
                     testUtilErrorName(data[i].ret), symbol->width, symbol->errtxt, data[i].comment);
         } else {
@@ -223,6 +234,7 @@ static void test_encode(int index, int generate, int debug) {
         int input_mode;
         int option_1;
         int option_2;
+        struct zint_structapp structapp;
         char *data;
         int length;
         char *primary;
@@ -235,7 +247,7 @@ static void test_encode(int index, int generate, int debug) {
         char *expected;
     };
     struct item data[] = {
-        /*  0*/ { -1, -1, -1, "THIS IS A 93 CHARACTER CODE SET A MESSAGE THAT FILLS A MODE 4, UNAPPENDED, MAXICODE SYMBOL...", -1, "", 0, 33, 30, 1, "ISO/IEC 16023:2000 Figure 2 (and L1), same",
+        /*  0*/ { -1, -1, -1, { 0, 0, "" }, "THIS IS A 93 CHARACTER CODE SET A MESSAGE THAT FILLS A MODE 4, UNAPPENDED, MAXICODE SYMBOL...", -1, "", 0, 33, 30, 1, "ISO/IEC 16023:2000 Figure 2 (and L1), same",
                     "011111010000001000001000100111"
                     "000100000001000000001010000000"
                     "001011001100100110110010010010"
@@ -270,7 +282,7 @@ static void test_encode(int index, int generate, int debug) {
                     "001001101111101101101010011100"
                     "001011000000111101100100001000"
                 },
-        /*  1*/ { -1, 4, -1, "MaxiCode (19 chars)", -1, "", 0, 33, 30, 0, "ISO/IEC 16023:2000 Figure H1 **NOT SAME** different encodation (figure uses '3 Shift A' among other differences); BWIPP different encodation again",
+        /*  1*/ { -1, 4, -1, { 0, 0, "" }, "MaxiCode (19 chars)", -1, "", 0, 33, 30, 0, "ISO/IEC 16023:2000 Figure H1 **NOT SAME** different encodation (figure uses '3 Shift A' among other differences); BWIPP different encodation again",
                     "001101011111011100000010101111"
                     "101100010001001100010000001100"
                     "101100001010001111001001111101"
@@ -305,7 +317,7 @@ static void test_encode(int index, int generate, int debug) {
                     "010110010110001110100000010100"
                     "010011110011000001010111100111"
                 },
-        /*  2*/ { DATA_MODE | ESCAPE_MODE, 2, 96, "1Z00004951\\GUPSN\\G06X610\\G159\\G1234567\\G1/1\\G\\GY\\G634 ALPHA DR\\GPITTSBURGH\\GPA\\R\\E", -1, "152382802840001", 0, 33, 30, 0, "ISO/IEC 16023:2000 Figure B2 **NOT SAME** uses different encodation (figure uses Latch B/Latch A instead of Shift B for '>\\R', and precedes PAD chars with Latch B); BWIPP different encodation again",
+        /*  2*/ { DATA_MODE | ESCAPE_MODE, 2, 96, { 0, 0, "" }, "1Z00004951\\GUPSN\\G06X610\\G159\\G1234567\\G1/1\\G\\GY\\G634 ALPHA DR\\GPITTSBURGH\\GPA\\R\\E", -1, "152382802840001", 0, 33, 30, 0, "ISO/IEC 16023:2000 Figure B2 **NOT SAME** uses different encodation (figure precedes PAD chars with Latch B); BWIPP different encodation again",
                     "110101110110111110111111101111"
                     "010101010111000011011000010010"
                     "110110110001001010101010010011"
@@ -340,7 +352,7 @@ static void test_encode(int index, int generate, int debug) {
                     "010110101101000001111000100110"
                     "110110100000010000001011110011"
                 },
-        /*  3*/ { -1, 3, -1, "CEN", -1, "B1050056999", 0, 33, 30, 1, "ISO/IEC 16023:2000 B.1 Example (primary only given, data arbitrary); verified manually against tec-it",
+        /*  3*/ { -1, 3, -1, { 0, 0, "" }, "CEN", -1, "B1050056999", 0, 33, 30, 1, "ISO/IEC 16023:2000 B.1 Example (primary only given, data arbitrary); verified manually against tec-it",
                     "000000010101010101010101010111"
                     "001011000000000000000000000010"
                     "111001101010101010101010101000"
@@ -375,7 +387,7 @@ static void test_encode(int index, int generate, int debug) {
                     "010010001001110010000101000010"
                     "010001011010000011010010011100"
                 },
-        /*  4*/ { UNICODE_MODE | ESCAPE_MODE, -1, -1, "Comité Européen de Normalisation\034rue de Stassart 36\034B-1050 BRUXELLES\034TEL +3225196811", -1, "", 0, 33, 30, 0, "ISO/IEC 16023:2000 Example F.5 **NOT SAME** uses different encodation (2 Shift A among other things); BWIPP different encodation again",
+        /*  4*/ { UNICODE_MODE | ESCAPE_MODE, -1, -1, { 0, 0, "" }, "Comité Européen de Normalisation\034rue de Stassart 36\034B-1050 BRUXELLES\034TEL +3225196811", -1, "", 0, 33, 30, 0, "ISO/IEC 16023:2000 Example F.5 **NOT SAME** uses different encodation (2 Shift A among other things); BWIPP different encodation again",
                     "010010100010110000000100001111"
                     "001010001100110110111110100110"
                     "001010011100101010011100100000"
@@ -410,7 +422,7 @@ static void test_encode(int index, int generate, int debug) {
                     "001011110011100001001001101100"
                     "000010111011111010110011000011"
                 },
-        /*  5*/ { -1, -1, -1, "999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999", -1, "", 0, 33, 30, 1, "Numeric compaction, verified manually against tec-it",
+        /*  5*/ { -1, -1, -1, { 0, 0, "" }, "999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999", -1, "", 0, 33, 30, 1, "Numeric compaction, verified manually against tec-it",
                     "010111101101010111101101010111"
                     "111011110110111011110110111010"
                     "001111111101001111111101001100"
@@ -445,7 +457,7 @@ static void test_encode(int index, int generate, int debug) {
                     "111010101011001101111001011010"
                     "011110011111000011101011111011"
                 },
-        /*  6*/ { -1, 5, -1, "\000\001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020\021\022\023\024\025\026\027\030\031\032\033\037\237\240\242\243\244\245\246\247\251\255\256\266\225\226\227\230\231\232\233\234\235\236", 51, "", 0, 33, 30, 1, "Mode 5 set E",
+        /*  6*/ { -1, 5, -1, { 0, 0, "" }, "\000\001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020\021\022\023\024\025\026\027\030\031\032\033\037\237\240\242\243\244\245\246\247\251\255\256\266\225\226\227\230\231\232\233\234\235\236", 51, "", 0, 33, 30, 1, "Mode 5 set E",
                     "000000000000000000101010101011"
                     "100101010111111111000000001010"
                     "110010011100100111001001110010"
@@ -480,7 +492,7 @@ static void test_encode(int index, int generate, int debug) {
                     "100111110000101000000001110100"
                     "100101010010100000010101000111"
                 },
-        /*  7*/ { -1, 6, -1, "\340\341\342\343\344\345\346\347\350\351\352\353\354\355\356\357\360\361\362\363\364\365\366\367\370\371\372\373\374\375\376\377\241\250\253\257\260\264\267\270\273\277\212\213\214\215\216\217\220\221\222\223\224", -1, "", 0, 33, 30, 1, "Mode 6 set D",
+        /*  7*/ { -1, 6, -1, { 0, 0, "" }, "\340\341\342\343\344\345\346\347\350\351\352\353\354\355\356\357\360\361\362\363\364\365\366\367\370\371\372\373\374\375\376\377\241\250\253\257\260\264\267\270\273\277\212\213\214\215\216\217\220\221\222\223\224", -1, "", 0, 33, 30, 1, "Mode 6 set D",
                     "000000000000000000101010101011"
                     "100101010111111111000000001010"
                     "110010011100100111001001110001"
@@ -515,7 +527,7 @@ static void test_encode(int index, int generate, int debug) {
                     "011111001010000101000011000110"
                     "101111010010011100100011110010"
                 },
-        /*  8*/ { -1, 6, -1, "\300\301\302\303\304\305\306\307\310\311\312\313\314\315\316\317\320\321\322\323\324\325\326\327\330\331\332\333\334\335\336\337\252\254\261\262\263\265\271\272\274\275\276\200\201\202\203\204\205\206\207\210\211", -1, "", 0, 33, 30, 1, "Mode 6 set C",
+        /*  8*/ { -1, 6, -1, { 0, 0, "" }, "\300\301\302\303\304\305\306\307\310\311\312\313\314\315\316\317\320\321\322\323\324\325\326\327\330\331\332\333\334\335\336\337\252\254\261\262\263\265\271\272\274\275\276\200\201\202\203\204\205\206\207\210\211", -1, "", 0, 33, 30, 1, "Mode 6 set C",
                     "000000000000000000101010101011"
                     "100101010111111111000000001010"
                     "110010011100100111001001110001"
@@ -550,7 +562,7 @@ static void test_encode(int index, int generate, int debug) {
                     "011111001010000101000011000110"
                     "101111010010011100100011110010"
                 },
-        /*  9*/ { UNICODE_MODE, 4, -1, "ABCDabcdAabcABabcABCabcABCDaABCabABCabcABCéa", -1, "", 0, 33, 30, 1, "Mode 4 LCHB SHA 2SHA 3SHA LCHA SHB LCHB 3SHA 3SHA SHD",
+        /*  9*/ { UNICODE_MODE, 4, -1, { 0, 0, "" }, "ABCDabcdAabcABabcABCabcABCDaABCabABCabcABCéa", -1, "", 0, 33, 30, 1, "Mode 4 LCHB SHA 2SHA 3SHA LCHA SHB LCHB 3SHA 3SHA SHD",
                     "110000000011000000000011000011"
                     "010000000001000000000001000000"
                     "111010011100100110011110100101"
@@ -585,7 +597,7 @@ static void test_encode(int index, int generate, int debug) {
                     "110001000010011110111101111000"
                     "011010011011111110001000000010"
                 },
-        /* 10*/ { UNICODE_MODE, 4, -1, "ÀÁÂÃ1", -1, "", 0, 33, 30, 1, "Mode 4 LCKC LCHA",
+        /* 10*/ { UNICODE_MODE, 4, -1, { 0, 0, "" }, "ÀÁÂÃ1", -1, "", 0, 33, 30, 1, "Mode 4 LCKC LCHA",
                     "010101010101010101010101010111"
                     "000000000000000000000000000000"
                     "101010101010101010101010101010"
@@ -620,7 +632,7 @@ static void test_encode(int index, int generate, int debug) {
                     "010110101111010110101010111100"
                     "010100000000010110101010010100"
                 },
-        /* 11*/ { UNICODE_MODE, 4, -1, "ÀÁÂÃ123456789", -1, "", 0, 33, 30, 1, "Mode 4 LCKC NS",
+        /* 11*/ { UNICODE_MODE, 4, -1, { 0, 0, "" }, "ÀÁÂÃ123456789", -1, "", 0, 33, 30, 1, "Mode 4 LCKC NS",
                     "111110110101010101010101010111"
                     "111010010000000000000000000000"
                     "000010011010101010101010101000"
@@ -655,7 +667,7 @@ static void test_encode(int index, int generate, int debug) {
                     "000000111100011110100001110000"
                     "101000000010100111001011110101"
                 },
-        /* 12*/ { UNICODE_MODE, 4, -1, "àáâã1", -1, "", 0, 33, 30, 1, "Mode 4 LCKD LCHA",
+        /* 12*/ { UNICODE_MODE, 4, -1, { 0, 0, "" }, "àáâã1", -1, "", 0, 33, 30, 1, "Mode 4 LCKD LCHA",
                     "010101010101010101010101010111"
                     "000000000000000000000000000000"
                     "101010101010101010101010101010"
@@ -690,7 +702,7 @@ static void test_encode(int index, int generate, int debug) {
                     "010110101111010110101010111100"
                     "010100000000010110101010010100"
                 },
-        /* 13*/ { UNICODE_MODE, 4, -1, "¢£¤¥1", -1, "", 0, 33, 30, 1, "Mode 4 LCKE LCHA",
+        /* 13*/ { UNICODE_MODE, 4, -1, { 0, 0, "" }, "¢£¤¥1", -1, "", 0, 33, 30, 1, "Mode 4 LCKE LCHA",
                     "010101010101010101010101010111"
                     "000000000000000000000000000000"
                     "101010101010101010101010101010"
@@ -725,7 +737,7 @@ static void test_encode(int index, int generate, int debug) {
                     "010110101111010110101010111100"
                     "010100000000010110101010010100"
                 },
-        /* 14*/ { UNICODE_MODE, 4, -1, "¢£¤¥123456789", -1, "", 0, 33, 30, 1, "Mode 4 LCKE NS",
+        /* 14*/ { UNICODE_MODE, 4, -1, { 0, 0, "" }, "¢£¤¥123456789", -1, "", 0, 33, 30, 1, "Mode 4 LCKE NS",
                     "111110110101010101010101010111"
                     "111010010000000000000000000000"
                     "000010011010101010101010101000"
@@ -760,7 +772,7 @@ static void test_encode(int index, int generate, int debug) {
                     "000000111100011110100001110000"
                     "101000000010100111001011110101"
                 },
-        /* 15*/ { UNICODE_MODE, 4, -1, "ABCDE12abcde1ÀÁÂÃ¢£¤¥1àáâãabcde123A123456789àáâã¢£¤¥abc", -1, "", 0, 33, 30, 1, "Mode 4 mixed sets",
+        /* 15*/ { UNICODE_MODE, 4, -1, { 0, 0, "" }, "ABCDE12abcde1ÀÁÂÃ¢£¤¥1àáâãabcde123A123456789àáâã¢£¤¥abc", -1, "", 0, 33, 30, 1, "Mode 4 mixed sets",
                     "000000001111111100000000111111"
                     "000010100100111100000000111100"
                     "011100101110000000100111010100"
@@ -795,6 +807,76 @@ static void test_encode(int index, int generate, int debug) {
                     "100011000001110011101110101000"
                     "001001110010111101100100010001"
                 },
+        /* 16*/ { UNICODE_MODE, 4, -1, { 3, 7, "" }, "THIS IS A 91 CHARACTER CODE SET A MESSAGE THAT FILLS A MODE 4, APPENDED, MAXICODE SYMBOL...", -1, "", 0, 33, 30, 1, "Mode 4 Structured Append",
+                    "010001111101000000100000100011"
+                    "000000010000000100000000101000"
+                    "001000101000110010011011001000"
+                    "000100011000100100000000011000"
+                    "110000001010000010101100000010"
+                    "100010000010110010001111000100"
+                    "001010000000011000001001000010"
+                    "100000001010001001001000100110"
+                    "101111101110000000100000011010"
+                    "000100010011101000000110000010"
+                    "110000000111100010001100111100"
+                    "100010001010000000000011000010"
+                    "000000001010000000010101110101"
+                    "111010110000000000010100101100"
+                    "110010111100000000001100000011"
+                    "000010010000000000001010000100"
+                    "111000001000000000001000000000"
+                    "011000010000000000001100100000"
+                    "000000001100000000011001010000"
+                    "101010010100000000000111001100"
+                    "001000000000000000001000001001"
+                    "000000000010000000000000100000"
+                    "101011000110011011000001010001"
+                    "100011111010000001000010001000"
+                    "011010000000000101011111110010"
+                    "000001110011111111111010100000"
+                    "001110100111000101011001001100"
+                    "011010010100110111100101011100"
+                    "101101001001011111000110110111"
+                    "110001110110110001000011001010"
+                    "011100001000111100110111011110"
+                    "010101011101100110111011100100"
+                    "011001000011110011011110111010"
+                },
+        /* 17*/ { UNICODE_MODE, 3, -1, { 1, 8, "" }, "COMMISSION FOR EUROPEAN NORMALIZATION, RUE DE STASSART 36, B-1050 BRUXELLES", -1, "B1050056999", 0, 33, 30, 1, "Mode 3 Structured Append",
+                    "010000000000001010000000010011"
+                    "001000111111010000011111001000"
+                    "101111111010101111101101000101"
+                    "000001000000100010100001100010"
+                    "111100110010001100101000001110"
+                    "110100011010001101101000011100"
+                    "100000000010001000000001011010"
+                    "001100110101001001111111000010"
+                    "011010001001100010110100000111"
+                    "100100000111100000100101001000"
+                    "000010100001110000010100101010"
+                    "110010001000000011010000101000"
+                    "100010111100000000100010001001"
+                    "100000001100000000011000000000"
+                    "001011100100000000011111100100"
+                    "010111011000000000000011011010"
+                    "001110101000000000001000001000"
+                    "000001110000000000001011000000"
+                    "000111010000000000011111111101"
+                    "001100101000000000011100100010"
+                    "011010111100000000001000100000"
+                    "000010101110000000011110000110"
+                    "111001101110000001111000000000"
+                    "001000101011011001000101010000"
+                    "000010010101010101010000111101"
+                    "111000000000000000001110100000"
+                    "001011101010101010101000100010"
+                    "001100110110100101101100010110"
+                    "111100110000110110000010011001"
+                    "011100011110101010001100000000"
+                    "011001100010001111111000101001"
+                    "011111110000111010001010001100"
+                    "110010001001001011011111100111"
+                },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -816,14 +898,19 @@ static void test_encode(int index, int generate, int debug) {
         assert_nonnull(symbol, "Symbol not created\n");
 
         length = testUtilSetSymbol(symbol, BARCODE_MAXICODE, data[i].input_mode, -1 /*eci*/, data[i].option_1, data[i].option_2, -1, -1 /*output_options*/, data[i].data, data[i].length, debug);
+        if (data[i].structapp.count) {
+            symbol->structapp = data[i].structapp;
+        }
         strcpy(symbol->primary, data[i].primary);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (generate) {
-            printf("        /*%3d*/ { %s, %d, %d, \"%s\", %d, \"%s\", %s, %d, %d, %d, \"%s\",\n",
-                    i, testUtilInputModeName(data[i].input_mode), data[i].option_1, data[i].option_2, testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), data[i].length,
+            printf("        /*%3d*/ { %s, %d, %d, { %d, %d, \"%s\" }, \"%s\", %d, \"%s\", %s, %d, %d, %d, \"%s\",\n",
+                    i, testUtilInputModeName(data[i].input_mode), data[i].option_1, data[i].option_2,
+                    data[i].structapp.index, data[i].structapp.count, data[i].structapp.id,
+                    testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), data[i].length,
                     data[i].primary, testUtilErrorName(data[i].ret), symbol->rows, symbol->width, data[i].bwipp_cmp, data[i].comment);
             testUtilModulesPrint(symbol, "                    ", "\n");
             printf("                },\n");

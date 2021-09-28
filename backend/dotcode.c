@@ -280,22 +280,71 @@ static int score_array(const char Dots[], const int Hgt, const int Wid) {
 //-------------------------------------------------------------------------
 
 static void rsencode(const int nd, const int nc, unsigned char *wd) {
-    // roots (antilogs): root[0] = 1; for (i = 1; i < GF - 1; i++) root[i] = (PM * root[i - 1]) % GF;
-    static int root[GF - 1] = {
-          1,   3,   9,  27,  81,  17,  51,  40,   7,  21,
-         63,  76,   2,   6,  18,  54,  49,  34, 102,  80,
-         14,  42,  13,  39,   4,  12,  36, 108,  98,  68,
-         91,  47,  28,  84,  26,  78,   8,  24,  72, 103,
-         83,  23,  69,  94,  56,  55,  52,  43,  16,  48,
-         31,  93,  53,  46,  25,  75, 112, 110, 104,  86,
-         32,  96,  62,  73, 106,  92,  50,  37, 111, 107,
-         95,  59,  64,  79,  11,  33,  99,  71, 100,  74,
-        109, 101,  77,   5,  15,  45,  22,  66,  85,  29,
-         87,  35, 105,  89,  41,  10,  30,  90,  44,  19,
-         57,  58,  61,  70,  97,  65,  82,  20,  60,  67,
-         88,  38
+    /* Pre-calculated coefficients for GF(113) of generator polys of degree 3 to 39. To generate run
+       "backend/tests/test_dotcode -f generate -g" and place result below */
+    static const char coefs[820 - 5] = { /* 40*(41 + 1)/2 == 820 less 2 + 3 (degrees 1 and 2) */
+          1,  74,  12,  62,
+          1, 106,   7, 107,  63,
+          1,  89,  13, 101,  52,  59,
+          1,  38, 107,   3,  99,   6,  42,
+          1, 111,  56,  17,  92,   1,  28,  15,
+          1, 104,  70,  77,  86,  35,  21,  45,   8,
+          1,  83,  33,  76,  51,  37,  77,  56,  80,  58,
+          1,  20,   2,  31,   9, 101,   6,  64,  55, 103,  75,
+          1,  57,  64, 105,  26,  95,  14,  60,  50, 104,  44,  63,
+          1,  55,  63,  90,  42,  43,  50,  32,  43,   4,  62,  88, 100,
+          1,  49,  72,  51,  67,  17,  18,  71,  77,  85,  38,  55,  24,  78,
+          1,  31,  94, 111,  53,  54,  51,  86,  42,  55,  90,  49,  51,  98,  65,
+          1,  90,   2,   7,  48,  17,  73,  44,  31,  47,  58,  48,   4,  56,  84, 106,
+          1,  41, 112,  22,  44,  38,  31,  83,  22, 110,  15,  31,  25,  86,  52,  58,   4,
+          1,   7,  74,  56,  87,  11,  95,  46,  25,  40,   4,  86, 101,  27,  66,  98,  66,  90,
+          1,  18,  38,  79,  25,  64, 103,  74,  79,  89, 105,  17,  30,   8,  24,  33,  14,  25,  86,
+          1,  51,  67,  90,  33,  98,  68,  83,  35,  97, 104,  92,  26,  94,  62,  34,  86,  35,   7,  13,
+          1,  37,  31,  56,  16,  88,  52,  35,   3,  59, 102, 105,  94,  69, 102,  70,  62,  74,  82,  28,  44,
+          1, 108,  59, 110,  37,  94,  85, 111,   2,  46, 110,   2,  91,  76,  29,  80,  60,  69,  25,  87, 111,  73,
+          1,  95,  11,  21,  76,  65, 106,  23,  28,  20,  77,  41,  65,  23,  58,  42,  37,  80,  32, 101, 110,  99,
+              68,
+          1,  56,  35,  44,  48,  39,  57,  70,  35,  58,  88,  89,  48,  87,  65,  40,  94, 106,  76,  96,  13, 103,
+              49,  60,
+          1,  52,  37,  17,  98,  73,  14,  68,  94,  31,  82,  76,  31,   8,  56,   6,  47,  69, 104,  18,  81,  51,
+              89,  90,  99,
+          1,  40,  91,  25,   7,  27,  42,  13,  69,  33,  49, 109,  23,  88,  73,  12,  88,  70,  67,  13,  91,  96,
+              42,  39,  36,  55,
+          1,   4,   7,  26,  11,   1,  87,  83,  53,  35, 104,  40,  54,  51,  69,  96, 108,  66,  33,  87,  75,  97,
+              89, 109, 101,   2,  54,
+          1,   9,  27,  61,  28,  56,  92,  66,  16,  74,  53, 108,  28,  95,  98, 102,  23,  41,  24,  26,  58,  20,
+               9, 102,  81,  55,  64,  44,
+          1,  24,  49,  14,  39,  24,  28,  90, 102,  88,  33, 112,  66,  63,  54, 103,  84,  47,  74,  47, 109,  99,
+              83,  11,  29,  27,  98, 100,  95,
+          1,  69, 112,  72, 104,  84,  91, 107,  84,  45,  38,  15,  21,  95,  64,  47,  86,  98,  42, 100,  77,  32,
+              18,  17,  72,  89,  70, 103,  75,  94,
+          1,  91,  48,  50, 106, 112,  18,  75,  65,  85,  11,  60,  12, 105,   7,  99, 103,  69,  51,   7,  17,  31,
+              44,  74, 107,  91, 107,  61,  81,  49,  34,
+          1,  44,  65,  54,  16, 102,  65,  20,  43,  81,  84, 108,  17, 106,  44, 109,  83,  87,  85,  96,  27,  23,
+              56,  40,  19,  34,  11,   4,  39,  84, 104,  97,
+          1,  16,  76,  42,  86, 106,  34,   8,  48,   7,  76,  16,  44,  82,  14,   7,  82,  23,  22,  89,  51,  58,
+              90,  54,  29,  67,  76,  35,  40,   9,  12,  10, 109,
+          1,  45,  88,  99,  61,   1,  57,  90,  54,  43,  53,  73,  56,   2,  19,  74,  59,  28,  11,  49,  33,  68,
+              77,  65,  13,   4,  98,  92,  38,  39,  47,  19,  60, 110,
+          1,  19,  48,  71,  86, 110,  31,  77,  87, 108,  65,  51,  79,  15,  80,  32,  56,  76,  74, 102,   2,   1,
+               4,  97,  18,   5, 107,  30,  19,  68,  50,  40,  18,  19,  78,
+          1,  54,  35,  56,  85,  69,  39,  32,  70, 102,   3,  66,  56,  68,  40,   7,  46,   2,  22,  93,  69,  71,
+              39,  11,  23,  70,  56,  46,  52,  55,  57,  95,  62,  84,  65,  18,
+          1,  46,  55,   2,  89,  67,  52,  59,  40, 107,  91,  42,  93,  72,  61,  26, 103,  86,   6,  30,   3,  84,
+              36,  38,  48, 112,  61,  50,  23,  91,  69,  91,  93,  40,  71,  63,  82,
+          1,  22,  81,  38,  41,  78,  26,  54,  93,  51,   9,   5, 102, 100,  28,  31,  44, 100,  89, 112,  74,  12,
+              54,  78,  40,  90,  85,  55,  66, 104,  32,  17,  56,  68,  15,  54,  39,  66,
+          1,  63,  79,  82,  17,  64,  60, 103,  47,  22,  66,  35,  81, 101,  60,  49,  72,  96,   8,  32,  33, 108,
+              94,  32,  74,  35,  46,  37,  61,  98,   2,  86,  75, 104,  91, 104, 106,  83, 107,
+          1,  73,  31,  81,  46,   8,  22,  25,  60,  40,  60,  17,  92,   7,  53,  84, 110,  25,  64, 112,  14,  99,
+              44,  68,  55,  97,  57,  45,  92,  30,  78, 106,  31,  63,   1, 110,  16,  13,  33,  53,
     };
-    int i, j, k, nw, start, step, c[GF];
+    static const short cinds[39 - 2] = { /* Indexes into above coefs[] array */
+          0,   4,   9,  15,  22,  30,  39,  49,  60,  72,  85,  99, 114, 130, 147, 165, 184, 204, 225, 247, 270, 294,
+        319, 345, 372, 400, 429, 459, 490, 522, 555, 589, 624, 660, 697, 735, 774,
+    };
+    int i, j, k, nw, start, step;
+    const char *c;
 
     // Here we compute how many interleaved R-S blocks will be needed
     nw = nd + nc;
@@ -306,33 +355,27 @@ static void rsencode(const int nd, const int nc, unsigned char *wd) {
         int ND = (nd - start + step - 1) / step;
         int NW = (nw - start + step - 1) / step;
         int NC = NW - ND;
+        unsigned char *e = wd + start + ND * step;
 
-        // first compute the generator polynomial "c" of order "NC":
-
-        // Keep clang-tidy happy (as far as UndefinedBinaryOperatorResult warning below at least)
-        memset(c, 0, GF * sizeof(int));
-
-        c[0] = 1;
-        for (i = 1; i <= NC; i++) {
-            for (j = NC; j >= 1; j--) {
-                c[j] = (GF + c[j] - (root[i] * c[j - 1]) % GF) % GF;
-            }
-        }
+        // first set the generator polynomial "c" of order "NC":
+        c = coefs + cinds[NC - 3];
 
         // & then compute the corresponding checkword values into wd[]
         // ... (a) starting at wd[start] & (b) stepping by step
-        for (i = ND; i < NW; i++) {
-            wd[start + i * step] = 0;
+        for (i = 0; i < NC; i++) {
+            e[i * step] = 0;
         }
         for (i = 0; i < ND; i++) {
-            k = (wd[start + i * step] + wd[start + ND * step]) % GF;
+            k = (wd[start + i * step] + e[0]) % GF;
             for (j = 0; j < NC - 1; j++) {
-                wd[start + (ND + j) * step] = (GF - ((c[j + 1] * k) % GF) + wd[start + (ND + j + 1) * step]) % GF;
+                e[j * step] = (GF - ((c[j + 1] * k) % GF) + e[(j + 1) * step]) % GF;
             }
-            wd[start + (ND + NC - 1) * step] = (GF - ((c[NC] * k) % GF)) % GF;
+            e[(NC - 1) * step] = (GF - ((c[NC] * k) % GF)) % GF;
         }
-        for (i = ND; i < NW; i++) {
-            wd[start + i * step] = (GF - wd[start + i * step]) % GF;
+        for (i = 0; i < NC; i++) {
+            if (e[i * step]) {
+                e[i * step] = GF - e[i * step];
+            }
         }
     }
 }
@@ -490,7 +533,7 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
     int input_position, array_length, i;
     char encoding_mode;
     int inside_macro;
-    int debug = (symbol->debug & ZINT_DEBUG_PRINT);
+    int debug_print = (symbol->debug & ZINT_DEBUG_PRINT);
     int binary_buffer_size = 0;
     int lawrencium[6]; // Reversed radix 103 values
     int nx;
@@ -557,7 +600,7 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
             // inside_macro only gets set to 97, 98 or 99 if the last two characters are RS/EOT
             input_position += 2;
             done = 1;
-            if (debug) {
+            if (debug_print) {
                 printf("A ");
             }
         }
@@ -567,7 +610,7 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
             // inside_macro only gets set to 100 if the last character is EOT
             input_position++;
             done = 1;
-            if (debug) {
+            if (debug_print) {
                 printf("B ");
             }
         }
@@ -592,7 +635,7 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
                             input_position += 7;
                             inside_macro = 97;
                             done = 1;
-                            if (debug) {
+                            if (debug_print) {
                                 printf("C1/1 ");
                             }
                         }
@@ -606,7 +649,7 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
                             input_position += 7;
                             inside_macro = 98;
                             done = 1;
-                            if (debug) {
+                            if (debug_print) {
                                 printf("C1/2 ");
                             }
                         }
@@ -620,7 +663,7 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
                             input_position += 7;
                             inside_macro = 99;
                             done = 1;
-                            if (debug) {
+                            if (debug_print) {
                                 printf("C1/3 ");
                             }
                         }
@@ -636,7 +679,7 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
                         input_position += 4;
                         inside_macro = 100;
                         done = 1;
-                        if (debug) {
+                        if (debug_print) {
                             printf("C1/4 ");
                         }
                     }
@@ -657,7 +700,7 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
                 array_length++;
                 input_position += 10;
                 done = 1;
-                if (debug) {
+                if (debug_print) {
                     printf("C2/1 ");
                 }
             }
@@ -675,7 +718,7 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
                 }
                 array_length++;
                 done = 1;
-                if (debug) {
+                if (debug_print) {
                     printf("C2/2 ");
                 }
             }
@@ -703,7 +746,7 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
                     encoding_mode = 'X';
                 }
                 done = 1;
-                if (debug) {
+                if (debug_print) {
                     printf("C3 ");
                 }
             }
@@ -746,7 +789,7 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
                 }
             }
             done = 1;
-            if (debug) {
+            if (debug_print) {
                 printf("C4 ");
             }
         }
@@ -770,7 +813,7 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
                     encoding_mode = 'C';
                 }
                 done = 1;
-                if (debug) {
+                if (debug_print) {
                     printf("D1 ");
                 }
             }
@@ -783,7 +826,7 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
                 array_length++;
                 input_position++;
                 done = 1;
-                if (debug) {
+                if (debug_print) {
                     printf("D2/1 ");
                 }
             } else {
@@ -822,7 +865,7 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
                     if (done == 1) {
                         array_length++;
                         input_position++;
-                        if (debug) {
+                        if (debug_print) {
                             printf("D2/2 ");
                         }
                     }
@@ -852,7 +895,7 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
                     encoding_mode = 'X';
                 }
                 done = 1;
-                if (debug) {
+                if (debug_print) {
                     printf("D3 ");
                 }
             }
@@ -876,7 +919,7 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
                 encoding_mode = 'A';
             }
             done = 1;
-            if (debug) {
+            if (debug_print) {
                 printf("D4 ");
             }
         }
@@ -899,7 +942,7 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
                     encoding_mode = 'C';
                 }
                 done = 1;
-                if (debug) {
+                if (debug_print) {
                     printf("E1 ");
                 }
             }
@@ -913,7 +956,7 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
                 array_length++;
                 input_position++;
                 done = 1;
-                if (debug) {
+                if (debug_print) {
                     printf("E2/1 ");
                 }
             } else {
@@ -926,7 +969,7 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
                     array_length++;
                     input_position++;
                     done = 1;
-                    if (debug) {
+                    if (debug_print) {
                         printf("E2/2 ");
                     }
                 }
@@ -955,7 +998,7 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
                     encoding_mode = 'X';
                 }
                 done = 1;
-                if (debug) {
+                if (debug_print) {
                     printf("E3 ");
                 }
             }
@@ -991,7 +1034,7 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
                 encoding_mode = 'B';
             }
             done = 1;
-            if (debug) {
+            if (debug_print) {
                 printf("E4 ");
             }
         }
@@ -1028,7 +1071,7 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
                     encoding_mode = 'C';
                 }
                 done = 1;
-                if (debug) {
+                if (debug_print) {
                     printf("F1 ");
                 }
             }
@@ -1063,7 +1106,7 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
                 }
                 input_position++;
                 done = 1;
-                if (debug) {
+                if (debug_print) {
                     printf("F2 ");
                 }
             }
@@ -1093,7 +1136,7 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
             }
             array_length++;
             // done = 1 // As long as last branch not needed
-            if (debug) {
+            if (debug_print) {
                 printf("F3 ");
             }
         }
@@ -1115,7 +1158,28 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
         *(binary_finish) = 1;
     }
 
-    if (debug) {
+    if (symbol->structapp.count) {
+        /* Need Code Set A or B - choosing A here (TEC-IT chooses B) */
+        if (encoding_mode == 'C') {
+            codeword_array[array_length++] = 101; /* Latch A */
+        } else if (encoding_mode == 'X') {
+            codeword_array[array_length++] = 109; /* Terminate with Latch A */
+            *binary_finish = 0;
+        }
+        if (symbol->structapp.index < 10) {
+            codeword_array[array_length++] = 16 + symbol->structapp.index; /* '0' + index for 1-9 */
+        } else  {
+            codeword_array[array_length++] = 33 + symbol->structapp.index - 10; /* 'A' + index for A-Z */
+        }
+        if (symbol->structapp.count < 10) {
+            codeword_array[array_length++] = 16 + symbol->structapp.count; /* '0' + count for 1-9 */
+        } else  {
+            codeword_array[array_length++] = 33 + symbol->structapp.count - 10; /* 'A' + count for A-Z */
+        }
+        codeword_array[array_length++] = 108; /* FNC2 as last codeword */
+    }
+
+    if (debug_print) {
         printf("\n");
     }
 
@@ -1134,8 +1198,6 @@ static int make_dotstream(const unsigned char masked_array[], const int array_le
     for (i = 1; i < array_length; i++) {
         bp = bin_append_posn(dot_patterns[masked_array[i]], 9, dot_stream, bp);
     }
-
-    dot_stream[bp] = '\0';
 
     return bp;
 }
@@ -1320,10 +1382,10 @@ INTERNAL int dotcode(struct zint_symbol *symbol, unsigned char source[], int len
     int dot_stream_length;
     int high_score, best_mask;
     int binary_finish = 0;
-    int debug = symbol->debug;
+    int debug_print = (symbol->debug & ZINT_DEBUG_PRINT);
     int padding_dots, is_first;
-    /* Allow up to 4 codewords per input + 2 (FNC) + 4 (ECI) + 2 (special char 1st position) */
-    int codeword_array_len = length * 4 + 8;
+    /* Allow 4 codewords per input + 2 (FNC) + 4 (ECI) + 2 (special char 1st position) + 4 (Structured Append) */
+    int codeword_array_len = length * 4 + 8 + 3;
 
 #ifndef _MSC_VER
     unsigned char codeword_array[codeword_array_len];
@@ -1344,6 +1406,21 @@ INTERNAL int dotcode(struct zint_symbol *symbol, unsigned char source[], int len
         user_mask = 0; /* Ignore */
     }
 
+    if (symbol->structapp.count) {
+        if (symbol->structapp.count < 2 || symbol->structapp.count > 35) {
+            strcpy(symbol->errtxt, "730: Structured Append count out of range (2-35)");
+            return ZINT_ERROR_INVALID_OPTION;
+        }
+        if (symbol->structapp.index < 1 || symbol->structapp.index > symbol->structapp.count) {
+            sprintf(symbol->errtxt, "731: Structured Append index out of range (1-%d)", symbol->structapp.count);
+            return ZINT_ERROR_INVALID_OPTION;
+        }
+        if (symbol->structapp.id[0]) {
+            strcpy(symbol->errtxt, "732: Structured Append ID not available for DotCode");
+            return ZINT_ERROR_INVALID_OPTION;
+        }
+    }
+
     data_length = dotcode_encode_message(symbol, source, length, codeword_array, &binary_finish);
 
     /* Suppresses clang-tidy clang-analyzer-core.UndefinedBinaryOperatorResult/uninitialized.ArraySubscript
@@ -1352,7 +1429,7 @@ INTERNAL int dotcode(struct zint_symbol *symbol, unsigned char source[], int len
 
     ecc_length = 3 + (data_length / 2);
 
-    if (debug & ZINT_DEBUG_PRINT) {
+    if (debug_print) {
         printf("Codeword length = %d, ECC length = %d\n", data_length, ecc_length);
         printf("Codewords: ");
         for (i = 0; i < data_length; i++) {
@@ -1361,7 +1438,7 @@ INTERNAL int dotcode(struct zint_symbol *symbol, unsigned char source[], int len
         printf("\n");
     }
 #ifdef ZINT_TEST
-    if (debug & ZINT_DEBUG_TEST) {
+    if (symbol->debug & ZINT_DEBUG_TEST) {
         debug_test_codeword_dump(symbol, codeword_array, data_length);
     }
 #endif
@@ -1419,7 +1496,7 @@ INTERNAL int dotcode(struct zint_symbol *symbol, unsigned char source[], int len
         }
     }
 
-    if (debug & ZINT_DEBUG_PRINT) {
+    if (debug_print) {
         printf("Width = %d, Height = %d\n", width, height);
     }
 
@@ -1488,7 +1565,7 @@ INTERNAL int dotcode(struct zint_symbol *symbol, unsigned char source[], int len
 
     if (user_mask) {
         best_mask = user_mask - 1;
-        if (debug & ZINT_DEBUG_PRINT) {
+        if (debug_print) {
             printf("Applying mask %d (specified)\n", best_mask);
         }
     } else {
@@ -1501,14 +1578,14 @@ INTERNAL int dotcode(struct zint_symbol *symbol, unsigned char source[], int len
 
             /* Add pad bits */
             for (jc = dot_stream_length; jc < n_dots; jc++) {
-                strcat(dot_stream, "1");
+                dot_stream[dot_stream_length++] = '1';
             }
 
             fold_dotstream(dot_stream, width, height, dot_array);
 
             mask_score[i] = score_array(dot_array, height, width);
 
-            if (debug & ZINT_DEBUG_PRINT) {
+            if (debug_print) {
                 printf("Mask %d score is %d\n", i, mask_score[i]);
             }
         }
@@ -1525,7 +1602,7 @@ INTERNAL int dotcode(struct zint_symbol *symbol, unsigned char source[], int len
 
         /* Re-evaluate using forced corners if needed */
         if (high_score <= (height * width) / 2) {
-            if (debug & ZINT_DEBUG_PRINT) {
+            if (debug_print) {
                 printf("High score %d <= %d (height * width) / 2\n", high_score, (height * width) / 2);
             }
 
@@ -1537,7 +1614,7 @@ INTERNAL int dotcode(struct zint_symbol *symbol, unsigned char source[], int len
 
                 /* Add pad bits */
                 for (jc = dot_stream_length; jc < n_dots; jc++) {
-                    strcat(dot_stream, "1");
+                    dot_stream[dot_stream_length++] = '1';
                 }
 
                 fold_dotstream(dot_stream, width, height, dot_array);
@@ -1546,7 +1623,7 @@ INTERNAL int dotcode(struct zint_symbol *symbol, unsigned char source[], int len
 
                 mask_score[i + 4] = score_array(dot_array, height, width);
 
-                if (debug & ZINT_DEBUG_PRINT) {
+                if (debug_print) {
                     printf("Mask %d score is %d\n", i + 4, mask_score[i + 4]);
                 }
             }
@@ -1559,7 +1636,7 @@ INTERNAL int dotcode(struct zint_symbol *symbol, unsigned char source[], int len
             }
         }
 
-        if (debug & ZINT_DEBUG_PRINT) {
+        if (debug_print) {
             printf("Applying mask %d, high_score %d\n", best_mask, high_score);
         }
     }
@@ -1567,12 +1644,26 @@ INTERNAL int dotcode(struct zint_symbol *symbol, unsigned char source[], int len
     /* Apply best mask */
     apply_mask(best_mask % 4, data_length, masked_codeword_array, codeword_array, ecc_length);
 
+    if (debug_print) {
+        printf("Masked codewords (%d):", data_length);
+        for (i = 1; i < data_length + 1; i++) {
+            printf(" [%d]", masked_codeword_array[i]);
+        }
+        printf("\n");
+        printf("Masked ECCs (%d):", ecc_length);
+        for (i = data_length + 1; i < data_length + ecc_length + 1; i++) {
+            printf(" [%d]", masked_codeword_array[i]);
+        }
+        printf("\n");
+    }
+
     dot_stream_length = make_dotstream(masked_codeword_array, (data_length + ecc_length + 1), dot_stream);
 
     /* Add pad bits */
     for (jc = dot_stream_length; jc < n_dots; jc++) {
-        strcat(dot_stream, "1");
+        dot_stream[dot_stream_length++] = '1';
     }
+    if (debug_print) printf("Binary (%d): %.*s\n", dot_stream_length, dot_stream_length, dot_stream);
 
     fold_dotstream(dot_stream, width, height, dot_array);
 

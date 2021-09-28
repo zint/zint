@@ -324,8 +324,8 @@ static int add_shift_char(char binary[], int bp, int shifty, int debug) {
     return bp;
 }
 
-static int gm_encode(unsigned int gbdata[], const int length, char binary[], const int reader, const int eci,
-            int *bin_len, int debug) {
+static int gm_encode(unsigned int gbdata[], const int length, char binary[], const int reader,
+            const struct zint_structapp *p_structapp, const int eci, int *bin_len, int debug) {
     /* Create a binary stream representation of the input data.
        7 sets are defined - Chinese characters, Numerals, Lower case letters, Upper case letters,
        Mixed numerals and latters, Control characters and 8-bit binary data */
@@ -352,8 +352,16 @@ static int gm_encode(unsigned int gbdata[], const int length, char binary[], con
     current_mode = 0;
     number_pad_posn = 0;
 
-    if (reader) {
+    if (reader && (!p_structapp || p_structapp->index == 1)) { /* Appears only in 1st symbol if Structured Append */
         bp = bin_append_posn(10, 4, binary, bp); /* FNC3 - Reader Initialisation */
+    }
+
+    if (p_structapp) {
+        bp = bin_append_posn(9, 4, binary, bp); /* FNC2 - Structured Append */
+        bp = bin_append_posn(to_int((const unsigned char *) p_structapp->id, (int) strlen(p_structapp->id)), 8,
+                binary, bp); /* File signature */
+        bp = bin_append_posn(p_structapp->count - 1, 4, binary, bp);
+        bp = bin_append_posn(p_structapp->index - 1, 4, binary, bp);
     }
 
     if (eci != 0) {
@@ -1007,6 +1015,7 @@ INTERNAL int grid_matrix(struct zint_symbol *symbol, unsigned char source[], int
     int data_cw, input_latch = 0;
     unsigned char word[1460] = {0};
     int data_max, reader = 0;
+    const struct zint_structapp *p_structapp = NULL;
     int size_squared;
     int bin_len;
     int eci_length = get_eci_length(symbol->eci, source, length);
@@ -1046,12 +1055,44 @@ INTERNAL int grid_matrix(struct zint_symbol *symbol, unsigned char source[], int
 
     if (symbol->output_options & READER_INIT) reader = 1;
 
+    if (symbol->structapp.count) {
+        if (symbol->structapp.count < 2 || symbol->structapp.count > 16) {
+            strcpy(symbol->errtxt, "536: Structured Append count out of range (2-16)");
+            return ZINT_ERROR_INVALID_OPTION;
+        }
+        if (symbol->structapp.index < 1 || symbol->structapp.index > symbol->structapp.count) {
+            sprintf(symbol->errtxt, "537: Structured Append index out of range (1-%d)", symbol->structapp.count);
+            return ZINT_ERROR_INVALID_OPTION;
+        }
+        if (symbol->structapp.id[0]) {
+            int id, id_len;
+
+            for (id_len = 0; id_len < 32 && symbol->structapp.id[id_len]; id_len++);
+
+            if (id_len > 3) { /* 255 (8 bits) */
+                strcpy(symbol->errtxt, "538: Structured Append ID too long (3 digit maximum)");
+                return ZINT_ERROR_INVALID_OPTION;
+            }
+
+            id = to_int((const unsigned char *) symbol->structapp.id, id_len);
+            if (id == -1) {
+                strcpy(symbol->errtxt, "539: Invalid Structured Append ID (digits only)");
+                return ZINT_ERROR_INVALID_OPTION;
+            }
+            if (id > 255) {
+                sprintf(symbol->errtxt, "530: Structured Append ID '%d' out of range (0-255)", id);
+                return ZINT_ERROR_INVALID_OPTION;
+            }
+        }
+        p_structapp = &symbol->structapp;
+    }
+
     if (symbol->eci > 811799) {
         strcpy(symbol->errtxt, "533: Invalid ECI");
         return ZINT_ERROR_INVALID_OPTION;
     }
 
-    error_number = gm_encode(gbdata, length, binary, reader, symbol->eci, &bin_len, symbol->debug);
+    error_number = gm_encode(gbdata, length, binary, reader, p_structapp, symbol->eci, &bin_len, symbol->debug);
     if (error_number != 0) {
         strcpy(symbol->errtxt, "531: Input data too long");
         return error_number;

@@ -118,7 +118,7 @@ be padded with spaces
         </property>
        </widget>
       </item>
-      <item row="0" column="1">
+      <item row="0" column="1" colspan="4">
        <widget class="QLineEdit" name="txtMaxiSCMPostcode">
         <property name="enabled">
          <bool>false</bool>
@@ -147,7 +147,7 @@ be padded with spaces
          <bool>false</bool>
         </property>
         <property name="toolTip">
-         <string>ISO 3166 numeric country code
+         <string>ISO 3166-1 numeric country code
 Value ranges from 000 to 999
 (ignored if disabled)</string>
         </property>
@@ -168,7 +168,7 @@ Value ranges from 000 to 999
          <bool>false</bool>
         </property>
         <property name="toolTip">
-         <string>ISO 3166 numeric country code
+         <string>ISO 3166-1 numeric country code
 Value ranges from 000 to 999
 (ignored if disabled)</string>
         </property>
@@ -189,7 +189,20 @@ Value ranges from 000 to 999
         </property>
        </widget>
       </item>
-      <item row="2" column="0">
+      <item row="1" column="2">
+       <spacer name="spacerMaxiSCM12">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint">
+         <size>
+          <width>10</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+	  </item>
+      <item row="1" column="3">
        <widget class="QLabel" name="lblMaxiSCMService">
         <property name="enabled">
          <bool>false</bool>
@@ -210,7 +223,7 @@ Value ranges from 000 to 999
         </property>
        </widget>
       </item>
-      <item row="2" column="1">
+      <item row="1" column="4">
        <widget class="QSpinBox" name="spnMaxiSCMService">
         <property name="enabled">
          <bool>false</bool>
@@ -237,14 +250,15 @@ Value ranges from 000 to 999
         </property>
        </widget>
       </item>
-      <item row="3" column="0">
+      <item row="2" column="0" colspan="2">
        <widget class="QCheckBox" name="chkMaxiSCMVV">
         <property name="enabled">
          <bool>false</bool>
         </property>
         <property name="toolTip">
          <string>Prefix Structured Carrier Message with &quot;[)&gt;\R01\Gvv&quot;
-(ANS MH10.8.2 Format 01) where  &quot;vv&quot; is version given below
+(ANS MH10.8.2 Format 01) where &quot;vv&quot; is version
+specified as follows
 (ignored if disabled)</string>
         </property>
         <property name="text">
@@ -252,7 +266,20 @@ Value ranges from 000 to 999
         </property>
        </widget>
       </item>
-      <item row="4" column="0">
+      <item row="2" column="2">
+       <spacer name="spacerMaxiSCM22">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint">
+         <size>
+          <width>10</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+	  </item>
+      <item row="2" column="3">
        <widget class="QLabel" name="lblMaxiSCMVV">
         <property name="enabled">
          <bool>false</bool>
@@ -272,7 +299,7 @@ Value ranges from 000 to 999
         </property>
        </widget>
       </item>
-      <item row="4" column="1">
+      <item row="2" column="4">
        <widget class="QSpinBox" name="spnMaxiSCMVV">
         <property name="enabled">
          <bool>false</bool>
@@ -295,6 +322,235 @@ Value ranges from 000 to 999
         </property>
         <property name="value">
          <number>96</number>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBoxMaxiStructApp">
+     <property name="title">
+      <string>Structured Append</string>
+     </property>
+     <property name="toolTip">
+      <string>MaxiCode supports Structured Append of up to
+8 symbols</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayoutMaxiStructApp">
+      <item row="0" column="0">
+       <widget class="QLabel" name="lblMaxiStructAppCount">
+        <property name="toolTip">
+         <string>Mark symbol as part of a Structured Append sequence
+containing a total of this number of symbols
+Value ranges from 2 to 8</string>
+        </property>
+        <property name="text">
+         <string>C&amp;ount:</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignLeft|Qt::AlignLeading|Qt::AlignVCenter</set>
+        </property>
+        <property name="buddy">
+         <cstring>cmbMaxiStructAppCount</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="cmbMaxiStructAppCount">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="toolTip">
+         <string>Mark symbol as part of a Structured Append sequence
+containing a total of this number of symbols
+Value ranges from 2 to 8</string>
+        </property>
+        <item>
+         <property name="text">
+          <string>Disabled</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>2</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>3</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>4</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>5</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>6</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>7</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>8</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="0" column="2">
+       <spacer name="spacerMaxiStructApp2">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint">
+         <size>
+          <width>10</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+	  </item>
+      <item row="0" column="3">
+       <widget class="QLabel" name="lblMaxiStructAppIndex">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="toolTip">
+         <string>Position of symbol in Structured Append sequence
+Value ranges from 1 to count
+(ignored if disabled)</string>
+        </property>
+        <property name="text">
+         <string>Inde&amp;x:</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignLeft|Qt::AlignLeading|Qt::AlignVCenter</set>
+        </property>
+        <property name="buddy">
+         <cstring>cmbMaxiStructAppIndex</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="4">
+       <widget class="QComboBox" name="cmbMaxiStructAppIndex">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="toolTip">
+         <string>Position of symbol in Structured Append sequence
+Value ranges from 1 to count
+(ignored if disabled)</string>
+        </property>
+        <item>
+         <property name="text">
+          <string>1</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>2</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>3</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>4</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>5</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>6</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>7</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>8</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="0" column="5">
+       <spacer name="spacerMaxiStructApp5">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint">
+         <size>
+          <width>10</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+	  </item>
+      <item row="0" column="6">
+       <widget class="QLabel" name="lblMaxiStructAppIDDisabled">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="toolTip">
+         <string>Structured Append ID not available for MaxiCode</string>
+        </property>
+        <property name="text">
+         <string>ID:</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignLeft|Qt::AlignLeading|Qt::AlignVCenter</set>
+        </property>
+        <property name="buddy">
+         <cstring>txtMaxiStructAppIDDisabled</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="7">
+       <widget class="QLineEdit" name="txtMaxiStructAppIDDisabled">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="toolTip">
+         <string>Structured Append ID not available for MaxiCode</string>
+        </property>
+        <property name="text">
+         <string>N/A</string>
         </property>
        </widget>
       </item>

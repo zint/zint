@@ -26,6 +26,9 @@
        <property name="text" >
         <string>&amp;Number of Data Columns:</string>
        </property>
+       <property name="toolTip">
+        <string>Set number of data characters in a row</string>
+       </property>
        <property name="alignment" >
         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
        </property>
@@ -36,6 +39,9 @@
      </item>
      <item row="0" column="1" >
       <widget class="QComboBox" name="cmbPDFCols" >
+       <property name="toolTip">
+        <string>Set number of data characters in a row</string>
+       </property>
        <item>
         <property name="text" >
          <string>Automatic</string>
@@ -141,12 +147,65 @@
          <string>20</string>
         </property>
        </item>
+       <item>
+        <property name="text" >
+         <string>21</string>
+        </property>
+       </item>
+       <item>
+        <property name="text" >
+         <string>22</string>
+        </property>
+       </item>
+       <item>
+        <property name="text" >
+         <string>23</string>
+        </property>
+       </item>
+       <item>
+        <property name="text" >
+         <string>24</string>
+        </property>
+       </item>
+       <item>
+        <property name="text" >
+         <string>25</string>
+        </property>
+       </item>
+       <item>
+        <property name="text" >
+         <string>26</string>
+        </property>
+       </item>
+       <item>
+        <property name="text" >
+         <string>27</string>
+        </property>
+       </item>
+       <item>
+        <property name="text" >
+         <string>28</string>
+        </property>
+       </item>
+       <item>
+        <property name="text" >
+         <string>29</string>
+        </property>
+       </item>
+       <item>
+        <property name="text" >
+         <string>30</string>
+        </property>
+       </item>
       </widget>
      </item>
      <item row="1" column="0" >
       <widget class="QLabel" name="lblPDFECC" >
        <property name="text" >
         <string>E&amp;rror Correction Capacity:</string>
+       </property>
+       <property name="toolTip">
+        <string>Set number of error correction characters</string>
        </property>
        <property name="alignment" >
         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -158,6 +217,9 @@
      </item>
      <item row="1" column="1" >
       <widget class="QComboBox" name="cmbPDFECC" >
+       <property name="toolTip">
+        <string>Set number of error correction characters</string>
+       </property>
        <item>
         <property name="text" >
          <string>Automatic</string>
@@ -217,6 +279,9 @@
      <property name="title">
       <string>Encoding Mode</string>
      </property>
+     <property name="toolTip">
+      <string>How to process data</string>
+     </property>
      <layout class="QGridLayout" name="gridLayoutPDFEncodingMode">
       <property name="sizeConstraint">
        <enum>QLayout::SetMinimumSize</enum>
@@ -225,6 +290,9 @@
        <widget class="QRadioButton" name="radPDFStand">
         <property name="text">
          <string>S&amp;tandard Mode</string>
+        </property>
+        <property name="toolTip">
+         <string>Process data as normal</string>
         </property>
         <property name="checked">
          <bool>true</bool>
@@ -236,12 +304,163 @@
         <property name="text">
          <string>H&amp;IBC PDF417</string>
         </property>
+        <property name="toolTip">
+         <string>Process data as a Health Industry Barcode (HIBC)
+Labeler Identification Code (LIC)
+For Provider Applications Standard (PAS), preface
+the data with a slash &quot;/&quot;</string>
+        </property>
        </widget>
       </item>
       <item row="1" column="0">
        <widget class="QRadioButton" name="radPDFTruncated">
         <property name="text">
          <string>&amp;Compact PDF417</string>
+        </property>
+        <property name="toolTip">
+         <string>Compact PDF417 (Truncated PDF417) mode omits the
+right row indicators and shortens the stop pattern</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBoxPDFStructApp">
+     <property name="title">
+      <string>Structured Append</string>
+     </property>
+     <property name="toolTip">
+      <string>PDF417 supports Structured Append of up to
+99,999 symbols</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayoutPDFStructApp">
+      <item row="0" column="0">
+       <widget class="QLabel" name="lblPDFStructAppCount">
+        <property name="text">
+         <string>C&amp;ount:</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignLeft|Qt::AlignLeading|Qt::AlignVCenter</set>
+        </property>
+        <property name="buddy">
+         <cstring>spnPDFStructAppCount</cstring>
+        </property>
+        <property name="toolTip">
+         <string>Mark symbol as part of a Structured Append sequence
+containing a total of this number of symbols
+Value ranges from 1 (Disabled) to 99999</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QSpinBox" name="spnPDFStructAppCount">
+        <property name="toolTip">
+         <string>Mark symbol as part of a Structured Append sequence
+containing a total of this number of symbols
+Value ranges from 1 (Disabled) to 99999</string>
+        </property>
+        <property name="specialValueText">
+         <string>1 (Disabled)</string>
+        </property>
+        <property name="minimum">
+         <number>1</number>
+        </property>
+        <property name="maximum">
+         <number>99999</number>
+        </property>
+        <property name="value">
+         <number>1</number>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2">
+       <spacer name="horizontalSpacerPDFStructApp">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </spacer>
+	  </item>
+      <item row="0" column="3">
+       <widget class="QLabel" name="lblPDFStructAppIndex">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>Inde&amp;x:</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignLeft|Qt::AlignLeading|Qt::AlignVCenter</set>
+        </property>
+        <property name="buddy">
+         <cstring>spnPDFStructAppIndex</cstring>
+        </property>
+        <property name="toolTip">
+         <string>Position of symbol in Structured Append sequence
+Value ranges from 1 to count
+(ignored if disabled)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="4">
+       <widget class="QSpinBox" name="spnPDFStructAppIndex">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="toolTip">
+         <string>Position of symbol in Structured Append sequence
+Value ranges from 1 to count
+(ignored if disabled)</string>
+        </property>
+        <property name="minimum">
+         <number>1</number>
+        </property>
+        <property name="maximum">
+         <number>99999</number>
+        </property>
+        <property name="value">
+         <number>1</number>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="lblPDFStructAppID">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="toolTip">
+         <string>Optional ID to indicate that symbols belong to the same
+Structured Append sequence
+Numbers only, in triplets ranging from 000 to 899
+Maximum length 30 (10 triplets)
+(ignored if disabled)</string>
+        </property>
+        <property name="text">
+         <string>I&amp;D:</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignLeft|Qt::AlignLeading|Qt::AlignVCenter</set>
+        </property>
+        <property name="buddy">
+         <cstring>txtPDFStructAppID</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1" colspan="4">
+       <widget class="QLineEdit" name="txtPDFStructAppID">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="maxLength">
+         <number>30</number>
+        </property>
+        <property name="toolTip">
+         <string>Optional ID to indicate that symbols belong to the same
+Structured Append sequence
+Numbers only, in triplets ranging from 000 to 899
+Maximum length 30 (10 triplets)
+(ignored if disabled)</string>
         </property>
        </widget>
       </item>

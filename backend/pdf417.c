@@ -1,7 +1,7 @@
 /* pdf417.c - Handles PDF417 stacked symbology */
 
 /*  Zint - A barcode generating program using libpng
-    Copyright (C) 2008-2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2021 Robin Stuart <rstuart114@gmail.com>
     Portions Copyright (C) 2004 Grandzebu
     Bug Fixes thanks to KL Chin <klchin@users.sourceforge.net>
 
@@ -398,14 +398,14 @@ static void textprocess(int *chainemc, int *mclength, const unsigned char chaine
 
 /* 671 */
 INTERNAL void byteprocess(int *chainemc, int *mclength, const unsigned char chaine[], int start, const int length,
-                const int debug) {
+                const int debug_print) {
 
-    if (debug) printf("\nEntering byte mode at position %d\n", start);
+    if (debug_print) printf("\nEntering byte mode at position %d\n", start);
 
     if (length == 1) {
         chainemc[(*mclength)++] = 913;
         chainemc[(*mclength)++] = chaine[start];
-        if (debug) {
+        if (debug_print) {
             printf("913 %d\n", chainemc[*mclength - 1]);
         }
     } else {
@@ -413,13 +413,13 @@ INTERNAL void byteprocess(int *chainemc, int *mclength, const unsigned char chai
         /* select the switch for multiple of 6 bytes */
         if (length % 6 == 0) {
             chainemc[(*mclength)++] = 924;
-            if (debug) printf("924 ");
+            if (debug_print) printf("924 ");
         } else {
             /* Default mode for MICROPDF417 is Byte Compaction (ISO/IEC 24728:2006 5.4.3), but not emitting it
              * depends on whether an ECI has been emitted previously (or not) it appears, so simpler and safer
              * to always emit it. */
             chainemc[(*mclength)++] = 901;
-            if (debug) printf("901 ");
+            if (debug_print) printf("901 ");
         }
 
         len = 0;
@@ -508,20 +508,13 @@ static void numbprocess(int *chainemc, int *mclength, const unsigned char chaine
     }
 }
 
-/* 366 */
-static int pdf417(struct zint_symbol *symbol, unsigned char chaine[], const int length) {
-    int i, k, j, indexchaine, indexliste, mode, longueur, loop, mccorrection[520] = {0}, offset;
-    int total, chainemc[PDF417_MAX_LEN], mclength, c1, c2, c3, dummy[35];
+/* Initial processing of data, shared by `pdf417enc()` and `micro_pdf417()` */
+static int pdf417_initial(struct zint_symbol *symbol, unsigned char chaine[], const int length, const int is_micro,
+            int chainemc[PDF417_MAX_LEN], int *p_mclength, int structapp_cws[18], int *p_structapp_cp) {
+    int i, indexchaine, indexliste, mode;
     int liste[2][PDF417_MAX_LEN] = {{0}};
-    char pattern[580];
-    int bp = 0;
-    int error_number;
-    int debug = symbol->debug & ZINT_DEBUG_PRINT;
-
-    if (length > PDF417_MAX_LEN) {
-        strcpy(symbol->errtxt, "463: Input string too long");
-        return ZINT_ERROR_TOO_LONG;
-    }
+    int mclength, structapp_cp = 0;
+    int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
 
     /* 456 */
     indexliste = 0;
@@ -543,7 +536,7 @@ static int pdf417(struct zint_symbol *symbol, unsigned char chaine[], const int 
     /* 474 */
     pdfsmooth(liste, &indexliste);
 
-    if (debug) {
+    if (debug_print) {
         printf("Initial block pattern:\n");
         for (i = 0; i < indexliste; i++) {
             printf("Len: %d  Type: ", liste[0][i]);
@@ -563,6 +556,56 @@ static int pdf417(struct zint_symbol *symbol, unsigned char chaine[], const int 
     /* 541 - now compress the data */
     indexchaine = 0;
     mclength = 0;
+
+    if (symbol->structapp.count) {
+        int id_cnt = 0, ids[10];
+
+        if (symbol->structapp.count < 2 || symbol->structapp.count > 99999) {
+            strcpy(symbol->errtxt, "740: Structured Append count out of range (2-99999)");
+            return ZINT_ERROR_INVALID_OPTION;
+        }
+        if (symbol->structapp.index < 1 || symbol->structapp.index > symbol->structapp.count) {
+            sprintf(symbol->errtxt, "741: Structured Append index out of range (1-%d)", symbol->structapp.count);
+            return ZINT_ERROR_INVALID_OPTION;
+        }
+        if (symbol->structapp.id[0]) {
+            int id_len;
+
+            for (id_len = 0; id_len < 32 && symbol->structapp.id[id_len]; id_len++);
+
+            if (id_len > 30) { /* 10 triplets */
+                strcpy(symbol->errtxt, "742: Structured Append ID too long (30 digit maximum)");
+                return ZINT_ERROR_INVALID_OPTION;
+            }
+
+            for (i = 0; i < id_len; i += 3, id_cnt++) {
+                int triplet_len = i + 3 < id_len ? 3 : id_len - i;
+                ids[id_cnt] = to_int((const unsigned char *) (symbol->structapp.id + i), triplet_len);
+                if (ids[id_cnt] == -1) {
+                    strcpy(symbol->errtxt, "743: Invalid Structured Append ID (digits only)");
+                    return ZINT_ERROR_INVALID_OPTION;
+                }
+                if (ids[id_cnt] > 899) {
+                    sprintf(symbol->errtxt, "744: Structured Append ID triplet %d '%03d' out of range (000-899)",
+                            id_cnt + 1, ids[id_cnt]);
+                    return ZINT_ERROR_INVALID_OPTION;
+                }
+            }
+        }
+        structapp_cws[structapp_cp++] = 928; /* Macro marker */
+        structapp_cws[structapp_cp++] = (100000 + symbol->structapp.index - 1) / 900; /* Segment index 1 */
+        structapp_cws[structapp_cp++] = (100000 + symbol->structapp.index - 1) % 900; /* Segment index 2 */
+        for (i = 0; i < id_cnt; i++) {
+            structapp_cws[structapp_cp++] = ids[i];
+        }
+        structapp_cws[structapp_cp++] = 923; /* Optional field */
+        structapp_cws[structapp_cp++] = 1; /* Segment count tag */
+        structapp_cws[structapp_cp++] = (100000 + symbol->structapp.count) / 900; /* Segment count 1 */
+        structapp_cws[structapp_cp++] = (100000 + symbol->structapp.count) % 900; /* Segment count 2 */
+        if (symbol->structapp.index == symbol->structapp.count) {
+            structapp_cws[structapp_cp++] = 922; /* Special last segment terminator */
+        }
+    }
 
     if (symbol->output_options & READER_INIT) {
         chainemc[mclength] = 921; /* Reader Initialisation */
@@ -598,10 +641,10 @@ static int pdf417(struct zint_symbol *symbol, unsigned char chaine[], const int 
     for (i = 0; i < indexliste; i++) {
         switch (liste[1][i]) {
             case TEX: /* 547 - text mode */
-                textprocess(chainemc, &mclength, chaine, indexchaine, liste[0][i], 0 /*is_micro*/);
+                textprocess(chainemc, &mclength, chaine, indexchaine, liste[0][i], is_micro);
                 break;
             case BYT: /* 670 - octet stream mode */
-                byteprocess(chainemc, &mclength, chaine, indexchaine, liste[0][i], debug);
+                byteprocess(chainemc, &mclength, chaine, indexchaine, liste[0][i], debug_print);
                 break;
             case NUM: /* 712 - numeric mode */
                 numbprocess(chainemc, &mclength, chaine, indexchaine, liste[0][i]);
@@ -611,7 +654,36 @@ static int pdf417(struct zint_symbol *symbol, unsigned char chaine[], const int 
     }
     assert(mclength > 0); /* Suppress clang-analyzer-core.uninitialized.Assign warning */
 
-    if (debug) {
+    *p_mclength = mclength;
+    *p_structapp_cp = structapp_cp;
+
+    return 0;
+}
+
+/* 366 */
+static int pdf417(struct zint_symbol *symbol, unsigned char chaine[], const int length) {
+    int i, k, j, longueur, loop, mccorrection[520] = {0}, offset;
+    int total, chainemc[PDF417_MAX_LEN], mclength, c1, c2, c3, dummy[35];
+    char pattern[580];
+    int bp = 0;
+    int structapp_cws[18] = {0}; /* 3 (Index) + 10 (ID) + 4 (Count) + 1 (Last) */
+    int structapp_cp = 0;
+    int error_number;
+    int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
+    static int ecc_num_cws[] = { 2, 4, 8, 16, 32, 64, 128, 256, 512 };
+
+    if (length > PDF417_MAX_LEN) {
+        strcpy(symbol->errtxt, "463: Input string too long");
+        return ZINT_ERROR_TOO_LONG;
+    }
+
+    error_number = pdf417_initial(symbol, chaine, length, 0 /*is_micro*/, chainemc, &mclength, structapp_cws,
+                    &structapp_cp);
+    if (error_number >= ZINT_ERROR) {
+        return error_number;
+    }
+
+    if (debug_print) {
         printf("\nCompressed data stream (%d):\n", mclength);
         for (i = 0; i < mclength; i++) {
             printf("%d ", chainemc[i]);
@@ -621,44 +693,42 @@ static int pdf417(struct zint_symbol *symbol, unsigned char chaine[], const int 
 
     /* 752 - Now take care of the number of CWs per row */
     if (symbol->option_1 < 0) {
-        if (mclength <= 40) {
+        if (mclength + structapp_cp <= 40) {
             symbol->option_1 = 2;
-        } else if (mclength <= 160) {
+        } else if (mclength + structapp_cp <= 160) {
             symbol->option_1 = 3;
-        } else if (mclength <= 320) {
+        } else if (mclength + structapp_cp <= 320) {
             symbol->option_1 = 4;
-        } else if (mclength <= 863) {
+        } else if (mclength + structapp_cp <= 863) {
             symbol->option_1 = 5;
         } else {
             symbol->option_1 = 6;
         }
     }
-    k = 1;
-    for (loop = 1; loop <= (symbol->option_1 + 1); loop++) {
-        k *= 2;
-    }
-    longueur = mclength;
-    if (longueur + k > 928) {
+    k = ecc_num_cws[symbol->option_1];
+    longueur = mclength + structapp_cp + k;
+    if (longueur > 928) {
         /* Enforce maximum codeword limit */
         strcpy(symbol->errtxt, "464: Input string too long");
         return ZINT_ERROR_TOO_LONG;
     }
 
     if (symbol->option_2 < 1) {
-        symbol->option_2 = (int) (0.5 + sqrt((longueur + k) / 3.0));
+        symbol->option_2 = (int) (0.5 + sqrt(longueur / 3.0));
     }
-    if (((longueur + k) / symbol->option_2) > 90) {
+    if ((longueur / symbol->option_2) > 90) {
         /* stop the symbol from becoming too high */
         symbol->option_2 = symbol->option_2 + 1;
 
-        if (((longueur + k) / symbol->option_2) > 90) {
+        if ((longueur / symbol->option_2) > 90) {
             strcpy(symbol->errtxt, "465: Data too long for specified number of columns");
             return ZINT_ERROR_TOO_LONG;
         }
     }
+    assert(symbol->option_2 >= 1); /* Suppress clang-analyzer-core.CallAndMessage */
 
     /* 781 - Padding calculation */
-    longueur = mclength + 1 + k;
+    longueur = mclength + structapp_cp + 1 + k;
     i = 0;
     if ((longueur / symbol->option_2) < 3) {
         i = (symbol->option_2 * 3) - longueur; /* A bar code must have at least three rows */
@@ -673,6 +743,14 @@ static int pdf417(struct zint_symbol *symbol, unsigned char chaine[], const int 
         mclength++;
         i--;
     }
+
+    /* We add the Structured Append Macro Control Block if any */
+    if (structapp_cp) {
+        for (i = 0; i < structapp_cp; i++) {
+            chainemc[mclength++] = structapp_cws[i];
+        }
+    }
+
     /* we add the length descriptor */
     for (i = mclength; i > 0; i--) {
         chainemc[i] = chainemc[i - 1];
@@ -716,7 +794,7 @@ static int pdf417(struct zint_symbol *symbol, unsigned char chaine[], const int 
         chainemc[mclength++] = mccorrection[i] ? 929 - mccorrection[i] : 0;
     }
 
-    if (debug) {
+    if (debug_print) {
         printf("Complete CW string (%d):\n", mclength);
         for (i = 0; i < mclength; i++) {
             printf("%d ", chainemc[i]);
@@ -732,7 +810,7 @@ static int pdf417(struct zint_symbol *symbol, unsigned char chaine[], const int 
     symbol->rows = mclength / symbol->option_2;
     assert(symbol->rows > 0); /* Suppress clang-analyzer-core.DivideZero warning */
 
-    if (debug) printf("\nSymbol size:\n%d columns x %d rows\n", symbol->option_2, symbol->rows);
+    if (debug_print) printf("\nSymbol size:\n%d columns x %d rows\n", symbol->option_2, symbol->rows);
 
     /* 818 - The CW string is finished */
     c1 = (symbol->rows - 1) / 3;
@@ -830,14 +908,15 @@ INTERNAL int pdf417enc(struct zint_symbol *symbol, unsigned char source[], int l
 
 /* like PDF417 only much smaller! */
 INTERNAL int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], int length) {
-    int i, k, j, indexchaine, indexliste, mode, longueur, mccorrection[50] = {0}, offset;
+    int i, k, j, longueur, mccorrection[50] = {0}, offset;
     int total, chainemc[PDF417_MAX_LEN], mclength, error_number = 0;
-    int liste[2][PDF417_MAX_LEN] = {{0}};
     char pattern[580];
     int bp = 0;
+    int structapp_cws[18] = {0}; /* 3 (Index) + 10 (ID) + 4 (Count) + 1 (Last) */
+    int structapp_cp = 0;
     int variant, LeftRAPStart, CentreRAPStart, RightRAPStart, StartCluster;
     int LeftRAP, CentreRAP, RightRAP, Cluster, loop;
-    int debug = symbol->debug & ZINT_DEBUG_PRINT;
+    int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
 
     if (length > MICRO_PDF417_MAX_LEN) {
         strcpy(symbol->errtxt, "474: Input data too long");
@@ -846,97 +925,15 @@ INTERNAL int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], in
 
     /* Encoding starts out the same as PDF417, so use the same code */
 
-    /* 456 */
-    indexliste = 0;
-    indexchaine = 0;
-
-    mode = quelmode(chaine[indexchaine]);
-
-    /* 463 */
-    do {
-        liste[1][indexliste] = mode;
-        while ((liste[1][indexliste] == mode) && (indexchaine < length)) {
-            liste[0][indexliste]++;
-            indexchaine++;
-            mode = quelmode(chaine[indexchaine]);
-        }
-        indexliste++;
-    } while (indexchaine < length);
-
-    /* 474 */
-    pdfsmooth(liste, &indexliste);
-
-    if (debug) {
-        printf("Initial mapping:\n");
-        for (i = 0; i < indexliste; i++) {
-            printf("len: %d   type: ", liste[0][i]);
-            switch (liste[1][i]) {
-                case TEX: printf("TEXT\n");
-                    break;
-                case BYT: printf("BYTE\n");
-                    break;
-                case NUM: printf("NUMBER\n");
-                    break;
-                default: printf("*ERROR*\n"); /* Should never happen */ /* Not reached */
-                    break;
-            }
-        }
-    }
-
-    /* 541 - now compress the data */
-    indexchaine = 0;
-    mclength = 0;
-
-    if (symbol->output_options & READER_INIT) {
-        chainemc[mclength] = 921; /* Reader Initialisation */
-        mclength++;
-    }
-
-    if (symbol->eci != 0) {
-
-        /* Encoding ECI assignment number, according to Table 8 */
-        if (symbol->eci <= 899) {
-            chainemc[mclength] = 927; /* ECI */
-            mclength++;
-            chainemc[mclength] = symbol->eci;
-            mclength++;
-        } else if (symbol->eci <= 810899) {
-            chainemc[mclength] = 926; /* ECI */
-            mclength++;
-            chainemc[mclength] = (symbol->eci / 900) - 1;
-            mclength++;
-            chainemc[mclength] = symbol->eci % 900;
-            mclength++;
-        } else {
-            if (symbol->eci > 811799) {
-                strcpy(symbol->errtxt, "473: Invalid ECI");
-                return ZINT_ERROR_INVALID_OPTION;
-            }
-            chainemc[mclength] = 925; /* ECI */
-            mclength++;
-            chainemc[mclength] = symbol->eci - 810900;
-            mclength++;
-        }
-    }
-
-    for (i = 0; i < indexliste; i++) {
-        switch (liste[1][i]) {
-            case TEX: /* 547 - text mode */
-                textprocess(chainemc, &mclength, chaine, indexchaine, liste[0][i], 1 /*is_micro*/);
-                break;
-            case BYT: /* 670 - octet stream mode */
-                byteprocess(chainemc, &mclength, chaine, indexchaine, liste[0][i], debug);
-                break;
-            case NUM: /* 712 - numeric mode */
-                numbprocess(chainemc, &mclength, chaine, indexchaine, liste[0][i]);
-                break;
-        }
-        indexchaine = indexchaine + liste[0][i];
+    error_number = pdf417_initial(symbol, chaine, length, 1 /*is_micro*/, chainemc, &mclength, structapp_cws,
+                    &structapp_cp);
+    if (error_number >= ZINT_ERROR) {
+        return error_number;
     }
 
     /* This is where it all changes! */
 
-    if (mclength > 126) {
+    if (mclength + structapp_cp > 126) {
         strcpy(symbol->errtxt, "467: Input data too long");
         return ZINT_ERROR_TOO_LONG;
     }
@@ -949,7 +946,7 @@ INTERNAL int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], in
         error_number = ZINT_WARN_INVALID_OPTION;
     }
 
-    if (debug) {
+    if (debug_print) {
         printf("\nEncoded Data Stream (%d):\n", mclength);
         for (i = 0; i < mclength; i++) {
             printf("%3d ", chainemc[i]);
@@ -961,7 +958,7 @@ INTERNAL int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], in
 
     variant = 0;
 
-    if ((symbol->option_2 == 1) && (mclength > 20)) {
+    if ((symbol->option_2 == 1) && (mclength + structapp_cp > 20)) {
         /* the user specified 1 column but the data doesn't fit - go to automatic */
         strcpy(symbol->errtxt, "469: Specified symbol size too small for data");
         if (symbol->warn_level == WARN_FAIL_ALL) {
@@ -971,7 +968,7 @@ INTERNAL int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], in
         error_number = ZINT_WARN_INVALID_OPTION;
     }
 
-    if ((symbol->option_2 == 2) && (mclength > 37)) {
+    if ((symbol->option_2 == 2) && (mclength + structapp_cp > 37)) {
         /* the user specified 2 columns but the data doesn't fit - go to automatic */
         strcpy(symbol->errtxt, "470: Specified symbol size too small for data");
         if (symbol->warn_level == WARN_FAIL_ALL) {
@@ -981,7 +978,7 @@ INTERNAL int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], in
         error_number = ZINT_WARN_INVALID_OPTION;
     }
 
-    if ((symbol->option_2 == 3) && (mclength > 82)) {
+    if ((symbol->option_2 == 3) && (mclength + structapp_cp > 82)) {
         /* the user specified 3 columns but the data doesn't fit - go to automatic */
         strcpy(symbol->errtxt, "471: Specified symbol size too small for data");
         if (symbol->warn_level == WARN_FAIL_ALL) {
@@ -993,80 +990,80 @@ INTERNAL int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], in
 
     if (symbol->option_2 == 1) {
         /* the user specified 1 column and the data does fit */
-        if (mclength <= 4) {
+        if (mclength + structapp_cp <= 4) {
             variant = 1;
-        } else if (mclength <= 7) {
+        } else if (mclength + structapp_cp <= 7) {
             variant = 2;
-        } else if (mclength <= 10) {
+        } else if (mclength + structapp_cp <= 10) {
             variant = 3;
-        } else if (mclength <= 12) {
+        } else if (mclength + structapp_cp <= 12) {
             variant = 4;
-        } else if (mclength <= 16) {
+        } else if (mclength + structapp_cp <= 16) {
             variant = 5;
         } else {
             variant = 6;
         }
     } else if (symbol->option_2 == 2) {
         /* the user specified 2 columns and the data does fit */
-        if (mclength <= 8) {
+        if (mclength + structapp_cp <= 8) {
             variant = 7;
-        } else if (mclength <= 13) {
+        } else if (mclength + structapp_cp <= 13) {
             variant = 8;
-        } else if (mclength <= 19) {
+        } else if (mclength + structapp_cp <= 19) {
             variant = 9;
-        } else if (mclength <= 24) {
+        } else if (mclength + structapp_cp <= 24) {
             variant = 10;
-        } else if (mclength <= 29) {
+        } else if (mclength + structapp_cp <= 29) {
             variant = 11;
-        } else if (mclength <= 33) {
+        } else if (mclength + structapp_cp <= 33) {
             variant = 12;
         } else {
             variant = 13;
         }
     } else if (symbol->option_2 == 3) {
         /* the user specified 3 columns and the data does fit */
-        if (mclength <= 6) {
+        if (mclength + structapp_cp <= 6) {
             variant = 14;
-        } else if (mclength <= 10) {
+        } else if (mclength + structapp_cp <= 10) {
             variant = 15;
-        } else if (mclength <= 14) {
+        } else if (mclength + structapp_cp <= 14) {
             variant = 16;
-        } else if (mclength <= 18) {
+        } else if (mclength + structapp_cp <= 18) {
             variant = 17;
-        } else if (mclength <= 24) {
+        } else if (mclength + structapp_cp <= 24) {
             variant = 18;
-        } else if (mclength <= 34) {
+        } else if (mclength + structapp_cp <= 34) {
             variant = 19;
-        } else if (mclength <= 46) {
+        } else if (mclength + structapp_cp <= 46) {
             variant = 20;
-        } else if (mclength <= 58) {
+        } else if (mclength + structapp_cp <= 58) {
             variant = 21;
-        } else if (mclength <= 70) {
+        } else if (mclength + structapp_cp <= 70) {
             variant = 22;
         } else {
             variant = 23;
         }
     } else if (symbol->option_2 == 4) {
         /* the user specified 4 columns and the data does fit */
-        if (mclength <= 8) {
+        if (mclength + structapp_cp <= 8) {
             variant = 24;
-        } else if (mclength <= 12) {
+        } else if (mclength + structapp_cp <= 12) {
             variant = 25;
-        } else if (mclength <= 18) {
+        } else if (mclength + structapp_cp <= 18) {
             variant = 26;
-        } else if (mclength <= 24) {
+        } else if (mclength + structapp_cp <= 24) {
             variant = 27;
-        } else if (mclength <= 30) {
+        } else if (mclength + structapp_cp <= 30) {
             variant = 28;
-        } else if (mclength <= 39) {
+        } else if (mclength + structapp_cp <= 39) {
             variant = 29;
-        } else if (mclength <= 54) {
+        } else if (mclength + structapp_cp <= 54) {
             variant = 30;
-        } else if (mclength <= 72) {
+        } else if (mclength + structapp_cp <= 72) {
             variant = 31;
-        } else if (mclength <= 90) {
+        } else if (mclength + structapp_cp <= 90) {
             variant = 32;
-        } else if (mclength <= 108) {
+        } else if (mclength + structapp_cp <= 108) {
             variant = 33;
         } else {
             variant = 34;
@@ -1074,10 +1071,11 @@ INTERNAL int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], in
     } else {
         /* Zint can choose automatically from all available variations */
         for (i = 27; i >= 0; i--) {
-
-            if (MicroAutosize[i] >= mclength) {
+            /* Note mclength + structapp_cp <= 126 and MicroAutosize[27] == 126 so variant will be set */
+            if (MicroAutosize[i] >= mclength + structapp_cp) {
                 variant = MicroAutosize[i + 28];
             } else {
+                assert(variant > 0); /* Suppress clang-tidy clang-analyzer-core.uninitialized.Assign */
                 break;
             }
         }
@@ -1089,10 +1087,10 @@ INTERNAL int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], in
     symbol->rows = MicroVariants[variant + 34]; /* rows */
     k = MicroVariants[variant + 68]; /* number of EC CWs */
     longueur = (symbol->option_2 * symbol->rows) - k; /* number of non-EC CWs */
-    i = longueur - mclength; /* amount of padding required */
+    i = longueur - (mclength + structapp_cp); /* amount of padding required */
     offset = MicroVariants[variant + 102]; /* coefficient offset */
 
-    if (debug) {
+    if (debug_print) {
         printf("\nChoose symbol size:\n");
         printf("%d columns x %d rows, variant %d\n", symbol->option_2, symbol->rows, variant + 1);
         printf("%d data codewords (including %d pads), %d ecc codewords\n", longueur, i, k);
@@ -1104,6 +1102,13 @@ INTERNAL int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], in
         chainemc[mclength] = 900;
         mclength++;
         i--;
+    }
+
+    /* We add the Structured Append Macro Control Block if any */
+    if (structapp_cp) {
+        for (i = 0; i < structapp_cp; i++) {
+            chainemc[mclength++] = structapp_cws[i];
+        }
     }
 
     /* Reed-Solomon error correction */
@@ -1130,7 +1135,7 @@ INTERNAL int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], in
         mclength++;
     }
 
-    if (debug) {
+    if (debug_print) {
         printf("Encoded Data Stream with ECC (%d):\n", mclength);
         for (i = 0; i < mclength; i++) {
             printf("%3d ", chainemc[i]);
@@ -1157,9 +1162,9 @@ INTERNAL int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], in
     Cluster = StartCluster;
     /* Cluster can be 0, 1 or 2 for Cluster(0), Cluster(3) and Cluster(6) */
 
-    if (debug) printf("\nInternal row representation:\n");
+    if (debug_print) printf("\nInternal row representation:\n");
     for (i = 0; i < symbol->rows; i++) {
-        if (debug) printf("row %d: ", i);
+        if (debug_print) printf("row %d: ", i);
         bp = 0;
         offset = 929 * Cluster;
         k = i * symbol->option_2;
@@ -1188,7 +1193,7 @@ INTERNAL int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], in
         }
         bp = bin_append_posn(rap_side[RightRAP - 1], 10, pattern, bp);
         pattern[bp++] = '1'; /* stop */
-        if (debug) printf("%.*s\n", bp, pattern);
+        if (debug_print) printf("%.*s\n", bp, pattern);
 
         /* so now pattern[] holds the string of '1's and '0's. - copy this to the symbol */
         for (loop = 0; loop < bp; loop++) {

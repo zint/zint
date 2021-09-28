@@ -49,31 +49,45 @@ public slots:
     void autoheight_ui_set();
     void HRTShow_ui_set();
     void dotty_ui_set();
+    void structapp_ui_set();
     void on_encoded();
 	void filter_symbologies();
 
 protected:
     void resizeEvent(QResizeEvent *event);
 	void combobox_item_enabled(QComboBox *comboBox, int index, bool enabled);
-    void upcean_addon_gap(QComboBox *comboBox, QLabel *label, int base);
-    void upcean_guard_descent(QDoubleSpinBox *spnBox, QLabel *label);
+    void upcean_addon_gap(const char *comboBoxName, const char *labelName, int base);
+    void upcean_guard_descent(const char *spnBoxName, const char *labelName);
     void set_gs1_mode(bool gs1_mode);
     void set_smaller_font(QLabel *note);
+
+	QObject *widget_obj(const char *name);
 
 	const char *get_setting_name(int symbology);
 
 	int get_button_group_index(const QStringList &children);
-	void set_radiobutton_from_setting(QSettings &settings, const QString &setting, const QStringList &children, int default_val = 0);
+	void set_radiobutton_from_setting(QSettings &settings, const QString &setting, const QStringList &children,
+			int default_val = 0);
+
 	int get_combobox_index(const QString &child);
-	void set_combobox_from_setting(QSettings &settings, const QString &setting, const QString &child, int default_val = 0);
+	void set_combobox_from_setting(QSettings &settings, const QString &setting, const QString &child,
+			int default_val = 0);
+
 	int get_checkbox_val(const QString &child);
-	void set_checkbox_from_setting(QSettings &settings, const QString &setting, const QString &child, int default_val = 0);
+	void set_checkbox_from_setting(QSettings &settings, const QString &setting, const QString &child,
+			int default_val = 0);
+
 	double get_doublespinbox_val(const QString &child);
-	void set_doublespinbox_from_setting(QSettings &settings, const QString &setting, const QString &child, float default_val = 0.0f);
+	void set_doublespinbox_from_setting(QSettings &settings, const QString &setting, const QString &child,
+			float default_val = 0.0f);
+
 	QString get_lineedit_val(const QString &child);
-	void set_lineedit_from_setting(QSettings &settings, const QString &setting, const QString &child, const char *default_val = "");
+	void set_lineedit_from_setting(QSettings &settings, const QString &setting, const QString &child,
+			const char *default_val = "");
+
 	int get_spinbox_val(const QString &child);
-	void set_spinbox_from_setting(QSettings &settings, const QString &setting, const QString &child, int default_val = 0);
+	void set_spinbox_from_setting(QSettings &settings, const QString &setting, const QString &child,
+			int default_val = 0);
 
 	void save_sub_settings(QSettings &settings, int symbology);
 	void load_sub_settings(QSettings &settings, int symbology);

@@ -72,7 +72,7 @@
 #  endif
 #endif
 
-/* Is float integral value? (https://stackoverflow.com/a/40404149/664741) */
+/* Is float integral value? (https://stackoverflow.com/a/40404149) */
 #define isfintf(arg) (fmodf(arg, 1.0f) == 0.0f)
 
 #if (defined(__GNUC__) || defined(__clang__)) && !defined(ZINT_TEST) && !defined(__MINGW32__)

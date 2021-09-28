@@ -562,7 +562,7 @@ static int isbn(struct zint_symbol *symbol, unsigned char source[], const int sr
         /* "X" can only occur in last position */
         error_number = is_sane(NEON, source, 12);
         if (error_number == ZINT_ERROR_INVALID_DATA) {
-            strcpy(symbol->errtxt, "277: Invalid character in data, \"X\" allowed in last position only");
+            strcpy(symbol->errtxt, "282: Invalid character in data, \"X\" allowed in last position only");
             return error_number;
         }
 
@@ -586,7 +586,7 @@ static int isbn(struct zint_symbol *symbol, unsigned char source[], const int sr
         /* "X" can only occur in last position */
         error_number = is_sane(NEON, source, 9);
         if (error_number == ZINT_ERROR_INVALID_DATA) {
-            strcpy(symbol->errtxt, "277: Invalid character in data, \"X\" allowed in last position only");
+            strcpy(symbol->errtxt, "296: Invalid character in data, \"X\" allowed in last position only");
             return error_number;
         }
 

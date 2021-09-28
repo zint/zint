@@ -308,14 +308,21 @@ bool MainWindow::save()
 
     save_dialog.setAcceptMode(QFileDialog::AcceptSave);
     save_dialog.setWindowTitle(tr("Save Barcode Image"));
-    save_dialog.setDirectory(settings.value("studio/default_dir", QDir::toNativeSeparators(QDir::homePath())).toString());
+    save_dialog.setDirectory(settings.value("studio/default_dir",
+                QDir::toNativeSeparators(QDir::homePath())).toString());
 
 #ifdef NO_PNG
     suffix = settings.value("studio/default_suffix", "gif").toString();
-    save_dialog.setNameFilter(tr("Encapsulated PostScript (*.eps);;Graphics Interchange Format (*.gif);;Scalable Vector Graphic (*.svg);;Windows Bitmap (*.bmp);;ZSoft PC Painter Image (*.pcx);;Enhanced Metafile (*.emf);;Tagged Image File Format (*.tif)"));
+    save_dialog.setNameFilter(tr(
+        "Encapsulated PostScript (*.eps);;Graphics Interchange Format (*.gif)"
+        ";;Scalable Vector Graphic (*.svg);;Windows Bitmap (*.bmp);;ZSoft PC Painter Image (*.pcx)"
+        ";;Enhanced Metafile (*.emf);;Tagged Image File Format (*.tif)"));
 #else
     suffix = settings.value("studio/default_suffix", "png").toString();
-    save_dialog.setNameFilter(tr("Portable Network Graphic (*.png);;Encapsulated PostScript (*.eps);;Graphics Interchange Format (*.gif);;Scalable Vector Graphic (*.svg);;Windows Bitmap (*.bmp);;ZSoft PC Painter Image (*.pcx);;Enhanced Metafile (*.emf);;Tagged Image File Format (*.tif)"));
+    save_dialog.setNameFilter(tr(
+        "Portable Network Graphic (*.png);;Encapsulated PostScript (*.eps);;Graphics Interchange Format (*.gif)"
+        ";;Scalable Vector Graphic (*.svg);;Windows Bitmap (*.bmp);;ZSoft PC Painter Image (*.pcx)"
+        ";;Enhanced Metafile (*.emf);;Tagged Image File Format (*.tif)"));
 #endif
 
     if (QString::compare(suffix, "png", Qt::CaseInsensitive) == 0)
@@ -378,7 +385,8 @@ void MainWindow::about()
         /* This is a test release */
         version_release = version_release / 10;
         version_build = lib_version % 10;
-        QTextStream(&zint_version) << version_major << "." << version_minor << "." << version_release << "." << version_build << " (dev)";
+        QTextStream(&zint_version) << version_major << "." << version_minor << "." << version_release
+                                    << "." << version_build << " (dev)";
     } else {
         /* This is a stable release */
         QTextStream(&zint_version) << version_major << "." << version_minor << "." << version_release;
@@ -488,6 +496,79 @@ void MainWindow::dotty_ui_set()
     }
 }
 
+void MainWindow::structapp_ui_set()
+{
+    int symbology = bstyle_items[bstyle->currentIndex()].symbology;
+    QString name;
+    bool enabled = false;
+    QWidget *widgetCount = NULL, *widgetIndex = NULL;
+    QLabel *lblID2 = NULL;
+    QWidget *widgetID = NULL, *widgetID2 = NULL;
+
+    if (symbology == BARCODE_AZTEC) {
+        name = "Aztec";
+        widgetID = m_optionWidget->findChild<QLineEdit*>("txt" + name + "StructAppID");
+    } else if (symbology == BARCODE_CODEONE) {
+        name = "C1";
+        QSpinBox *spnCount = m_optionWidget->findChild<QSpinBox*>("spn" + name + "StructAppCount");
+        enabled = spnCount ? spnCount->value() > 1 : false;
+        widgetCount = spnCount;
+        widgetIndex = m_optionWidget->findChild<QSpinBox*>("spn" + name + "StructAppIndex");
+    } else if (symbology == BARCODE_DATAMATRIX) {
+        name = "DM";
+        widgetID = m_optionWidget->findChild<QSpinBox*>("spn" + name + "StructAppID");
+        widgetID2 = m_optionWidget->findChild<QSpinBox*>("spn" + name + "StructAppID2");
+    } else if (symbology == BARCODE_DOTCODE) {
+        name = "Dot";
+    } else if (symbology == BARCODE_MAXICODE) {
+        name = "Maxi";
+    } else if (symbology == BARCODE_PDF417 || symbology == BARCODE_MICROPDF417) {
+        name = symbology == BARCODE_PDF417 ? "PDF" : "MPDF";
+        QSpinBox *spnCount = m_optionWidget->findChild<QSpinBox*>("spn" + name + "StructAppCount");
+        enabled = spnCount ? spnCount->value() > 1 : false;
+        widgetCount = spnCount;
+        widgetIndex = m_optionWidget->findChild<QSpinBox*>("spn" + name + "StructAppIndex");
+        widgetID = m_optionWidget->findChild<QLineEdit*>("txt" + name + "StructAppID");
+    } else if (symbology == BARCODE_QRCODE) {
+        name = "QR";
+        widgetID = m_optionWidget->findChild<QSpinBox*>("spn" + name + "StructAppID");
+    } else if (symbology == BARCODE_GRIDMATRIX) {
+        name = "Grid";
+        widgetID = m_optionWidget->findChild<QSpinBox*>("spn" + name + "StructAppID");
+    } else if (symbology == BARCODE_ULTRA) {
+        name = "Ultra";
+        widgetID = m_optionWidget->findChild<QSpinBox*>("spn" + name + "StructAppID");
+    }
+    if (!name.isEmpty()) {
+        QLabel *lblIndex = m_optionWidget->findChild<QLabel*>("lbl" + name + "StructAppIndex");
+        if (!widgetCount) {
+            QComboBox *cmbCount = m_optionWidget->findChild<QComboBox*>("cmb" + name + "StructAppCount");
+            enabled = cmbCount ? cmbCount->currentIndex() != 0 : false;
+            widgetCount = cmbCount;
+        }
+        if (!widgetIndex) {
+            widgetIndex = m_optionWidget->findChild<QComboBox*>("cmb" + name + "StructAppIndex");
+        }
+        if (lblIndex && widgetCount && widgetIndex) {
+            lblIndex->setEnabled(enabled);
+            widgetIndex->setEnabled(enabled);
+            QLabel *lblID = m_optionWidget->findChild<QLabel*>("lbl" + name + "StructAppID");
+            if (lblID) {
+                lblID->setEnabled(enabled);
+                if (lblID2) {
+                    lblID2->setEnabled(enabled);
+                }
+            }
+            if (widgetID) {
+                widgetID->setEnabled(enabled);
+                if (widgetID2) {
+                    widgetID2->setEnabled(enabled);
+                }
+            }
+        }
+    }
+}
+
 void MainWindow::on_encoded()
 {
     if (!chkAutoHeight->isEnabled() || chkAutoHeight->isChecked()) {
@@ -499,7 +580,8 @@ void MainWindow::on_encoded()
 
 void MainWindow::filter_symbologies()
 {
-    QString filter = filter_bstyle->text().simplified(); /* `simplified()` trims and reduces inner whitespace to a single space - nice! */
+    // `simplified()` trims and reduces inner whitespace to a single space - nice!
+    QString filter = filter_bstyle->text().simplified();
     QListView *lview = qobject_cast<QListView *>(bstyle->view());
     QStandardItemModel *model = qobject_cast<QStandardItemModel*>(bstyle->model());
     QStandardItem *item;
@@ -639,11 +721,11 @@ void MainWindow::change_options()
         chkComposite->setText(tr("Add &2D Component (GS1-128 only)"));
         combobox_item_enabled(cmbCompType, 3, true); // CC-C
         set_smaller_font(m_optionWidget->findChild<QLabel*>("noteC128CompositeEAN"));
-        connect(m_optionWidget->findChild<QObject*>("radC128EAN"), SIGNAL(toggled( bool )), SLOT(composite_ean_check()));
-        connect(m_optionWidget->findChild<QObject*>("radC128Stand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("radC128CSup"), SIGNAL(clicked( bool )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("radC128EAN"), SIGNAL(clicked( bool )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("radC128HIBC"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(widget_obj("radC128EAN"), SIGNAL(toggled( bool )), SLOT(composite_ean_check()));
+        connect(widget_obj("radC128Stand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(widget_obj("radC128CSup"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(widget_obj("radC128EAN"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(widget_obj("radC128HIBC"), SIGNAL(clicked( bool )), SLOT(update_preview()));
 
     } else if (symbology == BARCODE_PDF417) {
         QFile file(":/grpPDF417.ui");
@@ -652,11 +734,15 @@ void MainWindow::change_options()
         m_optionWidget = uiload.load(&file);
         file.close();
         tabMain->insertTab(1, m_optionWidget, tr("PDF41&7"));
-        connect(m_optionWidget->findChild<QObject*>("cmbPDFECC"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("cmbPDFCols"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("radPDFTruncated"), SIGNAL(clicked( bool )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("radPDFStand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("radPDFHIBC"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(widget_obj("cmbPDFECC"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("cmbPDFCols"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("radPDFTruncated"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(widget_obj("radPDFStand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(widget_obj("radPDFHIBC"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(widget_obj("spnPDFStructAppCount"), SIGNAL(valueChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("spnPDFStructAppCount"), SIGNAL(valueChanged( int )), SLOT(structapp_ui_set()));
+        connect(widget_obj("spnPDFStructAppIndex"), SIGNAL(valueChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("txtPDFStructAppID"), SIGNAL(textChanged( const QString& )), SLOT(update_preview()));
 
     } else if (symbology == BARCODE_MICROPDF417) {
         QFile file(":/grpMicroPDF.ui");
@@ -665,8 +751,12 @@ void MainWindow::change_options()
         m_optionWidget = uiload.load(&file);
         file.close();
         tabMain->insertTab(1, m_optionWidget, tr("Micro PDF41&7"));
-        connect(m_optionWidget->findChild<QObject*>("cmbMPDFCols"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("radMPDFStand"), SIGNAL(toggled( bool )), SLOT(update_preview()));
+        connect(widget_obj("cmbMPDFCols"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("radMPDFStand"), SIGNAL(toggled( bool )), SLOT(update_preview()));
+        connect(widget_obj("spnMPDFStructAppCount"), SIGNAL(valueChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("spnMPDFStructAppCount"), SIGNAL(valueChanged( int )), SLOT(structapp_ui_set()));
+        connect(widget_obj("spnMPDFStructAppIndex"), SIGNAL(valueChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("txtMPDFStructAppID"), SIGNAL(textChanged( const QString& )), SLOT(update_preview()));
 
     } else if (symbology == BARCODE_DOTCODE) {
         QFile file(":/grpDotCode.ui");
@@ -675,10 +765,13 @@ void MainWindow::change_options()
         m_optionWidget = uiload.load(&file);
         file.close();
         tabMain->insertTab(1, m_optionWidget, tr("DotCod&e"));
-        connect(m_optionWidget->findChild<QObject*>("cmbDotCols"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("cmbDotMask"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("radDotStand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("radDotGS1"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(widget_obj("cmbDotCols"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("cmbDotMask"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("radDotStand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(widget_obj("radDotGS1"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(widget_obj("cmbDotStructAppCount"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("cmbDotStructAppCount"), SIGNAL(currentIndexChanged( int )), SLOT(structapp_ui_set()));
+        connect(widget_obj("cmbDotStructAppIndex"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
 
     } else if (symbology == BARCODE_AZTEC) {
         QFile file(":/grpAztec.ui");
@@ -687,14 +780,18 @@ void MainWindow::change_options()
         m_optionWidget = uiload.load(&file);
         file.close();
         tabMain->insertTab(1, m_optionWidget, tr("Aztec Cod&e"));
-        connect(m_optionWidget->findChild<QObject*>("radAztecAuto"), SIGNAL(clicked( bool )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("radAztecSize"), SIGNAL(clicked( bool )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("radAztecECC"), SIGNAL(clicked( bool )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("cmbAztecSize"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("cmbAztecECC"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("radAztecStand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("radAztecGS1"), SIGNAL(clicked( bool )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("radAztecHIBC"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(widget_obj("radAztecAuto"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(widget_obj("radAztecSize"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(widget_obj("radAztecECC"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(widget_obj("cmbAztecSize"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("cmbAztecECC"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("radAztecStand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(widget_obj("radAztecGS1"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(widget_obj("radAztecHIBC"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(widget_obj("cmbAztecStructAppCount"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("cmbAztecStructAppCount"), SIGNAL(currentIndexChanged( int )), SLOT(structapp_ui_set()));
+        connect(widget_obj("cmbAztecStructAppIndex"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("txtAztecStructAppID"), SIGNAL(textChanged( const QString& )), SLOT(update_preview()));
 
     } else if (symbology == BARCODE_MSI_PLESSEY) {
         QFile file(":/grpMSICheck.ui");
@@ -703,9 +800,9 @@ void MainWindow::change_options()
         m_optionWidget = uiload.load(&file);
         file.close();
         tabMain->insertTab(1, m_optionWidget, tr("MSI Pless&ey"));
-        connect(m_optionWidget->findChild<QObject*>("cmbMSICheck"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("cmbMSICheck"), SIGNAL(currentIndexChanged( int )), SLOT(msi_plessey_ui_set()));
-        connect(m_optionWidget->findChild<QObject*>("chkMSICheckText"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(widget_obj("cmbMSICheck"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("cmbMSICheck"), SIGNAL(currentIndexChanged( int )), SLOT(msi_plessey_ui_set()));
+        connect(widget_obj("chkMSICheckText"), SIGNAL(clicked( bool )), SLOT(update_preview()));
 
     } else if (symbology == BARCODE_CODE11) {
         QFile file(":/grpC11.ui");
@@ -714,9 +811,9 @@ void MainWindow::change_options()
         m_optionWidget = uiload.load(&file);
         file.close();
         tabMain->insertTab(1, m_optionWidget, tr("Cod&e 11"));
-        connect(m_optionWidget->findChild<QObject*>("radC11TwoCheckDigits"), SIGNAL(clicked( bool )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("radC11OneCheckDigit"), SIGNAL(clicked( bool )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("radC11NoCheckDigits"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(widget_obj("radC11TwoCheckDigits"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(widget_obj("radC11OneCheckDigit"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(widget_obj("radC11NoCheckDigits"), SIGNAL(clicked( bool )), SLOT(update_preview()));
 
     } else if (symbology == BARCODE_C25STANDARD || symbology == BARCODE_C25INTER || symbology == BARCODE_C25IATA
             || symbology == BARCODE_C25LOGIC || symbology == BARCODE_C25IND) {
@@ -724,12 +821,14 @@ void MainWindow::change_options()
         if (file.open(QIODevice::ReadOnly)) {
             m_optionWidget = uiload.load(&file);
             file.close();
-            static const char *names[] = { "Standard (Matrix)", "Interleaved", "IATA", "", "Data Logic", "Industrial" };
+            static const char *names[] = {
+                "Standard (Matrix)", "Interleaved", "IATA", "", "Data Logic", "Industrial"
+            };
             /*: %1 is name of variant (Standard, Interleaved, IATA, Data Logic, Industrial) */
             tabMain->insertTab(1, m_optionWidget, tr("Cod&e 2 of 5 %1").arg(names[symbology - BARCODE_C25STANDARD]));
-            connect(m_optionWidget->findChild<QObject*>("radC25Stand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
-            connect(m_optionWidget->findChild<QObject*>("radC25Check"), SIGNAL(clicked( bool )), SLOT(update_preview()));
-            connect(m_optionWidget->findChild<QObject*>("radC25CheckHide"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+            connect(widget_obj("radC25Stand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+            connect(widget_obj("radC25Check"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+            connect(widget_obj("radC25CheckHide"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         }
 
     } else if (symbology == BARCODE_CODE39 || symbology == BARCODE_EXCODE39) {
@@ -738,9 +837,9 @@ void MainWindow::change_options()
             return;
         m_optionWidget = uiload.load(&file);
         file.close();
-        connect(m_optionWidget->findChild<QObject*>("radC39Stand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("radC39Check"), SIGNAL(clicked( bool )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("radC39HIBC"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(widget_obj("radC39Stand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(widget_obj("radC39Check"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(widget_obj("radC39HIBC"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         if (symbology == BARCODE_EXCODE39) {
             tabMain->insertTab(1, m_optionWidget, tr("Cod&e 39 Extended"));
             if (m_optionWidget->findChild<QRadioButton*>("radC39HIBC")->isChecked()) {
@@ -760,8 +859,8 @@ void MainWindow::change_options()
         m_optionWidget = uiload.load(&file);
         file.close();
         tabMain->insertTab(1, m_optionWidget, tr("LOGM&ARS"));
-        connect(m_optionWidget->findChild<QObject*>("radLOGMARSStand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("radLOGMARSCheck"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(widget_obj("radLOGMARSStand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(widget_obj("radLOGMARSCheck"), SIGNAL(clicked( bool )), SLOT(update_preview()));
 
     } else if (symbology == BARCODE_CODE16K) {
         QFile file(":/grpC16k.ui");
@@ -771,9 +870,9 @@ void MainWindow::change_options()
         file.close();
         tabMain->insertTab(1, m_optionWidget, tr("Cod&e 16K"));
         btype->setItemText(0, tr("Default (bind)"));
-        connect(m_optionWidget->findChild<QObject*>("cmbC16kRowSepHeight"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("radC16kStand"), SIGNAL(toggled( bool )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("chkC16kNoQuietZones"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(widget_obj("cmbC16kRowSepHeight"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("radC16kStand"), SIGNAL(toggled( bool )), SLOT(update_preview()));
+        connect(widget_obj("chkC16kNoQuietZones"), SIGNAL(clicked( bool )), SLOT(update_preview()));
 
     } else if (symbology == BARCODE_CODABAR) {
         QFile file(":/grpCodabar.ui");
@@ -782,7 +881,7 @@ void MainWindow::change_options()
         m_optionWidget = uiload.load(&file);
         file.close();
         tabMain->insertTab(1, m_optionWidget, tr("Cod&abar"));
-        connect(m_optionWidget->findChild<QObject*>("chkCodabarCheck"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(widget_obj("chkCodabarCheck"), SIGNAL(clicked( bool )), SLOT(update_preview()));
 
     } else if (symbology == BARCODE_CODABLOCKF) {
         QFile file (":/grpCodablockF.ui");
@@ -792,12 +891,12 @@ void MainWindow::change_options()
         file.close();
         tabMain->insertTab(1, m_optionWidget, tr("Codablock&-F"));
         btype->setItemText(0, tr("Default (bind)"));
-        connect(m_optionWidget->findChild<QObject*>("cmbCbfWidth"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("cmbCbfHeight"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("cmbCbfRowSepHeight"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("radCbfStand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("radCbfHIBC"), SIGNAL(clicked( bool )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("chkCbfNoQuietZones"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(widget_obj("cmbCbfWidth"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("cmbCbfHeight"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("cmbCbfRowSepHeight"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("radCbfStand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(widget_obj("radCbfHIBC"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(widget_obj("chkCbfNoQuietZones"), SIGNAL(clicked( bool )), SLOT(update_preview()));
 
     } else if (symbology == BARCODE_DAFT) {
         QFile file(":/grpDAFT.ui");
@@ -806,7 +905,7 @@ void MainWindow::change_options()
             file.close();
             tabMain->insertTab(1, m_optionWidget, tr("DAFT"));
             set_smaller_font(m_optionWidget->findChild<QLabel*>("noteTrackerRatios"));
-            connect(m_optionWidget->findChild<QObject*>("spnDAFTTrackerRatio"), SIGNAL(valueChanged( double )), SLOT(update_preview()));
+            connect(widget_obj("spnDAFTTrackerRatio"), SIGNAL(valueChanged( double )), SLOT(update_preview()));
         }
 
     } else if (symbology == BARCODE_DATAMATRIX) {
@@ -816,13 +915,18 @@ void MainWindow::change_options()
         m_optionWidget = uiload.load(&file);
         file.close();
         tabMain->insertTab(1, m_optionWidget, tr("D&ata Matrix"));
-        connect(m_optionWidget->findChild<QObject*>("radDM200Stand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("radDM200GS1"), SIGNAL(clicked( bool )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("radDM200HIBC"), SIGNAL(clicked( bool )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("cmbDM200Size"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("chkDMRectangle"), SIGNAL(stateChanged( int )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("chkDMRE"), SIGNAL(stateChanged( int )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("chkDMGSSep"), SIGNAL(stateChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("radDM200Stand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(widget_obj("radDM200GS1"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(widget_obj("radDM200HIBC"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(widget_obj("cmbDM200Size"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("chkDMRectangle"), SIGNAL(stateChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("chkDMRE"), SIGNAL(stateChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("chkDMGSSep"), SIGNAL(stateChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("cmbDMStructAppCount"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("cmbDMStructAppCount"), SIGNAL(currentIndexChanged( int )), SLOT(structapp_ui_set()));
+        connect(widget_obj("cmbDMStructAppIndex"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("spnDMStructAppID"), SIGNAL(valueChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("spnDMStructAppID2"), SIGNAL(valueChanged( int )), SLOT(update_preview()));
 
     } else if (symbology == BARCODE_ITF14) {
         btype->setItemText(0, tr("Default (box, non-zero width)"));
@@ -831,7 +935,7 @@ void MainWindow::change_options()
             m_optionWidget = uiload.load(&file);
             file.close();
             tabMain->insertTab(1, m_optionWidget, tr("ITF-1&4"));
-            connect(m_optionWidget->findChild<QObject*>("chkITF14NoQuietZones"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+            connect(widget_obj("chkITF14NoQuietZones"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         }
 
     } else if (symbology == BARCODE_QRCODE) {
@@ -841,13 +945,17 @@ void MainWindow::change_options()
         m_optionWidget = uiload.load(&file);
         file.close();
         tabMain->insertTab(1, m_optionWidget, tr("QR Cod&e"));
-        connect(m_optionWidget->findChild<QObject*>("cmbQRSize"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("cmbQRECC"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("cmbQRMask"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("radQRStand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("radQRGS1"), SIGNAL(clicked( bool )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("radQRHIBC"), SIGNAL(clicked( bool )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("chkQRFullMultibyte"), SIGNAL(stateChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("cmbQRSize"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("cmbQRECC"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("cmbQRMask"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("radQRStand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(widget_obj("radQRGS1"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(widget_obj("radQRHIBC"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(widget_obj("chkQRFullMultibyte"), SIGNAL(stateChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("cmbQRStructAppCount"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("cmbQRStructAppCount"), SIGNAL(currentIndexChanged( int )), SLOT(structapp_ui_set()));
+        connect(widget_obj("cmbQRStructAppIndex"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("spnQRStructAppID"), SIGNAL(valueChanged( int )), SLOT(update_preview()));
 
     } else if (symbology == BARCODE_RMQR) {
         QFile file(":/grpRMQR.ui");
@@ -856,11 +964,11 @@ void MainWindow::change_options()
         m_optionWidget = uiload.load(&file);
         file.close();
         tabMain->insertTab(1, m_optionWidget, tr("rMQR Cod&e"));
-        connect(m_optionWidget->findChild<QObject*>("cmbRMQRSize"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("cmbRMQRECC"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("radRMQRStand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("radRMQRGS1"), SIGNAL(clicked( bool )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("chkRMQRFullMultibyte"), SIGNAL(stateChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("cmbRMQRSize"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("cmbRMQRECC"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("radRMQRStand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(widget_obj("radRMQRGS1"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(widget_obj("chkRMQRFullMultibyte"), SIGNAL(stateChanged( int )), SLOT(update_preview()));
 
     } else if (symbology == BARCODE_HANXIN) {
         QFile file(":/grpHX.ui");
@@ -870,10 +978,10 @@ void MainWindow::change_options()
         file.close();
         tabMain->insertTab(1, m_optionWidget, tr("Han Xin Cod&e"));
         cmbECI->setItemText(25, tr("29: GB 18030 (PRC)"));
-        connect(m_optionWidget->findChild<QObject*>("cmbHXSize"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("cmbHXECC"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("cmbHXMask"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("chkHXFullMultibyte"), SIGNAL(stateChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("cmbHXSize"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("cmbHXECC"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("cmbHXMask"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("chkHXFullMultibyte"), SIGNAL(stateChanged( int )), SLOT(update_preview()));
 
     } else if (symbology == BARCODE_MICROQR) {
         QFile file(":/grpMQR.ui");
@@ -882,10 +990,10 @@ void MainWindow::change_options()
         m_optionWidget = uiload.load(&file);
         file.close();
         tabMain->insertTab(1, m_optionWidget, tr("Micro QR Cod&e"));
-        connect(m_optionWidget->findChild<QObject*>("cmbMQRSize"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("cmbMQRECC"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("cmbMQRMask"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("chkMQRFullMultibyte"), SIGNAL(stateChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("cmbMQRSize"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("cmbMQRECC"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("cmbMQRMask"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("chkMQRFullMultibyte"), SIGNAL(stateChanged( int )), SLOT(update_preview()));
 
     } else if (symbology == BARCODE_GRIDMATRIX) {
         QFile file(":/grpGrid.ui");
@@ -895,9 +1003,13 @@ void MainWindow::change_options()
         file.close();
         tabMain->insertTab(1, m_optionWidget, tr("Grid M&atrix"));
         set_smaller_font(m_optionWidget->findChild<QLabel*>("noteGridECC"));
-        connect(m_optionWidget->findChild<QObject*>("cmbGridSize"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("cmbGridECC"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("chkGridFullMultibyte"), SIGNAL(stateChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("cmbGridSize"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("cmbGridECC"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("chkGridFullMultibyte"), SIGNAL(stateChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("cmbGridStructAppCount"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("cmbGridStructAppCount"), SIGNAL(currentIndexChanged( int )), SLOT(structapp_ui_set()));
+        connect(widget_obj("cmbGridStructAppIndex"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("spnGridStructAppID"), SIGNAL(valueChanged( int )), SLOT(update_preview()));
 
     } else if (symbology == BARCODE_MAXICODE) {
         QFile file(":/grpMaxicode.ui");
@@ -906,14 +1018,17 @@ void MainWindow::change_options()
         m_optionWidget = uiload.load(&file);
         file.close();
         tabMain->insertTab(1, m_optionWidget, tr("MaxiCod&e"));
-        connect(m_optionWidget->findChild<QObject*>("cmbMaxiMode"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("cmbMaxiMode"), SIGNAL(currentIndexChanged( int )), SLOT(maxi_scm()));
-        connect(m_optionWidget->findChild<QObject*>("txtMaxiSCMPostcode"), SIGNAL(textChanged( const QString& )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("spnMaxiSCMCountry"), SIGNAL(valueChanged( int )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("spnMaxiSCMService"), SIGNAL(valueChanged( int )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("chkMaxiSCMVV"), SIGNAL(stateChanged( int )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("chkMaxiSCMVV"), SIGNAL(stateChanged( int )), SLOT(maxi_scm()));
-        connect(m_optionWidget->findChild<QObject*>("spnMaxiSCMVV"), SIGNAL(valueChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("cmbMaxiMode"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("cmbMaxiMode"), SIGNAL(currentIndexChanged( int )), SLOT(maxi_scm()));
+        connect(widget_obj("txtMaxiSCMPostcode"), SIGNAL(textChanged( const QString& )), SLOT(update_preview()));
+        connect(widget_obj("spnMaxiSCMCountry"), SIGNAL(valueChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("spnMaxiSCMService"), SIGNAL(valueChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("chkMaxiSCMVV"), SIGNAL(stateChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("chkMaxiSCMVV"), SIGNAL(stateChanged( int )), SLOT(maxi_scm()));
+        connect(widget_obj("spnMaxiSCMVV"), SIGNAL(valueChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("cmbMaxiStructAppCount"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("cmbMaxiStructAppCount"), SIGNAL(currentIndexChanged( int )), SLOT(structapp_ui_set()));
+        connect(widget_obj("cmbMaxiStructAppIndex"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
 
     } else if (symbology == BARCODE_CHANNEL) {
         QFile file(":/grpChannel.ui");
@@ -922,7 +1037,7 @@ void MainWindow::change_options()
         m_optionWidget = uiload.load(&file);
         file.close();
         tabMain->insertTab(1, m_optionWidget, tr("Channel Cod&e"));
-        connect(m_optionWidget->findChild<QObject*>("cmbChannel"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("cmbChannel"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
 
     } else if (symbology == BARCODE_CODEONE) {
         QFile file(":/grpCodeOne.ui");
@@ -931,8 +1046,11 @@ void MainWindow::change_options()
         m_optionWidget = uiload.load(&file);
         file.close();
         tabMain->insertTab(1, m_optionWidget, tr("Code On&e"));
-        connect(m_optionWidget->findChild<QObject*>("cmbC1Size"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("radC1GS1"), SIGNAL(toggled( bool )), SLOT(update_preview()));
+        connect(widget_obj("cmbC1Size"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("radC1GS1"), SIGNAL(toggled( bool )), SLOT(update_preview()));
+        connect(widget_obj("spnC1StructAppCount"), SIGNAL(valueChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("spnC1StructAppCount"), SIGNAL(valueChanged( int )), SLOT(structapp_ui_set()));
+        connect(widget_obj("spnC1StructAppIndex"), SIGNAL(valueChanged( int )), SLOT(update_preview()));
 
     } else if (symbology == BARCODE_CODE49) {
         QFile file(":/grpC49.ui");
@@ -942,9 +1060,9 @@ void MainWindow::change_options()
         file.close();
         tabMain->insertTab(1, m_optionWidget, tr("Cod&e 49"));
         btype->setItemText(0, tr("Default (bind)"));
-        connect(m_optionWidget->findChild<QObject*>("cmbC49RowSepHeight"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("radC49GS1"), SIGNAL(toggled( bool )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("chkC49NoQuietZones"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(widget_obj("cmbC49RowSepHeight"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("radC49GS1"), SIGNAL(toggled( bool )), SLOT(update_preview()));
+        connect(widget_obj("chkC49NoQuietZones"), SIGNAL(clicked( bool )), SLOT(update_preview()));
 
     } else if (symbology == BARCODE_CODE93) {
         QFile file(":/grpC93.ui");
@@ -952,7 +1070,7 @@ void MainWindow::change_options()
             m_optionWidget = uiload.load(&file);
             file.close();
             tabMain->insertTab(1, m_optionWidget, tr("Cod&e 93"));
-            connect(m_optionWidget->findChild<QObject*>("chkC93ShowChecks"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+            connect(widget_obj("chkC93ShowChecks"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         }
 
     } else if (symbology == BARCODE_DBAR_EXPSTK) {
@@ -962,7 +1080,7 @@ void MainWindow::change_options()
         m_optionWidget = uiload.load(&file);
         file.close();
         tabMain->insertTab(1, m_optionWidget, tr("GS1 DataBar Stack&ed"));
-        connect(m_optionWidget->findChild<QObject*>("cmbCols"), SIGNAL(currentIndexChanged ( int )), SLOT(update_preview()));
+        connect(widget_obj("cmbCols"), SIGNAL(currentIndexChanged ( int )), SLOT(update_preview()));
 
     } else if (symbology == BARCODE_ULTRA) {
         QFile file(":/grpUltra.ui");
@@ -971,11 +1089,15 @@ void MainWindow::change_options()
         m_optionWidget = uiload.load(&file);
         file.close();
         tabMain->insertTab(1, m_optionWidget, tr("Ultracod&e"));
-        connect(m_optionWidget->findChild<QObject*>("radUltraAuto"), SIGNAL(clicked( bool )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("radUltraEcc"), SIGNAL(clicked( bool )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("cmbUltraEcc"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("radUltraStand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("radUltraGS1"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(widget_obj("radUltraAuto"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(widget_obj("radUltraEcc"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(widget_obj("cmbUltraEcc"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("radUltraStand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(widget_obj("radUltraGS1"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(widget_obj("cmbUltraStructAppCount"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("cmbUltraStructAppCount"), SIGNAL(currentIndexChanged( int )), SLOT(structapp_ui_set()));
+        connect(widget_obj("cmbUltraStructAppIndex"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("spnUltraStructAppID"), SIGNAL(valueChanged( int )), SLOT(update_preview()));
 
     } else if (symbology == BARCODE_UPCA || symbology == BARCODE_UPCA_CHK || symbology == BARCODE_UPCA_CC) {
         QFile file(":/grpUPCA.ui");
@@ -988,9 +1110,9 @@ void MainWindow::change_options()
         if (cmbFontSetting->currentIndex() == 1) {
             cmbFontSetting->setCurrentIndex(0);
         }
-        connect(m_optionWidget->findChild<QObject*>("cmbUPCAAddonGap"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("spnUPCAGuardDescent"), SIGNAL(valueChanged( double )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("chkUPCANoQuietZones"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(widget_obj("cmbUPCAAddonGap"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("spnUPCAGuardDescent"), SIGNAL(valueChanged( double )), SLOT(update_preview()));
+        connect(widget_obj("chkUPCANoQuietZones"), SIGNAL(clicked( bool )), SLOT(update_preview()));
 
     } else if (symbology == BARCODE_EANX || symbology == BARCODE_EANX_CHK || symbology == BARCODE_EANX_CC
             || symbology == BARCODE_UPCE || symbology == BARCODE_UPCE_CHK || symbology == BARCODE_UPCE_CC
@@ -1011,9 +1133,9 @@ void MainWindow::change_options()
         if (cmbFontSetting->currentIndex() == 1) {
             cmbFontSetting->setCurrentIndex(0);
         }
-        connect(m_optionWidget->findChild<QObject*>("cmbUPCEANAddonGap"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("spnUPCEANGuardDescent"), SIGNAL(valueChanged( double )), SLOT(update_preview()));
-        connect(m_optionWidget->findChild<QObject*>("chkUPCEANNoQuietZones"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(widget_obj("cmbUPCEANAddonGap"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("spnUPCEANGuardDescent"), SIGNAL(valueChanged( double )), SLOT(update_preview()));
+        connect(widget_obj("chkUPCEANNoQuietZones"), SIGNAL(clicked( bool )), SLOT(update_preview()));
 
     } else if (symbology == BARCODE_VIN) {
         QFile file(":/grpVIN.ui");
@@ -1022,7 +1144,7 @@ void MainWindow::change_options()
         m_optionWidget = uiload.load(&file);
         file.close();
         tabMain->insertTab(1, m_optionWidget, tr("&VIN"));
-        connect(m_optionWidget->findChild<QObject*>("chkVINImportChar"), SIGNAL(clicked( bool )), SLOT(update_preview()));
+        connect(widget_obj("chkVINImportChar"), SIGNAL(clicked( bool )), SLOT(update_preview()));
     }
 
     switch (symbology) {
@@ -1043,7 +1165,8 @@ void MainWindow::change_options()
             break;
     }
 
-    cmbECI->setEnabled(m_bc.bc.supportsECI(symbology)); /* Will need checking again in update_preview() as encoding mode dependent (HIBC) */
+    // ECI will need checking again in update_preview() as encoding mode dependent (HIBC)
+    cmbECI->setEnabled(m_bc.bc.supportsECI(symbology));
     chkGS1Parens->setEnabled(m_bc.bc.supportsGS1(symbology)); /* Ditto (GS1) */
     chkGS1NoCheck->setEnabled(m_bc.bc.supportsGS1(symbology)); /* Ditto (GS1) */
     chkRInit->setEnabled(m_bc.bc.supportsReaderInit(symbology)); /* Ditto (HIBC and GS1) */
@@ -1142,10 +1265,12 @@ void MainWindow::combobox_item_enabled(QComboBox *comboBox, int index, bool enab
     }
 }
 
-void MainWindow::upcean_addon_gap(QComboBox *comboBox, QLabel *label, int base)
+void MainWindow::upcean_addon_gap(const char *comboBoxName, const char *labelName, int base)
 {
-    const QRegularExpression addonRE("^[0-9X]+[+][0-9]+$");
+    QComboBox *comboBox = m_optionWidget->findChild<QComboBox*>(comboBoxName);
+    QLabel *label = m_optionWidget->findChild<QLabel*>(labelName);
 
+    const QRegularExpression addonRE("^[0-9X]+[+][0-9]+$");
     bool enabled = txtData->text().contains(addonRE);
     if (comboBox) {
         comboBox->setEnabled(enabled);
@@ -1161,8 +1286,11 @@ void MainWindow::upcean_addon_gap(QComboBox *comboBox, QLabel *label, int base)
     }
 }
 
-void MainWindow::upcean_guard_descent(QDoubleSpinBox *spnBox, QLabel *label)
+void MainWindow::upcean_guard_descent(const char *spnBoxName, const char *labelName)
 {
+    QDoubleSpinBox *spnBox = m_optionWidget->findChild<QDoubleSpinBox*>(spnBoxName);
+    QLabel *label = m_optionWidget->findChild<QLabel*>(labelName);
+
     bool enabled = txtData->text().length() > 5;
     if (spnBox) {
         spnBox->setEnabled(enabled);
@@ -1236,6 +1364,7 @@ void MainWindow::update_preview()
     m_bc.bc.setGSSep(false);
     m_bc.bc.setNoQuietZones(false);
     m_bc.bc.setDotSize(0.4f / 0.5f);
+    m_bc.bc.clearStructApp();
 
     switch (symbology) {
 
@@ -1263,8 +1392,8 @@ void MainWindow::update_preview()
                 m_bc.bc.setSymbol(BARCODE_EANX_CC);
             else
                 m_bc.bc.setSymbol(BARCODE_EANX);
-            upcean_addon_gap(m_optionWidget->findChild<QComboBox*>("cmbUPCEANAddonGap"), m_optionWidget->findChild<QLabel*>("lblUPCEANAddonGap"), 7 /*base*/);
-            upcean_guard_descent(m_optionWidget->findChild<QDoubleSpinBox*>("spnUPCEANGuardDescent"), m_optionWidget->findChild<QLabel*>("lblUPCEANGuardDescent"));
+            upcean_addon_gap("cmbUPCEANAddonGap", "lblUPCEANAddonGap", 7 /*base*/);
+            upcean_guard_descent("spnUPCEANGuardDescent", "lblUPCEANGuardDescent");
             if (get_checkbox_val("chkUPCEANNoQuietZones")) {
                 m_bc.bc.setNoQuietZones(true);
             }
@@ -1272,8 +1401,8 @@ void MainWindow::update_preview()
 
         case BARCODE_ISBNX:
             m_bc.bc.setSymbol(symbology);
-            upcean_addon_gap(m_optionWidget->findChild<QComboBox*>("cmbUPCEANAddonGap"), m_optionWidget->findChild<QLabel*>("lblUPCEANAddonGap"), 7 /*base*/);
-            upcean_guard_descent(m_optionWidget->findChild<QDoubleSpinBox*>("spnUPCEANGuardDescent"), m_optionWidget->findChild<QLabel*>("lblUPCEANGuardDescent"));
+            upcean_addon_gap("cmbUPCEANAddonGap", "lblUPCEANAddonGap", 7 /*base*/);
+            upcean_guard_descent("spnUPCEANGuardDescent", "lblUPCEANGuardDescent");
             if (get_checkbox_val("chkUPCEANNoQuietZones")) {
                 m_bc.bc.setNoQuietZones(true);
             }
@@ -1284,8 +1413,8 @@ void MainWindow::update_preview()
                 m_bc.bc.setSymbol(BARCODE_UPCA_CC);
             else
                 m_bc.bc.setSymbol(BARCODE_UPCA);
-            upcean_addon_gap(m_optionWidget->findChild<QComboBox*>("cmbUPCAAddonGap"), m_optionWidget->findChild<QLabel*>("lblUPCAAddonGap"), 9 /*base*/);
-            upcean_guard_descent(m_optionWidget->findChild<QDoubleSpinBox*>("spnUPCAGuardDescent"), m_optionWidget->findChild<QLabel*>("lblUPCAGuardDescent"));
+            upcean_addon_gap("cmbUPCAAddonGap", "lblUPCAAddonGap", 9 /*base*/);
+            upcean_guard_descent("spnUPCAGuardDescent", "lblUPCAGuardDescent");
             if (get_checkbox_val("chkUPCANoQuietZones")) {
                 m_bc.bc.setNoQuietZones(true);
             }
@@ -1296,8 +1425,8 @@ void MainWindow::update_preview()
                 m_bc.bc.setSymbol(BARCODE_UPCE_CC);
             else
                 m_bc.bc.setSymbol(BARCODE_UPCE);
-            upcean_addon_gap(m_optionWidget->findChild<QComboBox*>("cmbUPCEANAddonGap"), m_optionWidget->findChild<QLabel*>("lblUPCEANAddonGap"), 7 /*base*/);
-            upcean_guard_descent(m_optionWidget->findChild<QDoubleSpinBox*>("spnUPCEANGuardDescent"), m_optionWidget->findChild<QLabel*>("lblUPCEANGuardDescent"));
+            upcean_addon_gap("cmbUPCEANAddonGap", "lblUPCEANAddonGap", 7 /*base*/);
+            upcean_guard_descent("spnUPCEANGuardDescent", "lblUPCEANGuardDescent");
             if (get_checkbox_val("chkUPCEANNoQuietZones")) {
                 m_bc.bc.setNoQuietZones(true);
             }
@@ -1358,6 +1487,12 @@ void MainWindow::update_preview()
                 m_bc.bc.setSymbol(BARCODE_HIBC_PDF);
             else
                 m_bc.bc.setSymbol(BARCODE_PDF417);
+
+            item_val = get_spinbox_val("spnPDFStructAppCount");
+            if (item_val > 1) {
+                m_bc.bc.setStructApp(item_val, get_spinbox_val("spnPDFStructAppIndex"),
+                            get_lineedit_val("txtPDFStructAppID"));
+            }
             break;
 
         case BARCODE_MICROPDF417:
@@ -1367,6 +1502,12 @@ void MainWindow::update_preview()
                 m_bc.bc.setSymbol(BARCODE_HIBC_MICPDF);
             else
                 m_bc.bc.setSymbol(BARCODE_MICROPDF417);
+
+            item_val = get_spinbox_val("spnMPDFStructAppCount");
+            if (item_val > 1) {
+                m_bc.bc.setStructApp(item_val, get_spinbox_val("spnMPDFStructAppIndex"),
+                            get_lineedit_val("txtMPDFStructAppID"));
+            }
             break;
 
         case BARCODE_DOTCODE:
@@ -1380,19 +1521,31 @@ void MainWindow::update_preview()
                 m_bc.bc.setOption3((item_val << 8) | m_bc.bc.option3());
             }
             set_gs1_mode(m_optionWidget->findChild<QRadioButton*>("radDotGS1")->isChecked());
+
+            item_val = get_combobox_index("cmbDotStructAppCount");
+            if (item_val) {
+                QString id; // Dummy ID
+                m_bc.bc.setStructApp(item_val + 1, get_combobox_index("cmbDotStructAppIndex") + 1, id);
+            }
             break;
 
         case BARCODE_AZTEC:
             m_bc.bc.setSymbol(BARCODE_AZTEC);
-            if(m_optionWidget->findChild<QRadioButton*>("radAztecSize")->isChecked())
+            if (m_optionWidget->findChild<QRadioButton*>("radAztecSize")->isChecked())
                 m_bc.bc.setOption2(m_optionWidget->findChild<QComboBox*>("cmbAztecSize")->currentIndex() + 1);
 
-            if(m_optionWidget->findChild<QRadioButton*>("radAztecECC")->isChecked())
+            if (m_optionWidget->findChild<QRadioButton*>("radAztecECC")->isChecked())
                 m_bc.bc.setOption1(m_optionWidget->findChild<QComboBox*>("cmbAztecECC")->currentIndex() + 1);
 
             set_gs1_mode(m_optionWidget->findChild<QRadioButton*>("radAztecGS1")->isChecked());
-            if(m_optionWidget->findChild<QRadioButton*>("radAztecHIBC")->isChecked())
+            if (m_optionWidget->findChild<QRadioButton*>("radAztecHIBC")->isChecked())
                 m_bc.bc.setSymbol(BARCODE_HIBC_AZTEC);
+
+            item_val = get_combobox_index("cmbAztecStructAppCount");
+            if (item_val) {
+                m_bc.bc.setStructApp(item_val + 1, get_combobox_index("cmbAztecStructAppIndex") + 1,
+                            get_lineedit_val("txtAztecStructAppID"));
+            }
             break;
 
         case BARCODE_MSI_PLESSEY:
@@ -1419,7 +1572,8 @@ void MainWindow::update_preview()
         case BARCODE_C25LOGIC:
         case BARCODE_C25IND:
             m_bc.bc.setSymbol(symbology);
-            m_bc.bc.setOption2(get_button_group_index(QStringList() << "radC25Stand" << "radC25Check" << "radC25CheckHide"));
+            m_bc.bc.setOption2(get_button_group_index(
+                QStringList() << "radC25Stand" << "radC25Check" << "radC25CheckHide"));
             break;
 
         case BARCODE_CODE39:
@@ -1494,11 +1648,12 @@ void MainWindow::update_preview()
 
         case BARCODE_DAFT:
             m_bc.bc.setSymbol(BARCODE_DAFT);
-            m_bc.bc.setOption2((int) (get_doublespinbox_val("spnDAFTTrackerRatio") * 10)); // Kept as percentage, convert to thousandths
+            // Kept as percentage, convert to thousandths
+            m_bc.bc.setOption2((int) (get_doublespinbox_val("spnDAFTTrackerRatio") * 10));
             break;
 
         case BARCODE_DATAMATRIX:
-            if(m_optionWidget->findChild<QRadioButton*>("radDM200HIBC")->isChecked())
+            if (m_optionWidget->findChild<QRadioButton*>("radDM200HIBC")->isChecked())
                 m_bc.bc.setSymbol(BARCODE_HIBC_DM);
             else
                 m_bc.bc.setSymbol(BARCODE_DATAMATRIX);
@@ -1521,10 +1676,10 @@ void MainWindow::update_preview()
                 // Supressing rectangles or allowing DMRE only makes sense if in automatic size mode
                 findChild<QCheckBox*>("chkDMRectangle")->setEnabled(true);
                 findChild<QCheckBox*>("chkDMRE")->setEnabled(true);
-                if(m_optionWidget->findChild<QCheckBox*>("chkDMRectangle")->isChecked())
+                if (m_optionWidget->findChild<QCheckBox*>("chkDMRectangle")->isChecked())
                         m_bc.bc.setOption3(DM_SQUARE);
                 else {
-                    if(m_optionWidget->findChild<QCheckBox*>("chkDMRE")->isChecked())
+                    if (m_optionWidget->findChild<QCheckBox*>("chkDMRE")->isChecked())
                         m_bc.bc.setOption3(DM_DMRE);
                     else
                         m_bc.bc.setOption3(0);
@@ -1533,6 +1688,15 @@ void MainWindow::update_preview()
                 findChild<QCheckBox*>("chkDMRectangle")->setEnabled(false);
                 findChild<QCheckBox*>("chkDMRE")->setEnabled(false);
                 m_bc.bc.setOption3(0);
+            }
+
+            item_val = get_combobox_index("cmbDMStructAppCount");
+            if (item_val) {
+                QString id;
+                int id1 = get_spinbox_val("spnDMStructAppID");
+                int id2 = get_spinbox_val("spnDMStructAppID2");
+                m_bc.bc.setStructApp(item_val + 1, get_combobox_index("cmbDMStructAppIndex") + 1,
+                            id.setNum(id1 * 1000 + id2));
             }
             break;
 
@@ -1565,6 +1729,13 @@ void MainWindow::update_preview()
             }
             if (m_optionWidget->findChild<QCheckBox*>("chkQRFullMultibyte")->isChecked()) {
                 m_bc.bc.setOption3(ZINT_FULL_MULTIBYTE | m_bc.bc.option3());
+            }
+
+            item_val = get_combobox_index("cmbQRStructAppCount");
+            if (item_val) {
+                QString id;
+                int id_val = get_spinbox_val("spnQRStructAppID");
+                m_bc.bc.setStructApp(item_val + 1, get_combobox_index("cmbQRStructAppIndex") + 1, id.setNum(id_val));
             }
             break;
 
@@ -1618,12 +1789,20 @@ void MainWindow::update_preview()
             if (m_optionWidget->findChild<QCheckBox*>("chkGridFullMultibyte")->isChecked()) {
                 m_bc.bc.setOption3(ZINT_FULL_MULTIBYTE);
             }
+
+            item_val = get_combobox_index("cmbGridStructAppCount");
+            if (item_val) {
+                QString id;
+                int id_val = get_spinbox_val("spnGridStructAppID");
+                m_bc.bc.setStructApp(item_val + 1, get_combobox_index("cmbGridStructAppIndex") + 1,
+                            id.setNum(id_val));
+            }
             break;
 
         case BARCODE_MAXICODE:
             m_bc.bc.setSymbol(BARCODE_MAXICODE);
             if (m_optionWidget->findChild<QComboBox*>("cmbMaxiMode")->currentIndex() == 0) {
-                m_bc.bc.setOption1(0); /* Auto-determine mode 2 or 3 from primary message (checks that it isn't empty) */
+                m_bc.bc.setOption1(0); // Auto-determine mode 2 or 3 from primary message (checks that it isn't empty)
                 m_bc.bc.setPrimaryMessage(QString::asprintf("%s%03d%03d",
                                     get_lineedit_val("txtMaxiSCMPostcode").toUtf8().constData(),
                                     get_spinbox_val("spnMaxiSCMCountry"), get_spinbox_val("spnMaxiSCMService")));
@@ -1633,6 +1812,12 @@ void MainWindow::update_preview()
                 }
             } else {
                 m_bc.bc.setOption1(m_optionWidget->findChild<QComboBox*>("cmbMaxiMode")->currentIndex() + 3);
+            }
+
+            item_val = get_combobox_index("cmbMaxiStructAppCount");
+            if (item_val) {
+                QString id; // Dummy ID
+                m_bc.bc.setStructApp(item_val + 1, get_combobox_index("cmbMaxiStructAppIndex") + 1, id);
             }
             break;
 
@@ -1655,6 +1840,12 @@ void MainWindow::update_preview()
             } else {
                 m_optionWidget->findChild<QRadioButton*>("radC1GS1")->setEnabled(true);
                 set_gs1_mode(m_optionWidget->findChild<QRadioButton*>("radC1GS1")->isChecked());
+            }
+
+            item_val = get_spinbox_val("spnC1StructAppCount");
+            if (item_val > 1) {
+                QString id; // Dummy ID
+                m_bc.bc.setStructApp(item_val, get_spinbox_val("spnC1StructAppIndex"), id);
             }
             break;
 
@@ -1699,9 +1890,17 @@ void MainWindow::update_preview()
 
         case BARCODE_ULTRA:
             m_bc.bc.setSymbol(BARCODE_ULTRA);
-            if(m_optionWidget->findChild<QRadioButton*>("radUltraEcc")->isChecked())
+            if (m_optionWidget->findChild<QRadioButton*>("radUltraEcc")->isChecked())
                 m_bc.bc.setOption1(m_optionWidget->findChild<QComboBox*>("cmbUltraEcc")->currentIndex() + 1);
             set_gs1_mode(m_optionWidget->findChild<QRadioButton*>("radUltraGS1")->isChecked());
+
+            item_val = get_combobox_index("cmbUltraStructAppCount");
+            if (item_val) {
+                QString id;
+                int id_val = get_spinbox_val("spnUltraStructAppID");
+                m_bc.bc.setStructApp(item_val + 1, get_combobox_index("cmbUltraStructAppIndex") + 1,
+                            id.setNum(id_val));
+            }
             break;
 
         case BARCODE_VIN:
@@ -1758,6 +1957,11 @@ void MainWindow::update_preview()
     m_bc.update();
     scene->setSceneRect(m_bc.boundingRect());
     scene->update();
+}
+
+/* Shorthand to find widget child as generic QObject */
+QObject *MainWindow::widget_obj(const char *name) {
+    return m_optionWidget->findChild<QObject*>(name);
 }
 
 /* Return settings subsection name for a symbol */
@@ -1920,7 +2124,8 @@ const char *MainWindow::get_setting_name(int symbology) {
     if (symbology < 0 || symbology >= data_size) {
         return "";
     }
-    if (ndata[symbology].val != symbology || (ndata[symbology].define != -1 && ndata[symbology].define != symbology)) { // Self-check
+    if (ndata[symbology].val != symbology ||
+            (ndata[symbology].define != -1 && ndata[symbology].define != symbology)) { // Self-check
         fprintf(stderr, "MainWindow::get_setting_name: ndata table out of sync (%d)\n", symbology);
         return "";
     }
@@ -1942,7 +2147,8 @@ int MainWindow::get_button_group_index(const QStringList &children) {
 }
 
 /* Helper to set radio button in group from index in settings, checking for NULL */
-void MainWindow::set_radiobutton_from_setting(QSettings &settings, const QString &setting, const QStringList &children, int default_val) {
+void MainWindow::set_radiobutton_from_setting(QSettings &settings, const QString &setting,
+            const QStringList &children, int default_val) {
     if (m_optionWidget) {
         int index = settings.value(setting, default_val).toInt();
         QRadioButton *radioButton;
@@ -1964,7 +2170,8 @@ int MainWindow::get_combobox_index(const QString &child) {
 }
 
 /* Helper to set item in combobox from index in settings, checking for NULL */
-void MainWindow::set_combobox_from_setting(QSettings &settings, const QString &setting, const QString &child, int default_val) {
+void MainWindow::set_combobox_from_setting(QSettings &settings, const QString &setting, const QString &child,
+            int default_val) {
     QComboBox *comboBox = m_optionWidget ? m_optionWidget->findChild<QComboBox*>(child) : nullptr;
     if (comboBox) {
         comboBox->setCurrentIndex(settings.value(setting, default_val).toInt());
@@ -1978,7 +2185,8 @@ int MainWindow::get_checkbox_val(const QString &child) {
 }
 
 /* Helper to set checkbox from settings, checking for NULL */
-void MainWindow::set_checkbox_from_setting(QSettings &settings, const QString &setting, const QString &child, int default_val) {
+void MainWindow::set_checkbox_from_setting(QSettings &settings, const QString &setting, const QString &child,
+            int default_val) {
     QCheckBox *checkBox = m_optionWidget ? m_optionWidget->findChild<QCheckBox*>(child) : nullptr;
     if (checkBox) {
         checkBox->setChecked(settings.value(setting, default_val).toInt() ? true : false);
@@ -1992,7 +2200,8 @@ double MainWindow::get_doublespinbox_val(const QString &child) {
 }
 
 /* Helper to set double spinner from settings, checking for NULL */
-void MainWindow::set_doublespinbox_from_setting(QSettings &settings, const QString &setting, const QString &child, float default_val) {
+void MainWindow::set_doublespinbox_from_setting(QSettings &settings, const QString &setting, const QString &child,
+            float default_val) {
     QDoubleSpinBox *spinBox = m_optionWidget->findChild<QDoubleSpinBox*>(child);
     if (spinBox) {
         spinBox->setValue(settings.value(setting, default_val).toFloat());
@@ -2006,7 +2215,8 @@ QString MainWindow::get_lineedit_val(const QString &child) {
 }
 
 /* Helper to set line edit from settings, checking for NULL */
-void MainWindow::set_lineedit_from_setting(QSettings &settings, const QString &setting, const QString &child, const char *default_val) {
+void MainWindow::set_lineedit_from_setting(QSettings &settings, const QString &setting, const QString &child,
+            const char *default_val) {
     QLineEdit *lineEdit = m_optionWidget ? m_optionWidget->findChild<QLineEdit*>(child) : nullptr;
     if (lineEdit) {
         lineEdit->setText(settings.value(setting, default_val).toString());
@@ -2020,7 +2230,8 @@ int MainWindow::get_spinbox_val(const QString &child) {
 }
 
 /* Helper to set spin box from settings, checking for NULL */
-void MainWindow::set_spinbox_from_setting(QSettings &settings, const QString &setting, const QString &child, int default_val) {
+void MainWindow::set_spinbox_from_setting(QSettings &settings, const QString &setting, const QString &child,
+            int default_val) {
     QSpinBox *spinBox = m_optionWidget ? m_optionWidget->findChild<QSpinBox*>(child) : nullptr;
     if (spinBox) {
         spinBox->setValue(settings.value(setting, default_val).toInt());
@@ -2049,7 +2260,8 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology) {
         settings.setValue(QString("studio/bc/%1/chk_gs1parens").arg(name), chkGS1Parens->isChecked() ? 1 : 0);
         settings.setValue(QString("studio/bc/%1/chk_gs1nocheck").arg(name), chkGS1NoCheck->isChecked() ? 1 : 0);
         if (chkAutoHeight->isEnabled()) {
-            settings.setValue(QString("studio/bc/%1/appearance/autoheight").arg(name), chkAutoHeight->isChecked() ? 1 : 0);
+            settings.setValue(
+                QString("studio/bc/%1/appearance/autoheight").arg(name), chkAutoHeight->isChecked() ? 1 : 0);
             settings.setValue(QString("studio/bc/%1/appearance/height").arg(name), heightb->value());
         }
         settings.setValue(QString("studio/bc/%1/appearance/border").arg(name), bwidth->value());
@@ -2058,11 +2270,14 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology) {
         settings.setValue(QString("studio/bc/%1/appearance/scale").arg(name), spnScale->value());
         settings.setValue(QString("studio/bc/%1/appearance/border_type").arg(name), btype->currentIndex());
         if (chkHRTShow->isEnabled()) {
-            settings.setValue(QString("studio/bc/%1/appearance/font_setting").arg(name), cmbFontSetting->currentIndex());
-            settings.setValue(QString("studio/bc/%1/appearance/chk_hrt_show").arg(name), chkHRTShow->isChecked() ? 1 : 0);
+            settings.setValue(
+                QString("studio/bc/%1/appearance/font_setting").arg(name), cmbFontSetting->currentIndex());
+            settings.setValue(
+                QString("studio/bc/%1/appearance/chk_hrt_show").arg(name), chkHRTShow->isChecked() ? 1 : 0);
         }
         settings.setValue(QString("studio/bc/%1/appearance/chk_cmyk").arg(name), chkCMYK->isChecked() ? 1 : 0);
-        settings.setValue(QString("studio/bc/%1/appearance/chk_quietzones").arg(name), chkQuietZones->isChecked() ? 1 : 0);
+        settings.setValue(
+            QString("studio/bc/%1/appearance/chk_quietzones").arg(name), chkQuietZones->isChecked() ? 1 : 0);
         settings.setValue(QString("studio/bc/%1/appearance/rotate").arg(name), cmbRotate->currentIndex());
         if (symbology == BARCODE_DOTCODE || chkDotty->isEnabled()) {
             settings.setValue(QString("studio/bc/%1/appearance/chk_dotty").arg(name), chkDotty->isChecked() ? 1 : 0);
@@ -2084,7 +2299,8 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology) {
         case BARCODE_GS1_128:
         case BARCODE_GS1_128_CC:
         case BARCODE_HIBC_128:
-            settings.setValue("studio/bc/code128/encoding_mode", get_button_group_index(QStringList() << "radC128Stand" << "radC128EAN" << "radC128CSup" << "radC128HIBC"));
+            settings.setValue("studio/bc/code128/encoding_mode", get_button_group_index(
+                QStringList() << "radC128Stand" << "radC128EAN" << "radC128CSup" << "radC128HIBC"));
             break;
 
         case BARCODE_PDF417:
@@ -2092,27 +2308,43 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology) {
         case BARCODE_HIBC_PDF:
             settings.setValue("studio/bc/pdf417/cols", get_combobox_index("cmbPDFCols"));
             settings.setValue("studio/bc/pdf417/ecc", get_combobox_index("cmbPDFECC"));
-            settings.setValue("studio/bc/pdf417/encoding_mode", get_button_group_index(QStringList() << "radPDFStand" << "radPDFTruncated" << "radPDFHIBC"));
+            settings.setValue("studio/bc/pdf417/encoding_mode", get_button_group_index(
+                QStringList() << "radPDFStand" << "radPDFTruncated" << "radPDFHIBC"));
+            settings.setValue("studio/bc/pdf417/structapp_count", get_spinbox_val("spnPDFStructAppCount"));
+            settings.setValue("studio/bc/pdf417/structapp_index", get_spinbox_val("spnPDFStructAppIndex"));
+            settings.setValue("studio/bc/pdf417/structapp_id", get_lineedit_val("txtPDFStructAppID"));
             break;
 
         case BARCODE_MICROPDF417:
         case BARCODE_HIBC_MICPDF:
             settings.setValue("studio/bc/micropdf417/cols", get_combobox_index("cmbMPDFCols"));
-            settings.setValue("studio/bc/micropdf417/encoding_mode", get_button_group_index(QStringList() << "radMPDFStand" << "radMPDFHIBC"));
+            settings.setValue("studio/bc/micropdf417/encoding_mode", get_button_group_index(
+                QStringList() << "radMPDFStand" << "radMPDFHIBC"));
+            settings.setValue("studio/bc/micropdf417/structapp_count", get_spinbox_val("spnMPDFStructAppCount"));
+            settings.setValue("studio/bc/micropdf417/structapp_index", get_spinbox_val("spnMPDFStructAppIndex"));
+            settings.setValue("studio/bc/micropdf417/structapp_id", get_lineedit_val("txtMPDFStructAppID"));
             break;
 
         case BARCODE_DOTCODE:
             settings.setValue("studio/bc/dotcode/cols", get_combobox_index("cmbDotCols"));
             settings.setValue("studio/bc/dotcode/mask", get_combobox_index("cmbDotMask"));
-            settings.setValue("studio/bc/dotcode/encoding_mode", get_button_group_index(QStringList() << "radDotStand" << "radDotGS1"));
+            settings.setValue("studio/bc/dotcode/encoding_mode", get_button_group_index(
+                QStringList() << "radDotStand" << "radDotGS1"));
+            settings.setValue("studio/bc/dotcode/structapp_count", get_combobox_index("cmbDotStructAppCount"));
+            settings.setValue("studio/bc/dotcode/structapp_index", get_combobox_index("cmbDotStructAppIndex"));
             break;
 
         case BARCODE_AZTEC:
         case BARCODE_HIBC_AZTEC:
-            settings.setValue("studio/bc/aztec/autoresizing", get_button_group_index(QStringList() << "radAztecAuto" << "radAztecSize" << "radAztecECC"));
+            settings.setValue("studio/bc/aztec/autoresizing", get_button_group_index(
+                QStringList() << "radAztecAuto" << "radAztecSize" << "radAztecECC"));
             settings.setValue("studio/bc/aztec/size", get_combobox_index("cmbAztecSize"));
             settings.setValue("studio/bc/aztec/ecc", get_combobox_index("cmbAztecECC"));
-            settings.setValue("studio/bc/aztec/encoding_mode", get_button_group_index(QStringList() << "radAztecStand" << "radAztecGS1" << "radAztecHIBC"));
+            settings.setValue("studio/bc/aztec/encoding_mode", get_button_group_index(
+                QStringList() << "radAztecStand" << "radAztecGS1" << "radAztecHIBC"));
+            settings.setValue("studio/bc/aztec/structapp_count", get_combobox_index("cmbAztecStructAppCount"));
+            settings.setValue("studio/bc/aztec/structapp_index", get_combobox_index("cmbAztecStructAppIndex"));
+            settings.setValue("studio/bc/aztec/structapp_id", get_lineedit_val("txtAztecStructAppID"));
             break;
 
         case BARCODE_MSI_PLESSEY:
@@ -2121,41 +2353,51 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology) {
             break;
 
         case BARCODE_CODE11:
-            settings.setValue("studio/bc/code11/check_digit", get_button_group_index(QStringList() << "radC11TwoCheckDigits" << "radC11OneCheckDigit" << "radC11NoCheckDigits"));
+            settings.setValue("studio/bc/code11/check_digit", get_button_group_index(
+                QStringList() << "radC11TwoCheckDigits" << "radC11OneCheckDigit" << "radC11NoCheckDigits"));
             break;
 
         case BARCODE_C25STANDARD:
-            settings.setValue("studio/bc/c25standard/check_digit", get_button_group_index(QStringList() << "radC25Stand" << "radC25Check" << "radC25CheckHide"));
+            settings.setValue("studio/bc/c25standard/check_digit", get_button_group_index(
+                QStringList() << "radC25Stand" << "radC25Check" << "radC25CheckHide"));
             break;
         case BARCODE_C25INTER:
-            settings.setValue("studio/bc/c25inter/check_digit", get_button_group_index(QStringList() << "radC25Stand" << "radC25Check" << "radC25CheckHide"));
+            settings.setValue("studio/bc/c25inter/check_digit", get_button_group_index(
+                QStringList() << "radC25Stand" << "radC25Check" << "radC25CheckHide"));
             break;
         case BARCODE_C25IATA:
-            settings.setValue("studio/bc/c25iata/check_digit", get_button_group_index(QStringList() << "radC25Stand" << "radC25Check" << "radC25CheckHide"));
+            settings.setValue("studio/bc/c25iata/check_digit", get_button_group_index(
+                QStringList() << "radC25Stand" << "radC25Check" << "radC25CheckHide"));
             break;
         case BARCODE_C25LOGIC:
-            settings.setValue("studio/bc/c25logic/check_digit", get_button_group_index(QStringList() << "radC25Stand" << "radC25Check" << "radC25CheckHide"));
+            settings.setValue("studio/bc/c25logic/check_digit", get_button_group_index(
+                QStringList() << "radC25Stand" << "radC25Check" << "radC25CheckHide"));
             break;
         case BARCODE_C25IND:
-            settings.setValue("studio/bc/c25ind/check_digit", get_button_group_index(QStringList() << "radC25Stand" << "radC25Check" << "radC25CheckHide"));
+            settings.setValue("studio/bc/c25ind/check_digit", get_button_group_index(
+                QStringList() << "radC25Stand" << "radC25Check" << "radC25CheckHide"));
             break;
 
         case BARCODE_CODE39:
         case BARCODE_HIBC_39:
-            settings.setValue("studio/bc/code39/check_digit", get_button_group_index(QStringList() << "radC39Stand" << "radC39Check" << "radC39HIBC"));
+            settings.setValue("studio/bc/code39/check_digit", get_button_group_index(
+                QStringList() << "radC39Stand" << "radC39Check" << "radC39HIBC"));
             break;
 
         case BARCODE_EXCODE39:
-            settings.setValue("studio/bc/excode39/check_digit", get_button_group_index(QStringList() << "radC39Stand" << "radC39Check"));
+            settings.setValue("studio/bc/excode39/check_digit", get_button_group_index(
+                QStringList() << "radC39Stand" << "radC39Check"));
             break;
 
         case BARCODE_LOGMARS:
-            settings.setValue("studio/bc/logmars/check_digit", get_button_group_index(QStringList() << "radLOGMARSStand" << "radLOGMARSCheck"));
+            settings.setValue("studio/bc/logmars/check_digit", get_button_group_index(
+                QStringList() << "radLOGMARSStand" << "radLOGMARSCheck"));
             break;
 
         case BARCODE_CODE16K:
             settings.setValue("studio/bc/code16k/row_sep_height", get_combobox_index("cmbC16kRowSepHeight"));
-            settings.setValue("studio/bc/code16k/encoding_mode", get_button_group_index(QStringList() << "radC16kStand" << "radC16kGS1"));
+            settings.setValue("studio/bc/code16k/encoding_mode", get_button_group_index(
+                QStringList() << "radC16kStand" << "radC16kGS1"));
             settings.setValue("studio/bc/code16k/chk_no_quiet_zones", get_checkbox_val("chkC16kNoQuietZones"));
             break;
 
@@ -2168,21 +2410,28 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology) {
             settings.setValue("studio/bc/codablockf/width", get_combobox_index("cmbCbfWidth"));
             settings.setValue("studio/bc/codablockf/height", get_combobox_index("cmbCbfHeight"));
             settings.setValue("studio/bc/codablockf/row_sep_height", get_combobox_index("cmbCbfRowSepHeight"));
-            settings.setValue("studio/bc/codablockf/encoding_mode", get_button_group_index(QStringList() << "radCbfStand" << "radCbfHIBC"));
+            settings.setValue("studio/bc/codablockf/encoding_mode", get_button_group_index(
+                QStringList() << "radCbfStand" << "radCbfHIBC"));
             settings.setValue("studio/bc/codablockf/chk_no_quiet_zones", get_checkbox_val("chkCbfNoQuietZones"));
             break;
 
         case BARCODE_DAFT:
-            settings.setValue("studio/bc/daft/tracker_ratio", QString::number(get_doublespinbox_val("spnDAFTTrackerRatio"), 'f', 1 /*precision*/));
+            settings.setValue("studio/bc/daft/tracker_ratio",
+                QString::number(get_doublespinbox_val("spnDAFTTrackerRatio"), 'f', 1 /*precision*/));
             break;
 
         case BARCODE_DATAMATRIX:
         case BARCODE_HIBC_DM:
             settings.setValue("studio/bc/datamatrix/size", get_combobox_index("cmbDM200Size"));
-            settings.setValue("studio/bc/datamatrix/encoding_mode", get_button_group_index(QStringList() << "radDM200Stand" << "radDM200GS1" << "radDM200HIBC"));
+            settings.setValue("studio/bc/datamatrix/encoding_mode", get_button_group_index(
+                QStringList() << "radDM200Stand" << "radDM200GS1" << "radDM200HIBC"));
             settings.setValue("studio/bc/datamatrix/chk_suppress_rect", get_checkbox_val("chkDMRectangle"));
             settings.setValue("studio/bc/datamatrix/chk_allow_dmre", get_checkbox_val("chkDMRE"));
             settings.setValue("studio/bc/datamatrix/chk_gs_sep", get_checkbox_val("chkDMGSSep"));
+            settings.setValue("studio/bc/datamatrix/structapp_count", get_combobox_index("cmbDMStructAppCount"));
+            settings.setValue("studio/bc/datamatrix/structapp_index", get_combobox_index("cmbDMStructAppIndex"));
+            settings.setValue("studio/bc/datamatrix/structapp_id", get_spinbox_val("spnDMStructAppID"));
+            settings.setValue("studio/bc/datamatrix/structapp_id2", get_spinbox_val("spnDMStructAppID2"));
             break;
 
         case BARCODE_ITF14:
@@ -2194,14 +2443,19 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology) {
             settings.setValue("studio/bc/qrcode/size", get_combobox_index("cmbQRSize"));
             settings.setValue("studio/bc/qrcode/ecc", get_combobox_index("cmbQRECC"));
             settings.setValue("studio/bc/qrcode/mask", get_combobox_index("cmbQRMask"));
-            settings.setValue("studio/bc/qrcode/encoding_mode", get_button_group_index(QStringList() << "radDM200Stand" << "radQRGS1" << "radQRHIBC"));
+            settings.setValue("studio/bc/qrcode/encoding_mode", get_button_group_index(
+                QStringList() << "radDM200Stand" << "radQRGS1" << "radQRHIBC"));
             settings.setValue("studio/bc/qrcode/chk_full_multibyte", get_checkbox_val("chkQRFullMultibyte"));
+            settings.setValue("studio/bc/qrcode/structapp_count", get_combobox_index("cmbQRStructAppCount"));
+            settings.setValue("studio/bc/qrcode/structapp_index", get_combobox_index("cmbQRStructAppIndex"));
+            settings.setValue("studio/bc/qrcode/structapp_id", get_spinbox_val("spnQRStructAppID"));
             break;
 
         case BARCODE_RMQR:
             settings.setValue("studio/bc/rmqr/size", get_combobox_index("cmbRMQRSize"));
             settings.setValue("studio/bc/rmqr/ecc", get_combobox_index("cmbRMQRECC"));
-            settings.setValue("studio/bc/rmqr/encoding_mode", get_button_group_index(QStringList() << "radQRStand" << "radRMQRGS1"));
+            settings.setValue("studio/bc/rmqr/encoding_mode", get_button_group_index(
+                QStringList() << "radQRStand" << "radRMQRGS1"));
             settings.setValue("studio/bc/rmqr/chk_full_multibyte", get_checkbox_val("chkRMQRFullMultibyte"));
             break;
 
@@ -2223,6 +2477,9 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology) {
             settings.setValue("studio/bc/gridmatrix/size", get_combobox_index("cmbGridSize"));
             settings.setValue("studio/bc/gridmatrix/ecc", get_combobox_index("cmbGridECC"));
             settings.setValue("studio/bc/gridmatrix/chk_full_multibyte", get_checkbox_val("chkGridFullMultibyte"));
+            settings.setValue("studio/bc/gridmatrix/structapp_count", get_combobox_index("cmbGridStructAppCount"));
+            settings.setValue("studio/bc/gridmatrix/structapp_index", get_combobox_index("cmbGridStructAppIndex"));
+            settings.setValue("studio/bc/gridmatrix/structapp_id", get_spinbox_val("spnGridStructAppID"));
             break;
 
         case BARCODE_MAXICODE:
@@ -2232,16 +2489,22 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology) {
             settings.setValue("studio/bc/maxicode/scm_service", get_spinbox_val("spnMaxiSCMService"));
             settings.setValue("studio/bc/maxicode/chk_scm_vv", get_checkbox_val("chkMaxiSCMVV"));
             settings.setValue("studio/bc/maxicode/spn_scm_vv", get_spinbox_val("spnMaxiSCMVV"));
+            settings.setValue("studio/bc/maxicode/structapp_count", get_combobox_index("cmbMaxiStructAppCount"));
+            settings.setValue("studio/bc/maxicode/structapp_index", get_combobox_index("cmbMaxiStructAppIndex"));
             break;
 
         case BARCODE_CODEONE:
             settings.setValue("studio/bc/codeone/size", get_combobox_index("cmbC1Size"));
-            settings.setValue("studio/bc/codeone/encoding_mode", get_button_group_index(QStringList() << "radC1Stand" << "radC1GS1"));
+            settings.setValue("studio/bc/codeone/encoding_mode", get_button_group_index(
+                QStringList() << "radC1Stand" << "radC1GS1"));
+            settings.setValue("studio/bc/codeone/structapp_count", get_spinbox_val("spnC1StructAppCount"));
+            settings.setValue("studio/bc/codeone/structapp_index", get_spinbox_val("spnC1StructAppIndex"));
             break;
 
         case BARCODE_CODE49:
             settings.setValue("studio/bc/code49/row_sep_height", get_combobox_index("cmbC49RowSepHeight"));
-            settings.setValue("studio/bc/code49/encoding_mode", get_button_group_index(QStringList() << "radC49Stand" << "radC49GS1"));
+            settings.setValue("studio/bc/code49/encoding_mode", get_button_group_index(
+                QStringList() << "radC49Stand" << "radC49GS1"));
             settings.setValue("studio/bc/code49/chk_no_quiet_zones", get_checkbox_val("chkC49NoQuietZones"));
             break;
 
@@ -2255,16 +2518,22 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology) {
             break;
 
         case BARCODE_ULTRA:
-            settings.setValue("studio/bc/ultra/autoresizing", get_button_group_index(QStringList() << "radUltraAuto" << "radUltraEcc"));
+            settings.setValue("studio/bc/ultra/autoresizing", get_button_group_index(
+                QStringList() << "radUltraAuto" << "radUltraEcc"));
             settings.setValue("studio/bc/ultra/ecc", get_combobox_index("cmbUltraEcc"));
-            settings.setValue("studio/bc/ultra/encoding_mode", get_button_group_index(QStringList() << "radUltraStand" << "radUltraGS1"));
+            settings.setValue("studio/bc/ultra/encoding_mode", get_button_group_index(
+                QStringList() << "radUltraStand" << "radUltraGS1"));
+            settings.setValue("studio/bc/ultra/structapp_count", get_combobox_index("cmbUltraStructAppCount"));
+            settings.setValue("studio/bc/ultra/structapp_index", get_combobox_index("cmbUltraStructAppIndex"));
+            settings.setValue("studio/bc/ultra/structapp_id", get_spinbox_val("spnUltraStructAppID"));
             break;
 
         case BARCODE_UPCA:
         case BARCODE_UPCA_CHK:
         case BARCODE_UPCA_CC:
             settings.setValue("studio/bc/upca/addongap", get_combobox_index("cmbUPCAAddonGap"));
-            settings.setValue("studio/bc/upca/guard_descent", QString::number(get_doublespinbox_val("spnUPCAGuardDescent"), 'f', 3 /*precision*/));
+            settings.setValue("studio/bc/upca/guard_descent",
+                QString::number(get_doublespinbox_val("spnUPCAGuardDescent"), 'f', 3 /*precision*/));
             settings.setValue("studio/bc/upca/chk_no_quiet_zones", get_checkbox_val("chkUPCANoQuietZones"));
             break;
 
@@ -2272,7 +2541,8 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology) {
         case BARCODE_EANX_CHK:
         case BARCODE_EANX_CC:
             settings.setValue("studio/bc/eanx/addongap", get_combobox_index("cmbUPCEANAddonGap"));
-            settings.setValue("studio/bc/eanx/guard_descent", QString::number(get_doublespinbox_val("spnUPCEANGuardDescent"), 'f', 3 /*precision*/));
+            settings.setValue("studio/bc/eanx/guard_descent",
+                QString::number(get_doublespinbox_val("spnUPCEANGuardDescent"), 'f', 3 /*precision*/));
             settings.setValue("studio/bc/eanx/chk_no_quiet_zones", get_checkbox_val("chkUPCEANNoQuietZones"));
             break;
 
@@ -2280,13 +2550,15 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology) {
         case BARCODE_UPCE_CHK:
         case BARCODE_UPCE_CC:
             settings.setValue("studio/bc/upce/addongap", get_combobox_index("cmbUPCEANAddonGap"));
-            settings.setValue("studio/bc/upce/guard_descent", QString::number(get_doublespinbox_val("spnUPCEANGuardDescent"), 'f', 3 /*precision*/));
+            settings.setValue("studio/bc/upce/guard_descent",
+                QString::number(get_doublespinbox_val("spnUPCEANGuardDescent"), 'f', 3 /*precision*/));
             settings.setValue("studio/bc/upce/chk_no_quiet_zones", get_checkbox_val("chkUPCEANNoQuietZones"));
             break;
 
         case BARCODE_ISBNX:
             settings.setValue("studio/bc/isnbx/addongap", get_combobox_index("cmbUPCEANAddonGap"));
-            settings.setValue("studio/bc/isnbx/guard_descent", QString::number(get_doublespinbox_val("spnUPCEANGuardDescent"), 'f', 3 /*precision*/));
+            settings.setValue("studio/bc/isnbx/guard_descent",
+                QString::number(get_doublespinbox_val("spnUPCEANGuardDescent"), 'f', 3 /*precision*/));
             settings.setValue("studio/bc/isnbx/chk_no_quiet_zones", get_checkbox_val("chkUPCEANNoQuietZones"));
             break;
 
@@ -2306,11 +2578,13 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology) {
             txtData->setText(tdata);
         }
         if (!grpComposite->isHidden()) {
-            const QString &composite_text = settings.value(QString("studio/bc/%1/composite_text").arg(name), "").toString();
+            const QString &composite_text = settings.value(
+                                                QString("studio/bc/%1/composite_text").arg(name), "").toString();
             if (!composite_text.isEmpty()) {
                 txtComposite->setText(composite_text);
             }
-            chkComposite->setChecked(settings.value(QString("studio/bc/%1/chk_composite").arg(name), 0).toInt() ? true : false);
+            chkComposite->setChecked(settings.value(
+                QString("studio/bc/%1/chk_composite").arg(name), 0).toInt() ? true : false);
             cmbCompType->setCurrentIndex(settings.value(QString("studio/bc/%1/comp_type").arg(name), 0).toInt());
         }
         if (cmbECI->isEnabled()) {
@@ -2321,10 +2595,13 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology) {
         if (chkRInit->isEnabled()) {
             chkRInit->setChecked(settings.value(QString("studio/bc/%1/chk_rinit").arg(name)).toInt() ? true : false);
         }
-        chkGS1Parens->setChecked(settings.value(QString("studio/bc/%1/chk_gs1parens").arg(name)).toInt() ? true : false);
-        chkGS1NoCheck->setChecked(settings.value(QString("studio/bc/%1/chk_gs1nocheck").arg(name)).toInt() ? true : false);
+        chkGS1Parens->setChecked(settings.value(
+            QString("studio/bc/%1/chk_gs1parens").arg(name)).toInt() ? true : false);
+        chkGS1NoCheck->setChecked(settings.value(
+            QString("studio/bc/%1/chk_gs1nocheck").arg(name)).toInt() ? true : false);
         if (chkAutoHeight->isEnabled()) {
-            chkAutoHeight->setChecked(settings.value(QString("studio/bc/%1/appearance/autoheight").arg(name), 1).toInt() ? true : false);
+            chkAutoHeight->setChecked(settings.value(
+                QString("studio/bc/%1/appearance/autoheight").arg(name), 1).toInt() ? true : false);
             heightb->setValue(settings.value(QString("studio/bc/%1/appearance/height").arg(name), 50.0f).toFloat());
         }
         bwidth->setValue(settings.value(QString("studio/bc/%1/appearance/border").arg(name), 0).toInt());
@@ -2333,14 +2610,19 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology) {
         spnScale->setValue(settings.value(QString("studio/bc/%1/appearance/scale").arg(name), 1.0).toFloat());
         btype->setCurrentIndex(settings.value(QString("studio/bc/%1/appearance/border_type").arg(name), 0).toInt());
         if (chkHRTShow->isEnabled()) {
-            cmbFontSetting->setCurrentIndex(settings.value(QString("studio/bc/%1/appearance/font_setting").arg(name), 0).toInt());
-            chkHRTShow->setChecked(settings.value(QString("studio/bc/%1/appearance/chk_hrt_show").arg(name), 1).toInt() ? true : false);
+            cmbFontSetting->setCurrentIndex(settings.value(
+                QString("studio/bc/%1/appearance/font_setting").arg(name), 0).toInt());
+            chkHRTShow->setChecked(settings.value(
+                QString("studio/bc/%1/appearance/chk_hrt_show").arg(name), 1).toInt() ? true : false);
         }
-        chkCMYK->setChecked(settings.value(QString("studio/bc/%1/appearance/cmyk").arg(name), 0).toInt() ? true : false);
+        chkCMYK->setChecked(settings.value(
+            QString("studio/bc/%1/appearance/cmyk").arg(name), 0).toInt() ? true : false);
         cmbRotate->setCurrentIndex(settings.value(QString("studio/bc/%1/appearance/rotate").arg(name), 0).toInt());
         if (symbology == BARCODE_DOTCODE || chkDotty->isEnabled()) {
-            chkDotty->setChecked(settings.value(QString("studio/bc/%1/appearance/chk_dotty").arg(name), 0).toInt() ? true : false);
-            spnDotSize->setValue(settings.value(QString("studio/bc/%1/appearance/dot_size").arg(name), 0.4f / 0.5f).toFloat());
+            chkDotty->setChecked(settings.value(
+                QString("studio/bc/%1/appearance/chk_dotty").arg(name), 0).toInt() ? true : false);
+            spnDotSize->setValue(settings.value(
+                QString("studio/bc/%1/appearance/dot_size").arg(name), 0.4f / 0.5f).toFloat());
         }
         m_fgcolor.setRgb(settings.value(QString("studio/bc/%1/ink/red").arg(name), 0).toInt(),
                         settings.value(QString("studio/bc/%1/ink/green").arg(name), 0).toInt(),
@@ -2358,7 +2640,8 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology) {
         case BARCODE_GS1_128:
         case BARCODE_GS1_128_CC:
         case BARCODE_HIBC_128:
-            set_radiobutton_from_setting(settings, "studio/bc/code128/encoding_mode", QStringList() << "radC128Stand" << "radC128EAN" << "radC128CSup" << "radC128HIBC");
+            set_radiobutton_from_setting(settings, "studio/bc/code128/encoding_mode",
+                QStringList() << "radC128Stand" << "radC128EAN" << "radC128CSup" << "radC128HIBC");
             break;
 
         case BARCODE_PDF417:
@@ -2366,27 +2649,43 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology) {
         case BARCODE_HIBC_PDF:
             set_combobox_from_setting(settings, "studio/bc/pdf417/cols", "cmbPDFCols");
             set_combobox_from_setting(settings, "studio/bc/pdf417/ecc", "cmbPDFECC");
-            set_radiobutton_from_setting(settings, "studio/bc/pdf417/encoding_mode", QStringList() << "radPDFStand" << "radPDFTruncated" << "radPDFHIBC");
+            set_radiobutton_from_setting(settings, "studio/bc/pdf417/encoding_mode",
+                QStringList() << "radPDFStand" << "radPDFTruncated" << "radPDFHIBC");
+            set_spinbox_from_setting(settings, "studio/bc/pdf417/structapp_count", "spnPDFStructAppCount", 1);
+            set_spinbox_from_setting(settings, "studio/bc/pdf417/structapp_index", "spnPDFStructAppIndex", 0);
+            set_lineedit_from_setting(settings, "studio/bc/pdf417/structapp_id", "txtPDFStructAppID", "");
             break;
 
         case BARCODE_MICROPDF417:
         case BARCODE_HIBC_MICPDF:
             set_combobox_from_setting(settings, "studio/bc/micropdf417/cols", "cmbMPDFCols");
-            set_radiobutton_from_setting(settings, "studio/bc/micropdf417/encoding_mode", QStringList() << "radMPDFStand" << "radMPDFHIBC");
+            set_radiobutton_from_setting(settings, "studio/bc/micropdf417/encoding_mode",
+                QStringList() << "radMPDFStand" << "radMPDFHIBC");
+            set_spinbox_from_setting(settings, "studio/bc/micropdf417/structapp_count", "spnMPDFStructAppCount", 1);
+            set_spinbox_from_setting(settings, "studio/bc/micropdf417/structapp_index", "spnMPDFStructAppIndex", 0);
+            set_lineedit_from_setting(settings, "studio/bc/micropdf417/structapp_id", "txtMPDFStructAppID", "");
             break;
 
         case BARCODE_DOTCODE:
             set_combobox_from_setting(settings, "studio/bc/dotcode/cols", "cmbDotCols");
             set_combobox_from_setting(settings, "studio/bc/dotcode/mask", "cmbDotMask");
-            set_radiobutton_from_setting(settings, "studio/bc/dotcode/encoding_mode", QStringList() << "radDotStand" << "radDotGS1");
+            set_radiobutton_from_setting(settings, "studio/bc/dotcode/encoding_mode",
+                QStringList() << "radDotStand" << "radDotGS1");
+            set_combobox_from_setting(settings, "studio/bc/dotcode/structapp_count", "cmbDotStructAppCount");
+            set_combobox_from_setting(settings, "studio/bc/dotcode/structapp_index", "cmbDotStructAppIndex");
             break;
 
         case BARCODE_AZTEC:
         case BARCODE_HIBC_AZTEC:
-            set_radiobutton_from_setting(settings, "studio/bc/aztec/autoresizing", QStringList() << "radAztecAuto" << "radAztecSize" << "radAztecECC");
+            set_radiobutton_from_setting(settings, "studio/bc/aztec/autoresizing",
+                QStringList() << "radAztecAuto" << "radAztecSize" << "radAztecECC");
             set_combobox_from_setting(settings, "studio/bc/aztec/size", "cmbAztecSize");
             set_combobox_from_setting(settings, "studio/bc/aztec/ecc", "cmbAztecECC");
-            set_radiobutton_from_setting(settings, "studio/bc/aztec/encoding_mode", QStringList() << "radAztecStand" << "radAztecGS1" << "radAztecHIBC");
+            set_radiobutton_from_setting(settings, "studio/bc/aztec/encoding_mode",
+                QStringList() << "radAztecStand" << "radAztecGS1" << "radAztecHIBC");
+            set_combobox_from_setting(settings, "studio/bc/aztec/structapp_count", "cmbAztecStructAppCount");
+            set_combobox_from_setting(settings, "studio/bc/aztec/structapp_index", "cmbAztecStructAppIndex");
+            set_lineedit_from_setting(settings, "studio/bc/aztec/structapp_id", "txtAztecStructAppID", "");
             break;
 
         case BARCODE_MSI_PLESSEY:
@@ -2396,41 +2695,51 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology) {
             break;
 
         case BARCODE_CODE11:
-            set_radiobutton_from_setting(settings, "studio/bc/code11/check_digit", QStringList() << "radC11TwoCheckDigits" << "radC11OneCheckDigit" << "radC11NoCheckDigits");
+            set_radiobutton_from_setting(settings, "studio/bc/code11/check_digit",
+                QStringList() << "radC11TwoCheckDigits" << "radC11OneCheckDigit" << "radC11NoCheckDigits");
             break;
 
         case BARCODE_C25STANDARD:
-            set_radiobutton_from_setting(settings, "studio/bc/c25standard/check_digit", QStringList() << "radC25Stand" << "radC25Check" << "radC25CheckHide");
+            set_radiobutton_from_setting(settings, "studio/bc/c25standard/check_digit",
+                QStringList() << "radC25Stand" << "radC25Check" << "radC25CheckHide");
             break;
         case BARCODE_C25INTER:
-            set_radiobutton_from_setting(settings, "studio/bc/c25inter/check_digit", QStringList() << "radC25Stand" << "radC25Check" << "radC25CheckHide");
+            set_radiobutton_from_setting(settings, "studio/bc/c25inter/check_digit",
+                QStringList() << "radC25Stand" << "radC25Check" << "radC25CheckHide");
             break;
         case BARCODE_C25IATA:
-            set_radiobutton_from_setting(settings, "studio/bc/c25iata/check_digit", QStringList() << "radC25Stand" << "radC25Check" << "radC25CheckHide");
+            set_radiobutton_from_setting(settings, "studio/bc/c25iata/check_digit",
+                QStringList() << "radC25Stand" << "radC25Check" << "radC25CheckHide");
             break;
         case BARCODE_C25LOGIC:
-            set_radiobutton_from_setting(settings, "studio/bc/c25logic/check_digit", QStringList() << "radC25Stand" << "radC25Check" << "radC25CheckHide");
+            set_radiobutton_from_setting(settings, "studio/bc/c25logic/check_digit",
+                QStringList() << "radC25Stand" << "radC25Check" << "radC25CheckHide");
             break;
         case BARCODE_C25IND:
-            set_radiobutton_from_setting(settings, "studio/bc/c25ind/check_digit", QStringList() << "radC25Stand" << "radC25Check" << "radC25CheckHide");
+            set_radiobutton_from_setting(settings, "studio/bc/c25ind/check_digit",
+                QStringList() << "radC25Stand" << "radC25Check" << "radC25CheckHide");
             break;
 
         case BARCODE_CODE39:
         case BARCODE_HIBC_39:
-            set_radiobutton_from_setting(settings, "studio/bc/code39/check_digit", QStringList() << "radC39Stand" << "radC39Check" << "radC39HIBC");
+            set_radiobutton_from_setting(settings, "studio/bc/code39/check_digit",
+                QStringList() << "radC39Stand" << "radC39Check" << "radC39HIBC");
             break;
 
         case BARCODE_EXCODE39:
-            set_radiobutton_from_setting(settings, "studio/bc/excode39/check_digit", QStringList() << "radC39Stand" << "radC39Check");
+            set_radiobutton_from_setting(settings, "studio/bc/excode39/check_digit",
+                QStringList() << "radC39Stand" << "radC39Check");
             break;
 
         case BARCODE_LOGMARS:
-            set_radiobutton_from_setting(settings, "studio/bc/logmars/check_digit", QStringList() << "radLOGMARSStand" << "radLOGMARSCheck");
+            set_radiobutton_from_setting(settings, "studio/bc/logmars/check_digit",
+                QStringList() << "radLOGMARSStand" << "radLOGMARSCheck");
             break;
 
         case BARCODE_CODE16K:
             set_combobox_from_setting(settings, "studio/bc/code16k/row_sep_height", "cmbC16kRowSepHeight");
-            set_radiobutton_from_setting(settings, "studio/bc/code16k/encoding_mode", QStringList() << "radC16kStand" << "radC16kGS1");
+            set_radiobutton_from_setting(settings, "studio/bc/code16k/encoding_mode",
+                QStringList() << "radC16kStand" << "radC16kGS1");
             set_checkbox_from_setting(settings, "studio/bc/code16k/chk_no_quiet_zones", "chkC16kNoQuietZones");
             break;
 
@@ -2443,7 +2752,8 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology) {
             set_combobox_from_setting(settings, "studio/bc/codablockf/width", "cmbCbfWidth");
             set_combobox_from_setting(settings, "studio/bc/codablockf/height", "cmbCbfHeight");
             set_combobox_from_setting(settings, "studio/bc/codablockf/row_sep_height", "cmbCbfRowSepHeight");
-            set_radiobutton_from_setting(settings, "studio/bc/codablockf/encoding_mode", QStringList() << "radCbfStand" << "radCbfHIBC");
+            set_radiobutton_from_setting(settings, "studio/bc/codablockf/encoding_mode",
+                QStringList() << "radCbfStand" << "radCbfHIBC");
             set_checkbox_from_setting(settings, "studio/bc/codablockf/chk_no_quiet_zones", "chkCbfNoQuietZones");
             break;
 
@@ -2454,10 +2764,15 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology) {
         case BARCODE_DATAMATRIX:
         case BARCODE_HIBC_DM:
             set_combobox_from_setting(settings, "studio/bc/datamatrix/size", "cmbDM200Size");
-            set_radiobutton_from_setting(settings, "studio/bc/datamatrix/encoding_mode", QStringList() << "radDM200Stand" << "radDM200GS1" << "radDM200HIBC");
+            set_radiobutton_from_setting(settings, "studio/bc/datamatrix/encoding_mode",
+                QStringList() << "radDM200Stand" << "radDM200GS1" << "radDM200HIBC");
             set_checkbox_from_setting(settings, "studio/bc/datamatrix/chk_suppress_rect", "chkDMRectangle");
             set_checkbox_from_setting(settings, "studio/bc/datamatrix/chk_allow_dmre", "chkDMRE");
             set_checkbox_from_setting(settings, "studio/bc/datamatrix/chk_gs_sep", "chkDMGSSep");
+            set_combobox_from_setting(settings, "studio/bc/datamatrix/structapp_count", "cmbDMStructAppCount");
+            set_combobox_from_setting(settings, "studio/bc/datamatrix/structapp_index", "cmbDMStructAppIndex");
+            set_spinbox_from_setting(settings, "studio/bc/datamatrix/structapp_id", "spnDMStructAppID", 1);
+            set_spinbox_from_setting(settings, "studio/bc/datamatrix/structapp_id2", "spnDMStructAppID2", 1);
             break;
 
         case BARCODE_ITF14:
@@ -2469,14 +2784,19 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology) {
             set_combobox_from_setting(settings, "studio/bc/qrcode/size", "cmbQRSize");
             set_combobox_from_setting(settings, "studio/bc/qrcode/ecc", "cmbQRECC");
             set_combobox_from_setting(settings, "studio/bc/qrcode/mask", "cmbQRMask");
-            set_radiobutton_from_setting(settings, "studio/bc/qrcode/encoding_mode", QStringList() << "radDM200Stand" << "radQRGS1" << "radQRHIBC");
+            set_radiobutton_from_setting(settings, "studio/bc/qrcode/encoding_mode",
+                QStringList() << "radDM200Stand" << "radQRGS1" << "radQRHIBC");
             set_checkbox_from_setting(settings, "studio/bc/qrcode/chk_full_multibyte", "chkQRFullMultibyte");
+            set_combobox_from_setting(settings, "studio/bc/qrcode/structapp_count", "cmbQRStructAppCount");
+            set_combobox_from_setting(settings, "studio/bc/qrcode/structapp_index", "cmbQRStructAppIndex");
+            set_spinbox_from_setting(settings, "studio/bc/qrcode/structapp_id", "spnQRStructAppID", 0);
             break;
 
         case BARCODE_RMQR:
             set_combobox_from_setting(settings, "studio/bc/rmqr/size", "cmbRMQRSize");
             set_combobox_from_setting(settings, "studio/bc/rmqr/ecc", "cmbRMQRECC");
-            set_radiobutton_from_setting(settings, "studio/bc/rmqr/encoding_mode", QStringList() << "radQRStand" << "radRMQRGS1");
+            set_radiobutton_from_setting(settings, "studio/bc/rmqr/encoding_mode",
+                QStringList() << "radQRStand" << "radRMQRGS1");
             set_checkbox_from_setting(settings, "studio/bc/rmqr/chk_full_multibyte", "chkRMQRFullMultibyte");
             break;
 
@@ -2498,6 +2818,9 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology) {
             set_combobox_from_setting(settings, "studio/bc/gridmatrix/size", "cmbGridSize");
             set_combobox_from_setting(settings, "studio/bc/gridmatrix/ecc", "cmbGridECC");
             set_checkbox_from_setting(settings, "studio/bc/gridmatrix/chk_full_multibyte", "chkGridFullMultibyte");
+            set_combobox_from_setting(settings, "studio/bc/gridmatrix/structapp_count", "cmbGridStructAppCount");
+            set_combobox_from_setting(settings, "studio/bc/gridmatrix/structapp_index", "cmbGridStructAppIndex");
+            set_spinbox_from_setting(settings, "studio/bc/gridmatrix/structapp_id", "spnGridStructAppID", 0);
             break;
 
         case BARCODE_MAXICODE:
@@ -2506,17 +2829,24 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology) {
             set_spinbox_from_setting(settings, "studio/bc/maxicode/scm_country", "spnMaxiSCMCountry", 0);
             set_spinbox_from_setting(settings, "studio/bc/maxicode/scm_service", "spnMaxiSCMService", 0);
             set_checkbox_from_setting(settings, "studio/bc/maxicode/chk_scm_vv", "chkMaxiSCMVV");
-            set_spinbox_from_setting(settings, "studio/bc/maxicode/spn_scm_vv", "spnMaxiSCMVV", 96); /* 96 is ASC MH10/SC 8 */
+            // 96 is ASC MH10/SC 8
+            set_spinbox_from_setting(settings, "studio/bc/maxicode/spn_scm_vv", "spnMaxiSCMVV", 96);
+            set_combobox_from_setting(settings, "studio/bc/maxicode/structapp_count", "cmbMaxiStructAppCount");
+            set_combobox_from_setting(settings, "studio/bc/maxicode/structapp_index", "cmbMaxiStructAppIndex");
             break;
 
         case BARCODE_CODEONE:
             set_combobox_from_setting(settings, "studio/bc/codeone/size", "cmbC1Size");
-            set_radiobutton_from_setting(settings, "studio/bc/codeone/encoding_mode", QStringList() << "radC1Stand" << "radC1GS1");
+            set_radiobutton_from_setting(settings, "studio/bc/codeone/encoding_mode",
+                QStringList() << "radC1Stand" << "radC1GS1");
+            set_spinbox_from_setting(settings, "studio/bc/codeone/structapp_count", "spnC1StructAppCount", 1);
+            set_spinbox_from_setting(settings, "studio/bc/codeone/structapp_index", "spnC1StructAppIndex", 0);
             break;
 
         case BARCODE_CODE49:
             set_combobox_from_setting(settings, "studio/bc/code49/row_sep_height", "cmbC49RowSepHeight");
-            set_radiobutton_from_setting(settings, "studio/bc/code49/encoding_mode", QStringList() << "radC49Stand" << "radC49GS1");
+            set_radiobutton_from_setting(settings, "studio/bc/code49/encoding_mode",
+                QStringList() << "radC49Stand" << "radC49GS1");
             set_checkbox_from_setting(settings, "studio/bc/code49/chk_no_quiet_zones", "chkC49NoQuietZones");
             break;
 
@@ -2529,9 +2859,14 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology) {
             break;
 
         case BARCODE_ULTRA:
-            set_radiobutton_from_setting(settings, "studio/bc/ultra/autoresizing", QStringList() << "radUltraAuto" << "radUltraEcc");
+            set_radiobutton_from_setting(settings, "studio/bc/ultra/autoresizing",
+                QStringList() << "radUltraAuto" << "radUltraEcc");
             set_combobox_from_setting(settings, "studio/bc/ultra/ecc", "cmbUltraEcc");
-            set_radiobutton_from_setting(settings, "studio/bc/ultra/encoding_mode", QStringList() << "radUltraStand" << "radUltraGS1");
+            set_radiobutton_from_setting(settings, "studio/bc/ultra/encoding_mode",
+                QStringList() << "radUltraStand" << "radUltraGS1");
+            set_combobox_from_setting(settings, "studio/bc/ultra/structapp_count", "cmbUltraStructAppCount");
+            set_combobox_from_setting(settings, "studio/bc/ultra/structapp_index", "cmbUltraStructAppIndex");
+            set_spinbox_from_setting(settings, "studio/bc/ultra/structapp_id", "spnUltraStructAppID", 0);
             break;
 
         case BARCODE_UPCA:

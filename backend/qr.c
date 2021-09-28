@@ -394,8 +394,8 @@ static int terminator_bits(const int version) {
 
 /* Convert input data to a binary stream and add padding */
 static void qr_binary(unsigned char datastream[], const int version, const int target_codewords, const char mode[],
-            const unsigned int jisdata[], const int length, const int gs1, const int eci, const int est_binlen,
-            const int debug_print) {
+            const unsigned int jisdata[], const int length, const struct zint_structapp *p_structapp, const int gs1,
+            const int eci, const int est_binlen, const int debug_print) {
     int position = 0;
     int i, j, bp;
     int termbits, padbits, modebits;
@@ -410,6 +410,14 @@ static void qr_binary(unsigned char datastream[], const int version, const int t
 #endif
     *binary = '\0';
     bp = 0;
+
+    if (p_structapp) {
+        bp = bin_append_posn(3, 4, binary, bp); /* Structured Append indicator */
+        bp = bin_append_posn(p_structapp->index - 1, 4, binary, bp);
+        bp = bin_append_posn(p_structapp->count - 1, 4, binary, bp);
+        bp = bin_append_posn(to_int((const unsigned char *) p_structapp->id, (int) strlen(p_structapp->id)), 8,
+                binary, bp); /* Parity */
+    }
 
     if (gs1) { /* Not applicable to MICROQR */
         if (version < RMQR_VERSION) {
@@ -1431,7 +1439,7 @@ static int blockLength(const int start, const char inputMode[], const int inputL
 }
 
 static int getBinaryLength(const int version, char inputMode[], const unsigned int inputData[], const int inputLength,
-            const int gs1, const int eci, const int debug_print) {
+            const struct zint_structapp *p_structapp, const int gs1, const int eci, const int debug_print) {
     /* Calculate the actual bitlength of the proposed binary string */
     int i, j;
     char currentMode;
@@ -1442,6 +1450,10 @@ static int getBinaryLength(const int version, char inputMode[], const unsigned i
     qr_define_mode(inputMode, inputData, inputLength, gs1, version, debug_print);
 
     currentMode = ' '; // Null
+
+    if (p_structapp) {
+        count += 4 + 8 + 8;
+    }
 
     if (gs1 == 1) { /* Not applicable to MICROQR */
         if (version < RMQR_VERSION) {
@@ -1534,6 +1546,7 @@ INTERNAL int qr_code(struct zint_symbol *symbol, unsigned char source[], int len
     int user_mask;
     int canShrink;
     int size_squared;
+    const struct zint_structapp *p_structapp = NULL;
     int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
     int eci_length = get_eci_length(symbol->eci, source, length);
 
@@ -1581,7 +1594,39 @@ INTERNAL int qr_code(struct zint_symbol *symbol, unsigned char source[], int len
         }
     }
 
-    est_binlen = getBinaryLength(40, mode, jisdata, length, gs1, symbol->eci, debug_print);
+    if (symbol->structapp.count) {
+        if (symbol->structapp.count < 2 || symbol->structapp.count > 16) {
+            strcpy(symbol->errtxt, "750: Structured Append count out of range (2-16)");
+            return ZINT_ERROR_INVALID_OPTION;
+        }
+        if (symbol->structapp.index < 1 || symbol->structapp.index > symbol->structapp.count) {
+            sprintf(symbol->errtxt, "751: Structured Append index out of range (1-%d)", symbol->structapp.count);
+            return ZINT_ERROR_INVALID_OPTION;
+        }
+        if (symbol->structapp.id[0]) {
+            int id, id_len;
+
+            for (id_len = 0; id_len < 32 && symbol->structapp.id[id_len]; id_len++);
+
+            if (id_len > 3) { /* 255 */
+                strcpy(symbol->errtxt, "752: Structured Append ID too long (3 digit maximum)");
+                return ZINT_ERROR_INVALID_OPTION;
+            }
+
+            id = to_int((const unsigned char *) symbol->structapp.id, id_len);
+            if (id == -1) {
+                strcpy(symbol->errtxt, "753: Invalid Structured Append ID (digits only)");
+                return ZINT_ERROR_INVALID_OPTION;
+            }
+            if (id > 255) {
+                sprintf(symbol->errtxt, "754: Structured Append ID '%d' out of range (0-255)", id);
+                return ZINT_ERROR_INVALID_OPTION;
+            }
+        }
+        p_structapp = &symbol->structapp;
+    }
+
+    est_binlen = getBinaryLength(40, mode, jisdata, length, p_structapp, gs1, symbol->eci, debug_print);
 
     ecc_level = LEVEL_L;
     max_cw = 2956;
@@ -1632,7 +1677,7 @@ INTERNAL int qr_code(struct zint_symbol *symbol, unsigned char source[], int len
         }
     }
     if (autosize != 40) {
-        est_binlen = getBinaryLength(autosize, mode, jisdata, length, gs1, symbol->eci, debug_print);
+        est_binlen = getBinaryLength(autosize, mode, jisdata, length, p_structapp, gs1, symbol->eci, debug_print);
     }
 
     // Now see if the optimised binary will fit in a smaller symbol.
@@ -1644,7 +1689,8 @@ INTERNAL int qr_code(struct zint_symbol *symbol, unsigned char source[], int len
         } else {
             prev_est_binlen = est_binlen;
             memcpy(prev_mode, mode, length);
-            est_binlen = getBinaryLength(autosize - 1, mode, jisdata, length, gs1, symbol->eci, debug_print);
+            est_binlen = getBinaryLength(autosize - 1, mode, jisdata, length, p_structapp, gs1, symbol->eci,
+                            debug_print);
 
             switch (ecc_level) {
                 case LEVEL_L:
@@ -1689,7 +1735,8 @@ INTERNAL int qr_code(struct zint_symbol *symbol, unsigned char source[], int len
          */
         if (symbol->option_2 > version) {
             version = symbol->option_2;
-            est_binlen = getBinaryLength(symbol->option_2, mode, jisdata, length, gs1, symbol->eci, debug_print);
+            est_binlen = getBinaryLength(symbol->option_2, mode, jisdata, length, p_structapp, gs1, symbol->eci,
+                            debug_print);
         }
 
         if (symbol->option_2 < version) {
@@ -1741,8 +1788,8 @@ INTERNAL int qr_code(struct zint_symbol *symbol, unsigned char source[], int len
     fullstream = (unsigned char *) _alloca(qr_total_codewords[version - 1] + 1);
 #endif
 
-    qr_binary(datastream, version, target_codewords, mode, jisdata, length, gs1, symbol->eci, est_binlen,
-                debug_print);
+    qr_binary(datastream, version, target_codewords, mode, jisdata, length, p_structapp, gs1, symbol->eci,
+                est_binlen, debug_print);
 #ifdef ZINT_TEST
     if (symbol->debug & ZINT_DEBUG_TEST) debug_test_codeword_dump(symbol, datastream, target_codewords);
 #endif
@@ -2482,8 +2529,8 @@ INTERNAL int microqr(struct zint_symbol *symbol, unsigned char source[], int len
     /* Determine length of binary data */
     for (i = 0; i < 4; i++) {
         if (version_valid[i]) {
-            binary_count[i] = getBinaryLength(MICROQR_VERSION + i, mode, jisdata, length, 0 /*gs1*/, 0 /*eci*/,
-                                                debug_print);
+            binary_count[i] = getBinaryLength(MICROQR_VERSION + i, mode, jisdata, length, NULL /*p_structapp*/,
+                                0 /*gs1*/, 0 /*eci*/, debug_print);
         } else {
             binary_count[i] = 128 + 1;
         }
@@ -2568,7 +2615,7 @@ INTERNAL int microqr(struct zint_symbol *symbol, unsigned char source[], int len
     qr_define_mode(mode, jisdata, length, 0 /*gs1*/, MICROQR_VERSION + version, debug_print);
 
     qr_binary((unsigned char *) full_stream, MICROQR_VERSION + version, 0 /*target_codewords*/, mode, jisdata, length,
-            0 /*gs1*/, 0 /*eci*/, binary_count[version], debug_print);
+                NULL /*p_structapp*/, 0 /*gs1*/, 0 /*eci*/, binary_count[version], debug_print);
 
     if (debug_print) printf("Binary (%d): %s\n", (int) strlen(full_stream), full_stream);
 
@@ -2746,7 +2793,7 @@ INTERNAL int upnqr(struct zint_symbol *symbol, unsigned char source[], int lengt
             break;
     }
 
-    est_binlen = getBinaryLength(15, mode, jisdata, length, 0, symbol->eci, debug_print);
+    est_binlen = getBinaryLength(15, mode, jisdata, length, NULL /*p_structapp*/, 0, symbol->eci, debug_print);
 
     ecc_level = LEVEL_M;
 
@@ -2767,7 +2814,8 @@ INTERNAL int upnqr(struct zint_symbol *symbol, unsigned char source[], int lengt
     fullstream = (unsigned char *) _alloca(qr_total_codewords[version - 1] + 1);
 #endif
 
-    qr_binary(datastream, version, target_codewords, mode, jisdata, length, 0, symbol->eci, est_binlen, debug_print);
+    qr_binary(datastream, version, target_codewords, mode, jisdata, length, NULL /*p_structapp*/, 0 /*gs1*/,
+                symbol->eci, est_binlen, debug_print);
 #ifdef ZINT_TEST
     if (symbol->debug & ZINT_DEBUG_TEST) debug_test_codeword_dump(symbol, datastream, target_codewords);
 #endif
@@ -2972,7 +3020,8 @@ INTERNAL int rmqr(struct zint_symbol *symbol, unsigned char source[], int length
         }
     }
 
-    est_binlen = getBinaryLength(RMQR_VERSION + 31, mode, jisdata, length, gs1, symbol->eci, debug_print);
+    est_binlen = getBinaryLength(RMQR_VERSION + 31, mode, jisdata, length, NULL /*p_structapp*/, gs1, symbol->eci,
+                    debug_print);
 
     ecc_level = LEVEL_M;
     max_cw = 152;
@@ -3008,8 +3057,8 @@ INTERNAL int rmqr(struct zint_symbol *symbol, unsigned char source[], int length
         autosize = 31;
         best_footprint = rmqr_height[31] * rmqr_width[31];
         for (version = 30; version >= 0; version--) {
-            est_binlen = getBinaryLength(RMQR_VERSION + version, mode, jisdata, length, gs1, symbol->eci,
-                            debug_print);
+            est_binlen = getBinaryLength(RMQR_VERSION + version, mode, jisdata, length, NULL /*p_structapp*/, gs1,
+                            symbol->eci, debug_print);
             footprint = rmqr_height[version] * rmqr_width[version];
             if (ecc_level == LEVEL_M) {
                 if (8 * rmqr_data_codewords_M[version] >= est_binlen) {
@@ -3028,20 +3077,23 @@ INTERNAL int rmqr(struct zint_symbol *symbol, unsigned char source[], int length
             }
         }
         version = autosize;
-        est_binlen = getBinaryLength(RMQR_VERSION + version, mode, jisdata, length, gs1, symbol->eci, debug_print);
+        est_binlen = getBinaryLength(RMQR_VERSION + version, mode, jisdata, length, NULL /*p_structapp*/, gs1,
+                        symbol->eci, debug_print);
     }
 
     if ((symbol->option_2 >= 1) && (symbol->option_2 <= 32)) {
         // User specified symbol size
         version = symbol->option_2 - 1;
-        est_binlen = getBinaryLength(RMQR_VERSION + version, mode, jisdata, length, gs1, symbol->eci, debug_print);
+        est_binlen = getBinaryLength(RMQR_VERSION + version, mode, jisdata, length, NULL /*p_structapp*/, gs1,
+                        symbol->eci, debug_print);
     }
 
     if (symbol->option_2 >= 33) {
         // User has specified symbol height only
         version = rmqr_fixed_height_upper_bound[symbol->option_2 - 32];
         for (i = version - 1; i > rmqr_fixed_height_upper_bound[symbol->option_2 - 33]; i--) {
-            est_binlen = getBinaryLength(RMQR_VERSION + i, mode, jisdata, length, gs1, symbol->eci, debug_print);
+            est_binlen = getBinaryLength(RMQR_VERSION + i, mode, jisdata, length, NULL /*p_structapp*/, gs1,
+                            symbol->eci, debug_print);
             if (ecc_level == LEVEL_M) {
                 if (8 * rmqr_data_codewords_M[i] >= est_binlen) {
                     version = i;
@@ -3052,7 +3104,8 @@ INTERNAL int rmqr(struct zint_symbol *symbol, unsigned char source[], int length
                 }
             }
         }
-        est_binlen = getBinaryLength(RMQR_VERSION + version, mode, jisdata, length, gs1, symbol->eci, debug_print);
+        est_binlen = getBinaryLength(RMQR_VERSION + version, mode, jisdata, length, NULL /*p_structapp*/, gs1,
+                        symbol->eci, debug_print);
     }
 
     if (symbol->option_1 == -1) {
@@ -3072,7 +3125,7 @@ INTERNAL int rmqr(struct zint_symbol *symbol, unsigned char source[], int length
 
     if (est_binlen > (target_codewords * 8)) {
         // User has selected a symbol too small for the data
-        strcpy(symbol->errtxt, "580: Input too long for selected symbol size");
+        strcpy(symbol->errtxt, "560: Input too long for selected symbol size");
         return ZINT_ERROR_TOO_LONG;
     }
 
@@ -3092,8 +3145,8 @@ INTERNAL int rmqr(struct zint_symbol *symbol, unsigned char source[], int length
     fullstream = (unsigned char *) _alloca(rmqr_total_codewords[version] + 1);
 #endif
 
-    qr_binary(datastream, RMQR_VERSION + version, target_codewords, mode, jisdata, length, gs1, symbol->eci,
-                est_binlen, debug_print);
+    qr_binary(datastream, RMQR_VERSION + version, target_codewords, mode, jisdata, length, NULL /*p_structapp*/, gs1,
+                symbol->eci, est_binlen, debug_print);
 #ifdef ZINT_TEST
     if (symbol->debug & ZINT_DEBUG_TEST) debug_test_codeword_dump(symbol, datastream, target_codewords);
 #endif

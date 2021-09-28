@@ -81,6 +81,13 @@ extern "C" {
         struct zint_vector_circle *circles; /* Pointer to first circle */
     };
 
+    /* Structured Append info - ignored unless `zint_structapp.count` is set to non-zero value */
+    struct zint_structapp {
+        int index;          /* Position in Structured Append sequence, 1-based. Must be <= count */
+        int count;          /* Number of symbols in Structured Append sequence. Set >= 2 to add SA Info */
+        char id[32];        /* Optional ID to distinguish sequence, ASCII, NUL-terminated unless max 32 long */
+    };
+
     /* Main symbol structure */
     struct zint_symbol {
         int symbology;      /* Symbol to use (see BARCODE_XXX below) */
@@ -105,6 +112,7 @@ extern "C" {
         int eci;            /* Extended Channel Interpretation. Default 0 (none) */
         float dot_size;     /* Size of dots used in BARCODE_DOTTY_MODE */
         float guard_descent; /* Height in X-dimensions that UPC/EAN guard bars descend. Default 5 */
+        struct zint_structapp structapp; /* Structured Append info. Default structapp.count 0 (none) */
         int warn_level;     /* Affects error/warning value returned by Zint API (see WARN_XXX below) */
         int debug;          /* Debugging flags */
         unsigned char text[128]; /* Human Readable Text (if any), UTF-8, NUL-terminated (output only) */
@@ -314,6 +322,7 @@ extern "C" {
 #define ZINT_CAP_READER_INIT    0x0200  /* Supports Reader Initialisation? */
 #define ZINT_CAP_FULL_MULTIBYTE 0x0400  /* Supports full-multibyte option? */
 #define ZINT_CAP_MASK           0x0800  /* Is mask selectable? */
+#define ZINT_CAP_STRUCTAPP      0x1000  /* Supports Structured Append? */
 
 /* The largest amount of data that can be encoded is 4350 4-byte UTF-8 chars in Han Xin Code */
 #define ZINT_MAX_DATA_LEN       17400

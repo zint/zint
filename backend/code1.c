@@ -517,9 +517,38 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigne
         } else {
             target[tp++] = 232; /* FNC1 */
         }
-        /* Note ignoring ECI if GS1 mode (up to caller to warn) */
+        /* Note ignoring Structured Append and ECI if GS1 mode (up to caller to warn/error) */
     } else {
-        if (symbol->eci) {
+        if (symbol->structapp.count) {
+            if (symbol->structapp.count < 16) { /* Group mode */
+                if (symbol->eci && symbol->structapp.index == 1) { /* Initial pad indicator for 1st symbol only */
+                    target[tp++] = 129; /* Pad */
+                    target[tp++] = 233; /* FNC2 */
+                    target[tp++] = (symbol->structapp.index - 1) * 15 + (symbol->structapp.count - 1);
+                    target[tp++] = '\\' + 1; /* Escape char */
+                } else {
+                    target[tp++] = (symbol->structapp.index - 1) * 15 + (symbol->structapp.count - 1);
+                    target[tp++] = 233; /* FNC2 */
+                }
+            } else { /* Extended Group mode */
+                if (symbol->eci && symbol->structapp.index == 1) { /* Initial pad indicator for 1st symbol only */
+                    target[tp++] = 129; /* Pad */
+                    target[tp++] = '\\' + 1; /* Escape char */
+                    target[tp++] = 233; /* FNC2 */
+                    target[tp++] = symbol->structapp.index;
+                    target[tp++] = symbol->structapp.count;
+                } else {
+                    target[tp++] = symbol->structapp.index;
+                    target[tp++] = symbol->structapp.count;
+                    target[tp++] = 233; /* FNC2 */
+                }
+            }
+            if (symbol->eci) {
+                eci_escape(symbol->eci, source, length, eci_buf, eci_length);
+                source = eci_buf;
+                length = eci_length;
+            }
+        } else if (symbol->eci) {
             target[tp++] = 129; /* Pad */
             target[tp++] = '\\' + 1; /* Escape char */
             eci_escape(symbol->eci, source, length, eci_buf, eci_length);
@@ -942,6 +971,25 @@ INTERNAL int code_one(struct zint_symbol *symbol, unsigned char source[], int le
         return ZINT_ERROR_INVALID_OPTION;
     }
 
+    if (symbol->structapp.count) {
+        if ((symbol->input_mode & 0x07) == GS1_MODE) {
+            strcpy(symbol->errtxt, "710: Cannot have Structured Append and GS1 mode at the same time");
+            return ZINT_ERROR_INVALID_OPTION;
+        }
+        if (symbol->structapp.count < 2 || symbol->structapp.count > 128) {
+            strcpy(symbol->errtxt, "711: Structured Append count out of range (2-128)");
+            return ZINT_ERROR_INVALID_OPTION;
+        }
+        if (symbol->structapp.index < 1 || symbol->structapp.index > symbol->structapp.count) {
+            sprintf(symbol->errtxt, "712: Structured Append index out of range (1-%d)", symbol->structapp.count);
+            return ZINT_ERROR_INVALID_OPTION;
+        }
+        if (symbol->structapp.id[0]) {
+            strcpy(symbol->errtxt, "713: Structured Append ID not available for Code One");
+            return ZINT_ERROR_INVALID_OPTION;
+        }
+    }
+
     if (symbol->option_2 == 9) {
         /* Version S */
         int codewords;
@@ -949,6 +997,10 @@ INTERNAL int code_one(struct zint_symbol *symbol, unsigned char source[], int le
         unsigned int data[30], ecc[15];
         int block_width;
 
+        if (symbol->structapp.count) { /* Version S */
+            strcpy(symbol->errtxt, "714: Structured Append not supported for Version S");
+            return ZINT_ERROR_INVALID_OPTION;
+        }
         if (length > 18) {
             strcpy(symbol->errtxt, "514: Input data too long for Version S");
             return ZINT_ERROR_TOO_LONG;
@@ -1460,7 +1512,10 @@ INTERNAL int code_one(struct zint_symbol *symbol, unsigned char source[], int le
 
     if (symbol->option_2 == 9) { /* Version S */
         if (symbol->eci || (symbol->input_mode & 0x07) == GS1_MODE) {
-            strcpy(symbol->errtxt, "511: ECI and GS1 mode ignored for Version S");
+            sprintf(symbol->errtxt, "511: %s ignored for Version S",
+                    symbol->eci && (symbol->input_mode & 0x07) == GS1_MODE
+                        ? "ECI and GS1 mode"
+                        : symbol->eci ? "ECI" : "GS1 mode");
             error_number = ZINT_WARN_INVALID_OPTION;
         }
     } else if (symbol->eci && (symbol->input_mode & 0x07) == GS1_MODE) {

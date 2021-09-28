@@ -796,7 +796,7 @@ static int ultra_generate_codewords(struct zint_symbol *symbol, const unsigned c
     mode[crop_length] = '\0';
 
     if (symbol->debug & ZINT_DEBUG_PRINT) {
-        printf("Mode: %s (%d)\n", mode, (int) strlen(mode));
+        printf("Mode (%d): %s\n", (int) strlen(mode), mode);
     }
 
     /* Use results from test to perform actual mode switching */
@@ -858,6 +858,8 @@ static int ultra_generate_codewords(struct zint_symbol *symbol, const unsigned c
 INTERNAL int ultracode(struct zint_symbol *symbol, unsigned char source[], int length) {
     int data_cw_count = 0;
     int acc, qcc;
+    int scr[3] = {0}, scr_cw_count = 0; /* Symbol Control Region (only if have Structured Append) */
+    int dr_count;
     int ecc_level;
     int rows, columns;
     int total_cws;
@@ -875,14 +877,57 @@ INTERNAL int ultracode(struct zint_symbol *symbol, unsigned char source[], int l
     char *pattern;
 #endif /* _MSC_VER */
 
-    cw_memalloc = length * 2;
-    if (cw_memalloc < 283) {
-        cw_memalloc = 283;
-    }
-
     if (symbol->eci > 811799) {
         strcpy(symbol->errtxt, "590: ECI value not supported by Ultracode");
         return ZINT_ERROR_INVALID_OPTION;
+    }
+
+    if (symbol->structapp.count) {
+        int link2 = 2; /* Draft Table 7, Structured Append Group (SAG) with no File Number */
+
+        if (symbol->structapp.count < 2 || symbol->structapp.count > 8) {
+            strcpy(symbol->errtxt, "558: Structured Append count out of range (2-8)");
+            return ZINT_ERROR_INVALID_OPTION;
+        }
+        if (symbol->structapp.index < 1 || symbol->structapp.index > symbol->structapp.count) {
+            sprintf(symbol->errtxt, "559: Structured Append index out of range (1-%d)", symbol->structapp.count);
+            return ZINT_ERROR_INVALID_OPTION;
+        }
+        scr_cw_count = 1;
+
+        if (symbol->structapp.id[0]) {
+            int id, id_len;
+
+            for (id_len = 0; id_len < 32 && symbol->structapp.id[id_len]; id_len++);
+
+            if (id_len > 5) { /* 282 * 283 + 282 = 80088 */
+                strcpy(symbol->errtxt, "727: Structured Append ID too long (5 digit maximum)");
+                return ZINT_ERROR_INVALID_OPTION;
+            }
+
+            id = to_int((const unsigned char *) symbol->structapp.id, id_len);
+            if (id == -1) {
+                strcpy(symbol->errtxt, "728: Invalid Structured Append ID (digits only)");
+                return ZINT_ERROR_INVALID_OPTION;
+            }
+            if (id > 80088) {
+                sprintf(symbol->errtxt, "729: Structured Append ID '%d' out of range (1-80088)", id);
+                return ZINT_ERROR_INVALID_OPTION;
+            }
+            if (id) {
+                link2 = 3; /* Missing from draft Table 7 but mentioned 7.4.3 - SAG with File Number */
+                scr[1] = id / 283;
+                scr[2] = id % 283; /* 7.4.3.2 says 1-282 but can be 0 if id >= 283 */
+                scr_cw_count += 2;
+            }
+        }
+
+        scr[0] = link2 * 70 + (symbol->structapp.count - 1) * 8 + symbol->structapp.index - 1;
+    }
+
+    cw_memalloc = length * 2;
+    if (cw_memalloc < 283) {
+        cw_memalloc = 283;
     }
 
 #ifndef _MSC_VER
@@ -906,7 +951,7 @@ INTERNAL int ultracode(struct zint_symbol *symbol, unsigned char source[], int l
     }
 #endif
 
-    data_cw_count += 2; // 2 == MCC + ACC (data codeword count includes start char)
+    data_cw_count += 2 + scr_cw_count; // 2 == MCC + ACC (data codeword count includes start char)
 
     /* Default ECC level is EC2 */
     if ((symbol->option_1 <= 0) || (symbol->option_1 > 6)) {
@@ -926,10 +971,23 @@ INTERNAL int ultracode(struct zint_symbol *symbol, unsigned char source[], int l
         }
 
     }
-    acc = qcc - 3;
-
     if (symbol->debug & ZINT_DEBUG_PRINT) {
         printf("EC%d codewords: %d\n", ecc_level + 1, qcc);
+    }
+
+    acc = qcc - 3;
+    if (scr_cw_count) {
+        acc += 70; /* Link1 = 1 (* 70) means SCR present */
+    }
+    if (symbol->debug & ZINT_DEBUG_PRINT) {
+        printf("MCC: %d, ACC: %d, SCR: %d", data_cw_count, acc, scr_cw_count);
+        if (scr_cw_count) {
+            printf(", SCR0: %d", scr[0]);
+            if (scr_cw_count > 1) {
+                printf(", SCR1: %d, SCR2: %d", scr[1], scr[2]);
+            }
+        }
+        printf("\n");
     }
 
     /* Maximum capacity is 282 codewords */
@@ -941,8 +999,8 @@ INTERNAL int ultracode(struct zint_symbol *symbol, unsigned char source[], int l
 
     rows = 5;
     for (i = 2; i >= 0; i--) {
-        // Total codewords less 6 overhead (Start + MCC + ACC + 3 TCC/RSEC/QCC patterns)
-        if (total_cws - 6 <= ultra_maxsize[i]) {
+        // Total codewords less 6 (+ SCR) overhead (Start + MCC + ACC (+ SCR) + 3 TCC/RSEC/QCC patterns)
+        if (total_cws - (6 + scr_cw_count) <= ultra_maxsize[i]) {
             rows--;
         }
     }
@@ -957,17 +1015,19 @@ INTERNAL int ultracode(struct zint_symbol *symbol, unsigned char source[], int l
     columns += columns / 15; // Secondary vertical clock tracks
 
     if (symbol->debug & ZINT_DEBUG_PRINT) {
-        printf("Calculated size is %d rows by %d columns\n", rows, columns);
+        printf("Calculated size is %d rows by %d columns (pads %d)\n", rows, columns, pads);
     }
 
-    /* Insert MCC and ACC into data codewords */
-    for (i = 282; i > 2; i--) {
-        data_codewords[i] = data_codewords[i - 2];
+    /* Insert MCC and ACC and possibly SCR into data codewords */
+    for (i = 282; i > 2 + scr_cw_count; i--) {
+        data_codewords[i] = data_codewords[i - (2 + scr_cw_count)];
     }
     data_codewords[1] = data_cw_count; // MCC
     data_codewords[2] = acc; // ACC
+    for (i = 0; i < scr_cw_count; i++) { // SCR
+        data_codewords[3 + i] = scr[i];
+    }
 
-    locn = 0;
     /* Calculate error correction codewords (RSEC) */
 
     ultra_gf283((short) data_cw_count, (short) qcc, data_codewords);
@@ -981,6 +1041,7 @@ INTERNAL int ultracode(struct zint_symbol *symbol, unsigned char source[], int l
     }
 
     /* Rearrange to make final codeword sequence */
+    locn = 0;
     codeword[locn++] = data_codewords[282 - (data_cw_count + qcc)]; // Start Character
     codeword[locn++] = data_cw_count; // MCC
     for (i = 0; i < qcc; i++) {
@@ -989,8 +1050,12 @@ INTERNAL int ultracode(struct zint_symbol *symbol, unsigned char source[], int l
     codeword[locn++] = data_cw_count + qcc; // TCC = C + Q - section 6.11.4
     codeword[locn++] = 283; // Separator
     codeword[locn++] = acc; // ACC
-    for (i = 0; i < (data_cw_count - 3); i++) {
-        codeword[locn++] = data_codewords[(282 - ((data_cw_count - 3) + qcc)) + i]; // Data Region
+    for (i = 0; i < scr_cw_count; i++) { // SCR
+        codeword[locn++] = scr[i];
+    }
+    dr_count = data_cw_count - (3 + scr_cw_count);
+    for (i = 0; i < dr_count; i++) {
+        codeword[locn++] = data_codewords[(282 - (dr_count + qcc)) + i]; // Data Region
     }
     for (i = 0; i < pads; i++) {
         codeword[locn++] = 284; // Pad pattern

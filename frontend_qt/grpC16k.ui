@@ -69,6 +69,9 @@
      <property name="title">
       <string>Encoding Mode</string>
      </property>
+     <property name="toolTip">
+      <string>How to process data</string>
+     </property>
      <layout class="QGridLayout" name="gridLayoutC16kEncodingMode">
       <property name="sizeConstraint">
        <enum>QLayout::SetMinimumSize</enum>

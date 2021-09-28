@@ -36,7 +36,7 @@
 /* Static log/antilog tables for prime polys of up to degree 8 (> 8 too large so generated at runtime instead).
  * Antilog tables doubled to avoid mod. */
 
-/* Paste output of "./test_reedsol -f generate -g" here */
+/* Paste output of "backend/tests/test_reedsol -f generate -g" here */
 static const unsigned char logt_0x13[16] = {
     0x00, 0x00, 0x01, 0x04, 0x02, 0x08, 0x05, 0x0A, 0x03, 0x0E, 0x09, 0x07, 0x06, 0x0D, 0x0B, 0x0C,
 };

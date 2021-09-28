@@ -27,6 +27,9 @@
        <property name="text">
         <string>&amp;Number of Data Columns:</string>
        </property>
+       <property name="toolTip">
+        <string>Set the width of the symbol</string>
+       </property>
        <property name="alignment">
         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
        </property>
@@ -37,6 +40,9 @@
      </item>
      <item row="0" column="1">
       <widget class="QComboBox" name="cmbDotCols">
+       <property name="toolTip">
+        <string>Set the width of the symbol</string>
+       </property>
        <property name="maxVisibleItems">
         <number>21</number>
        </property>
@@ -1032,6 +1038,11 @@
        <property name="text">
         <string>&amp;Mask:</string>
        </property>
+       <property name="toolTip">
+        <string>Manually specify which mask to use
+The prime masks 0&apos; to 3&apos; are the same
+as 0 to 3 with the corners lit</string>
+       </property>
        <property name="buddy">
         <cstring>cmbDotMask</cstring>
        </property>
@@ -1041,6 +1052,11 @@
       <widget class="QComboBox" name="cmbDotMask">
        <property name="maxVisibleItems">
         <number>8</number>
+       </property>
+       <property name="toolTip">
+        <string>Manually specify which mask to use
+The prime masks 0&apos; to 3&apos; are the same
+as 0 to 3 with the corners lit</string>
        </property>
        <item>
         <property name="text">
@@ -1096,6 +1112,9 @@
      <property name="title">
       <string>Encoding Mode</string>
      </property>
+     <property name="toolTip">
+      <string>How to process data</string>
+     </property>
      <layout class="QGridLayout" name="gridLayoutDotEncodingMode">
       <property name="sizeConstraint">
        <enum>QLayout::SetMinimumSize</enum>
@@ -1104,6 +1123,9 @@
        <widget class="QRadioButton" name="radDotStand">
         <property name="text">
          <string>S&amp;tandard Mode</string>
+        </property>
+        <property name="toolTip">
+         <string>Process data as normal</string>
         </property>
         <property name="checked">
          <bool>true</bool>
@@ -1114,6 +1136,509 @@
        <widget class="QRadioButton" name="radDotGS1">
         <property name="text">
          <string>GS&amp;1 Data Mode</string>
+        </property>
+        <property name="toolTip">
+         <string>Process data as GS1 General Specifications data,
+formatted with Application Identifiers (AIs)</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBoxDotStructApp">
+     <property name="title">
+      <string>Structured Append</string>
+     </property>
+     <property name="toolTip">
+      <string>DotCode supports Structured Append of up to
+35 symbols</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayoutDotStructApp">
+      <item row="0" column="0">
+       <widget class="QLabel" name="lblDotStructAppCount">
+        <property name="text">
+         <string>C&amp;ount:</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignLeft|Qt::AlignLeading|Qt::AlignVCenter</set>
+        </property>
+        <property name="buddy">
+         <cstring>cmbDotStructAppCount</cstring>
+        </property>
+        <property name="toolTip">
+         <string>Mark symbol as part of a Structured Append sequence
+containing a total of this number of symbols
+Value ranges from 2 to 35</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="cmbDotStructAppCount">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="toolTip">
+         <string>Mark symbol as part of a Structured Append sequence
+containing a total of this number of symbols
+Value ranges from 2 to 35</string>
+        </property>
+        <item>
+         <property name="text">
+          <string>Disabled</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>2</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>3</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>4</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>5</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>6</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>7</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>8</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>9</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>10</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>11</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>12</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>13</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>14</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>15</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>16</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>17</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>18</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>19</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>20</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>21</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>22</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>23</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>24</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>25</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>26</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>27</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>28</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>29</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>30</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>31</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>32</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>33</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>34</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>35</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="0" column="2">
+       <spacer name="spacerDotStructApp2">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint">
+         <size>
+          <width>10</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+	  </item>
+      <item row="0" column="3">
+       <widget class="QLabel" name="lblDotStructAppIndex">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>Inde&amp;x:</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignLeft|Qt::AlignLeading|Qt::AlignVCenter</set>
+        </property>
+        <property name="buddy">
+         <cstring>cmbDotStructAppIndex</cstring>
+        </property>
+        <property name="toolTip">
+         <string>Position of symbol in Structured Append sequence
+Value ranges from 1 to count
+(ignored if disabled)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="4">
+       <widget class="QComboBox" name="cmbDotStructAppIndex">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="toolTip">
+         <string>Position of symbol in Structured Append sequence
+Value ranges from 1 to count
+(ignored if disabled)</string>
+        </property>
+        <item>
+         <property name="text">
+          <string>1</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>2</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>3</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>4</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>5</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>6</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>7</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>8</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>9</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>10</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>11</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>12</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>13</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>14</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>15</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>16</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>17</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>18</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>19</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>20</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>21</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>22</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>23</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>24</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>25</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>26</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>27</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>28</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>29</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>30</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>31</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>32</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>33</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>34</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>35</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="0" column="5">
+       <spacer name="spacerDotStructApp5">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint">
+         <size>
+          <width>10</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+	  </item>
+      <item row="0" column="6">
+       <widget class="QLabel" name="lblDotStructAppIDDisabled">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="toolTip">
+         <string>Structured Append ID not available for DotCode</string>
+        </property>
+        <property name="text">
+         <string>ID:</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignLeft|Qt::AlignLeading|Qt::AlignVCenter</set>
+        </property>
+        <property name="buddy">
+         <cstring>txtDotStructAppIDDisabled</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="7">
+       <widget class="QLineEdit" name="txtDotStructAppIDDisabled">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="toolTip">
+         <string>Structured Append ID not available for DotCode</string>
+        </property>
+        <property name="text">
+         <string>N/A</string>
         </property>
        </widget>
       </item>

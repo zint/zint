@@ -435,7 +435,7 @@ INTERNAL int set_height(struct zint_symbol *symbol, const float min_row_height, 
     return error_number;
 }
 
-/* Removes excess precision from floats - see https://stackoverflow.com/q/503436/664741 */
+/* Removes excess precision from floats - see https://stackoverflow.com/q/503436 */
 INTERNAL float stripf(const float arg) {
     return *((volatile const float *) &arg);
 }

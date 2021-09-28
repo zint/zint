@@ -922,6 +922,22 @@ static void test_other_opts(int index, int debug) {
         /* 21*/ { BARCODE_GS1_128, "[00]376104250021234568", -1, "", NULL, "Warning 261: AI (00) position 18: Bad checksum '8', expected '9'" },
         /* 22*/ { BARCODE_GS1_128, "[00]376104250021234568", -1, " --gs1nocheck", NULL, "" },
         /* 23*/ { BARCODE_GS1_128, "[00]376104250021234568", -1, " --werror", NULL, "Error 261: AI (00) position 18: Bad checksum '8', expected '9'" },
+        /* 24*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "1", "Error 155: Invalid Structured Append argument, expect \"index,count[,ID]\"" },
+        /* 25*/ { BARCODE_AZTEC, "1", -1, " --structapp=", ",", "Error 156: Structured Append index too short" },
+        /* 26*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "1234567890,", "Error 156: Structured Append index too long" },
+        /* 27*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "123456789,", "Error 159: Structured Append count too short" },
+        /* 28*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "123456789,1234567890", "Error 159: Structured Append count too long" },
+        /* 29*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "123456789,123456789,", "Error 158: Structured Append ID too short" },
+        /* 30*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "123456789,1234567890,", "Error 157: Structured Append count too long" },
+        /* 31*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "123456789,123456789,123456789012345678901234567890123", "Error 158: Structured Append ID too long" },
+        /* 32*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "123456789,123456789,12345678901234567890123456789012", "Error 701: Structured Append count out of range (2-26)" },
+        /* 33*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "26,26,12345678901234567890123456789012", "" },
+        /* 34*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "A,26,12345678901234567890123456789012", "Error 160: Invalid Structured Append index (digits only)" },
+        /* 35*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "26,A,12345678901234567890123456789012", "Error 161: Invalid Structured Append count (digits only)" },
+        /* 36*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "26,1,12345678901234567890123456789012", "Error 162: Invalid Structured Append count, must be >= 2" },
+        /* 37*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "0,2,12345678901234567890123456789012", "Error 163: Structured Append index out of range (1-2)" },
+        /* 38*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "3,2,12345678901234567890123456789012", "Error 163: Structured Append index out of range (1-2)" },
+        /* 39*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "2,3,12345678901234567890123456789012", "" },
     };
     int data_size = ARRAY_SIZE(data);
     int i;

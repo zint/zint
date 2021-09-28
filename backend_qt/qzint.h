@@ -72,6 +72,9 @@ public:
     float guardDescent() const;
     void setGuardDescent(float guardDescent);
 
+    void setStructApp(const int count, const int index, const QString& id);
+    void clearStructApp();
+
     QColor fgColor() const;
     void setFgColor(const QColor& fgColor);
 
@@ -143,7 +146,7 @@ public:
 
     /* Note: legacy argument `mode` is not used */
     void render(QPainter& painter, const QRectF& paintRect, AspectRatioMode mode = IgnoreAspectRatio);
-    
+
     int getVersion() const;
 
 signals:
@@ -181,6 +184,7 @@ private:
     bool m_dotty;
     float m_dot_size;
     float m_guardDescent;
+    struct zint_structapp m_structapp;
     bool m_gs1parens;
     bool m_gs1nocheck;
     bool m_gssep;
@@ -193,6 +197,6 @@ private:
     int target_size_vert; /* Legacy */
 };
 
-}
+} /* namespace Zint */
 
 #endif /* QZINT_H */

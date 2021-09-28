@@ -37,7 +37,7 @@
 #endif /* _MSC_VER */
 
 /* It's assumed that int is at least 32 bits, the following will compile-time fail if not
- * https://stackoverflow.com/a/1980056/664741 */
+ * https://stackoverflow.com/a/1980056 */
 typedef int static_assert_int_at_least_32bits[CHAR_BIT != 8 || sizeof(int) < 4 ? -1 : 1];
 
 #ifndef ARRAY_SIZE
@@ -104,7 +104,7 @@ static void usage(void) {
     int version_minor = (zint_version % 10000) / 100;
     int version_release = zint_version % 100;
     int version_build;
-    
+
     if (version_release >= 9) {
         /* This is a test release */
         version_release = version_release / 10;
@@ -114,7 +114,7 @@ static void usage(void) {
         /* This is a stable release */
         printf( "Zint version %d.%d.%d\n", version_major, version_minor, version_release);
     }
-    
+
     printf( "Encode input data in a barcode and save as BMP/EMF/EPS/GIF/PCX/PNG/SVG/TIF/TXT\n\n"
             "  -b, --barcode=TYPE    Number or name of barcode type. Default is 20 (CODE128)\n"
             "  --addongap=NUMBER     Set add-on gap in multiples of X-dimension for UPC/EAN\n"
@@ -166,6 +166,7 @@ static void usage(void) {
             "  --separator=NUMBER    Set height of row separator bars (stacked symbologies)\n"
             "  --small               Use small text\n"
             "  --square              Force Data Matrix symbols to be square\n"
+            "  --structapp=I,C[,ID]  Set Structured Append info (I index, C count)\n"
             "  -t, --types           Display table of barcode types\n"
             "  --vers=NUMBER         Set symbol version (size, check digits, other options)\n"
             "  --vwhitesp=NUMBER     Set height of vertical whitespace in multiples of X-dim\n"
@@ -497,6 +498,61 @@ static int is_raster(const char *filetype, const int no_png) {
     return 0;
 }
 
+/* Parse and validate Structured Append argument "index,count[,ID]" to "--structapp" */
+int validate_structapp(const char *optarg, struct zint_structapp *structapp) {
+    char index[10] = {0}, count[10] = {0};
+    const char *comma = strchr(optarg, ',');
+    const char *comma2;
+    if (!comma) {
+        fprintf(stderr, "Error 155: Invalid Structured Append argument, expect \"index,count[,ID]\"\n");
+        return 0;
+    }
+    if (comma == optarg || comma - optarg > 9) {
+        fprintf(stderr, "Error 156: Structured Append index too %s\n", comma == optarg ? "short" : "long");
+        return 0;
+    }
+    strncpy(index, optarg, comma - optarg);
+    comma++;
+    comma2 = strchr(comma, ',');
+    if (comma2) {
+        if (comma2 == comma || comma2 - comma > 9) {
+            fprintf(stderr, "Error 157: Structured Append count too %s\n", comma2 == comma ? "short" : "long");
+            return 0;
+        }
+        strncpy(count, comma, comma2 - comma);
+        comma2++;
+        if (!*comma2 || strlen(comma2) > 32) {
+            fprintf(stderr, "Error 158: Structured Append ID too %s\n", !*comma2 ? "short" : "long");
+            return 0;
+        }
+        strncpy(structapp->id, comma2, 32);
+    } else {
+        if (!*comma || strlen(comma) > 9) {
+            fprintf(stderr, "Error 159: Structured Append count too %s\n", !*comma ? "short" : "long");
+            return 0;
+        }
+        strcpy(count, comma);
+    }
+    if (!validate_int(index, &structapp->index)) {
+        fprintf(stderr, "Error 160: Invalid Structured Append index (digits only)\n");
+        return 0;
+    }
+    if (!validate_int(count, &structapp->count)) {
+        fprintf(stderr, "Error 161: Invalid Structured Append count (digits only)\n");
+        return 0;
+    }
+    if (structapp->count < 2) {
+        fprintf(stderr, "Error 162: Invalid Structured Append count, must be >= 2\n");
+        return 0;
+    }
+    if (structapp->index < 1 || structapp->index > structapp->count) {
+        fprintf(stderr, "Error 163: Structured Append index out of range (1-%d)\n", structapp->count);
+        return 0;
+    }
+
+    return 1;
+}
+
 /* Batch mode - output symbol for each line of text in `filename` */
 static int batch_process(struct zint_symbol *symbol, const char *filename, const int mirror_mode,
             const char *filetype, const int rotate_angle) {
@@ -807,8 +863,8 @@ int main(int argc, char **argv) {
             OPT_HEIGHT, OPT_INIT, OPT_MIRROR, OPT_MASK, OPT_MODE,
             OPT_NOBACKGROUND, OPT_NOQUIETZONES, OPT_NOTEXT, OPT_PRIMARY, OPT_QUIETZONES,
             OPT_ROTATE, OPT_ROWS, OPT_SCALE, OPT_SCMVV,
-            OPT_SECURE, OPT_SEPARATOR, OPT_SMALL, OPT_SQUARE, OPT_VERBOSE, OPT_VERS,
-            OPT_VWHITESP, OPT_WERROR,
+            OPT_SECURE, OPT_SEPARATOR, OPT_SMALL, OPT_SQUARE, OPT_STRUCTAPP,
+            OPT_VERBOSE, OPT_VERS, OPT_VWHITESP, OPT_WERROR,
         };
         int option_index = 0;
         static struct option long_options[] = {
@@ -863,6 +919,7 @@ int main(int argc, char **argv) {
             {"separator", 1, NULL, OPT_SEPARATOR},
             {"small", 0, NULL, OPT_SMALL},
             {"square", 0, NULL, OPT_SQUARE},
+            {"structapp", 1, NULL, OPT_STRUCTAPP},
             {"types", 0, NULL, 't'},
             {"verbose", 0, NULL, OPT_VERBOSE}, // Currently undocumented, output some debug info
             {"vers", 1, NULL, OPT_VERS},
@@ -1026,7 +1083,8 @@ int main(int argc, char **argv) {
                 if (float_opt >= 0.0f && float_opt <= 50.0f) {
                     my_symbol->guard_descent = float_opt;
                 } else {
-                    fprintf(stderr, "Warning 155: Guard bar descent '%g' out of range (0 to 50), ignoring\n", float_opt);
+                    fprintf(stderr, "Warning 155: Guard bar descent '%g' out of range (0 to 50), ignoring\n",
+                            float_opt);
                     fflush(stderr);
                 }
                 break;
@@ -1035,7 +1093,8 @@ int main(int argc, char **argv) {
                 if (float_opt >= 0.5f && float_opt <= 1000.0f) {
                     my_symbol->height = float_opt;
                 } else {
-                    fprintf(stderr, "Warning 110: Symbol height '%g' out of range (0.5 to 1000), ignoring\n", float_opt);
+                    fprintf(stderr, "Warning 110: Symbol height '%g' out of range (0.5 to 1000), ignoring\n",
+                            float_opt);
                     fflush(stderr);
                 }
                 break;
@@ -1178,6 +1237,12 @@ int main(int argc, char **argv) {
                 break;
             case OPT_SQUARE:
                 my_symbol->option_3 = DM_SQUARE;
+                break;
+            case OPT_STRUCTAPP:
+                memset(&my_symbol->structapp, 0, sizeof(my_symbol->structapp));
+                if (!validate_structapp(optarg, &my_symbol->structapp)) {
+                    return do_exit(1);
+                }
                 break;
             case OPT_VERBOSE:
                 my_symbol->debug = 1;

@@ -127,6 +127,9 @@
 - iHeight check int -> double
 2021-09-24 GL
 - Added -quietzones and -noquietzones options
+2021-09-27 GL
+- Added -structapp
+- Split up -to parsing (could seg fault if given non-int for X0 or Y0)
 */
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
@@ -429,7 +432,6 @@ static int s_eci_number[] = {
     3,4,5,6,7,8,9,10,11,12,13,15,16,17,18,20,21,22,23,24,25,26,27,28,29,30
 };
 
-
 /* Version information */
 static char version_string[] = VERSION;
 /* Help text */
@@ -489,6 +491,7 @@ static char help_message[] = "zint tcl(stub,obj) dll\n"
     /* cli option --small replaced by -smalltext */
     "   -smalltext bool: tiny interpretation line font\n"
     "   -square bool: force Data Matrix symbols to be square\n"
+    "   -structapp {index count ?id?}: set Structured Append info\n"
     /* cli option --types not supported */
     "   -vers integer: Symbology option\n"
     "   -vwhitesp integer: vertical quiet zone in modules\n"
@@ -717,7 +720,7 @@ static int Encode(Tcl_Interp *interp, int objc,
             "-height", "-init", "-mask", "-mode",
             "-nobackground", "-noquietzones", "-notext", "-primary", "-quietzones",
             "-reverse", "-rotate", "-rows", "-scale", "-scmvv",
-            "-secure", "-separator", "-smalltext", "-square",
+            "-secure", "-separator", "-smalltext", "-square", "-structapp",
             "-to", "-vers", "-vwhitesp", "-werror", "-whitesp",
             NULL};
         enum iOption {
@@ -727,7 +730,7 @@ static int Encode(Tcl_Interp *interp, int objc,
             iHeight, iInit, iMask, iMode,
             iNoBackground, iNoQuietZones, iNoText, iPrimary, iQuietZones,
             iReverse, iRotate, iRows, iScale, iSCMvv,
-            iSecure, iSeparator, iSmallText, iSquare,
+            iSecure, iSeparator, iSmallText, iSquare, iStructApp,
             iTo, iVers, iVWhiteSp, iWError, iWhiteSp
             };
         int optionIndex;
@@ -819,7 +822,7 @@ static int Encode(Tcl_Interp *interp, int objc,
             Tcl_UtfToExternalDString( hZINTEncoding, pStr, lStr, &dString);
             if (Tcl_DStringLength(&dString) > (optionIndex==iPrimary?90:250)) {
                 Tcl_DStringFree(&dString);
-                Tcl_SetObjResult(interp,Tcl_NewStringObj("String to long", -1));
+                Tcl_SetObjResult(interp,Tcl_NewStringObj("String too long", -1));
                 fError = 1;
             }
             break;
@@ -1109,6 +1112,54 @@ static int Encode(Tcl_Interp *interp, int objc,
         case iWhiteSp:
             my_symbol->whitespace_width = intValue;
             break;
+        case iStructApp:
+            /* >> Decode the -structapp parameter as list of index count ?ID? */
+            {
+                Tcl_Obj *poParam;
+                struct zint_structapp structapp = { 0, 0, "" };
+                char *pStructAppId = NULL;
+                int lStructAppId = 0;
+                if (TCL_OK != Tcl_ListObjLength(interp,
+                    objv[optionPos+1], &lStr))
+                {
+                    fError = 1;
+                } else if ( ! ( lStr == 2 || lStr == 3 ) ) {
+                    Tcl_SetObjResult(interp,
+                        Tcl_NewStringObj(
+                        "option -structapp not a list of 2 or 3", -1));
+                    fError = 1;
+                } else {
+                    if (TCL_OK != Tcl_ListObjIndex(interp, objv[optionPos+1],
+                        0, &poParam)
+                        || TCL_OK != Tcl_GetIntFromObj(interp, poParam, &structapp.index)
+                        || TCL_OK != Tcl_ListObjIndex(interp, objv[optionPos+1],
+                            1, &poParam)
+                        || TCL_OK != Tcl_GetIntFromObj(interp, poParam, &structapp.count))
+                    {
+                        fError = 1;
+                    }
+                    if (!fError && lStr == 3 && (
+                        TCL_OK != Tcl_ListObjIndex(interp, objv[optionPos+1],
+                            2, &poParam)
+                        || !(pStructAppId = Tcl_GetStringFromObj(poParam, &lStructAppId))
+                        || lStructAppId > 32
+                        ))
+                    {
+                        if (lStructAppId > 32) {
+                            Tcl_SetObjResult(interp,
+                                Tcl_NewStringObj("Structured Append ID too long", -1));
+                        }
+                        fError = 1;
+                    }
+                    if (!fError) {
+                        my_symbol->structapp = structapp;
+                        if (lStr == 3 && pStructAppId && lStructAppId) {
+                            strncpy(my_symbol->structapp.id, pStructAppId, lStructAppId);
+                        }
+                    }
+                }
+            }
+            break;
         case iTo:
             /* >> Decode the -to parameter as list of X0 Y0 ?Width Height? */
             {
@@ -1122,25 +1173,29 @@ static int Encode(Tcl_Interp *interp, int objc,
                         Tcl_NewStringObj(
                         "option -to not a list of 2 or 4", -1));
                     fError = 1;
-                } else if ((
-                    TCL_OK != Tcl_ListObjIndex(interp, objv[optionPos+1],
-                        0, &poParam)
-                    || TCL_OK != Tcl_GetIntFromObj(interp,poParam,&destX0)
-                    || TCL_OK != Tcl_ListObjIndex(interp, objv[optionPos+1],
-                        1, &poParam)
-                    || TCL_OK != Tcl_GetIntFromObj(interp,poParam,&destY0)
-                    || lStr == 4) && (
-                    TCL_OK != Tcl_ListObjIndex(interp, objv[optionPos+1],
-                        2, &poParam)
-                    || TCL_OK != Tcl_GetIntFromObj(interp,poParam,
-                        &destWidth)
-                    || TCL_OK != Tcl_ListObjIndex(interp, objv[optionPos+1],
-                        3, &poParam)
-                    || TCL_OK != Tcl_GetIntFromObj(interp,poParam,
-                        &destHeight)
-                    ))
-                {
-                    fError = 1;
+                } else {
+                    if (TCL_OK != Tcl_ListObjIndex(interp, objv[optionPos+1],
+                            0, &poParam)
+                        || TCL_OK != Tcl_GetIntFromObj(interp,poParam,&destX0)
+                        || TCL_OK != Tcl_ListObjIndex(interp, objv[optionPos+1],
+                            1, &poParam)
+                        || TCL_OK != Tcl_GetIntFromObj(interp,poParam,&destY0))
+                    {
+                        fError = 1;
+                    }
+                    if (!fError && lStr == 4 && (
+                        TCL_OK != Tcl_ListObjIndex(interp, objv[optionPos+1],
+                            2, &poParam)
+                        || TCL_OK != Tcl_GetIntFromObj(interp,poParam,
+                            &destWidth)
+                        || TCL_OK != Tcl_ListObjIndex(interp, objv[optionPos+1],
+                            3, &poParam)
+                        || TCL_OK != Tcl_GetIntFromObj(interp,poParam,
+                            &destHeight)
+                        ))
+                    {
+                        fError = 1;
+                    }
                 }
             }
             break;

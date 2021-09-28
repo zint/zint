@@ -1151,7 +1151,7 @@ INTERNAL int dpd_parcel(struct zint_symbol *symbol, unsigned char source[], int 
     }
 
     if ((identifier < 32) || (identifier > 127)) {
-        strcpy(symbol->errtxt, "301: Invalid DPD identifier (first character), ASCII values 32 to 127 only");
+        strcpy(symbol->errtxt, "343: Invalid DPD identifier (first character), ASCII values 32 to 127 only");
         return ZINT_ERROR_INVALID_DATA;
     }
 

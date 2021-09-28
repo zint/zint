@@ -88,7 +88,7 @@ Default 5
 (ignored if disabled)</string>
        </property>
        <property name="text">
-        <string>G&amp;uard Bar Descent:</string>
+        <string>Guard Bar Des&amp;cent:</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>

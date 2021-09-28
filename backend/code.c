@@ -533,8 +533,8 @@ typedef const struct s_channel_precalc {
 //#define CHANNEL_GENERATE_PRECALCS
 
 #ifdef CHANNEL_GENERATE_PRECALCS
-/* To generate precalc tables uncomment CHANNEL_GENERATE_PRECALCS define and run "./test_channel -f generate -g" and
-   place result in "channel_precalcs.h" */
+/* To generate precalc tables uncomment CHANNEL_GENERATE_PRECALCS define and run
+   "backend/tests/test_channel -f generate -g" and place result in "channel_precalcs.h" */
 static void channel_generate_precalc(int channels, long value, int mod, int last, int B[8], int S[8], int bmax[7],
             int smax[7]) {
     int i;
@@ -706,7 +706,7 @@ INTERNAL int channel_code(struct zint_symbol *symbol, unsigned char source[], in
 
     if (target_value > max_ranges[channels]) {
         if (channels == 8) {
-            sprintf(symbol->errtxt, "305: Value out of range (0 to %d)", max_ranges[channels]);
+            sprintf(symbol->errtxt, "318: Value out of range (0 to %d)", max_ranges[channels]);
         } else {
             sprintf(symbol->errtxt, "335: Value out of range (0 to %d) for %d channels",
                     max_ranges[channels], channels);

@@ -70,11 +70,13 @@ static int c25_common(struct zint_symbol *symbol, const unsigned char source[], 
     int have_checkdigit = symbol->option_2 == 1 || symbol->option_2 == 2;
 
     if (length > max) {
+        /* errtxt 301: 303: 305: 307: */
         sprintf(symbol->errtxt, "%d: Input too long (%d character maximum)", error_base, max);
         return ZINT_ERROR_TOO_LONG;
     }
     error_number = is_sane(NEON, source, length);
     if (error_number == ZINT_ERROR_INVALID_DATA) {
+        /* errtxt 302: 304: 306: 308: */
         sprintf(symbol->errtxt, "%d: Invalid character in data (digits only)", error_base + 1);
         return error_number;
     }

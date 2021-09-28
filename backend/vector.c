@@ -378,8 +378,8 @@ static void vector_reduce_rectangles(struct zint_symbol *symbol) {
         target = prev->next;
 
         while (target) {
-            if ((rect->x == target->x) && (rect->width == target->width) && (stripf(rect->y + rect->height) == target->y)
-                    && (rect->colour == target->colour)) {
+            if ((rect->x == target->x) && (rect->width == target->width)
+                    && (stripf(rect->y + rect->height) == target->y) && (rect->colour == target->colour)) {
                 rect->height += target->height;
                 prev->next = target->next;
                 free(target);

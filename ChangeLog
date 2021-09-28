@@ -24,6 +24,8 @@ Changes
 - Add output_options BARCODE_QUIET_ZONES and BARCODE_NO_QUIET_ZONES
 - Allow dummy AI "[]" if GS1NOCHECK_MODE and has data (#204)
 - raster.c: improve non-half-integer interpolation performance
+- Add Structured Append support for AZTEC, CODEONE, DATAMATRIX, DOTCODE,
+  GRIDMATRIX, MAXICODE, MICROPDF417, PDF417, QRCODE, ULTRA
 
 Bugs
 ----

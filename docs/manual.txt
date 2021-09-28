@@ -478,7 +478,6 @@ vector files so that...
 zint --bg=ff0000 --fg=ffffff00 ...
 
 will give different results for PNG and SVG. Experimentation is advised!
-Also note that these options don't work properly with MaxiCode yet.
 
 In addition the --nobackground option will simply remove the background from
 PNG, GIF, TIF, SVG, EMF and EPS files.
@@ -765,7 +764,7 @@ PCX          |  ZSoft Paintbrush image
 PNG          |  Portable Network Graphic
 SVG          |  Scalable Vector Graphic
 TIF          |  Tagged Image File Format
-TXT          |  Text file (see 4.16)
+TXT          |  Text file (see 4.17)
 --------------------------------------------------------------
 
 =============================================================================
@@ -799,7 +798,26 @@ minimum dot size is 0.01, the maximum is 20.
 
 The default and minimum scale for raster output in dotty mode is 1.
 
-4.15 Help options
+4.15 Structured Append
+----------------------
+Structured Append is a method of splitting data among several symbols so that
+they form a sequence that can be scanned and re-assembled in the correct order
+on reading, and is available for Aztec Code, Code One, Data Matrix, DotCode,
+Grid Matrix, MaxiCode, MicroPDF417, PDF417, QR Code and Ultracode.
+
+The --structapp option marks a symbol as part of a Structured Append sequence,
+and has the format
+
+--structapp=I,C[,ID]
+
+where I is the index (position) of the symbol in the Structured Append sequence,
+C is the count or total number of symbols in the sequence, and ID is an optional
+identifier (not available for Code One, DotCode or MaxiCode) that is the same
+for all symbols belonging to the same sequence. The index is 1-based and goes
+from 1 to count. Count must be 2 or more. See the individual symbologies for
+further details.
+
+4.16 Help options
 -----------------
 There are three help options which give information about how to use the
 command line. The -h or --help option will display a list of all of the valid
@@ -810,7 +828,7 @@ ID numbers and names.
 
 The -e or --ecinos option gives a list of the ECI codes.
 
-4.16 Other output options
+4.17 Other output options
 -------------------------
 For linear barcodes the text present in the output image can be removed by
 using the --notext option.
@@ -1108,6 +1126,9 @@ dot_size          | float        | Size of dots used in dotty  | 4.0 / 5.0
                   |              |    mode.                    |
 guard_descent     | float        | Height of guard bar descent | 5.0
                   |              |    (UPC/EAN only).          |
+structapp         | Structured   | Mark a symbol as part of a  | count 0
+                  |    Append    |    sequence of symbols.     |   (disabled)
+                  |    structure |                             |
 warn_level        | integer      | Affects error/warning value | WARN_DEFAULT
                   |              |    returned by Zint API.    |
 text              | unsigned     | Human Readable Text, which  | "" (empty)
@@ -1512,11 +1533,13 @@ ZINT_CAP_ECI             |  Does the symbology support Extended Channel
                          |     Interpretations?
 ZINT_CAP_GS1             |  Does the symbology support GS1 data?
 ZINT_CAP_DOTTY           |  Can the symbology be outputted as dots?
+ZINT_CAP_QUIET_ZONES     |  Does the symbology have default quiet zones?
 ZINT_CAP_FIXED_RATIO     |  Does the symbology have a fixed width-to-height
                          |     (aspect) ratio?
 ZINT_CAP_READER_INIT     |  Does the symbology support Reader Initialisation?
 ZINT_CAP_FULL_MULTIBYTE  |  Is the ZINT_FULL_MULTIBYTE option applicable?
 ZINT_CAP_MASK            |  Is mask selection applicable?
+ZINT_CAP_STRUCTAPP       |  Does the symbology support Structured Append?
 -------------------------------------------------------------------------------
 
 For example:
@@ -2050,6 +2073,13 @@ mechanism. A separate symbology ID can be used to encode Health Industry
 Barcode (HIBC) data which adds a leading '+' character and a modulo-49 check
 digit to the encoded data.
 
+PDF417 supports Structured Append of up to a 99,999 symbols and a numeric ID of
+up to 30 digits, which can be set by using the --structapp option (see section
+4.15) or the API structapp variable. The ID consists of up to 10 triplets, each
+ranging from "000" to "899". For instance "123456789" would be a valid ID of 3
+triplets. However "123456900" would not, as the last triplet "900" exceeds
+"899". The triplets are 0-filled, for instance "1234" becomes "123004".
+
 6.2.5 Compact PDF417
 --------------------
 Previously known as Truncated PDF417. Options are the same as for PDF417 above.
@@ -2065,7 +2095,8 @@ determined using the --cols switch or option_2 as with PDF417. This symbology
 uses Latin-1 character encoding by default but also supports the ECI encoding
 mechanism. A separate symbology ID can be used to encode Health Industry
 Barcode (HIBC) data which adds a leading '+' character and a modulo-49 check
-digit to the encoded data.
+digit to the encoded data. MicroPDF417 supports Structured Append the same as
+PDF417, for which see details.
 
 6.2.7 GS1 DataBar Stacked (ISO 24724)
 -------------------------------------
@@ -2380,8 +2411,16 @@ DMRE symbol sizes may be activated in automatic size mode using the option
 --dmre or by the API option_3 = DM_DMRE
 
 GS1 data may be encoded using FNC1 (preferred) or GS as separator.
-Use the option --gssep to change to GS or use the API
-output_options |= GS1_GS_SEPARATOR
+Use the option --gssep to change to GS or use the API output_options |=
+GS1_GS_SEPARATOR
+
+Data Matrix supports Structured Append of up to 16 symbols and a numeric ID
+(file identifications), which can be set by using the --structapp option (see
+section 4.15) or the API structapp variable. The ID consists of 2 numbers ID1
+and ID2, each of which can range from 1 to 254, and is specified as the single
+number ID1 * 1000 + ID2, so for instance ID1 "123" and ID2 "234" would be given
+as "123234". Note that both ID1 and ID2 must be non-zero, so e.g. "123000" or
+"000123" would be invalid IDs. If an ID is not given it defaults to "001001".
 
 6.6.2 QR Code (ISO 18004)
 -------------------------
@@ -2466,6 +2505,13 @@ best mask to use is selected automatically by Zint but may be manually specified
 by using the --mask= switch with values 0-7, or by setting option_3 to
 (N + 1) << 8 where N is 0-7. To use with ZINT_FULL_MULTIBYTE set option_3 =
 ZINT_FULL_MULTIBYTE | (N + 1) << 8.
+
+QR Code supports Structured Append of up to 16 symbols and a numeric ID
+(parity), which can be set by using the --structapp option (see section 4.15) or
+the API structapp variable. The parity ID ranges from 0 and 255, and for full
+compliance should be set to the value obtained by XOR-ing together each byte of
+the complete data forming the sequence. Currently this calculation must be done
+outside of Zint. If an ID is not given it defaults to 0.
 
 6.6.3 Micro QR Code (ISO 18004)
 -------------------------------
@@ -2651,6 +2697,10 @@ Mode  |  Maximum Data Length  |  Maximum Data Length  |  Number of Error
 -----------------------------------------------------------------------------
 * - secondary only
 
+MaxiCode supports Structured Append of up to 8 symbols, which can be set by
+using the --structapp option (see section 4.15) or the API structapp variable.
+It does not support specifying an ID.
+
 MaxiCode uses a different scaling than other symbols for raster output, see
 4.9.2.
 
@@ -2736,11 +2786,16 @@ A separate symbology ID can be used to encode Health Industry Barcode (HIBC)
 data which adds a leading '+' character and a modulo-49 check digit to the
 encoded data.
 
+Aztec Code supports Structured Append of up to 26 symbols and an optional
+alphanumeric ID of up to 32 characters, which can be set by using the
+--structapp option (see section 4.15) or the API structapp variable. The ID
+cannot contain spaces. If an ID is not given, no ID is encoded.
+
 6.6.8 Aztec Runes
 -----------------
 A truncated version of compact Aztec Code for encoding whole integers between 0
 and 255. Includes Reed-Solomon error correction. As defined in ISO/IEC 24778
-Annex A.
+Annex A. It does not support Structured Append.
 
 6.6.9 Code One
 --------------
@@ -2769,6 +2824,11 @@ Input  |  Version  |  Size        |  Numeric        |  Alphanumeric
 
 Version S symbols can only encode numeric data. The width of version S and
 version T symbols is determined by the length of the input data.
+
+Code One supports Structured Append of up to 128 symbols, which can be set by
+using the --structapp option (see section 4.15) or the API structapp variable.
+It does not support specifying an ID. Structured Append is not supported with
+GS1 data nor for Version S symbols.
 
 6.6.10 Grid Matrix
 -----------------
@@ -2815,6 +2875,10 @@ Non-ASCII data density may be maximized by using the --fullmultibyte switch or
 by setting option_3 to ZINT_FULL_MULTIBYTE, but check that your barcode reader
 supports this before using.
 
+Grid Matrix supports Structured Append of up to 16 symbols and a numeric ID
+(file signature), which can be set by using the --structapp option (see section
+4.15) or the API structapp variable. The ID ranges from 0 (default) and 255.
+
 6.6.11 DotCode
 -------------
 DotCode uses a grid of dots in a rectangular formation to encode characters up
@@ -2832,6 +2896,10 @@ set being the same as the first with corners lit. The best mask to use is
 selected automatically by Zint but may be manually specified by using the
 --mask= switch with values 0-7, where 4-7 denote 0'-3', or by setting option_3
 to (N + 1) << 8 where N is 0-7.
+
+DotCode supports Structured Append of up to 35 symbols, which can be set by
+using the --structapp option (see section 4.15) or the API structapp variable.
+It does not support specifying an ID.
 
 6.6.12 Han Xin Code
 -------------------
@@ -2981,6 +3049,11 @@ symbol->option_3 = ULTRA_COMPRESSION;
 
 WARNING: Ultracode data compression is experimental and should not be used
 in a production environment.
+
+Ultracode supports Structured Append of up to 8 symbols and an optional numeric
+ID (File Number), which can be set by using the --structapp option (see section
+4.15) or the API structapp variable. The ID ranges from 1 and 80088. If an ID
+is not given, no ID is encoded.
 
 6.7 Other Barcode-Like Markings
 -------------------------------

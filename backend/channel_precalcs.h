@@ -30,7 +30,7 @@
 /* vim: set ts=4 sw=4 et : */
 
 /* Channel code precalculated values to avoid excessive looping */
-/* To generate uncomment CHANNEL_GENERATE_PRECALCS define and run "./test_channel -f generate -g" */
+/* To generate uncomment CHANNEL_GENERATE_PRECALCS define and run "backend/tests/test_channel -f generate -g" */
 /* Paste result below here */
 static channel_precalc channel_precalcs7[] = {
     {  115338, { 1, 3, 1, 1, 1, 1, 5, 1, }, { 1, 1, 1, 2, 1, 2, 3, 3, }, { 1, 7, 5, 5, 5, 5, 5, }, { 1, 7, 7, 7, 6, 6, 5, }, },

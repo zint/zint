@@ -72,8 +72,8 @@ INTERNAL void rs_init_gf(rs_t *rs, const unsigned int prime_poly) {
         const unsigned char *alog;
     };
     /* To add a new prime poly of degree <= 8 add its details to this table and to the table in `test_generate()`
-     * in "backend/tests/test_reedsol.c" and regenerate the log tables by running "./test_reedsol -f generate -g".
-     * Paste the result in "reedsol_logs.h" */
+       in "backend/tests/test_reedsol.c" and regenerate the log tables by running
+       "backend/tests/test_reedsol -f generate -g". Paste the result in "reedsol_logs.h" */
     static const struct item data[] = {
         { logt_0x13, alog_0x13 },   /* 0 000- */
         { logt_0x25, alog_0x25 },   /* 0 001- */

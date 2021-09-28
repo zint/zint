@@ -39,31 +39,39 @@ static void test_options(int index, int debug) {
         int output_options;
         int option_1;
         int option_2;
+        struct zint_structapp structapp;
         char *data;
         int ret;
 
         int expected_rows;
         int expected_width;
+        const char *expected_errtxt;
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /*  0*/ { BARCODE_AZTEC, -1, -1, -1, -1, "1234567890", 0, 15, 15 },
-        /*  1*/ { BARCODE_AZTEC, -1, -1, 1, -1, "1234567890", 0, 15, 15 },
-        /*  2*/ { BARCODE_AZTEC, -1, -1, 4, -1, "1234567890", 0, 19, 19 },
-        /*  3*/ { BARCODE_AZTEC, -1, -1, 5, -1, "1234567890", ZINT_WARN_INVALID_OPTION, 15, 15 },
-        /*  4*/ { BARCODE_AZTEC, -1, -1, -1, 1, "12345678901234567890", ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  5*/ { BARCODE_AZTEC, -1, -1, -1, 36, "1234567890", 0, 151, 151 },
-        /*  6*/ { BARCODE_AZTEC, -1, -1, -1, 37, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1 },
-        /*  7*/ { BARCODE_AZTEC, GS1_MODE, READER_INIT, -1, -1, "[91]A", ZINT_ERROR_INVALID_OPTION, -1, -1 },
-        /*  8*/ { BARCODE_AZTEC, GS1_MODE, -1, -1, -1, "[91]A", 0, 15, 15 },
-        /*  9*/ { BARCODE_AZTEC, GS1_MODE | GS1PARENS_MODE, -1, -1, -1, "(91)A", 0, 15, 15 },
-        /* 10*/ { BARCODE_AZTEC, -1, READER_INIT, -1, 26, "A", 0, 109, 109 }, // 22 layers
-        /* 11*/ { BARCODE_AZTEC, -1, READER_INIT, -1, 27, "A", ZINT_ERROR_TOO_LONG, -1, -1 }, // 23 layers
-        /* 12*/ { BARCODE_AZTEC, -1, READER_INIT, -1, 1, "A", 0, 15, 15 }, // Compact 1 layer
-        /* 13*/ { BARCODE_AZTEC, -1, READER_INIT, -1, 2, "A", 0, 19, 19 }, // Compact 2 layers gets set to full 1 layer if READER_INIT set
-        /* 14*/ { BARCODE_AZRUNE, -1, -1, -1, -1, "0001", ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 15*/ { BARCODE_AZRUNE, -1, -1, -1, -1, "A", ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 16*/ { BARCODE_AZRUNE, -1, -1, -1, -1, "256", ZINT_ERROR_INVALID_DATA, -1, -1 },
+        /*  0*/ { BARCODE_AZTEC, -1, -1, -1, -1, { 0, 0, "" }, "1234567890", 0, 15, 15, "" },
+        /*  1*/ { BARCODE_AZTEC, -1, -1, 1, -1, { 0, 0, "" }, "1234567890", 0, 15, 15, "" },
+        /*  2*/ { BARCODE_AZTEC, -1, -1, 4, -1, { 0, 0, "" }, "1234567890", 0, 19, 19, "" },
+        /*  3*/ { BARCODE_AZTEC, -1, -1, 5, -1, { 0, 0, "" }, "1234567890", ZINT_WARN_INVALID_OPTION, 15, 15, "Warning 503: Invalid error correction level - using default instead" },
+        /*  4*/ { BARCODE_AZTEC, -1, -1, -1, 1, { 0, 0, "" }, "12345678901234567890", ZINT_ERROR_TOO_LONG, -1, -1, "Error 505: Data too long for specified Aztec Code symbol size" },
+        /*  5*/ { BARCODE_AZTEC, -1, -1, -1, 36, { 0, 0, "" }, "1234567890", 0, 151, 151, "" },
+        /*  6*/ { BARCODE_AZTEC, -1, -1, -1, 37, { 0, 0, "" }, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 510: Invalid Aztec Code size" },
+        /*  7*/ { BARCODE_AZTEC, GS1_MODE, READER_INIT, -1, -1, { 0, 0, "" }, "[91]A", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 501: Cannot encode in GS1 and Reader Initialisation mode at the same time" },
+        /*  8*/ { BARCODE_AZTEC, GS1_MODE, -1, -1, -1, { 0, 0, "" }, "[91]A", 0, 15, 15, "" },
+        /*  9*/ { BARCODE_AZTEC, GS1_MODE | GS1PARENS_MODE, -1, -1, -1, { 0, 0, "" }, "(91)A", 0, 15, 15, "" },
+        /* 10*/ { BARCODE_AZTEC, -1, READER_INIT, -1, 26, { 0, 0, "" }, "A", 0, 109, 109, "" }, // 22 layers
+        /* 11*/ { BARCODE_AZTEC, -1, READER_INIT, -1, 27, { 0, 0, "" }, "A", ZINT_ERROR_TOO_LONG, -1, -1, "Error 506: Data too long for reader initialisation symbol" }, // 23 layers
+        /* 12*/ { BARCODE_AZTEC, -1, READER_INIT, -1, 1, { 0, 0, "" }, "A", 0, 15, 15, "" }, // Compact 1 layer
+        /* 13*/ { BARCODE_AZTEC, -1, READER_INIT, -1, 2, { 0, 0, "" }, "A", 0, 19, 19, "" }, // Compact 2 layers gets set to full 1 layer if READER_INIT set
+        /* 14*/ { BARCODE_AZRUNE, -1, -1, -1, -1, { 0, 0, "" }, "0001", ZINT_ERROR_TOO_LONG, -1, -1, "Error 507: Input too large (3 character maximum)" },
+        /* 15*/ { BARCODE_AZRUNE, -1, -1, -1, -1, { 0, 0, "" }, "A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 508: Invalid character in data (digits only)" },
+        /* 16*/ { BARCODE_AZRUNE, -1, -1, -1, -1, { 0, 0, "" }, "256", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 509: Input out of range (0 to 255)" },
+        /* 17*/ { BARCODE_AZTEC, -1, -1, -1, -1, { 1, 2, "" }, "1234567890", 0, 15, 15, "" },
+        /* 18*/ { BARCODE_AZTEC, -1, -1, -1, -1, { 1, 2, "12345678901234567890123456789012" }, "1234567890", 0, 23, 23, "" },
+        /* 19*/ { BARCODE_AZTEC, -1, -1, -1, -1, { 1, 1, "" }, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 701: Structured Append count out of range (2-26)" },
+        /* 20*/ { BARCODE_AZTEC, -1, -1, -1, -1, { 0, 2, "" }, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 702: Structured Append index out of range (1-2)" },
+        /* 21*/ { BARCODE_AZTEC, -1, -1, -1, -1, { 3, 2, "" }, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 702: Structured Append index out of range (1-2)" },
+        /* 22*/ { BARCODE_AZTEC, -1, -1, -1, -1, { 1, 2, "A B" }, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 703: Structured Append ID cannot contain spaces" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -79,6 +87,9 @@ static void test_options(int index, int debug) {
         assert_nonnull(symbol, "Symbol not created\n");
 
         length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, data[i].option_1, data[i].option_2, -1, data[i].output_options, data[i].data, -1, debug);
+        if (data[i].structapp.count) {
+            symbol->structapp = data[i].structapp;
+        }
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
@@ -87,6 +98,7 @@ static void test_options(int index, int debug) {
             assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, symbol->errtxt);
             assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, symbol->errtxt);
         }
+        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d symbol->errtxt %s != %s\n", i, symbol->errtxt, data[i].expected_errtxt);
 
         ZBarcode_Delete(symbol);
     }

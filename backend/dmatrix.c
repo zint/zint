@@ -632,9 +632,61 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
     sp = 0;
     tp = 0;
 
-    /* step (a) */
-    current_mode = DM_ASCII;
-    next_mode = DM_ASCII;
+    if (symbol->structapp.count) {
+        int id1, id2;
+
+        if (symbol->structapp.count < 2 || symbol->structapp.count > 16) {
+            strcpy(symbol->errtxt, "720: Structured Append count out of range (2-16)");
+            return ZINT_ERROR_INVALID_OPTION;
+        }
+        if (symbol->structapp.index < 1 || symbol->structapp.index > symbol->structapp.count) {
+            sprintf(symbol->errtxt, "721: Structured Append index out of range (1-%d)", symbol->structapp.count);
+            return ZINT_ERROR_INVALID_OPTION;
+        }
+        if (symbol->structapp.id[0]) {
+            int id, id_len, id1_err, id2_err;
+
+            for (id_len = 0; id_len < 32 && symbol->structapp.id[id_len]; id_len++);
+
+            if (id_len > 6) { /* ID1 * 1000 + ID2 */
+                strcpy(symbol->errtxt, "722: Structured Append ID too long (6 digit maximum)");
+                return ZINT_ERROR_INVALID_OPTION;
+            }
+
+            id = to_int((const unsigned char *) symbol->structapp.id, id_len);
+            if (id == -1) {
+                strcpy(symbol->errtxt, "723: Invalid Structured Append ID (digits only)");
+                return ZINT_ERROR_INVALID_OPTION;
+            }
+            id1 = id / 1000;
+            id2 = id % 1000;
+            id1_err = id1 < 1 || id1 > 254;
+            id2_err = id2 < 1 || id2 > 254;
+            if (id1_err || id2_err) {
+                if (id1_err && id2_err) {
+                    sprintf(symbol->errtxt,
+                            "724: Structured Append ID1 '%03d' and ID2 '%03d' out of range (001-254) (ID '%03d%03d')",
+                            id1, id2, id1, id2);
+                } else if (id1_err) {
+                    sprintf(symbol->errtxt,
+                            "725: Structured Append ID1 '%03d' out of range (001-254) (ID '%03d%03d')",
+                            id1, id1, id2);
+                } else {
+                    sprintf(symbol->errtxt,
+                            "726: Structured Append ID2 '%03d' out of range (001-254) (ID '%03d%03d')",
+                            id2, id1, id2);
+                }
+                return ZINT_ERROR_INVALID_OPTION;
+            }
+        } else {
+            id1 = id2 = 1;
+        }
+
+        target[tp++] = 233;
+        target[tp++] = (17 - symbol->structapp.count) | ((symbol->structapp.index - 1) << 4);
+        target[tp++] = id1;
+        target[tp++] = id2;
+    }
 
     /* gs1 flag values: 0: no gs1, 1: gs1 with FNC1 serparator, 2: GS separator */
     if ((symbol->input_mode & 0x07) == GS1_MODE) {
@@ -657,11 +709,14 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
         if (gs1) {
             strcpy(symbol->errtxt, "521: Cannot encode in GS1 mode and Reader Initialisation at the same time");
             return ZINT_ERROR_INVALID_OPTION;
-        } else {
-            target[tp] = 234;
-            tp++; /* Reader Programming */
-            if (debug) printf("RP ");
         }
+        if (symbol->structapp.count) {
+            strcpy(symbol->errtxt, "727: Cannot have Structured Append and Reader Initialisation at the same time");
+            return ZINT_ERROR_INVALID_OPTION;
+        }
+        target[tp] = 234;
+        tp++; /* Reader Programming */
+        if (debug) printf("RP ");
     }
 
     if (symbol->eci > 0) {
@@ -696,6 +751,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
             && (source[5] == '5' || source[5] == '6')
             && source[6] == '\x1d'
             && source[inputlen - 2] == '\x1e' && source[inputlen - 1] == '\x04') {
+
         /* Output macro Codeword */
         if (source[5] == '5') {
             target[tp] = 236;
@@ -710,6 +766,10 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
         inputlen -= 2;
         *p_length -= 2;
     }
+
+    /* step (a) */
+    current_mode = DM_ASCII;
+    next_mode = DM_ASCII;
 
     while (sp < inputlen) {
 
@@ -1089,7 +1149,7 @@ static int data_matrix_200(struct zint_symbol *symbol, const unsigned char sourc
     unsigned char binary[2200];
     int binlen;
     int symbolsize;
-    int taillength, error_number = 0;
+    int taillength, error_number;
     int H, W, FH, FW, datablock, bytes, rsblock;
     int debug = symbol->debug & ZINT_DEBUG_PRINT;
 

@@ -25,6 +25,9 @@
      <property name="title">
       <string>Encoding Mode</string>
      </property>
+     <property name="toolTip">
+      <string>How to process data</string>
+     </property>
      <layout class="QGridLayout" name="gridLayoutC128EncodingMode">
       <property name="sizeConstraint">
        <enum>QLayout::SetMinimumSize</enum>
@@ -33,6 +36,9 @@
        <widget class="QRadioButton" name="radC128Stand">
         <property name="text">
          <string>S&amp;tandard Mode</string>
+        </property>
+        <property name="toolTip">
+         <string>Process data as normal</string>
         </property>
         <property name="checked">
          <bool>true</bool>
@@ -44,6 +50,10 @@
         <property name="text">
          <string>Subset &amp;C Suppression</string>
         </property>
+        <property name="toolTip">
+         <string>Do not begin in Subset C mode,
+even if initial data is numeric</string>
+        </property>
        </widget>
       </item>
       <item row="1" column="0">
@@ -51,12 +61,22 @@
         <property name="text">
          <string>GS&amp;1-128</string>
         </property>
+        <property name="toolTip">
+         <string>Process data as GS1 General Specifications data,
+formatted with Application Identifiers (AIs)</string>
+        </property>
        </widget>
       </item>
       <item row="1" column="1">
        <widget class="QRadioButton" name="radC128HIBC">
         <property name="text">
          <string>H&amp;IBC 128</string>
+        </property>
+        <property name="toolTip">
+         <string>Process data as a Health Industry Barcode (HIBC)
+Labeler Identification Code (LIC)
+For Provider Applications Standard (PAS), preface
+the data with a slash &quot;/&quot;</string>
         </property>
        </widget>
       </item>

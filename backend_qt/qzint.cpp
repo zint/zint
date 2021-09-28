@@ -57,6 +57,7 @@ namespace Zint {
         m_dotty = false;
         m_dot_size = 4.0f / 5.0f;
         m_guardDescent = 5.0f;
+        memset(&m_structapp, 0, sizeof(m_structapp));
         m_whitespace = 0;
         m_vwhitespace = 0;
         m_gs1parens = false;
@@ -104,6 +105,7 @@ namespace Zint {
         }
         m_zintSymbol->dot_size = m_dot_size;
         m_zintSymbol->guard_descent = m_guardDescent;
+        m_zintSymbol->structapp = m_structapp;
         m_zintSymbol->show_hrt = m_show_hrt ? 1 : 0;
         m_zintSymbol->eci = m_eci;
         m_zintSymbol->scale = m_scale;
@@ -244,6 +246,31 @@ namespace Zint {
 
     void QZint::setGuardDescent(float guardDescent) {
         m_guardDescent = guardDescent;
+    }
+
+    void QZint::setStructApp(const int count, const int index, const QString& id) {
+        if (count) {
+            m_structapp.count = count;
+            m_structapp.index = index;
+            memset(m_structapp.id, 0, sizeof(m_structapp.id));
+            if (!id.isEmpty()) {
+                QByteArray idArr = id.toLatin1();
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstringop-truncation"
+#endif
+                strncpy(m_structapp.id, idArr, sizeof(m_structapp.id));
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+            }
+        } else {
+            clearStructApp();
+        }
+    }
+
+    void QZint::clearStructApp() {
+        memset(&m_structapp, 0, sizeof(m_structapp));
     }
 
     QColor QZint::fgColor() const {
@@ -441,7 +468,8 @@ namespace Zint {
         resetSymbol();
         strcpy(m_zintSymbol->outfile, filename.toLatin1().left(255));
         QByteArray bstr = m_text.toUtf8();
-        m_error = ZBarcode_Encode_and_Print(m_zintSymbol, (unsigned char *) bstr.data(), bstr.length(), m_rotate_angle);
+        m_error = ZBarcode_Encode_and_Print(m_zintSymbol, (unsigned char *) bstr.data(), bstr.length(),
+                                            m_rotate_angle);
         if (m_error >= ZINT_ERROR) {
             m_lastError = m_zintSymbol->errtxt;
             return false;
@@ -479,6 +507,7 @@ namespace Zint {
         }
     }
 
+    /* Note: legacy argument `mode` is not used */
     void QZint::render(QPainter& painter, const QRectF& paintRect, AspectRatioMode /*mode*/) {
         struct zint_vector_rect *rect;
         struct zint_vector_hexagon *hex;
@@ -639,4 +668,4 @@ namespace Zint {
 
         painter.restore();
     }
-}
+} /* namespace Zint */

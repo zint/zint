@@ -30,6 +30,6 @@ HRESULT DllGetVersion (DLLVERSIONINFO2* pdvi)
 	return S_OK;
 }
 #else
-/* https://stackoverflow.com/a/26541331/664741 Suppresses gcc warning ISO C forbids an empty translation unit */
+/* https://stackoverflow.com/a/26541331 Suppresses gcc warning ISO C forbids an empty translation unit */
 typedef int make_iso_compilers_happy;
 #endif /* _WIN32 */
