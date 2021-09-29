@@ -65,18 +65,35 @@ static const int ultra_mincols[] = {5, 13, 22, 29};
 
 static const int kec[] = {0, 1, 2, 4, 6, 8}; // Value K(EC) from Table 12
 
-static const int dccu[] = {
-    051363, 051563, 051653, 053153, 053163, 053513, 053563, 053613, //  0-7
-    053653, 056153, 056163, 056313, 056353, 056363, 056513, 056563, //  8-15
-    051316, 051356, 051536, 051616, 053156, 053516, 053536, 053616, // 16-23
-    053636, 053656, 056136, 056156, 056316, 056356, 056516, 056536  // 24-31
+/* Taken from BWIPP - change in DCCU/DCCL tiles for revision 2 2021-09-28 */
+static const unsigned short dccu[2][32] = {
+    { // Revision 1
+        051363, 051563, 051653, 053153, 053163, 053513, 053563, 053613, //  0-7
+        053653, 056153, 056163, 056313, 056353, 056363, 056513, 056563, //  8-15
+        051316, 051356, 051536, 051616, 053156, 053516, 053536, 053616, // 16-23
+        053636, 053656, 056136, 056156, 056316, 056356, 056516, 056536  // 24-31
+    },
+    { // Revision 2 (inversion of DCCL Revision 1)
+        015316, 016316, 013516, 016516, 013616, 015616, 013136, 015136, //  0-7
+        016136, 013536, 016536, 013636, 013156, 016156, 015356, 013656, //  8-15
+        015313, 016313, 013513, 016513, 013613, 015613, 013153, 015153, // 16-23
+        016153, 016353, 013653, 015653, 013163, 015163, 015363, 013563  // 24-31
+    },
 };
 
-static const int dccl[] = {
-    061351, 061361, 061531, 061561, 061631, 061651, 063131, 063151, //  0-7
-    063161, 063531, 063561, 063631, 065131, 065161, 065351, 065631, //  8-15
-    031351, 031361, 031531, 031561, 031631, 031651, 035131, 035151, // 16-23
-    035161, 035361, 035631, 035651, 036131, 036151, 036351, 036531  // 24-31
+static const unsigned short dccl[2][32] = {
+    { // Revision 1
+        061351, 061361, 061531, 061561, 061631, 061651, 063131, 063151, //  0-7
+        063161, 063531, 063561, 063631, 065131, 065161, 065351, 065631, //  8-15
+        031351, 031361, 031531, 031561, 031631, 031651, 035131, 035151, // 16-23
+        035161, 035361, 035631, 035651, 036131, 036151, 036351, 036531  // 24-31
+    },
+    { // Revision 2 (inversion of DCCU Revision 1)
+        036315, 036515, 035615, 035135, 036135, 031535, 036535, 031635, //  0-7
+        035635, 035165, 036165, 031365, 035365, 036365, 031565, 036565, //  8-15
+        061315, 065315, 063515, 061615, 065135, 061535, 063535, 061635, // 16-23
+        063635, 065635, 063165, 065165, 061365, 065365, 061565, 063565  // 24-31
+    },
 };
 
 static const int tiles[] = {
@@ -872,6 +889,7 @@ INTERNAL int ultracode(struct zint_symbol *symbol, unsigned char source[], int l
     char tilepat[6];
     int tilex, tiley;
     int dcc;
+    int revision_idx = 0;
 #ifdef _MSC_VER
     int *data_codewords;
     char *pattern;
@@ -952,6 +970,16 @@ INTERNAL int ultracode(struct zint_symbol *symbol, unsigned char source[], int l
 #endif
 
     data_cw_count += 2 + scr_cw_count; // 2 == MCC + ACC (data codeword count includes start char)
+
+    if (symbol->option_2 > 0) {
+        if (symbol->option_2 > 2) {
+            strcpy(symbol->errtxt, "592: Revision must be 1 or 2");
+            return ZINT_ERROR_INVALID_OPTION;
+        }
+        if (symbol->option_2 == 2) { /* Revision 2, swop and inversion of DCCU/DCCL tiles */
+            revision_idx = 1;
+        }
+    }
 
     /* Default ECC level is EC2 */
     if ((symbol->option_1 <= 0) || (symbol->option_1 > 6)) {
@@ -1147,7 +1175,7 @@ INTERNAL int ultracode(struct zint_symbol *symbol, unsigned char source[], int l
     tiley = (total_height - 11) / 2;
     /* DCCU */
     for (j = 0; j < 5; j++) {
-        tilepat[4 - j] = ultra_colour[(dccu[dcc] >> (3 * j)) & 0x07];
+        tilepat[4 - j] = ultra_colour[(dccu[revision_idx][dcc] >> (3 * j)) & 0x07];
     }
     for (j = 0; j < 5; j++) {
         pattern[((tiley + j) * total_width) + tilex] = tilepat[j];
@@ -1155,7 +1183,7 @@ INTERNAL int ultracode(struct zint_symbol *symbol, unsigned char source[], int l
     /* DCCL */
     tiley += 6;
     for (j = 0; j < 5; j++) {
-        tilepat[4 - j] = ultra_colour[(dccl[dcc] >> (3 * j)) & 0x07];
+        tilepat[4 - j] = ultra_colour[(dccl[revision_idx][dcc] >> (3 * j)) & 0x07];
     }
     for (j = 0; j < 5; j++) {
         pattern[((tiley + j) * total_width) + tilex] = tilepat[j];

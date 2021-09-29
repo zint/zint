@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>grpAztec</class>
- <widget class="QWidget" name="grpAztec">
+ <class>grpUltra</class>
+ <widget class="QWidget" name="grpUltra">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -34,6 +34,9 @@ based on data</string>
        <property name="checked">
         <bool>true</bool>
        </property>
+       <attribute name="buttonGroup">
+        <string notr="true">buttonGroupUltraSizeECC</string>
+       </attribute>
       </widget>
      </item>
      <item row="1" column="0">
@@ -45,6 +48,9 @@ based on data</string>
         <string>Set percentage of capacity to use for
 error correction codewords</string>
        </property>
+       <attribute name="buttonGroup">
+        <string notr="true">buttonGroupUltraSizeECC</string>
+       </attribute>
       </widget>
      </item>
      <item row="1" column="1">
@@ -91,10 +97,40 @@ error correction codewords</string>
        </item>
       </widget>
      </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="labelUltraRevision">
+       <property name="text">
+        <string>Rev&amp;ision:</string>
+       </property>
+       <property name="toolTip">
+        <string>Set revision to use on output</string>
+       </property>
+       <property name="buddy">
+        <cstring>cmbUltraRevision</cstring>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QComboBox" name="cmbUltraRevision">
+       <property name="toolTip">
+        <string>Set revision to use on output</string>
+       </property>
+       <item>
+        <property name="text">
+         <string>1 (default)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>2</string>
+        </property>
+       </item>
+      </widget>
+     </item>
     </layout>
    </item>
    <item>
-    <widget class="QGroupBox" name="grpUltraEncodingMode">
+    <widget class="QGroupBox" name="groupBoxUltraEncodingMode">
      <property name="title">
       <string>Encoding Mode</string>
      </property>
@@ -381,7 +417,7 @@ Value ranges from 1 to 80088
      <property name="sizeHint" stdset="0">
       <size>
        <width>20</width>
-       <height>43</height>
+       <height>10</height>
       </size>
      </property>
     </spacer>
@@ -407,4 +443,7 @@ Value ranges from 1 to 80088
    </hints>
   </connection>
  </connections>
+ <buttongroups>
+  <buttongroup name="buttonGroupUltraSizeECC"/>
+ </buttongroups>
 </ui>

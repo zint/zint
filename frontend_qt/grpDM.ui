@@ -351,7 +351,8 @@ the data with a slash &quot;/&quot;</string>
      </property>
      <property name="toolTip">
       <string>Only consider square versions on automatic symbol
-size selection</string>
+size selection
+(ignored if disabled)</string>
      </property>
      <property name="checked">
       <bool>true</bool>
@@ -365,7 +366,8 @@ size selection</string>
      </property>
      <property name="toolTip">
       <string>Consider DMRE versions on automatic symbol
-size selection</string>
+size selection
+(ignored if disabled)</string>
      </property>
      <property name="checked">
       <bool>false</bool>
@@ -375,11 +377,12 @@ size selection</string>
    <item>
     <widget class="QCheckBox" name="chkDMGSSep">
      <property name="text">
-      <string>&amp;Use separator GS for GS1</string>
+      <string>Use separator GS &amp;for GS1</string>
      </property>
      <property name="toolTip">
       <string>Use Group Separator (ASCII 0x1D) to separate GS1 AIs
-instead of the preferred FNC1</string>
+instead of the preferred FNC1
+(ignored if disabled)</string>
      </property>
      <property name="checked">
       <bool>false</bool>

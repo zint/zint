@@ -3052,6 +3052,10 @@ symbol->option_3 = ULTRA_COMPRESSION;
 WARNING: Ultracode data compression is experimental and should not be used
 in a production environment.
 
+Revision 2 of Ultracode (2021) which swops and inverts the DCCU and DCCL tiles
+may be specified using the --vers= switch with a value of 2 or by setting
+option_2 to 2.
+
 Ultracode supports Structured Append of up to 8 symbols and an optional numeric
 ID (File Number), which can be set by using the --structapp option (see section
 4.15) or the API structapp variable. The ID ranges from 1 to 80088. If an ID is

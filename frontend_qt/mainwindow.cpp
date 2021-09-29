@@ -1092,6 +1092,7 @@ void MainWindow::change_options()
         connect(widget_obj("radUltraAuto"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         connect(widget_obj("radUltraEcc"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         connect(widget_obj("cmbUltraEcc"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(widget_obj("cmbUltraRevision"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(widget_obj("radUltraStand"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         connect(widget_obj("radUltraGS1"), SIGNAL(clicked( bool )), SLOT(update_preview()));
         connect(widget_obj("cmbUltraStructAppCount"), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
@@ -1675,10 +1676,11 @@ void MainWindow::update_preview()
             if (m_optionWidget->findChild<QComboBox*>("cmbDM200Size")->currentIndex() == 0) {
                 // Supressing rectangles or allowing DMRE only makes sense if in automatic size mode
                 findChild<QCheckBox*>("chkDMRectangle")->setEnabled(true);
-                findChild<QCheckBox*>("chkDMRE")->setEnabled(true);
-                if (m_optionWidget->findChild<QCheckBox*>("chkDMRectangle")->isChecked())
-                        m_bc.bc.setOption3(DM_SQUARE);
-                else {
+                if (m_optionWidget->findChild<QCheckBox*>("chkDMRectangle")->isChecked()) {
+                    m_bc.bc.setOption3(DM_SQUARE);
+                    findChild<QCheckBox*>("chkDMRE")->setEnabled(false);
+                } else {
+                    findChild<QCheckBox*>("chkDMRE")->setEnabled(true);
                     if (m_optionWidget->findChild<QCheckBox*>("chkDMRE")->isChecked())
                         m_bc.bc.setOption3(DM_DMRE);
                     else
@@ -1891,8 +1893,13 @@ void MainWindow::update_preview()
         case BARCODE_ULTRA:
             m_bc.bc.setSymbol(BARCODE_ULTRA);
             if (m_optionWidget->findChild<QRadioButton*>("radUltraEcc")->isChecked())
-                m_bc.bc.setOption1(m_optionWidget->findChild<QComboBox*>("cmbUltraEcc")->currentIndex() + 1);
+                m_bc.bc.setOption1(get_combobox_index("cmbUltraEcc") + 1);
             set_gs1_mode(m_optionWidget->findChild<QRadioButton*>("radUltraGS1")->isChecked());
+
+            item_val = get_combobox_index("cmbUltraRevision");
+            if (item_val > 0) {
+                m_bc.bc.setOption2(item_val + 1); // Combobox 0-based
+            }
 
             item_val = get_combobox_index("cmbUltraStructAppCount");
             if (item_val) {
@@ -2521,6 +2528,7 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology) {
             settings.setValue("studio/bc/ultra/autoresizing", get_button_group_index(
                 QStringList() << "radUltraAuto" << "radUltraEcc"));
             settings.setValue("studio/bc/ultra/ecc", get_combobox_index("cmbUltraEcc"));
+            settings.setValue("studio/bc/ultra/revision", get_combobox_index("cmbUltraRevision"));
             settings.setValue("studio/bc/ultra/encoding_mode", get_button_group_index(
                 QStringList() << "radUltraStand" << "radUltraGS1"));
             settings.setValue("studio/bc/ultra/structapp_count", get_combobox_index("cmbUltraStructAppCount"));
@@ -2862,6 +2870,7 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology) {
             set_radiobutton_from_setting(settings, "studio/bc/ultra/autoresizing",
                 QStringList() << "radUltraAuto" << "radUltraEcc");
             set_combobox_from_setting(settings, "studio/bc/ultra/ecc", "cmbUltraEcc");
+            set_combobox_from_setting(settings, "studio/bc/ultra/revision", "cmbUltraRevision");
             set_radiobutton_from_setting(settings, "studio/bc/ultra/encoding_mode",
                 QStringList() << "radUltraStand" << "radUltraGS1");
             set_combobox_from_setting(settings, "studio/bc/ultra/structapp_count", "cmbUltraStructAppCount");

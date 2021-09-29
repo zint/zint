@@ -26,6 +26,7 @@ Changes
 - raster.c: improve non-half-integer interpolation performance
 - Add Structured Append support for AZTEC, CODEONE, DATAMATRIX, DOTCODE,
   GRIDMATRIX, MAXICODE, MICROPDF417, PDF417, QRCODE, ULTRA
+- ULTRA: add revision 2 support (based on BWIPP 2021-09-28 update)
 
 Bugs
 ----

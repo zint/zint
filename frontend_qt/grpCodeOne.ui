@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>grpChannel</class>
- <widget class="QWidget" name="grpChannel">
+ <class>grpCodeOne</class>
+ <widget class="QWidget" name="grpCodeOne">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -23,7 +23,7 @@
    <item>
     <layout class="QGridLayout" name="gridLayout">
      <item row="0" column="0">
-      <widget class="QLabel" name="lblChannel">
+      <widget class="QLabel" name="lblC1Size">
        <property name="text">
         <string>Symbol Si&amp;ze:</string>
        </property>
@@ -103,7 +103,7 @@
     </layout>
    </item>
    <item>
-    <widget class="QGroupBox" name="groupBox">
+    <widget class="QGroupBox" name="groupBoxC1EncodingMode">
      <property name="title">
       <string>Encoding Mode</string>
      </property>

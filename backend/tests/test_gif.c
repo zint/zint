@@ -169,6 +169,7 @@ static void test_print(int index, int generate, int debug) {
         /* 26*/ { BARCODE_CODE16K, -1, -1, 3, 5, -1, -1, 0.5, 0, 0, { 0, 0, "" }, "", "", "1234567890", "code16k_height0.5_wsp3_vwsp5.gif", "Separator covers bars" },
         /* 27*/ { BARCODE_CODE16K, -1, -1, 3, 5, -1, -1, 1.5, 0, 0, { 0, 0, "" }, "", "", "1234567890", "code16k_height1.5_wsp3_vwsp5.gif", "" },
         /* 28*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, -1, 0, 0, 0, { 2, 9, "001002" }, "", "", "1234567890", "datamatrix_seq2of9.gif", "" },
+        /* 29*/ { BARCODE_ULTRA, -1, -1, 1, -1, -1, 2, 0, 0, 0, { 0, 0, "" }, "", "", "12", "ultra_rev2.gif", "Revision 2" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;

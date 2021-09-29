@@ -2164,7 +2164,7 @@ static const char *testUtilBwippName(int index, const struct zint_symbol *symbol
         { "codeone", BARCODE_CODEONE, 141, 0, 1, 0, 0, 0, },
         { "", BARCODE_GRIDMATRIX, 142, 0, 0, 0, 0, 0, },
         { "", BARCODE_UPNQR, 143, 0, 0, 0, 0, 0, },
-        { "ultracode", BARCODE_ULTRA, 144, 1, 0, 0, 0, 0, },
+        { "ultracode", BARCODE_ULTRA, 144, 1, 1, 0, 0, 0, },
         { "rectangularmicroqrcode", BARCODE_RMQR, 145, 1, 1, 0, 0, 0, },
     };
     static const int data_size = ARRAY_SIZE(data);
@@ -2968,6 +2968,11 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
             if (option_1 >= 1 && option_1 <= 6) {
                 sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%seclevel=EC%d",
                         strlen(bwipp_opts_buf) ? " " : "", option_1 - 1);
+                bwipp_opts = bwipp_opts_buf;
+            }
+            if (option_2 >= 1 && option_2 <= 2) {
+                sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%srev=%d",
+                        strlen(bwipp_opts_buf) ? " " : "", option_2);
                 bwipp_opts = bwipp_opts_buf;
             }
         }
