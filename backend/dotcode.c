@@ -1385,7 +1385,7 @@ INTERNAL int dotcode(struct zint_symbol *symbol, unsigned char source[], int len
     int debug_print = (symbol->debug & ZINT_DEBUG_PRINT);
     int padding_dots, is_first;
     /* Allow 4 codewords per input + 2 (FNC) + 4 (ECI) + 2 (special char 1st position) + 4 (Structured Append) */
-    int codeword_array_len = length * 4 + 8 + 3;
+    int codeword_array_len = length * 4 + 2 + 4 + 2 + 4;
 
 #ifndef _MSC_VER
     unsigned char codeword_array[codeword_array_len];

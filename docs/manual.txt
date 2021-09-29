@@ -921,7 +921,8 @@ int main(int argc, char **argv)
 }
 
 Note that when using the API, the input data is assumed to be Latin-1 or binary
-unless the input_mode field is set - see section 5.10 for details.
+unless the input_mode variable in the symbol structure is set - see section 5.10
+for details.
 
 5.3 Encoding and Printing Functions in Depth
 --------------------------------------------
@@ -954,7 +955,7 @@ given in the "filename" string.
 
 If printing more than one barcode, the zint_symbol structure may be re-used by
 calling the ZBarcode_Clear() function after each barcode to free any output
-buffers allocated. The symbol structure input fields must be reset.
+buffers allocated. The symbol structure input variables must be reset.
 
 5.4 Buffering Symbols in Memory (raster)
 ----------------------------------------
@@ -1676,7 +1677,7 @@ before encoding.
 You can adjust the gap between the main symbol and an add-on in multiples of
 the X-dimension by setting --addongap= (option_2) to a value between 9 (default)
 and 12. The height in X-dimensions that the guard bars descend below the main
-bars can be adjusted by setting --guarddescent= (field guard_descent in the
+bars can be adjusted by setting --guarddescent= (variable guard_descent in the
 symbol structure) to a value between 0 and 20 (default 5).
 
 6.1.3.2 UPC Version E
@@ -1703,7 +1704,7 @@ before encoding.
 You can adjust the gap between the main symbol and an add-on in multiples of
 the X-dimension by setting --addongap= (option_2) to a value between 7 (default)
 and 12. The height in X-dimensions that the guard bars descend below the main
-bars can be adjusted by setting --guarddescent= (field guard_descent in the
+bars can be adjusted by setting --guarddescent= (variable guard_descent in the
 symbol structure) to a value between 0 and 20 (default 5).
 
 6.1.4 European Article Number (EN 797)
@@ -1740,7 +1741,7 @@ the check digit then you can use symbology BARCODE_EANX_CHK (14) which takes an
 You can adjust the gap between the main symbol and an add-on in multiples of
 the X-dimension by setting --addongap= (option_2) to a value between 7 (default)
 and 12. The height in X-dimensions that the guard bars descend below the main
-bars can be adjusted by setting --guarddescent= (field guard_descent in the
+bars can be adjusted by setting --guarddescent= (variable guard_descent in the
 symbol structure) to a value between 0 and 20 (default 5).
 
 6.1.4.2 SBN, ISBN and ISBN-13
@@ -1751,7 +1752,7 @@ needs to be present in the input data and will be verified before the symbol is
 generated. In addition EAN-2 and EAN-5 add-on symbols can be added using the +
 symbol as with UPC symbols, and the gap set with --addongap= (option_2) to
 between 7 (default) and 12. The height that the guard bars descend can be
-adjusted by setting --guarddescent= (field guard_descent in the symbol
+adjusted by setting --guarddescent= (variable guard_descent in the symbol
 structure) to a value between 0 and 20 (default 5).
 
 6.1.5 Plessey
@@ -2073,12 +2074,13 @@ mechanism. A separate symbology ID can be used to encode Health Industry
 Barcode (HIBC) data which adds a leading '+' character and a modulo-49 check
 digit to the encoded data.
 
-PDF417 supports Structured Append of up to a 99,999 symbols and a numeric ID of
-up to 30 digits, which can be set by using the --structapp option (see section
-4.15) or the API structapp variable. The ID consists of up to 10 triplets, each
-ranging from "000" to "899". For instance "123456789" would be a valid ID of 3
-triplets. However "123456900" would not, as the last triplet "900" exceeds
-"899". The triplets are 0-filled, for instance "1234" becomes "123004".
+PDF417 supports Structured Append of up to a 99,999 symbols and an optional
+numeric ID of up to 30 digits, which can be set by using the --structapp option
+(see section 4.15) or the API structapp variable. The ID consists of up to 10
+triplets, each ranging from "000" to "899". For instance "123456789" would be a
+valid ID of 3 triplets. However "123456900" would not, as the last triplet "900"
+exceeds "899". The triplets are 0-filled, for instance "1234" becomes "123004".
+If an ID is not given, no ID is encoded.
 
 6.2.5 Compact PDF417
 --------------------
@@ -2508,10 +2510,10 @@ ZINT_FULL_MULTIBYTE | (N + 1) << 8.
 
 QR Code supports Structured Append of up to 16 symbols and a numeric ID
 (parity), which can be set by using the --structapp option (see section 4.15) or
-the API structapp variable. The parity ID ranges from 0 and 255, and for full
-compliance should be set to the value obtained by XOR-ing together each byte of
-the complete data forming the sequence. Currently this calculation must be done
-outside of Zint. If an ID is not given it defaults to 0.
+the API structapp variable. The parity ID ranges from 0 (default) to 255, and
+for full compliance should be set to the value obtained by XOR-ing together each
+byte of the complete data forming the sequence. Currently this calculation must
+be done outside of Zint.
 
 6.6.3 Micro QR Code (ISO 18004)
 -------------------------------
@@ -2632,7 +2634,7 @@ Developed by UPS the MaxiCode symbology employs a grid of hexagons surrounding
 a 'bulls-eye' finder pattern. This symbology is designed for the identification
 of parcels. MaxiCode symbols can be encoded in one of five modes. In modes 2
 and 3 MaxiCode symbols are composed of two parts named the primary and
-secondary messages. The primary message consists of a structured data field
+secondary messages. The primary message consists of a Structured Carrier Message
 which includes various data about the package being sent and the secondary
 message usually consists of address data in a data structure. The format of the
 primary message required by Zint is given in the following table:
@@ -2645,7 +2647,7 @@ Characters | Meaning
            |    unused characters can be filled with the SPACE character
            |    (ASCII 32) or omitted (if omitted adjust the following
            |    character positions).
-10 - 12    | Three digit country code according to ISO 3166.
+10 - 12    | Three digit country code according to ISO 3166-1.
 13 - 15    | Three digit service code. This depends on your parcel courier.
 ----------------------------------------------------------------------------
 
@@ -2877,7 +2879,7 @@ supports this before using.
 
 Grid Matrix supports Structured Append of up to 16 symbols and a numeric ID
 (file signature), which can be set by using the --structapp option (see section
-4.15) or the API structapp variable. The ID ranges from 0 (default) and 255.
+4.15) or the API structapp variable. The ID ranges from 0 (default) to 255.
 
 6.6.11 DotCode
 -------------
@@ -3052,8 +3054,8 @@ in a production environment.
 
 Ultracode supports Structured Append of up to 8 symbols and an optional numeric
 ID (File Number), which can be set by using the --structapp option (see section
-4.15) or the API structapp variable. The ID ranges from 1 and 80088. If an ID
-is not given, no ID is encoded.
+4.15) or the API structapp variable. The ID ranges from 1 to 80088. If an ID is
+not given, no ID is encoded.
 
 6.7 Other Barcode-Like Markings
 -------------------------------
