@@ -20,7 +20,8 @@
       <string>Show &amp;Check Characters in Text</string>
      </property>
      <property name="toolTip">
-      <string>Display the 2 check characters in the Human Readable Text</string>
+      <string>Display the 2 check characters in
+the Human Readable Text</string>
      </property>
      <property name="checked">
       <bool>false</bool>

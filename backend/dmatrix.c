@@ -1144,7 +1144,7 @@ static void add_tail(unsigned char target[], int tp, const int tail_length) {
     }
 }
 
-static int data_matrix_200(struct zint_symbol *symbol, const unsigned char source[], int inputlen) {
+static int datamatrix_200(struct zint_symbol *symbol, const unsigned char source[], int inputlen) {
     int i, skew = 0;
     unsigned char binary[2200];
     int binlen;
@@ -1266,12 +1266,12 @@ static int data_matrix_200(struct zint_symbol *symbol, const unsigned char sourc
     return error_number;
 }
 
-INTERNAL int dmatrix(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int datamatrix(struct zint_symbol *symbol, unsigned char source[], int length) {
     int error_number;
 
     if (symbol->option_1 <= 1) {
         /* ECC 200 */
-        error_number = data_matrix_200(symbol, source, length);
+        error_number = datamatrix_200(symbol, source, length);
     } else {
         /* ECC 000 - 140 */
         strcpy(symbol->errtxt, "524: Older Data Matrix standards are no longer supported");

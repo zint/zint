@@ -103,10 +103,13 @@ static void test_hrt(int index, int debug) {
         /*  0*/ { BARCODE_CODABAR, -1, "A1234B", "A1234B" },
         /*  1*/ { BARCODE_CODABAR, -1, "a1234c", "A1234C" }, // Converts to upper
         /*  2*/ { BARCODE_CODABAR, 1, "A1234B", "A1234B" }, // Check not included
-        /*  3*/ { BARCODE_PHARMA, -1, "123456", "" }, // None
-        /*  4*/ { BARCODE_PHARMA_TWO, -1, "123456", "" }, // None
-        /*  5*/ { BARCODE_CODE32, -1, "123456", "A001234564" },
-        /*  6*/ { BARCODE_CODE32, -1, "12345678", "A123456788" },
+        /*  3*/ { BARCODE_CODABAR, 2, "A1234B", "A12345B" }, // Check included
+        /*  4*/ { BARCODE_CODABAR, 1, "A123456A", "A123456A" }, // Check not included
+        /*  5*/ { BARCODE_CODABAR, 2, "A123456A", "A123456$A" }, // Check included
+        /*  6*/ { BARCODE_PHARMA, -1, "123456", "" }, // None
+        /*  7*/ { BARCODE_PHARMA_TWO, -1, "123456", "" }, // None
+        /*  8*/ { BARCODE_CODE32, -1, "123456", "A001234564" },
+        /*  9*/ { BARCODE_CODE32, -1, "12345678", "A123456788" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;

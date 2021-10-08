@@ -54,6 +54,9 @@ be set based on data</string>
      </item>
      <item row="1" column="1">
       <widget class="QComboBox" name="cmbAztecSize">
+       <property name="maxVisibleItems">
+        <number>21</number>
+       </property>
        <property name="enabled">
         <bool>false</bool>
        </property>

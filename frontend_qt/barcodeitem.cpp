@@ -16,7 +16,7 @@
  ***************************************************************************/
 /* vim: set ts=4 sw=4 et : */
 
-#include <QDebug>
+//#include <QDebug>
 #include "barcodeitem.h"
 
 BarcodeItem::BarcodeItem()

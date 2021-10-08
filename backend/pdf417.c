@@ -508,7 +508,7 @@ static void numbprocess(int *chainemc, int *mclength, const unsigned char chaine
     }
 }
 
-/* Initial processing of data, shared by `pdf417enc()` and `micro_pdf417()` */
+/* Initial processing of data, shared by `pdf417()` and `micropdf417()` */
 static int pdf417_initial(struct zint_symbol *symbol, unsigned char chaine[], const int length, const int is_micro,
             int chainemc[PDF417_MAX_LEN], int *p_mclength, int structapp_cws[18], int *p_structapp_cp) {
     int i, indexchaine, indexliste, mode;
@@ -661,7 +661,7 @@ static int pdf417_initial(struct zint_symbol *symbol, unsigned char chaine[], co
 }
 
 /* 366 */
-static int pdf417(struct zint_symbol *symbol, unsigned char chaine[], const int length) {
+static int pdf417_enc(struct zint_symbol *symbol, unsigned char chaine[], const int length) {
     int i, k, j, longueur, loop, mccorrection[520] = {0}, offset;
     int total, chainemc[PDF417_MAX_LEN], mclength, c1, c2, c3, dummy[35];
     char pattern[580];
@@ -872,7 +872,7 @@ static int pdf417(struct zint_symbol *symbol, unsigned char chaine[], const int 
 }
 
 /* 345 */
-INTERNAL int pdf417enc(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int pdf417(struct zint_symbol *symbol, unsigned char source[], int length) {
     int codeerr, error_number;
 
     error_number = 0;
@@ -895,7 +895,7 @@ INTERNAL int pdf417enc(struct zint_symbol *symbol, unsigned char source[], int l
     }
 
     /* 349 */
-    codeerr = pdf417(symbol, source, length);
+    codeerr = pdf417_enc(symbol, source, length);
 
     /* 352 */
     if (codeerr != 0) {
@@ -907,7 +907,7 @@ INTERNAL int pdf417enc(struct zint_symbol *symbol, unsigned char source[], int l
 }
 
 /* like PDF417 only much smaller! */
-INTERNAL int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], int length) {
+INTERNAL int micropdf417(struct zint_symbol *symbol, unsigned char chaine[], int length) {
     int i, k, j, longueur, mccorrection[50] = {0}, offset;
     int total, chainemc[PDF417_MAX_LEN], mclength, error_number = 0;
     char pattern[580];

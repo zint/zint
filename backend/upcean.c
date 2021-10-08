@@ -30,9 +30,9 @@
  */
 /* vim: set ts=4 sw=4 et : */
 
-#define SODIUM          "0123456789+"
-#define ISBN_SANE       "0123456789X"
-#define ISBN_ADDON_SANE "0123456789Xx+"
+#define SODIUM              "0123456789+"
+#define ISBNX_SANE          "0123456789X"
+#define ISBNX_ADDON_SANE    "0123456789Xx+"
 
 #define EAN2    102
 #define EAN5    105
@@ -108,7 +108,6 @@ static void upca_draw(const unsigned char source[], const int length, char dest[
 /* Make a UPC-A barcode, allowing for composite if `cc_rows` set */
 static int upca_cc(struct zint_symbol *symbol, const unsigned char source[], int length, char dest[], int cc_rows) {
     unsigned char *gtin = symbol->text;
-    float height;
     int error_number = 0;
 
     ustrcpy(gtin, source);
@@ -130,23 +129,23 @@ static int upca_cc(struct zint_symbol *symbol, const unsigned char source[], int
 
     upca_draw(gtin, length, dest);
 
-#ifdef COMPLIANT_HEIGHTS
-    /* BS EN 797:1996 4.5.1 Nominal dimensions 22.85mm / 0.33mm (X) ~ 69.24,
-       same as minimum GS1 General Specifications 21.0.1 5.12.3.1 */
-    height = (float) (22.85 / 0.33);
-    if (symbol->symbology == BARCODE_UPCA_CC) {
-        symbol->height = height; /* Pass back min row == default height */
+    if (symbol->output_options & COMPLIANT_HEIGHT) {
+        /* BS EN 797:1996 4.5.1 Nominal dimensions 22.85mm / 0.33mm (X) ~ 69.24,
+           same as minimum GS1 General Specifications 21.0.1 5.12.3.1 */
+        const float height = stripf(22.85f / 0.33f);
+        if (symbol->symbology == BARCODE_UPCA_CC) {
+            symbol->height = height; /* Pass back min row == default height */
+        } else {
+            error_number = set_height(symbol, height, height, 0.0f, 0 /*no_errtxt*/);
+        }
     } else {
-        error_number = set_height(symbol, height, height, 0.0f, 0 /*no_errtxt*/);
+        const float height = 50.0f;
+        if (symbol->symbology == BARCODE_UPCA_CC) {
+            symbol->height = height - cc_rows * 2 - 6.0f;
+        } else {
+            (void) set_height(symbol, 0.0f, height, 0.0f, 1 /*no_errtxt*/);
+        }
     }
-#else
-    height = 50.0f;
-    if (symbol->symbology == BARCODE_UPCA_CC) {
-        symbol->height = height - cc_rows * 2 - 6.0f;
-    } else {
-        (void) set_height(symbol, 0.0f, height, 0.0f, 1 /*no_errtxt*/);
-    }
-#endif
 
     return error_number;
 }
@@ -163,7 +162,6 @@ static int upce_cc(struct zint_symbol *symbol, unsigned char source[], int lengt
     char src_check_digit = '\0';
     unsigned char equivalent[12];
     unsigned char *hrt = symbol->text;
-    float height;
     int error_number = 0;
 
     if (length == 8 || symbol->symbology == BARCODE_UPCE_CHK) {
@@ -297,23 +295,23 @@ static int upce_cc(struct zint_symbol *symbol, unsigned char source[], int lengt
         printf("UPC-E: %s, equivalent: %s, hrt: %s, Check digit: %c\n", source, equivalent, hrt, check_digit);
     }
 
-#ifdef COMPLIANT_HEIGHTS
-    /* BS EN 797:1996 4.5.1 Nominal dimensions 22.85mm / 0.33mm (X) ~ 69.24,
-       same as minimum GS1 General Specifications 21.0.1 5.12.3.1 */
-    height = (float) (22.85 / 0.33);
-    if (symbol->symbology == BARCODE_UPCE_CC) {
-        symbol->height = height; /* Pass back min row == default height */
+    if (symbol->output_options & COMPLIANT_HEIGHT) {
+        /* BS EN 797:1996 4.5.1 Nominal dimensions 22.85mm / 0.33mm (X) ~ 69.24,
+           same as minimum GS1 General Specifications 21.0.1 5.12.3.1 */
+        const float height = stripf(22.85f / 0.33f);
+        if (symbol->symbology == BARCODE_UPCE_CC) {
+            symbol->height = height; /* Pass back min row == default height */
+        } else {
+            error_number = set_height(symbol, height, height, 0.0f, 0 /*no_errtxt*/);
+        }
     } else {
-        error_number = set_height(symbol, height, height, 0.0f, 0 /*no_errtxt*/);
+        const float height = 50.0f;
+        if (symbol->symbology == BARCODE_UPCE_CC) {
+            symbol->height = height - cc_rows * 2 - 6.0f;
+        } else {
+            (void) set_height(symbol, 0.0f, height, 0.0f, 1 /*no_errtxt*/);
+        }
     }
-#else
-    height = 50.0f;
-    if (symbol->symbology == BARCODE_UPCE_CC) {
-        symbol->height = height - cc_rows * 2 - 6.0f;
-    } else {
-        (void) set_height(symbol, 0.0f, height, 0.0f, 1 /*no_errtxt*/);
-    }
-#endif
 
     return error_number;
 }
@@ -390,7 +388,6 @@ static int ean13_cc(struct zint_symbol *symbol, const unsigned char source[], in
     int i, half_way;
     char parity[6];
     unsigned char *gtin = symbol->text;
-    float height;
     int error_number = 0;
 
     parity[0] = '\0';
@@ -437,23 +434,23 @@ static int ean13_cc(struct zint_symbol *symbol, const unsigned char source[], in
     /* stop character */
     strcat(dest, "111");
 
-#ifdef COMPLIANT_HEIGHTS
-    /* BS EN 797:1996 4.5.1 Nominal dimensions 22.85mm / 0.33mm (X) ~ 69.24,
-       same as minimum GS1 General Specifications 21.0.1 5.12.3.1 */
-    height = (float) (22.85 / 0.33);
-    if (symbol->symbology == BARCODE_EANX_CC) {
-        symbol->height = height; /* Pass back min row == default height */
+    if (symbol->output_options & COMPLIANT_HEIGHT) {
+        /* BS EN 797:1996 4.5.1 Nominal dimensions 22.85mm / 0.33mm (X) ~ 69.24,
+           same as minimum GS1 General Specifications 21.0.1 5.12.3.1 */
+        const float height = stripf(22.85f / 0.33f);
+        if (symbol->symbology == BARCODE_EANX_CC) {
+            symbol->height = height; /* Pass back min row == default height */
+        } else {
+            error_number = set_height(symbol, height, height, 0.0f, 0 /*no_errtxt*/);
+        }
     } else {
-        error_number = set_height(symbol, height, height, 0.0f, 0 /*no_errtxt*/);
+        const float height = 50.0f;
+        if (symbol->symbology == BARCODE_EANX_CC) {
+            symbol->height = height - cc_rows * 2 - 6.0f;
+        } else {
+            (void) set_height(symbol, 0.0f, height, 0.0f, 1 /*no_errtxt*/);
+        }
     }
-#else
-    height = 50.0f;
-    if (symbol->symbology == BARCODE_EANX_CC) {
-        symbol->height = height - cc_rows * 2 - 6.0f;
-    } else {
-        (void) set_height(symbol, 0.0f, height, 0.0f, 1 /*no_errtxt*/);
-    }
-#endif
 
     return error_number;
 }
@@ -465,7 +462,6 @@ static int ean13(struct zint_symbol *symbol, const unsigned char source[], int l
 static int ean8_cc(struct zint_symbol *symbol, const unsigned char source[], int length, char dest[], int cc_rows) {
     /* EAN-8 is basically the same as UPC-A but with fewer digits */
     unsigned char *gtin = symbol->text;
-    float height;
     int error_number = 0;
 
     ustrcpy(gtin, source);
@@ -487,23 +483,23 @@ static int ean8_cc(struct zint_symbol *symbol, const unsigned char source[], int
 
     upca_draw(gtin, length, dest);
 
-#ifdef COMPLIANT_HEIGHTS
-    /* BS EN 797:1996 4.5.1 Nominal dimensions 18.23mm / 0.33mm (X) ~ 55.24,
-       same as minimum GS1 General Specifications 21.0.1 5.12.3.1 */
-    height = (float) (18.23 / 0.33);
-    if (symbol->symbology == BARCODE_EANX_CC) {
-        symbol->height = height; /* Pass back min row == default height */
+    if (symbol->output_options & COMPLIANT_HEIGHT) {
+        /* BS EN 797:1996 4.5.1 Nominal dimensions 18.23mm / 0.33mm (X) ~ 55.24,
+           same as minimum GS1 General Specifications 21.0.1 5.12.3.1 */
+        const float height = stripf(18.23f / 0.33f);
+        if (symbol->symbology == BARCODE_EANX_CC) {
+            symbol->height = height; /* Pass back min row == default height */
+        } else {
+            error_number = set_height(symbol, height, height, 0.0f, 0 /*no_errtxt*/);
+        }
     } else {
-        error_number = set_height(symbol, height, height, 0.0f, 0 /*no_errtxt*/);
+        const float height = 50.0f;
+        if (symbol->symbology == BARCODE_EANX_CC) {
+            symbol->height = height - cc_rows * 2 - 6.0f;
+        } else {
+            (void) set_height(symbol, 0.0f, height, 0.0f, 1 /*no_errtxt*/);
+        }
     }
-#else
-    height = 50.0f;
-    if (symbol->symbology == BARCODE_EANX_CC) {
-        symbol->height = height - cc_rows * 2 - 6.0f;
-    } else {
-        (void) set_height(symbol, 0.0f, height, 0.0f, 1 /*no_errtxt*/);
-    }
-#endif
 
     return error_number;
 }
@@ -514,7 +510,7 @@ static int ean8(struct zint_symbol *symbol, const unsigned char source[], int le
 }
 
 /* For ISBN(10) and SBN only */
-static char isbn_check(const unsigned char source[], const int length) {
+static char isbnx_check(const unsigned char source[], const int length) {
     int i, weight, sum, check;
     char check_char;
 
@@ -535,15 +531,14 @@ static char isbn_check(const unsigned char source[], const int length) {
 }
 
 /* Make an EAN-13 barcode from an SBN or ISBN */
-static int isbn(struct zint_symbol *symbol, unsigned char source[], const int src_len, char dest[]) {
-    int i, error_number;
+static int isbnx(struct zint_symbol *symbol, unsigned char source[], const int src_len, char dest[]) {
+    int i;
     char check_digit;
 
     to_upper(source);
-    error_number = is_sane(ISBN_SANE, source, src_len);
-    if (error_number == ZINT_ERROR_INVALID_DATA) {
+    if (is_sane(ISBNX_SANE, source, src_len) != 0) {
         strcpy(symbol->errtxt, "277: Invalid character in data (digits and \"X\" only)");
-        return error_number;
+        return ZINT_ERROR_INVALID_DATA;
     }
 
     /* Input must be 9, 10 or 13 characters */
@@ -560,10 +555,9 @@ static int isbn(struct zint_symbol *symbol, unsigned char source[], const int sr
         }
 
         /* "X" can only occur in last position */
-        error_number = is_sane(NEON, source, 12);
-        if (error_number == ZINT_ERROR_INVALID_DATA) {
+        if (is_sane(NEON, source, 12) != 0) {
             strcpy(symbol->errtxt, "282: Invalid character in data, \"X\" allowed in last position only");
-            return error_number;
+            return ZINT_ERROR_INVALID_DATA;
         }
 
         check_digit = gs1_check_digit(source, 12);
@@ -584,13 +578,12 @@ static int isbn(struct zint_symbol *symbol, unsigned char source[], const int sr
         }
 
         /* "X" can only occur in last position */
-        error_number = is_sane(NEON, source, 9);
-        if (error_number == ZINT_ERROR_INVALID_DATA) {
+        if (is_sane(NEON, source, 9) != 0) {
             strcpy(symbol->errtxt, "296: Invalid character in data, \"X\" allowed in last position only");
-            return error_number;
+            return ZINT_ERROR_INVALID_DATA;
         }
 
-        check_digit = isbn_check(source, 9);
+        check_digit = isbnx_check(source, 9);
         if (check_digit != source[9]) {
             sprintf(symbol->errtxt, "281: Invalid %s check digit '%c', expecting '%c'", src_len == 9 ? "SBN" : "ISBN",
                     source[9], check_digit);
@@ -758,10 +751,9 @@ INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int src
     char dest[1000] = {0};
     int latch, reader, writer;
     int with_addon;
-    int error_number, i, plus_count;
+    int error_number = 0, i, plus_count;
     int addon_gap = 0;
     int first_part_len, second_part_len;
-    float height;
 
     latch = FALSE;
     writer = 0;
@@ -772,16 +764,14 @@ INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int src
     }
     if (symbol->symbology != BARCODE_ISBNX) {
         /* ISBN has its own sanity routine */
-        error_number = is_sane(SODIUM, source, src_len);
-        if (error_number == ZINT_ERROR_INVALID_DATA) {
+        if (is_sane(SODIUM, source, src_len) != 0) {
             strcpy(symbol->errtxt, "284: Invalid character in data (digits and \"+\" only)");
-            return error_number;
+            return ZINT_ERROR_INVALID_DATA;
         }
     } else {
-        error_number = is_sane(ISBN_ADDON_SANE, source, src_len);
-        if (error_number == ZINT_ERROR_INVALID_DATA) {
+        if (is_sane(ISBNX_ADDON_SANE, source, src_len) != 0) {
             strcpy(symbol->errtxt, "285: Invalid character in data (digits, \"X\" and \"+\" only)");
-            return error_number;
+            return ZINT_ERROR_INVALID_DATA;
         }
         /* Add-on will be checked separately to be numeric only below */
     }
@@ -845,25 +835,23 @@ INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int src
             switch (first_part_len) {
                 case 2: ean_add_on(first_part, first_part_len, dest, 0);
                     ustrcpy(symbol->text, first_part);
-#ifdef COMPLIANT_HEIGHTS
-                    /* 21.9mm from GS1 General Specifications 5.2.6.6, Figure 5.2.6.6-5 */
-                    height = (float) (21.9 / 0.33); /* 21.9mm / 0.33mm ~ 66.36 */
-                    error_number = set_height(symbol, height, height, 0.0f, 0 /*no_errtxt*/);
-#else
-                    height = 50.0f;
-                    (void) set_height(symbol, 0.0f, height, 0.0f, 1 /*no_errtxt*/);
-#endif
+                    if (symbol->output_options & COMPLIANT_HEIGHT) {
+                        /* 21.9mm from GS1 General Specifications 5.2.6.6, Figure 5.2.6.6-5 */
+                        const float height = stripf(21.9f / 0.33f); /* 21.9mm / 0.33mm ~ 66.36 */
+                        error_number = set_height(symbol, height, height, 0.0f, 0 /*no_errtxt*/);
+                    } else {
+                        (void) set_height(symbol, 0.0f, 50.0f, 0.0f, 1 /*no_errtxt*/);
+                    }
                     break;
                 case 5: ean_add_on(first_part, first_part_len, dest, 0);
                     ustrcpy(symbol->text, first_part);
-#ifdef COMPLIANT_HEIGHTS
-                    /* 21.9mm from GS1 General Specifications 5.2.6.6, Figure 5.2.6.6-6 */
-                    height = (float) (21.9 / 0.33); /* 21.9mm / 0.33mm ~ 66.36 */
-                    error_number = set_height(symbol, height, height, 0.0f, 0 /*no_errtxt*/);
-#else
-                    height = 50.0f;
-                    (void) set_height(symbol, 0.0f, height, 0.0f, 1 /*no_errtxt*/);
-#endif
+                    if (symbol->output_options & COMPLIANT_HEIGHT) {
+                        /* 21.9mm from GS1 General Specifications 5.2.6.6, Figure 5.2.6.6-6 */
+                        const float height = stripf(21.9f / 0.33f); /* 21.9mm / 0.33mm ~ 66.36 */
+                        error_number = set_height(symbol, height, height, 0.0f, 0 /*no_errtxt*/);
+                    } else {
+                        (void) set_height(symbol, 0.0f, 50.0f, 0.0f, 1 /*no_errtxt*/);
+                    }
                     break;
                 case 7:
                 case 8: error_number = ean8(symbol, first_part, first_part_len, dest);
@@ -961,7 +949,7 @@ INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int src
             }
             break;
         case BARCODE_ISBNX:
-            error_number = isbn(symbol, first_part, first_part_len, dest);
+            error_number = isbnx(symbol, first_part, first_part_len, dest);
             break;
     }
 
@@ -972,10 +960,9 @@ INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int src
     second_part_len = (int) ustrlen(second_part);
 
     if (symbol->symbology == BARCODE_ISBNX) { /* Need to further check that add-on numeric only */
-        error_number = is_sane(NEON, second_part, second_part_len);
-        if (error_number == ZINT_ERROR_INVALID_DATA) {
+        if (is_sane(NEON, second_part, second_part_len) != 0) {
             strcpy(symbol->errtxt, "295: Invalid add-on data (digits only)");
-            return error_number;
+            return ZINT_ERROR_INVALID_DATA;
         }
     }
 

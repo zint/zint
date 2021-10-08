@@ -150,10 +150,10 @@ static void test_input(int index, int debug) {
         /*  3*/ { BARCODE_AUSPOST, "12345678ABcd!", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 404: Invalid character in data (alphanumerics, space and \"#\" only)" },
         /*  4*/ { BARCODE_AUSPOST, "12345678ABcd#", 0, 3, 103, "" },
         /*  5*/ { BARCODE_AUSPOST, "1234567890123456", 0, 3, 103, "" },
-        /*  6*/ { BARCODE_AUSPOST, "123456789012345A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 402: Invalid character in data (digits only for lengths 16 and 23)" },
+        /*  6*/ { BARCODE_AUSPOST, "123456789012345A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 402: Invalid character in data (digits only for length 16)" },
         /*  7*/ { BARCODE_AUSPOST, "12345678ABCDefgh #", 0, 3, 133, "" }, // Length 18
         /*  8*/ { BARCODE_AUSPOST, "12345678901234567890123", 0, 3, 133, "" },
-        /*  9*/ { BARCODE_AUSPOST, "1234567890123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 402: Invalid character in data (digits only for lengths 16 and 23)" },
+        /*  9*/ { BARCODE_AUSPOST, "1234567890123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 406: Invalid character in data (digits only for length 23)" },
         /* 10*/ { BARCODE_AUSPOST, "1234567", ZINT_ERROR_TOO_LONG, -1, -1, "Error 401: Auspost input is wrong length (8, 13, 16, 18 or 23 characters only)" }, // No leading zeroes added
         /* 11*/ { BARCODE_AUSREPLY, "12345678", 0, 3, 73, "" },
         /* 12*/ { BARCODE_AUSREPLY, "1234567", 0, 3, 73, "" }, // Leading zeroes added

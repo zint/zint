@@ -41,9 +41,49 @@
   <property name="locale">
    <locale language="English" country="UnitedStates"/>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_5">
+  <layout class="QVBoxLayout" name="verticalLayoutMain">
    <item>
-    <widget class="QGraphicsView" name="view"/>
+    <widget class="QGraphicsView" name="view">
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>10</height>
+      </size>
+     </property>
+     <property name="contextMenuPolicy">
+      <enum>Qt::CustomContextMenu</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QSplitter" name="errtxtBarContainer">
+     <property name="frameShape">
+      <enum>QFrame::StyledPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Plain</enum>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="visible">
+      <bool>false</bool>
+     </property>
+     <widget class="QStatusBar" name="errtxtBar">
+      <property name="contextMenuPolicy">
+       <enum>Qt::CustomContextMenu</enum>
+      </property>
+      <property name="autoFillBackground">
+       <bool>true</bool>
+      </property>
+      <property name="styleSheet">
+       <string notr="true"/>
+      </property>
+      <property name="sizeGripEnabled">
+       <bool>false</bool>
+      </property>
+     </widget>
+    </widget>
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
@@ -659,18 +699,37 @@ as delimiters for GS1 Application Identifiers
            <item>
             <layout class="QGridLayout" name="gridLayout">
              <item row="0" column="0" colspan="2">
-              <widget class="QCheckBox" name="chkAutoHeight">
-               <property name="toolTip">
-                <string>Use default height
+              <layout class="QHBoxLayout" name="horizontalLayoutAutoHeight">
+               <item>
+                <widget class="QCheckBox" name="chkAutoHeight">
+                 <property name="toolTip">
+                  <string>Use default height
 (ignored if disabled)</string>
-               </property>
-               <property name="text">
-                <string>Auto&amp;matic Height</string>
-               </property>
-               <property name="checked">
-                <bool>true</bool>
-               </property>
-              </widget>
+                 </property>
+                 <property name="text">
+                  <string>Auto&amp;matic Height</string>
+                 </property>
+                 <property name="checked">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="chkCompliantHeight">
+                 <property name="toolTip">
+                  <string>Warn if height not compliant with specification
+and use standard height (if any) for default
+(ignored if disabled)</string>
+                 </property>
+                 <property name="text">
+                  <string>Com&amp;pliant Height</string>
+                 </property>
+                 <property name="checked">
+                  <bool>false</bool>
+                 </property>
+                </widget>
+               </item>
+              </layout>
              </item>
              <item row="1" column="0">
               <widget class="QLabel" name="lblHeight">
@@ -701,6 +760,9 @@ as delimiters for GS1 Application Identifiers
                 <string>Overall symbol height in X-dimensions
 (ignored if disabled)</string>
                </property>
+               <property name="accelerated">
+                <bool>true</bool>
+               </property>
                <property name="prefix">
                 <string/>
                </property>
@@ -721,9 +783,6 @@ as delimiters for GS1 Application Identifiers
                </property>
                <property name="value">
                 <double>50.000000000000000</double>
-               </property>
-               <property name="accelerated">
-                <bool>true</bool>
                </property>
               </widget>
              </item>
@@ -1156,19 +1215,19 @@ in X-dimensions</string>
    <item>
     <layout class="QGridLayout" name="gridLayout_2">
      <item row="0" column="0">
-      <widget class="QPushButton" name="btnAbout">
+      <widget class="QPushButton" name="btnMenu">
        <property name="toolTip">
-        <string>About Zint</string>
+        <string>Show menu</string>
        </property>
        <property name="text">
-        <string>Abo&amp;ut</string>
+        <string>Men&amp;u</string>
        </property>
       </widget>
      </item>
      <item row="0" column="1">
-      <spacer name="horizontalSpacer_2">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+      <widget class="QStatusBar" name="statusBar">
+       <property name="sizeGripEnabled">
+        <bool>false</bool>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -1176,7 +1235,7 @@ in X-dimensions</string>
          <height>20</height>
         </size>
        </property>
-      </spacer>
+      </widget>
      </item>
      <item row="0" column="2">
       <widget class="QPushButton" name="btnCopyBMP">
@@ -1184,7 +1243,7 @@ in X-dimensions</string>
         <string>Copy to clipboard as BMP</string>
        </property>
        <property name="text">
-        <string>Copy &amp;BMP</string>
+        <string> &amp;BMP</string>
        </property>
       </widget>
      </item>
@@ -1194,7 +1253,7 @@ in X-dimensions</string>
         <string>Copy to clipboard as SVG</string>
        </property>
        <property name="text">
-        <string>Copy S&amp;VG</string>
+        <string> S&amp;VG</string>
        </property>
       </widget>
      </item>

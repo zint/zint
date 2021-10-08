@@ -957,7 +957,7 @@ static void block_copy(struct zint_symbol *symbol, char datagrid[136][120], cons
     }
 }
 
-INTERNAL int code_one(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int codeone(struct zint_symbol *symbol, unsigned char source[], int length) {
     int size = 1, i, j;
 
     char datagrid[136][120];
@@ -972,6 +972,10 @@ INTERNAL int code_one(struct zint_symbol *symbol, unsigned char source[], int le
     }
 
     if (symbol->structapp.count) {
+        if (symbol->option_2 == 9) { /* Version S */
+            strcpy(symbol->errtxt, "714: Structured Append not available for Version S");
+            return ZINT_ERROR_INVALID_OPTION;
+        }
         if ((symbol->input_mode & 0x07) == GS1_MODE) {
             strcpy(symbol->errtxt, "710: Cannot have Structured Append and GS1 mode at the same time");
             return ZINT_ERROR_INVALID_OPTION;
@@ -997,15 +1001,11 @@ INTERNAL int code_one(struct zint_symbol *symbol, unsigned char source[], int le
         unsigned int data[30], ecc[15];
         int block_width;
 
-        if (symbol->structapp.count) { /* Version S */
-            strcpy(symbol->errtxt, "714: Structured Append not supported for Version S");
-            return ZINT_ERROR_INVALID_OPTION;
-        }
         if (length > 18) {
             strcpy(symbol->errtxt, "514: Input data too long for Version S");
             return ZINT_ERROR_TOO_LONG;
         }
-        if (is_sane(NEON, source, length) == ZINT_ERROR_INVALID_DATA) {
+        if (is_sane(NEON, source, length) != 0) {
             strcpy(symbol->errtxt, "515: Invalid input data (Version S encodes numeric input only)");
             return ZINT_ERROR_INVALID_DATA;
         }

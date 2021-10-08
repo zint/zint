@@ -25,11 +25,17 @@
      <property name="title">
       <string>Check Digits</string>
      </property>
+     <property name="toolTip">
+      <string>Check digits options</string>
+     </property>
      <layout class="QGridLayout" name="gridLayoutC11CheckDigits">
       <item row="0" column="0">
        <widget class="QRadioButton" name="radC11TwoCheckDigits">
         <property name="text">
          <string>&amp;Two (Mod-11)</string>
+        </property>
+        <property name="toolTip">
+         <string>Add 2 mod-11 check digits</string>
         </property>
         <property name="checked">
          <bool>true</bool>
@@ -41,12 +47,18 @@
         <property name="text">
          <string>&amp;One (Mod-11)</string>
         </property>
+        <property name="toolTip">
+         <string>Add 1 mod-11 check digit</string>
+        </property>
        </widget>
       </item>
       <item row="1" column="0">
        <widget class="QRadioButton" name="radC11NoCheckDigits">
         <property name="text">
          <string>&amp;No Check Digit</string>
+        </property>
+        <property name="toolTip">
+         <string>Do not add any check digits</string>
         </property>
        </widget>
       </item>

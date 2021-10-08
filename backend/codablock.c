@@ -39,7 +39,7 @@
 #include <assert.h>
 #include "common.h"
 
-INTERNAL int code_128(struct zint_symbol *symbol, unsigned char source[], int length);
+INTERNAL int code128(struct zint_symbol *symbol, unsigned char source[], int length);
 
 #define uchar unsigned char
 
@@ -601,7 +601,7 @@ static void SumASCII(uchar **ppOutPos, int Sum, int CharacterSet)
 
 /* Main function called by zint framework
  */
-INTERNAL int codablock(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int codablockf(struct zint_symbol *symbol, unsigned char source[], int length) {
     int charCur, dataLength;
     int error_number;
     int rows, columns, useColumns;
@@ -613,7 +613,6 @@ INTERNAL int codablock(struct zint_symbol *symbol, unsigned char source[], int l
     int emptyColumns;
     char dest[1000];
     int r, c;
-    float min_row_height = 0.0f;
 #ifdef _MSC_VER
     CharacterSetTable *T;
     unsigned char *data;
@@ -627,20 +626,20 @@ INTERNAL int codablock(struct zint_symbol *symbol, unsigned char source[], int l
     /* option1: rows <= 0: automatic, 1..44 */
     rows = symbol->option_1;
     if (rows == 1) {
-        error_number = code_128(symbol, source, length); /* Only returns errors, not warnings */
+        error_number = code128(symbol, source, length); /* Only returns errors, not warnings */
         if (error_number < ZINT_ERROR) {
             symbol->output_options |= BARCODE_BIND;
             if (symbol->border_width == 0) { /* Allow override if non-zero */
                 symbol->border_width = 1; /* AIM ISS-X-24 Section 4.6.1 b) (note change from previous default 2) */
             }
             symbol->text[0] = '\0'; /* Disable HRT for compatibility with CODABLOCKF */
-#ifdef COMPLIANT_HEIGHTS
-            /* AIM ISS-X-24 Section 4.5.1 minimum row height 8 (for compatibility with CODABLOCKF, not specced for
-               CODE128) */
-            error_number = set_height(symbol, 8.0f, 10.0f, 0.0f, 0 /*no_errtxt*/);
-#else
-            (void) set_height(symbol, 0.0f, 5.0f, 0.0f, 1 /*no_errtxt*/);
-#endif
+            if (symbol->output_options & COMPLIANT_HEIGHT) {
+                /* AIM ISS-X-24 Section 4.5.1 minimum row height 8 (for compatibility with CODABLOCKF, not specced for
+                   CODE128) */
+                error_number = set_height(symbol, 8.0f, 10.0f, 0.0f, 0 /*no_errtxt*/);
+            } else {
+                (void) set_height(symbol, 0.0f, 5.0f, 0.0f, 1 /*no_errtxt*/);
+            }
         }
         return error_number;
     }
@@ -961,17 +960,17 @@ INTERNAL int codablock(struct zint_symbol *symbol, unsigned char source[], int l
         expand(symbol, dest);
     }
 
-#ifdef COMPLIANT_HEIGHTS
-    /* AIM ISS-X-24 Section 4.6.1 minimum row height; use 10 * rows as default for back-compatibility */
-    min_row_height = (float) (0.55 * useColumns + 3.0);
-    if (min_row_height < 8.0f) {
-        min_row_height = 8.0f;
+    if (symbol->output_options & COMPLIANT_HEIGHT) {
+        /* AIM ISS-X-24 Section 4.6.1 minimum row height; use 10 * rows as default */
+        float min_row_height = stripf(0.55f * useColumns + 3.0f);
+        if (min_row_height < 8.0f) {
+            min_row_height = 8.0f;
+        }
+        error_number = set_height(symbol, min_row_height, (min_row_height > 10.0f ? min_row_height : 10.0f) * rows,
+                                    0.0f, 0 /*no_errtxt*/);
+    } else {
+        (void) set_height(symbol, 0.0f, 10.0f * rows, 0.0f, 1 /*no_errtxt*/);
     }
-    error_number = set_height(symbol, min_row_height, (min_row_height > 10.0f ? min_row_height : 10.0f) * rows, 0.0f,
-                                0 /*no_errtxt*/);
-#else
-    (void) set_height(symbol, min_row_height, 10.0f * rows, 0.0f, 1 /*no_errtxt*/);
-#endif
 
     symbol->output_options |= BARCODE_BIND;
 

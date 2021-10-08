@@ -21,32 +21,52 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <layout class="QGridLayout" name="gridLayout">
-     <item row="0" column="0">
-      <widget class="QRadioButton" name="radC39Stand">
-       <property name="text">
-        <string>&amp;No Check Digit</string>
-       </property>
-       <property name="checked">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="0">
-      <widget class="QRadioButton" name="radC39HIBC">
-       <property name="text">
-        <string>H&amp;IBC 39</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1">
-      <widget class="QRadioButton" name="radC39Check">
-       <property name="text">
-        <string>&amp;Mod-43 Check Digit</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
+    <widget class="QGroupBox" name="grpC39Check">
+     <property name="title">
+      <string>Check Digit</string>
+     </property>
+     <property name="toolTip">
+      <string>Check character options</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayoutCheck">
+      <item row="0" column="0">
+       <widget class="QRadioButton" name="radC39Stand">
+        <property name="text">
+         <string>&amp;No Check Digit</string>
+        </property>
+        <property name="toolTip">
+         <string>Do not add check character</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0" colspan="2">
+       <widget class="QRadioButton" name="radC39HIBC">
+        <property name="text">
+         <string>H&amp;IBC 39 (Mod-43 Check Digit added)</string>
+        </property>
+        <property name="toolTip">
+         <string>Process data as a Health Industry Barcode (HIBC)
+Labeler Identification Code (LIC)
+For Provider Applications Standard (PAS), preface
+the data with a slash &quot;/&quot;</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QRadioButton" name="radC39Check">
+        <property name="text">
+         <string>&amp;Mod-43 Check Digit</string>
+        </property>
+        <property name="toolTip">
+         <string>Add mod-43 check character</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
    </item>
    <item>
     <spacer name="verticalSpacer">

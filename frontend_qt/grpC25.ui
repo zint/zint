@@ -21,41 +21,50 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <layout class="QGridLayout" name="gridLayout">
-     <item row="0" column="0">
-      <widget class="QRadioButton" name="radC25Stand">
-       <property name="text">
-        <string>&amp;No Check Digit</string>
-       </property>
-       <property name="checked">
-        <bool>true</bool>
-       </property>
-       <property name="toolTip">
-        <string>No check digit added</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1">
-      <widget class="QRadioButton" name="radC25Check">
-       <property name="text">
-        <string>&amp;Check Digit</string>
-       </property>
-       <property name="toolTip">
-        <string>Add standard GS1 mod-10 weighted check digit</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="0">
-      <widget class="QRadioButton" name="radC25CheckHide">
-       <property name="text">
-        <string>Check Digit, Not Shown in &amp;Text</string>
-       </property>
-       <property name="toolTip">
-        <string>Add standard GS1 check digit but do not display in Human Readable Text</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
+    <widget class="QGroupBox" name="grpC25Check">
+     <property name="title">
+      <string>Check Digit</string>
+     </property>
+     <property name="toolTip">
+      <string>Check digit options</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayoutC25Check">
+      <item row="0" column="0">
+       <widget class="QRadioButton" name="radC25Stand">
+        <property name="text">
+         <string>&amp;No Check Digit</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+        <property name="toolTip">
+         <string>Do not add check digit</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QRadioButton" name="radC25Check">
+        <property name="text">
+         <string>&amp;Check Digit</string>
+        </property>
+        <property name="toolTip">
+         <string>Add standard GS1 mod-10 check digit</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QRadioButton" name="radC25CheckHide">
+        <property name="text">
+         <string>&amp;Hidden Check Digit</string>
+        </property>
+        <property name="toolTip">
+         <string>Add standard GS1 mod-10 check digit but
+do not display in Human Readable Text</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
    </item>
    <item>
     <spacer name="verticalSpacer">

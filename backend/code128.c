@@ -300,7 +300,7 @@ STATIC_UNLESS_ZINT_TEST int hrt_cpy_iso8859_1(struct zint_symbol *symbol, const 
 }
 
 /* Handle Code 128, 128B and HIBC 128 */
-INTERNAL int code_128(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int code128(struct zint_symbol *symbol, unsigned char source[], int length) {
     int i, j, k, values[C128_MAX] = {0}, bar_characters, read, total_sum;
     int error_number, indexchaine, indexliste, f_state;
     int sourcelen;
@@ -705,7 +705,7 @@ INTERNAL int code_128(struct zint_symbol *symbol, unsigned char source[], int le
 }
 
 /* Handle EAN-128 (Now known as GS1-128), and composite version if `cc_mode` set */
-INTERNAL int ean_128_cc(struct zint_symbol *symbol, unsigned char source[], int length, const int cc_mode,
+INTERNAL int gs1_128_cc(struct zint_symbol *symbol, unsigned char source[], int length, const int cc_mode,
                 const int cc_rows) {
     int i, j, values[C128_MAX] = {0}, bar_characters, read, total_sum;
     int error_number, warn_number = 0, indexchaine, indexliste;
@@ -1014,23 +1014,26 @@ INTERNAL int ean_128_cc(struct zint_symbol *symbol, unsigned char source[], int 
         }
     }
 
-#ifdef COMPLIANT_HEIGHTS
-    /* GS1 General Specifications 21.0.1 5.12.3.2 table 2, including footnote (**):
-       same as ITF-14: "in case of further space constraints" height 5.8mm / 1.016mm (X max) ~ 5.7;
-       default 31.75mm / 0.495mm ~ 64.14 */
-    if (symbol->symbology == BARCODE_GS1_128_CC) {
-        /* Pass back via temporary linear structure */
-        symbol->height = symbol->height ? (float) (5.8 / 1.016) : (float) (31.75 / 0.495);
+    if (symbol->output_options & COMPLIANT_HEIGHT) {
+        /* GS1 General Specifications 21.0.1 5.12.3.2 table 2, including footnote (**):
+           same as ITF-14: "in case of further space constraints" height 5.8mm / 1.016mm (X max) ~ 5.7;
+           default 31.75mm / 0.495mm ~ 64.14 */
+        const float min_height = stripf(5.8f / 1.016f);
+        const float default_height = stripf(31.75f / 0.495f);
+        if (symbol->symbology == BARCODE_GS1_128_CC) {
+            /* Pass back via temporary linear structure */
+            symbol->height = symbol->height ? min_height : default_height;
+        } else {
+            warn_number = set_height(symbol, min_height, default_height, 0.0f, 0 /*no_errtxt*/);
+        }
     } else {
-        warn_number = set_height(symbol, (float) (5.8 / 1.016), (float) (31.75 / 0.495), 0.0f, 0 /*no_errtxt*/);
+        const float height = 50.0f;
+        if (symbol->symbology == BARCODE_GS1_128_CC) {
+            symbol->height = height - cc_rows * (cc_mode == 3 ? 3 : 2) - 1.0f;
+        } else {
+            (void) set_height(symbol, 0.0f, height, 0.0f, 1 /*no_errtxt*/);
+        }
     }
-#else
-    if (symbol->symbology == BARCODE_GS1_128_CC) {
-        symbol->height = 50.0f - cc_rows * (cc_mode == 3 ? 3 : 2) - 1.0f;
-    } else {
-        (void) set_height(symbol, 0.0f, 50.0f, 0.0f, 1 /*no_errtxt*/);
-    }
-#endif
 
     for (i = 0; i < length; i++) {
         if (source[i] == '[') {
@@ -1046,12 +1049,12 @@ INTERNAL int ean_128_cc(struct zint_symbol *symbol, unsigned char source[], int 
 }
 
 /* Handle EAN-128 (Now known as GS1-128) */
-INTERNAL int ean_128(struct zint_symbol *symbol, unsigned char source[], int length) {
-    return ean_128_cc(symbol, source, length, 0 /*cc_mode*/, 0 /*cc_rows*/);
+INTERNAL int gs1_128(struct zint_symbol *symbol, unsigned char source[], int length) {
+    return gs1_128_cc(symbol, source, length, 0 /*cc_mode*/, 0 /*cc_rows*/);
 }
 
 /* Add check digit if encoding an NVE18 symbol */
-INTERNAL int nve_18(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int nve18(struct zint_symbol *symbol, unsigned char source[], int length) {
     int i, count, check_digit;
     int error_number, zeroes;
     unsigned char ean128_equiv[23];
@@ -1061,10 +1064,9 @@ INTERNAL int nve_18(struct zint_symbol *symbol, unsigned char source[], int leng
         return ZINT_ERROR_TOO_LONG;
     }
 
-    error_number = is_sane(NEON, source, length);
-    if (error_number == ZINT_ERROR_INVALID_DATA) {
+    if (is_sane(NEON, source, length) != 0) {
         strcpy(symbol->errtxt, "346: Invalid character in data (digits only)");
-        return error_number;
+        return ZINT_ERROR_INVALID_DATA;
     }
 
     zeroes = 17 - length;
@@ -1083,13 +1085,13 @@ INTERNAL int nve_18(struct zint_symbol *symbol, unsigned char source[], int leng
     ean128_equiv[21] = itoc(check_digit);
     ean128_equiv[22] = '\0';
 
-    error_number = ean_128(symbol, ean128_equiv, 22);
+    error_number = gs1_128(symbol, ean128_equiv, 22);
 
     return error_number;
 }
 
 /* EAN-14 - A version of EAN-128 */
-INTERNAL int ean_14(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int ean14(struct zint_symbol *symbol, unsigned char source[], int length) {
     int i, count, check_digit;
     int error_number, zeroes;
     unsigned char ean128_equiv[19];
@@ -1099,10 +1101,9 @@ INTERNAL int ean_14(struct zint_symbol *symbol, unsigned char source[], int leng
         return ZINT_ERROR_TOO_LONG;
     }
 
-    error_number = is_sane(NEON, source, length);
-    if (error_number == ZINT_ERROR_INVALID_DATA) {
+    if (is_sane(NEON, source, length) != 0) {
         strcpy(symbol->errtxt, "348: Invalid character in data (digits only)");
-        return error_number;
+        return ZINT_ERROR_INVALID_DATA;
     }
 
     zeroes = 13 - length;
@@ -1121,7 +1122,7 @@ INTERNAL int ean_14(struct zint_symbol *symbol, unsigned char source[], int leng
     ean128_equiv[17] = itoc(check_digit);
     ean128_equiv[18] = '\0';
 
-    error_number = ean_128(symbol, ean128_equiv, 18);
+    error_number = gs1_128(symbol, ean128_equiv, 18);
 
     return error_number;
 }
@@ -1129,7 +1130,7 @@ INTERNAL int ean_14(struct zint_symbol *symbol, unsigned char source[], int leng
 /* DPD (Deutsher Paket Dienst) Code */
 /* Specification at ftp://dpd.at/Datenspezifikationen/EN/gbs_V4.0.2_hauptdokument.pdf
  * or https://docplayer.net/33728877-Dpd-parcel-label-specification.html */
-INTERNAL int dpd_parcel(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int dpd(struct zint_symbol *symbol, unsigned char source[], int length) {
     int error_number = 0;
     int i, p;
     unsigned char identifier;
@@ -1144,10 +1145,9 @@ INTERNAL int dpd_parcel(struct zint_symbol *symbol, unsigned char source[], int 
     identifier = source[0];
 
     to_upper(source + 1);
-    error_number = is_sane(KRSET, source + 1, length - 1);
-    if (error_number == ZINT_ERROR_INVALID_DATA) {
+    if (is_sane(KRSET, source + 1, length - 1) != 0) {
         strcpy(symbol->errtxt, "300: Invalid character in DPD data (alphanumerics only)");
-        return error_number;
+        return ZINT_ERROR_INVALID_DATA;
     }
 
     if ((identifier < 32) || (identifier > 127)) {
@@ -1155,16 +1155,16 @@ INTERNAL int dpd_parcel(struct zint_symbol *symbol, unsigned char source[], int 
         return ZINT_ERROR_INVALID_DATA;
     }
 
-    error_number = code_128(symbol, source, length); /* Only returns errors, not warnings */
+    error_number = code128(symbol, source, length); /* Only returns errors, not warnings */
 
     if (error_number < ZINT_ERROR) {
-#ifdef COMPLIANT_HEIGHTS
-        /* Specification DPD and primetime Parcel Despatch 4.0.2 Section 5.5.1
-           25mm / 0.4mm (X max) = 62.5 min, 25mm / 0.375 (X) ~ 66.66 default */
-        error_number = set_height(symbol, 62.5f, (float) (25.0 / 0.375), 0.0f, 0 /*no_errtxt*/);
-#else
-        (void) set_height(symbol, 0.0f, 50.0f, 0.0f, 1 /*no_errtxt*/);
-#endif
+        if (symbol->output_options & COMPLIANT_HEIGHT) {
+            /* Specification DPD and primetime Parcel Despatch 4.0.2 Section 5.5.1
+               25mm / 0.4mm (X max) = 62.5 min, 25mm / 0.375 (X) ~ 66.66 default */
+            error_number = set_height(symbol, 62.5f, stripf(25.0f / 0.375f), 0.0f, 0 /*no_errtxt*/);
+        } else {
+            (void) set_height(symbol, 0.0f, 50.0f, 0.0f, 1 /*no_errtxt*/);
+        }
 
         cd = mod;
 

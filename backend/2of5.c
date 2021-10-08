@@ -64,7 +64,7 @@ static char check_digit(const unsigned int count) {
 static int c25_common(struct zint_symbol *symbol, const unsigned char source[], int length, const int max,
             const char *table[10], const char *start_stop[2], const int error_base) {
 
-    int i, error_number;
+    int i;
     char dest[512]; /* Largest destination 6 + (80 + 1) * 6 + 5 + 1 = 498 */
     unsigned char temp[80 + 1 + 1]; /* Largest maximum 80 */
     int have_checkdigit = symbol->option_2 == 1 || symbol->option_2 == 2;
@@ -74,11 +74,10 @@ static int c25_common(struct zint_symbol *symbol, const unsigned char source[], 
         sprintf(symbol->errtxt, "%d: Input too long (%d character maximum)", error_base, max);
         return ZINT_ERROR_TOO_LONG;
     }
-    error_number = is_sane(NEON, source, length);
-    if (error_number == ZINT_ERROR_INVALID_DATA) {
+    if (is_sane(NEON, source, length) != 0) {
         /* errtxt 302: 304: 306: 308: */
         sprintf(symbol->errtxt, "%d: Invalid character in data (digits only)", error_base + 1);
-        return error_number;
+        return ZINT_ERROR_INVALID_DATA;
     }
 
     ustrcpy(temp, source);
@@ -107,46 +106,44 @@ static int c25_common(struct zint_symbol *symbol, const unsigned char source[], 
         symbol->text[length - 1] = '\0';
     }
 
-    return error_number;
+    return 0;
 }
 
 /* Code 2 of 5 Standard (Code 2 of 5 Matrix) */
-INTERNAL int matrix_two_of_five(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int c25standard(struct zint_symbol *symbol, unsigned char source[], int length) {
     return c25_common(symbol, source, length, 80, C25MatrixTable, C25MatrixStartStop, 301);
 }
 
 /* Code 2 of 5 Industrial */
-INTERNAL int industrial_two_of_five(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int c25ind(struct zint_symbol *symbol, unsigned char source[], int length) {
     return c25_common(symbol, source, length, 45, C25IndustTable, C25IndustStartStop, 303);
 }
 
 /* Code 2 of 5 IATA */
-INTERNAL int iata_two_of_five(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int c25iata(struct zint_symbol *symbol, unsigned char source[], int length) {
     return c25_common(symbol, source, length, 45, C25IndustTable, C25IataLogicStartStop, 305);
 }
 
 /* Code 2 of 5 Data Logic */
-INTERNAL int logic_two_of_five(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int c25logic(struct zint_symbol *symbol, unsigned char source[], int length) {
     return c25_common(symbol, source, length, 80, C25MatrixTable, C25IataLogicStartStop, 307);
 }
 
 /* Common to Interleaved, ITF-14, DP Leitcode, DP Identcode */
 static int c25inter_common(struct zint_symbol *symbol, unsigned char source[], int length,
             const int dont_set_height) {
-    int i, j, error_number;
+    int i, j, error_number = 0;
     char bars[7], spaces[7], mixed[14], dest[512]; /* 4 + (90 + 2) * 5 + 3 + 1 = 468 */
     unsigned char temp[90 + 2 + 1];
     int have_checkdigit = symbol->option_2 == 1 || symbol->option_2 == 2;
-    float height;
 
     if (length > 90) {
         strcpy(symbol->errtxt, "309: Input too long (90 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
-    error_number = is_sane(NEON, source, length);
-    if (error_number == ZINT_ERROR_INVALID_DATA) {
+    if (is_sane(NEON, source, length) != 0) {
         strcpy(symbol->errtxt, "310: Invalid character in data (digits only)");
-        return error_number;
+        return ZINT_ERROR_INVALID_DATA;
     }
 
     temp[0] = '\0';
@@ -199,26 +196,29 @@ static int c25inter_common(struct zint_symbol *symbol, unsigned char source[], i
     }
 
     if (!dont_set_height) {
-#ifdef COMPLIANT_HEIGHTS
-        /* ISO/IEC 16390:2007 Section 4.4 min height 5mm or 15% of symbol width whichever greater where
-           (P = character pairs, N = wide/narrow ratio = 3) width = (P(4N + 6) + N + 6)X = (length / 2) * 18 + 9 */
-        height = (float) ((18.0 * (length / 2) + 9.0) * 0.15);
-        if (height < (float) (5.0 / 0.33)) { /* Taking X = 0.330mm from Annex D.3.1 (application specification) */
-            height = (float) (5.0 / 0.33);
+        if (symbol->output_options & COMPLIANT_HEIGHT) {
+            /* ISO/IEC 16390:2007 Section 4.4 min height 5mm or 15% of symbol width whichever greater where
+               (P = character pairs, N = wide/narrow ratio = 3)
+               width = (P(4N + 6) + N + 6)X = (length / 2) * 18 + 9 */
+            /* Taking X = 0.330mm from Annex D.3.1 (application specification) */
+            const float min_height_min = stripf(5.0f / 0.33f);
+            float min_height = stripf((18.0f * (length / 2) + 9.0f) * 0.15f);
+            if (min_height < min_height_min) {
+                min_height = min_height_min;
+            }
+            /* Using 50 as default as none recommended */
+            error_number = set_height(symbol, min_height, min_height > 50.0f ? min_height : 50.0f, 0.0f,
+                                        0 /*no_errtxt*/);
+        } else {
+            (void) set_height(symbol, 0.0f, 50.0f, 0.0f, 1 /*no_errtxt*/);
         }
-        /* Using 50 as default as none recommended */
-        error_number = set_height(symbol, height, height > 50.0f ? height : 50.0f, 0.0f, 0 /*no_errtxt*/);
-#else
-        height = 50.0f;
-        (void) set_height(symbol, 0.0f, height, 0.0f, 1 /*no_errtxt*/);
-#endif
     }
 
     return error_number;
 }
 
 /* Code 2 of 5 Interleaved ISO/IEC 16390:2007 */
-INTERNAL int interleaved_two_of_five(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int c25inter(struct zint_symbol *symbol, unsigned char source[], int length) {
     return c25inter_common(symbol, source, length, 0 /*dont_set_height*/);
 }
 
@@ -232,10 +232,9 @@ INTERNAL int itf14(struct zint_symbol *symbol, unsigned char source[], int lengt
         return ZINT_ERROR_TOO_LONG;
     }
 
-    error_number = is_sane(NEON, source, length);
-    if (error_number == ZINT_ERROR_INVALID_DATA) {
+    if (is_sane(NEON, source, length) != 0) {
         strcpy(symbol->errtxt, "312: Invalid character in data (digits only)");
-        return error_number;
+        return ZINT_ERROR_INVALID_DATA;
     }
 
     /* Add leading zeros as required */
@@ -261,14 +260,14 @@ INTERNAL int itf14(struct zint_symbol *symbol, unsigned char source[], int lengt
     }
 
     if (error_number < ZINT_ERROR) {
-#ifdef COMPLIANT_HEIGHTS
-        /* GS1 General Specifications 21.0.1 5.12.3.2 table 2, including footnote (**): (note bind/box additional to
-           symbol->height), same as GS1-128: "in case of further space constraints"
-           height 5.8mm / 1.016mm (X max) ~ 5.7; default 31.75mm / 0.495mm ~ 64.14 */
-        warn_number = set_height(symbol, (float) (5.8 / 1.016), (float) (31.75 / 0.495), 0.0f, 0 /*no_errtxt*/);
-#else
-        (void) set_height(symbol, 0.0f, 50.0f, 0.0f, 1 /*no_errtxt*/);
-#endif
+        if (symbol->output_options & COMPLIANT_HEIGHT) {
+            /* GS1 General Specifications 21.0.1 5.12.3.2 table 2, including footnote (**): (note bind/box additional
+               to symbol->height), same as GS1-128: "in case of further space constraints"
+               height 5.8mm / 1.016mm (X max) ~ 5.7; default 31.75mm / 0.495mm ~ 64.14 */
+            warn_number = set_height(symbol, stripf(5.8f / 1.016f), stripf(31.75f / 0.495f), 0.0f, 0 /*no_errtxt*/);
+        } else {
+            (void) set_height(symbol, 0.0f, 50.0f, 0.0f, 1 /*no_errtxt*/);
+        }
     }
 
     return error_number ? error_number : warn_number;
@@ -286,10 +285,9 @@ INTERNAL int dpleit(struct zint_symbol *symbol, unsigned char source[], int leng
         strcpy(symbol->errtxt, "313: Input wrong length (13 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
-    error_number = is_sane(NEON, source, length);
-    if (error_number == ZINT_ERROR_INVALID_DATA) {
+    if (is_sane(NEON, source, length) != 0) {
         strcpy(symbol->errtxt, "314: Invalid character in data (digits only)");
-        return error_number;
+        return ZINT_ERROR_INVALID_DATA;
     }
 
     zeroes = 13 - length;
@@ -325,10 +323,9 @@ INTERNAL int dpident(struct zint_symbol *symbol, unsigned char source[], int len
         strcpy(symbol->errtxt, "315: Input wrong length (11 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
-    error_number = is_sane(NEON, source, length);
-    if (error_number == ZINT_ERROR_INVALID_DATA) {
+    if (is_sane(NEON, source, length) != 0) {
         strcpy(symbol->errtxt, "316: Invalid character in data (digits only)");
-        return error_number;
+        return ZINT_ERROR_INVALID_DATA;
     }
 
     zeroes = 11 - length;

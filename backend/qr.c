@@ -1538,7 +1538,7 @@ static int getBinaryLength(const int version, char inputMode[], const unsigned i
     return count;
 }
 
-INTERNAL int qr_code(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int qrcode(struct zint_symbol *symbol, unsigned char source[], int length) {
     int i, j, est_binlen, prev_est_binlen;
     int ecc_level, autosize, version, max_cw, target_codewords, blocks, size;
     int bitmask, gs1;

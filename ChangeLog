@@ -27,6 +27,10 @@ Changes
 - Add Structured Append support for AZTEC, CODEONE, DATAMATRIX, DOTCODE,
   GRIDMATRIX, MAXICODE, MICROPDF417, PDF417, QRCODE, ULTRA
 - ULTRA: add revision 2 support (based on BWIPP 2021-09-28 update)
+- Add compliant height
+- GUI: add Menu, copy to clipboard EMF/GIF/PNG/TIF, errtxt bar and status bar,
+  icons (feathericons)
+- CODABAR: add show check digit option
 
 Bugs
 ----
@@ -41,7 +45,8 @@ Bugs
   platform variation (#204 ARM-Cortex crash)
 - raster/vector.c: use new stripf() func to workaround gcc 32-bit
   float variations
-- raster.c: Don't allow for text if scale < 1.0
+- raster.c: Don't add height offset for text if scale < 1.0 (as won't print)
+- ISBNX: fix not returning error number (warning) correctly
 
 
 Version 2.10.0 2021-08-14

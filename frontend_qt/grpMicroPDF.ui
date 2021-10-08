@@ -149,7 +149,7 @@ containing a total of this number of symbols
 Value ranges from 1 (Disabled) to 99999</string>
         </property>
         <property name="specialValueText">
-         <string>1 (Disabled)</string>
+         <string> 1 (Disabled)</string>
         </property>
         <property name="minimum">
          <number>1</number>

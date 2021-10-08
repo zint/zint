@@ -55,16 +55,15 @@ INTERNAL int plessey(struct zint_symbol *symbol, unsigned char source[], int len
     unsigned char *checkptr;
     static const char grid[9] = {1, 1, 1, 1, 0, 1, 0, 0, 1};
     char dest[554]; /* 8 + 65 * 8 + 8 * 2 + 9 + 1 = 554 */
-    int error_number;
+    int error_number = 0;
 
     if (length > 65) {
         strcpy(symbol->errtxt, "370: Input too long (65 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
-    error_number = is_sane(SSET, source, length);
-    if (error_number == ZINT_ERROR_INVALID_DATA) {
+    if (is_sane(SSET, source, length) != 0) {
         strcpy(symbol->errtxt, "371: Invalid character in data (digits and \"ABCDEF\" only)");
-        return error_number;
+        return ZINT_ERROR_INVALID_DATA;
     }
 
     if (!(checkptr = (unsigned char *) calloc(1, length * 4 + 8))) {
@@ -155,7 +154,8 @@ static char msi_check_digit_mod11(const unsigned char source[], const int length
 }
 
 /* Plain MSI Plessey - does not calculate any check character */
-static void msi_plessey(struct zint_symbol *symbol, const unsigned char source[], const int length, char dest[]) {
+static void msi_plessey_nomod(struct zint_symbol *symbol, const unsigned char source[], const int length,
+            char dest[]) {
 
     int i;
 
@@ -290,8 +290,8 @@ static void msi_plessey_mod1110(struct zint_symbol *symbol, const unsigned char 
     }
 }
 
-INTERNAL int msi_handle(struct zint_symbol *symbol, unsigned char source[], int length) {
-    int error_number;
+INTERNAL int msi_plessey(struct zint_symbol *symbol, unsigned char source[], int length) {
+    int error_number = 0;
     char dest[550]; /* 2 + 65 * 8 + 3 * 8 + 3 + 1 = 550 */
     int check_option = symbol->option_2;
     int no_checktext = 0;
@@ -300,8 +300,7 @@ INTERNAL int msi_handle(struct zint_symbol *symbol, unsigned char source[], int 
         strcpy(symbol->errtxt, "372: Input too long (65 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
-    error_number = is_sane(NEON, source, length);
-    if (error_number != 0) {
+    if (is_sane(NEON, source, length) != 0) {
         strcpy(symbol->errtxt, "377: Invalid character in data (digits only)");
         return ZINT_ERROR_INVALID_DATA;
     }
@@ -318,7 +317,7 @@ INTERNAL int msi_handle(struct zint_symbol *symbol, unsigned char source[], int 
     strcpy(dest, "21");
 
     switch (check_option) {
-        case 0: msi_plessey(symbol, source, length, dest);
+        case 0: msi_plessey_nomod(symbol, source, length, dest);
             break;
         case 1: msi_plessey_mod10(symbol, source, length, no_checktext, dest);
             break;

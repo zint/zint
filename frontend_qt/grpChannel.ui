@@ -26,6 +26,17 @@
        <property name="text" >
         <string>&amp;Number of Channels:</string>
        </property>
+       <property name="toolTip" >
+        <string>The number of channels determines the&lt;br /&gt;range of numbers that can be encoded&lt;table cellspacing=&quot;3&quot;&gt;
+&gt;&lt;tr&gt;&lt;th align=left&gt;Channels&amp;nbsp;&lt;/th&gt;&lt;th align=left&gt;Range&lt;/th&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;3&amp;nbsp;&lt;/td&gt;&lt;td&gt;0 to 26&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;4&amp;nbsp;&lt;/td&gt;&lt;td&gt;0 to 292&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;5&amp;nbsp;&lt;/td&gt;&lt;td&gt;0 to 3493&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;6&amp;nbsp;&lt;/td&gt;&lt;td&gt;0 to 44072&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;7&amp;nbsp;&lt;/td&gt;&lt;td&gt;0 to 576688&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;8&amp;nbsp;&lt;/td&gt;&lt;td&gt;0 to 7742862&lt;/td&gt;&lt;/tr&gt;
+&lt;/table&gt;</string>
+       </property>
        <property name="alignment" >
         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
        </property>
@@ -36,6 +47,17 @@
      </item>
      <item>
       <widget class="QComboBox" name="cmbChannel" >
+       <property name="toolTip" >
+        <string>The number of channels determines the&lt;br /&gt;range of numbers that can be encoded&lt;table cellspacing=&quot;3&quot;&gt;
+&gt;&lt;tr&gt;&lt;th align=left&gt;Channels&amp;nbsp;&lt;/th&gt;&lt;th align=left&gt;Range&lt;/th&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;3&amp;nbsp;&lt;/td&gt;&lt;td&gt;0 to 26&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;4&amp;nbsp;&lt;/td&gt;&lt;td&gt;0 to 292&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;5&amp;nbsp;&lt;/td&gt;&lt;td&gt;0 to 3493&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;6&amp;nbsp;&lt;/td&gt;&lt;td&gt;0 to 44072&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;7&amp;nbsp;&lt;/td&gt;&lt;td&gt;0 to 576688&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;8&amp;nbsp;&lt;/td&gt;&lt;td&gt;0 to 7742862&lt;/td&gt;&lt;/tr&gt;
+&lt;/table&gt;</string>
+       </property>
        <item>
         <property name="text" >
          <string>Automatic</string>

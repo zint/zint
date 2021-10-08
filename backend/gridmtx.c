@@ -1006,7 +1006,7 @@ static void place_layer_id(char *grid, int size, int layers, int modules, int ec
     }
 }
 
-INTERNAL int grid_matrix(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int gridmatrix(struct zint_symbol *symbol, unsigned char source[], int length) {
     int size, modules, error_number;
     int auto_layers, min_layers, layers, auto_ecc_level, min_ecc_level, ecc_level;
     int x, y, i;

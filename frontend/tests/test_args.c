@@ -220,6 +220,15 @@ static void arg_output_options(char *cmd, int output_options) {
         if (output_options & GS1_GS_SEPARATOR) {
             sprintf(cmd + (int) strlen(cmd), "%s--gssep", strlen(cmd) ? " " : "");
         }
+        if (output_options & BARCODE_QUIET_ZONES) {
+            sprintf(cmd + (int) strlen(cmd), "%s--quietzones", strlen(cmd) ? " " : "");
+        }
+        if (output_options & BARCODE_NO_QUIET_ZONES) {
+            sprintf(cmd + (int) strlen(cmd), "%s--noquietzones", strlen(cmd) ? " " : "");
+        }
+        if (output_options & COMPLIANT_HEIGHT) {
+            sprintf(cmd + (int) strlen(cmd), "%s--compliantheight", strlen(cmd) ? " " : "");
+        }
     }
 }
 
@@ -906,38 +915,39 @@ static void test_other_opts(int index, int debug) {
         /*  5*/ { BARCODE_CODE128, "1", -1, " --fg=", "00000000", "" },
         /*  6*/ { BARCODE_CODE128, "1", -1, " --fg=", "000000F", "Error 651: Malformed foreground colour target" },
         /*  7*/ { BARCODE_CODE128, "1", -1, " --fg=", "000000FG", "Error 653: Malformed foreground colour target" },
-        /*  8*/ { BARCODE_CODE128, "1", -1, " --fontsize=", "10", "" },
-        /*  9*/ { BARCODE_CODE128, "1", -1, " --fontsize=", "101", "Warning 126: Font size out of range (0 to 100), ignoring" },
-        /* 10*/ { BARCODE_CODE128, "1", -1, " --nobackground", "", "" },
-        /* 11*/ { BARCODE_CODE128, "1", -1, " --noquietzones", "", "" },
-        /* 12*/ { BARCODE_CODE128, "1", -1, " --notext", "", "" },
-        /* 13*/ { BARCODE_CODE128, "1", -1, " --quietzones", "", "" },
-        /* 14*/ { BARCODE_CODE128, "1", -1, " --reverse", "", "" },
-        /* 15*/ { BARCODE_CODE128, "1", -1, " --werror", NULL, "" },
-        /* 16*/ { 19, "1", -1, " --werror", NULL, "Error 207: Codabar 18 not supported" },
-        /* 17*/ { BARCODE_GS1_128, "[01]12345678901231", -1, "", NULL, "" },
-        /* 18*/ { BARCODE_GS1_128, "0112345678901231", -1, "", NULL, "Error 252: Data does not start with an AI" },
-        /* 19*/ { BARCODE_GS1_128, "0112345678901231", -1, " --gs1nocheck", NULL, "Error 252: Data does not start with an AI" },
-        /* 20*/ { BARCODE_GS1_128, "[00]376104250021234569", -1, "", NULL, "" },
-        /* 21*/ { BARCODE_GS1_128, "[00]376104250021234568", -1, "", NULL, "Warning 261: AI (00) position 18: Bad checksum '8', expected '9'" },
-        /* 22*/ { BARCODE_GS1_128, "[00]376104250021234568", -1, " --gs1nocheck", NULL, "" },
-        /* 23*/ { BARCODE_GS1_128, "[00]376104250021234568", -1, " --werror", NULL, "Error 261: AI (00) position 18: Bad checksum '8', expected '9'" },
-        /* 24*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "1", "Error 155: Invalid Structured Append argument, expect \"index,count[,ID]\"" },
-        /* 25*/ { BARCODE_AZTEC, "1", -1, " --structapp=", ",", "Error 156: Structured Append index too short" },
-        /* 26*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "1234567890,", "Error 156: Structured Append index too long" },
-        /* 27*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "123456789,", "Error 159: Structured Append count too short" },
-        /* 28*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "123456789,1234567890", "Error 159: Structured Append count too long" },
-        /* 29*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "123456789,123456789,", "Error 158: Structured Append ID too short" },
-        /* 30*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "123456789,1234567890,", "Error 157: Structured Append count too long" },
-        /* 31*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "123456789,123456789,123456789012345678901234567890123", "Error 158: Structured Append ID too long" },
-        /* 32*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "123456789,123456789,12345678901234567890123456789012", "Error 701: Structured Append count out of range (2-26)" },
-        /* 33*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "26,26,12345678901234567890123456789012", "" },
-        /* 34*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "A,26,12345678901234567890123456789012", "Error 160: Invalid Structured Append index (digits only)" },
-        /* 35*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "26,A,12345678901234567890123456789012", "Error 161: Invalid Structured Append count (digits only)" },
-        /* 36*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "26,1,12345678901234567890123456789012", "Error 162: Invalid Structured Append count, must be >= 2" },
-        /* 37*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "0,2,12345678901234567890123456789012", "Error 163: Structured Append index out of range (1-2)" },
-        /* 38*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "3,2,12345678901234567890123456789012", "Error 163: Structured Append index out of range (1-2)" },
-        /* 39*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "2,3,12345678901234567890123456789012", "" },
+        /*  8*/ { BARCODE_CODE128, "1", -1, " --compliantheight", "", "" },
+        /*  9*/ { BARCODE_CODE128, "1", -1, " --fontsize=", "10", "" },
+        /* 10*/ { BARCODE_CODE128, "1", -1, " --fontsize=", "101", "Warning 126: Font size out of range (0 to 100), ignoring" },
+        /* 11*/ { BARCODE_CODE128, "1", -1, " --nobackground", "", "" },
+        /* 12*/ { BARCODE_CODE128, "1", -1, " --noquietzones", "", "" },
+        /* 13*/ { BARCODE_CODE128, "1", -1, " --notext", "", "" },
+        /* 14*/ { BARCODE_CODE128, "1", -1, " --quietzones", "", "" },
+        /* 15*/ { BARCODE_CODE128, "1", -1, " --reverse", "", "" },
+        /* 16*/ { BARCODE_CODE128, "1", -1, " --werror", NULL, "" },
+        /* 17*/ { 19, "1", -1, " --werror", NULL, "Error 207: Codabar 18 not supported" },
+        /* 18*/ { BARCODE_GS1_128, "[01]12345678901231", -1, "", NULL, "" },
+        /* 19*/ { BARCODE_GS1_128, "0112345678901231", -1, "", NULL, "Error 252: Data does not start with an AI" },
+        /* 20*/ { BARCODE_GS1_128, "0112345678901231", -1, " --gs1nocheck", NULL, "Error 252: Data does not start with an AI" },
+        /* 21*/ { BARCODE_GS1_128, "[00]376104250021234569", -1, "", NULL, "" },
+        /* 22*/ { BARCODE_GS1_128, "[00]376104250021234568", -1, "", NULL, "Warning 261: AI (00) position 18: Bad checksum '8', expected '9'" },
+        /* 23*/ { BARCODE_GS1_128, "[00]376104250021234568", -1, " --gs1nocheck", NULL, "" },
+        /* 24*/ { BARCODE_GS1_128, "[00]376104250021234568", -1, " --werror", NULL, "Error 261: AI (00) position 18: Bad checksum '8', expected '9'" },
+        /* 25*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "1", "Error 155: Invalid Structured Append argument, expect \"index,count[,ID]\"" },
+        /* 26*/ { BARCODE_AZTEC, "1", -1, " --structapp=", ",", "Error 156: Structured Append index too short" },
+        /* 27*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "1234567890,", "Error 156: Structured Append index too long" },
+        /* 28*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "123456789,", "Error 159: Structured Append count too short" },
+        /* 29*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "123456789,1234567890", "Error 159: Structured Append count too long" },
+        /* 30*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "123456789,123456789,", "Error 158: Structured Append ID too short" },
+        /* 31*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "123456789,1234567890,", "Error 157: Structured Append count too long" },
+        /* 32*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "123456789,123456789,123456789012345678901234567890123", "Error 158: Structured Append ID too long" },
+        /* 33*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "123456789,123456789,12345678901234567890123456789012", "Error 701: Structured Append count out of range (2-26)" },
+        /* 34*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "26,26,12345678901234567890123456789012", "" },
+        /* 35*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "A,26,12345678901234567890123456789012", "Error 160: Invalid Structured Append index (digits only)" },
+        /* 36*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "26,A,12345678901234567890123456789012", "Error 161: Invalid Structured Append count (digits only)" },
+        /* 37*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "26,1,12345678901234567890123456789012", "Error 162: Invalid Structured Append count, must be >= 2" },
+        /* 38*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "0,2,12345678901234567890123456789012", "Error 163: Structured Append index out of range (1-2)" },
+        /* 39*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "3,2,12345678901234567890123456789012", "Error 163: Structured Append index out of range (1-2)" },
+        /* 40*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "2,3,12345678901234567890123456789012", "" },
     };
     int data_size = ARRAY_SIZE(data);
     int i;

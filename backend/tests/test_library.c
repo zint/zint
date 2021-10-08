@@ -471,10 +471,10 @@ static void test_cap(int index) {
         /* 0*/ { BARCODE_CODE128, ZINT_CAP_HRT, ZINT_CAP_HRT },
         /* 1*/ { BARCODE_CODE128, ZINT_CAP_HRT | ZINT_CAP_STACKABLE | ZINT_CAP_GS1, ZINT_CAP_HRT | ZINT_CAP_STACKABLE },
         /* 2*/ { BARCODE_PDF417, ZINT_CAP_HRT | ZINT_CAP_ECI | ZINT_CAP_GS1 | ZINT_CAP_READER_INIT | ZINT_CAP_FULL_MULTIBYTE, ZINT_CAP_ECI | ZINT_CAP_READER_INIT },
-        /* 3*/ { BARCODE_QRCODE, ZINT_CAP_HRT | ZINT_CAP_ECI | ZINT_CAP_GS1 | ZINT_CAP_DOTTY | ZINT_CAP_READER_INIT | ZINT_CAP_FULL_MULTIBYTE | ZINT_CAP_MASK | ZINT_CAP_STRUCTAPP, ZINT_CAP_ECI | ZINT_CAP_GS1 | ZINT_CAP_DOTTY | ZINT_CAP_FULL_MULTIBYTE | ZINT_CAP_MASK | ZINT_CAP_STRUCTAPP },
-        /* 4*/ { BARCODE_EANX_CC, ZINT_CAP_HRT | ZINT_CAP_COMPOSITE | ZINT_CAP_EXTENDABLE | ZINT_CAP_ECI | ZINT_CAP_GS1 | ZINT_CAP_QUIET_ZONES, ZINT_CAP_HRT | ZINT_CAP_COMPOSITE | ZINT_CAP_EXTENDABLE | ZINT_CAP_GS1 | ZINT_CAP_QUIET_ZONES },
+        /* 3*/ { BARCODE_QRCODE, ZINT_CAP_HRT | ZINT_CAP_ECI | ZINT_CAP_GS1 | ZINT_CAP_DOTTY | ZINT_CAP_READER_INIT | ZINT_CAP_FULL_MULTIBYTE | ZINT_CAP_MASK | ZINT_CAP_STRUCTAPP | ZINT_CAP_COMPLIANT_HEIGHT, ZINT_CAP_ECI | ZINT_CAP_GS1 | ZINT_CAP_DOTTY | ZINT_CAP_FULL_MULTIBYTE | ZINT_CAP_MASK | ZINT_CAP_STRUCTAPP },
+        /* 4*/ { BARCODE_EANX_CC, ZINT_CAP_HRT | ZINT_CAP_COMPOSITE | ZINT_CAP_EXTENDABLE | ZINT_CAP_ECI | ZINT_CAP_GS1 | ZINT_CAP_QUIET_ZONES | ZINT_CAP_COMPLIANT_HEIGHT, ZINT_CAP_HRT | ZINT_CAP_COMPOSITE | ZINT_CAP_EXTENDABLE | ZINT_CAP_GS1 | ZINT_CAP_QUIET_ZONES | ZINT_CAP_COMPLIANT_HEIGHT },
         /* 5*/ { BARCODE_HANXIN, ZINT_CAP_DOTTY | ZINT_CAP_QUIET_ZONES | ZINT_CAP_FIXED_RATIO | ZINT_CAP_FULL_MULTIBYTE | ZINT_CAP_MASK, ZINT_CAP_DOTTY | ZINT_CAP_FIXED_RATIO | ZINT_CAP_FULL_MULTIBYTE | ZINT_CAP_MASK },
-        /* 6*/ { BARCODE_CODE11, ZINT_CAP_DOTTY | ZINT_CAP_FIXED_RATIO | ZINT_CAP_FIXED_RATIO | ZINT_CAP_READER_INIT | ZINT_CAP_FULL_MULTIBYTE, 0 },
+        /* 6*/ { BARCODE_CODE11, ZINT_CAP_DOTTY | ZINT_CAP_FIXED_RATIO | ZINT_CAP_FIXED_RATIO | ZINT_CAP_READER_INIT | ZINT_CAP_FULL_MULTIBYTE | ZINT_CAP_COMPLIANT_HEIGHT, 0 },
         /* 7*/ { BARCODE_POSTNET, ZINT_CAP_HRT | ZINT_CAP_STACKABLE | ZINT_CAP_EXTENDABLE | ZINT_CAP_COMPOSITE | ZINT_CAP_ECI | ZINT_CAP_GS1 | ZINT_CAP_DOTTY | ZINT_CAP_FIXED_RATIO | ZINT_CAP_READER_INIT | ZINT_CAP_FULL_MULTIBYTE | ZINT_CAP_MASK | ZINT_CAP_STRUCTAPP, 0 },
         /* 8*/ { 0, 0, 0 },
     };
@@ -490,6 +490,95 @@ static void test_cap(int index) {
 
         ret = ZBarcode_Cap(data[i].symbology, data[i].cap_flag);
         assert_equal(ret, data[i].expected, "i:%d ZBarcode_Cap(%s, 0x%X) 0x%X != 0x%X\n", i, testUtilBarcodeName(data[i].symbology), data[i].cap_flag, ret, data[i].expected);
+    }
+
+    testFinish();
+}
+
+static void test_cap_compliant_height() {
+    int symbol_id;
+    int ret;
+
+    testStart("test_cap_compliant_height");
+
+    for (symbol_id = 1; symbol_id <= BARCODE_RMQR; symbol_id++) {
+        if (!ZBarcode_ValidID(symbol_id)) continue;
+
+        ret = ZBarcode_Cap(symbol_id, ZINT_CAP_COMPLIANT_HEIGHT);
+
+        switch (symbol_id) {
+            //case BARCODE_CODE11: /* TODO: Find doc */
+            case BARCODE_C25INTER:
+            case BARCODE_CODE39:
+            case BARCODE_EXCODE39:
+            case BARCODE_EANX:
+            case BARCODE_EANX_CHK:
+            case BARCODE_GS1_128:
+            case BARCODE_CODABAR:
+            //case BARCODE_DPLEIT: /* TODO: Find doc */
+            //case BARCODE_DPIDENT: /* TODO: Find doc */
+            case BARCODE_CODE16K:
+            case BARCODE_CODE49:
+            case BARCODE_CODE93:
+            //case BARCODE_FLAT: /* TODO: Find doc */
+            case BARCODE_DBAR_OMN:
+            case BARCODE_DBAR_LTD:
+            case BARCODE_DBAR_EXP:
+            case BARCODE_TELEPEN:
+            case BARCODE_UPCA:
+            case BARCODE_UPCA_CHK:
+            case BARCODE_UPCE:
+            case BARCODE_UPCE_CHK:
+            case BARCODE_POSTNET:
+            //case BARCODE_MSI_PLESSEY: /* TODO: Find doc */
+            case BARCODE_FIM:
+            case BARCODE_LOGMARS:
+            case BARCODE_PHARMA:
+            case BARCODE_PZN:
+            case BARCODE_PHARMA_TWO:
+            case BARCODE_AUSPOST:
+            case BARCODE_AUSREPLY:
+            case BARCODE_AUSROUTE:
+            case BARCODE_AUSREDIRECT:
+            case BARCODE_ISBNX:
+            case BARCODE_RM4SCC:
+            case BARCODE_EAN14:
+            //case BARCODE_VIN: /* Spec unlikely */
+            case BARCODE_CODABLOCKF:
+            case BARCODE_NVE18:
+            case BARCODE_JAPANPOST:
+            //case BARCODE_KOREAPOST: /* TODO: Find doc */
+            case BARCODE_DBAR_STK:
+            case BARCODE_DBAR_OMNSTK:
+            case BARCODE_DBAR_EXPSTK:
+            case BARCODE_PLANET:
+            case BARCODE_USPS_IMAIL:
+            //case BARCODE_PLESSEY: /* TODO: Find doc */
+            case BARCODE_TELEPEN_NUM:
+            case BARCODE_ITF14:
+            case BARCODE_KIX:
+            case BARCODE_DPD:
+            case BARCODE_HIBC_39:
+            case BARCODE_HIBC_BLOCKF:
+            case BARCODE_MAILMARK:
+            case BARCODE_CODE32:
+            case BARCODE_EANX_CC:
+            case BARCODE_GS1_128_CC:
+            case BARCODE_DBAR_OMN_CC:
+            case BARCODE_DBAR_LTD_CC:
+            case BARCODE_DBAR_EXP_CC:
+            case BARCODE_UPCA_CC:
+            case BARCODE_UPCE_CC:
+            case BARCODE_DBAR_STK_CC:
+            case BARCODE_DBAR_OMNSTK_CC:
+            case BARCODE_DBAR_EXPSTK_CC:
+            case BARCODE_CHANNEL:
+                assert_equal(ret, ZINT_CAP_COMPLIANT_HEIGHT, "symbol_id %d (%s) ret 0x%X != ZINT_CAP_COMPLIANT_HEIGHT\n", symbol_id, testUtilBarcodeName(symbol_id), ret);
+                break;
+            default:
+                assert_zero(ret, "symbol_id %d (%s) ret 0x%X non-zero\n", symbol_id, testUtilBarcodeName(symbol_id), ret);
+                break;
+        }
     }
 
     testFinish();
@@ -950,6 +1039,7 @@ int main(int argc, char *argv[]) {
         { "test_input_mode", test_input_mode, 1, 0, 1 },
         { "test_escape_char_process", test_escape_char_process, 1, 1, 1 },
         { "test_cap", test_cap, 1, 0, 0 },
+        { "test_cap_compliant_height", test_cap_compliant_height, 0, 0, 0 },
         { "test_encode_file_empty", test_encode_file_empty, 0, 0, 0 },
         { "test_encode_file_too_large", test_encode_file_too_large, 0, 0, 0 },
         { "test_encode_file_unreadable", test_encode_file_unreadable, 0, 0, 0 },

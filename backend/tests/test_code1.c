@@ -270,7 +270,8 @@ static void test_input(int index, int debug) {
         /* 32*/ { -1, -1, -1, { 0, 2, "" }, "123456789012ABCDEFGHI", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 712: Structured Append index out of range (1-2)", },
         /* 33*/ { -1, -1, -1, { 3, 2, "" }, "123456789012ABCDEFGHI", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 712: Structured Append index out of range (1-2)", },
         /* 34*/ { -1, -1, -1, { 1, 2, "1" }, "123456789012ABCDEFGHI", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 713: Structured Append ID not available for Code One", },
-        /* 35*/ { -1, -1, 9, { 1, 2, "" }, "123456789012ABCDEFGHI", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 714: Structured Append not supported for Version S", },
+        /* 35*/ { -1, -1, 9, { 1, 2, "" }, "123456789012ABCDEFGHI", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 714: Structured Append not available for Version S", },
+        /* 36*/ { -1, -1, 9, { 3, 2, "" }, "123456789012ABCDEFGHI", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 714: Structured Append not available for Version S", }, // Trumps other checking
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;

@@ -33,9 +33,11 @@
 
 /*
  * Developed in accordance with "Royal Mail Mailmark barcode C encoding and deconding instructions"
- * (https://www.royalmail.com/sites/default/files/Mailmark-4-state-barcode-C-encoding-and-decoding-instructions-Sept-2015.pdf)
+ * (https://www.royalmail.com/sites/default/files/
+ *  Mailmark-4-state-barcode-C-encoding-and-decoding-instructions-Sept-2015.pdf)
  * and "Royal Mail Mailmark barcode L encoding and decoding"
- * (https://www.royalmail.com/sites/default/files/Mailmark-4-state-barcode-L-encoding-and-decoding-instructions-Sept-2015.pdf)
+ * (https://www.royalmail.com/sites/default/files/
+ *  Mailmark-4-state-barcode-L-encoding-and-decoding-instructions-Sept-2015.pdf)
  *
  */
 
@@ -182,21 +184,21 @@ INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int le
     // Format is in the range 0-4
     format = ctoi(local_source[0]);
     if ((format < 0) || (format > 4)) {
-        strcpy(symbol->errtxt, "582: Format out of range (0 to 4)");
+        strcpy(symbol->errtxt, "582: Format (1st character) out of range (0 to 4)");
         return ZINT_ERROR_INVALID_DATA;
     }
 
     // Version ID is in the range 1-4
     version_id = ctoi(local_source[1]) - 1;
     if ((version_id < 0) || (version_id > 3)) {
-        strcpy(symbol->errtxt, "583: Version ID out of range (1 to 4)");
+        strcpy(symbol->errtxt, "583: Version ID (2nd character) out of range (1 to 4)");
         return ZINT_ERROR_INVALID_DATA;
     }
 
     // Class is in the range 0-9,A-E
     mail_class = ctoi(local_source[2]);
     if ((mail_class < 0) || (mail_class > 14)) {
-        strcpy(symbol->errtxt, "584: Class out of range (0 to 9 and A to E)");
+        strcpy(symbol->errtxt, "584: Class (3rd character) out of range (0 to 9 and A to E)");
         return ZINT_ERROR_INVALID_DATA;
     }
 
@@ -207,7 +209,7 @@ INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int le
             supply_chain_id *= 10;
             supply_chain_id += ctoi(local_source[i]);
         } else {
-            strcpy(symbol->errtxt, "585: Invalid Supply Chain ID (digits only)");
+            sprintf(symbol->errtxt, "585: Invalid Supply Chain ID at character %d (digits only)", i);
             return ZINT_ERROR_INVALID_DATA;
         }
     }
@@ -219,7 +221,7 @@ INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int le
             item_id *= 10;
             item_id += ctoi(local_source[i]);
         } else {
-            strcpy(symbol->errtxt, "586: Invalid Item ID (digits only)");
+            sprintf(symbol->errtxt, "586: Invalid Item ID at character %d (digits only)", i);
             return ZINT_ERROR_INVALID_DATA;
         }
     }
@@ -273,7 +275,7 @@ INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int le
     // Verify postcode type
     if (postcode_type != 7) {
         if (verify_postcode(postcode, postcode_type) != 0) {
-            strcpy(symbol->errtxt, "587: Invalid postcode");
+            sprintf(symbol->errtxt, "587: Invalid postcode \"%s\"", postcode);
             return ZINT_ERROR_INVALID_DATA;
         }
     }
@@ -487,22 +489,24 @@ INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int le
         j += 2;
     }
 
-#ifdef COMPLIANT_HEIGHTS
-    /* Royal Mail Mailmark Barcode Definition Document (15 Sept 2015) Section 3.5.1
-       https://www.royalmail.com/sites/default/files/Royal-Mail-Mailmark-barcode-definition-document-September-2015.pdf
-       Using bar pitch as X (25.4mm / 42.3) ~ 0.6mm based on 21.2 bars + 21.1 spaces per 25.4mm (bar width 0.38-63mm)
-       Using recommended 1.9mm and 1.3mm heights for Ascender/Descenders and Trackers resp. as defaults
-       Min height 4.22mm * 39 (max pitch) / 25.4mm ~ 6.47, max height 5.84mm * 47 (min pitch) / 25.4mm ~ 10.8
-     */
-    symbol->row_height[0] = (float) ((1.9 * 42.3) / 25.4); /* ~3.16 */
-    symbol->row_height[1] = (float) ((1.3 * 42.3) / 25.4); /* ~2.16 */
-    /* Note using max X for minimum and min X for maximum */
-    error_number = daft_set_height(symbol, (float) ((4.22 * 39) / 25.4), (float) ((5.84 * 47) / 25.4));
-#else
-    symbol->row_height[0] = 4.0f;
-    symbol->row_height[1] = 2.0f;
-    daft_set_height(symbol, 0.0f, 0.0f);
-#endif
+    if (symbol->output_options & COMPLIANT_HEIGHT) {
+        /* Royal Mail Mailmark Barcode Definition Document (15 Sept 2015) Section 3.5.1
+           (https://www.royalmail.com/sites/default/files/
+            Royal-Mail-Mailmark-barcode-definition-document-September-2015.pdf)
+           Using bar pitch as X (25.4mm / 42.3) ~ 0.6mm based on 21.2 bars + 21.1 spaces per 25.4mm (bar width
+           0.38mm - 0.63mm)
+           Using recommended 1.9mm and 1.3mm heights for Ascender/Descenders and Trackers resp. as defaults
+           Min height 4.22mm * 39 (max pitch) / 25.4mm ~ 6.47, max height 5.84mm * 47 (min pitch) / 25.4mm ~ 10.8
+         */
+        symbol->row_height[0] = stripf((1.9f * 42.3f) / 25.4f); /* ~3.16 */
+        symbol->row_height[1] = stripf((1.3f * 42.3f) / 25.4f); /* ~2.16 */
+        /* Note using max X for minimum and min X for maximum */
+        error_number = daft_set_height(symbol, stripf((4.22f * 39) / 25.4f), stripf((5.84f * 47) / 25.4f));
+    } else {
+        symbol->row_height[0] = 4.0f;
+        symbol->row_height[1] = 2.0f;
+        (void) daft_set_height(symbol, 0.0f, 0.0f);
+    }
     symbol->rows = 3;
     symbol->width = j - 1;
 

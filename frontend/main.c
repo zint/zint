@@ -127,6 +127,7 @@ static void usage(void) {
             "  --box                 Add a box around the symbol\n"
             "  --cmyk                Use CMYK colour space in EPS/TIF symbols\n"
             "  --cols=NUMBER         Set the number of data columns in symbol\n"
+            "  --compliantheight     Warn if height not compliant, and use standard default\n"
             "  -d, --data=DATA       Set the symbol content\n"
             "  --direct              Send output to stdout\n"
             "  --dmre                Allow Data Matrix Rectangular Extended\n"
@@ -856,8 +857,8 @@ int main(int argc, char **argv) {
 
     while (no_getopt_error) {
         enum options {
-            OPT_ADDONGAP = 128, OPT_BATCH, OPT_BINARY, OPT_BG, OPT_BIND, OPT_BOLD, OPT_BORDER,
-            OPT_BOX, OPT_CMYK, OPT_COLS, OPT_DIRECT, OPT_DMRE, OPT_DOTSIZE, OPT_DOTTY, OPT_DUMP,
+            OPT_ADDONGAP = 128, OPT_BATCH, OPT_BINARY, OPT_BG, OPT_BIND, OPT_BOLD, OPT_BORDER, OPT_BOX,
+            OPT_CMYK, OPT_COLS, OPT_COMPLIANTHEIGHT, OPT_DIRECT, OPT_DMRE, OPT_DOTSIZE, OPT_DOTTY, OPT_DUMP,
             OPT_ECI, OPT_ESC, OPT_FG, OPT_FILETYPE, OPT_FONTSIZE, OPT_FULLMULTIBYTE,
             OPT_GS1, OPT_GS1NOCHECK, OPT_GS1PARENS, OPT_GSSEP, OPT_GUARDDESCENT,
             OPT_HEIGHT, OPT_INIT, OPT_MIRROR, OPT_MASK, OPT_MODE,
@@ -879,6 +880,7 @@ int main(int argc, char **argv) {
             {"box", 0, NULL, OPT_BOX},
             {"cmyk", 0, NULL, OPT_CMYK},
             {"cols", 1, NULL, OPT_COLS},
+            {"compliantheight", 0, NULL, OPT_COMPLIANTHEIGHT},
             {"data", 1, NULL, 'd'},
             {"direct", 0, NULL, OPT_DIRECT},
             {"dmre", 0, NULL, OPT_DMRE},
@@ -994,6 +996,9 @@ int main(int argc, char **argv) {
                     fprintf(stderr, "Warning 111: Number of columns out of range (1 to 200), ignoring\n");
                     fflush(stderr);
                 }
+                break;
+            case OPT_COMPLIANTHEIGHT:
+                my_symbol->output_options |= COMPLIANT_HEIGHT;
                 break;
             case OPT_DIRECT:
                 my_symbol->output_options |= BARCODE_STDOUT;

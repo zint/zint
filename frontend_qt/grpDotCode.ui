@@ -1050,9 +1050,6 @@ as 0 to 3 with the corners lit</string>
      </item>
      <item row="1" column="1">
       <widget class="QComboBox" name="cmbDotMask">
-       <property name="maxVisibleItems">
-        <number>8</number>
-       </property>
        <property name="toolTip">
         <string>Manually specify which mask to use
 The prime masks 0&apos; to 3&apos; are the same

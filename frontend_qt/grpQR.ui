@@ -312,9 +312,6 @@ error correction codewords</string>
      </item>
      <item row="2" column="1">
       <widget class="QComboBox" name="cmbQRMask">
-       <property name="maxVisibleItems">
-        <number>8</number>
-       </property>
        <property name="toolTip">
         <string>Manually specify which mask to use</string>
        </property>
@@ -428,7 +425,8 @@ the data with a slash &quot;/&quot;</string>
       <bool>false</bool>
      </property>
      <property name="toolTip">
-      <string>Use Kanji multibyte encoding for binary and Latin data</string>
+      <string>Use Kanji multibyte encoding for binary
+and Latin data</string>
      </property>
     </widget>
    </item>

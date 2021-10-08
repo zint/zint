@@ -132,80 +132,75 @@ void ZBarcode_Delete(struct zint_symbol *symbol) {
 }
 
 INTERNAL int eanx(struct zint_symbol *symbol, unsigned char source[], int length); /* EAN system barcodes */
-INTERNAL int c39(struct zint_symbol *symbol, unsigned char source[], int length); /* Code 3 from 9 (or Code 39) */
-/* Pharmazentral Nummer (PZN) */
-INTERNAL int pharmazentral(struct zint_symbol *symbol, unsigned char source[], int length);
+INTERNAL int code39(struct zint_symbol *symbol, unsigned char source[], int length); /* Code 3 from 9 (or Code 39) */
+INTERNAL int pzn(struct zint_symbol *symbol, unsigned char source[], int length); /* Pharmazentral Nummer (PZN) */
 /* Extended Code 3 from 9 (or Code 39+) */
-INTERNAL int ec39(struct zint_symbol *symbol, unsigned char source[], int length);
+INTERNAL int excode39(struct zint_symbol *symbol, unsigned char source[], int length);
 /* Codabar - a simple substitution cipher */
 INTERNAL int codabar(struct zint_symbol *symbol, unsigned char source[], int length);
 /* Code 2 of 5 Standard (& Matrix) */
-INTERNAL int matrix_two_of_five(struct zint_symbol *symbol, unsigned char source[], int length);
-/* Code 2 of 5 Industrial */
-INTERNAL int industrial_two_of_five(struct zint_symbol *symbol, unsigned char source[], int length);
-INTERNAL int iata_two_of_five(struct zint_symbol *symbol, unsigned char source[], int length); /* Code 2 of 5 IATA */
-/* Code 2 of 5 Interleaved */
-INTERNAL int interleaved_two_of_five(struct zint_symbol *symbol, unsigned char source[], int length);
-/* Code 2 of 5 Data Logic */
-INTERNAL int logic_two_of_five(struct zint_symbol *symbol, unsigned char source[], int length);
+INTERNAL int c25standard(struct zint_symbol *symbol, unsigned char source[], int length);
+INTERNAL int c25ind(struct zint_symbol *symbol, unsigned char source[], int length); /* Code 2 of 5 Industrial */
+INTERNAL int c25iata(struct zint_symbol *symbol, unsigned char source[], int length); /* Code 2 of 5 IATA */
+INTERNAL int c25inter(struct zint_symbol *symbol, unsigned char source[], int length); /* Code 2 of 5 Interleaved */
+INTERNAL int c25logic(struct zint_symbol *symbol, unsigned char source[], int length); /* Code 2 of 5 Data Logic */
 INTERNAL int itf14(struct zint_symbol *symbol, unsigned char source[], int length); /* ITF-14 */
 INTERNAL int dpleit(struct zint_symbol *symbol, unsigned char source[], int length); /* Deutsche Post Leitcode */
 INTERNAL int dpident(struct zint_symbol *symbol, unsigned char source[], int length); /* Deutsche Post Identcode */
 /* Code 93 - a re-working of Code 39+, generates 2 check digits */
-INTERNAL int c93(struct zint_symbol *symbol, unsigned char source[], int length);
-INTERNAL int code_128(struct zint_symbol *symbol, unsigned char source[], int length); /* Code 128 and NVE-18 */
-INTERNAL int ean_128(struct zint_symbol *symbol, unsigned char source[], int length); /* EAN-128 (GS1-128) */
-INTERNAL int code_11(struct zint_symbol *symbol, unsigned char source[], int length); /* Code 11 */
-INTERNAL int msi_handle(struct zint_symbol *symbol, unsigned char source[], int length); /* MSI Plessey */
+INTERNAL int code93(struct zint_symbol *symbol, unsigned char source[], int length);
+INTERNAL int code128(struct zint_symbol *symbol, unsigned char source[], int length); /* Code 128 and NVE-18 */
+INTERNAL int gs1_128(struct zint_symbol *symbol, unsigned char source[], int length); /* EAN-128 (GS1-128) */
+INTERNAL int code11(struct zint_symbol *symbol, unsigned char source[], int length); /* Code 11 */
+INTERNAL int msi_plessey(struct zint_symbol *symbol, unsigned char source[], int length); /* MSI Plessey */
 INTERNAL int telepen(struct zint_symbol *symbol, unsigned char source[], int length); /* Telepen ASCII */
 INTERNAL int telepen_num(struct zint_symbol *symbol, unsigned char source[], int length); /* Telepen Numeric */
 INTERNAL int plessey(struct zint_symbol *symbol, unsigned char source[], int length); /* Plessey Code */
-INTERNAL int pharma_one(struct zint_symbol *symbol, unsigned char source[], int length); /* Pharmacode One Track */
-INTERNAL int flattermarken(struct zint_symbol *symbol, unsigned char source[], int length); /* Flattermarken */
+INTERNAL int pharma(struct zint_symbol *symbol, unsigned char source[], int length); /* Pharmacode One Track */
+INTERNAL int flat(struct zint_symbol *symbol, unsigned char source[], int length); /* Flattermarken */
 INTERNAL int fim(struct zint_symbol *symbol, unsigned char source[], int length); /* Facing Identification Mark */
 INTERNAL int pharma_two(struct zint_symbol *symbol, unsigned char source[], int length); /* Pharmacode Two Track */
-INTERNAL int post_plot(struct zint_symbol *symbol, unsigned char source[], int length); /* Postnet */
-INTERNAL int planet_plot(struct zint_symbol *symbol, unsigned char source[], int length); /* PLANET */
+INTERNAL int postnet(struct zint_symbol *symbol, unsigned char source[], int length); /* Postnet */
+INTERNAL int planet(struct zint_symbol *symbol, unsigned char source[], int length); /* PLANET */
 /* Intelligent Mail (aka USPS OneCode) */
-INTERNAL int imail(struct zint_symbol *symbol, unsigned char source[], int length);
-INTERNAL int royal_plot(struct zint_symbol *symbol, unsigned char source[], int length); /* RM4SCC */
-/* Australia Post 4-state */
-INTERNAL int australia_post(struct zint_symbol *symbol, unsigned char source[], int length);
+INTERNAL int usps_imail(struct zint_symbol *symbol, unsigned char source[], int length);
+INTERNAL int rm4scc(struct zint_symbol *symbol, unsigned char source[], int length); /* RM4SCC */
+INTERNAL int auspost(struct zint_symbol *symbol, unsigned char source[], int length); /* Australia Post 4-state */
 INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int length); /* Code 16k */
-INTERNAL int pdf417enc(struct zint_symbol *symbol, unsigned char source[], int length); /* PDF417 */
-INTERNAL int micro_pdf417(struct zint_symbol *symbol, unsigned char chaine[], int length); /* Micro PDF417 */
+INTERNAL int pdf417(struct zint_symbol *symbol, unsigned char source[], int length); /* PDF417 */
+INTERNAL int micropdf417(struct zint_symbol *symbol, unsigned char chaine[], int length); /* Micro PDF417 */
 INTERNAL int maxicode(struct zint_symbol *symbol, unsigned char source[], int length); /* Maxicode */
-INTERNAL int rss14(struct zint_symbol *symbol, unsigned char source[], int length); /* RSS-14 */
-INTERNAL int rsslimited(struct zint_symbol *symbol, unsigned char source[], int length); /* RSS Limited */
-INTERNAL int rssexpanded(struct zint_symbol *symbol, unsigned char source[], int length); /* RSS Expanded */
+INTERNAL int dbar_omn(struct zint_symbol *symbol, unsigned char source[], int length); /* RSS-14 */
+INTERNAL int dbar_ltd(struct zint_symbol *symbol, unsigned char source[], int length); /* RSS Limited */
+INTERNAL int dbar_exp(struct zint_symbol *symbol, unsigned char source[], int length); /* RSS Expanded */
 INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int length); /* Composite Symbology */
-INTERNAL int kix_code(struct zint_symbol *symbol, unsigned char source[], int length); /* TNT KIX Code */
+INTERNAL int kix(struct zint_symbol *symbol, unsigned char source[], int length); /* TNT KIX Code */
 INTERNAL int aztec(struct zint_symbol *symbol, unsigned char source[], int length); /* Aztec Code */
 INTERNAL int code32(struct zint_symbol *symbol, unsigned char source[], int length); /* Italian Pharmacode */
-INTERNAL int daft_code(struct zint_symbol *symbol, unsigned char source[], int length); /* DAFT Code */
-INTERNAL int ean_14(struct zint_symbol *symbol, unsigned char source[], int length); /* EAN-14 */
-INTERNAL int nve_18(struct zint_symbol *symbol, unsigned char source[], int length); /* NVE-18 */
+INTERNAL int daft(struct zint_symbol *symbol, unsigned char source[], int length); /* DAFT Code */
+INTERNAL int ean14(struct zint_symbol *symbol, unsigned char source[], int length); /* EAN-14 */
+INTERNAL int nve18(struct zint_symbol *symbol, unsigned char source[], int length); /* NVE-18 */
 INTERNAL int microqr(struct zint_symbol *symbol, unsigned char source[], int length); /* Micro QR Code */
-INTERNAL int aztec_runes(struct zint_symbol *symbol, unsigned char source[], int length); /* Aztec Runes */
-INTERNAL int korea_post(struct zint_symbol *symbol, unsigned char source[], int length); /* Korea Post */
-INTERNAL int japan_post(struct zint_symbol *symbol, unsigned char source[], int length); /* Japanese Post */
-INTERNAL int code_49(struct zint_symbol *symbol, unsigned char source[], int length); /* Code 49 */
-INTERNAL int channel_code(struct zint_symbol *symbol, unsigned char source[], int length); /* Channel Code */
-INTERNAL int code_one(struct zint_symbol *symbol, unsigned char source[], int length); /* Code One */
-INTERNAL int grid_matrix(struct zint_symbol *symbol, unsigned char source[], int length); /* Grid Matrix */
-INTERNAL int han_xin(struct zint_symbol *symbol, unsigned char source[], int length); /* Han Xin */
+INTERNAL int azrune(struct zint_symbol *symbol, unsigned char source[], int length); /* Aztec Runes */
+INTERNAL int koreapost(struct zint_symbol *symbol, unsigned char source[], int length); /* Korea Post */
+INTERNAL int japanpost(struct zint_symbol *symbol, unsigned char source[], int length); /* Japanese Post */
+INTERNAL int code49(struct zint_symbol *symbol, unsigned char source[], int length); /* Code 49 */
+INTERNAL int channel(struct zint_symbol *symbol, unsigned char source[], int length); /* Channel Code */
+INTERNAL int codeone(struct zint_symbol *symbol, unsigned char source[], int length); /* Code One */
+INTERNAL int gridmatrix(struct zint_symbol *symbol, unsigned char source[], int length); /* Grid Matrix */
+INTERNAL int hanxin(struct zint_symbol *symbol, unsigned char source[], int length); /* Han Xin */
 INTERNAL int dotcode(struct zint_symbol *symbol, unsigned char source[], int length); /* DotCode */
-INTERNAL int codablock(struct zint_symbol *symbol, unsigned char source[], int length); /* Codablock */
+INTERNAL int codablockf(struct zint_symbol *symbol, unsigned char source[], int length); /* Codablock */
 INTERNAL int upnqr(struct zint_symbol *symbol, unsigned char source[], int length); /* UPNQR */
-INTERNAL int qr_code(struct zint_symbol *symbol, unsigned char source[], int length); /* QR Code */
-INTERNAL int dmatrix(struct zint_symbol *symbol, unsigned char source[], int length); /* Data Matrix (IEC16022) */
+INTERNAL int qrcode(struct zint_symbol *symbol, unsigned char source[], int length); /* QR Code */
+INTERNAL int datamatrix(struct zint_symbol *symbol, unsigned char source[], int length); /* Data Matrix (IEC16022) */
 /* VIN Code (Vehicle Identification Number) */
 INTERNAL int vin(struct zint_symbol *symbol, unsigned char source[], int length);
 /* Royal Mail 4-state Mailmark */
 INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int length);
-INTERNAL int ultracode(struct zint_symbol *symbol, unsigned char source[], int length); /* Ultracode */
+INTERNAL int ultra(struct zint_symbol *symbol, unsigned char source[], int length); /* Ultracode */
 INTERNAL int rmqr(struct zint_symbol *symbol, unsigned char source[], int length); /* rMQR */
-INTERNAL int dpd_parcel(struct zint_symbol *symbol, unsigned char source[], int length); /* DPD Code */
+INTERNAL int dpd(struct zint_symbol *symbol, unsigned char source[], int length); /* DPD Code */
 
 INTERNAL int plot_raster(struct zint_symbol *symbol, int rotate_angle, int file_type); /* Plot to PNG/BMP/PCX */
 INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_type); /* Plot to EPS/EMF/SVG */
@@ -299,7 +294,7 @@ static int dump_plot(struct zint_symbol *symbol) {
 /* Process health industry bar code data */
 static int hibc(struct zint_symbol *symbol, unsigned char source[], int length) {
     int i;
-    int    counter, error_number;
+    int counter, error_number = 0;
     char to_process[113], check_digit;
 
     /* without "+" and check: max 110 characters in HIBC 2.6 */
@@ -308,10 +303,9 @@ static int hibc(struct zint_symbol *symbol, unsigned char source[], int length) 
         return ZINT_ERROR_TOO_LONG;
     }
     to_upper(source);
-    error_number = is_sane(TECHNETIUM, source, length);
-    if (error_number == ZINT_ERROR_INVALID_DATA) {
+    if (is_sane(TECHNETIUM, source, length) != 0) {
         strcpy(symbol->errtxt, "203: Invalid character in data (alphanumerics, space and \"-.$/+%\" only)");
-        return error_number;
+        return ZINT_ERROR_INVALID_DATA;
     }
 
     counter = 41;
@@ -355,35 +349,35 @@ static int hibc(struct zint_symbol *symbol, unsigned char source[], int length) 
 
     switch (symbol->symbology) {
         case BARCODE_HIBC_128:
-            error_number = code_128(symbol, (unsigned char *) to_process, length);
+            error_number = code128(symbol, (unsigned char *) to_process, length);
             ustrcpy(symbol->text, "*");
             ustrcat(symbol->text, to_process);
             ustrcat(symbol->text, "*");
             break;
         case BARCODE_HIBC_39:
             symbol->option_2 = 0;
-            error_number = c39(symbol, (unsigned char *) to_process, length);
+            error_number = code39(symbol, (unsigned char *) to_process, length);
             ustrcpy(symbol->text, "*");
             ustrcat(symbol->text, to_process);
             ustrcat(symbol->text, "*");
             break;
         case BARCODE_HIBC_DM:
-            error_number = dmatrix(symbol, (unsigned char *) to_process, length);
+            error_number = datamatrix(symbol, (unsigned char *) to_process, length);
             break;
         case BARCODE_HIBC_QR:
-            error_number = qr_code(symbol, (unsigned char *) to_process, length);
+            error_number = qrcode(symbol, (unsigned char *) to_process, length);
             break;
         case BARCODE_HIBC_PDF:
-            error_number = pdf417enc(symbol, (unsigned char *) to_process, length);
+            error_number = pdf417(symbol, (unsigned char *) to_process, length);
             break;
         case BARCODE_HIBC_MICPDF:
-            error_number = micro_pdf417(symbol, (unsigned char *) to_process, length);
+            error_number = micropdf417(symbol, (unsigned char *) to_process, length);
             break;
         case BARCODE_HIBC_AZTEC:
             error_number = aztec(symbol, (unsigned char *) to_process, length);
             break;
         case BARCODE_HIBC_BLOCKF:
-            error_number = codablock(symbol, (unsigned char *) to_process, length);
+            error_number = codablockf(symbol, (unsigned char *) to_process, length);
             break;
     }
 
@@ -542,6 +536,41 @@ static int has_hrt(const int symbology) {
     return 1;
 }
 
+/* Used for dispatching barcodes and for whether symbol id valid */
+typedef int (*barcode_func_t)(struct zint_symbol *, unsigned char *, int);
+static const barcode_func_t barcode_funcs[146] = {
+          NULL,      code11, c25standard,    c25inter,     c25iata, /*0-4*/
+          NULL,    c25logic,      c25ind,      code39,    excode39, /*5-9*/
+          NULL,        NULL,        NULL,        eanx,        eanx, /*10-14*/
+          NULL,     gs1_128,        NULL,     codabar,        NULL, /*15-19*/
+       code128,      dpleit,     dpident,     code16k,      code49, /*20-24*/
+        code93,        NULL,        NULL,        flat,    dbar_omn, /*25-29*/
+      dbar_ltd,    dbar_exp,     telepen,        NULL,        eanx, /*30-34*/
+          eanx,        NULL,        eanx,        eanx,        NULL, /*35-39*/
+       postnet,        NULL,        NULL,        NULL,        NULL, /*40-44*/
+          NULL,        NULL, msi_plessey,        NULL,         fim, /*45-49*/
+        code39,      pharma,         pzn,  pharma_two,        NULL, /*50-54*/
+        pdf417,      pdf417,    maxicode,      qrcode,        NULL, /*55-59*/
+       code128,        NULL,        NULL,     auspost,        NULL, /*60-64*/
+          NULL,     auspost,     auspost,     auspost,        eanx, /*65-69*/
+        rm4scc,  datamatrix,       ean14,         vin,  codablockf, /*70-74*/
+         nve18,   japanpost,   koreapost,        NULL,    dbar_omn, /*75-79*/
+      dbar_omn,    dbar_exp,      planet,        NULL, micropdf417, /*80-84*/
+    usps_imail,     plessey, telepen_num,        NULL,       itf14, /*85-89*/
+           kix,        NULL,       aztec,        daft,        NULL, /*90-94*/
+          NULL,         dpd,     microqr,        hibc,        hibc, /*95-99*/
+          NULL,        NULL,        hibc,        NULL,        hibc, /*100-104*/
+          NULL,        hibc,        NULL,        hibc,        NULL, /*105-109*/
+          hibc,        NULL,        hibc,        NULL,        NULL, /*110-114*/
+       dotcode,      hanxin,        NULL,        NULL,        NULL, /*115-119*/
+          NULL,    mailmark,        NULL,        NULL,        NULL, /*120-124*/
+          NULL,        NULL,        NULL,      azrune,      code32, /*125-129*/
+     composite,   composite,   composite,   composite,   composite, /*130-134*/
+     composite,   composite,   composite,   composite,   composite, /*135-139*/
+       channel,     codeone,  gridmatrix,       upnqr,       ultra, /*140-144*/
+          rmqr,
+};
+
 static int reduced_charset(struct zint_symbol *symbol, unsigned char *source, int length);
 
 static int extended_or_reduced_charset(struct zint_symbol *symbol, unsigned char *source, const int length) {
@@ -549,17 +578,13 @@ static int extended_or_reduced_charset(struct zint_symbol *symbol, unsigned char
 
     switch (symbol->symbology) {
         /* These are the "elite" standards which have support for specific character sets */
-        case BARCODE_QRCODE: error_number = qr_code(symbol, source, length);
-            break;
-        case BARCODE_MICROQR: error_number = microqr(symbol, source, length);
-            break;
-        case BARCODE_GRIDMATRIX: error_number = grid_matrix(symbol, source, length);
-            break;
-        case BARCODE_HANXIN: error_number = han_xin(symbol, source, length);
-            break;
-        case BARCODE_UPNQR: error_number = upnqr(symbol, source, length);
-            break;
-        case BARCODE_RMQR: error_number = rmqr(symbol, source, length);
+        case BARCODE_QRCODE:
+        case BARCODE_MICROQR:
+        case BARCODE_GRIDMATRIX:
+        case BARCODE_HANXIN:
+        case BARCODE_UPNQR:
+        case BARCODE_RMQR:
+            error_number = (*barcode_funcs[symbol->symbology])(symbol, source, length);
             break;
         default: error_number = reduced_charset(symbol, source, length);
             break;
@@ -568,8 +593,8 @@ static int extended_or_reduced_charset(struct zint_symbol *symbol, unsigned char
     return error_number;
 }
 
+/* These are the "norm" standards which only support Latin-1 at most, though a few support ECI */
 static int reduced_charset(struct zint_symbol *symbol, unsigned char *source, int length) {
-    /* These are the "norm" standards which only support Latin-1 at most, though a few support ECI */
     int error_number = 0;
     unsigned char *preprocessed = source;
 
@@ -594,169 +619,7 @@ static int reduced_charset(struct zint_symbol *symbol, unsigned char *source, in
         }
     }
 
-    switch (symbol->symbology) {
-        case BARCODE_C25STANDARD: error_number = matrix_two_of_five(symbol, preprocessed, length);
-            break;
-        case BARCODE_C25IND: error_number = industrial_two_of_five(symbol, preprocessed, length);
-            break;
-        case BARCODE_C25INTER: error_number = interleaved_two_of_five(symbol, preprocessed, length);
-            break;
-        case BARCODE_C25IATA: error_number = iata_two_of_five(symbol, preprocessed, length);
-            break;
-        case BARCODE_C25LOGIC: error_number = logic_two_of_five(symbol, preprocessed, length);
-            break;
-        case BARCODE_DPLEIT: error_number = dpleit(symbol, preprocessed, length);
-            break;
-        case BARCODE_DPIDENT: error_number = dpident(symbol, preprocessed, length);
-            break;
-        case BARCODE_UPCA:
-        case BARCODE_UPCA_CHK:
-        case BARCODE_UPCE:
-        case BARCODE_UPCE_CHK:
-        case BARCODE_EANX:
-        case BARCODE_EANX_CHK:
-        case BARCODE_ISBNX:
-            error_number = eanx(symbol, preprocessed, length);
-            break;
-        case BARCODE_GS1_128: error_number = ean_128(symbol, preprocessed, length);
-            break;
-        case BARCODE_CODE39: error_number = c39(symbol, preprocessed, length);
-            break;
-        case BARCODE_PZN: error_number = pharmazentral(symbol, preprocessed, length);
-            break;
-        case BARCODE_EXCODE39: error_number = ec39(symbol, preprocessed, length);
-            break;
-        case BARCODE_CODABAR: error_number = codabar(symbol, preprocessed, length);
-            break;
-        case BARCODE_CODE93: error_number = c93(symbol, preprocessed, length);
-            break;
-        case BARCODE_LOGMARS: error_number = c39(symbol, preprocessed, length);
-            break;
-        case BARCODE_CODE128:
-        case BARCODE_CODE128B:
-            error_number = code_128(symbol, preprocessed, length);
-            break;
-        case BARCODE_NVE18: error_number = nve_18(symbol, preprocessed, length);
-            break;
-        case BARCODE_CODE11: error_number = code_11(symbol, preprocessed, length);
-            break;
-        case BARCODE_MSI_PLESSEY: error_number = msi_handle(symbol, preprocessed, length);
-            break;
-        case BARCODE_TELEPEN: error_number = telepen(symbol, preprocessed, length);
-            break;
-        case BARCODE_TELEPEN_NUM: error_number = telepen_num(symbol, preprocessed, length);
-            break;
-        case BARCODE_PHARMA: error_number = pharma_one(symbol, preprocessed, length);
-            break;
-        case BARCODE_PLESSEY: error_number = plessey(symbol, preprocessed, length);
-            break;
-        case BARCODE_ITF14: error_number = itf14(symbol, preprocessed, length);
-            break;
-        case BARCODE_FLAT: error_number = flattermarken(symbol, preprocessed, length);
-            break;
-        case BARCODE_FIM: error_number = fim(symbol, preprocessed, length);
-            break;
-        case BARCODE_POSTNET: error_number = post_plot(symbol, preprocessed, length);
-            break;
-        case BARCODE_PLANET: error_number = planet_plot(symbol, preprocessed, length);
-            break;
-        case BARCODE_RM4SCC: error_number = royal_plot(symbol, preprocessed, length);
-            break;
-        case BARCODE_AUSPOST:
-        case BARCODE_AUSREPLY:
-        case BARCODE_AUSROUTE:
-        case BARCODE_AUSREDIRECT:
-            error_number = australia_post(symbol, preprocessed, length);
-            break;
-        case BARCODE_CODE16K: error_number = code16k(symbol, preprocessed, length);
-            break;
-        case BARCODE_PHARMA_TWO: error_number = pharma_two(symbol, preprocessed, length);
-            break;
-        case BARCODE_USPS_IMAIL: error_number = imail(symbol, preprocessed, length);
-            break;
-        case BARCODE_DBAR_OMN:
-        case BARCODE_DBAR_STK:
-        case BARCODE_DBAR_OMNSTK:
-            error_number = rss14(symbol, preprocessed, length);
-            break;
-        case BARCODE_DBAR_LTD: error_number = rsslimited(symbol, preprocessed, length);
-            break;
-        case BARCODE_DBAR_EXP:
-        case BARCODE_DBAR_EXPSTK:
-            error_number = rssexpanded(symbol, preprocessed, length);
-            break;
-        case BARCODE_EANX_CC:
-        case BARCODE_GS1_128_CC:
-        case BARCODE_DBAR_OMN_CC:
-        case BARCODE_DBAR_LTD_CC:
-        case BARCODE_DBAR_EXP_CC:
-        case BARCODE_UPCA_CC:
-        case BARCODE_UPCE_CC:
-        case BARCODE_DBAR_STK_CC:
-        case BARCODE_DBAR_OMNSTK_CC:
-        case BARCODE_DBAR_EXPSTK_CC:
-            error_number = composite(symbol, preprocessed, length);
-            break;
-        case BARCODE_KIX: error_number = kix_code(symbol, preprocessed, length);
-            break;
-        case BARCODE_CODE32: error_number = code32(symbol, preprocessed, length);
-            break;
-        case BARCODE_DAFT: error_number = daft_code(symbol, preprocessed, length);
-            break;
-        case BARCODE_EAN14:
-            error_number = ean_14(symbol, preprocessed, length);
-            break;
-        case BARCODE_AZRUNE: error_number = aztec_runes(symbol, preprocessed, length);
-            break;
-        case BARCODE_KOREAPOST: error_number = korea_post(symbol, preprocessed, length);
-            break;
-        case BARCODE_HIBC_128:
-        case BARCODE_HIBC_39:
-        case BARCODE_HIBC_DM:
-        case BARCODE_HIBC_QR:
-        case BARCODE_HIBC_PDF:
-        case BARCODE_HIBC_MICPDF:
-        case BARCODE_HIBC_AZTEC:
-        case BARCODE_HIBC_BLOCKF:
-            error_number = hibc(symbol, preprocessed, length);
-            break;
-        case BARCODE_JAPANPOST: error_number = japan_post(symbol, preprocessed, length);
-            break;
-        case BARCODE_CODE49: error_number = code_49(symbol, preprocessed, length);
-            break;
-        case BARCODE_CHANNEL: error_number = channel_code(symbol, preprocessed, length);
-            break;
-        case BARCODE_CODEONE: error_number = code_one(symbol, preprocessed, length);
-            break;
-        case BARCODE_DATAMATRIX: error_number = dmatrix(symbol, preprocessed, length);
-            break;
-        case BARCODE_PDF417:
-        case BARCODE_PDF417COMP:
-            error_number = pdf417enc(symbol, preprocessed, length);
-            break;
-        case BARCODE_MICROPDF417: error_number = micro_pdf417(symbol, preprocessed, length);
-            break;
-        case BARCODE_MAXICODE: error_number = maxicode(symbol, preprocessed, length);
-            break;
-        case BARCODE_AZTEC: error_number = aztec(symbol, preprocessed, length);
-            break;
-        case BARCODE_DOTCODE: error_number = dotcode(symbol, preprocessed, length);
-            break;
-        case BARCODE_CODABLOCKF: error_number = codablock(symbol, preprocessed, length);
-            break;
-        case BARCODE_VIN: error_number = vin(symbol, preprocessed, length);
-            break;
-        case BARCODE_MAILMARK: error_number = mailmark(symbol, preprocessed, length);
-            break;
-        case BARCODE_ULTRA: error_number = ultracode(symbol, preprocessed, length);
-            break;
-        case BARCODE_DPD: error_number = dpd_parcel(symbol, preprocessed, length);
-            break;
-        default: /* Should never happen */
-            strcpy(symbol->errtxt, "001: Internal error"); /* Not reached */
-            error_number = ZINT_ERROR_ENCODING_PROBLEM;
-            break;
-    }
+    error_number = (*barcode_funcs[symbol->symbology])(symbol, preprocessed, length);
 
     return error_number;
 }
@@ -1484,31 +1347,14 @@ int ZBarcode_Encode_File_and_Buffer_Vector(struct zint_symbol *symbol, const cha
     return error_number;
 }
 
+/* Checks whether a symbology is supported */
 int ZBarcode_ValidID(int symbol_id) {
-    /* Checks whether a symbology is supported */
-    static const unsigned char ids[146] = {
-          0,   1,   2,   3,   4,   0,   6,   7,   8,   9,
-          0,   0,   0,  13,  14,   0,  16,   0,  18,   0,
-         20,  21,  22,  23,  24,  25,   0,   0,  28,  29,
-         30,  31,  32,   0,  34,  35,   0,  37,  38,   0,
-         40,   0,   0,   0,   0,   0,   0,  47,   0,  49,
-         50,  51,  52,  53,   0,  55,  56,  57,  58,   0,
-         60,   0,   0,  63,   0,   0,  66,  67,  68,  69,
-         70,  71,  72,  73,  74,  75,  76,  77,   0,  79,
-         80,  81,  82,   0,  84,  85,  86,  87,   0,  89,
-         90,   0,  92,  93,   0,   0,  96,  97,  98,  99,
-          0,   0, 102,   0, 104,   0, 106,   0, 108,   0,
-        110,   0, 112,   0,   0, 115, 116,   0,   0,   0,
-          0, 121,   0,   0,   0,   0,   0,   0, 128, 129,
-        130, 131, 132, 133, 134, 135, 136, 137, 138, 139,
-        140, 141, 142, 143, 144, 145,
-    };
 
     if (symbol_id <= 0 || symbol_id > 145) {
         return 0;
     }
 
-    return ids[symbol_id] != 0;
+    return barcode_funcs[symbol_id] != NULL;
 }
 
 /* Return the capability flags for symbology `symbol_id` that match `cap_flag` */
@@ -1625,6 +1471,36 @@ unsigned int ZBarcode_Cap(int symbol_id, unsigned int cap_flag) {
             case BARCODE_GRIDMATRIX:
             case BARCODE_ULTRA:
                 result |= ZINT_CAP_STRUCTAPP;
+                break;
+        }
+    }
+    if ((cap_flag & ZINT_CAP_COMPLIANT_HEIGHT) && !is_fixed_ratio(symbol_id)) {
+        switch (symbol_id) {
+            /* These don't have a compliant height defined */
+            case BARCODE_CODE11: /* TODO: Find doc */
+            case BARCODE_C25STANDARD: /* For C25 only have doc for C25INTER */
+            case BARCODE_C25IATA:
+            case BARCODE_C25LOGIC:
+            case BARCODE_C25IND:
+            case BARCODE_CODE128: /* Left to application */
+            case BARCODE_CODE128B:
+            case BARCODE_DPLEIT: /* TODO: Find doc */
+            case BARCODE_DPIDENT: /* TODO: Find doc */
+            case BARCODE_FLAT: /* TODO: Find doc */
+            case BARCODE_MSI_PLESSEY: /* TODO: Find doc */
+            case BARCODE_PDF417: /* Has compliant height but already warns & uses for default */
+            case BARCODE_PDF417COMP:
+            case BARCODE_VIN: /* Spec unlikely */
+            case BARCODE_KOREAPOST: /* TODO: Find doc */
+            case BARCODE_MICROPDF417: /* See PDF417 */
+            case BARCODE_PLESSEY: /* TODO: Find doc */
+            case BARCODE_DAFT: /* Generic */
+            case BARCODE_HIBC_128: /* See CODE128 */
+            case BARCODE_HIBC_PDF: /* See PDF417 */
+            case BARCODE_HIBC_MICPDF: /* See PDF417 */
+                break;
+            default:
+                result |= ZINT_CAP_COMPLIANT_HEIGHT;
                 break;
         }
     }

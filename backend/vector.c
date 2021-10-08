@@ -30,8 +30,6 @@
  */
 /* vim: set ts=4 sw=4 et : */
 
-#include <math.h>
-
 #ifdef _MSC_VER
 #include <malloc.h>
 #endif

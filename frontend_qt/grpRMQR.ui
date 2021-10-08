@@ -327,7 +327,8 @@ formatted with Application Identifiers (AIs)</string>
       <bool>false</bool>
      </property>
      <property name="toolTip">
-      <string>Use Kanji multibyte encoding for binary and Latin data</string>
+      <string>Use Kanji multibyte encoding for binary
+and Latin data</string>
      </property>
     </widget>
    </item>

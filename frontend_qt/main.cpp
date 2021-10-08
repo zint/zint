@@ -30,6 +30,8 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
 
     MainWindow w;
+    // Seem to need to do this before showing the window
+    w.setWindowTitle(w.windowTitle() + ' ' + MainWindow::get_zint_version());
     w.show();
     return app.exec();
 }

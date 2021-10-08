@@ -611,7 +611,7 @@ INTERNAL float output_large_bar_height(struct zint_symbol *symbol, int si) {
     if (zero_count) {
         large_bar_height = (symbol->height - fixed_height) / zero_count;
         if (large_bar_height <= 0.0f) { /* Shouldn't happen but protect against memory access violations */
-            large_bar_height = 0.01f; /* Token positive value */
+            large_bar_height = 0.0078125f; /* Token positive value (exact float 2**-6) */
             symbol->height = large_bar_height * zero_count + fixed_height;
         }
         if (si && !isfintf(large_bar_height * si)) {

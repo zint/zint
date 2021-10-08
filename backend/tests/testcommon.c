@@ -648,6 +648,7 @@ const char *testUtilOutputOptionsName(int output_options) {
         { "OUT_BUFFER_INTERMEDIATE", OUT_BUFFER_INTERMEDIATE, 1024 },
         { "BARCODE_QUIET_ZONES", BARCODE_QUIET_ZONES, 2048 },
         { "BARCODE_NO_QUIET_ZONES", BARCODE_NO_QUIET_ZONES, 4096 },
+        { "COMPLIANT_HEIGHT", COMPLIANT_HEIGHT, 0x2000 },
     };
     static int const data_size = ARRAY_SIZE(data);
     int set = 0;

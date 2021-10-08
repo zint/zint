@@ -406,11 +406,11 @@ INTERNAL int set_height(struct zint_symbol *symbol, const float min_row_height, 
 
     if (zero_count) {
         if (symbol->height) {
-            row_height = (symbol->height - fixed_height) / zero_count;
+            row_height = stripf((symbol->height - fixed_height) / zero_count);
         } else if (default_height) {
-            row_height = default_height / zero_count;
+            row_height = stripf(default_height / zero_count);
         } else {
-            row_height = min_row_height;
+            row_height = stripf(min_row_height);
         }
         if (row_height < 0.5f) { /* Absolute minimum */
             row_height = 0.5f;
@@ -421,9 +421,9 @@ INTERNAL int set_height(struct zint_symbol *symbol, const float min_row_height, 
                 strcpy(symbol->errtxt, "247: Height not compliant with standards");
             }
         }
-        symbol->height = row_height * zero_count + fixed_height;
+        symbol->height = stripf(row_height * zero_count + fixed_height);
     } else {
-        symbol->height = fixed_height; /* Ignore any given height */
+        symbol->height = stripf(fixed_height); /* Ignore any given height */
     }
     if (max_height && symbol->height > max_height) {
         error_number = ZINT_WARN_NONCOMPLIANT;

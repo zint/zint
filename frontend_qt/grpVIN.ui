@@ -27,6 +27,10 @@
        <property name="text">
         <string>&amp;Import Character Prefix</string>
        </property>
+       <property name="toolTip">
+        <string>Preface data with import character &apos;I&apos;
+(not shown in Human Readable Text)</string>
+       </property>
        <property name="checked">
         <bool>false</bool>
        </property>

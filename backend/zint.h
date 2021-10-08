@@ -110,7 +110,7 @@ extern "C" {
         int fontsize;       /* Unused */
         int input_mode;     /* Encoding of input data (see DATA_MODE etc below). Default DATA_MODE */
         int eci;            /* Extended Channel Interpretation. Default 0 (none) */
-        float dot_size;     /* Size of dots used in BARCODE_DOTTY_MODE */
+        float dot_size;     /* Size of dots used in BARCODE_DOTTY_MODE. Default 0.8 */
         float guard_descent; /* Height in X-dimensions that UPC/EAN guard bars descend. Default 5 */
         struct zint_structapp structapp; /* Structured Append info. Default structapp.count 0 (none) */
         int warn_level;     /* Affects error/warning value returned by Zint API (see WARN_XXX below) */
@@ -255,29 +255,31 @@ extern "C" {
 #define BARCODE_RMQR            145 /* Rectangular Micro QR Code (rMQR) */
 
 /* Output options (`symbol->output_options`) */
-#define BARCODE_NO_ASCII        1   /* Legacy (no-op) */
-#define BARCODE_BIND            2   /* Boundary bars above & below the symbol and between stacked symbols */
-#define BARCODE_BOX             4   /* Box around symbol */
-#define BARCODE_STDOUT          8   /* Output to stdout */
-#define READER_INIT             16  /* Reader Initialisation (Programming) */
-#define SMALL_TEXT              32  /* Use smaller font */
-#define BOLD_TEXT               64  /* Use bold font */
-#define CMYK_COLOUR             128 /* CMYK colour space (Encapsulated PostScript and TIF) */
-#define BARCODE_DOTTY_MODE      256 /* Plot a matrix symbol using dots rather than squares */
-#define GS1_GS_SEPARATOR        512 /* Use GS instead of FNC1 as GS1 separator (Data Matrix) */
-#define OUT_BUFFER_INTERMEDIATE 1024 /* Return ASCII values in bitmap buffer (OUT_BUFFER only) */
-#define BARCODE_QUIET_ZONES     2048 /* Add compliant quiet zones (additional to any specified whitespace) */
-                                     /* Note: CODE16K, CODE49, CODABLOCKF, ITF14, UPC/EAN have default quiet zones */
-#define BARCODE_NO_QUIET_ZONES  4096 /* Disable quiet zones, notably those with defaults as listed above */
+#define BARCODE_NO_ASCII        0x0001  /* Legacy (no-op) */
+#define BARCODE_BIND            0x0002  /* Boundary bars above & below the symbol and between stacked symbols */
+#define BARCODE_BOX             0x0004  /* Box around symbol */
+#define BARCODE_STDOUT          0x0008  /* Output to stdout */
+#define READER_INIT             0x0010  /* Reader Initialisation (Programming) */
+#define SMALL_TEXT              0x0020  /* Use smaller font */
+#define BOLD_TEXT               0x0040  /* Use bold font */
+#define CMYK_COLOUR             0x0080  /* CMYK colour space (Encapsulated PostScript and TIF) */
+#define BARCODE_DOTTY_MODE      0x0100  /* Plot a matrix symbol using dots rather than squares */
+#define GS1_GS_SEPARATOR        0x0200  /* Use GS instead of FNC1 as GS1 separator (Data Matrix) */
+#define OUT_BUFFER_INTERMEDIATE 0x0400  /* Return ASCII values in bitmap buffer (OUT_BUFFER only) */
+#define BARCODE_QUIET_ZONES     0x0800  /* Add compliant quiet zones (additional to any specified whitespace) */
+                                        /* Note: CODE16K, CODE49, CODABLOCKF, ITF14, UPC/EAN have default quiet zones
+                                         */
+#define BARCODE_NO_QUIET_ZONES  0x1000  /* Disable quiet zones, notably those with defaults as listed above */
+#define COMPLIANT_HEIGHT        0x2000  /* Warn if height not compliant and use standard height (if any) as default */
 
 /* Input data types (`symbol->input_mode`) */
 #define DATA_MODE               0   /* Binary */
 #define UNICODE_MODE            1   /* UTF-8 */
 #define GS1_MODE                2   /* GS1 */
 /* The following may be OR-ed with above */
-#define ESCAPE_MODE             8   /* Process escape sequences */
-#define GS1PARENS_MODE          16  /* Process parentheses as GS1 AI delimiters (instead of square brackets) */
-#define GS1NOCHECK_MODE         32  /* Do not check validity of GS1 data (except that printable ASCII only) */
+#define ESCAPE_MODE             0x0008  /* Process escape sequences */
+#define GS1PARENS_MODE          0x0010  /* Process parentheses as GS1 AI delimiters (instead of square brackets) */
+#define GS1NOCHECK_MODE         0x0020  /* Do not check validity of GS1 data (except that printable ASCII only) */
 
 /* Data Matrix specific options (`symbol->option_3`) */
 #define DM_SQUARE               100 /* Only consider square versions on automatic symbol size selection */
@@ -290,46 +292,47 @@ extern "C" {
 #define ULTRA_COMPRESSION       128 /* Enable Ultracode compression (experimental) */
 
 /* Warning and error conditions (API return values) */
-#define ZINT_WARN_INVALID_OPTION        2   /* Invalid option given but overridden by Zint */
-#define ZINT_WARN_USES_ECI              3   /* Automatic ECI inserted by Zint */
-#define ZINT_WARN_NONCOMPLIANT          4   /* Symbol created not compliant with standards */
-#define ZINT_ERROR                      5   /* Warn/error marker, not returned */
-#define ZINT_ERROR_TOO_LONG             5   /* Input data wrong length */
-#define ZINT_ERROR_INVALID_DATA         6   /* Input data incorrect */
-#define ZINT_ERROR_INVALID_CHECK        7   /* Input check digit incorrect */
-#define ZINT_ERROR_INVALID_OPTION       8   /* Incorrect option given */
-#define ZINT_ERROR_ENCODING_PROBLEM     9   /* Internal error (should not happen) */
-#define ZINT_ERROR_FILE_ACCESS          10  /* Error opening output file */
-#define ZINT_ERROR_MEMORY               11  /* Memory allocation (malloc) failure */
-#define ZINT_ERROR_FILE_WRITE           12  /* Error writing to output file */
-#define ZINT_ERROR_USES_ECI             13  /* Error counterpart of warning if WARN_FAIL_ALL set (see below) */
-#define ZINT_ERROR_NONCOMPLIANT         14  /* Error counterpart of warning if WARN_FAIL_ALL set */
+#define ZINT_WARN_INVALID_OPTION    2   /* Invalid option given but overridden by Zint */
+#define ZINT_WARN_USES_ECI          3   /* Automatic ECI inserted by Zint */
+#define ZINT_WARN_NONCOMPLIANT      4   /* Symbol created not compliant with standards */
+#define ZINT_ERROR                  5   /* Warn/error marker, not returned */
+#define ZINT_ERROR_TOO_LONG         5   /* Input data wrong length */
+#define ZINT_ERROR_INVALID_DATA     6   /* Input data incorrect */
+#define ZINT_ERROR_INVALID_CHECK    7   /* Input check digit incorrect */
+#define ZINT_ERROR_INVALID_OPTION   8   /* Incorrect option given */
+#define ZINT_ERROR_ENCODING_PROBLEM 9   /* Internal error (should not happen) */
+#define ZINT_ERROR_FILE_ACCESS      10  /* Error opening output file */
+#define ZINT_ERROR_MEMORY           11  /* Memory allocation (malloc) failure */
+#define ZINT_ERROR_FILE_WRITE       12  /* Error writing to output file */
+#define ZINT_ERROR_USES_ECI         13  /* Error counterpart of warning if WARN_FAIL_ALL set (see below) */
+#define ZINT_ERROR_NONCOMPLIANT     14  /* Error counterpart of warning if WARN_FAIL_ALL set */
 
 /* Warning warn (`symbol->warn_level`) */
 #define WARN_DEFAULT            0  /* Default behaviour */
 #define WARN_FAIL_ALL           2  /* Treat warning as error */
 
 /* Capability flags (ZBarcode_Cap() `cap_flag`) */
-#define ZINT_CAP_HRT            0x0001  /* Prints Human Readable Text? */
-#define ZINT_CAP_STACKABLE      0x0002  /* Is stackable? */
-#define ZINT_CAP_EXTENDABLE     0x0004  /* Is extendable with add-on data? (Is UPC/EAN?) */
-#define ZINT_CAP_COMPOSITE      0x0008  /* Can have composite data? */
-#define ZINT_CAP_ECI            0x0010  /* Supports Extended Channel Interpretations? */
-#define ZINT_CAP_GS1            0x0020  /* Supports GS1 data? */
-#define ZINT_CAP_DOTTY          0x0040  /* Can be output as dots? */
-#define ZINT_CAP_QUIET_ZONES    0x0080  /* Has default quiet zones? */
-#define ZINT_CAP_FIXED_RATIO    0x0100  /* Has fixed width-to-height (aspect) ratio? */
-#define ZINT_CAP_READER_INIT    0x0200  /* Supports Reader Initialisation? */
-#define ZINT_CAP_FULL_MULTIBYTE 0x0400  /* Supports full-multibyte option? */
-#define ZINT_CAP_MASK           0x0800  /* Is mask selectable? */
-#define ZINT_CAP_STRUCTAPP      0x1000  /* Supports Structured Append? */
+#define ZINT_CAP_HRT                0x0001  /* Prints Human Readable Text? */
+#define ZINT_CAP_STACKABLE          0x0002  /* Is stackable? */
+#define ZINT_CAP_EXTENDABLE         0x0004  /* Is extendable with add-on data? (Is UPC/EAN?) */
+#define ZINT_CAP_COMPOSITE          0x0008  /* Can have composite data? */
+#define ZINT_CAP_ECI                0x0010  /* Supports Extended Channel Interpretations? */
+#define ZINT_CAP_GS1                0x0020  /* Supports GS1 data? */
+#define ZINT_CAP_DOTTY              0x0040  /* Can be output as dots? */
+#define ZINT_CAP_QUIET_ZONES        0x0080  /* Has default quiet zones? */
+#define ZINT_CAP_FIXED_RATIO        0x0100  /* Has fixed width-to-height (aspect) ratio? */
+#define ZINT_CAP_READER_INIT        0x0200  /* Supports Reader Initialisation? */
+#define ZINT_CAP_FULL_MULTIBYTE     0x0400  /* Supports full-multibyte option? */
+#define ZINT_CAP_MASK               0x0800  /* Is mask selectable? */
+#define ZINT_CAP_STRUCTAPP          0x1000  /* Supports Structured Append? */
+#define ZINT_CAP_COMPLIANT_HEIGHT   0x2000  /* Has compliant height? */
 
 /* The largest amount of data that can be encoded is 4350 4-byte UTF-8 chars in Han Xin Code */
 #define ZINT_MAX_DATA_LEN       17400
 
 /* Debug flags (debug) */
-#define ZINT_DEBUG_PRINT        1   /* Print debug info (if any) to stdout */
-#define ZINT_DEBUG_TEST         2   /* For internal test use only */
+#define ZINT_DEBUG_PRINT        0x0001  /* Print debug info (if any) to stdout */
+#define ZINT_DEBUG_TEST         0x0002  /* For internal test use only */
 
 #ifdef _WIN32
 #  if defined(DLL_EXPORT) || defined(PIC) || defined(_USRDLL)

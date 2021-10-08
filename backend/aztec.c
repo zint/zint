@@ -1445,7 +1445,7 @@ INTERNAL int aztec(struct zint_symbol *symbol, unsigned char source[], int lengt
 }
 
 /* Encodes Aztec runes as specified in ISO/IEC 24778:2008 Annex A */
-INTERNAL int aztec_runes(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int azrune(struct zint_symbol *symbol, unsigned char source[], int length) {
     unsigned int input_value;
     int error_number, i, y, x, r;
     char binary_string[28];

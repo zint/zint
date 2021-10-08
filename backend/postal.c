@@ -95,41 +95,39 @@ static int usps_set_height(struct zint_symbol *symbol, const int no_errtxt) {
     int error_number = 0;
     float h_ratio; /* Half ratio */
 
-#ifdef COMPLIANT_HEIGHTS
-    symbol->row_height[0] = 0.075f * 43; /* 3.225 */
-    symbol->row_height[1] = 0.05f * 43; /* 2.15 */
-#else
-    symbol->row_height[0] = 6.0f;
-    symbol->row_height[1] = 6.0f;
-#endif
+    if (symbol->output_options & COMPLIANT_HEIGHT) {
+        symbol->row_height[0] = stripf(0.075f * 43); /* 3.225 */
+        symbol->row_height[1] = stripf(0.05f * 43); /* 2.15 */
+    } else {
+        symbol->row_height[0] = 6.0f;
+        symbol->row_height[1] = 6.0f;
+    }
     if (symbol->height) {
         h_ratio = symbol->row_height[1] / (symbol->row_height[0] + symbol->row_height[1]); /* 0.4 */
-        symbol->row_height[1] = symbol->height * h_ratio;
+        symbol->row_height[1] = stripf(symbol->height * h_ratio);
         if (symbol->row_height[1] < 0.5f) { /* Absolute minimum */
             symbol->row_height[1] = 0.5f;
-            symbol->row_height[0] = 0.5f / h_ratio - 0.5f; /* 0.75 */
+            symbol->row_height[0] = stripf(0.5f / h_ratio - 0.5f); /* 0.75 */
         } else {
-            symbol->row_height[0] = symbol->height - symbol->row_height[1];
+            symbol->row_height[0] = stripf(symbol->height - symbol->row_height[1]);
         }
     }
-    symbol->height = symbol->row_height[0] + symbol->row_height[1];
+    symbol->height = stripf(symbol->row_height[0] + symbol->row_height[1]);
 
-#ifdef COMPLIANT_HEIGHTS
-    if (symbol->height < 4.6f || symbol->height > 9.0f) {
-        error_number = ZINT_WARN_NONCOMPLIANT;
-        if (!no_errtxt) {
-            strcpy(symbol->errtxt, "498: Height not compliant with standards");
+    if (symbol->output_options & COMPLIANT_HEIGHT) {
+        if (symbol->height < 4.6f || symbol->height > 9.0f) {
+            error_number = ZINT_WARN_NONCOMPLIANT;
+            if (!no_errtxt) {
+                strcpy(symbol->errtxt, "498: Height not compliant with standards");
+            }
         }
     }
-#else
-    (void)&no_errtxt;
-#endif
 
     return error_number;
 }
 
 /* Handles the PostNet system used for Zip codes in the US */
-static int postnet(struct zint_symbol *symbol, unsigned char source[], char dest[], int length) {
+static int postnet_enc(struct zint_symbol *symbol, unsigned char source[], char dest[], int length) {
     int i, sum, check_digit;
     int error_number = 0;
 
@@ -141,7 +139,7 @@ static int postnet(struct zint_symbol *symbol, unsigned char source[], char dest
         strcpy(symbol->errtxt, "479: Input length is not standard (5, 9 or 11 characters)");
         error_number = ZINT_WARN_NONCOMPLIANT;
     }
-    if (is_sane(NEON, source, length) == ZINT_ERROR_INVALID_DATA) {
+    if (is_sane(NEON, source, length) != 0) {
         strcpy(symbol->errtxt, "481: Invalid character in data (digits only)");
         return ZINT_ERROR_INVALID_DATA;
     }
@@ -165,13 +163,13 @@ static int postnet(struct zint_symbol *symbol, unsigned char source[], char dest
 }
 
 /* Puts PostNet barcodes into the pattern matrix */
-INTERNAL int post_plot(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int postnet(struct zint_symbol *symbol, unsigned char source[], int length) {
     char height_pattern[256]; /* 5 + 38 * 5 + 5 + 5 + 1 = 206 */
     unsigned int loopey, h;
     int writer;
     int error_number, warn_number;
 
-    error_number = postnet(symbol, source, height_pattern, length);
+    error_number = postnet_enc(symbol, source, height_pattern, length);
     if (error_number >= ZINT_ERROR) {
         return error_number;
     }
@@ -193,7 +191,7 @@ INTERNAL int post_plot(struct zint_symbol *symbol, unsigned char source[], int l
 }
 
 /* Handles the PLANET system used for item tracking in the US */
-static int planet(struct zint_symbol *symbol, unsigned char source[], char dest[], int length) {
+static int planet_enc(struct zint_symbol *symbol, unsigned char source[], char dest[], int length) {
     int i, sum, check_digit;
     int error_number = 0;
 
@@ -205,7 +203,7 @@ static int planet(struct zint_symbol *symbol, unsigned char source[], char dest[
         strcpy(symbol->errtxt, "478: Input length is not standard (11 or 13 characters)");
         error_number = ZINT_WARN_NONCOMPLIANT;
     }
-    if (is_sane(NEON, source, length) == ZINT_ERROR_INVALID_DATA) {
+    if (is_sane(NEON, source, length) != 0) {
         strcpy(symbol->errtxt, "483: Invalid character in data (digits only)");
         return ZINT_ERROR_INVALID_DATA;
     }
@@ -229,13 +227,13 @@ static int planet(struct zint_symbol *symbol, unsigned char source[], char dest[
 }
 
 /* Puts PLANET barcodes into the pattern matrix */
-INTERNAL int planet_plot(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int planet(struct zint_symbol *symbol, unsigned char source[], int length) {
     char height_pattern[256]; /* 5 + 38 * 5 + 5 + 5 + 1 = 206 */
     unsigned int loopey, h;
     int writer;
     int error_number, warn_number;
 
-    error_number = planet(symbol, source, height_pattern, length);
+    error_number = planet_enc(symbol, source, height_pattern, length);
     if (error_number >= ZINT_ERROR) {
         return error_number;
     }
@@ -257,18 +255,17 @@ INTERNAL int planet_plot(struct zint_symbol *symbol, unsigned char source[], int
 }
 
 /* Korean Postal Authority */
-INTERNAL int korea_post(struct zint_symbol *symbol, unsigned char source[], int length) {
-    int total, loop, check, zeroes, error_number;
+INTERNAL int koreapost(struct zint_symbol *symbol, unsigned char source[], int length) {
+    int total, loop, check, zeroes, error_number = 0;
     char localstr[8], dest[80];
 
     if (length > 6) {
         strcpy(symbol->errtxt, "484: Input too long (6 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
-    error_number = is_sane(NEON, source, length);
-    if (error_number == ZINT_ERROR_INVALID_DATA) {
+    if (is_sane(NEON, source, length) != 0) {
         strcpy(symbol->errtxt, "485: Invalid character in data (digits only)");
-        return error_number;
+        return ZINT_ERROR_INVALID_DATA;
     }
     zeroes = 6 - length;
     memset(localstr, '0', zeroes);
@@ -333,14 +330,14 @@ INTERNAL int fim(struct zint_symbol *symbol, unsigned char source[], int length)
 
     expand(symbol, dest);
 
-#ifdef COMPLIANT_HEIGHTS
-    /* USPS Domestic Mail Manual (USPS DMM 300) Jan 8, 2006 (updated 2011) 708.9.3
-       X 0.03125" (1/32) +- 0.008" so X max 0.03925", height 0.625" (5/8) +- 0.125" (1/8) */
-    error_number = set_height(symbol, (float) (0.5 / 0.03925), 20.0f /*0.625 / 0.03125*/, (float) (0.75 / 0.02415),
-                    0 /*no_errtxt*/);
-#else
-    (void) set_height(symbol, 0.0f, 50.0f, 0.0f, 1 /*no_errtxt*/);
-#endif
+    if (symbol->output_options & COMPLIANT_HEIGHT) {
+        /* USPS Domestic Mail Manual (USPS DMM 300) Jan 8, 2006 (updated 2011) 708.9.3
+           X 0.03125" (1/32) +- 0.008" so X max 0.03925", height 0.625" (5/8) +- 0.125" (1/8) */
+        error_number = set_height(symbol, stripf(0.5f / 0.03925f), 20.0f /*0.625 / 0.03125*/,
+                        stripf(0.75f / 0.02415f), 0 /*no_errtxt*/);
+    } else {
+        (void) set_height(symbol, 0.0f, 50.0f, 0.0f, 1 /*no_errtxt*/);
+    }
 
     return error_number;
 }
@@ -352,36 +349,34 @@ INTERNAL int daft_set_height(struct zint_symbol *symbol, float min_height, float
     float t_ratio; /* Tracker ratio */
 
     if (symbol->height) {
-        t_ratio = symbol->row_height[1] / (symbol->row_height[0] * 2 + symbol->row_height[1]);
-        symbol->row_height[1] = symbol->height * t_ratio;
+        t_ratio = stripf(symbol->row_height[1] / stripf(symbol->row_height[0] * 2 + symbol->row_height[1]));
+        symbol->row_height[1] = stripf(symbol->height * t_ratio);
         if (symbol->row_height[1] < 0.5f) { /* Absolute minimum */
             symbol->row_height[1] = 0.5f;
-            symbol->row_height[0] = 0.25f / t_ratio - 0.25f;
+            symbol->row_height[0] = stripf(0.25f / t_ratio - 0.25f);
         } else {
-            symbol->row_height[0] = (symbol->height - symbol->row_height[1]) / 2.0f;
+            symbol->row_height[0] = stripf(stripf(symbol->height - symbol->row_height[1]) / 2.0f);
         }
         if (symbol->row_height[0] < 0.5f) {
             symbol->row_height[0] = 0.5f;
-            symbol->row_height[1] = t_ratio / (1.0f - t_ratio);
+            symbol->row_height[1] = stripf(t_ratio / (1.0f - t_ratio));
         }
     }
     symbol->row_height[2] = symbol->row_height[0];
-    symbol->height = symbol->row_height[0] + symbol->row_height[1] + symbol->row_height[2];
+    symbol->height = stripf(stripf(symbol->row_height[0] + symbol->row_height[1]) + symbol->row_height[2]);
 
-#ifdef COMPLIANT_HEIGHTS
-    if ((min_height && symbol->height < min_height) || (max_height && symbol->height > max_height)) {
-        error_number = ZINT_WARN_NONCOMPLIANT;
-        strcpy(symbol->errtxt, "499: Height not compliant with standards");
+    if (symbol->output_options & COMPLIANT_HEIGHT) {
+        if ((min_height && symbol->height < min_height) || (max_height && symbol->height > max_height)) {
+            error_number = ZINT_WARN_NONCOMPLIANT;
+            strcpy(symbol->errtxt, "499: Height not compliant with standards");
+        }
     }
-#else
-    (void)min_height; (void)max_height;
-#endif
 
     return error_number;
 }
 
 /* Handles the 4 State barcodes used in the UK by Royal Mail */
-static char rm4scc(unsigned char source[], char dest[], int length) {
+static char rm4scc_enc(unsigned char source[], char dest[], int length) {
     int i;
     int top, bottom, row, column, check_digit;
     char values[3], set_copy[] = KRSET;
@@ -418,11 +413,11 @@ static char rm4scc(unsigned char source[], char dest[], int length) {
 }
 
 /* Puts RM4SCC into the data matrix */
-INTERNAL int royal_plot(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int rm4scc(struct zint_symbol *symbol, unsigned char source[], int length) {
     char height_pattern[210];
     int loopey, h;
     int writer;
-    int error_number;
+    int error_number = 0;
     strcpy(height_pattern, "");
 
     if (length > 50) {
@@ -430,12 +425,11 @@ INTERNAL int royal_plot(struct zint_symbol *symbol, unsigned char source[], int 
         return ZINT_ERROR_TOO_LONG;
     }
     to_upper(source);
-    error_number = is_sane(KRSET, source, length);
-    if (error_number == ZINT_ERROR_INVALID_DATA) {
+    if (is_sane(KRSET, source, length) != 0) {
         strcpy(symbol->errtxt, "489: Invalid character in data (alphanumerics only)");
-        return error_number;
+        return ZINT_ERROR_INVALID_DATA;
     }
-    /*check = */rm4scc(source, height_pattern, length);
+    /*check = */rm4scc_enc(source, height_pattern, length);
 
     writer = 0;
     h = (int) strlen(height_pattern);
@@ -450,21 +444,22 @@ INTERNAL int royal_plot(struct zint_symbol *symbol, unsigned char source[], int 
         writer += 2;
     }
 
-#ifdef COMPLIANT_HEIGHTS
-    /* Royal Mail Know How User's Manual Appendix C: using CBC
-       https://web.archive.org/web/20120120060743/http://www.royalmail.com/sites/default/files/docs/pdf/Know How 2006 PIP vs 1.6a Accepted Changes.pdf
-       Bar pitch and min/maxes same as Mailmark, so using recommendations from Royal Mail Mailmark Barcode Definition
-       Document (15 Sept 2015) Section 3.5.1
-     */
-    symbol->row_height[0] = (float) ((1.9 * 42.3) / 25.4); /* ~3.16 */
-    symbol->row_height[1] = (float) ((1.3 * 42.3) / 25.4); /* ~2.16 */
-    /* Note using max X for minimum and min X for maximum */
-    error_number = daft_set_height(symbol, (float) ((4.22 * 39) / 25.4), (float) ((5.84 * 47) / 25.4));
-#else
-    symbol->row_height[0] = 3.0f;
-    symbol->row_height[1] = 2.0f;
-    error_number = daft_set_height(symbol, 0.0f, 0.0f);
-#endif
+    if (symbol->output_options & COMPLIANT_HEIGHT) {
+        /* Royal Mail Know How User's Manual Appendix C: using CBC
+           (https://web.archive.org/web/20120120060743/
+            http://www.royalmail.com/sites/default/files/docs/pdf/Know How 2006 PIP vs 1.6a Accepted Changes.pdf)
+           Bar pitch and min/maxes same as Mailmark, so using recommendations from
+           Royal Mail Mailmark Barcode Definition Document (15 Sept 2015) Section 3.5.1
+         */
+        symbol->row_height[0] = stripf((1.9f * 42.3f) / 25.4f); /* ~3.16 */
+        symbol->row_height[1] = stripf((1.3f * 42.3f) / 25.4f); /* ~2.16 */
+        /* Note using max X for minimum and min X for maximum */
+        error_number = daft_set_height(symbol, stripf((4.22f * 39) / 25.4f), stripf((5.84f * 47) / 25.4f));
+    } else {
+        symbol->row_height[0] = 3.0f;
+        symbol->row_height[1] = 2.0f;
+        (void) daft_set_height(symbol, 0.0f, 0.0f);
+    }
     symbol->rows = 3;
     symbol->width = writer - 1;
 
@@ -474,11 +469,11 @@ INTERNAL int royal_plot(struct zint_symbol *symbol, unsigned char source[], int 
 /* Handles Dutch Post TNT KIX symbols
    The same as RM4SCC but without check digit
    Specification at http://www.tntpost.nl/zakelijk/klantenservice/downloads/kIX_code/download.aspx */
-INTERNAL int kix_code(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int kix(struct zint_symbol *symbol, unsigned char source[], int length) {
     char height_pattern[75], localstr[20];
     int loopey;
     int writer, i, h;
-    int error_number;
+    int error_number = 0;
     strcpy(height_pattern, "");
 
     if (length > 18) {
@@ -486,10 +481,9 @@ INTERNAL int kix_code(struct zint_symbol *symbol, unsigned char source[], int le
         return ZINT_ERROR_TOO_LONG;
     }
     to_upper(source);
-    error_number = is_sane(KRSET, source, length);
-    if (error_number == ZINT_ERROR_INVALID_DATA) {
+    if (is_sane(KRSET, source, length) != 0) {
         strcpy(symbol->errtxt, "491: Invalid character in data (alphanumerics only)");
-        return error_number;
+        return ZINT_ERROR_INVALID_DATA;
     }
 
     ustrcpy(localstr, source);
@@ -512,17 +506,17 @@ INTERNAL int kix_code(struct zint_symbol *symbol, unsigned char source[], int le
         writer += 2;
     }
 
-#ifdef COMPLIANT_HEIGHTS
-    /* Dimensions same as RM4SCC */
-    symbol->row_height[0] = (float) ((1.9 * 42.3) / 25.4); /* ~3.16 */
-    symbol->row_height[1] = (float) ((1.3 * 42.3) / 25.4); /* ~2.16 */
-    /* Note using max X for minimum and min X for maximum */
-    error_number = daft_set_height(symbol, (float) ((4.22 * 39) / 25.4), (float) ((5.84 * 47) / 25.4));
-#else
-    symbol->row_height[0] = 3.0f;
-    symbol->row_height[1] = 2.0f;
-    error_number = daft_set_height(symbol, 0.0f, 0.0f);
-#endif
+    if (symbol->output_options & COMPLIANT_HEIGHT) {
+        /* Dimensions same as RM4SCC */
+        symbol->row_height[0] = stripf((1.9f * 42.3f) / 25.4f); /* ~3.16 */
+        symbol->row_height[1] = stripf((1.3f * 42.3f) / 25.4f); /* ~2.16 */
+        /* Note using max X for minimum and min X for maximum */
+        error_number = daft_set_height(symbol, stripf((4.22f * 39) / 25.4f), stripf((5.84f * 47) / 25.4f));
+    } else {
+        symbol->row_height[0] = 3.0f;
+        symbol->row_height[1] = 2.0f;
+        (void) daft_set_height(symbol, 0.0f, 0.0f);
+    }
     symbol->rows = 3;
     symbol->width = writer - 1;
 
@@ -530,10 +524,10 @@ INTERNAL int kix_code(struct zint_symbol *symbol, unsigned char source[], int le
 }
 
 /* Handles DAFT Code symbols */
-INTERNAL int daft_code(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int daft(struct zint_symbol *symbol, unsigned char source[], int length) {
     char height_pattern[100];
     unsigned int loopey, h;
-    int writer, i, error_number;
+    int writer, i;
     strcpy(height_pattern, "");
 
     if (length > 50) {
@@ -541,11 +535,10 @@ INTERNAL int daft_code(struct zint_symbol *symbol, unsigned char source[], int l
         return ZINT_ERROR_TOO_LONG;
     }
     to_upper(source);
-    error_number = is_sane(DAFTSET, source, length);
 
-    if (error_number == ZINT_ERROR_INVALID_DATA) {
+    if (is_sane(DAFTSET, source, length) != 0) {
         strcpy(symbol->errtxt, "493: Invalid character in data (\"D\", \"A\", \"F\" and \"T\" only)");
-        return error_number;
+        return ZINT_ERROR_INVALID_DATA;
     }
 
     for (i = 0; i < length; i++) {
@@ -578,12 +571,12 @@ INTERNAL int daft_code(struct zint_symbol *symbol, unsigned char source[], int l
 
     /* Allow ratio of tracker to be specified in thousandths */
     if (symbol->option_2 >= 50 && symbol->option_2 <= 900) {
-        float t_ratio = symbol->option_2 / 1000.0f;
+        const float t_ratio = symbol->option_2 / 1000.0f;
         if (symbol->height < 0.5f) {
             symbol->height = 8.0f;
         }
-        symbol->row_height[1] = symbol->height * t_ratio;
-        symbol->row_height[0] = (float) ((symbol->height - symbol->row_height[1]) / 2.0);
+        symbol->row_height[1] = stripf(symbol->height * t_ratio);
+        symbol->row_height[0] = stripf((symbol->height - symbol->row_height[1]) / 2.0);
     } else {
         symbol->row_height[0] = 3.0f;
         symbol->row_height[1] = 2.0f;
@@ -594,22 +587,21 @@ INTERNAL int daft_code(struct zint_symbol *symbol, unsigned char source[], int l
     symbol->rows = 3;
     symbol->width = writer - 1;
 
-    return error_number;
+    return 0;
 }
 
 /* Flattermarken - Not really a barcode symbology! */
-INTERNAL int flattermarken(struct zint_symbol *symbol, unsigned char source[], int length) {
-    int loop, error_number;
+INTERNAL int flat(struct zint_symbol *symbol, unsigned char source[], int length) {
+    int loop, error_number = 0;
     char dest[512]; /* 90 * 4 + 1 ~ */
 
     if (length > 90) {
         strcpy(symbol->errtxt, "494: Input too long (90 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
-    error_number = is_sane(NEON, source, length);
-    if (error_number == ZINT_ERROR_INVALID_DATA) {
+    if (is_sane(NEON, source, length) != 0) {
         strcpy(symbol->errtxt, "495: Invalid character in data (digits only)");
-        return error_number;
+        return ZINT_ERROR_INVALID_DATA;
     }
     *dest = '\0';
     for (loop = 0; loop < length; loop++) {
@@ -624,8 +616,8 @@ INTERNAL int flattermarken(struct zint_symbol *symbol, unsigned char source[], i
 }
 
 /* Japanese Postal Code (Kasutama Barcode) */
-INTERNAL int japan_post(struct zint_symbol *symbol, unsigned char source[], int length) {
-    int error_number, h;
+INTERNAL int japanpost(struct zint_symbol *symbol, unsigned char source[], int length) {
+    int error_number = 0, h;
     char pattern[69];
     int writer, loopey, inter_posn, i, sum, check;
     char check_char;
@@ -645,7 +637,7 @@ INTERNAL int japan_post(struct zint_symbol *symbol, unsigned char source[], int 
     ustrcpy(local_source, source);
     to_upper(local_source);
 
-    if (is_sane(SHKASUTSET, local_source, length) == ZINT_ERROR_INVALID_DATA) {
+    if (is_sane(SHKASUTSET, local_source, length) != 0) {
         strcpy(symbol->errtxt, "497: Invalid character in data (alphanumerics and \"-\" only)");
         return ZINT_ERROR_INVALID_DATA;
     }
@@ -722,19 +714,19 @@ INTERNAL int japan_post(struct zint_symbol *symbol, unsigned char source[], int 
     symbol->rows = 3;
     symbol->width = writer - 1;
 
-#ifdef COMPLIANT_HEIGHTS
-    /* Japan Post Zip/Barcode Manual pp.11-12 https://www.post.japanpost.jp/zipcode/zipmanual/p11.html
-       X 0.6mm (0.5mm - 0.7mm)
-       Tracker height 1.2mm (1.05mm - 1.35mm) / 0.6mm = 2,
-       Ascender/descender = 1.2mm (Full 3.6mm (3.4mm - 3.6mm, max preferred) less T divided by 2) / 0.6mm = 2 */
-    symbol->row_height[0] = 2.0f;
-    symbol->row_height[1] = 2.0f;
-    error_number = daft_set_height(symbol, (float) (3.4 / 0.7) /*~4.857*/, 3.6f / 0.5f /*7.2*/);
-#else
-    symbol->row_height[0] = 3.0f;
-    symbol->row_height[1] = 2.0f;
-    error_number = daft_set_height(symbol, 0.0f, 0.0f);
-#endif
+    if (symbol->output_options & COMPLIANT_HEIGHT) {
+        /* Japan Post Zip/Barcode Manual pp.11-12 https://www.post.japanpost.jp/zipcode/zipmanual/p11.html
+           X 0.6mm (0.5mm - 0.7mm)
+           Tracker height 1.2mm (1.05mm - 1.35mm) / 0.6mm = 2,
+           Ascender/descender = 1.2mm (Full 3.6mm (3.4mm - 3.6mm, max preferred) less T divided by 2) / 0.6mm = 2 */
+        symbol->row_height[0] = 2.0f;
+        symbol->row_height[1] = 2.0f;
+        error_number = daft_set_height(symbol, stripf(3.4f / 0.7f) /*~4.857*/, stripf(3.6f / 0.5f) /*7.2*/);
+    } else {
+        symbol->row_height[0] = 3.0f;
+        symbol->row_height[1] = 2.0f;
+        (void) daft_set_height(symbol, 0.0f, 0.0f);
+    }
 
     return error_number;
 }

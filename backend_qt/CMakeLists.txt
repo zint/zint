@@ -21,6 +21,9 @@ target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_SOURCE_DIR}/backend")
 
 target_link_libraries(${PROJECT_NAME} zint Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Gui)
 
+if(ZINT_TEST AND NOT WIN32) # Fails with "Test not available without configuration" on Windows so skip
+    add_subdirectory(tests)
+endif()
 
 install(TARGETS ${PROJECT_NAME} ${INSTALL_TARGETS_DEFAULT_ARGS})
 install(FILES qzint.h DESTINATION ${INCLUDE_INSTALL_DIR} COMPONENT Devel)

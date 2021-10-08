@@ -872,7 +872,7 @@ static int ultra_generate_codewords(struct zint_symbol *symbol, const unsigned c
     return codeword_count;
 }
 
-INTERNAL int ultracode(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int ultra(struct zint_symbol *symbol, unsigned char source[], int length) {
     int data_cw_count = 0;
     int acc, qcc;
     int scr[3] = {0}, scr_cw_count = 0; /* Symbol Control Region (only if have Structured Append) */

@@ -88,7 +88,7 @@ static void rs_error(char data_pattern[]) {
 INTERNAL int daft_set_height(struct zint_symbol *symbol, float min_height, float max_height);
 
 /* Handles Australia Posts's 4 State Codes */
-INTERNAL int australia_post(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int auspost(struct zint_symbol *symbol, unsigned char source[], int length) {
     /* Customer Standard Barcode, Barcode 2 or Barcode 3 system determined automatically
        (i.e. the FCC doesn't need to be specified by the user) dependent
        on the length of the input string */
@@ -108,10 +108,9 @@ INTERNAL int australia_post(struct zint_symbol *symbol, unsigned char source[], 
     char localstr[30];
 
     /* Check input immediately to catch nuls */
-    error_number = is_sane(GDSET, source, length);
-    if (error_number == ZINT_ERROR_INVALID_DATA) {
+    if (is_sane(GDSET, source, length) != 0) {
         strcpy(symbol->errtxt, "404: Invalid character in data (alphanumerics, space and \"#\" only)");
-        return error_number;
+        return ZINT_ERROR_INVALID_DATA;
     }
     strcpy(localstr, "");
 
@@ -127,22 +126,24 @@ INTERNAL int australia_post(struct zint_symbol *symbol, unsigned char source[], 
                 break;
             case 16:
                 strcpy(fcc, "59");
-                error_number = is_sane(NEON, source, length);
+                if (is_sane(NEON, source, length) != 0) {
+                    strcpy(symbol->errtxt, "402: Invalid character in data (digits only for length 16)");
+                    return ZINT_ERROR_INVALID_DATA;
+                }
                 break;
             case 18:
                 strcpy(fcc, "62");
                 break;
             case 23:
                 strcpy(fcc, "62");
-                error_number = is_sane(NEON, source, length);
+                if (is_sane(NEON, source, length) != 0) {
+                    strcpy(symbol->errtxt, "406: Invalid character in data (digits only for length 23)");
+                    return ZINT_ERROR_INVALID_DATA;
+                }
                 break;
             default:
                 strcpy(symbol->errtxt, "401: Auspost input is wrong length (8, 13, 16, 18 or 23 characters only)");
                 return ZINT_ERROR_TOO_LONG;
-        }
-        if (error_number == ZINT_ERROR_INVALID_DATA) {
-            strcpy(symbol->errtxt, "402: Invalid character in data (digits only for lengths 16 and 23)");
-            return error_number;
         }
     } else {
         int zeroes;
@@ -174,10 +175,9 @@ INTERNAL int australia_post(struct zint_symbol *symbol, unsigned char source[], 
     /* Verify that the first 8 characters are numbers */
     memcpy(dpid, localstr, 8);
     dpid[8] = '\0';
-    error_number = is_sane(NEON, (unsigned char *) dpid, 8);
-    if (error_number == ZINT_ERROR_INVALID_DATA) {
+    if (is_sane(NEON, (unsigned char *) dpid, 8) != 0) {
         strcpy(symbol->errtxt, "405: Invalid character in DPID (first 8 characters) (digits only)");
-        return error_number;
+        return ZINT_ERROR_INVALID_DATA;
     }
 
     /* Start character */
@@ -238,21 +238,23 @@ INTERNAL int australia_post(struct zint_symbol *symbol, unsigned char source[], 
         writer += 2;
     }
 
-#ifdef COMPLIANT_HEIGHTS
-    /* Australia Post Customer Barcoding Technical Specifications (Revised Aug 2012) Dimensions, placement and
-       printing p.12
-       https://auspost.com.au/content/dam/auspost_corp/media/documents/customer-barcode-technical-specifications-aug2012.pdf
-       X 0.5mm (average of 0.4mm - 0.6mm), min height 4.2mm / 0.6mm (X max) = 7, max 5.6mm / 0.4mm (X min) = 14
-       Tracker 1.3mm (average of 1mm - 1.6mm), Ascender/Descender 3.15mm (average of 2.6mm - 3.7mm) less T = 1.85mm
-     */
-    symbol->row_height[0] = 1.85f / 0.5f; /* 3.7 */
-    symbol->row_height[1] = 1.3f / 0.5f; /* 2.6 */
-    error_number = daft_set_height(symbol, 7.0f, 14.0f); /* Note using max X for minimum and min X for maximum */
-#else
-    symbol->row_height[0] = 3.0f;
-    symbol->row_height[1] = 2.0f;
-    error_number = daft_set_height(symbol, 0.0f, 0.0f);
-#endif
+    if (symbol->output_options & COMPLIANT_HEIGHT) {
+        /* Australia Post Customer Barcoding Technical Specifications (Revised Aug 2012) Dimensions, placement and
+           printing p.12
+           (https://auspost.com.au/content/dam/auspost_corp/media/documents/
+            customer-barcode-technical-specifications-aug2012.pdf)
+           X 0.5mm (average of 0.4mm - 0.6mm), min height 4.2mm / 0.6mm (X max) = 7, max 5.6mm / 0.4mm (X min) = 14
+           Tracker 1.3mm (average of 1mm - 1.6mm)
+           Ascender/Descender 3.15mm (average of 2.6mm - 3.7mm) less T = 1.85mm
+         */
+        symbol->row_height[0] = 3.7f; /* 1.85f / 0.5f */
+        symbol->row_height[1] = 2.6f; /* 1.3f / 0.5f */
+        error_number = daft_set_height(symbol, 7.0f, 14.0f); /* Note using max X for minimum and min X for maximum */
+    } else {
+        symbol->row_height[0] = 3.0f;
+        symbol->row_height[1] = 2.0f;
+        error_number = daft_set_height(symbol, 0.0f, 0.0f);
+    }
     symbol->rows = 3;
     symbol->width = writer - 1;
 

@@ -39,7 +39,7 @@
 
 /* "!" represents Shift 1 and "&" represents Shift 2, "*" represents FNC1 */
 
-INTERNAL int code_49(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int code49(struct zint_symbol *symbol, unsigned char source[], int length) {
     int i, j, rows, M, x_count, y_count, z_count, posn_val, local_value;
     char intermediate[170] = "";
     int codewords[170], codeword_count;
@@ -49,8 +49,6 @@ INTERNAL int code_49(struct zint_symbol *symbol, unsigned char source[], int len
     char pattern[80];
     int gs1;
     int h, len;
-    int separator;
-    float min_row_height = 0.0f;
     int error_number = 0;
 
     if (length > 81) {
@@ -351,16 +349,17 @@ INTERNAL int code_49(struct zint_symbol *symbol, unsigned char source[], int len
     symbol->rows = rows;
     symbol->width = (int) strlen(pattern);
 
-#ifdef COMPLIANT_HEIGHTS
-    separator = symbol->option_3 >= 1 && symbol->option_3 <= 4 ? symbol->option_3 : 1;
-    /* ANSI/AIM BC6-2000 Section 2.6 minimum 8X; use 10 * rows as default for back-compatibility */
-    min_row_height = 8.0f + separator;
-    error_number = set_height(symbol, min_row_height, (min_row_height > 10.0f ? min_row_height : 10.0f) * rows, 0.0f,
-                                0 /*no_errtxt*/);
-#else
-    (void)&separator;
-    (void) set_height(symbol, min_row_height, 10.0f * rows, 0.0f, 1 /*no_errtxt*/);
-#endif
+    if (symbol->output_options & COMPLIANT_HEIGHT) {
+        /* ANSI/AIM BC6-2000 Section 2.6 minimum 8X; use 10X as default
+           Formula 2 H = ((h + g)r + g)X = rows * row_height + (rows - 1) * separator as borders not included
+           in symbol->height (added on) */
+        const int separator = symbol->option_3 >= 1 && symbol->option_3 <= 4 ? symbol->option_3 : 1;
+        const float min_row_height = stripf((8.0f * rows + separator * (rows - 1)) / rows);
+        const float default_height = 10.0f * rows + separator * (rows - 1);
+        error_number = set_height(symbol, min_row_height, default_height, 0.0f, 0 /*no_errtxt*/);
+    } else {
+        (void) set_height(symbol, 0.0f, 10.0f * rows, 0.0f, 1 /*no_errtxt*/);
+    }
 
     symbol->output_options |= BARCODE_BIND;
 

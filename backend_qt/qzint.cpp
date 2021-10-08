@@ -65,6 +65,7 @@ namespace Zint {
         m_gssep = false;
         m_quiet_zones = false;
         m_no_quiet_zones = false;
+        m_compliant_height = false;
         m_reader_init = false;
         m_rotate_angle = 0;
         m_debug = false;
@@ -94,6 +95,9 @@ namespace Zint {
         }
         if (m_no_quiet_zones) {
             m_zintSymbol->output_options |= BARCODE_NO_QUIET_ZONES;
+        }
+        if (m_compliant_height) {
+            m_zintSymbol->output_options |= COMPLIANT_HEIGHT;
         }
         m_zintSymbol->border_width = m_borderWidth;
         m_zintSymbol->option_1 = m_option_1;
@@ -153,6 +157,8 @@ namespace Zint {
             m_whitespace = m_zintSymbol->whitespace_width;
             m_vwhitespace = m_zintSymbol->whitespace_height;
             emit encoded();
+        } else {
+            emit errored();
         }
     }
 
@@ -236,8 +242,12 @@ namespace Zint {
         m_dotty = dotty;
     }
 
-    void QZint::setDotSize(float dot_size) {
-        m_dot_size = dot_size;
+    float QZint::dotSize() const {
+        return m_dot_size;
+    }
+
+    void QZint::setDotSize(float dotSize) {
+        m_dot_size = dotSize;
     }
 
     float QZint::guardDescent() const {
@@ -246,6 +256,18 @@ namespace Zint {
 
     void QZint::setGuardDescent(float guardDescent) {
         m_guardDescent = guardDescent;
+    }
+
+    int QZint::structAppCount() const {
+        return m_structapp.count;
+    }
+
+    int QZint::structAppIndex() const {
+        return m_structapp.index;
+    }
+
+    QString QZint::structAppID() const {
+        return m_structapp.id;
     }
 
     void QZint::setStructApp(const int count, const int index, const QString& id) {
@@ -289,6 +311,10 @@ namespace Zint {
         m_bgColor = bgColor;
     }
 
+    bool QZint::cmyk() const {
+        return m_cmyk;
+    }
+
     void QZint::setCMYK(bool cmyk) {
         m_cmyk = cmyk;
     }
@@ -311,21 +337,33 @@ namespace Zint {
         return m_borderWidth;
     }
 
-    void QZint::setBorderWidth(int boderWidth) {
-        if (boderWidth < 0 || boderWidth > 16)
-            boderWidth = 0;
-        m_borderWidth = boderWidth;
+    void QZint::setBorderWidth(int borderWidth) {
+        if (borderWidth < 0 || borderWidth > 16)
+            borderWidth = 0;
+        m_borderWidth = borderWidth;
+    }
+
+    int QZint::whitespace() const {
+        return m_whitespace;
     }
 
     void QZint::setWhitespace(int whitespace) {
         m_whitespace = whitespace;
     }
 
-    void QZint::setVWhitespace(int vwhitespace) {
-        m_vwhitespace = vwhitespace;
+    int QZint::vWhitespace() const {
+        return m_vwhitespace;
     }
 
-    void QZint::setFontSetting(int fontSettingIndex) {
+    void QZint::setVWhitespace(int vWhitespace) {
+        m_vwhitespace = vWhitespace;
+    }
+
+    int QZint::fontSetting() const {
+        return m_fontSetting;
+    }
+
+    void QZint::setFontSetting(int fontSettingIndex) { // Sets from comboBox index
         if (fontSettingIndex == 1) {
             m_fontSetting = BOLD_TEXT;
         } else if (fontSettingIndex == 2) {
@@ -337,27 +375,59 @@ namespace Zint {
         }
     }
 
-    void QZint::setShowText(bool show) {
-        m_show_hrt = show;
+    void QZint::setFontSettingValue(int fontSetting) { // Sets literal value
+        if ((fontSetting & (BOLD_TEXT | SMALL_TEXT)) == fontSetting) {
+            m_fontSetting = fontSetting;
+        } else {
+            m_fontSetting = 0;
+        }
     }
 
-    void QZint::setGSSep(bool gssep) {
-        m_gssep = gssep;
+    bool QZint::showText() const {
+        return m_show_hrt;
     }
 
-    int QZint::rotateAngle() const {
-        return m_rotate_angle;
+    void QZint::setShowText(bool showText) {
+        m_show_hrt = showText;
+    }
+
+    bool QZint::gsSep() const {
+        return m_gssep;
+    }
+
+    void QZint::setGSSep(bool gsSep) {
+        m_gssep = gsSep;
+    }
+
+    bool QZint::quietZones() const {
+        return m_quiet_zones;
     }
 
     void QZint::setQuietZones(bool quietZones) {
         m_quiet_zones = quietZones;
     }
 
+    bool QZint::noQuietZones() const {
+        return m_no_quiet_zones;
+    }
+
     void QZint::setNoQuietZones(bool noQuietZones) {
         m_no_quiet_zones = noQuietZones;
     }
 
-    void QZint::setRotateAngle(int rotateIndex) {
+    bool QZint::compliantHeight() const {
+        return m_compliant_height;
+    }
+
+    void QZint::setCompliantHeight(bool compliantHeight) {
+        m_compliant_height = compliantHeight;
+    }
+
+    int QZint::rotateAngle() const {
+        return m_rotate_angle;
+    }
+
+    void QZint::setRotateAngle(int rotateIndex) { // Sets from comboBox index
         if (rotateIndex == 1) {
             m_rotate_angle = 90;
         } else if (rotateIndex == 2) {
@@ -369,7 +439,23 @@ namespace Zint {
         }
     }
 
-    void QZint::setECI(int ECIIndex) {
+    void QZint::setRotateAngleValue(int rotateAngle) { // Sets literal value
+        if (rotateAngle == 90) {
+            m_rotate_angle = 90;
+        } else if (rotateAngle == 180) {
+            m_rotate_angle = 180;
+        } else if (rotateAngle == 270) {
+            m_rotate_angle = 270;
+        } else {
+            m_rotate_angle = 0;
+        }
+    }
+
+    int QZint::eci() const {
+        return m_eci;
+    }
+
+    void QZint::setECI(int ECIIndex) { // Sets from comboBox index
         if (ECIIndex >= 1 && ECIIndex <= 11) {
             m_eci = ECIIndex + 2;
         } else if (ECIIndex >= 12 && ECIIndex <= 15) {
@@ -383,16 +469,40 @@ namespace Zint {
         }
     }
 
-    void QZint::setGS1Parens(bool gs1parens) {
-        m_gs1parens = gs1parens;
+    void QZint::setECIValue(int eci) { // Sets literal value
+        if (eci < 3 || (eci > 30 && eci != 899) || eci == 14 || eci == 19) {
+            m_eci = 0;
+        } else {
+            m_eci = eci;
+        }
     }
 
-    void QZint::setGS1NoCheck(bool gs1nocheck) {
-        m_gs1nocheck = gs1nocheck;
+    bool QZint::gs1Parens() const {
+        return m_gs1parens;
     }
 
-    void QZint::setReaderInit(bool reader_init) {
-        m_reader_init = reader_init;
+    void QZint::setGS1Parens(bool gs1Parens) {
+        m_gs1parens = gs1Parens;
+    }
+
+    bool QZint::gs1NoCheck() const {
+        return m_gs1nocheck;
+    }
+
+    void QZint::setGS1NoCheck(bool gs1NoCheck) {
+        m_gs1nocheck = gs1NoCheck;
+    }
+
+    bool QZint::readerInit() const {
+        return m_reader_init;
+    }
+
+    void QZint::setReaderInit(bool readerInit) {
+        m_reader_init = readerInit;
+    }
+
+    bool QZint::debug() const {
+        return m_debug;
     }
 
     void QZint::setDebug(bool debug) {
@@ -411,6 +521,7 @@ namespace Zint {
         target_size_horiz = width;
         target_size_vert = height;
     }
+    QString QZint::error_message() const { return m_lastError; } /* Same as lastError() */
 
     bool QZint::hasHRT(int symbology) const {
         return ZBarcode_Cap(symbology ? symbology : m_symbol, ZINT_CAP_HRT);
@@ -444,12 +555,12 @@ namespace Zint {
         return ZBarcode_Cap(symbology ? symbology : m_symbol, ZINT_CAP_READER_INIT);
     }
 
-    int QZint::getError() const {
-        return m_error;
+    bool QZint::hasCompliantHeight(int symbology) const {
+        return ZBarcode_Cap(symbology ? symbology : m_symbol, ZINT_CAP_COMPLIANT_HEIGHT);
     }
 
-    QString QZint::error_message() const {
-        return m_lastError;
+    int QZint::getError() const {
+        return m_error;
     }
 
     const QString& QZint::lastError() const {
@@ -472,6 +583,7 @@ namespace Zint {
                                             m_rotate_angle);
         if (m_error >= ZINT_ERROR) {
             m_lastError = m_zintSymbol->errtxt;
+            emit errored();
             return false;
         } else {
             return true;

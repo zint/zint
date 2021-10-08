@@ -130,6 +130,8 @@
 2021-09-27 GL
 - Added -structapp
 - Split up -to parsing (could seg fault if given non-int for X0 or Y0)
+2021-10-05 GL
+- Added -compliantheight option
 */
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
@@ -452,6 +454,7 @@ static char help_message[] = "zint tcl(stub,obj) dll\n"
     "   -box bool: box around bar code, size set be -border\n"
     /* cli option --cmyk not supported as no corresponding output */
     "   -cols integer: PDF417, Codablock F, DotCode: number of columns\n"
+    "   -compliantheight bool: warn if height not compliant, and use standard default\n"
     /* cli option --data is standard parameter */
     "   -dmre bool: Allow Data Matrix Rectangular Extended\n"
     "   -dotsize number: radius ratio of dots from 0.01 to 1.0\n" 
@@ -715,8 +718,9 @@ static int Encode(Tcl_Interp *interp, int objc,
         /* Option list and indexes */
         char *optionList[] = {
             "-addongap", "-barcode", "-bg", "-bind", "-bold", "-border", "-box",
-            "-cols", "-dmre", "-dotsize", "-dotty", "-eci", "-fg", "-format",
-            "-fullmultibyte", "-gs1nocheck", "-gs1parens", "-gssep", "-guarddescent",
+            "-cols", "-compliantheight", "-dmre", "-dotsize", "-dotty",
+            "-eci", "-fg", "-format", "-fullmultibyte",
+            "-gs1nocheck", "-gs1parens", "-gssep", "-guarddescent",
             "-height", "-init", "-mask", "-mode",
             "-nobackground", "-noquietzones", "-notext", "-primary", "-quietzones",
             "-reverse", "-rotate", "-rows", "-scale", "-scmvv",
@@ -725,8 +729,9 @@ static int Encode(Tcl_Interp *interp, int objc,
             NULL};
         enum iOption {
             iAddonGap, iBarcode, iBG, iBind, iBold, iBorder, iBox,
-            iCols, iDMRE, iDotSize, iDotty, iECI, iFG, iFormat,
-            iFullMultiByte, iGS1NoCheck, iGS1Parens, iGSSep, iGuardDescent,
+            iCols, iCompliantHeight, iDMRE, iDotSize, iDotty,
+            iECI, iFG, iFormat, iFullMultiByte,
+            iGS1NoCheck, iGS1Parens, iGSSep, iGuardDescent,
             iHeight, iInit, iMask, iMode,
             iNoBackground, iNoQuietZones, iNoText, iPrimary, iQuietZones,
             iReverse, iRotate, iRows, iScale, iSCMvv,
@@ -751,6 +756,7 @@ static int Encode(Tcl_Interp *interp, int objc,
         case iBind:
         case iBold:
         case iBox:
+        case iCompliantHeight:
         case iDMRE:
         case iDotty:
         case iGS1NoCheck:
@@ -860,6 +866,13 @@ static int Encode(Tcl_Interp *interp, int objc,
                 my_symbol->output_options |= BARCODE_BOX;
             } else {
                 my_symbol->output_options &= ~BARCODE_BOX;
+            }
+            break;
+        case iCompliantHeight:
+            if (intValue) {
+                my_symbol->output_options |= COMPLIANT_HEIGHT;
+            } else {
+                my_symbol->output_options &= ~COMPLIANT_HEIGHT;
             }
             break;
         case iDotSize:

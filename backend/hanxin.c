@@ -1448,7 +1448,7 @@ static void hx_apply_bitmask(unsigned char *grid, const int size, const int vers
 }
 
 /* Han Xin Code - main */
-INTERNAL int han_xin(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int hanxin(struct zint_symbol *symbol, unsigned char source[], int length) {
     int est_binlen;
     int ecc_level = symbol->option_1;
     int i, j, j_max, version;

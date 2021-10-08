@@ -28,7 +28,11 @@
         <string>Symbol Si&amp;ze:</string>
        </property>
        <property name="toolTip">
-        <string>Set size (version) of symbol</string>
+        <string>Set size (H x W) of symbol
+Versions A to H have fixed heights and
+fixed widths
+Versions S and T have fixed heights but
+variable widths</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -40,8 +44,15 @@
      </item>
      <item row="0" column="1">
       <widget class="QComboBox" name="cmbC1Size">
+       <property name="maxVisibleItems">
+        <number>11</number>
+       </property>
        <property name="toolTip">
-        <string>Set size (version) of symbol</string>
+        <string>Set size (H x W) of symbol
+Versions A to H have fixed heights and
+fixed widths
+Versions S and T have fixed heights but
+variable widths</string>
        </property>
        <item>
         <property name="text">
@@ -149,7 +160,8 @@ formatted with Application Identifiers (AIs)
      </property>
      <property name="toolTip">
       <string>Code One supports Structured Append of up to
-128 symbols</string>
+128 symbols (not available for Version S)
+(ignored if disabled)</string>
      </property>
      <layout class="QGridLayout" name="gridLayoutC1StructApp">
       <item row="0" column="0">
@@ -178,7 +190,7 @@ containing a total of this number of symbols
 Value ranges from 1 (Disabled) to 128</string>
         </property>
         <property name="specialValueText">
-         <string>1 (Disabled)</string>
+         <string> 1 (Disabled)</string>
         </property>
         <property name="minimum">
          <number>1</number>

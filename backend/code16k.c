@@ -119,8 +119,6 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int len
     int error_number = 0, first_sum, second_sum;
     int input_length;
     int gs1, c_count;
-    int separator;
-    float min_row_height = 0.0f;
 
     /* Suppresses clang-analyzer-core.UndefinedBinaryOperatorResult warning on fset which is fully set */
     assert(length > 0);
@@ -490,16 +488,17 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int len
     symbol->rows = rows;
     symbol->width = 70;
 
-#ifdef COMPLIANT_HEIGHTS
-    separator = symbol->option_3 >= 1 && symbol->option_3 <= 4 ? symbol->option_3 : 1;
-    /* BS EN 12323:2005 Section 4.5 (d) minimum 8X; use 10 * rows as default for back-compatibility */
-    min_row_height = 8.0f + separator;
-    error_number = set_height(symbol, min_row_height, (min_row_height > 10.0f ? min_row_height : 10.0f) * rows, 0.0f,
-                                0 /*no_errtxt*/);
-#else
-    (void)&separator;
-    (void) set_height(symbol, min_row_height, 10.0f * rows, 0.0f, 1 /*no_errtxt*/);
-#endif
+    if (symbol->output_options & COMPLIANT_HEIGHT) {
+        /* BS EN 12323:2005 Section 4.5 (d) minimum 8X; use 10X as default
+           Section 4.5 (b) H = X[r(h + g) + g] = rows * row_height + (rows - 1) * separator as borders not included
+           in symbol->height (added on) */
+        const int separator = symbol->option_3 >= 1 && symbol->option_3 <= 4 ? symbol->option_3 : 1;
+        const float min_row_height = stripf((8.0f * rows + separator * (rows - 1)) / rows);
+        const float default_height = 10.0f * rows + separator * (rows - 1);
+        error_number = set_height(symbol, min_row_height, default_height, 0.0f, 0 /*no_errtxt*/);
+    } else {
+        (void) set_height(symbol, 0.0f, 10.0f * rows, 0.0f, 1 /*no_errtxt*/);
+    }
 
     symbol->output_options |= BARCODE_BIND;
 

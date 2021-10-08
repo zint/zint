@@ -67,11 +67,15 @@ public:
     bool dotty() const;
     void setDotty(bool botty);
 
+    float dotSize() const;
     void setDotSize(float dot_size);
 
     float guardDescent() const;
     void setGuardDescent(float guardDescent);
 
+    int structAppCount() const;
+    int structAppIndex() const;
+    QString structAppID() const;
     void setStructApp(const int count, const int index, const QString& id);
     void clearStructApp();
 
@@ -81,38 +85,58 @@ public:
     QColor bgColor() const;
     void setBgColor(const QColor& bgColor);
 
+    bool cmyk() const;
     void setCMYK(bool cmyk);
 
     int borderType() const;
     void setBorderType(int borderTypeIndex);
 
     int borderWidth() const;
-    void setBorderWidth(int boderWidth);
+    void setBorderWidth(int borderWidth);
 
+    int whitespace() const;
     void setWhitespace(int whitespace);
 
-    void setVWhitespace(int vwhitespace);
+    int vWhitespace() const;
+    void setVWhitespace(int vWhitespace);
 
-    void setFontSetting(int fontSettingIndex);
+    int fontSetting() const;
+    void setFontSetting(int fontSettingIndex); // Sets from comboBox index
+    void setFontSettingValue(int fontSetting); // Sets literal value
 
-    void setShowText(bool show);
+    bool showText() const;
+    void setShowText(bool showText);
 
-    void setGSSep(bool gssep);
+    bool gsSep() const;
+    void setGSSep(bool gsSep);
 
+    bool quietZones() const;
     void setQuietZones(bool quietZones);
+
+    bool noQuietZones() const;
     void setNoQuietZones(bool noQuietZones);
 
+    bool compliantHeight() const;
+    void setCompliantHeight(bool compliantHeight);
+
     int rotateAngle() const;
-    void setRotateAngle(int rotateIndex);
+    void setRotateAngle(int rotateIndex); // Sets from comboBox index
+    void setRotateAngleValue(int rotateAngle); // Sets literal value
 
-    void setECI(int ECIIndex);
+    int eci() const;
+    void setECI(int ECIIndex); // Sets from comboBox index
+    void setECIValue(int eci); // Sets literal value
 
-    void setGS1Parens(bool gs1parens);
+    bool gs1Parens() const;
+    void setGS1Parens(bool gs1Parens);
 
-    void setGS1NoCheck(bool gs1nocheck);
+    bool gs1NoCheck() const;
+    void setGS1NoCheck(bool gs1NoCheck);
 
-    void setReaderInit(bool reader_init);
+    bool readerInit() const;
+    void setReaderInit(bool readerInit);
 
+    bool debug() const;
     void setDebug(bool debug);
 
     /* Legacy property getters/setters */
@@ -120,10 +144,11 @@ public:
     int width() const;
     void setSecurityLevel(int securityLevel); /* option_2 */
     int securityLevel() const;
-    void setPdf417CodeWords(int pdf417CodeWords); /* no op */
+    void setPdf417CodeWords(int pdf417CodeWords); /* No-op */
     int pdf417CodeWords() const;
     void setHideText(bool hide); /* setShowText(!hide) */
     void setTargetSize(int width, int height);
+    QString error_message() const; /* Same as lastError() */
 
     /* Test capabilities - ZBarcode_Cap() */
     bool hasHRT(int symbology = 0) const;
@@ -134,10 +159,9 @@ public:
     bool isFixedRatio(int symbology = 0) const;
     bool isDotty(int symbology = 0) const;
     bool supportsReaderInit(int symbology = 0) const;
+    bool hasCompliantHeight(int symbology = 0) const;
 
     int getError() const;
-
-    QString error_message() const;
 
     const QString& lastError() const;
     bool hasErrors() const;
@@ -151,6 +175,7 @@ public:
 
 signals:
     void encoded();
+    void errored();
 
 private:
     void resetSymbol();
@@ -190,6 +215,7 @@ private:
     bool m_gssep;
     bool m_quiet_zones;
     bool m_no_quiet_zones;
+    bool m_compliant_height;
     bool m_reader_init;
     bool m_debug;
 

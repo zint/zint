@@ -91,7 +91,8 @@ Mod-11 (NCR) uses NCR weightings</string>
       <string>Do not show check digit(s) in &amp;Text</string>
      </property>
      <property name="toolTip">
-      <string>Add check digit(s) but do not display in Human Readable Text</string>
+      <string>Add check digit(s) but do not display
+in Human Readable Text</string>
      </property>
      <property name="checked">
       <bool>false</bool>
