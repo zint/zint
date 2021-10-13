@@ -290,6 +290,54 @@
        </item>
       </widget>
      </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="lblDMAutoSize">
+       <property name="text">
+        <string>Automatic Size:</string>
+       </property>
+       <property name="toolTip">
+        <string>Selection criteria when considering
+automatic sizes
+Normally DMRE sizes are not considered,
+but other rectangular versions are
+(ignored if disabled)</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <layout class="QHBoxLayout" name="horzLayoutDMAutoSizeChecks">
+       <item>
+        <widget class="QCheckBox" name="chkDMRectangle">
+         <property name="text">
+          <string>Only Squa&amp;re</string>
+         </property>
+         <property name="toolTip">
+          <string>Only consider square versions on automatic symbol
+size selection, suppressing rectangular versions
+(ignored if disabled)</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="chkDMRE">
+         <property name="text">
+          <string>Allo&amp;w DMRE</string>
+         </property>
+         <property name="toolTip">
+          <string>Consider Data Matrix Rectangular Extension (DMRE)
+versions on automatic symbol size selection
+(ignored if disabled)</string>
+         </property>
+         <property name="checked">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
     </layout>
    </item>
    <item>
@@ -342,36 +390,6 @@ the data with a slash &quot;/&quot;</string>
        </widget>
       </item>
      </layout>
-    </widget>
-   </item>
-   <item>
-    <widget class="QCheckBox" name="chkDMRectangle">
-     <property name="text">
-      <string>Suppress &amp;Rectangular Symbols in Automatic Mode</string>
-     </property>
-     <property name="toolTip">
-      <string>Only consider square versions on automatic symbol
-size selection
-(ignored if disabled)</string>
-     </property>
-     <property name="checked">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QCheckBox" name="chkDMRE">
-     <property name="text">
-      <string>Allo&amp;w DMRE in Automatic Mode</string>
-     </property>
-     <property name="toolTip">
-      <string>Consider DMRE versions on automatic symbol
-size selection
-(ignored if disabled)</string>
-     </property>
-     <property name="checked">
-      <bool>false</bool>
-     </property>
     </widget>
    </item>
    <item>
@@ -524,7 +542,7 @@ Value ranges from 2 to 16</string>
          </size>
         </property>
        </spacer>
-	  </item>
+      </item>
       <item row="0" column="3">
        <widget class="QLabel" name="lblDMStructAppIndex">
         <property name="enabled">
@@ -656,7 +674,7 @@ Value ranges from 1 to count
          </size>
         </property>
        </spacer>
-	  </item>
+      </item>
       <item row="0" column="6">
        <widget class="QLabel" name="lblDMStructAppID">
         <property name="enabled">

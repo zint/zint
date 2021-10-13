@@ -1830,6 +1830,7 @@ void MainWindow::update_preview()
 
             if (get_cmb_index(QSL("cmbDM200Size")) == 0) {
                 // Suppressing rectangles or allowing DMRE only makes sense if in automatic size mode
+                m_optionWidget->findChild<QLabel*>(QSL("lblDMAutoSize"))->setEnabled(true);
                 m_optionWidget->findChild<QCheckBox*>(QSL("chkDMRectangle"))->setEnabled(true);
                 if (m_optionWidget->findChild<QCheckBox*>(QSL("chkDMRectangle"))->isChecked()) {
                     m_bc.bc.setOption3(DM_SQUARE);
@@ -1842,6 +1843,7 @@ void MainWindow::update_preview()
                         m_bc.bc.setOption3(0);
                 }
             } else {
+                m_optionWidget->findChild<QLabel*>(QSL("lblDMAutoSize"))->setEnabled(false);
                 m_optionWidget->findChild<QCheckBox*>(QSL("chkDMRectangle"))->setEnabled(false);
                 m_optionWidget->findChild<QCheckBox*>(QSL("chkDMRE"))->setEnabled(false);
                 m_bc.bc.setOption3(0);
@@ -2626,6 +2628,10 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology)
                 QSL("studio/bc/%1/appearance/autoheight").arg(name), chkAutoHeight->isChecked() ? 1 : 0);
             settings.setValue(QSL("studio/bc/%1/appearance/height").arg(name), heightb->value());
         }
+        if (chkCompliantHeight->isEnabled()) {
+            settings.setValue(
+                QSL("studio/bc/%1/appearance/compliantheight").arg(name), chkCompliantHeight->isChecked() ? 1 : 0);
+        }
         settings.setValue(QSL("studio/bc/%1/appearance/border").arg(name), bwidth->value());
         settings.setValue(QSL("studio/bc/%1/appearance/whitespace").arg(name), spnWhitespace->value());
         settings.setValue(QSL("studio/bc/%1/appearance/vwhitespace").arg(name), spnVWhitespace->value());
@@ -2972,6 +2978,10 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
                 QSL("studio/bc/%1/appearance/autoheight").arg(name), 1).toInt() ? true : false);
             heightb->setValue(settings.value(QSL("studio/bc/%1/appearance/height").arg(name), 50.0f).toFloat());
         }
+        if (chkCompliantHeight->isEnabled()) {
+            chkCompliantHeight->setChecked(settings.value(
+                QSL("studio/bc/%1/appearance/compliantheight").arg(name), 1).toInt() ? true : false);
+        }
         bwidth->setValue(settings.value(QSL("studio/bc/%1/appearance/border").arg(name), 0).toInt());
         spnWhitespace->setValue(settings.value(QSL("studio/bc/%1/appearance/whitespace").arg(name), 0).toInt());
         spnVWhitespace->setValue(settings.value(QSL("studio/bc/%1/appearance/vwhitespace").arg(name), 0).toInt());
@@ -2984,6 +2994,7 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
                 QSL("studio/bc/%1/appearance/chk_hrt_show").arg(name), 1).toInt() ? true : false);
         }
         chkCMYK->setChecked(settings.value(QSL("studio/bc/%1/appearance/cmyk").arg(name), 0).toInt() ? true : false);
+        chkQuietZones->setChecked(settings.value(QSL("studio/bc/%1/appearance/chk_quietzones").arg(name), 0).toInt() ? true : false);
         cmbRotate->setCurrentIndex(settings.value(QSL("studio/bc/%1/appearance/rotate").arg(name), 0).toInt());
         if (symbology == BARCODE_DOTCODE || chkDotty->isEnabled()) {
             chkDotty->setChecked(settings.value(
