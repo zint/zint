@@ -66,8 +66,8 @@ static void test_checks(int index, int debug) {
         /*  5*/ { BARCODE_CODE128, -1, "1234", -1, -1, -1, 0, 0, 0, 0, 100.01, -1, -1, -1, ZINT_ERROR_INVALID_OPTION, "Error 227: Scale out of range (0.01 to 100)", -1 },
         /*  6*/ { BARCODE_CODE128, -1, "1234", -1, -1, -1, 0, 0, 0, 0, -1, 20.1, -1, -1, ZINT_ERROR_INVALID_OPTION, "Error 221: Dot size out of range (0.01 to 20)", -1 },
         /*  7*/ { BARCODE_CODE128, -1, "1234", -1, -1, -1, 0, 0, 0, 0, 0.01, 0.009, -1, -1, ZINT_ERROR_INVALID_OPTION, "Error 221: Dot size out of range (0.01 to 20)", -1 },
-        /*  8*/ { BARCODE_CODE128, -1, "1234", -1, -1, -1, -0.1, 0, 0, 0, -1, -1, -1, -1, ZINT_ERROR_INVALID_OPTION, "Error 765: Height out of range (0 to 500)", -1 },
-        /*  9*/ { BARCODE_CODE128, -1, "1234", -1, -1, -1, 500.01, 0, 0, 0, -1, -1, -1, -1, ZINT_ERROR_INVALID_OPTION, "Error 765: Height out of range (0 to 500)", -1 },
+        /*  8*/ { BARCODE_CODE128, -1, "1234", -1, -1, -1, -0.1, 0, 0, 0, -1, -1, -1, -1, ZINT_ERROR_INVALID_OPTION, "Error 765: Height out of range (0 to 2000)", -1 },
+        /*  9*/ { BARCODE_CODE128, -1, "1234", -1, -1, -1, 2000.01, 0, 0, 0, -1, -1, -1, -1, ZINT_ERROR_INVALID_OPTION, "Error 765: Height out of range (0 to 2000)", -1 },
         /* 10*/ { BARCODE_CODE128, -1, "1234", -1, -1, -1, 0, -1, 0, 0, -1, -1, -1, -1, ZINT_ERROR_INVALID_OPTION, "Error 766: Whitespace width out of range (0 to 100)", -1 },
         /* 11*/ { BARCODE_CODE128, -1, "1234", -1, -1, -1, 0, 101, 0, 0, -1, -1, -1, -1, ZINT_ERROR_INVALID_OPTION, "Error 766: Whitespace width out of range (0 to 100)", -1 },
         /* 12*/ { BARCODE_CODE128, -1, "1234", -1, -1, -1, 0, 0, -1, 0, -1, -1, -1, -1, ZINT_ERROR_INVALID_OPTION, "Error 767: Whitespace height out of range (0 to 100)", -1 },
@@ -791,8 +791,8 @@ static void test_bad_args(void) {
 
     // Data too big
     symbol->errtxt[0] = '\0';
-    assert_equal(ZBarcode_Encode(symbol, (unsigned char *) empty, 17401), ZINT_ERROR_TOO_LONG, "ZBarcode_Encode(symbol, empty, 17401) != ZINT_ERROR_TOO_LONG\n");
-    assert_nonzero((int) strlen(symbol->errtxt), "ZBarcode_Encode(symbol, empty, 17401) no errtxt\n");
+    assert_equal(ZBarcode_Encode(symbol, (unsigned char *) empty, ZINT_MAX_DATA_LEN + 1), ZINT_ERROR_TOO_LONG, "ZBarcode_Encode(symbol, empty, ZINT_MAX_DATA_LEN + 1) != ZINT_ERROR_TOO_LONG\n");
+    assert_nonzero((int) strlen(symbol->errtxt), "ZBarcode_Encode(symbol, empty, ZINT_MAX_DATA_LEN + 1) no errtxt\n");
 
     ZBarcode_Delete(symbol);
 

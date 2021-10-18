@@ -17,7 +17,7 @@ Changes
   unless option_2 = 1 or vers=1
 - GUI: separate out MAXICODE Structured Carrier Message fields
 - library.c: Check that scale/height/whitespace/border are reasonable values:
-  scale (0.01-100), height (0-500), whitespace_width/height (0-100),
+  scale (0.01-100), height (0-2000), whitespace_width/height (0-100),
   border_width (0-100)
 - CLI: allow both e.g. '-height' and '--height' (getopt_long_only())
 - UPC/EAN: add guard_descent

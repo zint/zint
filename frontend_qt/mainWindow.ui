@@ -776,7 +776,7 @@ and use standard height (if any) for default
                 <double>0.500000000000000</double>
                </property>
                <property name="maximum">
-                <double>300.000000000000000</double>
+                <double>2000.000000000000000</double>
                </property>
                <property name="singleStep">
                 <double>0.100000000000000</double>

@@ -1095,10 +1095,10 @@ int main(int argc, char **argv) {
                 break;
             case OPT_HEIGHT:
                 float_opt = (float) atof(optarg);
-                if (float_opt >= 0.5f && float_opt <= 1000.0f) {
+                if (float_opt >= 0.5f && float_opt <= 2000.0f) {
                     my_symbol->height = float_opt;
                 } else {
-                    fprintf(stderr, "Warning 110: Symbol height '%g' out of range (0.5 to 1000), ignoring\n",
+                    fprintf(stderr, "Warning 110: Symbol height '%g' out of range (0.5 to 2000), ignoring\n",
                             float_opt);
                     fflush(stderr);
                 }

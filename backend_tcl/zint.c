@@ -1018,7 +1018,7 @@ static int Encode(Tcl_Interp *interp, int objc,
             }
             break;
         case iHeight:
-            if ((float)doubleValue < 0.5f || (float)doubleValue > 1000.0f) {
+            if ((float)doubleValue < 0.5f || (float)doubleValue > 2000.0f) {
                 Tcl_SetObjResult(interp,
                     Tcl_NewStringObj("Height out of range", -1));
                 fError = 1;

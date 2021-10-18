@@ -923,8 +923,8 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
         return error_tag(symbol, ZINT_ERROR_INVALID_OPTION, "221: Dot size out of range (0.01 to 20)");
     }
 
-    if ((symbol->height < 0.0f) || (symbol->height > 500.0f)) {
-        return error_tag(symbol, ZINT_ERROR_INVALID_OPTION, "765: Height out of range (0 to 500)");
+    if ((symbol->height < 0.0f) || (symbol->height > 2000.0f)) { /* Allow for 44 row CODABLOCKF at 45X each */
+        return error_tag(symbol, ZINT_ERROR_INVALID_OPTION, "765: Height out of range (0 to 2000)");
     }
     if ((symbol->guard_descent < 0.0f) || (symbol->guard_descent > 50.0f)) {
         return error_tag(symbol, ZINT_ERROR_INVALID_OPTION, "769: Guard bar descent out of range (0 to 50)");
