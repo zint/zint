@@ -96,8 +96,8 @@ void testRun(int argc, char *argv[], testFunction funcs[], int funcs_size);
 #include "../ms_stdint.h"
 void assert_zero(int exp, const char *fmt, ...);
 void assert_nonzero(int exp, const char *fmt, ...);
-void assert_null(void *exp, const char *fmt, ...);
-void assert_nonnull(void *exp, const char *fmt, ...);
+void assert_null(const void *exp, const char *fmt, ...);
+void assert_nonnull(const void *exp, const char *fmt, ...);
 void assert_equal(int e1, int e2, const char *fmt, ...);
 void assert_equalu64(uint64_t e1, uint64_t e2, const char *fmt, ...);
 void assert_notequal(int e1, int e2, ...);
@@ -126,11 +126,11 @@ const char *testUtilInputModeName(int input_mode);
 const char *testUtilOption3Name(int option_3);
 const char *testUtilOutputOptionsName(int output_options);
 
-int testUtilDAFTConvert(const struct zint_symbol *symbol, char *buffer, int buffer_size);
+int testUtilDAFTConvert(const struct zint_symbol *symbol, char *buffer, const int buffer_size);
 int testUtilIsValidUTF8(const unsigned char str[], const int length);
-char *testUtilEscape(char *buffer, int length, char *escaped, int escaped_size);
-char *testUtilReadCSVField(char *buffer, char *field, int field_size);
-void testUtilStrCpyRepeat(char *buffer, char *repeat, int size);
+char *testUtilEscape(const char *buffer, const int length, char *escaped, const int escaped_size);
+const char *testUtilReadCSVField(const char *buffer, char *field, const int field_size);
+void testUtilStrCpyRepeat(char *buffer, const char *repeat, const int size);
 
 int testUtilSymbolCmp(const struct zint_symbol *a, const struct zint_symbol *b);
 struct zint_vector *testUtilVectorCpy(const struct zint_vector *in);

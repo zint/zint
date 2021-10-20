@@ -31,6 +31,65 @@
 
 #include "testcommon.h"
 
+static void test_hrt(int index, int debug) {
+
+    struct item {
+        int option_2;
+        char *data;
+        int length;
+
+        char *expected;
+    };
+    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    struct item data[] = {
+        /*  0*/ { -1, "1", -1, "01" },
+        /*  1*/ { 3, "1", -1, "01" },
+        /*  2*/ { 3, "12", -1, "12" },
+        /*  3*/ { 4, "123", -1, "123" },
+        /*  4*/ { 5, "123", -1, "0123" },
+        /*  5*/ { 5, "12", -1, "0012" },
+        /*  6*/ { 5, "1", -1, "0001" },
+        /*  7*/ { 5, "1234", -1, "1234" },
+        /*  8*/ { 6, "1234", -1, "01234" },
+        /*  9*/ { 6, "123", -1, "00123" },
+        /* 10*/ { 6, "12", -1, "00012" },
+        /* 11*/ { 6, "1", -1, "00001" },
+        /* 12*/ { 7, "1234", -1, "001234" },
+        /* 13*/ { 7, "12345", -1, "012345" },
+        /* 14*/ { 7, "123456", -1, "123456" },
+        /* 15*/ { 7, "1", -1, "000001" },
+        /* 16*/ { 8, "12345", -1, "0012345" },
+        /* 17*/ { 8, "123456", -1, "0123456" },
+        /* 18*/ { 8, "1234567", -1, "1234567" },
+        /* 19*/ { 8, "12", -1, "0000012" },
+        /* 20*/ { 8, "1", -1, "0000001" },
+    };
+    int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
+    struct zint_symbol *symbol;
+
+    testStart("test_hrt");
+
+    for (i = 0; i < data_size; i++) {
+
+        if (index != -1 && i != index) continue;
+
+        symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        length = testUtilSetSymbol(symbol, BARCODE_CHANNEL, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, data[i].option_2, -1, -1 /*output_options*/, data[i].data, data[i].length, debug);
+
+        ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
+        assert_zero(ret, "i:%d ZBarcode_Encode ret %d != 0 %s\n", i, ret, symbol->errtxt);
+
+        assert_zero(strcmp((char *) symbol->text, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->text, data[i].expected);
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
 static void test_input(int index, int debug) {
 
     struct item {
@@ -436,6 +495,7 @@ static void test_generate(int generate) {
 int main(int argc, char *argv[]) {
 
     testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
+        { "test_hrt", test_hrt, 1, 0, 1 },
         { "test_input", test_input, 1, 0, 1 },
         { "test_encode", test_encode, 1, 1, 1 },
         { "test_generate", test_generate, 0, 1, 0 },

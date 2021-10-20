@@ -9,6 +9,8 @@ Version 2.10.0.9 (dev) not released yet
   NOTE: will return error if values outside ranges
 - raster.c: Bug fix for heap-buffer-overflow (#204 ARM-Cortex)
   NOTE: may cause single-pixel changes to height depending on height/scale used
+- JAPANPOST: return error if input data would be truncated
+  NOTE: previously was silently truncated
 
 Changes
 -------
@@ -31,6 +33,8 @@ Changes
 - GUI: add Menu, copy to clipboard EMF/GIF/PNG/TIF, errtxt bar and status bar,
   icons (feathericons)
 - CODABAR: add show check digit option
+- DAFT: max chars 50 -> 100
+- CMake: separate no-optimize from ZINT_DEBUG into new ZINT_NOOPT option
 
 Bugs
 ----
@@ -43,7 +47,7 @@ Bugs
   also ceilf(large_bar_height * si);
   also avoid distributive multiplication with floats to lessen chances of
   platform variation (#204 ARM-Cortex crash)
-- raster/vector.c: use new stripf() func to workaround gcc 32-bit
+- common/emf/output/raster/vector.c: use new stripf() func to workaround
   float variations
 - raster.c: Don't add height offset for text if scale < 1.0 (as won't print)
 - ISBNX: fix not returning error number (warning) correctly

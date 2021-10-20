@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2017 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -29,6 +29,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* vim: set ts=4 sw=4 et : */
 
 static const char c40_shift[] = {
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
@@ -94,9 +95,9 @@ static const unsigned short int c1_grid_height[] = {
     5, 7, 10, 15, 21, 30, 46, 68
 };
 
-#define C1_ASCII	1
-#define C1_C40		2
-#define C1_DECIMAL	3
-#define C1_TEXT		4
-#define C1_EDI		5
-#define C1_BYTE		6
+#define C1_ASCII    1
+#define C1_C40      2
+#define C1_DECIMAL  3
+#define C1_TEXT     4
+#define C1_EDI      5
+#define C1_BYTE     6

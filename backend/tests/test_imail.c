@@ -62,7 +62,7 @@ static void test_csv(int index, int debug) {
     assert_nonnull(fd, "fopen(%s) == NULL", csvfile);
 
     while (fgets(buffer, sizeof(buffer), fd) != NULL) {
-        char *b;
+        const char *b;
         struct zint_symbol *symbol;
 
         lc++;

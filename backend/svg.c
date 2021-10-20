@@ -128,7 +128,7 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
     int bg_alpha = 0xff;
     int fg_alpha = 0xff;
     float fg_alpha_opacity = 0.0f, bg_alpha_opacity = 0.0f;
-    const char *font_family = "Helvetica, sans-serif";
+    const char font_family[] = "Helvetica, sans-serif";
     int bold;
 
     struct zint_vector_rect *rect;
@@ -317,7 +317,7 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
             && (!is_extendable(symbol->symbology) || (symbol->output_options & SMALL_TEXT));
     string = symbol->vector->strings;
     while (string) {
-        const char *halign = string->halign == 2 ? "end" : string->halign == 1 ? "start" : "middle";
+        const char *const halign = string->halign == 2 ? "end" : string->halign == 1 ? "start" : "middle";
         fprintf(fsvg, "      <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"%s\"\n", string->x, string->y, halign);
         fprintf(fsvg, "         font-family=\"%s\" font-size=\"%.1f\"", font_family, string->fsize);
         if (bold) {

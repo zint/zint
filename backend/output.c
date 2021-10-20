@@ -35,32 +35,31 @@
 #include "output.h"
 #include "font.h"
 
-#define SSET "0123456789ABCDEF"
+#define SSET_F  (IS_NUM_F | IS_UHX_F) /* SSET "0123456789ABCDEF" */
 
 /* Check colour options are good. Note: using raster.c error nos 651-654 */
-INTERNAL int output_check_colour_options(struct zint_symbol *symbol) {
-    int error_number;
+INTERNAL int out_check_colour_options(struct zint_symbol *symbol) {
+    int fg_len = (int) strlen(symbol->fgcolour);
+    int bg_len = (int) strlen(symbol->bgcolour);
 
-    if ((strlen(symbol->fgcolour) != 6) && (strlen(symbol->fgcolour) != 8)) {
+    if ((fg_len != 6) && (fg_len != 8)) {
         strcpy(symbol->errtxt, "651: Malformed foreground colour target");
         return ZINT_ERROR_INVALID_OPTION;
     }
-    if ((strlen(symbol->bgcolour) != 6) && (strlen(symbol->bgcolour) != 8)) {
+    if ((bg_len != 6) && (bg_len != 8)) {
         strcpy(symbol->errtxt, "652: Malformed background colour target");
         return ZINT_ERROR_INVALID_OPTION;
     }
 
-    to_upper((unsigned char *) symbol->fgcolour);
-    to_upper((unsigned char *) symbol->bgcolour);
+    to_upper((unsigned char *) symbol->fgcolour, fg_len);
+    to_upper((unsigned char *) symbol->bgcolour, bg_len);
 
-    error_number = is_sane(SSET, (unsigned char *) symbol->fgcolour, (int) strlen(symbol->fgcolour));
-    if (error_number == ZINT_ERROR_INVALID_DATA) {
+    if (!is_sane(SSET_F, (unsigned char *) symbol->fgcolour, fg_len)) {
         strcpy(symbol->errtxt, "653: Malformed foreground colour target");
         return ZINT_ERROR_INVALID_OPTION;
     }
 
-    error_number = is_sane(SSET, (unsigned char *) symbol->bgcolour, (int) strlen(symbol->bgcolour));
-    if (error_number == ZINT_ERROR_INVALID_DATA) {
+    if (!is_sane(SSET_F, (unsigned char *) symbol->bgcolour, bg_len)) {
         strcpy(symbol->errtxt, "654: Malformed background colour target");
         return ZINT_ERROR_INVALID_OPTION;
     }
@@ -69,7 +68,7 @@ INTERNAL int output_check_colour_options(struct zint_symbol *symbol) {
 }
 
 /* Return minimum quiet zones for each symbology */
-STATIC_UNLESS_ZINT_TEST int quiet_zones(const struct zint_symbol *symbol, const int hide_text,
+STATIC_UNLESS_ZINT_TEST int out_quiet_zones(const struct zint_symbol *symbol, const int hide_text,
                             float *left, float *right, float *top, float *bottom) {
     int done = 0;
 
@@ -192,7 +191,7 @@ STATIC_UNLESS_ZINT_TEST int quiet_zones(const struct zint_symbol *symbol, const 
 
     /* Only do others if flag set */
     if (!(symbol->output_options & BARCODE_QUIET_ZONES) || (symbol->output_options & BARCODE_NO_QUIET_ZONES)) {
-        return done;
+        return 0;
     }
 
     switch (symbol->symbology) {
@@ -471,12 +470,12 @@ STATIC_UNLESS_ZINT_TEST int quiet_zones(const struct zint_symbol *symbol, const 
 }
 
 /* Set left (x), top (y), right and bottom offsets for whitespace */
-INTERNAL void output_set_whitespace_offsets(const struct zint_symbol *symbol, const int hide_text,
+INTERNAL void out_set_whitespace_offsets(const struct zint_symbol *symbol, const int hide_text,
                 float *xoffset, float *yoffset, float *roffset, float *boffset, const float scaler,
                 int *xoffset_si, int *yoffset_si, int *roffset_si, int *boffset_si) {
     float qz_left, qz_right, qz_top, qz_bottom;
 
-    quiet_zones(symbol, hide_text, &qz_left, &qz_right, &qz_top, &qz_bottom);
+    out_quiet_zones(symbol, hide_text, &qz_left, &qz_right, &qz_top, &qz_bottom);
 
     *xoffset = symbol->whitespace_width + qz_left;
     *roffset = symbol->whitespace_width + qz_right;
@@ -510,7 +509,7 @@ INTERNAL void output_set_whitespace_offsets(const struct zint_symbol *symbol, co
 
 /* Set composite offset and main width excluding addon (for start of addon calc) and addon text, returning
    UPC/EAN type */
-INTERNAL int output_process_upcean(const struct zint_symbol *symbol, int *p_main_width, int *p_comp_xoffset,
+INTERNAL int out_process_upcean(const struct zint_symbol *symbol, int *p_main_width, int *p_comp_xoffset,
                 unsigned char addon[6], int *p_addon_gap) {
     int main_width; /* Width of main linear symbol, excluding addon */
     int comp_xoffset; /* Whitespace offset (if any) of main linear symbol due to having composite */
@@ -588,9 +587,9 @@ INTERNAL int output_process_upcean(const struct zint_symbol *symbol, int *p_main
 }
 
 /* Calculate large bar height i.e. linear bars with zero row height that respond to the symbol height.
-   If scaler `si` non-zero (raster), then large_bar_height if non-zero or else row heights will be rounded to nearest
-   pixel and symbol height adjusted */
-INTERNAL float output_large_bar_height(struct zint_symbol *symbol, int si) {
+   If scaler `si` non-zero (raster), then large_bar_height if non-zero or else row heights will be rounded
+   to nearest pixel and symbol height adjusted */
+INTERNAL float out_large_bar_height(struct zint_symbol *symbol, int si) {
     float fixed_height = 0.0f;
     int zero_count = 0;
     int round_rows = 0;
@@ -609,15 +608,14 @@ INTERNAL float output_large_bar_height(struct zint_symbol *symbol, int si) {
     }
 
     if (zero_count) {
-        large_bar_height = (symbol->height - fixed_height) / zero_count;
+        large_bar_height = stripf((symbol->height - fixed_height) / zero_count);
         if (large_bar_height <= 0.0f) { /* Shouldn't happen but protect against memory access violations */
             large_bar_height = 0.0078125f; /* Token positive value (exact float 2**-6) */
-            symbol->height = large_bar_height * zero_count + fixed_height;
         }
         if (si && !isfintf(large_bar_height * si)) {
-            large_bar_height = roundf(large_bar_height * si) / si;
-            symbol->height = large_bar_height * zero_count + fixed_height;
+            large_bar_height = stripf(roundf(large_bar_height * si) / si);
         }
+        symbol->height = stripf(large_bar_height * zero_count + fixed_height);
         /* Note should never happen that have both zero_count and round_rows */
     } else {
         large_bar_height = 0.0f; /* Not used if zero_count zero */
@@ -629,7 +627,7 @@ INTERNAL float output_large_bar_height(struct zint_symbol *symbol, int si) {
                 }
                 fixed_height += symbol->row_height[i];
             }
-            symbol->height = fixed_height;
+            symbol->height = stripf(fixed_height);
         }
     }
 
@@ -637,7 +635,7 @@ INTERNAL float output_large_bar_height(struct zint_symbol *symbol, int si) {
 }
 
 /* Split UPC/EAN add-on text into various constituents */
-INTERNAL void output_upcean_split_text(int upceanflag, unsigned char text[],
+INTERNAL void out_upcean_split_text(int upceanflag, unsigned char text[],
                 unsigned char textpart1[5], unsigned char textpart2[7], unsigned char textpart3[7],
                 unsigned char textpart4[2]) {
     int i;

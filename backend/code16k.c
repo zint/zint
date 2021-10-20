@@ -40,27 +40,12 @@
 #include "common.h"
 #include "code128.h"
 
-static const char *C16KTable[107] = {
-    /* EN 12323 Table 1 - "Code 16K" character encodations */
-    "212222", "222122", "222221", "121223", "121322", "131222", "122213",
-    "122312", "132212", "221213", "221312", "231212", "112232", "122132", "122231", "113222",
-    "123122", "123221", "223211", "221132", "221231", "213212", "223112", "312131", "311222",
-    "321122", "321221", "312212", "322112", "322211", "212123", "212321", "232121", "111323",
-    "131123", "131321", "112313", "132113", "132311", "211313", "231113", "231311", "112133",
-    "112331", "132131", "113123", "113321", "133121", "313121", "211331", "231131", "213113",
-    "213311", "213131", "311123", "311321", "331121", "312113", "312311", "332111", "314111",
-    "221411", "431111", "111224", "111422", "121124", "121421", "141122", "141221", "112214",
-    "112412", "122114", "122411", "142112", "142211", "241211", "221114", "413111", "241112",
-    "134111", "111242", "121142", "121241", "114212", "124112", "124211", "411212", "421112",
-    "421211", "212141", "214121", "412121", "111143", "111341", "131141", "114113", "114311",
-    "411113", "411311", "113141", "114131", "311141", "411131", "211412", "211214", "211232",
-    "211133"
-};
+/* Note using C128Table with extra entry at 106 (Triple Shift) for C16KTable */
 
-
-static const char *C16KStartStop[8] = {
+static const char C16KStartStop[8][4] = {
     /* EN 12323 Table 3 and Table 4 - Start patterns and stop patterns */
-    "3211", "2221", "2122", "1411", "1132", "1231", "1114", "3112"
+    {'3','2','1','1'}, {'2','2','2','1'}, {'2','1','2','2'}, {'1','4','1','1'},
+    {'1','1','3','2'}, {'1','2','3','1'}, {'1','1','1','4'}, {'3','1','1','2'}
 };
 
 /* EN 12323 Table 5 - Start and stop values defining row numbers */
@@ -72,58 +57,23 @@ static const int C16KStopValues[16] = {
     0, 1, 2, 3, 4, 5, 6, 7, 4, 5, 6, 7, 0, 1, 2, 3
 };
 
-static void c16k_set_a(const unsigned char source, int values[], int *bar_chars) {
-    if (source > 127) {
-        if (source < 160) {
-            values[(*bar_chars)] = source + 64 - 128;
-        } else {
-            values[(*bar_chars)] = source - 32 - 128;
-        }
-    } else {
-        if (source < 32) {
-            values[(*bar_chars)] = source + 64;
-        } else {
-            values[(*bar_chars)] = source - 32;
-        }
-    }
-    (*bar_chars)++;
-}
-
-static void c16k_set_b(const unsigned char source, int values[], int *bar_chars) {
-    if (source > 127) {
-        values[(*bar_chars)] = source - 32 - 128;
-    } else {
-        values[(*bar_chars)] = source - 32;
-    }
-    (*bar_chars)++;
-}
-
-static void c16k_set_c(const unsigned char source_a, unsigned char source_b, int values[], int *bar_chars) {
-    int weight;
-
-    weight = (10 * ctoi(source_a)) + ctoi(source_b);
-    values[(*bar_chars)] = weight;
-    (*bar_chars)++;
-}
-
 INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int length) {
     char width_pattern[100];
     int current_row, rows, looper, first_check, second_check;
     int indexchaine;
     int list[2][C128_MAX] = {{0}};
     char set[C128_MAX] = {0}, fset[C128_MAX], mode, last_set, current_set;
-    int pads_needed, indexliste, i, j, m, read, mx_reader;
+    int pads_needed, indexliste, i, m, read, mx_reader;
     int values[C128_MAX] = {0};
     int bar_characters;
     float glyph_count;
     int error_number = 0, first_sum, second_sum;
     int input_length;
-    int gs1, c_count;
+    int gs1;
 
     /* Suppresses clang-analyzer-core.UndefinedBinaryOperatorResult warning on fset which is fully set */
     assert(length > 0);
 
-    strcpy(width_pattern, "");
     input_length = length;
 
     if ((symbol->input_mode & 0x07) == GS1_MODE) {
@@ -149,7 +99,7 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int len
     indexliste = 0;
     indexchaine = 0;
 
-    mode = parunmodd(source[indexchaine]);
+    mode = c128_parunmodd(source[indexchaine]);
 
     do {
         list[1][indexliste] = mode;
@@ -159,75 +109,18 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int len
             if (indexchaine == input_length) {
                 break;
             }
-            mode = parunmodd(source[indexchaine]);
+            mode = c128_parunmodd(source[indexchaine]);
             if ((gs1) && (source[indexchaine] == '[')) {
-                mode = ABORC;
+                mode = C128_ABORC;
             } /* FNC1 */
         }
         indexliste++;
     } while (indexchaine < input_length);
 
-    dxsmooth(list, &indexliste);
+    c128_dxsmooth(list, &indexliste);
 
-    /* Put set data into set[] */
-    read = 0;
-    for (i = 0; i < indexliste; i++) {
-        for (j = 0; j < list[0][i]; j++) {
-            switch (list[1][i]) {
-                case SHIFTA: set[read] = 'a';
-                    break;
-                case LATCHA: set[read] = 'A';
-                    break;
-                case SHIFTB: set[read] = 'b';
-                    break;
-                case LATCHB: set[read] = 'B';
-                    break;
-                case LATCHC: set[read] = 'C';
-                    break;
-            }
-            read++;
-        }
-    }
-
-    /* Watch out for odd-length Mode C blocks */
-    c_count = 0;
-    for (i = 0; i < read; i++) {
-        if (set[i] == 'C') {
-            if (source[i] == '[') {
-                if (c_count & 1) {
-                    if ((i - c_count) != 0) {
-                        set[i - c_count] = 'B';
-                    } else {
-                        set[i - 1] = 'B';
-                    }
-                }
-                c_count = 0;
-            } else {
-                c_count++;
-            }
-        } else {
-            if (c_count & 1) {
-                if ((i - c_count) != 0) {
-                    set[i - c_count] = 'B';
-                } else {
-                    set[i - 1] = 'B';
-                }
-            }
-            c_count = 0;
-        }
-    }
-    if (c_count & 1) {
-        if ((i - c_count) != 0) {
-            set[i - c_count] = 'B';
-        } else {
-            set[i - 1] = 'B';
-        }
-    }
-    for (i = 1; i < read - 1; i++) {
-        if ((set[i] == 'C') && ((set[i - 1] == 'B') && (set[i + 1] == 'B'))) {
-            set[i] = 'B';
-        }
-    }
+    /* Put set data into set[], resolving odd C blocks */
+    c128_put_in_set(list, indexliste, set, source);
 
     if (symbol->debug & ZINT_DEBUG_PRINT) {
         printf("Data: %.*s\n", input_length, source);
@@ -394,15 +287,15 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int len
             switch (set[read]) { /* Encode data characters */
                 case 'A':
                 case 'a':
-                    c16k_set_a(source[read], values, &bar_characters);
+                    c128_set_a(source[read], values, &bar_characters);
                     read++;
                     break;
                 case 'B':
                 case 'b':
-                    c16k_set_b(source[read], values, &bar_characters);
+                    c128_set_b(source[read], values, &bar_characters);
                     read++;
                     break;
-                case 'C': c16k_set_c(source[read], source[read + 1], values, &bar_characters);
+                case 'C': c128_set_c(source[read], source[read + 1], values, &bar_characters);
                     read += 2;
                     break;
             }
@@ -456,19 +349,21 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int len
         int writer;
         int flip_flop;
         int len;
+        char *d = width_pattern;
 
-        strcpy(width_pattern, "");
-        strcat(width_pattern, C16KStartStop[C16KStartValues[current_row]]);
-        strcat(width_pattern, "1");
-        for (i = 0; i < 5; i++) {
-            strcat(width_pattern, C16KTable[values[(current_row * 5) + i]]);
+        memcpy(d, C16KStartStop[C16KStartValues[current_row]], 4);
+        d += 4;
+        *d++ = '1';
+        for (i = 0; i < 5; i++, d += 6) {
+            memcpy(d, C128Table[values[(current_row * 5) + i]], 6);
         }
-        strcat(width_pattern, C16KStartStop[C16KStopValues[current_row]]);
+        memcpy(d, C16KStartStop[C16KStopValues[current_row]], 4);
+        d += 4;
 
         /* Write the information into the symbol */
         writer = 0;
         flip_flop = 1;
-        for (mx_reader = 0, len = (int) strlen(width_pattern); mx_reader < len; mx_reader++) {
+        for (mx_reader = 0, len = d - width_pattern; mx_reader < len; mx_reader++) {
             for (looper = 0; looper < ctoi(width_pattern[mx_reader]); looper++) {
                 if (flip_flop == 1) {
                     set_module(symbol, current_row, writer);

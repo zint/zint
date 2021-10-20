@@ -385,6 +385,33 @@ static void test_wpng_error_handler(void) {
     testFinish();
 }
 
+// Check compliant height printable for max CODABLOCKF with 44 rows * ((62 cols) * 0.55 + 3)) = 1632.4
+static void test_large_compliant_height(void) {
+    int ret;
+    struct zint_symbol *symbol = NULL;
+    const char pattern[] = { "1" };
+    const int codablockf_max = 2726;
+    char data_buf[2726 + 1];
+
+    testStart("test_large_compliant_height");
+
+    symbol = ZBarcode_Create();
+    assert_nonnull(symbol, "Symbol not created\n");
+
+    symbol->symbology = BARCODE_CODABLOCKF;
+    symbol->output_options |= COMPLIANT_HEIGHT;
+    testUtilStrCpyRepeat(data_buf, pattern, codablockf_max);
+    assert_equal(codablockf_max, (int) strlen(data_buf), "length %d != strlen(data_buf) %d\n", codablockf_max, (int) strlen(data_buf));
+
+    ret = ZBarcode_Encode_and_Print(symbol, (const unsigned char *) data_buf, codablockf_max, 0);
+    assert_zero(ret, "ZBarcode_Encode_and_Print ret %d != 0 (%s)\n", ret, symbol->errtxt);
+    assert_zero(remove(symbol->outfile), "remove(%s) != 0\n", symbol->outfile);
+
+    ZBarcode_Delete(symbol);
+
+    testFinish();
+}
+
 int main(int argc, char *argv[]) {
 
     testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
@@ -392,6 +419,7 @@ int main(int argc, char *argv[]) {
         { "test_print", test_print, 1, 1, 1 },
         { "test_outfile", test_outfile, 0, 0, 0 },
         { "test_wpng_error_handler", test_wpng_error_handler, 0, 0, 0 },
+        { "test_large_compliant_height", test_large_compliant_height, 0, 0, 0 },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

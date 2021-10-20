@@ -35,20 +35,22 @@
 #include "common.h"
 #include "code49.h"
 
-#define INSET   "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%!&*"
+static const char C49_INSET[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%!&*";
 
 /* "!" represents Shift 1 and "&" represents Shift 2, "*" represents FNC1 */
 
 INTERNAL int code49(struct zint_symbol *symbol, unsigned char source[], int length) {
     int i, j, rows, M, x_count, y_count, z_count, posn_val, local_value;
     char intermediate[170] = "";
+    char *d = intermediate;
     int codewords[170], codeword_count;
     int c_grid[8][8]; /* Refers to table 3 */
     int w_grid[8][4]; /* Refets to table 2 */
     int pad_count = 0;
     char pattern[80];
+    int bp;
     int gs1;
-    int h, len;
+    int h;
     int error_number = 0;
 
     if (length > 81) {
@@ -57,7 +59,7 @@ INTERNAL int code49(struct zint_symbol *symbol, unsigned char source[], int leng
     }
     if ((symbol->input_mode & 0x07) == GS1_MODE) {
         gs1 = 1;
-        strcpy(intermediate, "*"); /* FNC1 */
+        *d++ = '*'; /* FNC1 */
     } else {
         gs1 = 0;
     }
@@ -67,15 +69,18 @@ INTERNAL int code49(struct zint_symbol *symbol, unsigned char source[], int leng
             strcpy(symbol->errtxt, "431: Invalid character in input data, extended ASCII not allowed");
             return ZINT_ERROR_INVALID_DATA;
         }
-        if (gs1 && (source[i] == '['))
-            strcat(intermediate, "*"); /* FNC1 */
-        else
-            strcat(intermediate, c49_table7[source[i]]);
+        if (gs1 && (source[i] == '[')) {
+            *d++ = '*'; /* FNC1 */
+        } else {
+            const char *const entry = c49_table7[source[i]];
+            memcpy(d, entry, 2);
+            d += entry[1] ? 2 : 1;
+        }
     }
 
     codeword_count = 0;
     i = 0;
-    h = (int) strlen(intermediate);
+    h = d - intermediate;
     do {
         if ((intermediate[i] >= '0') && (intermediate[i] <= '9')) {
             /* Numeric data */
@@ -142,7 +147,7 @@ INTERNAL int code49(struct zint_symbol *symbol, unsigned char source[], int leng
                 switch (block_remain) {
                     case 1:
                         /* Rule (a) */
-                        codewords[codeword_count] = posn(INSET, intermediate[i]);
+                        codewords[codeword_count] = posn(C49_INSET, intermediate[i]);
                         codeword_count++;
                         i++;
                         break;
@@ -184,12 +189,12 @@ INTERNAL int code49(struct zint_symbol *symbol, unsigned char source[], int leng
                     codeword_count++;
                 }
             } else {
-                codewords[codeword_count] = posn(INSET, intermediate[i]);
+                codewords[codeword_count] = posn(C49_INSET, intermediate[i]);
                 codeword_count++;
                 i++;
             }
         } else {
-            codewords[codeword_count] = posn(INSET, intermediate[i]);
+            codewords[codeword_count] = posn(C49_INSET, intermediate[i]);
             codeword_count++;
             i++;
         }
@@ -321,25 +326,26 @@ INTERNAL int code49(struct zint_symbol *symbol, unsigned char source[], int leng
     }
 
     for (i = 0; i < rows; i++) {
-        strcpy(pattern, "10"); /* Start character */
+        bp = 0;
+        bp = bin_append_posn(2, 2, pattern, bp); /* Start character "10" */
         for (j = 0; j < 4; j++) {
             if (i != (rows - 1)) {
                 if (c49_table4[i][j] == 'E') {
                     /* Even Parity */
-                    bin_append(c49_even_bitpattern[w_grid[i][j]], 16, pattern);
+                    bp = bin_append_posn(c49_even_bitpattern[w_grid[i][j]], 16, pattern, bp);
                 } else {
                     /* Odd Parity */
-                    bin_append(c49_odd_bitpattern[w_grid[i][j]], 16, pattern);
+                    bp = bin_append_posn(c49_odd_bitpattern[w_grid[i][j]], 16, pattern, bp);
                 }
             } else {
                 /* Last row uses all even parity */
-                bin_append(c49_even_bitpattern[w_grid[i][j]], 16, pattern);
+                bp = bin_append_posn(c49_even_bitpattern[w_grid[i][j]], 16, pattern, bp);
             }
         }
-        strcat(pattern, "1111"); /* Stop character */
+        bp = bin_append_posn(15, 4, pattern, bp); /* Stop character "1111" */
 
         /* Expand into symbol */
-        for (j = 0, len = (int) strlen(pattern); j < len; j++) {
+        for (j = 0; j < bp; j++) {
             if (pattern[j] == '1') {
                 set_module(symbol, i, j);
             }
@@ -347,7 +353,7 @@ INTERNAL int code49(struct zint_symbol *symbol, unsigned char source[], int leng
     }
 
     symbol->rows = rows;
-    symbol->width = (int) strlen(pattern);
+    symbol->width = bp;
 
     if (symbol->output_options & COMPLIANT_HEIGHT) {
         /* ANSI/AIM BC6-2000 Section 2.6 minimum 8X; use 10X as default

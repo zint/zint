@@ -106,8 +106,8 @@ INTERNAL void rs_init_gf(rs_t *rs, const unsigned int prime_poly) {
 
 INTERNAL void rs_init_code(rs_t *rs, const int nsym, int index) {
     int i, k;
-    const unsigned char *logt = rs->logt;
-    const unsigned char *alog = rs->alog;
+    const unsigned char *const logt = rs->logt;
+    const unsigned char *const alog = rs->alog;
     unsigned char *rspoly = rs->rspoly;
 
     rs->nsym = nsym;
@@ -129,9 +129,9 @@ INTERNAL void rs_init_code(rs_t *rs, const int nsym, int index) {
  * and places them in reverse order in res */
 INTERNAL void rs_encode(const rs_t *rs, const int datalen, const unsigned char *data, unsigned char *res) {
     int i, k;
-    const unsigned char *logt = rs->logt;
-    const unsigned char *alog = rs->alog;
-    const unsigned char *rspoly = rs->rspoly;
+    const unsigned char *const logt = rs->logt;
+    const unsigned char *const alog = rs->alog;
+    const unsigned char *const rspoly = rs->rspoly;
     const int nsym = rs->nsym;
 
     memset(res, 0, nsym);
@@ -157,9 +157,9 @@ INTERNAL void rs_encode(const rs_t *rs, const int datalen, const unsigned char *
 
 INTERNAL void rs_encode_uint(const rs_t *rs, const int datalen, const unsigned int *data, unsigned int *res) {
     int i, k;
-    const unsigned char *logt = rs->logt;
-    const unsigned char *alog = rs->alog;
-    const unsigned char *rspoly = rs->rspoly;
+    const unsigned char *const logt = rs->logt;
+    const unsigned char *const alog = rs->alog;
+    const unsigned char *const rspoly = rs->rspoly;
     const int nsym = rs->nsym;
 
     memset(res, 0, sizeof(unsigned int) * nsym);

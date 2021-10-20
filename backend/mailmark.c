@@ -49,7 +49,7 @@
 #include "large.h"
 #include "reedsol.h"
 
-#define RUBIDIUM "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ "
+#define RUBIDIUM_F (IS_NUM_F | IS_UPR_F | IS_SPC_F) /* RUBIDIUM "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ " */
 
 // Allowed character values from Table 3
 #define SET_F "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -57,8 +57,10 @@
 #define SET_N "0123456789"
 #define SET_S " "
 
-static const char *postcode_format[6] = {
-    "FNFNLLNLS", "FFNNLLNLS", "FFNNNLLNL", "FFNFNLLNL", "FNNLLNLSS", "FNNNLLNLS"
+static const char postcode_format[6][9] = {
+    {'F','N','F','N','L','L','N','L','S'}, {'F','F','N','N','L','L','N','L','S'},
+    {'F','F','N','N','N','L','L','N','L'}, {'F','F','N','F','N','L','L','N','L'},
+    {'F','N','N','L','L','N','L','S','S'}, {'F','N','N','N','L','L','N','L','S'}
 };
 
 // Data/Check Symbols from Table 5
@@ -109,9 +111,7 @@ static int verify_character(char input, char type) {
 
 static int verify_postcode(char *postcode, int type) {
     int i;
-    char pattern[11];
-
-    strcpy(pattern, postcode_format[type - 1]);
+    const char *const pattern = postcode_format[type - 1];
 
     for (i = 0; i < 9; i++) {
         if (!(verify_character(postcode[i], pattern[i]))) {
@@ -122,7 +122,7 @@ static int verify_postcode(char *postcode, int type) {
     return 0;
 }
 
-INTERNAL int daft_set_height(struct zint_symbol *symbol, float min_height, float max_height);
+INTERNAL int daft_set_height(struct zint_symbol *symbol, const float min_height, const float max_height);
 
 /* Royal Mail Mailmark */
 INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int length) {
@@ -135,7 +135,7 @@ INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int le
     unsigned int item_id;
     char postcode[10];
     int postcode_type;
-    char pattern[10];
+    const char *pattern;
     large_int destination_postcode;
     large_int b;
     large_int cdv;
@@ -144,6 +144,7 @@ INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int le
     unsigned char check[7];
     unsigned int extender[27];
     char bar[80];
+    char *d = bar;
     int check_count;
     int i, j, len;
     rs_t rs;
@@ -170,13 +171,13 @@ INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int le
         length = 26;
     }
 
-    to_upper((unsigned char *) local_source);
+    to_upper((unsigned char *) local_source, length);
 
     if (symbol->debug & ZINT_DEBUG_PRINT) {
         printf("Producing Mailmark %s\n", local_source);
     }
 
-    if (is_sane(RUBIDIUM, (unsigned char *) local_source, length) != 0) {
+    if (!is_sane(RUBIDIUM_F, (unsigned char *) local_source, length)) {
         strcpy(symbol->errtxt, "581: Invalid character in data (alphanumerics and space only)");
         return ZINT_ERROR_INVALID_DATA;
     }
@@ -285,7 +286,7 @@ INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int le
     large_load_u64(&destination_postcode, 0);
 
     if (postcode_type != 7) {
-        strcpy(pattern, postcode_format[postcode_type - 1]);
+        pattern = postcode_format[postcode_type - 1];
 
         large_load_u64(&b, 0);
 
@@ -440,45 +441,42 @@ INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int le
     }
 
     // Conversion from Extender Groups to Bar Identifiers
-    strcpy(bar, "");
 
     for (i = 0; i < length; i++) {
         for (j = 0; j < 3; j++) {
             switch (extender[i] & 0x24) {
                 case 0x24:
-                    strcat(bar, "F");
+                    *d++ = 'F';
                     break;
                 case 0x20:
                     if (i % 2) {
-                        strcat(bar, "D");
+                        *d++ = 'D';
                     } else {
-                        strcat(bar, "A");
+                        *d++ = 'A';
                     }
                     break;
                 case 0x04:
                     if (i % 2) {
-                        strcat(bar, "A");
+                        *d++ = 'A';
                     } else {
-                        strcat(bar, "D");
+                        *d++ = 'D';
                     }
                     break;
                 default:
-                    strcat(bar, "T");
+                    *d++ = 'T';
                     break;
             }
             extender[i] = extender[i] << 1;
         }
     }
 
-    bar[(length * 3)] = '\0';
-
     if (symbol->debug & ZINT_DEBUG_PRINT) {
-        printf("Bar pattern: %s\n", bar);
+        printf("Bar pattern: %.*s\n", (int) (d - bar), bar);
     }
 
     /* Translate 4-state data pattern to symbol */
     j = 0;
-    for (i = 0, len = (int) strlen(bar); i < len; i++) {
+    for (i = 0, len = d - bar; i < len; i++) {
         if ((bar[i] == 'F') || (bar[i] == 'A')) {
             set_module(symbol, 0, j);
         }

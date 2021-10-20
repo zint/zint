@@ -1447,7 +1447,7 @@ INTERNAL int aztec(struct zint_symbol *symbol, unsigned char source[], int lengt
 /* Encodes Aztec runes as specified in ISO/IEC 24778:2008 Annex A */
 INTERNAL int azrune(struct zint_symbol *symbol, unsigned char source[], int length) {
     unsigned int input_value;
-    int error_number, i, y, x, r;
+    int i, y, x, r;
     char binary_string[28];
     unsigned char data_codewords[3], ecc_codewords[6];
     int bp = 0;
@@ -1459,8 +1459,7 @@ INTERNAL int azrune(struct zint_symbol *symbol, unsigned char source[], int leng
         strcpy(symbol->errtxt, "507: Input too large (3 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
-    error_number = is_sane(NEON, source, length);
-    if (error_number != 0) {
+    if (!is_sane(NEON_F, source, length)) {
         strcpy(symbol->errtxt, "508: Invalid character in data (digits only)");
         return ZINT_ERROR_INVALID_DATA;
     }

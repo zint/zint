@@ -38,7 +38,7 @@
 #include "common.h"
 #include "large.h"
 
-#define SODIUM  "0123456789-"
+#define SODIUM_MNS_F (IS_NUM_F | IS_MNS_F) /* SODIUM "0123456789-" */
 
 /* The following lookup tables were generated using the code in Appendix C */
 
@@ -242,11 +242,11 @@ static unsigned short USPS_MSB_Math_CRC11GenerateFrameCheckSequence(unsigned cha
     return FrameCheckSequence;
 }
 
-INTERNAL int daft_set_height(struct zint_symbol *symbol, float min_height, float max_height);
+INTERNAL int daft_set_height(struct zint_symbol *symbol, const float min_height, const float max_height);
 
 INTERNAL int usps_imail(struct zint_symbol *symbol, unsigned char source[], int length) {
     char data_pattern[200];
-    int error_number;
+    int error_number = 0;
     int i, j, read;
     char zip[35], tracker[35], temp[2];
     large_int accum;
@@ -262,10 +262,9 @@ INTERNAL int usps_imail(struct zint_symbol *symbol, unsigned char source[], int 
         strcpy(symbol->errtxt, "450: Input too long (32 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
-    error_number = is_sane(SODIUM, source, length);
-    if (error_number == ZINT_ERROR_INVALID_DATA) {
+    if (!is_sane(SODIUM_MNS_F, source, length)) {
         strcpy(symbol->errtxt, "451: Invalid character in data (digits and \"-\" only)");
-        return error_number;
+        return ZINT_ERROR_INVALID_DATA;
     }
 
     strcpy(zip, "");

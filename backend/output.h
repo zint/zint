@@ -37,14 +37,14 @@
 extern "C" {
 #endif /* __cplusplus */
 
-INTERNAL int output_check_colour_options(struct zint_symbol *symbol);
-INTERNAL void output_set_whitespace_offsets(const struct zint_symbol *symbol, const int hide_text,
+INTERNAL int out_check_colour_options(struct zint_symbol *symbol);
+INTERNAL void out_set_whitespace_offsets(const struct zint_symbol *symbol, const int hide_text,
                 float *xoffset, float *yoffset, float *roffset, float *boffset, const float scaler,
                 int *xoffset_si, int *yoffset_si, int *roffset_si, int *boffset_si);
-INTERNAL int output_process_upcean(const struct zint_symbol *symbol, int *p_main_width, int *p_comp_xoffset,
+INTERNAL int out_process_upcean(const struct zint_symbol *symbol, int *p_main_width, int *p_comp_xoffset,
                 unsigned char addon[6], int *p_addon_gap);
-INTERNAL float output_large_bar_height(struct zint_symbol *symbol, int si);
-INTERNAL void output_upcean_split_text(int upceanflag, unsigned char text[],
+INTERNAL float out_large_bar_height(struct zint_symbol *symbol, int si);
+INTERNAL void out_upcean_split_text(int upceanflag, unsigned char text[],
                 unsigned char textpart1[5], unsigned char textpart2[7], unsigned char textpart3[7],
                 unsigned char textpart4[2]);
 

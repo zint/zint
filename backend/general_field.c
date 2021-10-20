@@ -36,16 +36,17 @@
 
 static const char alphanum_puncs[] = "*,-./";
 static const char isoiec_puncs[] = "!\"%&'()*+,-./:;<=>?_ "; /* Note contains space, not in cset82 */
+#define IS_ISOIEC_F (IS_LWR_F | IS_C82_F | IS_PLS_F | IS_MNS_F | IS_SPC_F)
 
 /* Returns type of char at `i`. FNC1 counted as NUMERIC. Returns 0 if invalid char */
 static int general_field_type(const char *general_field, const int i) {
     if (general_field[i] == '[' || (general_field[i] >= '0' && general_field[i] <= '9')) {
         return NUMERIC;
     }
-    if ((general_field[i] >= 'A' && general_field[i] <= 'Z') || strchr(alphanum_puncs, general_field[i])) {
+    if ((general_field[i] >= 'A' && general_field[i] <= 'Z') || posn(alphanum_puncs, general_field[i]) != -1) {
         return ALPHANUMERIC;
     }
-    if ((general_field[i] >= 'a' && general_field[i] <= 'z') || strchr(isoiec_puncs, general_field[i])) {
+    if (is_sane(IS_ISOIEC_F, (const unsigned char *) general_field + i, 1)) {
         return ISOIEC;
     }
     return 0;

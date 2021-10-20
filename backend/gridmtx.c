@@ -43,6 +43,10 @@
 #include "gb2312.h"
 #include "eci.h"
 
+static const char EUROPIUM[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ";
+static const char EUROPIUM_UPR[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ ";
+static const char EUROPIUM_LWR[] = "abcdefghijklmnopqrstuvwxyz ";
+
 /* define_mode() stuff */
 
 /* Bits multiplied by this for costs, so as to be whole integer divisible by 2 and 3 */
@@ -68,7 +72,7 @@ static int in_numeral(const unsigned int gbdata[], const int length, const int i
             i++) {
         if (gbdata[i] >= '0' && gbdata[i] <= '9') {
             digit_cnt++;
-        } else if (strchr(numeral_nondigits, gbdata[i])) {
+        } else if (posn(numeral_nondigits, (const char) gbdata[i]) != -1) {
             if (nondigit) {
                 break;
             }
@@ -282,7 +286,7 @@ static void define_mode(char *mode, const unsigned int gbdata[], const int lengt
 
     /* Get optimal mode for each code point by tracing backwards */
     for (i = length - 1, cm_i = i * GM_NUM_MODES; i >= 0; i--, cm_i -= GM_NUM_MODES) {
-        j = strchr(mode_types, cur_mode) - mode_types;
+        j = posn(mode_types, cur_mode);
         cur_mode = char_modes[cm_i + j];
         mode[i] = cur_mode;
     }
@@ -308,7 +312,7 @@ static int add_shift_char(char binary[], int bp, int shifty, int debug) {
         glyph = shifty;
     } else {
         for (i = 32; i < 64; i++) {
-            if (shift_set[i] == shifty) {
+            if (gm_shift_set[i] == shifty) {
                 glyph = i;
                 break;
             }
@@ -577,7 +581,7 @@ static int gm_encode(unsigned int gbdata[], const int length, char binary[], con
                     if ((gbdata[sp] >= '0') && (gbdata[sp] <= '9')) {
                         numbuf[p] = gbdata[sp];
                         p++;
-                    } else if (strchr(numeral_nondigits, gbdata[sp])) {
+                    } else if (posn(numeral_nondigits, (const char) gbdata[sp]) != -1) {
                         if (ppos != -1) {
                             break;
                         }
@@ -701,7 +705,7 @@ static int gm_encode(unsigned int gbdata[], const int length, char binary[], con
 
                 if (shift == 0) {
                     /* Upper Case character */
-                    glyph = posn("ABCDEFGHIJKLMNOPQRSTUVWXYZ ", (const char) gbdata[sp]);
+                    glyph = posn(EUROPIUM_UPR, (const char) gbdata[sp]);
                     if (debug & ZINT_DEBUG_PRINT) {
                         printf("[%d] ", (int) glyph);
                     }
@@ -726,7 +730,7 @@ static int gm_encode(unsigned int gbdata[], const int length, char binary[], con
 
                 if (shift == 0) {
                     /* Lower Case character */
-                    glyph = posn("abcdefghijklmnopqrstuvwxyz ", (const char) gbdata[sp]);
+                    glyph = posn(EUROPIUM_LWR, (const char) gbdata[sp]);
                     if (debug & ZINT_DEBUG_PRINT) {
                         printf("[%d] ", (int) glyph);
                     }

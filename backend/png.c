@@ -46,8 +46,6 @@
 #include <zlib.h>
 #include <setjmp.h>
 
-#define SSET	"0123456789ABCDEF"
-
 /* Note if change this need to change "backend/tests/test_png.c" definition also */
 struct wpng_error_type {
     struct zint_symbol *symbol;
@@ -300,26 +298,34 @@ INTERNAL int png_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     pb = pixelbuf;
     if (bit_depth == 1) {
         for (row = 0; row < symbol->bitmap_height; row++) {
-            unsigned char *image_data = outdata;
-            for (column = 0; column < symbol->bitmap_width; column += 8, image_data++) {
-                unsigned char byte = 0;
-                for (i = 0; i < 8 && column + i < symbol->bitmap_width; i++, pb++) {
-                    byte |= map[*pb] << (7 - i);
+            if (row && memcmp(pb, pb - symbol->bitmap_width, symbol->bitmap_width) == 0) {
+                pb += symbol->bitmap_width;
+            } else {
+                unsigned char *image_data = outdata;
+                for (column = 0; column < symbol->bitmap_width; column += 8, image_data++) {
+                    unsigned char byte = 0;
+                    for (i = 0; i < 8 && column + i < symbol->bitmap_width; i++, pb++) {
+                        byte |= map[*pb] << (7 - i);
+                    }
+                    *image_data = byte;
                 }
-                *image_data = byte;
             }
             /* write row contents to file */
             png_write_row(png_ptr, outdata);
         }
     } else { /* Bit depth 4 */
         for (row = 0; row < symbol->bitmap_height; row++) {
-            unsigned char *image_data = outdata;
-            for (column = 0; column < symbol->bitmap_width; column += 2, image_data++) {
-                unsigned char byte = map[*pb++] << 4;
-                if (column + 1 < symbol->bitmap_width) {
-                    byte |= map[*pb++];
+            if (row && memcmp(pb, pb - symbol->bitmap_width, symbol->bitmap_width) == 0) {
+                pb += symbol->bitmap_width;
+            } else {
+                unsigned char *image_data = outdata;
+                for (column = 0; column < symbol->bitmap_width; column += 2, image_data++) {
+                    unsigned char byte = map[*pb++] << 4;
+                    if (column + 1 < symbol->bitmap_width) {
+                        byte |= map[*pb++];
+                    }
+                    *image_data = byte;
                 }
-                *image_data = byte;
             }
             /* write row contents to file */
             png_write_row(png_ptr, outdata);

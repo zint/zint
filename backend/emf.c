@@ -46,7 +46,7 @@
 #include "emf.h"
 
 /* Multiply truncating to 3 decimal places (avoids rounding differences on various platforms) */
-#define mul3dpf(m, arg) (roundf(m * arg * 1000.0) / 1000.0f)
+#define mul3dpf(m, arg) stripf(roundf(m * arg * 1000.0) / 1000.0f)
 
 static int count_rectangles(struct zint_symbol *symbol) {
     int rectangles = 0;
@@ -453,9 +453,9 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
         rectangle[this_rectangle].type = 0x0000002b; // EMR_RECTANGLE
         rectangle[this_rectangle].size = 24;
         rectangle[this_rectangle].box.top = (int32_t) rect->y;
-        rectangle[this_rectangle].box.bottom = (int32_t) (rect->y + rect->height);
+        rectangle[this_rectangle].box.bottom = (int32_t) stripf(rect->y + rect->height);
         rectangle[this_rectangle].box.left = (int32_t) rect->x;
-        rectangle[this_rectangle].box.right = (int32_t) (rect->x + rect->width);
+        rectangle[this_rectangle].box.right = (int32_t) stripf(rect->x + rect->width);
         this_rectangle++;
         bytecount += 24;
         recordcount++;
@@ -475,10 +475,10 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
         }
         circle[this_circle].type = 0x0000002a; // EMR_ELLIPSE
         circle[this_circle].size = 24;
-        circle[this_circle].box.top = (int32_t) (circ->y - radius);
-        circle[this_circle].box.bottom = (int32_t) (circ->y + radius);
-        circle[this_circle].box.left = (int32_t) (circ->x - radius);
-        circle[this_circle].box.right = (int32_t) (circ->x + radius);
+        circle[this_circle].box.top = (int32_t) stripf(circ->y - radius);
+        circle[this_circle].box.bottom = (int32_t) stripf(circ->y + radius);
+        circle[this_circle].box.left = (int32_t) stripf(circ->x - radius);
+        circle[this_circle].box.right = (int32_t) stripf(circ->x + radius);
         this_circle++;
         bytecount += 24;
         recordcount++;
@@ -487,10 +487,10 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
             float inner_radius = radius - circ->width;
             circle[this_circle].type = 0x0000002a; // EMR_ELLIPSE
             circle[this_circle].size = 24;
-            circle[this_circle].box.top = (int32_t) (circ->y - inner_radius);
-            circle[this_circle].box.bottom = (int32_t) (circ->y + inner_radius);
-            circle[this_circle].box.left = (int32_t) (circ->x - inner_radius);
-            circle[this_circle].box.right = (int32_t) (circ->x + inner_radius);
+            circle[this_circle].box.top = (int32_t) stripf(circ->y - inner_radius);
+            circle[this_circle].box.bottom = (int32_t) stripf(circ->y + inner_radius);
+            circle[this_circle].box.left = (int32_t) stripf(circ->x - inner_radius);
+            circle[this_circle].box.right = (int32_t) stripf(circ->x + inner_radius);
             this_circle++;
             bytecount += 24;
             recordcount++;
@@ -516,18 +516,18 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
         }
 
         /* Note rotation done via world transform */
-        hexagon[this_hexagon].a_points_a.x = (int32_t) (hex->x);
-        hexagon[this_hexagon].a_points_a.y = (int32_t) (hex->y + radius);
-        hexagon[this_hexagon].a_points_b.x = (int32_t) (hex->x + half_sqrt3_radius);
-        hexagon[this_hexagon].a_points_b.y = (int32_t) (hex->y + half_radius);
-        hexagon[this_hexagon].a_points_c.x = (int32_t) (hex->x + half_sqrt3_radius);
-        hexagon[this_hexagon].a_points_c.y = (int32_t) (hex->y - half_radius);
-        hexagon[this_hexagon].a_points_d.x = (int32_t) (hex->x);
-        hexagon[this_hexagon].a_points_d.y = (int32_t) (hex->y - radius);
-        hexagon[this_hexagon].a_points_e.x = (int32_t) (hex->x - half_sqrt3_radius);
-        hexagon[this_hexagon].a_points_e.y = (int32_t) (hex->y - half_radius);
-        hexagon[this_hexagon].a_points_f.x = (int32_t) (hex->x - half_sqrt3_radius);
-        hexagon[this_hexagon].a_points_f.y = (int32_t) (hex->y + half_radius);
+        hexagon[this_hexagon].a_points_a.x = (int32_t) hex->x;
+        hexagon[this_hexagon].a_points_a.y = (int32_t) stripf(hex->y + radius);
+        hexagon[this_hexagon].a_points_b.x = (int32_t) stripf(hex->x + half_sqrt3_radius);
+        hexagon[this_hexagon].a_points_b.y = (int32_t) stripf(hex->y + half_radius);
+        hexagon[this_hexagon].a_points_c.x = (int32_t) stripf(hex->x + half_sqrt3_radius);
+        hexagon[this_hexagon].a_points_c.y = (int32_t) stripf(hex->y - half_radius);
+        hexagon[this_hexagon].a_points_d.x = (int32_t) hex->x;
+        hexagon[this_hexagon].a_points_d.y = (int32_t) stripf(hex->y - radius);
+        hexagon[this_hexagon].a_points_e.x = (int32_t) stripf(hex->x - half_sqrt3_radius);
+        hexagon[this_hexagon].a_points_e.y = (int32_t) stripf(hex->y - half_radius);
+        hexagon[this_hexagon].a_points_f.x = (int32_t) stripf(hex->x - half_sqrt3_radius);
+        hexagon[this_hexagon].a_points_f.y = (int32_t) stripf(hex->y + half_radius);
 
         hexagon[this_hexagon].bounds.top = hexagon[this_hexagon].a_points_d.y;
         hexagon[this_hexagon].bounds.bottom = hexagon[this_hexagon].a_points_a.y;

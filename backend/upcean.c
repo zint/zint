@@ -30,12 +30,9 @@
  */
 /* vim: set ts=4 sw=4 et : */
 
-#define SODIUM              "0123456789+"
-#define ISBNX_SANE          "0123456789X"
-#define ISBNX_ADDON_SANE    "0123456789Xx+"
-
-#define EAN2    102
-#define EAN5    105
+#define SODIUM_PLS_F        (IS_NUM_F | IS_PLS_F) /* SODIUM "0123456789+" */
+#define ISBNX_SANE_F        (IS_NUM_F | IS_UX__F) /* ISBNX_SANE "0123456789X" */
+#define ISBNX_ADDON_SANE_F  (IS_NUM_F | IS_UX__F | IS_LX__F | IS_PLS_F) /* ISBNX_ADDON_SANE "0123456789Xx+" */
 
 #include <stdio.h>
 #include "common.h"
@@ -43,66 +40,72 @@
 
 /* UPC and EAN tables checked against EN 797:1996 */
 
-static const char *UPCParity0[10] = {
+static const char UPCParity0[10][6] = {
     /* Number set for UPC-E symbol (EN Table 4) */
-    "BBBAAA", "BBABAA", "BBAABA", "BBAAAB", "BABBAA", "BAABBA", "BAAABB",
-    "BABABA", "BABAAB", "BAABAB"
+    {'B','B','B','A','A','A'}, {'B','B','A','B','A','A'}, {'B','B','A','A','B','A'}, {'B','B','A','A','A','B'},
+    {'B','A','B','B','A','A'}, {'B','A','A','B','B','A'}, {'B','A','A','A','B','B'}, {'B','A','B','A','B','A'},
+    {'B','A','B','A','A','B'}, {'B','A','A','B','A','B'}
 };
 
-static const char *UPCParity1[10] = {
+static const char UPCParity1[10][6] = {
     /* Not covered by BS EN 797:1995 */
-    "AAABBB", "AABABB", "AABBAB", "AABBBA", "ABAABB", "ABBAAB", "ABBBAA",
-    "ABABAB", "ABABBA", "ABBABA"
+    {'A','A','A','B','B','B'}, {'A','A','B','A','B','B'}, {'A','A','B','B','A','B'}, {'A','A','B','B','B','A'},
+    {'A','B','A','A','B','B'}, {'A','B','B','A','A','B'}, {'A','B','B','B','A','A'}, {'A','B','A','B','A','B'},
+    {'A','B','A','B','B','A'}, {'A','B','B','A','B','A'}
 };
 
-static const char *EAN2Parity[4] = {
+static const char EAN2Parity[4][2] = {
     /* Number sets for 2-digit add-on (EN Table 6) */
-    "AA", "AB", "BA", "BB"
+    {'A','A'}, {'A','B'}, {'B','A'}, {'B','B'}
 };
 
-static const char *EAN5Parity[10] = {
+static const char EAN5Parity[10][5] = {
     /* Number set for 5-digit add-on (EN Table 7) */
-    "BBAAA", "BABAA", "BAABA", "BAAAB", "ABBAA", "AABBA", "AAABB", "ABABA",
-    "ABAAB", "AABAB"
+    {'B','B','A','A','A'}, {'B','A','B','A','A'}, {'B','A','A','B','A'}, {'B','A','A','A','B'}, {'A','B','B','A','A'},
+    {'A','A','B','B','A'}, {'A','A','A','B','B'}, {'A','B','A','B','A'}, {'A','B','A','A','B'}, {'A','A','B','A','B'}
 };
 
-static const char *EAN13Parity[10] = {
+static const char EAN13Parity[10][5] = {
     /* Left hand of the EAN-13 symbol (EN Table 3) */
-    "AAAAA", "ABABB", "ABBAB", "ABBBA", "BAABB", "BBAAB", "BBBAA", "BABAB",
-    "BABBA", "BBABA"
+    {'A','A','A','A','A'}, {'A','B','A','B','B'}, {'A','B','B','A','B'}, {'A','B','B','B','A'}, {'B','A','A','B','B'},
+    {'B','B','A','A','B'}, {'B','B','B','A','A'}, {'B','A','B','A','B'}, {'B','A','B','B','A'}, {'B','B','A','B','A'}
 };
 
-static const char *EANsetA[10] = {
+static const char EANsetA[10][4] = {
     /* Representation set A and C (EN Table 1) */
-    "3211", "2221", "2122", "1411", "1132", "1231", "1114", "1312", "1213", "3112"
+    {'3','2','1','1'}, {'2','2','2','1'}, {'2','1','2','2'}, {'1','4','1','1'}, {'1','1','3','2'},
+    {'1','2','3','1'}, {'1','1','1','4'}, {'1','3','1','2'}, {'1','2','1','3'}, {'3','1','1','2'}
 };
 
-static const char *EANsetB[10] = {
+static const char EANsetB[10][4] = {
     /* Representation set B (EN Table 1) */
-    "1123", "1222", "2212", "1141", "2311", "1321", "4111", "2131", "3121", "2113"
+    {'1','1','2','3'}, {'1','2','2','2'}, {'2','2','1','2'}, {'1','1','4','1'}, {'2','3','1','1'},
+    {'1','3','2','1'}, {'4','1','1','1'}, {'2','1','3','1'}, {'3','1','2','1'}, {'2','1','1','3'}
 };
 
 /* UPC A is usually used for 12 digit numbers, but this function takes a source of any length */
-static void upca_draw(const unsigned char source[], const int length, char dest[]) {
+static void upca_draw(const unsigned char source[], const int length, char *d) {
     int i, half_way;
 
     half_way = length / 2;
 
     /* start character */
-    strcat(dest, "111");
+    memcpy(d, "111", 3);
+    d += 3;
 
-    for (i = 0; i < length; i++) {
+    for (i = 0; i < length; i++, d += 4) {
         if (i == half_way) {
             /* middle character - separates manufacturer no. from product no. */
             /* also inverts right hand characters */
-            strcat(dest, "11111");
+            memcpy(d, "11111", 5);
+            d += 5;
         }
 
-        lookup(NEON, EANsetA, source[i], dest);
+        memcpy(d, EANsetA[source[i] - '0'], 4);
     }
 
     /* stop character */
-    strcat(dest, "111");
+    strcpy(d, "111");
 }
 
 /* Make a UPC-A barcode, allowing for composite if `cc_rows` set */
@@ -156,9 +159,10 @@ static int upca(struct zint_symbol *symbol, const unsigned char source[], int le
 }
 
 /* UPC-E, allowing for composite if `cc_rows` set */
-static int upce_cc(struct zint_symbol *symbol, unsigned char source[], int length, char dest[], int cc_rows) {
+static int upce_cc(struct zint_symbol *symbol, unsigned char source[], int length, char *d, int cc_rows) {
     int i, num_system;
-    char emode, check_digit, parity[8];
+    char emode, check_digit;
+    const char *parity;
     char src_check_digit = '\0';
     unsigned char equivalent[12];
     unsigned char *hrt = symbol->text;
@@ -266,27 +270,28 @@ static int upce_cc(struct zint_symbol *symbol, unsigned char source[], int lengt
 
     /* Use the number system and check digit information to choose a parity scheme */
     if (num_system == 1) {
-        strcpy(parity, UPCParity1[ctoi(check_digit)]);
+        parity = UPCParity1[ctoi(check_digit)];
     } else {
-        strcpy(parity, UPCParity0[ctoi(check_digit)]);
+        parity = UPCParity0[ctoi(check_digit)];
     }
 
     /* Take all this information and make the barcode pattern */
 
     /* start character */
-    strcat(dest, "111");
+    memcpy(d, "111", 3);
+    d += 3;
 
-    for (i = 0; i < length; i++) {
+    for (i = 0; i < length; i++, d += 4) {
         switch (parity[i]) {
-            case 'A': lookup(NEON, EANsetA, source[i], dest);
+            case 'A': memcpy(d, EANsetA[source[i] - '0'], 4);
                 break;
-            case 'B': lookup(NEON, EANsetB, source[i], dest);
+            case 'B': memcpy(d, EANsetB[source[i] - '0'], 4);
                 break;
         }
     }
 
     /* stop character */
-    strcat(dest, "111111");
+    strcpy(d, "111111");
 
     hrt[7] = check_digit;
     hrt[8] = '\0';
@@ -323,36 +328,27 @@ static int upce(struct zint_symbol *symbol, unsigned char source[], int length, 
 
 /* EAN-2 and EAN-5 add-on codes */
 static void ean_add_on(const unsigned char source[], const int length, char dest[], const int addon_gap) {
-    char parity[6];
-    int i, code_type;
+    const char *parity;
+    int i;
+    char *d = dest + strlen(dest);
 
     /* If an add-on then append with space */
     if (addon_gap != 0) {
-        i = (int) strlen(dest);
-        dest[i] = itoc(addon_gap);
-        dest[i + 1] = '\0';
+        *d++ = itoc(addon_gap);
     }
 
     /* Start character */
-    strcat(dest, "112");
+    memcpy(d, "112", 3);
+    d += 3;
 
-    /* Determine EAN2 or EAN5 add-on */
-    if (length == 2) {
-        code_type = EAN2;
-    } else {
-        code_type = EAN5;
-    }
-
-    /* Calculate parity for EAN2 */
-    if (code_type == EAN2) {
+    /* Calculate parity */
+    if (length == 2) { /* EAN-2 */
         int code_value, parity_bit;
 
         code_value = (10 * ctoi(source[0])) + ctoi(source[1]);
         parity_bit = code_value % 4;
-        strcpy(parity, EAN2Parity[parity_bit]);
-    }
-
-    if (code_type == EAN5) {
+        parity = EAN2Parity[parity_bit];
+    } else { /* EAN-5 */
         int values[6], parity_sum, parity_bit;
 
         for (i = 0; i < 6; i++) {
@@ -363,34 +359,37 @@ static void ean_add_on(const unsigned char source[], const int length, char dest
         parity_sum += (9 * (values[1] + values[3]));
 
         parity_bit = parity_sum % 10;
-        strcpy(parity, EAN5Parity[parity_bit]);
+        parity = EAN5Parity[parity_bit];
     }
 
     for (i = 0; i < length; i++) {
         switch (parity[i]) {
-            case 'A': lookup(NEON, EANsetA, source[i], dest);
+            case 'A': memcpy(d, EANsetA[source[i] - '0'], 4);
+                d += 4;
                 break;
-            case 'B': lookup(NEON, EANsetB, source[i], dest);
+            case 'B': memcpy(d, EANsetB[source[i] - '0'], 4);
+                d += 4;
                 break;
         }
 
         /* Glyph separator */
         if (i != (length - 1)) {
-            strcat(dest, "11");
+            memcpy(d, "11", 2);
+            d += 2;
         }
     }
+    *d = '\0';
 }
 
 /* ************************ EAN-13 ****************** */
 
-static int ean13_cc(struct zint_symbol *symbol, const unsigned char source[], int length, char dest[],
+static int ean13_cc(struct zint_symbol *symbol, const unsigned char source[], int length, char *d,
             int cc_rows) {
     int i, half_way;
-    char parity[6];
+    const char *parity;
     unsigned char *gtin = symbol->text;
     int error_number = 0;
 
-    parity[0] = '\0';
     ustrcpy(gtin, source);
 
     /* Add the appropriate check digit */
@@ -410,29 +409,32 @@ static int ean13_cc(struct zint_symbol *symbol, const unsigned char source[], in
     }
 
     /* Get parity for first half of the symbol */
-    lookup(SODIUM, EAN13Parity, gtin[0], parity);
+    parity = EAN13Parity[gtin[0] - '0'];
 
     /* Now get on with the cipher */
     half_way = 7;
 
     /* start character */
-    strcat(dest, "111");
-    for (i = 1; i < length; i++) {
+    memcpy(d, "111", 3);
+    d += 3;
+
+    for (i = 1; i < length; i++, d += 4) {
         if (i == half_way) {
             /* middle character - separates manufacturer no. from product no. */
             /* also inverses right hand characters */
-            strcat(dest, "11111");
+            memcpy(d, "11111", 5);
+            d += 5;
         }
 
         if (((i > 1) && (i < 7)) && (parity[i - 2] == 'B')) {
-            lookup(NEON, EANsetB, gtin[i], dest);
+            memcpy(d, EANsetB[gtin[i] - '0'], 4);
         } else {
-            lookup(NEON, EANsetA, gtin[i], dest);
+            memcpy(d, EANsetA[gtin[i] - '0'], 4);
         }
     }
 
     /* stop character */
-    strcat(dest, "111");
+    strcpy(d, "111");
 
     if (symbol->output_options & COMPLIANT_HEIGHT) {
         /* BS EN 797:1996 4.5.1 Nominal dimensions 22.85mm / 0.33mm (X) ~ 69.24,
@@ -535,8 +537,8 @@ static int isbnx(struct zint_symbol *symbol, unsigned char source[], const int s
     int i;
     char check_digit;
 
-    to_upper(source);
-    if (is_sane(ISBNX_SANE, source, src_len) != 0) {
+    to_upper(source, src_len);
+    if (!is_sane(ISBNX_SANE_F, source, src_len)) {
         strcpy(symbol->errtxt, "277: Invalid character in data (digits and \"X\" only)");
         return ZINT_ERROR_INVALID_DATA;
     }
@@ -554,16 +556,15 @@ static int isbnx(struct zint_symbol *symbol, unsigned char source[], const int s
             return ZINT_ERROR_INVALID_DATA;
         }
 
-        /* "X" can only occur in last position */
-        if (is_sane(NEON, source, 12) != 0) {
-            strcpy(symbol->errtxt, "282: Invalid character in data, \"X\" allowed in last position only");
+        /* "X" cannot occur */
+        if (!is_sane(NEON_F, source, 13)) {
+            strcpy(symbol->errtxt, "282: Invalid character in data, \"X\" not allowed in ISBN-13");
             return ZINT_ERROR_INVALID_DATA;
         }
 
         check_digit = gs1_check_digit(source, 12);
-        if (source[src_len - 1] != check_digit) {
-            sprintf(symbol->errtxt, "280: Invalid ISBN check digit '%c', expecting '%c'",
-                    source[src_len - 1], check_digit);
+        if (source[12] != check_digit) {
+            sprintf(symbol->errtxt, "280: Invalid ISBN check digit '%c', expecting '%c'", source[12], check_digit);
             return ZINT_ERROR_INVALID_CHECK;
         }
         source[12] = '\0';
@@ -578,7 +579,7 @@ static int isbnx(struct zint_symbol *symbol, unsigned char source[], const int s
         }
 
         /* "X" can only occur in last position */
-        if (is_sane(NEON, source, 9) != 0) {
+        if (!is_sane(NEON_F, source, 9)) {
             strcpy(symbol->errtxt, "296: Invalid character in data, \"X\" allowed in last position only");
             return ZINT_ERROR_INVALID_DATA;
         }
@@ -589,7 +590,7 @@ static int isbnx(struct zint_symbol *symbol, unsigned char source[], const int s
                     source[9], check_digit);
             return ZINT_ERROR_INVALID_CHECK;
         }
-        for (i = 11; i > 2; i--) {
+        for (i = 11; i > 2; i--) { /* This drops the check digit */
             source[i] = source[i - 3];
         }
         source[0] = '9';
@@ -603,8 +604,9 @@ static int isbnx(struct zint_symbol *symbol, unsigned char source[], const int s
 
 /* Add leading zeroes to EAN and UPC strings */
 INTERNAL int ean_leading_zeroes(struct zint_symbol *symbol, const unsigned char source[],
-                unsigned char local_source[], int *p_with_addon) {
-    unsigned char first_part[14], second_part[6], zfirst_part[14], zsecond_part[6];
+                unsigned char local_source[], int *p_with_addon, unsigned char *zfirst_part,
+                unsigned char *zsecond_part) {
+    unsigned char first_part[14], second_part[6];
     int with_addon = 0;
     int first_len = 0, second_len = 0, zfirst_len = 0, zsecond_len = 0, i, h;
 
@@ -641,14 +643,10 @@ INTERNAL int ean_leading_zeroes(struct zint_symbol *symbol, const unsigned char 
     /* Calculate target lengths */
     if (second_len == 0) {
         zsecond_len = 0;
+    } else if (second_len <= 2) {
+        zsecond_len = 2;
     } else {
-        if (second_len <= 5) {
-            if (second_len <= 2) {
-                zsecond_len = 2;
-            } else {
-                zsecond_len = 5;
-            }
-        }
+        zsecond_len = 5;
     }
     switch (symbol->symbology) {
         case BARCODE_EANX:
@@ -717,25 +715,29 @@ INTERNAL int ean_leading_zeroes(struct zint_symbol *symbol, const unsigned char 
             break;
     }
 
+    /* Copy adjusted data back to local_source */
 
     /* Add leading zeroes */
-    zfirst_part[0] = '\0';
     for (i = 0; i < (zfirst_len - first_len); i++) {
-        ustrcat(zfirst_part, "0");
+        local_source[i] = '0';
     }
-    ustrcat(zfirst_part, first_part);
-
-    zsecond_part[0] = '\0';
-    for (i = 0; i < (zsecond_len - second_len); i++) {
-        ustrcat(zsecond_part, "0");
+    ustrcpy(local_source + i, first_part);
+    if (zfirst_part) {
+        ustrcpy(zfirst_part, local_source);
     }
-    ustrcat(zsecond_part, second_part);
 
-    /* Copy adjusted data back to local_source */
-    ustrcat(local_source, zfirst_part);
-    if (*zsecond_part) {
-        ustrcat(local_source, "+");
-        ustrcat(local_source, zsecond_part);
+    if (with_addon) {
+        h = (int) ustrlen(local_source);
+        local_source[h++] = '+';
+        for (i = 0; i < (zsecond_len - second_len); i++) {
+            local_source[h + i] = '0';
+        }
+        ustrcpy(local_source + h + i, second_part);
+        if (zsecond_part) {
+            ustrcpy(zsecond_part, local_source + h);
+        }
+    } else if (zsecond_part) {
+        *zsecond_part = '\0';
     }
 
     if (p_with_addon) {
@@ -746,17 +748,13 @@ INTERNAL int ean_leading_zeroes(struct zint_symbol *symbol, const unsigned char 
 }
 
 INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int src_len, int cc_rows) {
-    unsigned char first_part[14] = {0}, second_part[6] = {0};
-    unsigned char local_source[20] = {0}; /* Allow 13 + "+" + 5 + 1 */
+    unsigned char first_part[14], second_part[6];
+    unsigned char local_source[20]; /* Allow 13 + "+" + 5 + 1 */
     char dest[1000] = {0};
-    int latch, reader, writer;
     int with_addon;
     int error_number = 0, i, plus_count;
     int addon_gap = 0;
     int first_part_len, second_part_len;
-
-    latch = FALSE;
-    writer = 0;
 
     if (src_len > 19) {
         strcpy(symbol->errtxt, "283: Input too long (19 character maximum)");
@@ -764,12 +762,12 @@ INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int src
     }
     if (symbol->symbology != BARCODE_ISBNX) {
         /* ISBN has its own sanity routine */
-        if (is_sane(SODIUM, source, src_len) != 0) {
+        if (!is_sane(SODIUM_PLS_F, source, src_len)) {
             strcpy(symbol->errtxt, "284: Invalid character in data (digits and \"+\" only)");
             return ZINT_ERROR_INVALID_DATA;
         }
     } else {
-        if (is_sane(ISBNX_ADDON_SANE, source, src_len) != 0) {
+        if (!is_sane(ISBNX_ADDON_SANE_F, source, src_len)) {
             strcpy(symbol->errtxt, "285: Invalid character in data (digits, \"X\" and \"+\" only)");
             return ZINT_ERROR_INVALID_DATA;
         }
@@ -789,42 +787,19 @@ INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int src
     }
 
     /* Add leading zeroes, checking max lengths of parts */
-    if (!ean_leading_zeroes(symbol, source, local_source, &with_addon)) {
+    if (!ean_leading_zeroes(symbol, source, local_source, &with_addon, first_part, second_part)) {
         sprintf(symbol->errtxt, "294: Input too long (%s)",
                 with_addon ? "5 character maximum for add-on" : "13 character maximum");
         return ZINT_ERROR_TOO_LONG;
     }
 
-    reader = 0;
     if (with_addon) {
-        int local_length = (int) ustrlen(local_source);
-        do {
-            if (local_source[reader] == '+') {
-                first_part[writer] = '\0';
-                latch = TRUE;
-                reader++;
-                writer = 0;
-            }
-
-            if (latch) {
-                second_part[writer] = local_source[reader];
-                reader++;
-                writer++;
-            } else {
-                first_part[writer] = local_source[reader];
-                reader++;
-                writer++;
-            }
-        } while (reader <= local_length);
-
         if (symbol->symbology == BARCODE_UPCA || symbol->symbology == BARCODE_UPCA_CHK
                 || symbol->symbology == BARCODE_UPCA_CC) {
             addon_gap = symbol->option_2 >= 9 && symbol->option_2 <= 12 ? symbol->option_2 : 9;
         } else {
             addon_gap = symbol->option_2 >= 7 && symbol->option_2 <= 12 ? symbol->option_2 : 7;
         }
-    } else {
-        ustrcpy(first_part, local_source);
     }
 
     first_part_len = (int) ustrlen(first_part);
@@ -960,7 +935,7 @@ INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int src
     second_part_len = (int) ustrlen(second_part);
 
     if (symbol->symbology == BARCODE_ISBNX) { /* Need to further check that add-on numeric only */
-        if (is_sane(NEON, second_part, second_part_len) != 0) {
+        if (!is_sane(NEON_F, second_part, second_part_len)) {
             strcpy(symbol->errtxt, "295: Invalid add-on data (digits only)");
             return ZINT_ERROR_INVALID_DATA;
         }
@@ -983,7 +958,7 @@ INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int src
             return ZINT_ERROR_TOO_LONG;
     }
 
-    expand(symbol, (const char *) dest);
+    expand(symbol, dest, (int) strlen(dest));
 
     switch (symbol->symbology) {
         case BARCODE_EANX_CC:

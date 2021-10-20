@@ -34,28 +34,28 @@
 
 // Print out the log/alog tables for "backend/reedsol_logs.h"
 static void print_logs(const char *name, int logmod, unsigned int *logt, unsigned int *alog, int u16, int last) {
-	int i;
+    int i;
     const char *type = u16 ? "short" : "char";
     const char *format = u16 ? " 0x%04X," : " 0x%02X,";
 
-	printf("static const unsigned %s logt_%s[%d] = {", type, name, logmod + 1);
-	for (i = 0; i < logmod + 1; i++) {
-		if (i % 16 == 0) printf("\n   ");
-		printf(format, i ? logt[i] : 0);
-	}
-	printf("\n};\n");
+    printf("static const unsigned %s logt_%s[%d] = {", type, name, logmod + 1);
+    for (i = 0; i < logmod + 1; i++) {
+        if (i % 16 == 0) printf("\n   ");
+        printf(format, i ? logt[i] : 0);
+    }
+    printf("\n};\n");
 
-	printf("static const unsigned %s alog_%s[%d] = {", type, name, logmod * 2);
-	for (i = 0; i < logmod; i++) {
-		if (i % 16 == 0) printf("\n   ");
-		printf(format, alog[i]);
-	}
+    printf("static const unsigned %s alog_%s[%d] = {", type, name, logmod * 2);
+    for (i = 0; i < logmod; i++) {
+        if (i % 16 == 0) printf("\n   ");
+        printf(format, alog[i]);
+    }
     // Double antilog table
     for (i = 0; i < logmod; i++) {
         if (i % 16 == 0) printf("\n   ");
         printf(format, alog[i]);
     }
-	printf("\n};\n");
+    printf("\n};\n");
     if (!last) {
         printf("\n");
     }

@@ -584,7 +584,7 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
     }
 
     // Prevent encodation as a macro if a special character is in first position
-    if (strchr(lead_specials, source[input_position]) != NULL) {
+    if (posn(lead_specials, source[input_position]) != -1) {
         codeword_array[array_length] = 101; // Latch A
         array_length++;
         codeword_array[array_length] = source[input_position] + 64;

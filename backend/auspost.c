@@ -31,61 +31,74 @@
  */
 /* vim: set ts=4 sw=4 et : */
 
-#define GDSET   "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz #"
+static const char GDSET[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz #";
+#define GDSET_F (IS_NUM_F | IS_UPR_F | IS_LWR_F | IS_SPC_F | IS_HSH_F)
 
-static const char *AusNTable[10] = {
-    "00", "01", "02", "10", "11", "12", "20", "21", "22", "30"
+static const char AusNTable[10][2] = {
+    {'0','0'}, {'0','1'}, {'0','2'}, {'1','0'}, {'1','1'}, {'1','2'}, {'2','0'}, {'2','1'}, {'2','2'}, {'3','0'}
 };
 
-static const char *AusCTable[64] = {
-    "222", "300", "301", "302", "310", "311", "312", "320", "321", "322",
-    "000", "001", "002", "010", "011", "012", "020", "021", "022", "100", "101", "102", "110",
-    "111", "112", "120", "121", "122", "200", "201", "202", "210", "211", "212", "220", "221",
-    "023", "030", "031", "032", "033", "103", "113", "123", "130", "131", "132", "133", "203",
-    "213", "223", "230", "231", "232", "233", "303", "313", "323", "330", "331", "332", "333",
-    "003", "013"
+static const char AusCTable[64][3] = {
+    {'2','2','2'}, {'3','0','0'}, {'3','0','1'}, {'3','0','2'}, {'3','1','0'}, {'3','1','1'},
+    {'3','1','2'}, {'3','2','0'}, {'3','2','1'}, {'3','2','2'}, {'0','0','0'}, {'0','0','1'},
+    {'0','0','2'}, {'0','1','0'}, {'0','1','1'}, {'0','1','2'}, {'0','2','0'}, {'0','2','1'},
+    {'0','2','2'}, {'1','0','0'}, {'1','0','1'}, {'1','0','2'}, {'1','1','0'}, {'1','1','1'},
+    {'1','1','2'}, {'1','2','0'}, {'1','2','1'}, {'1','2','2'}, {'2','0','0'}, {'2','0','1'},
+    {'2','0','2'}, {'2','1','0'}, {'2','1','1'}, {'2','1','2'}, {'2','2','0'}, {'2','2','1'},
+    {'0','2','3'}, {'0','3','0'}, {'0','3','1'}, {'0','3','2'}, {'0','3','3'}, {'1','0','3'},
+    {'1','1','3'}, {'1','2','3'}, {'1','3','0'}, {'1','3','1'}, {'1','3','2'}, {'1','3','3'},
+    {'2','0','3'}, {'2','1','3'}, {'2','2','3'}, {'2','3','0'}, {'2','3','1'}, {'2','3','2'},
+    {'2','3','3'}, {'3','0','3'}, {'3','1','3'}, {'3','2','3'}, {'3','3','0'}, {'3','3','1'},
+    {'3','3','2'}, {'3','3','3'}, {'0','0','3'}, {'0','1','3'}
 };
 
-static const char *AusBarTable[64] = {
-    "000", "001", "002", "003", "010", "011", "012", "013", "020", "021",
-    "022", "023", "030", "031", "032", "033", "100", "101", "102", "103", "110", "111", "112",
-    "113", "120", "121", "122", "123", "130", "131", "132", "133", "200", "201", "202", "203",
-    "210", "211", "212", "213", "220", "221", "222", "223", "230", "231", "232", "233", "300",
-    "301", "302", "303", "310", "311", "312", "313", "320", "321", "322", "323", "330", "331",
-    "332", "333"
+static const char AusBarTable[64][3] = {
+    {'0','0','0'}, {'0','0','1'}, {'0','0','2'}, {'0','0','3'}, {'0','1','0'}, {'0','1','1'},
+    {'0','1','2'}, {'0','1','3'}, {'0','2','0'}, {'0','2','1'}, {'0','2','2'}, {'0','2','3'},
+    {'0','3','0'}, {'0','3','1'}, {'0','3','2'}, {'0','3','3'}, {'1','0','0'}, {'1','0','1'},
+    {'1','0','2'}, {'1','0','3'}, {'1','1','0'}, {'1','1','1'}, {'1','1','2'}, {'1','1','3'},
+    {'1','2','0'}, {'1','2','1'}, {'1','2','2'}, {'1','2','3'}, {'1','3','0'}, {'1','3','1'},
+    {'1','3','2'}, {'1','3','3'}, {'2','0','0'}, {'2','0','1'}, {'2','0','2'}, {'2','0','3'},
+    {'2','1','0'}, {'2','1','1'}, {'2','1','2'}, {'2','1','3'}, {'2','2','0'}, {'2','2','1'},
+    {'2','2','2'}, {'2','2','3'}, {'2','3','0'}, {'2','3','1'}, {'2','3','2'}, {'2','3','3'},
+    {'3','0','0'}, {'3','0','1'}, {'3','0','2'}, {'3','0','3'}, {'3','1','0'}, {'3','1','1'},
+    {'3','1','2'}, {'3','1','3'}, {'3','2','0'}, {'3','2','1'}, {'3','2','2'}, {'3','2','3'},
+    {'3','3','0'}, {'3','3','1'}, {'3','3','2'}, {'3','3','3'}
 };
 
 #include <stdio.h>
 #include "common.h"
 #include "reedsol.h"
 
-static char convert_pattern(char data, int shift) {
+static char aus_convert_pattern(char data, int shift) {
     return (data - '0') << shift;
 }
 
 /* Adds Reed-Solomon error correction to auspost */
-static void rs_error(char data_pattern[]) {
-    int reader, len, triple_writer = 0;
+static char *aus_rs_error(char data_pattern[], char *d) {
+    int reader, length, triple_writer = 0;
     unsigned char triple[31];
     unsigned char result[5];
     rs_t rs;
 
-    for (reader = 2, len = (int) strlen(data_pattern); reader < len; reader += 3, triple_writer++) {
-        triple[triple_writer] = convert_pattern(data_pattern[reader], 4)
-                + convert_pattern(data_pattern[reader + 1], 2)
-                + convert_pattern(data_pattern[reader + 2], 0);
+    for (reader = 2, length = d - data_pattern; reader < length; reader += 3, triple_writer++) {
+        triple[triple_writer] = aus_convert_pattern(data_pattern[reader], 4)
+                + aus_convert_pattern(data_pattern[reader + 1], 2)
+                + aus_convert_pattern(data_pattern[reader + 2], 0);
     }
 
     rs_init_gf(&rs, 0x43);
     rs_init_code(&rs, 4, 1);
     rs_encode(&rs, triple_writer, triple, result);
 
-    for (reader = 4; reader > 0; reader--) {
-        strcat(data_pattern, AusBarTable[(int) result[reader - 1]]);
+    for (reader = 4; reader > 0; reader--, d += 3) {
+        memcpy(d, AusBarTable[(int) result[reader - 1]], 3);
     }
+
+    return d;
 }
 
-INTERNAL int daft_set_height(struct zint_symbol *symbol, float min_height, float max_height);
+INTERNAL int daft_set_height(struct zint_symbol *symbol, const float min_height, const float max_height);
 
 /* Handles Australia Posts's 4 State Codes */
 INTERNAL int auspost(struct zint_symbol *symbol, unsigned char source[], int length) {
@@ -104,17 +117,29 @@ INTERNAL int auspost(struct zint_symbol *symbol, unsigned char source[], int len
     int h;
 
     char data_pattern[200];
-    char fcc[3] = {0, 0, 0}, dpid[10];
+    char *d = data_pattern;
+    char fcc[3] = {0}, dpid[10];
     char localstr[30];
 
+    /* Do all of the length checking first to avoid stack smashing */
+    if (symbol->symbology == BARCODE_AUSPOST) {
+        if (length != 8 && length != 13 && length != 16 && length != 18 && length != 23) {
+            strcpy(symbol->errtxt, "401: Auspost input is wrong length (8, 13, 16, 18 or 23 characters only)");
+            return ZINT_ERROR_TOO_LONG;
+        }
+    } else if (length > 8) {
+        strcpy(symbol->errtxt, "403: Auspost input is too long (8 character maximum)");
+        return ZINT_ERROR_TOO_LONG;
+    }
+
     /* Check input immediately to catch nuls */
-    if (is_sane(GDSET, source, length) != 0) {
+    if (!is_sane(GDSET_F, source, length)) {
         strcpy(symbol->errtxt, "404: Invalid character in data (alphanumerics, space and \"#\" only)");
         return ZINT_ERROR_INVALID_DATA;
     }
-    strcpy(localstr, "");
 
-    /* Do all of the length checking first to avoid stack smashing */
+    localstr[0] = '\0';
+
     if (symbol->symbology == BARCODE_AUSPOST) {
         /* Format control code (FCC) */
         switch (length) {
@@ -126,7 +151,7 @@ INTERNAL int auspost(struct zint_symbol *symbol, unsigned char source[], int len
                 break;
             case 16:
                 strcpy(fcc, "59");
-                if (is_sane(NEON, source, length) != 0) {
+                if (!is_sane(NEON_F, source, length)) {
                     strcpy(symbol->errtxt, "402: Invalid character in data (digits only for length 16)");
                     return ZINT_ERROR_INVALID_DATA;
                 }
@@ -136,21 +161,14 @@ INTERNAL int auspost(struct zint_symbol *symbol, unsigned char source[], int len
                 break;
             case 23:
                 strcpy(fcc, "62");
-                if (is_sane(NEON, source, length) != 0) {
+                if (!is_sane(NEON_F, source, length)) {
                     strcpy(symbol->errtxt, "406: Invalid character in data (digits only for length 23)");
                     return ZINT_ERROR_INVALID_DATA;
                 }
                 break;
-            default:
-                strcpy(symbol->errtxt, "401: Auspost input is wrong length (8, 13, 16, 18 or 23 characters only)");
-                return ZINT_ERROR_TOO_LONG;
         }
     } else {
         int zeroes;
-        if (length > 8) {
-            strcpy(symbol->errtxt, "403: Auspost input is too long (8 character maximum)");
-            return ZINT_ERROR_TOO_LONG;
-        }
         switch (symbol->symbology) {
             case BARCODE_AUSREPLY: strcpy(fcc, "45");
                 break;
@@ -175,58 +193,60 @@ INTERNAL int auspost(struct zint_symbol *symbol, unsigned char source[], int len
     /* Verify that the first 8 characters are numbers */
     memcpy(dpid, localstr, 8);
     dpid[8] = '\0';
-    if (is_sane(NEON, (unsigned char *) dpid, 8) != 0) {
+    if (!is_sane(NEON_F, (unsigned char *) dpid, 8)) {
         strcpy(symbol->errtxt, "405: Invalid character in DPID (first 8 characters) (digits only)");
         return ZINT_ERROR_INVALID_DATA;
     }
 
     /* Start character */
-    strcpy(data_pattern, "13");
+    memcpy(d, "13", 2);
+    d += 2;
 
     /* Encode the FCC */
-    for (reader = 0; reader < 2; reader++) {
-        lookup(NEON, AusNTable, fcc[reader], data_pattern);
+    for (reader = 0; reader < 2; reader++, d += 2) {
+        memcpy(d, AusNTable[fcc[reader] - '0'], 2);
     }
 
     /* Delivery Point Identifier (DPID) */
-    for (reader = 0; reader < 8; reader++) {
-        lookup(NEON, AusNTable, dpid[reader], data_pattern);
+    for (reader = 0; reader < 8; reader++, d += 2) {
+        memcpy(d, AusNTable[dpid[reader] - '0'], 2);
     }
 
     /* Customer Information */
     if (h > 8) {
         if ((h == 13) || (h == 18)) {
-            for (reader = 8; reader < h; reader++) {
-                lookup(GDSET, AusCTable, localstr[reader], data_pattern);
+            for (reader = 8; reader < h; reader++, d += 3) {
+                memcpy(d, AusCTable[posn(GDSET, localstr[reader])], 3);
             }
         } else if ((h == 16) || (h == 23)) {
-            for (reader = 8; reader < h; reader++) {
-                lookup(NEON, AusNTable, localstr[reader], data_pattern);
+            for (reader = 8; reader < h; reader++, d += 2) {
+                memcpy(d, AusNTable[localstr[reader] - '0'], 2);
             }
         }
     }
 
     /* Filler bar */
-    h = (int) strlen(data_pattern);
+    h = d - data_pattern;
     switch (h) {
         case 22:
         case 37:
         case 52:
-            strcat(data_pattern, "3");
+            *d++ = '3';
             break;
         default:
             break;
     }
 
     /* Reed Solomon error correction */
-    rs_error(data_pattern);
+    d = aus_rs_error(data_pattern, d);
 
     /* Stop character */
-    strcat(data_pattern, "13");
+    memcpy(d, "13", 2);
+    d += 2;
 
     /* Turn the symbol into a bar pattern ready for plotting */
     writer = 0;
-    h = (int) strlen(data_pattern);
+    h = d - data_pattern;
     for (loopey = 0; loopey < h; loopey++) {
         if ((data_pattern[loopey] == '1') || (data_pattern[loopey] == '0')) {
             set_module(symbol, 0, writer);

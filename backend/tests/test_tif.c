@@ -92,7 +92,7 @@ static void test_pixel_plot(int index, int debug) {
 
     char *tif = "out.tif";
 
-    char data_buf[65536];
+    char data_buf[ZINT_MAX_DATA_LEN * 2 + 1];
 
     int have_tiffinfo = testUtilHaveTiffInfo();
     int have_identify = testUtilHaveIdentify();

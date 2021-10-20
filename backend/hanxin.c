@@ -474,7 +474,7 @@ static void hx_define_mode(char *mode, const unsigned int gbdata[], const int le
 
     /* Get optimal mode for each code point by tracing backwards */
     for (i = length - 1, cm_i = i * HX_NUM_MODES; i >= 0; i--, cm_i -= HX_NUM_MODES) {
-        j = strchr(mode_types, cur_mode) - mode_types;
+        j = posn(mode_types, cur_mode);
         cur_mode = char_modes[cm_i + j];
         mode[i] = cur_mode;
     }
@@ -535,17 +535,17 @@ static void calculate_binary(char binary[], const char mode[], unsigned int sour
                 while (i < block_length) {
                     int first = 0;
 
-                    first = posn(NEON, (char) source[position + i]);
+                    first = ctoi((const char) source[position + i]);
                     count = 1;
                     encoding_value = first;
 
                     if (i + 1 < block_length && mode[position + i + 1] == 'n') {
-                        int second = posn(NEON, (char) source[position + i + 1]);
+                        int second = ctoi((const char) source[position + i + 1]);
                         count = 2;
                         encoding_value = (encoding_value * 10) + second;
 
                         if (i + 2 < block_length && mode[position + i + 2] == 'n') {
-                            int third = posn(NEON, (char) source[position + i + 2]);
+                            int third = ctoi((const char) source[position + i + 2]);
                             count = 3;
                             encoding_value = (encoding_value * 10) + third;
                         }

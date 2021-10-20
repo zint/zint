@@ -501,7 +501,7 @@ static void test_cap_compliant_height() {
 
     testStart("test_cap_compliant_height");
 
-    for (symbol_id = 1; symbol_id <= BARCODE_RMQR; symbol_id++) {
+    for (symbol_id = 1; symbol_id <= BARCODE_LAST; symbol_id++) {
         if (!ZBarcode_ValidID(symbol_id)) continue;
 
         ret = ZBarcode_Cap(symbol_id, ZINT_CAP_COMPLIANT_HEIGHT);

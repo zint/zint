@@ -1,8 +1,4 @@
 /* code.c - Handles Code 11, 39, 39+, 93, PZN, Channel and VIN */
-/* LOGMARS MIL-STD-1189 Rev. B https://apps.dtic.mil/dtic/tr/fulltext/u2/a473534.pdf */
-/* PZN https://www.ifaffm.de/mandanten/1/documents/04_ifa_coding_system/IFA_Info_Code_39_EN.pdf */
-/* PZN https://www.ifaffm.de/mandanten/1/documents/04_ifa_coding_system/
-       IFA-Info_Check_Digit_Calculations_PZN_PPN_UDI_EN.pdf */
 
 /*
     libzint - the open source barcode library
@@ -41,61 +37,95 @@
 #include <assert.h>
 #include "common.h"
 
-#define SODIUM  "0123456789-"
-#define SILVER  "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%abcd"
-#define ARSENIC "0123456789ABCDEFGHJKLMNPRSTUVWXYZ"
+#define SODIUM_MNS_F    (IS_NUM_F | IS_MNS_F) /* SODIUM "0123456789-" */
 
-static const char *C11Table[11] = {
-    "111121", "211121", "121121", "221111", "112121", "212111", "122111",
-    "111221", "211211", "211111", "112111"
+/* Same as TECHNETIUM (HIBC) with "abcd" added for CODE93 */
+static const char SILVER[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%abcd";
+
+#define ARSENIC_F       (IS_NUM_F | IS_ARS_F) /* ARSENIC "0123456789ABCDEFGHJKLMNPRSTUVWXYZ" */
+
+static const char C11Table[11][6] = {
+    {'1','1','1','1','2','1'}, {'2','1','1','1','2','1'}, {'1','2','1','1','2','1'}, {'2','2','1','1','1','1'},
+    {'1','1','2','1','2','1'}, {'2','1','2','1','1','1'}, {'1','2','2','1','1','1'}, {'1','1','1','2','2','1'},
+    {'2','1','1','2','1','1'}, {'2','1','1','1','1','1'}, {'1','1','2','1','1','1'}
 };
 
 /* Code 39 tables checked against ISO/IEC 16388:2007 */
 
 /* Incorporates Table A1 */
 
-static const char *C39Table[43] = {
+static const char C39Table[43][10] = {
     /* Code 39 character assignments (Table 1) */
-    "1112212111", "2112111121", "1122111121", "2122111111", "1112211121",
-    "2112211111", "1122211111", "1112112121", "2112112111", "1122112111", "2111121121",
-    "1121121121", "2121121111", "1111221121", "2111221111", "1121221111", "1111122121",
-    "2111122111", "1121122111", "1111222111", "2111111221", "1121111221", "2121111211",
-    "1111211221", "2111211211", "1121211211", "1111112221", "2111112211", "1121112211",
-    "1111212211", "2211111121", "1221111121", "2221111111", "1211211121", "2211211111",
-    "1221211111", "1211112121", "2211112111", "1221112111", "1212121111", "1212111211",
-    "1211121211", "1112121211"
+    {'1','1','1','2','2','1','2','1','1','1'}, {'2','1','1','2','1','1','1','1','2','1'},
+    {'1','1','2','2','1','1','1','1','2','1'}, {'2','1','2','2','1','1','1','1','1','1'},
+    {'1','1','1','2','2','1','1','1','2','1'}, {'2','1','1','2','2','1','1','1','1','1'},
+    {'1','1','2','2','2','1','1','1','1','1'}, {'1','1','1','2','1','1','2','1','2','1'},
+    {'2','1','1','2','1','1','2','1','1','1'}, {'1','1','2','2','1','1','2','1','1','1'},
+    {'2','1','1','1','1','2','1','1','2','1'}, {'1','1','2','1','1','2','1','1','2','1'},
+    {'2','1','2','1','1','2','1','1','1','1'}, {'1','1','1','1','2','2','1','1','2','1'},
+    {'2','1','1','1','2','2','1','1','1','1'}, {'1','1','2','1','2','2','1','1','1','1'},
+    {'1','1','1','1','1','2','2','1','2','1'}, {'2','1','1','1','1','2','2','1','1','1'},
+    {'1','1','2','1','1','2','2','1','1','1'}, {'1','1','1','1','2','2','2','1','1','1'},
+    {'2','1','1','1','1','1','1','2','2','1'}, {'1','1','2','1','1','1','1','2','2','1'},
+    {'2','1','2','1','1','1','1','2','1','1'}, {'1','1','1','1','2','1','1','2','2','1'},
+    {'2','1','1','1','2','1','1','2','1','1'}, {'1','1','2','1','2','1','1','2','1','1'},
+    {'1','1','1','1','1','1','2','2','2','1'}, {'2','1','1','1','1','1','2','2','1','1'},
+    {'1','1','2','1','1','1','2','2','1','1'}, {'1','1','1','1','2','1','2','2','1','1'},
+    {'2','2','1','1','1','1','1','1','2','1'}, {'1','2','2','1','1','1','1','1','2','1'},
+    {'2','2','2','1','1','1','1','1','1','1'}, {'1','2','1','1','2','1','1','1','2','1'},
+    {'2','2','1','1','2','1','1','1','1','1'}, {'1','2','2','1','2','1','1','1','1','1'},
+    {'1','2','1','1','1','1','2','1','2','1'}, {'2','2','1','1','1','1','2','1','1','1'},
+    {'1','2','2','1','1','1','2','1','1','1'}, {'1','2','1','2','1','2','1','1','1','1'},
+    {'1','2','1','2','1','1','1','2','1','1'}, {'1','2','1','1','1','2','1','2','1','1'},
+    {'1','1','1','2','1','2','1','2','1','1'}
 };
 
-static const char *EC39Ctrl[128] = {
+static const char EC39Ctrl[128][2] = {
     /* Encoding the full ASCII character set in Code 39 (Table A2) */
-    "%U", "$A", "$B", "$C", "$D", "$E", "$F", "$G", "$H", "$I", "$J", "$K",
-    "$L", "$M", "$N", "$O", "$P", "$Q", "$R", "$S", "$T", "$U", "$V", "$W", "$X", "$Y", "$Z",
-    "%A", "%B", "%C", "%D", "%E", " ", "/A", "/B", "/C", "/D", "/E", "/F", "/G", "/H", "/I", "/J",
-    "/K", "/L", "-", ".", "/O", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "/Z", "%F",
-    "%G", "%H", "%I", "%J", "%V", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
-    "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "%K", "%L", "%M", "%N", "%O",
-    "%W", "+A", "+B", "+C", "+D", "+E", "+F", "+G", "+H", "+I", "+J", "+K", "+L", "+M", "+N", "+O",
-    "+P", "+Q", "+R", "+S", "+T", "+U", "+V", "+W", "+X", "+Y", "+Z", "%P", "%Q", "%R", "%S", "%T"
+    {'%','U'}, {'$','A'}, {'$','B'}, {'$','C'}, {'$','D'}, {'$','E'}, {'$','F'}, {'$','G'}, {'$','H'}, {'$','I'},
+    {'$','J'}, {'$','K'}, {'$','L'}, {'$','M'}, {'$','N'}, {'$','O'}, {'$','P'}, {'$','Q'}, {'$','R'}, {'$','S'},
+    {'$','T'}, {'$','U'}, {'$','V'}, {'$','W'}, {'$','X'}, {'$','Y'}, {'$','Z'}, {'%','A'}, {'%','B'}, {'%','C'},
+    {'%','D'}, {'%','E'}, {  " "  }, {'/','A'}, {'/','B'}, {'/','C'}, {'/','D'}, {'/','E'}, {'/','F'}, {'/','G'},
+    {'/','H'}, {'/','I'}, {'/','J'}, {'/','K'}, {'/','L'}, {  "-"  }, {  "."  }, {'/','O'}, {  "0"  }, {  "1"  },
+    {  "2"  }, {  "3"  }, {  "4"  }, {  "5"  }, {  "6"  }, {  "7"  }, {  "8"  }, {  "9"  }, {'/','Z'}, {'%','F'},
+    {'%','G'}, {'%','H'}, {'%','I'}, {'%','J'}, {'%','V'}, {  "A"  }, {  "B"  }, {  "C"  }, {  "D"  }, {  "E"  },
+    {  "F"  }, {  "G"  }, {  "H"  }, {  "I"  }, {  "J"  }, {  "K"  }, {  "L"  }, {  "M"  }, {  "N"  }, {  "O"  },
+    {  "P"  }, {  "Q"  }, {  "R"  }, {  "S"  }, {  "T"  }, {  "U"  }, {  "V"  }, {  "W"  }, {  "X"  }, {  "Y"  },
+    {  "Z"  }, {'%','K'}, {'%','L'}, {'%','M'}, {'%','N'}, {'%','O'}, {'%','W'}, {'+','A'}, {'+','B'}, {'+','C'},
+    {'+','D'}, {'+','E'}, {'+','F'}, {'+','G'}, {'+','H'}, {'+','I'}, {'+','J'}, {'+','K'}, {'+','L'}, {'+','M'},
+    {'+','N'}, {'+','O'}, {'+','P'}, {'+','Q'}, {'+','R'}, {'+','S'}, {'+','T'}, {'+','U'}, {'+','V'}, {'+','W'},
+    {'+','X'}, {'+','Y'}, {'+','Z'}, {'%','P'}, {'%','Q'}, {'%','R'}, {'%','S'}, {'%','T'}
 };
 
-static const char *C93Ctrl[128] = {
-    "bU", "aA", "aB", "aC", "aD", "aE", "aF", "aG", "aH", "aI", "aJ", "aK",
-    "aL", "aM", "aN", "aO", "aP", "aQ", "aR", "aS", "aT", "aU", "aV", "aW", "aX", "aY", "aZ",
-    "bA", "bB", "bC", "bD", "bE", " ", "cA", "cB", "cC", "$", "%", "cF", "cG", "cH", "cI", "cJ",
-    "+", "cL", "-", ".", "/", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "cZ", "bF",
-    "bG", "bH", "bI", "bJ", "bV", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
-    "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "bK", "bL", "bM", "bN", "bO",
-    "bW", "dA", "dB", "dC", "dD", "dE", "dF", "dG", "dH", "dI", "dJ", "dK", "dL", "dM", "dN", "dO",
-    "dP", "dQ", "dR", "dS", "dT", "dU", "dV", "dW", "dX", "dY", "dZ", "bP", "bQ", "bR", "bS", "bT"
+static const char C93Ctrl[128][2] = {
+    {'b','U'}, {'a','A'}, {'a','B'}, {'a','C'}, {'a','D'}, {'a','E'}, {'a','F'}, {'a','G'}, {'a','H'}, {'a','I'},
+    {'a','J'}, {'a','K'}, {'a','L'}, {'a','M'}, {'a','N'}, {'a','O'}, {'a','P'}, {'a','Q'}, {'a','R'}, {'a','S'},
+    {'a','T'}, {'a','U'}, {'a','V'}, {'a','W'}, {'a','X'}, {'a','Y'}, {'a','Z'}, {'b','A'}, {'b','B'}, {'b','C'},
+    {'b','D'}, {'b','E'}, {  " "  }, {'c','A'}, {'c','B'}, {'c','C'}, {  "$"  }, {  "%"  }, {'c','F'}, {'c','G'},
+    {'c','H'}, {'c','I'}, {'c','J'}, {  "+"  }, {'c','L'}, {  "-"  }, {  "."  }, {  "/"  }, {  "0"  }, {  "1"  },
+    {  "2"  }, {  "3"  }, {  "4"  }, {  "5"  }, {  "6"  }, {  "7"  }, {  "8"  }, {  "9"  }, {'c','Z'}, {'b','F'},
+    {'b','G'}, {'b','H'}, {'b','I'}, {'b','J'}, {'b','V'}, {  "A"  }, {  "B"  }, {  "C"  }, {  "D"  }, {  "E"  },
+    {  "F"  }, {  "G"  }, {  "H"  }, {  "I"  }, {  "J"  }, {  "K"  }, {  "L"  }, {  "M"  }, {  "N"  }, {  "O"  },
+    {  "P"  }, {  "Q"  }, {  "R"  }, {  "S"  }, {  "T"  }, {  "U"  }, {  "V"  }, {  "W"  }, {  "X"  }, {  "Y"  },
+    {  "Z"  }, {'b','K'}, {'b','L'}, {'b','M'}, {'b','N'}, {'b','O'}, {'b','W'}, {'d','A'}, {'d','B'}, {'d','C'},
+    {'d','D'}, {'d','E'}, {'d','F'}, {'d','G'}, {'d','H'}, {'d','I'}, {'d','J'}, {'d','K'}, {'d','L'}, {'d','M'},
+    {'d','N'}, {'d','O'}, {'d','P'}, {'d','Q'}, {'d','R'}, {'d','S'}, {'d','T'}, {'d','U'}, {'d','V'}, {'d','W'},
+    {'d','X'}, {'d','Y'}, {'d','Z'}, {'b','P'}, {'b','Q'}, {'b','R'}, {'b','S'}, {'b','T'}
 };
 
-static const char *C93Table[47] = {
-    "131112", "111213", "111312", "111411", "121113", "121212", "121311",
-    "111114", "131211", "141111", "211113", "211212", "211311", "221112", "221211", "231111",
-    "112113", "112212", "112311", "122112", "132111", "111123", "111222", "111321", "121122",
-    "131121", "212112", "212211", "211122", "211221", "221121", "222111", "112122", "112221",
-    "122121", "123111", "121131", "311112", "311211", "321111", "112131", "113121", "211131",
-    "121221", "312111", "311121", "122211"
+static const char C93Table[47][6] = {
+    {'1','3','1','1','1','2'}, {'1','1','1','2','1','3'}, {'1','1','1','3','1','2'}, {'1','1','1','4','1','1'},
+    {'1','2','1','1','1','3'}, {'1','2','1','2','1','2'}, {'1','2','1','3','1','1'}, {'1','1','1','1','1','4'},
+    {'1','3','1','2','1','1'}, {'1','4','1','1','1','1'}, {'2','1','1','1','1','3'}, {'2','1','1','2','1','2'},
+    {'2','1','1','3','1','1'}, {'2','2','1','1','1','2'}, {'2','2','1','2','1','1'}, {'2','3','1','1','1','1'},
+    {'1','1','2','1','1','3'}, {'1','1','2','2','1','2'}, {'1','1','2','3','1','1'}, {'1','2','2','1','1','2'},
+    {'1','3','2','1','1','1'}, {'1','1','1','1','2','3'}, {'1','1','1','2','2','2'}, {'1','1','1','3','2','1'},
+    {'1','2','1','1','2','2'}, {'1','3','1','1','2','1'}, {'2','1','2','1','1','2'}, {'2','1','2','2','1','1'},
+    {'2','1','1','1','2','2'}, {'2','1','1','2','2','1'}, {'2','2','1','1','2','1'}, {'2','2','2','1','1','1'},
+    {'1','1','2','1','2','2'}, {'1','1','2','2','2','1'}, {'1','2','2','1','2','1'}, {'1','2','3','1','1','1'},
+    {'1','2','1','1','3','1'}, {'3','1','1','1','1','2'}, {'3','1','1','2','1','1'}, {'3','2','1','1','1','1'},
+    {'1','1','2','1','3','1'}, {'1','1','3','1','2','1'}, {'2','1','1','1','3','1'}, {'1','2','1','2','2','1'},
+    {'3','1','2','1','1','1'}, {'3','1','1','1','2','1'}, {'1','2','2','2','1','1'}
 };
 
 /* *********************** CODE 11 ******************** */
@@ -105,8 +135,10 @@ INTERNAL int code11(struct zint_symbol *symbol, unsigned char source[], int leng
     int h, c_digit, c_weight, c_count, k_digit, k_weight, k_count;
     int weight[122], error_number = 0;
     char dest[750]; /* 6 + 121 * 6 + 2 * 6 + 5 + 1 == 750 */
-    char checkstr[3];
+    char *d = dest;
     int num_check_digits;
+    char checkstr[3] = {0};
+    static char checkchrs[11] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-' };
 
     /* Suppresses clang-tidy clang-analyzer-core.UndefinedBinaryOperatorResult warning */
     assert(length > 0);
@@ -115,7 +147,7 @@ INTERNAL int code11(struct zint_symbol *symbol, unsigned char source[], int leng
         strcpy(symbol->errtxt, "320: Input too long (121 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
-    if (is_sane(SODIUM, source, length) != 0) {
+    if (!is_sane(SODIUM_MNS_F, source, length)) {
         strcpy(symbol->errtxt, "321: Invalid character in data (digits and \"-\" only)");
         return ZINT_ERROR_INVALID_DATA;
     }
@@ -138,15 +170,16 @@ INTERNAL int code11(struct zint_symbol *symbol, unsigned char source[], int leng
     k_count = 0;
 
     /* start character */
-    strcpy(dest, "112211");
+    memcpy(d, "112211", 6);
+    d +=  6;
 
     /* Draw main body of barcode */
-    for (i = 0; i < length; i++) {
-        lookup(SODIUM, C11Table, source[i], dest);
+    for (i = 0; i < length; i++, d += 6) {
         if (source[i] == '-')
             weight[i] = 10;
         else
             weight[i] = ctoi(source[i]);
+        memcpy(d, C11Table[weight[i]], 6);
     }
 
     if (num_check_digits) {
@@ -161,14 +194,11 @@ INTERNAL int code11(struct zint_symbol *symbol, unsigned char source[], int leng
         }
         c_digit = c_count % 11;
 
-        if (num_check_digits == 1) {
-            checkstr[0] = itoc(c_digit);
-            if (checkstr[0] == 'A') {
-                checkstr[0] = '-';
-            }
-            checkstr[1] = '\0';
-            lookup(SODIUM, C11Table, checkstr[0], dest);
-        } else {
+        checkstr[0] = checkchrs[c_digit];
+        memcpy(d, C11Table[c_digit], 6);
+        d += 6;
+
+        if (num_check_digits == 2) {
             weight[length] = c_digit;
 
             /* Calculate K checksum */
@@ -182,17 +212,9 @@ INTERNAL int code11(struct zint_symbol *symbol, unsigned char source[], int leng
             }
             k_digit = k_count % 11;
 
-            checkstr[0] = itoc(c_digit);
-            checkstr[1] = itoc(k_digit);
-            if (checkstr[0] == 'A') {
-                checkstr[0] = '-';
-            }
-            if (checkstr[1] == 'A') {
-                checkstr[1] = '-';
-            }
-            checkstr[2] = '\0';
-            lookup(SODIUM, C11Table, checkstr[0], dest);
-            lookup(SODIUM, C11Table, checkstr[1], dest);
+            checkstr[1] = checkchrs[k_digit];
+            memcpy(d, C11Table[k_digit], 6);
+            d += 6;
         }
     }
 
@@ -201,9 +223,10 @@ INTERNAL int code11(struct zint_symbol *symbol, unsigned char source[], int leng
     }
 
     /* Stop character */
-    strcat(dest, "11221");
+    memcpy(d, "11221", 5);
+    d += 5;
 
-    expand(symbol, dest);
+    expand(symbol, dest, d - dest);
 
     // TODO: Find documentation on BARCODE_CODE11 dimensions/height
 
@@ -219,7 +242,9 @@ INTERNAL int code39(struct zint_symbol *symbol, unsigned char source[], int leng
     int i;
     int counter;
     int error_number = 0;
+    int posns[85];
     char dest[880]; /* 10 (Start) + 85 * 10 + 10 (Check) + 9 (Stop) + 1 = 880 */
+    char *d = dest;
     char localstr[2] = {0};
 
     counter = 0;
@@ -228,6 +253,7 @@ INTERNAL int code39(struct zint_symbol *symbol, unsigned char source[], int leng
         symbol->option_2 = 0;
     }
 
+    /* LOGMARS MIL-STD-1189 Rev. B https://apps.dtic.mil/dtic/tr/fulltext/u2/a473534.pdf */
     if ((symbol->symbology == BARCODE_LOGMARS) && (length > 30)) { /* MIL-STD-1189 Rev. B Section 5.2.6.2 */
         strcpy(symbol->errtxt, "322: Input too long (30 character maximum)");
         return ZINT_ERROR_TOO_LONG;
@@ -240,18 +266,20 @@ INTERNAL int code39(struct zint_symbol *symbol, unsigned char source[], int leng
         strcpy(symbol->errtxt, "323: Input too long (85 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
-    to_upper(source);
-    if (is_sane(SILVER, source, length) != 0) {
+
+    to_upper(source, length);
+    if (!is_sane_lookup(SILVER, 43, source, length, posns)) {
         strcpy(symbol->errtxt, "324: Invalid character in data (alphanumerics, space and \"-.$/+%\" only)");
         return ZINT_ERROR_INVALID_DATA;
     }
 
     /* Start character */
-    strcpy(dest, "1211212111");
+    memcpy(d, "1211212111", 10);
+    d += 10;
 
-    for (i = 0; i < length; i++) {
-        lookup(SILVER, C39Table, source[i], dest);
-        counter += posn(SILVER, source[i]);
+    for (i = 0; i < length; i++, d += 10) {
+        memcpy(d, C39Table[posns[i]], 10);
+        counter += posns[i];
     }
 
     if (symbol->option_2 == 1) {
@@ -259,7 +287,8 @@ INTERNAL int code39(struct zint_symbol *symbol, unsigned char source[], int leng
         char check_digit;
         counter %= 43;
         check_digit = SILVER[counter];
-        lookup(SILVER, C39Table, check_digit, dest);
+        memcpy(d, C39Table[counter], 10);
+        d += 10;
 
         /* Display a space check digit as _, otherwise it looks like an error */
         if (check_digit == ' ') {
@@ -271,11 +300,12 @@ INTERNAL int code39(struct zint_symbol *symbol, unsigned char source[], int leng
     }
 
     /* Stop character */
-    strcat(dest, "121121211");
+    memcpy(d, "121121211", 9);
+    d += 9;
 
     if ((symbol->symbology == BARCODE_LOGMARS) || (symbol->symbology == BARCODE_HIBC_39)) {
         /* LOGMARS uses wider 'wide' bars than normal Code 39 */
-        counter = (int) strlen(dest);
+        counter = d - dest;
         for (i = 0; i < counter; i++) {
             if (dest[i] == '2') {
                 dest[i] = '3';
@@ -283,11 +313,11 @@ INTERNAL int code39(struct zint_symbol *symbol, unsigned char source[], int leng
         }
     }
 
-	if (symbol->debug & ZINT_DEBUG_PRINT) {
-		printf("Barspaces: %s\n", dest);
-	}
+    if (symbol->debug & ZINT_DEBUG_PRINT) {
+        printf("Barspaces: %.*s\n", (int) (d - dest), dest);
+    }
 
-    expand(symbol, dest);
+    expand(symbol, dest, d - dest);
 
     if (symbol->output_options & COMPLIANT_HEIGHT) {
         if (symbol->symbology == BARCODE_LOGMARS) {
@@ -324,6 +354,9 @@ INTERNAL int code39(struct zint_symbol *symbol, unsigned char source[], int leng
 }
 
 /* Pharmazentral Nummer (PZN) */
+/* PZN https://www.ifaffm.de/mandanten/1/documents/04_ifa_coding_system/IFA_Info_Code_39_EN.pdf */
+/* PZN https://www.ifaffm.de/mandanten/1/documents/04_ifa_coding_system/
+       IFA-Info_Check_Digit_Calculations_PZN_PPN_UDI_EN.pdf */
 INTERNAL int pzn(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     int i, error_number, zeroes;
@@ -334,7 +367,7 @@ INTERNAL int pzn(struct zint_symbol *symbol, unsigned char source[], int length)
         strcpy(symbol->errtxt, "325: Input wrong length (7 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
-    if (is_sane(NEON, source, length) != 0) {
+    if (!is_sane(NEON_F, source, length)) {
         strcpy(symbol->errtxt, "326: Invalid character in data (digits only)");
         return ZINT_ERROR_INVALID_DATA;
     }
@@ -387,6 +420,7 @@ INTERNAL int pzn(struct zint_symbol *symbol, unsigned char source[], int length)
 INTERNAL int excode39(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     unsigned char buffer[85 * 2 + 1] = {0};
+    unsigned char *b = buffer;
     int i;
     int error_number;
 
@@ -402,11 +436,17 @@ INTERNAL int excode39(struct zint_symbol *symbol, unsigned char source[], int le
             strcpy(symbol->errtxt, "329: Invalid character in data, extended ASCII not allowed");
             return ZINT_ERROR_INVALID_DATA;
         }
-        ustrcat(buffer, EC39Ctrl[source[i]]);
+        memcpy(b, EC39Ctrl[source[i]], 2);
+        b += EC39Ctrl[source[i]][1] ? 2 : 1;
     }
+    if (b - buffer > 85) {
+        strcpy(symbol->errtxt, "317: Expanded input too long (85 symbol character maximum)");
+        return ZINT_ERROR_TOO_LONG;
+    }
+    *b = '\0';
 
     /* Then sends the buffer to the C39 function */
-    error_number = code39(symbol, buffer, (int) ustrlen(buffer));
+    error_number = code39(symbol, buffer, b - buffer);
 
     for (i = 0; i < length; i++)
         symbol->text[i] = source[i] >= ' ' && source[i] != 0x7F ? source[i] : ' ';
@@ -424,10 +464,11 @@ INTERNAL int code93(struct zint_symbol *symbol, unsigned char source[], int leng
 
     int i;
     int h, weight, c, k, error_number = 0;
-    int values[108]; /* 107 + 1 (1st check) */
+    int values[110]; /* 107 + 2 (Checks) */
     char buffer[216]; /* 107*2 (107 full ASCII) + 1 = 215 */
+    char *b = buffer;
     char dest[668]; /* 6 (Start) + 107*6 + 2*6 (Checks) + 7 (Stop) + 1 (NUL) = 668 */
-    char set_copy[] = SILVER;
+    char *d = dest;
 
     /* Suppresses clang-tidy clang-analyzer-core.CallAndMessage warning */
     assert(length > 0);
@@ -437,8 +478,6 @@ INTERNAL int code93(struct zint_symbol *symbol, unsigned char source[], int leng
         return ZINT_ERROR_TOO_LONG;
     }
 
-    *buffer = '\0';
-
     /* Message Content */
     for (i = 0; i < length; i++) {
         if (source[i] > 127) {
@@ -446,14 +485,15 @@ INTERNAL int code93(struct zint_symbol *symbol, unsigned char source[], int leng
             strcpy(symbol->errtxt, "331: Invalid character in data, extended ASCII not allowed");
             return ZINT_ERROR_INVALID_DATA;
         }
-        strcat(buffer, C93Ctrl[source[i]]);
+        memcpy(b, C93Ctrl[source[i]], 2);
+        b += C93Ctrl[source[i]][1] ? 2 : 1;
         symbol->text[i] = source[i] >= ' ' && source[i] != 0x7F ? source[i] : ' ';
     }
 
     /* Now we can check the true length of the barcode */
-    h = (int) strlen(buffer);
+    h = b - buffer;
     if (h > 107) {
-        strcpy(symbol->errtxt, "332: Input too long (107 symbol character maximum)");
+        strcpy(symbol->errtxt, "332: Expanded input too long (107 symbol character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
 
@@ -474,7 +514,6 @@ INTERNAL int code93(struct zint_symbol *symbol, unsigned char source[], int leng
     }
     c = c % 47;
     values[h] = c;
-    buffer[h] = set_copy[c];
 
     /* Check digit K */
     k = 0;
@@ -486,19 +525,26 @@ INTERNAL int code93(struct zint_symbol *symbol, unsigned char source[], int leng
             weight = 1;
     }
     k = k % 47;
-    buffer[++h] = set_copy[k];
-    buffer[++h] = '\0';
+    values[h + 1] = k;
+    h += 2;
+
+    if (symbol->debug & ZINT_DEBUG_PRINT) {
+        printf("Check digit c: %d, k: %d\n", c, k);
+    }
 
     /* Start character */
-    strcpy(dest, "111141");
+    memcpy(d, "111141", 6);
+    d += 6;
 
-    for (i = 0; i < h; i++) {
-        lookup(SILVER, C93Table, buffer[i], dest);
+    for (i = 0; i < h; i++, d += 6) {
+        memcpy(d, C93Table[values[i]], 6);
     }
 
     /* Stop character */
-    strcat(dest, "1111411");
-    expand(symbol, dest);
+    memcpy(d, "1111411", 7);
+    d += 7;
+
+    expand(symbol, dest, d - dest);
 
     if (symbol->output_options & COMPLIANT_HEIGHT) {
         /* ANSI/AIM BC5-1995 Section 2.6 minimum height 0.2" or 15% of symbol length, whichever is greater
@@ -511,8 +557,8 @@ INTERNAL int code93(struct zint_symbol *symbol, unsigned char source[], int leng
     }
 
     if (symbol->option_2 == 1) {
-        symbol->text[length] = set_copy[c];
-        symbol->text[length + 1] = set_copy[k];
+        symbol->text[length] = SILVER[c];
+        symbol->text[length + 1] = SILVER[k];
         symbol->text[length + 2] = '\0';
     }
 
@@ -658,16 +704,16 @@ INTERNAL int channel(struct zint_symbol *symbol, unsigned char source[], int len
     static int max_ranges[] = { -1, -1, -1, 26, 292, 3493, 44072, 576688, 7742862 };
     int S[8] = {0}, B[8] = {0};
     long target_value = 0;
-    char pattern[30];
+    char dest[30];
+    char *d = dest;
     int channels, i;
     int error_number = 0, zeroes;
-    char hrt[9];
 
     if (length > 7) {
         strcpy(symbol->errtxt, "333: Input too long (7 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
-    if (is_sane(NEON, source, length) != 0) {
+    if (!is_sane(NEON_F, source, length)) {
         strcpy(symbol->errtxt, "334: Invalid character in data (digits only)");
         return ZINT_ERROR_INVALID_DATA;
     }
@@ -713,24 +759,23 @@ INTERNAL int channel(struct zint_symbol *symbol, unsigned char source[], int len
 
     CHNCHR(channels, target_value, B, S);
 
-    strcpy(pattern, "111111111"); /* Finder pattern */
+    memcpy(d, "111111111", 9); /* Finder pattern */
+    d += 9;
     for (i = 8 - channels; i < 8; i++) {
-        char part[3];
-        part[0] = itoc(S[i]);
-        part[1] = itoc(B[i]);
-        part[2] = '\0';
-        strcat(pattern, part);
+        *d++ = itoc(S[i]);
+        *d++ = itoc(B[i]);
     }
 
     zeroes = channels - 1 - length;
     if (zeroes < 0) {
         zeroes = 0;
     }
-    memset(hrt, '0', zeroes);
-    ustrcpy(hrt + zeroes, source);
-    ustrcpy(symbol->text, hrt);
+    if (zeroes) {
+        memset(symbol->text, '0', zeroes);
+    }
+    ustrcpy(symbol->text + zeroes, source);
 
-    expand(symbol, pattern);
+    expand(symbol, dest, d - dest);
 
     if (symbol->output_options & COMPLIANT_HEIGHT) {
         /* ANSI/AIM BC12-1998 gives min height as 5mm or 15% of length; X left as application specification so use
@@ -750,11 +795,10 @@ INTERNAL int vin(struct zint_symbol *symbol, unsigned char source[], int length)
 
     /* This code verifies the check digit present in North American VIN codes */
 
-    char local_source[18];
     char dest[200]; /* 10 + 10 + 17 * 10 + 9 + 1 = 200 */
+    char *d = dest;
     char input_check;
     char output_check;
-    int value[17];
     int weight[17] = {8, 7, 6, 5, 4, 3, 2, 10, 0, 9, 8, 7, 6, 5, 4, 3, 2};
     int sum;
     int i;
@@ -766,34 +810,30 @@ INTERNAL int vin(struct zint_symbol *symbol, unsigned char source[], int length)
     }
 
     // Check input characters, I, O and Q are not allowed
-    if (is_sane(ARSENIC, source, length) != 0) {
-        sprintf(symbol->errtxt, "337: Invalid character in data (\"%s\" only)", ARSENIC);
+    if (!is_sane(ARSENIC_F, source, length)) {
+        strcpy(symbol->errtxt, "337: Invalid character in data (alphanumerics only, excluding \"I\", \"O\" and \"Q\")");
         return ZINT_ERROR_INVALID_DATA;
     }
 
-    ustrcpy(local_source, source);
-
-    to_upper((unsigned char *) local_source);
+    to_upper(source, length);
 
     // Check digit only valid for North America
-    if (local_source[0] >= '1' && local_source[0] <= '5') {
-        input_check = local_source[8];
-
-        for (i = 0; i < 17; i++) {
-            if ((local_source[i] >= '0') && (local_source[i] <= '9')) {
-                value[i] = local_source[i] - '0';
-            } else if ((local_source[i] >= 'A') && (local_source[i] <= 'I')) {
-                value[i] = (local_source[i] - 'A') + 1;
-            } else if ((local_source[i] >= 'J') && (local_source[i] <= 'R')) {
-                value[i] = (local_source[i] - 'J') + 1;
-            } else if ((local_source[i] >= 'S') && (local_source[i] <= 'Z')) {
-                value[i] = (local_source[i] - 'S') + 2;
-            }
-        }
+    if (source[0] >= '1' && source[0] <= '5') {
+        input_check = source[8];
 
         sum = 0;
         for (i = 0; i < 17; i++) {
-            sum += value[i] * weight[i];
+            int value;
+            if (source[i] <= '9') {
+                value = source[i] - '0';
+            } else if (source[i] <= 'H') {
+                value = (source[i] - 'A') + 1;
+            } else if (source[i] <= 'R') {
+                value = (source[i] - 'J') + 1;
+            } else { /* (source[i] >= 'S') && (source[i] <= 'Z') */
+                value = (source[i] - 'S') + 2;
+            }
+            sum += value * weight[i];
         }
 
         output_check = '0' + (sum % 11);
@@ -804,33 +844,39 @@ INTERNAL int vin(struct zint_symbol *symbol, unsigned char source[], int length)
         }
 
         if (symbol->debug & ZINT_DEBUG_PRINT) {
-            printf("Producing VIN code: %s\n", local_source);
+            printf("Producing VIN code: %s\n", source);
             printf("Input check was %c, calculated check is %c\n", input_check, output_check);
         }
 
         if (input_check != output_check) {
-            sprintf(symbol->errtxt, "338: Invalid check digit '%c', expecting '%c'", input_check, output_check);
+            sprintf(symbol->errtxt, "338: Invalid check digit '%c' (position 9), expecting '%c'",
+                    input_check, output_check);
             return ZINT_ERROR_INVALID_CHECK;
         }
     }
 
     /* Start character */
-    strcpy(dest, "1211212111");
+    memcpy(d, "1211212111", 10);
+    d += 10;
 
     /* Import character 'I' prefix? */
     if (symbol->option_2 & 1) {
-        strcat(dest, "1121122111");
+        memcpy(d, C39Table[18], 10);
+        d += 10;
     }
 
     // Copy glyphs to symbol
-    for (i = 0; i < 17; i++) {
-        lookup(SILVER, C39Table, local_source[i], dest);
+    for (i = 0; i < 17; i++, d += 10) {
+        memcpy(d, C39Table[posn(SILVER, source[i])], 10);
     }
 
-    strcat(dest, "121121211");
+    /* Stop character */
+    memcpy(d, "121121211", 9);
+    d += 9;
 
-    ustrcpy(symbol->text, local_source);
-    expand(symbol, dest);
+    expand(symbol, dest, d - dest);
+
+    ustrcpy(symbol->text, source);
 
     /* Specification of dimensions/height for BARCODE_VIN unlikely */
 

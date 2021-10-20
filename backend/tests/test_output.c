@@ -31,7 +31,7 @@
 
 #include "testcommon.h"
 
-STATIC_UNLESS_ZINT_TEST int quiet_zones(const struct zint_symbol *symbol, const int hide_text,
+STATIC_UNLESS_ZINT_TEST int out_quiet_zones(const struct zint_symbol *symbol, const int hide_text,
                             float *left, float *right, float *top, float *bottom);
 
 static void test_quiet_zones(void) {
@@ -42,11 +42,11 @@ static void test_quiet_zones(void) {
 
     testStart("test_quiet_zones");
 
-    for (i = BARCODE_CODE11; i <= BARCODE_RMQR; i++) {
+    for (i = 1; i <= BARCODE_LAST; i++) {
         if (!ZBarcode_ValidID(i)) continue;
         symbol.symbology = i;
         symbol.output_options = BARCODE_QUIET_ZONES;
-        ret = quiet_zones(&symbol, hide_text, &left, &right, &top, &bottom);
+        ret = out_quiet_zones(&symbol, hide_text, &left, &right, &top, &bottom);
         if (i != BARCODE_FLAT) { // Only one which isn't marked as done
             assert_nonzero(ret, "i:%d %s not done\n", i, testUtilBarcodeName(i));
         }

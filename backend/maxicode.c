@@ -612,7 +612,7 @@ INTERNAL int maxicode(struct zint_symbol *symbol, unsigned char source[], int le
                 postcode[i] = ' ';
             }
             /* Upper-case and check for Code Set A characters only */
-            to_upper(postcode);
+            to_upper(postcode, postcode_len);
             for (i = 0; i < 6; i++) {
                 /* Don't allow Code Set A control characters CR, RS, GS and RS */
                 if (postcode[i] < ' ' || maxiCodeSet[postcode[i]] > 1) {

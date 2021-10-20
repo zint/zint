@@ -38,49 +38,58 @@
 #endif
 #include "common.h"
 
-#define DAFTSET "DAFT"
-#define KRSET "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-#define KASUTSET "1234567890-abcdefgh"
-#define CHKASUTSET "0123456789-abcdefgh"
-#define SHKASUTSET "1234567890-ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+static const char DAFTSET[] = "FADT";
+static const char KRSET[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+static const char KASUTSET[] = "1234567890-abcdefgh";
+static const char CHKASUTSET[] = "0123456789-abcdefgh";
+#define SHKASUTSET_F (IS_NUM_F | IS_MNS_F | IS_UPR_F) /* SHKASUTSET "1234567890-ABCDEFGHIJKLMNOPQRSTUVWXYZ" */
 
 /* PostNet number encoding table - In this table L is long as S is short */
-static const char *PNTable[10] = {
-    "LLSSS", "SSSLL", "SSLSL", "SSLLS", "SLSSL", "SLSLS", "SLLSS", "LSSSL",
-    "LSSLS", "LSLSS"
+static const char PNTable[10][5] = {
+    {'L','L','S','S','S'}, {'S','S','S','L','L'}, {'S','S','L','S','L'}, {'S','S','L','L','S'}, {'S','L','S','S','L'},
+    {'S','L','S','L','S'}, {'S','L','L','S','S'}, {'L','S','S','S','L'}, {'L','S','S','L','S'}, {'L','S','L','S','S'}
 };
 
-static const char *PLTable[10] = {
-    "SSLLL", "LLLSS", "LLSLS", "LLSSL", "LSLLS", "LSLSL", "LSSLL", "SLLLS",
-    "SLLSL", "SLSLL"
+static const char PLTable[10][5] = {
+    {'S','S','L','L','L'}, {'L','L','L','S','S'}, {'L','L','S','L','S'}, {'L','L','S','S','L'}, {'L','S','L','L','S'},
+    {'L','S','L','S','L'}, {'L','S','S','L','L'}, {'S','L','L','L','S'}, {'S','L','L','S','L'}, {'S','L','S','L','L'}
 };
 
-static const char *RoyalValues[36] = {
-    "11", "12", "13", "14", "15", "10", "21", "22", "23", "24", "25",
-    "20", "31", "32", "33", "34", "35", "30", "41", "42", "43", "44", "45", "40", "51", "52",
-    "53", "54", "55", "50", "01", "02", "03", "04", "05", "00"
+static const char RoyalValues[36][2] = {
+    { 1, 1 }, { 1, 2 }, { 1, 3 }, { 1, 4 }, { 1, 5 }, { 1, 0 }, { 2, 1 }, { 2, 2 }, { 2, 3 }, { 2, 4 },
+    { 2, 5 }, { 2, 0 }, { 3, 1 }, { 3, 2 }, { 3, 3 }, { 3, 4 }, { 3, 5 }, { 3, 0 }, { 4, 1 }, { 4, 2 },
+    { 4, 3 }, { 4, 4 }, { 4, 5 }, { 4, 0 }, { 5, 1 }, { 5, 2 }, { 5, 3 }, { 5, 4 }, { 5, 5 }, { 5, 0 },
+    { 0, 1 }, { 0, 2 }, { 0, 3 }, { 0, 4 }, { 0, 5 }, { 0, 0 }
 };
 
 /* 0 = Full, 1 = Ascender, 2 = Descender, 3 = Tracker */
-static const char *RoyalTable[36] = {
-    "3300", "3210", "3201", "2310", "2301", "2211", "3120", "3030", "3021",
-    "2130", "2121", "2031", "3102", "3012", "3003", "2112", "2103", "2013", "1320", "1230",
-    "1221", "0330", "0321", "0231", "1302", "1212", "1203", "0312", "0303", "0213", "1122",
-    "1032", "1023", "0132", "0123", "0033"
+static const char RoyalTable[36][4] = {
+    {'3','3','0','0'}, {'3','2','1','0'}, {'3','2','0','1'}, {'2','3','1','0'}, {'2','3','0','1'}, {'2','2','1','1'},
+    {'3','1','2','0'}, {'3','0','3','0'}, {'3','0','2','1'}, {'2','1','3','0'}, {'2','1','2','1'}, {'2','0','3','1'},
+    {'3','1','0','2'}, {'3','0','1','2'}, {'3','0','0','3'}, {'2','1','1','2'}, {'2','1','0','3'}, {'2','0','1','3'},
+    {'1','3','2','0'}, {'1','2','3','0'}, {'1','2','2','1'}, {'0','3','3','0'}, {'0','3','2','1'}, {'0','2','3','1'},
+    {'1','3','0','2'}, {'1','2','1','2'}, {'1','2','0','3'}, {'0','3','1','2'}, {'0','3','0','3'}, {'0','2','1','3'},
+    {'1','1','2','2'}, {'1','0','3','2'}, {'1','0','2','3'}, {'0','1','3','2'}, {'0','1','2','3'}, {'0','0','3','3'}
 };
 
-static const char *FlatTable[10] = {
-    "0504", "18", "0117", "0216", "0315", "0414", "0513", "0612", "0711", "0810"
+static const char FlatTable[10][4] = {
+    {'0','5','0','4'}, {     "18"      }, {'0','1','1','7'}, {'0','2','1','6'}, {'0','3','1','5'},
+    {'0','4','1','4'}, {'0','5','1','3'}, {'0','6','1','2'}, {'0','7','1','1'}, {'0','8','1','0'}
 };
 
-static const char *KoreaTable[10] = {
-    "1313150613", "0713131313", "0417131313", "1506131313",
-    "0413171313", "17171313", "1315061313", "0413131713", "17131713", "13171713"
+static const char KoreaTable[10][10] = {
+    {'1','3','1','3','1','5','0','6','1','3'}, {'0','7','1','3','1','3','1','3','1','3'},
+    {'0','4','1','7','1','3','1','3','1','3'}, {'1','5','0','6','1','3','1','3','1','3'},
+    {'0','4','1','3','1','7','1','3','1','3'}, {              "17171313"               },
+    {'1','3','1','5','0','6','1','3','1','3'}, {'0','4','1','3','1','3','1','7','1','3'},
+    {              "17131713"               }, {              "13171713"               }
 };
 
-static const char *JapanTable[19] = {
-    "114", "132", "312", "123", "141", "321", "213", "231", "411", "144",
-    "414", "324", "342", "234", "432", "243", "423", "441", "111"
+static const char JapanTable[19][3] = {
+    {'1','1','4'}, {'1','3','2'}, {'3','1','2'}, {'1','2','3'}, {'1','4','1'},
+    {'3','2','1'}, {'2','1','3'}, {'2','3','1'}, {'4','1','1'}, {'1','4','4'},
+    {'4','1','4'}, {'3','2','4'}, {'3','4','2'}, {'2','3','4'}, {'4','3','2'},
+    {'2','4','3'}, {'4','2','3'}, {'4','4','1'}, {'1','1','1'}
 };
 
 /* Set height for POSTNET/PLANET codes, maintaining ratio */
@@ -127,7 +136,7 @@ static int usps_set_height(struct zint_symbol *symbol, const int no_errtxt) {
 }
 
 /* Handles the PostNet system used for Zip codes in the US */
-static int postnet_enc(struct zint_symbol *symbol, unsigned char source[], char dest[], int length) {
+static int postnet_enc(struct zint_symbol *symbol, const unsigned char source[], char *d, const int length) {
     int i, sum, check_digit;
     int error_number = 0;
 
@@ -139,25 +148,27 @@ static int postnet_enc(struct zint_symbol *symbol, unsigned char source[], char 
         strcpy(symbol->errtxt, "479: Input length is not standard (5, 9 or 11 characters)");
         error_number = ZINT_WARN_NONCOMPLIANT;
     }
-    if (is_sane(NEON, source, length) != 0) {
+    if (!is_sane(NEON_F, source, length)) {
         strcpy(symbol->errtxt, "481: Invalid character in data (digits only)");
         return ZINT_ERROR_INVALID_DATA;
     }
     sum = 0;
 
     /* start character */
-    strcpy(dest, "L");
+    *d++ = 'L';
 
-    for (i = 0; i < length; i++) {
-        lookup(NEON, PNTable, source[i], dest);
-        sum += ctoi(source[i]);
+    for (i = 0; i < length; i++, d += 5) {
+        const int val = source[i] - '0';
+        memcpy(d, PNTable[val], 5);
+        sum += val;
     }
 
     check_digit = (10 - (sum % 10)) % 10;
-    strcat(dest, PNTable[check_digit]);
+    memcpy(d, PNTable[check_digit], 5);
+    d += 5;
 
     /* stop character */
-    strcat(dest, "L");
+    strcpy(d, "L");
 
     return error_number;
 }
@@ -191,7 +202,7 @@ INTERNAL int postnet(struct zint_symbol *symbol, unsigned char source[], int len
 }
 
 /* Handles the PLANET system used for item tracking in the US */
-static int planet_enc(struct zint_symbol *symbol, unsigned char source[], char dest[], int length) {
+static int planet_enc(struct zint_symbol *symbol, const unsigned char source[], char *d, const int length) {
     int i, sum, check_digit;
     int error_number = 0;
 
@@ -203,25 +214,27 @@ static int planet_enc(struct zint_symbol *symbol, unsigned char source[], char d
         strcpy(symbol->errtxt, "478: Input length is not standard (11 or 13 characters)");
         error_number = ZINT_WARN_NONCOMPLIANT;
     }
-    if (is_sane(NEON, source, length) != 0) {
+    if (!is_sane(NEON_F, source, length)) {
         strcpy(symbol->errtxt, "483: Invalid character in data (digits only)");
         return ZINT_ERROR_INVALID_DATA;
     }
     sum = 0;
 
     /* start character */
-    strcpy(dest, "L");
+    *d++ = 'L';
 
-    for (i = 0; i < length; i++) {
-        lookup(NEON, PLTable, source[i], dest);
-        sum += ctoi(source[i]);
+    for (i = 0; i < length; i++, d += 5) {
+        const int val = source[i] - '0';
+        memcpy(d, PLTable[val], 5);
+        sum += val;
     }
 
     check_digit = (10 - (sum % 10)) % 10;
-    strcat(dest, PLTable[check_digit]);
+    memcpy(d, PLTable[check_digit], 5);
+    d += 5;
 
     /* stop character */
-    strcat(dest, "L");
+    strcpy(d, "L");
 
     return error_number;
 }
@@ -258,12 +271,14 @@ INTERNAL int planet(struct zint_symbol *symbol, unsigned char source[], int leng
 INTERNAL int koreapost(struct zint_symbol *symbol, unsigned char source[], int length) {
     int total, loop, check, zeroes, error_number = 0;
     char localstr[8], dest[80];
+    char *d = dest;
+    int posns[6];
 
     if (length > 6) {
         strcpy(symbol->errtxt, "484: Input too long (6 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
-    if (is_sane(NEON, source, length) != 0) {
+    if (!is_sane(NEON_F, source, length)) {
         strcpy(symbol->errtxt, "485: Invalid character in data (digits only)");
         return ZINT_ERROR_INVALID_DATA;
     }
@@ -273,7 +288,8 @@ INTERNAL int koreapost(struct zint_symbol *symbol, unsigned char source[], int l
 
     total = 0;
     for (loop = 0; loop < 6; loop++) {
-        total += ctoi(localstr[loop]);
+        posns[loop] = ctoi(localstr[loop]);
+        total += posns[loop];
     }
     check = 10 - (total % 10);
     if (check == 10) {
@@ -281,12 +297,17 @@ INTERNAL int koreapost(struct zint_symbol *symbol, unsigned char source[], int l
     }
     localstr[6] = itoc(check);
     localstr[7] = '\0';
-    *dest = '\0';
+
     for (loop = 5; loop >= 0; loop--) {
-        lookup(NEON, KoreaTable, localstr[loop], dest);
+        const char *const entry = KoreaTable[posns[loop]];
+        memcpy(d, entry, 10);
+        d += entry[8] ? 10 : 8;
     }
-    lookup(NEON, KoreaTable, localstr[6], dest);
-    expand(symbol, dest);
+    memcpy(d, KoreaTable[check], 10);
+    d += KoreaTable[check][8] ? 10 : 8;
+
+    expand(symbol, dest, d - dest);
+
     ustrcpy(symbol->text, localstr);
 
     // TODO: Find documentation on BARCODE_KOREAPOST dimensions/height
@@ -298,7 +319,6 @@ INTERNAL int koreapost(struct zint_symbol *symbol, unsigned char source[], int l
     glyphs from http://en.wikipedia.org/wiki/Facing_Identification_Mark */
 INTERNAL int fim(struct zint_symbol *symbol, unsigned char source[], int length) {
     int error_number = 0;
-    char dest[16] = {0};
 
     if (length > 1) {
         strcpy(symbol->errtxt, "486: Input too long (1 character maximum)");
@@ -308,27 +328,25 @@ INTERNAL int fim(struct zint_symbol *symbol, unsigned char source[], int length)
     switch ((char) source[0]) {
         case 'a':
         case 'A':
-            strcpy(dest, "111515111");
+            expand(symbol, "111515111", 9);
             break;
         case 'b':
         case 'B':
-            strcpy(dest, "13111311131");
+            expand(symbol, "13111311131", 11);
             break;
         case 'c':
         case 'C':
-            strcpy(dest, "11131313111");
+            expand(symbol, "11131313111", 11);
             break;
         case 'd':
         case 'D':
-            strcpy(dest, "1111131311111");
+            expand(symbol, "1111131311111", 13);
             break;
         default:
             strcpy(symbol->errtxt, "487: Invalid character in data (\"A\", \"B\", \"C\" or \"D\" only)");
             return ZINT_ERROR_INVALID_DATA;
             break;
     }
-
-    expand(symbol, dest);
 
     if (symbol->output_options & COMPLIANT_HEIGHT) {
         /* USPS Domestic Mail Manual (USPS DMM 300) Jan 8, 2006 (updated 2011) 708.9.3
@@ -344,7 +362,7 @@ INTERNAL int fim(struct zint_symbol *symbol, unsigned char source[], int length)
 
 /* Set height for DAFT-type codes, maintaining ratio. Expects row_height[0] & row_height[1] to be set */
 /* Used by auspost.c also */
-INTERNAL int daft_set_height(struct zint_symbol *symbol, float min_height, float max_height) {
+INTERNAL int daft_set_height(struct zint_symbol *symbol, const float min_height, const float max_height) {
     int error_number = 0;
     float t_ratio; /* Tracker ratio */
 
@@ -376,22 +394,21 @@ INTERNAL int daft_set_height(struct zint_symbol *symbol, float min_height, float
 }
 
 /* Handles the 4 State barcodes used in the UK by Royal Mail */
-static char rm4scc_enc(unsigned char source[], char dest[], int length) {
+static void rm4scc_enc(const int *posns, char *d, const int length) {
     int i;
     int top, bottom, row, column, check_digit;
-    char values[3], set_copy[] = KRSET;
 
     top = 0;
     bottom = 0;
 
     /* start character */
-    strcpy(dest, "1");
+    *d++ = '1';
 
-    for (i = 0; i < length; i++) {
-        lookup(KRSET, RoyalTable, source[i], dest);
-        strcpy(values, RoyalValues[posn(KRSET, source[i])]);
-        top += ctoi(values[0]);
-        bottom += ctoi(values[1]);
+    for (i = 0; i < length; i++, d += 4) {
+        const int p = posns[i];
+        memcpy(d, RoyalTable[p], 4);
+        top += RoyalValues[p][0];
+        bottom += RoyalValues[p][1];
     }
 
     /* Calculate the check digit */
@@ -404,32 +421,31 @@ static char rm4scc_enc(unsigned char source[], char dest[], int length) {
         column = 5;
     }
     check_digit = (6 * row) + column;
-    strcat(dest, RoyalTable[check_digit]);
+    memcpy(d, RoyalTable[check_digit], 4);
+    d += 4;
 
     /* stop character */
-    strcat(dest, "0");
-
-    return set_copy[check_digit];
+    strcpy(d, "0");
 }
 
 /* Puts RM4SCC into the data matrix */
 INTERNAL int rm4scc(struct zint_symbol *symbol, unsigned char source[], int length) {
     char height_pattern[210];
+    int posns[50];
     int loopey, h;
     int writer;
     int error_number = 0;
-    strcpy(height_pattern, "");
 
     if (length > 50) {
         strcpy(symbol->errtxt, "488: Input too long (50 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
-    to_upper(source);
-    if (is_sane(KRSET, source, length) != 0) {
+    to_upper(source, length);
+    if (!is_sane_lookup(KRSET, 36, source, length, posns)) {
         strcpy(symbol->errtxt, "489: Invalid character in data (alphanumerics only)");
         return ZINT_ERROR_INVALID_DATA;
     }
-    /*check = */rm4scc_enc(source, height_pattern, length);
+    rm4scc_enc(posns, height_pattern, length);
 
     writer = 0;
     h = (int) strlen(height_pattern);
@@ -467,34 +483,33 @@ INTERNAL int rm4scc(struct zint_symbol *symbol, unsigned char source[], int leng
 }
 
 /* Handles Dutch Post TNT KIX symbols
-   The same as RM4SCC but without check digit
+   The same as RM4SCC but without check digit or stop/start chars
    Specification at http://www.tntpost.nl/zakelijk/klantenservice/downloads/kIX_code/download.aspx */
 INTERNAL int kix(struct zint_symbol *symbol, unsigned char source[], int length) {
-    char height_pattern[75], localstr[20];
+    char height_pattern[75];
+    char *d = height_pattern;
+    int posns[18];
     int loopey;
     int writer, i, h;
     int error_number = 0;
-    strcpy(height_pattern, "");
 
     if (length > 18) {
         strcpy(symbol->errtxt, "490: Input too long (18 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
-    to_upper(source);
-    if (is_sane(KRSET, source, length) != 0) {
+    to_upper(source, length);
+    if (!is_sane_lookup(KRSET, 36, source, length, posns)) {
         strcpy(symbol->errtxt, "491: Invalid character in data (alphanumerics only)");
         return ZINT_ERROR_INVALID_DATA;
     }
 
-    ustrcpy(localstr, source);
-
     /* Encode data */
-    for (i = 0; i < length; i++) {
-        lookup(KRSET, RoyalTable, localstr[i], height_pattern);
+    for (i = 0; i < length; i++, d += 4) {
+        memcpy(d, RoyalTable[posns[i]], 4);
     }
 
     writer = 0;
-    h = (int) strlen(height_pattern);
+    h = d - height_pattern;
     for (loopey = 0; loopey < h; loopey++) {
         if ((height_pattern[loopey] == '1') || (height_pattern[loopey] == '0')) {
             set_module(symbol, 0, writer);
@@ -525,45 +540,28 @@ INTERNAL int kix(struct zint_symbol *symbol, unsigned char source[], int length)
 
 /* Handles DAFT Code symbols */
 INTERNAL int daft(struct zint_symbol *symbol, unsigned char source[], int length) {
-    char height_pattern[100];
-    unsigned int loopey, h;
-    int writer, i;
-    strcpy(height_pattern, "");
+    int posns[100];
+    int loopey;
+    int writer;
 
-    if (length > 50) {
-        strcpy(symbol->errtxt, "492: Input too long (50 character maximum)");
+    if (length > 100) {
+        strcpy(symbol->errtxt, "492: Input too long (100 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
-    to_upper(source);
+    to_upper(source, length);
 
-    if (is_sane(DAFTSET, source, length) != 0) {
+    if (!is_sane_lookup(DAFTSET, 4, source, length, posns)) {
         strcpy(symbol->errtxt, "493: Invalid character in data (\"D\", \"A\", \"F\" and \"T\" only)");
         return ZINT_ERROR_INVALID_DATA;
     }
 
-    for (i = 0; i < length; i++) {
-        if (source[i] == 'D') {
-            strcat(height_pattern, "2");
-        }
-        if (source[i] == 'A') {
-            strcat(height_pattern, "1");
-        }
-        if (source[i] == 'F') {
-            strcat(height_pattern, "0");
-        }
-        if (source[i] == 'T') {
-            strcat(height_pattern, "3");
-        }
-    }
-
     writer = 0;
-    h = (int) strlen(height_pattern);
-    for (loopey = 0; loopey < h; loopey++) {
-        if ((height_pattern[loopey] == '1') || (height_pattern[loopey] == '0')) {
+    for (loopey = 0; loopey < length; loopey++) {
+        if ((posns[loopey] == 1) || (posns[loopey] == 0)) {
             set_module(symbol, 0, writer);
         }
         set_module(symbol, 1, writer);
-        if ((height_pattern[loopey] == '2') || (height_pattern[loopey] == '0')) {
+        if ((posns[loopey] == 2) || (posns[loopey] == 0)) {
             set_module(symbol, 2, writer);
         }
         writer += 2;
@@ -594,21 +592,24 @@ INTERNAL int daft(struct zint_symbol *symbol, unsigned char source[], int length
 INTERNAL int flat(struct zint_symbol *symbol, unsigned char source[], int length) {
     int loop, error_number = 0;
     char dest[512]; /* 90 * 4 + 1 ~ */
+    char *d = dest;
 
     if (length > 90) {
         strcpy(symbol->errtxt, "494: Input too long (90 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
-    if (is_sane(NEON, source, length) != 0) {
+    if (!is_sane(NEON_F, source, length)) {
         strcpy(symbol->errtxt, "495: Invalid character in data (digits only)");
         return ZINT_ERROR_INVALID_DATA;
     }
-    *dest = '\0';
+
     for (loop = 0; loop < length; loop++) {
-        lookup(NEON, FlatTable, source[loop], dest);
+        const char *const entry = FlatTable[source[loop] - '0'];
+        memcpy(d, entry, 4);
+        d += entry[2] ? 4 : 2;
     }
 
-    expand(symbol, dest);
+    expand(symbol, dest, d - dest);
 
     // TODO: Find documentation on BARCODE_FLAT dimensions/height
 
@@ -619,25 +620,19 @@ INTERNAL int flat(struct zint_symbol *symbol, unsigned char source[], int length
 INTERNAL int japanpost(struct zint_symbol *symbol, unsigned char source[], int length) {
     int error_number = 0, h;
     char pattern[69];
+    char *d = pattern;
     int writer, loopey, inter_posn, i, sum, check;
     char check_char;
-    char inter[23];
-
-#ifndef _MSC_VER
-    unsigned char local_source[length + 1];
-#else
-    unsigned char *local_source = (unsigned char *) _alloca(length + 1);
-#endif
+    char inter[20 + 1];
 
     if (length > 20) {
         strcpy(symbol->errtxt, "496: Input too long (20 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
 
-    ustrcpy(local_source, source);
-    to_upper(local_source);
+    to_upper(source, length);
 
-    if (is_sane(SHKASUTSET, local_source, length) != 0) {
+    if (!is_sane(SHKASUTSET_F, source, length)) {
         strcpy(symbol->errtxt, "497: Invalid character in data (alphanumerics and \"-\" only)");
         return ZINT_ERROR_INVALID_DATA;
     }
@@ -647,35 +642,36 @@ INTERNAL int japanpost(struct zint_symbol *symbol, unsigned char source[], int l
     i = 0;
     inter_posn = 0;
     do {
-        if (((local_source[i] >= '0') && (local_source[i] <= '9')) || (local_source[i] == '-')) {
-            inter[inter_posn] = local_source[i];
+        if (((source[i] >= '0') && (source[i] <= '9')) || (source[i] == '-')) {
+            inter[inter_posn] = source[i];
             inter_posn++;
         } else {
-            if ((local_source[i] >= 'A') && (local_source[i] <= 'J')) {
+            if (source[i] <= 'J') {
                 inter[inter_posn] = 'a';
-                inter[inter_posn + 1] = local_source[i] - 'A' + '0';
-                inter_posn += 2;
-            }
-            if ((local_source[i] >= 'K') && (local_source[i] <= 'T')) {
+                inter[inter_posn + 1] = source[i] - 'A' + '0';
+            } else if (source[i] <= 'T') {
                 inter[inter_posn] = 'b';
-                inter[inter_posn + 1] = local_source[i] - 'K' + '0';
-                inter_posn += 2;
-            }
-            if ((local_source[i] >= 'U') && (local_source[i] <= 'Z')) {
+                inter[inter_posn + 1] = source[i] - 'K' + '0';
+            } else { /* (source[i] >= 'U') && (source[i] <= 'Z') */
                 inter[inter_posn] = 'c';
-                inter[inter_posn + 1] = local_source[i] - 'U' + '0';
-                inter_posn += 2;
+                inter[inter_posn + 1] = source[i] - 'U' + '0';
             }
+            inter_posn += 2;
         }
         i++;
     } while ((i < length) && (inter_posn < 20));
-    inter[20] = '\0';
 
-    strcpy(pattern, "13"); /* Start */
+    if (i != length || inter[20] != '\0') {
+        strcpy(symbol->errtxt, "477: Input too long (20 symbol character maximum)");
+        return ZINT_ERROR_TOO_LONG;
+    }
+
+    memcpy(d, "13", 2); /* Start */
+    d += 2;
 
     sum = 0;
-    for (i = 0; i < 20; i++) {
-        strcat(pattern, JapanTable[posn(KASUTSET, inter[i])]);
+    for (i = 0; i < 20; i++, d += 3) {
+        memcpy(d, JapanTable[posn(KASUTSET, inter[i])], 3);
         sum += posn(CHKASUTSET, inter[i]);
     }
 
@@ -691,15 +687,17 @@ INTERNAL int japanpost(struct zint_symbol *symbol, unsigned char source[], int l
     } else {
         check_char = (check - 11) + 'a';
     }
-    strcat(pattern, JapanTable[posn(KASUTSET, check_char)]);
+    memcpy(d, JapanTable[posn(KASUTSET, check_char)], 3);
+    d += 3;
 
     if (symbol->debug & ZINT_DEBUG_PRINT) printf("Check: %d, char: %c\n", check, check_char);
 
-    strcat(pattern, "31"); /* Stop */
+    memcpy(d, "31", 2); /* Stop */
+    d += 2;
 
     /* Resolve pattern to 4-state symbols */
     writer = 0;
-    h = (int) strlen(pattern);
+    h = d - pattern;
     for (loopey = 0; loopey < h; loopey++) {
         if ((pattern[loopey] == '2') || (pattern[loopey] == '1')) {
             set_module(symbol, 0, writer);

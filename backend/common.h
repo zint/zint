@@ -42,8 +42,28 @@
 #define TRUE    1
 #endif
 
+/* `is_sane()` flags */
+#define IS_SPC_F    0x0001 /* Space */
+#define IS_HSH_F    0x0002 /* Hash sign # */
+#define IS_PLS_F    0x0004 /* Plus sign + */
+#define IS_MNS_F    0x0008 /* Minus sign - */
+#define IS_NUM_F    0x0010 /* Number 0-9 */
+#define IS_UPO_F    0x0020 /* Uppercase letter, apart from A-F and X */
+#define IS_UHX_F    0x0040 /* Uppercase hex A-F */
+#define IS_UX__F    0x0080 /* Uppercase X */
+#define IS_LWO_F    0x0100 /* Lowercase letter, apart from a-f and x */
+#define IS_LHX_F    0x0200 /* Lowercase hex a-f */
+#define IS_LX__F    0x0400 /* Lowercase x */
+#define IS_C82_F    0x0800 /* CSET82 punctuation (apart from - and +) */
+#define IS_SIL_F    0x1000 /* SILVER/TECHNETIUM punctuation .$/% (apart from space, - and +) */
+#define IS_CLI_F    0x2000 /* CALCIUM INNER punctuation $:/. (apart from - and +) (Codabar) */
+#define IS_ARS_F    0x4000 /* ARSENIC uppercase subset (VIN) */
+
+#define IS_UPR_F    (IS_UPO_F | IS_UHX_F | IS_UX__F) /* Uppercase letters */
+#define IS_LWR_F    (IS_LWO_F | IS_LHX_F | IS_LX__F) /* Lowercase letters */
+
 /* The most commonly used set */
-#define NEON   "0123456789"
+#define NEON_F      IS_NUM_F /* NEON "0123456789" */
 
 #include "zint.h"
 #include "zintconfig.h"
@@ -83,6 +103,14 @@
 #  define INTERNAL
 #endif
 
+#if (defined(__GNUC__) || defined(__clang__)) && !defined(__MINGW32__)
+#  define INTERNAL_DATA_EXTERN __attribute__ ((visibility ("hidden"))) extern
+#  define INTERNAL_DATA __attribute__ ((visibility ("hidden")))
+#else
+#  define INTERNAL_DATA_EXTERN extern
+#  define INTERNAL_DATA
+#endif
+
 #ifdef ZINT_TEST
 #define STATIC_UNLESS_ZINT_TEST INTERNAL
 #else
@@ -112,14 +140,14 @@ extern "C" {
     INTERNAL int ctoi(const char source);
     INTERNAL char itoc(const int source);
     INTERNAL int to_int(const unsigned char source[], const int length);
-    INTERNAL void to_upper(unsigned char source[]);
+    INTERNAL void to_upper(unsigned char source[], const int length);
     INTERNAL int chr_cnt(const unsigned char string[], const int length, const unsigned char c);
 
-    INTERNAL int is_sane(const char test_string[], const unsigned char source[], const int length);
-    INTERNAL void lookup(const char set_string[], const char *table[], const char data, char dest[]);
+    INTERNAL int is_sane(const unsigned int flg, const unsigned char source[], const int length);
+    INTERNAL int is_sane_lookup(const char test_string[], const int test_length, const unsigned char source[],
+                    const int length, int *posns);
     INTERNAL int posn(const char set_string[], const char data);
 
-    INTERNAL void bin_append(const int arg, const int length, char *binary);
     INTERNAL int bin_append_posn(const int arg, const int length, char *binary, const int bin_posn);
 
     #ifndef COMMON_INLINE
@@ -130,12 +158,14 @@ extern "C" {
                     const int colour);
     #endif
     INTERNAL void unset_module(struct zint_symbol *symbol, const int y_coord, const int x_coord);
-    INTERNAL void expand(struct zint_symbol *symbol, const char data[]);
+
+    INTERNAL void expand(struct zint_symbol *symbol, const char data[], const int length);
 
     INTERNAL int is_stackable(const int symbology);
     INTERNAL int is_extendable(const int symbology);
     INTERNAL int is_composite(const int symbology);
-    INTERNAL int istwodigits(const unsigned char source[], const int length, const int position);
+
+    INTERNAL int is_twodigits(const unsigned char source[], const int length, const int position);
 
     INTERNAL unsigned int decode_utf8(unsigned int *state, unsigned int *codep, const unsigned char byte);
     INTERNAL int is_valid_utf8(const unsigned char source[], const int length);

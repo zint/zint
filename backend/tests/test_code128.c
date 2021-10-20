@@ -839,6 +839,105 @@ static void test_encode(int index, int generate, int debug) {
     testFinish();
 }
 
+#include <time.h>
+
+#define TEST_PERF_ITER_MILLES   10
+#define TEST_PERF_ITERATIONS    (TEST_PERF_ITER_MILLES * 1000)
+#define TEST_PERF_TIME(arg)     (((arg) * 1000.0) / CLOCKS_PER_SEC)
+
+// Not a real test, just performance indicator
+static void test_perf(int index, int debug) {
+
+    struct item {
+        int symbology;
+        char *data;
+        int ret;
+
+        int expected_rows;
+        int expected_width;
+        char *comment;
+    };
+    struct item data[] = {
+        /*  0*/ { BARCODE_CODE128, "123456ABCD123456ABCD123456ABCD123456ABCD123456ABCD123456ABCD", 0, 1, 618, "CODE128 60" },
+        /*  1*/ { BARCODE_CODE128, "123456ABCD", 0, 1, 123, "CODE128 10" },
+        /*  2*/ { BARCODE_GS1_128, "[01]09501101530003", 0, 1, 134, "GS1_128 (01)" },
+    };
+    int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
+    struct zint_symbol *symbol;
+
+    clock_t start;
+    clock_t total_create = 0, total_encode = 0, total_buffer = 0, total_buf_inter = 0, total_print = 0;
+    clock_t diff_create, diff_encode, diff_buffer, diff_buf_inter, diff_print;
+    int comment_max = 0;
+
+    if (!(debug & ZINT_DEBUG_TEST_PERFORMANCE)) { /* -d 256 */
+        return;
+    }
+
+    for (i = 0; i < data_size; i++) if ((int) strlen(data[i].comment) > comment_max) comment_max = (int) strlen(data[i].comment);
+
+    printf("Iterations %d\n", TEST_PERF_ITERATIONS);
+
+    for (i = 0; i < data_size; i++) {
+        int j;
+
+        if (index != -1 && i != index) continue;
+
+        diff_create = diff_encode = diff_buffer = diff_buf_inter = diff_print = 0;
+
+        for (j = 0; j < TEST_PERF_ITERATIONS; j++) {
+            start = clock();
+            symbol = ZBarcode_Create();
+            diff_create += clock() - start;
+            assert_nonnull(symbol, "Symbol not created\n");
+
+            length = testUtilSetSymbol(symbol, data[i].symbology, DATA_MODE, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
+
+            start = clock();
+            ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
+            diff_encode += clock() - start;
+            assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+
+            assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);
+            assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
+
+            start = clock();
+            ret = ZBarcode_Buffer(symbol, 0 /*rotate_angle*/);
+            diff_buffer += clock() - start;
+            assert_zero(ret, "i:%d ZBarcode_Buffer ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
+
+            symbol->output_options |= OUT_BUFFER_INTERMEDIATE;
+            start = clock();
+            ret = ZBarcode_Buffer(symbol, 0 /*rotate_angle*/);
+            diff_buf_inter += clock() - start;
+            assert_zero(ret, "i:%d ZBarcode_Buffer OUT_BUFFER_INTERMEDIATE ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
+            symbol->output_options &= ~OUT_BUFFER_INTERMEDIATE; // Undo
+
+            start = clock();
+            ret = ZBarcode_Print(symbol, 0 /*rotate_angle*/);
+            diff_print += clock() - start;
+            assert_zero(ret, "i:%d ZBarcode_Print ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
+            assert_zero(remove(symbol->outfile), "i:%d remove(%s) != 0\n", i, symbol->outfile);
+
+            ZBarcode_Delete(symbol);
+        }
+
+        printf("%*s: encode % 8gms, buffer % 8gms, buf_inter % 8gms, print % 8gms, create % 8gms\n", comment_max, data[i].comment,
+                TEST_PERF_TIME(diff_encode), TEST_PERF_TIME(diff_buffer), TEST_PERF_TIME(diff_buf_inter), TEST_PERF_TIME(diff_print), TEST_PERF_TIME(diff_create));
+
+        total_create += diff_create;
+        total_encode += diff_encode;
+        total_buffer += diff_buffer;
+        total_buf_inter += diff_buf_inter;
+        total_print += diff_print;
+    }
+    if (index == -1) {
+        printf("%*s: encode % 8gms, buffer % 8gms, buf_inter % 8gms, print % 8gms, create % 8gms\n", comment_max, "totals",
+                TEST_PERF_TIME(total_encode), TEST_PERF_TIME(total_buffer), TEST_PERF_TIME(total_buf_inter), TEST_PERF_TIME(total_print), TEST_PERF_TIME(total_create));
+    }
+}
+
 int main(int argc, char *argv[]) {
 
     testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
@@ -852,6 +951,7 @@ int main(int argc, char *argv[]) {
         { "test_ean14_input", test_ean14_input, 1, 1, 1 },
         { "test_dpd_input", test_dpd_input, 1, 1, 1 },
         { "test_encode", test_encode, 1, 1, 1 },
+        { "test_perf", test_perf, 1, 0, 1 },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));
