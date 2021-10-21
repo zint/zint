@@ -111,7 +111,7 @@ static const struct bstyle_item bstyle_items[] = {
     { QSL("POSTNET"), BARCODE_POSTNET },
     { QSL("QR Code (ISO 18004) (and HIBC)"), BARCODE_QRCODE },
     { QSL("Rectangular Micro QR (rMQR)"), BARCODE_RMQR },
-    { QSL("Royal Mail 4-state Barcode"), BARCODE_RM4SCC },
+    { QSL("Royal Mail 4-state Barcode (RM4SCC)"), BARCODE_RM4SCC },
     { QSL("Royal Mail 4-state Mailmark"), BARCODE_MAILMARK },
     { QSL("Telepen"), BARCODE_TELEPEN },
     { QSL("Telepen Numeric"), BARCODE_TELEPEN_NUM },

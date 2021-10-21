@@ -28,11 +28,12 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* vim: set ts=4 sw=4 et : */
 
 #ifndef EMF_H
-#define	EMF_H
+#define EMF_H
 
-#ifdef	__cplusplus
+#ifdef  __cplusplus
 extern "C" {
 #endif
 
@@ -243,10 +244,8 @@ extern "C" {
 
 #pragma pack()
 
-#ifdef	__cplusplus
+#ifdef  __cplusplus
 }
 #endif
 
-#endif	/* EMF_H */
-
-
+#endif  /* EMF_H */

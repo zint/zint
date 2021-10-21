@@ -68,7 +68,8 @@ INTERNAL int gs1_128_cc(struct zint_symbol *symbol, unsigned char source[], int 
 
 INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int length, const int cc_rows);
 INTERNAL int ean_leading_zeroes(struct zint_symbol *symbol, const unsigned char source[],
-                unsigned char local_source[], int *p_with_addon);
+                unsigned char local_source[], int *p_with_addon, unsigned char *zfirst_part,
+                unsigned char *zsecond_part);
 
 INTERNAL int dbar_omnstk_set_height(struct zint_symbol *symbol, const int first_row);
 INTERNAL int dbar_omn_cc(struct zint_symbol *symbol, unsigned char source[], int length, const int cc_rows);
@@ -1331,8 +1332,8 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
                 int padded_pri_len;
                 int with_addon;
                 unsigned char padded_pri[21];
-                padded_pri[0] = '\0';
-                if (!ean_leading_zeroes(symbol, (unsigned char *) symbol->primary, padded_pri, &with_addon)) {
+                if (!ean_leading_zeroes(symbol, (unsigned char *) symbol->primary, padded_pri, &with_addon, NULL,
+                        NULL)) {
                     sprintf(symbol->errtxt, "448: Input too long (%s) in linear component",
                             with_addon ? "5 character maximum for add-on" : "13 character maximum");
                     return ZINT_ERROR_TOO_LONG;

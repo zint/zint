@@ -41,8 +41,6 @@
 #include "gs1.h"
 #include "zfiletypes.h"
 
-#define TECHNETIUM  "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%"
-
 /* It's assumed that int is at least 32 bits, the following will compile-time fail if not
  * https://stackoverflow.com/a/1980056 */
 typedef int static_assert_int_at_least_32bits[CHAR_BIT != 8 || sizeof(int) < 4 ? -1 : 1];
@@ -51,10 +49,8 @@ typedef int static_assert_int_at_least_32bits[CHAR_BIT != 8 || sizeof(int) < 4 ?
 struct zint_symbol *ZBarcode_Create() {
     struct zint_symbol *symbol;
 
-    symbol = (struct zint_symbol *) malloc(sizeof(*symbol));
+    symbol = (struct zint_symbol *) calloc(1, sizeof(*symbol));
     if (!symbol) return NULL;
-
-    memset(symbol, 0, sizeof(*symbol));
 
     symbol->symbology = BARCODE_CODE128;
     symbol->scale = 1.0f;
@@ -86,14 +82,12 @@ INTERNAL void vector_free(struct zint_symbol *symbol); /* Free vector structures
 
 /* Free any output buffers that may have been created and initialize output fields */
 void ZBarcode_Clear(struct zint_symbol *symbol) {
-    int i, j;
+    int i;
 
     if (!symbol) return;
 
     for (i = 0; i < symbol->rows; i++) {
-        for (j = 0; j < symbol->width; j++) {
-            unset_module(symbol, i, j);
-        }
+        memset(symbol->encoded_data[i], 0, sizeof(symbol->encoded_data[0]));
     }
     symbol->rows = 0;
     symbol->width = 0;
@@ -209,8 +203,8 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
 STATIC_UNLESS_ZINT_TEST int error_tag(struct zint_symbol *symbol, int error_number, const char *error_string) {
 
     if (error_number != 0) {
-        static const char *error_fmt = "Error %.93s"; /* Truncate if too long */
-        static const char *warn_fmt = "Warning %.91s"; /* Truncate if too long */
+        static const char error_fmt[] = "Error %.93s"; /* Truncate if too long */
+        static const char warn_fmt[] = "Warning %.91s"; /* Truncate if too long */
         const char *fmt = error_number >= ZINT_ERROR ? error_fmt : warn_fmt;
         char error_buffer[100];
 
@@ -291,61 +285,36 @@ static int dump_plot(struct zint_symbol *symbol) {
     return 0;
 }
 
+static const char TECHNETIUM[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%"; /* Same as SILVER (CODE39) */
+
 /* Process health industry bar code data */
 static int hibc(struct zint_symbol *symbol, unsigned char source[], int length) {
     int i;
     int counter, error_number = 0;
-    char to_process[113], check_digit;
+    char to_process[110 + 2 + 1];
+    int posns[110];
 
     /* without "+" and check: max 110 characters in HIBC 2.6 */
     if (length > 110) {
         strcpy(symbol->errtxt, "202: Data too long for HIBC LIC (110 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
-    to_upper(source);
-    if (is_sane(TECHNETIUM, source, length) != 0) {
+    to_upper(source, length);
+    if (!is_sane_lookup(TECHNETIUM, sizeof(TECHNETIUM) - 1, source, length, posns)) {
         strcpy(symbol->errtxt, "203: Invalid character in data (alphanumerics, space and \"-.$/+%\" only)");
         return ZINT_ERROR_INVALID_DATA;
     }
 
     counter = 41;
     for (i = 0; i < length; i++) {
-        counter += posn(TECHNETIUM, source[i]);
+        counter += posns[i];
     }
     counter = counter % 43;
 
-    if (counter < 10) {
-        check_digit = itoc(counter);
-    } else {
-        if (counter < 36) {
-            check_digit = (counter - 10) + 'A';
-        } else {
-            switch (counter) {
-                case 36: check_digit = '-';
-                    break;
-                case 37: check_digit = '.';
-                    break;
-                case 38: check_digit = ' ';
-                    break;
-                case 39: check_digit = '$';
-                    break;
-                case 40: check_digit = '/';
-                    break;
-                case 41: check_digit = '+';
-                    break;
-                case 42: check_digit = '%';
-                    break;
-                default: check_digit = ' ';
-                    break; /* Keep compiler happy */
-            }
-        }
-    }
-
     to_process[0] = '+';
     memcpy(to_process + 1, source, length);
-    to_process[length + 1] = check_digit;
-    length += 2;
-    to_process[length] = '\0';
+    to_process[++length] = TECHNETIUM[counter];
+    to_process[++length] = '\0';
 
     switch (symbol->symbology) {
         case BARCODE_HIBC_128:
@@ -538,7 +507,7 @@ static int has_hrt(const int symbology) {
 
 /* Used for dispatching barcodes and for whether symbol id valid */
 typedef int (*barcode_func_t)(struct zint_symbol *, unsigned char *, int);
-static const barcode_func_t barcode_funcs[146] = {
+static const barcode_func_t barcode_funcs[BARCODE_LAST + 1] = {
           NULL,      code11, c25standard,    c25inter,     c25iata, /*0-4*/
           NULL,    c25logic,      c25ind,      code39,    excode39, /*5-9*/
           NULL,        NULL,        NULL,        eanx,        eanx, /*10-14*/
@@ -895,7 +864,7 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
                 symbol->symbology = BARCODE_CODE128;
             }
         /* Everything from 128 up is Zint-specific */
-        } else if (symbol->symbology > 145) {
+        } else if (symbol->symbology > BARCODE_LAST) {
             warn_number = error_tag(symbol, ZINT_WARN_INVALID_OPTION, "216: Symbology out of range");
             if (warn_number >= ZINT_ERROR) {
                 return warn_number;
@@ -1033,10 +1002,8 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
     return error_number;
 }
 
-/* Output a previously encoded symbol to file `symbol->outfile` */
-int ZBarcode_Print(struct zint_symbol *symbol, int rotate_angle) {
-    int error_number;
-    int len;
+/* Helper for output routines to check `rotate_angle` and dottiness */
+static int check_output_args(struct zint_symbol *symbol, int rotate_angle) {
 
     if (!symbol) return ZINT_ERROR_INVALID_DATA;
 
@@ -1051,10 +1018,20 @@ int ZBarcode_Print(struct zint_symbol *symbol, int rotate_angle) {
             break;
     }
 
-    if (symbol->output_options & BARCODE_DOTTY_MODE) {
-        if (!(is_dotty(symbol->symbology))) {
-            return error_tag(symbol, ZINT_ERROR_INVALID_OPTION, "224: Selected symbology cannot be rendered as dots");
-        }
+    if ((symbol->output_options & BARCODE_DOTTY_MODE) && !(is_dotty(symbol->symbology))) {
+        return error_tag(symbol, ZINT_ERROR_INVALID_OPTION, "224: Selected symbology cannot be rendered as dots");
+    }
+
+    return 0;
+}
+
+/* Output a previously encoded symbol to file `symbol->outfile` */
+int ZBarcode_Print(struct zint_symbol *symbol, int rotate_angle) {
+    int error_number;
+    int len;
+
+    if ((error_number = check_output_args(symbol, rotate_angle))) { /* >= ZINT_ERROR only */
+        return error_number; /* Already tagged */
     }
 
     len = (int) strlen(symbol->outfile);
@@ -1064,7 +1041,7 @@ int ZBarcode_Print(struct zint_symbol *symbol, int rotate_angle) {
         output[1] = symbol->outfile[len - 2];
         output[2] = symbol->outfile[len - 1];
         output[3] = '\0';
-        to_upper((unsigned char *) output);
+        to_upper((unsigned char *) output, 3);
 
         if (!(strcmp(output, "PNG"))) {
             error_number = plot_raster(symbol, rotate_angle, OUT_PNG_FILE);
@@ -1107,23 +1084,8 @@ int ZBarcode_Print(struct zint_symbol *symbol, int rotate_angle) {
 int ZBarcode_Buffer(struct zint_symbol *symbol, int rotate_angle) {
     int error_number;
 
-    if (!symbol) return ZINT_ERROR_INVALID_DATA;
-
-    switch (rotate_angle) {
-        case 0:
-        case 90:
-        case 180:
-        case 270:
-            break;
-        default:
-            return error_tag(symbol, ZINT_ERROR_INVALID_OPTION, "228: Invalid rotation angle");
-            break;
-    }
-
-    if (symbol->output_options & BARCODE_DOTTY_MODE) {
-        if (!(is_dotty(symbol->symbology))) {
-            return error_tag(symbol, ZINT_ERROR_INVALID_OPTION, "237: Selected symbology cannot be rendered as dots");
-        }
+    if ((error_number = check_output_args(symbol, rotate_angle))) { /* >= ZINT_ERROR only */
+        return error_number; /* Already tagged */
     }
 
     error_number = plot_raster(symbol, rotate_angle, OUT_BUFFER);
@@ -1134,23 +1096,8 @@ int ZBarcode_Buffer(struct zint_symbol *symbol, int rotate_angle) {
 int ZBarcode_Buffer_Vector(struct zint_symbol *symbol, int rotate_angle) {
     int error_number;
 
-    if (!symbol) return ZINT_ERROR_INVALID_DATA;
-
-    switch (rotate_angle) {
-        case 0:
-        case 90:
-        case 180:
-        case 270:
-            break;
-        default:
-            return error_tag(symbol, ZINT_ERROR_INVALID_OPTION, "219: Invalid rotation angle");
-            break;
-    }
-
-    if (symbol->output_options & BARCODE_DOTTY_MODE) {
-        if (!(is_dotty(symbol->symbology))) {
-            return error_tag(symbol, ZINT_ERROR_INVALID_OPTION, "238: Selected symbology cannot be rendered as dots");
-        }
+    if ((error_number = check_output_args(symbol, rotate_angle))) { /* >= ZINT_ERROR only */
+        return error_number; /* Already tagged */
     }
 
     error_number = plot_vector(symbol, rotate_angle, OUT_BUFFER);
@@ -1350,7 +1297,7 @@ int ZBarcode_Encode_File_and_Buffer_Vector(struct zint_symbol *symbol, const cha
 /* Checks whether a symbology is supported */
 int ZBarcode_ValidID(int symbol_id) {
 
-    if (symbol_id <= 0 || symbol_id > 145) {
+    if (symbol_id <= 0 || symbol_id > BARCODE_LAST) {
         return 0;
     }
 
@@ -1387,7 +1334,7 @@ unsigned int ZBarcode_Cap(int symbol_id, unsigned int cap_flag) {
         result |= ZINT_CAP_DOTTY;
     }
     if (cap_flag & ZINT_CAP_QUIET_ZONES) {
-        switch (symbol_id) { /* See `quiet_zones()` in "output.c" */
+        switch (symbol_id) { /* See `out_quiet_zones()` in "output.c" */
             case BARCODE_CODE16K:
             case BARCODE_CODE49:
             case BARCODE_CODABLOCKF:

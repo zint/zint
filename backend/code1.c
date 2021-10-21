@@ -319,7 +319,7 @@ static int is_last_single_ascii(const unsigned char string[], const int length, 
     if (length - sp == 1 && string[sp] <= 127) {
         return 1;
     }
-    if (length - sp == 2 && istwodigits(string, length, sp)) {
+    if (length - sp == 2 && is_twodigits(string, length, sp)) {
         return 1;
     }
     return 0;
@@ -591,7 +591,7 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigne
             }
 
             if (next_mode == C1_ASCII) {
-                if (istwodigits(source, length, sp)) {
+                if (is_twodigits(source, length, sp)) {
                     if (debug_print) printf("ASCII double-digits ");
 
                     /* Step B3 */
@@ -753,7 +753,7 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigne
                 if (codewords_remaining(symbol, tp) == 1 && (can_ascii || (num_digits[sp] == 1 && bits_left >= 4))) {
                     if (can_ascii) {
                         /* Encode last character or last 2 digits as ASCII */
-                        if (istwodigits(source, length, sp)) {
+                        if (is_twodigits(source, length, sp)) {
                             target[tp++] = (10 * ctoi(source[sp])) + ctoi(source[sp + 1]) + 130;
                             sp += 2;
                         } else {
@@ -864,7 +864,7 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigne
 
                 target[tp++] = 255; /* Unlatch */
                 for (; sp < length; sp++) {
-                    if (istwodigits(source, length, sp)) {
+                    if (is_twodigits(source, length, sp)) {
                         target[tp++] = (10 * ctoi(source[sp])) + ctoi(source[sp + 1]) + 130;
                         sp++;
                     } else if (source[sp] & 0x80) {
@@ -1005,7 +1005,7 @@ INTERNAL int codeone(struct zint_symbol *symbol, unsigned char source[], int len
             strcpy(symbol->errtxt, "514: Input data too long for Version S");
             return ZINT_ERROR_TOO_LONG;
         }
-        if (is_sane(NEON, source, length) != 0) {
+        if (!is_sane(NEON_F, source, length)) {
             strcpy(symbol->errtxt, "515: Invalid input data (Version S encodes numeric input only)");
             return ZINT_ERROR_INVALID_DATA;
         }

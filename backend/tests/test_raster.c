@@ -2518,7 +2518,9 @@ static void test_height(int index, int generate, int debug) {
 
 #include <time.h>
 
-#define TEST_PERF_ITERATIONS    1000
+#define TEST_PERF_ITER_MILLES   1
+#define TEST_PERF_ITERATIONS    (TEST_PERF_ITER_MILLES * 1000)
+#define TEST_PERF_TIME(arg)     (((arg) * 1000.0) / CLOCKS_PER_SEC)
 
 // Not a real test, just performance indicator for scaling
 static void test_perf_scale(int index, int debug) {
@@ -2547,28 +2549,38 @@ static void test_perf_scale(int index, int debug) {
                     "HIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ12345678901234567"
                     "890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcde"
                     "fghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNO",
-                    0, 40, 307, "960 chars, text/numeric" },
-        /*  1*/ { BARCODE_POSTNET, -1, -1, BARCODE_QUIET_ZONES, -1, -1, 0, 1.1, "12345", 0, 2, 63, "" },
-        /*  2*/ { BARCODE_ITF14, -1, 4, BARCODE_BIND, -1, -1, 61.8, 3.1, "12345", 0, 1, 135, "" },
+                    0, 40, 307, "PDF417 960 chars, text/numeric, 1.3" },
+        /*  1*/ { BARCODE_POSTNET, -1, -1, BARCODE_QUIET_ZONES, -1, -1, 0, 1.1, "12345", 0, 2, 63, "POSTNET 5 chars, quiet zones, 1.1" },
+        /*  2*/ { BARCODE_ITF14, -1, 4, BARCODE_BIND, -1, -1, 61.8, 3.1, "12345", 0, 1, 135, "ITF14 bind 4, height 61.8, 3.1" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
+    struct zint_symbol *symbol;
 
-    clock_t start, total_encode = 0, total_buffer = 0, diff_encode, diff_buffer;
+    clock_t start;
+    clock_t total_create = 0, total_encode = 0, total_buffer = 0, total_buf_inter = 0, total_print = 0;
+    clock_t diff_create, diff_encode, diff_buffer, diff_buf_inter, diff_print;
+    int comment_max = 0;
 
     if (!(debug & ZINT_DEBUG_TEST_PERFORMANCE)) { /* -d 256 */
         return;
     }
+
+    for (i = 0; i < data_size; i++) if ((int) strlen(data[i].comment) > comment_max) comment_max = (int) strlen(data[i].comment);
+
+    printf("Iterations %d\n", TEST_PERF_ITERATIONS);
 
     for (i = 0; i < data_size; i++) {
         int j;
 
         if (index != -1 && i != index) continue;
 
-        diff_encode = diff_buffer = 0;
+        diff_create = diff_encode = diff_buffer = diff_buf_inter = diff_print = 0;
 
         for (j = 0; j < TEST_PERF_ITERATIONS; j++) {
-            struct zint_symbol *symbol = ZBarcode_Create();
+            start = clock();
+            symbol = ZBarcode_Create();
+            diff_create += clock() - start;
             assert_nonnull(symbol, "Symbol not created\n");
 
             length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, data[i].option_1, data[i].option_2, -1, data[i].output_options, data[i].data, -1, debug);
@@ -2592,16 +2604,34 @@ static void test_perf_scale(int index, int debug) {
             diff_buffer += clock() - start;
             assert_zero(ret, "i:%d ZBarcode_Buffer ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
 
+            symbol->output_options |= OUT_BUFFER_INTERMEDIATE;
+            start = clock();
+            ret = ZBarcode_Buffer(symbol, 0 /*rotate_angle*/);
+            diff_buf_inter += clock() - start;
+            assert_zero(ret, "i:%d ZBarcode_Buffer OUT_BUFFER_INTERMEDIATE ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
+            symbol->output_options &= ~OUT_BUFFER_INTERMEDIATE; // Undo
+
+            start = clock();
+            ret = ZBarcode_Print(symbol, 0 /*rotate_angle*/);
+            diff_print += clock() - start;
+            assert_zero(ret, "i:%d ZBarcode_Print ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
+            assert_zero(remove(symbol->outfile), "i:%d remove(%s) != 0\n", i, symbol->outfile);
+
             ZBarcode_Delete(symbol);
         }
 
-        printf("%s: diff_encode %gms, diff_buffer %gms\n", data[i].comment, diff_encode * 1000.0 / CLOCKS_PER_SEC, diff_buffer * 1000.0 / CLOCKS_PER_SEC);
+        printf("%*s: encode % 8gms, buffer % 8gms, buf_inter % 8gms, print % 8gms, create % 8gms\n", comment_max, data[i].comment,
+                TEST_PERF_TIME(diff_encode), TEST_PERF_TIME(diff_buffer), TEST_PERF_TIME(diff_buf_inter), TEST_PERF_TIME(diff_print), TEST_PERF_TIME(diff_create));
 
+        total_create += diff_create;
         total_encode += diff_encode;
         total_buffer += diff_buffer;
+        total_buf_inter += diff_buf_inter;
+        total_print += diff_print;
     }
-    if (index != -1) {
-        printf("totals: encode %gms, buffer %gms\n", total_encode * 1000.0 / CLOCKS_PER_SEC, total_buffer * 1000.0 / CLOCKS_PER_SEC);
+    if (index == -1) {
+        printf("%*s: encode % 8gms, buffer % 8gms, buf_inter % 8gms, print % 8gms, create % 8gms\n", comment_max, "totals",
+                TEST_PERF_TIME(total_encode), TEST_PERF_TIME(total_buffer), TEST_PERF_TIME(total_buf_inter), TEST_PERF_TIME(total_print), TEST_PERF_TIME(total_create));
     }
 }
 

@@ -448,7 +448,8 @@ static font_item small_font[] = {
  *  release of ocr-b only granted rights for non-commercial use; that
  *  restriction is now lifted."
  *
- * Used OCRB.otf with FontForge to create OCRB-18.bdf (normal) and OCRB-16.bdf (small) and then touched up using gbdfed
+ * Used OCRB.otf with FontForge to create OCRB-18.bdf (normal) and OCRB-16.bdf (small) and then touched up
+ * using gbdfed
  * Note there's no bold version of OCR-B.
  */
 

@@ -46,7 +46,7 @@
 
 #define GFMUL(i, j) ((((i) == 0)||((j) == 0)) ? 0 : gfPwr[(gfLog[i] + gfLog[j])])
 
-static const char fragment[27][14] = {"http://", "https://", "http://www.", "https://www.",
+static const char fragment[27][13] = {"http://", "https://", "http://www.", "https://www.",
         "ftp://", "www.", ".com", ".edu", ".gov", ".int", ".mil", ".net", ".org",
         ".mobi", ".coop", ".biz", ".info", "mailto:", "tel:", ".cgi", ".asp",
         ".aspx", ".php", ".htm", ".html", ".shtml", "file:"};
@@ -273,7 +273,7 @@ static float look_ahead_eightbit(unsigned char source[], int in_length, int in_l
     *cw_len = codeword_count;
 
     if (codeword_count == 0) {
-        return 0.0;
+        return 0.0f;
     }
     return (float) letters_encoded / (float) codeword_count;
 }
@@ -362,7 +362,7 @@ static float look_ahead_ascii(unsigned char source[], int in_length, int in_locn
     *cw_len = codeword_count;
 
     if (codeword_count == 0) {
-        return 0.0;
+        return 0.0f;
     }
     return (float) letters_encoded / (float) codeword_count;
 }
@@ -372,8 +372,8 @@ static int c43_should_latch_other(const unsigned char data[], const int length, 
             const int gs1) {
     int i, fraglen, predict_window;
     int cnt, alt_cnt, fragno;
-    const char *set = subset == 1 ? ultra_c43_set1 : ultra_c43_set2;
-    const char *alt_set = subset == 2 ? ultra_c43_set1 : ultra_c43_set2;
+    const char *const set = subset == 1 ? ultra_c43_set1 : ultra_c43_set2;
+    const char *const alt_set = subset == 2 ? ultra_c43_set1 : ultra_c43_set2;
 
     if (locn + 3 > length) {
         return 0;
@@ -394,10 +394,10 @@ static int c43_should_latch_other(const unsigned char data[], const int length, 
             }
             i += fraglen - 1;
         } else {
-            if (strchr(set, data[i]) != NULL) {
+            if (posn(set, data[i]) != -1) {
                 cnt++;
             }
-            if (strchr(alt_set, data[i]) != NULL) {
+            if (posn(alt_set, data[i]) != -1) {
                 alt_cnt++;
             }
         }
@@ -612,7 +612,7 @@ static float look_ahead_c43(unsigned char source[], int in_length, int in_locn, 
     *cw_len = codeword_count;
 
     if (codeword_count == 0) {
-        return 0.0;
+        return 0.0f;
     }
     return (float) letters_encoded / (float) codeword_count;
 }

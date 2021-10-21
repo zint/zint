@@ -52,7 +52,7 @@ static int numeric(const unsigned char *data, int data_len, int offset, int min,
 
     if (data_len) {
         const unsigned char *d = data + offset;
-        const unsigned char *de = d + (data_len > max ? max : data_len);
+        const unsigned char *const de = d + (data_len > max ? max : data_len);
 
         for (; d < de; d++) {
             if (*d < '0' || *d > '9') {
@@ -90,7 +90,7 @@ static int cset82(const unsigned char *data, int data_len, int offset, int min, 
 
     if (data_len) {
         const unsigned char *d = data + offset;
-        const unsigned char *de = d + (data_len > max ? max : data_len);
+        const unsigned char *const de = d + (data_len > max ? max : data_len);
 
         for (; d < de; d++) {
             if (*d < '!' || *d > 'z' || c82[*d - '!'] == 82) {
@@ -117,7 +117,7 @@ static int cset39(const unsigned char *data, int data_len, int offset, int min, 
 
     if (data_len) {
         const unsigned char *d = data + offset;
-        const unsigned char *de = d + (data_len > max ? max : data_len);
+        const unsigned char *const de = d + (data_len > max ? max : data_len);
 
         for (; d < de; d++) {
             /* 0-9, A-Z and "#", "-", "/" */
@@ -145,13 +145,13 @@ static int csum(const unsigned char *data, int data_len, int offset, int min, in
 
     if (!length_only && data_len) {
         const unsigned char *d = data + offset;
-        const unsigned char *de = d + (data_len > max ? max : data_len) - 1; /* Note less last character */
+        const unsigned char *const de = d + (data_len > max ? max : data_len) - 1; /* Note less last character */
         int checksum = 0;
         int factor = (min & 1) ? 1 : 3;
 
         for (; d < de; d++) {
             checksum += (*d - '0') * factor;
-            factor = factor == 3 ? 1 : 3;
+            factor ^= 2; /* Toggles 1 and 3 */
         }
         checksum = 10 - checksum % 10;
         if (checksum == 10) {
@@ -189,7 +189,7 @@ static int csumalpha(const unsigned char *data, int data_len, int offset, int mi
             2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83
         };
         const unsigned char *d = data + offset;
-        const unsigned char *de = d + (data_len > max ? max : data_len) - 2; /* Note less last 2 characters */
+        const unsigned char *const de = d + (data_len > max ? max : data_len) - 2; /* Note less last 2 characters */
         int checksum = 0, c1, c2;
 
         for (; d < de; d++) {
@@ -549,7 +549,7 @@ static int pcenc(const unsigned char *data, int data_len, int offset, int min, i
 
     if (!length_only && data_len) {
         const unsigned char *d = data + offset;
-        const unsigned char *de = d + (data_len > max ? max : data_len);
+        const unsigned char *const de = d + (data_len > max ? max : data_len);
 
         for (; d < de; d++) {
             if (*d == '%') {
@@ -746,7 +746,7 @@ static int iban(const unsigned char *data, int data_len, int offset, int min, in
 
     if (!length_only && data_len) {
         const unsigned char *d = data + offset;
-        const unsigned char *de = d + (data_len > max ? max : data_len);
+        const unsigned char *const de = d + (data_len > max ? max : data_len);
         int checksum = 0;
         int given_checksum;
 
@@ -1394,7 +1394,7 @@ INTERNAL char gs1_check_digit(const unsigned char source[], const int length) {
 
     for (i = 0; i < length; i++) {
         count += factor * ctoi(source[i]);
-        factor = factor == 1 ? 3 : 1;
+        factor ^= 2; /* Toggles 1 and 3 */
     }
 
     return itoc((10 - (count % 10)) % 10);

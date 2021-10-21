@@ -779,7 +779,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
         if (current_mode == DM_ASCII) {
             next_mode = DM_ASCII;
 
-            if (istwodigits(source, inputlen, sp)) {
+            if (is_twodigits(source, inputlen, sp)) {
                 target[tp] = (unsigned char) ((10 * ctoi(source[sp])) + ctoi(source[sp + 1]) + 130);
                 if (debug) printf("N%02d ", target[tp] - 130);
                 tp++;
@@ -1029,7 +1029,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
                 target[tp++] = 254; // Unlatch
                 if (debug) printf("ASC ");
                 for (; sp < inputlen; sp++) {
-                    if (istwodigits(source, inputlen, sp)) {
+                    if (is_twodigits(source, inputlen, sp)) {
                         target[tp++] = (unsigned char) ((10 * ctoi(source[sp])) + ctoi(source[sp + 1]) + 130);
                         if (debug) printf("N%02d ", target[tp - 1] - 130);
                         sp++;

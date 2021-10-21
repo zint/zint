@@ -177,18 +177,20 @@ static void dbar_set_gtin14_hrt(struct zint_symbol *symbol, const unsigned char 
 /* Expand from a width pattern to a bit pattern */
 static int dbar_expand(struct zint_symbol *symbol, int writer, int *p_latch, const int width) {
     int j;
-    int latch = *p_latch;
 
-    for (j = 0; j < width; j++) {
-        if (latch) {
+    if (*p_latch) {
+        for (j = 0; j < width; j++) {
             set_module(symbol, symbol->rows, writer);
-        } else {
-            unset_module(symbol, symbol->rows, writer);
+            writer++;
         }
-        writer++;
+    } else {
+        for (j = 0; j < width; j++) {
+            unset_module(symbol, symbol->rows, writer);
+            writer++;
+        }
     }
 
-    *p_latch = !latch;
+    *p_latch = !*p_latch;
 
     return writer;
 }
@@ -304,7 +306,7 @@ INTERNAL int dbar_omn_cc(struct zint_symbol *symbol, unsigned char source[], int
         strcpy(symbol->errtxt, "380: Input too long (14 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
-    if (is_sane(NEON, source, src_len) != 0) {
+    if (!is_sane(NEON_F, source, src_len)) {
         strcpy(symbol->errtxt, "381: Invalid character in data (digits only)");
         return ZINT_ERROR_INVALID_DATA;
     }
@@ -641,7 +643,7 @@ INTERNAL int dbar_ltd_cc(struct zint_symbol *symbol, unsigned char source[], int
         strcpy(symbol->errtxt, "382: Input too long (14 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
-    if (is_sane(NEON, source, src_len) != 0) {
+    if (!is_sane(NEON_F, source, src_len)) {
         strcpy(symbol->errtxt, "383: Invalid character in data (digits only)");
         return ZINT_ERROR_INVALID_DATA;
     }

@@ -84,13 +84,13 @@ void assert_nonzero(int exp, const char *fmt, ...) {
         va_list args; assertionFailed++; va_start(args, fmt); vprintf(fmt, args); va_end(args); testFinish();
     }
 }
-void assert_null(void *exp, const char *fmt, ...) {
+void assert_null(const void *exp, const char *fmt, ...) {
     assertionNum++;
     if (exp != NULL) {
         va_list args; assertionFailed++; va_start(args, fmt); vprintf(fmt, args); va_end(args); testFinish();
     }
 }
-void assert_nonnull(void *exp, const char *fmt, ...) {
+void assert_nonnull(const void *exp, const char *fmt, ...) {
     assertionNum++;
     if (exp == NULL) {
         va_list args; assertionFailed++; va_start(args, fmt); vprintf(fmt, args); va_end(args); testFinish();
@@ -683,7 +683,7 @@ const char *testUtilOutputOptionsName(int output_options) {
 }
 
 /* Convert modules spanning 3 rows to DAFT equivalents */
-int testUtilDAFTConvert(const struct zint_symbol *symbol, char *buffer, int buffer_size) {
+int testUtilDAFTConvert(const struct zint_symbol *symbol, char *buffer, const int buffer_size) {
     int i;
     char *b = buffer;
     *b = '\0';
@@ -720,7 +720,7 @@ int testUtilIsValidUTF8(const unsigned char str[], const int length) {
 }
 
 /* Escape data for printing on generate test. Has a number of issues, e.g. need to use octal escapes */
-char *testUtilEscape(char *buffer, int length, char *escaped, int escaped_size) {
+char *testUtilEscape(const char *buffer, const int length, char *escaped, const int escaped_size) {
     int i;
     unsigned char *b = (unsigned char *) buffer;
     unsigned char *be = b + length;
@@ -767,9 +767,9 @@ char *testUtilEscape(char *buffer, int length, char *escaped, int escaped_size) 
 }
 
 /* Helper to read a CSV field */
-char *testUtilReadCSVField(char *buffer, char *field, int field_size) {
+const char *testUtilReadCSVField(const char *buffer, char *field, const int field_size) {
     int i;
-    char *b = buffer;
+    const char *b = buffer;
     for (i = 0; i < field_size && *b && *b != ',' && *b != '\n' && *b != '\r'; i++) {
         field[i] = *b++;
     }
@@ -781,7 +781,7 @@ char *testUtilReadCSVField(char *buffer, char *field, int field_size) {
 }
 
 /* Helper to fill a buffer (for "large" tests) - single-byte filler only */
-void testUtilStrCpyRepeat(char *buffer, char *repeat, int size) {
+void testUtilStrCpyRepeat(char *buffer, const char *repeat, const int size) {
     int i;
     int len = (int) strlen(repeat);
     int max = size - len;
@@ -2046,7 +2046,7 @@ static const char *testUtilBwippName(int index, const struct zint_symbol *symbol
         { "identcode", BARCODE_DPIDENT, 22, 0, 0, 0, 0, 0, },
         { "code16k", BARCODE_CODE16K, 23, 0, 0, 0, 8 /*linear_row_height*/, 0, },
         { "code49", BARCODE_CODE49, 24, 0, 0, 0, 8 /*linear_row_height*/, 0, },
-        { "code93", BARCODE_CODE93, 25, 0, 0, 0, 0, 0, },
+        { "code93ext", BARCODE_CODE93, 25, 0, 0, 0, 0, 0, },
         { "", -1, 26, 0, 0, 0, 0, 0, },
         { "", -1, 27, 0, 0, 0, 0, 0, },
         { "flattermarken", BARCODE_FLAT, 28, 0, 0, 0, 0, 0, },
@@ -2598,9 +2598,6 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
             } else if (symbology == BARCODE_CODE93) {
                 sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%sincludecheck",
                         strlen(bwipp_opts_buf) ? " " : "");
-                if (parse) {
-                    bwipp_barcode = "code93ext";
-                }
                 bwipp_opts = bwipp_opts_buf;
             } else if (symbology == BARCODE_PZN) {
                 sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%spzn8", strlen(bwipp_opts_buf) ? " " : "");
@@ -2681,7 +2678,7 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                         || symbology == BARCODE_PHARMA_TWO) {
                 for (r = 0; r < symbol->rows; r++) bwipp_row_height[r] = 1; /* Zap */
                 if (symbology == BARCODE_KIX) {
-                    to_upper((unsigned char *) bwipp_data);
+                    to_upper((unsigned char *) bwipp_data, (int) strlen(bwipp_data));
                 } else if (symbology == BARCODE_USPS_IMAIL) {
                     char *dash = strchr(bwipp_data, '-');
                     if (dash) {

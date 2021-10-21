@@ -57,7 +57,7 @@
 /* Convert decimal string `s` of (at most) length `length` to 64-bit and place in 128-bit `t` */
 INTERNAL void large_load_str_u64(large_int *t, const unsigned char *s, const int length) {
     uint64_t val = 0;
-    const unsigned char *se = s + length;
+    const unsigned char *const se = s + length;
     for (; s < se && *s >= '0' && *s <= '9'; s++) {
         val *= 10;
         val += *s - '0';

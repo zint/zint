@@ -31,6 +31,230 @@
 
 #include "testcommon.h"
 
+/* Original */
+static int is_sane_orig(const char test_string[], const unsigned char source[], const int length) {
+    int i, j, lt = (int) strlen(test_string);
+
+    for (i = 0; i < length; i++) {
+        unsigned int latch = FALSE;
+        for (j = 0; j < lt; j++) {
+            if (source[i] == test_string[j]) {
+                latch = TRUE;
+                break;
+            }
+        }
+        if (!(latch)) {
+            return ZINT_ERROR_INVALID_DATA;
+        }
+    }
+
+    return 0;
+}
+
+static void test_is_sane(int index) {
+
+    struct item {
+        unsigned int flg;
+        char *data;
+        int length;
+        int ret;
+
+        char *orig_test;
+    };
+    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    struct item data[] = {
+        /*  0*/ { IS_SPC_F, " ", -1, 1, " " },
+        /*  1*/ { IS_SPC_F, "\000", 1, 0, " " },
+        /*  2*/ { IS_HSH_F, "#", -1, 1, "#" },
+        /*  3*/ { IS_HSH_F, " ", -1, 0, "#" },
+        /*  4*/ { IS_PLS_F, "+", -1, 1, "+" },
+        /*  5*/ { IS_PLS_F, " ", -1, 0, "+" },
+        /*  6*/ { IS_MNS_F, "-", -1, 1, "-" },
+        /*  7*/ { IS_MNS_F, " ", -1, 0, "-" },
+        /*  8*/ { IS_NUM_F, "0123456789", -1, 1, "0123456789" }, // NEON
+        /*  9*/ { IS_NUM_F, "0123456789 ", -1, 0, "0123456789" },
+        /* 10*/ { IS_NUM_F, "012345678A9", -1, 0, "0123456789" },
+        /* 11*/ { IS_UPO_F, "GHIJKLMNOPQRSTUVWYZ", -1, 1, "GHIJKLMNOPQRSTUVWYZ" },
+        /* 12*/ { IS_UPO_F, "FGHIJKLMNOPQRSTUVWYZ", -1, 0, "GHIJKLMNOPQRSTUVWYZ" },
+        /* 13*/ { IS_LWO_F, "ghijklmnopqrstuvwyz", -1, 1, "ghijklmnopqrstuvwyz" },
+        /* 14*/ { IS_LWO_F, "fghijklmnopqrstuvwyz", -1, 0, "ghijklmnopqrstuvwyz" },
+        /* 15*/ { IS_UHX_F, "ABCDEF", -1, 1, "ABCDEF" },
+        /* 16*/ { IS_UHX_F, "ABCDEf", -1, 0, "ABCDEF" },
+        /* 17*/ { IS_LHX_F, "abcdef", -1, 1, "abcdef" },
+        /* 18*/ { IS_LHX_F, "abcdeF", -1, 0, "abcdef" },
+        /* 19*/ { IS_UPR_F, "ABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 1, "ABCDEFGHIJKLMNOPQRSTUVWXYZ" },
+        /* 20*/ { IS_UPR_F, "ABCDEFGHIJKLMNOPQRSTUVWXYZ ", -1, 0, "ABCDEFGHIJKLMNOPQRSTUVWXYZ" },
+        /* 21*/ { IS_UPR_F, "X", -1, 1, "ABCDEFGHIJKLMNOPQRSTUVWXYZ" },
+        /* 22*/ { IS_UPR_F, "x", -1, 0, "ABCDEFGHIJKLMNOPQRSTUVWXYZ" },
+        /* 23*/ { IS_LWR_F, "abcdefghijklmnopqrstuvwxyz", -1, 1, "abcdefghijklmnopqrstuvwxyz" },
+        /* 24*/ { IS_LWR_F, "abcdefghijklmnopqrstuvwxyz ", -1, 0, "abcdefghijklmnopqrstuvwxyz" },
+        /* 25*/ { IS_LWR_F, "x", -1, 1, "abcdefghijklmnopqrstuvwxyz" },
+        /* 26*/ { IS_LWR_F, "X", -1, 0, "abcdefghijklmnopqrstuvwxyz" },
+        /* 27*/ { IS_UX__F, "X", -1, 1, "X" },
+        /* 28*/ { IS_UX__F, "x", -1, 0, "X" },
+        /* 29*/ { IS_LX__F, "x", -1, 1, "x" },
+        /* 30*/ { IS_LX__F, "X", -1, 0, "x" },
+        /* 31*/ { IS_C82_F, "!\"%&'()*,./:;<=>?_", -1, 1, "!\"%&'()*,./:;<=>?_" }, // CSET82 punctuation less "-+"
+        /* 32*/ { IS_C82_F, "!\"%&'()*,./:;<=>?_ ", -1, 0, "!\"%&'()*,./:;<=>?_" },
+        /* 33*/ { IS_C82_F, "-", -1, 0, "!\"%&'()*,./:;<=>?_" },
+        /* 34*/ { IS_C82_F, "$", -1, 0, "!\"%&'()*,./:;<=>?_" },
+        /* 35*/ { IS_SIL_F, ".$/%", -1, 1, ".$/%" }, // SILVER punctuation less " -+"
+        /* 36*/ { IS_SIL_F, ".$/% " , -1, 0, ".$/%" },
+        /* 37*/ { IS_SIL_F, "-", -1, 0, ".$/%" },
+        /* 38*/ { IS_CLI_F, "$:/.", -1, 1, "$:/." }, // CALCIUM INNER punctuation less "-+"
+        /* 39*/ { IS_CLI_F, "$:/. ", -1, 0, "$:/." },
+        /* 40*/ { IS_CLI_F, "+", -1, 0, "$:/." },
+        /* 41*/ { IS_ARS_F, "ABCDEFGHJKLMNPRSTUVWXYZ", -1, 1, "ABCDEFGHJKLMNPRSTUVWXYZ" }, // ARSENIC uppercase
+        /* 42*/ { IS_ARS_F, "ABCDEFGHJKLMNPRSTUVWXYZ ", -1, 0, "ABCDEFGHJKLMNPRSTUVWXYZ" },
+        /* 43*/ { IS_ARS_F, "I", -1, 0, "ABCDEFGHJKLMNPRSTUVWXYZ" },
+        /* 44*/ { IS_ARS_F, "O", -1, 0, "ABCDEFGHJKLMNPRSTUVWXYZ" },
+        /* 45*/ { IS_NUM_F | IS_UHX_F, "0123456789ABCDEF", -1, 1, "0123456789ABCDEF" }, // SSET
+        /* 46*/ { IS_NUM_F | IS_UHX_F, "0123456789ABCDEf", -1, 0, "0123456789ABCDEF" },
+        /* 47*/ { IS_NUM_F | IS_PLS_F, "0123456789+", -1, 1, "0123456789+" }, // SODIUM_PLS
+        /* 48*/ { IS_NUM_F | IS_PLS_F, "0123456789+-", -1, 0, "0123456789+" },
+        /* 49*/ { IS_NUM_F | IS_UX__F, "0123456789X", -1, 1, "0123456789X" }, // ISBNX_SANE
+        /* 50*/ { IS_NUM_F | IS_UX__F, "0123456789x", -1, 0, "0123456789X" },
+        /* 51*/ { IS_NUM_F | IS_UX__F | IS_LX__F | IS_PLS_F, "0123456789Xx+", -1, 1, "0123456789Xx+" }, // ISBNX_ADDON_SANE
+        /* 52*/ { IS_NUM_F | IS_UX__F | IS_LX__F | IS_PLS_F, "0123456789Xx+Y", -1, 0, "0123456789Xx+" },
+        /* 53*/ { IS_NUM_F | IS_MNS_F, "0123456789-", -1, 1, "0123456789-" }, // SODIUM_MNS
+        /* 54*/ { IS_NUM_F | IS_MNS_F, "0123456789-+", -1, 0, "0123456789-" },
+        /* 55*/ { IS_C82_F | IS_MNS_F | IS_PLS_F | IS_NUM_F | IS_UPR_F | IS_LWR_F, "!\"%&'()*+,-./0123456789:;<=>?ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz", -1, 1, "!\"%&'()*+,-./0123456789:;<=>?ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz" }, // CSET82
+        /* 56*/ { IS_C82_F | IS_MNS_F | IS_PLS_F | IS_NUM_F | IS_UPR_F | IS_LWR_F, " ", -1, 0, "!\"%&'()*+,-./0123456789:;<=>?ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz" },
+        /* 57*/ { IS_C82_F | IS_MNS_F | IS_PLS_F | IS_NUM_F | IS_UPR_F | IS_LWR_F, "#", -1, 0, "!\"%&'()*+,-./0123456789:;<=>?ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz" },
+        /* 58*/ { IS_C82_F | IS_MNS_F | IS_PLS_F | IS_NUM_F | IS_UPR_F | IS_LWR_F, "$", -1, 0, "!\"%&'()*+,-./0123456789:;<=>?ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz" },
+        /* 59*/ { IS_C82_F | IS_MNS_F | IS_PLS_F | IS_NUM_F | IS_UPR_F | IS_LWR_F, "@", -1, 0, "!\"%&'()*+,-./0123456789:;<=>?ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz" },
+        /* 60*/ { IS_LWR_F | IS_C82_F | IS_PLS_F | IS_MNS_F | IS_SPC_F, "abcdefghijklmnopqrstuvwxyz!\"%&'()*+,-./:;<=>?_ ", -1, 1, "abcdefghijklmnopqrstuvwxyz!\"%&'()*+,-./:;<=>?_ " }, // IS_ISOIEC_F
+        /* 61*/ { IS_LWR_F | IS_C82_F | IS_PLS_F | IS_MNS_F | IS_SPC_F, "abcdefghijklmnopqrstuvwxyz!\"%&'()*+,-./:;<=>?_ #", -1, 0, "abcdefghijklmnopqrstuvwxyz!\"%&'()*+,-./:;<=>?_ " },
+        /* 62*/ { IS_LWR_F | IS_C82_F | IS_PLS_F | IS_MNS_F | IS_SPC_F, "$", -1, 0, "abcdefghijklmnopqrstuvwxyz!\"%&'()*+,-./:;<=>?_ " },
+        /* 63*/ { IS_MNS_F | IS_SIL_F | IS_SPC_F | IS_PLS_F, "-. $/+%", -1, 1, "" },
+        /* 64*/ { IS_MNS_F | IS_SIL_F | IS_SPC_F | IS_PLS_F, "-. $/!+%", -1, 0, "" },
+        /* 65*/ { IS_NUM_F | IS_UPR_F | IS_MNS_F | IS_SIL_F | IS_SPC_F | IS_PLS_F, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%", -1, 1, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%" }, // SILVER
+        /* 66*/ { IS_NUM_F | IS_UPR_F | IS_MNS_F | IS_SIL_F | IS_SPC_F | IS_PLS_F, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%a", -1, 0, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%" },
+        /* 67*/ { IS_NUM_F | IS_ARS_F, "0123456789ABCDEFGHJKLMNPRSTUVWXYZ", -1, 1, "0123456789ABCDEFGHJKLMNPRSTUVWXYZ" }, // ARSENIC
+        /* 68*/ { IS_NUM_F | IS_ARS_F, "0123456789ABCDEFGHJKLMNPQRSTUVWXYZ", -1, 0, "0123456789ABCDEFGHJKLMNPRSTUVWXYZ" },
+        /* 69*/ { IS_NUM_F | IS_ARS_F, "0123456789ABCDEFGHJKLMNPRSTUVWXYz", -1, 0, "0123456789ABCDEFGHJKLMNPRSTUVWXYZ" },
+        /* 70*/ { IS_NUM_F | IS_UPR_F | IS_LWR_F | IS_SPC_F | IS_HSH_F, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz #", -1, 1, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz #" }, // GDSET
+        /* 71*/ { IS_NUM_F | IS_UPR_F | IS_LWR_F | IS_SPC_F | IS_HSH_F, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz #!", -1, 0, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz #" },
+        /* 72*/ { IS_NUM_F | IS_MNS_F | IS_CLI_F | IS_PLS_F, "0123456789-$:/.+", -1, 1, "0123456789-$:/.+" }, // CALCIUM_INNER
+        /* 73*/ { IS_NUM_F | IS_MNS_F | IS_CLI_F | IS_PLS_F, "0123456789-$:/.+ ", -1, 0, "0123456789-$:/.+" },
+        /* 74*/ { IS_NUM_F | IS_MNS_F | IS_CLI_F | IS_PLS_F, "0123456789-$:/.+!", -1, 0, "0123456789-$:/.+" },
+        /* 75*/ { IS_NUM_F | IS_UPR_F, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 1, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ" }, // KRSET
+        /* 76*/ { IS_NUM_F | IS_UPR_F, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYz", -1, 0, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ" },
+        /* 77*/ { IS_NUM_F | IS_UPR_F | IS_SPC_F, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ ", -1, 1, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ " }, // RUBIDIUM
+        /* 78*/ { IS_NUM_F | IS_UPR_F | IS_SPC_F, "0123456789aBCDEFGHIJKLMNOPQRSTUVWXYZ ", -1, 0, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ " },
+        /* 79*/ { IS_NUM_F | IS_MNS_F | IS_UPR_F, "1234567890-ABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 1, "1234567890-ABCDEFGHIJKLMNOPQRSTUVWXYZ" }, // SHKASUTSET
+        /* 80*/ { IS_NUM_F | IS_MNS_F | IS_UPR_F, "1234567890-ABCDEFGHIJKLMNOPQRSTUVWXYz", -1, 0, "1234567890-ABCDEFGHIJKLMNOPQRSTUVWXYZ" },
+    };
+    int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
+
+    testStart("test_is_sane");
+
+    for (i = 0; i < data_size; i++) {
+
+        if (index != -1 && i != index) continue;
+
+        length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
+
+        ret = is_sane(data[i].flg, (const unsigned char *) data[i].data, length);
+        assert_equal(ret, data[i].ret, "i:%d ret %d != %d\n", i, ret, data[i].ret);
+
+        if (data[i].orig_test[0]) {
+            int orig_ret = is_sane_orig(data[i].orig_test, (const unsigned char *) data[i].data, length);
+            if (orig_ret == 0) {
+                assert_nonzero(ret, "i:%d orig_ret %d, ret %d == 0\n", i, orig_ret, ret);
+            } else {
+                assert_zero(ret, "i:%d orig_ret %d, ret %d != 0\n", i, orig_ret, ret);
+            }
+        }
+    }
+
+    testFinish();
+}
+
+static void test_is_sane_lookup(int index) {
+
+    struct item {
+        char *test_string;
+        int test_length;
+        char *data;
+        int length;
+        int ret;
+
+        int posns[32];
+    };
+    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    struct item data[] = {
+        /*  0*/ { "1234567", -1, "7654321357", -1, 1, { 6, 5, 4, 3, 2, 1, 0, 2, 4, 6 } },
+        /*  1*/ { "1234567", -1, "76543213578", -1, 0, {0} },
+    };
+    int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
+    int test_length;
+    int posns[32];
+
+    testStart("test_is_sane_lookup");
+
+    for (i = 0; i < data_size; i++) {
+
+        if (index != -1 && i != index) continue;
+
+        test_length = data[i].test_length == -1 ? (int) strlen(data[i].test_string) : data[i].test_length;
+        length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
+
+        ret = is_sane_lookup(data[i].test_string, test_length, (const unsigned char *) data[i].data, length, posns);
+        assert_equal(ret, data[i].ret, "i:%d ret %d != %d\n", i, ret, data[i].ret);
+
+        if (ret) {
+            int j;
+            for (j = 0; j < length; j++) {
+                assert_equal(posns[j], data[i].posns[j], "i:%d posns[%d] %d != expected posns[%d] %d\n", i, j, posns[j], j, data[i].posns[j]);
+            }
+        }
+    }
+
+    testFinish();
+}
+
+static void test_is_valid_utf8(int index) {
+
+    struct item {
+        char *data;
+        int length;
+        int ret;
+        char *comment;
+    };
+    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    struct item data[] = {
+        /*  0*/ { "", -1, 1, "" },
+        /*  1*/ { "abcdefghijklmnopqrstuvwxyz", -1, 1, "" },
+        /*  2*/ { "éa", -1, 1, "" },
+        /*  3*/ { "a\000b", 3, 1, "Embedded nul" },
+        /*  4*/ { "\357\273\277a", -1, 1, "Bom" },
+
+        /*  5*/ { "a\xC2", -1, 0, "Missing 2nd byte" },
+        /*  6*/ { "a\200b", -1, 0, "Orphan continuation 0x80" },
+        /*  7*/ { "\300\201", -1, 0, "Overlong 0xC081" },
+        /*  8*/ { "\355\240\200", -1, 0, "Surrogate 0xEDA080" },
+    };
+    int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
+
+    testStart("test_is_valid_utf8");
+
+    for (i = 0; i < data_size; i++) {
+
+        if (index != -1 && i != index) continue;
+
+        length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
+
+        ret = is_valid_utf8((const unsigned char *) data[i].data, length);
+        assert_equal(ret, data[i].ret, "i:%d ret %d != %d\n", i, ret, data[i].ret);
+    }
+
+    testFinish();
+}
+
 static void test_utf8_to_unicode(int index, int debug) {
 
     struct item {
@@ -142,45 +366,6 @@ static void test_set_height(int index, int debug) {
     testFinish();
 }
 
-static void test_is_valid_utf8(int index) {
-
-    struct item {
-        char *data;
-        int length;
-        int ret;
-        char *comment;
-    };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
-    struct item data[] = {
-        /*  0*/ { "", -1, 1, "" },
-        /*  1*/ { "abcdefghijklmnopqrstuvwxyz", -1, 1, "" },
-        /*  2*/ { "éa", -1, 1, "" },
-        /*  3*/ { "a\000b", 3, 1, "Embedded nul" },
-        /*  4*/ { "\357\273\277a", -1, 1, "Bom" },
-
-        /*  5*/ { "a\xC2", -1, 0, "Missing 2nd byte" },
-        /*  6*/ { "a\200b", -1, 0, "Orphan continuation 0x80" },
-        /*  7*/ { "\300\201", -1, 0, "Overlong 0xC081" },
-        /*  8*/ { "\355\240\200", -1, 0, "Surrogate 0xEDA080" },
-    };
-    int data_size = ARRAY_SIZE(data);
-    int i, length, ret;
-
-    testStart("test_is_valid_utf8");
-
-    for (i = 0; i < data_size; i++) {
-
-        if (index != -1 && i != index) continue;
-
-        length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
-
-        ret = is_valid_utf8((const unsigned char *) data[i].data, length);
-        assert_equal(ret, data[i].ret, "i:%d ret %d != %d\n", i, ret, data[i].ret);
-    }
-
-    testFinish();
-}
-
 static void test_debug_test_codeword_dump_int(int index, int debug) {
 
     struct item {
@@ -217,9 +402,11 @@ static void test_debug_test_codeword_dump_int(int index, int debug) {
 int main(int argc, char *argv[]) {
 
     testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
+        { "test_is_sane", test_is_sane, 1, 0, 0 },
+        { "test_is_sane_lookup", test_is_sane_lookup, 1, 0, 0 },
+        { "test_is_valid_utf8", test_is_valid_utf8, 1, 0, 0 },
         { "test_utf8_to_unicode", test_utf8_to_unicode, 1, 0, 1 },
         { "test_set_height", test_set_height, 1, 0, 1 },
-        { "test_is_valid_utf8", test_is_valid_utf8, 1, 0, 0 },
         { "test_debug_test_codeword_dump_int", test_debug_test_codeword_dump_int, 1, 0, 1 },
     };
 

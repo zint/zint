@@ -35,38 +35,42 @@
 #include "common.h"
 #include "gs1.h"
 
-static const char *C25MatrixTable[10] = {
-    "113311", "311131", "131131", "331111", "113131",
-    "313111", "133111", "111331", "311311", "131311"
+static const char C25MatrixTable[10][6] = {
+    {'1','1','3','3','1','1'}, {'3','1','1','1','3','1'}, {'1','3','1','1','3','1'}, {'3','3','1','1','1','1'},
+    {'1','1','3','1','3','1'}, {'3','1','3','1','1','1'}, {'1','3','3','1','1','1'}, {'1','1','1','3','3','1'},
+    {'3','1','1','3','1','1'}, {'1','3','1','3','1','1'}
 };
 
+static const char C25IndustTable[10][10] = {
+    {'1','1','1','1','3','1','3','1','1','1'}, {'3','1','1','1','1','1','1','1','3','1'},
+    {'1','1','3','1','1','1','1','1','3','1'}, {'3','1','3','1','1','1','1','1','1','1'},
+    {'1','1','1','1','3','1','1','1','3','1'}, {'3','1','1','1','3','1','1','1','1','1'},
+    {'1','1','3','1','3','1','1','1','1','1'}, {'1','1','1','1','1','1','3','1','3','1'},
+    {'3','1','1','1','1','1','3','1','1','1'}, {'1','1','3','1','1','1','3','1','1','1'}
+};
+
+/* Note `c25_common()` assumes Stop string length one less than Start */
 static const char *C25MatrixStartStop[2] = { "411111", "41111" };
-
-static const char *C25IndustTable[10] = {
-    "1111313111", "3111111131", "1131111131", "3131111111", "1111311131",
-    "3111311111", "1131311111", "1111113131", "3111113111", "1131113111"
-};
-
 static const char *C25IndustStartStop[2] = { "313111", "31113" };
-
 static const char *C25IataLogicStartStop[2] = { "1111", "311" };
 
-static const char *C25InterTable[10] = {
-    "11331", "31113", "13113", "33111", "11313",
-    "31311", "13311", "11133", "31131", "13131"
+static const char C25InterTable[10][5] = {
+    {'1','1','3','3','1'}, {'3','1','1','1','3'}, {'1','3','1','1','3'}, {'3','3','1','1','1'}, {'1','1','3','1','3'},
+    {'3','1','3','1','1'}, {'1','3','3','1','1'}, {'1','1','1','3','3'}, {'3','1','1','3','1'}, {'1','3','1','3','1'}
 };
 
-static char check_digit(const unsigned int count) {
+static char c25_check_digit(const unsigned int count) {
     return itoc((10 - (count % 10)) % 10);
 }
 
 /* Common to Standard (Matrix), Industrial, IATA, and Data Logic */
 static int c25_common(struct zint_symbol *symbol, const unsigned char source[], int length, const int max,
-            const char *table[10], const char *start_stop[2], const int error_base) {
+            const int is_matrix, const char *start_stop[2], const int start_length, const int error_base) {
 
     int i;
-    char dest[512]; /* Largest destination 6 + (80 + 1) * 6 + 5 + 1 = 498 */
-    unsigned char temp[80 + 1 + 1]; /* Largest maximum 80 */
+    char dest[500]; /* Largest destination 6 + (80 + 1) * 6 + 5 + 1 = 498 */
+    char *d = dest;
+    unsigned char temp[80 + 1 + 1]; /* Largest maximum 80 + optional check digit */
     int have_checkdigit = symbol->option_2 == 1 || symbol->option_2 == 2;
 
     if (length > max) {
@@ -74,7 +78,7 @@ static int c25_common(struct zint_symbol *symbol, const unsigned char source[], 
         sprintf(symbol->errtxt, "%d: Input too long (%d character maximum)", error_base, max);
         return ZINT_ERROR_TOO_LONG;
     }
-    if (is_sane(NEON, source, length) != 0) {
+    if (!is_sane(NEON_F, source, length)) {
         /* errtxt 302: 304: 306: 308: */
         sprintf(symbol->errtxt, "%d: Invalid character in data (digits only)", error_base + 1);
         return ZINT_ERROR_INVALID_DATA;
@@ -88,17 +92,25 @@ static int c25_common(struct zint_symbol *symbol, const unsigned char source[], 
         temp[++length] = '\0';
     }
 
-    /* start character */
-    strcpy(dest, start_stop[0]);
+    /* Start character */
+    memcpy(d, start_stop[0], start_length);
+    d += start_length;
 
-    for (i = 0; i < length; i++) {
-        lookup(NEON, table, temp[i], dest);
+    if (is_matrix) {
+        for (i = 0; i < length; i++, d += 6) {
+            memcpy(d, C25MatrixTable[temp[i] - '0'], 6);
+        }
+    } else {
+        for (i = 0; i < length; i++, d += 10) {
+            memcpy(d, C25IndustTable[temp[i] - '0'], 10);
+        }
     }
 
     /* Stop character */
-    strcat(dest, start_stop[1]);
+    memcpy(d, start_stop[1], start_length - 1);
+    d += start_length - 1;
 
-    expand(symbol, dest);
+    expand(symbol, dest, d - dest);
 
     ustrcpy(symbol->text, temp);
     if (symbol->option_2 == 2) {
@@ -111,29 +123,30 @@ static int c25_common(struct zint_symbol *symbol, const unsigned char source[], 
 
 /* Code 2 of 5 Standard (Code 2 of 5 Matrix) */
 INTERNAL int c25standard(struct zint_symbol *symbol, unsigned char source[], int length) {
-    return c25_common(symbol, source, length, 80, C25MatrixTable, C25MatrixStartStop, 301);
+    return c25_common(symbol, source, length, 80, 1 /*is_matrix*/, C25MatrixStartStop, 6, 301);
 }
 
 /* Code 2 of 5 Industrial */
 INTERNAL int c25ind(struct zint_symbol *symbol, unsigned char source[], int length) {
-    return c25_common(symbol, source, length, 45, C25IndustTable, C25IndustStartStop, 303);
+    return c25_common(symbol, source, length, 45, 0 /*is_matrix*/, C25IndustStartStop, 6, 303);
 }
 
 /* Code 2 of 5 IATA */
 INTERNAL int c25iata(struct zint_symbol *symbol, unsigned char source[], int length) {
-    return c25_common(symbol, source, length, 45, C25IndustTable, C25IataLogicStartStop, 305);
+    return c25_common(symbol, source, length, 45, 0 /*is_matrix*/, C25IataLogicStartStop, 4, 305);
 }
 
 /* Code 2 of 5 Data Logic */
 INTERNAL int c25logic(struct zint_symbol *symbol, unsigned char source[], int length) {
-    return c25_common(symbol, source, length, 80, C25MatrixTable, C25IataLogicStartStop, 307);
+    return c25_common(symbol, source, length, 80, 1 /*is_matrix*/, C25IataLogicStartStop, 4, 307);
 }
 
 /* Common to Interleaved, ITF-14, DP Leitcode, DP Identcode */
-static int c25inter_common(struct zint_symbol *symbol, unsigned char source[], int length,
+static int c25_inter_common(struct zint_symbol *symbol, unsigned char source[], int length,
             const int dont_set_height) {
     int i, j, error_number = 0;
-    char bars[7], spaces[7], mixed[14], dest[512]; /* 4 + (90 + 2) * 5 + 3 + 1 = 468 */
+    char dest[468]; /* 4 + (90 + 2) * 5 + 3 + 1 = 468 */
+    char *d = dest;
     unsigned char temp[90 + 2 + 1];
     int have_checkdigit = symbol->option_2 == 1 || symbol->option_2 == 2;
 
@@ -141,7 +154,7 @@ static int c25inter_common(struct zint_symbol *symbol, unsigned char source[], i
         strcpy(symbol->errtxt, "309: Input too long (90 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
-    if (is_sane(NEON, source, length) != 0) {
+    if (!is_sane(NEON_F, source, length)) {
         strcpy(symbol->errtxt, "310: Invalid character in data (digits only)");
         return ZINT_ERROR_INVALID_DATA;
     }
@@ -163,31 +176,26 @@ static int c25inter_common(struct zint_symbol *symbol, unsigned char source[], i
     }
 
     /* start character */
-    strcpy(dest, "1111");
+    memcpy(d, "1111", 4);
+    d += 4;
 
     for (i = 0; i < length; i += 2) {
-        int k = 0;
-        /* look up the bars and the spaces and put them in two strings */
-        bars[0] = '\0';
-        lookup(NEON, C25InterTable, temp[i], bars);
-        spaces[0] = '\0';
-        lookup(NEON, C25InterTable, temp[i + 1], spaces);
+        /* look up the bars and the spaces */
+        const char *const bars = C25InterTable[temp[i] - '0'];
+        const char *const spaces = C25InterTable[temp[i + 1] - '0'];
 
         /* then merge (interlace) the strings together */
-        for (j = 0; j <= 4; j++) {
-            mixed[k] = bars[j];
-            k++;
-            mixed[k] = spaces[j];
-            k++;
+        for (j = 0; j < 5; j++) {
+            *d++ = bars[j];
+            *d++ = spaces[j];
         }
-        mixed[k] = '\0';
-        strcat(dest, mixed);
     }
 
     /* Stop character */
-    strcat(dest, "311");
+    memcpy(d, "311", 3);
+    d += 3;
 
-    expand(symbol, dest);
+    expand(symbol, dest, d - dest);
 
     ustrcpy(symbol->text, temp);
     if (symbol->option_2 == 2) {
@@ -219,7 +227,7 @@ static int c25inter_common(struct zint_symbol *symbol, unsigned char source[], i
 
 /* Code 2 of 5 Interleaved ISO/IEC 16390:2007 */
 INTERNAL int c25inter(struct zint_symbol *symbol, unsigned char source[], int length) {
-    return c25inter_common(symbol, source, length, 0 /*dont_set_height*/);
+    return c25_inter_common(symbol, source, length, 0 /*dont_set_height*/);
 }
 
 /* Interleaved 2-of-5 (ITF-14) */
@@ -232,7 +240,7 @@ INTERNAL int itf14(struct zint_symbol *symbol, unsigned char source[], int lengt
         return ZINT_ERROR_TOO_LONG;
     }
 
-    if (is_sane(NEON, source, length) != 0) {
+    if (!is_sane(NEON_F, source, length)) {
         strcpy(symbol->errtxt, "312: Invalid character in data (digits only)");
         return ZINT_ERROR_INVALID_DATA;
     }
@@ -247,7 +255,7 @@ INTERNAL int itf14(struct zint_symbol *symbol, unsigned char source[], int lengt
     /* Calculate the check digit - the same method used for EAN-13 */
     localstr[13] = gs1_check_digit(localstr, 13);
     localstr[14] = '\0';
-    error_number = c25inter_common(symbol, localstr, 14, 1 /*dont_set_height*/);
+    error_number = c25_inter_common(symbol, localstr, 14, 1 /*dont_set_height*/);
     ustrcpy(symbol->text, localstr);
 
     if (!((symbol->output_options & BARCODE_BOX) || (symbol->output_options & BARCODE_BIND))) {
@@ -277,6 +285,7 @@ INTERNAL int itf14(struct zint_symbol *symbol, unsigned char source[], int lengt
 INTERNAL int dpleit(struct zint_symbol *symbol, unsigned char source[], int length) {
     int i, error_number;
     unsigned int count;
+    int factor;
     unsigned char localstr[16] = {0};
     int zeroes;
 
@@ -285,7 +294,7 @@ INTERNAL int dpleit(struct zint_symbol *symbol, unsigned char source[], int leng
         strcpy(symbol->errtxt, "313: Input wrong length (13 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
-    if (is_sane(NEON, source, length) != 0) {
+    if (!is_sane(NEON_F, source, length)) {
         strcpy(symbol->errtxt, "314: Invalid character in data (digits only)");
         return ZINT_ERROR_INVALID_DATA;
     }
@@ -295,16 +304,14 @@ INTERNAL int dpleit(struct zint_symbol *symbol, unsigned char source[], int leng
         localstr[i] = '0';
     ustrcpy(localstr + zeroes, source);
 
+    factor = 4;
     for (i = 12; i >= 0; i--) {
-        count += 4 * ctoi(localstr[i]);
-
-        if (i & 1) {
-            count += 5 * ctoi(localstr[i]);
-        }
+        count += factor * ctoi(localstr[i]);
+        factor ^= 0x0D; /* Toggles 4 and 9 */
     }
-    localstr[13] = check_digit(count);
+    localstr[13] = c25_check_digit(count);
     localstr[14] = '\0';
-    error_number = c25inter_common(symbol, localstr, 14, 1 /*dont_set_height*/);
+    error_number = c25_inter_common(symbol, localstr, 14, 1 /*dont_set_height*/);
     ustrcpy(symbol->text, localstr);
 
     // TODO: Find documentation on BARCODE_DPLEIT dimensions/height
@@ -316,6 +323,7 @@ INTERNAL int dpleit(struct zint_symbol *symbol, unsigned char source[], int leng
 INTERNAL int dpident(struct zint_symbol *symbol, unsigned char source[], int length) {
     int i, error_number, zeroes;
     unsigned int count;
+    int factor;
     unsigned char localstr[16] = {0};
 
     count = 0;
@@ -323,7 +331,7 @@ INTERNAL int dpident(struct zint_symbol *symbol, unsigned char source[], int len
         strcpy(symbol->errtxt, "315: Input wrong length (11 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
-    if (is_sane(NEON, source, length) != 0) {
+    if (!is_sane(NEON_F, source, length)) {
         strcpy(symbol->errtxt, "316: Invalid character in data (digits only)");
         return ZINT_ERROR_INVALID_DATA;
     }
@@ -333,16 +341,14 @@ INTERNAL int dpident(struct zint_symbol *symbol, unsigned char source[], int len
         localstr[i] = '0';
     ustrcpy(localstr + zeroes, source);
 
+    factor = 4;
     for (i = 10; i >= 0; i--) {
-        count += 4 * ctoi(localstr[i]);
-
-        if (i & 1) {
-            count += 5 * ctoi(localstr[i]);
-        }
+        count += factor * ctoi(localstr[i]);
+        factor ^= 0x0D; /* Toggles 4 and 9 */
     }
-    localstr[11] = check_digit(count);
+    localstr[11] = c25_check_digit(count);
     localstr[12] = '\0';
-    error_number = c25inter_common(symbol, localstr, 12, 1 /*dont_set_height*/);
+    error_number = c25_inter_common(symbol, localstr, 12, 1 /*dont_set_height*/);
     ustrcpy(symbol->text, localstr);
 
     // TODO: Find documentation on BARCODE_DPIDENT dimensions/height
