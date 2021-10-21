@@ -15,6 +15,10 @@ set(zint_SRCS ${zint_OUTPUT_SRCS} ${zint_COMMON_SRCS} ${zint_ONEDIM_SRCS} ${zint
 
 add_library(zint SHARED ${zint_SRCS})
 
+if(WIN32)
+    target_sources(${PROJECT_NAME} PRIVATE libzint.rc)
+endif()
+
 if(ZINT_STATIC)
     add_library(zint-static STATIC ${zint_SRCS})
 endif()
