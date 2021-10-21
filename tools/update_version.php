@@ -46,7 +46,8 @@ $v_base_str = $v_str = "$major.$minor.$release";
 if ($build) {
     $v_str .= ".$build";
 }
-$rc_str = "$major,$minor,$release,$build";
+$rc_str1 = "$major,$minor,$release,$build";
+$rc_str2 = "$major.$minor.$release.$build";
 
 function version_replace($to_do, $file, $match_pattern, $replace_pattern, $replace_str) {
     global $basename;
@@ -78,21 +79,30 @@ function version_replace($to_do, $file, $match_pattern, $replace_pattern, $repla
     }
 }
 
-function rc_replace($file, $rc_str) {
+function rc_replace($file, $rc_str1, $rc_str2) {
     global $basename;
 
     if (($get = file_get_contents($file)) === false) {
         exit("$basename: ERROR: Could not read file \"$file\"" . PHP_EOL);
     }
 
+    $match_pattern1 = '/#define[ \t]+VER_FILEVERSION[ \t]+/';
+    $match_pattern2 = '/#define[ \t]+VER_FILEVERSION_STR[ \t]+/';
     $lines = explode("\n", $get);
     $done = 0;
     foreach ($lines as $li => $line) {
-        if (preg_match('/#define[ \t]+VER_FILEVERSION/', $line)) {
+        if (preg_match($match_pattern1, $line)) {
             $cnt = 0;
-            $lines[$li] = preg_replace('/[0-9,]+/', $rc_str, $line, 1, $cnt);
+            $lines[$li] = preg_replace('/[0-9,]+/', $rc_str1, $line, 1, $cnt);
             if ($cnt === 0 || $lines[$li] === NULL) {
-                exit("$basename: ERROR: Could not replace \"$match_pattern\" in file \"$file\"" . PHP_EOL);
+                exit("$basename: ERROR: Could not replace \"$match_pattern1\" in file \"$file\"" . PHP_EOL);
+            }
+            $done++;
+        } else if (preg_match($match_pattern2, $line)) {
+            $cnt = 0;
+            $lines[$li] = preg_replace('/[0-9.]+/', $rc_str2, $line, 1, $cnt);
+            if ($cnt === 0 || $lines[$li] === NULL) {
+                exit("$basename: ERROR: Could not replace \"$match_pattern2\" in file \"$file\"" . PHP_EOL);
             }
             $done++;
         }
@@ -149,7 +159,7 @@ version_replace(1, $data_dirname . 'zint.nsi', '/^!define +PRODUCT_VERSION/', '/
 
 // backend/libzint.rc
 
-rc_replace($data_dirname . 'backend/libzint.rc', $rc_str);
+rc_replace($data_dirname . 'backend/libzint.rc', $rc_str1, $rc_str2);
 
 // backend/zintconfig.h
 
@@ -207,7 +217,7 @@ version_replace(1, $data_dirname . 'backend_tcl/lib/zint/pkgIndex.tcl', '/zint /
 
 // frontend/zint.rc
 
-rc_replace($data_dirname . 'frontend/zint.rc', $rc_str);
+rc_replace($data_dirname . 'frontend/zint.rc', $rc_str1, $rc_str2);
 
 // frontend/Makefile.mingw
 
@@ -228,7 +238,7 @@ version_replace(1, $data_dirname . 'docs/manual.txt', '/^The current version of 
 
 // frontend_qt/res/qtZint.rc
 
-rc_replace($data_dirname . 'frontend_qt/res/qtZint.rc', $rc_str);
+rc_replace($data_dirname . 'frontend_qt/res/qtZint.rc', $rc_str1, $rc_str2);
 
 // win32/libzint.vcxproj
 
@@ -240,7 +250,7 @@ version_replace(2, $data_dirname . 'win32/zint.vcxproj', '/ZINT_VERSION="/', '/Z
 
 // win32/zint_cmdline_vc6/zint.rc
 
-rc_replace($data_dirname . 'win32/zint_cmdline_vc6/zint.rc', $rc_str);
+rc_replace($data_dirname . 'win32/zint_cmdline_vc6/zint.rc', $rc_str1, $rc_str2);
 
 // win32/zint_cmdline_vc6/zint_cmdline_vc6.dsp
 

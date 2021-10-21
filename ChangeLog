@@ -47,6 +47,7 @@ Bugs
   float variations
 - raster.c: Don't add height offset for text if scale < 1.0 (as won't print)
 - ISBNX: fix not returning error number (warning) correctly
+- *.rc: fix VER_FILEVERSION_STR format (, -> .), props Jeff Skaistis
 
 
 Version 2.10.0 2021-08-14
