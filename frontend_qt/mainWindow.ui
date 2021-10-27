@@ -100,7 +100,7 @@
             <string>Type of barcode</string>
            </property>
            <property name="text">
-            <string>S&amp;ymbology:</string>
+            <string>Symbo&amp;logy:</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -167,9 +167,9 @@
          <property name="currentIndex">
           <number>0</number>
          </property>
-         <widget class="QWidget" name="tabGeneral">
+         <widget class="QWidget" name="tabData">
           <attribute name="title">
-           <string>&amp;General</string>
+           <string>&amp;Data</string>
           </attribute>
           <layout class="QVBoxLayout" name="verticalLayout_3">
            <item>
@@ -181,13 +181,16 @@
               </sizepolicy>
              </property>
              <property name="title">
-              <string>&amp;Data to Encode</string>
+              <string>Data to Enc&amp;ode</string>
+             </property>
+             <property name="toolTip">
+              <string>Input data</string>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_4">
               <item>
                <widget class="QLineEdit" name="txtData">
                 <property name="toolTip">
-                 <string>Data to encode</string>
+                 <string>Input data</string>
                 </property>
                 <property name="text">
                  <string>Your Data Here!</string>
@@ -255,6 +258,9 @@ or import from file</string>
              </property>
              <property name="title">
               <string>Composite Code</string>
+             </property>
+             <property name="toolTip">
+              <string>GS1 Composite symbol settings</string>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_2">
               <item>
@@ -351,7 +357,7 @@ or import from file</string>
 Remember to place [square brackets] around AI identifiers</string>
                   </property>
                   <property name="text">
-                   <string>2D C&amp;omponent Data:</string>
+                   <string>2D Co&amp;mponent Data:</string>
                   </property>
                   <property name="buddy">
                    <cstring>txtComposite</cstring>
@@ -645,7 +651,7 @@ Remember to place [square brackets] around AI identifiers</string>
 (ignored if disabled)</string>
                </property>
                <property name="text">
-                <string>Binary &amp;Mode</string>
+                <string>Binar&amp;y Mode</string>
                </property>
                <property name="checked">
                 <bool>false</bool>
@@ -722,7 +728,7 @@ and use standard height (if any) for default
 (ignored if disabled)</string>
                  </property>
                  <property name="text">
-                  <string>Com&amp;pliant Height</string>
+                  <string>&amp;Compliant Height</string>
                  </property>
                  <property name="checked">
                   <bool>false</bool>
@@ -916,7 +922,7 @@ in X-dimensions</string>
                 <string>Image scale when output to file</string>
                </property>
                <property name="text">
-                <string>Printing Sca&amp;le:</string>
+                <string>&amp;Printing Scale:</string>
                </property>
                <property name="alignment">
                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -1055,7 +1061,7 @@ in X-dimensions</string>
                 <string>Change paper colour</string>
                </property>
                <property name="text">
-                <string>Ba&amp;ckground</string>
+                <string>Back&amp;ground</string>
                </property>
               </widget>
              </item>
@@ -1146,7 +1152,7 @@ in X-dimensions</string>
 (ignored if disabled)</string>
                </property>
                <property name="text">
-                <string>&amp;Dotty</string>
+                <string>Dott&amp;y</string>
                </property>
                <property name="checked">
                 <bool>false</bool>
