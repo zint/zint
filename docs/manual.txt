@@ -1561,7 +1561,7 @@ if (cap & ZINT_CAP_ECI) {
 -----------------
 Lastly, the version of the Zint library linked to is returned by:
 
-int ZBarcode_Version();
+int ZBarcode_Version(void);
 
 The version parts are separated by hundreds. For instance, version "2.9.1" is
 returned as "20901".
@@ -1820,7 +1820,7 @@ setting option_2 = 1 or using --vers=1.
 A variation of Extended Code 39, Code 93 also supports full ASCII text. Two
 check characters are added by Zint. By default these check characters are not
 shown in the Human Readable Text, but may be shown by setting option_2 = 1 or
-using vers=1.
+using --vers=1.
 
 6.1.8.4 PZN (Pharmazentralnummer)
 ---------------------------------

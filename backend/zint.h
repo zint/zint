@@ -407,7 +407,7 @@ extern "C" {
     ZINT_EXTERN unsigned int ZBarcode_Cap(int symbol_id, unsigned int cap_flag);
 
     /* Return the version of Zint linked to */
-    ZINT_EXTERN int ZBarcode_Version();
+    ZINT_EXTERN int ZBarcode_Version(void);
 
 #ifdef __cplusplus
 }

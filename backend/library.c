@@ -1456,7 +1456,7 @@ unsigned int ZBarcode_Cap(int symbol_id, unsigned int cap_flag) {
 }
 
 /* Return the version of Zint linked to */
-int ZBarcode_Version() {
+int ZBarcode_Version(void) {
     if (ZINT_VERSION_BUILD) {
         return (ZINT_VERSION_MAJOR * 10000) + (ZINT_VERSION_MINOR * 100) + ZINT_VERSION_RELEASE * 10
                 + ZINT_VERSION_BUILD;
