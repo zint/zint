@@ -1184,7 +1184,7 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
                 unsigned char reduced[]) {
     int i, j, last_ai, ai_latch;
     int bracket_level, max_bracket_level, ai_length, max_ai_length, min_ai_length;
-    int ai_no_data;
+    int ai_zero_len_no_data = 0, ai_single_digit = 0, ai_nonnumeric = 0;
     int ai_count;
     int error_value = 0;
     char obracket = symbol->input_mode & GS1PARENS_MODE ? '(' : '[';
@@ -1230,37 +1230,37 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
     ai_length = 0;
     max_ai_length = 0;
     min_ai_length = 5;
-    j = 0;
     ai_latch = 0;
-    ai_no_data = 0;
     for (i = 0; i < src_len; i++) {
-        ai_length += j;
-        if (((j == 1) && (source[i] != cbracket)) && ((source[i] < '0') || (source[i] > '9'))) {
-            ai_latch = 1;
-        }
         if (source[i] == obracket) {
             bracket_level++;
-            j = 1;
-        }
-        if (source[i] == cbracket) {
+            if (bracket_level > max_bracket_level) {
+                max_bracket_level = bracket_level;
+            }
+            ai_latch = 1;
+        } else if (source[i] == cbracket) {
             bracket_level--;
+            if (ai_length > max_ai_length) {
+                max_ai_length = ai_length;
+            }
             if (ai_length < min_ai_length) {
                 min_ai_length = ai_length;
             }
-            j = 0;
+            /* Check zero-length AI has data */
+            if (ai_length == 0 && (i + 1 == src_len || source[i + 1] == obracket)) {
+                ai_zero_len_no_data = 1;
+            } else if (ai_length == 1) {
+                ai_single_digit = 1;
+            }
             ai_length = 0;
-            if (i + 1 == src_len || source[i + 1] == obracket) { /* Check if no data */
-                ai_no_data = 1;
+            ai_latch = 0;
+        } else if (ai_latch) {
+            ai_length++;
+            if ((source[i] < '0') || (source[i] > '9')) {
+                ai_nonnumeric = 1;
             }
         }
-        if (bracket_level > max_bracket_level) {
-            max_bracket_level = bracket_level;
-        }
-        if (ai_length > max_ai_length) {
-            max_ai_length = ai_length;
-        }
     }
-    min_ai_length--;
 
     if (bracket_level != 0) {
         /* Not all brackets are closed */
@@ -1281,16 +1281,16 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
     }
 
     if (min_ai_length <= 1) {
-        /* Allow too short AI if GS1NOCHECK_MODE and AI is zero-length and all AIs have some data
+        /* Allow too short AI if GS1NOCHECK_MODE and no single-digit AIs and all zero-length AIs have some data
            - permits dummy "[]" workaround for ticket #204 data with no valid AI */
-        if (!(symbol->input_mode & GS1NOCHECK_MODE) || min_ai_length == 1 || ai_no_data) {
+        if (!(symbol->input_mode & GS1NOCHECK_MODE) || ai_single_digit || ai_zero_len_no_data) {
             /* AI is too short */
             strcpy(symbol->errtxt, "256: Invalid AI in input data (AI too short)");
             return ZINT_ERROR_INVALID_DATA;
         }
     }
 
-    if (ai_latch == 1) {
+    if (ai_nonnumeric) {
         /* Non-numeric data in AI */
         strcpy(symbol->errtxt, "257: Invalid AI in input data (non-numeric characters in AI)");
         return ZINT_ERROR_INVALID_DATA;
