@@ -830,9 +830,10 @@ INTERNAL int aztec(struct zint_symbol *symbol, unsigned char source[], int lengt
     unsigned char desc_data[4], desc_ecc[6];
     int error_number, compact, data_length, data_maxsize, codeword_size, adjusted_length;
     int remainder, padbits, count, gs1, adjustment_size;
-    int debug_print = (symbol->debug & ZINT_DEBUG_PRINT), reader = 0;
+    int reader = 0;
     int comp_loop = 4;
     int bp = 0;
+    const int debug_print = (symbol->debug & ZINT_DEBUG_PRINT);
     rs_t rs;
     rs_uint_t rs_uint;
 
@@ -1451,7 +1452,7 @@ INTERNAL int azrune(struct zint_symbol *symbol, unsigned char source[], int leng
     char binary_string[28];
     unsigned char data_codewords[3], ecc_codewords[6];
     int bp = 0;
-    int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
+    const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
     rs_t rs;
 
     input_value = 0;

@@ -567,7 +567,7 @@ static int reduced_charset(struct zint_symbol *symbol, unsigned char *source, in
     int error_number = 0;
     unsigned char *preprocessed = source;
 
-    int eci_length = get_eci_length(symbol->eci, source, length);
+    const int eci_length = get_eci_length(symbol->eci, source, length);
 #ifndef _MSC_VER
     unsigned char preprocessed_buf[eci_length + 1];
 #else

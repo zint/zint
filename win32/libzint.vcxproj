@@ -203,6 +203,7 @@
     <ClInclude Include="..\backend\output.h" />
     <ClInclude Include="..\backend\pcx.h" />
     <ClInclude Include="..\backend\pdf417.h" />
+    <ClInclude Include="..\backend\pdf417_tabs.h" />
     <ClInclude Include="..\backend\qr.h" />
     <ClInclude Include="..\backend\reedsol.h" />
     <ClInclude Include="..\backend\reedsol_logs.h" />

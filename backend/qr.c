@@ -281,7 +281,7 @@ static void qr_define_mode(char mode[], const unsigned int jisdata[], const int 
         for (j = 0; j < QR_NUM_MODES; j++) { /* To mode */
             for (k = 0; k < QR_NUM_MODES; k++) { /* From mode */
                 if (j != k && char_modes[cm_i + k]) {
-                    unsigned int new_cost = cur_costs[k] + state[j]; /* Switch costs same as head costs */
+                    const unsigned int new_cost = cur_costs[k] + state[j]; /* Switch costs same as head costs */
                     if (!char_modes[cm_i + j] || new_cost < cur_costs[j]) {
                         cur_costs[j] = new_cost;
                         char_modes[cm_i + j] = mode_types[k];
@@ -1548,8 +1548,8 @@ INTERNAL int qrcode(struct zint_symbol *symbol, unsigned char source[], int leng
     int canShrink;
     int size_squared;
     const struct zint_structapp *p_structapp = NULL;
-    int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
-    int eci_length = get_eci_length(symbol->eci, source, length);
+    const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
+    const int eci_length = get_eci_length(symbol->eci, source, length);
 
 #ifndef _MSC_VER
     unsigned int jisdata[eci_length + 1];
@@ -1856,7 +1856,7 @@ static int micro_qr_m1(struct zint_symbol *symbol, char binary_data[], int bp) {
     }
 
     if (symbol->debug & ZINT_DEBUG_PRINT) {
-        printf("M1 Terminated binary (%d): %s (bits_left %d)\n", bp, binary_data, bits_left);
+        printf("M1 Terminated binary (%d): %.*s (bits_left %d)\n", bp, bp, binary_data, bits_left);
     }
 
     if (latch == 0) {
@@ -1952,7 +1952,7 @@ static int micro_qr_m2(struct zint_symbol *symbol, char binary_data[], int bp, c
     }
 
     if (symbol->debug & ZINT_DEBUG_PRINT) {
-        printf("M2 Terminated binary (%d): %s (bits_left %d)\n", bp, binary_data, bits_left);
+        printf("M2 Terminated binary (%d): %.*s (bits_left %d)\n", bp, bp, binary_data, bits_left);
     }
 
     if (latch == 0) {
@@ -2036,7 +2036,7 @@ static int micro_qr_m3(struct zint_symbol *symbol, char binary_data[], int bp, c
     }
 
     if (symbol->debug & ZINT_DEBUG_PRINT) {
-        printf("M3 Terminated binary (%d): %s (bits_left %d)\n", bp, binary_data, bits_left);
+        printf("M3 Terminated binary (%d): %.*s (bits_left %d)\n", bp, bp, binary_data, bits_left);
     }
 
     if (latch == 0) {
@@ -2155,7 +2155,7 @@ static int micro_qr_m4(struct zint_symbol *symbol, char binary_data[], int bp, c
     }
 
     if (symbol->debug & ZINT_DEBUG_PRINT) {
-        printf("M4 Terminated binary (%d): %s (bits_left %d)\n", (int) strlen(binary_data), binary_data, bits_left);
+        printf("M4 Terminated binary (%d): %.*s (bits_left %d)\n", bp, bp, binary_data, bits_left);
     }
 
     if (latch == 0) {
@@ -2436,7 +2436,7 @@ INTERNAL int microqr(struct zint_symbol *symbol, unsigned char source[], int len
     int ecc_level, autoversion, version;
     int bitmask, format, format_full;
     int size_squared;
-    int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
+    const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
 #ifdef _MSC_VER
     unsigned char *grid;
 #endif
@@ -2610,7 +2610,7 @@ INTERNAL int microqr(struct zint_symbol *symbol, unsigned char source[], int len
     bp = qr_binary((unsigned char *) full_stream, MICROQR_VERSION + version, 0 /*target_codewords*/, mode, jisdata,
                     length, NULL /*p_structapp*/, 0 /*gs1*/, 0 /*eci*/, binary_count[version], debug_print);
 
-    if (debug_print) printf("Binary (%d): %s\n", bp, full_stream);
+    if (debug_print) printf("Binary (%d): %.*s\n", bp, bp, full_stream);
 
     switch (version) {
         case 0: bp = micro_qr_m1(symbol, full_stream, bp);
@@ -2740,7 +2740,7 @@ INTERNAL int upnqr(struct zint_symbol *symbol, unsigned char source[], int lengt
     int ecc_level, version, target_codewords, blocks, size;
     int bitmask, error_number;
     int size_squared;
-    int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
+    const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
 
 #ifndef _MSC_VER
     unsigned int jisdata[length + 1];
@@ -2972,8 +2972,8 @@ INTERNAL int rmqr(struct zint_symbol *symbol, unsigned char source[], int length
     int full_multibyte;
     int footprint, best_footprint, format_data;
     unsigned int left_format_info, right_format_info;
-    int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
-    int eci_length = get_eci_length(symbol->eci, source, length);
+    const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
+    const int eci_length = get_eci_length(symbol->eci, source, length);
 
 #ifndef _MSC_VER
     unsigned int jisdata[eci_length + 1];

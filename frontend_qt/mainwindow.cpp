@@ -306,7 +306,7 @@ MainWindow::~MainWindow()
     save_sub_settings(settings, m_bc.bc.symbol());
 }
 
-QString MainWindow::get_zint_version()
+QString MainWindow::get_zint_version(void)
 {
     QString zint_version;
 
@@ -882,6 +882,7 @@ void MainWindow::change_options()
         tabMain->insertTab(1, m_optionWidget, tr("PDF41&7"));
         connect(get_widget(QSL("cmbPDFECC")), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(get_widget(QSL("cmbPDFCols")), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        connect(get_widget(QSL("cmbPDFRows")), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(get_widget(QSL("radPDFTruncated")), SIGNAL(toggled( bool )), SLOT(update_preview()));
         connect(get_widget(QSL("radPDFStand")), SIGNAL(toggled( bool )), SLOT(update_preview()));
         connect(get_widget(QSL("radPDFHIBC")), SIGNAL(toggled( bool )), SLOT(update_preview()));
@@ -1654,6 +1655,9 @@ void MainWindow::update_preview()
                 m_bc.bc.setSymbol(BARCODE_PDF417);
 
             m_bc.bc.setOption2(get_cmb_index(QSL("cmbPDFCols")));
+            if ((item_val = get_cmb_index(QSL("cmbPDFRows"))) != 0) {
+                m_bc.bc.setOption3(item_val + 2); // Starts at 3 rows
+            }
             m_bc.bc.setOption1(get_cmb_index(QSL("cmbPDFECC")) - 1);
 
             if ((item_val = get_spn_val(QSL("spnPDFStructAppCount"))) > 1) {
@@ -2674,6 +2678,7 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology)
         case BARCODE_PDF417COMP:
         case BARCODE_HIBC_PDF:
             settings.setValue(QSL("studio/bc/pdf417/cols"), get_cmb_index(QSL("cmbPDFCols")));
+            settings.setValue(QSL("studio/bc/pdf417/rows"), get_cmb_index(QSL("cmbPDFRows")));
             settings.setValue(QSL("studio/bc/pdf417/ecc"), get_cmb_index(QSL("cmbPDFECC")));
             settings.setValue(QSL("studio/bc/pdf417/encoding_mode"), get_rad_grp_index(
                 QStringList() << QSL("radPDFStand") << QSL("radPDFTruncated") << QSL("radPDFHIBC")));
@@ -2994,7 +2999,8 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
                 QSL("studio/bc/%1/appearance/chk_hrt_show").arg(name), 1).toInt() ? true : false);
         }
         chkCMYK->setChecked(settings.value(QSL("studio/bc/%1/appearance/cmyk").arg(name), 0).toInt() ? true : false);
-        chkQuietZones->setChecked(settings.value(QSL("studio/bc/%1/appearance/chk_quietzones").arg(name), 0).toInt() ? true : false);
+        chkQuietZones->setChecked(settings.value(
+            QSL("studio/bc/%1/appearance/chk_quietzones").arg(name), 0).toInt() ? true : false);
         cmbRotate->setCurrentIndex(settings.value(QSL("studio/bc/%1/appearance/rotate").arg(name), 0).toInt());
         if (symbology == BARCODE_DOTCODE || chkDotty->isEnabled()) {
             chkDotty->setChecked(settings.value(
@@ -3027,6 +3033,7 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
         case BARCODE_PDF417COMP:
         case BARCODE_HIBC_PDF:
             set_cmb_from_setting(settings, QSL("studio/bc/pdf417/cols"), QSL("cmbPDFCols"));
+            set_cmb_from_setting(settings, QSL("studio/bc/pdf417/rows"), QSL("cmbPDFRows"));
             set_cmb_from_setting(settings, QSL("studio/bc/pdf417/ecc"), QSL("cmbPDFECC"));
             set_rad_from_setting(settings, QSL("studio/bc/pdf417/encoding_mode"),
                 QStringList() << QSL("radPDFStand") << QSL("radPDFTruncated") << QSL("radPDFHIBC"));

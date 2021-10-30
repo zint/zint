@@ -1277,8 +1277,8 @@ static void test_quiet_zones(int index, int debug) {
     int i, length, ret;
     struct zint_symbol *symbol;
 
-    char *text;
-    static char composite[] = "[20]12";
+    const char *text;
+    static const char composite[] = "[20]12";
 
     struct zint_vector_rect *rect;
     struct zint_vector_circle *circle;

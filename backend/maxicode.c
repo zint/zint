@@ -540,7 +540,7 @@ INTERNAL int maxicode(struct zint_symbol *symbol, unsigned char source[], int le
     unsigned char maxi_codeword[144] = {0};
     int scm_vv = -1;
     int structapp_cw = 0;
-    int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
+    const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
 
     mode = symbol->option_1;
 

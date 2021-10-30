@@ -2065,16 +2065,17 @@ amount of data into a small space. Zint supports encoding up to the ISO
 standard maximum symbol size of 925 codewords which (at error correction level
 0) allows a maximum data size of 1850 text characters, or 2710 digits. The
 width of the generated PDF417 symbol can be specified at the command line using
-the --cols switch followed by a number between 1 and 30, and the amount of
+the --cols switch followed by a number between 1 and 30, the number of rows
+using the --rows switch followed by a number between 3 and 90, and the amount of
 error correction information can be specified by using the --secure switch
 followed by a number between 0 and 8 where the number of codewords used for
 error correction is determined by 2^(value + 1). If using the API these values
-are assigned to option_2 and option_1 respectively. The default level of error
-correction is determined by the amount of data being encoded. This symbology
-uses Latin-1 character encoding by default but also supports the ECI encoding
-mechanism. A separate symbology ID can be used to encode Health Industry
-Barcode (HIBC) data which adds a leading '+' character and a modulo-49 check
-digit to the encoded data.
+are assigned to option_2, option_3 and option_1 respectively. The default level
+of error correction is determined by the amount of data being encoded. This
+symbology uses Latin-1 character encoding by default but also supports the ECI
+encoding mechanism. A separate symbology ID can be used to encode Health
+Industry Barcode (HIBC) data which adds a leading '+' character and a modulo-49
+check digit to the encoded data.
 
 PDF417 supports Structured Append of up to a 99,999 symbols and an optional
 numeric ID of up to 30 digits, which can be set by using the --structapp option

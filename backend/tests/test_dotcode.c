@@ -1087,7 +1087,7 @@ static void test_fuzz(int index, int debug) {
 static void test_generate(int generate) {
 
     // roots (antilogs): root[0] = 1; for (i = 1; i < GF - 1; i++) root[i] = (PM * root[i - 1]) % GF;
-    static int root[GF - 1] = {
+    static const int root[GF - 1] = {
           1,   3,   9,  27,  81,  17,  51,  40,   7,  21,
          63,  76,   2,   6,  18,  54,  49,  34, 102,  80,
          14,  42,  13,  39,   4,  12,  36, 108,  98,  68,

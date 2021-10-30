@@ -248,7 +248,7 @@ static int key(const unsigned char *data, int data_len, int offset, int min, int
 static int yymmd0(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
 
-    static char days_in_month[] = { 0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+    static const char days_in_month[] = { 0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 
     (void)max;
 
@@ -277,7 +277,7 @@ static int yymmd0(const unsigned char *data, int data_len, int offset, int min, 
             return 0;
         }
         if (month == 2 && day == 29) { /* Leap year check */
-            int year = to_int(data + offset, 2);
+            const int year = to_int(data + offset, 2);
             if (year & 3) { /* Good until 2050 when 00 will mean 2100 (GS1 General Specifications 7.12) */
                 *p_err_no = 3;
                 *p_err_posn = offset + 4 + 1;
@@ -301,7 +301,7 @@ static int yymmdd(const unsigned char *data, int data_len, int offset, int min, 
     data_len -= offset;
 
     if (!length_only && data_len) {
-        int day = to_int(data + offset + 4, 2);
+        const int day = to_int(data + offset + 4, 2);
         if (day == 0) {
             *p_err_no = 3;
             *p_err_posn = offset + 4 + 1;
@@ -328,7 +328,7 @@ static int yymmddhh(const unsigned char *data, int data_len, int offset, int min
     data_len -= offset;
 
     if (!length_only && data_len) {
-        int hour = to_int(data + offset + 6, 2);
+        const int hour = to_int(data + offset + 6, 2);
         if (hour > 23) {
             *p_err_no = 3;
             *p_err_posn = offset + 6 + 1;
@@ -386,7 +386,7 @@ static int mmoptss(const unsigned char *data, int data_len, int offset, int min,
     }
 
     if (!length_only && data_len) {
-        int mins = to_int(data + offset, 2);
+        const int mins = to_int(data + offset, 2);
         if (mins > 59) {
             *p_err_no = 3;
             *p_err_posn = offset + 1;
@@ -394,7 +394,7 @@ static int mmoptss(const unsigned char *data, int data_len, int offset, int min,
             return 0;
         }
         if (data_len > 2) {
-            int secs = to_int(data + offset + 2, 2);
+            const int secs = to_int(data + offset + 2, 2);
             if (secs > 59) {
                 *p_err_no = 3;
                 *p_err_posn = offset + 2 + 1;
@@ -474,7 +474,7 @@ static int iso3166999(const unsigned char *data, int data_len, int offset, int m
     }
 
     if (!length_only && data_len) {
-        int cc = to_int(data + offset, 3);
+        const int cc = to_int(data + offset, 3);
         if (cc != 999 && !iso3166_numeric(cc)) {
             *p_err_no = 3;
             *p_err_posn = offset + 1;
@@ -632,7 +632,7 @@ static int nonzero(const unsigned char *data, int data_len, int offset, int min,
     }
 
     if (!length_only && data_len) {
-        int val = to_int(data + offset, data_len > max ? max : data_len);
+        const int val = to_int(data + offset, data_len > max ? max : data_len);
 
         if (val == 0) {
             *p_err_no = 3;
@@ -965,7 +965,7 @@ static int couponcode(const unsigned char *data, int data_len, int offset, int m
 
         /* Optional fields */
         while (d - data < data_len) {
-            int data_field = to_int(d, 1);
+            const int data_field = to_int(d, 1);
             d++;
 
             if (data_field == 1) {

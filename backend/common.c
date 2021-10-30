@@ -100,7 +100,7 @@ INTERNAL int chr_cnt(const unsigned char string[], const int length, const unsig
 /* Verifies that a string only uses valid characters */
 INTERNAL int is_sane(const unsigned int flg, const unsigned char source[], const int length) {
     #define IS_CLS_F    (IS_CLI_F | IS_SIL_F)
-    static unsigned short flgs[256] = {
+    static const unsigned short flgs[256] = {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, /*00-1F*/
                    IS_SPC_F,            IS_C82_F,            IS_C82_F,            IS_HSH_F, /*20-23*/ /*  !"# */
                    IS_CLS_F, IS_SIL_F | IS_C82_F,            IS_C82_F,            IS_C82_F, /*24-27*/ /* $%&' */
@@ -221,7 +221,7 @@ INTERNAL void expand(struct zint_symbol *symbol, const char data[], const int le
     int reader;
     int writer, i;
     int latch, num;
-    int row = symbol->rows;
+    const int row = symbol->rows;
 
     symbol->rows++;
 
@@ -344,7 +344,7 @@ INTERNAL unsigned int decode_utf8(unsigned int *state, unsigned int *codep, cons
         12,36,12,12,12,12,12,12,12,12,12,12,
     };
 
-    unsigned int type = utf8d[byte];
+    const unsigned int type = utf8d[byte];
 
     *codep = *state != 0 ? (byte & 0x3fu) | (*codep << 6) : (0xff >> type) & byte;
 
@@ -410,7 +410,7 @@ INTERNAL int set_height(struct zint_symbol *symbol, const float min_row_height, 
     int zero_count = 0;
     float row_height;
     int i;
-    int rows = symbol->rows ? symbol->rows : 1; /* Sometimes called before expand() */
+    const int rows = symbol->rows ? symbol->rows : 1; /* Sometimes called before expand() */
 
     for (i = 0; i < rows; i++) {
         if (symbol->row_height[i]) {

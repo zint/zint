@@ -135,10 +135,10 @@ static void test_gb18030_wctomb_zint(void) {
     unsigned int val1_1, val1_2, val2_1, val2_2;
     unsigned int i;
     /* See: https://file.allitebooks.com/20160708/CJKV%20Information%20Processing.pdf (table 3-37, p.109, 2nd ed.) */
-    static int nonpua_nonbmp[] = {
+    static const int nonpua_nonbmp[] = {
         0x20087, 0x20089, 0x200CC, 0x215D7, 0x2298F, 0x241FE
     };
-    static unsigned int nonpua_nonbmp_vals[] = {
+    static const unsigned int nonpua_nonbmp_vals[] = {
         0xFE51, 0xFE52, 0xFE53, 0xFE6C, 0xFE76, 0xFE91
     };
 

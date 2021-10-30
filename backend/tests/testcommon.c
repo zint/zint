@@ -2076,8 +2076,8 @@ static const char *testUtilBwippName(int index, const struct zint_symbol *symbol
         { "pzn", BARCODE_PZN, 52, 0, 0, 0, 0, 0, },
         { "pharmacode2", BARCODE_PHARMA_TWO, 53, 0, 0, 0, 0, 0, },
         { "", -1, 54, 0, 0, 0, 0, 0, },
-        { "pdf417", BARCODE_PDF417, 55, 1, 1, 0, 0, 0, },
-        { "pdf417compact", BARCODE_PDF417COMP, 56, 1, 1, 0, 0, 0, },
+        { "pdf417", BARCODE_PDF417, 55, 1, 1, 1, 0, 0, },
+        { "pdf417compact", BARCODE_PDF417COMP, 56, 1, 1, 1, 0, 0, },
         { "maxicode", BARCODE_MAXICODE, 57, 1, 1, 0, 0, 0, },
         { "qrcode", BARCODE_QRCODE, 58, 1, 1, 1, 0, 0, },
         { "", -1, 59, 0, 0, 0, 0, 0, },
@@ -2127,7 +2127,7 @@ static const char *testUtilBwippName(int index, const struct zint_symbol *symbol
         { "", -1, 103, 0, 0, 0, 0, 0, },
         { "hibcqrcode", BARCODE_HIBC_QR, 104, 1, 1, 1, 0, 0, },
         { "", -1, 105, 0, 0, 0, 0, 0, },
-        { "hibcpdf417", BARCODE_HIBC_PDF, 106, 1, 1, 0, 0, 0, },
+        { "hibcpdf417", BARCODE_HIBC_PDF, 106, 1, 1, 1, 0, 0, },
         { "", -1, 107, 0, 0, 0, 0, 0, },
         { "hibcmicropdf417", BARCODE_HIBC_MICPDF, 108, 0, 1, 0, 0, 0, },
         { "", -1, 109, 0, 0, 0, 0, 0, },
@@ -2670,6 +2670,11 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                 if (option_2 > 0) {
                     sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%scolumns=%d",
                             strlen(bwipp_opts_buf) ? " " : "", option_2);
+                    bwipp_opts = bwipp_opts_buf;
+                }
+                if (option_3 > 0) {
+                    sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%srows=%d",
+                            strlen(bwipp_opts_buf) ? " " : "", option_3);
                     bwipp_opts = bwipp_opts_buf;
                 }
             } else if (symbology == BARCODE_POSTNET || symbology == BARCODE_PLANET || symbology == BARCODE_RM4SCC

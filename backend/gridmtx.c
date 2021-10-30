@@ -134,7 +134,7 @@ static void define_mode(char *mode, const unsigned int gbdata[], const int lengt
     static const char mode_types[] = { GM_CHINESE, GM_NUMBER, GM_LOWER, GM_UPPER, GM_MIXED, GM_BYTE, '\0' };
 
     /* Initial mode costs */
-    static unsigned int head_costs[GM_NUM_MODES] = {
+    static const unsigned int head_costs[GM_NUM_MODES] = {
     /*  H            N (+pad prefix)    L            U            M            B (+byte count) */
         4 * GM_MULT, (4 + 2) * GM_MULT, 4 * GM_MULT, 4 * GM_MULT, 4 * GM_MULT, (4 + 9) * GM_MULT
     };
@@ -262,7 +262,7 @@ static void define_mode(char *mode, const unsigned int gbdata[], const int lengt
         for (j = 0; j < GM_NUM_MODES; j++) { /* To mode */
             for (k = 0; k < GM_NUM_MODES; k++) { /* From mode */
                 if (j != k && char_modes[cm_i + k]) {
-                    unsigned int new_cost = cur_costs[k] + switch_costs[k][j];
+                    const unsigned int new_cost = cur_costs[k] + switch_costs[k][j];
                     if (!char_modes[cm_i + j] || new_cost < cur_costs[j]) {
                         cur_costs[j] = new_cost;
                         char_modes[cm_i + j] = mode_types[k];
@@ -385,7 +385,7 @@ static int gm_encode(unsigned int gbdata[], const int length, char binary[], con
     define_mode(mode, gbdata, length, debug);
 
     do {
-        int next_mode = mode[sp];
+        const int next_mode = mode[sp];
 
         if (next_mode != current_mode) {
             switch (current_mode) {
@@ -1022,7 +1022,7 @@ INTERNAL int gridmatrix(struct zint_symbol *symbol, unsigned char source[], int 
     const struct zint_structapp *p_structapp = NULL;
     int size_squared;
     int bin_len;
-    int eci_length = get_eci_length(symbol->eci, source, length);
+    const int eci_length = get_eci_length(symbol->eci, source, length);
 
 #ifndef _MSC_VER
     unsigned int gbdata[eci_length + 1];

@@ -352,10 +352,10 @@ static void rsencode(const int nd, const int nc, unsigned char *wd) {
 
     // ...& then for each such block:
     for (start = 0; start < step; start++) {
-        int ND = (nd - start + step - 1) / step;
-        int NW = (nw - start + step - 1) / step;
-        int NC = NW - ND;
-        unsigned char *e = wd + start + ND * step;
+        const int ND = (nd - start + step - 1) / step;
+        const int NW = (nw - start + step - 1) / step;
+        const int NC = NW - ND;
+        unsigned char *const e = wd + start + ND * step;
 
         // first set the generator polynomial "c" of order "NC":
         c = coefs + cinds[NC - 3];
@@ -528,12 +528,12 @@ static int binary(const unsigned char source[], const int length, const int posi
 /* Analyse input data stream and encode using algorithm from Annex F */
 static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned char source[], const int length,
             unsigned char *codeword_array, int *binary_finish) {
-    static char lead_specials[] = "\x09\x1C\x1D\x1E"; // HT, FS, GS, RS
+    static const char lead_specials[] = "\x09\x1C\x1D\x1E"; // HT, FS, GS, RS
 
     int input_position, array_length, i;
     char encoding_mode;
     int inside_macro;
-    int debug_print = (symbol->debug & ZINT_DEBUG_PRINT);
+    const int debug_print = (symbol->debug & ZINT_DEBUG_PRINT);
     int binary_buffer_size = 0;
     int lawrencium[6]; // Reversed radix 103 values
     int nx;
@@ -754,8 +754,8 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
 
         /* Step C4 */
         if ((!done) && (encoding_mode == 'C')) {
-            int m = ahead_a(source, input_position, length);
-            int n = ahead_b(source, input_position, length, &nx);
+            const int m = ahead_a(source, input_position, length);
+            const int n = ahead_b(source, input_position, length, &nx);
             if (m > n) {
                 codeword_array[array_length] = 101; // Latch A
                 array_length++;
@@ -796,7 +796,7 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
 
         /* Step D1 */
         if ((!done) && (encoding_mode == 'B')) {
-            int n = try_c(source, input_position, length);
+            const int n = try_c(source, input_position, length);
 
             if (n >= 2) {
                 if (n <= 4) {
@@ -926,7 +926,7 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
 
         /* Step E1 */
         if ((!done) && (encoding_mode == 'A')) {
-            int n = try_c(source, input_position, length);
+            const int n = try_c(source, input_position, length);
             if (n >= 2) {
                 if (n <= 4) {
                     codeword_array[array_length] = 103 + (n - 2); // nx Shift C
@@ -1041,7 +1041,7 @@ static int dotcode_encode_message(struct zint_symbol *symbol, const unsigned cha
 
         /* Step F1 */
         if ((!done) && (encoding_mode == 'X')) {
-            int n = try_c(source, input_position, length);
+            const int n = try_c(source, input_position, length);
 
             if (n >= 2) {
                 /* Empty binary buffer */
@@ -1382,10 +1382,10 @@ INTERNAL int dotcode(struct zint_symbol *symbol, unsigned char source[], int len
     int dot_stream_length;
     int high_score, best_mask;
     int binary_finish = 0;
-    int debug_print = (symbol->debug & ZINT_DEBUG_PRINT);
+    const int debug_print = (symbol->debug & ZINT_DEBUG_PRINT);
     int padding_dots, is_first;
     /* Allow 4 codewords per input + 2 (FNC) + 4 (ECI) + 2 (special char 1st position) + 4 (Structured Append) */
-    int codeword_array_len = length * 4 + 2 + 4 + 2 + 4;
+    const int codeword_array_len = length * 4 + 2 + 4 + 2 + 4;
 
 #ifndef _MSC_VER
     unsigned char codeword_array[codeword_array_len];

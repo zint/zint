@@ -138,7 +138,7 @@ INTERNAL int code11(struct zint_symbol *symbol, unsigned char source[], int leng
     char *d = dest;
     int num_check_digits;
     char checkstr[3] = {0};
-    static char checkchrs[11] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-' };
+    static const char checkchrs[11] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-' };
 
     /* Suppresses clang-tidy clang-analyzer-core.UndefinedBinaryOperatorResult warning */
     assert(length > 0);
@@ -701,7 +701,7 @@ nb0:    if (++B[0] <= bmax[0]) goto lb0;
 
 /* Channel Code - According to ANSI/AIM BC12-1998 */
 INTERNAL int channel(struct zint_symbol *symbol, unsigned char source[], int length) {
-    static int max_ranges[] = { -1, -1, -1, 26, 292, 3493, 44072, 576688, 7742862 };
+    static const int max_ranges[] = { -1, -1, -1, 26, 292, 3493, 44072, 576688, 7742862 };
     int S[8] = {0}, B[8] = {0};
     long target_value = 0;
     char dest[30];
@@ -799,9 +799,9 @@ INTERNAL int vin(struct zint_symbol *symbol, unsigned char source[], int length)
     char *d = dest;
     char input_check;
     char output_check;
-    int weight[17] = {8, 7, 6, 5, 4, 3, 2, 10, 0, 9, 8, 7, 6, 5, 4, 3, 2};
     int sum;
     int i;
+    static const int weight[17] = {8, 7, 6, 5, 4, 3, 2, 10, 0, 9, 8, 7, 6, 5, 4, 3, 2};
 
     // Check length
     if (length != 17) {
@@ -811,7 +811,8 @@ INTERNAL int vin(struct zint_symbol *symbol, unsigned char source[], int length)
 
     // Check input characters, I, O and Q are not allowed
     if (!is_sane(ARSENIC_F, source, length)) {
-        strcpy(symbol->errtxt, "337: Invalid character in data (alphanumerics only, excluding \"I\", \"O\" and \"Q\")");
+        strcpy(symbol->errtxt,
+                "337: Invalid character in data (alphanumerics only, excluding \"I\", \"O\" and \"Q\")");
         return ZINT_ERROR_INVALID_DATA;
     }
 

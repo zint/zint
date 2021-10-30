@@ -57,13 +57,13 @@
 #define TIF_NO_COMPRESSION      1
 #define TIF_LZW                 5
 
-static void to_color_map(unsigned char rgb[4], tiff_color_t *color_map_entry) {
+static void to_color_map(const unsigned char rgb[4], tiff_color_t *color_map_entry) {
     color_map_entry->red = (rgb[0] << 8) | rgb[0];
     color_map_entry->green = (rgb[1] << 8) | rgb[1];
     color_map_entry->blue = (rgb[2] << 8) | rgb[2];
 }
 
-static void to_cmyk(unsigned char rgb[3], unsigned char alpha, unsigned char *cmyk) {
+static void to_cmyk(const unsigned char rgb[3], const unsigned char alpha, unsigned char *cmyk) {
     unsigned char max = rgb[0];
     if (rgb[1] > max) {
         max = rgb[1];
@@ -79,7 +79,7 @@ static void to_cmyk(unsigned char rgb[3], unsigned char alpha, unsigned char *cm
 
 }
 
-static int is_big_endian() {
+static int is_big_endian(void) {
     return (*((const uint16_t *)"\x11\x22") == 0x1122);
 }
 
@@ -145,7 +145,7 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
 
     if (symbol->symbology == BARCODE_ULTRA) {
         static const int ultra_chars[8] = { 'W', 'C', 'B', 'M', 'R', 'Y', 'G', 'K' };
-        static unsigned char ultra_rgbs[8][3] = {
+        static const unsigned char ultra_rgbs[8][3] = {
             { 0xff, 0xff, 0xff, }, /* White */
             {    0, 0xff, 0xff, }, /* Cyan */
             {    0,    0, 0xff, }, /* Blue */
@@ -388,13 +388,13 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
             }
         } else if (samples_per_pixel == 2) { /* PALETTE_COLOR with alpha */
             for (column = 0; column < symbol->bitmap_width; column++) {
-                int idx = map[*pb++];
+                const int idx = map[*pb++];
                 strip_buf[bytes_put++] = idx;
                 strip_buf[bytes_put++] = palette[idx][3];
             }
         } else { /* samples_per_pixel >= 4, RGB with alpha (4) or CMYK with (5) or without (4) alpha */
             for (column = 0; column < symbol->bitmap_width; column++) {
-                int idx = map[*pb++];
+                const int idx = map[*pb++];
                 memcpy(&strip_buf[bytes_put], &palette[idx], samples_per_pixel);
                 bytes_put += samples_per_pixel;
             }
@@ -414,7 +414,7 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
                 }
                 bytes_put = ftell(tif_file) - file_pos;
                 if (bytes_put != strip_bytes[strip]) {
-                    int diff = bytes_put - strip_bytes[strip];
+                    const int diff = bytes_put - strip_bytes[strip];
                     strip_bytes[strip] = bytes_put;
                     for (i = strip + 1; i < strip_count; i++) {
                         strip_offset[i] += diff;

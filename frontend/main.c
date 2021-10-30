@@ -99,9 +99,9 @@ static void types(void) {
 
 /* Output usage information */
 static void usage(void) {
-    int zint_version = ZBarcode_Version();
-    int version_major = zint_version / 10000;
-    int version_minor = (zint_version % 10000) / 100;
+    const int zint_version = ZBarcode_Version();
+    const int version_major = zint_version / 10000;
+    const int version_minor = (zint_version % 10000) / 100;
     int version_release = zint_version % 100;
     int version_build;
 
@@ -109,10 +109,10 @@ static void usage(void) {
         /* This is a test release */
         version_release = version_release / 10;
         version_build = zint_version % 10;
-        printf( "Zint version %d.%d.%d.%d (dev)\n", version_major, version_minor, version_release, version_build);
+        printf("Zint version %d.%d.%d.%d (dev)\n", version_major, version_minor, version_release, version_build);
     } else {
         /* This is a stable release */
-        printf( "Zint version %d.%d.%d\n", version_major, version_minor, version_release);
+        printf("Zint version %d.%d.%d\n", version_major, version_minor, version_release);
     }
 
     printf( "Encode input data in a barcode and save as BMP/EMF/EPS/GIF/PCX/PNG/SVG/TIF/TXT\n\n"
@@ -156,11 +156,11 @@ static void usage(void) {
             "  --noquietzones        Disable default quiet zones\n"
             "  --notext              Remove human readable text\n"
             "  -o, --output=FILE     Send output to FILE. Default is out.png\n"
-            "  --primary=STRING      Set structured primary message (MaxiCode/Composite)\n"
+            "  --primary=STRING      Set primary message (MaxiCode/Composite)\n"
             "  --quietzones          Add compliant quiet zones\n"
             "  -r, --reverse         Reverse colours (white on black)\n"
             "  --rotate=NUMBER       Rotate symbol by NUMBER degrees\n"
-            "  --rows=NUMBER         Set number of rows (Codablock-F)\n"
+            "  --rows=NUMBER         Set number of rows (Codablock-F/PDF417)\n"
             "  --scale=NUMBER        Adjust size of X-dimension\n"
             "  --scmvv=NUMBER        Prefix SCM with \"[)>\\R01\\Gvv\" (vv is NUMBER) (MaxiCode)\n"
             "  --secure=NUMBER       Set error correction level (ECC)\n"
@@ -213,7 +213,7 @@ static void show_eci(void) {
 static int validate_int(const char source[], int *p_val) {
     int val = 0;
     int i;
-    int length = (int) strlen(source);
+    const int length = (int) strlen(source);
 
     if (length > 9) { /* Prevent overflow */
         return 0;
@@ -241,7 +241,8 @@ static char itoc(const int source) {
 
 /* Converts upper case characters to lower case in a string source[] */
 static void to_lower(char source[]) {
-    int i, src_len = (int) strlen(source);
+    int i;
+    const int src_len = (int) strlen(source);
 
     for (i = 0; i < src_len; i++) {
         if ((source[i] >= 'A') && (source[i] <= 'Z')) {
@@ -393,8 +394,8 @@ static int get_barcode_name(const char *barcode_name) {
     n[j] = '\0';
 
     while (s <= e) {
-        int m = (s + e) / 2;
-        int cmp = strcmp(names[m].n, n);
+        const int m = (s + e) / 2;
+        const int cmp = strcmp(names[m].n, n);
         if (cmp < 0) {
             s = m + 1;
         } else if (cmp > 0) {
@@ -750,7 +751,7 @@ static int win_argc = 0;
 static char **win_argv = NULL;
 
 /* Free Windows args */
-static void win_free_args() {
+static void win_free_args(void) {
     int i;
     if (!win_argv) {
         return;
@@ -775,14 +776,15 @@ static void win_args(int *p_argc, char ***p_argv) {
             LocalFree(szArgList);
         } else {
             for (i = 0; i < win_argc; i++) {
-                int len = WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, szArgList[i], -1, NULL, 0, NULL, NULL);
+                const int len = WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, szArgList[i], -1, NULL, 0,
+                                                    NULL /*lpDefaultChar*/, NULL /*lpUsedDefaultChar*/);
                 if (len == 0 || !(win_argv[i] = malloc(len + 1))) {
                     win_free_args();
                     LocalFree(szArgList);
                     return;
                 }
-                if (WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, szArgList[i], -1, win_argv[i], len, NULL, NULL)
-                        == 0) {
+                if (WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, szArgList[i], -1, win_argv[i], len,
+                                        NULL /*lpDefaultChar*/, NULL /*lpUsedDefaultChar*/) == 0) {
                     win_free_args();
                     LocalFree(szArgList);
                     return;
@@ -822,6 +824,7 @@ int main(int argc, char **argv) {
     int mask = 0;
     int separator = 0;
     int addon_gap = 0;
+    int rows = 0;
     char filetype[4] = {0};
     int no_png;
     int png_refused;
@@ -868,7 +871,7 @@ int main(int argc, char **argv) {
             OPT_VERBOSE, OPT_VERS, OPT_VWHITESP, OPT_WERROR,
         };
         int option_index = 0;
-        static struct option long_options[] = {
+        static const struct option long_options[] = {
             {"addongap", 1, NULL, OPT_ADDONGAP},
             {"barcode", 1, NULL, 'b'},
             {"batch", 0, NULL, OPT_BATCH},
@@ -930,7 +933,7 @@ int main(int argc, char **argv) {
             {"whitesp", 1, NULL, 'w'},
             {NULL, 0, NULL, 0}
         };
-        int c = getopt_long_only(argc, argv, "b:d:ehi:o:rtw:", long_options, &option_index);
+        const int c = getopt_long_only(argc, argv, "b:d:ehi:o:rtw:", long_options, &option_index);
         if (c == -1) break;
 
         switch (c) {
@@ -1182,10 +1185,10 @@ int main(int argc, char **argv) {
                     fprintf(stderr, "Error 132: Invalid rows value (digits only)\n");
                     return do_exit(1);
                 }
-                if ((val >= 1) && (val <= 44)) {
-                    my_symbol->option_1 = val;
+                if ((val >= 1) && (val <= 90)) {
+                    rows = val;
                 } else {
-                    fprintf(stderr, "Warning 112: Number of rows out of range (1 to 44), ignoring\n");
+                    fprintf(stderr, "Warning 112: Number of rows out of range (1 to 90), ignoring\n");
                     fflush(stderr);
                 }
                 break;
@@ -1371,8 +1374,8 @@ int main(int argc, char **argv) {
     }
 
     if (data_arg_num) {
-        unsigned int cap = ZBarcode_Cap(my_symbol->symbology, ZINT_CAP_STACKABLE | ZINT_CAP_EXTENDABLE |
-                            ZINT_CAP_FULL_MULTIBYTE | ZINT_CAP_MASK);
+        const unsigned int cap = ZBarcode_Cap(my_symbol->symbology, ZINT_CAP_STACKABLE | ZINT_CAP_EXTENDABLE |
+                                    ZINT_CAP_FULL_MULTIBYTE | ZINT_CAP_MASK);
         if (fullmultibyte && (cap & ZINT_CAP_FULL_MULTIBYTE)) {
             my_symbol->option_3 = ZINT_FULL_MULTIBYTE;
         }
@@ -1384,6 +1387,14 @@ int main(int argc, char **argv) {
         }
         if (addon_gap && (cap & ZINT_CAP_EXTENDABLE)) {
             my_symbol->option_2 = addon_gap;
+        }
+        if (rows) {
+            if (my_symbol->symbology == BARCODE_PDF417 || my_symbol->symbology == BARCODE_PDF417COMP
+                    || my_symbol->symbology == BARCODE_HIBC_PDF) {
+                my_symbol->option_3 = rows;
+            } else if (my_symbol->symbology == BARCODE_CODABLOCKF || my_symbol->symbology == BARCODE_HIBC_BLOCKF) {
+                my_symbol->option_1 = rows;
+            }
         }
 
         if (batch_mode) {

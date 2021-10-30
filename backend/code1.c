@@ -483,8 +483,8 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigne
     char decimal_binary[24]; /* C1_DECIMAL buffer */
     int db_p = 0;
     int byte_start = 0;
-    int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
-    int eci_length = length + 7 + chr_cnt(source, length, '\\');
+    const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
+    const int eci_length = length + 7 + chr_cnt(source, length, '\\');
 #ifndef _MSC_VER
     unsigned char eci_buf[eci_length + 1];
     int num_digits[eci_length + 1];
@@ -965,6 +965,7 @@ INTERNAL int codeone(struct zint_symbol *symbol, unsigned char source[], int len
     int sub_version = 0;
     rs_t rs;
     int error_number = 0;
+    const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
 
     if ((symbol->option_2 < 0) || (symbol->option_2 > 10)) {
         strcpy(symbol->errtxt, "513: Invalid symbol size");
@@ -1028,7 +1029,7 @@ INTERNAL int codeone(struct zint_symbol *symbol, unsigned char source[], int len
             block_width = 6;
         }
 
-        if (symbol->debug & ZINT_DEBUG_PRINT) {
+        if (debug_print) {
             printf("Subversion: %d\n", sub_version);
         }
 
@@ -1045,7 +1046,7 @@ INTERNAL int codeone(struct zint_symbol *symbol, unsigned char source[], int len
             data[i + codewords] = ecc[codewords - i - 1];
         }
 
-        if (symbol->debug & ZINT_DEBUG_PRINT) {
+        if (debug_print) {
             printf("Codewords (%d): ", codewords);
             for (i = 0; i < codewords * 2; i++) printf(" %d", (int) data[i]);
             printf("\n");
@@ -1109,7 +1110,7 @@ INTERNAL int codeone(struct zint_symbol *symbol, unsigned char source[], int len
             block_width = 12;
         }
 
-        if (symbol->debug & ZINT_DEBUG_PRINT) {
+        if (debug_print) {
             printf("Padding: %d, Subversion: %d\n", data_cw - data_length, sub_version);
         }
 
@@ -1133,7 +1134,7 @@ INTERNAL int codeone(struct zint_symbol *symbol, unsigned char source[], int len
             data[data_cw + i] = ecc[ecc_cw - i - 1];
         }
 
-        if (symbol->debug & ZINT_DEBUG_PRINT) {
+        if (debug_print) {
             printf("Codewords (%d):", data_cw + ecc_cw);
             for (i = 0; i < data_cw + ecc_cw; i++) printf(" %d", (int) data[i]);
             printf("\n");
@@ -1195,13 +1196,13 @@ INTERNAL int codeone(struct zint_symbol *symbol, unsigned char source[], int len
             if (last_mode != C1_ASCII && last_mode != C1_BYTE) {
                 data[data_length++] = 255; /* Unlatch */
             }
-            if (symbol->debug & ZINT_DEBUG_PRINT) {
+            if (debug_print) {
                 printf("Padding: %d\n", data_cw - data_length);
             }
             for (i = data_length; i < data_cw; i++) {
                 data[i] = 129; /* Pad */
             }
-        } else if (symbol->debug & ZINT_DEBUG_PRINT) {
+        } else if (debug_print) {
             printf("No padding\n");
         }
 
@@ -1223,7 +1224,7 @@ INTERNAL int codeone(struct zint_symbol *symbol, unsigned char source[], int len
             }
         }
 
-        if (symbol->debug & ZINT_DEBUG_PRINT) {
+        if (debug_print) {
             printf("Codewords (%d):", data_cw + ecc_length);
             for (i = 0; i < data_cw + ecc_length; i++) printf(" %d", (int) data[i]);
             printf("\n");
@@ -1248,7 +1249,7 @@ INTERNAL int codeone(struct zint_symbol *symbol, unsigned char source[], int len
         symbol->width = c1_width[size - 1];
     }
 
-    if (symbol->debug & ZINT_DEBUG_PRINT) {
+    if (debug_print) {
         printf("Version: %d\n", size);
     }
 

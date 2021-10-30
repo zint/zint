@@ -833,10 +833,11 @@ INTERNAL int dbar_date(const unsigned char source[], const int src_posn) {
 /* Handles all data encodation from section 7.2.5 of ISO/IEC 24724 */
 static int dbar_exp_binary_string(struct zint_symbol *symbol, const unsigned char source[], char binary_string[],
             int cols_per_row, int *p_bp) {
-    int encoding_method, i, j, read_posn, debug = (symbol->debug & ZINT_DEBUG_PRINT), mode = NUMERIC;
+    int encoding_method, i, j, read_posn, mode = NUMERIC;
     char last_digit = '\0';
     int symbol_characters, characters_per_row = cols_per_row * 2;
     int length = (int) ustrlen(source);
+    const int debug_print = (symbol->debug & ZINT_DEBUG_PRINT);
 #ifndef _MSC_VER
     char general_field[length + 1];
 #else
@@ -852,17 +853,17 @@ static int dbar_exp_binary_string(struct zint_symbol *symbol, const unsigned cha
     if ((length >= 16) && ((source[0] == '0') && (source[1] == '1'))) {
         /* (01) and other AIs */
         encoding_method = 1;
-        if (debug) printf("Choosing Method 1\n");
+        if (debug_print) printf("Choosing Method 1\n");
     } else {
         /* any AIs */
         encoding_method = 2;
-        if (debug) printf("Choosing Method 2\n");
+        if (debug_print) printf("Choosing Method 2\n");
     }
 
     if (((length >= 20) && (encoding_method == 1)) && ((source[2] == '9') && (source[16] == '3'))) {
         /* Possibly encoding method > 2 */
 
-        if (debug) printf("Checking for other methods\n");
+        if (debug_print) printf("Checking for other methods\n");
 
         if ((length >= 26) && (source[17] == '1') && (source[18] == '0')) {
             /* Methods 3, 7, 9, 11 and 13 */
@@ -936,7 +937,7 @@ static int dbar_exp_binary_string(struct zint_symbol *symbol, const unsigned cha
             }
         }
 
-        if (debug && encoding_method != 1) printf("Now using method %d\n", encoding_method);
+        if (debug_print && encoding_method != 1) printf("Now using method %d\n", encoding_method);
     }
 
     switch (encoding_method) { /* Encoding method - Table 10 */
@@ -962,7 +963,7 @@ static int dbar_exp_binary_string(struct zint_symbol *symbol, const unsigned cha
             read_posn = length; /* 34 or 26 */
             break;
     }
-    if (debug) printf("Setting binary = %.*s\n", bp, binary_string);
+    if (debug_print) printf("Setting binary = %.*s\n", bp, binary_string);
 
     /* Variable length symbol bit field is just given a place holder (XX)
     for the time being */
@@ -981,7 +982,7 @@ static int dbar_exp_binary_string(struct zint_symbol *symbol, const unsigned cha
 
     /* Now encode the compressed data field */
 
-    if (debug) printf("Proceeding to encode data\n");
+    if (debug_print) printf("Proceeding to encode data\n");
     cdf_bp_start = bp; /* Debug use only */
 
     if (encoding_method == 1) {
@@ -1053,7 +1054,7 @@ static int dbar_exp_binary_string(struct zint_symbol *symbol, const unsigned cha
         bp = bin_append_posn((int) group_val, 16, binary_string, bp);
     }
 
-    if (debug && bp > cdf_bp_start) {
+    if (debug_print && bp > cdf_bp_start) {
         printf("Compressed data field (%d) = %.*s\n", bp - cdf_bp_start, bp - cdf_bp_start,
             binary_string + cdf_bp_start);
     }
@@ -1068,7 +1069,7 @@ static int dbar_exp_binary_string(struct zint_symbol *symbol, const unsigned cha
     }
     general_field[j] = '\0';
 
-    if (debug) printf("General field data = %s\n", general_field);
+    if (debug_print) printf("General field data = %s\n", general_field);
 
     if (j != 0) { /* If general field not empty */
         if (!general_field_encode(general_field, j, &mode, &last_digit, binary_string, &bp)) { /* Should not happen */
@@ -1078,7 +1079,7 @@ static int dbar_exp_binary_string(struct zint_symbol *symbol, const unsigned cha
         }
     }
 
-    if (debug) printf("Resultant binary = %.*s\n\tLength: %d\n", bp, binary_string, bp);
+    if (debug_print) printf("Resultant binary = %.*s\n\tLength: %d\n", bp, binary_string, bp);
 
     remainder = 12 - (bp % 12);
     if (remainder == 12) {
@@ -1098,7 +1099,7 @@ static int dbar_exp_binary_string(struct zint_symbol *symbol, const unsigned cha
 
     if (last_digit) {
         /* There is still one more numeric digit to encode */
-        if (debug) printf("Adding extra (odd) numeric digit\n");
+        if (debug_print) printf("Adding extra (odd) numeric digit\n");
 
         if ((remainder >= 4) && (remainder <= 6)) {
             bp = bin_append_posn(ctoi(last_digit) + 1, 4, binary_string, bp);
@@ -1125,7 +1126,7 @@ static int dbar_exp_binary_string(struct zint_symbol *symbol, const unsigned cha
 
         remainder = (12 * (symbol_characters - 1)) - bp;
 
-        if (debug) printf("Resultant binary = %.*s\n\tLength: %d\n", bp, binary_string, bp);
+        if (debug_print) printf("Resultant binary = %.*s\n\tLength: %d\n", bp, binary_string, bp);
     }
 
     if (bp > 252) { /* 252 = (21 * 12) */
@@ -1162,7 +1163,7 @@ static int dbar_exp_binary_string(struct zint_symbol *symbol, const unsigned cha
         binary_string[6] = d1 ? '1' : '0';
         binary_string[7] = d2 ? '1' : '0';
     }
-    if (debug) {
+    if (debug_print) {
         printf("Resultant binary = %.*s\n\tLength: %d, Symbol chars: %d\n", bp, binary_string, bp, symbol_characters);
     }
 
@@ -1252,6 +1253,7 @@ INTERNAL int dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[], int
     int bp = 0;
     int cols_per_row = 0;
     int stack_rows = 1;
+    const int debug_print = (symbol->debug & ZINT_DEBUG_PRINT);
 #ifndef _MSC_VER
     unsigned char reduced[src_len + 1];
     char binary_string[bin_len];
@@ -1268,7 +1270,7 @@ INTERNAL int dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[], int
     }
     warn_number = error_number;
 
-    if (symbol->debug & ZINT_DEBUG_PRINT) {
+    if (debug_print) {
         printf("Reduced (%d): %s\n", (int) ustrlen(reduced), reduced);
     }
 
@@ -1354,7 +1356,7 @@ INTERNAL int dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[], int
 
     check_char = (211 * ((data_chars + 1) - 4)) + (checksum % 211);
 
-    if (symbol->debug & ZINT_DEBUG_PRINT) {
+    if (debug_print) {
         printf("Data chars: %d, Check char: %d\n", data_chars, check_char);
     }
 
@@ -1500,7 +1502,7 @@ INTERNAL int dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[], int
                 left_to_right = 0;
             }
 
-            if (symbol->debug & ZINT_DEBUG_PRINT) {
+            if (debug_print) {
                 if (current_row == stack_rows) {
                     printf("Last row: number of columns: %d / %d, left to right: %d, special case: %d\n",
                         num_columns, cols_per_row, left_to_right, special_case_row);

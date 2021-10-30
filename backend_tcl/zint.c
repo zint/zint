@@ -132,6 +132,8 @@
 - Split up -to parsing (could seg fault if given non-int for X0 or Y0)
 2021-10-05 GL
 - Added -compliantheight option
+2021-10-30 GL
+- Added PDF417 -rows
 */
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
@@ -171,7 +173,7 @@
 
 
 /*----------------------------------------------------------------------------*/
-/* >>>>> Hepler defines */
+/* >>>>> Helper defines */
 
 /* Two macros are necessary to not include the define name, but the value */
 #define STRING(x) #x
@@ -199,7 +201,7 @@ static int Encode(Tcl_Interp *interp, int objc,
 
 /* >> List of Codes */
 
-static char *s_code_list[] = {
+static const char *s_code_list[] = {
     "Code11",
     "Standard2of5",
     "Interleaved2of5",
@@ -297,7 +299,7 @@ static char *s_code_list[] = {
     "rMQR",
     NULL};
 
-static int s_code_number[] = {
+static const int s_code_number[] = {
     BARCODE_CODE11,
     BARCODE_C25STANDARD,
     BARCODE_C25INTER,
@@ -399,7 +401,7 @@ static int s_code_number[] = {
  * The ECI comments are given after the name.
  * A ** indicates encodings where native data must be delivered and not utf-8
  */
-static char *s_eci_list[] = {
+static const char *s_eci_list[] = {
     "iso8859-1",    /* 3: ISO-8859-1 - Latin alphabet No. 1 (default)*/
     "iso8859-2",    /* 4: ISO-8859-2 - Latin alphabet No. 2*/
     "iso8859-3",    /* 5: ISO-8859-3 - Latin alphabet No. 3*/
@@ -430,14 +432,14 @@ static char *s_eci_list[] = {
 };
 
 /* The ECI numerical number to pass to ZINT */
-static int s_eci_number[] = {
+static const int s_eci_number[] = {
     3,4,5,6,7,8,9,10,11,12,13,15,16,17,18,20,21,22,23,24,25,26,27,28,29,30
 };
 
 /* Version information */
-static char version_string[] = VERSION;
+static const char version_string[] = VERSION;
 /* Help text */
-static char help_message[] = "zint tcl(stub,obj) dll\n"
+static const char help_message[] = "zint tcl(stub,obj) dll\n"
     " Generate barcode in tk images\n"
     "Usage:\n"
     " zint encode data photo ?option value? ...\n"
@@ -453,7 +455,7 @@ static char help_message[] = "zint tcl(stub,obj) dll\n"
     "   -border integer: width of a border around the symbol. Use with -bind/-box 1\n"
     "   -box bool: box around bar code, size set be -border\n"
     /* cli option --cmyk not supported as no corresponding output */
-    "   -cols integer: PDF417, Codablock F, DotCode: number of columns\n"
+    "   -cols integer: Codablock F, DotCode, PDF417: number of columns\n"
     "   -compliantheight bool: warn if height not compliant, and use standard default\n"
     /* cli option --data is standard parameter */
     "   -dmre bool: Allow Data Matrix Rectangular Extended\n"
@@ -486,10 +488,10 @@ static char help_message[] = "zint tcl(stub,obj) dll\n"
     "   -quietzones bool: add compliant quiet zones to whitespace\n"
     "   -reverse bool: Reverse colours (white on black)\n"
     "   -rotate angle: Image rotation by 0,90 or 270 degrees\n"
-    "   -rows integer: Codablock F: number of rows\n"
+    "   -rows integer: Codablock F, PDF417: number of rows\n"
     "   -scale double: Scale the image to this factor\n"
     "   -scmvv number: Prefix SCM with [)>\\R01\\Gvv (vv is NUMBER) (MaxiCode)\n"
-    "   -secure integer: EC Level (PDF417, QR)\n"
+    "   -secure integer: EC Level (Aztec, GridMatrix, HanXin, PDF417, QR, UltraCode)\n"
     "   -separator 0..4 (default: 1) : Stacked symbologies: separator width\n"
     /* cli option --small replaced by -smalltext */
     "   -smalltext bool: tiny interpretation line font\n"
@@ -691,6 +693,7 @@ static int Encode(Tcl_Interp *interp, int objc,
     int addon_gap = 0;
     int Separator = 1;
     int Mask = 0;
+    int rows = 0;
     unsigned int cap;
     /*------------------------------------------------------------------------*/
     /* >> Check if at least data and object is given and a pair number of */
@@ -716,7 +719,7 @@ static int Encode(Tcl_Interp *interp, int objc,
     for (optionPos = 4; optionPos < objc; optionPos+=2) {
         /*--------------------------------------------------------------------*/
         /* Option list and indexes */
-        char *optionList[] = {
+        static const char *optionList[] = {
             "-addongap", "-barcode", "-bg", "-bind", "-bold", "-border", "-box",
             "-cols", "-compliantheight", "-dmre", "-dotsize", "-dotty",
             "-eci", "-fg", "-format", "-fullmultibyte",
@@ -1070,16 +1073,16 @@ static int Encode(Tcl_Interp *interp, int objc,
         case iSecure:
         case iMode:
         case iRows:
-            /* >> Int in Option 1 */
+            /* >> Int in Option 1 for Codablock, Option 3 for PDF417 */
             if ( (optionIndex==iSecure && (intValue < 1 || intValue > 8))
                 || (optionIndex==iMode && (intValue < 0 || intValue > 6))
-                || (optionIndex==iRows && (intValue < 0 || intValue > 44)))
+                || (optionIndex==iRows && (intValue < 0 || intValue > 90)))
             {
                 Tcl_SetObjResult(interp,
                     Tcl_NewStringObj("secure/mode/rows out of range", -1));
                 fError = 1;
             } else {
-                my_symbol->option_1 = intValue;
+                rows = intValue;
             }
             break;
         case iPrimary:
@@ -1257,6 +1260,18 @@ static int Encode(Tcl_Interp *interp, int objc,
     /* On wrong symbology, the option is ignored(as does the zint program)*/
     if (addon_gap && (cap & ZINT_CAP_EXTENDABLE)) {
         my_symbol->option_2 = addon_gap;
+    }
+    /*------------------------------------------------------------------------*/
+    if (rows) {
+        /* PDF417 uses option 3 for rows */
+        if (my_symbol->symbology == BARCODE_PDF417
+                || my_symbol->symbology == BARCODE_PDF417COMP
+                || my_symbol->symbology == BARCODE_HIBC_PDF) {
+            my_symbol->option_3 = rows;
+        } else if (my_symbol->symbology == BARCODE_CODABLOCKF
+                || my_symbol->symbology == BARCODE_HIBC_BLOCKF) {
+            my_symbol->option_1 = rows;
+        }
     }
     /*------------------------------------------------------------------------*/
     /* >>> Prepare input dstring and encode it to ECI encoding*/

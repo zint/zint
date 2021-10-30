@@ -48,7 +48,7 @@ INTERNAL int code49(struct zint_symbol *symbol, unsigned char source[], int leng
     int w_grid[8][4]; /* Refets to table 2 */
     int pad_count = 0;
     char pattern[80];
-    int bp;
+    int bp = 0; /* Initialize to suppress gcc -Wmaybe-uninitialized warning */
     int gs1;
     int h;
     int error_number = 0;

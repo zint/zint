@@ -94,7 +94,7 @@ static int getBit(const UINT *bitStr, const int bitPos) {
 static int encode928(const UINT bitString[], UINT codeWords[], const int bitLng) {
     int i, j, b, cwNdx, cwLng;
     for (cwNdx = cwLng = b = 0; b < bitLng; b += 69, cwNdx += 7) {
-        int bitCnt = _min(bitLng - b, 69);
+        const int bitCnt = _min(bitLng - b, 69);
         int cwCnt;
         cwLng += cwCnt = bitCnt / 10 + 1;
         for (i = 0; i < cwCnt; i++)
@@ -125,13 +125,14 @@ static void cc_a(struct zint_symbol *symbol, const char source[], const int cc_w
     UINT bitStr[13] = {0};
     char pattern[580];
     int bp = 0;
+    const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
 
     variant = 0;
 
     bitlen = (int) strlen(source);
 
     for (segment = 0; segment < 13; segment++) {
-        int strpos = segment * 16;
+        const int strpos = segment * 16;
         if (strpos >= bitlen) {
             break;
         }
@@ -239,19 +240,19 @@ static void cc_a(struct zint_symbol *symbol, const char source[], const int cc_w
         k = i * cc_width;
         /* Copy the data into codebarre */
         if (cc_width != 3) {
-            bp = bin_append_posn(rap_side[LeftRAP - 1], 10, pattern, bp);
+            bp = bin_append_posn(pdf_rap_side[LeftRAP - 1], 10, pattern, bp);
         }
         bp = bin_append_posn(pdf_bitpattern[offset + codeWords[k]], 16, pattern, bp);
         pattern[bp++] = '0';
         if (cc_width >= 2) {
             if (cc_width == 3) {
-                bp = bin_append_posn(rap_centre[CentreRAP - 1], 10, pattern, bp);
+                bp = bin_append_posn(pdf_rap_centre[CentreRAP - 1], 10, pattern, bp);
             }
             bp = bin_append_posn(pdf_bitpattern[offset + codeWords[k + 1]], 16, pattern, bp);
             pattern[bp++] = '0';
             if (cc_width >= 3) {
                 if (cc_width == 4) {
-                    bp = bin_append_posn(rap_centre[CentreRAP - 1], 10, pattern, bp);
+                    bp = bin_append_posn(pdf_rap_centre[CentreRAP - 1], 10, pattern, bp);
                 }
                 bp = bin_append_posn(pdf_bitpattern[offset + codeWords[k + 2]], 16, pattern, bp);
                 pattern[bp++] = '0';
@@ -261,7 +262,7 @@ static void cc_a(struct zint_symbol *symbol, const char source[], const int cc_w
                 }
             }
         }
-        bp = bin_append_posn(rap_side[RightRAP - 1], 10, pattern, bp);
+        bp = bin_append_posn(pdf_rap_side[RightRAP - 1], 10, pattern, bp);
         pattern[bp++] = '1'; /* stop */
 
         /* so now pattern[] holds the string of '1's and '0's. - copy this to the symbol */
@@ -294,14 +295,14 @@ static void cc_a(struct zint_symbol *symbol, const char source[], const int cc_w
     }
     symbol->width = bp;
 
-    if (symbol->debug & ZINT_DEBUG_PRINT) {
+    if (debug_print) {
         printf("CC-A Columns: %d, Rows: %d, Variant: %d, CodeWords: %d\n", cc_width, symbol->rows, variant, cwCnt);
     }
 }
 
 /* CC-B 2D component */
 static void cc_b(struct zint_symbol *symbol, const char source[], const int cc_width) {
-    int length = (int) strlen(source) / 8;
+    const int length = (int) strlen(source) / 8;
     int i;
 #ifndef _MSC_VER
     unsigned char data_string[length + 3];
@@ -316,9 +317,10 @@ static void cc_b(struct zint_symbol *symbol, const char source[], const int cc_w
     int LeftRAP, CentreRAP, RightRAP, Cluster, loop;
     int columns;
     int bp = 0;
+    const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
 
     for (i = 0; i < length; i++) {
-        int binloc = i * 8;
+        const int binloc = i * 8;
 
         data_string[i] = 0;
         for (p = 0; p < 8; p++) {
@@ -334,7 +336,7 @@ static void cc_b(struct zint_symbol *symbol, const char source[], const int cc_w
     chainemc[mclength] = 920;
     mclength++;
 
-    byteprocess(chainemc, &mclength, data_string, 0, length, symbol->debug & ZINT_DEBUG_PRINT);
+    pdf_byteprocess(chainemc, &mclength, data_string, 0, length, debug_print);
 
     /* Now figure out which variant of the symbol to use and load values accordingly */
 
@@ -407,12 +409,12 @@ static void cc_b(struct zint_symbol *symbol, const char source[], const int cc_w
     /* Now we have the variant we can load the data - from here on the same as MicroPDF417 code */
     variant--;
     assert(variant >= 0);
-    columns = MicroVariants[variant]; /* columns */
-    symbol->rows = MicroVariants[variant + 34]; /* rows */
-    k = MicroVariants[variant + 68]; /* number of EC CWs */
+    columns = pdf_MicroVariants[variant]; /* columns */
+    symbol->rows = pdf_MicroVariants[variant + 34]; /* rows */
+    k = pdf_MicroVariants[variant + 68]; /* number of EC CWs */
     longueur = (columns * symbol->rows) - k; /* number of non-EC CWs */
     i = longueur - mclength; /* amount of padding required */
-    offset = MicroVariants[variant + 102]; /* coefficient offset */
+    offset = pdf_MicroVariants[variant + 102]; /* coefficient offset */
 
     /* Binary input padded to target length so no padding should be necessary */
     while (i > 0) {
@@ -427,9 +429,9 @@ static void cc_b(struct zint_symbol *symbol, const char source[], const int cc_w
         total = (chainemc[i] + mccorrection[k - 1]) % 929;
         for (j = k - 1; j >= 0; j--) {
             if (j == 0) {
-                mccorrection[j] = (929 - (total * Microcoeffs[offset + j]) % 929) % 929;
+                mccorrection[j] = (929 - (total * pdf_Microcoeffs[offset + j]) % 929) % 929;
             } else {
-                mccorrection[j] = (mccorrection[j - 1] + 929 - (total * Microcoeffs[offset + j]) % 929) % 929;
+                mccorrection[j] = (mccorrection[j - 1] + 929 - (total * pdf_Microcoeffs[offset + j]) % 929) % 929;
             }
         }
     }
@@ -446,10 +448,10 @@ static void cc_b(struct zint_symbol *symbol, const char source[], const int cc_w
     }
 
     /* Now get the RAP (Row Address Pattern) start values */
-    LeftRAPStart = RAPTable[variant];
-    CentreRAPStart = RAPTable[variant + 34];
-    RightRAPStart = RAPTable[variant + 68];
-    StartCluster = RAPTable[variant + 102] / 3;
+    LeftRAPStart = pdf_RAPTable[variant];
+    CentreRAPStart = pdf_RAPTable[variant + 34];
+    RightRAPStart = pdf_RAPTable[variant + 68];
+    StartCluster = pdf_RAPTable[variant + 102] / 3;
 
     /* That's all values loaded, get on with the encoding */
 
@@ -464,18 +466,18 @@ static void cc_b(struct zint_symbol *symbol, const char source[], const int cc_w
         offset = 929 * Cluster;
         k = i * columns;
         /* Copy the data into codebarre */
-        bp = bin_append_posn(rap_side[LeftRAP - 1], 10, pattern, bp);
+        bp = bin_append_posn(pdf_rap_side[LeftRAP - 1], 10, pattern, bp);
         bp = bin_append_posn(pdf_bitpattern[offset + chainemc[k]], 16, pattern, bp);
         pattern[bp++] = '0';
         if (cc_width >= 2) {
             if (cc_width == 3) {
-                bp = bin_append_posn(rap_centre[CentreRAP - 1], 10, pattern, bp);
+                bp = bin_append_posn(pdf_rap_centre[CentreRAP - 1], 10, pattern, bp);
             }
             bp = bin_append_posn(pdf_bitpattern[offset + chainemc[k + 1]], 16, pattern, bp);
             pattern[bp++] = '0';
             if (cc_width >= 3) {
                 if (cc_width == 4) {
-                    bp = bin_append_posn(rap_centre[CentreRAP - 1], 10, pattern, bp);
+                    bp = bin_append_posn(pdf_rap_centre[CentreRAP - 1], 10, pattern, bp);
                 }
                 bp = bin_append_posn(pdf_bitpattern[offset + chainemc[k + 2]], 16, pattern, bp);
                 pattern[bp++] = '0';
@@ -485,7 +487,7 @@ static void cc_b(struct zint_symbol *symbol, const char source[], const int cc_w
                 }
             }
         }
-        bp = bin_append_posn(rap_side[RightRAP - 1], 10, pattern, bp);
+        bp = bin_append_posn(pdf_rap_side[RightRAP - 1], 10, pattern, bp);
         pattern[bp++] = '1'; /* stop */
 
         /* so now pattern[] holds the string of '1's and '0's. - copy this to the symbol */
@@ -517,7 +519,7 @@ static void cc_b(struct zint_symbol *symbol, const char source[], const int cc_w
     }
     symbol->width = bp;
 
-    if (symbol->debug & ZINT_DEBUG_PRINT) {
+    if (debug_print) {
         printf("CC-B Columns: %d, Rows: %d, Variant: %d, CodeWords: %d\n",
                 cc_width, symbol->rows, variant + 1, mclength);
     }
@@ -525,7 +527,7 @@ static void cc_b(struct zint_symbol *symbol, const char source[], const int cc_w
 
 /* CC-C 2D component - byte compressed PDF417 */
 static void cc_c(struct zint_symbol *symbol, const char source[], const int cc_width, const int ecc_level) {
-    int length = (int) strlen(source) / 8;
+    const int length = (int) strlen(source) / 8;
     int i, p;
 #ifndef _MSC_VER
     unsigned char data_string[length + 4];
@@ -537,9 +539,10 @@ static void cc_c(struct zint_symbol *symbol, const char source[], const int cc_w
     int c1, c2, c3, dummy[35];
     char pattern[580];
     int bp = 0;
+    const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
 
     for (i = 0; i < length; i++) {
-        int binloc = i * 8;
+        const int binloc = i * 8;
 
         data_string[i] = 0;
         for (p = 0; p < 8; p++) {
@@ -556,11 +559,11 @@ static void cc_c(struct zint_symbol *symbol, const char source[], const int cc_w
     chainemc[mclength] = 920; /* CC-C identifier */
     mclength++;
 
-    byteprocess(chainemc, &mclength, data_string, 0, length, symbol->debug & ZINT_DEBUG_PRINT);
+    pdf_byteprocess(chainemc, &mclength, data_string, 0, length, debug_print);
 
     chainemc[0] = mclength;
 
-    if (symbol->debug & ZINT_DEBUG_PRINT) {
+    if (debug_print) {
         printf("CC-C Codewords (%d):", mclength);
         for (i = 0; i < mclength; i++) printf(" %d", chainemc[i]);
         printf("\n");
@@ -598,9 +601,9 @@ static void cc_c(struct zint_symbol *symbol, const char source[], const int cc_w
         total = (chainemc[i] + mccorrection[k - 1]) % 929;
         for (j = k - 1; j >= 0; j--) {
             if (j == 0) {
-                mccorrection[j] = (929 - (total * coefrs[offset + j]) % 929) % 929;
+                mccorrection[j] = (929 - (total * pdf_coefrs[offset + j]) % 929) % 929;
             } else {
-                mccorrection[j] = (mccorrection[j - 1] + 929 - (total * coefrs[offset + j]) % 929) % 929;
+                mccorrection[j] = (mccorrection[j - 1] + 929 - (total * pdf_coefrs[offset + j]) % 929) % 929;
             }
         }
     }
@@ -663,7 +666,7 @@ static void cc_c(struct zint_symbol *symbol, const char source[], const int cc_w
     }
     symbol->width = bp;
 
-    if (symbol->debug & ZINT_DEBUG_PRINT) {
+    if (debug_print) {
         printf("CC-C Columns: %d, Rows: %d, CodeWords: %d, ECC Level: %d\n",
                 cc_width, symbol->rows, mclength, ecc_level);
     }
@@ -876,7 +879,7 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
 #endif
     int target_bitsize;
     int bp = 0;
-    int debug = symbol->debug & ZINT_DEBUG_PRINT;
+    const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
 
     encoding_method = 1;
     read_posn = 0;
@@ -900,7 +903,7 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
 
     if (encoding_method == 1) {
         binary_string[bp++] = '0';
-        if (debug) printf("CC-%c Encodation Method: 0\n", 'A' + (cc_mode - 1));
+        if (debug_print) printf("CC-%c Encodation Method: 0\n", 'A' + (cc_mode - 1));
 
     } else if (encoding_method == 2) {
         /* Encoding Method field "10" - date and lot number */
@@ -942,7 +945,7 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
             }
         }
 
-        if (debug) {
+        if (debug_print) {
             printf("CC-%c Encodation Method: 10, Compaction Field: %.*s\n", 'A' + (cc_mode - 1), read_posn, source);
         }
 
@@ -1121,7 +1124,7 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
                 alpha_pad = 1; /* This is overwritten if a general field is encoded */
             }
 
-            if (debug) {
+            if (debug_print) {
                 printf("CC-%c Encodation Method: 11, Compaction Field: %.*s, Binary: %.*s (%d)\n",
                         'A' + (cc_mode - 1), read_posn, source, bp, binary_string, bp);
             }
@@ -1129,7 +1132,7 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
             /* Use general field encodation instead */
             binary_string[bp++] = '0';
             read_posn = 0;
-            if (debug) printf("CC-%c Encodation Method: 0\n", 'A' + (cc_mode - 1));
+            if (debug_print) printf("CC-%c Encodation Method: 0\n", 'A' + (cc_mode - 1));
         }
     }
 
@@ -1155,7 +1158,7 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
     }
     general_field[j] = '\0';
 
-    if (debug) {
+    if (debug_print) {
         printf("Mode %s, General Field: %.40s%s\n",
                 mode == NUMERIC ? "NUMERIC" : mode == ALPHANUMERIC ? "ALPHANUMERIC" : "ISO646",
                 general_field, j > 40 ? "..." : "");
@@ -1242,7 +1245,7 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
     }
     binary_string[target_bitsize] = '\0';
 
-    if (debug) {
+    if (debug_print) {
         printf("ECC: %d, CC width %d\n", *ecc, *cc_width);
         printf("Binary: %s (%d)\n", binary_string, target_bitsize);
     }
@@ -1277,7 +1280,7 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
     int error_number, warn_number = 0, cc_mode, cc_width = 0, ecc_level = 0;
     int j, i, k;
     /* Allow for 8 bits + 5-bit latch per char + 1000 bits overhead/padding */
-    unsigned int bs = 13 * length + 1000 + 1;
+    const unsigned int bs = 13 * length + 1000 + 1;
 #ifndef _MSC_VER
     char binary_string[bs];
 #else
@@ -1287,8 +1290,9 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
     struct zint_symbol *linear;
     int top_shift, bottom_shift;
     int linear_width = 0;
+    const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
 
-    if (symbol->debug & ZINT_DEBUG_PRINT) printf("Reduced length: %d\n", length);
+    if (debug_print) printf("Reduced length: %d\n", length);
 
     /* Perform sanity checks on input options first */
     error_number = 0;
@@ -1320,7 +1324,7 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
             }
             return ZINT_ERROR_INVALID_DATA;
         }
-        if (symbol->debug & ZINT_DEBUG_PRINT) {
+        if (debug_print) {
             printf("GS1-128 linear width: %d\n", linear_width);
         }
     }
@@ -1525,8 +1529,8 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
                    alignment, number the positions from right to left (0 is the Stop character, 1 is the Check
                    character, etc.), and then Position = (total number of Code 128 symbol characters – 9) div 2"
                  */
-                int num_symbols = (linear_width - 2) / 11;
-                int position = (num_symbols - 9) / 2;
+                const int num_symbols = (linear_width - 2) / 11;
+                const int position = (num_symbols - 9) / 2;
                 /* Less 1 to align with last space module */
                 int calc_shift = linear->width - position * 11 - 1 - symbol->width;
                 if (position) {
@@ -1570,7 +1574,7 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
             break;
     }
 
-    if (symbol->debug & ZINT_DEBUG_PRINT) {
+    if (debug_print) {
         printf("Top shift: %d, Bottom shift: %d\n", top_shift, bottom_shift);
     }
 

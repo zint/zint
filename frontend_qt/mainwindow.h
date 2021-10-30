@@ -37,7 +37,7 @@ public:
     MainWindow(QWidget *parent = 0, Qt::WindowFlags fl = Qt::WindowFlags());
     ~MainWindow();
 
-    static QString get_zint_version();
+    static QString get_zint_version(void);
 
 public slots:
     void update_preview();

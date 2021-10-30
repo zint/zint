@@ -590,6 +590,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\backend\pdf417_tabs.h"
+				>
+			</File>
+			<File
 				RelativePath="..\backend\qr.h"
 				>
 			</File>

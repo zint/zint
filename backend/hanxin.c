@@ -346,7 +346,7 @@ static void hx_define_mode(char *mode, const unsigned int gbdata[], const int le
     static const char mode_types[] = { 'n', 't', 'b', '1', '2', 'd', 'f', '\0' };
 
     /* Initial mode costs */
-    static unsigned int head_costs[HX_NUM_MODES] = {
+    static const unsigned int head_costs[HX_NUM_MODES] = {
     /*  N            T            B                   1            2            D            F */
         4 * HX_MULT, 4 * HX_MULT, (4 + 13) * HX_MULT, 4 * HX_MULT, 4 * HX_MULT, 4 * HX_MULT, 0
     };
@@ -450,7 +450,7 @@ static void hx_define_mode(char *mode, const unsigned int gbdata[], const int le
         for (j = 0; j < HX_NUM_MODES; j++) { /* To mode */
             for (k = 0; k < HX_NUM_MODES; k++) { /* From mode */
                 if (j != k && char_modes[cm_i + k]) {
-                    unsigned int new_cost = cur_costs[k] + switch_costs[k][j];
+                    const unsigned int new_cost = cur_costs[k] + switch_costs[k][j];
                     if (!char_modes[cm_i + j] || new_cost < cur_costs[j]) {
                         cur_costs[j] = new_cost;
                         char_modes[cm_i + j] = mode_types[k];
@@ -533,19 +533,17 @@ static void calculate_binary(char binary[], const char mode[], unsigned int sour
                 i = 0;
 
                 while (i < block_length) {
-                    int first = 0;
-
-                    first = ctoi((const char) source[position + i]);
+                    const int first = ctoi((const char) source[position + i]);
                     count = 1;
                     encoding_value = first;
 
                     if (i + 1 < block_length && mode[position + i + 1] == 'n') {
-                        int second = ctoi((const char) source[position + i + 1]);
+                        const int second = ctoi((const char) source[position + i + 1]);
                         count = 2;
                         encoding_value = (encoding_value * 10) + second;
 
                         if (i + 2 < block_length && mode[position + i + 2] == 'n') {
-                            int third = ctoi((const char) source[position + i + 2]);
+                            const int third = ctoi((const char) source[position + i + 2]);
                             count = 3;
                             encoding_value = (encoding_value * 10) + third;
                         }
@@ -846,7 +844,7 @@ static void hx_place_finder_top_left(unsigned char *grid, const int size) {
 /* Finder pattern for top right and bottom left of symbol */
 static void hx_place_finder(unsigned char *grid, const int size, const int x, const int y) {
     int xp, yp;
-    char finder[] = {0x7F, 0x01, 0x7D, 0x05, 0x75, 0x75, 0x75};
+    static const char finder[] = {0x7F, 0x01, 0x7D, 0x05, 0x75, 0x75, 0x75};
 
     for (xp = 0; xp < 7; xp++) {
         for (yp = 0; yp < 7; yp++) {
@@ -862,9 +860,9 @@ static void hx_place_finder(unsigned char *grid, const int size, const int x, co
 /* Finder pattern for bottom right of symbol */
 static void hx_place_finder_bottom_right(unsigned char *grid, const int size) {
     int xp, yp;
-    int x = size - 7;
-    int y = x;
-    char finder[] = {0x75, 0x75, 0x75, 0x05, 0x7D, 0x01, 0x7F};
+    const int x = size - 7;
+    const int y = x;
+    static const char finder[] = {0x75, 0x75, 0x75, 0x05, 0x7D, 0x01, 0x7F};
 
     for (xp = 0; xp < 7; xp++) {
         for (yp = 0; yp < 7; yp++) {
@@ -972,9 +970,9 @@ static void hx_setup_grid(unsigned char *grid, const int size, const int version
     }
 
     if (version > 3) {
-        int k = hx_module_k[version - 1];
-        int r = hx_module_r[version - 1];
-        int m = hx_module_m[version - 1];
+        const int k = hx_module_k[version - 1];
+        const int r = hx_module_r[version - 1];
+        const int m = hx_module_m[version - 1];
         int x, y, row_switch, column_switch;
         int module_height, module_width;
         int mod_x, mod_y;
@@ -1083,15 +1081,15 @@ static void hx_add_ecc(unsigned char fullstream[], const unsigned char datastrea
     int i, j, block;
     int input_position = -1;
     int output_position = -1;
-    int table_d1_pos = ((version - 1) * 36) + ((ecc_level - 1) * 9);
+    const int table_d1_pos = ((version - 1) * 36) + ((ecc_level - 1) * 9);
     rs_t rs;
 
     rs_init_gf(&rs, 0x163); // x^8 + x^6 + x^5 + x + 1 = 0
 
     for (i = 0; i < 3; i++) {
-        int batch_size = hx_table_d1[table_d1_pos + (3 * i)];
-        int data_length = hx_table_d1[table_d1_pos + (3 * i) + 1];
-        int ecc_length = hx_table_d1[table_d1_pos + (3 * i) + 2];
+        const int batch_size = hx_table_d1[table_d1_pos + (3 * i)];
+        const int data_length = hx_table_d1[table_d1_pos + (3 * i) + 1];
+        const int ecc_length = hx_table_d1[table_d1_pos + (3 * i) + 2];
 
         rs_init_code(&rs, ecc_length, 1);
 
@@ -1352,7 +1350,7 @@ static void hx_apply_bitmask(unsigned char *grid, const int size, const int vers
     int pattern, penalty[4] = {0};
     int best_pattern;
     int bit;
-    int size_squared = size * size;
+    const int size_squared = size * size;
 
 #ifndef _MSC_VER
     unsigned char mask[size_squared];
@@ -1458,7 +1456,7 @@ INTERNAL int hanxin(struct zint_symbol *symbol, unsigned char source[], int leng
     int size_squared;
     int codewords;
     int bin_len;
-    int eci_length = get_eci_length(symbol->eci, source, length);
+    const int eci_length = get_eci_length(symbol->eci, source, length);
 
 #ifndef _MSC_VER
     unsigned int gbdata[eci_length + 1];
@@ -1657,7 +1655,7 @@ INTERNAL int hanxin(struct zint_symbol *symbol, unsigned char source[], int leng
     symbol->rows = size;
 
     for (i = 0; i < size; i++) {
-        int r = i * size;
+        const int r = i * size;
         for (j = 0; j < size; j++) {
             if (grid[r + j] & 0x01) {
                 set_module(symbol, i, j);

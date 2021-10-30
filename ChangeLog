@@ -11,6 +11,8 @@ Version 2.10.0.9 (dev) not released yet
   NOTE: may cause single-pixel changes to height depending on height/scale used
 - JAPANPOST: return error if input data would be truncated
   NOTE: previously was silently truncated
+- PDF417: return warning if specified cols increased
+  NOTE: previously no warning was returned
 
 Changes
 -------
@@ -35,6 +37,7 @@ Changes
 - CODABAR: add show check digit option
 - DAFT: max chars 50 -> 100
 - CMake: separate no-optimize from ZINT_DEBUG into new ZINT_NOOPT option
+- PDF417: add specify rows option
 
 Bugs
 ----
@@ -52,6 +55,7 @@ Bugs
 - raster.c: Don't add height offset for text if scale < 1.0 (as won't print)
 - ISBNX: fix not returning error number (warning) correctly
 - *.rc: fix VER_FILEVERSION_STR format (, -> .), props Jeff Skaistis
+- PDF417: fix cols/rows calculation to require multiple <= 928 codewords
 
 
 Version 2.10.0 2021-08-14

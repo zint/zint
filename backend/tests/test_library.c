@@ -495,7 +495,7 @@ static void test_cap(int index) {
     testFinish();
 }
 
-static void test_cap_compliant_height() {
+static void test_cap_compliant_height(void) {
     int symbol_id;
     int ret;
 

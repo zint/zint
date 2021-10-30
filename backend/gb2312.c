@@ -1577,7 +1577,7 @@ INTERNAL int gb2312_utf8_to_eci(const int eci, const unsigned char source[], int
 
     if (is_eci_convertible(eci)) {
         int error_number;
-        int eci_length = get_eci_length(eci, source, *p_length);
+        const int eci_length = get_eci_length(eci, source, *p_length);
 #ifndef _MSC_VER
         unsigned char converted[eci_length + 1];
 #else
