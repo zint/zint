@@ -393,7 +393,6 @@ static void vector_reduce_rectangles(struct zint_symbol *symbol) {
 
 INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_type) {
     int error_number;
-    float large_bar_height;
     int main_width;
     int comp_xoffset = 0;
     unsigned char addon[6];
@@ -401,7 +400,6 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
     float addon_text_yposn = 0.0f;
     float xoffset, yoffset, roffset, boffset;
     float textoffset;
-    float yposn;
     int upceanflag = 0;
     int addon_latch = 0;
     unsigned char textpart1[5], textpart2[7], textpart3[7], textpart4[2];
@@ -412,11 +410,13 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
     float text_gap; /* Gap between barcode and text */
     float guard_descent;
 
+    float large_bar_height;
     int upcae_outside_text_height = 0; /* UPC-A/E outside digits font size */
     float digit_ascent_factor = 0.25f; /* Assuming digit ascent roughly 25% less than font size */
     float dot_overspill = 0.0f;
     float dot_offset = 0.0f;
-    int rect_count = 0, last_row_start = 0;
+    int rect_count = 0, last_row_start = 0; /* For UPC/EAN guard bars */
+    float yposn;
 
     struct zint_vector *vector;
     struct zint_vector_rect *rect, *last_rectangle = NULL;
@@ -444,7 +444,8 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
     vector->circles = NULL;
     vector->strings = NULL;
 
-    large_bar_height = out_large_bar_height(symbol, 0 /*No rounding to scale*/);
+    large_bar_height = out_large_bar_height(symbol, 0 /*si (scale and round)*/, NULL /*row_heights_si*/,
+                        NULL /*symbol_height_si*/);
 
     main_width = symbol->width;
 
@@ -568,11 +569,10 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
     } else if (symbol->symbology == BARCODE_ULTRA) {
         yposn = yoffset;
         for (r = 0; r < symbol->rows; r++) {
-            float row_height = symbol->row_height[r];
-            last_row_start = rect_count;
+            const float row_height = symbol->row_height[r];
 
             for (i = 0; i < symbol->width; i += block_width) {
-                int fill = module_colour_is_set(symbol, r, i);
+                const int fill = module_colour_is_set(symbol, r, i);
                 for (block_width = 1; (i + block_width < symbol->width)
                                         && module_colour_is_set(symbol, r, i + block_width) == fill; block_width++);
                 if (fill) {
@@ -581,7 +581,6 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
                     if (!rect) return ZINT_ERROR_MEMORY;
                     rect->colour = module_colour_is_set(symbol, r, i);
                     vector_plot_add_rect(symbol, rect, &last_rectangle);
-                    rect_count++;
                 }
             }
             yposn += row_height;
@@ -590,12 +589,12 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
     } else if (upceanflag >= 6) { /* UPC-E, EAN-8, UPC-A, EAN-13 */
         yposn = yoffset;
         for (r = 0; r < symbol->rows; r++) {
-            float row_height = symbol->row_height[r] ? symbol->row_height[r] : large_bar_height;
+            const float row_height = symbol->row_height[r] ? symbol->row_height[r] : large_bar_height;
             last_row_start = rect_count;
 
             for (i = 0; i < symbol->width; i += block_width) {
                 float addon_row_height;
-                int fill = module_is_set(symbol, r, i);
+                const int fill = module_is_set(symbol, r, i);
                 for (block_width = 1; (i + block_width < symbol->width)
                                         && module_is_set(symbol, r, i + block_width) == fill; block_width++);
 
@@ -632,11 +631,10 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
     } else {
         yposn = yoffset;
         for (r = 0; r < symbol->rows; r++) {
-            float row_height = symbol->row_height[r] ? symbol->row_height[r] : large_bar_height;
-            last_row_start = rect_count;
+            const float row_height = symbol->row_height[r] ? symbol->row_height[r] : large_bar_height;
 
             for (i = 0; i < symbol->width; i += block_width) {
-                int fill = module_is_set(symbol, r, i);
+                const int fill = module_is_set(symbol, r, i);
                 for (block_width = 1; (i + block_width < symbol->width)
                                         && module_is_set(symbol, r, i + block_width) == fill; block_width++);
                 if (fill) {
@@ -644,7 +642,6 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
                     rect = vector_plot_create_rect(symbol, i + xoffset, yposn, block_width, row_height);
                     if (!rect) return ZINT_ERROR_MEMORY;
                     vector_plot_add_rect(symbol, rect, &last_rectangle);
-                    rect_count++;
                 }
             }
             yposn += row_height;
@@ -872,7 +869,7 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
             sep_width -= 11 + 13;
         }
         for (r = 1; r < symbol->rows; r++) {
-            float row_height = symbol->row_height[r - 1] ? symbol->row_height[r - 1] : large_bar_height;
+            const float row_height = symbol->row_height[r - 1] ? symbol->row_height[r - 1] : large_bar_height;
             rect = vector_plot_create_rect(symbol, sep_xoffset, (r * row_height) + sep_yoffset,
                                             sep_width, sep_height);
             if (!rect) return ZINT_ERROR_MEMORY;
@@ -908,9 +905,9 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
             vector_plot_add_rect(symbol, rect, &last_rectangle);
         }
         if (symbol->output_options & BARCODE_BOX) {
-            float xbox_right = vector->width - symbol->border_width;
+            const float xbox_right = vector->width - symbol->border_width;
             // Following equivalent to symbol->height except for BARCODE_MAXICODE
-            float box_height = vector->height - textoffset - dot_overspill - yoffset - boffset;
+            const float box_height = vector->height - textoffset - dot_overspill - yoffset - boffset;
             // Left
             rect = vector_plot_create_rect(symbol, 0.0f, yoffset, symbol->border_width, box_height);
             if (!rect) return ZINT_ERROR_MEMORY;

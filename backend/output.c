@@ -30,6 +30,7 @@
  */
 /* vim: set ts=4 sw=4 et : */
 
+#include <assert.h>
 #include <math.h>
 #include "common.h"
 #include "output.h"
@@ -589,45 +590,70 @@ INTERNAL int out_process_upcean(const struct zint_symbol *symbol, int *p_main_wi
 /* Calculate large bar height i.e. linear bars with zero row height that respond to the symbol height.
    If scaler `si` non-zero (raster), then large_bar_height if non-zero or else row heights will be rounded
    to nearest pixel and symbol height adjusted */
-INTERNAL float out_large_bar_height(struct zint_symbol *symbol, int si) {
+INTERNAL float out_large_bar_height(struct zint_symbol *symbol, int si, int *row_heights_si, int *symbol_height_si) {
     float fixed_height = 0.0f;
     int zero_count = 0;
     int round_rows = 0;
     int i;
-    float large_bar_height;
+    float large_bar_height = 0.0f; /* Not used if zero_count zero */
 
-    for (i = 0; i < symbol->rows; i++) {
-        if (symbol->row_height[i]) {
-            fixed_height += symbol->row_height[i];
-            if (!round_rows && si && !isfintf(symbol->row_height[i] * si)) {
-                round_rows = 1;
-            }
-        } else {
-            zero_count++;
-        }
-    }
-
-    if (zero_count) {
-        large_bar_height = stripf((symbol->height - fixed_height) / zero_count);
-        if (large_bar_height <= 0.0f) { /* Shouldn't happen but protect against memory access violations */
-            large_bar_height = 0.0078125f; /* Token positive value (exact float 2**-6) */
-        }
-        if (si && !isfintf(large_bar_height * si)) {
-            large_bar_height = stripf(roundf(large_bar_height * si) / si);
-        }
-        symbol->height = stripf(large_bar_height * zero_count + fixed_height);
-        /* Note should never happen that have both zero_count and round_rows */
-    } else {
-        large_bar_height = 0.0f; /* Not used if zero_count zero */
-        if (round_rows) {
-            fixed_height = 0.0f;
-            for (i = 0; i < symbol->rows; i++) {
-                if (!isfintf(symbol->row_height[i] * si)) {
-                    symbol->row_height[i] = roundf(symbol->row_height[i] * si) / si;
-                }
+    if (si) {
+        for (i = 0; i < symbol->rows; i++) {
+            if (symbol->row_height[i]) {
                 fixed_height += symbol->row_height[i];
+                if (!round_rows && !isfintf(symbol->row_height[i] * si)) {
+                    round_rows = 1;
+                }
+            } else {
+                zero_count++;
             }
-            symbol->height = stripf(fixed_height);
+        }
+
+        if (zero_count) {
+            large_bar_height = stripf((symbol->height - fixed_height) / zero_count);
+            assert(large_bar_height >= 0.5f); /* Min row height as set by `set_height()` */
+            if (!isfintf(large_bar_height * si)) {
+                large_bar_height = stripf(roundf(large_bar_height * si) / si);
+            }
+            symbol->height = stripf(large_bar_height * zero_count + fixed_height);
+            /* Note should never happen that have both zero_count and round_rows */
+        } else {
+            if (round_rows) {
+                float total_height = 0.0f;
+                for (i = 0; i < symbol->rows; i++) {
+                    if (!isfintf(symbol->row_height[i] * si)) {
+                        symbol->row_height[i] = roundf(symbol->row_height[i] * si) / si;
+                    }
+                    total_height += symbol->row_height[i];
+                }
+                symbol->height = stripf(total_height);
+            }
+        }
+
+        if (row_heights_si) {
+            assert(symbol_height_si);
+            *symbol_height_si = 0;
+            for (i = 0; i < symbol->rows; i++) {
+                if (symbol->row_height[i]) {
+                    row_heights_si[i] = (int) roundf(symbol->row_height[i] * si);
+                } else {
+                    row_heights_si[i] = (int) roundf(large_bar_height * si);
+                }
+                *symbol_height_si += row_heights_si[i];
+            }
+        }
+    } else {
+        for (i = 0; i < symbol->rows; i++) {
+            if (symbol->row_height[i]) {
+                fixed_height += symbol->row_height[i];
+            } else {
+                zero_count++;
+            }
+        }
+        if (zero_count) {
+            large_bar_height = stripf((symbol->height - fixed_height) / zero_count);
+            assert(large_bar_height >= 0.5f); /* Min row height as set by `set_height()` */
+            symbol->height = stripf(large_bar_height * zero_count + fixed_height);
         }
     }
 

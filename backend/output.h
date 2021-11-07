@@ -30,8 +30,8 @@
  */
 /* vim: set ts=4 sw=4 et : */
 
-#ifndef OUTPUT_H
-#define OUTPUT_H
+#ifndef Z_OUTPUT_H
+#define Z_OUTPUT_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -43,7 +43,7 @@ INTERNAL void out_set_whitespace_offsets(const struct zint_symbol *symbol, const
                 int *xoffset_si, int *yoffset_si, int *roffset_si, int *boffset_si);
 INTERNAL int out_process_upcean(const struct zint_symbol *symbol, int *p_main_width, int *p_comp_xoffset,
                 unsigned char addon[6], int *p_addon_gap);
-INTERNAL float out_large_bar_height(struct zint_symbol *symbol, int si);
+INTERNAL float out_large_bar_height(struct zint_symbol *symbol, int si, int *row_heights_si, int *symbol_height_si);
 INTERNAL void out_upcean_split_text(int upceanflag, unsigned char text[],
                 unsigned char textpart1[5], unsigned char textpart2[7], unsigned char textpart3[7],
                 unsigned char textpart4[2]);
@@ -52,4 +52,4 @@ INTERNAL void out_upcean_split_text(int upceanflag, unsigned char text[],
 }
 #endif /* __cplusplus */
 
-#endif /* OUTPUT_H */
+#endif /* Z_OUTPUT_H */

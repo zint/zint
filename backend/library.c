@@ -908,6 +908,10 @@ int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int
         return error_tag(symbol, ZINT_ERROR_INVALID_OPTION, "768: Border width out of range (0 to 100)");
     }
 
+    if (symbol->rows >= 200) { /* Check for stacking too many symbols */
+        return error_tag(symbol, ZINT_ERROR_TOO_LONG, "770: Too many stacked symbols");
+    }
+
     if ((symbol->input_mode & 0x07) > 2) {
         symbol->input_mode = DATA_MODE; /* Reset completely TODO: in future, warn/error */
     }

@@ -46,9 +46,7 @@ Bugs
 - vector.c: enforce minimum scale >= 0.1 and allow in GUI
 - Suppress some pedantic warnings, props codemonkey82 (#204)
 - gs1.c: Allow 0-length AI data if GS1NOCHECK_MODE, props codemonkey82 (#204)
-- raster.c: Need ceilf(symbol->height * si) to avoid heap-buffer-overflow;
-  also ceilf(large_bar_height * si);
-  also avoid distributive multiplication with floats to lessen chances of
+- raster.c: avoid distributive multiplication with floats to lessen chances of
   platform variation (#204 ARM-Cortex crash)
 - common/emf/output/raster/vector.c: use new stripf() func to workaround
   float variations
@@ -56,6 +54,9 @@ Bugs
 - ISBNX: fix not returning error number (warning) correctly
 - *.rc: fix VER_FILEVERSION_STR format (, -> .), props Jeff Skaistis
 - PDF417: fix cols/rows calculation to require multiple <= 928 codewords
+- raster.c: fix possible blank rows appearing in CODE16K, CODE49, PHARMA_TWO,
+  PDF417 & CODABLOCKF due to height/scale rounding, props codemonkey82 (#204)
+- library.c: check for stacking symbols >= 200
 
 
 Version 2.10.0 2021-08-14
