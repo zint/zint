@@ -588,7 +588,7 @@ static void test_input(int index, int generate, int debug) {
         /*  3*/ { UNICODE_MODE, 0, -1, -1, -1, "0466010592130100000k*AGUATY80U", 0, 0, 20, 20, 1, "(40) 86 C4 83 87 DE 8F 83 82 82 31 6C EE 08 85 D6 D2 EF 65 FE 56 81 76 4F AB 22 B8 6F 0A", "" },
         /*  4*/ { UNICODE_MODE, 0, 5, -1, -1, "0466010592130100000k*AGUATY80U", ZINT_ERROR_TOO_LONG, -1, 0, 0, 0, "Error 522: Input too long for selected symbol size", "" },
         /*  5*/ { UNICODE_MODE, 0, 6, -1, -1, "0466010592130100000k*AGUATY80U", 0, 0, 20, 20, 1, "(40) 86 C4 83 87 DE 8F 83 82 82 31 6C EE 08 85 D6 D2 EF 65 FE 56 81 76 4F AB 22 B8 6F 0A", "" },
-        /*  6*/ { UNICODE_MODE, 0, -1, -1, -1, "0466010592130100000k*AGUATY80UA", 0, 0, 20, 20, 0, "(40) 86 C4 83 87 DE 8F 83 82 82 E6 19 5C 07 B7 82 5F D4 3D 1E 5F FE 81 BB 90 01 2A 31 9F", "BWIPP different encodation" },
+        /*  6*/ { UNICODE_MODE, 0, -1, -1, -1, "0466010592130100000k*AGUATY80UA", 0, 0, 20, 20, 0, "(40) 86 C4 83 87 DE 8F 83 82 82 E6 19 5C 07 B7 82 5F D4 3D 1E 5F FE 81 BB 90 01 2A 31 9F", "BWIPP different encodation (later change to C40)" },
         /*  7*/ { UNICODE_MODE, 0, -1, -1, -1, ">*\015>*\015>", 0, 0, 14, 14, 1, "EE 0C A9 0C A9 FE 3F 81 42 B2 11 A8 F9 0A EC C1 1E 41", "X12 symbols_left 3, process_p 1" },
         /*  8*/ { UNICODE_MODE, 0, -1, -1, -1, ">*\015>*\015>*", 0, 0, 14, 14, 1, "EE 0C A9 0C A9 FE 3F 2B 3F 05 D2 10 1B 9A 55 2F 68 C5", "X12 symbols_left 3, process_p 2" },
         /*  9*/ { UNICODE_MODE, 0, -1, -1, -1, ">*\015>*\015>*\015", 0, 0, 14, 14, 1, "EE 0C A9 0C A9 0C A9 FE 1F 30 3F EE 45 C1 1C D7 5F 7E", "X12 symbols_left 1, process_p 0" },
@@ -681,6 +681,8 @@ static void test_input(int index, int generate, int debug) {
         /* 96*/ { UNICODE_MODE, 810899, -1, -1, -1, "A", 0, 810899, 12, 12, 1, "F1 CC 51 05 42 BB A5 A7 8A C6 6E 0F", "ECI 810900 A41" },
         /* 97*/ { UNICODE_MODE | ESCAPE_MODE, -1, -1, -1, -1, "[)>\\R05\\GA\\R\\E", 0, 0, 10, 10, 1, "EC 42 81 5D 17 49 F6 B6", "Macro05 A41" },
         /* 98*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEFGHIJKLM*", 0, 0, 16, 16, 1, "EE 59 E9 6D 24 80 5F 93 9A FE 4E 2B 09 FF 50 A2 83 BE 32 E1 2F 17 1E F3", "C40 == X12, p_r_6_2_1 true" },
+        /* 99*/ { UNICODE_MODE, 0, -1, -1, -1, "\015\015\015\015\015\015\015\015\015a\015\015\015\015\015\015\015", 0, 0, 12, 26, 1, "EE 00 01 00 01 00 01 FE 62 EE 00 01 00 01 FE 0E B5 9A 73 85 83 20 23 2C E0 EC EC BF 71 E0", "a not X12 encodable" },
+        /*100*/ { UNICODE_MODE, 0, -1, -1, -1, ".........a.......", 0, 0, 18, 18, 0, "(32) F0 BA EB AE BA EB AE B9 F0 62 2F 2F 2F 2F 2F 2F 2F 81 78 BE 1F 90 B8 89 73 66 DC BD", "a not EDIFACT encodable; BWIPP different encodation (switches to ASCII one dot before)" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -2151,7 +2153,9 @@ static void test_encode(int index, int generate, int debug) {
 
 #include <time.h>
 
-#define TEST_PERF_ITERATIONS    1000
+#define TEST_PERF_ITER_MILLES   5
+#define TEST_PERF_ITERATIONS    (TEST_PERF_ITER_MILLES * 1000)
+#define TEST_PERF_TIME(arg)     (((arg) * 1000.0) / CLOCKS_PER_SEC)
 
 // Not a real test, just performance indicator
 static void test_perf(int index, int debug) {
@@ -2203,25 +2207,36 @@ static void test_perf(int index, int debug) {
                     "\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240"
                     "\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240",
                     0, 120, 120, "960 chars, byte" },
+        /*  2*/ { BARCODE_DATAMATRIX, -1, -1, -1, "https://example.com/01/09506000134369", 0, 22, 22, "37 chars, text/numeric" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
+    struct zint_symbol *symbol;
 
-    clock_t start, total_encode = 0, total_buffer = 0, diff_encode, diff_buffer;
+    clock_t start;
+    clock_t total_create = 0, total_encode = 0, total_buffer = 0, total_buf_inter = 0, total_print = 0;
+    clock_t diff_create, diff_encode, diff_buffer, diff_buf_inter, diff_print;
+    int comment_max = 0;
 
     if (!(debug & ZINT_DEBUG_TEST_PERFORMANCE)) { /* -d 256 */
         return;
     }
+
+    for (i = 0; i < data_size; i++) if ((int) strlen(data[i].comment) > comment_max) comment_max = (int) strlen(data[i].comment);
+
+    printf("Iterations %d\n", TEST_PERF_ITERATIONS);
 
     for (i = 0; i < data_size; i++) {
         int j;
 
         if (index != -1 && i != index) continue;
 
-        diff_encode = diff_buffer = 0;
+        diff_create = diff_encode = diff_buffer = diff_buf_inter = diff_print = 0;
 
         for (j = 0; j < TEST_PERF_ITERATIONS; j++) {
-            struct zint_symbol *symbol = ZBarcode_Create();
+            start = clock();
+            symbol = ZBarcode_Create();
+            diff_create += clock() - start;
             assert_nonnull(symbol, "Symbol not created\n");
 
             length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, data[i].option_1, data[i].option_2, -1, -1 /*output_options*/, data[i].data, -1, debug);
@@ -2239,16 +2254,34 @@ static void test_perf(int index, int debug) {
             diff_buffer += clock() - start;
             assert_zero(ret, "i:%d ZBarcode_Buffer ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
 
+            symbol->output_options |= OUT_BUFFER_INTERMEDIATE;
+            start = clock();
+            ret = ZBarcode_Buffer(symbol, 0 /*rotate_angle*/);
+            diff_buf_inter += clock() - start;
+            assert_zero(ret, "i:%d ZBarcode_Buffer OUT_BUFFER_INTERMEDIATE ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
+            symbol->output_options &= ~OUT_BUFFER_INTERMEDIATE; // Undo
+
+            start = clock();
+            ret = ZBarcode_Print(symbol, 0 /*rotate_angle*/);
+            diff_print += clock() - start;
+            assert_zero(ret, "i:%d ZBarcode_Print ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
+            assert_zero(remove(symbol->outfile), "i:%d remove(%s) != 0\n", i, symbol->outfile);
+
             ZBarcode_Delete(symbol);
         }
 
-        printf("%s: diff_encode %gms, diff_buffer %gms\n", data[i].comment, diff_encode * 1000.0 / CLOCKS_PER_SEC, diff_buffer * 1000.0 / CLOCKS_PER_SEC);
+        printf("%*s: encode % 8gms, buffer % 8gms, buf_inter % 8gms, print % 8gms, create % 8gms\n", comment_max, data[i].comment,
+                TEST_PERF_TIME(diff_encode), TEST_PERF_TIME(diff_buffer), TEST_PERF_TIME(diff_buf_inter), TEST_PERF_TIME(diff_print), TEST_PERF_TIME(diff_create));
 
+        total_create += diff_create;
         total_encode += diff_encode;
         total_buffer += diff_buffer;
+        total_buf_inter += diff_buf_inter;
+        total_print += diff_print;
     }
-    if (index != -1) {
-        printf("totals: encode %gms, buffer %gms\n", total_encode * 1000.0 / CLOCKS_PER_SEC, total_buffer * 1000.0 / CLOCKS_PER_SEC);
+    if (index == -1) {
+        printf("%*s: encode % 8gms, buffer % 8gms, buf_inter % 8gms, print % 8gms, create % 8gms\n", comment_max, "totals",
+                TEST_PERF_TIME(total_encode), TEST_PERF_TIME(total_buffer), TEST_PERF_TIME(total_buf_inter), TEST_PERF_TIME(total_print), TEST_PERF_TIME(total_create));
     }
 }
 

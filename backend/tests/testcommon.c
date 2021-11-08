@@ -2879,7 +2879,8 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                 }
                 if (symbol->structapp.count) {
                     sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%ssam=%c%c",
-                            strlen(bwipp_opts_buf) ? " " : "", itoc(symbol->structapp.index), itoc(symbol->structapp.count));
+                            strlen(bwipp_opts_buf) ? " " : "", itoc(symbol->structapp.index),
+                            itoc(symbol->structapp.count));
                     bwipp_opts = bwipp_opts_buf;
                 }
             }
@@ -2888,17 +2889,18 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
         if (symbology == BARCODE_DATAMATRIX || symbology == BARCODE_HIBC_DM) {
             int added_dmre = 0;
             #include "../dmatrix.h"
-            (void)matrixrsblock; (void)matrixdatablock; (void)matrixbytes; (void)matrixFW; (void)matrixFH;
-            (void)isDMRE; (void)text_value; (void)text_shift; (void)c40_value; (void)c40_shift;
+            (void)dm_matrixrsblock; (void)dm_matrixdatablock; (void)dm_matrixbytes;
+            (void)dm_matrixFW; (void)dm_matrixFH;
+            (void)dm_isDMRE; (void)dm_text_value; (void)dm_text_shift; (void)dm_c40_value; (void)dm_c40_shift;
 
             if (symbol->output_options & GS1_GS_SEPARATOR) {
                 sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%sgssep", strlen(bwipp_opts_buf) ? " " : "");
                 bwipp_opts = bwipp_opts_buf;
             }
-            if (option_2 >= 1 && option_2 <= ARRAY_SIZE(intsymbol)) {
-                int idx = intsymbol[option_2 - 1];
+            if (option_2 >= 1 && option_2 <= ARRAY_SIZE(dm_intsymbol)) {
+                int idx = dm_intsymbol[option_2 - 1];
                 sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%srows=%d columns=%d",
-                        strlen(bwipp_opts_buf) ? " " : "", matrixH[idx], matrixW[idx]);
+                        strlen(bwipp_opts_buf) ? " " : "", dm_matrixH[idx], dm_matrixW[idx]);
                 bwipp_opts = bwipp_opts_buf;
                 if (option_2 >= 31) {
                     sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%sdmre", strlen(bwipp_opts_buf) ? " " : "");
@@ -2942,10 +2944,12 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
             if (symbology == BARCODE_RMQR) {
                 if (option_2 >= 1 && option_2 <= 32) {
                     static const char *vers[] = {
-                        "R7x43", "R7x59", "R7x77", "R7x99", "R7x139", "R9x43", "R9x59", "R9x77", "R9x99", "R9x139",
-                        "R11x27", "R11x43", "R11x59", "R11x77", "R11x99", "R11x139", "R13x27", "R13x43", "R13x59", "R13x77",
-                        "R13x99", "R13x139", "R15x43", "R15x59", "R15x77", "R15x99", "R15x139", "R17x43", "R17x59", "R17x77",
-                        "R17x99", "R17x139",
+                        "R7x43", "R7x59", "R7x77", "R7x99", "R7x139",
+                        "R9x43", "R9x59", "R9x77", "R9x99", "R9x139",
+                        "R11x27", "R11x43", "R11x59", "R11x77", "R11x99", "R11x139",
+                        "R13x27", "R13x43", "R13x59", "R13x77", "R13x99", "R13x139",
+                        "R15x43", "R15x59", "R15x77", "R15x99", "R15x139",
+                        "R17x43", "R17x59", "R17x77", "R17x99", "R17x139",
                     };
                     sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%sversion=%s",
                             strlen(bwipp_opts_buf) ? " " : "", vers[option_2 - 1]);

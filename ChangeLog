@@ -57,6 +57,8 @@ Bugs
 - raster.c: fix possible blank rows appearing in CODE16K, CODE49, PHARMA_TWO,
   PDF417 & CODABLOCKF due to height/scale rounding, props codemonkey82 (#204)
 - library.c: check for stacking symbols >= 200
+- DATAMATRIX: fix mis-encoding of non-encodables in X12 and EDIFACT modes,
+  props Alex Geller
 
 
 Version 2.10.0 2021-08-14

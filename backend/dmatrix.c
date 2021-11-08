@@ -49,8 +49,8 @@
 #include "reedsol.h"
 #include "dmatrix.h"
 
-/* Annex M placement algorithm low level */
-static void ecc200placementbit(int *array, const int NR, const int NC, int r, int c, const int p, const char b) {
+/* Annex F placement algorithm low level */
+static void dm_placementbit(int *array, const int NR, const int NC, int r, int c, const int p, const char b) {
     if (r < 0) {
         r += NR;
         c += 4 - ((NR + 4) % 8);
@@ -59,7 +59,7 @@ static void ecc200placementbit(int *array, const int NR, const int NC, int r, in
         c += NC;
         r += 4 - ((NC + 4) % 8);
     }
-    // Necessary for 26x32,26x40,26x48,36x120,36x144,72x120,72x144
+    // Necessary for DMRE (ISO/IEC 21471:2020 Annex E)
     if (r >= NR) {
 #ifdef DEBUG
         fprintf(stderr, "r >= NR:%i,%i at r=%i->", p, b, r);
@@ -84,69 +84,65 @@ static void ecc200placementbit(int *array, const int NR, const int NC, int r, in
     array[r * NC + c] = (p << 3) + b;
 }
 
-static void ecc200placementblock(int *array, const int NR, const int NC, const int r,
+static void dm_placementblock(int *array, const int NR, const int NC, const int r,
         const int c, const int p) {
-    ecc200placementbit(array, NR, NC, r - 2, c - 2, p, 7);
-    ecc200placementbit(array, NR, NC, r - 2, c - 1, p, 6);
-    ecc200placementbit(array, NR, NC, r - 1, c - 2, p, 5);
-    ecc200placementbit(array, NR, NC, r - 1, c - 1, p, 4);
-    ecc200placementbit(array, NR, NC, r - 1, c - 0, p, 3);
-    ecc200placementbit(array, NR, NC, r - 0, c - 2, p, 2);
-    ecc200placementbit(array, NR, NC, r - 0, c - 1, p, 1);
-    ecc200placementbit(array, NR, NC, r - 0, c - 0, p, 0);
+    dm_placementbit(array, NR, NC, r - 2, c - 2, p, 7);
+    dm_placementbit(array, NR, NC, r - 2, c - 1, p, 6);
+    dm_placementbit(array, NR, NC, r - 1, c - 2, p, 5);
+    dm_placementbit(array, NR, NC, r - 1, c - 1, p, 4);
+    dm_placementbit(array, NR, NC, r - 1, c - 0, p, 3);
+    dm_placementbit(array, NR, NC, r - 0, c - 2, p, 2);
+    dm_placementbit(array, NR, NC, r - 0, c - 1, p, 1);
+    dm_placementbit(array, NR, NC, r - 0, c - 0, p, 0);
 }
 
-static void ecc200placementcornerA(int *array, const int NR, const int NC, const int p) {
-    ecc200placementbit(array, NR, NC, NR - 1, 0, p, 7);
-    ecc200placementbit(array, NR, NC, NR - 1, 1, p, 6);
-    ecc200placementbit(array, NR, NC, NR - 1, 2, p, 5);
-    ecc200placementbit(array, NR, NC, 0, NC - 2, p, 4);
-    ecc200placementbit(array, NR, NC, 0, NC - 1, p, 3);
-    ecc200placementbit(array, NR, NC, 1, NC - 1, p, 2);
-    ecc200placementbit(array, NR, NC, 2, NC - 1, p, 1);
-    ecc200placementbit(array, NR, NC, 3, NC - 1, p, 0);
+static void dm_placementcornerA(int *array, const int NR, const int NC, const int p) {
+    dm_placementbit(array, NR, NC, NR - 1, 0, p, 7);
+    dm_placementbit(array, NR, NC, NR - 1, 1, p, 6);
+    dm_placementbit(array, NR, NC, NR - 1, 2, p, 5);
+    dm_placementbit(array, NR, NC, 0, NC - 2, p, 4);
+    dm_placementbit(array, NR, NC, 0, NC - 1, p, 3);
+    dm_placementbit(array, NR, NC, 1, NC - 1, p, 2);
+    dm_placementbit(array, NR, NC, 2, NC - 1, p, 1);
+    dm_placementbit(array, NR, NC, 3, NC - 1, p, 0);
 }
 
-static void ecc200placementcornerB(int *array, const int NR, const int NC, const int p) {
-    ecc200placementbit(array, NR, NC, NR - 3, 0, p, 7);
-    ecc200placementbit(array, NR, NC, NR - 2, 0, p, 6);
-    ecc200placementbit(array, NR, NC, NR - 1, 0, p, 5);
-    ecc200placementbit(array, NR, NC, 0, NC - 4, p, 4);
-    ecc200placementbit(array, NR, NC, 0, NC - 3, p, 3);
-    ecc200placementbit(array, NR, NC, 0, NC - 2, p, 2);
-    ecc200placementbit(array, NR, NC, 0, NC - 1, p, 1);
-    ecc200placementbit(array, NR, NC, 1, NC - 1, p, 0);
+static void dm_placementcornerB(int *array, const int NR, const int NC, const int p) {
+    dm_placementbit(array, NR, NC, NR - 3, 0, p, 7);
+    dm_placementbit(array, NR, NC, NR - 2, 0, p, 6);
+    dm_placementbit(array, NR, NC, NR - 1, 0, p, 5);
+    dm_placementbit(array, NR, NC, 0, NC - 4, p, 4);
+    dm_placementbit(array, NR, NC, 0, NC - 3, p, 3);
+    dm_placementbit(array, NR, NC, 0, NC - 2, p, 2);
+    dm_placementbit(array, NR, NC, 0, NC - 1, p, 1);
+    dm_placementbit(array, NR, NC, 1, NC - 1, p, 0);
 }
 
-static void ecc200placementcornerC(int *array, const int NR, const int NC, const int p) {
-    ecc200placementbit(array, NR, NC, NR - 3, 0, p, 7);
-    ecc200placementbit(array, NR, NC, NR - 2, 0, p, 6);
-    ecc200placementbit(array, NR, NC, NR - 1, 0, p, 5);
-    ecc200placementbit(array, NR, NC, 0, NC - 2, p, 4);
-    ecc200placementbit(array, NR, NC, 0, NC - 1, p, 3);
-    ecc200placementbit(array, NR, NC, 1, NC - 1, p, 2);
-    ecc200placementbit(array, NR, NC, 2, NC - 1, p, 1);
-    ecc200placementbit(array, NR, NC, 3, NC - 1, p, 0);
+static void dm_placementcornerC(int *array, const int NR, const int NC, const int p) {
+    dm_placementbit(array, NR, NC, NR - 3, 0, p, 7);
+    dm_placementbit(array, NR, NC, NR - 2, 0, p, 6);
+    dm_placementbit(array, NR, NC, NR - 1, 0, p, 5);
+    dm_placementbit(array, NR, NC, 0, NC - 2, p, 4);
+    dm_placementbit(array, NR, NC, 0, NC - 1, p, 3);
+    dm_placementbit(array, NR, NC, 1, NC - 1, p, 2);
+    dm_placementbit(array, NR, NC, 2, NC - 1, p, 1);
+    dm_placementbit(array, NR, NC, 3, NC - 1, p, 0);
 }
 
-static void ecc200placementcornerD(int *array, const int NR, const int NC, const int p) {
-    ecc200placementbit(array, NR, NC, NR - 1, 0, p, 7);
-    ecc200placementbit(array, NR, NC, NR - 1, NC - 1, p, 6);
-    ecc200placementbit(array, NR, NC, 0, NC - 3, p, 5);
-    ecc200placementbit(array, NR, NC, 0, NC - 2, p, 4);
-    ecc200placementbit(array, NR, NC, 0, NC - 1, p, 3);
-    ecc200placementbit(array, NR, NC, 1, NC - 3, p, 2);
-    ecc200placementbit(array, NR, NC, 1, NC - 2, p, 1);
-    ecc200placementbit(array, NR, NC, 1, NC - 1, p, 0);
+static void dm_placementcornerD(int *array, const int NR, const int NC, const int p) {
+    dm_placementbit(array, NR, NC, NR - 1, 0, p, 7);
+    dm_placementbit(array, NR, NC, NR - 1, NC - 1, p, 6);
+    dm_placementbit(array, NR, NC, 0, NC - 3, p, 5);
+    dm_placementbit(array, NR, NC, 0, NC - 2, p, 4);
+    dm_placementbit(array, NR, NC, 0, NC - 1, p, 3);
+    dm_placementbit(array, NR, NC, 1, NC - 3, p, 2);
+    dm_placementbit(array, NR, NC, 1, NC - 2, p, 1);
+    dm_placementbit(array, NR, NC, 1, NC - 1, p, 0);
 }
 
-/* Annex M placement alorithm main function */
-static void ecc200placement(int *array, const int NR, const int NC) {
+/* Annex F placement algorithm main function */
+static void dm_placement(int *array, const int NR, const int NC) {
     int r, c, p;
-    // invalidate
-    for (r = 0; r < NR; r++)
-        for (c = 0; c < NC; c++)
-            array[r * NC + c] = 0;
     // start
     p = 1;
     r = 4;
@@ -154,17 +150,17 @@ static void ecc200placement(int *array, const int NR, const int NC) {
     do {
         // check corner
         if (r == NR && !c)
-            ecc200placementcornerA(array, NR, NC, p++);
+            dm_placementcornerA(array, NR, NC, p++);
         if (r == NR - 2 && !c && NC % 4)
-            ecc200placementcornerB(array, NR, NC, p++);
+            dm_placementcornerB(array, NR, NC, p++);
         if (r == NR - 2 && !c && (NC % 8) == 4)
-            ecc200placementcornerC(array, NR, NC, p++);
+            dm_placementcornerC(array, NR, NC, p++);
         if (r == NR + 4 && c == 2 && !(NC % 8))
-            ecc200placementcornerD(array, NR, NC, p++);
+            dm_placementcornerD(array, NR, NC, p++);
         // up/right
         do {
             if (r < NR && c >= 0 && !array[r * NC + c])
-                ecc200placementblock(array, NR, NC, r, c, p++);
+                dm_placementblock(array, NR, NC, r, c, p++);
             r -= 2;
             c += 2;
         } while (r >= 0 && c < NC);
@@ -173,7 +169,7 @@ static void ecc200placement(int *array, const int NR, const int NC) {
         // down/left
         do {
             if (r >= 0 && c < NC && !array[r * NC + c])
-                ecc200placementblock(array, NR, NC, r, c, p++);
+                dm_placementblock(array, NR, NC, r, c, p++);
             r += 2;
             c -= 2;
         } while (r < NR && c >= 0);
@@ -186,7 +182,7 @@ static void ecc200placement(int *array, const int NR, const int NC) {
 }
 
 /* calculate and append ecc code, and if necessary interleave */
-static void ecc200(unsigned char *binary, const int bytes, const int datablock, const int rsblock, const int skew) {
+static void dm_ecc(unsigned char *binary, const int bytes, const int datablock, const int rsblock, const int skew) {
     int blocks = (bytes + 2) / datablock, b;
     int rsblocks = rsblock * blocks;
     int n;
@@ -204,7 +200,8 @@ static void ecc200(unsigned char *binary, const int bytes, const int datablock, 
         for (n = b; n < rsblocks; n += blocks) {
             if (skew) {
                 /* Rotate ecc data to make 144x144 size symbols acceptable */
-                /* See http://groups.google.com/group/postscriptbarcode/msg/5ae8fda7757477da */
+                /* See http://groups.google.com/group/postscriptbarcode/msg/5ae8fda7757477da
+                   or https://github.com/nu-book/zxing-cpp/issues/259 */
                 if (b < 8) {
                     binary[bytes + n + 2] = ecc[p--];
                 } else {
@@ -218,7 +215,7 @@ static void ecc200(unsigned char *binary, const int bytes, const int datablock, 
 }
 
 /* Is basic (non-shifted) C40? */
-static int isc40(const unsigned char input) {
+static int dm_isc40(const unsigned char input) {
     if ((input >= '0' && input <= '9') || (input >= 'A' && input <= 'Z') || input == ' ') {
         return 1;
     }
@@ -226,7 +223,7 @@ static int isc40(const unsigned char input) {
 }
 
 /* Is basic (non-shifted) TEXT? */
-static int istext(const unsigned char input) {
+static int dm_istext(const unsigned char input) {
     if ((input >= '0' && input <= '9') || (input >= 'a' && input <= 'z') || input == ' ') {
         return 1;
     }
@@ -234,14 +231,14 @@ static int istext(const unsigned char input) {
 }
 
 /* Is basic (non-shifted) C40/TEXT? */
-static int isc40text(const int current_mode, const unsigned char input) {
-    return current_mode == DM_C40 ? isc40(input) : istext(input);
+static int dm_isc40text(const int current_mode, const unsigned char input) {
+    return current_mode == DM_C40 ? dm_isc40(input) : dm_istext(input);
 }
 
 /* Return true (1) if a character is valid in X12 set */
-static int isX12(const unsigned char input) {
+static int dm_isX12(const unsigned char input) {
 
-    if (isc40(input)) {
+    if (dm_isc40(input)) {
         return 1;
     }
     if (input == 13 || input == '*' || input == '>') {
@@ -251,14 +248,14 @@ static int isX12(const unsigned char input) {
     return 0;
 }
 
-static int p_r_6_2_1(const unsigned char inputData[], const int position, const int sourcelen) {
+static int dm_p_r_6_2_1(const unsigned char inputData[], const int position, const int sourcelen) {
     /* Annex P section (r)(6)(ii)(I)
        "If one of the three X12 terminator/separator characters first
         occurs in the yet to be processed data before a non-X12 character..."
      */
     int i;
 
-    for (i = position; i < sourcelen && isX12(inputData[i]); i++) {
+    for (i = position; i < sourcelen && dm_isX12(inputData[i]); i++) {
         if (inputData[i] == 13 || inputData[i] == '*' || inputData[i] == '>') {
             return 1;
         }
@@ -289,7 +286,7 @@ static int p_r_6_2_1(const unsigned char inputData[], const int position, const 
 #define DM_MULT_CEIL(n)     ((((n) + DM_MULT_MINUS_1) / DM_MULT) * DM_MULT)
 
 /* 'look ahead test' from Annex P */
-static int look_ahead_test(const unsigned char inputData[], const int sourcelen, const int position,
+static int dm_look_ahead_test(const unsigned char inputData[], const int sourcelen, const int position,
             const int current_mode, const int gs1, const int debug_print) {
     int ascii_count, c40_count, text_count, x12_count, edf_count, b256_count;
     int ascii_rnded, c40_rnded, text_rnded, x12_rnded, edf_rnded, b256_rnded;
@@ -342,7 +339,7 @@ static int look_ahead_test(const unsigned char inputData[], const int sourcelen,
         }
 
         /* c40 ... step (m) */
-        if (isc40(c)) {
+        if (dm_isc40(c)) {
             c40_count += DM_MULT_2_DIV_3; // (m)(1)
         } else {
             if (is_extended) {
@@ -353,7 +350,7 @@ static int look_ahead_test(const unsigned char inputData[], const int sourcelen,
         }
 
         /* text ... step (n) */
-        if (istext(c)) {
+        if (dm_istext(c)) {
             text_count += DM_MULT_2_DIV_3; // (n)(1)
         } else {
             if (is_extended) {
@@ -364,7 +361,7 @@ static int look_ahead_test(const unsigned char inputData[], const int sourcelen,
         }
 
         /* x12 ... step (o) */
-        if (isX12(c)) {
+        if (dm_isX12(c)) {
             x12_count += DM_MULT_2_DIV_3; // (o)(1)
         } else {
             if (is_extended) {
@@ -435,7 +432,7 @@ static int look_ahead_test(const unsigned char inputData[], const int sourcelen,
                     return DM_C40; /* step (r)(6)(i) */
                 }
                 if (c40_count == x12_count) {
-                    if (p_r_6_2_1(inputData, sp, sourcelen) == 1) {
+                    if (dm_p_r_6_2_1(inputData, sp, sourcelen) == 1) {
                         return DM_X12; /* step (r)(6)(ii)(I) */
                     }
                     return DM_C40; /* step (r)(6)(ii)(II) */
@@ -486,7 +483,7 @@ static int look_ahead_test(const unsigned char inputData[], const int sourcelen,
 }
 
 /* Copy C40/TEXT/X12 triplets from buffer to target. Returns elements left in buffer (< 3) */
-static int ctx_process_buffer_transfer(int process_buffer[8], int process_p, unsigned char target[], int *p_tp,
+static int dm_ctx_buffer_xfer(int process_buffer[8], int process_p, unsigned char target[], int *p_tp,
             const int debug_print) {
     int i, process_e;
     int tp = *p_tp;
@@ -515,8 +512,8 @@ static int ctx_process_buffer_transfer(int process_buffer[8], int process_p, uns
 }
 
 /* Copy EDIFACT quadruplets from buffer to target. Returns elements left in buffer (< 4) */
-static int edi_process_buffer_transfer(int process_buffer[8], int process_p, unsigned char target[], int *p_tp,
-            const int debug_print) {
+static int dm_edi_buffer_xfer(int process_buffer[8], int process_p, unsigned char target[], int *p_tp,
+            const int empty, const int debug_print) {
     int i, process_e;
     int tp = *p_tp;
 
@@ -536,6 +533,31 @@ static int edi_process_buffer_transfer(int process_buffer[8], int process_p, uns
 
     if (process_p) {
         memmove(process_buffer, process_buffer + process_e, sizeof(int) * process_p);
+        if (empty) {
+            if (process_p == 3) {
+                target[tp++] = (unsigned char) (process_buffer[i] << 2 | (process_buffer[i + 1] & 0x30) >> 4);
+                target[tp++] = (unsigned char) ((process_buffer[i + 1] & 0x0f) << 4
+                                                | (process_buffer[i + 2] & 0x3c) >> 2);
+                target[tp++] = (unsigned char) ((process_buffer[i + 2] & 0x03) << 6);
+                if (debug_print) {
+                    printf("[%d %d %d (%d %d %d)] ", process_buffer[i], process_buffer[i + 1], process_buffer[i + 2],
+                            target[tp - 3], target[tp - 2], target[tp - 1]);
+                }
+            } else if (process_p == 2) {
+                target[tp++] = (unsigned char) (process_buffer[i] << 2 | (process_buffer[i + 1] & 0x30) >> 4);
+                target[tp++] = (unsigned char) ((process_buffer[i + 1] & 0x0f) << 4);
+                if (debug_print) {
+                    printf("[%d %d (%d %d)] ", process_buffer[i], process_buffer[i + 1], target[tp - 2],
+                            target[tp - 1]);
+                }
+            } else {
+                target[tp++] = (unsigned char) (process_buffer[i] << 2);
+                if (debug_print) {
+                    printf("[%d (%d)] ", process_buffer[i], target[tp - 1]);
+                }
+            }
+            process_p = 0;
+        }
     }
 
     *p_tp = tp;
@@ -544,26 +566,26 @@ static int edi_process_buffer_transfer(int process_buffer[8], int process_p, uns
 }
 
 /* Get symbol size, as specified or else smallest containing `minimum` codewords */
-static int get_symbolsize(struct zint_symbol *symbol, const int minimum) {
+static int dm_get_symbolsize(struct zint_symbol *symbol, const int minimum) {
     int i;
 
     if ((symbol->option_2 >= 1) && (symbol->option_2 <= DMSIZESCOUNT)) {
-        return intsymbol[symbol->option_2 - 1];
+        return dm_intsymbol[symbol->option_2 - 1];
     }
     for (i = DMSIZESCOUNT - 2; i >= 0; i--) {
-        if (minimum > matrixbytes[i]) {
+        if (minimum > dm_matrixbytes[i]) {
             if (symbol->option_3 == DM_DMRE) {
                 return i + 1;
             }
             if (symbol->option_3 == DM_SQUARE) {
                 /* Skip rectangular symbols in square only mode */
-                while (i + 1 < DMSIZESCOUNT && matrixH[i + 1] != matrixW[i + 1]) {
+                while (i + 1 < DMSIZESCOUNT && dm_matrixH[i + 1] != dm_matrixW[i + 1]) {
                     i++;
                 }
                 return i + 1 < DMSIZESCOUNT ? i + 1 : 0;
             }
             /* Skip DMRE symbols in no dmre mode */
-            while (i + 1 < DMSIZESCOUNT && isDMRE[i + 1]) {
+            while (i + 1 < DMSIZESCOUNT && dm_isDMRE[i + 1]) {
                 i++;
             }
             return i + 1 < DMSIZESCOUNT ? i + 1 : 0;
@@ -573,14 +595,14 @@ static int get_symbolsize(struct zint_symbol *symbol, const int minimum) {
 }
 
 /* Number of codewords remaining in a particular version (may be negative) */
-static int codewords_remaining(struct zint_symbol *symbol, const int tp, const int process_p) {
-    int symbolsize = get_symbolsize(symbol, tp + process_p); /* Allow for the remaining data characters */
+static int dm_codewords_remaining(struct zint_symbol *symbol, const int tp, const int process_p) {
+    int symbolsize = dm_get_symbolsize(symbol, tp + process_p); /* Allow for the remaining data characters */
 
-    return matrixbytes[symbolsize] - tp;
+    return dm_matrixbytes[symbolsize] - tp;
 }
 
 /* Number of C40/TEXT elements needed to encode `input` */
-static int c40text_cnt(const int current_mode, const int gs1, unsigned char input) {
+static int dm_c40text_cnt(const int current_mode, const int gs1, unsigned char input) {
     int cnt;
 
     if (gs1 && input == '[') {
@@ -591,7 +613,7 @@ static int c40text_cnt(const int current_mode, const int gs1, unsigned char inpu
         cnt += 2;
         input = input - 128;
     }
-    if ((current_mode == DM_C40 && c40_shift[input]) || (current_mode == DM_TEXT && text_shift[input])) {
+    if ((current_mode == DM_C40 && dm_c40_shift[input]) || (current_mode == DM_TEXT && dm_text_shift[input])) {
         cnt += 1;
     }
 
@@ -599,7 +621,7 @@ static int c40text_cnt(const int current_mode, const int gs1, unsigned char inpu
 }
 
 /* Update Base 256 field length */
-static int update_b256_field_length(unsigned char target[], int tp, int b256_start) {
+static int dm_update_b256_field_length(unsigned char target[], int tp, int b256_start) {
     int b256_count = tp - (b256_start + 1);
     if (b256_count <= 249) {
         target[b256_start] = b256_count;
@@ -774,7 +796,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
                 if (debug_print) printf("N%02d ", target[tp - 1] - 130);
                 sp += 2;
             } else {
-                next_mode = look_ahead_test(source, inputlen, sp, current_mode, gs1, debug_print);
+                next_mode = dm_look_ahead_test(source, inputlen, sp, current_mode, gs1, debug_print);
 
                 if (next_mode != DM_ASCII) {
                     switch (next_mode) {
@@ -824,7 +846,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
 
             next_mode = current_mode;
             if (process_p == 0) {
-                next_mode = look_ahead_test(source, inputlen, sp, current_mode, gs1, debug_print);
+                next_mode = dm_look_ahead_test(source, inputlen, sp, current_mode, gs1, debug_print);
             }
 
             if (next_mode != current_mode) {
@@ -836,11 +858,11 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
                 const char *ct_shift, *ct_value;
 
                 if (current_mode == DM_C40) {
-                    ct_shift = c40_shift;
-                    ct_value = c40_value;
+                    ct_shift = dm_c40_shift;
+                    ct_value = dm_c40_value;
                 } else {
-                    ct_shift = text_shift;
-                    ct_value = text_value;
+                    ct_shift = dm_text_shift;
+                    ct_value = dm_text_value;
                 }
 
                 if (source[sp] & 0x80) {
@@ -869,7 +891,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
                 process_buffer[process_p++] = value;
 
                 if (process_p >= 3) {
-                    process_p = ctx_process_buffer_transfer(process_buffer, process_p, target, &tp, debug_print);
+                    process_p = dm_ctx_buffer_xfer(process_buffer, process_p, target, &tp, debug_print);
                 }
                 sp++;
             }
@@ -877,74 +899,86 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
         /* step (e) X12 encodation */
         } else if (current_mode == DM_X12) {
 
-            next_mode = DM_X12;
-            if (process_p == 0) {
-                next_mode = look_ahead_test(source, inputlen, sp, current_mode, gs1, debug_print);
-            }
+            if (dm_isX12(source[sp])) {
+                next_mode = DM_X12;
+                if (process_p == 0) {
+                    next_mode = dm_look_ahead_test(source, inputlen, sp, current_mode, gs1, debug_print);
+                }
 
-            if (next_mode != DM_X12) {
+                if (next_mode != DM_X12) {
+                    target[tp++] = 254; /* Unlatch */
+                    next_mode = DM_ASCII;
+                } else {
+                    static const char x12_nonalphanum_chars[] = "\015*> ";
+                    int value = 0;
+
+                    if ((source[sp] >= '0') && (source[sp] <= '9')) {
+                        value = (source[sp] - '0') + 4;
+                    } else if ((source[sp] >= 'A') && (source[sp] <= 'Z')) {
+                        value = (source[sp] - 'A') + 14;
+                    } else {
+                        value = posn(x12_nonalphanum_chars, source[sp]);
+                    }
+
+                    process_buffer[process_p++] = value;
+
+                    if (process_p >= 3) {
+                        process_p = dm_ctx_buffer_xfer(process_buffer, process_p, target, &tp, debug_print);
+                    }
+                    sp++;
+                }
+            } else {
+                process_p = 0; /* Throw away buffer if any */
                 target[tp++] = 254; /* Unlatch */
                 next_mode = DM_ASCII;
-                if (debug_print) printf("ASC ");
-            } else {
-                static const char x12_nonalphanum_chars[] = "\015*> ";
-                int value = 0;
-
-                if ((source[sp] >= '0') && (source[sp] <= '9')) {
-                    value = (source[sp] - '0') + 4;
-                } else if ((source[sp] >= 'A') && (source[sp] <= 'Z')) {
-                    value = (source[sp] - 'A') + 14;
-                } else {
-                    value = posn(x12_nonalphanum_chars, source[sp]);
-                }
-
-                process_buffer[process_p++] = value;
-
-                if (process_p >= 3) {
-                    process_p = ctx_process_buffer_transfer(process_buffer, process_p, target, &tp, debug_print);
-                }
-                sp++;
             }
+            if (debug_print && next_mode == DM_ASCII) printf("ASC ");
 
         /* step (f) EDIFACT encodation */
         } else if (current_mode == DM_EDIFACT) {
 
-            next_mode = DM_EDIFACT;
-            if (process_p == 3) {
-                /* Note different then spec Step (f)(1), which suggests checking when 0, but this seems to work
-                   better in many cases. */
-                next_mode = look_ahead_test(source, inputlen, sp, current_mode, gs1, debug_print);
-            }
-
-            if (next_mode != DM_EDIFACT) {
-                process_buffer[process_p++] = 31;
-                next_mode = DM_ASCII;
-            } else {
-                int value = source[sp];
-
-                if (value >= 64) { // '@'
-                    value -= 64;
+            if ((source[sp] >= ' ') && (source[sp] <= '^')) {
+                next_mode = DM_EDIFACT;
+                if (process_p == 3) {
+                    /* Note different then spec Step (f)(1), which suggests checking when 0, but this seems to work
+                       better in many cases as the switch to ASCII is "free" */
+                    next_mode = dm_look_ahead_test(source, inputlen, sp, current_mode, gs1, debug_print);
                 }
 
-                process_buffer[process_p++] = value;
-                sp++;
-            }
+                if (next_mode != DM_EDIFACT) {
+                    process_buffer[process_p++] = 31;
+                    next_mode = DM_ASCII;
+                } else {
+                    int value = source[sp];
 
-            if (process_p >= 4) {
-                process_p = edi_process_buffer_transfer(process_buffer, process_p, target, &tp, debug_print);
+                    if (value >= 64) { // '@'
+                        value -= 64;
+                    }
+
+                    process_buffer[process_p++] = value;
+                    sp++;
+                }
+
+                if (process_p >= 4) {
+                    process_p = dm_edi_buffer_xfer(process_buffer, process_p, target, &tp, 0 /*empty*/, debug_print);
+                }
+            } else {
+                process_buffer[process_p++] = 31;
+                process_p = dm_edi_buffer_xfer(process_buffer, process_p, target, &tp, 1 /*empty*/, debug_print);
+                next_mode = DM_ASCII;
             }
             if (debug_print && next_mode == DM_ASCII) printf("ASC ");
 
         /* step (g) Base 256 encodation */
         } else if (current_mode == DM_BASE256) {
-            next_mode = look_ahead_test(source, inputlen, sp, current_mode, gs1, debug_print);
+            next_mode = dm_look_ahead_test(source, inputlen, sp, current_mode, gs1, debug_print);
 
             if (next_mode == DM_BASE256) {
                 target[tp++] = source[sp];
                 sp++;
                 if (debug_print) printf("B%02X ", target[tp - 1]);
             } else {
-                tp = update_b256_field_length(target, tp, b256_start);
+                tp = dm_update_b256_field_length(target, tp, b256_start);
                 /* B.2.1 255-state randomising algorithm */
                 for (i = b256_start; i < tp; i++) {
                     int prn = ((149 * (i + 1)) % 255) + 1;
@@ -962,7 +996,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
 
     } /* while */
 
-    symbols_left = codewords_remaining(symbol, tp, process_p);
+    symbols_left = dm_codewords_remaining(symbol, tp, process_p);
 
     if (debug_print) printf("\nsymbols_left %d, process_p %d ", symbols_left, process_p);
 
@@ -981,9 +1015,9 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
             if (process_p == 2 && symbols_left == 2) {
                 /* 5.2.5.2 (b) */
                 process_buffer[process_p++] = 0; // Shift 1
-                (void) ctx_process_buffer_transfer(process_buffer, process_p, target, &tp, debug_print);
+                (void) dm_ctx_buffer_xfer(process_buffer, process_p, target, &tp, debug_print);
 
-            } else if (process_p == 1 && symbols_left <= 2 && isc40text(current_mode, source[inputlen - 1])) {
+            } else if (process_p == 1 && symbols_left <= 2 && dm_isc40text(current_mode, source[inputlen - 1])) {
                 /* 5.2.5.2 (c)/(d) */
                 if (symbols_left > 1) {
                     /* 5.2.5.2 (c) */
@@ -998,7 +1032,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
                 /* Backtrack to last complete triplet (same technique as BWIPP) */
                 while (sp > 0 && process_p % 3) {
                     sp--;
-                    cnt = c40text_cnt(current_mode, gs1, source[sp]);
+                    cnt = dm_c40text_cnt(current_mode, gs1, source[sp]);
                     total_cnt += cnt;
                     process_p -= cnt;
                 }
@@ -1068,16 +1102,13 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
             // Append edifact unlatch value (31) and empty buffer
             if (process_p <= 3) {
                 process_buffer[process_p++] = 31;
-                if (process_p < 4) {
-                    memset(process_buffer + process_p, 0, sizeof(int) * (4 - process_p));
-                }
             }
-            (void) edi_process_buffer_transfer(process_buffer, 4, target, &tp, debug_print);
+            (void) dm_edi_buffer_xfer(process_buffer, process_p, target, &tp, 1 /*empty*/, debug_print);
         }
 
     } else if (current_mode == DM_BASE256) {
         if (symbols_left > 0) {
-            tp = update_b256_field_length(target, tp, b256_start);
+            tp = dm_update_b256_field_length(target, tp, b256_start);
         }
         /* B.2.1 255-state randomising algorithm */
         for (i = b256_start; i < tp; i++) {
@@ -1100,7 +1131,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
 }
 
 /* add pad bits */
-static void add_tail(unsigned char target[], int tp, const int tail_length) {
+static void dm_add_tail(unsigned char target[], int tp, const int tail_length) {
     int i, prn, temp;
 
     for (i = tail_length; i > 0; i--) {
@@ -1134,9 +1165,9 @@ static int datamatrix_200(struct zint_symbol *symbol, const unsigned char source
         return error_number;
     }
 
-    symbolsize = get_symbolsize(symbol, binlen);
+    symbolsize = dm_get_symbolsize(symbol, binlen);
 
-    if (binlen > matrixbytes[symbolsize]) {
+    if (binlen > dm_matrixbytes[symbolsize]) {
         if ((symbol->option_2 >= 1) && (symbol->option_2 <= DMSIZESCOUNT)) {
             // The symbol size was given by --ver (option_2)
             strcpy(symbol->errtxt, "522: Input too long for selected symbol size");
@@ -1146,18 +1177,18 @@ static int datamatrix_200(struct zint_symbol *symbol, const unsigned char source
         return ZINT_ERROR_TOO_LONG;
     }
 
-    H = matrixH[symbolsize];
-    W = matrixW[symbolsize];
-    FH = matrixFH[symbolsize];
-    FW = matrixFW[symbolsize];
-    bytes = matrixbytes[symbolsize];
-    datablock = matrixdatablock[symbolsize];
-    rsblock = matrixrsblock[symbolsize];
+    H = dm_matrixH[symbolsize];
+    W = dm_matrixW[symbolsize];
+    FH = dm_matrixFH[symbolsize];
+    FW = dm_matrixFW[symbolsize];
+    bytes = dm_matrixbytes[symbolsize];
+    datablock = dm_matrixdatablock[symbolsize];
+    rsblock = dm_matrixrsblock[symbolsize];
 
     taillength = bytes - binlen;
 
     if (taillength != 0) {
-        add_tail(binary, binlen, taillength);
+        dm_add_tail(binary, binlen, taillength);
     }
     if (debug_print) {
         printf("Pads (%d): ", taillength);
@@ -1169,7 +1200,7 @@ static int datamatrix_200(struct zint_symbol *symbol, const unsigned char source
     if (symbolsize == INTSYMBOL144) {
         skew = 1;
     }
-    ecc200(binary, bytes, datablock, rsblock, skew);
+    dm_ecc(binary, bytes, datablock, rsblock, skew);
     if (debug_print) {
         printf("ECC (%d): ", rsblock * (bytes / datablock));
         for (i = bytes; i < bytes + rsblock * (bytes / datablock); i++) printf("%d ", binary[i]);
@@ -1186,10 +1217,16 @@ static int datamatrix_200(struct zint_symbol *symbol, const unsigned char source
         unsigned char *grid;
         NC = W - 2 * (W / FW);
         NR = H - 2 * (H / FH);
-        places = (int *) malloc(sizeof(int) * NC * NR);
-        ecc200placement(places, NR, NC);
-        grid = (unsigned char *) malloc((size_t) W * H);
-        memset(grid, 0, W * H);
+        if (!(places = (int *) calloc(NC * NR, sizeof(int)))) {
+            strcpy(symbol->errtxt, "718: Insufficient memory for placement array");
+            return ZINT_ERROR_MEMORY;
+        }
+        dm_placement(places, NR, NC);
+        if (!(grid = (unsigned char *) calloc((size_t) W * H, sizeof(unsigned char)))) {
+            free(places);
+            strcpy(symbol->errtxt, "719: Insufficient memory for grid array");
+            return ZINT_ERROR_MEMORY;
+        }
         for (y = 0; y < H; y += FH) {
             for (x = 0; x < W; x++)
                 grid[y * W + x] = 1;
@@ -1217,7 +1254,7 @@ static int datamatrix_200(struct zint_symbol *symbol, const unsigned char source
 #endif
         for (y = 0; y < NR; y++) {
             for (x = 0; x < NC; x++) {
-                int v = places[(NR - y - 1) * NC + x];
+                const int v = places[(NR - y - 1) * NC + x];
                 if (v == 1 || (v > 7 && (binary[(v >> 3) - 1] & (1 << (v & 7)))))
                     grid[(1 + y + 2 * (y / (FH - 2))) * W + 1 + x + 2 * (x / (FW - 2))] = 1;
             }

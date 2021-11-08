@@ -2014,7 +2014,6 @@ static void test_fuzz(int index, int debug) {
 #define TEST_PERF_ITERATIONS    (TEST_PERF_ITER_MILLES * 1000)
 #define TEST_PERF_TIME(arg)     (((arg) * 1000.0) / CLOCKS_PER_SEC)
 
-
 // Not a real test, just performance indicator
 static void test_perf(int index, int debug) {
 

@@ -136,9 +136,9 @@ INTERNAL void rs_encode(const rs_t *rs, const int datalen, const unsigned char *
 
     memset(res, 0, nsym);
     for (i = 0; i < datalen; i++) {
-        unsigned int m = res[nsym - 1] ^ data[i];
+        const unsigned int m = res[nsym - 1] ^ data[i];
         if (m) {
-            unsigned int log_m = logt[m];
+            const unsigned int log_m = logt[m];
             for (k = nsym - 1; k > 0; k--) {
                 if (rspoly[k])
                     res[k] = (unsigned char) (res[k - 1] ^ alog[log_m + logt[rspoly[k]]]);
@@ -164,9 +164,9 @@ INTERNAL void rs_encode_uint(const rs_t *rs, const int datalen, const unsigned i
 
     memset(res, 0, sizeof(unsigned int) * nsym);
     for (i = 0; i < datalen; i++) {
-        unsigned int m = res[nsym - 1] ^ data[i];
+        const unsigned int m = res[nsym - 1] ^ data[i];
         if (m) {
-            unsigned int log_m = logt[m];
+            const unsigned int log_m = logt[m];
             for (k = nsym - 1; k > 0; k--) {
                 if (rspoly[k])
                     res[k] = res[k - 1] ^ alog[log_m + logt[rspoly[k]]];
@@ -258,9 +258,9 @@ INTERNAL void rs_uint_encode(const rs_uint_t *rs_uint, const int datalen, const 
         return;
     }
     for (i = 0; i < datalen; i++) {
-        unsigned int m = res[nsym - 1] ^ data[i];
+        const unsigned int m = res[nsym - 1] ^ data[i];
         if (m) {
-            unsigned int log_m = logt[m];
+            const unsigned int log_m = logt[m];
             for (k = nsym - 1; k > 0; k--) {
                 if (rspoly[k])
                     res[k] = res[k - 1] ^ alog[log_m + logt[rspoly[k]]];
