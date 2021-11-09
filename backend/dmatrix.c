@@ -61,15 +61,15 @@ static void dm_placementbit(int *array, const int NR, const int NC, int r, int c
     }
     // Necessary for DMRE (ISO/IEC 21471:2020 Annex E)
     if (r >= NR) {
-#ifdef DEBUG
+#ifdef DM_DEBUG
         fprintf(stderr, "r >= NR:%i,%i at r=%i->", p, b, r);
 #endif
         r -= NR;
-#ifdef DEBUG
+#ifdef DM_DEBUG
         fprintf(stderr, "%i,c=%i\n", r, c);
 #endif
     }
-#ifdef DEBUG
+#ifdef DM_DEBUG
     if (0 != array[r * NC + c]) {
         int a = array[r * NC + c];
         fprintf(stderr, "Double:%i,%i->%i,%i at r=%i,c=%i\n", a >> 3, a & 7, p, b, r, c);
@@ -248,6 +248,16 @@ static int dm_isX12(const unsigned char input) {
     return 0;
 }
 
+/* Return true (1) if a character is valid in EDIFACT set */
+static int dm_isedifact(const unsigned char input, const int gs1) {
+
+    if ((input >= ' ' && input <= '^') && (!gs1 || input != '[')) { /* Can't encode GS1 FNC1/GS in EDIFACT */
+        return 1;
+    }
+
+    return 0;
+}
+
 static int dm_p_r_6_2_1(const unsigned char inputData[], const int position, const int sourcelen) {
     /* Annex P section (r)(6)(ii)(I)
        "If one of the three X12 terminator/separator characters first
@@ -372,7 +382,7 @@ static int dm_look_ahead_test(const unsigned char inputData[], const int sourcel
         }
 
         /* edifact ... step (p) */
-        if ((c >= ' ') && (c <= '^')) {
+        if (dm_isedifact(c, gs1)) {
             edf_count += DM_MULT_3_DIV_4; // (p)(1)
         } else {
             if (is_extended) {
@@ -937,7 +947,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
         /* step (f) EDIFACT encodation */
         } else if (current_mode == DM_EDIFACT) {
 
-            if ((source[sp] >= ' ') && (source[sp] <= '^')) {
+            if (dm_isedifact(source[sp], gs1)) {
                 next_mode = DM_EDIFACT;
                 if (process_p == 3) {
                     /* Note different then spec Step (f)(1), which suggests checking when 0, but this seems to work
@@ -981,7 +991,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
                 tp = dm_update_b256_field_length(target, tp, b256_start);
                 /* B.2.1 255-state randomising algorithm */
                 for (i = b256_start; i < tp; i++) {
-                    int prn = ((149 * (i + 1)) % 255) + 1;
+                    const int prn = ((149 * (i + 1)) % 255) + 1;
                     target[i] = (unsigned char) ((target[i] + prn) & 0xFF);
                 }
                 next_mode = DM_ASCII;
@@ -1214,7 +1224,6 @@ static int datamatrix_200(struct zint_symbol *symbol, const unsigned char source
 #endif
     { // placement
         int x, y, NC, NR, *places;
-        unsigned char *grid;
         NC = W - 2 * (W / FW);
         NR = H - 2 * (H / FH);
         if (!(places = (int *) calloc(NC * NR, sizeof(int)))) {
@@ -1222,31 +1231,24 @@ static int datamatrix_200(struct zint_symbol *symbol, const unsigned char source
             return ZINT_ERROR_MEMORY;
         }
         dm_placement(places, NR, NC);
-        if (!(grid = (unsigned char *) calloc((size_t) W * H, sizeof(unsigned char)))) {
-            free(places);
-            strcpy(symbol->errtxt, "719: Insufficient memory for grid array");
-            return ZINT_ERROR_MEMORY;
-        }
         for (y = 0; y < H; y += FH) {
             for (x = 0; x < W; x++)
-                grid[y * W + x] = 1;
+                set_module(symbol, (H - y) - 1, x);
             for (x = 0; x < W; x += 2)
-                grid[(y + FH - 1) * W + x] = 1;
+                set_module(symbol, y, x);
         }
         for (x = 0; x < W; x += FW) {
             for (y = 0; y < H; y++)
-                grid[y * W + x] = 1;
+                set_module(symbol, (H - y) - 1, x);
             for (y = 0; y < H; y += 2)
-                grid[y * W + x + FW - 1] = 1;
+                set_module(symbol, (H - y) - 1, x + FW - 1);
         }
-#ifdef DEBUG
+#ifdef DM_DEBUG
         // Print position matrix as in standard
         for (y = NR - 1; y >= 0; y--) {
             for (x = 0; x < NC; x++) {
-                int v;
-                if (x != 0)
-                    fprintf(stderr, "|");
-                v = places[(NR - y - 1) * NC + x];
+                const int v = places[(NR - y - 1) * NC + x];
+                if (x != 0) fprintf(stderr, "|");
                 fprintf(stderr, "%3d.%2d", (v >> 3), 8 - (v & 7));
             }
             fprintf(stderr, "\n");
@@ -1255,19 +1257,14 @@ static int datamatrix_200(struct zint_symbol *symbol, const unsigned char source
         for (y = 0; y < NR; y++) {
             for (x = 0; x < NC; x++) {
                 const int v = places[(NR - y - 1) * NC + x];
-                if (v == 1 || (v > 7 && (binary[(v >> 3) - 1] & (1 << (v & 7)))))
-                    grid[(1 + y + 2 * (y / (FH - 2))) * W + 1 + x + 2 * (x / (FW - 2))] = 1;
-            }
-        }
-        for (y = H - 1; y >= 0; y--) {
-            for (x = 0; x < W; x++) {
-                if (grid[W * y + x]) {
-                    set_module(symbol, (H - y) - 1, x);
+                if (v == 1 || (v > 7 && (binary[(v >> 3) - 1] & (1 << (v & 7))))) {
+                    set_module(symbol, H - (1 + y + 2 * (y / (FH - 2))) - 1, 1 + x + 2 * (x / (FW - 2)));
                 }
             }
-            symbol->row_height[(H - y) - 1] = 1;
         }
-        free(grid);
+        for (y = 0; y < H; y++) {
+            symbol->row_height[y] = 1;
+        }
         free(places);
     }
 

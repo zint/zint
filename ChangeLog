@@ -59,6 +59,7 @@ Bugs
 - library.c: check for stacking symbols >= 200
 - DATAMATRIX: fix mis-encoding of non-encodables in X12 and EDIFACT modes,
   props Alex Geller
+- DATAMATRIX: fix mis-encoding of FNC1/GS in EDIFACT in GS1 mode
 
 
 Version 2.10.0 2021-08-14
