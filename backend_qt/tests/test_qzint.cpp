@@ -30,7 +30,10 @@ public:
     {
     // Qt5 will trigger "detected memory leaks" if font used (libfontconfig) so skip if ASAN enabled
 #if QT_VERSION < 0x60000
-#  if defined(__SANITIZE_ADDRESS__) || (defined(__has_feature) && __has_feature(address_sanitizer))
+#  if !defined(__has_feature)
+#    define __has_feature(x) 0
+#  endif
+#  if defined(__SANITIZE_ADDRESS__) || __has_feature(address_sanitizer)
         m_skipIfFontUsed = true;
 #  endif
 #endif
