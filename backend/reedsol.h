@@ -31,8 +31,8 @@
  */
 /* vim: set ts=4 sw=4 et : */
 
-#ifndef __REEDSOL_H
-#define __REEDSOL_H
+#ifndef Z_REEDSOL_H
+#define Z_REEDSOL_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -41,15 +41,19 @@ extern "C" {
 typedef struct {
     const unsigned char *logt; /* These are static */
     const unsigned char *alog;
-    unsigned char rspoly[256];
-    int nsym;
+    unsigned char rspoly[256]; /* Generated poly */
+    unsigned char log_rspoly[256]; /* Logs of poly */
+    int nsym; /* Degree of poly */
+    int zero; /* Set if poly has a zero coeff */
 } rs_t;
 
 typedef struct {
     unsigned int *logt; /* These are malloced */
     unsigned int *alog;
-    unsigned short rspoly[4096]; /* 12-bit max - needs to be enlarged if > 12-bit used */
-    int nsym;
+    unsigned short rspoly[4096]; /* Generated poly, 12-bit max - needs to be enlarged if > 12-bit used */
+    unsigned int log_rspoly[4096]; /* Logs of poly */
+    int nsym; /* Degree of poly */
+    int zero; /* Set if poly has a zero coeff */
 } rs_uint_t;
 
 INTERNAL void rs_init_gf(rs_t *rs, const unsigned int prime_poly);
@@ -68,4 +72,4 @@ INTERNAL void rs_uint_free(rs_uint_t *rs_uint);
 }
 #endif /* __cplusplus */
 
-#endif /* __REEDSOL_H */
+#endif /* Z_REEDSOL_H */

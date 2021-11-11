@@ -91,7 +91,7 @@ INTERNAL void rs_init_gf(rs_t *rs, const unsigned int prime_poly) {
 
     /* Using bits 9-6 as hash to save a few cycles */
     /* Alter this hash or just iterate if new prime poly added that doesn't fit */
-    unsigned int hash = prime_poly >> 5;
+    const unsigned int hash = prime_poly >> 5;
 
     rs->logt = data[hash].logt;
     rs->alog = data[hash].alog;
@@ -109,6 +109,7 @@ INTERNAL void rs_init_code(rs_t *rs, const int nsym, int index) {
     const unsigned char *const logt = rs->logt;
     const unsigned char *const alog = rs->alog;
     unsigned char *rspoly = rs->rspoly;
+    unsigned char *log_rspoly = rs->log_rspoly;
 
     rs->nsym = nsym;
 
@@ -123,6 +124,13 @@ INTERNAL void rs_init_code(rs_t *rs, const int nsym, int index) {
         rspoly[0] = alog[logt[rspoly[0]] + index]; /* 2**(i + (i+1) + ... + index) */
         index++;
     }
+
+    /* Set logs of poly and check if have zero coeffs */
+    rs->zero = 0;
+    for (i = 0; i <= nsym; i++) {
+        log_rspoly[i] = logt[rspoly[i]]; /* For simplicity allow log of 0 */
+        rs->zero |= rspoly[i] == 0;
+    }
 }
 
 /* rs_encode(&rs, datalen, data, res) generates nsym Reed-Solomon codes (nsym as given in rs_init_code())
@@ -132,23 +140,40 @@ INTERNAL void rs_encode(const rs_t *rs, const int datalen, const unsigned char *
     const unsigned char *const logt = rs->logt;
     const unsigned char *const alog = rs->alog;
     const unsigned char *const rspoly = rs->rspoly;
+    const unsigned char *const log_rspoly = rs->log_rspoly;
     const int nsym = rs->nsym;
 
     memset(res, 0, nsym);
-    for (i = 0; i < datalen; i++) {
-        const unsigned int m = res[nsym - 1] ^ data[i];
-        if (m) {
-            const unsigned int log_m = logt[m];
-            for (k = nsym - 1; k > 0; k--) {
-                if (rspoly[k])
-                    res[k] = (unsigned char) (res[k - 1] ^ alog[log_m + logt[rspoly[k]]]);
-                else
-                    res[k] = res[k - 1];
+    if (rs->zero) { /* Poly has a zero coeff so need to check in inner loop */
+        for (i = 0; i < datalen; i++) {
+            const unsigned int m = res[nsym - 1] ^ data[i];
+            if (m) {
+                const unsigned int log_m = logt[m];
+                for (k = nsym - 1; k > 0; k--) {
+                    if (rspoly[k])
+                        res[k] = (unsigned char) (res[k - 1] ^ alog[log_m + log_rspoly[k]]);
+                    else
+                        res[k] = res[k - 1];
+                }
+                res[0] = alog[log_m + log_rspoly[0]];
+            } else {
+                memmove(res + 1, res, nsym - 1);
+                res[0] = 0;
             }
-            res[0] = alog[log_m + logt[rspoly[0]]]; /* rspoly[0] can't be zero */
-        } else {
-            memmove(res + 1, res, nsym - 1);
-            res[0] = 0;
+        }
+    } else { /* Avoid a branch in inner loop */
+        for (i = 0; i < datalen; i++) {
+            const unsigned int m = res[nsym - 1] ^ data[i];
+            if (m) {
+                const unsigned int log_m = logt[m];
+                for (k = nsym - 1; k > 0; k--) {
+                    res[k] = (unsigned char) (res[k - 1] ^ alog[log_m + log_rspoly[k]]);
+                }
+                res[0] = alog[log_m + log_rspoly[0]];
+            } else {
+                memmove(res + 1, res, nsym - 1);
+                res[0] = 0;
+            }
         }
     }
 }
@@ -160,23 +185,40 @@ INTERNAL void rs_encode_uint(const rs_t *rs, const int datalen, const unsigned i
     const unsigned char *const logt = rs->logt;
     const unsigned char *const alog = rs->alog;
     const unsigned char *const rspoly = rs->rspoly;
+    const unsigned char *const log_rspoly = rs->log_rspoly;
     const int nsym = rs->nsym;
 
     memset(res, 0, sizeof(unsigned int) * nsym);
-    for (i = 0; i < datalen; i++) {
-        const unsigned int m = res[nsym - 1] ^ data[i];
-        if (m) {
-            const unsigned int log_m = logt[m];
-            for (k = nsym - 1; k > 0; k--) {
-                if (rspoly[k])
-                    res[k] = res[k - 1] ^ alog[log_m + logt[rspoly[k]]];
-                else
-                    res[k] = res[k - 1];
+    if (rs->zero) { /* Poly has a zero coeff so need to check in inner loop */
+        for (i = 0; i < datalen; i++) {
+            const unsigned int m = res[nsym - 1] ^ data[i];
+            if (m) {
+                const unsigned int log_m = logt[m];
+                for (k = nsym - 1; k > 0; k--) {
+                    if (rspoly[k])
+                        res[k] = res[k - 1] ^ alog[log_m + log_rspoly[k]];
+                    else
+                        res[k] = res[k - 1];
+                }
+                res[0] = alog[log_m + log_rspoly[0]];
+            } else {
+                memmove(res + 1, res, sizeof(unsigned int) * (nsym - 1));
+                res[0] = 0;
             }
-            res[0] = alog[log_m + logt[rspoly[0]]];
-        } else {
-            memmove(res + 1, res, sizeof(unsigned int) * (nsym - 1));
-            res[0] = 0;
+        }
+    } else { /* Avoid a branch in inner loop */
+        for (i = 0; i < datalen; i++) {
+            const unsigned int m = res[nsym - 1] ^ data[i];
+            if (m) {
+                const unsigned int log_m = logt[m];
+                for (k = nsym - 1; k > 0; k--) {
+                    res[k] = res[k - 1] ^ alog[log_m + log_rspoly[k]];
+                }
+                res[0] = alog[log_m + log_rspoly[0]];
+            } else {
+                memmove(res + 1, res, sizeof(unsigned int) * (nsym - 1));
+                res[0] = 0;
+            }
         }
     }
 }
@@ -223,9 +265,10 @@ INTERNAL int rs_uint_init_gf(rs_uint_t *rs_uint, const unsigned int prime_poly, 
 
 INTERNAL void rs_uint_init_code(rs_uint_t *rs_uint, const int nsym, int index) {
     int i, k;
-    const unsigned int *logt = rs_uint->logt;
-    const unsigned int *alog = rs_uint->alog;
+    const unsigned int *const logt = rs_uint->logt;
+    const unsigned int *const alog = rs_uint->alog;
     unsigned short *rspoly = rs_uint->rspoly;
+    unsigned int *log_rspoly = rs_uint->log_rspoly;
 
     if (logt == NULL || alog == NULL) {
         return;
@@ -243,34 +286,58 @@ INTERNAL void rs_uint_init_code(rs_uint_t *rs_uint, const int nsym, int index) {
         rspoly[0] = alog[(logt[rspoly[0]] + index)];
         index++;
     }
+
+    /* Set logs of poly and check if have zero coeffs */
+    rs_uint->zero = 0;
+    for (i = 0; i <= nsym; i++) {
+        log_rspoly[i] = logt[rspoly[i]]; /* For simplicity allow log of 0 */
+        rs_uint->zero |= rspoly[i] == 0;
+    }
 }
 
 INTERNAL void rs_uint_encode(const rs_uint_t *rs_uint, const int datalen, const unsigned int *data,
                 unsigned int *res) {
     int i, k;
-    const unsigned int *logt = rs_uint->logt;
-    const unsigned int *alog = rs_uint->alog;
-    const unsigned short *rspoly = rs_uint->rspoly;
+    const unsigned int *const logt = rs_uint->logt;
+    const unsigned int *const alog = rs_uint->alog;
+    const unsigned short *const rspoly = rs_uint->rspoly;
+    const unsigned int *const log_rspoly = rs_uint->log_rspoly;
     const int nsym = rs_uint->nsym;
 
     memset(res, 0, sizeof(unsigned int) * nsym);
     if (logt == NULL || alog == NULL) {
         return;
     }
-    for (i = 0; i < datalen; i++) {
-        const unsigned int m = res[nsym - 1] ^ data[i];
-        if (m) {
-            const unsigned int log_m = logt[m];
-            for (k = nsym - 1; k > 0; k--) {
-                if (rspoly[k])
-                    res[k] = res[k - 1] ^ alog[log_m + logt[rspoly[k]]];
-                else
-                    res[k] = res[k - 1];
+    if (rs_uint->zero) { /* Poly has a zero coeff so need to check in inner loop */
+        for (i = 0; i < datalen; i++) {
+            const unsigned int m = res[nsym - 1] ^ data[i];
+            if (m) {
+                const unsigned int log_m = logt[m];
+                for (k = nsym - 1; k > 0; k--) {
+                    if (rspoly[k])
+                        res[k] = res[k - 1] ^ alog[log_m + log_rspoly[k]];
+                    else
+                        res[k] = res[k - 1];
+                }
+                res[0] = alog[log_m + log_rspoly[0]];
+            } else {
+                memmove(res + 1, res, sizeof(unsigned int) * (nsym - 1));
+                res[0] = 0;
             }
-            res[0] = alog[log_m + logt[rspoly[0]]];
-        } else {
-            memmove(res + 1, res, sizeof(unsigned int) * (nsym - 1));
-            res[0] = 0;
+        }
+    } else { /* Avoid a branch in inner loop */
+        for (i = 0; i < datalen; i++) {
+            const unsigned int m = res[nsym - 1] ^ data[i];
+            if (m) {
+                const unsigned int log_m = logt[m];
+                for (k = nsym - 1; k > 0; k--) {
+                    res[k] = res[k - 1] ^ alog[log_m + log_rspoly[k]];
+                }
+                res[0] = alog[log_m + log_rspoly[0]];
+            } else {
+                memmove(res + 1, res, sizeof(unsigned int) * (nsym - 1));
+                res[0] = 0;
+            }
         }
     }
 }

@@ -30,6 +30,7 @@
     SUCH DAMAGE.
  */
 /* vim: set ts=4 sw=4 et : */
+#include <assert.h>
 #ifdef ZINT_TEST
 #include <stdio.h>
 #endif
@@ -230,6 +231,7 @@ INTERNAL void expand(struct zint_symbol *symbol, const char data[], const int le
 
     for (reader = 0; reader < length; reader++) {
         num = ctoi(data[reader]);
+        assert(num >= 0);
         for (i = 0; i < num; i++) {
             if (latch) {
                 set_module(symbol, row, writer);

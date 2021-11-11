@@ -125,8 +125,8 @@ INTERNAL int telepen(struct zint_symbol *symbol, unsigned char source[], int src
     if (symbol->debug & ZINT_DEBUG_PRINT) printf("Check digit: %d\n", check_digit);
 
     /* Stop character */
-    memcpy(d, TeleTable['z'], 14);
-    d += 14;
+    memcpy(d, TeleTable['z'], 12);
+    d += 12;
 
     expand(symbol, dest, d - dest);
 
@@ -210,8 +210,8 @@ INTERNAL int telepen_num(struct zint_symbol *symbol, unsigned char source[], int
     if (symbol->debug & ZINT_DEBUG_PRINT) printf("Check digit: %d\n", check_digit);
 
     /* Stop character */
-    memcpy(d, TeleTable['z'], 14);
-    d += 14;
+    memcpy(d, TeleTable['z'], 12);
+    d += 12;
 
     expand(symbol, dest, d - dest);
 
