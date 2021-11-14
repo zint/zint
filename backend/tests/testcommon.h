@@ -41,6 +41,7 @@
 #define ZINT_DEBUG_TEST_KEEP_OUTFILE    64
 #define ZINT_DEBUG_TEST_BWIPP           128
 #define ZINT_DEBUG_TEST_PERFORMANCE     256
+#define ZINT_DEBUG_TEST_MINIMIZE        512
 
 #ifdef _MSC_VER
 #define testutil_popen(command, mode) _popen(command, mode)

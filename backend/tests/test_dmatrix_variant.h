@@ -1,16 +1,6 @@
-/* dmatrix.c Handles Data Matrix ECC 200 symbols */
-
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009 - 2021 Robin Stuart <rstuart114@gmail.com>
-
-    developed from and including some functions from:
-        IEC16022 bar code generation
-        Adrian Kennard, Andrews & Arnold Ltd
-        with help from Cliff Hones on the RS coding
-
-        (c) 2004 Adrian Kennard, Andrews & Arnold Ltd
-        (c) 2006 Stefan Schmidt <stefan@datenfreihafen.org>
+    Copyright (C) 2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -39,169 +29,13 @@
  */
 /* vim: set ts=4 sw=4 et : */
 
-#include <stdio.h>
-#include <assert.h>
-#include <math.h>
-#ifdef _MSC_VER
-#include <malloc.h>
-#endif
-#include "common.h"
-#include "reedsol.h"
-#include "dmatrix.h"
+/* Used by test_matrix.c test_minimize() (TODO: remove in the not-too-distant future) */
 
-/* Annex F placement algorithm low level */
-static void dm_placementbit(int *array, const int NR, const int NC, int r, int c, const int p, const char b) {
-    if (r < 0) {
-        r += NR;
-        c += 4 - ((NR + 4) % 8);
-    }
-    if (c < 0) {
-        c += NC;
-        r += 4 - ((NC + 4) % 8);
-    }
-    // Necessary for DMRE (ISO/IEC 21471:2020 Annex E)
-    if (r >= NR) {
-        r -= NR;
-    }
-    // Check index limits
-    assert(r < NR);
-    assert(c < NC);
-    // Check double-assignment
-    assert(0 == array[r * NC + c]);
-    array[r * NC + c] = (p << 3) + b;
-}
+#ifndef Z_DMATRIX_VARIANT_H
+#define Z_DMATRIX_VARIANT_H
 
-static void dm_placementblock(int *array, const int NR, const int NC, const int r,
-        const int c, const int p) {
-    dm_placementbit(array, NR, NC, r - 2, c - 2, p, 7);
-    dm_placementbit(array, NR, NC, r - 2, c - 1, p, 6);
-    dm_placementbit(array, NR, NC, r - 1, c - 2, p, 5);
-    dm_placementbit(array, NR, NC, r - 1, c - 1, p, 4);
-    dm_placementbit(array, NR, NC, r - 1, c - 0, p, 3);
-    dm_placementbit(array, NR, NC, r - 0, c - 2, p, 2);
-    dm_placementbit(array, NR, NC, r - 0, c - 1, p, 1);
-    dm_placementbit(array, NR, NC, r - 0, c - 0, p, 0);
-}
+#include "../dmatrix.h"
 
-static void dm_placementcornerA(int *array, const int NR, const int NC, const int p) {
-    dm_placementbit(array, NR, NC, NR - 1, 0, p, 7);
-    dm_placementbit(array, NR, NC, NR - 1, 1, p, 6);
-    dm_placementbit(array, NR, NC, NR - 1, 2, p, 5);
-    dm_placementbit(array, NR, NC, 0, NC - 2, p, 4);
-    dm_placementbit(array, NR, NC, 0, NC - 1, p, 3);
-    dm_placementbit(array, NR, NC, 1, NC - 1, p, 2);
-    dm_placementbit(array, NR, NC, 2, NC - 1, p, 1);
-    dm_placementbit(array, NR, NC, 3, NC - 1, p, 0);
-}
-
-static void dm_placementcornerB(int *array, const int NR, const int NC, const int p) {
-    dm_placementbit(array, NR, NC, NR - 3, 0, p, 7);
-    dm_placementbit(array, NR, NC, NR - 2, 0, p, 6);
-    dm_placementbit(array, NR, NC, NR - 1, 0, p, 5);
-    dm_placementbit(array, NR, NC, 0, NC - 4, p, 4);
-    dm_placementbit(array, NR, NC, 0, NC - 3, p, 3);
-    dm_placementbit(array, NR, NC, 0, NC - 2, p, 2);
-    dm_placementbit(array, NR, NC, 0, NC - 1, p, 1);
-    dm_placementbit(array, NR, NC, 1, NC - 1, p, 0);
-}
-
-static void dm_placementcornerC(int *array, const int NR, const int NC, const int p) {
-    dm_placementbit(array, NR, NC, NR - 3, 0, p, 7);
-    dm_placementbit(array, NR, NC, NR - 2, 0, p, 6);
-    dm_placementbit(array, NR, NC, NR - 1, 0, p, 5);
-    dm_placementbit(array, NR, NC, 0, NC - 2, p, 4);
-    dm_placementbit(array, NR, NC, 0, NC - 1, p, 3);
-    dm_placementbit(array, NR, NC, 1, NC - 1, p, 2);
-    dm_placementbit(array, NR, NC, 2, NC - 1, p, 1);
-    dm_placementbit(array, NR, NC, 3, NC - 1, p, 0);
-}
-
-static void dm_placementcornerD(int *array, const int NR, const int NC, const int p) {
-    dm_placementbit(array, NR, NC, NR - 1, 0, p, 7);
-    dm_placementbit(array, NR, NC, NR - 1, NC - 1, p, 6);
-    dm_placementbit(array, NR, NC, 0, NC - 3, p, 5);
-    dm_placementbit(array, NR, NC, 0, NC - 2, p, 4);
-    dm_placementbit(array, NR, NC, 0, NC - 1, p, 3);
-    dm_placementbit(array, NR, NC, 1, NC - 3, p, 2);
-    dm_placementbit(array, NR, NC, 1, NC - 2, p, 1);
-    dm_placementbit(array, NR, NC, 1, NC - 1, p, 0);
-}
-
-/* Annex F placement algorithm main function */
-static void dm_placement(int *array, const int NR, const int NC) {
-    int r, c, p;
-    // start
-    p = 1;
-    r = 4;
-    c = 0;
-    do {
-        // check corner
-        if (r == NR && !c)
-            dm_placementcornerA(array, NR, NC, p++);
-        if (r == NR - 2 && !c && NC % 4)
-            dm_placementcornerB(array, NR, NC, p++);
-        if (r == NR - 2 && !c && (NC % 8) == 4)
-            dm_placementcornerC(array, NR, NC, p++);
-        if (r == NR + 4 && c == 2 && !(NC % 8))
-            dm_placementcornerD(array, NR, NC, p++);
-        // up/right
-        do {
-            if (r < NR && c >= 0 && !array[r * NC + c])
-                dm_placementblock(array, NR, NC, r, c, p++);
-            r -= 2;
-            c += 2;
-        } while (r >= 0 && c < NC);
-        r++;
-        c += 3;
-        // down/left
-        do {
-            if (r >= 0 && c < NC && !array[r * NC + c])
-                dm_placementblock(array, NR, NC, r, c, p++);
-            r += 2;
-            c -= 2;
-        } while (r < NR && c >= 0);
-        r += 3;
-        c++;
-    } while (r < NR || c < NC);
-    // unfilled corner
-    if (!array[NR * NC - 1])
-        array[NR * NC - 1] = array[NR * NC - NC - 2] = 1;
-}
-
-/* calculate and append ecc code, and if necessary interleave */
-static void dm_ecc(unsigned char *binary, const int bytes, const int datablock, const int rsblock, const int skew) {
-    int blocks = (bytes + 2) / datablock, b;
-    int rsblocks = rsblock * blocks;
-    int n;
-    rs_t rs;
-
-    rs_init_gf(&rs, 0x12d);
-    rs_init_code(&rs, rsblock, 1);
-    for (b = 0; b < blocks; b++) {
-        unsigned char buf[256], ecc[256];
-        int p = 0;
-        for (n = b; n < bytes; n += blocks)
-            buf[p++] = binary[n];
-        rs_encode(&rs, p, buf, ecc);
-        p = rsblock - 1; // comes back reversed
-        for (n = b; n < rsblocks; n += blocks) {
-            if (skew) {
-                /* Rotate ecc data to make 144x144 size symbols acceptable */
-                /* See http://groups.google.com/group/postscriptbarcode/msg/5ae8fda7757477da
-                   or https://github.com/nu-book/zxing-cpp/issues/259 */
-                if (b < 8) {
-                    binary[bytes + n + 2] = ecc[p--];
-                } else {
-                    binary[bytes + n - 8] = ecc[p--];
-                }
-            } else {
-                binary[bytes + n] = ecc[p--];
-            }
-        }
-    }
-}
-
-/* Is basic (non-shifted) C40? */
 static int dm_isc40(const unsigned char input) {
     if (input <= '9') {
         return input >= '0' || input == ' ';
@@ -248,15 +82,16 @@ static int dm_p_r_6_2_1(const unsigned char inputData[], const int position, con
     return 0;
 }
 
-/* Character counts are multiplied by this, so as to be whole integer divisible by 2, 3 and 4 */
 #define DM_MULT             12
 
 #define DM_MULT_1_DIV_2     6
 #define DM_MULT_2_DIV_3     8
 #define DM_MULT_3_DIV_4     9
 #define DM_MULT_1           12
+#define DM_MULT_5_DIV_4     15
 #define DM_MULT_4_DIV_3     16
 #define DM_MULT_2           24
+#define DM_MULT_9_DIV_4     27
 #define DM_MULT_8_DIV_3     32
 #define DM_MULT_3           26
 #define DM_MULT_13_DIV_4    39
@@ -268,29 +103,43 @@ static int dm_p_r_6_2_1(const unsigned char inputData[], const int position, con
 #define DM_MULT_MINUS_1     11
 #define DM_MULT_CEIL(n)     ((((n) + DM_MULT_MINUS_1) / DM_MULT) * DM_MULT)
 
-/* 'look ahead test' from Annex P */
-static int dm_look_ahead_test(const unsigned char inputData[], const int sourcelen, const int position,
-            const int current_mode, const int mode_arg, const int gs1, const int debug_print) {
+static int dm_look_ahead_test_variant(const unsigned char inputData[], const int sourcelen, const int position,
+            const int current_mode, const int mode_arg, const int gs1, const int debug_print, const int variant) {
     int ascii_count, c40_count, text_count, x12_count, edf_count, b256_count;
     int ascii_rnded, c40_rnded, text_rnded, x12_rnded, edf_rnded, b256_rnded;
     int cnt_1;
     int sp;
 
+    int ascii_init_test, loop_test, edf_eod_test, x12_eod_test;
+
     /* step (j) */
-    if (current_mode == DM_ASCII || current_mode == DM_BASE256) { /* Adjusted to use for DM_BASE256 also */
+    if (variant == 1) {
+        ascii_init_test = (current_mode == DM_ASCII || current_mode == DM_BASE256);
+    } else {
+        ascii_init_test = (current_mode == DM_ASCII);
+    }
+    if (ascii_init_test) {
         ascii_count = 0;
         c40_count = DM_MULT_1;
         text_count = DM_MULT_1;
         x12_count = DM_MULT_1;
         edf_count = DM_MULT_1;
-        b256_count = DM_MULT_2; /* Adjusted from DM_MULT_5_DIV_4 (1.25) */
+        if (variant == 1) {
+            b256_count = DM_MULT_2;
+        } else {
+            b256_count = DM_MULT_5_DIV_4; // 1.25
+        }
     } else {
         ascii_count = DM_MULT_1;
         c40_count = DM_MULT_2;
         text_count = DM_MULT_2;
         x12_count = DM_MULT_2;
         edf_count = DM_MULT_2;
-        b256_count = DM_MULT_3; /* Adjusted from DM_MULT_9_DIV_4 (2.25) */
+        if (variant == 1) {
+            b256_count = DM_MULT_3;
+        } else {
+            b256_count = DM_MULT_9_DIV_4; // 2.25
+        }
     }
 
     switch (current_mode) {
@@ -303,7 +152,11 @@ static int dm_look_ahead_test(const unsigned char inputData[], const int sourcel
         case DM_EDIFACT: edf_count = 0;
             break;
         case DM_BASE256:
-            b256_count = mode_arg == 249 ? DM_MULT_1 : 0; /* Adjusted to use no. of bytes written */
+            if (variant == 1) {
+                b256_count = mode_arg == 249 ? DM_MULT_1 : 0;
+            } else {
+                b256_count = 0;
+            }
             break;
     }
 
@@ -312,7 +165,7 @@ static int dm_look_ahead_test(const unsigned char inputData[], const int sourcel
         int is_extended = c & 0x80;
 
         /* ascii ... step (l) */
-        if ((c <= '9') && (c >= '0')) {
+        if ((c >= '0') && (c <= '9')) {
             ascii_count += DM_MULT_1_DIV_2; // (l)(1)
         } else {
             if (is_extended) {
@@ -374,9 +227,16 @@ static int dm_look_ahead_test(const unsigned char inputData[], const int sourcel
             b256_count += DM_MULT_1; // (q)(2)
         }
 
-        if (sp >= position + 3) {
-            /* At least 4 data characters processed ... step (r) */
-            /* NOTE: previous behaviour was at least 5 (same as BWIPP) */
+        if (variant == 1) {
+            loop_test = sp >= position + 3;
+        } else {
+            loop_test = sp >= position + 4;
+        }
+        if (loop_test) {
+            int ascii_loop_test;
+
+            /* At least 5 data characters processed ... step (r) */
+            /* NOTE: different than spec, where it's at least 4. Following previous behaviour here (and BWIPP) */
 
             if (debug_print) {
                 printf("\n(m:%d, p:%d, sp:%d, a:%d): ascii_count %d, b256_count %d, edf_count %d, text_count %d"
@@ -386,12 +246,16 @@ static int dm_look_ahead_test(const unsigned char inputData[], const int sourcel
             }
 
             cnt_1 = ascii_count + DM_MULT_1;
-            /* Adjusted from <= b256_count */
-            if (cnt_1 < b256_count && cnt_1 <= edf_count && cnt_1 <= text_count && cnt_1 <= x12_count
-                    && cnt_1 <= c40_count) {
+            if (variant == 1) {
+                ascii_loop_test = (cnt_1 < b256_count && cnt_1 <= edf_count && cnt_1 <= text_count && cnt_1 <= x12_count && cnt_1 <= c40_count);
+            } else {
+                ascii_loop_test = (cnt_1 <= b256_count && cnt_1 <= edf_count && cnt_1 <= text_count && cnt_1 <= x12_count && cnt_1 <= c40_count);
+            }
+            if (ascii_loop_test) {
                 if (debug_print) printf("ASC->");
                 return DM_ASCII; /* step (r)(1) */
             }
+
             cnt_1 = b256_count + DM_MULT_1;
             if (cnt_1 <= ascii_count || (cnt_1 < edf_count && cnt_1 < text_count && cnt_1 < x12_count
                     && cnt_1 < c40_count)) {
@@ -443,10 +307,10 @@ static int dm_look_ahead_test(const unsigned char inputData[], const int sourcel
     x12_rnded = DM_MULT_CEIL(x12_count);
     c40_rnded = DM_MULT_CEIL(c40_count);
     if (debug_print) {
-        printf("\nEOD(m:%d, p:%d, a:%d): ascii_rnded %d, b256_rnded %d, edf_rnded %d, text_rnded %d"
-                ", x12_rnded %d (%d), c40_rnded %d (%d) ",
-                current_mode, position, mode_arg, ascii_rnded, b256_rnded, edf_rnded, text_rnded,
-                x12_rnded, x12_count, c40_rnded, c40_count);
+        printf("\nEOD(m:%d, p:%d, a:%d): ascii_rnded %d, b256_rnded %d, edf_rnded %d, text_rnded %d, x12_rnded %d (%d)"
+                ", c40_rnded %d (%d) ",
+                current_mode, position, mode_arg, ascii_rnded, b256_rnded, edf_rnded, text_rnded, x12_rnded, x12_count,
+                c40_rnded, c40_count);
     }
 
     if (ascii_rnded <= b256_rnded && ascii_rnded <= edf_rnded && ascii_rnded <= text_rnded && ascii_rnded <= x12_rnded
@@ -459,9 +323,12 @@ static int dm_look_ahead_test(const unsigned char inputData[], const int sourcel
         if (debug_print) printf("BAS->");
         return DM_BASE256; /* step (k)(3) */
     }
-    /* Adjusted from < x12_rnded */
-    if (edf_rnded < ascii_rnded && edf_rnded < b256_rnded && edf_rnded < text_rnded && edf_rnded <= x12_rnded
-            && edf_rnded < c40_rnded) {
+    if (variant == 1) {
+        edf_eod_test = (edf_rnded < ascii_rnded && edf_rnded < b256_rnded && edf_rnded < text_rnded && edf_rnded <= x12_rnded && edf_rnded < c40_rnded);
+    } else {
+        edf_eod_test = (edf_rnded < ascii_rnded && edf_rnded < b256_rnded && edf_rnded < text_rnded && edf_rnded < x12_rnded && edf_rnded < c40_rnded);
+    }
+    if (edf_eod_test) {
         if (debug_print) printf("EDI->");
         return DM_EDIFACT; /* step (k)(4) */
     }
@@ -470,12 +337,18 @@ static int dm_look_ahead_test(const unsigned char inputData[], const int sourcel
         if (debug_print) printf("TEX->");
         return DM_TEXT; /* step (k)(5) */
     }
-    /* Adjusted from < edf_rnded */
-    if (x12_rnded < ascii_rnded && x12_rnded < b256_rnded && x12_rnded <= edf_rnded && x12_rnded < text_rnded
-            && x12_rnded < c40_rnded) {
+    if (variant == 1) {
+        x12_eod_test = (x12_rnded < ascii_rnded && x12_rnded < b256_rnded && x12_rnded <= edf_rnded && x12_rnded < text_rnded && x12_rnded < c40_rnded);
+    } else {
+        x12_eod_test = (x12_rnded < ascii_rnded && x12_rnded < b256_rnded && x12_rnded < edf_rnded && x12_rnded < text_rnded && x12_rnded < c40_rnded);
+    }
+    if (x12_eod_test) {
         if (debug_print) printf("X12->");
         return DM_X12; /* step (k)(6) */
     }
+    /* Note the algorithm is particularly sub-optimal here, returning C40 even if X12/EDIFACT (much) better, due to
+       the < comparisons of rounded X12/EDIFACT values to each other above - comparisons would need to be <= or
+       unrounded (cf. very similar Code One algorithm). Not changed to maintain compatibility with spec and BWIPP */
     if (debug_print) printf("C40->");
     return DM_C40; /* step (k)(7) */
 }
@@ -561,81 +434,14 @@ static int dm_edi_buffer_xfer(int process_buffer[8], int process_p, unsigned cha
     return process_p;
 }
 
-/* Get symbol size, as specified or else smallest containing `minimum` codewords */
-STATIC_UNLESS_ZINT_TEST int dm_get_symbolsize(struct zint_symbol *symbol, const int minimum) {
-    int i;
+STATIC_UNLESS_ZINT_TEST int dm_get_symbolsize(struct zint_symbol *symbol, const int minimum);
+STATIC_UNLESS_ZINT_TEST int dm_codewords_remaining(struct zint_symbol *symbol, const int tp, const int process_p);
+STATIC_UNLESS_ZINT_TEST int dm_c40text_cnt(const int current_mode, const int gs1, unsigned char input);
+STATIC_UNLESS_ZINT_TEST int dm_update_b256_field_length(unsigned char target[], int tp, int b256_start);
 
-    if ((symbol->option_2 >= 1) && (symbol->option_2 <= DMSIZESCOUNT)) {
-        return dm_intsymbol[symbol->option_2 - 1];
-    }
-    for (i = DMSIZESCOUNT - 2; i >= 0; i--) {
-        if (minimum > dm_matrixbytes[i]) {
-            if (symbol->option_3 == DM_DMRE) {
-                return i + 1;
-            }
-            if (symbol->option_3 == DM_SQUARE) {
-                /* Skip rectangular symbols in square only mode */
-                while (i + 1 < DMSIZESCOUNT && dm_matrixH[i + 1] != dm_matrixW[i + 1]) {
-                    i++;
-                }
-                return i + 1 < DMSIZESCOUNT ? i + 1 : 0;
-            }
-            /* Skip DMRE symbols in no dmre mode */
-            while (i + 1 < DMSIZESCOUNT && dm_isDMRE[i + 1]) {
-                i++;
-            }
-            return i + 1 < DMSIZESCOUNT ? i + 1 : 0;
-        }
-    }
-    return 0;
-}
-
-/* Number of codewords remaining in a particular version (may be negative) */
-STATIC_UNLESS_ZINT_TEST int dm_codewords_remaining(struct zint_symbol *symbol, const int tp, const int process_p) {
-    int symbolsize = dm_get_symbolsize(symbol, tp + process_p); /* Allow for the remaining data characters */
-
-    return dm_matrixbytes[symbolsize] - tp;
-}
-
-/* Number of C40/TEXT elements needed to encode `input` */
-STATIC_UNLESS_ZINT_TEST int dm_c40text_cnt(const int current_mode, const int gs1, unsigned char input) {
-    int cnt;
-
-    if (gs1 && input == '[') {
-        return 2;
-    }
-    cnt = 1;
-    if (input & 0x80) {
-        cnt += 2;
-        input = input - 128;
-    }
-    if ((current_mode == DM_C40 && dm_c40_shift[input]) || (current_mode == DM_TEXT && dm_text_shift[input])) {
-        cnt += 1;
-    }
-
-    return cnt;
-}
-
-/* Update Base 256 field length */
-STATIC_UNLESS_ZINT_TEST int dm_update_b256_field_length(unsigned char target[], int tp, int b256_start) {
-    int b256_count = tp - (b256_start + 1);
-    if (b256_count <= 249) {
-        target[b256_start] = b256_count;
-    } else {
-        /* Insert extra codeword */
-        memmove(target + b256_start + 2, target + b256_start + 1, b256_count);
-        target[b256_start] = (unsigned char) (249 + (b256_count / 250));
-        target[b256_start + 1] = (unsigned char) (b256_count % 250);
-        tp++;
-    }
-
-    return tp;
-}
-
-/* Encodes data using ASCII, C40, Text, X12, EDIFACT or Base 256 modes as appropriate
-   Supports encoding FNC1 in supporting systems */
-static int dm200encode(struct zint_symbol *symbol, const unsigned char source[], unsigned char target[],
-            int *p_length, int *p_binlen) {
+/* Version of dm200encode() to check variant look ahead parameters */
+static int dm200encode_variant(struct zint_symbol *symbol, const unsigned char source[], unsigned char target[],
+        int *p_length, int *p_binlen, const int variant) {
 
     int sp;
     int tp, i, gs1;
@@ -793,7 +599,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
                 if (debug_print) printf("N%02d ", target[tp - 1] - 130);
                 sp += 2;
             } else {
-                next_mode = dm_look_ahead_test(source, inputlen, sp, current_mode, 0, gs1, debug_print);
+                next_mode = dm_look_ahead_test_variant(source, inputlen, sp, current_mode, 0, gs1, debug_print, variant);
 
                 if (next_mode != DM_ASCII) {
                     switch (next_mode) {
@@ -844,7 +650,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
 
             next_mode = current_mode;
             if (process_p == 0 && not_first) {
-                next_mode = dm_look_ahead_test(source, inputlen, sp, current_mode, process_p, gs1, debug_print);
+                next_mode = dm_look_ahead_test_variant(source, inputlen, sp, current_mode, process_p, gs1, debug_print, variant);
             }
 
             if (next_mode != current_mode) {
@@ -903,7 +709,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
             } else {
                 next_mode = DM_X12;
                 if (process_p == 0 && not_first) {
-                    next_mode = dm_look_ahead_test(source, inputlen, sp, current_mode, process_p, gs1, debug_print);
+                    next_mode = dm_look_ahead_test_variant(source, inputlen, sp, current_mode, process_p, gs1, debug_print, variant);
                 }
             }
 
@@ -916,7 +722,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
                 static const char x12_nonalphanum_chars[] = "\015*> ";
                 int value = 0;
 
-                if ((source[sp] <= '9') && (source[sp] >= '0')) {
+                if ((source[sp] >= '0') && (source[sp] <= '9')) {
                     value = (source[sp] - '0') + 4;
                 } else if ((source[sp] >= 'A') && (source[sp] <= 'Z')) {
                     value = (source[sp] - 'A') + 14;
@@ -943,7 +749,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
                 if (process_p == 3) {
                     /* Note different then spec Step (f)(1), which suggests checking when 0, but this seems to work
                        better in many cases as the switch to ASCII is "free" */
-                    next_mode = dm_look_ahead_test(source, inputlen, sp, current_mode, process_p, gs1, debug_print);
+                    next_mode = dm_look_ahead_test_variant(source, inputlen, sp, current_mode, process_p, gs1, debug_print, variant);
                 }
             }
 
@@ -976,8 +782,8 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
             } else {
                 next_mode = DM_BASE256;
                 if (not_first) {
-                    next_mode = dm_look_ahead_test(source, inputlen, sp, current_mode, tp - (b256_start + 1), gs1,
-                                    debug_print);
+                    next_mode = dm_look_ahead_test_variant(source, inputlen, sp, current_mode, tp - (b256_start + 1), gs1,
+                                    debug_print, variant);
                 }
             }
 
@@ -1143,152 +949,4 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
     return 0;
 }
 
-/* add pad bits */
-static void dm_add_tail(unsigned char target[], int tp, const int tail_length) {
-    int i, prn, temp;
-
-    for (i = tail_length; i > 0; i--) {
-        if (i == tail_length) {
-            target[tp++] = 129; /* Pad */
-        } else {
-            /* B.1.1 253-state randomising algorithm */
-            prn = ((149 * (tp + 1)) % 253) + 1;
-            temp = 129 + prn;
-            if (temp <= 254) {
-                target[tp++] = (unsigned char) (temp);
-            } else {
-                target[tp++] = (unsigned char) (temp - 254);
-            }
-        }
-    }
-}
-
-static int datamatrix_200(struct zint_symbol *symbol, const unsigned char source[], int inputlen) {
-    int i, skew = 0;
-    unsigned char binary[2200];
-    int binlen;
-    int symbolsize;
-    int taillength, error_number;
-    int H, W, FH, FW, datablock, bytes, rsblock;
-    const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
-
-    /* inputlen may be decremented by 2 if macro character is used */
-    error_number = dm200encode(symbol, source, binary, &inputlen, &binlen);
-    if (error_number != 0) {
-        return error_number;
-    }
-
-    symbolsize = dm_get_symbolsize(symbol, binlen);
-
-    if (binlen > dm_matrixbytes[symbolsize]) {
-        if ((symbol->option_2 >= 1) && (symbol->option_2 <= DMSIZESCOUNT)) {
-            // The symbol size was given by --ver (option_2)
-            strcpy(symbol->errtxt, "522: Input too long for selected symbol size");
-        } else {
-            strcpy(symbol->errtxt, "523: Data too long to fit in symbol");
-        }
-        return ZINT_ERROR_TOO_LONG;
-    }
-
-    H = dm_matrixH[symbolsize];
-    W = dm_matrixW[symbolsize];
-    FH = dm_matrixFH[symbolsize];
-    FW = dm_matrixFW[symbolsize];
-    bytes = dm_matrixbytes[symbolsize];
-    datablock = dm_matrixdatablock[symbolsize];
-    rsblock = dm_matrixrsblock[symbolsize];
-
-    taillength = bytes - binlen;
-
-    if (taillength != 0) {
-        dm_add_tail(binary, binlen, taillength);
-    }
-    if (debug_print) {
-        printf("Pads (%d): ", taillength);
-        for (i = binlen; i < binlen + taillength; i++) printf("%d ", binary[i]);
-        printf("\n");
-    }
-
-    // ecc code
-    if (symbolsize == INTSYMBOL144) {
-        skew = 1;
-    }
-    dm_ecc(binary, bytes, datablock, rsblock, skew);
-    if (debug_print) {
-        printf("ECC (%d): ", rsblock * (bytes / datablock));
-        for (i = bytes; i < bytes + rsblock * (bytes / datablock); i++) printf("%d ", binary[i]);
-        printf("\n");
-    }
-
-#ifdef ZINT_TEST
-    if (symbol->debug & ZINT_DEBUG_TEST) {
-        debug_test_codeword_dump(symbol, binary, skew ? 1558 + 620 : bytes + rsblock * (bytes / datablock));
-    }
-#endif
-    { // placement
-        const int NC = W - 2 * (W / FW);
-        const int NR = H - 2 * (H / FH);
-        int x, y, *places;
-        if (!(places = (int *) calloc(NC * NR, sizeof(int)))) {
-            strcpy(symbol->errtxt, "718: Insufficient memory for placement array");
-            return ZINT_ERROR_MEMORY;
-        }
-        dm_placement(places, NR, NC);
-        for (y = 0; y < H; y += FH) {
-            for (x = 0; x < W; x++)
-                set_module(symbol, (H - y) - 1, x);
-            for (x = 0; x < W; x += 2)
-                set_module(symbol, y, x);
-        }
-        for (x = 0; x < W; x += FW) {
-            for (y = 0; y < H; y++)
-                set_module(symbol, (H - y) - 1, x);
-            for (y = 0; y < H; y += 2)
-                set_module(symbol, (H - y) - 1, x + FW - 1);
-        }
-#ifdef DM_DEBUG
-        // Print position matrix as in standard
-        for (y = NR - 1; y >= 0; y--) {
-            for (x = 0; x < NC; x++) {
-                const int v = places[(NR - y - 1) * NC + x];
-                if (x != 0) fprintf(stderr, "|");
-                fprintf(stderr, "%3d.%2d", (v >> 3), 8 - (v & 7));
-            }
-            fprintf(stderr, "\n");
-        }
-#endif
-        for (y = 0; y < NR; y++) {
-            for (x = 0; x < NC; x++) {
-                const int v = places[(NR - y - 1) * NC + x];
-                if (v == 1 || (v > 7 && (binary[(v >> 3) - 1] & (1 << (v & 7))))) {
-                    set_module(symbol, H - (1 + y + 2 * (y / (FH - 2))) - 1, 1 + x + 2 * (x / (FW - 2)));
-                }
-            }
-        }
-        for (y = 0; y < H; y++) {
-            symbol->row_height[y] = 1;
-        }
-        free(places);
-    }
-
-    symbol->height = H;
-    symbol->rows = H;
-    symbol->width = W;
-
-    return error_number;
-}
-
-INTERNAL int datamatrix(struct zint_symbol *symbol, unsigned char source[], int length) {
-    int error_number;
-
-    if (symbol->option_1 <= 1) {
-        /* ECC 200 */
-        error_number = datamatrix_200(symbol, source, length);
-    } else {
-        /* ECC 000 - 140 */
-        strcpy(symbol->errtxt, "524: Older Data Matrix standards are no longer supported");
-        error_number = ZINT_ERROR_INVALID_OPTION;
-    }
-
-    return error_number;
-}
+#endif /* Z_DMATRIX_VARIANT_H */

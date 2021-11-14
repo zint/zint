@@ -30,6 +30,7 @@
 /* vim: set ts=4 sw=4 et : */
 
 #include "testcommon.h"
+#include "test_dmatrix_variant.h"
 
 static void test_large(int index, int debug) {
 
@@ -580,114 +581,116 @@ static void test_input(int index, int generate, int debug) {
         int bwipp_cmp;
         char *expected;
         char *comment;
+
+        int expected_diff; // Check minimize only (TODO: remove in the not-too-distant future)
     };
     struct item data[] = {
-        /*  0*/ { UNICODE_MODE, 0, -1, -1, -1, "0466010592130100000k*AGUATY80", 0, 0, 18, 18, 1, "(32) 86 C4 83 87 DE 8F 83 82 82 31 6C EE 08 85 D6 D2 EF 65 93 B0 1C 3C 76 FB D4 AB 16 11", "#208" },
-        /*  1*/ { UNICODE_MODE, 0, 5, -1, -1, "0466010592130100000k*AGUATY80", 0, 0, 18, 18, 1, "(32) 86 C4 83 87 DE 8F 83 82 82 31 6C EE 08 85 D6 D2 EF 65 93 B0 1C 3C 76 FB D4 AB 16 11", "" },
-        /*  2*/ { UNICODE_MODE, 0, -1, -1, -1, "0466010592130100000k*AGUATY8", 0, 0, 18, 18, 1, "(32) 86 C4 83 87 DE 8F 83 82 82 E6 19 5C 07 B7 82 5F D4 3D 65 B5 97 30 00 FC 2C 4C 30 52", "" },
-        /*  3*/ { UNICODE_MODE, 0, -1, -1, -1, "0466010592130100000k*AGUATY80U", 0, 0, 20, 20, 1, "(40) 86 C4 83 87 DE 8F 83 82 82 31 6C EE 08 85 D6 D2 EF 65 FE 56 81 76 4F AB 22 B8 6F 0A", "" },
-        /*  4*/ { UNICODE_MODE, 0, 5, -1, -1, "0466010592130100000k*AGUATY80U", ZINT_ERROR_TOO_LONG, -1, 0, 0, 0, "Error 522: Input too long for selected symbol size", "" },
-        /*  5*/ { UNICODE_MODE, 0, 6, -1, -1, "0466010592130100000k*AGUATY80U", 0, 0, 20, 20, 1, "(40) 86 C4 83 87 DE 8F 83 82 82 31 6C EE 08 85 D6 D2 EF 65 FE 56 81 76 4F AB 22 B8 6F 0A", "" },
-        /*  6*/ { UNICODE_MODE, 0, -1, -1, -1, "0466010592130100000k*AGUATY80UA", 0, 0, 20, 20, 0, "(40) 86 C4 83 87 DE 8F 83 82 82 E6 19 5C 07 B7 82 5F D4 3D 1E 5F FE 81 BB 90 01 2A 31 9F", "BWIPP different encodation (later change to C40)" },
-        /*  7*/ { UNICODE_MODE, 0, -1, -1, -1, ">*\015>*\015>", 0, 0, 14, 14, 1, "EE 0C A9 0C A9 FE 3F 81 42 B2 11 A8 F9 0A EC C1 1E 41", "X12 symbols_left 3, process_p 1" },
-        /*  8*/ { UNICODE_MODE, 0, -1, -1, -1, ">*\015>*\015>*", 0, 0, 14, 14, 1, "EE 0C A9 0C A9 FE 3F 2B 3F 05 D2 10 1B 9A 55 2F 68 C5", "X12 symbols_left 3, process_p 2" },
-        /*  9*/ { UNICODE_MODE, 0, -1, -1, -1, ">*\015>*\015>*\015", 0, 0, 14, 14, 1, "EE 0C A9 0C A9 0C A9 FE 1F 30 3F EE 45 C1 1C D7 5F 7E", "X12 symbols_left 1, process_p 0" },
-        /* 10*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEF", 0, 0, 12, 12, 1, "E6 59 E9 6D 24 3D 15 EF AA 21 F9 59", "C40 symbols_left 0, process_p 0" },
-        /* 11*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEFG", 0, 0, 14, 14, 1, "E6 59 E9 6D 24 FE 48 81 8C 7E 09 5E 10 64 BC 5F 4C 91", "C40 symbols_left 3, process_p 1" },
-        /* 12*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEFGH", 0, 0, 14, 14, 1, "E6 59 E9 6D 24 FE 48 49 2E 31 00 73 3B 8F 4B 55 93 19", "C40 symbols_left 3, process_p 2" },
-        /* 13*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEFGHI", 0, 0, 14, 14, 1, "E6 59 E9 6D 24 80 5F FE 01 DE 20 9F AA C2 FF 8F 08 97", "C40 symbols_left 1, process_p 0" },
-        /* 14*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEFGHIJ", 0, 0, 14, 14, 1, "E6 59 E9 6D 24 80 5F 4B AD 47 09 12 FF 2F 95 CA 5B 4A", "C40 symbols_left 1, process_p 1" },
-        /* 15*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEFGHIJK", 0, 0, 8, 32, 1, "E6 59 E9 6D 24 80 5F FE 4B 4C D8 69 88 60 B9 33 B9 31 E6 BF CA", "C40 symbols_left 3, process_p 2" },
-        /* 16*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEF\001G", 0, 0, 14, 14, 1, "E6 59 E9 6D 24 00 3D FE 5D 5A F5 0A 8A 4E 1D 63 07 B9", "C40 symbols_left 1, process_p 0" },
-        /* 17*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEFG\001", 0, 0, 14, 14, 1, "E6 59 E9 6D 24 7D 02 FE 14 A3 27 63 01 2F B1 94 FE FA", "C40 symbols_left 1, process_p 0" },
-        /* 18*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEFG\001H", 0, 0, 14, 14, 1, "E6 59 E9 6D 24 7D 02 49 C2 E6 DD 06 89 51 BA 8E 9D 1F", "C40 symbols_left 1, process_p 1" },
-        /* 19*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEFGH\001", 0, 0, 8, 32, 1, "E6 59 E9 6D 24 FE 48 49 02 81 BD 6D F3 94 FF 82 A6 BF BB F1 4F", "C40 symbols_left 1, process_p 1, backtracks" },
-        /* 20*/ { UNICODE_MODE, 0, -1, DM_SQUARE, -1, "ABCDEFGH\001", 0, 0, 16, 16, 1, "E6 59 E9 6D 24 FE 48 49 02 81 FB 93 AE 8B 1C 90 DF FE EB C5 A0 2A 6A 4F", "C40 symbols_left 1, process_p 1, backtracks" },
-        /* 21*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEFGH\001I", 0, 0, 8, 32, 1, "E6 59 E9 6D 24 FE 48 49 02 4A E1 0D DD BC 56 E4 66 52 E6 AE 02", "C40 symbols_left 3, process_p 2, backtracks" },
-        /* 22*/ { UNICODE_MODE, 0, -1, DM_SQUARE, -1, "ABCDEFGH\001I", 0, 0, 16, 16, 1, "E6 59 E9 6D 24 FE 48 49 02 4A 81 93 51 DF C0 0C D3 F9 72 13 17 52 5B 7E", "C40 symbols_left 5, process_p 2, backtracks" },
-        /* 23*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEFGHI\001", 0, 0, 8, 32, 1, "E6 59 E9 6D 24 80 5F FE 02 81 47 6C 3E 49 D3 FA 46 47 53 6E E5", "Switches to ASC for last char" },
-        /* 24*/ { UNICODE_MODE, 0, -1, DM_SQUARE, -1, "ABCDEFGHI\001", 0, 0, 16, 16, 1, "E6 59 E9 6D 24 80 5F FE 02 81 FB 93 33 E3 4F F7 2D 08 8A BF 64 C3 B0 26", "Switches to ASC for last char" },
-        /* 25*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEFGH\001I\001", 0, 0, 16, 16, 1, "E6 59 E9 6D 24 FE 48 49 02 4A 02 81 BD 5D C0 B9 09 25 87 3A 09 23 9D C0", "C40 symbols_left 1, process_p 1, backtracks 2" },
-        /* 26*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEF+G", 0, 0, 14, 14, 1, "E6 59 E9 6D 24 07 E5 FE 6B 35 71 7F 3D 57 59 46 F7 B9", "C40 symbols_left 1, process_p 0" },
-        /* 27*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEFG+", 0, 0, 14, 14, 1, "E6 59 E9 6D 24 7D 33 FE 33 F5 97 60 73 48 13 2E E5 74", "C40 symbols_left 1, process_p 0" },
-        /* 28*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEFG+H", 0, 0, 14, 14, 1, "E6 59 E9 6D 24 7D 33 49 E5 B0 6D 05 FB 36 18 34 86 91", "C40 symbols_left 1, process_p 1" },
-        /* 29*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEFGH+", 0, 0, 8, 32, 1, "E6 59 E9 6D 24 FE 48 49 2C 81 02 BD 40 CF 3B 06 C2 DF 36 E0 48", "C40 symbols_left 1, process_p 1, backtracks" },
-        /* 30*/ { UNICODE_MODE, 0, -1, DM_SQUARE, -1, "ABCDEFGH+", 0, 0, 16, 16, 1, "E6 59 E9 6D 24 FE 48 49 2C 81 FB 93 F6 78 B5 69 0B 83 C6 32 62 1A D2 FF", "C40 symbols_left 1, process_p 1, backtracks" },
-        /* 31*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEFGH+I", 0, 0, 8, 32, 1, "E6 59 E9 6D 24 FE 48 49 2C 4A 5E DD 6E E7 92 60 02 32 6B BF 05", "C40 symbols_left 3, process_p 2, backtracks" },
-        /* 32*/ { UNICODE_MODE, 0, -1, DM_SQUARE, -1, "ABCDEFGH+I", 0, 0, 16, 16, 1, "E6 59 E9 6D 24 FE 48 49 2C 4A 81 93 09 2C 69 F5 07 84 5F E4 D5 62 E3 CE", "C40 symbols_left 5, process_p 2, backtracks" },
-        /* 33*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEFGHI+", 0, 0, 8, 32, 1, "E6 59 E9 6D 24 80 5F FE 2C 81 F8 BC 8D 12 17 7E 22 27 DE 7F E2", "C40 symbols_left 3, process_p 2, backtracks" },
-        /* 34*/ { UNICODE_MODE, 0, -1, DM_SQUARE, -1, "ABCDEFGHI+", 0, 0, 16, 16, 1, "E6 59 E9 6D 24 80 5F FE 2C 81 FB 93 6B 10 E6 0E F9 75 A7 48 A6 F3 08 96", "Switches to ASC for last char" },
-        /* 35*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEFjG", 0, 0, 14, 14, 1, "E6 59 E9 6D 24 0E 25 FE DA 14 D7 15 47 69 9D 4A 54 6D", "C40 symbols_left 1, process_p 0" },
-        /* 36*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEFGj", 0, 0, 14, 14, 1, "E6 59 E9 6D 24 7D 5B FE B5 F3 24 0A 99 26 D6 CC A8 40", "C40 symbols_left 1, process_p 0" },
-        /* 37*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEFGjH", 0, 0, 14, 14, 1, "E6 59 E9 6D 24 7D 5B 49 63 B6 DE 6F 11 58 DD D6 CB A5", "C40 symbols_left 1, process_p 1" },
-        /* 38*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEFGHj", 0, 0, 8, 32, 1, "E6 59 E9 6D 24 FE 48 49 6B 81 ED 78 CB 9F 52 EE 52 88 91 67 96", "C40 symbols_left 1, process_p 1, backtracks" },
-        /* 39*/ { UNICODE_MODE, 0, -1, DM_SQUARE, -1, "ABCDEFGHj", 0, 0, 16, 16, 1, "E6 59 E9 6D 24 FE 48 49 6B 81 FB 93 BF 72 03 35 09 37 98 FF 39 A7 E3 6D", "C40 symbols_left 1, process_p 1, backtracks" },
-        /* 40*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEFGHjI", 0, 0, 8, 32, 1, "E6 59 E9 6D 24 FE 48 49 6B 4A B1 18 E5 B7 FB 88 92 65 CC 38 DB", "C40 symbols_left 3, process_p 2, backtracks" },
-        /* 41*/ { UNICODE_MODE, 0, -1, DM_SQUARE, -1, "ABCDEFGHjI", 0, 0, 16, 16, 1, "E6 59 E9 6D 24 FE 48 49 6B 4A 81 93 40 26 DF A9 05 30 01 29 8E DF D2 5C", "C40 symbols_left 5, process_p 2, backtracks" },
-        /* 42*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEFGHIj", 0, 0, 8, 32, 1, "E6 59 E9 6D 24 80 5F FE 6B 81 17 79 06 42 7E 96 B2 70 79 F8 3C", "Switches to ASC for last char" },
-        /* 43*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEFGHIJÊ", 0, 0, 16, 16, 1, "E6 59 E9 6D 24 80 5F FE 4B EB 4B 81 DD D9 F9 C9 C5 38 F3 4B DB 80 92 A7", "Switches to ASC for last 2 chars" },
-        /* 44*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEFGHIJKÊ", 0, 0, 16, 16, 1, "E6 59 E9 6D 24 80 5F FE 4B 4C EB 4B 15 17 46 06 70 F3 15 74 45 26 72 2D", "C40 symbols_left 3, process_p 2, backtracks" },
-        /* 45*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEFGHIJKª", 0, 0, 16, 16, 1, "E6 59 E9 6D 24 80 5F 93 82 BB B2 FE 11 5C 60 32 A6 DE FC 7B 30 F1 03 56", "C40 symbols_left 1, process_p 0" },
-        /* 46*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEFGHIJKê", 0, 0, 16, 16, 1, "E6 59 E9 6D 24 80 5F 93 82 BB DB FE 78 43 69 3C C2 FE F5 2E 1B 4F B6 04", "C40 symbols_left 1, process_p 0" },
-        /* 47*/ { GS1_MODE, 0, -1, -1, -1, "[10]ABCDEFGH[10]ABc", 0, 0, 12, 26, 1, "E8 8C E6 59 E9 6D 24 80 4A A9 8D FE 42 43 64 81 83 B4 8F 6B 95 F6 CE A6 3C 5C 77 86 08 50", "C40 symbols_left 3, process_p 1, backtracks" },
-        /* 48*/ { GS1_MODE, 0, -1, -1, GS1_GS_SEPARATOR, "[10]ABCDEFGH[10]ABc", 0, 0, 12, 26, 1, "E8 8C E6 59 E9 6D 24 80 49 B6 0D FE 42 43 64 81 79 E4 20 33 76 5C C7 23 E6 C5 FA 4C FF 88", "C40 symbols_left 3, process_p 1, backtracks" },
-        /* 49*/ { UNICODE_MODE, 0, -1, -1, -1, "abcdef", 0, 0, 12, 12, 1, "EF 59 E9 6D 24 E2 CC D9 B4 55 E2 6A", "TEX symbols_left 0, process_p 0" },
-        /* 50*/ { UNICODE_MODE, 0, -1, -1, -1, "abcdefg", 0, 0, 14, 14, 1, "EF 59 E9 6D 24 FE 68 81 A9 65 CD 3A A2 E9 E0 B7 E1 E5", "TEX symbols_left 3, process_p 1" },
-        /* 51*/ { UNICODE_MODE, 0, -1, -1, -1, "abcdefgh", 0, 0, 14, 14, 1, "EF 59 E9 6D 24 FE 68 69 68 36 28 3C 85 5A E9 D4 49 9A", "TEX symbols_left 3, process_p 2" },
-        /* 52*/ { UNICODE_MODE, 0, -1, -1, -1, "abcdefghi", 0, 0, 14, 14, 1, "EF 59 E9 6D 24 80 5F FE DA BF FA 16 71 15 22 4D E3 F3", "TEX symbols_left 1, process_p 0" },
-        /* 53*/ { UNICODE_MODE, 0, -1, -1, -1, "abcdef\001g", 0, 0, 14, 14, 1, "EF 59 E9 6D 24 00 3D FE 86 3B 2F 83 51 99 C0 A1 EC DD", "TEX symbols_left 1, process_p 0" },
-        /* 54*/ { UNICODE_MODE, 0, -1, -1, -1, "abcdefg\001", 0, 0, 14, 14, 1, "EF 59 E9 6D 24 7D 02 FE CF C2 FD EA DA F8 6C 56 15 9E", "TEX symbols_left 1, process_p 0" },
-        /* 55*/ { UNICODE_MODE, 0, -1, -1, -1, "abcdefg\001h", 0, 0, 14, 14, 1, "EF 59 E9 6D 24 7D 02 69 7A 9B EB A4 5E DE 99 25 01 8C", "TEX symbols_left 1, process_p 1" },
-        /* 56*/ { UNICODE_MODE, 0, -1, -1, -1, "abcdefgh\001", 0, 0, 8, 32, 1, "EF 59 E9 6D 24 FE 68 69 02 81 EB 84 25 32 6E 1B 5A FB 1D 25 4A", "TEX symbols_left 1, process_p 1, backtracks" },
-        /* 57*/ { UNICODE_MODE, 0, -1, DM_SQUARE, -1, "abcdefgh\001", 0, 0, 16, 16, 1, "EF 59 E9 6D 24 FE 68 69 02 81 FB 93 93 FD 1E 3B BA 1D 16 4D 59 41 EC B9", "TEX symbols_left 1, process_p 1, backtracks" },
-        /* 58*/ { UNICODE_MODE, 0, -1, -1, -1, "abcdefgh\001i", 0, 0, 8, 32, 1, "EF 59 E9 6D 24 FE 68 69 02 6A 31 35 48 9B 93 6E 15 BB 02 9D F4", "TEX symbols_left 3, process_p 2, backtracks" },
-        /* 59*/ { UNICODE_MODE, 0, -1, DM_SQUARE, -1, "abcdefgh\001i", 0, 0, 16, 16, 1, "EF 59 E9 6D 24 FE 68 69 02 6A 81 93 DE D7 EC 9B 7D 72 9C 68 B8 6E CF 31", "TEX symbols_left 3, process_p 2, backtracks" },
-        /* 60*/ { UNICODE_MODE, 0, -1, -1, -1, "abcdefghi\001", 0, 0, 8, 32, 1, "EF 59 E9 6D 24 80 5F FE 02 81 4D AB 30 86 CD D1 9D F3 15 F5 B1", "Switches to ASC for last char" },
-        /* 61*/ { UNICODE_MODE, 0, -1, -1, -1, "abcdefgh\001i\001", 0, 0, 16, 16, 1, "EF 59 E9 6D 24 FE 68 69 02 6A 02 81 32 55 EC 2E A7 AE 69 41 A6 1F 09 8F", "TEX symbols_left 1, process_p 1, backtracks 2" },
-        /* 62*/ { UNICODE_MODE, 0, -1, -1, -1, "abcdefJg", 0, 0, 14, 14, 1, "EF 59 E9 6D 24 0E 25 FE 01 75 0D 9C 9C BE 40 88 BF 09", "TEX symbols_left 1, process_p 0" },
-        /* 63*/ { UNICODE_MODE, 0, -1, -1, -1, "abcdefgJ", 0, 0, 14, 14, 1, "EF 59 E9 6D 24 7D 5B FE 6E 92 FE 83 42 F1 0B 0E 43 24", "TEX symbols_left 1, process_p 0" },
-        /* 64*/ { UNICODE_MODE, 0, -1, -1, -1, "abcdefgJh", 0, 0, 14, 14, 1, "EF 59 E9 6D 24 7D 5B 69 DB CB E8 CD C6 D7 FE 7D 57 36", "TEX symbols_left 1, process_p 1" },
-        /* 65*/ { UNICODE_MODE, 0, -1, -1, -1, "abcdefghJ", 0, 0, 8, 32, 1, "EF 59 E9 6D 24 FE 68 69 4B 81 15 8A 35 57 7F 33 B3 48 01 E0 BD", "TEX symbols_left 1, process_p 1, backtracks" },
-        /* 66*/ { UNICODE_MODE, 0, -1, DM_SQUARE, -1, "abcdefghJ", 0, 0, 16, 16, 1, "EF 59 E9 6D 24 FE 68 69 4B 81 FB 93 5B D4 D2 8B EE 85 F2 3E 3F 8E E5 04", "TEX symbols_left 1, process_p 1, backtracks" },
-        /* 67*/ { UNICODE_MODE, 0, -1, -1, -1, "abcdefghJi", 0, 0, 8, 32, 1, "EF 59 E9 6D 24 FE 68 69 4B 6A CF 3B 58 FE 82 46 FC 08 1E 58 03", "TEX symbols_left 3, process_p 2, backtracks" },
-        /* 68*/ { UNICODE_MODE, 0, -1, DM_SQUARE, -1, "abcdefghJi", 0, 0, 16, 16, 1, "EF 59 E9 6D 24 FE 68 69 4B 6A 81 93 16 FE 20 2B 29 EA 78 1B DE A1 C6 8C", "TEX symbols_left 3, process_p 2, backtracks" },
-        /* 69*/ { UNICODE_MODE, 0, -1, -1, -1, "abcdefghiJ", 0, 0, 8, 32, 1, "EF 59 E9 6D 24 80 5F FE 4B 81 B3 A5 20 E3 DC F9 74 40 09 30 46", "Switches to ASC for last char" },
-        /* 70*/ { UNICODE_MODE, 0, -1, -1, -1, "abcdefghijkÊ", 0, 0, 16, 16, 1, "EF 59 E9 6D 24 80 5F 93 82 BB DB FE 3E C8 EC 73 58 A7 42 46 10 49 25 99", "TEX symbols_left 1, process_p 0" },
-        /* 71*/ { UNICODE_MODE, 0, -1, -1, -1, "abcdefghijkª", 0, 0, 16, 16, 1, "EF 59 E9 6D 24 80 5F 93 82 BB B2 FE 57 D7 E5 7D 3C 87 4B 13 3B F7 90 CB", "TEX symbols_left 1, process_p 0" },
-        /* 72*/ { UNICODE_MODE, 0, -1, -1, -1, "abcdefghijkê", 0, 0, 16, 16, 1, "EF 59 E9 6D 24 80 5F FE 6B 6C EB 6B 59 43 1A B1 96 F4 FF C5 B5 08 AE 2F", "TEX symbols_left 3, process_p 2, backtracks" },
-        /* 73*/ { GS1_MODE, 0, -1, -1, -1, "[10]abcdefgh[10]abC", 0, 0, 12, 26, 1, "E8 8C EF 59 E9 6D 24 80 4A A9 8D FE 62 63 44 81 88 DC 73 33 70 A1 83 EA 50 CB 4E 17 90 DB", "TEX symbols left 3, process_p 1, backtracks" },
-        /* 74*/ { GS1_MODE, 0, -1, -1, GS1_GS_SEPARATOR, "[10]abcdefgh[10]abC", 0, 0, 12, 26, 1, "E8 8C EF 59 E9 6D 24 80 49 B6 0D FE 62 63 44 81 72 8C DC 6B 93 0B 8A 6F 8A 52 C3 DD 67 03", "TEX symbols left 3, process_p 1, backtracks" },
-        /* 75*/ { UNICODE_MODE, 0, -1, -1, -1, "\015*>\015*>", 0, 0, 12, 12, 1, "EE 00 2B 00 2B 83 3B 0A CE 32 36 65", "X12 symbols_left 0, process_p 0" },
-        /* 76*/ { UNICODE_MODE, 0, -1, -1, -1, "\015*>\015*>\015", 0, 0, 14, 14, 1, "EE 00 2B 00 2B FE 0E 81 C0 6C BF 37 F6 D6 48 71 E2 38", "Switches to ASC for last char" },
-        /* 77*/ { UNICODE_MODE, 0, -1, -1, -1, "\015*>\015*>\015*", 0, 0, 14, 14, 1, "EE 00 2B 00 2B FE 0E 2B BD DB 7C 8F 14 46 F1 9F 94 BC", "Switches to ASC for last 2 chars" },
-        /* 78*/ { UNICODE_MODE, 0, -1, -1, -1, "\015*>\015*>\015*>", 0, 0, 14, 14, 1, "EE 00 2B 00 2B 00 2B FE BF 81 70 74 1C 65 10 0C 06 38", "X12 symbols_left 1, process_p 0, ASC unlatch at end" },
-        /* 79*/ { UNICODE_MODE, 0, -1, -1, -1, "\015*>\015*>\015*>\015", 0, 0, 14, 14, 1, "EE 00 2B 00 2B 00 2B 0E 1C DB D8 26 3E EC CF 9C C3 4A", "X12 symbols_left 1, process_p 1, ASC no latch at end" },
-        /* 80*/ { UNICODE_MODE, 0, -1, -1, -1, "\015*>\015*>\015*>\015*", 0, 0, 8, 32, 1, "EE 00 2B 00 2B 00 2B FE 0E 2B 65 37 5F 2F F3 96 BE 9A 03 55 68", "X12 symbols_left 3, process_p 2, ASC last 2 chars" },
-        /* 81*/ { UNICODE_MODE, 0, -1, -1, -1, "\015*>\015*>\015*>\015*>", 0, 0, 8, 32, 1, "EE 00 2B 00 2B 00 2B 00 2B FE 6E 95 3A 10 58 4E 96 06 79 09 94", "X12 symbols_left 1, process_p 0, ASC unlatch at end" },
-        /* 82*/ { UNICODE_MODE, 0, -1, -1, -1, "@A1^B2?C", 0, 0, 14, 14, 1, "F0 00 1C 5E 0B 2F C3 81 2D 71 45 13 9B FF A1 B0 0B E2", "EDIFACT symbols_left 1, process_p 0" },
-        /* 83*/ { UNICODE_MODE, 0, -1, -1, -1, "@A1^B2?C3", 0, 0, 14, 14, 1, "F0 00 1C 5E 0B 2F C3 34 81 E8 6C 9E CE 12 CB F5 58 3F", "EDIFACT symbols_left 1, process_p 1" },
-        /* 84*/ { UNICODE_MODE, 0, -1, -1, -1, "@A1^B2?C3+", 0, 0, 8, 32, 1, "F0 00 1C 5E 0B 2F C3 CE B7 C0 33 C6 81 E1 63 6E 5E B4 27 30 C9", "EDIFACT symbols_left 3, process_p 2" },
-        /* 85*/ { UNICODE_MODE, 0, -1, -1, -1, "@A1^B2?C3+D", 0, 0, 8, 32, 1, "F0 00 1C 5E 0B 2F C3 CE B1 1F 4D E1 79 04 2B BC 05 6C 38 73 39", "EDIFACT symbols_left 3, process_p 3" },
-        /* 86*/ { UNICODE_MODE, 0, -1, -1, -1, "@A1^B2?C3+D4", 0, 0, 8, 32, 1, "F0 00 1C 5E 0B 2F C3 CE B1 34 F4 EC B3 DC 03 A3 1F B5 86 C3 F7", "EDIFACT symbols_left 0, process_p 0" },
-        /* 87*/ { UNICODE_MODE, 0, -1, -1, -1, "@A1^B2?C3+D4=", 0, 0, 16, 16, 1, "F0 00 1C 5E 0B 2F C3 CE B1 34 3E 81 42 96 43 6E 92 0D A9 B1 65 3C CF 9B", "EDIFACT symbols_left 2, process_p 1" },
-        /* 88*/ { UNICODE_MODE, 0, -1, -1, -1, "@A1^B2?C3+D4=E", 0, 0, 16, 16, 1, "F0 00 1C 5E 0B 2F C3 CE B1 34 3E 46 AD 8C F2 D8 5D AF F3 65 08 1F E3 A5", "EDIFACT symbols_left 2, process_p 2" },
-        /* 89*/ { DATA_MODE, 0, -1, -1, -1, "\377\376", 0, 0, 12, 12, 1, "EB 80 EB 7F 81 6F A8 0F 21 6F 5F 88", "FN4 A7F FN4 A7E, 1 pad" },
-        /* 90*/ { DATA_MODE, 0, -1, -1, -1, "\377\376\375", 0, 0, 12, 12, 1, "E7 2C C0 55 E9 67 45 8A D2 7E A9 23", "BAS BFF BFE BFD, no padding" },
-        /* 91*/ { DATA_MODE, 3, -1, -1, -1, "\101\102\103\104\300\105\310", 0, 3, 16, 16, 1, "F1 04 E7 5E 2D C4 5B F1 03 1D 36 81 64 0E C0 77 9A 18 52 B2 F9 F0 04 39", "ECI 4 BAS B41 B42 B43 B44 BC0 B45 BC8" },
-        /* 92*/ { UNICODE_MODE, 26, -1, -1, -1, "ABCDÀEÈ", 0, 26, 12, 26, 1, "F1 1B E7 60 2D C4 5B F1 06 58 B3 C7 21 81 57 ED 3D C0 12 2E 6C 80 58 CC 2C 05 0D 31 FC 2D", "ECI 27 BAS B41 B42 B43 B44 BC3 B80 B45 BC3 B88" },
-        /* 93*/ { UNICODE_MODE, 0, -1, -1, -1, "β", ZINT_WARN_USES_ECI, 9, 12, 12, 1, "Warning F1 0A EB 63 81 41 56 DA C0 3D 2D CC", "ECI 10 FN4 A62" },
-        /* 94*/ { UNICODE_MODE, 127, -1, -1, -1, "A", 0, 127, 12, 12, 1, "F1 80 01 42 81 14 A2 86 07 F5 27 30", "ECI 128 A41" },
-        /* 95*/ { UNICODE_MODE, 16382, -1, -1, -1, "A", 0, 16382, 12, 12, 1, "F1 BF FE 42 81 29 57 AA A0 92 B2 45", "ECI 16383 A41" },
-        /* 96*/ { UNICODE_MODE, 810899, -1, -1, -1, "A", 0, 810899, 12, 12, 1, "F1 CC 51 05 42 BB A5 A7 8A C6 6E 0F", "ECI 810900 A41" },
-        /* 97*/ { UNICODE_MODE | ESCAPE_MODE, -1, -1, -1, -1, "[)>\\R05\\GA\\R\\E", 0, 0, 10, 10, 1, "EC 42 81 5D 17 49 F6 B6", "Macro05 A41" },
-        /* 98*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEFGHIJKLM*", 0, 0, 16, 16, 1, "EE 59 E9 6D 24 80 5F 93 9A FE 4E 2B 09 FF 50 A2 83 BE 32 E1 2F 17 1E F3", "C40 == X12, p_r_6_2_1 true" },
-        /* 99*/ { UNICODE_MODE, 0, -1, -1, -1, "\015\015\015\015\015\015\015\015\015a\015\015\015\015\015\015\015", 0, 0, 12, 26, 1, "EE 00 01 00 01 00 01 FE 62 EE 00 01 00 01 FE 0E B5 9A 73 85 83 20 23 2C E0 EC EC BF 71 E0", "a not X12 encodable" },
-        /*100*/ { UNICODE_MODE, 0, -1, -1, -1, ".........a.......", 0, 0, 18, 18, 0, "(32) F0 BA EB AE BA EB AE B9 F0 62 2F 2F 2F 2F 2F 2F 2F 81 78 BE 1F 90 B8 89 73 66 DC BD", "a not EDIFACT encodable; BWIPP different encodation (switches to ASCII one dot before)" },
-        /*101*/ { GS1_MODE, 0, -1, -1, -1, "[90]........[91]....", 0, 0, 12, 26, 1, "E8 DC 2F 2F 2F 2F 2F 2F 2F 2F E8 DD 2F 2F 2F 2F C6 CC 13 68 0D 9D A9 A5 B8 D5 5A F3 7B 18", "Can't use GS1 EDIFACT if contains FNC1/GS" },
-        /*102*/ { GS1_MODE, 0, -1, -1, -1, "[90]........", 0, 0, 8, 32, 1, "E8 DC F0 BA EB AE BA EB AE 81 B1 C0 AB DA A5 92 AF E2 05 DE 56", "Can use GS1 EDIFACT if no FNC1/GS" },
-        /*103*/ { GS1_MODE, 0, -1, -1, -1, "[90]ABCDEFGH[91]ABCD", 0, 0, 12, 26, 1, "E8 DC E6 59 E9 6D 24 80 4A AA CE 59 E9 FE 45 81 6A 05 49 36 67 C8 00 DE 35 29 C5 9A 17 EA", "GS1 C40 ok" },
-        /*104*/ { GS1_MODE, 0, -1, -1, -1, "[90]ABCD", 0, 0, 14, 14, 1, "E8 DC 42 43 44 45 81 38 98 32 8C 23 4D 87 5A 95 04 A7", "Final ASC unlatch" },
-        /*105*/ { UNICODE_MODE, 0, -1, -1, -1, ">*\015>*\015>......", 0, 0, 12, 26, 1, "EE 0C A9 FE 3F 2B 0E 3F 2F 2F 2F 2F 2F 2F 81 ED 05 28 1E 8E 6B F5 A0 35 C9 B5 A3 A8 FC 5D", "X12 then ASC" },
+        /*  0*/ { UNICODE_MODE, 0, -1, -1, -1, "0466010592130100000k*AGUATY80", 0, 0, 18, 18, 1, "(32) 86 C4 83 87 DE 8F 83 82 82 31 6C EE 08 85 D6 D2 EF 65 93 B0 1C 3C 76 FB D4 AB 16 11", "#208", 0 },
+        /*  1*/ { UNICODE_MODE, 0, 5, -1, -1, "0466010592130100000k*AGUATY80", 0, 0, 18, 18, 1, "(32) 86 C4 83 87 DE 8F 83 82 82 31 6C EE 08 85 D6 D2 EF 65 93 B0 1C 3C 76 FB D4 AB 16 11", "", 0 },
+        /*  2*/ { UNICODE_MODE, 0, -1, -1, -1, "0466010592130100000k*AGUATY8", 0, 0, 18, 18, 0, "(32) 86 C4 83 87 DE 8F 83 82 82 31 6C E6 07 B7 82 5F D4 3D 08 EB 60 DA B1 82 72 50 A9 5B", "BWIPP different encodation (earlier change to C40)", 0 },
+        /*  3*/ { UNICODE_MODE, 0, -1, -1, -1, "0466010592130100000k*AGUATY80U", 0, 0, 20, 20, 1, "(40) 86 C4 83 87 DE 8F 83 82 82 31 6C EE 08 85 D6 D2 EF 65 FE 56 81 76 4F AB 22 B8 6F 0A", "", 0 },
+        /*  4*/ { UNICODE_MODE, 0, 5, -1, -1, "0466010592130100000k*AGUATY80U", ZINT_ERROR_TOO_LONG, -1, 0, 0, 0, "Error 522: Input too long for selected symbol size", "", 0 },
+        /*  5*/ { UNICODE_MODE, 0, 6, -1, -1, "0466010592130100000k*AGUATY80U", 0, 0, 20, 20, 1, "(40) 86 C4 83 87 DE 8F 83 82 82 31 6C EE 08 85 D6 D2 EF 65 FE 56 81 76 4F AB 22 B8 6F 0A", "", 0 },
+        /*  6*/ { UNICODE_MODE, 0, -1, -1, -1, "0466010592130100000k*AGUATY80UA", 0, 0, 20, 20, 1, "(40) 86 C4 83 87 DE 8F 83 82 82 31 6C E6 07 B7 82 5F D4 3D 1E 5F FE 81 1E 1B B0 FE E7 54", "", 0 },
+        /*  7*/ { UNICODE_MODE, 0, -1, -1, -1, ">*\015>*\015>", 0, 0, 14, 14, 1, "EE 0C A9 0C A9 FE 3F 81 42 B2 11 A8 F9 0A EC C1 1E 41", "X12 symbols_left 3, process_p 1", 0 },
+        /*  8*/ { UNICODE_MODE, 0, -1, -1, -1, ">*\015>*\015>*", 0, 0, 14, 14, 1, "EE 0C A9 0C A9 FE 3F 2B 3F 05 D2 10 1B 9A 55 2F 68 C5", "X12 symbols_left 3, process_p 2", 0 },
+        /*  9*/ { UNICODE_MODE, 0, -1, -1, -1, ">*\015>*\015>*\015", 0, 0, 14, 14, 1, "EE 0C A9 0C A9 0C A9 FE 1F 30 3F EE 45 C1 1C D7 5F 7E", "X12 symbols_left 1, process_p 0", 0 },
+        /* 10*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEF", 0, 0, 12, 12, 1, "E6 59 E9 6D 24 3D 15 EF AA 21 F9 59", "C40 symbols_left 0, process_p 0", 0 },
+        /* 11*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEFG", 0, 0, 14, 14, 1, "E6 59 E9 6D 24 FE 48 81 8C 7E 09 5E 10 64 BC 5F 4C 91", "C40 symbols_left 3, process_p 1", 0 },
+        /* 12*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEFGH", 0, 0, 14, 14, 1, "E6 59 E9 6D 24 FE 48 49 2E 31 00 73 3B 8F 4B 55 93 19", "C40 symbols_left 3, process_p 2", 0 },
+        /* 13*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEFGHI", 0, 0, 14, 14, 1, "E6 59 E9 6D 24 80 5F FE 01 DE 20 9F AA C2 FF 8F 08 97", "C40 symbols_left 1, process_p 0", 0 },
+        /* 14*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEFGHIJ", 0, 0, 14, 14, 1, "E6 59 E9 6D 24 80 5F 4B AD 47 09 12 FF 2F 95 CA 5B 4A", "C40 symbols_left 1, process_p 1", 0 },
+        /* 15*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEFGHIJK", 0, 0, 8, 32, 1, "E6 59 E9 6D 24 80 5F FE 4B 4C D8 69 88 60 B9 33 B9 31 E6 BF CA", "C40 symbols_left 3, process_p 2", 0 },
+        /* 16*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEF\001G", 0, 0, 14, 14, 1, "E6 59 E9 6D 24 00 3D FE 5D 5A F5 0A 8A 4E 1D 63 07 B9", "C40 symbols_left 1, process_p 0", 0 },
+        /* 17*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEFG\001", 0, 0, 14, 14, 1, "E6 59 E9 6D 24 7D 02 FE 14 A3 27 63 01 2F B1 94 FE FA", "C40 symbols_left 1, process_p 0", 0 },
+        /* 18*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEFG\001H", 0, 0, 14, 14, 1, "E6 59 E9 6D 24 7D 02 49 C2 E6 DD 06 89 51 BA 8E 9D 1F", "C40 symbols_left 1, process_p 1", 0 },
+        /* 19*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEFGH\001", 0, 0, 8, 32, 1, "E6 59 E9 6D 24 FE 48 49 02 81 BD 6D F3 94 FF 82 A6 BF BB F1 4F", "C40 symbols_left 1, process_p 1, backtracks", 0 },
+        /* 20*/ { UNICODE_MODE, 0, -1, DM_SQUARE, -1, "ABCDEFGH\001", 0, 0, 16, 16, 1, "E6 59 E9 6D 24 FE 48 49 02 81 FB 93 AE 8B 1C 90 DF FE EB C5 A0 2A 6A 4F", "C40 symbols_left 1, process_p 1, backtracks", 0 },
+        /* 21*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEFGH\001I", 0, 0, 8, 32, 1, "E6 59 E9 6D 24 FE 48 49 02 4A E1 0D DD BC 56 E4 66 52 E6 AE 02", "C40 symbols_left 3, process_p 2, backtracks", 0 },
+        /* 22*/ { UNICODE_MODE, 0, -1, DM_SQUARE, -1, "ABCDEFGH\001I", 0, 0, 16, 16, 1, "E6 59 E9 6D 24 FE 48 49 02 4A 81 93 51 DF C0 0C D3 F9 72 13 17 52 5B 7E", "C40 symbols_left 5, process_p 2, backtracks", 0 },
+        /* 23*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEFGHI\001", 0, 0, 8, 32, 1, "E6 59 E9 6D 24 80 5F FE 02 81 47 6C 3E 49 D3 FA 46 47 53 6E E5", "Switches to ASC for last char", 0 },
+        /* 24*/ { UNICODE_MODE, 0, -1, DM_SQUARE, -1, "ABCDEFGHI\001", 0, 0, 16, 16, 1, "E6 59 E9 6D 24 80 5F FE 02 81 FB 93 33 E3 4F F7 2D 08 8A BF 64 C3 B0 26", "Switches to ASC for last char", 0 },
+        /* 25*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEFGH\001I\001", 0, 0, 16, 16, 1, "E6 59 E9 6D 24 FE 48 49 02 4A 02 81 BD 5D C0 B9 09 25 87 3A 09 23 9D C0", "C40 symbols_left 1, process_p 1, backtracks 2", 0 },
+        /* 26*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEF+G", 0, 0, 14, 14, 1, "E6 59 E9 6D 24 07 E5 FE 6B 35 71 7F 3D 57 59 46 F7 B9", "C40 symbols_left 1, process_p 0", 0 },
+        /* 27*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEFG+", 0, 0, 14, 14, 1, "E6 59 E9 6D 24 7D 33 FE 33 F5 97 60 73 48 13 2E E5 74", "C40 symbols_left 1, process_p 0", 0 },
+        /* 28*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEFG+H", 0, 0, 14, 14, 1, "E6 59 E9 6D 24 7D 33 49 E5 B0 6D 05 FB 36 18 34 86 91", "C40 symbols_left 1, process_p 1", 0 },
+        /* 29*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEFGH+", 0, 0, 8, 32, 1, "E6 59 E9 6D 24 FE 48 49 2C 81 02 BD 40 CF 3B 06 C2 DF 36 E0 48", "C40 symbols_left 1, process_p 1, backtracks", 0 },
+        /* 30*/ { UNICODE_MODE, 0, -1, DM_SQUARE, -1, "ABCDEFGH+", 0, 0, 16, 16, 1, "E6 59 E9 6D 24 FE 48 49 2C 81 FB 93 F6 78 B5 69 0B 83 C6 32 62 1A D2 FF", "C40 symbols_left 1, process_p 1, backtracks", 0 },
+        /* 31*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEFGH+I", 0, 0, 8, 32, 1, "E6 59 E9 6D 24 FE 48 49 2C 4A 5E DD 6E E7 92 60 02 32 6B BF 05", "C40 symbols_left 3, process_p 2, backtracks", 0 },
+        /* 32*/ { UNICODE_MODE, 0, -1, DM_SQUARE, -1, "ABCDEFGH+I", 0, 0, 16, 16, 1, "E6 59 E9 6D 24 FE 48 49 2C 4A 81 93 09 2C 69 F5 07 84 5F E4 D5 62 E3 CE", "C40 symbols_left 5, process_p 2, backtracks", 0 },
+        /* 33*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEFGHI+", 0, 0, 8, 32, 1, "E6 59 E9 6D 24 80 5F FE 2C 81 F8 BC 8D 12 17 7E 22 27 DE 7F E2", "C40 symbols_left 3, process_p 2, backtracks", 0 },
+        /* 34*/ { UNICODE_MODE, 0, -1, DM_SQUARE, -1, "ABCDEFGHI+", 0, 0, 16, 16, 1, "E6 59 E9 6D 24 80 5F FE 2C 81 FB 93 6B 10 E6 0E F9 75 A7 48 A6 F3 08 96", "Switches to ASC for last char", 0 },
+        /* 35*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEFjG", 0, 0, 14, 14, 1, "E6 59 E9 6D 24 0E 25 FE DA 14 D7 15 47 69 9D 4A 54 6D", "C40 symbols_left 1, process_p 0", 0 },
+        /* 36*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEFGj", 0, 0, 14, 14, 1, "E6 59 E9 6D 24 7D 5B FE B5 F3 24 0A 99 26 D6 CC A8 40", "C40 symbols_left 1, process_p 0", 0 },
+        /* 37*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEFGjH", 0, 0, 14, 14, 1, "E6 59 E9 6D 24 7D 5B 49 63 B6 DE 6F 11 58 DD D6 CB A5", "C40 symbols_left 1, process_p 1", 0 },
+        /* 38*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEFGHj", 0, 0, 8, 32, 1, "E6 59 E9 6D 24 FE 48 49 6B 81 ED 78 CB 9F 52 EE 52 88 91 67 96", "C40 symbols_left 1, process_p 1, backtracks", 0 },
+        /* 39*/ { UNICODE_MODE, 0, -1, DM_SQUARE, -1, "ABCDEFGHj", 0, 0, 16, 16, 1, "E6 59 E9 6D 24 FE 48 49 6B 81 FB 93 BF 72 03 35 09 37 98 FF 39 A7 E3 6D", "C40 symbols_left 1, process_p 1, backtracks", 0 },
+        /* 40*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEFGHjI", 0, 0, 8, 32, 1, "E6 59 E9 6D 24 FE 48 49 6B 4A B1 18 E5 B7 FB 88 92 65 CC 38 DB", "C40 symbols_left 3, process_p 2, backtracks", 0 },
+        /* 41*/ { UNICODE_MODE, 0, -1, DM_SQUARE, -1, "ABCDEFGHjI", 0, 0, 16, 16, 1, "E6 59 E9 6D 24 FE 48 49 6B 4A 81 93 40 26 DF A9 05 30 01 29 8E DF D2 5C", "C40 symbols_left 5, process_p 2, backtracks", 0 },
+        /* 42*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEFGHIj", 0, 0, 8, 32, 1, "E6 59 E9 6D 24 80 5F FE 6B 81 17 79 06 42 7E 96 B2 70 79 F8 3C", "Switches to ASC for last char", 0 },
+        /* 43*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEFGHIJÊ", 0, 0, 16, 16, 1, "E6 59 E9 6D 24 80 5F FE 4B EB 4B 81 DD D9 F9 C9 C5 38 F3 4B DB 80 92 A7", "Switches to ASC for last 2 chars", 0 },
+        /* 44*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEFGHIJKÊ", 0, 0, 16, 16, 1, "E6 59 E9 6D 24 80 5F FE 4B 4C EB 4B 15 17 46 06 70 F3 15 74 45 26 72 2D", "C40 symbols_left 3, process_p 2, backtracks", 0 },
+        /* 45*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEFGHIJKª", 0, 0, 16, 16, 1, "E6 59 E9 6D 24 80 5F 93 82 BB B2 FE 11 5C 60 32 A6 DE FC 7B 30 F1 03 56", "C40 symbols_left 1, process_p 0", 0 },
+        /* 46*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEFGHIJKê", 0, 0, 16, 16, 1, "E6 59 E9 6D 24 80 5F 93 82 BB DB FE 78 43 69 3C C2 FE F5 2E 1B 4F B6 04", "C40 symbols_left 1, process_p 0", 0 },
+        /* 47*/ { GS1_MODE, 0, -1, -1, -1, "[10]ABCDEFGH[10]ABc", 0, 0, 12, 26, 1, "E8 8C E6 59 E9 6D 24 80 4A A9 8D FE 42 43 64 81 83 B4 8F 6B 95 F6 CE A6 3C 5C 77 86 08 50", "C40 symbols_left 3, process_p 1, backtracks", 0 },
+        /* 48*/ { GS1_MODE, 0, -1, -1, GS1_GS_SEPARATOR, "[10]ABCDEFGH[10]ABc", 0, 0, 12, 26, 1, "E8 8C E6 59 E9 6D 24 80 49 B6 0D FE 42 43 64 81 79 E4 20 33 76 5C C7 23 E6 C5 FA 4C FF 88", "C40 symbols_left 3, process_p 1, backtracks", 0 },
+        /* 49*/ { UNICODE_MODE, 0, -1, -1, -1, "abcdef", 0, 0, 12, 12, 1, "EF 59 E9 6D 24 E2 CC D9 B4 55 E2 6A", "TEX symbols_left 0, process_p 0", 0 },
+        /* 50*/ { UNICODE_MODE, 0, -1, -1, -1, "abcdefg", 0, 0, 14, 14, 1, "EF 59 E9 6D 24 FE 68 81 A9 65 CD 3A A2 E9 E0 B7 E1 E5", "TEX symbols_left 3, process_p 1", 0 },
+        /* 51*/ { UNICODE_MODE, 0, -1, -1, -1, "abcdefgh", 0, 0, 14, 14, 1, "EF 59 E9 6D 24 FE 68 69 68 36 28 3C 85 5A E9 D4 49 9A", "TEX symbols_left 3, process_p 2", 0 },
+        /* 52*/ { UNICODE_MODE, 0, -1, -1, -1, "abcdefghi", 0, 0, 14, 14, 1, "EF 59 E9 6D 24 80 5F FE DA BF FA 16 71 15 22 4D E3 F3", "TEX symbols_left 1, process_p 0", 0 },
+        /* 53*/ { UNICODE_MODE, 0, -1, -1, -1, "abcdef\001g", 0, 0, 14, 14, 1, "EF 59 E9 6D 24 00 3D FE 86 3B 2F 83 51 99 C0 A1 EC DD", "TEX symbols_left 1, process_p 0", 0 },
+        /* 54*/ { UNICODE_MODE, 0, -1, -1, -1, "abcdefg\001", 0, 0, 14, 14, 1, "EF 59 E9 6D 24 7D 02 FE CF C2 FD EA DA F8 6C 56 15 9E", "TEX symbols_left 1, process_p 0", 0 },
+        /* 55*/ { UNICODE_MODE, 0, -1, -1, -1, "abcdefg\001h", 0, 0, 14, 14, 1, "EF 59 E9 6D 24 7D 02 69 7A 9B EB A4 5E DE 99 25 01 8C", "TEX symbols_left 1, process_p 1", 0 },
+        /* 56*/ { UNICODE_MODE, 0, -1, -1, -1, "abcdefgh\001", 0, 0, 8, 32, 1, "EF 59 E9 6D 24 FE 68 69 02 81 EB 84 25 32 6E 1B 5A FB 1D 25 4A", "TEX symbols_left 1, process_p 1, backtracks", 0 },
+        /* 57*/ { UNICODE_MODE, 0, -1, DM_SQUARE, -1, "abcdefgh\001", 0, 0, 16, 16, 1, "EF 59 E9 6D 24 FE 68 69 02 81 FB 93 93 FD 1E 3B BA 1D 16 4D 59 41 EC B9", "TEX symbols_left 1, process_p 1, backtracks", 0 },
+        /* 58*/ { UNICODE_MODE, 0, -1, -1, -1, "abcdefgh\001i", 0, 0, 8, 32, 1, "EF 59 E9 6D 24 FE 68 69 02 6A 31 35 48 9B 93 6E 15 BB 02 9D F4", "TEX symbols_left 3, process_p 2, backtracks", 0 },
+        /* 59*/ { UNICODE_MODE, 0, -1, DM_SQUARE, -1, "abcdefgh\001i", 0, 0, 16, 16, 1, "EF 59 E9 6D 24 FE 68 69 02 6A 81 93 DE D7 EC 9B 7D 72 9C 68 B8 6E CF 31", "TEX symbols_left 3, process_p 2, backtracks", 0 },
+        /* 60*/ { UNICODE_MODE, 0, -1, -1, -1, "abcdefghi\001", 0, 0, 8, 32, 1, "EF 59 E9 6D 24 80 5F FE 02 81 4D AB 30 86 CD D1 9D F3 15 F5 B1", "Switches to ASC for last char", 0 },
+        /* 61*/ { UNICODE_MODE, 0, -1, -1, -1, "abcdefgh\001i\001", 0, 0, 16, 16, 1, "EF 59 E9 6D 24 FE 68 69 02 6A 02 81 32 55 EC 2E A7 AE 69 41 A6 1F 09 8F", "TEX symbols_left 1, process_p 1, backtracks 2", 0 },
+        /* 62*/ { UNICODE_MODE, 0, -1, -1, -1, "abcdefJg", 0, 0, 14, 14, 1, "EF 59 E9 6D 24 0E 25 FE 01 75 0D 9C 9C BE 40 88 BF 09", "TEX symbols_left 1, process_p 0", 0 },
+        /* 63*/ { UNICODE_MODE, 0, -1, -1, -1, "abcdefgJ", 0, 0, 14, 14, 1, "EF 59 E9 6D 24 7D 5B FE 6E 92 FE 83 42 F1 0B 0E 43 24", "TEX symbols_left 1, process_p 0", 0 },
+        /* 64*/ { UNICODE_MODE, 0, -1, -1, -1, "abcdefgJh", 0, 0, 14, 14, 1, "EF 59 E9 6D 24 7D 5B 69 DB CB E8 CD C6 D7 FE 7D 57 36", "TEX symbols_left 1, process_p 1", 0 },
+        /* 65*/ { UNICODE_MODE, 0, -1, -1, -1, "abcdefghJ", 0, 0, 8, 32, 1, "EF 59 E9 6D 24 FE 68 69 4B 81 15 8A 35 57 7F 33 B3 48 01 E0 BD", "TEX symbols_left 1, process_p 1, backtracks", 0 },
+        /* 66*/ { UNICODE_MODE, 0, -1, DM_SQUARE, -1, "abcdefghJ", 0, 0, 16, 16, 1, "EF 59 E9 6D 24 FE 68 69 4B 81 FB 93 5B D4 D2 8B EE 85 F2 3E 3F 8E E5 04", "TEX symbols_left 1, process_p 1, backtracks", 0 },
+        /* 67*/ { UNICODE_MODE, 0, -1, -1, -1, "abcdefghJi", 0, 0, 8, 32, 1, "EF 59 E9 6D 24 FE 68 69 4B 6A CF 3B 58 FE 82 46 FC 08 1E 58 03", "TEX symbols_left 3, process_p 2, backtracks", 0 },
+        /* 68*/ { UNICODE_MODE, 0, -1, DM_SQUARE, -1, "abcdefghJi", 0, 0, 16, 16, 1, "EF 59 E9 6D 24 FE 68 69 4B 6A 81 93 16 FE 20 2B 29 EA 78 1B DE A1 C6 8C", "TEX symbols_left 3, process_p 2, backtracks", 0 },
+        /* 69*/ { UNICODE_MODE, 0, -1, -1, -1, "abcdefghiJ", 0, 0, 8, 32, 1, "EF 59 E9 6D 24 80 5F FE 4B 81 B3 A5 20 E3 DC F9 74 40 09 30 46", "Switches to ASC for last char", 0 },
+        /* 70*/ { UNICODE_MODE, 0, -1, -1, -1, "abcdefghijkÊ", 0, 0, 16, 16, 1, "EF 59 E9 6D 24 80 5F 93 82 BB DB FE 3E C8 EC 73 58 A7 42 46 10 49 25 99", "TEX symbols_left 1, process_p 0", 0 },
+        /* 71*/ { UNICODE_MODE, 0, -1, -1, -1, "abcdefghijkª", 0, 0, 16, 16, 1, "EF 59 E9 6D 24 80 5F 93 82 BB B2 FE 57 D7 E5 7D 3C 87 4B 13 3B F7 90 CB", "TEX symbols_left 1, process_p 0", 0 },
+        /* 72*/ { UNICODE_MODE, 0, -1, -1, -1, "abcdefghijkê", 0, 0, 16, 16, 1, "EF 59 E9 6D 24 80 5F FE 6B 6C EB 6B 59 43 1A B1 96 F4 FF C5 B5 08 AE 2F", "TEX symbols_left 3, process_p 2, backtracks", 0 },
+        /* 73*/ { GS1_MODE, 0, -1, -1, -1, "[10]abcdefgh[10]abC", 0, 0, 12, 26, 1, "E8 8C EF 59 E9 6D 24 80 4A A9 8D FE 62 63 44 81 88 DC 73 33 70 A1 83 EA 50 CB 4E 17 90 DB", "TEX symbols left 3, process_p 1, backtracks", 0 },
+        /* 74*/ { GS1_MODE, 0, -1, -1, GS1_GS_SEPARATOR, "[10]abcdefgh[10]abC", 0, 0, 12, 26, 1, "E8 8C EF 59 E9 6D 24 80 49 B6 0D FE 62 63 44 81 72 8C DC 6B 93 0B 8A 6F 8A 52 C3 DD 67 03", "TEX symbols left 3, process_p 1, backtracks", 0 },
+        /* 75*/ { UNICODE_MODE, 0, -1, -1, -1, "\015*>\015*>", 0, 0, 12, 12, 1, "EE 00 2B 00 2B 83 3B 0A CE 32 36 65", "X12 symbols_left 0, process_p 0", 0 },
+        /* 76*/ { UNICODE_MODE, 0, -1, -1, -1, "\015*>\015*>\015", 0, 0, 14, 14, 1, "EE 00 2B 00 2B FE 0E 81 C0 6C BF 37 F6 D6 48 71 E2 38", "Switches to ASC for last char", 0 },
+        /* 77*/ { UNICODE_MODE, 0, -1, -1, -1, "\015*>\015*>\015*", 0, 0, 14, 14, 1, "EE 00 2B 00 2B FE 0E 2B BD DB 7C 8F 14 46 F1 9F 94 BC", "Switches to ASC for last 2 chars", 0 },
+        /* 78*/ { UNICODE_MODE, 0, -1, -1, -1, "\015*>\015*>\015*>", 0, 0, 14, 14, 1, "EE 00 2B 00 2B 00 2B FE BF 81 70 74 1C 65 10 0C 06 38", "X12 symbols_left 1, process_p 0, ASC unlatch at end", 0 },
+        /* 79*/ { UNICODE_MODE, 0, -1, -1, -1, "\015*>\015*>\015*>\015", 0, 0, 14, 14, 1, "EE 00 2B 00 2B 00 2B 0E 1C DB D8 26 3E EC CF 9C C3 4A", "X12 symbols_left 1, process_p 1, ASC no latch at end", 0 },
+        /* 80*/ { UNICODE_MODE, 0, -1, -1, -1, "\015*>\015*>\015*>\015*", 0, 0, 8, 32, 1, "EE 00 2B 00 2B 00 2B FE 0E 2B 65 37 5F 2F F3 96 BE 9A 03 55 68", "X12 symbols_left 3, process_p 2, ASC last 2 chars", 0 },
+        /* 81*/ { UNICODE_MODE, 0, -1, -1, -1, "\015*>\015*>\015*>\015*>", 0, 0, 8, 32, 1, "EE 00 2B 00 2B 00 2B 00 2B FE 6E 95 3A 10 58 4E 96 06 79 09 94", "X12 symbols_left 1, process_p 0, ASC unlatch at end", 0 },
+        /* 82*/ { UNICODE_MODE, 0, -1, -1, -1, "@A1^B2?C", 0, 0, 14, 14, 1, "F0 00 1C 5E 0B 2F C3 81 2D 71 45 13 9B FF A1 B0 0B E2", "EDIFACT symbols_left 1, process_p 0", 0 },
+        /* 83*/ { UNICODE_MODE, 0, -1, -1, -1, "@A1^B2?C3", 0, 0, 14, 14, 1, "F0 00 1C 5E 0B 2F C3 34 81 E8 6C 9E CE 12 CB F5 58 3F", "EDIFACT symbols_left 1, process_p 1", 0 },
+        /* 84*/ { UNICODE_MODE, 0, -1, -1, -1, "@A1^B2?C3+", 0, 0, 8, 32, 1, "F0 00 1C 5E 0B 2F C3 CE B7 C0 33 C6 81 E1 63 6E 5E B4 27 30 C9", "EDIFACT symbols_left 3, process_p 2", 0 },
+        /* 85*/ { UNICODE_MODE, 0, -1, -1, -1, "@A1^B2?C3+D", 0, 0, 8, 32, 1, "F0 00 1C 5E 0B 2F C3 CE B1 1F 4D E1 79 04 2B BC 05 6C 38 73 39", "EDIFACT symbols_left 3, process_p 3", 0 },
+        /* 86*/ { UNICODE_MODE, 0, -1, -1, -1, "@A1^B2?C3+D4", 0, 0, 8, 32, 1, "F0 00 1C 5E 0B 2F C3 CE B1 34 F4 EC B3 DC 03 A3 1F B5 86 C3 F7", "EDIFACT symbols_left 0, process_p 0", 0 },
+        /* 87*/ { UNICODE_MODE, 0, -1, -1, -1, "@A1^B2?C3+D4=", 0, 0, 16, 16, 1, "F0 00 1C 5E 0B 2F C3 CE B1 34 3E 81 42 96 43 6E 92 0D A9 B1 65 3C CF 9B", "EDIFACT symbols_left 2, process_p 1", 0 },
+        /* 88*/ { UNICODE_MODE, 0, -1, -1, -1, "@A1^B2?C3+D4=E", 0, 0, 16, 16, 1, "F0 00 1C 5E 0B 2F C3 CE B1 34 3E 46 AD 8C F2 D8 5D AF F3 65 08 1F E3 A5", "EDIFACT symbols_left 2, process_p 2", 0 },
+        /* 89*/ { DATA_MODE, 0, -1, -1, -1, "\377\376", 0, 0, 12, 12, 1, "EB 80 EB 7F 81 6F A8 0F 21 6F 5F 88", "FN4 A7F FN4 A7E, 1 pad", 0 },
+        /* 90*/ { DATA_MODE, 0, -1, -1, -1, "\377\376\375", 0, 0, 12, 12, 1, "E7 2C C0 55 E9 67 45 8A D2 7E A9 23", "BAS BFF BFE BFD, no padding", 0 },
+        /* 91*/ { DATA_MODE, 3, -1, -1, -1, "\101\102\103\104\300\105\310", 0, 3, 16, 16, 0, "F1 04 42 43 E7 87 5B F1 03 1D 36 81 2C E3 87 24 2D FD 69 9C 87 FA 8A 73", "ECI 4 ASC A41 A42 BAS B43 B44 BC0 B45 BC8; BWIPP different encodation (uses only B256, same no. of codewords)", 0 },
+        /* 92*/ { UNICODE_MODE, 26, -1, -1, -1, "ABCDÀEÈ", 0, 26, 12, 26, 1, "F1 1B E7 60 2D C4 5B F1 06 58 B3 C7 21 81 57 ED 3D C0 12 2E 6C 80 58 CC 2C 05 0D 31 FC 2D", "ECI 27 BAS B41 B42 B43 B44 BC3 B80 B45 BC3 B88", 0 },
+        /* 93*/ { UNICODE_MODE, 0, -1, -1, -1, "β", ZINT_WARN_USES_ECI, 9, 12, 12, 1, "Warning F1 0A EB 63 81 41 56 DA C0 3D 2D CC", "ECI 10 FN4 A62", 0 },
+        /* 94*/ { UNICODE_MODE, 127, -1, -1, -1, "A", 0, 127, 12, 12, 1, "F1 80 01 42 81 14 A2 86 07 F5 27 30", "ECI 128 A41", 0 },
+        /* 95*/ { UNICODE_MODE, 16382, -1, -1, -1, "A", 0, 16382, 12, 12, 1, "F1 BF FE 42 81 29 57 AA A0 92 B2 45", "ECI 16383 A41", 0 },
+        /* 96*/ { UNICODE_MODE, 810899, -1, -1, -1, "A", 0, 810899, 12, 12, 1, "F1 CC 51 05 42 BB A5 A7 8A C6 6E 0F", "ECI 810900 A41", 0 },
+        /* 97*/ { UNICODE_MODE | ESCAPE_MODE, -1, -1, -1, -1, "[)>\\R05\\GA\\R\\E", 0, 0, 10, 10, 1, "EC 42 81 5D 17 49 F6 B6", "Macro05 A41", 0 },
+        /* 98*/ { UNICODE_MODE, 0, -1, -1, -1, "ABCDEFGHIJKLM*", 0, 0, 16, 16, 1, "EE 59 E9 6D 24 80 5F 93 9A FE 4E 2B 09 FF 50 A2 83 BE 32 E1 2F 17 1E F3", "C40 == X12, p_r_6_2_1 true", 0 },
+        /* 99*/ { UNICODE_MODE, 0, -1, -1, -1, "\015\015\015\015\015\015\015\015\015a\015\015\015\015\015\015\015", 0, 0, 12, 26, 1, "EE 00 01 00 01 00 01 FE 62 EE 00 01 00 01 FE 0E B5 9A 73 85 83 20 23 2C E0 EC EC BF 71 E0", "a not X12 encodable", 0 },
+        /*100*/ { UNICODE_MODE, 0, -1, -1, -1, ".........a.......", 0, 0, 18, 18, 0, "(32) F0 BA EB AE BA EB AE B9 F0 62 2F 2F 2F 2F 2F 2F 2F 81 78 BE 1F 90 B8 89 73 66 DC BD", "a not EDIFACT encodable; BWIPP different encodation (switches to ASCII one dot before)", 0 },
+        /*101*/ { GS1_MODE, 0, -1, -1, -1, "[90]........[91]....", 0, 0, 12, 26, 1, "E8 DC 2F 2F 2F 2F 2F 2F 2F 2F E8 DD 2F 2F 2F 2F C6 CC 13 68 0D 9D A9 A5 B8 D5 5A F3 7B 18", "Can't use GS1 EDIFACT if contains FNC1/GS", 0 },
+        /*102*/ { GS1_MODE, 0, -1, -1, -1, "[90]........", 0, 0, 8, 32, 1, "E8 DC F0 BA EB AE BA EB AE 81 B1 C0 AB DA A5 92 AF E2 05 DE 56", "Can use GS1 EDIFACT if no FNC1/GS", 0 },
+        /*103*/ { GS1_MODE, 0, -1, -1, -1, "[90]ABCDEFGH[91]ABCD", 0, 0, 12, 26, 1, "E8 DC E6 59 E9 6D 24 80 4A AA CE 59 E9 FE 45 81 6A 05 49 36 67 C8 00 DE 35 29 C5 9A 17 EA", "GS1 C40 ok", 0 },
+        /*104*/ { GS1_MODE, 0, -1, -1, -1, "[90]ABCD", 0, 0, 14, 14, 1, "E8 DC 42 43 44 45 81 38 98 32 8C 23 4D 87 5A 95 04 A7", "Final ASC unlatch", 0 },
+        /*105*/ { UNICODE_MODE, 0, -1, -1, -1, ">*\015>*\015>......", 0, 0, 12, 26, 0, "EE 0C A9 0C A9 FE 3F 2F 2F 2F 2F 2F 2F 81 57 ED 0F 29 C7 9D 5D 64 61 94 14 CD A8 DF 65 8D", "X12 then ASC; BWIPP different encodation", 1 },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -712,14 +715,61 @@ static void test_input(int index, int generate, int debug) {
 
         length = testUtilSetSymbol(symbol, BARCODE_DATAMATRIX, data[i].input_mode, data[i].eci, -1 /*option_1*/, data[i].option_2, data[i].option_3, data[i].output_options, data[i].data, -1, debug);
 
+        // Check minimize only? (TODO: remove in the not-too-distant future)
+        if (debug & ZINT_DEBUG_TEST_MINIMIZE) { // -d 512
+            unsigned char binary[2][2200];
+            int inputlen;
+            int binlen;
+            int variant;
+            int binlens[2] = {0};
+
+            if (data[i].ret != 0) {
+                ZBarcode_Delete(symbol);
+                continue;
+            }
+
+            variant = 0;
+            inputlen = length;
+            binlen = 0;
+            ret = dm200encode_variant(symbol, (unsigned char *) data[i].data, binary[0], &inputlen, &binlen, variant);
+            assert_equal(ret, data[i].ret, "i:%d dm200encode_variant(%d) ret %d != %d (%s)\n", variant, i, ret, data[i].ret, symbol->errtxt);
+
+            binlens[variant] = binlen;
+
+            variant = 1;
+            inputlen = length;
+            binlen = 0;
+            ret = dm200encode_variant(symbol, (unsigned char *) data[i].data, binary[1], &inputlen, &binlen, variant);
+            assert_equal(ret, data[i].ret, "i:%d dm200encode_variant(%d) ret %d != %d (%s)\n", variant, i, ret, data[i].ret, symbol->errtxt);
+
+            binlens[variant] = binlen;
+
+            assert_equal(binlens[0], binlens[1] + data[i].expected_diff, "i:%d binlens[0] %d != %d binlens[1] (%d) + expected_diff (%d)\n",
+                        i, binlens[0], binlens[1] + data[i].expected_diff, binlens[1], data[i].expected_diff);
+
+            if (debug & ZINT_DEBUG_TEST_PRINT) {
+                if (data[i].expected_diff == 0) {
+                    if (memcmp(binary[0], binary[1], binlen) != 0) {
+                        printf("i:%d binaries differ\n", i);
+                    }
+                } else {
+                    printf("i:%d diff %d\n", i, data[i].expected_diff);
+                }
+            }
+
+            ZBarcode_Delete(symbol);
+            continue;
+        }
+
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (generate) {
-            printf("        /*%3d*/ { %s, %d, %d, %s, %s, \"%s\", %s, %d, %d, %d, %d, \"%s\", \"%s\" },\n",
+            printf("        /*%3d*/ { %s, %d, %d, %s, %s, \"%s\", %s, %d, %d, %d, %d, \"%s\", \"%s\", %d },\n",
                     i, testUtilInputModeName(data[i].input_mode), data[i].eci, data[i].option_2, testUtilOption3Name(data[i].option_3),
                     testUtilOutputOptionsName(data[i].output_options), testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
-                    testUtilErrorName(data[i].ret), ret < ZINT_ERROR ? symbol->eci : -1, symbol->rows, symbol->width, data[i].bwipp_cmp, symbol->errtxt, data[i].comment);
+                    testUtilErrorName(data[i].ret), ret < ZINT_ERROR ? symbol->eci : -1, symbol->rows, symbol->width,
+                    data[i].bwipp_cmp, symbol->errtxt, data[i].comment, data[i].expected_diff);
         } else {
             if (ret < ZINT_ERROR) {
                 assert_equal(symbol->eci, data[i].expected_eci, "i:%d eci %d != %d\n", i, symbol->eci, data[i].expected_eci);
@@ -768,12 +818,13 @@ static void test_encode(int index, int generate, int debug) {
         int expected_width;
         int bwipp_cmp;
         char *comment;
+        int expected_diff; // Check minimize only (TODO: remove in the not-too-distant future)
         char *expected;
     };
     // Verified manually against ISO/IEC 16022:2006, ISO/IEC 21471:2020, GS1 General Specifications 21.0.1 (GGS), ANSI/HIBC LIC 2.6-2016 (HIBC/LIC) and
     // ANSI/HIBC PAS 1.3-2010 (HIBC/PAS), with noted exceptions
     struct item data[] = {
-        /*  0*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, "1234abcd", 0, 14, 14, 1, "",
+        /*  0*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, "1234abcd", 0, 14, 14, 1, "", 0,
                     "10101010101010"
                     "11001010001111"
                     "11000101100100"
@@ -789,7 +840,7 @@ static void test_encode(int index, int generate, int debug) {
                     "10011111000100"
                     "11111111111111"
                 },
-        /*  1*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, "A1B2C3D4E5F6G7H8I9J0K1L2", 0, 18, 18, 1, "16022:2006 Figure 1",
+        /*  1*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, "A1B2C3D4E5F6G7H8I9J0K1L2", 0, 18, 18, 1, "16022:2006 Figure 1", 0,
                     "101010101010101010"
                     "101000101010001111"
                     "101100000111000010"
@@ -809,7 +860,7 @@ static void test_encode(int index, int generate, int debug) {
                     "100011000000100100"
                     "111111111111111111"
                 },
-        /*  2*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, "123456", 0, 10, 10, 1, "16022:2006 Figure O.2",
+        /*  2*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, "123456", 0, 10, 10, 1, "16022:2006 Figure O.2", 0,
                     "1010101010"
                     "1100101101"
                     "1100000100"
@@ -821,7 +872,7 @@ static void test_encode(int index, int generate, int debug) {
                     "1001110100"
                     "1111111111"
                 },
-        /*  3*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, "30Q324343430794<OQQ", 0, 16, 16, 1, "16022:2006 Figure R.1",
+        /*  3*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, "30Q324343430794<OQQ", 0, 16, 16, 1, "16022:2006 Figure R.1", 0,
                     "1010101010101010"
                     "1010101010000001"
                     "1010101011101100"
@@ -839,7 +890,7 @@ static void test_encode(int index, int generate, int debug) {
                     "1110010010100010"
                     "1111111111111111"
                 },
-        /*  4*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, -1, 32, -1, "A1B2C3D4E5F6G7H8I9J0K1L2", 0, 8, 64, 1, "21471:2020 Figure 1",
+        /*  4*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, -1, 32, -1, "A1B2C3D4E5F6G7H8I9J0K1L2", 0, 8, 64, 1, "21471:2020 Figure 1", 0,
                     "1010101010101010101010101010101010101010101010101010101010101010"
                     "1010001010111001101010111011111110001110000000011101010100010101"
                     "1011000000000110110111111110111010110000101001101101001000010110"
@@ -849,7 +900,7 @@ static void test_encode(int index, int generate, int debug) {
                     "1101101100110110111100110000001011100011001001101011001001001000"
                     "1111111111111111111111111111111111111111111111111111111111111111"
                 },
-        /*  5*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, -1, 31, -1, "123456789012345678901234567890123456", 0, 8, 48, 1, "21471:2020 Figure H.3",
+        /*  5*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, -1, 31, -1, "123456789012345678901234567890123456", 0, 8, 48, 1, "21471:2020 Figure H.3", 0,
                     "101010101010101010101010101010101010101010101010"
                     "110010010100000111110001101001010110100110001011"
                     "110011000111101000101010110111001110011011011010"
@@ -859,7 +910,7 @@ static void test_encode(int index, int generate, int debug) {
                     "101101111110001011010010111010001111110101101110"
                     "111111111111111111111111111111111111111111111111"
                 },
-        /*  6*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, -1, 29, -1, "30Q324343430794<OQ", 0, 16, 36, 1, "21471:2020 Figure J.1 NOTE: single Q at end, not 2; also not DMRE",
+        /*  6*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, -1, 29, -1, "30Q324343430794<OQ", 0, 16, 36, 1, "21471:2020 Figure J.1 NOTE: single Q at end, not 2; also not DMRE", 0,
                     "101010101010101010101010101010101010"
                     "101010101000000101111110101011001101"
                     "101010101101111110111111101110001100"
@@ -877,31 +928,31 @@ static void test_encode(int index, int generate, int debug) {
                     "101111001001100000110110100000010110"
                     "111111111111111111111111111111111111"
                 },
-        /*  7*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, "https://example.com/01/09506000134369", 0, 22, 22, 1, "GGS Figure 2.1.13.1 (and 5.1-9) **NOT SAME**, different encodation; note not GS1",
+        /*  7*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, "https://example.com/01/09506000134369", 0, 22, 22, 0, "GGS Figure 2.1.13.1 (and 5.1-9) same; note not GS1; BWIPP different encodation", 0,
                     "1010101010101010101010"
-                    "1100101110000001110101"
-                    "1001010101111100101110"
-                    "1000000100111110100001"
-                    "1101010111011101101000"
-                    "1101110001110000010101"
-                    "1110100101000101111110"
-                    "1101101110110101111111"
-                    "1111010011000010010100"
-                    "1100011101100101001111"
-                    "1000100000001111100010"
-                    "1011000101110110101111"
-                    "1100011101110101101110"
-                    "1011010101010110110011"
-                    "1000000100111110001110"
-                    "1011011101001110111001"
-                    "1110001111111011110000"
-                    "1100100001011110010001"
-                    "1111011110000101001110"
-                    "1110000100000000010101"
-                    "1101001001101110010100"
+                    "1100101110000001111101"
+                    "1001010101111000101010"
+                    "1000000100111100110001"
+                    "1101010111000111100100"
+                    "1101110001010000001101"
+                    "1110100101010101011010"
+                    "1101101101110101100111"
+                    "1111010000000001100100"
+                    "1100011001100101001111"
+                    "1000111100001111010010"
+                    "1011111101110101111011"
+                    "1100110101001101101010"
+                    "1011010101000110011101"
+                    "1000000110110000011110"
+                    "1011011100011000011001"
+                    "1110000001110111001000"
+                    "1100101000000101110001"
+                    "1111101100001110001010"
+                    "1110110101100110000101"
+                    "1101100001100010010100"
                     "1111111111111111111111"
                 },
-        /*  8*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, -1, -1, "[01]09501101530003[17]150119[10]AB-123", 0, 20, 20, 1, "GGS Figure 2.6.14-3",
+        /*  8*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, -1, -1, "[01]09501101530003[17]150119[10]AB-123", 0, 20, 20, 1, "GGS Figure 2.6.14-3", 0,
                     "10101010101010101010"
                     "11001111010100000111"
                     "10001010001001010100"
@@ -923,7 +974,7 @@ static void test_encode(int index, int generate, int debug) {
                     "10011011100101011010"
                     "11111111111111111111"
                 },
-        /*  9*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, -1, -1, "[01]04012345678901[21]ABCDEFG123456789", 0, 20, 20, 1, "GGS Figure 2.6.14-4",
+        /*  9*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, -1, -1, "[01]04012345678901[21]ABCDEFG123456789", 0, 20, 20, 1, "GGS Figure 2.6.14-4", 0,
                     "10101010101010101010"
                     "11011000001101000111"
                     "10001001100001110100"
@@ -945,7 +996,7 @@ static void test_encode(int index, int generate, int debug) {
                     "10001000100001111010"
                     "11111111111111111111"
                 },
-        /* 10*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, -1, -1, "[01]04012345678901[17]170101[10]ABC123", 0, 20, 20, 1, "GGS Figure 4.15-1 (and 5.1-6)",
+        /* 10*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, -1, -1, "[01]04012345678901[17]170101[10]ABC123", 0, 20, 20, 1, "GGS Figure 4.15-1 (and 5.1-6)", 0,
                     "10101010101010101010"
                     "11011000010100000111"
                     "10001001100001010100"
@@ -967,7 +1018,7 @@ static void test_encode(int index, int generate, int debug) {
                     "10001000000101111010"
                     "11111111111111111111"
                 },
-        /* 11*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, GS1_GS_SEPARATOR, -1, -1, "[01]09504000059101[21]12345678p901[10]1234567p[17]141120[8200]http://www.gs1.org/demo/", 0, 32, 32, 1, "GGS Figure 4.15.1-1 **NOT SAME**, uses 0-padded final TEXT triplet",
+        /* 11*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, GS1_GS_SEPARATOR, -1, -1, "[01]09504000059101[21]12345678p901[10]1234567p[17]141120[8200]http://www.gs1.org/demo/", 0, 32, 32, 1, "GGS Figure 4.15.1-1 **NOT SAME**, uses 0-padded final TEXT triplet", 0,
                     "10101010101010101010101010101010"
                     "11001111010000111101100000101001"
                     "10001010011111001011011001000010"
@@ -1001,7 +1052,7 @@ static void test_encode(int index, int generate, int debug) {
                     "10110110011000001010011010011000"
                     "11111111111111111111111111111111"
                 },
-        /* 12*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, -1, -1, "[01]09504000059101[21]12345678p901[10]1234567p[17]141120[8200]http://www.gs1.org/demo/", 0, 32, 32, 1, "GGS Figure 4.15.1-2 (and 4.15.1-3) **NOT SAME**, uses 0-padded final TEXT triplet (as does tec-it)",
+        /* 12*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, -1, -1, "[01]09504000059101[21]12345678p901[10]1234567p[17]141120[8200]http://www.gs1.org/demo/", 0, 32, 32, 1, "GGS Figure 4.15.1-2 (and 4.15.1-3) **NOT SAME**, uses 0-padded final TEXT triplet (as does tec-it)", 0,
                     "10101010101010101010101010101010"
                     "11001111010000111101100000101001"
                     "10001010011111001011011001000010"
@@ -1035,7 +1086,7 @@ static void test_encode(int index, int generate, int debug) {
                     "10110000011010101010011010011000"
                     "11111111111111111111111111111111"
                 },
-        /* 13*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, -1, -1, "[01]09512345678901[15]170810[21]abcde", 0, 20, 20, 1, "GGS Figure 5.6.2-1",
+        /* 13*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, -1, -1, "[01]09512345678901[15]170810[21]abcde", 0, 20, 20, 1, "GGS Figure 5.6.2-1", 0,
                     "10101010101010101010"
                     "11001111010111100111"
                     "10001010100101010100"
@@ -1057,7 +1108,7 @@ static void test_encode(int index, int generate, int debug) {
                     "10011010101001110010"
                     "11111111111111111111"
                 },
-        /* 14*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, -1, -1, "[01]00012345678905[17]040115", 0, 12, 26, 1, "GGS Figure 5.6.3.1-1 (left)",
+        /* 14*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, -1, -1, "[01]00012345678905[17]040115", 0, 12, 26, 1, "GGS Figure 5.6.3.1-1 (left)", 0,
                     "10101010101010101010101010"
                     "11001000010011010100111111"
                     "10001001100010001111001010"
@@ -1071,7 +1122,7 @@ static void test_encode(int index, int generate, int debug) {
                     "10001001100010100010100000"
                     "11111111111111111111111111"
                 },
-        /* 15*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, -1, DM_SQUARE, "[01]00012345678905[17]040115", 0, 18, 18, 1, "GGS Figure 5.6.3.1-1 (right)",
+        /* 15*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, -1, DM_SQUARE, "[01]00012345678905[17]040115", 0, 18, 18, 1, "GGS Figure 5.6.3.1-1 (right)", 0,
                     "101010101010101010"
                     "110010000100010101"
                     "100010011010111110"
@@ -1091,7 +1142,7 @@ static void test_encode(int index, int generate, int debug) {
                     "100000101110000100"
                     "111111111111111111"
                 },
-        /* 16*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, -1, -1, "[01]00012345678905[17]180401[21]ABCDEFGHIJKL12345678[91]ABCDEFGHI123456789[92]abcdefghi", 0, 32, 32, 0, "GGS Figure 5.6.3.2-3 (left) **NOT SAME** different encodation; BWIPP different encodation",
+        /* 16*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, -1, -1, "[01]00012345678905[17]180401[21]ABCDEFGHIJKL12345678[91]ABCDEFGHI123456789[92]abcdefghi", 0, 32, 32, 0, "GGS Figure 5.6.3.2-3 (left) **NOT SAME** different encodation; BWIPP different encodation", 0,
                     "10101010101010101010101010101010"
                     "11001000010111111000100110101011"
                     "10001001100001101100110010100010"
@@ -1125,7 +1176,7 @@ static void test_encode(int index, int generate, int debug) {
                     "11110110001001001010110111010110"
                     "11111111111111111111111111111111"
                 },
-        /* 17*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, 30, -1, "[01]00012345678905[17]180401[21]ABCDEFGHIJKL12345678[91]abcdefghi", 0, 16, 48, 1, "GGS Figure 5.6.3.2-3 (right) **NOT SAME** different encodation",
+        /* 17*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, 30, -1, "[01]00012345678905[17]180401[21]ABCDEFGHIJKL12345678[91]abcdefghi", 0, 16, 48, 1, "GGS Figure 5.6.3.2-3 (right) **NOT SAME** different encodation", 0,
                     "101010101010101010101010101010101010101010101010"
                     "110010000101111001000011101101100100111011001111"
                     "100010011000011101111100100100011000110010111100"
@@ -1143,7 +1194,7 @@ static void test_encode(int index, int generate, int debug) {
                     "101110001010001011101010101101111111111000000100"
                     "111111111111111111111111111111111111111111111111"
                 },
-        /* 18*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, -1, DM_SQUARE, "[00]395011010013000129[403]123+1021JK+0320+12[421]5281500KM", 0, 24, 24, 1, "GGS Figure 6.6.5-6 **NOT SAME** figure has unnecessary FNC1 at end of data",
+        /* 18*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, -1, DM_SQUARE, "[00]395011010013000129[403]123+1021JK+0320+12[421]5281500KM", 0, 24, 24, 1, "GGS Figure 6.6.5-6 **NOT SAME** figure has unnecessary FNC1 at end of data", 0,
                     "101010101010101010101010"
                     "110001110100011010101101"
                     "100010100100101000011000"
@@ -1169,7 +1220,7 @@ static void test_encode(int index, int generate, int debug) {
                     "111001011011101100011010"
                     "111111111111111111111111"
                 },
-        /* 19*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, -1, -1, "[00]093123450000000012[421]0362770[401]931234518430GR[403]MEL", 0, 24, 24, 1, "GGS Figure 6.6.5-7 **NOT SAME** different encodation",
+        /* 19*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, -1, -1, "[00]093123450000000012[421]0362770[401]931234518430GR[403]MEL", 0, 24, 24, 1, "GGS Figure 6.6.5-7 **NOT SAME** different encodation", 0,
                     "101010101010101010101010"
                     "110011100101100110110101"
                     "100010001001111010000100"
@@ -1195,47 +1246,47 @@ static void test_encode(int index, int generate, int debug) {
                     "101110011001110010101010"
                     "111111111111111111111111"
                 },
-        /* 20*/ { BARCODE_HIBC_DM, -1, -1, -1, -1, -1, "A123BJC5D6E71", 0, 16, 16, 1, "HIBC/LIC Figure 3 **NOT SAME** different encodation, same no. of codewords",
+        /* 20*/ { BARCODE_HIBC_DM, -1, -1, -1, -1, -1, "A123BJC5D6E71", 0, 16, 16, 0, "HIBC/LIC Figure 3 same; BWIPP different encodation, same no. of codewords", 0,
                     "1010101010101010"
-                    "1110000011011011"
-                    "1100001110001000"
-                    "1110101011011111"
-                    "1100110100001000"
-                    "1011000001001001"
+                    "1011101001111011"
+                    "1000001100010100"
+                    "1010101011001111"
+                    "1100110100101100"
+                    "1011000001011001"
                     "1100010011110100"
-                    "1000101001010101"
-                    "1010110011110000"
-                    "1011000001001111"
-                    "1000010001001110"
-                    "1001111110001111"
-                    "1000110101010010"
-                    "1101101110100101"
-                    "1100101101000010"
+                    "1000101001100101"
+                    "1010111011100000"
+                    "1011000011100011"
+                    "1000101100111010"
+                    "1001011100001101"
+                    "1010010001110100"
+                    "1101010010001101"
+                    "1111100111000010"
                     "1111111111111111"
                 },
-        /* 21*/ { BARCODE_HIBC_DM, -1, -1, -1, -1, -1, "A123BJC5D6E71/$$52001510X3", 0, 20, 20, 1, "HIBC/LIC Section 4.3.3 **NOT SAME** different encodation; also figure has weird CRLF after check digit",
+        /* 21*/ { BARCODE_HIBC_DM, -1, -1, -1, -1, -1, "A123BJC5D6E71/$$52001510X3", 0, 20, 20, 0, "HIBC/LIC Section 4.3.3 **NOT SAME** different encodation; also figure has weird CRLF after check digit; BWIPP different encodation", 0,
                     "10101010101010101010"
-                    "11100000100101100001"
-                    "11000011111010101100"
-                    "11101011100011000101"
-                    "11001100011011000100"
-                    "10110010010000101011"
-                    "11000000100101100010"
-                    "10000110010100000101"
-                    "10111010001100001110"
-                    "11111100101000000011"
-                    "11110110001001111110"
-                    "11100111110010000011"
-                    "11000010001110101000"
-                    "10110110001001010001"
-                    "11100011101111010110"
-                    "10000010110000110001"
-                    "10000100001100100110"
-                    "10111011000001111101"
-                    "10110110110000011010"
+                    "10111011000101100001"
+                    "10000110011010101100"
+                    "10100001100011010101"
+                    "11010110011011000000"
+                    "10001010010000010001"
+                    "11011000100100111110"
+                    "10000110010001101111"
+                    "10011010001111111010"
+                    "10111100100101111001"
+                    "10000110000111010110"
+                    "11010111000101001111"
+                    "10000011101001011100"
+                    "10110001100101000001"
+                    "11100001000111011110"
+                    "10001010000000000101"
+                    "10010101101111110110"
+                    "11011011000010010101"
+                    "10010010010000100010"
                     "11111111111111111111"
                 },
-        /* 22*/ { BARCODE_HIBC_DM, -1, -1, -1, -1, -1, "H123ABC01234567890", 0, 12, 26, 1, "HIBC/LIC Figure C2, same",
+        /* 22*/ { BARCODE_HIBC_DM, -1, -1, -1, -1, -1, "H123ABC01234567890", 0, 12, 26, 1, "HIBC/LIC Figure C2, same", 0,
                     "10101010101010101010101010"
                     "10111011011011110101001101"
                     "10010110000001001100110100"
@@ -1249,7 +1300,7 @@ static void test_encode(int index, int generate, int debug) {
                     "10010010001100110000011010"
                     "11111111111111111111111111"
                 },
-        /* 23*/ { BARCODE_HIBC_DM, -1, -1, -1, -1, DM_SQUARE, "/ACMRN123456/V200912190833", 0, 20, 20, 1, "HIBC/PAS Section 2.2 Patient Id, same",
+        /* 23*/ { BARCODE_HIBC_DM, -1, -1, -1, -1, DM_SQUARE, "/ACMRN123456/V200912190833", 0, 20, 20, 1, "HIBC/PAS Section 2.2 Patient Id, same", 0,
                     "10101010101010101010"
                     "10001000010011001001"
                     "11100110001010110100"
@@ -1271,7 +1322,7 @@ static void test_encode(int index, int generate, int debug) {
                     "10000100100110010010"
                     "11111111111111111111"
                 },
-        /* 24*/ { BARCODE_DATAMATRIX, DATA_MODE | ESCAPE_MODE, -1, -1, -1, -1, "[)>\\R06\\G+/ACMRN123456/V2009121908334\\R\\E", 0, 20, 20, 1, "HIBC/PAS 1.3-2010 Section 2.2 Patient Id Macro, same",
+        /* 24*/ { BARCODE_DATAMATRIX, DATA_MODE | ESCAPE_MODE, -1, -1, -1, -1, "[)>\\R06\\G+/ACMRN123456/V2009121908334\\R\\E", 0, 20, 20, 1, "HIBC/PAS 1.3-2010 Section 2.2 Patient Id Macro, same", 0,
                     "10101010101010101010"
                     "10000000001110001111"
                     "11010101001010011100"
@@ -1293,7 +1344,7 @@ static void test_encode(int index, int generate, int debug) {
                     "11100110001010111010"
                     "11111111111111111111"
                 },
-        /* 25*/ { BARCODE_HIBC_DM, -1, -1, -1, -1, -1, "/EO523201", 0, 14, 14, 1, "HIBC/PAS Section 2.2 Purchase Order, same",
+        /* 25*/ { BARCODE_HIBC_DM, -1, -1, -1, -1, -1, "/EO523201", 0, 14, 14, 1, "HIBC/PAS Section 2.2 Purchase Order, same", 0,
                     "10101010101010"
                     "10011001010101"
                     "11101000011010"
@@ -1309,7 +1360,7 @@ static void test_encode(int index, int generate, int debug) {
                     "10010010000100"
                     "11111111111111"
                 },
-        /* 26*/ { BARCODE_HIBC_DM, -1, -1, -1, -1, DM_SQUARE, "/EU720060FF0/O523201", 0, 18, 18, 1, "HIBC/PAS Section 2.2 2nd Purchase Order, same",
+        /* 26*/ { BARCODE_HIBC_DM, -1, -1, -1, -1, DM_SQUARE, "/EU720060FF0/O523201", 0, 18, 18, 1, "HIBC/PAS Section 2.2 2nd Purchase Order, same", 0,
                     "101010101010101010"
                     "100110010100100001"
                     "111011110110010110"
@@ -1329,7 +1380,7 @@ static void test_encode(int index, int generate, int debug) {
                     "111000010011001010"
                     "111111111111111111"
                 },
-        /* 27*/ { BARCODE_HIBC_DM, -1, -1, -1, -1, -1, "/EU720060FF0/O523201/Z34H159/M9842431340", 0, 22, 22, 1, "HIBC/PAS Section 2.2 3rd Purchase Order (left), same",
+        /* 27*/ { BARCODE_HIBC_DM, -1, -1, -1, -1, -1, "/EU720060FF0/O523201/Z34H159/M9842431340", 0, 22, 22, 1, "HIBC/PAS Section 2.2 3rd Purchase Order (left), same", 0,
                     "1010101010101010101010"
                     "1001100101001000000011"
                     "1110111101100001111010"
@@ -1353,7 +1404,7 @@ static void test_encode(int index, int generate, int debug) {
                     "1010110000010001001000"
                     "1111111111111111111111"
                 },
-        /* 28*/ { BARCODE_DATAMATRIX, DATA_MODE | ESCAPE_MODE, -1, -1, -1, -1, "[)>\\R06\\G+/EU720060FF0/O523201/Z34H159/M9842431340V\\R\\E", 0, 22, 22, 1, "HIBC/PAS Section 2.2 3rd Purchase Order (right), same",
+        /* 28*/ { BARCODE_DATAMATRIX, DATA_MODE | ESCAPE_MODE, -1, -1, -1, -1, "[)>\\R06\\G+/EU720060FF0/O523201/Z34H159/M9842431340V\\R\\E", 0, 22, 22, 1, "HIBC/PAS Section 2.2 3rd Purchase Order (right), same", 0,
                     "1010101010101010101010"
                     "1000000000111010011101"
                     "1101011100101001011100"
@@ -1377,7 +1428,7 @@ static void test_encode(int index, int generate, int debug) {
                     "1001110110011101101000"
                     "1111111111111111111111"
                 },
-        /* 29*/ { BARCODE_HIBC_DM, -1, -1, -1, -1, -1, "/E+/KN12345", 0, 16, 16, 1, "HIBC/PAS Section 2.2 Asset Tag **NOT SAME** check digit 'A' in figure is for '/KN12345', but actual data is as given here, when check digit is 'J'",
+        /* 29*/ { BARCODE_HIBC_DM, -1, -1, -1, -1, -1, "/E+/KN12345", 0, 16, 16, 1, "HIBC/PAS Section 2.2 Asset Tag **NOT SAME** check digit 'A' in figure is for '/KN12345', but actual data is as given here, when check digit is 'J'", 0,
                     "1010101010101010"
                     "1001101010001111"
                     "1110001000101100"
@@ -1395,7 +1446,7 @@ static void test_encode(int index, int generate, int debug) {
                     "1001000000000010"
                     "1111111111111111"
                 },
-        /* 30*/ { BARCODE_HIBC_DM, -1, -1, -1, -1, -1, "/LAH123/NC903", 0, 16, 16, 1, "HIBC/PAS Section 2.2 Surgical Instrument, same",
+        /* 30*/ { BARCODE_HIBC_DM, -1, -1, -1, -1, -1, "/LAH123/NC903", 0, 16, 16, 1, "HIBC/PAS Section 2.2 Surgical Instrument, same", 0,
                     "1010101010101010"
                     "1001010001010001"
                     "1110010100000100"
@@ -1413,7 +1464,7 @@ static void test_encode(int index, int generate, int debug) {
                     "1100000101010010"
                     "1111111111111111"
                 },
-        /* 31*/ { BARCODE_DATAMATRIX, DATA_MODE | ESCAPE_MODE, -1, -1, 7, -1, "[)>\\R06\\G18VD89536\\G1P8902A\\GS3122A02965\\R\\E", 0, 22, 22, 1, "ANSI MH10.8.17-2017 Figure 4 Macro06 **NOT SAME** 253-state randomising of padding in figure seems incorrect",
+        /* 31*/ { BARCODE_DATAMATRIX, DATA_MODE | ESCAPE_MODE, -1, -1, 7, -1, "[)>\\R06\\G18VD89536\\G1P8902A\\GS3122A02965\\R\\E", 0, 22, 22, 1, "ANSI MH10.8.17-2017 Figure 4 Macro06 **NOT SAME** 253-state randomising of padding in figure seems incorrect", 0,
                     "1010101010101010101010"
                     "1101110000111001011011"
                     "1010111010001010001110"
@@ -1437,7 +1488,7 @@ static void test_encode(int index, int generate, int debug) {
                     "1000001010010010110100"
                     "1111111111111111111111"
                 },
-        /* 32*/ { BARCODE_DATAMATRIX, DATA_MODE | ESCAPE_MODE, -1, -1, -1, -1, "[)>\\R06\\G25S0614141MH80312\\R\\E", 0, 16, 16, 1, "ANSI MH10.8.17-2017 Table B.1 B7",
+        /* 32*/ { BARCODE_DATAMATRIX, DATA_MODE | ESCAPE_MODE, -1, -1, -1, -1, "[)>\\R06\\G25S0614141MH80312\\R\\E", 0, 16, 16, 1, "ANSI MH10.8.17-2017 Table B.1 B7", 0,
                     "1010101010101010"
                     "1101000010101111"
                     "1011100001011100"
@@ -1455,7 +1506,7 @@ static void test_encode(int index, int generate, int debug) {
                     "1010101010001010"
                     "1111111111111111"
                 },
-        /* 33*/ { BARCODE_DATAMATRIX, DATA_MODE | ESCAPE_MODE, -1, -1, -1, -1, "[)>\\R05\\G80040614141MH80312\\R\\E", 0, 16, 16, 1, "ANSI MH10.8.17-2017 Table B.1 B8",
+        /* 33*/ { BARCODE_DATAMATRIX, DATA_MODE | ESCAPE_MODE, -1, -1, -1, -1, "[)>\\R05\\G80040614141MH80312\\R\\E", 0, 16, 16, 1, "ANSI MH10.8.17-2017 Table B.1 B8", 0,
                     "1010101010101010"
                     "1111100010001111"
                     "1010100001100100"
@@ -1473,7 +1524,7 @@ static void test_encode(int index, int generate, int debug) {
                     "1010000010101010"
                     "1111111111111111"
                 },
-        /* 34*/ { BARCODE_DATAMATRIX, DATA_MODE, 3, -1, -1, -1, "\101\300", 0, 12, 12, 1, "AÀ",
+        /* 34*/ { BARCODE_DATAMATRIX, DATA_MODE, 3, -1, -1, -1, "\101\300", 0, 12, 12, 1, "AÀ", 0,
                     "101010101010"
                     "100010101111"
                     "100001011110"
@@ -1487,7 +1538,7 @@ static void test_encode(int index, int generate, int debug) {
                     "100011011010"
                     "111111111111"
                 },
-        /* 35*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 26, -1, -1, -1, "AÀ", 0, 14, 14, 1, "AÀ",
+        /* 35*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 26, -1, -1, -1, "AÀ", 0, 14, 14, 1, "AÀ", 0,
                     "10101010101010"
                     "10001010100001"
                     "10110101100100"
@@ -1503,7 +1554,7 @@ static void test_encode(int index, int generate, int debug) {
                     "11000110001100"
                     "11111111111111"
                 },
-        /* 36*/ { BARCODE_DATAMATRIX, UNICODE_MODE, -1, -1, -1, DM_SQUARE, "abcdefgh+", 0, 16, 16, 1, "TEX last_shift 2, symbols_left 1, process_p 1",
+        /* 36*/ { BARCODE_DATAMATRIX, UNICODE_MODE, -1, -1, -1, DM_SQUARE, "abcdefgh+", 0, 16, 16, 1, "TEX last_shift 2, symbols_left 1, process_p 1", 0,
                     "1010101010101010"
                     "1010011011101001"
                     "1011001010010010"
@@ -1521,7 +1572,7 @@ static void test_encode(int index, int generate, int debug) {
                     "1101110101001010"
                     "1111111111111111"
                 },
-        /* 37*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, -1, -1, -1, "\200\200\200\200\200\200\200", 0, 8, 32, 1, "7 BASE256s, 1 pad",
+        /* 37*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, -1, -1, -1, "\200\200\200\200\200\200\200", 0, 8, 32, 1, "7 BASE256s, 1 pad", 0,
                     "10101010101010101010101010101010"
                     "10000101000011011000110100100001"
                     "11100111110101001011101110100010"
@@ -1531,7 +1582,7 @@ static void test_encode(int index, int generate, int debug) {
                     "11010000111100001010011101100100"
                     "11111111111111111111111111111111"
                 },
-        /* 38*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, -1, -1, -1, "\200\200\200\200\200\200\200\200", 0, 8, 32, 1, "8 BASE256s, no padding",
+        /* 38*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, -1, -1, -1, "\200\200\200\200\200\200\200\200", 0, 8, 32, 1, "8 BASE256s, no padding", 0,
                     "10101010101010101010101010101010"
                     "10000101000011011111001101000001"
                     "11010111110101001001011001100010"
@@ -1541,7 +1592,7 @@ static void test_encode(int index, int generate, int debug) {
                     "11010000110010001001010001111000"
                     "11111111111111111111111111111111"
                 },
-        /* 39*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, -1, -1, DM_SQUARE, "\200\200\200\200\200\200\200\200\200\200", 0, 16, 16, 1, "8 BASE256s, square, no padding",
+        /* 39*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, -1, -1, DM_SQUARE, "\200\200\200\200\200\200\200\200\200\200", 0, 16, 16, 1, "8 BASE256s, square, no padding", 0,
                     "1010101010101010"
                     "1000010100001101"
                     "1101011111101110"
@@ -1559,7 +1610,7 @@ static void test_encode(int index, int generate, int debug) {
                     "1111000011111010"
                     "1111111111111111"
                 },
-        /* 40*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, -1, -1, -1, "\200\200\200\200\200\200\200\200\200", 0, 16, 16, 1, "9 BASE256s, 1 pad",
+        /* 40*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, -1, -1, -1, "\200\200\200\200\200\200\200\200\200", 0, 16, 16, 1, "9 BASE256s, 1 pad", 0,
                     "1010101010101010"
                     "1000010101001101"
                     "1110011111000010"
@@ -1577,7 +1628,7 @@ static void test_encode(int index, int generate, int debug) {
                     "1100000011011010"
                     "1111111111111111"
                 },
-        /* 41*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, -1, -1, -1, "\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200", 0, 22, 22, 1, "22 BASE256s, 6 pads",
+        /* 41*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, -1, -1, -1, "\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200", 0, 22, 22, 1, "22 BASE256s, 6 pads", 0,
                     "1010101010101010101010"
                     "1010010100011100010101"
                     "1000011110111110001100"
@@ -1601,7 +1652,7 @@ static void test_encode(int index, int generate, int debug) {
                     "1111101000110111010100"
                     "1111111111111111111111"
                 },
-        /* 42*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, -1, -1, DM_DMRE, "\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200", 0, 8, 64, 1, "22 BASE256s, no padding",
+        /* 42*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, -1, -1, DM_DMRE, "\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200", 0, 8, 64, 1, "22 BASE256s, no padding", 0,
                     "1010101010101010101010101010101010101010101010101010101010101010"
                     "1000010101100011101010101011101111110100100110011100010011010111"
                     "1101011110001010110000001110001010001011010111001010101101100000"
@@ -1611,7 +1662,7 @@ static void test_encode(int index, int generate, int debug) {
                     "1101000011001010111101101101110010111100111101001010010011001000"
                     "1111111111111111111111111111111111111111111111111111111111111111"
                 },
-        /* 43*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, -1, -1, -1, "\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\061\062\063\064\065\066", 0, 64, 64, 1, "249 BASE256s + 6 ASCII (3 double-digits)",
+        /* 43*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, -1, -1, -1, "\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\061\062\063\064\065\066", 0, 64, 64, 1, "249 BASE256s + 6 ASCII (3 double-digits)", 0,
                     "1010101010101010101010101010101010101010101010101010101010101010"
                     "1000010100011101100000010111100110100010110111011011111010000001"
                     "1100011110111110100110111101111010101101000010001101001011001100"
@@ -1677,11 +1728,11 @@ static void test_encode(int index, int generate, int debug) {
                     "1000001101010100110010010110101010000000001010101100100011101010"
                     "1111111111111111111111111111111111111111111111111111111111111111"
                 },
-        /* 44*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, -1, -1, -1, "\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\061\062\063\064\065\066", 0, 64, 64, 1, "250 BASE256s + 6 ASCII (3 double-digits)",
+        /* 44*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, -1, -1, -1, "\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\061\062\063\064\065\066", 0, 64, 64, 0, "249 BASE256s + 8 ASCII (Sh A80 + 3 double-digits); BWIPP uses 2nd B256 length byte instead of ASCII shift (same no. of codewords)", 0,
                     "1010101010101010101010101010101010101010101010101010101010101010"
                     "1000010100011101100000010111100110100010110111011011111010000001"
                     "1100011110111110100110111101111010101101000010001101001011001100"
-                    "1110101100010111110011110010101111111101101111111000111010011111"
+                    "1101101100010111110011110010101111111101101111111000111010011111"
                     "1000100000010100101110100100010011101111110111101111000010011100"
                     "1100011100101001111000111100010110100000001000111000010111011111"
                     "1001010100111000110001000111000010000110010001101001010100110110"
@@ -1691,59 +1742,59 @@ static void test_encode(int index, int generate, int debug) {
                     "1000000110110110101100000110101010111110101110001001100111001010"
                     "1011110011010011100100010101110110010111100011011011000101010001"
                     "1111000000110100100110001000001010110000101101001000110010011100"
-                    "1100010111100011111010011010011110001011111110011001011110111101"
-                    "1111011001000110110011110110010010011101001110101110100000101100"
+                    "1100010111100011111010011010011110001011111110011001011110100101"
+                    "1111011001000110110011110110010010011101001110101110100000111100"
                     "1111111111111111111111111111111111111111111111111111111111111111"
                     "1010101010101010101010101010101010101010101010101010101010101010"
-                    "1110001011011001101110110011001111000100100101111110101111100101"
-                    "1110110010110010111000100100011010010000000010101111111100111100"
-                    "1101000010101101110111100001111110100100111100111100010100100111"
-                    "1000100110010100110000111011001011101101110101001001100010111100"
-                    "1111100101011001100001011010011111100110001111111010111110011111"
-                    "1000001111111110110101011001100011101101000010101100111001110110"
-                    "1111000000111101101111010011010111000001100001111110011100001001"
-                    "1111010010101010100000011000001010001110111110101111111000000110"
-                    "1011001001000111100000011010011110111101001101011101101101000001"
-                    "1000010001100010101101001011010011100111000010101100000111001110"
-                    "1111011010100001111100001110110111001001101010111000001101110001"
-                    "1110100001010010100001011000100010001010110100101111101011111010"
-                    "1111111110101101111011010111110111101000000011011100011010110011"
-                    "1001110010110010111011001000101011011101000101001101001000111100"
+                    "1110001011011001101110110011001111000100100101111110101110001101"
+                    "1110110010110010111000100100011010010000000010101111111100110100"
+                    "1101000010101101110111100001111110100100111100111100010000000001"
+                    "1000100110010100110000111011001011101101110101001001100000001100"
+                    "1111100101011001100001011010011111100110001111111010101001000111"
+                    "1000001111111110110101011001100011101101000010101100111101110110"
+                    "1111000000111101101111010011010111000001100001111110000111011001"
+                    "1111010010101010100000011000001010001110111110101111011000110110"
+                    "1011001001000111100000011010011110111101001101011100111100001001"
+                    "1000010001100010101101001011010011100111000010101110100100111110"
+                    "1111011010100001111100001110110111001001101011111100111010000111"
+                    "1110100001010010100001011000100010001010110101101010010100110100"
+                    "1111111110101101111011010111110111101000101010111010111100010011"
+                    "1001110010110010111011001000101011011100011101101100100011101100"
                     "1111111111111111111111111111111111111111111111111111111111111111"
                     "1010101010101010101010101010101010101010101010101010101010101010"
-                    "1101000101000011110110000010110111101001011000111010110010100001"
-                    "1101111101111010110111110101100011001010101001101000101001101010"
-                    "1011011101111111111111010000101111010010000101111010110001110011"
-                    "1011011110000100101000101100100011101101110110001000100001011000"
-                    "1000101100001001110001110111011111100100110001111010001000000011"
-                    "1010100101101000110000011111111010100100111100001000101101101010"
-                    "1100001101001011101001110000101111100100010010111110010000001011"
-                    "1100000011000000110100100100100011000110000010101000010110110110"
-                    "1001100111111111101100110100000110111000011000011100001111101111"
-                    "1010100111101010101001000101001011100101100111001001001111010110"
-                    "1100100101001111101001111111011111100001111110011101111100010111"
-                    "1111100101100000100001110001101011001010100100101100010000010100"
-                    "1110111011000011110010010010111111100100100001111100111010001101"
-                    "1011110001011110101100100110010010101001010100101101000001110010"
+                    "1101000101000011110110000010110111101000011000111110111010011001"
+                    "1101111101111010110111110101100011001000101011101100100111110010"
+                    "1011011101111111111111010000101111010010000110111110001111100111"
+                    "1011011110000100101000101100100011101101110010101111000100001000"
+                    "1000101100001001110001110111011111100100111110111000100100000101"
+                    "1010100101101000110000011111111010100100001011101001001011010010"
+                    "1100001101001011101001110000101111100100000011111111101010100011"
+                    "1100000011000000110100100100100011000101101010101101011011101110"
+                    "1001100111111111101100110100000110111010110011011010001010001111"
+                    "1010100111101010101001000101001011101010101011101100000011001110"
+                    "1100100101001111101001111111011111101011101001011001101101011011"
+                    "1111100101100000100001110001101011011101110000001010101100110100"
+                    "1110111011000011110010010010111111011111110111111110001001101011"
+                    "1011110001011110101100100110011010001101000111001110011110001110"
                     "1111111111111111111111111111111111111111111111111111111111111111"
                     "1010101010101010101010101010101010101010101010101010101010101010"
-                    "1110111000110011111011100100011111101101100100111111000011010011"
-                    "1110110010010110100100001110010011101110010000001010101110001000"
-                    "1001001101100001111011100010101111000101010111011100100110111001"
-                    "1010011111000110111100001101100010111100111111101001010010101100"
-                    "1011111111010001100011010010100111101001000010111010100101101111"
-                    "1011011011010000111100001110110011011110010110101010011100011000"
-                    "1010100010001111100111010011101110110010101101111101010110000111"
-                    "1010001000011110101101100000011010001010000001001110110101111010"
-                    "1100100011011111101101111000111110011111110000111101110101101101"
-                    "1110001110100110101001011010011010100101010101101100001001011110"
-                    "1111011111010111111101011100110110100100010110011100011100000111"
-                    "1111110000011000101010001010011011001100101101101000111111001000"
-                    "1011101010110001101111110010010111001010000001111001100011111101"
-                    "1000001101010100111000010100101010000010001011101100100111101010"
+                    "1110111000110011111011100100010111111011010010011101000000001011"
+                    "1110110010010110100100001110100011101000100110101001000110101000"
+                    "1001001101100001111011100010111111111010011111011010100111110001"
+                    "1010011111000110111100001110111011011000000101101101011000001000"
+                    "1011111111010001100011010011011111001000000100011011100011101111"
+                    "1011011011010000111100001000111010101111011101101101010111001000"
+                    "1010100010001111100111010001110110110101011001011101010011101001"
+                    "1010001000011110101101011010000011001010110101101000110111100000"
+                    "1100100011011111101101011101110110001000001011111000100101111101"
+                    "1110001110100110101001100110100010111111000101001110100100110110"
+                    "1111011111010111111110100001101111100010101100111101010001000111"
+                    "1111110000011000101010110101101010000111111000001011100010000000"
+                    "1010101010110001101001110010010111001010001001011001111101101001"
+                    "1000001101010100110100010100101010001100001000101100101001101010"
                     "1111111111111111111111111111111111111111111111111111111111111111"
                 },
-        /* 45*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, -1, -1, -1, "\101\102\103\104\105\106\107\110\111\112\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\061\062\063\064\065\066", 0, 64, 64, 1, "10 ASCII + 251 BASE256s + 6 ASCII",
+        /* 45*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, -1, -1, -1, "\101\102\103\104\105\106\107\110\111\112\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\061\062\063\064\065\066", 0, 64, 64, 1, "10 ASCII + 251 BASE256s + 6 ASCII", 0,
                     "1010101010101010101010101010101010101010101010101010101010101010"
                     "1010011010011101100000010111100110100010110111011011111010000001"
                     "1011001010111110100110111101111010101101000010001101001011001100"
@@ -1809,7 +1860,7 @@ static void test_encode(int index, int generate, int debug) {
                     "1001010101010100111010010100101010000010001011001100101011101010"
                     "1111111111111111111111111111111111111111111111111111111111111111"
                 },
-        /* 46*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, -1, -1, -1, "\101\102\103\104\105\106\107\110\111\112\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\061\062\063\064\065\066\067\070\071\060\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\061\062\063\064\065\066", 0, 88, 88, 1, "10 ASCII + 252 BASE256s + 10 ASCII + 253 BASE256 + 6 ASCII",
+        /* 46*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, -1, -1, -1, "\101\102\103\104\105\106\107\110\111\112\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\061\062\063\064\065\066\067\070\071\060\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\061\062\063\064\065\066", 0, 88, 88, 1, "10 ASCII + 252 BASE256s + 10 ASCII + 253 BASE256 + 6 ASCII", 0,
                     "1010101010101010101010101010101010101010101010101010101010101010101010101010101010101010"
                     "1010011010011100000001110111100010001011011111001111101000000110011111111000100110101111"
                     "1011001010111110011010111101111010110100001010010100101100110010101011111110101001100000"
@@ -1899,7 +1950,7 @@ static void test_encode(int index, int generate, int debug) {
                     "1101010100110101110000110100001000100000101010010010101110100111001111100010001001001100"
                     "1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
                 },
-        /* 47*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, -1, -1, -1, "\101\102\103\104\105\106\107\110\111\112\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\061\062\063\064\065\066\067\070\071\060\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200", 0, 88, 88, 1, "10 ASCII + 252 BASE256s + 10 ASCII + 304 BASE256, no padding",
+        /* 47*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, -1, -1, -1, "\101\102\103\104\105\106\107\110\111\112\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\061\062\063\064\065\066\067\070\071\060\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200", 0, 88, 88, 1, "10 ASCII + 252 BASE256s + 10 ASCII + 304 BASE256, no padding", 0,
                     "1010101010101010101010101010101010101010101010101010101010101010101010101010101010101010"
                     "1010011010011100000001110111100010001011011111001111101000000110011111111000100110101111"
                     "1011001010111110011010111101111010110100001010010100101100110010101011111110101001100000"
@@ -1989,7 +2040,7 @@ static void test_encode(int index, int generate, int debug) {
                     "1101010100110101100000110110001000001000101011110010001110100101001111000010001111001100"
                     "1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
                 },
-        /* 48*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, "@@@@@@@@@_", 0, 8, 32, 0, "EDI; BWIPP uses different encodation, switching to ASC for last 2 chars, not last 3 like Zint",
+        /* 48*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, "@@@@@@@@@_", 0, 8, 32, 0, "EDI; BWIPP uses different encodation, switching to ASC for last 2 chars, not last 3 like Zint", 0,
                     "10101010101010101010101010101010"
                     "10000000001001111001101100001101"
                     "10000000000001001001110011001100"
@@ -1999,7 +2050,7 @@ static void test_encode(int index, int generate, int debug) {
                     "11000000000000001001000001011010"
                     "11111111111111111111111111111111"
                 },
-        /* 49*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, "@@@@@@@@@@_", 0, 16, 16, 0, "EDI; BWIPP uses different encodation, switching to ASC for last 3 chars, not last 4 like Zint",
+        /* 49*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, "@@@@@@@@@@_", 0, 16, 16, 0, "EDI; BWIPP uses different encodation, switching to ASC for last 3 chars, not last 4 like Zint", 0,
                     "1010101010101010"
                     "1000000001000001"
                     "1000000000111110"
@@ -2017,25 +2068,25 @@ static void test_encode(int index, int generate, int debug) {
                     "1010100000010010"
                     "1111111111111111"
                 },
-        /* 50*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, "@@@@@@@@@@@_", 0, 16, 16, 0, "EDI; BWIPP uses different encodation, switching to ASC for last 4 chars, not last 5 like Zint",
+        /* 50*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, "@@@@@@@@@@@_", 0, 16, 16, 0, "EDI; BWIPP uses different encodation, switching to ASC for last 4 chars, not last 1 like Zint", 1,
                     "1010101010101010"
-                    "1000000000100001"
-                    "1000000000001010"
-                    "1000000010001001"
-                    "1000000100001000"
-                    "1000001000110111"
-                    "1000000011101110"
-                    "1110100111100001"
-                    "1110000111010100"
-                    "1010011001111101"
-                    "1000000000000110"
-                    "1001010011101111"
-                    "1010000011111000"
-                    "1101100111110101"
-                    "1001100000100010"
+                    "1000000001000001"
+                    "1000000000001100"
+                    "1000000100100001"
+                    "1000000000000010"
+                    "1000001001100111"
+                    "1000010001000110"
+                    "1000000010101001"
+                    "1000111011011000"
+                    "1001110001101101"
+                    "1000111000000000"
+                    "1000100111110111"
+                    "1011100111000100"
+                    "1011000110111101"
+                    "1000100000100010"
                     "1111111111111111"
                 },
-        /* 51*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, "@@@@@@@@@@@@_", 0, 16, 16, 0, "EDI; BWIPP uses same encodation for this case, switching to ASC for last 5 chars, not last 2 like Zint",
+        /* 51*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, "@@@@@@@@@@@@_", 0, 16, 16, 0, "EDI; BWIPP uses different encodation, switching to ASC for last 5 chars, not last 2 like Zint", 0,
                     "1010101010101010"
                     "1000000000100001"
                     "1000000000111000"
@@ -2053,7 +2104,7 @@ static void test_encode(int index, int generate, int debug) {
                     "1011100000010010"
                     "1111111111111111"
                 },
-        /* 52*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, "@@@@@@@@@@@@@_", 0, 12, 26, 0, "EDI; BWIPP uses different encodation, switching to ASC for last 2 chars, not last 3 like Zint",
+        /* 52*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, "@@@@@@@@@@@@@_", 0, 12, 26, 0, "EDI; BWIPP uses different encodation, switching to ASC for last 2 chars, not last 3 like Zint", 0,
                     "10101010101010101010101010"
                     "10000000001001100100101011"
                     "10000000000010000000111000"
@@ -2067,164 +2118,164 @@ static void test_encode(int index, int generate, int debug) {
                     "10000001000001101011010000"
                     "11111111111111111111111111"
                 },
-        /* 53*/ { BARCODE_DATAMATRIX, -1, 26, -1, -1, -1, "abcdefghi1234FGHIJKLMNabc@@@@@@@@@é", 0, 24, 24, 0, "Mix of modes TEX ASC C40 ASC EDI BAS; BWIPP uses different encodation for EDI as above",
+        /* 53*/ { BARCODE_DATAMATRIX, -1, 26, -1, -1, -1, "abcdefghi1234FGHIJKLMNabc@@@@@@@@@é", 0, 24, 24, 0, "Mix of modes TEX ASC C40 ASC EDI BAS; BWIPP uses different encodation", 0,
                     "101010101010101010101010"
-                    "100111011110011100100101"
-                    "101111001100101100001100"
-                    "101110110110001010011011"
-                    "100100110000101000010110"
-                    "111011010011000001000111"
-                    "101010011000101111100110"
-                    "100111101000011110110001"
-                    "100111010000000001111100"
-                    "101110101000001010011011"
-                    "101111100000000100111110"
-                    "111111100000101101010001"
-                    "100111000000111111101100"
-                    "101000000001011001011101"
-                    "110100000001101010011000"
-                    "100000001000001001110001"
-                    "111000011110010010110100"
-                    "111000110011110110101011"
-                    "111011010100011100100000"
-                    "100010010011101010000101"
-                    "100010001010001100011100"
-                    "110011110000001011001101"
-                    "110111010101111111011010"
+                    "100111011110011101000101"
+                    "101111001100101101101000"
+                    "101110110110001110110011"
+                    "100100110000101100000010"
+                    "111011010011000111011111"
+                    "101010011000101100110110"
+                    "100111101000011111010001"
+                    "100111010000001011100100"
+                    "101110101000001101111011"
+                    "101111100000100111011110"
+                    "111111100000011100111011"
+                    "100111000010101010001010"
+                    "101000000010000111010101"
+                    "110100001000111110001000"
+                    "100000000100100010100001"
+                    "111000101000011111101100"
+                    "111000101111000100000011"
+                    "111001010010011000011000"
+                    "100001100010101101010101"
+                    "101011000110000010000110"
+                    "110111111101101101101101"
+                    "111101010110111111111010"
                     "111111111111111111111111"
                 },
-        /* 54*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, -1, -1, -1, "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyz&,:#-.$/+%*=^ABCDEFGHIJKLMNOPQRSTUVWXYZ12345678901234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ;<>@[]_`~!||()?{}'123456789012345678901234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ12345678912345678912345678912345678900001234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyz&,:#-.$/+%*=^;<>@[]_`~!||()?{}'ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyz&,:#-.$/+%*=^ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyz&,:#-.$/+%*=^abcdefghijklmnopqrstuvwxyz&,:#-.$/+%*=^abcdefghijklmnopqrstuvwxyz&,:#-.$/+%*=^;<>@[]_`~!||()?{}'\001\002\003\004\005\006...............\015\015\015\015\015\015\015\015abcdefghijklmnopqrstuvwxyz\015\015\015\015\015\015\015\015...............\001\002\003\004\005\006ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyz&,:#-.$/+%*=^...............", 0, 132, 132, 0, "Mixed modes (except B256); BWIPP different encodation",
+        /* 54*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, -1, -1, -1, "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyz&,:#-.$/+%*=^ABCDEFGHIJKLMNOPQRSTUVWXYZ12345678901234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ;<>@[]_`~!||()?{}'123456789012345678901234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ12345678912345678912345678912345678900001234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyz&,:#-.$/+%*=^;<>@[]_`~!||()?{}'ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyz&,:#-.$/+%*=^ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyz&,:#-.$/+%*=^abcdefghijklmnopqrstuvwxyz&,:#-.$/+%*=^abcdefghijklmnopqrstuvwxyz&,:#-.$/+%*=^;<>@[]_`~!||()?{}'\001\002\003\004\005\006...............\015\015\015\015\015\015\015\015abcdefghijklmnopqrstuvwxyz\015\015\015\015\015\015\015\015...............\001\002\003\004\005\006ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyz&,:#-.$/+%*=^...............", 0, 132, 132, 0, "Mixed modes (except B256); BWIPP different encodation", 4,
                     "101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010"
-                    "101001101001010011000111100011111001011001011010011011010011011101110111100110101011100111110000100011100000011010110110111101110001"
-                    "101100101010110110010011000010100000111010101111010101001001101010100011010100110111111010101011001011100110101010000001010110111100"
-                    "100110010000100111011110100001010100101110111101000000001001000011101111111011010000010110001001100000010001111101111011101011100111"
-                    "101010011110000110101010001010010010000101101101000110111111111110111011001011001111011011101001000100000110001111001101110111010100"
-                    "100001101000001110110111000000101011010001011111110001000100100001111100100000001001001110111111101001110110011010001101010001110111"
-                    "110000101111011110011010000001101111000100001110000111110100111010101010100110110101001011010111101101101111101001100001000001011100"
-                    "111101011101000110000110111101011100101010111111110110010100011101100000010001011101000111010110111011100001111011011000000110101101"
-                    "111100100111111111101010110000000110111100101101101101000110011110110100000100010001110010000001011111111100001111010110111011000110"
-                    "110110011010110000100110010000000010111110111011100111111000110011100111110101111110011111111011110001100001011100110001101111101111"
-                    "101111110100111101111010011100110111001000001111000101111011010010101111101110101110100011001100111111010010101011000101101000110010"
-                    "101011101110100100000110101100100010010011011001011011101001010001110011101011110000101110001100101101110000111001110101100000110101"
-                    "101011000011010111011011110110000100101101101111101011101000011000111111011010101011000011101101000001011110001111101100010010110010"
-                    "110110000001101101000111110100001000100010111110111000111111100111110001011100001001101111001111100111101011011011101111111100111011"
-                    "100010110001001100001011011111001110100100001110110111010111100100111111000111101000010010101000111010101111001111111100010010100110"
-                    "101110110111001001001110011110111011111110011110010101001110100011101111110010111001011111010000101101011011011001110000011100011111"
-                    "111101111011011010001011111100111101000011001000111100001111110100101011010011010010100010110001101100000011101110000000100011110110"
-                    "111111101001100101100111100011000101000011111111010111100001011111100011010001010000100110110001110110101010111101111000100100011001"
-                    "101101101101010111010010110000110001001011001011101011011010100010101100011100011101000011011100001110111100101101010001000100111100"
-                    "101101111111010111110111000001011011000011111010011001011111000011100111100111101010100110111111001010110110011010011010100010111111"
-                    "101100010101001011010010011110100101101101001010001011000101001010100011101000101010001010101100100111000010101100001010000110100000"
+                    "101001101001010011000111100011111001011001011010011010010111111101110111100110110110000111110000111000011100111110111010111110010101"
+                    "101100101010110110010011000010100000111010101111010100001111001010100011010100110101000010101011010001111011001010111111011000100110"
+                    "100110010000100111011110100001010100101110111101000100110001000011101111111010010111110110001000111010011010111111011011000000110111"
+                    "101010011110000110101010001010010010000101101101000011010001111110111011001010001100111011101001110100000111101100001000011111100100"
+                    "100001101000001110110111000000101011010001011111111010111100100001111100100100110101001110111110100101000000011111100111011010010111"
+                    "110000101111011110011010000001101111000100001110000111001100111010101010100011100111001011010111010100000100001100110101011111001100"
+                    "111101011101000110000110111101011100101010111111000001010100011101100000011010110101000111010110110101101110111000001001011011101001"
+                    "111100100111111111101010110000000110111100101100001001100110011110110100000111100001110010000010011001110010001110110000111110010010"
+                    "110110011010110000100110010000000010111110111101101100111000110011100111000010011110011111111000101101010110111110010011111100000001"
+                    "101111110100111101111010011100110111001000001001111000111011010010101110001111001110100011001010111010011001101001101101110000100110"
+                    "101011101110100100000110101100100010010010111101100110111001010001110101101011110000101110000000101111000101111101101011110110101101"
+                    "101011000011010111011011110110000100101101101011110111101000011000111001111110101011000011111100101110001011101100011101100100101010"
+                    "110110000001101101000111110100001000100010111110111110111011100111101101111100001001101111001010101001000010111100001100110111111011"
+                    "100010110001001100001011011111001110100010101111110111010011100100111001110111101000011010000100111101110000101000100001101111000110"
+                    "101110110111001001001110011110111011101010111111111101011011100011101101110010111001010111110000101110101011011110011010110000011111"
+                    "111101111011011010001011011100111101010001101101001100011111110010101001110011010010000011001111111010101110001111010010010001110110"
+                    "111111101001100101100111111011000101000001111101100111111001001011100011010001010000000110011111110101101011011100101010111100011001"
+                    "101101101101010111011011010000110000111001101110101011011010110010101100011100011110011010100111010001110110101011010011001100111100"
+                    "101101111111010111111110000001011001110011111100011111111111000011100111100111101010111110000111011001101011111001100001000010111111"
+                    "101100010101001011001011011110100010101100101010001100000100111010100011101000100010110010100110111001001010001111111001100110100000"
                     "111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
                     "101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010"
-                    "111111000101011100101110011100100011100110111010111101010011001111111100001101011101100110001010110111000010011001011100110001001101"
-                    "111101101010101010011011111011001010100000101111101111000101110100101010110100100111001010110011100100111001101000100111100010000110"
-                    "110101100101000010000111011001100011110110011001101000100011010101100010010110100111101110010111111001101100011100100111001011001111"
-                    "100100011111111110011011101001001101010011101011000110101011000110111010001111111111101010000001101010111100001011111011110111101100"
-                    "111011100100100001110110111111100101011101111110100011100001110011101111001000010110111110000011100010101000111100001101000001001001"
-                    "100110001100010001111011010111110001101001101000110111001110010010110100101111000011010011000000000100001000101111000001001011010010"
-                    "111001010100100011100111010110011010110001011110100111101011010001110010111001111001001111000101100110100010111001011101110110111101"
-                    "111011000110110011110010000011100101100101001010000111011110011100100011110101001100010011100001011011110111001101101100000000000010"
-                    "100111111011111000011111111010110100000101111100010110011111100111110111011010000111110111000101111010011101111000001011111101011011"
-                    "101110110101110110100011000111110010010110101111000011001011101000100000010001111001010010011011011101010001001011101101011000000010"
-                    "101111001110010100101110000110000000101011111111111010111100001001100001111011101010010111001111011001110111011010000011111000101101"
-                    "110010110010111011000011110011101011010111101101000100101010110100101110100101111011010010001110010101111010001000110011001101111010"
-                    "110000110111011001101111101100011001010010011010001011000010001101101010010101111001010111001011100111101110111101111001111110011001"
-                    "111110110011101000010011001001101001000011001001001011111010010100111010101100110110001011010110110101101101101010100011101100111100"
-                    "101000111010111001011110111101111000000101111011100100101111110101111100001011111100000111101111011101101011111100001001001010011101"
-                    "100010110011010010001010111011010110010000001110100100110101011100100111010010110011110011100110111100001001001111010101100111011100"
-                    "101101101001010000100110111001010001101001011100010100010010011111111010101111001001111111111111111111010100111101001011010010001101"
-                    "100010001100011110100011111100000110011010001100000111000011101100101000101010100001010010111101101101111101001010000101100110101110"
-                    "100101100111101000010110010111110110010000011111111001111001001101110110010000010100010111110011001001101001111101000001011100101111"
-                    "100100111000100100011011111001101110011110101110111010010110110100101010011110010110001011111110110101010001101110010011001011011100"
+                    "111111000101011100010110011100111000100010111110110110010001111111111100001101011110111110001100101110101011011001111100110001001101"
+                    "111101101010101010000011111011010010100111101111111011000010110100101010110100111101111010110010011011001111001000111001100010000110"
+                    "110101100101000001100111011000111011111001011001110000111000010101100010010110000110101110001011111000001011111000100111001011001111"
+                    "100100011111110111111011101001111101000011101010100110110011000110111010001101000111101010001100000110000011001011110011110111101100"
+                    "111011100100101000110110111110100100000001111010110010111001110011101111001011110110111111011101000111101001111010101101000001001001"
+                    "100110001100010000111011010111110001111001101111110111111110010010110100101100100011010010001000000110111000101111100001001011010010"
+                    "111001010100010110110111010110011101100001111001100110101011010001110010110101111001000110000001101010100110111111011101110110111101"
+                    "111011000101010111110010000011100101100100001010000111011110011100100011100111001100010010000111010111000001101101101100000000000010"
+                    "100111111011011110011111111010100101000000011000010110011111100111110111110010000110110110010001110110010101111000001011111101000011"
+                    "101110111001110110100011000111100010010111101111000011001011101000100011100001111001010011000111100100001001101011101101011000010110"
+                    "101111000011111100101110000111001100110110111111111010111100001001100010011011101111010111010110111001000011011010000011111000101001"
+                    "110010101011001011000011110010111011010101101101000100101010110100101111000101111101100010101101101000101100001000110011001101111110"
+                    "110000000101101001101111101110101000010111111010001011000010001101101010010101101001000110111111100011100110111101111001111110010011"
+                    "111111110110101000010011001001101000001101001001001011111010010110111110101100101100111010111001100010100101101010100011101100111000"
+                    "101000111100111001011110110000111100111001111011100100101111110111111100001011100110010110101111001011101011111100001001001010100101"
+                    "101000001011010010001010100011010011001100001110100100110101010110110111010011011000010011001110111101001001001111010101100110001100"
+                    "100110101101010000100111011001011010010001011100010100010010010111111010101111110100011110111111110101010100111101001011010011001101"
+                    "100101111100011110100010011100000110000010001100000111000011100110101000101011100101010010110101110001111101001010000101101101011000"
+                    "100110010111101000001111010111000001110000011111111001111001001101110110011100001111110110010011011001101001111101000001010011111101"
+                    "111000111000100100011010111000000111111110101110111010010110110100101010001000011101100010111111100101010001101110010011101000111100"
                     "111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
                     "101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010"
-                    "110111101101010110101111101011100001101001011111000011111110010111100001001000110110111111001010010000110011011101110111000001011111"
-                    "111001111100101111000011111111010000101001101010101100111010001100110001000001110001111011011010001000111100001000000100111110100010"
-                    "101101110110010111100111110001100101010111011000100111001111001001111101001101101100011111101111100100111111111011100011000010111011"
-                    "111100101110011000110010111110110100100101101110100010110100101010111001110000010100110011110101111011101011101111101100101101111100"
-                    "101011001001110000101110101111110110100100111011110000010010110101111110010101100111001111010010011000000000011010001101011111111101"
-                    "110010101001010001001011000101101111110100101101011111000011100110111110011011011001111011000100001011110110101011011000101000101100"
-                    "101010111000110010111111101111001001010100011101001001110111011011111000111010011100100111111011111100100111111010110101010111010011"
-                    "101011111101010010100010110010101010100111001001001110000010010010110111111001110101111010000111100100111000001011110101011001010110"
-                    "110111010000111001000110110010111111111001111101001010000010011001100001100010011110101110010001000011110000111111101011100111000011"
-                    "100010101010101001001010110011000100111110001001011111001111010100100011110100010101111011100101000110010101001100101101011011100110"
-                    "100011111000000011000110110111010111001011111110011011000100010101110011101001001101110111101010110100110101011101010111100011110001"
-                    "100001010001000101001010100011000010011111101111001101101010111010100011010011111100101011000011100001001010001100111010001010111100"
-                    "100101111001100011110110000000110000011011111010111101111111010101111000111110101010011111000111011001111001111111010011000001010101"
-                    "110001111011101010001011000110111111001011001100110100010011010110110100111110010010011010001011100011111101101110101010100011101110"
-                    "101101100101100010001111000011001010111000111010100101011010010001110110000000101010010111001110110011101100011001011101101011010001"
-                    "101000100111000100010011110111000100110100101010111100010001001010110101000100101110001011100101111101111111001011101100000001001110"
-                    "111110011111101011110111100101001010010110011110010011101001011101111110011010011001101111000000111000101001111101000010110000011011"
-                    "110010010111101001011010000001001010111010001101011010001010101100111010011010001111110011101111001011101001101001011111010010001010"
-                    "100010010110110010010110011110100111010001111111001101100101101011111111100000101000000110011000000100000110111110101101100111001011"
-                    "111111000010011011111011011110100011010000101111011100011111000010101111010000000110001011011001111011001000001000001100110110111000"
+                    "100000101101010110101111101101101001101001011111000011111110010111100001000011010001110111001010110000110011011101110111001001110011"
+                    "111101111100101110100011111001010000101001101010101100111010001100110001111100011001111011010111101000111100001000000111001010101000"
+                    "111001110110010010100111101101010101010111011000100111001111001001111100100101011001111111100111100100111111111011100010100111100101"
+                    "111100101110011100110010111001010100100101101110100010110100101010111100100111000111110011110011111011101011101111101101001000000100"
+                    "111011001001110000101110101111010110100100111011110000010010110101110100001110111001001111101010011000000000011010000000001001111101"
+                    "110010101001001101001010101001101111110100101101011111000011100110100101111001010001110011001100001011110110101011101010011010100000"
+                    "101010111000011110101110100011001001010100011101001001110111011011111000010110100100101110111011111100100111111010010011000010111111"
+                    "101011111100100010110010101010101010100111001001001110000010010010110000101101001101001010100111100100111000001001000000101001000110"
+                    "110111010110001001000110000010111111111001111101001010000010011011110101101011111110100110010001000011110000111101101001110001001101"
+                    "100010101100101000111011110011000100111110001001011111001111011110101001100011110110100011100101000110010101101101111000010111010000"
+                    "100011101110000001110110110111010111001010111110011011000101111001110010001001001100010111101010110100110101111001010111110000101001"
+                    "100001011101000010100010000011000010011110101111001101101011010100111111010101110100001011000011100001001010101111000010000101101100"
+                    "100101101001111000011110000000110000011110111110111101111111110101111011111100100110011111000111011001111001111001001110100011001101"
+                    "110001111011110000010011000110111111001111001100110100010100010010111101101101101110011010001011100011111000101000000100111011011010"
+                    "101101100100111000001111000011001010111110111010100101010110010111111011111110010010010111001110110011100110111111110100110100100001"
+                    "101000100111111001110011110111000100110100101010111100011010101100110010110110011110001011100101111101011011101001100111101010001110"
+                    "111110011110101011110111100101001011111110011110010011110001011111111011001101111001101111000000111000000011011101101111011110010111"
+                    "110010010111001011011010000001001011001010001101011010100111110000100011111001001111110011101111001000001010001001101101001010110010"
+                    "100010010110111010010110001110100101100001111111001010111001011011101110101000101000000110011000000101111001011100101010100010001011"
+                    "111111000011110011111011001110100110010000101111011111100011100100110110111100000110001011011001111011110010101101100101110001011000"
                     "111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
                     "101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010"
-                    "110101111010011001111110111000011010011111011010010111100110101011100110011101000111001111111100111011101110011110001100011101110011"
-                    "101011001111110111110010110100010010111010101000011010001000000010100010111101110110000010011100100000101110001110010000010000010110"
-                    "111010000001111110011110000111101001010000011000101101010110101001100101000101110111000111000100110110011101011111011100110000010011"
-                    "110001111100110011010011101110001001111111101101011011010001010000101001101010001101100011100100010100110101001011100000001110111000"
-                    "111011100111000100010111010101100111001011111101000111011100000001100110111100101100101110111010001101100001111011011101010100111001"
-                    "100111010010010000111010011100100101000111001100101111100100000010100101110000101001001011100001100100010101001101111111100001101110"
-                    "110101110000101111010111110111100101001110011000001010111110000111100111111001011000011111100010011111110100011100101000011010110001"
-                    "100001011110011011100011011011110001010101101010110101011000001110110101100001111100001011111000000000010110001111001111111000110010"
-                    "100111001010011010100110101101011110111100011110010100111110000101101000110001110100111111110111000010000101011011011100000111001001"
-                    "111011001110010011110011011010111111011001101010010000110101101010101001110101011100011010001001111111100110001000110011111100010110"
-                    "101101000001101001010111001110111011011101111110000010111110111101101000110001101100010110001101111010101000011011100001000111000111"
-                    "101001010000001010110010000100111000011011001101100000011100010110111110101000101110100010001000010000111101001000110001001011100110"
-                    "111110100101101110000110010110000110111001011100010000111001000011111001101000000010101110010011000000110100011101011011001110100101"
-                    "111110110100000101101011000101110101111100001001000100111100010000110111111010101110101011100010110011011000001001000110110110000010"
-                    "111011110111010100010110100101001100010111111101000110000011010111111010100111010010100110100111011000000001011001010101000001100011"
-                    "110101111011000001011010101110110111111001101000011101011010010000110100000110000101011010111101101011111000001110011001101100000010"
-                    "101110101100111101001111110110001011101011111000000101001111100101111100110111011111010111011001010100100100011011000111111001001001"
-                    "110011010110111011011010111001110001111111001010001111011110100100100111010101111100111010100010000111001101101010001110001110101110"
-                    "110101000010111010011110101101111001110001011001110110001110101001110100101101101011100111110000111001101100111011001101010100011011"
-                    "110100110111111000010010111100001100111100101010111000010000000110100100001000001101001011110111000010111011001100011001110000010110"
+                    "110101111000011001111111101100011100011111011010011001010111000001100000010101000111001111111100111111101111011011011011001111100011"
+                    "101011000100010101110011110100001010111010101000000010110010010000100110101101110110000010011100000101110011001010110000010011000010"
+                    "111010001111111111111111100110101101010000011000000001101011111001111011100101110111000111000100001111111110111000010110101101001111"
+                    "110001110010111101010011101111111001111111101101111011111101100000110001001010001101100011100101111101000011001100100100010000010000"
+                    "111011010111001001111111010110010111001011111101100011100111111111100100111100101100101110111011011010010101111111111110110111010001"
+                    "100110011010001101001010011000100101000111001101101100000011011110110001110000101001001011100001100011001101101100101111011001111000"
+                    "110111010000010101100111100000100101001110011101100000001010011001101111111001011000011111101110111111011010111000011100100011000001"
+                    "101110011110000110100011011111110001010100001010100111000000000110101101100001111100001011010101001110010001001100101000001010100010"
+                    "101001001001111100100111011001001110111100111111110110000000010011101000110001110100111111011101110010111110011001101000100101111001"
+                    "111101000111101011110011011010101111011011101101010100010000110110101001110101011100010011111001111100110101001001010001000001100110"
+                    "101101001000101101000111011111101111011010011100010100000000100101101000110001101100011110101111011101111110111110111100001010010011"
+                    "111001010001111010100010000101111000000111001000000001100010000110111110101000101110100010101110110010101000101000001101011110001010"
+                    "101110010110011111001111010111100111000001111100110000000100000011111001101000000010001111011011100111001010011100110111000000110001"
+                    "101101010000000100111011000101110100001110001011001000001111010000110111111010101100101011101011111000000110101001010101000010011110"
+                    "101111000000010110100110111111001101101011111010000110001111010111111010100111010001011110101010100010000000011111001111111101001111"
+                    "111001111111000001011010110010110001011110001100101101011100010000110100000110001001011010110010101001101111101011000100001000011110"
+                    "100011011000110000001111011010001101011100011000001110111111100101111100110111010101001111000010001111010000111001011101111011010111"
+                    "101011010110100011011011101001111011001000001011011101010110100100100111010101000011110010011001001110010101001100001100010110010110"
+                    "100001010011011010011111001100101110110110011001101111101110101001110100101101001001100110110001000100110110011110001100111101011001"
+                    "110000110110011000001010111100100100100111101111111101110000000110100100001000101100100010111100011101011001001100001001110100010010"
                     "111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
                     "101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010"
-                    "100000100100010001101110101000001010101100011110100001100011110111110111111100010000111111000100101011011111111100000011110101100001"
-                    "111010000111111100000010001100010011000011001100111100011111110010111110001100001111110010010101011011001101001011010111001000101100"
-                    "100100001011111101101110100111101101100001111010111000010100000011110000000111110111101111111001111011011100011001101000111011101101"
-                    "111111010011110100101011100100101000111110001001110110011010011010101101011101111111010011001100101001111101101011110011000100001000"
-                    "111111111010010111101110001010010000110101111011110011101010100011110010110111110010101110000111101010100101111001101010111111011101"
-                    "111100000011011001110010101010001110000100001101001100100110001010101011010011110001110010011100010111111101101011010110111010110010"
-                    "100100000100101101111110010000011011110111111110010000011010100111101110000010000001100111010000101101010011111111101010111010000111"
-                    "110100010001011001010010010000101101011011001110001010001110100110111011001001111100100010111001001111111100001100000000100110000010"
-                    "101100101101001110111110011000101010101111011011100110101111101011111101011111110111001111101000111001010000011101000100011011001111"
-                    "110110011100011011111010111001100111011000001101000100000101010010110110101101000101011011000001101110101110001101010100011101111100"
-                    "101110000000111011000111011001101101000111111110110101010101110101110100000011100010111110111110001001101110011100100101001100011001"
-                    "101110011010011000100011110110110100110100101011001101110010010100111111100111101100111010011001011100101000001111010011000111000010"
-                    "100001000111100000011111011111100000001011111100000110100001100101100011101100101010010111110100010001110101111100111010101100110001"
-                    "110000010011110110010010111101011010110000001111101101111111011110100001001000111011011011000111010100000110001111100100110100110100"
-                    "100111010110001010001111111011000110010001011111000011110000110011111111101000011100110111101000001110100100111110101110011110111111"
-                    "110110001111011111001011100110011001110111101100000011010001011100111001011100111010111010000010000000001000001011110010111010111110"
-                    "101110111010010101001110101111011100001011011110000100000110000001101110110011100100110110111100111100000110111011110111101011010101"
-                    "111101111111101011011010110110111100101010001101101100010111011100101001000010110101111010011000000111101011101100010001101001100010"
-                    "100100001101111001101111101110101011000010111001101010111110100111100001111000111110110111010001111110111111011011010010111101110101"
-                    "110100111100010101110011011100001111001000101001100110000000001100101000101001001001100010100001111010010101101100011001111011010110"
+                    "110011100011010000101111101010101010110111011111101101100011110111110111111101010001001111100100011010100010111111010101111111000001"
+                    "101110000110111101110010001100001011101000001101100000011111110010111110000000100001010010111111101101100011001010100100010011110110"
+                    "101000001011111110011110100000100010111111111111011000010100000011110000001001110000010110101110100110110001011011101001111010000111"
+                    "111111001001110000101011111110100010110101001011010110011010011010101101001011110101010010010010001100011000001011000000001000011000"
+                    "101110101011100000101110011100001010101101111000110011101010100011110010110100000000011110000010100111100111111101111010011101111001"
+                    "111101001101011101110010000100010010011110101011001100100110001010101001110010001000000010100110111111111010001011000101010100001100"
+                    "111100001001011001111111110110000010111100111000010000011010100111101100100111011110111110000010101100100101111100101100100001111111"
+                    "110011001101011001010010101111101011001010001110001010001110100110111101010100100011111011011101100110010001001011011010000000101000"
+                    "100111010001011110111110010001111110101111011011100110101111101011110110000100111101001110111110011010111111011001000010011111111001"
+                    "101010000000011011111010011001110101111111001101000100000101010000110000010010000000110010011000110111000111001011111001000101110100"
+                    "100001110011111011100111111010101110011011111110110101010101110111100011100001000101110110001000100000000110011011001100110101000111"
+                    "100111101110011111100011010110011000000010101011001101110010011010100101010100101010101010000010111001000000101110010011010001111100"
+                    "101001101011101100100110011110100000101011111100000110100001101001110110110000111100000111110000011010110001011111010110011110000111"
+                    "110000010011100011110011111011011110111000001111101101111111001110110110100011010010000010100010000010011000001001001000001001100000"
+                    "110100001110000001010111101111011010110001011111000011110000111001101000111110100001110110110000111001011010111101010001000110010001"
+                    "110000001101011010101011110101010111010111101100000011010011110010111011001001011010111011110010010010101000001010001000010100000100"
+                    "110110000000101110111111101001010110001011011110000100000101000111111101100000110110100111010100101101101001011011011110101110000001"
+                    "100110001101000100111010011000100100101010001101101100010101100010110011001001001110010010100110111101100110101000110001101100010100"
+                    "110111001001010100101110110011111011000010111001101010111111100011101111100011011011000110001001100011000110011000111011001111100011"
+                    "100111111111000101101011001101101111001000101001100110111100011110101100000101010110000011111110010000101000101011111011011100010110"
                     "111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
                     "101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010"
-                    "110110010101011111101111000110111100100100111100011011101010011101100000001001000000011110001000011100010111011010111010010001100011"
-                    "111001001100010110011011111011110010011111101101101101110000100100110101100010000101010010100111100010110100001000000001100110000000"
-                    "111010100011000101101110111011010111100100011110110011001011000001111010001010110011000110101010101000010001111000101111111111110001"
-                    "110111011011100011110010011100000100110001001010001010010110110110111010101011000100011010010010100011110100001010101011000110000110"
-                    "101111001101101011011110011010010101011011011101101011110111001001110000100110101001100111100101100000000011111110000110101000111101"
-                    "110011011100001110001010010111110000010000001101000111001011100110100010000110100000011010011101110011101100101100100010110101010000"
-                    "100110011011101010001111110100100111110010011111100011100001010011100010111101111101101111110001101100000101111101001001101000111011"
-                    "101000000100111010011010110101110110100000101101000110100100011100111000100100001001001010000100111101100110001110001101100011011100"
-                    "100001011010100011111111111011101111011100011100110110111111011011100000110100011001001111111000000101101010111111000101000000011001"
-                    "111100110011100111010011010010110000110000001010100011111101100000100111111011100111110010100101011010010000101000010100001011110110"
-                    "111110101010000110110110110101100111011010011100011001011110000111111010001011010111000110101000100001100000111111101100111101000111"
-                    "110110111110001001111011101010011110110101001011000010101101101000111000101100101010011011110000111010011101101000001100111100110110"
-                    "101000101110101011001110101000100010101011111011011000110110000001100010010000011001100110010101101011010111011001010110100111010001"
-                    "111100110101101101010011011110010110101110101000101100110010011010110100110011001110111011001010000101100000001001011001010100100000"
-                    "101100011111111111100110010100100101000000011001000011101000001001101011000001001110011111110011100000010001011100100100001100000011"
-                    "110000011111010101110011001111010111001010101100110000000001100000110101111110101001010010100100110110101000101011110110101010100110"
-                    "100000011010110011011110010111100101101001011100111111101100100011111110111001111001101111010000000101101011111011001111000010010011"
-                    "100010001001111101000010001000010001010111001001000111100011011100101111000001011100101010101000001011010000101100000111100101000000"
-                    "100110011011101010100111110101011111010101111110010111101010101111101101001011110100110110111001111010110001011010100110001001010101"
-                    "100101011100010111111010100000000010010011001111010000010110101010111000101111100110100011001110001101101001001001100111011011001100"
+                    "110110110100100110111111101011111100100100111100011011000110010011100001101011001011001110011001100111011011011100011001101001111011"
+                    "111111110110110111010010011101010010011111101101101111111001100110111001101100111000100010001111101100100010101111001001101111110100"
+                    "100001010011111110110110001010110111100100011110110001001011100011100000100001011001011110011101111011001010011001011110011010110111"
+                    "100100110111011001100010100110010100110001001010000101110011010100100111100111000000010010100110101111001111101111000101000010011100"
+                    "101010100100010111011110101101110101011011011101101110111100011101110100111111110000001111101110001111010011011011100011111111010001"
+                    "111110000110111110011010110111110000010000001101010001011101111010111100100101000000101010011010111011010000101100100000000011101000"
+                    "111100010110101011011111100000100111110010011111111011011101001111111001011011010001100110000001101101111100111001011100111000100011"
+                    "101111010000110110110011010001110110100000101100001101010101111100101000100010101110011011101111111101100010001101100101100100111100"
+                    "111111101100001011101111001011101111011100011110010010000000011101101011011000010011111110011011001010001111111101100101010101101001"
+                    "111100010000001010011010010010110000110000001001101011010010011000100110111010111100010010000000011010110111101111001111001001001000"
+                    "111101100000101010110110110101100111011010111010111011100111101101100010010111110110000111010100110010001110011001010110110001001111"
+                    "110011000011001011000010101010011110110111101110111011010010001000111001011110011111100010101110101000000111101110001011111111000000"
+                    "111010000000001110100111101000100010101011111101111100010111111111101100011111001110000111000010011000011111111010011111111101101011"
+                    "111000000010110101110011011110010110101111101001100000100100001000110000100000110101011010000001101100001011001011010110110000000100"
+                    "100000000111101101000110010100100101001100111010110011110101111001110011110100110111010111101110001001000111111111111100000111110011"
+                    "111100100010011101110011001111010111010111001110000111000111110010111100000010100111010010011111010101110011101001001000011000100110"
+                    "111111101010111110011110010111100101010001011011011100011100001001110010011011100000000110110001000110101010111011000001000001100011"
+                    "101101011011010101000010001000010010011111001010101011100011100010100111011101100101110010011100001110011111101110011100011010110000"
+                    "101111111111101110100111110101011100010000011000010101010001111111110011101101001001001110111101011001111010011010100011101010111001"
+                    "110101010100010111111010100000000000110011101101010011010100111010111011101111011111110010101110001010101110001010111111010011111110"
                     "111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
                 },
     };
@@ -2249,14 +2300,63 @@ static void test_encode(int index, int generate, int debug) {
 
         length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, data[i].eci, -1 /*option_1*/, data[i].option_2, data[i].option_3, data[i].output_options, data[i].data, -1, debug);
 
+        // Check minimize only? (TODO: remove in the not-too-distant future)
+        if (debug & ZINT_DEBUG_TEST_MINIMIZE) { // -d 512
+            unsigned char binary[2][2200];
+            int inputlen;
+            int binlen;
+            int variant;
+            int binlens[2] = {0};
+
+            if (data[i].ret != 0) {
+                ZBarcode_Delete(symbol);
+                continue;
+            }
+
+            variant = 0;
+            inputlen = length;
+            binlen = 0;
+            ret = dm200encode_variant(symbol, (unsigned char *) data[i].data, binary[0], &inputlen, &binlen, variant);
+            assert_zero(ret, "i:%d dm200encode_variant(%d) ret %d != 0 (%s)\n", variant, i, ret, symbol->errtxt);
+
+            binlens[variant] = binlen;
+
+            variant = 1;
+            inputlen = length;
+            binlen = 0;
+            ret = dm200encode_variant(symbol, (unsigned char *) data[i].data, binary[1], &inputlen, &binlen, variant);
+            assert_equal(ret, data[i].ret, "i:%d dm200encode_variant(%d) ret %d != %d (%s)\n", variant, i, ret, data[i].ret, symbol->errtxt);
+
+            binlens[variant] = binlen;
+
+            assert_equal(binlens[0], binlens[1] + data[i].expected_diff, "i:%d binlens[0] %d != %d binlens[1] (%d) + expected_diff (%d)\n",
+                        i, binlens[0], binlens[1] + data[i].expected_diff, binlens[1], data[i].expected_diff);
+
+            if (debug & ZINT_DEBUG_TEST_PRINT) {
+                if (data[i].expected_diff == 0) {
+                    if (memcmp(binary[0], binary[1], binlen) != 0) {
+                        printf("i:%d binaries differ\n", i);
+                    }
+                } else {
+                    printf("i:%d diff %d\n", i, data[i].expected_diff);
+                }
+            }
+
+            ZBarcode_Delete(symbol);
+            continue;
+        }
+
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d\n", i, ret, data[i].ret);
 
         if (generate) {
-            printf("        /*%3d*/ { %s, %s, %d, %s, %d, %s, \"%s\", %s, %d, %d, %d, \"%s\",\n",
-                    i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode), data[i].eci, testUtilOutputOptionsName(data[i].output_options),
-                    data[i].option_2, testUtilOption3Name(data[i].option_3), testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
-                    testUtilErrorName(data[i].ret), symbol->rows, symbol->width, data[i].bwipp_cmp, data[i].comment);
+            printf("        /*%3d*/ { %s, %s, %d, %s, %d, %s, \"%s\", %s, %d, %d, %d, \"%s\", %d,\n",
+                    i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode), data[i].eci,
+                    testUtilOutputOptionsName(data[i].output_options),
+                    data[i].option_2, testUtilOption3Name(data[i].option_3),
+                    testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
+                    testUtilErrorName(data[i].ret), symbol->rows, symbol->width, data[i].bwipp_cmp, data[i].comment,
+                    data[i].expected_diff);
             testUtilModulesPrint(symbol, "                    ", "\n");
             printf("                },\n");
         } else {
@@ -2302,7 +2402,6 @@ static void test_perf(int index, int debug) {
     struct item {
         int symbology;
         int input_mode;
-        int option_1;
         int option_2;
         char *data;
         int ret;
@@ -2312,7 +2411,7 @@ static void test_perf(int index, int debug) {
         char *comment;
     };
     struct item data[] = {
-        /*  0*/ { BARCODE_DATAMATRIX, -1, -1, -1,
+        /*  0*/ { BARCODE_DATAMATRIX, -1, -1,
                     "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyz&,:#-.$/+%*=^ABCDEFGHIJKLMNOPQRSTUVWXYZ12345678901234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLM"
                     "NOPQRSTUVWXYZ;<>@[]_`~!||()?{}'123456789012345678901234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJK"
                     "LMNOPQRSTUVWXYZ12345678912345678912345678912345678900001234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFG"
@@ -2320,7 +2419,7 @@ static void test_perf(int index, int debug) {
                     "890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcde"
                     "fghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNO",
                     0, 96, 96, "960 chars, text/numeric" },
-        /*  1*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, -1,
+        /*  1*/ { BARCODE_DATAMATRIX, DATA_MODE, -1,
                     "\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240"
                     "\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240"
                     "\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240"
@@ -2346,7 +2445,7 @@ static void test_perf(int index, int debug) {
                     "\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240"
                     "\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240",
                     0, 120, 120, "960 chars, byte" },
-        /*  2*/ { BARCODE_DATAMATRIX, -1, -1, -1, "https://example.com/01/09506000134369", 0, 22, 22, "37 chars, text/numeric" },
+        /*  2*/ { BARCODE_DATAMATRIX, -1, -1, "https://example.com/01/09506000134369", 0, 22, 22, "37 chars, text/numeric" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -2378,7 +2477,7 @@ static void test_perf(int index, int debug) {
             diff_create += clock() - start;
             assert_nonnull(symbol, "Symbol not created\n");
 
-            length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, data[i].option_1, data[i].option_2, -1, -1 /*output_options*/, data[i].data, -1, debug);
+            length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, data[i].option_2, -1, -1 /*output_options*/, data[i].data, -1, debug);
 
             start = clock();
             ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
@@ -2424,6 +2523,243 @@ static void test_perf(int index, int debug) {
     }
 }
 
+// Not a real test, just minimization indicator (TODO: remove in the not-too-distant future)
+static void test_minimize(int index, int debug) {
+
+    struct item {
+        int symbology;
+        int input_mode;
+        int output_options;
+        int option_2;
+        char *data;
+        int length;
+        int ret;
+
+        int expected_diff;
+        char *comment;
+    };
+    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    struct item data[] = {
+        /*  0*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200A", -1, 0, 0, "ASC last 1" },
+        /*  1*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200AA", -1, 0, 0, "ASC 2" },
+        /*  2*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200AAA", -1, 0, 0, "ASC 3" },
+        /*  3*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200AAAA", -1, 0, 0, "ASC 4" },
+        /*  4*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200AAAAA", -1, 0, 0, "ASC 5" },
+        /*  5*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200AAAAAA", -1, 0, 1, "C40 6" },
+        /*  6*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200AAAAAAA", -1, 0, 0, "C40" },
+        /*  7*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200AAAAAAAA", -1, 0, 1, "C40" },
+        /*  8*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200AAAAAAAAA", -1, 0, 2, "C40" },
+        /*  9*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200AAAAAAAAAA", -1, 0, 1, "C40 except last ASC" },
+        /* 10*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200AAAAAAAAAAA", -1, 0, 1, "C40 except last 2 ASC" },
+        /* 11*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200AAAAAAAAAAAA", -1, 0, 2, "C40 except last ASC" },
+        /* 12*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200AAAAAAAAAAAAA", -1, 0, 2, "C40 except last 2 ASC" },
+        /* 13*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\2009", -1, 0, 0, "ASC last 1" },
+        /* 14*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\20099", -1, 0, -1, "Switches too early to ASC (EOD), for last 3" },
+        /* 15*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200999", -1, 0, 0, "" },
+        /* 16*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\2009999", -1, 0, 0, "" },
+        /* 17*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\20099999", -1, 0, 0, "" },
+        /* 18*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200999999", -1, 0, 0, "" },
+        /* 19*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\2009999999", -1, 0, 0, "" },
+        /* 20*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\20099999999", -1, 0, 0, "" },
+        /* 21*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200999999999", -1, 0, 0, "" },
+        /* 22*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\2009999999999", -1, 0, 0, "" },
+        /* 23*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\20099999999999", -1, 0, 0, "" },
+        /* 24*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200999999999999", -1, 0, 0, "" },
+        /* 25*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\2009999999999999", -1, 0, 0, "" },
+        /* 26*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200a", -1, 0, 0, "ASC last 1" },
+        /* 27*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200aa", -1, 0, 0, "ASC 2" },
+        /* 28*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200aaa", -1, 0, 0, "ASC 3" },
+        /* 29*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200aaaa", -1, 0, 0, "ASC 4" },
+        /* 30*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200aaaaa", -1, 0, 0, "ASC 5" },
+        /* 31*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200aaaaaa", -1, 0, 1, "TEX 6" },
+        /* 32*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200aaaaaaa", -1, 0, 0, "TEX" },
+        /* 33*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200aaaaaaaa", -1, 0, 1, "TEX" },
+        /* 34*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200aaaaaaaaa", -1, 0, 2, "TEX" },
+        /* 35*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200aaaaaaaaaa", -1, 0, 1, "TEX except last ASC" },
+        /* 36*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200aaaaaaaaaaa", -1, 0, 1, "TEX except last 2 ASC" },
+        /* 37*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200aaaaaaaaaaaa", -1, 0, 2, "TEX" },
+        /* 38*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200aaaaaaaaaaaaa", -1, 0, 2, "TEX except last ASC" },
+        /* 39*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200>", -1, 0, 0, "ASC last 1" },
+        /* 40*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200>>", -1, 0, 0, "ASC 2" },
+        /* 41*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200>>>", -1, 0, 0, "ASC 3" },
+        /* 42*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200>>>>", -1, 0, 0, "ASC 4" },
+        /* 43*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200>>>>>", -1, 0, 0, "ASC 5" },
+        /* 44*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200>>>>>>", -1, 0, 1, "X12 6" },
+        /* 45*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200>>>>>>>", -1, 0, 0, "X12 except last 2 ASC" },
+        /* 46*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200>>>>>>>>", -1, 0, 1, "X12" },
+        /* 47*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200>>>>>>>>>", -1, 0, 2, "X12" },
+        /* 48*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200>>>>>>>>>>", -1, 0, 1, "X12 except last 2 ASC" },
+        /* 49*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200>>>>>>>>>>>", -1, 0, 1, "X12 except last 3 ASC" },
+        /* 50*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200>>>>>>>>>>>>", -1, 0, 2, "X12" },
+        /* 51*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200>>>>>>>>>>>>>", -1, 0, 2, "X12 except last ASC" },
+        /* 52*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200.", -1, 0, 0, "ASC last 1" },
+        /* 53*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200..", -1, 0, 0, "ASC 2" },
+        /* 54*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200...", -1, 0, 0, "ASC 3" },
+        /* 55*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200....", -1, 0, 0, "ASC 4" },
+        /* 56*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200.....", -1, 0, 0, "ASC 5" },
+        /* 57*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200......", -1, 0, 0, "ASC 6" },
+        /* 58*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200.......", -1, 0, 0, "ASC 7" },
+        /* 59*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200........", -1, 0, 1, "EDI 8" },
+        /* 60*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200.........", -1, 0, 0, "EDI" },
+        /* 61*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200..........", -1, 0, 0, "EDI" },
+        /* 62*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200...........", -1, 0, 1, "EDI" },
+        /* 63*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200............", -1, 0, 2, "EDI" },
+        /* 64*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200.............", -1, 0, 2, "EDI except last ASC" },
+        /* 65*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200A\200\200\200", -1, 0, 0, "BAS" },
+        /* 66*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200AA\200\200\200", -1, 0, 0, "BAS" },
+        /* 67*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200AAA\200\200\200", -1, 0, 0, "BAS" },
+        /* 68*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200AAAA\200\200\200", -1, 0, 0, "BAS" },
+        /* 69*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200AAAAA\200\200\200", -1, 0, 0, "BAS" },
+        /* 70*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200AAAAAA\200\200\200", -1, 0, 0, "BAS" },
+        /* 71*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200AAAAAAA\200\200\200", -1, 0, 0, "BAS 7 As, no switch as C40 & X12 cancel each other out" },
+        /* 72*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200AAAAAAAA\200\200\200", -1, 0, 0, "BAS 8 As, no switch as C40 & X12 cancel each other out" },
+        /* 73*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200AAAAAAAAA\200\200\200", -1, 0, 0, "BAS 9 As, no switch as C40 & X12 cancel each other out" },
+        /* 74*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200AAAAAAAAAA\200\200\200", -1, 0, 0, "BAS 10 As, no switch as C40 & X12 cancel each other out" },
+        /* 75*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200AAAAAAAAAAA\200\200\200", -1, 0, 0, "BAS 11 As, no switch as C40 & X12 cancel each other out" },
+        /* 76*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200AAAAAAAAAAAA\200\200\200", -1, 0, 0, "BAS 12 As, no switch as C40 & X12 cancel each other out" },
+        /* 77*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200AAAAAAAAAAAAA\200\200\200", -1, 0, 0, "BAS 13 As, no switch as C40 & X12 cancel each other out" },
+        /* 78*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\2009\200\200\200", -1, 0, 0, "BAS" },
+        /* 79*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\20099\200\200\200", -1, 0, 0, "BAS" },
+        /* 80*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200999\200\200\200", -1, 0, 0, "BAS" },
+        /* 81*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\2009999\200\200\200", -1, 0, 0, "ASC 4" },
+        /* 82*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\20099999\200\200\200", -1, 0, 0, "ASC 4" },
+        /* 83*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200999999\200\200\200", -1, 0, 0, "ASC 6" },
+        /* 84*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\2009999999\200\200\200", -1, 0, 0, "ASC 6" },
+        /* 85*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\20099999999\200\200\200", -1, 0, 0, "ASC 8" },
+        /* 86*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200999999999\200\200\200", -1, 0, 0, "ASC 8" },
+        /* 87*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\2009999999999\200\200\200", -1, 0, 0, "ASC 10" },
+        /* 88*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\20099999999999\200\200\200", -1, 0, 0, "ASC 10" },
+        /* 89*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200999999999999\200\200\200", -1, 0, 0, "ASC 12" },
+        /* 90*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\2009999999999999\200\200\200", -1, 0, 0, "ASC 12" },
+        /* 91*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200a\200\200\200", -1, 0, 0, "BAS" },
+        /* 92*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200aa\200\200\200", -1, 0, 0, "BAS" },
+        /* 93*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200aaa\200\200\200", -1, 0, 0, "BAS" },
+        /* 94*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200aaaa\200\200\200", -1, 0, 0, "BAS" },
+        /* 95*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200aaaaa\200\200\200", -1, 0, 0, "BAS" },
+        /* 96*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200aaaaaa\200\200\200", -1, 0, 0, "BAS" },
+        /* 97*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200aaaaaaa\200\200\200", -1, 0, -2, "7 a's, worse - switches to TEX" },
+        /* 98*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200aaaaaaa\200\200", -1, 0, -2, "7 a's end 2 extended, worse - switches to TEX" },
+        /* 99*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200aaaaaaa\200", -1, 0, -1, "7 a's end 1 extended, worse - switches to TEX" },
+        /*100*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200aaaaaaa", -1, 0, 0, "7 a's end 0 extended, switches to TEX but same codeword count" },
+        /*101*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200\200aaaaaaa\200\200", -1, 0, -2, "7 a's, worse - switches to TEX" },
+        /*102*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200\200\200aaaaaaa\200\200", -1, 0, -2, "7 a's, worse - switches to TEX" },
+        /*103*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200aaaaaaa\200\200\200\200", -1, 0, -2, "7 a's end 4 extended, worse - switches to TEX" },
+        /*104*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200aaaaaaa\200\200\200\200\200", -1, 0, -2, "7 a's end 5 extended, worse - switches to TEX" },
+        /*105*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200aaaaaaaa\200\200", -1, 0, -2, "8 a's end 2 extended, worse - switches to TEX" },
+        /*106*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200aaaaaaaa\200\200\200", -1, 0, -2, "8 a's, worse - switches to TEX" },
+        /*107*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200aaaaaaaaa\200\200\200", -1, 0, -1, "9 a's, worse - switches to TEX" },
+        /*108*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200aaaaaaaaaa\200\200\200", -1, 0, -1, "10 a's, worse - switches to TEX" },
+        /*109*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200aaaaaaaaaaa\200\200\200", -1, 0, -1, "11 a's, worse - switches to TEX" },
+        /*110*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200aaaaaaaaaaaa\200\200\200", -1, 0, 0, "12 a's, switches to TEX but same codeword count" },
+        /*111*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200aaaaaaaaaaaaa\200\200\200", -1, 0, 0, "13 a's, switches to TEX but same codeword count" },
+        /*112*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200aaaaaaaaaaaaaa\200\200\200", -1, 0, 0, "14 a's, switches to TEX but same codeword count" },
+        /*113*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200aaaaaaaaaaaaaaa\200\200\200", -1, 0, 1, "15 a's, switches to TEX, better" },
+        /*114*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200aaaaaaaaaaaaaaaa\200\200\200", -1, 0, 1, "16 a's, switches to TEX, better" },
+        /*115*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200aaaaaaaaaaaaaaaaa\200\200\200", -1, 0, 1, "17 a's, switches to TEX, better" },
+        /*116*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200aaaaaaaaaaaaaaaaaa\200\200\200", -1, 0, 2, "18 a's, switches to TEX, better" },
+        /*117*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200aaaaaaaaaaaaaaaaaaa\200\200\200", -1, 0, 2, "19 a's, switches to TEX, better" },
+        /*118*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200aaaaaaaaaaaaaaaaaaaa\200\200\200", -1, 0, 2, "20 a's, switches to TEX, better" },
+        /*119*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200aaaaaaaaaaaaaaaaaaaaa\200\200\200", -1, 0, 3, "21 a's, switches to TEX, better" },
+        /*120*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200Aaaaaaa\200\200\200", -1, 0, 0, "" },
+        /*121*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200aaaAaaa\200\200\200", -1, 0, 0, "" },
+        /*122*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200aaaaaaA\200\200\200", -1, 0, 0, "" },
+        /*123*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200Aaaaaaaa\200\200\200", -1, 0, -2, "" },
+        /*124*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200aaaaAaaa\200\200\200", -1, 0, 0, "" },
+        /*125*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200aaaaaaAa\200\200\200", -1, 0, 0, "" },
+        /*126*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200aaaaaaaA\200\200\200", -1, 0, -2, "" },
+        /*127*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200aaaaaaaAa\200\200\200", -1, 0, -2, "" },
+        /*128*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200>\200\200\200", -1, 0, 0, "BAS" },
+        /*129*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200>>\200\200\200", -1, 0, 0, "BAS" },
+        /*130*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200>>>\200\200\200", -1, 0, 0, "BAS" },
+        /*131*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200>>>>\200\200\200", -1, 0, 0, "BAS" },
+        /*132*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200>>>>>\200\200\200", -1, 0, 0, "BAS" },
+        /*133*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200>>>>>>\200\200\200", -1, 0, 0, "BAS" },
+        /*134*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200>>>>>>>\200\200\200", -1, 0, 0, "BAS" },
+        /*135*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200>>>>>>>>\200\200\200", -1, 0, 0, "BAS" },
+        /*136*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200>>>>>>>>>\200\200\200", -1, 0, 0, "BAS" },
+        /*137*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200>>>>>>>>>>\200\200\200", -1, 0, 0, "BAS" },
+        /*138*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200>>>>>>>>>>>\200\200\200", -1, 0, 0, "BAS" },
+        /*139*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200>>>>>>>>>>>>\200\200\200", -1, 0, 0, "BAS" },
+        /*140*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200>>>>>>>>>>>>>\200\200\200", -1, 0, 0, "X12 12" },
+        /*141*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200>>>>>>>>>>>>>>\200\200\200", -1, 0, 0, "X12 12" },
+        /*142*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200>>>>>>>>>>>>>>>\200\200\200", -1, 0, 0, "X12 12" },
+        /*143*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200>>>>>>>>>>>>>>>>\200\200\200", -1, 0, 1, "X12 15" },
+        /*144*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200>>>>>>>>>>>>>>>>>\200\200\200", -1, 0, 1, "X12 15" },
+        /*145*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200>>>>>>>>>>>>>>>>>>\200\200\200", -1, 0, 1, "X12 15" },
+        /*146*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200>>>>>>>>>>>>>>>>>>>\200\200\200", -1, 0, 2, "X12 18" },
+        /*147*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200>>>>>>>>>>>>>>>>>>>>\200\200\200", -1, 0, 2, "X12 18" },
+        /*148*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200>>>>>>>>>>>>>>>>>>>>>\200\200\200", -1, 0, 2, "X12 18" },
+        /*149*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200>>>>>>>>>>>>>>>>>>>>>>\200\200\200", -1, 0, 3, "X12 21" },
+        /*150*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\200\200\200|||||||||||||", -1, 0, 0, "Variant 1 last 3 ASC" },
+        /*151*/ { BARCODE_DATAMATRIX, -1, -1, -1, "AAAAAAAAAAAAAA|||||||||||AAAAAAAAAAAAAAA", -1, 0, 0, "" },
+        /*152*/ { BARCODE_DATAMATRIX, -1, -1, -1, "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyz&,:#-.$/+%*=^ABCDEFGHIJKLMNOPQRSTUVWXYZ12345678901234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLM" "NOPQRSTUVWXYZ;<>@[]_`~!||()?{}'123456789012345678901234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJK" "LMNOPQRSTUVWXYZ12345678912345678912345678912345678900001234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFG" "HIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ12345678901234567" "890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcde" "fghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNO", -1, 0, 0, "960 chars, text/numeric" },
+        /*153*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\000\004\a\b\t\n\v\f\r\033\035\036\201\\", 14, 0, 0, "From test_library escape_char_process 0, variant 1 later switch to B256 and changes to ASC for last 2 chars" },
+        /*154*/ { BARCODE_DATAMATRIX, -1, -1, -1, "AAAAAAAAAAAA*+*0**AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", -1, 0, 0, "" },
+        /*155*/ { BARCODE_DATAMATRIX, -1, -1, -1, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAA", -1, 0, 0, "" },
+        /*156*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\000\001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020\021\022\023\024\025\026\027\030\031\032\033\034\035\036\037 !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\177", 128, 0, 0, "" },
+        /*157*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, "\200\200\200[\200\200[\200\200", -1, 0, 0, "Can't have extended ASCII in GS1 mode so these will never happen" },
+        /*158*/ { BARCODE_DATAMATRIX, GS1_MODE, GS1_GS_SEPARATOR, -1, "\200\200\200[\200\200[\200\200", -1, 0, 0, "" },
+        /*159*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, "\200\200\200\200[\200\200\200[\200\200", -1, 0, -1, "Stays in ASC after 1st FNC1" },
+        /*160*/ { BARCODE_DATAMATRIX, GS1_MODE, GS1_GS_SEPARATOR, -1, "\200\200\200\200[\200\200\200[\200\200", -1, 0, 0, "" },
+    };
+    int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
+    struct zint_symbol *symbol;
+
+    unsigned char binary[2][2200];
+    int inputlen;
+    int binlen;
+    int variant;
+    int binlens[2] = {0};
+
+    if (!(debug & ZINT_DEBUG_TEST_MINIMIZE)) { // -d 512
+        return;
+    }
+
+    testStart("test_minimize");
+
+    for (i = 0; i < data_size; i++) {
+
+        if (index != -1 && i != index) continue;
+
+        symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, data[i].option_2, -1, data[i].output_options, data[i].data, data[i].length, debug);
+
+        variant = 0;
+        inputlen = length;
+        binlen = 0;
+        ret = dm200encode_variant(symbol, (unsigned char *) data[i].data, binary[0], &inputlen, &binlen, variant);
+        assert_equal(ret, data[i].ret, "i:%d dm200encode_variant(%d) ret %d != %d (%s)\n", variant, i, ret, data[i].ret, symbol->errtxt);
+
+        binlens[variant] = binlen;
+
+        variant = 1;
+        inputlen = length;
+        binlen = 0;
+        ret = dm200encode_variant(symbol, (unsigned char *) data[i].data, binary[1], &inputlen, &binlen, variant);
+        assert_equal(ret, data[i].ret, "i:%d dm200encode_variant(%d) ret %d != %d (%s)\n", variant, i, ret, data[i].ret, symbol->errtxt);
+
+        binlens[variant] = binlen;
+
+        assert_equal(binlens[0], binlens[1] + data[i].expected_diff, "i:%d binlens[0] %d != %d binlens[1] (%d) + expected_diff (%d)\n",
+                    i, binlens[0], binlens[1] + data[i].expected_diff, binlens[1], data[i].expected_diff);
+
+        if (debug & ZINT_DEBUG_TEST_PRINT) {
+            if (data[i].expected_diff == 0) {
+                if (memcmp(binary[0], binary[1], binlen) != 0) {
+                    printf("i:%d binaries differ\n", i);
+                }
+            } else {
+                printf("i:%d diff %d%s\n", i, data[i].expected_diff, data[i].expected_diff < 0 ? " ***worse***" : "");
+            }
+        }
+
+        ZBarcode_Delete(symbol);
+    }
+}
+
 int main(int argc, char *argv[]) {
 
     testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
@@ -2434,6 +2770,7 @@ int main(int argc, char *argv[]) {
         { "test_input", test_input, 1, 1, 1 },
         { "test_encode", test_encode, 1, 1, 1 },
         { "test_perf", test_perf, 1, 0, 1 },
+        { "test_minimize", test_minimize, 1, 0, 1 },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));
