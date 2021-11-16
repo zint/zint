@@ -232,20 +232,34 @@ static int dm_isedifact(const unsigned char input, const int gs1) {
     return (input >= ' ' && input <= '^') && (!gs1 || input != '['); /* Can't encode GS1 FNC1/GS in EDIFACT */
 }
 
-static int dm_p_r_6_2_1(const unsigned char inputData[], const int position, const int sourcelen) {
+static int dm_p_r_6_2_1(const unsigned char source[], const int length, const int sp) {
     /* Annex P section (r)(6)(ii)(I)
        "If one of the three X12 terminator/separator characters first
         occurs in the yet to be processed data before a non-X12 character..."
      */
     int i;
 
-    for (i = position; i < sourcelen && dm_isX12(inputData[i]); i++) {
-        if (inputData[i] == 13 || inputData[i] == '*' || inputData[i] == '>') {
+    for (i = sp; i < length && dm_isX12(source[i]); i++) {
+        if (source[i] == 13 || source[i] == '*' || source[i] == '>') {
             return 1;
         }
     }
 
     return 0;
+}
+
+/* Count number of TEXT characters around `sp` between `position` and `length`
+   - helper to avoid exiting from Base 256 too early if have series of TEXT characters */
+static int dm_text_sp_cnt(const unsigned char source[], const int position, const int length, const int sp) {
+    int i;
+    int cnt = 0;
+
+    /* Count from `sp` forward */
+    for (i = sp; i < length && dm_istext(source[i]); i++, cnt++);
+    /* Count backwards from `sp` */
+    for (i = sp - 1; i >= position && dm_istext(source[i]); i--, cnt++);
+
+    return cnt;
 }
 
 /* Character counts are multiplied by this, so as to be whole integer divisible by 2, 3 and 4 */
@@ -269,7 +283,7 @@ static int dm_p_r_6_2_1(const unsigned char inputData[], const int position, con
 #define DM_MULT_CEIL(n)     ((((n) + DM_MULT_MINUS_1) / DM_MULT) * DM_MULT)
 
 /* 'look ahead test' from Annex P */
-static int dm_look_ahead_test(const unsigned char inputData[], const int sourcelen, const int position,
+static int dm_look_ahead_test(const unsigned char source[], const int length, const int position,
             const int current_mode, const int mode_arg, const int gs1, const int debug_print) {
     int ascii_count, c40_count, text_count, x12_count, edf_count, b256_count;
     int ascii_rnded, c40_rnded, text_rnded, x12_rnded, edf_rnded, b256_rnded;
@@ -307,8 +321,8 @@ static int dm_look_ahead_test(const unsigned char inputData[], const int sourcel
             break;
     }
 
-    for (sp = position; sp < sourcelen; sp++) {
-        unsigned char c = inputData[sp];
+    for (sp = position; sp < length; sp++) {
+        unsigned char c = source[sp];
         int is_extended = c & 0x80;
 
         /* ascii ... step (l) */
@@ -407,8 +421,15 @@ static int dm_look_ahead_test(const unsigned char inputData[], const int sourcel
             cnt_1 = text_count + DM_MULT_1;
             if (cnt_1 < ascii_count && cnt_1 < b256_count && cnt_1 < edf_count && cnt_1 < x12_count
                     && cnt_1 < c40_count) {
-                if (debug_print) printf("TEX->");
-                return DM_TEXT; /* step (r)(4) */
+                /* Adjusted to avoid early exit from Base 256 if have less than break-even sequence of TEXT chars */
+                if (current_mode == DM_BASE256 && position + 6 < length
+                        && dm_text_sp_cnt(source, position, length, sp) >= 12) {
+                    if (debug_print) printf("TEX->");
+                    return DM_TEXT; /* step (r)(4) */
+                } else {
+                    if (debug_print) printf("TEX->");
+                    return DM_TEXT; /* step (r)(4) */
+                }
             }
             cnt_1 = x12_count + DM_MULT_1;
             if (cnt_1 < ascii_count && cnt_1 < b256_count && cnt_1 < edf_count && cnt_1 < text_count
@@ -423,7 +444,7 @@ static int dm_look_ahead_test(const unsigned char inputData[], const int sourcel
                     return DM_C40; /* step (r)(6)(i) */
                 }
                 if (c40_count == x12_count) {
-                    if (dm_p_r_6_2_1(inputData, sp, sourcelen) == 1) {
+                    if (dm_p_r_6_2_1(source, length, sp) == 1) {
                         if (debug_print) printf("X12->");
                         return DM_X12; /* step (r)(6)(ii)(I) */
                     }
@@ -632,6 +653,35 @@ STATIC_UNLESS_ZINT_TEST int dm_update_b256_field_length(unsigned char target[], 
     return tp;
 }
 
+/* Switch from ASCII or Base 256 to another mode */
+STATIC_UNLESS_ZINT_TEST int dm_switch_mode(const int next_mode, unsigned char target[], int tp, int *b256_start,
+            const int debug_print) {
+    switch (next_mode) {
+        case DM_ASCII:
+            if (debug_print) printf("ASC ");
+            break;
+        case DM_C40: target[tp++] = 230;
+            if (debug_print) printf("C40 ");
+            break;
+        case DM_TEXT: target[tp++] = 239;
+            if (debug_print) printf("TEX ");
+            break;
+        case DM_X12: target[tp++] = 238;
+            if (debug_print) printf("X12 ");
+            break;
+        case DM_EDIFACT: target[tp++] = 240;
+            if (debug_print) printf("EDI ");
+            break;
+        case DM_BASE256: target[tp++] = 231;
+            *b256_start = tp;
+            target[tp++] = 0; /* Byte count holder (may be expanded to 2 codewords) */
+            if (debug_print) printf("BAS ");
+            break;
+    }
+
+    return tp;
+}
+
 /* Encodes data using ASCII, C40, Text, X12, EDIFACT or Base 256 modes as appropriate
    Supports encoding FNC1 in supporting systems */
 static int dm200encode(struct zint_symbol *symbol, const unsigned char source[], unsigned char target[],
@@ -796,25 +846,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
                 next_mode = dm_look_ahead_test(source, inputlen, sp, current_mode, 0, gs1, debug_print);
 
                 if (next_mode != DM_ASCII) {
-                    switch (next_mode) {
-                        case DM_C40: target[tp++] = 230;
-                            if (debug_print) printf("C40 ");
-                            break;
-                        case DM_TEXT: target[tp++] = 239;
-                            if (debug_print) printf("TEX ");
-                            break;
-                        case DM_X12: target[tp++] = 238;
-                            if (debug_print) printf("X12 ");
-                            break;
-                        case DM_EDIFACT: target[tp++] = 240;
-                            if (debug_print) printf("EDI ");
-                            break;
-                        case DM_BASE256: target[tp++] = 231;
-                            b256_start = tp;
-                            target[tp++] = 0; /* Byte count holder (may be expanded to 2 codewords) */
-                            if (debug_print) printf("BAS ");
-                            break;
-                    }
+                    tp = dm_switch_mode(next_mode, target, tp, &b256_start, debug_print);
                     not_first = 0;
                 } else {
                     if (source[sp] & 0x80) {
@@ -988,8 +1020,9 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
                     const int prn = ((149 * (i + 1)) % 255) + 1;
                     target[i] = (unsigned char) ((target[i] + prn) & 0xFF);
                 }
-                next_mode = DM_ASCII;
-                if (debug_print) printf("ASC ");
+                /* We switch directly here to avoid flipping back to Base 256 due to `dm_text_sp_cnt()` */
+                tp = dm_switch_mode(next_mode, target, tp, &b256_start, debug_print);
+                not_first = 0;
             } else {
                 if (gs1 == 2 && source[sp] == '[') {
                     target[tp++] = 29; /* GS */
