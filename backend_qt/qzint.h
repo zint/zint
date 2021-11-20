@@ -139,6 +139,9 @@ public:
     bool debug() const;
     void setDebug(bool debug);
 
+    int encodedWidth() const; // Read-only, encoded width (no. of modules encoded)
+    int encodedRows() const; // Read-only, no. of rows encoded
+
     /* Legacy property getters/setters */
     void setWidth(int width); /* option_1 */
     int width() const;
@@ -218,6 +221,8 @@ private:
     bool m_compliant_height;
     bool m_reader_init;
     bool m_debug;
+    int m_encodedWidth;
+    int m_encodedRows;
 
     int target_size_horiz; /* Legacy */
     int target_size_vert; /* Legacy */

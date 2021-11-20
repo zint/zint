@@ -394,6 +394,28 @@ zint --height=100 -d "This Text"
 
 This specifies a symbol height of 100 times the X-dimension of the symbol.
 
+The switch --compliantheight changes the default height to be compliant with the
+barcode standard (if any). For instance
+
+zint -b LOGMARS -d "This Text" --compliantheight
+
+will produce a barcode of height 45.455X instead of the normal default of 50X.
+The flag also causes Zint to return a warning if a non-compliant height is
+given:
+
+zint -b LOGMARS -d "This Text" --compliantheight --height=6.2
+Warning 247: Height not compliant with standards
+
+The switch --heightperrow is useful for symbologies that have a variable number
+of linear rows, namely PDF417, MicroPDF417, Codablock-F, Code16K, Code 49 and
+DataBar Expanded Stacked, as it changes the treatment of the height value from
+overall height to per-row height, allowing you to specify a consistent height
+for each linear row without having to know how many there will be. For instance
+
+zint -b PDF417 -d "This Text" --height=4 --heightperrow
+
+will produce a barcode of height 32X, with each of the 8 rows 4X high.
+
 4.5 Adjusting whitespace
 ------------------------
 The amount of horizontal whitespace to the left and right of the generated
@@ -1453,22 +1475,24 @@ UPC-A and UPC-E have compliant quiet zones added by default.
 The way in which the input data is encoded can be set using the input_mode
 property. Valid values are shown in the table below.
 
--------------------------------------------------------------------------------
-Value           |  Effect
--------------------------------------------------------------------------------
-DATA_MODE       |  Uses full 8-bit range interpreted as Latin-1 or binary data.
-UNICODE_MODE    |  Uses pre-formatted UTF-8 input.
-GS1_MODE        |  Encodes GS1 data using FNC1 characters.
-----------------|--------------------------------------------------------------
-ESCAPE_MODE     |  Process input data for escape sequences.
-GS1PARENS_MODE  |  Parentheses (round brackets) used in input data instead of
-                |     square brackets to delimit GS1 Application Identifiers
-                |     (parentheses must not otherwise occur in the data).
-GS1NOCHECK_MODE |  Do not check GS1 data for validity, i.e. suppress checks for
-                |     valid AIs and data lengths. Invalid characters (e.g.
-                |     control characters, extended ASCII characters) are still
-                |     checked for.
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+Value             |  Effect
+--------------------------------------------------------------------------------
+DATA_MODE         |  Uses full 8-bit range interpreted as Latin-1 or binary data
+UNICODE_MODE      |  Uses pre-formatted UTF-8 input.
+GS1_MODE          |  Encodes GS1 data using FNC1 characters.
+------------------|-------------------------------------------------------------
+ESCAPE_MODE       |  Process input data for escape sequences.
+GS1PARENS_MODE    |  Parentheses (round brackets) used in input data instead of
+                  |     square brackets to delimit GS1 Application Identifiers
+                  |     (parentheses must not otherwise occur in the data).
+GS1NOCHECK_MODE   |  Do not check GS1 data for validity, i.e. suppress checks
+                  |     for valid AIs and data lengths. Invalid characters (e.g.
+                  |     control characters, extended ASCII characters) are still
+                  |     checked for.
+HEIGHTPERROW_MODE |  Interpret the height variable as per-row rather than as
+                  |     overall height.
+--------------------------------------------------------------------------------
 
 The default mode is DATA_MODE.
 
@@ -1494,6 +1518,10 @@ GS1NOCHECK_MODE is for use with legacy systems that have data that does not
 conform to the current GS1 standard. Non-printable ASCII input is still checked
 for, as is the validity of GS1 data specified without AIs (e.g. linear data for
 GS1 DataBar Omnidirectional/Limited/etc.).
+
+For HEIGHTPERROW_MODE, see --heightperrow in section 4.4. The height variable
+should be set to the desired per-row value on input (it will be set to the
+overall height on output).
 
 5.11 Verifying Symbology Availability
 -------------------------------------
@@ -2056,7 +2084,8 @@ Code 16K uses a Code 128 based system which can stack up to 16 rows in a block.
 This gives a maximum data capacity of 77 characters or 154 numerical digits and
 includes two modulo-107 check digits. Code 16K also supports extended ASCII
 character encoding in the same manner as Code 128. GS1 data encoding is also
-supported.
+supported. The minimum number of rows to use can be set using the --rows option
+or by setting option_1, with values from 2 to 16.
 
 6.2.4 PDF417 (ISO 15438)
 ------------------------
@@ -2122,17 +2151,22 @@ component to make a composite symbol.
 A stacked variation of the GS1 DataBar Expanded symbol for smaller packages.
 Input is the same as for GS1 DataBar Expanded (see section 6.1.12.3). In
 addition the width of the symbol can be altered using the --cols switch or
-option_2. In this case the number of columns relates to the number of character
-pairs on each row of the symbol. This symbol can be generated with a two-
-dimensional component to make a composite symbol. For symbols with a 2D
-component the number of columns must be at least 2.
+option_2, with values from 1 to 11. In this case the number of columns relates
+to the number of character pairs on each row of the symbol. Alternatively the
+--rows switch or option_3 can be used to specify the maximum number of rows
+(values 2 to 11), and the number of columns will be adjusted accordingly. This
+symbol can be generated with a two-dimensional component to make a composite
+symbol. For symbols with a 2D component the number of columns must be at least
+2.
 
 6.2.10 Code 49
 --------------
 Developed in 1987 at Intermec, Code 49 is a cross between UPC and Code 39. It
 is one of the earliest stacked symbologies and influenced the design of Code
 16K a few years later. It supports full 7-bit ASCII input up to a maximum of 49
-characters or 81 numeric digits. GS1 data encoding is also supported.
+characters or 81 numeric digits. GS1 data encoding is also supported. The
+minimum number of rows to use can be set using the --rows option or by setting
+option_1, with values from 2 to 8.
 
 6.3 Composite Symbols (ISO 24723)
 ---------------------------------

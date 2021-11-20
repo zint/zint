@@ -19,9 +19,9 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QVBoxLayout" name="verticalLayoutAztec">
    <item>
-    <layout class="QGridLayout" name="gridLayout">
+    <layout class="QGridLayout" name="gridLayoutAztec">
      <item row="0" column="0">
       <widget class="QRadioButton" name="radAztecAuto">
        <property name="text">
@@ -331,7 +331,7 @@ formatted with Application Identifiers (AIs)</string>
       <item row="0" column="2">
        <widget class="QRadioButton" name="radAztecHIBC">
         <property name="text">
-         <string>H&amp;IBC Aztec Code</string>
+         <string>H&amp;IBC</string>
         </property>
         <property name="toolTip">
          <string>Process data as a Health Industry Barcode (HIBC)
@@ -729,7 +729,7 @@ Maximum length 32 and cannot contain spaces
     </widget>
    </item>
    <item>
-    <spacer name="verticalSpacer">
+    <spacer name="verticalSpacerAztec">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
      </property>

@@ -188,6 +188,12 @@ static void arg_input_mode(char *cmd, int input_mode) {
         if (input_mode & GS1PARENS_MODE) {
             sprintf(cmd + (int) strlen(cmd), "%s--gs1parens", strlen(cmd) ? " " : "");
         }
+        if (input_mode & GS1NOCHECK_MODE) {
+            sprintf(cmd + (int) strlen(cmd), "%s--gs1nocheck", strlen(cmd) ? " " : "");
+        }
+        if (input_mode & HEIGHTPERROW_MODE) {
+            sprintf(cmd + (int) strlen(cmd), "%s--heightperrow", strlen(cmd) ? " " : "");
+        }
     }
 }
 
@@ -949,6 +955,7 @@ static void test_other_opts(int index, int debug) {
         /* 38*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "0,2,12345678901234567890123456789012", "Error 163: Structured Append index out of range (1-2)" },
         /* 39*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "3,2,12345678901234567890123456789012", "Error 163: Structured Append index out of range (1-2)" },
         /* 40*/ { BARCODE_AZTEC, "1", -1, " --structapp=", "2,3,12345678901234567890123456789012", "" },
+        /* 41*/ { BARCODE_PDF417, "1", -1, " --heightperrow", "", "" },
     };
     int data_size = ARRAY_SIZE(data);
     int i;

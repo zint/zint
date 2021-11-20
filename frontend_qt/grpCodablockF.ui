@@ -19,16 +19,16 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QVBoxLayout" name="verticalLayoutCbf">
    <item>
-    <layout class="QGridLayout" name="gridCbfLayout">
+    <layout class="QGridLayout" name="gridLayoutCbf">
      <item row="0" column="0">
-      <widget class="QLabel" name="labelWidth">
+      <widget class="QLabel" name="lblCbfWidth">
        <property name="text">
-        <string>Symbol &amp;Width (Columns):</string>
+        <string>&amp;Number of Data Columns:</string>
        </property>
        <property name="toolTip">
-        <string>The number of data characters in a row</string>
+        <string>Set number of data characters in a row</string>
        </property>
        <property name="buddy">
         <cstring>cmbCbfWidth</cstring>
@@ -41,7 +41,7 @@
         <number>21</number>
        </property>
        <property name="toolTip">
-        <string>The number of data characters in a row</string>
+        <string>Set number of data characters in a row</string>
        </property>
        <item>
         <property name="text">
@@ -346,12 +346,12 @@
       </widget>
      </item>
      <item row="1" column="0">
-      <widget class="QLabel" name="labelHeight">
+      <widget class="QLabel" name="lblCbfHeight">
        <property name="text">
-        <string>Symbol &amp;Height (Rows):</string>
+        <string>Number of Ro&amp;ws:</string>
        </property>
        <property name="toolTip">
-        <string>The number of rows</string>
+        <string>Set number of rows</string>
        </property>
        <property name="buddy">
         <cstring>cmbCbfHeight</cstring>
@@ -364,7 +364,7 @@
         <number>21</number>
        </property>
        <property name="toolTip">
-        <string>The number of rows</string>
+        <string>Set number of rows</string>
        </property>
        <item>
         <property name="text">
@@ -594,7 +594,119 @@
       </widget>
      </item>
      <item row="2" column="0">
-      <widget class="QLabel" name="labelRowSeparatorHeight">
+      <widget class="QLabel" name="lblCbfHeightPerRow">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="toolTip">
+        <string>Height per row in X-dimensions
+Only available if &quot;Automatic Height&quot; in
+the Appearance tab is not checked
+(ignored if disabled)</string>
+       </property>
+       <property name="text">
+        <string>Row &amp;Height:</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+       </property>
+       <property name="buddy">
+        <cstring>spnCbfHeightPerRow</cstring>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <layout class="QHBoxLayout" name="horzLayoutCbfHeightPerRow">
+       <item>
+        <widget class="QDoubleSpinBox" name="spnCbfHeightPerRow">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="toolTip">
+        <string>Height per row in X-dimensions
+Only available if &quot;Automatic Height&quot; in
+the Appearance tab is not checked
+(ignored if disabled)</string>
+         </property>
+         <property name="accelerated">
+          <bool>true</bool>
+         </property>
+         <property name="prefix">
+          <string/>
+         </property>
+         <property name="suffix">
+          <string> X</string>
+         </property>
+         <property name="decimals">
+          <number>3</number>
+         </property>
+         <property name="minimum">
+          <double>0</double>
+         </property>
+         <property name="maximum">
+          <double>2000.000000000000000</double>
+         </property>
+         <property name="singleStep">
+          <double>0.100000000000000</double>
+         </property>
+         <property name="value">
+          <double>0</double>
+         </property>
+         <property name="specialValueText">
+          <string>0 (Disabled)</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btnCbfHeightPerRowDisable">
+         <property name="toolTip">
+          <string>Set height per row to 0
+(&quot;Height&quot; in the Appearance
+tab will be re-enabled)</string>
+         </property>
+         <property name="text">
+          <string>Disabl&amp;e</string>
+         </property>
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+           <horstretch>1</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>30</width>
+           <height>20</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btnCbfHeightPerRowDefault">
+         <property name="toolTip">
+          <string>Set height per row to default value</string>
+         </property>
+         <property name="text">
+          <string>De&amp;fault</string>
+         </property>
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+           <horstretch>1</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>30</width>
+           <height>20</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="lblCbfRowSepHeight">
        <property name="text">
         <string>&amp;Row Separator Height:</string>
        </property>
@@ -607,7 +719,7 @@ separating rows</string>
        </property>
       </widget>
      </item>
-     <item row="2" column="1">
+     <item row="3" column="1">
       <widget class="QComboBox" name="cmbCbfRowSepHeight">
        <property name="toolTip">
         <string>Height in X-dimensions of horizontal lines
@@ -645,7 +757,7 @@ separating rows</string>
      <property name="toolTip">
       <string>How to process data</string>
      </property>
-     <layout class="QHBoxLayout" name="horizontalLayout">
+     <layout class="QHBoxLayout" name="horizontalCbfLayout">
       <property name="sizeConstraint">
        <enum>QLayout::SetMinimumSize</enum>
       </property>
@@ -665,7 +777,7 @@ separating rows</string>
       <item>
        <widget class="QRadioButton" name="radCbfHIBC">
         <property name="text">
-         <string>H&amp;IBC Codablock-F</string>
+         <string>H&amp;IBC</string>
         </property>
         <property name="toolTip">
          <string>Process data as a Health Industry Barcode (HIBC)
@@ -692,7 +804,7 @@ the data with a slash &quot;/&quot;</string>
     </widget>
    </item>
    <item>
-    <spacer name="verticalSpacer">
+    <spacer name="verticalSpacerCbf">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
      </property>

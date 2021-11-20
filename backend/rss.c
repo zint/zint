@@ -832,10 +832,11 @@ INTERNAL int dbar_date(const unsigned char source[], const int src_posn) {
 
 /* Handles all data encodation from section 7.2.5 of ISO/IEC 24724 */
 static int dbar_exp_binary_string(struct zint_symbol *symbol, const unsigned char source[], char binary_string[],
-            int cols_per_row, int *p_bp) {
+            int *p_cols_per_row, const int max_rows, int *p_bp) {
     int encoding_method, i, j, read_posn, mode = NUMERIC;
     char last_digit = '\0';
-    int symbol_characters, characters_per_row = cols_per_row * 2;
+    int symbol_characters, characters_per_row = *p_cols_per_row * 2;
+    int min_cols_per_row = 0;
     int length = (int) ustrlen(source);
     const int debug_print = (symbol->debug & ZINT_DEBUG_PRINT);
 #ifndef _MSC_VER
@@ -1079,13 +1080,20 @@ static int dbar_exp_binary_string(struct zint_symbol *symbol, const unsigned cha
         }
     }
 
-    if (debug_print) printf("Resultant binary = %.*s\n\tLength: %d\n", bp, binary_string, bp);
+    if (debug_print) printf("Resultant binary (%d): %.*s\n", bp, bp, binary_string);
 
     remainder = 12 - (bp % 12);
     if (remainder == 12) {
         remainder = 0;
     }
     symbol_characters = ((bp + remainder) / 12) + 1;
+
+    if (max_rows) {
+        min_cols_per_row = ((symbol_characters + 1) / 2 + max_rows - 1) / max_rows;
+        if (min_cols_per_row > *p_cols_per_row) {
+            characters_per_row = min_cols_per_row * 2;
+        }
+    }
 
     if (characters_per_row && (symbol_characters % characters_per_row) == 1) { // DBAR_EXPSTK
         symbol_characters++;
@@ -1116,6 +1124,13 @@ static int dbar_exp_binary_string(struct zint_symbol *symbol, const unsigned cha
         }
         symbol_characters = ((bp + remainder) / 12) + 1;
 
+        if (max_rows) {
+            min_cols_per_row = ((symbol_characters + 1) / 2 + max_rows - 1) / max_rows;
+            if (min_cols_per_row > *p_cols_per_row) {
+                characters_per_row = min_cols_per_row * 2;
+            }
+        }
+
         if (characters_per_row && (symbol_characters % characters_per_row) == 1) { // DBAR_EXPSTK
             symbol_characters++;
         }
@@ -1126,12 +1141,16 @@ static int dbar_exp_binary_string(struct zint_symbol *symbol, const unsigned cha
 
         remainder = (12 * (symbol_characters - 1)) - bp;
 
-        if (debug_print) printf("Resultant binary = %.*s\n\tLength: %d\n", bp, binary_string, bp);
+        if (debug_print) printf(" Expanded binary (%d): %.*s\n", bp, bp, binary_string);
     }
 
     if (bp > 252) { /* 252 = (21 * 12) */
         strcpy(symbol->errtxt, "387: Input too long"); // TODO: Better error message
         return ZINT_ERROR_TOO_LONG;
+    }
+
+    if (min_cols_per_row && min_cols_per_row > *p_cols_per_row) {
+        *p_cols_per_row = min_cols_per_row;
     }
 
     /* Now add padding to binary string (7.2.5.5.4) */
@@ -1164,7 +1183,8 @@ static int dbar_exp_binary_string(struct zint_symbol *symbol, const unsigned cha
         binary_string[7] = d2 ? '1' : '0';
     }
     if (debug_print) {
-        printf("Resultant binary = %.*s\n\tLength: %d, Symbol chars: %d\n", bp, binary_string, bp, symbol_characters);
+        printf("    Final binary (%d): %.*s\n    Symbol chars: %d, Remainder: %d\n",
+                bp, bp, binary_string, symbol_characters, remainder);
     }
 
     *p_bp = bp;
@@ -1252,6 +1272,7 @@ INTERNAL int dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[], int
     int widths[4];
     int bp = 0;
     int cols_per_row = 0;
+    int max_rows = 0;
     int stack_rows = 1;
     const int debug_print = (symbol->debug & ZINT_DEBUG_PRINT);
 #ifndef _MSC_VER
@@ -1297,10 +1318,12 @@ INTERNAL int dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[], int
                    component of an EAN.UCC Composite symbol." */
                 cols_per_row = 2;
             }
+        } else if (symbol->option_3 >= 2 && symbol->option_3 <= 11) {
+            max_rows = symbol->option_3;
         }
     }
 
-    error_number = dbar_exp_binary_string(symbol, reduced, binary_string, cols_per_row, &bp);
+    error_number = dbar_exp_binary_string(symbol, reduced, binary_string, &cols_per_row, max_rows, &bp);
     if (error_number != 0) {
         return error_number;
     }

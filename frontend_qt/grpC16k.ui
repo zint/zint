@@ -19,11 +19,227 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QVBoxLayout" name="verticalLayoutC16k">
    <item>
-    <layout class="QGridLayout" name="gridLayout">
+    <layout class="QGridLayout" name="gridLayoutC16k">
      <item row="0" column="0">
-      <widget class="QLabel" name="labelRowSeparatorHeight">
+      <widget class="QLabel" name="lblC16kRows">
+       <property name="text">
+        <string>Minimum Ro&amp;ws:</string>
+       </property>
+       <property name="toolTip">
+        <string>Set minimum number of rows</string>
+       </property>
+       <property name="buddy">
+        <cstring>cmbC16kRows</cstring>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QComboBox" name="cmbC16kRows">
+       <property name="maxVisibleItems">
+        <number>16</number>
+       </property>
+       <property name="toolTip">
+        <string>Set minimum number of rows</string>
+       </property>
+       <item>
+        <property name="text">
+         <string>Automatic</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>3</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>4</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>5</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>6</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>7</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>8</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>9</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>10</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>11</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>12</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>13</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>14</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>15</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>16</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="lblC16kHeightPerRow">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="toolTip">
+        <string>Height per row in X-dimensions
+Only available if &quot;Automatic Height&quot; in
+the Appearance tab is not checked
+(ignored if disabled)</string>
+       </property>
+       <property name="text">
+        <string>Row &amp;Height:</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+       </property>
+       <property name="buddy">
+        <cstring>spnC16kHeightPerRow</cstring>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <layout class="QHBoxLayout" name="horzLayoutC16kHeightPerRow">
+       <item>
+        <widget class="QDoubleSpinBox" name="spnC16kHeightPerRow">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="toolTip">
+          <string>Height per row in X-dimensions
+Only available if &quot;Automatic Height&quot; in
+the Appearance tab is not checked
+(ignored if disabled)</string>
+         </property>
+         <property name="accelerated">
+          <bool>true</bool>
+         </property>
+         <property name="prefix">
+          <string/>
+         </property>
+         <property name="suffix">
+          <string> X</string>
+         </property>
+         <property name="decimals">
+          <number>3</number>
+         </property>
+         <property name="minimum">
+          <double>0</double>
+         </property>
+         <property name="maximum">
+          <double>2000.000000000000000</double>
+         </property>
+         <property name="singleStep">
+          <double>0.100000000000000</double>
+         </property>
+         <property name="value">
+          <double>0</double>
+         </property>
+         <property name="specialValueText">
+          <string>0 (Disabled)</string>
+         </property>
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+           <horstretch>2</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btnC16kHeightPerRowDisable">
+         <property name="toolTip">
+          <string>Set height per row to 0
+(&quot;Height&quot; in the Appearance
+tab will be re-enabled)</string>
+         </property>
+         <property name="text">
+          <string>Disabl&amp;e</string>
+         </property>
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+           <horstretch>1</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>30</width>
+           <height>20</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btnC16kHeightPerRowDefault">
+         <property name="toolTip">
+          <string>Set height per row to default value</string>
+         </property>
+         <property name="text">
+          <string>De&amp;fault</string>
+         </property>
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+           <horstretch>1</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>30</width>
+           <height>20</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="lblC16kRowSepHeight">
        <property name="text">
         <string>&amp;Row Separator Height:</string>
        </property>
@@ -36,7 +252,7 @@ separating rows</string>
        </property>
       </widget>
      </item>
-     <item row="0" column="1">
+     <item row="2" column="1">
       <widget class="QComboBox" name="cmbC16kRowSepHeight">
        <property name="toolTip">
         <string>Height in X-dimensions of horizontal lines
@@ -119,7 +335,7 @@ formatted with Application Identifiers (AIs)</string>
     </widget>
    </item>
    <item>
-    <spacer name="verticalSpacer">
+    <spacer name="verticalSpacerC16k">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
      </property>

@@ -85,6 +85,7 @@ static void test_input(int index, int generate, int debug) {
 
     struct item {
         int input_mode;
+        int option_1;
         char *data;
         int length;
         int ret;
@@ -96,21 +97,31 @@ static void test_input(int index, int generate, int debug) {
     // NUL U+0000, S1 SP (39)
     // US U+001F (\037, 31), S1 5
     struct item data[] = {
-        /*  0*/ { UNICODE_MODE, "é", -1, ZINT_ERROR_INVALID_DATA, 0, 0, "Error 431: Invalid character in input data", "ASCII only" },
-        /*  1*/ { UNICODE_MODE, "EXAMPLE 2", -1, 0, 2, 70, "(16) 14 33 10 22 25 21 14 41 38 2 35 14 18 13 0 22", "2.3.7 Symbol Example" },
-        /*  2*/ { UNICODE_MODE, "12345", -1, 0, 2, 70, "(16) 5 17 9 48 48 48 48 27 48 48 13 23 0 13 2 0", "2.3 Example 1: Numeric Encodation (Start 2, Numeric)" },
-        /*  3*/ { UNICODE_MODE, "123456", -1, 0, 2, 70, "(16) 5 17 9 6 48 48 48 34 48 48 36 9 23 41 2 11", "2.3 Example 1: Numeric Encodation" },
-        /*  4*/ { UNICODE_MODE, "12345678", -1, 0, 2, 70, "(16) 5 17 9 14 6 48 48 0 48 48 25 42 2 17 2 37", "2.3 Example 1: Numeric Encodation" },
-        /*  5*/ { UNICODE_MODE, "123456789", -1, 0, 2, 70, "(16) 5 17 9 46 16 37 48 31 48 48 7 26 9 39 2 32", "2.3 Example 1: Numeric Encodation" },
-        /*  6*/ { UNICODE_MODE, "1234567", -1, 0, 2, 70, "(16) 43 45 2 11 39 48 48 40 48 48 33 36 38 6 2 15", "2.3 Example 1: Numeric Encodation" },
-        /*  7*/ { UNICODE_MODE, "\037", -1, 0, 2, 70, "(16) 5 48 48 48 48 48 48 48 48 48 4 33 13 15 4 18", "US (Start 4, Alphanumeric S1)" },
-        /*  8*/ { UNICODE_MODE, "\000\037", 2, 0, 2, 70, "(16) 38 43 5 48 48 48 48 33 48 48 45 7 38 43 4 37", "NUL S1 US (Start 4, Alphanumeric S1)" },
-        /*  9*/ { UNICODE_MODE, "a\000", 2, 0, 2, 70, "(16) 10 43 38 48 48 48 48 38 48 48 32 33 14 15 5 48", "a S1 NUL (Start 5, Alphanumeric S2)" },
-        /* 10*/ { UNICODE_MODE, "ab", -1, 0, 2, 70, "(16) 10 44 11 48 48 48 48 12 48 48 27 39 42 0 5 13", "a S2 b (Start 5, Alphanumeric S2)" },
-        /* 11*/ { UNICODE_MODE, "\000A\000a\000", 5, 0, 2, 70, "(16) 38 10 43 38 44 10 43 30 38 48 25 23 38 32 4 12", "NUL A S1 NUL S2 a S1 (C18 30) NUL (Start 4, Alphanumeric S1)" },
-        /* 12*/ { UNICODE_MODE, "1234\037aA12345A", -1, 0, 3, 70, "(24) 1 2 3 4 43 5 44 4 10 10 48 5 17 9 48 0 10 48 19 2 13 32 7 33", "1 2 3 4 S1 US S2 (C18 4) a A NS 12345 NS (C28 0) A (Start 0, Alpha)" },
-        /* 13*/ { GS1_MODE, "[90]12345[91]AB12345", -1, 0, 4, 70, "(32) 45 48 47 15 4 7 9 28 48 45 9 1 10 11 48 25 5 17 9 48 48 48 48 27 48 48 37 39 26 8 14", "FNC1 NS 9012345 (C18 28) NS FNC1 9 1 A B NS (C28 25) 12345 Pad (4) (C38 27) (Start 0, Alpha)" },
-        /* 14*/ { GS1_MODE | GS1PARENS_MODE, "(90)12345(91)AB12345", -1, 0, 4, 70, "(32) 45 48 47 15 4 7 9 28 48 45 9 1 10 11 48 25 5 17 9 48 48 48 48 27 48 48 37 39 26 8 14", "FNC1 NS 9012345 (C18 28) NS FNC1 9 1 A B NS (C28 25) 12345 Pad (4) (C38 27) (Start 0, Alpha)" },
+        /*  0*/ { UNICODE_MODE, -1, "é", -1, ZINT_ERROR_INVALID_DATA, 0, 0, "Error 431: Invalid character in input data", "ASCII only" },
+        /*  1*/ { UNICODE_MODE, -1, "EXAMPLE 2", -1, 0, 2, 70, "(16) 14 33 10 22 25 21 14 41 38 2 35 14 18 13 0 22", "2.3.7 Symbol Example" },
+        /*  2*/ { UNICODE_MODE, -1, "12345", -1, 0, 2, 70, "(16) 5 17 9 48 48 48 48 27 48 48 13 23 0 13 2 0", "2.3 Example 1: Numeric Encodation (Start 2, Numeric)" },
+        /*  3*/ { UNICODE_MODE, -1, "123456", -1, 0, 2, 70, "(16) 5 17 9 6 48 48 48 34 48 48 36 9 23 41 2 11", "2.3 Example 1: Numeric Encodation" },
+        /*  4*/ { UNICODE_MODE, -1, "12345678", -1, 0, 2, 70, "(16) 5 17 9 14 6 48 48 0 48 48 25 42 2 17 2 37", "2.3 Example 1: Numeric Encodation" },
+        /*  5*/ { UNICODE_MODE, -1, "123456789", -1, 0, 2, 70, "(16) 5 17 9 46 16 37 48 31 48 48 7 26 9 39 2 32", "2.3 Example 1: Numeric Encodation" },
+        /*  6*/ { UNICODE_MODE, -1, "1234567", -1, 0, 2, 70, "(16) 43 45 2 11 39 48 48 40 48 48 33 36 38 6 2 15", "2.3 Example 1: Numeric Encodation" },
+        /*  7*/ { UNICODE_MODE, -1, "\037", -1, 0, 2, 70, "(16) 5 48 48 48 48 48 48 48 48 48 4 33 13 15 4 18", "US (Start 4, Alphanumeric S1)" },
+        /*  8*/ { UNICODE_MODE, -1, "\000\037", 2, 0, 2, 70, "(16) 38 43 5 48 48 48 48 33 48 48 45 7 38 43 4 37", "NUL S1 US (Start 4, Alphanumeric S1)" },
+        /*  9*/ { UNICODE_MODE, -1, "a\000", 2, 0, 2, 70, "(16) 10 43 38 48 48 48 48 38 48 48 32 33 14 15 5 48", "a S1 NUL (Start 5, Alphanumeric S2)" },
+        /* 10*/ { UNICODE_MODE, -1, "ab", -1, 0, 2, 70, "(16) 10 44 11 48 48 48 48 12 48 48 27 39 42 0 5 13", "a S2 b (Start 5, Alphanumeric S2)" },
+        /* 11*/ { UNICODE_MODE, -1, "\000A\000a\000", 5, 0, 2, 70, "(16) 38 10 43 38 44 10 43 30 38 48 25 23 38 32 4 12", "NUL A S1 NUL S2 a S1 (C18 30) NUL (Start 4, Alphanumeric S1)" },
+        /* 12*/ { UNICODE_MODE, -1, "1234\037aA12345A", -1, 0, 3, 70, "(24) 1 2 3 4 43 5 44 4 10 10 48 5 17 9 48 0 10 48 19 2 13 32 7 33", "1 2 3 4 S1 US S2 (C18 4) a A NS 12345 NS (C28 0) A (Start 0, Alpha)" },
+        /* 13*/ { GS1_MODE, -1, "[90]12345[91]AB12345", -1, 0, 4, 70, "(32) 45 48 47 15 4 7 9 28 48 45 9 1 10 11 48 25 5 17 9 48 48 48 48 27 48 48 37 39 26 8 14", "FNC1 NS 9012345 (C18 28) NS FNC1 9 1 A B NS (C28 25) 12345 Pad (4) (C38 27) (Start 0, Alpha)" },
+        /* 14*/ { GS1_MODE | GS1PARENS_MODE, -1, "(90)12345(91)AB12345", -1, 0, 4, 70, "(32) 45 48 47 15 4 7 9 28 48 45 9 1 10 11 48 25 5 17 9 48 48 48 48 27 48 48 37 39 26 8 14", "FNC1 NS 9012345 (C18 28) NS FNC1 9 1 A B NS (C28 25) 12345 Pad (4) (C38 27) (Start 0, Alpha)" },
+        /* 15*/ { UNICODE_MODE, -1, "1234567890123456789012345678901234567890", -1, 0, 5, 70, "(40) 5 17 9 29 22 18 5 7 17 9 29 22 18 5 17 19 9 29 22 18 5 17 9 11 29 22 18 48 48 48 48 16", "" },
+        /* 16*/ { UNICODE_MODE, 1, "1234567890123456789012345678901234567890", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 424: Minimum number of rows out of range (2 to 8)", "" },
+        /* 17*/ { UNICODE_MODE, 9, "1234567890123456789012345678901234567890", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 424: Minimum number of rows out of range (2 to 8)", "" },
+        /* 18*/ { UNICODE_MODE, 2, "1234567890123456789012345678901234567890", -1, 0, 5, 70, "(40) 5 17 9 29 22 18 5 7 17 9 29 22 18 5 17 19 9 29 22 18 5 17 9 11 29 22 18 48 48 48 48 16", "" },
+        /* 19*/ { UNICODE_MODE, 3, "1234567890123456789012345678901234567890", -1, 0, 5, 70, "(40) 5 17 9 29 22 18 5 7 17 9 29 22 18 5 17 19 9 29 22 18 5 17 9 11 29 22 18 48 48 48 48 16", "" },
+        /* 20*/ { UNICODE_MODE, 4, "1234567890123456789012345678901234567890", -1, 0, 5, 70, "(40) 5 17 9 29 22 18 5 7 17 9 29 22 18 5 17 19 9 29 22 18 5 17 9 11 29 22 18 48 48 48 48 16", "" },
+        /* 21*/ { UNICODE_MODE, 5, "1234567890123456789012345678901234567890", -1, 0, 5, 70, "(40) 5 17 9 29 22 18 5 7 17 9 29 22 18 5 17 19 9 29 22 18 5 17 9 11 29 22 18 48 48 48 48 16", "" },
+        /* 22*/ { UNICODE_MODE, 6, "1234567890123456789012345678901234567890", -1, 0, 6, 70, "(48) 5 17 9 29 22 18 5 7 17 9 29 22 18 5 17 19 9 29 22 18 5 17 9 11 29 22 18 48 48 48 48 16", "" },
+        /* 23*/ { UNICODE_MODE, 7, "1234567890123456789012345678901234567890", -1, 0, 7, 70, "(56) 5 17 9 29 22 18 5 7 17 9 29 22 18 5 17 19 9 29 22 18 5 17 9 11 29 22 18 48 48 48 48 16", "" },
+        /* 24*/ { UNICODE_MODE, 8, "1234567890123456789012345678901234567890", -1, 0, 8, 70, "(64) 5 17 9 29 22 18 5 7 17 9 29 22 18 5 17 19 9 29 22 18 5 17 9 11 29 22 18 48 48 48 48 16", "" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -129,14 +140,15 @@ static void test_input(int index, int generate, int debug) {
 
         symbol->debug = ZINT_DEBUG_TEST; // Needed to get codeword dump in errtxt
 
-        length = testUtilSetSymbol(symbol, BARCODE_CODE49, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, data[i].length, debug);
+        length = testUtilSetSymbol(symbol, BARCODE_CODE49, data[i].input_mode, -1 /*eci*/, data[i].option_1, -1, -1, -1 /*output_options*/, data[i].data, data[i].length, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (generate) {
-            printf("        /*%3d*/ { %s, \"%s\", %d, %s, %d, %d, \"%s\", \"%s\" },\n",
-                    i, testUtilInputModeName(data[i].input_mode), testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), data[i].length,
+            printf("        /*%3d*/ { %s, %d, \"%s\", %d, %s, %d, %d, \"%s\", \"%s\" },\n",
+                    i, testUtilInputModeName(data[i].input_mode), data[i].option_1,
+                    testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), data[i].length,
                     testUtilErrorName(data[i].ret), symbol->rows, symbol->width, symbol->errtxt, data[i].comment);
         } else {
             if (ret < ZINT_ERROR) {
@@ -156,6 +168,7 @@ static void test_encode(int index, int generate, int debug) {
 
     struct item {
         int input_mode;
+        int option_1;
         char *data;
         int ret;
 
@@ -165,16 +178,31 @@ static void test_encode(int index, int generate, int debug) {
         char *expected;
     };
     struct item data[] = {
-        /*  0*/ { UNICODE_MODE, "MULTIPLE ROWS IN CODE 49", 0, 5, 70, "ANSI/AIM BC6-2000 Figure 1",
+        /*  0*/ { UNICODE_MODE, -1, "MULTIPLE ROWS IN CODE 49", 0, 5, 70, "ANSI/AIM BC6-2000 Figure 1",
                     "1011111011001011101011100110000110111101011011111010111101000100001111"
                     "1010100001000010001001111000101110100110001111010010001011100011001111"
                     "1011001100000101101101110111000010110010110000111011101011110001101111"
                     "1010011001100100001111010010001100101011101111110011010001001111101111"
                     "1011001111001011101000000101001110111110111010001011010001101111101111"
                 },
-        /*  1*/ { UNICODE_MODE, "EXAMPLE 2", 0, 2, 70, "ANSI/AIM BC6-2000 Figure 3",
+        /*  1*/ { UNICODE_MODE, -1, "EXAMPLE 2", 0, 2, 70, "ANSI/AIM BC6-2000 Figure 3",
                     "1011000111011100101111001001000110110011110010100010001111000100101111"
                     "1011000100110010001100010110010000100001101001111010000001001011101111"
+                },
+        /*  2*/ { UNICODE_MODE, 3, "EXAMPLE 2", 0, 3, 70, "Min 3 rows",
+                    "1011000111011100101111001001000110110011110010100010001111000100101111"
+                    "1011000100110010001010111011111100110011110010111010111011001111101111"
+                    "1011001111001011101110011111001010100001000010001010111001111001101111"
+                },
+        /*  3*/ { UNICODE_MODE, 8, "EXAMPLE 2", 0, 8, 70, "Min 8 rows",
+                    "1011000111011100101111001001000110110011110010100010001111000100101111"
+                    "1011000100110010001010111011111100110011110010111010111011001111101111"
+                    "1010101110111111001010111011111100110011110010111011001110110001001111"
+                    "1011001111001011101100111100101110101011101111110010111001000001101111"
+                    "1010101110111111001100111100101110101011101111110011001110110001001111"
+                    "1011001111001011101010111011111100101011101111110011001110110001001111"
+                    "1010101110111111001010111011111100101011101111110010111001000001101111"
+                    "1011110110100100001010000100010000111010010011111011001000111011001111"
                 },
     };
     int data_size = ARRAY_SIZE(data);
@@ -196,14 +224,15 @@ static void test_encode(int index, int generate, int debug) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, BARCODE_CODE49, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, BARCODE_CODE49, data[i].input_mode, -1 /*eci*/, data[i].option_1, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (generate) {
-            printf("        /*%3d*/ { %s, \"%s\", %s, %d, %d, \"%s\",\n",
-                    i, testUtilInputModeName(data[i].input_mode), testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
+            printf("        /*%3d*/ { %s, %d, \"%s\", %s, %d, %d, \"%s\",\n",
+                    i, testUtilInputModeName(data[i].input_mode), data[i].option_1,
+                    testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
                     testUtilErrorName(data[i].ret), symbol->rows, symbol->width, data[i].comment);
             testUtilModulesPrint(symbol, "                    ", "\n");
             printf("                },\n");
@@ -217,8 +246,8 @@ static void test_encode(int index, int generate, int debug) {
                 ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
                 assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, ret, width, row, data[i].data);
 
-                if (do_bwipp && testUtilCanBwipp(i, symbol, -1, -1, -1, debug)) {
-                    ret = testUtilBwipp(i, symbol, -1, -1, -1, data[i].data, length, NULL, bwipp_buf, sizeof(bwipp_buf));
+                if (do_bwipp && testUtilCanBwipp(i, symbol, data[i].option_1, -1, -1, debug)) {
+                    ret = testUtilBwipp(i, symbol, data[i].option_1, -1, -1, data[i].data, length, NULL, bwipp_buf, sizeof(bwipp_buf));
                     assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
 
                     ret = testUtilBwippCmp(symbol, bwipp_msg, bwipp_buf, data[i].expected);

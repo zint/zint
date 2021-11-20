@@ -1441,6 +1441,7 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
     linear->input_mode = symbol->input_mode;
     linear->output_options = symbol->output_options;
     linear->option_2 = symbol->option_2;
+    linear->option_3 = symbol->option_3;
     /* If symbol->height given minimum row height will be returned, else default height */
     linear->height = symbol->height;
     linear->debug = symbol->debug;

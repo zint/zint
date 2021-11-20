@@ -69,6 +69,8 @@ namespace Zint {
         m_reader_init = false;
         m_rotate_angle = 0;
         m_debug = false;
+        m_encodedWidth = 0;
+        m_encodedRows = 0;
 
         target_size_horiz = 0; /* Legacy */
         target_size_vert = 0; /* Legacy */
@@ -156,8 +158,12 @@ namespace Zint {
             m_borderWidth = m_zintSymbol->border_width;
             m_whitespace = m_zintSymbol->whitespace_width;
             m_vwhitespace = m_zintSymbol->whitespace_height;
+            m_encodedWidth = m_zintSymbol->width;
+            m_encodedRows = m_zintSymbol->rows;
             emit encoded();
         } else {
+            m_encodedWidth = 0;
+            m_encodedRows = 0;
             emit errored();
         }
     }
@@ -509,6 +515,14 @@ namespace Zint {
         m_debug = debug;
     }
 
+    int QZint::encodedWidth() const { // Read-only, encoded width (no. of modules encoded)
+        return m_encodedWidth;
+    }
+
+    int QZint::encodedRows() const { // Read-only, no. of rows encoded
+        return m_encodedRows;
+    }
+
     /* Legacy */
     void QZint::setWidth(int width) { setOption1(width); }
     int QZint::width() const { return m_option_1; }
@@ -583,6 +597,8 @@ namespace Zint {
                                             m_rotate_angle);
         if (m_error >= ZINT_ERROR) {
             m_lastError = m_zintSymbol->errtxt;
+            m_encodedWidth = 0;
+            m_encodedRows = 0;
             emit errored();
             return false;
         } else {

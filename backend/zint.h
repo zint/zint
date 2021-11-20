@@ -281,6 +281,7 @@ extern "C" {
 #define ESCAPE_MODE             0x0008  /* Process escape sequences */
 #define GS1PARENS_MODE          0x0010  /* Process parentheses as GS1 AI delimiters (instead of square brackets) */
 #define GS1NOCHECK_MODE         0x0020  /* Do not check validity of GS1 data (except that printable ASCII only) */
+#define HEIGHTPERROW_MODE       0x0040  /* Interpret `height` as per-row rather than as overall height */
 
 /* Data Matrix specific options (`symbol->option_3`) */
 #define DM_SQUARE               100 /* Only consider square versions on automatic symbol size selection */

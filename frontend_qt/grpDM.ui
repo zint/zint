@@ -19,9 +19,9 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QVBoxLayout" name="verticalLayoutDM">
    <item>
-    <layout class="QGridLayout" name="gridLayout">
+    <layout class="QGridLayout" name="gridLayoutDM">
      <item row="0" column="0">
       <widget class="QLabel" name="lblDM200Size">
        <property name="text">
@@ -379,7 +379,7 @@ formatted with Application Identifiers (AIs)</string>
       <item row="0" column="2">
        <widget class="QRadioButton" name="radDM200HIBC">
         <property name="text">
-         <string>H&amp;IBC Data Matrix</string>
+         <string>H&amp;IBC</string>
         </property>
         <property name="toolTip">
          <string>Process data as a Health Industry Barcode (HIBC)
@@ -745,7 +745,7 @@ Value ranges from 1 to 254
     </widget>
    </item>
    <item>
-    <spacer name="verticalSpacer">
+    <spacer name="verticalSpacerDM">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
      </property>

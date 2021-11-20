@@ -125,7 +125,9 @@ static const struct bstyle_item bstyle_items[] = {
 };
 
 MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags fl)
-        : QWidget(parent, fl), m_optionWidget(nullptr), m_symbology(0), m_saveAsShortcut(nullptr), m_menu(nullptr)
+        : QWidget(parent, fl), m_optionWidget(nullptr), m_symbology(0), m_saveAsShortcut(nullptr), m_menu(nullptr),
+          m_lblHeightPerRow(nullptr), m_spnHeightPerRow(nullptr),
+          m_btnHeightPerRowDisable(nullptr), m_btnHeightPerRowDefault(nullptr)
 {
     // Undocumented command line debug flag
     m_bc.bc.setDebug(QCoreApplication::arguments().contains(QSL("--verbose")));
@@ -518,6 +520,24 @@ void MainWindow::autoheight_ui_set()
     bool enabled = chkAutoHeight->isEnabled() && !chkAutoHeight->isChecked();
     lblHeight->setEnabled(enabled);
     heightb->setEnabled(enabled);
+
+    if (m_lblHeightPerRow && m_spnHeightPerRow) {
+        m_lblHeightPerRow->setEnabled(enabled);
+        m_spnHeightPerRow->setEnabled(enabled);
+        if (enabled && m_spnHeightPerRow->value()) {
+            lblHeight->setEnabled(!enabled);
+            heightb->setEnabled(!enabled);
+            statusBar->showMessage(tr("Using \"Row Height\""), statusBarTimeout);
+        } else {
+            statusBar->clearMessage();
+        }
+        if (m_btnHeightPerRowDisable) {
+            m_btnHeightPerRowDisable->setEnabled(enabled && m_spnHeightPerRow->value());
+        }
+        if (m_btnHeightPerRowDefault) {
+            m_btnHeightPerRowDefault->setEnabled(enabled);
+        }
+    }
 }
 
 void MainWindow::HRTShow_ui_set()
@@ -634,7 +654,7 @@ void MainWindow::on_encoded()
     enableActions(true);
     errtxtBar_set(false /*isError*/);
 
-    if (!chkAutoHeight->isEnabled() || chkAutoHeight->isChecked()) {
+    if (!chkAutoHeight->isEnabled() || chkAutoHeight->isChecked() || !heightb->isEnabled()) {
         /* setValue() rounds up/down to precision (decimals 3), we want round up only */
         float height = (float) (ceil(m_bc.bc.height() * 1000.0f) / 1000.0f);
         heightb->setValue(height);
@@ -779,6 +799,52 @@ void MainWindow::copy_to_clipboard_errtxt()
     }
 }
 
+void MainWindow::height_per_row_disable()
+{
+    if (m_spnHeightPerRow) {
+        m_spnHeightPerRow->setValue(0.0);
+    }
+}
+
+void MainWindow::height_per_row_default()
+{
+    if (m_spnHeightPerRow && m_btnHeightPerRowDefault) {
+        const QString &name = m_btnHeightPerRowDefault->objectName();
+        double val = 0.0;
+        if (name == QSL("btnPDFHeightPerRowDefault")) {
+            val = 3.0;
+        } else if (name == QSL("btnMPDFHeightPerRowDefault")) {
+            val = 2.0;
+        } else if (name == QSL("btnC16kHeightPerRowDefault")) {
+            if (chkCompliantHeight->isEnabled() && chkCompliantHeight->isChecked()) {
+                const int rows = m_bc.bc.encodedRows();
+                val = 10.0 + (double)((rows - 1) * (get_cmb_index(QSL("cmbC16kRowSepHeight")) + 1)) / rows;
+            } else {
+                val = 10.0;
+            }
+        } else if (name == QSL("btnCbfHeightPerRowDefault")) {
+            // Depends on no. of data cols
+            const int cols = (m_bc.bc.encodedWidth() - 57) / 11; // 57 = 4 * 11 (start/subset/checks) + 13 (stop char)
+            val = 0.55 * cols + 3;
+            if (val < 10.0) {
+                val = 10.0;
+            }
+        } else if (name == QSL("btnC49HeightPerRowDefault")) {
+            if (chkCompliantHeight->isEnabled() && chkCompliantHeight->isChecked()) {
+                const int rows = m_bc.bc.encodedRows();
+                val = 10.0 + (double)((rows - 1) * (get_cmb_index(QSL("cmbC49RowSepHeight")) + 1)) / rows;
+            } else {
+                val = 10.0;
+            }
+        } else if (name == QSL("btnDBESHeightPerRowDefault")) {
+            val = 34.0;
+        }
+        if (val) {
+            m_spnHeightPerRow->setValue(val);
+        }
+    }
+}
+
 void MainWindow::guard_reset_upcean()
 {
     guard_reset(QSL("spnUPCEANGuardDescent"));
@@ -812,6 +878,7 @@ void MainWindow::view_context_menu(const QPoint &pos)
 #endif
         menu.addAction(m_copySVGAct);
         menu.addAction(m_copyTIFAct);
+        menu.addSeparator();
         menu.addAction(m_saveAsAct);
 
         menu.exec(get_context_menu_pos(pos, view));
@@ -853,6 +920,10 @@ void MainWindow::change_options()
     cmbECI->setItemText(25, tr("29: GB 2312 (PRC)"));
     btype->setItemText(0, tr("No border"));
     combobox_item_enabled(cmbFontSetting, 1, true);
+    m_lblHeightPerRow = nullptr;
+    m_spnHeightPerRow = nullptr;
+    m_btnHeightPerRowDisable = nullptr;
+    m_btnHeightPerRowDefault = nullptr;
 
     if (symbology == BARCODE_CODE128) {
         QFile file(QSL(":/grpC128.ui"));
@@ -883,6 +954,14 @@ void MainWindow::change_options()
         connect(get_widget(QSL("cmbPDFECC")), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(get_widget(QSL("cmbPDFCols")), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(get_widget(QSL("cmbPDFRows")), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        m_lblHeightPerRow = m_optionWidget->findChild<QLabel*>(QSL("lblPDFHeightPerRow"));
+        m_spnHeightPerRow = m_optionWidget->findChild<QDoubleSpinBox*>(QSL("spnPDFHeightPerRow"));
+        connect(m_spnHeightPerRow, SIGNAL(valueChanged( double )), SLOT(autoheight_ui_set()));
+        connect(m_spnHeightPerRow, SIGNAL(valueChanged( double )), SLOT(update_preview()));
+        m_btnHeightPerRowDisable = m_optionWidget->findChild<QPushButton*>(QSL("btnPDFHeightPerRowDisable"));
+        m_btnHeightPerRowDefault = m_optionWidget->findChild<QPushButton*>(QSL("btnPDFHeightPerRowDefault"));
+        connect(m_btnHeightPerRowDisable, SIGNAL(clicked( bool )), SLOT(height_per_row_disable()));
+        connect(m_btnHeightPerRowDefault, SIGNAL(clicked( bool )), SLOT(height_per_row_default()));
         connect(get_widget(QSL("radPDFTruncated")), SIGNAL(toggled( bool )), SLOT(update_preview()));
         connect(get_widget(QSL("radPDFStand")), SIGNAL(toggled( bool )), SLOT(update_preview()));
         connect(get_widget(QSL("radPDFHIBC")), SIGNAL(toggled( bool )), SLOT(update_preview()));
@@ -901,6 +980,14 @@ void MainWindow::change_options()
         structapp_ui_set();
         tabMain->insertTab(1, m_optionWidget, tr("Micro PDF41&7"));
         connect(get_widget(QSL("cmbMPDFCols")), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        m_lblHeightPerRow = m_optionWidget->findChild<QLabel*>(QSL("lblMPDFHeightPerRow"));
+        m_spnHeightPerRow = m_optionWidget->findChild<QDoubleSpinBox*>(QSL("spnMPDFHeightPerRow"));
+        connect(m_spnHeightPerRow, SIGNAL(valueChanged( double )), SLOT(autoheight_ui_set()));
+        connect(m_spnHeightPerRow, SIGNAL(valueChanged( double )), SLOT(update_preview()));
+        m_btnHeightPerRowDisable = m_optionWidget->findChild<QPushButton*>(QSL("btnMPDFHeightPerRowDisable"));
+        m_btnHeightPerRowDefault = m_optionWidget->findChild<QPushButton*>(QSL("btnMPDFHeightPerRowDefault"));
+        connect(m_btnHeightPerRowDisable, SIGNAL(clicked( bool )), SLOT(height_per_row_disable()));
+        connect(m_btnHeightPerRowDefault, SIGNAL(clicked( bool )), SLOT(height_per_row_default()));
         connect(get_widget(QSL("radMPDFStand")), SIGNAL(toggled( bool )), SLOT(update_preview()));
         connect(get_widget(QSL("spnMPDFStructAppCount")), SIGNAL(valueChanged( int )), SLOT(update_preview()));
         connect(get_widget(QSL("spnMPDFStructAppCount")), SIGNAL(valueChanged( int )), SLOT(structapp_ui_set()));
@@ -1034,6 +1121,15 @@ void MainWindow::change_options()
         load_sub_settings(settings, symbology);
         tabMain->insertTab(1, m_optionWidget, tr("Cod&e 16K"));
         btype->setItemText(0, tr("Default (bind)"));
+        connect(get_widget(QSL("cmbC16kRows")), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        m_lblHeightPerRow = m_optionWidget->findChild<QLabel*>(QSL("lblC16kHeightPerRow"));
+        m_spnHeightPerRow = m_optionWidget->findChild<QDoubleSpinBox*>(QSL("spnC16kHeightPerRow"));
+        connect(m_spnHeightPerRow, SIGNAL(valueChanged( double )), SLOT(autoheight_ui_set()));
+        connect(m_spnHeightPerRow, SIGNAL(valueChanged( double )), SLOT(update_preview()));
+        m_btnHeightPerRowDisable = m_optionWidget->findChild<QPushButton*>(QSL("btnC16kHeightPerRowDisable"));
+        m_btnHeightPerRowDefault = m_optionWidget->findChild<QPushButton*>(QSL("btnC16kHeightPerRowDefault"));
+        connect(m_btnHeightPerRowDisable, SIGNAL(clicked( bool )), SLOT(height_per_row_disable()));
+        connect(m_btnHeightPerRowDefault, SIGNAL(clicked( bool )), SLOT(height_per_row_default()));
         connect(get_widget(QSL("cmbC16kRowSepHeight")), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(get_widget(QSL("radC16kStand")), SIGNAL(toggled( bool )), SLOT(update_preview()));
         connect(get_widget(QSL("chkC16kNoQuietZones")), SIGNAL(toggled( bool )), SLOT(update_preview()));
@@ -1061,6 +1157,14 @@ void MainWindow::change_options()
         btype->setItemText(0, tr("Default (bind)"));
         connect(get_widget(QSL("cmbCbfWidth")), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(get_widget(QSL("cmbCbfHeight")), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        m_lblHeightPerRow = m_optionWidget->findChild<QLabel*>(QSL("lblCbfHeightPerRow"));
+        m_spnHeightPerRow = m_optionWidget->findChild<QDoubleSpinBox*>(QSL("spnCbfHeightPerRow"));
+        connect(m_spnHeightPerRow, SIGNAL(valueChanged( double )), SLOT(autoheight_ui_set()));
+        connect(m_spnHeightPerRow, SIGNAL(valueChanged( double )), SLOT(update_preview()));
+        m_btnHeightPerRowDisable = m_optionWidget->findChild<QPushButton*>(QSL("btnCbfHeightPerRowDisable"));
+        m_btnHeightPerRowDefault = m_optionWidget->findChild<QPushButton*>(QSL("btnCbfHeightPerRowDefault"));
+        connect(m_btnHeightPerRowDisable, SIGNAL(clicked( bool )), SLOT(height_per_row_disable()));
+        connect(m_btnHeightPerRowDefault, SIGNAL(clicked( bool )), SLOT(height_per_row_default()));
         connect(get_widget(QSL("cmbCbfRowSepHeight")), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(get_widget(QSL("radCbfStand")), SIGNAL(toggled( bool )), SLOT(update_preview()));
         connect(get_widget(QSL("radCbfHIBC")), SIGNAL(toggled( bool )), SLOT(update_preview()));
@@ -1250,6 +1354,15 @@ void MainWindow::change_options()
         load_sub_settings(settings, symbology);
         tabMain->insertTab(1, m_optionWidget, tr("Cod&e 49"));
         btype->setItemText(0, tr("Default (bind)"));
+        connect(get_widget(QSL("cmbC49Rows")), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        m_lblHeightPerRow = m_optionWidget->findChild<QLabel*>(QSL("lblC49HeightPerRow"));
+        m_spnHeightPerRow = m_optionWidget->findChild<QDoubleSpinBox*>(QSL("spnC49HeightPerRow"));
+        connect(m_spnHeightPerRow, SIGNAL(valueChanged( double )), SLOT(autoheight_ui_set()));
+        connect(m_spnHeightPerRow, SIGNAL(valueChanged( double )), SLOT(update_preview()));
+        m_btnHeightPerRowDisable = m_optionWidget->findChild<QPushButton*>(QSL("btnC49HeightPerRowDisable"));
+        m_btnHeightPerRowDefault = m_optionWidget->findChild<QPushButton*>(QSL("btnC49HeightPerRowDefault"));
+        connect(m_btnHeightPerRowDisable, SIGNAL(clicked( bool )), SLOT(height_per_row_disable()));
+        connect(m_btnHeightPerRowDefault, SIGNAL(clicked( bool )), SLOT(height_per_row_default()));
         connect(get_widget(QSL("cmbC49RowSepHeight")), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(get_widget(QSL("radC49GS1")), SIGNAL(toggled( bool )), SLOT(update_preview()));
         connect(get_widget(QSL("chkC49NoQuietZones")), SIGNAL(toggled( bool )), SLOT(update_preview()));
@@ -1271,8 +1384,19 @@ void MainWindow::change_options()
         m_optionWidget = uiload.load(&file);
         file.close();
         load_sub_settings(settings, symbology);
-        tabMain->insertTab(1, m_optionWidget, tr("GS1 DataBar Stack&ed"));
-        connect(get_widget(QSL("cmbCols")), SIGNAL(currentIndexChanged ( int )), SLOT(update_preview()));
+        tabMain->insertTab(1, m_optionWidget, tr("GS1 D&ataBar Exp Stack"));
+        connect(get_widget(QSL("radDBESCols")), SIGNAL(toggled( bool )), SLOT(update_preview()));
+        connect(get_widget(QSL("radDBESRows")), SIGNAL(toggled( bool )), SLOT(update_preview()));
+        connect(get_widget(QSL("cmbDBESCols")), SIGNAL(currentIndexChanged ( int )), SLOT(update_preview()));
+        connect(get_widget(QSL("cmbDBESRows")), SIGNAL(currentIndexChanged ( int )), SLOT(update_preview()));
+        m_lblHeightPerRow = m_optionWidget->findChild<QLabel*>(QSL("lblDBESHeightPerRow"));
+        m_spnHeightPerRow = m_optionWidget->findChild<QDoubleSpinBox*>(QSL("spnDBESHeightPerRow"));
+        connect(m_spnHeightPerRow, SIGNAL(valueChanged( double )), SLOT(autoheight_ui_set()));
+        connect(m_spnHeightPerRow, SIGNAL(valueChanged( double )), SLOT(update_preview()));
+        m_btnHeightPerRowDisable = m_optionWidget->findChild<QPushButton*>(QSL("btnDBESHeightPerRowDisable"));
+        m_btnHeightPerRowDefault = m_optionWidget->findChild<QPushButton*>(QSL("btnDBESHeightPerRowDefault"));
+        connect(m_btnHeightPerRowDisable, SIGNAL(clicked( bool )), SLOT(height_per_row_disable()));
+        connect(m_btnHeightPerRowDefault, SIGNAL(clicked( bool )), SLOT(height_per_row_default()));
 
     } else if (symbology == BARCODE_ULTRA) {
         QFile file(QSL(":/grpUltra.ui"));
@@ -1642,8 +1766,15 @@ void MainWindow::update_preview()
             break;
         case BARCODE_DBAR_EXPSTK:
             m_bc.bc.setSymbol(chkComposite->isChecked() ? BARCODE_DBAR_EXPSTK_CC : BARCODE_DBAR_EXPSTK);
-            if ((item_val = get_cmb_index(QSL("cmbCols"))) != 0)
-                m_bc.bc.setOption2(item_val);
+            if (get_rad_val(QSL("radDBESCols"))) {
+                if ((item_val = get_cmb_index(QSL("cmbDBESCols"))) != 0) {
+                    m_bc.bc.setOption2(item_val);
+                }
+            } else if (get_rad_val(QSL("radDBESRows"))) {
+                if ((item_val = get_cmb_index(QSL("cmbDBESRows"))) != 0) {
+                    m_bc.bc.setOption3(item_val + 1); // Begins at 2
+                }
+            }
             break;
 
         case BARCODE_PDF417:
@@ -1769,6 +1900,9 @@ void MainWindow::update_preview()
         case BARCODE_CODE16K:
             m_bc.bc.setSymbol(BARCODE_CODE16K);
             set_gs1_mode(get_rad_val(QSL("radC16kGS1")));
+            if ((item_val = get_cmb_index(QSL("cmbC16kRows"))) != 0) {
+                m_bc.bc.setOption1(item_val + 2); // Starts at 3
+            }
             // Row separator height selection uses option 3 in zint_symbol
             if ((item_val = get_cmb_index(QSL("cmbC16kRowSepHeight"))) != 0) {
                 m_bc.bc.setOption3(item_val + 1); // Zero-based
@@ -1997,6 +2131,9 @@ void MainWindow::update_preview()
         case BARCODE_CODE49:
             m_bc.bc.setSymbol(BARCODE_CODE49);
             set_gs1_mode(get_rad_val(QSL("radC49GS1")));
+            if ((item_val = get_cmb_index(QSL("cmbC49Rows"))) != 0) {
+                m_bc.bc.setOption1(item_val + 2); // Starts at 3
+            }
             // Row separator height selection uses option 3 in zint_symbol
             if ((item_val = get_cmb_index(QSL("cmbC49RowSepHeight"))) != 0) {
                 m_bc.bc.setOption3(item_val + 1); // Zero-based
@@ -2075,7 +2212,13 @@ void MainWindow::update_preview()
     if (!chkAutoHeight->isEnabled() || chkAutoHeight->isChecked()) {
         m_bc.bc.setHeight(0);
     } else {
-        m_bc.bc.setHeight(heightb->value());
+        if (m_spnHeightPerRow && m_spnHeightPerRow->isEnabled() && m_spnHeightPerRow->value()) {
+            // This causes a double-encode unfortunately, as heightb gets synced
+            m_bc.bc.setInputMode(m_bc.bc.inputMode() | HEIGHTPERROW_MODE);
+            m_bc.bc.setHeight(m_spnHeightPerRow->value());
+        } else {
+            m_bc.bc.setHeight(heightb->value());
+        }
     }
     m_bc.bc.setCompliantHeight(chkCompliantHeight->isEnabled() && chkCompliantHeight->isChecked());
     m_bc.bc.setECI(cmbECI->isEnabled() ? cmbECI->currentIndex() : 0);
@@ -2309,7 +2452,7 @@ QPoint MainWindow::get_context_menu_pos(const QPoint &pos, QWidget *widget)
 /* Shorthand to find widget child as generic QWidget */
 QWidget *MainWindow::get_widget(const QString &name)
 {
-    return m_optionWidget->findChild<QWidget*>(name);
+    return m_optionWidget ? m_optionWidget->findChild<QWidget*>(name) : nullptr;
 }
 
 /* Return settings subsection name for a symbol */
@@ -2679,6 +2822,7 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology)
         case BARCODE_HIBC_PDF:
             settings.setValue(QSL("studio/bc/pdf417/cols"), get_cmb_index(QSL("cmbPDFCols")));
             settings.setValue(QSL("studio/bc/pdf417/rows"), get_cmb_index(QSL("cmbPDFRows")));
+            settings.setValue(QSL("studio/bc/pdf417/height_per_row"), get_dspn_val(QSL("spnPDFHeightPerRow")));
             settings.setValue(QSL("studio/bc/pdf417/ecc"), get_cmb_index(QSL("cmbPDFECC")));
             settings.setValue(QSL("studio/bc/pdf417/encoding_mode"), get_rad_grp_index(
                 QStringList() << QSL("radPDFStand") << QSL("radPDFTruncated") << QSL("radPDFHIBC")));
@@ -2690,6 +2834,7 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology)
         case BARCODE_MICROPDF417:
         case BARCODE_HIBC_MICPDF:
             settings.setValue(QSL("studio/bc/micropdf417/cols"), get_cmb_index(QSL("cmbMPDFCols")));
+            settings.setValue(QSL("studio/bc/micropdf417/height_per_row"), get_dspn_val(QSL("spnMPDFHeightPerRow")));
             settings.setValue(QSL("studio/bc/micropdf417/encoding_mode"), get_rad_grp_index(
                 QStringList() << QSL("radMPDFStand") << QSL("radMPDFHIBC")));
             settings.setValue(QSL("studio/bc/micropdf417/structapp_count"),
@@ -2770,6 +2915,8 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology)
             break;
 
         case BARCODE_CODE16K:
+            settings.setValue(QSL("studio/bc/code16k/rows"), get_cmb_index(QSL("cmbC16kRows")));
+            settings.setValue(QSL("studio/bc/code16k/height_per_row"), get_dspn_val(QSL("spnC16kHeightPerRow")));
             settings.setValue(QSL("studio/bc/code16k/row_sep_height"), get_cmb_index(QSL("cmbC16kRowSepHeight")));
             settings.setValue(QSL("studio/bc/code16k/encoding_mode"), get_rad_grp_index(
                 QStringList() << QSL("radC16kStand") << QSL("radC16kGS1")));
@@ -2785,6 +2932,7 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology)
         case BARCODE_HIBC_BLOCKF:
             settings.setValue(QSL("studio/bc/codablockf/width"), get_cmb_index(QSL("cmbCbfWidth")));
             settings.setValue(QSL("studio/bc/codablockf/height"), get_cmb_index(QSL("cmbCbfHeight")));
+            settings.setValue(QSL("studio/bc/codablockf/height_per_row"), get_dspn_val(QSL("spnCbfHeightPerRow")));
             settings.setValue(QSL("studio/bc/codablockf/row_sep_height"), get_cmb_index(QSL("cmbCbfRowSepHeight")));
             settings.setValue(QSL("studio/bc/codablockf/encoding_mode"), get_rad_grp_index(
                 QStringList() << QSL("radCbfStand") << QSL("radCbfHIBC")));
@@ -2881,6 +3029,8 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology)
             break;
 
         case BARCODE_CODE49:
+            settings.setValue(QSL("studio/bc/code49/rows"), get_cmb_index(QSL("cmbC49Rows")));
+            settings.setValue(QSL("studio/bc/code49/height_per_row"), get_dspn_val(QSL("spnC49HeightPerRow")));
             settings.setValue(QSL("studio/bc/code49/row_sep_height"), get_cmb_index(QSL("cmbC49RowSepHeight")));
             settings.setValue(QSL("studio/bc/code49/encoding_mode"), get_rad_grp_index(
                 QStringList() << QSL("radC49Stand") << QSL("radC49GS1")));
@@ -2893,7 +3043,11 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology)
 
         case BARCODE_DBAR_EXPSTK:
         case BARCODE_DBAR_EXPSTK_CC:
-            settings.setValue(QSL("studio/bc/dbar_expstk/cols"), get_cmb_index(QSL("cmbCols")));
+            settings.setValue(QSL("studio/bc/dbar_expstk/colsrows"), get_rad_grp_index(
+                QStringList() << QSL("radDBESCols") << QSL("radDBESRows")));
+            settings.setValue(QSL("studio/bc/dbar_expstk/cols"), get_cmb_index(QSL("cmbDBESCols")));
+            settings.setValue(QSL("studio/bc/dbar_expstk/rows"), get_cmb_index(QSL("cmbDBESRows")));
+            settings.setValue(QSL("studio/bc/dbar_expstk/height_per_row"), get_dspn_val(QSL("spnDBESHeightPerRow")));
             break;
 
         case BARCODE_ULTRA:
@@ -3034,6 +3188,7 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
         case BARCODE_HIBC_PDF:
             set_cmb_from_setting(settings, QSL("studio/bc/pdf417/cols"), QSL("cmbPDFCols"));
             set_cmb_from_setting(settings, QSL("studio/bc/pdf417/rows"), QSL("cmbPDFRows"));
+            set_dspn_from_setting(settings, QSL("studio/bc/pdf417/height_per_row"), QSL("spnPDFHeightPerRow"), 0.0f);
             set_cmb_from_setting(settings, QSL("studio/bc/pdf417/ecc"), QSL("cmbPDFECC"));
             set_rad_from_setting(settings, QSL("studio/bc/pdf417/encoding_mode"),
                 QStringList() << QSL("radPDFStand") << QSL("radPDFTruncated") << QSL("radPDFHIBC"));
@@ -3045,6 +3200,8 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
         case BARCODE_MICROPDF417:
         case BARCODE_HIBC_MICPDF:
             set_cmb_from_setting(settings, QSL("studio/bc/micropdf417/cols"), QSL("cmbMPDFCols"));
+            set_dspn_from_setting(settings, QSL("studio/bc/micropdf417/height_per_row"), QSL("spnMPDFHeightPerRow"),
+                0.0f);
             set_rad_from_setting(settings, QSL("studio/bc/micropdf417/encoding_mode"),
                 QStringList() << QSL("radMPDFStand") << QSL("radMPDFHIBC"));
             set_spn_from_setting(settings, QSL("studio/bc/micropdf417/structapp_count"),
@@ -3127,6 +3284,9 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
             break;
 
         case BARCODE_CODE16K:
+            set_cmb_from_setting(settings, QSL("studio/bc/code16k/rows"), QSL("cmbC16kRows"));
+            set_dspn_from_setting(settings, QSL("studio/bc/code16k/height_per_row"), QSL("spnC16kHeightPerRow"),
+                0.0f);
             set_cmb_from_setting(settings, QSL("studio/bc/code16k/row_sep_height"), QSL("cmbC16kRowSepHeight"));
             set_rad_from_setting(settings, QSL("studio/bc/code16k/encoding_mode"),
                 QStringList() << QSL("radC16kStand") << QSL("radC16kGS1"));
@@ -3142,6 +3302,8 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
         case BARCODE_HIBC_BLOCKF:
             set_cmb_from_setting(settings, QSL("studio/bc/codablockf/width"), QSL("cmbCbfWidth"));
             set_cmb_from_setting(settings, QSL("studio/bc/codablockf/height"), QSL("cmbCbfHeight"));
+            set_dspn_from_setting(settings, QSL("studio/bc/codablockf/height_per_row"), QSL("spnCbfHeightPerRow"),
+                0.0f);
             set_cmb_from_setting(settings, QSL("studio/bc/codablockf/row_sep_height"),
                 QSL("cmbCbfRowSepHeight"));
             set_rad_from_setting(settings, QSL("studio/bc/codablockf/encoding_mode"),
@@ -3238,6 +3400,8 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
             break;
 
         case BARCODE_CODE49:
+            set_cmb_from_setting(settings, QSL("studio/bc/code49/rows"), QSL("cmbC49Rows"));
+            set_dspn_from_setting(settings, QSL("studio/bc/code49/height_per_row"), QSL("spnC49HeightPerRow"), 0.0f);
             set_cmb_from_setting(settings, QSL("studio/bc/code49/row_sep_height"), QSL("cmbC49RowSepHeight"));
             set_rad_from_setting(settings, QSL("studio/bc/code49/encoding_mode"),
                 QStringList() << QSL("radC49Stand") << QSL("radC49GS1"));
@@ -3249,7 +3413,12 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
             break;
 
         case BARCODE_DBAR_EXPSTK:
-            set_cmb_from_setting(settings, QSL("studio/bc/dbar_expstk/cols"), QSL("cmbCols"));
+            set_rad_from_setting(settings, QSL("studio/bc/dbar_expstk/colsrows"),
+                QStringList() << QSL("radDBESCols") << QSL("radDBESRows"));
+            set_cmb_from_setting(settings, QSL("studio/bc/dbar_expstk/cols"), QSL("cmbDBESCols"));
+            set_cmb_from_setting(settings, QSL("studio/bc/dbar_expstk/rows"), QSL("cmbDBESRows"));
+            set_dspn_from_setting(settings, QSL("studio/bc/dbar_expstk/height_per_row"), QSL("spnDBESHeightPerRow"),
+                0.0f);
             break;
 
         case BARCODE_ULTRA:

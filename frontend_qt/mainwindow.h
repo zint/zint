@@ -22,12 +22,15 @@
 #include <QGraphicsItem>
 #include <QMainWindow>
 #include <QGraphicsScene>
+#include <QButtonGroup>
 
 #include "ui_mainWindow.h"
 #include "barcodeitem.h"
 
 class QLabel;
 class QShortcut;
+class QDoubleSpinBox;
+class QPushButton;
 
 class MainWindow : public QWidget, private Ui::mainWindow
 {
@@ -81,6 +84,9 @@ public slots:
     void copy_to_clipboard_tif();
 
     void copy_to_clipboard_errtxt();
+
+    void height_per_row_disable();
+    void height_per_row_default();
 
     void guard_reset_upcean();
     void guard_reset_upca();
@@ -160,6 +166,10 @@ private:
     QAction *m_helpAct;
     QAction *m_quitAct;
     QAction *m_copyErrtxtAct;
+    QLabel *m_lblHeightPerRow;
+    QDoubleSpinBox *m_spnHeightPerRow;
+    QPushButton *m_btnHeightPerRowDisable;
+    QPushButton *m_btnHeightPerRowDefault;
 };
 
 #endif

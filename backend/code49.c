@@ -246,6 +246,20 @@ INTERNAL int code49(struct zint_symbol *symbol, unsigned char source[], int leng
         rows++;
     }
 
+    if (symbol->option_1 >= 2 && symbol->option_1 <= 8) { /* Minimum no. of rows */
+        if (symbol->option_1 > rows) {
+            for (j = symbol->option_1 - rows; j > 0; j--) {
+                for (i = 0; i < 7; i++) {
+                    c_grid[rows][i] = 48; /* Pad */
+                }
+                rows++;
+            }
+        }
+    } else if (symbol->option_1 >= 1) {
+        strcpy(symbol->errtxt, "424: Minimum number of rows out of range (2 to 8)");
+        return ZINT_ERROR_INVALID_OPTION;
+    }
+
     /* Add row count and mode character */
     c_grid[rows - 1][6] = (7 * (rows - 2)) + M;
 

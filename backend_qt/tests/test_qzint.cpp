@@ -223,6 +223,9 @@ private slots:
         bool debug = true;
         bc.setDebug(debug);
         QCOMPARE(bc.debug(), debug);
+
+        QCOMPARE(bc.encodedWidth(), 0); // Read-only
+        QCOMPARE(bc.encodedRows(), 0); // Read-only
     }
 
     void setGetECIValueTest_data()
@@ -314,10 +317,12 @@ private slots:
         QTest::addColumn<QString>("text");
         QTest::addColumn<int>("getError");
         QTest::addColumn<QString>("error_message");
+        QTest::addColumn<int>("encodedWidth");
+        QTest::addColumn<int>("encodedRows");
 
-        QTest::newRow("BARCODE_QRCODE") << BARCODE_QRCODE << "1234" << 0 << "";
+        QTest::newRow("BARCODE_QRCODE") << BARCODE_QRCODE << "1234" << 0 << "" << 21 << 21;
         if (!m_skipIfFontUsed) {
-            QTest::newRow("BARCODE_QRCODE no text") << BARCODE_QRCODE << "" << ZINT_ERROR_INVALID_DATA << "Error 205: No input data";
+            QTest::newRow("BARCODE_QRCODE no text") << BARCODE_QRCODE << "" << ZINT_ERROR_INVALID_DATA << "Error 205: No input data" << 0 << 0;
         }
     }
 
@@ -340,6 +345,8 @@ private slots:
         QFETCH(QString, text);
         QFETCH(int, getError);
         QFETCH(QString, error_message);
+        QFETCH(int, encodedWidth);
+        QFETCH(int, encodedRows);
 
         bc.setSymbol(symbology);
         bc.setText(text);
@@ -356,6 +363,8 @@ private slots:
         QCOMPARE(bc.error_message(), error_message);
         QCOMPARE(bc.lastError(), error_message);
         QCOMPARE(bc.hasErrors(), getError != 0);
+        QCOMPARE(bc.encodedWidth(), encodedWidth);
+        QCOMPARE(bc.encodedRows(), encodedRows);
 
         if (getError) {
             QCOMPARE(spyEncoded.count(), 0);

@@ -38,6 +38,9 @@ Changes
 - DAFT: max chars 50 -> 100
 - CMake: separate no-optimize from ZINT_DEBUG into new ZINT_NOOPT option
 - PDF417: add specify rows option
+- Add HEIGHTPERROW_MODE input mode flag
+- DBAR_EXPSTK: add max rows option
+- CODE16K/CODE49: add min rows option
 
 Bugs
 ----

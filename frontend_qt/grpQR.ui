@@ -19,9 +19,9 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QVBoxLayout" name="verticalLayoutQR">
    <item>
-    <layout class="QGridLayout" name="gridLayout">
+    <layout class="QGridLayout" name="gridLayoutQR">
      <item row="0" column="0">
       <widget class="QLabel" name="labelQRSize">
        <property name="text">
@@ -403,7 +403,7 @@ formatted with Application Identifiers (AIs)</string>
       <item row="0" column="2">
        <widget class="QRadioButton" name="radQRHIBC">
         <property name="text">
-         <string>H&amp;IBC QR Code</string>
+         <string>H&amp;IBC</string>
         </property>
         <property name="toolTip">
          <string>Process data as a Health Industry Barcode (HIBC)
@@ -746,7 +746,7 @@ Value ranges from 0 to 255
     </widget>
    </item>
    <item>
-    <spacer name="verticalSpacer">
+    <spacer name="verticalSpacerQR">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
      </property>

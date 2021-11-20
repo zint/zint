@@ -64,6 +64,7 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int len
     int list[2][C128_MAX] = {{0}};
     char set[C128_MAX] = {0}, fset[C128_MAX], mode, last_set, current_set;
     int pads_needed, indexliste, i, m, read, mx_reader;
+    int extra_pads = 0;
     int values[C128_MAX] = {0};
     int bar_characters;
     float glyph_count;
@@ -182,6 +183,15 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int len
 
     if (rows == 1) {
         rows = 2;
+    }
+    if (symbol->option_1 >= 2 && symbol->option_1 <= 16) { /* Minimum no. of rows */
+        if (symbol->option_1 > rows) {
+            extra_pads = (symbol->option_1 - rows) * 5;
+            rows = symbol->option_1;
+        }
+    } else if (symbol->option_1 >= 1) {
+        strcpy(symbol->errtxt, "424: Minimum number of rows out of range (2 to 16)");
+        return ZINT_ERROR_INVALID_OPTION;
     }
 
     /* start with the mode character - Table 2 */
@@ -313,7 +323,7 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int len
     if ((bar_characters + pads_needed) < 8) {
         pads_needed += 8 - (bar_characters + pads_needed);
     }
-    for (i = 0; i < pads_needed; i++) {
+    for (i = 0; i < pads_needed + extra_pads; i++) {
         values[bar_characters] = 103;
         bar_characters++;
     }

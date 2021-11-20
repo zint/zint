@@ -424,7 +424,11 @@ INTERNAL int set_height(struct zint_symbol *symbol, const float min_row_height, 
 
     if (zero_count) {
         if (symbol->height) {
-            row_height = stripf((symbol->height - fixed_height) / zero_count);
+            if (symbol->input_mode & HEIGHTPERROW_MODE) {
+                row_height = stripf(symbol->height);
+            } else {
+                row_height = stripf((symbol->height - fixed_height) / zero_count);
+            }
         } else if (default_height) {
             row_height = stripf(default_height / zero_count);
         } else {

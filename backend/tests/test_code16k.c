@@ -145,6 +145,7 @@ static void test_input(int index, int generate, int debug) {
 
     struct item {
         int input_mode;
+        int option_1;
         char *data;
         int length;
         int ret;
@@ -161,29 +162,37 @@ static void test_input(int index, int generate, int debug) {
     // ß U+00DF (\337, 223), UTF-8 C39F, CodeA and CodeB extended ASCII
     // é U+00E9 (\351, 233), UTF-8 C3A9, CodeB-only extended ASCII
     struct item data[] = {
-        /*  0*/ { UNICODE_MODE, "\037", -1, 0, 2, 70, "(10) 0 95 103 103 103 103 103 103 22 42", "ModeA US Pad (6)" },
-        /*  1*/ { UNICODE_MODE, "A", -1, 0, 2, 70, "(10) 1 33 103 103 103 103 103 103 52 82", "ModeB A Pad (6)" },
-        /*  2*/ { UNICODE_MODE, "12", -1, 0, 2, 70, "(10) 2 12 103 103 103 103 103 103 98 27", "ModeC 12 Pad (6)" },
-        /*  3*/ { GS1_MODE, "[90]A", -1, 0, 2, 70, "(10) 3 25 16 33 103 103 103 103 83 20", "ModeBFNC1 9 0 A Pad (4)" },
-        /*  4*/ { GS1_MODE, "[90]12", -1, 0, 2, 70, "(10) 4 90 12 103 103 103 103 103 79 62", "ModeCFNC1 90 12 Pad (5)" },
-        /*  5*/ { GS1_MODE, "[90]12[20]12", -1, 0, 2, 70, "(10) 4 90 12 102 20 12 103 103 9 72", "ModeCFNC1 90 12 FNC1 20 12 Pad (2)" },
-        /*  6*/ { GS1_MODE, "[90]123[20]12", -1, 0, 2, 70, "(15) 4 90 12 100 19 99 102 20 12 103 103 103 103 88 22", "ModeCFNC1 90 CodeB 3 CodeC FNC1 20 12 Pad (4)" },
-        /*  7*/ { GS1_MODE, "[90]123[91]1A3[20]12", -1, 0, 4, 70, "(20) 18 90 12 100 19 102 25 99 11 100 33 19 99 102 20 12 103 103 0 3", "ModeCFNC1 90 12 CodeB 3 FNC1 9 CodeC 11 CodeB A 3 CodeC FNC1 20 12 Pad (2)" },
-        /*  8*/ { GS1_MODE, "[90]123A[91]123", -1, 0, 3, 70, "(15) 11 90 12 100 19 33 102 25 99 11 23 103 103 81 56", "ModeCFNC1 90 12 CodeB 3 A FNC1 9 CodeC 11 23 Pad (2)" },
-        /*  9*/ { GS1_MODE | GS1PARENS_MODE, "(90)12", -1, 0, 2, 70, "(10) 4 90 12 103 103 103 103 103 79 62", "ModeCFNC1 90 12 Pad (5)" },
-        /* 10*/ { UNICODE_MODE, "a0123456789", -1, 0, 2, 70, "(10) 5 65 1 23 45 67 89 103 27 86", "ModeC1SB a 01 23 45 67 89 Pad" },
-        /* 11*/ { UNICODE_MODE, "ab0123456789", -1, 0, 2, 70, "(10) 6 65 66 1 23 45 67 89 19 42", "ModeC2SB a b 01 23 45 67 89" },
-        /* 12*/ { UNICODE_MODE, "1234\037a", -1, 0, 2, 70, "(10) 2 12 34 101 95 98 65 103 67 53", "ModeC 12 34 CodeA US 1SB a Pad" },
-        /* 13*/ { UNICODE_MODE, "\000\037ß", 4, 0, 2, 70, "(10) 0 64 95 101 63 103 103 103 75 11", "ModeA NUL US FNC4 ß Pad (3)" },
-        /* 14*/ { UNICODE_MODE, "\000\037é", 4, 0, 2, 70, "(10) 0 64 95 101 98 73 103 103 75 6", "ModeA NUL US FNC4 1SB é Pad (2)" },
-        /* 15*/ { UNICODE_MODE, "\000\037éa", 5, 0, 2, 70, "(10) 0 64 95 100 100 73 65 103 99 69", "ModeA NUL US CodeB FNC4 é a Pad" },
-        /* 16*/ { UNICODE_MODE, "abß", -1, 0, 2, 70, "(10) 1 65 66 100 63 103 103 103 66 56", "ModeB a b FNC4 ß Pad (3)" },
-        /* 17*/ { DATA_MODE, "\141\142\237", -1, 0, 2, 70, "(10) 1 65 66 100 98 95 103 103 6 71", "ModeB a b FNC4 1SA APC Pad (2)" },
-        /* 18*/ { DATA_MODE, "\141\142\237\037", -1, 0, 2, 70, "(10) 1 65 66 101 101 95 95 103 72 93", "ModeB a b CodeA FNC4 APC US Pad" },
-        /* 19*/ { UNICODE_MODE, "ééé", -1, 0, 2, 70, "(10) 1 100 73 100 73 100 73 103 105 106", "ModeB FNC4 é FNC4 é FNC4 é Pad" },
-        /* 20*/ { UNICODE_MODE, "aééééb", -1, 0, 3, 70, "(15) 8 65 100 73 100 73 100 73 100 73 66 103 103 39 83", "ModeB a FNC4 é (4) b Pad (2)" },
-        /* 21*/ { UNICODE_MODE, "aéééééb", -1, 0, 3, 70, "(15) 8 65 100 73 100 73 100 73 100 73 100 73 66 74 106", "ModeB a FNC4 é (5) b" },
-        /* 22*/ { UNICODE_MODE, "aééééébcdeé", -1, 0, 4, 70, "(20) 15 65 100 73 100 73 100 73 100 73 100 73 66 67 68 69 100 73 14 69", "ModeB a FNC4 é (5) b c d e FNC4 é" },
+        /*  0*/ { UNICODE_MODE, -1, "\037", -1, 0, 2, 70, "(10) 0 95 103 103 103 103 103 103 22 42", "ModeA US Pad (6)" },
+        /*  1*/ { UNICODE_MODE, -1, "A", -1, 0, 2, 70, "(10) 1 33 103 103 103 103 103 103 52 82", "ModeB A Pad (6)" },
+        /*  2*/ { UNICODE_MODE, -1, "12", -1, 0, 2, 70, "(10) 2 12 103 103 103 103 103 103 98 27", "ModeC 12 Pad (6)" },
+        /*  3*/ { GS1_MODE, -1, "[90]A", -1, 0, 2, 70, "(10) 3 25 16 33 103 103 103 103 83 20", "ModeBFNC1 9 0 A Pad (4)" },
+        /*  4*/ { GS1_MODE, -1, "[90]12", -1, 0, 2, 70, "(10) 4 90 12 103 103 103 103 103 79 62", "ModeCFNC1 90 12 Pad (5)" },
+        /*  5*/ { GS1_MODE, -1, "[90]12[20]12", -1, 0, 2, 70, "(10) 4 90 12 102 20 12 103 103 9 72", "ModeCFNC1 90 12 FNC1 20 12 Pad (2)" },
+        /*  6*/ { GS1_MODE, -1, "[90]123[20]12", -1, 0, 2, 70, "(15) 4 90 12 100 19 99 102 20 12 103 103 103 103 88 22", "ModeCFNC1 90 CodeB 3 CodeC FNC1 20 12 Pad (4)" },
+        /*  7*/ { GS1_MODE, -1, "[90]123[91]1A3[20]12", -1, 0, 4, 70, "(20) 18 90 12 100 19 102 25 99 11 100 33 19 99 102 20 12 103 103 0 3", "ModeCFNC1 90 12 CodeB 3 FNC1 9 CodeC 11 CodeB A 3 CodeC FNC1 20 12 Pad (2)" },
+        /*  8*/ { GS1_MODE, -1, "[90]123A[91]123", -1, 0, 3, 70, "(15) 11 90 12 100 19 33 102 25 99 11 23 103 103 81 56", "ModeCFNC1 90 12 CodeB 3 A FNC1 9 CodeC 11 23 Pad (2)" },
+        /*  9*/ { GS1_MODE | GS1PARENS_MODE, -1, "(90)12", -1, 0, 2, 70, "(10) 4 90 12 103 103 103 103 103 79 62", "ModeCFNC1 90 12 Pad (5)" },
+        /* 10*/ { UNICODE_MODE, -1, "a0123456789", -1, 0, 2, 70, "(10) 5 65 1 23 45 67 89 103 27 86", "ModeC1SB a 01 23 45 67 89 Pad" },
+        /* 11*/ { UNICODE_MODE, -1, "ab0123456789", -1, 0, 2, 70, "(10) 6 65 66 1 23 45 67 89 19 42", "ModeC2SB a b 01 23 45 67 89" },
+        /* 12*/ { UNICODE_MODE, -1, "1234\037a", -1, 0, 2, 70, "(10) 2 12 34 101 95 98 65 103 67 53", "ModeC 12 34 CodeA US 1SB a Pad" },
+        /* 13*/ { UNICODE_MODE, -1, "\000\037ß", 4, 0, 2, 70, "(10) 0 64 95 101 63 103 103 103 75 11", "ModeA NUL US FNC4 ß Pad (3)" },
+        /* 14*/ { UNICODE_MODE, -1, "\000\037é", 4, 0, 2, 70, "(10) 0 64 95 101 98 73 103 103 75 6", "ModeA NUL US FNC4 1SB é Pad (2)" },
+        /* 15*/ { UNICODE_MODE, -1, "\000\037éa", 5, 0, 2, 70, "(10) 0 64 95 100 100 73 65 103 99 69", "ModeA NUL US CodeB FNC4 é a Pad" },
+        /* 16*/ { UNICODE_MODE, -1, "abß", -1, 0, 2, 70, "(10) 1 65 66 100 63 103 103 103 66 56", "ModeB a b FNC4 ß Pad (3)" },
+        /* 17*/ { DATA_MODE, -1, "\141\142\237", -1, 0, 2, 70, "(10) 1 65 66 100 98 95 103 103 6 71", "ModeB a b FNC4 1SA APC Pad (2)" },
+        /* 18*/ { DATA_MODE, -1, "\141\142\237\037", -1, 0, 2, 70, "(10) 1 65 66 101 101 95 95 103 72 93", "ModeB a b CodeA FNC4 APC US Pad" },
+        /* 19*/ { UNICODE_MODE, -1, "ééé", -1, 0, 2, 70, "(10) 1 100 73 100 73 100 73 103 105 106", "ModeB FNC4 é FNC4 é FNC4 é Pad" },
+        /* 20*/ { UNICODE_MODE, -1, "aééééb", -1, 0, 3, 70, "(15) 8 65 100 73 100 73 100 73 100 73 66 103 103 39 83", "ModeB a FNC4 é (4) b Pad (2)" },
+        /* 21*/ { UNICODE_MODE, -1, "aéééééb", -1, 0, 3, 70, "(15) 8 65 100 73 100 73 100 73 100 73 100 73 66 74 106", "ModeB a FNC4 é (5) b" },
+        /* 22*/ { UNICODE_MODE, -1, "aééééébcdeé", -1, 0, 4, 70, "(20) 15 65 100 73 100 73 100 73 100 73 100 73 66 67 68 69 100 73 14 69", "ModeB a FNC4 é (5) b c d e FNC4 é" },
+        /* 23*/ { UNICODE_MODE, -1, "123456789012345678901234", -1, 0, 3, 70, "(15) 9 12 34 56 78 90 12 34 56 78 90 12 34 71 42", "3 rows" },
+        /* 24*/ { UNICODE_MODE, 2, "123456789012345678901234", -1, 0, 3, 70, "(15) 9 12 34 56 78 90 12 34 56 78 90 12 34 71 42", "Min 2 rows (no change)" },
+        /* 25*/ { UNICODE_MODE, 3, "123456789012345678901234", -1, 0, 3, 70, "(15) 9 12 34 56 78 90 12 34 56 78 90 12 34 71 42", "Min 3 rows (no change)" },
+        /* 26*/ { UNICODE_MODE, 4, "123456789012345678901234", -1, 0, 4, 70, "(20) 16 12 34 56 78 90 12 34 56 78 90 12 34 103 103 103 103 103 66 96", "Min 4 rows" },
+        /* 27*/ { UNICODE_MODE, 5, "123456789012345678901234", -1, 0, 5, 70, "(25) 23 12 34 56 78 90 12 34 56 78 90 12 34 103 103 103 103 103 103 103 103 103 103 68 61", "Min 5 rows" },
+        /* 28*/ { UNICODE_MODE, 16, "123456789012345678901234", -1, 0, 16, 70, "(80) 100 12 34 56 78 90 12 34 56 78 90 12 34 103 103 103 103 103 103 103 103 103 103 103", "Min 16 rows" },
+        /* 29*/ { UNICODE_MODE, 1, "123456789012345678901234", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 424: Minimum number of rows out of range (2 to 16)", "" },
+        /* 30*/ { UNICODE_MODE, 17, "123456789012345678901234", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 424: Minimum number of rows out of range (2 to 16)", "" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -202,20 +211,21 @@ static void test_input(int index, int generate, int debug) {
 
         symbol->debug = ZINT_DEBUG_TEST; // Needed to get codeword dump in errtxt
 
-        length = testUtilSetSymbol(symbol, BARCODE_CODE16K, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, data[i].length, debug);
+        length = testUtilSetSymbol(symbol, BARCODE_CODE16K, data[i].input_mode, -1 /*eci*/, data[i].option_1, -1, -1, -1 /*output_options*/, data[i].data, data[i].length, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (generate) {
-            printf("        /*%3d*/ { %s, \"%s\", %d, %s, %d, %d, \"%s\", \"%s\" },\n",
-                    i, testUtilInputModeName(data[i].input_mode), testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), data[i].length,
+            printf("        /*%3d*/ { %s, %d, \"%s\", %d, %s, %d, %d, \"%s\", \"%s\" },\n",
+                    i, testUtilInputModeName(data[i].input_mode), data[i].option_1,
+                    testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), data[i].length,
                     testUtilErrorName(data[i].ret), symbol->rows, symbol->width, symbol->errtxt, data[i].comment);
         } else {
+            assert_zero(strcmp((char *) symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
             if (ret < ZINT_ERROR) {
                 assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);
                 assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
-                assert_zero(strcmp((char *) symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
             }
         }
 
@@ -229,6 +239,7 @@ static void test_encode(int index, int generate, int debug) {
 
     struct item {
         int input_mode;
+        int option_1;
         char *data;
         int ret;
 
@@ -238,16 +249,47 @@ static void test_encode(int index, int generate, int debug) {
         char *expected;
     };
     struct item data[] = {
-        /*  0*/ { UNICODE_MODE, "ab0123456789", 0, 2, 70, "BS EN 12323:2005 Figure 3",
+        /*  0*/ { UNICODE_MODE, -1, "ab0123456789", 0, 2, 70, "BS EN 12323:2005 Figure 3",
                     "1110010101100110111011010011110110111100100110010011000100100010001101"
                     "1100110101000100111011110100110010010000100110100011010010001110011001"
                 },
-        /*  1*/ { UNICODE_MODE, "www.wikipedia.de", 0, 4, 70, "https://commons.wikimedia.org/wiki/File:Code_16K_wikipedia.png",
+        /*  1*/ { UNICODE_MODE, -1, "www.wikipedia.de", 0, 4, 70, "https://commons.wikimedia.org/wiki/File:Code_16K_wikipedia.png",
                     "1110010101000110011000011010110000110101100001101011011001100010001101"
                     "1100110100001101011011110010110011110110101111001011010110000110011001"
                     "1101100101001101111011110110010111100101101101001111011001100010010011"
                     "1000010101111011001010011011110010111101101100001011010001001110111101"
                },
+        /*  2*/ { UNICODE_MODE, -1, "12345678901234567890123456789012", 0, 4, 70, "",
+                    "1110010101100010011010011000110111010011100011101001001111010110001101"
+                    "1100110100100001001010011000110111010011100011101001001111010110011001"
+                    "1101100100100001001010011000110111010011100011101001001111010110010011"
+                    "1000010100100001001010011000110010111101100001011101000111010010111101"
+                },
+        /*  3*/ { UNICODE_MODE, 5, "12345678901234567890123456789012", 0, 5, 70, "Min 5 rows",
+                    "1110010100010010001010011000110111010011100011101001001111010110001101"
+                    "1100110100100001001010011000110111010011100011101001001111010110011001"
+                    "1101100100100001001010011000110111010011100011101001001111010110010011"
+                    "1000010100100001001010011000110010111101100101111011001011110110111101"
+                    "1011100100101111011001011110110010111101101000010001011110011010100011"
+                },
+        /*  4*/ { UNICODE_MODE, 16, "12345678901234567890123456789012", 0, 16, 70, "Min 16 rows",
+                    "1110010101000010001010011000110111010011100011101001001111010110001101"
+                    "1100110100100001001010011000110111010011100011101001001111010110011001"
+                    "1101100100100001001010011000110111010011100011101001001111010110010011"
+                    "1000010100100001001010011000110010111101100101111011001011110110111101"
+                    "1011100100101111011001011110110010111101100101111011001011110110100011"
+                    "1001110100101111011001011110110010111101100101111011001011110110110001"
+                    "1010000100101111011001011110110010111101100101111011001011110110101111"
+                    "1110100100101111011001011110110010111101100101111011001011110110001011"
+                    "1110010100101111011001011110110010111101100101111011001011110110100011"
+                    "1100110100101111011001011110110010111101100101111011001011110110110001"
+                    "1101100100101111011001011110110010111101100101111011001011110110101111"
+                    "1000010100101111011001011110110010111101100101111011001011110110001011"
+                    "1011100100101111011001011110110010111101100101111011001011110110001101"
+                    "1001110100101111011001011110110010111101100101111011001011110110011001"
+                    "1010000100101111011001011110110010111101100101111011001011110110010011"
+                    "1110100100101111011001011110110010111101100101110001001110010010111101"
+                },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -268,14 +310,15 @@ static void test_encode(int index, int generate, int debug) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, BARCODE_CODE16K, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, BARCODE_CODE16K, data[i].input_mode, -1 /*eci*/, data[i].option_1, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (generate) {
-            printf("        /*%3d*/ { %s, \"%s\", %s, %d, %d, \"%s\",\n",
-                    i, testUtilInputModeName(data[i].input_mode), testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
+            printf("        /*%3d*/ { %s, %d, \"%s\", %s, %d, %d, \"%s\",\n",
+                    i, testUtilInputModeName(data[i].input_mode), data[i].option_1,
+                    testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
                     testUtilErrorName(data[i].ret), symbol->rows, symbol->width, data[i].comment);
             testUtilModulesPrint(symbol, "                    ", "\n");
             printf("                },\n");
@@ -289,8 +332,8 @@ static void test_encode(int index, int generate, int debug) {
                 ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
                 assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, ret, width, row, data[i].data);
 
-                if (do_bwipp && testUtilCanBwipp(i, symbol, -1, -1, -1, debug)) {
-                    ret = testUtilBwipp(i, symbol, -1, -1, -1, data[i].data, length, NULL, bwipp_buf, sizeof(bwipp_buf));
+                if (do_bwipp && testUtilCanBwipp(i, symbol, data[i].option_1, -1, -1, debug)) {
+                    ret = testUtilBwipp(i, symbol, data[i].option_1, -1, -1, data[i].data, length, NULL, bwipp_buf, sizeof(bwipp_buf));
                     assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
 
                     ret = testUtilBwippCmp(symbol, bwipp_msg, bwipp_buf, data[i].expected);

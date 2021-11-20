@@ -19,9 +19,9 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QVBoxLayout" name="verticalLayoutMPDF">
    <item>
-    <layout class="QGridLayout" name="gridLayout">
+    <layout class="QGridLayout" name="gridLayoutMPDF">
      <item row="0" column="0">
       <widget class="QLabel" name="lblMPDFCols">
        <property name="text">
@@ -38,7 +38,7 @@
        </property>
       </widget>
      </item>
-     <item row="0" column="2">
+     <item row="0" column="1">
       <widget class="QComboBox" name="cmbMPDFCols">
        <property name="toolTip">
         <string>Set number of data characters in a row</string>
@@ -70,6 +70,124 @@
        </item>
       </widget>
      </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="lblMPDFHeightPerRow">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="toolTip">
+        <string>Height per row in X-dimensions
+Only available if &quot;Automatic Height&quot; in
+the Appearance tab is not checked
+(ignored if disabled)</string>
+       </property>
+       <property name="text">
+        <string>Row &amp;Height:</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+       </property>
+       <property name="buddy">
+        <cstring>spnMPDFHeightPerRow</cstring>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <layout class="QHBoxLayout" name="horzLayoutMPDFHeightPerRow">
+       <item>
+        <widget class="QDoubleSpinBox" name="spnMPDFHeightPerRow">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="toolTip">
+          <string>Height per row in X-dimensions
+Only available if &quot;Automatic Height&quot; in
+the Appearance tab is not checked
+(ignored if disabled)</string>
+         </property>
+         <property name="accelerated">
+          <bool>true</bool>
+         </property>
+         <property name="prefix">
+          <string/>
+         </property>
+         <property name="suffix">
+          <string> X</string>
+         </property>
+         <property name="decimals">
+          <number>3</number>
+         </property>
+         <property name="minimum">
+          <double>0</double>
+         </property>
+         <property name="maximum">
+          <double>2000.000000000000000</double>
+         </property>
+         <property name="singleStep">
+          <double>0.100000000000000</double>
+         </property>
+         <property name="value">
+          <double>0</double>
+         </property>
+         <property name="specialValueText">
+          <string>0 (Disabled)</string>
+         </property>
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+           <horstretch>2</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btnMPDFHeightPerRowDisable">
+         <property name="toolTip">
+          <string>Set height per row to 0
+(&quot;Height&quot; in the Appearance
+tab will be re-enabled)</string>
+         </property>
+         <property name="text">
+          <string>Disabl&amp;e</string>
+         </property>
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+           <horstretch>1</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>30</width>
+           <height>20</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btnMPDFHeightPerRowDefault">
+         <property name="toolTip">
+          <string>Set height per row to default value</string>
+         </property>
+         <property name="text">
+          <string>De&amp;fault</string>
+         </property>
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+           <horstretch>1</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>30</width>
+           <height>20</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
     </layout>
    </item>
    <item>
@@ -100,7 +218,7 @@
       <item row="0" column="1">
        <widget class="QRadioButton" name="radMPDFHIBC">
         <property name="text">
-         <string>H&amp;IBC MicroPDF417</string>
+         <string>H&amp;IBC</string>
         </property>
         <property name="toolTip">
          <string>Process data as a Health Industry Barcode (HIBC)
@@ -163,7 +281,7 @@ Value ranges from 1 (Disabled) to 99999</string>
        </widget>
       </item>
       <item row="0" column="2">
-       <spacer name="horizontalSpacerPDFStructApp">
+       <spacer name="horizontalSpacerMPDFStructApp">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
@@ -253,7 +371,7 @@ Numbers only, in triplets, maximum length 30 (10 triplets)
     </widget>
    </item>
    <item>
-    <spacer name="verticalSpacer">
+    <spacer name="verticalSpacerMPDF">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
      </property>

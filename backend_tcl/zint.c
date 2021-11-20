@@ -134,6 +134,9 @@
 - Added -compliantheight option
 2021-10-30 GL
 - Added PDF417 -rows
+2021-11-19 GL
+- Added -heightperrow option
+- Added DBAR_EXPSTK, CODE16K, CODE49 -rows
 */
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
@@ -475,6 +478,7 @@ static const char help_message[] = "zint tcl(stub,obj) dll\n"
     "   -gssep bool: for gs1, use gs as separator instead fnc1 (Datamatrix only)\n"
     "   -guarddescent double: Height of guard bar descent in modules (UPC/EAN only)\n"
     "   -height double: Symbol height in modules\n"
+    "   -heightperrow bool: treat height as per-row\n"
     /* cli option --input not supported */
     "   -init bool: Create reader initialisation symbol (Code 128, Data Matrix)\n"
     "   -mask number: set masking pattern to use (QR/MicroQR/HanXin/DotCode)\n"
@@ -724,7 +728,7 @@ static int Encode(Tcl_Interp *interp, int objc,
             "-cols", "-compliantheight", "-dmre", "-dotsize", "-dotty",
             "-eci", "-fg", "-format", "-fullmultibyte",
             "-gs1nocheck", "-gs1parens", "-gssep", "-guarddescent",
-            "-height", "-init", "-mask", "-mode",
+            "-height", "-heightperrow", "-init", "-mask", "-mode",
             "-nobackground", "-noquietzones", "-notext", "-primary", "-quietzones",
             "-reverse", "-rotate", "-rows", "-scale", "-scmvv",
             "-secure", "-separator", "-smalltext", "-square", "-structapp",
@@ -735,7 +739,7 @@ static int Encode(Tcl_Interp *interp, int objc,
             iCols, iCompliantHeight, iDMRE, iDotSize, iDotty,
             iECI, iFG, iFormat, iFullMultiByte,
             iGS1NoCheck, iGS1Parens, iGSSep, iGuardDescent,
-            iHeight, iInit, iMask, iMode,
+            iHeight, iHeightPerRow, iInit, iMask, iMode,
             iNoBackground, iNoQuietZones, iNoText, iPrimary, iQuietZones,
             iReverse, iRotate, iRows, iScale, iSCMvv,
             iSecure, iSeparator, iSmallText, iSquare, iStructApp,
@@ -765,6 +769,7 @@ static int Encode(Tcl_Interp *interp, int objc,
         case iGS1NoCheck:
         case iGS1Parens:
         case iGSSep:
+        case iHeightPerRow:
         case iInit:
         case iNoBackground:
         case iNoQuietZones:
@@ -926,6 +931,13 @@ static int Encode(Tcl_Interp *interp, int objc,
                 fError = 1;
             } else {
                 my_symbol->eci = s_eci_number[ECIIndex];
+            }
+            break;
+        case iHeightPerRow:
+            if (intValue) {
+                my_symbol->input_mode |= HEIGHTPERROW_MODE;
+            } else {
+                my_symbol->input_mode &= ~HEIGHTPERROW_MODE;
             }
             break;
         case iInit:
@@ -1263,13 +1275,17 @@ static int Encode(Tcl_Interp *interp, int objc,
     }
     /*------------------------------------------------------------------------*/
     if (rows) {
-        /* PDF417 uses option 3 for rows */
+        /* PDF417 and DBAR_EXPSTK use option 3 for rows */
         if (my_symbol->symbology == BARCODE_PDF417
                 || my_symbol->symbology == BARCODE_PDF417COMP
-                || my_symbol->symbology == BARCODE_HIBC_PDF) {
+                || my_symbol->symbology == BARCODE_HIBC_PDF
+                || my_symbol->symbology == BARCODE_DBAR_EXPSTK
+                || my_symbol->symbology == BARCODE_DBAR_EXPSTK_CC) {
             my_symbol->option_3 = rows;
         } else if (my_symbol->symbology == BARCODE_CODABLOCKF
-                || my_symbol->symbology == BARCODE_HIBC_BLOCKF) {
+                || my_symbol->symbology == BARCODE_HIBC_BLOCKF
+                || my_symbol->symbology == BARCODE_CODE16K
+                || my_symbol->symbology == BARCODE_CODE49) {
             my_symbol->option_1 = rows;
         }
     }

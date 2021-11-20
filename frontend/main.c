@@ -147,6 +147,7 @@ static void usage(void) {
             "  --guarddescent=NUMBER Set height of guard bar descent in X-dims (UPC/EAN)\n"
             "  -h, --help            Display help message\n"
             "  --height=NUMBER       Set height of symbol in multiples of X-dimension\n"
+            "  --heightperrow        Treat height as per-row\n"
             "  -i, --input=FILE      Read input data from FILE\n"
             "  --init                Create reader initialisation/programming symbol\n"
             "  --mask=NUMBER         Set masking pattern to use (QR/Han Xin/DotCode)\n"
@@ -864,7 +865,7 @@ int main(int argc, char **argv) {
             OPT_CMYK, OPT_COLS, OPT_COMPLIANTHEIGHT, OPT_DIRECT, OPT_DMRE, OPT_DOTSIZE, OPT_DOTTY, OPT_DUMP,
             OPT_ECI, OPT_ESC, OPT_FG, OPT_FILETYPE, OPT_FONTSIZE, OPT_FULLMULTIBYTE,
             OPT_GS1, OPT_GS1NOCHECK, OPT_GS1PARENS, OPT_GSSEP, OPT_GUARDDESCENT,
-            OPT_HEIGHT, OPT_INIT, OPT_MIRROR, OPT_MASK, OPT_MODE,
+            OPT_HEIGHT, OPT_HEIGHTPERROW, OPT_INIT, OPT_MIRROR, OPT_MASK, OPT_MODE,
             OPT_NOBACKGROUND, OPT_NOQUIETZONES, OPT_NOTEXT, OPT_PRIMARY, OPT_QUIETZONES,
             OPT_ROTATE, OPT_ROWS, OPT_SCALE, OPT_SCMVV,
             OPT_SECURE, OPT_SEPARATOR, OPT_SMALL, OPT_SQUARE, OPT_STRUCTAPP,
@@ -903,6 +904,7 @@ int main(int argc, char **argv) {
             {"gssep", 0, NULL, OPT_GSSEP},
             {"guarddescent", 1, NULL, OPT_GUARDDESCENT},
             {"height", 1, NULL, OPT_HEIGHT},
+            {"heightperrow", 0, NULL, OPT_HEIGHTPERROW},
             {"help", 0, NULL, 'h'},
             {"init", 0, NULL, OPT_INIT},
             {"input", 1, NULL, 'i'},
@@ -1105,6 +1107,9 @@ int main(int argc, char **argv) {
                             float_opt);
                     fflush(stderr);
                 }
+                break;
+            case OPT_HEIGHTPERROW:
+                my_symbol->input_mode |= HEIGHTPERROW_MODE;
                 break;
             case OPT_INIT:
                 my_symbol->output_options |= READER_INIT;
@@ -1390,9 +1395,11 @@ int main(int argc, char **argv) {
         }
         if (rows) {
             if (my_symbol->symbology == BARCODE_PDF417 || my_symbol->symbology == BARCODE_PDF417COMP
-                    || my_symbol->symbology == BARCODE_HIBC_PDF) {
+                    || my_symbol->symbology == BARCODE_HIBC_PDF || my_symbol->symbology == BARCODE_DBAR_EXPSTK
+                    || my_symbol->symbology == BARCODE_DBAR_EXPSTK_CC) {
                 my_symbol->option_3 = rows;
-            } else if (my_symbol->symbology == BARCODE_CODABLOCKF || my_symbol->symbology == BARCODE_HIBC_BLOCKF) {
+            } else if (my_symbol->symbology == BARCODE_CODABLOCKF || my_symbol->symbology == BARCODE_HIBC_BLOCKF
+                    || my_symbol->symbology == BARCODE_CODE16K || my_symbol->symbology == BARCODE_CODE49) {
                 my_symbol->option_1 = rows;
             }
         }

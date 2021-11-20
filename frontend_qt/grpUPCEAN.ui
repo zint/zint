@@ -19,9 +19,9 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QVBoxLayout" name="verticalLayoutUPCEAN">
    <item>
-    <layout class="QGridLayout" name="gridLayout">
+    <layout class="QGridLayout" name="gridLayoutUPCEAN">
      <item row="0" column="0">
       <widget class="QLabel" name="lblUPCEANAddonGap">
        <property name="text">
@@ -99,7 +99,7 @@ descend below the main bars (default 5X)
      </item>
      <item row="1" column="1">
       <layout class="QHBoxLayout" name="horzLayoutUPCEANGuardDescent">
-	   <item>
+       <item>
         <widget class="QDoubleSpinBox" name="spnUPCEANGuardDescent">
          <property name="toolTip">
           <string>Height in X-dimensions that the guard bars
@@ -179,7 +179,7 @@ to default 5X</string>
     </widget>
    </item>
    <item>
-    <spacer name="verticalSpacer">
+    <spacer name="verticalSpacerUPCEAN">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
      </property>

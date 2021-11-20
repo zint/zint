@@ -19,7 +19,7 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QVBoxLayout" name="verticalLayoutC39">
    <item>
     <widget class="QGroupBox" name="grpC39Check">
      <property name="title">
@@ -28,7 +28,7 @@
      <property name="toolTip">
       <string>Check character options</string>
      </property>
-     <layout class="QGridLayout" name="gridLayoutCheck">
+     <layout class="QGridLayout" name="gridLayoutC39Check">
       <item row="0" column="0">
        <widget class="QRadioButton" name="radC39Stand">
         <property name="text">
@@ -45,7 +45,7 @@
       <item row="1" column="0" colspan="2">
        <widget class="QRadioButton" name="radC39HIBC">
         <property name="text">
-         <string>H&amp;IBC 39 (Mod-43 Check Digit added)</string>
+         <string>H&amp;IBC (Mod-43 Check Digit added)</string>
         </property>
         <property name="toolTip">
          <string>Process data as a Health Industry Barcode (HIBC)
@@ -69,7 +69,7 @@ the data with a slash &quot;/&quot;</string>
     </widget>
    </item>
    <item>
-    <spacer name="verticalSpacer">
+    <spacer name="verticalSpacerC39">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
      </property>

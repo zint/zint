@@ -541,9 +541,10 @@ const char *testUtilInputModeName(int input_mode) {
         int val;
     };
     static const struct item data[] = {
-        { "ESCAPE_MODE", ESCAPE_MODE, 8 },
-        { "GS1PARENS_MODE", GS1PARENS_MODE, 16 },
-        { "GS1NOCHECK_MODE", GS1NOCHECK_MODE, 32 },
+        { "ESCAPE_MODE", ESCAPE_MODE, 0x0008 },
+        { "GS1PARENS_MODE", GS1PARENS_MODE, 0x0010 },
+        { "GS1NOCHECK_MODE", GS1NOCHECK_MODE, 0x0020 },
+        { "HEIGHTPERROW_MODE", HEIGHTPERROW_MODE, 0x0040 },
     };
     static const int data_size = ARRAY_SIZE(data);
     int set, i;
@@ -2044,8 +2045,8 @@ static const char *testUtilBwippName(int index, const struct zint_symbol *symbol
         { "code128", BARCODE_CODE128, 20, 0, 0, 0, 0, 0, },
         { "leitcode", BARCODE_DPLEIT, 21, 0, 0, 0, 0, 0, },
         { "identcode", BARCODE_DPIDENT, 22, 0, 0, 0, 0, 0, },
-        { "code16k", BARCODE_CODE16K, 23, 0, 0, 0, 8 /*linear_row_height*/, 0, },
-        { "code49", BARCODE_CODE49, 24, 0, 0, 0, 8 /*linear_row_height*/, 0, },
+        { "code16k", BARCODE_CODE16K, 23, 1, 0, 0, 8 /*linear_row_height*/, 0, },
+        { "code49", BARCODE_CODE49, 24, 1, 0, 0, 8 /*linear_row_height*/, 0, },
         { "code93ext", BARCODE_CODE93, 25, 0, 0, 0, 0, 0, },
         { "", -1, 26, 0, 0, 0, 0, 0, },
         { "", -1, 27, 0, 0, 0, 0, 0, },
@@ -2717,6 +2718,13 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
             } else if (symbology == BARCODE_CODE16K || symbology == BARCODE_CODE49) {
                 sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%ssepheight=0", strlen(bwipp_opts_buf) ? " " : "");
                 bwipp_opts = bwipp_opts_buf;
+                if (option_1 >= 2) {
+                    if ((symbology == BARCODE_CODE16K && option_1 <= 16)
+                            || (symbology == BARCODE_CODE49 && option_1 <= 8)) {
+                        sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%srows=%d",
+                            strlen(bwipp_opts_buf) ? " " : "", option_1);
+                    }
+                }
             } else if (symbology == BARCODE_AZTEC || symbology == BARCODE_HIBC_AZTEC) {
                 int compact = 0, full = 0;
                 if (option_1 >= 1 && option_1 <= 4) {
