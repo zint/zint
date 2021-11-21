@@ -712,7 +712,7 @@ INTERNAL int code128(struct zint_symbol *symbol, unsigned char source[], int len
             printf(" %d", values[i]);
         }
         printf(" (%d)\n", bar_characters);
-        printf("Barspaces: %s\n", dest);
+        printf("Barspaces: %.*s\n", (int) (d - dest), dest);
     }
 #ifdef ZINT_TEST
     if (symbol->debug & ZINT_DEBUG_TEST) {
@@ -951,7 +951,7 @@ INTERNAL int gs1_128_cc(struct zint_symbol *symbol, unsigned char source[], int 
             printf(" %d", values[i]);
         }
         printf(" (%d)\n", bar_characters);
-        printf("Barspaces: %s\n", dest);
+        printf("Barspaces: %.*s\n", (int) (d - dest), dest);
     }
 #ifdef ZINT_TEST
     if (symbol->debug & ZINT_DEBUG_TEST) {
