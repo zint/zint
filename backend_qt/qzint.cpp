@@ -884,8 +884,8 @@ namespace Zint {
 
         if (supportsGS1()) {
             arg_bool(cmd, "--gs1", (inputMode() & 0x07) == GS1_MODE);
-            arg_bool(cmd, "--gs1parens", gs1Parens());
-            arg_bool(cmd, "--gs1nocheck", gs1NoCheck());
+            arg_bool(cmd, "--gs1parens", gs1Parens() || (inputMode() & GS1PARENS_MODE));
+            arg_bool(cmd, "--gs1nocheck", gs1NoCheck() || (inputMode() & GS1NOCHECK_MODE));
             arg_bool(cmd, "--gssep", gsSep());
         }
 

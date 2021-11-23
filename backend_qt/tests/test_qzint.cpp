@@ -735,6 +735,18 @@ private slots:
             << "zint.exe -b 145 -d \"テ\" --eci=20 --rotate=180 --vers=8"
             << "" << "";
 
+        QTest::newRow("BARCODE_ULTRA") << false << 0.0f << ""
+            << BARCODE_ULTRA << (GS1_MODE | GS1PARENS_MODE | GS1NOCHECK_MODE) // symbology-inputMode
+            << "(01)1" << "" // text-primary
+            << 0.0f << 6 << 2 << 0 << 1.0f << true << 0.8f // height-dotSize
+            << 5.0f << 2 << 1 << "4" << QColor(Qt::black) << QColor(Qt::white) // guardDescent-bgColor
+            << false << 0 << 0 << 0 << 0 << 0 // cmyk-fontSetting
+            << true << false << false << false << true << 0 // showText-rotateAngle
+            << 0 << false << false << false << WARN_DEFAULT << false // eci-debug
+            << "zint -b 144 -d '(01)1' --gs1 --gs1parens --gs1nocheck --secure=6 --structapp='1,2,4' --vers=2"
+            << "zint.exe -b 144 -d \"(01)1\" --gs1 --gs1parens --gs1nocheck --secure=6 --structapp=\"1,2,4\" --vers=2"
+            << "" << "";
+
         QTest::newRow("BARCODE_UPCE_CC") << true << 0.0f << "out.svg"
             << BARCODE_UPCE_CC << UNICODE_MODE // symbology-inputMode
             << "12345670+1234" << "[11]901222[99]ABCDE" // text-primary
