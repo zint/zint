@@ -8,8 +8,18 @@ ZINT_TEST option enabled:
   mkdir build
   cd build
   cmake -DZINT_TEST=ON ..
-  make
+  cmake --build .
 
+When using generators that support multiple build configurations, such as
+Visual C++ Project Files (the default generator on win32), the configuration
+can be provided via --config:
+
+  cd <project-dir>
+  mkdir build
+  cd build
+  cmake -DZINT_TEST=ON ..
+  cmake --build . --config Debug
+  
 ------------------------------------------------------------------------------
 
 In order to run the test suite, the path of the zint library may need to be
@@ -28,6 +38,12 @@ the tests.
 To run all tests (within <build-dir>):
 
   ctest
+
+When using a generator that does support multiple build configurations, the
+configuration that was used to build the project has to be explicitly provided
+to ctest, even if it was the default one:
+
+  ctest -C Debug
 
 For various useful options, e.g. matching (-R) and excluding (-E) tests, see
 https://cmake.org/cmake/help/latest/manual/ctest.1.html#options
