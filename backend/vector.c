@@ -409,6 +409,7 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
     int text_height; /* Font pixel size (so whole integers) */
     float text_gap; /* Gap between barcode and text */
     float guard_descent;
+    float addon_row_height;
 
     float large_bar_height;
     int upcae_outside_text_height = 0; /* UPC-A/E outside digits font size */
@@ -593,7 +594,6 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
             last_row_start = rect_count;
 
             for (i = 0; i < symbol->width; i += block_width) {
-                float addon_row_height;
                 const int fill = module_is_set(symbol, r, i);
                 for (block_width = 1; (i + block_width < symbol->width)
                                         && module_is_set(symbol, r, i + block_width) == fill; block_width++);
