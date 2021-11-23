@@ -5,12 +5,14 @@ QT += widgets
 
 # Input
 HEADERS += barcodeitem.h \
+         cliwindow.h \
          datawindow.h \
          exportwindow.h \
          mainwindow.h \
          sequencewindow.h
 
-FORMS += extData.ui \
+FORMS += extCLI.ui \
+         extData.ui \
          extExport.ui \
          extSequence.ui \
          grpAztec.ui \
@@ -45,6 +47,7 @@ FORMS += extData.ui \
          mainWindow.ui
 
 SOURCES += barcodeitem.cpp \
+        cliwindow.cpp \
         datawindow.cpp \
         exportwindow.cpp \
         main.cpp \

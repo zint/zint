@@ -10,24 +10,6 @@
     <height>505</height>
    </rect>
   </property>
-  <property name="sizePolicy">
-   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-    <horstretch>0</horstretch>
-    <verstretch>0</verstretch>
-   </sizepolicy>
-  </property>
-  <property name="minimumSize">
-   <size>
-    <width>450</width>
-    <height>505</height>
-   </size>
-  </property>
-  <property name="maximumSize">
-   <size>
-    <width>450</width>
-    <height>505</height>
-   </size>
-  </property>
   <property name="windowTitle">
    <string>Export Barcodes</string>
   </property>
@@ -35,258 +17,214 @@
    <iconset resource="resources.qrc">
     <normaloff>:res/zint-qt.ico</normaloff>:res/zint-qt.ico</iconset>
   </property>
-  <widget class="QLineEdit" name="linDestPath">
-   <property name="geometry">
-    <rect>
-     <x>140</x>
-     <y>10</y>
-     <width>261</width>
-     <height>22</height>
-    </rect>
-   </property>
-   <property name="toolTip">
-    <string>Destination folder</string>
-   </property>
-  </widget>
-  <widget class="QLineEdit" name="linPrefix">
-   <property name="geometry">
-    <rect>
-     <x>140</x>
-     <y>40</y>
-     <width>301</width>
-     <height>22</height>
-    </rect>
-   </property>
-   <property name="toolTip">
-    <string>The first part of the filenames</string>
-   </property>
-   <property name="text">
-    <string>bcs_</string>
-   </property>
-  </widget>
-  <widget class="QComboBox" name="cmbFileName">
-   <property name="geometry">
-    <rect>
-     <x>140</x>
-     <y>70</y>
-     <width>301</width>
-     <height>22</height>
-    </rect>
-   </property>
-   <property name="toolTip">
-    <string>Set the naming convention used by the files</string>
-   </property>
+  <layout class="QVBoxLayout" name="verticalLayoutExp">
    <item>
-    <property name="text">
-     <string>Same as Data</string>
-    </property>
+    <layout class="QGridLayout" name="gridLayoutExpFile">
+     <item row="0" column="0">
+      <widget class="QLabel" name="lblDestPath">
+       <property name="text">
+        <string>&amp;Destination Path:</string>
+       </property>
+       <property name="toolTip">
+        <string>Destination folder</string>
+       </property>
+       <property name="buddy">
+        <cstring>linDestPath</cstring>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QLineEdit" name="linDestPath">
+       <property name="geometry">
+        <rect>
+         <x>140</x>
+         <y>10</y>
+         <width>261</width>
+         <height>22</height>
+        </rect>
+       </property>
+       <property name="toolTip">
+        <string>Destination folder</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="2">
+      <widget class="QToolButton" name="btnDestPath">
+       <property name="toolTip">
+        <string>Find a destination for your files</string>
+       </property>
+       <property name="text">
+        <string>&amp;...</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="lblPrefix">
+       <property name="text">
+        <string>File Name &amp;Prefix:</string>
+       </property>
+       <property name="toolTip">
+        <string>The first part of the filenames</string>
+       </property>
+       <property name="buddy">
+        <cstring>linPrefix</cstring>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1" colspan="2">
+      <widget class="QLineEdit" name="linPrefix">
+       <property name="toolTip">
+        <string>The first part of the filenames</string>
+       </property>
+       <property name="text">
+        <string>bcs_</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="lblFileName">
+       <property name="text">
+        <string>File &amp;Name:</string>
+       </property>
+       <property name="toolTip">
+        <string>Set the naming convention used by the files</string>
+       </property>
+       <property name="buddy">
+        <cstring>cmbFileName</cstring>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1" colspan="2">
+      <widget class="QComboBox" name="cmbFileName">
+       <property name="toolTip">
+        <string>Set the naming convention used by the files</string>
+       </property>
+       <item>
+        <property name="text">
+         <string>Same as Data</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Serial Number</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="lblFileFormat">
+       <property name="text">
+        <string>File &amp;Format:</string>
+       </property>
+       <property name="toolTip">
+        <string>The type of file which you want to create</string>
+       </property>
+       <property name="buddy">
+        <cstring>cmbFileFormat</cstring>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1" colspan="2">
+      <widget class="QComboBox" name="cmbFileFormat">
+       <property name="toolTip">
+        <string>The type of file which you want to create</string>
+       </property>
+       <item>
+        <property name="text">
+         <string>Portable Network Graphic (*.png)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Encapsulated Post Script (*.eps)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Graphics Interchange Format (*.gif)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Scalable Vector Graphic (*.svg)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Windows Bitmap (*.bmp)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>ZSoft PC Painter Image (*.pcx)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Extended Metafile (*.emf)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Tagged Image File Format (*.tif)</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+    </layout>
    </item>
    <item>
-    <property name="text">
-     <string>Serial Number</string>
-    </property>
-   </item>
-  </widget>
-  <widget class="QComboBox" name="cmbFileFormat">
-   <property name="geometry">
-    <rect>
-     <x>140</x>
-     <y>100</y>
-     <width>301</width>
-     <height>22</height>
-    </rect>
-   </property>
-   <property name="toolTip">
-    <string>The type of file which you want to create</string>
-   </property>
-   <item>
-    <property name="text">
-     <string>Portable Network Graphic (*.png)</string>
-    </property>
-   </item>
-   <item>
-    <property name="text">
-     <string>Encapsulated Post Script (*.eps)</string>
-    </property>
-   </item>
-   <item>
-    <property name="text">
-     <string>Graphics Interchange Format (*.gif)</string>
-    </property>
-   </item>
-   <item>
-    <property name="text">
-     <string>Scalable Vector Graphic (*.svg)</string>
-    </property>
-   </item>
-   <item>
-    <property name="text">
-     <string>Windows Bitmap (*.bmp)</string>
-    </property>
+    <layout class="QHBoxLayout" name="horzLayoutExpBtns">
+     <item>
+      <spacer name="horzSpacerExpBtns">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnOK">
+       <property name="text">
+        <string>&amp;Export</string>
+       </property>
+       <property name="toolTip">
+        <string>Create files</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnCancel">
+       <property name="text">
+        <string>&amp;Close</string>
+       </property>
+       <property name="toolTip">
+        <string>Close window</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
    <item>
-    <property name="text">
-     <string>ZSoft PC Painter Image (*.pcx)</string>
-    </property>
+    <widget class="QLabel" name="lblFeedback">
+     <property name="text">
+      <string>Export Results:</string>
+     </property>
+    </widget>
    </item>
    <item>
-    <property name="text">
-     <string>Extended Metafile (*.emf)</string>
-    </property>
+    <widget class="QPlainTextEdit" name="txtFeedback">
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+    </widget>
    </item>
-   <item>
-    <property name="text">
-     <string>Tagged Image File Format (*.tif)</string>
-    </property>
-   </item>
-  </widget>
-  <widget class="QToolButton" name="btnDestPath">
-   <property name="geometry">
-    <rect>
-     <x>410</x>
-     <y>10</y>
-     <width>30</width>
-     <height>25</height>
-    </rect>
-   </property>
-   <property name="toolTip">
-    <string>Find a destination for your files</string>
-   </property>
-   <property name="text">
-    <string>&amp;...</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>10</y>
-     <width>121</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>&amp;Destination Path:</string>
-   </property>
-   <property name="toolTip">
-    <string>Destination folder</string>
-   </property>
-   <property name="buddy">
-    <cstring>linDestPath</cstring>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_2">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>40</y>
-     <width>111</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>File Name &amp;Prefix:</string>
-   </property>
-   <property name="toolTip">
-    <string>The first part of the filenames</string>
-   </property>
-   <property name="buddy">
-    <cstring>linPrefix</cstring>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_3">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>70</y>
-     <width>111</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>File &amp;Name:</string>
-   </property>
-   <property name="toolTip">
-    <string>Set the naming convention used by the files</string>
-   </property>
-   <property name="buddy">
-    <cstring>cmbFileName</cstring>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_4">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>100</y>
-     <width>111</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>File &amp;Format:</string>
-   </property>
-   <property name="toolTip">
-    <string>The type of file which you want to create</string>
-   </property>
-   <property name="buddy">
-    <cstring>cmbFileFormat</cstring>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="btnCancel">
-   <property name="geometry">
-    <rect>
-     <x>360</x>
-     <y>130</y>
-     <width>80</width>
-     <height>26</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>&amp;Close</string>
-   </property>
-   <property name="toolTip">
-    <string>Close window</string>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="btnOK">
-   <property name="geometry">
-    <rect>
-     <x>270</x>
-     <y>130</y>
-     <width>80</width>
-     <height>26</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>&amp;Export</string>
-   </property>
-   <property name="toolTip">
-    <string>Create files</string>
-   </property>
-  </widget>
-  <widget class="QPlainTextEdit" name="txtFeedback">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>180</y>
-     <width>430</width>
-     <height>315</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QLabel" name="lblFeedback">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>160</y>
-     <width>101</width>
-     <height>17</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Export Results:</string>
-   </property>
-  </widget>
+  </layout>
  </widget>
  <resources/>
  <connections/>

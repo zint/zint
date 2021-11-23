@@ -34,14 +34,14 @@
 #include <QAction>
 
 #include "mainwindow.h"
+#include "cliwindow.h"
 #include "datawindow.h"
 #include "sequencewindow.h"
-#include <stdio.h>
 
 // Shorthand
 #define QSL QStringLiteral
 
-static const int statusBarTimeout = 0; // Don't timeout
+static const int tempMessageTimeout = 2000;
 
 static const QKeySequence quitKeySeq(Qt::CTRL | Qt::Key_Q); // Use on Windows also (i.e. not using QKeySequence::Quit)
 
@@ -430,11 +430,11 @@ bool MainWindow::save()
     QString dirname = pathname.mid(0, lastSeparator);
     if (dirname.isEmpty()) {
         /*: %1 is path saved to */
-        statusBar->showMessage(tr("Saved as \"%1\"").arg(pathname), statusBarTimeout);
+        statusBar->showMessage(tr("Saved as \"%1\"").arg(pathname), 0 /*No timeout*/);
     } else {
         QString filename = pathname.right(pathname.length() - (lastSeparator + 1));
         /*: %1 is base filename saved to, %2 is directory saved in */
-        statusBar->showMessage(tr("Saved as \"%1\" in \"%2\"").arg(filename).arg(dirname), statusBarTimeout);
+        statusBar->showMessage(tr("Saved as \"%1\" in \"%2\"").arg(filename).arg(dirname), 0 /*No timeout*/);
     }
 
     settings.setValue(QSL("studio/default_dir"), dirname);
@@ -476,21 +476,35 @@ void MainWindow::help()
     QDesktopServices::openUrl(QSL("https://zint.org.uk/manual")); // TODO: manual.md
 }
 
-int MainWindow::open_data_dialog()
+void MainWindow::open_data_dialog()
 {
-    int retval;
     DataWindow dlg(txtData->text());
-    retval = dlg.exec();
-    if (dlg.Valid == 1)
+    (void) dlg.exec();
+    if (dlg.Valid) {
+        const bool updated = txtData->text() != dlg.DataOutput;
         txtData->setText(dlg.DataOutput);
-    return retval;
+        if (updated) {
+            statusBar->showMessage(tr("Updated data"), tempMessageTimeout);
+        }
+    }
 }
 
-int MainWindow::open_sequence_dialog()
+void MainWindow::open_sequence_dialog()
 {
-    SequenceWindow dlg;
-    dlg.barcode = &m_bc;
-    return dlg.exec();
+    SequenceWindow dlg(&m_bc);
+    (void) dlg.exec();
+#ifdef _WIN32
+    // Windows causes BarcodeItem to paint on closing dialog so need to re-paint with our (non-Export) values
+    update_preview();
+#endif
+}
+
+void MainWindow::open_cli_dialog()
+{
+    CLIWindow dlg(&m_bc, chkAutoHeight->isEnabled() && chkAutoHeight->isChecked(),
+                    m_spnHeightPerRow && m_spnHeightPerRow->isEnabled() ? m_spnHeightPerRow->value() : 0.0);
+
+    (void) dlg.exec();
 }
 
 void MainWindow::on_fgcolor_clicked()
@@ -527,7 +541,7 @@ void MainWindow::autoheight_ui_set()
         if (enabled && m_spnHeightPerRow->value()) {
             lblHeight->setEnabled(!enabled);
             heightb->setEnabled(!enabled);
-            statusBar->showMessage(tr("Using \"Row Height\""), statusBarTimeout);
+            statusBar->showMessage(tr("Using \"Row Height\""), 0 /*No timeout*/);
         } else {
             statusBar->clearMessage();
         }
@@ -650,6 +664,9 @@ void MainWindow::structapp_ui_set()
 
 void MainWindow::on_encoded()
 {
+    if (QApplication::activeModalWidget() != nullptr) { // Protect against encode in popup dialog
+        return;
+    }
     this->setMinimumHeight(m_bc.bc.getError() ? 455 : 435);
     enableActions(true);
     errtxtBar_set(false /*isError*/);
@@ -663,6 +680,9 @@ void MainWindow::on_encoded()
 
 void MainWindow::on_errored()
 {
+    if (QApplication::activeModalWidget() != nullptr) { // Protect against error in popup dialog (Sequence Export)
+        return;
+    }
     this->setMinimumHeight(455);
     enableActions(false);
     errtxtBar_set(true /*isError*/);
@@ -795,7 +815,7 @@ void MainWindow::copy_to_clipboard_errtxt()
         QMimeData *mdata = new QMimeData;
         mdata->setText(m_bc.bc.lastError());
         clipboard->setMimeData(mdata, QClipboard::Clipboard);
-        statusBar->showMessage(tr("Copied message to clipboard"), statusBarTimeout);
+        statusBar->showMessage(tr("Copied message to clipboard"), 0 /*No timeout*/);
     }
 }
 
@@ -878,6 +898,8 @@ void MainWindow::view_context_menu(const QPoint &pos)
 #endif
         menu.addAction(m_copySVGAct);
         menu.addAction(m_copyTIFAct);
+        menu.addSeparator();
+        menu.addAction(m_CLIAct);
         menu.addSeparator();
         menu.addAction(m_saveAsAct);
 
@@ -1698,6 +1720,7 @@ void MainWindow::update_preview()
     m_bc.bc.setGSSep(false);
     m_bc.bc.setNoQuietZones(false);
     m_bc.bc.setDotSize(0.4f / 0.5f);
+    m_bc.bc.setGuardDescent(5.0f);
     m_bc.bc.clearStructApp();
 
     switch (symbology) {
@@ -2253,6 +2276,7 @@ void MainWindow::createActions()
     // MIT license - see site and "frontend_qt/res/LICENSE_feathericons"
     QIcon menuIcon(QSL(":res/menu.svg"));
     QIcon copyIcon(QIcon::fromTheme(QSL("edit-copy"), QIcon(QSL(":res/copy.svg"))));
+    QIcon cliIcon(QSL(":res/zint_black.ico"));
     QIcon saveIcon(QIcon::fromTheme(QSL("document-save"), QIcon(QSL(":res/download.svg"))));
     QIcon aboutIcon(QSL(":res/zint-qt.ico"));
     QIcon helpIcon(QIcon::fromTheme(QSL("help-contents"), QIcon(QSL(":res/help-circle.svg"))));
@@ -2302,6 +2326,10 @@ void MainWindow::createActions()
     m_copyTIFAct->setStatusTip(tr("Copy to clipboard as TIF"));
     connect(m_copyTIFAct, SIGNAL(triggered()), this, SLOT(copy_to_clipboard_tif()));
 
+    m_CLIAct = new QAction(cliIcon, tr("C&LI equivalent..."), this);
+    m_CLIAct->setStatusTip(tr("Generate CLI equivalent"));
+    connect(m_CLIAct, SIGNAL(triggered()), this, SLOT(open_cli_dialog()));
+
     m_saveAsAct = new QAction(saveIcon, tr("&Save As..."), this);
     m_saveAsAct->setStatusTip(tr("Output image to file"));
     m_saveAsAct->setShortcut(QKeySequence::Save);
@@ -2346,6 +2374,8 @@ void MainWindow::createMenu()
     m_menu->addAction(m_copyTIFAct);
     m_menu->addSeparator();
 
+    m_menu->addAction(m_CLIAct);
+    m_menu->addSeparator();
     m_menu->addAction(m_saveAsAct);
     m_menu->addSeparator();
     m_menu->addAction(m_helpAct);
@@ -2374,6 +2404,7 @@ void MainWindow::enableActions(bool enabled)
 #endif
     m_copySVGAct->setEnabled(enabled);
     m_copyTIFAct->setEnabled(enabled);
+    m_CLIAct->setEnabled(enabled);
     m_saveAsAct->setEnabled(enabled);
 
     m_saveAsShortcut->setEnabled(enabled);
@@ -2397,13 +2428,13 @@ void MainWindow::copy_to_clipboard(const QString &filename, const QString& name,
             file.close();
             clipboard->setMimeData(mdata, QClipboard::Clipboard);
             /*: %1 is format (BMP/EMF etc) */
-            statusBar->showMessage(tr("Copied to clipboard as %1").arg(name), statusBarTimeout);
+            statusBar->showMessage(tr("Copied to clipboard as %1").arg(name), 0 /*No timeout*/);
         }
     } else {
         mdata->setImageData(QImage(filename));
         clipboard->setMimeData(mdata, QClipboard::Clipboard);
         /*: %1 is format (BMP/EMF etc) */
-        statusBar->showMessage(tr("Copied to clipboard as %1").arg(name), statusBarTimeout);
+        statusBar->showMessage(tr("Copied to clipboard as %1").arg(name), 0 /*No timeout*/);
     }
 
     QFile::remove(filename);
@@ -2456,172 +2487,59 @@ QWidget *MainWindow::get_widget(const QString &name)
 }
 
 /* Return settings subsection name for a symbol */
-const QString &MainWindow::get_setting_name(int symbology)
+QString MainWindow::get_setting_name(int symbology)
 {
-    struct item {
-        const QString name;
-        int define;
-        int val;
-    };
-    static const struct item ndata[] = {
-        { QSL(""), -1, 0 },
-        { QSL("code11"), BARCODE_CODE11, 1 },
-        { QSL("c25standard"), BARCODE_C25STANDARD, 2 },
-        { QSL("c25inter"), BARCODE_C25INTER, 3 },
-        { QSL("c25iata"), BARCODE_C25IATA, 4 },
-        { QSL(""), -1, 5 },
-        { QSL("c25logic"), BARCODE_C25LOGIC, 6 },
-        { QSL("c25ind"), BARCODE_C25IND, 7 },
-        { QSL("code39"), BARCODE_CODE39, 8 },
-        { QSL("excode39"), BARCODE_EXCODE39, 9 },
-        { QSL(""), -1, 10 },
-        { QSL(""), -1, 11 },
-        { QSL(""), -1, 12 },
-        { QSL("eanx"), BARCODE_EANX, 13 },
-        { QSL("eanx"), BARCODE_EANX_CHK, 14 },
-        { QSL(""), -1, 15 },
-        { QSL("code128"), BARCODE_GS1_128, 16 },
-        { QSL(""), -1, 17 },
-        { QSL("codabar"), BARCODE_CODABAR, 18 },
-        { QSL(""), -1, 19 },
-        { QSL("code128"), BARCODE_CODE128, 20 },
-        { QSL("dpleit"), BARCODE_DPLEIT, 21 },
-        { QSL("dpident"), BARCODE_DPIDENT, 22 },
-        { QSL("code16k"), BARCODE_CODE16K, 23 },
-        { QSL("code49"), BARCODE_CODE49, 24 },
-        { QSL("code93"), BARCODE_CODE93, 25 },
-        { QSL(""), -1, 26 },
-        { QSL(""), -1, 27 },
-        { QSL("flat"), BARCODE_FLAT, 28 },
-        { QSL("dbar_omn"), BARCODE_DBAR_OMN, 29 },
-        { QSL("dbar_ltd"), BARCODE_DBAR_LTD, 30 },
-        { QSL("dbar_exp"), BARCODE_DBAR_EXP, 31 },
-        { QSL("telepen"), BARCODE_TELEPEN, 32 },
-        { QSL(""), -1, 33 },
-        { QSL("upca"), BARCODE_UPCA, 34 },
-        { QSL("upca"), BARCODE_UPCA_CHK, 35 },
-        { QSL(""), -1, 36 },
-        { QSL("upce"), BARCODE_UPCE, 37 },
-        { QSL("upce"), BARCODE_UPCE_CHK, 38 },
-        { QSL(""), -1, 39 },
-        { QSL("postnet"), BARCODE_POSTNET, 40 },
-        { QSL(""), -1, 41 },
-        { QSL(""), -1, 42 },
-        { QSL(""), -1, 43 },
-        { QSL(""), -1, 44 },
-        { QSL(""), -1, 45 },
-        { QSL(""), -1, 46 },
-        { QSL("msi_plessey"), BARCODE_MSI_PLESSEY, 47 },
-        { QSL(""), -1, 48 },
-        { QSL("fim"), BARCODE_FIM, 49 },
-        { QSL("logmars"), BARCODE_LOGMARS, 50 },
-        { QSL("pharma"), BARCODE_PHARMA, 51 },
-        { QSL("pzn"), BARCODE_PZN, 52 },
-        { QSL("pharma_two"), BARCODE_PHARMA_TWO, 53 },
-        { QSL(""), -1, 54 },
-        { QSL("pdf417"), BARCODE_PDF417, 55 },
-        { QSL("pdf417"), BARCODE_PDF417COMP, 56 },
-        { QSL("maxicode"), BARCODE_MAXICODE, 57 },
-        { QSL("qrcode"), BARCODE_QRCODE, 58 },
-        { QSL(""), -1, 59 },
-        { QSL("code128"), BARCODE_CODE128B, 60 },
-        { QSL(""), -1, 61 },
-        { QSL(""), -1, 62 },
-        { QSL("auspost"), BARCODE_AUSPOST, 63 },
-        { QSL(""), -1, 64 },
-        { QSL(""), -1, 65 },
-        { QSL("ausreply"), BARCODE_AUSREPLY, 66 },
-        { QSL("ausroute"), BARCODE_AUSROUTE, 67 },
-        { QSL("ausredirect"), BARCODE_AUSREDIRECT, 68 },
-        { QSL("isbnx"), BARCODE_ISBNX, 69 },
-        { QSL("rm4scc"), BARCODE_RM4SCC, 70 },
-        { QSL("datamatrix"), BARCODE_DATAMATRIX, 71 },
-        { QSL("ean14"), BARCODE_EAN14, 72 },
-        { QSL("vin"), BARCODE_VIN, 73 },
-        { QSL("codablockf"), BARCODE_CODABLOCKF, 74 },
-        { QSL("nve18"), BARCODE_NVE18, 75 },
-        { QSL("japanpost"), BARCODE_JAPANPOST, 76 },
-        { QSL("koreapost"), BARCODE_KOREAPOST, 77 },
-        { QSL(""), -1, 78 },
-        { QSL("dbar_stk"), BARCODE_DBAR_STK, 79 },
-        { QSL("dbar_omnstk"), BARCODE_DBAR_OMNSTK, 80 },
-        { QSL("dbar_expstk"), BARCODE_DBAR_EXPSTK, 81 },
-        { QSL("planet"), BARCODE_PLANET, 82 },
-        { QSL(""), -1, 83 },
-        { QSL("micropdf417"), BARCODE_MICROPDF417, 84 },
-        { QSL("usps_imail"), BARCODE_USPS_IMAIL, 85 },
-        { QSL("plessey"), BARCODE_PLESSEY, 86 },
-        { QSL("telepen_num"), BARCODE_TELEPEN_NUM, 87 },
-        { QSL(""), -1, 88 },
-        { QSL("itf14"), BARCODE_ITF14, 89 },
-        { QSL("kix"), BARCODE_KIX, 90 },
-        { QSL(""), -1, 91 },
-        { QSL("aztec"), BARCODE_AZTEC, 92 },
-        { QSL("daft"), BARCODE_DAFT, 93 },
-        { QSL(""), -1, 94 },
-        { QSL(""), -1, 95 },
-        { QSL("dpd"), BARCODE_DPD, 96 },
-        { QSL("microqr"), BARCODE_MICROQR, 97 },
-        { QSL("code128"), BARCODE_HIBC_128, 98 },
-        { QSL("code39"), BARCODE_HIBC_39, 99 },
-        { QSL(""), -1, 100 },
-        { QSL(""), -1, 101 },
-        { QSL("datamatrix"), BARCODE_HIBC_DM, 102 },
-        { QSL(""), -1, 103 },
-        { QSL("qrcode"), BARCODE_HIBC_QR, 104 },
-        { QSL(""), -1, 105 },
-        { QSL("pdf417"), BARCODE_HIBC_PDF, 106 },
-        { QSL(""), -1, 107 },
-        { QSL("micropdf417"), BARCODE_HIBC_MICPDF, 108 },
-        { QSL(""), -1, 109 },
-        { QSL("codablockf"), BARCODE_HIBC_BLOCKF, 110 },
-        { QSL(""), -1, 111 },
-        { QSL("aztec"), BARCODE_HIBC_AZTEC, 112 },
-        { QSL(""), -1, 113 },
-        { QSL(""), -1, 114 },
-        { QSL("dotcode"), BARCODE_DOTCODE, 115 },
-        { QSL("hanxin"), BARCODE_HANXIN, 116 },
-        { QSL(""), -1, 117 },
-        { QSL(""), -1, 118 },
-        { QSL(""), -1, 119 },
-        { QSL(""), -1, 120 },
-        { QSL("mailmark"), BARCODE_MAILMARK, 121 },
-        { QSL(""), -1, 122 },
-        { QSL(""), -1, 123 },
-        { QSL(""), -1, 124 },
-        { QSL(""), -1, 125 },
-        { QSL(""), -1, 126 },
-        { QSL(""), -1, 127 },
-        { QSL("azrune"), BARCODE_AZRUNE, 128 },
-        { QSL("code32"), BARCODE_CODE32, 129 },
-        { QSL("eanx"), BARCODE_EANX_CC, 130 },
-        { QSL("code128"), BARCODE_GS1_128_CC, 131 },
-        { QSL("dbar_omn"), BARCODE_DBAR_OMN_CC, 132 },
-        { QSL("dbar_ltd"), BARCODE_DBAR_LTD_CC, 133 },
-        { QSL("dbar_exp"), BARCODE_DBAR_EXP_CC, 134 },
-        { QSL("upca"), BARCODE_UPCA_CC, 135 },
-        { QSL("upce"), BARCODE_UPCE_CC, 136 },
-        { QSL("dbar_stk"), BARCODE_DBAR_STK_CC, 137 },
-        { QSL("dbar_omnstk"), BARCODE_DBAR_OMNSTK_CC, 138 },
-        { QSL("dbar_expstk"), BARCODE_DBAR_EXPSTK_CC, 139 },
-        { QSL("channel"), BARCODE_CHANNEL, 140 },
-        { QSL("codeone"), BARCODE_CODEONE, 141 },
-        { QSL("gridmatrix"), BARCODE_GRIDMATRIX, 142 },
-        { QSL("upnqr"), BARCODE_UPNQR, 143 },
-        { QSL("ultra"), BARCODE_ULTRA, 144 },
-        { QSL("rmqr"), BARCODE_RMQR, 145 },
-    };
-    static const int data_size = sizeof(ndata) / sizeof(struct item);
-
-    if (symbology < 0 || symbology >= data_size) {
-        return ndata[0].name; // ""
+    char name_buf[32];
+    switch (symbology) {
+        case BARCODE_CODE128B:
+        case BARCODE_GS1_128:
+        case BARCODE_GS1_128_CC:
+        case BARCODE_HIBC_128:
+            symbology = BARCODE_CODE128;
+            break;
+        case BARCODE_PDF417COMP:
+        case BARCODE_HIBC_PDF:
+            symbology = BARCODE_PDF417;
+            break;
+        case BARCODE_HIBC_MICPDF:
+            symbology = BARCODE_MICROPDF417;
+            break;
+        case BARCODE_HIBC_AZTEC:
+            symbology = BARCODE_AZTEC;
+            break;
+        case BARCODE_HIBC_39:
+            symbology = BARCODE_CODE39;
+            break;
+        case BARCODE_HIBC_BLOCKF:
+            symbology = BARCODE_CODABLOCKF;
+            break;
+        case BARCODE_HIBC_DM:
+            symbology = BARCODE_DATAMATRIX;
+            break;
+        case BARCODE_HIBC_QR:
+            symbology = BARCODE_QRCODE;
+            break;
+        case BARCODE_DBAR_EXPSTK_CC:
+            symbology = BARCODE_DBAR_EXPSTK;
+            break;
+        case BARCODE_UPCA_CHK:
+        case BARCODE_UPCA_CC:
+            symbology = BARCODE_UPCA;
+            break;
+        case BARCODE_EANX_CHK:
+        case BARCODE_EANX_CC:
+            symbology = BARCODE_EANX;
+            break;
+        case BARCODE_UPCE_CHK:
+        case BARCODE_UPCE_CC:
+            symbology = BARCODE_UPCE;
+            break;
     }
-    if (ndata[symbology].val != symbology ||
-            (ndata[symbology].define != -1 && ndata[symbology].define != symbology)) { // Self-check
-        fprintf(stderr, "MainWindow::get_setting_name: ndata table out of sync (%d)\n", symbology);
-        return ndata[0].name; // ""
+    if (ZBarcode_BarcodeName(symbology, name_buf) != 0) {
+        return QSL("");
     }
-    return ndata[symbology].name;
+    QString name(name_buf + 8); // Strip "BARCODE_" prefix
+    return name.toLower();
 }
 
 /* Helper to return index of selected radio button in group, checking for NULL */
@@ -2752,7 +2670,7 @@ void MainWindow::set_spn_from_setting(QSettings &settings, const QString &settin
 /* Save settings for an individual symbol */
 void MainWindow::save_sub_settings(QSettings &settings, int symbology)
 {
-    const QString &name = get_setting_name(symbology);
+    QString name = get_setting_name(symbology);
     if (!name.isEmpty()) {
         settings.setValue(QSL("studio/bc/%1/data").arg(name), txtData->text());
         if (!grpComposite->isHidden()) {
@@ -3020,6 +2938,10 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology)
             settings.setValue(QSL("studio/bc/maxicode/structapp_index"), get_cmb_index(QSL("cmbMaxiStructAppIndex")));
             break;
 
+        case BARCODE_CHANNEL:
+            settings.setValue(QSL("studio/bc/channel/channel"), get_cmb_index(QSL("cmbChannel")));
+            break;
+
         case BARCODE_CODEONE:
             settings.setValue(QSL("studio/bc/codeone/size"), get_cmb_index(QSL("cmbC1Size")));
             settings.setValue(QSL("studio/bc/codeone/encoding_mode"), get_rad_grp_index(
@@ -3105,7 +3027,7 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology)
 /* Load settings for an individual symbol */
 void MainWindow::load_sub_settings(QSettings &settings, int symbology)
 {
-    const QString &name = get_setting_name(symbology);
+    QString name = get_setting_name(symbology);
     if (!name.isEmpty()) {
         const QString &tdata = settings.value(QSL("studio/bc/%1/data").arg(name), QSL("")).toString();
         if (!tdata.isEmpty()) {
@@ -3389,6 +3311,10 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
             set_spn_from_setting(settings, QSL("studio/bc/maxicode/spn_scm_vv"), QSL("spnMaxiSCMVV"), 96);
             set_cmb_from_setting(settings, QSL("studio/bc/maxicode/structapp_count"), QSL("cmbMaxiStructAppCount"));
             set_cmb_from_setting(settings, QSL("studio/bc/maxicode/structapp_index"), QSL("cmbMaxiStructAppIndex"));
+            break;
+
+        case BARCODE_CHANNEL:
+            set_cmb_from_setting(settings, QSL("studio/bc/channel/channel"), QSL("cmbChannel"));
             break;
 
         case BARCODE_CODEONE:

@@ -41,6 +41,8 @@ Changes
 - Add HEIGHTPERROW_MODE input mode flag
 - DBAR_EXPSTK: add max rows option
 - CODE16K/CODE49: add min rows option
+- GUI: add CLI equivalent dialog (#163)
+- Add ZBarcode_BarcodeName()
 
 Bugs
 ----

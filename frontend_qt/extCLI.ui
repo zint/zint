@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>CLIDialog</class>
+ <widget class="QDialog" name="CLIDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>429</width>
+    <height>333</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>CLI Equivalent</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="resources.qrc">
+    <normaloff>:res/zint-qt.ico</normaloff>:res/zint-qt.ico</iconset>
+  </property>
+  <property name="modal">
+   <bool>true</bool>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayoutCLI">
+   <item>
+    <widget class="QLabel" name="lblCLICmd">
+     <property name="text">
+      <string>Command Line &amp;Equivalent</string>
+     </property>
+     <property name="toolTip">
+      <string>Current GUI settings as CLI equivalent</string>
+     </property>
+     <property name="buddy">
+      <cstring>txtCLICmd</cstring>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPlainTextEdit" name="txtCLICmd">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBoxCLIUnixWin">
+     <property name="title">
+      <string>Escape Method</string>
+     </property>
+     <property name="toolTip">
+      <string>How to escape data</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayoutCLIUnixWin">
+      <property name="sizeConstraint">
+       <enum>QLayout::SetMinimumSize</enum>
+      </property>
+      <item row="0" column="0">
+       <widget class="QRadioButton" name="radCLIUnix">
+        <property name="text">
+         <string>&amp;Unix</string>
+        </property>
+        <property name="toolTip">
+         <string>Escape for Unix shell</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QRadioButton" name="radCLIWin">
+        <property name="text">
+         <string>&amp;Windows</string>
+        </property>
+        <property name="toolTip">
+         <string>Escape for Windows command prompt</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horzLayoutCLIChks">
+     <item>
+      <widget class="QCheckBox" name="chkCLILongOpts">
+       <property name="text">
+        <string>&amp;Long Options Only</string>
+       </property>
+       <property name="toolTip">
+        <string>Only use long option names, not short ones</string>
+       </property>
+       <property name="checked">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="chkCLIBarcodeName">
+       <property name="text">
+        <string>&amp;Barcode Name</string>
+       </property>
+       <property name="toolTip">
+        <string>Use name of barcode, not number</string>
+       </property>
+       <property name="checked">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horzLayoutCLIBtns">
+     <property name="sizeConstraint">
+      <enum>QLayout::SetDefaultConstraint</enum>
+     </property>
+     <item>
+      <widget class="QStatusBar" name="statusBarCLI">
+       <property name="sizeGripEnabled">
+        <bool>false</bool>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnCLICopy">
+       <property name="toolTip">
+        <string>Copy to clipboard</string>
+       </property>
+       <property name="text">
+        <string> C&amp;opy</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnCLIClose">
+       <property name="text">
+        <string>&amp;Close</string>
+       </property>
+       <property name="toolTip">
+        <string>Close window</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

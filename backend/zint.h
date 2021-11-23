@@ -404,6 +404,10 @@ extern "C" {
     /* Is `symbol_id` a recognized symbology? */
     ZINT_EXTERN int ZBarcode_ValidID(int symbol_id);
 
+    /* Copy BARCODE_XXX name of `symbol_id` into `name` buffer, NUL-terminated.
+       Returns 0 if valid, non-zero (1 or -1) if not valid */
+    ZINT_EXTERN int ZBarcode_BarcodeName(int symbol_id, char name[32]);
+
     /* Return the capability flags for symbology `symbol_id` that match `cap_flag` */
     ZINT_EXTERN unsigned int ZBarcode_Cap(int symbol_id, unsigned int cap_flag);
 

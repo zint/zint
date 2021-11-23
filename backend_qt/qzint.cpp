@@ -31,49 +31,39 @@
 /* Qt 5.7 did not require it. */
 #include <QPainterPath>
 
+// Shorthand
+#define QSL QStringLiteral
+
 namespace Zint {
     static const char *fontStyle = "Helvetica";
     static const char *fontStyleError = "Helvetica";
     static const int fontSizeError = 14; /* Point size */
 
-    QZint::QZint() {
-        m_zintSymbol = NULL;
-        m_symbol = BARCODE_CODE128;
-        m_height = 0.0f;
-        m_borderType = 0;
-        m_borderWidth = 0;
-        m_fontSetting = 0;
-        m_option_1 = -1;
-        m_option_2 = 0;
-        m_option_3 = 0;
-        m_fgColor = Qt::black;
-        m_bgColor = Qt::white;
-        m_cmyk = false;
-        m_error = 0;
-        m_input_mode = UNICODE_MODE;
-        m_scale = 1.0f;
-        m_show_hrt = 1;
-        m_eci = 0;
-        m_dotty = false;
-        m_dot_size = 4.0f / 5.0f;
-        m_guardDescent = 5.0f;
+    QZint::QZint()
+        : m_zintSymbol(NULL), m_symbol(BARCODE_CODE128), m_input_mode(UNICODE_MODE),
+            m_height(0.0f),
+            m_option_1(-1), m_option_2(0), m_option_3(0),
+            m_scale(1.0f),
+            m_dotty(false), m_dot_size(4.0f / 5.0f),
+            m_guardDescent(5.0f),
+            m_fgColor(Qt::black), m_bgColor(Qt::white), m_cmyk(false),
+            m_borderType(0), m_borderWidth(0),
+            m_whitespace(0), m_vwhitespace(0),
+            m_fontSetting(0),
+            m_show_hrt(true),
+            m_gssep(false),
+            m_quiet_zones(false), m_no_quiet_zones(false),
+            m_compliant_height(false),
+            m_rotate_angle(0),
+            m_eci(0),
+            m_gs1parens(false), m_gs1nocheck(false),
+            m_reader_init(false),
+            m_warn_level(WARN_DEFAULT), m_debug(false),
+            m_encodedWidth(0), m_encodedRows(0),
+            m_error(0),
+            target_size_horiz(0), target_size_vert(0) // Legacy
+    {
         memset(&m_structapp, 0, sizeof(m_structapp));
-        m_whitespace = 0;
-        m_vwhitespace = 0;
-        m_gs1parens = false;
-        m_gs1nocheck = false;
-        m_gssep = false;
-        m_quiet_zones = false;
-        m_no_quiet_zones = false;
-        m_compliant_height = false;
-        m_reader_init = false;
-        m_rotate_angle = 0;
-        m_debug = false;
-        m_encodedWidth = 0;
-        m_encodedRows = 0;
-
-        target_size_horiz = 0; /* Legacy */
-        target_size_vert = 0; /* Legacy */
     }
 
     QZint::~QZint() {
@@ -127,16 +117,19 @@ namespace Zint {
         if (m_reader_init) {
             m_zintSymbol->output_options |= READER_INIT;
         }
+        if (m_warn_level) {
+            m_zintSymbol->warn_level = m_warn_level;
+        }
         if (m_debug) {
             m_zintSymbol->debug |= ZINT_DEBUG_PRINT;
         }
 
         strcpy(m_zintSymbol->fgcolour, m_fgColor.name().toLatin1().right(6));
-        if (m_fgColor.alpha() != 0xff) {
+        if (m_fgColor.alpha() != 0xFF) {
             strcat(m_zintSymbol->fgcolour, m_fgColor.name(QColor::HexArgb).toLatin1().mid(1,2));
         }
         strcpy(m_zintSymbol->bgcolour, m_bgColor.name().toLatin1().right(6));
-        if (m_bgColor.alpha() != 0xff) {
+        if (m_bgColor.alpha() != 0xFF) {
             strcat(m_zintSymbol->bgcolour, m_bgColor.name(QColor::HexArgb).toLatin1().mid(1,2));
         }
         if (m_cmyk) {
@@ -507,6 +500,14 @@ namespace Zint {
         m_reader_init = readerInit;
     }
 
+    int QZint::warnLevel() const {
+        return m_warn_level;
+    }
+
+    void QZint::setWarnLevel(int warnLevel) {
+        m_warn_level = warnLevel;
+    }
+
     bool QZint::debug() const {
         return m_debug;
     }
@@ -541,8 +542,16 @@ namespace Zint {
         return ZBarcode_Cap(symbology ? symbology : m_symbol, ZINT_CAP_HRT);
     }
 
+    bool QZint::isStackable(int symbology) const {
+        return ZBarcode_Cap(symbology ? symbology : m_symbol, ZINT_CAP_STACKABLE);
+    }
+
     bool QZint::isExtendable(int symbology) const {
         return ZBarcode_Cap(symbology ? symbology : m_symbol, ZINT_CAP_EXTENDABLE);
+    }
+
+    bool QZint::isComposite(int symbology) const {
+        return ZBarcode_Cap(symbology ? symbology : m_symbol, ZINT_CAP_COMPOSITE);
     }
 
     bool QZint::supportsECI(int symbology) const {
@@ -553,6 +562,10 @@ namespace Zint {
         return ZBarcode_Cap(symbology ? symbology : m_symbol, ZINT_CAP_GS1);
     }
 
+    bool QZint::isDotty(int symbology) const {
+        return ZBarcode_Cap(symbology ? symbology : m_symbol, ZINT_CAP_DOTTY);
+    }
+
     bool QZint::hasDefaultQuietZones(int symbology) const {
         return ZBarcode_Cap(symbology ? symbology : m_symbol, ZINT_CAP_QUIET_ZONES);
     }
@@ -561,12 +574,20 @@ namespace Zint {
         return ZBarcode_Cap(symbology ? symbology : m_symbol, ZINT_CAP_FIXED_RATIO);
     }
 
-    bool QZint::isDotty(int symbology) const {
-        return ZBarcode_Cap(symbology ? symbology : m_symbol, ZINT_CAP_DOTTY);
-    }
-
     bool QZint::supportsReaderInit(int symbology) const {
         return ZBarcode_Cap(symbology ? symbology : m_symbol, ZINT_CAP_READER_INIT);
+    }
+
+    bool QZint::supportsFullMultibyte(int symbology) const {
+        return ZBarcode_Cap(symbology ? symbology : m_symbol, ZINT_CAP_FULL_MULTIBYTE);
+    }
+
+    bool QZint::hasMask(int symbology) const {
+        return ZBarcode_Cap(symbology ? symbology : m_symbol, ZINT_CAP_MASK);
+    }
+
+    bool QZint::supportsStructApp(int symbology) const {
+        return ZBarcode_Cap(symbology ? symbology : m_symbol, ZINT_CAP_STRUCTAPP);
     }
 
     bool QZint::hasCompliantHeight(int symbology) const {
@@ -589,7 +610,7 @@ namespace Zint {
         return ZBarcode_Version();
     }
 
-    bool QZint::save_to_file(QString filename) {
+    bool QZint::save_to_file(const QString &filename) {
         resetSymbol();
         strcpy(m_zintSymbol->outfile, filename.toLatin1().left(255));
         QByteArray bstr = m_text.toUtf8();
@@ -795,5 +816,240 @@ namespace Zint {
         }
 
         painter.restore();
+    }
+
+    /* Translate settings into Command Line equivalent. Set `win` to use Windows escaping of data.
+       If `autoHeight` set then `--height=` option will not be emitted.
+       If HEIGHTPERROW_MODE set and non-zero `heightPerRow` given then use that for height instead of internal
+       height */
+    QString QZint::getAsCLI(const bool win, const bool longOptOnly, const bool barcodeNames,
+                    const bool autoHeight, const float heightPerRow, const QString &outfile) const {
+        QString cmd(win ? QSL("zint.exe") : QSL("zint"));
+
+        char name_buf[32];
+        if (barcodeNames && ZBarcode_BarcodeName(m_symbol, name_buf) == 0) {
+            QString name(name_buf + 8); // Strip "BARCODE_" prefix
+            arg_str(cmd, longOptOnly ? "--barcode=" : "-b ", name);
+        } else {
+            arg_int(cmd, longOptOnly ? "--barcode=" : "-b ", m_symbol);
+        }
+
+        if (isExtendable()) {
+            arg_int(cmd, "--addongap=", option2());
+        }
+
+        if (bgColor() != Qt::white && bgColor() != QColor(0xFF, 0xFF, 0xFF, 0)) {
+            arg_color(cmd, "--bg=", bgColor());
+        }
+
+        arg_bool(cmd, "--binary", (inputMode() & 0x07) == DATA_MODE);
+        arg_bool(cmd, "--bind", (borderType() & BARCODE_BIND) && !(borderType() & BARCODE_BOX));
+        arg_bool(cmd, "--bold", fontSetting() & BOLD_TEXT);
+        arg_int(cmd, "--border=", borderWidth());
+        arg_bool(cmd, "--box", borderType() & BARCODE_BOX);
+        arg_bool(cmd, "--cmyk", cmyk());
+
+        if (m_symbol == BARCODE_DBAR_EXPSTK || m_symbol == BARCODE_DBAR_EXPSTK_CC
+                || m_symbol == BARCODE_PDF417 || m_symbol == BARCODE_PDF417COMP || m_symbol == BARCODE_HIBC_PDF
+                || m_symbol == BARCODE_MICROPDF417 || m_symbol == BARCODE_HIBC_MICPDF
+                || m_symbol == BARCODE_DOTCODE || m_symbol == BARCODE_CODABLOCKF || m_symbol == BARCODE_HIBC_BLOCKF) {
+            arg_int(cmd, "--cols=", option2());
+        }
+
+        arg_bool(cmd, "--compliantheight", hasCompliantHeight() && compliantHeight());
+        arg_data(cmd, longOptOnly ? "--data=" : "-d ", text(), win);
+
+        if (m_symbol == BARCODE_DATAMATRIX || m_symbol == BARCODE_HIBC_DM) {
+            arg_bool(cmd, "--dmre", option3() == DM_DMRE);
+        }
+
+        if ((m_symbol == BARCODE_DOTCODE || (isDotty() && dotty())) && dotSize() != 0.8f) {
+            arg_float(cmd, "--dotsize=", dotSize());
+        }
+        if (m_symbol != BARCODE_DOTCODE && isDotty() && dotty()) {
+            arg_bool(cmd, "--dotty", dotty());
+        }
+
+        if (supportsECI()) {
+            arg_int(cmd, "--eci=", eci());
+        }
+
+        arg_bool(cmd, "--esc", inputMode() & ESCAPE_MODE);
+
+        if (fgColor() != Qt::black) {
+            arg_color(cmd, "--fg=", fgColor());
+        }
+
+        arg_bool(cmd, "--fullmultibyte", supportsFullMultibyte() && (option3() & 0xFF) == ZINT_FULL_MULTIBYTE);
+
+        if (supportsGS1()) {
+            arg_bool(cmd, "--gs1", (inputMode() & 0x07) == GS1_MODE);
+            arg_bool(cmd, "--gs1parens", gs1Parens());
+            arg_bool(cmd, "--gs1nocheck", gs1NoCheck());
+            arg_bool(cmd, "--gssep", gsSep());
+        }
+
+        if (isExtendable() && guardDescent() != 5.0f) {
+            arg_float(cmd, "--guarddescent=", guardDescent(), true /*allowZero*/);
+        }
+
+        if (!autoHeight && !isFixedRatio()) {
+            if (inputMode() & HEIGHTPERROW_MODE) {
+                arg_float(cmd, "--height=", heightPerRow ? heightPerRow : height());
+                arg_bool(cmd, "--heightperrow", true);
+            } else {
+                arg_float(cmd, "--height=", height());
+            }
+        }
+
+        arg_bool(cmd, "--init", supportsReaderInit() && readerInit());
+
+        if (hasMask()) {
+            arg_int(cmd, "--mask=", (option3() >> 8) - 1, true /*allowZero*/);
+        }
+
+        if (m_symbol == BARCODE_MAXICODE || isComposite()) {
+            arg_int(cmd, "--mode=", option1());
+        }
+
+        arg_bool(cmd, "--nobackground", bgColor() == QColor(0xFF, 0xFF, 0xFF, 0));
+        arg_bool(cmd, "--noquietzones", hasDefaultQuietZones() && noQuietZones());
+        arg_bool(cmd, "--notext", hasHRT() && !showText());
+        arg_data(cmd, longOptOnly ? "--output=" : "-o ", outfile, win);
+
+        if (m_symbol == BARCODE_MAXICODE || isComposite()) {
+            arg_data(cmd, "--primary=", primaryMessage(), win);
+        }
+
+        arg_bool(cmd, "--quietzones", !hasDefaultQuietZones() && quietZones());
+        arg_int(cmd, "--rotate=", rotateAngle());
+
+        if (m_symbol == BARCODE_CODE16K || m_symbol == BARCODE_CODABLOCKF || m_symbol == BARCODE_HIBC_BLOCKF
+                || m_symbol == BARCODE_CODE49) {
+            arg_int(cmd, "--rows=", option1());
+        } else if (m_symbol == BARCODE_DBAR_EXPSTK || m_symbol == BARCODE_DBAR_EXPSTK_CC
+                || m_symbol == BARCODE_PDF417 || m_symbol == BARCODE_PDF417COMP || m_symbol == BARCODE_HIBC_PDF) {
+            arg_int(cmd, "--rows=", option3());
+        }
+
+        if (scale() != 1.0f) {
+            arg_float(cmd, "--scale=", scale());
+        }
+
+        if (m_symbol == BARCODE_MAXICODE) {
+            arg_int(cmd, "--scmvv=", option2() - 1, true /*allowZero*/);
+        }
+
+        if (m_symbol == BARCODE_PDF417 || m_symbol == BARCODE_PDF417COMP || m_symbol == BARCODE_HIBC_PDF
+                || m_symbol == BARCODE_AZTEC || m_symbol == BARCODE_HIBC_AZTEC
+                || m_symbol == BARCODE_QRCODE || m_symbol == BARCODE_HIBC_QR || m_symbol == BARCODE_MICROQR
+                || m_symbol == BARCODE_RMQR || m_symbol == BARCODE_GRIDMATRIX || m_symbol == BARCODE_HANXIN
+                || m_symbol == BARCODE_ULTRA) {
+            arg_int(cmd, "--secure=", option1());
+        }
+
+        if (m_symbol == BARCODE_CODE16K || m_symbol == BARCODE_CODABLOCKF || m_symbol == BARCODE_HIBC_BLOCKF
+                || m_symbol == BARCODE_CODE49) {
+            arg_int(cmd, "--separator=", option3());
+        }
+
+        arg_bool(cmd, "--small", fontSetting() & SMALL_TEXT);
+
+        if (m_symbol == BARCODE_DATAMATRIX || m_symbol == BARCODE_HIBC_DM) {
+            arg_bool(cmd, "--square", option3() == DM_SQUARE);
+        }
+
+        if (supportsStructApp()) {
+            arg_structapp(cmd, "--structapp=", structAppCount(), structAppIndex(), structAppID(), win);
+        }
+
+        arg_bool(cmd, "--verbose", debug());
+
+        if (m_symbol == BARCODE_AZTEC || m_symbol == BARCODE_HIBC_AZTEC
+                || m_symbol == BARCODE_MSI_PLESSEY || m_symbol == BARCODE_CODE11
+                || m_symbol == BARCODE_C25STANDARD || m_symbol == BARCODE_C25INTER || m_symbol == BARCODE_C25IATA
+                || m_symbol == BARCODE_C25LOGIC || m_symbol == BARCODE_C25IND
+                || m_symbol == BARCODE_CODE39 || m_symbol == BARCODE_HIBC_39 || m_symbol == BARCODE_EXCODE39
+                || m_symbol == BARCODE_LOGMARS || m_symbol == BARCODE_CODABAR
+                || m_symbol == BARCODE_DATAMATRIX || m_symbol == BARCODE_HIBC_DM
+                || m_symbol == BARCODE_QRCODE || m_symbol == BARCODE_HIBC_QR || m_symbol == BARCODE_MICROQR
+                || m_symbol == BARCODE_RMQR || m_symbol == BARCODE_GRIDMATRIX || m_symbol == BARCODE_HANXIN
+                || m_symbol == BARCODE_CHANNEL || m_symbol == BARCODE_CODEONE || m_symbol == BARCODE_CODE93
+                || m_symbol == BARCODE_ULTRA || m_symbol == BARCODE_VIN) {
+            arg_int(cmd, "--vers=", option2());
+        } else if (m_symbol == BARCODE_DAFT && option2() != 250) {
+            arg_int(cmd, "--vers=", option2());
+        }
+
+        arg_int(cmd, "--vwhitesp=", vWhitespace());
+        arg_int(cmd, longOptOnly ? "--whitesp=" : "-w ", whitespace());
+        arg_bool(cmd, "--werror", warnLevel() == WARN_FAIL_ALL);
+
+        return cmd;
+    }
+
+    /* `getAsCLI()` helpers */
+    void QZint::arg_str(QString &cmd, const char *const opt, const QString &val) {
+        if (!val.isEmpty()) {
+            QByteArray bstr = val.toUtf8();
+            cmd += QString::asprintf(" %s%.*s", opt, bstr.length(), bstr.data());
+        }
+    }
+
+    void QZint::arg_int(QString &cmd, const char *const opt, const int val, const bool allowZero) {
+        if (val > 0 || (val == 0 && allowZero)) {
+            cmd += QString::asprintf(" %s%d", opt, val);
+        }
+    }
+
+    void QZint::arg_bool(QString &cmd, const char *const opt, const bool val) {
+        if (val) {
+            cmd += QString::asprintf(" %s", opt);
+        }
+    }
+
+    void QZint::arg_color(QString &cmd, const char *const opt, const QColor val) {
+        if (val.alpha() != 0xFF) {
+            cmd += QString::asprintf(" %s%02X%02X%02X%02X", opt, val.red(), val.green(), val.blue(), val.alpha());
+        } else {
+            cmd += QString::asprintf(" %s%02X%02X%02X", opt, val.red(), val.green(), val.blue());
+        }
+    }
+
+    void QZint::arg_data(QString &cmd, const char *const opt, const QString &val, const bool win) {
+        if (!val.isEmpty()) {
+            QString text(val);
+            const char delim = win ? '"' : '\'';
+            if (win) {
+                // Difficult (impossible?) to fully escape strings on Windows, e.g. "blah%PATH%" will substitute
+                // env var PATH, so just doing basic escaping here
+                text.replace("\\\\", "\\\\\\\\"); // Double-up backslashed backslash `\\` -> `\\\\`
+                text.replace("\"", "\\\""); // Backslash quote `"` -> `\"`
+                QByteArray bstr = text.toUtf8();
+                cmd += QString::asprintf(" %s%c%.*s%c", opt, delim, bstr.length(), bstr.data(), delim);
+            } else {
+                text.replace("'", "'\\''"); // Single quote `'` -> `'\''`
+                QByteArray bstr = text.toUtf8();
+                cmd += QString::asprintf(" %s%c%.*s%c", opt, delim, bstr.length(), bstr.data(), delim);
+            }
+        }
+    }
+
+    void QZint::arg_float(QString &cmd, const char *const opt, const float val, const bool allowZero) {
+        if (val > 0 || (val == 0 && allowZero)) {
+            cmd += QString::asprintf(" %s%g", opt, val);
+        }
+    }
+
+    void QZint::arg_structapp(QString &cmd, const char *const opt, const int count, const int index,
+                                const QString &id, const bool win) {
+        if (count >= 2 && index >= 1) {
+            if (id.isEmpty()) {
+                cmd += QString::asprintf(" %s%d,%d", opt, index, count);
+            } else {
+                QByteArray bstr = id.toUtf8();
+                arg_data(cmd, opt, QString::asprintf("%d,%d,%.*s", index, count, bstr.length(), bstr.data()), win);
+            }
+        }
     }
 } /* namespace Zint */

@@ -70,10 +70,6 @@
 extern "C" {
 #endif
 
-#ifndef ARRAY_SIZE
-#define ARRAY_SIZE(x) ((int) (sizeof(x) / sizeof((x)[0])))
-#endif
-
 extern int assertionFailed;
 extern int assertionNum;
 extern const char *assertionFilename;

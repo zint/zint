@@ -69,8 +69,9 @@ public slots:
     void menu();
 
     void reset_colours();
-    int open_data_dialog();
-    int open_sequence_dialog();
+    void open_data_dialog();
+    void open_sequence_dialog();
+    void open_cli_dialog();
 
     void copy_to_clipboard_bmp();
     void copy_to_clipboard_emf();
@@ -118,7 +119,7 @@ protected:
 
     QWidget *get_widget(const QString &name);
 
-    const QString &get_setting_name(int symbology);
+    static QString get_setting_name(int symbology);
 
     int get_rad_grp_index(const QStringList &names);
     void set_rad_from_setting(QSettings &settings, const QString &setting, const QStringList &names,
@@ -161,6 +162,7 @@ private:
     QAction *m_copyPNGAct;
     QAction *m_copySVGAct;
     QAction *m_copyTIFAct;
+    QAction *m_CLIAct;
     QAction *m_saveAsAct;
     QAction *m_aboutAct;
     QAction *m_helpAct;

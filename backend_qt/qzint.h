@@ -136,6 +136,9 @@ public:
     bool readerInit() const;
     void setReaderInit(bool readerInit);
 
+    int warnLevel() const;
+    void setWarnLevel(int warnLevel);
+
     bool debug() const;
     void setDebug(bool debug);
 
@@ -155,13 +158,18 @@ public:
 
     /* Test capabilities - ZBarcode_Cap() */
     bool hasHRT(int symbology = 0) const;
+    bool isStackable(int symbology = 0) const;
     bool isExtendable(int symbology = 0) const;
+    bool isComposite(int symbology = 0) const;
     bool supportsECI(int symbology = 0) const;
     bool supportsGS1(int symbology = 0) const;
+    bool isDotty(int symbology = 0) const;
     bool hasDefaultQuietZones(int symbology = 0) const;
     bool isFixedRatio(int symbology = 0) const;
-    bool isDotty(int symbology = 0) const;
     bool supportsReaderInit(int symbology = 0) const;
+    bool supportsFullMultibyte(int symbology = 0) const;
+    bool hasMask(int symbology = 0) const;
+    bool supportsStructApp(int symbology = 0) const;
     bool hasCompliantHeight(int symbology = 0) const;
 
     int getError() const;
@@ -169,12 +177,19 @@ public:
     const QString& lastError() const;
     bool hasErrors() const;
 
-    bool save_to_file(QString filename);
+    bool save_to_file(const QString &filename);
 
     /* Note: legacy argument `mode` is not used */
     void render(QPainter& painter, const QRectF& paintRect, AspectRatioMode mode = IgnoreAspectRatio);
 
     int getVersion() const;
+
+    /* Translate settings into Command Line equivalent. Set `win` to use Windows escaping of data.
+       If `autoHeight` set then `--height=` option will not be emitted.
+       If HEIGHTPERROW_MODE set and non-zero `heightPerRow` given then use that for height instead of internal
+       height */
+    QString getAsCLI(const bool win, const bool longOptOnly = false, const bool barcodeNames = false,
+                const bool autoHeight = false, const float heightPerRow = 0.0f, const QString &outfile = "") const;
 
 signals:
     void encoded();
@@ -185,44 +200,55 @@ private:
     void encode();
     static Qt::GlobalColor colourToQtColor(int colour);
 
+    /* `getAsCLI()` helpers */
+    static void arg_str(QString &cmd, const char *const opt, const QString &val);
+    static void arg_int(QString &cmd, const char *const opt, const int val, const bool allowZero = false);
+    static void arg_bool(QString &cmd, const char *const opt, const bool val);
+    static void arg_color(QString &cmd, const char *const opt, const QColor val);
+    static void arg_data(QString &cmd, const char *const opt, const QString &val, const bool win);
+    static void arg_float(QString &cmd, const char *const opt, const float val, const bool allowZero = false);
+    static void arg_structapp(QString &cmd, const char *const opt, const int count, const int index,
+                                const QString &id, const bool win);
+
 private:
+    zint_symbol *m_zintSymbol;
     int m_symbol;
+    int m_input_mode;
     QString m_text;
     QString m_primaryMessage;
     float m_height;
-    int m_borderType;
-    int m_borderWidth;
-    int m_fontSetting;
     int m_option_1;
     int m_option_2;
     int m_option_3;
-    int m_input_mode;
-    QColor m_fgColor;
-    QColor m_bgColor;
-    bool m_cmyk;
-    QString m_lastError;
-    int m_error;
-    int m_whitespace;
-    int m_vwhitespace;
-    zint_symbol * m_zintSymbol;
     float m_scale;
-    bool m_show_hrt;
-    int m_eci;
-    int m_rotate_angle;
     bool m_dotty;
     float m_dot_size;
     float m_guardDescent;
     struct zint_structapp m_structapp;
-    bool m_gs1parens;
-    bool m_gs1nocheck;
+    QColor m_fgColor;
+    QColor m_bgColor;
+    bool m_cmyk;
+    int m_borderType;
+    int m_borderWidth;
+    int m_whitespace;
+    int m_vwhitespace;
+    int m_fontSetting;
+    bool m_show_hrt;
     bool m_gssep;
     bool m_quiet_zones;
     bool m_no_quiet_zones;
     bool m_compliant_height;
+    int m_rotate_angle;
+    int m_eci;
+    bool m_gs1parens;
+    bool m_gs1nocheck;
     bool m_reader_init;
+    int m_warn_level;
     bool m_debug;
     int m_encodedWidth;
     int m_encodedRows;
+    QString m_lastError;
+    int m_error;
 
     int target_size_horiz; /* Legacy */
     int target_size_vert; /* Legacy */

@@ -27,35 +27,43 @@
 
 #include "datawindow.h"
 
-DataWindow::DataWindow()
+// Shorthand
+#define QSL QStringLiteral
+
+DataWindow::DataWindow(const QString &input) : Valid(false)
 {
     setupUi(this);
+    QSettings settings;
+#if QT_VERSION < 0x60000
+    settings.setIniCodec("UTF-8");
+#endif
 
-    connect(btnCancel, SIGNAL( clicked( bool )), SLOT(quit_now()));
-    connect(btnReset, SIGNAL( clicked( bool )), SLOT(clear_data()));
-    connect(btnOK, SIGNAL( clicked( bool )), SLOT(okay()));
-}
+    QByteArray geometry = settings.value(QSL("studio/data/window_geometry")).toByteArray();
+    restoreGeometry(geometry);
 
-DataWindow::DataWindow(const QString &input)
-{
-    setupUi(this);
+    QIcon closeIcon(QIcon::fromTheme(QSL("window-close"), QIcon(QSL(":res/x.svg"))));
+    QIcon clearIcon(QIcon::fromTheme(QSL("edit-clear"), QIcon(QSL(":res/delete.svg"))));
+    QIcon okIcon(QIcon(QSL(":res/check.svg")));
+    btnCancel->setIcon(closeIcon);
+    btnDataClear->setIcon(clearIcon);
+    btnOK->setIcon(okIcon);
+
     txtDataInput->setPlainText(input);
     txtDataInput->moveCursor(QTextCursor::End, QTextCursor::MoveAnchor);
 
-    connect(btnCancel, SIGNAL( clicked( bool )), SLOT(quit_now()));
-    connect(btnReset, SIGNAL( clicked( bool )), SLOT(clear_data()));
+    connect(btnCancel, SIGNAL( clicked( bool )), SLOT(close()));
+    connect(btnDataClear, SIGNAL( clicked( bool )), SLOT(clear_data()));
     connect(btnOK, SIGNAL( clicked( bool )), SLOT(okay()));
     connect(btnFromFile, SIGNAL( clicked( bool )), SLOT(from_file()));
 }
 
 DataWindow::~DataWindow()
 {
-}
-
-void DataWindow::quit_now()
-{
-    Valid = 0;
-    close();
+    QSettings settings;
+#if QT_VERSION < 0x60000
+    settings.setIniCodec("UTF-8");
+#endif
+    settings.setValue(QSL("studio/data/window_geometry"), saveGeometry());
 }
 
 void DataWindow::clear_data()
@@ -65,7 +73,7 @@ void DataWindow::clear_data()
 
 void DataWindow::okay()
 {
-    Valid = 1;
+    Valid = true;
     DataOutput = txtDataInput->toPlainText();
     close();
 }
@@ -93,7 +101,7 @@ void DataWindow::from_file()
     }
 
     file.setFileName(filename);
-    if(!file.open(QIODevice::ReadOnly)) {
+    if (!file.open(QIODevice::ReadOnly)) {
         QMessageBox::critical(this, tr("Open Error"), tr("Could not open selected file."));
         return;
     }

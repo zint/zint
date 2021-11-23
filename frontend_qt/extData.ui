@@ -27,8 +27,8 @@
       <string>&amp;Data</string>
      </property>
      <property name="toolTip">
-      <string>Input data. Newlines (Line Feeds (0xA0))
-will be converted to spaces</string>
+      <string>Input data. Line Feeds (0xA0) will
+be converted to spaces</string>
      </property>
      <property name="buddy">
       <cstring>txtDataInput</cstring>
@@ -70,14 +70,14 @@ will be converted to spaces</string>
 &lt;tr&gt;&lt;td&gt;Record Separator (0x1E)&lt;/td&gt;&lt;td&gt;&amp;nbsp;\R&lt;/td&gt;&lt;/tr&gt;
 &lt;tr&gt;&lt;td&gt;Backslash (0x5C)&lt;/td&gt;&lt;td&gt;&amp;nbsp;\\&lt;/td&gt;&lt;/tr&gt;
 &lt;/table&gt;
-Note that newlines (Line Feeds (0x0A)) are &lt;br/&gt;not included</string>
+Note that Line Feed (0x0A) is not included</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="btnReset">
+      <widget class="QPushButton" name="btnDataClear">
        <property name="text">
-        <string>&amp;Reset</string>
+        <string> C&amp;lear</string>
        </property>
        <property name="toolTip">
         <string>Clear data window</string>
@@ -100,7 +100,7 @@ Note that newlines (Line Feeds (0x0A)) are &lt;br/&gt;not included</string>
      <item>
       <widget class="QPushButton" name="btnOK">
        <property name="text">
-        <string>&amp;OK</string>
+        <string> &amp;OK</string>
        </property>
        <property name="toolTip">
         <string>Close window and update input data</string>

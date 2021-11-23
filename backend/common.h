@@ -42,6 +42,10 @@
 #define TRUE    1
 #endif
 
+#ifndef ARRAY_SIZE
+#define ARRAY_SIZE(x) ((int) (sizeof(x) / sizeof((x)[0])))
+#endif
+
 /* `is_sane()` flags */
 #define IS_SPC_F    0x0001 /* Space */
 #define IS_HSH_F    0x0002 /* Hash sign # */

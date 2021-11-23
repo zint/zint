@@ -175,7 +175,7 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int len
 
     /* Calculate how tall the symbol will be */
     glyph_count = glyph_count + 2.0f;
-    i = (int)glyph_count;
+    i = (int) glyph_count;
     rows = (i / 5);
     if (i % 5 > 0) {
         rows++;

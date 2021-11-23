@@ -1,6 +1,6 @@
 /*
     Zint Barcode Generator - the open source barcode generator
-    Copyright (C) 2009-2017 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2021 Robin Stuart <rstuart114@gmail.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,6 +16,7 @@
     with this program; if not, write to the Free Software Foundation, Inc.,
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
+/* vim: set ts=4 sw=4 et : */
 
 #ifndef SEQUENCEWINDOW_H
 #define SEQUENCEWINDOW_H
@@ -25,23 +26,24 @@
 
 class SequenceWindow : public QDialog, private Ui::SequenceDialog
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	SequenceWindow();
-	~SequenceWindow();
-	BarcodeItem *barcode;
+    SequenceWindow(BarcodeItem *bc);
+    ~SequenceWindow();
 
 private:
-	QString apply_format(QString raw_number);
+    QString apply_format(const QString &raw_number);
 
 private slots:
-	void quit_now();
-	void reset_preview();
-	void create_sequence();
-	void check_generate();
-	void import();
-	void generate_sequence();
+    void clear_preview();
+    void create_sequence();
+    void check_generate();
+    void import();
+    void generate_sequence();
+
+protected:
+    BarcodeItem *m_bc;
 };
 
 #endif

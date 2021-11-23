@@ -32,7 +32,10 @@
         <file>grpUPCEAN.ui</file>
         <file>grpVIN.ui</file>
         <file>res/zint-qt.ico</file>
+        <file>res/zint_black.ico</file>
+        <file>res/check.svg</file>
         <file>res/copy.svg</file>
+        <file>res/delete.svg</file>
         <file>res/download.svg</file>
         <file>res/help-circle.svg</file>
         <file>res/menu.svg</file>
