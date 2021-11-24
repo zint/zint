@@ -410,8 +410,9 @@ zint --height=100 -d "This Text"
 
 This specifies a symbol height of 100 times the X-dimension of the symbol.
 
-The switch --compliantheight changes the default height to be compliant with the
-barcode standard (if any). For instance
+The default height of most linear barcodes is 50X, but this can be changed for
+barcodes whose specifications give a standard height by using the switch
+--compliantheight. For instance
 
 zint -b LOGMARS -d "This Text" --compliantheight
 
@@ -422,11 +423,12 @@ given:
 zint -b LOGMARS -d "This Text" --compliantheight --height=6.2
 Warning 247: Height not compliant with standards
 
-The switch --heightperrow is useful for symbologies that have a variable number
-of linear rows, namely PDF417, MicroPDF417, Codablock-F, Code16K, Code 49 and
-DataBar Expanded Stacked, as it changes the treatment of the height value from
-overall height to per-row height, allowing you to specify a consistent height
-for each linear row without having to know how many there will be. For instance
+Another switch is --heightperrow, which can be useful for symbologies that have
+a variable number of linear rows, namely PDF417, MicroPDF417, Codablock-F,
+Code16K, Code 49 and DataBar Expanded Stacked, as it changes the treatment of
+the height value from overall height to per-row height, allowing you to specify
+a consistent height for each linear row without having to know how many there
+are. For instance
 
 zint -b PDF417 -d "This Text" --height=4 --heightperrow
 
