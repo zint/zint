@@ -47,7 +47,7 @@
 typedef int static_assert_int_at_least_32bits[CHAR_BIT != 8 || sizeof(int) < 4 ? -1 : 1];
 
 /* Create and initialize a symbol structure */
-struct zint_symbol *ZBarcode_Create() {
+struct zint_symbol *ZBarcode_Create(void) {
     struct zint_symbol *symbol;
 
     symbol = (struct zint_symbol *) calloc(1, sizeof(*symbol));
