@@ -82,7 +82,7 @@ extern const char *assertionFilename;
 void testStartReal(const char *func, const char *name);
 void testFinish(void);
 void testSkip(const char *msg);
-void testReport();
+void testReport(void);
 
 typedef struct s_testFunction {
     const char *name; void *func; int has_index; int has_generate; int has_debug;
@@ -157,15 +157,15 @@ int testUtilCmpBins(const char *bin1, const char *bin2);
 int testUtilCmpSvgs(const char *svg1, const char *svg2);
 int testUtilCmpEpss(const char *eps1, const char *eps2);
 
-int testUtilHaveIdentify();
+int testUtilHaveIdentify(void);
 int testUtilVerifyIdentify(const char *filename, int debug);
-int testUtilHaveLibreOffice();
+int testUtilHaveLibreOffice(void);
 int testUtilVerifyLibreOffice(const char *filename, int debug);
-int testUtilHaveGhostscript();
+int testUtilHaveGhostscript(void);
 int testUtilVerifyGhostscript(const char *filename, int debug);
-int testUtilHaveVnu();
+int testUtilHaveVnu(void);
 int testUtilVerifyVnu(const char *filename, int debug);
-int testUtilHaveTiffInfo();
+int testUtilHaveTiffInfo(void);
 int testUtilVerifyTiffInfo(const char *filename, int debug);
 
 int testUtilCanBwipp(int index, const struct zint_symbol *symbol, int option_1, int option_2, int option_3,

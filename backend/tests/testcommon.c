@@ -162,7 +162,7 @@ void testSkip(const char *msg) {
 }
 
 /* End test program */
-void testReport() {
+void testReport(void) {
     if (failed && skipped) {
         printf("Total %d tests, %d skipped, %d fails.\n", tests, skipped, failed);
         exit(-1);
@@ -1674,7 +1674,7 @@ int testUtilCmpEpss(const char *eps1, const char *eps2) {
 #endif
 
 /* Whether ImageMagick's identify utility available on system */
-int testUtilHaveIdentify() {
+int testUtilHaveIdentify(void) {
     return system("magick -version " DEV_NULL) == 0;
 }
 
@@ -1701,7 +1701,7 @@ int testUtilVerifyIdentify(const char *filename, int debug) {
 }
 
 /* Whether Libre Office available on system */
-int testUtilHaveLibreOffice() {
+int testUtilHaveLibreOffice(void) {
     return system("libreoffice --version " DEV_NULL) == 0;
 }
 
@@ -1785,7 +1785,7 @@ int testUtilVerifyLibreOffice(const char *filename, int debug) {
 #endif
 
 /* Whether Ghostscript available on system */
-int testUtilHaveGhostscript() {
+int testUtilHaveGhostscript(void) {
     return system(GS_FILENAME " -v " DEV_NULL) == 0;
 }
 
@@ -1809,7 +1809,7 @@ int testUtilVerifyGhostscript(const char *filename, int debug) {
 
 /* Whether vnu validator available on system. v.Nu https://github.com/validator/validator
    Needs "$INSTALL_DIR/vnu-runtime-image/bin" in PATH */
-int testUtilHaveVnu() {
+int testUtilHaveVnu(void) {
     return system("vnu --version " DEV_NULL_STDERR) == 0;
 }
 
@@ -1831,7 +1831,7 @@ int testUtilVerifyVnu(const char *filename, int debug) {
 }
 
 /* Whether tiffinfo available on system. Requires libtiff 4.2.0 http://www.libtiff.org to be installed */
-int testUtilHaveTiffInfo() {
+int testUtilHaveTiffInfo(void) {
     return system("tiffinfo -h " DEV_NULL) == 0;
 }
 
