@@ -478,13 +478,18 @@ void MainWindow::help()
 
 void MainWindow::open_data_dialog()
 {
-    DataWindow dlg(txtData->text());
+    DataWindow dlg(txtData->text(), chkEscape->isChecked());
     (void) dlg.exec();
     if (dlg.Valid) {
         const bool updated = txtData->text() != dlg.DataOutput;
         txtData->setText(dlg.DataOutput);
         if (updated) {
-            statusBar->showMessage(tr("Updated data"), tempMessageTimeout);
+            if (dlg.Escaped && !chkEscape->isChecked()) {
+                chkEscape->setChecked(true);
+                statusBar->showMessage(tr("Set \"Parse Escapes\", updated data"), tempMessageTimeout);
+            } else {
+                statusBar->showMessage(tr("Updated data"), tempMessageTimeout);
+            }
         }
     }
 }

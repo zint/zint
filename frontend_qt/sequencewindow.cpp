@@ -56,7 +56,7 @@ SequenceWindow::SequenceWindow(BarcodeItem *bc) : m_bc(bc)
     connect(btnSeqClear, SIGNAL( clicked( bool )), SLOT(clear_preview()));
     connect(btnSeqCreate, SIGNAL( clicked( bool )), SLOT(create_sequence()));
     connect(txtSeqPreview, SIGNAL( textChanged()), SLOT(check_generate()));
-    connect(btnSeqImport, SIGNAL( clicked( bool )), SLOT(import()));
+    connect(btnSeqFromFile, SIGNAL( clicked( bool )), SLOT(from_file()));
     connect(btnSeqExport, SIGNAL( clicked( bool )), SLOT(generate_sequence()));
 }
 
@@ -166,14 +166,12 @@ void SequenceWindow::check_generate()
     preview_copy = txtSeqPreview->toPlainText();
     if (preview_copy.isEmpty()) {
         btnSeqExport->setEnabled(false);
-        lblSeqExport->setEnabled(false);
     } else {
         btnSeqExport->setEnabled(true);
-        lblSeqExport->setEnabled(true);
     }
 }
 
-void SequenceWindow::import()
+void SequenceWindow::from_file()
 {
     QSettings settings;
 #if QT_VERSION < 0x60000

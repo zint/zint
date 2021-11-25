@@ -43,6 +43,7 @@ Changes
 - CODE16K/CODE49: add min rows option
 - GUI: add CLI equivalent dialog (#163)
 - Add ZBarcode_BarcodeName()
+- GUI: data dialog: convert Line Feeds if escaping on input, escape on output
 
 Bugs
 ----

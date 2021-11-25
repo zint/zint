@@ -556,6 +556,18 @@ private slots:
                 " --height=11.7 --heightperrow --noquietzones --rows=4 --separator=2 --small"
             << "" << "";
 
+        QTest::newRow("BARCODE_CODE49") << true << 0.0f << ""
+            << BARCODE_CODE49 << UNICODE_MODE // symbology-inputMode
+            << "12345678901234567890" << "" // text-primary
+            << 30.0f << -1 << 0 << 0 << 1.0f << false << 0.8f // height-dotSize
+            << 5.0f << 0 << 0 << "" << QColor(Qt::black) << QColor(Qt::white) // guardDescent-bgColor
+            << false << 0 << 0 << 0 << 0 << 0 // cmyk-fontSetting
+            << true << false << false << false << true << 0 // showText-rotateAngle
+            << 0 << false << false << false << WARN_DEFAULT << false // eci-debug
+            << "zint -b 24 --compliantheight -d '12345678901234567890'"
+            << "zint.exe -b 24 --compliantheight -d \"12345678901234567890\""
+            << "" << "";
+
         QTest::newRow("BARCODE_CODABLOCKF") << true << 0.0f << ""
             << BARCODE_CODABLOCKF << (DATA_MODE | ESCAPE_MODE) // symbology-inputMode
             << "T\\n\\xA0t\\\"" << "" // text-primary
@@ -680,6 +692,18 @@ private slots:
                 " --rows=10 --scale=10 --secure=3 --structapp=1,2"
             << "zint.exe -b 106 --binary --cols=4 -d \"TEXT\" --height=3.5 --heightperrow --quietzones"
                 " --rows=10 --scale=10 --secure=3 --structapp=1,2"
+            << "" << "";
+
+        QTest::newRow("BARCODE_ITF14") << true << 0.0f << ""
+            << BARCODE_ITF14 << UNICODE_MODE // symbology-inputMode
+            << "9212320967145" << "" // text-primary
+            << 30.0f << -1 << 0 << 0 << 1.0f << false << 0.8f // height-dotSize
+            << 5.0f << 0 << 0 << "" << QColor(Qt::black) << QColor(Qt::white) // guardDescent-bgColor
+            << false << 0 << 0 << 0 << 0 << 0 // cmyk-fontSetting
+            << true << false << false << false << true << 0 // showText-rotateAngle
+            << 0 << false << false << false << WARN_DEFAULT << false // eci-debug
+            << "zint -b 89 --compliantheight -d '9212320967145'"
+            << "zint.exe -b 89 --compliantheight -d \"9212320967145\""
             << "" << "";
 
         QTest::newRow("BARCODE_MAXICODE") << true << 0.0f << ""

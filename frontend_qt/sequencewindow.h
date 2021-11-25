@@ -39,7 +39,7 @@ private slots:
     void clear_preview();
     void create_sequence();
     void check_generate();
-    void import();
+    void from_file();
     void generate_sequence();
 
 protected:

@@ -25,7 +25,6 @@
 
 #include "cliwindow.h"
 #include "barcodeitem.h"
-#include "mainwindow.h"
 
 // Shorthand
 #define QSL QStringLiteral

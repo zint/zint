@@ -1707,7 +1707,7 @@ border width of 5. This behaviour can be overridden by using the --bind option
 (or adding BARCODE_BIND to symbol->output_options). Similarly the border width
 can be overridden using --border= (or by setting symbol->border_width). If a
 symbol with no border is required this can be achieved by explicitly setting
-the border type to bind (or box) and setting the border width to 0.
+the border type to box (or bind) and setting the border width to 0.
 
 6.1.2.7 Deutsche Post Leitcode
 ------------------------------

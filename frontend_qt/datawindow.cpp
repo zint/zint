@@ -24,13 +24,16 @@
 #include <QStringList>
 #include <QMessageBox>
 #include <QSettings>
+#include <QRegularExpression>
 
 #include "datawindow.h"
 
 // Shorthand
 #define QSL QStringLiteral
 
-DataWindow::DataWindow(const QString &input) : Valid(false)
+static const int tempMessageTimeout = 2000;
+
+DataWindow::DataWindow(const QString &input, bool isEscaped) : Valid(false), Escaped(false)
 {
     setupUi(this);
     QSettings settings;
@@ -48,7 +51,26 @@ DataWindow::DataWindow(const QString &input) : Valid(false)
     btnDataClear->setIcon(clearIcon);
     btnOK->setIcon(okIcon);
 
-    txtDataInput->setPlainText(input);
+    if (isEscaped && input.contains(QSL("\\n"))) {
+        // Substitute escaped Line Feeds with actual Line Feeds
+        QString out;
+        out.reserve(input.length());
+        int lastPosn = 0;
+        QRegularExpression escRE(QSL("\\\\(?:[0EabtnvfreGR\\\\]|x[0-9A-Fa-f]{2}|u[0-9A-Fa-f]{4})"));
+        QRegularExpressionMatchIterator matchI = escRE.globalMatch(input);
+        while (matchI.hasNext()) {
+            QRegularExpressionMatch match = matchI.next();
+            if (match.captured(0) == QSL("\\n")) {
+                out += input.mid(lastPosn, match.capturedStart(0) - lastPosn) + '\n';
+                lastPosn = match.capturedEnd(0);
+            }
+        }
+        out += input.mid(lastPosn);
+        txtDataInput->setPlainText(out);
+        statusBarData->showMessage(tr("Converted LFs"), tempMessageTimeout);
+    } else {
+        txtDataInput->setPlainText(input);
+    }
     txtDataInput->moveCursor(QTextCursor::End, QTextCursor::MoveAnchor);
 
     connect(btnCancel, SIGNAL( clicked( bool )), SLOT(close()));
@@ -75,6 +97,11 @@ void DataWindow::okay()
 {
     Valid = true;
     DataOutput = txtDataInput->toPlainText();
+    if (DataOutput.contains('\n')) {
+        // Escape Line Feeds
+        DataOutput.replace('\n', QSL("\\n"));
+        Escaped = true;
+    }
     close();
 }
 
@@ -88,9 +115,7 @@ void DataWindow::from_file()
     QString filename;
     QFile file;
     QByteArray outstream;
-    QString escape_string;
-
-    open_dialog.setWindowTitle("Open File");
+    open_dialog.setWindowTitle("Import File");
     open_dialog.setDirectory(settings.value("studio/default_dir",
                 QDir::toNativeSeparators(QDir::homePath())).toString());
 
@@ -110,22 +135,27 @@ void DataWindow::from_file()
 
     /* Allow some non-printing (control) characters to be read from file
        by converting them to escape sequences */
-    escape_string.clear();
-    escape_string.append(QString(outstream));
+    QString escape_string(outstream); // Converts to UTF-8 (NOTE: QString can't handle embedded NULs)
 
-    escape_string.replace((QChar)'\\', (QString)"\\\\", Qt::CaseInsensitive);
-    escape_string.replace((QChar)0x04, (QString)"\\E", Qt::CaseInsensitive); /* End of Transmission */
-    escape_string.replace((QChar)'\a', (QString)"\\a", Qt::CaseInsensitive); /* Bell */
-    escape_string.replace((QChar)'\b', (QString)"\\b", Qt::CaseInsensitive); /* Backspace */
-    escape_string.replace((QChar)'\t', (QString)"\\t", Qt::CaseInsensitive); /* Horizontal tab */
-    escape_string.replace((QChar)'\v', (QString)"\\v", Qt::CaseInsensitive); /* Vertical tab */
-    escape_string.replace((QChar)'\f', (QString)"\\f", Qt::CaseInsensitive); /* Form feed */
-    escape_string.replace((QChar)'\r', (QString)"\\r", Qt::CaseInsensitive); /* Carriage return */
-    escape_string.replace((QChar)0x1b, (QString)"\\e", Qt::CaseInsensitive); /* Escape */
-    escape_string.replace((QChar)0x1d, (QString)"\\G", Qt::CaseInsensitive); /* Group Separator */
-    escape_string.replace((QChar)0x1e, (QString)"\\R", Qt::CaseInsensitive); /* Record Separator */
+    QRegularExpression escRE(QSL("[\\x04\\x07\\x08\\x09\\x0B\\x0C\\x0D\\x1B\\x1D\\x1E\\x5C]"));
+    if (escape_string.contains(escRE)) {
+        escape_string.replace((QChar)'\\', QSL("\\\\"));
+        escape_string.replace((QChar)0x04, QSL("\\E")); /* End of Transmission */
+        escape_string.replace((QChar)'\a', QSL("\\a")); /* Bell (0x07) */
+        escape_string.replace((QChar)'\b', QSL("\\b")); /* Backspace (0x08) */
+        escape_string.replace((QChar)'\t', QSL("\\t")); /* Horizontal tab (0x09) */
+        // Leaving Line Feed (0x0A)
+        escape_string.replace((QChar)'\v', QSL("\\v")); /* Vertical tab (0x0B) */
+        escape_string.replace((QChar)'\f', QSL("\\f")); /* Form feed (0x0C) */
+        escape_string.replace((QChar)'\r', QSL("\\r")); /* Carriage return (0x0D) */
+        escape_string.replace((QChar)0x1b, QSL("\\e")); /* Escape */
+        escape_string.replace((QChar)0x1d, QSL("\\G")); /* Group Separator */
+        escape_string.replace((QChar)0x1e, QSL("\\R")); /* Record Separator */
+        Escaped = true;
+        statusBarData->showMessage(tr("Escaped data"), tempMessageTimeout);
+    }
 
-    txtDataInput->setPlainText(QString(escape_string));
+    txtDataInput->setPlainText(escape_string);
     file.close();
 
     settings.setValue("studio/default_dir", filename.mid(0, filename.lastIndexOf(QDir::separator())));

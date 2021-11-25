@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>429</width>
+    <width>500</width>
     <height>333</height>
    </rect>
   </property>
@@ -27,8 +27,7 @@
       <string>&amp;Data</string>
      </property>
      <property name="toolTip">
-      <string>Input data. Line Feeds (0xA0) will
-be converted to spaces</string>
+      <string>Input data</string>
      </property>
      <property name="buddy">
       <cstring>txtDataInput</cstring>
@@ -56,7 +55,7 @@ be converted to spaces</string>
         <string>&amp;From File...</string>
        </property>
        <property name="toolTip">
-        <string>Get input data from a file. Certain characters &lt;br/&gt;will be converted to escape sequences
+        <string>Import input data from a file. Certain characters &lt;br/&gt;will be converted to escape sequences
 &lt;table cellspacing=&quot;3&quot;&gt;
 &lt;tr&gt;&lt;td&gt;End of Transmission (0x04)&lt;/td&gt;&lt;td&gt;&amp;nbsp;\E&lt;/td&gt;&lt;/tr&gt;
 &lt;tr&gt;&lt;td&gt;Bell (0x07)&lt;/td&gt;&lt;td&gt;&amp;nbsp;\a&lt;/td&gt;&lt;/tr&gt;
@@ -70,7 +69,7 @@ be converted to spaces</string>
 &lt;tr&gt;&lt;td&gt;Record Separator (0x1E)&lt;/td&gt;&lt;td&gt;&amp;nbsp;\R&lt;/td&gt;&lt;/tr&gt;
 &lt;tr&gt;&lt;td&gt;Backslash (0x5C)&lt;/td&gt;&lt;td&gt;&amp;nbsp;\\&lt;/td&gt;&lt;/tr&gt;
 &lt;/table&gt;
-Note that Line Feed (0x0A) is not included</string>
+Note that Line Feeds (0x0A) are not included,&lt;br/&gt; but any present will be escaped on update</string>
        </property>
       </widget>
      </item>
@@ -85,9 +84,9 @@ Note that Line Feed (0x0A) is not included</string>
       </widget>
      </item>
      <item>
-      <spacer name="horizontalSpacer">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+      <widget class="QStatusBar" name="statusBarData">
+       <property name="sizeGripEnabled">
+        <bool>false</bool>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -95,7 +94,7 @@ Note that Line Feed (0x0A) is not included</string>
          <height>20</height>
         </size>
        </property>
-      </spacer>
+      </widget>
      </item>
      <item>
       <widget class="QPushButton" name="btnOK">
@@ -103,7 +102,8 @@ Note that Line Feed (0x0A) is not included</string>
         <string> &amp;OK</string>
        </property>
        <property name="toolTip">
-        <string>Close window and update input data</string>
+        <string>Close window and update input data
+Line Feeds (0xA0) will be escaped as &quot;\n&quot;</string>
        </property>
       </widget>
      </item>

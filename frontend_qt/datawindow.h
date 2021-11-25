@@ -28,10 +28,11 @@ class DataWindow : public QDialog, private Ui::DataDialog
     Q_OBJECT
 
 public:
-    DataWindow(const QString &input);
+    DataWindow(const QString &input, bool isEscaped);
     ~DataWindow();
 
     bool Valid;
+    bool Escaped;
     QString DataOutput;
 
 private slots:
