@@ -910,6 +910,54 @@ private slots:
             QCOMPARE(cmd, expected_barcodeNames);
         }
     }
+
+    void qZintAndLibZintEqual_data()
+    {
+        QTest::addColumn<int>("symbology");
+        QTest::addColumn<int>("rotateAngles");
+        QTest::addColumn<QString>("text");
+
+        QTest::newRow("symbology=BARCODE_DATAMATRIX  rotateAngles=0   text=1234")          << BARCODE_DATAMATRIX << 0   << "1234";
+        QTest::newRow("symbology=BARCODE_QRCODE      rotateAngles=0   text=Hello%20World") << BARCODE_QRCODE     << 0   << "Hello%20World";
+        QTest::newRow("symbology=BARCODE_QRCODE      rotateAngles=90  text=Hello%20World") << BARCODE_QRCODE     << 90  << "Hello%20World";
+        QTest::newRow("symbology=BARCODE_QRCODE      rotateAngles=180 text=Hello%20World") << BARCODE_QRCODE     << 180 << "Hello%20World";
+        QTest::newRow("symbology=BARCODE_QRCODE      rotateAngles=270 text=Hello%20World") << BARCODE_QRCODE     << 270 << "Hello%20World";
+    }
+
+    void qZintAndLibZintEqual()
+    {
+        QFETCH(int, symbology);
+        QFETCH(int, rotateAngles);
+        QFETCH(QString, text);
+        QString fileName("test_qZintAndLibZintEqual_%1.gif");
+        QString fileNameForLibZint(fileName.arg("libZint"));
+        QString fileNameForQZint(fileName.arg("qZint"));
+
+        Zint::QZint bc;
+        QSharedPointer<zint_symbol> symbol(ZBarcode_Create(), ZBarcode_Delete);
+
+        bc.setSymbol(symbology);
+        symbol->symbology = symbology;
+
+        bc.setText(text);
+        bc.setRotateAngleValue(rotateAngles);
+
+        qstrcpy(symbol->outfile, qUtf8Printable(fileNameForLibZint));
+
+        bc.save_to_file(fileNameForQZint);
+        ZBarcode_Encode_and_Print(symbol.data(), reinterpret_cast<const unsigned char*>(qUtf8Printable(text)), 0, rotateAngles);
+
+        QImage imageWrittenByVanilla(fileNameForLibZint);
+        QImage imageWrittenByQZint(fileNameForQZint);
+
+        QCOMPARE(imageWrittenByQZint.isNull(), false);
+        QCOMPARE(imageWrittenByVanilla.isNull(), false);
+
+        QCOMPARE(imageWrittenByQZint == imageWrittenByVanilla, true);
+
+        QFile::remove(fileNameForLibZint);
+        QFile::remove(fileNameForQZint);
+    }
 };
 
 QTEST_MAIN(TestQZint)
