@@ -165,11 +165,11 @@ foreach ($spec_ais as $spec => $ais) {
             }
             if (is_array($ai)) {
                 $this_s = $ai[0];
-                $this_e = $ai[0];
+                $this_e = $ai[1];
             } else {
                 $this_s = $this_e = $ai;
             }
-            if ($this_s === $prev_e + 1) {
+            if ($this_s === $prev_e + 1 && $this_e - $prev_s < 100) { // Confine to batches of 100
                 $tmp_ais[$cnt - 1] = array($prev_s, $this_e);
             } else {
                 $tmp_ais[] = $ai;
