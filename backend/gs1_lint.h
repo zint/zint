@@ -626,37 +626,49 @@ static int gs1_lint(const int ai, const unsigned char *data, const int data_len,
 
     } else if (ai < 3200) {
 
-        if (ai >= 3100 && ai <= 3169) {
+        if ((ai >= 3100 && ai <= 3105) || (ai >= 3110 && ai <= 3115) || (ai >= 3120 && ai <= 3125)
+                || (ai >= 3130 && ai <= 3135) || (ai >= 3140 && ai <= 3145) || (ai >= 3150 && ai <= 3155)
+                || (ai >= 3160 && ai <= 3165)) {
             return n6(data, data_len, p_err_no, p_err_posn, err_msg);
         }
 
     } else if (ai < 3300) {
 
-        if (ai <= 3299) {
+        if (ai <= 3205 || (ai >= 3210 && ai <= 3215) || (ai >= 3220 && ai <= 3225) || (ai >= 3230 && ai <= 3235)
+                || (ai >= 3240 && ai <= 3245) || (ai >= 3250 && ai <= 3255) || (ai >= 3260 && ai <= 3265)
+                || (ai >= 3270 && ai <= 3275) || (ai >= 3280 && ai <= 3285) || (ai >= 3290 && ai <= 3295)) {
             return n6(data, data_len, p_err_no, p_err_posn, err_msg);
         }
 
     } else if (ai < 3400) {
 
-        if (ai <= 3379) {
+        if (ai <= 3305 || (ai >= 3310 && ai <= 3315) || (ai >= 3320 && ai <= 3325) || (ai >= 3330 && ai <= 3335)
+                || (ai >= 3340 && ai <= 3345) || (ai >= 3350 && ai <= 3355) || (ai >= 3360 && ai <= 3365)
+                || (ai >= 3370 && ai <= 3375)) {
             return n6(data, data_len, p_err_no, p_err_posn, err_msg);
         }
 
     } else if (ai < 3500) {
 
-        if (ai <= 3499) {
+        if (ai <= 3405 || (ai >= 3410 && ai <= 3415) || (ai >= 3420 && ai <= 3425) || (ai >= 3430 && ai <= 3435)
+                || (ai >= 3440 && ai <= 3445) || (ai >= 3450 && ai <= 3455) || (ai >= 3460 && ai <= 3465)
+                || (ai >= 3470 && ai <= 3475) || (ai >= 3480 && ai <= 3485) || (ai >= 3490 && ai <= 3495)) {
             return n6(data, data_len, p_err_no, p_err_posn, err_msg);
         }
 
     } else if (ai < 3600) {
 
-        if (ai <= 3579) {
+        if (ai <= 3505 || (ai >= 3510 && ai <= 3515) || (ai >= 3520 && ai <= 3525) || (ai >= 3530 && ai <= 3535)
+                || (ai >= 3540 && ai <= 3545) || (ai >= 3550 && ai <= 3555) || (ai >= 3560 && ai <= 3565)
+                || (ai >= 3570 && ai <= 3575)) {
             return n6(data, data_len, p_err_no, p_err_posn, err_msg);
         }
 
     } else if (ai < 3700) {
 
-        if (ai <= 3699) {
+        if (ai <= 3605 || (ai >= 3610 && ai <= 3615) || (ai >= 3620 && ai <= 3625) || (ai >= 3630 && ai <= 3635)
+                || (ai >= 3640 && ai <= 3645) || (ai >= 3650 && ai <= 3655) || (ai >= 3660 && ai <= 3665)
+                || (ai >= 3670 && ai <= 3675) || (ai >= 3680 && ai <= 3685) || (ai >= 3690 && ai <= 3695)) {
             return n6(data, data_len, p_err_no, p_err_posn, err_msg);
         }
 
@@ -668,10 +680,10 @@ static int gs1_lint(const int ai, const unsigned char *data, const int data_len,
         if ((ai >= 3910 && ai <= 3919) || (ai >= 3930 && ai <= 3939)) {
             return n3_iso4217_n1__15(data, data_len, p_err_no, p_err_posn, err_msg);
         }
-        if (ai >= 3940 && ai <= 3949) {
+        if (ai >= 3940 && ai <= 3943) {
             return n4(data, data_len, p_err_no, p_err_posn, err_msg);
         }
-        if (ai >= 3950 && ai <= 3959) {
+        if (ai >= 3950 && ai <= 3955) {
             return n6(data, data_len, p_err_no, p_err_posn, err_msg);
         }
 
