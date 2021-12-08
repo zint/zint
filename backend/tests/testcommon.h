@@ -42,6 +42,7 @@
 #define ZINT_DEBUG_TEST_BWIPP           128
 #define ZINT_DEBUG_TEST_PERFORMANCE     256
 #define ZINT_DEBUG_TEST_MINIMIZE        512
+#define ZINT_DEBUG_TEST_ZXINGCPP        1024
 
 #ifdef _MSC_VER
 #define testutil_popen(command, mode) _popen(command, mode)
@@ -172,9 +173,16 @@ int testUtilCanBwipp(int index, const struct zint_symbol *symbol, int option_1, 
             int debug);
 int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int option_2, int option_3,
             const char *data, int length, const char *primary, char *buffer, int buffer_size);
-int testUtilBwippCmp(const struct zint_symbol *symbol, char *msg, char *bwipp_buf, const char *expected);
-int testUtilBwippCmpRow(const struct zint_symbol *symbol, int row, char *msg, const char *bwipp_buf,
+int testUtilBwippCmp(const struct zint_symbol *symbol, char *msg, char *cmp_buf, const char *expected);
+int testUtilBwippCmpRow(const struct zint_symbol *symbol, int row, char *msg, const char *cmp_buf,
             const char *expected);
+
+int testUtilHaveZXingCPPDecoder(void);
+int testUtilCanZXingCPP(int index, const struct zint_symbol *symbol, const char *data, const int debug);
+int testUtilZXingCPP(int index, struct zint_symbol *symbol, const char *source, char *bits, char *buffer,
+            const int buffer_size, int *p_cmp_len);
+int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, int cmp_len,
+            const char *expected, int expected_len, const char *primary, char *ret_buf, int *p_ret_len);
 
 #ifdef __cplusplus
 }

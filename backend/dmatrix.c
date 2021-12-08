@@ -422,10 +422,11 @@ static int dm_look_ahead_test(const unsigned char source[], const int length, co
             if (cnt_1 < ascii_count && cnt_1 < b256_count && cnt_1 < edf_count && cnt_1 < x12_count
                     && cnt_1 < c40_count) {
                 /* Adjusted to avoid early exit from Base 256 if have less than break-even sequence of TEXT chars */
-                if (current_mode == DM_BASE256 && position + 6 < length
-                        && dm_text_sp_cnt(source, position, length, sp) >= 12) {
-                    if (debug_print) printf("TEX->");
-                    return DM_TEXT; /* step (r)(4) */
+                if (current_mode == DM_BASE256 && position + 6 < length) {
+                    if (dm_text_sp_cnt(source, position, length, sp) >= 12) {
+                        if (debug_print) printf("TEX->");
+                        return DM_TEXT; /* step (r)(4) */
+                    }
                 } else {
                     if (debug_print) printf("TEX->");
                     return DM_TEXT; /* step (r)(4) */
@@ -1044,7 +1045,7 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
 
     symbols_left = dm_codewords_remaining(symbol, tp, process_p);
 
-    if (debug_print) printf("\nsymbols_left %d, process_p %d ", symbols_left, process_p);
+    if (debug_print) printf("\nsymbols_left %d, tp %d, process_p %d ", symbols_left, tp, process_p);
 
     if (current_mode == DM_C40 || current_mode == DM_TEXT) {
         /* NOTE: changed to follow spec exactly here, only using Shift 1 padded triplets when 2 symbol chars remain.
@@ -1180,18 +1181,15 @@ static int dm200encode(struct zint_symbol *symbol, const unsigned char source[],
 static void dm_add_tail(unsigned char target[], int tp, const int tail_length) {
     int i, prn, temp;
 
-    for (i = tail_length; i > 0; i--) {
-        if (i == tail_length) {
-            target[tp++] = 129; /* Pad */
+    target[tp++] = 129; /* Pad */
+    for (i = 1; i < tail_length; i++) {
+        /* B.1.1 253-state randomising algorithm */
+        prn = ((149 * (tp + 1)) % 253) + 1;
+        temp = 129 + prn;
+        if (temp <= 254) {
+            target[tp++] = (unsigned char) (temp);
         } else {
-            /* B.1.1 253-state randomising algorithm */
-            prn = ((149 * (tp + 1)) % 253) + 1;
-            temp = 129 + prn;
-            if (temp <= 254) {
-                target[tp++] = (unsigned char) (temp);
-            } else {
-                target[tp++] = (unsigned char) (temp - 254);
-            }
+            target[tp++] = (unsigned char) (temp - 254);
         }
     }
 }

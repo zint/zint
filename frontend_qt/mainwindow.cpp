@@ -367,12 +367,14 @@ bool MainWindow::save()
     QFileDialog save_dialog;
     QString pathname;
     QString suffix;
+    QStringList suffixes;
 
     save_dialog.setAcceptMode(QFileDialog::AcceptSave);
     save_dialog.setWindowTitle(tr("Save Barcode Image"));
     save_dialog.setDirectory(settings.value(QSL("studio/default_dir"),
                 QDir::toNativeSeparators(QDir::homePath())).toString());
 
+    suffixes << QSL("eps") << QSL("gif") << QSL("svg") << QSL("bmp") << QSL("pcx") << QSL("emf") << QSL("tif");
 #ifdef NO_PNG
     suffix = settings.value(QSL("studio/default_suffix"), QSL("gif")).toString();
     save_dialog.setNameFilter(tr(
@@ -385,6 +387,7 @@ bool MainWindow::save()
         "Portable Network Graphic (*.png);;Encapsulated PostScript (*.eps);;Graphics Interchange Format (*.gif)"
         ";;Scalable Vector Graphic (*.svg);;Windows Bitmap (*.bmp);;ZSoft PC Painter Image (*.pcx)"
         ";;Enhanced Metafile (*.emf);;Tagged Image File Format (*.tif)"));
+    suffixes << QSL("png");
 #endif
 
     if (QString::compare(suffix, QSL("png"), Qt::CaseInsensitive) == 0)
@@ -413,6 +416,11 @@ bool MainWindow::save()
             pathname.append(suffix);
         } else {
             suffix = pathname.right(pathname.length() - (pathname.lastIndexOf('.') + 1));
+            if (!suffixes.contains(suffix, Qt::CaseInsensitive)) {
+                /*: %1 is suffix of filename */
+                QMessageBox::critical(this, tr("Save Error"), tr("Unknown output format \"%1\"").arg(suffix));
+                return false;
+            }
         }
     } else {
         return false;
@@ -426,13 +434,14 @@ bool MainWindow::save()
         QMessageBox::warning(this, tr("Save Warning"), m_bc.bc.error_message());
     }
 
-    int lastSeparator = pathname.lastIndexOf(QDir::separator());
-    QString dirname = pathname.mid(0, lastSeparator);
+    QString nativePathname = QDir::toNativeSeparators(pathname);
+    int lastSeparator = nativePathname.lastIndexOf(QDir::separator());
+    QString dirname = nativePathname.mid(0, lastSeparator);
     if (dirname.isEmpty()) {
         /*: %1 is path saved to */
-        statusBar->showMessage(tr("Saved as \"%1\"").arg(pathname), 0 /*No timeout*/);
+        statusBar->showMessage(tr("Saved as \"%1\"").arg(nativePathname), 0 /*No timeout*/);
     } else {
-        QString filename = pathname.right(pathname.length() - (lastSeparator + 1));
+        QString filename = nativePathname.right(nativePathname.length() - (lastSeparator + 1));
         /*: %1 is base filename saved to, %2 is directory saved in */
         statusBar->showMessage(tr("Saved as \"%1\" in \"%2\"").arg(filename).arg(dirname), 0 /*No timeout*/);
     }

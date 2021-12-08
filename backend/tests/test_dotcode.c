@@ -255,12 +255,13 @@ static void test_encode(int index, int generate, int debug) {
         int expected_rows;
         int expected_width;
         int bwipp_cmp;
+        int zxingcpp_cmp;
         char *comment;
         char *expected;
     };
     // ISS DotCode, Rev 4.0, DRAFT 0.15, TSC Pre-PR #5, MAY 28, 2019
     struct item data[] = {
-        /*  0*/ { GS1_MODE, 64, -1, { 0, 0, "" }, "[01]00012345678905[17]201231[10]ABC123456", -1, 0, 9, 64, 1, "ISS DotCode Rev 4.0 Figure 1 (left), same",
+        /*  0*/ { GS1_MODE, 64, -1, { 0, 0, "" }, "[01]00012345678905[17]201231[10]ABC123456", -1, 0, 9, 64, 1, 1, "ISS DotCode Rev 4.0 Figure 1 (left), same",
                     "1010000000101000101010000010000010001010100010101000101000001010"
                     "0100010001010001010001000001010100010100010001000100010101000001"
                     "1010001010000000101010100010001010000010101000000010100010100000"
@@ -271,7 +272,7 @@ static void test_encode(int index, int generate, int debug) {
                     "0001010100010001010100010001010000010001010000000101010001010101"
                     "1000100010001000100010100010001010001000101000101000100010000010"
                 },
-        /*  1*/ { GS1_MODE, -1, -1, { 0, 0, "" }, "[01]00012345678905[17]201231[10]ABC123456", -1, 0, 20, 29, 1, "ISS DotCode Rev 4.0 Figure 1 (right) (and Figure 10), same",
+        /*  1*/ { GS1_MODE, -1, -1, { 0, 0, "" }, "[01]00012345678905[17]201231[10]ABC123456", -1, 0, 20, 29, 1, 1, "ISS DotCode Rev 4.0 Figure 1 (right) (and Figure 10), same",
                     "10101000101010100010101000101"
                     "00010100010100010100000001010"
                     "00001010100010000000101010000"
@@ -293,7 +294,7 @@ static void test_encode(int index, int generate, int debug) {
                     "10000010101000100000001000001"
                     "01000100010101010000000101010"
                 },
-        /*  2*/ { GS1_MODE, -1, 1 << 8, { 0, 0, "" }, "[17]070620[10]ABC123456", -1, 0, 16, 23, 1, "ISS DotCode Rev 4.0 Figure 5 (and Figure 6 top-left) when Mask = 0, same",
+        /*  2*/ { GS1_MODE, -1, 1 << 8, { 0, 0, "" }, "[17]070620[10]ABC123456", -1, 0, 16, 23, 1, 1, "ISS DotCode Rev 4.0 Figure 5 (and Figure 6 top-left) when Mask = 0, same",
                     "10101000100010000000001"
                     "01000101010001010000000"
                     "00100010001000101000100"
@@ -311,7 +312,7 @@ static void test_encode(int index, int generate, int debug) {
                     "10101000001000101010001"
                     "01000001010101010000010"
                 },
-        /*  3*/ { GS1_MODE, -1, 2 << 8, { 0, 0, "" }, "[17]070620[10]ABC123456", -1, 0, 16, 23, 1, "ISS DotCode Rev 4.0 Figure 6 top-right Mask = 1, same",
+        /*  3*/ { GS1_MODE, -1, 2 << 8, { 0, 0, "" }, "[17]070620[10]ABC123456", -1, 0, 16, 23, 1, 1, "ISS DotCode Rev 4.0 Figure 6 top-right Mask = 1, same",
                     "10000000001010001000101"
                     "01010101000100000101000"
                     "00100010000000100000001"
@@ -329,7 +330,7 @@ static void test_encode(int index, int generate, int debug) {
                     "10000010101010100010101"
                     "01000101000101010101010"
                 },
-        /*  4*/ { GS1_MODE, -1, 3 << 8, { 0, 0, "" }, "[17]070620[10]ABC123456", -1, 0, 16, 23, 1, "ISS DotCode Rev 4.0 Figure 6 bottom-left Mask = 2, same",
+        /*  4*/ { GS1_MODE, -1, 3 << 8, { 0, 0, "" }, "[17]070620[10]ABC123456", -1, 0, 16, 23, 1, 1, "ISS DotCode Rev 4.0 Figure 6 bottom-left Mask = 2, same",
                     "10100000101010100010001"
                     "01000101000100000000010"
                     "10101010001010000010000"
@@ -347,7 +348,7 @@ static void test_encode(int index, int generate, int debug) {
                     "10101010000000001010001"
                     "01010101000001000101010"
                 },
-        /*  5*/ { GS1_MODE, -1, 4 << 8, { 0, 0, "" }, "[17]070620[10]ABC123456", -1, 0, 16, 23, 1, "ISS DotCode Rev 4.0 Figure 6 bottom-right Mask = 3, same",
+        /*  5*/ { GS1_MODE, -1, 4 << 8, { 0, 0, "" }, "[17]070620[10]ABC123456", -1, 0, 16, 23, 1, 1, "ISS DotCode Rev 4.0 Figure 6 bottom-right Mask = 3, same",
                     "10000000100000001010101"
                     "01010001010100010001000"
                     "10001000001010101010100"
@@ -365,7 +366,7 @@ static void test_encode(int index, int generate, int debug) {
                     "10001000001010001000001"
                     "01010100000101000100010"
                 },
-        /*  6*/ { GS1_MODE, -1, -1, { 0, 0, "" }, "[17]070620[10]ABC123456", -1, 0, 16, 23, 1, "ISS DotCode Rev 4.0 Figure 6 top-right, auto Mask = 1, same",
+        /*  6*/ { GS1_MODE, -1, -1, { 0, 0, "" }, "[17]070620[10]ABC123456", -1, 0, 16, 23, 1, 1, "ISS DotCode Rev 4.0 Figure 6 top-right, auto Mask = 1, same",
                     "10000000001010001000101"
                     "01010101000100000101000"
                     "00100010000000100000001"
@@ -383,7 +384,7 @@ static void test_encode(int index, int generate, int debug) {
                     "10000010101010100010101"
                     "01000101000101010101010"
                 },
-        /*  7*/ { UNICODE_MODE, -1, 1 << 8, { 0, 0, "" }, "2741", -1, 0, 10, 13, 0, "ISS DotCode Rev 4.0 Figure 7A top-left Mask = 0, same; BWIPP automatically primes mask",
+        /*  7*/ { UNICODE_MODE, -1, 1 << 8, { 0, 0, "" }, "2741", -1, 0, 10, 13, 0, 0, "ISS DotCode Rev 4.0 Figure 7A top-left Mask = 0, same; BWIPP automatically primes mask; ZXing-C++ can't handle zero row",
                     "1010101010100"
                     "0000010001010"
                     "0000101000101"
@@ -395,7 +396,7 @@ static void test_encode(int index, int generate, int debug) {
                     "1000100010001"
                     "0000000000000"
                 },
-        /*  8*/ { UNICODE_MODE, -1, 2 << 8, { 0, 0, "" }, "2741", -1, 0, 10, 13, 0, "ISS DotCode Rev 4.0 Figure 7A top-right Mask = 1, same; BWIPP automatically primes mask",
+        /*  8*/ { UNICODE_MODE, -1, 2 << 8, { 0, 0, "" }, "2741", -1, 0, 10, 13, 0, 1, "ISS DotCode Rev 4.0 Figure 7A top-right Mask = 1, same; BWIPP automatically primes mask",
                     "1010001000101"
                     "0000000100010"
                     "0000100000001"
@@ -407,7 +408,7 @@ static void test_encode(int index, int generate, int debug) {
                     "0000000010001"
                     "0001000001000"
                 },
-        /*  9*/ { UNICODE_MODE, -1, 3 << 8, { 0, 0, "" }, "2741", -1, 0, 10, 13, 0, "ISS DotCode Rev 4.0 Figure 7A bottom-left Mask = 2, same; BWIPP automatically primes mask",
+        /*  9*/ { UNICODE_MODE, -1, 3 << 8, { 0, 0, "" }, "2741", -1, 0, 10, 13, 0, 1, "ISS DotCode Rev 4.0 Figure 7A bottom-left Mask = 2, same; BWIPP automatically primes mask",
                     "1010001010100"
                     "0001000000000"
                     "1000100010101"
@@ -419,7 +420,7 @@ static void test_encode(int index, int generate, int debug) {
                     "1000100010101"
                     "0001000100000"
                 },
-        /* 10*/ { UNICODE_MODE, -1, 4 << 8, { 0, 0, "" }, "2741", -1, 0, 10, 13, 0, "ISS DotCode Rev 4.0 Figure 7A bottom-right Mask = 3, same; BWIPP automatically primes mask",
+        /* 10*/ { UNICODE_MODE, -1, 4 << 8, { 0, 0, "" }, "2741", -1, 0, 10, 13, 0, 1, "ISS DotCode Rev 4.0 Figure 7A bottom-right Mask = 3, same; BWIPP automatically primes mask",
                     "1010001000100"
                     "0001000001010"
                     "1000001000000"
@@ -431,7 +432,7 @@ static void test_encode(int index, int generate, int debug) {
                     "1000001010001"
                     "0101010101010"
                 },
-        /* 11*/ { UNICODE_MODE, -1, 5 << 8, { 0, 0, "" }, "2741", -1, 0, 10, 13, 1, "ISS DotCode Rev 4.0 Figure 7B top-left Mask = 0' (4), same",
+        /* 11*/ { UNICODE_MODE, -1, 5 << 8, { 0, 0, "" }, "2741", -1, 0, 10, 13, 1, 1, "ISS DotCode Rev 4.0 Figure 7B top-left Mask = 0' (4), same",
                     "1010101010101"
                     "0000010001010"
                     "0000101000101"
@@ -443,7 +444,7 @@ static void test_encode(int index, int generate, int debug) {
                     "1000100010001"
                     "0100000000010"
                 },
-        /* 12*/ { UNICODE_MODE, -1, 6 << 8, { 0, 0, "" }, "2741", -1, 0, 10, 13, 1, "ISS DotCode Rev 4.0 Figure 7B top-right Mask = 1' (5), same",
+        /* 12*/ { UNICODE_MODE, -1, 6 << 8, { 0, 0, "" }, "2741", -1, 0, 10, 13, 1, 1, "ISS DotCode Rev 4.0 Figure 7B top-right Mask = 1' (5), same",
                     "1010001000101"
                     "0000000100010"
                     "0000100000001"
@@ -455,7 +456,7 @@ static void test_encode(int index, int generate, int debug) {
                     "1000000010001"
                     "0101000001010"
                 },
-        /* 13*/ { UNICODE_MODE, -1, 7 << 8, { 0, 0, "" }, "2741", -1, 0, 10, 13, 1, "ISS DotCode Rev 4.0 Figure 7B bottom-left Mask = 2' (6), same",
+        /* 13*/ { UNICODE_MODE, -1, 7 << 8, { 0, 0, "" }, "2741", -1, 0, 10, 13, 1, 1, "ISS DotCode Rev 4.0 Figure 7B bottom-left Mask = 2' (6), same",
                     "1010001010101"
                     "0001000000000"
                     "1000100010101"
@@ -467,7 +468,7 @@ static void test_encode(int index, int generate, int debug) {
                     "1000100010101"
                     "0101000100010"
                 },
-        /* 14*/ { UNICODE_MODE, -1, 8 << 8, { 0, 0, "" }, "2741", -1, 0, 10, 13, 1, "ISS DotCode Rev 4.0 Figure 7B bottom-right Mask = 3' (7), same",
+        /* 14*/ { UNICODE_MODE, -1, 8 << 8, { 0, 0, "" }, "2741", -1, 0, 10, 13, 1, 1, "ISS DotCode Rev 4.0 Figure 7B bottom-right Mask = 3' (7), same",
                     "1010001000101"
                     "0001000001010"
                     "1000001000000"
@@ -479,7 +480,7 @@ static void test_encode(int index, int generate, int debug) {
                     "1000001010001"
                     "0101010101010"
                 },
-        /* 15*/ { UNICODE_MODE, -1, -1, { 0, 0, "" }, "2741", -1, 0, 10, 13, 1, "ISS DotCode Rev 4.0 Figure 7B bottom-left auto Mask = 2' (6), same",
+        /* 15*/ { UNICODE_MODE, -1, -1, { 0, 0, "" }, "2741", -1, 0, 10, 13, 1, 1, "ISS DotCode Rev 4.0 Figure 7B bottom-left auto Mask = 2' (6), same",
                     "1010001010101"
                     "0001000000000"
                     "1000100010101"
@@ -491,7 +492,7 @@ static void test_encode(int index, int generate, int debug) {
                     "1000100010101"
                     "0101000100010"
                 },
-        /* 16*/ { GS1_MODE, 40, -1, { 0, 0, "" }, "[01]00012345678905", -1, 0, 7, 40, 1, "ISS DotCode Rev 4.0 Figure 8 top-left 7x40, Mask = 1, same",
+        /* 16*/ { GS1_MODE, 40, -1, { 0, 0, "" }, "[01]00012345678905", -1, 0, 7, 40, 1, 1, "ISS DotCode Rev 4.0 Figure 8 top-left 7x40, Mask = 1, same",
                     "1010101010001000100010100010101000001000"
                     "0000010101000100010100010000010001000001"
                     "1010001000001000001000101010001000101000"
@@ -500,7 +501,7 @@ static void test_encode(int index, int generate, int debug) {
                     "0001010001010001000100000001010100010001"
                     "1000100010001000100010100010001010001000"
                 },
-        /* 17*/ { GS1_MODE, 18, -1, { 0, 0, "" }, "[01]00012345678905", -1, 0, 17, 18, 1, "ISS DotCode Rev 4.0 Figure 8 top-right 17x18 **NOT SAME** no matter what mask; but same as BWIPP and verified manually against tec-it",
+        /* 17*/ { GS1_MODE, 18, -1, { 0, 0, "" }, "[01]00012345678905", -1, 0, 17, 18, 1, 1, "ISS DotCode Rev 4.0 Figure 8 top-right 17x18 **NOT SAME** no matter what mask; but same as BWIPP and verified manually against tec-it",
                     "101000001000101010"
                     "010100000101010001"
                     "000000101000001010"
@@ -519,7 +520,7 @@ static void test_encode(int index, int generate, int debug) {
                     "010001010001000101"
                     "100010001000100010"
                 },
-        /* 18*/ { GS1_MODE, 35, -1, { 0, 0, "" }, "[01]00012345678905", -1, 0, 8, 35, 1, "ISS DotCode Rev 4.0 Figure 8 bottom-left 8x35, Mask = 3, same",
+        /* 18*/ { GS1_MODE, 35, -1, { 0, 0, "" }, "[01]00012345678905", -1, 0, 8, 35, 1, 1, "ISS DotCode Rev 4.0 Figure 8 bottom-left 8x35, Mask = 3, same",
                     "10100010000000000010100000100010101"
                     "00010101010001000000010100010100000"
                     "10001000101010101010001010000010101"
@@ -529,7 +530,7 @@ static void test_encode(int index, int generate, int debug) {
                     "10000010101010101010000010000010001"
                     "01000001000101000100010100010001000"
                 },
-        /* 19*/ { GS1_MODE, 17, -1, { 0, 0, "" }, "[01]00012345678905", -1, 0, 18, 17, 1, "ISS DotCode Rev 4.0 Figure 8 bottom-right 18x17 **NOT SAME** no matter what mask; same as BWIPP; verified manually against tec-it",
+        /* 19*/ { GS1_MODE, 17, -1, { 0, 0, "" }, "[01]00012345678905", -1, 0, 18, 17, 1, 1, "ISS DotCode Rev 4.0 Figure 8 bottom-right 18x17 **NOT SAME** no matter what mask; same as BWIPP; verified manually against tec-it",
                     "10101000001000001"
                     "01000001010100010"
                     "00000000100010001"
@@ -549,7 +550,7 @@ static void test_encode(int index, int generate, int debug) {
                     "10101010101010101"
                     "01010101000101010"
                 },
-        /* 20*/ { UNICODE_MODE, 35, -1, { 0, 0, "" }, "Dots can be Square!", -1, 0, 18, 35, 1, "ISS DotCode Rev 4.0 Figure 11 **NOT SAME**; same as BWIPP; verified manually against tec-it",
+        /* 20*/ { UNICODE_MODE, 35, -1, { 0, 0, "" }, "Dots can be Square!", -1, 0, 18, 35, 1, 1, "ISS DotCode Rev 4.0 Figure 11 **NOT SAME**; same as BWIPP; verified manually against tec-it",
                     "10000010101000000000000000101010101"
                     "01010101000101000100010100000001000"
                     "00001000000010101000101010101010000"
@@ -569,7 +570,7 @@ static void test_encode(int index, int generate, int debug) {
                     "10101000101000001000100010101000101"
                     "01000001000001000101010001000000010"
                 },
-        /* 21*/ { GS1_MODE, -1, 1 << 8, { 0, 0, "" }, "[99]8766", -1, 0, 10, 13, 0, "ISS DotCode Rev 4.0 Table G.1 Mask 0, same; BWIPP automatically primes mask",
+        /* 21*/ { GS1_MODE, -1, 1 << 8, { 0, 0, "" }, "[99]8766", -1, 0, 10, 13, 0, 0, "ISS DotCode Rev 4.0 Table G.1 Mask 0, same; BWIPP automatically primes mask; ZXing-C++ can't handle zero col",
                     "0000001010000"
                     "0001010000010"
                     "0000000010001"
@@ -581,7 +582,7 @@ static void test_encode(int index, int generate, int debug) {
                     "0010000000101"
                     "0101000101010"
                 },
-        /* 22*/ { GS1_MODE, -1, 2 << 8, { 0, 0, "" }, "[99]8766", -1, 0, 10, 13, 0, "ISS DotCode Rev 4.0 Table G.1 Mask 1, same; BWIPP automatically primes mask",
+        /* 22*/ { GS1_MODE, -1, 2 << 8, { 0, 0, "" }, "[99]8766", -1, 0, 10, 13, 0, 1, "ISS DotCode Rev 4.0 Table G.1 Mask 1, same; BWIPP automatically primes mask",
                     "0000100000001"
                     "0001010000000"
                     "0000000000001"
@@ -593,7 +594,7 @@ static void test_encode(int index, int generate, int debug) {
                     "0010101000101"
                     "0100010101000"
                 },
-        /* 23*/ { GS1_MODE, -1, 3 << 8, { 0, 0, "" }, "[99]8766", -1, 0, 10, 13, 0, "ISS DotCode Rev 4.0 Table G.1 Mask 2, same; BWIPP automatically primes mask",
+        /* 23*/ { GS1_MODE, -1, 3 << 8, { 0, 0, "" }, "[99]8766", -1, 0, 10, 13, 0, 1, "ISS DotCode Rev 4.0 Table G.1 Mask 2, same; BWIPP automatically primes mask",
                     "0000100010100"
                     "0000000000000"
                     "1000101010101"
@@ -605,7 +606,7 @@ static void test_encode(int index, int generate, int debug) {
                     "0000000010001"
                     "0100000001010"
                 },
-        /* 24*/ { GS1_MODE, -1, 4 << 8, { 0, 0, "" }, "[99]8766", -1, 0, 10, 13, 0, "ISS DotCode Rev 4.0 Table G.1 Mask 3, same; BWIPP automatically primes mask",
+        /* 24*/ { GS1_MODE, -1, 4 << 8, { 0, 0, "" }, "[99]8766", -1, 0, 10, 13, 0, 0, "ISS DotCode Rev 4.0 Table G.1 Mask 3, same; BWIPP automatically primes mask; ZXing-C++ can't handle zero col",
                     "0000000000000"
                     "0001010001000"
                     "1000001010000"
@@ -617,7 +618,7 @@ static void test_encode(int index, int generate, int debug) {
                     "1000000010000"
                     "0100000000010"
                 },
-        /* 25*/ { GS1_MODE, -1, 5 << 8, { 0, 0, "" }, "[99]8766", -1, 0, 10, 13, 1, "ISS DotCode Rev 4.0 Table G.1 Mask 0' (4), same",
+        /* 25*/ { GS1_MODE, -1, 5 << 8, { 0, 0, "" }, "[99]8766", -1, 0, 10, 13, 1, 1, "ISS DotCode Rev 4.0 Table G.1 Mask 0' (4), same",
                     "1000001010001"
                     "0001010000010"
                     "0000000010001"
@@ -629,7 +630,7 @@ static void test_encode(int index, int generate, int debug) {
                     "1010000000101"
                     "0101000101010"
                 },
-        /* 26*/ { GS1_MODE, -1, 6 << 8, { 0, 0, "" }, "[99]8766", -1, 0, 10, 13, 1, "ISS DotCode Rev 4.0 Table G.1 Mask 1' (5), same",
+        /* 26*/ { GS1_MODE, -1, 6 << 8, { 0, 0, "" }, "[99]8766", -1, 0, 10, 13, 1, 1, "ISS DotCode Rev 4.0 Table G.1 Mask 1' (5), same",
                     "1000100000001"
                     "0001010000000"
                     "0000000000001"
@@ -641,7 +642,7 @@ static void test_encode(int index, int generate, int debug) {
                     "1010101000101"
                     "0100010101010"
                 },
-        /* 27*/ { GS1_MODE, -1, 7 << 8, { 0, 0, "" }, "[99]8766", -1, 0, 10, 13, 1, "ISS DotCode Rev 4.0 Table G.1 Mask 2' (6), same",
+        /* 27*/ { GS1_MODE, -1, 7 << 8, { 0, 0, "" }, "[99]8766", -1, 0, 10, 13, 1, 1, "ISS DotCode Rev 4.0 Table G.1 Mask 2' (6), same",
                     "1000100010101"
                     "0000000000000"
                     "1000101010101"
@@ -653,7 +654,7 @@ static void test_encode(int index, int generate, int debug) {
                     "1000000010001"
                     "0100000001010"
                 },
-        /* 28*/ { GS1_MODE, -1, 8 << 8, { 0, 0, "" }, "[99]8766", -1, 0, 10, 13, 1, "ISS DotCode Rev 4.0 Table G.1 Mask 3' (7), same",
+        /* 28*/ { GS1_MODE, -1, 8 << 8, { 0, 0, "" }, "[99]8766", -1, 0, 10, 13, 1, 1, "ISS DotCode Rev 4.0 Table G.1 Mask 3' (7), same",
                     "1000000000001"
                     "0001010001000"
                     "1000001010000"
@@ -665,7 +666,7 @@ static void test_encode(int index, int generate, int debug) {
                     "1000000010001"
                     "0100000000010"
                 },
-        /* 29*/ { GS1_MODE, -1, -1, { 0, 0, "" }, "[99]8766", -1, 0, 10, 13, 1, "ISS DotCode Rev 4.0 Table G.1 auto Mask 0' (4); all mask scores match Table G.1",
+        /* 29*/ { GS1_MODE, -1, -1, { 0, 0, "" }, "[99]8766", -1, 0, 10, 13, 1, 1, "ISS DotCode Rev 4.0 Table G.1 auto Mask 0' (4); all mask scores match Table G.1",
                     "1000001010001"
                     "0001010000010"
                     "0000000010001"
@@ -677,7 +678,7 @@ static void test_encode(int index, int generate, int debug) {
                     "1010000000101"
                     "0101000101010"
                 },
-        /* 30*/ { UNICODE_MODE, 6, -1, { 0, 0, "" }, "A", -1, 0, 19, 6, 1, "ISS DotCode Rev 4.0 5.2.1.4 2) Table 4, 1 padding dot available; verified manually against tec-it",
+        /* 30*/ { UNICODE_MODE, 6, -1, { 0, 0, "" }, "A", -1, 0, 19, 6, 1, 1, "ISS DotCode Rev 4.0 5.2.1.4 2) Table 4, 1 padding dot available; verified manually against tec-it",
                     "101000"
                     "000101"
                     "101010"
@@ -698,7 +699,7 @@ static void test_encode(int index, int generate, int debug) {
                     "010000"
                     "101000"
                 },
-        /* 31*/ { UNICODE_MODE, 94, -1, { 0, 0, "" }, "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRS", -1, 0, 37, 94, 1, "Interleaved R-S; verified manually against tec-it",
+        /* 31*/ { UNICODE_MODE, 94, -1, { 0, 0, "" }, "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRS", -1, 0, 37, 94, 1, 1, "Interleaved R-S; verified manually against tec-it",
                     "1000001010000000100010000010101010101000001000100000001010101000001000001000101010001000101010"
                     "0101010000000101000001010001010001010100010001000001000000010101010000000101010100010001010100"
                     "0010101000100010000010101010000000101010000010101000001000100010100000100010100010001000101000"
@@ -737,7 +738,7 @@ static void test_encode(int index, int generate, int debug) {
                     "0001000101010100000001010101000001010000010001010001000100010000010001000101010001010001000001"
                     "0010001000001010101000000010101000101000001000001010100000101010001000000010100000001010101000"
                 },
-        /* 32*/ { GS1_MODE, 50, -1, { 0, 0, "" }, "[17]070620[10]ABC123456", -1, 0, 7, 50, 1, "GS1 Gen Spec Figure 5.1-8.",
+        /* 32*/ { GS1_MODE, 50, -1, { 0, 0, "" }, "[17]070620[10]ABC123456", -1, 0, 7, 50, 1, 1, "GS1 Gen Spec Figure 5.1-8.",
                     "10000010101000100010101010001000000010100000100000"
                     "01000101000101010100000100010000010001000001010101"
                     "00001010001000101000101000100010001010100000000010"
@@ -746,14 +747,14 @@ static void test_encode(int index, int generate, int debug) {
                     "00010001010000000100010101000100010001010001000101"
                     "10001000001010101000001000100010100010100000101010"
                 },
-        /* 33*/ { UNICODE_MODE, 200, -1, { 0, 0, "" }, "123456789012345678901234567890123456789012345678901234567890", -1, 0, 5, 200, 1, "Max cols",
+        /* 33*/ { UNICODE_MODE, 200, -1, { 0, 0, "" }, "123456789012345678901234567890123456789012345678901234567890", -1, 0, 5, 200, 1, 1, "Max cols",
                     "10101000100010101010000010101000000010001000100000101010100010100000101000100010000000101000101010001010100000100000101010100000001000101000001010100010001010000010001010001010100000100010101000000010"
                     "00010101010000000101000100010001000101000101000100010001000001010001000001010100000001000101010000000101010100010101010000010001000101010001000001000001010000010100010001010101000001000001010100000001"
                     "10100010000000100010101000101010100000001010001000100000101000101000001000101010001000000010101010100010101000000010100010001000001010100000101000100000101010100010000000001000001010101000101010100000"
                     "00010001010001010000000101000100010001010000010000010100010100000100010101010001000101000000010100010001010100010000010100000101000100010100000101010000000101000001010100010100010001000101000001010001"
                     "10100010001010101000000010001000001010001010001000001010100010000000101010001010000010101010000000101000100010100010100000100010100010001010100000001010101000001010000000001000101000101010000010101010"
                 },
-        /* 34*/ { UNICODE_MODE, 19, -1, { 0, 0, "" }, "4", -1, 0, 6, 19, 1, "Mask 1 selected",
+        /* 34*/ { UNICODE_MODE, 19, -1, { 0, 0, "" }, "4", -1, 0, 6, 19, 1, 1, "Mask 1 selected",
                     "1010100000101000101"
                     "0100000000010001010"
                     "0010101010000000000"
@@ -761,7 +762,7 @@ static void test_encode(int index, int generate, int debug) {
                     "1000100010001010001"
                     "0001010101010101010"
                 },
-        /* 35*/ { UNICODE_MODE, 19, 3 << 8, { 0, 0, "" }, "4", -1, 0, 6, 19, 0, "Mask 2 specified, unlit right edge mask; BWIPP automatically primes mask",
+        /* 35*/ { UNICODE_MODE, 19, 3 << 8, { 0, 0, "" }, "4", -1, 0, 6, 19, 0, 1, "Mask 2 specified, unlit right edge mask; BWIPP automatically primes mask",
                     "1010101010000000100"
                     "0000000101000100010"
                     "1010100000001010100"
@@ -769,7 +770,7 @@ static void test_encode(int index, int generate, int debug) {
                     "1000001010100010100"
                     "0101000100010001010"
                 },
-        /* 36*/ { UNICODE_MODE, 19, 7 << 8, { 0, 0, "" }, "4", -1, 0, 6, 19, 1, "Mask 2' specified",
+        /* 36*/ { UNICODE_MODE, 19, 7 << 8, { 0, 0, "" }, "4", -1, 0, 6, 19, 1, 1, "Mask 2' specified",
                     "1010101010000000101"
                     "0000000101000100010"
                     "1010100000001010100"
@@ -777,7 +778,7 @@ static void test_encode(int index, int generate, int debug) {
                     "1000001010100010101"
                     "0101000100010001010"
                 },
-        /* 37*/ { GS1_MODE, -1, -1, { 0, 0, "" }, "[10]12[20]12", -1, 0, 12, 17, 1, "Code Set C with FNC1",
+        /* 37*/ { GS1_MODE, -1, -1, { 0, 0, "" }, "[10]12[20]12", -1, 0, 12, 17, 1, 1, "Code Set C with FNC1",
                     "10100000001000001"
                     "00010100010101010"
                     "10001000100000001"
@@ -791,7 +792,7 @@ static void test_encode(int index, int generate, int debug) {
                     "10000010100000101"
                     "01000100010101010"
                 },
-        /* 38*/ { UNICODE_MODE, -1, -1, { 0, 0, "" }, "1234\011\034\035\036", -1, 0, 14, 21, 1, "Code Set B HT FS GS RS",
+        /* 38*/ { UNICODE_MODE, -1, -1, { 0, 0, "" }, "1234\011\034\035\036", -1, 0, 14, 21, 1, 1, "Code Set B HT FS GS RS",
                     "100010001000001010101"
                     "010001000001000001000"
                     "100010100010101010001"
@@ -807,7 +808,7 @@ static void test_encode(int index, int generate, int debug) {
                     "001010101000101010001"
                     "010101010001000101000"
                 },
-        /* 39*/ { UNICODE_MODE, 17, -1, { 0, 0, "" }, "abcd\015\012", -1, 0, 14, 17, 1, "Code Set B CRLF",
+        /* 39*/ { UNICODE_MODE, 17, -1, { 0, 0, "" }, "abcd\015\012", -1, 0, 14, 17, 1, 1, "Code Set B CRLF",
                     "00001000001000101"
                     "01000101010001000"
                     "10100000100010101"
@@ -823,7 +824,7 @@ static void test_encode(int index, int generate, int debug) {
                     "10100000001010000"
                     "01010001000101000"
                 },
-        /* 40*/ { DATA_MODE, -1, -1, { 0, 0, "" }, "\101\102\103\104\105\106\107\200\101\102\240\101", -1, 0, 18, 27, 1, "Code Set B Upper Shift A Upper Shift B",
+        /* 40*/ { DATA_MODE, -1, -1, { 0, 0, "" }, "\101\102\103\104\105\106\107\200\101\102\240\101", -1, 0, 18, 27, 1, 1, "Code Set B Upper Shift A Upper Shift B",
                     "101010100000101000101000001"
                     "010100010101000100010101000"
                     "000010001010100000101010101"
@@ -843,7 +844,7 @@ static void test_encode(int index, int generate, int debug) {
                     "100010101000000010001000001"
                     "010001000100000101000001010"
                 },
-        /* 41*/ { UNICODE_MODE, -1, -1, { 0, 0, "" }, "ABCDEF\001G1234H", -1, 0, 16, 25, 1, "Code Set A 4x Shift C",
+        /* 41*/ { UNICODE_MODE, -1, -1, { 0, 0, "" }, "ABCDEF\001G1234H", -1, 0, 16, 25, 1, 1, "Code Set A 4x Shift C",
                     "0010101010100000100000101"
                     "0000000100010101000001000"
                     "1000100000101000100000101"
@@ -861,7 +862,7 @@ static void test_encode(int index, int generate, int debug) {
                     "1010101010001000101000000"
                     "0000010100010101000101010"
                 },
-        /* 42*/ { UNICODE_MODE, -1, -1, { 0, 0, "" }, "ABCDEF\001ab\011\034\035\036\001A", -1, 0, 19, 28, 1, "Code Set A 6x Shift B HT FS GS RS",
+        /* 42*/ { UNICODE_MODE, -1, -1, { 0, 0, "" }, "ABCDEF\001ab\011\034\035\036\001A", -1, 0, 19, 28, 1, 1, "Code Set A 6x Shift B HT FS GS RS",
                     "1000001010100010101010101010"
                     "0101000000010100010101010001"
                     "0010001010100000101000001010"
@@ -882,7 +883,7 @@ static void test_encode(int index, int generate, int debug) {
                     "0001010000010100000100010101"
                     "1010100010000000101010101010"
                 },
-        /* 43*/ { UNICODE_MODE, -1, -1, { 0, 0, "" }, "ABCDEF\001abcdefgA", -1, 0, 19, 28, 1, "Code Set A Latch B",
+        /* 43*/ { UNICODE_MODE, -1, -1, { 0, 0, "" }, "ABCDEF\001abcdefgA", -1, 0, 19, 28, 1, 1, "Code Set A Latch B",
                     "1010001010100010101010101010"
                     "0100010101010000000100010001"
                     "1010000010100000100010101000"
@@ -903,7 +904,7 @@ static void test_encode(int index, int generate, int debug) {
                     "0001010000010100000100010101"
                     "1010100010000000101010101010"
                 },
-        /* 44*/ { DATA_MODE, -1, -1, { 0, 0, "" }, "\200\200\200\200\061\062\063\064\065\066\067\070\071\060\061\062\063\064\065\066\200", -1, 0, 20, 29, 1, "Binary Latch C",
+        /* 44*/ { DATA_MODE, -1, -1, { 0, 0, "" }, "\200\200\200\200\061\062\063\064\065\066\067\070\071\060\061\062\063\064\065\066\200", -1, 0, 20, 29, 1, 1, "Binary Latch C",
                     "10101010000010100010101010001"
                     "01010001000101010001000000010"
                     "00001010101000101010001000001"
@@ -925,7 +926,7 @@ static void test_encode(int index, int generate, int debug) {
                     "10000010100010000010001000101"
                     "01000100000100010001010101010"
                 },
-        /* 45*/ { UNICODE_MODE, -1, -1, { 11, 24, "" }, "ABCDEFG", -1, 0, 16, 23, 1, "Structured Append",
+        /* 45*/ { UNICODE_MODE, -1, -1, { 11, 24, "" }, "ABCDEFG", -1, 0, 16, 23, 1, 1, "Structured Append",
                     "10101000001000101000001"
                     "01010101000001010001010"
                     "10101010100010000000001"
@@ -943,7 +944,7 @@ static void test_encode(int index, int generate, int debug) {
                     "10001010101000100010001"
                     "01000001000100010101010"
                 },
-        /* 46*/ { UNICODE_MODE, -1, -1, { 0, 0, "" }, "1234", -1, 0, 10, 13, 1, "",
+        /* 46*/ { UNICODE_MODE, -1, -1, { 0, 0, "" }, "1234", -1, 0, 10, 13, 1, 1, "",
                     "0010100000001"
                     "0000000001010"
                     "1000000010101"
@@ -961,10 +962,11 @@ static void test_encode(int index, int generate, int debug) {
     struct zint_symbol *symbol;
 
     char escaped[1024];
-    char bwipp_buf[8192];
-    char bwipp_msg[1024];
+    char cmp_buf[8192];
+    char cmp_msg[1024];
 
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); // Only do BWIPP test if asked, too slow otherwise
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); // Only do ZXing-C++ test if asked, too slow otherwise
 
     testStart("test_encode");
 
@@ -985,11 +987,11 @@ static void test_encode(int index, int generate, int debug) {
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (generate) {
-            printf("        /*%3d*/ { %s, %d, %s, { %d, %d, \"%s\" }, \"%s\", %d, %s, %d, %d, %d, \"%s\",\n",
+            printf("        /*%3d*/ { %s, %d, %s, { %d, %d, \"%s\" }, \"%s\", %d, %s, %d, %d, %d, %d, \"%s\",\n",
                     i, testUtilInputModeName(data[i].input_mode), data[i].option_2, testUtilOption3Name(data[i].option_3),
                     data[i].structapp.index, data[i].structapp.count, data[i].structapp.id,
                     testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), data[i].length,
-                    testUtilErrorName(data[i].ret), symbol->rows, symbol->width, data[i].bwipp_cmp, data[i].comment);
+                    testUtilErrorName(data[i].ret), symbol->rows, symbol->width, data[i].bwipp_cmp, data[i].zxingcpp_cmp, data[i].comment);
             testUtilModulesPrint(symbol, "                    ", "\n");
             printf("                },\n");
         } else {
@@ -1006,12 +1008,27 @@ static void test_encode(int index, int generate, int debug) {
                     if (!data[i].bwipp_cmp) {
                         if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not BWIPP compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
                     } else {
-                        ret = testUtilBwipp(i, symbol, -1, data[i].option_2, data[i].option_3, data[i].data, length, NULL, bwipp_buf, sizeof(bwipp_buf));
+                        ret = testUtilBwipp(i, symbol, -1, data[i].option_2, data[i].option_3, data[i].data, length, NULL, cmp_buf, sizeof(cmp_buf));
                         assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
 
-                        ret = testUtilBwippCmp(symbol, bwipp_msg, bwipp_buf, data[i].expected);
+                        ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, data[i].expected);
                         assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
-                                       i, testUtilBarcodeName(symbol->symbology), ret, bwipp_msg, bwipp_buf, data[i].expected);
+                                       i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_buf, data[i].expected);
+                    }
+                }
+                if (do_zxingcpp && testUtilCanZXingCPP(i, symbol, data[i].data, debug)) {
+                    if (!data[i].zxingcpp_cmp) {
+                        if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not ZXing-C++ compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                    } else {
+                        int cmp_len, ret_len;
+                        char modules_dump[16384];
+                        assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
+                        ret = testUtilZXingCPP(i, symbol, data[i].data, modules_dump, cmp_buf, sizeof(cmp_buf), &cmp_len);
+                        assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+
+                        ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length, NULL /*primary*/, escaped, &ret_len);
+                        assert_zero(ret, "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
+                                       i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len, escaped);
                     }
                 }
             }

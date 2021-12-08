@@ -1011,9 +1011,7 @@ INTERNAL int gs1_128(struct zint_symbol *symbol, unsigned char source[], int len
 
 /* Add check digit if encoding an NVE18 symbol */
 INTERNAL int nve18(struct zint_symbol *symbol, unsigned char source[], int length) {
-    int i, count, check_digit;
     int error_number, zeroes;
-    int factor;
     unsigned char ean128_equiv[23];
 
     if (length > 17) {
@@ -1031,17 +1029,7 @@ INTERNAL int nve18(struct zint_symbol *symbol, unsigned char source[], int lengt
     memset(ean128_equiv + 4, '0', zeroes);
     ustrcpy(ean128_equiv + 4 + zeroes, source);
 
-    count = 0;
-    factor = 3;
-    for (i = 20; i >= 4; i--) {
-        count += ctoi(ean128_equiv[i]) * factor;
-        factor ^= 2; /* Toggles 1 and 3 */
-    }
-    check_digit = 10 - count % 10;
-    if (check_digit == 10) {
-        check_digit = 0;
-    }
-    ean128_equiv[21] = itoc(check_digit);
+    ean128_equiv[21] = gs1_check_digit(ean128_equiv + 4, 17);
     ean128_equiv[22] = '\0';
 
     error_number = gs1_128(symbol, ean128_equiv, 22);
@@ -1051,7 +1039,6 @@ INTERNAL int nve18(struct zint_symbol *symbol, unsigned char source[], int lengt
 
 /* EAN-14 - A version of EAN-128 */
 INTERNAL int ean14(struct zint_symbol *symbol, unsigned char source[], int length) {
-    int i, count, check_digit;
     int error_number, zeroes;
     unsigned char ean128_equiv[19];
 
@@ -1070,15 +1057,7 @@ INTERNAL int ean14(struct zint_symbol *symbol, unsigned char source[], int lengt
     memset(ean128_equiv + 4, '0', zeroes);
     ustrcpy(ean128_equiv + 4 + zeroes, source);
 
-    count = 0;
-    for (i = 16; i >= 4; i--) {
-        count += i & 1 ? ctoi(ean128_equiv[i]) : 3 * ctoi(ean128_equiv[i]);
-    }
-    check_digit = 10 - (count % 10);
-    if (check_digit == 10) {
-        check_digit = 0;
-    }
-    ean128_equiv[17] = itoc(check_digit);
+    ean128_equiv[17] = gs1_check_digit(ean128_equiv + 4, 13);
     ean128_equiv[18] = '\0';
 
     error_number = gs1_128(symbol, ean128_equiv, 18);

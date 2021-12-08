@@ -1330,6 +1330,7 @@ INTERNAL int dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[], int
 
     data_chars = bp / 12;
 
+    if (debug_print) printf("Data:");
     for (i = 0; i < data_chars; i++) {
         k = i * 12;
         vs = 0;
@@ -1352,6 +1353,7 @@ INTERNAL int dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[], int
         }
         v_odd = (vs - g_sum_exp[group - 1]) / t_even_exp[group - 1];
         v_even = (vs - g_sum_exp[group - 1]) % t_even_exp[group - 1];
+        if (debug_print) printf("%s%d", i == 0 || (i & 1) ? " " : ",", vs);
 
         getRSSwidths(widths, v_odd, modules_odd_exp[group - 1], 4, widest_odd_exp[group - 1], 0);
         char_widths[i][0] = widths[0];
@@ -1364,6 +1366,7 @@ INTERNAL int dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[], int
         char_widths[i][5] = widths[2];
         char_widths[i][7] = widths[3];
     }
+    if (debug_print) printf("\n");
 
     /* 7.2.6 Check character */
     /* The checksum value is equal to the mod 211 residue of the weighted sum of the widths of the

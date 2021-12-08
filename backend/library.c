@@ -607,7 +607,8 @@ STATIC_UNLESS_ZINT_TEST void strip_bom(unsigned char *source, int *input_length)
     }
 }
 
-static int escape_char_process(struct zint_symbol *symbol, unsigned char *input_string, int *length) {
+STATIC_UNLESS_ZINT_TEST int escape_char_process(struct zint_symbol *symbol, unsigned char *input_string,
+            int *length) {
     int in_posn, out_posn;
     int hex1, hex2;
     int i, unicode;

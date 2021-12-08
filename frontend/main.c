@@ -1379,7 +1379,8 @@ int main(int argc, char **argv) {
     }
 
     if (data_arg_num) {
-        const unsigned int cap = ZBarcode_Cap(my_symbol->symbology, ZINT_CAP_STACKABLE | ZINT_CAP_EXTENDABLE |
+        const int symbology = my_symbol->symbology;
+        const unsigned int cap = ZBarcode_Cap(symbology, ZINT_CAP_STACKABLE | ZINT_CAP_EXTENDABLE |
                                     ZINT_CAP_FULL_MULTIBYTE | ZINT_CAP_MASK);
         if (fullmultibyte && (cap & ZINT_CAP_FULL_MULTIBYTE)) {
             my_symbol->option_3 = ZINT_FULL_MULTIBYTE;
@@ -1394,12 +1395,11 @@ int main(int argc, char **argv) {
             my_symbol->option_2 = addon_gap;
         }
         if (rows) {
-            if (my_symbol->symbology == BARCODE_PDF417 || my_symbol->symbology == BARCODE_PDF417COMP
-                    || my_symbol->symbology == BARCODE_HIBC_PDF || my_symbol->symbology == BARCODE_DBAR_EXPSTK
-                    || my_symbol->symbology == BARCODE_DBAR_EXPSTK_CC) {
+            if (symbology == BARCODE_PDF417 || symbology == BARCODE_PDF417COMP || symbology == BARCODE_HIBC_PDF
+                    || symbology == BARCODE_DBAR_EXPSTK || symbology == BARCODE_DBAR_EXPSTK_CC) {
                 my_symbol->option_3 = rows;
-            } else if (my_symbol->symbology == BARCODE_CODABLOCKF || my_symbol->symbology == BARCODE_HIBC_BLOCKF
-                    || my_symbol->symbology == BARCODE_CODE16K || my_symbol->symbology == BARCODE_CODE49) {
+            } else if (symbology == BARCODE_CODABLOCKF || symbology == BARCODE_HIBC_BLOCKF
+                    || symbology == BARCODE_CODE16K || symbology == BARCODE_CODE49) {
                 my_symbol->option_1 = rows;
             }
         }
@@ -1418,9 +1418,9 @@ int main(int argc, char **argv) {
                     strcpy(filetype, no_png ? "gif" : "png");
                 }
             }
-            if (((my_symbol->symbology != BARCODE_MAXICODE && my_symbol->scale < 0.5f) || my_symbol->scale < 0.2f)
+            if (((symbology != BARCODE_MAXICODE && my_symbol->scale < 0.5f) || my_symbol->scale < 0.2f)
                     && is_raster(filetype, no_png)) {
-                const int min = my_symbol->symbology != BARCODE_MAXICODE ? 5 : 2;
+                const int min = symbology != BARCODE_MAXICODE ? 5 : 2;
                 fprintf(stderr, "Warning 145: Scaling less than 0.%d will be set to 0.%d for '%s' output\n", min, min,
                     filetype);
                 fflush(stderr);
@@ -1434,9 +1434,9 @@ int main(int argc, char **argv) {
             if (filetype[0] != '\0') {
                 set_extension(my_symbol->outfile, filetype);
             }
-            if (((my_symbol->symbology != BARCODE_MAXICODE && my_symbol->scale < 0.5f) || my_symbol->scale < 0.2f)
+            if (((symbology != BARCODE_MAXICODE && my_symbol->scale < 0.5f) || my_symbol->scale < 0.2f)
                     && is_raster(get_extension(my_symbol->outfile), no_png)) {
-                const int min = my_symbol->symbology != BARCODE_MAXICODE ? 5 : 2;
+                const int min = symbology != BARCODE_MAXICODE ? 5 : 2;
                 fprintf(stderr, "Warning 146: Scaling less than 0.%d will be set to 0.%d for '%s' output\n", min, min,
                     get_extension(my_symbol->outfile));
                 fflush(stderr);

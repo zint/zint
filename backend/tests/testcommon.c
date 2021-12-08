@@ -2014,8 +2014,8 @@ static const char *testUtilBwippName(int index, const struct zint_symbol *symbol
     };
     static const int data_size = ARRAY_SIZE(data);
 
-    int symbology = symbol->symbology;
-    int gs1 = (symbol->input_mode & 0x07) == GS1_MODE;
+    const int symbology = symbol->symbology;
+    const int gs1 = (symbol->input_mode & 0x07) == GS1_MODE;
 
     if (symbology < 0 || symbology >= data_size) {
         fprintf(stderr, "testUtilBwippName: unknown symbology (%d)\n", symbology);
@@ -2972,35 +2972,35 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
 }
 
 /* Compare bwipp_dump.ps output to test suite module dump */
-int testUtilBwippCmp(const struct zint_symbol *symbol, char *msg, char *bwipp_buf, const char *expected) {
-    int bwipp_len = (int) strlen(bwipp_buf);
+int testUtilBwippCmp(const struct zint_symbol *symbol, char *msg, char *cmp_buf, const char *expected) {
+    int cmp_len = (int) strlen(cmp_buf);
     int expected_len = (int) strlen(expected);
     int ret_memcmp;
     int i;
 
     (void)symbol;
 
-    if (bwipp_len != expected_len) {
-        sprintf(msg, "bwipp_len %d != expected_len %d", bwipp_len, expected_len);
+    if (cmp_len != expected_len) {
+        sprintf(msg, "cmp_len %d != expected_len %d", cmp_len, expected_len);
         return 2;
     }
 
     if (symbol->symbology == BARCODE_ULTRA) {
         static const char map[] = { '8', '1', '2', '3', '4', '5', '6', '7', '8', '7' };
-        for (i = 0; i < bwipp_len; i++) {
-            if (bwipp_buf[i] >= '0' && bwipp_buf[i] <= '9') {
-                bwipp_buf[i] = map[bwipp_buf[i] - '0'];
+        for (i = 0; i < cmp_len; i++) {
+            if (cmp_buf[i] >= '0' && cmp_buf[i] <= '9') {
+                cmp_buf[i] = map[cmp_buf[i] - '0'];
             }
         }
     }
-    ret_memcmp = memcmp(bwipp_buf, expected, expected_len);
+    ret_memcmp = memcmp(cmp_buf, expected, expected_len);
     if (ret_memcmp != 0) {
         for (i = 0; i < expected_len; i++) {
-            if (bwipp_buf[i] != expected[i]) {
+            if (cmp_buf[i] != expected[i]) {
                 break;
             }
         }
-        sprintf(msg, "bwipp memcmp %d != 0, at %d, len %d", ret_memcmp, i, expected_len);
+        sprintf(msg, "memcmp %d != 0, at %d, len %d", ret_memcmp, i, expected_len);
         return ret_memcmp;
     }
 
@@ -3008,28 +3008,644 @@ int testUtilBwippCmp(const struct zint_symbol *symbol, char *msg, char *bwipp_bu
 }
 
 /* Compare bwipp_dump.ps output to single row module dump (see testUtilModulesPrintRow) */
-int testUtilBwippCmpRow(const struct zint_symbol *symbol, int row, char *msg, const char *bwipp_buf,
+int testUtilBwippCmpRow(const struct zint_symbol *symbol, int row, char *msg, const char *cmp_buf,
             const char *expected) {
-    int bwipp_len = (int) strlen(bwipp_buf);
+    int cmp_len = (int) strlen(cmp_buf);
     int expected_len = (int) strlen(expected);
     int ret_memcmp;
     int i, j;
 
     (void)symbol;
 
-    if (bwipp_len != expected_len * symbol->rows) {
-        sprintf(msg, "bwipp_len %d != expected_len %d * symbol->rows %d", bwipp_len, expected_len, symbol->rows);
+    if (cmp_len != expected_len * symbol->rows) {
+        sprintf(msg, "cmp_len %d != expected_len %d * symbol->rows %d", cmp_len, expected_len, symbol->rows);
         return 2;
     }
 
-    ret_memcmp = memcmp(bwipp_buf + expected_len * row, expected, expected_len);
+    ret_memcmp = memcmp(cmp_buf + expected_len * row, expected, expected_len);
     if (ret_memcmp != 0) {
         for (i = 0, j = expected_len * row; i < expected_len; i++, j++) {
-            if (bwipp_buf[j] != expected[i]) {
+            if (cmp_buf[j] != expected[i]) {
                 break;
             }
         }
-        sprintf(msg, "bwipp memcmp %d != 0, at %d (%d), len %d", ret_memcmp, i, j, expected_len);
+        sprintf(msg, "memcmp %d != 0, at %d (%d), len %d", ret_memcmp, i, j, expected_len);
+        return ret_memcmp;
+    }
+
+    return 0;
+}
+
+/* Whether ZXing-C++ Decoder available on system */
+/* Requires the "diagnostics2" branch from https://github.com/gitlost/zxing-cpp built with BUILD_EXAMPLE_DECODER
+   and "zintcppdecoder" placed in PATH, e.g.:
+     git clone --branch diagnostics2 https://github.com/gitlost/zxing-cpp zxing-cpp-diagnostics2
+     cd zxing-cpp-diagnostics2
+     mkdir build; cd build
+     cmake -DCMAKE_INSTALL_PREFIX=/usr/local -DBUILD_EXAMPLE_DECODER=ON ..
+     make && sudo make install
+ */
+int testUtilHaveZXingCPPDecoder(void) {
+    return system("zxingcppdecoder " DEV_NULL_STDERR) == 0;
+}
+
+/* Map Zint symbology to ZXing-C++ format name */
+static const char *testUtilZXingCPPName(int index, const struct zint_symbol *symbol, const char *source,
+            const int debug) {
+    struct item {
+        const char *name;
+        int define;
+        int val;
+    };
+    static const struct item data[] = {
+        { "", -1, 0, },
+        { "", BARCODE_CODE11, 1, },
+        { "", BARCODE_C25STANDARD, 2, },
+        { "ITF", BARCODE_C25INTER, 3, },
+        { "", BARCODE_C25IATA, 4, },
+        { "", -1, 5, },
+        { "", BARCODE_C25LOGIC, 6, },
+        { "", BARCODE_C25IND, 7, },
+        { "Code39", BARCODE_CODE39, 8, },
+        { "Code39", BARCODE_EXCODE39, 9, }, // TODO: Code39 with specially encoded chars
+        { "", -1, 10, },
+        { "", -1, 11, },
+        { "", -1, 12, },
+        { "EAN-13", BARCODE_EANX, 13, },
+        { "EAN-13", BARCODE_EANX_CHK, 14, },
+        { "", -1, 15, },
+        { "Code128", BARCODE_GS1_128, 16, },
+        { "", -1, 17, },
+        { "Codabar", BARCODE_CODABAR, 18, },
+        { "", -1, 19, },
+        { "Code128", BARCODE_CODE128, 20, },
+        { "ITF", BARCODE_DPLEIT, 21, },
+        { "ITF", BARCODE_DPIDENT, 22, },
+        { "", BARCODE_CODE16K, 23, },
+        { "", BARCODE_CODE49, 24, },
+        { "Code93", BARCODE_CODE93, 25, },
+        { "", -1, 26, },
+        { "", -1, 27, },
+        { "", BARCODE_FLAT, 28, },
+        { "DataBar", BARCODE_DBAR_OMN, 29, },
+        { "", BARCODE_DBAR_LTD, 30, },
+        { "DataBarExpanded", BARCODE_DBAR_EXP, 31, },
+        { "", BARCODE_TELEPEN, 32, },
+        { "", -1, 33, },
+        { "UPC-A", BARCODE_UPCA, 34, },
+        { "UPC-A", BARCODE_UPCA_CHK, 35, },
+        { "", -1, 36, },
+        { "UPC-E", BARCODE_UPCE, 37, },
+        { "UPC-E", BARCODE_UPCE_CHK, 38, },
+        { "", -1, 39, },
+        { "", BARCODE_POSTNET, 40, },
+        { "", -1, 41, },
+        { "", -1, 42, },
+        { "", -1, 43, },
+        { "", -1, 44, },
+        { "", -1, 45, },
+        { "", -1, 46, },
+        { "", BARCODE_MSI_PLESSEY, 47, },
+        { "", -1, 48, },
+        { "", BARCODE_FIM, 49, },
+        { "Code39", BARCODE_LOGMARS, 50, },
+        { "", BARCODE_PHARMA, 51, },
+        { "", BARCODE_PZN, 52, }, // TODO: Code39 with prefix and mod-11 checksum
+        { "", BARCODE_PHARMA_TWO, 53, },
+        { "", -1, 54, },
+        { "PDF417", BARCODE_PDF417, 55, },
+        { "PDF417", BARCODE_PDF417COMP, 56, },
+        { "MaxiCode", BARCODE_MAXICODE, 57, },
+        { "QRCode", BARCODE_QRCODE, 58, },
+        { "", -1, 59, },
+        { "Code128", BARCODE_CODE128B, 60, },
+        { "", -1, 61, },
+        { "", -1, 62, },
+        { "", BARCODE_AUSPOST, 63, },
+        { "", -1, 64, },
+        { "", -1, 65, },
+        { "", BARCODE_AUSREPLY, 66, },
+        { "", BARCODE_AUSROUTE, 67, },
+        { "", BARCODE_AUSREDIRECT, 68, },
+        { "EAN-13", BARCODE_ISBNX, 69, },
+        { "", BARCODE_RM4SCC, 70, },
+        { "DataMatrix", BARCODE_DATAMATRIX, 71, },
+        { "Code128", BARCODE_EAN14, 72, },
+        { "Code39", BARCODE_VIN, 73, },
+        { "", BARCODE_CODABLOCKF, 74, },
+        { "Code128", BARCODE_NVE18, 75, },
+        { "", BARCODE_JAPANPOST, 76, },
+        { "", BARCODE_KOREAPOST, 77, },
+        { "", -1, 78, },
+        { "", BARCODE_DBAR_STK, 79, },
+        { "DataBar", BARCODE_DBAR_OMNSTK, 80, },
+        { "DataBarExpanded", BARCODE_DBAR_EXPSTK, 81, },
+        { "", BARCODE_PLANET, 82, },
+        { "", -1, 83, },
+        { "", BARCODE_MICROPDF417, 84, },
+        { "", BARCODE_USPS_IMAIL, 85, },
+        { "", BARCODE_PLESSEY, 86, },
+        { "", BARCODE_TELEPEN_NUM, 87, },
+        { "", -1, 88, },
+        { "ITF", BARCODE_ITF14, 89, },
+        { "", BARCODE_KIX, 90, },
+        { "", -1, 91, },
+        { "Aztec", BARCODE_AZTEC, 92, },
+        { "", BARCODE_DAFT, 93, },
+        { "", -1, 94, },
+        { "", -1, 95, },
+        { "Code128", BARCODE_DPD, 96, },
+        { "", BARCODE_MICROQR, 97, },
+        { "Code128", BARCODE_HIBC_128, 98, },
+        { "Code39", BARCODE_HIBC_39, 99, },
+        { "", -1, 100, },
+        { "", -1, 101, },
+        { "DataMatrix", BARCODE_HIBC_DM, 102, },
+        { "", -1, 103, },
+        { "QRCode", BARCODE_HIBC_QR, 104, },
+        { "", -1, 105, },
+        { "PDF417", BARCODE_HIBC_PDF, 106, },
+        { "", -1, 107, },
+        { "", BARCODE_HIBC_MICPDF, 108, },
+        { "", -1, 109, },
+        { "", BARCODE_HIBC_BLOCKF, 110, },
+        { "", -1, 111, },
+        { "Aztec", BARCODE_HIBC_AZTEC, 112, },
+        { "", -1, 113, },
+        { "", -1, 114, },
+        { "DotCode", BARCODE_DOTCODE, 115, },
+        { "", BARCODE_HANXIN, 116, },
+        { "", -1, 117, },
+        { "", -1, 118, },
+        { "", -1, 119, },
+        { "", -1, 120, },
+        { "", BARCODE_MAILMARK, 121, },
+        { "", -1, 122, },
+        { "", -1, 123, },
+        { "", -1, 124, },
+        { "", -1, 125, },
+        { "", -1, 126, },
+        { "", -1, 127, },
+        { "", BARCODE_AZRUNE, 128, },
+        { "", BARCODE_CODE32, 129, }, // Code39 based
+        { "", BARCODE_EANX_CC, 130, },
+        { "", BARCODE_GS1_128_CC, 131, },
+        { "", BARCODE_DBAR_OMN_CC, 132, },
+        { "", BARCODE_DBAR_LTD_CC, 133, },
+        { "", BARCODE_DBAR_EXP_CC, 134, },
+        { "", BARCODE_UPCA_CC, 135, },
+        { "", BARCODE_UPCE_CC, 136, },
+        { "", BARCODE_DBAR_STK_CC, 137, },
+        { "", BARCODE_DBAR_OMNSTK_CC, 138, },
+        { "", BARCODE_DBAR_EXPSTK_CC, 139, },
+        { "", BARCODE_CHANNEL, 140, },
+        { "", BARCODE_CODEONE, 141, },
+        { "", BARCODE_GRIDMATRIX, 142, },
+        { "", BARCODE_UPNQR, 143, },
+        { "", BARCODE_ULTRA, 144, },
+        { "", BARCODE_RMQR, 145, },
+    };
+    static const int data_size = ARRAY_SIZE(data);
+
+    const int symbology = symbol->symbology;
+
+    if (symbology < 0 || symbology >= data_size) {
+        fprintf(stderr, "testUtilZXingCPPName: unknown symbology (%d)\n", symbology);
+        abort();
+    }
+    // Self-check
+    if (data[symbology].val != symbology || (data[symbology].define != -1 && data[symbology].define != symbology)) {
+        fprintf(stderr, "testUtilZXingCPPName: data table out of sync (%d)\n", symbology);
+        abort();
+    }
+    if (data[symbology].name[0] == '\0') {
+        if (debug & ZINT_DEBUG_TEST_PRINT) {
+            printf("i:%d %s no ZXint-C++ mapping\n", index, testUtilBarcodeName(symbology));
+        }
+        return NULL;
+    }
+
+    if (symbology == BARCODE_QRCODE || symbology == BARCODE_HIBC_QR || symbology == BARCODE_MICROQR
+            || symbology == BARCODE_RMQR) {
+        const int full_multibyte = (symbol->option_3 & 0xFF) == ZINT_FULL_MULTIBYTE;
+        if (full_multibyte) { // TODO: Support in ZXing-C++
+            printf("i:%d %s not ZXing-C++ compatible, ZINT_FULL_MULTIBYTE not supported\n",
+                    index, testUtilBarcodeName(symbology));
+            return NULL;
+        }
+    } else if (is_extendable(symbology)) {
+        if (symbology == BARCODE_EANX || symbology == BARCODE_EANX_CHK) {
+            const int length = (int) strlen(source);
+            if (length < 9) {
+                if (length < 6) {
+                    printf("i:%d %s not ZXing-C++ compatible, EAN-5/EAN-2 not supported\n",
+                            index, testUtilBarcodeName(symbology));
+                    return NULL;
+                }
+                return "EAN-8";
+            }
+            if (strchr(source, '+') != NULL && length < 15) {
+                printf("i:%d %s not ZXing-C++ compatible, EAN-8 with add-on not supported yet\n",
+                        index, testUtilBarcodeName(symbology));
+                return NULL;
+            }
+        }
+    }
+
+    return data[symbology].name;
+}
+
+/* Whether can use ZXing-C++ to check a symbology with given options */
+int testUtilCanZXingCPP(int index, const struct zint_symbol *symbol, const char *source, const int debug) {
+    return testUtilZXingCPPName(index, symbol, source, debug) != NULL;
+}
+
+int testUtilZXingCPP(int index, struct zint_symbol *symbol, const char *source, char *bits, char *buffer,
+            const int buffer_size, int *p_cmp_len) {
+    const char *cmd_fmt = "zxingcppdecoder -width %d -textonly -format %s -zint '%d,%d' -bits '%s'";
+
+    const int length = (int) strlen(bits);
+    const int width = symbol->width;
+    const int symbology = symbol->symbology;
+    char *cmd = (char *) testutil_alloca(length + 1024);
+    const char *zxingcpp_barcode = NULL;
+    const int data_mode = (symbol->input_mode & 0x07) == DATA_MODE;
+
+    FILE *fp = NULL;
+    int cnt;
+
+    buffer[0] = '\0';
+
+    zxingcpp_barcode = testUtilZXingCPPName(index, symbol, source, 0 /*debug*/);
+    if (!zxingcpp_barcode) {
+        fprintf(stderr, "i:%d testUtilZXingCPP: no mapping for %s\n", index, testUtilBarcodeName(symbology));
+        return -1;
+    }
+    sprintf(cmd, cmd_fmt, width, zxingcpp_barcode, symbology, symbol->option_2, bits);
+
+    if (symbol->debug & ZINT_DEBUG_TEST_PRINT) {
+        printf("i:%d testUtilZXingCPP: cmd %s\n", index, cmd);
+    }
+
+    fp = testutil_popen(cmd, "r");
+    if (!fp) {
+        fprintf(stderr, "i:%d testUtilZXingCPP: failed to run '%s'\n", index, cmd);
+        return -1;
+    }
+
+    cnt = (int) fread(buffer, 1, buffer_size, fp);
+    if (cnt == buffer_size) {
+        fprintf(stderr, "i:%d testUtilZXingCPP: buffer too small, %d bytes, cnt %d (%s)\n",
+                index, buffer_size, cnt, cmd);
+        testutil_pclose(fp);
+        return -1;
+    }
+    buffer[cnt] = '\0';
+
+    if (fgetc(fp) != EOF) {
+        fprintf(stderr, "i:%d testUtilZXingCPP: failed to read full stream (%s)\n", index, cmd);
+        testutil_pclose(fp);
+        return -1;
+    }
+
+    testutil_pclose(fp);
+
+    if (data_mode && is_eci_convertible(symbol->eci)) {
+        int error_number;
+        const int eci_length = get_eci_length(symbol->eci, (const unsigned char *) buffer, cnt);
+        unsigned char *preprocessed = (unsigned char *) testutil_alloca(eci_length + 1);
+
+        if (eci_length >= buffer_size) {
+            fprintf(stderr, "i:%d testUtilZXingCPP: buffer too small, %d bytes, eci_length %d (%s)\n",
+                    index, buffer_size, eci_length, cmd);
+            return -1;
+        }
+        error_number = utf8_to_eci(symbol->eci, (const unsigned char *) buffer, preprocessed, &cnt);
+        if (error_number == 0) {
+            memcpy(buffer, preprocessed, cnt);
+        } else {
+            if (symbol->eci != 0) {
+                fprintf(stderr, "i:%d testUtilZXingCPP: utf8_to_eci == %d (%s)\n", index, error_number, cmd);
+                return -1;
+            } else {
+                int i;
+                unsigned int *vals = (unsigned int *) testutil_alloca(sizeof(int) * (cnt + 1));
+                error_number = utf8_to_unicode(symbol, (const unsigned char *) buffer, vals, &cnt, 1);
+                if (error_number != 0) {
+                    fprintf(stderr, "i:%d testUtilZXingCPP: utf8_to_unicode == %d (%s)\n", index, error_number, cmd);
+                    return -1;
+                }
+                for (i = 0; i < cnt; i++) {
+                    buffer[i] = (char) vals[i];
+                }
+                buffer[cnt] = '\0';
+            }
+        }
+    }
+
+    *p_cmp_len = cnt;
+
+    return 0;
+}
+
+STATIC_UNLESS_ZINT_TEST int escape_char_process(struct zint_symbol *symbol, unsigned char *input_string,
+            int *length);
+
+#include "../gs1.h"
+
+static const char TECHNETIUM[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%"; /* Same as SILVER (CODE39) */
+
+int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, int cmp_len,
+            const char *expected, int expected_len, const char *primary, char *ret_buf, int *p_ret_len) {
+    const int symbology = symbol->symbology;
+
+    const int gs1 = (symbol->input_mode & 0x07) == GS1_MODE;
+    const int is_escaped = symbol->input_mode & ESCAPE_MODE;
+    const int is_hibc = symbology >= BARCODE_HIBC_128 && symbology <= BARCODE_HIBC_AZTEC;
+    const int have_c25checkdigit = symbol->option_2 == 1 || symbol->option_2 == 2;
+    const int have_c25inter = (symbology == BARCODE_C25INTER && ((expected_len & 1) || have_c25checkdigit))
+                            || symbology == BARCODE_ITF14 || symbology == BARCODE_DPLEIT || symbology == BARCODE_DPIDENT;
+    const int is_dbar_exp = symbology == BARCODE_DBAR_EXP || symbology == BARCODE_DBAR_EXPSTK;
+    const int is_upcean = is_extendable(symbology);
+
+    char *reduced = gs1 ? (char *) alloca(expected_len + 1) : NULL;
+    char *escaped = is_escaped ? (char *) alloca(expected_len + 1) : NULL;
+    char *hibc = is_hibc ? (char *) alloca(expected_len + 2 + 1) : NULL;
+    char *maxi = symbology == BARCODE_MAXICODE && primary ? (char *) alloca(expected_len + strlen(primary) + 6 + 9 + 1) : NULL;
+    char *vin = symbology == BARCODE_VIN && (symbol->option_2 & 1) ? (char *) alloca(expected_len + 1 + 1) : NULL;
+    char *c25inter = have_c25inter ? (char *) alloca(expected_len + 13 + 1 + 1) : NULL;
+    char *dbar_exp = is_dbar_exp ? (char *) alloca(expected_len + 1) : NULL;
+    char *upcean = is_upcean ? (char *) alloca(expected_len + 1 + 1) : NULL;
+    char *ean14_nve18 = symbology == BARCODE_EAN14 || symbology == BARCODE_NVE18 ? (char *) alloca(expected_len + 3 + 1) : NULL;
+
+    int ret;
+    int ret_memcmp;
+    int i;
+
+    if (ret_buf) {
+        ret_buf[0] = '\0';
+    }
+    if (p_ret_len) {
+        *p_ret_len = 0;
+    }
+
+    if (is_escaped) {
+        memcpy(escaped, expected, expected_len);
+        ret = escape_char_process(symbol, (unsigned char *) escaped, &expected_len);
+        if (ret != 0) {
+            sprintf(msg, "escape_char_process %d != 0", ret);
+            return 3;
+        }
+        expected = escaped;
+    }
+    if (gs1 && symbology != BARCODE_EAN14 && symbology != BARCODE_NVE18) {
+        ret = gs1_verify(symbol, (const unsigned char *) expected, expected_len, (unsigned char *) reduced);
+        if (ret != 0) {
+            sprintf(msg, "gs1_verify %d != 0", ret);
+            return 4;
+        }
+        expected_len = (int) strlen(reduced);
+        for (i = 0; i < expected_len; i++) {
+            if (reduced[i] == '[') {
+                reduced[i] = 29;
+            }
+        }
+        expected = reduced;
+        if (primary) {
+            // TODO:
+        }
+    } else if (is_hibc) {
+        int counter;
+        int posns[110];
+        hibc[0] = '+';
+        memcpy(hibc + 1, expected, expected_len);
+        to_upper((unsigned char *) (hibc + 1), expected_len);
+        if (!is_sane_lookup(TECHNETIUM, sizeof(TECHNETIUM) - 1, (unsigned char *) (hibc + 1), expected_len, posns)) {
+            sprintf(msg, "HIBC is_sane_lookup(TECHNETIUM) failed");
+            return 5;
+        }
+        counter = 41;
+        for (i = 0; i < expected_len && i < 110; i++) {
+            counter += posns[i];
+        }
+        counter = counter % 43;
+        hibc[++expected_len] = TECHNETIUM[counter];
+        hibc[++expected_len] = '\0';
+        expected = hibc;
+    }
+    if (symbology == BARCODE_MAXICODE) {
+        if (symbol->primary && symbol->primary[0]) {
+            int primary_len = (int) strlen(primary);
+            int maxi_len = 0;
+            if (symbol->option_2 >= 1 && symbol->option_2 <= 100) {
+                sprintf(maxi, "[)>\03601\035%02d", symbol->option_2 - 1);
+                maxi_len = (int) strlen(maxi);
+            }
+            sprintf(maxi + maxi_len, "%-6.*s\035%.*s\035%.*s\035", primary_len - 6, primary,
+                    3, primary + primary_len - 6, 3, primary + primary_len - 3);
+            maxi_len = (int) strlen(maxi);
+            memcpy(maxi + maxi_len, expected, expected_len);
+            expected = maxi;
+            expected_len += maxi_len;
+        }
+    } else if (symbology == BARCODE_CODABAR) {
+        // Start A/B/C/D and stop A/B/C/D chars not returned by ZXing-C++
+        expected++;
+        expected_len -= 2;
+        if (symbol->option_2 == 1 || symbol->option_2 == 2) {
+            cmp_len--; // Too messy to calc the check digit so ignore
+        }
+    } else if (symbology == BARCODE_VIN) {
+        if (symbol->option_2 & 1) {
+            vin[0] = 'I';
+            memcpy(vin + 1, expected, expected_len);
+            vin[++expected_len] = '\0';
+            expected = vin;
+        }
+    } else if (have_c25inter) {
+        if (symbology == BARCODE_C25INTER) {
+            if ((expected_len & 1) || have_c25checkdigit) {
+                if (((expected_len & 1) && !have_c25checkdigit) || (!(expected_len & 1) && have_c25checkdigit)) {
+                    c25inter[0] = '0';
+                    memcpy(c25inter + 1, expected, expected_len);
+                    expected_len++;
+                } else {
+                    memcpy(c25inter, expected, expected_len);
+                }
+                if (have_c25checkdigit) {
+                    c25inter[expected_len] = gs1_check_digit((const unsigned char *) c25inter, expected_len);
+                    expected_len++;
+                }
+                c25inter[expected_len] = '\0';
+                printf("c25inter %s\n", c25inter);
+                expected = c25inter;
+            }
+        } else if (symbology == BARCODE_DPLEIT || symbology == BARCODE_DPIDENT) {
+            const int len = symbology == BARCODE_DPLEIT ? 13 : 11;
+            int zeroes = len - expected_len;
+            unsigned int count = 0;
+            int factor = 4;
+            for (i = 0; i < zeroes; i++) {
+                c25inter[i] = '0';
+            }
+            memcpy(c25inter + zeroes, expected, expected_len);
+            expected_len += zeroes;
+            for (i = len - 1; i >= 0; i--) {
+                count += factor * ctoi(c25inter[i]);
+                factor ^= 0x0D; /* Toggles 4 and 9 */
+            }
+            c25inter[expected_len] = itoc((10 - (count % 10)) % 10);
+            c25inter[++expected_len] = '\0';
+            expected = c25inter;
+        } else if (symbology == BARCODE_ITF14) {
+            int zeroes = 13 - expected_len;
+            for (i = 0; i < zeroes; i++) {
+                c25inter[i] = '0';
+            }
+            memcpy(c25inter + zeroes, expected, expected_len);
+            expected_len += zeroes;
+            c25inter[expected_len] = gs1_check_digit((const unsigned char *) c25inter, 13);
+            c25inter[++expected_len] = '\0';
+            expected = c25inter;
+        }
+    } else if (symbology == BARCODE_DBAR_OMN || symbology == BARCODE_DBAR_OMNSTK) {
+        if (expected_len == 13) {
+            cmp_len--; // Too messy to calc the check digit so ignore
+        }
+    } else if (is_dbar_exp) {
+        for (i = 0; i < expected_len; i++) {
+            if (expected[i] == '[') {
+                dbar_exp[i] = '(';
+            } else if (expected[i] == ']') {
+                dbar_exp[i] = ')';
+            } else {
+                dbar_exp[i] = expected[i];
+            }
+        }
+        expected = dbar_exp;
+    } else if (is_upcean) {
+        if (symbology == BARCODE_UPCA && (expected_len == 11 || expected_len == 14 || expected_len == 17)) {
+            memcpy(upcean, expected, 11);
+            upcean[11] = gs1_check_digit((const unsigned char *) upcean, 11);
+            if (expected_len == 14) {
+                upcean[12] = ' ';
+                memcpy(upcean + 13, expected + 12, 2);
+            } else if (expected_len == 17) {
+                upcean[12] = ' ';
+                memcpy(upcean + 13, expected + 12, 5);
+            }
+            expected_len++;
+            upcean[expected_len] = '\0';
+            expected = upcean;
+        } else if (symbology == BARCODE_UPCA_CHK && (expected_len == 15 || expected_len == 18)) {
+            memcpy(upcean, expected, expected_len);
+            upcean[12] = ' ';
+            expected = upcean;
+        } else if (symbology == BARCODE_UPCE && (expected_len == 7 || expected_len == 10 || expected_len == 13)) {
+            char equivalent[11];
+            memcpy(upcean, expected, 7);
+            memcpy(equivalent, upcean, 3);
+            memset(equivalent + 3, '0', 8);
+            switch (upcean[6]) {
+                case '0': case '1': case '2':
+                    equivalent[3] = upcean[6];
+                    equivalent[8] = upcean[3];
+                    equivalent[9] = upcean[4];
+                    equivalent[10] = upcean[5];
+                    break;
+                case '3':
+                    equivalent[3] = upcean[3];
+                    equivalent[9] = upcean[4];
+                    equivalent[10] = upcean[5];
+                    break;
+                case '4':
+                    equivalent[3] = upcean[3];
+                    equivalent[4] = upcean[4];
+                    equivalent[10] = upcean[5];
+                    break;
+                case '5': case '6': case '7': case '8': case '9':
+                    equivalent[3] = upcean[3];
+                    equivalent[4] = upcean[4];
+                    equivalent[5] = upcean[5];
+                    equivalent[10] = upcean[6];
+                    break;
+            }
+            upcean[7] = gs1_check_digit((const unsigned char *) equivalent, 11);
+            if (expected_len == 10) {
+                upcean[8] = ' ';
+                memcpy(upcean + 9, expected + 8, 2);
+            } else if (expected_len == 13) {
+                upcean[8] = ' ';
+                memcpy(upcean + 9, expected + 8, 5);
+            }
+            expected_len++;
+            upcean[expected_len] = '\0';
+            expected = upcean;
+        } else if (symbology == BARCODE_UPCE_CHK && (expected_len == 11 || expected_len == 14)) {
+            memcpy(upcean, expected, expected_len);
+            upcean[8] = ' ';
+            expected = upcean;
+        } else if (symbology == BARCODE_EANX && (expected_len == 12 || expected_len == 15 || expected_len == 18)) {
+            memcpy(upcean, expected, 12);
+            upcean[12] = gs1_check_digit((const unsigned char *) upcean, 12);
+            if (expected_len == 15) {
+                upcean[13] = ' ';
+                memcpy(upcean + 14, expected + 13, 2);
+            } else if (expected_len == 18) {
+                upcean[13] = ' ';
+                memcpy(upcean + 14, expected + 13, 5);
+            }
+            expected_len++;
+            upcean[expected_len] = '\0';
+            expected = upcean;
+        } else if (symbology == BARCODE_EANX && (expected_len == 16 || expected_len == 19)) {
+            memcpy(upcean, expected, expected_len);
+            upcean[13] = ' ';
+            expected = upcean;
+        } else if (symbology == BARCODE_EANX && expected_len == 7) {
+            memcpy(upcean, expected, 7);
+            upcean[7] = gs1_check_digit((const unsigned char *) upcean, 7);
+            expected_len++;
+            upcean[expected_len] = '\0';
+            expected = upcean;
+        } else if ((symbology == BARCODE_EANX_CHK || symbology == BARCODE_ISBNX) && (expected_len == 16 || expected_len == 19)) {
+            memcpy(upcean, expected, expected_len);
+            upcean[13] = ' ';
+            expected = upcean;
+        }
+
+    } else if (symbology == BARCODE_EAN14 || symbology == BARCODE_NVE18) {
+        ean14_nve18[0] = '0';
+        ean14_nve18[1] = symbology == BARCODE_NVE18 ? '0' : '1';
+        memcpy(ean14_nve18 + 2, expected, expected_len);
+        if (symbology == BARCODE_NVE18) {
+            ean14_nve18[19] = gs1_check_digit((unsigned char *) (ean14_nve18 + 2), 17);
+        } else {
+            ean14_nve18[15] = gs1_check_digit((unsigned char *) (ean14_nve18 + 2), 13);
+        }
+        expected = ean14_nve18;
+        expected_len += 3;
+    }
+
+    if (ret_buf) {
+        memcpy(ret_buf, expected, expected_len);
+    }
+    if (p_ret_len) {
+        *p_ret_len = expected_len;
+    }
+
+    if (cmp_len != expected_len) {
+        sprintf(msg, "cmp_len %d != expected_len %d", cmp_len, expected_len);
+        return 2;
+    }
+    ret_memcmp = memcmp(cmp_buf, expected, expected_len);
+    if (ret_memcmp != 0) {
+        for (i = 0; i < expected_len; i++) {
+            if (cmp_buf[i] != expected[i]) {
+                break;
+            }
+        }
+        sprintf(msg, "memcmp %d != 0, at %d, len %d", ret_memcmp, i, expected_len);
         return ret_memcmp;
     }
 

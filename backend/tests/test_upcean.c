@@ -37,63 +37,72 @@ static void test_upce_input(int index, int debug) {
         int symbology;
         char *data;
         int ret;
+
+        char *hrt;
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /*  0*/ { BARCODE_UPCE, "12345", 0 }, // equivalent: 00123400005, hrt: 00123457, Check digit: 7
-        /*  1*/ { BARCODE_UPCE_CHK, "12345", ZINT_ERROR_INVALID_CHECK },
-        /*  2*/ { BARCODE_UPCE_CHK, "12344", 0 }, // equivalent: 00012000003, hrt: 00012344, Check digit: 4
-        /*  3*/ { BARCODE_UPCE, "123456", 0 }, // equivalent: 01234500006, hrt: 01234565, Check digit: 5
-        /*  4*/ { BARCODE_UPCE_CHK, "123456", ZINT_ERROR_INVALID_CHECK },
-        /*  5*/ { BARCODE_UPCE_CHK, "123457", 0 }, // equivalent: 00123400005, hrt: 00123457, Check digit: 7
-        /*  6*/ { BARCODE_UPCE, "1234567", 0 }, // equivalent: 12345600007, hrt: 12345670, Check digit: 0
-        /*  7*/ { BARCODE_UPCE_CHK, "1234567", ZINT_ERROR_INVALID_CHECK },
-        /*  8*/ { BARCODE_UPCE_CHK, "1234565", 0 }, // equivalent: 01234500006, hrt: 01234565, Check digit: 5
-        /*  9*/ { BARCODE_UPCE, "12345678", ZINT_ERROR_INVALID_CHECK },
-        /* 10*/ { BARCODE_UPCE, "12345670", 0 }, // equivalent: 12345600007, hrt: 12345670, Check digit: 0
-        /* 11*/ { BARCODE_UPCE_CHK, "12345678", ZINT_ERROR_INVALID_CHECK },
-        /* 12*/ { BARCODE_UPCE_CHK, "12345670", 0 }, // equivalent: 12345600007, hrt: 12345670, Check digit: 0
-        /* 13*/ { BARCODE_UPCE, "123456789", ZINT_ERROR_TOO_LONG },
-        /* 14*/ { BARCODE_UPCE_CHK, "123456789", ZINT_ERROR_TOO_LONG },
-        /* 15*/ { BARCODE_UPCE, "123456A", ZINT_ERROR_INVALID_DATA },
-        /* 16*/ { BARCODE_UPCE, "1234567A", ZINT_ERROR_INVALID_DATA },
-        /* 17*/ { BARCODE_UPCE, "12345678A", ZINT_ERROR_INVALID_DATA },
-        /* 18*/ { BARCODE_UPCE_CHK, "123456A", ZINT_ERROR_INVALID_DATA },
-        /* 19*/ { BARCODE_UPCE_CHK, "1234567A", ZINT_ERROR_INVALID_DATA },
-        /* 20*/ { BARCODE_UPCE_CHK, "12345678A", ZINT_ERROR_INVALID_DATA },
-        /* 21*/ { BARCODE_UPCE, "2345678", 0 }, // 2 ignored, equivalent: 03456700008, hrt: 03456781, Check digit: 1
-        /* 22*/ { BARCODE_UPCE_CHK, "23456781", 0 }, // 2 ignored, equivalent: 03456700008, hrt: 03456781, Check digit: 1
-        /* 23*/ { BARCODE_UPCE, "123455", 0 }, // equivalent: 01234500005, hrt: 01234558, Check digit: 8 (BS 797 Rule 3 (a))
-        /* 24*/ { BARCODE_UPCE_CHK, "1234558", 0 }, // equivalent: 01234500005, hrt: 01234558, Check digit: 8 (BS 797 Rule 3 (a))
-        /* 25*/ { BARCODE_UPCE, "456784", 0 }, // equivalent: 04567000008, hrt: 04567840, Check digit: 0 (BS 797 Rule 3 (b))
-        /* 26*/ { BARCODE_UPCE_CHK, "4567840", 0 }, // equivalent: 04567000008, hrt: 04567840, Check digit: 0 (BS 797 Rule 3 (b))
-        /* 27*/ { BARCODE_UPCE, "345670", 0 }, // equivalent: 03400000567, hrt: 03456703, Check digit: 3 (BS 797 Rule 3 (c))
-        /* 28*/ { BARCODE_UPCE_CHK, "3456703", 0 }, // equivalent: 03400000567, hrt: 03456703, Check digit: 3 (BS 797 Rule 3 (c))
-        /* 29*/ { BARCODE_UPCE, "984753", 0 }, // equivalent: 09840000075, hrt: 09847531, Check digit: 1 (BS 797 Rule 3 (d))
-        /* 30*/ { BARCODE_UPCE_CHK, "9847531", 0 }, // equivalent: 09840000075, hrt: 09847531, Check digit: 1 (BS 797 Rule 3 (d))
-        /* 31*/ { BARCODE_UPCE, "120453", ZINT_ERROR_INVALID_DATA }, // If last digit (emode) 3, 3rd can't be 0, 1 or 2 (BS 787 Table 5 NOTE 1)
-        /* 32*/ { BARCODE_UPCE, "121453", ZINT_ERROR_INVALID_DATA }, // If last digit (emode) 3, 3rd can't be 0, 1 or 2 (BS 787 Table 5 NOTE 1)
-        /* 33*/ { BARCODE_UPCE, "122453", ZINT_ERROR_INVALID_DATA }, // If last digit (emode) 3, 3rd can't be 0, 1 or 2 (BS 787 Table 5 NOTE 1)
-        /* 34*/ { BARCODE_UPCE, "123453", 0 },
-        /* 35*/ { BARCODE_UPCE, "123054", ZINT_ERROR_INVALID_DATA }, // If last digit (emode) 4, 4th can't be 0 (BS 787 Table 5 NOTE 2)
-        /* 36*/ { BARCODE_UPCE, "123154", 0 },
-        /* 37*/ { BARCODE_UPCE, "123405", ZINT_ERROR_INVALID_DATA }, // If last digit (emode) 5, 5th can't be 0 (BS 787 Table 5 NOTE 3)
-        /* 38*/ { BARCODE_UPCE, "123455", 0 },
-        /* 39*/ { BARCODE_UPCE, "123406", ZINT_ERROR_INVALID_DATA }, // If last digit (emode) 6, 5th can't be 0 (BS 787 Table 5 NOTE 3)
-        /* 40*/ { BARCODE_UPCE, "123456", 0 },
-        /* 41*/ { BARCODE_UPCE, "123407", ZINT_ERROR_INVALID_DATA }, // If last digit (emode) 7, 5th can't be 0 (BS 787 Table 5 NOTE 3)
-        /* 42*/ { BARCODE_UPCE, "123457", 0 },
-        /* 43*/ { BARCODE_UPCE, "123408", ZINT_ERROR_INVALID_DATA }, // If last digit (emode) 8, 5th can't be 0 (BS 787 Table 5 NOTE 3)
-        /* 44*/ { BARCODE_UPCE, "123458", 0 },
-        /* 45*/ { BARCODE_UPCE, "123409", ZINT_ERROR_INVALID_DATA }, // If last digit (emode) 9, 5th can't be 0 (BS 787 Table 5 NOTE 3)
-        /* 46*/ { BARCODE_UPCE, "123459", 0 },
-        /* 47*/ { BARCODE_UPCE, "000000", 0 },
-        /* 48*/ { BARCODE_UPCE, "000001", 0 },
-        /* 49*/ { BARCODE_UPCE, "000002", 0 },
+        /*  0*/ { BARCODE_UPCE, "12345", 0, "00123457" }, // equivalent: 00123400005, Check digit: 7
+        /*  1*/ { BARCODE_UPCE_CHK, "12345", ZINT_ERROR_INVALID_CHECK, "" },
+        /*  2*/ { BARCODE_UPCE_CHK, "12344", 0, "00012344" }, // equivalent: 00012000003, Check digit: 4
+        /*  3*/ { BARCODE_UPCE, "123456", 0, "01234565" }, // equivalent: 01234500006, Check digit: 5
+        /*  4*/ { BARCODE_UPCE_CHK, "123456", ZINT_ERROR_INVALID_CHECK, "" },
+        /*  5*/ { BARCODE_UPCE_CHK, "123457", 0, "00123457" }, // equivalent: 00123400005, Check digit: 7
+        /*  6*/ { BARCODE_UPCE, "1234567", 0, "12345670" }, // equivalent: 12345600007, Check digit: 0
+        /*  7*/ { BARCODE_UPCE_CHK, "1234567", ZINT_ERROR_INVALID_CHECK, "" },
+        /*  8*/ { BARCODE_UPCE_CHK, "1234565", 0, "01234565" }, // equivalent: 01234500006, Check digit: 5
+        /*  9*/ { BARCODE_UPCE, "12345678", ZINT_ERROR_INVALID_CHECK, "" },
+        /* 10*/ { BARCODE_UPCE, "12345670", 0, "12345670" }, // equivalent: 12345600007, Check digit: 0
+        /* 11*/ { BARCODE_UPCE_CHK, "12345678", ZINT_ERROR_INVALID_CHECK, "" },
+        /* 12*/ { BARCODE_UPCE_CHK, "12345670", 0, "12345670" }, // equivalent: 12345600007, Check digit: 0
+        /* 13*/ { BARCODE_UPCE, "123456789", ZINT_ERROR_TOO_LONG, "" },
+        /* 14*/ { BARCODE_UPCE_CHK, "123456789", ZINT_ERROR_TOO_LONG, "" },
+        /* 15*/ { BARCODE_UPCE, "123456A", ZINT_ERROR_INVALID_DATA, "" },
+        /* 16*/ { BARCODE_UPCE, "1234567A", ZINT_ERROR_INVALID_DATA, "" },
+        /* 17*/ { BARCODE_UPCE, "12345678A", ZINT_ERROR_INVALID_DATA, "" },
+        /* 18*/ { BARCODE_UPCE_CHK, "123456A", ZINT_ERROR_INVALID_DATA, "" },
+        /* 19*/ { BARCODE_UPCE_CHK, "1234567A", ZINT_ERROR_INVALID_DATA, "" },
+        /* 20*/ { BARCODE_UPCE_CHK, "12345678A", ZINT_ERROR_INVALID_DATA, "" },
+        /* 21*/ { BARCODE_UPCE, "2345678", 0, "03456781" }, // 2 ignored, equivalent: 03456700008, Check digit: 1
+        /* 22*/ { BARCODE_UPCE_CHK, "23456781", 0, "03456781" }, // 2 ignored, equivalent: 03456700008, Check digit: 1
+        /* 23*/ { BARCODE_UPCE, "123455", 0, "01234558" }, // equivalent: 01234500005, Check digit: 8 (BS 797 Rule 3 (a))
+        /* 24*/ { BARCODE_UPCE_CHK, "1234558", 0, "01234558" }, // equivalent: 01234500005, Check digit: 8 (BS 797 Rule 3 (a))
+        /* 25*/ { BARCODE_UPCE, "456784", 0, "04567840" }, // equivalent: 04567000008, Check digit: 0 (BS 797 Rule 3 (b))
+        /* 26*/ { BARCODE_UPCE_CHK, "4567840", 0, "04567840" }, // equivalent: 04567000008, Check digit: 0 (BS 797 Rule 3 (b))
+        /* 27*/ { BARCODE_UPCE, "345670", 0, "03456703" }, // equivalent: 03400000567, Check digit: 3 (BS 797 Rule 3 (c))
+        /* 28*/ { BARCODE_UPCE_CHK, "3456703", 0, "03456703" }, // equivalent: 03400000567, Check digit: 3 (BS 797 Rule 3 (c))
+        /* 29*/ { BARCODE_UPCE, "984753", 0, "09847531" }, // equivalent: 09840000075, Check digit: 1 (BS 797 Rule 3 (d))
+        /* 30*/ { BARCODE_UPCE_CHK, "9847531", 0, "09847531" }, // equivalent: 09840000075, Check digit: 1 (BS 797 Rule 3 (d))
+        /* 31*/ { BARCODE_UPCE, "120453", ZINT_ERROR_INVALID_DATA, "" }, // If last digit (emode) 3, 3rd can't be 0, 1 or 2 (BS 787 Table 5 NOTE 1)
+        /* 32*/ { BARCODE_UPCE, "121453", ZINT_ERROR_INVALID_DATA, "" }, // If last digit (emode) 3, 3rd can't be 0, 1 or 2 (BS 787 Table 5 NOTE 1)
+        /* 33*/ { BARCODE_UPCE, "122453", ZINT_ERROR_INVALID_DATA, "" }, // If last digit (emode) 3, 3rd can't be 0, 1 or 2 (BS 787 Table 5 NOTE 1)
+        /* 34*/ { BARCODE_UPCE, "123453", 0, "01234531" },
+        /* 35*/ { BARCODE_UPCE, "123054", ZINT_ERROR_INVALID_DATA, "" }, // If last digit (emode) 4, 4th can't be 0 (BS 787 Table 5 NOTE 2)
+        /* 36*/ { BARCODE_UPCE, "123154", 0, "01231542" },
+        /* 37*/ { BARCODE_UPCE, "123405", ZINT_ERROR_INVALID_DATA, "" }, // If last digit (emode) 5, 5th can't be 0 (BS 787 Table 5 NOTE 3)
+        /* 38*/ { BARCODE_UPCE, "123455", 0, "01234558" },
+        /* 39*/ { BARCODE_UPCE, "123406", ZINT_ERROR_INVALID_DATA, "" }, // If last digit (emode) 6, 5th can't be 0 (BS 787 Table 5 NOTE 3)
+        /* 40*/ { BARCODE_UPCE, "123456", 0, "01234565" },
+        /* 41*/ { BARCODE_UPCE, "123407", ZINT_ERROR_INVALID_DATA, "" }, // If last digit (emode) 7, 5th can't be 0 (BS 787 Table 5 NOTE 3)
+        /* 42*/ { BARCODE_UPCE, "123457", 0, "01234572" },
+        /* 43*/ { BARCODE_UPCE, "123408", ZINT_ERROR_INVALID_DATA, "" }, // If last digit (emode) 8, 5th can't be 0 (BS 787 Table 5 NOTE 3)
+        /* 44*/ { BARCODE_UPCE, "123458", 0, "01234589" },
+        /* 45*/ { BARCODE_UPCE, "123409", ZINT_ERROR_INVALID_DATA, "" }, // If last digit (emode) 9, 5th can't be 0 (BS 787 Table 5 NOTE 3)
+        /* 46*/ { BARCODE_UPCE, "123459", 0, "01234596" },
+        /* 47*/ { BARCODE_UPCE, "000000", 0, "00000000" },
+        /* 48*/ { BARCODE_UPCE, "000001", 0, "00000019" },
+        /* 49*/ { BARCODE_UPCE, "000002", 0, "00000028" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol;
+
+    char escaped[4096];
+    char cmp_buf[4096];
+    char cmp_msg[1024];
+
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); // Only do BWIPP test if asked, too slow otherwise
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); // Only do ZXing-C++ test if asked, too slow otherwise
 
     testStart("test_upce_input");
 
@@ -108,6 +117,30 @@ static void test_upce_input(int index, int debug) {
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+
+        if (ret < ZINT_ERROR) {
+            if (do_bwipp && testUtilCanBwipp(i, symbol, -1, -1, -1, debug)) {
+                char modules_dump[8192 + 1];
+                assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
+                ret = testUtilBwipp(i, symbol, -1, -1, -1, data[i].hrt, (int) strlen(data[i].hrt), NULL, cmp_buf, sizeof(cmp_buf));
+                assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+
+                ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, modules_dump);
+                assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
+                               i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_buf, modules_dump);
+            }
+            if (do_zxingcpp && testUtilCanZXingCPP(i, symbol, data[i].data, debug)) {
+                int cmp_len, ret_len;
+                char modules_dump[8192 + 1];
+                assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
+                ret = testUtilZXingCPP(i, symbol, data[i].data, modules_dump, cmp_buf, sizeof(cmp_buf), &cmp_len);
+                assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+
+                ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].hrt, (int) strlen(data[i].hrt), NULL /*primary*/, escaped, &ret_len);
+                assert_zero(ret, "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
+                               i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len, escaped);
+            }
+        }
 
         ZBarcode_Delete(symbol);
     }
@@ -857,10 +890,10 @@ static void test_encode(int index, int generate, int debug) {
         /* 28*/ { BARCODE_UPCA, 12, "21098765432+12121", 0, 1, 154, "Example of UPC-A with 5-digit add-on, addon_gap 12",
                     "1010010011001100100011010001011011011101110110101010100001001110101110010000101101100111010010100000000000010110011001010010011010110011010011011010011001"
                 },
-        /* 29*/ { BARCODE_UPCE_CHK, 8, "06543217+21", 0, 1, 79, "Example of UPC-A with 2-digit add-on, addon_gap 8",
+        /* 29*/ { BARCODE_UPCE_CHK, 8, "06543217+21", 0, 1, 79, "Example of UPC-E with 2-digit add-on, addon_gap 8",
                     "1010000101011000100111010111101001101100110010101010000000010110010011010110011"
                 },
-        /* 30*/ { BARCODE_UPCE, 11, "1654321+12121", 0, 1, 109, "Example of UPC-A with 5-digit add-on, addon_gap 11",
+        /* 30*/ { BARCODE_UPCE, 11, "1654321+12121", 0, 1, 109, "Example of UPC-E with 5-digit add-on, addon_gap 11",
                     "1010101111011100101000110111101001101101100110101010000000000010110011001010010011010110011010011011010011001"
                 },
         /* 31*/ { BARCODE_ISBNX, -1, "9789295055124", 0, 1, 95, "ISBN Users' Manual 7th Ed. 13.2",
@@ -883,10 +916,12 @@ static void test_encode(int index, int generate, int debug) {
     int i, length, ret;
     struct zint_symbol *symbol;
 
-    char bwipp_buf[4096];
-    char bwipp_msg[1024];
+    char escaped[4096];
+    char cmp_buf[4096];
+    char cmp_msg[1024];
 
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); // Only do BWIPP test if asked, too slow otherwise
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); // Only do ZXing-C++ test if asked, too slow otherwise
 
     testStart("test_encode");
 
@@ -918,12 +953,23 @@ static void test_encode(int index, int generate, int debug) {
                 assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, ret, width, row, data[i].data);
 
                 if (do_bwipp && testUtilCanBwipp(i, symbol, -1, data[i].option_2, -1, debug)) {
-                    ret = testUtilBwipp(i, symbol, -1, data[i].option_2, -1, data[i].data, length, NULL, bwipp_buf, sizeof(bwipp_buf));
+                    ret = testUtilBwipp(i, symbol, -1, data[i].option_2, -1, data[i].data, length, NULL, cmp_buf, sizeof(cmp_buf));
                     assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
 
-                    ret = testUtilBwippCmp(symbol, bwipp_msg, bwipp_buf, data[i].expected);
+                    ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, data[i].expected);
                     assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
-                                   i, testUtilBarcodeName(symbol->symbology), ret, bwipp_msg, bwipp_buf, data[i].expected);
+                                   i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_buf, data[i].expected);
+                }
+                if (do_zxingcpp && testUtilCanZXingCPP(i, symbol, data[i].data, debug)) {
+                    int cmp_len, ret_len;
+                    char modules_dump[8192 + 1];
+                    assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
+                    ret = testUtilZXingCPP(i, symbol, data[i].data, modules_dump, cmp_buf, sizeof(cmp_buf), &cmp_len);
+                    assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+
+                    ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length, NULL /*primary*/, escaped, &ret_len);
+                    assert_zero(ret, "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
+                                   i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len, escaped);
                 }
             }
         }
