@@ -283,6 +283,7 @@ extern "C" {
 #define GS1NOCHECK_MODE         0x0020  /* Do not check validity of GS1 data (except that printable ASCII only) */
 #define HEIGHTPERROW_MODE       0x0040  /* Interpret `height` as per-row rather than as overall height */
 #define FAST_MODE               0x0080  /* Use faster if less optimal encodation for symbologies that support it */
+                                        /* Note: only DATAMATRIX currently */
 
 /* Data Matrix specific options (`symbol->option_3`) */
 #define DM_SQUARE               100     /* Only consider square versions on automatic symbol size selection */
