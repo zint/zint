@@ -1175,7 +1175,7 @@ structapp         | Structured   | Mark a symbol as part of a  | count 0
 warn_level        | integer      | Affects error/warning value | WARN_DEFAULT
                   |              |    returned by Zint API.    |
 text              | unsigned     | Human Readable Text, which  | "" (empty)
-                  |    character |    usually consists of in-  |
+                  |    character |    usually consists of in-  | (output only)
                   |    string    |    put data plus one more   |
                   |              |    check digit. Uses UTF-8  |
                   |              |    formatting, with a       |
@@ -2500,6 +2500,9 @@ DMRE symbol sizes may be activated in automatic size mode using the option
 GS1 data may be encoded using FNC1 (preferred) or GS as separator. Use the
 option --gssep to change to GS or use the API output_options |= GS1_GS_SEPARATOR
 
+For a near-optimal but slower encoding, the --compressenc option (API
+option_3 |= DM_COMPRESSION) may be used.
+
 Data Matrix supports Structured Append of up to 16 symbols and a numeric ID
 (file identifications), which can be set by using the --structapp option (see
 section 4.15) or the API structapp variable. The ID consists of 2 numbers ID1
@@ -3132,9 +3135,9 @@ Value | EC Level | Amount of symbol holding error correction data
 -----------------------------------------------------------------
 
 Zint does not currently implement data compression by default, but this can
-be initiated through the API by setting
+be initiated using the `--compressenc` option or through the API by setting
 
-symbol->option_3 = ULTRA_COMPRESSION;
+symbol->option_3 |= ULTRA_COMPRESSION;
 
 WARNING: Ultracode data compression is experimental and should not be used
 in a production environment.

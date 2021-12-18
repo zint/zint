@@ -388,6 +388,7 @@ const char *testUtilInputModeName(int input_mode) {
         { "GS1PARENS_MODE", GS1PARENS_MODE, 0x0010 },
         { "GS1NOCHECK_MODE", GS1NOCHECK_MODE, 0x0020 },
         { "HEIGHTPERROW_MODE", HEIGHTPERROW_MODE, 0x0040 },
+        { "FAST_MODE", FAST_MODE, 0x0080 },
     };
     static const int data_size = ARRAY_SIZE(data);
     int set, i;
@@ -433,7 +434,7 @@ const char *testUtilOption3Name(int option_3) {
     static char buffer[64];
 
     const char *name = NULL;
-    unsigned int high_byte = option_3 == -1 ? 0 : (option_3 >> 8) & 0xFF;
+    const unsigned int high_byte = option_3 == -1 ? 0 : (option_3 >> 8) & 0xFF;
 
     switch (option_3 & 0xFF) {
         case DM_SQUARE:
@@ -2758,8 +2759,8 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                     added_dmre = 1;
                 }
             }
-            if (option_3 != DM_SQUARE && symbol->width != symbol->height) {
-                if (option_3 == DM_DMRE && !added_dmre) {
+            if ((option_3 & 0x7F) != DM_SQUARE && symbol->width != symbol->height) {
+                if ((option_3 & 0x7F) == DM_DMRE && !added_dmre) {
                     sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%sdmre", strlen(bwipp_opts_buf) ? " " : "");
                     //added_dmre = 1;
                 }

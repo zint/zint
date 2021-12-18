@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009 - 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009 - 2021 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -32,7 +32,7 @@
 /* vim: set ts=4 sw=4 et : */
 
 /*
-    Containes Extended Rectangular Data Matrix (DMRE)
+    Contains Extended Rectangular Data Matrix (DMRE)
     See http://www.dmre.info for information
     Contact: harald.oehlmann@eurodatacouncil.org
  */

@@ -44,6 +44,9 @@ Changes
 - GUI: add CLI equivalent dialog (#163)
 - Add ZBarcode_BarcodeName()
 - GUI: data dialog: convert Line Feeds if escaping on input, escape on output
+- DATAMATRIX: new algorithm for (near-)optimal encoding, props Alex Geller
+- CLI/GUI/Tcl: add --fast option to select faster but less optimal DATAMATRIX
+  algorithm (previous default)
 
 Bugs
 ----

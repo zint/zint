@@ -1233,6 +1233,7 @@ void MainWindow::change_options()
         connect(get_widget(QSL("chkDMRectangle")), SIGNAL(toggled( bool )), SLOT(update_preview()));
         connect(get_widget(QSL("chkDMRE")), SIGNAL(toggled( bool )), SLOT(update_preview()));
         connect(get_widget(QSL("chkDMGSSep")), SIGNAL(toggled( bool )), SLOT(update_preview()));
+        connect(get_widget(QSL("chkDMFast")), SIGNAL(toggled( bool )), SLOT(update_preview()));
         connect(get_widget(QSL("cmbDMStructAppCount")), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(get_widget(QSL("cmbDMStructAppCount")), SIGNAL(currentIndexChanged( int )), SLOT(structapp_ui_set()));
         connect(get_widget(QSL("cmbDMStructAppIndex")), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
@@ -2022,6 +2023,10 @@ void MainWindow::update_preview()
                 m_optionWidget->findChild<QCheckBox*>(QSL("chkDMRectangle"))->setEnabled(false);
                 m_optionWidget->findChild<QCheckBox*>(QSL("chkDMRE"))->setEnabled(false);
                 m_bc.bc.setOption3(0);
+            }
+
+            if (get_chk_val(QSL("chkDMFast"))) {
+                m_bc.bc.setInputMode(FAST_MODE | m_bc.bc.inputMode());
             }
 
             if ((item_val = get_cmb_index(QSL("cmbDMStructAppCount"))) != 0) {
@@ -2884,6 +2889,7 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology)
             settings.setValue(QSL("studio/bc/datamatrix/chk_suppress_rect"), get_chk_val(QSL("chkDMRectangle")));
             settings.setValue(QSL("studio/bc/datamatrix/chk_allow_dmre"), get_chk_val(QSL("chkDMRE")));
             settings.setValue(QSL("studio/bc/datamatrix/chk_gs_sep"), get_chk_val(QSL("chkDMGSSep")));
+            settings.setValue(QSL("studio/bc/datamatrix/chk_fast"), get_chk_val(QSL("chkDMFast")));
             settings.setValue(QSL("studio/bc/datamatrix/structapp_count"), get_cmb_index(QSL("cmbDMStructAppCount")));
             settings.setValue(QSL("studio/bc/datamatrix/structapp_index"), get_cmb_index(QSL("cmbDMStructAppIndex")));
             settings.setValue(QSL("studio/bc/datamatrix/structapp_id"), get_spn_val(QSL("spnDMStructAppID")));
@@ -3259,6 +3265,7 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
             set_chk_from_setting(settings, QSL("studio/bc/datamatrix/chk_suppress_rect"), QSL("chkDMRectangle"));
             set_chk_from_setting(settings, QSL("studio/bc/datamatrix/chk_allow_dmre"), QSL("chkDMRE"));
             set_chk_from_setting(settings, QSL("studio/bc/datamatrix/chk_gs_sep"), QSL("chkDMGSSep"));
+            set_chk_from_setting(settings, QSL("studio/bc/datamatrix/chk_fast"), QSL("chkDMFast"));
             set_cmb_from_setting(settings, QSL("studio/bc/datamatrix/structapp_count"), QSL("cmbDMStructAppCount"));
             set_cmb_from_setting(settings, QSL("studio/bc/datamatrix/structapp_index"), QSL("cmbDMStructAppIndex"));
             set_spn_from_setting(settings, QSL("studio/bc/datamatrix/structapp_id"), QSL("spnDMStructAppID"), 1);

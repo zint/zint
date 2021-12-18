@@ -49,7 +49,6 @@
 #ifndef _MSC_VER
 #include <stdint.h>
 #else
-#include <malloc.h>
 #include "ms_stdint.h"
 #endif
 #include <assert.h>

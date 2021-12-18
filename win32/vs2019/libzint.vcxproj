@@ -183,6 +183,7 @@
     <ClInclude Include="..\..\backend\common.h" />
     <ClInclude Include="..\..\backend\composite.h" />
     <ClInclude Include="..\..\backend\dmatrix.h" />
+    <ClInclude Include="..\..\backend\dmatrix_trace.h" />
     <ClInclude Include="..\..\backend\eci.h" />
     <ClInclude Include="..\..\backend\eci_sb.h" />
     <ClInclude Include="..\..\backend\emf.h" />

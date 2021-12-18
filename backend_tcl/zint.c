@@ -137,6 +137,8 @@
 2021-11-19 GL
 - Added -heightperrow option
 - Added DBAR_EXPSTK, CODE16K, CODE49 -rows
+2021-12-17 GL
+- Added -fast option
 */
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
@@ -468,6 +470,7 @@ static const char help_message[] = "zint tcl(stub,obj) dll\n"
     /* cli option --ecinos not supported */
     "   -eci number: ECI to use\n"
     /* cli option --esc not supported */
+    "   -fast bool: use fast encodation (Data Matrix)\n"
     "   -fg color: set foreground color as 6 or 8 hex rrggbbaa\n"
     /* replaces cli options --binary and --gs1 */
     "   -format binary|unicode|gs1: input data format. Default:unicode\n"
@@ -726,7 +729,7 @@ static int Encode(Tcl_Interp *interp, int objc,
         static const char *optionList[] = {
             "-addongap", "-barcode", "-bg", "-bind", "-bold", "-border", "-box",
             "-cols", "-compliantheight", "-dmre", "-dotsize", "-dotty",
-            "-eci", "-fg", "-format", "-fullmultibyte",
+            "-eci", "-fast", "-fg", "-format", "-fullmultibyte",
             "-gs1nocheck", "-gs1parens", "-gssep", "-guarddescent",
             "-height", "-heightperrow", "-init", "-mask", "-mode",
             "-nobackground", "-noquietzones", "-notext", "-primary", "-quietzones",
@@ -737,7 +740,7 @@ static int Encode(Tcl_Interp *interp, int objc,
         enum iOption {
             iAddonGap, iBarcode, iBG, iBind, iBold, iBorder, iBox,
             iCols, iCompliantHeight, iDMRE, iDotSize, iDotty,
-            iECI, iFG, iFormat, iFullMultiByte,
+            iECI, iFast, iFG, iFormat, iFullMultiByte,
             iGS1NoCheck, iGS1Parens, iGSSep, iGuardDescent,
             iHeight, iHeightPerRow, iInit, iMask, iMode,
             iNoBackground, iNoQuietZones, iNoText, iPrimary, iQuietZones,
@@ -766,6 +769,7 @@ static int Encode(Tcl_Interp *interp, int objc,
         case iCompliantHeight:
         case iDMRE:
         case iDotty:
+        case iFast:
         case iGS1NoCheck:
         case iGS1Parens:
         case iGSSep:
@@ -897,6 +901,13 @@ static int Encode(Tcl_Interp *interp, int objc,
                 my_symbol->output_options |= BARCODE_DOTTY_MODE;
             } else {
                 my_symbol->output_options &= ~BARCODE_DOTTY_MODE;
+            }
+            break;
+        case iFast:
+            if (intValue) {
+                my_symbol->input_mode |= FAST_MODE;
+            } else {
+                my_symbol->input_mode &= ~FAST_MODE;
             }
             break;
         case iGS1NoCheck:

@@ -857,6 +857,7 @@ namespace Zint {
         }
 
         arg_bool(cmd, "--compliantheight", hasCompliantHeight() && compliantHeight());
+
         arg_data(cmd, longOptOnly ? "--data=" : "-d ", text(), win);
 
         if (m_symbol == BARCODE_DATAMATRIX || m_symbol == BARCODE_HIBC_DM) {
@@ -875,6 +876,7 @@ namespace Zint {
         }
 
         arg_bool(cmd, "--esc", inputMode() & ESCAPE_MODE);
+        arg_bool(cmd, "--fast", inputMode() & FAST_MODE);
 
         if (fgColor() != Qt::black) {
             arg_color(cmd, "--fg=", fgColor());

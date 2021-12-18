@@ -5,7 +5,7 @@ set -e
 
 function run_zxingcpp_test() {
     echo -e "\n$1 -f $2"
-    backend/tests/$1 -f "$2" -d $(expr 1024 + 16 + 32) || exit 1
+    backend/tests/$1 -f "$2" -d $(expr 512 + 16 + 32) || exit 1
 }
 
 run_zxingcpp_test "test_2of5" "encode"

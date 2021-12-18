@@ -510,6 +510,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\backend\dmatrix_trace.h"
+				>
+			</File>
+			<File
 				RelativePath="..\backend\eci.h"
 				>
 			</File>

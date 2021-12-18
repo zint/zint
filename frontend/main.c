@@ -137,6 +137,7 @@ static void usage(void) {
             "  -e, --ecinos          Display table of ECI character encodings\n"
             "  --eci=NUMBER          Set the ECI (Extended Channel Interpretation) code\n"
             "  --esc                 Process escape characters in input data\n"
+            "  --fast                Use faster encodation (Data Matrix)\n"
             "  --fg=COLOUR           Specify a foreground colour (in hex RGB/RGBA)\n"
             "  --filetype=TYPE       Set output file type BMP/EMF/EPS/GIF/PCX/PNG/SVG/TIF/TXT\n"
             "  --fullmultibyte       Use multibyte for binary/Latin (QR/Han Xin/Grid Matrix)\n"
@@ -863,7 +864,7 @@ int main(int argc, char **argv) {
         enum options {
             OPT_ADDONGAP = 128, OPT_BATCH, OPT_BINARY, OPT_BG, OPT_BIND, OPT_BOLD, OPT_BORDER, OPT_BOX,
             OPT_CMYK, OPT_COLS, OPT_COMPLIANTHEIGHT, OPT_DIRECT, OPT_DMRE, OPT_DOTSIZE, OPT_DOTTY, OPT_DUMP,
-            OPT_ECI, OPT_ESC, OPT_FG, OPT_FILETYPE, OPT_FONTSIZE, OPT_FULLMULTIBYTE,
+            OPT_ECI, OPT_ESC, OPT_FAST, OPT_FG, OPT_FILETYPE, OPT_FONTSIZE, OPT_FULLMULTIBYTE,
             OPT_GS1, OPT_GS1NOCHECK, OPT_GS1PARENS, OPT_GSSEP, OPT_GUARDDESCENT,
             OPT_HEIGHT, OPT_HEIGHTPERROW, OPT_INIT, OPT_MIRROR, OPT_MASK, OPT_MODE,
             OPT_NOBACKGROUND, OPT_NOQUIETZONES, OPT_NOTEXT, OPT_PRIMARY, OPT_QUIETZONES,
@@ -894,6 +895,7 @@ int main(int argc, char **argv) {
             {"eci", 1, NULL, OPT_ECI},
             {"ecinos", 0, NULL, 'e'},
             {"esc", 0, NULL, OPT_ESC},
+            {"fast", 0, NULL, OPT_FAST},
             {"fg", 1, 0, OPT_FG},
             {"filetype", 1, NULL, OPT_FILETYPE},
             {"fontsize", 1, NULL, OPT_FONTSIZE},
@@ -1044,6 +1046,9 @@ int main(int argc, char **argv) {
                 break;
             case OPT_ESC:
                 my_symbol->input_mode |= ESCAPE_MODE;
+                break;
+            case OPT_FAST:
+                my_symbol->input_mode |= FAST_MODE;
                 break;
             case OPT_FG:
                 strncpy(my_symbol->fgcolour, optarg, 9);

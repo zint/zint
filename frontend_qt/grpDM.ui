@@ -50,242 +50,242 @@
        </item>
        <item>
         <property name="text">
-         <string>10 x 10</string>
+         <string>10 x 10 (Zint 1)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>12 x 12</string>
+         <string>12 x 12 (Zint 2)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>14 x 14</string>
+         <string>14 x 14 (Zint 3)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>16 x 16</string>
+         <string>16 x 16 (Zint 4)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>18 x 18</string>
+         <string>18 x 18 (Zint 5)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>20 x 20</string>
+         <string>20 x 20 (Zint 6)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>22 x 22</string>
+         <string>22 x 22 (Zint 7)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>24 x 24</string>
+         <string>24 x 24 (Zint 8)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>26 x 26</string>
+         <string>26 x 26 (Zint 9)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>32 x 32</string>
+         <string>32 x 32 (Zint 10)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>36 x 36</string>
+         <string>36 x 36 (Zint 11)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>40 x 40</string>
+         <string>40 x 40 (Zint 12)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>44 x 44</string>
+         <string>44 x 44 (Zint 13)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>48 x 48</string>
+         <string>48 x 48 (Zint 14)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>52 x 52</string>
+         <string>52 x 52 (Zint 15)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>64 x 64</string>
+         <string>64 x 64 (Zint 16)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>72 x 72</string>
+         <string>72 x 72 (Zint 17)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>80 x 80</string>
+         <string>80 x 80 (Zint 18)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>88 x 88</string>
+         <string>88 x 88 (Zint 19)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>96 x 96</string>
+         <string>96 x 96 (Zint 20)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>104 x 104</string>
+         <string>104 x 104 (Zint 21)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>120 x 120</string>
+         <string>120 x 120 (Zint 22)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>132 x 132</string>
+         <string>132 x 132 (Zint 23)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>144 x 144</string>
+         <string>144 x 144 (Zint 24)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>8 x 18</string>
+         <string>8 x 18 (Zint 25)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>8 x 32</string>
+         <string>8 x 32 (Zint 26)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>12 x 26</string>
+         <string>12 x 26 (Zint 27)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>12 x 36</string>
+         <string>12 x 36 (Zint 28)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>16 x 36</string>
+         <string>16 x 36 (Zint 29)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>16 x 48</string>
+         <string>16 x 48 (Zint 30)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>8 x 48 (DMRE)</string>
+         <string>8 x 48 (DMRE) (Zint 31)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>8 x 64 (DMRE)</string>
+         <string>8 x 64 (DMRE) (Zint 32)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>8 x 80 (DMRE)</string>
+         <string>8 x 80 (DMRE) (Zint 33)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>8 x 96 (DMRE)</string>
+         <string>8 x 96 (DMRE) (Zint 34)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>8 x 120 (DMRE)</string>
+         <string>8 x 120 (DMRE) (Zint 35)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>8 x 144 (DMRE)</string>
+         <string>8 x 144 (DMRE) (Zint 36)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>12 x 64 (DMRE)</string>
+         <string>12 x 64 (DMRE) (Zint 37)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>12 x 88 (DMRE)</string>
+         <string>12 x 88 (DMRE) (Zint 38)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>16 x 64 (DMRE)</string>
+         <string>16 x 64 (DMRE) (Zint 39)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>20 x 36 (DMRE)</string>
+         <string>20 x 36 (DMRE) (Zint 40)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>20 x 44 (DMRE)</string>
+         <string>20 x 44 (DMRE) (Zint 41)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>20 x 64 (DMRE)</string>
+         <string>20 x 64 (DMRE) (Zint 42)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>22 x 48 (DMRE)</string>
+         <string>22 x 48 (DMRE) (Zint 43)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>24 x 48 (DMRE)</string>
+         <string>24 x 48 (DMRE) (Zint 44)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>24 x 64 (DMRE)</string>
+         <string>24 x 64 (DMRE) (Zint 45)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>26 x 40 (DMRE)</string>
+         <string>26 x 40 (DMRE) (Zint 46)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>26 x 48 (DMRE)</string>
+         <string>26 x 48 (DMRE) (Zint 47)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>26 x 64 (DMRE)</string>
+         <string>26 x 64 (DMRE) (Zint 48)</string>
         </property>
        </item>
       </widget>
@@ -401,6 +401,20 @@ the data with a slash &quot;/&quot;</string>
       <string>Use Group Separator (ASCII 0x1D) to separate GS1 AIs
 instead of the preferred FNC1
 (ignored if disabled)</string>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="chkDMFast">
+     <property name="text">
+      <string>&amp;Fast encoding</string>
+     </property>
+     <property name="toolTip">
+      <string>Use a faster but less optimal algorithm
+for encoding the data</string>
      </property>
      <property name="checked">
       <bool>false</bool>

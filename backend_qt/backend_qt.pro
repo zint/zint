@@ -34,6 +34,7 @@ HEADERS +=  ../backend/aztec.h \
             ../backend/common.h \
             ../backend/composite.h \
             ../backend/dmatrix.h \
+            ../backend/dmatrix_trace.h \
             ../backend/eci.h \
             ../backend/eci_sb.h \
             ../backend/emf.h \
