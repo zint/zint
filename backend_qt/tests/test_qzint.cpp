@@ -606,6 +606,18 @@ private slots:
             << "zint.exe -b 71 -d \"[20]12\" --gs1 --gssep --square"
             << "" << "";
 
+        QTest::newRow("BARCODE_DATAMATRIX") << false << 0.0f << ""
+            << BARCODE_DATAMATRIX << (DATA_MODE | ESCAPE_MODE | FAST_MODE) // symbology-inputMode
+            << "ABCDEFGH\\x01I" << "" // text-primary
+            << 0.0f << -1 << 0 << 0 << 1.0f << false << 0.7f // height-dotSize
+            << 5.0f << 0 << 0 << "" << QColor(Qt::black) << QColor(Qt::white) // guardDescent-bgColor
+            << false << 0 << 0 << 0 << 0 << 0 // cmyk-fontSetting
+            << true << false << false << false << true << 0 // showText-rotateAngle
+            << 0 << false << false << false << WARN_DEFAULT << false // eci-debug
+            << "zint -b 71 --binary -d 'ABCDEFGH\\x01I' --esc --fast"
+            << "zint.exe -b 71 --binary -d \"ABCDEFGH\\x01I\" --esc --fast"
+            << "" << "";
+
         QTest::newRow("BARCODE_DBAR_EXPSTK_CC") << false << 40.8f << ""
             << BARCODE_DBAR_EXPSTK_CC << (DATA_MODE | HEIGHTPERROW_MODE) // symbology-inputMode
             << "[91]ABCDEFGHIJKL" << "[11]901222[99]ABCDE" // text-primary
