@@ -13,6 +13,9 @@ Version 2.10.0.9 (dev) not released yet
   NOTE: previously was silently truncated
 - PDF417: return warning if specified cols increased
   NOTE: previously no warning was returned
+- Matrix symbols: horizontal boundary bars appear outside any vertical
+  whitespace
+  NOTE: previously appeared inside vertical whitespace
 
 Changes
 -------
@@ -47,6 +50,8 @@ Changes
 - DATAMATRIX: new algorithm for (near-)optimal encoding, props Alex Geller
 - CLI/GUI/Tcl: add --fast option to select faster but less optimal DATAMATRIX
   algorithm (previous default)
+- Matrix symbols: change horizontal boundary bars to appear outside any
+  vertical whitespace, as they're decorative rather than functional (#247)
 
 Bugs
 ----
@@ -69,6 +74,7 @@ Bugs
 - DATAMATRIX: fix mis-encoding of non-encodables in X12 and EDIFACT modes,
   props Alex Geller
 - DATAMATRIX: fix mis-encoding of FNC1/GS in EDIFACT in GS1 mode
+- Allow for dot overspill in height of vertical box sides (dotty mode)
 
 
 Version 2.10.0 2021-08-14

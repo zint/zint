@@ -8,8 +8,8 @@
 
    <g id="barcode" fill="#000000">
       <rect x="0" y="0" width="44" height="48" fill="#FFFFFF" />
-      <rect x="0.00" y="2.00" width="44.00" height="2.00" />
-      <rect x="0.00" y="44.00" width="44.00" height="2.00" />
+      <rect x="0.00" y="0.00" width="44.00" height="2.00" />
+      <rect x="0.00" y="46.00" width="44.00" height="2.00" />
       <circle cx="3.00" cy="5.00" r="0.80" />
       <circle cx="7.00" cy="5.00" r="0.80" />
       <circle cx="11.00" cy="5.00" r="0.80" />

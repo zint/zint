@@ -168,6 +168,8 @@ extern "C" {
     INTERNAL int is_stackable(const int symbology);
     INTERNAL int is_extendable(const int symbology);
     INTERNAL int is_composite(const int symbology);
+    INTERNAL int is_dotty(const int symbology);
+    INTERNAL int is_fixed_ratio(const int symbology);
 
     INTERNAL int is_twodigits(const unsigned char source[], const int length, const int position);
 

@@ -878,42 +878,50 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
     }
 
     // Bind/box
-    if (symbol->border_width > 0) {
-        if (symbol->output_options & (BARCODE_BOX | BARCODE_BIND)) {
-            const float ybind_top = yoffset - symbol->border_width;
-            // Following equivalent to yoffset + symbol->height + dot_overspill except for BARCODE_MAXICODE
-            const float ybind_bot = vector->height - textoffset - boffset;
-            // Top
-            rect = vector_plot_create_rect(symbol, 0.0f, ybind_top, vector->width, symbol->border_width);
-            if (!rect) return ZINT_ERROR_MEMORY;
-            if (!(symbol->output_options & BARCODE_BOX)
-                    && (symbol->symbology == BARCODE_CODABLOCKF || symbol->symbology == BARCODE_HIBC_BLOCKF)) {
-                /* CodaBlockF bind - does not extend over horizontal whitespace */
-                rect->x = xoffset;
-                rect->width -= xoffset + roffset;
-            }
-            vector_plot_add_rect(symbol, rect, &last_rectangle);
-            // Bottom
-            rect = vector_plot_create_rect(symbol, 0.0f, ybind_bot, vector->width, symbol->border_width);
-            if (!rect) return ZINT_ERROR_MEMORY;
-            if (!(symbol->output_options & BARCODE_BOX)
-                    && (symbol->symbology == BARCODE_CODABLOCKF || symbol->symbology == BARCODE_HIBC_BLOCKF)) {
-                /* CodaBlockF bind - does not extend over horizontal whitespace */
-                rect->x = xoffset;
-                rect->width -= xoffset + roffset;
-            }
-            vector_plot_add_rect(symbol, rect, &last_rectangle);
+    if (symbol->border_width > 0 && (symbol->output_options & (BARCODE_BOX | BARCODE_BIND))) {
+        const int horz_outside = is_fixed_ratio(symbol->symbology);
+        float ybind_top = yoffset - symbol->border_width;
+        // Following equivalent to yoffset + symbol->height + dot_overspill except for BARCODE_MAXICODE
+        float ybind_bot = vector->height - textoffset - boffset;
+        if (horz_outside) {
+            ybind_top = 0;
+            ybind_bot = vector->height - symbol->border_width;
         }
+        // Top
+        rect = vector_plot_create_rect(symbol, 0.0f, ybind_top, vector->width, symbol->border_width);
+        if (!rect) return ZINT_ERROR_MEMORY;
+        if (!(symbol->output_options & BARCODE_BOX)
+                && (symbol->symbology == BARCODE_CODABLOCKF || symbol->symbology == BARCODE_HIBC_BLOCKF)) {
+            /* CodaBlockF bind - does not extend over horizontal whitespace */
+            rect->x = xoffset;
+            rect->width -= xoffset + roffset;
+        }
+        vector_plot_add_rect(symbol, rect, &last_rectangle);
+        // Bottom
+        rect = vector_plot_create_rect(symbol, 0.0f, ybind_bot, vector->width, symbol->border_width);
+        if (!rect) return ZINT_ERROR_MEMORY;
+        if (!(symbol->output_options & BARCODE_BOX)
+                && (symbol->symbology == BARCODE_CODABLOCKF || symbol->symbology == BARCODE_HIBC_BLOCKF)) {
+            /* CodaBlockF bind - does not extend over horizontal whitespace */
+            rect->x = xoffset;
+            rect->width -= xoffset + roffset;
+        }
+        vector_plot_add_rect(symbol, rect, &last_rectangle);
         if (symbol->output_options & BARCODE_BOX) {
             const float xbox_right = vector->width - symbol->border_width;
+            float box_top = yoffset;
             // Following equivalent to symbol->height except for BARCODE_MAXICODE
-            const float box_height = vector->height - textoffset - dot_overspill - yoffset - boffset;
+            float box_height = vector->height - textoffset - dot_overspill - yoffset - boffset;
+            if (horz_outside) {
+                box_top = symbol->border_width;
+                box_height = vector->height - symbol->border_width * 2;
+            }
             // Left
-            rect = vector_plot_create_rect(symbol, 0.0f, yoffset, symbol->border_width, box_height);
+            rect = vector_plot_create_rect(symbol, 0.0f, box_top, symbol->border_width, box_height);
             if (!rect) return ZINT_ERROR_MEMORY;
             vector_plot_add_rect(symbol, rect, &last_rectangle);
             // Right
-            rect = vector_plot_create_rect(symbol, xbox_right, yoffset, symbol->border_width, box_height);
+            rect = vector_plot_create_rect(symbol, xbox_right, box_top, symbol->border_width, box_height);
             if (!rect) return ZINT_ERROR_MEMORY;
             vector_plot_add_rect(symbol, rect, &last_rectangle);
         }

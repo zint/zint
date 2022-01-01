@@ -393,49 +393,6 @@ static int gs1_compliant(const int symbology) {
     return check_force_gs1(symbology);
 }
 
-static int is_dotty(const int symbology) {
-    /* Returns 1 if symbology is a matrix design renderable as dots */
-
-    switch (symbology) {
-        /* Note MAXICODE and ULTRA absent */
-        case BARCODE_QRCODE:
-        case BARCODE_DATAMATRIX:
-        case BARCODE_MICROQR:
-        case BARCODE_HIBC_DM:
-        case BARCODE_AZTEC:
-        case BARCODE_HIBC_QR:
-        case BARCODE_HIBC_AZTEC:
-        case BARCODE_AZRUNE:
-        case BARCODE_CODEONE:
-        case BARCODE_GRIDMATRIX:
-        case BARCODE_HANXIN:
-        case BARCODE_DOTCODE:
-        case BARCODE_UPNQR:
-        case BARCODE_RMQR:
-            return 1;
-            break;
-    }
-
-    return 0;
-}
-
-static int is_fixed_ratio(const int symbology) {
-    /* Returns 1 if symbology has fixed aspect ratio (matrix design) */
-
-    if (is_dotty(symbology)) {
-        return 1;
-    }
-
-    switch (symbology) {
-        case BARCODE_MAXICODE:
-        case BARCODE_ULTRA:
-            return 1;
-            break;
-    }
-
-    return 0;
-}
-
 static int supports_eci(const int symbology) {
     /* Returns 1 if symbology can encode the ECI character */
 

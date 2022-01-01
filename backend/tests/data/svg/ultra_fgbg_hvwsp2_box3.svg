@@ -173,9 +173,9 @@
       <rect x="52.00" y="32.00" width="2.00" height="2.00" fill="#00ff00" />
       <rect x="54.00" y="32.00" width="2.00" height="2.00" fill="#ffff00" />
       <rect x="10.00" y="34.00" width="48.00" height="2.00" fill="#000000" />
-      <rect x="0.00" y="4.00" width="68.00" height="6.00" />
-      <rect x="0.00" y="36.00" width="68.00" height="6.00" />
-      <rect x="0.00" y="10.00" width="6.00" height="26.00" />
-      <rect x="62.00" y="10.00" width="6.00" height="26.00" />
+      <rect x="0.00" y="0.00" width="68.00" height="6.00" />
+      <rect x="0.00" y="40.00" width="68.00" height="6.00" />
+      <rect x="0.00" y="6.00" width="6.00" height="34.00" />
+      <rect x="62.00" y="6.00" width="6.00" height="34.00" />
    </g>
 </svg>

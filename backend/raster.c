@@ -668,9 +668,14 @@ static void draw_bind_box(const struct zint_symbol *symbol, unsigned char *pixel
             const int xoffset_si, const int yoffset_si, const int symbol_height_si, const int dot_overspill_si,
             const int image_width, const int image_height, const int si) {
     if (symbol->border_width > 0 && (symbol->output_options & (BARCODE_BOX | BARCODE_BIND))) {
+        const int horz_outside = is_fixed_ratio(symbol->symbology);
         const int bwidth_si = symbol->border_width * si;
-        const int ybind_top = yoffset_si - bwidth_si;
-        const int ybind_bot = yoffset_si + symbol_height_si + dot_overspill_si;
+        int ybind_top = yoffset_si - bwidth_si;
+        int ybind_bot = yoffset_si + symbol_height_si + dot_overspill_si;
+        if (horz_outside) {
+            ybind_top = 0;
+            ybind_bot = image_height - bwidth_si;
+        }
         /* Horizontal boundary bars */
         if ((symbol->output_options & BARCODE_BOX)
                 || (symbol->symbology != BARCODE_CODABLOCKF && symbol->symbology != BARCODE_HIBC_BLOCKF)) {
@@ -686,9 +691,14 @@ static void draw_bind_box(const struct zint_symbol *symbol, unsigned char *pixel
         if (symbol->output_options & BARCODE_BOX) {
             /* Vertical side bars */
             const int xbox_right = image_width - bwidth_si;
-            draw_bar(pixelbuf, 0, bwidth_si, yoffset_si, symbol_height_si, image_width, image_height, DEFAULT_INK);
-            draw_bar(pixelbuf, xbox_right, bwidth_si, yoffset_si, symbol_height_si, image_width, image_height,
-                    DEFAULT_INK);
+            int box_top = yoffset_si;
+            int box_height = symbol_height_si + dot_overspill_si;
+            if (horz_outside) {
+                box_top = bwidth_si;
+                box_height = image_height - bwidth_si * 2;
+            }
+            draw_bar(pixelbuf, 0, bwidth_si, box_top, box_height, image_width, image_height, DEFAULT_INK);
+            draw_bar(pixelbuf, xbox_right, bwidth_si, box_top, box_height, image_width, image_height, DEFAULT_INK);
         }
     }
 }

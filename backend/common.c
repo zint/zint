@@ -298,6 +298,49 @@ INTERNAL int is_composite(const int symbology) {
     return symbology >= BARCODE_EANX_CC && symbology <= BARCODE_DBAR_EXPSTK_CC;
 }
 
+/* Returns 1 if symbology is a matrix design renderable as dots */
+INTERNAL int is_dotty(const int symbology) {
+
+    switch (symbology) {
+        /* Note MAXICODE and ULTRA absent */
+        case BARCODE_QRCODE:
+        case BARCODE_DATAMATRIX:
+        case BARCODE_MICROQR:
+        case BARCODE_HIBC_DM:
+        case BARCODE_AZTEC:
+        case BARCODE_HIBC_QR:
+        case BARCODE_HIBC_AZTEC:
+        case BARCODE_AZRUNE:
+        case BARCODE_CODEONE:
+        case BARCODE_GRIDMATRIX:
+        case BARCODE_HANXIN:
+        case BARCODE_DOTCODE:
+        case BARCODE_UPNQR:
+        case BARCODE_RMQR:
+            return 1;
+            break;
+    }
+
+    return 0;
+}
+
+/* Returns 1 if symbology has fixed aspect ratio (matrix design) */
+INTERNAL int is_fixed_ratio(const int symbology) {
+
+    if (is_dotty(symbology)) {
+        return 1;
+    }
+
+    switch (symbology) {
+        case BARCODE_MAXICODE:
+        case BARCODE_ULTRA:
+            return 1;
+            break;
+    }
+
+    return 0;
+}
+
 /* Whether next two characters are digits */
 INTERNAL int is_twodigits(const unsigned char source[], const int length, const int position) {
     if ((position + 1 < length) && (source[position] >= '0') && (source[position] <= '9')

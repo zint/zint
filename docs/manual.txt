@@ -471,7 +471,7 @@ symbol by corrupting a scan if the scanning beam strays off the top or bottom of
 the symbol. Zint can also put a border right around the symbol and its
 horizontal whitespace with the --box option.
 
-The width of the boundary or box can be specified using the --border switch.
+The width of the boundary or box must be specified using the --border switch.
 For example:
 
 zint --box --border=10 -w 10 -d "This"
@@ -479,6 +479,11 @@ zint --box --border=10 -w 10 -d "This"
 gives a box with a width 10 times the X-dimension of the symbol. Note that when
 specifying a box, horizontal whitespace is usually required in order to create a
 quiet zone between the barcode and the sides of the box.
+
+For linear symbols, horizontal boundary bars appear tight against the barcode,
+inside any vertical whitespace (or text). For matrix symbols, however, where
+they are decorative rather than functional, boundary bars appear outside any
+whitespace.
 
 Codablock-F, Code 16K and Code 49 always have boundary bars, and default to
 particular horizontal whitespace values. Special considerations apply to ITF-14
