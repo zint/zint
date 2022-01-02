@@ -2881,8 +2881,8 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
         memcpy(cmd + GS_INITIAL_LEN, adj, sizeof(adj));
     }
     if (symbology == BARCODE_FIM) {
-        /* Ratio 2 width bar/space -> 1 width */
-        char adj[8] = " -sr=0.5";
+        /* Ratio 2.25 width bar/space -> 1 width */
+        char adj[10] = " -sr=0.444";
         memmove(cmd + GS_INITIAL_LEN + sizeof(adj), cmd + GS_INITIAL_LEN, strlen(cmd) + 1 - GS_INITIAL_LEN);
         memcpy(cmd + GS_INITIAL_LEN, adj, sizeof(adj));
     }

@@ -52,6 +52,7 @@ Changes
   algorithm (previous default)
 - Matrix symbols: change horizontal boundary bars to appear outside any
   vertical whitespace, as they're decorative rather than functional (#247)
+- FIM: Add support for FIM E
 
 Bugs
 ----

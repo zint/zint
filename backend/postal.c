@@ -342,8 +342,12 @@ INTERNAL int fim(struct zint_symbol *symbol, unsigned char source[], int length)
         case 'D':
             expand(symbol, "1111131311111", 13);
             break;
+        case 'e':
+        case 'E':
+            expand(symbol, "1317131", 7);
+            break;
         default:
-            strcpy(symbol->errtxt, "487: Invalid character in data (\"A\", \"B\", \"C\" or \"D\" only)");
+            strcpy(symbol->errtxt, "487: Invalid character in data (\"A\", \"B\", \"C\", \"D\" or \"E\" only)");
             return ZINT_ERROR_INVALID_DATA;
             break;
     }

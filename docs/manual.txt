@@ -3163,18 +3163,19 @@ not given, no ID is encoded.
 6.7.1 Facing Identification Mark (FIM)
 --------------------------------------
 Used by the United States Postal Service (USPS), the FIM symbology is used to
-assist automated mail processing. There are only 4 valid symbols which can be
-generated using the characters A-D as shown in the table below.
+assist automated mail processing. There are only 5 valid symbols which can be
+generated using the characters A-E as shown in the table below.
 
-----------------------------------------------------------------------------
+------------------------------------------------------------------------------
 Code Letter  |  Usage
-----------------------------------------------------------------------------
+------------------------------------------------------------------------------
 A            |  Used for courtesy reply mail and metered reply mail with a
              |     pre-printed POSTNET symbol.
 B            |  Used for business reply mail without a pre-printed zip code.
 C            |  Used for business reply mail with a pre-printed zip code.
 D            |  Used for Information Based Indicia (IBI) postage.
-----------------------------------------------------------------------------
+E            |  Used for customized mail with a USPS Intelligent Mail barcode.
+------------------------------------------------------------------------------
 
 6.7.2 Flattermarken
 -------------------
