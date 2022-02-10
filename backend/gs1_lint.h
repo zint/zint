@@ -620,7 +620,7 @@ static int gs1_lint(const int ai, const unsigned char *data, const int data_len,
 
     } else if (ai < 800) {
 
-        if (ai >= 710 && ai <= 714) {
+        if (ai >= 710 && ai <= 715) {
             return x1__20(data, data_len, p_err_no, p_err_posn, err_msg);
         }
 
