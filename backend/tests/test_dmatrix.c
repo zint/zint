@@ -916,7 +916,7 @@ static void test_input(int index, int generate, int debug) {
         /*235*/ { UNICODE_MODE, 0, -1, -1, -1, "aaaaaa", 0, 0, 12, 12, 1, "EF 59 BF 59 BF 1B 98 38 0A E1 70 F9", "TTTTTT", 0 },
         /*236*/ { UNICODE_MODE | FAST_MODE, 0, -1, -1, -1, "AAAAAAAAAAAAAA12a", 0, 0, 12, 26, 1, "E6 59 BF 59 BF 59 BF 59 BF 59 B6 25 D2 FE 81 ED 63 5A 30 1D C5 77 70 66 93 2B 6A 40 23 22", "", 0 },
         /*237*/ { UNICODE_MODE, 0, -1, -1, -1, "AAAAAAAAAAAAAA12a", 0, 0, 12, 26, 0, "E6 59 BF 59 BF 59 BF 59 BF FE 42 42 8E 62 81 ED 19 C5 3F C8 AC F1 E9 F5 68 75 AA 6C 14 72", "CCCCCCCCCCCCAAAAA; BWIPP same as FAST_MODE", 0 },
-        /*238*/ { UNICODE_MODE | FAST_MODE, 0, -1, -1, -1, "1234ééé12", 0, 0, 8, 32, 1, "8E A4 E7 59 D5 6B EB 6A 8E 81 22 4D 35 A9 CA 58 B3 1B 33 B7 DD", "", 0 },
+        /*238*/ { UNICODE_MODE | FAST_MODE, 0, -1, -1, -1, "1234ééé12", 0, 0, 8, 32, 0, "8E A4 E7 59 D5 6B EB 6A 8E 81 22 4D 35 A9 CA 58 B3 1B 33 B7 DD", "N12 N34 BAS BE9 BE9 ASC FN4 A69 N12; BWIPP same as non-FAST_MODE", 0 },
         /*239*/ { UNICODE_MODE, 0, -1, -1, -1, "1234ééé12", 0, 0, 14, 14, 1, "8E A4 E7 5A D5 6B 01 8E 1C 5C 58 A7 11 8D DD A8 D6 B9", "", 1 },
     };
     int data_size = ARRAY_SIZE(data);
