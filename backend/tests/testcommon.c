@@ -3246,9 +3246,7 @@ static const char *testUtilZXingCPPName(int index, const struct zint_symbol *sym
                 return "EAN-8";
             }
             if (strchr(source, '+') != NULL && length < 15) {
-                printf("i:%d %s not ZXing-C++ compatible, EAN-8 with add-on not supported yet\n",
-                        index, testUtilBarcodeName(symbology));
-                return NULL;
+                return "EAN-8";
             }
         }
     }
@@ -3365,19 +3363,22 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
     const int is_hibc = symbology >= BARCODE_HIBC_128 && symbology <= BARCODE_HIBC_AZTEC;
     const int have_c25checkdigit = symbol->option_2 == 1 || symbol->option_2 == 2;
     const int have_c25inter = (symbology == BARCODE_C25INTER && ((expected_len & 1) || have_c25checkdigit))
-                            || symbology == BARCODE_ITF14 || symbology == BARCODE_DPLEIT || symbology == BARCODE_DPIDENT;
+                                || symbology == BARCODE_ITF14 || symbology == BARCODE_DPLEIT
+                                || symbology == BARCODE_DPIDENT;
     const int is_dbar_exp = symbology == BARCODE_DBAR_EXP || symbology == BARCODE_DBAR_EXPSTK;
     const int is_upcean = is_extendable(symbology);
 
     char *reduced = gs1 ? (char *) alloca(expected_len + 1) : NULL;
     char *escaped = is_escaped ? (char *) alloca(expected_len + 1) : NULL;
     char *hibc = is_hibc ? (char *) alloca(expected_len + 2 + 1) : NULL;
-    char *maxi = symbology == BARCODE_MAXICODE && primary ? (char *) alloca(expected_len + strlen(primary) + 6 + 9 + 1) : NULL;
+    char *maxi = symbology == BARCODE_MAXICODE && primary
+                    ? (char *) alloca(expected_len + strlen(primary) + 6 + 9 + 1) : NULL;
     char *vin = symbology == BARCODE_VIN && (symbol->option_2 & 1) ? (char *) alloca(expected_len + 1 + 1) : NULL;
     char *c25inter = have_c25inter ? (char *) alloca(expected_len + 13 + 1 + 1) : NULL;
     char *dbar_exp = is_dbar_exp ? (char *) alloca(expected_len + 1) : NULL;
     char *upcean = is_upcean ? (char *) alloca(expected_len + 1 + 1) : NULL;
-    char *ean14_nve18 = symbology == BARCODE_EAN14 || symbology == BARCODE_NVE18 ? (char *) alloca(expected_len + 3 + 1) : NULL;
+    char *ean14_nve18 = symbology == BARCODE_EAN14 || symbology == BARCODE_NVE18
+                        ? (char *) alloca(expected_len + 3 + 1) : NULL;
 
     int ret;
     int ret_memcmp;
@@ -3603,15 +3604,29 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
             memcpy(upcean, expected, expected_len);
             upcean[13] = ' ';
             expected = upcean;
-        } else if (symbology == BARCODE_EANX && expected_len == 7) {
+        } else if (symbology == BARCODE_EANX && (expected_len == 7
+				|| (strchr(expected, '+') != NULL && (expected_len == 10 || expected_len == 13)))) {
             memcpy(upcean, expected, 7);
             upcean[7] = gs1_check_digit((const unsigned char *) upcean, 7);
+			if (expected_len == 10) {
+                upcean[8] = ' ';
+                memcpy(upcean + 9, expected + 8, 2);
+			} else if (expected_len == 13) {
+                upcean[8] = ' ';
+                memcpy(upcean + 9, expected + 8, 5);
+			}
             expected_len++;
             upcean[expected_len] = '\0';
             expected = upcean;
-        } else if ((symbology == BARCODE_EANX_CHK || symbology == BARCODE_ISBNX) && (expected_len == 16 || expected_len == 19)) {
+        } else if ((symbology == BARCODE_EANX_CHK || symbology == BARCODE_ISBNX)
+                && (expected_len == 16 || expected_len == 19)) {
             memcpy(upcean, expected, expected_len);
             upcean[13] = ' ';
+            expected = upcean;
+        } else if (symbology == BARCODE_EANX_CHK && strchr(expected, '+') != NULL
+                && (expected_len == 11 || expected_len == 14)) {
+            memcpy(upcean, expected, expected_len);
+            upcean[8] = ' ';
             expected = upcean;
         }
 
