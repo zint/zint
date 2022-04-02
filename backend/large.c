@@ -45,6 +45,7 @@
  *   https://github.com/fahickman/r128/blob/master/r128.h
  *   "R128 is released into the public domain. See LICENSE for details." LICENSE is The Unlicense.
  */
+#include <assert.h>
 #include <stdio.h>
 #ifdef _MSC_VER
 #include <malloc.h>
@@ -197,6 +198,7 @@ INTERNAL uint64_t large_div_u64(large_int *t, uint64_t v) {
 
     /* Compute qhat1 estimate */
 
+    assert(vn1 != 0); /* Suppress clang-tidy-14 clang-analyzer-core.DivideZero */
     qhat1 = tnhi / vn1; /* Divide first digit of v into first 2 digits of t */
     rhat = tnhi % vn1;
 

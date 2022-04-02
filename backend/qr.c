@@ -765,6 +765,8 @@ static void add_ecc(unsigned char fullstream[], const unsigned char datastream[]
         ecc_cw = rmqr_total_codewords[version - RMQR_VERSION] - data_cw;
     }
 
+    /* Suppress some clang-tidy clang-analyzer-core.UndefinedBinaryOperatorResult/uninitialized.Assign warnings */
+    assert(blocks > 0);
     short_data_block_length = data_cw / blocks;
     qty_long_blocks = data_cw % blocks;
     qty_short_blocks = blocks - qty_long_blocks;
@@ -840,7 +842,6 @@ static void add_ecc(unsigned char fullstream[], const unsigned char datastream[]
     }
 
     for (j = 0; j < data_cw; j++) {
-        // NOLINTNEXTLINE suppress clang-tidy warning: interleaved_data[data_cw] fully set
         fullstream[j] = interleaved_data[j];
     }
     for (j = 0; j < ecc_cw; j++) {
