@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019 - 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -27,14 +27,13 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
 /*
  * Adapted from qrencode/tests/common.h
  * Copyright (C) 2006-2017 Kentaro Fukuchi <kentaro@fukuchi.org>
  */
 
-#ifndef TESTCOMMON_H
-#define TESTCOMMON_H
+#ifndef Z_TESTCOMMON_H
+#define Z_TESTCOMMON_H
 
 #define ZINT_DEBUG_TEST_PRINT           16
 #define ZINT_DEBUG_TEST_LESS_NOISY      32
@@ -177,9 +176,10 @@ int testUtilBwippCmpRow(const struct zint_symbol *symbol, int row, char *msg, co
             const char *expected);
 
 int testUtilHaveZXingCPPDecoder(void);
-int testUtilCanZXingCPP(int index, const struct zint_symbol *symbol, const char *data, const int debug);
-int testUtilZXingCPP(int index, struct zint_symbol *symbol, const char *source, char *bits, char *buffer,
-            const int buffer_size, int *p_cmp_len);
+int testUtilCanZXingCPP(int index, const struct zint_symbol *symbol, const char *data, const int length,
+            const int debug);
+int testUtilZXingCPP(int index, struct zint_symbol *symbol, const char *source, const int length, char *bits,
+            char *buffer, const int buffer_size, int *p_cmp_len);
 int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, int cmp_len,
             const char *expected, int expected_len, const char *primary, char *ret_buf, int *p_ret_len);
 
@@ -187,4 +187,5 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
 }
 #endif
 
-#endif /* TESTCOMMON_H */
+/* vim: set ts=4 sw=4 et : */
+#endif /* Z_TESTCOMMON_H */

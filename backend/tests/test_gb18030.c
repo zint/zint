@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019 - 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -27,7 +27,6 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
 
 #include "testcommon.h"
 #include "test_gb18030_tab.h"
@@ -388,6 +387,70 @@ static void test_gb18030_cpy(int index) {
     testFinish();
 }
 
+/* For testing GBK, to exclude GB 18030 extensions */
+STATIC_UNLESS_ZINT_TEST int gb18030ext_wctomb(unsigned int *r, const unsigned int wc);
+STATIC_UNLESS_ZINT_TEST int gb18030uni_wctomb(unsigned int *r1, unsigned int *r2, const unsigned int wc);
+
+/* Control for GBK */
+static int gbk_wctomb_zint2(unsigned int *r, unsigned int wc) {
+    unsigned int c;
+    int tab_length, start_i, end_i;
+    int i;
+    unsigned int r1, r2;
+
+    if (gb18030ext_wctomb(&r1, wc)) {
+        return 0;
+    }
+    if (wc >= 0xe000 && wc <= 0xe864) {
+        return 0;
+    }
+    if (gb18030uni_wctomb(&r1, &r2, wc)) {
+        return 0;
+    }
+
+    tab_length = ARRAY_SIZE(test_gb18030_tab);
+    start_i = test_gb18030_tab_ind[wc >> 10];
+    end_i = start_i + 0x800 > tab_length ? tab_length : start_i + 0x800;
+    for (i = start_i; i < end_i; i += 2) {
+        if (test_gb18030_tab[i + 1] == wc) {
+            c = test_gb18030_tab[i];
+            if (c <= 0xFFFF) {
+                *r = c;
+                return c <= 0xFF ? 1 : 2;
+            }
+            return 0;
+        }
+    }
+    return 0;
+}
+
+static void test_gbk_wctomb_zint(void) {
+
+    int ret, ret2;
+    unsigned int val, val2;
+    unsigned int i;
+
+    testStart("test_gbk_wctomb_zint");
+
+    for (i = 0; i < 0xFFFE; i++) {
+        if (i < 0x80) { // ASCII is straight through and not dealt with by gbk_wctomb_zint()
+            continue;
+        }
+        if (i >= 0xD800 && i <= 0xDFFF) { // UTF-16 surrogates
+            continue;
+        }
+        val = val2 = 0;
+        ret = gbk_wctomb_zint(&val, i);
+        ret2 = gbk_wctomb_zint2(&val2, i);
+        assert_equal(ret, ret2, "i:%d 0x%04X ret %d != ret2 %d, val 0x%04X, val2 0x%04X\n", (int) i, i, ret, ret2, val, val2);
+        if (ret2) {
+            assert_equal(val, val2, "i:%d 0x%04X val 0x%04X != val2 0x%04X\n", (int) i, i, val, val2);
+        }
+    }
+
+    testFinish();
+}
+
 int main(int argc, char *argv[]) {
 
     testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
@@ -395,6 +458,7 @@ int main(int argc, char *argv[]) {
         { "test_gb18030_utf8", test_gb18030_utf8, 1, 0, 0 },
         { "test_gb18030_utf8_to_eci", test_gb18030_utf8_to_eci, 1, 0, 0 },
         { "test_gb18030_cpy", test_gb18030_cpy, 1, 0, 0 },
+        { "test_gbk_wctomb_zint", test_gbk_wctomb_zint, 0, 0, 0 },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));
@@ -403,3 +467,5 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
+
+/* vim: set ts=4 sw=4 et : */

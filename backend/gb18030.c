@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019-2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -27,7 +27,6 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
 /*
  * Adapted from GNU LIBICONV library and patched to allow 2 duplicate mappings
  * for compatibility with GB 2312 (GB2312.TXT):
@@ -2422,7 +2421,7 @@ static int gbkext_inv_wctomb(unsigned int *r, const unsigned int wc) {
  * GBK (libiconv-1.16/lib/gbk.h)
  */
 
-static int gbk_wctomb(unsigned int *r, const unsigned int wc) {
+INTERNAL int gbk_wctomb_zint(unsigned int *r, const unsigned int wc) {
     int ret;
 
     /* ZINT: Note these mappings U+30FB and U+2015 different from GB 2312 */
@@ -2551,7 +2550,7 @@ static const unsigned short gb18030ext_pagefe[16] = {
   0xa6ed, 0xa6f3, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, /*0x18-0x1f*/
 };
 
-static int gb18030ext_wctomb(unsigned int *r, const unsigned int wc) {
+STATIC_UNLESS_ZINT_TEST int gb18030ext_wctomb(unsigned int *r, const unsigned int wc) {
     unsigned short c = 0;
     if (wc == 0x01f9) {
         c = 0xa8bf;
@@ -2725,7 +2724,7 @@ static const unsigned short gb18030uni_ranges[206] = {
   25994, 25998, 26012, 26016, 26110, 26116
 };
 
-static int gb18030uni_wctomb(unsigned int *r1, unsigned int *r2, const unsigned int wc) {
+STATIC_UNLESS_ZINT_TEST int gb18030uni_wctomb(unsigned int *r1, unsigned int *r2, const unsigned int wc) {
     unsigned int i = wc;
     if (i >= 0x0080 && i <= 0xffff) {
         if (i == 0xe7c7) {
@@ -2806,7 +2805,7 @@ INTERNAL int gb18030_wctomb_zint(unsigned int *r1, unsigned int *r2, const unsig
     }
 
     /* Code set 1 (GBK extended) */
-    ret = gbk_wctomb(r1, wc);
+    ret = gbk_wctomb_zint(r1, wc);
     if (ret) {
         return ret;
     }
@@ -2973,3 +2972,5 @@ INTERNAL void gb18030_cpy(const unsigned char source[], int *p_length, unsigned 
         }
     }
 }
+
+/* vim: set ts=4 sw=4 et : */

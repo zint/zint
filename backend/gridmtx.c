@@ -1,7 +1,7 @@
 /*  gridmtx.c - Grid Matrix
 
     libzint - the open source barcode library
-    Copyright (C) 2009-2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -28,7 +28,6 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
 
 /* This file implements Grid Matrix as specified in
    AIM Global Document Number AIMD014 Rev. 1.63 Revised 9 Dec 2008 */
@@ -1011,6 +1010,7 @@ static void place_layer_id(char *grid, int size, int layers, int modules, int ec
 }
 
 INTERNAL int gridmatrix(struct zint_symbol *symbol, unsigned char source[], int length) {
+    int warn_number = 0;
     int size, modules, error_number;
     int auto_layers, min_layers, layers, auto_ecc_level, min_ecc_level, ecc_level;
     int x, y, i;
@@ -1038,7 +1038,7 @@ INTERNAL int gridmatrix(struct zint_symbol *symbol, unsigned char source[], int 
         gb2312_cpy(source, &length, gbdata, full_multibyte);
     } else {
         int done = 0;
-        if (symbol->eci != 29) { /* Unless ECI 29 (GB) */
+        if (symbol->eci != 29) { /* Unless ECI 29 (GB 2312) */
             /* Try other conversions (ECI 0 defaults to ISO/IEC 8859-1) */
             error_number = gb2312_utf8_to_eci(symbol->eci, source, &length, gbdata, full_multibyte);
             if (error_number == 0) {
@@ -1053,6 +1053,10 @@ INTERNAL int gridmatrix(struct zint_symbol *symbol, unsigned char source[], int 
             error_number = gb2312_utf8(symbol, source, &length, gbdata);
             if (error_number != 0) {
                 return error_number;
+            }
+            if (symbol->eci != 29) {
+                strcpy(symbol->errtxt, "540: Converted to GB 2312 but no ECI specified");
+                warn_number = ZINT_WARN_NONCOMPLIANT;
             }
         }
     }
@@ -1237,5 +1241,7 @@ INTERNAL int gridmatrix(struct zint_symbol *symbol, unsigned char source[], int 
     }
     symbol->height = size;
 
-    return 0;
+    return warn_number;
 }
+
+/* vim: set ts=4 sw=4 et : */

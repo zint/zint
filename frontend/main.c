@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2022 Robin Stuart <rstuart114@gmail.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,7 +18,6 @@
     with this program; if not, write to the Free Software Foundation, Inc.,
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-/* vim: set ts=4 sw=4 et : */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -200,14 +199,19 @@ static void show_eci(void) {
             " 22: Windows 1251 - Cyrillic\n"
             " 23: Windows 1252 - Latin 1\n"
             " 24: Windows 1256 - Arabic\n"
-            " 25: UCS-2BE (High order byte first) (Unicode BMP)\n"
+            " 25: UTF-16BE (High order byte first)\n"
             " 26: UTF-8 (Unicode)\n"
-            " 27: ISO/IEC 646:1991 7-bit character set (ASCII)\n"
+            " 27: ISO/IEC 646:1991 7-bit ASCII\n"
             " 28: Big5 (Taiwan) Chinese Character Set\n"
-            " 29: ** GB (PRC) Chinese Character Set\n"
+            " 29: GB 2312 (PRC) Chinese Character Set\n"
             " 30: Korean Character Set EUC-KR (KS X 1001:2002)\n"
+            " 31: GBK Chinese Character Set\n"
+            " 32: GB 18030 Chinese Character Set\n"
+            " 33: UTF-16LE (Low order byte first)\n"
+            " 34: UTF-32BE (High order bytes first)\n"
+            " 35: UTF-32LE (Low order bytes first)\n"
+            "170: ISO/IEC 646:1991 7-bit Invariant\n"
             "899: 8-bit binary data\n"
-            "** ECI 29 is GB 2312 except for Han Xin, when it is GB 18030\n"
     );
 }
 
@@ -1479,3 +1483,5 @@ int main(int argc, char **argv) {
 
     return do_exit(error_number);
 }
+
+/* vim: set ts=4 sw=4 et : */

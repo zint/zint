@@ -425,6 +425,9 @@ Remember to place [square brackets] around AI identifiers</string>
                  <height>0</height>
                 </size>
                </property>
+               <property name="maxVisibleItems">
+                <number>34</number>
+               </property>
                <property name="toolTip">
                 <string>Set the ECI (Extended Channel Interpretation) code
 (ignored if disabled)</string>
@@ -536,7 +539,7 @@ Remember to place [square brackets] around AI identifiers</string>
                </item>
                <item>
                 <property name="text">
-                 <string>25: UCS-2BE</string>
+                 <string>25: UTF-16BE</string>
                 </property>
                </item>
                <item>
@@ -562,6 +565,36 @@ Remember to place [square brackets] around AI identifiers</string>
                <item>
                 <property name="text">
                  <string>30: Korean EUC-KR</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>31: GBK</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>32: GB 18030</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>33: UTF-16LE</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>34: UTF-32BE</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>35: UTF-32LE</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>170: ISO 646 Invariant</string>
                 </property>
                </item>
                <item>

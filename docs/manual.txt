@@ -670,9 +670,6 @@ The ECI value of 0 does not encode any ECI information in the code symbol. In
 this case, the default encoding applies for the data which is "ISO/IEC 8859-1 -
 Latin alphabet No. 1".
 
-The row marked with an asterisk (*) translates GB 2312 codepoints, except when
-using Han Xin Code, which translates GB 18030 codepoints, a superset of GB 2312.
-
 Note: the "--eci=3" specification should only be used for special purposes.
 Using this parameter, the ECI information is explicitly added to the code
 symbol. Nevertheless, for ECI Code 3, this is not required, as this is the
@@ -701,12 +698,18 @@ ECI Code  |  Character Encoding Scheme
 22        |  Windows 1251 - Cyrillic
 23        |  Windows 1252 - Latin 1
 24        |  Windows 1256 - Arabic
-25        |  UCS-2BE (High order byte first) (Unicode BMP)
+25        |  UTF-16BE (High order byte first)
 26        |  UTF-8 (Unicode)
 27        |  ISO/IEC 646:1991 7-bit character set (ASCII)
 28        |  Big5 (Taiwan) Chinese Character Set
-29 *      |  GB (PRC) Chinese Character Set
+29        |  GB 2312 (PRC) Chinese Character Set
 30        |  Korean Character Set EUC-KR (KS X 1001:2002)
+31        |  GBK Chinese Character Set
+32        |  GB 18030 Chinese Character Set
+33        |  UTF-16LE (Low order byte first)
+34        |  UTF-32BE (High order bytes first)
+35        |  UTF-32LE (Low order bytes first)
+170       |  ISO/IEC 646:1991 7-bit character set (Invariant)
 899       |  8-bit binary data
 ------------------------------------------------------------
 
@@ -1523,11 +1526,12 @@ FAST_MODE         |  Use faster if less optimal encodation for symbologies that
                   |     support it (currently DATAMATRIX only).
 --------------------------------------------------------------------------------
 
-The default mode is DATA_MODE.
+The default mode is DATA_MODE. (Note that this differs from the default for the
+CLI and GUI, which is UNICODE_MODE.)
 
-DATA_MODE, UNICODE_MODE and GS1_MODE are mutually exclusive, whereas ESCAPE_MODE,
-GS1PARENS_MODE, GS1NOCHECK_MODE and HEIGHTPERROW_MODE are optional. So, for
-example, you can set
+DATA_MODE, UNICODE_MODE and GS1_MODE are mutually exclusive, whereas
+ESCAPE_MODE, GS1PARENS_MODE, GS1NOCHECK_MODE, HEIGHTPERROW_MODE and FAST_MODE
+are optional. So, for example, you can set
 
 my_symbol->input_mode = UNICODE_MODE | ESCAPE_MODE;
 
@@ -1579,7 +1583,7 @@ returned on success. For instance:
 
 char name[32];
 if (ZBarcode_BarcodeName(BARCODE_PDF417, name) == 0) {
-	printf("%s\n", name);
+    printf("%s\n", name);
 }
 
 will print "BARCODE_PDF417".
@@ -3199,7 +3203,7 @@ default value is 250 (25%).
 ================================
 7.1 License
 -----------
-Zint, libzint and Zint Barcode Studio are Copyright © 2021 Robin Stuart. All
+Zint, libzint and Zint Barcode Studio are Copyright © 2022 Robin Stuart. All
 historical versions are distributed under the GNU General Public License
 version 3 or later. Version 2.5 (and later) is released under a dual license:
 the encoding library is released under the BSD license whereas the GUI, Zint
@@ -3283,9 +3287,8 @@ international standards:
      capture techniques - Code 39 bar code symbology specification
 > ISO/IEC 18004:2015 Information technology - Automatic identification and data
      capture techniques - QR Code bar code symbology specification
-> ISO/IEC DIS 20830:2019 (Draft 2019-10-10) Information technology - Automatic
-     identification and data capture techniques - Han Xin Code bar code
-     symbology specification
+> ISO/IEC 20830:2021 Information technology - Automatic identification and data
+     capture techniques - Han Xin Code bar code symbology specification
 > ISO/IEC 24723:2010 Information technology - Automatic identification and data
      capture techniques - GS1 Composite bar code symbology specification
 > ISO/IEC 24724:2011 Information technology - Automatic identification and data
@@ -3317,12 +3320,12 @@ international standards:
      (Released 9th Dec 2008)
 > AIMD/TSC15032-43 (v 0.99c) - International Technical Specification -
      Ultracode Symbology (Draft) (Released 4th Nov 2015)
-> GS1 General Specifications Release 21.0.1 (Jan 2021)
+> GS1 General Specifications Release 22.0 (Jan 2022)
 > AIM ITS/04-001 International Technical Standard - Extended Channel
      Interpretations Part 1: Identification Schemes and Protocol (Released 24th
      May 2004)
 > AIM ITS/04-023 International Technical Standard - Extended Channel
-     Interpretations Part 3: Register (Released 15th July 2004)
+     Interpretations Part 3: Register (Version 2, February 2022)
 
 
 A. Character Encoding

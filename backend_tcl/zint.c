@@ -1,7 +1,7 @@
 /* zint_tcl.c TCL binding for zint */
 /*
     zint - the open source tcl binding to the zint barcode library
-    Copyright (C) 2014 Harald Oehlmann <oehhar@users.sourceforge.net>
+    Copyright (C) 2014-2022 Harald Oehlmann <oehhar@users.sourceforge.net>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -28,7 +28,6 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
 */
-/* vim: set ts=4 sw=4 et : */
 /*
  History
 
@@ -139,6 +138,9 @@
 - Added DBAR_EXPSTK, CODE16K, CODE49 -rows
 2021-12-17 GL
 - Added -fast option
+2022-04-08 GL
+- Updated ECIs to AIM ITS/04-023:2022
+  Note changed names "unicode" -> "utf-16be", "euc-cn" -> "gb2312"
 */
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
@@ -427,18 +429,24 @@ static const char *s_eci_list[] = {
     "cp1251",       /*22: Windows-1251*/
     "cp1252",       /*23: Windows-1252*/
     "cp1256",       /*24: Windows-1256*/
-    "unicode",      /*25: UCS-2BE (High order byte first) Unicode BMP*/
+    "utf-16be",     /*25: UTF-16BE (High order byte first) Unicode*/
     "utf-8",        /*26: Unicode (UTF-8)*/
     "ascii",        /*27: ISO-646:1991 7-bit character set*/
     "big5",         /*28: Big5 (Taiwan) Chinese Character Set*/
-    "euc-cn",       /*29: GB (PRC) Chinese Character Set*/
+    "gb2312",       /*29: GB 2312 (PRC) Chinese Character Set*/
     "iso2022-kr",   /*30: Korean Character Set EUC-KR (KS X 1001:2002)*/
+    "gbk",          /*31: GBK Chinese Character Set*/
+    "gb18030",      /*32: GB 18030 Chinese Character Set*/
+    "utf-16le",     /*33: UTF-16LE (Low order byte first) Unicode*/
+    "utf-32be",     /*34: UTF-32BE (High order byte first) Unicode*/
+    "utf-32le",     /*35: UTF-32BE (Low order byte first) Unicode*/
     NULL
 };
 
 /* The ECI numerical number to pass to ZINT */
 static const int s_eci_number[] = {
-    3,4,5,6,7,8,9,10,11,12,13,15,16,17,18,20,21,22,23,24,25,26,27,28,29,30
+    3,4,5,6,7,8,9,10,11,12,13,15,16,17,18,20,21,22,23,24,25,26,27,28,29,30,
+    31,32,33,34,35
 };
 
 /* Version information */
@@ -1403,3 +1411,5 @@ static int Encode(Tcl_Interp *interp, int objc,
     }
     return TCL_OK;
 }
+
+/* vim: set ts=4 sw=4 et : */

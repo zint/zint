@@ -1,7 +1,7 @@
 /***************************************************************************
  *   Copyright (C) 2008 by BogDan Vatra                                    *
  *   bogdan@licentia.eu                                                    *
- *   Copyright (C) 2010-2021 Robin Stuart                                  *
+ *   Copyright (C) 2010-2022 Robin Stuart                                  *
  *                                                                         *
  *   This program is free software: you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -14,7 +14,6 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
-/* vim: set ts=4 sw=4 et : */
 
 #ifdef _MSC_VER
 #if _MSC_VER >= 1900 /* MSVC 2015 */
@@ -459,9 +458,11 @@ namespace Zint {
             m_eci = ECIIndex + 2;
         } else if (ECIIndex >= 12 && ECIIndex <= 15) {
             m_eci = ECIIndex + 3;
-        } else if (ECIIndex >= 16 && ECIIndex <= 26) {
+        } else if (ECIIndex >= 16 && ECIIndex <= 31) {
             m_eci = ECIIndex + 4;
-        } else if (ECIIndex == 27) {
+        } else if (ECIIndex == 32) {
+            m_eci = 170; /* ISO 646 Invariant */
+        } else if (ECIIndex == 33) {
             m_eci = 899; /* 8-bit binary data */
         } else {
             m_eci = 0;
@@ -469,7 +470,7 @@ namespace Zint {
     }
 
     void QZint::setECIValue(int eci) { // Sets literal value
-        if (eci < 3 || (eci > 30 && eci != 899) || eci == 14 || eci == 19) {
+        if (eci < 3 || (eci > 35 && eci != 170 && eci != 899) || eci == 14 || eci == 19) {
             m_eci = 0;
         } else {
             m_eci = eci;
@@ -1055,3 +1056,5 @@ namespace Zint {
         }
     }
 } /* namespace Zint */
+
+/* vim: set ts=4 sw=4 et : */

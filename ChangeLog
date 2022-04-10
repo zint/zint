@@ -16,6 +16,10 @@ Version 2.10.0.9 (dev) not released yet
 - Matrix symbols: horizontal boundary bars appear outside any vertical
   whitespace
   NOTE: previously appeared inside vertical whitespace
+- ECI 29 now GB 2312 only; GB 18030 is new ECI 32
+  NOTE: previously ECI 29 was GB 18030 for HANXIN, GB 2312 otherwise
+- GRIDMATRIX, HANXIN, QRCODE/RMQR now warn when convert to GB 2312, GB 18030,
+  Shift JIS resp. and no ECI given
 
 Changes
 -------
@@ -53,6 +57,10 @@ Changes
 - Matrix symbols: change horizontal boundary bars to appear outside any
   vertical whitespace, as they're decorative rather than functional (#247)
 - FIM: Add support for FIM E
+- Updated ECIs to AIM ITS/04-023:2022 (ECI Part 3: Register)
+- HANXIN: removed alternating filler in function information
+- GRIDMATRIX/HANXIN/QRCODE/RMQR: warn if auto-conversion (i.e. no ECI given)
+  occurs to resp. specialized char sets (GB 2312/GB 18030/Shift JIS)
 
 Bugs
 ----
@@ -76,6 +84,7 @@ Bugs
   props Alex Geller
 - DATAMATRIX: fix mis-encoding of FNC1/GS in EDIFACT in GS1 mode
 - Allow for dot overspill in height of vertical box sides (dotty mode)
+- HANXIN: fix gate-posts on codeword limits
 
 
 Version 2.10.0 2021-08-14
