@@ -22,6 +22,9 @@ int main(int argc, char *argv[])
 {
     Q_INIT_RESOURCE(resources);
 
+#if QT_VERSION >= 0x50600
+    QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+#endif
 #if QT_VERSION >= 0x50400
     /* Suppresses "Qt WebEngine seems to be initialized from a plugin" warning */
     QApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
