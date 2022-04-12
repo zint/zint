@@ -1,7 +1,7 @@
 /* qr.c Handles QR Code, Micro QR Code, UPNQR and rMQR
 
     libzint - the open source barcode library
-    Copyright (C) 2009 - 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -28,7 +28,6 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
 
 #include <math.h>
 #ifdef _MSC_VER
@@ -1541,6 +1540,7 @@ static int getBinaryLength(const int version, char inputMode[], const unsigned i
 }
 
 INTERNAL int qrcode(struct zint_symbol *symbol, unsigned char source[], int length) {
+    int warn_number = 0;
     int i, j, est_binlen, prev_est_binlen;
     int ecc_level, autosize, version, max_cw, target_codewords, blocks, size;
     int bitmask, gs1;
@@ -1592,6 +1592,10 @@ INTERNAL int qrcode(struct zint_symbol *symbol, unsigned char source[], int leng
             int error_number = sjis_utf8(symbol, source, &length, jisdata);
             if (error_number != 0) {
                 return error_number;
+            }
+            if (symbol->eci != 20) {
+                strcpy(symbol->errtxt, "543: Converted to Shift JIS but no ECI specified");
+                warn_number = ZINT_WARN_NONCOMPLIANT;
             }
         }
     }
@@ -1832,7 +1836,7 @@ INTERNAL int qrcode(struct zint_symbol *symbol, unsigned char source[], int leng
     }
     symbol->height = size;
 
-    return 0;
+    return warn_number;
 }
 
 static int micro_qr_m1(struct zint_symbol *symbol, char binary_data[], int bp) {
@@ -2967,6 +2971,7 @@ static void setup_rmqr_grid(unsigned char *grid, const int h_size, const int v_s
 
 /* rMQR according to 2018 draft standard */
 INTERNAL int rmqr(struct zint_symbol *symbol, unsigned char source[], int length) {
+    int warn_number = 0;
     int i, j, est_binlen;
     int ecc_level, autosize, version, max_cw, target_codewords, blocks, h_size, v_size;
     int gs1;
@@ -3010,6 +3015,10 @@ INTERNAL int rmqr(struct zint_symbol *symbol, unsigned char source[], int length
             int error_number = sjis_utf8(symbol, source, &length, jisdata);
             if (error_number != 0) {
                 return error_number;
+            }
+            if (symbol->eci != 20) {
+                strcpy(symbol->errtxt, "544: Converted to Shift JIS but no ECI specified");
+                warn_number = ZINT_WARN_NONCOMPLIANT;
             }
         }
     }
@@ -3214,5 +3223,7 @@ INTERNAL int rmqr(struct zint_symbol *symbol, unsigned char source[], int length
     }
     symbol->height = v_size;
 
-    return 0;
+    return warn_number;
 }
+
+/* vim: set ts=4 sw=4 et : */

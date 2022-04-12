@@ -1,7 +1,7 @@
 /*  hanxin.c - Han Xin Code
 
     libzint - the open source barcode library
-    Copyright (C) 2009-2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -28,10 +28,9 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
 
-/* This code attempts to implement Han Xin Code according to ISO/IEC 20830 (draft 2019-10-10)
- * (previously AIMD-015:2010 (Rev 0.8)) */
+/* This code attempts to implement Han Xin Code according to ISO/IEC 20830:2021
+ * (previously ISO/IEC 20830 (draft 2019-10-10) and AIMD-015:2010 (Rev 0.8)) */
 
 #include <stdio.h>
 #ifdef _MSC_VER
@@ -630,7 +629,7 @@ static void calculate_binary(char binary[], const char mode[], unsigned int sour
                 bp = bin_append_posn(block_length + double_byte, 13, binary, bp);
 
                 if (debug & ZINT_DEBUG_PRINT) {
-                    printf("Binary (length %d)\n", block_length + double_byte);
+                    printf("Binary Mode (%d):", block_length + double_byte);
                 }
 
                 i = 0;
@@ -641,7 +640,7 @@ static void calculate_binary(char binary[], const char mode[], unsigned int sour
                     bp = bin_append_posn(source[i + position], source[i + position] > 0xFF ? 16 : 8, binary, bp);
 
                     if (debug & ZINT_DEBUG_PRINT) {
-                        printf("%d ", (int) source[i + position]);
+                        printf(" %02x", (int) source[i + position]);
                     }
 
                     i++;
@@ -1142,14 +1141,11 @@ static void hx_set_function_info(unsigned char *grid, const int size, const int 
         bp = bin_append_posn(fi_ecc[i], 4, function_information, bp);
     }
 
-    /* This alternating filler pattern at end not mentioned in ISO/IEC 20830 (draft 2019-10-10) and does not appear
-     * in Figure 1 or the figures in Annex K but does appear in Figure 2 and Figures 4-9 */
+    /* Previously added alternating filler pattern here (as does BWIPP) but not mentioned in ISO/IEC 20830:2021 and
+       does not appear in Figure 1 nor in the figures in Annex K (although does appear in Figure 2 and Figures 4-9)
+       nor in the AIM ITS/04-023:2022 examples: so just clear */
     for (i = 28; i < 34; i++) {
-        if (i & 1) {
-            function_information[i] = '1';
-        } else {
-            function_information[i] = '0';
-        }
+        function_information[i] = '0';
     }
 
     if (debug & ZINT_DEBUG_PRINT) {
@@ -1293,7 +1289,7 @@ static int hx_evaluate(const unsigned char *local, const int size) {
      * position of the module.” - however i being the length of the run of the
      * same colour (i.e. "block" below) in the same fashion as ISO/IEC 18004
      * makes more sense. -- Confirmed by Wang Yi */
-    /* Fixed in ISO/IEC 20830 (draft 2019-10-10) section 5.8.3.2 "In Table 12 below, i refers to the modules with
+    /* Fixed in ISO/IEC 20830 section 5.8.4.3 "In Table, i refers to the modules with
        same color." */
 
     /* Vertical */
@@ -1341,8 +1337,8 @@ static int hx_evaluate(const unsigned char *local, const int size) {
 }
 
 /* Apply the four possible bitmasks for evaluation */
-/* TODO: Haven't been able to replicate (or even get close to) the penalty scores in ISO/IEC 20830
- * (draft 2019-10-10) Annex K examples; however they don't use alternating filler pattern on structural info */
+/* TODO: Haven't been able to replicate (or even get close to) the penalty scores in ISO/IEC 20830:2021
+ * Annex K examples */
 static void hx_apply_bitmask(unsigned char *grid, const int size, const int version, const int ecc_level,
             const int user_mask, const int debug) {
     int x, y;
@@ -1447,6 +1443,7 @@ static void hx_apply_bitmask(unsigned char *grid, const int size, const int vers
 
 /* Han Xin Code - main */
 INTERNAL int hanxin(struct zint_symbol *symbol, unsigned char source[], int length) {
+    int warn_number = 0;
     int est_binlen;
     int ecc_level = symbol->option_1;
     int i, j, j_max, version;
@@ -1482,7 +1479,7 @@ INTERNAL int hanxin(struct zint_symbol *symbol, unsigned char source[], int leng
         gb18030_cpy(source, &length, gbdata, full_multibyte);
     } else {
         int done = 0;
-        if (symbol->eci != 29) { /* Unless ECI 29 (GB) */
+        if (symbol->eci != 32) { /* Unless ECI 32 (GB 18030) */
             /* Try other conversions (ECI 0 defaults to ISO/IEC 8859-1) */
             int error_number = gb18030_utf8_to_eci(symbol->eci, source, &length, gbdata, full_multibyte);
             if (error_number == 0) {
@@ -1497,6 +1494,10 @@ INTERNAL int hanxin(struct zint_symbol *symbol, unsigned char source[], int leng
             int error_number = gb18030_utf8(symbol, source, &length, gbdata);
             if (error_number != 0) {
                 return error_number;
+            }
+            if (symbol->eci != 32) {
+                strcpy(symbol->errtxt, "543: Converted to GB 18030 but no ECI specified");
+                warn_number = ZINT_WARN_NONCOMPLIANT;
             }
         }
     }
@@ -1520,30 +1521,33 @@ INTERNAL int hanxin(struct zint_symbol *symbol, unsigned char source[], int leng
     if (bin_len & 0x07) {
         codewords++;
     }
+    if (symbol->debug & ZINT_DEBUG_PRINT) {
+        printf("Num. of codewords: %d\n", codewords);
+    }
 
     version = 85;
     for (i = 84; i > 0; i--) {
         switch (ecc_level) {
             case 1:
-                if (hx_data_codewords_L1[i - 1] > codewords) {
+                if (hx_data_codewords_L1[i - 1] >= codewords) {
                     version = i;
                     data_codewords = hx_data_codewords_L1[i - 1];
                 }
                 break;
             case 2:
-                if (hx_data_codewords_L2[i - 1] > codewords) {
+                if (hx_data_codewords_L2[i - 1] >= codewords) {
                     version = i;
                     data_codewords = hx_data_codewords_L2[i - 1];
                 }
                 break;
             case 3:
-                if (hx_data_codewords_L3[i - 1] > codewords) {
+                if (hx_data_codewords_L3[i - 1] >= codewords) {
                     version = i;
                     data_codewords = hx_data_codewords_L3[i - 1];
                 }
                 break;
             case 4:
-                if (hx_data_codewords_L4[i - 1] > codewords) {
+                if (hx_data_codewords_L4[i - 1] >= codewords) {
                     version = i;
                     data_codewords = hx_data_codewords_L4[i - 1];
                 }
@@ -1576,17 +1580,17 @@ INTERNAL int hanxin(struct zint_symbol *symbol, unsigned char source[], int leng
 
     /* Unless explicitly specified (within min/max bounds) by user */
     if (symbol->option_1 == -1 || symbol->option_1 != ecc_level) {
-        if ((ecc_level == 1) && (codewords < hx_data_codewords_L2[version - 1])) {
+        if ((ecc_level == 1) && (codewords <= hx_data_codewords_L2[version - 1])) {
             ecc_level = 2;
             data_codewords = hx_data_codewords_L2[version - 1];
         }
 
-        if ((ecc_level == 2) && (codewords < hx_data_codewords_L3[version - 1])) {
+        if ((ecc_level == 2) && (codewords <= hx_data_codewords_L3[version - 1])) {
             ecc_level = 3;
             data_codewords = hx_data_codewords_L3[version - 1];
         }
 
-        if ((ecc_level == 3) && (codewords < hx_data_codewords_L4[version - 1])) {
+        if ((ecc_level == 3) && (codewords <= hx_data_codewords_L4[version - 1])) {
             ecc_level = 4;
             data_codewords = hx_data_codewords_L4[version - 1];
         }
@@ -1616,8 +1620,7 @@ INTERNAL int hanxin(struct zint_symbol *symbol, unsigned char source[], int leng
     }
 
     if (symbol->debug & ZINT_DEBUG_PRINT) {
-        printf("Datastream length: %d\n", data_codewords);
-        printf("Datastream:\n");
+        printf("Datastream (%d): ", data_codewords);
         for (i = 0; i < data_codewords; i++) {
             printf("%.2x ", datastream[i]);
         }
@@ -1630,6 +1633,14 @@ INTERNAL int hanxin(struct zint_symbol *symbol, unsigned char source[], int leng
     hx_setup_grid(grid, size, version);
 
     hx_add_ecc(fullstream, datastream, data_codewords, version, ecc_level);
+
+    if (symbol->debug & ZINT_DEBUG_PRINT) {
+        printf("Fullstream (%d): ", hx_total_codewords[version - 1]);
+        for (i = 0; i < hx_total_codewords[version - 1]; i++) {
+            printf("%.2x ", fullstream[i]);
+        }
+        printf("\n");
+    }
 
     make_picket_fence(fullstream, picket_fence, hx_total_codewords[version - 1]);
 
@@ -1665,5 +1676,7 @@ INTERNAL int hanxin(struct zint_symbol *symbol, unsigned char source[], int leng
     }
     symbol->height = size;
 
-    return 0;
+    return warn_number;
 }
+
+/* vim: set ts=4 sw=4 et : */

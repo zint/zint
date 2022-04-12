@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019 - 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -27,7 +27,6 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
 /*
  * Adapted from qrencode/tests/common.c
  * Copyright (C) 2006-2017 Kentaro Fukuchi <kentaro@fukuchi.org>
@@ -1608,8 +1607,8 @@ int testUtilCmpEpss(const char *eps1, const char *eps2) {
     char buf1[1024];
     char buf2[1024];
     size_t len1 = 0, len2 = 0;
-    char first_line[] = "%!PS-Adobe-3.0 EPSF-3.0\n";
-    char second_line_start[] = "%%Creator: Zint ";
+    static char first_line[] = "%!PS-Adobe-3.0 EPSF-3.0\n";
+    static char second_line_start[] = "%%Creator: Zint ";
 
     fp1 = fopen(eps1, "r");
     if (!fp1) {
@@ -2170,7 +2169,7 @@ static char *testUtilBwippEscape(char *bwipp_data, int bwipp_data_size, const ch
     while (b < be && d < de) {
         /* Have to escape double quote otherwise Ghostscript gives "Unterminated quote in @-file" for some reason */
         /* Escape single quote also to avoid having to do proper shell escaping TODO: proper shell escaping */
-        if (*d < 0x20 || *d >= 0x7F || *d == '^' || *d == '"' || *d == '\'') {
+        if (*d < 0x20 || *d >= 0x7F || *d == '^' || *d == '"' || *d == '\'' || (!zint_escape_mode && *d == '\\')) {
             if (b + 4 >= be) {
                 fprintf(stderr, "testUtilBwippEscape: double quote bwipp_data buffer full (%d)\n", bwipp_data_size);
                 return NULL;
@@ -2244,14 +2243,15 @@ static void testUtilISBNHyphenate(char *bwipp_data, int addon_posn) {
 /* Create bwipp_dump.ps command and run */
 int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int option_2, int option_3,
             const char *data, int length, const char *primary, char *buffer, int buffer_size) {
-    const char *cmd_fmt = "gs -dNOPAUSE -dBATCH -dNODISPLAY -q -sb=%s -sd='%s' backend/tests/tools/bwipp_dump.ps";
-    const char *cmd_opts_fmt = "gs -dNOPAUSE -dBATCH -dNODISPLAY -q -sb=%s -sd='%s' -so='%s'"
-                                " backend/tests/tools/bwipp_dump.ps";
+    static const char cmd_fmt[] = "gs -dNOPAUSE -dBATCH -dNODISPLAY -q -sb=%s -sd='%s'"
+                                    " backend/tests/tools/bwipp_dump.ps";
+    static const char cmd_opts_fmt[] = "gs -dNOPAUSE -dBATCH -dNODISPLAY -q -sb=%s -sd='%s' -so='%s'"
+                                        " backend/tests/tools/bwipp_dump.ps";
     // If data > 2K
-    const char *cmd_fmt2 = "gs -dNOPAUSE -dBATCH -dNODISPLAY -q -sb=%s -sd='%.2043s' -sd2='%s'"
-                                " backend/tests/tools/bwipp_dump.ps";
-    const char *cmd_opts_fmt2 = "gs -dNOPAUSE -dBATCH -dNODISPLAY -q -sb=%s -sd='%.2043s' -sd2='%s' -so='%s'"
-                                " backend/tests/tools/bwipp_dump.ps";
+    static const char cmd_fmt2[] = "gs -dNOPAUSE -dBATCH -dNODISPLAY -q -sb=%s -sd='%.2043s' -sd2='%s'"
+                                        " backend/tests/tools/bwipp_dump.ps";
+    static const char cmd_opts_fmt2[] = "gs -dNOPAUSE -dBATCH -dNODISPLAY -q -sb=%s -sd='%.2043s' -sd2='%s' -so='%s'"
+                                        " backend/tests/tools/bwipp_dump.ps";
 
     int symbology = symbol->symbology;
     int data_len = length == -1 ? (int) strlen(data) : length;
@@ -3052,7 +3052,7 @@ int testUtilHaveZXingCPPDecoder(void) {
 
 /* Map Zint symbology to ZXing-C++ format name */
 static const char *testUtilZXingCPPName(int index, const struct zint_symbol *symbol, const char *source,
-            const int debug) {
+            const int length, const int debug) {
     struct item {
         const char *name;
         int define;
@@ -3175,7 +3175,7 @@ static const char *testUtilZXingCPPName(int index, const struct zint_symbol *sym
         { "", -1, 113, },
         { "", -1, 114, },
         { "DotCode", BARCODE_DOTCODE, 115, },
-        { "", BARCODE_HANXIN, 116, },
+        { "HanXin", BARCODE_HANXIN, 116, },
         { "", -1, 117, },
         { "", -1, 118, },
         { "", -1, 119, },
@@ -3236,7 +3236,6 @@ static const char *testUtilZXingCPPName(int index, const struct zint_symbol *sym
         }
     } else if (is_extendable(symbology)) {
         if (symbology == BARCODE_EANX || symbology == BARCODE_EANX_CHK) {
-            const int length = (int) strlen(source);
             if (length < 9) {
                 if (length < 6) {
                     printf("i:%d %s not ZXing-C++ compatible, EAN-5/EAN-2 not supported\n",
@@ -3255,32 +3254,47 @@ static const char *testUtilZXingCPPName(int index, const struct zint_symbol *sym
 }
 
 /* Whether can use ZXing-C++ to check a symbology with given options */
-int testUtilCanZXingCPP(int index, const struct zint_symbol *symbol, const char *source, const int debug) {
-    return testUtilZXingCPPName(index, symbol, source, debug) != NULL;
+int testUtilCanZXingCPP(int index, const struct zint_symbol *symbol, const char *source, const int length,
+            const int debug) {
+    return testUtilZXingCPPName(index, symbol, source, length, debug) != NULL;
 }
 
-int testUtilZXingCPP(int index, struct zint_symbol *symbol, const char *source, char *bits, char *buffer,
-            const int buffer_size, int *p_cmp_len) {
-    const char *cmd_fmt = "zxingcppdecoder -width %d -textonly -format %s -zint '%d,%d' -bits '%s'";
+int testUtilZXingCPP(int index, struct zint_symbol *symbol, const char *source, const int length, char *bits,
+            char *buffer, const int buffer_size, int *p_cmp_len) {
+    static const char cmd_fmt[] = "zxingcppdecoder -width %d -textonly -format %s -zint '%d,%d' -bits '%s'";
+    static const char cs_cmd_fmt[] = "zxingcppdecoder -width %d -textonly -format %s -zint '%d,%d' -bits '%s'"
+                                        " -charset %s";
 
-    const int length = (int) strlen(bits);
+    const int bits_len = (int) strlen(bits);
     const int width = symbol->width;
     const int symbology = symbol->symbology;
-    char *cmd = (char *) testutil_alloca(length + 1024);
+    char *cmd = (char *) testutil_alloca(bits_len + 1024);
     const char *zxingcpp_barcode = NULL;
     const int data_mode = (symbol->input_mode & 0x07) == DATA_MODE;
+    int set_charset = 0;
 
     FILE *fp = NULL;
     int cnt;
 
     buffer[0] = '\0';
 
-    zxingcpp_barcode = testUtilZXingCPPName(index, symbol, source, 0 /*debug*/);
+    zxingcpp_barcode = testUtilZXingCPPName(index, symbol, source, length, 0 /*debug*/);
     if (!zxingcpp_barcode) {
         fprintf(stderr, "i:%d testUtilZXingCPP: no mapping for %s\n", index, testUtilBarcodeName(symbology));
         return -1;
     }
-    sprintf(cmd, cmd_fmt, width, zxingcpp_barcode, symbology, symbol->option_2, bits);
+
+    if (symbol->eci == 0 && symbol->symbology == BARCODE_HANXIN) {
+        int converted_len = length;
+        unsigned char *converted_buf = (unsigned char *) testutil_alloca(converted_len + 1);
+        set_charset = utf8_to_eci(0, (const unsigned char *) source, converted_buf, &converted_len) != 0;
+    }
+    if (set_charset) {
+        static const char charset[] = "GB18030";
+        sprintf(cmd, cs_cmd_fmt, width, zxingcpp_barcode, symbology, symbol->option_2, bits, charset);
+    } else {
+        sprintf(cmd, cmd_fmt, width, zxingcpp_barcode, symbology, symbol->option_2, bits);
+    }
 
     if (symbol->debug & ZINT_DEBUG_TEST_PRINT) {
         printf("i:%d testUtilZXingCPP: cmd %s\n", index, cmd);
@@ -3309,9 +3323,10 @@ int testUtilZXingCPP(int index, struct zint_symbol *symbol, const char *source, 
 
     testutil_pclose(fp);
 
-    if (data_mode && is_eci_convertible(symbol->eci)) {
+    if (data_mode && (is_eci_convertible(symbol->eci) || symbol->eci == 899)) {
+        const int eci = symbol->eci == 899 ? 3 : symbol->eci;
         int error_number;
-        const int eci_length = get_eci_length(symbol->eci, (const unsigned char *) buffer, cnt);
+        const int eci_length = get_eci_length(eci, (const unsigned char *) buffer, cnt);
         unsigned char *preprocessed = (unsigned char *) testutil_alloca(eci_length + 1);
 
         if (eci_length >= buffer_size) {
@@ -3319,11 +3334,11 @@ int testUtilZXingCPP(int index, struct zint_symbol *symbol, const char *source, 
                     index, buffer_size, eci_length, cmd);
             return -1;
         }
-        error_number = utf8_to_eci(symbol->eci, (const unsigned char *) buffer, preprocessed, &cnt);
+        error_number = utf8_to_eci(eci, (const unsigned char *) buffer, preprocessed, &cnt);
         if (error_number == 0) {
             memcpy(buffer, preprocessed, cnt);
         } else {
-            if (symbol->eci != 0) {
+            if (eci != 0) {
                 fprintf(stderr, "i:%d testUtilZXingCPP: utf8_to_eci == %d (%s)\n", index, error_number, cmd);
                 return -1;
             } else {
@@ -3605,16 +3620,16 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
             upcean[13] = ' ';
             expected = upcean;
         } else if (symbology == BARCODE_EANX && (expected_len == 7
-				|| (strchr(expected, '+') != NULL && (expected_len == 10 || expected_len == 13)))) {
+                || (strchr(expected, '+') != NULL && (expected_len == 10 || expected_len == 13)))) {
             memcpy(upcean, expected, 7);
             upcean[7] = gs1_check_digit((const unsigned char *) upcean, 7);
-			if (expected_len == 10) {
+            if (expected_len == 10) {
                 upcean[8] = ' ';
                 memcpy(upcean + 9, expected + 8, 2);
-			} else if (expected_len == 13) {
+            } else if (expected_len == 13) {
                 upcean[8] = ' ';
                 memcpy(upcean + 9, expected + 8, 5);
-			}
+            }
             expected_len++;
             upcean[expected_len] = '\0';
             expected = upcean;
@@ -3667,3 +3682,5 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
 
     return 0;
 }
+
+/* vim: set ts=4 sw=4 et : */

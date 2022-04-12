@@ -1,6 +1,6 @@
 /***************************************************************************
  *   Copyright (C) 2008 by BogDan Vatra <bogdan@licentia.eu>               *
- *   Copyright (C) 2009-2021 by Robin Stuart <rstuart114@gmail.com>        *
+ *   Copyright (C) 2009-2022 by Robin Stuart <rstuart114@gmail.com>        *
  *                                                                         *
  *   This program is free software: you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -13,7 +13,6 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
-/* vim: set ts=4 sw=4 et : */
 
 //#include <QDebug>
 #include <QGraphicsScene>
@@ -461,7 +460,7 @@ void MainWindow::about()
            "<p>A free barcode generator</p>"
            "<p>Instruction manual is available at the project homepage:<br>"
            "<a href=\"http://www.zint.org.uk\">http://www.zint.org.uk</a>"
-           "<p>Copyright &copy; 2006-2021 Robin Stuart and others.<br>"
+           "<p>Copyright &copy; 2006-2022 Robin Stuart and others.<br>"
            "Qt backend by BogDan Vatra</p>"
            "<p>Qt version %2</p>"
            "<p>With thanks to Harald Oehlmann, Norbert Szab&oacute;, Robert Elliott, Milton Neal, "
@@ -953,7 +952,6 @@ void MainWindow::change_options()
 
     chkComposite->setText(tr("Add &2D Component"));
     combobox_item_enabled(cmbCompType, 3, false); // CC-C
-    cmbECI->setItemText(25, tr("29: GB 2312 (PRC)"));
     btype->setItemText(0, tr("No border"));
     combobox_item_enabled(cmbFontSetting, 1, true);
     m_lblHeightPerRow = nullptr;
@@ -1294,7 +1292,6 @@ void MainWindow::change_options()
         file.close();
         load_sub_settings(settings, symbology);
         tabMain->insertTab(1, m_optionWidget, tr("Han Xin Cod&e"));
-        cmbECI->setItemText(25, tr("29: GB 18030 (PRC)"));
         connect(get_widget(QSL("cmbHXSize")), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(get_widget(QSL("cmbHXECC")), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(get_widget(QSL("cmbHXMask")), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
@@ -3415,3 +3412,5 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
             break;
     }
 }
+
+/* vim: set ts=4 sw=4 et : */

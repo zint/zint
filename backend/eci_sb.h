@@ -1,7 +1,7 @@
-/*  eci_sb.h - Extended Channel Interpretations single-byte and UCS-2 BE
+/*  eci_sb.h - Extended Channel Interpretations single-byte and UTF-16/32
 
     libzint - the open source barcode library
-    Copyright (C) 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2021-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -28,10 +28,9 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
 
-#ifndef ECI_SB_H
-#define ECI_SB_H
+#ifndef Z_ECI_SB_H
+#define Z_ECI_SB_H
 
 /*
  * Adapted from GNU LIBICONV library */
@@ -1116,17 +1115,84 @@ static int cp1256_wctosb(unsigned char *r, const unsigned int wc) {
 }
 
 /*
- * UCS-2 (libiconv-1.16/lib/ucs2.h)
+ * UTF-16BE (libiconv-1.16/lib/utf16be.h)
  */
 
-/* ECI 25 UC2-2 Big Endian (ISO/IEC 10646) */
-static int ucs2be_wctomb(unsigned char *r, const unsigned int wc) {
-    if (wc < 0x10000 && wc != 0xfffe && !(wc >= 0xd800 && wc < 0xe000)) {
-        r[0] = (unsigned char) (wc >> 8);
-        r[1] = (unsigned char) (wc & 0xff);
-        return 2;
+/* ECI 25 UTF-16 Big Endian (ISO/IEC 10646) */
+static int utf16be_wctomb(unsigned char *r, const unsigned int wc) {
+    if (!(wc >= 0xd800 && wc < 0xe000)) {
+        if (wc < 0x10000) {
+            r[0] = (unsigned char) (wc >> 8);
+            r[1] = (unsigned char) (wc & 0xff);
+            return 2;
+        } else if (wc < 0x110000) {
+            unsigned int wc1 = 0xd800 + ((wc - 0x10000) >> 10);
+            unsigned int wc2 = 0xdc00 + ((wc - 0x10000) & 0x3ff);
+            r[0] = (unsigned char) (wc1 >> 8);
+            r[1] = (unsigned char) (wc1 & 0xff);
+            r[2] = (unsigned char) (wc2 >> 8);
+            r[3] = (unsigned char) (wc2 & 0xff);
+            return 4;
+        }
     }
     return 0;
 }
 
-#endif /* ECI_SB_H */
+/*
+ * UTF-16LE (libiconv-1.16/lib/utf16le.h)
+ */
+
+/* ECI 33 UTF-16 Little Endian (ISO/IEC 10646) */
+static int utf16le_wctomb(unsigned char *r, const unsigned int wc) {
+    if (!(wc >= 0xd800 && wc < 0xe000)) {
+        if (wc < 0x10000) {
+            r[0] = (unsigned char) (wc & 0xff);
+            r[1] = (unsigned char) (wc >> 8);
+            return 2;
+        } else if (wc < 0x110000) {
+            unsigned int wc1 = 0xd800 + ((wc - 0x10000) >> 10);
+            unsigned int wc2 = 0xdc00 + ((wc - 0x10000) & 0x3ff);
+            r[0] = (unsigned char) (wc1 & 0xff);
+            r[1] = (unsigned char) (wc1 >> 8);
+            r[2] = (unsigned char) (wc2 & 0xff);
+            r[3] = (unsigned char) (wc2 >> 8);
+            return 4;
+        }
+    }
+    return 0;
+}
+
+/*
+ * UTF-32BE (libiconv-1.16/lib/utf32be.h)
+ */
+
+/* ECI 34 UTF-32 Big Endian (ISO/IEC 10646) */
+static int utf32be_wctomb(unsigned char *r, const unsigned int wc) {
+    if (wc < 0x110000 && !(wc >= 0xd800 && wc < 0xe000)) {
+        r[0] = 0;
+        r[1] = (unsigned char) (wc >> 16);
+        r[2] = (unsigned char) (wc >> 8);
+        r[3] = (unsigned char) (wc & 0xff);
+        return 4;
+    }
+    return 0;
+}
+
+/*
+ * UTF-32LE (libiconv-1.16/lib/utf32le.h)
+ */
+
+/* ECI 35 UTF-32 Little Endian (ISO/IEC 10646) */
+static int utf32le_wctomb(unsigned char *r, const unsigned int wc) {
+    if (wc < 0x110000 && !(wc >= 0xd800 && wc < 0xe000)) {
+        r[0] = (unsigned char) (wc & 0xff);
+        r[1] = (unsigned char) (wc >> 8);
+        r[2] = (unsigned char) (wc >> 16);
+        r[3] = 0;
+        return 4;
+    }
+    return 0;
+}
+
+/* vim: set ts=4 sw=4 et : */
+#endif /* Z_ECI_SB_H */

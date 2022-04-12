@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright (C) 2021 Robin Stuart <rstuart114@gmail.com>
+# Copyright (C) 2021-2022 Robin Stuart <rstuart114@gmail.com>
 # vim: set ts=4 sw=4 et :
 set -e
 
@@ -15,6 +15,7 @@ run_zxingcpp_test "test_code128" "encode"
 run_zxingcpp_test "test_dmatrix" "input"
 run_zxingcpp_test "test_dmatrix" "encode"
 run_zxingcpp_test "test_dotcode" "encode"
+run_zxingcpp_test "test_hanxin" "encode"
 run_zxingcpp_test "test_maxicode" "encode"
 run_zxingcpp_test "test_medical" "encode"
 run_zxingcpp_test "test_pdf417" "encode"

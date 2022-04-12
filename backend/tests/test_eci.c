@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019 - 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -27,7 +27,6 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et norl : */
 
 #include "testcommon.h"
 #include "../eci.h"
@@ -204,7 +203,7 @@ static void test_reduced_charset_input(int index, int debug) {
         /* 64*/ { BARCODE_PDF417, UNICODE_MODE, 25, "ကက", 0, 25, "In UCS-2BE" },
         /* 65*/ { BARCODE_PDF417, UNICODE_MODE, 25, "12", 0, 25, "UCS-2BE ASCII" },
         /* 66*/ { BARCODE_PDF417, UNICODE_MODE, 0, "𐀀", ZINT_WARN_USES_ECI, 26, "Not in any single-byte page" },
-        /* 67*/ { BARCODE_PDF417, UNICODE_MODE, 25, "𐀀", ZINT_ERROR_INVALID_DATA, -1, "Not in UCS-2BE (in Supplementary Plane)" },
+        /* 67*/ { BARCODE_PDF417, UNICODE_MODE, 25, "𐀀", 0, 25, "UTF-16BE (in Supplementary Plane)" },
         /* 68*/ { BARCODE_PDF417, UNICODE_MODE, 0, "テ", ZINT_WARN_USES_ECI, 26, "Defaults to UTF-8 if not in any ISO 8859 or Win page" },
         /* 69*/ { BARCODE_PDF417, UNICODE_MODE, 26, "テ", 0, 26, "" },
         /* 70*/ { BARCODE_PDF417, UNICODE_MODE, 26, "テテ", 0, 26, "" },
@@ -762,29 +761,37 @@ static void test_utf8_to_eci_ascii(void) {
             assert_zero(memcmp(data[i].data, dest, length), "i:%d memcmp != 0\n", i);
         }
     }
-};
+}
 
-static void test_utf8_to_eci_ucs2be(void) {
+static void test_utf8_to_eci_utf16be(void) {
 
     struct item {
-        int eci;
         char *data;
         int length;
         int ret;
         int expected_length;
+        char *expected;
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /*  0*/ { 25, "\000\001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020\021\022\023\024\025\026\027\030\031\032\033\034\035\036\037", 32, 0, 32 * 2 },
-        /*  1*/ { 25, " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\177", 96, 0, 96 * 2 },
-        /*  2*/ { 25, "\302\200\357\277\277", -1, 0, 4 }, // U+0080 U+FFFF
-        /*  3*/ { 25, "\357\277\276", -1, ZINT_ERROR_INVALID_DATA, -1 }, // U+FFFE (reversed BOM) not allowed
-        /*  4*/ { 25, "\355\240\200", -1, ZINT_ERROR_INVALID_DATA, -1 }, // U+D800 surrogate not allowed
+        /*  0*/ { "\000\001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020\021\022\023\024\025\026\027\030\031\032\033\034\035\036\037", 32, 0, 32 * 2, NULL },
+        /*  1*/ { " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\177", 96, 0, 96 * 2, NULL },
+        /*  2*/ { "\302\200\357\277\277", -1, 0, 4, "\000\200\377\377" }, // U+0080 U+FFFF
+        /*  3*/ { "\357\277\276", -1, 0, 2, "\377\376" }, // U+FFFE (reversed BOM) allowed
+        /*  4*/ { "\357\273\277", -1, 0, 2, "\376\377" }, // U+FEFF (BOM) allowed
+        /*  5*/ { "\355\237\277", -1, 0, 2, "\327\377" }, // U+D7FF (ed9fbf)
+        /*  6*/ { "\355\240\200", -1, ZINT_ERROR_INVALID_DATA, -1, NULL }, // U+D800 (eda080) surrogate half not allowed
+        /*  7*/ { "\355\277\277", -1, ZINT_ERROR_INVALID_DATA, -1, NULL }, // U+DFFF (edbfbf) surrogate half not allowed
+        /*  8*/ { "\356\200\200", -1, 0, 2, "\340\000" }, // U+E000 (ee8080)
+        /*  9*/ { "\360\220\200\200", -1, 0, 4, "\330\000\334\000" }, // U+10000 maps to surrogate pair
+        /* 10*/ { "\364\217\277\277", -1, 0, 4, "\333\377\337\377" }, // U+10FFFF maps to surrogate pair
+        /* 11*/ { "\364\220\200\200", -1, ZINT_ERROR_INVALID_DATA, -1, NULL }, // Non-Unicode 0x110000 not allowed
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
+    const int eci = 25;
 
-    testStart("test_utf8_to_eci_ucs2be");
+    testStart("test_utf8_to_eci_utf16be");
 
     for (i = 0; i < data_size; i++) {
         int out_length, eci_length;
@@ -792,22 +799,209 @@ static void test_utf8_to_eci_ucs2be(void) {
 
         length = data[i].length != -1 ? data[i].length : (int) strlen(data[i].data);
         out_length = length;
-        eci_length = get_eci_length(data[i].eci, (const unsigned char *) data[i].data, length);
+        eci_length = get_eci_length(eci, (const unsigned char *) data[i].data, length);
 
         assert_nonzero(eci_length + 1 <= 1024, "i:%d eci_length %d + 1 > 1024\n", i, eci_length);
-        ret = utf8_to_eci(data[i].eci, (const unsigned char *) data[i].data, (unsigned char *) dest, &out_length);
+        ret = utf8_to_eci(eci, (const unsigned char *) data[i].data, (unsigned char *) dest, &out_length);
         assert_equal(ret, data[i].ret, "i:%d utf8_to_eci ret %d != %d\n", i, ret, data[i].ret);
         if (ret == 0) {
             assert_equal(out_length, data[i].expected_length, "i:%d length %d != %d\n", i, out_length, data[i].expected_length);
             assert_nonzero(out_length <= eci_length, "i:%d out_length %d > eci_length %d\n", i, out_length, eci_length);
+            if (data[i].expected) {
+                ret = memcmp(dest, data[i].expected, data[i].expected_length);
+                assert_zero(ret, "i:%d memcmp() %d != 0\n", i, ret);
+            } else {
+                int j;
+                for (j = 0; j < length; j++) {
+                    assert_zero(dest[j * 2], "i:%d dest[%d] %d != 0\n", i, j * 2, dest[j * 2]);
+                    assert_equal(dest[j * 2 + 1], data[i].data[j], "i:%d dest[%d] %d != data[%d] %d\n", i, j * 2 + 1, dest[j * 2 + 1], j, data[i].data[j]);
+                }
+            }
         }
     }
-};
+}
+
+static void test_utf8_to_eci_utf16le(void) {
+
+    struct item {
+        char *data;
+        int length;
+        int ret;
+        int expected_length;
+        char *expected;
+    };
+    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    struct item data[] = {
+        /*  0*/ { "\000\001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020\021\022\023\024\025\026\027\030\031\032\033\034\035\036\037", 32, 0, 32 * 2, NULL },
+        /*  1*/ { " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\177", 96, 0, 96 * 2, NULL },
+        /*  2*/ { "\302\200\357\277\277", -1, 0, 4, "\200\000\377\377" }, // U+0080 U+FFFF
+        /*  3*/ { "\357\277\276", -1, 0, 2, "\376\377" }, // U+FFFE (reversed BOM) allowed
+        /*  4*/ { "\357\273\277", -1, 0, 2, "\377\376" }, // U+FEFF (BOM) allowed
+        /*  5*/ { "\355\237\277", -1, 0, 2, "\377\327" }, // U+D7FF (ed9fbf)
+        /*  6*/ { "\355\240\200", -1, ZINT_ERROR_INVALID_DATA, -1, NULL }, // U+D800 (eda080) surrogate half not allowed
+        /*  7*/ { "\355\277\277", -1, ZINT_ERROR_INVALID_DATA, -1, NULL }, // U+DFFF (edbfbf) surrogate half not allowed
+        /*  8*/ { "\356\200\200", -1, 0, 2, "\000\340" }, // U+E000 (ee8080)
+        /*  9*/ { "\360\220\200\200", -1, 0, 4, "\000\330\000\334" }, // U+10000 maps to surrogate pair
+        /* 10*/ { "\364\217\277\277", -1, 0, 4, "\377\333\377\337" }, // U+10FFFF maps to surrogate pair
+        /* 11*/ { "\364\220\200\200", -1, ZINT_ERROR_INVALID_DATA, -1, NULL }, // Non-Unicode 0x110000 not allowed
+    };
+    int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
+    const int eci = 33;
+
+    testStart("test_utf8_to_eci_utf16le");
+
+    for (i = 0; i < data_size; i++) {
+        int out_length, eci_length;
+        char dest[1024];
+
+        length = data[i].length != -1 ? data[i].length : (int) strlen(data[i].data);
+        out_length = length;
+        eci_length = get_eci_length(eci, (const unsigned char *) data[i].data, length);
+
+        assert_nonzero(eci_length + 1 <= 1024, "i:%d eci_length %d + 1 > 1024\n", i, eci_length);
+        ret = utf8_to_eci(eci, (const unsigned char *) data[i].data, (unsigned char *) dest, &out_length);
+        assert_equal(ret, data[i].ret, "i:%d utf8_to_eci ret %d != %d\n", i, ret, data[i].ret);
+        if (ret == 0) {
+            assert_equal(out_length, data[i].expected_length, "i:%d length %d != %d\n", i, out_length, data[i].expected_length);
+            assert_nonzero(out_length <= eci_length, "i:%d out_length %d > eci_length %d\n", i, out_length, eci_length);
+            if (data[i].expected) {
+                ret = memcmp(dest, data[i].expected, data[i].expected_length);
+                assert_zero(ret, "i:%d memcmp() %d != 0\n", i, ret);
+            } else {
+                int j;
+                for (j = 0; j < length; j++) {
+                    assert_equal(dest[j * 2], data[i].data[j], "i:%d dest[%d] %d != data[%d] %d\n", i, j * 2, dest[j * 2], j, data[i].data[j]);
+                    assert_zero(dest[j * 2 + 1], "i:%d dest[%d] %d != 0\n", i, j * 2 + 1, dest[j * 2 + 1]);
+                }
+            }
+        }
+    }
+}
+
+static void test_utf8_to_eci_utf32be(void) {
+
+    struct item {
+        char *data;
+        int length;
+        int ret;
+        int expected_length;
+        char *expected;
+    };
+    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    struct item data[] = {
+        /*  0*/ { "\000\001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020\021\022\023\024\025\026\027\030\031\032\033\034\035\036\037", 32, 0, 32 * 4, NULL },
+        /*  1*/ { " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\177", 96, 0, 96 * 4, NULL },
+        /*  2*/ { "\302\200\357\277\277", -1, 0, 8, "\000\000\000\200\000\000\377\377" }, // U+0080 U+FFFF
+        /*  3*/ { "\357\277\276", -1, 0, 4, "\000\000\377\376" }, // U+FFFE (reversed BOM) allowed
+        /*  4*/ { "\357\273\277", -1, 0, 4, "\000\000\376\377" }, // U+FEFF (BOM) allowed
+        /*  5*/ { "\355\237\277", -1, 0, 4, "\000\000\327\377" }, // U+D7FF (ed9fbf)
+        /*  6*/ { "\355\240\200", -1, ZINT_ERROR_INVALID_DATA, -1, NULL }, // U+D800 (eda080) surrogate half not allowed
+        /*  7*/ { "\355\277\277", -1, ZINT_ERROR_INVALID_DATA, -1, NULL }, // U+DFFF (edbfbf) surrogate half not allowed
+        /*  8*/ { "\356\200\200", -1, 0, 4, "\000\000\340\000" }, // U+E000 (ee8080)
+        /*  9*/ { "\360\220\200\200", -1, 0, 4, "\000\001\000\000" }, // U+10000
+        /* 10*/ { "\364\217\277\277", -1, 0, 4, "\000\020\377\377" }, // U+10FFFF
+        /* 11*/ { "\364\220\200\200", -1, ZINT_ERROR_INVALID_DATA, -1, NULL }, // Non-Unicode 0x110000 not allowed
+    };
+    int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
+    const int eci = 34;
+
+    testStart("test_utf8_to_eci_utf32be");
+
+    for (i = 0; i < data_size; i++) {
+        int out_length, eci_length;
+        char dest[1024];
+
+        length = data[i].length != -1 ? data[i].length : (int) strlen(data[i].data);
+        out_length = length;
+        eci_length = get_eci_length(eci, (const unsigned char *) data[i].data, length);
+
+        assert_nonzero(eci_length + 1 <= 1024, "i:%d eci_length %d + 1 > 1024\n", i, eci_length);
+        ret = utf8_to_eci(eci, (const unsigned char *) data[i].data, (unsigned char *) dest, &out_length);
+        assert_equal(ret, data[i].ret, "i:%d utf8_to_eci ret %d != %d\n", i, ret, data[i].ret);
+        if (ret == 0) {
+            assert_equal(out_length, data[i].expected_length, "i:%d length %d != %d\n", i, out_length, data[i].expected_length);
+            assert_nonzero(out_length <= eci_length, "i:%d out_length %d > eci_length %d\n", i, out_length, eci_length);
+            if (data[i].expected) {
+                ret = memcmp(dest, data[i].expected, data[i].expected_length);
+                assert_zero(ret, "i:%d memcmp() %d != 0\n", i, ret);
+            } else {
+                int j;
+                for (j = 0; j < length; j++) {
+                    assert_zero(dest[j * 4], "i:%d dest[%d] %d != 0\n", i, j * 4, dest[j * 4]);
+                    assert_zero(dest[j * 4 + 1], "i:%d dest[%d] %d != 0\n", i, j * 4 + 1, dest[j * 4 + 1]);
+                    assert_zero(dest[j * 4 + 2], "i:%d dest[%d] %d != 0\n", i, j * 4 + 2, dest[j * 4 + 2]);
+                    assert_equal(dest[j * 4 + 3], data[i].data[j], "i:%d dest[%d] %d != data[%d] %d\n", i, j * 4 + 3, dest[j * 4 + 3], j, data[i].data[j]);
+                }
+            }
+        }
+    }
+}
+
+static void test_utf8_to_eci_utf32le(void) {
+
+    struct item {
+        char *data;
+        int length;
+        int ret;
+        int expected_length;
+        char *expected;
+    };
+    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    struct item data[] = {
+        /*  0*/ { "\000\001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020\021\022\023\024\025\026\027\030\031\032\033\034\035\036\037", 32, 0, 32 * 4, NULL },
+        /*  1*/ { " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\177", 96, 0, 96 * 4, NULL },
+        /*  2*/ { "\302\200\357\277\277", -1, 0, 8, "\200\000\000\000\377\377\000\000" }, // U+0080 U+FFFF
+        /*  3*/ { "\357\277\276", -1, 0, 4, "\376\377\000\000" }, // U+FFFE (reversed BOM) allowed
+        /*  4*/ { "\357\273\277", -1, 0, 4, "\377\376\000\000" }, // U+FEFF (BOM) allowed
+        /*  5*/ { "\355\237\277", -1, 0, 4, "\377\327\000\000" }, // U+D7FF (ed9fbf)
+        /*  6*/ { "\355\240\200", -1, ZINT_ERROR_INVALID_DATA, -1, NULL }, // U+D800 (eda080) surrogate half not allowed
+        /*  7*/ { "\355\277\277", -1, ZINT_ERROR_INVALID_DATA, -1, NULL }, // U+DFFF (edbfbf) surrogate half not allowed
+        /*  8*/ { "\356\200\200", -1, 0, 4, "\000\340\000\000" }, // U+E000 (ee8080)
+        /*  9*/ { "\360\220\200\200", -1, 0, 4, "\000\000\001\000" }, // U+10000
+        /* 10*/ { "\364\217\277\277", -1, 0, 4, "\377\377\020\000" }, // U+10FFFF
+        /* 11*/ { "\364\220\200\200", -1, ZINT_ERROR_INVALID_DATA, -1, NULL }, // Non-Unicode 0x110000 not allowed
+    };
+    int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
+    const int eci = 35;
+
+    testStart("test_utf8_to_eci_utf32le");
+
+    for (i = 0; i < data_size; i++) {
+        int out_length, eci_length;
+        char dest[1024];
+
+        length = data[i].length != -1 ? data[i].length : (int) strlen(data[i].data);
+        out_length = length;
+        eci_length = get_eci_length(eci, (const unsigned char *) data[i].data, length);
+
+        assert_nonzero(eci_length + 1 <= 1024, "i:%d eci_length %d + 1 > 1024\n", i, eci_length);
+        ret = utf8_to_eci(eci, (const unsigned char *) data[i].data, (unsigned char *) dest, &out_length);
+        assert_equal(ret, data[i].ret, "i:%d utf8_to_eci ret %d != %d\n", i, ret, data[i].ret);
+        if (ret == 0) {
+            assert_equal(out_length, data[i].expected_length, "i:%d length %d != %d\n", i, out_length, data[i].expected_length);
+            assert_nonzero(out_length <= eci_length, "i:%d out_length %d > eci_length %d\n", i, out_length, eci_length);
+            if (data[i].expected) {
+                ret = memcmp(dest, data[i].expected, data[i].expected_length);
+                assert_zero(ret, "i:%d memcmp() %d != 0\n", i, ret);
+            } else {
+                int j;
+                for (j = 0; j < length; j++) {
+                    assert_equal(dest[j * 4], data[i].data[j], "i:%d dest[%d] %d != data[%d] %d\n", i, j * 4, dest[j * 4], j, data[i].data[j]);
+                    assert_zero(dest[j * 4 + 1], "i:%d dest[%d] %d != 0\n", i, j * 4 + 1, dest[j * 4 + 1]);
+                    assert_zero(dest[j * 4 + 2], "i:%d dest[%d] %d != 0\n", i, j * 4 + 2, dest[j * 4 + 2]);
+                    assert_zero(dest[j * 4 + 3], "i:%d dest[%d] %d != 0\n", i, j * 4 + 3, dest[j * 4 + 3]);
+                }
+            }
+        }
+    }
+}
 
 static void test_utf8_to_eci_sjis(void) {
 
     struct item {
-        int eci;
         char *data;
         int length;
         int ret;
@@ -815,26 +1009,27 @@ static void test_utf8_to_eci_sjis(void) {
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /*  0*/ { 20, "\000\001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020\021\022\023\024\025\026\027\030\031\032\033\034\035\036\037", 32, 0, 32 },
-        /*  1*/ { 20, " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}\177", 95, 0, 95 + 1 }, // Backslash goes to 2 byte
-        /*  2*/ { 20, "~", -1, ZINT_ERROR_INVALID_DATA, -1 }, // No mapping for tilde
-        /*  3*/ { 20, "\302\200", -1, ZINT_ERROR_INVALID_DATA, -1 }, // No mapping for U+0080
-        /*  4*/ { 20, "\302\241", -1, ZINT_ERROR_INVALID_DATA, -1 }, // No mapping for U+00A1 Inverted exclaimation mark
-        /*  5*/ { 20, "\302\245", -1, 0, 1 }, // U+00A5 Yen goes to backslash
-        /*  6*/ { 20, "\302\277", -1, ZINT_ERROR_INVALID_DATA, -1 }, // No mapping for U+00BF Inverted question mark
-        /*  7*/ { 20, "\303\200", -1, ZINT_ERROR_INVALID_DATA, -1 }, // No mapping for U+00C0 À
-        /*  8*/ { 20, "\303\251", -1, ZINT_ERROR_INVALID_DATA, -1 }, // No mapping for U+00E9 é
-        /*  9*/ { 20, "\312\262", -1, ZINT_ERROR_INVALID_DATA, -1 }, // No mapping for U+03B2 β
-        /* 10*/ { 20, "\342\272\200", -1, ZINT_ERROR_INVALID_DATA, -1 }, // No mapping for U+2E80 CJK RADICAL REPEAT
-        /* 11*/ { 20, "\343\200\200", -1, 0, 2 }, // U+3000 IDEOGRAPHIC SPACE
-        /* 12*/ { 20, "\343\200\204", -1, ZINT_ERROR_INVALID_DATA, -1 }, // No mapping for U+3004 JAPANESE INDUSTRIAL STANDARD SYMBOL
-        /* 13*/ { 20, "\343\201\201", -1, 0, 2 }, //U+3041 HIRAGANA LETTER SMALL A
-        /* 14*/ { 20, "\357\277\277", -1, ZINT_ERROR_INVALID_DATA, -1 }, // No mapping for U+FFFF
-        /* 15*/ { 20, "\357\277\276", -1, ZINT_ERROR_INVALID_DATA, -1 }, // U+FFFE (reversed BOM) not allowed
-        /* 16*/ { 20, "\355\240\200", -1, ZINT_ERROR_INVALID_DATA, -1 }, // U+D800 surrogate not allowed
+        /*  0*/ { "\000\001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020\021\022\023\024\025\026\027\030\031\032\033\034\035\036\037", 32, 0, 32 },
+        /*  1*/ { " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}\177", 95, 0, 95 + 1 }, // Backslash goes to 2 byte
+        /*  2*/ { "~", -1, ZINT_ERROR_INVALID_DATA, -1 }, // No mapping for tilde
+        /*  3*/ { "\302\200", -1, ZINT_ERROR_INVALID_DATA, -1 }, // No mapping for U+0080
+        /*  4*/ { "\302\241", -1, ZINT_ERROR_INVALID_DATA, -1 }, // No mapping for U+00A1 Inverted exclaimation mark
+        /*  5*/ { "\302\245", -1, 0, 1 }, // U+00A5 Yen goes to backslash
+        /*  6*/ { "\302\277", -1, ZINT_ERROR_INVALID_DATA, -1 }, // No mapping for U+00BF Inverted question mark
+        /*  7*/ { "\303\200", -1, ZINT_ERROR_INVALID_DATA, -1 }, // No mapping for U+00C0 À
+        /*  8*/ { "\303\251", -1, ZINT_ERROR_INVALID_DATA, -1 }, // No mapping for U+00E9 é
+        /*  9*/ { "\312\262", -1, ZINT_ERROR_INVALID_DATA, -1 }, // No mapping for U+03B2 β
+        /* 10*/ { "\342\272\200", -1, ZINT_ERROR_INVALID_DATA, -1 }, // No mapping for U+2E80 CJK RADICAL REPEAT
+        /* 11*/ { "\343\200\200", -1, 0, 2 }, // U+3000 IDEOGRAPHIC SPACE
+        /* 12*/ { "\343\200\204", -1, ZINT_ERROR_INVALID_DATA, -1 }, // No mapping for U+3004 JAPANESE INDUSTRIAL STANDARD SYMBOL
+        /* 13*/ { "\343\201\201", -1, 0, 2 }, //U+3041 HIRAGANA LETTER SMALL A
+        /* 14*/ { "\357\277\277", -1, ZINT_ERROR_INVALID_DATA, -1 }, // No mapping for U+FFFF
+        /* 15*/ { "\357\277\276", -1, ZINT_ERROR_INVALID_DATA, -1 }, // U+FFFE (reversed BOM) not allowed
+        /* 16*/ { "\355\240\200", -1, ZINT_ERROR_INVALID_DATA, -1 }, // U+D800 surrogate not allowed
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
+    const int eci = 20;
 
     testStart("test_utf8_to_eci_sjis");
 
@@ -844,22 +1039,21 @@ static void test_utf8_to_eci_sjis(void) {
 
         length = data[i].length != -1 ? data[i].length : (int) strlen(data[i].data);
         out_length = length;
-        eci_length = get_eci_length(data[i].eci, (const unsigned char *) data[i].data, length);
+        eci_length = get_eci_length(eci, (const unsigned char *) data[i].data, length);
 
         assert_nonzero(eci_length + 1 <= 1024, "i:%d eci_length %d + 1 > 1024\n", i, eci_length);
-        ret = utf8_to_eci(data[i].eci, (const unsigned char *) data[i].data, (unsigned char *) dest, &out_length);
+        ret = utf8_to_eci(eci, (const unsigned char *) data[i].data, (unsigned char *) dest, &out_length);
         assert_equal(ret, data[i].ret, "i:%d utf8_to_eci ret %d != %d\n", i, ret, data[i].ret);
         if (ret == 0) {
             assert_equal(out_length, data[i].expected_length, "i:%d length %d != %d\n", i, out_length, data[i].expected_length);
             assert_nonzero(out_length <= eci_length, "i:%d out_length %d > eci_length %d\n", i, out_length, eci_length);
         }
     }
-};
+}
 
 static void test_utf8_to_eci_big5(void) {
 
     struct item {
-        int eci;
         char *data;
         int length;
         int ret;
@@ -867,16 +1061,17 @@ static void test_utf8_to_eci_big5(void) {
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /*  0*/ { 28, "\000\001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020\021\022\023\024\025\026\027\030\031\032\033\034\035\036\037", 32, 0, 32 },
-        /*  1*/ { 28, " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\177", 96, 0, 96 },
-        /*  2*/ { 28, "\302\200", -1, ZINT_ERROR_INVALID_DATA, -1 }, // No mapping for U+0080
-        /*  3*/ { 28, "\343\200\200", -1, 0, 2 }, // U+3000 IDEOGRAPHIC SPACE
-        /*  4*/ { 28, "\357\277\277", -1, ZINT_ERROR_INVALID_DATA, -1 }, // No mapping for U+FFFF
-        /*  5*/ { 28, "\357\277\276", -1, ZINT_ERROR_INVALID_DATA, -1 }, // U+FFFE (reversed BOM) not allowed
-        /*  6*/ { 28, "\355\240\200", -1, ZINT_ERROR_INVALID_DATA, -1 }, // U+D800 surrogate not allowed
+        /*  0*/ { "\000\001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020\021\022\023\024\025\026\027\030\031\032\033\034\035\036\037", 32, 0, 32 },
+        /*  1*/ { " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\177", 96, 0, 96 },
+        /*  2*/ { "\302\200", -1, ZINT_ERROR_INVALID_DATA, -1 }, // No mapping for U+0080
+        /*  3*/ { "\343\200\200", -1, 0, 2 }, // U+3000 IDEOGRAPHIC SPACE
+        /*  4*/ { "\357\277\277", -1, ZINT_ERROR_INVALID_DATA, -1 }, // No mapping for U+FFFF
+        /*  5*/ { "\357\277\276", -1, ZINT_ERROR_INVALID_DATA, -1 }, // U+FFFE (reversed BOM) not allowed
+        /*  6*/ { "\355\240\200", -1, ZINT_ERROR_INVALID_DATA, -1 }, // U+D800 surrogate not allowed
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
+    const int eci = 28;
 
     testStart("test_utf8_to_eci_big5");
 
@@ -886,22 +1081,21 @@ static void test_utf8_to_eci_big5(void) {
 
         length = data[i].length != -1 ? data[i].length : (int) strlen(data[i].data);
         out_length = length;
-        eci_length = get_eci_length(data[i].eci, (const unsigned char *) data[i].data, length);
+        eci_length = get_eci_length(eci, (const unsigned char *) data[i].data, length);
 
         assert_nonzero(eci_length + 1 <= 1024, "i:%d eci_length %d + 1 > 1024\n", i, eci_length);
-        ret = utf8_to_eci(data[i].eci, (const unsigned char *) data[i].data, (unsigned char *) dest, &out_length);
+        ret = utf8_to_eci(eci, (const unsigned char *) data[i].data, (unsigned char *) dest, &out_length);
         assert_equal(ret, data[i].ret, "i:%d utf8_to_eci ret %d != %d\n", i, ret, data[i].ret);
         if (ret == 0) {
             assert_equal(out_length, data[i].expected_length, "i:%d length %d != %d\n", i, out_length, data[i].expected_length);
             assert_nonzero(out_length <= eci_length, "i:%d out_length %d > eci_length %d\n", i, out_length, eci_length);
         }
     }
-};
+}
 
 static void test_utf8_to_eci_gb2312(void) {
 
     struct item {
-        int eci;
         char *data;
         int length;
         int ret;
@@ -909,16 +1103,17 @@ static void test_utf8_to_eci_gb2312(void) {
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /*  0*/ { 29, "\000\001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020\021\022\023\024\025\026\027\030\031\032\033\034\035\036\037", 32, 0, 32 },
-        /*  1*/ { 29, " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\177", 96, 0, 96 },
-        /*  2*/ { 29, "\302\200", -1, ZINT_ERROR_INVALID_DATA, -1 }, // No mapping for U+0080
-        /*  3*/ { 29, "\343\200\200", -1, 0, 2 }, // U+3000 IDEOGRAPHIC SPACE
-        /*  4*/ { 29, "\357\277\277", -1, ZINT_ERROR_INVALID_DATA, -1 }, // No mapping for U+FFFF
-        /*  5*/ { 29, "\357\277\276", -1, ZINT_ERROR_INVALID_DATA, -1 }, // U+FFFE (reversed BOM) not allowed
-        /*  6*/ { 29, "\355\240\200", -1, ZINT_ERROR_INVALID_DATA, -1 }, // U+D800 surrogate not allowed
+        /*  0*/ { "\000\001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020\021\022\023\024\025\026\027\030\031\032\033\034\035\036\037", 32, 0, 32 },
+        /*  1*/ { " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\177", 96, 0, 96 },
+        /*  2*/ { "\302\200", -1, ZINT_ERROR_INVALID_DATA, -1 }, // No mapping for U+0080
+        /*  3*/ { "\343\200\200", -1, 0, 2 }, // U+3000 IDEOGRAPHIC SPACE
+        /*  4*/ { "\357\277\277", -1, ZINT_ERROR_INVALID_DATA, -1 }, // No mapping for U+FFFF
+        /*  5*/ { "\357\277\276", -1, ZINT_ERROR_INVALID_DATA, -1 }, // U+FFFE (reversed BOM) not allowed
+        /*  6*/ { "\355\240\200", -1, ZINT_ERROR_INVALID_DATA, -1 }, // U+D800 surrogate not allowed
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
+    const int eci = 29;
 
     testStart("test_utf8_to_eci_gb2312");
 
@@ -928,22 +1123,21 @@ static void test_utf8_to_eci_gb2312(void) {
 
         length = data[i].length != -1 ? data[i].length : (int) strlen(data[i].data);
         out_length = length;
-        eci_length = get_eci_length(data[i].eci, (const unsigned char *) data[i].data, length);
+        eci_length = get_eci_length(eci, (const unsigned char *) data[i].data, length);
 
         assert_nonzero(eci_length + 1 <= 1024, "i:%d eci_length %d + 1 > 1024\n", i, eci_length);
-        ret = utf8_to_eci(data[i].eci, (const unsigned char *) data[i].data, (unsigned char *) dest, &out_length);
+        ret = utf8_to_eci(eci, (const unsigned char *) data[i].data, (unsigned char *) dest, &out_length);
         assert_equal(ret, data[i].ret, "i:%d utf8_to_eci ret %d != %d\n", i, ret, data[i].ret);
         if (ret == 0) {
             assert_equal(out_length, data[i].expected_length, "i:%d length %d != %d\n", i, out_length, data[i].expected_length);
             assert_nonzero(out_length <= eci_length, "i:%d out_length %d > eci_length %d\n", i, out_length, eci_length);
         }
     }
-};
+}
 
 static void test_utf8_to_eci_euc_kr(void) {
 
     struct item {
-        int eci;
         char *data;
         int length;
         int ret;
@@ -951,16 +1145,17 @@ static void test_utf8_to_eci_euc_kr(void) {
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /*  0*/ { 30, "\000\001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020\021\022\023\024\025\026\027\030\031\032\033\034\035\036\037", 32, 0, 32 },
-        /*  1*/ { 30, " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\177", 96, 0, 96 },
-        /*  2*/ { 30, "\302\200", -1, ZINT_ERROR_INVALID_DATA, -1 }, // No mapping for U+0080
-        /*  3*/ { 30, "\343\200\200", -1, 0, 2 }, // U+3000 IDEOGRAPHIC SPACE
-        /*  4*/ { 30, "\357\277\277", -1, ZINT_ERROR_INVALID_DATA, -1 }, // No mapping for U+FFFF
-        /*  5*/ { 30, "\357\277\276", -1, ZINT_ERROR_INVALID_DATA, -1 }, // U+FFFE (reversed BOM) not allowed
-        /*  6*/ { 30, "\355\240\200", -1, ZINT_ERROR_INVALID_DATA, -1 }, // U+D800 surrogate not allowed
+        /*  0*/ { "\000\001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020\021\022\023\024\025\026\027\030\031\032\033\034\035\036\037", 32, 0, 32 },
+        /*  1*/ { " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\177", 96, 0, 96 },
+        /*  2*/ { "\302\200", -1, ZINT_ERROR_INVALID_DATA, -1 }, // No mapping for U+0080
+        /*  3*/ { "\343\200\200", -1, 0, 2 }, // U+3000 IDEOGRAPHIC SPACE
+        /*  4*/ { "\357\277\277", -1, ZINT_ERROR_INVALID_DATA, -1 }, // No mapping for U+FFFF
+        /*  5*/ { "\357\277\276", -1, ZINT_ERROR_INVALID_DATA, -1 }, // U+FFFE (reversed BOM) not allowed
+        /*  6*/ { "\355\240\200", -1, ZINT_ERROR_INVALID_DATA, -1 }, // U+D800 surrogate not allowed
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
+    const int eci = 30;
 
     testStart("test_utf8_to_eci_euc_kr");
 
@@ -970,17 +1165,17 @@ static void test_utf8_to_eci_euc_kr(void) {
 
         length = data[i].length != -1 ? data[i].length : (int) strlen(data[i].data);
         out_length = length;
-        eci_length = get_eci_length(data[i].eci, (const unsigned char *) data[i].data, length);
+        eci_length = get_eci_length(eci, (const unsigned char *) data[i].data, length);
 
         assert_nonzero(eci_length + 1 <= 1024, "i:%d eci_length %d + 1 > 1024\n", i, eci_length);
-        ret = utf8_to_eci(data[i].eci, (const unsigned char *) data[i].data, (unsigned char *) dest, &out_length);
+        ret = utf8_to_eci(eci, (const unsigned char *) data[i].data, (unsigned char *) dest, &out_length);
         assert_equal(ret, data[i].ret, "i:%d utf8_to_eci ret %d != %d\n", i, ret, data[i].ret);
         if (ret == 0) {
             assert_equal(out_length, data[i].expected_length, "i:%d length %d != %d\n", i, out_length, data[i].expected_length);
             assert_nonzero(out_length <= eci_length, "i:%d out_length %d > eci_length %d\n", i, out_length, eci_length);
         }
     }
-};
+}
 
 static void test_get_best_eci(int index) {
 
@@ -1026,7 +1221,10 @@ int main(int argc, char *argv[]) {
         { "test_reduced_charset_input", test_reduced_charset_input, 1, 0, 1 },
         { "test_utf8_to_eci_sb", test_utf8_to_eci_sb, 1, 0, 0 },
         { "test_utf8_to_eci_ascii", test_utf8_to_eci_ascii, 0, 0, 0 },
-        { "test_utf8_to_eci_ucs2be", test_utf8_to_eci_ucs2be, 0, 0, 0 },
+        { "test_utf8_to_eci_utf16be", test_utf8_to_eci_utf16be, 0, 0, 0 },
+        { "test_utf8_to_eci_utf16le", test_utf8_to_eci_utf16le, 0, 0, 0 },
+        { "test_utf8_to_eci_utf32be", test_utf8_to_eci_utf32be, 0, 0, 0 },
+        { "test_utf8_to_eci_utf32le", test_utf8_to_eci_utf32le, 0, 0, 0 },
         { "test_utf8_to_eci_sjis", test_utf8_to_eci_sjis, 0, 0, 0 },
         { "test_utf8_to_eci_big5", test_utf8_to_eci_big5, 0, 0, 0 },
         { "test_utf8_to_eci_gb2312", test_utf8_to_eci_gb2312, 0, 0, 0 },
@@ -1040,3 +1238,5 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
+
+/* vim: set ts=4 sw=4 et norl : */
